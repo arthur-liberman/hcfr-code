@@ -1,0 +1,211 @@
+<!doctype HTML public "-//W3C//DTD HTML 4.0 Frameset//EN">
+
+<html>
+
+<head>
+<title>Etalon_sim</title>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252">
+<meta name="generator" content="RoboHelp by eHelp Corporation www.ehelp.com">
+<link rel="StyleSheet" href="../../../Application%20Help.css"><style>
+<!--
+body { background-color:#eaeaea; }
+-->
+</style><style title="hcp" type="text/css">
+<!--
+div.hcp1 { position:relative; }
+img.hcp2 { border:none; float:none; border-style:none; }
+p.hcp3 { margin-right:41px; margin-left:48px; }
+p.hcp4 { margin-right:41px; margin-left:48px; font-size:10pt; color:#0000ff; font-weight:bold; }
+p.hcp5 { font-size:7pt; text-align:center; }
+-->
+</style>
+</head>
+<body>
+<div placeholder id="header" style="width:100%;" class="hcp1"><table x-use-null-cells
+		style="x-cell-content-align: top;
+				width: 100%;
+				border-spacing: 0px;
+				border-spacing: 0px;"
+		cellspacing=0
+		width=100%>
+  <col style="width: 50%;">
+  <col style="width: 50%;">
+  <tr style="x-cell-content-align: top;"
+	valign=top>
+  <td style="width: 50%;
+			padding-right: 10px;
+			padding-left: 10px;
+			x-cell-content-align: center;"
+	valign=middle
+	width=50%>
+  <h1><img src="../../../bggraybevel.gif" x-save-file="TRUE" x-save-method="compute-relative" x-maintain-ratio="TRUE" style="width:21px; height:21px;" width="21" height="21" border="0" class="hcp2"><span style="color: #000000;">Colorimètre HCFR</span></td>
+  <td style="width: 50%;
+			padding-right: 10px;
+			padding-left: 10px;
+			border-top-style: none;
+			border-bottom-style: none;
+			border-right-style: none;"
+	width=50%>
+  <p style="text-align: right;"
+	align=right><img src="../../../logo_colorhcfr_499.gif" x-maintain-ratio="TRUE" style="margin-left: 0px;
+							margin-right: 0px;
+							margin-top: 0px;
+							margin-bottom: 0px;
+							border-left-style: none;
+							border-top-style: none;
+							border-right-style: none;
+							border-bottom-style: none;
+							width: 70px;
+							height: 34px;
+							float: none;
+							border-style: none;
+							border-style: none;" width="70" height="34" border="0"></td></tr>
+ </table><hr style="float: aligncenter; color: #7e7e7e;"
+	align=center
+	color=#7E7E7E>
+ <p>&nbsp;</p>
+</div>
+<h2 style="margin-left: 0px; margin-right: 41px;"><span class=TitreTropic>Menu 
+ Avancé / Fichier étalon</span></h2>
+
+<h2 style="margin-right: 41px; margin-left: 48px;">&nbsp;</h2>
+
+<h2 class=GraphicsIndent
+	style="margin-right: 32px;">Fabriquer un étalon à partir de mesures 
+ simultanées</h2>
+
+<p style="margin-left: 48px;
+			text-align: justify;
+			margin-right: 41px;">Cette option permet de fabriquer un étalon 
+ en effectuant des mesures simultanées avec le colorimètre à étalonner 
+ et une sonde de référence. <br>&nbsp;</p>
+
+<p style="margin-right: 41px;"><span class=Heading3Short><img src="../../../images/menu/Avance/etalon_simult.gif"
+	x-maintain-ratio=TRUE
+	style="border: none;
+			margin-left: 50px;
+			width: 653px;
+			height: 192px;
+			float: none;
+			border-style: none;
+			border-style: none;"
+	width=653
+	height=192
+	border=0></span> </p>
+
+<p class="hcp3">&nbsp;</p>
+
+<p class="hcp3">Cette option permet de 
+ fabriquer un étalon en effectuant des mesures simultanées entre le capteur 
+ HCFR et un colorimètre de référence. Elle permet également de créer des 
+ étalons pour tous les colorimètres tri-stimulus quand l’option Active 
+ les étalons pour toutes les sondes tri-stimulus est cochée dans les <a 
+ href="../Onglets_preferences/Avance.htm#Etalons">Préférences, onglet Avancé</a>. 
+ </p>
+
+<p class="hcp3">Pour l’utiliser, vous 
+ devez obligatoirement disposer d’un colorimètre de référence supporté 
+ par le logiciel, et d’un colorimètre HCFR. Il faut avoir deux documents 
+ ouverts simultanément, le document lié au colorimètre de référence ayant 
+ la checkbox « Mesure de référence » cochée. Il faut ensuite appeler cette 
+ fonction avec le document lié à la sonde HCFR (ou une autre sonde tri-stimulus) 
+ actif (la fonction renvoie un message d’erreur si le document d’appel 
+ est le document de référence). </p>
+
+<p class="hcp3">Les deux capteurs étant 
+ positionnés face à l’écran, à une distance équivalente, sans se masquer 
+ mutuellement, il suffit d’appeler cette option pour lancer la mesure des 
+ couleurs primaires et du blanc. Une fois les mesures terminées, le logiciel 
+ calcule l’étalon, puis affiche une <a href="#Signature">boîte de Signature</a> 
+ vous demandant un nom ou un pseudonyme pour signer l’étalon (ce n’est 
+ utile que si vous diffusez vos étalons ou que vous les transmettez à HCFR, 
+ afin de pouvoir en identifier l’origine).</p>
+
+<p class="hcp3">Ensuite, le programme 
+ affiche une boîte de message indiquant l’<a href="#Additivité">additivité</a> 
+ et le delta E entre le blanc mesuré par le colorimètre de référence, et 
+ le blanc calculé avec le nouvel étalon. </p>
+
+<p class="hcp3">Les données d’additivité 
+ sont purement informatives, des écarts importants pouvant être rencontrés 
+ sur certains modèles de projecteurs sans que cela n’invalide l’étalon. 
+ Par contre, le Delta E du blanc calculé à partir de l’étalon et le blanc 
+ mesuré par le colorimètre de référence est important. Une valeur trop 
+ importante invalide l’étalon. On peut considérer qu’un Delta E inférieur 
+ à 3 est acceptable pour l’étalon. En principe, si le blanc a été mesuré, 
+ le Delta E pour le blanc doit être égal à zéro. Si ce n’est pas le cas, 
+ c’est que l’étalon n’a pu être calculé qu’en employant les couleurs primaires.</p>
+
+<p class="hcp3">Après cet affichage, 
+ le logiciel propose de sauver l’étalon dans un fichier. Si vous ne sauvez 
+ pas le fichier à ce stade, vous pourrez le faire ultérieurement à l’aide 
+ de la fonction Sauver le fichier étalon.</p>
+
+<p class="hcp3">Il convient ensuite de 
+ vérifier la pertinence du nouvel étalon en effectuant des mesures simultanées 
+ de l’échelle de gris entre les deux documents, et d’utiliser les divers 
+ diagrammes pour vérifier qu’il y a peu d’écarts entre les résultats donnés 
+ par le colorimètre de référence et la sonde HCFR.</p>
+
+<p class="hcp3">Lorsque vous disposez 
+ d’un nouvel étalon pour un projecteur pour lequel aucun étalon n’est fourni, 
+ merci de le transmettre à l’équipe de développement via le forum du colorimètre, 
+ sur le site www.homecinema-fr.com. Afin de nous permettre de le diffuser, 
+ merci de communiquer avec cet étalon les deux fichiers .chc de mesures 
+ simultanées ayant permis la génération de l’étalon.</p>
+
+<p class="hcp3">Note : pour « jouer » 
+ avec le logiciel, il est possible d’étalonner le Capteur Simulé, et également 
+ de l’utiliser comme colorimètre de référence. Les étalons générés par 
+ ce biais n’ont bien entendu aucune valeur, et vont varier d’une fois sur 
+ l’autre puisqu’ils sont basés sur des valeurs aléatoires. <br>&nbsp;</p>
+
+<p class="hcp3">&nbsp;</p>
+
+<p class="hcp4"><a name=Signature>La boîte de signature:</a></p>
+
+<p class="hcp3">&nbsp;</p>
+
+<p class="hcp3">La boîte permettant de 
+ signer un étalon apparaît ainsi:</p>
+
+<p class="hcp3">&nbsp;</p>
+
+<p class="hcp3"><img src="../../../images/menu/Avance/dlg_signature.png" x-maintain-ratio="TRUE" style="width:285px; height:151px;" width="285" height="151" border="0" class="hcp2"></p>
+
+<p class="hcp3">&nbsp;</p>
+
+<p class="hcp3">Cette boîte apparaît 
+ automatiquement lors de la génération d’un étalon par mesures simultanées 
+ ou manuellement à partir d’un colorimètre de référence. Elle permet de 
+ saisir un nom ou un pseudonyme qui sera stocké en tant que nom d’auteur 
+ dans le fichier étalon. Cette information sera visible dans l’onglet Matrice 
+ Capteur de la boîte de configuration du capteur.</p>
+
+<p class="hcp3">&nbsp;</p>
+
+<p class="hcp4"><a name=Additivité>La boîte d'additivité</a></p>
+
+<p class="hcp3">&nbsp;</p>
+
+<p class="hcp3">Les informations d'additivité 
+ apparaissent sous forme d'une message box.</p>
+
+<p class="hcp3">&nbsp;</p>
+
+<p class="hcp3"><img src="../../../images/menu/Avance/dlg_additivite.png" x-maintain-ratio="TRUE" style="width:426px; height:211px;" width="426" height="211" border="0" class="hcp2"></p>
+
+<p class="hcp3">&nbsp;</p>
+
+<p class="hcp3">Ces informations sont 
+ reprises dans les commentaires associées à l'étalon.</p>
+
+<p>&nbsp;</p>
+
+<div placeholder id="footer" style="width:100%;" class="hcp1">
+ <p align="center" class="hcp5">&nbsp;</p>
+ <p align="center" class="hcp5">Copyright © 2005 - 2008 HCFR Team, All rights reserved.</p>
+ <p align="center" class="hcp5">&nbsp;</p>
+</div>
+</body>
+</html>

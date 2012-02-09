@@ -1,0 +1,781 @@
+<html>
+<!-- Sitemap 1.0 -->
+<object type="text/site properties">
+  <param name="SiteType" value="toc">
+  <param name="Image Width" value="16">
+  <param name="Window Styles" value="0x400027">
+  <param name="ExWindow Styles" value="0x100">
+</object>
+<ul>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Bienvenue">
+    <param name="Local" value="Bienvenue.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Contrat de license">
+    <param name="Local" value="Contrat_de_license.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Matériel et configuration nécessaires">
+    <param name="Local" value="Materiel_et_configuration_necessaires/materiel_necessaire.htm">
+  </object>
+  <ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Matériel nécessaire">
+      <param name="Local" value="Materiel_et_configuration_necessaires/materiel_necessaire.htm">
+    </object>
+    </ul>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Installation">
+    <param name="Local" value="Installation/installation_colorimetre.htm">
+  </object>
+  <ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Installation de la sonde Colorimètre HCFR">
+      <param name="Local" value="Installation/installation_colorimetre.htm">
+    </object>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Installation du logiciel et fichiers ...">
+      <param name="Local" value="Installation/Logiciel/Installation_logiciel_ColorHCFR.htm">
+    </object>
+    <ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Téléchargement ...">
+        <param name="Local" value="Installation/Logiciel/Installation_logiciel_ColorHCFR.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Installation">
+        <param name="Local" value="Installation/Logiciel/Installation.htm">
+      </object>
+      </ul>
+    </ul>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Premier démarrrage">
+    <param name="Local" value="Premier_demarrage/G&eacute;n&eacute;ralit&eacute;s.htm">
+  </object>
+  <ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Généralités">
+      <param name="Local" value="Premier_demarrage/G&eacute;n&eacute;ralit&eacute;s.htm">
+    </object>
+    </ul>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Fenêtre principale">
+    <param name="Local" value="Fenetre_document/Generalites.htm">
+  </object>
+  <ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Généralites">
+      <param name="Local" value="Fenetre_document/Generalites.htm">
+    </object>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Onglet Mesures">
+      <param name="Local" value="Fenetre_document/Onglet_mesures/Onglet_mesures.htm">
+    </object>
+    <ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Généralités">
+        <param name="Local" value="Fenetre_document/Onglet_mesures/Onglet_mesures.htm">
+      </object>
+      </ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Graphe de luminance">
+      <param name="Local" value="Fenetre_document/Graphe_de_luminance/Graphe_luminance.htm">
+    </object>
+    <ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Généralités">
+        <param name="Local" value="Fenetre_document/Graphe_de_luminance/Graphe_luminance.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Courbes">
+        <param name="Local" value="Fenetre_document/Graphe_de_luminance/Courbes.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Couleurs">
+        <param name="Local" value="Fenetre_document/Graphe_de_luminance/Couleurs.htm">
+      </object>
+      </ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Graphe de gamma">
+      <param name="Local" value="Fenetre_document/Graphe_de_gamma/Graphe_gamma.htm">
+    </object>
+    <ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Généralités">
+        <param name="Local" value="Fenetre_document/Graphe_de_gamma/Graphe_gamma.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Courbes">
+        <param name="Local" value="Fenetre_document/Graphe_de_gamma/courbes.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Couleurs">
+        <param name="Local" value="Fenetre_document/Graphe_de_gamma/couleurs.htm">
+      </object>
+      </ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Graphe de niveaux RVB">
+      <param name="Local" value="Fenetre_document/Graphe_RVB/Graphe_RVB.htm">
+    </object>
+    <ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Généralités">
+        <param name="Local" value="Fenetre_document/Graphe_RVB/Graphe_RVB.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Graphes">
+        <param name="Local" value="Fenetre_document/Graphe_RVB/Courbes.htm">
+      </object>
+      </ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Graphe de température de couleur">
+      <param name="Local" value="Fenetre_document/Graphe_temperature_couleur/Graphe_temperature_couleur.htm">
+    </object>
+    <ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Généralités">
+        <param name="Local" value="Fenetre_document/Graphe_temperature_couleur/Graphe_temperature_couleur.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Graphe">
+        <param name="Local" value="Fenetre_document/Graphe_temperature_couleur/Courbes.htm">
+      </object>
+      </ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Diagramme CIE">
+      <param name="Local" value="Fenetre_document/Diagramme_cie/Diagramme_CIE.htm">
+    </object>
+    <ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Généralités">
+        <param name="Local" value="Fenetre_document/Diagramme_cie/Diagramme_CIE.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Fond du diagramme">
+        <param name="Local" value="Fenetre_document/Diagramme_cie/Fond_du_diagramme.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Mesures">
+        <param name="Local" value="Fenetre_document/Diagramme_cie/Mesures.htm">
+      </object>
+      </ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Graphe combiné - mesures libres">
+      <param name="Local" value="Fenetre_document/Graphe_combine/Graph_combine.htm">
+    </object>
+    <ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Généralités">
+        <param name="Local" value="Fenetre_document/Graphe_combine/Graph_combine.htm">
+      </object>
+      </ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Graphe de luma au voisinage du noir">
+      <param name="Local" value="Fenetre_document/Graphe_luma_voisinage_noir/Graphe_luma_voisinage_noir.htm">
+    </object>
+    <ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Généralités">
+        <param name="Local" value="Fenetre_document/Graphe_luma_voisinage_noir/Graphe_luma_voisinage_noir.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Graphes">
+        <param name="Local" value="Fenetre_document/Graphe_luma_voisinage_noir/Courbes.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Composantes">
+        <param name="Local" value="Fenetre_document/Graphe_luma_voisinage_noir/Couleurs.htm">
+      </object>
+      </ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Graphe de luma au voisinage du blanc">
+      <param name="Local" value="Fenetre_document/Graphe_luma_voisinage_blanc/Graphe_luma_voisinage_blanc.htm">
+    </object>
+    <ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Généralités">
+        <param name="Local" value="Fenetre_document/Graphe_luma_voisinage_blanc/Graphe_luma_voisinage_blanc.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Graphes">
+        <param name="Local" value="Fenetre_document/Graphe_luma_voisinage_blanc/Courbes.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Composantes">
+        <param name="Local" value="Fenetre_document/Graphe_luma_voisinage_blanc/Couleurs.htm">
+      </object>
+      </ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Graphe de saturation-luminance">
+      <param name="Local" value="Fenetre_document/Graphe_saturation-luminance/Graphe_saturation_luminance.htm">
+    </object>
+    <ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Généralites">
+        <param name="Local" value="Fenetre_document/Graphe_saturation-luminance/Graphe_saturation_luminance.htm">
+      </object>
+      </ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Graphe de saturation-écarts">
+      <param name="Local" value="Fenetre_document/Graphe_saturation_ecart/Graphe_saturation_ecart.htm">
+    </object>
+    <ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Généralites">
+        <param name="Local" value="Fenetre_document/Graphe_saturation_ecart/Graphe_saturation_ecart.htm">
+      </object>
+      </ul>
+    </ul>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Menu">
+  </object>
+  <ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Fichier">
+      <param name="Local" value="Menu/Fichier/Options_detail.htm">
+    </object>
+    <ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Duplication de document..">
+        <param name="Local" value="Menu/Fichier/Options_detail.htm">
+      </object>
+      </ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Edition">
+      <param name="Local" value="Menu/Edition/copier.htm">
+    </object>
+    <ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Annuler">
+        <param name="Local" value="Menu/Edition/annuler.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Couper">
+        <param name="Local" value="Menu/Edition/copier.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Copier">
+        <param name="Local" value="Menu/Edition/coller.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Coller">
+        <param name="Local" value="Menu/Edition/menu_edition.htm">
+      </object>
+      </ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Affichage">
+      <param name="Local" value="Menu/Affichage/Couleur_de_test.htm">
+    </object>
+    <ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Couleur de test">
+        <param name="Local" value="Menu/Affichage/Couleur_de_test.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Luminance">
+        <param name="Local" value="Menu/Affichage/New_Topic.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Barres d'outils">
+        <param name="Local" value="Menu/Affichage/Barre_d_outils.htm">
+      </object>
+      <ul>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Outils">
+          <param name="Local" value="Menu/Affichage/Barre_d_outils.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Vues">
+          <param name="Local" value="Menu/Affichage/Vues.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Mesures">
+          <param name="Local" value="Menu/Affichage/Capteur.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Mesures étendues">
+          <param name="Local" value="Menu/Affichage/Barre_mesures_ex.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Mesures saturations">
+          <param name="Local" value="Menu/Affichage/Barre_mesures_saturations.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Etat">
+          <param name="Local" value="Menu/Affichage/Etat.htm">
+        </object>
+        </ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Onglets_en_haut">
+        <param name="Local" value="Menu/Affichage/Onglets_en_haut.htm">
+      </object>
+      </ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Mesures">
+    </object>
+    <ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Echelle_de_gris">
+        <param name="Local" value="Menu/Mesures/Echelle_de_gris.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Couleurs_primaires">
+        <param name="Local" value="Menu/Mesures/Couleurs_primaires.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Primaires_secondaires">
+        <param name="Local" value="Menu/Mesures/Primaires_secondaires.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="gris_couleurs">
+        <param name="Local" value="Menu/Mesures/gris_couleurs.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Voisinage_noir">
+        <param name="Local" value="Menu/Mesures/Voisinage_noir.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Voisinage_blanc">
+        <param name="Local" value="Menu/Mesures/Voisinage_blanc.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Saturations">
+        <param name="Local" value="Menu/Mesures/Saturation.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Contraste">
+        <param name="Local" value="Menu/Mesures/Contraste.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Mesure_unique">
+        <param name="Local" value="Menu/Mesures/Mesure_unique.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Mesure_continu">
+        <param name="Local" value="Menu/Mesures/Mesure_continu.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Capteur">
+        <param name="Local" value="Menu/Mesures/Menu_capteur/Configure.htm">
+      </object>
+      <ul>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Configure...">
+          <param name="Local" value="Menu/Mesures/Menu_capteur/Configure.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Sélectionne...">
+          <param name="Local" value="Menu/Mesures/Menu_capteur/Selectionne.htm">
+        </object>
+        </ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Générateur">
+        <param name="Local" value="Menu/Mesures/Menu_generateur/Generalites.htm">
+      </object>
+      <ul>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Configure...">
+          <param name="Local" value="Menu/Mesures/Menu_generateur/Configure/Configure.htm">
+        </object>
+        <ul>
+          <li><object type="text/sitemap">
+            <param name="Name" value="Affichage des mires">
+            <param name="Local" value="Menu/Mesures/Menu_generateur/Configure/Configure.htm">
+          </object>
+          <li><object type="text/sitemap">
+            <param name="Name" value="Générateur HCFR">
+            <param name="Local" value="Menu/Mesures/Menu_generateur/Configure/generateur_ki.htm">
+          </object>
+          </ul>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Sélectionne...">
+          <param name="Local" value="Menu/Mesures/Menu_generateur/Selectionne/selectionne.htm">
+        </object>
+        <ul>
+          <li><object type="text/sitemap">
+            <param name="Name" value="Générateur">
+            <param name="Local" value="Menu/Mesures/Menu_generateur/Selectionne/selectionne.htm">
+          </object>
+          </ul>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Généralités">
+          <param name="Local" value="Menu/Mesures/Menu_generateur/Generalites.htm">
+        </object>
+        </ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Parametres">
+        <param name="Local" value="Menu/Mesures/Parametres.htm">
+      </object>
+      </ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Relevé">
+      <param name="Local" value="Menu/Relev&eacute;s/Mesures.htm">
+    </object>
+    <ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Tableaux de mesures">
+        <param name="Local" value="Menu/Relev&eacute;s/Mesures.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Graphe de luminance">
+        <param name="Local" value="Menu/Relev&eacute;s/Graphe_luminance.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Graphe de gamma">
+        <param name="Local" value="Menu/Relev&eacute;s/Graphe_gamma.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Graphe de niveaux RVB">
+        <param name="Local" value="Menu/Relev&eacute;s/Graphe_RVB.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Graphe de température de couleurs">
+        <param name="Local" value="Menu/Relev&eacute;s/Graphe_temperature_couleur.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Diagramme CIE">
+        <param name="Local" value="Menu/Relev&eacute;s/Diagramme_CIE.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Graphe de luminance au voisinage du noir">
+        <param name="Local" value="Menu/Relev&eacute;s/Graphe_luma_voisinage_noir.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Graphe de luminance au voisinage du blanc">
+        <param name="Local" value="Menu/Relev&eacute;s/Graphe_luma_voisinage_blanc.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Graphe de saturation luminance">
+        <param name="Local" value="Menu/Relev&eacute;s/Graphe_saturation_luminance.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Graphe de saturation-écarts">
+        <param name="Local" value="Menu/Relev&eacute;s/Graphe_saturation_ecart.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Graphe combiné - mesures libres">
+        <param name="Local" value="Menu/Relev&eacute;s/Graphe_combine.htm">
+      </object>
+      </ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Avancé">
+      <param name="Local" value="Menu/Avance/Generalites.htm">
+    </object>
+    <ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Généralités">
+        <param name="Local" value="Menu/Avance/Generalites.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Matrice d'ajustement des coordonnées XYZ">
+        <param name="Local" value="Menu/Avance/Ajustement/Calculer.htm">
+      </object>
+      <ul>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Calculer la matrice de conversion à partir du document de référence">
+          <param name="Local" value="Menu/Avance/Ajustement/Calculer.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Efface la matrice de conversion XYZ">
+          <param name="Local" value="Menu/Avance/Ajustement/Effacer.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Edition manuelle de la matrice de conversion XYZ">
+          <param name="Local" value="Menu/Avance/Ajustement/Editer.htm">
+        </object>
+        </ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Mires">
+        <param name="Local" value="Menu/Avance/Mires/Anim_noir.htm">
+      </object>
+      <ul>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Mire animée de niveau de noir">
+          <param name="Local" value="Menu/Avance/Mires/Anim_noir.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Mire animée de niveau de blanc">
+          <param name="Local" value="Menu/Avance/Mires/Anim_blanc.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Affichage Mires">
+          <param name="Local" value="Menu/Avance/Mires/Mires.htm">
+        </object>
+        </ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Fichier étalon">
+        <param name="Local" value="Menu/Avance/Etalons/Etalon_sim.htm">
+      </object>
+      <ul>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Fabriquer un étalon élémentaire">
+          <param name="Local" value="Menu/Avance/Etalons/Etalon_simple.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Fabriquer un étalon à partir de mesures simultanées">
+          <param name="Local" value="Menu/Avance/Etalons/Etalon_sim.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Fabriquer un étalon manuellement à partir d'un colorimètre de référence">
+          <param name="Local" value="Menu/Avance/Etalons/Etalon_ref.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Sauver le fichier étalon">
+          <param name="Local" value="Menu/Avance/Etalons/Etalon_save.htm">
+        </object>
+        </ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Mesures simultanées">
+        <param name="Local" value="Menu/Avance/Mesures_simultanees/Echelle_de_gris.htm">
+      </object>
+      <ul>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Echelle de gris">
+          <param name="Local" value="Menu/Avance/Mesures_simultanees/Echelle_de_gris.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Couleurs primaires">
+          <param name="Local" value="Menu/Avance/Mesures_simultanees/Couleurs_primaires.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Couleurs primaires et secondaires">
+          <param name="Local" value="Menu/Avance/Mesures_simultanees/Primaires_secondaires.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Echelle de gris et couleurs">
+          <param name="Local" value="Menu/Avance/Mesures_simultanees/Gris_couleur.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Voisinage du noir">
+          <param name="Local" value="Menu/Avance/Mesures_simultanees/Voisinage_noir.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Voisinage du blanc">
+          <param name="Local" value="Menu/Avance/Mesures_simultanees/Voisinage_blanc.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Saturations">
+          <param name="Local" value="Menu/Avance/Mesures_simultanees/Saturations.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Mesure libre">
+          <param name="Local" value="Menu/Avance/Mesures_simultanees/Mesure_unique.htm">
+        </object>
+        </ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Exportation">
+        <param name="Local" value="Menu/Avance/Exportation/exportation.htm">
+      </object>
+      <ul>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Mesures vers fichier xls">
+          <param name="Local" value="Menu/Avance/Exportation/exportation.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Mesures vers fichier csv">
+          <param name="Local" value="Menu/Avance/Exportation/exportation_csv.htm">
+        </object>
+        </ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Mises à jour">
+        <param name="Local" value="Menu/Avance/Upgrade/Mises_&agrave;_jour_.htm">
+      </object>
+      <ul>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Mises à jour du logiciel">
+          <param name="Local" value="Menu/Avance/Upgrade/Mises_&agrave;_jour_.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Mise à jour des fichiers étalons">
+          <param name="Local" value="Menu/Avance/Upgrade/Etalons.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Mise à jour des fichiers profils IR">
+          <param name="Local" value="Menu/Avance/Upgrade/Profiles_IR.htm">
+        </object>
+        </ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Préférences">
+        <param name="Local" value="Menu/Avance/Pr&eacute;f&eacute;rences.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Langue">
+        <param name="Local" value="Menu/Avance/Langue.htm">
+      </object>
+      </ul>
+    </ul>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Support et aides">
+  </object>
+  <ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Glossaire">
+      <param name="Local" value="Support_et_aides/Glossaire/Index_glossaire.htm">
+    </object>
+    <ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Index glossaire">
+        <param name="Local" value="Support_et_aides/Glossaire/Index_glossaire.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="A à M">
+      </object>
+      <ul>
+        <li><object type="text/sitemap">
+          <param name="Name" value="A">
+          <param name="Local" value="Support_et_aides/Glossaire/a.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="B">
+          <param name="Local" value="Support_et_aides/Glossaire/B.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="C">
+          <param name="Local" value="Support_et_aides/Glossaire/C.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="D">
+          <param name="Local" value="Support_et_aides/Glossaire/D.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="E">
+          <param name="Local" value="Support_et_aides/Glossaire/E.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="F">
+          <param name="Local" value="Support_et_aides/Glossaire/F.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="G">
+          <param name="Local" value="Support_et_aides/Glossaire/G.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="H">
+          <param name="Local" value="Support_et_aides/Glossaire/H.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="I">
+          <param name="Local" value="Support_et_aides/Glossaire/I.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="J">
+          <param name="Local" value="Support_et_aides/Glossaire/J.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="K">
+          <param name="Local" value="Support_et_aides/Glossaire/K.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="L">
+          <param name="Local" value="Support_et_aides/Glossaire/L.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="M">
+          <param name="Local" value="Support_et_aides/Glossaire/M.htm">
+        </object>
+        </ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="N à Z">
+      </object>
+      <ul>
+        <li><object type="text/sitemap">
+          <param name="Name" value="N">
+          <param name="Local" value="Support_et_aides/Glossaire/N.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="O">
+          <param name="Local" value="Support_et_aides/Glossaire/O.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="P">
+          <param name="Local" value="Support_et_aides/Glossaire/P.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Q">
+          <param name="Local" value="Support_et_aides/Glossaire/Q.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="R">
+          <param name="Local" value="Support_et_aides/Glossaire/R.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="S">
+          <param name="Local" value="Support_et_aides/Glossaire/S.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="T">
+          <param name="Local" value="Support_et_aides/Glossaire/T.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="U">
+          <param name="Local" value="Support_et_aides/Glossaire/U.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="V">
+          <param name="Local" value="Support_et_aides/Glossaire/V.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="W">
+          <param name="Local" value="Support_et_aides/Glossaire/W.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="X">
+          <param name="Local" value="Support_et_aides/Glossaire/X.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Y">
+          <param name="Local" value="Support_et_aides/Glossaire/Y.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Z">
+          <param name="Local" value="Support_et_aides/Glossaire/z.htm">
+        </object>
+        </ul>
+      </ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="ColorHCFR Forum">
+      <param name="Local" value="Support_et_aides/colorhcfr_forum.htm">
+    </object>
+    <li><object type="text/sitemap">
+      <param name="Name" value="ColorHCFR Team">
+      <param name="Local" value="Support_et_aides/colorhcfr_team.htm">
+    </object>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Feedback">
+      <param name="Local" value="Support_et_aides/feedback.htm">
+    </object>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Support technique">
+      <param name="Local" value="Support_et_aides/support_technique.htm">
+    </object>
+    </ul>
+  <li><object type="text/sitemap">
+    <param name="Name" value="ColorHCFR pour les nuls">
+  </object>
+  <ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="FAQ">
+      <param name="Local" value="Hcfr_pour_nuls/FAQ/index.htm">
+    </object>
+    <ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Index">
+        <param name="Local" value="Hcfr_pour_nuls/FAQ/index.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Sonde ColorHCFR">
+        <param name="Local" value="Hcfr_pour_nuls/FAQ/Sonde_HCFR.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Histogramme">
+        <param name="Local" value="Hcfr_pour_nuls/FAQ/Histogramme.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Divers">
+        <param name="Local" value="Hcfr_pour_nuls/FAQ/Divers.htm">
+      </object>
+      </ul>
+    </ul>
+</ul>
+</html>

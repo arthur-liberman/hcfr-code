@@ -1,0 +1,168 @@
+<!doctype HTML public "-//W3C//DTD HTML 4.0 Frameset//EN">
+
+<html>
+
+<head>
+<title>Graphe de saturation - écarts</title>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252">
+<meta name="generator" content="RoboHelp by eHelp Corporation www.ehelp.com">
+<link rel="StyleSheet" href="../../Application%20Help.css"><style>
+<!--
+body { background-color:#ffffff; background-image:url("../../images/hcfr.gif"); }
+H6.NormalJLD { margin-left:24px; }
+LI.kadov-H6-CNormalJLD {  }
+-->
+</style><script language="javascript" src="../../ehlpdhtm.js"></script>
+<style title="hcp" type="text/css">
+<!--
+div.hcp1 { position:relative; }
+p.hcp2 { margin-right:20px; }
+p.hcp3 { margin-left:48px; text-align:justify; margin-right:20px; }
+span.hcp4 { font-weight:bold; }
+p.hcp5 { font-size:7pt; text-align:center; }
+-->
+</style>
+</head>
+<body>
+<div placeholder id="header" style="width:100%;" class="hcp1"><table x-use-null-cells
+		style="x-cell-content-align: top;
+				width: 100%;
+				border-spacing: 0px;
+				border-spacing: 0px;"
+		cellspacing=0
+		width=100%>
+  <col style="width: 50%;">
+  <col style="width: 50%;">
+  <tr style="x-cell-content-align: top;"
+	valign=top>
+  <td style="width: 50%;
+			padding-right: 10px;
+			padding-left: 10px;
+			x-cell-content-align: center;"
+	valign=middle
+	width=50%>
+  <h1><img src="../../bggraybevel.gif" x-save-file="TRUE" x-save-method="compute-relative" x-maintain-ratio="TRUE" style="border: none;
+				width: 21px;
+				height: 21px;
+				float: none;
+				border-style: none;
+				border-style: none;" width="21" height="21" border="0"><span style="color: #000000;">HCFR Colorimeter</span></td>
+  <td style="width: 50%;
+			padding-right: 10px;
+			padding-left: 10px;
+			border-top-style: none;
+			border-bottom-style: none;
+			border-right-style: none;"
+	width=50%>
+  <p style="text-align: right;"
+	align=right><img src="../../logo_colorhcfr_499.gif" x-maintain-ratio="TRUE" style="margin-left: 0px;
+							margin-right: 0px;
+							margin-top: 0px;
+							margin-bottom: 0px;
+							border-left-style: none;
+							border-top-style: none;
+							border-right-style: none;
+							border-bottom-style: none;
+							width: 70px;
+							height: 34px;
+							float: none;
+							border-style: none;
+							border-style: none;" width="70" height="34" border="0"></td></tr>
+ </table><hr style="float: aligncenter; color: #7e7e7e;"
+	align=center
+	color=#7E7E7E>
+ <p>&nbsp;</p>
+</div>
+<h2 style="margin-left: 0px; margin-right: 20px;"><span class=TitreTropic>Generalities</span></h2>
+
+<p class="hcp2">&nbsp;</p>
+
+<h2 style="margin-right: 20px;">Saturation-shifts graph</h2>
+
+<p style="font-weight: normal;
+			margin-left: 48px;
+			text-align: justify;
+			margin-right: 20px;"><span class=Heading3Short>Saturation-difference 
+ histogram measures two distinct things. Curves on higher part of the graph 
+ show the difference between the measured saturation level and the expected 
+ level. The goal is to reach a 0% difference for all curves. Negative values 
+ mean a lake of saturation and positive values mean an excess of saturation.</span></p>
+
+<h3 style="font-weight: normal;
+			margin-left: 48px;
+			text-align: justify;
+			margin-right: 20px;"><span class=Heading3Short
+										style="font-family: Verdana, sans-serif;">Curves 
+ on the lower part of the graph show a delta E between the measured color 
+ and the expected color, without taking into account the saturation level. 
+ As an example, a measured green with 60% of saturation instead of 50% 
+ will have a delta E of 0, contrary to the saturation curves, which will 
+ show +10% saturation error. However, whether the saturation is correct 
+ or not, if this green is not pure with blue or red component, the corresponding 
+ delta E curve would show the error.</span><span class=Heading3Short
+												style="color: #ff0000;"><br>
+&nbsp;</span></h3>
+
+<p class="hcp2"><img src="../../images/Fenetres/wnd_saturation_ecarts.png"
+									x-maintain-ratio=TRUE
+									style="border: none;
+											margin-left: 50px;
+											float: none;
+											width: 516px;
+											height: 412px;
+											border-style: none;
+											border-style: none;"
+									width=516
+									height=412
+									border=0> </p>
+
+<p class="hcp2">&nbsp; </p>
+
+<p class="hcp3"><span class=Heading3Short
+										style="font-weight: bold;">Note:</span><span 
+ class=Heading3Short> This delta E is not a &quot;true&quot; delta E, because 
+ it is not computed using a fixed reference point, but using a projected 
+ point on a line coming from white to a primary or secondary color. It 
+ means delta E values used to draw these curves are different than those 
+ displayed in measures grid. Moreover, this delta E value never takes luminance 
+ into account, regardless &quot;</span><span class=Heading3Short
+											style="font-weight: bold;">Do 
+ not use luminance in delta E formula</span><span class=Heading3Short>&quot; 
+ option in <a href="../../Menu/Avance/Onglets_preferences/Avance.htm">advanced 
+ preferences</a>.</span></p>
+
+<p class="hcp3">&nbsp;</p>
+
+<p class="hcp3"><span class="hcp4">Important 
+ notice:</span> The delta E difference depends on the chosen full saturated 
+ color reference. Actually, if measurements for the primary and secondary 
+ colors are available, they would be used as references if the &quot;<span class="hcp4">Use measured colors (when available)</span>&quot; 
+ option is checked in <a href="../../Menu/Avance/Onglets_preferences/generale.htm">general 
+ preferences</a>. If they are not, the chosen references would be the ones 
+ selected in the <a href="../../Menu/Avance/Onglets_preferences/reference.htm">reference 
+ preferences</a>. That explains these curves may change when erasing or 
+ measuring again the primary colors, or due to the lake of these measurements 
+ the references used by <span class="hcp4">HCFR Colorimeter</span> 
+ are modified (this affect especially curves linked to green and magenta). 
+ Therefore, if measured colors are taken as reference, Delta E measurements 
+ are relevant only when those colors are measured within the same conditions.</p>
+
+<p class="hcp2">&nbsp; </p>
+
+<p style="margin-left: 48px;
+			text-align: justify;
+			margin-right: 20px;
+			font-style: italic;">The options relative to this graph are 
+ available using right mouse button. They can<span class=Heading3Short
+													style="font-style: italic;"> 
+ <a href="../../Parametres_vues/Echelle.htm">define scale</a>, <a href="../../Parametres_vues/Parametres_graphes.htm">graph 
+ parameters</a>, and <a href="../../Parametres_vues/Enregistrer.htm">save 
+ graph in a file</a>.</span></p>
+
+<div placeholder id="footer" style="width:100%;" class="hcp1">
+ <p align="center" class="hcp5">&nbsp;</p>
+ <p align="center" class="hcp5">Copyright © 2005 - 2008 HCFR Team, All rights reserved.</p>
+ <p align="center" class="hcp5">&nbsp;</p>
+</div>
+</body>
+</html>

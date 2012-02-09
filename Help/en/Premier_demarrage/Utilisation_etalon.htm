@@ -1,0 +1,184 @@
+<!doctype HTML public "-//W3C//DTD HTML 4.0 Frameset//EN">
+
+<html>
+
+<head>
+<title>Utilisation étalon</title>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252">
+<meta name="generator" content="RoboHelp by eHelp Corporation www.ehelp.com">
+<link rel="StyleSheet" href="../Application%20Help.css"><style>
+<!--
+body { background-color:#ffffff; background-image:url("../images/hcfr.gif"); }
+H6.NormalJLD { margin-left:24px; }
+LI.kadov-H6-CNormalJLD {  }
+-->
+</style><style title="hcp" type="text/css">
+<!--
+div.hcp1 { position:relative; }
+h2.hcp2 { margin-right:53px; }
+p.hcp3 { margin-right:53px; text-align:justify; margin-left:48px; }
+p.hcp4 { margin-left:48px; }
+-->
+</style>
+</head>
+<body>
+<div placeholder id="header" style="width:100%;" class="hcp1"><table x-use-null-cells
+		style="x-cell-content-align: top;
+				width: 100%;
+				border-spacing: 0px;
+				border-spacing: 0px;"
+		cellspacing=0
+		width=100%>
+  <col style="width: 50%;">
+  <col style="width: 50%;">
+  <tr style="x-cell-content-align: top;"
+	valign=top>
+  <td style="width: 50%;
+			padding-right: 10px;
+			padding-left: 10px;
+			x-cell-content-align: center;"
+	valign=middle
+	width=50%>
+  <h1><img src="../bggraybevel.gif" x-save-file="TRUE" x-save-method="compute-relative" x-maintain-ratio="TRUE" style="border: none;
+				width: 21px;
+				height: 21px;
+				float: none;
+				border-style: none;
+				border-style: none;" width="21" height="21" border="0"><span style="color: #000000;">HCFR Colorimeter</span></td>
+  <td style="width: 50%;
+			padding-right: 10px;
+			padding-left: 10px;
+			border-top-style: none;
+			border-bottom-style: none;
+			border-right-style: none;"
+	width=50%>
+  <p style="text-align: right;"
+	align=right><img src="../images/logo_hcfr_shg.gif" x-maintain-ratio="TRUE" style="margin-left: 0px;
+							margin-right: 0px;
+							margin-top: 0px;
+							margin-bottom: 0px;
+							border-left-style: none;
+							border-top-style: none;
+							border-right-style: none;
+							border-bottom-style: none;
+							width: 101px;
+							height: 47px;
+							float: none;
+							border-style: none;
+							border-style: none;" width="101" height="47" border="0"></td></tr>
+ </table><hr style="float: aligncenter; height: 1px;"
+	align=center
+	size=1>
+</div>
+<h2><span class=TitreTropic>Using calibration files</span></h2>
+
+<p>&nbsp;</p>
+
+<h2 class="hcp2">Preliminary</h2>
+
+<p class="hcp3"><span class=Heading3Short>What is a calibration 
+ file ? This is a file containing a color coordinates conversion matrix. 
+ HCFR probe measures colors in its own RGB colorspace. Each projector emit 
+ light with a particular spectrum. Since </span>there is an infinite number 
+ of possible light spectra to obtain a D65 calibrated white, it's somewhat 
+ difficult for some tri-stimulus colorimeters to see what is absolute D65. 
+ Tri-stimulus commercial probes try to have a native RGB colorspace which 
+ match as much as possible XYZ normalized colorspace. This condition allow 
+ measuring D65 without any conversion matrix (or, at least, using always 
+ the same conversion matrix), for any projector.</p>
+
+<p class="hcp3">HCFR probe is not in capable of that. Its 
+ own colorspace is relatively different from XYZ colorspace. It needs a 
+ conversion matrix for each projector model to guarantee what the probe 
+ considers D65 is really D65. Without calibration file, or with incorrect 
+ calibration file, any color could be considered as white.</p>
+
+<p class="hcp3">So, why did we base HCFR probe on colorimetric 
+ sensor needing calibration file, while it would have been easier for everybody 
+ to get rid of that ? Answer is simple: TAOS sensors have other qualities: 
+ they are more sensible and offer better repeatability than most tri-stimulus 
+ sensors. And they allow building a relatively cheap probe, with relatively 
+ easy work.</p>
+
+<p class="hcp3">&nbsp;</p>
+
+<h2 class="hcp2">Choosing the right calibration file</h2>
+
+<p class="hcp4"><span class=Heading3Short>When creating a 
+ new measure document, you must choose the right calibration file. If a 
+ calibration file exists for your projector, just select it, and that's 
+ all. If not, you can build it by yourself, using calibration file building 
+ features in advanced menu, but you need a reference colorimeter for that 
+ operation, and it is not always easy to find.</span></p>
+
+<p class="hcp4"><span class=Heading3Short>If you don't have 
+ the right calibration file, and no way to make your own, you can often 
+ use calibration file for another projector, if you choose a model from 
+ the same brand, which is technically similar. After calibrating using 
+ this calibration file, you can easily see if targeted white looks really 
+ white. In this case, the calibration file is suitable. If not, meaning 
+ calibrated white looks greenish, bluish or any color except white, the 
+ calibration file does not match you projector.</span></p>
+
+<p class="hcp4">If no suitable calibration file can be found, 
+ you must build one by yourself. Of course, it will not guarantee calibrated 
+ white will respect precisely D65 standard, but it will make possible to 
+ guarantee all gray levels are the same color, so dark grays are not bluish 
+ and light gray redish, and also ensure your brightness, contrast and gamma 
+ settings are OK. In fact, even if white is not exactly D65, having a balanced 
+ colorimetry on all gray scale, and a regular gamma curve is the most important 
+ part of calibration, at the condition that white is near D65 enough.</p>
+
+<p class="hcp4"><span class=Heading3Short>To build an approximate 
+ calibration file, play with your projector settings displaying at a white 
+ pattern. Using your eyes, change settings to make the white pattern appear 
+ really white. Not bluish, not greenish, not redish. As much perfectly 
+ white as possible. But take care of one thing: D65 is not the same white 
+ than the one displayed by a computer monitor, which is often slightly 
+ bluish, to make is more &quot;vibrant&quot;. At the opposite, D65 is a 
+ white slightly &quot;hot&quot;, and it can give impression to be very 
+ subtly yellow, meaning absolutely not bluish. To get this estimated D65 
+ white, you will generally use color temperature setting on &quot;low&quot;, 
+ &quot;6500K&quot;, &quot;D65&quot;, with colorimetric settings near zero. 
+ Eventually, adjust this white using primary color gain settings, to obtain 
+ a white which looks &quot;hot&quot; and &quot;pure&quot; at the same time.</span></p>
+
+<p class="hcp4"><span class=Heading3Short>When this is done, 
+ use the basic calibration file building feature in the advanced menu. 
+ This calibration file will target the white you determined using your 
+ eyes during above step, and will consider projector primary colors match 
+ exactly the color standard selected for calibration file building. It 
+ will be impossible to judge gamut, nor check if target white is D65 or 
+ not, but you can balance RGB levels and optimize gamma curve, which is 
+ essential for a balanced and realistic image.</span></p>
+
+<p class="hcp4">&nbsp;</p>
+
+<h6 class=NORMALJLD2>&nbsp;</h6>
+
+&nbsp; 
+
+<br>&nbsp; 
+ 
+
+<p style="text-align: center;"
+	align=center>&nbsp;</p>
+
+<h2 style="margin-left: 40px;">&nbsp;</h2>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<div placeholder id="footer" style="width:100%;" class="hcp1"><hr class=whs6
+	style="float: aligncenter; height: 1px;"
+	align=center
+	size=1>
+ <p class=whs7
+	style="text-align: center; font-size: 7pt;"
+	align=center>Copyright © 2005 - 2008 HCFR Team, All rights reserved.</p>
+ <p>&nbsp;</p>
+ <p>&nbsp;</p>
+</div>
+</body>
+</html>

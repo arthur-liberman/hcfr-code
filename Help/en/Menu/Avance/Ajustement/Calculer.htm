@@ -1,0 +1,251 @@
+<!doctype HTML public "-//W3C//DTD HTML 4.0 Frameset//EN">
+
+<html>
+
+<head>
+<title>Calculer</title>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252">
+<meta name="generator" content="RoboHelp by eHelp Corporation www.ehelp.com">
+<link rel="StyleSheet" href="../../../Application%20Help.css"><style>
+<!--
+body { background-color:#eaeaea; }
+-->
+</style><style title="hcp" type="text/css">
+<!--
+div.hcp1 { position:relative; }
+span.hcp2 { font-weight:bold; }
+p.hcp3 { font-size:7pt; text-align:center; }
+-->
+</style>
+</head>
+<body>
+<div placeholder id="header" style="width:100%;" class="hcp1"><table x-use-null-cells
+		style="x-cell-content-align: top;
+				width: 100%;
+				border-spacing: 0px;
+				border-spacing: 0px;"
+		cellspacing=0
+		width=100%>
+  <col style="width: 50%;">
+  <col style="width: 50%;">
+  <tr style="x-cell-content-align: top;"
+	valign=top>
+  <td style="width: 50%;
+			padding-right: 10px;
+			padding-left: 10px;
+			x-cell-content-align: center;"
+	valign=middle
+	width=50%>
+  <h1><img src="../../../bggraybevel.gif" x-save-file="TRUE" x-save-method="compute-relative" x-maintain-ratio="TRUE" style="border: none;
+				width: 21px;
+				height: 21px;
+				float: none;
+				border-style: none;
+				border-style: none;" width="21" height="21" border="0"><span style="color: #000000;">HCFR Colorimeter</span></td>
+  <td style="width: 50%;
+			padding-right: 10px;
+			padding-left: 10px;
+			border-top-style: none;
+			border-bottom-style: none;
+			border-right-style: none;"
+	width=50%>
+  <p style="text-align: right;"
+	align=right><img src="../../../logo_colorhcfr_499.gif" x-maintain-ratio="TRUE" style="margin-left: 0px;
+							margin-right: 0px;
+							margin-top: 0px;
+							margin-bottom: 0px;
+							border-left-style: none;
+							border-top-style: none;
+							border-right-style: none;
+							border-bottom-style: none;
+							width: 70px;
+							height: 34px;
+							float: none;
+							border-style: none;
+							border-style: none;" width="70" height="34" border="0"></td></tr>
+ </table><hr style="float: aligncenter; color: #7e7e7e;"
+	align=center
+	color=#7E7E7E>
+ <p>&nbsp;</p>
+</div>
+<h2 class=GraphicsIndent
+	style="margin-left: 0px; margin-right: 113px;"><span class=TitreTropic>XYZ 
+ Adjustment...<br>
+&nbsp;</span></h2>
+
+<p class=GraphicsIndent
+	style="margin-right: 113px;
+			margin-left: 48px;
+			font-weight: bold;
+			font-size: 10pt;"><span style="font-weight: bold; font-size: 10pt;">XYZ 
+ Adjustment: Generalities</span></p>
+
+<p class=GraphicsIndent
+	style="margin-right: 113px; margin-left: 48px;">The adjustment principle 
+ is relatively simple. The documents stores raw data as XYZ coordinates. 
+ During normal use, those coordinates are displayed directly in grids, 
+ and used as is for all graph computations. When XYZ adjustment is applied, 
+ the measured XYZ coordinates are changed through a transformation matrix, 
+ and they are not anymore used directly in all software parts.</p>
+
+<p class=GraphicsIndent
+	style="margin-right: 113px; margin-left: 48px;">Uses for XYZ adjustments 
+ are multiple. You can use this function to handle a screen offset, or 
+ to calibrate very precisely a probe to match another probe response. (This 
+ is analogous to creating a calibration file, but is simpler to use because 
+ of easiness to activate or deactivate the adjustment).</p>
+
+<p class=GraphicsIndent
+	style="margin-left: 48px;
+			text-align: justify;
+			margin-right: 113px;
+			font-size: 8pt;
+			font-weight: normal;
+			color: #000000;">&nbsp;</p>
+
+<p class=GraphicsIndent
+	style="margin-left: 48px;
+			text-align: justify;
+			margin-right: 113px;
+			font-weight: bold;
+			font-size: 10pt;
+			color: #0000ff;">Compute conversion matrix from reference document</p>
+
+<p class=GraphicsIndent
+	style="margin-left: 48px;
+			text-align: justify;
+			margin-right: 113px;"><span class=Heading3Short>This function 
+ defines an adjustment matrix. This matrix is used only when the </span><span 
+ class=Heading3Short
+	style="font-style: italic;"><a href="../../../Fenetre_document/Onglet_mesures/Onglet_mesures.htm#Groupe_parametres">XYZ 
+ Adjusement</a> </span><span class=Heading3Short>checkbox is checked in 
+ the <a href="../../../Fenetre_document/Onglet_mesures/Onglet_mesures.htm#Tableau_de_mesure">measures 
+ view</a>.<br>
+&nbsp;</span></p>
+
+<p class=GraphicsIndent
+	style="margin-right: 113px;"><img src="../../../images/menu/Avance/XYZ_calc_matrix.gif"
+										x-maintain-ratio=TRUE
+										alt="Cable USB"
+										style="border: none;
+												margin-left: 50px;
+												float: none;
+												border-style: none;
+												width: 532px;
+												height: 193px;
+												border-style: none;"
+										width=532
+										height=193
+										border=0> </p>
+
+<p class=GraphicsIndent>&nbsp; </p>
+
+<p class=GraphicsIndent
+	style="margin-right: 113px; margin-left: 48px;">This option automatically 
+ generates an XYZ transformation matrix, by comparing primary color (and 
+ white) measures in active document, with the same measures in the reference 
+ document. The matrix is computed to make primary colors and white coordinates 
+ in current document become exactly the same than corresponding coordinates 
+ in reference document. </p>
+
+<p class=GraphicsIndent
+	style="margin-right: 113px; margin-left: 48px;">For optimal precision, 
+ it is recommended that white is measured in both documents (the white 
+ measured with primary and secondary colors, not level 100 is gray scale). 
+ If the white measure is missing in one of the documents, the matrix computation 
+ will take only primaries into account, and the conversion matrix will 
+ give a much less precise results around white. For that reason, it is 
+ strongly recommended to keep activated the additional white measure when 
+ measuring primary and secondary colors (see <a href="../Onglets_preferences/generale.htm">general 
+ preferences</a> for details)</p>
+
+<p class=GraphicsIndent
+	style="margin-right: 113px;
+			margin-left: 48px;
+			x-text-underline: normal;
+			font-style: italic;
+			font-weight: bold;
+			/*begin!kadov{{*/ text-decoration: underline; /*}}end!kadov*/ ">Use 
+ cases:</p>
+
+<p class=GraphicsIndent
+	style="margin-right: 113px; margin-left: 48px;"><span class="hcp2">1 
+ – Training</span> : The goal is to precisely calibrate a fast and sensible 
+ colorimeter, but whose precision is quite low, using a very precise colorimeter, 
+ but which is slower, less sensible, or less practical to use. Then, you 
+ can use repeatedly the fast colorimeter, and obtain a final result as 
+ reliable as if you used the most precise probe during the whole calibration 
+ session.</p>
+
+<p class=GraphicsIndent
+	style="margin-right: 113px; margin-left: 48px;">First, you make two 
+ primary colors measures (including white) of the projector to calibrate, 
+ with both probes places roughly at the same place. You can use simultaneous 
+ measures, with both probes side by side, or successive measures with probes 
+ exactly at the same place, as you like.</p>
+
+<p class=GraphicsIndent
+	style="margin-right: 113px; margin-left: 48px;">When primary colors 
+ and white measures available on both documents, check the &quot;Reference&quot; 
+ checkbox on the document linked to the reference colorimeter. Then, activate 
+ the other document window, the one using the probe to &quot;train&quot;, 
+ and call <span class="hcp2">Compute conversion matrix from 
+ reference document</span>. Validate the confirmation message to create 
+ the matrix. The checkbox <span class="hcp2">XYZ Adjust</span> 
+ is checked. All document measures, present and future, are then adjusted. 
+ To see raw measures or adjusted coordinates, you just need to check or 
+ uncheck <span class="hcp2">Adjust XYZ</span><span>. You 
+ can then calibrate your projector with the trained meter.</span></p>
+
+<p class=GraphicsIndent
+	style="margin-right: 113px; margin-left: 48px;">The goal of training 
+ is to obtain a maximum precision with a relatively low precision probe, 
+ or a probe whose results can vary (for exemple when ambient temperature 
+ changes...). Generally, this kind of matrix will not be saved, because 
+ it offers a gain only during the calibration session.</p>
+
+<p class=GraphicsIndent
+	style="margin-right: 113px; margin-left: 48px;">&nbsp;</p>
+
+<p class=GraphicsIndent
+	style="margin-right: 113px; margin-left: 48px;"><span class="hcp2">2 
+ – Screen offset</span> : The goal is to make measures which take into 
+ account the colorimetric shifting of the screen, but facing the projector, 
+ to benefit of a higher light quantity to measure, therefore a better precision 
+ and faster measures.</p>
+
+<p class=GraphicsIndent
+	style="margin-right: 113px; margin-left: 48px;">First, measure primary 
+ colors and white facing screen, in a document which will become the reference 
+ document.</p>
+
+<p class=GraphicsIndent
+	style="margin-right: 113px; margin-left: 48px;">Then, create a second 
+ document, with the same probe, but place the probe facing the projector. 
+ You make then a second series of measure of the primary colors and white 
+ in this new document. In the first document, which made measures facing 
+ screen, check the <span class="hcp2">&quot;Reference</span>&quot; 
+ checkbox. Activate the second document, and call <span class="hcp2">Compute 
+ conversion matrix from reference document</span>. The new document is 
+ ready to perform measures facing the projector, the result will take the 
+ screen offset into account when the <span class="hcp2">Adjust 
+ XYZ</span> checkbox will be checked, and will display raw measures (pure 
+ projector light) when unchecked.</p>
+
+<p class=GraphicsIndent
+	style="margin-right: 113px; margin-left: 48px;">The screen offset being 
+ a screen (and room) characteristic, there is few chances of varing between 
+ two calibration sessions. The adjustment matrix is likely to be saved 
+ in a file to be reused later.</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<div placeholder id="footer" style="width:100%;" class="hcp1">
+ <p align="center" class="hcp3">&nbsp;</p>
+ <p align="center" class="hcp3">Copyright © 2005 - 2008 HCFR Team, All rights reserved.</p>
+ <p align="center" class="hcp3">&nbsp;</p>
+</div>
+</body>
+</html>

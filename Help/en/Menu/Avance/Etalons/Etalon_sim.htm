@@ -1,0 +1,208 @@
+<!doctype HTML public "-//W3C//DTD HTML 4.0 Frameset//EN">
+
+<html>
+
+<head>
+<title>Etalon_sim</title>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252">
+<meta name="generator" content="RoboHelp by eHelp Corporation www.ehelp.com">
+<link rel="StyleSheet" href="../../../Application%20Help.css"><style>
+<!--
+body { background-color:#eaeaea; }
+-->
+</style><style title="hcp" type="text/css">
+<!--
+div.hcp1 { position:relative; }
+img.hcp2 { border:none; float:none; border-style:none; }
+p.hcp3 { margin-right:41px; margin-left:48px; }
+span.hcp4 { font-weight:bold; }
+span.hcp5 { margin-right:41px; margin-left:48px; }
+p.hcp6 { margin-right:41px; margin-left:48px; font-size:10pt; color:#0000ff; font-weight:bold; }
+p.hcp7 { font-size:7pt; text-align:center; }
+-->
+</style>
+</head>
+<body>
+<div placeholder id="header" style="width:100%;" class="hcp1"><table x-use-null-cells
+		style="x-cell-content-align: top;
+				width: 100%;
+				border-spacing: 0px;
+				border-spacing: 0px;"
+		cellspacing=0
+		width=100%>
+  <col style="width: 50%;">
+  <col style="width: 50%;">
+  <tr style="x-cell-content-align: top;"
+	valign=top>
+  <td style="width: 50%;
+			padding-right: 10px;
+			padding-left: 10px;
+			x-cell-content-align: center;"
+	valign=middle
+	width=50%>
+  <h1><img src="../../../bggraybevel.gif" x-save-file="TRUE" x-save-method="compute-relative" x-maintain-ratio="TRUE" style="width:21px; height:21px;" width="21" height="21" border="0" class="hcp2"><span style="color: #000000;">HCFR Colorimeter</span></td>
+  <td style="width: 50%;
+			padding-right: 10px;
+			padding-left: 10px;
+			border-top-style: none;
+			border-bottom-style: none;
+			border-right-style: none;"
+	width=50%>
+  <p style="text-align: right;"
+	align=right><img src="../../../logo_colorhcfr_499.gif" x-maintain-ratio="TRUE" style="margin-left: 0px;
+							margin-right: 0px;
+							margin-top: 0px;
+							margin-bottom: 0px;
+							border-left-style: none;
+							border-top-style: none;
+							border-right-style: none;
+							border-bottom-style: none;
+							width: 70px;
+							height: 34px;
+							float: none;
+							border-style: none;
+							border-style: none;" width="70" height="34" border="0"></td></tr>
+ </table><hr style="float: aligncenter; color: #7e7e7e;"
+	align=center
+	color=#7E7E7E>
+ <p>&nbsp;</p>
+</div>
+<h2 style="margin-left: 0px; margin-right: 41px;"><span class=TitreTropic>Advanced 
+ / Calibration file</span></h2>
+
+<h2 style="margin-right: 41px; margin-left: 48px;">&nbsp;</h2>
+
+<h2 class=GraphicsIndent
+	style="margin-right: 32px;">Build using simultaneous measures</h2>
+
+<p style="margin-left: 48px;
+			text-align: justify;
+			margin-right: 41px;">This option builds a calibration file 
+ using simultaneous measures between the probe to calibrate and a reference 
+ colorimeter.<br>&nbsp;</p>
+
+<p style="margin-right: 41px;"><span class=Heading3Short><img src="../../../images/menu/Avance/etalon_simult.gif"
+	x-maintain-ratio=TRUE
+	style="border: none;
+			margin-left: 50px;
+			float: none;
+			width: 470px;
+			height: 192px;
+			border-style: none;
+			border-style: none;"
+	width=470
+	height=192
+	border=0></span> </p>
+
+<p class="hcp3">&nbsp;</p>
+
+<p class="hcp3">This option builds a 
+ calibration file using simultaneous measures between the probe to calibrate 
+ and a reference colorimeter. You can create calibration files for all 
+ tri-stimulus colorimeters when the <span class="hcp4">Activate 
+ calibration files on all tri-stimulus probes</span> is checked in <a href="../Onglets_preferences/Avance.htm#Etalons">advanced 
+ preferences</a>.</p>
+
+<p class="hcp3">To use this feature, 
+ you must have a reference colorimeter supported by this software, and 
+ a HCFR colorimeter (or other tri-stimulus) to calibrate. You must have 
+ two documents opened at the same time, the document using the reference 
+ colorimeter having the &quot;<span class="hcp4">Reference</span>&quot; 
+ checkbox checked. You must then call this function with the non-reference 
+ document active (the one which pilot the probe to calibrate). If the active 
+ document when you call this function is the reference document, an error 
+ is issued.</p>
+
+<p class="hcp3">Both probes facing the 
+ screen, at an equivalent distance, and without masking each other, just 
+ call this option to launch the measure of primary colors and white. When 
+ the measures are done, the calibration matrix is computed, a <span class="hcp5"><a 
+ href="#Signature">Signature</a> asking a name or a pseudo appears (useful 
+ only when you publish your calibration files or transmit them to HCFR 
+ forums)</span></p>
+
+<p class="hcp3">Then, the program display 
+ the <a href="#Additivité">additivity</a> information and delta E between 
+ white measured by the reference colorimeter and the white computed using 
+ the new calibration file. </p>
+
+<p class="hcp3">Additivity data are pure 
+ information. Large differences can be found on some projectors without 
+ invalidating calibration file. But the delta E between white measured 
+ by the reference colorimeter and calibration-computed white is very important. 
+ A big value invalidates calibration file. You can consider a delta E below 
+ 3 is acceptable. But normally, if white has been measured, the delta E 
+ should be exactly zero. If not, it means calibration matrix has been computed 
+ using only primary colors.</p>
+
+<p class="hcp3">After the additivity 
+ display, the software proposes to save the calibration file. If you don't 
+ save the file at this stage, you can do it later using <a href="Etalon_save.htm">Save 
+ calibration file</a>.</p>
+
+<p class="hcp3">Check calibration file 
+ precision by measuring the whole grayscale with the two documents, using 
+ simultaneous measures, and examine the graphs to verify that differences 
+ between the two documents are low.</p>
+
+<p class="hcp3">When you have a new calibration 
+ file for a projector for which no calibration file is furnished, please 
+ transmit it to the development team on the HCFR forums <span class="hcp5">www.homecinema-fr.com. 
+ To help us control and publish it, please send us the two .chc measure 
+ files you made using simultaneous measures when building the calibration 
+ file.</span></p>
+
+<p class="hcp3">Note : to « play » with 
+ this function, it is possible to calibrate the simulated sensor, and use 
+ it as a reference colorimeter. Of course, calibration files built this 
+ way are totally useless, because they are based on random values.<br>&nbsp;</p>
+
+<p class="hcp3">&nbsp;</p>
+
+<p class="hcp6"><a name=Signature>Signature:</a></p>
+
+<p class="hcp3">&nbsp;</p>
+
+<p class="hcp3">The signature dialog:</p>
+
+<p class="hcp3">&nbsp;</p>
+
+<p class="hcp3"><img src="../../../images/menu/Avance/dlg_signature.png" x-maintain-ratio="TRUE" style="width:285px; height:151px;" width="285" height="151" border="0" class="hcp2"></p>
+
+<p class="hcp3">&nbsp;</p>
+
+<p class="hcp3">This dialog appears when 
+ generating a calibration file using simultaneous measures, or manually 
+ using a reference colorimeter. You can type your name or pseudo, which 
+ will be saved in the author field inside the calibration file. This information 
+ will appear in the Sensor matrix tab in the <a href="../../Mesures/Menu_capteur/Configure.htm#Configuration_de_la_Matrice_du_capteur">sensor 
+ configuration dialog</a>.</p>
+
+<p class="hcp3">&nbsp;</p>
+
+<p class="hcp6"><a name=Additivité>Additivity</a></p>
+
+<p class="hcp3">&nbsp;</p>
+
+<p class="hcp3">The additivity information 
+ appear in a simple message box.</p>
+
+<p class="hcp3">&nbsp;</p>
+
+<p class="hcp3"><img src="../../../images/menu/Avance/dlg_additivite.png" x-maintain-ratio="TRUE" style="width:431px; height:211px;" width="431" height="211" border="0" class="hcp2"></p>
+
+<p class="hcp3">&nbsp;</p>
+
+<p class="hcp3">This information is put 
+ inside calibration file comments field, visible in the <a href="../../Mesures/Menu_capteur/Configure.htm#Configuration_de_la_Matrice_du_capteur">sensor 
+ configuration dialog</a>.</p>
+
+<p>&nbsp;</p>
+
+<div placeholder id="footer" style="width:100%;" class="hcp1">
+ <p align="center" class="hcp7">&nbsp;</p>
+ <p align="center" class="hcp7">Copyright © 2005 - 2008 HCFR Team, All rights reserved.</p>
+ <p align="center" class="hcp7">&nbsp;</p>
+</div>
+</body>
+</html>

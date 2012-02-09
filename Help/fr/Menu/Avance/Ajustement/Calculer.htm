@@ -1,0 +1,261 @@
+<!doctype HTML public "-//W3C//DTD HTML 4.0 Frameset//EN">
+
+<html>
+
+<head>
+<title>Calculer</title>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252">
+<meta name="generator" content="RoboHelp by eHelp Corporation www.ehelp.com">
+<link rel="StyleSheet" href="../../../Application%20Help.css"><style>
+<!--
+body { background-color:#eaeaea; }
+-->
+</style><style title="hcp" type="text/css">
+<!--
+div.hcp1 { position:relative; }
+span.hcp2 { font-weight:bold; }
+p.hcp3 { font-size:7pt; text-align:center; }
+-->
+</style>
+</head>
+<body>
+<div placeholder id="header" style="width:100%;" class="hcp1"><table x-use-null-cells
+		style="x-cell-content-align: top;
+				width: 100%;
+				border-spacing: 0px;
+				border-spacing: 0px;"
+		cellspacing=0
+		width=100%>
+  <col style="width: 50%;">
+  <col style="width: 50%;">
+  <tr style="x-cell-content-align: top;"
+	valign=top>
+  <td style="width: 50%;
+			padding-right: 10px;
+			padding-left: 10px;
+			x-cell-content-align: center;"
+	valign=middle
+	width=50%>
+  <h1><img src="../../../bggraybevel.gif" x-save-file="TRUE" x-save-method="compute-relative" x-maintain-ratio="TRUE" style="border: none;
+				width: 21px;
+				height: 21px;
+				float: none;
+				border-style: none;
+				border-style: none;" width="21" height="21" border="0"><span style="color: #000000;">Colorimètre HCFR</span></td>
+  <td style="width: 50%;
+			padding-right: 10px;
+			padding-left: 10px;
+			border-top-style: none;
+			border-bottom-style: none;
+			border-right-style: none;"
+	width=50%>
+  <p style="text-align: right;"
+	align=right><img src="../../../logo_colorhcfr_499.gif" x-maintain-ratio="TRUE" style="margin-left: 0px;
+							margin-right: 0px;
+							margin-top: 0px;
+							margin-bottom: 0px;
+							border-left-style: none;
+							border-top-style: none;
+							border-right-style: none;
+							border-bottom-style: none;
+							width: 70px;
+							height: 34px;
+							float: none;
+							border-style: none;
+							border-style: none;" width="70" height="34" border="0"></td></tr>
+ </table><hr style="float: aligncenter; color: #7e7e7e;"
+	align=center
+	color=#7E7E7E>
+ <p>&nbsp;</p>
+</div>
+<h2 class=GraphicsIndent
+	style="margin-left: 0px; margin-right: 113px;"><span class=TitreTropic>Ajustement 
+ XYZ...<br>
+&nbsp;</span></h2>
+
+<p class=GraphicsIndent
+	style="margin-right: 113px;
+			margin-left: 48px;
+			font-weight: bold;
+			font-size: 10pt;"><span style="font-weight: bold; font-size: 10pt;">Ajustement 
+ XYZ: Généralités</span></p>
+
+<p class=GraphicsIndent
+	style="margin-right: 113px; margin-left: 48px;">Le principe de fonctionnement 
+ est relativement simple. Le document stocke des mesures brutes sous forme 
+ de coordonnées XYZ. En utilisation normale, ces coordonnées sont affichées 
+ directement dans les tableaux, et utilisées telles quelles pour le calcul 
+ des divers graphes. Lorsqu’on utilise l’Ajustement XYZ, on applique une 
+ matrice de transformation aux coordonnées XYZ des mesures, afin que partout 
+ elles soient affichées non pas directement, mais transformées.</p>
+
+<p class=GraphicsIndent
+	style="margin-left: 48px;
+			text-align: justify;
+			margin-right: 113px;
+			font-size: 8pt;
+			font-weight: normal;
+			color: #000000;">Les usages sont multiples. On peut utiliser 
+ cette fonction pour gérer un screen offset, ou pour calibrer finement 
+ une sonde par rapport à une autre (de façon analogue à la création d’un 
+ étalon, mais de façon plus souple d’emploi car facile à activer/désactiver).</p>
+
+<p class=GraphicsIndent
+	style="margin-left: 48px;
+			text-align: justify;
+			margin-right: 113px;
+			font-size: 8pt;
+			font-weight: normal;
+			color: #000000;">&nbsp;</p>
+
+<p class=GraphicsIndent
+	style="margin-left: 48px;
+			text-align: justify;
+			margin-right: 113px;
+			font-weight: bold;
+			font-size: 10pt;
+			color: #0000ff;">Calculer la matrice de conversion à partir 
+ du document de référence</p>
+
+<p class=GraphicsIndent
+	style="margin-left: 48px;
+			text-align: justify;
+			margin-right: 113px;"><span class=Heading3Short>Cette fonction 
+ permet de définir une matrice d'ajustement XYZ. Cette matrice est utilisée 
+ uniquement quand la checkbox </span><span class=Heading3Short
+											style="font-style: italic;"><a 
+ href="../../../Fenetre_document/Onglet_mesures/Onglet_mesures.htm#Groupe_parametres">Ajustement 
+ XYZ</a></span><span class=Heading3Short> est cochée dans le <a href="../../../Fenetre_document/Onglet_mesures/Onglet_mesures.htm#Tableau_de_mesure">tableau 
+ des mesures</a>.<br>
+&nbsp;</span></p>
+
+<p class=GraphicsIndent
+	style="margin-right: 113px;"><img src="../../../images/menu/Avance/XYZ_calc_matrix.gif"
+										x-maintain-ratio=TRUE
+										alt="Cable USB"
+										style="border: none;
+												margin-left: 50px;
+												margin-right: 0px;
+												margin-top: 0px;
+												margin-bottom: 0px;
+												width: 633px;
+												height: 193px;
+												float: none;
+												border-style: none;
+												border-style: none;"
+										width=633
+										height=193
+										border=0> </p>
+
+<p class=GraphicsIndent>&nbsp; </p>
+
+<p class=GraphicsIndent
+	style="margin-right: 113px; margin-left: 48px;">Cette option permet 
+ de générer automatiquement une matrice de transformation XYZ par comparaison 
+ des mesures des couleurs primaires (et du blanc) du document actif, avec 
+ les mêmes mesures dans le document de référence. La matrice est générée 
+ de sorte qu’en appliquant la matrice au document courant, les coordonnées 
+ XYZ des couleurs primaires et du blanc soient identiques à celles du document 
+ de référence.</p>
+
+<p class=GraphicsIndent
+	style="margin-right: 113px; margin-left: 48px;">Il est recommandé, 
+ pour plus de précision, que le blanc soit mesuré dans les deux documents 
+ (le blanc présent dans le tableau des primaires et secondaires, pas le 
+ niveau 100 de l’échelle de gris). S’il manque dans un des documents, le 
+ calcul de la matrice ne prendra en compte que les couleurs primaires, 
+ et donc la matrice de conversion donnera un résultat moins précis qu’attendu 
+ sur le blanc. Il est donc recommandé de conserver au moins le blanc dans 
+ les Mesures additionnelles aux couleurs primaires et secondaires dans 
+ les Préférences, onglet Général.</p>
+
+<p class=GraphicsIndent
+	style="margin-right: 113px;
+			margin-left: 48px;
+			x-text-underline: normal;
+			font-style: italic;
+			font-weight: bold;
+			/*begin!kadov{{*/ text-decoration: underline; /*}}end!kadov*/ ">Exemples 
+ d’utilisation :</p>
+
+<p class=GraphicsIndent
+	style="margin-right: 113px; margin-left: 48px;"><span class="hcp2">1 
+ – Training</span> : le but est d’étalonner finement un colorimètre rapide 
+ et sensible mais peu précis par rapport à un colorimètre très précis, 
+ mais plus lent, moins sensible, ou moins pratique d’usage. Par la suite, 
+ on pourra donc utiliser de façon répétée le colorimètre le plus rapide/sensible/pratique 
+ pour faire son réglage, tout en obtenant un résultat final aussi fiable 
+ que si on avait utilisé le meilleur colorimètre pendant toute la session.</p>
+
+<p class=GraphicsIndent
+	style="margin-right: 113px; margin-left: 48px;">On commence par réaliser 
+ deux mesures des couleurs primaires (et du blanc) du diffuseur à étalonner, 
+ avec les sondes placées au même endroit. On peut choisir d’employer des 
+ mesures simultanées, avec les deux sondes côte à côte, ou des mesures 
+ successives avec les deux sondes placées exactement au même endroit, selon 
+ ses préférences.</p>
+
+<p class=GraphicsIndent
+	style="margin-right: 113px; margin-left: 48px;">Une fois les mesures 
+ de primaires (et du blanc) obtenues sur les deux documents, on coche la 
+ checkbox « Référence » sur le document correspondant aux mesures avec 
+ le colorimètre de référence. On active alors la fenêtre de l’autre document, 
+ celui correspondant au colorimètre à « entraîner », et on lance l’option 
+ de menu Avancé / Matrice d’ajustement des coordonnées XYZ / Calculer la 
+ matrice de conversion à partir du document de référence. Quand on valide 
+ le message de confirmation, la matrice est créée, et la checkbox Ajustement 
+ XYZ est cochée. Toutes les mesures du document, présentes et futures, 
+ sont alors affectées. Pour passer des mesures brutes aux mesures corrigées, 
+ il suffit de cocher ou décocher Ajustement XYZ. On procèdera ensuite à 
+ l’étalonnage du diffuseur avec la sonde entraînée, afin de gagner du temps.</p>
+
+<p class=GraphicsIndent
+	style="margin-right: 113px; margin-left: 48px;">Le but du training 
+ étant d’obtenir un maximum de précision des mesures avec une sonde relativement 
+ peu précise, voire sujette à des variations (en fonction de la température 
+ ambiante par exemple), on ne sauvera généralement pas la matrice d’ajustement, 
+ qui ne sera utilisée que pendant une session, voire seulement pendant 
+ une partie de la session.</p>
+
+<p class=GraphicsIndent
+	style="margin-right: 113px; margin-left: 48px;"><span class="hcp2">2 
+ – Screen offset</span> : Le but est de faire des mesures qui tiennent 
+ compte de la dérive colorimétrique de l’écran, mais face au projecteur, 
+ pour bénéficier d’une plus grande quantité de lumière à mesurer, donc 
+ d’une meilleure précision et d’une plus grande rapidité de mesure.</p>
+
+<p class=GraphicsIndent
+	style="margin-right: 113px; margin-left: 48px;">On réalisera une première 
+ mesure des primaires et du blanc face à l’écran, dans un document qui 
+ deviendra le document de référence.</p>
+
+<p class=GraphicsIndent
+	style="margin-right: 113px; margin-left: 48px;">On créera ensuite un 
+ nouveau document, avec la même sonde, qu’on placera cette fois ci face 
+ au projecteur. On réalisera alors une seconde mesure des primaires et 
+ du blanc dans ce nouveau document. Le premier document, ayant servi à 
+ réaliser les mesures face à l’écran sera le document de référence, et 
+ avec le second document actif, on appellera l’option de menu Avancé / 
+ Matrice d’ajustement des coordonnées XYZ / Calculer la matrice de conversion 
+ à partir du document de référence. Le nouveau document est prêt à faire 
+ des mesure face au projecteur, le résultat tiendra compte du screen offset 
+ quand la checkbox Ajustement XYZ sera cochée, et n’en tiendra pas compte 
+ quand elle sera décochée.</p>
+
+<p class=GraphicsIndent
+	style="margin-right: 113px; margin-left: 48px;">Le screen offset étant 
+ une caractéristique de l’écran (et de la pièce), il a peu de chances de 
+ varier entre deux sessions d’étalonnage. La matrice d’ajustement a donc 
+ vocation à être sauvée dans un fichier pour pouvoir être réutilisée ultérieurement.</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<div placeholder id="footer" style="width:100%;" class="hcp1">
+ <p align="center" class="hcp3">&nbsp;</p>
+ <p align="center" class="hcp3">Copyright © 2005 - 2008 HCFR Team, All rights reserved.</p>
+ <p align="center" class="hcp3">&nbsp;</p>
+</div>
+</body>
+</html>

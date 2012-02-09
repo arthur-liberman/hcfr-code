@@ -1,0 +1,102 @@
+[GlossaryTab]
+TabCaption=&Glossaire
+TermCaption=&Terme
+DefinitionCaption=&Définition pour:
+
+[BrowseSequence]
+PreCaption=Précédent
+PreTooltip=Sujet précédent
+NextCaption=Suivant
+NextTooltip=Sujet suivant
+BlockTooltip=Sélectionner les séquences d'exploration
+
+[Common]
+Contents=Contenu
+Index=Index
+Search=Recherche
+Glossary=Glossaire
+Logo/Author=Développé par
+Show=Montrer
+Hide=Masquer
+SyncToc=SyncToc
+Prev=<<
+Next=>>
+Disabled Prev=<<
+Disabled Next=>>
+Seperate = |
+
+[WebHelp]
+Cancel=Annuler
+CantOpenURLorFile=Impossible d'ouvrir l'URL ou le fichier
+CompletingContents=Achèvement du contenu...
+Display=Afficher
+Term=Terme:
+Definition=Définition:
+Done=Terminer
+Find=Rechercher
+IndexInputPrompt=Taper le mot clé pour trouver:
+RelateTopicListPrompt=Cliquer sur une matière, puis cliquer sur Afficher.
+LoadingData=Chargement des données en cours. Veuillez patienter...
+LoadingContents=Téléchargement du contenu, prière d'attendre...
+LoadingContentsData=Chargement en cours. Cliquer ici pour annuler...
+LoadingFTS=Lecture des données de consultation...
+LoadingIndex=Téléchargement de l'index...
+LoadingTOCItem=Téléchargement de la table des matières :
+Searching=Recherche...
+FtsInputPrompt=Taper le(s) mot(s) pour trouver:
+TopicsFound=Matières trouvées
+BrowserLimitedMessage=L'explorateur ne supporte pas les cadres. Nous recommandons de le mettre à niveau de façon à ce qu'il supporte les cadres.
+SuggestViewNoFrameMessage=Pour afficher le système d'aide sans cadres, cliquer sur cet
+SuggestViewNoFrameMsg2=hyperlien.
+TopicsNotFound=Aucune matière trouvée.
+CantSearch=Ne peut pas rechercher cette phrase.
+JS_alert_appletNotLoad = Incapable de charger la mini-application. Si vous utilisez une ancienne version de Netscape, le fichier prefs.js doit être édité.
+JS_alert_colorlimitation=WebHelp a détecté que votre écran était réglé sur 16 couleurs. Pour le support WebHelp, veuillez régler votre écran sur 256 couleurs ou plus.
+Blank_topic_text=Ce sujet a été créé par l'assistant informatique de conversion de projet WinHelp, et représente la destination d'un sujet manquant ou d'un hyperlien rompu.
+JS_alert_ProjectLoadingFail=Chargement incorrect. Prière de relancer le chargement.
+JS_alert_cantLoadProject=Chargement impossible du projet:
+JS_alert_ErrorInLoading=Erreur dans le chargement de la navigation. Prière de régénérer WebHelp.
+IndexBtnText=Ok
+FtsBtnText=Ok
+ToolBarSearchBtnText=Ok
+InTopicSearchBtnText=Ok
+SearchLabel=Rechercher
+SearchPrompt=- Rechercher -
+PreTooltip=Sujet précédent
+NextTooltip=Sujet suivant
+WebSearch=WebSearch
+SyncTocTooltip=Synchronisation de la table des matières
+Book=Livre
+Page=Page
+Remote_Page=Page à distance
+Show_Navigation_Component=Afficher le composant de navigation
+Hide_Navigation_Component=Ne pas afficher le composant de navigation
+nls_edit_label=Tapez votre question:
+nls_button_go_hint=Lancer recherche
+nls_button_go_text=Ok
+nls_body_instruction=Tapez votre question dans le champ ci-dessus, puis cliquez GO.
+nls_body_empty=Désolé.  Nous n’avons pas pu trouver une réponse satisfaisante à votre question.
+IndexSelectTopicTitle=Sélectionnez un sujet
+IndexSelectTopicLabel=Sélectionnez un sujet et cliquez sur Affichage
+IndexSelectTopicError=Prière de sélectionner un sujet.
+IndexAlphabetBookmarks=ABCDEFGHIJKLMNOPQRSTUVWXYZ
+MergeError1=Le système d'aide fusionné
+MergeError2=utilise une langue différente de celle du système d'aide maître. Les fonctionnalités d'index et de recherche sur le texte intégral vont être désactivées dans le système d'aide fusionné.
+PoweredBy=Développé par
+GeneratedBy=Généré par
+Author=Auteur
+About=À propos de
+Print=Imprimer
+
+[PrintedDoc]
+ChapterFileNamePrefix=Chapitre_
+TitlePage=Page de titre
+TitlePageFileName=Chapitre__Page_Titre.doc
+TableOfContents=Table des matières
+
+CrossReferencePrefix=Voir
+GlossaryHeadingStyleName=En-tête de glossaire
+GlossaryTermStyleName=Terme de glossaire
+GlossaryDefinitionStyleName=Définition de glossaire
+TitlePageTitleStyleName=Titre de page de titre
+TocPageTitleStyleName=Page de titre de table des matières

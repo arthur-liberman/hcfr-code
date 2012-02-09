@@ -1,0 +1,935 @@
+<!doctype HTML public "-//W3C//DTD HTML 4.0 Frameset//EN">
+
+<html>
+
+<head>
+<title>C</title>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252">
+<meta name="generator" content="RoboHelp by eHelp Corporation www.ehelp.com">
+<link rel="StyleSheet" href="../../Application%20Help.css"><style>
+<!--
+body { background-image:url("../../images/hcfr.gif"); }
+-->
+</style><style>
+<!--
+h1.whs1 { font-size:12pt; }
+LI.kadov-h1-Cwhs1 { font-size:12pt; }
+hr.whs2 { float:aligncenter; width:200%; color:#000000; height:1px; }
+p.whs3 { margin-top:0; margin-bottom:0; font-family:Tahoma, sans-serif; font-size:9pt; margin-left:20px; margin-right:20px; }
+LI.kadov-p-Cwhs3 { font-family:Tahoma, sans-serif; font-size:9pt; }
+p.whs4 { font-family:Tahoma, sans-serif; font-size:9pt; margin-right:20pt; margin-top:0pt; margin-bottom:0pt; margin-left:27px; }
+LI.kadov-p-Cwhs4 { font-family:Tahoma, sans-serif; font-size:9pt; }
+img\005fwhs5 { border:none; float:none; width:7px; height:13px; border-style:none; }
+ol.whs6 { list-style:decimal; }
+p.whs7 { font-family:Tahoma, sans-serif; font-size:9pt; margin-left:20pt; margin-right:20pt; margin-top:0pt; margin-bottom:0pt; }
+LI.kadov-p-Cwhs7 { font-family:Tahoma, sans-serif; font-size:9pt; }
+p.whs8 { font-size:9pt; margin-left:20pt; margin-right:20pt; margin-top:0pt; margin-bottom:0pt; font-family:Tahoma, sans-serif; font-weight:bold; }
+LI.kadov-p-Cwhs8 { font-size:9pt; font-family:Tahoma, sans-serif; font-weight:bold; }
+p.whs9 { font-size:9pt; margin-left:20pt; margin-right:20pt; margin-top:0pt; margin-bottom:0pt; font-family:Tahoma, sans-serif; }
+LI.kadov-p-Cwhs9 { font-size:9pt; font-family:Tahoma, sans-serif; }
+p.whs10 { font-size:9pt; margin-left:20pt; margin-right:20pt; margin-top:0pt; margin-bottom:0pt; }
+LI.kadov-p-Cwhs10 { font-size:9pt; }
+p.whs11 { margin-top:0; margin-bottom:0; font-size:9pt; }
+LI.kadov-p-Cwhs11 { font-size:9pt; }
+p.whs12 { margin-top:0; margin-bottom:0; }
+LI.kadov-p-Cwhs12 {  }
+div.whs13 { width:100%; }
+hr.whs14 { float:aligncenter; height:1px; }
+p.whs15 { text-align:center; font-size:8pt; color:#808080; font-family:Tahoma, sans-serif; margin-top:0pt; margin-bottom:0pt; }
+LI.kadov-p-Cwhs15 { text-align:center; font-size:8pt; color:#808080; font-family:Tahoma, sans-serif; }
+-->
+</style><style>
+<!--
+div.WebHelpPopupMenu { position:absolute; left:0px; top:0px; z-index:4; visibility:hidden; }
+-->
+</style><script type="text/javascript"
+		language=JavaScript
+		title=WebHelpSplitCss><!--
+if (navigator.appName !="Netscape")
+{   document.write("<link rel='stylesheet' href='../Contacts.css'>");}
+//--></script>
+
+<script type="text/javascript"
+		language=JavaScript><!--
+if ((navigator.appName == "Netscape") && (parseInt(navigator.appVersion) == 4))
+{
+  var strNSS = "<style type='text/css'>";
+  strNSS += "p.whs3 {margin-top:1pt;margin-bottom:1pt; }";
+  strNSS += "p.whs4 {margin-top:1pt;margin-bottom:1pt; }";
+  strNSS += "p.whs7 {margin-top:1pt;margin-bottom:1pt; }";
+  strNSS += "p.whs8 {margin-top:1pt;margin-bottom:1pt; }";
+  strNSS += "p.whs9 {margin-top:1pt;margin-bottom:1pt; }";
+  strNSS += "p.whs10 {margin-top:1pt;margin-bottom:1pt; }";
+  strNSS += "p.whs11 {margin-top:1pt;margin-bottom:1pt; }";
+  strNSS += "p.whs12 {margin-top:1pt;margin-bottom:1pt; }";
+  strNSS += "p.whs15 {margin-top:1pt;margin-bottom:1pt; }";
+  strNSS +="</style>";
+  document.write(strNSS);
+}
+//--></script>
+
+<script type="text/javascript"
+		language=JavaScript
+		title=WebHelpInlineScript><!--
+function reDo() {
+  if (innerWidth != origWidth || innerHeight != origHeight)
+     location.reload();
+}
+if ((parseInt(navigator.appVersion) == 4) && (navigator.appName == "Netscape")) {
+	origWidth = innerWidth;
+	origHeight = innerHeight;
+	onresize = reDo;
+}
+onerror = null; 
+//--></script>
+
+<script type="text/javascript" language="javascript1.2" src="../../whmsg.js"></script>
+
+<script type="text/javascript" language="javascript" src="../../whver.js"></script>
+
+<script type="text/javascript" language="javascript1.2" src="../../whproxy.js"></script>
+
+<script type="text/javascript" language="javascript1.2" src="../../whutils.js"></script>
+
+<script type="text/javascript" language="javascript1.2" src="../../whtopic.js"></script>
+
+<style title="hcp" type="text/css">
+<!--
+div.hcp1 { position:relative; }
+img.hcp2 { border:none; float:none; border-style:none; }
+p.hcp3 { font-size:12pt; }
+img.hcp4 { border:none; margin-left:10px; margin-right:0px; margin-top:0px; margin-bottom:0px; float:none; border-style:none; }
+p.hcp5 { margin-left:48px; margin-right:33px; text-align:justify; }
+font.hcp6 { color:#0000ff; }
+b.hcp7 { font-weight:bold; }
+p.hcp8 { margin-left:48px; text-align:justify; margin-right:35px; }
+a.hcp9 { font-size:8pt; font-family:Verdana, sans-serif; }
+i.hcp10 { font-family:Verdana, sans-serif; }
+p.hcp11 { font-size:12pt; margin-right:55px; }
+p.hcp12 { margin-left:36px; }
+a.hcp13 { font-size:8pt; }
+p.hcp14 { margin-left:36px; font-size:8pt; }
+p.hcp15 { margin-right:55px; }
+p.hcp16 { margin-left:36px; margin-right:33px; text-align:justify; }
+p.hcp17 { text-align:justify; margin-right:19px; margin-left:48px; }
+span.hcp18 { font-size:8pt; }
+p.hcp19 { margin-left:48px; font-size:8pt; margin-right:33px; text-align:justify; }
+p.hcp20 { margin-left:54px; margin-right:33px; text-align:justify; }
+-->
+</style>
+</head>
+<body>
+<div placeholder id="header" style="width:100%;" class="hcp1"><table x-use-null-cells
+		style="x-cell-content-align: top;
+				width: 100%;
+				border-spacing: 0px;
+				border-spacing: 0px;"
+		cellspacing=0
+		width=100%>
+  <col style="width: 50%;">
+  <col style="width: 50%;">
+  <tr style="x-cell-content-align: top;"
+	valign=top>
+  <td style="width: 50%;
+			padding-right: 10px;
+			padding-left: 10px;
+			x-cell-content-align: center;"
+	valign=middle
+	width=50%>
+  <h1><img src="../../bggraybevel.gif" x-save-file="TRUE" x-save-method="compute-relative" x-maintain-ratio="TRUE" style="width:21px; height:21px;" width="21" height="21" border="0" class="hcp2"><span style="color: #000000;">HCFR Colorimeter</span></td>
+  <td style="width: 50%;
+			padding-right: 10px;
+			padding-left: 10px;
+			border-top-style: none;
+			border-bottom-style: none;
+			border-right-style: none;"
+	width=50%>
+  <p style="text-align: right;"
+	align=right><img src="../../images/logo_hcfr_shg.gif" x-maintain-ratio="TRUE" style="margin-left: 0px;
+							margin-right: 0px;
+							margin-top: 0px;
+							margin-bottom: 0px;
+							border-left-style: none;
+							border-top-style: none;
+							border-right-style: none;
+							border-bottom-style: none;
+							width: 101px;
+							height: 47px;
+							float: none;
+							border-style: none;
+							border-style: none;" width="101" height="47" border="0"></td></tr>
+ </table><hr style="float: aligncenter; height: 1px;"
+	align=center
+	size=1>
+</div>
+<h1 class=whs1><span class=TitreTropic>Letter C</span></h1>
+
+<p class=whs1>&nbsp;</p>
+
+<h2 style="text-align: center; font-size: 13pt;"
+	align=center><a href="a.htm"
+					title="Aller à la page A"><img src="BTN_A.BMP" x-maintain-ratio="TRUE" style="width:16px; height:20px;" width="16" height="20" border="0" class="hcp2"></a> <a href="B.htm"><img src="BTN_B.BMP" x-maintain-ratio="TRUE" style="width:16px; height:20px;" width="16" height="20" border="0" class="hcp2"></a> <a href="C.htm"><img src="BTN_C.BMP" x-maintain-ratio="TRUE" style="width:16px; height:20px;" width="16" height="20" border="0" class="hcp2"></a> <a href="D.htm"><img src="BTN_D.BMP" x-maintain-ratio="TRUE" style="width:16px; height:20px;" width="16" height="20" border="0" class="hcp2"></a> <a href="E.htm"><img src="BTN_E.BMP" x-maintain-ratio="TRUE" style="width:16px; height:20px;" width="16" height="20" border="0" class="hcp2"></a> <a href="F.htm"><img src="BTN_F.BMP" x-maintain-ratio="TRUE" style="width:16px; height:20px;" width="16" height="20" border="0" class="hcp2"></a> <a href="G.htm"><img src="BTN_G.BMP" x-maintain-ratio="TRUE" style="width:16px; height:20px;" width="16" height="20" border="0" class="hcp2"></a> <a href="H.htm"><img src="BTN_H.BMP" x-maintain-ratio="TRUE" style="width:16px; height:20px;" width="16" height="20" border="0" class="hcp2"></a> <a href="I.htm"><img src="BTN_I.BMP" x-maintain-ratio="TRUE" style="width:16px; height:20px;" width="16" height="20" border="0" class="hcp2"></a> <a href="J.htm"><img src="BTN_J.BMP" x-maintain-ratio="TRUE" style="width:16px; height:20px;" width="16" height="20" border="0" class="hcp2"></a> <a href="K.htm"><img src="BTN_K.BMP" x-maintain-ratio="TRUE" style="width:16px; height:20px;" width="16" height="20" border="0" class="hcp2"></a> <a href="L.htm"><img src="BTN_L.BMP" x-maintain-ratio="TRUE" style="width:16px; height:20px;" width="16" height="20" border="0" class="hcp2"></a> <a href="M.htm"><img src="BTN_M.BMP" x-maintain-ratio="TRUE" style="width:16px; height:20px;" width="16" height="20" border="0" class="hcp2"></a> <a href="N.htm"><img src="BTN_N.BMP" x-maintain-ratio="TRUE" style="width:16px; height:20px;" width="16" height="20" border="0" class="hcp2"></a> <a href="O.htm"><img src="BTN_O.BMP" x-maintain-ratio="TRUE" style="width:16px; height:20px;" width="16" height="20" border="0" class="hcp2"></a> <a href="P.htm"><img src="BTN_P.BMP" x-maintain-ratio="TRUE" style="width:16px; height:20px;" width="16" height="20" border="0" class="hcp2"></a> <a href="Q.htm"><img src="BTN_Q.BMP" x-maintain-ratio="TRUE" style="width:16px; height:20px;" width="16" height="20" border="0" class="hcp2"></a> <a href="R.htm"><img src="BTN_R.BMP" x-maintain-ratio="TRUE" style="width:16px; height:20px;" width="16" height="20" border="0" class="hcp2"></a> <a href="S.htm"><img src="BTN_S.BMP" x-maintain-ratio="TRUE" style="width:16px; height:20px;" width="16" height="20" border="0" class="hcp2"></a> <a href="T.htm"><img src="BTN_T.BMP" x-maintain-ratio="TRUE" style="width:16px; height:20px;" width="16" height="20" border="0" class="hcp2"></a> <a href="U.htm"><img src="BTN_U.BMP" x-maintain-ratio="TRUE" style="width:16px; height:20px;" width="16" height="20" border="0" class="hcp2"></a> <a href="V.htm"><img src="BTN_V.BMP" x-maintain-ratio="TRUE" style="width:16px; height:20px;" width="16" height="20" border="0" class="hcp2"></a> <a href="W.htm"><img src="BTN_W.BMP" x-maintain-ratio="TRUE" style="width:16px; height:20px;" width="16" height="20" border="0" class="hcp2"></a> <a href="X.htm"><img src="BTN_X.BMP" x-maintain-ratio="TRUE" style="width:16px; height:20px;" width="16" height="20" border="0" class="hcp2"></a> <a href="Y.htm"><img src="BTN_Y.BMP" x-maintain-ratio="TRUE" style="width:16px; height:20px;" width="16" height="20" border="0" class="hcp2"></a> <a href="z.htm"><img src="BTN_Z.BMP" x-maintain-ratio="TRUE" style="width:16px; height:20px;" width="16" height="20" border="0" class="hcp2"></a> <a href="Index_glossaire.htm">Index</a></h2>
+
+<p>&nbsp;</p>
+
+<p class="hcp3"><span class=glosstext><a href="Index_glossaire.htm"
+													title="Retour à l'index"><img src="largesqr.bmp" x-maintain-ratio="TRUE" style="width:15px; height:14px;" width="15" height="14" border="0" class="hcp4"></a> <a name=Candéla>Candela</a></span></p>
+
+<p class="hcp5"><span class=Heading3Short>T</span>he 
+ <b>candela</b> (symbol: cd) is the <a href="http://en.wikipedia.org/wiki/SI_base_unit"
+										title="SI base unit">SI base unit</a> 
+ of <a href="http://en.wikipedia.org/wiki/Luminous_intensity"
+		title="Luminous intensity">luminous intensity</a> (that is, power 
+ emitted by a light source in a particular direction, with wavelengths 
+ weighted by the <a href="http://en.wikipedia.org/wiki/Luminosity_function"
+					title="Luminosity function">luminosity function</a>, 
+ a standardized model of the sensitivity of the human eye).</p>
+
+<p class="hcp5">Since the 16th <a href="http://en.wikipedia.org/wiki/General_Conference_on_Weights_and_Measures"
+													title="General Conference on Weights and Measures">General 
+ Conference on Weights and Measures</a> in 1979, the candela has been defined 
+ as follows:</p>
+
+<p class="hcp5"><span class=Heading3Short>The candela 
+ is the luminous intensity, in a given direction, of a source that emits 
+ monochromatic radiation of frequency 540×10<sup>12</sup> <a href="http://en.wikipedia.org/wiki/Hertz"
+															title=Hertz>hertz</a> 
+ and that has a <a href="http://en.wikipedia.org/wiki/Radiant_intensity"
+					title="Radiant intensity">radiant intensity</a> in 
+ that direction of 1/683 <a href="http://en.wikipedia.org/wiki/Watt"
+							title=Watt>watt</a> per <a href="http://en.wikipedia.org/wiki/Steradian"
+														title=Steradian>steradian</a>.<br>
+&nbsp;</span></p>
+
+<p class=Tip
+	style="margin-right: 33px; text-align: justify;"><img src="../../Pencil.gif" x-maintain-ratio="TRUE" style="width:15px; height:15px;" width="15" height="15" border="0" class="hcp2">++++++ 
+ <font face="Wingdings" class="hcp6">&#49;</font> this document is 
+ issue from <a title="L'encyclopédie libre"
+				href="http://en.wikipedia.org/wiki/Main_Page"
+				target=_blank>en.wikipedia.org</a> and is under GNU Documentation 
+ license FDL. You can copy, modify as so long than this note appear.</p>
+
+<p>&nbsp;</p>
+
+<p style="margin-left: 48px; text-align: justify;">&nbsp;</p>
+
+<p class="hcp3"><span class=glosstext><a href="Index_glossaire.htm"
+													title="Retour à l'index"><img src="largesqr.bmp" x-maintain-ratio="TRUE" style="width:15px; height:14px;" width="15" height="14" border="0" class="hcp4"></a> <a name=Chrominance>Chrominance</a> (C)</span></p>
+
+<p class="hcp5"><b class="hcp7">Chrominance</b> 
+ (<i>chroma</i> for short), along with <a href="http://en.wikipedia.org/wiki/Luma_%28video%29"
+											title="Luma (video)">luma</a> 
+ is one of the two components of a <a href="http://en.wikipedia.org/wiki/Television"
+										title=Television>television</a> 
+ signal. It defines the two attributes of a color: hue (frequency) and 
+ saturation (amount of black).</p>
+
+<p class="hcp5">The idea of transmitting a color television 
+ signal as <a href="http://en.wikipedia.org/wiki/Luma_%28video%29"
+				title="Luma (video)">luma</a> and chrominance comes from 
+ <a href="http://en.wikipedia.org/wiki/Georges_Valensi"
+	title="Georges Valensi">Georges Valensi</a>, who patented it in <a 
+ href="http://en.wikipedia.org/wiki/1938"
+	title=1938>1938</a>. Previous color television systems tried to transmit 
+ <a href="http://en.wikipedia.org/wiki/RGB"
+	title=RGB>RGB</a> signals in different ways and were incompatible with 
+ monochrome receivers.</p>
+
+<p class="hcp5">In <a href="http://en.wikipedia.org/wiki/Analog_television"
+										title="Analog television">analog 
+ television</a>, chrominance is encoded into a <a href="http://en.wikipedia.org/wiki/Video"
+													title=Video>video</a> 
+ signal using a special &quot;<a href="http://en.wikipedia.org/wiki/Subcarrier"
+								title=Subcarrier>subcarrier</a>&quot; frequency, 
+ which, depending on the standard, can be either <a href="http://en.wikipedia.org/wiki/Quadrature_amplitude_modulation"
+													title="Quadrature amplitude modulation">quadrature-amplitude</a> 
+ (<a href="http://en.wikipedia.org/wiki/NTSC"
+	title=NTSC>NTSC</a> and <a href="http://en.wikipedia.org/wiki/PAL"
+								title=PAL>PAL</a>) or <a href="http://en.wikipedia.org/wiki/Frequency_modulation"
+														title="Frequency modulation">frequency</a> 
+ (<a href="http://en.wikipedia.org/wiki/SECAM"
+	title=SECAM>SECAM</a>) modulated. In the <a href="http://en.wikipedia.org/wiki/PAL"
+												title=PAL>PAL</a> system, 
+ the color subcarrier is 4.43 MHz above the video carrier, while in the 
+ <a href="http://en.wikipedia.org/wiki/NTSC"
+	title=NTSC>NTSC</a> system it is 3.58 MHz above the video carrier. 
+ SECAM uses two different frequencies, 4.250 MHz and 4.40625 MHz above 
+ the video carrier.</p>
+
+<p class="hcp5">The presence of chrominance in a video 
+ signal is signalled by a &quot;<a href="http://en.wikipedia.org/wiki/Color_burst"
+									title="Color burst">color burst</a>&quot; 
+ signal transmitted on the &quot;front porch,&quot; just after horizontal 
+ synchronization and before each line of video starts. If the color burst 
+ signal were to be made visible on a television screen, it would look like 
+ a vertical strip of a very dark olive color. In NTSC and PAL hue is represented 
+ by a phase shift in the chrominance signal within each video line relative 
+ to the color burst, while saturation is determined by the amplitude of 
+ the subcarrier. In SECAM (R-Y) and (B-Y) signals are transmitted alternately 
+ and phase does not matter.</p>
+
+<p class="hcp5">Chrominance is represented by the <a 
+ href="http://en.wikipedia.org/wiki/YUV"
+	title=YUV>U-V</a> color plane in a PAL and SECAM video signals, and 
+ by the <a href="http://en.wikipedia.org/wiki/YIQ"
+			title=YIQ>I-Q</a> color plane in NTSC.<br>&nbsp;</p>
+
+<p class=Tip
+	style="margin-right: 33px; text-align: justify;"><img src="../../Pencil.gif" x-maintain-ratio="TRUE" style="width:15px; height:15px;" width="15" height="15" border="0" class="hcp2">++++++ 
+ <font face="Wingdings" class="hcp6">&#49;</font> this document is 
+ issue from <a title="L'encyclopédie libre"
+				href="http://en.wikipedia.org/wiki/Main_Page"
+				target=_blank>en.wikipedia.org</a> and is under GNU Documentation 
+ license FDL. You can copy, modify as so long than this note appear.</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p class="hcp3"><span class=glosstext><a href="Index_glossaire.htm"
+													title="Retour à l'index"><img src="largesqr.bmp" x-maintain-ratio="TRUE" style="width:15px; height:14px;" width="15" height="14" border="0" class="hcp4"></a> <a name=CIE>CIE (....)</a></span></p>
+
+<p class="hcp8">In the study of the perception of <a href="http://en.wikipedia.org/wiki/Color"
+	title=Color>color</a>, one of the first mathematically defined <a href="http://en.wikipedia.org/wiki/Color_space"
+	title="Color space">color spaces</a> was the <b>CIE XYZ color space</b> 
+ (also known as <b>CIE 1931 color space</b>), created by the <a href="http://en.wikipedia.org/wiki/International_Commission_on_Illumination"
+	title="International Commission on Illumination">International Commission 
+ on Illumination</a> (CIE) in 1931.</p>
+
+<p class="hcp8">The human <a href="http://en.wikipedia.org/wiki/Eye"
+												title=Eye>eye</a> has receptors 
+ for short (<i>S</i>), middle (<i>M</i>), and long (<i>L</i>) wavelengths, 
+ also known as blue, green, and red receptors. That means that one, in 
+ principle, needs three parameters to describe a color sensation. A specific 
+ method for associating three numbers (or <a href="http://en.wikipedia.org/wiki/Tristimulus"
+											title=Tristimulus>tristimulus</a> 
+ values) with each color is called a <a href="http://en.wikipedia.org/wiki/Color_space"
+										title="Color space">color space</a>: 
+ the CIE XYZ color space is one of many such spaces. However, the CIE XYZ 
+ color space is special, because it is based on direct measurements of 
+ the human eye, and serves as the basis from which many other color spaces 
+ are defined.</p>
+
+<p class="hcp8">The CIE XYZ color space was derived from 
+ a series of experiments done in the late 1920s by W. David Wright (Wright 
+ 1928) and John Guild (Guild 1931). Their experimental results were combined 
+ into the specification of the CIE RGB color space, from which the CIE 
+ XYZ color space was derived. This article is actually concerned with both 
+ of these color spaces.</p>
+
+<p class="hcp8">In the CIE XYZ color space, the tristimulus 
+ values are not the <i>S</i>, <i>M</i>, and <i>L</i> stimuli of the human 
+ eye, but rather a set of tristimulus values called <i>X</i>, <i>Y</i>, 
+ and <i>Z</i>, which are also roughly red, green and blue, respectively. 
+ Two light sources may be made up of different mixtures of various colors, 
+ and yet have the same color (<a href="http://en.wikipedia.org/wiki/Metamerism_%28color%29"
+								title="Metamerism (color)">metamerism</a>). 
+ If two light sources have the same apparent color, then they will have 
+ the same tristimulus values, no matter what different mixtures of light 
+ were used to produce them.</p>
+
+<p style="margin-right: 35px;"><span><img src="cie.gif"
+											x-maintain-ratio=TRUE
+											style="border: none;
+													margin-left: 40px;
+													margin-right: 0px;
+													margin-top: 0px;
+													margin-bottom: 0px;
+													width: 250px;
+													height: 242px;
+													float: none;
+													border-style: none;
+													border-style: none;"
+											width=250
+											height=242
+											border=0> </span></p>
+
+<p class="hcp8">The chromaticity diagram illustrates a 
+ number of interesting properties of the CIE XYZ color space:<br style="clear: both;"
+	clear=all>
+</p>
+
+<ul>
+	
+	<li class=kadov-p><p class="hcp8">The diagram represents 
+ all of the chromaticities visible to the average person. These are shown 
+ in color and this region is called the <a href="http://en.wikipedia.org/wiki/Gamut" title="Gamut" class="hcp9">gamut</a> 
+ of human vision. The gamut of all visible chromaticities on the CIE plot 
+ is the tongue-shaped or horseshoe-shaped figure shown in color. The curved 
+ edge of the gamut is called the <i>spectral locus</i> and corresponds 
+ to <a href="http://en.wikipedia.org/wiki/Monochromatic" title="Monochromatic" class="hcp9">monochromatic</a> 
+ light, with wavelengths listed in nanometers. The straight edge on the 
+ lower part of the gamut is called the <i>purple line</i>. These colors, 
+ although they are on the border of the gamut, have no counterpart in monochromatic 
+ light. Less saturated colors appear in the interior of the figure with 
+ <a href="http://en.wikipedia.org/wiki/White" title="White" class="hcp9">white</a> 
+ at the center.<br>&nbsp;</p></li>
+</ul>
+
+<ul>
+	
+	<li class=kadov-p><p class="hcp8">It is seen that all 
+ visible chromaticities correspond to positive values of <i>x</i> and <i>y</i> 
+ (and therefore to positive values of <i>X</i>, <i>Y</i>, and <i>Z</i>).<br>&nbsp;</p></li>
+</ul>
+
+<ul>
+	
+	<li class=kadov-p><p class="hcp8">If one chooses any 
+ two points on the chromaticity diagram, then all colors that can be formed 
+ by mixing these two colors lie between those two points, on a straight 
+ line connecting them. It follows that the gamut of colors must be <a href="http://en.wikipedia.org/wiki/Convex_set" title="Convex set" class="hcp9">convex</a> 
+ in shape. All colors that can be formed by mixing three sources are found 
+ inside the triangle formed by the source points on the chromaticity diagram 
+ (and so on for multiple sources).<br>&nbsp;</p></li>
+</ul>
+
+<ul>
+	
+	<li class=kadov-p><p class="hcp8">The mixture of two 
+ equally bright colors will not generally lie on the midpoint of that line 
+ segment. In more general terms, a distance on the <i>xy</i> chromaticity 
+ diagram does not correspond to the degree of difference between two colors. 
+ Other color spaces (<a href="http://en.wikipedia.org/wiki/Lab_color_space" title="Lab color space" class="hcp9">CIELuv 
+ and CIELab</a> in particular) have been designed to meet this problem.<br>&nbsp;</p></li>
+</ul>
+
+<ul>
+	
+	<li class=kadov-p><p class="hcp8">It can be seen that, 
+ given three real sources, these sources cannot cover the gamut of human 
+ vision. Geometrically stated, there are no three points lying within the 
+ gamut that include the entire gamut.<br>&nbsp;</p></li>
+</ul>
+
+<ul>
+	
+	<li class=kadov-p><p class="hcp8"><span style="font-family: Verdana, sans-serif;">Light 
+ with a <a href="http://en.wikipedia.org/wiki/White_point" title="White point" class="hcp9">flat 
+ energy spectrum</a> corresponds to the point (<i class="hcp10">x</i>,<i class="hcp10">y</i>) = (1/3,1/3).</span><br>&nbsp;</p></li>
+</ul>
+
+<p>&nbsp;</p>
+
+<p class=Tip
+	style="text-align: justify; margin-right: 33px;"><img src="../../Pencil.gif" x-maintain-ratio="TRUE" style="width:15px; height:15px;" width="15" height="15" border="0" class="hcp2">++++++ 
+ <font face="Wingdings" class="hcp6">&#49;</font> this document is 
+ issue from <a title="L'encyclopédie libre"
+				href="http://en.wikipedia.org/wiki/Main_Page"
+				target=_blank>en.wikipedia.org</a> and is under GNU Documentation 
+ license FDL. You can copy, modify as so long than this note appear.</p>
+
+<p>&nbsp;</p>
+
+<p class="hcp11"><span class=glosstext><a 
+ href="Index_glossaire.htm"
+	title="Retour à l'index"><img src="largesqr.bmp" x-maintain-ratio="TRUE" style="width:15px; height:14px;" width="15" height="14" border="0" class="hcp4"></a> <a name=CMYK>CMYK</a></span></p>
+
+<p class="hcp12"><b>CMYK</b> is a <a href="http://en.wikipedia.org/wiki/Subtractive_color" title="Subtractive color" class="hcp13">subtractive</a> 
+ <a href="http://en.wikipedia.org/wiki/Color_model" title="Color model" class="hcp13">color model</a> used in color <a href="http://en.wikipedia.org/wiki/Printing" title="Printing" class="hcp13">printing</a>.</p>
+
+<p class="hcp12">This color model is based on mixing pigments 
+ of the following <a href="http://en.wikipedia.org/wiki/Color" title="Color" class="hcp13">colors</a> in order to make 
+ other colors:</p>
+
+<ul>
+	
+	<li class=kadov-p><p class="hcp14">C=<a href="http://en.wikipedia.org/wiki/Cyan" title="Cyan" class="hcp13">cyan</a></p></li>
+	
+	<li class=kadov-p><p class="hcp14">M=<a href="http://en.wikipedia.org/wiki/Magenta" title="Magenta" class="hcp13">magenta</a></p></li>
+	
+	<li class=kadov-p><p class="hcp14">Y=<a href="http://en.wikipedia.org/wiki/Yellow" title="Yellow" class="hcp13">yellow</a></p></li>
+	
+	<li class=kadov-p><p class="hcp14">K=key 
+ (<a href="http://en.wikipedia.org/wiki/Black" title="Black" class="hcp13">black</a>).</p></li>
+</ul>
+
+<p class="hcp12">The mixture of ideal CMY <a href="http://en.wikipedia.org/wiki/Color" title="Color" class="hcp13">colors</a> 
+ is subtractive (cyan, magenta, and yellow printed together on white result 
+ in black). CMYK works through <a href="http://en.wikipedia.org/wiki/Absorption_%28optics%29" title="Absorption (optics)" class="hcp13">light absorption</a>. 
+ The colors that are seen are from the part of light that is not absorbed. 
+ In CMYK, magenta plus yellow produces <a href="http://en.wikipedia.org/wiki/Red" title="Red" class="hcp13">red</a>, 
+ magenta plus cyan makes <a href="http://en.wikipedia.org/wiki/Blue" title="Blue" class="hcp13">blue</a> and cyan plus 
+ yellow generates <a href="http://en.wikipedia.org/wiki/Green" title="Green" class="hcp13">green</a>.<br>&nbsp;</p>
+
+<p class=Tip
+	style="text-align: justify;
+			margin-right: 33px;
+			margin-left: 12px;"><img src="../../Pencil.gif" x-maintain-ratio="TRUE" style="width:15px; height:15px;" width="15" height="15" border="0" class="hcp2">++++++ <font face="Wingdings" class="hcp6">&#49;</font> this document is 
+ issue from <a title="L'encyclopédie libre"
+				href="http://en.wikipedia.org/wiki/Main_Page"
+				target=_blank>en.wikipedia.org</a> and is under GNU Documentation 
+ license FDL. You can copy, modify as so long than this note appear.</p>
+
+<p class="hcp15">&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p class="hcp11"><span class=glosstext><a 
+ href="Index_glossaire.htm"
+	title="Retour à l'index"><img src="largesqr.bmp" x-maintain-ratio="TRUE" style="width:15px; height:14px;" width="15" height="14" border="0" class="hcp4"></a> <a name=Roue_chromatique>Color 
+ Circle</a></span></p>
+
+<p class="hcp16"><span class=Heading3Short>A</span> <b>color 
+ circle</b> is a way of representing the <a href="http://en.wikipedia.org/wiki/Visible_spectrum"
+											title="Visible spectrum">visible 
+ spectrum</a> in a circular form, with <a href="http://en.wikipedia.org/wiki/Color"
+											title=Color>colors</a> arranged 
+ in sequence around the circumference in order of spectral frequency. Analogous 
+ to the use of a <a href="http://en.wikipedia.org/wiki/Color_theory"
+					title="Color theory">color wheel</a> in art, the color 
+ circle performs a different purpose, as it is a <a href="http://en.wikipedia.org/wiki/Psychophysics"
+													title=Psychophysics>psychophysical</a> 
+ tool used in the exploration of <a href="http://en.wikipedia.org/wiki/Visual_perception"
+									title="Visual perception">visual perception</a>, 
+ its anomalies and <a href="http://en.wikipedia.org/wiki/Optical_illusion"
+						title="Optical illusion">optical illusions</a> 
+ connected with color vision.</p>
+
+<p class="hcp16">A normal color circle will appear with 
+ <a href="http://en.wikipedia.org/wiki/Red"
+	title=Red>red</a> at one end of the spectrum and <a href="http://en.wikipedia.org/wiki/Violet"
+														title=Violet>violet</a> 
+ at the other, and with a wedge-shaped gap representing colours which have 
+ no unique spectral frequency, but are rather formed by the additive mixture 
+ of colors from the two ends of the spectrum.</p>
+
+<p class="hcp16"><span class=Heading3Short>Adding together 
+ two colored lights from different parts of the spectrum may produce a 
+ third color that appears to match a color in another part of the spectrum, 
+ even though the wavelengths involved are quite dissimilar. This type of 
+ colour matching is known as <a href="http://en.wikipedia.org/wiki/Metamer"
+								title=Metamer>metameric</a> matching. Thus 
+ a combination of green and red light might produce a color close to amber 
+ in apparent hue. The new hue formed lies between the two original colors 
+ on the color wheel, but they are usually represented as being joined by 
+ a straight line on the wheel, indicating that the resulting hue is less 
+ saturated (i.e., paler) than either of the two source colors.<br>
+&nbsp;</span></p>
+
+<p class="hcp16"><br>
+<br>&nbsp;</p>
+
+<p class=Tip
+	style="text-align: justify; margin-right: 33px;"><img src="../../Pencil.gif" x-maintain-ratio="TRUE" style="width:15px; height:15px;" width="15" height="15" border="0" class="hcp2">++++++ 
+ <font face="Wingdings" class="hcp6">&#49;</font> this document is 
+ issue from <a title="L'encyclopédie libre"
+				href="http://en.wikipedia.org/wiki/Main_Page"
+				target=_blank>en.wikipedia.org</a> and is under GNU Documentation 
+ license FDL. You can copy, modify as so long than this note appear.</p>
+
+<p class="hcp15">&nbsp;</p>
+
+<p class="hcp3"><span class=glosstext><a href="Index_glossaire.htm"
+													title="Retour à l'index"><img src="largesqr.bmp" x-maintain-ratio="TRUE" style="width:15px; height:14px;" width="15" height="14" border="0" class="hcp4"></a> <a name=Colorimeter>Colorimeter</a></span></p>
+
+<p class="hcp17">A <b>colorimeter</b> is device used to 
+ measure the absorbance of a specific solution. It allows the absorbance 
+ of a solution at a particular wavelength of light to be determined. The 
+ most common application of a colorimeter is to determine the concentration 
+ of a known solute. Different chemical substances absorb different wavelengths 
+ of light. The concentration of a solute is proportional to the absorbance.</p>
+
+<p class="hcp17">The optics filter in the colorimeter is 
+ used to select the wavelength of light which the solute absorbs the most, 
+ in order to maximise accuracy.</p>
+
+<p class="hcp17">Colorimeters usually measure results in 
+ percent transmission, percent absorption, or both.</p>
+
+<p class="hcp17">In <a href="http://en.wikipedia.org/wiki/Graphic_design"
+										title="Graphic design">graphic 
+ design</a>, <b>colorimeters</b> are used to generate <a href="http://en.wikipedia.org/wiki/ICC_profile"
+														title="ICC profile">colour 
+ profiles</a> for equipment in the workflow. Accurate colour profiles are 
+ important to ensure that screen displays match the final printed products.</p>
+
+<p class="hcp17">&nbsp;</p>
+
+<p class=Tip
+	style="text-align: justify; margin-right: 33px;"><img src="../../Pencil.gif" x-maintain-ratio="TRUE" style="width:15px; height:15px;" width="15" height="15" border="0" class="hcp2">++++++ 
+ <font face="Wingdings" class="hcp6">&#49;</font> this document is 
+ issue from <a title="L'encyclopédie libre"
+				href="http://en.wikipedia.org/wiki/Main_Page"
+				target=_blank>en.wikipedia.org</a> and is under GNU Documentation 
+ license FDL. You can copy, modify as so long than this note appear.</p>
+
+<p class="hcp15">&nbsp;</p>
+
+<p class="hcp15">&nbsp;</p>
+
+<p class="hcp3"><a href="Index_glossaire.htm"
+								title="Retour à l'index"><span class=glosstext><img src="largesqr.bmp" x-maintain-ratio="TRUE" style="width:15px; height:14px;" width="15" height="14" border="0" class="hcp4"></a> <a name=Complementary_color>Complementary color</a></span></p>
+
+<p class="hcp5">In color science, two <a href="http://en.wikipedia.org/wiki/Color" title="Color" class="hcp13">colors</a> 
+ are called <b>complementary</b> if, when mixed they produce a shade of 
+ grey (including white, or even black in a <a href="http://en.wikipedia.org/wiki/Subtractive_color" title="Subtractive color" class="hcp13">subtractive</a> 
+ system). In most perceptual color models, white is towards the center 
+ of the color space, and complementary colors will lie roughly opposite 
+ each other. The clearest example is the <a href="http://en.wikipedia.org/wiki/HSV_color_space" title="HSV color space" class="hcp13">HSV 
+ color space</a>, in which complementary colors lie opposite each other 
+ on the wheel (or on any circular cross-section).</p>
+
+<p class="hcp5">In most discussions of complementary 
+ color, only fully saturated, bright colors are considered. However, under 
+ the formal definition, brightness and saturation are also factors. Thus, 
+ in the formal <a href="http://en.wikipedia.org/wiki/CIE_1931_color_space" title="CIE 1931 color space" class="hcp13">CIE 1931 color space</a>, any 
+ color of a particular <a href="http://en.wikipedia.org/wiki/Dominant_wavelength" title="Dominant wavelength" class="hcp13">dominant wavelength</a> 
+ can be balanced to create white/grey by adding a particular amount (i.e. 
+ brightness) of the complementary wavelength, or a different amount of 
+ less saturated versions of the complementary wavelength.</p>
+
+<p class="hcp5"><a href="http://en.wikipedia.org/wiki/Primary_color"
+									title="Primary color"><span class="hcp18">Primary 
+ colors</a> and <a href="http://en.wikipedia.org/wiki/Secondary_color" title="Secondary color" class="hcp13">secondary colors</a> are typically 
+ paired in this way:</span></p>
+
+<ul>
+	
+	<li class=kadov-p><p class="hcp19"><a href="http://en.wikipedia.org/wiki/Red"
+														title=Red><span class="hcp18">red</a> and <a href="http://en.wikipedia.org/wiki/Cyan" title="Cyan" class="hcp13">cyan</a> 
+ (</span><span style="background-color: #ff0000; color: #ffffff;">&nbsp;red&nbsp;</span> 
+ <span style="background-color: #00ffff;">&nbsp;cyan&nbsp;</span>) (where 
+ cyan is the mixture of green and blue)</p></li>
+	
+	<li class=kadov-p><p class="hcp19"><a href="http://en.wikipedia.org/wiki/Green"
+														title=Green><span class="hcp18">green</a> and <a href="http://en.wikipedia.org/wiki/Magenta" title="Magenta" class="hcp13">magenta</a> 
+ (</span><span style="background-color: #00ff00; color: #ffffff;">&nbsp;green&nbsp;</span> 
+ <span style="background-color: #ff00ff;">&nbsp;magenta&nbsp;</span>) (where 
+ magenta is the mixture of red and blue)</p></li>
+	
+	<li class=kadov-p><p class="hcp19"><a href="http://en.wikipedia.org/wiki/Blue"
+														title=Blue><span class="hcp18">blue</a> and <a href="http://en.wikipedia.org/wiki/Yellow" title="Yellow" class="hcp13">yellow</a> 
+ (</span><span style="background-color: #0000ff; color: #ffffff;">&nbsp;blue&nbsp;</span> 
+ <span style="background-color: #ffff00;">&nbsp;yellow&nbsp;</span>) (where 
+ yellow is the mixture of red and green)</p></li>
+</ul>
+
+<p class="hcp20">&nbsp;</p>
+
+<p class=Tip
+	style="text-align: justify; margin-right: 33px;"><img src="../../Pencil.gif" x-maintain-ratio="TRUE" style="width:15px; height:15px;" width="15" height="15" border="0" class="hcp2">++++++ 
+ <font face="Wingdings" class="hcp6">&#49;</font> this document is 
+ issue from <a title="L'encyclopédie libre"
+				href="http://en.wikipedia.org/wiki/Main_Page"
+				target=_blank>en.wikipedia.org</a> and is under GNU Documentation 
+ license FDL. You can copy, modify as so long than this note appear.</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p class="hcp3"><span class=glosstext><a href="Index_glossaire.htm"
+													title="Retour à l'index"><img src="largesqr.bmp" x-maintain-ratio="TRUE" style="width:15px; height:14px;" width="15" height="14" border="0" class="hcp4"></a> <a name=Composite_signal>Composite video (signal..)</a></span></p>
+
+<p class="hcp5"><b class="hcp7">Composite 
+ video</b> is the format of an <a href="http://en.wikipedia.org/wiki/Analog_television"
+									title="Analog television">analog television</a> 
+ (picture only) signal before it is combined with a sound signal and <a 
+ href="http://en.wikipedia.org/wiki/Modulation"
+	title=Modulation>modulated</a> onto an <a href="http://en.wikipedia.org/wiki/RF"
+												title=RF>RF</a> <a href="http://en.wikipedia.org/wiki/Carrier_wave"
+	title="Carrier wave">carrier</a>. It is usually in a standard format 
+ such as <a href="http://en.wikipedia.org/wiki/NTSC"
+			title=NTSC>NTSC</a>, <a href="http://en.wikipedia.org/wiki/PAL"
+									title=PAL>PAL</a>, or <a href="http://en.wikipedia.org/wiki/SECAM"
+															title=SECAM>SECAM</a>. 
+ It is a composite of three source signals called Y, U and V (together 
+ referred to as <a href="http://en.wikipedia.org/wiki/YUV"
+					title=YUV>YUV</a>) with sync pulses. Y represents the 
+ brightness or <i>luminance</i> of the picture and includes synchronizing 
+ pulses, so that by itself it could be displayed as a monochrome picture. 
+ U and V between them carry the colour information. They are first mixed 
+ with two orthogonal phases of a colour carrier signal to form a signal 
+ called the <i>chrominance</i>. Y and UV are then added together. Since 
+ Y is a <a href="http://en.wikipedia.org/wiki/Baseband"
+			title=Baseband>baseband</a> signal and UV has been mixed with 
+ a carrier, this addition is equivalent to <a href="http://en.wikipedia.org/wiki/Frequency-division_multiplexing"
+												title="Frequency-division multiplexing">frequency-division 
+ multiplexing</a>.</p>
+
+<p class="hcp5">Composite video can easily be directed 
+ to any broadcast channel simply by modulating the proper RF carrier frequency 
+ with it. Most analogue home video equipment records a signal in (roughly) 
+ composite format: <a href="http://en.wikipedia.org/wiki/LaserDisc"
+						title=LaserDisc>LaserDiscs</a> store a true composite 
+ signal, while <a href="http://en.wikipedia.org/wiki/VHS"
+					title=VHS>VHS</a> tapes use a slightly modified composite 
+ signal. These devices then give the user the option of outputting the 
+ raw signal, or modulating it on to a <a href="http://en.wikipedia.org/wiki/Very_high_frequency"
+										title="Very high frequency">VHF</a> 
+ or <a href="http://en.wikipedia.org/wiki/Ultra_high_frequency"
+		title="Ultra high frequency">UHF</a> frequency to appear on a selected 
+ TV channel. In typical home applications, the composite video signal is 
+ typically connected using an <a href="http://en.wikipedia.org/wiki/RCA_jack"
+								title="RCA jack">RCA jack</a>, normally 
+ yellow (often accompanied with red and white for right and left audio 
+ channels respectively). <a href="http://en.wikipedia.org/wiki/BNC_connector"
+							title="BNC connector">BNC</a> connectors and 
+ higher quality co-axial cable are often used in more professional applications.</p>
+
+<p class="hcp5">In Europe, <a href="http://en.wikipedia.org/wiki/SCART"
+												title=SCART>SCART</a> connections 
+ are often used instead of RCA jacks — though SCART can also carry far 
+ superior RGB <a href="http://en.wikipedia.org/wiki/Component_video"
+				title="Component video">component video</a> signals (and 
+ to a lesser extent, <a href="http://en.wikipedia.org/wiki/S-Video"
+						title=S-Video>S-Video</a>), so where available, 
+ RGB is used instead of composite video with computers, video game consoles, 
+ and <a href="http://en.wikipedia.org/wiki/DVD"
+		title=DVD>DVD</a> players.<br>&nbsp;</p>
+
+<p class=Tip
+	style="text-align: justify; margin-right: 33px;"><img src="../../Pencil.gif" x-maintain-ratio="TRUE" style="width:15px; height:15px;" width="15" height="15" border="0" class="hcp2">++++++ 
+ <font face="Wingdings" class="hcp6">&#49;</font> this document is 
+ issue from <a title="L'encyclopédie libre"
+				href="http://en.wikipedia.org/wiki/Main_Page"
+				target=_blank>en.wikipedia.org</a> and is under GNU Documentation 
+ license FDL. You can copy, modify as so long than this note appear.</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p class="hcp3"><span class=glosstext><a href="Index_glossaire.htm"
+													title="Retour à l'index"><img src="largesqr.bmp" x-maintain-ratio="TRUE" style="width:15px; height:14px;" width="15" height="14" border="0" class="hcp4"></a> <a name=Cônes>C</span><span class=glosstext>o</span><span 
+ class=glosstext>nes</span></a></p>
+
+<p class="hcp20"><b class="hcp7">Cone cells</b>, 
+ or <b>cones</b>, are <a href="http://en.wikipedia.org/wiki/Cell_%28biology%29"
+						title="Cell (biology)">cells</a> in the <a href="http://en.wikipedia.org/wiki/Retina"
+	title=Retina>retina</a> of the <a href="http://en.wikipedia.org/wiki/Eye"
+										title=Eye>eye</a> which only function 
+ in relatively bright <a href="http://en.wikipedia.org/wiki/Light"
+						title=Light>light</a>. There are about 6 million 
+ in the human eye, concentrated at the <a href="http://en.wikipedia.org/wiki/Fovea"
+											title=Fovea>fovea</a>. This 
+ figure, commonly cited, was found by Osterberg in 1935. Oyster's textbook 
+ (1999) cites work by Curcio et al. (1990) indicating an average closer 
+ to 4.5 million cone cells and 90 million <a href="http://en.wikipedia.org/wiki/Rod_cell"
+											title="Rod cell">rod cells</a> 
+ in the human retina. The sampling methodology in these modern papers include 
+ computer models and statistical samples. In this latter study several 
+ retinas were used and there was significant variability in the densities 
+ of the cells in each region of the retina. The cone cells gradually become 
+ more sparse towards the outside of the retina.</p>
+
+<p class="hcp20">Cones are less sensitive to light than 
+ the <a href="http://en.wikipedia.org/wiki/Rod_cell"
+		title="Rod cell">rod cells</a> in the retina (which support vision 
+ at low light levels), but allow <a href="http://en.wikipedia.org/wiki/Color_vision"
+									title="Color vision">the perception 
+ of color</a>. They are also able to perceive finer detail and more rapid 
+ changes in images, because their response times to stimuli are faster 
+ than those of rods. Because humans usually have three kinds of cones, 
+ with different <a href="http://en.wikipedia.org/wiki/Photopsin"
+					title=Photopsin>photopsins</a>, which have different 
+ response curves, and thus respond to variation in color in different ways, 
+ they have <a href="http://en.wikipedia.org/wiki/Trichromatic_vision"
+				title="Trichromatic vision">trichromatic vision</a>. Being 
+ <a href="http://en.wikipedia.org/wiki/Color_blindness"
+	title="Color blindness">color blind</a> can change this, and there 
+ have been reports of people with four or more types of cone cells.<br>&nbsp;</p>
+
+<p class=Tip
+	style="text-align: justify; margin-right: 33px;"><img src="../../Pencil.gif" x-maintain-ratio="TRUE" style="width:15px; height:15px;" width="15" height="15" border="0" class="hcp2">++++++ 
+ <font face="Wingdings" class="hcp6">&#49;</font> this document is 
+ issue from <a title="L'encyclopédie libre"
+				href="http://en.wikipedia.org/wiki/Main_Page"
+				target=_blank>en.wikipedia.org</a> and is under GNU Documentation 
+ license FDL. You can copy, modify as so long than this note appear.</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p class="hcp3"><span class=glosstext><a href="Index_glossaire.htm"
+													title="Retour à l'index"><img src="largesqr.bmp" x-maintain-ratio="TRUE" style="width:15px; height:14px;" width="15" height="14" border="0" class="hcp4"></a> <a name=Contrast>Contrast</a></span></p>
+
+<p class="hcp20"><b class="hcp7">Contrast</b> 
+ is the difference in visual properties that makes an object (or its representation 
+ in an image) distinguishable from other objects and the background. In 
+ <a href="http://en.wikipedia.org/wiki/Visual_perception"
+	title="Visual perception">visual perception</a> of the real world, 
+ contrast is determined by the difference in the <a href="http://en.wikipedia.org/wiki/Color"
+													title=Color>color</a> 
+ and <a href="http://en.wikipedia.org/wiki/Brightness"
+		title=Brightness>brightness</a> of the object and other objects 
+ within the same <a href="http://en.wikipedia.org/wiki/Field_of_view"
+					title="Field of view">field of view</a>. Because the 
+ human visual system is more sensitive to contrast than absolute <a href="http://en.wikipedia.org/wiki/Luminance"
+	title=Luminance>luminance</a>, we can perceive the world similarly 
+ regardless of the huge changes in illumination over the day or from place 
+ to place.<br>&nbsp;</p>
+
+<p class=Tip
+	style="text-align: justify; margin-right: 33px;"><img src="../../Pencil.gif" x-maintain-ratio="TRUE" style="width:15px; height:15px;" width="15" height="15" border="0" class="hcp2">++++++ 
+ <font face="Wingdings" class="hcp6">&#49;</font> this document is 
+ issue from <a title="L'encyclopédie libre"
+				href="http://en.wikipedia.org/wiki/Main_Page"
+				target=_blank>en.wikipedia.org</a> and is under GNU Documentation 
+ license FDL. You can copy, modify as so long than this note appear.</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p class="hcp3"><span class=glosstext><a href="Index_glossaire.htm"
+													title="Retour à l'index"><img src="largesqr.bmp" x-maintain-ratio="TRUE" style="width:15px; height:14px;" width="15" height="14" border="0" class="hcp4"></a> <a name=Csv>Csv</a></span></p>
+
+<p class="hcp5">The <b>comma-separated values</b> (or 
+ <b>CSV</b>) <a href="http://en.wikipedia.org/wiki/File_format"
+				title="File format">file format</a> is a <a href="http://en.wikipedia.org/wiki/Delimited"
+															title=Delimited>delimited</a> 
+ data format that has <a href="http://en.wikipedia.org/wiki/Field_%28computer_science%29"
+						title="Field (computer science)">fields</a> separated 
+ by the <a href="http://en.wikipedia.org/wiki/Comma"
+			title=Comma>comma</a> <a href="http://en.wikipedia.org/wiki/Grapheme"
+									title=Grapheme>character</a> and <a 
+ href="http://en.wikipedia.org/wiki/Row_%28database%29"
+	title="Row (database)">records</a> separated by <a href="http://en.wikipedia.org/wiki/Newline"
+														title=Newline>newlines</a>. 
+ Fields that contain a comma, newline, or <a href="http://en.wikipedia.org/wiki/Double_quote"
+											title="Double quote">double 
+ quote</a> character, or which start or end with whitespace that is to 
+ be preserved, must be enclosed in double quotes. However, if a line contains 
+ a single entry which is the empty string, it may be enclosed in double 
+ quotes. If a field's value contains a double quote character it is <a 
+ href="http://en.wikipedia.org/wiki/Escape_character"
+	title="Escape character">escaped</a> by placing another double quote 
+ character next to it. The CSV file format does not require a specific 
+ <a href="http://en.wikipedia.org/wiki/Character_encoding"
+	title="Character encoding">character encoding</a>, <a href="http://en.wikipedia.org/wiki/Byte_order"
+															title="Byte order">byte 
+ order</a>, or line terminator format.</p>
+
+<p class="hcp5">CSV is one implementation of the <i><a 
+ href="http://en.wikipedia.org/wiki/Delimiter-separated_values"
+	title="Delimiter-separated values">Delimiter-separated values</a></i> 
+ file format, which can use any character as the delimiter. Many applications 
+ in fact allow .csv-named files to use any delimiter character. However 
+ CSV differs from other delimiter separated file formats in using a &quot; 
+ (<a href="http://en.wikipedia.org/wiki/Double_quote"
+	title="Double quote">double quote</a>) character around fields that 
+ contain reserved characters (such as commas or <a href="http://en.wikipedia.org/wiki/Newline"
+													title=Newline>newlines</a>). 
+ Most other delimiter formats either use an <a href="http://en.wikipedia.org/wiki/Escape_character"
+												title="Escape character">escape 
+ character</a> such as a <a href="http://en.wikipedia.org/wiki/Backslash"
+							title=Backslash>backslash</a>, or have no support 
+ for reserved characters.</p>
+
+<p>&nbsp;</p>
+
+<p class=Tip
+	style="text-align: justify; margin-right: 33px;"><img src="../../Pencil.gif" x-maintain-ratio="TRUE" style="width:15px; height:15px;" width="15" height="15" border="0" class="hcp2">++++++ 
+ <font face="Wingdings" class="hcp6">&#49;</font> this document is 
+ issue from <a title="L'encyclopédie libre"
+				href="http://en.wikipedia.org/wiki/Main_Page"
+				target=_blank>en.wikipedia.org</a> and is under GNU Documentation 
+ license FDL. You can copy, modify as so long than this note appear.</p>
+
+<p>&nbsp;</p>
+
+<p class="hcp3"><span class=glosstext><a href="Index_glossaire.htm"
+													title="Retour à l'index"><img src="largesqr.bmp" x-maintain-ratio="TRUE" style="width:15px; height:14px;" width="15" height="14" border="0" class="hcp4"></a> <a name=Cyan>Cyan</a></span></p>
+
+<p class="hcp5"><span class=Heading3Short><b class="hcp7">C</span>yan</b> 
+ (from <a href="http://en.wikipedia.org/wiki/Greek_language"
+			title="Greek language">Greek</a> &#954;&#965;&#945;&#957;&#959;s, 
+ meaning &quot;blue&quot;) may be used as the name of any of a number of 
+ a range of colors in the blue/green part of the <a href="http://en.wikipedia.org/wiki/Spectrum"
+													title=Spectrum>spectrum</a>. 
+ The most important scientific definition is that specific color cyan that 
+ is the precise <a href="http://en.wikipedia.org/wiki/Color"
+					title=Color>color</a> obtained by mixing equal amounts 
+ of <a href="http://en.wikipedia.org/wiki/Green"
+		title=Green>green</a> and <a href="http://en.wikipedia.org/wiki/Blue"
+									title=Blue>blue</a> <a href="http://en.wikipedia.org/wiki/Light"
+															title=Light>light</a> 
+ (it also is a pure <a href="http://en.wikipedia.org/wiki/Optical_spectrum"
+						title="Optical spectrum">spectral</a> <a href="http://en.wikipedia.org/wiki/Color"
+	title=Color>color</a>). As such, cyan is the <a href="http://en.wikipedia.org/wiki/Complementary_color"
+													title="Complementary color">complement</a> 
+ of <a href="http://en.wikipedia.org/wiki/Red"
+		title=Red>red</a>: cyan <a href="http://en.wikipedia.org/wiki/Pigment"
+									title=Pigment>pigments</a> totally 
+ absorb red light.</p>
+
+<p class="hcp5"><i style="font-style: italic;">Cyan</i> 
+ used to be called <b>aqua</b> and before that it was called <i>blue-green</i>. 
+ The name &quot;cyan&quot; for printer's cyan has been in use since <a 
+ href="http://en.wikipedia.org/wiki/1889"
+	title=1889>1889</a>. <sup id=_ref-0
+								class=reference><a href="http://en.wikipedia.org/wiki/Cyan#_note-0"
+													title>[1]</a></sup></p>
+
+<p class="hcp5"><span class=Heading3Short>Some shades 
+ of color close to cyan in the cyan color range are <a href="http://en.wikipedia.org/wiki/Baby_blue"
+														title="Baby blue">baby 
+ blue</a>, <a href="http://en.wikipedia.org/wiki/Turquoise_%28color%29"
+				title="Turquoise (color)">turquoise</a>, and light blue.<br>
+&nbsp;</span></p>
+
+<p class=Tip
+	style="text-align: justify; margin-right: 55px;"><img src="../../Pencil.gif" x-maintain-ratio="TRUE" style="width:15px; height:15px;" width="15" height="15" border="0" class="hcp2">++++++ 
+ <font face="Wingdings" class="hcp6">&#49;</font> this document is 
+ issue from <a title="L'encyclopédie libre"
+				href="http://en.wikipedia.org/wiki/Main_Page"
+				target=_blank>en.wikipedia.org</a> and is under GNU Documentation 
+ license FDL. You can copy, modify as so long than this note appear.</p>
+
+<p class="hcp15">&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p class=normaljld2><b>CMYK</b> is a <a href="http://en.wikipedia.org/wiki/Subtractive_color"
+										title="Subtractive color">subtractive</a> 
+ <a href="http://en.wikipedia.org/wiki/Color_model"
+	title="Color model">color model</a> used in color <a href="http://en.wikipedia.org/wiki/Printing"
+														title=Printing>printing</a>.</p>
+
+<p>This color model is based on mixing pigments of the following <a href="http://en.wikipedia.org/wiki/Color"
+	title=Color>colors</a> in order to make other colors:</p>
+
+<ul>
+	
+	<li class=kadov-p>C=<a href="http://en.wikipedia.org/wiki/Cyan"
+							title=Cyan>cyan</a></li>
+	
+	<li class=kadov-p>M=<a href="http://en.wikipedia.org/wiki/Magenta"
+							title=Magenta>magenta</a></li>
+	
+	<li class=kadov-p>Y=<a href="http://en.wikipedia.org/wiki/Yellow"
+							title=Yellow>yellow</a></li>
+	
+	<li class=kadov-p>K=key (<a href="http://en.wikipedia.org/wiki/Black"
+								title=Black>black</a>).</li>
+</ul>
+
+<p>The mixture of ideal CMY <a href="http://en.wikipedia.org/wiki/Color"
+								title=Color>colors</a> is subtractive (cyan, 
+ magenta, and yellow printed together on white result in black). CMYK works 
+ through <a href="http://en.wikipedia.org/wiki/Absorption_%28optics%29"
+			title="Absorption (optics)">light absorption</a>. The colors 
+ that are seen are from the part of light that is not absorbed. In CMYK, 
+ magenta plus yellow produces <a href="http://en.wikipedia.org/wiki/Red"
+								title=Red>red</a>, magenta plus cyan makes 
+ <a href="http://en.wikipedia.org/wiki/Blue"
+	title=Blue>blue</a> and cyan plus yellow generates <a href="http://en.wikipedia.org/wiki/Green"
+															title=Green>green</a>.</p>
+
+<p>&nbsp;</p>
+
+<div placeholder id="footer" style="width:100%;" class="hcp1"><hr class=whs6
+	style="float: aligncenter; height: 1px;"
+	align=center
+	size=1>
+ <p class=whs7
+	style="text-align: center; font-size: 7pt;"
+	align=center>Copyright © 2005 - 2008 HCFR Team, All rights reserved.</p>
+ <p>&nbsp;</p>
+ <p>&nbsp;</p>
+</div>
+</body>
+</html>

@@ -1,0 +1,223 @@
+<!doctype HTML public "-//W3C//DTD HTML 4.0 Frameset//EN">
+
+<html>
+
+<head>
+<title>Graphe de luminance au voisinage du noir</title>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252">
+<meta name="generator" content="RoboHelp by eHelp Corporation www.ehelp.com">
+<link rel="StyleSheet" href="../../Application%20Help.css"><style>
+<!--
+body { background-color:#ffffff; background-image:url("../../images/hcfr.gif"); }
+H6.NormalJLD { margin-left:24px; }
+LI.kadov-H6-CNormalJLD {  }
+-->
+</style><style title="hcp" type="text/css">
+<!--
+div.hcp1 { position:relative; }
+img.hcp2 { border:none; float:none; border-style:none; }
+p.hcp3 { margin-right:84px; text-align:justify; }
+a.hcp4 { font-weight:normal; }
+p.hcp5 { margin-left:48px; margin-right:84px; text-align:justify; }
+p.hcp6 { font-size:7pt; text-align:center; }
+-->
+</style>
+</head>
+<body><script type="text/javascript" language="JavaScript1.2" src="../../ehlpdhtm.js" x-save-method="compute-relative"></script>
+<script type="text/javascript"
+		language=JavaScript1.2>
+<!-- 
+if( typeof( kadovInitEffects ) != 'function' ) kadovInitEffects = new Function();if( typeof( kadovInitTrigger ) != 'function' ) kadovInitTrigger = new Function();if( typeof( kadovFilePopupInit ) != 'function' ) kadovFilePopupInit = new Function();if( typeof( kadovTextPopupInit ) != 'function' ) kadovTextPopupInit = new Function();
+ //-->
+</script>
+
+<div placeholder id="header" style="width:100%;" class="hcp1"><table x-use-null-cells
+		style="x-cell-content-align: top;
+				width: 100%;
+				border-spacing: 0px;
+				border-spacing: 0px;"
+		cellspacing=0
+		width=100%>
+  <col style="width: 50%;">
+  <col style="width: 50%;">
+  <tr style="x-cell-content-align: top;"
+	valign=top>
+  <td style="width: 50%;
+			padding-right: 10px;
+			padding-left: 10px;
+			x-cell-content-align: center;"
+	valign=middle
+	width=50%>
+  <h1><img src="../../bggraybevel.gif" x-save-file="TRUE" x-save-method="compute-relative" x-maintain-ratio="TRUE" style="width:21px; height:21px;" width="21" height="21" border="0" class="hcp2"><span style="color: #000000;">Colorimètre HCFR</span></td>
+  <td style="width: 50%;
+			padding-right: 10px;
+			padding-left: 10px;
+			border-top-style: none;
+			border-bottom-style: none;
+			border-right-style: none;"
+	width=50%>
+  <p style="text-align: right;"
+	align=right><img src="../../logo_colorhcfr_499.gif" x-maintain-ratio="TRUE" style="margin-left: 0px;
+							margin-right: 0px;
+							margin-top: 0px;
+							margin-bottom: 0px;
+							border-left-style: none;
+							border-top-style: none;
+							border-right-style: none;
+							border-bottom-style: none;
+							width: 70px;
+							height: 34px;
+							float: none;
+							border-style: none;
+							border-style: none;" width="70" height="34" border="0"></td></tr>
+ </table><hr style="float: aligncenter; color: #7e7e7e;"
+	align=center
+	color=#7E7E7E>
+ <p>&nbsp;</p>
+</div>
+<h2 style="margin-left: 0px;
+			margin-right: 84px;
+			text-align: justify;"><span class=TitreTropic>Généralités</span></h2>
+
+<p class="hcp3">&nbsp;</p>
+
+<h2 style="margin-right: 84px; text-align: justify;">Graphe de luminance 
+ au voisinage du noir</h2>
+
+<h3 style="font-weight: normal;
+			margin-left: 48px;
+			margin-right: 84px;
+			text-align: justify;"><span class=Heading3Short>Le graphe de 
+ <a href="javascript:BSSCPopup('../../Support_et_aides/Glossaire/L.htm#Luminance',600,300);"
+	title=Glossaire...
+	id=a1>luminance</a><script type="text/javascript"
+													language=JavaScript1.2><!--
+kadovFilePopupInit('a1');
+//--></script> 
+ au voisinage du noir permet de visualiser en détail les <a href="javascript:BSSCPopup('../../Support_et_aides/Glossaire/L.htm#Luminosité',600,300);"
+															title=Glossaire...
+															id=a2>luminosités</a><script 
+ type="text/javascript"
+	language=JavaScript1.2><!--
+kadovFilePopupInit('a2');
+//--></script> 
+ proches de zéro, par pas de un pourcent ou un IRE. </span>&nbsp;</h3>
+
+<h3 style="margin-left: 48px;
+			margin-right: 84px;
+			text-align: justify;"><span class=Heading3Short>La courbe est 
+ analogue à celle de l’<a href="../Graphe_de_luminance/Graphe_luminance.htm" title="Aller au tpoic ..." class="hcp4">échelle de gris</a></span><span 
+ class=Heading3Short>, mais porte sur les données du </span><span class=Heading3Short
+	style="font-weight: bold;">voisinage du noir</span><span class=Heading3Short>. 
+ Ces données ne sont représentées que dans ce graphe, qui ne sert que pour 
+ régler la luminosité, et éventuellement affiner un réglage de <a href="javascript:BSSCPopup('../../Support_et_aides/Glossaire/G.htm#Gamma',600,300);"
+	title=Glossaire...
+	id=a4>gamma</a><script type="text/javascript"
+												language=JavaScript1.2><!--
+kadovFilePopupInit('a4');
+//--></script> 
+ bas sur le diffuseur. Le nombre de points mesurés est paramétrable, et 
+ par défaut à 5. Les valeurs les plus intéressantes sont zéro, un et deux 
+ pourcents (ou IRE). Lors du calibrage, on cherchera le réglage de luminosité 
+ du diffuseur le plus faible qui permette de noter le décollage de luminosité 
+ dès le niveau 1. On cherche donc à obtenir une courbe telle que celle-ci&nbsp;:<br>
+&nbsp;</span></h3>
+
+<p class="hcp3"><img src="../../images/Fenetres/wnd_voisinage_noir.png"
+														x-maintain-ratio=TRUE
+														style="border: none;
+	margin-left: 50px;
+	margin-right: 0px;
+	margin-top: 0px;
+	margin-bottom: 0px;
+	width: 515px;
+	height: 413px;
+	float: none;
+	border-style: none;
+	border-style: none;"
+														width=515
+														height=413
+														border=0> </p>
+
+<p class="hcp5">&nbsp; <span class=Heading3Short><br>
+Lorsque le réglage de luminosité est trop bas, on obtient une courbe caractéristique 
+ de <a title="Glossaire ..."
+		href="javascript:BSSCPopup('../../Support_et_aides/Glossaire/N.htm#Noirs_bouch_s',600,300);"
+		id=a8>noirs bouchés</a><script type="text/javascript"
+															language=JavaScript1.2><!--
+kadovFilePopupInit('a8');
+//--></script>, 
+ c'est-à-dire un réglage ne permettant pas au diffuseur de montrer les 
+ plus petites différences de luminance de l’image dans les zones sombres, 
+ ce qui donne une courbe ressemblant à cela&nbsp;:</span><br>
+<br>
+<img src="../../images/menu/affichage/VN_Noir_bouche.gif" x-maintain-ratio="TRUE" style="width:569px; height:343px;" width="569" height="343" border="0" class="hcp2"><span class=Heading3Short><br>
+<br>
+Attention, il est possible d’obtenir une courbe d’apparence correcte avec 
+ un réglage de luminosité trop élevé, qui pénalise lourdement le niveau 
+ de noir du diffuseur, avec pour conséquences une image faiblement contrastée, 
+ avec des zones sombres voilée.</span><span class=Heading3Short
+											style="font-weight: bold;">&nbsp;</span><span 
+ class=Heading3Short><br>
+<br>
+Le graphe de luminance au voisinage du noir peut être affiché en <a title="Glossaire..." href="javascript:BSSCPopup('../../Support_et_aides/Glossaire/M.htm#Mode_logarithmique',600,300);" id="a10" class="hcp4">mode logarithmique</a><script 
+ type="text/javascript"
+	language=JavaScript1.2><!--
+kadovFilePopupInit('a10');
+//--></script> 
+ afin d’améliorer la lisibilité, et éventuellement d’affiner le réglage 
+ de gamma bas, pour les diffuseurs qui en disposent. Cet affichage n'est 
+ disponible que si un blanc de référence a été mesuré, soit dans l'échelle 
+ de gris, soit en complément des couleurs primaires et/ou secondaires, 
+ soit encore lors d'une mesure de contraste.</span></p>
+
+<p class="hcp5"><span class=Heading3Short
+										style="font-weight: bold;">Notes&nbsp;:</span><span 
+ class=Heading3Short> contrairement aux <a href="../Graphe_de_luminance/Graphe_luminance.htm" title="Aller au topic ...">mesures 
+ de luminance sur la totalité de l’échelle de gris</a>, et au <a href="../Graphe_luma_voisinage_blanc/Graphe_luma_voisinage_blanc.htm" title="Aller au topic...">voisinage du blanc</a>, les mesures au voisinage 
+ du noir ne permettent pas de calculer des courbes en <a href="javascript:BSSCPopup('../../Support_et_aides/Glossaire/M.htm#Mode_logarithmique');"
+														title=Glossaire...
+														id=a6>mode logarithmique</a><script 
+ type="text/javascript"
+	language=JavaScript1.2><!--
+kadovFilePopupInit('a6');
+//--></script>, 
+ faute de disposer d’une mesure de luminosité à 100 </span><span class=Heading3Short><a 
+ title=Glossaire...
+	href="javascript:BSSCPopup('../../Support_et_aides/Glossaire/I.htm#IRE',600,300);"
+	id=a7>IRE</a><script type="text/javascript"
+											language=JavaScript1.2><!--
+kadovFilePopupInit('a7');
+//--></script></span><span 
+ class=Heading3Short>. La courbe de référence affichée n’est pas non plus 
+ exacte pour la même raison. Elle est extrapolée, en considérant que le 
+ point le plus lumineux est sur la courbe. Mais si ce point ne reflète 
+ pas le gamma de référence, la courbe sera décalée par rapport au <a title=Glossaire...
+	href="javascript:BSSCPopup('../../Support_et_aides/Glossaire/G.htm',600,300);"
+	id=a9>gamma</a><script type="text/javascript"
+												language=JavaScript1.2><!--
+kadovFilePopupInit('a9');
+//--></script> 
+ souhaité. Il est donc inutile de chercher à tout prix le réglage permettant 
+ d’épouser la courbe de référence en tout point. Néanmoins, l’affichage 
+ de sa forme générale pouvant être utile à la bonne lisibilité du graphe,il 
+ reste possible de l’afficher grâce au menu contextuel.</span> <br>&nbsp;</p>
+
+<p class="hcp5"><span class=Heading3Short
+										style="font-style: italic;">Les 
+ différentes options inhérentes à ce graphe sont disponibles via le bouton 
+ droit de la souris. &nbsp;Elles 
+ permettent de définir les <a href="Couleurs.htm">composantes</a> et les 
+ <a href="Courbes.htm">courbes de références</a> affichées, de <a href="../../Parametres_vues/Echelle.htm">définir 
+ l'échelle</a>, les <a href="../../Parametres_vues/Parametres_graphes.htm">paramètres 
+ des graphes</a>, et d'<a href="../../Parametres_vues/Enregistrer.htm">enregistrer 
+ le graphe dans un fichier</a>.</span><br>
+<br>&nbsp;</p>
+
+<div placeholder id="footer" style="width:100%;" class="hcp1">
+ <p align="center" class="hcp6">&nbsp;</p>
+ <p align="center" class="hcp6">Copyright © 2005 - 2008 HCFR Team, All rights reserved.</p>
+ <p align="center" class="hcp6">&nbsp;</p>
+</div>
+</body>
+</html>
