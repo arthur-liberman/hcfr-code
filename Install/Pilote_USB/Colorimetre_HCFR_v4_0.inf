@@ -1,0 +1,62 @@
+
+; Windows USB CDC ACM Setup File
+; Copyright (c) 2000 Microsoft Corporation
+; Copyright (C) 2004 Microchip Technology Inc.
+
+[Version] 
+Signature="$Windows NT$" 
+Class=Ports
+ClassGuid={4D36E978-E325-11CE-BFC1-08002BE10318} 
+Provider=%MCHP% 
+LayoutFile=layout.inf
+DriverVer=04/04/2008,4.0.0000.0
+
+[Manufacturer] 
+%MFGNAME%=DvList,nt,ntamd64
+
+[DestinationDirs] 
+DefaultDestDir=12 
+
+[DvList] 
+%DESCRIPTION%=DriverInstall, USB\VID_04D8&PID_FE17 
+
+[DvList.nt]
+%DESCRIPTION%=DriverInstall,USB\VID_04D8&PID_FE17
+
+[DvList.ntamd64]
+%DESCRIPTION%=DriverInstall,USB\VID_04D8&PID_FE17
+
+;------------------------------------------------------------------------------
+;  Windows 2000/XP Sections
+;------------------------------------------------------------------------------
+
+[DriverInstall.nt] 
+
+include=mdmcpq.inf
+CopyFiles=FakeModemCopyFileSection
+AddReg=DriverInstall.nt.AddReg
+
+[DriverInstall.nt.AddReg] 
+HKR,,DevLoader,,*ntkern 
+HKR,,NTMPDriver,,usbser.sys 
+HKR,,EnumPropPages32,,"MsPorts.dll,SerialPortPropPageProvider" 
+
+[DriverInstall.nt.Services] 
+AddService=usbser, 0x00000002, DriverServiceInst
+
+[DriverServiceInst] 
+DisplayName=%SERVICE% 
+ServiceType=1
+StartType=3
+ErrorControl=1
+ServiceBinary=%12%\usbser.sys 
+
+;------------------------------------------------------------------------------
+;  String Definitions
+;------------------------------------------------------------------------------
+
+[Strings] 
+MCHP="Homecinema-fr.com"
+MFGNAME="Homecinema-fr.com"
+DESCRIPTION="Colorimetre HCFR" 
+SERVICE="USB RS-232 Emulation Driver"
