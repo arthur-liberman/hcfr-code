@@ -1,7 +1,3 @@
-; This project file has been recreated
-; by KeyTools. It is only an approximation
-; of the original project file.
-
 [OPTIONS]
 Compiled file=ColorHCFR_en.chm
 Default topic=Bienvenue.htm
@@ -381,9 +377,9 @@ Menu\Avance\Onglets_preferences\Avance.htm
 Menu\Avance\Onglets_preferences\generale.htm
 Menu\Avance\Onglets_preferences\reference.htm
 Menu\Avance\Onglets_preferences\Toolbars.htm
-Menu\Avance\Préférences.htm
+Menu\Avance\Preferences.htm
 Menu\Avance\Upgrade\Etalons.htm
-Menu\Avance\Upgrade\Mises_à_jour_.htm
+Menu\Avance\Upgrade\Mises_a_jour_.htm
 Menu\Avance\Upgrade\Profiles_IR.htm
 Menu\Edition\annuler.htm
 Menu\Edition\coller.htm
@@ -407,17 +403,17 @@ Menu\Mesures\Primaires_secondaires.htm
 Menu\Mesures\Saturation.htm
 Menu\Mesures\Voisinage_blanc.htm
 Menu\Mesures\Voisinage_noir.htm
-Menu\Relevés\Diagramme_CIE.htm
-Menu\Relevés\Graphe_combine.htm
-Menu\Relevés\Graphe_gamma.htm
-Menu\Relevés\Graphe_luma_voisinage_blanc.htm
-Menu\Relevés\Graphe_luma_voisinage_noir.htm
-Menu\Relevés\Graphe_luminance.htm
-Menu\Relevés\Graphe_RVB.htm
-Menu\Relevés\Graphe_saturation_ecart.htm
-Menu\Relevés\Graphe_saturation_luminance.htm
-Menu\Relevés\Graphe_temperature_couleur.htm
-Menu\Relevés\Mesures.htm
+Menu\Releves\Diagramme_CIE.htm
+Menu\Releves\Graphe_combine.htm
+Menu\Releves\Graphe_gamma.htm
+Menu\Releves\Graphe_luma_voisinage_blanc.htm
+Menu\Releves\Graphe_luma_voisinage_noir.htm
+Menu\Releves\Graphe_luminance.htm
+Menu\Releves\Graphe_RVB.htm
+Menu\Releves\Graphe_saturation_ecart.htm
+Menu\Releves\Graphe_saturation_luminance.htm
+Menu\Releves\Graphe_temperature_couleur.htm
+Menu\Releves\Mesures.htm
 Parametres_vues\Echelle.htm
 Parametres_vues\Enregistrer.htm
 Parametres_vues\Parametres_graphes.htm
@@ -433,14 +429,14 @@ popup\Saturation_luminance.htm
 popup\temperature_couleur.htm
 popup\voisinage_blanc.htm
 popup\voisinage_noir.htm
-Premier_demarrage\Généralités.htm
-Premier_demarrage\Utilisation_étalon.htm
+Premier_demarrage\Generalites.htm
+Premier_demarrage\Utilisation_etalon.htm
 RoboHHRE.lng
-Réalisation_DIY\Généralités.htm
-Réalisation_DIY\Materiel.htm
-Réalisation_DIY\Montage.htm
-Réalisation_DIY\Schema.htm
-Réalisation_DIY\Typon.htm
+Realisation_DIY\Generalites.htm
+Realisation_DIY\Materiel.htm
+Realisation_DIY\Montage.htm
+Realisation_DIY\Schema.htm
+Realisation_DIY\Typon.htm
 Support_et_aides\colorhcfr_forum.htm
 Support_et_aides\colorhcfr_team.htm
 Support_et_aides\feedback.htm

@@ -51,12 +51,12 @@
     </ul>
   <li><object type="text/sitemap">
     <param name="Name" value="Premier démarrrage">
-    <param name="Local" value="Premier_demarrage/G&eacute;n&eacute;ralit&eacute;s.htm">
+    <param name="Local" value="Premier_demarrage/Generalites.htm">
   </object>
   <ul>
     <li><object type="text/sitemap">
       <param name="Name" value="Généralités">
-      <param name="Local" value="Premier_demarrage/G&eacute;n&eacute;ralit&eacute;s.htm">
+      <param name="Local" value="Premier_demarrage/Generalites.htm">
     </object>
     </ul>
   <li><object type="text/sitemap">
@@ -410,52 +410,52 @@
       </ul>
     <li><object type="text/sitemap">
       <param name="Name" value="Relevé">
-      <param name="Local" value="Menu/Relev&eacute;s/Mesures.htm">
+      <param name="Local" value="Menu/Releves/Mesures.htm">
     </object>
     <ul>
       <li><object type="text/sitemap">
         <param name="Name" value="Tableaux de mesures">
-        <param name="Local" value="Menu/Relev&eacute;s/Mesures.htm">
+        <param name="Local" value="Menu/Releves/Mesures.htm">
       </object>
       <li><object type="text/sitemap">
         <param name="Name" value="Graphe de luminance">
-        <param name="Local" value="Menu/Relev&eacute;s/Graphe_luminance.htm">
+        <param name="Local" value="Menu/Releves/Graphe_luminance.htm">
       </object>
       <li><object type="text/sitemap">
         <param name="Name" value="Graphe de gamma">
-        <param name="Local" value="Menu/Relev&eacute;s/Graphe_gamma.htm">
+        <param name="Local" value="Menu/Releves/Graphe_gamma.htm">
       </object>
       <li><object type="text/sitemap">
         <param name="Name" value="Graphe de niveaux RVB">
-        <param name="Local" value="Menu/Relev&eacute;s/Graphe_RVB.htm">
+        <param name="Local" value="Menu/Releves/Graphe_RVB.htm">
       </object>
       <li><object type="text/sitemap">
         <param name="Name" value="Graphe de température de couleurs">
-        <param name="Local" value="Menu/Relev&eacute;s/Graphe_temperature_couleur.htm">
+        <param name="Local" value="Menu/Releves/Graphe_temperature_couleur.htm">
       </object>
       <li><object type="text/sitemap">
         <param name="Name" value="Diagramme CIE">
-        <param name="Local" value="Menu/Relev&eacute;s/Diagramme_CIE.htm">
+        <param name="Local" value="Menu/Releves/Diagramme_CIE.htm">
       </object>
       <li><object type="text/sitemap">
         <param name="Name" value="Graphe de luminance au voisinage du noir">
-        <param name="Local" value="Menu/Relev&eacute;s/Graphe_luma_voisinage_noir.htm">
+        <param name="Local" value="Menu/Releves/Graphe_luma_voisinage_noir.htm">
       </object>
       <li><object type="text/sitemap">
         <param name="Name" value="Graphe de luminance au voisinage du blanc">
-        <param name="Local" value="Menu/Relev&eacute;s/Graphe_luma_voisinage_blanc.htm">
+        <param name="Local" value="Menu/Releves/Graphe_luma_voisinage_blanc.htm">
       </object>
       <li><object type="text/sitemap">
         <param name="Name" value="Graphe de saturation luminance">
-        <param name="Local" value="Menu/Relev&eacute;s/Graphe_saturation_luminance.htm">
+        <param name="Local" value="Menu/Releves/Graphe_saturation_luminance.htm">
       </object>
       <li><object type="text/sitemap">
         <param name="Name" value="Graphe de saturation-écarts">
-        <param name="Local" value="Menu/Relev&eacute;s/Graphe_saturation_ecart.htm">
+        <param name="Local" value="Menu/Releves/Graphe_saturation_ecart.htm">
       </object>
       <li><object type="text/sitemap">
         <param name="Name" value="Graphe combiné - mesures libres">
-        <param name="Local" value="Menu/Relev&eacute;s/Graphe_combine.htm">
+        <param name="Local" value="Menu/Releves/Graphe_combine.htm">
       </object>
       </ul>
     <li><object type="text/sitemap">
@@ -579,12 +579,12 @@
         </ul>
       <li><object type="text/sitemap">
         <param name="Name" value="Mises à jour">
-        <param name="Local" value="Menu/Avance/Upgrade/Mises_&agrave;_jour_.htm">
+        <param name="Local" value="Menu/Avance/Upgrade/Mises_a_jour_.htm">
       </object>
       <ul>
         <li><object type="text/sitemap">
           <param name="Name" value="Mises à jour du logiciel">
-          <param name="Local" value="Menu/Avance/Upgrade/Mises_&agrave;_jour_.htm">
+          <param name="Local" value="Menu/Avance/Upgrade/Mises_a_jour_.htm">
         </object>
         <li><object type="text/sitemap">
           <param name="Name" value="Mise à jour des fichiers étalons">
@@ -597,7 +597,7 @@
         </ul>
       <li><object type="text/sitemap">
         <param name="Name" value="Préférences">
-        <param name="Local" value="Menu/Avance/Pr&eacute;f&eacute;rences.htm">
+        <param name="Local" value="Menu/Avance/Preferences.htm">
       </object>
       <li><object type="text/sitemap">
         <param name="Name" value="Langue">

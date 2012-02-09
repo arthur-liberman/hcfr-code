@@ -51,16 +51,16 @@
     </ul>
   <li><object type="text/sitemap">
     <param name="Name" value="First execution">
-    <param name="Local" value="Premier_demarrage/G&eacute;n&eacute;ralit&eacute;s.htm">
+    <param name="Local" value="Premier_demarrage/Generalites.htm">
   </object>
   <ul>
     <li><object type="text/sitemap">
       <param name="Name" value="Generalities">
-      <param name="Local" value="Premier_demarrage/G&eacute;n&eacute;ralit&eacute;s.htm">
+      <param name="Local" value="Premier_demarrage/Generalites.htm">
     </object>
     <li><object type="text/sitemap">
       <param name="Name" value="Using calibration files">
-      <param name="Local" value="Premier_demarrage/Utilisation_&eacute;talon.htm">
+      <param name="Local" value="Premier_demarrage/Utilisation_etalon.htm">
     </object>
     </ul>
   <li><object type="text/sitemap">
@@ -406,47 +406,47 @@
     <ul>
       <li><object type="text/sitemap">
         <param name="Name" value="Measures tab">
-        <param name="Local" value="Menu/Relev&eacute;s/Mesures.htm">
+        <param name="Local" value="Menu/Releves/Mesures.htm">
       </object>
       <li><object type="text/sitemap">
         <param name="Name" value="Luminance graph">
-        <param name="Local" value="Menu/Relev&eacute;s/Graphe_luminance.htm">
+        <param name="Local" value="Menu/Releves/Graphe_luminance.htm">
       </object>
       <li><object type="text/sitemap">
         <param name="Name" value="Gamma graph">
-        <param name="Local" value="Menu/Relev&eacute;s/Graphe_gamma.htm">
+        <param name="Local" value="Menu/Releves/Graphe_gamma.htm">
       </object>
       <li><object type="text/sitemap">
         <param name="Name" value="RGB levels graph">
-        <param name="Local" value="Menu/Relev&eacute;s/Graphe_RVB.htm">
+        <param name="Local" value="Menu/Releves/Graphe_RVB.htm">
       </object>
       <li><object type="text/sitemap">
         <param name="Name" value="Color temperature graph">
-        <param name="Local" value="Menu/Relev&eacute;s/Graphe_temperature_couleur.htm">
+        <param name="Local" value="Menu/Releves/Graphe_temperature_couleur.htm">
       </object>
       <li><object type="text/sitemap">
         <param name="Name" value="CIE Diagram">
-        <param name="Local" value="Menu/Relev&eacute;s/Diagramme_CIE.htm">
+        <param name="Local" value="Menu/Releves/Diagramme_CIE.htm">
       </object>
       <li><object type="text/sitemap">
         <param name="Name" value="Near black grayscale graph">
-        <param name="Local" value="Menu/Relev&eacute;s/Graphe_luma_voisinage_noir.htm">
+        <param name="Local" value="Menu/Releves/Graphe_luma_voisinage_noir.htm">
       </object>
       <li><object type="text/sitemap">
         <param name="Name" value="Near white grayscale graph">
-        <param name="Local" value="Menu/Relev&eacute;s/Graphe_luma_voisinage_blanc.htm">
+        <param name="Local" value="Menu/Releves/Graphe_luma_voisinage_blanc.htm">
       </object>
       <li><object type="text/sitemap">
         <param name="Name" value="Saturation - luminance graph">
-        <param name="Local" value="Menu/Relev&eacute;s/Graphe_saturation_luminance.htm">
+        <param name="Local" value="Menu/Releves/Graphe_saturation_luminance.htm">
       </object>
       <li><object type="text/sitemap">
         <param name="Name" value="Saturation - shift graph">
-        <param name="Local" value="Menu/Relev&eacute;s/Graphe_saturation_ecart.htm">
+        <param name="Local" value="Menu/Releves/Graphe_saturation_ecart.htm">
       </object>
       <li><object type="text/sitemap">
         <param name="Name" value="Combined graph - free measures">
-        <param name="Local" value="Menu/Relev&eacute;s/Graphe_combine.htm">
+        <param name="Local" value="Menu/Releves/Graphe_combine.htm">
       </object>
       </ul>
     <li><object type="text/sitemap">
@@ -569,7 +569,7 @@
       <ul>
         <li><object type="text/sitemap">
           <param name="Name" value="Software">
-          <param name="Local" value="Menu/Avance/Upgrade/Mises_&agrave;_jour_.htm">
+          <param name="Local" value="Menu/Avance/Upgrade/Mises_a_jour_.htm">
         </object>
         <li><object type="text/sitemap">
           <param name="Name" value="Calibration files">
@@ -607,7 +607,7 @@
         </ul>
       <li><object type="text/sitemap">
         <param name="Name" value="Preferences">
-        <param name="Local" value="Menu/Avance/Pr&eacute;f&eacute;rences.htm">
+        <param name="Local" value="Menu/Avance/Preferences.htm">
       </object>
       <li><object type="text/sitemap">
         <param name="Name" value="Language">
@@ -788,28 +788,28 @@
     </ul>
   <li><object type="text/sitemap">
     <param name="Name" value="DIY">
-    <param name="Local" value="R&eacute;alisation_DIY/G&eacute;n&eacute;ralit&eacute;s.htm">
+    <param name="Local" value="Realisation_DIY/Generalites.htm">
   </object>
   <ul>
     <li><object type="text/sitemap">
       <param name="Name" value="Generalities">
-      <param name="Local" value="R&eacute;alisation_DIY/G&eacute;n&eacute;ralit&eacute;s.htm">
+      <param name="Local" value="Realisation_DIY/Generalites.htm">
     </object>
     <li><object type="text/sitemap">
       <param name="Name" value="Hardware">
-      <param name="Local" value="R&eacute;alisation_DIY/Materiel.htm">
+      <param name="Local" value="Realisation_DIY/Materiel.htm">
     </object>
     <li><object type="text/sitemap">
       <param name="Name" value="Building">
-      <param name="Local" value="R&eacute;alisation_DIY/Montage.htm">
+      <param name="Local" value="Realisation_DIY/Montage.htm">
     </object>
     <li><object type="text/sitemap">
       <param name="Name" value="Schema">
-      <param name="Local" value="R&eacute;alisation_DIY/Schema.htm">
+      <param name="Local" value="Realisation_DIY/Schema.htm">
     </object>
     <li><object type="text/sitemap">
       <param name="Name" value="Typon">
-      <param name="Local" value="R&eacute;alisation_DIY/Typon.htm">
+      <param name="Local" value="Realisation_DIY/Typon.htm">
     </object>
     </ul>
 </ul>
