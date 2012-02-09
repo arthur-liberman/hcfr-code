@@ -1,0 +1,122 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: CxImage - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\tchoa\LOCALS~1\Temp\RSPEF7.tmp" with contents
+[
+/nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\jpeg" /I "..\png" /I "..\zlib" /I "..\mng" /I "..\tiff" /I "..\j2k" /I "..\jasper\include" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "_AFXDLL" /D "JAS_WIN_MSVC_BUILD" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"D:\Calibration\Code\cximage599c_full\CxImage\tif_xfile.cpp"
+"D:\Calibration\Code\cximage599c_full\CxImage\ximabmp.cpp"
+"D:\Calibration\Code\cximage599c_full\CxImage\ximadsp.cpp"
+"D:\Calibration\Code\cximage599c_full\CxImage\ximaenc.cpp"
+"D:\Calibration\Code\cximage599c_full\CxImage\ximaexif.cpp"
+"D:\Calibration\Code\cximage599c_full\CxImage\ximage.cpp"
+"D:\Calibration\Code\cximage599c_full\CxImage\ximagif.cpp"
+"D:\Calibration\Code\cximage599c_full\CxImage\ximahist.cpp"
+"D:\Calibration\Code\cximage599c_full\CxImage\ximaico.cpp"
+"D:\Calibration\Code\cximage599c_full\CxImage\ximainfo.cpp"
+"D:\Calibration\Code\cximage599c_full\CxImage\ximaint.cpp"
+"D:\Calibration\Code\cximage599c_full\CxImage\ximaj2k.cpp"
+"D:\Calibration\Code\cximage599c_full\CxImage\ximajas.cpp"
+"D:\Calibration\Code\cximage599c_full\CxImage\ximajbg.cpp"
+"D:\Calibration\Code\cximage599c_full\CxImage\ximajpg.cpp"
+"D:\Calibration\Code\cximage599c_full\CxImage\ximalpha.cpp"
+"D:\Calibration\Code\cximage599c_full\CxImage\ximalyr.cpp"
+"D:\Calibration\Code\cximage599c_full\CxImage\ximamng.cpp"
+"D:\Calibration\Code\cximage599c_full\CxImage\ximapal.cpp"
+"D:\Calibration\Code\cximage599c_full\CxImage\ximapcx.cpp"
+"D:\Calibration\Code\cximage599c_full\CxImage\ximapng.cpp"
+"D:\Calibration\Code\cximage599c_full\CxImage\ximasel.cpp"
+"D:\Calibration\Code\cximage599c_full\CxImage\ximatga.cpp"
+"D:\Calibration\Code\cximage599c_full\CxImage\ximath.cpp"
+"D:\Calibration\Code\cximage599c_full\CxImage\ximatif.cpp"
+"D:\Calibration\Code\cximage599c_full\CxImage\ximatran.cpp"
+"D:\Calibration\Code\cximage599c_full\CxImage\ximawbmp.cpp"
+"D:\Calibration\Code\cximage599c_full\CxImage\ximawmf.cpp"
+"D:\Calibration\Code\cximage599c_full\CxImage\ximawnd.cpp"
+"D:\Calibration\Code\cximage599c_full\CxImage\xmemfile.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\tchoa\LOCALS~1\Temp\RSPEF7.tmp" 
+Creating temporary file "C:\DOCUME~1\tchoa\LOCALS~1\Temp\RSPEF8.tmp" with contents
+[
+/nologo /out:"Debug\cximage.lib" 
+.\Debug\tif_xfile.obj
+.\Debug\ximabmp.obj
+.\Debug\ximadsp.obj
+.\Debug\ximaenc.obj
+.\Debug\ximaexif.obj
+.\Debug\xImage.obj
+.\Debug\ximagif.obj
+.\Debug\ximahist.obj
+.\Debug\ximaico.obj
+.\Debug\ximainfo.obj
+.\Debug\ximaint.obj
+.\Debug\ximaj2k.obj
+.\Debug\ximajas.obj
+.\Debug\ximajbg.obj
+.\Debug\ximajpg.obj
+.\Debug\ximalpha.obj
+.\Debug\ximalyr.obj
+.\Debug\ximamng.obj
+.\Debug\ximapal.obj
+.\Debug\ximapcx.obj
+.\Debug\ximapng.obj
+.\Debug\ximasel.obj
+.\Debug\ximatga.obj
+.\Debug\ximath.obj
+.\Debug\ximatif.obj
+.\Debug\ximatran.obj
+.\Debug\ximawbmp.obj
+.\Debug\ximawmf.obj
+.\Debug\ximawnd.obj
+.\Debug\xmemfile.obj
+]
+Creating command line "link.exe -lib @C:\DOCUME~1\tchoa\LOCALS~1\Temp\RSPEF8.tmp"
+<h3>Output Window</h3>
+Compiling...
+tif_xfile.cpp
+ximabmp.cpp
+ximadsp.cpp
+ximaenc.cpp
+ximaexif.cpp
+ximage.cpp
+ximagif.cpp
+ximahist.cpp
+ximaico.cpp
+ximainfo.cpp
+ximaint.cpp
+ximaj2k.cpp
+ximajas.cpp
+ximajbg.cpp
+ximajpg.cpp
+ximalpha.cpp
+ximalyr.cpp
+ximamng.cpp
+ximapal.cpp
+ximapcx.cpp
+Generating Code...
+Compiling...
+ximapng.cpp
+ximasel.cpp
+ximatga.cpp
+ximath.cpp
+ximatif.cpp
+ximatran.cpp
+ximawbmp.cpp
+ximawmf.cpp
+ximawnd.cpp
+xmemfile.cpp
+Generating Code...
+Creating library...
+
+
+
+<h3>Results</h3>
+cximage.lib - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

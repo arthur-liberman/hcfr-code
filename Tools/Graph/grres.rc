@@ -1,0 +1,204 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "grres.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif //_WIN32\r\n"
+    "#include ""res\\test_grafix.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#include ""afxprint.rc""       // printing/print preview resources\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_GRAPH_GRAPH_PROP_PAGE DIALOG DISCARDABLE  0, 0, 195, 127
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "General"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_X1,39,17,57,12,ES_AUTOHSCROLL
+    LTEXT           "x1 =",IDC_STATIC,23,19,14,8
+    EDITTEXT        IDC_X2,39,32,57,12,ES_AUTOHSCROLL
+    LTEXT           "x2 =",IDC_STATIC,23,34,14,8
+    EDITTEXT        IDC_Y1,121,17,57,12,ES_AUTOHSCROLL
+    LTEXT           "y1 =",IDC_STATIC,105,19,14,8
+    EDITTEXT        IDC_Y2,121,32,57,12,ES_AUTOHSCROLL
+    LTEXT           "y2 =",IDC_STATIC,105,34,14,8
+    GROUPBOX        "Coordinates range",IDC_STATIC,17,7,168,43
+    CONTROL         "Point marks",IDC_GRAPH_POINTMARKS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,18,60,61,8
+    CONTROL         "Mouse coordinates",IDC_GRAPH_MOUSECOORDS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,18,72,76,8
+    CONTROL         "Axis",IDC_GEN_GRAPH_PROPS_AXIS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,18,84,87,8
+END
+
+IDD_GRAPH_AXIS_PROP_PAGE DIALOG DISCARDABLE  0, 0, 195, 127
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Axis"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_XTITLE,40,16,142,12,ES_AUTOHSCROLL
+    LTEXT           "Title",IDC_STATIC,16,18,22,8
+    GROUPBOX        "X Axis",IDC_STATIC,7,7,182,42
+    EDITTEXT        IDC_XUOM,40,32,28,12,ES_AUTOHSCROLL
+    LTEXT           "UOM",IDC_STATIC,16,34,22,8
+    EDITTEXT        IDC_YTITLE,40,66,142,12,ES_AUTOHSCROLL
+    LTEXT           "Title",IDC_STATIC,16,69,22,8
+    GROUPBOX        "Y Axis",IDC_STATIC,7,56,181,45
+    EDITTEXT        IDC_YUOM,40,82,28,12,ES_AUTOHSCROLL
+    LTEXT           "UOM",IDC_STATIC,16,85,22,8
+    LTEXT           "Precision",IDC_STATIC,77,34,33,8
+    EDITTEXT        IDC_XAXIS_PRECISION,112,32,52,12,ES_AUTOHSCROLL
+    LTEXT           "Precision",IDC_STATIC,77,85,33,8
+    EDITTEXT        IDC_YAXIS_PRECISION,112,83,52,12,ES_AUTOHSCROLL
+END
+
+IDD_GRAPH_GRAPHICS_PROPS DIALOG DISCARDABLE  0, 0, 195, 127
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Graphs"
+FONT 8, "MS Sans Serif"
+BEGIN
+    COMBOBOX        IDC_GRAPH_CHOICE,58,17,125,74,CBS_DROPDOWNLIST | 
+                    CBS_OWNERDRAWFIXED | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Hide",IDC_GRAPH_HIDESHOW,12,58,37,14
+    EDITTEXT        IDC_GRAPH_TITLE,58,38,125,12,ES_AUTOHSCROLL | 
+                    ES_READONLY | NOT WS_TABSTOP
+    PUSHBUTTON      "Title",IDC_GRAPH_CH_TITLE,12,37,37,14
+    PUSHBUTTON      "Color",IDC_GRAPH_CH_COLOR,12,16,37,14
+    PUSHBUTTON      "Show all",IDC_GRAPHS_SHOWALL,58,58,37,14
+END
+
+IDD_GRAPH_CHANGE_TITLE DIALOG DISCARDABLE  0, 0, 254, 34
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Title"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,67,17,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,137,17,50,14
+    EDITTEXT        IDC_TITLE_STRING,3,2,248,12,ES_AUTOHSCROLL
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_GRAPH_GRAPH_PROP_PAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 188
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 120
+    END
+
+    IDD_GRAPH_AXIS_PROP_PAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 188
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 120
+    END
+
+    IDD_GRAPH_GRAPHICS_PROPS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 188
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 120
+    END
+
+    IDD_GRAPH_CHANGE_TITLE, DIALOG
+    BEGIN
+        TOPMARGIN, 2
+        BOTTOMMARGIN, 31
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#endif //_WIN32
+#include "res\test_grafix.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"         // Standard components
+#include "afxprint.rc"       // printing/print preview resources
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

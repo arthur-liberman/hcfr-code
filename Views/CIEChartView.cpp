@@ -1,0 +1,1602 @@
+/////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2005-2008 Association Homecinema Francophone.  All rights reserved.
+/////////////////////////////////////////////////////////////////////////////
+//
+//  This file is subject to the terms of the GNU General Public License as
+//  published by the Free Software Foundation.  A copy of this license is
+//  included with this software distribution in the file COPYING.htm. If you
+//  do not have a copy, you may obtain a copy by writing to the Free
+//  Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+//
+//  This software is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details
+/////////////////////////////////////////////////////////////////////////////
+//  Author(s):
+//	François-Xavier CHABOUD
+//	Georges GALLERAND
+/////////////////////////////////////////////////////////////////////////////
+
+// CIEChartView.cpp : implementation file
+//
+
+#include "stdafx.h"
+#include "ColorHCFR.h"
+#include "MainFrm.h"
+#include "DataSetDoc.h"
+#include "DocTempl.h"
+#include "CIEChartView.h"
+#include <math.h>
+#include "ximage.h"
+#include "savegraphdialog.h"
+#include "graphcontrol.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+extern void DrawCIEChart(CDC* pDC,int aWidth, int aHeight, BOOL doFullChart, BOOL doShowBlack, BOOL bCIEuv);
+extern void DrawDeltaECurve(CDC* pDC, int cxMax, int cyMax, double DeltaE, BOOL bCIEuv );
+
+#define FX_MINSIZETOSHOW_SCALEDETAILS 300
+#define FX_MINSIZETOSHOW_TRIANGLEDETAILS 200
+#define FX_MINSIZETOSHOW_REFDETAILS 300
+
+/////////////////////////////////////////////////////////////////////////////
+// CCIEGraphPoint
+
+CCIEGraphPoint::CCIEGraphPoint(double aX, double aY, double aL, CString aName, BOOL bConvertCIEuv)
+{ 
+	bCIEuv = bConvertCIEuv;
+	if ( bCIEuv )
+	{
+		x = ( 4.0 * aX ) / ( (-2.0 * aX ) + ( 12.0 * aY ) + 3.0 );
+		y = ( 9.0 * aY ) / ( (-2.0 * aX ) + ( 12.0 * aY ) + 3.0 );
+	}
+	else
+	{
+		x = aX; 
+		y = aY; 
+	}
+	
+	L = aL;
+	name=aName; 
+}
+
+int CCIEGraphPoint::GetGraphX(CRect rect) 
+{
+	return (int)(x*(double)rect.Width()/(bCIEuv?0.7:0.8));	// graph is from 0 to 0.8 in width
+}
+
+int CCIEGraphPoint::GetGraphY(CRect rect) 
+{
+	return (int)((double)rect.bottom-y*(double)rect.Height()/(bCIEuv?0.7:0.9));	// graph is from 0 to 0.9 in height
+}
+
+CPoint CCIEGraphPoint::GetGraphPoint(CRect rect)
+{
+	return CPoint(GetGraphX(rect),GetGraphY(rect));
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CCIEChartGrapher
+
+CCIEChartGrapher::CCIEChartGrapher()
+{
+	m_refRedPrimaryBitmap.LoadBitmap(IDB_REFREDPRIMARY_BITMAP);
+	m_refGreenPrimaryBitmap.LoadBitmap(IDB_REFGREENPRIMARY_BITMAP);
+	m_refBluePrimaryBitmap.LoadBitmap(IDB_REFBLUEPRIMARY_BITMAP);
+	m_refYellowSecondaryBitmap.LoadBitmap(IDB_REFYELLOWSECONDARY_BITMAP);
+	m_refCyanSecondaryBitmap.LoadBitmap(IDB_REFCYANSECONDARY_BITMAP);
+	m_refMagentaSecondaryBitmap.LoadBitmap(IDB_REFMAGENTASECONDARY_BITMAP);
+	m_illuminantPointBitmap.LoadBitmap(IDB_ILLUMINANTPOINT_BITMAP);
+	m_colorTempPointBitmap.LoadBitmap(IDB_COLORTEMPPOINT_BITMAP);
+	m_redPrimaryBitmap.LoadBitmap(IDB_REDPRIMARY_BITMAP);
+	m_greenPrimaryBitmap.LoadBitmap(IDB_GREENPRIMARY_BITMAP);
+	m_bluePrimaryBitmap.LoadBitmap(IDB_BLUEPRIMARY_BITMAP);
+	m_yellowSecondaryBitmap.LoadBitmap(IDB_YELLOWSECONDARY_BITMAP);
+	m_cyanSecondaryBitmap.LoadBitmap(IDB_CYANSECONDARY_BITMAP);
+	m_magentaSecondaryBitmap.LoadBitmap(IDB_MAGENTASECONDARY_BITMAP);
+	m_grayPlotBitmap.LoadBitmap(IDB_GRAYPLOT_BITMAP);
+	m_measurePlotBitmap.LoadBitmap(IDB_MEASUREPLOT_BITMAP);
+	m_selectedPlotBitmap.LoadBitmap(IDB_SELECTEDLOT_BITMAP);
+
+	m_datarefRedBitmap.LoadBitmap(IDB_REFCROSS_RED);
+	m_datarefGreenBitmap.LoadBitmap(IDB_REFCROSS_GREEN);
+	m_datarefBlueBitmap.LoadBitmap(IDB_REFCROSS_BLUE);
+	m_datarefYellowBitmap.LoadBitmap(IDB_REFCROSS_YELLOW);
+	m_datarefCyanBitmap.LoadBitmap(IDB_REFCROSS_CYAN);
+	m_datarefMagentaBitmap.LoadBitmap(IDB_REFCROSS_MAGENTA);
+
+	m_doDisplayBackground=GetConfig()->GetProfileInt("CIE Chart","Display Background",TRUE);
+	m_doDisplayDeltaERef=GetConfig()->GetProfileInt("CIE Chart","Display Delta E",FALSE);
+	m_doShowReferences=GetConfig()->GetProfileInt("CIE Chart","Show References",TRUE);
+	m_doShowDataRef=GetConfig()->GetProfileInt("CIE Chart","Show Reference Data",TRUE);
+	m_doShowGrayScale=GetConfig()->GetProfileInt("CIE Chart","Display GrayScale",TRUE);
+	m_doShowSaturationScale=GetConfig()->GetProfileInt("CIE Chart","Display Saturation Scale",TRUE);
+	m_doShowMeasurements=GetConfig()->GetProfileInt("CIE Chart","Show Measurements",TRUE);
+	m_bCIEuv=GetConfig()->GetProfileInt("CIE Chart","CIE uv mode",FALSE);
+
+	m_ZoomFactor = 1000;
+	m_DeltaX = 0;
+	m_DeltaY = 0;
+}
+
+void CCIEChartGrapher::MakeBgBitmap(CRect rect, BOOL bWhiteBkgnd)	// Create background bitmap
+{
+    int		i;
+	CDC		ScreenDC;
+	
+	ScreenDC.CreateDC ( "DISPLAY", NULL, NULL, NULL );
+
+    CDC bgDC;
+    bgDC.CreateCompatibleDC(&ScreenDC);
+
+
+    if(m_drawBitmap.m_hObject)
+        m_drawBitmap.DeleteObject();
+    m_drawBitmap.CreateCompatibleBitmap(&ScreenDC,rect.Width(),rect.Height());
+
+    if(m_bgBitmap.m_hObject)
+        m_bgBitmap.DeleteObject();
+    m_bgBitmap.CreateCompatibleBitmap(&ScreenDC,rect.Width(),rect.Height());
+
+    if(m_gamutBitmap.m_hObject)
+        m_gamutBitmap.DeleteObject();
+	if(m_doDisplayBackground)
+	    m_gamutBitmap.CreateCompatibleBitmap(&ScreenDC,rect.Width(),rect.Height());
+
+	BITMAP bm;
+	GetColorApp() -> m_chartBitmap.GetBitmap(&bm);
+
+    CBitmap *pOldBitmap=bgDC.SelectObject(&m_bgBitmap);
+	int oldMode=bgDC.GetStretchBltMode();
+
+	CDC memDC;
+	memDC.CreateCompatibleDC( &ScreenDC );
+
+	ScreenDC.DeleteDC ();
+	
+	if(m_doDisplayBackground)
+	{
+		// Manual draw of CIE chart: very slow and ugly...
+//		DrawCIEChart(&bgDC,rect.Width(),rect.Height(),FALSE,TRUE, FALSE);	
+
+		// Use correctly stretched bitmap instead 
+		CBitmap* pOld;
+		
+		if ( bWhiteBkgnd )
+		{
+			if ( m_bCIEuv )
+				pOld = memDC.SelectObject( & GetColorApp() -> m_chartBitmap_uv_white );
+			else
+				pOld = memDC.SelectObject( & GetColorApp() -> m_chartBitmap_white );
+		}
+		else
+		{
+			if ( m_bCIEuv )
+				pOld = memDC.SelectObject( & GetColorApp() -> m_chartBitmap_uv );
+			else
+				pOld = memDC.SelectObject( & GetColorApp() -> m_chartBitmap );
+		}
+		
+		bgDC.SetStretchBltMode(HALFTONE);
+		SetBrushOrgEx(bgDC, 0,0, NULL);
+		bgDC.StretchBlt(0,0,rect.right,rect.bottom,&memDC,0,0,bm.bmWidth,bm.bmHeight,SRCCOPY);
+	    memDC.SelectObject(pOld);
+	}
+	else
+		bgDC.FillSolidRect(rect,bWhiteBkgnd?RGB(255,255,255):RGB(0,0,0));
+
+	if ( m_doDisplayDeltaERef )
+	{
+		DrawDeltaECurve(&bgDC, rect.Width(),rect.Height(), 3.0, m_bCIEuv );
+		DrawDeltaECurve(&bgDC, rect.Width(),rect.Height(), 10.0, m_bCIEuv );
+	}
+
+	// Draw axis
+    CPen axisPen(PS_SOLID,1,RGB(64,64,64));
+    CPen *pOldPen = bgDC.SelectObject(&axisPen); 
+
+	bgDC.SetTextAlign(TA_BOTTOM);
+	bgDC.SetTextColor(bWhiteBkgnd?RGB(0,0,0):RGB(255,255,255));
+	bgDC.SetBkMode(TRANSPARENT);
+
+	// Initializes a CFont object with the specified characteristics. 
+	CFont font;
+	font.CreatePointFont(min(120,(100*rect.Width()/bm.bmWidth)),"Default",NULL);
+
+	CFont* pOldFont = bgDC.SelectObject(&font);
+
+	for(i=0;i<(m_bCIEuv?7:8);i++)	// Draw X axis
+	{
+		int x=rect.Width()*i/(m_bCIEuv?7.0:8.0);
+		CString str;
+
+		str.Format("%.1f",i/10.0);
+		bgDC.MoveTo(x,0);
+		bgDC.LineTo(x,rect.bottom);
+		if(i && min(rect.Width(),rect.Height()) > FX_MINSIZETOSHOW_REFDETAILS )
+			bgDC.TextOut(x+2,rect.bottom,str); // Draw axis label
+	}
+
+	for(i=0;i<(m_bCIEuv?7:9);i++) 	// Draw Y axis
+	{
+		int y=rect.Height()*i/(m_bCIEuv?7.0:9.0);
+		CString str;
+
+		str.Format("%.1f",(m_bCIEuv?0.7:0.9)-i/10.0);
+		bgDC.MoveTo(0,y);
+		bgDC.LineTo(rect.right,y);
+		if(i && min(rect.Width(),rect.Height()) > FX_MINSIZETOSHOW_REFDETAILS)
+			bgDC.TextOut(2,y,str);
+	}
+
+	bgDC.SelectObject(pOldPen);
+	bgDC.SelectObject(pOldFont);
+
+	CGraphControl::DrawFiligree ( &bgDC, rect, bWhiteBkgnd?RGB(192,192,192):RGB(64,64,64) );
+	
+	// Create stretched bitmap for gamut hilighting
+
+	if(m_doDisplayBackground)
+	{
+		bgDC.SelectObject(&m_gamutBitmap);
+		GetColorApp() -> m_lightenChartBitmap.GetBitmap(&bm);
+		CBitmap* pOld = memDC.SelectObject(m_bCIEuv ? & GetColorApp() -> m_lightenChartBitmap_uv : & GetColorApp() -> m_lightenChartBitmap);
+		bgDC.SetStretchBltMode(HALFTONE);
+		SetBrushOrgEx(bgDC, 0,0, NULL);
+
+		// Manual draw of CIE chart: very slow and ugly...
+//		DrawCIEChart(&bgDC,rect.Width(),rect.Height(),TRUE,FALSE, FALSE);	
+
+		// Use correctly stretched bitmap instead 
+		bgDC.StretchBlt(0,0,rect.right,rect.bottom,&memDC,0,0,bm.bmWidth,bm.bmHeight,SRCCOPY);
+
+		memDC.SelectObject(pOld);
+
+		if ( m_doDisplayDeltaERef )
+		{
+			DrawDeltaECurve(&bgDC, rect.Width(),rect.Height(), 3.0, m_bCIEuv );
+			DrawDeltaECurve(&bgDC, rect.Width(),rect.Height(), 10.0, m_bCIEuv );
+		}
+	}
+
+	bgDC.SetStretchBltMode(oldMode); 
+	bgDC.SelectObject(pOldBitmap);
+}
+
+void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, CCIEGraphPoint aGraphPoint, CBitmap *pBitmap, CRect rect, CPPToolTip * pTooltip, CWnd * pWnd, CCIEGraphPoint * pRefPoint)
+{
+	ASSERT(pBitmap);
+	ASSERT(pDC);
+
+	BITMAP bm;
+	pBitmap->GetBitmap(&bm);
+
+	// Add tootip if name is defined
+	if(!aGraphPoint.name.IsEmpty())
+	{
+		CString str, str2, str3;
+		int x=aGraphPoint.GetGraphX(rect)+m_DeltaX;
+		int y=aGraphPoint.GetGraphY(rect)+m_DeltaY;
+		// Note: remove 5 pixels for transparency area of bitmap
+		CRect rect_tip(x-bm.bmWidth/2+5,y-bm.bmHeight/2+5,x+bm.bmWidth/2-5,y+bm.bmHeight/2-5);
+		if ( m_bCIEuv )
+			str.Format("u': %.3f, v': %.3f",aGraphPoint.x,aGraphPoint.y);
+		else
+			str.Format("x: %.3f, y: %.3f",aGraphPoint.x,aGraphPoint.y);
+		
+		if ( pRefPoint )
+		{
+			// Compute Delta E between 
+			double u, v, uRef, vRef;
+			double x, y, xRef, yRef;
+			
+			if ( m_bCIEuv )
+			{
+				u = aGraphPoint.x;
+				v = aGraphPoint.y;
+				uRef = pRefPoint -> x;
+				vRef = pRefPoint -> y;
+
+				x = ( 9.0 * u ) / ( ( 6.0 * u ) - ( 16.0 * v ) + 12.0 );
+				y = ( 4.0 * v ) / ( ( 6.0 * u ) - ( 16.0 * v ) + 12.0 );
+				xRef = ( 9.0 * uRef ) / ( ( 6.0 * uRef ) - ( 16.0 * vRef ) + 12.0 );
+				yRef = ( 4.0 * vRef ) / ( ( 6.0 * uRef ) - ( 16.0 * vRef ) + 12.0 );
+			}
+			else
+			{
+				x = aGraphPoint.x;
+				y = aGraphPoint.y;
+				xRef = pRefPoint -> x;
+				yRef = pRefPoint -> y;
+
+				u = 4.0*x / (-2.0*x + 12.0*y + 3.0); 
+				v = 9.0*y / (-2.0*x + 12.0*y + 3.0); 
+				uRef = 4.0*xRef / (-2.0*xRef + 12.0*yRef + 3.0); 
+				vRef = 9.0*yRef / (-2.0*xRef + 12.0*yRef + 3.0); 
+			}
+			
+			double dE;
+			
+			if ( GetConfig()->m_bUseOldDeltaEFormula )
+			{
+				dE = 1300.0 * sqrt ( pow((u - uRef),2) + pow((v - vRef),2) );
+			}
+			else
+			{
+				double u_white = GetColorReference().GetWhite_uValue();
+				double v_white = GetColorReference().GetWhite_vValue();
+				double L = aGraphPoint.L;
+				double LRef = pRefPoint -> L;
+
+				double uu = 13.0 * L * ( u - u_white );
+				double vv = 13.0 * L * ( v - v_white );
+				double uuRef = 13.0 * LRef * ( uRef - u_white );
+				double vvRef = 13.0 * LRef * ( vRef - v_white );
+
+				dE = sqrt ( pow ((L - LRef),2) + pow((uu - uuRef),2) + pow((vv - vvRef),2) );
+			}
+			
+			double dXY = sqrt ( pow((x - xRef),2) + pow((y - yRef),2) );
+			str2.Format ( ", Delta E: %.1f\n",dE );
+			str3.LoadString (IDS_DISTANCEINCIEXY);
+			str2 += str3;
+			str3.Format ( ": %.3f xy", dXY );
+			str2 += str3;
+		}
+		
+		if ( pTooltip )
+			pTooltip -> AddTool(pWnd, "<b>"+CString(aGraphPoint.name) +"</b> \n" +str+str2,&rect_tip);
+	}
+
+	CDC memDC;
+	memDC.CreateCompatibleDC( pDC );
+
+	CBitmap* pOld = memDC.SelectObject(pBitmap);
+	BLENDFUNCTION bf;
+	bf.BlendOp=AC_SRC_OVER;
+	bf.BlendFlags=0;
+	bf.AlphaFormat=0x01;  // AC_SRC_ALPHA=0x01
+	bf.SourceConstantAlpha=255;
+	AlphaBlend(*pDC,aGraphPoint.GetGraphX(rect)-bm.bmWidth/2,aGraphPoint.GetGraphY(rect)-bm.bmHeight/2,bm.bmWidth,bm.bmHeight,memDC,0,0,bm.bmWidth,bm.bmHeight,bf);
+
+	memDC.SelectObject(pOld);
+}
+
+void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPToolTip * pTooltip, CWnd * pWnd) 
+{
+	CColorHCFRApp *	pApp = GetColorApp();
+	CString			Msg, Msg2, Msg3;
+	CDataSetDoc *	pDataRef = GetDataRef();
+
+	if ( pDataRef == pDoc || ! m_doShowDataRef )
+		pDataRef = NULL;
+
+	// Wait for background thread terminating background bitmaps creation
+	if ( WAIT_TIMEOUT == WaitForSingleObject ( pApp -> m_hCIEEvent, 0 ) )
+	{
+		CWaitCursor wait;
+		if ( pApp -> m_hCIEThread )
+		{
+			// Increase background thread priority
+			::SetThreadPriority ( pApp -> m_hCIEThread, THREAD_PRIORITY_NORMAL );
+		}
+		
+		WaitForSingleObject ( pApp -> m_hCIEEvent, INFINITE );
+	}
+
+	if ( pTooltip )
+		pTooltip -> RemoveAllTools();
+
+	// Default is SDTV / NTSC
+	Msg.LoadString ( IDS_NTSCREDREF );
+	Msg2.LoadString ( IDS_NTSCGREENREF );
+	Msg3.LoadString ( IDS_NTSCBLUEREF );
+
+	if(GetConfig()->m_colorStandard == PALSECAM)
+	{
+		Msg.LoadString ( IDS_PALREDREF );
+		Msg2.LoadString ( IDS_PALGREENREF );
+		Msg3.LoadString ( IDS_PALBLUEREF );
+	}
+
+	if(GetConfig()->m_colorStandard == HDTV || GetConfig()->m_colorStandard == sRGB)
+	{
+		Msg.LoadString ( IDS_REC709REDREF );
+		Msg2.LoadString ( IDS_REC709GREENREF );
+		Msg3.LoadString ( IDS_REC709BLUEREF );
+	}
+
+	CColor RedClr = GetColorReference().GetRed ().GetxyYValue();
+	CColor GreenClr = GetColorReference().GetGreen ().GetxyYValue();
+	CColor BlueClr = GetColorReference().GetBlue ().GetxyYValue();
+	CColor YellowClr = GetColorReference().GetYellow ().GetxyYValue();
+	CColor CyanClr = GetColorReference().GetCyan ().GetxyYValue();
+	CColor MagentaClr = GetColorReference().GetMagenta ().GetxyYValue();
+	CColor WhiteClr = GetColorReference().GetWhite ().GetxyYValue();
+
+	CCIEGraphPoint refRedPrimaryPoint(RedClr[0], RedClr[1], GetColorReference().GetRed().GetLValue (1.0), Msg, m_bCIEuv);
+	CCIEGraphPoint refGreenPrimaryPoint(GreenClr[0], GreenClr[1], GetColorReference().GetGreen().GetLValue (1.0), Msg2, m_bCIEuv);
+	CCIEGraphPoint refBluePrimaryPoint(BlueClr[0], BlueClr[1], GetColorReference().GetBlue().GetLValue (1.0), Msg3, m_bCIEuv);
+
+	CCIEGraphPoint whiteRef(WhiteClr[0],WhiteClr[1],100.0,"", m_bCIEuv);
+
+	Msg.LoadString ( IDS_YELLOWSECONDARYREF );
+	CCIEGraphPoint refYellowSecondaryPoint(YellowClr[0], YellowClr[1], GetColorReference().GetYellow().GetLValue (1.0), Msg, m_bCIEuv);
+
+	Msg.LoadString ( IDS_CYANSECONDARYREF );
+	CCIEGraphPoint refCyanSecondaryPoint(CyanClr[0], CyanClr[1], GetColorReference().GetCyan().GetLValue (1.0), Msg, m_bCIEuv);
+
+	Msg.LoadString ( IDS_MAGENTASECONDARYREF );
+	CCIEGraphPoint refMagentaSecondaryPoint(MagentaClr[0], MagentaClr[1], GetColorReference().GetMagenta().GetLValue (1.0), Msg, m_bCIEuv);
+
+	CCIEGraphPoint illuminantA(0.4476,0.4074,100.0,"Illuminant A", m_bCIEuv);
+	CCIEGraphPoint illuminantB(0.3484,0.3516,100.0,"Illuminant B", m_bCIEuv);
+	CCIEGraphPoint illuminantC(0.3101,0.3162,100.0,"Illuminant C", m_bCIEuv);
+	CCIEGraphPoint illuminantD65(0.3127,0.3291,100.0,"Illuminant D65", m_bCIEuv);
+
+	Msg.LoadString ( IDS_TEMPERATURE );
+	CCIEGraphPoint colorTempPoint2700(0.4614,0.4158,100.0,Msg+" 2700", m_bCIEuv);   
+	CCIEGraphPoint colorTempPoint3000(0.4388,0.4095,100.0,Msg+" 3000", m_bCIEuv);	  
+//	CCIEGraphPoint colorTempPoint3500(0.4075,0.3962,100.0,Msg+" 3500", m_bCIEuv);   
+	CCIEGraphPoint colorTempPoint4000(0.3827,0.3820,100.0,Msg+" 4000", m_bCIEuv);  
+	CCIEGraphPoint colorTempPoint5500(0.3346,0.3451,100.0,Msg+" 5500", m_bCIEuv);   
+	CCIEGraphPoint colorTempPoint9300(0.2866,0.2950,100.0,Msg+" 9300", m_bCIEuv);   
+
+	CColor redPrimaryColor=pDoc->GetMeasure()->GetRedPrimary().GetxyYValue();
+	CColor greenPrimaryColor=pDoc->GetMeasure()->GetGreenPrimary().GetxyYValue();
+	CColor bluePrimaryColor=pDoc->GetMeasure()->GetBluePrimary().GetxyYValue();
+
+	BOOL hasPrimaries= redPrimaryColor != noDataColor && greenPrimaryColor != noDataColor &&
+					   bluePrimaryColor != noDataColor;
+
+	// Take sum of primary colors Y by default, in case of no white measure found
+	double YWhite = redPrimaryColor[2]+greenPrimaryColor[2]+bluePrimaryColor[2];
+	
+	if ( pDoc -> GetMeasure () -> GetOnOffWhite () != noDataColor )
+		YWhite = pDoc -> GetMeasure () -> GetOnOffWhite () [ 1 ];
+	else 
+	{
+		int i = pDoc -> GetMeasure () -> GetGrayScaleSize ();
+		if ( pDoc -> GetMeasure () -> GetGray ( i - 1 ) != noDataColor )
+			YWhite = pDoc -> GetMeasure () -> GetGray ( i - 1 ) [ 1 ];
+	}
+
+	Msg.LoadString ( IDS_REDPRIMARY );
+	CCIEGraphPoint redPrimaryPoint(redPrimaryColor.GetX(),redPrimaryColor.GetY(),pDoc->GetMeasure()->GetRedPrimary().GetLValue(YWhite), Msg, m_bCIEuv);
+	Msg.LoadString ( IDS_GREENPRIMARY );
+	CCIEGraphPoint greenPrimaryPoint(greenPrimaryColor.GetX(),greenPrimaryColor.GetY(),pDoc->GetMeasure()->GetGreenPrimary().GetLValue(YWhite), Msg, m_bCIEuv);
+	Msg.LoadString ( IDS_BLUEPRIMARY );
+	CCIEGraphPoint bluePrimaryPoint(bluePrimaryColor.GetX(),bluePrimaryColor.GetY(),pDoc->GetMeasure()->GetBluePrimary().GetLValue(YWhite), Msg, m_bCIEuv);
+
+	CColor yellowSecondaryColor=pDoc->GetMeasure()->GetYellowSecondary().GetxyYValue();
+	CColor cyanSecondaryColor=pDoc->GetMeasure()->GetCyanSecondary().GetxyYValue();
+	CColor magentaSecondaryColor=pDoc->GetMeasure()->GetMagentaSecondary().GetxyYValue();
+
+	BOOL hasSecondaries= yellowSecondaryColor != noDataColor && cyanSecondaryColor != noDataColor &&
+					   magentaSecondaryColor != noDataColor;
+
+	Msg.LoadString ( IDS_YELLOWSECONDARY );
+	CCIEGraphPoint yellowSecondaryPoint(yellowSecondaryColor.GetX(),yellowSecondaryColor.GetY(),pDoc->GetMeasure()->GetYellowSecondary().GetLValue(YWhite), Msg, m_bCIEuv);
+	Msg.LoadString ( IDS_CYANSECONDARY );
+	CCIEGraphPoint cyanSecondaryPoint(cyanSecondaryColor.GetX(),cyanSecondaryColor.GetY(),pDoc->GetMeasure()->GetCyanSecondary().GetLValue(YWhite), Msg, m_bCIEuv);
+	Msg.LoadString ( IDS_MAGENTASECONDARY );
+	CCIEGraphPoint magentaSecondaryPoint(magentaSecondaryColor.GetX(),magentaSecondaryColor.GetY(),pDoc->GetMeasure()->GetMagentaSecondary().GetLValue(YWhite), Msg, m_bCIEuv);
+
+	CColor datarefRed = noDataColor;
+	CColor datarefGreen = noDataColor;
+	CColor datarefBlue = noDataColor;
+	CColor datarefYellow = noDataColor;
+	CColor datarefCyan = noDataColor;
+	CColor datarefMagenta = noDataColor;
+	
+	BOOL hasdatarefPrimaries = FALSE;
+	BOOL hasdatarefSecondaries = FALSE;
+
+	double YWhiteRef;
+
+	double datarefRed_L = 100.0;
+	double datarefGreen_L = 100.0;
+	double datarefBlue_L = 100.0;
+	double datarefYellow_L = 100.0;
+	double datarefCyan_L = 100.0;
+	double datarefMagenta_L = 100.0;
+
+	if ( pDataRef )
+	{
+		datarefRed=pDataRef->GetMeasure()->GetRedPrimary().GetxyYValue();
+		datarefGreen=pDataRef->GetMeasure()->GetGreenPrimary().GetxyYValue();
+		datarefBlue=pDataRef->GetMeasure()->GetBluePrimary().GetxyYValue();
+		datarefYellow=pDataRef->GetMeasure()->GetYellowSecondary().GetxyYValue();
+		datarefCyan=pDataRef->GetMeasure()->GetCyanSecondary().GetxyYValue();
+		datarefMagenta=pDataRef->GetMeasure()->GetMagentaSecondary().GetxyYValue();
+
+		hasdatarefPrimaries = datarefRed != noDataColor && datarefGreen != noDataColor && datarefBlue != noDataColor;
+		hasdatarefSecondaries = datarefYellow != noDataColor && datarefCyan != noDataColor && datarefMagenta != noDataColor;
+
+		YWhiteRef = datarefRed[2]+datarefGreen[2]+datarefBlue[2];
+		
+		if ( pDataRef -> GetMeasure () -> GetOnOffWhite () != noDataColor )
+			YWhiteRef = pDataRef -> GetMeasure () -> GetOnOffWhite () [ 1 ];
+		else 
+		{
+			int i = pDataRef -> GetMeasure () -> GetGrayScaleSize ();
+			if ( pDataRef -> GetMeasure () -> GetGray ( i - 1 ) != noDataColor )
+				YWhiteRef = pDataRef -> GetMeasure () -> GetGray ( i - 1 ) [ 1 ];
+		}
+		
+		datarefRed_L = pDataRef->GetMeasure()->GetRedPrimary().GetLValue(YWhiteRef);
+		datarefGreen_L = pDataRef->GetMeasure()->GetGreenPrimary().GetLValue(YWhiteRef);
+		datarefBlue_L = pDataRef->GetMeasure()->GetBluePrimary().GetLValue(YWhiteRef);
+		datarefYellow_L = pDataRef->GetMeasure()->GetYellowSecondary().GetLValue(YWhiteRef);
+		datarefCyan_L = pDataRef->GetMeasure()->GetCyanSecondary().GetLValue(YWhiteRef);
+		datarefMagenta_L = pDataRef->GetMeasure()->GetMagentaSecondary().GetLValue(YWhiteRef);
+	}
+	
+	Msg.LoadString ( IDS_DATAREF_RED );
+	CCIEGraphPoint datarefRedPoint(datarefRed.GetX(),datarefRed.GetY(),datarefRed_L,Msg, m_bCIEuv);
+	Msg.LoadString ( IDS_DATAREF_GREEN );
+	CCIEGraphPoint datarefGreenPoint(datarefGreen.GetX(),datarefGreen.GetY(),datarefGreen_L,Msg, m_bCIEuv);
+	Msg.LoadString ( IDS_DATAREF_BLUE );
+	CCIEGraphPoint datarefBluePoint(datarefBlue.GetX(),datarefBlue.GetY(),datarefBlue_L,Msg, m_bCIEuv);
+
+	Msg.LoadString ( IDS_DATAREF_YELLOW );
+	CCIEGraphPoint datarefYellowPoint(datarefYellow.GetX(),datarefYellow.GetY(),datarefYellow_L,Msg, m_bCIEuv);
+	Msg.LoadString ( IDS_DATAREF_CYAN );
+	CCIEGraphPoint datarefCyanPoint(datarefCyan.GetX(),datarefCyan.GetY(),datarefCyan_L,Msg, m_bCIEuv);
+	Msg.LoadString ( IDS_DATAREF_MAGENTA );
+	CCIEGraphPoint datarefMagentaPoint(datarefMagenta.GetX(),datarefMagenta.GetY(),datarefMagenta_L,Msg, m_bCIEuv);
+
+
+	// Draw background bitmap
+	CDC dcBg;
+	dcBg.CreateCompatibleDC(pDC);
+	CBitmap *pOldBitmap=dcBg.SelectObject(&m_bgBitmap);
+	pDC->BitBlt(0,0,rect.Width(),rect.Height(),&dcBg,0,0,SRCCOPY);
+	dcBg.SelectObject(pOldBitmap);
+
+	// Fill triangle with ligthen chart
+	if(m_doDisplayBackground && hasPrimaries)
+	{
+		CBrush gamutBrush;
+		gamutBrush.CreatePatternBrush(&m_gamutBitmap);
+		CBrush *pOldBrush=pDC->SelectObject(&gamutBrush);
+		CPoint ptVertex[]={ redPrimaryPoint.GetGraphPoint(rect),
+							greenPrimaryPoint.GetGraphPoint(rect),
+							bluePrimaryPoint.GetGraphPoint(rect) };
+		CRgn triangleRgn;
+		triangleRgn.CreatePolygonRgn(ptVertex,3,WINDING);
+		pDC->PaintRgn(&triangleRgn);
+		pDC->SelectObject(pOldBrush);
+	}
+
+	int penWidth=(min(rect.Width(),rect.Height()) > FX_MINSIZETOSHOW_TRIANGLEDETAILS) ? 3: 2;
+
+ 	// Draw reference gamut triangle
+    CPen refPrimariesPen(PS_SOLID,penWidth,RGB(128,128,128));
+    CPen *pOldPen = pDC->SelectObject(&refPrimariesPen); 
+
+	pDC->SetBkMode(TRANSPARENT);
+	if(m_doDisplayBackground)
+		pDC->SetROP2(R2_MASKPEN);
+	else
+		pDC->SetROP2(R2_COPYPEN);
+
+	pDC->MoveTo(refRedPrimaryPoint.GetGraphPoint(rect));
+	pDC->LineTo(refGreenPrimaryPoint.GetGraphPoint(rect));
+	pDC->LineTo(refBluePrimaryPoint.GetGraphPoint(rect));
+	pDC->LineTo(refRedPrimaryPoint.GetGraphPoint(rect));
+
+	pDC->SelectObject(pOldPen);
+
+	pDC->SetBkMode(TRANSPARENT);
+	pDC->SetROP2(R2_COPYPEN);
+
+	if ( hasdatarefPrimaries )
+	{
+		CPen datarefPrimariesPen(PS_SOLID,penWidth-1,RGB(192,192,192));
+		pOldPen = pDC->SelectObject(&datarefPrimariesPen); 
+
+		pDC->MoveTo(datarefRedPoint.GetGraphPoint(rect));
+		pDC->LineTo(datarefGreenPoint.GetGraphPoint(rect));
+		pDC->LineTo(datarefBluePoint.GetGraphPoint(rect));
+		pDC->LineTo(datarefRedPoint.GetGraphPoint(rect));
+		
+		pDC->SelectObject(pOldPen);
+	}
+
+    CPen primariesPen(PS_SOLID,penWidth,RGB(255,255,255));
+    pOldPen = pDC->SelectObject(&primariesPen); 
+
+	// Draw gamut triangle
+	if(hasPrimaries)
+	{
+		pDC->MoveTo(redPrimaryPoint.GetGraphPoint(rect));
+		pDC->LineTo(greenPrimaryPoint.GetGraphPoint(rect));
+		pDC->LineTo(bluePrimaryPoint.GetGraphPoint(rect));
+		pDC->LineTo(redPrimaryPoint.GetGraphPoint(rect));
+	}
+	pDC->SelectObject(pOldPen);
+
+	// Draw white reference white dashed cross 
+	if(min(rect.Width(),rect.Height()) > FX_MINSIZETOSHOW_SCALEDETAILS )
+	{
+		CPen whiteCrossPen(PS_DOT,1,RGB(192,192,192));
+		pOldPen = pDC->SelectObject(&whiteCrossPen); 
+
+		pDC->MoveTo(5,whiteRef.GetGraphY(rect));
+		pDC->LineTo(rect.right-5,whiteRef.GetGraphY(rect));
+		pDC->MoveTo(whiteRef.GetGraphX(rect),5);
+		pDC->LineTo(whiteRef.GetGraphX(rect),rect.bottom-5);
+
+		pDC->SelectObject(pOldPen);
+	}
+
+	// Draw bitmaps on triangle vertex
+	if(min(rect.Width(),rect.Height()) > FX_MINSIZETOSHOW_TRIANGLEDETAILS)  // Enough room to draw details
+	{
+		DrawAlphaBitmap(pDC,refRedPrimaryPoint,&m_refRedPrimaryBitmap,rect,pTooltip,pWnd);
+		DrawAlphaBitmap(pDC,refGreenPrimaryPoint,&m_refGreenPrimaryBitmap,rect,pTooltip,pWnd);
+		DrawAlphaBitmap(pDC,refBluePrimaryPoint,&m_refBluePrimaryBitmap,rect,pTooltip,pWnd);
+		
+		DrawAlphaBitmap(pDC,refYellowSecondaryPoint,&m_refYellowSecondaryBitmap,rect,pTooltip,pWnd);
+		DrawAlphaBitmap(pDC,refCyanSecondaryPoint,&m_refCyanSecondaryBitmap,rect,pTooltip,pWnd);
+		DrawAlphaBitmap(pDC,refMagentaSecondaryPoint,&m_refMagentaSecondaryBitmap,rect,pTooltip,pWnd);
+
+		if(m_doDisplayBackground)
+			pDC->SetTextColor(RGB(0,0,0));
+		else
+			pDC->SetTextColor(RGB(255,255,255));
+		pDC->SetBkMode(TRANSPARENT);
+
+		if(m_doShowReferences)
+		{
+			BITMAP bm;
+			GetColorApp() -> m_chartBitmap.GetBitmap(&bm);
+			// Initializes a CFont object with the specified characteristics. 
+			CFont font;
+			font.CreatePointFont(min(120,(100*rect.Width()/bm.bmWidth)),"Arial",NULL);
+
+			CFont* pOldFont = pDC->SelectObject(&font);
+
+			// Draw ref illuminant points
+			pDC->SetTextAlign(TA_TOP|TA_LEFT);
+			DrawAlphaBitmap(pDC,illuminantA,&m_illuminantPointBitmap,rect,pTooltip,pWnd);
+			pDC->TextOut(illuminantA.GetGraphX(rect)-2,illuminantA.GetGraphY(rect)+4,"A");
+			DrawAlphaBitmap(pDC,illuminantB,&m_illuminantPointBitmap,rect,pTooltip,pWnd);
+			pDC->TextOut(illuminantB.GetGraphX(rect)+4,illuminantB.GetGraphY(rect)+4,"B");
+			DrawAlphaBitmap(pDC,illuminantC,&m_illuminantPointBitmap,rect,pTooltip,pWnd);
+			pDC->TextOut(illuminantC.GetGraphX(rect)+4,illuminantC.GetGraphY(rect)+4,"C");
+			DrawAlphaBitmap(pDC,illuminantD65,&m_illuminantPointBitmap,rect,pTooltip,pWnd);
+			pDC->SetTextAlign(TA_BOTTOM|TA_RIGHT);
+			pDC->TextOut(illuminantC.GetGraphX(rect)-4,illuminantC.GetGraphY(rect)-4,"D65");
+
+			// Draw color temp points
+			pDC->SetTextAlign(TA_BOTTOM|TA_RIGHT);
+			DrawAlphaBitmap(pDC,colorTempPoint9300,&m_colorTempPointBitmap,rect,pTooltip,pWnd);
+			pDC->TextOut(colorTempPoint9300.GetGraphX(rect)-2,colorTempPoint9300.GetGraphY(rect)-2,"9300");
+			pDC->SetTextAlign(TA_BOTTOM|TA_RIGHT);
+			DrawAlphaBitmap(pDC,colorTempPoint4000,&m_colorTempPointBitmap,rect,pTooltip,pWnd);
+			pDC->TextOut(colorTempPoint4000.GetGraphX(rect)-2,colorTempPoint4000.GetGraphY(rect)-2,"4000");
+			DrawAlphaBitmap(pDC,colorTempPoint5500,&m_colorTempPointBitmap,rect,pTooltip,pWnd);
+			pDC->TextOut(colorTempPoint5500.GetGraphX(rect)-2,colorTempPoint5500.GetGraphY(rect)-2,"5500");
+			DrawAlphaBitmap(pDC,colorTempPoint3000,&m_colorTempPointBitmap,rect,pTooltip,pWnd);
+			pDC->SetTextAlign(TA_BOTTOM|TA_RIGHT);
+			pDC->TextOut(colorTempPoint3000.GetGraphX(rect)+2,colorTempPoint3000.GetGraphY(rect)-2,"3000");
+			DrawAlphaBitmap(pDC,colorTempPoint2700,&m_colorTempPointBitmap,rect,pTooltip,pWnd);
+			pDC->SetTextAlign(TA_BOTTOM|TA_LEFT);
+			pDC->TextOut(colorTempPoint2700.GetGraphX(rect)-2,colorTempPoint2700.GetGraphY(rect)-2,"2700");
+
+			pDC->SelectObject(pOldFont);
+		}
+
+		if(hasPrimaries && hasSecondaries)
+		{
+			// Draw lines between primaries and secondaries
+			CPen secondariesPen(PS_DOT,1,RGB(64,64,64));
+			pOldPen = pDC->SelectObject(&secondariesPen); 
+
+			pDC->MoveTo(redPrimaryPoint.GetGraphPoint(rect));
+			pDC->LineTo(cyanSecondaryPoint.GetGraphPoint(rect));
+
+			pDC->MoveTo(greenPrimaryPoint.GetGraphPoint(rect));
+			pDC->LineTo(magentaSecondaryPoint.GetGraphPoint(rect));
+
+			pDC->MoveTo(bluePrimaryPoint.GetGraphPoint(rect));
+			pDC->LineTo(yellowSecondaryPoint.GetGraphPoint(rect));
+
+			pDC->SelectObject(pOldPen);
+		}
+		
+		if ( hasPrimaries )
+		{
+			DrawAlphaBitmap(pDC,redPrimaryPoint,&m_redPrimaryBitmap,rect,pTooltip,pWnd,&refRedPrimaryPoint);
+			DrawAlphaBitmap(pDC,greenPrimaryPoint,&m_greenPrimaryBitmap,rect,pTooltip,pWnd,&refGreenPrimaryPoint);
+			DrawAlphaBitmap(pDC,bluePrimaryPoint,&m_bluePrimaryBitmap,rect,pTooltip,pWnd,&refBluePrimaryPoint);
+		}
+		
+		if ( hasSecondaries )
+		{
+			DrawAlphaBitmap(pDC,yellowSecondaryPoint,&m_yellowSecondaryBitmap,rect,pTooltip,pWnd,&refYellowSecondaryPoint);
+			DrawAlphaBitmap(pDC,cyanSecondaryPoint,&m_cyanSecondaryBitmap,rect,pTooltip,pWnd,&refCyanSecondaryPoint);
+			DrawAlphaBitmap(pDC,magentaSecondaryPoint,&m_magentaSecondaryBitmap,rect,pTooltip,pWnd,&refMagentaSecondaryPoint);
+		}
+
+		if ( hasdatarefPrimaries )
+		{
+			DrawAlphaBitmap(pDC,datarefRedPoint,&m_datarefRedBitmap,rect,pTooltip,pWnd,&refRedPrimaryPoint);
+			DrawAlphaBitmap(pDC,datarefGreenPoint,&m_datarefGreenBitmap,rect,pTooltip,pWnd,&refGreenPrimaryPoint);
+			DrawAlphaBitmap(pDC,datarefBluePoint,&m_datarefBlueBitmap,rect,pTooltip,pWnd,&refBluePrimaryPoint);
+		}
+
+		if ( hasdatarefSecondaries )
+		{
+			DrawAlphaBitmap(pDC,datarefYellowPoint,&m_datarefYellowBitmap,rect,pTooltip,pWnd,&refYellowSecondaryPoint);
+			DrawAlphaBitmap(pDC,datarefCyanPoint,&m_datarefCyanBitmap,rect,pTooltip,pWnd,&refCyanSecondaryPoint);
+			DrawAlphaBitmap(pDC,datarefMagentaPoint,&m_datarefMagentaBitmap,rect,pTooltip,pWnd,&refMagentaSecondaryPoint);
+		}
+	}
+
+	if(m_doShowGrayScale)
+	{
+		BOOL bIRE = pDoc->GetMeasure()->m_bIREScaleMode;
+		int nSize = pDoc->GetMeasure()->GetGrayScaleSize();
+		
+		double YWhiteGray = YWhite;
+		if ( nSize > 0 )
+			YWhiteGray = pDoc -> GetMeasure () -> GetGray ( nSize - 1 ) [ 1 ];
+		
+		double YGray;
+		double L_Gray = 100;
+		
+		CCIEGraphPoint grayRef(WhiteClr[0],WhiteClr[1],100.0,"", m_bCIEuv);
+		
+		CColor GrayClr;
+		
+		double Gamma, Offset;
+		pDoc->ComputeGammaAndOffset(&Gamma, &Offset, 3, 1, nSize);
+
+		for(int i=0;i<nSize;i++)
+		{
+			CString str;
+			Msg.LoadString ( IDS_GRAYIRE );
+			str.Format(Msg,i*100/(pDoc->GetMeasure()->GetGrayScaleSize()-1));
+
+			if ( GetConfig () -> m_bUseDeltaELumaOnGrays )
+			{
+				// Compute reference Luma regarding actual offset and reference gamma
+				double x = ArrayIndexToGrayLevel ( i, nSize, bIRE );
+
+				double valx=(GrayLevelToGrayProp(x,bIRE)+Offset)/(1.0+Offset);
+				double valy=pow(valx, GetConfig()->m_GammaRef);
+				
+				YGray = YWhiteGray * valy;
+				
+				GrayClr.SetxyYValue(CColor(WhiteClr[0],WhiteClr[1],YGray));
+				grayRef.L = GrayClr.GetLValue(YWhiteGray);
+				L_Gray = pDoc->GetMeasure()->GetGray(i).GetLValue(YWhiteGray);
+			}
+			else
+			{
+				// Use actual gray luma as correct reference (Delta E will check color only, not brightness)
+				grayRef.L = 100;
+				L_Gray = 100;
+			}
+
+			CCIEGraphPoint grayPoint(pDoc->GetMeasure()->GetGray(i).GetxyYValue().GetX(),
+								  pDoc->GetMeasure()->GetGray(i).GetxyYValue().GetY(),
+								  L_Gray,
+								  str, m_bCIEuv);
+
+			DrawAlphaBitmap(pDC,grayPoint,&m_grayPlotBitmap,rect,pTooltip,pWnd,&grayRef);
+		}
+	}
+
+	if(m_doShowSaturationScale)
+	{
+		for(int i=0;i<pDoc->GetMeasure()->GetSaturationSize();i++)
+		{
+			CString str;
+
+			Msg.LoadString ( IDS_REDSATPERCENT );
+			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
+			CCIEGraphPoint RedPoint(pDoc->GetMeasure()->GetRedSat(i).GetxyYValue().GetX(),
+								  pDoc->GetMeasure()->GetRedSat(i).GetxyYValue().GetY(),
+								  pDoc->GetMeasure()->GetRedSat(i).GetLValue(YWhite),
+								  str, m_bCIEuv);
+			DrawAlphaBitmap(pDC,RedPoint,&m_redPrimaryBitmap,rect,pTooltip,pWnd);
+
+			Msg.LoadString ( IDS_GREENSATPERCENT );
+			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
+			CCIEGraphPoint GreenPoint(pDoc->GetMeasure()->GetGreenSat(i).GetxyYValue().GetX(),
+								  pDoc->GetMeasure()->GetGreenSat(i).GetxyYValue().GetY(),
+								  pDoc->GetMeasure()->GetGreenSat(i).GetLValue(YWhite),
+								  str, m_bCIEuv);
+			DrawAlphaBitmap(pDC,GreenPoint,&m_greenPrimaryBitmap,rect,pTooltip,pWnd);
+
+			Msg.LoadString ( IDS_BLUESATPERCENT );
+			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
+			CCIEGraphPoint BluePoint(pDoc->GetMeasure()->GetBlueSat(i).GetxyYValue().GetX(),
+								  pDoc->GetMeasure()->GetBlueSat(i).GetxyYValue().GetY(),
+								  pDoc->GetMeasure()->GetBlueSat(i).GetLValue(YWhite),
+								  str, m_bCIEuv);
+			DrawAlphaBitmap(pDC,BluePoint,&m_bluePrimaryBitmap,rect,pTooltip,pWnd);
+
+			Msg.LoadString ( IDS_YELLOWSATPERCENT );
+			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
+			CCIEGraphPoint YellowPoint(pDoc->GetMeasure()->GetYellowSat(i).GetxyYValue().GetX(),
+								  pDoc->GetMeasure()->GetYellowSat(i).GetxyYValue().GetY(),
+								  pDoc->GetMeasure()->GetYellowSat(i).GetLValue(YWhite),
+								  str, m_bCIEuv);
+			DrawAlphaBitmap(pDC,YellowPoint,&m_yellowSecondaryBitmap,rect,pTooltip,pWnd);
+
+			Msg.LoadString ( IDS_CYANSATPERCENT );
+			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
+			CCIEGraphPoint CyanPoint(pDoc->GetMeasure()->GetCyanSat(i).GetxyYValue().GetX(),
+								  pDoc->GetMeasure()->GetCyanSat(i).GetxyYValue().GetY(),
+								  pDoc->GetMeasure()->GetCyanSat(i).GetLValue(YWhite),
+								  str, m_bCIEuv);
+			DrawAlphaBitmap(pDC,CyanPoint,&m_cyanSecondaryBitmap,rect,pTooltip,pWnd);
+
+			Msg.LoadString ( IDS_MAGENTASATPERCENT );
+			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
+			CCIEGraphPoint MagentaPoint(pDoc->GetMeasure()->GetMagentaSat(i).GetxyYValue().GetX(),
+								  pDoc->GetMeasure()->GetMagentaSat(i).GetxyYValue().GetY(),
+								  pDoc->GetMeasure()->GetMagentaSat(i).GetLValue(YWhite),
+								  str, m_bCIEuv);
+			DrawAlphaBitmap(pDC,MagentaPoint,&m_magentaSecondaryBitmap,rect,pTooltip,pWnd);
+		}
+	}
+
+	if(m_doShowMeasurements)
+		for(int i=max(0,pDoc->GetMeasure()->GetMeasurementsSize()-20);i<pDoc->GetMeasure()->GetMeasurementsSize();i++)
+		{
+			CString str;
+			Msg.LoadString ( IDS_MEASURENUM );
+			str.Format(Msg,i);
+			CCIEGraphPoint measurePoint(pDoc->GetMeasure()->GetMeasurement(i).GetxyYValue().GetX(),
+								  pDoc->GetMeasure()->GetMeasurement(i).GetxyYValue().GetY(),
+								  100.0,
+								  str, m_bCIEuv);
+			DrawAlphaBitmap(pDC,measurePoint,&m_measurePlotBitmap,rect,pTooltip,pWnd);
+		}
+
+	if ( pDoc->m_SelectedColor != noDataColor)
+	{
+		Msg.LoadString ( IDS_SELECTION );
+		CCIEGraphPoint measurePoint(pDoc->m_SelectedColor.GetxyYValue().GetX(),
+								 pDoc->m_SelectedColor.GetxyYValue().GetY(),
+								 100.0,
+								 Msg, m_bCIEuv);
+		DrawAlphaBitmap(pDC,measurePoint,&m_selectedPlotBitmap,rect,pTooltip,pWnd);
+	}
+}
+
+void CCIEChartGrapher::SaveGraphFile ( CDataSetDoc * pDoc, CSize ImageSize, LPCSTR lpszPathName, int ImageFormat, int ImageQuality )
+{
+	int				format;
+
+	switch ( ImageFormat )
+	{
+		case 0: format = CXIMAGE_FORMAT_JPG; break;
+		case 1: format = CXIMAGE_FORMAT_BMP; break;
+		case 2: format = CXIMAGE_FORMAT_PNG; break;
+		default: format = CXIMAGE_FORMAT_JPG; break;
+	}
+
+    CRect rect(0,0,ImageSize.cx,ImageSize.cy);
+
+	CDC ScreenDC;
+	ScreenDC.CreateDC ( "DISPLAY", NULL, NULL, NULL );
+
+	CDC dc2;
+    dc2.CreateCompatibleDC(&ScreenDC);
+
+	CBitmap bitmap; 
+    bitmap.CreateCompatibleBitmap(&ScreenDC,rect.Width(),rect.Height());
+
+	ScreenDC.DeleteDC ();
+
+    CBitmap *pOldBitmap=dc2.SelectObject(&bitmap);
+
+	MakeBgBitmap(rect,GetConfig()->m_bWhiteBkgndOnFile);
+	DrawChart ( pDoc, & dc2, rect, NULL, NULL );
+	dc2.SelectObject(pOldBitmap);
+
+	CxImage *pImage = new CxImage();
+	pImage->CreateFromHBITMAP(bitmap);
+
+	if (pImage->IsValid())
+	{
+		pImage->SetJpegQuality(ImageQuality);
+		pImage->Save(lpszPathName,format);
+	}
+
+	delete pImage;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CCIEChartView
+
+IMPLEMENT_DYNCREATE(CCIEChartView, CSavingView)
+
+CCIEChartView::CCIEChartView()
+	: CSavingView()
+{
+	m_bDelayedUpdate = FALSE;
+}
+
+CCIEChartView::~CCIEChartView()
+{
+}
+
+BEGIN_MESSAGE_MAP(CCIEChartView, CSavingView)
+	//{{AFX_MSG_MAP(CCIEChartView)
+	ON_WM_ERASEBKGND()
+	ON_WM_SIZE()
+	ON_WM_CONTEXTMENU()
+	ON_UPDATE_COMMAND_UI(IDM_CIE_SHOWBACKGROUND, OnUpdateCieShowbackground)
+	ON_UPDATE_COMMAND_UI(IDM_CIE_SHOWDELTAE, OnUpdateCieShowDeltaE)
+	ON_UPDATE_COMMAND_UI(IDM_CIE_SHOWREFERENCES, OnUpdateCieShowreferences)
+	ON_UPDATE_COMMAND_UI(IDM_LUM_GRAPH_DATAREF, OnUpdateCieGraphShowDataRef)
+	ON_COMMAND(IDM_CIE_SHOWREFERENCES, OnCieShowreferences)
+	ON_COMMAND(IDM_LUM_GRAPH_DATAREF, OnCieGraphShowDataRef)
+	ON_COMMAND(IDM_CIE_SHOWBACKGROUND, OnCieShowbackground)
+	ON_COMMAND(IDM_CIE_SHOWDELTAE, OnCieShowDeltaE)
+	ON_COMMAND(IDM_CIE_SHOWGRAYSCALE, OnCieShowGrayScale)
+	ON_COMMAND(IDM_CIE_SHOWSATURATIONSCALE, OnCieShowSaturationScale)
+	ON_COMMAND(IDM_CIE_SHOWMEASUREMENTS, OnCieShowMeasurements)
+	ON_COMMAND(IDM_GRAPH_Y_ZOOM_IN, OnGraphZoomIn)
+	ON_COMMAND(IDM_GRAPH_Y_ZOOM_OUT, OnGraphZoomOut)
+	ON_UPDATE_COMMAND_UI(IDM_CIE_SHOWMEASUREMENTS, OnUpdateCieShowMeasurements)
+	ON_UPDATE_COMMAND_UI(IDM_CIE_SHOWGRAYSCALE, OnUpdateCieShowGrayScale)
+	ON_UPDATE_COMMAND_UI(IDM_CIE_SHOWSATURATIONSCALE, OnUpdateCieShowSaturationScale)
+	ON_COMMAND(IDM_CIE_SAVECHART, OnCieSavechart)
+	ON_WM_LBUTTONDOWN()
+	ON_WM_LBUTTONUP()
+	ON_WM_MOUSEMOVE()
+	ON_COMMAND(IDM_HELP, OnHelp)
+	ON_COMMAND(IDM_CIE_UV, OnCieUv)
+	ON_UPDATE_COMMAND_UI(IDM_CIE_UV, OnUpdateCieUv)
+	ON_WM_MOUSEWHEEL()
+	ON_WM_PAINT()
+	ON_WM_KEYDOWN()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// CCIEChartView diagnostics
+
+#ifdef _DEBUG
+void CCIEChartView::AssertValid() const
+{
+	CSavingView::AssertValid();
+}
+
+void CCIEChartView::Dump(CDumpContext& dc) const
+{
+	CSavingView::Dump(dc);
+}
+#endif //_DEBUG
+
+/////////////////////////////////////////////////////////////////////////////
+// CCIEChartView message handlers
+
+void CCIEChartView::OnInitialUpdate() 
+{
+	m_tooltip.Create(this);	
+	m_tooltip.SetBehaviour(PPTOOLTIP_MULTIPLE_SHOW);
+	m_tooltip.SetNotify(TRUE);
+}
+
+void CCIEChartView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
+{
+	CRect	Rect;
+	
+	// Do nothing when not concerned
+	switch ( lHint )
+	{
+		case UPD_NEARBLACK:
+		case UPD_NEARWHITE:
+		case UPD_CONTRAST:
+		case UPD_GENERATORCONFIG:
+			 return;
+	}
+
+	if ( IsWindowVisible () )
+	{
+		m_bDelayedUpdate = FALSE;
+		GetReferenceRect ( & Rect );
+		m_Grapher.MakeBgBitmap(Rect,GetConfig()->m_bWhiteBkgndOnScreen);
+		Invalidate(TRUE);
+	}
+	else
+	{
+		// CIE chart is inside CMultiFrame window and is currently hidden. Do not recompute bitmap
+		m_bDelayedUpdate = TRUE;
+	}
+}
+
+DWORD CCIEChartView::GetUserInfo ()
+{
+	return	( ( m_Grapher.m_doDisplayBackground		& 0x0001 )	<< 0 )
+		  + ( ( m_Grapher.m_doDisplayDeltaERef		& 0x0001 )	<< 1 )
+		  + ( ( m_Grapher.m_doShowReferences		& 0x0001 )	<< 2 )
+		  + ( ( m_Grapher.m_doShowDataRef			& 0x0001 )	<< 3 )
+		  + ( ( m_Grapher.m_doShowGrayScale			& 0x0001 )	<< 4 )
+		  + ( ( m_Grapher.m_doShowSaturationScale	& 0x0001 )	<< 5 )
+		  + ( ( m_Grapher.m_doShowMeasurements		& 0x0001 )	<< 6 )
+		  + ( ( m_Grapher.m_bCIEuv					& 0x0001 )	<< 7 );
+}
+
+void CCIEChartView::SetUserInfo ( DWORD dwUserInfo )
+{
+	m_Grapher.m_doDisplayBackground		= ( dwUserInfo >> 0 ) & 0x0001;
+	m_Grapher.m_doDisplayDeltaERef		= ( dwUserInfo >> 1 ) & 0x0001;
+	m_Grapher.m_doShowReferences		= ( dwUserInfo >> 2 ) & 0x0001;
+	m_Grapher.m_doShowDataRef			= ( dwUserInfo >> 3 ) & 0x0001;
+	m_Grapher.m_doShowGrayScale			= ( dwUserInfo >> 4 ) & 0x0001;
+	m_Grapher.m_doShowSaturationScale	= ( dwUserInfo >> 5 ) & 0x0001;
+	m_Grapher.m_doShowMeasurements		= ( dwUserInfo >> 6 ) & 0x0001;
+	m_Grapher.m_bCIEuv					= ( dwUserInfo >> 7 ) & 0x0001;
+	
+	m_bDelayedUpdate = TRUE;
+}
+
+void CCIEChartView::OnDraw(CDC* pDC) 
+{
+	if ( m_bDelayedUpdate )
+	{
+		// Perform late update
+		OnUpdate ( NULL, 0, NULL );
+	}
+
+	CRect rect, refrect;
+	GetClientRect(&rect);
+	GetReferenceRect(&refrect);
+
+	CDC dcDraw;
+	dcDraw.CreateCompatibleDC(pDC);
+	CBitmap *pOldBitmap=dcDraw.SelectObject(&m_Grapher.m_drawBitmap);
+	m_Grapher.DrawChart ( GetDocument (), & dcDraw, refrect, & m_tooltip, this );
+	pDC->BitBlt(0,0,rect.Width(),rect.Height(),&dcDraw,-m_Grapher.m_DeltaX,-m_Grapher.m_DeltaY,SRCCOPY);
+	dcDraw.SelectObject(pOldBitmap);
+
+//	DrawChart(pDC);
+}
+
+void CCIEChartView::SaveChart() 
+{
+	CSaveGraphDialog dialog;
+
+	if(dialog.DoModal()!=IDOK)
+		return;
+
+    CRect rect;
+	CSize size;
+
+	switch(dialog.m_sizeType)
+	{
+		case 0:
+		    GetClientRect(&rect);
+			size = CSize(rect.Width(),rect.Height());
+			break;
+		case 1:
+			size = CSize(300,200);
+			break;
+		case 2:
+			size = CSize(600,400);
+			break;
+		case 3:
+			size = CSize(dialog.m_saveWidth,dialog.m_saveHeight);
+			break;
+
+	}
+ 
+	char *defExt;
+	char *filter;
+
+	switch(dialog.m_fileType)
+	{
+		case 0:
+			defExt="jpg";
+			filter="Jpeg File (*.jpg)|*.jpg||";
+			break;
+		case 1:
+			defExt="bmp";
+			filter="Bitmap File (*.bmp)|*.bmp||";
+			break;
+		case 2:
+			defExt="jpg";
+			filter="Portable Network Graphic File (*.png)|*.png||";
+			break;
+	}
+
+	CFileDialog fileSaveDialog( FALSE, defExt, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, filter );
+	if(fileSaveDialog.DoModal()==IDOK)
+	{
+		m_Grapher.SaveGraphFile ( GetDocument (), size, fileSaveDialog.GetPathName(), dialog.m_fileType, dialog.m_jpegQuality );
+
+		// Recompute BgBitmap to match client size
+		CRect clientRect;
+		GetReferenceRect(&clientRect);
+		m_Grapher.MakeBgBitmap(clientRect,GetConfig()->m_bWhiteBkgndOnScreen);
+	}
+}
+
+BOOL CCIEChartView::OnEraseBkgnd(CDC* pDC) 
+{
+	return TRUE;
+}
+
+void CCIEChartView::OnSize(UINT nType, int cx, int cy) 
+{
+	if(cx && cy)
+	{
+		CRect ClientRect = CRect(CPoint(0,0),CSize(cx,cy));
+		CRect RefRect;
+
+		if ( m_Grapher.m_ZoomFactor > 1000 )
+		{
+			// Zoom is active: adjust deltaX and deltaY
+			do
+			{
+				RefRect = CRect(CPoint(0,0),CSize(cx*m_Grapher.m_ZoomFactor/1000,cy*m_Grapher.m_ZoomFactor/1000));
+				if ( m_Grapher.m_ZoomFactor >= 1200 && ( RefRect.Width () > 2000 || RefRect.Height () > 2000 ) )
+					m_Grapher.m_ZoomFactor -= 200;
+				else
+					break;
+			} while ( TRUE );
+
+			if ( RefRect.right + m_Grapher.m_DeltaX < ClientRect.right )
+				m_Grapher.m_DeltaX = ClientRect.right - RefRect.right;
+
+			if ( RefRect.bottom + m_Grapher.m_DeltaY < ClientRect.bottom )
+				m_Grapher.m_DeltaY = ClientRect.bottom - RefRect.bottom;
+		}
+		else
+			RefRect = ClientRect;
+
+		m_Grapher.MakeBgBitmap(RefRect,GetConfig()->m_bWhiteBkgndOnScreen);
+	}
+	Invalidate(FALSE);
+}
+
+void CCIEChartView::OnContextMenu(CWnd* pWnd, CPoint point) 
+{
+	// load and display popup menu
+	CNewMenu menu;
+	menu.LoadMenu(IDR_CIE_MENU);
+	CMenu* pPopup = menu.GetSubMenu(0);
+	ASSERT(pPopup);
+	
+	pPopup->TrackPopupMenu( TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_VERTICAL,
+		point.x, point.y, GetParent());
+}
+
+void CCIEChartView::OnUpdateCieShowbackground(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable();
+	pCmdUI->SetCheck(m_Grapher.m_doDisplayBackground);
+}
+
+void CCIEChartView::OnUpdateCieShowDeltaE(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable();
+	pCmdUI->SetCheck(m_Grapher.m_doDisplayDeltaERef);
+}
+
+void CCIEChartView::OnUpdateCieShowreferences(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable();
+	pCmdUI->SetCheck(m_Grapher.m_doShowReferences);
+}
+
+void CCIEChartView::OnUpdateCieGraphShowDataRef(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable();
+	pCmdUI->SetCheck(m_Grapher.m_doShowDataRef);
+}
+
+void CCIEChartView::OnUpdateCieShowGrayScale(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable();
+	pCmdUI->SetCheck(m_Grapher.m_doShowGrayScale);
+}
+
+void CCIEChartView::OnUpdateCieShowSaturationScale(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable();
+	pCmdUI->SetCheck(m_Grapher.m_doShowSaturationScale);
+}
+
+void CCIEChartView::OnUpdateCieShowMeasurements(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable();
+	pCmdUI->SetCheck(m_Grapher.m_doShowMeasurements);
+}
+
+void CCIEChartView::OnCieShowbackground() 
+{
+	m_Grapher.m_doDisplayBackground = !m_Grapher.m_doDisplayBackground;
+	GetConfig()->WriteProfileInt("CIE Chart","Display Background",m_Grapher.m_doDisplayBackground);
+	CRect rect;
+	GetReferenceRect(&rect);
+	m_Grapher.MakeBgBitmap(rect,GetConfig()->m_bWhiteBkgndOnScreen);
+	Invalidate(TRUE);
+}
+
+void CCIEChartView::OnCieShowDeltaE() 
+{
+	m_Grapher.m_doDisplayDeltaERef = !m_Grapher.m_doDisplayDeltaERef;
+	GetConfig()->WriteProfileInt("CIE Chart","Display Delta E",m_Grapher.m_doDisplayDeltaERef);
+	CRect rect;
+	GetReferenceRect(&rect);
+	m_Grapher.MakeBgBitmap(rect,GetConfig()->m_bWhiteBkgndOnScreen);
+	Invalidate(TRUE);
+}
+
+void CCIEChartView::OnCieShowreferences() 
+{
+	m_Grapher.m_doShowReferences = !m_Grapher.m_doShowReferences;
+	GetConfig()->WriteProfileInt("CIE Chart","Show References",m_Grapher.m_doShowReferences);
+	Invalidate(TRUE);
+}
+
+void CCIEChartView::OnCieGraphShowDataRef()
+{
+	m_Grapher.m_doShowDataRef = !m_Grapher.m_doShowDataRef;
+	GetConfig()->WriteProfileInt("CIE Chart","Show Reference Data",m_Grapher.m_doShowDataRef);
+	Invalidate(TRUE);
+}
+
+
+void CCIEChartView::OnCieShowGrayScale() 
+{
+	m_Grapher.m_doShowGrayScale = !m_Grapher.m_doShowGrayScale;
+	GetConfig()->WriteProfileInt("CIE Chart","Display GrayScale",m_Grapher.m_doShowGrayScale);
+	Invalidate(TRUE);
+}
+
+void CCIEChartView::OnCieShowSaturationScale() 
+{
+	m_Grapher.m_doShowSaturationScale = !m_Grapher.m_doShowSaturationScale;
+	GetConfig()->WriteProfileInt("CIE Chart","Display Saturation Scale",m_Grapher.m_doShowSaturationScale);
+	Invalidate(TRUE);
+}
+
+void CCIEChartView::OnCieShowMeasurements() 
+{
+	m_Grapher.m_doShowMeasurements = !m_Grapher.m_doShowMeasurements;
+	GetConfig()->WriteProfileInt("CIE Chart","Show Measurements",m_Grapher.m_doShowMeasurements);
+	Invalidate(TRUE);
+}
+
+void CCIEChartView::OnGraphZoomIn() 
+{
+	CRect	ClientRect, RefRect;
+	GetClientRect ( & ClientRect );
+
+	m_Grapher.m_ZoomFactor += 200;
+	if ( m_Grapher.m_ZoomFactor > 4000 )
+		m_Grapher.m_ZoomFactor = 4000;
+
+	GetReferenceRect ( & RefRect );
+	if ( m_Grapher.m_ZoomFactor >= 1200 && ( RefRect.Width () > 2000 || RefRect.Height () > 2000 ) )
+	{
+		m_Grapher.m_ZoomFactor -= 200;
+		GetReferenceRect ( & RefRect );
+	}
+
+	if ( m_Grapher.m_DeltaX > 0 )
+		m_Grapher.m_DeltaX = 0;
+	else if ( m_Grapher.m_DeltaX < ClientRect.right - RefRect.right )
+		m_Grapher.m_DeltaX = ClientRect.right - RefRect.right;
+
+	if ( m_Grapher.m_DeltaY > 0 )
+		m_Grapher.m_DeltaY = 0;
+	else if ( m_Grapher.m_DeltaY < ClientRect.bottom - RefRect.bottom )
+		m_Grapher.m_DeltaY = ClientRect.bottom - RefRect.bottom;
+
+	m_Grapher.MakeBgBitmap(RefRect,GetConfig()->m_bWhiteBkgndOnScreen);
+	
+	Invalidate ( TRUE );
+}
+
+void CCIEChartView::OnGraphZoomOut() 
+{
+	CRect	ClientRect, RefRect;
+	GetClientRect ( & ClientRect );
+
+	m_Grapher.m_ZoomFactor -= 200;
+	if ( m_Grapher.m_ZoomFactor < 1000 )
+		m_Grapher.m_ZoomFactor = 1000;
+
+	GetReferenceRect ( & RefRect );
+
+	if ( m_Grapher.m_DeltaX > 0 )
+		m_Grapher.m_DeltaX = 0;
+	else if ( m_Grapher.m_DeltaX < ClientRect.right - RefRect.right )
+		m_Grapher.m_DeltaX = ClientRect.right - RefRect.right;
+
+	if ( m_Grapher.m_DeltaY > 0 )
+		m_Grapher.m_DeltaY = 0;
+	else if ( m_Grapher.m_DeltaY < ClientRect.bottom - RefRect.bottom )
+		m_Grapher.m_DeltaY = ClientRect.bottom - RefRect.bottom;
+
+	m_Grapher.MakeBgBitmap(RefRect,GetConfig()->m_bWhiteBkgndOnScreen);
+	
+	Invalidate ( TRUE );
+}
+
+void CCIEChartView::OnCieUv() 
+{
+	m_Grapher.m_bCIEuv = !m_Grapher.m_bCIEuv;
+	GetConfig()->WriteProfileInt("CIE Chart","CIE uv mode",m_Grapher.m_bCIEuv);
+
+	CRect rect;
+	GetReferenceRect(&rect);
+	m_Grapher.MakeBgBitmap(rect,GetConfig()->m_bWhiteBkgndOnScreen);
+	Invalidate(TRUE);
+}
+
+void CCIEChartView::OnUpdateCieUv(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable();
+	pCmdUI->SetCheck(m_Grapher.m_bCIEuv);
+}
+
+BOOL CCIEChartView::PreTranslateMessage(MSG* pMsg) 
+{
+	m_tooltip.RelayEvent(pMsg);
+	
+	return CSavingView::PreTranslateMessage(pMsg);
+}
+
+void CCIEChartView::OnCieSavechart() 
+{
+	SaveChart();
+}
+
+void CCIEChartView::OnLButtonDown(UINT nFlags, CPoint point) 
+{
+	// TODO: Add your message handler code here and/or call default
+	SetCapture ();
+	m_CurMousePoint = point;
+	UpdateTestColor ( point );
+}
+
+void CCIEChartView::OnLButtonUp(UINT nFlags, CPoint point) 
+{
+	// TODO: Add your message handler code here and/or call default
+	if ( GetCapture () )
+	{
+		if ( m_Grapher.m_ZoomFactor > 1000 )
+		{
+			// Update 
+			int		OldDeltaX = m_Grapher.m_DeltaX;
+			int		OldDeltaY = m_Grapher.m_DeltaY;
+			CRect	ClientRect, RefRect;
+
+			GetClientRect ( & ClientRect );
+			GetReferenceRect ( & RefRect );
+
+			m_Grapher.m_DeltaX += point.x - m_CurMousePoint.x;
+			if ( m_Grapher.m_DeltaX > 0 )
+				m_Grapher.m_DeltaX = 0;
+			else if ( m_Grapher.m_DeltaX < ClientRect.right - RefRect.right )
+				m_Grapher.m_DeltaX = ClientRect.right - RefRect.right;
+
+			m_Grapher.m_DeltaY += point.y - m_CurMousePoint.y;
+			if ( m_Grapher.m_DeltaY > 0 )
+				m_Grapher.m_DeltaY = 0;
+			else if ( m_Grapher.m_DeltaY < ClientRect.bottom - RefRect.bottom )
+				m_Grapher.m_DeltaY = ClientRect.bottom - RefRect.bottom;
+			
+			m_CurMousePoint = point;
+
+			ScrollWindow ( m_Grapher.m_DeltaX - OldDeltaX, m_Grapher.m_DeltaY - OldDeltaY );
+		}
+
+		UpdateTestColor ( point );
+		ReleaseCapture ();
+	}
+}
+
+void CCIEChartView::OnMouseMove(UINT nFlags, CPoint point) 
+{
+	// TODO: Add your message handler code here and/or call default
+	if ( GetCapture () )
+	{
+		if ( m_Grapher.m_ZoomFactor > 1000 )
+		{
+			// Update 
+			int		OldDeltaX = m_Grapher.m_DeltaX;
+			int		OldDeltaY = m_Grapher.m_DeltaY;
+			CRect	ClientRect, RefRect;
+
+			GetClientRect ( & ClientRect );
+			GetReferenceRect ( & RefRect );
+
+			m_Grapher.m_DeltaX += point.x - m_CurMousePoint.x;
+			if ( m_Grapher.m_DeltaX > 0 )
+				m_Grapher.m_DeltaX = 0;
+			else if ( m_Grapher.m_DeltaX < ClientRect.right - RefRect.right )
+				m_Grapher.m_DeltaX = ClientRect.right - RefRect.right;
+
+			m_Grapher.m_DeltaY += point.y - m_CurMousePoint.y;
+			if ( m_Grapher.m_DeltaY > 0 )
+				m_Grapher.m_DeltaY = 0;
+			else if ( m_Grapher.m_DeltaY < ClientRect.bottom - RefRect.bottom )
+				m_Grapher.m_DeltaY = ClientRect.bottom - RefRect.bottom;
+			
+			m_CurMousePoint = point;
+
+			ScrollWindow ( m_Grapher.m_DeltaX - OldDeltaX, m_Grapher.m_DeltaY - OldDeltaY );
+		}
+
+		UpdateTestColor ( point );
+	}
+}
+
+
+BOOL CCIEChartView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt) 
+{
+	// TODO: Add your message handler code here and/or call default
+	CRect	ClientRect, RefRect;
+	GetClientRect ( & ClientRect );
+
+	if ( zDelta < 0 )
+	{
+		m_Grapher.m_ZoomFactor += 200;
+		if ( m_Grapher.m_ZoomFactor > 4000 )
+			m_Grapher.m_ZoomFactor = 4000;
+
+		GetReferenceRect ( & RefRect );
+		if ( m_Grapher.m_ZoomFactor >= 1200 && ( RefRect.Width () > 2000 || RefRect.Height () > 2000 ) )
+			m_Grapher.m_ZoomFactor -= 200;
+	}
+	else if ( zDelta > 0 )
+	{
+		m_Grapher.m_ZoomFactor -= 200;
+		if ( m_Grapher.m_ZoomFactor < 1000 )
+			m_Grapher.m_ZoomFactor = 1000;
+	}
+
+	GetReferenceRect ( & RefRect );
+
+	if ( m_Grapher.m_DeltaX > 0 )
+		m_Grapher.m_DeltaX = 0;
+	else if ( m_Grapher.m_DeltaX < ClientRect.right - RefRect.right )
+		m_Grapher.m_DeltaX = ClientRect.right - RefRect.right;
+
+	if ( m_Grapher.m_DeltaY > 0 )
+		m_Grapher.m_DeltaY = 0;
+	else if ( m_Grapher.m_DeltaY < ClientRect.bottom - RefRect.bottom )
+		m_Grapher.m_DeltaY = ClientRect.bottom - RefRect.bottom;
+
+	m_Grapher.MakeBgBitmap(RefRect,GetConfig()->m_bWhiteBkgndOnScreen);
+	
+	Invalidate ( FALSE );
+
+	return TRUE;
+}
+
+void CCIEChartView::UpdateTestColor ( CPoint point )
+{
+	int		nR = 0, nG = 0, nB = 0;
+	CRect	rect;
+	double	x, y;
+	double	u, v;
+	double	r, g, b;
+	double	cmax;
+	double	base, coef;
+	double	gamma = 0.45;
+	CColor	RGBColor;
+
+	GetReferenceRect ( & rect );
+
+	x = (double)(point.x-m_Grapher.m_DeltaX) / (double)rect.Width() * (m_Grapher.m_bCIEuv ? 0.7 : 0.8);
+	y = (double)(rect.bottom-(point.y-m_Grapher.m_DeltaY)) / (double)rect.Height() * (m_Grapher.m_bCIEuv ? 0.7 : 0.9);
+
+	if ( m_Grapher.m_bCIEuv )
+	{
+		u = x;
+		v = y;
+		x = ( 9.0 * u ) / ( ( 6.0 * u ) - ( 16.0 * v ) + 12.0 );
+		y = ( 4.0 * v ) / ( ( 6.0 * u ) - ( 16.0 * v ) + 12.0 );
+	}
+
+	if ( x > 0.0 && x < 1.0 && y > 0.0 && y < 1.0 )
+	{
+		CColor	ClickedColor ( x, y );
+
+		RGBColor = ClickedColor.GetRGBValue ();
+		r = max(0.0,pow(RGBColor[0],gamma));
+		g = max(0.0,pow(RGBColor[1],gamma));
+		b = max(0.0,pow(RGBColor[2],gamma));
+
+		cmax = max(r,g);
+		if ( b>cmax)
+			cmax=b;
+
+		if(GetDocument()->GetGenerator()->m_b16_235)
+		{
+			base = 16.0;
+			coef = 235.0 - 16.0;
+		}
+		else
+		{
+			base = 0.0;
+			coef = 255.0;
+		}
+
+		nR = (int) (r/cmax*coef+base);
+		nG = (int) (g/cmax*coef+base);
+		nB = (int) (b/cmax*coef+base);
+	}
+
+	( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.SetColor ( RGB(nR,nG,nB) );
+	( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.RedrawWindow ();
+}
+
+void CCIEChartView::GetReferenceRect ( LPRECT lpRect )
+{
+	GetClientRect ( lpRect );
+	lpRect -> right = lpRect -> right * m_Grapher.m_ZoomFactor / 1000;
+	lpRect -> bottom = lpRect -> bottom * m_Grapher.m_ZoomFactor / 1000;
+}
+
+void CCIEChartView::OnHelp() 
+{
+	GetConfig () -> DisplayHelp ( HID_CIECHART, NULL );
+}
+
+
+
+void CCIEChartView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) 
+{
+	// TODO: Add your message handler code here and/or call default
+	int		OldDeltaX = m_Grapher.m_DeltaX;
+	int		OldDeltaY = m_Grapher.m_DeltaY;
+	CRect	ClientRect, RefRect;
+
+	GetClientRect ( & ClientRect );
+	GetReferenceRect ( & RefRect );
+
+	switch ( nChar )
+	{
+		case VK_UP:
+			 m_Grapher.m_DeltaY += 10;
+			 break;
+		case VK_DOWN:
+			 m_Grapher.m_DeltaY -= 10;
+			 break;
+		case VK_LEFT:
+			 m_Grapher.m_DeltaX += 10;
+			 break;
+		case VK_RIGHT:
+			 m_Grapher.m_DeltaX -= 10;
+			 break;
+	}
+
+	if ( m_Grapher.m_DeltaX > 0 )
+		m_Grapher.m_DeltaX = 0;
+	else if ( m_Grapher.m_DeltaX < ClientRect.right - RefRect.right )
+		m_Grapher.m_DeltaX = ClientRect.right - RefRect.right;
+
+	if ( m_Grapher.m_DeltaY > 0 )
+		m_Grapher.m_DeltaY = 0;
+	else if ( m_Grapher.m_DeltaY < ClientRect.bottom - RefRect.bottom )
+		m_Grapher.m_DeltaY = ClientRect.bottom - RefRect.bottom;
+	
+	ScrollWindow ( m_Grapher.m_DeltaX - OldDeltaX, m_Grapher.m_DeltaY - OldDeltaY );
+
+	CSavingView::OnKeyDown(nChar, nRepCnt, nFlags);
+}
