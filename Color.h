@@ -60,7 +60,7 @@ class CColor: public Matrix
 {
 public:
 	CColor();
-	CColor(CColor &aColor);
+	CColor(const CColor &aColor);
 	CColor(Matrix aMatrix);
 	CColor(double aX,double aY, double aZ);	// XYZ initialisation
 	CColor(double ax,double ay);			// xy initialisation

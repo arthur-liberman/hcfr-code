@@ -213,7 +213,7 @@ public:
   afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
   afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
   afx_msg void OnNcCalcSize(BOOL bCalcValidRects, NCCALCSIZE_PARAMS FAR* lpncsp);
-  afx_msg UINT OnNcHitTest(CPoint point);
+  afx_msg LRESULT OnNcHitTest(CPoint point);
 };
 
 #endif //__NewMenuBar_H_

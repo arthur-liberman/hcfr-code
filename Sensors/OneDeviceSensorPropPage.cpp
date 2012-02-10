@@ -139,7 +139,7 @@ BOOL COneDeviceSensorPropPage::OnInitDialog()
 		m_pPrimariesGrid->SetItem(&Item);
 	}
 
-	for(i=0;i<3;i++)
+	for(int i=0;i<3;i++)
 	{
 		Item.row = i+1;
 		Item.col = 0;
@@ -178,7 +178,7 @@ BOOL COneDeviceSensorPropPage::OnInitDialog()
 	m_pWhiteGrid->SetColumnCount(2);
 	
 	// Set labels
-	for(i=0;i<3;i++)
+	for(int i=0;i<3;i++)
 	{
 		Item.row = i;
 		Item.col = 0;
@@ -216,7 +216,7 @@ void COneDeviceSensorPropPage::UpdateGrids()
 		}
 	m_pPrimariesGrid->Refresh();
 	
-	for(i=0;i<3;i++)
+	for(int i=0;i<3;i++)
 	{
 		CString strValue;
 		strValue.Format("%.4f",m_whiteMatrix[i][0]);
@@ -345,7 +345,8 @@ void COneDeviceSensorPropPage::LoadReferenceValues()
 			{
 				BOOL titleFound=FALSE;
 				CString refStr;
-				for(int i=0;i<strlen(line);i++)
+                int i;
+				for(i=0;i<strlen(line);i++)
 				{
 					if(line[i] == ']')
 						break;

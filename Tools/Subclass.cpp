@@ -110,7 +110,8 @@ void CSubclassWnd::AssertValid() const
 	CObject::AssertValid();
 	ASSERT(m_hWnd==NULL || ::IsWindow(m_hWnd));
 	if (m_hWnd) {
-		for (CSubclassWnd* p = theHookMap.Lookup(m_hWnd); p; p=p->m_pNext) {
+        CSubclassWnd* p = 0;
+		for (p = theHookMap.Lookup(m_hWnd); p; p=p->m_pNext) {
 			if (p==this)
 				break;
 		}

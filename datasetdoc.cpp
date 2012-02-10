@@ -1442,16 +1442,16 @@ void CDataSetDoc::OnExportXls()
 {
 	StopBackgroundMeasures ();
 
-	CExport export(this,CExport::XLS);
-	export.Save();
+	CExport exportVar(this,CExport::XLS);
+	exportVar.Save();
 }
 
 void CDataSetDoc::OnExportCsv() 
 {
 	StopBackgroundMeasures ();
 
-	CExport export(this,CExport::CSV);
-	export.Save();
+	CExport exportVar(this,CExport::CSV);
+	exportVar.Save();
 }
 
 BOOL CDataSetDoc::OnSaveDocument(LPCTSTR lpszPathName) 
@@ -2181,7 +2181,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode, UINT nCalibrationOrCo
 				GenColors [ i ] = CIRELevel(i,i,i,FALSE, m_pGenerator->m_b16_235);
 				mType [ i ] = CGenerator::MT_NEARBLACK;
 			 }
-			 pValidationFunc = CMeasure::ValidateBackgroundNearBlack;
+			 pValidationFunc = &CMeasure::ValidateBackgroundNearBlack;
 			 lHint = UPD_NEARBLACK;
 			 break;
 
@@ -2194,7 +2194,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode, UINT nCalibrationOrCo
 				GenColors [ i ] = CIRELevel(101-nSteps+i,101-nSteps+i,101-nSteps+i,FALSE, m_pGenerator->m_b16_235);
 				mType [ i ] = CGenerator::MT_NEARWHITE;
 			 }
-			 pValidationFunc = CMeasure::ValidateBackgroundNearWhite;
+			 pValidationFunc = &CMeasure::ValidateBackgroundNearWhite;
 			 lHint = UPD_NEARWHITE;
 			 break;
 
@@ -2203,7 +2203,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode, UINT nCalibrationOrCo
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_RED;
 			 GenerateSaturationColors ( GenColors, nSteps, TRUE, FALSE, FALSE, m_pGenerator->m_b16_235 );
-			 pValidationFunc = CMeasure::ValidateBackgroundRedSatScale;
+			 pValidationFunc = &CMeasure::ValidateBackgroundRedSatScale;
 			 lHint = UPD_REDSAT;
 			 break;
 
@@ -2212,7 +2212,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode, UINT nCalibrationOrCo
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_GREEN;
 			 GenerateSaturationColors ( GenColors, nSteps, FALSE, TRUE, FALSE, m_pGenerator->m_b16_235 );
-			 pValidationFunc = CMeasure::ValidateBackgroundGreenSatScale;
+			 pValidationFunc = &CMeasure::ValidateBackgroundGreenSatScale;
 			 lHint = UPD_GREENSAT;
 			 break;
 
@@ -2221,7 +2221,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode, UINT nCalibrationOrCo
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_BLUE;
 			 GenerateSaturationColors ( GenColors, nSteps, FALSE, FALSE, TRUE, m_pGenerator->m_b16_235 );
-			 pValidationFunc = CMeasure::ValidateBackgroundBlueSatScale;
+			 pValidationFunc = &CMeasure::ValidateBackgroundBlueSatScale;
 			 lHint = UPD_BLUESAT;
 			 break;
 
@@ -2230,7 +2230,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode, UINT nCalibrationOrCo
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_YELLOW;
 			 GenerateSaturationColors ( GenColors, nSteps, TRUE, TRUE, FALSE, m_pGenerator->m_b16_235 );
-			 pValidationFunc = CMeasure::ValidateBackgroundYellowSatScale;
+			 pValidationFunc = &CMeasure::ValidateBackgroundYellowSatScale;
 			 lHint = UPD_YELLOWSAT;
 			 break;
 
@@ -2239,7 +2239,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode, UINT nCalibrationOrCo
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_CYAN;
 			 GenerateSaturationColors ( GenColors, nSteps, FALSE, TRUE, TRUE, m_pGenerator->m_b16_235 );
-			 pValidationFunc = CMeasure::ValidateBackgroundCyanSatScale;
+			 pValidationFunc = &CMeasure::ValidateBackgroundCyanSatScale;
 			 lHint = UPD_CYANSAT;
 			 break;
 
@@ -2248,7 +2248,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode, UINT nCalibrationOrCo
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_MAGENTA;
 			 GenerateSaturationColors ( GenColors, nSteps, TRUE, FALSE, TRUE, m_pGenerator->m_b16_235 );
-			 pValidationFunc = CMeasure::ValidateBackgroundMagentaSatScale;
+			 pValidationFunc = &CMeasure::ValidateBackgroundMagentaSatScale;
 			 lHint = UPD_MAGENTASAT;
 			 break;
 
@@ -2267,7 +2267,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode, UINT nCalibrationOrCo
 			 GenColors [ 2 ] = CIRELevel(0,0,100,FALSE, m_pGenerator->m_b16_235);		// blue
 			 GenColors [ 3 ] = CIRELevel(100,100,100,FALSE, m_pGenerator->m_b16_235);	// white (to control additivity)
 			 GenColors [ 4 ] = CIRELevel(0,0,0,FALSE, m_pGenerator->m_b16_235);			// black
-			 pValidationFunc = CMeasure::ValidateBackgroundPrimaries;
+			 pValidationFunc = &CMeasure::ValidateBackgroundPrimaries;
 			 lHint = UPD_PRIMARIES;
 			 break;
 
@@ -2290,13 +2290,13 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode, UINT nCalibrationOrCo
 			 GenColors [ 5 ] = CIRELevel(100,0,100,FALSE, m_pGenerator->m_b16_235);		// magenta
 			 GenColors [ 6 ] = CIRELevel(100,100,100,FALSE, m_pGenerator->m_b16_235);	// white (to control additivity)
 			 GenColors [ 7 ] = CIRELevel(0,0,0,FALSE, m_pGenerator->m_b16_235);			// black
-			 pValidationFunc = CMeasure::ValidateBackgroundSecondaries;
+			 pValidationFunc = &CMeasure::ValidateBackgroundSecondaries;
 			 lHint = UPD_SECONDARIES;
 			 break;
 
 		case -3:
 			 nSteps = GetMeasure () -> GetGrayScaleSize ();
-			 for ( i = 0; i < nSteps ; i ++ )
+			 for (int i = 0; i < nSteps ; i ++ )
 			 {
 				GenIRE [ i ] = ArrayIndexToGrayLevel ( i, nSteps, GetMeasure () -> m_bIREScaleMode );
 				bIRE [ i ] = GetMeasure () -> m_bIREScaleMode;
@@ -2318,7 +2318,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode, UINT nCalibrationOrCo
 			 mType [ nSteps + 5 ] = CGenerator::MT_SECONDARY;
 			 nSteps += 6;
 			 nMaxSteps = nSteps;
-			 pValidationFunc = CMeasure::ValidateBackgroundGrayScaleAndColors;
+			 pValidationFunc = &CMeasure::ValidateBackgroundGrayScaleAndColors;
 			 lHint = UPD_GRAYSCALEANDCOLORS;
 			 break;
 
@@ -2327,7 +2327,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode, UINT nCalibrationOrCo
 			 nMaxSteps = nSteps;
 			 GenColors [ 0 ] = ( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.GetColor () & 0x00FFFFFF;
 			 mType [ 0 ] = CGenerator::MT_UNKNOWN;
-			 pValidationFunc = CMeasure::ValidateBackgroundSingleMeasurement;
+			 pValidationFunc = &CMeasure::ValidateBackgroundSingleMeasurement;
 			 lHint = UPD_FREEMEASUREAPPENDED;
 
 			 // Do not use luxmeter when performing free measurement
@@ -2338,7 +2338,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode, UINT nCalibrationOrCo
 		default:
 			 nSteps = GetMeasure () -> GetGrayScaleSize ();
 			 nMaxSteps = nSteps;
-			 for ( i = 0; i < nSteps ; i ++ )
+			 for (i = 0; i < nSteps ; i ++ )
 			 {
 				GenIRE [ i ] = ArrayIndexToGrayLevel ( i, nSteps, GetMeasure () -> m_bIREScaleMode );
 				bIRE [ i ] = GetMeasure () -> m_bIREScaleMode;
@@ -2346,7 +2346,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode, UINT nCalibrationOrCo
  			 	mType [ i ] = CGenerator::MT_IRE;
 			 }
 
-			 pValidationFunc = CMeasure::ValidateBackgroundGrayScale;
+			 pValidationFunc = &CMeasure::ValidateBackgroundGrayScale;
 			 lHint = UPD_GRAYSCALE;
 			 break;
 	}
@@ -2933,7 +2933,7 @@ void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int Col
 
 			int	nb = 0;
 			double avg = 0;
-			for (i=1; i<Size-1; i++)
+			for (int i=1; i<Size-1; i++)
 			{
 				if ( lumlvl[i] > 0.0 )
 				{

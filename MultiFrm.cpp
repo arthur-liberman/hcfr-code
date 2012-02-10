@@ -1237,7 +1237,7 @@ void DdeParseString ( LPCSTR lpszString, CString & strCmd, CStringList & CmdPara
 	while ( lpszString [ 0 ] == ' ' || lpszString [ 0 ] == '\t' )
 		lpszString ++;
 
-	lpStr = strchr ( lpszString, (int) '(' );
+	lpStr = strchr ( (LPSTR)lpszString, (int) '(' );
 	if ( lpStr )
 	{	
 		lpStr [ 0 ] = '\0';
@@ -1340,7 +1340,7 @@ LRESULT CMultiFrame::OnDDEInitiate(WPARAM wParam, LPARAM lParam)
 				if ( nAtomTopic )
 				{
 					GlobalGetAtomName ( nAtomTopic, szBuf, sizeof ( szBuf ) );
-					if ( stricmp ( szBuf, szTopic ) == 0 )
+					if ( _stricmp ( szBuf, szTopic ) == 0 )
 						bOk = TRUE;
 				}
 				else
@@ -1479,7 +1479,7 @@ LRESULT CMultiFrame::OnDDERequest(WPARAM wParam, LPARAM lParam)
 		GlobalGetAtomName ( nAtomData, szBuf, sizeof ( szBuf ) );
 		DdeParseString ( szBuf, strCmd, CmdParams ); 
 
-		if ( stricmp ( (LPCSTR) strCmd, "MeasureSizes" ) == 0 )
+		if ( _stricmp ( (LPCSTR) strCmd, "MeasureSizes" ) == 0 )
 		{
 			// Array sizes
 			strData.Format("%d,%d,%d,%d", GetDocument()->GetMeasure()->GetGrayScaleSize()-1, GetDocument()->GetMeasure()->GetNearBlackScaleSize()-1, GetDocument()->GetMeasure()->GetNearWhiteScaleSize()-1, GetDocument()->GetMeasure()->GetSaturationSize()-1 );
@@ -1488,26 +1488,26 @@ LRESULT CMultiFrame::OnDDERequest(WPARAM wParam, LPARAM lParam)
 		{
 			// Color values
 			nNbParms = 1;
-			if ( stricmp ( (LPCSTR) strCmd, "red" ) == 0 )
+			if ( _stricmp ( (LPCSTR) strCmd, "red" ) == 0 )
 				ReqColor = GetDocument()->GetMeasure()->GetPrimary(0);
-			else if ( stricmp ( (LPCSTR) strCmd, "green" ) == 0 )
+			else if ( _stricmp ( (LPCSTR) strCmd, "green" ) == 0 )
 				ReqColor = GetDocument()->GetMeasure()->GetPrimary(1);
-			else if ( stricmp ( (LPCSTR) strCmd, "blue" ) == 0 )
+			else if ( _stricmp ( (LPCSTR) strCmd, "blue" ) == 0 )
 				ReqColor = GetDocument()->GetMeasure()->GetPrimary(2);
-			else if ( stricmp ( (LPCSTR) strCmd, "yellow" ) == 0 )
+			else if ( _stricmp ( (LPCSTR) strCmd, "yellow" ) == 0 )
 				ReqColor = GetDocument()->GetMeasure()->GetSecondary(0);
-			else if ( stricmp ( (LPCSTR) strCmd, "cyan" ) == 0 )
+			else if ( _stricmp ( (LPCSTR) strCmd, "cyan" ) == 0 )
 				ReqColor = GetDocument()->GetMeasure()->GetSecondary(1);
-			else if ( stricmp ( (LPCSTR) strCmd, "magenta" ) == 0 )
+			else if ( _stricmp ( (LPCSTR) strCmd, "magenta" ) == 0 )
 				ReqColor = GetDocument()->GetMeasure()->GetSecondary(2);
-			else if ( stricmp ( (LPCSTR) strCmd, "free" ) == 0 )
+			else if ( _stricmp ( (LPCSTR) strCmd, "free" ) == 0 )
 			{
 				if ( GetDocument()->GetMeasure()->GetMeasurementsSize() > 0 )
 					ReqColor = GetDocument()->GetMeasure()->GetMeasurement(0);
 				else
 					ReqColor = noDataColor;
 			}
-			else if ( stricmp ( (LPCSTR) strCmd, "IRE" ) == 0 )
+			else if ( _stricmp ( (LPCSTR) strCmd, "IRE" ) == 0 )
 			{
 				nNbParms = 2;
 				if ( ! CmdParams.IsEmpty () )
@@ -1527,7 +1527,7 @@ LRESULT CMultiFrame::OnDDERequest(WPARAM wParam, LPARAM lParam)
 					bOk = FALSE;
 				}
 			}
-			else if ( stricmp ( (LPCSTR) strCmd, "NearBlack" ) == 0 )
+			else if ( _stricmp ( (LPCSTR) strCmd, "NearBlack" ) == 0 )
 			{
 				nNbParms = 2;
 				if ( ! CmdParams.IsEmpty () )
@@ -1546,7 +1546,7 @@ LRESULT CMultiFrame::OnDDERequest(WPARAM wParam, LPARAM lParam)
 					bOk = FALSE;
 				}
 			}
-			else if ( stricmp ( (LPCSTR) strCmd, "NearWhite" ) == 0 )
+			else if ( _stricmp ( (LPCSTR) strCmd, "NearWhite" ) == 0 )
 			{
 				nNbParms = 2;
 				if ( ! CmdParams.IsEmpty () )
@@ -1581,17 +1581,17 @@ LRESULT CMultiFrame::OnDDERequest(WPARAM wParam, LPARAM lParam)
 					{
 						strTemp = CmdParams.GetTail ();
 
-						if ( stricmp ( (LPCSTR) strTemp, "XYZ" ) == 0 )
+						if ( _stricmp ( (LPCSTR) strTemp, "XYZ" ) == 0 )
 							nFormat = HCFR_XYZ_VIEW;
-						else if ( stricmp ( (LPCSTR) strTemp, "SENSOR" ) == 0 )
+						else if ( _stricmp ( (LPCSTR) strTemp, "SENSOR" ) == 0 )
 							nFormat = HCFR_SENSORRGB_VIEW;
-						else if ( stricmp ( (LPCSTR) strTemp, "RGB" ) == 0 )
+						else if ( _stricmp ( (LPCSTR) strTemp, "RGB" ) == 0 )
 							nFormat = HCFR_RGB_VIEW;
-						else if ( stricmp ( (LPCSTR) strTemp, "xyz2" ) == 0 )
+						else if ( _stricmp ( (LPCSTR) strTemp, "xyz2" ) == 0 )
 							nFormat = HCFR_xyz2_VIEW;
-						else if ( stricmp ( (LPCSTR) strTemp, "xyY" ) == 0 )
+						else if ( _stricmp ( (LPCSTR) strTemp, "xyY" ) == 0 )
 							nFormat = HCFR_xyY_VIEW;
-						else if ( stricmp ( (LPCSTR) strTemp, "SPECTRUM" ) == 0 )
+						else if ( _stricmp ( (LPCSTR) strTemp, "SPECTRUM" ) == 0 )
 							nFormat = -1;
 						else
 							bOk = FALSE;
@@ -1756,11 +1756,11 @@ LRESULT CMultiFrame::OnDDEPoke(WPARAM wParam, LPARAM lParam)
 				// Default to "XYZ"
 				nFormat = HCFR_XYZ_VIEW;
 
-				if ( stricmp ( (LPCSTR) strTemp, "SENSOR" ) == 0 )
+				if ( _stricmp ( (LPCSTR) strTemp, "SENSOR" ) == 0 )
 					nFormat = HCFR_SENSORRGB_VIEW;
-				else if ( stricmp ( (LPCSTR) strTemp, "RGB" ) == 0 )
+				else if ( _stricmp ( (LPCSTR) strTemp, "RGB" ) == 0 )
 					nFormat = HCFR_RGB_VIEW;
-				else if ( stricmp ( (LPCSTR) strTemp, "xyY" ) == 0 )
+				else if ( _stricmp ( (LPCSTR) strTemp, "xyY" ) == 0 )
 					nFormat = HCFR_xyY_VIEW;
 			}
 
@@ -1790,42 +1790,42 @@ LRESULT CMultiFrame::OnDDEPoke(WPARAM wParam, LPARAM lParam)
 				}
 			}
 			
-			if ( stricmp ( (LPCSTR) strCmd, "red" ) == 0 )
+			if ( _stricmp ( (LPCSTR) strCmd, "red" ) == 0 )
 			{
 				GetDocument()->GetMeasure()->SetRedPrimary(ReceivedColor);
 				lHint = UPD_PRIMARIES;
 			}
-			else if ( stricmp ( (LPCSTR) strCmd, "green" ) == 0 )
+			else if ( _stricmp ( (LPCSTR) strCmd, "green" ) == 0 )
 			{
 				GetDocument()->GetMeasure()->SetGreenPrimary(ReceivedColor);
 				lHint = UPD_PRIMARIES;
 			}
-			else if ( stricmp ( (LPCSTR) strCmd, "blue" ) == 0 )
+			else if ( _stricmp ( (LPCSTR) strCmd, "blue" ) == 0 )
 			{
 				GetDocument()->GetMeasure()->SetBluePrimary(ReceivedColor);
 				lHint = UPD_PRIMARIES;
 			}
-			else if ( stricmp ( (LPCSTR) strCmd, "yellow" ) == 0 )
+			else if ( _stricmp ( (LPCSTR) strCmd, "yellow" ) == 0 )
 			{
 				GetDocument()->GetMeasure()->SetYellowSecondary(ReceivedColor);
 				lHint = UPD_SECONDARIES;
 			}
-			else if ( stricmp ( (LPCSTR) strCmd, "cyan" ) == 0 )
+			else if ( _stricmp ( (LPCSTR) strCmd, "cyan" ) == 0 )
 			{
 				GetDocument()->GetMeasure()->SetCyanSecondary(ReceivedColor);
 				lHint = UPD_SECONDARIES;
 			}
-			else if ( stricmp ( (LPCSTR) strCmd, "magenta" ) == 0 )
+			else if ( _stricmp ( (LPCSTR) strCmd, "magenta" ) == 0 )
 			{
 				GetDocument()->GetMeasure()->SetMagentaSecondary(ReceivedColor);
 				lHint = UPD_SECONDARIES;
 			}
-			else if ( stricmp ( (LPCSTR) strCmd, "free" ) == 0 )
+			else if ( _stricmp ( (LPCSTR) strCmd, "free" ) == 0 )
 			{
 				GetDocument()->GetMeasure()->InsertMeasurement(0,ReceivedColor);
 				lHint = UPD_FREEMEASURES;
 			}
-			else if ( stricmp ( (LPCSTR) strCmd, "IRE" ) == 0 )
+			else if ( _stricmp ( (LPCSTR) strCmd, "IRE" ) == 0 )
 			{
 				lHint = UPD_GRAYSCALE;
 				if ( ! CmdParams.IsEmpty () )
@@ -1845,7 +1845,7 @@ LRESULT CMultiFrame::OnDDEPoke(WPARAM wParam, LPARAM lParam)
 					bOk = FALSE;
 				}
 			}
-			else if ( stricmp ( (LPCSTR) strCmd, "NearBlack" ) == 0 )
+			else if ( _stricmp ( (LPCSTR) strCmd, "NearBlack" ) == 0 )
 			{
 				lHint = UPD_NEARBLACK;
 				if ( ! CmdParams.IsEmpty () )
@@ -1865,7 +1865,7 @@ LRESULT CMultiFrame::OnDDEPoke(WPARAM wParam, LPARAM lParam)
 					bOk = FALSE;
 				}
 			}
-			else if ( stricmp ( (LPCSTR) strCmd, "NearWhite" ) == 0 )
+			else if ( _stricmp ( (LPCSTR) strCmd, "NearWhite" ) == 0 )
 			{
 				lHint = UPD_NEARWHITE;
 				if ( ! CmdParams.IsEmpty () )
@@ -1998,7 +1998,7 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 
 	DdeParseString ( (LPCSTR) strCommand, strCmd, CmdParams );
 
-	if ( stricmp ( (LPCSTR) strCmd, "Save" ) == 0 )
+	if ( _stricmp ( (LPCSTR) strCmd, "Save" ) == 0 )
 	{
 		if ( CmdParams.IsEmpty () )
 		{
@@ -2011,18 +2011,18 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 			if ( CmdParams.GetCount () == 2 )
 			{
 				strParam = CmdParams.GetTail ();
-				if ( strnicmp ( (LPCSTR) strParam, "Yes", 3 ) == 0 )
+				if ( _strnicmp ( (LPCSTR) strParam, "Yes", 3 ) == 0 )
 					bUpdateName = TRUE;
 			}
 			strParam = CmdParams.GetHead ();
 			bOk = GetDocument () -> DoSave ( (LPCSTR) strParam, bUpdateName );
 		}
 	}
-	else if ( stricmp ( (LPCSTR) strCmd, "Close" ) == 0 )
+	else if ( _stricmp ( (LPCSTR) strCmd, "Close" ) == 0 )
 	{
 		GetParent () -> PostMessage ( WM_CLOSE );
 	}
-	else if ( stricmp ( (LPCSTR) strCmd, "SetSensorMatrix" ) == 0 )
+	else if ( _stricmp ( (LPCSTR) strCmd, "SetSensorMatrix" ) == 0 )
 	{
 		nCount = CmdParams.GetCount ();
 		
@@ -2051,7 +2051,7 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 			}
 		}
 	}
-	else if ( stricmp ( (LPCSTR) strCmd, "SetPrimariesChromacities" ) == 0 )
+	else if ( _stricmp ( (LPCSTR) strCmd, "SetPrimariesChromacities" ) == 0 )
 	{
 		nCount = CmdParams.GetCount ();
 		
@@ -2080,7 +2080,7 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 			}
 		}
 	}
-	else if ( stricmp ( (LPCSTR) strCmd, "SetWhiteChromacity" ) == 0 )
+	else if ( _stricmp ( (LPCSTR) strCmd, "SetWhiteChromacity" ) == 0 )
 	{
 		nCount = CmdParams.GetCount ();
 		
@@ -2106,7 +2106,7 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 			}
 		}
 	}
-	else if ( stricmp ( (LPCSTR) strCmd, "SetInfoText" ) == 0 )
+	else if ( _stricmp ( (LPCSTR) strCmd, "SetInfoText" ) == 0 )
 	{
 		nCount = CmdParams.GetCount ();
 		
@@ -2118,7 +2118,7 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 			GetDlgItem ( IDC_INFOS_EDIT ) -> SetWindowText ( (LPCSTR) str );
 		}
 	}
-	else if ( stricmp ( (LPCSTR) strCmd, "SetHCFRSensorParams" ) == 0 )
+	else if ( _stricmp ( (LPCSTR) strCmd, "SetHCFRSensorParams" ) == 0 )
 	{
 		str.LoadString(IDS_KISENSOR_NAME);
 		if ( GetDocument() -> m_pSensor -> GetName () == str )
@@ -2140,7 +2140,7 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 				{
 					// Debug mode
 					strParam = CmdParams.GetNext ( pos );
-					pSensor -> m_debugMode = ( strnicmp ( (LPCSTR) strParam, "Yes", 3 ) == 0 ? TRUE : FALSE );
+					pSensor -> m_debugMode = ( _strnicmp ( (LPCSTR) strParam, "Yes", 3 ) == 0 ? TRUE : FALSE );
 				}
 
 				if ( pos )
@@ -2154,7 +2154,7 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 				{
 					// Measure white
 					strParam = CmdParams.GetNext ( pos );
-					pSensor -> m_bMeasureWhite = ( strnicmp ( (LPCSTR) strParam, "Yes", 3 ) == 0 ? TRUE : FALSE );
+					pSensor -> m_bMeasureWhite = ( _strnicmp ( (LPCSTR) strParam, "Yes", 3 ) == 0 ? TRUE : FALSE );
 				}
 
 				if ( pos )
@@ -2179,12 +2179,12 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 				{
 					// Fast measure
 					strParam = CmdParams.GetNext ( pos );
-					pSensor -> m_bFastMeasure = ( strnicmp ( (LPCSTR) strParam, "Yes", 3 ) == 0 ? TRUE : FALSE );
+					pSensor -> m_bFastMeasure = ( _strnicmp ( (LPCSTR) strParam, "Yes", 3 ) == 0 ? TRUE : FALSE );
 				}
 			}
 		}
 	}
-	else if ( stricmp ( (LPCSTR) strCmd, "SetMeasureSizes" ) == 0 )
+	else if ( _stricmp ( (LPCSTR) strCmd, "SetMeasureSizes" ) == 0 )
 	{
 		nCount = CmdParams.GetCount ();
 		
@@ -2261,7 +2261,7 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 			GetDocument () -> SetSelectedColor ( noDataColor );
 		}
 	}
-	else if ( stricmp ( (LPCSTR) strCmd, "SaveCalibrationFile" ) == 0 && bSensorCalibrated )
+	else if ( _stricmp ( (LPCSTR) strCmd, "SaveCalibrationFile" ) == 0 && bSensorCalibrated )
 	{
 		nCount = CmdParams.GetCount ();
 		
@@ -2275,10 +2275,10 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 			{
 				bOk = TRUE;
 				
-				LPSTR lpStr = strrchr ( (LPCSTR) strParam, '.' );
+				LPSTR lpStr = strrchr ( (LPSTR)(LPCSTR) strParam, '.' );
 				if ( lpStr )
 				{
-					if ( stricmp ( lpStr, ".thc" ) != 0 )
+					if ( _stricmp ( lpStr, ".thc" ) != 0 )
 						bOk = FALSE;
 				}
 				else
@@ -2312,7 +2312,7 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 			}
 		}
 	}
-	else if ( stricmp ( (LPCSTR) strCmd, "measure" ) == 0 && bSensorCalibrated )
+	else if ( _stricmp ( (LPCSTR) strCmd, "measure" ) == 0 && bSensorCalibrated )
 	{
 		if ( CmdParams.IsEmpty () )
 		{
@@ -2336,9 +2336,9 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 				{
 					strParam = CmdParams.GetPrev ( pos );
 
-					if ( stricmp ( (LPCSTR) strParam, "no_wait" ) == 0 )
+					if ( _stricmp ( (LPCSTR) strParam, "no_wait" ) == 0 )
 						bNoWait = TRUE;
-					else if ( stricmp ( (LPCSTR) strParam, "wait" ) == 0 || strParam.IsEmpty () )
+					else if ( _stricmp ( (LPCSTR) strParam, "wait" ) == 0 || strParam.IsEmpty () )
 						bNoWait = FALSE;
 					else
 						bOk = FALSE;
@@ -2348,9 +2348,9 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 					// Second param is "display" or "no_display"
 					strParam = CmdParams.GetPrev ( pos );
 
-					if ( stricmp ( (LPCSTR) strParam, "display" ) == 0 )
+					if ( _stricmp ( (LPCSTR) strParam, "display" ) == 0 )
 						bDisplay = TRUE;
-					else if ( stricmp ( (LPCSTR) strParam, "no_display" ) == 0 || strParam.IsEmpty () )
+					else if ( _stricmp ( (LPCSTR) strParam, "no_display" ) == 0 || strParam.IsEmpty () )
 						bDisplay = FALSE;
 					else
 						bOk = FALSE;
@@ -2370,49 +2370,49 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 
 				nCount = CmdParams.GetCount ();
 
-				if ( stricmp ( (LPCSTR) strCmd, "red" ) == 0 && nCount == 0 )
+				if ( _stricmp ( (LPCSTR) strCmd, "red" ) == 0 && nCount == 0 )
 				{
 					lHint = UPD_PRIMARIES;
 					nCategory = CLRCAT_PRIMARY;
 					nClrIndex = 0;
 					clrref = RGB(255,0,0);
 				}
-				else if ( stricmp ( (LPCSTR) strCmd, "green" ) == 0 && nCount == 0 )
+				else if ( _stricmp ( (LPCSTR) strCmd, "green" ) == 0 && nCount == 0 )
 				{
 					lHint = UPD_PRIMARIES;
 					nCategory = CLRCAT_PRIMARY;
 					nClrIndex = 1;
 					clrref = RGB(0,255,0);
 				}
-				else if ( stricmp ( (LPCSTR) strCmd, "blue" ) == 0 && nCount == 0 )
+				else if ( _stricmp ( (LPCSTR) strCmd, "blue" ) == 0 && nCount == 0 )
 				{
 					lHint = UPD_PRIMARIES;
 					nCategory = CLRCAT_PRIMARY;
 					nClrIndex = 2;
 					clrref = RGB(0,0,255);
 				}
-				else if ( stricmp ( (LPCSTR) strCmd, "yellow" ) == 0 && nCount == 0 )
+				else if ( _stricmp ( (LPCSTR) strCmd, "yellow" ) == 0 && nCount == 0 )
 				{
 					lHint = UPD_SECONDARIES;
 					nCategory = CLRCAT_SECONDARY;
 					nClrIndex = 0;
 					clrref = RGB(255,255,0);
 				}
-				else if ( stricmp ( (LPCSTR) strCmd, "cyan" ) == 0 && nCount == 0 )
+				else if ( _stricmp ( (LPCSTR) strCmd, "cyan" ) == 0 && nCount == 0 )
 				{
 					lHint = UPD_SECONDARIES;
 					nCategory = CLRCAT_SECONDARY;
 					nClrIndex = 1;
 					clrref = RGB(0,255,255);
 				}
-				else if ( stricmp ( (LPCSTR) strCmd, "magenta" ) == 0 && nCount == 0 )
+				else if ( _stricmp ( (LPCSTR) strCmd, "magenta" ) == 0 && nCount == 0 )
 				{
 					lHint = UPD_SECONDARIES;
 					nCategory = CLRCAT_SECONDARY;
 					nClrIndex = 2;
 					clrref = RGB(255,0,255);
 				}
-				else if ( stricmp ( (LPCSTR) strCmd, "IRE" ) == 0 && nCount == 1 )
+				else if ( _stricmp ( (LPCSTR) strCmd, "IRE" ) == 0 && nCount == 1 )
 				{
 					lHint = UPD_GRAYSCALE;
 					nCategory = CLRCAT_IRE;
@@ -2430,7 +2430,7 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 
 					nClrIndex = i*j/100;
 				}
-				else if ( stricmp ( (LPCSTR) strCmd, "NearBlack" ) == 0 && nCount == 1 )
+				else if ( _stricmp ( (LPCSTR) strCmd, "NearBlack" ) == 0 && nCount == 1 )
 				{
 					lHint = UPD_NEARBLACK;
 					nCategory = CLRCAT_NEARBLACK;
@@ -2446,7 +2446,7 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 					ire = i;
 					nClrIndex = i;
 				}
-				else if ( stricmp ( (LPCSTR) strCmd, "NearWhite" ) == 0 && nCount == 1 )
+				else if ( _stricmp ( (LPCSTR) strCmd, "NearWhite" ) == 0 && nCount == 1 )
 				{
 					lHint = UPD_NEARWHITE;
 					nCategory = CLRCAT_NEARWHITE;
@@ -2462,35 +2462,35 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 					ire = i;
 					nClrIndex = i-100+j;
 				}
-				else if ( stricmp ( (LPCSTR) strCmd, "saturation" ) == 0 && nCount == 2 )
+				else if ( _stricmp ( (LPCSTR) strCmd, "saturation" ) == 0 && nCount == 2 )
 				{
 					strParam = CmdParams.GetHead ();
-					if ( stricmp ( (LPCSTR) strParam, "red" ) == 0 )
+					if ( _stricmp ( (LPCSTR) strParam, "red" ) == 0 )
 					{
 						lHint = UPD_REDSAT;
 						nCategory = CLRCAT_SAT_RED;
 					}
-					else if ( stricmp ( (LPCSTR) strParam, "green" ) == 0 )
+					else if ( _stricmp ( (LPCSTR) strParam, "green" ) == 0 )
 					{
 						lHint = UPD_GREENSAT;
 						nCategory = CLRCAT_SAT_GREEN;
 					}
-					else if ( stricmp ( (LPCSTR) strParam, "blue" ) == 0 )
+					else if ( _stricmp ( (LPCSTR) strParam, "blue" ) == 0 )
 					{
 						lHint = UPD_BLUESAT;
 						nCategory = CLRCAT_SAT_BLUE;
 					}
-					else if ( stricmp ( (LPCSTR) strParam, "yellow" ) == 0 )
+					else if ( _stricmp ( (LPCSTR) strParam, "yellow" ) == 0 )
 					{
 						lHint = UPD_YELLOWSAT;
 						nCategory = CLRCAT_SAT_YELLOW;
 					}
-					else if ( stricmp ( (LPCSTR) strParam, "cyan" ) == 0 )
+					else if ( _stricmp ( (LPCSTR) strParam, "cyan" ) == 0 )
 					{
 						lHint = UPD_CYANSAT;
 						nCategory = CLRCAT_SAT_CYAN;
 					}
-					else if ( stricmp ( (LPCSTR) strParam, "magenta" ) == 0 )
+					else if ( _stricmp ( (LPCSTR) strParam, "magenta" ) == 0 )
 					{
 						lHint = UPD_MAGENTASAT;
 						nCategory = CLRCAT_SAT_MAGENTA;
@@ -2509,7 +2509,7 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 
 					nClrIndex = i*j/100;
 				}
-				else if ( stricmp ( (LPCSTR) strCmd, "free" ) == 0 && ( nCount == 0 || nCount == 3 ) )
+				else if ( _stricmp ( (LPCSTR) strCmd, "free" ) == 0 && ( nCount == 0 || nCount == 3 ) )
 				{
 					lHint = UPD_FREEMEASURES;
 					nCategory = CLRCAT_FREE;

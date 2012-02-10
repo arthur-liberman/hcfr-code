@@ -7,6 +7,8 @@
 #define AFX_STDAFX_H__53A7E878_541F_4044_A0E6_3A5BE7C30A41__INCLUDED_
 
 #define WINVER 0x0410
+#define _WIN32_IE 0x0601
+#define _CRT_SECURE_NO_WARNINGS
 // disable warning C4786: symbol greater than 255 character, okay to ignore
 #pragma warning(disable : 4786)
 

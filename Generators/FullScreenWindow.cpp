@@ -156,7 +156,6 @@ void CFullScreenWindow::MoveToMonitor ( HMONITOR hMon )
 
 void CFullScreenWindow::DisplayRGBColor ( COLORREF clr, BOOL bDisableWaiting )
 {
-    int				i, j;
 	int				nColorFlag;
 	int				nPadWidth, nPadHeight;
 	int				R, G, B;
@@ -262,14 +261,14 @@ void CFullScreenWindow::DisplayRGBColor ( COLORREF clr, BOOL bDisableWaiting )
 				dwYUY2_Black = 0x80008000;
 			}
 
-			for ( i = 0; i < SurfaceDesc.dwHeight; i ++ )
+			for (int i = 0; i < SurfaceDesc.dwHeight; i ++ )
 			{
 				DWORD*	pPixel = (DWORD*) ((BYTE*)SurfaceDesc.lpSurface + i * SurfaceDesc.lPitch);
 				
 				if ( nColorFlag )
 				{
 					// Alternate Black and White rectangles (ANSI contrast)
-					for (j = 0; j < SurfaceDesc.dwWidth / 2; j ++)
+					for (int j = 0; j < SurfaceDesc.dwWidth / 2; j ++)
 					{
 						if ( ( ( ( i / nPadHeight ) + ( j * 2 / nPadWidth ) ) & 1 ) == nColorFlag - 1 )
 							*pPixel = dwYUY2_Color;
@@ -281,7 +280,7 @@ void CFullScreenWindow::DisplayRGBColor ( COLORREF clr, BOOL bDisableWaiting )
 				else
 				{
 					// Colored rectangle mode
-					for (j = 0; j < SurfaceDesc.dwWidth / 2; j ++)
+					for (int j = 0; j < SurfaceDesc.dwWidth / 2; j ++)
 					{
 						if ( i >= patternRect.top && i < patternRect.bottom && j * 2 >= patternRect.left && j * 2 < patternRect.right )
 							*pPixel = dwYUY2_Color;
@@ -664,7 +663,7 @@ void CFullScreenWindow::OnPaint()
 			clrStartLevel = 255 - clrMaxLevel;
 		}
 
-		for ( i = 0; i < m_nPadsPattern; i++)
+		for (int i = 0; i < m_nPadsPattern; i++)
 		{
 			cClr = clrStartLevel + (i * clrMaxLevel)/(m_nPadsPattern-1);
 			if (m_iClrLevel == 0 || m_iClrLevel >7)
@@ -805,7 +804,7 @@ void CFullScreenWindow::OnPaint()
 		stepY = maxY / m_nPadsPattern;
 		stepX = stepY;
 		offset = (maxX % stepX) / 2;
-		halfCircle = (sqrt(maxX * maxX + maxY * maxY) / 2 - (maxY / 2) - 1) / 2.37 - 1;
+		halfCircle = (sqrt(double(maxX * maxX + maxY * maxY)) / 2.0 - (maxY / 2.0) - 1.0) / 2.37 - 1;
 
 		if (halfCircle > (maxY / 4)) 
 			halfCircle = (maxY / 4) - 1;
@@ -1096,6 +1095,7 @@ struct MonitorEnumCtx
 	HMONITOR		m_hSearchedMon;
 	LPDIRECTDRAW	m_lpDD;
     HRESULT			m_ddrval;
+    HRESULT (WINAPI * m_pDirectDrawCreate) (GUID*, LPDIRECTDRAW*, IUnknown*);
 };
 
 static BOOL WINAPI MonitorCallback ( GUID *lpGUID, LPSTR lpDriverDescription, LPSTR lpDriverName, LPVOID lpContext, HMONITOR hMon )
@@ -1104,7 +1104,7 @@ static BOOL WINAPI MonitorCallback ( GUID *lpGUID, LPSTR lpDriverDescription, LP
 
 	if ( lpCtx -> m_hSearchedMon == hMon )
 	{
-		lpCtx -> m_ddrval = DirectDrawCreate(lpGUID, &lpCtx -> m_lpDD, NULL);
+		lpCtx -> m_ddrval = lpCtx->m_pDirectDrawCreate(lpGUID, &lpCtx -> m_lpDD, NULL);
 		return FALSE;
 	}
 
@@ -1121,10 +1121,19 @@ void CFullScreenWindow::InitOverlay ()
 	MonitorEnumCtx	MonCtx;
 	char			szError [ 256 ];
 	char			szMsg [ 256 ];
-    HINSTANCE		hLib;
+    HINSTANCE		hLib  = 0;
 	HRESULT ( WINAPI * pDirectDrawEnumerateEx ) ( LPDDENUMCALLBACKEXA lpCallback, LPVOID lpContext, DWORD dwFlags) = NULL;
+    HRESULT ( WINAPI * pDirectDrawCreate ) ( GUID FAR *lpGUID, LPDIRECTDRAW FAR *lplpDD, IUnknown FAR *pUnkOuter );
 
 	ASSERT ( m_lpDD == NULL && m_lpDDPrimarySurface == NULL && m_lpDDOverlay == NULL );
+
+    if(!hLib)
+	    hLib = GetModuleHandle ( "ddraw.dll" );
+    
+    if ( hLib )
+		pDirectDrawCreate = (HRESULT (WINAPI *) (GUID*, LPDIRECTDRAW*, IUnknown*) ) GetProcAddress ( hLib, "DirectDrawCreate" );
+    else
+        return;
 
 	if ( m_hCurrentMon )
 	{
@@ -1139,6 +1148,7 @@ void CFullScreenWindow::InitOverlay ()
 			MonCtx.m_hSearchedMon = m_hCurrentMon;
 			MonCtx.m_lpDD = NULL;
 			MonCtx.m_ddrval = 0;
+            MonCtx.m_pDirectDrawCreate = pDirectDrawCreate;
 			pDirectDrawEnumerateEx ( MonitorCallback, (void *) & MonCtx, DDENUM_ATTACHEDSECONDARYDEVICES );
 			m_lpDD = MonCtx.m_lpDD;
 
@@ -1159,8 +1169,10 @@ void CFullScreenWindow::InitOverlay ()
 
 	if ( m_lpDD == NULL )
 	{
+		// Retrieve DirectDraw GUID for current monitor
+
 		// Init Direct Draw in normal mode
-		ddrval = DirectDrawCreate(NULL, &m_lpDD, NULL);
+		ddrval = pDirectDrawCreate(NULL, &m_lpDD, NULL);
 		if (FAILED(ddrval))
 		{
 			GetOverlayErrorText ( ddrval, szError );

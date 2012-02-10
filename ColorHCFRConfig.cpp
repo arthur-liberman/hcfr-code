@@ -104,7 +104,7 @@ CColorHCFRConfig::CColorHCFRConfig()
 			if ( lpStr )
 				lpStr [ 0 ] = '\0';
 			
-			if ( stricmp ( szBuf, "PATTERNS" ) != 0 )
+			if ( _stricmp ( szBuf, "PATTERNS" ) != 0 )
 				dlg.m_Languages.AddTail ( szBuf );
 		} while ( FindNextFile ( hFind, & wfd ) );
 
@@ -173,7 +173,7 @@ CColorHCFRConfig::CColorHCFRConfig()
 					// Translate language suffixes into readable names
 					for ( i = 0 ; i < sizeof ( g_HelpFileNames ) / sizeof ( g_HelpFileNames [ 0 ] ) ; i ++ )
 					{
-						if ( stricmp ( szBuf, g_HelpFileNames[i].lpszLangCode ) == 0 )
+						if ( _stricmp ( szBuf, g_HelpFileNames[i].lpszLangCode ) == 0 )
 						{
 							dlgHelp.m_Languages.AddTail ( g_HelpFileNames[i].lpszHelpName );
 							break;
@@ -193,7 +193,7 @@ CColorHCFRConfig::CColorHCFRConfig()
 
 					for ( i = 0 ; i < sizeof ( g_HelpFileNames ) / sizeof ( g_HelpFileNames [ 0 ] ) ; i ++ )
 					{
-						if ( stricmp ( (LPCSTR) str, g_HelpFileNames[i].lpszHelpName ) == 0 )
+						if ( _stricmp ( (LPCSTR) str, g_HelpFileNames[i].lpszHelpName ) == 0 )
 						{
 							str = HELP_PREFIX;
 							str += g_HelpFileNames[i].lpszLangCode;
@@ -471,7 +471,7 @@ BOOL CColorHCFRConfig::GetPropertiesSheetValues()
 	BOOL	needRestart=FALSE;
 	CString	strPort;
 
-	if ( strnicmp ( (LPCSTR) m_advancedPropertiesPage.m_comPort, "COM", 3 ) == 0 )
+	if ( _strnicmp ( (LPCSTR) m_advancedPropertiesPage.m_comPort, "COM", 3 ) == 0 )
 		strPort = m_advancedPropertiesPage.m_comPort;
 
 	if ( strPort != GetColorApp() -> m_LuxPort )

@@ -242,7 +242,7 @@ void CRGBLevelWnd::DrawGradientBar(CDC *pDC,COLORREF aColor, int aX, int aY, int
 	// fill color to black gradient
 	r1=GetRValue(aColor),g1=GetGValue(aColor),b1=GetBValue(aColor); //Any stop color
 	r2=0,g2=0,b2=0; // end with black
-	for(i=0;i<aWidth;i++)
+	for(int i=0;i<aWidth;i++)
 	{ 
 		int r,g,b;
 		r = r1 + (i * (r2-r1) / aWidth);

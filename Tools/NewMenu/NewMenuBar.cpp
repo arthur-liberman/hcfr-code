@@ -1699,7 +1699,7 @@ void CNewMenuBar::DrawGripper(CDC* pDC, const CRect& rect)
   }
 }
 
-UINT CNewMenuBar::OnNcHitTest(CPoint)
+LRESULT CNewMenuBar::OnNcHitTest(CPoint)
 {
   return HTCLIENT;
 }

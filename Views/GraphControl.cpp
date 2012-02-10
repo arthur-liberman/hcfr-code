@@ -801,7 +801,7 @@ void CGraphControl::DrawAxis(CDC *pDC, CRect rect, BOOL bWhiteBkgnd)
 	pDC->SetTextColor(bWhiteBkgnd?RGB(64,64,64):RGB(192,192,192));
 	double yVal=m_minY;
 	double lastStrEndY=GetGraphY(yVal,rect);
-	for(i=0;i<(m_maxY-m_minY)/m_yAxisStep;i++)
+	for(int i=0;i<(m_maxY-m_minY)/m_yAxisStep;i++)
 	{
 		int y=GetGraphY(yVal,rect);
 		if(m_doShowAxis)
@@ -1024,7 +1024,7 @@ void CGraphControl::SaveGraphFile ( CSize ImageSize, LPCSTR lpszPathName, int Im
 		DrawAxis(&MemDC,halfRect1,GetConfig()->m_bWhiteBkgndOnFile);
 		DrawGraphs(&MemDC,halfRect1);
 
-		for ( i = 0; i < NbOtherGraphs ; i ++ )
+		for (i = 0; i < NbOtherGraphs ; i ++ )
 		{
 			CRect halfRect2(CPoint(0,rect.Height()*(i+1)/(NbOtherGraphs+1)),CSize(rect.Width(),(rect.Height()/(NbOtherGraphs+1))+1));
 			CRgn clipRgn;

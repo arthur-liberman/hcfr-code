@@ -355,7 +355,7 @@ void CTargetWnd::MakeBgBitmap()	// Create background bitmap
         dc2.SelectObject(pOldPen);
 	}
 
-	for(i=rect.Width() / 2; i<rect.Width();i++)
+	for(int i=rect.Width() / 2; i<rect.Width();i++)
 	{
         r = r1b + ( (i-(rect.Width()/2)) * (r2-r1b) / (rect.Width()/2) );
         g = g1b + ( (i-(rect.Width()/2)) * (g2-g1b) / (rect.Width()/2) );
@@ -370,7 +370,7 @@ void CTargetWnd::MakeBgBitmap()	// Create background bitmap
         dc2.SelectObject(pOldPen);
 	}
 
-	for(i=0; i<rect.Width();i++)
+	for(int i=0; i<rect.Width();i++)
 	{
         r = r3 + (i * (r4-r3) / rect.Width());
         g = g3 + (i * (g4-g3) / rect.Width());
@@ -385,7 +385,7 @@ void CTargetWnd::MakeBgBitmap()	// Create background bitmap
         dc2.SelectObject(pOldPen);
 	}
 
-	for(i=0; i<rect.Height();i++)
+	for(int i=0; i<rect.Height();i++)
 	{
         r = r1 + (i * (r3-r1) / rect.Height());
         g = g1 + (i * (g3-g1) / rect.Height());
@@ -400,7 +400,7 @@ void CTargetWnd::MakeBgBitmap()	// Create background bitmap
         dc2.SelectObject(pOldPen);
 	}
 
-	for(i=0; i<rect.Height()/2;i++)		
+	for(int i=0; i<rect.Height()/2;i++)		
 	{
         r = r2 + (i * (r2b-r2) / (rect.Height()/2) );
         g = g2 + (i * (g2b-g2) / (rect.Height()/2) );
@@ -415,7 +415,7 @@ void CTargetWnd::MakeBgBitmap()	// Create background bitmap
         dc2.SelectObject(pOldPen);
 	}
 
-	for(i=rect.Height()/2; i<rect.Height();i++)		
+	for(int i=rect.Height()/2; i<rect.Height();i++)		
 	{
         r = r2b + ( (i-(rect.Height()/2)) * (r4-r2b) / (rect.Height()/2) );
         g = g2b + ( (i-(rect.Height()/2)) * (g4-g2b) / (rect.Height()/2) );

@@ -1303,7 +1303,7 @@ BOOL CAboutDlg::OnInitDialog()
 	str.LoadString ( IDS_ABOUT_THANK_HEADER );
 	s += str;
 
-	for(i=0;i<classesNb;i+=2)
+	for(int i=0;i<classesNb;i+=2)
 	{
 		s+=CString(classesStyle)+ "<a href='" + CString(classesStrings[i+1])+"'>" + CString(classesStrings[i])+ "</a></font>";
 	} 

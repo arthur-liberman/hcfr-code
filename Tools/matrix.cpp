@@ -550,7 +550,7 @@ double Matrix::Determinant() const
 
 	for(int q=0; q<m_nCols; ++q) {
 		Matrix* NewMinor = GetMinorNew(0, q);
-		sum += (pow(-1, q)*(m_pData[0][q]*NewMinor->Determinant()));
+		sum += (pow(-1.0, (double)q)*(m_pData[0][q]*NewMinor->Determinant()));
 		delete NewMinor;
 	}
 
@@ -1166,8 +1166,8 @@ Matrix& Matrix::CMAR(const Matrix& obj)
 	if(m_nCols != obj.m_nCols) ErrorMsg("mismatched matrices in row concatenation", true);
 
 	Matrix temp(0.0, (m_nRows + obj.m_nRows), m_nCols);
-
-	for(int i=0; i<m_nRows; ++i) {
+    int i;
+	for(i=0; i<m_nRows; ++i) {
 		for(int j=0; j<m_nCols; ++j) {
 			temp.m_pData[i][j] = m_pData[i][j];
 		}
@@ -1192,7 +1192,8 @@ Matrix& Matrix::CMAC(const Matrix& obj)
 	Matrix temp(0.0, m_nRows, (m_nCols + obj.m_nCols));
 
 	for(int i=0; i<m_nRows; ++i) {
-		for(int j=0; j<m_nCols; ++j) {
+        int j;
+		for(j=0; j<m_nCols; ++j) {
 			temp.m_pData[i][j] = m_pData[i][j];
 		}
 		for(int l=0; l<obj.m_nCols; ++l, ++j) {
@@ -1234,7 +1235,8 @@ Matrix& Matrix::ConcatenateRow(const double* RowData)
 {
 	Matrix temp(0.0, m_nRows+1, m_nCols);
 
-	for(int i=0; i<m_nRows; ++i) {
+    int i;
+	for(i=0; i<m_nRows; ++i) {
 		for(int j=0; j<m_nCols; ++j) {
 			temp.m_pData[i][j] = m_pData[i][j];
 		}
@@ -1255,13 +1257,13 @@ Matrix& Matrix::ConcatenateColumn(const double* ColumnData)
 	
 	Matrix temp(0.0, m_nRows, m_nCols+1);
 
-	for(int i=0; i<m_nRows; ++i) {
+    int i;
+	for(i=0; i<m_nRows; ++i) {
 		for(int j=0; j<m_nCols; ++j) {
 			temp.m_pData[i][j] = m_pData[i][j];
 		}
 	}
-	int j;
-	for(j=m_nCols, i=0; i<m_nRows; ++i) {
+	for(int j=m_nCols, i=0; i<m_nRows; ++i) {
 		temp.m_pData[i][j] = ColumnData[i];
 	}
 

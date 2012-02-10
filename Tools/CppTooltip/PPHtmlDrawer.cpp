@@ -827,7 +827,7 @@ CSize CPPHtmlDrawer::DrawHtmlTable (CDC * pDC, CString & str, CRect & rect, BOOL
 			} //for
 
 			//Creates table
-			for (i = 0; i < szTable.cy; i++)
+			for (int i = 0; i < szTable.cy; i++)
 			{
 				m_arrTable.push_back(row);
 				rowHeight.push_back(0);
@@ -1200,7 +1200,7 @@ CSize CPPHtmlDrawer::DrawHtmlTable (CDC * pDC, CString & str, CRect & rect, BOOL
 							{
 								int step = (sc.szCell.cx - span_width) / i;
 								colWidth [x + i - 1] += (sc.szCell.cx - span_width) % i;
-								for (z = 0; z < i; z++)
+								for (int z = 0; z < i; z++)
 									colWidth [x + z] += step;
 							} //if
 						} //if
@@ -1232,7 +1232,7 @@ CSize CPPHtmlDrawer::DrawHtmlTable (CDC * pDC, CString & str, CRect & rect, BOOL
 							{
 								int step = (sc.szCell.cy - span_height) / i;
 								rowHeight [y] += (sc.szCell.cy - span_height) % i;
-								for (z = 0; z < i; z++)
+								for (int z = 0; z < i; z++)
 									rowHeight [y + z] += step;
 							} //if
 						} //if

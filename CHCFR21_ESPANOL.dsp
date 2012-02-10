@@ -96,7 +96,7 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=".\CHCFR21_ESPAÑOL.rc"
+SOURCE=".\CHCFR21_ESPANOL.rc"
 
 !IF  "$(CFG)" == "CHCFR21_ESPAÑOL - Win32 Release"
 

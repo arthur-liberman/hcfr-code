@@ -486,7 +486,7 @@ CColor::CColor():Matrix(1.0,3,1)
 	m_pLuxValue = NULL;
 }
 
-CColor::CColor(CColor &aColor):Matrix(aColor)
+CColor::CColor(const CColor &aColor):Matrix(aColor)
 {
 	m_XYZtoSensorMatrix = aColor.m_XYZtoSensorMatrix;
 	m_SensorToXYZMatrix = aColor.m_SensorToXYZMatrix;

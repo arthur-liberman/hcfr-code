@@ -48,6 +48,8 @@
 #if !defined(__CXIMAGE_H)
 #define __CXIMAGE_H
 
+#define _CRT_SECURE_NO_WARNINGS
+
 #if _MSC_VER > 1000
 #pragma once
 #endif 

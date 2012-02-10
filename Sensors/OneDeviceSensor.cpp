@@ -809,7 +809,7 @@ void COneDeviceSensor::SaveCalibrationFile()
 				Msg.LoadString ( IDS_MUSTSAVEINSUBDIR );
 				AfxMessageBox ( Msg );
 				strFileName = fileSaveDialog.GetFileName();
-				lpStr = strrchr ( (LPCSTR) strFileName, '.' );
+				lpStr = strrchr ( (LPSTR)(LPCSTR) strFileName, '.' );
 				if ( lpStr )
 					lpStr [ 0 ] = '\0';
 				bContinue = TRUE;

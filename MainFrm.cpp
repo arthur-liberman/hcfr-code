@@ -33,7 +33,7 @@
 
 #include "PatternDisplay.h"
 
-#include "WebUpdate.h"
+//#include "WebUpdate.h"
 
 #include <dde.h>
 
@@ -569,7 +569,7 @@ LRESULT CMainFrame::OnDDEInitiate(WPARAM wParam, LPARAM lParam)
 		if ( nAtomAppli != AfxGetApp () -> m_atomApp )
 		{
 			GlobalGetAtomName ( nAtomAppli, szBuf, sizeof ( szBuf ) );
-			if ( stricmp ( szBuf, g_szShortApplicationName ) == 0 || stricmp ( szBuf, g_szLongApplicationName ) == 0 )
+			if ( _stricmp ( szBuf, g_szShortApplicationName ) == 0 || _stricmp ( szBuf, g_szLongApplicationName ) == 0 )
 			{
 				// Received	good name, compressed or not. Get good atom name
 				nAtomAppli = AfxGetApp () -> m_atomApp;
@@ -582,7 +582,7 @@ LRESULT CMainFrame::OnDDEInitiate(WPARAM wParam, LPARAM lParam)
 			if ( nAtomTopic )
 			{
 				GlobalGetAtomName ( nAtomTopic, szBuf, sizeof ( szBuf ) );
-				if ( stricmp ( szBuf, g_szDDETopicName ) == 0 )
+				if ( _stricmp ( szBuf, g_szDDETopicName ) == 0 )
 					bOk = TRUE;
 			}
 			else
@@ -702,7 +702,7 @@ LRESULT CMainFrame::OnDDEExecute(WPARAM wParam, LPARAM lParam)
 
 			bOk = FALSE;
 			DdeParseString ( (LPCSTR) strCommand, strCmd, CmdParams );
-			if ( stricmp ( (LPCSTR) strCmd, "OpenColorDataSet" ) == 0 || stricmp ( (LPCSTR) strCmd, "Open" ) == 0 )
+			if ( _stricmp ( (LPCSTR) strCmd, "OpenColorDataSet" ) == 0 || _stricmp ( (LPCSTR) strCmd, "Open" ) == 0 )
 			{
 				lRes = 0;
 				nCount = CmdParams.GetCount ();
@@ -719,7 +719,7 @@ LRESULT CMainFrame::OnDDEExecute(WPARAM wParam, LPARAM lParam)
 						bOk = FALSE;
 				}
 			}
-			else if ( stricmp ( (LPCSTR) strCmd, "NewColorDataSet" ) == 0 )
+			else if ( _stricmp ( (LPCSTR) strCmd, "NewColorDataSet" ) == 0 )
 			{
 				nCount = CmdParams.GetCount ();
 				
@@ -776,7 +776,7 @@ LRESULT CMainFrame::OnDDEExecute(WPARAM wParam, LPARAM lParam)
 				
 				lRes = 0;
 			}
-			else if ( stricmp ( (LPCSTR) strCmd, "NewColorDataSetWithThc" ) == 0 )
+			else if ( _stricmp ( (LPCSTR) strCmd, "NewColorDataSetWithThc" ) == 0 )
 			{
 				nCount = CmdParams.GetCount ();
 				
@@ -831,7 +831,7 @@ LRESULT CMainFrame::OnDDEExecute(WPARAM wParam, LPARAM lParam)
 				
 				lRes = 0;
 			}
-			else if ( stricmp ( (LPCSTR) strCmd, "SetLogFileName" ) == 0 )
+			else if ( _stricmp ( (LPCSTR) strCmd, "SetLogFileName" ) == 0 )
 			{
 				nCount = CmdParams.GetCount ();
 				
@@ -1068,7 +1068,7 @@ void CMainFrame::OnLanguage()
 			if ( lpStr )
 				lpStr [ 0 ] = '\0';
 			
-			if ( stricmp ( szBuf, "PATTERNS" ) != 0 )
+			if ( _stricmp ( szBuf, "PATTERNS" ) != 0 )
 				dlg.m_Languages.AddTail ( szBuf );
 		} while ( FindNextFile ( hFind, & wfd ) );
 
@@ -1120,9 +1120,10 @@ int __stdcall MyDialogProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 void CMainFrame::OnUpdateSoft()
 {
+/*
 	CString strNewFtpFile;
 	CString strDefaultFileName;
-	CWebUpdate WebUpdate;
+//	CWebUpdate WebUpdate;
 	HWND	hDlg, hCtrl;
 
 	hDlg = ::CreateDialog ( AfxGetResourceHandle (), MAKEINTRESOURCE(IDD_WEB_UPDATE), m_hWnd, MyDialogProc );
@@ -1136,8 +1137,9 @@ void CMainFrame::OnUpdateSoft()
 		AfxMessageBox(IDS_UPD_IMPOSSIBLE, MB_OK | MB_ICONWARNING);
 		return;
 	}
+*/
 
-	::SetWindowText ( hCtrl, "Looking for new version... please wait..." );
+/*	::SetWindowText ( hCtrl, "Looking for new version... please wait..." );
 	strNewFtpFile = WebUpdate.CheckNewSoft();
 	if (strNewFtpFile.IsEmpty())
 	{
@@ -1174,11 +1176,12 @@ void CMainFrame::OnUpdateSoft()
 		}
 		::DestroyWindow ( hDlg );
 	}
+*/
 }
 
 void CMainFrame::OnUpdateEtalons()
 {
-	CWebUpdate WebUpdate;
+/*	CWebUpdate WebUpdate;
 	HWND	hDlg, hCtrl;
 
 	hDlg = ::CreateDialog ( AfxGetResourceHandle (), MAKEINTRESOURCE(IDD_WEB_UPDATE), m_hWnd, MyDialogProc );
@@ -1203,12 +1206,13 @@ void CMainFrame::OnUpdateEtalons()
 		AfxMessageBox(IDS_UPD_DOWNLOAD_FAILED, MB_OK | MB_ICONWARNING);
 	}
 	::DestroyWindow ( hDlg );
+*/
 }
 
 
 void CMainFrame::OnUpdateIRProfiles() 
 {
-	CWebUpdate WebUpdate;
+/*	CWebUpdate WebUpdate;
 	HWND	hDlg, hCtrl;
 
 	hDlg = ::CreateDialog ( AfxGetResourceHandle (), MAKEINTRESOURCE(IDD_WEB_UPDATE), m_hWnd, MyDialogProc );
@@ -1233,6 +1237,7 @@ void CMainFrame::OnUpdateIRProfiles()
 		AfxMessageBox(IDS_UPD_DOWNLOAD_FAILED, MB_OK | MB_ICONWARNING);
 	}
 	::DestroyWindow ( hDlg );
+*/
 }
 
 

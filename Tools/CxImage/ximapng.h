@@ -46,19 +46,19 @@ protected:
 
 	static void user_read_data(png_structp png_ptr, png_bytep data, png_size_t length)
 	{
-		CxFile* hFile = (CxFile*)png_ptr->io_ptr;
+		CxFile* hFile = (CxFile*)png_get_io_ptr(png_ptr);
 		if (hFile->Read(data,1,length) != length) png_error(png_ptr, "Read Error");
 	}
 
 	static void user_write_data(png_structp png_ptr, png_bytep data, png_size_t length)
 	{
-		CxFile* hFile = (CxFile*)png_ptr->io_ptr;
+		CxFile* hFile = (CxFile*)png_get_io_ptr(png_ptr);
 		if (hFile->Write(data,1,length) != length) png_error(png_ptr, "Write Error");
 	}
 
 	static void user_flush_data(png_structp png_ptr)
 	{
-		CxFile* hFile = (CxFile*)png_ptr->io_ptr;
+		CxFile* hFile = (CxFile*)png_get_io_ptr(png_ptr);
 		if (!hFile->Flush()) png_error(png_ptr, "Flush Error");
 	}
     static void user_error_fn(png_structp png_ptr,png_const_charp error_msg)

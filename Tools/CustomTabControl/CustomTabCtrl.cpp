@@ -1653,7 +1653,8 @@ int CCustomTabCtrl::CopyItem(int nItemSrc, int nItemDst, BOOL fMouseSel)
 				sDst.Format(_T("%s (%d)"),(LPCTSTR)m_aItems[nItemSrc]->m_sText,ndx);
 			else
 				sDst.Format(_T("%s(%d)"),(LPCTSTR)m_aItems[nItemSrc]->m_sText.Left(n),ndx);
-			for(int i=0;i<m_aItems.GetSize();i++)
+            int i;
+			for(i=0;i<m_aItems.GetSize();i++)
 			{
 				if(m_aItems[i]->m_sText==sDst)
 					break;
@@ -2409,7 +2410,7 @@ int CCustomTabCtrl::RecalcRectangles()
 				if(w>nMaxWidth)
 					nMaxWidth = w;
 			}
-			for(i=0; i<m_aItems.GetSize(); i++)
+			for(int i=0; i<m_aItems.GetSize(); i++)
 			{
 				if(fTop)
 				{

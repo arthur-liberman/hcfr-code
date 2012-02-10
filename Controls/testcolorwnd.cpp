@@ -218,25 +218,25 @@ BOOL CTestColorWnd::PreTranslateMessage(MSG* pMsg)
 			}
 			
 			// fill selection color array with interesting ones for us
-			for(i=0; i<11; i++)
+			for(int i=0; i<11; i++)
 			{
 				Msg.LoadString ( IDS_GRAYIRE );
 				CColourPopupXP::m_crColours[i].crColour=RGB(i*coef+base,i*coef+base,i*coef+base);
 				sprintf(CColourPopupXP::m_crColours[i].szName,(LPCSTR)Msg,i*10);
 			}
-			for(i=0; i<11; i++)
+			for(int i=0; i<11; i++)
 			{
 				Msg.LoadString ( IDS_REDIRE );
 				CColourPopupXP::m_crColours[i+11].crColour=RGB(i*coef+base,base,base);
 				sprintf(CColourPopupXP::m_crColours[i+11].szName,(LPCSTR)Msg,i*10);
 			}
-			for(i=0; i<11; i++)
+			for(int i=0; i<11; i++)
 			{
 				Msg.LoadString ( IDS_GREENIRE );
 				CColourPopupXP::m_crColours[i+22].crColour=RGB(base,i*coef+base,base);
 				sprintf(CColourPopupXP::m_crColours[i+22].szName,(LPCSTR)Msg,i*10);
 			}
-			for(i=0; i<11; i++)
+			for(int i=0; i<11; i++)
 			{
 				Msg.LoadString ( IDS_BLUEIRE );
 				CColourPopupXP::m_crColours[i+33].crColour=RGB(base,base,i*coef+base);

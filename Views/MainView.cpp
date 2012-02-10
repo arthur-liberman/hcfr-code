@@ -806,8 +806,10 @@ void CMainView::InitGrid()
 
 	m_pGrayScaleGrid->SetItem(&Item);
 
+    int i;
+
 	// set columns labels 
-	for(int i=0;i<size;i++)
+	for(i=0;i<size;i++)
 	{
 		Item.row = 0;
 		Item.col = i+1;

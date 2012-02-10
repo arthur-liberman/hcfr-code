@@ -749,6 +749,8 @@ protected:
   UINT m_TimerID;
   UINT m_menubarItemIndex;
 
+    typedef CNewFrame<baseClass> ThisClass;
+    typedef baseClass TheBaseClass;
 
 #if _MFC_VER < 0x0700 
   static const AFX_MSGMAP* PASCAL _GetBaseMessageMap()
@@ -861,9 +863,9 @@ protected:
     baseClass::OnDestroy();
   }
 
-  afx_msg UINT OnNcHitTest(CPoint point)
+  afx_msg LRESULT OnNcHitTest(CPoint point)
   {
-    UINT nHitCode = baseClass::OnNcHitTest(point);
+    LRESULT nHitCode = baseClass::OnNcHitTest(point);
     // Test Win95/98/me and Win NT 4.0
     if(g_Shell<Win2000 || bRemoteSession)
     {
