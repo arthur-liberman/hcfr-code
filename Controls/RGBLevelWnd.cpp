@@ -119,7 +119,7 @@ void CRGBLevelWnd::OnPaint()
 
 	float yScale;
 	if(maxYValue < 200 )
-		yScale=(float)drawRect.Height()/200.0;		// if value is bellow 200% => scale is 0-200% 
+		yScale=(float)(drawRect.Height()/200.0);		// if value is bellow 200% => scale is 0-200% 
 	else		
 		yScale=(float)drawRect.Height()/(float)maxYValue;	// else scale is 0-max value
 	
@@ -131,19 +131,19 @@ void CRGBLevelWnd::OnPaint()
 	{
 		CPen aPen(PS_DOT,1,RGB(128,128,128));
 		pDC->SelectObject(&aPen);
-		pDC->MoveTo(0,rect.Height()-(int)100.0*yScale-heightMargin);
-		pDC->LineTo(rect.Width(),rect.Height()-(int)100.0*yScale-heightMargin);
+		pDC->MoveTo(0,rect.Height()-(int)(100.0*yScale)-heightMargin);
+		pDC->LineTo(rect.Width(),rect.Height()-(int)(100.0*yScale)-heightMargin);
 	}
 
-	int redBarHeight=(int)m_redValue*yScale;
+	int redBarHeight=(int)(m_redValue*yScale);
 	int redBarX=widthMargin;
 	int redBarY=rect.Height()-redBarHeight-heightMargin;
 	
-	int greenBarHeight= (int)m_greenValue*yScale;
+	int greenBarHeight= (int)(m_greenValue*yScale);
 	int greenBarX=widthMargin+barWidth+interBarMargin;
 	int greenBarY=rect.Height()-greenBarHeight-heightMargin;
 
-	int blueBarHeight= (int)m_blueValue*yScale;
+	int blueBarHeight= (int)(m_blueValue*yScale);
 	int blueBarX=widthMargin+2*barWidth+2*interBarMargin;
 	int blueBarY=rect.Height()-blueBarHeight-heightMargin;
 

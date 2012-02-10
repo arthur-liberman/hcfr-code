@@ -261,14 +261,14 @@ void CFullScreenWindow::DisplayRGBColor ( COLORREF clr, BOOL bDisableWaiting )
 				dwYUY2_Black = 0x80008000;
 			}
 
-			for (int i = 0; i < SurfaceDesc.dwHeight; i ++ )
+			for (int i = 0; i < (int)SurfaceDesc.dwHeight; i ++ )
 			{
 				DWORD*	pPixel = (DWORD*) ((BYTE*)SurfaceDesc.lpSurface + i * SurfaceDesc.lPitch);
 				
 				if ( nColorFlag )
 				{
 					// Alternate Black and White rectangles (ANSI contrast)
-					for (int j = 0; j < SurfaceDesc.dwWidth / 2; j ++)
+					for (DWORD j = 0; j < SurfaceDesc.dwWidth / 2; j ++)
 					{
 						if ( ( ( ( i / nPadHeight ) + ( j * 2 / nPadWidth ) ) & 1 ) == nColorFlag - 1 )
 							*pPixel = dwYUY2_Color;
@@ -280,7 +280,7 @@ void CFullScreenWindow::DisplayRGBColor ( COLORREF clr, BOOL bDisableWaiting )
 				else
 				{
 					// Colored rectangle mode
-					for (int j = 0; j < SurfaceDesc.dwWidth / 2; j ++)
+					for (int j = 0; j < (int)(SurfaceDesc.dwWidth / 2); j ++)
 					{
 						if ( i >= patternRect.top && i < patternRect.bottom && j * 2 >= patternRect.left && j * 2 < patternRect.right )
 							*pPixel = dwYUY2_Color;
@@ -663,7 +663,7 @@ void CFullScreenWindow::OnPaint()
 			clrStartLevel = 255 - clrMaxLevel;
 		}
 
-		for (int i = 0; i < m_nPadsPattern; i++)
+		for (DWORD i = 0; i < m_nPadsPattern; i++)
 		{
 			cClr = clrStartLevel + (i * clrMaxLevel)/(m_nPadsPattern-1);
 			if (m_iClrLevel == 0 || m_iClrLevel >7)
@@ -804,7 +804,7 @@ void CFullScreenWindow::OnPaint()
 		stepY = maxY / m_nPadsPattern;
 		stepX = stepY;
 		offset = (maxX % stepX) / 2;
-		halfCircle = (sqrt(double(maxX * maxX + maxY * maxY)) / 2.0 - (maxY / 2.0) - 1.0) / 2.37 - 1;
+		halfCircle = (int)((sqrt(double(maxX * maxX + maxY * maxY)) / 2.0 - (maxY / 2.0) - 1.0) / 2.37 - 1);
 
 		if (halfCircle > (maxY / 4)) 
 			halfCircle = (maxY / 4) - 1;
@@ -822,7 +822,7 @@ void CFullScreenWindow::OnPaint()
 		ePen.DeleteObject ();
 
 		br0.CreateSolidBrush (CIRELevel(100,FALSE,m_b16_235));
-		for ( i = offset; i < maxX-1; i+=(stepX*ratio) )
+		for ( i = offset; i < maxX-1; i+=(int)(stepX*ratio) )
 		{
 			SetRect ( &aRect, i, 0, i+1, maxY );
 			dc.FillRect ( &aRect, &br0 );
@@ -1271,11 +1271,11 @@ void CFullScreenWindow::InitOverlay ()
 
 		if (SUCCEEDED(ddrval))
 		{
-			for ( i = 0; i < SurfaceDesc.dwHeight; i ++ )
+			for ( i = 0; i < (int)SurfaceDesc.dwHeight; i ++ )
 			{
 				unsigned short* pPixel = (unsigned short*) ((BYTE*)SurfaceDesc.lpSurface + i * SurfaceDesc.lPitch);
 				
-				for (j = 0; j < SurfaceDesc.dwWidth; j ++)
+				for (j = 0; j < (int)SurfaceDesc.dwWidth; j ++)
 				{
 					*pPixel = 0x8000;	// Y = 0x00 -> black, U (even pixel) or V (odd pixel) = 0x80 -> black
 					pPixel++;

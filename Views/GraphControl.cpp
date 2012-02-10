@@ -859,9 +859,9 @@ void CGraphControl::OnPaint()
 		else if(m_doGradientBg)
 		{
 			if ( m_maxX*2.55 < 128 )
-				i = ( m_maxX*2.55 ) + 64;
+				i = (int)( m_maxX*2.55 ) + 64;
 			else
-				i = ( m_maxX*2.55 ) - 96;
+				i = (int)( m_maxX*2.55 ) - 96;
 			clr = RGB ( i, i, i );
 		}
 		else
@@ -1039,9 +1039,9 @@ void CGraphControl::SaveGraphFile ( CSize ImageSize, LPCSTR lpszPathName, int Im
 				else if ( pOtherGraphs [ i ] -> m_doGradientBg )
 				{
 					if ( pOtherGraphs [ i ] -> m_maxX*2.55 < 128 )
-						j = ( pOtherGraphs [ i ] -> m_maxX*2.55 ) + 64;
+						j = (int)( pOtherGraphs [ i ] -> m_maxX*2.55 ) + 64;
 					else
-						j = ( pOtherGraphs [ i ] -> m_maxX*2.55 ) - 96;
+						j = (int)( pOtherGraphs [ i ] -> m_maxX*2.55 ) - 96;
 					clr = RGB ( j, j, j );
 				}
 				else
@@ -1062,9 +1062,9 @@ void CGraphControl::SaveGraphFile ( CSize ImageSize, LPCSTR lpszPathName, int Im
 		else if(m_doGradientBg)
 		{
 			if ( m_maxX*2.55 < 128 )
-				i = ( m_maxX*2.55 ) + 64;
+				i = (int)( m_maxX*2.55 ) + 64;
 			else
-				i = ( m_maxX*2.55 ) - 96;
+				i = (int)( m_maxX*2.55 ) - 96;
 			clr = RGB ( i, i, i );
 		}
 		else

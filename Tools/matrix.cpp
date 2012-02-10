@@ -1367,12 +1367,11 @@ Matrix& Matrix::SortAscend()
 {
 	double* Data = GetDataOneDimen();
 	int length = (m_nRows * m_nCols);
-	int temp;
 
 	for(int i=0; i<length; ++i) {
 		for(int j=0; j<length-1; ++j) {
 			if(Data[j] > Data[j+1]) {
-				temp = Data[j];
+				double temp = Data[j];
 				Data[j] = Data[j+1];
 				Data[j+1] = temp;
 			}
@@ -1389,12 +1388,11 @@ Matrix& Matrix::SortDescend()
 {
 	double* Data = GetDataOneDimen();
 	int length = (m_nRows * m_nCols);
-	int temp;
 
 	for(int i=0; i<length; ++i) {
 		for(int j=0; j<length-1; ++j) {
 			if(Data[j] < Data[j+1]) {
-				temp = Data[j];
+				double temp = Data[j];
 				Data[j] = Data[j+1];
 				Data[j+1] = temp;
 			}

@@ -2298,7 +2298,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode, UINT nCalibrationOrCo
 			 nSteps = GetMeasure () -> GetGrayScaleSize ();
 			 for (i = 0; i < nSteps ; i ++ )
 			 {
-				GenIRE [ i ] = ArrayIndexToGrayLevel ( i, nSteps, GetMeasure () -> m_bIREScaleMode );
+				GenIRE [ i ] = (int)ArrayIndexToGrayLevel ( i, nSteps, GetMeasure () -> m_bIREScaleMode );
 				bIRE [ i ] = GetMeasure () -> m_bIREScaleMode;
 				GenColors [ i ] = CIRELevel(GenIRE[i],bIRE[i], m_pGenerator->m_b16_235);
 			 	mType [ i ] = CGenerator::MT_IRE;
@@ -2340,7 +2340,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode, UINT nCalibrationOrCo
 			 nMaxSteps = nSteps;
 			 for (i = 0; i < nSteps ; i ++ )
 			 {
-				GenIRE [ i ] = ArrayIndexToGrayLevel ( i, nSteps, GetMeasure () -> m_bIREScaleMode );
+				GenIRE [ i ] = (int)ArrayIndexToGrayLevel ( i, nSteps, GetMeasure () -> m_bIREScaleMode );
 				bIRE [ i ] = GetMeasure () -> m_bIREScaleMode;
 				GenColors [ i ] = CIRELevel(GenIRE[i],bIRE[i], m_pGenerator->m_b16_235);
  			 	mType [ i ] = CGenerator::MT_IRE;

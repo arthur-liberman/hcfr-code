@@ -704,7 +704,7 @@ void CMultiFrame::OnClickTabctrl(NMHDR* pNMHDR, LRESULT* pResult)
 			pView -> DestroyWindow ();
 			pView = NULL;
 
-			if ( nSelView < m_NbTabbedViews - 1 )
+			if ( nSelView < (DWORD)(m_NbTabbedViews - 1))
 			{
 				memmove ( & m_pTabbedView [ nSelView ], & m_pTabbedView [ nSelView + 1 ], ( m_NbTabbedViews - nSelView - 1 ) * sizeof ( m_pTabbedView [ 0 ] ) );
 				memmove ( & m_nTabbedViewIndex [ nSelView ], & m_nTabbedViewIndex [ nSelView + 1 ], ( m_NbTabbedViews - nSelView - 1 ) * sizeof ( m_nTabbedViewIndex [ 0 ] ) );
@@ -769,7 +769,7 @@ void CMultiFrame::CloseAllThoseViews ( int nViewIndex )
 			pView -> DestroyWindow ();
 			pView = NULL;
 
-			if ( nSelView < m_NbTabbedViews - 1 )
+			if ( nSelView < (DWORD)(m_NbTabbedViews - 1))
 			{
 				memmove ( & m_pTabbedView [ nSelView ], & m_pTabbedView [ nSelView + 1 ], ( m_NbTabbedViews - nSelView - 1 ) * sizeof ( m_pTabbedView [ 0 ] ) );
 				memmove ( & m_nTabbedViewIndex [ nSelView ], & m_nTabbedViewIndex [ nSelView + 1 ], ( m_NbTabbedViews - nSelView - 1 ) * sizeof ( m_nTabbedViewIndex [ 0 ] ) );
@@ -1011,7 +1011,7 @@ void CMultiFrame::OnCloseTab()
 		
 		m_pTabbedView [ nSelView ] -> DestroyWindow ();
 
-		if ( nSelView < m_NbTabbedViews - 1 )
+		if ( nSelView < (DWORD)(m_NbTabbedViews - 1))
 		{
 			memmove ( & m_pTabbedView [ nSelView ], & m_pTabbedView [ nSelView + 1 ], ( m_NbTabbedViews - nSelView - 1 ) * sizeof ( m_pTabbedView [ 0 ] ) );
 			memmove ( & m_nTabbedViewIndex [ nSelView ], & m_nTabbedViewIndex [ nSelView + 1 ], ( m_NbTabbedViews - nSelView - 1 ) * sizeof ( m_nTabbedViewIndex [ 0 ] ) );

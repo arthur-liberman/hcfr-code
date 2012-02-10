@@ -1683,7 +1683,7 @@ void CMainView::UpdateGrid()
 		double			YWhiteGrayRefDoc = -1.0;
 		double			YWhite = -1.0;
 		double			YWhiteRefDoc = -1.0;
-		double			Gamma,Offset;
+		double			Gamma,Offset = 0.0;
 		COLORREF		clrSpecial1, clrSpecial2;
 		CDataSetDoc *	pDataRef = GetDataRef();
 

@@ -437,6 +437,7 @@ void CCreditsCtrl::Initialize()
 	ga.nMaxHeight = nMaxHeight;
 	general_attribs_tree.AddTail(ga); // default alignment
 	font_attribs link;
+    ZeroMemory(&link, sizeof(font_attribs));
 	BOOL bInsideTag = FALSE;
 	CString sCurTagName;
 	CString sCurElement;

@@ -294,7 +294,7 @@ bool CExport::SaveGrayScaleSheet()
 		Rows.RemoveAll();
 		Rows.Add(legendXYZ[i]);
 		for(j=0;j<size;j++)
-			Rows.Add(m_pDoc->GetMeasure()->GetGray(j)[i]);
+			Rows.Add((float)m_pDoc->GetMeasure()->GetGray(j)[i]);
 		result&=graySS.AddRow(Rows,rowNb,m_doReplace);
 		rowNb++;
 	}
@@ -304,7 +304,7 @@ bool CExport::SaveGrayScaleSheet()
 		Rows.RemoveAll();
 		Rows.Add(legendRGB[i]);
 		for(j=0;j<size;j++)
-			Rows.Add(m_pDoc->GetMeasure()->GetGray(j).GetRGBValue()[i]);
+			Rows.Add((float)m_pDoc->GetMeasure()->GetGray(j).GetRGBValue()[i]);
 		result&=graySS.AddRow(Rows,rowNb,m_doReplace);
 		rowNb++;
 	}
@@ -316,7 +316,7 @@ bool CExport::SaveGrayScaleSheet()
 			Rows.RemoveAll();
 			Rows.Add(legendSensor[i]);
 			for(j=0;j<size;j++)
-				Rows.Add(m_pDoc->GetMeasure()->GetGray(j).GetSensorValue()[i]);
+				Rows.Add((float)m_pDoc->GetMeasure()->GetGray(j).GetSensorValue()[i]);
 			result&=graySS.AddRow(Rows,rowNb,m_doReplace);
 			rowNb++;
 		}
@@ -325,7 +325,7 @@ bool CExport::SaveGrayScaleSheet()
 	Rows.RemoveAll();
 	Rows.Add("ColorTemp");
 	for(j=0;j<size;j++)
-		Rows.Add(m_pDoc->GetMeasure()->GetGray(j).GetColorTemp());
+		Rows.Add((float)m_pDoc->GetMeasure()->GetGray(j).GetColorTemp());
 	result&=graySS.AddRow(Rows,rowNb,m_doReplace);
 	rowNb++;
 
@@ -358,7 +358,7 @@ bool CExport::SaveGrayScaleSheet()
 			YWhite = m_pDoc->GetMeasure()->GetGray(j) [ 1 ];
 		}
 		
-		Rows.Add(m_pDoc->GetMeasure()->GetGray(j).GetDeltaE(YWhite, refColor, 1.0));
+		Rows.Add((float)m_pDoc->GetMeasure()->GetGray(j).GetDeltaE(YWhite, refColor, 1.0));
 	}
 	result&=graySS.AddRow(Rows,rowNb,m_doReplace);
 	rowNb++;
@@ -409,9 +409,9 @@ bool CExport::SavePrimariesSheet()
 		Rows.RemoveAll();
 		Rows.Add(legendXYZ[i]);
 		for(j=0;j<3;j++)
-			Rows.Add(m_pDoc->GetMeasure()->GetPrimary(j)[i]);
+			Rows.Add((float)m_pDoc->GetMeasure()->GetPrimary(j)[i]);
 		for(j=0;j<3;j++)
-			Rows.Add(m_pDoc->GetMeasure()->GetSecondary(j)[i]);
+			Rows.Add((float)m_pDoc->GetMeasure()->GetSecondary(j)[i]);
 		result&=primariesSS.AddRow(Rows,rowNb,m_doReplace);
 		rowNb++;
 	}
@@ -421,9 +421,9 @@ bool CExport::SavePrimariesSheet()
 		Rows.RemoveAll();
 		Rows.Add(legendRGB[i]);
 		for(j=0;j<3;j++)
-			Rows.Add(m_pDoc->GetMeasure()->GetPrimary(j).GetRGBValue()[i]);
+			Rows.Add((float)m_pDoc->GetMeasure()->GetPrimary(j).GetRGBValue()[i]);
 		for(j=0;j<3;j++)
-			Rows.Add(m_pDoc->GetMeasure()->GetSecondary(j).GetRGBValue()[i]);
+			Rows.Add((float)m_pDoc->GetMeasure()->GetSecondary(j).GetRGBValue()[i]);
 		result&=primariesSS.AddRow(Rows,rowNb,m_doReplace);
 		rowNb++;
 	}
@@ -435,9 +435,9 @@ bool CExport::SavePrimariesSheet()
 			Rows.RemoveAll();
 			Rows.Add(legendSensor[i]);
 			for(j=0;j<3;j++)
-				Rows.Add(m_pDoc->GetMeasure()->GetPrimary(j).GetSensorValue()[i]);
+				Rows.Add((float)m_pDoc->GetMeasure()->GetPrimary(j).GetSensorValue()[i]);
 			for(j=0;j<3;j++)
-				Rows.Add(m_pDoc->GetMeasure()->GetSecondary(j).GetSensorValue()[i]);
+				Rows.Add((float)m_pDoc->GetMeasure()->GetSecondary(j).GetSensorValue()[i]);
 			result&=primariesSS.AddRow(Rows,rowNb,m_doReplace);
 			rowNb++;
 		}

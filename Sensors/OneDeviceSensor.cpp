@@ -26,6 +26,7 @@
 #include "OneDeviceSensor.h"
 #include "Generator.h"
 #include "Signature.h"
+#include <math.h>
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -357,7 +358,7 @@ void COneDeviceSensor::GetPropertiesSheetValues()
 
 	if(m_calibrationIRELevel!=m_oneDevicePropertiesPage.m_calibrationIRELevel)
 	{
-		m_calibrationIRELevel=m_oneDevicePropertiesPage.m_calibrationIRELevel;
+		m_calibrationIRELevel=(float)m_oneDevicePropertiesPage.m_calibrationIRELevel;
 		SetModifiedFlag(TRUE);
 	}
 
@@ -577,7 +578,7 @@ BOOL COneDeviceSensor::CalibrateSensor(CGenerator *apGenerator)
 		for(int i=0;i<3;i++)
 		{
 			double aSum=measuredRed[i]+measuredGreen[i]+measuredBlue[i];
-			if( (abs(aSum - measuredWhite[i])/measuredWhite[i])*100.0 > m_maxAdditivityErrorPercent) 
+			if( (int)((fabs(aSum - measuredWhite[i])/measuredWhite[i])*100.0) > m_maxAdditivityErrorPercent) 
 			{
 				CString str;
 

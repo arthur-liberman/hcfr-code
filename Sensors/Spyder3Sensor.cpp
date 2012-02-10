@@ -167,7 +167,7 @@ BOOL CSpyder3Sensor::Init( BOOL bForSimultaneousMeasures )
 
 		GetModuleBaseName ( hProcess, NULL, szBuf, sizeof ( szBuf ) );
 
-		if ( stricmp ( szBuf, "Spyder3Utility.exe" ) == 0 )
+		if ( _stricmp ( szBuf, "Spyder3Utility.exe" ) == 0 )
 		{
 			// Cannot use Spyder 3 when Spyder3Utility is running: propose to terminate the process
 			Msg.LoadString ( IDS_SPYDER3UTILITYRUNNING );
@@ -240,7 +240,7 @@ BOOL CSpyder3Sensor::Release()
 
 CColor CSpyder3Sensor::MeasureColor(COLORREF aRGBValue)
 {
-	int			nLoops;
+	UINT		nLoops;
 	BOOL		bContinue = FALSE;
 	UINT		r, g, b;
 	UINT		nAdjustedReadTime;

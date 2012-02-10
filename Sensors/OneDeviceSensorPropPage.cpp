@@ -345,7 +345,7 @@ void COneDeviceSensorPropPage::LoadReferenceValues()
 			{
 				BOOL titleFound=FALSE;
 				CString refStr;
-                int i;
+                size_t i;
 				for(i=0;i<strlen(line);i++)
 				{
 					if(line[i] == ']')
@@ -448,7 +448,7 @@ void COneDeviceSensorPropPage::GetReferencesList()
 		{
 			BOOL titleFound=FALSE;
 			CString refStr;
-			for(int i=0;i<strlen(line);i++)
+			for(size_t i=0;i<strlen(line);i++)
 			{
 				if(line[i] == ']')
 					break;

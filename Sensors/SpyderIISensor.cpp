@@ -217,7 +217,7 @@ BOOL CSpyderIISensor::Release()
 
 CColor CSpyderIISensor::MeasureColor(COLORREF aRGBValue)
 {
-	int			nLoops;
+	UINT		nLoops;
 	BOOL		bContinue = FALSE;
 	UINT		r, g, b;
 	UINT		nAdjustedReadTime;

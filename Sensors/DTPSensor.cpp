@@ -282,7 +282,7 @@ BOOL CDTPSensor::Release()
 
 CColor CDTPSensor::MeasureColor(COLORREF aRGBValue)
 {
-	int			nLoops;
+	UINT		nLoops;
 	BOOL		bContinue = FALSE;
 	LPSTR		lpStr;
 	double		x=0.0, y=0.0, z=0.0;

@@ -482,7 +482,7 @@ BOOL CEyeOneSensor::Release()
 
 CColor CEyeOneSensor::MeasureColor(COLORREF aRGBValue)
 {
-	int			i, nLoops;
+	UINT		nLoops;
 	BOOL		bOk;
 	BOOL		bContinue = FALSE;
 	BOOL		bSpectrumOk = FALSE;
@@ -514,7 +514,7 @@ CColor CEyeOneSensor::MeasureColor(COLORREF aRGBValue)
 						if ( bSpectrumOk )
 						{
 							lpStr = strchr ( lpStr, (int) '|' ) + 1;
-							for ( i = 0; lpStr && lpStr [ 0 ] && i < SPECTRUM_BANDS ; i ++ )
+							for (int i = 0; lpStr && lpStr [ 0 ] && i < SPECTRUM_BANDS ; i ++ )
 							{
 								Spectrum [ i ] = atof ( lpStr );
 								lpStr = strchr ( lpStr, (int) ',' ) + 1;
@@ -538,7 +538,7 @@ CColor CEyeOneSensor::MeasureColor(COLORREF aRGBValue)
 
 				if ( bSpectrumOk )
 				{
-					for ( i = 0; i < SPECTRUM_BANDS ; i++ )
+					for (int i = 0; i < SPECTRUM_BANDS ; i++ )
 						FullSpectrum [ i ] = ( ( FullSpectrum [ i ] * (double) nLoops ) + Spectrum [ i ] ) / d;
 				}
 			}
@@ -550,7 +550,7 @@ CColor CEyeOneSensor::MeasureColor(COLORREF aRGBValue)
 
 				if ( bSpectrumOk )
 				{
-					for ( i = 0; i < SPECTRUM_BANDS ; i++ )
+					for (int i = 0; i < SPECTRUM_BANDS ; i++ )
 						FullSpectrum [ i ] = Spectrum [ i ];
 				}
 			}
@@ -572,7 +572,7 @@ CColor CEyeOneSensor::MeasureColor(COLORREF aRGBValue)
 					fprintf(f, "Eye One - %s : * building value - loop %d * : X:%5.3f Y:%5.3f Z:%5.3f |", s, nLoops, x, y, z );
 					if ( bSpectrumOk )
 					{
-						for ( i = 0; i < SPECTRUM_BANDS ; i++ )
+						for (int i = 0; i < SPECTRUM_BANDS ; i++ )
 							fprintf(f, " %7.4f", Spectrum[i]);
 					}
 					fprintf(f, "\n");
@@ -602,7 +602,7 @@ CColor CEyeOneSensor::MeasureColor(COLORREF aRGBValue)
 					fprintf(f, "Eye One - %s : R:%3d G:%3d B:%3d (%d loops) : X:%5.3f Y:%5.3f Z:%5.3f |", s, GetRValue(aRGBValue), GetGValue(aRGBValue), GetBValue(aRGBValue), nLoops, xx, yy, zz );
 					if ( bSpectrumOk )
 					{
-						for ( i = 0; i < SPECTRUM_BANDS ; i++ )
+						for (int i = 0; i < SPECTRUM_BANDS ; i++ )
 							fprintf(f, " %7.4f", FullSpectrum[i]);
 					}
 					fprintf(f, "\n");

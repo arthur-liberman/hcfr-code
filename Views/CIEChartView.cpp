@@ -214,7 +214,7 @@ void CCIEChartGrapher::MakeBgBitmap(CRect rect, BOOL bWhiteBkgnd)	// Create back
 
 	for(i=0;i<(m_bCIEuv?7:8);i++)	// Draw X axis
 	{
-		int x=rect.Width()*i/(m_bCIEuv?7.0:8.0);
+		int x=(int)(rect.Width()*i/(m_bCIEuv?7.0:8.0));
 		CString str;
 
 		str.Format("%.1f",i/10.0);
@@ -226,7 +226,7 @@ void CCIEChartGrapher::MakeBgBitmap(CRect rect, BOOL bWhiteBkgnd)	// Create back
 
 	for(i=0;i<(m_bCIEuv?7:9);i++) 	// Draw Y axis
 	{
-		int y=rect.Height()*i/(m_bCIEuv?7.0:9.0);
+		int y=(int)(rect.Height()*i/(m_bCIEuv?7.0:9.0));
 		CString str;
 
 		str.Format("%.1f",(m_bCIEuv?0.7:0.9)-i/10.0);

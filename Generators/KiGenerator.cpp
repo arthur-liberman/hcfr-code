@@ -494,7 +494,7 @@ BOOL CKiGenerator::DisplayGray(double aLevel, BOOL bIRE, MeasureType nPatternTyp
 	if ( m_NbNextCodeToAdd > 0 )
 		m_NbNextCodeToAdd --;
 
-	m_lastPatternInfo = aLevel;
+	m_lastPatternInfo = (UINT)aLevel;
 	
 	Title.LoadString ( IDS_INFORMATION );
 
@@ -1089,22 +1089,22 @@ BOOL CKiGenerator::HasPatternChanged( MeasureType nScaleType,CColor previousColo
 	pRGBColor=previousColor.GetRGBValue();
 	lRGBColor=lastColor.GetRGBValue();
 
-	float a = pRGBColor[0];
-	float b = pRGBColor[1];
-	float c = pRGBColor[2];
+	float a = (float)pRGBColor[0];
+	float b = (float)pRGBColor[1];
+	float c = (float)pRGBColor[2];
 
-	float g = abs(pRGBColor[0]);
-	float h = abs(pRGBColor[1]);
-	float i = abs(pRGBColor[2]);
+	float g = (float)abs(pRGBColor[0]);
+	float h = (float)abs(pRGBColor[1]);
+	float i = (float)abs(pRGBColor[2]);
 
 
-	float d = lRGBColor[0];
-	float e = lRGBColor[1];
-	float f = lRGBColor[2];
+	float d = (float)lRGBColor[0];
+	float e = (float)lRGBColor[1];
+	float f = (float)lRGBColor[2];
 
 	if (pRGBColor[0] != 0)
 	{
-		redDif = (lRGBColor[0] - pRGBColor[0])/pRGBColor[0];
+		redDif = (float)((lRGBColor[0] - pRGBColor[0])/pRGBColor[0]);
 		if (redDif < 0)
 			redDif = -redDif;
 	}
@@ -1118,7 +1118,7 @@ BOOL CKiGenerator::HasPatternChanged( MeasureType nScaleType,CColor previousColo
 
 	if (pRGBColor[1] != 0)
 	{
-		greenDif = (lRGBColor[1] - pRGBColor[1])/pRGBColor[1];
+		greenDif = (float)((lRGBColor[1] - pRGBColor[1])/pRGBColor[1]);
 		if (greenDif < 0)
 			greenDif = -greenDif;
 	}
@@ -1132,7 +1132,7 @@ BOOL CKiGenerator::HasPatternChanged( MeasureType nScaleType,CColor previousColo
 
 		if (pRGBColor[2] != 0)
 	{
-		blueDif = (lRGBColor[2] - pRGBColor[2])/pRGBColor[2];
+		blueDif = (float)((lRGBColor[2] - pRGBColor[2])/pRGBColor[2]);
 		if (blueDif < 0)
 			blueDif = -blueDif;
 	}

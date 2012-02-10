@@ -244,7 +244,7 @@ void CTargetWnd::OnPaint()
 	int pointWidth=(int)(rect.Width()*m_pointSizeInPercent/100.0);
 	int pointHeight=(int)(rect.Height()*m_pointSizeInPercent/100.0);
 
-	DrawTransparentBitmap(pDC->m_hDC,(HBITMAP)m_scaledPointBitmap.m_hObject,targetPoint.x-pointWidth/4,targetPoint.y-pointHeight*3/4,RGB(0,0,0));
+	DrawTransparentBitmap(pDC->m_hDC,(HBITMAP)m_scaledPointBitmap.m_hObject,(short)(targetPoint.x-pointWidth/4),(short)(targetPoint.y-pointHeight*3/4),RGB(0,0,0));
 }
 
 double CTargetWnd::GetZoomFactor()
