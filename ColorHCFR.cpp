@@ -1239,7 +1239,9 @@ BOOL CAboutDlg::OnInitDialog()
 							"David LAIR",szDVD,
 							"Henri NICOLAS",szValidation,
 							"Franck CAREDDU",szValidation,
-							"Maik OPITZ", szGermanVersion };
+							"Maik OPITZ", szGermanVersion,
+							"John ADCOCK",szDevApp,
+    };
 	int auteursNb=(sizeof(auteurStrings)/sizeof(char *));
 
 	char *classesStyle="<br><font style='u' size='11' color='0,0,255'>";
