@@ -18,11 +18,10 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\Release"
-			IntermediateDirectory=".\Release"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)\$(ProjectName)"
 			ConfigurationType="4"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
-			UseOfMFC="2"
+			UseOfMFC="1"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
 			>
@@ -51,9 +50,6 @@
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				PrecompiledHeaderFile=".\Release/cximage.pch"
-				AssemblerListingLocation=".\Release/"
-				ObjectFile=".\Release/"
-				ProgramDataBaseFileName=".\Release/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 			/>
@@ -70,7 +66,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\Release\cximage.lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -93,11 +89,10 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\Debug"
-			IntermediateDirectory=".\Debug"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)\$(ProjectName)"
 			ConfigurationType="4"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
-			UseOfMFC="2"
+			UseOfMFC="1"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
 			>
@@ -125,9 +120,6 @@
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				PrecompiledHeaderFile=".\Debug/cximage.pch"
-				AssemblerListingLocation=".\Debug/"
-				ObjectFile=".\Debug/"
-				ProgramDataBaseFileName=".\Debug/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
@@ -145,7 +137,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\Debug\cximage.lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
