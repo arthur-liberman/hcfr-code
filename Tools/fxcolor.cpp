@@ -46,10 +46,11 @@ COLORREF fxColorText;
 #define ETDT_ENABLETAB      (ETDT_ENABLE  | ETDT_USETABTEXTURE)
 
 //---- flags to control theming within an app ----
-
+#ifndef STAP_ALLOW_NONCLIENT
 #define STAP_ALLOW_NONCLIENT    (1 << 0)
 #define STAP_ALLOW_CONTROLS     (1 << 1)
 #define STAP_ALLOW_WEBCONTENT   (1 << 2)
+#endif
 
 // 
 typedef HRESULT (WINAPI * EnableThemeDialogTextureFunct) (HWND, DWORD);

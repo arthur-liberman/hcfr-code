@@ -2296,7 +2296,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode, UINT nCalibrationOrCo
 
 		case -3:
 			 nSteps = GetMeasure () -> GetGrayScaleSize ();
-			 for (int i = 0; i < nSteps ; i ++ )
+			 for (i = 0; i < nSteps ; i ++ )
 			 {
 				GenIRE [ i ] = ArrayIndexToGrayLevel ( i, nSteps, GetMeasure () -> m_bIREScaleMode );
 				bIRE [ i ] = GetMeasure () -> m_bIREScaleMode;

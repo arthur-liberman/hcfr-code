@@ -1058,7 +1058,7 @@ protected:
     #endif
   #else
     template<class baseClass>
-    const AFX_MSGMAP CNewFrame<baseClass>::messageMap = { &baseClass::messageMap, GetMessageEntries()};
+    const AFX_MSGMAP CNewFrame<baseClass>::messageMap = { &baseClass::GetThisMessageMap, GetMessageEntries()};
   #endif // _AFXDLL
 #endif // _GUILIB_
 

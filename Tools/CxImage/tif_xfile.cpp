@@ -2,12 +2,12 @@
  * TIFF file IO, using CxFile.
  */
 
+#include "ximage.h"
 #ifdef WIN32
  #include <windows.h>
 #endif
 #include <stdio.h>
 
-#include "ximage.h"
 
 #if CXIMAGE_SUPPORT_TIF
 
