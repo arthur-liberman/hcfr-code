@@ -33,7 +33,7 @@
 
 #include "PatternDisplay.h"
 
-//#include "WebUpdate.h"
+#include "WebUpdate.h"
 
 #include <dde.h>
 
@@ -1120,10 +1120,9 @@ int __stdcall MyDialogProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 void CMainFrame::OnUpdateSoft()
 {
-/*
 	CString strNewFtpFile;
 	CString strDefaultFileName;
-//	CWebUpdate WebUpdate;
+	CWebUpdate WebUpdate;
 	HWND	hDlg, hCtrl;
 
 	hDlg = ::CreateDialog ( AfxGetResourceHandle (), MAKEINTRESOURCE(IDD_WEB_UPDATE), m_hWnd, MyDialogProc );
@@ -1137,9 +1136,9 @@ void CMainFrame::OnUpdateSoft()
 		AfxMessageBox(IDS_UPD_IMPOSSIBLE, MB_OK | MB_ICONWARNING);
 		return;
 	}
-*/
 
-/*	::SetWindowText ( hCtrl, "Looking for new version... please wait..." );
+
+	::SetWindowText ( hCtrl, "Looking for new version... please wait..." );
 	strNewFtpFile = WebUpdate.CheckNewSoft();
 	if (strNewFtpFile.IsEmpty())
 	{
@@ -1176,12 +1175,11 @@ void CMainFrame::OnUpdateSoft()
 		}
 		::DestroyWindow ( hDlg );
 	}
-*/
 }
 
 void CMainFrame::OnUpdateEtalons()
 {
-/*	CWebUpdate WebUpdate;
+	CWebUpdate WebUpdate;
 	HWND	hDlg, hCtrl;
 
 	hDlg = ::CreateDialog ( AfxGetResourceHandle (), MAKEINTRESOURCE(IDD_WEB_UPDATE), m_hWnd, MyDialogProc );
@@ -1206,13 +1204,12 @@ void CMainFrame::OnUpdateEtalons()
 		AfxMessageBox(IDS_UPD_DOWNLOAD_FAILED, MB_OK | MB_ICONWARNING);
 	}
 	::DestroyWindow ( hDlg );
-*/
 }
 
 
 void CMainFrame::OnUpdateIRProfiles() 
 {
-/*	CWebUpdate WebUpdate;
+	CWebUpdate WebUpdate;
 	HWND	hDlg, hCtrl;
 
 	hDlg = ::CreateDialog ( AfxGetResourceHandle (), MAKEINTRESOURCE(IDD_WEB_UPDATE), m_hWnd, MyDialogProc );
@@ -1237,7 +1234,6 @@ void CMainFrame::OnUpdateIRProfiles()
 		AfxMessageBox(IDS_UPD_DOWNLOAD_FAILED, MB_OK | MB_ICONWARNING);
 	}
 	::DestroyWindow ( hDlg );
-*/
 }
 
 

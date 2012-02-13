@@ -759,6 +759,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\WebUpdate.cpp"
+				>
+			</File>
+			<File
 				RelativePath="WinAppEx.cpp"
 				>
 				<FileConfiguration
