@@ -37,6 +37,7 @@
 #include "icoms.h"
 #include "conv.h"
 #include "usbio.h"
+#include "hidio.h"
 
 #ifdef USE_LIBUSB1
 # include "libusb.h"

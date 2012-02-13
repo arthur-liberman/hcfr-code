@@ -31,6 +31,7 @@
 #include "icoms.h"
 #include "conv.h"
 #include "usbio.h"
+#include "hidio.h"
 
 #undef DEBUG
 

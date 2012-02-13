@@ -266,6 +266,14 @@ void plot_wav2(munkiimp *m, double *data) {
 #endif	/* !PLOT_DEBUG */
 
 /* ============================================================ */
+int munki_average_multimeas(
+	munki *p,
+	double *avg,			/* return average [nraw] */
+	double **multimeas,		/* Array of [nummeas][nraw] value to average */
+	int nummeas,			/* number of readings to be averaged */
+	double *poallavg,		/* If not NULL, return overall average of bands and measurements */
+	double darkthresh		/* Dark threshold (used for consistency check scaling) */
+);
 
 /* Implementation struct */
 
