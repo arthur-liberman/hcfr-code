@@ -1,0 +1,5 @@
+Create Installer
+Add meter code from argyllcms
+Remove old non-free meter code
+Create support for plug-in meter code
+ 
