@@ -1,0 +1,26 @@
+
+Changes to the 0.1.12.1 source this is based on.
+===============================================
+
+!!! plus change to src/driver/pnp.c set_configuration() in case IRP_MN_START_DEVICE:
+ - un-commented set_configuration (don't care about using this as a filter driver)
+   Added patched flag
+
+
+*** driver/libusb_driver.h	Mon Nov 21 03:11:40 2005
+--- /src/argyll/libusbw/src/driver/libusb_driver.h	Sun Oct 22 15:01:01 2006
+***************
+*** 72,78 ****
+  
+  
+! #define LIBUSB_MAX_CONTROL_TRANSFER_TIMEOUT 5000
+  
+  
+  #ifndef __GNUC__
+--- 72,78 ----
+  
+  
+! #define LIBUSB_MAX_CONTROL_TRANSFER_TIMEOUT 240000
+  
+  
+  #ifndef __GNUC__

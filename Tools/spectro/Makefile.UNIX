@@ -1,0 +1,43 @@
+# Generic UNIX setup
+
+# Copyright 2000 - 2007 Graeme W. Gill
+# This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
+# see the License2.txt file for licencing details.
+
+SLASH     = /
+SUFLIB    = .a
+SUFOBJ    = .o
+SUFEXE    = 
+CMDSEP    = ;
+
+INCFLAG       = -I
+DEFFLAG       = -D
+UNDEFFLAG     = -U
+CCOPTFLAG     = -O
+CCDEBUGFLAG   = -g
+CCPROFFLAG    = 
+LINKDEBUGFLAG = 
+LINKPROFFLAG  = 
+
+STDHDRSDEF = /usr/include
+
+MAKEU     = make
+LIBU      = ar -r
+LIBOF     =
+RANLIB    = echo
+AS        = as
+CCFLAGSDEF   = -DUNIX -c
+CC        = cc $(CCFLAGS) $(STDHDRS)
+CCOF      = -o 
+LINKFLAGSDEF = -lm -lpthread -lrt
+LINKLIBS  = 
+LINK      = cc $(LINKFLAGS) $(LINKLIBS)
+LINKOF    = -o 
+CP        = cp
+
+.SUFFIXES:
+.SUFFIXES: .c $(SUFLIB) $(SUFOBJ) $(SUFEXE)
+
+.c$(SUFOBJ):
+	$(CC) $(CCOF)$*$(SUFOBJ) $<
+	

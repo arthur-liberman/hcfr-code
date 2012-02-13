@@ -1,0 +1,11 @@
+
+To create a standalone instrument library, you need a subset of
+files from this directory and other selected files from Argyll.
+
+If you are on MSWin you need to build argyll first using Jam.
+
+You can run the instlib.ksh script which will copy the necessary
+files into the file instlib.zip.
+
+This can be extracted, the Makefile modified to suite the system,
+and then built. (See the Readme.txt within instlib.zip file)

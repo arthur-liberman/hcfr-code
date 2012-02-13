@@ -1,0 +1,9 @@
+#!/bin/sh
+# Copy to /etc/hotplug/usb/Argyll
+#
+# Argyll hotplug script. Adds the USB devices to the plugdev group.
+if [ "${ACTION}" = "add" ] && [ -f "${DEVICE}" ]
+then
+    chgrp plugdev "${DEVICE}"
+    chmod 660 "${DEVICE}"
+fi

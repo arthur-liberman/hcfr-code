@@ -1,0 +1,58 @@
+# udev rule to recognize instruments and make them accessible to user applications.
+# Copy this to /etc/udev/rules.d/55-Argyll.rules
+
+# Skip all this to speed things up if it'a not a usb add.
+ACTION!="add", GOTO="argyll_rules_end"
+SUBSYSTEM!="usb", GOTO="argyll_rules_end"
+
+# Recognize the color measurement devices
+
+# DTP20
+ATTRS{idVendor}=="0765", ATTRS{idProduct}=="d020", ENV{COLOR_MEASUREMENT_DEVICE}="1"
+
+# DTP92Q (not tested)
+ATTRS{idVendor}=="0765", ATTRS{idProduct}=="d092", ENV{COLOR_MEASUREMENT_DEVICE}="1"
+
+# DTP94
+ATTRS{idVendor}=="0765", ATTRS{idProduct}=="d094", ENV{COLOR_MEASUREMENT_DEVICE}="1"
+
+# MonacoOPTIX (Same as i1 Display 1)
+ATTRS{idVendor}=="0670", ATTRS{idProduct}=="0001", ENV{COLOR_MEASUREMENT_DEVICE}="1"
+
+# i1Display
+ATTRS{idVendor}=="0971", ATTRS{idProduct}=="2003", ENV{COLOR_MEASUREMENT_DEVICE}="1"
+
+# i1Display 3
+ATTRS{idVendor}=="0765", ATTRS{idProduct}=="5020", ENV{COLOR_MEASUREMENT_DEVICE}="1"
+
+# i1Monitor
+ATTRS{idVendor}=="0971", ATTRS{idProduct}=="2001", ENV{COLOR_MEASUREMENT_DEVICE}="1"
+
+# i1Pro
+ATTRS{idVendor}=="0971", ATTRS{idProduct}=="2000", ENV{COLOR_MEASUREMENT_DEVICE}="1"
+
+# ColorMunki
+ATTRS{idVendor}=="0971", ATTRS{idProduct}=="2007", ENV{COLOR_MEASUREMENT_DEVICE}="1"
+
+# Colorimtre HCFR
+ATTRS{idVendor}=="04db", ATTRS{idProduct}=="005b", ENV{COLOR_MEASUREMENT_DEVICE}="1"
+
+# Spyder 2
+ATTRS{idVendor}=="085c", ATTRS{idProduct}=="0200", ENV{COLOR_MEASUREMENT_DEVICE}="1"
+
+# Spyder 3
+ATTRS{idVendor}=="085c", ATTRS{idProduct}=="0300", ENV{COLOR_MEASUREMENT_DEVICE}="1"
+
+# Huey
+ATTRS{idVendor}=="0971", ATTRS{idProduct}=="2005", ENV{COLOR_MEASUREMENT_DEVICE}="1"
+
+# Let udev-acl and ConsoleKit manage these devices, if applicable
+TEST=="/lib/udev/udev-acl", TEST=="/var/run/ConsoleKit/database", ENV{COLOR_MEASUREMENT_DEVICE}=="*?", ENV{ACL_MANAGE}="1"
+
+# Otherwise, restrict access to members of the plugdev group
+ENV{COLOR_MEASUREMENT_DEVICE}=="*?", ENV{ACL_MANAGE}!="*?", MODE="660", GROUP="plugdev"
+
+# Set ID_VENDOR and ID_MODEL acording to VID and PID
+IMPORT{program}="usb-db %p"
+
+LABEL="argyll_rules_end"

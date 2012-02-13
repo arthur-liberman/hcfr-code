@@ -1,0 +1,39 @@
+
+# This builds the client libraries libusb.lib for libusb-win32,
+# and leaves it and usb.h in ../libusbw ready for any
+# other component of Argyll to use it.
+
+# If we're MingW, we can actually build the driver and dll too
+# by running gmake, but we're not doing so at the moment.
+
+# For the 64 bit driver we need to run the Server 2003 64 bit DDK,
+# cd to ddk_make, run make_driver.bat & make_dll.bat,
+# and then cp ddk_make/libusb0.sys libusb0_x64.sys
+# and then cp ddk_make/libusb0.dll libusb0_x64.dll
+
+PREF_CCFLAGS 	+= $(CCOPTFLAG) ;		# Turn optimisation on
+#PREF_CCFLAGS	+= $(CCDEBUGFLAG) ;		# Debugging flags
+PREF_LINKFLAGS	+= $(LINKDEBUGFLAG) ;
+
+if ! $(UNIX) {
+	
+	NDepends lib : libusb.lib ;
+	NDepends libusb.lib : libusb0.def ;
+	local LIBUSB_LIB = [ NormDstPaths libusb.lib ] ;
+	local LIBUSB0_DEF = [ NormSrcPaths libusb0.def ] ;
+	if $(MINGW) {
+		GenFileNND libusb.lib : dlltool "-D libusb0.dll -d $(LIBUSB0_DEF) -l $(LIBUSB_LIB)" ;
+	} else if $(MSVCNT) {
+		GenFileNND libusb.lib : lib "/nologo /machine:i386 /def:$(LIBUSB0_DEF) /out:$(LIBUSB_LIB)" ;
+		Clean clean : $(LIBUSB_LIB:S=.exp) ;
+	} else {
+		EXIT "Unknown compiler !" ;
+	}
+
+	# Copy the header file to the libusb directory
+	File usb.h : src/usb.h ;
+
+	# Install the DLL to the binary directory
+	#InstallFile $(DESTDIR)$(PREFIX)/bin : libusb0.dll ;
+}
+

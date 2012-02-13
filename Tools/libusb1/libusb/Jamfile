@@ -1,0 +1,38 @@
+
+# JAM style makefile for libusb 1.0
+
+File $(LIBUSB1NAME).def : libusb-X.X.def ;
+
+if $(UNIX) {
+	if $(OS) != MACOSX {
+		OS_SRC = os/linux_usbfs.c ;
+	} else {
+		OS_SRC = os/darwin_usb.c ;
+	}
+	DEFINES += _GNU_SOURCE ;		# So TIMESPEC_TO_TIMEVAL is found
+	SHLINKSEARCHEXEPATH = "true" ;	# Search the executable location for the shared library
+}
+
+if $(NT) {
+	OS_SRC = os/poll_windows.c os/windows_usb.c ;
+
+	if $(MSVCNT) {
+		OS_HDRS = ../msvc ;
+	}
+
+	if ! $(POSIX_THREADS) {
+		OS_SRC += os/threads_windows.c ;
+	}
+
+	SHLINKDEFFILE = $(LIBUSB1NAME).def ;	# Use this file to define exports
+}
+
+# Use generated config.h before the one in msvc
+HDRS = . .. os $(OS_HDRS) ;
+
+if $(LIBUSB_IS_DLL) = true {
+	ShLibrary $(LIBUSB1NAME).xxx : core.c descriptor.c io.c sync.c $(OS_SRC) ;
+} else {
+	Library $(LIBUSB1NAME)$(SUFLIB) : core.c descriptor.c io.c sync.c $(OS_SRC) ;
+}
+

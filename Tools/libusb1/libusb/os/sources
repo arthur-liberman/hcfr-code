@@ -1,0 +1,31 @@
+TARGETNAME=libusb-X.X
+TARGETTYPE=DYNLINK
+TARGETPATH=obj
+
+DLLDEF=..\libusb-X.X.def
+
+!IFNDEF MSC_WARNING_LEVEL
+MSC_WARNING_LEVEL=/W3
+!ENDIF
+
+USE_MSVCRT=1
+386_STDCALL=0
+
+INCLUDES=..;..\..;..\..\msvc;$(DDK_INC_PATH)
+C_DEFINES = $(C_DEFINES) /DDDKBUILD /D_MSC_VER=1200
+
+TARGETLIBS=$(SDK_LIB_PATH)\kernel32.lib \
+           $(SDK_LIB_PATH)\advapi32.lib \
+           $(SDK_LIB_PATH)\user32.lib \
+           $(SDK_LIB_PATH)\setupapi.lib \
+           $(SDK_LIB_PATH)\ole32.lib
+
+SOURCES=..\core.c \
+	..\descriptor.c \
+	..\io.c \
+	..\sync.c \
+	threads_windows.c \
+	poll_windows.c \
+	windows_usb.c \
+	..\libusb-X.X.rc
+

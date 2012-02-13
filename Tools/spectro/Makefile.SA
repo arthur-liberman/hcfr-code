@@ -1,0 +1,178 @@
+
+# Boilerplate Makefile for compiling standalone instrumement driver
+
+# Copyright 2000 - 2007 Graeme W. Gill
+# This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
+# see the License2.txt file for licencing details.
+
+# "include" the right environment for your system,
+# by uncommenting the appropriate line:
+
+# Microsoft VC++, WinNT setup
+include Makefile.WNT
+
+# Generic UNIX setup
+#include Makefile.UNIX
+
+# Apple OS X
+#include Makefile.OSX
+
+# On UNIX & OS X you will have to make libusb1 first!
+# by:
+#  cd libusb1
+#  sh autogen.sh
+#  make
+#  cp libusb/libusb-1.0A.a .
+#  cd ..
+
+###############################
+
+
+CCDEFINES = $(DEFFLAG)SALONEINSTLIB $(DEFFLAG)ENABLE_SERIAL $(DEFFLAG)ENABLE_USB $(DEFFLAG)USE_LIBUSB1
+
+#Set optimisation on
+CCFLAGS = $(CCFLAGSDEF) $(CCOPTFLAG) $(CCDEFINES) $(BCONFIG)
+
+# Set debugging on
+#CCFLAGS = $(CCFLAGSDEF) $(CCDEBUGFLAG) $(CCDEFINES) $(BCONFIG)
+# Debugging and debugging #define
+#CCFLAGS = $(CCFLAGSDEF) $(CCDEBUGFLAG) $(CCDEFINES) $(DEFFLAG)DEBUG
+
+LINKFLAGS = $(LINKFLAGSDEF) $(LINKDEBUGFLAG)
+
+# Where headers come from
+STDHDRS = $(INCFLAG)$(STDHDRSDEF) $(INCFLAG)libusb1
+WIN_STDHDRS = $(INCFLAG)libusb1$(SLASH)msvc 
+
+all:: libinst$(SUFLIB) spotread$(SUFEXE) spyd2en$(SUFEXE) i1d3ccss$(SUFEXE)
+
+INSTHEADERS = dtp20.h dtp22.h dtp41.h dtp51.h dtp92.h ss.h ss_imp.h i1disp.h i1d3.h i1pro.h i1pro_imp.h munki.h munki_imp.h hcfr.h huey.h spyd2.h spyd2setup.h spyd2PLD.h
+INSOBJS = dtp20$(SUFOBJ) dtp22$(SUFOBJ) dtp41$(SUFOBJ) dtp51$(SUFOBJ) dtp92$(SUFOBJ) ss$(SUFOBJ) ss_imp$(SUFOBJ) i1disp$(SUFOBJ) i1d3$(SUFOBJ) i1pro$(SUFOBJ) i1pro_imp$(SUFOBJ) munki$(SUFOBJ) munki_imp$(SUFOBJ) hcfr$(SUFOBJ) huey$(SUFOBJ) spyd2$(SUFOBJ)
+
+HEADERS = pollem.h conv.h hidio.h icoms.h inst.c inst.h insttypeinst.h insttypes.h $(INSTHEADERS) usbio.h xspect.h rspl1.h sort.h xdg_bds.h ccss.h pars.h cgats.h libusb1$(SLASH)libusb.h
+
+# libinst objects
+OBJS = conv$(SUFOBJ) inst$(SUFOBJ) numsup$(SUFOBJ) rspl1$(SUFOBJ) ntio$(SUFOBJ) unixio$(SUFOBJ) usbio$(SUFOBJ) hidio$(SUFOBJ) insttypes$(SUFOBJ) pollem$(SUFOBJ) xspect$(SUFOBJ) xdg_bds$(SUFOBJ) ccss$(SUFOBJ) pars$(SUFOBJ) cgats$(SUFOBJ) $(INSOBJS)
+
+
+# instrument library
+
+conv$(SUFOBJ): conv.c $(HEADERS)
+	$(CC) conv.c
+
+inst$(SUFOBJ): inst.c $(HEADERS)
+	$(CC) inst.c
+
+numsup$(SUFOBJ): numsup.c $(HEADERS)
+	$(CC) numsup.c
+
+rspl1$(SUFOBJ): rspl1.c $(HEADERS)
+	$(CC) rspl1.c
+
+ntio$(SUFOBJ): ntio.c $(HEADERS)
+	$(CC) ntio.c
+
+unixio$(SUFOBJ): unixio.c $(HEADERS)
+	$(CC) unixio.c
+
+usbio$(SUFOBJ): usbio.c $(HEADERS)
+	$(CC) usbio.c
+
+hidio$(SUFOBJ): hidio.c $(HEADERS)
+	$(CC) hidio.c
+
+insttypes$(SUFOBJ): insttypes.c $(HEADERS)
+	$(CC) insttypes.c
+
+pollem$(SUFOBJ): pollem.c $(HEADERS)
+	$(CC) pollem.c
+
+xspect$(SUFOBJ): xspect.c $(HEADERS)
+	$(CC) xspect.c
+
+pars$(SUFOBJ): pars.c parsstd.c $(HEADERS)
+	$(CC) pars.c
+
+cgats$(SUFOBJ): cgats.c cgatsstd.c $(HEADERS)
+	$(CC) cgats.c
+
+dtp20$(SUFOBJ): dtp20.c $(HEADERS)
+	$(CC) dtp20.c
+
+dtp22$(SUFOBJ): dtp22.c $(HEADERS)
+	$(CC) dtp22.c
+
+dtp41$(SUFOBJ): dtp41.c $(HEADERS)
+	$(CC) dtp41.c
+
+dtp51$(SUFOBJ): dtp51.c $(HEADERS)
+	$(CC) dtp51.c
+
+dtp92$(SUFOBJ): dtp92.c $(HEADERS)
+	$(CC) dtp92.c
+
+ss$(SUFOBJ): ss.c $(HEADERS)
+	$(CC) ss.c
+
+ss_imp$(SUFOBJ): ss_imp.c $(HEADERS)
+	$(CC) ss_imp.c
+
+i1disp$(SUFOBJ): i1disp.c $(HEADERS)
+	$(CC) i1disp.c
+
+i1d3$(SUFOBJ): i1d3.c $(HEADERS)
+	$(CC) i1d3.c
+
+i1pro$(SUFOBJ): i1pro.c $(HEADERS)
+	$(CC) i1pro.c
+
+i1pro_imp$(SUFOBJ): i1pro_imp.c $(HEADERS)
+	$(CC) i1pro_imp.c
+
+munki$(SUFOBJ): munki.c $(HEADERS)
+	$(CC) munki.c
+
+munki_imp$(SUFOBJ): munki_imp.c $(HEADERS)
+	$(CC) munki_imp.c
+
+hcfr$(SUFOBJ): hcfr.c $(HEADERS)
+	$(CC) hcfr.c
+
+huey$(SUFOBJ): huey.c $(HEADERS)
+	$(CC) huey.c
+
+spyd2$(SUFOBJ): spyd2.c $(HEADERS)
+	$(CC) spyd2.c
+
+spyd2en$(SUFOBJ): spyd2en.c $(HEADERS)
+	$(CC) spyd2en.c
+
+i1d3ccss$(SUFOBJ): i1d3ccss.c $(HEADERS)
+	$(CC) i1d3ccss.c
+
+vinflate$(SUFOBJ): vinflate.c $(HEADERS)
+	$(CC) vinflate.c
+
+inflate$(SUFOBJ): inflate.c $(HEADERS)
+	$(CC) inflate.c
+
+LzmaDec$(SUFOBJ): LzmaDec.c LzmaDec.h LzmaTypes.h $(HEADERS)
+	$(CC) LzmaDec.c
+
+libinst$(SUFLIB): $(OBJS)
+	$(LIBU) $(LIBOF)$@ $(OBJS)
+	$(RANLIB) libinst$(SUFLIB)
+
+# test/example code
+
+spotread$(SUFEXE): spotread$(SUFOBJ) libinst$(SUFLIB) libusb1$(SLASH)libusb-1.0A$(SUFLIB) inst.h
+	$(LINK) $(LINKOF)spotread$(SUFEXE) spotread$(SUFOBJ) libinst$(SUFLIB) libusb1$(SLASH)libusb-1.0A$(SUFLIB) $(LINKLIBS) 
+
+spyd2en$(SUFEXE): spyd2en$(SUFOBJ) vinflate$(SUFOBJ) libinst$(SUFLIB)
+	$(LINK) $(LINKOF)spyd2en$(SUFEXE) spyd2en$(SUFOBJ) vinflate$(SUFOBJ) libinst$(SUFLIB) $(LINKLIBS) 
+
+i1d3ccss$(SUFEXE): i1d3ccss$(SUFOBJ) inflate$(SUFOBJ) LzmaDec$(SUFOBJ) libinst$(SUFLIB)
+	$(LINK) $(LINKOF)i1d3ccss$(SUFEXE) i1d3ccss$(SUFOBJ) inflate$(SUFOBJ) LzmaDec$(SUFOBJ) libinst$(SUFLIB) $(LINKLIBS) 
+
+
+

@@ -1,0 +1,15 @@
+
+Quote:
+
+The library (DLL) is distributed under the terms of the GNU Lesser General Public License (LGPL).
+
+All other components (drivers, services, installer) are distributed under the terms of the GNU General Public License (GPL).
+
+This license combination explicitly allows the use of this library in commercial, non Open Source applications. Read the licenses carefully and apply all of their requirements before including this library in a commercial application!
+
+Unquote.
+
+This applies to the code taken from libusb-win32, in particular the libusb/os/drivers directory.
+
+[ Taken from the libsub-win32 web page <http://libusb-win32.sourceforge.net./#license>
+  on the 14th of December 2007 - Graeme Gill ]

@@ -1,0 +1,196 @@
+
+
+#PREF_CCFLAGS 	+= $(CCOPTFLAG) ;		# Turn optimisation on
+PREF_CCFLAGS    += $(CCDEBUGFLAG) ;		# Debugging flags
+PREF_LINKFLAGS	+= $(LINKDEBUGFLAG) ;
+
+# Setup the right hardware access libraries
+if $(NT) {
+	if $(USE_LIBUSB1) = true {
+		LIBUSBDIR = ../libusb1 ;
+		LIBUSBHDRS = ../libusb1 ;
+		if $(MSVCNT) {
+			LIBUSBHDRS += ../libusb1/msvc ;	# So stdint.h can be found
+		}
+		if $(LIBUSB_IS_DLL) = true {
+			LIBUSB = $(LIBUSB1NAME)$(SUFIMPLIB) ;
+			LIBUSBSH = $(LIBUSB1NAME)$(SUFSHLIB) ;
+		} else {
+			LIBUSB = $(LIBUSB1NAME)$(SUFLIB) ;
+		}
+		DEFINES += USE_LIBUSB1 ;
+	} else {
+		LIBUSBDIR = ../libusbw ;
+		LIBUSBHDRS = ../libusbw ;
+		LIBUSB = libusb ;
+	}
+	IOFILE = ntio.c ;
+}
+if $(UNIX) {
+	if $(USE_LIBUSB1) = true {
+		LIBUSBDIR = ../libusb1 ;
+		LIBUSBHDRS = ../libusb1 ;
+		if $(LIBUSB_IS_DLL) = true {
+			LIBUSB = $(LIBUSB1NAME)$(SUFIMPLIB) ;
+			LIBUSBSH = $(LIBUSB1NAME)$(SUFSHLIB) ;
+		} else {
+			LIBUSB = $(LIBUSB1NAME)$(SUFLIB) ;
+		}
+		DEFINES += USE_LIBUSB1 ;
+	} else {
+		LIBUSBDIR = ../libusb ;
+		LIBUSBHDRS = ../libusb ;
+		LIBUSB = libusb ;
+	}
+	IOFILE = unixio.c ;
+	CONVFILE = pollem.c ;
+}
+
+#Products
+Libraries = libinsttypes libinst libdisp libconv ;
+Executables = dispwin synthcal dispread dispcal fakeread synthread
+              chartread spotread illumread ccxxmake spec2cie average spyd2en i1d3ccss ;
+Headers = inst.h ;
+Samples = SOtele.sp linear.cal strange.cal ;
+
+#Install
+InstallBin  $(DESTDIR)$(PREFIX)/bin : $(Executables) ;
+InstallFile $(DESTDIR)$(PREFIX)/$(REFSUBDIR) : $(Samples) ;
+#InstallFile $(DESTDIR)$(PREFIX)/h : $(Headers) ;
+#InstallLib  $(DESTDIR)$(PREFIX)/lib : $(Libraries) ;
+
+if $(UNIX) && $(OS) != MACOSX {
+	# Micro Unix CMM for handling monitor profile association
+	CMMHDRS = ../ucmm ;
+	CMMLIBS = ../ucmm/libucmm ../jcnf/libjcnf ../jcnf/yajl/libyajl ;
+}
+
+HDRS = ../h ../numlib ../icc ../cgats ../rspl ../xicc ../gamut ../spectro
+       ../plot $(LIBUSBHDRS) $(CMMHDRS) ;
+
+# Instrument access library library
+Library libinst : inst.c insttypes.c dtp20.c dtp22.c dtp41.c dtp51.c dtp92.c i1disp.c i1d3.c i1pro.c i1pro_imp.c munki.c munki_imp.c ss.c ss_imp.c hcfr.c spyd2.c huey.c $(IOFILE) usbio.c hidio.c ;
+
+# Display access library 
+Library libdisp : dispsup.c dispwin.c : : : $(LibWinH) ;
+
+# Instrument types utility functions library. Use this instead of libinst */
+# (Note we're working around a bug in Jam caused by objects shared between libraries)
+Object insttypes2 : insttypes.c ;
+LibraryFromObjects libinsttypes : insttypes2 ;
+
+# System utility functions (keyboard, msec_*, thread)
+Library libconv : xdg_bds.c conv.c $(CONVFILE) : : : $(LibWinH) ;
+
+# Support file
+#Object alphix : ../target/alphix.c ;
+
+LINKLIBS = libinst libconv 
+           ../xicc/libxcolorants ../xicc/libxicc
+           ../gamut/libgamut
+           ../rspl/librspl ../cgats/libcgats
+           ../icc/libicc ../plot/libplot ../plot/libvrml ../numlib/libnum
+           $(CMMLIBS) ;
+
+if $(LIBUSB_IS_DLL) = true {
+	LINKSHLIBS = $(LIBUSBDIR)/$(LIBUSB) ;
+	File $(LIBUSBSH) : $(LIBUSBDIR)/$(LIBUSBSH) ;
+	# executable needs .so/.dll in same directory
+	NDepends $(Executables) : $(LIBUSBSH) ;
+} else {
+	LINKLIBS += $(LIBUSBDIR)/$(LIBUSB) ;
+}
+
+# General target reader program
+Main chartread : chartread.c ../target/alphix.c : : : ../target : : ;
+
+# Illuminant measurement
+Main illumread : illumread.c : : : ../target : : ;
+
+# Printed target spot reader utility
+Main spotread : spotread.c : : : : : ;
+
+# Test code
+if $(HOME) = "d:\\usr\\graeme" && $(PWD) = "/src/argyll/spectro" {
+	Main setoem : setoem.c : : : : : ;
+}
+
+# CCMX and CCSStool
+Main ccxxmake : ccxxmake.c : : : : : libdisp ;
+
+# Gretag Spectroscan/T filmstrip reader
+#Main filmread : filmread.c : : : : : ;
+
+# Create synthetic .cal
+Main synthcal : synthcal.c ;
+
+# Display calibration program
+Main dispcal : dispcal.c : : : ../target : : libdisp ;
+
+# Display tester program
+Main dispread : dispread.c : : : : : libdisp ;
+
+#display test window test/Lut loader utility
+# [ Could avoid need for libisnt libusb etc.
+#   by separating system dependent utils to a separate library .] 
+MainVariant dispwin : dispwin.c : : STANDALONE_TEST : : : $(LibWin) ;
+
+LINKLIBS = libinsttypes ../xicc/libxicc ../gamut/libgamut ../rspl/librspl
+           ../cgats/libcgats ../icc/libicc ../numlib/libnum ../plot/libplot
+           ../plot/libvrml ;
+
+# Fake device print/read utility using ICC profile
+Main fakeread : fakeread.c ;
+
+# Synthetic device print/read utility
+Main synthread : synthread.c ;
+
+# Add CIE values to a spectral reading file
+Main spec2cie : spec2cie.c ;
+
+# Average RGB or CMYK .ti3 files
+Main average : average.c ;
+
+# Utility to enable the Spyder 2 instrument */
+Main spyd2en : spyd2en.c vinflate.c : : : : : libconv ;
+
+# Utility to install ccss's or install from OEM EDR files
+Main i1d3ccss : i1d3ccss.c inflate.c LzmaDec.c : : : : : libconv ;
+
+# Generate linear.cal example/diagnostic
+GenFileND linear.cal : synthcal [ NormPaths linear ] ;
+NDepends exe : linear.cal ;	# Normally create it 
+
+# Generate strange.cal example/diagnostic
+GenFileND strange.cal : synthcal -s 0.7,1.0,0.9 -p 1.7,0.8,0.7 [ NormPaths strange ] ;
+NDepends exe : strange.cal ;	# Normally create it 
+
+# Dumy ti3 file generator for testing
+#Main dumyti3 : dumyti3.c ;
+
+# Test utility for XYZ matrix spectral correction
+#Main xyzfix : xyzfix.c ;
+
+# Individual stand alone test of xdg_bds library
+MainVariant xdg_bds : xdg_bds.c : : STANDALONE_TEST : : : libconv ;
+
+# fp conversion code test
+#Main fp : fp.c ;
+
+# test code
+#Main t : t.c ;
+#Main tt : tt.c ;
+#Main i1d3eval : i1d3eval.c ;
+
+if $(OLD_GRETAG) && $(UNIX) && $(OS) != MACOSX {
+
+	# test for parsing a VISE archive
+	Main visetest : visetest.c vinflate.c ;
+
+	# Compute deconvolution filter for i1pro
+	#Main i1deconv : i1deconv.c ;
+
+	# Compute stray light calibration for i1pro
+	#Main i1stray : i1stray.c ;
+}
+

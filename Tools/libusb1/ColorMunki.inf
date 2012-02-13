@@ -1,0 +1,320 @@
+;--------------------------------------------------------------------------
+; Copyright 2010 Graeme W. Gill.
+; 
+; Permission is hereby granted, free of charge, to any person obtaining a copy
+; of this file, to deal
+; in this file without restriction, including without limitation the rights
+; to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+; copies of this file, and to permit persons to whom this file is
+; furnished to do so, subject to the following conditions:
+; 
+; The above copyright notice and this permission notice shall be included in
+; all copies or substantial portions of this file.
+; 
+; THIS FILE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+; IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+; FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+; AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+; LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+; OUT OF OR IN CONNECTION WITH THIS FILE OR THE USE OR OTHER DEALINGS IN
+; THIS FILE.
+;--------------------------------------------------------------------------
+
+; ==== Strings ====
+
+[Strings]
+
+Provider            = "ArgyllCMS"
+DeviceName          = "ColorMunki (Argyll)" 
+Manufacturer        = "X-Rite"
+VendorID            = "VID_0971"
+ProductID           = "PID_2007"
+DeviceGUID          = {34b75320-2c11-11df-bb5e-0002a5d5c51b}
+CatalogFile         = "ColorMunki.cat"
+CatalogFile_NTAMD64 = "ColorMunki_x64.cat"
+
+Date                = "03/18/2010"		; MM/DD/YYYY
+libusb0ver          = "1.0.0.1"
+
+Libusb_ClassName    = "Argyll LibUSB-1.0A devices"
+Libusb_DiskName     = "LibUSB-1.0A Device Install Disk"
+
+libusb0_SvcDesc     = "LibUSB-1.0A libusb0 - Kernel Driver 2010/3/18, 1.0.0.1"
+ptlibusb0_SvcDesc   = "LibUSB-1.0A libusb0 - PT Kernel Driver 2010/3/18, 1.12.0.1"
+WinUSB_SvcDesc      = "LibUSB-1.0A WinUSB Driver Service"
+
+; These 8 determine which type of driver is installed & used for each platform:
+; LIBUSB0_DEV   libusb0.sys kernel driver (Win2K to Win7, signing needed on 64 bit)
+; PTLIBUSB0_DEV ptlibusb0.sys kernel driver (Win2K to Win7, signed by PRUFTECHNIK)
+; WINUSBCO_DEV  Install & use latest WinUSB kernel driver (WinXP to Win7)
+; WINUSB_DEV    Use installed WinUSB kernel driver (Vista to Win7) 
+
+Default_Device      = "LIBUSB0_DEV"		; Default
+NTx86.5.0_Device    = "LIBUSB0_DEV"		; 32 bit Win2K
+NTx86.5.1_Device    = "WINUSBCO_DEV"		; 32 bit WinXP
+NTamd64.5.1_Device  = "WINUSBCO_DEV"		; 64 bit WinXP
+NTx86.6_Device      = "WINUSBCO_DEV"		; 32 bit Vista
+NTamd64.6_Device    = "WINUSBCO_DEV"		; 64 bit Vista
+NTx86.6.1_Device    = "WINUSBCO_DEV"		; 32 bit Win7
+NTamd64.6.1_Device  = "WINUSBCO_DEV"		; 64 bit Win7
+
+; ==== Version ====
+
+[Version]
+Signature = "$Windows NT$"
+DriverVer = %Date%,%libusb0ver%
+Provider  = %Provider%
+
+; (Note the ClassGuid must not be quoted or a string substitution to work on Win2K)
+Class               = %Libusb_ClassName%
+ClassGuid           = {817cffe0-328b-11df-9b9f-0002a5d5c51b}	; Libusb V1.0A ClassGUID
+CatalogFile         = %CatalogFile%
+CatalogFile.NTAMD64 = %CatalogFile_NTAMD64%
+
+[ClassInstall32]
+AddReg=class_install_add_reg
+
+[class_install_add_reg]
+HKR,,,,%Libusb_ClassName%
+HKR,,Icon,,"-20"	; -20 is for the USB icon
+
+; ==== Manufacturer and Models ====
+
+[Manufacturer]
+%Manufacturer%=Devices,NTx86.5.0,NTx86.5.1,NTx86.5,NTamd64.5.1,NTamd64.5, \
+                       NTx86.6,NTamd64.6,NTx86.6.1,NTamd64.6.1
+
+; ==== Devices ====
+
+[Devices]				; Default
+%DeviceName% = %Default_Device%, USB\%VendorID%&%ProductID%
+
+[Devices.NTx86.5.0]		; 32 bit Win2K 
+%DeviceName% = %NTx86.5.0_Device%, USB\%VendorID%&%ProductID%
+
+[Devices.NTx86.5.1]		; 32 bit WinXP
+%DeviceName% = %NTx86.5.1_Device%, USB\%VendorID%&%ProductID%
+
+[Devices.NTx86.5]		; 32 bit Windows Server 2003 etc.
+%DeviceName% = %NTx86.5.1_Device%, USB\%VendorID%&%ProductID%
+
+[Devices.NTamd64.5.1]	; 64 bit WinXP
+%DeviceName% = %NTamd64.5.1_Device%, USB\%VendorID%&%ProductID%
+
+[Devices.NTamd64.5]		; 64 bit Windows Server 2003 etc.
+%DeviceName% = %NTamd64.5.1_Device%, USB\%VendorID%&%ProductID%
+
+[Devices.NTx86.6]		; 32 bit Vista
+%DeviceName% = %NTx86.6_Device%, USB\%VendorID%&%ProductID%
+
+[Devices.NTamd64.6]		; 64 bit Vista
+%DeviceName% = %NTamd64.6_Device%, USB\%VendorID%&%ProductID%
+
+[Devices.NTx86.6.1]		; 32 bit Win7
+%DeviceName% = %NTx86.6.1_Device%, USB\%VendorID%&%ProductID%
+
+[Devices.NTamd64.6.1]	; 64 bit Win7
+%DeviceName% = %NTamd64.6.1_Device%, USB\%VendorID%&%ProductID%
+
+
+; ==== Files Sources and Destinations ====
+
+[SourceDisksNames]
+1 = %Libusb_DiskName%
+2 = %Libusb_DiskName%,,,WinCoInstallers\x86
+3 = %Libusb_DiskName%,,,WinCoInstallers\amd64
+
+[SourceDisksFiles]
+libusb0.sys = 1,,
+libusb0_x64.sys = 1,,
+ptlibusb0.sys = 1,,
+ptlibusb0_x64.sys = 1,,
+libusb-1.0A.dll = 1,,
+libusb-1.0A_x64.dll = 1,,
+WinUSBCoInstaller2.dll=2
+WdfCoInstaller01009.dll=2
+
+[SourceDisksFiles.amd64]
+WinUSBCoInstaller2.dll=3
+WdfCoInstaller01009.dll=3
+
+[DestinationDirs]
+libusb0_files_sys       = 10,system32\drivers
+libusb0_files_sys_x64   = 10,system32\drivers
+ptlibusb0_files_sys     = 10,system32\drivers
+ptlibusb0_files_sys_x64 = 10,system32\drivers
+Libusb_files_dll        = 10,system32
+Libusb_files_dll_wow64  = 10,syswow64
+Libusb_files_dll_x64    = 10,system32
+CoInstallers_CopyFiles  = 11
+
+[Libusb_files_dll]
+libusb-1.0A.dll
+
+[Libusb_files_dll_wow64]
+libusb-1.0A.dll
+
+[Libusb_files_dll_x64]
+libusb-1.0A.dll,libusb-1.0A_x64.dll
+
+; ==== libusb0 Device driver ====
+
+[libusb0_files_sys]
+libusb0.sys
+
+[libusb0_files_sys_x64]
+libusb0.sys,libusb0_x64.sys
+
+; For each one of these, there must be one for Services !!!
+[LIBUSB0_DEV]
+CopyFiles = Libusb0_files_sys, Libusb_files_dll
+
+[LIBUSB0_DEV.NTAMD64]
+CopyFiles = libusb0_files_sys_x64, Libusb_files_dll_wow64, Libusb_files_dll_x64
+
+
+[LIBUSB0_DEV.HW]
+AddReg = libusb0_add_reg_hw
+
+
+[libusb0_add_reg]
+HKR,,DevLoader,,*ntkern
+HKR,,NTMPDriver,,libusb0.sys
+
+[libusb0_add_reg_hw]
+HKR,,DeviceInterfaceGUIDs,0x10000,%DeviceGUID%
+HKR,,SurpriseRemovalOK,0x00010001,1				; Device properties
+
+[LIBUSB0_DEV.Services]
+AddService = libusb0, 0x00000002, libusb0_add_service
+
+[LIBUSB0_DEV.NTAMD64.Services]
+AddService = libusb0, 0x00000002, libusb0_add_service
+
+[libusb0_add_service]
+DisplayName    = %libusb0_SvcDesc%
+ServiceType    = 1
+StartType      = 3
+ErrorControl   = 0
+ServiceBinary  = %12%\libusb0.sys
+
+; ==== ptlibusb0 Device driver ====
+
+[ptlibusb0_files_sys]
+libusb0.sys,ptlibusb0.sys
+
+[ptlibusb0_files_sys_x64]
+libusb0.sys,ptlibusb0_x64.sys
+
+; For each one of these, there must be one for Services !!!
+[PTLIBUSB0_DEV]
+CopyFiles = ptlibusb0_files_sys, Libusb_files_dll
+
+[PTLIBUSB0_DEV.NTAMD64]
+CopyFiles = ptlibusb0_files_sys_x64, Libusb_files_dll_wow64, Libusb_files_dll_x64
+
+
+[PTLIBUSB0_DEV.HW]
+AddReg = ptlibusb0_add_reg_hw
+
+
+[ptlibusb0_add_reg]
+HKR,,DevLoader,,*ntkern
+HKR,,NTMPDriver,,libusb0.sys
+
+[ptlibusb0_add_reg_hw]
+HKR,,DeviceInterfaceGUIDs,0x10000,%DeviceGUID%
+HKR,,SurpriseRemovalOK,0x00010001,1				; Device properties
+
+[PTLIBUSB0_DEV.Services]
+AddService = libusb0, 0x00000002, ptlibusb0_add_service
+
+[PTLIBUSB0_DEV.NTAMD64.Services]
+AddService = libusb0, 0x00000002, ptlibusb0_add_service
+
+[ptlibusb0_add_service]
+DisplayName    = %ptlibusb0_SvcDesc%
+ServiceType    = 1
+StartType      = 3
+ErrorControl   = 0
+ServiceBinary  = %12%\libusb0.sys
+
+
+; ==== WinUSB Device driver with Coinstallers ====
+
+; For each one of these, there must be one for Services !!!
+[WINUSBCO_DEV]
+CopyFiles = Libusb_files_dll
+Include=winusb.inf
+Needs=WINUSB.NT
+
+[WINUSBCO_DEV.NTAMD64]
+CopyFiles = Libusb_files_dll_wow64, Libusb_files_dll_x64
+Include=winusb.inf
+Needs=WINUSB.NT
+
+
+[WINUSBCO_DEV.HW]
+AddReg = WinUSB_add_reg_hw
+
+[WINUSBCO_DEV.Services]
+Include=winusb.inf
+AddService=WinUSB,0x00000002,WinUSB_add_service
+
+[WINUSBCO_DEV.NTAMD64.Services]
+Include=winusb.inf
+AddService=WinUSB,0x00000002,WinUSB_add_service
+
+[WINUSBCO_DEV.Wdf]
+KmdfService=WINUSB, WinUSB_Install
+
+[WINUSBCO_DEV.CoInstallers]
+AddReg=CoInstallers_AddReg
+CopyFiles=CoInstallers_CopyFiles
+
+[CoInstallers_AddReg]
+HKR,,CoInstallers32,0x00010000,"WdfCoInstaller01009.dll,WdfCoInstaller","WinUSBCoInstaller2.dll"
+
+[CoInstallers_CopyFiles]
+WinUSBCoInstaller2.dll
+WdfCoInstaller01009.dll
+
+; ==== WinUSB Device driver (No Coinstallers) ====
+
+; For each one of these, there must be one for Services !!!
+[WINUSB_DEV]
+CopyFiles = Libusb_files_dll
+
+[WINUSB_DEV.NTAMD64]
+CopyFiles = Libusb_files_dll_wow64, Libusb_files_dll_x64
+
+
+[WINUSB_DEV.HW]
+AddReg = WinUSB_add_reg_hw
+
+[WINUSB_DEV.Services]
+Include=winusb.inf
+AddService=WinUSB,0x00000002,WinUSB_add_service
+
+[WINUSB_DEV.NTAMD64.Services]
+Include=winusb.inf
+AddService=WinUSB,0x00000002,WinUSB_add_service
+
+[WINUSB_DEV.Wdf]
+KmdfService=WINUSB, WinUSB_Install
+
+[WinUSB_Install]
+KmdfLibraryVersion=1.9
+
+[WinUSB_add_reg_hw]
+HKR,,DeviceInterfaceGUIDs,0x10000,%DeviceGUID%
+HKR,,SurpriseRemovalOK,0x00010001,1				; Device properties
+
+[WinUSB_add_service]
+DisplayName     = %WinUSB_SvcDesc%
+ServiceType     = 1
+StartType       = 3
+ErrorControl    = 1
+ServiceBinary   = %12%\WinUSB.sys
+
+
