@@ -45,6 +45,7 @@
 #ifndef SALONEINSTLIB
 #include "copyright.h"
 #include "aconfig.h"
+#include "numsup.h"
 #endif  /* !SALONEINSTLIB */
 #include "xspect.h"
 #include "insttypes.h"

@@ -42,6 +42,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LibJpeg", "Tools\Jpeg\LibJp
 		{BEBC9EA2-AD8B-43D7-A95D-2D6D86A899DC} = {BEBC9EA2-AD8B-43D7-A95D-2D6D86A899DC}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libusb-1.0A (static)", "Tools\libusb1\libusb-static_2008.vcproj", "{349EE8F9-7D25-4909-AAF5-FF3FADE72187}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spectro", "Tools\spectro\spectro.vcproj", "{5AA3F412-D3AB-437E-A8CF-C1B9ACBCA25E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -114,6 +118,20 @@ Global
 		{E4929E39-EF57-470E-A748-0A5C28D74C5E}.Release|Win32.Build.0 = Release|Win32
 		{E4929E39-EF57-470E-A748-0A5C28D74C5E}.Release|x64.ActiveCfg = Release|x64
 		{E4929E39-EF57-470E-A748-0A5C28D74C5E}.Release|x64.Build.0 = Release|x64
+		{349EE8F9-7D25-4909-AAF5-FF3FADE72187}.Debug|Win32.ActiveCfg = Debug|Win32
+		{349EE8F9-7D25-4909-AAF5-FF3FADE72187}.Debug|Win32.Build.0 = Debug|Win32
+		{349EE8F9-7D25-4909-AAF5-FF3FADE72187}.Debug|x64.ActiveCfg = Debug|x64
+		{349EE8F9-7D25-4909-AAF5-FF3FADE72187}.Debug|x64.Build.0 = Debug|x64
+		{349EE8F9-7D25-4909-AAF5-FF3FADE72187}.Release|Win32.ActiveCfg = Release|Win32
+		{349EE8F9-7D25-4909-AAF5-FF3FADE72187}.Release|Win32.Build.0 = Release|Win32
+		{349EE8F9-7D25-4909-AAF5-FF3FADE72187}.Release|x64.ActiveCfg = Release|x64
+		{349EE8F9-7D25-4909-AAF5-FF3FADE72187}.Release|x64.Build.0 = Release|x64
+		{5AA3F412-D3AB-437E-A8CF-C1B9ACBCA25E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5AA3F412-D3AB-437E-A8CF-C1B9ACBCA25E}.Debug|Win32.Build.0 = Debug|Win32
+		{5AA3F412-D3AB-437E-A8CF-C1B9ACBCA25E}.Debug|x64.ActiveCfg = Debug|Win32
+		{5AA3F412-D3AB-437E-A8CF-C1B9ACBCA25E}.Release|Win32.ActiveCfg = Release|Win32
+		{5AA3F412-D3AB-437E-A8CF-C1B9ACBCA25E}.Release|Win32.Build.0 = Release|Win32
+		{5AA3F412-D3AB-437E-A8CF-C1B9ACBCA25E}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

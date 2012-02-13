@@ -85,7 +85,7 @@ struct usb_device *dev
 
 		if (config->bNumInterfaces > 0
 		 && config->interface[0]. num_altsetting > 0
-		 & config->interface[0].altsetting[0].bInterfaceClass == LIBUSB_CLASS_HID) {
+		 && config->interface[0].altsetting[0].bInterfaceClass == LIBUSB_CLASS_HID) {
 			if (p->debug) fprintf(stderr,"Is a libusb HID device\n");
 			libusb_free_config_descriptor(config);
 			return 0;
@@ -130,7 +130,7 @@ struct usb_device *dev
 		p->paths[p->npaths]->dev = dev;
 		p->paths[p->npaths]->hev = NULL;
 		p->paths[p->npaths]->itype = itype;
-		if ((p->paths[p->npaths]->path = strdup(pname)) == NULL)
+		if ((p->paths[p->npaths]->path = _strdup(pname)) == NULL)
 			error("icoms: strdup failed!");
 		p->npaths++;
 		p->paths[p->npaths] = NULL;
@@ -673,7 +673,7 @@ char **pnames		/* List of process names to try and kill before opening */
 			if ((p->ppath = malloc(sizeof(icompath))) == NULL)
 				error("malloc() failed on com port path");
 			*p->ppath = *p->paths[port-1];				/* Structure copy */
-			if ((p->ppath->path = strdup(p->paths[port-1]->path)) == NULL)
+			if ((p->ppath->path = _strdup(p->paths[port-1]->path)) == NULL)
 				error("strdup() failed on com port path");
 			p->port = port;
 	
