@@ -11,19 +11,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{E4929E39-EF57-470E-A748-0A5C28D74C5E}</ProjectGuid>
-    <RootNamespace>LibJpeg</RootNamespace>
+    <ProjectGuid>{5AA3F412-D3AB-437E-A8CF-C1B9ACBCA25E}</ProjectGuid>
+    <RootNamespace>spectro</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -51,100 +51,95 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\libusb1\libusb;..\libusb1\msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;NT;_CRT_SECURE_NO_WARNINGS;USE_LIBUSB1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
-      <ExceptionHandling>
-      </ExceptionHandling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <BufferSecurityCheck>false</BufferSecurityCheck>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DisableSpecificWarnings>4101;4018;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <Optimization>MinSpace</Optimization>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ExceptionHandling>
-      </ExceptionHandling>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>..\libusb1\libusb;..\libusb1\msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;NT;_CRT_SECURE_NO_WARNINGS;USE_LIBUSB1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4101;4018;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="jcapimin.c" />
-    <ClCompile Include="jcapistd.c" />
-    <ClCompile Include="jccoefct.c" />
-    <ClCompile Include="jccolor.c" />
-    <ClCompile Include="jcdctmgr.c" />
-    <ClCompile Include="jchuff.c" />
-    <ClCompile Include="jcinit.c" />
-    <ClCompile Include="jcmainct.c" />
-    <ClCompile Include="jcmarker.c" />
-    <ClCompile Include="jcmaster.c" />
-    <ClCompile Include="jcomapi.c" />
-    <ClCompile Include="jcparam.c" />
-    <ClCompile Include="jcphuff.c" />
-    <ClCompile Include="jcprepct.c" />
-    <ClCompile Include="jcsample.c" />
-    <ClCompile Include="jctrans.c" />
-    <ClCompile Include="jdapimin.c" />
-    <ClCompile Include="jdapistd.c" />
-    <ClCompile Include="jdatadst.c" />
-    <ClCompile Include="jdatasrc.c" />
-    <ClCompile Include="jdcoefct.c" />
-    <ClCompile Include="jdcolor.c" />
-    <ClCompile Include="jddctmgr.c" />
-    <ClCompile Include="jdhuff.c" />
-    <ClCompile Include="jdinput.c" />
-    <ClCompile Include="jdmainct.c" />
-    <ClCompile Include="jdmarker.c" />
-    <ClCompile Include="jdmaster.c" />
-    <ClCompile Include="jdmerge.c" />
-    <ClCompile Include="jdphuff.c" />
-    <ClCompile Include="jdpostct.c" />
-    <ClCompile Include="jdsample.c" />
-    <ClCompile Include="jdtrans.c" />
-    <ClCompile Include="jerror.c" />
-    <ClCompile Include="jfdctflt.c" />
-    <ClCompile Include="jfdctfst.c" />
-    <ClCompile Include="jfdctint.c" />
-    <ClCompile Include="jidctflt.c" />
-    <ClCompile Include="jidctfst.c" />
-    <ClCompile Include="jidctint.c" />
-    <ClCompile Include="jidctred.c" />
-    <ClCompile Include="jmemmgr.c" />
-    <ClCompile Include="jmemnobs.c" />
-    <ClCompile Include="jpegtran.c" />
-    <ClCompile Include="jquant1.c" />
-    <ClCompile Include="jquant2.c" />
-    <ClCompile Include="jutils.c" />
+    <ClCompile Include="dtp20.c" />
+    <ClCompile Include="dtp22.c" />
+    <ClCompile Include="dtp41.c" />
+    <ClCompile Include="dtp51.c" />
+    <ClCompile Include="dtp92.c" />
+    <ClCompile Include="hcfr.c" />
+    <ClCompile Include="hidio.c" />
+    <ClCompile Include="huey.c" />
+    <ClCompile Include="i1d3.c" />
+    <ClCompile Include="i1disp.c" />
+    <ClCompile Include="i1pro.c" />
+    <ClCompile Include="i1pro_imp.c" />
+    <ClCompile Include="inst.c" />
+    <ClCompile Include="insttypes.c" />
+    <ClCompile Include="LzmaDec.c" />
+    <ClCompile Include="munki.c" />
+    <ClCompile Include="munki_imp.c" />
+    <ClCompile Include="ntio.c" />
+    <ClCompile Include="numsup.c" />
+    <ClCompile Include="spyd2.c" />
+    <ClCompile Include="ss.c" />
+    <ClCompile Include="ss_imp.c" />
+    <ClCompile Include="usbio.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="jchuff.h" />
-    <ClInclude Include="jconfig.h" />
-    <ClInclude Include="jdct.h" />
-    <ClInclude Include="jdhuff.h" />
-    <ClInclude Include="jerror.h" />
-    <ClInclude Include="jinclude.h" />
-    <ClInclude Include="jmemsys.h" />
-    <ClInclude Include="jmorecfg.h" />
-    <ClInclude Include="jpegint.h" />
-    <ClInclude Include="jpeglib.h" />
-    <ClInclude Include="jversion.h" />
+    <ClInclude Include="conv.h" />
+    <ClInclude Include="copyright.h" />
+    <ClInclude Include="dispsup.h" />
+    <ClInclude Include="dispwin.h" />
+    <ClInclude Include="dtp20.h" />
+    <ClInclude Include="dtp22.h" />
+    <ClInclude Include="dtp41.h" />
+    <ClInclude Include="dtp51.h" />
+    <ClInclude Include="dtp92.h" />
+    <ClInclude Include="hcfr.h" />
+    <ClInclude Include="hidio.h" />
+    <ClInclude Include="huey.h" />
+    <ClInclude Include="i1d3.h" />
+    <ClInclude Include="i1disp.h" />
+    <ClInclude Include="i1pro.h" />
+    <ClInclude Include="i1pro_imp.h" />
+    <ClInclude Include="icoms.h" />
+    <ClInclude Include="inst.h" />
+    <ClInclude Include="insttypeinst.h" />
+    <ClInclude Include="insttypes.h" />
+    <ClInclude Include="LzmaDec.h" />
+    <ClInclude Include="LzmaTypes.h" />
+    <ClInclude Include="munki.h" />
+    <ClInclude Include="munki_imp.h" />
+    <ClInclude Include="numsup.h" />
+    <ClInclude Include="pollem.h" />
+    <ClInclude Include="spyd2.h" />
+    <ClInclude Include="spyd2PLD.h" />
+    <ClInclude Include="spyd2setup.h" />
+    <ClInclude Include="ss.h" />
+    <ClInclude Include="ss_imp.h" />
+    <ClInclude Include="usbio.h" />
+    <ClInclude Include="xdg_bds.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\zlib\zlib.vcxproj">
-      <Project>{bebc9ea2-ad8b-43d7-a95d-2d6d86a899dc}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
+    <None Include="Readme.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
