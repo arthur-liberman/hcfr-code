@@ -106,12 +106,14 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;NT;_CRT_SECURE_NO_WARNINGS"
+				AdditionalIncludeDirectories="..\libusb1\libusb;..\libusb1\msvc"
+				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;NT;_CRT_SECURE_NO_WARNINGS;USE_LIBUSB1"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
+				DisableSpecificWarnings="4101;4018"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
