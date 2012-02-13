@@ -1,0 +1,321 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{0d11c325-e407-4229-aed9-803a1ea2d258}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{f0c61ea1-94d9-43d2-96a0-28ff5e63b1e5}</UniqueIdentifier>
+      <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{c3ce6648-6a69-4994-8b33-293297a6204f}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="CHCFR21_FRANCAIS.rc">
+      <Filter>Source Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\bitmap1.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\bitmap2.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\blueprimary.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\blueprimaryplot.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\camera.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\camera_b.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\cieplot.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ColorHCFR.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ColorHCFR.rc2">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ColorMeasurementsDoc.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\colors_i.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\colortempplot.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\contrast.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\cursor_meas.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\cyansecondary.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\delete.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\delete_b.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\docref.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\DRAGMOVE.CUR">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\graycolo.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\grayplot.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\grayscal.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\greenprimary.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\icon1.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\icon_controlled.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\idi_start.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\idi_stop.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\idr_ciec.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\idr_coltemp.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\idr_doct.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\idr_gamm.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\idr_lumi.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\idr_meas.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\idr_nebl.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\idr_newh.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\idr_prop.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\idr_rgbh.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\idr_rgbv.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\idr_slum.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\idr_sshi.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\illuminantplot.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\logo.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\magentasecondary.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\meas_cont.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\meas_g.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\meas_p.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\meas_ps.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\meas_psg.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\meas_stop.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\measureplot.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\medium_t.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\medium_tb_main_hicol.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\medium_tb_measures_ex_hicol.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\medium_tb_measures_hicol.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\medium_tb_measures_sat_hicol.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\medium_tb_sensor_hicol.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\medium_tb_views_hicol.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\mediumto.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\medtoot.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\menubarg.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\nearblac.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\nearblack.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\nearwhit.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\nearwhite.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\newtab_i.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\point.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\properties.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\redprimary.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\redprimary2.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\refblueprimary.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\refcrossblue.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\refcrosscyan.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\refcrossgreen.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\refcrossmagenta.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\refcrossred.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\refcrossyellow.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\refcyansecondary.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\refgreenprimary.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\refmagentasecondary.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\refredprimary.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\refyellowsecondary.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\sat_all.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\satblue.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\satcyan.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\satgreen.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\satmagenta.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\satred.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\satred_i.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\satyellow.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\selectedplot.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\settings.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\spectrum.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\target.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\tbmeasures.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\tbmeasures_ex.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\tbmeasures_sat.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\Toolbar.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\trash.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\yellowsecondary.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>

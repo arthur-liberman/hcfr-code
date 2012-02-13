@@ -1,0 +1,829 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{ff8fa4e5-7d52-46aa-9d49-c18ee772d4cf}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="Source Files\Views">
+      <UniqueIdentifier>{78f1e514-6ae8-4d0d-8944-793eba51dea7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Tools">
+      <UniqueIdentifier>{ad02d224-0ae0-4e37-b4f6-270e0639614e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Tools\Matrix">
+      <UniqueIdentifier>{af2ca984-e1a0-4319-b007-5b17aa9cb8bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Tools\Grid">
+      <UniqueIdentifier>{098fb227-dd60-49fc-8f5b-f4ac66d1f4fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Tools\Sizebar">
+      <UniqueIdentifier>{70a29583-f1e1-4a43-a98e-6d59580dd5c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Tools\CPPToolTips">
+      <UniqueIdentifier>{151192f8-f04b-4859-8a43-09cf1c567eb5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Tools\BtnST">
+      <UniqueIdentifier>{bd38ea29-35f4-4fd9-81ca-7c4dd4d6377e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Tools\NewMenu">
+      <UniqueIdentifier>{9513dc22-0778-45c2-95b0-668966659948}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Tools\ColorPicker">
+      <UniqueIdentifier>{49e1d91b-56e6-429b-a866-f3c3a1150db6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Tools\CustomTabControl">
+      <UniqueIdentifier>{5deda927-06b2-42c6-8bba-169122eabc5d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Controls">
+      <UniqueIdentifier>{eec6e1c1-6eb6-4598-b242-20debfcb234d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Generators">
+      <UniqueIdentifier>{f22e305e-b39a-43f8-908d-0c061ec5199b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Sensors">
+      <UniqueIdentifier>{ce385050-2804-4f63-913c-645cc756a950}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Color">
+      <UniqueIdentifier>{7a2e6c56-a2b2-43bd-b86c-e6e597a7d9fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Wizards">
+      <UniqueIdentifier>{dfff3be7-fd3b-4779-9d55-8c7ab2f6bf9a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{4ead8434-9b70-4224-a650-f3d652120858}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Views headers">
+      <UniqueIdentifier>{17c40aec-cb9d-4342-a986-ca3289daba6f}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Tools headers">
+      <UniqueIdentifier>{feacc51c-0878-4432-b31c-3ed35c6b4a11}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Tools headers\Matric headers">
+      <UniqueIdentifier>{e5febd7a-745f-477b-ab40-09a785f2b691}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Tools headers\Grid headers">
+      <UniqueIdentifier>{3b6caf4e-bb4a-4855-8b9d-25be9c947534}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Tools headers\Sizebar headers">
+      <UniqueIdentifier>{bede7a19-8eb6-49c4-81d2-c6035b6ae024}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Tools headers\CPPToolTips headers">
+      <UniqueIdentifier>{e14469f9-02a5-41af-9bff-20f2e42ad6f4}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Tools headers\BtnST headers">
+      <UniqueIdentifier>{f19e9d4d-90d2-443d-8962-1e915eae47c6}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Tools headers\NewMenu headers">
+      <UniqueIdentifier>{c930a9e4-3294-491c-a2f7-e41358ec5de3}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Tools headers\ColorPicker headers">
+      <UniqueIdentifier>{218ac468-0b5f-4b15-be6f-30348b25ec16}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Tools headers\CustomTabControl headers">
+      <UniqueIdentifier>{efae0be1-7d56-49fd-91fd-a85e017f8cbf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Controls headers">
+      <UniqueIdentifier>{e56ac52e-3e12-4305-9340-967b0dbd1946}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Generators headers">
+      <UniqueIdentifier>{3b274e8f-58a9-4d15-9641-115b83b8dc7e}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Sensors headers">
+      <UniqueIdentifier>{81ed86b1-1da8-4419-b44c-1ab51bf429b9}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Color headers">
+      <UniqueIdentifier>{6c25885b-ce5c-4712-baed-6528851d2df6}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Wizards headers">
+      <UniqueIdentifier>{4a775650-2eee-42df-a84b-04f92801d633}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{a2580424-398b-4470-88fc-9d6870d5d97a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="AdjustMatrixDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AdvancedPropPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AppearancePropPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ColorHCFR.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ColorHCFRConfig.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DataSetDoc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DocEnumerator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DocTempl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DuplicateDocDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Export.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ExportReplaceDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneralPropPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LangSelection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LuxScaleAdvisor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MainFrm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Measure.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelessPropertySheet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MultiFrm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PatternDisplay.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RefColorDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ReferencesPropPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ScaleSizes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Signature.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StdAfx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ToolbarPropPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WinAppEx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Views\CIEChartView.cpp">
+      <Filter>Source Files\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="Views\ColorTempHistoView.cpp">
+      <Filter>Source Files\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="Views\GammaHistoView.cpp">
+      <Filter>Source Files\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="Views\graphcontrol.cpp">
+      <Filter>Source Files\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="Views\graphscalepropdialog.cpp">
+      <Filter>Source Files\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="Views\graphsettingsdialog.cpp">
+      <Filter>Source Files\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="Views\LuminanceHistoView.cpp">
+      <Filter>Source Files\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="Views\MainView.cpp">
+      <Filter>Source Files\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="Views\measureshistoview.cpp">
+      <Filter>Source Files\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="Views\NearBlackHistoView.cpp">
+      <Filter>Source Files\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="Views\NearWhiteHistoView.cpp">
+      <Filter>Source Files\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="Views\RGBHistoView.cpp">
+      <Filter>Source Files\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="Views\SatLumHistoView.cpp">
+      <Filter>Source Files\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="Views\SatLumShiftView.cpp">
+      <Filter>Source Files\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="Views\savegraphdialog.cpp">
+      <Filter>Source Files\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\BitmapTools.cpp">
+      <Filter>Source Files\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\CIEChartImage.cpp">
+      <Filter>Source Files\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\CreditsCtrl.cpp">
+      <Filter>Source Files\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\fxcolor.cpp">
+      <Filter>Source Files\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\HyperLink.cpp">
+      <Filter>Source Files\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\SerialCom.cpp">
+      <Filter>Source Files\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\Subclass.cpp">
+      <Filter>Source Files\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\XPGroupBox.cpp">
+      <Filter>Source Files\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\Matrix.cpp">
+      <Filter>Source Files\Tools\Matrix</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\GridCtrl\GridCell.cpp">
+      <Filter>Source Files\Tools\Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\GridCtrl\GridCellBase.cpp">
+      <Filter>Source Files\Tools\Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\GridCtrl\GridCtrl.cpp">
+      <Filter>Source Files\Tools\Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\GridCtrl\GridDropTarget.cpp">
+      <Filter>Source Files\Tools\Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\GridCtrl\InPlaceEdit.cpp">
+      <Filter>Source Files\Tools\Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\GridCtrl\TitleTip.cpp">
+      <Filter>Source Files\Tools\Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\scbarcf.cpp">
+      <Filter>Source Files\Tools\Sizebar</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\scbarg.cpp">
+      <Filter>Source Files\Tools\Sizebar</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\sizecbar.cpp">
+      <Filter>Source Files\Tools\Sizebar</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\CppTooltip\CeXDib.cpp">
+      <Filter>Source Files\Tools\CPPToolTips</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\CppTooltip\PPDrawManager.cpp">
+      <Filter>Source Files\Tools\CPPToolTips</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\CppTooltip\PPHtmlDrawer.cpp">
+      <Filter>Source Files\Tools\CPPToolTips</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\CppTooltip\PPTooltip.cpp">
+      <Filter>Source Files\Tools\CPPToolTips</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\ButtonST\BtnST.cpp">
+      <Filter>Source Files\Tools\BtnST</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\ButtonST\ShadeButtonST.cpp">
+      <Filter>Source Files\Tools\BtnST</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\NewMenu\MyTrace.cpp">
+      <Filter>Source Files\Tools\NewMenu</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\NewMenu\NewDialogBar.cpp">
+      <Filter>Source Files\Tools\NewMenu</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\NewMenu\NewMenu.cpp">
+      <Filter>Source Files\Tools\NewMenu</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\NewMenu\NewMenuBar.cpp">
+      <Filter>Source Files\Tools\NewMenu</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\NewMenu\NewProperty.cpp">
+      <Filter>Source Files\Tools\NewMenu</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\NewMenu\NewStatusBar.cpp">
+      <Filter>Source Files\Tools\NewMenu</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\NewMenu\NewToolBar.cpp">
+      <Filter>Source Files\Tools\NewMenu</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\ColourPickerXP.cpp">
+      <Filter>Source Files\Tools\ColorPicker</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\CustomTabControl\CustomTabCtrl.cpp">
+      <Filter>Source Files\Tools\CustomTabControl</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\CustomTabControl\ThemeUtil.cpp">
+      <Filter>Source Files\Tools\CustomTabControl</Filter>
+    </ClCompile>
+    <ClCompile Include="Controls\LuminanceWnd.cpp">
+      <Filter>Source Files\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="Controls\RGBLevelWnd.cpp">
+      <Filter>Source Files\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="Controls\SpectrumDlg.cpp">
+      <Filter>Source Files\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="Controls\TargetWnd.cpp">
+      <Filter>Source Files\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="Controls\testcolorwnd.cpp">
+      <Filter>Source Files\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="Generators\FullScreenWindow.cpp">
+      <Filter>Source Files\Generators</Filter>
+    </ClCompile>
+    <ClCompile Include="Generators\GDIGenePropPage.cpp">
+      <Filter>Source Files\Generators</Filter>
+    </ClCompile>
+    <ClCompile Include="Generators\GDIGenerator.cpp">
+      <Filter>Source Files\Generators</Filter>
+    </ClCompile>
+    <ClCompile Include="Generators\Generator.cpp">
+      <Filter>Source Files\Generators</Filter>
+    </ClCompile>
+    <ClCompile Include="Generators\GeneratorPropPage.cpp">
+      <Filter>Source Files\Generators</Filter>
+    </ClCompile>
+    <ClCompile Include="Generators\IRProfile.cpp">
+      <Filter>Source Files\Generators</Filter>
+    </ClCompile>
+    <ClCompile Include="Generators\IRProfilePropPage.cpp">
+      <Filter>Source Files\Generators</Filter>
+    </ClCompile>
+    <ClCompile Include="Generators\KiGenePropPage.cpp">
+      <Filter>Source Files\Generators</Filter>
+    </ClCompile>
+    <ClCompile Include="Generators\KiGenerator.cpp">
+      <Filter>Source Files\Generators</Filter>
+    </ClCompile>
+    <ClCompile Include="Generators\ManualDVDGenerator.cpp">
+      <Filter>Source Files\Generators</Filter>
+    </ClCompile>
+    <ClCompile Include="Sensors\DTPSensor.cpp">
+      <Filter>Source Files\Sensors</Filter>
+    </ClCompile>
+    <ClCompile Include="Sensors\DTPsensorproppage.cpp">
+      <Filter>Source Files\Sensors</Filter>
+    </ClCompile>
+    <ClCompile Include="Sensors\EyeOneSensor.cpp">
+      <Filter>Source Files\Sensors</Filter>
+    </ClCompile>
+    <ClCompile Include="Sensors\EyeOnesensorproppage.cpp">
+      <Filter>Source Files\Sensors</Filter>
+    </ClCompile>
+    <ClCompile Include="Sensors\KiSensor.cpp">
+      <Filter>Source Files\Sensors</Filter>
+    </ClCompile>
+    <ClCompile Include="Sensors\KiSensorPropPage.cpp">
+      <Filter>Source Files\Sensors</Filter>
+    </ClCompile>
+    <ClCompile Include="Sensors\MTCSSensor.cpp">
+      <Filter>Source Files\Sensors</Filter>
+    </ClCompile>
+    <ClCompile Include="Sensors\MTCSsensorproppage.cpp">
+      <Filter>Source Files\Sensors</Filter>
+    </ClCompile>
+    <ClCompile Include="Sensors\OneDeviceSensor.cpp">
+      <Filter>Source Files\Sensors</Filter>
+    </ClCompile>
+    <ClCompile Include="Sensors\OneDeviceSensorPropPage.cpp">
+      <Filter>Source Files\Sensors</Filter>
+    </ClCompile>
+    <ClCompile Include="Sensors\Sensor.cpp">
+      <Filter>Source Files\Sensors</Filter>
+    </ClCompile>
+    <ClCompile Include="Sensors\SensorPropPage.cpp">
+      <Filter>Source Files\Sensors</Filter>
+    </ClCompile>
+    <ClCompile Include="Sensors\SimulatedSensor.cpp">
+      <Filter>Source Files\Sensors</Filter>
+    </ClCompile>
+    <ClCompile Include="Sensors\SimulatedSensorPropPage.cpp">
+      <Filter>Source Files\Sensors</Filter>
+    </ClCompile>
+    <ClCompile Include="Sensors\Spyder3Sensor.cpp">
+      <Filter>Source Files\Sensors</Filter>
+    </ClCompile>
+    <ClCompile Include="Sensors\Spyder3sensorproppage.cpp">
+      <Filter>Source Files\Sensors</Filter>
+    </ClCompile>
+    <ClCompile Include="Sensors\SpyderIISensor.cpp">
+      <Filter>Source Files\Sensors</Filter>
+    </ClCompile>
+    <ClCompile Include="Sensors\SpyderIIsensorproppage.cpp">
+      <Filter>Source Files\Sensors</Filter>
+    </ClCompile>
+    <ClCompile Include="Color.cpp">
+      <Filter>Source Files\Color</Filter>
+    </ClCompile>
+    <ClCompile Include="NewDocPropertyPages.cpp">
+      <Filter>Source Files\Wizards</Filter>
+    </ClCompile>
+    <ClCompile Include="NewDocWizard.cpp">
+      <Filter>Source Files\Wizards</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AdjustMatrixDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AdvancedPropPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AppearancePropPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ColorHCFR.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ColorHCFRConfig.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DataSetDoc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DocEnumerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DocTempl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HelpID.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="htmlhelp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LuxScaleAdvisor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MainFrm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\MainWndPlacement.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Measure.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelessPropertySheet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MultiFrm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PatternDisplay.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RefColorDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ReferencesPropPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ScaleSizes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Signature.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StdAfx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ToolbarPropPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WinAppEx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Views\CIEChartView.h">
+      <Filter>Header Files\Views headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Views\ColorTempHistoView.h">
+      <Filter>Header Files\Views headers</Filter>
+    </ClInclude>
+    <ClInclude Include="CSpreadSheet.h">
+      <Filter>Header Files\Views headers</Filter>
+    </ClInclude>
+    <ClInclude Include="DuplicateDocDlg.h">
+      <Filter>Header Files\Views headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Export.h">
+      <Filter>Header Files\Views headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ExportReplaceDialog.h">
+      <Filter>Header Files\Views headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Views\GammaHistoView.h">
+      <Filter>Header Files\Views headers</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneralPropPage.h">
+      <Filter>Header Files\Views headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Views\GraphControl.h">
+      <Filter>Header Files\Views headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Views\graphscalepropdialog.h">
+      <Filter>Header Files\Views headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Views\graphsettingsdialog.h">
+      <Filter>Header Files\Views headers</Filter>
+    </ClInclude>
+    <ClInclude Include="LangSelection.h">
+      <Filter>Header Files\Views headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Views\LuminanceHistoView.h">
+      <Filter>Header Files\Views headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Views\MainView.h">
+      <Filter>Header Files\Views headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Views\measureshistoview.h">
+      <Filter>Header Files\Views headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Views\NearBlackHistoView.h">
+      <Filter>Header Files\Views headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Views\NearWhiteHistoView.h">
+      <Filter>Header Files\Views headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Views\RGBHistoView.h">
+      <Filter>Header Files\Views headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Views\SatLumHistoView.h">
+      <Filter>Header Files\Views headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Views\SatLumShiftView.h">
+      <Filter>Header Files\Views headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Views\savegraphdialog.h">
+      <Filter>Header Files\Views headers</Filter>
+    </ClInclude>
+    <ClInclude Include="WebUpdate.h">
+      <Filter>Header Files\Views headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\BitmapTools.h">
+      <Filter>Header Files\Tools headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\CreditsCtrl.h">
+      <Filter>Header Files\Tools headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\fxcolor.h">
+      <Filter>Header Files\Tools headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\HyperLink.h">
+      <Filter>Header Files\Tools headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\SerialCom.h">
+      <Filter>Header Files\Tools headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\Subclass.h">
+      <Filter>Header Files\Tools headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\XPGroupBox.h">
+      <Filter>Header Files\Tools headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\Matrix.h">
+      <Filter>Header Files\Tools headers\Matric headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\GridCtrl\CellRange.h">
+      <Filter>Header Files\Tools headers\Grid headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\GridCtrl\GridCell.h">
+      <Filter>Header Files\Tools headers\Grid headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\GridCtrl\GridCellBase.h">
+      <Filter>Header Files\Tools headers\Grid headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\GridCtrl\GridCtrl.h">
+      <Filter>Header Files\Tools headers\Grid headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\GridCtrl\GridDropTarget.h">
+      <Filter>Header Files\Tools headers\Grid headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\GridCtrl\InPlaceEdit.h">
+      <Filter>Header Files\Tools headers\Grid headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\GridCtrl\MemDC.h">
+      <Filter>Header Files\Tools headers\Grid headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\GridCtrl\TitleTip.h">
+      <Filter>Header Files\Tools headers\Grid headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\scbarcf.h">
+      <Filter>Header Files\Tools headers\Sizebar headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\scbarg.h">
+      <Filter>Header Files\Tools headers\Sizebar headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\sizecbar.h">
+      <Filter>Header Files\Tools headers\Sizebar headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\CppTooltip\CeXDib.h">
+      <Filter>Header Files\Tools headers\CPPToolTips headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\CppTooltip\PPDrawManager.h">
+      <Filter>Header Files\Tools headers\CPPToolTips headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\CppTooltip\PPHtmlDrawer.h">
+      <Filter>Header Files\Tools headers\CPPToolTips headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\CppTooltip\PPTooltip.h">
+      <Filter>Header Files\Tools headers\CPPToolTips headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\ButtonST\BtnST.h">
+      <Filter>Header Files\Tools headers\BtnST headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\ButtonST\ShadeButtonST.h">
+      <Filter>Header Files\Tools headers\BtnST headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\NewMenu\MyTrace.h">
+      <Filter>Header Files\Tools headers\NewMenu headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\NewMenu\NewDialogBar.h">
+      <Filter>Header Files\Tools headers\NewMenu headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\NewMenu\NewMenu.h">
+      <Filter>Header Files\Tools headers\NewMenu headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\NewMenu\NewMenuBar.h">
+      <Filter>Header Files\Tools headers\NewMenu headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\NewMenu\NewProperty.h">
+      <Filter>Header Files\Tools headers\NewMenu headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\NewMenu\NewStatusBar.h">
+      <Filter>Header Files\Tools headers\NewMenu headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\NewMenu\NewToolBar.h">
+      <Filter>Header Files\Tools headers\NewMenu headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\ColourPickerXP.h">
+      <Filter>Header Files\Tools headers\ColorPicker headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\CustomTabControl\CustomTabCtrl.h">
+      <Filter>Header Files\Tools headers\CustomTabControl headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\CustomTabControl\Schemadef.h">
+      <Filter>Header Files\Tools headers\CustomTabControl headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\CustomTabControl\ThemeUtil.h">
+      <Filter>Header Files\Tools headers\CustomTabControl headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\CustomTabControl\Tmschema.h">
+      <Filter>Header Files\Tools headers\CustomTabControl headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Controls\LuminanceWnd.h">
+      <Filter>Header Files\Controls headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Controls\RGBLevelWnd.h">
+      <Filter>Header Files\Controls headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Controls\SpectrumDlg.h">
+      <Filter>Header Files\Controls headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Controls\TargetWnd.h">
+      <Filter>Header Files\Controls headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Controls\testcolorwnd.h">
+      <Filter>Header Files\Controls headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Generators\FullScreenWindow.h">
+      <Filter>Header Files\Generators headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Generators\GDIGenePropPage.h">
+      <Filter>Header Files\Generators headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Generators\GDIGenerator.h">
+      <Filter>Header Files\Generators headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Generators\Generator.h">
+      <Filter>Header Files\Generators headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Generators\GeneratorPropPage.h">
+      <Filter>Header Files\Generators headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Generators\IRProfile.h">
+      <Filter>Header Files\Generators headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Generators\IRProfilePropPage.h">
+      <Filter>Header Files\Generators headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Generators\KiGenePropPage.h">
+      <Filter>Header Files\Generators headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Generators\KiGenerator.h">
+      <Filter>Header Files\Generators headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Generators\ManualDVDGenerator.h">
+      <Filter>Header Files\Generators headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Sensors\DTPSensor.h">
+      <Filter>Header Files\Sensors headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Sensors\DTPsensorproppage.h">
+      <Filter>Header Files\Sensors headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Sensors\EyeOneSensor.h">
+      <Filter>Header Files\Sensors headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Sensors\EyeOnesensorproppage.h">
+      <Filter>Header Files\Sensors headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Sensors\KiSensor.h">
+      <Filter>Header Files\Sensors headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Sensors\KiSensorPropPage.h">
+      <Filter>Header Files\Sensors headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Sensors\MTCSSensor.h">
+      <Filter>Header Files\Sensors headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Sensors\MTCSsensorproppage.h">
+      <Filter>Header Files\Sensors headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Sensors\OneDeviceSensor.h">
+      <Filter>Header Files\Sensors headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Sensors\OneDeviceSensorPropPage.h">
+      <Filter>Header Files\Sensors headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Sensors\Sensor.h">
+      <Filter>Header Files\Sensors headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Sensors\SensorPropPage.h">
+      <Filter>Header Files\Sensors headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Sensors\SimulatedSensor.h">
+      <Filter>Header Files\Sensors headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Sensors\SimulatedSensorPropPage.h">
+      <Filter>Header Files\Sensors headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Sensors\Spyder3Sensor.h">
+      <Filter>Header Files\Sensors headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Sensors\Spyder3sensorproppage.h">
+      <Filter>Header Files\Sensors headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Sensors\SpyderIISensor.h">
+      <Filter>Header Files\Sensors headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Sensors\SpyderIIsensorproppage.h">
+      <Filter>Header Files\Sensors headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Color.h">
+      <Filter>Header Files\Color headers</Filter>
+    </ClInclude>
+    <ClInclude Include="NewDocPropertyPages.h">
+      <Filter>Header Files\Wizards headers</Filter>
+    </ClInclude>
+    <ClInclude Include="NewDocWizard.h">
+      <Filter>Header Files\Wizards headers</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ColorHCFR.rc">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\icon1.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="res\splash_screen.png">
+      <Filter>Resources</Filter>
+    </None>
+  </ItemGroup>
+</Project>
