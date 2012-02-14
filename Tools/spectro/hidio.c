@@ -469,6 +469,8 @@ void hid_close_port(icoms *p) {
 #endif /* ENABLE_USB */
 }
 
+/* Declaration of needed function in ntio.c or unixio.c */
+void icoms_close_port(icoms *p);
 
 /* Open an HID port for all our uses. */
 static void hid_open_port(

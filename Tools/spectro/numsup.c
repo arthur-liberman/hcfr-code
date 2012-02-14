@@ -28,6 +28,14 @@
 
 #include "numsup.h"
 
+#if defined (NT)
+void sleep(int seconds)
+{
+    Sleep(seconds * 1000);
+}
+#endif
+
+
 /* 
  * TODO: Should probably break all the non-numlib stuff out into
  *       a separate library, so that it can be ommitted.
