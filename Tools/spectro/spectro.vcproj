@@ -165,6 +165,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\conv.c"
+				>
+			</File>
+			<File
 				RelativePath=".\dtp20.c"
 				>
 			</File>
@@ -266,6 +270,10 @@
 			</File>
 			<File
 				RelativePath=".\usbio.c"
+				>
+			</File>
+			<File
+				RelativePath=".\xdg_bds.c"
 				>
 			</File>
 			<File

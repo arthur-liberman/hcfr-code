@@ -95,6 +95,7 @@
 /*                           MS WINDOWS                          */  
 /* ============================================================= */
 #ifdef NT
+#include <direct.h> 
 
 /* wait for and then return the next character from the keyboard */
 /* (If not_interactive, return getchar()) */
@@ -1119,7 +1120,7 @@ iccss *list_iccss(int *no) {
 			if (no != NULL) *no = -1;
 			return NULL;
 		}
-		if ((rv[j].path = strdup(paths[i])) == NULL) {
+		if ((rv[j].path = _strdup(paths[i])) == NULL) {
 			for (--j; j >= 0; j--) {
 				free(rv[j].path);
 				free(rv[j].desc);
