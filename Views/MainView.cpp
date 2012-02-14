@@ -173,7 +173,7 @@ BOOL StartBackgroundMeasures ( CDataSetDoc * pDoc );
 void StopBackgroundMeasures ();
 extern CDataSetDoc *	g_pDataDocRunningThread;
 extern BOOL				g_bTerminateThread;
-extern HANDLE			g_hThread;
+extern CWinThread*			g_hThread;
 
 /////////////////////////////////////////////////////////////////////////////
 // CMainView construction/destruction

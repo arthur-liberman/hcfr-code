@@ -101,7 +101,7 @@ CDataSetDoc * g_DocToDuplicate;
 
 // Internal data to handle background execution
 
-       HANDLE			g_hThread = NULL;
+       CWinThread*			g_hThread = NULL;
        BOOL				g_bTerminateThread = FALSE;
        CDataSetDoc *	g_pDataDocRunningThread = NULL;	// View running background thread
 static BOOL				g_bGDIGeneratorRunning = FALSE;
@@ -113,7 +113,7 @@ volatile BOOL			g_bInsideBkgndRefresh = FALSE;
 
 // The background thread function
 
-static DWORD WINAPI BkgndThreadFunc ( LPVOID lpParameter )
+static UINT __cdecl BkgndThreadFunc ( LPVOID lpParameter )
 {
 	CSensor *		pSensor = g_pDataDocRunningThread -> m_pSensor;	// Assume sensor is initialized
 	CGenerator *	pGenerator = g_pDataDocRunningThread -> m_pGenerator;
@@ -175,7 +175,6 @@ static DWORD WINAPI BkgndThreadFunc ( LPVOID lpParameter )
 		else
 		{
 			// Error: close thread
-			CloseHandle ( g_hThread );
 			g_hThread = NULL;
 			g_bTerminateThread = FALSE;
 
@@ -292,7 +291,7 @@ BOOL StartBackgroundMeasures ( CDataSetDoc * pDoc )
 		g_bTerminateThread = FALSE;
 		g_pDataDocRunningThread = pDoc;
 		InitializeCriticalSection (& g_CritSec );
-		g_hThread = CreateThread ( NULL, 0, BkgndThreadFunc, NULL, 0, & dw );
+		g_hThread = AfxBeginThread (BkgndThreadFunc, & dw );
 
 		if ( g_hThread != NULL )
 		{
@@ -353,7 +352,7 @@ void StopBackgroundMeasures ()
 		g_bTerminateThread = TRUE;
 
 		// Wait for thread ending
-		WaitForSingleObject ( g_hThread, INFINITE );
+		WaitForSingleObject ((HANDLE)(*g_hThread), INFINITE );
 		
 		// Clean remaining measures
 		POSITION pos = g_MeasuredColorList.GetHeadPosition ();
@@ -365,7 +364,6 @@ void StopBackgroundMeasures ()
 		g_MeasuredColorList.RemoveAll ();
 
 		// Delete thread object
-		CloseHandle ( g_hThread );
 		g_hThread = NULL;
 		g_bTerminateThread = FALSE;
 	}
