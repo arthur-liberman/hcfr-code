@@ -24,13 +24,11 @@
  *
  */
 
-#define SALONEINSTLIB
 #ifndef SALONEINSTLIB
 #include "icc.h"		/* icclib ICC definitions */ 
 #else /* SALONEINSTLIB */
 #include "conv.h"		/* fake icclib ICC definitions */ 
 #endif /* SALONEINSTLIB */
-#undef SALONEINSTLIB
 
 #ifdef __cplusplus
 	extern "C" {
