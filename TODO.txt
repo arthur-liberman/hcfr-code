@@ -2,4 +2,12 @@ Create Installer
 Add meter code from argyllcms
 Remove old non-free meter code
 Create support for plug-in meter code
- 
+
+
+Notes
+=====
+
+Replace critical sections with RAII code from DScaler
+Move common Delta E target stuff into a function
+Review english dialog labels for double negatives
+Review threading code and protection of arrays
