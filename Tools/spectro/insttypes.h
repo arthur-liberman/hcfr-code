@@ -80,7 +80,7 @@ extern int inst_illuminant(xspect *sp, instType itype);
 
 
 #ifdef __cplusplus
-	extern "C" {
+    }
 #endif
 
 #define INSTTYPES_H

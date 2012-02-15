@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\libusb1\libusb;..\libusb1\msvc"
-				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;NT;_CRT_SECURE_NO_WARNINGS;USE_LIBUSB1"
+				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;NT;_CRT_SECURE_NO_WARNINGS;SALONEINSTLIB;ENABLE_SERIAL;ENABLE_USB;USE_LIBUSB1"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -107,7 +107,7 @@
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				AdditionalIncludeDirectories="..\libusb1\libusb;..\libusb1\msvc"
-				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;NT;_CRT_SECURE_NO_WARNINGS;USE_LIBUSB1"
+				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;NT;_CRT_SECURE_NO_WARNINGS;SALONEINSTLIB;ENABLE_SERIAL;ENABLE_USB;USE_LIBUSB1"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
@@ -152,6 +152,22 @@
 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
+			<File
+				RelativePath=".\ccss.c"
+				>
+			</File>
+			<File
+				RelativePath=".\cgats.c"
+				>
+			</File>
+			<File
+				RelativePath=".\cgatsstd.c"
+				>
+			</File>
+			<File
+				RelativePath=".\conv.c"
+				>
+			</File>
 			<File
 				RelativePath=".\dtp20.c"
 				>
@@ -229,6 +245,18 @@
 				>
 			</File>
 			<File
+				RelativePath=".\pars.c"
+				>
+			</File>
+			<File
+				RelativePath=".\parsstd.c"
+				>
+			</File>
+			<File
+				RelativePath=".\rspl1.c"
+				>
+			</File>
+			<File
 				RelativePath=".\spyd2.c"
 				>
 			</File>
@@ -244,12 +272,28 @@
 				RelativePath=".\usbio.c"
 				>
 			</File>
+			<File
+				RelativePath=".\xdg_bds.c"
+				>
+			</File>
+			<File
+				RelativePath=".\xspect.c"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath=".\ccss.h"
+				>
+			</File>
+			<File
+				RelativePath=".\cgats.h"
+				>
+			</File>
 			<File
 				RelativePath=".\conv.h"
 				>
@@ -351,7 +395,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\pars.h"
+				>
+			</File>
+			<File
 				RelativePath=".\pollem.h"
+				>
+			</File>
+			<File
+				RelativePath=".\rspl1.h"
 				>
 			</File>
 			<File
@@ -380,6 +432,10 @@
 			</File>
 			<File
 				RelativePath=".\xdg_bds.h"
+				>
+			</File>
+			<File
+				RelativePath=".\xspect.h"
 				>
 			</File>
 		</Filter>
