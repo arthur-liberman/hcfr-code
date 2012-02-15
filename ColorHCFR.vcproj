@@ -52,7 +52,7 @@
 				Optimization="1"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="./,Tools,Tools/CxImage,Tools/NewMenu,Tools/Graph,Tools/ButtonST,Tools/GridCtrl,Tools/CppTooltip,Generators,Sensors,Controls,Views,Tools/spectro"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USE_32BIT_TIME_T"
 				StringPooling="true"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -75,6 +75,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				IgnoreImportLibrary="true"
 				AdditionalDependencies="setupapi.lib psapi.lib msimg32.lib htmlhelp.lib devlib\chcfrdi1.lib devlib\chcfrdi2.lib devlib\chcfrdi3.lib devlib\chcfrdi4.lib"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -143,7 +144,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="Tools/CxImage,./,Tools,Tools/NewMenu,Tools/Graph,Tools/ButtonST,Tools/GridCtrl,Tools/CppTooltip,Generators,Sensors,Controls,Views,Tools/spectro"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USE_32BIT_TIME_T"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -166,6 +167,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				IgnoreImportLibrary="true"
 				AdditionalDependencies="setupapi.lib psapi.lib msimg32.lib htmlhelp.lib devlib\chcfrdi1.lib devlib\chcfrdi2.lib devlib\chcfrdi3.lib devlib\chcfrdi4.lib"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
