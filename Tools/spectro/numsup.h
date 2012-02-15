@@ -109,10 +109,6 @@ short **smatrix(int nrl,int nrh,int ncl,int nch);
 short **smatrixz(int nrl,int nrh,int ncl,int nch);
 void free_smatrix(short **m,int nrl,int nrh,int ncl,int nch);
 
-#ifdef NT
-void sleep(int seconds);
-#endif
-
 /* =========================================================== */
 /* Should this go in spectro/conv.h ??                         */
 /* =========================================================== */
