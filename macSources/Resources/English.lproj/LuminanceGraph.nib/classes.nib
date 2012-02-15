@@ -1,0 +1,13 @@
+{
+    IBClasses = (
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            ACTIONS = {displayModeChanged = id; refreshGraph = id; }; 
+            CLASS = HCFRLuminanceGraphController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {optionsView = NSView; }; 
+            SUPERCLASS = NSObject; 
+        }
+    ); 
+    IBVersion = 1; 
+}

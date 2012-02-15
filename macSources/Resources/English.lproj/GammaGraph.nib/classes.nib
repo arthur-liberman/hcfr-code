@@ -1,0 +1,13 @@
+{
+    IBClasses = (
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            ACTIONS = {refreshGraph = id; }; 
+            CLASS = HCFRGammaGraphController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {optionsView = NSView; }; 
+            SUPERCLASS = NSObject; 
+        }
+    ); 
+    IBVersion = 1; 
+}

@@ -1,0 +1,20 @@
+{
+    IBClasses = (
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            ACTIONS = {optionChanged = id; }; 
+            CLASS = HCFRKiSensor; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                fastMeasuresButton = NSButton; 
+                hardwareVersionTextField = NSTextField; 
+                interleavedMeasuresPopup = NSPopUpButton; 
+                sensorToUsePopup = NSPopUpButton; 
+                setupView = NSView; 
+                softwareVersionTextField = NSTextField; 
+            }; 
+            SUPERCLASS = NSObject; 
+        }
+    ); 
+    IBVersion = 1; 
+}

@@ -1,0 +1,13 @@
+{
+    IBClasses = (
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            ACTIONS = {selectedScreenChanged = id; }; 
+            CLASS = HCFRIntegratedGenerator; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {configurationView = NSView; screensPopupButton = NSPopUpButton; }; 
+            SUPERCLASS = NSObject; 
+        }
+    ); 
+    IBVersion = 1; 
+}

@@ -1,0 +1,18 @@
+{
+    IBClasses = (
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            ACTIONS = {hideLicence = id; showLicence = id; visitWebsite = id; }; 
+            CLASS = HCFRAboutWindowController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                creditsTextView = NSTextView; 
+                licencePanel = NSPanel; 
+                licenceTextView = NSTextView; 
+                versionTextField = NSTextField; 
+            }; 
+            SUPERCLASS = NSWindowController; 
+        }
+    ); 
+    IBVersion = 1; 
+}

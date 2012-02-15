@@ -1,0 +1,33 @@
+{
+    IBClasses = (
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            ACTIONS = {
+                addProfile = id; 
+                authorChanged = id; 
+                delayChanged = id; 
+                deleteProfile = id; 
+                importProfile = id; 
+                learnCode = id; 
+                selectedCodeChanged = id; 
+                testCode = id; 
+            }; 
+            CLASS = HCFRIRProfilesManager; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                authorTextField = NSTextField; 
+                chapterNavigationDelayTextField = NSTextField; 
+                codeTextField = NSTextView; 
+                codesPopup = NSPopUpButton; 
+                descriptionTextField = NSTextView; 
+                irCodeValidityTextField = NSTextField; 
+                mainWindow = NSWindow; 
+                menuNavigationDelayTextField = NSTextField; 
+                menuSelectionDelayTextField = NSTextField; 
+                outlineView = NSOutlineView; 
+            }; 
+            SUPERCLASS = NSObject; 
+        }
+    ); 
+    IBVersion = 1; 
+}

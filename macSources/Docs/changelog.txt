@@ -1,0 +1,173 @@
+1.2b1 :
+- bug sur les filesystem case sensitive corrigé pour le plugin spyder2
+- suppression des methodes depracated dans le code
+- libspyder3 mis à jour en version 1.2.2
+- mesures en continue
+- profiles de calibrations mis à jour
+- correction de quelques problèmes mineurs dans le code (dont plusieurs fuites mémoires)
+- passage au SDK de mac OS X 10.5
+================================================================================================
+1.1.1 :
+echelle de du graph RVB fixe pour éviter que les valeurs pour une luminosité faible ne rendent le graph innutilisable (elle devienent facilement très grandes)
+correction du panneau de config des générateurs en version anglaise (mainMenu.nib)
+================================================================================================
+1.1 :
+equivalente à la version b1
+
+================================================================================================
+1.1b1 :
+----- Nouvelles fonctionnalités :
+copier coller, save as et drag/drop des graphiques (sm2dGraphController+ImageAdditions)
+copié des valeurs de la tableview (text et csv)
+drag/drop pour la tableview des valeurs vers du text, du CSV
+import des fichiers PC (.chc) et CSV dans une nouvelle série par menu
+import des fichiers PC (.chc) et CSV par drag&drop, avec possibilité d'importer dans une série déjà existante
+drag/drop de la table des séries vers un fichier (finder ou appli)
+gestion des documents récents (enfin)
+graphique saturation/ecart
+graphique gamma
+----- générateur intégré :
+la mire contrast ANSI affiche les 16 "cases" usuelles.
+----- gestion des profiles IR :
+import export de fichiers IHC et XML (nottament par drag&drop)
+----- sonde HCFR
+Ajouts du choix du capteur utilisé et du niveau d'entrelacement
+----- Correction de bugs :
+lorsqu'on crée une série pendant l'edition des notes, les notes ne sont plus reportées sur la nouvelle série
+on peut mesurer uniquement le contrast ANSI avec le générateur intégré et le générateur DVD manuel
+
+================================================================================================
+1.0b11 : 
+
+Ajout d'un outil "sensor updater" au plugin Ki
+Possibilité de fermer les fenêtre via un pomme-w
+
+================================================================================================
+1.0b10 : 
+
+Correction sur l'enregistrement des profiles IR personalisés (vérification de l'existance du dossier ColorHCFR) (kiPlugin)
+Correction sur l'utilisation du screenCoverage pour la calibration de la sonde (integratedGenerator)
+intégration profile IR PS3+bluewave (noName)
+Correction d'un problème de gestion mémoire provoquant un crash lors de la personnalisation de la barre d'outils
+
+================================================================================================
+1.0b9 : 
+
+Correction d'une fuite mémoire sur la gestion des séries
+Possibilité de n'utiliser qu'une partie de l'écran dans le HCFRIntegratedGenerator
+
+================================================================================================
+1.0b8 : 
+
+Correction d'un bug silencieux sur la création du diagramme CIE
+Correction d'un bug sur la vérification des codes IR sur les machines intel
+Correction d'un bug qui empéchait le rechargement du profile de calibration
+Correction d'un problème de localisation qui bloquait la traduction pour les plugins
+Le generateur Ki gère la sauvegarde et l'enregistrement de ses préférences
+L'outil de gestion des profiles IR indique dans la liste la validité des profiles
+Les profiles IR invalides ne sont plus proposés lors de la configuration du générateur
+On ne peut plus appeler la fenêtre de config pendant les mesures (on pouvait arriver à des situations incohérentes en faisant ça)
+Bug corrigé dans le générateur HCFR sur les mesures de contratst (trois étapes, dont une bidon)
+
+================================================================================================
+1.0b7 : 
+
+Général
+---------
+Internationnalisation en français
+Petit changement pour les plugins : les methodes getId et getName sont maintenant des methodes de classe
+Reset du compteur d'innactivité avant chaque mesure pour éviter le déclanchement de l'économiseur d'écran
+
+================================================================================================
+1.0b6 : 
+
+Général
+---------
+Les paramètres de mesures sont sauvegardés et chargés lors de l'ouverture des fichiers.
+Plusieurs corrections mineures
+
+Générateur Ki
+-------------
+Gestion du DVD version 2
+
+================================================================================================
+1.0b5 : 
+
+Général
+---------
+Les fichiers sauvegardés ont maintenant une icone, et sont associés à l'application (ouverture par double clic possible)
+
+Sonde Ki
+---------
+La detection de la sonde HCFR est plus fiable (merci à noname pour son aide sur ce problème)
+
+================================================================================================
+1.0b4 : 
+
+Général
+---------
+Plusieurs séries peuvent être stockées, avec des commentaires sur chacune.
+Une série peut être sélectionnée comme référence
+Nouveau format de sauvegarde, permettant de sauvegarder les séries ainsi que les informations périphériques (gamma, référence de couleur ...)
+
+================================================================================================
+1.0b3 : 
+
+Général
+---------
+Changement architectural : les générateurs, les sondes et les outils sont maintenant des plugins.
+Nouvelle preference : masquer les écrans non utilisés, avec affichage d'une vue de contrôle
+Nouveau menu "outils" dans leque les plugins peuvent fournir des utilitaires
+Nouvelle option "pause avant les mesures de contrast" pour permettre de retourner la sonde dans le cas un vidéo-projecteur
+Correction de bug : le menu "composantes secondaires" lancait les mesures des primaires
+Les éléments "new application" ont été corrigés dans le nib principal.
+
+Ki plugin : sonde HCFR
+------------------
+On écoute les evenement USB pour déterminer quand une sonde est connectée/déconnectée
+Les nouveaux identifiants USB sont pris en compte
+
+Ki plugin : générateur HCFR
+------------------
+Nouveau générateur
+
+Ki plugin : gestionnaire de profiles IR
+------------------
+Nouvel outil
+
+capteur virtuel
+------------------
+Nouvelle option permettant de faire une pause entre les mesures, pour permttre d'utiliser le logiciel comme générateur simple, pendant qu'une autre machine fait les mesures
+
+générateur intégré
+------------------
+Correction de bug : la description en bas à gauche de l'écran n'était pas raffraichie dans certains cas.
+
+graphique CIE
+------------------
+Nouvelle option pour afficher la grille
+Nouvelle option pour afficher le corps noir
+
+================================================================================================
+1.0b2 : 
+
+Général
+---------
+absence de menu sur l'élément de la toolbar "grayscale" corrigé
+balise SVNrevision ajoutée au info.plist et affiché dans la fenêtre "about"
+
+Moteur de mesures
+------------------
+Le délai d'attente entre l'affichage d'une frame et le lancement de la mesure est maintenant cofigurable (configuration générale)
+
+IntegratedGenerator
+-------------------
+Affichage des d'alertes du corrigé pour s'afficher même quand il n'y a que un seul écran
+avertissement avant mesures de contrast obligatoire (une option sera prévue pour plus tard).
+
+Merci à Pat971 pour son aide sur ces problèmes.
+
+================================================================================================
+1.0b1 :
+
+version initiale

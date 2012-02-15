@@ -1,0 +1,367 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 42;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0226906B0E684A93006515A1 /* IHCFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 022690690E684A93006515A1 /* IHCFile.cpp */; };
+		0226906C0E684A93006515A1 /* IHCFile.h in Headers */ = {isa = PBXBuildFile; fileRef = 0226906A0E684A93006515A1 /* IHCFile.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		0242C3C30E50779D009EB9CC /* CHCFile.h in Headers */ = {isa = PBXBuildFile; fileRef = 0242C3C10E50779D009EB9CC /* CHCFile.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		0242C3C40E50779D009EB9CC /* CHCFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0242C3C20E50779D009EB9CC /* CHCFile.cpp */; };
+		0242C4400E530639009EB9CC /* PCFilesReaderUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 0242C43E0E530639009EB9CC /* PCFilesReaderUtilities.h */; };
+		0242C4410E530639009EB9CC /* PCFilesReaderUtilities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0242C43F0E530639009EB9CC /* PCFilesReaderUtilities.cpp */; };
+		027593A10D4D15DC00CCD1B8 /* CalibrationFile.h in Headers */ = {isa = PBXBuildFile; fileRef = 027593950D4D15DC00CCD1B8 /* CalibrationFile.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		027593A50D4D15DC00CCD1B8 /* Color.h in Headers */ = {isa = PBXBuildFile; fileRef = 027593990D4D15DC00CCD1B8 /* Color.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		027593A70D4D15DC00CCD1B8 /* Exceptions.h in Headers */ = {isa = PBXBuildFile; fileRef = 0275939B0D4D15DC00CCD1B8 /* Exceptions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		027593A90D4D15DC00CCD1B8 /* matrix.h in Headers */ = {isa = PBXBuildFile; fileRef = 0275939D0D4D15DC00CCD1B8 /* matrix.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		027593AA0D4D15DC00CCD1B8 /* ProfilesRepositoryIndexFileReader.h in Headers */ = {isa = PBXBuildFile; fileRef = 0275939E0D4D15DC00CCD1B8 /* ProfilesRepositoryIndexFileReader.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		027593DF0D4D189300CCD1B8 /* CalibrationFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 027593940D4D15DC00CCD1B8 /* CalibrationFile.cpp */; };
+		027593E00D4D189500CCD1B8 /* Color.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 027593980D4D15DC00CCD1B8 /* Color.cpp */; };
+		027593E10D4D189600CCD1B8 /* Exceptions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0275939A0D4D15DC00CCD1B8 /* Exceptions.cpp */; };
+		027593E20D4D189700CCD1B8 /* matrix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0275939C0D4D15DC00CCD1B8 /* matrix.cpp */; };
+		027593E30D4D189800CCD1B8 /* ProfilesRepositoryIndexFileReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 027593C60D4D172100CCD1B8 /* ProfilesRepositoryIndexFileReader.cpp */; };
+		02CBD61E0E50740900863324 /* Endianness.h in Headers */ = {isa = PBXBuildFile; fileRef = 02CBD61C0E50740900863324 /* Endianness.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		02CBD61F0E50740900863324 /* Endianness.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02CBD61D0E50740900863324 /* Endianness.cpp */; };
+		8DC2EF530486A6940098B216 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C1666FE841158C02AAC07 /* InfoPlist.strings */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		022690690E684A93006515A1 /* IHCFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IHCFile.cpp; sourceTree = "<group>"; };
+		0226906A0E684A93006515A1 /* IHCFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IHCFile.h; sourceTree = "<group>"; };
+		0242C3C10E50779D009EB9CC /* CHCFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CHCFile.h; sourceTree = "<group>"; };
+		0242C3C20E50779D009EB9CC /* CHCFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CHCFile.cpp; sourceTree = "<group>"; };
+		0242C43E0E530639009EB9CC /* PCFilesReaderUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PCFilesReaderUtilities.h; sourceTree = "<group>"; };
+		0242C43F0E530639009EB9CC /* PCFilesReaderUtilities.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PCFilesReaderUtilities.cpp; sourceTree = "<group>"; };
+		027593940D4D15DC00CCD1B8 /* CalibrationFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CalibrationFile.cpp; sourceTree = "<group>"; };
+		027593950D4D15DC00CCD1B8 /* CalibrationFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CalibrationFile.h; sourceTree = "<group>"; };
+		027593980D4D15DC00CCD1B8 /* Color.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Color.cpp; sourceTree = "<group>"; };
+		027593990D4D15DC00CCD1B8 /* Color.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Color.h; sourceTree = "<group>"; };
+		0275939A0D4D15DC00CCD1B8 /* Exceptions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Exceptions.cpp; sourceTree = "<group>"; };
+		0275939B0D4D15DC00CCD1B8 /* Exceptions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Exceptions.h; sourceTree = "<group>"; };
+		0275939C0D4D15DC00CCD1B8 /* matrix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = matrix.cpp; sourceTree = "<group>"; };
+		0275939D0D4D15DC00CCD1B8 /* matrix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = matrix.h; sourceTree = "<group>"; };
+		0275939E0D4D15DC00CCD1B8 /* ProfilesRepositoryIndexFileReader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProfilesRepositoryIndexFileReader.h; sourceTree = "<group>"; };
+		0275939F0D4D15DC00CCD1B8 /* ProfilesRepositoryIndexFileReader.ll */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ProfilesRepositoryIndexFileReader.ll; sourceTree = "<group>"; };
+		027593C60D4D172100CCD1B8 /* ProfilesRepositoryIndexFileReader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ProfilesRepositoryIndexFileReader.cpp; sourceTree = "<group>"; };
+		02CBD61C0E50740900863324 /* Endianness.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Endianness.h; sourceTree = "<group>"; };
+		02CBD61D0E50740900863324 /* Endianness.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Endianness.cpp; sourceTree = "<group>"; };
+		089C1667FE841158C02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		32DBCF5E0370ADEE00C91783 /* libHCFR_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libHCFR_Prefix.pch; sourceTree = "<group>"; };
+		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		8DC2EF5B0486A6940098B216 /* libHCFR.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = libHCFR.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8DC2EF560486A6940098B216 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		034768DFFF38A50411DB9C8B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8DC2EF5B0486A6940098B216 /* libHCFR.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0867D691FE84028FC02AAC07 /* libHCFR */ = {
+			isa = PBXGroup;
+			children = (
+				08FB77AEFE84172EC02AAC07 /* libHCFR */,
+				32C88DFF0371C24200C91783 /* Other Sources */,
+				089C1665FE841158C02AAC07 /* Resources */,
+				0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */,
+				034768DFFF38A50411DB9C8B /* Products */,
+			);
+			name = libHCFR;
+			sourceTree = "<group>";
+		};
+		0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				1058C7B0FEA5585E11CA2CBB /* Linked Frameworks */,
+				1058C7B2FEA5585E11CA2CBB /* Other Frameworks */,
+			);
+			name = "External Frameworks and Libraries";
+			sourceTree = "<group>";
+		};
+		089C1665FE841158C02AAC07 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				8DC2EF5A0486A6940098B216 /* Info.plist */,
+				089C1666FE841158C02AAC07 /* InfoPlist.strings */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		08FB77AEFE84172EC02AAC07 /* libHCFR */ = {
+			isa = PBXGroup;
+			children = (
+				02CBD61C0E50740900863324 /* Endianness.h */,
+				02CBD61D0E50740900863324 /* Endianness.cpp */,
+				027593950D4D15DC00CCD1B8 /* CalibrationFile.h */,
+				027593940D4D15DC00CCD1B8 /* CalibrationFile.cpp */,
+				0242C3C10E50779D009EB9CC /* CHCFile.h */,
+				0242C3C20E50779D009EB9CC /* CHCFile.cpp */,
+				0226906A0E684A93006515A1 /* IHCFile.h */,
+				022690690E684A93006515A1 /* IHCFile.cpp */,
+				027593990D4D15DC00CCD1B8 /* Color.h */,
+				027593980D4D15DC00CCD1B8 /* Color.cpp */,
+				0275939B0D4D15DC00CCD1B8 /* Exceptions.h */,
+				0275939A0D4D15DC00CCD1B8 /* Exceptions.cpp */,
+				0275939D0D4D15DC00CCD1B8 /* matrix.h */,
+				0275939C0D4D15DC00CCD1B8 /* matrix.cpp */,
+				0275939E0D4D15DC00CCD1B8 /* ProfilesRepositoryIndexFileReader.h */,
+				027593C60D4D172100CCD1B8 /* ProfilesRepositoryIndexFileReader.cpp */,
+				0275939F0D4D15DC00CCD1B8 /* ProfilesRepositoryIndexFileReader.ll */,
+				0242C43E0E530639009EB9CC /* PCFilesReaderUtilities.h */,
+				0242C43F0E530639009EB9CC /* PCFilesReaderUtilities.cpp */,
+			);
+			fileEncoding = 4;
+			name = libHCFR;
+			path = ..;
+			sourceTree = "<group>";
+		};
+		1058C7B0FEA5585E11CA2CBB /* Linked Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "Linked Frameworks";
+			sourceTree = "<group>";
+		};
+		1058C7B2FEA5585E11CA2CBB /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		32C88DFF0371C24200C91783 /* Other Sources */ = {
+			isa = PBXGroup;
+			children = (
+				32DBCF5E0370ADEE00C91783 /* libHCFR_Prefix.pch */,
+			);
+			name = "Other Sources";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		8DC2EF500486A6940098B216 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				027593A10D4D15DC00CCD1B8 /* CalibrationFile.h in Headers */,
+				027593A50D4D15DC00CCD1B8 /* Color.h in Headers */,
+				027593A70D4D15DC00CCD1B8 /* Exceptions.h in Headers */,
+				027593A90D4D15DC00CCD1B8 /* matrix.h in Headers */,
+				027593AA0D4D15DC00CCD1B8 /* ProfilesRepositoryIndexFileReader.h in Headers */,
+				02CBD61E0E50740900863324 /* Endianness.h in Headers */,
+				0242C3C30E50779D009EB9CC /* CHCFile.h in Headers */,
+				0242C4400E530639009EB9CC /* PCFilesReaderUtilities.h in Headers */,
+				0226906C0E684A93006515A1 /* IHCFile.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		8DC2EF4F0486A6940098B216 /* libHCFR */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1DEB91AD08733DA50010E9CD /* Build configuration list for PBXNativeTarget "libHCFR" */;
+			buildPhases = (
+				027593B80D4D169A00CCD1B8 /* ShellScript */,
+				8DC2EF500486A6940098B216 /* Headers */,
+				8DC2EF520486A6940098B216 /* Resources */,
+				8DC2EF540486A6940098B216 /* Sources */,
+				8DC2EF560486A6940098B216 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = libHCFR;
+			productInstallPath = "$(HOME)/Library/Frameworks";
+			productName = libHCFR;
+			productReference = 8DC2EF5B0486A6940098B216 /* libHCFR.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0867D690FE84028FC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "libHCFR" */;
+			compatibilityVersion = "Xcode 2.4";
+			hasScannedForEncodings = 1;
+			mainGroup = 0867D691FE84028FC02AAC07 /* libHCFR */;
+			productRefGroup = 034768DFFF38A50411DB9C8B /* Products */;
+			projectDirPath = "";
+			projectRoot = ..;
+			targets = (
+				8DC2EF4F0486A6940098B216 /* libHCFR */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8DC2EF520486A6940098B216 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8DC2EF530486A6940098B216 /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		027593B80D4D169A00CCD1B8 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			comments = "compilation du fichier flex";
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/../ProfilesRepositoryIndexFileReader.ll",
+			);
+			outputPaths = (
+				"$(SRCROOT)/../ProfilesRepositoryIndexFileReader.cpp",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "cd ..\n\nif [ -f ProfilesRepositoryIndexFileReader.cpp ]\nthen\n\trm ProfilesRepositoryIndexFileReader.cpp\nfi\n\nflex -t ProfilesRepositoryIndexFileReader.ll > ProfilesRepositoryIndexFileReader.cpp";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8DC2EF540486A6940098B216 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				027593DF0D4D189300CCD1B8 /* CalibrationFile.cpp in Sources */,
+				027593E00D4D189500CCD1B8 /* Color.cpp in Sources */,
+				027593E10D4D189600CCD1B8 /* Exceptions.cpp in Sources */,
+				027593E20D4D189700CCD1B8 /* matrix.cpp in Sources */,
+				027593E30D4D189800CCD1B8 /* ProfilesRepositoryIndexFileReader.cpp in Sources */,
+				02CBD61F0E50740900863324 /* Endianness.cpp in Sources */,
+				0242C3C40E50779D009EB9CC /* CHCFile.cpp in Sources */,
+				0242C4410E530639009EB9CC /* PCFilesReaderUtilities.cpp in Sources */,
+				0226906B0E684A93006515A1 /* IHCFile.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		089C1666FE841158C02AAC07 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				089C1667FE841158C02AAC07 /* English */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		1DEB91AE08733DA50010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				FRAMEWORK_VERSION = A;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = libHCFR_Prefix.pch;
+				INFOPLIST_FILE = Info.plist;
+				INSTALL_PATH = "@executable_path/../Frameworks";
+				PRODUCT_NAME = libHCFR;
+				WRAPPER_EXTENSION = framework;
+				ZERO_LINK = YES;
+			};
+			name = Debug;
+		};
+		1DEB91AF08733DA50010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					ppc,
+					i386,
+				);
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				FRAMEWORK_VERSION = A;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = libHCFR_Prefix.pch;
+				INFOPLIST_FILE = Info.plist;
+				INSTALL_PATH = "@executable_path/../Frameworks";
+				PRODUCT_NAME = libHCFR;
+				WRAPPER_EXTENSION = framework;
+			};
+			name = Release;
+		};
+		1DEB91B208733DA50010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DYLIB_COMPATIBILITY_VERSION = 1.0;
+				DYLIB_CURRENT_VERSION = 1.1;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				PREBINDING = NO;
+				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
+			};
+			name = Debug;
+		};
+		1DEB91B308733DA50010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DYLIB_COMPATIBILITY_VERSION = 1.0;
+				DYLIB_CURRENT_VERSION = 1.1;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				PREBINDING = NO;
+				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1DEB91AD08733DA50010E9CD /* Build configuration list for PBXNativeTarget "libHCFR" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB91AE08733DA50010E9CD /* Debug */,
+				1DEB91AF08733DA50010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "libHCFR" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB91B208733DA50010E9CD /* Debug */,
+				1DEB91B308733DA50010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0867D690FE84028FC02AAC07 /* Project object */;
+}

@@ -1,0 +1,22 @@
+{
+    IBClasses = (
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            ACTIONS = {cancelUpdate = id; closeWindow = id; }; 
+            CLASS = HCFRProfilesManager; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                messageTextField = NSTextField; 
+                messageView = NSView; 
+                progressIndicator = NSProgressIndicator; 
+                progressTextField = NSTextField; 
+                progressView = NSView; 
+                progressWindow = NSWindow; 
+                reportTextField = NSTextField; 
+                reportView = NSView; 
+            }; 
+            SUPERCLASS = NSObject; 
+        }
+    ); 
+    IBVersion = 1; 
+}

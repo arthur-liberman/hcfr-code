@@ -1,0 +1,7 @@
+//
+// Prefix header for all source files of the 'libHCFR' target in the 'libHCFR' project.
+//
+
+#ifdef __OBJC__
+    #import <Cocoa/Cocoa.h>
+#endif

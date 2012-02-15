@@ -1,0 +1,35 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!! Ajouter un type aux graphsController (normal ou continuous),
+!!!! et intégrer les plugins continuous au plugin manager pour qu'ils
+!!!! soient notifiés des changements de colorReference
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+HCFRAnalyser
+  - valeurs calculées (gamma moyen)
+  - suggestion corrections pour les différents graphs
+résultats d'analyse dans une fenêtre séparée
+
+Vérification copier - coller vers csv (valeurs négatives ...)
+
+Vérifer cohérence valeurs avec sondes commerciales
+
+Légendes sur les graphes
+---------------------------------------
+possibilité de soumettre des profiles IR en ligne
+---------------------------------------
+gérer les MAJ des profiles en demandant un pass admin si necessaire
+---------------------------------------
+Assistant de calibration -> full screen avec étapes, graph en cours, et suggestion analyseur
+---------------------------------------
+Analyseur de graph à intégrer à la libHCFR
+- une instance par type de graph utile à la calibration
+- chaque instance reçois un ou plusieurs tableaux de floats (pour la lum, le gamma idéal et les mesures,
+pour le rvb, les mesures R, les mesures V et les mesures B)
+- après analyse, l'analyseur retourne une (ou plusieurs) constantes, qui indiqueront le message à afficher.
+Pas de retour de message car internationnalisation trop dépendante du système.
+---------------------------------------
+gestion sonde EyeOne
+---------------------------------------
+gestion des mesures libres continues

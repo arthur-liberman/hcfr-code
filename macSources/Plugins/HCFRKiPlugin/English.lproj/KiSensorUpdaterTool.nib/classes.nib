@@ -1,0 +1,24 @@
+{
+    IBClasses = (
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            ACTIONS = {performUpdate = id; selectFile = id; visitForums = id; }; 
+            CLASS = HCFRSensorUpdater; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                failure = NSView; 
+                filenameTextField = NSTextField; 
+                mainWindow = NSWindow; 
+                progressIndicator = NSProgressIndicator; 
+                step1 = NSView; 
+                step2 = NSView; 
+                step2Status = NSTextField; 
+                step3 = NSView; 
+                success = NSView; 
+                updateButton = NSButton; 
+            }; 
+            SUPERCLASS = NSObject; 
+        }
+    ); 
+    IBVersion = 1; 
+}

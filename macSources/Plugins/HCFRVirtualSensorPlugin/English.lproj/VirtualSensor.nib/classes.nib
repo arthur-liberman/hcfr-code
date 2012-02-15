@@ -1,0 +1,17 @@
+{
+    IBClasses = (
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            ACTIONS = {loadDataFromFile = id; }; 
+            CLASS = HCFRVirtualSensor; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                alertBeforeValueButton = NSButton; 
+                dataStoreStatus = NSTextField; 
+                setupView = NSView; 
+            }; 
+            SUPERCLASS = NSObject; 
+        }
+    ); 
+    IBVersion = 1; 
+}
