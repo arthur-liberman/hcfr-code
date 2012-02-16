@@ -55,6 +55,9 @@ WizardInfoBefore=Warning
 InfoBeforeLabel=Please read the following important warning before continuing.
 InfoBeforeClickLabel=When you are ready and happy to continue with Setup, click Next.
 
+[Dirs]
+Name: "{app}"; Permissions: everyone-modify
+
 [Components]
 Name: "main"; Description: "Main Files"; Types: full; Flags: fixed
 
@@ -88,6 +91,6 @@ Filename: "{app}\ColorHCFR.exe"; Description: "Launch HCFR"; Flags: nowait posti
 [UninstallDelete]
 Type: files; Name: "{app}\HCFR.url"
 Type: files; Name: "{app}\Support.url"
-Type: files; Name: "{app}\ColorHCFR.ini"; OnlyBelowVersion: 5,5;
-Type: files; Name: "{app}\ColorHCFR.log"; OnlyBelowVersion: 5,5;
+Type: files; Name: "{app}\ColorHCFR.ini";
+Type: files; Name: "{app}\ColorHCFR.log";
 
