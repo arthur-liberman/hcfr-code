@@ -1,5 +1,5 @@
 [OPTIONS]
-Compiled file=ColorHCFR_fr.chm
+Compiled file=..\..\Release\ColorHCFR_fr.chm
 Default topic=Bienvenue.htm
 Title=Colorimètre HCFR
 Default Window=default

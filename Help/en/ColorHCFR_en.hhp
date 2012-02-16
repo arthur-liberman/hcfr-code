@@ -1,7 +1,7 @@
 [OPTIONS]
-Compiled file=ColorHCFR_en.chm
+Compiled file=..\..\Release\ColorHCFR_en.chm
 Default topic=Bienvenue.htm
-Title=HCFR Colorimeter
+Title=HCFR Calibration
 Default Window=default
 Full-text search=Yes
 
