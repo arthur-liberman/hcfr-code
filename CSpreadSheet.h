@@ -1427,6 +1427,12 @@ short CSpreadSheet::CalculateColumnNumber(CString column, bool Auto)
 // Get the name of the Excel-ODBC driver
 void CSpreadSheet::GetExcelDriver()
 {
+    // TODO: there is an annoying issue with ODBC calls when using 
+    // the staic libraries, this is only used to turn off a menu so
+    // probably ok to diable for now
+    m_sExcelDriver = "Microsoft Excel Driver (*.xls)";
+#ifdef NEVER
+
 	char szBuf[2001];
 	WORD cbBufMax = 2000;
 	WORD cbBufOut;
@@ -1450,6 +1456,7 @@ void CSpreadSheet::GetExcelDriver()
 		pszBuf = strchr( pszBuf, '\0' ) + 1;
 	}
 	while( pszBuf[1] != '\0' );
+#endif
 }
 
 #endif

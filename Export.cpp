@@ -40,6 +40,11 @@ static char THIS_FILE[]=__FILE__;
 // check the Excel-ODBC driver is installed
 bool IsExcelDriverInsalled()
 {
+    // TODO: there is an annoying issue with ODBC calls when using 
+    // the staic libraries, this is only used to turn off a menu so
+    // probably ok to diable for now
+    return true;
+#ifdef NEVER
 	char szBuf[2001];
 	WORD cbBufMax = 2000;
 	WORD cbBufOut;
@@ -63,6 +68,7 @@ bool IsExcelDriverInsalled()
 	}
 	while( pszBuf[1] != '\0' );
 	return false;
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////
