@@ -1,13 +1,37 @@
 Create Installer
-Add meter code from argyllcms
-Remove old non-free meter code
-Create support for plug-in meter code
 
+Remove old non-free meter code
+
+Create support for plug-in meter code
 
 Notes
 =====
 
 Replace critical sections with RAII code from DScaler
+
+Getting memory leaks on exit after some operations switch to smart pointers 
+
+Getting exceptions thrown in normal operation, try and change
+
 Move common Delta E target stuff into a function
+
 Review english dialog labels for double negatives
+
 Review threading code and protection of arrays
+
+Remove themeing?
+
+
+Thoughts
+========
+
+Switch to just strings localization to speed up resource updating
+something like http://beta.codeproject.com/KB/locale/translator.aspx?msg=1153839
+should work much better, that way the translation can lag development.
+
+Convert project to UNICODE
+
+Replace ini file with registry to allow for saving unicode strings?
+
+
+ 
