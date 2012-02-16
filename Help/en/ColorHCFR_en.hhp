@@ -503,6 +503,7 @@ Support_et_aides\support_technique.htm
 default=,"ColorHCFR_en.hhc",,,,,,,,0x420,,0x200e,,0x0,0x0,,0,0,0,
 
 [ALIAS]
+HID_WELCOME = Bienvenue.htm 
 101 = Fenetre_document\Onglet_mesures\Onglet_mesures.htm
 102 = Fenetre_document\Graphe_de_luminance\Graphe_luminance.htm
 103 = Fenetre_document\Graphe_RVB\Graphe_RVB.htm
@@ -546,3 +547,6 @@ default=,"ColorHCFR_en.hhc",,,,,,,,0x420,,0x200e,,0x0,0x0,,0,0,0,
 3007 = Menu\Avance\Etalons\Etalon_sim.htm#Signature
 3008 = Menu\Avance\Mires\Mires.htm
 1023 = Menu\Mesures\Menu_capteur\Configure.htm#Cas_du_Spyder_3
+
+[MAP]
+#include ..\..\helpid.h
