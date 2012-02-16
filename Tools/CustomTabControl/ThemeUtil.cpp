@@ -16,7 +16,7 @@ CThemeUtil::CThemeUtil()
 	m_hTheme = NULL;
 	FreeLibrary();
 	if(IsWinXP())
-		m_hUxThemeDll = AfxLoadLibrary(CString(_T("UxTheme.dll")));
+		m_hUxThemeDll = LoadLibrary(_T("UxTheme.dll"));
 }
 
 CThemeUtil::~CThemeUtil()
@@ -28,7 +28,7 @@ void CThemeUtil::FreeLibrary()
 {
 	CloseThemeData();
 	if(m_hUxThemeDll!=NULL)
-		AfxFreeLibrary(m_hUxThemeDll);
+        ::FreeLibrary(m_hUxThemeDll);
 	m_hUxThemeDll = NULL;
 }
 
@@ -61,7 +61,7 @@ BOOL CThemeUtil::OpenThemeData(HWND hWnd, LPCWSTR pszClassList)
 			
 			if(GetCurrentThemeName(szThemeFileName,MAX_PATH,szColorBuff,MAX_PATH,szSizeBuff,MAX_PATH))
 			{
-				if((m_hRcDll = AfxLoadLibrary(CString(szThemeFileName))))
+				if((m_hRcDll = LoadLibrary(CString(szThemeFileName))))
 					return TRUE;				
 			}
 			CloseThemeData();
@@ -82,7 +82,7 @@ void CThemeUtil::CloseThemeData()
 	}
 	m_hTheme = NULL;
 	if(m_hRcDll!=NULL)
-		AfxFreeLibrary(m_hRcDll);
+        ::FreeLibrary(m_hRcDll);
 	m_hRcDll = NULL;
 }
 

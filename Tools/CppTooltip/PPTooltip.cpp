@@ -6,7 +6,7 @@
 // allow multimonitor-aware code on Win95 systems
 // comment out the first line if you already define it in another file
 // comment out both lines if you don't care about Win95
-#define COMPILE_MULTIMON_STUBS
+//#define COMPILE_MULTIMON_STUBS
 #include "multimon.h"
 
 #ifdef _DEBUG
