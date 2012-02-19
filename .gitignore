@@ -9,3 +9,6 @@ Release/
 *.ncb
 *.suo
 *.APS
+*.pbxuser
+*.mode1
+*.xcuserdatad/
