@@ -17,9 +17,6 @@
 		021179421315C2A40057A0C1 /* CalibrationEngine.xib in Resources */ = {isa = PBXBuildFile; fileRef = 021179411315C2A40057A0C1 /* CalibrationEngine.xib */; };
 		021179441315C2AF0057A0C1 /* ContinuousAcquisitionEngine.xib in Resources */ = {isa = PBXBuildFile; fileRef = 021179431315C2AF0057A0C1 /* ContinuousAcquisitionEngine.xib */; };
 		021179461315C2B70057A0C1 /* ManualGenerator.xib in Resources */ = {isa = PBXBuildFile; fileRef = 021179451315C2B70057A0C1 /* ManualGenerator.xib */; };
-		02117AB31317169F0057A0C1 /* spyder3Plugin.hcfrPlugin in Copy plugins */ = {isa = PBXBuildFile; fileRef = 02268F580E671B69006515A1 /* spyder3Plugin.hcfrPlugin */; };
-		02117AB41317169F0057A0C1 /* spyder2Plugin.hcfrPlugin in Copy plugins */ = {isa = PBXBuildFile; fileRef = 02268F5A0E671B69006515A1 /* spyder2Plugin.hcfrPlugin */; };
-		02117AB51317169F0057A0C1 /* eyeOnePlugin.hcfrPlugin in Copy plugins */ = {isa = PBXBuildFile; fileRef = 025490141184D7D80039077D /* eyeOnePlugin.hcfrPlugin */; };
 		02132C550D5DDE1800475539 /* HCFRKiPlugin.mm in Sources */ = {isa = PBXBuildFile; fileRef = 02132C440D5DDCC600475539 /* HCFRKiPlugin.mm */; };
 		021BAB6E0CA954F000DFB506 /* HCFRSatLumGraphController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 021BAB6C0CA954F000DFB506 /* HCFRSatLumGraphController.mm */; };
 		0224BB4C0C91840C00154FE1 /* HCFRRgbGraphController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0224BB4A0C91840C00154FE1 /* HCFRRgbGraphController.mm */; };
@@ -293,20 +290,6 @@
 			remoteGlobalIDString = 02132C330D5DD7AD00475539;
 			remoteInfo = kiPlugin;
 		};
-		02268F570E671B69006515A1 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 024EBAFC0E669A4600FDFB3C /* privatePlugins.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 8D5B49B6048680CD000E48DA;
-			remoteInfo = spyder3Plugin;
-		};
-		02268F590E671B69006515A1 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 024EBAFC0E669A4600FDFB3C /* privatePlugins.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 0242C8FA0E56D5E1009EB9CC;
-			remoteInfo = spyder2Plugin;
-		};
 		024EB6BF0E6547BF00FDFB3C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
@@ -334,13 +317,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
 			remoteInfo = libHCFR;
-		};
-		025490131184D7D80039077D /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 024EBAFC0E669A4600FDFB3C /* privatePlugins.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 024579050F44246700C36D97;
-			remoteInfo = eyeOnePlugin;
 		};
 		02CC41AD0DC75F790094B4F6 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -398,27 +374,6 @@
 			remoteGlobalIDString = 02CC44C00DC896690094B4F6;
 			remoteInfo = ManualDVDGeneratorPlugin;
 		};
-		02F0151C13195F4000E3EBE7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 024EBAFC0E669A4600FDFB3C /* privatePlugins.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 8D5B49AC048680CD000E48DA /* spyder3Plugin */;
-			remoteInfo = spyder3Plugin;
-		};
-		02F0151E13195F4000E3EBE7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 024EBAFC0E669A4600FDFB3C /* privatePlugins.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 0242C8F90E56D5E1009EB9CC /* spyder2Plugin */;
-			remoteInfo = spyder2Plugin;
-		};
-		02F0152013195F4000E3EBE7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 024EBAFC0E669A4600FDFB3C /* privatePlugins.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 024579040F44246700C36D97 /* eyeOnePlugin */;
-			remoteInfo = eyeOnePlugin;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -428,9 +383,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				02117AB31317169F0057A0C1 /* spyder3Plugin.hcfrPlugin in Copy plugins */,
-				02117AB41317169F0057A0C1 /* spyder2Plugin.hcfrPlugin in Copy plugins */,
-				02117AB51317169F0057A0C1 /* eyeOnePlugin.hcfrPlugin in Copy plugins */,
 				02CC44DF0DC897E60094B4F6 /* ManualDVDGeneratorPlugin.hcfrPlugin in Copy plugins */,
 				02CC3F100DC751E80094B4F6 /* KiPlugin.hcfrPlugin in Copy plugins */,
 				02CC420D0DC761720094B4F6 /* VirtualSensorPlugin.hcfrPlugin in Copy plugins */,
@@ -650,7 +602,6 @@
 		024EB84B0E6565B700FDFB3C /* HCFRAditionnalFrameView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HCFRAditionnalFrameView.h; sourceTree = "<group>"; };
 		024EB84C0E6565B700FDFB3C /* HCFRAditionnalFrameView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HCFRAditionnalFrameView.m; sourceTree = "<group>"; };
 		024EB8520E65686400FDFB3C /* HCFRWhiteAnimatedView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HCFRWhiteAnimatedView.h; sourceTree = "<group>"; };
-		024EBAFC0E669A4600FDFB3C /* privatePlugins.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = privatePlugins.xcodeproj; path = ../privatePlugins/privatePlugins.xcodeproj; sourceTree = SOURCE_ROOT; };
 		024EBB6C0E66CF6A00FDFB3C /* libHCFR.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = libHCFR.xcodeproj; path = "../libHCFR/mac project files/libHCFR.xcodeproj"; sourceTree = SOURCE_ROOT; };
 		024EBBA50E66D63600FDFB3C /* HCFRFullscreenImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HCFRFullscreenImageView.h; sourceTree = "<group>"; };
 		024EBBA60E66D63600FDFB3C /* HCFRFullscreenImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HCFRFullscreenImageView.m; sourceTree = "<group>"; };
@@ -996,16 +947,6 @@
 				0229EEEB12FAF13E00E0F045 /* Continuous graphs */,
 			);
 			path = "Graph Controllers";
-			sourceTree = "<group>";
-		};
-		02268F530E671B69006515A1 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				02268F580E671B69006515A1 /* spyder3Plugin.hcfrPlugin */,
-				02268F5A0E671B69006515A1 /* spyder2Plugin.hcfrPlugin */,
-				025490141184D7D80039077D /* eyeOnePlugin.hcfrPlugin */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 		02268F7F0E672755006515A1 /* images */ = {
@@ -1591,7 +1532,6 @@
 			children = (
 				02DE60C20C86CACF00D878CC /* Docs */,
 				024EBB6C0E66CF6A00FDFB3C /* libHCFR.xcodeproj */,
-				024EBAFC0E669A4600FDFB3C /* privatePlugins.xcodeproj */,
 				02F5C4B60D60DBF30051E0BF /* Plugins */,
 				02DE613A0C86DBC100D878CC /* protocols */,
 				080E96DDFE201D6D7F000001 /* Classes */,
@@ -1818,9 +1758,6 @@
 				02CC431B0DC76F0A0094B4F6 /* PBXTargetDependency */,
 				02CC44E40DC897FC0094B4F6 /* PBXTargetDependency */,
 				024EB7870E65502600FDFB3C /* PBXTargetDependency */,
-				02F0151D13195F4000E3EBE7 /* PBXTargetDependency */,
-				02F0151F13195F4000E3EBE7 /* PBXTargetDependency */,
-				02F0152113195F4000E3EBE7 /* PBXTargetDependency */,
 			);
 			name = ColorHCFR;
 			productInstallPath = "$(HOME)/Applications";
@@ -1853,10 +1790,6 @@
 					ProductGroup = 024EBB6D0E66CF6A00FDFB3C /* Products */;
 					ProjectRef = 024EBB6C0E66CF6A00FDFB3C /* libHCFR.xcodeproj */;
 				},
-				{
-					ProductGroup = 02268F530E671B69006515A1 /* Products */;
-					ProjectRef = 024EBAFC0E669A4600FDFB3C /* privatePlugins.xcodeproj */;
-				},
 			);
 			projectRoot = "";
 			targets = (
@@ -1872,32 +1805,11 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		02268F580E671B69006515A1 /* spyder3Plugin.hcfrPlugin */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = spyder3Plugin.hcfrPlugin;
-			remoteRef = 02268F570E671B69006515A1 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		02268F5A0E671B69006515A1 /* spyder2Plugin.hcfrPlugin */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = spyder2Plugin.hcfrPlugin;
-			remoteRef = 02268F590E671B69006515A1 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		024EBB710E66CF6A00FDFB3C /* libHCFR.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
 			path = libHCFR.framework;
 			remoteRef = 024EBB700E66CF6A00FDFB3C /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		025490141184D7D80039077D /* eyeOnePlugin.hcfrPlugin */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = eyeOnePlugin.hcfrPlugin;
-			remoteRef = 025490131184D7D80039077D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -2299,21 +2211,6 @@
 			isa = PBXTargetDependency;
 			target = 02CC44C00DC896690094B4F6 /* ManualDVDGeneratorPlugin */;
 			targetProxy = 02CC44E30DC897FC0094B4F6 /* PBXContainerItemProxy */;
-		};
-		02F0151D13195F4000E3EBE7 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = spyder3Plugin;
-			targetProxy = 02F0151C13195F4000E3EBE7 /* PBXContainerItemProxy */;
-		};
-		02F0151F13195F4000E3EBE7 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = spyder2Plugin;
-			targetProxy = 02F0151E13195F4000E3EBE7 /* PBXContainerItemProxy */;
-		};
-		02F0152113195F4000E3EBE7 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = eyeOnePlugin;
-			targetProxy = 02F0152013195F4000E3EBE7 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
