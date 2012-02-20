@@ -66,7 +66,7 @@
     class CriticalSection
     {
     public:
-        CriticalSection() :
+        CriticalSection()
         {
             m_matrixMutex = PTHREAD_MUTEX_INITIALIZER;
         }
@@ -449,12 +449,6 @@ CColorReference GetStandardColorReference(ColorStandard aColorStandard)
 	CColorReference aStandardRef(aColorStandard);
 	return aStandardRef;
 }
-
-//void SetColorReference(ColorStandard aColorStandard, WhiteTarget aWhiteTarget, double gamma)
-//{
-//	*(GetColorApp()->m_pColorReference)=CColorReference(aColorStandard,aWhiteTarget,gamma);
-//}
-
 
 ///////////////////////////////////////////////////////////////////
 // Sensor references
