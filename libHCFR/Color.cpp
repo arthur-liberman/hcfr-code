@@ -70,8 +70,9 @@
     public:
         CriticalSection()
         {
-            m_matrixMutex = PTHREAD_MUTEX_INITIALIZER;
+			pthread_mutex_init(&m_matrixMutex, NULL);
         }
+		
         ~CriticalSection()
         {
             ///\todo do we need to clean up here
