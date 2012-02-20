@@ -138,7 +138,6 @@ void Matrix::readFromFile(ifstream &theFile)
 {
   uint32_t header1, header2, version;
   uint32_t nbColumns, nbRows;
-  unsigned int columnIndex, rowIndex;
   
   // les détrompeurs
   theFile.read((char*)&header1, 4);
@@ -181,9 +180,9 @@ void Matrix::readFromFile(ifstream &theFile)
   }
   
   // puis on le remplie
-  for (columnIndex = 0; columnIndex < m_nCols; columnIndex++)
+  for (int columnIndex = 0; columnIndex < m_nCols; columnIndex++)
   {
-    for (rowIndex = 0; rowIndex < m_nRows; rowIndex++)
+    for (int rowIndex = 0; rowIndex < m_nRows; rowIndex++)
     {
       double value;
       theFile.read((char*)&value, 8);
@@ -551,7 +550,7 @@ double Matrix::Determinant() const
 
 	for(int q=0; q<m_nCols; ++q) {
 		Matrix* NewMinor = GetMinorNew(0, q);
-		sum += (pow(-1, q)*(m_pData[0][q]*NewMinor->Determinant()));
+		sum += (pow(-1.0, (double)q)*(m_pData[0][q]*NewMinor->Determinant()));
 		delete NewMinor;
 	}
 
@@ -1391,12 +1390,11 @@ Matrix& Matrix::SortAscend()
 {
 	double* Data = GetDataOneDimen();
 	int length = (m_nRows * m_nCols);
-	int temp;
 
 	for(int i=0; i<length; ++i) {
 		for(int j=0; j<length-1; ++j) {
 			if(Data[j] > Data[j+1]) {
-				temp = Data[j];
+				double temp = Data[j];
 				Data[j] = Data[j+1];
 				Data[j+1] = temp;
 			}
@@ -1413,12 +1411,11 @@ Matrix& Matrix::SortDescend()
 {
 	double* Data = GetDataOneDimen();
 	int length = (m_nRows * m_nCols);
-	int temp;
 
 	for(int i=0; i<length; ++i) {
 		for(int j=0; j<length-1; ++j) {
 			if(Data[j] < Data[j+1]) {
-				temp = Data[j];
+				double temp = Data[j];
 				Data[j] = Data[j+1];
 				Data[j+1] = temp;
 			}
