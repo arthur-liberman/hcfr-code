@@ -31,13 +31,84 @@
 #include "Endianness.h"
 #include <math.h>
 #include <assert.h>
-#include <pthread.h>  // included to access POSIX mutex
 
-#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
+/// handle cross platform differences between
+/// windows and unix type oses
+/// \todo belongs in a sepeerate file 
+#ifdef WIN32
+#   include <windows.h>
+
+    class CriticalSection
+    {
+    public:
+        CriticalSection()
+        {
+            InitializeCriticalSection(&m_critcalSection);
+        }
+        ~CriticalSection()
+        {
+            DeleteCriticalSection(&m_critcalSection);
+        }
+        void lock()
+        {
+            EnterCriticalSection(&m_critcalSection);
+        }
+        void unlock()
+        {
+            LeaveCriticalSection(&m_critcalSection);
+        }
+    private:
+        CRITICAL_SECTION m_critcalSection;
+    };
+#else
+#   include <pthread.h>  // included to access POSIX mutex
+
+    class CriticalSection
+    {
+    public:
+        CriticalSection() :
+        {
+            m_matrixMutex = PTHREAD_MUTEX_INITIALIZER;
+        }
+        ~CriticalSection()
+        {
+            ///\todo do we need to clean up here
+        }
+        void lock()
+        {
+            pthread_mutex_lock (&m_matrixMutex);
+        }
+        void unlock()
+        {
+            pthread_mutex_unlock (&m_matrixMutex);
+        }
+    private:
+        pthread_mutex_t m_matrixMutex;
+    };
 #endif
+
+/// CLockWhileInScope
+/// RAII critical section locker to simplify
+/// cross platform locking
+class CLockWhileInScope
+{
+public:
+    CLockWhileInScope(CriticalSection& sectionToLock) :
+        m_section(sectionToLock)
+    {
+        m_section.lock();
+    }
+    ~CLockWhileInScope()
+    {
+        m_section.unlock();
+    }
+private:
+    CriticalSection& m_section;
+};
+
+// critical section to be used in this file to
+// ensure config matrices don't get changed mid-calculation
+static CriticalSection m_matrixSection;
 
 /*
  *      Name:   XYZtoCorColorTemp.c
@@ -148,8 +219,6 @@ int XYZtoCorColorTemp(double *xyz, double *temp)
 ///////////////////////////////////////////////////////////////////
 // Color references
 ///////////////////////////////////////////////////////////////////
-
-pthread_mutex_t matrixMutex = PTHREAD_MUTEX_INITIALIZER;
 
 CColor illuminantA(0.447593,0.407539);
 CColor illuminantB(0.348483,0.351747);
@@ -698,9 +767,8 @@ CColor CColor::GetRGBValue(CColorReference colorReference) const
 
 	if(*this != noDataColor)
 	{
-    pthread_mutex_lock (&matrixMutex);
+        CLockWhileInScope dummy(m_matrixSection);
 		clr = colorReference.XYZtoRGBMatrix*(*this);
-		pthread_mutex_unlock (&matrixMutex);
 	}
 	else 
 		clr = noDataColor;
@@ -714,9 +782,8 @@ CColor CColor::GetSensorValue() const
 
 	if(*this != noDataColor)
 	{
-    pthread_mutex_lock (&matrixMutex);
+        CLockWhileInScope dummy(m_matrixSection);
 		clr = m_XYZtoSensorMatrix*(*this);
-    pthread_mutex_unlock (&matrixMutex);
 	}
 	else 
 		clr = noDataColor;
@@ -838,9 +905,10 @@ void CColor::SetRGBValue(const CColor & aColor, CColorReference colorReference)
 
 	CColor temp;
 
-  pthread_mutex_lock (&matrixMutex);
-	temp=colorReference.RGBtoXYZMatrix*aColor;
-  pthread_mutex_unlock (&matrixMutex);
+    {
+        CLockWhileInScope dummy(m_matrixSection);
+        temp=colorReference.RGBtoXYZMatrix*aColor;
+    }
 
 	SetX(temp.GetX()); 
 	SetY(temp.GetY()); 
@@ -856,10 +924,11 @@ void CColor::SetSensorValue(const CColor & aColor)
 	}
 
 	CColor temp;
-
-  pthread_mutex_lock (&matrixMutex);
-	temp=m_SensorToXYZMatrix*aColor;
-  pthread_mutex_unlock (&matrixMutex);
+    
+    {
+        CLockWhileInScope dummy(m_matrixSection);
+        temp=m_SensorToXYZMatrix*aColor;
+    }
 	
 	SetX(temp.GetX()); 
 	SetY(temp.GetY()); 
@@ -945,9 +1014,8 @@ void CColor::SetSensorToXYZMatrix(const Matrix & aMatrix)
 { 
 	m_SensorToXYZMatrix=aMatrix; 
 
-  pthread_mutex_lock (&matrixMutex);
-	m_XYZtoSensorMatrix = m_SensorToXYZMatrix.GetInverse();
-  pthread_mutex_unlock (&matrixMutex);
+    CLockWhileInScope dummy(m_matrixSection);
+    m_XYZtoSensorMatrix = m_SensorToXYZMatrix.GetInverse();
 }
 
 Matrix CColor::GetSensorToXYZMatrix() const
