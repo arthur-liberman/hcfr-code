@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		01D8795B14F228E9002DC664 /* libHCFR.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 01D8795A14F228E9002DC664 /* libHCFR.framework */; };
 		0206297C0C99275C005216D9 /* HCFRCIEChartController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0206297B0C99275C005216D9 /* HCFRCIEChartController.mm */; };
 		020650700DF9424B00A4580A /* HCFRFile.icns in Resources */ = {isa = PBXBuildFile; fileRef = 0206506E0DF9424800A4580A /* HCFRFile.icns */; };
 		020CD4D812E88D4C00B098C6 /* HCFRManualFullscreenGenerator.mm in Sources */ = {isa = PBXBuildFile; fileRef = 020CD4D712E88D4C00B098C6 /* HCFRManualFullscreenGenerator.mm */; };
@@ -61,7 +62,6 @@
 		024EB84D0E6565B700FDFB3C /* HCFRAditionnalFrameView.m in Sources */ = {isa = PBXBuildFile; fileRef = 024EB84C0E6565B700FDFB3C /* HCFRAditionnalFrameView.m */; };
 		024EBB7A0E66CF8D00FDFB3C /* libHCFR.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 024EBB710E66CF6A00FDFB3C /* libHCFR.framework */; };
 		024EBB870E66CF9E00FDFB3C /* libHCFR.framework in Copy frameworks */ = {isa = PBXBuildFile; fileRef = 024EBB710E66CF6A00FDFB3C /* libHCFR.framework */; };
-		024EBB880E66CFAB00FDFB3C /* libHCFR.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 024EBB710E66CF6A00FDFB3C /* libHCFR.framework */; };
 		024EBB950E66D00C00FDFB3C /* libHCFR.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 024EBB710E66CF6A00FDFB3C /* libHCFR.framework */; };
 		024EBB960E66D01200FDFB3C /* libHCFR.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 024EBB710E66CF6A00FDFB3C /* libHCFR.framework */; };
 		024EBB970E66D01500FDFB3C /* libHCFR.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 024EBB710E66CF6A00FDFB3C /* libHCFR.framework */; };
@@ -283,6 +283,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		01D86C1E14F2262D002DC664 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 024EBB6C0E66CF6A00FDFB3C /* libHCFR.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
+			remoteInfo = libHCFR;
+		};
 		02132C530D5DDE0D00475539 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
@@ -516,6 +523,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		01D86C3C14F228C8002DC664 /* git */ = {isa = PBXFileReference; lastKnownFileType = folder; name = git; path = /Users/nick/src/git; sourceTree = "<absolute>"; };
+		01D8795A14F228E9002DC664 /* libHCFR.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libHCFR.framework; path = "/Users/nick/src/git/hcfr/libHCFR/mac project files/build/Debug/libHCFR.framework"; sourceTree = "<absolute>"; };
 		0206297B0C99275C005216D9 /* HCFRCIEChartController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = HCFRCIEChartController.mm; sourceTree = "<group>"; };
 		020629E40C99311C005216D9 /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/CIEChart.nib; sourceTree = "<group>"; };
 		0206506E0DF9424800A4580A /* HCFRFile.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = HCFRFile.icns; sourceTree = "<group>"; };
@@ -859,7 +868,7 @@
 			files = (
 				02CC41BF0DC760260094B4F6 /* Foundation.framework in Frameworks */,
 				02CC41C10DC7603B0094B4F6 /* AppKit.framework in Frameworks */,
-				024EBB880E66CFAB00FDFB3C /* libHCFR.framework in Frameworks */,
+				01D8795B14F228E9002DC664 /* libHCFR.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1540,6 +1549,8 @@
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
 				02FEE0880D40B6AD00F7FAC9 /* CalibrationProfiles */,
+				01D86C3C14F228C8002DC664 /* git */,
+				01D8795A14F228E9002DC664 /* libHCFR.framework */,
 			);
 			name = ColorHCFR;
 			sourceTree = "<group>";
@@ -1752,6 +1763,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				01D86C1F14F2262D002DC664 /* PBXTargetDependency */,
 				02CC42800DC765090094B4F6 /* PBXTargetDependency */,
 				02132C540D5DDE0D00475539 /* PBXTargetDependency */,
 				02CC42110DC761840094B4F6 /* PBXTargetDependency */,
@@ -2152,6 +2164,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		01D86C1F14F2262D002DC664 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = libHCFR;
+			targetProxy = 01D86C1E14F2262D002DC664 /* PBXContainerItemProxy */;
+		};
 		02132C540D5DDE0D00475539 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 02132C330D5DD7AD00475539 /* KiPlugin */;
@@ -2566,6 +2583,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_1)",
+					"\"$(SRCROOT)/../libHCFR/mac project files/build/Debug\"",
 				);
 				FRAMEWORK_SEARCH_PATHS_QUOTED_1 = "\"$(SRCROOT)\"";
 				FRAMEWORK_VERSION = A;
@@ -2599,6 +2617,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_1)",
+					"\"$(SRCROOT)/../libHCFR/mac project files/build/Debug\"",
 				);
 				FRAMEWORK_SEARCH_PATHS_QUOTED_1 = "\"$(SRCROOT)\"";
 				FRAMEWORK_VERSION = A;
@@ -2871,6 +2890,9 @@
 		C01FCF4F08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"../libHCFR/mac\\ project\\ files/build/Debug/",
+				);
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_OBJC_CALL_CXX_CDTORS = YES;
 				GCC_TREAT_IMPLICIT_FUNCTION_DECLARATIONS_AS_ERRORS = YES;
@@ -2893,6 +2915,9 @@
 		C01FCF5008A954540054247B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"../libHCFR/mac\\ project\\ files/build/Release/",
+				);
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_OBJC_CALL_CXX_CDTORS = YES;
 				GCC_TREAT_IMPLICIT_FUNCTION_DECLARATIONS_AS_ERRORS = YES;
@@ -2911,6 +2936,7 @@
 				PREBINDING = NO;
 				RUN_CLANG_STATIC_ANALYZER = YES;
 				SDKROOT = macosx10.5;
+				VALID_ARCHS = i386;
 			};
 			name = Release;
 		};
