@@ -1,4 +1,4 @@
-/////////////////////////////////////////////////////////////////////////////
+﻿/////////////////////////////////////////////////////////////////////////////
 // Copyright (c) 2005-2007 Association Homecinema Francophone.  All rights reserved.
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -65,6 +65,8 @@
 
     class CriticalSection
     {
+    private:
+        pthread_mutex_t m_matrixMutex;
     public:
         CriticalSection()
         {
@@ -82,8 +84,6 @@
         {
             pthread_mutex_unlock (&m_matrixMutex);
         }
-    private:
-        pthread_mutex_t m_matrixMutex;
     };
 #endif
 
