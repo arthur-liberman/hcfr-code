@@ -72,18 +72,17 @@
         {
 			pthread_mutex_init(&m_matrixMutex, NULL);
         }
-		
         ~CriticalSection()
         {
-            ///\todo do we need to clean up here
+            pthread_mutex_destroy(&m_matrixMutex);
         }
         void lock()
         {
-            pthread_mutex_lock (&m_matrixMutex);
+            pthread_mutex_lock(&m_matrixMutex);
         }
         void unlock()
         {
-            pthread_mutex_unlock (&m_matrixMutex);
+            pthread_mutex_unlock(&m_matrixMutex);
         }
     };
 #endif
