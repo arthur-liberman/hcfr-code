@@ -24,7 +24,7 @@ CriticalSection::CriticalSection()
 #ifdef LIBHCFR_HAS_WIN32_API
     InitializeCriticalSection(&m_critcalSection);
 #else if LIBHCFR_HAS_PTHREADS
-    pthread_mutex_init(&m_matrixMutex);
+    pthread_mutex_init(&m_matrixMutex, NULL);
 #endif
 }
 CriticalSection::~CriticalSection()
