@@ -25,6 +25,10 @@
 		027593E30D4D189800CCD1B8 /* ProfilesRepositoryIndexFileReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 027593C60D4D172100CCD1B8 /* ProfilesRepositoryIndexFileReader.cpp */; };
 		02CBD61E0E50740900863324 /* Endianness.h in Headers */ = {isa = PBXBuildFile; fileRef = 02CBD61C0E50740900863324 /* Endianness.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		02CBD61F0E50740900863324 /* Endianness.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02CBD61D0E50740900863324 /* Endianness.cpp */; };
+		5293257F14F41C6100E5702A /* CriticalSection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5293257B14F41C6100E5702A /* CriticalSection.cpp */; };
+		5293258014F41C6100E5702A /* CriticalSection.h in Headers */ = {isa = PBXBuildFile; fileRef = 5293257C14F41C6100E5702A /* CriticalSection.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		5293258114F41C6100E5702A /* libHCFR_Config.h in Headers */ = {isa = PBXBuildFile; fileRef = 5293257D14F41C6100E5702A /* libHCFR_Config.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		5293258214F41C6100E5702A /* LockWhileInScope.h in Headers */ = {isa = PBXBuildFile; fileRef = 5293257E14F41C6100E5702A /* LockWhileInScope.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		8DC2EF530486A6940098B216 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C1666FE841158C02AAC07 /* InfoPlist.strings */; };
 /* End PBXBuildFile section */
 
@@ -50,6 +54,10 @@
 		02CBD61D0E50740900863324 /* Endianness.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Endianness.cpp; sourceTree = "<group>"; };
 		089C1667FE841158C02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		32DBCF5E0370ADEE00C91783 /* libHCFR_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libHCFR_Prefix.pch; sourceTree = "<group>"; };
+		5293257B14F41C6100E5702A /* CriticalSection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CriticalSection.cpp; sourceTree = "<group>"; };
+		5293257C14F41C6100E5702A /* CriticalSection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CriticalSection.h; sourceTree = "<group>"; };
+		5293257D14F41C6100E5702A /* libHCFR_Config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libHCFR_Config.h; sourceTree = "<group>"; };
+		5293257E14F41C6100E5702A /* LockWhileInScope.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LockWhileInScope.h; sourceTree = "<group>"; };
 		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* libHCFR.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = libHCFR.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -106,6 +114,10 @@
 		08FB77AEFE84172EC02AAC07 /* libHCFR */ = {
 			isa = PBXGroup;
 			children = (
+				5293257B14F41C6100E5702A /* CriticalSection.cpp */,
+				5293257C14F41C6100E5702A /* CriticalSection.h */,
+				5293257D14F41C6100E5702A /* libHCFR_Config.h */,
+				5293257E14F41C6100E5702A /* LockWhileInScope.h */,
 				02CBD61C0E50740900863324 /* Endianness.h */,
 				02CBD61D0E50740900863324 /* Endianness.cpp */,
 				027593950D4D15DC00CCD1B8 /* CalibrationFile.h */,
@@ -169,6 +181,9 @@
 				0242C3C30E50779D009EB9CC /* CHCFile.h in Headers */,
 				0242C4400E530639009EB9CC /* PCFilesReaderUtilities.h in Headers */,
 				0226906C0E684A93006515A1 /* IHCFile.h in Headers */,
+				5293258014F41C6100E5702A /* CriticalSection.h in Headers */,
+				5293258114F41C6100E5702A /* libHCFR_Config.h in Headers */,
+				5293258214F41C6100E5702A /* LockWhileInScope.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -264,6 +279,7 @@
 				0242C3C40E50779D009EB9CC /* CHCFile.cpp in Sources */,
 				0242C4410E530639009EB9CC /* PCFilesReaderUtilities.cpp in Sources */,
 				0226906B0E684A93006515A1 /* IHCFile.cpp in Sources */,
+				5293257F14F41C6100E5702A /* CriticalSection.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

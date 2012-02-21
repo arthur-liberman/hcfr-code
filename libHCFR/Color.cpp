@@ -34,9 +34,6 @@
 #include <math.h>
 #include <assert.h>
 
-/// \todo remove this by getting all projects to include the right files
-#include "CriticalSection.cpp"
-
 // critical section to be used in this file to
 // ensure config matrices don't get changed mid-calculation
 static CriticalSection m_matrixSection;
