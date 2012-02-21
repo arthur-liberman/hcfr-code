@@ -31,7 +31,7 @@ static HCFRScreensManager *sharedManager = nil;
 {
   @synchronized(self) {
     if (sharedManager == nil) {
-      [[self alloc] init]; // On n'alloue pas sharedDevice ici : ce sera fait par allocWithZone
+      [[[self alloc] init] autorelease]; // On n'alloue pas sharedDevice ici : ce sera fait par allocWithZone
     }
   }
   return sharedManager;
