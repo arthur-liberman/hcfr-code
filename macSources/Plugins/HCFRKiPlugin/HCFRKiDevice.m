@@ -84,7 +84,7 @@ static HCFRKiDevice *sharedDevice = nil;
   NSLog (@"kiDevice getSharedDevice");
   @synchronized(self) {
     if (sharedDevice == nil) {
-      [[self alloc] init]; // On n'alloue pas sharedDevice ici : ce sera fait par allocWithZone
+      [[[self alloc] init] autorelease]; // On n'alloue pas sharedDevice ici : ce sera fait par allocWithZone
     }
   }
   return sharedDevice;

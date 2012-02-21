@@ -12,3 +12,6 @@ Release/
 *.pbxuser
 *.mode1
 *.xcuserdatad/
+.DS_Store
+*.model1v3
+
