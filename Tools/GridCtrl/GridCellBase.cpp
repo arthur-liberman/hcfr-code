@@ -42,7 +42,7 @@
 //        
 /////////////////////////////////////////////////////////////////////////////
 
-#include "../../stdafx.h"
+#include "stdafx.h"
 #include "GridCtrl.h"
 #include "GridCellBase.h"
 

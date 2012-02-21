@@ -282,31 +282,31 @@ void CNearBlackGrapher::AddPointtoLumGraph(int ColorSpace,int ColorIndex,int Siz
 	
 	if (ColorSpace == 0) 
 	{
-		max=pDataSet->GetMeasure()->GetNearBlack(Size-1).GetRGBValue()[ColorIndex] / Valformax;
-		colorlevel=pDataSet->GetMeasure()->GetNearBlack(PointIndex).GetRGBValue()[ColorIndex];
+		max=pDataSet->GetMeasure()->GetNearBlack(Size-1).GetRGBValue(GetColorReference())[ColorIndex] / Valformax;
+		colorlevel=pDataSet->GetMeasure()->GetNearBlack(PointIndex).GetRGBValue(GetColorReference())[ColorIndex];
 
 		int grayscalesize=pDataSet->GetMeasure()->GetGrayScaleSize();
 		int nearwhitescalesize=pDataSet->GetMeasure()->GetNearWhiteScaleSize();
 
 		if (pDataSet->GetMeasure()->GetGray(grayscalesize-1)!=noDataColor)
-			whitelvl=pDataSet->GetMeasure()->GetGray(grayscalesize-1).GetRGBValue()[ColorIndex];
+			whitelvl=pDataSet->GetMeasure()->GetGray(grayscalesize-1).GetRGBValue(GetColorReference())[ColorIndex];
 		else if (pDataSet->GetMeasure()->GetNearWhite(nearwhitescalesize-1)!=noDataColor)
-			whitelvl=pDataSet->GetMeasure()->GetNearWhite(nearwhitescalesize-1).GetRGBValue()[ColorIndex];
+			whitelvl=pDataSet->GetMeasure()->GetNearWhite(nearwhitescalesize-1).GetRGBValue(GetColorReference())[ColorIndex];
 		else
 			whitelvl=0;
 	}
 	else if (ColorSpace == 1) 
 	{
-		max=pDataSet->GetMeasure()->GetNearBlack(Size-1).GetLuxOrLumaValue() / Valformax;
-		colorlevel=pDataSet->GetMeasure()->GetNearBlack(PointIndex).GetLuxOrLumaValue();
+		max=pDataSet->GetMeasure()->GetNearBlack(Size-1).GetLuxOrLumaValue(GetConfig () -> m_nLuminanceCurveMode) / Valformax;
+		colorlevel=pDataSet->GetMeasure()->GetNearBlack(PointIndex).GetLuxOrLumaValue(GetConfig () -> m_nLuminanceCurveMode);
 
 		int grayscalesize=pDataSet->GetMeasure()->GetGrayScaleSize();
 		int nearwhitescalesize=pDataSet->GetMeasure()->GetNearWhiteScaleSize();
 
 		if (pDataSet->GetMeasure()->GetGray(grayscalesize-1)!=noDataColor)
-			whitelvl=pDataSet->GetMeasure()->GetGray(grayscalesize-1).GetLuxOrLumaValue();
+			whitelvl=pDataSet->GetMeasure()->GetGray(grayscalesize-1).GetLuxOrLumaValue(GetConfig () -> m_nLuminanceCurveMode);
 		else if (pDataSet->GetMeasure()->GetNearWhite(nearwhitescalesize-1)!=noDataColor)
-			whitelvl=pDataSet->GetMeasure()->GetNearWhite(nearwhitescalesize-1).GetLuxOrLumaValue();
+			whitelvl=pDataSet->GetMeasure()->GetNearWhite(nearwhitescalesize-1).GetLuxOrLumaValue(GetConfig () -> m_nLuminanceCurveMode);
 		else
 			whitelvl=0;
 	}
@@ -330,13 +330,13 @@ void CNearBlackGrapher::AddPointtoLumGraph(int ColorSpace,int ColorIndex,int Siz
 	if(GetConfig() -> m_GammaOffsetType == 1 ) {
 		if (ColorSpace == 0) 
 		{
-			colorlevel-=pDataSet->GetMeasure()->GetNearBlack(0).GetRGBValue()[ColorIndex];
-			max-=pDataSet->GetMeasure()->GetNearBlack(0).GetRGBValue()[ColorIndex];
+			colorlevel-=pDataSet->GetMeasure()->GetNearBlack(0).GetRGBValue(GetColorReference())[ColorIndex];
+			max-=pDataSet->GetMeasure()->GetNearBlack(0).GetRGBValue(GetColorReference())[ColorIndex];
 		}
 		else if (ColorSpace == 1) 
 		{
-			colorlevel-=pDataSet->GetMeasure()->GetNearBlack(0).GetLuxOrLumaValue();
-			max-=pDataSet->GetMeasure()->GetNearBlack(0).GetLuxOrLumaValue();
+			colorlevel-=pDataSet->GetMeasure()->GetNearBlack(0).GetLuxOrLumaValue(GetConfig () -> m_nLuminanceCurveMode);
+			max-=pDataSet->GetMeasure()->GetNearBlack(0).GetLuxOrLumaValue(GetConfig () -> m_nLuminanceCurveMode);
 		}
 		else 
 		{

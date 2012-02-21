@@ -1929,7 +1929,7 @@ BOOL CDataSetDoc::ComputeAdjustmentMatrix()
 	// check that measure matrix is inversible
 	if ( measures.Determinant() != 0.0 ) 
 	{
-		Matrix ConvMatrix = ComputeConversionMatrix ( measures, references, white, whiteRef );
+		Matrix ConvMatrix = ComputeConversionMatrix (measures, references, white, whiteRef, GetConfig () -> m_bUseOnlyPrimaries );
 
 		// check that matrix is inversible
 		if ( ConvMatrix.Determinant() != 0.0 )	
@@ -2200,7 +2200,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode, UINT nCalibrationOrCo
 			 nSteps = GetMeasure () -> GetSaturationSize ();
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_RED;
-			 GenerateSaturationColors ( GenColors, nSteps, TRUE, FALSE, FALSE, m_pGenerator->m_b16_235 );
+			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, TRUE, FALSE, FALSE, m_pGenerator->m_b16_235 );
 			 pValidationFunc = &CMeasure::ValidateBackgroundRedSatScale;
 			 lHint = UPD_REDSAT;
 			 break;
@@ -2209,7 +2209,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode, UINT nCalibrationOrCo
 			 nSteps = GetMeasure () -> GetSaturationSize ();
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_GREEN;
-			 GenerateSaturationColors ( GenColors, nSteps, FALSE, TRUE, FALSE, m_pGenerator->m_b16_235 );
+			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, FALSE, TRUE, FALSE, m_pGenerator->m_b16_235 );
 			 pValidationFunc = &CMeasure::ValidateBackgroundGreenSatScale;
 			 lHint = UPD_GREENSAT;
 			 break;
@@ -2218,7 +2218,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode, UINT nCalibrationOrCo
 			 nSteps = GetMeasure () -> GetSaturationSize ();
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_BLUE;
-			 GenerateSaturationColors ( GenColors, nSteps, FALSE, FALSE, TRUE, m_pGenerator->m_b16_235 );
+			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, FALSE, FALSE, TRUE, m_pGenerator->m_b16_235 );
 			 pValidationFunc = &CMeasure::ValidateBackgroundBlueSatScale;
 			 lHint = UPD_BLUESAT;
 			 break;
@@ -2227,7 +2227,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode, UINT nCalibrationOrCo
 			 nSteps = GetMeasure () -> GetSaturationSize ();
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_YELLOW;
-			 GenerateSaturationColors ( GenColors, nSteps, TRUE, TRUE, FALSE, m_pGenerator->m_b16_235 );
+			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, TRUE, TRUE, FALSE, m_pGenerator->m_b16_235 );
 			 pValidationFunc = &CMeasure::ValidateBackgroundYellowSatScale;
 			 lHint = UPD_YELLOWSAT;
 			 break;
@@ -2236,7 +2236,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode, UINT nCalibrationOrCo
 			 nSteps = GetMeasure () -> GetSaturationSize ();
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_CYAN;
-			 GenerateSaturationColors ( GenColors, nSteps, FALSE, TRUE, TRUE, m_pGenerator->m_b16_235 );
+			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, FALSE, TRUE, TRUE, m_pGenerator->m_b16_235 );
 			 pValidationFunc = &CMeasure::ValidateBackgroundCyanSatScale;
 			 lHint = UPD_CYANSAT;
 			 break;
@@ -2245,7 +2245,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode, UINT nCalibrationOrCo
 			 nSteps = GetMeasure () -> GetSaturationSize ();
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_MAGENTA;
-			 GenerateSaturationColors ( GenColors, nSteps, TRUE, FALSE, TRUE, m_pGenerator->m_b16_235 );
+			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, TRUE, FALSE, TRUE, m_pGenerator->m_b16_235 );
 			 pValidationFunc = &CMeasure::ValidateBackgroundMagentaSatScale;
 			 lHint = UPD_MAGENTASAT;
 			 break;
@@ -2776,13 +2776,13 @@ void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int Col
 
 	if (ColorSpace == 0) 
 	{
-		blacklvl=GetMeasure()->GetGray(0).GetRGBValue()[ColorIndex];
-		whitelvl=GetMeasure()->GetGray(Size-1).GetRGBValue()[ColorIndex];
+		blacklvl=GetMeasure()->GetGray(0).GetRGBValue(GetColorReference())[ColorIndex];
+		whitelvl=GetMeasure()->GetGray(Size-1).GetRGBValue(GetColorReference())[ColorIndex];
 	}
 	else if (ColorSpace == 1) 
 	{
-		blacklvl=GetMeasure()->GetGray(0).GetLuxOrLumaValue();
-		whitelvl=GetMeasure()->GetGray(Size-1).GetLuxOrLumaValue();
+		blacklvl=GetMeasure()->GetGray(0).GetLuxOrLumaValue(GetConfig () -> m_nLuminanceCurveMode);
+		whitelvl=GetMeasure()->GetGray(Size-1).GetLuxOrLumaValue(GetConfig () -> m_nLuminanceCurveMode);
 	}
 	else if (ColorSpace == 2) 
 	{
@@ -2795,8 +2795,8 @@ void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int Col
 		if ( nLumCurveMode > 0 )
 		{
 			// When luxmeter values are authorized in curves, use preference for contrast/delta luma
-			blacklvl=GetMeasure()->GetGray(0).GetPreferedLuxValue();
-			whitelvl=GetMeasure()->GetGray(Size-1).GetPreferedLuxValue();
+			blacklvl=GetMeasure()->GetGray(0).GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter);
+			whitelvl=GetMeasure()->GetGray(Size-1).GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter);
 		}
 		else
 		{
@@ -2812,15 +2812,15 @@ void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int Col
 	for (int i=0; i<Size; i++)
 	{	
 		if (ColorSpace == 0)
-			graylvl=GetMeasure()->GetGray(i).GetRGBValue()[ColorIndex];
+			graylvl=GetMeasure()->GetGray(i).GetRGBValue(GetColorReference())[ColorIndex];
 		else if (ColorSpace == 1)
-			graylvl=GetMeasure()->GetGray(i).GetLuxOrLumaValue();
+			graylvl=GetMeasure()->GetGray(i).GetLuxOrLumaValue(GetConfig () -> m_nLuminanceCurveMode);
 		else if (ColorSpace == 2) 
 			graylvl=GetMeasure()->GetGray(i).GetLuxValue();
 		else
 		{
 			if ( nLumCurveMode > 0 )
-				graylvl=GetMeasure()->GetGray(i).GetPreferedLuxValue();
+				graylvl=GetMeasure()->GetGray(i).GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter);
 			else
 				graylvl=GetMeasure()->GetGray(i).GetLuminance();
 		}

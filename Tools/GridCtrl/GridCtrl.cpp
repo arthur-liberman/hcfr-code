@@ -115,7 +115,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-#include "../../stdafx.h"
+#include "stdafx.h"
 #include "MemDC.h"
 #include "GridCtrl.h"
 

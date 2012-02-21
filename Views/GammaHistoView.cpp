@@ -272,15 +272,15 @@ void CGammaGrapher::AddPointtoLumGraph(int ColorSpace,int ColorIndex,int Size,in
 
 	if (ColorSpace == 0) 
 	{
-		blacklvl=pDataSet->GetMeasure()->GetGray(0).GetRGBValue()[ColorIndex];
-		whitelvl=pDataSet->GetMeasure()->GetGray(Size-1).GetRGBValue()[ColorIndex];
-		colorlevel=pDataSet->GetMeasure()->GetGray(PointIndex).GetRGBValue()[ColorIndex];
+		blacklvl=pDataSet->GetMeasure()->GetGray(0).GetRGBValue(GetColorReference())[ColorIndex];
+		whitelvl=pDataSet->GetMeasure()->GetGray(Size-1).GetRGBValue(GetColorReference())[ColorIndex];
+		colorlevel=pDataSet->GetMeasure()->GetGray(PointIndex).GetRGBValue(GetColorReference())[ColorIndex];
 	}
 	else if (ColorSpace == 1) 
 	{
-		blacklvl=pDataSet->GetMeasure()->GetGray(0).GetLuxOrLumaValue();
-		whitelvl=pDataSet->GetMeasure()->GetGray(Size-1).GetLuxOrLumaValue();
-		colorlevel=pDataSet->GetMeasure()->GetGray(PointIndex).GetLuxOrLumaValue();
+		blacklvl=pDataSet->GetMeasure()->GetGray(0).GetLuxOrLumaValue(GetConfig () -> m_nLuminanceCurveMode);
+		whitelvl=pDataSet->GetMeasure()->GetGray(Size-1).GetLuxOrLumaValue(GetConfig () -> m_nLuminanceCurveMode);
+		colorlevel=pDataSet->GetMeasure()->GetGray(PointIndex).GetLuxOrLumaValue(GetConfig () -> m_nLuminanceCurveMode);
 	}
 	else 
 	{

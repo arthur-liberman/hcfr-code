@@ -1517,7 +1517,7 @@ void CCIEChartView::UpdateTestColor ( CPoint point )
 	{
 		CColor	ClickedColor ( x, y );
 
-		RGBColor = ClickedColor.GetRGBValue ();
+		RGBColor = ClickedColor.GetRGBValue (GetColorReference());
 		r = max(0.0,pow(RGBColor[0],gamma));
 		g = max(0.0,pow(RGBColor[1],gamma));
 		b = max(0.0,pow(RGBColor[2],gamma));

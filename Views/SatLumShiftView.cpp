@@ -456,7 +456,7 @@ void CSatLumShiftGrapher::GetEndPoint ( double & xend, double & yend, CColor & S
 	{
 		CColor Clr2, Clr3;
 		
-		Clr2.SetRGBValue(ClrRGB);
+		Clr2.SetRGBValue(ClrRGB, GetColorReference());
 		Clr3=Clr2.GetxyYValue();
 		
 		xend=Clr3[0];

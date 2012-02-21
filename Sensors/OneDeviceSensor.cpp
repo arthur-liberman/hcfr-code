@@ -146,7 +146,7 @@ void CCalibrationInfo::GetAdditivityInfoText ( CString & strResult, Matrix & sen
 		strResult+=str;
 		Msg.LoadString ( IDS_DELTAE );
 		strResult += Msg;
-		str.Format(" : %.1f\r\n",ConvertedWhiteTest.GetDeltaE(-1.0,m_WhiteRef,-1.0));
+		str.Format(" : %.1f\r\n",ConvertedWhiteTest.GetDeltaE(-1.0,m_WhiteRef,-1.0, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula));
 		strResult+=str;
 	}
 
@@ -721,7 +721,7 @@ BOOL COneDeviceSensor::CalibrateSensor(Matrix & measures, Matrix & references, C
 		return FALSE;
 	}
 
-	m = ComputeConversionMatrix ( measures, references, WhiteTest, WhiteRef );
+	m = ComputeConversionMatrix ( measures, references, WhiteTest, WhiteRef, GetConfig () -> m_bUseOnlyPrimaries );
 
 	if(m.Determinant() != 0)	// check that matrix is inversible
 	{

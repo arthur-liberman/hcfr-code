@@ -21,7 +21,7 @@
 // FullScreenWindow.cpp : Defines the full screen color window
 //
 
-#include "../stdafx.h"
+#include "stdafx.h"
 #include "../ColorHCFR.h"
 #include "FullScreenWindow.h"
 #include <math.h>

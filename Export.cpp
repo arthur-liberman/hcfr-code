@@ -310,7 +310,7 @@ bool CExport::SaveGrayScaleSheet()
 		Rows.RemoveAll();
 		Rows.Add(legendRGB[i]);
 		for(j=0;j<size;j++)
-			Rows.Add((float)m_pDoc->GetMeasure()->GetGray(j).GetRGBValue()[i]);
+			Rows.Add((float)m_pDoc->GetMeasure()->GetGray(j).GetRGBValue(GetColorReference())[i]);
 		result&=graySS.AddRow(Rows,rowNb,m_doReplace);
 		rowNb++;
 	}
@@ -331,7 +331,7 @@ bool CExport::SaveGrayScaleSheet()
 	Rows.RemoveAll();
 	Rows.Add("ColorTemp");
 	for(j=0;j<size;j++)
-		Rows.Add((float)m_pDoc->GetMeasure()->GetGray(j).GetColorTemp());
+		Rows.Add((float)m_pDoc->GetMeasure()->GetGray(j).GetColorTemp(GetColorReference()));
 	result&=graySS.AddRow(Rows,rowNb,m_doReplace);
 	rowNb++;
 
@@ -364,7 +364,7 @@ bool CExport::SaveGrayScaleSheet()
 			YWhite = m_pDoc->GetMeasure()->GetGray(j) [ 1 ];
 		}
 		
-		Rows.Add((float)m_pDoc->GetMeasure()->GetGray(j).GetDeltaE(YWhite, refColor, 1.0));
+		Rows.Add((float)m_pDoc->GetMeasure()->GetGray(j).GetDeltaE(YWhite, refColor, 1.0, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula));
 	}
 	result&=graySS.AddRow(Rows,rowNb,m_doReplace);
 	rowNb++;
@@ -427,9 +427,9 @@ bool CExport::SavePrimariesSheet()
 		Rows.RemoveAll();
 		Rows.Add(legendRGB[i]);
 		for(j=0;j<3;j++)
-			Rows.Add((float)m_pDoc->GetMeasure()->GetPrimary(j).GetRGBValue()[i]);
+			Rows.Add((float)m_pDoc->GetMeasure()->GetPrimary(j).GetRGBValue(GetColorReference())[i]);
 		for(j=0;j<3;j++)
-			Rows.Add((float)m_pDoc->GetMeasure()->GetSecondary(j).GetRGBValue()[i]);
+			Rows.Add((float)m_pDoc->GetMeasure()->GetSecondary(j).GetRGBValue(GetColorReference())[i]);
 		result&=primariesSS.AddRow(Rows,rowNb,m_doReplace);
 		rowNb++;
 	}

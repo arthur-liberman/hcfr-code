@@ -20,7 +20,7 @@
 //
 /////////////////////////////////////////////////////////////////////
 
-#include "../../stdafx.h"
+#include "stdafx.h"
 #include "PPHtmlDrawer.h"
 #include "atlconv.h"    // for Unicode conversion - requires #include <afxdisp.h> // MFC OLE automation classes
 

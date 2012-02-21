@@ -22,6 +22,7 @@
 
 #include "stdafx.h"
 #include "color.h"
+#include "ColorHCFR.h"
 #include <math.h>
 
 

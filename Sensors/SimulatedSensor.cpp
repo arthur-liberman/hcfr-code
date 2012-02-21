@@ -240,7 +240,7 @@ CColor CSimulatedSensor::MeasureColor(COLORREF aRGBValue)
 	Sleep(200);		// Sleep 200 ms to simulate acquisition
 
 	CColor colMeasure, colSensor;
-	colMeasure.SetRGBValue(simulColor);
+	colMeasure.SetRGBValue(simulColor, GetColorReference());
 	
 	colMeasure.SetSensorToXYZMatrix(m_sensorToXYZMatrix); 
 

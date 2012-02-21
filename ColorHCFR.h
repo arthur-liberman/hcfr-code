@@ -36,6 +36,7 @@
 #include "resource.h"       // main symbols
 #include "WinAppEx.h"
 #include "HelpID.h"
+#include "Color.h"
 
 // Return codes for CColorHCFRApp::GetLuxMeasure
 
@@ -98,7 +99,7 @@ class CColorHCFRApp : public CWinAppEx
 public:
 
 	CColorHCFRConfig *m_pConfig;
-	CColorReference * m_pColorReference;
+	CColorReference *m_pColorReference;
 	CDataSetDoc *m_pReferenceData; //Ki
 
 public:
@@ -198,6 +199,7 @@ public:
 };
 
 inline CColorHCFRApp * GetColorApp () { return (CColorHCFRApp *) AfxGetApp (); }
+inline CColorReference& GetColorReference() {return *(GetColorApp()->m_pColorReference);}
 
 /////////////////////////////////////////////////////////////////////////////
 

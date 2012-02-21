@@ -151,7 +151,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			normColor[2]=((1.0-(aColor[0]+aColor[1]))/aColor[1]);
 
 			CColor aMeasure(normColor);
-			normColor=aMeasure.GetRGBValue();
+			normColor=aMeasure.GetRGBValue(GetColorReference());
 
 			double x = ArrayIndexToGrayLevel ( i, size, bIRE );
 
@@ -177,7 +177,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 					// Use actual gray luma as correct reference (Delta E will check color only, not brightness)
 					YWhite = aColor [ 2 ];
 				}
-				m_graphCtrl2.AddPoint(m_deltaEGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(YWhite, refColor, 1.0));
+				m_graphCtrl2.AddPoint(m_deltaEGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(YWhite, refColor, 1.0, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula));
 			}
 		}
 	}
@@ -210,7 +210,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			normColor[2]=((1.0-(aColorRef[0]+aColorRef[1]))/aColorRef[1]);
 
 			CColor aMeasure(normColor);
-			normColor=aMeasure.GetRGBValue();
+			normColor=aMeasure.GetRGBValue(GetColorReference());
 
 			double x = ArrayIndexToGrayLevel ( i, size, bIRE );
 
@@ -240,10 +240,10 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 						YWhite = aColor [ 2 ];
 				}
 
-				m_graphCtrl2.AddPoint(m_deltaEDataRefGraphID, x, pDataRef->GetMeasure()->GetGray(i).GetDeltaE(YWhiteRefDoc, refColor, 1.0));
+				m_graphCtrl2.AddPoint(m_deltaEDataRefGraphID, x, pDataRef->GetMeasure()->GetGray(i).GetDeltaE(YWhiteRefDoc, refColor, 1.0, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula));
 				
 				if (bMainDocHasColors)
-					m_graphCtrl2.AddPoint(m_deltaEBetweenGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(YWhite,pDataRef->GetMeasure()->GetGray(i),YWhiteRefDoc)); //Ki
+					m_graphCtrl2.AddPoint(m_deltaEBetweenGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(YWhite,pDataRef->GetMeasure()->GetGray(i),YWhiteRefDoc, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula)); //Ki
 			}
 		}
 	}

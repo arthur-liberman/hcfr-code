@@ -56,7 +56,7 @@ void CRGBLevelWnd::Refresh()
 		normColor[2]=((1.0-(aColor[0]+aColor[1]))/aColor[1]);
 
 		CColor aMeasure(normColor);
-		normColor=aMeasure.GetRGBValue();
+		normColor=aMeasure.GetRGBValue(GetColorReference());
 
 		m_redValue=(int)(normColor[0]*100.0);
 		m_greenValue=(int)(normColor[1]*100.0);

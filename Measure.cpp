@@ -37,8 +37,6 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
-extern CRITICAL_SECTION MatrixCritSec;	// Implemented in Color.cpp
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -1522,7 +1520,7 @@ BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	}
 
 	// Generate saturation colors for red
-	GenerateSaturationColors ( GenColors, size, TRUE, FALSE, FALSE, pGenerator->m_b16_235 );
+	GenerateSaturationColors (GetColorReference(), GenColors, size, TRUE, FALSE, FALSE, pGenerator->m_b16_235 );
 
 	for(int i=0;i<size;i++)
 	{
@@ -1677,7 +1675,7 @@ BOOL CMeasure::MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	}
 
 	// Generate saturation colors for green
-	GenerateSaturationColors ( GenColors, size, FALSE, TRUE, FALSE, pGenerator->m_b16_235 );
+	GenerateSaturationColors (GetColorReference(), GenColors, size, FALSE, TRUE, FALSE, pGenerator->m_b16_235 );
 
 	for(int i=0;i<size;i++)
 	{
@@ -1832,7 +1830,7 @@ BOOL CMeasure::MeasureBlueSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	}
 
 	// Generate saturation colors for blue
-	GenerateSaturationColors ( GenColors, size, FALSE, FALSE, TRUE, pGenerator->m_b16_235 );
+	GenerateSaturationColors (GetColorReference(), GenColors, size, FALSE, FALSE, TRUE, pGenerator->m_b16_235 );
 
 	for(int i=0;i<size;i++)
 	{
@@ -1987,7 +1985,7 @@ BOOL CMeasure::MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	}
 
 	// Generate saturation colors for yellow
-	GenerateSaturationColors ( GenColors, size, TRUE, TRUE, FALSE, pGenerator->m_b16_235 );
+	GenerateSaturationColors (GetColorReference(), GenColors, size, TRUE, TRUE, FALSE, pGenerator->m_b16_235 );
 
 	for(int i=0;i<size;i++)
 	{
@@ -2143,7 +2141,7 @@ BOOL CMeasure::MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	}
 
 	// Generate saturation colors for cyan
-	GenerateSaturationColors ( GenColors, size, FALSE, TRUE, TRUE, pGenerator->m_b16_235 );
+	GenerateSaturationColors (GetColorReference(), GenColors, size, FALSE, TRUE, TRUE, pGenerator->m_b16_235 );
 
 	for(int i=0;i<size;i++)
 	{
@@ -2299,7 +2297,7 @@ BOOL CMeasure::MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	}
 
 	// Generate saturation colors for magenta
-	GenerateSaturationColors ( GenColors, size, TRUE, FALSE, TRUE, pGenerator->m_b16_235 );
+	GenerateSaturationColors (GetColorReference(), GenColors, size, TRUE, FALSE, TRUE, pGenerator->m_b16_235 );
 
 	for(int i=0;i<size;i++)
 	{
@@ -2465,12 +2463,12 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 	}
 
 	// Generate saturations for all colors
-	GenerateSaturationColors ( GenColors, size, TRUE, FALSE, FALSE, pGenerator->m_b16_235 );				// Red
-	GenerateSaturationColors ( & GenColors [ size * 1 ], size, FALSE, TRUE, FALSE, pGenerator->m_b16_235 );	// Green
-	GenerateSaturationColors ( & GenColors [ size * 2 ], size, FALSE, FALSE, TRUE, pGenerator->m_b16_235 );	// Blue
-	GenerateSaturationColors ( & GenColors [ size * 3 ], size, TRUE, TRUE, FALSE, pGenerator->m_b16_235 );	// Yellow
-	GenerateSaturationColors ( & GenColors [ size * 4 ], size, FALSE, TRUE, TRUE, pGenerator->m_b16_235 );	// Cyan
-	GenerateSaturationColors ( & GenColors [ size * 5 ], size, TRUE, FALSE, TRUE, pGenerator->m_b16_235 );	// Magenta
+	GenerateSaturationColors (GetColorReference(), GenColors, size, TRUE, FALSE, FALSE, pGenerator->m_b16_235 );				// Red
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 1 ], size, FALSE, TRUE, FALSE, pGenerator->m_b16_235 );	// Green
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 2 ], size, FALSE, FALSE, TRUE, pGenerator->m_b16_235 );	// Blue
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 3 ], size, TRUE, TRUE, FALSE, pGenerator->m_b16_235 );	// Yellow
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 4 ], size, FALSE, TRUE, TRUE, pGenerator->m_b16_235 );	// Cyan
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 5 ], size, TRUE, FALSE, TRUE, pGenerator->m_b16_235 );	// Magenta
 
 	for ( j = 0 ; j < ( bPrimaryOnly ? 3 : 6 ) ; j ++ )
 	{
@@ -3502,7 +3500,7 @@ BOOL CMeasure::MeasureContrast(CSensor *pSensor, CGenerator *pGenerator)
 			}
 		}
 
-		if ( m_AnsiBlack.GetPreferedLuxValue () > m_AnsiWhite.GetPreferedLuxValue () )
+		if ( m_AnsiBlack.GetPreferedLuxValue (GetConfig () -> m_bPreferLuxmeter) > m_AnsiWhite.GetPreferedLuxValue (GetConfig () -> m_bPreferLuxmeter) )
 		{
 			// Exchange colors
 			measure = m_AnsiBlack;
@@ -3523,8 +3521,8 @@ BOOL CMeasure::MeasureContrast(CSensor *pSensor, CGenerator *pGenerator)
 
 double CMeasure::GetOnOffContrast ()
 {
-	double	black = m_OnOffBlack.GetPreferedLuxValue ();
-	double	white = m_OnOffWhite.GetPreferedLuxValue ();
+	double	black = m_OnOffBlack.GetPreferedLuxValue (GetConfig () -> m_bPreferLuxmeter);
+	double	white = m_OnOffWhite.GetPreferedLuxValue (GetConfig () -> m_bPreferLuxmeter);
 	
 	if ( black > 0.000001 && white > black )
 		return ( white / black );
@@ -3534,8 +3532,8 @@ double CMeasure::GetOnOffContrast ()
 
 double CMeasure::GetAnsiContrast ()
 {
-	double	black = m_AnsiBlack.GetPreferedLuxValue ();
-	double	white = m_AnsiWhite.GetPreferedLuxValue ();
+	double	black = m_AnsiBlack.GetPreferedLuxValue (GetConfig () -> m_bPreferLuxmeter);
+	double	white = m_AnsiWhite.GetPreferedLuxValue (GetConfig () -> m_bPreferLuxmeter);
 	
 	if ( black > 0.000001 && white > black )
 		return ( white / black );
@@ -3545,7 +3543,7 @@ double CMeasure::GetAnsiContrast ()
 
 double CMeasure::GetContrastMinLum ()
 {
-	double	black = m_OnOffBlack.GetPreferedLuxValue ();
+	double	black = m_OnOffBlack.GetPreferedLuxValue (GetConfig () -> m_bPreferLuxmeter);
 	if ( black > 0.000001 )
 		return black;
 	else
@@ -3554,7 +3552,7 @@ double CMeasure::GetContrastMinLum ()
 
 double CMeasure::GetContrastMaxLum ()
 {
-	double	white = m_OnOffWhite.GetPreferedLuxValue ();
+	double	white = m_OnOffWhite.GetPreferedLuxValue (GetConfig () -> m_bPreferLuxmeter);
 
 	if ( white > 0.000001 )
 		return white;
@@ -4021,7 +4019,7 @@ void CMeasure::FreeMeasurementAppended()
 		{
 			LastMeasure=GetMeasurement(n-1);
 
-			if ( LastMeasure.GetDeltaE ( GetColorReference().GetRed () ) < 120 )
+			if ( LastMeasure.GetDeltaE ( GetColorReference().GetRed ()) < 120 )
 			{
 				// Copy real color to primary (not LastMeasure which may have been adjusted)
 				SetRedPrimary ( m_measurementsArray[n-1] );
@@ -4676,9 +4674,7 @@ CColor CMeasure::ComputeAdjustedColor(const CColor & aColor) const
 
 	if ( aColor != noDataColor )
 	{
-		EnterCriticalSection ( & MatrixCritSec );
 		clr = m_XYZAdjustmentMatrix*aColor;
-		LeaveCriticalSection ( & MatrixCritSec );
 
 		if ( aColor.HasLuxValue () )
 			clr.SetLuxValue ( aColor.GetLuxValue () );

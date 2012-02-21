@@ -15,7 +15,7 @@
 //
 /////////////////////////////////////////////////////////////////////
 
-#include "../../stdafx.h"
+#include "stdafx.h"
 #include "PPDrawManager.h"
 
 #ifdef _DEBUG

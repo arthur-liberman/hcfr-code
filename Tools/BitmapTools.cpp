@@ -1,5 +1,5 @@
 
-#include <windows.h> 
+#include "stdafx.h"
 #include <windowsx.h> 
 #include <stdio.h> 
 #include <math.h> 

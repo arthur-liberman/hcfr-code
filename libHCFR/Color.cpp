@@ -29,82 +29,13 @@
 
 #include "Color.h"
 #include "Endianness.h"
+#include "CriticalSection.h"
+#include "LockWhileInScope.h"
 #include <math.h>
 #include <assert.h>
 
-/// handle cross platform differences between
-/// windows and unix type oses
-/// \todo belongs in a sepeerate file 
-#ifdef WIN32
-#   include <windows.h>
-
-    class CriticalSection
-    {
-    public:
-        CriticalSection()
-        {
-            InitializeCriticalSection(&m_critcalSection);
-        }
-        ~CriticalSection()
-        {
-            DeleteCriticalSection(&m_critcalSection);
-        }
-        void lock()
-        {
-            EnterCriticalSection(&m_critcalSection);
-        }
-        void unlock()
-        {
-            LeaveCriticalSection(&m_critcalSection);
-        }
-    private:
-        CRITICAL_SECTION m_critcalSection;
-    };
-#else
-#   include <pthread.h>  // included to access POSIX mutex
-
-    class CriticalSection
-    {
-    private:
-        pthread_mutex_t m_matrixMutex;
-    public:
-        CriticalSection()
-        {
-			pthread_mutex_init(&m_matrixMutex, NULL);
-        }
-        ~CriticalSection()
-        {
-            pthread_mutex_destroy(&m_matrixMutex);
-        }
-        void lock()
-        {
-            pthread_mutex_lock(&m_matrixMutex);
-        }
-        void unlock()
-        {
-            pthread_mutex_unlock(&m_matrixMutex);
-        }
-    };
-#endif
-
-/// CLockWhileInScope
-/// RAII critical section locker to simplify
-/// cross platform locking
-class CLockWhileInScope
-{
-public:
-    CLockWhileInScope(CriticalSection& sectionToLock) :
-        m_section(sectionToLock)
-    {
-        m_section.lock();
-    }
-    ~CLockWhileInScope()
-    {
-        m_section.unlock();
-    }
-private:
-    CriticalSection& m_section;
-};
+/// \todo remove this by getting all projects to include the right files
+#include "CriticalSection.cpp"
 
 // critical section to be used in this file to
 // ensure config matrices don't get changed mid-calculation
@@ -285,8 +216,6 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
 {
 	m_standard = aColorStandard;
 
-//	strModified.LoadString ( IDS_MODIFIED ); -> passÈ en argument
-	
 	switch(aColorStandard)
 	{
 		case PALSECAM:
@@ -347,8 +276,7 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
 		}
 		default:
 		{
-//			standardName.LoadString ( IDS_UNKNOWN );
-      standardName="unknown";
+            standardName="Unknown";
 			whiteColor=illuminantD65;
 			whiteName="D65";
 			m_white=D65;
@@ -438,6 +366,10 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
 	aColor = bluePrimary.GetxyYValue ();
 	aColor.SetZ ( GetBlueReferenceLuma () );
 	bluePrimary.SetxyYValue ( aColor );
+
+    UpdateSecondary ( yellowSecondary, redPrimary, greenPrimary, bluePrimary );
+    UpdateSecondary ( cyanSecondary, greenPrimary, bluePrimary, redPrimary );
+    UpdateSecondary ( magentaSecondary, bluePrimary, redPrimary, greenPrimary );
 }
 
 CColorReference::~CColorReference()
@@ -448,6 +380,30 @@ CColorReference GetStandardColorReference(ColorStandard aColorStandard)
 {
 	CColorReference aStandardRef(aColorStandard);
 	return aStandardRef;
+}
+
+void CColorReference::UpdateSecondary ( CColor & secondary, const CColor & primary1, const CColor & primary2, const CColor & primaryOpposite )
+{
+	// Compute intersection between line (primary1-primary2) and line (primaryOpposite-white)
+	CColor	prim1 = primary1.GetxyYValue ();
+	CColor	prim2 = primary2.GetxyYValue ();
+	CColor	primOppo = primaryOpposite.GetxyYValue ();
+	CColor	white = GetWhite ().GetxyYValue ();
+
+	double x1 = prim1[0];
+	double y1 = prim1[1];
+	double x2 = white[0];
+	double y2 = white[1];
+	double dx1 = prim2[0] - x1;
+	double dy1 = prim2[1] - y1;
+	double dx2 = primOppo[0] - x2;
+	double dy2 = primOppo[1] - y2;
+	
+	double k = ( ( ( x2 - x1 ) / dx1 ) + ( dx2 / ( dx1 * dy2 ) ) * ( y1 - y2 ) ) / ( 1.0 - ( ( dx2 * dy1 ) / ( dx1 * dy2 ) ) );
+
+	CColor	aColor ( x1 + k * dx1, y1 + k * dy1, primary1.GetY() + primary2.GetY() );
+
+	secondary.SetxyYValue ( aColor );
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -511,7 +467,8 @@ CIRELevel::CIRELevel(double aRedIRELevel,double aGreenIRELevel,double aBlueIRELe
 	m_blueIRELevel=aBlueIRELevel;
 }
 
-/*CIRELevel::operator COLORREF()
+#ifdef LIBHCFR_HAS_WIN32_API
+CIRELevel::operator COLORREF()
 {
 	double coef;
 
@@ -525,7 +482,8 @@ CIRELevel::CIRELevel(double aRedIRELevel,double aGreenIRELevel,double aBlueIRELe
 		coef=255.0/100.0;
 		return RGB((BYTE)(ceil(m_redIRELevel*coef)),(BYTE)(ceil(m_greenIRELevel*coef)),(BYTE)(ceil(m_blueIRELevel*coef)));
 	}
-}*/
+}
+#endif // #ifdef LIBHCFR_HAS_WIN32_API
 
 /////////////////////////////////////////////////////////////////////
 // ColorMeasure.cpp: implementation of the CColor class.
@@ -682,9 +640,8 @@ double CColor::GetLuminance() const
 	return GetY();
 }
 
-double CColor::GetDeltaE(double YWhite, const CColorReference & colorReference , double YWhiteRef, bool useOldDeltaEFormula) const
+double CColor::GetDeltaE(double YWhite, const CColor & refColor, double YWhiteRef, const CColorReference & colorReference, bool useOldDeltaEFormula) const
 {
-  const CColor & refColor = colorReference.GetWhite();
 	double dE;
 	double x=this->GetxyYValue()[0];
 	double y=this->GetxyYValue()[1];
@@ -717,6 +674,22 @@ double CColor::GetDeltaE(double YWhite, const CColorReference & colorReference ,
 	return dE;
 }
 
+double CColor::GetDeltaE(const CColor & refColor) const
+{
+	double dE;
+	double x=this->GetxyYValue()[0];
+	double y=this->GetxyYValue()[1];
+	double u = 4.0*x / (-2.0*x + 12.0*y + 3.0); 
+	double v = 9.0*y / (-2.0*x + 12.0*y + 3.0); 
+	double xRef=refColor.GetxyYValue()[0];
+	double yRef=refColor.GetxyYValue()[1];
+	double uRef = 4.0*xRef / (-2.0*xRef + 12.0*yRef + 3.0); 
+	double vRef = 9.0*yRef / (-2.0*xRef + 12.0*yRef + 3.0); 
+	
+	dE = 1300.0 * sqrt ( pow((u - uRef),2) + pow((v - vRef),2) );
+
+	return dE;
+}
 
 double CColor::GetDeltaxy(const CColor & refColor) const
 {
@@ -1089,6 +1062,85 @@ double CColor::GetPreferedLuxValue (bool preferLuxmeter) const
 	return ( preferLuxmeter && m_pLuxValue ? (*m_pLuxValue) : GetY() );
 }
 
+#ifdef LIBHCFR_HAS_MFC
+void CColor::Serialize(CArchive& archive)
+{
+	if (archive.IsStoring())
+	{
+		int version=1;
+
+		if ( m_pLuxValue )
+		{
+			if ( m_pSpectrum )
+				version = 4;
+			else
+				version = 3;
+		}
+		else if ( m_pSpectrum )
+		{
+			version = 2;
+		}
+
+		archive << version;
+		Matrix::Serialize(archive) ;
+		m_XYZtoSensorMatrix.Serialize(archive);
+		m_SensorToXYZMatrix.Serialize(archive);
+
+		if ( m_pSpectrum )
+		{
+			archive << m_pSpectrum -> GetRows ();
+			archive << m_pSpectrum -> m_WaveLengthMin;
+			archive << m_pSpectrum -> m_WaveLengthMax;
+			archive << m_pSpectrum -> m_BandWidth;
+			m_pSpectrum -> Serialize(archive);
+		}
+
+		if ( m_pLuxValue )
+			archive << (* m_pLuxValue);
+	}
+	else
+	{
+		int version;
+		archive >> version;
+		
+		if ( version > 4 )
+			AfxThrowArchiveException ( CArchiveException::badSchema );
+		
+		Matrix::Serialize(archive) ;
+		m_XYZtoSensorMatrix.Serialize(archive);
+		m_SensorToXYZMatrix.Serialize(archive);
+
+		if ( m_pSpectrum )
+		{
+			delete m_pSpectrum;
+			m_pSpectrum = NULL;
+		}
+
+		if ( m_pLuxValue )
+		{
+			delete m_pLuxValue;
+			m_pLuxValue = NULL;
+		}
+
+		if ( version == 2 || version == 4 )
+		{
+			int NbBands, WaveLengthMin, WaveLengthMax, BandWidth;
+			archive >> NbBands;
+			archive >> WaveLengthMin;
+			archive >> WaveLengthMax;
+			archive >> BandWidth;
+			m_pSpectrum = new CSpectrum ( NbBands, WaveLengthMin, WaveLengthMax, BandWidth );
+			m_pSpectrum -> Serialize(archive);
+		}
+
+		if ( version == 3 || version == 4 )
+		{
+			m_pLuxValue = new double;
+			archive >> (* m_pLuxValue);
+		}
+	}
+}
+#endif
 
 /////////////////////////////////////////////////////////////////////
 // Implementation of the CSpectrum class.
@@ -1152,14 +1204,33 @@ CColor CSpectrum::GetXYZValue() const
 	return noDataColor;
 }
 
-// cette fonction ne fait partie d'aucune classe, et gÈnËre des valeurs spÈcifique ‡ un OS
-// -> commentÈe pour le moment.
-/*void GenerateSaturationColors ( COLORREF * GenColors, int nSteps, bool bRed, bool bGreen, bool bBlue )
+#ifdef LIBHCFR_HAS_MFC
+void CSpectrum::Serialize(CArchive& archive)
+{
+	if (archive.IsStoring())
+	{
+		int version=1;
+		archive << version;
+		Matrix::Serialize(archive);
+	}
+	else
+	{
+		int version;
+		archive >> version;
+		if ( version > 1 )
+			AfxThrowArchiveException ( CArchiveException::badSchema );
+		Matrix::Serialize(archive);
+	}
+}
+#endif
+
+#ifdef LIBHCFR_HAS_WIN32_API
+void GenerateSaturationColors (const CColorReference& colorReference, COLORREF * GenColors, int nSteps, BOOL bRed, BOOL bGreen, BOOL bBlue, BOOL b16_235 )
 {
 	// Retrieve color luma coefficients matching actual reference
-	const double KR = GetColorReference().GetRedReferenceLuma ();  
-	const double KG = GetColorReference().GetGreenReferenceLuma ();
-	const double KB = GetColorReference().GetBlueReferenceLuma (); 
+	const double KR = colorReference.GetRedReferenceLuma ();  
+	const double KG = colorReference.GetGreenReferenceLuma ();
+	const double KB = colorReference.GetBlueReferenceLuma (); 
 
 	double K = ( bRed ? KR : 0.0 ) + ( bGreen ? KG : 0.0 ) + ( bBlue ? KB : 0.0 );
 	double luma = K * 255.0;	// Luma for pure color
@@ -1169,8 +1240,8 @@ CColor CSpectrum::GetXYZValue() const
 	double	xstart, ystart, xend, yend;
 
 	// Retrieve gray xy coordinates
-	xstart = GetColorReference().GetWhite().GetxyYValue().GetX();
-	ystart = GetColorReference().GetWhite().GetxyYValue().GetY();
+	xstart = colorReference.GetWhite().GetxyYValue().GetX();
+	ystart = colorReference.GetWhite().GetxyYValue().GetY();
 
 	// Define target color in RGB mode
 	Clr1[0] = ( bRed ? 255.0 : 0.0 );
@@ -1178,7 +1249,7 @@ CColor CSpectrum::GetXYZValue() const
 	Clr1[2] = ( bBlue ? 255.0 : 0.0 );
 
 	// Compute xy coordinates of 100% saturated color
-	Clr2.SetRGBValue(Clr1);
+	Clr2.SetRGBValue(Clr1, colorReference);
 	Clr3=Clr2.GetxyYValue();
 	xend=Clr3[0];
 	yend=Clr3[1];
@@ -1209,7 +1280,7 @@ CColor CSpectrum::GetXYZValue() const
 			CColor UnsatClr;
 			UnsatClr.SetxyYValue (UnsatClr_xyY);
 
-			CColor UnsatClr_rgb = UnsatClr.GetRGBValue ();
+			CColor UnsatClr_rgb = UnsatClr.GetRGBValue (colorReference);
 
 			// Both components are theoretically equal, get medium value
 			clr = ( ( ( bRed ? UnsatClr_rgb[0] : 0.0 ) + ( bGreen ? UnsatClr_rgb[1] : 0.0 ) + ( bBlue ? UnsatClr_rgb[2] : 0.0 ) ) / (double) ( bRed + bGreen + bBlue ) );
@@ -1229,8 +1300,16 @@ CColor CSpectrum::GetXYZValue() const
 		// adjust "color gamma"
 		int	clr2, comp2;
 
-		clr2 = (int) ( 255.0 * pow ( clr / 255.0, 0.45 ) );
-		comp2 = (int) ( 255.0 * pow ( comp / 255.0, 0.45 ) );
+		if ( b16_235 )
+		{
+			clr2 = 16 + (int) ( 219.0 * pow ( clr / 255.0, 0.45 ) );
+			comp2 = 16 + (int) ( 219.0 * pow ( comp / 255.0, 0.45 ) );
+		}
+		else
+		{
+			clr2 = (int) ( 255.0 * pow ( clr / 255.0, 0.45 ) );
+			comp2 = (int) ( 255.0 * pow ( comp / 255.0, 0.45 ) );
+		}
 
 		GenColors [ i ] = RGB ( ( bRed ? clr2 : comp2 ), ( bGreen ? clr2 : comp2 ), ( bBlue ? clr2 : comp2 ) );
 
@@ -1241,7 +1320,7 @@ CColor CSpectrum::GetXYZValue() const
 #endif
 	}
 }
-*/
+#endif
 
 Matrix ComputeConversionMatrix(Matrix & measures, Matrix & references, CColor & WhiteTest, CColor & WhiteRef, bool	bUseOnlyPrimaries)
 {

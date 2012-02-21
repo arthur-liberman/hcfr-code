@@ -478,7 +478,7 @@ void CMainView::RefreshSelection()
 		Item.row = 1;
 		m_pSelectedColorGrid->SetItem(&Item);
 
-		aColorTemp = m_SelectedColor.GetColorTemp();
+		aColorTemp = m_SelectedColor.GetColorTemp(GetColorReference());
 		
 		if ( aColorTemp < 1500 )
 		{
@@ -534,7 +534,7 @@ void CMainView::RefreshSelection()
 		Item.row = 14;
 		m_pSelectedColorGrid->SetItem(&Item);
 
-		aColor=m_SelectedColor.GetRGBValue();
+		aColor=m_SelectedColor.GetRGBValue(GetColorReference());
 		Item.strText.Format("%.3f",aColor[0]);
 		Item.row = 6;
 		m_pSelectedColorGrid->SetItem(&Item);
@@ -556,7 +556,7 @@ void CMainView::RefreshSelection()
 		Item.row = 11;
 		m_pSelectedColorGrid->SetItem(&Item);
 
-		aColor=m_SelectedColor.GetLabValue(YWhite);
+		aColor=m_SelectedColor.GetLabValue(YWhite, GetColorReference());
 		Item.strText.Format("%.1f",aColor[0]);
 		Item.row = 15;
 		m_pSelectedColorGrid->SetItem(&Item);
@@ -567,7 +567,7 @@ void CMainView::RefreshSelection()
 		Item.row = 17;
 		m_pSelectedColorGrid->SetItem(&Item);
 
-		aColor=m_SelectedColor.GetLCHValue(YWhite);
+		aColor=m_SelectedColor.GetLCHValue(YWhite, GetColorReference());
 		Item.strText.Format("%.1f",aColor[0]);
 		Item.row = 18;
 		m_pSelectedColorGrid->SetItem(&Item);
@@ -1384,7 +1384,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						str.Format("%.3f",aColor[aComponentNum]);
 					break;
 				case HCFR_RGB_VIEW:
-					aColor=aMeasure.GetRGBValue();
+					aColor=aMeasure.GetRGBValue(GetColorReference());
 					str.Format("%.3f",aColor[aComponentNum]);
 					break;
 				case HCFR_xyz2_VIEW:
@@ -1415,7 +1415,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 		else if ( aComponentNum == 3 )
 		{
 			if ( aReference != noDataColor )
-				str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0 ) );
+				str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula) );
 			else
 				str.Empty ();
 		}
@@ -1429,7 +1429,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 		else if ( aComponentNum == 5 )
 		{
 			if ( aRefDocColor != noDataColor )
-				str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aRefDocColor, YWhiteRefDoc ) );
+				str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aRefDocColor, YWhiteRefDoc, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula) );
 			else
 				str.Empty ();
 		}
@@ -1490,9 +1490,9 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				
 				CColor white = GetDocument()->GetMeasure()->GetOnOffWhite();
 				
-				if ( nCol < 7 && white != noDataColor && white.GetPreferedLuxValue() > 0.0001 )
+				if ( nCol < 7 && white != noDataColor && white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) > 0.0001 )
 				{
-					double d = aMeasure.GetPreferedLuxValue() / white.GetPreferedLuxValue();
+					double d = aMeasure.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) / white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter);
 
 					if ( fabs ( ( RefLuma [ nCol - 1 ] - d ) / RefLuma [ nCol - 1 ] ) < 0.001 )
 						str = "=";
@@ -2312,7 +2312,7 @@ void CMainView::OnGrayScaleGridBeginEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 				aColor=aColorMeasure.GetSensorValue();
 				break;
 			case HCFR_RGB_VIEW:
-				aColor=aColorMeasure.GetRGBValue();
+				aColor=aColorMeasure.GetRGBValue(GetColorReference());
 				break;
 			case HCFR_xyY_VIEW:
 				aColor=aColorMeasure.GetxyYValue();
@@ -2452,7 +2452,7 @@ void CMainView::OnGrayScaleGridEndEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 				aColor=aColorMeasure.GetSensorValue();
 				break;
 			case HCFR_RGB_VIEW:
-				aColor=aColorMeasure.GetRGBValue();
+				aColor=aColorMeasure.GetRGBValue(GetColorReference());
 				break;
 			case HCFR_xyY_VIEW:
 				aColor=aColorMeasure.GetxyYValue();
@@ -2472,7 +2472,7 @@ void CMainView::OnGrayScaleGridEndEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 				aColorMeasure.SetSensorValue(aColor);
 				break;
 			case HCFR_RGB_VIEW:
-				aColorMeasure.SetRGBValue(aColor);
+				aColorMeasure.SetRGBValue(aColor, GetColorReference());
 				break;
 			case HCFR_xyY_VIEW:
 				aColorMeasure.SetxyYValue(aColor);

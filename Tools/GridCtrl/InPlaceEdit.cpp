@@ -43,7 +43,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-#include "../../stdafx.h"
+#include "stdafx.h"
 #include "TCHAR.h"
 #include "InPlaceEdit.h"
 

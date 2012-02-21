@@ -45,6 +45,9 @@ IMPLEMENT_SERIAL(CSpyderIISensor, COneDeviceSensor, 1) ;
 
 CSpyderIISensor::CSpyderIISensor()
 {
+    inst * myInst = new_inst(1, instUnknown, 1, 1);
+    inst_code instCode = myInst->init_coms(myInst, 1, baud_nc, fc_nc, 15.0);
+    instCode = myInst->init_inst(myInst);
 	m_CalibrationMode = 2;
 	m_ReadTime = 300;
 	m_bAdjustTime = GetConfig () -> GetProfileInt ( "SpyderII", "AdjustTime", FALSE );

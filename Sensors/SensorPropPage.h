@@ -26,7 +26,7 @@
 // SensorPropPage.h : header file
 //
 
-#include "Tools/Matrix.h"
+#include "Matrix.h"
 #include "Tools/GridCtrl/GridCtrl.h"
 
 /////////////////////////////////////////////////////////////////////////////

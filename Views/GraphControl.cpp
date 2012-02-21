@@ -644,7 +644,7 @@ static double spectral_chromaticities[][2] = {
 			yCIE += (yCIE2 - yCIE)*WaveIndex;
 
 			CColor	WaveColor ( xCIE, yCIE );
-			CColor RGBColor = WaveColor.GetRGBValue ();
+			CColor RGBColor = WaveColor.GetRGBValue (GetColorReference());
 
 			r = pow(max(0.0,RGBColor[0]),gamma);
 			g = pow(max(0.0,RGBColor[1]),gamma);

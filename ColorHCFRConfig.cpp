@@ -576,7 +576,7 @@ void CColorHCFRConfig::ApplySettings(BOOL isStartupApply)
 	SetFxColors(m_fxColorWindow,m_fxColorMenu,m_fxColorSelection,m_fxColorText);
 
 	// Apply reference settings
-	SetColorReference(m_colorStandard, m_whiteTarget);
+    *(GetColorApp()->m_pColorReference)=CColorReference(m_colorStandard, m_whiteTarget,-1);
 	
 	if ( ! isStartupApply )
 	{

@@ -1587,3 +1587,74 @@ ostream& operator <<(ostream& ostr, const Matrix& obj)
 
 	return ostr;
 }
+
+#ifdef LIBHCFR_HAS_MFC
+void Matrix::Serialize(CArchive& archive)
+{
+	// Fx: be aware that matrices are serialized by column, row not row, column as usual 
+	//		(needed to preserve compatibility with old matrix class :( )
+
+	if (archive.IsStoring())
+		{
+		// writing the matrix
+		// write the object header first so we can correctly recognise the object type "CMatrixC"
+		long	header1 = 0x434d6174 ;
+		long	header2 = 0x72697843 ;
+		int		version = 1 ;						// serialization version format number
+
+		archive << header1 ;
+		archive << header2 ;
+		archive << version ;						// version number of object type
+
+		// now write out the actual matrix
+		archive << GetColumns() ;
+		archive << GetRows() ;
+		// this could be done with a archive.Write(m_pData, sizeof(double) * m_NumColumns * m_NumRows)
+		// for efficiency (dont forget its a flat array). Not done here for clarity
+		for (int i = 0 ; i < m_nCols ; ++i)
+			{
+			for (int j = 0 ; j < m_nRows ; ++j)
+				{
+				archive << m_pData[j][i] ;		
+				}
+			}
+		// done!
+		}
+	else
+		{
+		// reading the matrix
+		// read the object header first so we can correctly recognise the object type "CMatrixC"
+		long	header1 = 0 ;
+		long	header2 = 0 ;
+		int		version = 0 ;				// serialization version format
+
+		archive >> header1 ;
+		archive >> header2 ;
+		if (header1 != 0x434d6174 || header2 != 0x72697843)
+			{
+			// incorrect header, cannot load it
+			AfxThrowArchiveException(CArchiveException::badClass, NULL) ;
+			}
+		archive >> version ;				// version number of object type
+		ASSERT(version == 1) ;				// only file format number so far
+
+		// now write out the actual matrix
+		int		nCols ;
+		int		nRows ;
+		double	value ;
+		archive >> nCols ;
+		archive >> nRows ;
+		Matrix loading(0.0, nRows, nCols) ;
+		for (int i = 0 ; i < nCols ; ++i)
+			{
+			for (int j = 0 ; j < nRows ; ++j)
+				{
+				archive >> value ;
+				loading(j,i)=value;
+				}
+			}
+		*this = loading ;					// copy the data into ourselves
+		// done!
+		}
+}
+#endif //#ifdef LIBHCFR_HAS_MFC

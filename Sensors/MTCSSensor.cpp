@@ -296,8 +296,6 @@ BOOL CMTCSSensor::Release()
 	return CSensor::Release();
 }
 
-extern CRITICAL_SECTION MatrixCritSec;
-
 CColor CMTCSSensor::MeasureColor(COLORREF aRGBValue)
 {
 	UINT		nTicks;
@@ -338,9 +336,7 @@ CColor CMTCSSensor::MeasureColor(COLORREF aRGBValue)
 		DeviceColor[1]= ((double)g/(double)nTicks) - ( (double)m_nBlackGOffset + m_DeviceBlackLevel(1,0) );
 		DeviceColor[2]= ((double)b/(double)nTicks) - ( (double)m_nBlackBOffset + m_DeviceBlackLevel(2,0) );
 
-		EnterCriticalSection ( & MatrixCritSec );
 		MTCSColor = m_DeviceMatrix*DeviceColor;
-		LeaveCriticalSection ( & MatrixCritSec );
 
 		if (m_debugMode) 
 		{

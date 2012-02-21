@@ -51,16 +51,18 @@
 				Name="VCCLCompilerTool"
 				Optimization="1"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="./,Tools,Tools/CxImage,Tools/NewMenu,Tools/Graph,Tools/ButtonST,Tools/GridCtrl,Tools/CppTooltip,Generators,Sensors,Controls,Views,Tools/spectro"
+				AdditionalIncludeDirectories="Tools/CxImage,./,Tools,Tools/NewMenu,Tools/Graph,Tools/ButtonST,Tools/GridCtrl,Tools/CppTooltip,Generators,Sensors,Controls,Views,Tools/spectro,libHCFR"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USE_32BIT_TIME_T"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="2"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
+				DisableSpecificWarnings="4800"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -143,16 +145,18 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="Tools/CxImage,./,Tools,Tools/NewMenu,Tools/Graph,Tools/ButtonST,Tools/GridCtrl,Tools/CppTooltip,Generators,Sensors,Controls,Views,Tools/spectro"
+				AdditionalIncludeDirectories="Tools/CxImage,./,Tools,Tools/NewMenu,Tools/Graph,Tools/ButtonST,Tools/GridCtrl,Tools/CppTooltip,Generators,Sensors,Controls,Views,Tools/spectro,libHCFR"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USE_32BIT_TIME_T"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="2"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
+				DisableSpecificWarnings="4800"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -727,6 +731,7 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
+						UsePrecompiledHeader="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -736,6 +741,7 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
+						UsePrecompiledHeader="1"
 					/>
 				</FileConfiguration>
 			</File>
@@ -1303,28 +1309,6 @@
 				<Filter
 					Name="Matrix"
 					>
-					<File
-						RelativePath="Tools\Matrix.cpp"
-						>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								PreprocessorDefinitions=""
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AdditionalIncludeDirectories=""
-								PreprocessorDefinitions=""
-							/>
-						</FileConfiguration>
-					</File>
 				</Filter>
 				<Filter
 					Name="Grid"
@@ -2646,28 +2630,6 @@
 			<Filter
 				Name="Color"
 				>
-				<File
-					RelativePath="Color.cpp"
-					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-				</File>
 			</Filter>
 			<Filter
 				Name="Wizards"
@@ -2947,10 +2909,6 @@
 					Name="Matric headers"
 					Filter="h"
 					>
-					<File
-						RelativePath="Tools\Matrix.h"
-						>
-					</File>
 				</Filter>
 				<Filter
 					Name="Grid headers"
@@ -3253,10 +3211,6 @@
 				Name="Color headers"
 				Filter="h"
 				>
-				<File
-					RelativePath="Color.h"
-					>
-				</File>
 			</Filter>
 			<Filter
 				Name="Wizards headers"

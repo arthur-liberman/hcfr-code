@@ -230,8 +230,8 @@ void CMeasuresHistoView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 		m_graphCtrl1.AddPoint(m_refGraphID, 0, 100);
 		m_graphCtrl1.AddPoint(m_refGraphID, nMaxX, 100);
 
-		m_graphCtrl3.AddPoint(m_refGraphID3, 0, GetColorReference().GetWhite().GetColorTemp());
-		m_graphCtrl3.AddPoint(m_refGraphID3, nMaxX, GetColorReference().GetWhite().GetColorTemp());
+		m_graphCtrl3.AddPoint(m_refGraphID3, 0, GetColorReference().GetWhite().GetColorTemp(GetColorReference()));
+		m_graphCtrl3.AddPoint(m_refGraphID3, nMaxX, GetColorReference().GetWhite().GetColorTemp(GetColorReference()));
 	}
 
 	int size=GetDocument()->GetMeasure()->GetMeasurementsSize();
@@ -243,7 +243,7 @@ void CMeasuresHistoView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
 	for (i=nStart, j=0; i<nEnd; i++, j++)
 	{
-		int colorTemp=GetDocument()->GetMeasure()->GetMeasurement(i).GetColorTemp();
+		int colorTemp=GetDocument()->GetMeasure()->GetMeasurement(i).GetColorTemp(GetColorReference());
 		double Y=GetDocument()->GetMeasure()->GetMeasurement(i).GetXYZValue()[1];
 		
 		if ( Y > YMax )
@@ -257,7 +257,7 @@ void CMeasuresHistoView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 		normColor[2]=((1.0-(aColor[0]+aColor[1]))/aColor[1]);
 
 		CColor aMeasure(normColor);
-		normColor=aMeasure.GetRGBValue();
+		normColor=aMeasure.GetRGBValue(GetColorReference());
 
 		m_graphCtrl.AddPoint(m_luminanceGraphID, j, Y);
 
@@ -265,7 +265,7 @@ void CMeasuresHistoView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 		m_graphCtrl1.AddPoint(m_greenGraphID, j, normColor[1]*100.0);
 		m_graphCtrl1.AddPoint(m_blueGraphID, j, normColor[2]*100.0);
 
-		m_graphCtrl2.AddPoint(m_deltaEGraphID, j, GetDocument()->GetMeasure()->GetMeasurement(i).GetDeltaE(-1.0));
+		m_graphCtrl2.AddPoint(m_deltaEGraphID, j, GetDocument()->GetMeasure()->GetMeasurement(i).GetDeltaE(-1.0, GetColorReference().GetWhite(), 1.0, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula));
 
 		if(colorTemp > 1500 && colorTemp < 12000)
 			m_graphCtrl3.AddPoint(m_ColorTempGraphID, j, colorTemp);

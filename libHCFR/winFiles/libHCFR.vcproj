@@ -21,7 +21,8 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
-			CharacterSet="1"
+			UseOfMFC="1"
+			CharacterSet="2"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -41,13 +42,15 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_DEBUG;_LIB"
+				AdditionalIncludeDirectories="..\..\Tools\libusb1\msvc"
+				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;WINVER=0x0600;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
+				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="4"
+				DisableSpecificWarnings="4309"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -82,7 +85,8 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
-			CharacterSet="1"
+			UseOfMFC="1"
+			CharacterSet="2"
 			WholeProgramOptimization="1"
 			>
 			<Tool
@@ -104,13 +108,14 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\Tools\libusb1\msvc"
-				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
-				RuntimeLibrary="2"
+				AdditionalIncludeDirectories="..\..\Tools\libusb1\msvc"
+				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;WINVER=0x0600;_CRT_SECURE_NO_WARNINGS"
+				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
+				DisableSpecificWarnings="4309"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -150,35 +155,55 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\CalibrationFile.cpp"
+				RelativePath="..\CalibrationFile.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\CHCFile.cpp"
+				RelativePath="..\CHCFile.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Color.cpp"
+				RelativePath="..\Color.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Endianness.cpp"
+				RelativePath="..\CriticalSection.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\Endianness.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Exceptions.cpp"
+				RelativePath="..\Exceptions.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\IHCFile.cpp"
+				RelativePath="..\IHCFile.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\matrix.cpp"
+				RelativePath="..\matrix.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\PCFilesReaderUtilities.cpp"
+				RelativePath="..\PCFilesReaderUtilities.cpp"
 				>
 			</File>
 		</Filter>
@@ -188,35 +213,43 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\CalibrationFile.h"
+				RelativePath="..\CalibrationFile.h"
 				>
 			</File>
 			<File
-				RelativePath=".\CHCFile.h"
+				RelativePath="..\CHCFile.h"
 				>
 			</File>
 			<File
-				RelativePath=".\Color.h"
+				RelativePath="..\Color.h"
 				>
 			</File>
 			<File
-				RelativePath=".\Endianness.h"
+				RelativePath="..\CriticalSection.h"
 				>
 			</File>
 			<File
-				RelativePath=".\Exceptions.h"
+				RelativePath="..\Endianness.h"
 				>
 			</File>
 			<File
-				RelativePath=".\IHCFile.h"
+				RelativePath="..\Exceptions.h"
 				>
 			</File>
 			<File
-				RelativePath=".\matrix.h"
+				RelativePath="..\IHCFile.h"
 				>
 			</File>
 			<File
-				RelativePath=".\PCFilesReaderUtilities.h"
+				RelativePath="..\libHCFR_Config.h"
+				>
+			</File>
+			<File
+				RelativePath="..\matrix.h"
+				>
+			</File>
+			<File
+				RelativePath="..\PCFilesReaderUtilities.h"
 				>
 			</File>
 		</Filter>
@@ -227,7 +260,7 @@
 			>
 		</Filter>
 		<File
-			RelativePath=".\ReadMe.txt"
+			RelativePath="..\ReadMe.txt"
 			>
 		</File>
 	</Files>

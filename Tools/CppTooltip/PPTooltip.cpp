@@ -1,6 +1,6 @@
 // PPTooltip.cpp : implementation file
 //
-#include "../../stdafx.h"
+#include "stdafx.h"
 #include "PPTooltip.h"
 
 // allow multimonitor-aware code on Win95 systems

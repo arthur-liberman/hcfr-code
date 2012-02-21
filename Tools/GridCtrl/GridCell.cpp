@@ -30,7 +30,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-#include "../../stdafx.h"
+#include "stdafx.h"
 #include "GridCell.h"
 #include "InPlaceEdit.h"
 #include "GridCtrl.h"

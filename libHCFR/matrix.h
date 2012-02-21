@@ -5,6 +5,11 @@
 #ifndef _MATRIX_H_
 #define _MATRIX_H_
 
+#include "libHCFR_Config.h"
+
+#ifdef LIBHCFR_HAS_MFC
+#include <afxwin.h>         // MFC core and standard components
+#endif
 #include <iostream>
 #include <fstream>
 using namespace std;
@@ -30,8 +35,8 @@ public:
 	Matrix(double** Data, int Rows, int Cols);
 	Matrix(double (* Func)(double, double), int Rows, int Cols);
 	Matrix(const Matrix& obj);
-  Matrix(ifstream &theFile);
-  void readFromFile(ifstream &theFile);
+    Matrix(ifstream &theFile);
+    void readFromFile(ifstream &theFile);
 	~Matrix();
 
 
@@ -158,6 +163,9 @@ public:
 	void Read(ifstream& istr);
 	void Write(ofstream& ostr) const;
 
+#ifdef LIBHCFR_HAS_MFC
+    void Serialize(CArchive& archive);
+#endif
 
 	//static functions
 

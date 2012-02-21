@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005-2007 Association Homecinema Francophone.  All rights reserved.
+// Copyright (c) 2005-2012 Association Homecinema Francophone.  All rights reserved.
 /////////////////////////////////////////////////////////////////////////////
 //
 //  This file is subject to the terms of the GNU General Public License as
@@ -16,21 +16,19 @@
 //  Author(s):
 //	FranÁois-Xavier CHABOUD
 //  Georges GALLERAND
+//  John Adcock
 /////////////////////////////////////////////////////////////////////////////
 
 // Color.h: interface for the CColor class.
 //
 //////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_COLOR_H__BF14995B_5241_4AE0_89EF_21D3DD240DAD__INCLUDED_)
-#define AFX_COLOR_H__BF14995B_5241_4AE0_89EF_21D3DD240DAD__INCLUDED_
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
+#if !defined(COLOR_H_INCLUDED_)
+#define COLOR_H_INCLUDED_
 
 #define FX_NODATA -99999.99
 
+#include "libHCFR_Config.h"
 #include "Matrix.h"
 
 typedef enum 
@@ -65,7 +63,7 @@ public:
 	CColor(Matrix aMatrix);
 	CColor(double aX,double aY, double aZ);	// XYZ initialisation
 	CColor(double ax,double ay);			// xy initialisation
-  CColor(ifstream &theFile);
+    CColor(ifstream &theFile);
 	~CColor();
 
 	CColor& operator =(const CColor& obj);
@@ -74,9 +72,8 @@ public:
 
 	double GetLuminance() const;
 	int GetColorTemp(CColorReference colorReference) const;
-//	double GetDeltaE(double YWhite) const; // removed because of access to global app (OS dependent)
-//	double GetDeltaE(double YWhite, const CColor & refColor, double YWhiteRef) const; // modifiÈe pour supprimer les dÈpendences
-  double GetDeltaE(double YWhite, const CColorReference & colorReference , double YWhiteRef, bool useOldDeltaEFormula) const;
+    double GetDeltaE(double YWhite, const CColor & refColor, double YWhiteRef, const CColorReference & colorReference, bool useOldDeltaEFormula) const;
+    double GetDeltaE(const CColor & refColor) const;
 	double GetDeltaxy(const CColor & refColor) const;
 	double GetLValue(double YWhiteRef) const;	// L for Lab or LCH
 	CColor GetXYZValue() const;
@@ -115,6 +112,10 @@ public:
 	double GetLuxOrLumaValue (const int luminanceCurveMode) const;
 	double GetPreferedLuxValue (bool preferLuxmeter) const;
 
+#ifdef LIBHCFR_HAS_MFC
+    void Serialize(CArchive& archive);
+#endif
+
 protected:
     Matrix m_XYZtoSensorMatrix;
     Matrix m_SensorToXYZMatrix;
@@ -129,12 +130,16 @@ public:
 	CSpectrum(int NbBands, int WaveLengthMin, int WaveLengthMax, int BandWidth );
 	CSpectrum(int NbBands, int WaveLengthMin, int WaveLengthMax, int BandWidth, double * pValues );
 	CSpectrum(const CSpectrum &aSpectrum);
-  CSpectrum (ifstream &theFile);
+    CSpectrum (ifstream &theFile);
 	~CSpectrum();
 
 	double& operator[](const int nRow) const;
 
 	CColor GetXYZValue() const;
+
+#ifdef LIBHCFR_HAS_MFC
+    void Serialize(CArchive& archive);
+#endif
 
 public:
 	int		m_WaveLengthMin;
@@ -154,7 +159,9 @@ public:
 	CIRELevel(double aIRELevel,bool bIRE,bool b16_235=false);
 	CIRELevel(double aRedIRELevel,double aGreenIRELevel,double aBlueIRELevel,bool bIRE,bool b16_235=false);
 
-//	operator COLORREF();
+#ifdef WIN32
+    operator COLORREF();
+#endif
 };
 
 class CColorReference
@@ -171,41 +178,52 @@ public:
 	CColor redPrimary;
 	CColor greenPrimary;
 	CColor bluePrimary;
+	CColor yellowSecondary;
+	CColor cyanSecondary;
+	CColor magentaSecondary;
 	double gamma;
 	Matrix RGBtoXYZMatrix;
 	Matrix XYZtoRGBMatrix;
 
+    void	UpdateSecondary ( CColor & secondary, const CColor & primary1, const CColor & primary2, const CColor & primaryOpposite );
+
 public:
-	CColorReference(ColorStandard aStandard, WhiteTarget aWhiteTarget=Default, double aGamma=-1, string	strModified="");
+	CColorReference(ColorStandard aStandard, WhiteTarget aWhiteTarget=Default, double aGamma=-1.0, string strModified=" modified");
 	~CColorReference();
 	CColor GetWhite() const { return whiteColor; } 
 	double GetWhite_uValue() const { return u_white; }
 	double GetWhite_vValue() const { return v_white; }
-	string GetName() {return standardName;}
-	const char *GetWhiteName() {return whiteName; }
-	CColor GetRed() { return redPrimary; }
-	CColor GetGreen() { return greenPrimary; }
-	CColor GetBlue() { return bluePrimary; }
+	string GetName() const {return standardName;}
+	const char *GetWhiteName() const {return whiteName; }
+	CColor GetRed() const { return redPrimary; }
+	CColor GetGreen() const { return greenPrimary; }
+	CColor GetBlue() const { return bluePrimary; }
+	CColor GetYellow() const { return yellowSecondary; }
+	CColor GetCyan() const { return cyanSecondary; }
+	CColor GetMagenta() const { return magentaSecondary; }
 	
 	// Primary colors relative-to-white luminance, depending on color standard. White luma reference value is 1.
-	double GetRedReferenceLuma ()	{ return RGBtoXYZMatrix(1,0); /*0.212671 in Rec709*/ }
-	double GetGreenReferenceLuma ()	{ return RGBtoXYZMatrix(1,1); /*0.715160 in Rec709*/ }
-	double GetBlueReferenceLuma ()	{ return RGBtoXYZMatrix(1,2); /*0.072169 in Rec709*/ }
+	double GetRedReferenceLuma () const { return RGBtoXYZMatrix(1,0); /*0.212671 in Rec709*/ }
+	double GetGreenReferenceLuma () const { return RGBtoXYZMatrix(1,1); /*0.715160 in Rec709*/ }
+	double GetBlueReferenceLuma () const { return RGBtoXYZMatrix(1,2); /*0.072169 in Rec709*/ }
+	
+#ifdef LIBHCFR_HAS_MFC
+    void Serialize(CArchive& archive);
+#endif
 };
 
-extern void SetColorReference(ColorStandard aColorStandard, WhiteTarget aWhiteTarget=Default,double aGamma=-1);
-extern CColorReference & GetColorReference();
 extern CColorReference GetStandardColorReference(ColorStandard aColorStandard);
 
-extern CColorReference theColorReference;
 extern CColor theMeasure;
 extern CColor noDataColor;
 
 // Tool functions
-//extern void GenerateSaturationColors ( COLORREF * GenColors, int nSteps, bool bRed, bool bGreen, bool bBlue );
+#ifdef LIBHCFR_HAS_WIN32_API
+extern void GenerateSaturationColors (const CColorReference& colorReference, COLORREF * GenColors, int nSteps, BOOL bRed, BOOL bGreen, BOOL bBlue, BOOL b16_235 );
+#endif
 extern Matrix ComputeConversionMatrix(Matrix & measures, Matrix & references, CColor & WhiteTest, CColor & WhiteRef, bool	bUseOnlyPrimaries);
 double ArrayIndexToGrayLevel ( int nCol, int nSize, bool bIRE );
 double GrayLevelToGrayProp ( double Level, bool bIRE );
 
 
-#endif // !defined(AFX_COLOR_H__BF14995B_5241_4AE0_89EF_21D3DD240DAD__INCLUDED_)
+#endif // !defined(COLOR_H_INCLUDED_)

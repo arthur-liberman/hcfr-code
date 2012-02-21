@@ -1643,7 +1643,7 @@ LRESULT CMultiFrame::OnDDERequest(WPARAM wParam, LPARAM lParam)
 							strData.Format("%.3f,%.3f,%.3f",aColor[0],aColor[1],aColor[2]);
 							break;
 						case HCFR_RGB_VIEW:
-							aColor=ReqColor.GetRGBValue();
+							aColor=ReqColor.GetRGBValue(GetColorReference());
 							strData.Format("%.3f,%.3f,%.3f",aColor[0],aColor[1],aColor[2]);
 							break;
 						case HCFR_xyz2_VIEW:
@@ -1782,7 +1782,7 @@ LRESULT CMultiFrame::OnDDEPoke(WPARAM wParam, LPARAM lParam)
 						ReceivedColor.SetSensorValue(aColor);
 						break;
 					case HCFR_RGB_VIEW:
-						ReceivedColor.SetRGBValue(aColor);
+						ReceivedColor.SetRGBValue(aColor, GetColorReference());
 						break;
 					case HCFR_xyY_VIEW:
 						ReceivedColor.SetxyYValue(aColor);
