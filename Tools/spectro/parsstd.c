@@ -57,6 +57,10 @@
 #define was_debug_malloc
 #endif	/* dmalloc */
 
+#ifdef NT
+#define fileno _fileno
+#endif
+
 static void *cgatsAllocStd_dmalloc(
 struct _cgatsAlloc *pp,
 size_t size,
@@ -344,7 +348,7 @@ cgatsAlloc *al		/* heap allocator, NULL for default */
 	p->fname    = cgatsFileStd_fname;
 	p->del      = cgatsFileStd_delete;
 
-	if (fstat(_fileno(fp), &sbuf) == 0) {
+	if (fstat(fileno(fp), &sbuf) == 0) {
 		p->size = sbuf.st_size;
 	} else {
 		p->size = 0;

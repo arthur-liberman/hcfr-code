@@ -130,11 +130,12 @@
 # define mputenv _putenv
 # define unlink _unlink
 # define rmdir _rmdir
+# define strdup _strdup
 #else
 /* UNIX putenv is a pain.. */
 static void mputenv(char *ss) {
 	int ll = strlen(ss);
-	ss = _strdup(ss);
+	ss = strdup(ss);
 	if (ll > 0 && ss[ll-1]== '=') {
 		ss[ll-1] = '\000';
 		unsetenv(ss); 
@@ -275,7 +276,7 @@ int xdg_bds(
 	*paths = NULL;
 
 	/* Initial, empty path */
-	if ((path = _strdup("")) == NULL) {
+	if ((path = strdup("")) == NULL) {
 		if (er != NULL) *er = xdg_alloc;
 		DBG((dbgo,"malloc error\n"))
 		xdg_ifree(paths, fnames, npaths);
@@ -637,7 +638,7 @@ int xdg_bds(
 							return 0;
 						}
 					}
-					if (((*paths)[npaths] = _strdup(fpath)) == NULL) {
+					if (((*paths)[npaths] = strdup(fpath)) == NULL) {
 						free(path);
 						free(spath);
 						free(fpath);
@@ -647,7 +648,7 @@ int xdg_bds(
 						return 0;
 					}
 					/* The non-searchpath part of the name found */
-					if ((fnames[npaths] = _strdup(fpath + rlen)) == NULL) {
+					if ((fnames[npaths] = strdup(fpath + rlen)) == NULL) {
 						free((*paths)[npaths]);
 						free(path);
 						free(spath);
@@ -885,7 +886,7 @@ static int runtest(
 	char buf[200];
 
 	if ((xval = getenv(env)) != NULL)		/* Save value before mods */
-		xval = _strdup(xval);
+		xval = strdup(xval);
 	if (*env != '\000') {		/* If it is to be set */
 		sprintf(buf, "%s=%s",env,envv);
 		mputenv(buf);

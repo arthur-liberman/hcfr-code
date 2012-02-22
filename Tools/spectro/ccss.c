@@ -36,6 +36,10 @@
 #include "xspect.h"
 #include "ccss.h"
 
+#ifdef NT
+#define strdup _strdup
+#endif
+
 /* Forward declarations */
 static void free_ccss(ccss *p);
 
@@ -189,21 +193,21 @@ char *inname	/* Filename to read from */
 	free_ccss(p);
 
 	if ((ti = icg->find_kword(icg, 0, "DESCRIPTOR")) >= 0) {
-		if ((p->desc = _strdup(icg->t[0].kdata[ti])) == NULL) {
+		if ((p->desc = strdup(icg->t[0].kdata[ti])) == NULL) {
 			sprintf(p->err, "read_ccss: malloc failed");
 			icg->del(icg);
 			return 2;
 		}
 	}
 	if ((ti = icg->find_kword(icg, 0, "ORIGINATOR")) >= 0) {
-		if ((p->orig = _strdup(icg->t[0].kdata[ti])) == NULL) {
+		if ((p->orig = strdup(icg->t[0].kdata[ti])) == NULL) {
 			sprintf(p->err, "read_ccss: malloc failed");
 			icg->del(icg);
 			return 2;
 		}
 	}
 	if ((ti = icg->find_kword(icg, 0, "CREATED")) >= 0) {
-		if ((p->crdate = _strdup(icg->t[0].kdata[ti])) == NULL) {
+		if ((p->crdate = strdup(icg->t[0].kdata[ti])) == NULL) {
 			sprintf(p->err, "read_ccss: malloc failed");
 			icg->del(icg);
 			return 2;
@@ -211,14 +215,14 @@ char *inname	/* Filename to read from */
 	}
 
 	if ((ti = icg->find_kword(icg, 0, "DISPLAY")) >= 0) {
-		if ((p->disp = _strdup(icg->t[0].kdata[ti])) == NULL) {
+		if ((p->disp = strdup(icg->t[0].kdata[ti])) == NULL) {
 			sprintf(p->err, "read_ccss: malloc failed");
 			icg->del(icg);
 			return 2;
 		}
 	}
 	if ((ti = icg->find_kword(icg, 0, "TECHNOLOGY")) >= 0) {
-		if ((p->tech = _strdup(icg->t[0].kdata[ti])) == NULL) {
+		if ((p->tech = strdup(icg->t[0].kdata[ti])) == NULL) {
 			sprintf(p->err, "read_ccss: malloc failed");
 			icg->del(icg);
 			return 2;
@@ -231,7 +235,7 @@ char *inname	/* Filename to read from */
 	}
 
 	if ((ti = icg->find_kword(icg, 0, "REFERENCE")) >= 0) {
-		if ((p->ref = _strdup(icg->t[0].kdata[ti])) == NULL) {
+		if ((p->ref = strdup(icg->t[0].kdata[ti])) == NULL) {
 			sprintf(p->err, "read_ccss: malloc failed");
 			icg->del(icg);
 			return 2;
@@ -323,37 +327,37 @@ int no_samp			/* Number of spectral samples */
 
 	free_ccss(p);
 	if (orig != NULL) {
-		if ((p->orig = _strdup(orig)) == NULL) {
+		if ((p->orig = strdup(orig)) == NULL) {
 			sprintf(p->err, "set_ccss: malloc orig failed");
 			return 2;
 		}
 	}
 	if (desc != NULL) {
-		if ((p->desc = _strdup(desc)) == NULL) {
+		if ((p->desc = strdup(desc)) == NULL) {
 			sprintf(p->err, "set_ccss: malloc desc failed");
 			return 2;
 		}
 	}
 	if (crdate != NULL) {
-		if ((p->crdate = _strdup(crdate)) == NULL) {
+		if ((p->crdate = strdup(crdate)) == NULL) {
 			sprintf(p->err, "set_ccss: malloc crdate failed");
 			return 2;
 		}
 	}
 	if (disp != NULL) {
-		if ((p->disp = _strdup(disp)) == NULL) {
+		if ((p->disp = strdup(disp)) == NULL) {
 			sprintf(p->err, "set_ccss: malloc disp failed");
 			return 2;
 		}
 	}
 	if (tech != NULL) {
-		if ((p->tech = _strdup(tech)) == NULL) {
+		if ((p->tech = strdup(tech)) == NULL) {
 			sprintf(p->err, "set_ccss: malloc tech failed");
 			return 2;
 		}
 	}
 	if (ref != NULL) {
-		if ((p->ref = _strdup(ref)) == NULL) {
+		if ((p->ref = strdup(ref)) == NULL) {
 			sprintf(p->err, "set_ccss: malloc ref failed");
 			return 2;
 		}

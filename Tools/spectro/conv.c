@@ -76,6 +76,10 @@
 #include <mach/task_policy.h>
 #endif /* __APPLE__ */
 
+#ifdef NT
+#define strdup _strdup
+#endif
+
 #undef DEBUG
 
 #ifdef DEBUG
@@ -1120,7 +1124,7 @@ iccss *list_iccss(int *no) {
 			if (no != NULL) *no = -1;
 			return NULL;
 		}
-		if ((rv[j].path = _strdup(paths[i])) == NULL) {
+		if ((rv[j].path = strdup(paths[i])) == NULL) {
 			for (--j; j >= 0; j--) {
 				free(rv[j].path);
 				free(rv[j].desc);

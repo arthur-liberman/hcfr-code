@@ -49,6 +49,7 @@
 
 #if defined(NT)
 #include <setupapi.h>
+#define strdup _strdup
 #endif
 
 #if defined(UNIX) && !defined(__APPLE__)
@@ -228,10 +229,10 @@ struct _icoms *p
 				if ((p->paths[p->npaths]->hev = (hid_device *)calloc(sizeof(hid_device), 1))
 				                                                                     == NULL)
 					error("icoms: calloc failed!");
-				if ((p->paths[p->npaths]->hev->dpath = _strdup(pdidd->DevicePath)) == NULL)
+				if ((p->paths[p->npaths]->hev->dpath = strdup(pdidd->DevicePath)) == NULL)
 					error("icoms: calloc failed!");
 				p->paths[p->npaths]->itype = itype;
-				if ((p->paths[p->npaths]->path = _strdup(pname)) == NULL)
+				if ((p->paths[p->npaths]->path = strdup(pname)) == NULL)
 					error("icoms: strdup failed!");
 				p->npaths++;
 				p->paths[p->npaths] = NULL;
@@ -510,7 +511,7 @@ char **pnames			/* List of process names to try and kill before opening */
 		if ((p->ppath = calloc(sizeof(icompath), 1)) == NULL)
 			error("calloc() failed on com port path");
 		*p->ppath = *p->paths[port-1];				/* Structure copy */
-		if ((p->ppath->path = _strdup(p->paths[port-1]->path)) == NULL)
+		if ((p->ppath->path = strdup(p->paths[port-1]->path)) == NULL)
 			error("strdup() failed on com port path");
 		p->port = port;
 
