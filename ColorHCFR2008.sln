@@ -63,6 +63,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ArgyllWrapper", "Tools\Argy
 		{349EE8F9-7D25-4909-AAF5-FF3FADE72187} = {349EE8F9-7D25-4909-AAF5-FF3FADE72187}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cppunit", "Tools\cppunit\src\cppunit\cppunit.vcproj", "{66EB3A42-A52A-4521-88CB-E93CC730D44B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTests", "UnitTests\UnitTests.vcproj", "{B7996400-C9D4-4036-91B3-D37EC369929B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{66EB3A42-A52A-4521-88CB-E93CC730D44B} = {66EB3A42-A52A-4521-88CB-E93CC730D44B}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -125,6 +132,14 @@ Global
 		{1A665DC9-9C8B-428A-AC8C-5E9DBC3529AA}.Debug|Win32.Build.0 = Debug|Win32
 		{1A665DC9-9C8B-428A-AC8C-5E9DBC3529AA}.Release|Win32.ActiveCfg = Release|Win32
 		{1A665DC9-9C8B-428A-AC8C-5E9DBC3529AA}.Release|Win32.Build.0 = Release|Win32
+		{66EB3A42-A52A-4521-88CB-E93CC730D44B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{66EB3A42-A52A-4521-88CB-E93CC730D44B}.Debug|Win32.Build.0 = Debug|Win32
+		{66EB3A42-A52A-4521-88CB-E93CC730D44B}.Release|Win32.ActiveCfg = Release|Win32
+		{66EB3A42-A52A-4521-88CB-E93CC730D44B}.Release|Win32.Build.0 = Release|Win32
+		{B7996400-C9D4-4036-91B3-D37EC369929B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B7996400-C9D4-4036-91B3-D37EC369929B}.Debug|Win32.Build.0 = Debug|Win32
+		{B7996400-C9D4-4036-91B3-D37EC369929B}.Release|Win32.ActiveCfg = Release|Win32
+		{B7996400-C9D4-4036-91B3-D37EC369929B}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
