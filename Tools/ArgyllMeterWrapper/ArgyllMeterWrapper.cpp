@@ -144,6 +144,9 @@ namespace
         }
     }
 
+    // very basic logging and error handling to override
+    // the standard argyll verion
+    // should use whatever log library we end up with
     void logMessage(const char* messageType, char *fmt, va_list& args)
     {
         fprintf(stdout,"Argyll %s - ", messageType);
@@ -169,6 +172,10 @@ namespace
         va_end(args);
     }
 
+    // get called for errors in argyll
+    // can be called in normal situations
+    // like no meters found or wrong drivers
+    // convert to c++ exception
     void error_imp(char *fmt, ...) 
     {
         va_list args;
@@ -178,7 +185,7 @@ namespace
         throw std::logic_error("Argyll Error");
     }
 
-    // check an actual inst code is a particular
+    // check an actual inst code is a particular reason
     bool isInstCodeReason(inst_code fullInstCode, inst_code partialInstCode)
     {
         return ((fullInstCode & inst_mask) == partialInstCode);
