@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="ArgyllWrapper"
+	Name="ArgyllMeterWrapper"
 	ProjectGUID="{1A665DC9-9C8B-428A-AC8C-5E9DBC3529AA}"
 	RootNamespace="ArgyllWrapper"
 	Keyword="Win32Proj"
