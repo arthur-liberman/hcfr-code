@@ -54,6 +54,7 @@
 #include "aconfig.h"
 #include "numlib.h"
 #endif /* !SALONEINSTLIB */
+#include "numlib.h"
 #include "xspect.h"
 #include "insttypes.h"
 #include "icoms.h"
