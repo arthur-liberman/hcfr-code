@@ -21,6 +21,7 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)\$(ProjectName)"
 			ConfigurationType="1"
+			UseOfMFC="1"
 			CharacterSet="2"
 			>
 			<Tool
@@ -41,7 +42,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\Tools\cppunit\include"
+				AdditionalIncludeDirectories="..\Tools\cppunit\include;..\Tools\spectro;..\libHCFR;..\Tools\libusb1\msvc;..\Tools\ArgyllMeterWrapper"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -61,7 +62,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="Nafxcwd.lib Libcmtd.lib setupapi.lib "
 				LinkIncremental="2"
+				IgnoreDefaultLibraryNames="Nafxcwd.lib Libcmtd.lib"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				TargetMachine="1"
@@ -115,7 +118,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\Tools\cppunit\include"
+				AdditionalIncludeDirectories="..\Tools\cppunit\include;..\Tools\spectro;..\libHCFR;..\Tools\libusb1\msvc;..\Tools\ArgyllMeterWrapper"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -172,6 +175,10 @@
 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
+			<File
+				RelativePath=".\ArgyllMeterWrapper_unittests.cpp"
+				>
+			</File>
 			<File
 				RelativePath=".\spectro_unittests.cpp"
 				>
