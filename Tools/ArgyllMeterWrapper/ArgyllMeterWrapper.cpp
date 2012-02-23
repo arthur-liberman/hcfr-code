@@ -143,7 +143,50 @@ namespace
             return ArgyllMeterWrapper::AUTODETECT;
         }
     }
+
+    void logMessage(const char* messageType, char *fmt, va_list& args)
+    {
+        fprintf(stdout,"Argyll %s - ", messageType);
+        vfprintf(stdout, fmt, args);
+        va_end(args);
+        fprintf(stdout,"\n");
+        fflush(stdout);
+    }
+
+    void _cdecl warning_imp(char *fmt, ...) 
+    {
+        va_list args;
+        va_start(args, fmt);
+        logMessage("Warning", fmt, args);
+        va_end(args);
+    }
+
+    void verbose_imp(int level, char *fmt, ...) 
+    {
+        va_list args;
+        va_start(args, fmt);
+        logMessage("Trace", fmt, args);
+        va_end(args);
+    }
+
+    void error_imp(char *fmt, ...) 
+    {
+        va_list args;
+        va_start(args, fmt);
+        logMessage("Error", fmt, args);
+        va_end(args);
+        throw std::logic_error("Argyll Error");
+    }
 }
+
+// define the error handlers so we can change them
+extern "C"
+{
+    extern void (*error)(char *fmt, ...);
+    extern void (*warning)(char *fmt, ...);
+    extern void (*verbose)(int level, char *fmt, ...);
+}
+
 
 ArgyllMeterWrapper::ArgyllMeterWrapper(eMeterType meterType, eDisplayType displayType, eReadingType readingType, int meterNumber) :
     m_meterType(meterType),
@@ -184,8 +227,20 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription)
         m_meter->del(m_meter);
         m_meter = 0;
     }
+
+    error = error_imp;
+    warning = warning_imp;
+    verbose = verbose_imp;
     instType argyllMeterType(convertMeterTypeToArgyllInst(m_meterType));
-    m_meter = new_inst(m_comPort, argyllMeterType, 1, 0);
+    try
+    {
+        m_meter = new_inst(m_comPort, argyllMeterType, 1, 0);
+    }
+    catch(std::logic_error&)
+    {
+        errorDescription = "Create new Argyll instrument failed with severe error";
+        return false;
+    }
     if(m_meter == 0)
     {
         errorDescription = "Create new Argyll instrument failed";
