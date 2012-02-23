@@ -9,10 +9,10 @@
 #define API_EXPORTED /**/
 
 /* Debug message logging */
-#define ENABLE_DEBUG_LOGGING 1
+/* #define ENABLE_DEBUG_LOGGING 1 */
 
 /* Message logging */
-#define ENABLE_LOGGING 1
+/* #define ENABLE_LOGGING 1 */
 
 /* Windows backend */
 #define OS_WINDOWS /**/
