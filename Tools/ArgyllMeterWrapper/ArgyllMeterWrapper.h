@@ -32,10 +32,35 @@ struct _inst;
 class ArgyllMeterWrapper
 {
 public:
+    // we maintain our our meter list
+    // annoyingly it doesn't quite line up with
+    // the argyll internal list as there are some
+    // unsupported meters in that list
     typedef enum
     {
         AUTODETECT = 0,
-        EYE_ONE,
+        DTP20,
+        DTP22,
+        DTP41,
+        DTP51,
+        DTP92,
+        DTP94,
+        SPECTROLINO,
+        SPECTROSCAN,
+        SPECTROSCANT,
+        SPECTROCAM,
+        I1DISPLAY,
+        I1MONITOR,
+        I1PRO,
+        I1DISP3,
+        COLORMUNKI,
+        HCFR,
+        SPYDER2,
+        SPYDER3,
+        HUEY,
+        // this isn't really a meter, it intended to be used in
+        // loops e.g for populating combo boxes
+        LAST_METER
     } eMeterType;
 
     typedef enum
@@ -50,26 +75,79 @@ public:
         PROJECTOR
     } eReadingType;
 
+    typedef enum
+    {
+        READY,
+        NEEDS_MANUAL_CALIBRATION,
+        INCORRECT_POSITION,
+    } eMeterState;
+
     /// ArgyllMeterWrapper constructor
     /// Create a USB meter object
-    ArgyllMeterWrapper(eMeterType meterType, eDisplayType displayType, eReadingType readingType);
+    ArgyllMeterWrapper(eMeterType meterType, eDisplayType displayType, eReadingType readingType, int meterNumber);
 
     /// ArgyllMeterWrapper constructor
     /// Create a serial meter object
     ArgyllMeterWrapper(eMeterType meterType, eDisplayType displayType, eReadingType readingType, int comPort, int baudRate, bool flowControl);
 
     ~ArgyllMeterWrapper();
-    bool doesMeterNeedCalibration();
-    CColor takeSpotXYZReading();
-    void calibrate();
+
+    /// initialize the meter
+    /// returns true on success
+    bool connectAndStartMeter();
+
+    /// see if the meter supports calibration
+    bool doesMeterSupportCalibration();
+
+    // try and do a reading
+    // the client application will need to handle the
+    // possible non success conditions
+    eMeterState takeReading();
+
+    CColor getLastReading() const;
+
+    // calibrate the meter
+    // this should be called 
+    // after the user has been told what to do
+    // and presumably followed them
+    // return true on success
+    // false if the display is in wrong state or for 
+    /// anything else oddd
+    eMeterState calibrate();
+
+    /// if either take reading or calibrate returns 
+    /// NEEDS_MANUAL_CALIBRATION then call this to find out
+    /// what the user needs to do next
     std::string getCalibrationInstructions();
 
+    /// if either take reading or calibrate returns 
+    /// INCORRECT_POSITION then call this to find out
+    /// what the user needs to do next
+    std::string getIncorrectPositionInstructions();
+
+    /// get the name of the meter
+    static std::string getMeterName(eMeterType meterType);
+
+    /// is a given meter USB assume serial if false
+    static bool isMeterUSB(eMeterType meterType);
+
+    /// returns a string containing what went wrong if a function fails
+    std::string getLastError() const;
+
 private:
-    void createMeter(int comPort, int baudRate, bool flowControl);
+    void checkMeterIsInitialized() const;
     _inst* m_meter;
     eMeterType m_meterType;
     eDisplayType m_displayType;
     eReadingType m_readingType;
+    int m_comPort;
+    int m_baudRate;
+    bool m_flowControl;
+    std::string m_lastError;
+    CColor m_lastReading;
+    int m_nextCalibration;
+    char m_calibrationMessage[200];
+
 };
 
 #endif

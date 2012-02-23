@@ -47,22 +47,126 @@ namespace
             return baud_nc;
         }
     }
+    
+    instType convertMeterTypeToArgyllInst(ArgyllMeterWrapper::eMeterType meterType)
+    {
+        switch(meterType)
+        {
+        case ArgyllMeterWrapper::AUTODETECT:
+            return instUnknown;
+        case ArgyllMeterWrapper::DTP20:
+            return instDTP20;
+        case ArgyllMeterWrapper::DTP22:
+            return instDTP22;
+        case ArgyllMeterWrapper::DTP41:
+            return instDTP41;
+        case ArgyllMeterWrapper::DTP51:
+            return instDTP51;
+        case ArgyllMeterWrapper::DTP92:
+            return instDTP92;
+        case ArgyllMeterWrapper::DTP94:
+            return instDTP94;
+        case ArgyllMeterWrapper::SPECTROLINO:
+            return instSpectrolino;
+        case ArgyllMeterWrapper::SPECTROSCAN:
+            return instSpectroScan;
+        case ArgyllMeterWrapper::SPECTROSCANT:
+            return instSpectroScanT;
+        case ArgyllMeterWrapper::I1DISPLAY:
+            return instI1Display;
+        case ArgyllMeterWrapper::I1MONITOR:
+            return instI1Monitor;
+        case ArgyllMeterWrapper::I1PRO:
+            return instI1Pro;
+        case ArgyllMeterWrapper::I1DISP3:
+            return instI1Disp3;
+        case ArgyllMeterWrapper::COLORMUNKI:
+            return instColorMunki;
+        case ArgyllMeterWrapper::HCFR:
+            return instHCFR;
+        case ArgyllMeterWrapper::SPYDER2:
+            return instSpyder2;
+        case ArgyllMeterWrapper::SPYDER3:
+            return instSpyder3;
+        case ArgyllMeterWrapper::HUEY:
+            return instHuey;
+        default:
+            return instUnknown;
+        }
+    }
+    
+    ArgyllMeterWrapper::eMeterType convertArgyllInstToMeterType(instType argyllType)
+    {
+        switch(argyllType)
+        {
+        case instUnknown:
+            return ArgyllMeterWrapper::AUTODETECT;
+        case instDTP20:
+            return ArgyllMeterWrapper::DTP20;
+        case instDTP22:
+            return ArgyllMeterWrapper::DTP22;
+        case instDTP41:
+            return ArgyllMeterWrapper::DTP41;
+        case instDTP51:
+            return ArgyllMeterWrapper::DTP51;
+        case instDTP92:
+            return ArgyllMeterWrapper::DTP92;
+        case instDTP94:
+            return ArgyllMeterWrapper::DTP94;
+        case instSpectrolino:
+            return ArgyllMeterWrapper::SPECTROLINO;
+        case instSpectroScan:
+            return ArgyllMeterWrapper::SPECTROSCAN;
+        case instSpectroScanT:
+            return ArgyllMeterWrapper::SPECTROSCANT;
+        case instSpectrocam:
+            return ArgyllMeterWrapper::SPECTROCAM;
+        case instI1Display:
+            return ArgyllMeterWrapper::I1DISPLAY;
+        case instI1Monitor:
+            return ArgyllMeterWrapper::I1MONITOR;
+        case instI1Pro:
+            return ArgyllMeterWrapper::I1PRO;
+        case instI1Disp3:
+            return ArgyllMeterWrapper::I1DISP3;
+        case instColorMunki:
+            return ArgyllMeterWrapper::COLORMUNKI;
+        case instHCFR:
+            return ArgyllMeterWrapper::HCFR;
+        case instSpyder2:
+            return ArgyllMeterWrapper::SPYDER2;
+        case instSpyder3:
+            return ArgyllMeterWrapper::SPYDER3;
+        case instHuey:
+            return ArgyllMeterWrapper::HUEY;
+        default:
+            return ArgyllMeterWrapper::AUTODETECT;
+        }
+    }
 }
 
-ArgyllMeterWrapper::ArgyllMeterWrapper(eMeterType meterType, eDisplayType displayType, eReadingType readingType) :
+ArgyllMeterWrapper::ArgyllMeterWrapper(eMeterType meterType, eDisplayType displayType, eReadingType readingType, int meterNumber) :
     m_meterType(meterType),
     m_displayType(displayType),
-    m_readingType(readingType)
+    m_readingType(readingType),
+    m_comPort(meterNumber),
+    m_baudRate(9600),
+    m_flowControl(false),
+    m_meter(0),
+    m_nextCalibration(0)
 {
-    createMeter(1, 9600, false);
 }
 
 ArgyllMeterWrapper::ArgyllMeterWrapper(eMeterType meterType, eDisplayType displayType, eReadingType readingType, int comPort, int baudRate, bool flowControl) :
     m_meterType(meterType),
     m_displayType(displayType),
-    m_readingType(readingType)
+    m_readingType(readingType),
+    m_comPort(comPort),
+    m_baudRate(baudRate),
+    m_flowControl(flowControl),
+    m_meter(0),
+    m_nextCalibration(0)
 {
-    createMeter(comPort, baudRate, flowControl);
 }
 
 ArgyllMeterWrapper::~ArgyllMeterWrapper()
@@ -73,22 +177,31 @@ ArgyllMeterWrapper::~ArgyllMeterWrapper()
     }
 }
 
-void ArgyllMeterWrapper::createMeter(int comPort, int baudRate, bool flowControl)
+bool ArgyllMeterWrapper::connectAndStartMeter()
 {
-    m_meter = new_inst(comPort, (instType)(m_meterType - 1), 1, 1);
+    if(m_meter)
+    {
+        m_meter->del(m_meter);
+        m_meter = 0;
+    }
+    m_lastError.clear();
+    instType argyllMeterType(convertMeterTypeToArgyllInst(m_meterType));
+    m_meter = new_inst(m_comPort, argyllMeterType, 1, 0);
     if(m_meter == 0)
     {
-        throw std::logic_error("Create new Argyll instrument failed");
+        m_lastError = "Create new Argyll instrument failed";
+        return false;
     }
-    baud_rate argyllBaudRate(convertBaudRate(baudRate));
-    flow_control argyllFlowControl(flowControl?fc_Hardware:fc_none);
+    baud_rate argyllBaudRate(convertBaudRate(m_baudRate));
+    flow_control argyllFlowControl(m_flowControl?fc_Hardware:fc_none);
 
-    inst_code instCode = m_meter->init_coms(m_meter, comPort, argyllBaudRate, argyllFlowControl, 15.0);
+    inst_code instCode = m_meter->init_coms(m_meter, m_comPort, argyllBaudRate, argyllFlowControl, 15.0);
     if(instCode != inst_ok)
     {
         m_meter->del(m_meter);
         m_meter = 0;
-        throw std::logic_error("Starting communications with the meter failed");
+        m_lastError = "Starting communications with the meter failed";
+        return false;
     }
 
     instCode = m_meter->set_opt_mode(m_meter, inst_opt_set_filter, inst_opt_filter_none);
@@ -98,11 +211,12 @@ void ArgyllMeterWrapper::createMeter(int comPort, int baudRate, bool flowControl
     {
         m_meter->del(m_meter);
         m_meter = 0;
-        throw std::logic_error("Failed to initialize the instrument");
+        m_lastError = "Failed to initialize the instrument";
+        return false;
     }
 
     // get actual meter type
-    m_meterType = (eMeterType)(m_meter->get_itype(m_meter) + 1);
+    m_meterType = convertArgyllInstToMeterType(m_meter->get_itype(m_meter));
 
     inst_mode displayMode = inst_mode_emis_spot;
     instCode = m_meter->set_mode(m_meter, displayMode);
@@ -110,7 +224,8 @@ void ArgyllMeterWrapper::createMeter(int comPort, int baudRate, bool flowControl
     {
         m_meter->del(m_meter);
         m_meter = 0;
-        throw std::logic_error("Couldn't set display mode");
+        m_lastError = "Couldn't set display mode";
+        return false;
     }
 
     int capabilities = m_meter->capabilities(m_meter);
@@ -132,7 +247,8 @@ void ArgyllMeterWrapper::createMeter(int comPort, int baudRate, bool flowControl
     {
         m_meter->del(m_meter);
         m_meter = 0;
-        throw std::logic_error("Couldn't set meter mode");
+        m_lastError = "Couldn't set meter mode";
+        return false;
     }
 
     instCode = m_meter->set_opt_mode(m_meter, inst_opt_trig_prog);
@@ -140,34 +256,181 @@ void ArgyllMeterWrapper::createMeter(int comPort, int baudRate, bool flowControl
     {
         m_meter->del(m_meter);
         m_meter = 0;
-        throw std::logic_error("Couldn't set trigger mode");
+        m_lastError = "Couldn't set trigger mode";
+        return false;
     }
-
-}
-
-bool ArgyllMeterWrapper::doesMeterNeedCalibration()
-{
     return true;
 }
 
-CColor ArgyllMeterWrapper::takeSpotXYZReading()
+bool ArgyllMeterWrapper::doesMeterSupportCalibration()
 {
+    checkMeterIsInitialized();
+    int capabilities2 = m_meter->capabilities2(m_meter);
+    return ((capabilities2 & (inst2_cal_ref_white |
+                            inst2_cal_ref_dark |
+                            inst2_cal_trans_white|
+                            inst2_cal_trans_dark|
+                            inst2_cal_disp_offset |
+                            inst2_cal_disp_ratio |
+                            inst2_cal_disp_int_time |
+                            inst2_cal_proj_offset |
+                            inst2_cal_proj_ratio |
+                            inst2_cal_proj_int_time |
+                            inst2_cal_crt_freq)) != 0);
+}
+
+CColor ArgyllMeterWrapper::getLastReading() const
+{
+    checkMeterIsInitialized();
+    return m_lastReading;
+}
+
+ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading()
+{
+    checkMeterIsInitialized();
     ipatch argyllReading;
     inst_code instCode = m_meter->read_sample(m_meter, "SPOT", &argyllReading);
+    if(instCode == inst_needs_cal)
+    {
+        // try autocalibration - we might get lucky
+        m_nextCalibration = 0;
+        instCode = m_meter->calibrate(m_meter, inst_calt_all, (inst_cal_cond*)&m_nextCalibration, m_calibrationMessage);
+        // if that didn't work tell the user
+        if(instCode == inst_cal_setup)
+        {
+            return NEEDS_MANUAL_CALIBRATION;
+        }
+        if(instCode != inst_ok)
+        {
+            throw std::logic_error("Automatic calibration failed");
+        }
+        // otherwise try reading again
+        instCode = m_meter->read_sample(m_meter, "SPOT", &argyllReading);
+        if(instCode == inst_needs_cal)
+        {
+            // this would be an odd situation and will need
+            // further investigation to work out what to do about it
+            throw std::logic_error("Automatic calibration succeed but reading then failed wanting calibration again");
+        }
+    }
+    if(instCode == inst_wrong_sensor_pos)
+    {
+        return INCORRECT_POSITION;
+    }
     if(instCode != inst_ok)
     {
         throw std::logic_error("Taking Reading failed");
     }
-    CColor result(argyllReading.aXYZ[0], argyllReading.aXYZ[1], argyllReading.aXYZ[2]);
-    return result;
+
+    m_lastReading = CColor(argyllReading.aXYZ[0], argyllReading.aXYZ[1], argyllReading.aXYZ[2]);
+    return READY;
 }
 
-void ArgyllMeterWrapper::calibrate()
+ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::calibrate()
 {
-    //m_meter->calibrate(m_meter);
+    checkMeterIsInitialized();
+    m_lastError.clear();
+    m_calibrationMessage[0] = '\0';
+    inst_code instCode = m_meter->calibrate(m_meter, inst_calt_all, (inst_cal_cond*)&m_nextCalibration, m_calibrationMessage);
+    if(instCode == inst_cal_setup)
+    {
+        return NEEDS_MANUAL_CALIBRATION;
+    }
+    if(instCode == inst_wrong_sensor_pos)
+    {
+        return INCORRECT_POSITION;
+    }
+    if(instCode != inst_ok)
+    {
+        throw std::logic_error("Calibration failed");
+    }
+    return READY;
 }
 
 std::string ArgyllMeterWrapper::getCalibrationInstructions()
 {
-    return "";
+    checkMeterIsInitialized();
+    inst_code instCode(inst_ok);
+    if(m_nextCalibration == 0)
+    {
+        instCode = m_meter->calibrate(m_meter, inst_calt_all, (inst_cal_cond*)&m_nextCalibration, m_calibrationMessage);
+        if(instCode == inst_ok || instCode == inst_unsupported)
+        {
+            // we don't need to do anything
+            // and we are now calibrated
+            return "";
+        }
+        if(instCode != inst_cal_setup)
+        {
+            throw std::logic_error("Automatic calibration failed");
+        }
+        // otherwise drop through here
+    }
+    switch(m_nextCalibration)
+    {
+        case inst_calc_none:
+            return "No particular calibration setup or unknown";
+        case inst_calc_uop_ref_white:
+            return "user operated reflective white calibration";
+        case inst_calc_uop_trans_white:
+            return "user operated tranmissive white calibration";
+        case inst_calc_uop_trans_dark:
+            return "user operated tranmissive dark calibration";
+        case inst_calc_uop_mask:
+            return "user operated calibration mask";
+        case inst_calc_man_ref_white:
+            return "place instrument on reflective white reference";
+        case inst_calc_man_ref_whitek:
+            return "click instrument on reflective white reference";
+        case inst_calc_man_ref_dark:
+            return "place instrument in dark not close to anything";
+        case inst_calc_man_em_dark:
+            return "place cap on instrument put on dark surface or white ref.";
+        case inst_calc_man_cal_smode:
+            return "Put instrument sensor in calibration position";
+        case inst_calc_man_trans_white:
+            return "place instrument on transmissive white reference";
+        case inst_calc_man_trans_dark:
+            return "place instrument on transmissive dark reference";
+        case inst_calc_man_man_mask:
+            return "user configured calibration mask";
+        case inst_calc_disp_white:
+            return "Provide a white display test patch";
+        case inst_calc_disp_grey:
+            return "Provide a grey display test patch";
+        case inst_calc_disp_grey_darker:
+            return "Provide a darker grey display test patch";
+        case inst_calc_disp_grey_ligher:
+            return "Provide a darker grey display test patch";
+        case inst_calc_disp_mask:
+            return "Display provided reference patch";
+        case inst_calc_proj_white
+            :return "Provide a white projector test patch";
+        case inst_calc_proj_grey:
+            return "Provide a grey projector test patch";
+        case inst_calc_proj_grey_darker:
+            return "Provide a darker grey projector test patch";
+        case inst_calc_proj_grey_ligher:
+            return "Provide a darker grey projector test patch";
+        case inst_calc_proj_mask:
+            return "Projector provided reference patch";
+        case inst_calc_change_filter:
+            return std::string("Filter needs changing on device - ") + m_calibrationMessage;
+        case inst_calc_message:
+            return m_calibrationMessage;
+    }
+    return "Unknown state";
+}
+
+void ArgyllMeterWrapper::checkMeterIsInitialized() const
+{
+    if(!m_meter)
+    {
+        throw std::logic_error("Meter not initialized");
+    }
+}
+
+std::string ArgyllMeterWrapper::getIncorrectPositionInstructions()
+{
+    return "Meter is in incorrect position";
 }
