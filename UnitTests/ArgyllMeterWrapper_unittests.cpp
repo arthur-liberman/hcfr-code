@@ -24,6 +24,10 @@ public:
 
 protected:
 
+    // show how calibration works
+    // we need to keep showing the user instructions
+    // and then allowing the user to control when the calibration function
+    // is called. On exit the meter should be calibrated
     void doCalibration(ArgyllMeterWrapper& meter)
     {
         ArgyllMeterWrapper::eMeterState state(ArgyllMeterWrapper::NEEDS_MANUAL_CALIBRATION);
@@ -35,12 +39,25 @@ protected:
                 break;
             }
             std::cout << meterInstructions << std::endl;
+            // would normally pause here
             state = meter.calibrate();
+            if(state == ArgyllMeterWrapper::INCORRECT_POSITION)
+            {
+                std::cout << meter.getIncorrectPositionInstructions() << std::endl;
+                // would normally pause here
+            }
         }
     }
+
+    // demonstrate how to open a meter, calibrate it
+    // and then take a reading coping with all possible
+    // normal returns from the functions
+    // the sections showing where to pause would be where
+    // the UI is expected to show the relevant text and allow the
+    // user to indicate when they are ready to move to the next step
     void autoDetectMeter()
     {
-        ArgyllMeterWrapper meter(ArgyllMeterWrapper::AUTODETECT, ArgyllMeterWrapper::CRT, ArgyllMeterWrapper::DISPLAY, 1);
+        ArgyllMeterWrapper meter(ArgyllMeterWrapper::AUTODETECT, ArgyllMeterWrapper::CRT, ArgyllMeterWrapper::PROJECTOR, 1);
 
         std::string errorDescription;
         if(!meter.connectAndStartMeter(errorDescription))
@@ -66,6 +83,7 @@ protected:
             if(state == ArgyllMeterWrapper::INCORRECT_POSITION)
             {
                 std::cout << meter.getIncorrectPositionInstructions() << std::endl;
+                // would normally pause here
             }
         }
         CColor reading(meter.getLastReading());
