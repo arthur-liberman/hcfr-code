@@ -177,19 +177,18 @@ ArgyllMeterWrapper::~ArgyllMeterWrapper()
     }
 }
 
-bool ArgyllMeterWrapper::connectAndStartMeter()
+bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription)
 {
     if(m_meter)
     {
         m_meter->del(m_meter);
         m_meter = 0;
     }
-    m_lastError.clear();
     instType argyllMeterType(convertMeterTypeToArgyllInst(m_meterType));
     m_meter = new_inst(m_comPort, argyllMeterType, 1, 0);
     if(m_meter == 0)
     {
-        m_lastError = "Create new Argyll instrument failed";
+        errorDescription = "Create new Argyll instrument failed";
         return false;
     }
     baud_rate argyllBaudRate(convertBaudRate(m_baudRate));
@@ -200,7 +199,7 @@ bool ArgyllMeterWrapper::connectAndStartMeter()
     {
         m_meter->del(m_meter);
         m_meter = 0;
-        m_lastError = "Starting communications with the meter failed";
+        errorDescription = "Starting communications with the meter failed";
         return false;
     }
 
@@ -211,7 +210,7 @@ bool ArgyllMeterWrapper::connectAndStartMeter()
     {
         m_meter->del(m_meter);
         m_meter = 0;
-        m_lastError = "Failed to initialize the instrument";
+        errorDescription = "Failed to initialize the instrument";
         return false;
     }
 
@@ -224,7 +223,7 @@ bool ArgyllMeterWrapper::connectAndStartMeter()
     {
         m_meter->del(m_meter);
         m_meter = 0;
-        m_lastError = "Couldn't set display mode";
+        errorDescription = "Couldn't set display mode";
         return false;
     }
 
@@ -247,7 +246,7 @@ bool ArgyllMeterWrapper::connectAndStartMeter()
     {
         m_meter->del(m_meter);
         m_meter = 0;
-        m_lastError = "Couldn't set meter mode";
+        errorDescription = "Couldn't set meter mode";
         return false;
     }
 
@@ -256,7 +255,7 @@ bool ArgyllMeterWrapper::connectAndStartMeter()
     {
         m_meter->del(m_meter);
         m_meter = 0;
-        m_lastError = "Couldn't set trigger mode";
+        errorDescription = "Couldn't set trigger mode";
         return false;
     }
     return true;
@@ -329,7 +328,6 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading()
 ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::calibrate()
 {
     checkMeterIsInitialized();
-    m_lastError.clear();
     m_calibrationMessage[0] = '\0';
     inst_code instCode = m_meter->calibrate(m_meter, inst_calt_all, (inst_cal_cond*)&m_nextCalibration, m_calibrationMessage);
     if(instCode == inst_cal_setup)
@@ -433,4 +431,81 @@ void ArgyllMeterWrapper::checkMeterIsInitialized() const
 std::string ArgyllMeterWrapper::getIncorrectPositionInstructions()
 {
     return "Meter is in incorrect position";
+}
+
+ArgyllMeterWrapper::eMeterType ArgyllMeterWrapper::getType() const
+{
+    checkMeterIsInitialized();
+    return m_meterType;
+}
+
+std::string ArgyllMeterWrapper::getMeterName(eMeterType meterType)
+{
+    switch(meterType)
+    {
+    case AUTODETECT:
+        return "Auto-Detect";
+    case DTP20:
+        return "DTP20";
+    case DTP22:
+        return "DTP22";
+    case DTP41:
+        return "DTP41";
+    case DTP51:
+        return "DTP51";
+    case DTP92:
+        return "DTP92";
+    case DTP94:
+        return "DTP94";
+    case SPECTROLINO:
+        return "Spectrolino";
+    case SPECTROSCAN:
+        return "SpectroScan";
+    case SPECTROSCANT:
+        return "SpectroScanT";
+    case SPECTROCAM:
+        return "Spectrocam";
+    case I1DISPLAY:
+        return "I1Display";
+    case I1MONITOR:
+        return "I1Monitor";
+    case I1PRO:
+        return "I1Pro";
+    case I1DISP3:
+        return "I1Display3";
+    case COLORMUNKI:
+        return "ColorMunki";
+    case HCFR:
+        return "HCFR";
+    case SPYDER2:
+        return "Spyder2";
+    case SPYDER3:
+        return "Spyder3";
+    case HUEY:
+        return "Huey";
+    default:
+        return "Unknown";
+    }
+}
+
+bool ArgyllMeterWrapper::isMeterUSB(eMeterType meterType)
+{
+    switch(meterType)
+    {
+    case DTP20:
+    case DTP92:
+    case DTP94:
+    case I1DISPLAY:
+    case I1MONITOR:
+    case I1PRO:
+    case I1DISP3:
+    case COLORMUNKI:
+    case HCFR:
+    case SPYDER2:
+    case SPYDER3:
+    case HUEY:
+        return true;
+    default:
+        return false;
+    }
 }

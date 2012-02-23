@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <cppunit/config/SourcePrefix.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include <map>
 
 // this is not really a unit test
 // but really a description of how to use the interface
@@ -13,6 +14,7 @@ class THIS_TEST_CASE : public CPPUNIT_NS::TestFixture
 {
     CPPUNIT_TEST_SUITE(THIS_TEST_CASE);
     CPPUNIT_TEST( autoDetectMeter );
+    CPPUNIT_TEST( NumSupportedUSBMeters );
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -40,11 +42,15 @@ protected:
     {
         ArgyllMeterWrapper meter(ArgyllMeterWrapper::AUTODETECT, ArgyllMeterWrapper::CRT, ArgyllMeterWrapper::DISPLAY, 1);
 
-        if(!meter.connectAndStartMeter())
+        std::string errorDescription;
+        if(!meter.connectAndStartMeter(errorDescription))
         {
+            std::cout << errorDescription << std::endl;
             return;
         }
-        
+
+        std::cout << ArgyllMeterWrapper::getMeterName(meter.getType()) << " meter found" << std::endl;
+
         if(meter.doesMeterSupportCalibration())
         {
             doCalibration(meter);
@@ -64,6 +70,21 @@ protected:
         }
         CColor reading(meter.getLastReading());
         std::cout << reading << std::endl;
+    }
+    void NumSupportedUSBMeters()
+    {
+        std::map<string, ArgyllMeterWrapper::eMeterType> usbMeters;
+        for(int i = ArgyllMeterWrapper::AUTODETECT; 
+            i < ArgyllMeterWrapper::LAST_METER;
+            ++i)
+        {
+            ArgyllMeterWrapper::eMeterType type = static_cast<ArgyllMeterWrapper::eMeterType>(i);
+            if(ArgyllMeterWrapper::isMeterUSB(type))
+            {
+                usbMeters[ArgyllMeterWrapper::getMeterName(type)] = type;
+            }
+        }
+        CPPUNIT_ASSERT_EQUAL( usbMeters.size(), size_t(12));
     }
 };
 

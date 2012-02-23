@@ -94,7 +94,7 @@ public:
 
     /// initialize the meter
     /// returns true on success
-    bool connectAndStartMeter();
+    bool connectAndStartMeter(std::string& errorDescription);
 
     /// see if the meter supports calibration
     bool doesMeterSupportCalibration();
@@ -125,14 +125,14 @@ public:
     /// what the user needs to do next
     std::string getIncorrectPositionInstructions();
 
-    /// get the name of the meter
+    /// gets the actual type of the meter
+    eMeterType getType() const;
+
+    /// get the name of the meter given the type
     static std::string getMeterName(eMeterType meterType);
 
     /// is a given meter USB assume serial if false
     static bool isMeterUSB(eMeterType meterType);
-
-    /// returns a string containing what went wrong if a function fails
-    std::string getLastError() const;
 
 private:
     void checkMeterIsInitialized() const;
@@ -143,11 +143,9 @@ private:
     int m_comPort;
     int m_baudRate;
     bool m_flowControl;
-    std::string m_lastError;
     CColor m_lastReading;
     int m_nextCalibration;
     char m_calibrationMessage[200];
-
 };
 
 #endif
