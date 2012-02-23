@@ -177,6 +177,12 @@ namespace
         va_end(args);
         throw std::logic_error("Argyll Error");
     }
+
+    // check an actual inst code is a particular
+    bool isInstCodeReason(inst_code fullInstCode, inst_code partialInstCode)
+    {
+        return ((fullInstCode & inst_mask) == partialInstCode);
+    }
 }
 
 // define the error handlers so we can change them
@@ -238,7 +244,7 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription)
     }
     catch(std::logic_error&)
     {
-        errorDescription = "Create new Argyll instrument failed with severe error";
+        errorDescription = "No meter found - Create new Argyll instrument failed with severe error";
         return false;
     }
     if(m_meter == 0)
@@ -249,7 +255,18 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription)
     baud_rate argyllBaudRate(convertBaudRate(m_baudRate));
     flow_control argyllFlowControl(m_flowControl?fc_Hardware:fc_none);
 
-    inst_code instCode = m_meter->init_coms(m_meter, m_comPort, argyllBaudRate, argyllFlowControl, 15.0);
+    inst_code instCode;
+    try
+    {
+        instCode = m_meter->init_coms(m_meter, m_comPort, argyllBaudRate, argyllFlowControl, 15.0);
+    }
+    catch(std::logic_error&)
+    {
+        m_meter->del(m_meter);
+        m_meter = 0;
+        errorDescription = "Incorrect driver - Starting communications with the meter failed with severe error";
+        return false;
+    }
     if(instCode != inst_ok)
     {
         m_meter->del(m_meter);
@@ -283,17 +300,31 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription)
     }
 
     int capabilities = m_meter->capabilities(m_meter);
-    inst_mode mode = inst_mode_ref_spot;
+    inst_mode mode = inst_mode_emis_spot;
 
-    if(m_readingType == PROJECTOR && capabilities & (inst_emis_proj_crt | inst_emis_proj_lcd))
+    if(m_readingType == PROJECTOR)
     {
-        instCode = m_meter->set_opt_mode(m_meter, m_displayType == CRT?inst_opt_proj_crt:inst_opt_proj_lcd);
-        mode = inst_mode_emis_proj;
+        if(capabilities & (inst_emis_proj_crt | inst_emis_proj_lcd))
+        {
+            instCode = m_meter->set_opt_mode(m_meter, m_displayType == CRT?inst_opt_proj_crt:inst_opt_proj_lcd);
+            mode = inst_mode_emis_proj;
+        }
+        if(capabilities & (inst_emis_proj))
+        {
+            mode = inst_mode_emis_proj;
+        }
     }
-    else if (capabilities & (inst_emis_disp_crt | inst_emis_disp_lcd)) 
+    else
     {
-        instCode = m_meter->set_opt_mode(m_meter, m_displayType == CRT?inst_opt_disp_crt:inst_opt_disp_lcd);
-        mode = inst_mode_emis_disp;
+        if (capabilities & (inst_emis_disp_crt | inst_emis_disp_lcd)) 
+        {
+            instCode = m_meter->set_opt_mode(m_meter, m_displayType == CRT?inst_opt_disp_crt:inst_opt_disp_lcd);
+            mode = inst_mode_emis_disp;
+        }
+        if(capabilities & (inst_emis_disp))
+        {
+            mode = inst_mode_emis_disp;
+        }
     }
 
     instCode = m_meter->set_mode(m_meter, mode);
@@ -344,13 +375,13 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading()
     checkMeterIsInitialized();
     ipatch argyllReading;
     inst_code instCode = m_meter->read_sample(m_meter, "SPOT", &argyllReading);
-    if(instCode == inst_needs_cal)
+    if(isInstCodeReason(instCode, inst_needs_cal))
     {
         // try autocalibration - we might get lucky
         m_nextCalibration = 0;
         instCode = m_meter->calibrate(m_meter, inst_calt_all, (inst_cal_cond*)&m_nextCalibration, m_calibrationMessage);
         // if that didn't work tell the user
-        if(instCode == inst_cal_setup)
+        if(isInstCodeReason(instCode, inst_cal_setup))
         {
             return NEEDS_MANUAL_CALIBRATION;
         }
@@ -360,18 +391,18 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading()
         }
         // otherwise try reading again
         instCode = m_meter->read_sample(m_meter, "SPOT", &argyllReading);
-        if(instCode == inst_needs_cal)
+        if(isInstCodeReason(instCode, inst_needs_cal))
         {
             // this would be an odd situation and will need
             // further investigation to work out what to do about it
             throw std::logic_error("Automatic calibration succeed but reading then failed wanting calibration again");
         }
     }
-    if(instCode == inst_wrong_sensor_pos)
+    if(isInstCodeReason(instCode, inst_wrong_sensor_pos))
     {
         return INCORRECT_POSITION;
     }
-    if(instCode != inst_ok)
+    if(instCode != inst_ok || !argyllReading.aXYZ_v)
     {
         throw std::logic_error("Taking Reading failed");
     }
@@ -385,9 +416,18 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::calibrate()
     checkMeterIsInitialized();
     m_calibrationMessage[0] = '\0';
     inst_code instCode = m_meter->calibrate(m_meter, inst_calt_all, (inst_cal_cond*)&m_nextCalibration, m_calibrationMessage);
-    if(instCode == inst_cal_setup)
+    if(isInstCodeReason(instCode, inst_cal_setup))
     {
-        return NEEDS_MANUAL_CALIBRATION;
+        // special case for colormunki when calibrating the
+        // error is a setup one if the meter is in wrong position
+        if(m_meterType == COLORMUNKI && instCode == (inst_code)0xf42)
+        {
+            return INCORRECT_POSITION;
+        }
+        else
+        {
+            return NEEDS_MANUAL_CALIBRATION;
+        }
     }
     if(instCode == inst_wrong_sensor_pos)
     {
@@ -407,13 +447,13 @@ std::string ArgyllMeterWrapper::getCalibrationInstructions()
     if(m_nextCalibration == 0)
     {
         instCode = m_meter->calibrate(m_meter, inst_calt_all, (inst_cal_cond*)&m_nextCalibration, m_calibrationMessage);
-        if(instCode == inst_ok || instCode == inst_unsupported)
+        if(instCode == inst_ok || isInstCodeReason(instCode, inst_unsupported))
         {
             // we don't need to do anything
             // and we are now calibrated
             return "";
         }
-        if(instCode != inst_cal_setup)
+        if(!isInstCodeReason(instCode, inst_cal_setup))
         {
             throw std::logic_error("Automatic calibration failed");
         }
