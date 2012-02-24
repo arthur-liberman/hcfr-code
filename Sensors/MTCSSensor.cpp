@@ -392,7 +392,4 @@ CColor CMTCSSensor::MeasureBlackLevel(BOOL bUseOffsets)
 	return DeviceColor;
 }
 
-
-
-
-
+#pragma comment(lib, "devlib\\CHCFRDI3.lib")

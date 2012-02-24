@@ -322,7 +322,4 @@ CColor CSpyderIISensor::MeasureColor(COLORREF aRGBValue)
 	return colMeasure.GetSensorValue();
 }
 
-
-
-
-
+#pragma comment(lib, "devlib\\CHCFRDI1.lib")

@@ -642,5 +642,6 @@ void CEyeOneSensor::GetUniqueIdentifier( CString & strId )
 	strId.ReleaseBuffer (); 
 }
 
+#pragma comment(lib, "devlib\\CHCFRDI2.lib")
 
 

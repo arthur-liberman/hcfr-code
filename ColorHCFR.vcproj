@@ -78,7 +78,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
-				AdditionalDependencies="setupapi.lib psapi.lib msimg32.lib htmlhelp.lib devlib\chcfrdi1.lib devlib\chcfrdi2.lib devlib\chcfrdi3.lib devlib\chcfrdi4.lib"
+				AdditionalDependencies="setupapi.lib psapi.lib msimg32.lib htmlhelp.lib"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories=""
@@ -172,7 +172,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
-				AdditionalDependencies="setupapi.lib psapi.lib msimg32.lib htmlhelp.lib devlib\chcfrdi1.lib devlib\chcfrdi2.lib devlib\chcfrdi3.lib devlib\chcfrdi4.lib"
+				AdditionalDependencies="setupapi.lib psapi.lib msimg32.lib htmlhelp.lib"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories=""
