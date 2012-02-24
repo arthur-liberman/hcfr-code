@@ -23,6 +23,9 @@
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
+
+#ifdef USE_NON_FREE_CODE
+
 // MTCSSensorPropPage.h : header file
 //
 
@@ -86,4 +89,5 @@ protected:
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
+#endif // defined USE_NON_FREE_CODE
 #endif // !defined(AFX_MTCSSensorPropPage_H__4A28F0DD_80F3_4CE4_BD25_AD38CBF304C9__INCLUDED_)

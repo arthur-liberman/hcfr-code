@@ -6,6 +6,15 @@
 #if !defined(AFX_STDAFX_H__53A7E878_541F_4044_A0E6_3A5BE7C30A41__INCLUDED_)
 #define AFX_STDAFX_H__53A7E878_541F_4044_A0E6_3A5BE7C30A41__INCLUDED_
 
+#if _MSC_VER > 1000
+#pragma once
+#endif // _MSC_VER > 1000
+
+// undefine to allow use of orginal devlib dlls
+// these should not be linked in distributions
+//#define USE_NON_FREE_CODE
+
+
 #if _MSC_VER >= 1600
 // visual studio 2010 ships with mfc that doesn't like 
 // low values of WINVER
@@ -18,9 +27,6 @@
 // disable warning C4786: symbol greater than 255 character, okay to ignore
 #pragma warning(disable : 4786)
 
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
 
 #define VC_EXTRALEAN		// Exclude rarely-used stuff from Windows headers
 

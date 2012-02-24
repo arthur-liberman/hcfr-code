@@ -37,6 +37,8 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
+#ifdef USE_NON_FREE_CODE
+
 // Spectrum characteristics
 #define SPECTRUM_WAVELENGTH_MIN			380
 #define SPECTRUM_WAVELENGTH_MAX			730
@@ -645,3 +647,4 @@ void CEyeOneSensor::GetUniqueIdentifier( CString & strId )
 #pragma comment(lib, "devlib\\CHCFRDI2.lib")
 
 
+#endif

@@ -28,6 +28,8 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#ifdef USE_NON_FREE_CODE
+
 #include "OneDeviceSensor.h"
 #include "EyeOneSensorPropPage.h"
 
@@ -78,4 +80,5 @@ public:
 	virtual void GetUniqueIdentifier( CString & strId );
 };
 
+#endif // defined USE_NON_FREE_CODE
 #endif // !defined(AFX_EYEONESENSOR_H__1493C213_6A02_44C5_8EB7_55B469092E14__INCLUDED_)

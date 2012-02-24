@@ -599,12 +599,15 @@ void CDataSetDoc::CreateSensor(int aID)
 		case 1:
 				m_pSensor=new CSimulatedSensor();
 				break;
+#ifdef USE_NON_FREE_CODE
 		case 2:
 				m_pSensor=new CSpyderIISensor();
 				break;
+#endif
 		case 3:
 				m_pSensor=new CDTPSensor();
 				break;
+#ifdef USE_NON_FREE_CODE
 		case 4:
 				m_pSensor=new CEyeOneSensor();
 				break;
@@ -614,6 +617,7 @@ void CDataSetDoc::CreateSensor(int aID)
 		case 6:
 				m_pSensor=new CSpyder3Sensor();
 				break;
+#endif
 		default:
 				Msg.LoadString ( IDS_UNKNOWNSENSOR1 );
 				Title.LoadString ( IDS_ERROR );
@@ -662,12 +666,15 @@ void CDataSetDoc::DuplicateSensor(CDataSetDoc* pDoc)
 		if (type == typeid(CSimulatedSensor).name())
 			m_pSensor=new CSimulatedSensor();
 		else
+#ifdef USE_NON_FREE_CODE
 			if (type == typeid(CSpyderIISensor).name())
 				m_pSensor=new CSpyderIISensor();
 			else
+#endif
 				if (type == typeid(CDTPSensor).name())
 					m_pSensor=new CDTPSensor();
 				else
+#ifdef USE_NON_FREE_CODE
 					if (type == typeid(CEyeOneSensor).name())
 						m_pSensor=new CEyeOneSensor();
 					else
@@ -677,6 +684,7 @@ void CDataSetDoc::DuplicateSensor(CDataSetDoc* pDoc)
 							if (type == typeid(CSpyder3Sensor).name())
 								m_pSensor=new CSpyder3Sensor();
 							else
+#endif
 							{
 								Msg.LoadString ( IDS_UNKNOWNSENSOR1 );
 								Title.LoadString ( IDS_ERROR );
@@ -771,6 +779,7 @@ BOOL CDataSetDoc::OnNewDocument()
 					// Sensor not needing calibration
 					if(propSheet.m_Page2.m_sensorTrainingMode != 1)
 					{
+#ifdef USE_NON_FREE_CODE
 						if ( propSheet.m_Page2.GetCurrentID() == 4 ) 
 						{
 							// Eye one. When a calibration file is selected, cannot use Eye One Pro
@@ -780,6 +789,7 @@ BOOL CDataSetDoc::OnNewDocument()
 								( (CEyeOneSensor*) m_pSensor ) -> m_CalibrationMode = 1;
 							}
 						}
+#endif
 						m_pSensor->LoadCalibrationFile(propSheet.m_Page2.m_trainingFileName);
 					}
 				}

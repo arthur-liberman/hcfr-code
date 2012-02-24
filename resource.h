@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
-// Used by ColorHCFR.rc
+// Microsoft Visual C++ generated include file.
+// Used by CHCFR21_ENGLISH.rc
 //
 #define IDS_STRING_VERSION              1
 #define IDS_STRING_VERSION_WEB          2

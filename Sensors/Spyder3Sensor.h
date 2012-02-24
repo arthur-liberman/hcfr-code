@@ -28,6 +28,8 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#ifdef USE_NON_FREE_CODE
+
 #include "OneDeviceSensor.h"
 #include "Spyder3SensorPropPage.h"
 
@@ -67,4 +69,5 @@ public:
 	virtual BOOL SensorAcceptCalibration () { return GetConfig()->m_bUseCalibrationFilesOnAllProbes; }
 };
 
+#endif // defined USE_NON_FREE_CODE
 #endif // !defined(AFX_SPYDER3SENSOR_H__1493C213_6A02_44C5_8EB7_55B469092E14__INCLUDED_)

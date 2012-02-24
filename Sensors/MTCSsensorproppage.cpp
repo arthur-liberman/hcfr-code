@@ -35,6 +35,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+#ifdef USE_NON_FREE_CODE
+
 /////////////////////////////////////////////////////////////////////////////
 // CMTCSSensorPropPage property page
 
@@ -395,4 +397,4 @@ UINT CMTCSSensorPropPage::GetHelpId ( LPSTR lpszTopic )
 	return HID_SENSOR_MTCS;
 }
 
-
+#endif

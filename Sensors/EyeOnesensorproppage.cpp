@@ -34,6 +34,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+#ifdef USE_NON_FREE_CODE
+
 /////////////////////////////////////////////////////////////////////////////
 // CEyeOneSensorPropPage property page
 
@@ -278,3 +280,4 @@ BOOL CEyeOneSensorPropPage::OnSetActive()
 	
 	return bRet;
 }
+#endif

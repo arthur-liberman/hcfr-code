@@ -46,8 +46,10 @@
 
 #include "ximage.h"
 
+#ifdef USE_NON_FREE_CODE
 // Include for device interface (this device interface is outside GNU GPL license)
 #include "devlib\CHCFRDI3.h"
+#endif
 
 
 #ifdef _DEBUG
@@ -117,7 +119,9 @@ CColorHCFRApp::CColorHCFRApp()
 
 CColorHCFRApp::~CColorHCFRApp()
 {
+#ifdef USE_NON_FREE_CODE
 	CEyeOneSensor::CloseEyeOnePipe ();
+#endif
 
 	if ( m_hCIEThread )
 	{
@@ -445,7 +449,9 @@ void CColorHCFRApp::OnAppAbout()
 
 int CColorHCFRApp::ExitInstance() 
 {
+#ifdef USE_NON_FREE_CODE
 	DisconnectDevice3();
+#endif
 
 	delete m_pConfig;
 	delete m_pColorReference;

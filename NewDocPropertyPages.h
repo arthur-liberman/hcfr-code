@@ -62,6 +62,7 @@ public:
 	virtual BOOL OnSetActive();
 	virtual BOOL OnWizardFinish();
 	virtual void OnOK();
+    virtual BOOL OnInitDialog();
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
@@ -73,6 +74,8 @@ protected:
 	afx_msg void OnSelchangeSensorchoiceCombo();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+private:
+    void AddSensor(LPCTSTR name, int id);
 
 };
 

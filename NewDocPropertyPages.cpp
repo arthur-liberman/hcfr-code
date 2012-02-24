@@ -130,15 +130,28 @@ CSensorSelectionPropPage::~CSensorSelectionPropPage()
 void CSensorSelectionPropPage::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPageWithHelp::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CSensorSelectionPropPage)
 	DDX_Control(pDX, IDC_SENSORTRAININGFILE_COMBO, m_trainingFileCombo);
 	DDX_Control(pDX, IDC_SENSORCHOICE_COMBO, m_sensorChoiceCtrl);
+    if(m_sensorChoiceCtrl.GetCount() == 0)
+    {
+        AddSensor(_T("HCFR Sensor"), 0);
+        AddSensor(_T("Simulated sensor"), 1);
+#ifdef USE_NON_FREE_CODE
+        AddSensor(_T("Spyder II"), 2);
+#endif
+        AddSensor(_T("DTP-94"), 3);
+#ifdef USE_NON_FREE_CODE
+        AddSensor(_T("Eye One"), 4);
+        AddSensor(_T("Mazet MTCS-C2"), 5);
+        AddSensor(_T("Spyder 3"), 6);
+#endif
+    }
+
 	DDX_CBString(pDX, IDC_SENSORCHOICE_COMBO, m_sensorChoice);
 	DDX_Radio(pDX, IDC_SENSORTRAININGMODE_RADIO1, m_sensorTrainingMode);
-	//}}AFX_DATA_MAP
 
 	if(pDX->m_bSaveAndValidate != 0)	// 0=init 1=save
-		m_currentID=m_sensorChoiceCtrl.GetCurSel();
+		m_currentID=m_sensorChoiceCtrl.GetItemData(m_sensorChoiceCtrl.GetCurSel());
 	else
 	{
 		// In case of language changing, the default name can be incorrect
@@ -170,6 +183,19 @@ void CSensorSelectionPropPage::OnOK()
 {
 	OnWizardFinish();
 }
+
+void CSensorSelectionPropPage::AddSensor(LPCTSTR name, int id)
+{
+    int index = m_sensorChoiceCtrl.AddString(name);
+    m_sensorChoiceCtrl.SetItemData(index, id);
+}
+
+BOOL CSensorSelectionPropPage::OnInitDialog()
+{
+    BOOL result = CPropertyPageWithHelp::OnInitDialog();
+    return result;
+}
+
 
 BOOL CSensorSelectionPropPage::OnWizardFinish() 
 {

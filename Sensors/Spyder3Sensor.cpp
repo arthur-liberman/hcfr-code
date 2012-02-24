@@ -38,6 +38,8 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
+#ifdef USE_NON_FREE_CODE
+
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -344,3 +346,5 @@ CColor CSpyder3Sensor::MeasureColor(COLORREF aRGBValue)
 }
 
 #pragma comment(lib, "devlib\\CHCFRDI4.lib")
+
+#endif
