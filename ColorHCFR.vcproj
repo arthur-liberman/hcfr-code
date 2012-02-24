@@ -2231,6 +2231,14 @@
 				Name="Sensors"
 				>
 				<File
+					RelativePath=".\Sensors\ArgyllSensor.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Sensors\Argyllsensorproppage.cpp"
+					>
+				</File>
+				<File
 					RelativePath="Sensors\DTPSensor.cpp"
 					>
 					<FileConfiguration
@@ -3134,6 +3142,14 @@
 				Name="Sensors headers"
 				Filter="h"
 				>
+				<File
+					RelativePath=".\Sensors\ArgyllSensor.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Sensors\Argyllsensorproppage.h"
+					>
+				</File>
 				<File
 					RelativePath="Sensors\DTPSensor.h"
 					>

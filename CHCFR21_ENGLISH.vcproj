@@ -633,6 +633,10 @@
 				RelativePath=".\resource.h"
 				>
 			</File>
+			<File
+				RelativePath=".\resource.hm"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>

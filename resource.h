@@ -247,6 +247,7 @@
 #define IDD_LUXMETER_SCALE              373
 #define IDD_TOOLBAR_PROP_PAGE           374
 #define IDD_S3SENSOR_PROP_PAGE          375
+#define IDD_ARGYLL_SENSOR_PROP_PAGE     376
 #define IDC_GRAYSCALE_GRID              1001
 #define IDC_GRAPH_TITLE                 1002
 #define IDC_SENSORMATRIX_GRID           1002
@@ -672,6 +673,9 @@
 #define IDC_EDIT_BLACK_3                1262
 #define IDC_MEASURE_BLACK               1263
 #define IDC_FLASH_EEPROM_FILE           1264
+#define IDC_ARGYLLSENSOR_MODE_COMBO     1265
+#define IDC_ARGYLL_CALIBRATE            1266
+#define IDC_ARGYLL_SENSOR_DEBUG_CB      1267
 #define IDC_COLORTEMPHISTO_GRAPH        11003
 #define IDC_RGBHISTO_GRAPH              11101
 #define IDC_RGBHISTO_GRAPH2             11102
@@ -1281,7 +1285,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        376
 #define _APS_NEXT_COMMAND_VALUE         33027
-#define _APS_NEXT_CONTROL_VALUE         1262
+#define _APS_NEXT_CONTROL_VALUE         1268
 #define _APS_NEXT_SYMED_VALUE           140
 #endif
 #endif

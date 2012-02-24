@@ -482,22 +482,17 @@ END
 
 IDD_I1SENSOR_PROP_PAGE DIALOGEX 0, 0, 212, 174
 STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
-CAPTION "Eye One"
+CAPTION "Argyll Sensor"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Configuration",IDC_STATIC,6,5,198,60,WS_GROUP
     LTEXT           "Calibration mode",IDC_STATIC,13,20,60,8,0,0,HIDC_STATIC
-    COMBOBOX        IDC_S2SENSOR_MODE_COMBO,79,17,113,82,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    CONTROL         "Mode ""ambient light"" (using light diffusor)",IDC_AMBIENTLIGHT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,36,144,10
+    COMBOBOX        IDC_ARGYLLSENSOR_MODE_COMBO,79,17,113,82,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     CONTROL         "Average many reads on dark measurements",IDC_CHECK_AVG_MEASURES,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,48,154,10
-    GROUPBOX        "Black level",IDC_STATIC,6,70,198,36
-    PUSHBUTTON      "Calibrate internal sensor offsets",IDC_DTP_BLACKLEVEL,15,84,178,14
-    GROUPBOX        "Time during which device calibration remains valid",IDC_STATIC,6,111,198,34
-    LTEXT           "Number of minutes (0: unlimited)",IDC_STATIC,13,127,101,8
-    EDITTEXT        IDC_EDIT_MINUTES,119,124,40,14,ES_AUTOHSCROLL
-    CONTROL         "Debug (save data in decoder.log)",IDC_KISENSOR_DEBUG_CB,
+    GROUPBOX        "Calibration",IDC_STATIC,6,70,198,36
+    PUSHBUTTON      "Calibrate meter",IDC_ARGYLL_CALIBRATE,15,84,178,14
+    CONTROL         "Debug (save data in decoder.log)",IDC_ARGYLL_SENSOR_DEBUG_CB,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,15,152,184,10
 END
 
@@ -887,6 +882,27 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,72,184,10
 END
 
+IDD_AUDIO_SENSOR_PROP_PAGE DIALOGEX 0, 0, 212, 174
+STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Eye One"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Configuration",IDC_STATIC,6,5,198,60,WS_GROUP
+    LTEXT           "Calibration mode",IDC_STATIC,13,20,60,8,0,0,HIDC_STATIC
+    COMBOBOX        IDC_S2SENSOR_MODE_COMBO,79,17,113,82,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    CONTROL         "Mode ""ambient light"" (using light diffusor)",IDC_AMBIENTLIGHT,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,36,144,10
+    CONTROL         "Average many reads on dark measurements",IDC_CHECK_AVG_MEASURES,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,48,154,10
+    GROUPBOX        "Black level",IDC_STATIC,6,70,198,36
+    PUSHBUTTON      "Calibrate internal sensor offsets",IDC_DTP_BLACKLEVEL,15,84,178,14
+    GROUPBOX        "Time during which device calibration remains valid",IDC_STATIC,6,111,198,34
+    LTEXT           "Number of minutes (0: unlimited)",IDC_STATIC,13,127,101,8
+    EDITTEXT        IDC_EDIT_MINUTES,119,124,40,14,ES_AUTOHSCROLL
+    CONTROL         "Debug (save data in decoder.log)",IDC_KISENSOR_DEBUG_CB,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,15,152,184,10
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1101,17 +1117,10 @@ END
 
 IDD_I1SENSOR_PROP_PAGE DLGINIT
 BEGIN
-    IDC_S2SENSOR_MODE_COMBO, 0x403, 22, 0
-0x7945, 0x2065, 0x6e4f, 0x2065, 0x6944, 0x7073, 0x616c, 0x2079, 0x202d, 
-0x5243, 0x0054, 
-    IDC_S2SENSOR_MODE_COMBO, 0x403, 22, 0
-0x7945, 0x2065, 0x6e4f, 0x2065, 0x6944, 0x7073, 0x616c, 0x2079, 0x202d, 
+    IDC_ARGYLLSENSOR_MODE_COMBO, 0x403, 4, 0
 0x434c, 0x0044, 
-    IDC_S2SENSOR_MODE_COMBO, 0x403, 25, 0
-0x7945, 0x2065, 0x6e4f, 0x2065, 0x6944, 0x7073, 0x616c, 0x2079, 0x202d, 
-0x6c50, 0x7361, 0x616d, "\000" 
-    IDC_S2SENSOR_MODE_COMBO, 0x403, 12, 0
-0x7945, 0x2065, 0x6e4f, 0x2065, 0x7250, 0x006f, 
+    IDC_ARGYLLSENSOR_MODE_COMBO, 0x403, 4, 0
+0x5243, 0x0054, 
     0
 END
 
@@ -1236,6 +1245,22 @@ BEGIN
 0x4f43, 0x384d, "\000" 
     IDC_LUXMETER_COM_COMBO, 0x403, 5, 0
 0x4f43, 0x394d, "\000" 
+    0
+END
+
+IDD_AUDIO_SENSOR_PROP_PAGE DLGINIT
+BEGIN
+    IDC_S2SENSOR_MODE_COMBO, 0x403, 22, 0
+0x7945, 0x2065, 0x6e4f, 0x2065, 0x6944, 0x7073, 0x616c, 0x2079, 0x202d, 
+0x5243, 0x0054, 
+    IDC_S2SENSOR_MODE_COMBO, 0x403, 22, 0
+0x7945, 0x2065, 0x6e4f, 0x2065, 0x6944, 0x7073, 0x616c, 0x2079, 0x202d, 
+0x434c, 0x0044, 
+    IDC_S2SENSOR_MODE_COMBO, 0x403, 25, 0
+0x7945, 0x2065, 0x6e4f, 0x2065, 0x6944, 0x7073, 0x616c, 0x2079, 0x202d, 
+0x6c50, 0x7361, 0x616d, "\000" 
+    IDC_S2SENSOR_MODE_COMBO, 0x403, 12, 0
+0x7945, 0x2065, 0x6e4f, 0x2065, 0x7250, 0x006f, 
     0
 END
 
