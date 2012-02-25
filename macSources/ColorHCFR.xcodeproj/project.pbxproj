@@ -655,7 +655,7 @@
 		024EB6E50E6549F200FDFB3C /* HCFRAditionnalFramesPlugin.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = HCFRAditionnalFramesPlugin.mm; sourceTree = "<group>"; };
 		024EB7160E654D4300FDFB3C /* HCFRAditionnalFramesTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HCFRAditionnalFramesTool.h; sourceTree = "<group>"; };
 		024EB7170E654D4300FDFB3C /* HCFRAditionnalFramesTool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HCFRAditionnalFramesTool.m; sourceTree = "<group>"; };
-		024EB75B0E654F0F00FDFB3C /* English */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/Localizable.strings; sourceTree = "<group>"; };
+		024EB75B0E654F0F00FDFB3C /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/Localizable.strings; sourceTree = "<group>"; };
 		024EB83A0E655EF100FDFB3C /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/AditionnalFrames.nib; sourceTree = "<group>"; };
 		024EB84B0E6565B700FDFB3C /* HCFRAditionnalFrameView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HCFRAditionnalFrameView.h; sourceTree = "<group>"; };
 		024EB84C0E6565B700FDFB3C /* HCFRAditionnalFrameView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HCFRAditionnalFrameView.m; sourceTree = "<group>"; };

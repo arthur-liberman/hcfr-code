@@ -560,12 +560,12 @@ void HCFRSensorUpdaterDeviceRemoved(void * refCon, io_iterator_t iterator);
 	request.bInterfaceProtocol = kIOUSBFindInterfaceDontCare;
 	request.bAlternateSetting = kIOUSBFindInterfaceDontCare;
   
-	kernResult = (*device)->CreateInterfaceIterator(device, &request, &iterator);
+	(*device)->CreateInterfaceIterator(device, &request, &iterator);
 
   // on prend la première interface qu'on trouve.
 	usbInterface = IOIteratorNext (iterator);
   
-  kernResult = IOCreatePlugInInterfaceForService(usbInterface, kIOUSBInterfaceUserClientTypeID,
+  IOCreatePlugInInterfaceForService(usbInterface, kIOUSBInterfaceUserClientTypeID,
                                                  kIOCFPlugInInterfaceID, &plugInInterface, &score);
   
   // une fois l'interface d'interface créée, on release le usbInterface et l'iterateur
@@ -578,7 +578,7 @@ void HCFRSensorUpdaterDeviceRemoved(void * refCon, io_iterator_t iterator);
     return NO;
   }
   
-  result = (*plugInInterface)->QueryInterface(plugInInterface, CFUUIDGetUUIDBytes(kIOUSBInterfaceInterfaceID),
+  (*plugInInterface)->QueryInterface(plugInInterface, CFUUIDGetUUIDBytes(kIOUSBInterfaceInterfaceID),
                                               (LPVOID) &interface);
   
   (*plugInInterface)->Release(plugInInterface);
@@ -881,9 +881,9 @@ void HCFRSensorUpdaterDeviceAdded(void * refCon, io_iterator_t iterator)
     }
     
     //Check these values for confirmation
-    err = (*dev)->GetDeviceVendor(dev, &vendor);
-    err = (*dev)->GetDeviceProduct(dev, &product);
-    err = (*dev)->GetDeviceReleaseNumber(dev, &release);
+    (*dev)->GetDeviceVendor(dev, &vendor);
+    (*dev)->GetDeviceProduct(dev, &product);
+    (*dev)->GetDeviceReleaseNumber(dev, &release);
     if ((vendor != kVendorID) || (product != kProductID))
     {
       (void) (*dev)->Release(dev);
