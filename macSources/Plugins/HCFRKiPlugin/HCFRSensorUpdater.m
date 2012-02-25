@@ -453,9 +453,11 @@ void HCFRSensorUpdaterDeviceRemoved(void * refCon, io_iterator_t iterator);
   
 	err = IOServiceAddMatchingNotification(notify_port, kIOFirstMatchNotification, matchingDictionary, HCFRSensorUpdaterDeviceAdded, self, &device_added_iterator);
 	HCFRSensorUpdaterDeviceAdded (self, device_added_iterator);
-	if (err !=noErr) {
-    NSLog (@"HCFRSensorUpdater: pblm lors de l'ajout de notification");
-    return NO;
+	if (err !=noErr) 
+	{
+		CFRelease(matchingDictionary);
+		NSLog (@"HCFRSensorUpdater: pblm lors de l'ajout de notification");
+		return NO;
 	}
   
 	err = IOServiceAddMatchingNotification(notify_port, kIOTerminatedNotification, matchingDictionary, HCFRSensorUpdaterDeviceRemoved, self, &device_removed_iterator);
@@ -855,7 +857,7 @@ void HCFRSensorUpdaterDeviceAdded(void * refCon, io_iterator_t iterator)
   {
     // on crée un plugin pour le device
     // ce plugin sera la connection entre l'appli et le kernel
-		err = IOCreatePlugInInterfaceForService(usbDevice,
+	IOCreatePlugInInterfaceForService(usbDevice,
                                             kIOUSBDeviceUserClientTypeID,
                                             kIOCFPlugInInterfaceID,
                                             &plugInInterface, &score);
