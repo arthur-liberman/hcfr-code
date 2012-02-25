@@ -6355,10 +6355,10 @@ munki_code munki_optimise_sensor(
 	double new_int_time;
 	double min_int_time;	/* Adjusted min_int_time */
 	int    new_gain_mode;
+	munkiimp *m = (munkiimp *)p->m;
 
 	RDBG((dbgo,"munki_optimise_sensor called, inttime %f, gain mode %d, scale %f\n",cur_int_time,cur_gain_mode, scale))
 
-	munkiimp *m = (munkiimp *)p->m;
 	min_int_time = m->min_int_time - deadtime;
 	cur_int_time -= deadtime;
 
