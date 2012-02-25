@@ -8,6 +8,15 @@
 
 /* Begin PBXBuildFile section */
 		01D8876214F4C4BC002DC664 /* libHCFR.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 024EBB710E66CF6A00FDFB3C /* libHCFR.framework */; };
+		01D88B0F14F8675F002DC664 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
+		01D88B1014F8675F002DC664 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 29B97324FDCFA39411CA2CEA /* AppKit.framework */; };
+		01D88B1114F8675F002DC664 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 29B97325FDCFA39411CA2CEA /* Foundation.framework */; };
+		01D88B1214F8675F002DC664 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 023142B40CA410410034465F /* IOKit.framework */; };
+		01D88B1314F8675F002DC664 /* HCFRPlugins.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02CC41A50DC75F560094B4F6 /* HCFRPlugins.framework */; };
+		01D88B1414F8675F002DC664 /* libHCFR.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 024EBB710E66CF6A00FDFB3C /* libHCFR.framework */; };
+		01D88B1E14F8677D002DC664 /* libargyll.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 01D8890A14F848F7002DC664 /* libargyll.a */; };
+		01D88B2614F867EB002DC664 /* ArgyllSensorPlugin.mm in Sources */ = {isa = PBXBuildFile; fileRef = 01D88B2514F867EB002DC664 /* ArgyllSensorPlugin.mm */; };
+		01D88B2914F867FA002DC664 /* ArgyllSensor.mm in Sources */ = {isa = PBXBuildFile; fileRef = 01D88B2814F867FA002DC664 /* ArgyllSensor.mm */; };
 		0206297C0C99275C005216D9 /* HCFRCIEChartController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0206297B0C99275C005216D9 /* HCFRCIEChartController.mm */; };
 		020650700DF9424B00A4580A /* HCFRFile.icns in Resources */ = {isa = PBXBuildFile; fileRef = 0206506E0DF9424800A4580A /* HCFRFile.icns */; };
 		020CD4D812E88D4C00B098C6 /* HCFRManualFullscreenGenerator.mm in Sources */ = {isa = PBXBuildFile; fileRef = 020CD4D712E88D4C00B098C6 /* HCFRManualFullscreenGenerator.mm */; };
@@ -290,6 +299,41 @@
 			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
 			remoteInfo = libHCFR;
 		};
+		01D8890914F848F7002DC664 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 01D8890414F848F7002DC664 /* spectro.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 01D8884914F83A10002DC664 /* libargyll.a */;
+			remoteInfo = argyll;
+		};
+		01D8893514F84CA4002DC664 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 01D8890414F848F7002DC664 /* spectro.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 01D8893114F84CA3002DC664 /* liblibusb_.a */;
+			remoteInfo = libusb_;
+		};
+		01D8897F14F86754002DC664 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 02CC41A40DC75F560094B4F6 /* HCFRPlugins */;
+			remoteInfo = HCFRPlugins;
+		};
+		01D88B6714F869CA002DC664 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 01D8890414F848F7002DC664 /* spectro.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 01D8884814F83A10002DC664 /* argyll */;
+			remoteInfo = argyll;
+		};
+		01D88BA614F86DDB002DC664 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 01D8897714F8672E002DC664 /* ArgyllPlugin */;
+			remoteInfo = ArgyllPlugin;
+		};
 		02132C530D5DDE0D00475539 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
@@ -523,6 +567,13 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		01D8890414F848F7002DC664 /* spectro.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = spectro.xcodeproj; path = ../Tools/macSources/spectro/spectro.xcodeproj; sourceTree = SOURCE_ROOT; };
+		01D8897814F8672E002DC664 /* ArgyllPlugin.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ArgyllPlugin.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
+		01D8897914F8672E002DC664 /* ArgyllPlugin-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "ArgyllPlugin-Info.plist"; path = "../ArgyllPlugin-Info.plist"; sourceTree = "<group>"; };
+		01D88B2414F867EB002DC664 /* ArgyllSensorPlugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ArgyllSensorPlugin.h; sourceTree = "<group>"; };
+		01D88B2514F867EB002DC664 /* ArgyllSensorPlugin.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ArgyllSensorPlugin.mm; sourceTree = "<group>"; };
+		01D88B2714F867FA002DC664 /* ArgyllSensor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ArgyllSensor.h; sourceTree = "<group>"; };
+		01D88B2814F867FA002DC664 /* ArgyllSensor.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ArgyllSensor.mm; sourceTree = "<group>"; };
 		0206297B0C99275C005216D9 /* HCFRCIEChartController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = HCFRCIEChartController.mm; sourceTree = "<group>"; };
 		020629E40C99311C005216D9 /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/CIEChart.nib; sourceTree = "<group>"; };
 		0206506E0DF9424800A4580A /* HCFRFile.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = HCFRFile.icns; sourceTree = "<group>"; };
@@ -838,6 +889,20 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		01D8897614F8672E002DC664 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				01D88B0F14F8675F002DC664 /* Cocoa.framework in Frameworks */,
+				01D88B1014F8675F002DC664 /* AppKit.framework in Frameworks */,
+				01D88B1114F8675F002DC664 /* Foundation.framework in Frameworks */,
+				01D88B1214F8675F002DC664 /* IOKit.framework in Frameworks */,
+				01D88B1314F8675F002DC664 /* HCFRPlugins.framework in Frameworks */,
+				01D88B1414F8675F002DC664 /* libHCFR.framework in Frameworks */,
+				01D88B1E14F8677D002DC664 /* libargyll.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		02132C320D5DD7AD00475539 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -922,6 +987,43 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		01D8890514F848F7002DC664 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				01D8890A14F848F7002DC664 /* libargyll.a */,
+				01D8893614F84CA4002DC664 /* liblibusb_.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		01D88B2114F867AD002DC664 /* ArgyllPlugin */ = {
+			isa = PBXGroup;
+			children = (
+				01D8897914F8672E002DC664 /* ArgyllPlugin-Info.plist */,
+				01D88B2214F867BB002DC664 /* Class */,
+				01D88B2314F867C3002DC664 /* Resources */,
+			);
+			name = ArgyllPlugin;
+			sourceTree = "<group>";
+		};
+		01D88B2214F867BB002DC664 /* Class */ = {
+			isa = PBXGroup;
+			children = (
+				01D88B2414F867EB002DC664 /* ArgyllSensorPlugin.h */,
+				01D88B2514F867EB002DC664 /* ArgyllSensorPlugin.mm */,
+				01D88B2714F867FA002DC664 /* ArgyllSensor.h */,
+				01D88B2814F867FA002DC664 /* ArgyllSensor.mm */,
+			);
+			name = Class;
+			sourceTree = "<group>";
+		};
+		01D88B2314F867C3002DC664 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
 		020CD4CA12E88CF500B098C6 /* InternalGenerators */ = {
 			isa = PBXGroup;
 			children = (
@@ -1344,6 +1446,7 @@
 		02F5C4B60D60DBF30051E0BF /* Plugins */ = {
 			isa = PBXGroup;
 			children = (
+				01D88B2114F867AD002DC664 /* ArgyllPlugin */,
 				02CC42970DC766750094B4F6 /* Framework */,
 				02132C2F0D5DD78600475539 /* HCFRKiPlugin */,
 				02CC41CE0DC760880094B4F6 /* HCFRVirtualSensorPlugin */,
@@ -1530,6 +1633,7 @@
 				02CC44C10DC896690094B4F6 /* ManualDVDGeneratorPlugin.hcfrPlugin */,
 				024EB6BA0E65476C00FDFB3C /* AditionnalFramesPlugin.hcfrPlugin */,
 				8D1107320486CEB800E47090 /* ColorHCFR.app */,
+				01D8897814F8672E002DC664 /* ArgyllPlugin.bundle */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1537,6 +1641,7 @@
 		29B97314FDCFA39411CA2CEA /* ColorHCFR */ = {
 			isa = PBXGroup;
 			children = (
+				01D8890414F848F7002DC664 /* spectro.xcodeproj */,
 				02DE60C20C86CACF00D878CC /* Docs */,
 				024EBB6C0E66CF6A00FDFB3C /* libHCFR.xcodeproj */,
 				02F5C4B60D60DBF30051E0BF /* Plugins */,
@@ -1628,6 +1733,25 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		01D8897714F8672E002DC664 /* ArgyllPlugin */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 01D8897C14F8672F002DC664 /* Build configuration list for PBXNativeTarget "ArgyllPlugin" */;
+			buildPhases = (
+				01D8897414F8672E002DC664 /* Resources */,
+				01D8897514F8672E002DC664 /* Sources */,
+				01D8897614F8672E002DC664 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				01D8898014F86754002DC664 /* PBXTargetDependency */,
+				01D88B6814F869CA002DC664 /* PBXTargetDependency */,
+			);
+			name = ArgyllPlugin;
+			productName = ArgyllPlugin;
+			productReference = 01D8897814F8672E002DC664 /* ArgyllPlugin.bundle */;
+			productType = "com.apple.product-type.bundle";
+		};
 		02132C330D5DD7AD00475539 /* KiPlugin */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 02132C360D5DD7B000475539 /* Build configuration list for PBXNativeTarget "KiPlugin" */;
@@ -1766,6 +1890,7 @@
 				02CC431B0DC76F0A0094B4F6 /* PBXTargetDependency */,
 				02CC44E40DC897FC0094B4F6 /* PBXTargetDependency */,
 				024EB7870E65502600FDFB3C /* PBXTargetDependency */,
+				01D88BA714F86DDB002DC664 /* PBXTargetDependency */,
 			);
 			name = ColorHCFR;
 			productInstallPath = "$(HOME)/Applications";
@@ -1798,6 +1923,10 @@
 					ProductGroup = 024EBB6D0E66CF6A00FDFB3C /* Products */;
 					ProjectRef = 024EBB6C0E66CF6A00FDFB3C /* libHCFR.xcodeproj */;
 				},
+				{
+					ProductGroup = 01D8890514F848F7002DC664 /* Products */;
+					ProjectRef = 01D8890414F848F7002DC664 /* spectro.xcodeproj */;
+				},
 			);
 			projectRoot = "";
 			targets = (
@@ -1808,11 +1937,27 @@
 				02CC44C00DC896690094B4F6 /* ManualDVDGeneratorPlugin */,
 				024EB6B90E65476C00FDFB3C /* AditionnalFramesPlugin */,
 				8D1107260486CEB800E47090 /* ColorHCFR */,
+				01D8897714F8672E002DC664 /* ArgyllPlugin */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		01D8890A14F848F7002DC664 /* libargyll.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libargyll.a;
+			remoteRef = 01D8890914F848F7002DC664 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		01D8893614F84CA4002DC664 /* liblibusb_.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			name = liblibusb_.a;
+			path = build/Debug/liblibusb_.a;
+			remoteRef = 01D8893514F84CA4002DC664 /* PBXContainerItemProxy */;
+			sourceTree = "<group>";
+		};
 		024EBB710E66CF6A00FDFB3C /* libHCFR.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
@@ -1823,6 +1968,13 @@
 /* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
+		01D8897414F8672E002DC664 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		02132C300D5DD7AD00475539 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -2042,6 +2194,15 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		01D8897514F8672E002DC664 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				01D88B2614F867EB002DC664 /* ArgyllSensorPlugin.mm in Sources */,
+				01D88B2914F867FA002DC664 /* ArgyllSensor.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		02132C310D5DD7AD00475539 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -2164,6 +2325,21 @@
 			isa = PBXTargetDependency;
 			name = libHCFR;
 			targetProxy = 01D86C1E14F2262D002DC664 /* PBXContainerItemProxy */;
+		};
+		01D8898014F86754002DC664 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 02CC41A40DC75F560094B4F6 /* HCFRPlugins */;
+			targetProxy = 01D8897F14F86754002DC664 /* PBXContainerItemProxy */;
+		};
+		01D88B6814F869CA002DC664 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = argyll;
+			targetProxy = 01D88B6714F869CA002DC664 /* PBXContainerItemProxy */;
+		};
+		01D88BA714F86DDB002DC664 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 01D8897714F8672E002DC664 /* ArgyllPlugin */;
+			targetProxy = 01D88BA614F86DDB002DC664 /* PBXContainerItemProxy */;
 		};
 		02132C540D5DDE0D00475539 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -2440,6 +2616,56 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		01D8897A14F8672F002DC664 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
+				INFOPLIST_FILE = "ArgyllPlugin-Info.plist";
+				INSTALL_PATH = "$(HOME)/Library/Bundles";
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = ArgyllPlugin;
+				WRAPPER_EXTENSION = bundle;
+			};
+			name = Debug;
+		};
+		01D8897B14F8672F002DC664 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
+				INFOPLIST_FILE = "ArgyllPlugin-Info.plist";
+				INSTALL_PATH = "$(HOME)/Library/Bundles";
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = ArgyllPlugin;
+				WRAPPER_EXTENSION = bundle;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
 		02132C370D5DD7B000475539 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -2938,6 +3164,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		01D8897C14F8672F002DC664 /* Build configuration list for PBXNativeTarget "ArgyllPlugin" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				01D8897A14F8672F002DC664 /* Debug */,
+				01D8897B14F8672F002DC664 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		02132C360D5DD7B000475539 /* Build configuration list for PBXNativeTarget "KiPlugin" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
