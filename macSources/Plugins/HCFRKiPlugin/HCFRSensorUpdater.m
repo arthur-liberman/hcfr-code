@@ -619,7 +619,7 @@ void HCFRSensorUpdaterDeviceRemoved(void * refCon, io_iterator_t iterator);
     [self displayStep:connectSensorStep];
 }
 
-#pragma Fonctions d'accès à la sonde
+#pragma access functions
 -(BOOL) erase:(int)nbPages rowsAt:(unsigned int)address
 {
   NSAssert (interface != NULL, @"Sensor updater : erase called with NULL interface.");
