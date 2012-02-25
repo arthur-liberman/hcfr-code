@@ -147,7 +147,6 @@ ss_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) {
 	ss_ctt sobrc[7]  = { ss_ctt_SetBaud9600, ss_ctt_SetBaud19200, ss_ctt_SetBaud57600,
 	                     ss_ctt_SetBaud2400, ss_ctt_SetBaud1200,  ss_ctt_SetBaud600,
 	                     ss_ctt_SetBaud300 };
-	char *fcc;
 	ss_ctt fcc1;
 	ss_hst fcc2;
 	long etime;
@@ -422,7 +421,6 @@ ss_init_inst(inst *pp) {
 			return rv;
 
 		if (p->verb) {
-			char buf[1000]; 
 			char dn[19];		/* Device name */
 			unsigned int sn;	/* Serial number */
 			char pn[9];			/* Part number */
@@ -456,7 +454,6 @@ ss_init_inst(inst *pp) {
 		return rv;
 
 	if (p->verb) {
-		char buf[1000]; 
 		char dn[19];		/* device name */
 		ss_dnot dno;		/* device number */
 		char pn[9];			/* part number */
@@ -633,7 +630,6 @@ ipatch *vals) { 		/* Pointer to array of values */
 	int pass, step, patch;
 	int tries, tc;			/* Total read tries */
 	int fstep = 0;			/* NZ if step is fast & quiet direction */
-	int pisrow;				/* patches in a step direction serpentine row */
 
 	if (p->itype != instSpectroScan
 	 && p->itype != instSpectroScanT)
@@ -1473,7 +1469,6 @@ inst_code ss_comp_filter(
 struct _inst *pp,
 char *filtername
 ) {
-	ss *p = (ss *)pp;
 	
 #ifndef SALONEINSTLIB
 	if (filtername == NULL) {

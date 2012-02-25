@@ -1342,7 +1342,6 @@ spyd2_rd_ee_ushort(
 ) {
 	inst_code ev;
 	unsigned char buf[2];
-	int v, val;
 
 	if ((ev = spyd2_readEEProm(p, buf, addr, 2)) != inst_ok)
 		return ev;
@@ -1361,7 +1360,6 @@ spyd2_rd_ee_int(
 ) {
 	inst_code ev;
 	unsigned char buf[4];
-	int v, val;
 
 	if ((ev = spyd2_readEEProm(p, buf, addr, 4)) != inst_ok)
 		return ev;
@@ -1915,12 +1913,7 @@ spyd2_download_pld(
 static inst_code
 spyd2_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) {
 	spyd2 *p = (spyd2 *) pp;
-	char buf[16];
-	int rsize;
-	long etime;
-	int bi, i, rv;
 	icomuflags usbflags = icomuf_none;
-	inst_code ev = inst_ok;
 
 	if (p->debug) {
 		p->icom->debug = p->debug;	/* Turn on debugging */

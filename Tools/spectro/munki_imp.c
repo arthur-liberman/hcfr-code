@@ -283,7 +283,7 @@ munki_code add_munkiimp(munki *p) {
 
 	if ((m = (munkiimp *)calloc(1, sizeof(munkiimp))) == NULL) {
 		DBG((dbgo,"add_munkiimp malloc %d bytes failed (1)\n",sizeof(munkiimp)))
-		if (p->verb) printf("Malloc %d bytes failed (1)\n",sizeof(munkiimp));
+		if (p->verb) printf("Malloc %lu bytes failed (1)\n",sizeof(munkiimp));
 		return MUNKI_INT_MALLOC;
 	}
 	m->p = p;
@@ -301,7 +301,6 @@ void del_munkiimp(munki *p) {
 		int i;
 		munkiimp *m = (munkiimp *)p->m;
 		munki_state *s;
-		munki_code ev;
 
 		if (m->th != NULL) {		/* Terminate switch monitor thread by simulating an event */
 			m->th_term = 1;			/* Tell thread to exit on error */
@@ -884,7 +883,6 @@ munki_code munki_imp_set_mode(
 inst_cal_type munki_imp_needs_calibration(
 	munki *p
 ) {
-	munki_code ev = MUNKI_OK;
 	munkiimp *m = (munkiimp *)p->m;
 	munki_state *s = &m->ms[m->mmode];
 	time_t curtime = time(NULL);
@@ -1296,7 +1294,6 @@ munki_code munki_imp_calibrate(
 	if ((s->reflective && *calc == inst_calc_man_cal_smode)
 	 || (s->trans && *calc == inst_calc_man_trans_white)) {
 		double dead_time = 0.0;		/* Dead integration time */
-		int optimal;
 		double scale;
 		int i;
 		double ulimit = m->optsval / m->minsval;	/* Upper scale needed limit */
@@ -2040,7 +2037,7 @@ munki_code munki_save_calibration(munki *p) {
 	munkiimp *m = (munkiimp *)p->m;
 	munki_code ev = MUNKI_OK;
 	munki_state *s;
-	int i, j;
+	int i;
 	char nmode[10];
 	char cal_name[40+1];		/* Name */
 	char **cal_paths = NULL;
@@ -2312,8 +2309,6 @@ munki_code munki_restore_calibration(munki *p) {
 
 	/* For each mode, save the calibration if it's valid */
 	for (i = 0; i < mk_no_modes; i++) {
-		double dd, inttime;
-		s = &m->ms[i];
 
 		/* Mode identification */
 		read_ints(&x, fp, &ts.emiss, 1);
@@ -2517,7 +2512,6 @@ munki_code munki_dark_measure_2(
 ) {
 	munki_code ev = MUNKI_OK;
 	munkiimp *m = (munkiimp *)p->m;
-	munki_state *s = &m->ms[m->mmode];
 	double **multimes;		/* Multiple measurement results */
 	double darkthresh;		/* Dark threshold */
 	double sensavg;			/* Overall average of sensor readings */
@@ -2595,9 +2589,7 @@ munki_code munki_heatLED(
 	munki *p,
 	double htime		/* Heat up time */
 ) {
-	munki_code ev = MUNKI_OK;
 	munkiimp *m = (munkiimp *)p->m;
-	munki_state *s = &m->ms[m->mmode];
 	double inttime = m->cal_int_time; 		/* Integration time to use/used */
 	int nummeas;
 	unsigned char *buf;		/* Raw USB reading buffer */
@@ -2771,10 +2763,9 @@ munki_code munki_compute_wav_whitemeas(
 	double *abswav2,		/* Return array [nwav2] of abswav values (if hr_init, may be NULL) */
 	double *absraw			/* Given array [nraw] of absraw values */
 ) {
-	munki_code ev = MUNKI_OK;
+#if defined(PLOT_DEBUG) || defined(HIGH_RES)
 	munkiimp *m = (munkiimp *)p->m;
-	munki_state *s = &m->ms[m->mmode];
-
+#endif
 	/* Convert an absraw array from raw wavelengths to output wavelenths */
 	if (abswav1 != NULL) {
 		munki_abssens_to_abswav1(p, 1, &abswav1, &absraw);
@@ -2819,7 +2810,6 @@ munki_code munki_ledtemp_whitemeasure(
 	double **multimes;		/* Multiple measurement results */
 	double *ledtemp;		/* LED temperature for each measurement */
 	double darkthresh;		/* Dark threshold */
-	int rv;
 
 	DBG((dbgo,"munki_ledtemp_whitemeasure called \n"))
 
@@ -3035,8 +3025,6 @@ munki_code munki_read_patches_1(
 ) {
 	munki_code ev = MUNKI_OK;
 	munkiimp *m = (munkiimp *)p->m;
-	munki_state *s = &m->ms[m->mmode];
-	int rv = 0;
 
 	if ((ninvmeas + minnummeas) <= 0)
 		return MUNKI_INT_ZEROMEASURES;
@@ -3324,9 +3312,7 @@ munki_code munki_trialmeasure(
 	double **multimes;		/* Multiple measurement results */
 	double *abssens;		/* Linearsised absolute sensor raw values */
 	int nmeasuered;			/* Number actually measured */
-	double highest;			/* Highest of sensor readings */
 	double sensavg;			/* Overall average of sensor readings */
-	double satthresh;		/* Saturation threshold */
 	double darkthresh;		/* Dark threshold */
 	double trackmax[2];		/* Track optimum target */
 	double maxval;			/* Maximum multimeas value */
@@ -3629,7 +3615,6 @@ void munki_sub_sens_to_abssens(
 
 	/* Process the "tracked to max" values too */
 	if (ntrackmax > 0 && trackmax != NULL)  {
-		double raw, lval;
 		for (i = 0; i < ntrackmax; i++) {
 			double rval, fval, lval;
 
@@ -4339,7 +4324,7 @@ munki_code munki_extract_patches_multimeas(
 		PRDBG((dbgo,"Patch %d: consistency = %f%%, thresh = %f%%\n",pix,100.0 * cons, 100.0 * patch_cons_thr))
 		if (cons > patch_cons_thr) {
 			if (p->debug >= 1)
-				fprintf(stderr,"Patch recog failed - patch %k is inconsistent (%f%%)\n",cons);
+				fprintf(stderr,"Patch recog failed - patch %d is inconsistent (%f%%)\n",pix, cons);
 			rv |= 1;
 		}
 		pix++;
@@ -4383,7 +4368,7 @@ munki_code munki_extract_patches_flash(
 	double inttime			/* Integration time (used to compute duration) */
 ) {
 	munkiimp *m = (munkiimp *)p->m;
-	int i, j, k, pix;
+	int i, j, k;
 	double minval, maxval;		/* min and max input value at wavelength of maximum input */
 	double mean;				/* Mean of the max wavelength band */
 	int maxband;				/* Band of maximum value */
@@ -6079,11 +6064,12 @@ int munki_imp_highres(munki *p) {
 
 /* Set to high resolution mode */
 munki_code munki_set_highres(munki *p) {
-	int i;
-	munkiimp *m = (munkiimp *)p->m;
 	munki_code ev = MUNKI_OK;
 
 #ifdef HIGH_RES
+	int i;
+	munkiimp *m = (munkiimp *)p->m;
+
 	if (m->hr_inited == 0) {
 		if ((ev = munki_create_hr(p, 1)) != MUNKI_OK)	/* Reflective */
 			return ev;	
@@ -6121,11 +6107,12 @@ munki_code munki_set_highres(munki *p) {
 
 /* Set to standard resolution mode */
 munki_code munki_set_stdres(munki *p) {
-	int i;
-	munkiimp *m = (munkiimp *)p->m;
 	munki_code ev = MUNKI_OK;
 
 #ifdef HIGH_RES
+	int i;
+	munkiimp *m = (munkiimp *)p->m;
+
 	m->nwav = m->nwav1;
 	m->wl_short = m->wl_short1;
 	m->wl_long = m->wl_long1; 
@@ -6158,7 +6145,6 @@ munki_code munki_set_stdres(munki *p) {
 /* Modify the scan consistency tolerance */
 munki_code munki_set_scan_toll(munki *p, double toll_ratio) {
 	munkiimp *m = (munkiimp *)p->m;
-	munki_code ev = MUNKI_OK;
 
 	m->scan_toll_ratio = toll_ratio;
 
@@ -6280,7 +6266,6 @@ int munki_compute_white_cal(
 	double *white_read2		/* [nwav2] The white that was read */
 ) {
 	munkiimp *m = (munkiimp *)p->m;
-	munki_state *s = &m->ms[m->mmode];
 	int j, warn = 0;
 	
 	DBG((dbgo,"munki_compute_white_cal called"))
@@ -6367,14 +6352,13 @@ munki_code munki_optimise_sensor(
 	double scale,			/* scale needed of current int time to reach optimum */
 	double deadtime			/* Dead integration time (if any) */
 ) {
-	munki_code ev = MUNKI_OK;
-	munkiimp *m = (munkiimp *)p->m;
 	double new_int_time;
 	double min_int_time;	/* Adjusted min_int_time */
 	int    new_gain_mode;
 
 	RDBG((dbgo,"munki_optimise_sensor called, inttime %f, gain mode %d, scale %f\n",cur_int_time,cur_gain_mode, scale))
 
+	munkiimp *m = (munkiimp *)p->m;
 	min_int_time = m->min_int_time - deadtime;
 	cur_int_time -= deadtime;
 
@@ -6654,7 +6638,6 @@ munki_getfirm(
 	int *noeeblocks,	/* Number of EEPROM blocks */
 	int *eeblocksize	/* Size of each block */
 ) {
-	int rwbytes;			/* Data bytes read or written */
 	unsigned char pbuf[24];	/* status bytes read */
 	int _fwrev_maj, _fwrev_min;
 	int _tickdur;
@@ -6707,7 +6690,6 @@ munki_getchipid(
 	munki *p,
 	unsigned char chipid[8]
 ) {
-	int rwbytes;			/* Data bytes read or written */
 	int se, rv = MUNKI_OK;
 	int isdeb = 0;
 
@@ -6742,7 +6724,6 @@ munki_getversionstring(
 	munki *p,
 	char vstring[37]
 ) {
-	int rwbytes;			/* Data bytes read or written */
 	int se, rv = MUNKI_OK;
 	int isdeb = 0;
 
@@ -6781,7 +6762,6 @@ munki_getmeasstate(
 	int *dutycycle,		/* Duty Cycle */
 	int *ADfeedback		/* A/D converter feedback */
 ) {
-	int rwbytes;			/* Data bytes read or written */
 	unsigned char pbuf[16];	/* values read */
 	int _ledtrange;
 	int _ledtemp;
@@ -6832,7 +6812,6 @@ munki_getstatus(
 	mk_spos *spos,		/* Return the sensor position */
 	mk_but *but			/* Return Button state */
 ) {
-	int rwbytes;			/* Data bytes read or written */
 	unsigned char pbuf[2];	/* status bytes read */
 	mk_spos _spos;
 	mk_but _but;
@@ -6901,7 +6880,6 @@ munki_setindled(
     int p4,			/* Number of pulses, -1 = max */
     int p5			/* Ignored ? */
 ) {
-	int rwbytes;			/* Data bytes read or written */
 	unsigned char pbuf[20];	/* command bytes written */
 	int se, rv = MUNKI_OK;
 	int isdeb = 0;
@@ -6946,7 +6924,6 @@ munki_triggermeasure(
 	int holdtempduty	/* Hold temperature duty cycle */
 ) {
 	munkiimp *m = (munkiimp *)p->m;
-	int rwbytes;			/* Data bytes read or written */
 	unsigned char pbuf[12];	/* command bytes written */
 	int se, rv = MUNKI_OK;
 	int isdeb = 0;
@@ -7034,7 +7011,7 @@ munki_readmeasurement(
 
 	top = extra + m->c_inttime * nmeas;
 
-	if (isdeb) fprintf(stderr,"\nmunki: Read measurement results: inummeas %d, scanflag %d, address 0x%x bsize 0x%x, timout %f\n",inummeas, scanflag, buf, bsize, top);
+	if (isdeb) fprintf(stderr,"\nmunki: Read measurement results: inummeas %d, scanflag %d, address 0x%x bsize 0x%x, timout %f\n",inummeas, scanflag, (unsigned int)buf, bsize, top);
 
 	for (;;) {
 		int size;		/* number of bytes to read */
@@ -7180,7 +7157,6 @@ munki_readmeasurement(
 /* Simulating an event */
 munki_code munki_simulate_event(munki *p, mk_eve ecode,  int timestamp) {
 	munkiimp *m = (munkiimp *)p->m;
-	int rwbytes;			/* Data bytes read or written */
 	unsigned char pbuf[8];	/* 8 bytes to write */
 	int se, rv = MUNKI_OK;
 	int isdeb = 0;

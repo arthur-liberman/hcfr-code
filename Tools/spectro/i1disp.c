@@ -618,7 +618,7 @@ i1disp_take_measurement_1(
 	int cal,				/* nz if black is not to be subtracted */
 	double rgb[3]			/* Return the rgb values */
 ) {
-	int i, j;
+	int i;
 	int intthr[3];		/* Integration times 1..255 for each channel */
 	inst_code ev;
 
@@ -700,7 +700,6 @@ i1disp_take_first_raw_measurement_2(
 	i1disp *p,				/* Object */
 	double rgb[3]			/* Return the RGB values */
 ) {
-	int i;
 	unsigned char ibuf[16];
 	unsigned char obuf[16];
 	int rsize;
@@ -741,7 +740,7 @@ i1disp_take_raw_measurement_2(
 	int edgec[3],		/* Measurement edge count for each channel */
 	double rgb[3]		/* Return the RGB values */
 ) {
-	int i, tries = 2;
+	int i;
 	unsigned char ibuf[16];
 	unsigned char obuf[16];
 	int rsize;
@@ -793,7 +792,7 @@ i1disp_take_measurement_2(
 	int crtm,				/* nz if crt mode */
 	double rgb[3]			/* Return the rgb values */
 ) {
-	int i, j;
+	int i;
 	int edgec[3] = {ME,ME,ME};	/* Measurement edge count for each channel */
 	int rem[3] = {1,1,1};	/* remeasure flags */
 	inst_code ev;
@@ -961,7 +960,7 @@ static inst_code
 i1disp_do_black_cal(
 	i1disp *p				/* Object */
 ) {
-	int i, j;
+	int i;
 	double rgb1[3], rgb2[3];	/* RGB Readings */
 	inst_code ev;
 
@@ -1380,8 +1379,6 @@ i1disp_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout)
 	i1disp *p = (i1disp *) pp;
 	unsigned char buf[16];
 	int rsize;
-	long etime;
-	int bi, i, rv;
 	inst_code ev = inst_ok;
 
 	if (p->debug) {
@@ -1780,7 +1777,6 @@ static inst_code
 i1disp_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 {
 	i1disp *p = (i1disp *)pp;
-	inst_code ev = inst_ok;
 
 	if (m == inst_opt_disp_crt) {
 		if (p->crt == 0)

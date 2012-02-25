@@ -84,11 +84,6 @@ static inst_code i1pro_interp_code(i1pro *p, i1pro_code ec);
 static inst_code
 i1pro_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) {
 	i1pro *p = (i1pro *) pp;
-	char buf[16];
-	int rsize;
-	long etime;
-	int bi, i, rv;
-	inst_code ev = inst_ok;
 	icomuflags usbflags = icomuf_none;
 #ifdef __APPLE__
 	/* If the X-Rite software has been installed, then there may */
@@ -577,11 +572,9 @@ inst_status_type m,	/* Requested status type */
 ...) {				/* Status parameters */                             
 	i1pro *p = (i1pro *)pp;
 	i1proimp *imp = (i1proimp *)p->m;
-	inst_code rv = inst_ok;
 
 	/* Return the filter */
 	if (m == inst_stat_get_filter) {
-		i1pro_code ev;
 		inst_opt_filter *filt;
 		va_list args;
 
@@ -608,8 +601,6 @@ static inst_code
 i1pro_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 {
 	i1pro *p = (i1pro *)pp;
-	char buf[MAX_MES_SIZE];
-	inst_code ev = inst_ok;
 
 	/* Ignore these modes - not applicable, but be nice. */
 	if (m == inst_opt_disp_crt

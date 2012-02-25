@@ -109,7 +109,6 @@ cgatsFile *fp		/* File to read from */
 
 /* a * b */
 static size_t ssat_mul(size_t a, size_t b) {
-	size_t c;
 
 	if (a == 0 || b == 0)
 		return 0;
@@ -243,7 +242,6 @@ cgatsFile *pp
 static char *cgatsFileMem_fname(
 cgatsFile *pp
 ) {
-	cgatsFileMem *p = (cgatsFileMem *)pp;
 
 	/* Memory doesn't have a name */
 	return "**Mem**";

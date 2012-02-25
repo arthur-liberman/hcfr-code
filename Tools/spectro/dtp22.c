@@ -650,7 +650,6 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 		return rv;
 
 	if (calt == inst_calt_ref_white) {		/* White calibration */
-		int c;
 		if ((rv = activate_mode(p)) != inst_ok) 
 			goto do_exit;
 
@@ -871,7 +870,6 @@ dtp22_del(inst *pp) {
 
 /* Return the instrument capabilities */
 inst_capability dtp22_capabilities(inst *pp) {
-	dtp22 *p = (dtp22 *)pp;
 	inst_capability rv;
 
 	rv =  
@@ -885,7 +883,6 @@ inst_capability dtp22_capabilities(inst *pp) {
 
 /* Return the instrument capabilities 2 */
 inst2_capability dtp22_capabilities2(inst *pp) {
-	dtp22 *p = (dtp22 *)pp;
 	inst2_capability rv;
 
 	rv = inst2_cal_ref_white
@@ -961,8 +958,6 @@ static inst_code
 dtp22_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 {
 	dtp22 *p = (dtp22 *)pp;
-	char buf[MAX_MES_SIZE];
-	inst_code ev = inst_ok;
 
 	/* Record the trigger mode */
 	if (m == inst_opt_trig_prog
@@ -1022,7 +1017,6 @@ extern dtp22 *new_dtp22(icoms *icom, int debug, int verb)
 static int comp_password(char *out, char *in, unsigned char key[4]) {
 	unsigned int inv[5];
 	unsigned short outv;
-	unsigned short check;
 
 	in[10] = '\000';
 

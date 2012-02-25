@@ -376,7 +376,7 @@ double twid			/* Trailer length in mm (For DTP41T) */
 static inst_code
 dtp20_init_inst(inst *pp) {
 	dtp20 *p = (dtp20 *)pp;
-	char tbuf[100], buf[MAX_MES_SIZE];
+	char buf[MAX_MES_SIZE];
 	inst_code rv = inst_ok;
 
 	if (p->gotcoms == 0)
@@ -812,7 +812,7 @@ char *name,			/* Strip name (7 chars) */
 ipatch *val) {		/* Pointer to instrument patch value */
 	dtp20 *p = (dtp20 *)pp;
 	char buf[MAX_MES_SIZE], *tp;
-	int i, se;
+	int se;
 	inst_code ev = inst_ok;
 	int switch_trig = 0;
 	int user_trig = 0;
@@ -1317,8 +1317,6 @@ dtp20_del(inst *pp) {
 
 /* Interogate the device to discover its capabilities */
 static void	discover_capabilities(dtp20 *p) {
-	inst_code rv = inst_ok;
-
 	p->cap = inst_ref_spot
 	       | inst_ref_strip
 	       | inst_s_ref_spot
@@ -1396,8 +1394,6 @@ static inst_code
 dtp20_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 {
 	dtp20 *p = (dtp20 *)pp;
-	inst_code rv = inst_ok;
-
 	/* Record the trigger mode */
 	if (m == inst_opt_trig_prog
 	 || m == inst_opt_trig_keyb
@@ -1424,7 +1420,6 @@ inst *pp,
 inst_status_type m,	/* Requested status type */
 ...) {				/* Status parameters */                             
 	dtp20 *p = (dtp20 *)pp;
-	inst_code rv = inst_ok;
 
 	if (m == inst_stat_saved_readings) {
 		char buf[MAX_MES_SIZE];
@@ -1470,11 +1465,9 @@ inst_status_type m,	/* Requested status type */
 	/* Return the number of saved spot readings */
 	if (m == inst_stat_s_spot) {
 		int ev;
-		char cmd[10];
 		char buf[MAX_MES_SIZE];
 		int *pnsr;
 		va_list args;
-		int nsr, cs;
 
 		va_start(args, m);
 		pnsr = va_arg(args, int *);
@@ -1570,7 +1563,6 @@ inst_status_type m,	/* Requested status type */
 	/* Return the charged status of the battery */
 	if (m == inst_stat_battery) {
 		int ev;
-		char cmd[10];
 		char buf[MAX_MES_SIZE];
 		double *pbchl;
 		va_list args;
