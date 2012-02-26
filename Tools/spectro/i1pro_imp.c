@@ -62,7 +62,7 @@
 #include "copyright.h"
 #include "aconfig.h"
 #include "numlib.h"
-//#include "rspl.h"
+#include "rspl.h"
 #else /* SALONEINSTLIB */
 #include <fcntl.h>
 #include "sa_config.h"
@@ -87,7 +87,7 @@
 #define SW_THREAD_TIMEOUT	(10 * 60.0) 	/* Switch read thread timeout */
 
 #define SINGLE_READ		/* Use a single USB read for scan to eliminate latency issues. */
-//#define HIGH_RES		/* Enable high resolution spectral mode code. Dissable */
+#define HIGH_RES		/* Enable high resolution spectral mode code. Dissable */
 						/* to break dependency on rspl library. */
 
 /* Debug */
@@ -946,7 +946,6 @@ i1pro_code i1pro_imp_set_mode(
 inst_cal_type i1pro_imp_needs_calibration(
 	i1pro *p
 ) {
-	i1pro_code ev = I1PRO_OK;
 	i1proimp *m = (i1proimp *)p->m;
 	i1pro_state *s = &m->ms[m->mmode];
 	time_t curtime = time(NULL);
@@ -1002,7 +1001,7 @@ i1pro_code i1pro_imp_calibrate(
 	int nummeas = 0;
 	int transwarn = 0;
 	int ltocmode = 0;			/* 1 = Lamp turn on compensation mode */
-	int i, j, k;
+	int i, k;
 
 	DBG((dbgo,"i1pro_imp_calibrate called with calp 0x%x, calc 0x%x\n",caltp, *calc))
 
@@ -1340,7 +1339,6 @@ i1pro_code i1pro_imp_calibrate(
 	/* If we are doing a white reference calibrate */
 	if ((s->reflective && *calc == inst_calc_man_ref_white)
 	 || (s->trans && *calc == inst_calc_man_trans_white)) {
-		int optimal;
 		double scale;
 
 		DBG((dbgo,"Doing initial white calibration with current inttime %f, gainmode %d\n",
@@ -2006,7 +2004,7 @@ i1pro_code i1pro_imp_measure(
 /* Always returns success, even if the restore fails */
 i1pro_code i1pro_restore_refspot_cal(i1pro *p) {
 	int chsum1, *chsum2;
-	int *ip, i, xcount;
+	int *ip, i;
 	unsigned int count;
 	double *dp;
 	unsigned char buf[256];
@@ -2112,7 +2110,7 @@ i1pro_code i1pro_restore_refspot_cal(i1pro *p) {
 /* Save the reflective spot calibration information to the EEPRom data object. */
 /* Note we don't actually write to the EEProm here! */
 static i1pro_code i1pro_set_log_data(i1pro *p) {
-	int *ip, i, xcount;
+	int *ip, i;
 	unsigned int count;
 	double *dp;
 	double absmeas[128];
@@ -2345,7 +2343,7 @@ i1pro_code i1pro_save_calibration(i1pro *p) {
 	i1proimp *m = (i1proimp *)p->m;
 	i1pro_code ev = I1PRO_OK;
 	i1pro_state *s;
-	int i, j;
+	int i;
 	char nmode[10];
 	char cal_name[40+1];		/* Name */
 	char **cal_paths = NULL;
@@ -2609,7 +2607,6 @@ i1pro_code i1pro_restore_calibration(i1pro *p) {
 
 	/* For each mode, save the calibration if it's valid */
 	for (i = 0; i < i1p_no_modes; i++) {
-		double dd, inttime;
 		s = &m->ms[i];
 
 		/* Mode identification */
@@ -2838,7 +2835,6 @@ i1pro_code i1pro_dark_measure_2(
 ) {
 	i1pro_code ev = I1PRO_OK;
 	i1proimp *m = (i1proimp *)p->m;
-	i1pro_state *s = &m->ms[m->mmode];
 	double **multimes;		/* Multiple measurement results */
 	double sensavg;			/* Overall average of sensor readings */
 	double satthresh;		/* Saturation threshold */
@@ -2946,7 +2942,6 @@ i1pro_code i1pro_whitemeasure(
 	unsigned char *buf;		/* Raw USB reading buffer */
 	unsigned int bsize;
 	double **multimes;		/* Multiple measurement results */
-	int rv;
 
 	DBG((dbgo,"i1pro_whitemeasure called \n"))
 
@@ -3056,9 +3051,6 @@ i1pro_code i1pro_whitemeasure_3(
 ) {
 	i1pro_code ev = I1PRO_OK;
 	i1proimp *m = (i1proimp *)p->m;
-	i1pro_state *s = &m->ms[m->mmode];
-	unsigned char *buf;		/* Raw USB reading buffer */
-	unsigned int bsize;
 	double highest;			/* Highest of sensor readings */
 	double sensavg;			/* Overall average of sensor readings */
 	double satthresh;		/* Saturation threshold */
@@ -3156,8 +3148,6 @@ i1pro_code i1pro_read_patches_1(
 ) {
 	i1pro_code ev = I1PRO_OK;
 	i1proimp *m = (i1proimp *)p->m;
-	i1pro_state *s = &m->ms[m->mmode];
-	int rv = 0;
 
 	if (minnummeas <= 0)
 		return I1PRO_INT_ZEROMEASURES;
@@ -3372,14 +3362,9 @@ i1pro_code i1pro_read_patches(
 	int gainmode			/* Gain mode to use, 0 = normal, 1 = high */
 ) {
 	i1pro_code ev = I1PRO_OK;
-	i1proimp *m = (i1proimp *)p->m;
-	i1pro_state *s = &m->ms[m->mmode];
 	unsigned char *buf;		/* Raw USB reading buffer */
 	unsigned int bsize;
 	int nmeasuered;			/* Number actually measured */
-	double satthresh;		/* Saturation threshold */
-	double darkthresh;		/* Dark threshold (for consistency checking) */
-	int rv = 0;
 
 	if (minnummeas <= 0)
 		return I1PRO_INT_ZEROMEASURES;
@@ -3824,12 +3809,12 @@ double i1pro_raw_to_abssens(
 	int gainmode			/* Gain mode, 0 = normal, 1 = high */
 ) {
 	i1proimp *m = (i1proimp *)p->m;
-	int i, j, k;
+	int k;
 	double gain;
 	int npoly;			/* Number of linearisation coefficients */
 	double *polys;		/* the coeficients */
 	double scale;		/* Absolute scale value */
-	double fval, lval;
+	double lval;
 
 	if (gainmode) {
 		gain = m->highgain;
@@ -3886,8 +3871,7 @@ i1pro_code i1pro_abssens_to_meas(
 ) {
 	i1proimp *m = (i1proimp *)p->m;
 	unsigned int maxpve = m->maxpve;	/* maximum +ve sensor value + 1 */ 
-	int i, j, k;
-	double avlastv = 0.0;
+	int j;
 	double gain;
 	int npoly;			/* Number of linearisation coefficients */
 	double *polys;		/* the coeficients */
@@ -3953,7 +3937,6 @@ int i1pro_average_multimeas(
 	double satthresh,		/* Sauration threshold, 0 for none */
 	double darkthresh		/* Dark threshold (used for consistency check scaling) */
 ) {
-	i1proimp *m = (i1proimp *)p->m;
 	int i, j;
 	double highest = -1e6;
 	double oallavg = 0.0;
@@ -4662,7 +4645,7 @@ i1pro_code i1pro_extract_patches_multimeas(
 		PRDBG((dbgo,"Patch %d: consistency = %f%%, thresh = %f%%\n",pix,100.0 * cons, 100.0 * patch_cons_thr))
 		if (cons > patch_cons_thr) {
 			if (p->debug >= 1)
-				fprintf(stderr,"Patch recog failed - patch %k is inconsistent (%f%%)\n",cons);
+				fprintf(stderr,"Patch recog failed - patch %d is inconsistent (%f%%)\n",pix, cons);
 			rv |= 1;
 		}
 		pix++;
@@ -4706,7 +4689,7 @@ i1pro_code i1pro_extract_patches_flash(
 	double inttime			/* Integration time (used to compute duration) */
 ) {
 	i1proimp *m = (i1proimp *)p->m;
-	int i, j, k, pix;
+	int i, j, k;
 	double minval, maxval;		/* min and max input value at wavelength of maximum input */
 	double mean;				/* Mean of the max wavelength band */
 	int maxband;				/* Band of maximum value */
@@ -5287,7 +5270,9 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 	i1pro_xp xp[101];			/* Crossover points each side of filter */
 	i1pro_code ev = I1PRO_OK;
 	rspl *raw2wav;				/* Lookup from CCD index to wavelength */
+#ifdef HIGH_RES_PLOT
 	i1pro_fs fshape[100 * 16];  /* Existing filter shape */
+#endif /* COMPUTE_DISPERSION */
 	int ncp = 0;				/* Number of shape points */
 #ifdef COMPUTE_DISPERSION
 	double spf[3];				/* Spread function parameters */
@@ -5876,10 +5861,12 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 		/* Normalise the filters area in CCD space, while maintaining the */
 		/* total contribution of each CCD at the target too. */
 		{
-			int ii;
 			double tot = 0.0;
 			double ccdweight[128], avgw;	/* Weighting determined by cell widths */
+#ifdef NEVER
+			int ii;
 			double ccdsum[128];
+#endif
 
 			/* Normalize the overall filter weightings */
 			for (j = 0; j < m->nwav2; j++)
@@ -6234,11 +6221,12 @@ int i1pro_imp_highres(i1pro *p) {
 
 /* Set to high resolution mode */
 i1pro_code i1pro_set_highres(i1pro *p) {
-	int i;
-	i1proimp *m = (i1proimp *)p->m;
 	i1pro_code ev = I1PRO_OK;
 
 #ifdef HIGH_RES
+	i1proimp *m = (i1proimp *)p->m;
+	int i;
+
 	if (m->hr_inited == 0) {
 		if ((ev = i1pro_create_hr(p)) != I1PRO_OK) {
 			return ev;
@@ -6270,11 +6258,12 @@ i1pro_code i1pro_set_highres(i1pro *p) {
 
 /* Set to standard resolution mode */
 i1pro_code i1pro_set_stdres(i1pro *p) {
-	int i;
-	i1proimp *m = (i1proimp *)p->m;
 	i1pro_code ev = I1PRO_OK;
 
 #ifdef HIGH_RES
+	int i;
+	i1proimp *m = (i1proimp *)p->m;
+
 	m->nwav = m->nwav1;
 	m->wl_short = m->wl_short1;
 	m->wl_long = m->wl_long1; 
@@ -6302,7 +6291,6 @@ i1pro_code i1pro_set_stdres(i1pro *p) {
 /* Modify the scan consistency tolerance */
 i1pro_code i1pro_set_scan_toll(i1pro *p, double toll_ratio) {
 	i1proimp *m = (i1proimp *)p->m;
-	i1pro_code ev = I1PRO_OK;
 
 	m->scan_toll_ratio = toll_ratio;
 
@@ -6422,7 +6410,6 @@ i1pro_code i1pro_check_white_reference1(
 	i1pro *p,
 	double *abswav			/* [mwav1] Measurement to check */
 ) {
-	i1pro_code ev = I1PRO_OK;
 	i1proimp *m = (i1proimp *)p->m;
 	double *emiswav, normfac;
 	double avg01, avg2227;
@@ -6492,7 +6479,6 @@ int i1pro_compute_white_cal(
 	double *white_read2		/* [nwav2] The white that was read */
 ) {
 	i1proimp *m = (i1proimp *)p->m;
-	i1pro_state *s = &m->ms[m->mmode];
 	int j, warn = 0;;
 	
 	if (white_ref1 == NULL) {		/* transmission white reference */
@@ -6575,7 +6561,6 @@ i1pro_code i1pro_optimise_sensor(
 	double targoscale,		/* Optimising target scale ( <= 1.0) */
 	double scale			/* scale needed of current int time to reach optimum */
 ) {
-	i1pro_code ev = I1PRO_OK;
 	i1proimp *m = (i1proimp *)p->m;
 	double new_int_time;
 	int    new_gain_mode;
@@ -6769,7 +6754,6 @@ i1pro_reset(
 				/* 0x01 = establish high power mode */
 ) {
 	i1proimp *m = (i1proimp *)p->m;
-	int rwbytes;			/* Data bytes read or written */
 	unsigned char pbuf[1];	/* 1 bytes to write */
 	int se, rv = I1PRO_OK;
 	int isdeb = 0;
@@ -6884,10 +6868,8 @@ i1pro_writeEEProm(
 	int size				/* Number of bytes to write (max 65535) */
 ) {
 	i1proimp *m = (i1proimp *)p->m;
-	int rwbytes;			/* Data bytes read or written */
-	unsigned char pbuf[8];	/* Write EEprom parameters */
 	int se = 0, rv = I1PRO_OK;
-	int i, isdeb = 0;
+	int isdeb = 0;
 	int stime;
 
 	/* Don't write over fixed values, as the instrument could become unusable.. */ 
@@ -6989,7 +6971,6 @@ i1pro_getmisc(
 	int *powmode	/* 0 = high power mode, 8 = low power mode */
 ) {
 	i1proimp *m = (i1proimp *)p->m;
-	int rwbytes;			/* Data bytes read or written */
 	unsigned char pbuf[8];	/* status bytes read */
 	int _fwrev;
 	int _unkn1;
@@ -7047,7 +7028,6 @@ i1pro_getmeasparams(
 	int *measmodeflags	/* Measurement mode flags */
 ) {
 	i1proimp *m = (i1proimp *)p->m;
-	int rwbytes;			/* Data bytes read or written */
 	unsigned char pbuf[8];	/* status bytes read */
 	int _intclocks;
 	int _lampclocks;
@@ -7118,7 +7098,6 @@ i1pro_setmeasparams(
 	int measmodeflags	/* Measurement mode flags */
 ) {
 	i1proimp *m = (i1proimp *)p->m;
-	int rwbytes;			/* Data bytes read or written */
 	unsigned char pbuf[8];	/* command bytes written */
 	int se, rv = I1PRO_OK;
 	int isdeb = 0;
@@ -7160,8 +7139,7 @@ static int
 i1pro_delayed_trigger(void *pp) {
 	i1pro *p = (i1pro *)pp;
 	i1proimp *m = (i1proimp *)p->m;
-	int rwbytes;			/* Data bytes read or written */
-	int se, rv = I1PRO_OK;
+	int se;
 	int stime;
 
 	if ((m->c_measmodeflags & I1PRO_MMF_NOLAMP) == 0) {		/* Lamp will be on for measurement */
@@ -7267,7 +7245,7 @@ i1pro_readmeasurement(
 	isdeb = p->debug;
 	p->icom->debug = 0;
 
-	if (isdeb) fprintf(stderr,"\ni1pro: Read measurement results inummeas %d, scanflag %d, address 0x%x bsize 0x%x @ %d msec\n",inummeas, scanflag, buf, bsize, (stime = msec_time()) - m->msec);
+	if (isdeb) fprintf(stderr,"\ni1pro: Read measurement results inummeas %d, scanflag %d, address 0x%x bsize 0x%x @ %d msec\n",inummeas, scanflag, (unsigned int)buf, bsize, (stime = msec_time()) - m->msec);
 
 	extra = 1.0;		/* Extra timeout margin */
 
@@ -7456,7 +7434,6 @@ i1pro_setmcmode(
 	int mcmode	/* Measurement clock mode, 1..mxmcmode */
 ) {
 	i1proimp *m = (i1proimp *)p->m;
-	int rwbytes;			/* Data bytes read or written */
 	unsigned char pbuf[1];	/* 1 bytes to write */
 	int se, rv = I1PRO_OK;
 	int isdeb = 0;
@@ -7500,7 +7477,6 @@ i1pro_getmcmode(
 	int *subtmode		/* Subtract mode on read using average of value 127 */
 ) {
 	i1proimp *m = (i1proimp *)p->m;
-	int rwbytes;			/* Data bytes read or written */
 	unsigned char pbuf[8];	/* status bytes read */
 	int _maxmcmode;		/* mcmode must be < maxmcmode */
 	int _mcmode;		/* readback current mcmode */
@@ -7651,7 +7627,6 @@ i1pro_terminate_switch(
 	i1pro *p
 ) {
 	i1proimp *m = (i1proimp *)p->m;
-	int rwbytes;			/* Data bytes read or written */
 	unsigned char pbuf[8];	/* 8 bytes to write */
 	int se, rv = I1PRO_OK;
 	int isdeb = 0;
@@ -7928,7 +7903,6 @@ static i1pro_code i1data_ser_ints(
 	unsigned char *buf,
 	unsigned int size
 ) {
-	i1pro *p = d->p;
 	int i, len;
 
 	if (k->type != i1_dtype_int)
@@ -7956,7 +7930,6 @@ static i1pro_code i1data_ser_doubles(
 	unsigned char *buf,
 	unsigned int size
 ) {
-	i1pro *p = d->p;
 	int i, len;
 
 	if (k->type != i1_dtype_double)
@@ -8356,7 +8329,7 @@ static int i1data_checksum(
 	i1data *d,
 	i1key keyoffset 	/* Offset to apply to keys */
 ) {
-	int i, n, j;
+	int i, j;
 	int chsum = 0;
 
 	for (i = 0; ; i++) {

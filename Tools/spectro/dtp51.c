@@ -746,7 +746,6 @@ inst_capability dtp51_capabilities(inst *pp) {
 
 /* Return the instrument capabilities 2 */
 inst2_capability dtp51_capabilities2(inst *pp) {
-	dtp51 *p = (dtp51 *)pp;
 	inst2_capability rv;
 
 	rv = inst2_cal_ref_white		/* Currently user operated though */
@@ -787,8 +786,6 @@ static inst_code
 dtp51_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 {
 	dtp51 *p = (dtp51 *)pp;
-	inst_code rv = inst_ok;
-	static char buf[MAX_MES_SIZE];
 
 	/* Record the trigger mode */
 	if (m == inst_opt_trig_switch) {	/* Can only be triggered this way */

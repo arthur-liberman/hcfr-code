@@ -775,7 +775,6 @@ dtp92_interp_error(inst *pp, int ec) {
 /* Convert a machine specific error code into an abstract dtp code */
 static inst_code 
 dtp92_interp_code(inst *pp, int ec) {
-	dtp92 *p = (dtp92 *)pp;
 
 	ec &= inst_imask;
 	switch (ec) {

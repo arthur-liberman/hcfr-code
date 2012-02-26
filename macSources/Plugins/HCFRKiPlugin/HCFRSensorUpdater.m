@@ -453,9 +453,11 @@ void HCFRSensorUpdaterDeviceRemoved(void * refCon, io_iterator_t iterator);
   
 	err = IOServiceAddMatchingNotification(notify_port, kIOFirstMatchNotification, matchingDictionary, HCFRSensorUpdaterDeviceAdded, self, &device_added_iterator);
 	HCFRSensorUpdaterDeviceAdded (self, device_added_iterator);
-	if (err !=noErr) {
-    NSLog (@"HCFRSensorUpdater: pblm lors de l'ajout de notification");
-    return NO;
+	if (err !=noErr) 
+	{
+		CFRelease(matchingDictionary);
+		NSLog (@"HCFRSensorUpdater: pblm lors de l'ajout de notification");
+		return NO;
 	}
   
 	err = IOServiceAddMatchingNotification(notify_port, kIOTerminatedNotification, matchingDictionary, HCFRSensorUpdaterDeviceRemoved, self, &device_removed_iterator);
@@ -560,12 +562,12 @@ void HCFRSensorUpdaterDeviceRemoved(void * refCon, io_iterator_t iterator);
 	request.bInterfaceProtocol = kIOUSBFindInterfaceDontCare;
 	request.bAlternateSetting = kIOUSBFindInterfaceDontCare;
   
-	kernResult = (*device)->CreateInterfaceIterator(device, &request, &iterator);
+	(*device)->CreateInterfaceIterator(device, &request, &iterator);
 
   // on prend la première interface qu'on trouve.
 	usbInterface = IOIteratorNext (iterator);
   
-  kernResult = IOCreatePlugInInterfaceForService(usbInterface, kIOUSBInterfaceUserClientTypeID,
+  IOCreatePlugInInterfaceForService(usbInterface, kIOUSBInterfaceUserClientTypeID,
                                                  kIOCFPlugInInterfaceID, &plugInInterface, &score);
   
   // une fois l'interface d'interface créée, on release le usbInterface et l'iterateur
@@ -578,7 +580,7 @@ void HCFRSensorUpdaterDeviceRemoved(void * refCon, io_iterator_t iterator);
     return NO;
   }
   
-  result = (*plugInInterface)->QueryInterface(plugInInterface, CFUUIDGetUUIDBytes(kIOUSBInterfaceInterfaceID),
+  (*plugInInterface)->QueryInterface(plugInInterface, CFUUIDGetUUIDBytes(kIOUSBInterfaceInterfaceID),
                                               (LPVOID) &interface);
   
   (*plugInInterface)->Release(plugInInterface);
@@ -619,7 +621,7 @@ void HCFRSensorUpdaterDeviceRemoved(void * refCon, io_iterator_t iterator);
     [self displayStep:connectSensorStep];
 }
 
-#pragma Fonctions d'accès à la sonde
+#pragma access functions
 -(BOOL) erase:(int)nbPages rowsAt:(unsigned int)address
 {
   NSAssert (interface != NULL, @"Sensor updater : erase called with NULL interface.");
@@ -855,7 +857,7 @@ void HCFRSensorUpdaterDeviceAdded(void * refCon, io_iterator_t iterator)
   {
     // on crée un plugin pour le device
     // ce plugin sera la connection entre l'appli et le kernel
-		err = IOCreatePlugInInterfaceForService(usbDevice,
+	IOCreatePlugInInterfaceForService(usbDevice,
                                             kIOUSBDeviceUserClientTypeID,
                                             kIOCFPlugInInterfaceID,
                                             &plugInInterface, &score);
@@ -881,9 +883,9 @@ void HCFRSensorUpdaterDeviceAdded(void * refCon, io_iterator_t iterator)
     }
     
     //Check these values for confirmation
-    err = (*dev)->GetDeviceVendor(dev, &vendor);
-    err = (*dev)->GetDeviceProduct(dev, &product);
-    err = (*dev)->GetDeviceReleaseNumber(dev, &release);
+    (*dev)->GetDeviceVendor(dev, &vendor);
+    (*dev)->GetDeviceProduct(dev, &product);
+    (*dev)->GetDeviceReleaseNumber(dev, &release);
     if ((vendor != kVendorID) || (product != kProductID))
     {
       (void) (*dev)->Release(dev);

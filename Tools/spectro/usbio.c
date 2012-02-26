@@ -1223,7 +1223,6 @@ icoms_usb_read_th(icoms *p,
 	int lerr;				/* Last error */
 	int bread, qa;
 	long top;			/* Timeout period */
-	unsigned char *rrbuf = rbuf;	/* Start of return buffer */
 	int bulk = 0;			/* nz if bulk rather than interrupt read */
 
 #ifdef QUIET_MEMCHECKERS

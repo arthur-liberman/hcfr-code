@@ -156,7 +156,7 @@ namespace
         fflush(stdout);
     }
 
-    void _cdecl warning_imp(char *fmt, ...) 
+    void warning_imp(char *fmt, ...) 
     {
         va_list args;
         va_start(args, fmt);

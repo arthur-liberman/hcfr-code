@@ -367,7 +367,6 @@ fit_rspl_w(
 /* Return NULL if something goes wrong. */
 rspl *new_rspl(int flags, int di, int fdi) {
 	rspl *t;	/* this */
-	double cw;		/* Curvature weighting factor */
 
 	if (flags != RSPL_NOFLAGS || di != 1 || fdi != 1) {
 		DBG((dbgo, "rspl1:Can't handle general rspl: flags %d, di %d, do %d\n",flags,di,fdi));

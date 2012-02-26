@@ -183,7 +183,6 @@ huey_command(
 	double to,					/* Timeout in seconds */
 	double to2					/* Timeout in seconds for 2nd read */
 ) {
-	int i;
 	unsigned char buf[8];	/* 8 bytes to write/read */
 	int wbytes;				/* bytes written */
 	int rbytes;				/* bytes read from ep */
@@ -335,7 +334,6 @@ huey_rdreg_byte(
 	int addr				/* Register Address, 0 - 255 */
 ) {
 	unsigned char buf[8];
-	int rsize;
 	inst_code ev;
 
 	if (addr < 0 || addr > 255)
@@ -441,9 +439,7 @@ huey_wrreg_byte(
 	int inv,				/* Input value */
 	int addr				/* Register Address, 0 - 127 */
 ) {
-	int cval;
 	unsigned char ibuf[8], obuf[8];
-	int rsize;
 	inst_code ev;
 
 	ibuf[0] = addr;  
@@ -509,7 +505,6 @@ huey_rd_int_time(
 	int *outp				/* Where to write value */
 ) {
 	unsigned char buf[8];
-	int rsize;
 	inst_code ev;
 
 	if ((ev = huey_command(p, i1d_getintgt, buf, buf, 1.0, 1.0)) != inst_ok)
@@ -528,7 +523,6 @@ huey_wr_int_time(
 	int inv					/* Value to write */
 ) {
 	unsigned char buf[16];
-	int rsize;
 	inst_code ev;
 
 	int2buf(buf, inv);
@@ -546,7 +540,6 @@ huey_take_first_raw_measurement_2(
 	huey *p,				/* Object */
 	double rgb[3]			/* Return the RGB values */
 ) {
-	int i;
 	unsigned char ibuf[8];
 	unsigned char obuf[8];
 	inst_code ev;
@@ -577,10 +570,8 @@ huey_take_raw_measurement_2(
 	int edgec[3],		/* Measurement edge count for each channel */
 	double rgb[3]		/* Return the RGB values */
 ) {
-	int i;
 	unsigned char ibuf[16];
 	unsigned char obuf[16];
-	int rsize;
 	inst_code ev;
 
 	/* Set the edge count */
@@ -614,10 +605,8 @@ huey_take_raw_measurement_3(
 	int edgec[3],		/* Measurement edge count for each channel */
 	double rgb[3]		/* Return the RGB values */
 ) {
-	int i;
 	unsigned char ibuf[16];
 	unsigned char obuf[16];
-	int rsize;
 	inst_code ev;
 
 	/* Do the measurement, and return the Red value */
@@ -661,7 +650,7 @@ huey_take_measurement_2(
 	int crtm,				/* nz if crt mode */
 	double rgb[3]			/* Return the rgb values */
 ) {
-	int i, j;
+	int i;
 	int edgec[3] = {1,1,1};	/* Measurement edge count for each channel */
 	int rem[3] = {1,1,1};	/* remeasure flags */
 	inst_code ev;
@@ -764,10 +753,8 @@ huey_take_amb_measurement_1(
 	double *amb,		/* Return the raw ambient value */
 	int *rb				/* Returned byte */
 ) {
-	int i;
 	unsigned char ibuf[16];
 	unsigned char obuf[16];
-	int rsize;
 	inst_code ev;
 
 	a1 &= 0xff;
@@ -818,7 +805,6 @@ huey_set_LEDs(
 	huey *p,			/* Object */
 	int mask			/* 8 bit LED mask */
 ) {
-	int i;
 	unsigned char ibuf[8];
 	unsigned char obuf[8];
 	inst_code ev;
@@ -887,10 +873,7 @@ huey_check_unlock(
 	huey *p				/* Object */
 ) {
 	unsigned char buf[8];
-	int rsize;
 	inst_code ev;
-	int vv;
-	double ver;
 
 	if (p->debug) fprintf(stderr,"huey: about to check response and unlock instrument if needed\n");
 
@@ -1009,7 +992,6 @@ static inst_code
 huey_compute_factors(
 	huey *p				/* Object */
 ) {
-	int i;
 
 	/* Check that certain value are valid */
 	if (p->ser_no == 0xffffffff)
@@ -1042,9 +1024,6 @@ static inst_code
 huey_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) {
 	huey *p = (huey *) pp;
 	unsigned char buf[8];
-	int rsize;
-	long etime;
-	int bi, i, rv;
 	inst_code ev = inst_ok;
 	char **pnames = NULL;
 	int retries = 0;
@@ -1222,7 +1201,6 @@ double mtx[3][3]
 /* Eye-One Display 2 if a frequency calibration is needed, */
 /* and we are in CRT mode */
 inst_cal_type huey_needs_calibration(inst *pp) {
-	huey *p = (huey *)pp;
 
 	return inst_ok;
 }
@@ -1234,8 +1212,6 @@ inst_cal_type calt,		/* Calibration type. inst_calt_all for all neeeded */
 inst_cal_cond *calc,	/* Current condition/desired condition */
 char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 ) {
-	huey *p = (huey *)pp;
-	int rv = 0;
 
 	id[0] = '\000';
 
@@ -1393,7 +1369,6 @@ huey_del(inst *pp) {
 
 /* Return the instrument capabilities */
 inst_capability huey_capabilities(inst *pp) {
-	huey *p = (huey *)pp;
 	inst_capability rv;
 
 	rv = inst_emis_spot
@@ -1411,7 +1386,6 @@ inst_capability huey_capabilities(inst *pp) {
 
 /* Return the instrument capabilities 2 */
 inst2_capability huey_capabilities2(inst *pp) {
-	huey *p = (huey *)pp;
 	inst2_capability rv = 0;
 
 	rv |= inst2_prog_trig;
@@ -1453,7 +1427,6 @@ static inst_code
 huey_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 {
 	huey *p = (huey *)pp;
-	inst_code ev = inst_ok;
 
 	/* Select CRT/LCD */
 	if (m == inst_opt_disp_crt) {

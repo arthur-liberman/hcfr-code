@@ -173,7 +173,6 @@ i1d3_command(
 	unsigned char *recv,			/* 64 Response bytes returned */
 	double to					/* Timeout in seconds */
 ) {
-	int i;
 	unsigned char cmd;		/* Major command code */
 	int wbytes;				/* bytes written */
 	int rbytes;				/* bytes read from ep */
@@ -358,7 +357,6 @@ i1d3_get_info(
 	unsigned char fromdev[64];
 	inst_code ev;
 	int isdeb = p->icom->debug;
-	int slen;
 
 	memset(todev, 0, 64);
 	memset(fromdev, 0, 64);
@@ -412,7 +410,6 @@ i1d3_get_prodname(
 	unsigned char fromdev[64];
 	inst_code ev;
 	int isdeb = p->icom->debug;
-	int slen;
 
 	memset(todev, 0, 64);
 	memset(fromdev, 0, 64);
@@ -437,7 +434,6 @@ i1d3_get_prodtype(
 	unsigned char fromdev[64];
 	inst_code ev;
 	int isdeb = p->icom->debug;
-	int slen;
 
 	memset(todev, 0, 64);
 	memset(fromdev, 0, 64);
@@ -462,7 +458,6 @@ i1d3_get_firmver(
 	unsigned char fromdev[64];
 	inst_code ev;
 	int isdeb = p->icom->debug;
-	int slen;
 
 	memset(todev, 0, 64);
 	memset(fromdev, 0, 64);
@@ -487,7 +482,6 @@ i1d3_get_firmdate(
 	unsigned char fromdev[64];
 	inst_code ev;
 	int isdeb = p->icom->debug;
-	int slen;
 
 	memset(todev, 0, 64);
 	memset(fromdev, 0, 64);
@@ -614,7 +608,6 @@ i1d3_get_diffpos(
 	unsigned char fromdev[64];
 	inst_code ev;
 	int isdeb = p->icom->debug;
-	int slen;
 
 	memset(todev, 0, 64);
 	memset(fromdev, 0, 64);
@@ -737,7 +730,6 @@ i1d3_raw_measurement_1(
 	unsigned char todev[64];
 	unsigned char fromdev[64];
 	inst_code ev;
-	int isdeb = p->icom->debug;
 
 	memset(todev, 0, 64);
 	memset(fromdev, 0, 64);
@@ -774,11 +766,9 @@ i1d3_raw_measurement_2(
 	int mask,				/* Bit mask to enable channels */
 	double rgb[3]			/* Return the RGB values */
 ) {
-	int intclks;
 	unsigned char todev[64];
 	unsigned char fromdev[64];
 	inst_code ev;
-	int isdeb = p->icom->debug;
 
 	memset(todev, 0, 64);
 	memset(fromdev, 0, 64);
@@ -813,11 +803,9 @@ i1d3_set_LEDs(
 	double ontime,			/* On time. Fade is included in this */
 	int count				/* Pulse count. 0x80 = infinity ? */
 ) {
-	int intclks;
 	unsigned char todev[64];
 	unsigned char fromdev[64];
 	inst_code ev;
-	int isdeb = p->icom->debug;
 	double mul1, mul2;
 	int ftime, ntime; 
 
@@ -1294,9 +1282,7 @@ i1d3_take_XYZ_measurement(
 	i1d3 *p,				/* Object */
 	double XYZ[3]			/* Return the XYZ values */
 ) {
-	int i, j;
 	inst_code ev;
-	double *mat;		/* Pointer to matrix */
 
 	if ((p->mode & inst_mode_measurement_mask) == inst_mode_emis_ambient) {
 		if ((ev = i1d3_take_amb_measurement(p, XYZ)) != inst_ok)
@@ -1550,10 +1536,6 @@ i1d3_comp_calmat(
 static inst_code
 i1d3_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) {
 	i1d3 *p = (i1d3 *) pp;
-	unsigned char buf[8];
-	int rsize;
-	long etime;
-	int bi, i, rv;
 	int stat;
 	inst_code ev = inst_ok;
 #ifdef NT
@@ -1870,7 +1852,6 @@ int no_sets
 /* Eye-One Display 2 if a frequency calibration is needed, */
 /* and we are in CRT mode */
 inst_cal_type i1d3_needs_calibration(inst *pp) {
-	i1d3 *p = (i1d3 *)pp;
 
 	return inst_ok;
 }
@@ -1882,8 +1863,7 @@ inst_cal_type calt,		/* Calibration type. inst_calt_all for all neeeded */
 inst_cal_cond *calc,	/* Current condition/desired condition */
 char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 ) {
-	i1d3 *p = (i1d3 *)pp;
-	int rv = 0;
+
 
 	id[0] = '\000';
 
@@ -2041,7 +2021,6 @@ i1d3_del(inst *pp) {
 
 /* Return the instrument capabilities */
 inst_capability i1d3_capabilities(inst *pp) {
-	i1d3 *p = (i1d3 *)pp;
 	inst_capability rv;
 
 	rv = inst_emis_spot
@@ -2058,7 +2037,6 @@ inst_capability i1d3_capabilities(inst *pp) {
 
 /* Return the instrument capabilities 2 */
 inst2_capability i1d3_capabilities2(inst *pp) {
-	i1d3 *p = (i1d3 *)pp;
 	inst2_capability rv = 0;
 
 	rv |= inst2_has_sensmode;
@@ -2101,7 +2079,6 @@ inst *pp,
 inst_status_type m,	/* Requested status type */
 ...) {				/* Status parameters */                             
 	i1d3 *p = (i1d3 *)pp;
-	inst_code rv = inst_ok;
 
 	/* Return the sensor mode */
 	if (m == inst_stat_sensmode) {
@@ -2138,7 +2115,6 @@ static inst_code
 i1d3_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 {
 	i1d3 *p = (i1d3 *)pp;
-	inst_code ev = inst_ok;
 
 	/* Record the trigger mode */
 	if (m == inst_opt_trig_prog
