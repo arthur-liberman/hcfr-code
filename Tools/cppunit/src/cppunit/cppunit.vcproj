@@ -44,7 +44,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\include"
-				PreprocessorDefinitions="_DEBUG;_LIB;WIN32"
+				PreprocessorDefinitions="_DEBUG;_LIB;WIN32;_USE_32BIT_TIME_T"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -85,7 +85,6 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description=""
 				CommandLine=""
 			/>
 		</Configuration>
@@ -119,7 +118,7 @@
 				Optimization="2"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\include"
-				PreprocessorDefinitions="NDEBUG;_LIB;WIN32"
+				PreprocessorDefinitions="NDEBUG;_LIB;WIN32;_USE_32BIT_TIME_T"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -160,7 +159,6 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description=""
 				CommandLine=""
 			/>
 		</Configuration>
@@ -376,11 +374,11 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\include\cppunit\TextTestRunner.h"
+				RelativePath="..\..\include\cppunit\ui\text\TextTestRunner.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\cppunit\ui\text\TextTestRunner.h"
+				RelativePath="..\..\include\cppunit\TextTestRunner.h"
 				>
 			</File>
 		</Filter>
@@ -1643,11 +1641,11 @@
 			>
 		</File>
 		<File
-			RelativePath="..\..\include\cppunit\Makefile.am"
+			RelativePath="Makefile.am"
 			>
 		</File>
 		<File
-			RelativePath="Makefile.am"
+			RelativePath="..\..\include\cppunit\Makefile.am"
 			>
 		</File>
 	</Files>
