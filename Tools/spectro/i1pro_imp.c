@@ -62,7 +62,7 @@
 #include "copyright.h"
 #include "aconfig.h"
 #include "numlib.h"
-//#include "rspl.h"
+#include "rspl.h"
 #else /* SALONEINSTLIB */
 #include <fcntl.h>
 #include "sa_config.h"
@@ -87,7 +87,7 @@
 #define SW_THREAD_TIMEOUT	(10 * 60.0) 	/* Switch read thread timeout */
 
 #define SINGLE_READ		/* Use a single USB read for scan to eliminate latency issues. */
-//#define HIGH_RES		/* Enable high resolution spectral mode code. Dissable */
+#define HIGH_RES		/* Enable high resolution spectral mode code. Dissable */
 						/* to break dependency on rspl library. */
 
 /* Debug */
@@ -5270,7 +5270,9 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 	i1pro_xp xp[101];			/* Crossover points each side of filter */
 	i1pro_code ev = I1PRO_OK;
 	rspl *raw2wav;				/* Lookup from CCD index to wavelength */
+#ifdef HIGH_RES_PLOT
 	i1pro_fs fshape[100 * 16];  /* Existing filter shape */
+#endif /* COMPUTE_DISPERSION */
 	int ncp = 0;				/* Number of shape points */
 #ifdef COMPUTE_DISPERSION
 	double spf[3];				/* Spread function parameters */
@@ -5859,10 +5861,12 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 		/* Normalise the filters area in CCD space, while maintaining the */
 		/* total contribution of each CCD at the target too. */
 		{
-			int ii;
 			double tot = 0.0;
 			double ccdweight[128], avgw;	/* Weighting determined by cell widths */
+#ifdef NEVER
+			int ii;
 			double ccdsum[128];
+#endif
 
 			/* Normalize the overall filter weightings */
 			for (j = 0; j < m->nwav2; j++)
