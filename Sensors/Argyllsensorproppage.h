@@ -35,42 +35,43 @@ class CArgyllSensor;
 
 class CArgyllSensorPropPage : public CPropertyPageWithHelp
 {
-	DECLARE_DYNCREATE(CArgyllSensorPropPage)
+    DECLARE_DYNCREATE(CArgyllSensorPropPage)
  
 // Construction
 public:
-	CArgyllSensorPropPage();
-	~CArgyllSensorPropPage();
+    CArgyllSensorPropPage();
+    ~CArgyllSensorPropPage();
 
 // Dialog Data
-	//{{AFX_DATA(CArgyllSensorPropPage)
-	enum { IDD = IDD_ARGYLL_SENSOR_PROP_PAGE };
-	int		m_CalibrationMode;
-	BOOL	m_debugMode;
-	BOOL	m_bAverageReads;
-	//}}AFX_DATA
+    //{{AFX_DATA(CArgyllSensorPropPage)
+    enum { IDD = IDD_ARGYLL_SENSOR_PROP_PAGE };
+    int        m_DisplayType;
+    int        m_ReadingType;
+    int        m_PortNumber;
+    BOOL       m_DebugMode;
+    //}}AFX_DATA
+    
+    CArgyllSensor* m_pSensor;
 
-	CArgyllSensor *	m_pSensor;
-
-	virtual UINT GetHelpId ( LPSTR lpszTopic );
+    virtual UINT GetHelpId ( LPSTR lpszTopic );
 
 // Overrides
-	// ClassWizard generate virtual function overrides
-	//{{AFX_VIRTUAL(CArgyllSensorPropPage)
-	public:
-	virtual BOOL OnSetActive();
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	//}}AFX_VIRTUAL
+    // ClassWizard generate virtual function overrides
+    //{{AFX_VIRTUAL(CArgyllSensorPropPage)
+    public:
+    virtual BOOL OnSetActive();
+    protected:
+    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+    //}}AFX_VIRTUAL
 
 // Implementation
 protected:
-	// Generated message map functions
-	//{{AFX_MSG(CArgyllSensorPropPage)
-	afx_msg void OnCalibrate();
-	afx_msg void OnSelchangeModeCombo();
-	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
+    // Generated message map functions
+    //{{AFX_MSG(CArgyllSensorPropPage)
+    afx_msg void OnCalibrate();
+    afx_msg void OnSelchangeModeCombo();
+    //}}AFX_MSG
+    DECLARE_MESSAGE_MAP()
 
 };
 

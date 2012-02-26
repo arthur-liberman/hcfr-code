@@ -52,6 +52,7 @@
 #include "EyeOneSensor.h"
 #include "MTCSSensor.h"
 #include "Spyder3Sensor.h"
+#include "ArgyllSensor.h"
 
 #include "Matrix.h"
 #include "NewDocWizard.h"
@@ -618,6 +619,9 @@ void CDataSetDoc::CreateSensor(int aID)
 				m_pSensor=new CSpyder3Sensor();
 				break;
 #endif
+		case 7:
+				m_pSensor=new CArgyllSensor();
+				break;
 		default:
 				Msg.LoadString ( IDS_UNKNOWNSENSOR1 );
 				Title.LoadString ( IDS_ERROR );
@@ -685,12 +689,15 @@ void CDataSetDoc::DuplicateSensor(CDataSetDoc* pDoc)
 								m_pSensor=new CSpyder3Sensor();
 							else
 #endif
-							{
-								Msg.LoadString ( IDS_UNKNOWNSENSOR1 );
-								Title.LoadString ( IDS_ERROR );
-								MessageBox(NULL,Msg,Title,MB_ICONERROR | MB_OK);
-								m_pSensor=new CSimulatedSensor();
-							}
+							    if (type == typeid(CArgyllSensor).name())
+								    m_pSensor=new CArgyllSensor();
+							    else
+							    {
+								    Msg.LoadString ( IDS_UNKNOWNSENSOR1 );
+								    Title.LoadString ( IDS_ERROR );
+								    MessageBox(NULL,Msg,Title,MB_ICONERROR | MB_OK);
+								    m_pSensor=new CSimulatedSensor();
+							    }
 
 	m_pSensor->Copy(pDoc->m_pSensor);
 }
@@ -763,7 +770,7 @@ BOOL CDataSetDoc::OnNewDocument()
 				if(m_pSensor==NULL || m_pGenerator==NULL)
 					return FALSE;	// Something went wrong during creation
 
-				if ( propSheet.m_Page2.GetCurrentID() < 2 )
+				if ( propSheet.m_Page2.GetCurrentID() < 2)
 				{
 					// HCFR sensor or simulated sensor, needing calibration
 					if(propSheet.m_Page2.m_sensorTrainingMode == 1)
@@ -774,6 +781,10 @@ BOOL CDataSetDoc::OnNewDocument()
 					else
 						m_pSensor->LoadCalibrationFile(propSheet.m_Page2.m_trainingFileName);
 				}
+                else if(propSheet.m_Page2.GetCurrentID() > 6)
+                {
+                    ((CArgyllSensor*)m_pSensor)->Calibrate();
+                }
 				else
 				{
 					// Sensor not needing calibration

@@ -31,51 +31,51 @@
 #endif // _MSC_VER > 1000
 
 #include "OneDeviceSensor.h"
-#include "ArgyllPropPage.h"
+#include "Argyllsensorproppage.h"
 #include "ArgyllMeterWrapper.h"
 
 class CArgyllSensor : public COneDeviceSensor  
 {
 public:
-	DECLARE_SERIAL(CArgyllSensor) ;
+    DECLARE_SERIAL(CArgyllSensor) ;
 
 protected:
-	CArgyllSensorPropPage m_ArgyllSensorPropertiesPage;
- 
+    CArgyllSensorPropPage m_ArgyllSensorPropertiesPage;
+
 public:
-	UINT	m_DisplayMode;
-	UINT	m_ReadingMode;
-    UINT    m_portNumber;
-	BOOL	m_debugMode;
-	BOOL	m_bAverageReads;
-	double	m_MinRequestedY;
-	UINT	m_MaxReadLoops;
+    UINT    m_DisplayType;
+    UINT    m_ReadingType;
+    UINT    m_PortNumber;
+    BOOL    m_DebugMode;
 
 private:
     ArgyllMeterWrapper* m_meter;
 
 public:
-	CArgyllSensor();
-	virtual ~CArgyllSensor();
+    CArgyllSensor();
+    virtual ~CArgyllSensor();
 
-	// Overriden functions from CSensor
-	virtual	void Copy(CSensor * p);	
-	virtual void Serialize(CArchive& archive); 
+    // Overriden functions from CSensor
+    virtual    void Copy(CSensor * p);    
+    virtual void Serialize(CArchive& archive); 
 
-	virtual BOOL Init( BOOL bForSimultaneousMeasures );
-	virtual CColor MeasureColor(COLORREF aRGBValue);
-	virtual BOOL Release();
+    virtual BOOL Init( BOOL bForSimultaneousMeasures );
+    virtual CColor MeasureColor(COLORREF aRGBValue);
+    virtual BOOL Release();
 
-	virtual void SetPropertiesSheetValues();
-	virtual void GetPropertiesSheetValues();
+    virtual void SetPropertiesSheetValues();
+    virtual void GetPropertiesSheetValues();
 
-	virtual LPCSTR GetStandardSubDir ()	{ return ( GetConfig()->m_bUseCalibrationFilesOnAllProbes) ? "Calibration Argyll" : ""; }
-	virtual BOOL SensorNeedCalibration () { return FALSE; }
-	virtual BOOL SensorAcceptCalibration () { return FALSE; }
+    virtual LPCSTR GetStandardSubDir ()    { return ( GetConfig()->m_bUseCalibrationFilesOnAllProbes) ? "Calibration Argyll" : ""; }
 
-	virtual BOOL HasSpectrumCapabilities ( int * pNbBands, int * pMinWaveLength, int * pMaxWaveLength, int * pBandWidth );
+    void Calibrate();
 
-	virtual void GetUniqueIdentifier( CString & strId );
+    virtual BOOL SensorNeedCalibration ();
+    virtual BOOL SensorAcceptCalibration ();
+
+    virtual BOOL HasSpectrumCapabilities ( int * pNbBands, int * pMinWaveLength, int * pMaxWaveLength, int * pBandWidth );
+
+    virtual void GetUniqueIdentifier( CString & strId );
 };
 
 #endif // !defined(AFX_ARGYLLSENSOR_H__1493C213_6A02_44C5_8EB7_55B469092E14__INCLUDED_)

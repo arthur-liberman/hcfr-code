@@ -43,6 +43,7 @@
 #define HID_PREF_ADVANCED		1021	// Préférences / Avancé
 #define HID_PREF_TOOLBAR		1022	// Préférences / Toolbar
 #define HID_SENSOR_SPYDER3		1023	// Paramètres Spyder 3
+#define HID_SENSOR_ARGYLL		1024	// Help for Argyll Sensor
 
 // Options des contrôles d'affichages de données
 #define HID_INFOMEASURE			2000	// Informations sur les mesures

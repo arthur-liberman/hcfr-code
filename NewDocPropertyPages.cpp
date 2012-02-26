@@ -134,13 +134,12 @@ void CSensorSelectionPropPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_SENSORCHOICE_COMBO, m_sensorChoiceCtrl);
     if(m_sensorChoiceCtrl.GetCount() == 0)
     {
-        AddSensor(_T("HCFR Sensor"), 0);
+        AddSensor(_T("Argyll"), 7);
         AddSensor(_T("Simulated sensor"), 1);
+        AddSensor(_T("DTP-94"), 3);
+        AddSensor(_T("HCFR Sensor"), 0);
 #ifdef USE_NON_FREE_CODE
         AddSensor(_T("Spyder II"), 2);
-#endif
-        AddSensor(_T("DTP-94"), 3);
-#ifdef USE_NON_FREE_CODE
         AddSensor(_T("Eye One"), 4);
         AddSensor(_T("Mazet MTCS-C2"), 5);
         AddSensor(_T("Spyder 3"), 6);
@@ -256,6 +255,9 @@ LPCSTR CSensorSelectionPropPage::GetThcFileSubDir ( int nSensorID )
 		case 6:
 			 return ( GetConfig()->m_bUseCalibrationFilesOnAllProbes ? "Etalon_S3" : "" );
 
+		case 7:
+			 return "Etalon_Argyll";
+
 		default:
 			 return "";
 	} 
@@ -284,7 +286,7 @@ void CSensorSelectionPropPage::OnSelchangeSensorchoiceCombo()
 	
 	if ( ! strSubDir.IsEmpty () )
 	{
-		if ( m_currentID < 2 )
+		if ( m_currentID < 2 || m_currentID > 6)
 		{
 			// Sensor needing calibration file
 			str.LoadString ( IDS_CREATE_CALIBRATION_FILE );
@@ -331,7 +333,7 @@ void CSensorSelectionPropPage::OnSelchangeSensorchoiceCombo()
 		}
 		m_trainingFileCombo.SetCurSel ( nSel >= 0 ? nSel : 0 );
 
-		if ( ! bFileFound && m_currentID >= 2 )
+		if ( ! bFileFound && m_currentID >= 2 && m_currentID < 7)
 		{
 			// No calibration file
 			GetDlgItem (IDC_SENSORTRAININGMODE_RADIO1) -> EnableWindow ( FALSE );
