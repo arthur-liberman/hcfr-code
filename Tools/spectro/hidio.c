@@ -181,7 +181,7 @@ struct _icoms *p
 						break;
 					memcpy(buf, cp + 4, 4);
 					buf[4] = '\000';
-					if (sscanf(buf, "%x", &VendorID) != 1)
+					if (sscanf(buf, "%hx", &VendorID) != 1)
 						break;
 					if ((cp = strchr(pdidd->DevicePath, 'p')) == NULL)
 						break;
@@ -191,7 +191,7 @@ struct _icoms *p
 						break;
 					memcpy(buf, cp + 4, 4);
 					buf[4] = '\000';
-					if (sscanf(buf, "%x", &ProductID) != 1)
+					if (sscanf(buf, "%hx", &ProductID) != 1)
 						break;
 					gotid = 1;
 					break;
