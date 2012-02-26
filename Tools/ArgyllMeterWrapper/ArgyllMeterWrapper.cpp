@@ -316,7 +316,11 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription)
             instCode = m_meter->set_opt_mode(m_meter, m_displayType == CRT?inst_opt_proj_crt:inst_opt_proj_lcd);
             mode = inst_mode_emis_proj;
         }
-        if(capabilities & (inst_emis_proj))
+        if(capabilities & (inst_emis_tele))
+        {
+            mode = inst_mode_emis_tele;
+        }
+        else if(capabilities & (inst_emis_proj))
         {
             mode = inst_mode_emis_proj;
         }
@@ -326,15 +330,14 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription)
         if (capabilities & (inst_emis_disp_crt | inst_emis_disp_lcd)) 
         {
             instCode = m_meter->set_opt_mode(m_meter, m_displayType == CRT?inst_opt_disp_crt:inst_opt_disp_lcd);
-            mode = inst_mode_emis_disp;
-        }
-        if(capabilities & (inst_emis_disp))
-        {
-            mode = inst_mode_emis_disp;
         }
     }
 
     instCode = m_meter->set_mode(m_meter, mode);
+    if(instCode == inst_unsupported && mode != inst_mode_emis_spot)
+    {
+        instCode = m_meter->set_mode(m_meter, inst_mode_emis_spot);
+    }
     if(instCode != inst_ok)
     {
         m_meter->del(m_meter);
