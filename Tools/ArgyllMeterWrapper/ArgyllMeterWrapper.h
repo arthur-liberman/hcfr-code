@@ -24,7 +24,7 @@
 #if !defined(ARGYLLWAPPER_HEADER_INCLUDED)
 #define ARGYLLWAPPER_HEADER_INCLUDED
 
-#include "Color.h"
+#include "libHCFR/Color.h"
 #include <string>
 
 struct _inst;
