@@ -5272,8 +5272,10 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 	rspl *raw2wav;				/* Lookup from CCD index to wavelength */
 #ifdef HIGH_RES_PLOT
 	i1pro_fs fshape[100 * 16];  /* Existing filter shape */
-#endif /* COMPUTE_DISPERSION */
-	int ncp = 0;				/* Number of shape points */
+#endif /* HIGH_RES_PLOT */
+#ifdef EXISTING_SHAPE
+int ncp = 0;				/* Number of shape points */
+#endif /* EXISTING_SHAPE */
 #ifdef COMPUTE_DISPERSION
 	double spf[3];				/* Spread function parameters */
 #endif /* COMPUTE_DISPERSION */
