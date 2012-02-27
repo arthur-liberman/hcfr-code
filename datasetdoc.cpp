@@ -783,6 +783,7 @@ BOOL CDataSetDoc::OnNewDocument()
 				}
                 else if(propSheet.m_Page2.GetCurrentID() > 6)
                 {
+                    m_pSensor->Configure();
                     ((CArgyllSensor*)m_pSensor)->Calibrate();
                 }
 				else
