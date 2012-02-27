@@ -15,3 +15,16 @@ Release/
 .DS_Store
 *.model1v3
 
+Tools/libusb1/examples/lsusb_ddkbuild/
+Tools/libusb1/examples/xusb_ddkbuild/
+Tools/libusb1/libusb/os/*.log
+Tools/libusb1/libusb/os/driver/*.log
+Tools/libusb1/libusb/os/driver/makefile
+Tools/libusb1/libusb/os/driver/objfre_wlh_amd64/
+Tools/libusb1/libusb/os/driver/objfre_wxp_x86/
+Tools/libusb1/libusb/os/libusb-X.X.def
+Tools/libusb1/libusb/os/makefile
+Tools/libusb1/libusb/os/objfre_wlh_amd64/
+Tools/libusb1/libusb/os/objfre_wxp_x86/
+
+
