@@ -22,5 +22,5 @@ rem **************************************************************************
 rem Sign the files
 rem **************************************************************************
 for %%f in (*.sys) do signtool sign /v /a /ac .\MSCV-GlobalSign.cer /t http://timestamp.globalsign.com/scripts/timstamp.dll %%f
-inf2cat /drv:. /os:XP_x86,XP_x64
+inf2cat /drv:. /os:2000,XP_x86,XP_x64,Vista_x86,Vista_x64,7_x86,7_x64,Server2003_x86,Server2003_x64,Server2008_x86,Server2008R2_x64
 for %%f in (*.cat) do signtool sign /v /a /ac .\MSCV-GlobalSign.cer /t http://timestamp.globalsign.com/scripts/timstamp.dll %%f
