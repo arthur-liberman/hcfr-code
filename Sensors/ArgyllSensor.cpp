@@ -44,9 +44,9 @@ IMPLEMENT_SERIAL(CArgyllSensor, COneDeviceSensor, 1) ;
 CArgyllSensor::CArgyllSensor() :
     m_meter(0)
 {
-    m_DisplayType = GetConfig()->GetProfileInt("Argyll", "DisplayType", 0);
+    m_DisplayType = GetConfig()->GetProfileInt("Argyll", "DisplayType", 1);
     m_ReadingType = GetConfig()->GetProfileInt("Argyll", "ReadingType", 0);
-    m_PortNumber = GetConfig()->GetProfileInt("Argyll", "PortNumber", 0);
+    m_PortNumber = GetConfig()->GetProfileInt("Argyll", "PortNumber", 1);
     m_DebugMode = GetConfig()->GetProfileInt("Argyll", "DebugMode", 0);
 
     m_ArgyllSensorPropertiesPage.m_pSensor = this;
@@ -184,6 +184,7 @@ CColor CArgyllSensor::MeasureColor(COLORREF aRGBValue)
 void CArgyllSensor::Calibrate()
 {
     if(!m_meter) Init(FALSE);
+    if(!m_meter->doesMeterSupportCalibration()) return;
 
     ArgyllMeterWrapper::eMeterState state(ArgyllMeterWrapper::NEEDS_MANUAL_CALIBRATION);
     while(state != ArgyllMeterWrapper::READY)
@@ -205,7 +206,9 @@ void CArgyllSensor::Calibrate()
 
 BOOL CArgyllSensor::SensorNeedCalibration () 
 {
-    return FALSE;
+    if(!m_meter) Init(FALSE);
+
+    return m_meter->doesMeterSupportCalibration();
 }
 
 BOOL CArgyllSensor::SensorAcceptCalibration ()
