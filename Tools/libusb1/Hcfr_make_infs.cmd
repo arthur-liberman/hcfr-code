@@ -21,6 +21,10 @@ call hcfr_make_inf.cmd HCFR4.0 libusbDrivers
 rem **************************************************************************
 rem Sign the files
 rem **************************************************************************
+copy Win32\release\sys\libusb0.sys .
+copy x64\release\sys\libusb0.sys libusb0_x64.sys
+copy Win32\release\dll\libusb-X.X.dll libusb-1.0A.dll
+copy x64\release\dll\libusb-X.X.dll libusb-1.0A_x64.dll
 for %%f in (*.sys) do signtool sign /v /a /ac .\MSCV-GlobalSign.cer /t http://timestamp.globalsign.com/scripts/timstamp.dll %%f
 inf2cat /drv:. /os:2000,XP_x86,XP_x64,Vista_x86,Vista_x64,7_x86,7_x64,Server2003_x86,Server2003_x64,Server2008_x86,Server2008R2_x64
 for %%f in (*.cat) do signtool sign /v /a /ac .\MSCV-GlobalSign.cer /t http://timestamp.globalsign.com/scripts/timstamp.dll %%f
