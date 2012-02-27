@@ -371,7 +371,7 @@ bool ArgyllMeterWrapper::doesMeterSupportCalibration()
                             inst2_cal_proj_offset |
                             inst2_cal_proj_ratio |
                             inst2_cal_proj_int_time |
-                            inst2_cal_crt_freq)) != 0);
+                            ((m_displayType == CRT)?inst2_cal_crt_freq:0))) != 0);
 }
 
 CColor ArgyllMeterWrapper::getLastReading() const
