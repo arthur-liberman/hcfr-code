@@ -1,5 +1,5 @@
 # Sed script for Eye-One Monitor 
-          s/#FILE_NAME#/i1Pro/
+          s/#FILE_NAME#/i1Monitor/
         s/#DEVICE_NAME#/Eye-One Monitor (Argyll)/
 s/#DEVICE_MANUFACTURER#/Gretag Macbeth/
           s/#VENDOR_ID#/VID_0971/
