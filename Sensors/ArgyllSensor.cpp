@@ -175,7 +175,14 @@ CColor CArgyllSensor::MeasureColor(COLORREF aRGBValue)
     ArgyllMeterWrapper::eMeterState state(ArgyllMeterWrapper::NEEDS_MANUAL_CALIBRATION);
     while(state != ArgyllMeterWrapper::READY)
     {
-        state = m_meter->takeReading();
+        try
+        {
+            state = m_meter->takeReading();
+        }
+        catch(std::logic_error&)
+        {
+            return noDataColor;
+        }
         if(state == ArgyllMeterWrapper::NEEDS_MANUAL_CALIBRATION)
         {
             Calibrate();
