@@ -42,6 +42,10 @@ static char THIS_FILE[]=__FILE__;
 IMPLEMENT_SERIAL(CArgyllSensor, COneDeviceSensor, 1) ;
 
 CArgyllSensor::CArgyllSensor() :
+    m_DisplayType(0),
+    m_ReadingType(0),
+    m_PortNumber(1),
+    m_DebugMode(FALSE),
     m_meter(0)
 {
     m_DisplayType = GetConfig()->GetProfileInt("Argyll", "DisplayType", 1);
@@ -115,7 +119,7 @@ void CArgyllSensor::GetPropertiesSheetValues()
 
     if( m_DisplayType != m_ArgyllSensorPropertiesPage.m_DisplayType ||
         m_ReadingType != m_ArgyllSensorPropertiesPage.m_ReadingType ||
-        m_PortNumber != m_ArgyllSensorPropertiesPage.m_PortNumber ||
+        m_PortNumber != (m_ArgyllSensorPropertiesPage.m_PortNumber + 1) ||
         m_DebugMode != m_ArgyllSensorPropertiesPage.m_DebugMode) 
     {
         SetModifiedFlag(TRUE);
@@ -135,7 +139,6 @@ void CArgyllSensor::GetPropertiesSheetValues()
             m_meter = NULL;
         }
     }
-
 }
 
 BOOL CArgyllSensor::Init( BOOL bForSimultaneousMeasures )
@@ -150,6 +153,8 @@ BOOL CArgyllSensor::Init( BOOL bForSimultaneousMeasures )
         if(!m_meter->connectAndStartMeter(errorDescription))
         {
             MessageBox(NULL, errorDescription.c_str(), "Argyll Meter", MB_OK+MB_ICONHAND);
+            delete m_meter;
+            m_meter = 0;
             return FALSE;
         }
     }
