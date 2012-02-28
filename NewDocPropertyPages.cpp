@@ -113,7 +113,7 @@ CSensorSelectionPropPage::CSensorSelectionPropPage() : CPropertyPageWithHelp(CSe
 
 	// Init selection with previoulsy stored value
 	CString	Msg;
-	Msg.LoadString ( IDS_SIMULATEDSENSOR_NAME );
+	Msg.LoadString ( IDS_ARGYLLSENSOR_NAME );
 	m_sensorChoice = GetConfig()->GetProfileString("Defaults","Sensor",(LPCSTR)Msg);
 	m_trainingFileName = GetConfig()->GetProfileString("Defaults","Training FileName","");
 	m_sensorTrainingMode = GetConfig()->GetProfileInt("Defaults","Training Mode",1);

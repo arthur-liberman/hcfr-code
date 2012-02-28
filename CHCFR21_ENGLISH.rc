@@ -2415,6 +2415,7 @@ BEGIN
     ID_VIEW_TOOLBAR         "Show or hide the toolbar\nToggle ToolBar"
     ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle StatusBar"
     IDS_ARGYLLSENSOR_PROPERTIES_TITLE "Argyll Meter Property Page"
+    IDS_ARGYLLSENSOR_NAME   "Argyll"
 END
 
 STRINGTABLE 

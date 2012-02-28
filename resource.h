@@ -1282,6 +1282,7 @@
 #define IDS_SPYDER3UTILITYRUNNING       41835
 #define IDS_SENSORHWVERSION             41836
 #define IDS_ARGYLLSENSOR_PROPERTIES_TITLE 59394
+#define IDS_ARGYLLSENSOR_NAME           59395
 
 // Next default values for new objects
 // 
