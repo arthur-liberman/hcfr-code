@@ -65,8 +65,8 @@ Provider  = %Provider%
 ; (Note the ClassGuid must not be quoted or a string substitution to work on Win2K)
 Class               = %Libusb_ClassName%
 ClassGuid           = {817cffe0-328b-11df-9b9f-0002a5d5c51b}	; Libusb V1.0A ClassGUID
-CatalogFile         = i1Disp.cat
-CatalogFile.NTAMD64 = i1Disp_x64.cat
+CatalogFile         = i1D3.cat
+CatalogFile.NTAMD64 = i1D3_x64.cat
 
 [ClassInstall32]
 AddReg=class_install_add_reg
