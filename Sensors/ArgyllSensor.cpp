@@ -137,6 +137,7 @@ void CArgyllSensor::GetPropertiesSheetValues()
         {
             delete m_meter;
             m_meter = NULL;
+            SetName("Argyll Meter");
         }
     }
 }
@@ -157,6 +158,7 @@ BOOL CArgyllSensor::Init( BOOL bForSimultaneousMeasures )
             m_meter = 0;
             return FALSE;
         }
+        SetName(CString(m_meter->getMeterName(m_meter->getType()).c_str()));
     }
     return TRUE;
 }
