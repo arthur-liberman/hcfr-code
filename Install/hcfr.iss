@@ -75,6 +75,15 @@ Source: "..\Install\Profils_IR\*.ihc"; DestDir: "{app}\Profils_IR"; Flags: ignor
 Source: "..\Tools\libusb1\*.cat"; DestDir: "{app}\Drivers"; Flags: ignoreversion; Components: main
 Source: "..\Tools\libusb1\*.inf"; DestDir: "{app}\Drivers"; Flags: ignoreversion; Components: main
 Source: "..\Tools\libusb1\*.sys"; DestDir: "{app}\Drivers"; Flags: ignoreversion; Components: main
+Source: "..\Tools\libusb1\*.dll"; DestDir: "{app}\Drivers"; Flags: ignoreversion; Components: main
+Source: "..\Tools\libusb1\AUTHORS"; DestDir: "{app}\Drivers"; DestName: Authors.txt; Flags: ignoreversion; Components: main
+Source: "..\Tools\libusb1\COPYING"; DestDir: "{app}\Drivers"; DestName: Copying.txt; Flags: ignoreversion; Components: main
+Source: "..\Tools\libusb1\COPYING_GPL"; DestDir: "{app}\Drivers"; DestName: Copying_GPL.txt; Flags: ignoreversion; Components: main
+Source: "..\Tools\libusb1\KDRIVER_LICENSE"; DestDir: "{app}\Drivers"; DestName: KernelDriverLicense.txt; Flags: ignoreversion; Components: main
+Source: "..\Tools\libusb1\NEWS"; DestDir: "{app}\Drivers"; DestName: News.txt; Flags: ignoreversion; Components: main
+Source: "..\Tools\libusb1\THANKS"; DestDir: "{app}\Drivers"; DestName: Thanks.txt; Flags: ignoreversion; Components: main
+Source: "..\Tools\libusb1\TODO"; DestDir: "{app}\Drivers"; DestName: Todo.txt; Flags: ignoreversion; Components: main
+Source: "..\Tools\libusb1\license.rtf"; DestDir: "{app}\Drivers"; DestName: CoInstaller_License.rtf; Flags: ignoreversion; Components: main
 
 [INI]
 Filename: "{app}\HCFR.url"; Section: "InternetShortcut"; Key: "URL"; String: "http://sourceforge.net/projects/hcfr/"
