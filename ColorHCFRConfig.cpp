@@ -115,7 +115,7 @@ CColorHCFRConfig::CColorHCFRConfig()
 	{
 		case 0:
 			 // Use default
-			 strLang = "FRANCAIS";
+			 strLang = "ENGLISH";
 			 break;
 
 		case 1:
