@@ -1169,219 +1169,221 @@ LONG CCustomTabCtrl::OnThemeChanged(WPARAM /*wParam*/, LPARAM /*lParam*/)
 	m_hBmpBkRightSpin = NULL;
 
 	HBITMAP hBmpGlyph = NULL;
-	CDC dcGlyph;
-	dcGlyph.CreateCompatibleDC(NULL);
-	CBitmap* pOldBmpGlyph = NULL;
+    CDC dcGlyph;
+    CBitmap* pOldBmpGlyph = NULL;
+
+    // if the whole theme thing doesn't work then don't throw an error
+	CThemeUtil tm;
+	if(!tm.OpenThemeData(m_hWnd, L"SPIN"))
+    {
+        return 0;
+    }
 
 	try
 	{
-		CThemeUtil tm;
-		if(!tm.OpenThemeData(m_hWnd, L"SPIN"))
+	    dcGlyph.CreateCompatibleDC(NULL);
+		// left spin background
+		int nBkType;
+		if(!tm.GetThemeEnumValue(SPNP_DOWNHORZ,0,TMT_BGTYPE,&nBkType))
+			AfxThrowUserException();
+		if(nBkType!=BT_IMAGEFILE)
 			AfxThrowUserException();
 
-		{
-			// left spin background
-			int nBkType;
-			if(!tm.GetThemeEnumValue(SPNP_DOWNHORZ,0,TMT_BGTYPE,&nBkType))
-				AfxThrowUserException();
-			if(nBkType!=BT_IMAGEFILE)
-				AfxThrowUserException();
+		int nImageCount;
+		if(!tm.GetThemeInt(SPNP_DOWNHORZ,0,TMT_IMAGECOUNT,&nImageCount))
+			AfxThrowUserException();
+		if(nImageCount!=4)
+			AfxThrowUserException();
 
-			int nImageCount;
-			if(!tm.GetThemeInt(SPNP_DOWNHORZ,0,TMT_IMAGECOUNT,&nImageCount))
-				AfxThrowUserException();
-			if(nImageCount!=4)
-				AfxThrowUserException();
+		WCHAR szSpinBkLeftBitmapFilename[MAX_PATH];
+		if(!tm.GetThemeFilename(SPNP_DOWNHORZ,0,TMT_IMAGEFILE,szSpinBkLeftBitmapFilename,MAX_PATH))
+			AfxThrowUserException();
+		m_hBmpBkLeftSpin = tm.LoadBitmap(szSpinBkLeftBitmapFilename);
+		if(!m_hBmpBkLeftSpin)
+			AfxThrowUserException();
 
-			WCHAR szSpinBkLeftBitmapFilename[MAX_PATH];
-			if(!tm.GetThemeFilename(SPNP_DOWNHORZ,0,TMT_IMAGEFILE,szSpinBkLeftBitmapFilename,MAX_PATH))
-				AfxThrowUserException();
-			m_hBmpBkLeftSpin = tm.LoadBitmap(szSpinBkLeftBitmapFilename);
-			if(!m_hBmpBkLeftSpin)
-				AfxThrowUserException();
+		int nLeftImageLayout;
+		if(!tm.GetThemeEnumValue(SPNP_DOWNHORZ,0,TMT_IMAGELAYOUT,&nLeftImageLayout))
+			AfxThrowUserException();
+		if(nLeftImageLayout==IL_VERTICAL)
+			m_fIsLeftImageHorLayout = FALSE;
+		else
+			m_fIsLeftImageHorLayout = TRUE;
+		
+		if(!tm.GetThemeMargins(SPNP_DOWNHORZ,0,TMT_SIZINGMARGINS,&m_mrgnLeft))
+			AfxThrowUserException();
+    	{
+		    // right spin background
+		    int nBkType;
+		    if(!tm.GetThemeEnumValue(SPNP_UPHORZ,0,TMT_BGTYPE,&nBkType))
+			    AfxThrowUserException();
+		    if(nBkType!=BT_IMAGEFILE)
+			    AfxThrowUserException();
 
-			int nLeftImageLayout;
-			if(!tm.GetThemeEnumValue(SPNP_DOWNHORZ,0,TMT_IMAGELAYOUT,&nLeftImageLayout))
-				AfxThrowUserException();
-			if(nLeftImageLayout==IL_VERTICAL)
-				m_fIsLeftImageHorLayout = FALSE;
-			else
-				m_fIsLeftImageHorLayout = TRUE;
-			
-			if(!tm.GetThemeMargins(SPNP_DOWNHORZ,0,TMT_SIZINGMARGINS,&m_mrgnLeft))
-				AfxThrowUserException();
-		}
-		{
-			// right spin background
-			int nBkType;
-			if(!tm.GetThemeEnumValue(SPNP_UPHORZ,0,TMT_BGTYPE,&nBkType))
-				AfxThrowUserException();
-			if(nBkType!=BT_IMAGEFILE)
-				AfxThrowUserException();
+		    int nImageCount;
+		    if(!tm.GetThemeInt(SPNP_UPHORZ,0,TMT_IMAGECOUNT,&nImageCount))
+			    AfxThrowUserException();
+		    if(nImageCount!=4)
+			    AfxThrowUserException();
 
-			int nImageCount;
-			if(!tm.GetThemeInt(SPNP_UPHORZ,0,TMT_IMAGECOUNT,&nImageCount))
-				AfxThrowUserException();
-			if(nImageCount!=4)
-				AfxThrowUserException();
+		    WCHAR szSpinBkRightBitmapFilename[MAX_PATH];
+		    if(!tm.GetThemeFilename(SPNP_UPHORZ,0,TMT_IMAGEFILE,szSpinBkRightBitmapFilename,MAX_PATH))
+			    AfxThrowUserException();
+    		
+		    m_hBmpBkRightSpin = tm.LoadBitmap(szSpinBkRightBitmapFilename);
+		    if(!m_hBmpBkRightSpin)
+			    AfxThrowUserException();
 
-			WCHAR szSpinBkRightBitmapFilename[MAX_PATH];
-			if(!tm.GetThemeFilename(SPNP_UPHORZ,0,TMT_IMAGEFILE,szSpinBkRightBitmapFilename,MAX_PATH))
-				AfxThrowUserException();
-			
-			m_hBmpBkRightSpin = tm.LoadBitmap(szSpinBkRightBitmapFilename);
-			if(!m_hBmpBkRightSpin)
-				AfxThrowUserException();
-	
-			int nRightImageLayout;
-			if(!tm.GetThemeEnumValue(SPNP_UPHORZ,0,TMT_IMAGELAYOUT,&nRightImageLayout))
-				AfxThrowUserException();
-			if(nRightImageLayout==IL_VERTICAL)
-				m_fIsRightImageHorLayout = FALSE;
-			else
-				m_fIsRightImageHorLayout = TRUE;
+		    int nRightImageLayout;
+		    if(!tm.GetThemeEnumValue(SPNP_UPHORZ,0,TMT_IMAGELAYOUT,&nRightImageLayout))
+			    AfxThrowUserException();
+		    if(nRightImageLayout==IL_VERTICAL)
+			    m_fIsRightImageHorLayout = FALSE;
+		    else
+			    m_fIsRightImageHorLayout = TRUE;
 
-			if(!tm.GetThemeMargins(SPNP_UPHORZ,0,TMT_SIZINGMARGINS,&m_mrgnRight))
-				AfxThrowUserException();
-		}
-		{
-			// glyph color
-			int nGlyphType;
-			if(!tm.GetThemeEnumValue(SPNP_DOWNHORZ,0,TMT_GLYPHTYPE,&nGlyphType))
-				AfxThrowUserException();
-			
-			if(nGlyphType==GT_IMAGEGLYPH)
-			{
-				COLORREF rgbTransGlyph = RGB(255,0,255);
-				if(!tm.GetThemeColor(SPNP_DOWNHORZ,0,TMT_GLYPHTRANSPARENTCOLOR,&rgbTransGlyph))
-					AfxThrowUserException();
-				WCHAR szSpinGlyphIconFilename[MAX_PATH];
-				if(!tm.GetThemeFilename(SPNP_DOWNHORZ,0,TMT_GLYPHIMAGEFILE,szSpinGlyphIconFilename,MAX_PATH))
-					AfxThrowUserException();
-				hBmpGlyph = tm.LoadBitmap(szSpinGlyphIconFilename);
-				if(!hBmpGlyph)
-					AfxThrowUserException();
+		    if(!tm.GetThemeMargins(SPNP_UPHORZ,0,TMT_SIZINGMARGINS,&m_mrgnRight))
+			    AfxThrowUserException();
+	    }
+	    {
+		    // glyph color
+		    int nGlyphType;
+		    if(!tm.GetThemeEnumValue(SPNP_DOWNHORZ,0,TMT_GLYPHTYPE,&nGlyphType))
+			    AfxThrowUserException();
+    		
+		    if(nGlyphType==GT_IMAGEGLYPH)
+		    {
+			    COLORREF rgbTransGlyph = RGB(255,0,255);
+			    if(!tm.GetThemeColor(SPNP_DOWNHORZ,0,TMT_GLYPHTRANSPARENTCOLOR,&rgbTransGlyph))
+				    AfxThrowUserException();
+			    WCHAR szSpinGlyphIconFilename[MAX_PATH];
+			    if(!tm.GetThemeFilename(SPNP_DOWNHORZ,0,TMT_GLYPHIMAGEFILE,szSpinGlyphIconFilename,MAX_PATH))
+				    AfxThrowUserException();
+			    hBmpGlyph = tm.LoadBitmap(szSpinGlyphIconFilename);
+			    if(!hBmpGlyph)
+				    AfxThrowUserException();
 
-				CBitmap* pBmp = CBitmap::FromHandle(hBmpGlyph);
-				if(pBmp==NULL)
-					AfxThrowUserException();
-				pOldBmpGlyph = dcGlyph.SelectObject(pBmp);
-				BITMAP bm;
-				pBmp->GetBitmap(&bm);
-				m_rgbGlyph[0] = rgbTransGlyph;
-				m_rgbGlyph[1] = rgbTransGlyph;
-				m_rgbGlyph[2] = rgbTransGlyph;
-				m_rgbGlyph[3] = rgbTransGlyph;
-				if(m_fIsLeftImageHorLayout)
-				{
-					for(int i=0;i<bm.bmWidth;i++)
-					{
-						if(i<bm.bmWidth/4 && m_rgbGlyph[0]==rgbTransGlyph)
-						{
-							for(int j=0;j<bm.bmHeight;j++)
-							{
-								if((m_rgbGlyph[0]=dcGlyph.GetPixel(i,j))!=rgbTransGlyph)
-									break;
-							}
-							if(i==bm.bmWidth/4-1 && m_rgbGlyph[0]==rgbTransGlyph)
-								AfxThrowUserException();
-						}
-						else if(i>=bm.bmWidth/4 && i<bm.bmWidth/2 && m_rgbGlyph[1]==rgbTransGlyph)
-						{
-							for(int j=0;j<bm.bmHeight;j++)
-							{
-								if((m_rgbGlyph[1]=dcGlyph.GetPixel(i,j))!=rgbTransGlyph)
-									break;
-							}
-							if(i==bm.bmWidth/2-1 && m_rgbGlyph[1]==rgbTransGlyph)
-								AfxThrowUserException();
-						}
-						else if(i>=bm.bmWidth/2 && i<3*bm.bmWidth/4 && m_rgbGlyph[2]==rgbTransGlyph)
-						{
-							for(int j=0;j<bm.bmHeight;j++)
-							{
-								if((m_rgbGlyph[2]=dcGlyph.GetPixel(i,j))!=rgbTransGlyph)
-									break;
-							}
-							if(i==3*bm.bmWidth/4-1 && m_rgbGlyph[2]==rgbTransGlyph)
-								AfxThrowUserException();
-						}
-						else if(i>=3*bm.bmWidth/4 && i<bm.bmWidth && m_rgbGlyph[3]==rgbTransGlyph)
-						{
-							for(int j=0;j<bm.bmHeight;j++)
-							{
-								if((m_rgbGlyph[3]=dcGlyph.GetPixel(i,j))!=rgbTransGlyph)
-									break;
-							}
-							if(i==bm.bmWidth-1 && m_rgbGlyph[3]==rgbTransGlyph)
-								AfxThrowUserException();
-						}
-					}
-				}
-				else
-				{
-					for(int i=0;i<bm.bmHeight;i++)
-					{
-						if(i<bm.bmHeight/4 && m_rgbGlyph[0]==rgbTransGlyph)
-						{
-							for(int j=0;j<bm.bmWidth;j++)
-							{
-								if((m_rgbGlyph[0] = dcGlyph.GetPixel(j,i))!=rgbTransGlyph)
-									break;
-							}
-							if(i==bm.bmHeight/4-1 && m_rgbGlyph[0]==rgbTransGlyph)
-								AfxThrowUserException();
-						}
-						else if(i>=bm.bmHeight/4 && i<bm.bmHeight/2 && m_rgbGlyph[1]==rgbTransGlyph)
-						{
-							for(int j=0;j<bm.bmWidth;j++)
-							{
-								if((m_rgbGlyph[1]=dcGlyph.GetPixel(j,i))!=rgbTransGlyph)
-									break;
-							}
-							if(i==bm.bmHeight/2-1 && m_rgbGlyph[1]==rgbTransGlyph)
-								AfxThrowUserException();
-						}
-						else if(i>=bm.bmHeight/2 && i<3*bm.bmHeight/4 && m_rgbGlyph[2]==rgbTransGlyph)
-						{
-							for(int j=0;j<bm.bmWidth;j++)
-							{
-								if((m_rgbGlyph[2] = dcGlyph.GetPixel(j,i))!=rgbTransGlyph)
-									break;
-							}
-							if(i==3*bm.bmHeight/4-1 && m_rgbGlyph[2]==rgbTransGlyph)
-								AfxThrowUserException();
-						}
-						else if(i>=3*bm.bmHeight/4 && i<bm.bmHeight && m_rgbGlyph[3]==rgbTransGlyph)
-						{
-							for(int j=0;j<bm.bmWidth;j++)
-							{
-								if((m_rgbGlyph[3]=dcGlyph.GetPixel(j,i))!=rgbTransGlyph)
-									break;
-							}
-							if(i==bm.bmHeight-1 && m_rgbGlyph[3]==rgbTransGlyph)
-								AfxThrowUserException();
-						}
-					}
-				}
-				dcGlyph.SelectObject(pOldBmpGlyph);
-				pOldBmpGlyph = NULL;
-				::DeleteObject(hBmpGlyph);
-				hBmpGlyph = NULL;
-			}
-			else if(nGlyphType==GT_FONTGLYPH)
-			{
-				if(!tm.GetThemeColor(SPNP_UPHORZ,UPHZS_NORMAL,TMT_GLYPHTEXTCOLOR,&m_rgbGlyph[0]))
-					AfxThrowUserException();
-				if(!tm.GetThemeColor(SPNP_UPHORZ,UPHZS_HOT,TMT_GLYPHTEXTCOLOR,&m_rgbGlyph[1]))
-					AfxThrowUserException();
-				if(!tm.GetThemeColor(SPNP_UPHORZ,UPHZS_PRESSED,TMT_GLYPHTEXTCOLOR,&m_rgbGlyph[2]))
-					AfxThrowUserException();	
-			}
-			else
-				AfxThrowUserException();
-		}
-		tm.CloseThemeData();
+			    CBitmap* pBmp = CBitmap::FromHandle(hBmpGlyph);
+			    if(pBmp==NULL)
+				    AfxThrowUserException();
+			    pOldBmpGlyph = dcGlyph.SelectObject(pBmp);
+			    BITMAP bm;
+			    pBmp->GetBitmap(&bm);
+			    m_rgbGlyph[0] = rgbTransGlyph;
+			    m_rgbGlyph[1] = rgbTransGlyph;
+			    m_rgbGlyph[2] = rgbTransGlyph;
+			    m_rgbGlyph[3] = rgbTransGlyph;
+			    if(m_fIsLeftImageHorLayout)
+			    {
+				    for(int i=0;i<bm.bmWidth;i++)
+				    {
+					    if(i<bm.bmWidth/4 && m_rgbGlyph[0]==rgbTransGlyph)
+					    {
+						    for(int j=0;j<bm.bmHeight;j++)
+						    {
+							    if((m_rgbGlyph[0]=dcGlyph.GetPixel(i,j))!=rgbTransGlyph)
+								    break;
+						    }
+						    if(i==bm.bmWidth/4-1 && m_rgbGlyph[0]==rgbTransGlyph)
+							    AfxThrowUserException();
+					    }
+					    else if(i>=bm.bmWidth/4 && i<bm.bmWidth/2 && m_rgbGlyph[1]==rgbTransGlyph)
+					    {
+						    for(int j=0;j<bm.bmHeight;j++)
+						    {
+							    if((m_rgbGlyph[1]=dcGlyph.GetPixel(i,j))!=rgbTransGlyph)
+								    break;
+						    }
+						    if(i==bm.bmWidth/2-1 && m_rgbGlyph[1]==rgbTransGlyph)
+							    AfxThrowUserException();
+					    }
+					    else if(i>=bm.bmWidth/2 && i<3*bm.bmWidth/4 && m_rgbGlyph[2]==rgbTransGlyph)
+					    {
+						    for(int j=0;j<bm.bmHeight;j++)
+						    {
+							    if((m_rgbGlyph[2]=dcGlyph.GetPixel(i,j))!=rgbTransGlyph)
+								    break;
+						    }
+						    if(i==3*bm.bmWidth/4-1 && m_rgbGlyph[2]==rgbTransGlyph)
+							    AfxThrowUserException();
+					    }
+					    else if(i>=3*bm.bmWidth/4 && i<bm.bmWidth && m_rgbGlyph[3]==rgbTransGlyph)
+					    {
+						    for(int j=0;j<bm.bmHeight;j++)
+						    {
+							    if((m_rgbGlyph[3]=dcGlyph.GetPixel(i,j))!=rgbTransGlyph)
+								    break;
+						    }
+						    if(i==bm.bmWidth-1 && m_rgbGlyph[3]==rgbTransGlyph)
+							    AfxThrowUserException();
+					    }
+				    }
+			    }
+			    else
+			    {
+				    for(int i=0;i<bm.bmHeight;i++)
+				    {
+					    if(i<bm.bmHeight/4 && m_rgbGlyph[0]==rgbTransGlyph)
+					    {
+						    for(int j=0;j<bm.bmWidth;j++)
+						    {
+							    if((m_rgbGlyph[0] = dcGlyph.GetPixel(j,i))!=rgbTransGlyph)
+								    break;
+						    }
+						    if(i==bm.bmHeight/4-1 && m_rgbGlyph[0]==rgbTransGlyph)
+							    AfxThrowUserException();
+					    }
+					    else if(i>=bm.bmHeight/4 && i<bm.bmHeight/2 && m_rgbGlyph[1]==rgbTransGlyph)
+					    {
+						    for(int j=0;j<bm.bmWidth;j++)
+						    {
+							    if((m_rgbGlyph[1]=dcGlyph.GetPixel(j,i))!=rgbTransGlyph)
+								    break;
+						    }
+						    if(i==bm.bmHeight/2-1 && m_rgbGlyph[1]==rgbTransGlyph)
+							    AfxThrowUserException();
+					    }
+					    else if(i>=bm.bmHeight/2 && i<3*bm.bmHeight/4 && m_rgbGlyph[2]==rgbTransGlyph)
+					    {
+						    for(int j=0;j<bm.bmWidth;j++)
+						    {
+							    if((m_rgbGlyph[2] = dcGlyph.GetPixel(j,i))!=rgbTransGlyph)
+								    break;
+						    }
+						    if(i==3*bm.bmHeight/4-1 && m_rgbGlyph[2]==rgbTransGlyph)
+							    AfxThrowUserException();
+					    }
+					    else if(i>=3*bm.bmHeight/4 && i<bm.bmHeight && m_rgbGlyph[3]==rgbTransGlyph)
+					    {
+						    for(int j=0;j<bm.bmWidth;j++)
+						    {
+							    if((m_rgbGlyph[3]=dcGlyph.GetPixel(j,i))!=rgbTransGlyph)
+								    break;
+						    }
+						    if(i==bm.bmHeight-1 && m_rgbGlyph[3]==rgbTransGlyph)
+							    AfxThrowUserException();
+					    }
+				    }
+			    }
+			    dcGlyph.SelectObject(pOldBmpGlyph);
+			    pOldBmpGlyph = NULL;
+			    ::DeleteObject(hBmpGlyph);
+			    hBmpGlyph = NULL;
+		    }
+		    else if(nGlyphType==GT_FONTGLYPH)
+		    {
+			    if(!tm.GetThemeColor(SPNP_UPHORZ,UPHZS_NORMAL,TMT_GLYPHTEXTCOLOR,&m_rgbGlyph[0]))
+				    AfxThrowUserException();
+			    if(!tm.GetThemeColor(SPNP_UPHORZ,UPHZS_HOT,TMT_GLYPHTEXTCOLOR,&m_rgbGlyph[1]))
+				    AfxThrowUserException();
+			    if(!tm.GetThemeColor(SPNP_UPHORZ,UPHZS_PRESSED,TMT_GLYPHTEXTCOLOR,&m_rgbGlyph[2]))
+				    AfxThrowUserException();	
+		    }
+		    else
+			    AfxThrowUserException();
+        }
+
+        tm.CloseThemeData();
 	}
 	catch(CUserException* e)
 	{
