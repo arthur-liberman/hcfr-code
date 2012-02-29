@@ -42,14 +42,14 @@ public:
 
 	//operators
 
-	Matrix& operator +(const Matrix& obj) const;
-	Matrix& operator -(const Matrix& obj) const;
-	Matrix& operator *(const Matrix& obj) const;
-	Matrix& operator *(const double _d) const;
-	Matrix& operator *(const int _i) const;
-	Matrix& operator /(const Matrix& obj) const;
-	Matrix& operator /(const double _d) const;
-	Matrix& operator /(const int _i) const;
+	Matrix operator +(const Matrix& obj) const;
+	Matrix operator -(const Matrix& obj) const;
+	Matrix operator *(const Matrix& obj) const;
+	Matrix operator *(const double _d) const;
+	Matrix operator *(const int _i) const;
+	Matrix operator /(const Matrix& obj) const;
+	Matrix operator /(const double _d) const;
+	Matrix operator /(const int _i) const;
 	Matrix& operator +=(const Matrix& obj);
 	Matrix& operator -=(const Matrix& obj);
 	Matrix& operator *=(const Matrix& obj);
@@ -59,7 +59,7 @@ public:
 	Matrix& operator /=(const double _d);
 	Matrix& operator /=(const int _i);
 	Matrix& operator =(const Matrix& obj);
-	Matrix& operator ~() const;
+	Matrix operator ~() const;
 	bool operator ==(const Matrix& obj) const;
 	bool operator !=(const Matrix& obj) const;
 	double* operator [](const int _i) const;
@@ -104,7 +104,7 @@ public:
 	Matrix& FillRow(const int Row, const double _d);
 	Matrix& FillColumn(const int Col, const double _d);
 
-	Matrix& GetInverse() const;
+	Matrix GetInverse() const;
 	Matrix& Invert();
 
 	Matrix& AddRows(const int SourceRow, const int DestRow, const double factor = 1);
@@ -116,18 +116,18 @@ public:
 
 	Matrix& REF();
 	Matrix& RREF();
-	Matrix& GetREF() const;
-	Matrix& GetRREF() const;
+	Matrix GetREF() const;
+	Matrix GetRREF() const;
 
-	Matrix& GetMinor(const int RowSpot, const int ColSpot) const;
+	Matrix GetMinor(const int RowSpot, const int ColSpot) const;
 	Matrix* GetMinorNew(const int RowSpot, const int ColSpot) const;
-	Matrix& GetSubMatrix(const int RowSpot, const int ColSpot, const int RowLen, const int ColLen) const;
+	Matrix GetSubMatrix(const int RowSpot, const int ColSpot, const int RowLen, const int ColLen) const;
 	Matrix& SetSubMatrix(const int RowSpot, const int ColSpot, const int RowLen, const int ColLen);
 
 	Matrix& SwapRows(const int Row1, const int Row2);
 	Matrix& SwapCols(const int Col1, const int Col2);
 
-	Matrix& GetTransposed() const;
+	Matrix GetTransposed() const;
 	Matrix& Transpose();
 
 	Matrix& GetNumericRange(double& Min, double& Max) const;
@@ -136,8 +136,8 @@ public:
 
 	Matrix& CMAR(const Matrix& obj);
 	Matrix& CMAC(const Matrix& obj);
-	Matrix& GetCMAR(const Matrix& obj) const;
-	Matrix& GetCMAC(const Matrix& obj) const;
+	Matrix GetCMAR(const Matrix& obj) const;
+	Matrix GetCMAC(const Matrix& obj) const;
 
 	Matrix& ConcatenateRow(const double* RowData);
 	Matrix& ConcatenateColumn(const double* ColumnData);
@@ -151,10 +151,10 @@ public:
 	Matrix& SortAscend();
 	Matrix& SortDescend();
 
-	Matrix& GetNormalized(const double Min, const double Max) const;
+	Matrix GetNormalized(const double Min, const double Max) const;
 	Matrix& Normalize(const double Min, const double Max);
 
-	Matrix& GetCovariant() const;
+	Matrix GetCovariant() const;
 	Matrix& MakeCovariant();
 
 	void Display() const;
@@ -169,10 +169,10 @@ public:
 
 	//static functions
 
-	static Matrix& IdentityMatrix(int Diagonal);
+	static Matrix IdentityMatrix(int Diagonal);
 };
 
-Matrix& IdentityMatrix(int Diagonal);
+Matrix IdentityMatrix(int Diagonal);
 
 ostream& operator <<(ostream& ostr, const Matrix& obj);
 

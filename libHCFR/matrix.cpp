@@ -218,15 +218,14 @@ Matrix::~Matrix()
 }
 
 //add two matrices
-Matrix& Matrix::operator +(const Matrix& obj) const
+Matrix Matrix::operator +(const Matrix& obj) const
 {
 	if((m_nRows != obj.m_nRows) || (m_nCols != obj.m_nCols))
   {
     cout << "Matrix exception : Mismatched matrices in addition" << endl;
 	  throw new MatrixException("Mismatched matrices in addition");
   }
-	static Matrix temp;
-	temp = Matrix(0.0, m_nRows, m_nCols);
+	Matrix temp(0.0, m_nRows, m_nCols);
 
 	for(int i=0; i<m_nRows; ++i) {
 		for(int j=0; j<m_nCols; ++j) {
@@ -238,15 +237,14 @@ Matrix& Matrix::operator +(const Matrix& obj) const
 }
 
 //subtract two matrices
-Matrix& Matrix::operator -(const Matrix& obj) const
+Matrix Matrix::operator -(const Matrix& obj) const
 {
 	if((m_nRows != obj.m_nRows) || (m_nCols != obj.m_nCols))
   {
     cout << "Matrix exception : Mismatched matrices in substraction" << endl;
     throw new MatrixException("Mismatched matrices in substraction");
   }
-	static Matrix temp;
-	temp = Matrix(0.0, m_nRows, m_nCols);
+	Matrix temp(0.0, m_nRows, m_nCols);
 
 	for(int i=0; i<m_nRows; ++i) {
 		for(int j=0; j<m_nCols; ++j) {
@@ -258,7 +256,7 @@ Matrix& Matrix::operator -(const Matrix& obj) const
 }
 
 //multiply two matrices
-Matrix& Matrix::operator *(const Matrix& obj) const
+Matrix Matrix::operator *(const Matrix& obj) const
 {
 	if(m_nCols != obj.m_nRows)
   {
@@ -269,8 +267,7 @@ Matrix& Matrix::operator *(const Matrix& obj) const
 	double sum = 0;
 	double prod = 1;
 
-	static Matrix temp;
-	temp = Matrix(0.0, m_nRows, obj.m_nCols);
+	Matrix temp(0.0, m_nRows, obj.m_nCols);
 
 	for(int i=0; i<temp.m_nRows; ++i) {
 		for(int j=0; j<temp.m_nCols; ++j) {
@@ -287,10 +284,9 @@ Matrix& Matrix::operator *(const Matrix& obj) const
 }
 
 //multiply a matrix by a double scalar
-Matrix& Matrix::operator *(const double _d) const
+Matrix Matrix::operator *(const double _d) const
 {
-	static Matrix temp;
-	temp = Matrix(m_pData, m_nCols, m_nRows);
+	Matrix temp(m_pData, m_nCols, m_nRows);
 
 	for(int i=0; i<temp.m_nRows; ++i) {
 		for(int j=0; j<temp.m_nCols; ++j) {
@@ -302,10 +298,9 @@ Matrix& Matrix::operator *(const double _d) const
 }
 
 //multiply a matrix by an int scalar
-Matrix& Matrix::operator *(const int _i) const
+Matrix Matrix::operator *(const int _i) const
 {
-	static Matrix temp;
-	temp = Matrix(m_pData, m_nCols, m_nRows);
+	Matrix temp(m_pData, m_nCols, m_nRows);
 
 	for(int i=0; i<temp.m_nRows; ++i) {
 		for(int j=0; j<temp.m_nCols; ++j) {
@@ -317,21 +312,20 @@ Matrix& Matrix::operator *(const int _i) const
 }
 
 //divide a matrix by another matrix
-Matrix& Matrix::operator /(const Matrix& obj) const
+Matrix Matrix::operator /(const Matrix& obj) const
 {
 	return(*this * obj.GetInverse());
 }
 
 //divide a matrix by a double scalar
-Matrix& Matrix::operator /(const double _d) const
+Matrix Matrix::operator /(const double _d) const
 {
 	if(_d == 0)
   {
     cout << "Matrix exception : double division by zero" << endl;
 	  throw new MatrixException("Matrix exception : double division by zero");
   }
-	static Matrix temp;
-	temp = Matrix(m_pData, m_nCols, m_nRows);
+	Matrix temp(m_pData, m_nCols, m_nRows);
 
 	for(int i=0; i<temp.m_nRows; ++i) {
 		for(int j=0; j<temp.m_nCols; ++j) {
@@ -343,15 +337,14 @@ Matrix& Matrix::operator /(const double _d) const
 }
 
 //divide a matrix by an int scalar
-Matrix& Matrix::operator /(const int _i) const
+Matrix Matrix::operator /(const int _i) const
 {
 	if(_i == 0)
   {
     cout << "Matrix exception : int division by zero" << endl;
 		throw new MatrixException("Divide by zero in integer division");
   }
-	static Matrix temp;
-	temp = Matrix(m_pData, m_nCols, m_nRows);
+	Matrix temp(m_pData, m_nCols, m_nRows);
 
 	for(int i=0; i<temp.m_nRows; ++i) {
 		for(int j=0; j<temp.m_nCols; ++j) {
@@ -438,7 +431,7 @@ Matrix& Matrix::operator =(const Matrix& obj)
 
 //inversion operator
 //returns the inverse of the calling matrix
-Matrix& Matrix::operator ~() const
+Matrix Matrix::operator ~() const
 {
 	return GetInverse();
 }
@@ -836,16 +829,15 @@ Matrix& Matrix::FillColumn(const int Col, const double _d)
 }
 
 //returns the inverse of the calling matrix
-Matrix& Matrix::GetInverse() const
+Matrix Matrix::GetInverse() const
 {
 	if(m_nRows != m_nCols)
-  {
-    cout << "Matrix exception : getInverse on a non-square matrix" << endl;
-	  throw new MatrixException("GetInverse : not a square matrix");
+    {
+        cout << "Matrix exception : getInverse on a non-square matrix" << endl;
+        throw new MatrixException("GetInverse : not a square matrix");
 	}
 
-	static Matrix temp;
-	temp = *this;
+	Matrix temp(*this);
 	temp.RightAppendIdentity();
 	temp.RREF();
 	temp.LeftRemoveIdentity();
@@ -962,33 +954,27 @@ Matrix& Matrix::RREF()
 }
 
 //returns a matrix that is the row-echelon form of the calling matrix
-Matrix& Matrix::GetREF() const
+Matrix Matrix::GetREF() const
 {
-	static Matrix temp;
-
-	temp = *this;
+	Matrix temp(*this);
 	temp.REF();
 
 	return temp;
 }
 
 //returns a matrix that is the reduced row-echelon form of the calling matrix
-Matrix& Matrix::GetRREF() const
+Matrix Matrix::GetRREF() const
 {
-	static Matrix temp;
-
-	temp = *this;
+	Matrix temp(*this);
 	temp.RREF();
 
 	return temp;
 }
 
 //returns minor around spot Row,Col
-//returns a static Matrix object
-Matrix& Matrix::GetMinor(const int RowSpot, const int ColSpot) const
+Matrix Matrix::GetMinor(const int RowSpot, const int ColSpot) const
 {
-	static Matrix temp;
-	temp = Matrix(0.0, m_nRows-1, m_nCols-1);
+	Matrix temp(0.0, m_nRows-1, m_nCols-1);
 
 	for(int i=0, k=0; i<m_nRows; ) {
 		if(i == RowSpot) {
@@ -1041,10 +1027,9 @@ Matrix* Matrix::GetMinorNew(const int RowSpot, const int ColSpot) const
 
 //returns the submatrix starting at spot (RowSpot, ColSpot) and with lengths
 //of 'RowLen' rows and 'ColLen' columns
-Matrix& Matrix::GetSubMatrix(const int RowSpot, const int ColSpot, const int RowLen, const int ColLen) const
+Matrix Matrix::GetSubMatrix(const int RowSpot, const int ColSpot, const int RowLen, const int ColLen) const
 {
-	static Matrix temp;
-	temp = Matrix(0.0, RowLen, ColLen);
+	Matrix temp(0.0, RowLen, ColLen);
 
 	for(int i=RowSpot, k=0; i<(RowLen+RowSpot); ++i, ++k) {
 		for(int j=ColSpot, l=0; j<(ColLen+ColSpot); ++j, ++l) {
@@ -1105,10 +1090,9 @@ Matrix& Matrix::SwapCols(const int Col1, const int Col2)
 }
 
 //returns the transposition of the calling matrix
-Matrix& Matrix::GetTransposed() const
+Matrix Matrix::GetTransposed() const
 {
-	static Matrix temp;
-	temp = Matrix(0.0, m_nCols, m_nRows);
+	Matrix temp(0.0, m_nCols, m_nRows);
 
 	for(int i=0; i<m_nRows; ++i) {
 		for(int j=0; j<m_nCols; ++j) {
@@ -1228,11 +1212,9 @@ Matrix& Matrix::CMAC(const Matrix& obj)
 
 //CMAR = Concatenate Matrix As Rows
 //returns a new matrix that is the calling object + 'obj' on the right
-Matrix& Matrix::GetCMAR(const Matrix& obj) const
+Matrix Matrix::GetCMAR(const Matrix& obj) const
 {
-	static Matrix temp;
-
-	temp = *this;
+	Matrix temp(*this);
 	temp.CMAR(obj);
 
 	return temp;
@@ -1240,11 +1222,9 @@ Matrix& Matrix::GetCMAR(const Matrix& obj) const
 
 //CMAC = Concatenate Matrix As Columns
 //returns a new matrix that is the valling object + 'obj' on the bottom
-Matrix& Matrix::GetCMAC(const Matrix& obj) const
+Matrix Matrix::GetCMAC(const Matrix& obj) const
 {
-	static Matrix temp;
-
-	temp = *this;
+	Matrix temp(*this);
 	temp.CMAC(obj);
 
 	return temp;
@@ -1428,11 +1408,9 @@ Matrix& Matrix::SortDescend()
 }
 
 //returns a matrix that is scaled between Min and Max of the calling matrix
-Matrix& Matrix::GetNormalized(const double Min, const double Max) const
+Matrix Matrix::GetNormalized(const double Min, const double Max) const
 {
-	static Matrix temp;
-
-	temp = *this;
+	Matrix temp(*this);
 	temp.Normalize(Min, Max);
 
 	return temp;
@@ -1462,7 +1440,7 @@ Matrix& Matrix::Normalize(const double Min, const double Max)
 }
 
 //returns the covariant of the calling matrix (transposed(obj) * obj)
-Matrix& Matrix::GetCovariant() const
+Matrix Matrix::GetCovariant() const
 {
 	Matrix temp;
 
@@ -1554,10 +1532,9 @@ void Matrix::Write(ofstream& ostr) const
 }
 
 //returns an identity matrix of size Diagonal
-Matrix& Matrix::IdentityMatrix(int Diagonal)
+Matrix Matrix::IdentityMatrix(int Diagonal)
 {
-	static Matrix temp;
-	temp = Matrix(0.0, Diagonal, Diagonal);
+	Matrix temp(0.0, Diagonal, Diagonal);
 
 	for(int q=0; q<Diagonal; ++q) {
 		temp.m_pData[q][q] = 1;
@@ -1567,7 +1544,7 @@ Matrix& Matrix::IdentityMatrix(int Diagonal)
 }
 
 //uses Matrix::IdentityMatrix to get an identity matrix of size Diagonal
-Matrix& IdentityMatrix(int Diagonal)
+Matrix IdentityMatrix(int Diagonal)
 {
 	return Matrix::IdentityMatrix(Diagonal);
 }
