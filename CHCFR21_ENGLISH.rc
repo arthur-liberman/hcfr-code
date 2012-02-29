@@ -310,8 +310,8 @@ FONT 8, "MS Sans Serif"
 BEGIN
     CONTROL         223,IDC_STATIC,"Static",SS_BITMAP,7,7,172,62
     LTEXT           "Version 2.0",IDC_STATIC_VERSION,7,76,119,8,SS_NOPREFIX
-    LTEXT           "Copyright (C) 2005-2008\nAssociation Homecinema Francophone",IDC_STATIC2,7,88,168,18
-    LTEXT           "www.homecinema-fr.com",IDC_HOMECINEMA_HYPERLINK,7,110,80,8
+    LTEXT           "Copyright (C) 2012 Hcfr Project, 2005-2008\nAssociation Homecinema Francophone",IDC_STATIC2,7,88,168,18
+    LTEXT           "hcfr.sourceforge.net",IDC_HOMECINEMA_HYPERLINK,7,110,80,8
     LTEXT           "To make a donation...",IDC_DONATION_HYPERLINK,7,122,70,8
     LTEXT           "IDC_PLACEHOLDER",IDC_PLACEHOLDER,4,136,177,117
     DEFPUSHBUTTON   "OK",IDOK,68,257,50,14,WS_GROUP
@@ -1601,12 +1601,6 @@ BEGIN
     POPUP "&Advanced"
     BEGIN
         MENUITEM "&Patterns...",                IDM_PATTERN_DISP_ROOT
-        POPUP "Updates"
-        BEGIN
-            MENUITEM "Download updated software",   IDM_UPDATE_SOFT
-            MENUITEM "Download the calibration files", IDM_UPDATE_ETALONS
-            MENUITEM "Download IR profiles files",  IDM_UPDATE_IRPROFILES
-        END
         MENUITEM SEPARATOR
         MENUITEM "&Preferences...",             IDM_GENERAL_CONFIG
         MENUITEM "&Language...",                IDM_LANGUAGE
@@ -1616,9 +1610,8 @@ BEGIN
         MENUITEM "&Help\tF1",                   IDM_HELP
         MENUITEM "Colorimeter &Installation",   IDM_HELP_INSTALL
         MENUITEM "&Support",                    IDM_HELP_SUPPORT
-        MENUITEM "HCFR &Forum",                 IDM_HELP_FORUM
         MENUITEM SEPARATOR
-        MENUITEM "About HCFR &Colorimeter...",  ID_APP_ABOUT
+        MENUITEM "About H&CFR ...",             ID_APP_ABOUT
     END
 END
 
@@ -2535,7 +2528,7 @@ BEGIN
     IDM_EXPORT_XLS          "Export measures to .xls file\nExport to .xls"
     IDM_HELP                "Display help\nHelp"
     IDM_HELP_SUPPORT        "Help: technical support\nSupport"
-    IDM_HELP_FORUM          "Help: www.homecinema-fr.com forum\nForum"
+    IDM_HELP_FORUM          "Help: hcfr.sourceforge.net forum\nForum"
     IDM_HELP_INSTALL        "Help: HCFR sensor installation\nInstallation"
     IDM_WHATS_THIS          "Help context\nContext help"
     IDM_VIEW_NEARBLACKHISTO "Display near black luminance graph\nNear black luminance graph"
@@ -2952,8 +2945,8 @@ BEGIN
     IDM_PATTERN_ANIM_BLACK  "Display animated test pattern with two stripes at IRE 1 and 2 on a black background\nAnimated black level test pattern"
     IDM_PATTERN_ANIM_WHITE  "Display animated test pattern with two stripes at IRE 98 and 99 on a white background\nAnimated white level test pattern"
     ID_VIEW_SPECTRUM        "Display or hide spectrum window\nSpectrum"
-    IDM_UPDATE_SOFT         "Test if a new software release is available on www.homecinema-fr.com website and download it\nDownload software updates"
-    IDM_UPDATE_ETALONS      "Download updated and new calibration files from www.homecinema-fr.com site\nDownload calibration files"
+    IDM_UPDATE_SOFT         "Test if a new software release is available on hcfr.sourceforge.net website and download it\nDownload software updates"
+    IDM_UPDATE_ETALONS      "Download updated and new calibration files from hcfr.sourceforge.net site\nDownload calibration files"
     IDM_TRAIN_METER         "Compute the conversion matrix XYZ sensor values match reference document coordinates\nCompute conversion matrix from reference document"
     IDM_SINGLE_MEASUREMENT  "Perform a unique measure\nPerform a unique measure"
     IDM_CONTINUOUS_MEASUREMENT 
@@ -3084,7 +3077,7 @@ BEGIN
                             "Measure primary colors saturation scales\nMeasure primary colors saturation scales"
     IDM_MEASURE_CONTRAST    "Measure contrast\nMeasure contrast"
     IDM_SAVE_CALIBRATION_FILE "Save calibration file\nSave calibration file"
-    IDM_UPDATE_IRPROFILES   "Download updated and new IR profiles from www.homecinema-fr.com site\nDownload IR profiles"
+    IDM_UPDATE_IRPROFILES   "Download updated and new IR profiles from hcfr.sourceforge.net site\nDownload IR profiles"
 END
 
 STRINGTABLE 
@@ -3113,7 +3106,7 @@ BEGIN
     IDS_MTCS_CALIBRATE      "Measure internal black level ?\nTo perform this operation, you must point instrument to an absolute black surface."
     IDS_CTRLCLICK_SIM       "Control+click -> simultaneous measures"
     IDS_MTCS_CALIBRATE_EX   "Black level measure is out of range regarding current probe internal offsets. Do you want to reconfigure internal offsets ?\nTo perform this operation, point instrument to an absolute black surface and click Yes."
-    IDS_DONATION_HYPERLINK  "http://www.homecinema-fr.com/colorimetre/donation/index_en.php"
+    IDS_DONATION_HYPERLINK  "http://hcfr.sourceforge.net/donate/"
     IDS_S3SENSOR_NAME       "Spyder III"
     IDS_S3SENSOR_PROPERTIES_TITLE "Spyder III parameters"
     IDS_SPYDER3             "Spyder III"

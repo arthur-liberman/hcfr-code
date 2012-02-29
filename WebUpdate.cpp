@@ -31,7 +31,7 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
-#define	FTP_SERVERNAME		"www.homecinema-fr.com"
+#define	FTP_SERVERNAME		"hcfr.sourceforge.net"
 #define	FTP_PORT			21
 #define	FTP_USERNAME		NULL
 #define	FTP_PASSWORD		NULL

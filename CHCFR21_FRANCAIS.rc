@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -32,18 +32,18 @@ LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE 
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE 
+2 TEXTINCLUDE 
 BEGIN
     "#include ""afxres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE 
+3 TEXTINCLUDE 
 BEGIN
     "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
     "#define _AFX_NO_OLE_RESOURCES\r\n"
@@ -72,118 +72,102 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_APPICON             ICON    DISCARDABLE     "res\\icon1.ico"
-IDR_RGBVIEW_TMPL        ICON    DISCARDABLE     "res\\idr_rgbv.ico"
-IDR_CIECHARTVIEW_TMPL   ICON    DISCARDABLE     "res\\idr_ciec.ico"
-IDR_LUMINANCEHISTOVIEW_TMPL ICON    DISCARDABLE     "res\\idr_lumi.ico"
-IDR_RGBHISTOVIEW_TMPL   ICON    DISCARDABLE     "res\\idr_rgbh.ico"
-IDR_SATLUMHISTOVIEW_TMPL ICON    DISCARDABLE     "res\\idr_slum.ico"
-IDR_SATLUMSHIFTVIEW_TMPL ICON    DISCARDABLE     "res\\idr_sshi.ico"
-IDR_COLORTEMPHISTOVIEW_TMPL ICON    DISCARDABLE     "res\\idr_coltemp.ico"
-IDI_PROPERTIES_ICON     ICON    DISCARDABLE     "res\\properties.ico"
-IDR_PROPERTIES_ICON     ICON    DISCARDABLE     "res\\idr_prop.ico"
-IDI_TRASH_ICON          ICON    DISCARDABLE     "res\\trash.ico"
-IDI_SETTINGS_ICON       ICON    DISCARDABLE     "res\\settings.ico"
-IDI_CAMERA_ICON         ICON    DISCARDABLE     "res\\camera.ico"
-IDI_DELETE_ICON         ICON    DISCARDABLE     "res\\delete.ico"
-IDR_NEARBLACKHISTOVIEW_TMPL ICON    DISCARDABLE     "res\\idr_nebl.ico"
-IDR_NEARWHITEHISTOVIEW_TMPL ICON    DISCARDABLE     "res\\idr_newh.ico"
-IDR_MEASURESHISTOVIEW_TMPL ICON    DISCARDABLE     "res\\idr_meas.ico"
-IDR_MAINFRAME           ICON    DISCARDABLE     "res\\ColorHCFR.ico"
-IDR_MESURETYPE          ICON    DISCARDABLE     "res\\ColorMeasurementsDoc.ico"
-IDI_START_ICON          ICON    DISCARDABLE     "res\\idi_start.ico"
-IDI_STOP_ICON           ICON    DISCARDABLE     "res\\idi_stop.ico"
-IDR_DOCREF              ICON    DISCARDABLE     "res\\docref.ico"
-IDR_DOCTREE             ICON    DISCARDABLE     "res\\idr_doct.ico"
-IDI_NEWTAB_ICON         ICON    DISCARDABLE     "res\\newtab_i.ico"
-IDR_GAMMAHISTOVIEW_TMPL ICON    DISCARDABLE     "res\\idr_gamm.ico"
-IDI_SPECTRUM_ICON       ICON    DISCARDABLE     "res\\spectrum.ico"
-IDI_GRAYSCALE_ICON      ICON    DISCARDABLE     "res\\grayscal.ico"
-IDI_COLORS_ICON         ICON    DISCARDABLE     "res\\colors_i.ico"
-IDI_GRAYCOLORS_ICON     ICON    DISCARDABLE     "res\\graycolo.ico"
-IDI_NEARBLACK_ICON      ICON    DISCARDABLE     "res\\nearblac.ico"
-IDI_NEARWHITE_ICON      ICON    DISCARDABLE     "res\\nearwhit.ico"
-IDI_ICON_CONTROLLED_MODE ICON    DISCARDABLE     "res\\icon_controlled.ico"
+IDR_APPICON             ICON                    "res\\icon1.ico"
+IDR_RGBVIEW_TMPL        ICON                    "res\\idr_rgbv.ico"
+IDR_CIECHARTVIEW_TMPL   ICON                    "res\\idr_ciec.ico"
+IDR_LUMINANCEHISTOVIEW_TMPL ICON                    "res\\idr_lumi.ico"
+IDR_RGBHISTOVIEW_TMPL   ICON                    "res\\idr_rgbh.ico"
+IDR_SATLUMHISTOVIEW_TMPL ICON                    "res\\idr_slum.ico"
+IDR_SATLUMSHIFTVIEW_TMPL ICON                    "res\\idr_sshi.ico"
+IDR_COLORTEMPHISTOVIEW_TMPL ICON                    "res\\idr_coltemp.ico"
+IDI_PROPERTIES_ICON     ICON                    "res\\properties.ico"
+IDR_PROPERTIES_ICON     ICON                    "res\\idr_prop.ico"
+IDI_TRASH_ICON          ICON                    "res\\trash.ico"
+IDI_SETTINGS_ICON       ICON                    "res\\settings.ico"
+IDI_CAMERA_ICON         ICON                    "res\\camera.ico"
+IDI_DELETE_ICON         ICON                    "res\\delete.ico"
+IDR_NEARBLACKHISTOVIEW_TMPL ICON                    "res\\idr_nebl.ico"
+IDR_NEARWHITEHISTOVIEW_TMPL ICON                    "res\\idr_newh.ico"
+IDR_MEASURESHISTOVIEW_TMPL ICON                    "res\\idr_meas.ico"
+IDR_MAINFRAME           ICON                    "res\\ColorHCFR.ico"
+IDR_MESURETYPE          ICON                    "res\\ColorMeasurementsDoc.ico"
+IDI_START_ICON          ICON                    "res\\idi_start.ico"
+IDI_STOP_ICON           ICON                    "res\\idi_stop.ico"
+IDR_DOCREF              ICON                    "res\\docref.ico"
+IDR_DOCTREE             ICON                    "res\\idr_doct.ico"
+IDI_NEWTAB_ICON         ICON                    "res\\newtab_i.ico"
+IDR_GAMMAHISTOVIEW_TMPL ICON                    "res\\idr_gamm.ico"
+IDI_SPECTRUM_ICON       ICON                    "res\\spectrum.ico"
+IDI_GRAYSCALE_ICON      ICON                    "res\\grayscal.ico"
+IDI_COLORS_ICON         ICON                    "res\\colors_i.ico"
+IDI_GRAYCOLORS_ICON     ICON                    "res\\graycolo.ico"
+IDI_NEARBLACK_ICON      ICON                    "res\\nearblac.ico"
+IDI_NEARWHITE_ICON      ICON                    "res\\nearwhit.ico"
+IDI_ICON_CONTROLLED_MODE ICON                    "res\\icon_controlled.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Dialog
 //
 
-IDD_SENSOR_PROP_PAGE DIALOG DISCARDABLE  0, 0, 192, 191
-STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+IDD_SENSOR_PROP_PAGE DIALOG  0, 0, 192, 191
+STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Matrice capteur"
 FONT 8, "MS Sans Serif"
 BEGIN
-    CONTROL         "",IDC_SENSORMATRIX_STATIC,"Static",SS_ETCHEDFRAME,10,20,
-                    122,34
+    CONTROL         "",IDC_SENSORMATRIX_STATIC,"Static",SS_ETCHEDFRAME,10,20,122,34
     LTEXT           "Matrice de conversion vers XYZ:",IDC_STATIC,10,8,174,10
     LTEXT           "Date de l'étalonnage:",IDC_STATIC,10,60,127,8
     LTEXT           "Static",IDC_CALIBRATIONDATE_STATIC,17,70,157,8
     LTEXT           "Autres informations:",IDC_STATIC,10,85,62,8
-    EDITTEXT        IDC_EDIT_INFOS,10,96,174,86,ES_MULTILINE | ES_READONLY | 
-                    WS_VSCROLL | WS_GROUP
+    EDITTEXT        IDC_EDIT_INFOS,10,96,174,86,ES_MULTILINE | ES_READONLY | WS_VSCROLL | WS_GROUP
 END
 
-IDD_SELECT_SENSOR_PROPPAGE DIALOG DISCARDABLE  0, 0, 186, 122
-STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+IDD_SELECT_SENSOR_PROPPAGE DIALOG  0, 0, 186, 122
+STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Sélection capteur"
 FONT 8, "MS Sans Serif"
 BEGIN
-    LTEXT           "Sélectionnez un capteur dans la liste ci-dessous:",
-                    IDC_STATIC,8,11,171,10
-    COMBOBOX        IDC_SENSORCHOICE_COMBO,20,25,146,96,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    LTEXT           "Comment voulez vous étalonner le capteur ?",IDC_STATIC,
-                    8,50,171,9
-    CONTROL         "Utiliser un fichier d'étalonnage existant",
-                    IDC_SENSORTRAININGMODE_RADIO1,"Button",
-                    BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,14,64,165,10
-    CONTROL         "Lancer un nouvel étalonnage du capteur",
-                    IDC_SENSORTRAININGMODE_RADIO2,"Button",
-                    BS_AUTORADIOBUTTON,14,100,165,10
-    COMBOBOX        IDC_SENSORTRAININGFILE_COMBO,20,77,146,105,
-                    CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    LTEXT           "Sélectionnez un capteur dans la liste ci-dessous:",IDC_STATIC,8,11,171,10
+    COMBOBOX        IDC_SENSORCHOICE_COMBO,20,25,146,96,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    LTEXT           "Comment voulez vous étalonner le capteur ?",IDC_STATIC,8,50,171,9
+    CONTROL         "Utiliser un fichier d'étalonnage existant",IDC_SENSORTRAININGMODE_RADIO1,
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,14,64,165,10
+    CONTROL         "Lancer un nouvel étalonnage du capteur",IDC_SENSORTRAININGMODE_RADIO2,
+                    "Button",BS_AUTORADIOBUTTON,14,100,165,10
+    COMBOBOX        IDC_SENSORTRAININGFILE_COMBO,20,77,146,105,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
 END
 
-IDD_SELECT_GENERATOR_PROPPAGE DIALOG DISCARDABLE  0, 0, 183, 94
-STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+IDD_SELECT_GENERATOR_PROPPAGE DIALOG  0, 0, 183, 94
+STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Sélection générateur"
 FONT 8, "MS Sans Serif"
 BEGIN
-    LTEXT           "Sélectionnez un générateur dans la liste ci-dessous:",
-                    IDC_STATIC,20,20,128,17
-    COMBOBOX        IDC_GENERATORCHOICE_COMBO,30,43,106,43,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Sélectionnez un générateur dans la liste ci-dessous:",IDC_STATIC,20,20,128,17
+    COMBOBOX        IDC_GENERATORCHOICE_COMBO,30,43,106,43,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_GRAPH_PROP_PAGE DIALOG DISCARDABLE  0, 0, 202, 171
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_GRAPH_PROP_PAGE DIALOG  0, 0, 202, 171
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Paramètres des graphes"
 FONT 8, "MS Sans Serif"
 BEGIN
     GROUPBOX        "Graphes",IDC_STATIC,7,5,180,94
     LTEXT           "Nom du graphe:",IDC_STATIC,14,18,54,8
-    COMBOBOX        IDC_GRAPH_NAME_COMBO,68,16,116,128,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_GRAPH_NAME_COMBO,68,16,116,128,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "Paramètres",IDC_STATIC,11,32,172,63
     LTEXT           "Couleur de la courbe:",IDC_STATIC,18,45,76,8
     PUSHBUTTON      "Button1",IDC_GRAPHCOLOR_BUTTON,98,42,26,12
-    CONTROL         "Affiche les points",IDC_GRAPH_SHOWPOINTS_CHECK,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,17,61,76,10
+    CONTROL         "Affiche les points",IDC_GRAPH_SHOWPOINTS_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,61,76,10
     CONTROL         "Affiche les tooltips",IDC_GRAPH_SHOWTOOLTIPS_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,98,61,80,10
     LTEXT           "Epaisseur:",IDC_STATIC,17,77,39,8
-    COMBOBOX        IDC_GRAPH_LINEWIDTH_COMBO,59,76,31,54,CBS_DROPDOWN | 
-                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_GRAPH_LINEWIDTH_COMBO,59,76,31,54,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Style:",IDC_STATIC,96,78,21,8
-    COMBOBOX        IDC_GRAPH_LINETYPE_COMBO,119,76,59,51,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_GRAPH_LINETYPE_COMBO,119,76,59,51,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "Global",IDC_STATIC,9,100,177,51
-    CONTROL         "Affiche les axes",IDC_GRAPH_SHOWAXIS_CHECK,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,17,112,77,10
-    CONTROL         "Fond en dégradé",IDC_GRAPH_SHOWGRADIENT_CHECK,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,17,123,77,10
+    CONTROL         "Affiche les axes",IDC_GRAPH_SHOWAXIS_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,112,77,10
+    CONTROL         "Fond en dégradé",IDC_GRAPH_SHOWGRADIENT_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,123,77,10
     CONTROL         "Affiche les points",IDC_GRAPH_SHOWALLPOINTS_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,135,77,10
     CONTROL         "Affiche les labels X",IDC_GRAPH_SHOWXLABELS_CHECK,
@@ -197,8 +181,8 @@ BEGIN
     PUSHBUTTON      "Aide",IDHELP,137,154,49,14,WS_GROUP
 END
 
-IDD_GRAPH_SCALE_PROP_PAGE DIALOG DISCARDABLE  0, 0, 202, 171
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_GRAPH_SCALE_PROP_PAGE DIALOG  0, 0, 202, 171
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Echelles des graphes"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -229,31 +213,24 @@ BEGIN
     PUSHBUTTON      "Aide",IDHELP,140,152,49,14,WS_GROUP
 END
 
-IDD_GRAPH_SAVE_DIALOG DIALOG DISCARDABLE  0, 0, 202, 171
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_GRAPH_SAVE_DIALOG DIALOG  0, 0, 202, 171
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Sauvegarde des graphes"
 FONT 8, "MS Sans Serif"
 BEGIN
     GROUPBOX        "Taille de l'image",IDC_STATIC,10,7,180,78
-    CONTROL         "Taille de la fenêtre",IDC_SIZE_RADIO,"Button",
-                    BS_AUTORADIOBUTTON | WS_GROUP,22,21,160,10
-    CONTROL         "300 x 200",IDC_SIZE_RADIO2,"Button",BS_AUTORADIOBUTTON,
-                    22,32,160,10
-    CONTROL         "600 x 400",IDC_SIZE_RADIO3,"Button",BS_AUTORADIOBUTTON,
-                    22,43,160,10
-    CONTROL         "Personnalisée",IDC_SIZE_RADIO4,"Button",
-                    BS_AUTORADIOBUTTON,22,54,160,10
+    CONTROL         "Taille de la fenêtre",IDC_SIZE_RADIO,"Button",BS_AUTORADIOBUTTON | WS_GROUP,22,21,160,10
+    CONTROL         "300 x 200",IDC_SIZE_RADIO2,"Button",BS_AUTORADIOBUTTON,22,32,160,10
+    CONTROL         "600 x 400",IDC_SIZE_RADIO3,"Button",BS_AUTORADIOBUTTON,22,43,160,10
+    CONTROL         "Personnalisée",IDC_SIZE_RADIO4,"Button",BS_AUTORADIOBUTTON,22,54,160,10
     LTEXT           "Largeur:",IDC_STATIC,34,66,37,8
     EDITTEXT        IDC_SAVE_WIDTH_EDIT,74,64,26,14,ES_AUTOHSCROLL
     LTEXT           "Hauteur:",IDC_STATIC,105,66,37,8
     EDITTEXT        IDC_SAVE_HEIGHT_EDIT,147,64,26,14,ES_AUTOHSCROLL
     GROUPBOX        "Type de fichier",IDC_STATIC,10,92,180,57
-    CONTROL         "JPEG",IDC_FILE_TYPE_RADIO,"Button",BS_AUTORADIOBUTTON | 
-                    WS_GROUP,22,105,37,10
-    CONTROL         "BMP",IDC_FILE_TYPE_RADIO2,"Button",BS_AUTORADIOBUTTON,
-                    22,117,37,10
-    CONTROL         "PNG",IDC_FILE_TYPE_RADIO3,"Button",BS_AUTORADIOBUTTON,
-                    22,129,37,10
+    CONTROL         "JPEG",IDC_FILE_TYPE_RADIO,"Button",BS_AUTORADIOBUTTON | WS_GROUP,22,105,37,10
+    CONTROL         "BMP",IDC_FILE_TYPE_RADIO2,"Button",BS_AUTORADIOBUTTON,22,117,37,10
+    CONTROL         "PNG",IDC_FILE_TYPE_RADIO3,"Button",BS_AUTORADIOBUTTON,22,129,37,10
     LTEXT           "Qualité JPEG (en %):",IDC_STATIC,61,106,78,8
     EDITTEXT        IDC_SAVE_JPEGQUALITY_EDIT,143,103,18,14,ES_AUTOHSCROLL
     DEFPUSHBUTTON   "OK",IDOK,10,154,50,14
@@ -262,153 +239,117 @@ BEGIN
 END
 
 IDD_REFERENCE_PROP_PAGE DIALOGEX 0, 0, 212, 161
-STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Références"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Couleurs",IDC_STATIC,7,7,198,43,WS_GROUP
     LTEXT           "Standard:",IDC_STATIC,14,18,32,8
-    COMBOBOX        IDC_COLORREF_COMBO,47,16,110,73,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    CONTROL         "Changer le blanc",IDC_CHANGEWHITE_CHECK,"Button",
-                    BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,33,66,10
-    COMBOBOX        IDC_WHITETARGET_COMBO,88,32,69,84,CBS_DROPDOWNLIST | 
-                    WS_DISABLED | WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    COMBOBOX        IDC_COLORREF_COMBO,47,16,110,73,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    CONTROL         "Changer le blanc",IDC_CHANGEWHITE_CHECK,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,33,66,10
+    COMBOBOX        IDC_WHITETARGET_COMBO,88,32,69,84,CBS_DROPDOWNLIST | WS_DISABLED | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     GROUPBOX        "Calcul du Gamma",IDC_STATIC,7,51,198,73,WS_GROUP
     CONTROL         "Standard de visualisation",IDC_GAMMA_OFFSET_RADIO1,
-                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,12,
-                    61,115,10
-    CONTROL         "Standard avec compensation du noir",
-                    IDC_GAMMA_OFFSET_RADIO2,"Button",BS_AUTORADIOBUTTON,12,
-                    73,138,10
-    CONTROL         "Standard d'encodage",IDC_GAMMA_OFFSET_RADIO3,"Button",
-                    BS_AUTORADIOBUTTON,12,85,97,10
-    CONTROL         "Standard d'encodage, Offset manuel :",
-                    IDC_GAMMA_OFFSET_RADIO4,"Button",BS_AUTORADIOBUTTON,12,
-                    97,134,10,WS_EX_TRANSPARENT
-    CONTROL         "Optimisé",IDC_GAMMA_OFFSET_RADIO5,"Button",
-                    BS_AUTORADIOBUTTON,12,109,54,10,WS_EX_TRANSPARENT
-    EDITTEXT        IDC_EDIT_MANUAL_GOFFSET,148,95,41,14,ES_AUTOHSCROLL | 
-                    WS_GROUP
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,12,61,115,10
+    CONTROL         "Standard avec compensation du noir",IDC_GAMMA_OFFSET_RADIO2,
+                    "Button",BS_AUTORADIOBUTTON,12,73,138,10
+    CONTROL         "Standard d'encodage",IDC_GAMMA_OFFSET_RADIO3,"Button",BS_AUTORADIOBUTTON,12,85,97,10
+    CONTROL         "Standard d'encodage, Offset manuel :",IDC_GAMMA_OFFSET_RADIO4,
+                    "Button",BS_AUTORADIOBUTTON,12,97,134,10,WS_EX_TRANSPARENT
+    CONTROL         "Optimisé",IDC_GAMMA_OFFSET_RADIO5,"Button",BS_AUTORADIOBUTTON,12,109,54,10,WS_EX_TRANSPARENT
+    EDITTEXT        IDC_EDIT_MANUAL_GOFFSET,148,95,41,14,ES_AUTOHSCROLL | WS_GROUP
     GROUPBOX        "Réference Gamma",IDC_STATIC,7,126,84,29,WS_GROUP
-    EDITTEXT        IDC_EDIT_GAMMA_REF,17,136,64,14,ES_AUTOHSCROLL | 
-                    WS_GROUP
+    EDITTEXT        IDC_EDIT_GAMMA_REF,17,136,64,14,ES_AUTOHSCROLL | WS_GROUP
 END
 
-IDD_GENERAL_PROP_PAGE DIALOG DISCARDABLE  0, 0, 212, 183
-STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+IDD_GENERAL_PROP_PAGE DIALOG  0, 0, 212, 183
+STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Général"
 FONT 8, "MS Sans Serif"
 BEGIN
     GROUPBOX        "Application",IDC_STATIC,7,7,198,25,WS_GROUP
-    CONTROL         "Instances multiples",IDC_CHECK_MULTIPLEINSTANCE,"Button",
-                    BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,18,77,10
+    CONTROL         "Instances multiples",IDC_CHECK_MULTIPLEINSTANCE,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,18,77,10
     CONTROL         "Restaure taille et position",IDC_CHECK_SAVEPOSITION,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,95,18,
-                    99,10
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,95,18,99,10
     GROUPBOX        "Mesures utilisateur",IDC_STATIC,7,34,198,48,WS_GROUP
-    CONTROL         "Affiche la couleur de test pendant les mesures",
-                    IDC_CHECK_COLORS,"Button",BS_AUTOCHECKBOX | WS_GROUP | 
-                    WS_TABSTOP,14,45,183,10
+    CONTROL         "Affiche la couleur de test pendant les mesures",IDC_CHECK_COLORS,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,45,183,10
     CONTROL         "Effectue des mesures en continu",IDC_CHECK_CONTINUOUS,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,56,
-                    119,10
-    CONTROL         "Détecte les primaires lors des mesures utilisateur",
-                    IDC_CHECK_DETECT_PRIMARIES,"Button",BS_AUTOCHECKBOX | 
-                    WS_GROUP | WS_TABSTOP,14,67,167,10
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,56,119,10
+    CONTROL         "Détecte les primaires lors des mesures utilisateur",IDC_CHECK_DETECT_PRIMARIES,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,67,167,10
     GROUPBOX        "Iris dynamique",IDC_STATIC,7,85,198,36,WS_GROUP
     LTEXT           "Temps de latence",IDC_STATIC,14,96,103,8
-    EDITTEXT        IDC_EDIT_IRIS_TIME,123,93,40,14,ES_AUTOHSCROLL | 
-                    WS_GROUP
+    EDITTEXT        IDC_EDIT_IRIS_TIME,123,93,40,14,ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "ms",IDC_STATIC,168,96,15,8
-    CONTROL         "Bip au début de la mesure (aide au réglage de latence)",
-                    IDC_CHECK_BEEP,"Button",BS_AUTOCHECKBOX | WS_GROUP | 
-                    WS_TABSTOP,14,107,188,10
-    GROUPBOX        "Mesures additionnelles aux primaires et secondaires",
-                    IDC_STATIC,7,123,198,25,WS_GROUP
-    CONTROL         "Aucune",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | 
-                    WS_GROUP | WS_TABSTOP,13,134,41,10
-    CONTROL         "Blanc",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,69,134,34,
-                    10
-    CONTROL         "Blanc et noir",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,
-                    115,134,55,10
-    GROUPBOX        "Couleurs de référence pour les courbes de saturation",
-                    IDC_STATIC,7,151,198,26,WS_GROUP
-    CONTROL         "Utilise les couleurs mesurées (si elles sont disponibles)",
-                    IDC_CHECK_SATREF_MEASURES,"Button",BS_AUTOCHECKBOX | 
-                    WS_GROUP | WS_TABSTOP,14,162,185,10
+    CONTROL         "Bip au début de la mesure (aide au réglage de latence)",IDC_CHECK_BEEP,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,107,188,10
+    GROUPBOX        "Mesures additionnelles aux primaires et secondaires",IDC_STATIC,7,123,198,25,WS_GROUP
+    CONTROL         "Aucune",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,134,41,10
+    CONTROL         "Blanc",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,69,134,34,10
+    CONTROL         "Blanc et noir",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,115,134,55,10
+    GROUPBOX        "Couleurs de référence pour les courbes de saturation",IDC_STATIC,7,151,198,26,WS_GROUP
+    CONTROL         "Utilise les couleurs mesurées (si elles sont disponibles)",IDC_CHECK_SATREF_MEASURES,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,162,185,10
 END
 
-IDD_EXPORTXLS_DIALOG DIALOG DISCARDABLE  0, 0, 226, 135
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_EXPORTXLS_DIALOG DIALOG  0, 0, 226, 135
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Exportation excel"
 FONT 8, "MS Sans Serif"
 BEGIN
-    LTEXT           "Le fichier contient déjà des mesures.",IDC_STATIC,10,8,
-                    209,8
+    LTEXT           "Le fichier contient déjà des mesures.",IDC_STATIC,10,8,209,8
     LTEXT           "Que voulez-vous faire ?",IDC_STATIC,10,19,209,8
-    CONTROL         "Rajouter la nouvelle mesure à la suite des données actuelles",
-                    IDC_APPEND_RADIO,"Button",BS_AUTORADIOBUTTON | WS_GROUP | 
-                    WS_TABSTOP,10,34,206,10
-    CONTROL         "Remplacer la mesure ",IDC_REPLACE_RADIO,"Button",
-                    BS_AUTORADIOBUTTON,10,46,206,10
-    LISTBOX         IDC_REPLACEMEASURE_LIST,10,60,203,39,LBS_SORT | 
-                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_GROUP | 
-                    WS_TABSTOP
+    CONTROL         "Rajouter la nouvelle mesure à la suite des données actuelles",IDC_APPEND_RADIO,
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,10,34,206,10
+    CONTROL         "Remplacer la mesure ",IDC_REPLACE_RADIO,"Button",BS_AUTORADIOBUTTON,10,46,206,10
+    LISTBOX         IDC_REPLACEMEASURE_LIST,10,60,203,39,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     DEFPUSHBUTTON   "OK",IDOK,28,108,50,14,WS_GROUP
     PUSHBUTTON      "Cancel",IDCANCEL,89,108,49,14,WS_GROUP
     PUSHBUTTON      "Aide",IDHELP,149,108,49,14,WS_GROUP
 END
 
-IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 186, 278
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_ABOUTBOX DIALOG  0, 0, 186, 278
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "A propos du Colorimètre HCFR"
 FONT 8, "MS Sans Serif"
 BEGIN
     CONTROL         223,IDC_STATIC,"Static",SS_BITMAP,7,7,172,62
     LTEXT           "Version 2.0",IDC_STATIC_VERSION,7,76,119,8,SS_NOPREFIX
-    LTEXT           "Copyright (C) 2005-2008\nAssociation Homecinema Francophone",
-                    IDC_STATIC2,7,88,168,18
-    LTEXT           "www.homecinema-fr.com",IDC_HOMECINEMA_HYPERLINK,7,110,
-                    80,8
+    LTEXT           "Copyright (C) 2012 Hcfr Project, 2005-2008\nAssociation Homecinema Francophone",IDC_STATIC2,7,88,168,18
+    LTEXT           "hcfr.sourceforge.net",IDC_HOMECINEMA_HYPERLINK,7,110,80,8
     LTEXT           "Pour faire un don...",IDC_DONATION_HYPERLINK,7,122,61,8
     LTEXT           "IDC_PLACEHOLDER",IDC_PLACEHOLDER,4,136,177,117
     DEFPUSHBUTTON   "OK",IDOK,68,257,50,14,WS_GROUP
 END
 
-IDD_ONEDEVICESENSOR_PROP_PAGE DIALOG DISCARDABLE  0, 0, 212, 191
-STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+IDD_ONEDEVICESENSOR_PROP_PAGE DIALOG  0, 0, 212, 191
+STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Calibration"
 FONT 8, "MS Sans Serif"
 BEGIN
     GROUPBOX        "Reférence",IDC_STATIC,5,2,197,105
     LTEXT           "Modèle:",IDC_STATIC,15,15,31,8
-    COMBOBOX        IDC_DISPLAYREF_COMBO,49,13,140,44,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_DISPLAYREF_COMBO,49,13,140,44,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Chromacité des primaires",IDC_STATIC,15,31,100,9
-    CONTROL         "",IDC_PRIMARIESMATRIX_STATIC,"Static",SS_ETCHEDFRAME,15,
-                    41,104,60
+    CONTROL         "",IDC_PRIMARIESMATRIX_STATIC,"Static",SS_ETCHEDFRAME,15,41,104,60
     LTEXT           "Chromacité du blanc",IDC_STATIC,131,31,64,16
-    CONTROL         "",IDC_WHITEMATRIX_STATIC,"Static",SS_ETCHEDFRAME,133,50,
-                    46,43
+    CONTROL         "",IDC_WHITEMATRIX_STATIC,"Static",SS_ETCHEDFRAME,133,50,46,43
     GROUPBOX        "Options",IDC_STATIC,5,107,197,80
     CONTROL         "Compensation du noir",IDC_BLACK_COMPENSATION_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,119,167,10
     CONTROL         "Vérifie l'additivité",IDC_VERIFY_ADDITIVITY_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,133,166,10
     LTEXT           "Erreur max (en %) :",IDC_STATIC,37,145,69,8
-    EDITTEXT        IDC_MAX_ADDITIVITY_ERROR_EDIT,113,145,25,12,
-                    ES_AUTOHSCROLL
-    CONTROL         "Affiche le résultat de l'additivité",
-                    IDC_SHOW_ADDITIVITY_CHECK,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,25,158,168,10
+    EDITTEXT        IDC_MAX_ADDITIVITY_ERROR_EDIT,113,145,25,12,ES_AUTOHSCROLL
+    CONTROL         "Affiche le résultat de l'additivité",IDC_SHOW_ADDITIVITY_CHECK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,158,168,10
     LTEXT           "Niveau IRE des mires:",IDC_STATIC,26,173,85,8
-    COMBOBOX        IDC_RGBLEVEL_COMBO,113,170,32,47,CBS_DROPDOWN | 
-                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_RGBLEVEL_COMBO,113,170,32,47,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_GENERATOR_PROP_PAGE DIALOG DISCARDABLE  0, 0, 192, 105
-STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+IDD_GENERATOR_PROP_PAGE DIALOG  0, 0, 192, 105
+STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Blanking"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -416,54 +357,40 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,20,164,10
 END
 
-IDD_GENERATOR_GDI_PROP_PAGE DIALOG DISCARDABLE  0, 0, 169, 124
-STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+IDD_GENERATOR_GDI_PROP_PAGE DIALOG  0, 0, 169, 124
+STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Display"
 FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "Ecran cible:",IDC_STATIC,9,11,59,9
-    COMBOBOX        IDC_MONITOR_COMBO,88,8,71,62,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    COMBOBOX        IDC_MONITOR_COMBO,88,8,71,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     LTEXT           "Taille de la mire: (en %)",IDC_STATIC,8,29,73,8
-    EDITTEXT        IDC_PATTERNSIZE_EDIT,88,27,34,12,ES_AUTOHSCROLL | 
-                    WS_GROUP
+    EDITTEXT        IDC_PATTERNSIZE_EDIT,88,27,34,12,ES_AUTOHSCROLL | WS_GROUP
     GROUPBOX        "Mode d'affichage",IDC_STATIC,9,51,150,30,WS_GROUP
-    CONTROL         "GDI",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | 
-                    WS_TABSTOP,15,63,29,10
-    CONTROL         "Overlay",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,51,63,
-                    41,10
+    CONTROL         "GDI",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,63,29,10
+    CONTROL         "Overlay",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,51,63,41,10
     PUSHBUTTON      "Test Overlay",IDC_OVERLAY,99,61,54,14,WS_GROUP
-    GROUPBOX        "Echelle niveaux de gris (GDI)",IDC_STATIC_GROUP,9,87,
-                    150,27,WS_GROUP
-    CONTROL         "0 - 255",IDC_RGBLEVEL_RADIO1,"Button",
-                    BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,99,38,10
-    CONTROL         "16 - 235",IDC_RGBLEVEL_RADIO2,"Button",
-                    BS_AUTORADIOBUTTON,64,99,42,10
+    GROUPBOX        "Echelle niveaux de gris (GDI)",IDC_STATIC_GROUP,9,87,150,27,WS_GROUP
+    CONTROL         "0 - 255",IDC_RGBLEVEL_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,99,38,10
+    CONTROL         "16 - 235",IDC_RGBLEVEL_RADIO2,"Button",BS_AUTORADIOBUTTON,64,99,42,10
 END
 
-IDD_APPEARANCE_PROP_PAGE DIALOG DISCARDABLE  0, 0, 212, 158
-STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+IDD_APPEARANCE_PROP_PAGE DIALOG  0, 0, 212, 158
+STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Apparence"
 FONT 8, "MS Sans Serif"
 BEGIN
     GROUPBOX        "Style visuel",IDC_STATIC,7,7,199,45,WS_GROUP
     LTEXT           "Thème:",IDC_STATIC,13,20,33,9
-    COMBOBOX        IDC_THEME_COMBO,49,18,62,62,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    COMBOBOX        IDC_THEME_COMBO,49,18,62,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     CONTROL         "Affiche le délimiteur de menu",IDC_MENUBORDER_CHECK,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,36,
-                    117,10
-    CONTROL         "XP blending",IDC_XPBLENDING_CHECK,"Button",
-                    BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,136,15,67,10
-    CONTROL         "Gloom",IDC_GLOOM_CHECK,"Button",BS_AUTOCHECKBOX | 
-                    WS_GROUP | WS_TABSTOP,136,25,67,10
-    CONTROL         "Select disabled",IDC_DISABLE_CHECK,"Button",
-                    BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,136,36,67,10
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,36,117,10
+    CONTROL         "XP blending",IDC_XPBLENDING_CHECK,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,136,15,67,10
+    CONTROL         "Gloom",IDC_GLOOM_CHECK,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,136,25,67,10
+    CONTROL         "Select disabled",IDC_DISABLE_CHECK,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,136,36,67,10
     GROUPBOX        "Couleurs",IDC_STATIC,7,53,199,57,WS_GROUP
-    CONTROL         "Couleurs Windows",IDC_CUSTOMCOLOR_RADIO,"Button",
-                    BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,66,146,10
-    CONTROL         "Couleurs personnalisées",IDC_RADIO7,"Button",
-                    BS_AUTORADIOBUTTON | BS_MULTILINE,15,76,66,25
+    CONTROL         "Couleurs Windows",IDC_CUSTOMCOLOR_RADIO,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,66,146,10
+    CONTROL         "Couleurs personnalisées",IDC_RADIO7,"Button",BS_AUTORADIOBUTTON | BS_MULTILINE,15,76,66,25
     LTEXT           "Menu",IDC_STATIC,84,78,19,8
     PUSHBUTTON      "Button1",IDC_MENUCOLOR_BUTTON,109,76,23,12,WS_GROUP
     LTEXT           "Texte",IDC_STATIC,84,93,19,8
@@ -471,58 +398,43 @@ BEGIN
     LTEXT           "Fond",IDC_STATIC,136,78,39,8
     PUSHBUTTON      "Button1",IDC_WINDOWCOLOR_BUTTON,177,76,23,12,WS_GROUP
     LTEXT           "Sélection",IDC_STATIC,136,94,39,8
-    PUSHBUTTON      "Button1",IDC_SELECTIONCOLOR_BUTTON,177,91,23,12,
-                    WS_GROUP
+    PUSHBUTTON      "Button1",IDC_SELECTIONCOLOR_BUTTON,177,91,23,12,WS_GROUP
     GROUPBOX        "Graphiques",IDC_STATIC,7,111,199,40,WS_GROUP
-    CONTROL         "Affichage des graphes sur fond blanc",
-                    IDC_BK_WHITE_SCREEN,"Button",BS_AUTOCHECKBOX | WS_GROUP | 
-                    WS_TABSTOP,16,123,133,10
-    CONTROL         "Sauvegarde des fichiers graphes sur fond blanc",
-                    IDC_BK_WHITE_FILE,"Button",BS_AUTOCHECKBOX | WS_GROUP | 
-                    WS_TABSTOP,16,135,166,10
+    CONTROL         "Affichage des graphes sur fond blanc",IDC_BK_WHITE_SCREEN,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,16,123,133,10
+    CONTROL         "Sauvegarde des fichiers graphes sur fond blanc",IDC_BK_WHITE_FILE,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,16,135,166,10
 END
 
 IDD_KISENSOR_PROP_PAGE DIALOGEX 0, 0, 212, 174
-STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Sonde HCFR"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Configuration",IDC_STATIC,6,5,198,62,WS_GROUP
     LTEXT           "Port COM / USB",IDC_STATIC,13,20,94,8,0,0,HIDC_STATIC
-    COMBOBOX        IDC_KISENSOR_COM_COMBO,114,17,52,82,CBS_DROPDOWN | 
-                    WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    COMBOBOX        IDC_KISENSOR_COM_COMBO,114,17,52,82,CBS_DROPDOWN | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     PUSHBUTTON      "Version",IDC_KISENSOR_GETVERSION,170,17,28,13,WS_GROUP
-    LTEXT           "Timeout Mesure (40 000 ms)",IDC_STATIC,13,37,98,8,0,0,
-                    HIDC_STATIC
-    EDITTEXT        IDC_TIMEOUT_MESURE_EDIT,114,35,52,12,ES_AUTOHSCROLL | 
-                    WS_GROUP
-    CONTROL         "Debug (sauve les mesures dans decoder.log)",
-                    IDC_KISENSOR_DEBUG_CB,"Button",BS_AUTOCHECKBOX | 
-                    WS_GROUP | WS_TABSTOP,13,51,184,10
+    LTEXT           "Timeout Mesure (40 000 ms)",IDC_STATIC,13,37,98,8,0,0,HIDC_STATIC
+    EDITTEXT        IDC_TIMEOUT_MESURE_EDIT,114,35,52,12,ES_AUTOHSCROLL | WS_GROUP
+    CONTROL         "Debug (sauve les mesures dans decoder.log)",IDC_KISENSOR_DEBUG_CB,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,51,184,10
     GROUPBOX        "Paramètres avancés",IDC_STATIC,6,70,198,83,WS_GROUP
     GROUPBOX        "Capteur utilisé",IDC_STATIC,12,81,70,51,WS_GROUP
-    CONTROL         "Capteur 0",IDC_KISENSOR_TAOS_0,"Button",
-                    BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,22,94,54,10
-    CONTROL         "Capteur 1",IDC_KISENSOR_TAOS_1,"Button",
-                    BS_AUTORADIOBUTTON,22,105,54,10
-    CONTROL         "Les deux",IDC_KISENSOR_TAOS_2,"Button",
-                    BS_AUTORADIOBUTTON,22,116,54,10
+    CONTROL         "Capteur 0",IDC_KISENSOR_TAOS_0,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,22,94,54,10
+    CONTROL         "Capteur 1",IDC_KISENSOR_TAOS_1,"Button",BS_AUTORADIOBUTTON,22,105,54,10
+    CONTROL         "Les deux",IDC_KISENSOR_TAOS_2,"Button",BS_AUTORADIOBUTTON,22,116,54,10
     GROUPBOX        "Entrelacement mesures",IDC_STATIC,90,81,105,51,WS_GROUP
-    CONTROL         "Aucun",IDC_KISENSOR_INTERLACE_0,"Button",
-                    BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,100,94,89,10
-    CONTROL         "Deux niveaux",IDC_KISENSOR_INTERLACE_1,"Button",
-                    BS_AUTORADIOBUTTON,100,105,89,10
-    CONTROL         "Quatre niveaux",IDC_KISENSOR_INTERLACE_2,"Button",
-                    BS_AUTORADIOBUTTON,100,116,89,10
-    CONTROL         "Mesure le blanc",IDC_KISENSOR_WHITE,"Button",
-                    BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,12,138,73,10
+    CONTROL         "Aucun",IDC_KISENSOR_INTERLACE_0,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,100,94,89,10
+    CONTROL         "Deux niveaux",IDC_KISENSOR_INTERLACE_1,"Button",BS_AUTORADIOBUTTON,100,105,89,10
+    CONTROL         "Quatre niveaux",IDC_KISENSOR_INTERLACE_2,"Button",BS_AUTORADIOBUTTON,100,116,89,10
+    CONTROL         "Mesure le blanc",IDC_KISENSOR_WHITE,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,12,138,73,10
     CONTROL         "Mesure rapide (moins précise)",IDC_KISENSOR_FASTMEASURE,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,90,138,
-                    109,10
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,90,138,109,10
 END
 
 IDD_COLORTEST DIALOGEX 300, 10, 117, 69
-STYLE DS_MODALFRAME | DS_3DLOOK | WS_POPUP | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW | WS_EX_CLIENTEDGE
 CAPTION "Couleur de test"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
@@ -530,145 +442,112 @@ BEGIN
 END
 
 IDD_S2SENSOR_PROP_PAGE DIALOGEX 0, 0, 212, 174
-STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Spyder II"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Configuration",IDC_STATIC,6,5,198,78,WS_GROUP
-    LTEXT           "Mode de calibrage",IDC_STATIC,13,20,94,8,0,0,
-                    HIDC_STATIC
-    COMBOBOX        IDC_S2SENSOR_MODE_COMBO,114,17,52,82,CBS_DROPDOWN | 
-                    WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    LTEXT           "Temps de mesure (ms)",IDC_STATIC,13,37,98,8,0,0,
-                    HIDC_STATIC
+    LTEXT           "Mode de calibrage",IDC_STATIC,13,20,94,8,0,0,HIDC_STATIC
+    COMBOBOX        IDC_S2SENSOR_MODE_COMBO,114,17,52,82,CBS_DROPDOWN | WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    LTEXT           "Temps de mesure (ms)",IDC_STATIC,13,37,98,8,0,0,HIDC_STATIC
     EDITTEXT        IDC_READTIME_EDIT,114,35,52,12,ES_AUTOHSCROLL | WS_GROUP
-    CONTROL         "Allonger le temps de mesure pour les couleurs sombres",
-                    IDC_CHECK_VARIABLE_READTIME,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,13,53,187,10
-    CONTROL         "Moyenner plusieurs mesures pour les couleurs sombres",
-                    IDC_CHECK_AVG_MEASURES,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,13,65,188,10
-    CONTROL         "Debug (sauve les mesures dans decoder.log)",
-                    IDC_KISENSOR_DEBUG_CB,"Button",BS_AUTOCHECKBOX | 
-                    WS_GROUP | WS_TABSTOP,13,89,184,10
+    CONTROL         "Allonger le temps de mesure pour les couleurs sombres",IDC_CHECK_VARIABLE_READTIME,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,53,187,10
+    CONTROL         "Moyenner plusieurs mesures pour les couleurs sombres",IDC_CHECK_AVG_MEASURES,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,65,188,10
+    CONTROL         "Debug (sauve les mesures dans decoder.log)",IDC_KISENSOR_DEBUG_CB,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,89,184,10
 END
 
-IDD_LANGSELECTION DIALOG DISCARDABLE  0, 0, 142, 84
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_LANGSELECTION DIALOG  0, 0, 142, 84
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Language"
 FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "Language selection",IDC_STATIC,7,7,63,8
-    LISTBOX         IDC_LISTBOX,7,17,128,40,LBS_SORT | LBS_NOINTEGRALHEIGHT | 
-                    WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    LISTBOX         IDC_LISTBOX,7,17,128,40,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     DEFPUSHBUTTON   "OK",IDOK,46,63,50,14
 END
 
 IDD_DTPSENSOR_PROP_PAGE DIALOGEX 0, 0, 212, 174
-STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "DTP-94"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Configuration",IDC_STATIC,6,5,198,65,WS_GROUP
-    LTEXT           "Mode de calibrage",IDC_STATIC,13,20,94,8,0,0,
-                    HIDC_STATIC
-    COMBOBOX        IDC_S2SENSOR_MODE_COMBO,114,17,52,82,CBS_DROPDOWN | 
-                    WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    LTEXT           "Mode de calibrage",IDC_STATIC,13,20,94,8,0,0,HIDC_STATIC
+    COMBOBOX        IDC_S2SENSOR_MODE_COMBO,114,17,52,82,CBS_DROPDOWN | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     LTEXT           "Timeout (ms)",IDC_STATIC,13,37,98,8,0,0,HIDC_STATIC
     EDITTEXT        IDC_READTIME_EDIT,114,35,52,12,ES_AUTOHSCROLL | WS_GROUP
-    CONTROL         "Moyenner plusieurs mesures pour les couleurs sombres",
-                    IDC_CHECK_AVG_MEASURES,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,13,52,188,10
+    CONTROL         "Moyenner plusieurs mesures pour les couleurs sombres",IDC_CHECK_AVG_MEASURES,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,52,188,10
     GROUPBOX        "Niveau de noir",IDC_STATIC,6,76,198,48
-    CONTROL         "Utiliser les offsets de niveau de noir de la sonde",
-                    IDC_CHECK_USE_BLACKLEVEL,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,89,165,10
-    PUSHBUTTON      "Calibrer les offsets internes de la sonde",
-                    IDC_DTP_BLACKLEVEL,15,102,179,14
-    PUSHBUTTON      "Mesurer la température interne de la sonde",
-                    IDC_DTP_TEMP,15,130,178,14
-    CONTROL         "Debug (sauve les mesures dans decoder.log)",
-                    IDC_KISENSOR_DEBUG_CB,"Button",BS_AUTOCHECKBOX | 
-                    WS_GROUP | WS_TABSTOP,15,150,184,10
+    CONTROL         "Utiliser les offsets de niveau de noir de la sonde",IDC_CHECK_USE_BLACKLEVEL,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,89,165,10
+    PUSHBUTTON      "Calibrer les offsets internes de la sonde",IDC_DTP_BLACKLEVEL,15,102,179,14
+    PUSHBUTTON      "Mesurer la température interne de la sonde",IDC_DTP_TEMP,15,130,178,14
+    CONTROL         "Debug (sauve les mesures dans decoder.log)",IDC_KISENSOR_DEBUG_CB,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,15,150,184,10
 END
 
 IDD_I1SENSOR_PROP_PAGE DIALOGEX 0, 0, 212, 174
-STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Eye One"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Configuration",IDC_STATIC,6,5,198,60,WS_GROUP
-    LTEXT           "Mode de calibrage",IDC_STATIC,13,20,66,8,0,0,
-                    HIDC_STATIC
-    COMBOBOX        IDC_S2SENSOR_MODE_COMBO,79,17,113,82,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    CONTROL         "Mode ""lumière ambiante"" (utilisation du diffuseur)",
-                    IDC_AMBIENTLIGHT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    13,36,169,10
-    CONTROL         "Moyenner plusieurs mesures pour les couleurs sombres",
-                    IDC_CHECK_AVG_MEASURES,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,13,48,188,10
+    LTEXT           "Mode de calibrage",IDC_STATIC,13,20,66,8,0,0,HIDC_STATIC
+    COMBOBOX        IDC_S2SENSOR_MODE_COMBO,79,17,113,82,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    CONTROL         "Mode ""lumière ambiante"" (utilisation du diffuseur)",IDC_AMBIENTLIGHT,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,36,169,10
+    CONTROL         "Moyenner plusieurs mesures pour les couleurs sombres",IDC_CHECK_AVG_MEASURES,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,48,188,10
     GROUPBOX        "Niveau de noir",IDC_STATIC,6,70,198,36
-    PUSHBUTTON      "Calibrer les offsets internes de la sonde",
-                    IDC_DTP_BLACKLEVEL,15,84,179,14
-    GROUPBOX        "Temps de validité du calibrage de la sonde",IDC_STATIC,
-                    6,111,198,34
+    PUSHBUTTON      "Calibrer les offsets internes de la sonde",IDC_DTP_BLACKLEVEL,15,84,179,14
+    GROUPBOX        "Temps de validité du calibrage de la sonde",IDC_STATIC,6,111,198,34
     LTEXT           "Nombre de minutes (0: illimité)",IDC_STATIC,13,127,94,8
     EDITTEXT        IDC_EDIT_MINUTES,119,124,40,14,ES_AUTOHSCROLL
-    CONTROL         "Debug (sauve les mesures dans decoder.log)",
-                    IDC_KISENSOR_DEBUG_CB,"Button",BS_AUTOCHECKBOX | 
-                    WS_GROUP | WS_TABSTOP,15,152,184,10
+    CONTROL         "Debug (sauve les mesures dans decoder.log)",IDC_KISENSOR_DEBUG_CB,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,15,152,184,10
 END
 
-IDD_DUPLICATEDOC_DIALOG DIALOG DISCARDABLE  0, 0, 279, 153
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_DUPLICATEDOC_DIALOG DIALOG  0, 0, 279, 153
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Dupliquer un document"
 FONT 8, "MS Sans Serif"
 BEGIN
     PUSHBUTTON      "Annuler",IDCANCEL,222,110,50,14
     DEFPUSHBUTTON   "OK",IDOK,222,131,50,14
-    GROUPBOX        "Sélectionner les données à dupliquer",IDC_STATIC,7,3,
-                    201,142
+    GROUPBOX        "Sélectionner les données à dupliquer",IDC_STATIC,7,3,201,142
     CONTROL         "Mesure de l'échelle de gris",IDC_DUPLGRAYLEVEL_CHECK,
-                    "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,
-                    14,183,13
+                    "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,14,183,13
     CONTROL         "Mesure du voisinage du noir",IDC_DUPLNEARBLACK_CHECK,
-                    "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,
-                    27,183,13
+                    "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,27,183,13
     CONTROL         "Mesure du voisinage du blanc",IDC_DUPLNEARWHITE_CHECK,
-                    "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,
-                    40,183,13
-    CONTROL         "Mesure de saturation des primaires",
-                    IDC_DUPLPRIMARIESSAT_CHECK,"Button",BS_AUTOCHECKBOX | 
-                    BS_LEFTTEXT | WS_TABSTOP,16,53,183,13
-    CONTROL         "Mesure de saturation des secondaires",
-                    IDC_DUPLSECONDARIESSAT_CHECK,"Button",BS_AUTOCHECKBOX | 
-                    BS_LEFTTEXT | WS_TABSTOP,16,66,183,13
-    CONTROL         "Mesure des couleurs primaires",
-                    IDC_DUPLPRIMARIESCOL_CHECK,"Button",BS_AUTOCHECKBOX | 
-                    BS_LEFTTEXT | WS_TABSTOP,16,79,183,13
-    CONTROL         "Mesure des couleurs secondaires",
-                    IDC_DUPLSECONDARIESCOL_CHECK,"Button",BS_AUTOCHECKBOX | 
-                    BS_LEFTTEXT | WS_TABSTOP,16,92,183,13
-    CONTROL         "Mesure du contraste",IDC_DUPLCONTRAST_CHECK,"Button",
-                    BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,105,183,13
-    CONTROL         "Informations",IDC_DUPLINFO_CHECK,"Button",
-                    BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,118,183,13
-    CONTROL         "Matrice d'ajustement XYZ",IDC_DUPLXYZ_CHECK,"Button",
-                    BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,131,183,13
+                    "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,40,183,13
+    CONTROL         "Mesure de saturation des primaires",IDC_DUPLPRIMARIESSAT_CHECK,
+                    "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,53,183,13
+    CONTROL         "Mesure de saturation des secondaires",IDC_DUPLSECONDARIESSAT_CHECK,
+                    "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,66,183,13
+    CONTROL         "Mesure des couleurs primaires",IDC_DUPLPRIMARIESCOL_CHECK,
+                    "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,79,183,13
+    CONTROL         "Mesure des couleurs secondaires",IDC_DUPLSECONDARIESCOL_CHECK,
+                    "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,92,183,13
+    CONTROL         "Mesure du contraste",IDC_DUPLCONTRAST_CHECK,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,105,183,13
+    CONTROL         "Informations",IDC_DUPLINFO_CHECK,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,118,183,13
+    CONTROL         "Matrice d'ajustement XYZ",IDC_DUPLXYZ_CHECK,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,131,183,13
     PUSHBUTTON      "Effacer",IDC_CLEAR_BUTTON,222,7,50,14
     PUSHBUTTON      "Inverser",IDC_INVERT_BUTTON,222,28,50,14
     PUSHBUTTON      "Aide",ID_HELP,222,63,50,14
 END
 
-IDD_REF_COLOR_VALUES DIALOG DISCARDABLE  0, 0, 280, 97
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_REF_COLOR_VALUES DIALOG  0, 0, 280, 97
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Couleurs du colorimètre de référence"
 FONT 8, "MS Sans Serif"
 BEGIN
     GROUPBOX        "Unités",IDC_STATIC,8,16,50,49,WS_GROUP
-    CONTROL         "XYZ",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | 
-                    WS_TABSTOP,15,31,30,10
+    CONTROL         "XYZ",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,31,30,10
     CONTROL         "xyY",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,15,44,27,10
     LTEXT           "X:",IDC_STATIC_1,65,21,8,8
     LTEXT           "Y:",IDC_STATIC_2,65,37,8,8
@@ -694,8 +573,8 @@ BEGIN
     PUSHBUTTON      "Aide",ID_HELP,217,76,50,14,WS_GROUP
 END
 
-IDD_SIMULATED_SENSOR_PROP_PAGE DIALOG DISCARDABLE  0, 0, 196, 158
-STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+IDD_SIMULATED_SENSOR_PROP_PAGE DIALOG  0, 0, 196, 158
+STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Simulation"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -705,22 +584,19 @@ BEGIN
     EDITTEXT        IDC_GREENOFFSET_EDIT,71,27,27,12,ES_AUTOHSCROLL
     LTEXT           "Offset Bleu",IDC_STATIC,19,43,50,10
     EDITTEXT        IDC_BLUEOFFSET_EDIT,71,42,27,12,ES_AUTOHSCROLL
-    CONTROL         "Offset aléatoire",IDC_OFFSET_CHECK,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,19,65,83,10
+    CONTROL         "Offset aléatoire",IDC_OFFSET_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,65,83,10
     LTEXT           "Erreur offset Max",IDC_STATIC,31,76,70,10
     EDITTEXT        IDC_OFFSETERROR_EDIT,103,74,19,12,ES_AUTOHSCROLL
-    CONTROL         "Gamma aléatoire",IDC_GAMMA_CHECK,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,19,90,83,10
+    CONTROL         "Gamma aléatoire",IDC_GAMMA_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,90,83,10
     LTEXT           "Erreur gamma Max",IDC_STATIC,31,101,70,10
     EDITTEXT        IDC_GAMMAERROR_EDIT,103,99,19,12,ES_AUTOHSCROLL
-    CONTROL         "Gain aléatoire",IDC_GAIN_CHECK,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,19,116,83,10
+    CONTROL         "Gain aléatoire",IDC_GAIN_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,116,83,10
     LTEXT           "Erreur gain Max",IDC_STATIC,31,128,70,10
     EDITTEXT        IDC_GAINERROR_EDIT,103,125,19,12,ES_AUTOHSCROLL
 END
 
 IDD_WEB_UPDATE DIALOGEX 100, 100, 186, 46
-STYLE WS_POPUP | WS_CAPTION
+STYLE DS_SETFONT | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Web update"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
@@ -728,20 +604,18 @@ BEGIN
     CTEXT           "Connecting...",IDC_STATIC1,7,18,172,8
 END
 
-IDD_IRPROFILE_PROP_PAGE DIALOG DISCARDABLE  0, 0, 226, 214
-STYLE WS_POPUP | WS_CAPTION
+IDD_IRPROFILE_PROP_PAGE DIALOG  0, 0, 226, 214
+STYLE DS_SETFONT | WS_POPUP | WS_CAPTION
 CAPTION "Profil IR"
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,20,193,50,14
     PUSHBUTTON      "Annuler",IDCANCEL,85,193,50,14
-    EDITTEXT        IDC_EDIT_CODE_IR,10,45,207,77,ES_MULTILINE | 
-                    ES_AUTOVSCROLL | WS_VSCROLL
+    EDITTEXT        IDC_EDIT_CODE_IR,10,45,207,77,ES_MULTILINE | ES_AUTOVSCROLL | WS_VSCROLL
     PUSHBUTTON      "Test validité",IDC_TEST_IR_VALID,10,125,62,14
     PUSHBUTTON      "Acquérir le code",IDC_ACQUIRE,82,125,62,14
     PUSHBUTTON      "Envoi du code",IDC_SEND_IR_CODE,154,125,62,14
-    GROUPBOX        "Temps de latence (en millisecondes)",IDC_STATIC,10,144,
-                    207,47
+    GROUPBOX        "Temps de latence (en millisecondes)",IDC_STATIC,10,144,207,47
     LTEXT           "Navigation menu",IDC_STATIC,15,156,64,8
     LTEXT           "Validation menu",IDC_STATIC,83,157,64,8
     LTEXT           "Chapitre suivant",IDC_STATIC,151,157,64,8
@@ -751,63 +625,49 @@ BEGIN
     LTEXT           "Nom",IDC_STATIC,10,13,64,8
     EDITTEXT        IDC_IR_PROFILE_NAME,85,9,58,14,ES_AUTOHSCROLL
     LTEXT           "Code IR pour",IDC_STATIC,10,31,70,8
-    COMBOBOX        IDC_COMBO_CODE_NAME,85,28,73,65,CBS_DROPDOWNLIST | 
-                    WS_GROUP | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_CODE_NAME,85,28,73,65,CBS_DROPDOWNLIST | WS_GROUP | WS_TABSTOP
     PUSHBUTTON      "Aide",IDHELP,157,193,50,14
 END
 
 IDD_GENERATOR_KI_PROP_PAGE DIALOGEX 0, 0, 224, 258
-STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Générateur HCFR"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
-    CONTROL         "Affiche dialogues",IDC_SHOWDIALOG_CHECK,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,8,173,10
+    CONTROL         "Affiche dialogues",IDC_SHOWDIALOG_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,8,173,10
     LTEXT           "Port COM",IDC_STATIC,10,26,73,11,0,0,HIDC_STATIC
-    COMBOBOX        IDC_KISENSOR_COM_COMBO,89,23,52,82,CBS_DROPDOWN | 
-                    WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Vérification du changement de mire",IDC_STATIC,10,146,
-                    207,103
+    COMBOBOX        IDC_KISENSOR_COM_COMBO,89,23,52,82,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Vérification du changement de mire",IDC_STATIC,10,146,207,103
     CONTROL         "Echelle de gris",IDC_PATTERN_CHECK_ON_GRAYSCALE_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,215,95,10
     CONTROL         "Saturations",IDC_PATTERN_CHECK_ON_SATURATION_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,227,95,10
-    CONTROL         "Couleurs primaires",
-                    IDC_PATTERN_CHECK_ON_PRIMARIES_CHECK,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,117,216,95,10
-    CONTROL         "Couleurs secondaires",
-                    IDC_PATTERN_CHECK_ON_SECONDARIES_CHECK,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,117,228,95,10
+    CONTROL         "Couleurs primaires",IDC_PATTERN_CHECK_ON_PRIMARIES_CHECK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,117,216,95,10
+    CONTROL         "Couleurs secondaires",IDC_PATTERN_CHECK_ON_SECONDARIES_CHECK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,117,228,95,10
     LTEXT           "Ecart minimal :",IDC_STATIC,17,158,53,8
-    LTEXT           "Nombre de répetitions maxi par mire :",IDC_STATIC,18,
-                    177,117,8
-    LTEXT           "Nombre de répetitions maxi par série :",IDC_STATIC,18,
-                    192,118,8
-    EDITTEXT        IDC_EDIT_PATTERN_CHECK_THRESHOLD,71,155,32,14,
-                    ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_PATTERN_CHECK_MAX_RETRY_BY_PATTERN,136,174,58,
-                    14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_PATTERN_CHECK_MAX_RETRY_BY_SERIES,135,191,58,14,
-                    ES_AUTOHSCROLL
+    LTEXT           "Nombre de répetitions maxi par mire :",IDC_STATIC,18,177,117,8
+    LTEXT           "Nombre de répetitions maxi par série :",IDC_STATIC,18,192,118,8
+    EDITTEXT        IDC_EDIT_PATTERN_CHECK_THRESHOLD,71,155,32,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_PATTERN_CHECK_MAX_RETRY_BY_PATTERN,136,174,58,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_PATTERN_CHECK_MAX_RETRY_BY_SERIES,135,191,58,14,ES_AUTOHSCROLL
     LTEXT           "%",IDC_STATIC,109,158,25,8
     GROUPBOX        "Activation",IDC_STATIC,13,205,201,38
     PUSHBUTTON      "Nouveau",IDC_NEWIRPROFILE,160,55,49,15
     GROUPBOX        "Profil IR",IDC_STATIC,9,39,207,103
     PUSHBUTTON      "Modifier",IDC_MODIFYIRPROFILE,161,77,48,15
-    LISTBOX         IDC_IRPROFILE_LIST,15,52,137,83,LBS_SORT | 
-                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_IRPROFILE_LIST,15,52,137,83,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "Supprimer",IDC_DELETEIRPROFILE,161,99,48,15
 END
 
 IDD_PATTERNS DIALOGEX 0, 0, 200, 290
-STYLE DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | 
-    WS_THICKFRAME
+STYLE DS_SETFONT | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 EXSTYLE WS_EX_APPWINDOW
 CAPTION "Choisissez une mire"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Mires Outils",IDC_STATIC,4,64,192,79,0,
-                    WS_EX_TRANSPARENT
+    GROUPBOX        "Mires Outils",IDC_STATIC,4,64,192,79,0,WS_EX_TRANSPARENT
     GROUPBOX        "Couleurs",IDC_STATIC,4,6,192,56,0,WS_EX_TRANSPARENT
     PUSHBUTTON      "Niveaux Blanc",IDC_PATTERN_WHITE_LEVEL,129,46,60,10
     PUSHBUTTON      "Niveau Noir",IDC_PATTERN_BLACK_LEVEL,69,46,60,10
@@ -838,14 +698,10 @@ BEGIN
     PUSHBUTTON      "Cyan",IDC_PATTERN_CYAN,99,26,30,10
     PUSHBUTTON      "Luminosité",IDC_PATTERN_ANIM_B,10,116,79,10
     PUSHBUTTON      "Contraste",IDC_PATTERN_ANIM_W,10,127,79,10
-    LTEXT           "Les touches ""page précédente"" et ""page suivante"", ou ""+"" et ""-"" du pavé numérique ajoutent ou enlèvent des niveaux ou changent de mires.",
-                    IDC_STATIC,3,209,193,24
-    LTEXT           "Les touches Home ou "" * "" permet de revenir aux valeurs par defaut.",
-                    IDC_STATIC,3,236,193,18
-    LTEXT           "Les touches ""ESC"" et ""Enter"" permettent de sortir du mode mire.",
-                    IDC_STATIC,3,269,193,16
-    LTEXT           "La touche ESPACE modifie l'affichage.",IDC_STATIC,3,256,
-                    193,10
+    LTEXT           "Les touches ""page précédente"" et ""page suivante"", ou ""+"" et ""-"" du pavé numérique ajoutent ou enlèvent des niveaux ou changent de mires.",IDC_STATIC,3,209,193,24
+    LTEXT           "Les touches Home ou "" * "" permet de revenir aux valeurs par defaut.",IDC_STATIC,3,236,193,18
+    LTEXT           "Les touches ""ESC"" et ""Enter"" permettent de sortir du mode mire.",IDC_STATIC,3,269,193,16
+    LTEXT           "La touche ESPACE modifie l'affichage.",IDC_STATIC,3,256,193,10
     GROUPBOX        "Photos, Iris && Définition ",IDC_STATIC,4,146,192,29
     PUSHBUTTON      "Définition ",IDC_PATTERN_PICT_IRIS,129,159,60,10
     PUSHBUTTON      "Iris Dynamique",IDC_PATTERN_PICT,69,159,60,10
@@ -858,40 +714,30 @@ BEGIN
     PUSHBUTTON      "SMPTE 75%",IDC_PATTERN_SMPTE75,94,116,46,10
 END
 
-IDD_REF_CHECKBOX DIALOG DISCARDABLE  0, 0, 129, 12
-STYLE WS_CHILD
+IDD_REF_CHECKBOX DIALOG  0, 0, 129, 12
+STYLE DS_SETFONT | WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
     PUSHBUTTON      "",IDC_BUTTON_MENU,0,1,10,10
-    CONTROL         "Ajustement XYZ",IDC_CHECK_XYZ,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,12,1,67,10
-    CONTROL         "Référence",IDC_CHECK_REF,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,80,1,49,10
+    CONTROL         "Ajustement XYZ",IDC_CHECK_XYZ,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,1,67,10
+    CONTROL         "Référence",IDC_CHECK_REF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,80,1,49,10
 END
 
-IDD_SCALESIZES DIALOG DISCARDABLE  0, 0, 185, 113
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_SCALESIZES DIALOG  0, 0, 185, 113
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Paramètres des mesures"
 FONT 8, "MS Sans Serif"
 BEGIN
-    LTEXT           "Nombre de niveaux de l'échelle de gris",IDC_STATIC,7,11,
-                    122,8
-    COMBOBOX        IDC_COMBO_GRAYS,138,7,40,48,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    COMBOBOX        IDC_COMBO_EDIT_GRAYS,138,7,40,48,CBS_DROPDOWN | 
-                    WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    LTEXT           "Nombre de niveaux de l'échelle de gris",IDC_STATIC,7,11,122,8
+    COMBOBOX        IDC_COMBO_GRAYS,138,7,40,48,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_EDIT_GRAYS,138,7,40,48,CBS_DROPDOWN | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     CONTROL         "Echelle de gris en niveaux IRE NTSC",IDC_CHECK_IRE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,24,134,10
-    LTEXT           "Nombre de gris au voisinage du noir",IDC_STATIC,7,40,
-                    114,8
-    EDITTEXT        IDC_EDIT_NEARBLACK,138,36,40,14,ES_AUTOHSCROLL | 
-                    WS_GROUP
-    LTEXT           "Nombre de gris au voisinage du blanc",IDC_STATIC,7,57,
-                    120,8
-    EDITTEXT        IDC_EDIT_NEARWHITE,138,53,40,14,ES_AUTOHSCROLL | 
-                    WS_GROUP
-    LTEXT           "Nombre de couleurs pour les saturations",IDC_STATIC,7,
-                    74,127,8
+    LTEXT           "Nombre de gris au voisinage du noir",IDC_STATIC,7,40,114,8
+    EDITTEXT        IDC_EDIT_NEARBLACK,138,36,40,14,ES_AUTOHSCROLL | WS_GROUP
+    LTEXT           "Nombre de gris au voisinage du blanc",IDC_STATIC,7,57,120,8
+    EDITTEXT        IDC_EDIT_NEARWHITE,138,53,40,14,ES_AUTOHSCROLL | WS_GROUP
+    LTEXT           "Nombre de couleurs pour les saturations",IDC_STATIC,7,74,127,8
     EDITTEXT        IDC_EDIT_SAT,138,70,40,14,ES_AUTOHSCROLL | WS_GROUP
     DEFPUSHBUTTON   "OK",IDOK,7,91,50,14,WS_GROUP
     PUSHBUTTON      "Cancel",IDCANCEL,67,91,50,14,WS_GROUP
@@ -899,253 +745,186 @@ BEGIN
 END
 
 IDD_MAINVIEW_FORM DIALOGEX 0, 0, 523, 333
-STYLE WS_CHILD
+STYLE DS_SETFONT | WS_CHILD
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Affichage",IDC_PARAM_GROUP,4,3,251,36
-    COMBOBOX        IDC_GRAYSCALESTEPS_COMBOMODE,10,19,148,123,
-                    CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    CONTROL         "Données éditables",IDC_EDITGRID_CHECK,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,164,20,73,12,
-                    WS_EX_TRANSPARENT
-    CONTROL         "Spin1",IDC_SPIN_VIEW,"msctls_updown32",UDS_ARROWKEYS | 
-                    WS_GROUP | WS_TABSTOP,241,19,10,14
+    COMBOBOX        IDC_GRAYSCALESTEPS_COMBOMODE,10,19,148,123,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    CONTROL         "Données éditables",IDC_EDITGRID_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,164,20,73,12,WS_EX_TRANSPARENT
+    CONTROL         "Spin1",IDC_SPIN_VIEW,"msctls_updown32",UDS_ARROWKEYS | WS_GROUP | WS_TABSTOP,241,19,10,14
     GROUPBOX        "Capteur",IDC_SENSOR_GROUP,256,3,84,36
-    CTEXT           "Nom du capteur",IDC_SENSORNAME_STATIC,258,21,62,11,
-                    SS_CENTERIMAGE
-    PUSHBUTTON      "Configure...",IDM_CONFIGURE_SENSOR,321,19,15,15,
-                    BS_BITMAP
+    CTEXT           "Nom du capteur",IDC_SENSORNAME_STATIC,258,21,62,11,SS_CENTERIMAGE
+    PUSHBUTTON      "Configure...",IDM_CONFIGURE_SENSOR,321,19,15,15,BS_BITMAP
     GROUPBOX        "Générateur",IDC_GENERATOR_GROUP,341,3,84,36
-    CTEXT           "Nom du générateur",IDC_GENERATORNAME_STATIC,343,21,62,
-                    11,SS_CENTERIMAGE,WS_EX_TRANSPARENT
-    PUSHBUTTON      "Configure...",IDM_CONFIGURE_GENERATOR,406,19,15,15,
-                    BS_BITMAP
+    CTEXT           "Nom du générateur",IDC_GENERATORNAME_STATIC,343,21,62,11,SS_CENTERIMAGE,WS_EX_TRANSPARENT
+    PUSHBUTTON      "Configure...",IDM_CONFIGURE_GENERATOR,406,19,15,15,BS_BITMAP
     GROUPBOX        "Paramètres",IDC_DATAREF_GROUP,426,3,89,36
-    CONTROL         "Mesure de référence",IDC_DATAREF_CHECK,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,430,16,81,10,
-                    WS_EX_TRANSPARENT
-    CONTROL         "Ajustement XYZ",IDC_ADJUSTXYZ_CHECK,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,430,27,81,10,
-                    WS_EX_TRANSPARENT
+    CONTROL         "Mesure de référence",IDC_DATAREF_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,430,16,81,10,WS_EX_TRANSPARENT
+    CONTROL         "Ajustement XYZ",IDC_ADJUSTXYZ_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,430,27,81,10,WS_EX_TRANSPARENT
     GROUPBOX        "Echelle de gris",IDC_GRAYSCALE_GROUP,4,40,461,112
-    CONTROL         "",IDC_VALUES_STATIC,"Static",SS_ETCHEDFRAME,10,56,449,
-                    91
+    CONTROL         "",IDC_VALUES_STATIC,"Static",SS_ETCHEDFRAME,10,56,449,91
     GROUPBOX        "Unité",IDC_DISPLAY_GROUP,466,40,49,65
-    CONTROL         "Capteur",IDC_SENSORRGB_RADIO,"Button",
-                    BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,470,54,44,8,
-                    WS_EX_TRANSPARENT
-    CONTROL         "RVB",IDC_RGB_RADIO,"Button",BS_AUTORADIOBUTTON,470,64,
-                    44,8,WS_EX_TRANSPARENT
-    CONTROL         "XYZ",IDC_XYZ_RADIO,"Button",BS_AUTORADIOBUTTON,470,74,
-                    44,8
-    CONTROL         "xyz",IDC_XYZ_RADIO2,"Button",BS_AUTORADIOBUTTON,470,84,
-                    44,8
-    CONTROL         "xyY",IDC_XYY_RADIO,"Button",BS_AUTORADIOBUTTON,470,94,
-                    44,8
+    CONTROL         "Capteur",IDC_SENSORRGB_RADIO,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,470,54,44,8,WS_EX_TRANSPARENT
+    CONTROL         "RVB",IDC_RGB_RADIO,"Button",BS_AUTORADIOBUTTON,470,64,44,8,WS_EX_TRANSPARENT
+    CONTROL         "XYZ",IDC_XYZ_RADIO,"Button",BS_AUTORADIOBUTTON,470,74,44,8
+    CONTROL         "xyz",IDC_XYZ_RADIO2,"Button",BS_AUTORADIOBUTTON,470,84,44,8
+    CONTROL         "xyY",IDC_XYY_RADIO,"Button",BS_AUTORADIOBUTTON,470,94,44,8
     PUSHBUTTON      "Go",IDC_MEASUREGRAYSCALE_BUTTON,467,107,47,21
-    PUSHBUTTON      "Efface",IDC_DELETEGRAYSCALE_BUTTON,467,130,47,21,0,
-                    WS_EX_TRANSPARENT
+    PUSHBUTTON      "Efface",IDC_DELETEGRAYSCALE_BUTTON,467,130,47,21,0,WS_EX_TRANSPARENT
     GROUPBOX        "Couleur sélectionnée",IDC_SELECTION_GROUP,4,153,171,173
     LTEXT           "Niveaux RVB",IDC_STATIC_RGBLEVELS,10,167,44,8
     LTEXT           "Niveaux RVB",IDC_RGBLEVELS,10,179,72,60
     LTEXT           "Cible",IDC_STATIC_TARGET,10,249,16,8
     LTEXT           "Cible",IDC_TARGET,10,261,72,60
     LTEXT           "Données",IDC_STATIC_DATA,92,167,30,8
-    CONTROL         "",IDC_COLORDATA_STATIC,"Static",SS_ETCHEDFRAME,92,179,
-                    78,142
+    CONTROL         "",IDC_COLORDATA_STATIC,"Static",SS_ETCHEDFRAME,92,179,78,142
     GROUPBOX        "Informations",IDC_VIEW_GROUP,176,153,339,173
-    COMBOBOX        IDC_INFO_DISPLAY,182,167,170,123,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    LTEXT           "",IDC_STATIC_VIEW,182,183,327,138,NOT WS_VISIBLE,
-                    WS_EX_TRANSPARENT
+    COMBOBOX        IDC_INFO_DISPLAY,182,167,170,123,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    LTEXT           "",IDC_STATIC_VIEW,182,183,327,138,NOT WS_VISIBLE,WS_EX_TRANSPARENT
     PUSHBUTTON      "",IDC_ANSICONTRAST_PATTERN_TEST_BUTTON,502,170,8,8
 END
 
-IDD_CONVERSION_MATRIX DIALOG DISCARDABLE  0, 0, 199, 163
-STYLE WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_CONVERSION_MATRIX DIALOG  0, 0, 199, 163
+STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Matrice de conversion XYZ"
 FONT 8, "MS Sans Serif"
 BEGIN
-    LTEXT           "Matrice d'ajustement des mesures XYZ:",IDC_STATIC,10,11,
-                    130,10
-    CONTROL         "",IDC_SENSORMATRIX_STATIC,"Static",SS_ETCHEDFRAME,10,24,
-                    122,34
+    LTEXT           "Matrice d'ajustement des mesures XYZ:",IDC_STATIC,10,11,130,10
+    CONTROL         "",IDC_SENSORMATRIX_STATIC,"Static",SS_ETCHEDFRAME,10,24,122,34
     PUSHBUTTON      "Load...",IDC_LOAD,140,24,50,14,WS_GROUP
     PUSHBUTTON      "Save...",IDC_SAVE,140,43,50,14,WS_GROUP
     LTEXT           "Commentaire:",IDC_STATIC,10,67,121,8
-    EDITTEXT        IDC_EDIT_COMMENT,10,78,180,50,ES_MULTILINE | 
-                    ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL | WS_GROUP
+    EDITTEXT        IDC_EDIT_COMMENT,10,78,180,50,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL | WS_GROUP
     DEFPUSHBUTTON   "OK",IDOK,10,139,50,14,WS_GROUP
     PUSHBUTTON      "Cancel",IDCANCEL,75,139,50,14,WS_GROUP
     PUSHBUTTON      "Aide",IDHELP,140,139,49,14,WS_GROUP
 END
 
 IDD_ADVANCED_PROP_PAGE DIALOGEX 0, 0, 212, 217
-STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Avancé"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Lancement mesures",IDC_STATIC,7,7,199,28,WS_GROUP
-    CONTROL         "Demande confirmation",IDC_CHECK_CONFIRM,"Button",
-                    BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,19,87,10
+    CONTROL         "Demande confirmation",IDC_CHECK_CONFIRM,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,19,87,10
     CONTROL         "Autorise le mode asservi",IDC_CHECK_CONTROLLED_MODE,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,106,19,
-                    92,10
-    GROUPBOX        "Fichiers étalons - utilisation avancée",IDC_STATIC,7,38,
-                    199,40,WS_GROUP
-    CONTROL         "Active les étalons pour toutes les sondes tri-stimulus",
-                    IDC_CHECK_CALIBRATION_EX,"Button",BS_AUTOCHECKBOX | 
-                    WS_GROUP | WS_TABSTOP,13,50,178,10
-    CONTROL         "Ne pas utiliser le blanc lors des calculs matriciels (V1.x)",
-                    IDC_CHECK_CALIBRATION_OLD,"Button",BS_AUTOCHECKBOX | 
-                    WS_GROUP | WS_TABSTOP,13,62,187,10
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,106,19,92,10
+    GROUPBOX        "Fichiers étalons - utilisation avancée",IDC_STATIC,7,38,199,40,WS_GROUP
+    CONTROL         "Active les étalons pour toutes les sondes tri-stimulus",IDC_CHECK_CALIBRATION_EX,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,50,178,10
+    CONTROL         "Ne pas utiliser le blanc lors des calculs matriciels (V1.x)",IDC_CHECK_CALIBRATION_OLD,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,62,187,10
     GROUPBOX        "Luxmètre LX-1108",IDC_STATIC,7,82,199,86,WS_GROUP
     LTEXT           "Port COM",IDC_STATIC,17,94,43,8,0,0,HIDC_STATIC
-    COMBOBOX        IDC_LUXMETER_COM_COMBO,65,92,52,118,CBS_DROPDOWN | 
-                    WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    CONTROL         "Unités impériales",IDC_CHECK_IMPERIAL,"Button",
-                    BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,123,94,69,10
-    CONTROL         "Affiche les courbes avec la luminance du colorimètre",
-                    IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | 
-                    WS_TABSTOP,13,114,181,10
-    CONTROL         "Préfère la luminance du luxmètre quand elle existe",
-                    IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,13,125,173,10
-    CONTROL         "Affiche deux courbes séparées",IDC_RADIO3,"Button",
-                    BS_AUTORADIOBUTTON,13,136,113,10
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ | WS_GROUP,7,109,
-                    199,1
-    CONTROL         "Calcule le contraste et le delta luma à partir du luxmètre",
-                    IDC_CHECK_PREFER_LUXMETER,"Button",BS_AUTOCHECKBOX | 
-                    WS_GROUP | WS_TABSTOP,13,153,189,10
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ | WS_GROUP,7,149,
-                    199,1
+    COMBOBOX        IDC_LUXMETER_COM_COMBO,65,92,52,118,CBS_DROPDOWN | WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    CONTROL         "Unités impériales",IDC_CHECK_IMPERIAL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,123,94,69,10
+    CONTROL         "Affiche les courbes avec la luminance du colorimètre",IDC_RADIO1,
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,114,181,10
+    CONTROL         "Préfère la luminance du luxmètre quand elle existe",IDC_RADIO2,
+                    "Button",BS_AUTORADIOBUTTON,13,125,173,10
+    CONTROL         "Affiche deux courbes séparées",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,13,136,113,10
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ | WS_GROUP,7,109,199,1
+    CONTROL         "Calcule le contraste et le delta luma à partir du luxmètre",IDC_CHECK_PREFER_LUXMETER,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,153,189,10
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ | WS_GROUP,7,149,199,1
     GROUPBOX        "Delta E",IDC_STATIC,7,171,199,38,WS_GROUP
-    CONTROL         "Ne pas utiliser la luminance dans le calcul (V1.x)",
-                    IDC_CHECK_OLD_DELTAE,"Button",BS_AUTOCHECKBOX | WS_GROUP | 
-                    WS_TABSTOP,13,183,167,10
-    CONTROL         "Prendre en compte le gamma sur les niveaux de gris",
-                    IDC_CHECK_DELTAE_GRAY_LUMA,"Button",BS_AUTOCHECKBOX | 
-                    WS_GROUP | WS_TABSTOP,13,195,179,10
+    CONTROL         "Ne pas utiliser la luminance dans le calcul (V1.x)",IDC_CHECK_OLD_DELTAE,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,183,167,10
+    CONTROL         "Prendre en compte le gamma sur les niveaux de gris",IDC_CHECK_DELTAE_GRAY_LUMA,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,195,179,10
 END
 
-IDD_SIGNATURE DIALOG DISCARDABLE  0, 0, 186, 73
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_SIGNATURE DIALOG  0, 0, 186, 73
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Signature"
 FONT 8, "MS Sans Serif"
 BEGIN
-    LTEXT           "Indiquez ici votre nom ou votre pseudo, afin de signer le fichier étalon.",
-                    IDC_STATIC,7,7,172,18
+    LTEXT           "Indiquez ici votre nom ou votre pseudo, afin de signer le fichier étalon.",IDC_STATIC,7,7,172,18
     EDITTEXT        IDC_EDIT_NAME,7,27,172,14,ES_AUTOHSCROLL | WS_GROUP
     DEFPUSHBUTTON   "OK",IDOK,37,52,50,14,WS_GROUP
     PUSHBUTTON      "Aide",IDHELP,99,52,50,14,WS_GROUP
 END
 
 IDD_MTCSSENSOR_PROP_PAGE DIALOGEX 0, 0, 212, 279
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Mazet MTCS-C2"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Configuration",IDC_STATIC,6,5,198,43,WS_GROUP
-    LTEXT           "Temps de mesure (ms)",IDC_STATIC,13,18,98,8,0,0,
-                    HIDC_STATIC
+    LTEXT           "Temps de mesure (ms)",IDC_STATIC,13,18,98,8,0,0,HIDC_STATIC
     EDITTEXT        IDC_READTIME_EDIT,114,16,52,12,ES_AUTOHSCROLL | WS_GROUP
-    CONTROL         "Allonger le temps de mesure pour les couleurs sombres",
-                    IDC_CHECK_VARIABLE_READTIME,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,13,32,187,10
-    CONTROL         "Debug (sauve les mesures dans decoder.log)",
-                    IDC_KISENSOR_DEBUG_CB,"Button",BS_AUTOCHECKBOX | 
-                    WS_GROUP | WS_TABSTOP,13,54,184,10
-    GROUPBOX        "Matrice de conversion interne du capteur",IDC_STATIC,7,
-                    68,198,112,WS_GROUP
-    CONTROL         "",IDC_SENSORMATRIX_STATIC,"Static",SS_ETCHEDFRAME,13,83,
-                    122,34
-    PUSHBUTTON      "Visualiser la matrice interne du capteur",
-                    IDC_DISPLAY_MATRIX,13,122,156,14
-    PUSHBUTTON      "Ecrire la matrice dans l'eeprom du capteur",
-                    IDC_FLASH_EEPROM,13,140,156,14
-    PUSHBUTTON      "Ecrire une matrice par défaut dans l'eeprom",
-                    IDC_FLASH_EEPROM_DEF,13,158,156,14
-    GROUPBOX        "Niveau de noir interne du capteur",IDC_STATIC,7,185,198,
-                    87
+    CONTROL         "Allonger le temps de mesure pour les couleurs sombres",IDC_CHECK_VARIABLE_READTIME,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,32,187,10
+    CONTROL         "Debug (sauve les mesures dans decoder.log)",IDC_KISENSOR_DEBUG_CB,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,54,184,10
+    GROUPBOX        "Matrice de conversion interne du capteur",IDC_STATIC,7,68,198,112,WS_GROUP
+    CONTROL         "",IDC_SENSORMATRIX_STATIC,"Static",SS_ETCHEDFRAME,13,83,122,34
+    PUSHBUTTON      "Visualiser la matrice interne du capteur",IDC_DISPLAY_MATRIX,13,122,156,14
+    PUSHBUTTON      "Ecrire la matrice dans l'eeprom du capteur",IDC_FLASH_EEPROM,13,140,156,14
+    PUSHBUTTON      "Ecrire une matrice par défaut dans l'eeprom",IDC_FLASH_EEPROM_DEF,13,158,156,14
+    GROUPBOX        "Niveau de noir interne du capteur",IDC_STATIC,7,185,198,87
     LTEXT           "R",IDC_STATIC,13,200,8,8
     EDITTEXT        IDC_EDIT_BLACK_1,22,198,40,14,ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "G",IDC_STATIC,67,200,8,8
     EDITTEXT        IDC_EDIT_BLACK_2,76,198,40,14,ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "B",IDC_STATIC,120,200,8,8
     EDITTEXT        IDC_EDIT_BLACK_3,129,198,40,14,ES_AUTOHSCROLL | WS_GROUP
-    PUSHBUTTON      "Visualiser le niveau de noir interne du capteur",
-                    IDC_DISPLAY_BLACK,13,215,156,14
-    PUSHBUTTON      "Ecrire les valeurs dans l'eeprom du capteur",
-                    IDC_FLASH_EEPROM_BLACK,13,233,156,14
-    PUSHBUTTON      "Mesurer le niveau de noir",IDC_MEASURE_BLACK,13,251,156,
-                    14
+    PUSHBUTTON      "Visualiser le niveau de noir interne du capteur",IDC_DISPLAY_BLACK,13,215,156,14
+    PUSHBUTTON      "Ecrire les valeurs dans l'eeprom du capteur",IDC_FLASH_EEPROM_BLACK,13,233,156,14
+    PUSHBUTTON      "Mesurer le niveau de noir",IDC_MEASURE_BLACK,13,251,156,14
 END
 
 IDD_LUXMETER_SCALE DIALOGEX 0, 0, 235, 74
-STYLE DS_SETFOREGROUND | WS_POPUP | WS_VISIBLE | WS_CAPTION
+STYLE DS_SETFONT | DS_SETFOREGROUND | WS_POPUP | WS_VISIBLE | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW | WS_EX_STATICEDGE
 CAPTION "Echelle du luxmètre"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
-    LTEXT           "L'échelle actuelle du luxmètre ne permet pas la mesure.",
-                    IDC_STATIC,7,8,174,8
-    LTEXT           "Veuillez modifier l'échelle afin d'obtenir un affichage sur le luxmètre",
-                    IDC_STATIC,7,18,208,8
-    LTEXT           "La mesure reprendra automatiquement dès que l'échelle sera adaptée",
-                    IDC_STATIC,7,28,220,8
-    LTEXT           "Vous pouvez stopper l'attente en cliquant l'un des boutons ci dessous",
-                    IDC_STATIC,7,38,220,8
+    LTEXT           "L'échelle actuelle du luxmètre ne permet pas la mesure.",IDC_STATIC,7,8,174,8
+    LTEXT           "Veuillez modifier l'échelle afin d'obtenir un affichage sur le luxmètre",IDC_STATIC,7,18,208,8
+    LTEXT           "La mesure reprendra automatiquement dès que l'échelle sera adaptée",IDC_STATIC,7,28,220,8
+    LTEXT           "Vous pouvez stopper l'attente en cliquant l'un des boutons ci dessous",IDC_STATIC,7,38,220,8
     PUSHBUTTON      "Continuer les mesures sans luxmètre",IDOK,7,53,128,14
     PUSHBUTTON      "Annuler les mesures",IDCANCEL,150,53,78,14
 END
 
-IDD_TOOLBAR_PROP_PAGE DIALOG DISCARDABLE  0, 0, 212, 137
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_TOOLBAR_PROP_PAGE DIALOG  0, 0, 212, 137
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Toolbars"
 FONT 8, "MS Sans Serif"
 BEGIN
-    GROUPBOX        "Click droit sur toolbar vues",IDC_STATIC,7,7,198,60,
-                    WS_GROUP
-    CONTROL         "Ouvre une vue dans une nouvelle fenêtre",
-                    IDC_RADIO_TBV_1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | 
-                    WS_TABSTOP,13,20,147,10
-    CONTROL         "Active la vue dans toutes les fenêtres ouvertes",
-                    IDC_RADIO_TBV_2,"Button",BS_AUTORADIOBUTTON,13,31,163,10
-    CONTROL         "Ouvre une nouvelle vue même s'il en existe déjà une",
-                    IDC_RADIO_TBV_3,"Button",BS_AUTORADIOBUTTON,13,42,181,10
-    CONTROL         "Ferme la vue",IDC_RADIO_TBV_4,"Button",
-                    BS_AUTORADIOBUTTON,13,53,57,10
-    GROUPBOX        "Click bouton central sur toolbar vues",IDC_STATIC,7,70,
-                    198,60,WS_GROUP
-    CONTROL         "Ouvre une vue dans une nouvelle fenêtre",
-                    IDC_RADIO_TBV_5,"Button",BS_AUTORADIOBUTTON | WS_GROUP | 
-                    WS_TABSTOP,13,84,147,10
-    CONTROL         "Active la vue dans toutes les fenêtres ouvertes",
-                    IDC_RADIO_TBV_6,"Button",BS_AUTORADIOBUTTON,13,94,163,10
-    CONTROL         "Ouvre une nouvelle vue même s'il en existe déjà une",
-                    IDC_RADIO_TBV_7,"Button",BS_AUTORADIOBUTTON,13,105,181,
-                    10
-    CONTROL         "Ferme la vue",IDC_RADIO_TBV_8,"Button",
-                    BS_AUTORADIOBUTTON,13,116,57,10
+    GROUPBOX        "Click droit sur toolbar vues",IDC_STATIC,7,7,198,60,WS_GROUP
+    CONTROL         "Ouvre une vue dans une nouvelle fenêtre",IDC_RADIO_TBV_1,
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,20,147,10
+    CONTROL         "Active la vue dans toutes les fenêtres ouvertes",IDC_RADIO_TBV_2,
+                    "Button",BS_AUTORADIOBUTTON,13,31,163,10
+    CONTROL         "Ouvre une nouvelle vue même s'il en existe déjà une",IDC_RADIO_TBV_3,
+                    "Button",BS_AUTORADIOBUTTON,13,42,181,10
+    CONTROL         "Ferme la vue",IDC_RADIO_TBV_4,"Button",BS_AUTORADIOBUTTON,13,53,57,10
+    GROUPBOX        "Click bouton central sur toolbar vues",IDC_STATIC,7,70,198,60,WS_GROUP
+    CONTROL         "Ouvre une vue dans une nouvelle fenêtre",IDC_RADIO_TBV_5,
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,84,147,10
+    CONTROL         "Active la vue dans toutes les fenêtres ouvertes",IDC_RADIO_TBV_6,
+                    "Button",BS_AUTORADIOBUTTON,13,94,163,10
+    CONTROL         "Ouvre une nouvelle vue même s'il en existe déjà une",IDC_RADIO_TBV_7,
+                    "Button",BS_AUTORADIOBUTTON,13,105,181,10
+    CONTROL         "Ferme la vue",IDC_RADIO_TBV_8,"Button",BS_AUTORADIOBUTTON,13,116,57,10
 END
 
 IDD_S3SENSOR_PROP_PAGE DIALOGEX 0, 0, 212, 174
-STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Spyder III"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Configuration",-1,6,5,198,61,WS_GROUP
     LTEXT           "Temps de mesure (ms)",-1,13,20,98,8,0,0,0x8177ffff
     EDITTEXT        IDC_READTIME_EDIT,114,18,52,12,ES_AUTOHSCROLL | WS_GROUP
-    CONTROL         "Allonger le temps de mesure pour les couleurs sombres",
-                    IDC_CHECK_VARIABLE_READTIME,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,13,36,187,10
-    CONTROL         "Moyenner plusieurs mesures pour les couleurs sombres",
-                    IDC_CHECK_AVG_MEASURES,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,13,48,188,10
-    CONTROL         "Debug (sauve les mesures dans decoder.log)",
-                    IDC_KISENSOR_DEBUG_CB,"Button",BS_AUTOCHECKBOX | 
-                    WS_GROUP | WS_TABSTOP,13,72,184,10
+    CONTROL         "Allonger le temps de mesure pour les couleurs sombres",IDC_CHECK_VARIABLE_READTIME,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,36,187,10
+    CONTROL         "Moyenner plusieurs mesures pour les couleurs sombres",IDC_CHECK_AVG_MEASURES,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,48,188,10
+    CONTROL         "Debug (sauve les mesures dans decoder.log)",IDC_KISENSOR_DEBUG_CB,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,72,184,10
 END
 
 
@@ -1155,7 +934,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE 
+GUIDELINES DESIGNINFO 
 BEGIN
     IDD_REFERENCE_PROP_PAGE, DIALOG
     BEGIN
@@ -1255,62 +1034,62 @@ END
 // Bitmap
 //
 
-IDB_CAMERA_BITMAP       BITMAP  DISCARDABLE     "res\\camera_b.bmp"
-IDB_DELETE_BITMAP       BITMAP  DISCARDABLE     "res\\delete_b.bmp"
-IDB_MEDIUMTOOLBAR_MAIN_HICOL BITMAP  DISCARDABLE     "res\\medium_tb_main_hicol.bmp"
-IDB_MEDIUMTOOLBAR_VIEW_HICOL BITMAP  DISCARDABLE     "res\\medium_tb_views_hicol.bmp"
-IDB_MEDIUMTOOLBAR_MEASURE_HICOL BITMAP  DISCARDABLE     "res\\medium_tb_measures_hicol.bmp"
-IDB_MEDIUMTOOLBAR_MEAS_EX_HICOL BITMAP  DISCARDABLE     "res\\medium_tb_measures_ex_hicol.bmp"
-IDB_POINT_BITMAP        BITMAP  DISCARDABLE     "res\\target.bmp"
-IDB_REFBLUEPRIMARY_BITMAP BITMAP  DISCARDABLE     "res\\refblueprimary.bmp"
-IDB_REFGREENPRIMARY_BITMAP BITMAP  DISCARDABLE     "res\\refgreenprimary.bmp"
-IDB_REFREDPRIMARY_BITMAP BITMAP  DISCARDABLE     "res\\refredprimary.bmp"
-IDB_ILLUMINANTPOINT_BITMAP BITMAP  DISCARDABLE     "res\\illuminantplot.bmp"
-IDB_COLORTEMPPOINT_BITMAP BITMAP  DISCARDABLE     "res\\colortempplot.bmp"
-IDB_BLUEPRIMARY_BITMAP  BITMAP  DISCARDABLE     "res\\blueprimary.bmp"
-IDB_GREENPRIMARY_BITMAP BITMAP  DISCARDABLE     "res\\greenprimary.bmp"
-IDB_YELLOWSECONDARY_BITMAP BITMAP  DISCARDABLE     "res\\yellowsecondary.bmp"
-IDB_MAGENTASECONDARY_BITMAP BITMAP  DISCARDABLE     "res\\magentasecondary.bmp"
-IDB_CYANSECONDARY_BITMAP BITMAP  DISCARDABLE     "res\\cyansecondary.bmp"
-IDB_REDPRIMARY_BITMAP   BITMAP  DISCARDABLE     "res\\redprimary.bmp"
-IDB_GRAYPLOT_BITMAP     BITMAP  DISCARDABLE     "res\\grayplot.bmp"
-IDB_MEASUREPLOT_BITMAP  BITMAP  DISCARDABLE     "res\\measureplot.bmp"
-IDB_SELECTEDLOT_BITMAP  BITMAP  DISCARDABLE     "res\\selectedplot.bmp"
-IDB_ANSICONTRAST_BITMAP BITMAP  DISCARDABLE     "res\\bitmap1.bmp"
-IDB_LOGO                BITMAP  DISCARDABLE     "res\\logo.bmp"
-IDR_MAINFRAME           BITMAP  MOVEABLE PURE   "res\\Toolbar.bmp"
-IDR_MEDIUMTOOLBAR_VIEWS BITMAP  DISCARDABLE     "res\\medtoot.bmp"
-IDR_MEDIUMTOOLBAR_MAIN  BITMAP  MOVEABLE PURE   "res\\mediumto.bmp"
-IDB_REFYELLOWSECONDARY_BITMAP BITMAP  DISCARDABLE     "res\\refyellowsecondary.bmp"
-IDB_REFCYANSECONDARY_BITMAP BITMAP  DISCARDABLE     "res\\refcyansecondary.bmp"
-IDB_REFMAGENTASECONDARY_BITMAP BITMAP  DISCARDABLE     "res\\refmagentasecondary.bmp"
-IDR_MENUBARGRAPH        BITMAP  MOVEABLE PURE   "res\\menubarg.bmp"
-IDB_SATRED              BITMAP  MOVEABLE PURE   "res\\satred.bmp"
-IDB_SATGREEN            BITMAP  MOVEABLE PURE   "res\\satgreen.bmp"
-IDB_SATBLUE             BITMAP  MOVEABLE PURE   "res\\satblue.bmp"
-IDB_SATYELLOW           BITMAP  MOVEABLE PURE   "res\\satyellow.bmp"
-IDB_SATCYAN             BITMAP  MOVEABLE PURE   "res\\satcyan.bmp"
-IDB_SATMAGENTA          BITMAP  MOVEABLE PURE   "res\\satmagenta.bmp"
-IDB_SATALL              BITMAP  MOVEABLE PURE   "res\\sat_all.bmp"
-IDR_MEDIUMTOOLBAR_MEASURES BITMAP  DISCARDABLE     "res\\tbmeasures.bmp"
-IDR_MEDIUMTOOLBAR_MEASURES_EX BITMAP  DISCARDABLE     "res\\tbmeasures_ex.bmp"
-IDB_NEARBLACK           BITMAP  DISCARDABLE     "res\\nearblack.bmp"
-IDB_NEARWHITE           BITMAP  DISCARDABLE     "res\\nearwhite.bmp"
-IDB_MEAS_PRIMARIES      BITMAP  DISCARDABLE     "res\\meas_p.bmp"
-IDB_MEAS_PRIM_SEC       BITMAP  DISCARDABLE     "res\\meas_ps.bmp"
-IDB_MEAS_PRIM_SEC_GRAYS BITMAP  DISCARDABLE     "res\\meas_psg.bmp"
-IDB_MEAS_GRAYS          BITMAP  DISCARDABLE     "res\\meas_g.bmp"
-IDB_MEAS_CONT           BITMAP  DISCARDABLE     "res\\meas_cont.bmp"
-IDB_MEAS_STOP           BITMAP  DISCARDABLE     "res\\meas_stop.bmp"
-IDB_REFCROSS_RED        BITMAP  DISCARDABLE     "res\\refcrossred.bmp"
-IDB_REFCROSS_GREEN      BITMAP  DISCARDABLE     "res\\refcrossgreen.bmp"
-IDB_REFCROSS_BLUE       BITMAP  DISCARDABLE     "res\\refcrossblue.bmp"
-IDB_REFCROSS_YELLOW     BITMAP  DISCARDABLE     "res\\refcrossyellow.bmp"
-IDB_REFCROSS_CYAN       BITMAP  DISCARDABLE     "res\\refcrosscyan.bmp"
-IDB_REFCROSS_MAGENTA    BITMAP  DISCARDABLE     "res\\refcrossmagenta.bmp"
-IDB_CONTRAST            BITMAP  DISCARDABLE     "res\\contrast.bmp"
-IDR_MEDIUMTOOLBAR_MEASURES_SAT BITMAP  DISCARDABLE     "res\\tbmeasures_sat.bmp"
-IDB_MEDIUMTOOLBAR_MEAS_SAT_HICOL BITMAP  DISCARDABLE     "res\\medium_tb_measures_sat_hicol.bmp"
+IDB_CAMERA_BITMAP       BITMAP                  "res\\camera_b.bmp"
+IDB_DELETE_BITMAP       BITMAP                  "res\\delete_b.bmp"
+IDB_MEDIUMTOOLBAR_MAIN_HICOL BITMAP                  "res\\medium_tb_main_hicol.bmp"
+IDB_MEDIUMTOOLBAR_VIEW_HICOL BITMAP                  "res\\medium_tb_views_hicol.bmp"
+IDB_MEDIUMTOOLBAR_MEASURE_HICOL BITMAP                  "res\\medium_tb_measures_hicol.bmp"
+IDB_MEDIUMTOOLBAR_MEAS_EX_HICOL BITMAP                  "res\\medium_tb_measures_ex_hicol.bmp"
+IDB_POINT_BITMAP        BITMAP                  "res\\target.bmp"
+IDB_REFBLUEPRIMARY_BITMAP BITMAP                  "res\\refblueprimary.bmp"
+IDB_REFGREENPRIMARY_BITMAP BITMAP                  "res\\refgreenprimary.bmp"
+IDB_REFREDPRIMARY_BITMAP BITMAP                  "res\\refredprimary.bmp"
+IDB_ILLUMINANTPOINT_BITMAP BITMAP                  "res\\illuminantplot.bmp"
+IDB_COLORTEMPPOINT_BITMAP BITMAP                  "res\\colortempplot.bmp"
+IDB_BLUEPRIMARY_BITMAP  BITMAP                  "res\\blueprimary.bmp"
+IDB_GREENPRIMARY_BITMAP BITMAP                  "res\\greenprimary.bmp"
+IDB_YELLOWSECONDARY_BITMAP BITMAP                  "res\\yellowsecondary.bmp"
+IDB_MAGENTASECONDARY_BITMAP BITMAP                  "res\\magentasecondary.bmp"
+IDB_CYANSECONDARY_BITMAP BITMAP                  "res\\cyansecondary.bmp"
+IDB_REDPRIMARY_BITMAP   BITMAP                  "res\\redprimary.bmp"
+IDB_GRAYPLOT_BITMAP     BITMAP                  "res\\grayplot.bmp"
+IDB_MEASUREPLOT_BITMAP  BITMAP                  "res\\measureplot.bmp"
+IDB_SELECTEDLOT_BITMAP  BITMAP                  "res\\selectedplot.bmp"
+IDB_ANSICONTRAST_BITMAP BITMAP                  "res\\bitmap1.bmp"
+IDB_LOGO                BITMAP                  "res\\logo.bmp"
+IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
+IDR_MEDIUMTOOLBAR_VIEWS BITMAP                  "res\\medtoot.bmp"
+IDR_MEDIUMTOOLBAR_MAIN  BITMAP                  "res\\mediumto.bmp"
+IDB_REFYELLOWSECONDARY_BITMAP BITMAP                  "res\\refyellowsecondary.bmp"
+IDB_REFCYANSECONDARY_BITMAP BITMAP                  "res\\refcyansecondary.bmp"
+IDB_REFMAGENTASECONDARY_BITMAP BITMAP                  "res\\refmagentasecondary.bmp"
+IDR_MENUBARGRAPH        BITMAP                  "res\\menubarg.bmp"
+IDB_SATRED              BITMAP                  "res\\satred.bmp"
+IDB_SATGREEN            BITMAP                  "res\\satgreen.bmp"
+IDB_SATBLUE             BITMAP                  "res\\satblue.bmp"
+IDB_SATYELLOW           BITMAP                  "res\\satyellow.bmp"
+IDB_SATCYAN             BITMAP                  "res\\satcyan.bmp"
+IDB_SATMAGENTA          BITMAP                  "res\\satmagenta.bmp"
+IDB_SATALL              BITMAP                  "res\\sat_all.bmp"
+IDR_MEDIUMTOOLBAR_MEASURES BITMAP                  "res\\tbmeasures.bmp"
+IDR_MEDIUMTOOLBAR_MEASURES_EX BITMAP                  "res\\tbmeasures_ex.bmp"
+IDB_NEARBLACK           BITMAP                  "res\\nearblack.bmp"
+IDB_NEARWHITE           BITMAP                  "res\\nearwhite.bmp"
+IDB_MEAS_PRIMARIES      BITMAP                  "res\\meas_p.bmp"
+IDB_MEAS_PRIM_SEC       BITMAP                  "res\\meas_ps.bmp"
+IDB_MEAS_PRIM_SEC_GRAYS BITMAP                  "res\\meas_psg.bmp"
+IDB_MEAS_GRAYS          BITMAP                  "res\\meas_g.bmp"
+IDB_MEAS_CONT           BITMAP                  "res\\meas_cont.bmp"
+IDB_MEAS_STOP           BITMAP                  "res\\meas_stop.bmp"
+IDB_REFCROSS_RED        BITMAP                  "res\\refcrossred.bmp"
+IDB_REFCROSS_GREEN      BITMAP                  "res\\refcrossgreen.bmp"
+IDB_REFCROSS_BLUE       BITMAP                  "res\\refcrossblue.bmp"
+IDB_REFCROSS_YELLOW     BITMAP                  "res\\refcrossyellow.bmp"
+IDB_REFCROSS_CYAN       BITMAP                  "res\\refcrosscyan.bmp"
+IDB_REFCROSS_MAGENTA    BITMAP                  "res\\refcrossmagenta.bmp"
+IDB_CONTRAST            BITMAP                  "res\\contrast.bmp"
+IDR_MEDIUMTOOLBAR_MEASURES_SAT BITMAP                  "res\\tbmeasures_sat.bmp"
+IDB_MEDIUMTOOLBAR_MEAS_SAT_HICOL BITMAP                  "res\\medium_tb_measures_sat_hicol.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1617,7 +1396,7 @@ END
 // Accelerator
 //
 
-IDR_MAINFRAME ACCELERATORS PRELOAD MOVEABLE PURE 
+IDR_MAINFRAME ACCELERATORS 
 BEGIN
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
@@ -1630,8 +1409,7 @@ BEGIN
     VK_ADD,         IDM_GRAPH_X_ZOOM_IN,    VIRTKEY, SHIFT, NOINVERT
     VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT, NOINVERT
     VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
-    VK_DOWN,        IDM_DELTAE_GRAPH_Y_SHIFT_BOTTOM, VIRTKEY, CONTROL, 
-                                                    NOINVERT
+    VK_DOWN,        IDM_DELTAE_GRAPH_Y_SHIFT_BOTTOM, VIRTKEY, CONTROL, NOINVERT
     VK_DOWN,        IDM_GRAPH_Y_SHIFT_BOTTOM, VIRTKEY, SHIFT, NOINVERT
     VK_F1,          IDM_HELP,               VIRTKEY, NOINVERT
     VK_F5,          IDM_MEASURE_GRAYSCALE_COLORS, VIRTKEY, NOINVERT
@@ -1661,7 +1439,7 @@ END
 // Menu
 //
 
-IDR_CIE_MENU MENU DISCARDABLE 
+IDR_CIE_MENU MENU 
 BEGIN
     POPUP "CIE"
     BEGIN
@@ -1683,7 +1461,7 @@ BEGIN
     END
 END
 
-IDR_LUM_GRAPH_MENU MENU DISCARDABLE 
+IDR_LUM_GRAPH_MENU MENU 
 BEGIN
     POPUP "Graphe"
     BEGIN
@@ -1703,28 +1481,21 @@ BEGIN
             POPUP "Luminance"
             BEGIN
                 MENUITEM "0-100%",                      IDM_LUMINANCE_GRAPH_Y_SCALE1
-
                 MENUITEM "Auto-ajuste",                 IDM_GRAPH_Y_SCALE_FIT
-
                 MENUITEM "Zoom +",                      IDM_GRAPH_Y_ZOOM_IN
                 MENUITEM "Zoom -",                      IDM_GRAPH_Y_ZOOM_OUT
                 MENUITEM "Décale vers le haut",         IDM_GRAPH_Y_SHIFT_TOP
-
                 MENUITEM "Décale vers le bas",          IDM_GRAPH_Y_SHIFT_BOTTOM
-
             END
             POPUP "IRE"
             BEGIN
                 MENUITEM "0-100 IRE",                   IDM_GRAPH_X_SCALE1
                 MENUITEM "20-100 IRE",                  IDM_GRAPH_X_SCALE2
                 MENUITEM "Auto-ajuste",                 IDM_GRAPH_X_SCALE_FIT
-
                 MENUITEM "Zoom +",                      IDM_GRAPH_X_ZOOM_IN
                 MENUITEM "Zoom -",                      IDM_GRAPH_X_ZOOM_OUT
                 MENUITEM "Décale vers la droite",       IDM_GRAPH_X_SHIFT_RIGHT
-
                 MENUITEM "Décale vers la gauche",       IDM_GRAPH_X_SHIFT_LEFT
-
             END
             MENUITEM "Valeurs...     ",             IDM_GRAPH_SCALE_CUSTOM
         END
@@ -1734,7 +1505,7 @@ BEGIN
     END
 END
 
-IDR_SATLUM_GRAPH_MENU MENU DISCARDABLE 
+IDR_SATLUM_GRAPH_MENU MENU 
 BEGIN
     POPUP "Graphe"
     BEGIN
@@ -1749,7 +1520,6 @@ BEGIN
         BEGIN
             MENUITEM "Auto-ajuste",                 IDM_GRAPH_SCALE_FIT
             MENUITEM "0% / +100%",                  IDM_LUMINANCE_GRAPH_Y_SCALE1
-
         END
         MENUITEM "Paramètres...",               IDM_GRAPH_SETTINGS
         MENUITEM SEPARATOR
@@ -1757,7 +1527,7 @@ BEGIN
     END
 END
 
-IDR_SATLUMSHIFT_GRAPH_MENU MENU DISCARDABLE 
+IDR_SATLUMSHIFT_GRAPH_MENU MENU 
 BEGIN
     POPUP "Graphe"
     BEGIN
@@ -1778,38 +1548,24 @@ BEGIN
             POPUP "Saturation"
             BEGIN
                 MENUITEM "-100% / +100%",               IDM_LUMINANCE_GRAPH_Y_SCALE1
-
                 MENUITEM "-20% / +20%",                 IDM_LUMINANCE_GRAPH_Y_SCALE2
-
                 MENUITEM "Auto-ajuste",                 IDM_GRAPH_Y_SCALE_FIT
-
                 MENUITEM "Zoom +",                      IDM_GRAPH_Y_ZOOM_IN
                 MENUITEM "Zoom -",                      IDM_GRAPH_Y_ZOOM_OUT
                 MENUITEM "Décale vers le haut",         IDM_GRAPH_Y_SHIFT_TOP
-
                 MENUITEM "Décale vers le bas",          IDM_GRAPH_Y_SHIFT_BOTTOM
-
                 MENUITEM "Valeurs...     ",             IDM_GRAPH_SCALE_CUSTOM
-
             END
             POPUP "Delta E"
             BEGIN
                 MENUITEM "0-20",                        IDM_DELTAE_GRAPH_Y_SCALE1
-
                 MENUITEM "0-5",                         IDM_DELTAE_GRAPH_Y_SCALE2
-
                 MENUITEM "Auto-ajuste",                 IDM_DELTAE_GRAPH_Y_SCALE_FIT
-
                 MENUITEM "Zoom +",                      IDM_DELTAE_GRAPH_Y_ZOOM_IN
-
                 MENUITEM "Zoom -",                      IDM_DELTAE_GRAPH_Y_ZOOM_OUT
-
                 MENUITEM "Décale vers le haut",         IDM_DELTAE_GRAPH_Y_SHIFT_TOP
-
                 MENUITEM "Décale vers le bas",          IDM_DELTAE_GRAPH_Y_SHIFT_BOTTOM
-
                 MENUITEM "Valeurs...     ",             IDM_DELTAE_GRAPH_SCALE_CUSTOM
-
             END
         END
         MENUITEM "Paramètres...",               IDM_GRAPH_SETTINGS
@@ -1818,7 +1574,7 @@ BEGIN
     END
 END
 
-IDR_RGB_GRAPH_MENU MENU DISCARDABLE 
+IDR_RGB_GRAPH_MENU MENU 
 BEGIN
     POPUP "Graphe"
     BEGIN
@@ -1833,55 +1589,36 @@ BEGIN
             POPUP "RGB"
             BEGIN
                 MENUITEM "0-200%",                      IDM_RGB_GRAPH_Y_SCALE1
-
                 MENUITEM "50-150%",                     IDM_RGB_GRAPH_Y_SCALE2
-
                 MENUITEM "80-120%",                     IDM_RGB_GRAPH_Y_SCALE3
-
                 MENUITEM "Auto-ajuste",                 IDM_GRAPH_Y_SCALE_FIT
-
                 MENUITEM "Zoom +",                      IDM_GRAPH_Y_ZOOM_IN
                 MENUITEM "Zoom -",                      IDM_GRAPH_Y_ZOOM_OUT
                 MENUITEM "Décale vers le haut",         IDM_GRAPH_Y_SHIFT_TOP
-
                 MENUITEM "Décale vers le bas",          IDM_GRAPH_Y_SHIFT_BOTTOM
-
                 MENUITEM "Valeurs...     ",             IDM_GRAPH_SCALE_CUSTOM
-
             END
             POPUP "Delta E"
             BEGIN
                 MENUITEM "0-20",                        IDM_DELTAE_GRAPH_Y_SCALE1
-
                 MENUITEM "0-10",                        IDM_DELTAE_GRAPH_Y_SCALE3
-
                 MENUITEM "0-5",                         IDM_DELTAE_GRAPH_Y_SCALE2
-
                 MENUITEM "Auto-ajuste",                 IDM_DELTAE_GRAPH_Y_SCALE_FIT
-
                 MENUITEM "Zoom +",                      IDM_DELTAE_GRAPH_Y_ZOOM_IN
-
                 MENUITEM "Zoom -",                      IDM_DELTAE_GRAPH_Y_ZOOM_OUT
-
                 MENUITEM "Décale vers le haut",         IDM_DELTAE_GRAPH_Y_SHIFT_TOP
-
                 MENUITEM "Décale vers le bas",          IDM_DELTAE_GRAPH_Y_SHIFT_BOTTOM
-
                 MENUITEM "Valeurs...     ",             IDM_DELTAE_GRAPH_SCALE_CUSTOM
-
             END
             POPUP "IRE"
             BEGIN
                 MENUITEM "0-100 IRE",                   IDM_GRAPH_X_SCALE1
                 MENUITEM "20-100 IRE",                  IDM_GRAPH_X_SCALE2
                 MENUITEM "Auto-ajuste",                 IDM_GRAPH_X_SCALE_FIT
-
                 MENUITEM "Zoom +",                      IDM_GRAPH_X_ZOOM_IN
                 MENUITEM "Zoom -",                      IDM_GRAPH_X_ZOOM_OUT
                 MENUITEM "Décale vers la droite",       IDM_GRAPH_X_SHIFT_RIGHT
-
                 MENUITEM "Décale vers la gauche",       IDM_GRAPH_X_SHIFT_LEFT
-
             END
         END
         MENUITEM "Paramètres...",               IDM_GRAPH_SETTINGS
@@ -1890,14 +1627,12 @@ BEGIN
     END
 END
 
-IDR_COLORTEMP_GRAPH_MENU MENU DISCARDABLE 
+IDR_COLORTEMP_GRAPH_MENU MENU 
 BEGIN
     POPUP "Graphe"
     BEGIN
         MENUITEM "Affiche la référence",        IDM_COLORTEMP_GRAPH_REFERENCE
-
-        MENUITEM "Affiche la mesure de référence", 
-                                                IDM_COLORTEMP_GRAPH_DATAREF
+        MENUITEM "Affiche la mesure de référence", IDM_COLORTEMP_GRAPH_DATAREF
         MENUITEM SEPARATOR
         MENUITEM "Enregistrer...",              IDM_GRAPH_SAVE
         POPUP "Echelle"
@@ -1906,30 +1641,22 @@ BEGIN
             POPUP "Température"
             BEGIN
                 MENUITEM "2000K-10000K",                IDM_COLORTEMP_GRAPH_Y_SCALE1
-
                 MENUITEM "4000K-8000K",                 IDM_COLORTEMP_GRAPH_Y_SCALE2
-
                 MENUITEM "Auto-ajuste",                 IDM_GRAPH_Y_SCALE_FIT
-
                 MENUITEM "Zoom +",                      IDM_GRAPH_Y_ZOOM_IN
                 MENUITEM "Zoom -",                      IDM_GRAPH_Y_ZOOM_OUT
                 MENUITEM "Décale vers le haut",         IDM_GRAPH_Y_SHIFT_TOP
-
                 MENUITEM "Décale vers le bas",          IDM_GRAPH_Y_SHIFT_BOTTOM
-
             END
             POPUP "IRE"
             BEGIN
                 MENUITEM "0-100 IRE",                   IDM_GRAPH_X_SCALE1
                 MENUITEM "20-100 IRE",                  IDM_GRAPH_X_SCALE2
                 MENUITEM "Auto-ajuste",                 IDM_GRAPH_X_SCALE_FIT
-
                 MENUITEM "Zoom +",                      IDM_GRAPH_X_ZOOM_IN
                 MENUITEM "Zoom -",                      IDM_GRAPH_X_ZOOM_OUT
                 MENUITEM "Décale vers la droite",       IDM_GRAPH_X_SHIFT_RIGHT
-
                 MENUITEM "Décale vers la gauche",       IDM_GRAPH_X_SHIFT_LEFT
-
             END
             MENUITEM "Valeurs...     ",             IDM_GRAPH_SCALE_CUSTOM
         END
@@ -1939,7 +1666,7 @@ BEGIN
     END
 END
 
-IDR_MAINFRAME MENU PRELOAD DISCARDABLE 
+IDR_MAINFRAME MENU 
 BEGIN
     POPUP "&Fichier"
     BEGIN
@@ -1967,13 +1694,6 @@ BEGIN
     POPUP "A&vancé"
     BEGIN
         MENUITEM "&Mires...",                   IDM_PATTERN_DISP_ROOT
-        POPUP "Mises à jour"
-        BEGIN
-            MENUITEM "Télécharger mise à jour du logiciel", IDM_UPDATE_SOFT
-            MENUITEM "Télécharger les fichiers étalons", IDM_UPDATE_ETALONS
-            MENUITEM "Télécharger les fichiers profils IR", 
-                                                    IDM_UPDATE_IRPROFILES
-        END
         MENUITEM SEPARATOR
         MENUITEM "Préférences...",              IDM_GENERAL_CONFIG
         MENUITEM "Langue...",                   IDM_LANGUAGE
@@ -1983,13 +1703,12 @@ BEGIN
         MENUITEM "&Aide\tF1",                   IDM_HELP
         MENUITEM "&Installation Colorimètre",   IDM_HELP_INSTALL
         MENUITEM "&Support",                    IDM_HELP_SUPPORT
-        MENUITEM "Forum HCFR",                  IDM_HELP_FORUM
         MENUITEM SEPARATOR
-        MENUITEM "A propos du &Colorimètre HCFR...", ID_APP_ABOUT
+        MENUITEM "A propos du H&CFR...",        ID_APP_ABOUT
     END
 END
 
-IDR_MESURETYPE MENU PRELOAD DISCARDABLE 
+IDR_MESURETYPE MENU 
 BEGIN
     POPUP "&Fichier"
     BEGIN
@@ -2035,8 +1754,7 @@ BEGIN
         MENUITEM "&Echelle de gris",            IDM_MEASURE_GRAYSCALE
         MENUITEM "Couleurs &primaires",         IDM_MEASURE_PRIMARIES
         MENUITEM "Primaires et &secondaires",   IDM_MEASURE_SECONDARIES
-        MENUITEM "Echelle de gris et couleurs\tF5", 
-                                                IDM_MEASURE_GRAYSCALE_COLORS
+        MENUITEM "Echelle de gris et couleurs\tF5", IDM_MEASURE_GRAYSCALE_COLORS
         MENUITEM SEPARATOR
         MENUITEM "Voisinage du &Noir",          IDM_MEASURE_NEARBLACK
         MENUITEM "Voisinage du &Blanc",         IDM_MEASURE_NEARWHITE
@@ -2050,7 +1768,6 @@ BEGIN
             MENUITEM "&Magenta",                    IDM_MEASURE_SAT_MAGENTA
             MENUITEM SEPARATOR
             MENUITEM "Couleurs &Primaires",         IDM_MEASURE_SAT_PRIMARIES
-
             MENUITEM "&Toutes les couleurs",        IDM_MEASURE_SAT_ALL
         END
         MENUITEM "&Contraste",                  IDM_MEASURE_CONTRAST
@@ -2077,15 +1794,12 @@ BEGIN
         MENUITEM "Graphe de &Luminance",        IDM_VIEW_LUMINANCEHISTO
         MENUITEM "Graphe de &Gamma",            IDM_VIEW_GAMMAHISTO
         MENUITEM "Graphe de niveaux &RVB",      IDM_VIEW_RGBHISTO
-        MENUITEM "Graphe de température de &couleur", 
-                                                IDM_VIEW_COLORTEMPHISTO
+        MENUITEM "Graphe de température de &couleur", IDM_VIEW_COLORTEMPHISTO
         MENUITEM SEPARATOR
         MENUITEM "&Diagramme CIE",              IDM_VIEW_CIECHART
         MENUITEM SEPARATOR
-        MENUITEM "Graphe de luma au voisinage du &noir", 
-                                                IDM_VIEW_NEARBLACKHISTO
-        MENUITEM "Graphe de luma au voisinage du &blanc", 
-                                                IDM_VIEW_NEARWHITEHISTO
+        MENUITEM "Graphe de luma au voisinage du &noir", IDM_VIEW_NEARBLACKHISTO
+        MENUITEM "Graphe de luma au voisinage du &blanc", IDM_VIEW_NEARWHITEHISTO
         MENUITEM SEPARATOR
         MENUITEM "Graphe de saturation - luminance", IDM_VIEW_SATLUMHISTO
         MENUITEM "Graphe de saturation - écarts", IDM_VIEW_SATLUMSHIFT
@@ -2096,45 +1810,33 @@ BEGIN
     BEGIN
         POPUP "Matrice d'ajustement des coordonnées XYZ"
         BEGIN
-            MENUITEM "Calculer la matrice de conversion à partir du document de référence", 
-                                                    IDM_TRAIN_METER
-            MENUITEM "Efface la matrice de conversion XYZ", 
-                                                    IDM_RESET_CONVERSION_MATRIX
-
-            MENUITEM "Edition manuelle de la matrice de conversion XYZ...", 
-                                                    IDM_EDIT_CONVERSION_MATRIX
-
+            MENUITEM "Calculer la matrice de conversion à partir du document de référence", IDM_TRAIN_METER
+            MENUITEM "Efface la matrice de conversion XYZ", IDM_RESET_CONVERSION_MATRIX
+            MENUITEM "Edition manuelle de la matrice de conversion XYZ...", IDM_EDIT_CONVERSION_MATRIX
         END
         MENUITEM SEPARATOR
         POPUP "&Mires"
         BEGIN
             MENUITEM "Mire animée de niveau de noir", IDM_PATTERN_ANIM_BLACK
-            MENUITEM "Mire animée de niveau de blanc", 
-                                                    IDM_PATTERN_ANIM_WHITE
+            MENUITEM "Mire animée de niveau de blanc", IDM_PATTERN_ANIM_WHITE
             MENUITEM "Affichage &Mires",            IDM_PATTERN_DISPLAY
         END
         MENUITEM SEPARATOR
         POPUP "Fichier étalon"
         BEGIN
-            MENUITEM "Fabriquer un étalon élémentaire...", 
-                                                    IDM_CALIBRATE_SENSOR
+            MENUITEM "Fabriquer un étalon élémentaire...", IDM_CALIBRATE_SENSOR
             MENUITEM SEPARATOR
-            MENUITEM "Fabriquer un étalon à partir de mesures simultanées", 
-                                                    IDM_CALIBRATION_SIM
-            MENUITEM "Fabriquer un étalon manuellement à partir d'un colorimètre de référence", 
-                                                    IDM_CALIBRATION_MANUAL
+            MENUITEM "Fabriquer un étalon à partir de mesures simultanées", IDM_CALIBRATION_SIM
+            MENUITEM "Fabriquer un étalon manuellement à partir d'un colorimètre de référence", IDM_CALIBRATION_MANUAL
             MENUITEM SEPARATOR
             MENUITEM "Sauver le fichier étalon...", IDM_SAVE_CALIBRATION_FILE
-
         END
         POPUP "Mesures simultanées"
         BEGIN
             MENUITEM "&Echelle de gris",            IDM_SIM_GRAYSCALE
             MENUITEM "Couleurs &primaires",         IDM_SIM_PRIMARIES
-            MENUITEM "Couleurs primaires et &secondaires", 
-                                                    IDM_SIM_SECONDARIES
+            MENUITEM "Couleurs primaires et &secondaires", IDM_SIM_SECONDARIES
             MENUITEM "Echelle de gris et couleurs", IDM_SIM_GRAYSCALE_AND_COLORS
-
             MENUITEM SEPARATOR
             MENUITEM "Voisinage du &Noir",          IDM_SIM_NEARBLACK
             MENUITEM "Voisinage du &Blanc",         IDM_SIM_NEARWHITE
@@ -2160,8 +1862,7 @@ BEGIN
         BEGIN
             MENUITEM "Télécharger mise à jour du logiciel", IDM_UPDATE_SOFT
             MENUITEM "Télécharger les fichiers étalons", IDM_UPDATE_ETALONS
-            MENUITEM "Télécharger les fichiers profils IR", 
-                                                    IDM_UPDATE_IRPROFILES
+            MENUITEM "Télécharger les fichiers profils IR", IDM_UPDATE_IRPROFILES
         END
         MENUITEM SEPARATOR
         MENUITEM "Préférences...",              IDM_GENERAL_CONFIG
@@ -2185,7 +1886,7 @@ BEGIN
     END
 END
 
-IDR_WHATS_THIS MENU DISCARDABLE 
+IDR_WHATS_THIS MENU 
 BEGIN
     POPUP "Help"
     BEGIN
@@ -2193,7 +1894,7 @@ BEGIN
     END
 END
 
-IDR_NEARBLACK_GRAPH_MENU MENU DISCARDABLE 
+IDR_NEARBLACK_GRAPH_MENU MENU 
 BEGIN
     POPUP "Graphe"
     BEGIN
@@ -2213,28 +1914,20 @@ BEGIN
             POPUP "Luminance"
             BEGIN
                 MENUITEM "0-1%",                        IDM_LUMINANCE_GRAPH_Y_SCALE1
-
                 MENUITEM "Auto-ajuste",                 IDM_GRAPH_Y_SCALE_FIT
-
                 MENUITEM "Zoom +",                      IDM_GRAPH_Y_ZOOM_IN
                 MENUITEM "Zoom -",                      IDM_GRAPH_Y_ZOOM_OUT
                 MENUITEM "Décale vers le haut",         IDM_GRAPH_Y_SHIFT_TOP
-
                 MENUITEM "Décale vers le bas",          IDM_GRAPH_Y_SHIFT_BOTTOM
-
             END
             POPUP "Gamma"
             BEGIN
                 MENUITEM "1-3",                         IDM_GAMMA_GRAPH_Y_SCALE1
-
                 MENUITEM "Auto-ajuste",                 IDM_GRAPH_Y_SCALE_FIT
-
                 MENUITEM "Zoom +",                      IDM_GRAPH_Y_ZOOM_IN
                 MENUITEM "Zoom -",                      IDM_GRAPH_Y_ZOOM_OUT
                 MENUITEM "Décale vers le haut",         IDM_GRAPH_Y_SHIFT_TOP
-
                 MENUITEM "Décale vers le bas",          IDM_GRAPH_Y_SHIFT_BOTTOM
-
             END
             MENUITEM "Valeurs...     ",             IDM_GRAPH_SCALE_CUSTOM
         END
@@ -2244,7 +1937,7 @@ BEGIN
     END
 END
 
-IDR_NEARWHITE_GRAPH_MENU MENU DISCARDABLE 
+IDR_NEARWHITE_GRAPH_MENU MENU 
 BEGIN
     POPUP "Graphe"
     BEGIN
@@ -2264,28 +1957,20 @@ BEGIN
             POPUP "Luminance"
             BEGIN
                 MENUITEM "80-100%",                     IDM_LUMINANCE_GRAPH_Y_SCALE1
-
                 MENUITEM "Auto-ajuste",                 IDM_GRAPH_Y_SCALE_FIT
-
                 MENUITEM "Zoom +",                      IDM_GRAPH_Y_ZOOM_IN
                 MENUITEM "Zoom -",                      IDM_GRAPH_Y_ZOOM_OUT
                 MENUITEM "Décale vers le haut",         IDM_GRAPH_Y_SHIFT_TOP
-
                 MENUITEM "Décale vers le bas",          IDM_GRAPH_Y_SHIFT_BOTTOM
-
             END
             POPUP "Gamma"
             BEGIN
                 MENUITEM "1-3",                         IDM_GAMMA_GRAPH_Y_SCALE1
-
                 MENUITEM "Auto-ajuste",                 IDM_GRAPH_Y_SCALE_FIT
-
                 MENUITEM "Zoom +",                      IDM_GRAPH_Y_ZOOM_IN
                 MENUITEM "Zoom -",                      IDM_GRAPH_Y_ZOOM_OUT
                 MENUITEM "Décale vers le haut",         IDM_GRAPH_Y_SHIFT_TOP
-
                 MENUITEM "Décale vers le bas",          IDM_GRAPH_Y_SHIFT_BOTTOM
-
             END
             MENUITEM "Valeurs...     ",             IDM_GRAPH_SCALE_CUSTOM
         END
@@ -2295,7 +1980,7 @@ BEGIN
     END
 END
 
-IDR_MEASURES_GRAPH_MENU MENU DISCARDABLE 
+IDR_MEASURES_GRAPH_MENU MENU 
 BEGIN
     POPUP "Graphe"
     BEGIN
@@ -2304,7 +1989,6 @@ BEGIN
         MENUITEM "Affiche la température de couleur", IDM_GRAPH_COLORTEMP
         MENUITEM SEPARATOR
         MENUITEM "Affiche les références",      IDM_COLORTEMP_GRAPH_REFERENCE
-
         MENUITEM SEPARATOR
         MENUITEM "Enregistrer...",              IDM_GRAPH_SAVE
         POPUP "Echelle"
@@ -2315,25 +1999,18 @@ BEGIN
             POPUP "RGB"
             BEGIN
                 MENUITEM "0-200%",                      IDM_RGB_GRAPH_Y_SCALE1
-
                 MENUITEM "50-150%",                     IDM_RGB_GRAPH_Y_SCALE2
-
                 MENUITEM "80-120%",                     IDM_RGB_GRAPH_Y_SCALE3
-
             END
             POPUP "Delta E"
             BEGIN
                 MENUITEM "0-20",                        IDM_DELTAE_GRAPH_Y_SCALE1
-
                 MENUITEM "0-5",                         IDM_DELTAE_GRAPH_Y_SCALE2
-
             END
             POPUP "Température"
             BEGIN
                 MENUITEM "2000K-10000K",                IDM_COLORTEMP_GRAPH_Y_SCALE1
-
                 MENUITEM "4000K-8000K",                 IDM_COLORTEMP_GRAPH_Y_SCALE2
-
             END
         END
         MENUITEM "Paramètres...",               IDM_GRAPH_SETTINGS
@@ -2342,15 +2019,14 @@ BEGIN
     END
 END
 
-IDR_DOCTREE_MENU MENU DISCARDABLE 
+IDR_DOCTREE_MENU MENU 
 BEGIN
     POPUP "Application"
     BEGIN
         MENUITEM "Nouveau document",            ID_FILE_NEW
         MENUITEM "Ouvrir document...",          ID_FILE_OPEN
         MENUITEM SEPARATOR
-        MENUITEM "Afficher les vues existantes uniquement", 
-                                                IDM_SHOWOPENVIEWSONLY
+        MENUITEM "Afficher les vues existantes uniquement", IDM_SHOWOPENVIEWSONLY
     END
     POPUP "Document"
     BEGIN
@@ -2366,22 +2042,17 @@ BEGIN
         POPUP "Afficher vue"
         BEGIN
             MENUITEM "Graphe de &luminance",        IDM_VIEW_LUMINANCEHISTO
-            MENUITEM "Graphe de luma au voisinage du &noir", 
-                                                    IDM_VIEW_NEARBLACKHISTO
-            MENUITEM "Graphe de luma au voisinage du blanc", 
-                                                    IDM_VIEW_NEARWHITEHISTO
+            MENUITEM "Graphe de luma au voisinage du &noir", IDM_VIEW_NEARBLACKHISTO
+            MENUITEM "Graphe de luma au voisinage du blanc", IDM_VIEW_NEARWHITEHISTO
             MENUITEM SEPARATOR
             MENUITEM "Graphe de niveaux &RVB",      IDM_VIEW_RGBHISTO
-            MENUITEM "Graphe de température de &couleur", 
-                                                    IDM_VIEW_COLORTEMPHISTO
+            MENUITEM "Graphe de température de &couleur", IDM_VIEW_COLORTEMPHISTO
             MENUITEM "&Diagramme CIE",              IDM_VIEW_CIECHART
             MENUITEM SEPARATOR
-            MENUITEM "Graphe de saturation - luminance", 
-                                                    IDM_VIEW_SATLUMHISTO
+            MENUITEM "Graphe de saturation - luminance", IDM_VIEW_SATLUMHISTO
             MENUITEM "Graphe de saturation - écarts", IDM_VIEW_SATLUMSHIFT
             MENUITEM SEPARATOR
-            MENUITEM "Graphe combiné - mesures libres", 
-                                                    IDM_VIEW_MEASURESCOMBO
+            MENUITEM "Graphe combiné - mesures libres", IDM_VIEW_MEASURESCOMBO
         END
         MENUITEM "Afficher toutes les vues",    IDM_SHOWALLVIEWS
         MENUITEM "Fermer toutes les vues",      IDM_CLOSEALLVIEWS
@@ -2395,22 +2066,20 @@ BEGIN
     END
 END
 
-IDR_TAB_MENU MENU DISCARDABLE 
+IDR_TAB_MENU MENU 
 BEGIN
     POPUP "Tabs"
     BEGIN
         MENUITEM "Active l'onglet",             IDM_TAB_ACTIVATE
-        MENUITEM "Active l'onglet sur tous les documents\tCtrl+Click", 
-                                                IDM_TAB_ACTIVATE_ON_ALL
+        MENUITEM "Active l'onglet sur tous les documents\tCtrl+Click", IDM_TAB_ACTIVATE_ON_ALL
         MENUITEM "Duplique l'onglet",           IDM_TAB_DUPLICATE
-        MENUITEM "Ouvre l'onglet dans une nouvelle fenêtre", 
-                                                IDM_TAB_NEWFRAME
+        MENUITEM "Ouvre l'onglet dans une nouvelle fenêtre", IDM_TAB_NEWFRAME
         MENUITEM SEPARATOR
         MENUITEM "Ferme l'onglet",              IDM_TAB_CLOSE
     END
 END
 
-IDR_GAMMA_GRAPH_MENU MENU DISCARDABLE 
+IDR_GAMMA_GRAPH_MENU MENU 
 BEGIN
     POPUP "Graphe"
     BEGIN
@@ -2430,7 +2099,6 @@ BEGIN
             POPUP "Gamma"
             BEGIN
                 MENUITEM "1-3",                         IDM_GAMMA_GRAPH_Y_SCALE1
-
                 MENUITEM "Auto-ajuste",                 32886
                 MENUITEM "Zoom +",                      32888
                 MENUITEM "Zoom -",                      32887
@@ -2442,13 +2110,10 @@ BEGIN
                 MENUITEM "0-100 IRE",                   IDM_GRAPH_X_SCALE1
                 MENUITEM "20-100 IRE",                  IDM_GRAPH_X_SCALE2
                 MENUITEM "Auto-ajuste",                 IDM_GRAPH_X_SCALE_FIT
-
                 MENUITEM "Zoom +",                      IDM_GRAPH_X_ZOOM_IN
                 MENUITEM "Zoom -",                      IDM_GRAPH_X_ZOOM_OUT
                 MENUITEM "Décale vers la droite",       IDM_GRAPH_X_SHIFT_RIGHT
-
                 MENUITEM "Décale vers la gauche",       IDM_GRAPH_X_SHIFT_LEFT
-
             END
             MENUITEM "Valeurs...     ",             IDM_GRAPH_SCALE_CUSTOM
         END
@@ -2464,7 +2129,7 @@ END
 // Toolbar
 //
 
-IDR_MAINFRAME TOOLBAR DISCARDABLE  16, 15
+IDR_MAINFRAME TOOLBAR  16, 15
 BEGIN
     BUTTON      ID_FILE_NEW
     BUTTON      ID_FILE_OPEN
@@ -2479,7 +2144,7 @@ BEGIN
     BUTTON      ID_APP_ABOUT
 END
 
-IDR_MEDIUMTOOLBAR_VIEWS TOOLBAR DISCARDABLE  32, 32
+IDR_MEDIUMTOOLBAR_VIEWS TOOLBAR  32, 32
 BEGIN
     BUTTON      IDM_VIEW_DATASET
     SEPARATOR
@@ -2499,7 +2164,7 @@ BEGIN
     BUTTON      IDM_VIEW_MEASURESCOMBO
 END
 
-IDR_MEDIUMTOOLBAR_MAIN TOOLBAR DISCARDABLE  32, 32
+IDR_MEDIUMTOOLBAR_MAIN TOOLBAR  32, 32
 BEGIN
     BUTTON      ID_FILE_NEW
     BUTTON      ID_FILE_OPEN
@@ -2514,7 +2179,7 @@ BEGIN
     BUTTON      ID_APP_ABOUT
 END
 
-IDR_MENUBARGRAPH TOOLBAR DISCARDABLE  16, 15
+IDR_MENUBARGRAPH TOOLBAR  16, 15
 BEGIN
     BUTTON      ID_FILE_NEW
     BUTTON      ID_FILE_OPEN
@@ -2580,7 +2245,7 @@ BEGIN
     BUTTON      IDM_MEASURE_CONTRAST
 END
 
-IDR_MEDIUMTOOLBAR_MEASURES TOOLBAR DISCARDABLE  32, 32
+IDR_MEDIUMTOOLBAR_MEASURES TOOLBAR  32, 32
 BEGIN
     BUTTON      IDM_MEASURE_GRAYSCALE
     BUTTON      IDM_MEASURE_PRIMARIES
@@ -2591,7 +2256,7 @@ BEGIN
     BUTTON      IDM_CONTINUOUS_MEASUREMENT
 END
 
-IDR_MEDIUMTOOLBAR_MEASURES_EX TOOLBAR DISCARDABLE  32, 32
+IDR_MEDIUMTOOLBAR_MEASURES_EX TOOLBAR  32, 32
 BEGIN
     BUTTON      IDM_MEASURE_NEARBLACK
     BUTTON      IDM_MEASURE_NEARWHITE
@@ -2599,7 +2264,7 @@ BEGIN
     BUTTON      IDM_MEASURE_SAT_ALL
 END
 
-IDR_MEDIUMTOOLBAR_MEASURES_SAT TOOLBAR DISCARDABLE  32, 32
+IDR_MEDIUMTOOLBAR_MEASURES_SAT TOOLBAR  32, 32
 BEGIN
     BUTTON      IDM_MEASURE_SAT_RED
     BUTTON      IDM_MEASURE_SAT_GREEN
@@ -2610,7 +2275,6 @@ BEGIN
 END
 
 
-#ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
@@ -2633,18 +2297,15 @@ BEGIN
     BEGIN
         BLOCK "040c04b0"
         BEGIN
-            VALUE "Comments", "Under GPL Licence\0"
-            VALUE "CompanyName", "Association Homecinema Francophone\0"
-            VALUE "FileDescription", "Resources Colorimètre HCFR\0"
-            VALUE "FileVersion", "2, 1, 0, 0\0"
-            VALUE "InternalName", "CHCFR21_FRANCAIS\0"
-            VALUE "LegalCopyright", "Copyright (C) 2005-2008\0"
-            VALUE "LegalTrademarks", "\0"
-            VALUE "OriginalFilename", "CHCFR21_FRANCAIS.DLL\0"
-            VALUE "PrivateBuild", "\0"
-            VALUE "ProductName", "Colorimètre HCFR langage Français\0"
-            VALUE "ProductVersion", "2, 1, 0, 0\0"
-            VALUE "SpecialBuild", "\0"
+            VALUE "Comments", "Under GPL Licence"
+            VALUE "CompanyName", "Association Homecinema Francophone"
+            VALUE "FileDescription", "Resources Colorimètre HCFR"
+            VALUE "FileVersion", "2, 1, 0, 0"
+            VALUE "InternalName", "CHCFR21_FRANCAIS"
+            VALUE "LegalCopyright", "Copyright (C) 2005-2008"
+            VALUE "OriginalFilename", "CHCFR21_FRANCAIS.DLL"
+            VALUE "ProductName", "Colorimètre HCFR langage Français"
+            VALUE "ProductVersion", "2, 1, 0, 0"
         END
     END
     BLOCK "VarFileInfo"
@@ -2653,40 +2314,38 @@ BEGIN
     END
 END
 
-#endif    // !_MAC
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Cursor
 //
 
-IDC_CURSORMOVE          CURSOR  DISCARDABLE     "res\\DRAGMOVE.CUR"
-IDC_CURSOR_MEASURE      CURSOR  DISCARDABLE     "res\\cursor_meas.cur"
+IDC_CURSORMOVE          CURSOR                  "res\\DRAGMOVE.CUR"
+IDC_CURSOR_MEASURE      CURSOR                  "res\\cursor_meas.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // String Table
 //
 
-STRINGTABLE PRELOAD DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDR_MAINFRAME           "Colorimètre HCFR"
     IDR_MESURETYPE          "\nRelevé\nRelevé\nFichiers ColorHCFR (*.chc)\n.chc\nCOLORHCFR\nRelevé de couleurs HCFR"
 END
 
-STRINGTABLE PRELOAD DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_PROPSHT_CAPTION     "Wizard"
 END
 
-STRINGTABLE PRELOAD DISCARDABLE 
+STRINGTABLE 
 BEGIN
     AFX_IDS_APP_TITLE       "Colorimètre HCFR"
     AFX_IDS_IDLEMESSAGE     "Prêt"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_INDICATOR_EXT        "EXT"
     ID_INDICATOR_CAPS       "MAJ"
@@ -2696,7 +2355,7 @@ BEGIN
     ID_INDICATOR_REC        "ENR"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_FILE_NEW             "Crée un nouveau document\nNouveau"
     ID_FILE_OPEN            "Ouvre un document existant\nOuvrir"
@@ -2709,13 +2368,13 @@ BEGIN
     ID_FILE_PRINT_PREVIEW   "Affiche des pages entières\nAperçu avant impression"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_APP_ABOUT            "Affiche des informations sur le programme, le numéro de version et le copyright\nA propos de"
     ID_APP_EXIT             "Ferme l'application ; propose d'enregistrer les documents\nQuitter"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_FILE_MRU_FILE1       "Ouvre ce document"
     ID_FILE_MRU_FILE2       "Ouvre ce document"
@@ -2735,13 +2394,13 @@ BEGIN
     ID_FILE_MRU_FILE16      "Ouvre ce document"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_NEXT_PANE            "Passe au volet de fenêtre suivant\nVolet suivant"
     ID_PREV_PANE            "Revient au volet précédent\nVolet précédent"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_WINDOW_NEW           "Ouvre une nouvelle fenêtre pour le document actif\nNouvelle fenêtre"
     ID_WINDOW_ARRANGE       "Réorganise les icônes en bas de la fenêtre\nRéorganise les icônes"
@@ -2751,7 +2410,7 @@ BEGIN
     ID_WINDOW_SPLIT         "Réorganise les fenêtres en une mosaïque\nMosaïque"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_EDIT_CLEAR           "Efface la sélection\nEffacer"
     ID_EDIT_CLEAR_ALL       "Efface tout\nEffacer tout"
@@ -2766,13 +2425,13 @@ BEGIN
     ID_EDIT_REDO            "Rétablit l'action précédemment annulée\nRétablir"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_VIEW_TOOLBAR         "Affiche ou masque la barre d'outils\nBarre d'outils"
     ID_VIEW_STATUS_BAR      "Affiche ou masque la barre d'état\nBarre d'état"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     AFX_IDS_SCSIZE          "Change la taille de la fenêtre"
     AFX_IDS_SCMOVE          "Change la position de la fenêtre"
@@ -2783,19 +2442,19 @@ BEGIN
     AFX_IDS_SCCLOSE         "Ferme la fenêtre active et propose l'enregistrement des documents"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     AFX_IDS_SCRESTORE       "Restaure la fenêtre à sa taille d'origine"
     AFX_IDS_SCTASKLIST      "Active la liste des tâches"
     AFX_IDS_MDICHILD        "Active cette fenêtre"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     AFX_IDS_PREVIEW_CLOSE   "Ferme le mode d'aperçu avant impression\nFermer l'aperçu"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_LUMINANCEHISTOVIEW_NAME "Graphe de luminance"
     IDS_COLORTEMPHISTOVIEW_NAME "Graphe de température de couleur"
@@ -2809,7 +2468,7 @@ BEGIN
     IDS_GENERATOR_PROPERTIES_TITLE "Paramètres du générateur"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_GDIGENERATOR_PROPERTIES_TITLE "Paramètres de l'affichage des mires"
     IDS_KIGENERATOR_PROPERTIES_TITLE "Paramètres du générateur HCFR"
@@ -2828,7 +2487,7 @@ BEGIN
     IDS_CALIBRATESENSOR     "Lancer l'étalonnage du capteur ?"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDM_VIEW_LUMINANCE      "Affiche la luminance mesurée par le luxmètre\nLuminance"
     IDM_VIEW_CIECHART       "Affiche le diagramme CIE\nDiagramme CIE"
@@ -2839,13 +2498,13 @@ BEGIN
     IDM_VIEW_SATLUMSHIFT    "Affiche le graphe de saturation - écarts\nGraphe de saturation - écarts"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_UNITS_XYZ            "XYZ"
     ID_UNITS_RVB            "RVB"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDM_REFRESH_CONTROLS    "Rafraichir\nRafraichir"
     ID_UNITS_SENSOR         "Valeurs du capteur"
@@ -2856,7 +2515,7 @@ BEGIN
     IDM_CALIBRATE_SENSOR    "Etalonne le capteur en fonction des caractéristiques attendues du diffuseur (méthode très peu précise)"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDM_VIEW_TESTCOLOR      "Affiche les couleurs de test\nCouleurs de test"
     IDM_CIE_SHOWSATURATIONSCALE 
@@ -2864,7 +2523,7 @@ BEGIN
     ID_UNITS_xyz_2          "xyz"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_AFFICHAGE_BARREVUES  "Affiche ou masque la barre vues\nBarre vues"
     ID_VIEW_VIEW_BAR        "Affiche ou masque la barre vues\nBarre vue"
@@ -2876,13 +2535,13 @@ BEGIN
                             "Affiche les points correspondants aux mesures\nAffiches les mesures"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDM_LUM_GRAPH_LOGMODE   "Affiche la luminance en mode sous la forme log(y)/log(x)"
     IDM_LUM_GRAPH_RGBLUM    "Affiche 3 courbes de luminance "
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDM_GENERAL_CONFIG      "Définit les préférences générales, les références colorimétriques, et l'apparence du logiciel"
     IDM_REFERENCE_CONFIG    "Configure les références des calculs"
@@ -2890,7 +2549,7 @@ BEGIN
     IDM_EXPORT_XLS          "Exporte les mesures vers un fichier .xls\nExport xls"
     IDM_HELP                "Affiche la fenêtre d'aide\nAide"
     IDM_HELP_SUPPORT        "Aide: support technique\nSupport"
-    IDM_HELP_FORUM          "Aide: forum www.homecinema-fr.com\nForum"
+    IDM_HELP_FORUM          "Aide: forum hcfr.sourceforge.net\nForum"
     IDM_HELP_INSTALL        "Aide: installation colorimètre\nInstallation"
     IDM_WHATS_THIS          "Aide contextuelle\nAide contextuelle"
     IDM_VIEW_NEARBLACKHISTO "Affiche le graphe de luminance au voisinage du noir\nGraphe de luminance au voisinage du noir"
@@ -2898,7 +2557,7 @@ BEGIN
     IDM_VIEW_INFOMEASURE    "Affiche la boîte d'informations concernant la mesure courante\nAffiche les informations mesures"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDM_CIE_UV              "Affiche le diagramme CIE u'v'\nDiagramme CIE u'v'"
     IDM_VIEW_MEASURESCOMBO  "Affiche le graphe combiné des mesures libres\nGraphe combiné - mesures libres"
@@ -2907,7 +2566,7 @@ BEGIN
     IDM_SETASREF            "Défini le document comme document de référence"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_ERRINITGENERATOR    "Erreur lors de l'initialisation du générateur"
     IDS_ERRINITSENSOR       "Erreur lors de l'initialisation du capteur"
@@ -2927,7 +2586,7 @@ BEGIN
     IDS_BADADDITIVITYFOR    "L'additivité n'est pas correcte pour le"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_INSTEADOF           "au lieu de"
     IDS_ADDITIVITY          "Additivité:"
@@ -2947,7 +2606,7 @@ BEGIN
     IDS_MEASUREPRIMARIES    "Mesure les primaires"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_DELETEPRIMARIES     "Efface les primaires"
     IDS_MEASURESECONDARIES  "Mesure les primaires et les secondaires"
@@ -2967,7 +2626,7 @@ BEGIN
     IDS_MEASURESATYELLOW    "Mesure les saturations pour le jaune"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_MEASURESATCYAN      "Mesure les saturations pour le cyan"
     IDS_MEASURESATMAGENTA   "Mesure les saturations pour le magenta"
@@ -2987,7 +2646,7 @@ BEGIN
     IDS_DELETESATBLUE       "Efface les saturations pour le bleu"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_DELETESATYELLOW     "Efface les saturations pour le yellow"
     IDS_DELETESATCYAN       "Efface les saturations pour le cyan"
@@ -3008,7 +2667,7 @@ BEGIN
     IDS_TEMPERATURE         "Température"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_PALREDREF           "Référence rouge PAL"
     IDS_PALGREENREF         "Référence vert PAL"
@@ -3028,7 +2687,7 @@ BEGIN
     IDS_GRAYIRE             "Gris %d IRE"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_REDSATPERCENT       "Rouge Saturé à %d%%"
     IDS_GREENSATPERCENT     "Vert Saturé à %d%%"
@@ -3048,7 +2707,7 @@ BEGIN
     IDS_GAMMAGREEN          "Gamma Vert"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_GAMMABLUE           "Gamma Bleu"
     IDS_GAMMAREFERENCE      "Gamma Référence"
@@ -3068,7 +2727,7 @@ BEGIN
     IDS_REFMAGENTA          "Référence magenta"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_PERCENTSATRED       "% Sat Rouge"
     IDS_PERCENTSATGREEN     "% Sat Vert"
@@ -3088,7 +2747,7 @@ BEGIN
     IDS_GREENIRE            "Vert %d IRE"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_BLUEIRE             "Bleu %d IRE"
     IDS_INVALIDCODE1        "Caractère invalide. Seuls les caractères hexadécimaux (0-9, A-F) et les espaces sont acceptés."
@@ -3108,7 +2767,7 @@ BEGIN
     IDS_DVDPOS1             "Vérifiez que vous êtes bien sur le menu 'Mires de réglage'\ndu DVD avec la sélection courante sur 0% gris"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_DVDPOS2             "Vérifiez que vous êtes bien sur la première mire de mesure du voisinage du noir."
     IDS_DVDPOS3             "Vérifiez que vous êtes bien sur la première mire de mesure du voisinage du blanc."
@@ -3128,7 +2787,7 @@ BEGIN
     IDS_DVDPOS8             "Vérifiez que vous êtes bien sur le menu réglage des saturations\nSECONDAIRES du DVD de mires avec la sélection courante sur le JAUNE."
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_DVDPOS9             "Vérifiez que vous êtes bien sur la première mire de la série Couleurs Primaires."
     IDS_DVDPOS10            "Vérifiez que vous êtes bien sur la première mire %s."
@@ -3148,7 +2807,7 @@ BEGIN
     IDS_SENSORVERSION       "Version capteur:"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_MODIFIED            " modifié"
     IDS_UNKNOWN             "Inconnu"
@@ -3168,7 +2827,7 @@ BEGIN
     IDS_MEASURESCANCELED    "Mesures annulées"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_ANERROROCCURED      "Une erreur est survenue:\n"
     IDS_SPYDER              "Spyder II"
@@ -3188,7 +2847,7 @@ BEGIN
     IDS_GAMMAGREENDATAREF   "Gamma Vert mesure de référence"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_GAMMABLUEDATAREF    "Gamma Bleu mesure de référence"
     IDS_COLORTEMPDATAREF    "Température de couleur mesure de référence"
@@ -3209,12 +2868,12 @@ BEGIN
     IDS_ABOUT_DVD           "DVD de mires"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_HELPFILE_NAME       "ColorHCFR_fr.chm"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_ABOUT_VALIDATION    "tests et validation"
     IDS_ABOUT_THANK_HEADER  "<font size='11' color='0,0,0' align='center'>Un grand merci au site <font style='ub'><a href='http://www.codeproject.com/'>CodeProject</a> </font>pour être<br>une mine de code source aussi précieuse...<br>Ce programme fait usage des classes suivantes:</font><br>"
@@ -3234,7 +2893,7 @@ BEGIN
     IDS_DELTAEYELLOWDATAREF "Delta E Jaune mesure de référence"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_DELTAECYANDATAREF   "Delta E Cyan mesure de référence"
     IDS_DELTAEMAGENTADATAREF "Delta E Magenta mesure de référence"
@@ -3254,12 +2913,12 @@ BEGIN
     IDS_CALIBRATE_FAILED    "Erreur lors du calibrage."
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_STRING_VERSION      "Version 2.0"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDM_SHOWVIEW            "Affiche la vue sélectionnée"
     IDM_CLOSEVIEW           "Ferme la vue sélectionnée"
@@ -3276,7 +2935,7 @@ BEGIN
     IDM_SHOWVIEWFORALLDOC   "Affiche la vue sélectionnée pour tous les documents ouverts"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_PATTERN_RETRY       "Plusieurs mesures ont été nécessaires pour les mires suivantes :\n%sVérifiez la cohérence des mesures ou desactivez la surveillance du changement de mire"
     IDS_MANYDOCSUSESAMESENSOR 
@@ -3302,15 +2961,15 @@ BEGIN
     IDS_SPECTRUM            "Spectre"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDM_SIM_GRAYSCALE_AND_COLORS 
                             "Effectue des mesures simultanées de l'échelle de gris et des couleurs primaires et secondaires en une seule opération.\nMesures simultanées de l'échelle de gris et des couleurs primaires et secondaires"
     IDM_PATTERN_ANIM_BLACK  "Affiche une mire animée avec deux bandes à IRE 1 et IRE 2 sur fond noir\nMire animée de niveau de noir"
     IDM_PATTERN_ANIM_WHITE  "Affiche une mire animée avec deux bandes à IRE 98 et IRE 99 sur fond blanc\nMire animée de niveau de blanc"
     ID_VIEW_SPECTRUM        "Affiche ou masque la fenêtre de spectres\nSpectre"
-    IDM_UPDATE_SOFT         "Vérifie l'existence d'une mise à jour du logiciel sur le site www.homecinema-fr.com et la télécharge\nTélécharge une mise à jour du logiciel"
-    IDM_UPDATE_ETALONS      "Met à jour les fichiers étalons du colorimètre HCFR en téléchargeant les nouveautés sur le site www.homecinema-fr.com\nTéléchargement des étalons"
+    IDM_UPDATE_SOFT         "Vérifie l'existence d'une mise à jour du logiciel sur le site hcfr.sourceforge.net et la télécharge\nTélécharge une mise à jour du logiciel"
+    IDM_UPDATE_ETALONS      "Met à jour les fichiers étalons du colorimètre HCFR en téléchargeant les nouveautés sur le site hcfr.sourceforge.net\nTéléchargement des étalons"
     IDM_TRAIN_METER         "Définit la matrice de correction des valeurs mesurées pour faire coincider les coordonnées XYZ avec celles du document de référence\nDéfinit la matrice de conversion à partir du document de référence"
     IDM_SINGLE_MEASUREMENT  "Effectue une mesure unique\nEffectue une mesure unique"
     IDM_CONTINUOUS_MEASUREMENT 
@@ -3320,7 +2979,7 @@ BEGIN
     IDM_VIEW_DATASET        "Affiche les mesures\nMesures"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_NOSPECTRUM          "Pas de données spectrales disponibles."
     IDS_MEASUREGRAYSCALE_SIM 
@@ -3347,7 +3006,7 @@ BEGIN
     IDS_UPD_DOWNLOAD_SUCCEED "Le téléchargement a réussi."
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_UPD_DOWNLOAD_FAILED "Le téléchargement a échoué."
     IDS_CONTRAST            "Contraste"
@@ -3369,7 +3028,7 @@ BEGIN
     IDS_NOIRPROFILESELECTED "Aucun profil IR sélectionné"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_FREEMEASURES        "Mesures libres"
     IDS_RGBLEVELS           "Niveaux RVB"
@@ -3390,7 +3049,7 @@ BEGIN
     IDS_MEASURESINGLE_SIM   "Effectue une mesure libre unique sur tous les documents simultanément ?"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDM_TAB_CLOSE           "Ferme l'onglet"
     IDM_TAB_NEWFRAME        "Ouvre l'onglet dans une nouvelle fenêtre"
@@ -3410,7 +3069,7 @@ BEGIN
     IDM_MEASURE_SAT_MAGENTA "Mesure les saturations pour le magenta\nMesure les saturations pour le magenta"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDM_MEASURE_SAT_ALL     "Mesure les saturations pour toutes les couleurs\nMesure les saturations pour toutes les couleurs"
     IDM_MEASURE_GRAYSCALE_COLORS 
@@ -3426,7 +3085,7 @@ BEGIN
     IDM_VIEW_GAMMAHISTO     "Affiche le graphe de gamma\nGraphe de gamma"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_VIEW_MEASURE_BAR     "Affiche ou masque la barre mesures\nBarre mesures"
     IDM_RESET_CONVERSION_MATRIX 
@@ -3441,10 +3100,10 @@ BEGIN
     IDM_MEASURE_CONTRAST    "Mesure le contraste\nMesure le contraste"
     IDM_SAVE_CALIBRATION_FILE 
                             "Sauve le fichier étalon\nSauve le fichier étalon"
-    IDM_UPDATE_IRPROFILES   "Met à jour les fichiers profils IR du générateur HCFR en téléchargeant les nouveautés sur le site www.homecinema-fr.com\nTéléchargement des fichiers profils IR"
+    IDM_UPDATE_IRPROFILES   "Met à jour les fichiers profils IR du générateur HCFR en téléchargeant les nouveautés sur le site hcfr.sourceforge.net\nTéléchargement des fichiers profils IR"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_DATAREF_RED         "Rouge document de référence"
     IDS_DATAREF_GREEN       "Vert document de référence"
@@ -3464,13 +3123,13 @@ BEGIN
     IDS_OPERATION_SUCCESSFUL "Operation effectuée avec succès"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_OPERATION_FAILED    "Une erreur est survenue. Opération annulée."
     IDS_MTCS_CALIBRATE      "Mesure le niveau de noir interne ?\nPour effectuer cette mesure, la sonde doit mesurer un noir absolu."
     IDS_CTRLCLICK_SIM       "Control+click -> mesures simultanées"
     IDS_MTCS_CALIBRATE_EX   "La mesure du niveau de noir est hors limites pour les offsets internes actuels de la sonde.\nVoulez-vous reconfigurer ces offsets internes ? Pour ce faire, assurez vous que la sonde mesure un noir absolu et cliquez sur le bouton Oui."
-    IDS_DONATION_HYPERLINK  "http://www.homecinema-fr.com/colorimetre/donation"
+    IDS_DONATION_HYPERLINK  "http://hcfr.sourceforge.net/donate/"
     IDS_S3SENSOR_NAME       "Spyder III"
     IDS_S3SENSOR_PROPERTIES_TITLE "Paramètres du Spyder III"
     IDS_SPYDER3             "Spyder III"
@@ -3482,7 +3141,7 @@ BEGIN
     IDS_SENSORHWVERSION     "version HW capteur:"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_VIEW_MEASURE_SAT_BAR "Affiche ou masque la barre mesures saturations\nBarre mesures saturations"
 END
