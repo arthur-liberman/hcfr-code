@@ -92,6 +92,7 @@ CColorHCFRApp::CColorHCFRApp()
 	// Place all significant initialization in InitInstance
 	m_hCIEThread = NULL;
 	m_hCIEEvent = CreateEvent ( NULL, TRUE, FALSE, NULL );	// Manual event starting non-signaled
+    ResetEvent(m_hCIEEvent);
 	m_hCursorMeasure = NULL;
 	m_hSavedCursor = NULL;
 	m_pPatternWnd = NULL;
@@ -143,7 +144,22 @@ CColorHCFRApp::~CColorHCFRApp()
 		m_hLuxThread = NULL;
 	}
 
-	DeleteCriticalSection ( & m_LuxCritSec );
+    if(m_pColorReference)
+    {
+        delete m_pColorReference;
+    }
+
+    if(m_pConfig)
+    {
+        delete m_pConfig;
+    }
+
+    if(m_pReferenceData)
+    {
+        delete m_pReferenceData;
+    }
+
+    DeleteCriticalSection ( & m_LuxCritSec );
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -453,9 +469,6 @@ int CColorHCFRApp::ExitInstance()
 	DisconnectDevice3();
 #endif
 
-	delete m_pConfig;
-	delete m_pColorReference;
-	
 	return CWinApp::ExitInstance();
 }
 
