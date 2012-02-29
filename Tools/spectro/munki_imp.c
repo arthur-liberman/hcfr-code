@@ -77,7 +77,7 @@
 //#define SW_THREAD_TIMEOUT (0.1) 	/* Switch read thread timeout */
 
 #define SINGLE_READ		/* Use a single USB read for scan to eliminate latency issues. */
-//#define HIGH_RES		/* Enable high resolution spectral mode code. Disable */
+#define HIGH_RES		/* Enable high resolution spectral mode code. Disable */
 						/* to break dependency on rspl library. */
 
 /* Debug */
