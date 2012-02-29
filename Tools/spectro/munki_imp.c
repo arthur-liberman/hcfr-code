@@ -4886,8 +4886,10 @@ munki_code munki_create_hr(munki *p, int ref) {
 	munki_xp xp[41];			/* Crossover points each side of filter */
 	munki_code ev = MUNKI_OK;
 	rspl *raw2wav;				/* Lookup from CCD index to wavelength */
-	munki_fs fshape[40 * 16];  /* Existing filter shape */
+#ifdef EXISTING_SHAPE
+    munki_fs fshape[40 * 16];  /* Existing filter shape */
 	int ncp = 0;				/* Number of shape points */
+#endif
 	int *mtx_index1, **pmtx_index2, *mtx_index2;
 	int *mtx_nocoef1, **pmtx_nocoef2, *mtx_nocoef2;
 	double *mtx_coef1, **pmtx_coef2, *mtx_coef2;
@@ -5470,10 +5472,12 @@ munki_code munki_create_hr(munki *p, int ref) {
 		/* Normalise the filters area in CCD space, while maintaining the */
 		/* total contribution of each CCD at the target too. */
 		{
-			int ii;
 			double tot = 0.0;
 			double ccdweight[NRAW], avgw;	/* Weighting determined by cell widths */
+#ifdef NEVER
 			double ccdsum[NRAW];
+			int ii;
+#endif
 
 			/* Normalize the overall filter weightings */
 			for (j = 0; j < m->nwav2; j++)
@@ -5610,7 +5614,10 @@ munki_code munki_create_hr(munki *p, int ref) {
 			datao vlow, vhigh;
 			int gres[2];
 			double avgdev[2];
-			int ii, jj;
+			int ii;
+#ifdef PATREC_DEBUG
+            int jj;
+#endif
 			co pp;
 	
 			/* First the 1D references */
