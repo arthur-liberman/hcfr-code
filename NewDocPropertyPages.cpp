@@ -256,7 +256,7 @@ LPCSTR CSensorSelectionPropPage::GetThcFileSubDir ( int nSensorID )
 			 return ( GetConfig()->m_bUseCalibrationFilesOnAllProbes ? "Etalon_S3" : "" );
 
 		case 7:
-			 return "Etalon_Argyll";
+            return ( GetConfig()->m_bUseCalibrationFilesOnAllProbes ? "Etalon_Argyll" : "" );
 
 		default:
 			 return "";
@@ -286,7 +286,7 @@ void CSensorSelectionPropPage::OnSelchangeSensorchoiceCombo()
 	
 	if ( ! strSubDir.IsEmpty () )
 	{
-		if ( m_currentID < 2 || m_currentID > 6)
+		if ( m_currentID < 2)
 		{
 			// Sensor needing calibration file
 			str.LoadString ( IDS_CREATE_CALIBRATION_FILE );
