@@ -303,16 +303,15 @@ BEGIN
     PUSHBUTTON      "Help",IDHELP,149,108,49,14,WS_GROUP
 END
 
-IDD_ABOUTBOX DIALOG  0, 0, 186, 278
+IDD_ABOUTBOX DIALOGEX 0, 0, 186, 278
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About HCFR Colorimeter"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         223,IDC_STATIC,"Static",SS_BITMAP,7,7,172,62
-    LTEXT           "Version 2.0",IDC_STATIC_VERSION,7,76,119,8,SS_NOPREFIX
-    LTEXT           "Copyright (C) 2012 Hcfr Project, 2005-2008\nAssociation Homecinema Francophone",IDC_STATIC2,7,88,168,18
-    LTEXT           "hcfr.sourceforge.net",IDC_HOMECINEMA_HYPERLINK,7,110,80,8
-    LTEXT           "To make a donation...",IDC_DONATION_HYPERLINK,7,122,70,8
+    LTEXT           "Version 3.0",IDC_STATIC_VERSION,7,76,119,8,SS_NOPREFIX
+    LTEXT           "Copyright (C) 2012 Hcfr Project\nCopyright (C) 2005-2008 Association Homecinema Francophone",IDC_STATIC2,7,88,168,24
+    LTEXT           "hcfr.sourceforge.net",IDC_HOMECINEMA_HYPERLINK,7,119,80,8
     LTEXT           "IDC_PLACEHOLDER",IDC_PLACEHOLDER,4,136,177,117
     DEFPUSHBUTTON   "OK",IDOK,68,257,50,14,WS_GROUP
 END
