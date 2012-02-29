@@ -1275,8 +1275,9 @@ BOOL CAboutDlg::OnInitDialog()
 	::LoadString ( ::GetModuleHandle ( NULL ), IDS_STRING_VERSION, szSensor, sizeof ( szSensor ) );
 	m_Version.SetWindowText ( szSensor );
 
-	str.LoadString ( IDS_DONATION_HYPERLINK );
-	m_donationHyperLink.SetURL ( str );
+    // disable donations for now
+	//str.LoadString ( IDS_DONATION_HYPERLINK );
+	//m_donationHyperLink.SetURL ( str );
 
 	str.LoadString ( IDS_ABOUT_SENSOR );
 	strcpy ( szSensor, (LPCSTR) str );
