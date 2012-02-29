@@ -884,7 +884,7 @@ void CGraphControl::DrawFiligree(CDC *pDC, CRect rect, COLORREF clr)
 	CFont	font;
 	CSize	TextSize;
 	LOGFONT logfont;
-	static const char * szFiliText = "www.homecinema-fr.com";
+	static const char * szFiliText = "hcfr.sourceforge.net";
 
 	logfont.lfHeight = -16;
 	logfont.lfWidth = 0;
