@@ -43,6 +43,7 @@ CArgyllSensorPropPage::CArgyllSensorPropPage() : CPropertyPageWithHelp(CArgyllSe
     m_ReadingType = 0;
     m_PortNumber = 1;
     m_DebugMode = FALSE;
+    m_HiRes = TRUE;
     //}}AFX_DATA_INIT
 }
 
@@ -58,6 +59,7 @@ void CArgyllSensorPropPage::DoDataExchange(CDataExchange* pDX)
     DDX_CBIndex(pDX, IDC_ARGYLLSENSOR_READINGTYPE_COMBO, m_ReadingType);
     DDX_CBIndex(pDX, IDC_ARGYLLSENSOR_PORTNUMBER_COMBO, m_PortNumber);
     DDX_Check(pDX, IDC_ARGYLL_SENSOR_DEBUG_CB, m_DebugMode);
+    DDX_Check(pDX, IDC_ARGYLL_SENSOR_HIRES, m_HiRes);
     //}}AFX_DATA_MAP
 }
 

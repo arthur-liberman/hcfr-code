@@ -538,6 +538,18 @@ std::string ArgyllMeterWrapper::getIncorrectPositionInstructions()
     return "Meter is in incorrect position";
 }
 
+void ArgyllMeterWrapper::setHiResMode(bool enableHiRes)
+{
+    checkMeterIsInitialized();
+    // only suported on i1Pro and colormunki (photo not display)
+    // but just do nothing otherwise
+    if(m_meterType == I1PRO || m_meterType == COLORMUNKI)
+    {
+        m_meter->set_opt_mode(m_meter, enableHiRes?inst_opt_highres:inst_opt_stdres);
+    }
+}
+
+
 ArgyllMeterWrapper::eMeterType ArgyllMeterWrapper::getType() const
 {
     checkMeterIsInitialized();

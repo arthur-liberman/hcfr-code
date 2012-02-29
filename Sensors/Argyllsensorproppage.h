@@ -49,6 +49,7 @@ public:
     int        m_ReadingType;
     int        m_PortNumber;
     BOOL       m_DebugMode;
+    BOOL       m_HiRes;
     //}}AFX_DATA
     
     CArgyllSensor* m_pSensor;

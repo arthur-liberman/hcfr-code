@@ -47,7 +47,7 @@ public:
     UINT    m_ReadingType;
     UINT    m_PortNumber;
     BOOL    m_DebugMode;
-
+    BOOL    m_HiRes;
 private:
     ArgyllMeterWrapper* m_meter;
 

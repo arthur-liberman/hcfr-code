@@ -128,6 +128,8 @@ public:
     /// gets the actual type of the meter
     eMeterType getType() const;
 
+    /// Enable/Disable hi resolution mode on i1Pro
+    void setHiResMode(bool enableHiRes);
     /// get the name of the meter given the type
     static std::string getMeterName(eMeterType meterType);
 

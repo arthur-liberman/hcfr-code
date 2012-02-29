@@ -52,6 +52,7 @@ CArgyllSensor::CArgyllSensor() :
     m_ReadingType = GetConfig()->GetProfileInt("Argyll", "ReadingType", 0);
     m_PortNumber = GetConfig()->GetProfileInt("Argyll", "PortNumber", 1);
     m_DebugMode = GetConfig()->GetProfileInt("Argyll", "DebugMode", 0);
+    m_HiRes = GetConfig()->GetProfileInt("Argyll", "HiRes", 1);
 
     m_ArgyllSensorPropertiesPage.m_pSensor = this;
 
@@ -75,6 +76,7 @@ void CArgyllSensor::Copy(CSensor * p)
     m_ReadingType = ((CArgyllSensor*)p)->m_ReadingType;
     m_PortNumber = ((CArgyllSensor*)p)->m_PortNumber;
     m_DebugMode = ((CArgyllSensor*)p)->m_DebugMode;
+    m_HiRes = ((CArgyllSensor*)p)->m_HiRes;
 }
 
 void CArgyllSensor::Serialize(CArchive& archive)
@@ -89,6 +91,7 @@ void CArgyllSensor::Serialize(CArchive& archive)
         archive << m_ReadingType;
         archive << m_PortNumber;
         archive << m_DebugMode;
+        archive << m_HiRes;
     }
     else
     {
@@ -100,6 +103,7 @@ void CArgyllSensor::Serialize(CArchive& archive)
         archive >> m_ReadingType;
         archive >> m_PortNumber;
         archive >> m_DebugMode;
+        archive >> m_HiRes;
     }
 }
 
@@ -111,11 +115,22 @@ void CArgyllSensor::SetPropertiesSheetValues()
     m_ArgyllSensorPropertiesPage.m_ReadingType=m_ReadingType;
     m_ArgyllSensorPropertiesPage.m_PortNumber=m_PortNumber - 1;
     m_ArgyllSensorPropertiesPage.m_DebugMode=m_DebugMode;
+    m_ArgyllSensorPropertiesPage.m_DebugMode=m_HiRes;
 }
 
 void CArgyllSensor::GetPropertiesSheetValues()
 {
     COneDeviceSensor::GetPropertiesSheetValues();
+
+    if(m_HiRes != m_ArgyllSensorPropertiesPage.m_HiRes)
+    {
+        m_HiRes = m_ArgyllSensorPropertiesPage.m_HiRes;
+        GetConfig () -> WriteProfileInt ( "Argyll", "HiRes", m_HiRes );
+        if(m_meter)
+        {
+            m_meter->setHiResMode(!!m_HiRes);
+        }
+    }
 
     if( m_DisplayType != m_ArgyllSensorPropertiesPage.m_DisplayType ||
         m_ReadingType != m_ArgyllSensorPropertiesPage.m_ReadingType ||
@@ -127,6 +142,7 @@ void CArgyllSensor::GetPropertiesSheetValues()
         m_ReadingType=m_ArgyllSensorPropertiesPage.m_ReadingType;
         m_PortNumber=m_ArgyllSensorPropertiesPage.m_PortNumber + 1;
         m_DebugMode=m_ArgyllSensorPropertiesPage.m_DebugMode;
+        m_HiRes=m_ArgyllSensorPropertiesPage.m_DebugMode;
 
         GetConfig () -> WriteProfileInt ( "Argyll", "DisplayType", m_DisplayType );
         GetConfig () -> WriteProfileInt ( "Argyll", "ReadingType", m_ReadingType );
@@ -158,6 +174,7 @@ BOOL CArgyllSensor::Init( BOOL bForSimultaneousMeasures )
             m_meter = 0;
             return FALSE;
         }
+        m_meter->setHiResMode(!!m_HiRes);
         SetName(CString(m_meter->getMeterName(m_meter->getType()).c_str()));
     }
     return TRUE;
