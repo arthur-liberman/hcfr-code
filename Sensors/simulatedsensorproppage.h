@@ -36,7 +36,7 @@ class CSimulatedSensorPropPage : public CPropertyPageWithHelp
 // Construction
 public:
 	CSimulatedSensorPropPage();
-	~CSimulatedSensorPropPage();
+	virtual ~CSimulatedSensorPropPage();
 
 // Dialog Data
 	//{{AFX_DATA(CSimulatedSensorPropPage)

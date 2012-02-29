@@ -57,8 +57,10 @@ class CPropertyPageWithHelp : public CPropertyPage
  	DECLARE_DYNAMIC(CPropertyPageWithHelp)
 
 public:
+
 	CPropertyPageWithHelp () : CPropertyPage () { m_psp.dwFlags |= PSP_HASHELP; m_psp.hInstance = AfxGetResourceHandle (); }
 	CPropertyPageWithHelp(UINT nIDTemplate, UINT nIDCaption = 0) : CPropertyPage ( nIDTemplate, nIDCaption ) { m_psp.dwFlags |= PSP_HASHELP; m_psp.hInstance = AfxGetResourceHandle (); }
+    virtual ~CPropertyPageWithHelp() {}
 	
 	virtual UINT GetHelpId ( LPSTR lpszTopic ) { return 0; }
 
@@ -74,7 +76,7 @@ class CPropertySheetWithHelp : public CPropertySheet
 	CPropertySheetWithHelp() : CPropertySheet() { m_psh.dwFlags |= PSH_HASHELP; }
 	CPropertySheetWithHelp(UINT nIDCaption, CWnd* pParentWnd = NULL, UINT iSelectPage = 0) : CPropertySheet ( nIDCaption, pParentWnd, iSelectPage ) { m_psh.dwFlags |= PSH_HASHELP; }
 	CPropertySheetWithHelp(LPCTSTR pszCaption, CWnd* pParentWnd = NULL, UINT iSelectPage = 0) : CPropertySheet ( pszCaption, pParentWnd, iSelectPage ) { m_psh.dwFlags |= PSH_HASHELP; }
-
+    virtual ~CPropertySheetWithHelp() {}
 	afx_msg BOOL CPropertySheetWithHelp::OnHelpInfo ( HELPINFO * pHelpInfo );
 	afx_msg void OnHelp();
 	DECLARE_MESSAGE_MAP()

@@ -39,6 +39,7 @@ class CNewDocWizard : public CPropertySheetWithHelp
 // Construction
 public:
 	CNewDocWizard(CWnd* pWndParent = NULL);
+    virtual ~CNewDocWizard();
 
 // Attributes
 public:
@@ -55,8 +56,7 @@ public:
 
 // Implementation
 public:
-	virtual ~CNewDocWizard();
-		 virtual BOOL OnInitDialog();
+	 virtual BOOL OnInitDialog();
 
 // Generated message map functions
 protected:

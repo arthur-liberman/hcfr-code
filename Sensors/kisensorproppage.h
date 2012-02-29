@@ -39,7 +39,7 @@ class CKiSensorPropPage : public CPropertyPageWithHelp
 // Construction
 public:
 	CKiSensorPropPage();
-	~CKiSensorPropPage();
+	virtual ~CKiSensorPropPage();
 
 // Dialog Data
 	//{{AFX_DATA(CKiSensorPropPage)

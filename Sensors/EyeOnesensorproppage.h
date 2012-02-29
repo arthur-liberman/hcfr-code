@@ -39,7 +39,7 @@ class CEyeOneSensorPropPage : public CPropertyPageWithHelp
 // Construction
 public:
 	CEyeOneSensorPropPage();
-	~CEyeOneSensorPropPage();
+	virtual ~CEyeOneSensorPropPage();
 
 // Dialog Data
 	//{{AFX_DATA(CEyeOneSensorPropPage)

@@ -41,7 +41,7 @@ class CSpyderIISensorPropPage : public CPropertyPageWithHelp
 // Construction
 public:
 	CSpyderIISensorPropPage();
-	~CSpyderIISensorPropPage();
+	virtual ~CSpyderIISensorPropPage();
 
 // Dialog Data
 	//{{AFX_DATA(CSpyderIISensorPropPage)

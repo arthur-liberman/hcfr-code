@@ -40,7 +40,7 @@ class CArgyllSensorPropPage : public CPropertyPageWithHelp
 // Construction
 public:
     CArgyllSensorPropPage();
-    ~CArgyllSensorPropPage();
+    virtual ~CArgyllSensorPropPage();
 
 // Dialog Data
     //{{AFX_DATA(CArgyllSensorPropPage)

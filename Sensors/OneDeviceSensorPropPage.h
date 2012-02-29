@@ -42,7 +42,7 @@ class COneDeviceSensorPropPage : public CPropertyPageWithHelp
 // Construction
 public:
 	COneDeviceSensorPropPage();
-	~COneDeviceSensorPropPage();
+	virtual ~COneDeviceSensorPropPage();
 
 	double m_calibrationIRELevel;
 	CString m_calibrationReferenceName;

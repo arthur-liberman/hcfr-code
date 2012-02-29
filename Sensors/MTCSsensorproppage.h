@@ -41,7 +41,7 @@ class CMTCSSensorPropPage : public CPropertyPageWithHelp
 // Construction
 public:
 	CMTCSSensorPropPage();
-	~CMTCSSensorPropPage();
+	virtual ~CMTCSSensorPropPage();
 
 // Dialog Data
 	//{{AFX_DATA(CMTCSSensorPropPage)

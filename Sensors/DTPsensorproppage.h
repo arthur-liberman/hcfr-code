@@ -38,7 +38,7 @@ class CDTPSensorPropPage : public CPropertyPageWithHelp
 // Construction
 public:
 	CDTPSensorPropPage();
-	~CDTPSensorPropPage();
+	virtual ~CDTPSensorPropPage();
 
 // Dialog Data
 	//{{AFX_DATA(CDTPSensorPropPage)
