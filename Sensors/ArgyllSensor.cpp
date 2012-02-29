@@ -187,7 +187,7 @@ BOOL CArgyllSensor::Release()
 
 CColor CArgyllSensor::MeasureColor(COLORREF aRGBValue)
 {
-    if(!m_meter) Init(FALSE);
+    if(!m_meter) if(!Init(FALSE)) return noDataColor;
 
     ArgyllMeterWrapper::eMeterState state(ArgyllMeterWrapper::NEEDS_MANUAL_CALIBRATION);
     while(state != ArgyllMeterWrapper::READY)
@@ -214,7 +214,7 @@ CColor CArgyllSensor::MeasureColor(COLORREF aRGBValue)
 
 void CArgyllSensor::Calibrate()
 {
-    if(!m_meter) Init(FALSE);
+    if(!m_meter) if(!Init(FALSE)) return;
     if(!m_meter->doesMeterSupportCalibration()) return;
 
     ArgyllMeterWrapper::eMeterState state(ArgyllMeterWrapper::NEEDS_MANUAL_CALIBRATION);
@@ -237,7 +237,7 @@ void CArgyllSensor::Calibrate()
 
 BOOL CArgyllSensor::SensorNeedCalibration () 
 {
-    if(!m_meter) Init(FALSE);
+    if(!m_meter) if(!Init(FALSE)) return FALSE;
 
     return m_meter->doesMeterSupportCalibration();
 }
