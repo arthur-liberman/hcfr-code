@@ -63,3 +63,7 @@ main( int argc, char* argv[] )
   return result.wasSuccessful() ? 0 : 1;
 }
 
+// no logging in the unit tests for now
+void ArgyllLogMessage(const char* messageType, char *fmt, va_list& args)
+{
+}

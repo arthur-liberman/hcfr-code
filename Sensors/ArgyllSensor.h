@@ -41,12 +41,12 @@ public:
 
 protected:
     CArgyllSensorPropPage m_ArgyllSensorPropertiesPage;
+    static bool m_debugMode;
 
 public:
     UINT    m_DisplayType;
     UINT    m_ReadingType;
     UINT    m_PortNumber;
-    BOOL    m_DebugMode;
     BOOL    m_HiRes;
 private:
     ArgyllMeterWrapper* m_meter;
@@ -76,6 +76,7 @@ public:
     virtual BOOL HasSpectrumCapabilities ( int * pNbBands, int * pMinWaveLength, int * pMaxWaveLength, int * pBandWidth );
 
     virtual void GetUniqueIdentifier( CString & strId );
+    static bool isInDebugMode() {return m_debugMode;}
 };
 
 #endif // !defined(AFX_ARGYLLSENSOR_H__1493C213_6A02_44C5_8EB7_55B469092E14__INCLUDED_)

@@ -34,7 +34,7 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
-
+bool CArgyllSensor::m_debugMode = false;
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -45,13 +45,12 @@ CArgyllSensor::CArgyllSensor() :
     m_DisplayType(0),
     m_ReadingType(0),
     m_PortNumber(1),
-    m_DebugMode(FALSE),
     m_meter(0)
 {
     m_DisplayType = GetConfig()->GetProfileInt("Argyll", "DisplayType", 1);
     m_ReadingType = GetConfig()->GetProfileInt("Argyll", "ReadingType", 0);
     m_PortNumber = GetConfig()->GetProfileInt("Argyll", "PortNumber", 1);
-    m_DebugMode = GetConfig()->GetProfileInt("Argyll", "DebugMode", 0);
+    m_debugMode = !!GetConfig()->GetProfileInt("Argyll", "DebugMode", 0);
     m_HiRes = GetConfig()->GetProfileInt("Argyll", "HiRes", 1);
 
     m_ArgyllSensorPropertiesPage.m_pSensor = this;
@@ -75,7 +74,6 @@ void CArgyllSensor::Copy(CSensor * p)
     m_DisplayType = ((CArgyllSensor*)p)->m_DisplayType;
     m_ReadingType = ((CArgyllSensor*)p)->m_ReadingType;
     m_PortNumber = ((CArgyllSensor*)p)->m_PortNumber;
-    m_DebugMode = ((CArgyllSensor*)p)->m_DebugMode;
     m_HiRes = ((CArgyllSensor*)p)->m_HiRes;
 }
 
@@ -90,7 +88,7 @@ void CArgyllSensor::Serialize(CArchive& archive)
         archive << m_DisplayType;
         archive << m_ReadingType;
         archive << m_PortNumber;
-        archive << m_DebugMode;
+        archive << m_debugMode;
         archive << m_HiRes;
     }
     else
@@ -102,7 +100,7 @@ void CArgyllSensor::Serialize(CArchive& archive)
         archive >> m_DisplayType;
         archive >> m_ReadingType;
         archive >> m_PortNumber;
-        archive >> m_DebugMode;
+        archive >> m_debugMode;
         archive >> m_HiRes;
     }
 }
@@ -114,7 +112,7 @@ void CArgyllSensor::SetPropertiesSheetValues()
     m_ArgyllSensorPropertiesPage.m_DisplayType=m_DisplayType;
     m_ArgyllSensorPropertiesPage.m_ReadingType=m_ReadingType;
     m_ArgyllSensorPropertiesPage.m_PortNumber=m_PortNumber - 1;
-    m_ArgyllSensorPropertiesPage.m_DebugMode=m_DebugMode;
+    m_ArgyllSensorPropertiesPage.m_DebugMode=m_debugMode;
     m_ArgyllSensorPropertiesPage.m_DebugMode=m_HiRes;
 }
 
@@ -124,6 +122,7 @@ void CArgyllSensor::GetPropertiesSheetValues()
 
     if(m_HiRes != m_ArgyllSensorPropertiesPage.m_HiRes)
     {
+        SetModifiedFlag(TRUE);
         m_HiRes = m_ArgyllSensorPropertiesPage.m_HiRes;
         GetConfig () -> WriteProfileInt ( "Argyll", "HiRes", m_HiRes );
         if(m_meter)
@@ -132,22 +131,25 @@ void CArgyllSensor::GetPropertiesSheetValues()
         }
     }
 
+    if(m_debugMode != !!m_ArgyllSensorPropertiesPage.m_DebugMode) 
+    {
+        SetModifiedFlag(TRUE);
+        m_debugMode = m_ArgyllSensorPropertiesPage.m_DebugMode;
+        GetConfig () -> WriteProfileInt ( "Argyll", "DebugMode", m_debugMode?1:0);
+    }
+
     if( m_DisplayType != m_ArgyllSensorPropertiesPage.m_DisplayType ||
         m_ReadingType != m_ArgyllSensorPropertiesPage.m_ReadingType ||
-        m_PortNumber != (m_ArgyllSensorPropertiesPage.m_PortNumber + 1) ||
-        m_DebugMode != m_ArgyllSensorPropertiesPage.m_DebugMode) 
+        m_PortNumber != (m_ArgyllSensorPropertiesPage.m_PortNumber + 1)) 
     {
         SetModifiedFlag(TRUE);
         m_DisplayType=m_ArgyllSensorPropertiesPage.m_DisplayType;
         m_ReadingType=m_ArgyllSensorPropertiesPage.m_ReadingType;
         m_PortNumber=m_ArgyllSensorPropertiesPage.m_PortNumber + 1;
-        m_DebugMode=m_ArgyllSensorPropertiesPage.m_DebugMode;
-        m_HiRes=m_ArgyllSensorPropertiesPage.m_DebugMode;
 
         GetConfig () -> WriteProfileInt ( "Argyll", "DisplayType", m_DisplayType );
         GetConfig () -> WriteProfileInt ( "Argyll", "ReadingType", m_ReadingType );
         GetConfig () -> WriteProfileInt ( "Argyll", "PortNumber", m_PortNumber );
-        GetConfig () -> WriteProfileInt ( "Argyll", "DebugMode", m_DebugMode );
 
         if(m_meter)
         {
@@ -256,4 +258,21 @@ BOOL CArgyllSensor::HasSpectrumCapabilities ( int * pNbBands, int * pMinWaveLeng
 void CArgyllSensor::GetUniqueIdentifier( CString & strId )
 {
     strId = "Argyll Meter";
+}
+
+
+// very basic logging and error handling to override
+// the standard argyll verion
+// should use whatever log library we end up with
+void ArgyllLogMessage(const char* messageType, char *fmt, va_list& args)
+{
+    if(CArgyllSensor::isInDebugMode())
+    {
+        FILE *logFile = fopen( GetConfig () -> m_logFileName, "a" );
+        fprintf(logFile,"Argyll %s - ", messageType);
+        vfprintf(logFile, fmt, args);
+        va_end(args);
+        fprintf(logFile,"\n");
+        fclose(logFile);
+    }
 }

@@ -144,23 +144,11 @@ namespace
         }
     }
 
-    // very basic logging and error handling to override
-    // the standard argyll verion
-    // should use whatever log library we end up with
-    void logMessage(const char* messageType, char *fmt, va_list& args)
-    {
-        fprintf(stdout,"Argyll %s - ", messageType);
-        vfprintf(stdout, fmt, args);
-        va_end(args);
-        fprintf(stdout,"\n");
-        fflush(stdout);
-    }
-
     void warning_imp(char *fmt, ...) 
     {
         va_list args;
         va_start(args, fmt);
-        logMessage("Warning", fmt, args);
+        ArgyllLogMessage("Warning", fmt, args);
         va_end(args);
     }
 
@@ -168,7 +156,7 @@ namespace
     {
         va_list args;
         va_start(args, fmt);
-        logMessage("Trace", fmt, args);
+        ArgyllLogMessage("Trace", fmt, args);
         va_end(args);
     }
 
@@ -180,7 +168,7 @@ namespace
     {
         va_list args;
         va_start(args, fmt);
-        logMessage("Error", fmt, args);
+        ArgyllLogMessage("Error", fmt, args);
         va_end(args);
         throw std::logic_error("Argyll Error");
     }

@@ -26,6 +26,7 @@
 
 #include "libHCFR/Color.h"
 #include <string>
+#include <vadefs.h>
 
 struct _inst;
 
@@ -149,5 +150,8 @@ private:
     int m_nextCalibration;
     char m_calibrationMessage[200];
 };
+
+extern void ArgyllLogMessage(const char* messageType, char *fmt, va_list& args);
+
 
 #endif
