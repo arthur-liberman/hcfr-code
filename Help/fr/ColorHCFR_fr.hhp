@@ -479,7 +479,7 @@ default=,"ColorHCFR_fr.hhc",,,,,,,,0x420,,0x200e,,0x0,0x0,,0,0,0,
 [ALIAS]
 HID_WELCOME = ColorHCFR_fr.chm::/Bienvenue.htm
 HID_INSTALL = ColorHCFR_fr.chm::/Installation\installation_colorimetre.htm
-HID_SUPPORT = ColorHCFR_fr.chm::/Menu\Mesures\Menu_capteur\Configure.htm
+HID_SUPPORT = ColorHCFR_fr.chm::/Support_et_aides\support_technique.htm
 HID_FORUM = ColorHCFR_fr.chm::/Support_et_aides\colorhcfr_forum.htm
 HID_MEASURES = ColorHCFR_fr.chm::/Fenetre_document\Onglet_mesures\Onglet_mesures.htm
 HID_LUMINANCE = ColorHCFR_fr.chm::/Fenetre_document\Graphe_de_luminance\Graphe_luminance.htm
@@ -515,6 +515,7 @@ HID_SENSOR_MTCS = ColorHCFR_fr.chm::/Menu\Mesures\Menu_capteur\Configure.htm
 HID_PREF_ADVANCED = ColorHCFR_fr.chm::/Menu\Avance\Onglets_preferences\Avance.htm
 HID_PREF_TOOLBAR = ColorHCFR_fr.chm::/Menu\Avance\Onglets_preferences\Toolbars.htm
 HID_SENSOR_SPYDER3 = ColorHCFR_fr.chm::/Menu\Mesures\Menu_capteur\Configure.htm#Cas_du_Spyder_3
+HID_SENSOR_ARGYLL = ColorHCFR_en.chm::/Menu\Mesures\Menu_capteur\Configure.htm#Argyll
 HID_CTRL_LUMINANCE = ColorHCFR_fr.chm::/Menu\Affichage\New_Topic.htm
 HID_CTRL_RGBLEVELS = ColorHCFR_fr.chm::/Fenetre_document\Onglet_mesures\Onglet_mesures.htm#Couleur_selectionnee
 HID_CTRL_TARGET = ColorHCFR_fr.chm::/Fenetre_document\Onglet_mesures\Onglet_mesures.htm#Cible
