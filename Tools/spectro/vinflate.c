@@ -9,6 +9,10 @@
    The modifications include reading data 16 bits at a time, big endian,
    aligning to 16 bits before a stored block, and backing out 16
    bits at a time at the end of a block.
+
+   (Note that this failes on the latest Spyder2 setup.exe, while
+    the vinflate inside InstExpl.exe works. See
+    http://www.totalcmd.net/plugring/InstallExplorer.html)
  
 */
 
@@ -96,7 +100,9 @@ int flush_output(unsigned int w) {
 		return 0;
 	if (vwrite_output(slide, wp))
 		return 1;
+    DBG(("Flushed %d byte sof ouput\n",wp))
     wp = 0;
+
 	return 0;
 }
 

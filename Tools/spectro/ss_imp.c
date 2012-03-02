@@ -45,8 +45,11 @@
 #ifndef SALONEINSTLIB
 #include "copyright.h"
 #include "aconfig.h"
-#endif /* !SALONEINSTLIB */
 #include "numlib.h"
+#else /* SALONEINSTLIB */
+#include "sa_config.h"
+#include "numsup.h"
+#endif /* SALONEINSTLIB */
 #include "xspect.h"
 #include "insttypes.h"
 #include "icoms.h"
@@ -335,8 +338,8 @@ void ss_sub_string(ss *p, char *t, int len) {
 	if (chrspace(p, 2 * len))
 		return;
 	for (i = 0; i < len; i++) {
-		t[i] = (h2b(p, p->rbuf[2 * i + 0]) << 4)
-		     | (h2b(p, p->rbuf[2 * i + 1]) << 0);
+		t[i] = (char)((h2b(p, p->rbuf[2 * i + 0]) << 4)
+		            | (h2b(p, p->rbuf[2 * i + 1]) << 0));
 	}
 	t[i] = '\000';
 	p->rbuf += 2 * len;
@@ -998,7 +1001,7 @@ ss_mmt mm	/* Measurement Mode (Meas/Cal etc.) */
 	ss_add_soreq(p, ss_ExecRefMeasurement);
 	ss_add_1(p, 0x09);
 	ss_add_1(p, mm);
-	ss_command(p, DF_TMO);
+	ss_command(p, 2.0 * DF_TMO);
 	ss_sub_soans(p, ss_ExecError);
 	ss_incorp_err(p, ss_sub_1(p));
 	chended(p);
@@ -1040,7 +1043,7 @@ ss *p
 	}
 #endif
 	ss_add_soreq(p, ss_ExecMeasurement);
-	ss_command(p, DF_TMO);
+	ss_command(p, 2.0 * DF_TMO);
 	ss_sub_soans(p, ss_ExecError);
 	ss_incorp_err(p, ss_sub_1(p));
 	chended(p);

@@ -316,6 +316,9 @@ struct _icoms {
 		char **pnames				/* List of process names to try and kill before opening */
 	);
 
+	/* Close the port */
+	void (*close_port)(struct _icoms *p);
+
 	/* Reset user interrupt handling to default (Esc, ^C, q or 'Q' = Abort) */
 	void (*reset_uih)(struct _icoms *p);
 

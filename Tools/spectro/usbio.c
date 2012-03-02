@@ -45,9 +45,6 @@
 # include "usb.h"
 #endif
 
-#ifdef NT
-#define strdup _strdup
-#endif
 #ifdef ENABLE_USB
 
 /* To simplify error messages: */
@@ -75,26 +72,40 @@ struct usb_device *dev
 	if (p->debug) fprintf(stderr,"usb_check_and_add() called with VID 0x%x, PID 0x%x\n",descriptor.idVendor, descriptor.idProduct);
 
 #ifdef USE_LIBUSB1
-#ifdef NT
+#if defined(NT) || defined(__APPLE__)
 	/* Ignore libusb1 HID driver capability */
-	if (descriptor.bDeviceClass == LIBUSB_CLASS_HID)
-		return 0;
 	{
-		struct libusb_config_descriptor *config;
+		struct libusb_config_descriptor *config = NULL;
 
-		if (libusb_get_config_descriptor(dev, 0, &config) != LIBUSB_SUCCESS) {
+		if (descriptor.bDeviceClass != LIBUSB_CLASS_HID
+		  && libusb_get_config_descriptor(dev, 0, &config) != LIBUSB_SUCCESS) {
 			if (p->debug) fprintf(stderr,"Get config desc. 0 failed\n");
 			return 1;
 		}
 
-		if (config->bNumInterfaces > 0
-		 && config->interface[0]. num_altsetting > 0
-		 && config->interface[0].altsetting[0].bInterfaceClass == LIBUSB_CLASS_HID) {
-			if (p->debug) fprintf(stderr,"Is a libusb HID device\n");
-			libusb_free_config_descriptor(config);
-			return 0;
+		if (descriptor.bDeviceClass == LIBUSB_CLASS_HID
+		 || (config->bNumInterfaces > 0
+		  && config->interface[0]. num_altsetting > 0
+		  && config->interface[0].altsetting[0].bInterfaceClass == LIBUSB_CLASS_HID)) {
+			int i;
+			/* See if this devices is already in the list via the HID interface */
+			/* (This may not be 100% correct in the face of multiple instances
+			   of the same device, if Windows allows different drivers for different
+			   instances of the same device type.) */
+			for (i = 0; i < p->npaths; i++) {
+				if (p->paths[i]->vid == descriptor.idVendor
+				 && p->paths[i]->pid == descriptor.idProduct)
+					break;		/* Yes */
+			}
+			if (i < p->npaths) {
+				if (p->debug) fprintf(stderr,"Is an HID device and already added\n");
+				if (config != NULL)
+					libusb_free_config_descriptor(config);
+				return 0;
+			}
 		}
-		libusb_free_config_descriptor(config);
+		if (config != NULL)
+			libusb_free_config_descriptor(config);
 	}
 #endif
 #endif
@@ -240,7 +251,7 @@ instType usb_is_usb_portno(
 		p->get_paths(p);
 
 	if (port <= 0 || port > p->npaths)
-		error("icoms - usb_is_usb_portno: port number out of range!");
+		error("icoms - usb_is_usb_portno: port number %d out of range %d - %d",port,1,p->npaths);
 
 #ifdef ENABLE_USB
 	if (p->paths[port-1]->dev != NULL)
@@ -619,9 +630,6 @@ void usb_close_port(icoms *p) {
 #endif /* ENABLE_USB */
 }
 
-/* Declaration of needed function in ntio.c or unixio.c */
-void icoms_close_port(icoms *p);
-
 /* Open a USB port for all our uses. */
 static void usb_open_port(
 icoms *p,
@@ -638,7 +646,7 @@ char **pnames		/* List of process names to try and kill before opening */
 
 	if (port >= 1) {
 		if (p->is_open && port != p->port) {	/* If port number changes */
-			icoms_close_port(p);
+			p->close_port(p);
 		}
 	}
 
@@ -1455,7 +1463,7 @@ int icoms_usb_cancel_io(
 	icoms *p,
 	void *hcancel
 ) {
-	int rv;
+	int rv = 0;
 #ifdef USE_LIBUSB1
 	if (hcancel != NULL)
 		rv = libusb_cancel_transfer((struct libusb_transfer *)hcancel);
@@ -1584,7 +1592,7 @@ char **pnames			/* List of process names to try and kill before opening */
 	if (p->debug) fprintf(stderr,"icoms: About to set usb port characteristics\n");
 
 	if (p->is_open) 
-		icoms_close_port(p);
+		p->close_port(p);
 
 	if (p->is_usb_portno(p, port) != instUnknown) {
 

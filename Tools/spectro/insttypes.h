@@ -35,15 +35,18 @@ typedef enum {
     instSpectroScan, 			/* GretagMacbeth SpectroScan */
     instSpectroScanT, 			/* GretagMacbeth SpectroScanT */
 	instSpectrocam,				/* Avantes Spectrocam */
-	instI1Display,				/* GretagMacbeth i1 Display */
+	instI1Disp1,				/* GretagMacbeth i1 Display 1 */
+	instI1Disp2,				/* GretagMacbeth i1 Display 2 */
+	instI1Disp3,				/* Xrite i1 DisplayPro, ColorMunki Display */
 	instI1Monitor,				/* GretagMacbeth i1 Monitor */
 	instI1Pro,					/* GretagMacbeth i1 Pro */
-	instI1Disp3,				/* Xrite i1 DisplayPro, ColorMunki Display */
 	instColorMunki,				/* X-Rite ColorMunki */
 	instHCFR,					/* Colorimtre HCFR */
 	instSpyder2,				/* Datacolor/ColorVision Spyder2 */
 	instSpyder3,				/* Datacolor Spyder3 */
+	instSpyder4,				/* Datacolor Spyder4 */
 	instHuey,					/* GretagMacbeth Huey */
+	instColorHug,				/* Hughski ColorHug */
 
 } instType;
 

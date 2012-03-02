@@ -103,7 +103,7 @@ struct _dtp22 {
 	}; typedef struct _dtp22 dtp22;
 
 /* Constructor */
-extern dtp22 *new_dtp22(icoms *icom, int debug, int verb);
+extern dtp22 *new_dtp22(icoms *icom, instType itype, int debug, int verb);
 
 
 #define DTP22_H

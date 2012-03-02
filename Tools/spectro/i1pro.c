@@ -53,8 +53,10 @@
 #include "copyright.h"
 #include "aconfig.h"
 #include "numlib.h"
-#endif /* !SALONEINSTLIB */
-#include "numlib.h"
+#else /* SALONEINSTLIB */
+#include "sa_config.h"
+#include "numsup.h"
+#endif /* SALONEINSTLIB */
 #include "xspect.h"
 #include "insttypes.h"
 #include "icoms.h"
@@ -84,6 +86,7 @@ static inst_code i1pro_interp_code(i1pro *p, i1pro_code ec);
 static inst_code
 i1pro_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) {
 	i1pro *p = (i1pro *) pp;
+	int rsize;
 	icomuflags usbflags = icomuf_none;
 #ifdef __APPLE__
 	/* If the X-Rite software has been installed, then there may */
@@ -123,21 +126,8 @@ i1pro_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) 
 	return inst_ok;
 }
 
-/* Initialise the I1PRO */
-/* return non-zero on an error, with dtp error code */
 static inst_code
-i1pro_init_inst(inst *pp) {
-	i1pro *p = (i1pro *)pp;
-	i1pro_code ev = I1PRO_OK;
-
-	if (p->debug) fprintf(stderr,"i1pro: About to init instrument\n");
-
-	if (p->gotcoms == 0)
-		return i1pro_interp_code(p, I1PRO_INT_NO_COMS);	/* Must establish coms before calling init */
-	if ((ev = i1pro_imp_init(p)) != I1PRO_OK) {
-		if (p->debug) fprintf(stderr,"i1pro_imp_init() failed\n");
-		return i1pro_interp_code(p, ev);
-	}
+i1pro_determine_capabilities(i1pro *p) {
 
 	/* Set the base Monitor/Pro capabilities mask */
 	p->cap =  inst_emis_spot
@@ -169,20 +159,49 @@ i1pro_init_inst(inst *pp) {
 		        ;
 	}
 
-	if (i1pro_imp_highres(p))
+	if (i1pro_imp_highres(p))		/* This is static */
 		p->cap |= inst_highres;
 
-	if (i1pro_imp_ambient(p)) {
+	if (i1pro_imp_ambient(p)) {		/* This depends on the instrument */
 		p->cap |= inst_emis_ambient
 		       |  inst_emis_ambient_flash
 		       ;
 	}
+	return inst_ok;
+}
+
+/* Initialise the I1PRO */
+/* return non-zero on an error, with dtp error code */
+static inst_code
+i1pro_init_inst(inst *pp) {
+	i1pro *p = (i1pro *)pp;
+	i1pro_code ev = I1PRO_OK;
+
+	if (p->debug) fprintf(stderr,"i1pro: About to init instrument\n");
+
+	if (p->gotcoms == 0)
+		return i1pro_interp_code(p, I1PRO_INT_NO_COMS);	/* Must establish coms before calling init */
+	if ((ev = i1pro_imp_init(p)) != I1PRO_OK) {
+		if (p->debug) fprintf(stderr,"i1pro_imp_init() failed\n");
+		return i1pro_interp_code(p, ev);
+	}
+
+	p->inited = 1;
+
+	/* Now it's initied, we can get true capabilities */
+	i1pro_determine_capabilities(p);
 
 	return i1pro_interp_code(p, ev);
 }
 
 static char *i1pro_get_serial_no(inst *pp) {
 	i1pro *p = (i1pro *)pp;
+	
+	if (!pp->gotcoms)
+		return "";
+	if (!pp->inited)
+		return "";
+
 	return i1pro_imp_get_serial_no(p);
 }
 
@@ -202,6 +221,11 @@ ipatch *vals) {		/* Pointer to array of instrument patch values */
 	i1pro *p = (i1pro *)pp;
 	i1pro_code rv;
 
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
 	rv = i1pro_imp_measure(p, vals, npatch);
 
 	return i1pro_interp_code(p, rv);
@@ -217,6 +241,11 @@ ipatch *val) {		/* Pointer to instrument patch value */
 	i1pro *p = (i1pro *)pp;
 	i1pro_code rv;
 
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
 	rv = i1pro_imp_measure(p, val, 1);
 
 	return i1pro_interp_code(p, rv);
@@ -227,6 +256,12 @@ ipatch *val) {		/* Pointer to instrument patch value */
 /* and the first type of calibration needed. */
 inst_cal_type i1pro_needs_calibration(inst *pp) {
 	i1pro *p = (i1pro *)pp;
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
 	return i1pro_imp_needs_calibration(p);
 }
 
@@ -245,6 +280,11 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 ) {
 	i1pro *p = (i1pro *)pp;
 	i1pro_code rv;
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
 
 	rv = i1pro_imp_calibrate(p, calt, calc, id);
 	return i1pro_interp_code(p, rv);
@@ -522,6 +562,11 @@ inst_code i1pro_set_mode(inst *pp, inst_mode m) {
 	inst_mode mm;			/* Request measurement mode */
 	i1p_mode mmode = -1;	/* Instrument measurement mode */
 
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
 	/* The measurement mode portion of the mode */
 	mm = m & inst_mode_measurement_mask;
 
@@ -573,6 +618,11 @@ inst_status_type m,	/* Requested status type */
 	i1pro *p = (i1pro *)pp;
 	i1proimp *imp = (i1proimp *)p->m;
 
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
 	/* Return the filter */
 	if (m == inst_stat_get_filter) {
 		inst_opt_filter *filt;
@@ -602,11 +652,10 @@ i1pro_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 {
 	i1pro *p = (i1pro *)pp;
 
-	/* Ignore these modes - not applicable, but be nice. */
-	if (m == inst_opt_disp_crt
-	 || m == inst_opt_disp_lcd) {
-		return inst_ok;
-	}
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
 
 	if (m == inst_opt_noautocalib) {
 		i1pro_set_noautocalib(p, 1);
@@ -662,7 +711,7 @@ i1pro_del(inst *pp) {
 }
 
 /* Constructor */
-extern i1pro *new_i1pro(icoms *icom, int debug, int verb)
+extern i1pro *new_i1pro(icoms *icom, instType itype, int debug, int verb)
 {
 	i1pro *p;
 	if ((p = (i1pro *)calloc(sizeof(i1pro),1)) == NULL)
@@ -673,6 +722,7 @@ extern i1pro *new_i1pro(icoms *icom, int debug, int verb)
 	else
 		p->icom = icom;
 
+	i1pro_determine_capabilities(p);
 	p->debug = debug;
 	p->verb = verb;
 
@@ -684,9 +734,9 @@ extern i1pro *new_i1pro(icoms *icom, int debug, int verb)
 	/* Inst methods */
 	p->init_coms         = i1pro_init_coms;
 	p->init_inst         = i1pro_init_inst;
-	p->get_serial_no     = i1pro_get_serial_no;
 	p->capabilities      = i1pro_capabilities;
 	p->capabilities2     = i1pro_capabilities2;
+	p->get_serial_no     = i1pro_get_serial_no;
 	p->set_mode          = i1pro_set_mode;
 	p->get_status        = i1pro_get_status;
 	p->set_opt_mode      = i1pro_set_opt_mode;
@@ -697,7 +747,7 @@ extern i1pro *new_i1pro(icoms *icom, int debug, int verb)
 	p->interp_error      = i1pro_interp_error;
 	p->del               = i1pro_del;
 
-	p->itype = instUnknown;		/* Until initalisation */
+	p->itype = itype;
 
 	return p;
 }

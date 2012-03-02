@@ -50,7 +50,8 @@ public:
         SPECTROSCAN,
         SPECTROSCANT,
         SPECTROCAM,
-        I1DISPLAY,
+        I1DISP1,
+        I1DISP2,
         I1MONITOR,
         I1PRO,
         I1DISP3,
@@ -58,7 +59,9 @@ public:
         HCFR,
         SPYDER2,
         SPYDER3,
+        SPYDER4,
         HUEY,
+        COLORHUG,
         // this isn't really a meter, it intended to be used in
         // loops e.g for populating combo boxes
         LAST_METER

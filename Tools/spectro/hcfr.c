@@ -90,9 +90,10 @@ hcfr_command(
 	int bsize,		/* Out buffer size */
 	double to		/* Timeout in seconds */
 ) {
-	int se;
+	int rv, se;
 
 	if ((se = p->icom->write_read(p->icom, in, out, bsize, '\n', 1, to)) != 0) {
+		int ec;
 #ifdef DEBUG
 		printf("hcfr fcommand: serial i/o failure on write_read '%s'\n",icoms_fix(in));
 #endif
@@ -110,6 +111,7 @@ inst_code
 hcfr_break(
 	hcfr *p
 ) {
+	int rwbytes;			/* Data bytes read or written */
 	int se, rv = inst_ok;
 	int isdeb = 0;
 
@@ -138,6 +140,7 @@ hcfr_flush(
 ) {
 	icoms *c = p->icom;
 	char buf[MAX_MES_SIZE];
+	inst_code ev = inst_ok;
 
 	for (c->lerr = 0;;) {
 		int debug = c->debug; c->debug = 0;
@@ -379,8 +382,11 @@ hcfr_comp_matrix(
 static inst_code
 hcfr_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) {
 	hcfr *p = (hcfr *) pp;
-	icomuflags usbflags = icomuf_no_open_clear | icomuf_detach;
+	int rsize;
+	long etime;
+	int bi, i, rv;
 	inst_code ev = inst_ok;
+	icomuflags usbflags = icomuf_no_open_clear | icomuf_detach;
 
 #if defined(__APPLE__) && defined(__i386__)
 	/* Except on Intel OS X 10.4/5 for some reasone. */
@@ -419,6 +425,7 @@ hcfr_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) {
 static inst_code
 hcfr_init_inst(inst *pp) {
 	hcfr *p = (hcfr *)pp;
+	static char buf[MAX_MES_SIZE];
 	inst_code ev = inst_ok;
 
 	if (p->debug) fprintf(stderr,"hcfr: About to init instrument\n");
@@ -447,100 +454,6 @@ hcfr_init_inst(inst *pp) {
 	return ev;
 }
 
-/* For an xy instrument, release the paper */
-/* Return the inst error code */
-static inst_code
-hcfr_xy_sheet_release(
-struct _inst *p) {
-	/* This is not supported by this device */
-	return inst_unsupported;
-}
-
-/* For an xy instrument, hold the paper */
-/* Return the inst error code */
-static inst_code 
-hcfr_xy_sheet_hold(
-struct _inst *p) {
-	/* This is not supported by this device */
-	return inst_unsupported;
-}
-
-/* For an xy instrument, allow the user to locate a point */
-/* Return the inst error code */
-static inst_code
-hcfr_xy_locate_start(
-struct _inst *p) {
-	/* This is not supported by this device */
-	return inst_unsupported;
-}
-
-/* For an xy instrument, read back the location */
-/* Return the inst error code */
-static inst_code
-hcfr_xy_get_location(
-struct _inst *p,
-double *x, double *y) {
-	/* This is not supported by this device */
-	return inst_unsupported;
-}
-
-/* For an xy instrument, ends allowing the user to locate a point */
-/* Return the inst error code */
-static inst_code
-hcfr_xy_locate_end(
-struct _inst *p) {
-	/* This is not supported by this device */
-	return inst_unsupported;
-}
-
-/* For an xy instrument, try and clear the table after an abort */
-/* Return the inst error code */
-static inst_code
-hcfr_xy_clear(
-struct _inst *p) {
-	/* This is not supported by this device */
-	return inst_unsupported;
-}
-
-/* Read a sheet full of patches using xy mode */
-/* Return the inst error code */
-static inst_code
-hcfr_read_xy(
-inst *p,
-int pis,				/* Passes in strip (letters in sheet) */
-int sip,				/* Steps in pass (numbers in sheet) */
-int npatch,				/* Total patches in strip (skip in last pass) */
-char *pname,			/* Starting pass name (' A' to 'ZZ') */
-char *sname,			/* Starting step name (' 1' to '99') */
-double ox, double oy,	/* Origin of first patch */
-double ax, double ay,	/* pass increment */
-double aax, double aay,	/* pass offset for odd patches */
-double px, double py,	/* step/patch increment */
-ipatch *vals) { 		/* Pointer to array of values */
-	/* This is not supported by this device */
-	return inst_unsupported;
-}
-
-
-/* Read a set of strips */
-/* Return the dtp error code */
-static inst_code
-hcfr_read_strip(
-inst *pp,
-char *name,			/* Strip name (7 chars) */
-int npatch,			/* Number of patches in the pass */
-char *pname,		/* Pass name (3 chars) */
-int sguide,			/* Guide number */
-double pwid,		/* Patch length in mm (DTP41) */
-double gwid,		/* Gap length in mm (DTP41) */
-double twid,		/* Trailer length in mm (DTP41T) */
-ipatch *vals) {		/* Pointer to array of instrument patch values */
-//	hcfr *p = (hcfr *)pp;
-
-	/* This is not supported by HCFR */
-	return inst_unsupported;
-}
-
 /* Read a single sample */
 /* Return the dtp error code */
 static inst_code
@@ -552,6 +465,11 @@ ipatch *val) {		/* Pointer to instrument patch value */
 	inst_code ev;
 	double rgb[3];
 	int user_trig = 0;
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
 
 	if (p->trig == inst_opt_trig_keyb) {
 		int se;
@@ -602,46 +520,17 @@ double mtx[3][3]
 ) {
 	hcfr *p = (hcfr *)pp;
 
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
 	if (mtx == NULL)
 		icmSetUnity3x3(p->ccmat);
 	else
 		icmCpy3x3(p->ccmat, mtx);
 		
 	return inst_ok;
-}
-
-/* Determine if a calibration is needed. Returns inst_calt_none if not, */
-/* inst_calt_unknown if it is unknown, or inst_calt_XXX if needs calibration, */
-/* and the first type of calibration needed. */
-inst_cal_type hcfr_needs_calibration(inst *pp) {
-	return inst_unsupported;
-}
-
-/* Request an instrument calibration. */
-/* This is use if the user decides they want to do a calibration */
-/* in anticipation of a calibration (needs_calibration()) to avoid */
-/* requiring one during measurement, or in response to measuring */
-/* returning inst_needs_cal. Initially use an inst_cal_cond of inst_calc_none, */
-/* and then be prepared to setup the right conditions, or ask the */
-/* user to do so, each time the error inst_cal_setup is returned. */
-inst_code hcfr_calibrate(
-inst *pp,
-inst_cal_type calt,		/* Calibration type. inst_calt_all for all neeeded */
-inst_cal_cond *calc,	/* Current condition/desired condition */
-char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
-) {
-	return inst_unsupported;
-}
-
-/* Insert a compensation filter in the instrument readings */
-/* This is typically needed if an adapter is being used, that alters */
-/* the spectrum of the light reaching the instrument */
-/* To remove the filter, pass NULL for the filter filename */
-inst_code hcfr_comp_filter(
-struct _inst *p,
-char *filtername
-) {
-	return inst_unsupported;
 }
 
 /* Error codes interpretation */
@@ -688,6 +577,7 @@ hcfr_interp_error(inst *pp, int ec) {
 /* Convert a machine specific error code into an abstract dtp code */
 static inst_code 
 hcfr_interp_code(inst *pp, int ec) {
+	hcfr *p = (hcfr *)pp;
 
 	ec &= inst_imask;
 	switch (ec) {
@@ -746,20 +636,21 @@ hcfr_del(inst *pp) {
 
 /* Return the instrument capabilities */
 inst_capability hcfr_capabilities(inst *pp) {
+	hcfr *p = (hcfr *)pp;
 	inst_capability rv;
 
 	rv = inst_emis_spot
 	   | inst_emis_disp
 	   | inst_colorimeter
 	   | inst_ccmx
-	   | inst_emis_disp_crt
-	   | inst_emis_disp_lcd
+	   | inst_emis_disptype
 	   ;
 	return rv;
 }
 
 /* Return the instrument capabilities 2 */
 inst2_capability hcfr_capabilities2(inst *pp) {
+	hcfr *p = (hcfr *)pp;
 	inst2_capability rv;
 
 	rv = inst2_prog_trig
@@ -769,10 +660,62 @@ inst2_capability hcfr_capabilities2(inst *pp) {
 	return rv;
 }
 
+inst_disptypesel hcfr_disptypesel[3] = {
+	{
+		1,
+		"c",
+		"HCFR: CRT display",
+		1
+	},
+	{
+		2,
+		"l",
+		"HCFR: LCD display [Default]",
+		0
+	},
+	{
+		0,
+		"",
+		"",
+		-1
+	}
+};
+
+/* Get mode and option details */
+static inst_code hcfr_get_opt_details(
+inst *pp,
+inst_optdet_type m,	/* Requested option detail type */
+...) {				/* Status parameters */                             
+	hcfr *p = (hcfr *)pp;
+	inst_code rv = inst_ok;
+
+	if (m == inst_optdet_disptypesel) {
+		va_list args;
+		int *pnsels;
+		inst_disptypesel **psels;
+
+		va_start(args, m);
+		pnsels = va_arg(args, int *);
+		psels = va_arg(args, inst_disptypesel **);
+		va_end(args);
+
+		*pnsels = 2;
+		*psels = hcfr_disptypesel;
+		
+		return inst_ok;
+	}
+
+	return inst_unsupported;
+}
+
 /* Set device measurement mode */
-inst_code hcfr_set_mode(inst *pp, inst_mode m)
-{
+inst_code hcfr_set_mode(inst *pp, inst_mode m) {
 	inst_mode mm;		/* Measurement mode */
+
+	if (!pp->gotcoms)
+		return inst_no_coms;
+	if (!pp->inited)
+		return inst_no_init;
 
 	/* The measurement mode portion of the mode */
 	mm = m & inst_mode_measurement_mask;
@@ -795,20 +738,38 @@ inst_code hcfr_set_mode(inst *pp, inst_mode m)
  * We assume that the instrument has been initialised.
  */
 static inst_code
-hcfr_set_opt_mode(inst *pp, inst_opt_mode m, ...)
-{
+hcfr_set_opt_mode(inst *pp, inst_opt_mode m, ...) {
 	hcfr *p = (hcfr *)pp;
+	inst_code ev = inst_ok;
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
 
 #ifdef MEASURE_RAW
 	p->cal_mode = 2;
 	return inst_ok;
 #endif
-	if (m == inst_opt_disp_crt) {
-		p->cal_mode = 0;
-		return inst_ok;
-	} else if (m == inst_opt_disp_lcd) {
-		p->cal_mode = 1;
-		return inst_ok;
+
+	/* Set the display type */
+	if (m == inst_opt_disp_type) {
+		va_list args;
+		int ix;
+
+		va_start(args, m);
+		ix = va_arg(args, int);
+		va_end(args);
+
+		if (ix == 1) {
+			p->cal_mode = 0;
+			return inst_ok;
+		} else if (ix == 2) {
+			p->cal_mode = 1;
+			return inst_ok;
+		} else {
+			return inst_unsupported;
+		}
 	}
 
 	/* Record the trigger mode */
@@ -829,7 +790,7 @@ hcfr_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 }
 
 /* Constructor */
-extern hcfr *new_hcfr(icoms *icom, int debug, int verb)
+extern hcfr *new_hcfr(icoms *icom, instType itype, int debug, int verb)
 {
 	hcfr *p;
 	if ((p = (hcfr *)calloc(sizeof(hcfr),1)) == NULL)
@@ -840,6 +801,7 @@ extern hcfr *new_hcfr(icoms *icom, int debug, int verb)
 	else
 		p->icom = icom;
 
+	p->cal_mode = 1;		/* LCD is default */
 	p->debug = debug;
 	p->verb = verb;
 
@@ -849,27 +811,16 @@ extern hcfr *new_hcfr(icoms *icom, int debug, int verb)
 	p->init_inst        = hcfr_init_inst;
 	p->capabilities     = hcfr_capabilities;
 	p->capabilities2    = hcfr_capabilities2;
+	p->get_opt_details  = hcfr_get_opt_details;
 	p->set_mode         = hcfr_set_mode;
 	p->set_opt_mode     = hcfr_set_opt_mode;
-	p->xy_sheet_release = hcfr_xy_sheet_release;
-	p->xy_sheet_hold    = hcfr_xy_sheet_hold;
-	p->xy_locate_start  = hcfr_xy_locate_start;
-	p->xy_get_location  = hcfr_xy_get_location;
-	p->xy_locate_end    = hcfr_xy_locate_end;
-	p->xy_clear         = hcfr_xy_clear;
-	p->read_xy          = hcfr_read_xy;
-	p->read_strip       = hcfr_read_strip;
 	p->read_sample      = hcfr_read_sample;
-	p->needs_calibration = hcfr_needs_calibration;
-	p->calibrate        = hcfr_calibrate;
-	p->comp_filter    	= hcfr_comp_filter;
 	p->col_cor_mat      = hcfr_col_cor_mat;
 	p->interp_error     = hcfr_interp_error;
-	p->inst_interp_error = NULL;				/* virtual constructor will do this */
 	p->last_comerr      = hcfr_last_comerr;
 	p->del              = hcfr_del;
 
-	p->itype = instHCFR;
+	p->itype = itype;
 
 	return p;
 }

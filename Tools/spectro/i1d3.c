@@ -538,11 +538,13 @@ i1d3_unlock(
 		i1d3_dtype stype;						/* Sub type enumerator */
 	} codes[] = {
 		{ "i1Display3 ",
-			{ 0xd4, 0x9f, 0xd4, 0xa4, 0x59, 0x7e, 0x35, 0xcf }, i1d3_disppro, i1d3_calman },
+			{ 0x61, 0xcd, 0xd1, 0x1e, 0x9d, 0x9c, 0x16, 0x72 }, i1d3_disppro, i1d3_disppro },
 		{ "Colormunki Display ",
 			{ 0xf6, 0x22, 0x91, 0x9d, 0xe1, 0x8b, 0x1f, 0xda }, i1d3_munkdisp, i1d3_munkdisp },
 		{ "i1Display3 ",
-			{ 0x61, 0xcd, 0xd1, 0x1e, 0x9d, 0x9c, 0x16, 0x72 }, i1d3_disppro, i1d3_disppro },
+			{ 0xd4, 0x9f, 0xd4, 0xa4, 0x59, 0x7e, 0x35, 0xcf }, i1d3_disppro, i1d3_oem },
+		{ "i1Display3 ",
+			{ 0x87, 0x9f, 0x6b, 0x78, 0xee, 0xe9, 0x56, 0xa4 }, i1d3_disppro, i1d3_nec_ssp },
 		{ NULL } 
 	}; 
 	inst_code ev;
@@ -653,8 +655,8 @@ i1d3_read_internal_eeprom(
 
 		/* OEM driver retries several times after a 10msec sleep on failure. */
 		/* Can a failure actually happen though ? */
-		todev[1] = addr;
-		todev[2] = ll;
+		todev[1] = (unsigned char)addr;
+		todev[2] = (unsigned char)ll;
 	
 		p->icom->debug = 0;
 		if ((ev = i1d3_command(p, i1d3_readintee, todev, fromdev, 1.0)) != inst_ok) {
@@ -701,7 +703,7 @@ i1d3_read_external_eeprom(
 		/* OEM driver retries several times after a 10msec sleep on failure. */
 		/* Can a failure actually happen though ? */
 		short2bufBE(todev + 1, addr);
-		todev[3] = ll;
+		todev[3] = (unsigned char)ll;
 	
 		p->icom->debug = 0;
 		if ((ev = i1d3_command(p, i1d3_readextee, todev, fromdev, 1.0)) != inst_ok) {
@@ -777,7 +779,7 @@ i1d3_raw_measurement_2(
 	short2buf(todev + 3, edgec[1]);
 	short2buf(todev + 5, edgec[2]);
 
-	todev[7] = mask;	
+	todev[7] = (unsigned char)mask;	
 	todev[8] = 0;			/* Unknown parameter, always 0 */	
 	
 	if ((ev = i1d3_command(p, i1d3_measure2, todev, fromdev, 20.0)) != inst_ok)
@@ -838,10 +840,10 @@ i1d3_set_LEDs(
 	else if (count > 0x80)
 		count = 0x80;
 
-	todev[1] = mode;
-	todev[2] = ftime;
-	todev[3] = ntime;
-	todev[4] = count;
+	todev[1] = (unsigned char)mode;
+	todev[2] = (unsigned char)ftime;
+	todev[3] = (unsigned char)ntime;
+	todev[4] = (unsigned char)count;
 
 	if ((ev = i1d3_command(p, i1d3_setled, todev, fromdev, 1.0)) != inst_ok)
 		return ev;
@@ -1054,6 +1056,11 @@ i1d3_take_amb_measurement(
 	return inst_ok;
 }
 
+// ~~99
+//#define DEBUG
+//#undef DBG
+//#define DBG(xxx) printf xxx ;
+
 /* Take an display measurement and return the cooked reading */
 /* The cooked reading is the frequency of the L2V */
 static inst_code
@@ -1088,6 +1095,7 @@ i1d3_take_emis_measurement(
 	/* If we should take a frequency measurement first */
 	if (mode == i1d3_adaptive || mode == i1d3_frequency) {
 
+		/* Typically this is 200msec */
 		DBG(("Doing fixed period frequency measurement over %f secs\n",p->inttime));
 
 		/* Take a frequency measurement over a fixed period */
@@ -1110,84 +1118,124 @@ i1d3_take_emis_measurement(
 			mask = 0x0;
 
 			for (i = 0; i < 3; i++) {
-				/* Not measured or count is too small for desired precision */
+				/* Not measured or count is too small for desired precision. */
 				/* (We're being twice as critical as the OEM driver here) */
-				if (rmeas[i] < 200.0)		/* Could be 0.25% quantization error */
+				if (rmeas[i] < 200.0) {		/* Could be 0.25% quantization error */
+					DBG(("chan %d needs period reading\n",i));
 					mask |= 1 << i;			
-				else
+				} else {
+					DBG(("chan %d has sufficient frequeny count\n",i));
 					edgec[i] = 0;
+				}
 			}
 		}
 
-		if (mask != 0x0) {
-			int mask2 = 0x0;
+		if (mask != 0x0) {	/* Some measurement wasn't accurate enough, so use period */
+			int mask2 = mask;
 
-			DBG(("Doing initial period measurement mask 0x%x, edgec %s\n",mask,icmPiv(3,edgec)));
-			/* Take an initial period  measurement over 2 edges */
-			if ((ev = i1d3_raw_measurement_2(p, edgec, mask, rmeas)) != inst_ok)
-	 			return ev;
-
-			DBG(("Got %s raw %f %f %f Hz\n",icmPdv(3,rmeas),
-			     p->clkrate/rmeas[0], p->clkrate/rmeas[1], p->clkrate/rmeas[2]));
-
-			/* Do 2nd initial measurement if the count is small, in case */
-			/* we are measuring a CRT with a refresh rate which adds innacuracy, */
-			/* and could result in a unecessarily long re-reading. */
-			/* Don't do this for Munki Display, because of its slow measurements. */
-			if (p->dtype != i1d3_munkdisp) {
-				for (i = 0; i < 3; i++) {
-					if ((mask & (1 << i)) == 0)
-						continue;
-
-					if (rmeas[i] > 0.5) {
-						double nedgec;
-						int inedgec;
-
-						/* Compute number of edges needed for a clock count */
-						/* of 0.01 seconds */
-						nedgec = edgec[i] * 0.025 * p->clkrate/rmeas[i];
-
-						DBG(("chan %d target edges %f\n",i,nedgec));
-
-						/* Limit to a legal range */
-						if (nedgec > 65534.0)
-							nedgec = 65534.0;
-						else if (nedgec < 2.0)
-							nedgec = 2.0;
-
-						inedgec = (int)floor(nedgec) + 0.5;
-
-						/* Make sure it is an even edge count */
-						if (inedgec & 1)
-							inedgec++;
-
-						DBG(("chan %d set edgec to %d\n",i,inedgec));
-
-						/* Don't do 2nd initial measure if we have fewer number of edges */
-						if (inedgec > edgec[i]) {
-							mask2 |= (1 << i);
-							edgec[i] = inedgec;
-						}
-					}
+			/* See if we need to do some pre-measurement to compute how many */
+			/* edges to count. */
+			for (i = 0; i < 3; i++) {
+				if ((mask & (1 << i)) == 0)
+					continue;
+				
+				if (rmeas[i] < 10.0) {
+					DBG(("chan %d needs pre-measurement\n",i));
+					mask2 |= 1 << i;			
+				} else {
+					double freq;
+					mask2 &= ~(1 << i);			
+					/* Convert rmeas[i] from frequency to period equivalent */
+					/* for subsequent calculations */
+					freq = (rmeas[i] * 0.5 + 0.5)/p->inttime;
+					rmeas[i] = (0.5 * edgec[i] * p->clkrate)/freq; 
+					DBG(("chan %d has sufficient frequeny count to avoid pre-measure (rmeas_p %f)\n",i,rmeas[i]));
 				}
-				if (mask2 != 0x0) {
-					double rmeas2[3];
+			}
+			if (mask2 != 0x0) {
+				int mask3 = 0x0;
 
-					DBG(("Doing 2nd initial period measurement mask 0x%x, edgec %s\n",mask,icmPiv(3,edgec)));
-					/* Take a 2nd initial period  measurement */
-					if ((ev = i1d3_raw_measurement_2(p, edgec, mask2, rmeas2)) != inst_ok)
-			 			return ev;
+				DBG(("Doing 1st period pre-measurement mask 0x%x, edgec %s\n",mask2,icmPiv(3,edgec)));
+				/* Take an initial period  measurement over 2 edges */
+				if ((ev = i1d3_raw_measurement_2(p, edgec, mask, rmeas)) != inst_ok)
+		 			return ev;
 
-					DBG(("Got %s raw %f %f %f Hz\n",icmPdv(3,rmeas),
-					     0.5 * edgec[0] * p->clkrate/rmeas[0],
-					     0.5 * edgec[1] * p->clkrate/rmeas[1],
-					     0.5 * edgec[2] * p->clkrate/rmeas[2]));
+				DBG(("Got %s raw %f %f %f Hz\n",icmPdv(3,rmeas),
+				     p->clkrate/rmeas[0], p->clkrate/rmeas[1], p->clkrate/rmeas[2]));
 
-					/* Transfer updated counts from 2nd initial measurement */
+				/* Do 2nd initial measurement if the count is small, in case */
+				/* we are measuring a CRT with a refresh rate which adds innacuracy, */
+				/* and could result in a unecessarily long re-reading. */
+				/* Don't do this for Munki Display, because of its slow measurements. */
+				if (p->dtype != i1d3_munkdisp) {
 					for (i = 0; i < 3; i++) {
-						if ((mask2 & (1 << i)) == 0)
+						if ((mask & (1 << i)) == 0)
 							continue;
-						rmeas[i]  = rmeas2[i];
+
+						if (rmeas[i] > 0.5) {
+							double nedgec;
+							int inedgec;
+
+							/* Compute number of edges needed for a clock count */
+							/* of 0.050 seconds */
+							nedgec = edgec[i] * 0.050 * p->clkrate/rmeas[i];
+
+							DBG(("chan %d target edges %f\n",i,nedgec));
+
+							/* Limit to a legal range */
+							if (nedgec > 65534.0)
+								nedgec = 65534.0;
+							else if (nedgec < 2.0)
+								nedgec = 2.0;
+
+							/* Round it up to error on the long side */
+							inedgec = (int)ceil(nedgec);
+
+							/* Make sure it is an even edge count */
+							if (inedgec & 1)
+								inedgec++;
+
+							DBG(("chan %d set edgec to %d\n",i,inedgec));
+
+							/* Don't do 2nd initial measure if we have fewer number of edges */
+							if (inedgec > edgec[i]) {
+								mask3 |= (1 << i);
+								edgec[i] = inedgec;
+							}
+						}
+#ifdef DEBUG
+						else printf("chan %d had no reading, so skipping period measurement\n",i);
+#endif
+					}
+					if (mask3 != 0x0) {
+						double rmeas2[3];
+
+						DBG(("Doing 2nd initial period measurement mask 0x%x, edgec %s\n",mask,icmPiv(3,edgec)));
+						/* Take a 2nd initial period  measurement */
+						if ((ev = i1d3_raw_measurement_2(p, edgec, mask3, rmeas2)) != inst_ok)
+				 			return ev;
+
+						DBG(("Got %s raw %f %f %f Hz\n",icmPdv(3,rmeas2),
+						     0.5 * edgec[0] * p->clkrate/rmeas2[0],
+						     0.5 * edgec[1] * p->clkrate/rmeas2[1],
+						     0.5 * edgec[2] * p->clkrate/rmeas2[2]));
+
+						/* Transfer updated counts from 2nd initial measurement */
+						for (i = 0; i < 3; i++) {
+							if ((mask3 & (1 << i)) == 0)
+								continue;
+#ifdef DEBUG
+							{
+								double ratio;
+								if (rmeas2[i] > rmeas[i])
+									ratio = rmeas2[i] / rmeas[i];
+								else
+									ratio = rmeas[i] / rmeas2[i];
+								printf("Chan %d 1st to 2nd initial value ratio %f\n",i,ratio);
+							}
+#endif
+							rmeas[i]  = rmeas2[i];
+						}
 					}
 				}
 			}
@@ -1201,8 +1249,8 @@ i1d3_take_emis_measurement(
 					double nedgec;
 
 					/* Compute number of edges needed for a clock count */
-					/* of p->LCDtime seconds (ie. typical 2.4e6 clocks). */
-					nedgec = edgec[i] * p->LCDtime * p->clkrate/rmeas[i];
+					/* of p->inttime (0.2) seconds (ie. typical 2.4e6 clocks). */
+					nedgec = edgec[i] * p->inttime * p->clkrate/rmeas[i];
 
 					DBG(("chan %d target edges %f\n",i,nedgec));
 
@@ -1212,7 +1260,8 @@ i1d3_take_emis_measurement(
 					else if (nedgec < 2.0)
 						nedgec = 2.0;
 
-					edgec[i] = (int)floor(nedgec) + 0.5;
+					/* Round it up to error on the long side */
+					edgec[i] = (int)ceil(nedgec);
 
 					/* Make sure it is an even edge count */
 					if (edgec[i] & 1)
@@ -1273,6 +1322,11 @@ i1d3_take_emis_measurement(
 	
 	return inst_ok;
 }
+
+// ~~99
+//#undef DEBUG
+//#undef DBG
+//#define DBG(xxx) 
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
@@ -1360,7 +1414,9 @@ static inst_code i1d3_decode_extEE(
 	if (rchsum != chsum)
 		return i1d3_interp_code((inst *)p, I1D3_BAD_EX_CHSUM);
 		
-	// Read 3 x sensor spectral sensitivits
+	/* Read 3 x sensor spectral sensitivits */
+	/* These seem to be in Hz per W/nm @ 1nm spacing, */
+	/* so convert to Hz per mW/nm which is our default assumption. */
 	p->cal_date = buf2ord64(buf + 0x001E);
 
 	for (j = 0; j < 3; j++) {
@@ -1372,6 +1428,7 @@ static inst_code i1d3_decode_extEE(
 			unsigned int val;
 			val = buf2uint(buf + off);
 			p->sens[j].spec[i] = IEEE754todouble(val);
+			p->sens[j].spec[i] /= 1000;
 		}
 		p->ambi[j] = p->sens[j];	/* Structure copy */
 	}
@@ -1437,7 +1494,10 @@ static inst_code i1d3_decode_extEE(
 /* a means of calibrating the Ambient readings. */
 /* (This matches the OEM default calibrations.) */
 /* We could weight this towards minimizing white error */
-/* by synthesizing a white patch to add to the "sample" set. */
+/* by synthesizing a white patch to add to the "sample" set */
+/* (but this might make the result worse!), or we could */
+/* add or use spectral shape target (ie. analogous to */
+/* one sample per spectral wavelength, weighted by CMF's) */
 
 /* The more general calibration uses a set of spectral samples, */
 /* and a least squares matrix is computed to map the sensor RGB */
@@ -1446,6 +1506,8 @@ static inst_code i1d3_decode_extEE(
 /* allows weigting towards a distribution of actual spectral samples. */
 /* (The OEM driver supplies .edr files with this information. We use */
 /* .ccsp files) */
+/* To allow less than 3 samples, extra secondary constraints could be added, */
+/* such as CMF's as pseudo-samples or a spectral shape target. */
 
 static inst_code
 i1d3_comp_calmat(
@@ -1477,16 +1539,21 @@ i1d3_comp_calmat(
 		return i1d3_interp_code((inst *)p, I1D3_INT_CIECONVFAIL);
 	for (i = 0; i < nsamp; i++) {
 		conv->convert(conv, sampXYZ[i], &samples[i]); 
-		for (j = 0; j < 3; j++)			/* Scale to 683 lumens/watt */
-			sampXYZ[i][j] *= 683.0;
 	}
 	conv->del(conv);
 
 	/* Compute sensor RGB of the sample array */
-	if ((conv = new_xsp2cie(icxIT_none, NULL, icxOT_custom, RGBcmfs, icSigXYZData)) == NULL)
+	if ((conv = new_xsp2cie(icxIT_none, NULL, icxOT_custom, RGBcmfs, icSigXYZData)) == NULL) {
+		free_dmatrix(sampXYZ, 0, nsamp-1, 0, 3-1);
+		free_dmatrix(sampRGB, 0, nsamp-1, 0, 3-1);
 		return i1d3_interp_code((inst *)p, I1D3_INT_CIECONVFAIL);
-	for (i = 0; i < nsamp; i++)
+	}
+	for (i = 0; i < nsamp; i++) {
 		conv->convert(conv, sampRGB[i], &samples[i]); 
+		/* But we need to undo lumens scaling, because it doesn't apply to RGB sensor values */
+		for (j = 0; j < 3; j++)
+			sampRGB[i][j] /= 0.683002;
+	}
 	conv->del(conv);
 
 	/* If there are exactly 3 samples, we can directly compute the */
@@ -1494,8 +1561,11 @@ i1d3_comp_calmat(
 	if (nsamp == 3) {
 		copy_dmatrix_to3x3(XYZ, sampXYZ, 0, 2, 0, 2);
 		copy_dmatrix_to3x3(RGB, sampRGB, 0, 2, 0, 2);
-		if (icmInverse3x3(iRGB, RGB))
+		if (icmInverse3x3(iRGB, RGB)) {
+			free_dmatrix(sampXYZ, 0, nsamp-1, 0, 3-1);
+			free_dmatrix(sampRGB, 0, nsamp-1, 0, 3-1);
 			return i1d3_interp_code((inst *)p, I1D3_TOO_FEW_CALIBSAMP);
+		}
 
 		icmMul3x3_2(mat, iRGB, XYZ);
 		icmTranspose3x3(mat, mat);
@@ -1518,12 +1588,17 @@ i1d3_comp_calmat(
 					RGB[j][i] += sampRGB[k][i] * sampRGB[k][j];
 			}
 		}
-		if (icmInverse3x3(iRGB, RGB))
+		if (icmInverse3x3(iRGB, RGB)) {
+			free_dmatrix(sampXYZ, 0, nsamp-1, 0, 3-1);
+			free_dmatrix(sampRGB, 0, nsamp-1, 0, 3-1);
 			return i1d3_interp_code((inst *)p, I1D3_TOO_FEW_CALIBSAMP);
+		}
 
 		icmMul3x3_2(mat, iRGB, XYZ);
 		icmTranspose3x3(mat, mat);
 	}
+	free_dmatrix(sampXYZ, 0, nsamp-1, 0, 3-1);
+	free_dmatrix(sampRGB, 0, nsamp-1, 0, 3-1);
 
 	return inst_ok;
 }
@@ -1703,8 +1778,8 @@ i1d3_init_inst(inst *pp) {
 
 	/* Set known constants */
 	p->clkrate = 12e6;		/* 12 Mhz */
-	p->inttime = 0.2;		/* 0.2 second integration time default */
-	p->LCDtime = 0.2;		/* 0.2 second LCD target time default */
+	p->dinttime = 0.2;		/* 0.2 second integration time default */
+	p->inttime = p->dinttime;	/* Start in non-refresh mode */
 
 	/* Create the default calibrations */
 	if ((ev = i1d3_comp_calmat(p, p->emis_cal, icxOT_CIE_1931_2, NULL, p->sens, p->sens, 3)) != inst_ok) {
@@ -1733,8 +1808,6 @@ i1d3_init_inst(inst *pp) {
 		if (p->debug) fprintf(stderr,"i1d3: instrument inited OK\n");
 	}
 
-	p->itype = instI1Disp3;
-
 	/* Flash the LED, just cos we can! */
 	if ((ev = i1d3_set_LEDs(p, i1d3_flash, 0.2, 0.05, 2)) != inst_ok)
 		return ev;
@@ -1751,8 +1824,12 @@ char *name,			/* Strip name (7 chars) */
 ipatch *val) {		/* Pointer to instrument patch value */
 	i1d3 *p = (i1d3 *)pp;
 	int user_trig = 0;
-
 	int rv = inst_protocol_error;
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
 
 	if (p->trig == inst_opt_trig_keyb) {
 		int se;
@@ -1791,6 +1868,11 @@ double mtx[3][3]
 ) {
 	i1d3 *p = (i1d3 *)pp;
 
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
 	if (mtx == NULL)
 		icmSetUnity3x3(p->ccmat);
 	else
@@ -1812,6 +1894,11 @@ int no_sets
 ) {
 	i1d3 *p = (i1d3 *)pp;
 	inst_code ev = inst_ok;
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
 
 	if (obType == icxOT_default)
 		obType = icxOT_CIE_1931_2;
@@ -1863,7 +1950,12 @@ inst_cal_type calt,		/* Calibration type. inst_calt_all for all neeeded */
 inst_cal_cond *calc,	/* Current condition/desired condition */
 char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 ) {
+	i1d3 *p = (i1d3 *)pp;
 
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
 
 	id[0] = '\000';
 
@@ -2028,6 +2120,7 @@ inst_capability i1d3_capabilities(inst *pp) {
 	   | inst_emis_proj
 	   | inst_emis_ambient
 	   | inst_colorimeter
+	   | inst_emis_disptype
 	   | inst_ccmx
 	   | inst_ccss
 	     ;
@@ -2047,12 +2140,64 @@ inst2_capability i1d3_capabilities2(inst *pp) {
 	return rv;
 }
 
+/* This isn't used at the moment, */
+/* but most of the implementation is in place. */
+inst_disptypesel i1d3_disptypesel[3] = {
+	{
+		1,
+		"rc",
+		"i1d3: Refresh display",
+		1
+	},
+	{
+		2,
+		"nl",
+		"i1d3: Non-Refresh display [Default]",
+		0
+	},
+	{
+		0,
+		"",
+		"",
+		-1
+	}
+};
+
+/* Get mode and option details */
+static inst_code i1d3_get_opt_details(
+inst *pp,
+inst_optdet_type m,	/* Requested option detail type */
+...) {				/* Status parameters */                             
+
+	if (m == inst_optdet_disptypesel) {
+		va_list args;
+		int *pnsels;
+		inst_disptypesel **psels;
+
+		va_start(args, m);
+		pnsels = va_arg(args, int *);
+		psels = va_arg(args, inst_disptypesel **);
+		va_end(args);
+
+		*pnsels = 2;
+		*psels = i1d3_disptypesel;
+		
+		return inst_ok;
+	}
+
+	return inst_unsupported;
+}
+
 /* Set device measurement mode */
 inst_code i1d3_set_mode(inst *pp, inst_mode m)
 {
 	i1d3 *p = (i1d3 *)pp;
 	inst_mode mm;		/* Measurement mode */
 
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
 
 	/* The measurement mode portion of the mode */
 	mm = m & inst_mode_measurement_mask;
@@ -2115,6 +2260,33 @@ static inst_code
 i1d3_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 {
 	i1d3 *p = (i1d3 *)pp;
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
+	/* Set the display type */
+	if (m == inst_opt_disp_type) {
+		va_list args;
+		int ix;
+
+		va_start(args, m);
+		ix = va_arg(args, int);
+		va_end(args);
+
+		if (ix == 1) {
+			p->refmode = 1;					/* Refresh mode */
+			p->inttime = 2.0 * p->dinttime;	/* Double integration time */
+			return inst_ok;
+		} else if (ix == 2) {
+			p->refmode = 0;					/* Non-Refresh mode */
+			p->inttime = p->dinttime;		/* Normal integration time */
+			return inst_ok;
+		} else {
+			return inst_unsupported;
+		}
+	}
 
 	/* Record the trigger mode */
 	if (m == inst_opt_trig_prog
@@ -2233,7 +2405,7 @@ i1d3_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 }
 
 /* Constructor */
-extern i1d3 *new_i1d3(icoms *icom, int debug, int verb)
+extern i1d3 *new_i1d3(icoms *icom, instType itype, int debug, int verb)
 {
 	i1d3 *p;
 	if ((p = (i1d3 *)calloc(sizeof(i1d3),1)) == NULL)
@@ -2253,6 +2425,7 @@ extern i1d3 *new_i1d3(icoms *icom, int debug, int verb)
 	p->init_inst         = i1d3_init_inst;
 	p->capabilities      = i1d3_capabilities;
 	p->capabilities2     = i1d3_capabilities2;
+	p->get_opt_details   = i1d3_get_opt_details;
 	p->set_mode          = i1d3_set_mode;
 	p->set_opt_mode      = i1d3_set_opt_mode;
 	p->read_sample       = i1d3_read_sample;
@@ -2263,7 +2436,7 @@ extern i1d3 *new_i1d3(icoms *icom, int debug, int verb)
 	p->interp_error      = i1d3_interp_error;
 	p->del               = i1d3_del;
 
-	p->itype = instUnknown;		/* Until initalisation */
+	p->itype = itype;
 
 	return p;
 }

@@ -109,7 +109,7 @@ struct _dtp41 {
 	}; typedef struct _dtp41 dtp41;
 
 /* Constructor */
-extern dtp41 *new_dtp41(icoms *icom, int debug, int verb);
+extern dtp41 *new_dtp41(icoms *icom, instType itype, int debug, int verb);
 
 #define DTP41_H
 #endif /* DTP41_H */

@@ -61,7 +61,7 @@ struct _munki {
 }; typedef struct _munki munki;
 
 /* Constructor */
-extern munki *new_munki(icoms *icom, int debug, int verb);
+extern munki *new_munki(icoms *icom, instType itype, int debug, int verb);
 
 #ifdef __cplusplus
 	}

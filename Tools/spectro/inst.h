@@ -53,7 +53,7 @@ struct _ipatch {
 	char loc[ICOM_MAX_LOC_LEN];	/* patch location */
 
 	int XYZ_v;			/* XYZ valid */
-	double XYZ[3];		/* XYZ values, 0.0 .. 100.0 */
+	double XYZ[3];		/* XYZ values, 0.0 .. 100.0% */
 
 	int aXYZ_v;			/* Absolute XYZ valid */
 	double aXYZ[3];		/* XYZ values in cd/m^2 or Lux/PI */
@@ -63,8 +63,8 @@ struct _ipatch {
 	double Lab[3];		/* Lab value */
 
 	xspect sp;			/* Spectrum. sp.spec_n > 0 if valid */
-						/* Reflectance/Transmittance 0.0 .. 100.0, norm = 100.0 */
-						/* or mW/m^2, norm = 1.0  */
+						/* Reflectance/Transmittance 0.0 .. 100.0%, norm = 100.0 */
+						/* or mW/nm/m^2, norm = 1.0  */
 
 	double duration;	/* Apparent total duration in seconds (flash measurement) */
 
@@ -75,32 +75,34 @@ struct _ipatch {
 
 /* Abstract return codes in ms byte. */
 /* Machine dependant codes in ls byte. */
-/* Note :- update interp_code() in inst.c if anything here is changed. */
+/* Note :- update inst_interp_error() in inst.c if anything here is changed. */
 /* and also check all the instrument specific XXX_interp_code() routines too. */
 typedef enum {
 	inst_ok                = 0x0000,
 	inst_notify            = 0x0100,	/* A Notification */
 	inst_warning           = 0x0200,	/* A Warning */
-	inst_internal_error    = 0x0300,	/* Internal software error */
-	inst_coms_fail         = 0x0400,	/* Communication failure */
-	inst_unknown_model     = 0x0500,	/* Not the expected instrument */
-	inst_protocol_error    = 0x0600, 	/* Read or Write protocol error */
-	inst_user_abort        = 0x0700,	/* User hit escape */
-	inst_user_term         = 0x0800,	/* User hit terminate key */
-	inst_user_trig         = 0x0900,	/* User hit trigger key */
-	inst_user_cmnd         = 0x0A00,	/* User hit command key */
-	inst_misread           = 0x0B00,	/* Bad reading, or strip misread */
-	inst_nonesaved         = 0x0C00,	/* No saved data to read */
-	inst_nochmatch         = 0x0D00,	/* Chart doesn't match */
-	inst_needs_cal         = 0x0E00,	/* Instrument needs calibration, and read retried */
-	inst_cal_setup         = 0x0F00,	/* Calibration retry with correct setup is needed */
-	inst_wrong_sensor_pos  = 0x1000,	/* Reading retry with correct sensor position is needed */
-	inst_unsupported       = 0x1100,	/* Unsupported function */
-	inst_unexpected_reply  = 0x1200,	/* Unexpected Reply */
-	inst_wrong_config      = 0x1300,    /* Configuration is wrong */
-	inst_hardware_fail     = 0x1400,    /* Hardware failure */
-	inst_bad_parameter     = 0x1500,	/* Bad parameter value */
-	inst_other_error       = 0x1600,	/* Some other error */
+	inst_no_coms           = 0x0300,	/* init_coms() hasn't been called yet */
+	inst_no_init           = 0x0400,	/* init_inst() hasn't been called yet */
+	inst_unsupported       = 0x0500,	/* Unsupported function */
+	inst_internal_error    = 0x0600,	/* Internal software error */
+	inst_coms_fail         = 0x0700,	/* Communication failure */
+	inst_unknown_model     = 0x0800,	/* Not the expected instrument */
+	inst_protocol_error    = 0x0900, 	/* Read or Write protocol error */
+	inst_user_abort        = 0x0A00,	/* User hit escape */
+	inst_user_term         = 0x0B00,	/* User hit terminate key */
+	inst_user_trig         = 0x0C00,	/* User hit trigger key */
+	inst_user_cmnd         = 0x0D00,	/* User hit command key */
+	inst_misread           = 0x0E00,	/* Bad reading, or strip misread */
+	inst_nonesaved         = 0x0F00,	/* No saved data to read */
+	inst_nochmatch         = 0x1000,	/* Chart doesn't match */
+	inst_needs_cal         = 0x1100,	/* Instrument needs calibration, and read retried */
+	inst_cal_setup         = 0x1200,	/* Calibration retry with correct setup is needed */
+	inst_wrong_sensor_pos  = 0x1300,	/* Reading retry with correct sensor position is needed */
+	inst_unexpected_reply  = 0x1400,	/* Unexpected Reply */
+	inst_wrong_config      = 0x1500,    /* Configuration is wrong */
+	inst_hardware_fail     = 0x1600,    /* Hardware failure */
+	inst_bad_parameter     = 0x1700,	/* Bad parameter value */
+	inst_other_error       = 0x1800,	/* Some other error */
 	inst_mask              = 0xff00,	/* inst_code mask value */
 	inst_imask             = 0x00ff		/* instrument specific mask value */
 } inst_code;
@@ -131,16 +133,14 @@ typedef enum {
 	inst_emis_spot          = 0x00001000, /* Capable of emission spot measurement */
 	inst_emis_strip         = 0x00002000, /* Capable of emission strip measurement */
 	inst_emis_disp          = 0x00004000, /* Capable of display emission measurement */
-	inst_emis_disp_crt      = 0x00008000, /* Has a CRT display mode */
-	inst_emis_disp_lcd      = 0x00010000, /* Has an LCD display mode */
-	inst_emis_proj          = 0x00020000, /* Capable of projector emission measurement */
-	inst_emis_proj_crt      = 0x00040000, /* Has a CRT display mode */
-	inst_emis_proj_lcd      = 0x00080000, /* Has an LCD display mode */
-	inst_emis_tele          = 0x00100000, /* Capable of telephoto emission measurement */
-	inst_emis_ambient       = 0x00200000, /* Capable of ambient measurement */
-	inst_emis_ambient_flash = 0x00400000, /* Capable of ambient flash measurement */
-	inst_emis_ambient_mono  = 0x00800000, /* The ambient measurement is monochrome */
-	inst_emission           = 0x00FFF000, /* Capable of general emission measurements */
+	inst_emis_proj          = 0x00008000, /* Capable of projector emission measurement */
+	inst_emis_disptype      = 0x00010000, /* Has a display type selector */
+	inst_emis_disptypem     = 0x00020000, /* Setting display type is mandatory */
+	inst_emis_tele          = 0x00040000, /* Capable of telephoto emission measurement */
+	inst_emis_ambient       = 0x00080000, /* Capable of ambient measurement */
+	inst_emis_ambient_flash = 0x00100000, /* Capable of ambient flash measurement */
+	inst_emis_ambient_mono  = 0x00200000, /* The ambient measurement is monochrome */
+	inst_emission           = 0x003FF000, /* Capable of general emission measurements */
 
 	inst_colorimeter        = 0x01000000, /* Colorimetric capability */
 	inst_spectral           = 0x02000000, /* Spectral capability */
@@ -187,8 +187,26 @@ typedef enum {
 
 } inst2_capability;
 
-/* Instrument modes and sub-modes */
-/* We assume that we only want to be in one measurement mode at a time */
+
+/* Instrument status commands for get_opt_details() */
+typedef enum {
+	inst_optdet_unknown           = 0x0000,	/* Option detail type not specified */
+
+	inst_optdet_disptypesel       = 0x0001	/* Return array of display type selectors */
+											/* [args: int *no_selectors,inst_disptypesel **sels] */
+} inst_optdet_type;
+
+/* Structure used to return display type selection information */
+typedef struct _inst_disptypesel {
+	int ix;					/* Selection index */
+	char sel[10];			/* String of selector characters */
+	char desc[100];			/* Textural description */
+	int  ref;				/* Refresh mode flag */
+} inst_disptypesel;
+
+
+/* Instrument measurement modes and sub-modes */
+/* We assume that there can only be one measurement mode at a time */
 typedef enum {
 	inst_mode_unknown            = 0x0000,	/* Mode not specified */
 
@@ -277,10 +295,7 @@ typedef enum {
 	inst_opt_autocalib          = 0x0001,	/* Enable auto calibration (default) [No args] */
 	inst_opt_noautocalib        = 0x0002,	/* Disable auto calibration [No args] */
 
-	inst_opt_disp_crt           = 0x0003,	/* CRT display technology [No args] */
-	inst_opt_disp_lcd           = 0x0004,	/* LCD display technology [No args] */
-	inst_opt_proj_crt           = 0x0005,	/* CRT display technology [No args] */
-	inst_opt_proj_lcd           = 0x0006,	/* LCD display technology [No args] */
+	inst_opt_disp_type          = 0x0003,	/* Set display type by inst_disptypesel index [int] */
 
 	inst_opt_set_filter         = 0x0007,	/* Set a filter configuration */
 											/* [1 argument type inst_opt_filter] */
@@ -444,15 +459,18 @@ typedef enum {
 #define CALIDLEN 200
 
 /* Color instrument interface base object */
+/* Note that some methods work after creation, while many */
+/* will return an error if communications hasn't been established and */
+/* the instrument initialised. Some may change their response before and */
+/* after initialisation. */
 #define INST_OBJ_BASE															\
 																				\
 	int debug;		/* debug level, 1..9 */										\
 	int verb;		/* Verbosity level */                                       \
-	instType  prelim_itype;	/* Instrument type determined by cons/USB */		\
 	instType  itype;	/* Instrument type determined by driver */				\
 	icoms *icom;	/* Instrument coms object */								\
 	int gotcoms;	/* Coms established flag */                                 \
-	int inited;		/* Initialised flag */                                      \
+	int inited;		/* Instrument open and initialized flag */                  \
 	double cal_gy_level; /* Display calibration test window state */			\
 	int cal_gy_count;	/* Display calibration test window state */				\
 																				\
@@ -472,19 +490,28 @@ typedef enum {
         struct _inst *p);														\
 																				\
 	/* Return the instrument type */											\
-	/* This may not be valid until after init_inst() */							\
+	/* (this could concievably change after init_inst()) */						\
+	/* Can be called before init */												\
 	instType (*get_itype)(  													\
         struct _inst *p);														\
+																				\
+	/* Return the instrument capabilities. */									\
+	/* Can be called before init, but may be different to */					\
+	/* what's returned after initilisation. */									\
+	/* Note that these may change with the mode. */								\
+	inst_capability (*capabilities)(struct _inst *p);							\
+	inst2_capability (*capabilities2)(struct _inst *p);							\
+																				\
+    /* Get mode and option details */											\
+    inst_code (*get_opt_details)(												\
+        struct _inst *p,														\
+        inst_optdet_type m,	/* Requested option detail type */					\
+		...);				/* Parameters */									\
 																				\
 	/* Return the instrument serial number. */									\
 	/* (This will be an empty string if there is no serial no) */               \
 	char *(*get_serial_no)(  													\
         struct _inst *p);														\
-																				\
-	/* Return the instrument capabilities. */									\
-	/* Note that these may change with the mode. */								\
-	inst_capability (*capabilities)(struct _inst *p);							\
-	inst2_capability (*capabilities2)(struct _inst *p);							\
 																				\
     /* Set the device measurement mode */                                       \
 	/* Note that this may change the capabilities. */							\
@@ -682,7 +709,6 @@ typedef enum {
 	/* inst_user_cmnd if User command has been hit */							\
 	inst_code (*poll_user)(struct _inst *p, int wait);							\
 																				\
-																				\
 	/* Generic inst error codes interpretation */								\
 	char * (*inst_interp_error)(struct _inst *p, inst_code ec);					\
 																				\
@@ -700,10 +726,12 @@ struct _inst {
 	INST_OBJ_BASE
 	}; typedef struct _inst inst;
 
-/* Constructor */
+/* Virtual constructor. */
+/* Return NULL for unknown instrument, */
+/* or serial instrument if nocoms == 0. */
 extern inst *new_inst(
 	int comport,		/* icom communication port number */
-	instType itype,		/* Usually instUnknown to auto detect type of instrument */
+	int nocoms,			/* Don't open if communications are needed to establish inst type */
 	int debug,			/* Debug level, 0 = off */
 	int verb			/* Verbose level, 0  = off */
 );
@@ -725,6 +753,16 @@ inst_code inst_handle_calibrate(
 							/* Callback for handling a display calibration - May be NULL */
 	disp_win_info *dwi		/* Information to be able to open a display test patch - May be NULL */
 );
+
+/* ============================================================================= */
+
+/* A helper function to display -y flag usage for each instrument type available */
+/* Return accumulated capabilities of all the instruments */
+inst_capability inst_show_disptype_options(FILE *fp, char *oline, icoms *icom);
+
+/* A helper function to turn a -y flag into a selection index */
+/* Return 0 on error */
+int inst_get_disptype_index(inst *it, int c);
 
 #ifdef __cplusplus
 	}

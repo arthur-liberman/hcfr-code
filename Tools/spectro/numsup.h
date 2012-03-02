@@ -109,6 +109,22 @@ short **smatrix(int nrl,int nrh,int ncl,int nch);
 short **smatrixz(int nrl,int nrh,int ncl,int nch);
 void free_smatrix(short **m,int nrl,int nrh,int ncl,int nch);
 
+/* ----------------------------------------------------------- */
+/* Basic matrix operations */
+
+/* Transpose a 0 base matrix */
+void matrix_trans(double **d, double **s, int nr,  int nc);
+
+/* Matrix multiply 0 based matricies */
+int matrix_mult(
+	double **d,  int nr,  int nc,
+	double **s1, int nr1, int nc1,
+	double **s2, int nr2, int nc2
+);
+
+/* Diagnostic */
+void matrix_print(char *c, double **a, int nr,  int nc);
+
 /* =========================================================== */
 /* Should this go in spectro/conv.h ??                         */
 /* =========================================================== */

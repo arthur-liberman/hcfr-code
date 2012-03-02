@@ -38,6 +38,9 @@
 
 /* Structure for conveying spectral information */
 
+/* NOTE :- should ditch norm, and replace it by */
+/* "units", ie. reflectance/transmittance 0..1, 0..100%, */
+/* W/nm/m^2 or mW/nm/m^2 */
 #define XSPECT_MAX_BANDS 601		/* Enought for 1nm from 300 to 900 */
 
 typedef struct {
@@ -83,7 +86,7 @@ typedef struct {
 
 #ifndef SALONEINSTLIB
 
-/* Spectrum utility functions. Return NZ if error */
+/* Single spectrum utility functions. Return NZ if error */
 int write_xspect(char *fname, xspect *s);
 int read_xspect(xspect *sp, char *fname);
 
@@ -91,12 +94,20 @@ int read_xspect(xspect *sp, char *fname);
 int write_cmf(char *fname, xspect cmf[3]);
 int read_cmf(xspect cmf[3], char *fname);
 
+/* Save a set of nspec spectrum to a CGATS file. Return NZ if error */
+/* type 0 = SPECT, 1 = CMF */
+int write_nxspect(char *fname, xspect *sp, int nspec, int type);
+
+/* Restore a set of up to nspec spectrum from a CGATS file. Return NZ if error */
+/* type  = any, 1 = SPECT, 2 = CMF, 3 = both */
+int read_nxspect(xspect *sp, char *fname, int *nret, int off, int nspec, int type);
+
 #endif /* !SALONEINSTLIB*/
 
 /* Get interpolated value at wavelenth (not normalised) */
 double value_xspect(xspect *sp, double wl);
 
-/* De-noramlize and set normalisation factor to 1.0 */
+/* De-normalize and set normalisation factor to 1.0 */
 void xspect_denorm(xspect *sp);
 
 #ifndef SALONEINSTLIB
@@ -193,7 +204,10 @@ struct _xsp2cie {
 	void (*del)(struct _xsp2cie *p);
 
 	/* Convert (and possibly fwa correct) reflectance spectrum */
-	/* Note that XYZ is 0..1 range */
+	/* Note that the input spectrum normalisation value is used. */
+	/* Note that the returned XYZ is 0..1 range for reflectanc. */
+	/* Emissive spectral values are assumed to be in mW/nm, and sampled */
+	/* rather than integrated if they are not at 1nm spacing. */
 	void (*convert) (struct _xsp2cie *p,	/* this */
 	                 double *out,			/* Return XYZ or D50 Lab value */
 	                 xspect *in				/* Spectrum to be converted, normalised by norm */
@@ -201,7 +215,9 @@ struct _xsp2cie {
 
 	/* Convert and also return (possibly corrected) reflectance spectrum */
 	/* Spectrum will be same wlength range and readings as input spectrum */
-	/* Note that XYZ is 0..1 range */
+	/* Note that the returned XYZ is 0..1 range for reflectanc. */
+	/* Emissive spectral values are assumed to be in mW/nm, and sampled */
+	/* rather than integrated if they are not at 1nm spacing. */
 	void (*sconvert) (struct _xsp2cie *p,	/* this */
 	                 xspect *sout,			/* Return corrected refl. spectrum (may be NULL) */
 	                 double *out,			/* Return XYZ or D50 Lab value (may be NULL) */

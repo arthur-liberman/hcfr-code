@@ -43,8 +43,11 @@
 #ifndef SALONEINSTLIB
 #include "copyright.h"
 #include "aconfig.h"
-#endif /* !SALONEINSTLIB */
+#include "numlib.h"
+#else	/* !SALONEINSTLIB */
+#include "sa_config.h"
 #include "numsup.h"
+#endif /* !SALONEINSTLIB */
 #include "xspect.h"
 #include "insttypes.h"
 #include "icoms.h"
@@ -166,7 +169,7 @@ dtp41_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) 
 	char *brc[9] =     { "9600BR\r", "19200BR\r", "38400BR\r", "57600BR\r",
 	                     "4800BR\r", "2400BR\r", "1200BR\r", "600BR\r", "300BR\r" };
 	char *fcc;
-	long etime;
+	unsigned int etime;
 	int ci, bi, i, rv;
 	inst_code ev = inst_ok;
 
@@ -476,6 +479,11 @@ ipatch *vals) {		/* Pointer to array of instrument patch values */
 	int switch_trig = 0;
 	int user_trig = 0;
 
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
 	/* Configure for dynamic mode */
 	p->lastmode = (p->lastmode & ~inst_mode_sub_mask) | inst_mode_strip;
 	activate_mode(p);
@@ -604,6 +612,11 @@ ipatch *val) {		/* Pointer to instrument patch value */
 	inst_code ev = inst_ok;
 	int switch_trig = 0;
 	int user_trig = 0;
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
 
 	/* Configure for static mode */
 	p->lastmode = (p->lastmode & ~inst_mode_sub_mask) | inst_mode_spot;
@@ -751,6 +764,11 @@ ipatch *val) {		/* Pointer to instrument patch value */
 inst_cal_type dtp41_needs_calibration(inst *pp) {
 	dtp41 *p = (dtp41 *)pp;
 	
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
 	if (p->need_cal) {
 		if ((p->mode & inst_mode_illum_mask) == inst_mode_transmission)
 			return inst_calt_trans_white;	/* ??? */
@@ -774,6 +792,12 @@ inst_cal_cond *calc,	/* Current condition/desired condition */
 char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 ) {
 	dtp41 *p = (dtp41 *)pp;
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
 	id[0] = '\000';
 
 	if ((p->mode & inst_mode_illum_mask) == inst_mode_transmission) {
@@ -969,6 +993,8 @@ dtp41_del(inst *pp) {
 }
 
 /* Interogate the device to discover its capabilities */
+/* If we haven't initilalised the instrument, we don't */
+/* know if it supports transparency. */
 static void	discover_capabilities(dtp41 *p) {
 	static char buf[MAX_MES_SIZE];
 	inst_code rv = inst_ok;
@@ -985,15 +1011,18 @@ static void	discover_capabilities(dtp41 *p) {
 	        | inst2_keyb_switch_trig
 	        ;
 
-	/* Check whether we have transmission capability */
-	if ((rv = dtp41_command(p, "0119CF\r", buf, MAX_MES_SIZE, 1.5)) == inst_ok) {
-		p->cap |= inst_trans_spot
-		       |  inst_trans_strip
-		       ;
-
-		p->cap2 |= inst2_cal_trans_white;		/* User operated though */
+	if (p->inited) {
+		/* Check whether we have transmission capability */
+		if ((rv = dtp41_command(p, "0119CF\r", buf, MAX_MES_SIZE, 1.5)) == inst_ok) {
+			p->cap |= inst_trans_spot
+			       |  inst_trans_strip
+			       ;
+	
+			p->cap2 |= inst2_cal_trans_white;		/* User operated though */
+		}
+		/* Set back to reflectance mode */
+		rv = dtp41_command(p, "0019CF\r", buf, MAX_MES_SIZE, 1.5);
 	}
-	rv = dtp41_command(p, "0019CF\r", buf, MAX_MES_SIZE, 1.5);
 }
 
 /* Return the instrument capabilities */
@@ -1123,6 +1152,11 @@ dtp41_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 	inst_code rv = inst_ok;
 	static char buf[MAX_MES_SIZE];
 
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
 	/* Record the trigger mode */
 	if (m == inst_opt_trig_prog
 	 || m == inst_opt_trig_keyb
@@ -1153,7 +1187,7 @@ dtp41_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 }
 
 /* Constructor */
-extern dtp41 *new_dtp41(icoms *icom, int debug, int verb)
+extern dtp41 *new_dtp41(icoms *icom, instType itype, int debug, int verb)
 {
 	dtp41 *p;
 	if ((p = (dtp41 *)calloc(sizeof(dtp41),1)) == NULL)
@@ -1172,18 +1206,18 @@ extern dtp41 *new_dtp41(icoms *icom, int debug, int verb)
 	p->capabilities  = dtp41_capabilities;
 	p->capabilities2 = dtp41_capabilities2;
 	p->set_mode      = dtp41_set_mode;
-	p->set_opt_mode     = dtp41_set_opt_mode;
-	p->read_strip   = dtp41_read_strip;
-	p->read_sample  = dtp41_read_sample;
+	p->set_opt_mode  = dtp41_set_opt_mode;
+	p->read_strip    = dtp41_read_strip;
+	p->read_sample   = dtp41_read_sample;
 	p->needs_calibration = dtp41_needs_calibration;
-	p->calibrate    = dtp41_calibrate;
-	p->interp_error = dtp41_interp_error;
-	p->del          = dtp41_del;
+	p->calibrate     = dtp41_calibrate;
+	p->interp_error  = dtp41_interp_error;
+	p->del           = dtp41_del;
 
-	p->itype = instDTP41;
-	p->cap = inst_unknown;						/* Unknown until initialised */
-	p->mode = inst_mode_unknown;				/* Not in a known mode yet */
-	p->nstaticr = 5;							/* Number of static readings */
+	p->itype = itype;
+	p->cap = inst_unknown;				/* Unknown until set */
+	p->mode = inst_mode_unknown;		/* Not in a known mode yet */
+	p->nstaticr = 5;					/* Number of static readings */
 
 	return p;
 }

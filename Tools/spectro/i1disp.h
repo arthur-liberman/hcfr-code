@@ -153,7 +153,7 @@ struct _i1disp {
 }; typedef struct _i1disp i1disp;
 
 /* Constructor */
-extern i1disp *new_i1disp(icoms *icom, int debug, int verb);
+extern i1disp *new_i1disp(icoms *icom, instType itype, int debug, int verb);
 
 
 #define I1DISP_H

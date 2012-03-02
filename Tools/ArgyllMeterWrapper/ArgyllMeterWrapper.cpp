@@ -72,8 +72,10 @@ namespace
             return instSpectroScan;
         case ArgyllMeterWrapper::SPECTROSCANT:
             return instSpectroScanT;
-        case ArgyllMeterWrapper::I1DISPLAY:
-            return instI1Display;
+        case ArgyllMeterWrapper::I1DISP1:
+            return instI1Disp1;
+        case ArgyllMeterWrapper::I1DISP2:
+            return instI1Disp2;
         case ArgyllMeterWrapper::I1MONITOR:
             return instI1Monitor;
         case ArgyllMeterWrapper::I1PRO:
@@ -88,8 +90,12 @@ namespace
             return instSpyder2;
         case ArgyllMeterWrapper::SPYDER3:
             return instSpyder3;
+        case ArgyllMeterWrapper::SPYDER4:
+            return instSpyder3;
         case ArgyllMeterWrapper::HUEY:
             return instHuey;
+        case ArgyllMeterWrapper::COLORHUG:
+            return instColorHug;
         default:
             return instUnknown;
         }
@@ -121,8 +127,10 @@ namespace
             return ArgyllMeterWrapper::SPECTROSCANT;
         case instSpectrocam:
             return ArgyllMeterWrapper::SPECTROCAM;
-        case instI1Display:
-            return ArgyllMeterWrapper::I1DISPLAY;
+        case instI1Disp1:
+            return ArgyllMeterWrapper::I1DISP1;
+        case instI1Disp2:
+            return ArgyllMeterWrapper::I1DISP2;
         case instI1Monitor:
             return ArgyllMeterWrapper::I1MONITOR;
         case instI1Pro:
@@ -137,8 +145,12 @@ namespace
             return ArgyllMeterWrapper::SPYDER2;
         case instSpyder3:
             return ArgyllMeterWrapper::SPYDER3;
+        case instSpyder4:
+            return ArgyllMeterWrapper::SPYDER4;
         case instHuey:
             return ArgyllMeterWrapper::HUEY;
+        case instColorHug:
+            return ArgyllMeterWrapper::COLORHUG;
         default:
             return ArgyllMeterWrapper::AUTODETECT;
         }
@@ -164,7 +176,7 @@ namespace
     // can be called in normal situations
     // like no meters found or wrong drivers
     // convert to c++ exception
-    void error_imp(char *fmt, ...) 
+    void error_imp(char *fmt, ...)
     {
         va_list args;
         va_start(args, fmt);
@@ -299,11 +311,11 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription)
 
     if(m_readingType == PROJECTOR)
     {
-        if(capabilities & (inst_emis_proj_crt | inst_emis_proj_lcd))
-        {
-            instCode = m_meter->set_opt_mode(m_meter, m_displayType == CRT?inst_opt_proj_crt:inst_opt_proj_lcd);
-            mode = inst_mode_emis_proj;
-        }
+//        if(capabilities & (inst_emis_proj_crt | inst_emis_proj_lcd))
+//        {
+//            instCode = m_meter->set_opt_mode(m_meter, m_displayType == CRT?inst_opt_proj_crt:inst_opt_proj_lcd);
+//            mode = inst_mode_emis_proj;
+//        }
         if(capabilities & (inst_emis_tele))
         {
             mode = inst_mode_emis_tele;
@@ -315,10 +327,10 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription)
     }
     else
     {
-        if (capabilities & (inst_emis_disp_crt | inst_emis_disp_lcd)) 
-        {
-            instCode = m_meter->set_opt_mode(m_meter, m_displayType == CRT?inst_opt_disp_crt:inst_opt_disp_lcd);
-        }
+//        if (capabilities & (inst_emis_disp_crt | inst_emis_disp_lcd)) 
+//        {
+//           instCode = m_meter->set_opt_mode(m_meter, m_displayType == CRT?inst_opt_disp_crt:inst_opt_disp_lcd);
+//        }
     }
 
     instCode = m_meter->set_mode(m_meter, mode);
@@ -570,8 +582,10 @@ std::string ArgyllMeterWrapper::getMeterName(eMeterType meterType)
         return "SpectroScanT";
     case SPECTROCAM:
         return "Spectrocam";
-    case I1DISPLAY:
-        return "I1Display";
+    case I1DISP1:
+        return "I1Display1";
+    case I1DISP2:
+        return "I1Display2";
     case I1MONITOR:
         return "I1Monitor";
     case I1PRO:
@@ -586,8 +600,12 @@ std::string ArgyllMeterWrapper::getMeterName(eMeterType meterType)
         return "Spyder2";
     case SPYDER3:
         return "Spyder3";
+    case SPYDER4:
+        return "Spyder4";
     case HUEY:
         return "Huey";
+    case COLORHUG:
+        return "ColorHug";
     default:
         return "Unknown";
     }
@@ -600,7 +618,8 @@ bool ArgyllMeterWrapper::isMeterUSB(eMeterType meterType)
     case DTP20:
     case DTP92:
     case DTP94:
-    case I1DISPLAY:
+    case I1DISP1:
+    case I1DISP2:
     case I1MONITOR:
     case I1PRO:
     case I1DISP3:
@@ -608,7 +627,9 @@ bool ArgyllMeterWrapper::isMeterUSB(eMeterType meterType)
     case HCFR:
     case SPYDER2:
     case SPYDER3:
+    case SPYDER4:
     case HUEY:
+    case COLORHUG:
         return true;
     default:
         return false;

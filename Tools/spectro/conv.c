@@ -29,6 +29,7 @@
 # include <windows.h>
 #include <conio.h>
 #include <tlhelp32.h>
+#include <direct.h>
 #endif
 
 #if defined(UNIX)
@@ -76,10 +77,6 @@
 #include <mach/task_policy.h>
 #endif /* __APPLE__ */
 
-#ifdef NT
-#define strdup _strdup
-#endif
-
 #undef DEBUG
 
 #ifdef DEBUG
@@ -99,7 +96,6 @@
 /*                           MS WINDOWS                          */  
 /* ============================================================= */
 #ifdef NT
-#include <direct.h> 
 
 /* wait for and then return the next character from the keyboard */
 /* (If not_interactive, return getchar()) */
@@ -123,8 +119,6 @@ int next_con_char(void) {
 				return buf[0];
 			}
 		}
-
-		return 0;
 	}
 
 	c = _getch();
@@ -275,7 +269,7 @@ athread *p
 
 	if (p->th != NULL) {		/* Oops. this isn't good. */
 		DBG("athread_del calling TerminateThread() because thread hasn't finished\n");
-		TerminateThread(p->th, -1);		/* But it is worse to leave it hanging around */
+		TerminateThread(p->th, (DWORD)-1);		/* But it is worse to leave it hanging around */
 		CloseHandle(p->th);
 	}
 
@@ -989,87 +983,6 @@ int kill_nprocess(char **pname, int debug) {
 #endif /* __APPLE__ || NT */
 
 /* ============================================================= */
-/* Provide a system independent glob type function */
-
-/* Create the aglob */
-/* Return nz on malloc error */
-int aglob_create(aglob *g, char *spath) {
-#ifdef NT
-	char *pp;
-	int rlen;
-	/* Figure out where the filename starts */
-	if ((pp = strrchr(spath, '/')) == NULL
-	 && (pp = strrchr(spath, '\\')) == NULL)
-		rlen = 0;
-	else
-		rlen = pp - spath + 1;
-
-	if ((g->base = malloc(rlen + 1)) == NULL)
-		return 1;
-
-	memmove(g->base, spath, rlen);
-	g->base[rlen] = '\000';
-
-	g->first = 1;
-    g->ff = _findfirst(spath, &g->ffs);
-#else /* UNIX */
-	g->rv = glob(spath, GLOB_NOSORT, NULL, &g->g);
-	if (g->rv == GLOB_NOSPACE)
-		return 1;
-	g->ix = 0;
-#endif
-	g->merr = 0;
-	return 0;
-}
-
-/* Return an allocated string of the next match. */
-/* Return NULL if no more matches */
-char *aglob_next(aglob *g) {
-	char *fpath;
-
-#ifdef NT
-	if (g->ff == -1L) {
-		return NULL;
-	}
-	if (g->first == 0) {
-		if (_findnext(g->ff, &g->ffs) != 0) {
-			return NULL;
-		}
-	}
-	g->first = 0;
-
-	/* Convert match filename to full path */
-	if ((fpath = malloc(strlen(g->base) + strlen(g->ffs.name) + 1)) == NULL) {
-		g->merr = 1;
-		return NULL;
-	}
-	strcpy(fpath, g->base);
-	strcat(fpath, g->ffs.name);
-	return fpath;
-#else
-	if (g->rv != 0 || g->ix >= g->g.gl_pathc)
-		return NULL;
-	if ((fpath = strdup(g->g.gl_pathv[g->ix])) == NULL) {
-		g->merr = 1;
-		return NULL;
-	}
-	g->ix++;
-	return fpath;
-#endif
-}
-
-void aglob_cleanup(aglob *g) {
-#ifdef NT
-	if (g->ff != -1L)
-		_findclose(g->ff);
-	free(g->base);
-#else /* UNIX */
-	if (g->rv == 0)
-		globfree(&g->g);
-#endif
-}
-
-/* ============================================================= */
 /* CCSS location support */
 
 /* return a list of installed ccss files. */
@@ -1334,6 +1247,202 @@ void sa_Scale3(double out[3], double in[3], double rat) {
 	out[1] = in[1] * rat;
 	out[2] = in[2] * rat;
 }
+
+/* Return the normal Delta E given two Lab values */
+double sa_LabDE(double *Lab0, double *Lab1) {
+	double rv = 0.0, tt;
+
+	tt = Lab0[0] - Lab1[0];
+	rv += tt * tt;
+	tt = Lab0[1] - Lab1[1];
+	rv += tt * tt;
+	tt = Lab0[2] - Lab1[2];
+	rv += tt * tt;
+
+	return sqrt(rv);
+}
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - */
+/* A sub-set of ludecomp code from numlib          */
+
+int sa_lu_decomp(double **a, int n, int *pivx, double *rip) {
+	int    i, j;
+	double *rscale, RSCALE[10];		
+
+	if (n <= 10)
+		rscale = RSCALE;
+	else
+		rscale = dvector(0, n-1);
+
+	for (i = 0; i < n; i++) {
+		double big;
+		for (big = 0.0, j=0; j < n; j++) {
+			double temp;
+			temp = fabs(a[i][j]);
+			if (temp > big)
+				big = temp;
+		}
+		if (fabs(big) <= DBL_MIN) {
+			if (rscale != RSCALE)
+				free_dvector(rscale, 0, n-1);
+			return 1;		
+		}
+		rscale[i] = 1.0/big;	
+	}
+
+	for (*rip = 1.0, j = 0; j < n; j++) {
+		double big;
+		int k, bigi = 0;
+
+		for (i = 0; i < j; i++) {
+			double sum;
+			sum = a[i][j];
+			for (k = 0; k < i; k++)
+				sum -= a[i][k] * a[k][j];
+			a[i][j] = sum;
+		}
+
+		for (big = 0.0, i = j; i < n; i++) {
+			double sum, temp;
+			sum = a[i][j];
+			for (k = 0; k < j; k++)
+				sum -= a[i][k] * a[k][j];
+			a[i][j] = sum;
+			temp = rscale[i] * fabs(sum);	
+			if (temp >= big) {
+				big = temp;		
+				bigi = i;		
+			}
+		}
+		
+		if (j != bigi) {
+			{	
+				double *temp;
+				temp = a[bigi];
+				a[bigi] = a[j];
+				a[j] = temp;
+			}
+			*rip = -(*rip);				
+			rscale[bigi] = rscale[j];	
+		}
+		
+		pivx[j] = bigi;					
+		if (fabs(a[j][j]) <= DBL_MIN) {
+			if (rscale != RSCALE)
+				free_dvector(rscale, 0, n-1);
+			return 1; 					
+		}
+
+		if (j != (n-1)) {
+			double temp;
+			temp = 1.0/a[j][j];
+			for (i = j+1; i < n; i++)
+				a[i][j] *= temp;
+		}
+	}
+	if (rscale != RSCALE)
+		free_dvector(rscale, 0, n-1);
+	return 0;
+}
+
+void sa_lu_backsub(double **a, int n, int *pivx, double  *b) {
+	int i, j;
+	int nvi;		
+	
+	for (nvi = -1, i = 0; i < n; i++) {
+		int px;
+		double sum;
+
+		px = pivx[i];
+		sum = b[px];
+		b[px] = b[i];
+		if (nvi >= 0) {
+			for (j = nvi; j < i; j++)
+				sum -= a[i][j] * b[j];
+		} else {
+			if (sum != 0.0)
+				nvi = i;			
+		}
+		b[i] = sum;
+	}
+
+	for (i = (n-1); i >= 0; i--) {
+		double sum;
+		sum = b[i];
+		for (j = i+1; j < n; j++)
+			sum -= a[i][j] * b[j];
+		b[i] = sum/a[i][i];
+	}
+}
+
+int sa_lu_invert(double **a, int n) {
+	int i, j;
+	double rip;		
+	int *pivx, PIVX[10];
+	double **y;
+
+	if (n <= 10)
+		pivx = PIVX;
+	else
+		pivx = ivector(0, n-1);
+
+	if (sa_lu_decomp(a, n, pivx, &rip)) {
+		if (pivx != PIVX)
+			free_ivector(pivx, 0, n-1);
+		return 1;
+	}
+
+	y = dmatrix(0, n-1, 0, n-1);
+	for (i = 0; i < n; i++) {
+		for (j = 0; j < n; j++) {
+			y[i][j] = a[i][j];
+		}
+	}
+
+	for (i = 0; i < n; i++) {
+		for (j = 0; j < n; j++)
+			a[i][j] = 0.0;
+		a[i][i] = 1.0;
+		sa_lu_backsub(y, n, pivx, a[i]);
+	}
+
+	free_dmatrix(y, 0, n-1, 0, n-1);
+	if (pivx != PIVX)
+		free_ivector(pivx, 0, n-1);
+
+	return 0;
+}
+
+int sa_lu_psinvert(double **out, double **in, int m, int n) {
+	int rv = 0;
+	double **tr;		
+	double **sq;		
+
+	tr = dmatrix(0, n-1, 0, m-1);
+	matrix_trans(tr, in, m,  n);
+
+	if (m > n) {
+		sq = dmatrix(0, n-1, 0, n-1);
+		if ((rv = matrix_mult(sq, n, n, tr, n, m, in, m, n)) == 0) {
+			if ((rv = sa_lu_invert(sq, n)) == 0) {
+				rv = matrix_mult(out, n, m, sq, n, n, tr, n, m);
+			}
+		}
+		free_dmatrix(sq, 0, n-1, 0, n-1);
+	} else {
+		sq = dmatrix(0, m-1, 0, m-1);
+		if ((rv = matrix_mult(sq, m, m, in, m, n, tr, n, m)) == 0) {
+			if ((rv = sa_lu_invert(sq, m)) == 0) {
+				rv = matrix_mult(out, n, m, tr, n, m, sq, m, m);
+			}
+		}
+		free_dmatrix(sq, 0, m-1, 0, m-1);
+	}
+
+	free_dmatrix(tr, 0, n-1, 0, m-1);
+	return rv;
+}
+
 
 #endif /* SALONEINSTLIB */
 /* ============================================================= */

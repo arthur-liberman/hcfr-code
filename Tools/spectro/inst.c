@@ -107,6 +107,11 @@ static inst2_capability capabilities2(inst *p) {
 	return inst2_unknown;
 }
 
+/* Get mode and option details */
+static inst_code get_opt_details(inst *p, inst_optdet_type m, ...) {
+	return inst_unsupported;
+}
+
 /* Set the device measurement mode */                                       
 static inst_code set_mode(
 inst *p,
@@ -349,6 +354,10 @@ static char *inst_interp_error(inst *p, inst_code ec) {
 			return "Notification";
 		case inst_warning:
 			return "Warning";
+		case inst_no_coms:
+			return "Internal error - communications needed but not established";
+		case inst_no_init:
+			return "Internal error - initialisation needed but not done";
 		case inst_internal_error:
 			return "Internal software error";
 		case inst_coms_fail:
@@ -404,16 +413,16 @@ static int last_comerr(inst *p) {
 }
 
 /* ---------------------------------------------- */
-/* Virtual constructor */
-/* Return NULL for unknown instrument */
-/* Can hand in instUnknown for a USB port */
+/* Virtual constructor. */
+/* Return NULL for unknown instrument, */
+/* or serial instrument if nocoms == 0. */
 extern inst *new_inst(
 int comport,
-instType itype,		/* Requested/override type. Will fail if instUnknown and not this type */
+int nocoms,			/* Don't open if communications are needed to establish inst type */
 int debug,			/* Coms and instrument debug level */
 int verb			/* Verbosity flag */
 ) {			/* Debug flag */
-	instType atype;		/* Actual type */
+	instType itype;		/* Actual type */
 	icoms *icom;		/* Optional icoms to hand in */
 	inst *p;
 
@@ -425,63 +434,59 @@ int verb			/* Verbosity flag */
 		icom->debug = debug;
 
 	/* Set instrument type from USB port, if not specified */
-	atype = usb_is_usb_portno(icom, comport);		/* Type from USB */
-	if (atype == instUnknown)						/* Not USB */
-		atype = hid_is_hid_portno(icom, comport);	/* Else type from HID */
+	itype = usb_is_usb_portno(icom, comport);		/* Type from USB */
+	if (itype == instUnknown)						/* Not USB */
+		itype = hid_is_hid_portno(icom, comport);	/* Else type from HID */
 #ifdef ENABLE_SERIAL
-	if (atype == instUnknown)
-		atype = ser_inst_type(icom, comport);		/* Else type from serial */
+	if (itype == instUnknown && !nocoms)
+		itype = ser_inst_type(icom, comport);		/* Else type from serial */
 #endif /* ENABLE_SERIAL */
-	if (itype == instUnknown && atype != instUnknown) {
-		itype = atype;
-	} else if (itype != instUnknown && atype == instUnknown) {
-		atype = itype;
-	}
 
-	/* itype and atype will be the same now, so use itype */
 	if (itype == instDTP20)
-		p = (inst *)new_dtp20(icom, debug, verb);
+		p = (inst *)new_dtp20(icom, itype, debug, verb);
 	else if (itype == instDTP22)
-		p = (inst *)new_dtp22(icom, debug, verb);
+		p = (inst *)new_dtp22(icom, itype, debug, verb);
 	else if (itype == instDTP41)
-		p = (inst *)new_dtp41(icom, debug, verb);
+		p = (inst *)new_dtp41(icom, itype, debug, verb);
 	else if (itype == instDTP51)
-		p = (inst *)new_dtp51(icom, debug, verb);
+		p = (inst *)new_dtp51(icom, itype, debug, verb);
 	else if ((itype == instDTP92) || 
 	         (itype == instDTP94))
-		p = (inst *)new_dtp92(icom, debug, verb);
+		p = (inst *)new_dtp92(icom, itype, debug, verb);
 	else if ((itype == instSpectrolino ) ||
 			 (itype == instSpectroScan ) ||
 			 (itype == instSpectroScanT))
-		p = (inst *)new_ss(icom, debug, verb);
+		p = (inst *)new_ss(icom, itype, debug, verb);
 /* NYI
 	else if (itype == instSpectrocam)
-		p = (inst *)new_spc(icom, debug, verb);
+		p = (inst *)new_spc(icom, itype, debug, verb);
 */
-	else if (itype == instI1Display)
-		p = (inst *)new_i1disp(icom, debug, verb);
+	else if (itype == instI1Disp1 ||
+		    itype == instI1Disp2)
+		p = (inst *)new_i1disp(icom, itype, debug, verb);
 	else if (itype == instI1Disp3)
-		p = (inst *)new_i1d3(icom, debug, verb);
+		p = (inst *)new_i1d3(icom, itype, debug, verb);
 	else if (itype == instI1Monitor)
-		p = (inst *)new_i1pro(icom, debug, verb);
+		p = (inst *)new_i1pro(icom, itype, debug, verb);
 	else if (itype == instI1Pro)
-		p = (inst *)new_i1pro(icom, debug, verb);
+		p = (inst *)new_i1pro(icom, itype, debug, verb);
 	else if (itype == instColorMunki)
-		p = (inst *)new_munki(icom, debug, verb);
+		p = (inst *)new_munki(icom, itype, debug, verb);
 	else if (itype == instHCFR)
-		p = (inst *)new_hcfr(icom, debug, verb);
+		p = (inst *)new_hcfr(icom, itype, debug, verb);
 	else if (itype == instSpyder2)
-		p = (inst *)new_spyd2(icom, debug, verb);
+		p = (inst *)new_spyd2(icom, itype, debug, verb);
 	else if (itype == instSpyder3)
-		p = (inst *)new_spyd2(icom, debug, verb);
+		p = (inst *)new_spyd2(icom, itype, debug, verb);
+	else if (itype == instSpyder4)
+		p = (inst *)new_spyd2(icom, itype, debug, verb);
 	else if (itype == instHuey)
-		p = (inst *)new_huey(icom, debug, verb);
+		p = (inst *)new_huey(icom, itype, debug, verb);
+	else if (itype == instColorHug)
+		p = (inst *)new_colorhug(icom, itype, debug, verb);
 	else {
 		return NULL;
 	}
-
-	/* Tell driver the perported instrument type */
-	p->prelim_itype = itype;
 
 	/* Add default methods if constructor did not supply them */
 	if (p->init_coms == NULL)
@@ -496,6 +501,8 @@ int verb			/* Verbosity flag */
 		p->capabilities = capabilities;
 	if (p->capabilities2 == NULL)
 		p->capabilities2 = capabilities2;
+	if (p->get_opt_details == NULL)
+		p->get_opt_details = get_opt_details;
 	if (p->set_mode == NULL)
 		p->set_mode = set_mode;
 	if (p->set_opt_mode == NULL)
@@ -564,8 +571,8 @@ static instType ser_inst_type(
 	baud_rate brt[] = { baud_9600, baud_19200, baud_4800, baud_2400,
 	                     baud_1200, baud_38400, baud_57600, baud_115200,
 	                     baud_600, baud_300, baud_110, baud_nc };
-	long etime;
-	int bi, i;
+	unsigned int etime;
+	unsigned int bi, i;
 	int se, len;
 	int xrite = 0;
 	int ss = 0;
@@ -702,8 +709,8 @@ static void hex2bin(char *buf, int len) {
 	int i;
 
 	for (i = 0; i < len; i++) {
-		buf[i] = (h2b(buf[2 * i + 0]) << 4)
-		       | (h2b(buf[2 * i + 1]) << 0);
+		buf[i] = (char)((h2b(buf[2 * i + 0]) << 4)
+		              | (h2b(buf[2 * i + 1]) << 0));
 	}
 }
 
@@ -917,7 +924,141 @@ inst_code inst_handle_calibrate(
 			}
 		}
 	}
-	DBG((dbgo,"inst_handle_calibrate done 0x%x\n",ev))
-	return inst_ok;
 }
+
+/* ============================================================================= */
+
+/* A helper function to display -y flag usage for each instrument type available */
+/* Return accumulated capabilities of all the instruments */
+inst_capability inst_show_disptype_options(FILE *fp, char *oline, icoms *icom) { 
+	int i, j;
+	char buf[200], *bp;
+	int olen, pstart;
+	int notall = 0;
+	inst_capability acap = 0;	/* Accumulate capabilities */
+
+	olen = strlen(oline);		/* lenth of option part of line */
+
+	/* Locate the end of the option */
+	for (bp = oline; *bp != '\000' && *bp == ' '; bp++)
+		;
+	for (; *bp != '\000' && *bp != ' '; bp++)
+		;
+	pstart = bp - oline;
+	if (pstart > 10)
+		pstart = 10;
+	strncpy(buf, oline, pstart); 
+	buf[pstart++] = ' ';
+
+	olen = strlen(oline);		/* lenth of option part of line */
+
+	if (icom->paths == NULL)
+	    icom->get_paths(icom);
+
+	for (i = 0; i < icom->npaths; i++) {
+		inst *it;
+		inst_capability cap;
+		int k;
+
+		if ((it = new_inst(i+1, 1, 0, 0)) == NULL) {
+			notall = 1;
+			continue;
+		}
+
+		cap = it->capabilities(it);
+		acap |= cap;
+
+		if (cap & inst_emis_disptype) {
+			int nsel;
+			inst_disptypesel *sels;
+
+			if (it->get_opt_details(it, inst_optdet_disptypesel, &nsel, &sels) != inst_ok) {
+				it->del(it);
+				continue;
+			}
+			for (j = 0; j < nsel; j++) {
+				int m = pstart;
+				for (k = 0; k < 9; k++) {
+					if (sels[j].sel[k] == '\000')
+						break;
+					if (m > pstart)
+						buf[m++] = '|';
+					buf[m++] = sels[j].sel[k];
+				}
+				while (m < (olen+1))	/* Indent it by 1 */
+					buf[m++] = ' ';
+				buf[m++] = '\000';
+				
+				fprintf(fp, "%s%s\n",buf, sels[j].desc);
+
+				if (j == 0) {
+					for (m = 0; m < pstart; m++)
+						buf[m] = ' ';
+				}
+			}
+		}
+	}
+	/* Output a default desciption */
+	if (notall) {
+		int m = pstart;
+		buf[m++] = 'c';
+		buf[m++] = '|';
+		buf[m++] = 'l';
+		while (m < olen)
+			buf[m++] = ' ';
+		buf[m++] = '\000';
+		fprintf(fp, "%s%s\n",buf, " Other: c = CRT, l = LCD");
+	}
+
+	return acap;
+}
+
+/* A helper function to turn a -y flag into a selection index */
+/* Return 0 on error */
+int inst_get_disptype_index(inst *it, int c) {
+	inst_capability cap;
+	int j, k;
+
+	cap = it->capabilities(it);
+
+	if (cap & inst_emis_disptype) {
+		int nsel;
+		inst_disptypesel *sels;
+
+		if (it->get_opt_details(it, inst_optdet_disptypesel, &nsel, &sels) != inst_ok) {
+			return 0;
+		}
+		for (j = 0; j < nsel; j++) {
+			for (k = 0; k < 9; k++) {
+				if (sels[j].sel[k] == '\000')
+					break;
+				if (sels[j].sel[k] == c) {
+					return sels[j].ix;
+				}
+			}
+		}
+	}
+	return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

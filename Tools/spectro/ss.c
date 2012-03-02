@@ -65,8 +65,11 @@
 #ifndef SALONEINSTLIB
 #include "copyright.h"
 #include "aconfig.h"
-#endif /* !SALONEINSTLIB */
+#include "numlib.h"
+#else /* SALONEINSTLIB */
+#include "sa_config.h"
 #include "numsup.h"
+#endif /* SALONEINSTLIB */
 #include "xspect.h"
 #include "insttypes.h"
 #include "icoms.h"
@@ -343,7 +346,7 @@ ss_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) {
 	return inst_ok;
 }
 
-/* Set the capabilities values for the current mode */
+/* Set the capabilities values for the type of instrument */
 static void ss_determine_capabilities(ss *p) {
 
 	/* Set the capabilities mask */
@@ -507,6 +510,11 @@ struct _inst *pp) {
 	ss *p = (ss *)pp;
 	inst_code rv = inst_ok;
 
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
 	if (p->cap2 & inst2_xy_holdrel)
 		rv = ss_do_ReleasePaper(p);
 	return rv;
@@ -520,6 +528,16 @@ struct _inst *pp) {
 	ss *p = (ss *)pp;
 	inst_code rv = inst_ok;
 
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
 	if (p->cap2 & inst2_xy_holdrel)
 		rv = ss_do_HoldPaper(p);
 	return rv;
@@ -532,6 +550,11 @@ ss_xy_locate_start(
 struct _inst *pp) {
 	ss *p = (ss *)pp;
 	inst_code rv = inst_ok;
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
 
 	if (p->cap2 & inst2_xy_locate) {
 		rv = ss_do_SetDeviceOffline(p);
@@ -549,6 +572,11 @@ double x, double y
 ) {
 	ss *p = (ss *)pp;
 	inst_code rv = inst_ok;
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
 
 	if (p->cap2 & inst2_xy_position)
 		if ((rv = ss_do_MoveAbsolut(p, measure ? ss_rt_SensorRef : ss_rt_SightRef, x, y)) != inst_ok)
@@ -568,6 +596,11 @@ double *x, double *y) {
 	ss_rt rr;
 	ss_zkt zk;
 
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
 	if (p->cap2 & inst2_xy_position)
 		if ((rv = ss_do_OutputActualPosition(p, ss_rt_SightRef, &rr, x, y, &zk)) != inst_ok)
 			return rv;
@@ -583,6 +616,11 @@ struct _inst *pp) {
 	ss *p = (ss *)pp;
 	inst_code rv = inst_ok;
 
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
 	if (p->cap2 & inst2_xy_position) {
 		rv = ss_do_SetDeviceOnline(p);
 		p->offline = 0;
@@ -597,6 +635,11 @@ ss_xy_clear(
 struct _inst *pp) {
 	ss *p = (ss *)pp;
 	inst_code rv = inst_ok;
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
 
 	if (p->cap2 & inst2_xy_position) {
 		ss_do_SetDeviceOnline(p);	/* Put the device online */
@@ -630,6 +673,11 @@ ipatch *vals) { 		/* Pointer to array of values */
 	int pass, step, patch;
 	int tries, tc;			/* Total read tries */
 	int fstep = 0;			/* NZ if step is fast & quiet direction */
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
 
 	if (p->itype != instSpectroScan
 	 && p->itype != instSpectroScanT)
@@ -886,6 +934,11 @@ ipatch *val) {		/* Pointer to instrument patch value */
 	double col[3], spec[36];
 	int i;
 
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
 	if (!val)
 		return inst_internal_error;
 
@@ -1116,14 +1169,12 @@ ipatch *val) {		/* Pointer to instrument patch value */
 				XYZ[j] += obsv[tix][j][i] * spec[i];
 
 		if ((p->mode & inst_mode_illum_mask) == inst_mode_emission) {
-			/* The CIE maximum spectral luminence efficiency is 683 lumens per watt, */
-			/* which is the constant applied to sumation over 1nm from 360 to 830nm, */
-			/* so this needs to be scaled by the sumation over 5nm from 380 to 830, */
-			/* a factor of 10.683/106.86 * 683. */
+			/* Emission XYZ seems to be Luminous Watts, so */
+			/* convert to cd/m^2 */
 			val->aXYZ_v = 1;
-			val->aXYZ[0] = XYZ[0] * 683.226;
-			val->aXYZ[1] = XYZ[1] * 683.226;
-			val->aXYZ[2] = XYZ[2] * 683.226;
+			val->aXYZ[0] = XYZ[0] * 683.002;
+			val->aXYZ[1] = XYZ[1] * 683.002;
+			val->aXYZ[2] = XYZ[2] * 683.002;
 		} else {
 			val->XYZ_v = 1;
 			val->XYZ[0] = XYZ[0];
@@ -1170,6 +1221,7 @@ ipatch *val) {		/* Pointer to instrument patch value */
 			val->sp.spec_wl_short = 380;
 			val->sp.spec_wl_long = 730;
 			if ((p->mode & inst_mode_illum_mask) == inst_mode_emission) {
+				/* Spectral data is in mW/nm/m^2 interpolated to 10nm spacing */
 				val->sp.norm = 1.0;
 				for (i = 0; i < val->sp.spec_n; i++)
 					val->sp.spec[i] = (double)spec[i];
@@ -1190,6 +1242,11 @@ ipatch *val) {		/* Pointer to instrument patch value */
 /* and the first type of calibration needed. */
 inst_cal_type ss_needs_calibration(inst *pp) {
 	ss *p = (ss *)pp;
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
 
 	if (p->need_w_cal && p->noautocalib == 0) {
 		return inst_calt_ref_white;
@@ -1458,6 +1515,11 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 ) {
 	ss *p = (ss *)pp;
 
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
 	return ss_calibrate_imp(p, calt, calc, id);
 }
 
@@ -1469,7 +1531,13 @@ inst_code ss_comp_filter(
 struct _inst *pp,
 char *filtername
 ) {
+	ss *p = (ss *)pp;
 	
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
 #ifndef SALONEINSTLIB
 	if (filtername == NULL) {
 		p->compen = 0;
@@ -1676,9 +1744,15 @@ static inst_code
 ss_set_mode(inst *pp, inst_mode m) {
 	ss *p = (ss *)pp;
 	inst_code rv = inst_ok;
-
-	int cap = pp->capabilities(pp);
+	int cap;
 	inst_mode mm;		/* Measurement mode */
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
+	cap = pp->capabilities(pp);
 
 	/* The measurement mode portion of the mode */
 	mm = m & inst_mode_measurement_mask;
@@ -1753,6 +1827,11 @@ inst_status_type m,	/* Requested status type */
 	ss *p = (ss *)pp;
 	inst_code rv = inst_ok;
 
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
 	/* Return the filter */
 	if (m == inst_stat_get_filter) {
 		inst_opt_filter *filt;
@@ -1806,11 +1885,10 @@ ss_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 {
 	ss *p = (ss *)pp;
 
-	/* Ignore these modes - not applicable, but be nice. */
-	if (m == inst_opt_disp_crt
-	 || m == inst_opt_disp_lcd) {
-		return inst_ok;
-	}
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
 
 	if (m == inst_opt_noautocalib) {
 		p->noautocalib = 1;
@@ -1886,7 +1964,7 @@ ss_del(inst *pp) {
 }
 
 /* Constructor */
-extern ss *new_ss(icoms *icom, int debug, int verb) {
+extern ss *new_ss(icoms *icom, instType itype, int debug, int verb) {
 	ss *p;
 	if ((p = (ss *)calloc(sizeof(ss),1)) == NULL)
 		error("ss: malloc failed!");
@@ -1924,7 +2002,7 @@ extern ss *new_ss(icoms *icom, int debug, int verb) {
 	p->del          	= ss_del;
 
 	/* Init state */
-	p->itype = instUnknown;						/* Unknown until initialised */
+	p->itype = itype;							/* Preliminary */
 	p->cap = inst_unknown;						/* Unknown until initialised */
 	p->mode = inst_mode_unknown;				/* Not in a known mode yet */
 	p->nextmode = inst_mode_unknown;			/* Not in a known mode yet */
@@ -1951,6 +2029,8 @@ extern ss *new_ss(icoms *icom, int debug, int verb) {
 	p->sbx = 100.0;
 	p->sby = 200.0;
 #endif
+
+	ss_determine_capabilities(p);
 
 	return p;
 }

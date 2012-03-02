@@ -44,8 +44,11 @@
 #ifndef SALONEINSTLIB
 #include "copyright.h"
 #include "aconfig.h"
-#endif	/* !SALONEINSTLIB */
 #include "numlib.h"
+#else /* SALONEINSTLIB */
+#include "sa_config.h"
+#include "numsup.h"
+#endif /* SALONEINSTLIB */
 #include "xspect.h"
 #include "insttypes.h"
 #include "icoms.h"
@@ -114,21 +117,8 @@ munki_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) 
 	return inst_ok;
 }
 
-/* Initialise the MUNKI */
-/* return non-zero on an error, with dtp error code */
 static inst_code
-munki_init_inst(inst *pp) {
-	munki *p = (munki *)pp;
-	munki_code ev = MUNKI_OK;
-
-	if (p->debug) fprintf(stderr,"munki: About to init instrument\n");
-
-	if (p->gotcoms == 0)
-		return munki_interp_code(p, MUNKI_INT_NO_COMS);	/* Must establish coms before calling init */
-	if ((ev = munki_imp_init(p)) != MUNKI_OK) {
-		if (p->debug) fprintf(stderr,"munki_imp_init() failed\n");
-		return munki_interp_code(p, ev);
-	}
+munki_discover_capabilities(munki *p) {
 
 	/* Set the Munki capabilities mask */
 	p->cap |= inst_ref_spot
@@ -160,14 +150,42 @@ munki_init_inst(inst *pp) {
 			| inst2_has_sensmode
 	        ;
 
-	if (munki_imp_highres(p))
+	if (munki_imp_highres(p))		/* Static */
 		p->cap |= inst_highres;
+
+	return inst_ok;
+}
+
+/* Initialise the MUNKI */
+/* return non-zero on an error, with dtp error code */
+static inst_code
+munki_init_inst(inst *pp) {
+	munki *p = (munki *)pp;
+	munki_code ev = MUNKI_OK;
+
+	if (p->debug) fprintf(stderr,"munki: About to init instrument\n");
+
+	if (p->gotcoms == 0)
+		return munki_interp_code(p, MUNKI_INT_NO_COMS);	/* Must establish coms before calling init */
+	if ((ev = munki_imp_init(p)) != MUNKI_OK) {
+		if (p->debug) fprintf(stderr,"munki_imp_init() failed\n");
+		return munki_interp_code(p, ev);
+	}
+
+	p->inited = 1;
+	munki_discover_capabilities(p);
 
 	return munki_interp_code(p, ev);
 }
 
 static char *munki_get_serial_no(inst *pp) {
 	munki *p = (munki *)pp;
+
+	if (!p->gotcoms)
+		return "";
+	if (!p->inited)
+		return "";
+
 	return munki_imp_get_serial_no(p);
 }
 
@@ -187,6 +205,11 @@ ipatch *vals) {		/* Pointer to array of instrument patch values */
 	munki *p = (munki *)pp;
 	munki_code rv;
 
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
 	rv = munki_imp_measure(p, vals, npatch);
 
 	return munki_interp_code(p, rv);
@@ -202,6 +225,11 @@ ipatch *val) {		/* Pointer to instrument patch value */
 	munki *p = (munki *)pp;
 	munki_code rv;
 
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
 	rv = munki_imp_measure(p, val, 1);
 
 	return munki_interp_code(p, rv);
@@ -212,6 +240,12 @@ ipatch *val) {		/* Pointer to instrument patch value */
 /* and the first type of calibration needed. */
 inst_cal_type munki_needs_calibration(inst *pp) {
 	munki *p = (munki *)pp;
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
 	return munki_imp_needs_calibration(p);
 }
 
@@ -230,6 +264,11 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 ) {
 	munki *p = (munki *)pp;
 	munki_code rv;
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
 
 	rv = munki_imp_calibrate(p, calt, calc, id);
 	return munki_interp_code(p, rv);
@@ -499,6 +538,11 @@ inst_code munki_set_mode(inst *pp, inst_mode m) {
 	inst_mode mm;			/* Request measurement mode */
 	mk_mode mmode = -1;	/* Instrument measurement mode */
 
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
 	/* The measurement mode portion of the mode */
 	mm = m & inst_mode_measurement_mask;
 
@@ -553,6 +597,11 @@ inst_status_type m,	/* Requested status type */
 ...) {				/* Status parameters */                             
 	munki *p = (munki *)pp;
 
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
 	/* Return the sensor mode */
 	if (m == inst_stat_sensmode) {
 		munki_code ev;
@@ -568,7 +617,7 @@ inst_status_type m,	/* Requested status type */
 
 		/* Get the device status */
 		ev = munki_getstatus(p, &spos, NULL);
-		if (ev != MUNKI_OK);
+		if (ev != MUNKI_OK)
 			return munki_interp_code(p, ev);
 
 		if (spos == mk_spos_proj)
@@ -610,13 +659,10 @@ munki_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 {
 	munki *p = (munki *)pp;
 
-	/* Ignore these modes - not applicable, but be nice. */
-	if (m == inst_opt_disp_crt
-	 || m == inst_opt_disp_lcd
-	 || m == inst_opt_proj_crt
-	 || m == inst_opt_proj_lcd) {
-		return inst_ok;
-	}
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
 
 	if (m == inst_opt_noautocalib) {
 		munki_set_noautocalib(p, 1);
@@ -763,7 +809,7 @@ munki_del(inst *pp) {
 }
 
 /* Constructor */
-extern munki *new_munki(icoms *icom, int debug, int verb)
+extern munki *new_munki(icoms *icom, instType itype, int debug, int verb)
 {
 	munki *p;
 	if ((p = (munki *)calloc(sizeof(munki),1)) == NULL)
@@ -774,6 +820,8 @@ extern munki *new_munki(icoms *icom, int debug, int verb)
 	else
 		p->icom = icom;
 
+	/* Preliminary capabilities */
+	munki_discover_capabilities(p);
 	p->debug = debug;
 	p->verb = verb;
 
@@ -785,9 +833,9 @@ extern munki *new_munki(icoms *icom, int debug, int verb)
 	/* Inst methods */
 	p->init_coms         = munki_init_coms;
 	p->init_inst         = munki_init_inst;
-	p->get_serial_no     = munki_get_serial_no;
 	p->capabilities      = munki_capabilities;
 	p->capabilities2     = munki_capabilities2;
+	p->get_serial_no     = munki_get_serial_no;
 	p->set_mode          = munki_set_mode;
 	p->get_status        = munki_get_status;
 	p->set_opt_mode      = munki_set_opt_mode;
@@ -798,7 +846,7 @@ extern munki *new_munki(icoms *icom, int debug, int verb)
 	p->interp_error      = munki_interp_error;
 	p->del               = munki_del;
 
-	p->itype = instUnknown;		/* Until initalisation */
+	p->itype = itype;
 
 	return p;
 }

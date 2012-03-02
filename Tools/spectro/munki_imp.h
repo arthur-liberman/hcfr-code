@@ -213,6 +213,7 @@ struct _munkiimp {
 								/* thermal warmup. */ 
 
 	double min_int_time;	/* Minimum integration time (secs) (set from minintcount) */
+							/* (Typical value is 0.007168 = 139.5 times/sec) */
 	double max_int_time;	/* Maximum integration time (secs) (fixed in sw) */
 
 	/* Underlying calibration information */
@@ -610,15 +611,16 @@ void munki_sub_sens_to_abssens(
 	double *maxv			/* If not NULL, return the maximum value */
 );
 
-/* Average a set of sens measurements into one. */
-/* Return zero if readings are consistent. */
+/* Average a set of sens or absens measurements into one. */
+/* (Make sure darkthresh is tracked if absens is being averaged!) */
+/* Return zero if readings are consistent and not saturated. */
 /* Return nz if the readings are not consistent */
 /* Return the overall average. */
-int munki_average_sens_multimeas(
+int munki_average_multimeas(
 	munki *p,
 	double *avg,			/* return average [nraw] */
 	double **multimeas,		/* Array of [nummeas][nraw] value to average */
-	int nummeas,			/* Return number of readings measured */
+	int nummeas,			/* number of readings to be averaged */
 	double *poallavg,		/* If not NULL, return overall average of bands and measurements */
 	double darkthresh		/* Dark threshold (used for consistency check scaling) */
 );

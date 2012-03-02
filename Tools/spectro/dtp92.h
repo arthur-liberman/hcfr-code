@@ -95,7 +95,7 @@ struct _dtp92 {
 	}; typedef struct _dtp92 dtp92;
 
 /* Constructor */
-extern dtp92 *new_dtp92(icoms *icom, int debug, int verb);
+extern dtp92 *new_dtp92(icoms *icom, instType itype, int debug, int verb);
 
 
 #define DTP92_H

@@ -58,10 +58,12 @@
 #undef DEBUG
 
 #ifdef DEBUG
-#define DBG(xxx) printf xxx ;
+#define DBG(xxx) fprintf xxx ;
 #else
-#define DBG(xxx) 
+#define DBG(xxx) if (p->debug >= 5) fprintf xxx ;
 #endif
+
+#define dbgo stderr
 
 static inst_code huey_interp_code(inst *pp, int ec);
 static inst_code huey_check_unlock(huey *p);
@@ -183,6 +185,7 @@ huey_command(
 	double to,					/* Timeout in seconds */
 	double to2					/* Timeout in seconds for 2nd read */
 ) {
+	int i;
 	unsigned char buf[8];	/* 8 bytes to write/read */
 	int wbytes;				/* bytes written */
 	int rbytes;				/* bytes read from ep */
@@ -231,7 +234,6 @@ huey_command(
 
 	if (p->icom->is_hid) {
 		se = p->icom->hid_read(p->icom, buf, 8, &rbytes, to);
-
 	} else {
 		se = p->icom->usb_read(p->icom, 0x81, buf, 8, &rbytes, to);
 	} 
@@ -334,6 +336,7 @@ huey_rdreg_byte(
 	int addr				/* Register Address, 0 - 255 */
 ) {
 	unsigned char buf[8];
+	int rsize;
 	inst_code ev;
 
 	if (addr < 0 || addr > 255)
@@ -439,7 +442,9 @@ huey_wrreg_byte(
 	int inv,				/* Input value */
 	int addr				/* Register Address, 0 - 127 */
 ) {
+	int cval;
 	unsigned char ibuf[8], obuf[8];
+	int rsize;
 	inst_code ev;
 
 	ibuf[0] = addr;  
@@ -505,6 +510,7 @@ huey_rd_int_time(
 	int *outp				/* Where to write value */
 ) {
 	unsigned char buf[8];
+	int rsize;
 	inst_code ev;
 
 	if ((ev = huey_command(p, i1d_getintgt, buf, buf, 1.0, 1.0)) != inst_ok)
@@ -523,6 +529,7 @@ huey_wr_int_time(
 	int inv					/* Value to write */
 ) {
 	unsigned char buf[16];
+	int rsize;
 	inst_code ev;
 
 	int2buf(buf, inv);
@@ -540,6 +547,7 @@ huey_take_first_raw_measurement_2(
 	huey *p,				/* Object */
 	double rgb[3]			/* Return the RGB values */
 ) {
+	int i;
 	unsigned char ibuf[8];
 	unsigned char obuf[8];
 	inst_code ev;
@@ -570,8 +578,10 @@ huey_take_raw_measurement_2(
 	int edgec[3],		/* Measurement edge count for each channel */
 	double rgb[3]		/* Return the RGB values */
 ) {
+	int i;
 	unsigned char ibuf[16];
 	unsigned char obuf[16];
+	int rsize;
 	inst_code ev;
 
 	/* Set the edge count */
@@ -605,8 +615,10 @@ huey_take_raw_measurement_3(
 	int edgec[3],		/* Measurement edge count for each channel */
 	double rgb[3]		/* Return the RGB values */
 ) {
+	int i;
 	unsigned char ibuf[16];
 	unsigned char obuf[16];
+	int rsize;
 	inst_code ev;
 
 	/* Do the measurement, and return the Red value */
@@ -650,7 +662,7 @@ huey_take_measurement_2(
 	int crtm,				/* nz if crt mode */
 	double rgb[3]			/* Return the rgb values */
 ) {
-	int i;
+	int i, j;
 	int edgec[3] = {1,1,1};	/* Measurement edge count for each channel */
 	int rem[3] = {1,1,1};	/* remeasure flags */
 	inst_code ev;
@@ -658,7 +670,7 @@ huey_take_measurement_2(
 	if (p->inited == 0)
 		return huey_interp_code((inst *)p, HUEY_NOT_INITED);
 
-	DBG(("take_measurement_2 called with crtm = %d\n",crtm));
+	DBG((dbgo,"take_measurement_2 called with crtm = %d\n",crtm));
 
 	/* For CRT mode, do an initial set of syncromized measurements */
 	if (crtm) {
@@ -666,7 +678,7 @@ huey_take_measurement_2(
 		if ((ev = huey_take_first_raw_measurement_2(p, rgb)) != inst_ok)
 			return ev;
 
-		DBG(("Raw initial CRT RGB = %f %f %f\n",rgb[0],rgb[1],rgb[2]))
+		DBG((dbgo,"Raw initial CRT RGB = %f %f %f\n",rgb[0],rgb[1],rgb[2]))
 
 		/* Decide whether any channels need re-measuring, */
 		/* and computed cooked values. Threshold is typically 75 */
@@ -674,7 +686,7 @@ huey_take_measurement_2(
 			rem[i] = (rgb[i] <= (0.75 * (double)p->sampno)) ? 1 : 0;
 			rgb[i] = 0.5 * rgb[i] * 1e6/(double)p->int_clocks;
 		}
-		DBG(("Re-measure flags = %d %d %d\n",rem[0],rem[1],rem[2]))
+		DBG((dbgo,"Re-measure flags = %d %d %d\n",rem[0],rem[1],rem[2]))
 	}
 
 	/* If any need re-measuring */
@@ -684,7 +696,7 @@ huey_take_measurement_2(
 		/* Do a first or second set of measurements */
 		if ((ev = huey_take_raw_measurement_2(p, edgec, rgb2)) != inst_ok)
 			return ev;
-		DBG(("Raw initial/subsequent ecount %d %d %d RGB = %f %f %f\n",
+		DBG((dbgo,"Raw initial/subsequent ecount %d %d %d RGB = %f %f %f\n",
 		     edgec[0], edgec[1], edgec[2], rgb2[0], rgb2[1], rgb2[2]))
 
 		/* Compute adjusted edge count for channels we're remeasuring, */
@@ -710,7 +722,7 @@ huey_take_measurement_2(
 			if ((ev = huey_take_raw_measurement_2(p, edgec, rgb3)) != inst_ok)
 				return ev;
 	
-			DBG(("Raw subsequent2 ecount %d %d %d RGB = %f %f %f\n",
+			DBG((dbgo,"Raw subsequent2 ecount %d %d %d RGB = %f %f %f\n",
 			     edgec[0], edgec[1], edgec[2], rgb3[0], rgb3[1], rgb3[2]))
 
 			/* Average readings if we repeated a measurement with the same threshold */
@@ -727,19 +739,19 @@ huey_take_measurement_2(
 		for (i = 0; i < 3; i++) {
 			if (rem[i]) {
 				rgb[i] = ((double)edgec[i])/(rgb2[i] * 2.0 * p->clk_prd);
-				DBG(("%d after scale = %f\n",i,rgb[i]))
+				DBG((dbgo,"%d after scale = %f\n",i,rgb[i]))
 		
 				rgb[i] -= p->dark_cal[i];		/* Subtract black level */
-				DBG(("%d after sub black = %f\n",i,rgb[i]))
+				DBG((dbgo,"%d after sub black = %f\n",i,rgb[i]))
 		
 				if (rgb[i] < 0.0001)
 					rgb[i] = 0.0001;
-				DBG(("%d after limit min = %f\n",i,rgb[i]))
+				DBG((dbgo,"%d after limit min = %f\n",i,rgb[i]))
 			}
 		}
 	}
 
-	DBG(("Cooked RGB = %f %f %f\n",rgb[0],rgb[1],rgb[2]))
+	DBG((dbgo,"Cooked RGB = %f %f %f\n",rgb[0],rgb[1],rgb[2]))
 	
 	return inst_ok;
 }
@@ -753,8 +765,10 @@ huey_take_amb_measurement_1(
 	double *amb,		/* Return the raw ambient value */
 	int *rb				/* Returned byte */
 ) {
+	int i;
 	unsigned char ibuf[16];
 	unsigned char obuf[16];
+	int rsize;
 	inst_code ev;
 
 	a1 &= 0xff;
@@ -788,12 +802,12 @@ huey_take_amb_measurement(
 	if (p->inited == 0)
 		return huey_interp_code((inst *)p, HUEY_NOT_INITED);
 
-	DBG(("take_amb_measurement_2 called with crtm = %d\n",crtm));
+	DBG((dbgo,"take_amb_measurement_2 called with crtm = %d\n",crtm));
 
 	/* First param is always 3, second is sync mode */
 	if ((ev = huey_take_amb_measurement_1(p, 3, crtm ? 2 : 0, amb, &rb)) != inst_ok)
  		return ev;
-	DBG(("Raw ambient = %f\n",*amb))
+	DBG((dbgo,"Raw ambient = %f\n",*amb))
 	return inst_ok;
 }
 
@@ -805,6 +819,7 @@ huey_set_LEDs(
 	huey *p,			/* Object */
 	int mask			/* 8 bit LED mask */
 ) {
+	int i;
 	unsigned char ibuf[8];
 	unsigned char obuf[8];
 	inst_code ev;
@@ -861,7 +876,7 @@ huey_take_XYZ_measurement(
 		/* Apply the colorimeter correction matrix */
 		icmMulBy3x3(XYZ, p->ccmat, XYZ);
 	}
-	DBG(("returning XYZ = %f %f %f\n",XYZ[0],XYZ[1],XYZ[2]))
+	DBG((dbgo,"returning XYZ = %f %f %f\n",XYZ[0],XYZ[1],XYZ[2]))
 	return inst_ok;
 }
 
@@ -873,7 +888,10 @@ huey_check_unlock(
 	huey *p				/* Object */
 ) {
 	unsigned char buf[8];
+	int rsize;
 	inst_code ev;
+	int vv;
+	double ver;
 
 	if (p->debug) fprintf(stderr,"huey: about to check response and unlock instrument if needed\n");
 
@@ -918,36 +936,36 @@ huey_read_all_regs(
 	/* Serial number */
 	if ((ev = huey_rdreg_word(p, &p->ser_no, 0) ) != inst_ok)
 		return ev;
-	DBG(("serial number = %d\n",p->ser_no))
+	DBG((dbgo,"serial number = %d\n",p->ser_no))
 
 
 	/* LCD/user calibration values */
 	for (i = 0; i < 9; i++) {
 		if ((ev = huey_rdreg_float(p, &p->LCD_cal[i], 4 + 4 * i) ) != inst_ok)
 			return ev;
-		DBG(("LCD/user cal[%d] = %f\n",i,p->LCD_cal[i]))
+		DBG((dbgo,"LCD/user cal[%d] = %f\n",i,p->LCD_cal[i]))
 	}
 	/* LCD/user calibration time */
 	if ((ev = huey_rdreg_word(p, &p->LCD_caltime, 50) ) != inst_ok)
 		return ev;
-	DBG(("LCD/user calibration time = 0x%x = %s\n",p->LCD_caltime, ctime(&p->LCD_caltime)))
+	DBG((dbgo,"LCD/user calibration time = 0x%x = %s\n",p->LCD_caltime, ctime((time_t *)&p->LCD_caltime)))
 
 
 	/* CRT/factory calibration values */
 	for (i = 0; i < 9; i++) {
 		if ((ev = huey_rdreg_float(p, &p->CRT_cal[i], 54 + 4 * i) ) != inst_ok)
 			return ev;
-		DBG(("CRT/factory cal[%d] = %f\n",i,p->CRT_cal[i]))
+		DBG((dbgo,"CRT/factory cal[%d] = %f\n",i,p->CRT_cal[i]))
 	}
 	/* CRT/factory calibration flag */
 	if ((ev = huey_rdreg_word(p, &p->CRT_caltime, 90) ) != inst_ok)
 		return ev;
-	DBG(("CRT/factory flag = 0x%x = %s\n",p->CRT_caltime, ctime(&p->CRT_caltime)))
+	DBG((dbgo,"CRT/factory flag = 0x%x = %s\n",p->CRT_caltime, ctime((time_t *)&p->CRT_caltime)))
 
 
 	/* Hard coded in Huey */
 	p->clk_prd = 1e-6;
-	DBG(("Clock period = %f\n",p->clk_prd))
+	DBG((dbgo,"Clock period = %f\n",p->clk_prd))
 
 	/* Dark current calibration values */
 	for (i = 0; i < 3; i++) {
@@ -956,7 +974,7 @@ huey_read_all_regs(
 				return ev;
 			p->dark_cal[i] = 0.0;
 		}
-		DBG(("darkcal[%d] = %f\n",i,p->dark_cal[i]))
+		DBG((dbgo,"darkcal[%d] = %f\n",i,p->dark_cal[i]))
 	}
 
 	/* Ambient darkcurrent calibration value ? */
@@ -965,7 +983,7 @@ huey_read_all_regs(
 			return ev;
 		p->amb_cal = 0.0;
 	}
-	DBG(("Ambient cal = %f\n",p->amb_cal))
+	DBG((dbgo,"Ambient cal = %f\n",p->amb_cal))
 
 	/* Unlock string */
 	for (i = 0; i < 4; i++) {
@@ -975,12 +993,12 @@ huey_read_all_regs(
 		p->unlk_string[i] = (char)vv;
 	}
 	p->unlk_string[i] = '\000';
-	DBG(("unlock string = '%s'\n",p->unlk_string))
+	DBG((dbgo,"unlock string = '%s'\n",p->unlk_string))
 
 	/* Read the integration time */
 	if ((ev = huey_rd_int_time(p, &p->int_clocks) ) != inst_ok)
 		return ev;
-	DBG(("Integration time = %d\n",p->int_clocks))
+	DBG((dbgo,"Integration time = %d\n",p->int_clocks))
 
 	if (p->debug) fprintf(stderr,"huey: all registers read OK\n");
 
@@ -992,6 +1010,7 @@ static inst_code
 huey_compute_factors(
 	huey *p				/* Object */
 ) {
+	int i;
 
 	/* Check that certain value are valid */
 	if (p->ser_no == 0xffffffff)
@@ -1007,7 +1026,7 @@ huey_compute_factors(
 
 	/* clk_prd inversion */
 	p->clk_freq = 1.0/p->clk_prd;
-	DBG(("clk_freq = %f\n",p->clk_freq))
+	DBG((dbgo,"clk_freq = %f\n",p->clk_freq))
 	
 	/* Set some defaults */
 	p->sampno = 100;		/* Minimum sampling count */
@@ -1024,6 +1043,9 @@ static inst_code
 huey_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) {
 	huey *p = (huey *) pp;
 	unsigned char buf[8];
+	int rsize;
+	long etime;
+	int bi, i, rv;
 	inst_code ev = inst_ok;
 	char **pnames = NULL;
 	int retries = 0;
@@ -1111,8 +1133,6 @@ huey_init_inst(inst *pp) {
 		if (p->debug) fprintf(stderr,"huey: instrument inited OK\n");
 	}
 
-	p->itype = instHuey;
-
 	/* Flash the LEDs, just cos we can! */
 	if ((ev = huey_set_LEDs(p, 0x1)) != inst_ok)
 		return ev;
@@ -1152,6 +1172,11 @@ ipatch *val) {		/* Pointer to instrument patch value */
 	int user_trig = 0;
 	int rv = inst_protocol_error;
 
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
 	if (p->trig == inst_opt_trig_keyb) {
 		int se;
 		if ((se = icoms_poll_user(p->icom, 1)) != ICOM_TRIG) {
@@ -1188,6 +1213,11 @@ double mtx[3][3]
 ) {
 	huey *p = (huey *)pp;
 
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
 	if (mtx == NULL)
 		icmSetUnity3x3(p->ccmat);
 	else
@@ -1201,6 +1231,12 @@ double mtx[3][3]
 /* Eye-One Display 2 if a frequency calibration is needed, */
 /* and we are in CRT mode */
 inst_cal_type huey_needs_calibration(inst *pp) {
+	huey *p = (huey *)pp;
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
 
 	return inst_ok;
 }
@@ -1212,6 +1248,13 @@ inst_cal_type calt,		/* Calibration type. inst_calt_all for all neeeded */
 inst_cal_cond *calc,	/* Current condition/desired condition */
 char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 ) {
+	huey *p = (huey *)pp;
+	int rv = 0;
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
 
 	id[0] = '\000';
 
@@ -1369,12 +1412,13 @@ huey_del(inst *pp) {
 
 /* Return the instrument capabilities */
 inst_capability huey_capabilities(inst *pp) {
+	huey *p = (huey *)pp;
 	inst_capability rv;
 
 	rv = inst_emis_spot
 	   | inst_emis_disp
-	   | inst_emis_disp_crt
-	   | inst_emis_disp_lcd
+	   | inst_emis_disptype
+	   | inst_emis_disptypem
 	   | inst_colorimeter
 	   | inst_ccmx
 	   | inst_emis_ambient
@@ -1386,6 +1430,7 @@ inst_capability huey_capabilities(inst *pp) {
 
 /* Return the instrument capabilities 2 */
 inst2_capability huey_capabilities2(inst *pp) {
+	huey *p = (huey *)pp;
 	inst2_capability rv = 0;
 
 	rv |= inst2_prog_trig;
@@ -1395,11 +1440,64 @@ inst2_capability huey_capabilities2(inst *pp) {
 	return rv;
 }
 
+inst_disptypesel huey_disptypesel[3] = {
+	{
+		1,
+		"c",
+		"Huey: CRT display",
+		1
+	},
+	{
+		2,
+		"l",
+		"Huey: LCD display",
+		0
+	},
+	{
+		0,
+		"",
+		"",
+		-1
+	}
+};
+
+/* Get mode and option details */
+static inst_code huey_get_opt_details(
+inst *pp,
+inst_optdet_type m,	/* Requested option detail type */
+...) {				/* Status parameters */                             
+	huey *p = (huey *)pp;
+	inst_code rv = inst_ok;
+
+	if (m == inst_optdet_disptypesel) {
+		va_list args;
+		int *pnsels;
+		inst_disptypesel **psels;
+
+		va_start(args, m);
+		pnsels = va_arg(args, int *);
+		psels = va_arg(args, inst_disptypesel **);
+		va_end(args);
+
+		*pnsels = 2;
+		*psels = huey_disptypesel;
+		
+		return inst_ok;
+	}
+
+	return inst_unsupported;
+}
+
 /* Set device measurement mode */
 inst_code huey_set_mode(inst *pp, inst_mode m)
 {
 	huey *p = (huey *)pp;
 	inst_mode mm;		/* Measurement mode */
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
 
 	/* The measurement mode portion of the mode */
 	mm = m & inst_mode_measurement_mask;
@@ -1427,18 +1525,35 @@ static inst_code
 huey_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 {
 	huey *p = (huey *)pp;
+	inst_code ev = inst_ok;
 
-	/* Select CRT/LCD */
-	if (m == inst_opt_disp_crt) {
-		if (p->crt == 0)
-		p->crt = 1;
-		return inst_ok;
-	} else if (m == inst_opt_disp_lcd) {
-		if (p->crt != 0)
-		p->crt = 0;
-		return inst_ok;
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
 
+	/* Set the display type */
+	if (m == inst_opt_disp_type) {
+		va_list args;
+		int ix;
+
+		va_start(args, m);
+		ix = va_arg(args, int);
+		va_end(args);
+
+		if (ix == 1) {
+			if (p->crt == 0)
+			p->crt = 1;
+			return inst_ok;
+		} else if (ix == 2) {
+			if (p->crt != 0)
+			p->crt = 0;
+			return inst_ok;
+		} else {
+			return inst_unsupported;
+		}
 	}
+
 	/* Record the trigger mode */
 	if (m == inst_opt_trig_prog
 	 || m == inst_opt_trig_keyb) {
@@ -1486,7 +1601,7 @@ huey_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 }
 
 /* Constructor */
-extern huey *new_huey(icoms *icom, int debug, int verb)
+extern huey *new_huey(icoms *icom, instType itype, int debug, int verb)
 {
 	huey *p;
 	if ((p = (huey *)calloc(sizeof(huey),1)) == NULL)
@@ -1506,6 +1621,7 @@ extern huey *new_huey(icoms *icom, int debug, int verb)
 	p->init_inst         = huey_init_inst;
 	p->capabilities      = huey_capabilities;
 	p->capabilities2     = huey_capabilities2;
+	p->get_opt_details   = huey_get_opt_details;
 	p->set_mode          = huey_set_mode;
 	p->set_opt_mode      = huey_set_opt_mode;
 	p->read_sample       = huey_read_sample;
@@ -1515,7 +1631,7 @@ extern huey *new_huey(icoms *icom, int debug, int verb)
 	p->interp_error      = huey_interp_error;
 	p->del               = huey_del;
 
-	p->itype = instUnknown;		/* Until initalisation */
+	p->itype = itype;
 
 	return p;
 }

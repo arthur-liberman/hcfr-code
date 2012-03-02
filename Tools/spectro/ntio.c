@@ -88,10 +88,10 @@ icoms *p
 		p->paths = NULL;
 	}
 	
-	DBG("icoms_get_paths: about to call usb_get_paths()\n");
-	usb_get_paths(p);
-	DBGF((errout,"icoms_get_paths: up to %d, about to call hid_get_paths()\n",p->npaths));
+	DBG("icoms_get_paths: about to call hid_get_paths()\n");
 	hid_get_paths(p);
+	DBGF((errout,"icoms_get_paths: up to %d, about to call usb_get_paths()\n",p->npaths));
+	usb_get_paths(p);
 	usbend = p->npaths;
 
 	DBGF((errout,"icoms_get_paths: up to %d, about to lookup the registry for serial ports\n",p->npaths));
@@ -155,7 +155,7 @@ icoms *p
 		}
 		if ((p->paths[p->npaths] = malloc(sizeof(icompath))) == NULL)
 			error("icoms: malloc failed!");
-		if ((p->paths[p->npaths]->path = _strdup(value)) == NULL)
+		if ((p->paths[p->npaths]->path = strdup(value)) == NULL)
 			error("icoms: strdup failed!");
 #ifdef ENABLE_USB
 		p->paths[p->npaths]->dev = NULL;
@@ -189,7 +189,7 @@ icoms *p
 
 
 /* Close the port */
-void icoms_close_port(icoms *p) {
+static void icoms_close_port(icoms *p) {
 	if (p->is_open) {
 		if (p->is_usb) {
 			usb_close_port(p);
@@ -238,7 +238,7 @@ word_length	 word)
 
 	if (port >= 1) {
 		if (p->is_open && port != p->port) {	/* If port number changes */
-			icoms_close_port(p);
+			p->close_port(p);
 		}
 	}
 
@@ -277,7 +277,7 @@ word_length	 word)
 			if ((p->ppath = malloc(sizeof(icompath))) == NULL)
 				error("malloc() failed on com port path");
 			*p->ppath = *p->paths[port-1];				/* Structure copy */
-			if ((p->ppath->path = _strdup(p->paths[port-1]->path)) == NULL)
+			if ((p->ppath->path = strdup(p->paths[port-1]->path)) == NULL)
 				error("strdup() failed on com port path");
 			p->port = port;
 
@@ -628,7 +628,7 @@ icoms_del(icoms *p) {
 	if (p->debug) fprintf(stderr,"icoms: delete called\n");
 	if (p->is_open) {
 		if (p->debug) fprintf(stderr,"icoms: closing port\n");
-		icoms_close_port(p);
+		p->close_port(p);
 	}
 	if (p->paths != NULL) {
 		int i;
@@ -673,6 +673,8 @@ icoms *new_icoms()
 	p->tc = -1;
 	p->debug = 0;
 	
+	p->close_port = icoms_close_port;
+
 	p->port_type = icoms_port_type;
 	p->get_paths = icoms_get_paths;
 	p->set_ser_port = icoms_set_ser_port;

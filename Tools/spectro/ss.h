@@ -109,7 +109,7 @@ struct _ss {
 	}; typedef struct _ss ss;
 
 /* Constructor */
-extern ss *new_ss(icoms *icom, int debug, int verb);
+extern ss *new_ss(icoms *icom, instType itype, int debug, int verb);
 
 #define SS_H
 #endif /* SS_H */

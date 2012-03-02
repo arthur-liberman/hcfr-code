@@ -42,8 +42,11 @@
 #ifndef SALONEINSTLIB
 #include "copyright.h"
 #include "aconfig.h"
-#endif /* !SALONEINSTLIB */
 #include "numlib.h"
+#else	/* !SALONEINSTLIB */
+#include "sa_config.h"
+#include "numsup.h"
+#endif /* !SALONEINSTLIB */
 #include "xspect.h"
 #include "insttypes.h"
 #include "icoms.h"
@@ -160,7 +163,7 @@ i1disp_command_1(
 	int value;				/* 16 bit value (USB wValue, sent little endian) */
 	int index;				/* 16 bit index (USB wIndex, sent little endian) */
 	int rwsize;				/* 16 bit data size (USB wLength, send little endian) */ 
-	int rcc;				/* Return cc code from instruction */
+	int rcc = 0;			/* Return cc code from instruction */
 	int i, tsize;
 	unsigned char buf[8];	/* 8 bytes to read */
 	int se, ua = 0, rv = inst_ok;
@@ -310,7 +313,7 @@ i1disp_rdreg_byte(
 		if (addr < 0 || addr > 159)
 			return i1disp_interp_code((inst *)p, I1DISP_BAD_REG_ADDRESS);
 	}
-	c = addr;  
+	c = (unsigned char)addr;  
 
 	/* Read a byte */
 	if ((ev = i1disp_command(p, i1d_rdreg, &c, 1,
@@ -427,8 +430,8 @@ i1disp_wrreg_byte(
 	if (cval == inv) 	/* No need to write */
 		return inst_ok;
 
-	ibuf[0] = addr;  
-	ibuf[1] = inv;  
+	ibuf[0] = (unsigned char)addr;  
+	ibuf[1] = (unsigned char)inv;  
 
 	/* Write a byte */
 	if ((ev = i1disp_command(p, i1d_wrreg, ibuf, 2,
@@ -749,13 +752,12 @@ i1disp_take_raw_measurement_2(
 	/* Set the edge count */
 	for (i = 0; i < 3; i++) {
 		short2buf(ibuf, edgec[i]);	/* Edge count */
-		ibuf[2] = i;				/* Channel number */
+		ibuf[2] = (unsigned char)i;	/* Channel number */
 		if ((ev = i1disp_command(p, i1d_setmedges2, ibuf, 3,
 			         obuf, 8, &rsize, p->samptime + 1.0)) != inst_ok)
 			return ev;
 	}
 
-//	for (i = 0; i < 2; i++) {
 	/* Do the measurement, and return the Red value */
 	if ((ev = i1disp_command(p, i1d_m_rgb_edge_2, ibuf, 0,
 		         obuf, 8, &rsize, 120.0)) != inst_ok)
@@ -1084,6 +1086,7 @@ i1disp_check_unlock(
 		{ { 0x00,0x00,0x01,0x00 }, NULL },		/* */
 		{ { 0x09,0x0b,0x0c,0x0d }, NULL },		/* */
 		{ { 0x0e,0x0e,0x0e,0x0e }, NULL },		/* */
+		{ { 0x11,0x02,0xde,0xf0 }, NULL },		/* Barco Chroma 5 ? */
 		{ { ' ',' ',' ',' ' }, (int *)-1 }
 	}; 
 
@@ -1147,7 +1150,10 @@ i1disp_check_unlock(
 
 	DBG((dbgo,"Version character = 0x%02x = '%c'\n",vv,vv))
 
-	if (ver >= 4.0 && ver < 5.1 && vv == 0xff) {
+	/* Sequel Chroma 4 with vv == 0xff ? */
+	/* Barco Chroma 5 with ver = 5.01 and vv = '5' */
+	if (ver >= 4.0 && ver < 5.1
+	 && (vv == 0xff || vv == 0x35)) {
 		p->dtype = 0;			/* Sequel Chroma 4 ?? */
 		p->chroma4 = 1;			/* Treat like an Eye-One Display 1 */
 								/* !!! Not fully tested !!! */
@@ -1320,28 +1326,30 @@ i1disp_compute_factors(
 	if (p->reg0_W == 0xffffffff)
 		return i1disp_interp_code((inst *)p, I1DISP_BAD_SERIAL_NUMBER);
 
+	/* LCD calibration date valid ? */
 	if (p->reg50_W == 0xffffffff)
 		return i1disp_interp_code((inst *)p, I1DISP_BAD_LCD_CALIBRATION);
 
-	/* The value stored in reg126_S seems hard to interpret. */
+	/* The value stored in reg126_S ("user cal flag") seems hard to interpret. */
 	/* For the i1display 1&2, it has a value of 0xd. */
 	/* Value 0x7 seems to be for a "user calibration" */
 	/* Values 3 & 6 seem to always "errors" as does a value */
 	/* < 7 in most circumstances. But the Heidelberg Viewmaker */
 	/* (from Sequel Imaging) and Lacie Blue Eye colorimeter seems to have a value of 2. */
+	/* The Barco sensor seems to have a value of 0x20 */
 	if (p->reg126_S == 0xffffffff || (p->reg126_S < 7 && p->reg126_S != 2))
 		return i1disp_interp_code((inst *)p, I1DISP_BAD_LCD_CALIBRATION);
-
-	if (p->reg90_W == 0xffffffff)
-		return i1disp_interp_code((inst *)p, I1DISP_BAD_CRT_CALIBRATION);
 
 	/* Not quite sure about this, but we're assuming this */
 	/* is set to 2 or 0xd if reg4-36 hold the LCD calibration, */
 	/* and some other number if they are not set, or set */
 	/* to a custom user calibration. */
-	if (p->reg126_S != 0xd && p->reg126_S != 2)
+	if (p->reg126_S != 0xd && p->reg126_S != 2 && p->reg126_S != 0x20)
 		return i1disp_interp_code((inst *)p, I1DISP_BAD_LCD_CALIBRATION);
 		
+	if (p->reg90_W == 0xffffffff)
+		return i1disp_interp_code((inst *)p, I1DISP_BAD_CRT_CALIBRATION);
+
 	/* Compute ambient matrix */
 	for (i = 0; i < 9; i++)
 		p->amb[i] = p->reg144_F[i % 3] * 0.5 * (p->reg4_F[i] + p->reg54_F[i]);
@@ -1440,8 +1448,6 @@ i1disp_init_inst(inst *pp) {
 		if (p->debug) fprintf(dbgo,"i1disp: instrument inited OK\n");
 	}
 
-	p->itype = instI1Display;
-
 	return ev;
 }
 
@@ -1455,6 +1461,11 @@ ipatch *val) {		/* Pointer to instrument patch value */
 	i1disp *p = (i1disp *)pp;
 	int user_trig = 0;
 	int rv = inst_protocol_error;
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
 
 	if (p->trig == inst_opt_trig_keyb) {
 		int se;
@@ -1491,6 +1502,11 @@ double mtx[3][3]
 ) {
 	i1disp *p = (i1disp *)pp;
 
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
 	if (mtx == NULL)
 		icmSetUnity3x3(p->ccmat);
 	else
@@ -1505,6 +1521,11 @@ double mtx[3][3]
 /* and we are in CRT mode */
 inst_cal_type i1disp_needs_calibration(inst *pp) {
 	i1disp *p = (i1disp *)pp;
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
 
 	if (p->dtype == 1 && p->crt != 0 && p->itset == 0)
 		return inst_calt_crt_freq;
@@ -1526,6 +1547,11 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 ) {
 	i1disp *p = (i1disp *)pp;
 	int rv = 0;
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
 
 	id[0] = '\000';
 
@@ -1716,15 +1742,15 @@ inst_capability i1disp_capabilities(inst *pp) {
 
 	rv = inst_emis_spot
 	   | inst_emis_disp
-	   | inst_emis_disp_crt
-	   | inst_emis_disp_lcd
+	   | inst_emis_disptype
+	   | inst_emis_disptypem
 	   | inst_colorimeter
 	   | inst_ccmx
 	     ;
 
-	if (p->dtype == 1) {	/* Eye-One Display 2 */
+	/* Eye-One Display 2 has ambient capability */
+	if (p->dtype == 1)
 	   rv |= inst_emis_ambient;
-	}
 
 	return rv;
 }
@@ -1745,11 +1771,62 @@ inst2_capability i1disp_capabilities2(inst *pp) {
 	return rv;
 }
 
+inst_disptypesel i1disp_disptypesel[3] = {
+	{
+		1,
+		"c",
+		"i1Disp: CRT display",
+		1
+	},
+	{
+		2,
+		"l",
+		"i1Disp: LCD display",
+		0
+	},
+	{
+		0,
+		"",
+		"",
+		-1
+	}
+};
+
+/* Get mode and option details */
+static inst_code i1disp_get_opt_details(
+inst *pp,
+inst_optdet_type m,	/* Requested option detail type */
+...) {				/* Status parameters */                             
+
+	if (m == inst_optdet_disptypesel) {
+		va_list args;
+		int *pnsels;
+		inst_disptypesel **psels;
+
+		va_start(args, m);
+		pnsels = va_arg(args, int *);
+		psels = va_arg(args, inst_disptypesel **);
+		va_end(args);
+
+		*pnsels = 2;
+		*psels = i1disp_disptypesel;
+		
+		return inst_ok;
+	}
+
+	return inst_unsupported;
+}
+
 /* Set device measurement mode */
 inst_code i1disp_set_mode(inst *pp, inst_mode m)
 {
 	i1disp *p = (i1disp *)pp;
 	inst_mode mm;		/* Measurement mode */
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
 
 	/* The measurement mode portion of the mode */
 	mm = m & inst_mode_measurement_mask;
@@ -1778,18 +1855,35 @@ i1disp_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 {
 	i1disp *p = (i1disp *)pp;
 
-	if (m == inst_opt_disp_crt) {
-		if (p->crt == 0)
-			p->itset = 0;		/* This is a hint we may have swapped displays */
-		p->crt = 1;
-		return inst_ok;
-	} else if (m == inst_opt_disp_lcd) {
-		if (p->crt != 0)
-			p->itset = 0;		/* This is a hint we may have swapped displays */
-		p->crt = 0;
-		return inst_ok;
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
 
+	/* Set the display type */
+	if (m == inst_opt_disp_type) {
+		va_list args;
+		int ix;
+
+		va_start(args, m);
+		ix = va_arg(args, int);
+		va_end(args);
+
+		if (ix == 1) {
+			if (p->crt == 0)
+				p->itset = 0;		/* This is a hint we may have swapped displays */
+			p->crt = 1;
+			return inst_ok;
+		} else if (ix == 2) {
+			if (p->crt != 0)
+				p->itset = 0;		/* This is a hint we may have swapped displays */
+			p->crt = 0;
+			return inst_ok;
+		} else {
+			return inst_unsupported;
+		}
 	}
+
 	/* Record the trigger mode */
 	if (m == inst_opt_trig_prog
 	 || m == inst_opt_trig_keyb) {
@@ -1808,7 +1902,7 @@ i1disp_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 }
 
 /* Constructor */
-extern i1disp *new_i1disp(icoms *icom, int debug, int verb)
+extern i1disp *new_i1disp(icoms *icom, instType itype, int debug, int verb)
 {
 	i1disp *p;
 	if ((p = (i1disp *)calloc(sizeof(i1disp),1)) == NULL)
@@ -1828,6 +1922,7 @@ extern i1disp *new_i1disp(icoms *icom, int debug, int verb)
 	p->init_inst         = i1disp_init_inst;
 	p->capabilities      = i1disp_capabilities;
 	p->capabilities2     = i1disp_capabilities2;
+	p->get_opt_details   = i1disp_get_opt_details;
 	p->set_mode          = i1disp_set_mode;
 	p->set_opt_mode      = i1disp_set_opt_mode;
 	p->read_sample       = i1disp_read_sample;
@@ -1837,7 +1932,10 @@ extern i1disp *new_i1disp(icoms *icom, int debug, int verb)
 	p->interp_error      = i1disp_interp_error;
 	p->del               = i1disp_del;
 
-	p->itype = instUnknown;		/* Until initalisation */
+	p->itype = itype;
+
+	if (p->itype == instI1Disp2)
+		p->dtype = 1;			/* i1Display2 */
 
 	return p;
 }

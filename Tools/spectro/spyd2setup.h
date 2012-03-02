@@ -32,8 +32,6 @@ extern unsigned char *spyder2_pld_bytes;
 }
 #endif
 
-/* Argument is the executable path, used to locate the spyd2PLD.bin file. */
-/* If this is NULL, then the default computed executable path will be used. */
 /* Return 0 if Spyder 2 firmware is not available */
 /* Return 1 if Spyder 2 firmware is available from an external file */
 /* Return 2 if Spyder 2 firmware is part of this executable */
@@ -59,7 +57,7 @@ int setup_spyd2() {
 	/* If no firmware compiled in, see if there is a file to load from. */
 	if ((pld_size == 0 || pld_size == 0x11223344) && loaded == 0) {
 		
-		for (;;) {
+		for (;;) {	/* So we can break out */
 			if ((no_paths = xdg_bds(NULL, &bin_paths, xdg_data, xdg_read, xdg_user, "color/spyd2PLD.bin")) < 1)
 				break;
 

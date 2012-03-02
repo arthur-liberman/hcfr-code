@@ -99,7 +99,7 @@ struct _dtp51 {
 	}; typedef struct _dtp51 dtp51;
 
 /* Constructor */
-extern dtp51 *new_dtp51(icoms *icom, int debug, int verb);
+extern dtp51 *new_dtp51(icoms *icom, instType itype, int debug, int verb);
 
 
 

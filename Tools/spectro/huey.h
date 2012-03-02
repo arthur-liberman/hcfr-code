@@ -128,7 +128,7 @@ struct _huey {
 }; typedef struct _huey huey;
 
 /* Constructor */
-extern huey *new_huey(icoms *icom, int debug, int verb);
+extern huey *new_huey(icoms *icom, instType itype, int debug, int verb);
 
 
 #define HUEY_H

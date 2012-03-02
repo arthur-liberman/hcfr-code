@@ -59,14 +59,24 @@
 #define SPYD2_BADREADSIZE           0x03
 #define SPYD2_TRIGTIMEOUT           0x04
 #define SPYD2_OVERALLTIMEOUT        0x05
+#define SPYD2_BAD_EE_CRC	        0x06
 
-/* Internal errors */
-#define SPYD2_BAD_EE_ADDRESS	    0x20
-#define SPYD2_BAD_EE_SIZE		    0x21
-#define SPYD2_NO_PLD_PATTERN	    0x22
-#define SPYD2_NO_COMS  		        0x23
-#define SPYD2_NOT_INITED  		    0x24
+/* Internal software errors */
+#define SPYD2_BAD_EE_ADDRESS	    0x21
+#define SPYD2_BAD_EE_SIZE		    0x22
+#define SPYD2_NO_PLD_PATTERN	    0x23
+#define SPYD2_NO_COMS  		        0x24
+#define SPYD2_NOT_INITED  		    0x25
+#define SPYD2_NOCRTCAL  		    0x26		/* No CRT calibration data */
+#define SPYD2_NOLCDCAL  		    0x27		/* No CRT calibration data */
+#define SPYD2_MALLOC     		    0x28
+#define SPYD2_OBS_SELECT   		    0x29		/* Observer */
+#define SPYD2_CAL_FAIL   		    0x2A
+#define SPYD2_TOO_FEW_CALIBSAMP     0x2B
+#define SPYD2_INT_CIECONVFAIL       0x2C
 
+/* Configuration */
+#define SPYD2_DISP_SEL_RANGE  	    0x40		/* Calibration selection is out of range */
 
 /* SPYD2/3 communication object */
 struct _spyd2 {
@@ -78,20 +88,29 @@ struct _spyd2 {
 	int trig_return;			/* Emit "\n" after trigger */
 
 	/* Serial EEPROM registers */
-	unsigned int hwver;			/* 5:S	Harware version number & feature bits */
+								/* versioni & feature bits */
 								/* Spyder2         = 0x0307 */
 								/* Spyder3 Express = 0x040f */
 								/* Spyder3 Pro     = 0x0407 */
 								/* Spyder3 Elite   = 0x0407 */
-								/* Feature bits 0,1,2 correspond to display types */
-								/* CRT, LCD, TOK */
-								/* Feature bit 3 on Spyder 3 correspond to no ambient sensor ??? */
+								/* Spyder4 Pro     = 0x070F */
+
+	unsigned int hwver;			/* 5:B	Harware version number */
+
+	unsigned int fbits;			/* 6:B Feature bits 0,1,2,3 correspond to calibration types */
+								/* CRT/UNK, LCD/NORM, TOK, CRT/UNK  */
+
 	char    serno[9];			/* 8:8xB  Serial number as zero terminated string */
 
 								/* Spyder2: [0][][] = CRT, [1][][] = LCD */
-								/* Spyder3: [0][][] = ???, [1][][] = CRT & LCD */
-	double  cal_A[2][3][9];		/* 16, 256  CRT/LCD A calibration matrix */
-	double  cal_B[2][3][9];		/* 128, 384 CRT/LCD B calibration matrix */
+								/* Spyder3: [0][][] = UNK, [1][][] = CRT & LCD */
+					
+	/* hwver 3..6 uses these calibrations */
+	double  cal_A[2][3][9];		/* HW3..6: 16, 256  CRT/LCD A calibration matrix */
+	double  cal_B[2][3][9];		/* HW3..6: 128, 384 CRT/LCD B calibration matrix */
+
+								/* HW7: cal_A[1] computed from sensor spectral data. */
+								/* HWy: cal_B[1] 60, 384 Linearity correction */
 
 								/* The first (A) 3x9 is a sensor to XYZ transform. */
 								/* cal[0] is an offset value, while the */
@@ -110,11 +129,18 @@ struct _spyd2 {
 								/* This might be Y only weightings for the 7 sensor values, */
 								/* with no offset value (TOK type ?). */
 
+	/* hwver 7 (Spyder 4) uses computed calibrations */
+//	double sens[7][41];			/* Sensor sensitivity curves in Hz per mW/nm/m^2 */
+	xspect sens[7];				/* Sensor sensitivity curves in Hz per mW/nm/m^2 */
+
 	/* Computed factors and state */
 	int prevraw[8];				/* Previous raw reading values */
-	int     lcd;				/* NZ if set to LCD */ 
+	int     ref;				/* 0 for constant, 1 for refresh display */ 
 	int     rrset;				/* Flag, nz if the refresh rate has been determined */
 	double  rrate;				/* Current refresh rate. Set to DEFREFR if !determined */
+	int     calix;				/* Cal table index */
+	int     calix4;				/* Spyder 4 spectral cal index, last calix4, 0..spyd4_nocals-1 */
+	double  gain;				/* hwver == 5 gain value (default 4) */
 
 	double ccmat[3][3];			/* Colorimeter correction matrix */
 
@@ -125,7 +151,7 @@ struct _spyd2 {
 }; typedef struct _spyd2 spyd2;
 
 /* Constructor */
-extern spyd2 *new_spyd2(icoms *icom, int debug, int verb);
+extern spyd2 *new_spyd2(icoms *icom, instType itype, int debug, int verb);
 
 
 #define SPYD2_H

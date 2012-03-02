@@ -3,27 +3,28 @@
 /* 
  * Argyll Color Correction System
  *
- * ColorVision Spyder 2 related software.
+ * Datacolor Spyder 4 related software.
  *
  * Author: Graeme W. Gill
  * Date:   17/9/2007
  *
- * Copyright 2006 - 2007, Graeme W. Gill
+ * Copyright 2006 - 2012, Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
  * see the License2.txt file for licencing details.
  */
 
-/* This program enables the Spyder 2 instrument for Argyll, */
+/* This program enables the full range of normal Spyder 4 calibration for Argyll, */
 /* by searching for the vendor driver files to locate the */
-/* Spyder 2 PLD firmare pattern. If it is found, it transfers it to */
-/* a spyd2PLD.bin so that the user can use the Argyll driver with their */
-/* device. If the vendor instalation files are not in expected places, */
+/* Spyder 4 dccmtr.dll. It then looks for the display spectral data */
+/* in the file and transfers it to a spyd4cal.bin so that the user can */
+/* select from the standard range of Spyder4 calibrations. */
+/* If the vendor instalation files are not in expected places, */
 /* then the instalation file (e.g. the MSWindows instalation */
-/* CVSpyder.dll, or full MSWindows instalation archive setup/setup.exe) */
+/* dccmtr.dll, or full MSWindows instalation archive Data/setup.exe) */
 /* can be provided as a command line argument. Note that even though */
-/* the vendor install files are platform dependent, spyd2en is platform */
+/* the vendor install files are platform dependent, spyd4en is platform */
 /* neutral. */
 
 #include <stdio.h>
@@ -69,8 +70,8 @@ struct _archive {
 	unsigned int dsize;		/* size of decompressed file */
 	unsigned int maxdsize;	/* maximum size allowed for */
 
-	unsigned char *firmware;	/* Pointer to firmware */
-	unsigned int firmwaresize;
+	unsigned char *caldata;	/* Pointer to cal data */
+	unsigned int caldatasize;	/* Length of cal data */
 
 	/* Locate the given name, and set the offset */
 	/* to the locatation the compressed data is at */
@@ -87,8 +88,8 @@ struct _archive {
 	/* Unget 16 bytes */
 	void (*unget16)(struct _archive *p);
 
-	/* return the address of the firmware and its size */
-	void (*get_firmware)(struct _archive *p, unsigned char **buf, unsigned int *size);
+	/* return the address of the cal data and its size */
+	void (*get_caldata)(struct _archive *p, unsigned char **buf, unsigned int *size);
 
 	/* Destroy ourselves */
 	void (*del)(struct _archive *p);
@@ -172,10 +173,10 @@ unsigned int get16_arch(archive *p) {
 	return val;
 }
 
-/* return the address of the firmware and its size */
-void get_firmware_arch(archive *p, unsigned char **buf, unsigned int *size) {
-	*buf = p->firmware;
-	*size = p->firmwaresize;
+/* return the address of the calibration data and its size */
+void get_caldata_arch(archive *p, unsigned char **buf, unsigned int *size) {
+	*buf = p->caldata;
+	*size = p->caldatasize;
 }
 
 /* Unget the 16 bits from the archive. */
@@ -230,7 +231,7 @@ archive *new_arch(char *name, int verb) {
 	p->verb = verb;
 	p->get16 = get16_arch;
 	p->unget16 = unget16_arch;
-	p->get_firmware = get_firmware_arch;
+	p->get_caldata = get_caldata_arch;
 	p->del = del_arch;
 
 	/* Open up the file for reading */
@@ -275,7 +276,7 @@ archive *new_arch(char *name, int verb) {
 	}
 
 	if (p->isvise) {		/* Need to locate driver file and decompress it */
-		char *dname = "CVSpyder.dll";
+		char *dname = "dccmtr.dll";
 
 		if (verb)
 			printf("Input file '%s' is a VISE archive file base 0x%x\n",name,p->vbase);
@@ -304,17 +305,16 @@ archive *new_arch(char *name, int verb) {
 			printf("Input file '%s' is NOT a VISE archive file - assume it's a .dll\n",name);
 	}
 
-	/* Locate the Spyder firmware image */
+	/* Locate the Spyder spectral calibration information */
 	{
 		unsigned char *buf;
 		unsigned int size;
 		unsigned int i, j;
+		int nocals;
 		unsigned int rfsize;
-		/* First few bytes of the standard Xilinx XCS05XL PLD pattern */
-		unsigned char magic[4] = { 0xff, 0x04, 0xb0, 0x0a };
-
-		p->firmwaresize = 6817;
-		rfsize = (p->firmwaresize + 7) & ~7;
+		/* First 41 x 8 bytes are the following pattern: */
+		unsigned char cal2vals[8] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0x3f };
+		unsigned char cal2evals[7] = { '3', '3', '3', '7', '1', '0', '-' };
 
 		if (p->isvise) {
 			buf = p->dbuf;
@@ -324,217 +324,53 @@ archive *new_arch(char *name, int verb) {
 			size = p->asize;
 		}
 
-		/* Search for start of PLD pattern */
-		for(i = 0; (i + rfsize) < size ;i++) {
-			if (buf[i] == magic[0]) {
-				for (j = 0; j < 4; j++) {
-					if (buf[i + j] != magic[j])
+		/* Search for start of the calibration data */
+		for(i = 0; i < (size - 41 * 8 - 7) ;i++) {
+			if (buf[i] == cal2vals[0]) {
+				for (j = 0; j < (41 * 8); j++) {
+					if (buf[i + j] != cal2vals[j % 8])
 						break;
 				}
-				if (j >= 4)
-					break;		/* found it */
+				if (j >= (41 * 8))
+					break;		/* found first set of doubles */
 			}
 		}
-		if ((i + rfsize) >= size)
-			error("Failed to locate Spyder 2 firmware");
+		if (i >= (size - 41 * 8 - 7))
+			error("Failed to locate Spyder 4 calibration data");
+
+		p->caldata = buf + i;
+
+		/* Search for end of the calibration data */
+		for(i += (41 * 8); i < (size-7) ;i++) {
+			if (buf[i] == cal2evals[0]) {
+				for (j = 0; j < 7; j++) {
+					if (buf[i + j] != cal2evals[j])
+						break;
+				}
+				if (j >= 7)
+					break;		/* found string after calibration data */
+			}
+		}
+		if (i >= (size-7))
+			error("Failed to locate end of Spyder 4 calibration data");
+
+		rfsize = buf + i - p->caldata;
+
+		nocals = rfsize / (41 * 8);
+		if (rfsize != (nocals * 41 * 8))
+			error("Spyder 4 calibration data is not a multiple of %d bytes",41 * 8);
+
+		if (nocals != 6)
+			error("Spyder 4 calibration data has an unexpected number of entries (%d)",nocals);
+
+		p->caldatasize = rfsize;
 
 		if (verb)
-			printf("Located firmware in driver file\n");
-		p->firmware = buf + i;
+			printf("Located calibration data file\n");
 	} 
 	return p;
 }
 
-/* --------------------------------------------------------- */
-
-char *location_magic = "XCS05XL firmware pattern";
-
-/* Create a firmware header source file */
-/* return nz if something goes wrong */
-int write_header(char *name, unsigned char *fbuf, unsigned int fsize, int verb) {
-	FILE *ofp;
-	int i, j;
-
-	if (verb)
-		printf("About to transfer firmware to source file '%s'\n",name);
-
-	/* open output file */
-	if ((ofp = fopen(name,"w")) == NULL) {
-		warning("Can't open file '%s'",name);
-		return 1;
-	}
-
-
-	fprintf(ofp, "\n");
-	fprintf(ofp, "/* Spyder 2 Colorimeter Xilinx  XCS05XL firmware pattern, */\n");
-	fprintf(ofp, "/* transfered from the Spyder 2 vendor instalation by spyden. */\n");
-	fprintf(ofp, "\n");
-	fprintf(ofp, "/* This firmware pattern is (presumably) Copyright Datacolor Inc., */\n");
-	fprintf(ofp, "/* and cannot be distributed without their permision. */\n");
-	fprintf(ofp, "\n");
-	fprintf(ofp, "static unsigned int pld_size = %d;  /* Number of bytes to download */\n",fsize);
-	fsize = (fsize + 7) & ~7;		/* Round up to 4 bytes */
-	fprintf(ofp, "static unsigned char pld_space = %d;\n",fsize);
-	fprintf(ofp, "static unsigned char pld_bytes[%d] = {\n",fsize);
-
-	fprintf(ofp, "	");
-	for (i = 0, j = 0; i < fsize; i++, j++) {
-		if (j == 8) {
-			j = 0;
-			if (i < (fsize-1))
-				fprintf(ofp, ",\n	");
-			else
-				fprintf(ofp, "\n	");
-		}
-		if (j > 0)
-			fprintf(ofp, ", ");
-		fprintf(ofp, "0x%02x",fbuf[i]);
-	}
-	fprintf(ofp, "\n};\n");
-	fprintf(ofp, "\n");
-
-
-	if (fclose(ofp) != 0) {
-		warning("Failed to close output file '%s'",name);
-		return 1;
-	}
-	return 0;
-}
-
-/* --------------------------------------------------------- */
-
-/* Patch an executable */
-/* return nz if something goes wrong */
-int patch_exe(char *name, unsigned char *fbuf, unsigned int fsize, int verb) {
-	FILE *fp;
-	unsigned char *buf = NULL;
-	unsigned int size;
-	unsigned int rfsize;	/* rounded fsize */
-	int lms;				/* Location magic string size */
-	int i, j;
-
-	if (verb)
-		printf("About to patch executable '%s'\n",name);
-
-	/* open executable file */
-#if !defined(O_CREAT) && !defined(_O_CREAT)
-# error "Need to #include fcntl.h!"
-#endif
-#if defined(O_BINARY) || defined(_O_BINARY)
-	if ((fp = fopen(name,"r+b")) == NULL)
-#else
-	if ((fp = fopen(name,"r+")) == NULL)
-#endif
-	{
-		warning("Unable to open executable '%s' for patching",name);
-		return 1;
-	}
-
-	/* Figure out how big it is */
-	if (fseek(fp, 0, SEEK_END)) {
-		warning("Seek to EOF failed on '%s", name);
-		fclose(fp);
-		return 1;
-	}
-	size = (unsigned long)ftell(fp);
-
-	if (fseek(fp, 0, SEEK_SET)) {
-		warning("Seek to SOF failed on '%s'", name);
-		fclose(fp);
-		return 1;
-	}
-
-	if ((buf = (unsigned char *)malloc(size)) == NULL) {
-		error("Failed to allocate buffer for file '%s'",name);
-		fclose(fp);
-		return 1;
-	}
-
-	if (fread(buf, 1, size, fp) != size) {
-		error("Failed to read patch file '%s'\n",name);
-		free(buf);
-		fclose(fp);
-		return 1;
-	}
-
-	if (fseek(fp, 0, SEEK_SET)) {
-		warning("Seek to SOF failed on '%s'", name);
-		free(buf);
-		fclose(fp);
-		return 1;
-	}
-
-	/* Now, locate the space allowed for the pld pattern */
-
-	lms = strlen(location_magic);
-
-	/* Search for the location magic string */
-	for (i = 0; i < (size - lms) ;i++) {
-	
-		if (buf[i] == location_magic[0]) {
-			for (j = 0; j < lms; j++) {
-				if (buf[i + j] != location_magic[j])
-					break;		/* Got it */
-			}
-			if (j >= lms)
-				break;		/* found it */
-		}
-	}
-	if (i >= (size - lms)) {
-		warning("Failed to patch '%s' - already patched ?",name);
-		free(buf);
-		fclose(fp);
-		return 1;
-	}
-
-	rfsize = (fsize + 7) & ~7;
-
-	/* Copy the firmware into place */
-	for (j = 0; j < rfsize; j++) {
-		buf[i + j] = fbuf[j];
-	} 
-
-	/* Locate the size */
-	for (j = i; j > (i - 16); j-- ) {
-		if (buf[j] == 0x44 || buf[j] == 0x11)
-			break;
-	}
-	if (j <= (i = 16)) {
-		warning("Failed to locate size in '%s'",name);
-		free(buf);
-		fclose(fp);
-		return 1;
-	}
-	if (buf[j] == 0x44) { 	/* big endian */
-		buf[j]   = ((fsize >> 0)  & 0xff);
-		buf[j-1] = ((fsize >> 8)  & 0xff);
-		buf[j-2] = ((fsize >> 16) & 0xff);
-		buf[j-3] = ((fsize >> 24) & 0xff);
-	} else {				/* Little endian */
-		buf[j]   = ((fsize >> 24) & 0xff);
-		buf[j-1] = ((fsize >> 16) & 0xff);
-		buf[j-2] = ((fsize >> 8)  & 0xff);
-		buf[j-3] = ((fsize >> 0)  & 0xff);
-	}
-	
-	if (fwrite(buf, 1, size, fp) != size) {
-		error("Failed to write patch file '%s'\n",name);
-		free(buf);
-		fclose(fp);
-		return 1;
-	}
-
-	if (fclose(fp) != 0) {
-		warning("Failed to close executable file '%s'",name);
-		free(buf);
-		return 1;
-	}
-	free(buf);
-
-	if (verb)
-		printf("Executable '%s' sucessfuly patches\n",name);
-	return 0;
-}
 /* --------------------------------------------------------- */
 
 /* Write out a binary file */
@@ -595,8 +431,8 @@ void usage(void) {
 /* Cleanup function for transfer on Apple OS X */
 void umiso() {
 #if defined(UNIX) && defined(__APPLE__)
-	system("umount /Volumes/ColorVision_ISO");
-	system("rmdir /Volumes/ColorVision_ISO");
+	system("umount /Volumes/Datacolor_ISO");
+	system("rmdir /Volumes/Datacolor_ISO");
 #endif /* UNIX && __APPLE__ */
 }
 
@@ -604,15 +440,11 @@ int
 main(int argc, char *argv[]) {
 	int fa,nfa;				/* argument we're looking at */
 	char in_name[MAXNAMEL+1] = "\000" ;
-	char patch_name[MAXNAMEL+1] = "\000" ;
-	char *header_name = "spyd2PLD.h";
-	char *bin_name = "color/spyd2PLD.bin";
+	char *bin_name = "color/spyd4cal.bin";
 	char **bin_paths = NULL;
 	int no_paths = 0;
 	xdg_scope scope = xdg_user;
 	int verb = 0;
-	int header = 0;
-	int patch = 0;
 	int amount = 0;			/* We mounted the CDROM */
 	archive *va;
 	unsigned char *fbuf;
@@ -650,16 +482,6 @@ main(int argc, char *argv[]) {
 				verb = 1;
 			}
 
-			/* Creat header */
-			else if (argv[fa][1] == 'h' || argv[fa][1] == 'H') {
-				header = 1;
-			}
-
-			/* Patch an executable */
-			else if (argv[fa][1] == 'p' || argv[fa][1] == 'P') {
-				patch = 1;
-			}
-
 			/* Install scope */
 			else if (argv[fa][1] == 'S') {
 				fa = nfa;
@@ -687,14 +509,14 @@ main(int argc, char *argv[]) {
 			int i;
 			char *pf = NULL;
 
-			char *paths[] = {		/* Typical instalation locations */
-				"\\ColorVision\\Spyder2express\\CVSpyder.dll",
-				"\\PANTONE COLORVISION\\ColorPlus\\CVSpyder.dll",
+			char *paths[] = {		/* Typical instalation locations ??? */
+									/* These are almost certainly wrong. */
+				"\\Datacolor\\Spyder4Express\\dccmtr.dll",
+				"\\Datacolor\\Spyder4pro\\dccmtr.dll",
 				""
 			};
 
 			char *vols[] = {		/* Typical volume names the CDROM may have */
-				"ColorVision",
 				"Datacolor",
 				""
 			};
@@ -748,7 +570,7 @@ main(int argc, char *argv[]) {
 							if (vols[j][0] != '\000') {
 								/* Found the instalation CDROM */
 								strcpy(in_name, buf+i);
-								strcat(in_name, "setup\\setup.exe");
+								strcat(in_name, "Data\\setup.exe");
 								if (verb)
 									printf("found Vol '%s' file '%s'\n",vols[j], in_name);
 								break;
@@ -765,55 +587,46 @@ main(int argc, char *argv[]) {
 
 #if defined(UNIX) && defined(__APPLE__)
 		{
-			/* (Note we're only looking for the entry level package. */
-			/* We should perhaps search eveything starting with "Spyder" ?) */
-			strcpy(in_name, "/Applications/Spyder2express 2.2/Spyder2express.app/Contents/MacOSClassic/Spyder.lib");
-			if (verb) {
-				printf("Looking for Apple OS X install at\n '%s' .. ",in_name);
-				fflush(stdout);
-			}
-			if (access(in_name, 0) == 0) {
+			/* Look for the install CDROM, since we don't really know */
+			/* how the OS X driver software is arranged. */
+
+			in_name[0] = '\000';
+			if (verb) printf("not found\n");
+			if (verb) { printf("Looking for Spyder 4 install CDROM .. "); fflush(stdout); }
+
+			/* In case it's already mounted (abort of spyd2en ?) */
+			if (access("/Volumes/Datacolor_ISO/Data/Setup.exe", 0) == 0) {
+				strcpy(in_name, "/Volumes/Datacolor_ISO/Data/Setup.exe");
 				if (verb) printf("found\n");
-			} else {		/* Not accessible, so look for the install CDROM */
+			} else if (access("/Volumes/Datacolor", 0) == 0) {
+				struct statfs buf;
+				char sbuf[400];
+				int sl, rv;
+				if (verb) { printf("found\nMounting ISO partition .. "); fflush(stdout); }
 
-				in_name[0] = '\000';
-				if (verb) printf("not found\n");
-				if (verb) { printf("Looking for Spyder 2 install CDROM .. "); fflush(stdout); }
+				/* but we need the ISO partition */
+				/* Locate the mount point */
+				if (statfs("/Volumes/Datacolor", &buf) != 0) 
+					error("\nUnable to locate mount point of install CDROM"); 
+				if ((sl = strlen(buf.f_mntfromname)) > 3
+				 && buf.f_mntfromname[sl-2] == 's'
+				 && buf.f_mntfromname[sl-1] >= '1'
+				 && buf.f_mntfromname[sl-1] <= '9')
+					 buf.f_mntfromname[sl-2] = '\000';
+				else
+					error("\nUnable to determine CDROM mount point from '%s'",buf.f_mntfromname);
 
-				/* In case it's already mounted (abort of spyd2en ?) */
-				if (access("/Volumes/ColorVision_ISO/setup/setup.exe", 0) == 0) {
-					strcpy(in_name, "/Volumes/ColorVision_ISO/setup/setup.exe");
-					if (verb) printf("found\n");
-				} else if (access("/Volumes/ColorVision", 0) == 0) {
-					struct statfs buf;
-					char sbuf[400];
-					int sl, rv;
-					if (verb) { printf("found\nMounting ISO partition .. "); fflush(stdout); }
-
-					/* but we need the ISO partition */
-					/* Locate the mount point */
-					if (statfs("/Volumes/ColorVision", &buf) != 0) 
-						error("\nUnable to locate mount point of install CDROM"); 
-					if ((sl = strlen(buf.f_mntfromname)) > 3
-					 && buf.f_mntfromname[sl-2] == 's'
-					 && buf.f_mntfromname[sl-1] >= '1'
-					 && buf.f_mntfromname[sl-1] <= '9')
-						 buf.f_mntfromname[sl-2] = '\000';
-					else
-						error("\nUnable to determine CDROM mount point from '%s'",buf.f_mntfromname);
-
-					if ((rv = system("mkdir /Volumes/ColorVision_ISO")) != 0)
-						error("\nCreating ISO9660 volume of CDROM failed with %d",rv); 
-					sprintf(sbuf, "mount_cd9660 %s /Volumes/ColorVision_ISO", buf.f_mntfromname);
-					if ((rv = system(sbuf)) != 0) {
-						system("rmdir /Volumes/ColorVision_ISO");
-						error("\nMounting ISO9660 volume of CDROM failed with %d",rv); 
-					}
-					if (verb)
-						printf("done\n");
-					strcpy(in_name, "/Volumes/ColorVision_ISO/setup/setup.exe");
-					amount = 1;		/* Remember to unmount */
+				if ((rv = system("mkdir /Volumes/Datacolor_ISO")) != 0)
+					error("\nCreating ISO9660 volume of CDROM failed with %d",rv); 
+				sprintf(sbuf, "mount_cd9660 %s /Volumes/Datacolor_ISO", buf.f_mntfromname);
+				if ((rv = system(sbuf)) != 0) {
+					system("rmdir /Volumes/Datacolor_ISO");
+					error("\nMounting ISO9660 volume of CDROM failed with %d",rv); 
 				}
+				if (verb)
+					printf("done\n");
+				strcpy(in_name, "/Volumes/Datacolor_ISO/Data/setup.exe");
+				amount = 1;		/* Remember to unmount */
 			}
 		}
 #endif /* UNIX && __APPLE__ */
@@ -825,7 +638,7 @@ main(int argc, char *argv[]) {
 			/* Since there is no vendor driver instalation for Linux, we */
 			/* must look for the CDROM. */
 			char *vols[] = {		/* Typical volumes the CDROM could be mounted under */
-				"/media/ColorVision",
+				"/media/Datacolor",
 				"/mnt/cdrom",
 				"/mnt/cdrecorder",
 				"/media/cdrom",
@@ -837,13 +650,14 @@ main(int argc, char *argv[]) {
 
 			if (verb)
 				if (verb) { printf("Looking for Spyder 2 install CDROM .. "); fflush(stdout); }
+
 			/* See if we can see what we're looking for on one of the volumes */
 			/* It would be nice to be able to read the volume name ! */
 			for(i = 0;;i++) {
 				if (vols[i][0] == '\000')
 					break;
 				strcpy(in_name, vols[i]);
-				strcat(in_name, "/setup/setup.exe");
+				strcat(in_name, "/Data/setup.exe");
 				if (access(in_name, 0) == 0) {
 					if (verb) printf("found\n");
 					break;		
@@ -862,7 +676,7 @@ main(int argc, char *argv[]) {
 		error("No CD present, or install file to process");
 	}
 
-	/* Locate the firmware in the driver or install file */
+	/* Locate the cal data in the driver or install file */
 	if ((va = new_arch(in_name, verb)) == NULL) {
 		if(amount) umiso();
 		error("Failed to create archive object from '%s'",in_name);
@@ -875,23 +689,15 @@ main(int argc, char *argv[]) {
 		error("Failed to find/create XDG_DATA path");
 	}
 
-	get_firmware_arch(va, &fbuf, &fsize);
+	get_caldata_arch(va, &fbuf, &fsize);
 	
 	if (verb)
 		printf("Firmware is being save to '%s'\n",bin_paths[0]);
 
-	/* Create a binary file containing the firmware */
+	/* Create a binary file containing the cal data */
 	/* that drivers for the Spyder 2 can use */
 	write_bin(bin_paths[0], fbuf, fsize, verb);
 	xdg_free(bin_paths, no_paths);
-
-	/* Create a header file that can be compiled in */
-	if (header)
-		write_header(header_name, fbuf, fsize, verb);
-
-	/* Patch an executable so it behaves as if it's been compiled in */
-	if (patch)
-		patch_exe(patch_name, fbuf, fsize, verb);
 
 	va->del(va);
 

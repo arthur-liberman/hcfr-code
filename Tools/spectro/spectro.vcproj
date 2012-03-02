@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\libusb1\libusb;..\libusb1\msvc"
-				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;NT;_CRT_SECURE_NO_WARNINGS;SALONEINSTLIB;ENABLE_SERIAL;ENABLE_USB;USE_LIBUSB1;_USE_32BIT_TIME_T"
+				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;NT;_CRT_SECURE_NO_WARNINGS;SALONEINSTLIB;ENABLE_SERIAL;ENABLE_USB;USE_LIBUSB1;_USE_32BIT_TIME_T;_CRT_NONSTDC_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -50,7 +50,7 @@
 				WarningLevel="3"
 				DebugInformationFormat="4"
 				CompileAs="1"
-				DisableSpecificWarnings="4101;4018;4244"
+				DisableSpecificWarnings="4101;4018"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -108,13 +108,13 @@
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				AdditionalIncludeDirectories="..\libusb1\libusb;..\libusb1\msvc"
-				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;NT;_CRT_SECURE_NO_WARNINGS;SALONEINSTLIB;ENABLE_SERIAL;ENABLE_USB;USE_LIBUSB1;_USE_32BIT_TIME_T"
+				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;NT;_CRT_SECURE_NO_WARNINGS;SALONEINSTLIB;ENABLE_SERIAL;ENABLE_USB;USE_LIBUSB1;_USE_32BIT_TIME_T;_CRT_NONSTDC_NO_DEPRECATE"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
-				DisableSpecificWarnings="4101;4018;4244"
+				DisableSpecificWarnings="4101;4018"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -154,6 +154,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\aglob.c"
+				>
+			</File>
+			<File
 				RelativePath=".\ccss.c"
 				>
 			</File>
@@ -163,6 +167,10 @@
 			</File>
 			<File
 				RelativePath=".\cgatsstd.c"
+				>
+			</File>
+			<File
+				RelativePath=".\colorhug.c"
 				>
 			</File>
 			<File
@@ -226,10 +234,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\LzmaDec.c"
-				>
-			</File>
-			<File
 				RelativePath=".\munki.c"
 				>
 			</File>
@@ -288,11 +292,19 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath=".\aglob.h"
+				>
+			</File>
+			<File
 				RelativePath=".\ccss.h"
 				>
 			</File>
 			<File
 				RelativePath=".\cgats.h"
+				>
+			</File>
+			<File
+				RelativePath=".\colorhug.h"
 				>
 			</File>
 			<File
@@ -373,14 +385,6 @@
 			</File>
 			<File
 				RelativePath=".\insttypes.h"
-				>
-			</File>
-			<File
-				RelativePath=".\LzmaDec.h"
-				>
-			</File>
-			<File
-				RelativePath=".\LzmaTypes.h"
 				>
 			</File>
 			<File

@@ -100,7 +100,7 @@ struct _hcfr {
 	}; typedef struct _hcfr hcfr;
 
 /* Constructor */
-extern hcfr *new_hcfr(icoms *icom, int debug, int verb);
+extern hcfr *new_hcfr(icoms *icom, instType itype, int debug, int verb);
 
 
 #define HCFR_H

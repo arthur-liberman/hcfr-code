@@ -113,8 +113,8 @@ icoms *p
 		p->paths = NULL;
 	}
 
-	usb_get_paths(p);
 	hid_get_paths(p);
+	usb_get_paths(p);
 	usbend = p->npaths;
 
 #ifdef ENABLE_SERIAL
@@ -122,6 +122,7 @@ icoms *p
 	/* Search the OSX registry for serial ports */
 	{
 	    kern_return_t kstat; 
+	    mach_port_t mp;						/* Master IO port */
 	    CFMutableDictionaryRef sdict;		/* Serial Port  dictionary */
 		io_iterator_t mit;					/* Matching itterator */
 		io_object_t ioob;					/* Serial object found */
@@ -211,6 +212,7 @@ icoms *p
 		6: uart:unknown port:00000000 irq:0
 		7: uart:unknown port:00000000 irq:0
 
+		but the permissions don't allow looking at this.
 	 */
 	/* (This info is similar to what is returned by "setserial -g /dev/ttyS*", */
 	/*  and "setserial -gb /dev/ttyS*" returns just the real ports.) */
@@ -281,24 +283,30 @@ icoms *p
 			strcpy(dpath, dirn);
 			strcat(dpath, de->d_name);
 
-			if ((fd = open(dpath, O_RDWR | O_NOCTTY | O_NONBLOCK )) < 0) {
-				if (p->debug) fprintf(errout,"failed to open serial \"%s\"\n",dpath);
-				free(dpath);
-				continue;
-			}
-			/* On linux we could do a 
-				struct serial_struct serinfo;
+			/* See if the serial port is real */
+			if (strncmp(de->d_name, "ttyUSB", 5) != 0) {
 
-				serinfo.reserved_char[0] = 0;
-
-				if (ioctl(fd, TIOCGSERIAL, &serinfo) < 0
-					|| serinfo.type == PORT_UNKNOWN) {
+				/* Hmm. This is probably a bad idea - it can upset other */
+				/* programs that use the serial ports ? */
+				if ((fd = open(dpath, O_RDONLY | O_NOCTTY | O_NONBLOCK)) < 0) {
+					if (p->debug) fprintf(errout,"failed to open serial \"%s\"\n",dpath);
 					free(dpath);
 					continue;
 				}
-
-			 */
-			close(fd);
+				/* On linux we could do a 
+					struct serial_struct serinfo;
+	
+					serinfo.reserved_char[0] = 0;
+	
+					if (ioctl(fd, TIOCGSERIAL, &serinfo) < 0
+						|| serinfo.type == PORT_UNKNOWN) {
+						free(dpath);
+						continue;
+					}
+	
+				 */
+				close(fd);
+			}
 			if (p->debug) fprintf(errout,"managed to open serial \"%s\"\n",dpath);
 
 			/* Add the path to the list */
@@ -351,7 +359,7 @@ icoms *p
 
 
 /* Close the port */
-void icoms_close_port(icoms *p) {
+static void icoms_close_port(icoms *p) {
 	if (p->is_open) {
 		if (p->is_usb) {
 			usb_close_port(p);
@@ -395,7 +403,7 @@ word_length	 word
 
 	if (port >= 1) {
 		if (p->is_open && port != p->port) {	/* If port number changes */
-			icoms_close_port(p);
+			p->close_port(p);
 		}
 	}
 
@@ -837,7 +845,7 @@ icoms_del(icoms *p) {
 	if (p->debug) fprintf(stderr,"icoms: delete called\n");
 	if (p->is_open) {
 		if (p->debug) fprintf(stderr,"icoms: closing port\n");
-		icoms_close_port(p);
+		p->close_port(p);
 	}
 	if (p->paths != NULL) {
 		int i;
@@ -879,6 +887,8 @@ icoms *new_icoms() {
 	p->wl = length_nc;
 	p->debug = 0;
 	
+	p->close_port = icoms_close_port;
+
 	p->port_type = icoms_port_type;
 	p->get_paths = icoms_get_paths;
 	p->set_ser_port = icoms_set_ser_port;

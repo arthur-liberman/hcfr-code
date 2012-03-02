@@ -231,6 +231,7 @@ void
 usage(int debug, iccss *cl) {
 	int i;
 	icoms *icom;
+	inst_capability cap = 0;
 	fprintf(stderr,"Read Print Spot values, Version %s\n",ARGYLL_VERSION_STR);
 	fprintf(stderr,"Author: Graeme W. Gill, licensed under the GPL Version 2 or later\n");
 	if (setup_spyd2() == 2)
@@ -274,14 +275,14 @@ usage(int debug, iccss *cl) {
 // 	Hmm. Need to add tele mode as well ~~~
 	fprintf(stderr," -a                   Use ambient measurement mode (absolute results)\n");
 	fprintf(stderr," -f                   Use ambient flash measurement mode (absolute results)\n");
-	fprintf(stderr," -y c|l               Display type (if emissive), c = CRT, l = LCD\n");
+	cap = inst_show_disptype_options(stderr, " -y                   ", icom);
 	fprintf(stderr," -i illum             Choose illuminant for print/transparency spectral data:\n");
 #ifndef SALONEINSTLIB
 	fprintf(stderr,"                      A, C, D50 (def.), D65, F5, F8, F10 or file.sp\n");
 #else
 	fprintf(stderr,"                      A, C, D50 (def.), D65\n");
 #endif
-	fprintf(stderr," -o observ            Choose CIE Observer for spectral data or CCSS instrument:\n");
+	fprintf(stderr," -Q observ            Choose CIE Observer for spectral data or CCSS instrument:\n");
 #ifndef SALONEINSTLIB
 	fprintf(stderr,"                      1931_2 (def), 1964_10, S&B 1955_2, shaw, J&V 1978_2\n");
 #else
@@ -305,19 +306,25 @@ usage(int debug, iccss *cl) {
 	fprintf(stderr," -N                   Disable auto calibration of instrument\n");
 	fprintf(stderr," -H                   Start in high resolution spectrum mode (if available)\n");
 #ifndef SALONEINSTLIB
-	fprintf(stderr," -X file.ccmx         Apply Colorimeter Correction Matrix\n");
+	if (cap & inst_ccmx)
+		fprintf(stderr," -X file.ccmx         Apply Colorimeter Correction Matrix\n");
 #endif
-	fprintf(stderr," -X file.ccss         Use Colorimeter Calibration Spectral Samples for calibration\n");
-	for (i = 0; cl != NULL && cl[i].desc != NULL; i++) {
-		if (i == 0)
-			fprintf(stderr," -X N                  0: %s\n",cl[i].desc); 
-		else
-			fprintf(stderr,"                       %d: %s\n",i,cl[i].desc); 
+	if (cap & inst_ccss) {
+		fprintf(stderr," -X file.ccss         Use Colorimeter Calibration Spectral Samples for calibration\n");
+		for (i = 0; cl != NULL && cl[i].desc != NULL; i++) {
+			if (i == 0)
+				fprintf(stderr," -X N                  0: %s\n",cl[i].desc); 
+			else
+				fprintf(stderr,"                       %d: %s\n",i,cl[i].desc); 
+		}
+		free_iccss(cl);
 	}
-	free_iccss(cl);
 	fprintf(stderr," -W n|h|x             Override serial port flow control: n = none, h = HW, x = Xon/Xoff\n");
 	fprintf(stderr," -D [level]           Print debug diagnostics to stderr\n");
 	fprintf(stderr," logfile              Optional file to save reading results as text\n");
+
+	if (icom != NULL)
+		icom->del(icom);
 	exit(1);
 	}
 
@@ -353,8 +360,7 @@ int main(int argc, char *argv[])
 	char filtername[MAXNAMEL+1] = "\000";  /* Filter compensation */
 	FILE *fp = NULL;				/* Logfile */
 	int comport = COMPORT;			/* COM port used */
-	instType itype = instUnknown;	/* No default target instrument */
-	int dtype = 0;					/* Display type, 0 = default, 1 = CRT, 2 = LCD */
+	int dtype = 0;					/* Display type selection charater */
 	inst_capability  cap = inst_unknown;	/* Instrument capabilities */
 	inst2_capability cap2 = inst2_unknown;	/* Instrument capabilities 2 */
 	double lx, ly;					/* Read location on xy table */
@@ -436,12 +442,7 @@ int main(int argc, char *argv[])
 			} else if (argv[fa][1] == 'y' || argv[fa][1] == 'Y') {
 				fa = nfa;
 				if (na == NULL) usage(debug, cl);
-				if (na[0] == 'c' || na[0] == 'C')
-					dtype = 1;
-				else if (na[0] == 'l' || na[0] == 'L')
-					dtype = 2;
-				else
-					usage(debug, cl);
+				dtype = na[0];
 
 			/* Spectral Illuminant type */
 			} else if (argv[fa][1] == 'i' || argv[fa][1] == 'I') {
@@ -481,7 +482,7 @@ int main(int argc, char *argv[])
 #endif /* SALONEINSTLIB */
 
 			/* Spectral Observer type */
-			} else if (argv[fa][1] == 'o' || argv[fa][1] == 'O') {
+			} else if (argv[fa][1] == 'Q') {
 				fa = nfa;
 				if (na == NULL) usage(debug, cl);
 				if (strcmp(na, "1931_2") == 0) {			/* Classic 2 degree */
@@ -624,6 +625,7 @@ int main(int argc, char *argv[])
 
 #ifndef SALONEINSTLIB
 			/* Colorimeter Correction Matrix or */
+#endif
 			/* or Colorimeter Calibration Spectral Samples */
 			} else if (argv[fa][1] == 'X') {
 				int ix;
@@ -636,7 +638,6 @@ int main(int argc, char *argv[])
 				} else {
 					strncpy(ccxxname,na,MAXNAMEL-1); ccxxname[MAXNAMEL-1] = '\000';
 				}
-#endif
 			/* Serial port flow control */
 			} else if (argv[fa][1] == 'W') {
 				fa = nfa;
@@ -671,23 +672,22 @@ int main(int argc, char *argv[])
 	}
 
 
-#ifndef SALONEINSTLIB
 	/* See if there is an environment variable ccxx */
 	if (ccxxname[0] == '\000') {
 		char *na;
 		if ((na = getenv("ARGYLL_COLMTER_CAL_SPEC_SET")) != NULL) {
 			strncpy(ccxxname,na,MAXNAMEL-1); ccxxname[MAXNAMEL-1] = '\000';
 
+#ifndef SALONEINSTLIB
 		} else if ((na = getenv("ARGYLL_COLMTER_COR_MATRIX")) != NULL) {
 			strncpy(ccxxname,na,MAXNAMEL-1); ccxxname[MAXNAMEL-1] = '\000';
+#endif
 		}
 	}
-	free_iccss(cl);
-#endif
 
 	/* - - - - - - - - - - - - - - - - - - -  */
 	/* Setup the instrument ready to do reads */
-	if ((it = new_inst(comport, itype, debug, verb)) == NULL) {
+	if ((it = new_inst(comport, 0, debug, verb)) == NULL) {
 		warning("Unknown, inappropriate or no instrument detected");
 		usage(debug, cl);
 	}
@@ -733,8 +733,6 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 	
-	itype = it->get_itype(it);		/* get actual type of instrument */
-
 	/* Configure the instrument mode */
 	{
 		int ccssset = 0;
@@ -824,35 +822,26 @@ int main(int argc, char *argv[])
 				}
 			}
 
-			/* Set CRT or LCD mode */
-			if (dtype == 1 || dtype == 2) {
-				inst_opt_mode om;
-	
-				if (proj) {
-					if (dtype == 1)
-						om = inst_opt_proj_crt;
-					else
-						om = inst_opt_proj_lcd;
-				} else {
-					if (dtype == 1)
-						om = inst_opt_disp_crt;
-					else
-						om = inst_opt_disp_lcd;
-				}
-	
-				if ((rv = it->set_opt_mode(it,om)) != inst_ok) {
-					printf("Setting %s mode %s not supported by instrument\n",
-					       proj ? "projector" : "display", dtype == 1 ? "CRT" : "LCD");
-					it->del(it);
-					return -1;
-				}
-			} else if (proj && it->capabilities(it) & (inst_emis_proj_crt | inst_emis_proj_lcd)) {
-				printf("Either CRT or LCD must be selected\n");
-				it->del(it);
-				return -1;
+			/* Set display type */
+			if (dtype != 0) {
 
-			} else if (it->capabilities(it) & (inst_emis_disp_crt | inst_emis_disp_lcd)) {
-				printf("Either CRT or LCD must be selected\n");
+				if (cap & inst_emis_disptype) {
+					int ix;
+					if ((ix = inst_get_disptype_index(it, dtype)) == 0) {
+						it->del(it);
+						usage(debug, cl);
+					}
+		
+					if ((rv = it->set_opt_mode(it, inst_opt_disp_type, ix)) != inst_ok) {
+						printf("Setting display type ix %d not supported by instrument\n",ix);
+						it->del(it);
+						return -1;
+					}
+				} else
+					printf("Display type ignored - instrument doesn't support display type\n");
+
+			} else if (cap & (inst_emis_disptypem)) {
+				printf("A display type must be selected\n");
 				it->del(it);
 				return -1;
 			}
@@ -1091,6 +1080,8 @@ int main(int argc, char *argv[])
 		it->icom->set_uih(it->icom, 0x03, 0x03, ICOM_USER);		/* ^c */
 		it->icom->set_uih(it->icom, 0x1b, 0x1b, ICOM_USER);		/* Esc */
 	}
+	free_iccss(cl);
+	cl = NULL;
 
 #ifdef DEBUG
 	printf("About to enter read loop\n");
@@ -1606,7 +1597,7 @@ int main(int argc, char *argv[])
 				error("Instrument didn't return spectral data");
 			}
 
-			if (inst_illuminant(&insp, itype) != 0)
+			if (inst_illuminant(&insp, it->get_itype(it)) != 0)
 				error ("Instrument doesn't have an FWA illuminent");
 
 			/* Creat the base conversion object */

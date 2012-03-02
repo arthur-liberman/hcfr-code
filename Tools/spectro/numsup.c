@@ -1046,6 +1046,69 @@ int nch
 	free((char *)(m+nrl-1));
 }
 
+/***************************/
+/* Basic matrix operations */
+/***************************/
+
+/* Transpose a 0 base matrix */
+void matrix_trans(double **d, double **s, int nr,  int nc) {
+	int i, j;
+
+	for (i = 0; i < nr; i++) {
+		for (j = 0; j < nc; j++) {
+			d[j][i] = s[i][j];
+		}
+	}
+}
+
+/* Multiply two 0 based matricies */
+/* Return nz on matching error */
+int matrix_mult(
+	double **d,  int nr,  int nc,
+	double **s1, int nr1, int nc1,
+	double **s2, int nr2, int nc2
+) {
+	int i, j, k;
+
+	/* s1 and s2 must mesh */
+	if (nc1 != nr2)
+		return 1;
+
+	/* Output rows = s1 rows */
+	if (nr != nr1)
+		return 2;
+
+	/* Output colums = s2 columns */
+	if (nc != nc2)
+		return 2;
+
+	for (i = 0; i < nr1; i++) {
+		for (j = 0; j < nc2; j++) { 
+			d[i][j] = 0.0;  
+			for (k = 0; k < nc1; k++) {
+				d[i][j] += s1[i][k] * s2[k][j];
+			}
+		}
+	}
+
+	return 0;
+}
+
+/* Diagnostic */
+void matrix_print(char *c, double **a, int nr,  int nc) {
+	int i, j;
+	printf("%s, %d x %d\n",c,nr,nc);
+
+	for (j = 0; j < nr; j++) {
+		printf(" ");
+		for (i = 0; i < nc; i++) {
+			printf(" %.2f",a[j][i]);
+		}
+		printf("\n");
+	}
+}
+
+
 /*******************************************/
 /* Platform independent IEE754 conversions */
 /*******************************************/

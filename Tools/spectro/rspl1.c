@@ -216,6 +216,9 @@ static int fit_rspl_imp(
 				xv = dd[n].p[0];
 				yv = dd[n].v[0];
 				wv = dd[n].w;
+			} else {
+				DBG((dbgo, "rspl1:Internal error, unknown dtp value %d\n",dtp));
+				return 1;
 			}
 			yv = (yv - t->vl)/t->vw;	/* Normalize the value */
 

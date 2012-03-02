@@ -17,10 +17,6 @@
  *
  */
 
-#ifdef NT
-#define fileno _fileno
-#endif
-
 #define _PARSSTD_C_
 
 #ifndef COMBINED_STD
@@ -60,7 +56,6 @@
 #undef free
 #define was_debug_malloc
 #endif	/* dmalloc */
-
 
 static void *cgatsAllocStd_dmalloc(
 struct _cgatsAlloc *pp,

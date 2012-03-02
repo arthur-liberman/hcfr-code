@@ -136,7 +136,7 @@ struct _dtp20 {
 }; typedef struct _dtp20 dtp20;
 
 /* Constructor */
-extern dtp20 *new_dtp20(icoms *icom, int debug, int verb);
+extern dtp20 *new_dtp20(icoms *icom, instType itype, int debug, int verb);
 
 
 

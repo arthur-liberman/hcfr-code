@@ -10,8 +10,8 @@
 /* minor number = 8 bits */
 /* major number = 8 bits */
 
-#define ARGYLL_VERSION 0x01035
-#define ARGYLL_VERSION_STR "1.3.5"
+#define ARGYLL_VERSION 0x01036
+#define ARGYLL_VERSION_STR "1.3.6_beta"
 
 /* Maximum file path length */
 #define MAXNAMEL 1024

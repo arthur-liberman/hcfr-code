@@ -2,18 +2,28 @@
  /* XDG Base Directory Specifications support library. */
  /* Implements equivalent cross platform functionality too. */
 
-/* 
- * Argyll Color Correction System
- *
- * Author: Graeme W. Gill
- * Date:   28/7/2010
- *
- * Copyright 2010 Graeme W. Gill
- * All rights reserved.
- *
- * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
- * see the License2.txt file for licencing details.
- */
+/*************************************************************************
+ Copyright 2011 Graeme W. Gill
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+
+ *************************************************************************/
 
 /*
 	This function provides support for the XDG Base Directory Specifications
@@ -104,6 +114,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "conv.h"
+#include "aglob.h"
 #include "xdg_bds.h"
 
 #undef DEBUG
@@ -130,7 +141,6 @@
 # define mputenv _putenv
 # define unlink _unlink
 # define rmdir _rmdir
-# define strdup _strdup
 #else
 /* UNIX putenv is a pain.. */
 static void mputenv(char *ss) {
@@ -537,14 +547,12 @@ int xdg_bds(
 
 	{
 		char *spath = NULL;
-		char *cp, *ep, tc;
+		char *cp, *ep;
 
 		/* For each search path */
 		for (cp = path; *cp != '\000';) {
 			int rlen = 0;	/* Number of chars of search path up to subpath & filename */
 			char *pp;
-			struct stat sbuf;
-			mode_t mode;
 
 			/* Copy search path */
 			if ((ep = strchr(cp, SSEP)) == NULL)

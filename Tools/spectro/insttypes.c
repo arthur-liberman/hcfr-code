@@ -55,8 +55,10 @@ char *inst_name(instType itype) {
 			return "GretagMacbeth SpectroScanT";
 		case instSpectrocam:
 			return "Spectrocam";
-		case instI1Display:
-			return "GretagMacbeth i1 Display";
+		case instI1Disp1:
+			return "GretagMacbeth i1 Display 1";
+		case instI1Disp2:
+			return "GretagMacbeth i1 Display 2";
 		case instI1Disp3:
 			return "Xrite i1 DisplayPro, ColorMunki Display";
 		case instI1Monitor:
@@ -71,8 +73,12 @@ char *inst_name(instType itype) {
 			return "ColorVision Spyder2";
 		case instSpyder3:
 			return "Datacolor Spyder3";
+		case instSpyder4:
+			return "Datacolor Spyder4";
 		case instHuey:
 			return "GretagMacbeth Huey";
+		case instColorHug:
+			return "Hughski ColorHug";
 		default:
 			break;
 	}
@@ -103,9 +109,12 @@ instType inst_enum(char *name) {
 		return instSpectroScanT;
 	else if (strcmp(name, "Spectrocam") == 0)
 		return instSpectrocam;
-	else if (strcmp(name, "GretagMacbeth i1 Display") == 0
+	else if (strcmp(name, "GretagMacbeth i1 Display 1") == 0)
+		return instI1Disp1;
+	else if (strcmp(name, "GretagMacbeth i1 Display 2") == 0
+		  || strcmp(name, "GretagMacbeth i1 Display") == 0
 	      || strcmp(name, "Xrite i1 Display") == 0)
-		return instI1Display;
+		return instI1Disp2;
 	else if (strcmp(name, "Xrite i1 DisplayPro") == 0
 	      || strcmp(name, "ColorMunki Display") == 0)
 		return instI1Disp3;
@@ -122,8 +131,12 @@ instType inst_enum(char *name) {
 		return instSpyder2;
 	else if (strcmp(name, "Datacolor Spyder3") == 0)
 		return instSpyder3;
+	else if (strcmp(name, "Datacolor Spyder4") == 0)
+		return instSpyder4;
 	else if (strcmp(name, "GretagMacbeth Huey") == 0)
 		return instHuey;
+	else if (strcmp(name, "Hughski ColorHug") == 0)
+		return instColorHug;
 
 	return instUnknown;
 }
@@ -137,7 +150,7 @@ instType inst_usb_match(
 unsigned short idVendor,
 unsigned short idProduct) {
 
-	if (idVendor  == 0x0765) {		/* X-Rite */
+	if (idVendor == 0x0765) {		/* X-Rite */
 		if (idProduct == 0xD020)	/* DTP20 */
 			return instDTP20;
 		if (idProduct == 0xD092)	/* DTP92Q */
@@ -150,37 +163,44 @@ unsigned short idProduct) {
 			return instI1Disp3;
 	}
 
-	if (idVendor  == 0x0971) {		/* Gretag Macbeth */
+	if (idVendor == 0x0971) {		/* Gretag Macbeth */
 		if (idProduct == 0x2000)	/* i1 Pro */
 			return instI1Pro;
 		if (idProduct == 0x2001)	/* i1 Monitor */
 			return instI1Monitor;
-		if (idProduct == 0x2003)	/* i1 Display */
-			return instI1Display;
+		if (idProduct == 0x2003)	/* i1 Display 2 */
+			return instI1Disp2;
 		if (idProduct == 0x2005)	/* Huey (HID) */
 			return instHuey;
 		if (idProduct == 0x2007)	/* ColorMunki */
 			return instColorMunki;
 	}
 
-	if (idVendor  == 0x0670) {		/* Sequel Imaging */
+	if (idVendor == 0x0670) {		/* Sequel Imaging */
 		if (idProduct == 0x0001)	/* Monaco Optix / i1 Display 1 */
 									/* Sequel Chroma 4 / i1 Display 1 */
-			return instI1Display;	/* Alias to the i1 Display */
+			return instI1Disp1;
 	}
 
-	if (idVendor  == 0x04DB) {
+	if (idVendor == 0x04DB) {
 		if (idProduct == 0x005B)	/* Colorimtre HCFR */
 			return instHCFR;
 	}
 
-	if (idVendor  == 0x085C) {		/* ColorVision */
+	if (idVendor == 0x085C) {		/* ColorVision */
 		if (idProduct == 0x0100)	/* ColorVision Spyder1 */
 			return instSpyder2;		/* Alias to Spyder 2 */
 		if (idProduct == 0x0200)	/* ColorVision Spyder2 */
 			return instSpyder2;
 		if (idProduct == 0x0300)	/* ColorVision Spyder3 */
 			return instSpyder3;
+		if (idProduct == 0x0400)	/* ColorVision Spyder4 */
+			return instSpyder4;
+	}
+
+	if (idVendor == 0x04d8) {		/* Microchip */
+		if (idProduct == 0xf8da)	/* Hughski ColorHug */
+			return instColorHug;
 	}
 
 	/* Add other instruments here */
@@ -233,7 +253,10 @@ int inst_illuminant(xspect *sp, instType itype) {
 		case instSpectrocam:
 			return standardIlluminant(sp, icxIT_Spectrocam, 0);   /* Spectrocam Xenon Lamp */
 #endif
-		case instI1Display:
+		case instI1Disp1:
+			return 1;										/* Not applicable */
+
+		case instI1Disp2:
 			return 1;										/* Not applicable */
 
 		case instI1Disp3:
@@ -257,7 +280,13 @@ int inst_illuminant(xspect *sp, instType itype) {
 		case instSpyder3:
 			return 1;										/* Not applicable */
 
+		case instSpyder4:
+			return 1;										/* Not applicable */
+
 		case instHuey:
+			return 1;										/* Not applicable */
+
+		case instColorHug:
 			return 1;										/* Not applicable */
 
 

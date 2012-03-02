@@ -49,7 +49,7 @@ struct _i1pro {
 }; typedef struct _i1pro i1pro;
 
 /* Constructor */
-extern i1pro *new_i1pro(icoms *icom, int debug, int verb);
+extern i1pro *new_i1pro(icoms *icom, instType itype, int debug, int verb);
 
 #define I1PRO_H
 #endif /* I1PRO_H */
