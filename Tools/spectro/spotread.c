@@ -230,7 +230,7 @@ static int gcc_bug_fix(int i) {
 void
 usage(int debug, iccss *cl) {
 	int i;
-	icoms *icom;
+	icoms *icom = 0;
 	inst_capability cap = 0;
 	fprintf(stderr,"Read Print Spot values, Version %s\n",ARGYLL_VERSION_STR);
 	fprintf(stderr,"Author: Graeme W. Gill, licensed under the GPL Version 2 or later\n");
@@ -261,7 +261,6 @@ usage(int debug, iccss *cl) {
 			}
 		} else
 			fprintf(stderr,"    ** No ports found **\n");
-		icom->del(icom);
 	}
 //	fprintf(stderr," -i 22|41|51|92|SO|SS Select serial port target instrument\n");
 	fprintf(stderr," -t                   Use transmission measurement mode\n");
