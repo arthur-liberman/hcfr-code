@@ -53,7 +53,7 @@ static int write_ccss(
 ccss *p,			/* This */
 char *outname	/* Filename to write to */
 ) {
-	int i, j, n;
+	int i, j;
 	time_t clk = time(0);
 	struct tm *tsp = localtime(&clk);
 	char *atm = asctime(tsp); /* Ascii time */
@@ -160,7 +160,7 @@ static int read_ccss(
 ccss *p,			/* This */
 char *inname	/* Filename to read from */
 ) {
-	int i, j, n, ix;
+	int i, j;
 	cgats *icg;			/* input cgats structure */
 	int ti, ii;			/* Temporary CGATs index */
 	int  spi[XSPECT_MAX_BANDS];	/* CGATS indexes for each wavelength */

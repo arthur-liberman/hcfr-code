@@ -14,9 +14,15 @@
 		01D88B1214F8675F002DC664 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 023142B40CA410410034465F /* IOKit.framework */; };
 		01D88B1314F8675F002DC664 /* HCFRPlugins.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02CC41A50DC75F560094B4F6 /* HCFRPlugins.framework */; };
 		01D88B1414F8675F002DC664 /* libHCFR.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 024EBB710E66CF6A00FDFB3C /* libHCFR.framework */; };
-		01D88B1E14F8677D002DC664 /* libargyll.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 01D8890A14F848F7002DC664 /* libargyll.a */; };
 		01D88B2614F867EB002DC664 /* ArgyllSensorPlugin.mm in Sources */ = {isa = PBXBuildFile; fileRef = 01D88B2514F867EB002DC664 /* ArgyllSensorPlugin.mm */; };
 		01D88B2914F867FA002DC664 /* ArgyllSensor.mm in Sources */ = {isa = PBXBuildFile; fileRef = 01D88B2814F867FA002DC664 /* ArgyllSensor.mm */; };
+		01D88D3E14F98CE8002DC664 /* libHCFR.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 024EBB710E66CF6A00FDFB3C /* libHCFR.framework */; };
+		01D88D3F14F98CF3002DC664 /* libargyll.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 01D8890A14F848F7002DC664 /* libargyll.a */; };
+		01D88D5014F98D92002DC664 /* ArgyllMeterWrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01D88D4E14F98D62002DC664 /* ArgyllMeterWrapper.cpp */; };
+		01D88DC415017739002DC664 /* libArgyllWrapper.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 01D88D2214F98CBF002DC664 /* libArgyllWrapper.a */; };
+		01D88DE11501789E002DC664 /* Logging.h in Headers */ = {isa = PBXBuildFile; fileRef = 01D88DDF1501789E002DC664 /* Logging.h */; };
+		01D88DE21501789E002DC664 /* Logging.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01D88DE01501789E002DC664 /* Logging.cpp */; };
+		01D88DEA15017904002DC664 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 01D88DE915017904002DC664 /* Carbon.framework */; };
 		0206297C0C99275C005216D9 /* HCFRCIEChartController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0206297B0C99275C005216D9 /* HCFRCIEChartController.mm */; };
 		020650700DF9424B00A4580A /* HCFRFile.icns in Resources */ = {isa = PBXBuildFile; fileRef = 0206506E0DF9424800A4580A /* HCFRFile.icns */; };
 		020CD4D812E88D4C00B098C6 /* HCFRManualFullscreenGenerator.mm in Sources */ = {isa = PBXBuildFile; fileRef = 020CD4D712E88D4C00B098C6 /* HCFRManualFullscreenGenerator.mm */; };
@@ -320,19 +326,33 @@
 			remoteGlobalIDString = 02CC41A40DC75F560094B4F6 /* HCFRPlugins */;
 			remoteInfo = HCFRPlugins;
 		};
-		01D88B6714F869CA002DC664 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 01D8890414F848F7002DC664 /* spectro.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 01D8884814F83A10002DC664 /* argyll */;
-			remoteInfo = argyll;
-		};
 		01D88BA614F86DDB002DC664 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 01D8897714F8672E002DC664 /* ArgyllPlugin */;
 			remoteInfo = ArgyllPlugin;
+		};
+		01D88D4614F98D0F002DC664 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 024EBB6C0E66CF6A00FDFB3C /* libHCFR.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 8DC2EF4F0486A6940098B216 /* libHCFR */;
+			remoteInfo = libHCFR;
+		};
+		01D88D4814F98D14002DC664 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 01D8890414F848F7002DC664 /* spectro.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 01D8884814F83A10002DC664 /* argyll */;
+			remoteInfo = argyll;
+		};
+		01D88DC0150176FE002DC664 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 01D88D2114F98CBF002DC664 /* ArgyllWrapper */;
+			remoteInfo = ArgyllWrapper;
 		};
 		02132C530D5DDE0D00475539 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -574,6 +594,12 @@
 		01D88B2514F867EB002DC664 /* ArgyllSensorPlugin.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ArgyllSensorPlugin.mm; sourceTree = "<group>"; };
 		01D88B2714F867FA002DC664 /* ArgyllSensor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ArgyllSensor.h; sourceTree = "<group>"; };
 		01D88B2814F867FA002DC664 /* ArgyllSensor.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ArgyllSensor.mm; sourceTree = "<group>"; };
+		01D88D2214F98CBF002DC664 /* libArgyllWrapper.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libArgyllWrapper.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		01D88D4E14F98D62002DC664 /* ArgyllMeterWrapper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ArgyllMeterWrapper.cpp; path = ../Tools/ArgyllMeterWrapper/ArgyllMeterWrapper.cpp; sourceTree = SOURCE_ROOT; };
+		01D88D4F14F98D62002DC664 /* ArgyllMeterWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ArgyllMeterWrapper.h; path = ../Tools/ArgyllMeterWrapper/ArgyllMeterWrapper.h; sourceTree = SOURCE_ROOT; };
+		01D88DDF1501789E002DC664 /* Logging.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Logging.h; sourceTree = "<group>"; };
+		01D88DE01501789E002DC664 /* Logging.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Logging.cpp; sourceTree = "<group>"; };
+		01D88DE915017904002DC664 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
 		0206297B0C99275C005216D9 /* HCFRCIEChartController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = HCFRCIEChartController.mm; sourceTree = "<group>"; };
 		020629E40C99311C005216D9 /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/CIEChart.nib; sourceTree = "<group>"; };
 		0206506E0DF9424800A4580A /* HCFRFile.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = HCFRFile.icns; sourceTree = "<group>"; };
@@ -899,7 +925,17 @@
 				01D88B1214F8675F002DC664 /* IOKit.framework in Frameworks */,
 				01D88B1314F8675F002DC664 /* HCFRPlugins.framework in Frameworks */,
 				01D88B1414F8675F002DC664 /* libHCFR.framework in Frameworks */,
-				01D88B1E14F8677D002DC664 /* libargyll.a in Frameworks */,
+				01D88DC415017739002DC664 /* libArgyllWrapper.a in Frameworks */,
+				01D88DEA15017904002DC664 /* Carbon.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		01D88D2014F98CBF002DC664 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				01D88D3F14F98CF3002DC664 /* libargyll.a in Frameworks */,
+				01D88D3E14F98CE8002DC664 /* libHCFR.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1022,6 +1058,25 @@
 			children = (
 			);
 			name = Resources;
+			sourceTree = "<group>";
+		};
+		01D88D4C14F98D35002DC664 /* ArgyllWrapper */ = {
+			isa = PBXGroup;
+			children = (
+				01D88D4D14F98D3F002DC664 /* Class */,
+			);
+			name = ArgyllWrapper;
+			sourceTree = "<group>";
+		};
+		01D88D4D14F98D3F002DC664 /* Class */ = {
+			isa = PBXGroup;
+			children = (
+				01D88D4E14F98D62002DC664 /* ArgyllMeterWrapper.cpp */,
+				01D88D4F14F98D62002DC664 /* ArgyllMeterWrapper.h */,
+				01D88DDF1501789E002DC664 /* Logging.h */,
+				01D88DE01501789E002DC664 /* Logging.cpp */,
+			);
+			name = Class;
 			sourceTree = "<group>";
 		};
 		020CD4CA12E88CF500B098C6 /* InternalGenerators */ = {
@@ -1446,6 +1501,7 @@
 		02F5C4B60D60DBF30051E0BF /* Plugins */ = {
 			isa = PBXGroup;
 			children = (
+				01D88D4C14F98D35002DC664 /* ArgyllWrapper */,
 				01D88B2114F867AD002DC664 /* ArgyllPlugin */,
 				02CC42970DC766750094B4F6 /* Framework */,
 				02132C2F0D5DD78600475539 /* HCFRKiPlugin */,
@@ -1634,6 +1690,7 @@
 				024EB6BA0E65476C00FDFB3C /* AditionnalFramesPlugin.hcfrPlugin */,
 				8D1107320486CEB800E47090 /* ColorHCFR.app */,
 				01D8897814F8672E002DC664 /* ArgyllPlugin.bundle */,
+				01D88D2214F98CBF002DC664 /* libArgyllWrapper.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1652,6 +1709,7 @@
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
 				02FEE0880D40B6AD00F7FAC9 /* CalibrationProfiles */,
+				01D88DE915017904002DC664 /* Carbon.framework */,
 			);
 			name = ColorHCFR;
 			sourceTree = "<group>";
@@ -1704,6 +1762,14 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		01D88D1E14F98CBF002DC664 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				01D88DE11501789E002DC664 /* Logging.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		02CC41A00DC75F560094B4F6 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -1744,13 +1810,32 @@
 			buildRules = (
 			);
 			dependencies = (
+				01D88DC1150176FE002DC664 /* PBXTargetDependency */,
 				01D8898014F86754002DC664 /* PBXTargetDependency */,
-				01D88B6814F869CA002DC664 /* PBXTargetDependency */,
 			);
 			name = ArgyllPlugin;
 			productName = ArgyllPlugin;
 			productReference = 01D8897814F8672E002DC664 /* ArgyllPlugin.bundle */;
 			productType = "com.apple.product-type.bundle";
+		};
+		01D88D2114F98CBF002DC664 /* ArgyllWrapper */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 01D88D2914F98CDE002DC664 /* Build configuration list for PBXNativeTarget "ArgyllWrapper" */;
+			buildPhases = (
+				01D88D1E14F98CBF002DC664 /* Headers */,
+				01D88D1F14F98CBF002DC664 /* Sources */,
+				01D88D2014F98CBF002DC664 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				01D88D4714F98D0F002DC664 /* PBXTargetDependency */,
+				01D88D4914F98D14002DC664 /* PBXTargetDependency */,
+			);
+			name = ArgyllWrapper;
+			productName = ArgyllWrapper;
+			productReference = 01D88D2214F98CBF002DC664 /* libArgyllWrapper.a */;
+			productType = "com.apple.product-type.library.static";
 		};
 		02132C330D5DD7AD00475539 /* KiPlugin */ = {
 			isa = PBXNativeTarget;
@@ -1938,6 +2023,7 @@
 				024EB6B90E65476C00FDFB3C /* AditionnalFramesPlugin */,
 				8D1107260486CEB800E47090 /* ColorHCFR */,
 				01D8897714F8672E002DC664 /* ArgyllPlugin */,
+				01D88D2114F98CBF002DC664 /* ArgyllWrapper */,
 			);
 		};
 /* End PBXProject section */
@@ -2203,6 +2289,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		01D88D1F14F98CBF002DC664 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				01D88D5014F98D92002DC664 /* ArgyllMeterWrapper.cpp in Sources */,
+				01D88DE21501789E002DC664 /* Logging.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		02132C310D5DD7AD00475539 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -2331,15 +2426,25 @@
 			target = 02CC41A40DC75F560094B4F6 /* HCFRPlugins */;
 			targetProxy = 01D8897F14F86754002DC664 /* PBXContainerItemProxy */;
 		};
-		01D88B6814F869CA002DC664 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = argyll;
-			targetProxy = 01D88B6714F869CA002DC664 /* PBXContainerItemProxy */;
-		};
 		01D88BA714F86DDB002DC664 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 01D8897714F8672E002DC664 /* ArgyllPlugin */;
 			targetProxy = 01D88BA614F86DDB002DC664 /* PBXContainerItemProxy */;
+		};
+		01D88D4714F98D0F002DC664 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = libHCFR;
+			targetProxy = 01D88D4614F98D0F002DC664 /* PBXContainerItemProxy */;
+		};
+		01D88D4914F98D14002DC664 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = argyll;
+			targetProxy = 01D88D4814F98D14002DC664 /* PBXContainerItemProxy */;
+		};
+		01D88DC1150176FE002DC664 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 01D88D2114F98CBF002DC664 /* ArgyllWrapper */;
+			targetProxy = 01D88DC0150176FE002DC664 /* PBXContainerItemProxy */;
 		};
 		02132C540D5DDE0D00475539 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -2662,6 +2767,38 @@
 				PREBINDING = NO;
 				PRODUCT_NAME = ArgyllPlugin;
 				WRAPPER_EXTENSION = bundle;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		01D88D2314F98CC0002DC664 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				HEADER_SEARCH_PATHS = ../Tools/spectro;
+				INSTALL_PATH = /usr/local/lib;
+				PREBINDING = NO;
+				PRODUCT_NAME = ArgyllWrapper;
+			};
+			name = Debug;
+		};
+		01D88D2414F98CC0002DC664 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_MODEL_TUNING = G5;
+				HEADER_SEARCH_PATHS = ../Tools/spectro;
+				INSTALL_PATH = /usr/local/lib;
+				PREBINDING = NO;
+				PRODUCT_NAME = ArgyllWrapper;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -3169,6 +3306,15 @@
 			buildConfigurations = (
 				01D8897A14F8672F002DC664 /* Debug */,
 				01D8897B14F8672F002DC664 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		01D88D2914F98CDE002DC664 /* Build configuration list for PBXNativeTarget "ArgyllWrapper" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				01D88D2314F98CC0002DC664 /* Debug */,
+				01D88D2414F98CC0002DC664 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
