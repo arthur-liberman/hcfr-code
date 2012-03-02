@@ -23,9 +23,9 @@
 [Setup]
 AppName=HCFR Calibration
 AppVerName=HCFR {#MyAppVersion}
-AppPublisherURL=http://sourceforge.net/projects/hcfr/
-AppSupportURL=http://sourceforge.net/projects/hcfr/
-AppUpdatesURL=http://sourceforge.net/projects/hcfr/
+AppPublisherURL=http://hcfr.sourceforge.net/
+AppSupportURL=http://hcfr.sourceforge.net/
+AppUpdatesURL=http://hcfr.sourceforge.net/
 AppVersion={#MyAppVersion}
 DefaultDirName={pf}\HCFR Calibration
 DefaultGroupName=HCFR Calibration
@@ -68,6 +68,9 @@ Name: "quicklaunchicon"; Description: "Create a &Quick Launch icon"; GroupDescri
 [Files]
 ; main
 Source: "..\Release\ColorHCFR.exe"; DestDir: "{app}"; Flags: ignoreversion; Components: main
+Source: "..\Release\spyd2en.exe"; DestDir: "{app}\Tools"; Flags: ignoreversion; Components: main
+Source: "..\Release\spyd4en.exe"; DestDir: "{app}\Tools"; Flags: ignoreversion; Components: main
+Source: "..\Release\i1d3ccss.exe"; DestDir: "{app}\Tools"; Flags: ignoreversion; Components: main
 Source: "..\Release\*.dll"; DestDir: "{app}"; Flags: ignoreversion; Components: main
 Source: "..\Release\*.chm"; DestDir: "{app}"; Flags: ignoreversion; Components: main
 Source: "..\Install\Etalon_HCFR\*.thc"; DestDir: "{app}\Etalon_HCFR"; Flags: ignoreversion; Components: main
@@ -86,7 +89,7 @@ Source: "..\Tools\libusb1\TODO"; DestDir: "{app}\Drivers"; DestName: Todo.txt; F
 Source: "..\Tools\libusb1\license.rtf"; DestDir: "{app}\Drivers"; DestName: CoInstaller_License.rtf; Flags: ignoreversion; Components: main
 
 [INI]
-Filename: "{app}\HCFR.url"; Section: "InternetShortcut"; Key: "URL"; String: "http://sourceforge.net/projects/hcfr/"
+Filename: "{app}\HCFR.url"; Section: "InternetShortcut"; Key: "URL"; String: "http://hcfr.sourceforge.net/"
 
 [Icons]
 Name: "{group}\HCFR"; Filename: "{app}\ColorHCFR.exe"
