@@ -26,6 +26,7 @@
 
 #include "libHCFR/Color.h"
 #include <string>
+#include <vector>
 #include <vadefs.h>
 
 struct _inst;
@@ -33,46 +34,6 @@ struct _inst;
 class ArgyllMeterWrapper
 {
 public:
-    // we maintain our our meter list
-    // annoyingly it doesn't quite line up with
-    // the argyll internal list as there are some
-    // unsupported meters in that list
-    typedef enum
-    {
-        AUTODETECT = 0,
-        DTP20,
-        DTP22,
-        DTP41,
-        DTP51,
-        DTP92,
-        DTP94,
-        SPECTROLINO,
-        SPECTROSCAN,
-        SPECTROSCANT,
-        SPECTROCAM,
-        I1DISP1,
-        I1DISP2,
-        I1MONITOR,
-        I1PRO,
-        I1DISP3,
-        COLORMUNKI,
-        HCFR,
-        SPYDER2,
-        SPYDER3,
-        SPYDER4,
-        HUEY,
-        COLORHUG,
-        // this isn't really a meter, it intended to be used in
-        // loops e.g for populating combo boxes
-        LAST_METER
-    } eMeterType;
-
-    typedef enum
-    {
-        CRT,
-        LCD
-    } eDisplayType;
-
     typedef enum
     {
         DISPLAY,
@@ -88,11 +49,7 @@ public:
 
     /// ArgyllMeterWrapper constructor
     /// Create a USB meter object
-    ArgyllMeterWrapper(eMeterType meterType, eDisplayType displayType, eReadingType readingType, int meterNumber);
-
-    /// ArgyllMeterWrapper constructor
-    /// Create a serial meter object
-    ArgyllMeterWrapper(eMeterType meterType, eDisplayType displayType, eReadingType readingType, int comPort, int baudRate, bool flowControl);
+    ArgyllMeterWrapper(int meterIndex, eReadingType readingType);
 
     ~ArgyllMeterWrapper();
 
@@ -109,6 +66,9 @@ public:
     eMeterState takeReading();
 
     CColor getLastReading() const;
+
+    int getNumberOfDisplayModes() const;
+    const char* getDisplayModeText(int displayModeIndex);
 
     // calibrate the meter
     // this should be called 
@@ -129,26 +89,20 @@ public:
     /// what the user needs to do next
     std::string getIncorrectPositionInstructions();
 
-    /// gets the actual type of the meter
-    eMeterType getType() const;
-
     /// Enable/Disable hi resolution mode on i1Pro
     void setHiResMode(bool enableHiRes);
-    /// get the name of the meter given the type
-    static std::string getMeterName(eMeterType meterType);
+    /// get the name of the meter given the meter
+    std::string getMeterName() const;
 
-    /// is a given meter USB assume serial if false
-    static bool isMeterUSB(eMeterType meterType);
+    static std::vector<std::string> getDetectedMeters();
 
 private:
     void checkMeterIsInitialized() const;
     _inst* m_meter;
-    eMeterType m_meterType;
-    eDisplayType m_displayType;
+    int m_displayType;
+    int m_portNumber;
+    int m_meterType;
     eReadingType m_readingType;
-    int m_comPort;
-    int m_baudRate;
-    bool m_flowControl;
     CColor m_lastReading;
     int m_nextCalibration;
     char m_calibrationMessage[200];

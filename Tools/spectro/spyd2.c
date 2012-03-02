@@ -1515,7 +1515,7 @@ void crc32_init(void) {
     }
 }
 
-unsigned int crc32(unsigned char *data, int len) {
+static unsigned int crc32(unsigned char *data, int len) {
     unsigned int        crc;
     int                 i;
     unsigned char       octet;

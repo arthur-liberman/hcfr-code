@@ -46,13 +46,14 @@ protected:
 public:
     UINT    m_DisplayType;
     UINT    m_ReadingType;
-    UINT    m_PortNumber;
+    UINT    m_meterIndex;
     BOOL    m_HiRes;
 private:
     ArgyllMeterWrapper* m_meter;
 
 public:
     CArgyllSensor();
+    CArgyllSensor(int meterNumber);
     virtual ~CArgyllSensor();
 
     // Overriden functions from CSensor

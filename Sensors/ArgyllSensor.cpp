@@ -44,12 +44,11 @@ IMPLEMENT_SERIAL(CArgyllSensor, COneDeviceSensor, 1) ;
 CArgyllSensor::CArgyllSensor() :
     m_DisplayType(0),
     m_ReadingType(0),
-    m_PortNumber(1),
+    m_meterIndex(-1),
     m_meter(0)
 {
     m_DisplayType = GetConfig()->GetProfileInt("Argyll", "DisplayType", 1);
     m_ReadingType = GetConfig()->GetProfileInt("Argyll", "ReadingType", 0);
-    m_PortNumber = GetConfig()->GetProfileInt("Argyll", "PortNumber", 1);
     m_debugMode = !!GetConfig()->GetProfileInt("Argyll", "DebugMode", 0);
     m_HiRes = GetConfig()->GetProfileInt("Argyll", "HiRes", 1);
 
@@ -60,6 +59,28 @@ CArgyllSensor::CArgyllSensor() :
     m_PropertySheetTitle = IDS_ARGYLLSENSOR_PROPERTIES_TITLE;
 
     SetName("Argyll Meter");
+}
+
+CArgyllSensor::CArgyllSensor(int meterIndex) :
+    m_DisplayType(0),
+    m_ReadingType(0),
+    m_meterIndex(meterIndex),
+    m_meter(0)
+{
+    m_DisplayType = GetConfig()->GetProfileInt("Argyll", "DisplayType", 1);
+    m_ReadingType = GetConfig()->GetProfileInt("Argyll", "ReadingType", 0);
+    m_debugMode = !!GetConfig()->GetProfileInt("Argyll", "DebugMode", 0);
+    m_HiRes = GetConfig()->GetProfileInt("Argyll", "HiRes", 1);
+
+    m_meter = new ArgyllMeterWrapper(m_meterIndex, (ArgyllMeterWrapper::eReadingType)m_ReadingType);
+
+    m_ArgyllSensorPropertiesPage.m_pSensor = this;
+
+    m_pDevicePage = & m_ArgyllSensorPropertiesPage;  // Add Argyll settings page to property sheet
+
+    m_PropertySheetTitle = IDS_ARGYLLSENSOR_PROPERTIES_TITLE;
+
+    SetName(CString(m_meter->getMeterName().c_str()));
 }
 
 CArgyllSensor::~CArgyllSensor()
@@ -73,8 +94,13 @@ void CArgyllSensor::Copy(CSensor * p)
 
     m_DisplayType = ((CArgyllSensor*)p)->m_DisplayType;
     m_ReadingType = ((CArgyllSensor*)p)->m_ReadingType;
-    m_PortNumber = ((CArgyllSensor*)p)->m_PortNumber;
+    m_meterIndex = ((CArgyllSensor*)p)->m_meterIndex;
     m_HiRes = ((CArgyllSensor*)p)->m_HiRes;
+    if(m_meterIndex >= 0)
+    {
+        m_meter = new ArgyllMeterWrapper(m_meterIndex, (ArgyllMeterWrapper::eReadingType)m_ReadingType);
+        SetName(CString(m_meter->getMeterName().c_str()));
+    }
 }
 
 void CArgyllSensor::Serialize(CArchive& archive)
@@ -87,19 +113,20 @@ void CArgyllSensor::Serialize(CArchive& archive)
         archive << version;
         archive << m_DisplayType;
         archive << m_ReadingType;
-        archive << m_PortNumber;
+        archive << m_meterIndex;
         archive << m_debugMode;
         archive << m_HiRes;
     }
     else
     {
         int version;
+        int dummy;
         archive >> version;
         if ( version > 1 )
             AfxThrowArchiveException ( CArchiveException::badSchema );
         archive >> m_DisplayType;
         archive >> m_ReadingType;
-        archive >> m_PortNumber;
+        archive >> dummy;
         archive >> m_debugMode;
         archive >> m_HiRes;
     }
@@ -111,7 +138,7 @@ void CArgyllSensor::SetPropertiesSheetValues()
 
     m_ArgyllSensorPropertiesPage.m_DisplayType=m_DisplayType;
     m_ArgyllSensorPropertiesPage.m_ReadingType=m_ReadingType;
-    m_ArgyllSensorPropertiesPage.m_PortNumber=m_PortNumber - 1;
+    m_ArgyllSensorPropertiesPage.m_PortNumber = 0;
     m_ArgyllSensorPropertiesPage.m_DebugMode=m_debugMode;
     m_ArgyllSensorPropertiesPage.m_DebugMode=m_HiRes;
 }
@@ -138,24 +165,21 @@ void CArgyllSensor::GetPropertiesSheetValues()
         GetConfig () -> WriteProfileInt ( "Argyll", "DebugMode", m_debugMode?1:0);
     }
 
-    if( m_DisplayType != m_ArgyllSensorPropertiesPage.m_DisplayType ||
-        m_ReadingType != m_ArgyllSensorPropertiesPage.m_ReadingType ||
-        m_PortNumber != (m_ArgyllSensorPropertiesPage.m_PortNumber + 1)) 
+    if(m_ReadingType != m_ArgyllSensorPropertiesPage.m_ReadingType) 
     {
         SetModifiedFlag(TRUE);
-        m_DisplayType=m_ArgyllSensorPropertiesPage.m_DisplayType;
         m_ReadingType=m_ArgyllSensorPropertiesPage.m_ReadingType;
-        m_PortNumber=m_ArgyllSensorPropertiesPage.m_PortNumber + 1;
 
-        GetConfig () -> WriteProfileInt ( "Argyll", "DisplayType", m_DisplayType );
         GetConfig () -> WriteProfileInt ( "Argyll", "ReadingType", m_ReadingType );
-        GetConfig () -> WriteProfileInt ( "Argyll", "PortNumber", m_PortNumber );
 
         if(m_meter)
         {
             delete m_meter;
             m_meter = NULL;
-            SetName("Argyll Meter");
+            if(m_meterIndex >= 0)
+            {
+                m_meter = new ArgyllMeterWrapper(m_meterIndex, (ArgyllMeterWrapper::eReadingType)m_ReadingType);
+            }
         }
     }
 }
@@ -164,21 +188,17 @@ BOOL CArgyllSensor::Init( BOOL bForSimultaneousMeasures )
 {
     if(!m_meter)
     {
-        m_meter = new ArgyllMeterWrapper(ArgyllMeterWrapper::AUTODETECT, 
-                                            (ArgyllMeterWrapper::eDisplayType)m_DisplayType,
-                                            (ArgyllMeterWrapper::eReadingType)m_ReadingType,
-                                            m_PortNumber);
-        std::string errorDescription;
-        if(!m_meter->connectAndStartMeter(errorDescription))
-        {
-            MessageBox(NULL, errorDescription.c_str(), "Argyll Meter", MB_OK+MB_ICONHAND);
-            delete m_meter;
-            m_meter = 0;
-            return FALSE;
-        }
-        m_meter->setHiResMode(!!m_HiRes);
-        SetName(CString(m_meter->getMeterName(m_meter->getType()).c_str()));
+        m_meter = new ArgyllMeterWrapper(m_meterIndex, (ArgyllMeterWrapper::eReadingType)m_ReadingType);
     }
+    std::string errorDescription;
+    if(!m_meter->connectAndStartMeter(errorDescription))
+    {
+        MessageBox(NULL, errorDescription.c_str(), "Argyll Meter", MB_OK+MB_ICONHAND);
+        delete m_meter;
+        m_meter = 0;
+        return FALSE;
+    }
+    m_meter->setHiResMode(!!m_HiRes);
     return TRUE;
 }
 

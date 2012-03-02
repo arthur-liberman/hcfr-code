@@ -41,14 +41,15 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\spectro;..\.."
-				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;NT;WINVER=0x510;_USE_32BIT_TIME_T"
+				AdditionalIncludeDirectories="..\spectro;..\..;..\libusb1\libusb;..\libusb1\msvc"
+				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;NT;WINVER=0x510;_USE_32BIT_TIME_T;USE_LIBUSB1"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="4"
+				DisableSpecificWarnings="4200"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -105,13 +106,14 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\spectro;..\.."
-				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;NT;WINVER=0x510;_USE_32BIT_TIME_T"
+				AdditionalIncludeDirectories="..\spectro;..\..;..\libusb1\libusb;..\libusb1\msvc"
+				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;NT;WINVER=0x510;_USE_32BIT_TIME_T;USE_LIBUSB1"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
+				DisableSpecificWarnings="4200"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"

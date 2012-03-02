@@ -14,7 +14,6 @@ class THIS_TEST_CASE : public CPPUNIT_NS::TestFixture
 {
     CPPUNIT_TEST_SUITE(THIS_TEST_CASE);
     CPPUNIT_TEST( autoDetectMeter );
-    CPPUNIT_TEST( NumSupportedUSBMeters );
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -57,7 +56,13 @@ protected:
     // user to indicate when they are ready to move to the next step
     void autoDetectMeter()
     {
-        ArgyllMeterWrapper meter(ArgyllMeterWrapper::AUTODETECT, ArgyllMeterWrapper::CRT, ArgyllMeterWrapper::PROJECTOR, 1);
+        std::vector<std::string> meters = ArgyllMeterWrapper::getDetectedMeters();
+        if(meters.size() == 0)
+        {
+            return;
+        }
+        
+        ArgyllMeterWrapper meter(0, ArgyllMeterWrapper::PROJECTOR);
 
         std::string errorDescription;
         if(!meter.connectAndStartMeter(errorDescription))
@@ -66,7 +71,7 @@ protected:
             return;
         }
 
-        std::cout << ArgyllMeterWrapper::getMeterName(meter.getType()) << " meter found" << std::endl;
+        std::cout << meter.getMeterName() << " meter found" << std::endl;
 
         if(meter.doesMeterSupportCalibration())
         {
@@ -88,21 +93,6 @@ protected:
         }
         CColor reading(meter.getLastReading());
         std::cout << reading << std::endl;
-    }
-    void NumSupportedUSBMeters()
-    {
-        std::map<string, ArgyllMeterWrapper::eMeterType> usbMeters;
-        for(int i = ArgyllMeterWrapper::AUTODETECT; 
-            i < ArgyllMeterWrapper::LAST_METER;
-            ++i)
-        {
-            ArgyllMeterWrapper::eMeterType type = static_cast<ArgyllMeterWrapper::eMeterType>(i);
-            if(ArgyllMeterWrapper::isMeterUSB(type))
-            {
-                usbMeters[ArgyllMeterWrapper::getMeterName(type)] = type;
-            }
-        }
-        CPPUNIT_ASSERT_EQUAL( usbMeters.size(), size_t(12));
     }
 };
 

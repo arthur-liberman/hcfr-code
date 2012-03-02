@@ -619,14 +619,18 @@ void CDataSetDoc::CreateSensor(int aID)
 				m_pSensor=new CSpyder3Sensor();
 				break;
 #endif
-		case 7:
-				m_pSensor=new CArgyllSensor();
-				break;
 		default:
+            if(aID >= 7)
+            {
+				m_pSensor=new CArgyllSensor(aID - 7);
+            }
+            else
+            {
 				Msg.LoadString ( IDS_UNKNOWNSENSOR1 );
 				Title.LoadString ( IDS_ERROR );
 				MessageBox(NULL,Msg,Title,MB_ICONERROR | MB_OK);
 				m_pSensor=new CSimulatedSensor();
+            }
 	}
 }
 
