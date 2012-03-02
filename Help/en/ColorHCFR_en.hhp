@@ -505,7 +505,7 @@ default=,"ColorHCFR_en.hhc",,,,,,,,0x420,,0x200e,,0x0,0x0,,0,0,0,
 [ALIAS]
 HID_WELCOME = ColorHCFR_en.chm::/Bienvenue.htm
 HID_INSTALL = ColorHCFR_en.chm::/Installation\installation_colorimetre.htm
-HID_SUPPORT = ColorHCFR_en.chm::/Support_et_aides\online_support.htmSupport_et_aides\online_support.htm
+HID_SUPPORT = ColorHCFR_en.chm::/Support_et_aides\online_support.htm
 HID_FORUM = ColorHCFR_en.chm::/Support_et_aides\colorhcfr_forum.htm
 HID_MEASURES = ColorHCFR_en.chm::/Fenetre_document\Onglet_mesures\Onglet_mesures.htm
 HID_LUMINANCE = ColorHCFR_en.chm::/Fenetre_document\Graphe_de_luminance\Graphe_luminance.htm
