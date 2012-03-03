@@ -415,7 +415,12 @@ std::vector<std::string> ArgyllMeterWrapper::getDetectedMeters()
         {
             for (int i(0); paths[i] != NULL; ++i) 
             {
-                result.push_back(inst_name(paths[i]->itype));
+                // avoid COM ports for now until we work out how to handle 
+                // them properly
+                if(strnicmp("COM", paths[i]->path, 3) != 0)
+                {
+                    result.push_back(inst_name(paths[i]->itype));
+                }
             }
         }
         icom->del(icom);
