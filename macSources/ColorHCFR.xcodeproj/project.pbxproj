@@ -588,17 +588,17 @@
 
 /* Begin PBXFileReference section */
 		01D8890414F848F7002DC664 /* spectro.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = spectro.xcodeproj; path = ../Tools/macSources/spectro/spectro.xcodeproj; sourceTree = SOURCE_ROOT; };
-		01D8897814F8672E002DC664 /* ArgyllPlugin.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ArgyllPlugin.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
-		01D8897914F8672E002DC664 /* ArgyllPlugin-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "ArgyllPlugin-Info.plist"; path = "../ArgyllPlugin-Info.plist"; sourceTree = "<group>"; };
-		01D88B2414F867EB002DC664 /* ArgyllSensorPlugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ArgyllSensorPlugin.h; sourceTree = "<group>"; };
-		01D88B2514F867EB002DC664 /* ArgyllSensorPlugin.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ArgyllSensorPlugin.mm; sourceTree = "<group>"; };
-		01D88B2714F867FA002DC664 /* ArgyllSensor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ArgyllSensor.h; sourceTree = "<group>"; };
-		01D88B2814F867FA002DC664 /* ArgyllSensor.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ArgyllSensor.mm; sourceTree = "<group>"; };
+		01D8897814F8672E002DC664 /* ArgyllPlugin.hcfrPlugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ArgyllPlugin.hcfrPlugin; sourceTree = BUILT_PRODUCTS_DIR; };
+		01D8897914F8672E002DC664 /* ArgyllPlugin-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "ArgyllPlugin-Info.plist"; path = "ArgyllSensorPlugin/ArgyllPlugin-Info.plist"; sourceTree = "<group>"; };
+		01D88B2414F867EB002DC664 /* ArgyllSensorPlugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ArgyllSensorPlugin.h; path = ArgyllSensorPlugin/ArgyllSensorPlugin.h; sourceTree = "<group>"; };
+		01D88B2514F867EB002DC664 /* ArgyllSensorPlugin.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = ArgyllSensorPlugin.mm; path = ArgyllSensorPlugin/ArgyllSensorPlugin.mm; sourceTree = "<group>"; };
+		01D88B2714F867FA002DC664 /* ArgyllSensor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ArgyllSensor.h; path = ArgyllSensorPlugin/ArgyllSensor.h; sourceTree = "<group>"; };
+		01D88B2814F867FA002DC664 /* ArgyllSensor.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = ArgyllSensor.mm; path = ArgyllSensorPlugin/ArgyllSensor.mm; sourceTree = "<group>"; };
 		01D88D2214F98CBF002DC664 /* libArgyllWrapper.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libArgyllWrapper.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		01D88D4E14F98D62002DC664 /* ArgyllMeterWrapper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ArgyllMeterWrapper.cpp; path = ../Tools/ArgyllMeterWrapper/ArgyllMeterWrapper.cpp; sourceTree = SOURCE_ROOT; };
 		01D88D4F14F98D62002DC664 /* ArgyllMeterWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ArgyllMeterWrapper.h; path = ../Tools/ArgyllMeterWrapper/ArgyllMeterWrapper.h; sourceTree = SOURCE_ROOT; };
-		01D88DDF1501789E002DC664 /* Logging.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Logging.h; sourceTree = "<group>"; };
-		01D88DE01501789E002DC664 /* Logging.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Logging.cpp; sourceTree = "<group>"; };
+		01D88DDF1501789E002DC664 /* Logging.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Logging.h; path = ArgyllSensorPlugin/Logging.h; sourceTree = "<group>"; };
+		01D88DE01501789E002DC664 /* Logging.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Logging.cpp; path = ArgyllSensorPlugin/Logging.cpp; sourceTree = "<group>"; };
 		01D88DE915017904002DC664 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
 		0206297B0C99275C005216D9 /* HCFRCIEChartController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = HCFRCIEChartController.mm; sourceTree = "<group>"; };
 		020629E40C99311C005216D9 /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/CIEChart.nib; sourceTree = "<group>"; };
@@ -1689,7 +1689,7 @@
 				02CC44C10DC896690094B4F6 /* ManualDVDGeneratorPlugin.hcfrPlugin */,
 				024EB6BA0E65476C00FDFB3C /* AditionnalFramesPlugin.hcfrPlugin */,
 				8D1107320486CEB800E47090 /* ColorHCFR.app */,
-				01D8897814F8672E002DC664 /* ArgyllPlugin.bundle */,
+				01D8897814F8672E002DC664 /* ArgyllPlugin.hcfrPlugin */,
 				01D88D2214F98CBF002DC664 /* libArgyllWrapper.a */,
 			);
 			name = Products;
@@ -1815,7 +1815,7 @@
 			);
 			name = ArgyllPlugin;
 			productName = ArgyllPlugin;
-			productReference = 01D8897814F8672E002DC664 /* ArgyllPlugin.bundle */;
+			productReference = 01D8897814F8672E002DC664 /* ArgyllPlugin.hcfrPlugin */;
 			productType = "com.apple.product-type.bundle";
 		};
 		01D88D2114F98CBF002DC664 /* ArgyllWrapper */ = {
@@ -2732,8 +2732,8 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
-				INFOPLIST_FILE = "ArgyllPlugin-Info.plist";
-				INSTALL_PATH = "$(HOME)/Library/Bundles";
+				INFOPLIST_FILE = "Plugins/ArgyllSensorPlugin/ArgyllPlugin-Info.plist";
+				INSTALL_PATH = "@executeable_path/../Plugins";
 				OTHER_LDFLAGS = (
 					"-framework",
 					Foundation,
@@ -2742,7 +2742,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = ArgyllPlugin;
-				WRAPPER_EXTENSION = bundle;
+				WRAPPER_EXTENSION = hcfrPlugin;
 			};
 			name = Debug;
 		};
@@ -2756,8 +2756,8 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
-				INFOPLIST_FILE = "ArgyllPlugin-Info.plist";
-				INSTALL_PATH = "$(HOME)/Library/Bundles";
+				INFOPLIST_FILE = "Plugins/ArgyllSensorPlugin/ArgyllPlugin-Info.plist";
+				INSTALL_PATH = "@executeable_path/../Plugins";
 				OTHER_LDFLAGS = (
 					"-framework",
 					Foundation,
@@ -2766,7 +2766,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = ArgyllPlugin;
-				WRAPPER_EXTENSION = bundle;
+				WRAPPER_EXTENSION = hcfrPlugin;
 				ZERO_LINK = NO;
 			};
 			name = Release;
