@@ -107,21 +107,21 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 01D8882414F833CE002DC664 /* libusb1 */;
+			remoteGlobalIDString = 01D8882414F833CE002DC664;
 			remoteInfo = libusb1;
 		};
 		01D8895414F84E3F002DC664 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 01D8890B14F8494D002DC664 /* libusb_make */;
+			remoteGlobalIDString = 01D8890B14F8494D002DC664;
 			remoteInfo = libusb_make;
 		};
 		01D88BC514F86F17002DC664 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 01D8893014F84CA3002DC664 /* usb-1.0A */;
+			remoteGlobalIDString = 01D8893014F84CA3002DC664;
 			remoteInfo = "usb-1.0A";
 		};
 /* End PBXContainerItemProxy section */
@@ -593,6 +593,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_EXCEPTIONS = YES;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -620,6 +621,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_EXCEPTIONS = YES;
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_MODEL_TUNING = G5;
 				GCC_PREPROCESSOR_DEFINITIONS = (
