@@ -23,6 +23,7 @@
 		01D88DE11501789E002DC664 /* Logging.h in Headers */ = {isa = PBXBuildFile; fileRef = 01D88DDF1501789E002DC664 /* Logging.h */; };
 		01D88DE21501789E002DC664 /* Logging.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01D88DE01501789E002DC664 /* Logging.cpp */; };
 		01D88DEA15017904002DC664 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 01D88DE915017904002DC664 /* Carbon.framework */; };
+		01D88F001502C873002DC664 /* ArgyllPlugin.hcfrPlugin in Copy plugins */ = {isa = PBXBuildFile; fileRef = 01D8897814F8672E002DC664 /* ArgyllPlugin.hcfrPlugin */; };
 		0206297C0C99275C005216D9 /* HCFRCIEChartController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0206297B0C99275C005216D9 /* HCFRCIEChartController.mm */; };
 		020650700DF9424B00A4580A /* HCFRFile.icns in Resources */ = {isa = PBXBuildFile; fileRef = 0206506E0DF9424800A4580A /* HCFRFile.icns */; };
 		020CD4D812E88D4C00B098C6 /* HCFRManualFullscreenGenerator.mm in Sources */ = {isa = PBXBuildFile; fileRef = 020CD4D712E88D4C00B098C6 /* HCFRManualFullscreenGenerator.mm */; };
@@ -309,49 +310,49 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 01D8890414F848F7002DC664 /* spectro.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 01D8884914F83A10002DC664 /* libargyll.a */;
+			remoteGlobalIDString = 01D8884914F83A10002DC664;
 			remoteInfo = argyll;
 		};
 		01D8893514F84CA4002DC664 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 01D8890414F848F7002DC664 /* spectro.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 01D8893114F84CA3002DC664 /* liblibusb_.a */;
+			remoteGlobalIDString = 01D8893114F84CA3002DC664;
 			remoteInfo = libusb_;
 		};
 		01D8897F14F86754002DC664 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 02CC41A40DC75F560094B4F6 /* HCFRPlugins */;
+			remoteGlobalIDString = 02CC41A40DC75F560094B4F6;
 			remoteInfo = HCFRPlugins;
 		};
 		01D88BA614F86DDB002DC664 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 01D8897714F8672E002DC664 /* ArgyllPlugin */;
+			remoteGlobalIDString = 01D8897714F8672E002DC664;
 			remoteInfo = ArgyllPlugin;
 		};
 		01D88D4614F98D0F002DC664 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 024EBB6C0E66CF6A00FDFB3C /* libHCFR.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 8DC2EF4F0486A6940098B216 /* libHCFR */;
+			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
 			remoteInfo = libHCFR;
 		};
 		01D88D4814F98D14002DC664 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 01D8890414F848F7002DC664 /* spectro.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 01D8884814F83A10002DC664 /* argyll */;
+			remoteGlobalIDString = 01D8884814F83A10002DC664;
 			remoteInfo = argyll;
 		};
 		01D88DC0150176FE002DC664 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 01D88D2114F98CBF002DC664 /* ArgyllWrapper */;
+			remoteGlobalIDString = 01D88D2114F98CBF002DC664;
 			remoteInfo = ArgyllWrapper;
 		};
 		02132C530D5DDE0D00475539 /* PBXContainerItemProxy */ = {
@@ -454,6 +455,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
+				01D88F001502C873002DC664 /* ArgyllPlugin.hcfrPlugin in Copy plugins */,
 				02CC44DF0DC897E60094B4F6 /* ManualDVDGeneratorPlugin.hcfrPlugin in Copy plugins */,
 				02CC3F100DC751E80094B4F6 /* KiPlugin.hcfrPlugin in Copy plugins */,
 				02CC420D0DC761720094B4F6 /* VirtualSensorPlugin.hcfrPlugin in Copy plugins */,
@@ -1027,7 +1029,7 @@
 			isa = PBXGroup;
 			children = (
 				01D8890A14F848F7002DC664 /* libargyll.a */,
-				01D8893614F84CA4002DC664 /* liblibusb_.a */,
+				01D8893614F84CA4002DC664 /* libusb-1.0A.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2036,13 +2038,12 @@
 			remoteRef = 01D8890914F848F7002DC664 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		01D8893614F84CA4002DC664 /* liblibusb_.a */ = {
+		01D8893614F84CA4002DC664 /* libusb-1.0A.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
-			name = liblibusb_.a;
-			path = build/Debug/liblibusb_.a;
+			path = "libusb-1.0A.a";
 			remoteRef = 01D8893514F84CA4002DC664 /* PBXContainerItemProxy */;
-			sourceTree = "<group>";
+			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		024EBB710E66CF6A00FDFB3C /* libHCFR.framework */ = {
 			isa = PBXReferenceProxy;
