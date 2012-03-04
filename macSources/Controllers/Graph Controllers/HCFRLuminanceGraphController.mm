@@ -413,6 +413,9 @@ const float referenceSerieCurvesGamma = 0.2;
     switch (graphMode)
     {
       case kLuminanceGraphWhiteProximityMode :
+      {
+            
+        
         // on cherche le premier point dont la reference est > à 5 IRE, afin de prendre sa valeur
         // comme minimum pour l'axe Y
         int     index = [graphValues count]-1;
@@ -442,6 +445,7 @@ const float referenceSerieCurvesGamma = 0.2;
 
         return minValue;
         break;
+      }
       default :
         return 0;
         break;

@@ -83,8 +83,8 @@ HCFRAboutWindowController *sharedController = nil;
 - (IBAction)showLicence:(id)sender
 {
 	NSString	*licensePath = [[NSBundle bundleForClass:[self class]] pathForResource:@"License" ofType:@"txt"];
-	[licenceTextView setString:[NSString stringWithContentsOfFile:licensePath]];
-	
+    [licenceTextView setString:[NSString stringWithContentsOfFile:licensePath encoding:NSUTF8StringEncoding error:nil]];
+     	
 	[NSApp beginSheet:licencePanel
 	   modalForWindow:[self window]
       modalDelegate:nil

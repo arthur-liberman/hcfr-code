@@ -315,10 +315,10 @@
 		int intRGB[48];
 		int	nDiv, nMul;
 		int nSensor;
-		char dummyStr[6];
+		char dummyStr[4];
 		
 		sscanf(answer, "%4s%1d:%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d%3d",
-           &dummyStr, & nSensor, & nDiv, & nMul,
+           dummyStr, & nSensor, & nDiv, & nMul,
            &intRGB[0],  &intRGB[1],  &intRGB[2],  &intRGB[3],  &intRGB[4],  &intRGB[5], 
            &intRGB[6],  &intRGB[7],  &intRGB[8],  &intRGB[9],  &intRGB[10], &intRGB[11], 
            &intRGB[12], &intRGB[13], &intRGB[14], &intRGB[15], &intRGB[16], &intRGB[17],

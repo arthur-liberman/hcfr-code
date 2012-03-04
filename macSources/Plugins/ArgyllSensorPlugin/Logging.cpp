@@ -9,3 +9,6 @@
 
 #include "Logging.h"
 
+void ArgyllLogMessage(const char* messageType, char *fmt, va_list& args)
+{
+}
