@@ -84,7 +84,7 @@ static HCFRKiDevice *sharedDevice = nil;
   NSLog (@"kiDevice getSharedDevice");
   @synchronized(self) {
     if (sharedDevice == nil) {
-      [[self alloc] init]; // On n'alloue pas sharedDevice ici : ce sera fait par allocWithZone
+      [[[self alloc] init] autorelease]; // On n'alloue pas sharedDevice ici : ce sera fait par allocWithZone
     }
   }
   return sharedDevice;
@@ -104,14 +104,14 @@ static HCFRKiDevice *sharedDevice = nil;
 {
   return self;
 }
-/*- (id)retain
+- (id)retain
 {
   return [super retain];
-}*/
-/*- (unsigned)retainCount
+}
+- (unsigned)retainCount
 {
   return UINT_MAX;  // Cet objet ne peut pas être releasé
-}*/
+}
 - (void)release
 {
   @synchronized(self) {
@@ -130,10 +130,10 @@ static HCFRKiDevice *sharedDevice = nil;
     }
   }
 }
-/*- (id)autorelease
+- (id)autorelease
 {
   return self;
-}*/
+}
 
 
 #pragma mark Fonctions d'initialisation

@@ -34,7 +34,7 @@ static HCFRKiGeneratorIRProfilesRepository *sharedRepository = nil;
 {
   @synchronized(self) {
     if (sharedRepository == nil) {
-        [[self alloc] init]; // On n'alloue pas sharedDevice ici : ce sera fait par allocWithZone
+        [[[self alloc] init] autorelease]; // On n'alloue pas sharedDevice ici : ce sera fait par allocWithZone
     }
   }
   return sharedRepository;
