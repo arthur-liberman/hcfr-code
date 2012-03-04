@@ -118,7 +118,7 @@
 				Optimization="2"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\include"
-				PreprocessorDefinitions="NDEBUG;_LIB;WIN32;_USE_32BIT_TIME_T"
+				PreprocessorDefinitions="NDEBUG;_LIB;WIN32;_USE_32BIT_TIME_T;CPPUNIT_HAVE_RTTI=0"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"

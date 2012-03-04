@@ -119,7 +119,7 @@
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				AdditionalIncludeDirectories="..\Tools\cppunit\include;..\Tools\spectro;..;..\Tools\libusb1\msvc;..\Tools\ArgyllMeterWrapper"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;WINVER=0x510;_USE_32BIT_TIME_T"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;WINVER=0x510;_USE_32BIT_TIME_T;CPPUNIT_HAVE_RTTI=0"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
