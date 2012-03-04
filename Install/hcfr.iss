@@ -87,7 +87,8 @@ Source: "..\Tools\libusb1\NEWS"; DestDir: "{app}\Drivers"; DestName: News.txt; F
 Source: "..\Tools\libusb1\THANKS"; DestDir: "{app}\Drivers"; DestName: Thanks.txt; Flags: ignoreversion; Components: main
 Source: "..\Tools\libusb1\TODO"; DestDir: "{app}\Drivers"; DestName: Todo.txt; Flags: ignoreversion; Components: main
 Source: "..\Tools\libusb1\license.rtf"; DestDir: "{app}\Drivers"; DestName: CoInstaller_License.rtf; Flags: ignoreversion; Components: main
-Source: "..\Tools\libusb1\WinCoInstallers\*.*"; DestDir: "{app}\Drivers\WinCoInstallers"; Flags: ignoreversion; Components: main
+Source: "..\Tools\libusb1\WinCoInstallers\amd64\*.*"; DestDir: "{app}\Drivers\WinCoInstallers\amd64"; Flags: ignoreversion; Components: main
+Source: "..\Tools\libusb1\WinCoInstallers\x86\*.*"; DestDir: "{app}\Drivers\WinCoInstallers\x86"; Flags: ignoreversion; Components: main
 
 [INI]
 Filename: "{app}\HCFR.url"; Section: "InternetShortcut"; Key: "URL"; String: "http://hcfr.sourceforge.net/"
