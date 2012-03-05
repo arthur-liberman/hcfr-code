@@ -401,7 +401,7 @@ void ArgyllMeterWrapper::setHiResMode(bool enableHiRes)
 
 std::string ArgyllMeterWrapper::getMeterName() const
 {
-    return inst_name((instType)m_meter->Type);
+    return inst_name((instType)m_meterType);
 }
 
 std::vector<ArgyllMeterWrapper*> ArgyllMeterWrapper::getDetectedMeters()
