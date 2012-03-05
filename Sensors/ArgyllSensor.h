@@ -53,7 +53,7 @@ private:
 
 public:
     CArgyllSensor();
-    CArgyllSensor(int meterNumber);
+    CArgyllSensor(ArgyllMeterWrapper* meter);
     virtual ~CArgyllSensor();
 
     // Overriden functions from CSensor

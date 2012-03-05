@@ -620,9 +620,9 @@ void CDataSetDoc::CreateSensor(int aID)
 				break;
 #endif
 		default:
-            if(aID >= 7)
+            if(aID >= 7 || aID < 0)
             {
-				m_pSensor=new CArgyllSensor(aID - 7);
+				m_pSensor=new CArgyllSensor((ArgyllMeterWrapper*)aID);
             }
             else
             {

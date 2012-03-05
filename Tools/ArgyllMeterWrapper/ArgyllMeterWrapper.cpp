@@ -81,8 +81,8 @@ extern "C"
 }
 
 
-ArgyllMeterWrapper::ArgyllMeterWrapper(int meterIndex, eReadingType readingType) :
-    m_readingType(readingType),
+ArgyllMeterWrapper::ArgyllMeterWrapper(int meterIndex) :
+    m_readingType(DISPLAY),
     m_meter(0),
     m_nextCalibration(0),
     m_meterType(0),
@@ -110,7 +110,7 @@ ArgyllMeterWrapper::~ArgyllMeterWrapper()
     }
 }
 
-bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription)
+bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eReadingType readingType)
 {
     inst_code instCode;
     try
@@ -124,6 +124,9 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription)
         errorDescription = "Incorrect driver - Starting communications with the meter failed with severe error";
         return false;
     }
+
+    m_readingType = readingType;
+
     if(instCode != inst_ok)
     {
         m_meter->del(m_meter);
@@ -142,9 +145,6 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription)
         errorDescription = "Failed to initialize the instrument";
         return false;
     }
-
-    // get actual meter type
-    m_meterType = m_meter->get_itype(m_meter);
 
     inst_mode displayMode = inst_mode_emis_spot;
     instCode = m_meter->set_mode(m_meter, displayMode);
@@ -401,12 +401,12 @@ void ArgyllMeterWrapper::setHiResMode(bool enableHiRes)
 
 std::string ArgyllMeterWrapper::getMeterName() const
 {
-    return inst_name((instType)m_meterType);
+    return inst_name((instType)m_meter->Type);
 }
 
-std::vector<std::string> ArgyllMeterWrapper::getDetectedMeters()
+std::vector<ArgyllMeterWrapper*> ArgyllMeterWrapper::getDetectedMeters()
 {
-    std::vector<std::string> result;
+    std::vector<ArgyllMeterWrapper*> result;
     icoms *icom = 0;
     if ((icom = new_icoms()) != NULL) 
     {
@@ -419,7 +419,7 @@ std::vector<std::string> ArgyllMeterWrapper::getDetectedMeters()
                 // them properly
                 if(strnicmp("COM", paths[i]->path, 3) != 0)
                 {
-                    result.push_back(inst_name(paths[i]->itype));
+                    result.push_back(new ArgyllMeterWrapper(i));
                 }
             }
         }

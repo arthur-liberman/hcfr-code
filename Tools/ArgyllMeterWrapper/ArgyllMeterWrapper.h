@@ -47,15 +47,11 @@ public:
         INCORRECT_POSITION,
     } eMeterState;
 
-    /// ArgyllMeterWrapper constructor
-    /// Create a USB meter object
-    ArgyllMeterWrapper(int meterIndex, eReadingType readingType);
-
     ~ArgyllMeterWrapper();
 
     /// initialize the meter
     /// returns true on success
-    bool connectAndStartMeter(std::string& errorDescription);
+    bool connectAndStartMeter(std::string& errorDescriptione, eReadingType readingType);
 
     /// see if the meter supports calibration
     bool doesMeterSupportCalibration();
@@ -94,9 +90,16 @@ public:
     /// get the name of the meter given the meter
     std::string getMeterName() const;
 
-    static std::vector<std::string> getDetectedMeters();
+    // get a list of pointer to meters, the life time of the
+    // pointers is handled at a global level and there is no need to free
+    // or delete the returned objects
+    static std::vector<ArgyllMeterWrapper*> getDetectedMeters();
 
 private:
+    /// ArgyllMeterWrapper constructor
+    /// Create a USB meter object
+    ArgyllMeterWrapper(int meterIndex);
+
     void checkMeterIsInitialized() const;
     _inst* m_meter;
     int m_displayType;

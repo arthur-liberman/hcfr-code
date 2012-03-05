@@ -61,18 +61,15 @@ CArgyllSensor::CArgyllSensor() :
     SetName("Argyll Meter");
 }
 
-CArgyllSensor::CArgyllSensor(int meterIndex) :
+CArgyllSensor::CArgyllSensor(ArgyllMeterWrapper* meter) :
     m_DisplayType(0),
     m_ReadingType(0),
-    m_meterIndex(meterIndex),
-    m_meter(0)
+    m_meter(meter)
 {
     m_DisplayType = GetConfig()->GetProfileInt("Argyll", "DisplayType", 1);
     m_ReadingType = GetConfig()->GetProfileInt("Argyll", "ReadingType", 0);
     m_debugMode = !!GetConfig()->GetProfileInt("Argyll", "DebugMode", 0);
     m_HiRes = GetConfig()->GetProfileInt("Argyll", "HiRes", 1);
-
-    m_meter = new ArgyllMeterWrapper(m_meterIndex, (ArgyllMeterWrapper::eReadingType)m_ReadingType);
 
     m_ArgyllSensorPropertiesPage.m_pSensor = this;
 
@@ -96,9 +93,9 @@ void CArgyllSensor::Copy(CSensor * p)
     m_ReadingType = ((CArgyllSensor*)p)->m_ReadingType;
     m_meterIndex = ((CArgyllSensor*)p)->m_meterIndex;
     m_HiRes = ((CArgyllSensor*)p)->m_HiRes;
-    if(m_meterIndex >= 0)
+    if(m_meter >= 0)
     {
-        m_meter = new ArgyllMeterWrapper(m_meterIndex, (ArgyllMeterWrapper::eReadingType)m_ReadingType);
+        m_meter = ((CArgyllSensor*)p)->m_meter;
         SetName(CString(m_meter->getMeterName().c_str()));
     }
 }
@@ -171,27 +168,13 @@ void CArgyllSensor::GetPropertiesSheetValues()
         m_ReadingType=m_ArgyllSensorPropertiesPage.m_ReadingType;
 
         GetConfig () -> WriteProfileInt ( "Argyll", "ReadingType", m_ReadingType );
-
-        if(m_meter)
-        {
-            delete m_meter;
-            m_meter = NULL;
-            if(m_meterIndex >= 0)
-            {
-                m_meter = new ArgyllMeterWrapper(m_meterIndex, (ArgyllMeterWrapper::eReadingType)m_ReadingType);
-            }
-        }
     }
 }
 
 BOOL CArgyllSensor::Init( BOOL bForSimultaneousMeasures )
 {
-    if(!m_meter)
-    {
-        m_meter = new ArgyllMeterWrapper(m_meterIndex, (ArgyllMeterWrapper::eReadingType)m_ReadingType);
-    }
     std::string errorDescription;
-    if(!m_meter->connectAndStartMeter(errorDescription))
+    if(!m_meter->connectAndStartMeter(errorDescription, (ArgyllMeterWrapper::eReadingType)m_ReadingType))
     {
         MessageBox(NULL, errorDescription.c_str(), "Argyll Meter", MB_OK+MB_ICONHAND);
         delete m_meter;

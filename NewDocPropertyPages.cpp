@@ -133,12 +133,12 @@ void CSensorSelectionPropPage::DoDataExchange(CDataExchange* pDX)
 	CPropertyPageWithHelp::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_SENSORTRAININGFILE_COMBO, m_trainingFileCombo);
 	DDX_Control(pDX, IDC_SENSORCHOICE_COMBO, m_sensorChoiceCtrl);
-    std::vector<std::string> argyllMeters = ArgyllMeterWrapper::getDetectedMeters();
+    std::vector<ArgyllMeterWrapper*> argyllMeters = ArgyllMeterWrapper::getDetectedMeters();
     if(m_sensorChoiceCtrl.GetCount() == 0)
     {
         for(size_t i(0); i < argyllMeters.size(); ++i)
         {
-            AddSensor(argyllMeters[i].c_str(), 7 + i);
+            AddSensor(argyllMeters[i]->getMeterName().c_str(), (int)argyllMeters[i]);
         }
         AddSensor(_T("Simulated sensor"), 1);
         AddSensor(_T("DTP-94"), 3);
