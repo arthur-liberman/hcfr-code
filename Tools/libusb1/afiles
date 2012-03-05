@@ -67,6 +67,10 @@ Spyd3.cat
 Spyd3.inf
 Spyd3.sed
 Spyd3_x64.cat
+Spyd4.cat
+Spyd4.inf
+Spyd4.sed
+Spyd4_x64.cat
 i1Disp.cat
 i1Disp.inf
 i1Disp.sed
@@ -82,6 +86,10 @@ i1Pro.cat
 i1Pro.inf
 i1Pro.sed
 i1Pro_x64.cat
+ColorHug.cat
+ColorHug.inf
+ColorHug.sed
+ColorHug_x64.cat
 Jamfile
 libusb/Jamfile
 examples/Jamfile

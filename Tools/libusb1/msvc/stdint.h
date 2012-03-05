@@ -29,6 +29,8 @@
 // 
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifndef __MINGW32__
+
 #ifndef _MSC_VER // [
 #error "Use this header only with Microsoft Visual C++ compilers!"
 #endif // _MSC_VER ]
@@ -245,3 +247,5 @@ typedef uint64_t  uintmax_t;
 
 
 #endif // _MSC_STDINT_H_ ]
+
+#endif /* !__MINGW32__ */

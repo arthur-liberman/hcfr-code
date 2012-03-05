@@ -11,6 +11,8 @@ call hcfr_make_inf.cmd Spyd3 winusbDrivers
 call hcfr_make_inf.cmd i1Monitor winusbDrivers 
 call hcfr_make_inf.cmd i1Disp winusbDrivers
 call hcfr_make_inf.cmd i1D3 winusbDrivers
+call hcfr_make_inf.cmd ColorHug winusbDrivers
+call hcfr_make_inf.cmd Spyd4 winusbDrivers
 rem **************************************************************************
 rem create the inf files that can only use libUSB
 rem **************************************************************************

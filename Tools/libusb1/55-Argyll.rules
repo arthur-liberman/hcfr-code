@@ -43,8 +43,14 @@ ATTRS{idVendor}=="085c", ATTRS{idProduct}=="0200", ENV{COLOR_MEASUREMENT_DEVICE}
 # Spyder 3
 ATTRS{idVendor}=="085c", ATTRS{idProduct}=="0300", ENV{COLOR_MEASUREMENT_DEVICE}="1"
 
+# Spyder 4
+ATTRS{idVendor}=="085c", ATTRS{idProduct}=="0400", ENV{COLOR_MEASUREMENT_DEVICE}="1"
+
 # Huey
 ATTRS{idVendor}=="0971", ATTRS{idProduct}=="2005", ENV{COLOR_MEASUREMENT_DEVICE}="1"
+
+# ColorHug
+ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="f8da", ENV{COLOR_MEASUREMENT_DEVICE}="1"
 
 # Let udev-acl and ConsoleKit manage these devices, if applicable
 TEST=="/lib/udev/udev-acl", TEST=="/var/run/ConsoleKit/database", ENV{COLOR_MEASUREMENT_DEVICE}=="*?", ENV{ACL_MANAGE}="1"

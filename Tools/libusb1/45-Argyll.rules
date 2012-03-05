@@ -38,5 +38,11 @@ SYSFS{idVendor}=="085c", SYSFS{idProduct}=="0200", PROGRAM="/bin/sh -c 'K=%k; K=
 # Spyder 3
 SYSFS{idVendor}=="085c", SYSFS{idProduct}=="0300", PROGRAM="/bin/sh -c 'K=%k; K=$${K#usbdev}; printf bus/usb/%%03i/%%03i $${K%%%%.*} $${K#*.}'", NAME="%c", MODE="660", GROUP="plugdev"
 
+# Spyder 4
+SYSFS{idVendor}=="085c", SYSFS{idProduct}=="0400", PROGRAM="/bin/sh -c 'K=%k; K=$${K#usbdev}; printf bus/usb/%%03i/%%03i $${K%%%%.*} $${K#*.}'", NAME="%c", MODE="660", GROUP="plugdev"
+
 # Huey
 SYSFS{idVendor}=="0971", SYSFS{idProduct}=="2005", PROGRAM="/bin/sh -c 'K=%k; K=$${K#usbdev}; printf bus/usb/%%03i/%%03i $${K%%%%.*} $${K#*.}'", NAME="%c", MODE="660", GROUP="plugdev"
+
+# ColorHug
+SYSFS{idVendor}=="04d8", SYSFS{idProduct}=="f8da", PROGRAM="/bin/sh -c 'K=%k; K=$${K#usbdev}; printf bus/usb/%%03i/%%03i $${K%%%%.*} $${K#*.}'", NAME="%c", MODE="660", GROUP="plugdev"

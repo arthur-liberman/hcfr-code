@@ -35,7 +35,7 @@ if [ GLOB $(PATH) : sed sed.exe ] {
 # List of .inf files needed
 # WinUSB driver preference
 INFS1 = ColorMunki DTP20 DTP92 DTP94 Huey MonacoOptix
-       Spyd3 i1Monitor i1Disp i1D3 ;
+       Spyd3 Spyd4 i1Monitor i1Disp i1D3 ColorHug ;
 DRIVERS1  = winusbDrivers ;
 
 # Libusb driver preference
