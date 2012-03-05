@@ -254,7 +254,7 @@ dtp92_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) 
 
 		while (msec_time() < etime) {
 
-			if (p->debug) fprintf(stderr,"dtp92: Trying different baud rates (%ld ticks to go)\n",etime - msec_time());
+			if (p->debug) fprintf(stderr,"dtp92: Trying different baud rates (%u ticks to go)\n",etime - msec_time());
 
 			/* Until we time out, find the correct baud rate */
 			for (i = ci; msec_time() < etime;) {

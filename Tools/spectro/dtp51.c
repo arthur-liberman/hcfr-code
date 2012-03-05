@@ -810,7 +810,6 @@ static inst_code
 dtp51_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 {
 	dtp51 *p = (dtp51 *)pp;
-	static char buf[MAX_MES_SIZE];
 
 	if (!p->gotcoms)
 		return inst_no_coms;

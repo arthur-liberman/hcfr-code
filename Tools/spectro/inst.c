@@ -597,7 +597,7 @@ static instType ser_inst_type(
 	/* The tick to give up on */
 	etime = msec_time() + (long)(1000.0 * 20.0 + 0.5);
 
-	if (p->debug) fprintf(stderr,"instType: Trying different baud rates (%lu msec to go)\n",etime - msec_time());
+	if (p->debug) fprintf(stderr,"instType: Trying different baud rates (%u msec to go)\n",etime - msec_time());
 
 	/* Until we time out, find the correct baud rate */
 	for (i = bi; msec_time() < etime; i++) {

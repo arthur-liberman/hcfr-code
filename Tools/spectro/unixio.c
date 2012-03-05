@@ -122,7 +122,6 @@ icoms *p
 	/* Search the OSX registry for serial ports */
 	{
 	    kern_return_t kstat; 
-	    mach_port_t mp;						/* Master IO port */
 	    CFMutableDictionaryRef sdict;		/* Serial Port  dictionary */
 		io_iterator_t mit;					/* Matching itterator */
 		io_object_t ioob;					/* Serial object found */
