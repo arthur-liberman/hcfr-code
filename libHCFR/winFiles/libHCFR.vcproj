@@ -229,6 +229,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\LockWhileInScope.h"
+				>
+			</File>
+			<File
 				RelativePath="..\matrix.h"
 				>
 			</File>
