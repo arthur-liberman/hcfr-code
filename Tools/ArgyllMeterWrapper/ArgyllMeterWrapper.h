@@ -90,6 +90,14 @@ public:
     /// get the name of the meter given the meter
     std::string getMeterName() const;
 
+    // do the meter objects point to the same underlying meter
+    // not expected to be useful to client code but harmless
+    bool isSameMeter(ArgyllMeterWrapper* otherMeter) const;
+
+    // do the meter objects point to the same underlying meter
+    // not expected to be useful to client code but harmless
+    bool isMeterStillValid() const;
+
     // get a list of pointer to meters, the life time of the
     // pointers is handled at a global level and there is no need to free
     // or delete the returned objects

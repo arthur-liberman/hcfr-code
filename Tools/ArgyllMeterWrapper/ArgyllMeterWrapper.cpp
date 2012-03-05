@@ -22,15 +22,21 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "ArgyllMeterWrapper.h"
+#include "CriticalSection.h"
+#include "LockWhileInScope.h"
 
 #define SALONEINSTLIB
 #define ENABLE_USB
 #define ENABLE_SERIAL
 #if defined(_MSC_VER)
 #pragma warning(disable:4200)
+#include <winsock.h>
 #endif
 #include "xspect.h"
 #include "inst.h"
+#include "hidio.h"
+#include "libusb.h"
+#include "libusbi.h"
 #undef SALONEINSTLIB
 #include <stdexcept>
 
@@ -70,6 +76,49 @@ namespace
     {
         return ((fullInstCode & inst_mask) == partialInstCode);
     }
+    
+    class ArgyllMeters
+    {
+    private:
+        CriticalSection m_MeterCritSection;
+        std::vector<ArgyllMeterWrapper*> m_meters;
+        ArgyllMeters()
+        {
+        }
+        ~ArgyllMeters()
+        {
+            for(size_t i(0); i < m_meters.size(); ++i)
+            {
+                delete m_meters[i];
+            }
+            m_meters.clear();
+        }
+    public:
+        static ArgyllMeters& getInstance()
+        {
+            static ArgyllMeters theInstance;
+            return theInstance;
+        }
+        void addMeter(ArgyllMeterWrapper* newMeter)
+        {
+            CLockWhileInScope usingThis(m_MeterCritSection);
+            for(size_t i(0); i < m_meters.size(); ++i)
+            {
+                if(m_meters[i]->isSameMeter(newMeter))
+                {
+                    delete newMeter;
+                    return;
+                }
+            }
+            m_meters.push_back(newMeter);
+        }
+        std::vector<ArgyllMeterWrapper*> getDetectedMeters()
+        {
+            CLockWhileInScope usingThis(m_MeterCritSection);
+            std::vector<ArgyllMeterWrapper*> result(m_meters);
+            return result;
+        }
+    };
 }
 
 // define the error handlers so we can change them
@@ -404,9 +453,41 @@ std::string ArgyllMeterWrapper::getMeterName() const
     return inst_name((instType)m_meterType);
 }
 
+bool ArgyllMeterWrapper::isSameMeter(ArgyllMeterWrapper* otherMeter) const
+{
+    if(!isMeterStillValid())
+    {
+        return false;
+    }
+    if(!otherMeter->isMeterStillValid())
+    {
+        return false;
+    }
+    if(m_meter->icom->is_hid)
+    {
+        // a guess at a unique thing
+        return (strcmp(m_meter->icom->hidd->dpath, otherMeter->m_meter->icom->hidd->dpath) == 0);
+    }
+    else if(m_meter->icom->is_usb)
+    {
+        return (m_meter->icom->vid == otherMeter->m_meter->icom->vid) &&
+                (m_meter->icom->pid == otherMeter->m_meter->icom->pid) &&
+                (m_meter->icom->usbd->bus_number == otherMeter->m_meter->icom->usbd->bus_number) &&
+                (m_meter->icom->usbd->device_address == otherMeter->m_meter->icom->usbd->device_address);
+    }
+    else
+    {
+        return (m_meter->icom->port == otherMeter->m_meter->icom->port);
+    }
+}
+
+bool ArgyllMeterWrapper::isMeterStillValid() const
+{
+    return m_meter && m_meter->icom;
+}
+
 std::vector<ArgyllMeterWrapper*> ArgyllMeterWrapper::getDetectedMeters()
 {
-    std::vector<ArgyllMeterWrapper*> result;
     icoms *icom = 0;
     if ((icom = new_icoms()) != NULL) 
     {
@@ -419,11 +500,11 @@ std::vector<ArgyllMeterWrapper*> ArgyllMeterWrapper::getDetectedMeters()
                 // them properly
                 if(strnicmp("COM", paths[i]->path, 3) != 0)
                 {
-                    result.push_back(new ArgyllMeterWrapper(i));
+                    ArgyllMeters::getInstance().addMeter(new ArgyllMeterWrapper(i));
                 }
             }
         }
         icom->del(icom);
     }
-    return result;
+    return ArgyllMeters::getInstance().getDetectedMeters();
 }

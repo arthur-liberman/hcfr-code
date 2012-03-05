@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\spectro;..\..;..\libusb1\libusb;..\libusb1\msvc"
+				AdditionalIncludeDirectories="..\spectro;..\..;..\libusb1\libusb;..\libusb1\msvc;..\..\libHCFR"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;NT;WINVER=0x510;_USE_32BIT_TIME_T;USE_LIBUSB1;_CRT_NONSTDC_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -106,7 +106,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\spectro;..\..;..\libusb1\libusb;..\libusb1\msvc"
+				AdditionalIncludeDirectories="..\spectro;..\..;..\libusb1\libusb;..\libusb1\msvc;..\..\libHCFR"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;NT;WINVER=0x510;_USE_32BIT_TIME_T;USE_LIBUSB1;_CRT_NONSTDC_NO_DEPRECATE"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
