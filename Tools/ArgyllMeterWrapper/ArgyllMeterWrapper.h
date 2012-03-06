@@ -51,7 +51,7 @@ public:
 
     /// initialize the meter
     /// returns true on success
-    bool connectAndStartMeter(std::string& errorDescriptione, eReadingType readingType);
+    bool connectAndStartMeter(std::string& errorDescription, eReadingType readingType);
 
     /// see if the meter supports calibration
     bool doesMeterSupportCalibration();
@@ -106,12 +106,11 @@ public:
 private:
     /// ArgyllMeterWrapper constructor
     /// Create a USB meter object
-    ArgyllMeterWrapper(int meterIndex);
+    ArgyllMeterWrapper(_inst* meter);
 
-    void checkMeterIsInitialized() const;
+    void checkMeterIsInitialized();
     _inst* m_meter;
     int m_displayType;
-    int m_portNumber;
     int m_meterType;
     eReadingType m_readingType;
     CColor m_lastReading;

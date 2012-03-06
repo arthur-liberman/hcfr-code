@@ -82,7 +82,7 @@ CArgyllSensor::CArgyllSensor(ArgyllMeterWrapper* meter) :
 
 CArgyllSensor::~CArgyllSensor()
 {
-    delete m_meter;
+    // we don't own the meter don't delete it
 }
 
 void CArgyllSensor::Copy(CSensor * p)
@@ -177,7 +177,6 @@ BOOL CArgyllSensor::Init( BOOL bForSimultaneousMeasures )
     if(!m_meter->connectAndStartMeter(errorDescription, (ArgyllMeterWrapper::eReadingType)m_ReadingType))
     {
         MessageBox(NULL, errorDescription.c_str(), "Argyll Meter", MB_OK+MB_ICONHAND);
-        delete m_meter;
         m_meter = 0;
         return FALSE;
     }
@@ -240,19 +239,6 @@ void CArgyllSensor::Calibrate()
     MessageBox(NULL, "Device is now calibrated.  If the device requires it return to the correct measurement position.", "Calibration Complete", MB_OK);
 }
 
-BOOL CArgyllSensor::SensorNeedCalibration () 
-{
-    if(!m_meter) if(!Init(FALSE)) return FALSE;
-
-    return m_meter->doesMeterSupportCalibration();
-}
-
-BOOL CArgyllSensor::SensorAcceptCalibration ()
-{
-    return FALSE;
-}
-
-
 BOOL CArgyllSensor::HasSpectrumCapabilities ( int * pNbBands, int * pMinWaveLength, int * pMaxWaveLength, int * pBandWidth )
 {
     return FALSE;
@@ -262,7 +248,6 @@ void CArgyllSensor::GetUniqueIdentifier( CString & strId )
 {
     strId = "Argyll Meter";
 }
-
 
 // very basic logging and error handling to override
 // the standard argyll verion

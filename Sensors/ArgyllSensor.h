@@ -71,8 +71,8 @@ public:
 
     void Calibrate();
 
-    virtual BOOL SensorNeedCalibration ();
-    virtual BOOL SensorAcceptCalibration ();
+    virtual BOOL SensorNeedCalibration () { return FALSE; }
+    virtual BOOL SensorAcceptCalibration () { return ( GetConfig()->m_bUseCalibrationFilesOnAllProbes ); }
 
     virtual BOOL HasSpectrumCapabilities ( int * pNbBands, int * pMinWaveLength, int * pMaxWaveLength, int * pBandWidth );
 
