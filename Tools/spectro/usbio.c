@@ -173,10 +173,10 @@ struct _icoms *p
 	/* Scan the USB busses for instruments we recognise */
 	/* We're not expecting any of our unstruments to be an interface on a device. */
 
-   	libusb_init(&ctx);
+   	libusb_init(NULL);
 
 	if (p->debug > 8)
-		libusb_set_debug(ctx, p->debug);
+		libusb_set_debug(NULL, p->debug);
 
 	nlist = libusb_get_device_list(NULL, &list);
     
