@@ -273,7 +273,7 @@ munki_code add_munkiimp(munki *p) {
 
 	if ((m = (munkiimp *)calloc(1, sizeof(munkiimp))) == NULL) {
 		DBG((dbgo,"add_munkiimp malloc %d bytes failed (1)\n",sizeof(munkiimp)))
-		if (p->verb) printf("Malloc %d bytes failed (1)\n",sizeof(munkiimp));
+		if (p->verb) printf("Malloc %lu bytes failed (1)\n",sizeof(munkiimp));
 		return MUNKI_INT_MALLOC;
 	}
 	m->p = p;
@@ -4313,7 +4313,7 @@ munki_code munki_extract_patches_multimeas(
 		PRDBG((dbgo,"Patch %d: consistency = %f%%, thresh = %f%%\n",pix,100.0 * cons, 100.0 * patch_cons_thr))
 		if (cons > patch_cons_thr) {
 			if (p->debug >= 1)
-				fprintf(stderr,"Patch recog failed - patch %k is inconsistent (%f%%)\n",cons);
+				fprintf(stderr,"Patch recog failed - patch %d is inconsistent (%f%%)\n",k, cons);
 			rv |= 1;
 		}
 		pix++;
@@ -4876,8 +4876,6 @@ munki_code munki_create_hr(munki *p, int ref) {
 	munki_xp xp[41];			/* Crossover points each side of filter */
 	munki_code ev = MUNKI_OK;
 	rspl *raw2wav;				/* Lookup from CCD index to wavelength */
-	munki_fs fshape[40 * 16];  /* Existing filter shape */
-	int ncp = 0;				/* Number of shape points */
 	int *mtx_index1, **pmtx_index2, *mtx_index2;
 	int *mtx_nocoef1, **pmtx_nocoef2, *mtx_nocoef2;
 	double *mtx_coef1, **pmtx_coef2, *mtx_coef2;
@@ -5460,10 +5458,12 @@ munki_code munki_create_hr(munki *p, int ref) {
 		/* Normalise the filters area in CCD space, while maintaining the */
 		/* total contribution of each CCD at the target too. */
 		{
-			int ii;
 			double tot = 0.0;
 			double ccdweight[NRAW], avgw;	/* Weighting determined by cell widths */
+#ifdef NEVER
+			int ii;
 			double ccdsum[NRAW];
+#endif
 
 			/* Normalize the overall filter weightings */
 			for (j = 0; j < m->nwav2; j++)
@@ -5600,7 +5600,7 @@ munki_code munki_create_hr(munki *p, int ref) {
 			datao vlow, vhigh;
 			int gres[2];
 			double avgdev[2];
-			int ii, jj;
+			int ii;
 			co pp;
 	
 			/* First the 1D references */
@@ -6133,7 +6133,6 @@ munki_code munki_set_stdres(munki *p) {
 /* Modify the scan consistency tolerance */
 munki_code munki_set_scan_toll(munki *p, double toll_ratio) {
 	munkiimp *m = (munkiimp *)p->m;
-	munki_code ev = MUNKI_OK;
 
 	m->scan_toll_ratio = toll_ratio;
 
@@ -6255,7 +6254,6 @@ int munki_compute_white_cal(
 	double *white_read2		/* [nwav2] The white that was read */
 ) {
 	munkiimp *m = (munkiimp *)p->m;
-	munki_state *s = &m->ms[m->mmode];
 	int j, warn = 0;
 	
 	DBG((dbgo,"munki_compute_white_cal called"))
@@ -6342,7 +6340,6 @@ munki_code munki_optimise_sensor(
 	double scale,			/* scale needed of current int time to reach optimum */
 	double deadtime			/* Dead integration time (if any) */
 ) {
-	munki_code ev = MUNKI_OK;
 	munkiimp *m = (munkiimp *)p->m;
 	double new_int_time;
 	double min_int_time;	/* Adjusted min_int_time */
@@ -7002,7 +6999,7 @@ munki_readmeasurement(
 
 	top = extra + m->c_inttime * nmeas;
 
-	if (isdeb) fprintf(stderr,"\nmunki: Read measurement results: inummeas %d, scanflag %d, address 0x%x bsize 0x%x, timout %f\n",inummeas, scanflag, buf, bsize, top);
+	if (isdeb) fprintf(stderr,"\nmunki: Read measurement results: inummeas %d, scanflag %d, bsize 0x%x, timout %f\n",inummeas, scanflag, bsize, top);
 
 	for (;;) {
 		int size;		/* number of bytes to read */

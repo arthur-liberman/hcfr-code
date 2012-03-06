@@ -1380,7 +1380,7 @@ spyd2_ReadRegister(
 	ival = buf2ushort(&pbuf[0]);
 //	_val = (double)ival * 12.5;		/* Read temperature */
 
-	if (isdeb) fprintf(stderr,"Read Register %d returns %d ICOM err 0x%x\n", ival, se);
+	if (isdeb) fprintf(stderr,"Read Register %d returns %d ICOM err 0x%x\n", reg, ival, se);
 
 	p->icom->debug = isdeb;
 
@@ -1430,7 +1430,6 @@ spyd2_rd_ee_uchar(
 ) {
 	inst_code ev;
 	unsigned char buf[1];
-	int v, val;
 
 	if ((ev = spyd2_readEEProm(p, buf, addr, 1)) != inst_ok)
 		return ev;
@@ -1449,7 +1448,6 @@ spyd2_rd_ee_ushort(
 ) {
 	inst_code ev;
 	unsigned char buf[2];
-	int v, val;
 
 	if ((ev = spyd2_readEEProm(p, buf, addr, 2)) != inst_ok)
 		return ev;
@@ -1468,7 +1466,6 @@ spyd2_rd_ee_int(
 ) {
 	inst_code ev;
 	unsigned char buf[4];
-	int v, val;
 
 	if ((ev = spyd2_readEEProm(p, buf, addr, 4)) != inst_ok)
 		return ev;
@@ -1518,7 +1515,6 @@ void crc32_init(void) {
 static unsigned int crc32(unsigned char *data, int len) {
     unsigned int        crc;
     int                 i;
-    unsigned char       octet;
     
     crc = ~0;
     for (i = 0; i < len; i++)
@@ -1534,7 +1530,7 @@ spyd2_checkEECRC(
 	inst_code ev;
 	unsigned char buf[1024], *bp;
 	unsigned int crct, crc;			/* Target value, computed value */
-	int i, j;
+	int i;
 
 	crc32_init();
 
@@ -2093,10 +2089,9 @@ spyd4_comp_calmat(
 	xspect *samples,	/* Array of nsamp spectral samples */
 	int nsamp			/* Number of real samples */
 ) {
-	int i, j, k;
+	int i, j;
 	int nasamp = nsamp + 81; /* Number of real + augmented samples */
 	double exwt = 1.0;	/* Extra spectral point weight */
-	double intsv;		/* Maximum sample value */
 	double **sampXYZ;	/* Sample XYZ values */
 	double **sampSENS;	/* Sample Sensor values */
 	double **isampSENS;	/* Pseudo-inverse of sensor values */
@@ -2713,12 +2708,7 @@ spyd4_load_cal(int debug) {
 static inst_code
 spyd2_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) {
 	spyd2 *p = (spyd2 *) pp;
-	char buf[16];
-	int rsize;
-	long etime;
-	int bi, i, rv;
 	icomuflags usbflags = icomuf_none;
-	inst_code ev = inst_ok;
 
 	if (p->debug) {
 		p->icom->debug = p->debug;	/* Turn on debugging */
@@ -3408,7 +3398,6 @@ inst *pp,
 inst_optdet_type m,	/* Requested option detail type */
 ...) {				/* Status parameters */                             
 	spyd2 *p = (spyd2 *)pp;
-	inst_code rv = inst_ok;
 
 	if (m == inst_optdet_disptypesel) {
 		va_list args;
