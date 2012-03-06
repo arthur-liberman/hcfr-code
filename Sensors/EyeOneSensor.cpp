@@ -27,7 +27,9 @@
 #include "SerialCom.h"
 
 // Include for device interface (this device interface is outside GNU GPL license)
+#ifdef USE_NON_FREE_CODE
 #include "devlib\CHCFRDI2.h"
+#endif
 
 #include <math.h>
 
@@ -37,7 +39,6 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
-#ifdef USE_NON_FREE_CODE
 
 // Spectrum characteristics
 #define SPECTRUM_WAVELENGTH_MIN			380
@@ -45,7 +46,9 @@ static char THIS_FILE[]=__FILE__;
 #define SPECTRUM_WAVELENGTH_BANDWIDTH	10
 #define SPECTRUM_BANDS					36
 
+#ifdef USE_NON_FREE_CODE
 HANDLE CEyeOneSensor::m_hPipe = NULL;
+#endif
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -206,6 +209,7 @@ void CEyeOneSensor::GetPropertiesSheetValues()
 
 void CEyeOneSensor::CreateEyeOnePipe ()
 {
+#ifdef USE_NON_FREE_CODE
 	DWORD		dw;
 	char		szBuf [ 512 ];
 	STARTUPINFO	si;
@@ -237,10 +241,12 @@ void CEyeOneSensor::CreateEyeOnePipe ()
 		CloseHandle ( pi.hProcess );
 		CloseHandle ( pi.hThread );
 	}
+#endif
 }
 
 void CEyeOneSensor::CloseEyeOnePipe ()
 {
+#ifdef USE_NON_FREE_CODE
 	if ( m_hPipe )
 	{
 		DWORD	dw;
@@ -248,12 +254,14 @@ void CEyeOneSensor::CloseEyeOnePipe ()
 		CloseHandle ( m_hPipe );
 		m_hPipe = NULL;
 	}
+#endif
 }
 
 BOOL CEyeOneSensor::Init( BOOL bForSimultaneousMeasures )
 {
-	int			nErrorCode;
+#ifdef USE_NON_FREE_CODE
 	BOOL		bOk = FALSE;
+	int			nErrorCode;
 	BOOL		bCalibrate = FALSE;
 	BOOL		bNeedCalibration, bCalibrated;
 	DWORD		dw;
@@ -459,12 +467,15 @@ BOOL CEyeOneSensor::Init( BOOL bForSimultaneousMeasures )
 			}
 		}
 	}
-
 	return bOk;
+#else
+    return TRUE;
+#endif
 }
 
 BOOL CEyeOneSensor::Release()
 {
+#ifdef USE_NON_FREE_CODE
 	DWORD	dw;
 	char	szBuf [ 256 ];
 
@@ -478,12 +489,14 @@ BOOL CEyeOneSensor::Release()
 	}
 	else
 		ReleaseDevice2();
-
+#endif
 	return CSensor::Release();
 }
 
 CColor CEyeOneSensor::MeasureColor(COLORREF aRGBValue)
 {
+	CColor		EyeOneColor;
+#ifdef USE_NON_FREE_CODE
 	UINT		nLoops;
 	BOOL		bOk;
 	BOOL		bContinue = FALSE;
@@ -493,7 +506,6 @@ CColor CEyeOneSensor::MeasureColor(COLORREF aRGBValue)
 	double		d, xx, yy, zz;
 	double		Spectrum[SPECTRUM_BANDS];
 	double		FullSpectrum[SPECTRUM_BANDS];
-	CColor		EyeOneColor;
 	char		szBuf [ 4096 ];
 	LPSTR		lpStr;
 	
@@ -619,7 +631,7 @@ CColor CEyeOneSensor::MeasureColor(COLORREF aRGBValue)
 			return noDataColor;
 		}
 	} while ( bContinue );
-
+#endif
 	return EyeOneColor;
 }
 
@@ -644,7 +656,6 @@ void CEyeOneSensor::GetUniqueIdentifier( CString & strId )
 	strId.ReleaseBuffer (); 
 }
 
+#ifdef USE_NON_FREE_CODE
 #pragma comment(lib, "devlib\\CHCFRDI2.lib")
-
-
 #endif

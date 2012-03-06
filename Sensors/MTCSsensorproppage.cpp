@@ -27,15 +27,15 @@
 #include "math.h"
 
 // Include for device interface (this device interface is outside GNU GPL license)
+#ifdef USE_NON_FREE_CODE
 #include "devlib\CHCFRDI3.h"
+#endif
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
-
-#ifdef USE_NON_FREE_CODE
 
 /////////////////////////////////////////////////////////////////////////////
 // CMTCSSensorPropPage property page
@@ -133,6 +133,7 @@ void CMTCSSensorPropPage::OnDisplayMatrix()
 
 void CMTCSSensorPropPage::OnWriteDeviceMatrix()
 {
+#ifdef USE_NON_FREE_CODE
 	CString	Msg;
 	int		nValues [ 9 ];
 	short	sValues [ 9 ];
@@ -177,10 +178,12 @@ void CMTCSSensorPropPage::OnWriteDeviceMatrix()
 		
 		m_pSensor -> Release ();
 	}
+#endif
 }
 
 void CMTCSSensorPropPage::OnWriteDefaultMatrix()
 {
+#ifdef USE_NON_FREE_CODE
 	if ( m_pSensor -> Init ( FALSE ) )
 	{
 		CString Msg;
@@ -222,6 +225,7 @@ void CMTCSSensorPropPage::OnWriteDefaultMatrix()
 		}
 		m_pSensor -> Release ();
 	}
+#endif
 }
 
 void CMTCSSensorPropPage::OnDisplayBlack() 
@@ -246,6 +250,7 @@ void CMTCSSensorPropPage::OnDisplayBlack()
 
 void CMTCSSensorPropPage::OnWriteDeviceBlackLevel() 
 {
+#ifdef USE_NON_FREE_CODE
 	if ( m_pSensor -> Init ( FALSE ) )
 	{
 		CString Msg;
@@ -277,10 +282,12 @@ void CMTCSSensorPropPage::OnWriteDeviceBlackLevel()
 		}
 		m_pSensor -> Release ();
 	}
+#endif
 }
 
 void CMTCSSensorPropPage::OnMeasureBlackLevel() 
 {
+#ifdef USE_NON_FREE_CODE
 	BOOL		bOk;
 	BOOL		bForceOffset;
 	CString		Msg;
@@ -390,6 +397,7 @@ void CMTCSSensorPropPage::OnMeasureBlackLevel()
 			m_pSensor -> Release ();
 		}
 	}
+#endif
 }
 
 UINT CMTCSSensorPropPage::GetHelpId ( LPSTR lpszTopic )
@@ -397,4 +405,3 @@ UINT CMTCSSensorPropPage::GetHelpId ( LPSTR lpszTopic )
 	return HID_SENSOR_MTCS;
 }
 
-#endif

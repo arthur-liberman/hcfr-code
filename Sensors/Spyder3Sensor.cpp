@@ -27,7 +27,9 @@
 #include "SerialCom.h"
 
 // Include for device interface (this device interface is outside GNU GPL license)
+#ifdef USE_NON_FREE_CODE
 #include "devlib\CHCFRDI4.h"
+#endif
 
 #include <math.h>
 #include <psapi.h>
@@ -37,8 +39,6 @@
 static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
-
-#ifdef USE_NON_FREE_CODE
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -149,6 +149,7 @@ void CSpyder3Sensor::GetPropertiesSheetValues()
 
 BOOL CSpyder3Sensor::Init( BOOL bForSimultaneousMeasures )
 {
+#ifdef USE_NON_FREE_CODE
 	int			nErrorCode;
 	BOOL		bOk = FALSE;
 	BOOL		bInitializeDevice = TRUE;
@@ -232,16 +233,22 @@ BOOL CSpyder3Sensor::Init( BOOL bForSimultaneousMeasures )
 	}
 
 	return bOk;
+#else
+    return TRUE;
+#endif
 }
 
 BOOL CSpyder3Sensor::Release()
 {
+#ifdef USE_NON_FREE_CODE
 	ReleaseDevice4();
+#endif
 	return CSensor::Release();
 }
 
 CColor CSpyder3Sensor::MeasureColor(COLORREF aRGBValue)
 {
+#ifdef USE_NON_FREE_CODE
 	UINT		nLoops;
 	BOOL		bContinue = FALSE;
 	UINT		r, g, b;
@@ -343,8 +350,11 @@ CColor CSpyder3Sensor::MeasureColor(COLORREF aRGBValue)
 	} while ( bContinue );
 
 	return colMeasure.GetSensorValue();
+#else
+    return noDataColor;
+#endif
 }
 
+#ifdef USE_NON_FREE_CODE
 #pragma comment(lib, "devlib\\CHCFRDI4.lib")
-
 #endif

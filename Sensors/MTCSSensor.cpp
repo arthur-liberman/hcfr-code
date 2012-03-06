@@ -27,7 +27,9 @@
 #include "SerialCom.h"
 
 // Include for device interface (this device interface is outside GNU GPL license)
+#ifdef USE_NON_FREE_CODE
 #include "devlib\CHCFRDI3.h"
+#endif
 
 #include <math.h>
 
@@ -36,8 +38,6 @@
 static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
-
-#ifdef USE_NON_FREE_CODE
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -152,9 +152,10 @@ void CMTCSSensor::GetPropertiesSheetValues()
 
 BOOL CMTCSSensor::Init( BOOL bForSimultaneousMeasures )
 {
+#ifdef USE_NON_FREE_CODE
+	BOOL		bOk = FALSE;
 	int			i;
 	int			nErrorCode;
-	BOOL		bOk = FALSE;
 	BOOL		bMatch;
 	short		sValues [ 9 ];
 	int			nValues [ 9 ];
@@ -284,11 +285,16 @@ BOOL CMTCSSensor::Init( BOOL bForSimultaneousMeasures )
 	}
 
 	return bOk;
+#else
+    return TRUE;
+#endif
 }
 
 BOOL CMTCSSensor::Release()
 {
+#ifdef USE_NON_FREE_CODE
 	ReleaseDevice3();
+#endif
 	m_DeviceMatrix = IdentityMatrix (3);
 	m_DeviceBlackLevel(0,0)=0.0;
 	m_DeviceBlackLevel(1,0)=0.0;
@@ -299,6 +305,7 @@ BOOL CMTCSSensor::Release()
 
 CColor CMTCSSensor::MeasureColor(COLORREF aRGBValue)
 {
+#ifdef USE_NON_FREE_CODE
 	UINT		nTicks;
 	UINT		nAdjustedReadTime;
 	DWORD		amp, r, g, b;
@@ -359,14 +366,18 @@ CColor CMTCSSensor::MeasureColor(COLORREF aRGBValue)
 	}
 
 	return colMeasure.GetSensorValue();
+#else
+    return noDataColor;
+#endif
 }
 
 CColor CMTCSSensor::MeasureBlackLevel(BOOL bUseOffsets)
 {
+	CColor		DeviceColor;
+#ifdef USE_NON_FREE_CODE
 	UINT		nTicks;
 	UINT		nAdjustedReadTime;
 	DWORD		amp, r, g, b;
-	CColor		DeviceColor;
 	
 	// This function measures black level, with no conversion
 	nAdjustedReadTime = 2800;
@@ -389,10 +400,10 @@ CColor CMTCSSensor::MeasureBlackLevel(BOOL bUseOffsets)
 		MessageBox(0, "No data from Sensor","Error",MB_OK+MB_ICONINFORMATION);
 		return noDataColor;
 	}
-
+#endif
 	return DeviceColor;
 }
 
+#ifdef USE_NON_FREE_CODE
 #pragma comment(lib, "devlib\\CHCFRDI3.lib")
-
 #endif

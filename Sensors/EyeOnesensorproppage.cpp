@@ -26,15 +26,15 @@
 #include "EyeOneSensorPropPage.h"
 
 // Include for device interface (this device interface is outside GNU GPL license)
+#ifdef USE_NON_FREE_CODE
 #include "devlib\CHCFRDI2.h"
+#endif
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
-
-#ifdef USE_NON_FREE_CODE
 
 /////////////////////////////////////////////////////////////////////////////
 // CEyeOneSensorPropPage property page
@@ -84,6 +84,7 @@ END_MESSAGE_MAP()
 
 void CEyeOneSensorPropPage::OnBlackLevel() 
 {
+#ifdef USE_NON_FREE_CODE
 	int			nErrorCode;
 	BOOL		bOk = FALSE;
 	BOOL		bCalibrated;
@@ -241,6 +242,7 @@ void CEyeOneSensorPropPage::OnBlackLevel()
 		else
 			ReleaseDevice2();
 	}
+#endif
 }
 
 
@@ -280,4 +282,3 @@ BOOL CEyeOneSensorPropPage::OnSetActive()
 	
 	return bRet;
 }
-#endif

@@ -31,8 +31,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#ifdef USE_NON_FREE_CODE
-
 /////////////////////////////////////////////////////////////////////////////
 // CSpyder3SensorPropPage property page
 
@@ -78,5 +76,3 @@ UINT CSpyder3SensorPropPage::GetHelpId ( LPSTR lpszTopic )
 {
 	return HID_SENSOR_SPYDER3;
 }
-
-#endif

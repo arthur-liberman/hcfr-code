@@ -24,10 +24,11 @@
 #include "stdafx.h"
 #include "ColorHCFR.h"
 #include "SpyderIISensor.h"
-#include "SerialCom.h"
 
 // Include for device interface (this device interface is outside GNU GPL license)
+#ifdef USE_NON_FREE_CODE
 #include "devlib\CHCFRDI1.h"
+#endif
 
 #include <math.h>
 
@@ -37,8 +38,6 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
-#ifdef USE_NON_FREE_CODE
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -47,9 +46,6 @@ IMPLEMENT_SERIAL(CSpyderIISensor, COneDeviceSensor, 1) ;
 
 CSpyderIISensor::CSpyderIISensor()
 {
-    inst * myInst = new_inst(1, instUnknown, 1, 1);
-    inst_code instCode = myInst->init_coms(myInst, 1, baud_nc, fc_nc, 15.0);
-    instCode = myInst->init_inst(myInst);
 	m_CalibrationMode = 2;
 	m_ReadTime = 300;
 	m_bAdjustTime = GetConfig () -> GetProfileInt ( "SpyderII", "AdjustTime", FALSE );
@@ -175,6 +171,7 @@ void CSpyderIISensor::GetPropertiesSheetValues()
 
 BOOL CSpyderIISensor::Init( BOOL bForSimultaneousMeasures )
 {
+#ifdef USE_NON_FREE_CODE
 	int			nErrorCode;
 	BOOL		bOk = FALSE;
 	CString		Msg, Title;
@@ -212,16 +209,22 @@ BOOL CSpyderIISensor::Init( BOOL bForSimultaneousMeasures )
 	}
 
 	return bOk;
+#else
+    return TRUE;
+#endif
 }
 
 BOOL CSpyderIISensor::Release()
 {
+#ifdef USE_NON_FREE_CODE
 	ReleaseDevice1();
+#endif
 	return CSensor::Release();
 }
 
 CColor CSpyderIISensor::MeasureColor(COLORREF aRGBValue)
 {
+#ifdef USE_NON_FREE_CODE
 	UINT		nLoops;
 	BOOL		bContinue = FALSE;
 	UINT		r, g, b;
@@ -322,8 +325,11 @@ CColor CSpyderIISensor::MeasureColor(COLORREF aRGBValue)
 	} while ( bContinue );
 
 	return colMeasure.GetSensorValue();
+#else
+    return noDataColor;
+#endif
 }
 
+#ifdef USE_NON_FREE_CODE
 #pragma comment(lib, "devlib\\CHCFRDI1.lib")
-
 #endif
