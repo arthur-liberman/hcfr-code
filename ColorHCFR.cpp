@@ -443,7 +443,6 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CAboutDlg)
 	DDX_Control(pDX, IDC_STATIC_VERSION, m_Version);
 	DDX_Control(pDX, IDC_HOMECINEMA_HYPERLINK, m_hcfrHyperLink);
-	DDX_Control(pDX, IDC_DONATION_HYPERLINK, m_donationHyperLink);
 	//}}AFX_DATA_MAP
 }
 
