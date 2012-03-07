@@ -86,7 +86,6 @@ static inst_code i1pro_interp_code(i1pro *p, i1pro_code ec);
 static inst_code
 i1pro_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) {
 	i1pro *p = (i1pro *) pp;
-	int rsize;
 	icomuflags usbflags = icomuf_none;
 #ifdef __APPLE__
 	/* If the X-Rite software has been installed, then there may */

@@ -114,11 +114,8 @@ main(int argc, char *argv[]) {
 	int install = 1;
 	int amount = 0;			/* We mounted the CDROM */
 	char *amount_path = "";	/* Path we mouted */
-	unsigned char *fbuf;
-	unsigned int fsize;
 	char *install_dir = NULL;
 	int i;
-	int rv = 0;
 	
 	set_exe_path(argv[0]);		/* Set global exe_path and error_program */
 
@@ -502,7 +499,9 @@ main(int argc, char *argv[]) {
 
 	if (not_edr) {	/* Must be Setup.exe */
 		xfile *xf0 = NULL;
+#ifdef NEVER
 		xfile *xf1 = NULL;
+#endif
 		xfile *xf2 = NULL;
 		xfile *xf3 = NULL;
 
@@ -848,7 +847,7 @@ static xfile *load_file(char *sname, int verb) {
 	}
 	ilen = (unsigned long)ftell(fp);
 
-	if (verb > 1) printf("Size of file '%s' is %d bytes\n",sname, ilen);
+	if (verb > 1) printf("Size of file '%s' is %lu bytes\n",sname, ilen);
 
 	if (fseek(fp, 0, SEEK_SET)) {
 		fprintf(stderr,"Seek to SOF of file '%s' failed\n",sname);
@@ -863,7 +862,7 @@ static xfile *load_file(char *sname, int verb) {
 	if (verb > 1) printf("(Reading file '%s')\n",sname);
 
 	if ((bread = fread(ibuf, 1, ilen, fp)) != ilen) {
-		fprintf(stderr,"Failed to read file '%s', read %d out of %d bytes\n",sname,bread,ilen);
+		fprintf(stderr,"Failed to read file '%s', read %lu out of %lu bytes\n",sname,bread,ilen);
 		exit(-1);
 	}
 	fclose(fp);
@@ -892,12 +891,9 @@ static ccss *parse_EDR(
 	char *name,				/* Name of the file */
 	int verb				/* Verbose flag */
 ) {
-	int i, j;
-	FILE *fp;
+	int j;
 	unsigned char *nbuf;
 	unsigned long nlen;
-	unsigned int off;
-	unsigned char *dbuf = NULL;	/* Buffer for spectral samples */
 	ORD64 edrdate;
 	char creatdate[30];
 	char dispdesc[256];
@@ -1241,7 +1237,7 @@ static ccss *read_EDR_file(
 	}
 
 	if ((bread = fread(ibuf, 1, ilen, fp)) != ilen) {
-		if (verb) printf("Failed to read file '%s', read %d out of %d bytes\n",name,bread,ilen);
+		if (verb) printf("Failed to read file '%s', read %lu out of %lu bytes\n",name,bread,ilen);
 		free(ibuf);
 		return NULL;
 	}
@@ -1347,7 +1343,7 @@ ELzmaFinishMode finishMode, ELzmaStatus *status, ISzAlloc *alloc) {
 /* Return a list of xfiles, with one entry if successful */
 /* print error message and exit othewise. */
 static xfile *inno_extract(xfile *xi, char *tfilename, int verb) {
-	int i, j, k;
+	int i, j;
 	unsigned char *ibuf;
 	unsigned long ilen;
 	char *headerid = "Inno Setup Setup Data (5.3.10)";
@@ -1408,7 +1404,7 @@ static xfile *inno_extract(xfile *xi, char *tfilename, int verb) {
 	haddr += 4;		/* Skip Inno header CRC */
 	cblocklen = buf2uint(ibuf + haddr);		/* Compressed block length */
 
-	if (verb > 1) printf("Header compression block length = %d\n",cblocklen); 
+	if (verb > 1) printf("Header compression block length = %lu\n",cblocklen); 
 
 	if ((haddr + cblocklen) > ilen) {
 		fprintf(stderr,"Compression block is longer than setup.exe\n");
@@ -1440,7 +1436,7 @@ static xfile *inno_extract(xfile *xi, char *tfilename, int verb) {
 		fprintf(stderr,"lzma decode failed with rv %d and status %d\n",rv, dstat);
 		exit(-1);
 	}
-	if (verb > 1) printf("Decoded %d bytes to created %d bytes of Header output (ratio %.1f)\n",srclen,d1sz,(double)d1sz/srclen);
+	if (verb > 1) printf("Decoded %lu bytes to created %lu bytes of Header output (ratio %.1f)\n",srclen,d1sz,(double)d1sz/srclen);
 
 //	dump_bytes(stdout, "  ", d1buf, d1sz);
 
@@ -1449,7 +1445,7 @@ static xfile *inno_extract(xfile *xi, char *tfilename, int verb) {
 	/* Skip to the start of the next compression block header */
 	haddr += cblocklen;
 
-	if (verb > 1) printf("Expect File Location compressed block to be at 0x%x\n",haddr);
+	if (verb > 1) printf("Expect File Location compressed block to be at 0x%lx\n",haddr);
 	if ((haddr + 20) > ilen) {
 		fprintf(stderr,"Setup.exe too short for 2nd header block\n");
 		exit(-1);
@@ -1459,7 +1455,7 @@ static xfile *inno_extract(xfile *xi, char *tfilename, int verb) {
 	haddr += 4;		/* Skip Inno header CRC */
 	cblocklen = buf2uint(ibuf + haddr);		/* Compressed block length */
 
-	if (verb > 1) printf("File Location compression block length = %d\n",cblocklen); 
+	if (verb > 1) printf("File Location compression block length = %lu\n",cblocklen); 
 
 	if ((haddr + cblocklen) > ilen) {
 		fprintf(stderr,"2nd compression block is longer than setup.exe\n");
@@ -1490,7 +1486,7 @@ static xfile *inno_extract(xfile *xi, char *tfilename, int verb) {
 		fprintf(stderr,"lzma decode of 2nd block failed with rv %d and status %d\n",rv, dstat);
 		exit(-1);
 	}
-	if (verb > 1) printf("Decoded %d bytes to created %d bytes of File Location output (ratio %.1f)\n",srclen,d1sz,(double)d1sz/srclen);
+	if (verb > 1) printf("Decoded %lu bytes to created %lu bytes of File Location output (ratio %.1f)\n",srclen,d1sz,(double)d1sz/srclen);
 
 //	dump_bytes(stdout, "  ", d2buf, d2sz);
 
@@ -1519,7 +1515,7 @@ static xfile *inno_extract(xfile *xi, char *tfilename, int verb) {
 
 	ix = buf2uint(d1buf + i);
 
-	if (verb > 1) printf("Got file location index %d at 0x%x\n",ix,i);
+	if (verb > 1) printf("Got file location index %lu at 0x%x\n",ix,i);
 
 
 	/* Now get the ix file entry information. */
@@ -1541,7 +1537,7 @@ static xfile *inno_extract(xfile *xi, char *tfilename, int verb) {
 		exit(-1);
 	}
 
-	if (verb > 1) printf("File '%s' is at offset 0x%x, length %d\n",tfilename,fileso,filesz);
+	if (verb > 1) printf("File '%s' is at offset 0x%lx, length %lu\n",tfilename,fileso,filesz);
 
 	if ((fileso + ldrbase) > ilen
 	 || (fileso + ldrbase + filesz-1) > ilen) {
@@ -1584,7 +1580,7 @@ static xfile *inno_extract(xfile *xi, char *tfilename, int verb) {
 	xf[0].buf = msibuf;
 	xf[0].len = filesz;
 
-	if (verb) printf("Returning '%s' length %d from '%s'\n",xf[0].name,xf[0].len, xi[0].name);
+	if (verb) printf("Returning '%s' length %lu from '%s'\n",xf[0].name,xf[0].len, xi[0].name);
 
 	return xf;
 }
@@ -1596,11 +1592,10 @@ static xfile *inno_extract(xfile *xi, char *tfilename, int verb) {
 /* just need to identify where it is and its length. */
 /* (This will work on any file that has the .cab file uncompressed and contiguous) */
 static xfile *msi_extract(xfile *xi, char *tname, int verb) {
-	int i, j, k;
+	int i;
 	xfile *xf = NULL;
 	char *fid = "i1d3.xrdevice";		/* File in .cab to look for */
 	unsigned long fle = strlen(fid);
-	unsigned long cabo, cabsz;
 
 	if (verb) printf("Attempting to extract '%s' from '%s'\n",tname,xi[0].name);
 
@@ -1634,7 +1629,7 @@ static xfile *msi_extract(xfile *xi, char *tname, int verb) {
 	/* Lookup the .cab size (really 64 bit, but we don't care) */
 	xf[0].len = buf2uint(xi[0].buf + i + 8);
 
-	if (verb > 1) printf("'%s' is length %d\n",tname,xf[0].len);
+	if (verb > 1) printf("'%s' is length %lu\n",tname,xf[0].len);
 
 	if ((xi[0].len - i) < xf[0].len) {
 		fprintf(stderr,"Not enough room for .cab file in source\n");
@@ -1652,7 +1647,7 @@ static xfile *msi_extract(xfile *xi, char *tname, int verb) {
 		exit(-1);
 	}
 
-	if (verb) printf("Extacted '%s' length %d\n",xf[0].name,xf[0].len);
+	if (verb) printf("Extacted '%s' length %lu\n",xf[0].name,xf[0].len);
 
 	return xf;
 }
@@ -1691,7 +1686,7 @@ void inflate_unget_byte() {
 /* Save the decompressed file to the buffer */
 int inflate_write_output(unsigned char *buf, unsigned int len) {
 	if ((o_ix + len) > o_len) {
-		fprintf(stderr,"Uncompressed buffer is unexpectedly large (%d > %d)!\n", o_ix + len, o_len);
+		fprintf(stderr,"Uncompressed buffer is unexpectedly large (%lu > %lu)!\n", o_ix + len, o_len);
 		return 1;
 	}
 	memmove(o_buf + o_ix, buf, len);
@@ -1701,7 +1696,7 @@ int inflate_write_output(unsigned char *buf, unsigned int len) {
 
 /* Extract all the .edr files from the .cab */
 static xfile *cab_extract(xfile *xi, char *text, int verb) {
-	int i, j, k;
+	int j, k;
 	xfile *xf = NULL;
 	unsigned char *buf = xi[0].buf;
 	unsigned long len = xi[0].len;
@@ -1756,7 +1751,7 @@ static xfile *cab_extract(xfile *xi, char *text, int verb) {
 		exit(-1);
 	}
 
-	if (verb > 1) printf(".cab headeroffset = 0x%x, datastart = 0x%x, nofiles = %d\n",headeroffset,datastart,nofiles);
+	if (verb > 1) printf(".cab headeroffset = 0x%lx, datastart = 0x%lx, nofiles = %ul\n",headeroffset,datastart,nofiles);
 
 	/* Look at each file */
 	for (off = headeroffset, k = 0; k < nofiles; k++) {
@@ -1777,7 +1772,7 @@ static xfile *cab_extract(xfile *xi, char *text, int verb) {
 		strncpy(fname, (char *)buf + off + 0x10, 94);
 		fname[94] = '\000';
 
-		if (verb > 1) printf("file %d is '%s' at 0x%x length %d\n",k,fname, foff,fsize);
+		if (verb > 1) printf("file %d is '%s' at 0x%lx length %lu\n",k,fname, foff,fsize);
 
 		off += 0x10 + strlen(fname) + 1;		/* Next entry */
 	}
@@ -1790,7 +1785,7 @@ static xfile *cab_extract(xfile *xi, char *text, int verb) {
 		unsigned long ubytes;
 
 		if (off > (len - 8)) {
-			if (verb > 1) printf("Got to end of data blocks at 0x%x\n",off);
+			if (verb > 1) printf("Got to end of data blocks at 0x%lx\n",off);
 			break;
 		}
 
@@ -1798,7 +1793,7 @@ static xfile *cab_extract(xfile *xi, char *text, int verb) {
 		cbytes = buf2short(buf + off + 0x04);
 		ubytes = buf2short(buf + off + 0x06);
 
-		if (verb > 1) printf("Compression block %d, cbytes %d, ubytes %d\n",j,cbytes,ubytes);
+		if (verb > 1) printf("Compression block %d, cbytes %lu, ubytes %lu\n",j,cbytes,ubytes);
 
 		totubytes += ubytes;
 
@@ -1841,7 +1836,7 @@ static xfile *cab_extract(xfile *xi, char *text, int verb) {
 		}
 
 		if (inflate()) {
-			fprintf(stderr, "inflate of '%s' failed at i_ix 0x%x, o_ix 0x%x\n",xi[0].name,i_ix,o_ix);
+			fprintf(stderr, "inflate of '%s' failed at i_ix 0x%lx, o_ix 0x%lx\n",xi[0].name,i_ix,o_ix);
 			exit (-1);
 		}
 
@@ -1881,11 +1876,11 @@ static xfile *cab_extract(xfile *xi, char *text, int verb) {
 			xx = add_xf(&xf);
 
 			if (foff >= olen || (foff + fsize) > olen) {
-				fprintf(stderr,"file '%s' doesn't fit in decomressed buffer\n");
+				fprintf(stderr,"file '%s' doesn't fit in decomressed buffer\n", fname);
 				exit(-1);
 			}
 			if ((xx->buf = malloc(fsize)) == NULL) {
-				fprintf(stderr,"maloc of file '%s' buffer len %d failed\n",fname,fsize);
+				fprintf(stderr,"maloc of file '%s' buffer len %lu failed\n",fname,fsize);
 				exit(-1);
 			}
 			xx->len = fsize;

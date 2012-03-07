@@ -90,10 +90,9 @@ hcfr_command(
 	int bsize,		/* Out buffer size */
 	double to		/* Timeout in seconds */
 ) {
-	int rv, se;
+	int se;
 
 	if ((se = p->icom->write_read(p->icom, in, out, bsize, '\n', 1, to)) != 0) {
-		int ec;
 #ifdef DEBUG
 		printf("hcfr fcommand: serial i/o failure on write_read '%s'\n",icoms_fix(in));
 #endif
@@ -111,7 +110,6 @@ inst_code
 hcfr_break(
 	hcfr *p
 ) {
-	int rwbytes;			/* Data bytes read or written */
 	int se, rv = inst_ok;
 	int isdeb = 0;
 
@@ -140,7 +138,6 @@ hcfr_flush(
 ) {
 	icoms *c = p->icom;
 	char buf[MAX_MES_SIZE];
-	inst_code ev = inst_ok;
 
 	for (c->lerr = 0;;) {
 		int debug = c->debug; c->debug = 0;
@@ -382,9 +379,6 @@ hcfr_comp_matrix(
 static inst_code
 hcfr_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) {
 	hcfr *p = (hcfr *) pp;
-	int rsize;
-	long etime;
-	int bi, i, rv;
 	inst_code ev = inst_ok;
 	icomuflags usbflags = icomuf_no_open_clear | icomuf_detach;
 
@@ -425,7 +419,6 @@ hcfr_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) {
 static inst_code
 hcfr_init_inst(inst *pp) {
 	hcfr *p = (hcfr *)pp;
-	static char buf[MAX_MES_SIZE];
 	inst_code ev = inst_ok;
 
 	if (p->debug) fprintf(stderr,"hcfr: About to init instrument\n");
@@ -577,7 +570,6 @@ hcfr_interp_error(inst *pp, int ec) {
 /* Convert a machine specific error code into an abstract dtp code */
 static inst_code 
 hcfr_interp_code(inst *pp, int ec) {
-	hcfr *p = (hcfr *)pp;
 
 	ec &= inst_imask;
 	switch (ec) {
@@ -636,7 +628,6 @@ hcfr_del(inst *pp) {
 
 /* Return the instrument capabilities */
 inst_capability hcfr_capabilities(inst *pp) {
-	hcfr *p = (hcfr *)pp;
 	inst_capability rv;
 
 	rv = inst_emis_spot
@@ -650,7 +641,6 @@ inst_capability hcfr_capabilities(inst *pp) {
 
 /* Return the instrument capabilities 2 */
 inst2_capability hcfr_capabilities2(inst *pp) {
-	hcfr *p = (hcfr *)pp;
 	inst2_capability rv;
 
 	rv = inst2_prog_trig
@@ -686,9 +676,6 @@ static inst_code hcfr_get_opt_details(
 inst *pp,
 inst_optdet_type m,	/* Requested option detail type */
 ...) {				/* Status parameters */                             
-	hcfr *p = (hcfr *)pp;
-	inst_code rv = inst_ok;
-
 	if (m == inst_optdet_disptypesel) {
 		va_list args;
 		int *pnsels;
@@ -740,7 +727,6 @@ inst_code hcfr_set_mode(inst *pp, inst_mode m) {
 static inst_code
 hcfr_set_opt_mode(inst *pp, inst_opt_mode m, ...) {
 	hcfr *p = (hcfr *)pp;
-	inst_code ev = inst_ok;
 
 	if (!p->gotcoms)
 		return inst_no_coms;

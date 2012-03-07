@@ -617,7 +617,7 @@ void *target,
 IOReturn result,
 void *refcon,
 void *sender,
-UInt32 size) {
+uint32_t size) {
 	icoms *p = (icoms *)target;
 
 //printf("\n~1 callback called with size %d, result 0x%x\n",size,result);
