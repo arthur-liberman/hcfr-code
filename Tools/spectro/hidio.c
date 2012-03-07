@@ -482,6 +482,8 @@ void hid_close_port(icoms *p) {
 #endif /* ENABLE_USB */
 }
 
+/* Declaration of needed function in ntio.c or unixio.c */
+void icoms_close_port(icoms *p);
 
 /* Open an HID port for all our uses. */
 static void hid_open_port(
@@ -617,7 +619,12 @@ void *target,
 IOReturn result,
 void *refcon,
 void *sender,
-uint32_t size) {
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1050
+uint32_t size
+#else
+UInt32 size
+#endif
+) {
 	icoms *p = (icoms *)target;
 
 //printf("\n~1 callback called with size %d, result 0x%x\n",size,result);
@@ -901,6 +908,8 @@ icoms *p
 ) {
 	p->is_hid_portno  = hid_is_hid_portno;
 	p->set_hid_port   = icoms_set_hid_port;
+	p->hid_read_th    = icoms_hid_read_th;
+	p->hid_write_th   = icoms_hid_write_th;
 	p->hid_read       = icoms_hid_read;
 	p->hid_write      = icoms_hid_write;
 

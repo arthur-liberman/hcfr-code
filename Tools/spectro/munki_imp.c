@@ -45,6 +45,7 @@
 #include <time.h>
 #include <stdarg.h>
 #include <math.h>
+#include <fcntl.h>
 #ifndef SALONEINSTLIB
 #include "copyright.h"
 #include "aconfig.h"
@@ -264,6 +265,14 @@ void plot_wav2(munkiimp *m, double *data) {
 #endif	/* !PLOT_DEBUG */
 
 /* ============================================================ */
+int munki_average_multimeas(
+	munki *p,
+	double *avg,			/* return average [nraw] */
+	double **multimeas,		/* Array of [nummeas][nraw] value to average */
+	int nummeas,			/* number of readings to be averaged */
+	double *poallavg,		/* If not NULL, return overall average of bands and measurements */
+	double darkthresh		/* Dark threshold (used for consistency check scaling) */
+);
 
 /* Implementation struct */
 
@@ -272,7 +281,7 @@ munki_code add_munkiimp(munki *p) {
 	munkiimp *m;
 
 	if ((m = (munkiimp *)calloc(1, sizeof(munkiimp))) == NULL) {
-		DBG((dbgo,"add_munkiimp malloc %d bytes failed (1)\n",sizeof(munkiimp)))
+		DBG((dbgo,"add_munkiimp malloc %lu bytes failed (1)\n",sizeof(munkiimp)))
 		if (p->verb) printf("Malloc %lu bytes failed (1)\n",sizeof(munkiimp));
 		return MUNKI_INT_MALLOC;
 	}
@@ -863,6 +872,8 @@ munki_code munki_imp_set_mode(
 			m->mmode = mmode;
 			m->spec_en = spec_en ? 1 : 0;
 			return MUNKI_OK;
+		default:
+			break;
 	}
 	return MUNKI_INT_ILLEGALMODE;
 }
@@ -1555,7 +1566,7 @@ munki_code munki_imp_measure(
 
 	DBG((dbgo,"munki_imp_measure called\n"))
 	if (p->debug)
-		fprintf(stderr,"Taking %d measurments in %s%s%s%s mode called\n", nvals,
+		fprintf(stderr,"Taking %d measurments in %s%s%s%s%s mode called\n", nvals,
 		        s->emiss ? "Emission" : s->trans ? "Trans" : "Refl", 
 		        s->emiss && s->ambient ? " Ambient" : "",
 		        s->scan ? " Scan" : "",
@@ -1971,6 +1982,8 @@ static void write_doubles(i1pnonv *x, FILE *fp, double *dp, int n) {
 }
 
 /* Write an array of time_t's to the file. Set the error flag to nz on error */
+/* (This will cause file checksum fail if different executables on the same */
+/*  system have different time_t values) */
 static void write_time_ts(i1pnonv *x, FILE *fp, time_t *dp, int n) {
 
 	if (fwrite((void *)dp, sizeof(time_t), n, fp) != n) {
@@ -2012,6 +2025,8 @@ static void read_doubles(i1pnonv *x, FILE *fp, double *dp, int n) {
 }
 
 /* Read an array of time_t's from the file. Set the error flag to nz on error */
+/* (This will cause file checksum fail if different executables on the same */
+/*  system have different time_t values) */
 static void read_time_ts(i1pnonv *x, FILE *fp, time_t *dp, int n) {
 
 	if (fread((void *)dp, sizeof(time_t), n, fp) != n) {
@@ -2752,8 +2767,9 @@ munki_code munki_compute_wav_whitemeas(
 	double *abswav2,		/* Return array [nwav2] of abswav values (if hr_init, may be NULL) */
 	double *absraw			/* Given array [nraw] of absraw values */
 ) {
+#if defined(PLOT_DEBUG) || defined(HIGH_RES)
 	munkiimp *m = (munkiimp *)p->m;
-
+#endif
 	/* Convert an absraw array from raw wavelengths to output wavelenths */
 	if (abswav1 != NULL) {
 		munki_abssens_to_abswav1(p, 1, &abswav1, &absraw);
@@ -4313,7 +4329,7 @@ munki_code munki_extract_patches_multimeas(
 		PRDBG((dbgo,"Patch %d: consistency = %f%%, thresh = %f%%\n",pix,100.0 * cons, 100.0 * patch_cons_thr))
 		if (cons > patch_cons_thr) {
 			if (p->debug >= 1)
-				fprintf(stderr,"Patch recog failed - patch %d is inconsistent (%f%%)\n",k, cons);
+				fprintf(stderr,"Patch recog failed - patch %d is inconsistent (%f%%)\n",pix, cons);
 			rv |= 1;
 		}
 		pix++;
@@ -4876,6 +4892,10 @@ munki_code munki_create_hr(munki *p, int ref) {
 	munki_xp xp[41];			/* Crossover points each side of filter */
 	munki_code ev = MUNKI_OK;
 	rspl *raw2wav;				/* Lookup from CCD index to wavelength */
+#ifdef EXISTING_SHAPE
+    munki_fs fshape[40 * 16];  /* Existing filter shape */
+	int ncp = 0;				/* Number of shape points */
+#endif
 	int *mtx_index1, **pmtx_index2, *mtx_index2;
 	int *mtx_nocoef1, **pmtx_nocoef2, *mtx_nocoef2;
 	double *mtx_coef1, **pmtx_coef2, *mtx_coef2;
@@ -5461,8 +5481,8 @@ munki_code munki_create_hr(munki *p, int ref) {
 			double tot = 0.0;
 			double ccdweight[NRAW], avgw;	/* Weighting determined by cell widths */
 #ifdef NEVER
-			int ii;
 			double ccdsum[NRAW];
+			int ii;
 #endif
 
 			/* Normalize the overall filter weightings */
@@ -5601,6 +5621,9 @@ munki_code munki_create_hr(munki *p, int ref) {
 			int gres[2];
 			double avgdev[2];
 			int ii;
+#ifdef PATREC_DEBUG
+            int jj;
+#endif
 			co pp;
 	
 			/* First the 1D references */
@@ -5845,15 +5868,16 @@ munki_code munki_create_hr(munki *p, int ref) {
 			/* Create upsampled version */
 			for (i = 0; i < m->nwav2; i++) {		/* Output wavelength */
 				for (j = 0; j < m->nwav2; j++) {	/* Input wavelength */
-					pp.p[0] = XSPECT_WL(m->wl_short2, m->wl_long2, m->nwav2, i);
-					pp.p[1] = XSPECT_WL(m->wl_short2, m->wl_long2, m->nwav2, j);
+					double p0, p1;
+					p0 = XSPECT_WL(m->wl_short2, m->wl_long2, m->nwav2, i);
+					p1 = XSPECT_WL(m->wl_short2, m->wl_long2, m->nwav2, j);
 #ifdef SALONEINSTLIB
 					/* Do linear interp with clipping at ends */
 					{
 						int x0, x1, y0, y1;
 						double xx, yy, w0, w1, v0, v1;
 
-						xx = (m->nwav1-1.0) * (pp.p[0] - m->wl_short1)/(m->wl_long1 - m->wl_short1);
+						xx = (m->nwav1-1.0) * (p0 - m->wl_short1)/(m->wl_long1 - m->wl_short1);
 						x0 = (int)floor(xx);
 						if (x0 <= 0)
 							x0 = 0;
@@ -5863,7 +5887,7 @@ munki_code munki_create_hr(munki *p, int ref) {
 						w1 = xx - (double)x0;
 						w0 = 1.0 - w1;
 
-						yy = (m->nwav1-1.0) * (pp.p[1] - m->wl_short1)/(m->wl_long1 - m->wl_short1);
+						yy = (m->nwav1-1.0) * (p1 - m->wl_short1)/(m->wl_long1 - m->wl_short1);
 						y0 = (int)floor(yy);
 						if (y0 <= 0)
 							y0 = 0;
@@ -5879,6 +5903,8 @@ munki_code munki_create_hr(munki *p, int ref) {
 						        + w1 * v1 * slp[x1][y1]; 
 					}
 #else /* !SALONEINSTLIB */
+					pp.p[0] = p0;
+					pp.p[1] = p1;
 					trspl->interp(trspl, &pp);
 #endif /* !SALONEINSTLIB */
 					m->straylight2[i][j] = pp.v[0] * HIGHRES_WIDTH/10.0;
@@ -6054,11 +6080,12 @@ int munki_imp_highres(munki *p) {
 
 /* Set to high resolution mode */
 munki_code munki_set_highres(munki *p) {
-	int i;
-	munkiimp *m = (munkiimp *)p->m;
 	munki_code ev = MUNKI_OK;
 
 #ifdef HIGH_RES
+	int i;
+	munkiimp *m = (munkiimp *)p->m;
+
 	if (m->hr_inited == 0) {
 		if ((ev = munki_create_hr(p, 1)) != MUNKI_OK)	/* Reflective */
 			return ev;	
@@ -6096,11 +6123,12 @@ munki_code munki_set_highres(munki *p) {
 
 /* Set to standard resolution mode */
 munki_code munki_set_stdres(munki *p) {
-	int i;
-	munkiimp *m = (munkiimp *)p->m;
 	munki_code ev = MUNKI_OK;
 
 #ifdef HIGH_RES
+	int i;
+	munkiimp *m = (munkiimp *)p->m;
+
 	m->nwav = m->nwav1;
 	m->wl_short = m->wl_short1;
 	m->wl_long = m->wl_long1; 
@@ -6340,10 +6368,10 @@ munki_code munki_optimise_sensor(
 	double scale,			/* scale needed of current int time to reach optimum */
 	double deadtime			/* Dead integration time (if any) */
 ) {
-	munkiimp *m = (munkiimp *)p->m;
 	double new_int_time;
 	double min_int_time;	/* Adjusted min_int_time */
 	int    new_gain_mode;
+	munkiimp *m = (munkiimp *)p->m;
 
 	RDBG((dbgo,"munki_optimise_sensor called, inttime %f, gain mode %d, scale %f\n",cur_int_time,cur_gain_mode, scale))
 
@@ -6999,7 +7027,7 @@ munki_readmeasurement(
 
 	top = extra + m->c_inttime * nmeas;
 
-	if (isdeb) fprintf(stderr,"\nmunki: Read measurement results: inummeas %d, scanflag %d, bsize 0x%x, timout %f\n",inummeas, scanflag, bsize, top);
+	if (isdeb) fprintf(stderr,"\nmunki: Read measurement results: inummeas %d, scanflag %d, address %p bsize 0x%x, timout %f\n",inummeas, scanflag, buf, bsize, top);
 
 	for (;;) {
 		int size;		/* number of bytes to read */
@@ -7420,7 +7448,7 @@ munki_code munki_parse_eeprom(munki *p, unsigned char *buf, unsigned int len) {
 
 	/* Create class to handle EEProm parsing */
 	if ((d = m->data = new_mkdata(p, buf, len, p->verb, p->debug)) == NULL)
-		MUNKI_INT_CREATE_EEPROM_STORE;
+		return MUNKI_INT_CREATE_EEPROM_STORE;
 
 	/* Check out the version */
 	if (d->get_u16_ints(d, &calver, 0, 1) == NULL)

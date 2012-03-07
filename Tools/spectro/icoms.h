@@ -26,8 +26,15 @@
 	forgiving in interrupting coms to/from the instrument, as well
 	as being long winded and needing abort. For USB insruments it's
 	not necessarily robust to interrupt or terminate after a give
-	USB transaction. Really, the instrument driver should deterimine
+	USB transaction. The handling of user commands and aborts
+	is not consistent either, possibly leaving some instruments
+	suseptable to body results due to an unrecognised aborted
+	command. Really, the instrument driver should deterimine
 	at what points an operation can be aborted, and how to recover.
+
+	Because the instrument itself can be a source of commands,
+	some way of waiting for instrument or user input is needed.
+	Could a threaded approach with instrument abort work ?
 	
 */
 
@@ -439,6 +446,17 @@ struct _icoms {
 	int (*usb_clearhalt)(struct _icoms *p,
 		int ep);				/* End point address */
 
+	/* For an HID device, read a message from the device - thread friendly. */
+	/* Set error state on error */
+	int (*hid_read_th)(struct _icoms *p,
+		unsigned char *buf,		/* Read buffer */
+		int bsize,				/* Bytes to read or write */
+		int *bread,				/* Bytes read */
+		double tout,			/* Timeout in seconds */
+		int debug,				/* debug flag value */
+		int *cut,				/* Character that caused termination */
+		int checkabort);		/* Check for abort from keyboard */
+
 	/* For an HID device, read a message from the device. */
 	/* Set error state on error */
 	int (*hid_read)(struct _icoms *p,
@@ -446,6 +464,17 @@ struct _icoms {
 		int bsize,				/* Bytes to read or write */
 		int *bread,				/* Bytes read */
 		double tout);			/* Timeout in seconds */
+
+	/* For an HID device, write a message to the device - thread friendly. */
+	/* Set error state on error */
+	int (*hid_write_th)(struct _icoms *p,
+		unsigned char *wbuf,	/* Write buffer */
+		int wsize,				/* Bytes to or write */
+		int *bwritten,			/* Bytes written */
+		double tout,			/* Timeout in seconds */
+		int debug,				/* debug flag value */
+		int *cut,				/* Character that caused termination */
+		int checkabort);		/* Check for abort from keyboard */
 
 	/* For an HID device, write a message to the device */
 	/* Set error state on error */

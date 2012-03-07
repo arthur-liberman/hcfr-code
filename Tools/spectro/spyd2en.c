@@ -33,8 +33,8 @@
 #include <string.h>
 #if defined (NT)
 #define WIN32_LEAN_AND_MEAN
-#include <windows.h>
 #include <io.h>
+#include <windows.h>
 #endif
 #ifdef UNIX
 #include <unistd.h>
@@ -51,8 +51,6 @@
 #include "numsup.h"
 #endif /* SALONEINSTLIB */
 #include "xdg_bds.h"
-
-int vinflate();
 
 /* --------------------------------------------------------- */
 /* code for handling the driver or install file */
@@ -188,6 +186,8 @@ void unget16_arch(archive *p) {
 /* --------------------------------------------------------- */
 /* Interface with vinflate.c */
 
+int vinflate(void);
+
 archive *g_va = NULL;
 
 /* fetch the next 16 bits, big endian */
@@ -218,7 +218,8 @@ int vwrite_output(unsigned char *buf, unsigned int len) {
 /* create an archive by reading the file into memory */
 archive *new_arch(char *name, int verb) {
 	FILE *ifp;
-	unsigned int bread, i;
+	unsigned int bread;
+	unsigned int i;
 	archive *p;
 
 	if ((p = (archive *)calloc(sizeof(archive),1)) == NULL)

@@ -1240,18 +1240,36 @@ double IEEE754_64todouble(ORD64 ip) {
 	return op;
 }
 
+/* Return a string representation of a 32 bit ctime. */
+/* A static buffer is used. There is no \n at the end */
+char *ctime_32(const INR32 *timer) {
+	char *rv;
+#if defined(_MSC_VER) && __MSVCRT_VERSION__ >= 0x0601
+	rv = _ctime32((const __time32_t *)timer);
+#else
+	time_t timerv = (time_t) *timer;		/* May case to 64 bit */
+	rv = ctime(&timerv);
+#endif
+
+	if (rv != NULL)
+		rv[strlen(rv)-1] = '\000';
+
+	return rv;
+}
+
 /* Return a string representation of a 64 bit ctime. */
 /* A static buffer is used. There is no \n at the end */
-char *ctime_64(const ORD64 *timer) {
+char *ctime_64(const INR64 *timer) {
 	char *rv;
-#ifdef _MSC_VER
-# if __MSVCRT_VERSION__ >= 0x0601
-	rv = _ctime64((const __time32_t *)timer);
-# else
-	rv = ctime((const time_t *)timer);
-# endif
+#if defined(_MSC_VER) && __MSVCRT_VERSION__ >= 0x0601
+	rv = _ctime64((const __time64_t *)timer);
 #else
-	rv = ctime((const time_t *)timer);
+	time_t timerv;
+
+	if (sizeof(time_t) == 4 && *timer > 0x7fffffff)
+		return NULL;
+	timerv = (time_t) *timer;			/* May truncate to 32 bits */
+	rv = ctime(&timerv);
 #endif
 
 	if (rv != NULL)

@@ -1112,7 +1112,7 @@ ipatch *val) {		/* Pointer to instrument patch value */
 	/* Using filter compensation */
 	/* This isn't applicable to emulated transmission mode, because */
 	/* the filter will be calibrated out in the illuminant measurement. */
-	} else if (p->compen |= 0) {
+	} else if (p->compen != 0) {
 		ss_cst rct;
 		ss_st rst;		/* Return Spectrum Type (Reflectance/Density) */
 		ss_rvt rvf;		/* Return Reference Valid Flag */
@@ -1925,6 +1925,8 @@ ss_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 			case inst_opt_filter_Custom:
 				p->filt = ss_aft_CustomFilter;
 				return inst_ok;
+			default:
+				break;
 		}
 		return inst_unsupported;
 	}

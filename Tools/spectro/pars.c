@@ -242,8 +242,6 @@ cgatsFile *pp
 static char *cgatsFileMem_fname(
 cgatsFile *pp
 ) {
-//	cgatsFileMem *p = (cgatsFileMem *)pp;
-
 	/* Memory doesn't have a name */
 	return "**Mem**";
 }

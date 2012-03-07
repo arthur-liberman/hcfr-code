@@ -224,9 +224,13 @@ ORD64 doubletoIEEE754_64(double d);
 /* in a platform independent fashion. */
 double IEEE754_64todouble(ORD64 ip);
 
+/* Return a string representation of a 32 bit ctime. */
+/* A static buffer is used. There is no \n at the end */
+char *ctime_32(const INR32 *timer);
+
 /* Return a string representation of a 64 bit ctime. */
 /* A static buffer is used. There is no \n at the end */
-char *ctime_64(const ORD64 *timer);
+char *ctime_64(const INR64 *timer);
 
 #ifdef __cplusplus
 	}

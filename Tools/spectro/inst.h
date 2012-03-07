@@ -168,7 +168,7 @@ typedef enum {
 	inst2_cal_proj_offset   = 0x00000800, /* Uses a display offset/black calibration */
 	inst2_cal_proj_ratio    = 0x00001000, /* Uses a display ratio calibration */
 	inst2_cal_proj_int_time = 0x00002000, /* Uses a display integration time calibration */
-	inst2_cal_crt_freq      = 0x00004000, /* Uses a display CRT scan frequency calibration */
+	inst2_cal_crt_freq      = 0x00004000, /* Uses a refresh display calibration */
 
 	inst2_prog_trig         = 0x00010000, /* Progromatic trigger measure capability */
 	inst2_keyb_trig         = 0x00020000, /* Keyboard trigger measure capability */
