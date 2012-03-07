@@ -74,6 +74,9 @@ public:
 	virtual LPCSTR GetStandardSubDir ()	{ return GetConfig()->m_bUseCalibrationFilesOnAllProbes ? "Etalon_MTCS" : ""; }
 	virtual BOOL SensorNeedCalibration () { return FALSE; }
 	virtual BOOL SensorAcceptCalibration () { return GetConfig()->m_bUseCalibrationFilesOnAllProbes; }
+#ifdef USE_NON_FREE_CODE
+    virtual bool isValid() const {return false;}
+#endif
 };
 
 #endif // !defined(AFX_MTCSSENSOR_H__1493C213_6A02_44C5_8EB7_55B469092E14__INCLUDED_)

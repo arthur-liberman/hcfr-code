@@ -98,6 +98,7 @@ public:
 	virtual void GetUniqueIdentifier( CString & strId ) { strId = m_name; }
 
 	virtual BOOL HasSpectrumCapabilities ( int * pNbBands, int * pMinWaveLength, int * pMaxWaveLength, int * pBandWidth ) { return FALSE; }
+    virtual bool isValid() const {return true;}
 };
 
 #endif // !defined(AFX_SENSOR_H__FD0761AA_CBEC_4A38_8A67_ADB0963FBAE4__INCLUDED_)

@@ -77,6 +77,9 @@ public:
 	virtual BOOL HasSpectrumCapabilities ( int * pNbBands, int * pMinWaveLength, int * pMaxWaveLength, int * pBandWidth );
 
 	virtual void GetUniqueIdentifier( CString & strId );
+#ifdef USE_NON_FREE_CODE
+    virtual bool isValid() const {return false;}
+#endif
 };
 
 #endif // !defined(AFX_EYEONESENSOR_H__1493C213_6A02_44C5_8EB7_55B469092E14__INCLUDED_)
