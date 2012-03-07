@@ -917,7 +917,14 @@ void CDataSetDoc::Serialize(CArchive& ar)
 
 		CObject *pObj=ar.ReadObject(NULL);
 		if(pObj->GetRuntimeClass()->IsDerivedFrom(RUNTIME_CLASS(CSensor)) )
-			m_pSensor=(CSensor *)pObj;
+        {
+            m_pSensor=(CSensor *)pObj;
+            if(!m_pSensor->isValid())
+            {
+                delete m_pSensor;
+                m_pSensor = new CSimulatedSensor();
+            }
+        }
 		else
 		{
 			Msg.LoadString ( IDS_UNKNOWNSENSOR2 );
