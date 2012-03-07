@@ -166,7 +166,6 @@ struct _icoms *p
 ) {
 #ifdef ENABLE_USB
 	ssize_t i, nlist;
-	libusb_context *ctx = NULL;
 
 	struct libusb_device **list;
 
