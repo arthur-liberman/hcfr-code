@@ -49,11 +49,11 @@ WinUSB_SvcDesc      = "LibUSB-1.0A WinUSB Driver Service"
 Default_Device      = "LIBUSB0_DEV"		; Default
 NTx86.5.0_Device    = "LIBUSB0_DEV"		; 32 bit Win2K
 NTx86.5.1_Device    = "LIBUSB0_DEV"		; 32 bit WinXP
-NTamd64.5.1_Device  = "PTLIBUSB0_DEV"		; 64 bit WinXP
+NTamd64.5.1_Device  = "LIBUSB0_DEV"		; 64 bit WinXP
 NTx86.6_Device      = "LIBUSB0_DEV"		; 32 bit Vista
-NTamd64.6_Device    = "PTLIBUSB0_DEV"		; 64 bit Vista
+NTamd64.6_Device    = "LIBUSB0_DEV"		; 64 bit Vista
 NTx86.6.1_Device    = "LIBUSB0_DEV"		; 32 bit Win7
-NTamd64.6.1_Device  = "PTLIBUSB0_DEV"		; 64 bit Win7
+NTamd64.6.1_Device  = "LIBUSB0_DEV"		; 64 bit Win7
 
 ; ==== Version ====
 
