@@ -1608,7 +1608,7 @@ static void dump_bytes(FILE *fp, char *pfx, unsigned char *buf, int len) {
 				if (isprint(buf[j]))
 					fprintf(fp,"%c",buf[j]);
 				else
-					fprintf(fp,".",buf[j]);
+					fprintf(fp,".");
 			}
 			fprintf(fp,"\n");
 		}

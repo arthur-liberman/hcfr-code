@@ -30,7 +30,7 @@ typedef double ratao[1];
 
 /* Interface coordinate value */
 typedef struct {
-    double p[1];	/* coordinate position */
+    double p[2];	/* coordinate position */
     double v[1];	/* function values */
 } co;
 

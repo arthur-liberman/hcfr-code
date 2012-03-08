@@ -285,14 +285,12 @@ struct _icoms *p
 
 			if ((vref = CFDictionaryGetValue(hidprops, CFSTR(kIOHIDVendorIDKey))) != 0) {
 				CFNumberGetValue(vref, kCFNumberIntType, &vid);
-				CFRelease(vref);
 			}
 			if ((pref = CFDictionaryGetValue(hidprops, CFSTR(kIOHIDProductIDKey))) != 0) {
 				CFNumberGetValue(pref, kCFNumberIntType, &pid);
-				CFRelease(pref);
 			}
-// ~~999
-//			CFRelease(hidprops);		// Crashes !!
+
+			CFRelease(hidprops);		// Wont crash if you don't free individual dictionary items that are owned by the dictionary
 			hidprops = NULL;
 
 			/* If it's a device we're looking for */

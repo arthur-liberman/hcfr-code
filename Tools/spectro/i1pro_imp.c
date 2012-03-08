@@ -938,6 +938,8 @@ i1pro_code i1pro_imp_set_mode(
 			m->mmode = mmode;
 			m->spec_en = spec_en ? 1 : 0;
 			return I1PRO_OK;
+		case i1p_no_modes:
+			return I1PRO_INT_ILLEGALMODE;
 	}
 	return I1PRO_INT_ILLEGALMODE;
 }
@@ -1676,7 +1678,7 @@ i1pro_code i1pro_imp_measure(
 
 	DBG((dbgo,"i1pro_imp_measure called\n"))
 	if (p->debug)
-		fprintf(stderr,"Taking %d measurments in %s%s%s%s mode called\n", nvals,
+		fprintf(stderr,"Taking %d measurments in %s%s%s%s%s mode called\n", nvals,
 		        s->emiss ? "Emission" : s->trans ? "Trans" : "Refl", 
 		        s->emiss && s->ambient ? " Ambient" : "",
 		        s->scan ? " Scan" : "",
@@ -7771,7 +7773,7 @@ static int *i1data_get_int(i1data *d, i1key key, unsigned int index) {
 	if (k->type != i1_dtype_int)
 		return NULL;
 
-	if (index < 0 || index >= k->count)
+	if (index >= k->count)
 		return NULL;
 
 	return ((int *)k->data) + index;
@@ -7788,7 +7790,7 @@ static double *i1data_get_double(i1data *d, i1key key, double *data, unsigned in
 	if (k->type != i1_dtype_double)
 		return NULL;
 
-	if (index < 0 || index >= k->count)
+	if (index >= k->count)
 		return NULL;
 
 	return ((double *)k->data) + index;
@@ -8028,7 +8030,7 @@ static i1pro_code i1data_parse_eeprom(i1data *d, unsigned char *buf, unsigned in
 		return I1PRO_DATA_KEY_COUNT;
 
 	if (buf2short(buf + dir) != 1)	/* Must be 1 */
-		I1PRO_DATA_KEY_CORRUPT;
+		return I1PRO_DATA_KEY_CORRUPT;
 	
 	nokeys = buf2short(buf + dir + 2);	/* Bytes in key table */
 	if (nokeys < 300 || nokeys > 512)

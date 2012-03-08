@@ -21,17 +21,19 @@ LINKPROFFLAG  =
 
 STDHDRSDEF = /usr/include
 
+
+WARNINGS  = -Werror -Wno-conversion -Wno-tautological-compare
 MAKEU     = make
 LIBU      = ar -r
 LIBOF     = 
 RANLIB    = ranlib
 AS        = as
 CCFLAGSDEF   = -DUNIX -c
-CC        = cc $(CCFLAGS) $(STDHDRS)
+CC        = clang -arch i386 -arch x86_64 $(WARNINGS) $(CCFLAGS) $(STDHDRS)
 CCOF      = -o
-LINKFLAGSDEF = -lm -framework Carbon -framework IOKit -framework CoreFoundation
+LINKFLAGSDEF = -lm -framework AudioToolbox -framework IOKit -framework CoreFoundation
 LINKLIBS  = 
-LINK      = cc $(LINKFLAGS) $(LINKLIBS)
+LINK      = clang -arch i386 -arch x86_64 $(LINKFLAGS) $(LINKLIBS)
 LINKOF    = -o 
 CP        = cp
 
@@ -40,4 +42,4 @@ CP        = cp
 
 .c$(SUFOBJ):
 	$(CC) $(CCOF)$*$(SUFOBJ) $<
-	
+

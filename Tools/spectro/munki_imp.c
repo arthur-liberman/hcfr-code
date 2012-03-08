@@ -875,6 +875,8 @@ munki_code munki_imp_set_mode(
 			m->mmode = mmode;
 			m->spec_en = spec_en ? 1 : 0;
 			return MUNKI_OK;
+		case mk_no_modes:
+			return MUNKI_INT_ILLEGALMODE;
 	}
 	return MUNKI_INT_ILLEGALMODE;
 }
@@ -1567,7 +1569,7 @@ munki_code munki_imp_measure(
 
 	DBG((dbgo,"munki_imp_measure called\n"))
 	if (p->debug)
-		fprintf(stderr,"Taking %d measurments in %s%s%s%s mode called\n", nvals,
+		fprintf(stderr,"Taking %d measurments in %s%s%s%s%s mode called\n", nvals,
 		        s->emiss ? "Emission" : s->trans ? "Trans" : "Refl", 
 		        s->emiss && s->ambient ? " Ambient" : "",
 		        s->scan ? " Scan" : "",
@@ -7439,7 +7441,7 @@ munki_code munki_parse_eeprom(munki *p, unsigned char *buf, unsigned int len) {
 
 	/* Create class to handle EEProm parsing */
 	if ((d = m->data = new_mkdata(p, buf, len, p->verb, p->debug)) == NULL)
-		MUNKI_INT_CREATE_EEPROM_STORE;
+		return MUNKI_INT_CREATE_EEPROM_STORE;
 
 	/* Check out the version */
 	if (d->get_u16_ints(d, &calver, 0, 1) == NULL)

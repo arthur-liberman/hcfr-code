@@ -74,6 +74,7 @@
 #include <IOKit/IOBSD.h>
 #include <mach/mach_init.h>
 #include <mach/task_policy.h>
+#include <AudioToolbox/AudioServices.h>
 #endif /* __APPLE__ */
 
 #ifdef NT
@@ -612,7 +613,7 @@ static int beep_msec;
 static int delayed_beep(void *pp) {
 	msec_sleep(beep_delay);
 #ifdef __APPLE__
-	SysBeep((beep_msec * 60)/1000);
+	AudioServicesPlayAlertSound(kUserPreferredAlert);
 #else
 	fprintf(stdout, "\a"); fflush(stdout);
 #endif 
@@ -631,7 +632,7 @@ void msec_beep(int delay, int freq, int msec) {
 			error("Delayed beep failed to create thread");
 	} else {
 #ifdef __APPLE__
-		SysBeep((msec * 60)/1000);
+		AudioServicesPlayAlertSound(kUserPreferredAlert);
 #else
 		/* Linux is pretty lame in this regard... */
 		fprintf(stdout, "\a"); fflush(stdout);
