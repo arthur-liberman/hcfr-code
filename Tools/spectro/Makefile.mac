@@ -31,7 +31,7 @@ AS        = as
 CCFLAGSDEF   = -DUNIX -c
 CC        = gcc $(CCFLAGS) $(STDHDRS)
 CCOF      = -o
-LINKFLAGSDEF = -lm -framework Carbon -framework IOKit -framework CoreFoundation
+LINKFLAGSDEF = -lm -framework Carbon -framework IOKit -framework CoreFoundation -framework AudioToolbox
 LINKLIBS  = 
 LINK      = gcc $(LINKFLAGS) $(LINKLIBS)
 LINKOF    = -o 
@@ -44,8 +44,8 @@ CP        = cp
 	$(CC) $(CCOF)$*$(SUFOBJ) $<
 	
 
-SDK=/Developer-old/SDKs/MacOSX10.5.sdk
-FLAGS=-arch i386 -isysroot $(SDK) -mmacosx-version-min=10.5
+#SDK=/Developer-old/SDKs/MacOSX10.5.sdk
+FLAGS=-arch x86_64 #-isysroot $(SDK) -mmacosx-version-min=10.5
 LIBUSB=../libusb1/libusb
 
 CCDEFINES = $(DEFFLAG)SALONEINSTLIB $(DEFFLAG)ENABLE_SERIAL $(DEFFLAG)ENABLE_USB $(DEFFLAG)USE_LIBUSB1

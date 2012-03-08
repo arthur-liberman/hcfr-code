@@ -25,6 +25,7 @@
 	m_ReadingType = ArgyllMeterWrapper::DISPLAY;
 	m_PortNumber  = 1;
 	m_meter		  = nil;
+    m_HiRes       = false;
 	
 	return self;
 }
