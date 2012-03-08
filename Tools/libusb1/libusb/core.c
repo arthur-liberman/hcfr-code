@@ -1567,6 +1567,10 @@ err:
 API_EXPORTED void libusb_exit(struct libusb_context *ctx)
 {
 	USBI_GET_CONTEXT(ctx);
+    /* allow exit to be called even if we haven't yet allocated a context 
+	 * which can happen if there are no usb buses as on hyper-v instance. */
+	if(!ctx)
+		return;
 	usbi_dbg("");
 
 	/* a little sanity check. doesn't bother with open_devs locking because
