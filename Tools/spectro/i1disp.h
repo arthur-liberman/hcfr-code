@@ -144,7 +144,7 @@ struct _i1disp {
 
 	/* For dtype == 1 (Eye-One Display2) */
 	int     itset;				/* Flag, nz if the integration time has been measured and set */
-	double  sampfreq;			/* Sampling frequency for i1d2 and CRT, default 60 */
+	double  sampfreq;			/* Refresh rate for i1d2, CRT default 60, LCD = 100 */
 	int     sampno;				/* Number of refresh rate samples we're aiming to take, def 100 */
 	double  samptime;			/* Total sample time in seconds (= sampno * sampfreq) */
 	int     nmeasprds;       	/* Number of disp refresh period measurments to average, deflt 5 */

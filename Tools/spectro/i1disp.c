@@ -98,19 +98,19 @@ static int icoms2i1disp_err(int se) {
 /* A = string (5 bytes total max) , - = none */
 typedef enum {
     i1d_status       = 0x00,		/* -:A    Get status string */
-    i1d_rd_red       = 0x01,		/* -:W    Read the red channel */
-    i1d_rd_green     = 0x02,		/* -:W    Read the green channel */
-    i1d_rd_blue      = 0x03,		/* -:W    Read the blue channel */
-    i1d_getmeas_p    = 0x04,		/* -:W    Read the measure period */
+    i1d_rd_red       = 0x01,		/* -:W    Read the red channel clk count */
+    i1d_rd_green     = 0x02,		/* -:W    Read the green channel clk count */
+    i1d_rd_blue      = 0x03,		/* -:W    Read the blue channel clk count */
+    i1d_getmeas_p    = 0x04,		/* -:W    Read the measure refresh period */
     i1d_setintgt     = 0x05,		/* W:-    Set the integration time */
     i1d_getintgt     = 0x06,		/* -:W    Get the integration time */
     i1d_wrreg        = 0x07,		/* BB:-   Write a register value */
     i1d_rdreg        = 0x08,		/* B:B    Read a register value */
-    id1_getmeas_p2   = 0x09,		/* -:W    Read the measure period (finer resolution ?) */
+    i1d_getmeas_p2   = 0x09,		/* -:W    Read the measure refresh period (finer ?) */
     i1d_m_red_p      = 0x0a,		/* B:W    Measure the red period */
     i1d_m_green_p    = 0x0b,		/* B:W    Measure the green period */
     i1d_m_blue_p     = 0x0c,		/* B:W    Measure the blue period */
-    i1d_m_rgb_p      = 0x0d,		/* BBB:W  Measure the RGB period */
+    i1d_m_rgb_p      = 0x0d,		/* BBB:W  Measure the RGB period for given edge count */
     i1d_unlock       = 0x0e,		/* BBBB:- Unlock the interface */
 
     i1d_m_red_p2     = 0x10,		/* S:W    Measure the red period (16 bit ?) */
@@ -541,9 +541,9 @@ i1disp_wr_int_time(
 	return inst_ok;
 }
 
-/* Read the measurement period */
+/* Read the refresh period */
 static inst_code
-i1disp_rd_meas_period(
+i1disp_rd_meas_ref_period(
 	i1disp *p,				/* Object */
 	int *outp				/* Where to write value */
 ) {
@@ -551,7 +551,7 @@ i1disp_rd_meas_period(
 	int rsize;
 	inst_code ev;
 
-	if ((ev = i1disp_command(p, id1_getmeas_p2, NULL, 0,
+	if ((ev = i1disp_command(p, i1d_getmeas_p2, NULL, 0,
 		         buf, 8, &rsize, 1.5)) != inst_ok)
 		return ev;
 	
@@ -565,14 +565,14 @@ i1disp_rd_meas_period(
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - */
 
-/* Take a raw RGB measurement from the device for an i1d1 */
-/* The raw measurement seems something like an integration time */
-/* in clocks, to reach the given threshold (ie. dual slope integral A/D ?). */
+/* Take a raw RGB period measurement from the device for an i1d1. */
+/* The time taken to count the given number of L2F clock edges (+ve & -ve) */
+/* is measured in clk clk_freq counts. */ 
 static inst_code
-i1disp_take_raw_measurement_1(
+i1d1_period_measure(
 	i1disp *p,				/* Object */
-	int intthr[3],			/* Threshold 1..255 for each channel ?? */
-	double rgb[3]			/* Return the RGB A/D values */
+	int edgec[3],			/* Number of clock edges to count */
+	double rgb[3]			/* Return the number of clk's */
 ) {
 	int i;
 	unsigned char ibuf[16];
@@ -580,11 +580,11 @@ i1disp_take_raw_measurement_1(
 	int rsize;
 	inst_code ev;
 
-	/* Sanity check the threshold */
+	/* Sanity check the number of edges */
 	for (i = 0; i < 3; i++) {
-		if (intthr[i] < 1 || intthr[i] > 255)
+		if (edgec[i] < 1 || edgec[i] > 255)
 			return i1disp_interp_code((inst *)p, I1DISP_BAD_INT_THRESH);
-		ibuf[i] = (char)intthr[i];
+		ibuf[i] = (char)edgec[i];
 	}
 
 	/* Do the measurement, and return the Red value */
@@ -614,15 +614,16 @@ i1disp_take_raw_measurement_1(
 	return inst_ok;
 }
 
-/* Take a cooked measurement from the device for the i1d1 */
+/* Take a cooked period measurement from the device for the i1d1 */
+/* and return the frequency for each sensor. */
 static inst_code
-i1disp_take_measurement_1(
+i1d1_take_measurement(
 	i1disp *p,				/* Object */
 	int cal,				/* nz if black is not to be subtracted */
-	double rgb[3]			/* Return the rgb values */
+	double rgb[3]			/* Return the rgb frequency values */
 ) {
 	int i;
-	int intthr[3];		/* Integration times 1..255 for each channel */
+	int edgec[3];		/* Edge count 1..255 for each channel */
 	inst_code ev;
 
 	if (p->inited == 0)
@@ -631,16 +632,16 @@ i1disp_take_measurement_1(
 	if (p->dtype != 0)
 		return i1disp_interp_code((inst *)p, I1DISP_WRONG_DEVICE);
 
-	/* Do an initial measurement with minimum integration threshold of 1 */
-	intthr[0] = intthr[1] = intthr[2] = 1;
+	/* Do an initial measurement with minimum edge count of 1 */
+	edgec[0] = edgec[1] = edgec[2] = 1;
 
-	if ((ev = i1disp_take_raw_measurement_1(p, intthr, rgb)) != inst_ok)
+	if ((ev = i1d1_period_measure(p, edgec, rgb)) != inst_ok)
 		return ev;
 
 	DBG((dbgo, "Initial RGB = %f %f %f\n",rgb[0],rgb[1],rgb[2]))
 
-	/* Compute adjusted integration threshold, aiming */
-	/* for count values of clk_freq (~1e6). */
+	/* Compute adjusted edge count, aiming */
+	/* for count values of clk_freq = 1 second (~1e6). */
 	for (i = 0; i < 3; i++) {
 		double ns;
 		if (p->clk_freq > ((255.0 - 0.5) * rgb[i]))
@@ -650,35 +651,33 @@ i1disp_take_measurement_1(
 			if (ns < 1.0)
 				ns = 1.0;
 		}
-		intthr[i] = (int)ns;
+		edgec[i] = (int)ns;
 	}
 
-	/* If we compute a different threshold, read again */
-	if (intthr[0] > 1 || intthr[1] > 1 || intthr[2] > 1) {
+	/* Only if we compute a different edge count, read again */
+	if (edgec[0] > 1 || edgec[1] > 1 || edgec[2] > 1) {
 		double rgb2[3];		/* 2nd RGB Readings */
 
-		if ((ev = i1disp_take_raw_measurement_1(p, intthr, rgb2)) != inst_ok)
+		if ((ev = i1d1_period_measure(p, edgec, rgb2)) != inst_ok)
 			return ev;
 
-		/* Average readings if we repeated a measurement with the same threshold */
+		/* Average readings if we repeated a measurement with the same edge count */
 		/* (Minor advantage, but may as well use it) */
 		for (i = 0; i < 3; i++) {
-			if (intthr[i] == 1)
+			if (edgec[i] == 1)
 				rgb[i] = 0.5 * (rgb[i] + rgb2[i]);
 			else
 				rgb[i] = rgb2[i];
 		}
 	}
 
-	DBG((dbgo, "scaled %d %d %d gives RGB = %f %f %f\n", intthr[0],intthr[1],intthr[2], rgb[0],rgb[1],rgb[2]))
+	DBG((dbgo, "scaled %d %d %d gives RGB = %f %f %f\n", edgec[0],edgec[1],edgec[2], rgb[0],rgb[1],rgb[2]))
 
-	/* Compute adjusted readings */
-	/* We need to invert the count to give a light level, and */
-	/* multiply by the integration threshold, */
-	/* (divide by the clock period to give integration time in seconds) */
+	/* Compute adjusted readings as a frequency. */
+	/* We need to divide the number of edges/2 by the period in seconds */
 	for (i = 0; i < 3; i++) {
-		rgb[i] = (p->rgbadj2[i] * (double)intthr[i])/(rgb[i] * 2.0 * p->clk_prd);
-		DBG((dbgo, "%d after scale = %f\n",i,rgb[i]))
+		rgb[i] = (p->rgbadj2[i] * (double)edgec[i])/(rgb[i] * 2.0 * p->clk_prd);
+		DBG((dbgo, "%d sensor frequency = %f\n",i,rgb[i]))
 
 		/* If we're not calibrating the black */
 		if (cal == 0) {
@@ -697,11 +696,16 @@ i1disp_take_measurement_1(
 
 /* . . . . . . . . . . . . . . . . . . . . . . . . */
 
-/* Take a raw initial measurement from the device for an i1d2 */
+/* Take a fixed period frequency measurement from the device for an i1d2. */
+/* This measures edge count over the set integration period. */
+
+/* Take a raw measurement using a given integration time. */
+/* The measureent is the count of (both) edges from the L2V */
+/* over the integration time */
 static inst_code
-i1disp_take_first_raw_measurement_2(
+i1d2_freq_measure(
 	i1disp *p,				/* Object */
-	double rgb[3]			/* Return the RGB values */
+	double rgb[3]			/* Return the RGB edge count values */
 ) {
 	unsigned char ibuf[16];
 	unsigned char obuf[16];
@@ -736,12 +740,12 @@ i1disp_take_first_raw_measurement_2(
 	return inst_ok;
 }
 
-/* Take a raw initial subsequent mesurement from the device for an i1d2 */
+/* Meaure the period by Take a raw initial subsequent mesurement from the device for an i1d2 */
 static inst_code
-i1disp_take_raw_measurement_2(
+i1disp_period_measure(
 	i1disp *p,			/* Object */
 	int edgec[3],		/* Measurement edge count for each channel */
-	double rgb[3]		/* Return the RGB values */
+	double rgb[3]		/* Return the RGB clock count values */
 ) {
 	int i;
 	unsigned char ibuf[16];
@@ -785,18 +789,20 @@ i1disp_take_raw_measurement_2(
 	return inst_ok;
 }
 
-#define ME 1
+#define ME 1		/* One edge initially (should this be 2 ?) */
 
 /* Take a cooked measurement from the device for the i1d2 */
 static inst_code
-i1disp_take_measurement_2(
+i1d2_take_measurement(
 	i1disp *p,				/* Object */
 	int crtm,				/* nz if crt mode */
 	double rgb[3]			/* Return the rgb values */
 ) {
 	int i;
+	double rmeas[3];			/* Raw measurement */
 	int edgec[3] = {ME,ME,ME};	/* Measurement edge count for each channel */
-	int rem[3] = {1,1,1};	/* remeasure flags */
+	int cdgec[3] = {ME,ME,ME};	/* CRT computed edge count for re-measure */
+	int mask = 0x7;         /* Period measure mask */
 	inst_code ev;
 
 	if (p->inited == 0)
@@ -805,97 +811,150 @@ i1disp_take_measurement_2(
 	if (p->dtype == 0)
 		return i1disp_interp_code((inst *)p, I1DISP_WRONG_DEVICE);
 
-	DBG((dbgo, "take_measurement_2 called with crtm = %d\n",crtm));
+	DBG((dbgo, "i1d2_take_measurement called with crtm = %d\n",crtm));
 
-	/* Do CRT frequency calibration/set integration time if needed */
+	/* Do CRT frequency calibration if CRT, */
+	/* and set integration time to default or CRT calibrated value. */
 	if (p->itset == 0) {
 		if ((ev = i1disp_do_fcal_setit(p)) != inst_ok)
 			return ev;
 	}
 
-	/* For CRT mode, do an initial set of syncronized measurements */
+	/* For CRT mode, do an initial set of fixed integration time */
+	/* frequency measurement */
 	if (crtm) {
 
-		if ((ev = i1disp_take_first_raw_measurement_2(p, rgb)) != inst_ok)
+		DBG((dbgo,"Doing fixed period frequency measurement over %f secs\n",p->int_clocks/(double)p->clk_freq))
+
+		if ((ev = i1d2_freq_measure(p, rmeas)) != inst_ok)
 			return ev;
 
-		DBG((dbgo, "Raw initial CRT RGB = %f %f %f\n",rgb[0],rgb[1],rgb[2]))
+		for (i = 0; i < 3; i++)
+			rgb[i] = 0.5 * rmeas[i] * p->rgbadj1[i]/(double)p->int_clocks;
+
+		DBG((dbgo,"Got %f %f %f raw, %f %f %f Hz\n",
+		rmeas[0], rmeas[1], rmeas[2], rgb[0], rgb[1], rgb[2]))
 
 		/* Decide whether any channels need re-measuring, */
-		/* and computed cooked values. Threshold is typically 75 */
+		/* and computed cooked values. Threshold is a count of 75 */
+		mask = 0x0;
 		for (i = 0; i < 3; i++) {
-			rem[i] = (rgb[i] <= (0.75 * (double)p->sampno)) ? 1 : 0;
-			rgb[i] = 0.5 * rgb[i] * p->rgbadj1[i]/(double)p->int_clocks;
+			if (rmeas[i] <= (0.75 * (double)p->sampno)) {
+				mask |= (1 << i);		/* Yes */
+				if (rmeas[i] >= 10) {	/* Compute target edges */
+					cdgec[i] = (int)(2.0 * rgb[i] * p->int_clocks/(double)p->clk_freq + 0.5); 
+					if (cdgec[i] > 2000)
+						cdgec[i] = 2000;
+					else if (cdgec[i] < ME)
+						cdgec[i] = ME;
+				}
+			}
 		}
-		DBG((dbgo,"Re-measure flags = %d %d %d\n",rem[0],rem[1],rem[2]))
+		DBG((dbgo,"Re-measure mask = 0x%x\n",mask))
+		DBG((dbgo,"cdgec = %d %d %d\n",cdgec[0],cdgec[1],cdgec[2]))
 	}
 
 	/* If any need re-measuring */
-	if (rem[0] || rem[1] || rem[2]) {
-		double rgb2[3];
+	if (mask != 0) {
 
-		/* Do a first or second set of measurements */
-		if ((ev = i1disp_take_raw_measurement_2(p, edgec, rgb2)) != inst_ok)
-			return ev;
-		DBG((dbgo,"Raw initial/subsequent ecount %d %d %d RGB = %f %f %f\n",
-		     edgec[0], edgec[1], edgec[2], rgb2[0], rgb2[1], rgb2[2]))
-
-		/* Compute adjusted edge count for channels we're remeasuring, */
-		/* aiming for count values of clk_freq (~1e6). */
+		/* See if we need to compute a target edge count */
 		for (i = 0; i < 3; i++) {
-			double ns;
-			if (rem[i]) {
-				if (p->clk_freq > ((2000.0 - 0.5) * rgb2[i]))
+			if ((mask & (1 << i)) && cdgec[i] == ME)
+				break;
+		}
+
+		/* Yes we do */
+		if (i < 3) {
+
+			DBG((dbgo,"Doing 1st period pre-measurement mask 0x%x, edgec %d %d %d\n",
+			mask, edgec[0], edgec[1], edgec[2]))
+
+			/* Do an initial measurement of 1 edge to estimate the */
+			/* number of edges needed for the whole integration time. */
+			if ((ev = i1disp_period_measure(p, edgec, rmeas)) != inst_ok)
+				return ev;
+
+			DBG((dbgo,"Got %f %f %f raw %f %f %f Hz\n",
+			rmeas[0], rmeas[1], rmeas[2],
+			(p->rgbadj2[0] * (double)edgec[0])/(rmeas[0] * 2.0 * p->clk_prd),
+			(p->rgbadj2[1] * (double)edgec[1])/(rmeas[1] * 2.0 * p->clk_prd),
+			(p->rgbadj2[2] * (double)edgec[2])/(rmeas[2] * 2.0 * p->clk_prd)))
+
+			/* Compute adjusted edge count for channels we're remeasuring, */
+			/* aiming for a values of int_clocks. */
+			for (i = 0; i < 3; i++) {
+				double ns;
+				if ((mask & (1 << i)) == 0)
+					continue;
+				if (p->int_clocks > ((2000.0 - 0.5) * rmeas[i]))
 					ns = 2000.0;			/* Maximum edge count */
 				else {
-					ns = floor(p->clk_freq/rgb2[i]) + 0.5;
+					ns = floor(p->int_clocks/rmeas[i]) + 0.5;
 					if (ns < ME)			/* Minimum edge count */
 						ns = ME;
 				}
 				edgec[i] = (int)ns;
 			}
 		}
+
+		/* Use frequency computed edge count if available */
+		for (i = 0; i < 3; i++) {
+			if ((mask & (1 << i)) == 0)
+				continue;
+			if (cdgec[i] != ME)
+				edgec[i] = cdgec[i];
+		}
 	
 		/* If we compute a different edge count, read again */
 		if (edgec[0] > ME || edgec[1] > ME || edgec[2] > ME) {
-			double rgb3[3];		/* 2nd RGB Readings */
+			double rmeas2[3];		/* 2nd RGB Readings */
 	
-			if ((ev = i1disp_take_raw_measurement_2(p, edgec, rgb3)) != inst_ok)
+			DBG((dbgo,"Doing period re-measurement mask 0x%x, edgec %d %d %d\n",
+			mask, edgec[0], edgec[1], edgec[2]))
+
+			if ((ev = i1disp_period_measure(p, edgec, rmeas2)) != inst_ok)
 				return ev;
 	
-			DBG((dbgo,"Raw subsequent2 ecount %d %d %d RGB = %f %f %f\n",
-			     edgec[0], edgec[1], edgec[2], rgb3[0], rgb3[1], rgb3[2]))
+			DBG((dbgo,"Got %f %f %f raw %f %f %f Hz\n",
+			rmeas[0], rmeas[1], rmeas[2],
+			(p->rgbadj2[0] * (double)edgec[0])/(rmeas2[0] * 2.0 * p->clk_prd),
+			(p->rgbadj2[1] * (double)edgec[1])/(rmeas2[1] * 2.0 * p->clk_prd),
+			(p->rgbadj2[2] * (double)edgec[2])/(rmeas2[2] * 2.0 * p->clk_prd)))
 
-			/* Average readings if we repeated a measurement with the same threshold */
+			DBG((dbgo,"Int period %f %f %f secs\n",
+			rmeas2[0]/p->clk_freq, rmeas2[1]/p->clk_freq, rmeas2[2]/p->clk_freq))
+
+			/* Average readings if we repeated a measurement with the same count */
 			/* (Minor advantage, but may as well use it) */
 			for (i = 0; i < 3; i++) {
-				if (edgec[i] == 1)
-					rgb2[i] = 0.5 * (rgb2[i] + rgb3[i]);
+				if (edgec[i] == ME)
+					rmeas[i] = 0.5 * (rmeas[i] + rmeas2[i]);
 				else
-					rgb2[i] = rgb3[i];
+					rmeas[i] = rmeas2[i];
 			}
 		}
 
 		/* Compute adjusted readings, ovewritting initial cooked values */
 		for (i = 0; i < 3; i++) {
-			if (rem[i]) {
-				rgb[i] = (p->rgbadj2[i] * (double)edgec[i])/(rgb2[i] * 2.0 * p->clk_prd);
-				DBG((dbgo,"%d after scale = %f\n",i,rgb[i]))
-		
-				rgb[i] -= p->reg103_F[i];		/* Subtract black level */
-				DBG((dbgo,"%d after sub black = %f\n",i,rgb[i]))
-		
-				if (rgb[i] < 0.0001)
-					rgb[i] = 0.0001;
-				DBG((dbgo,"%d after limit min = %f\n",i,rgb[i]))
-			}
+			if ((mask & (1 << i)) == 0)
+				continue;
+			rgb[i] = (p->rgbadj2[i] * (double)edgec[i])/(rmeas[i] * 2.0 * p->clk_prd);
+			DBG((dbgo,"%d after scale = %f\n",i,rgb[i]))
+	
+			rgb[i] -= p->reg103_F[i];		/* Subtract black level */
+			DBG((dbgo,"%d after sub black = %f\n",i,rgb[i]))
+	
+			if (rgb[i] < 0.0001)
+				rgb[i] = 0.0001;
+			DBG((dbgo,"%d after limit min = %f\n",i,rgb[i]))
 		}
 	}
 
-	DBG((dbgo,"Cooked RGB = %f %f %f\n",rgb[0],rgb[1],rgb[2]))
+	DBG((dbgo,"Cooked RGB Hz = %f %f %f\n",rgb[0],rgb[1],rgb[2]))
 	
 	return inst_ok;
 }
+
 #undef ME
 
 /* . . . . . . . . . . . . . . . . . . . . . . . . */
@@ -912,7 +971,7 @@ i1disp_take_XYZ_measurement(
 	double *mat;		/* Pointer to matrix */
 
 	if (p->dtype == 0) {		/* i1 disp 1 */
-		if ((ev = i1disp_take_measurement_1(p, 0, rgb)) != inst_ok)
+		if ((ev = i1d1_take_measurement(p, 0, rgb)) != inst_ok)
 			return ev;
 	} else {				/* i1 disp 2 */
 		int crtm = 0;		/* Assume LCD or ambient */
@@ -921,7 +980,7 @@ i1disp_take_XYZ_measurement(
 			crtm = 1; 
 		}
 
-		if ((ev = i1disp_take_measurement_2(p, crtm, rgb)) != inst_ok)
+		if ((ev = i1d2_take_measurement(p, crtm, rgb)) != inst_ok)
 			return ev;
 	}
 
@@ -970,9 +1029,9 @@ i1disp_do_black_cal(
 		return i1disp_interp_code((inst *)p, I1DISP_CANT_BLACK_CALIB);
 
 	/* Do a couple of readings without subtracting the black */
-	if ((ev = i1disp_take_measurement_1(p, 1, rgb1)) != inst_ok)
+	if ((ev = i1d1_take_measurement(p, 1, rgb1)) != inst_ok)
 		return ev;
-	if ((ev = i1disp_take_measurement_1(p, 1, rgb2)) != inst_ok)
+	if ((ev = i1d1_take_measurement(p, 1, rgb2)) != inst_ok)
 		return ev;
 
 	/* Average the results */
@@ -995,7 +1054,7 @@ i1disp_do_black_cal(
 	return inst_ok;
 }
 
-/* Do a measurement period cailbration if CRT and set integration time */
+/* Do a refersh period cailbration if CRT, and set integration time in device */
 static inst_code
 i1disp_do_fcal_setit(
 	i1disp *p				/* Object */
@@ -1011,11 +1070,11 @@ i1disp_do_fcal_setit(
 
 	if (p->crt && (p->mode & inst_mode_measurement_mask) != inst_mode_emis_ambient) {
 
-		/* Average a few measurement period readings */
+		/* Average a few refresh period readings */
 		for (i = 0; i < p->nmeasprds; i++) {
 			int mp;
 	
-			if ((ev = i1disp_rd_meas_period(p, &mp)) != inst_ok)
+			if ((ev = i1disp_rd_meas_ref_period(p, &mp)) != inst_ok)
 				return ev;
 			if (mp == 0)
 				break;			/* Too dark to measure */
@@ -1029,10 +1088,10 @@ i1disp_do_fcal_setit(
 			p->sampfreq = 1.0/measp;	/* Measurement sample frequency */
 			DBG((dbgo,"Sample frequency measured = %f\n",p->sampfreq))
 		} else {
-			p->sampfreq = 60.0;
+			p->sampfreq = 60.0;	/* Integration time = 1.67 seconds */
 		}
 	} else {
-		p->sampfreq = 100.0;	/* Make integration clocks = 1e6, same as default */
+		p->sampfreq = 100.0;	/* Make integration clocks = 1e6 = 1.0 seconds, same as default */
 	}
 
 	/* Compute actual sampling time */
@@ -1049,7 +1108,7 @@ i1disp_do_fcal_setit(
 	/* Read the integration time (could it be limited by instrument?) */
 	if ((ev = i1disp_rd_int_time(p, &p->int_clocks) ) != inst_ok)
 		return ev;
-	DBG((dbgo,"Actual integration time = %d clocks\n",p->int_clocks))
+	DBG((dbgo,"Actual integration time = %d clocks = %f sec\n",p->int_clocks, p->int_clocks/p->clk_freq))
 
 	p->itset = 1;
 	return inst_ok;
@@ -1200,7 +1259,7 @@ i1disp_read_all_regs(
 	/* LCD/user calibration time */
 	if ((ev = i1disp_rdreg_word(p, &p->reg50_W, 50) ) != inst_ok)
 		return ev;
-	DBG((dbgo,"LCD/user calibration time = 0x%x = %s\n",p->reg50_W, ctime((time_t *)&p->reg50_W)))
+	DBG((dbgo,"LCD/user calibration time = 0x%x = %s\n",p->reg50_W, ctime_32(&p->reg50_W)))
 
 	/* LCD/user calibration flag */
 	if ((ev = i1disp_rdreg_short(p, &p->reg126_S, 126) ) != inst_ok)
@@ -1217,7 +1276,7 @@ i1disp_read_all_regs(
 	/* CRT/factory calibration flag */
 	if ((ev = i1disp_rdreg_word(p, &p->reg90_W, 90) ) != inst_ok)
 		return ev;
-	DBG((dbgo,"CRT/factory flag = 0x%x = %s\n",p->reg90_W, ctime((time_t *)&p->reg90_W)))
+	DBG((dbgo,"CRT/factory flag = 0x%x = %s\n",p->reg90_W, ctime_32(&p->reg90_W)))
 
 
 	/* Calibration factor */
@@ -1246,7 +1305,7 @@ i1disp_read_all_regs(
 	/* unknown */
 	if ((ev = i1disp_rdreg_word(p, &p->reg98_W, 98) ) != inst_ok)
 		return ev;
-	DBG((dbgo,"reg98 = 0x%x = %s\n",p->reg98_W,ctime((time_t *)&p->reg98_W)))
+	DBG((dbgo,"reg98 = 0x%x = %s\n",p->reg98_W,ctime_32(&p->reg98_W)))
 
 	/* unknown */
 	if ((ev = i1disp_rdreg_byte(p, &p->reg102_B, 102) ) != inst_ok)

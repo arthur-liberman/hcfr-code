@@ -81,7 +81,7 @@
 typedef enum {
 	i1d3_disppro    = 0,	/* i1 DisplayPro */
 	i1d3_munkdisp   = 1,	/* ColorMunki Display */
-	i1d3_oem        = 2,	/* CalMan/OEM ? */
+	i1d3_oem        = 2,	/* OEM */
 	i1d3_nec_ssp    = 3 	/* NEC SpectraSensor Pro */
 } i1d3_dtype;
 
@@ -102,8 +102,9 @@ struct _i1d3 {
 	int trig_return;			/* Emit "\n" after trigger */
 
 	/* Information and EEPROM values */
-	i1d3_dtype dtype;			/* Base type of instrument */
-	i1d3_dtype stype;			/* Sub type of instrument */
+	i1d3_dtype dtype;			/* Base type of instrument, ie i1d3_disppro or i1d3_munkdisp */
+	i1d3_dtype stype;			/* Sub type of instrument, ie. any of i1d3_dtype. */
+								/* (Only accurate if it needed unlocking). */
 	int status;					/* 0 if status is ok (not sure what this is) */
 	char prod_name[32];			/* "i1Display3 " or "ColorMunki Display" */
 	int prod_type;				/* 16 bit product type number. i1d3_disppro = 0x0001, */
@@ -122,6 +123,8 @@ struct _i1d3 {
 
 	/* Computed factors and state */
 	int refmode;				/* nz if in refresh display mode double int. time */
+	int rrset;					/* Flag, nz if the refresh rate has been determined */
+	double refperiod;			/* if > 0.0 in refmode, target int time quantization */
 	double clkrate;				/* Clockrate (12Mhz) */
 	double dinttime;			/* default integration time = 0.2 seconds */
 	double inttime;				/* current integration time = 0.2 seconds */

@@ -40,6 +40,11 @@
 	correctly, since the targets are in raw sensor value,
 	but the comparison is done after subtracting black ??
 	See the Munki implementation for an approach to fix this ??
+
+	It should be possible to add a refresh-display calibration
+	routine based on an emissive scan + the auto-correlation
+	(see i1d3.c). Whether this will noticably improve repeatibility
+	remains to be seen.
 */
 
 /*
@@ -57,6 +62,7 @@
 #include <time.h>
 #include <stdarg.h>
 #include <math.h>
+#include <fcntl.h>
 #ifndef SALONEINSTLIB
 #include "copyright.h"
 #include "aconfig.h"
@@ -939,6 +945,8 @@ i1pro_code i1pro_imp_set_mode(
 			m->mmode = mmode;
 			m->spec_en = spec_en ? 1 : 0;
 			return I1PRO_OK;
+		default:
+			break;
 	}
 	return I1PRO_INT_ILLEGALMODE;
 }
@@ -1677,7 +1685,7 @@ i1pro_code i1pro_imp_measure(
 
 	DBG((dbgo,"i1pro_imp_measure called\n"))
 	if (p->debug)
-		fprintf(stderr,"Taking %d measurments in %s%s%s%s mode called\n", nvals,
+		fprintf(stderr,"Taking %d measurments in %s%s%s%s%s mode called\n", nvals,
 		        s->emiss ? "Emission" : s->trans ? "Trans" : "Refl", 
 		        s->emiss && s->ambient ? " Ambient" : "",
 		        s->scan ? " Scan" : "",
@@ -2308,6 +2316,8 @@ static void write_doubles(i1pnonv *x, FILE *fp, double *dp, int n) {
 }
 
 /* Write an array of time_t's to the file. Set the error flag to nz on error */
+/* (This will cause file checksum fail if different executables on the same */
+/*  system have different time_t values) */
 static void write_time_ts(i1pnonv *x, FILE *fp, time_t *dp, int n) {
 
 	if (fwrite((void *)dp, sizeof(time_t), n, fp) != n) {
@@ -2338,6 +2348,8 @@ static void read_doubles(i1pnonv *x, FILE *fp, double *dp, int n) {
 }
 
 /* Read an array of time_t's from the file. Set the error flag to nz on error */
+/* (This will cause file checksum fail if different executables on the same */
+/*  system have different time_t values) */
 static void read_time_ts(i1pnonv *x, FILE *fp, time_t *dp, int n) {
 
 	if (fread((void *)dp, sizeof(time_t), n, fp) != n) {
@@ -3156,7 +3168,7 @@ i1pro_code i1pro_read_patches_1(
 ) {
 	i1pro_code ev = I1PRO_OK;
 	i1proimp *m = (i1proimp *)p->m;
-    
+
 	if (minnummeas <= 0)
 		return I1PRO_INT_ZEROMEASURES;
 	if (minnummeas > maxnummeas)
@@ -4656,7 +4668,7 @@ i1pro_code i1pro_extract_patches_multimeas(
 		PRDBG((dbgo,"Patch %d: consistency = %f%%, thresh = %f%%\n",pix,100.0 * cons, 100.0 * patch_cons_thr))
 		if (cons > patch_cons_thr) {
 			if (p->debug >= 1)
-				fprintf(stderr,"Patch recog failed - patch %d is inconsistent (%f%%)\n", k, cons);
+				fprintf(stderr,"Patch recog failed - patch %d is inconsistent (%f%%)\n",pix,cons);
 			rv |= 1;
 		}
 		pix++;
@@ -5282,6 +5294,12 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 	i1pro_xp xp[101];			/* Crossover points each side of filter */
 	i1pro_code ev = I1PRO_OK;
 	rspl *raw2wav;				/* Lookup from CCD index to wavelength */
+#ifdef HIGH_RES_PLOT
+	i1pro_fs fshape[100 * 16];  /* Existing filter shape */
+#endif /* HIGH_RES_PLOT */
+#ifdef EXISTING_SHAPE
+int ncp = 0;				/* Number of shape points */
+#endif /* EXISTING_SHAPE */
 #ifdef COMPUTE_DISPERSION
 	double spf[3];				/* Spread function parameters */
 #endif /* COMPUTE_DISPERSION */
@@ -5871,6 +5889,10 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 		{
 			double tot = 0.0;
 			double ccdweight[128], avgw;	/* Weighting determined by cell widths */
+#ifdef NEVER
+			int ii;
+			double ccdsum[128];
+#endif
 
 			/* Normalize the overall filter weightings */
 			for (j = 0; j < m->nwav2; j++)
@@ -6225,11 +6247,12 @@ int i1pro_imp_highres(i1pro *p) {
 
 /* Set to high resolution mode */
 i1pro_code i1pro_set_highres(i1pro *p) {
-	int i;
-	i1proimp *m = (i1proimp *)p->m;
 	i1pro_code ev = I1PRO_OK;
 
 #ifdef HIGH_RES
+	i1proimp *m = (i1proimp *)p->m;
+	int i;
+
 	if (m->hr_inited == 0) {
 		if ((ev = i1pro_create_hr(p)) != I1PRO_OK) {
 			return ev;
@@ -6261,11 +6284,12 @@ i1pro_code i1pro_set_highres(i1pro *p) {
 
 /* Set to standard resolution mode */
 i1pro_code i1pro_set_stdres(i1pro *p) {
-	int i;
-	i1proimp *m = (i1proimp *)p->m;
 	i1pro_code ev = I1PRO_OK;
 
 #ifdef HIGH_RES
+	int i;
+	i1proimp *m = (i1proimp *)p->m;
+
 	m->nwav = m->nwav1;
 	m->wl_short = m->wl_short1;
 	m->wl_long = m->wl_long1; 
@@ -7246,7 +7270,7 @@ i1pro_readmeasurement(
 	isdeb = p->debug;
 	p->icom->debug = 0;
 
-	if (isdeb) fprintf(stderr,"\ni1pro: Read measurement results inummeas %d, scanflag %d, bsize 0x%x @ %d msec\n",inummeas, scanflag, bsize, (stime = msec_time()) - m->msec);
+	if (isdeb) fprintf(stderr,"\ni1pro: Read measurement results inummeas %d, scanflag %d, address %p bsize 0x%x @ %d msec\n",inummeas, scanflag, buf, bsize, (stime = msec_time()) - m->msec);
 
 	extra = 1.0;		/* Extra timeout margin */
 
@@ -7770,7 +7794,7 @@ static int *i1data_get_int(i1data *d, i1key key, unsigned int index) {
 	if (k->type != i1_dtype_int)
 		return NULL;
 
-	if (index < 0 || index >= k->count)
+	if (index >= k->count)
 		return NULL;
 
 	return ((int *)k->data) + index;
@@ -7787,7 +7811,7 @@ static double *i1data_get_double(i1data *d, i1key key, double *data, unsigned in
 	if (k->type != i1_dtype_double)
 		return NULL;
 
-	if (index < 0 || index >= k->count)
+	if (index >= k->count)
 		return NULL;
 
 	return ((double *)k->data) + index;
@@ -8027,7 +8051,7 @@ static i1pro_code i1data_parse_eeprom(i1data *d, unsigned char *buf, unsigned in
 		return I1PRO_DATA_KEY_COUNT;
 
 	if (buf2short(buf + dir) != 1)	/* Must be 1 */
-		I1PRO_DATA_KEY_CORRUPT;
+		return I1PRO_DATA_KEY_CORRUPT;
 	
 	nokeys = buf2short(buf + dir + 2);	/* Bytes in key table */
 	if (nokeys < 300 || nokeys > 512)

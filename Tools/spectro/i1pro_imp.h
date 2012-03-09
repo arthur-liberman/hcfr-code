@@ -54,7 +54,7 @@ typedef enum {
 	i1p_amb_flash      = 6,
 	i1p_trans_spot     = 7,
 	i1p_trans_scan     = 8,
-	i1p_no_modes       = 9
+	i1p_no_modes       = 9		/* Number of modes */
 } i1p_mode;
 
 struct _i1pro_state {

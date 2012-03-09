@@ -156,16 +156,16 @@ static int icoms2spyd2_err(int se) {
 
 /* Take an int, and convert it into a byte buffer big endian */
 static void int2buf(unsigned char *buf, int inv) {
-	buf[0] = (inv >> 24) & 0xff;
-	buf[1] = (inv >> 16) & 0xff;
-	buf[2] = (inv >> 8) & 0xff;
-	buf[3] = (inv >> 0) & 0xff;
+	buf[0] = (unsigned char)(inv >> 24) & 0xff;
+	buf[1] = (unsigned char)(inv >> 16) & 0xff;
+	buf[2] = (unsigned char)(inv >> 8) & 0xff;
+	buf[3] = (unsigned char)(inv >> 0) & 0xff;
 }
 
 /* Take a short, and convert it into a byte buffer big endian */
 static void short2buf(unsigned char *buf, int inv) {
-	buf[0] = (inv >> 8) & 0xff;
-	buf[1] = (inv >> 0) & 0xff;
+	buf[0] = (unsigned char)(inv >> 8) & 0xff;
+	buf[1] = (unsigned char)(inv >> 0) & 0xff;
 }
 
 /* Take a short sized buffer, and convert it to an int big endian */
@@ -1380,7 +1380,7 @@ spyd2_ReadRegister(
 	ival = buf2ushort(&pbuf[0]);
 //	_val = (double)ival * 12.5;		/* Read temperature */
 
-	if (isdeb) fprintf(stderr,"Read Register %d returns %d ICOM err 0x%x\n", reg, ival, se);
+	if (isdeb) fprintf(stderr,"Read Register %d returns %d ICOM err 0x%x\n", ival, rv, se);
 
 	p->icom->debug = isdeb;
 
@@ -1492,9 +1492,9 @@ spyd2_rdreg_float(
 	return inst_ok;
 }
 
-unsigned int crctab[256];
+unsigned int spyd4_crctab[256];
 
-void crc32_init(void) {
+static void spyd4_crc32_init(void) {
     int i, j;
 
     unsigned int crc;
@@ -1507,18 +1507,18 @@ void crc32_init(void) {
             else
                 crc = crc >> 1;
         }
-        crctab[i] = crc;
+        spyd4_crctab[i] = crc;
 //		printf("crctab[%d] = 0x%08x\n",i,crctab[i]);
     }
 }
 
-static unsigned int crc32(unsigned char *data, int len) {
+static unsigned int spyd4_crc32(unsigned char *data, int len) {
     unsigned int        crc;
     int                 i;
     
     crc = ~0;
     for (i = 0; i < len; i++)
-		crc = crctab[(crc ^ *data++) & 0xff] ^ (crc >> 8);
+		crc = spyd4_crctab[(crc ^ *data++) & 0xff] ^ (crc >> 8);
     return ~crc;
 }
 
@@ -1532,7 +1532,7 @@ spyd2_checkEECRC(
 	unsigned int crct, crc;			/* Target value, computed value */
 	int i;
 
-	crc32_init();
+	spyd4_crc32_init();
 
 	if ((ev = spyd2_readEEProm(p, buf, 0, 1024)) != inst_ok)
 		return ev;
@@ -1543,7 +1543,7 @@ spyd2_checkEECRC(
 	bp = buf;
     crc = ~0;
 	for (i = 0; i < (1024 - 4); i++, bp++)
-		crc = crctab[(crc ^ *bp) & 0xff] ^ (crc >> 8);
+		crc = spyd4_crctab[(crc ^ *bp) & 0xff] ^ (crc >> 8);
     crc = ~crc;
 
 	if (p->debug) fprintf(stderr,"spyd2: EEProm CRC is 0x%x, should be 0x%x\n",crc,crct);
@@ -1708,7 +1708,7 @@ spyd2_GetReading(
 
 	/* Establish the frame rate detect threshold level */
 	/* (The Spyder 3 doesn't use this ?) */
-	clocks1 = (int)((double)(nframes * CLKRATE)/(10.0 * p->rrate));		/* Use 10% of measurement clocks */
+	clocks1 = (int)((nframes * CLKRATE)/(10 * p->rrate) + 0.5);		/* Use 10% of measurement clocks */
 
 	if ((ev = spyd2_GetMinMax(p, &clocks1, &min, &max)) != inst_ok)
 		return ev; 
@@ -1717,7 +1717,7 @@ spyd2_GetReading(
 	thresh = (max - min)/5 + min;			/* Threshold is at 80% of max brightness */
 	if (thresh == 0)
 		thresh = 65535;						/* Set to max, otherwise reading will be 0 */
-	frclocks = (int)(CLKRATE/p->rrate);
+	frclocks = (int)(CLKRATE/p->rrate + 0.5);
 	minfclks = frclocks/3;					/* Allow for 180 Hz */
 	maxfclks = (frclocks * 5)/2;			/* Allow for 24 Hz */
 
@@ -2586,7 +2586,7 @@ spyd4_load_cal(int debug) {
 	int no_paths = 0;
 	unsigned int size;
 	unsigned char *buf = NULL;
-	FILE *fp;
+	FILE *fp = NULL;
 	int nocals = 0;
 	int i, j;
 
@@ -2655,7 +2655,6 @@ spyd4_load_cal(int debug) {
 	if ((spyd4_cals = (xspect *)calloc(nocals, sizeof(xspect))) == NULL) {
 		if (buf != NULL)
 			free(buf);
-		fclose(fp);
 		return SPYD2_MALLOC;
 	}
 

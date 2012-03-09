@@ -230,7 +230,7 @@ static int gcc_bug_fix(int i) {
 void
 usage(int debug, iccss *cl) {
 	int i;
-	icoms *icom = 0;
+	icoms *icom;
 	inst_capability cap = 0;
 	fprintf(stderr,"Read Print Spot values, Version %s\n",ARGYLL_VERSION_STR);
 	fprintf(stderr,"Author: Graeme W. Gill, licensed under the GPL Version 2 or later\n");
@@ -298,6 +298,7 @@ usage(int debug, iccss *cl) {
 	fprintf(stderr," -E extrafilterfile   Apply extra filter compensation file\n");
 	fprintf(stderr," -x                   Display Yxy instead of Lab\n");
 	fprintf(stderr," -h                   Display LCh instead of Lab\n");
+	fprintf(stderr," -V                   Show running average and std. devation from ref.\n");
 #ifndef SALONEINSTLIB
 	fprintf(stderr," -T                   Display correlated color temperatures and CRI\n");
 #endif /* !SALONEINSTLIB */
@@ -329,7 +330,7 @@ usage(int debug, iccss *cl) {
 
 int main(int argc, char *argv[])
 {
-	int i,j;
+	int i, j;
 	int fa, nfa, mfa;				/* current argument we're looking at */
 	int verb = 0;
 	int debug = 0;
@@ -381,6 +382,10 @@ int main(int argc, char *argv[])
 	double rLab[3] = { -10.0, 0, 0};	/* Reference Lab */
 	double Yxy[3] = { 0.0, 0, 0};	/* Yxy value */
 	double LCh[3] = { 0.0, 0, 0};	/* LCh value */
+	double refstats = 0;			/* Print running avg & stddev against ref */
+	double rstat_n;					/* Stats N */
+	double rstat_Lab[3];			/* Stats sum of Lab's */
+	double rstat_Labsq[3];			/* Stats sum of Lab's squared */
 	int savdrd = 0;					/* At least one saved reading is available */
 	int ix;							/* Reading index number */
 	int loghead = 0;				/* NZ if log file heading has been printed */
@@ -419,7 +424,7 @@ int main(int argc, char *argv[])
 			if (argv[fa][1] == '?') {
 				usage(debug, cl);
 
-			} else if (argv[fa][1] == 'v' || argv[fa][1] == 'V') {
+			} else if (argv[fa][1] == 'v') {
 				verb = 1;
 
 			} else if (argv[fa][1] == 's') {
@@ -598,6 +603,10 @@ int main(int argc, char *argv[])
 			} else if (argv[fa][1] == 'h') {
 				doYxy = 0;
 				doLCh = 1;
+
+			/* Compute running average and standard deviation from ref. */
+			} else if (argv[fa][1] == 'V') {
+				refstats = 1;
 #ifndef SALONEINSTLIB
 
 			/* Show CCT etc. */
@@ -1503,6 +1512,13 @@ int main(int argc, char *argv[])
 				if (pspec) {
 					rsp = sp;		/* Save spectral reference too */
 				}
+				if (refstats) {
+					rstat_n = 1;
+					for (j = 0; j < 3; j++) {
+						rstat_Lab[j] = Lab[j];
+						rstat_Labsq[j] = Lab[j] * Lab[j];
+					}
+				}
 				printf("\n Reference is now Lab: %f %f %f\n", rLab[0], rLab[1], rLab[2]);
 			} else {
 				printf("\n No previous reading to use as reference\n");
@@ -1585,6 +1601,7 @@ int main(int argc, char *argv[])
 			} else {
 				dofwa = 1;
 			}
+
 		}
 
 		/* Setup FWA compensation */
@@ -1873,6 +1890,19 @@ int main(int argc, char *argv[])
 			}
 
 			if (rLab[0] >= -1.0) {
+				if (refstats) {
+					double avg[3], sdev[3];
+					rstat_n++;
+					for (j = 0; j < 3; j++) {
+						rstat_Lab[j] += Lab[j];
+						rstat_Labsq[j] += Lab[j] * Lab[j];
+
+						avg[j] = rstat_Lab[j]/rstat_n;
+						sdev[j] = sqrt(rstat_n * rstat_Labsq[j] - rstat_Lab[j] * rstat_Lab[j])/rstat_n;
+					}
+					printf(" Lab stats %.0f: Avg %f %f %f, S.Dev %f %f %f\n",
+					rstat_n, avg[0], avg[1], avg[2], sdev[0], sdev[1], sdev[2]);
+				}
 #ifndef SALONEINSTLIB
 				printf(" Delta E to reference is %f %f %f (%f, CIE94 %f)\n",
 				Lab[0] - rLab[0], Lab[1] - rLab[1], Lab[2] - rLab[2],

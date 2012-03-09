@@ -29,11 +29,12 @@ AS        = as
 CCFLAGSDEF   = -DUNIX -c
 CC        = cc $(CCFLAGS) $(STDHDRS)
 CCOF      = -o
-LINKFLAGSDEF = -lm -framework Carbon -framework IOKit -framework CoreFoundation
+LINKFLAGSDEF = -lm -framework Carbon -framework IOKit -framework CoreFoundation -framework AudioToolbox
 LINKLIBS  = 
 LINK      = cc $(LINKFLAGS) $(LINKLIBS)
 LINKOF    = -o 
 CP        = cp
+RM        = rm
 
 .SUFFIXES:
 .SUFFIXES: .c $(SUFLIB) $(SUFOBJ) $(SUFEXE)

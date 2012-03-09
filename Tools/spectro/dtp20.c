@@ -102,14 +102,13 @@ extract_ec(char *s) {
 static int icoms2dtp20_err(int se) {
 	if (se & ICOM_USERM) {
 		se &= ICOM_USERM;
-		if (se == ICOM_USER)
-			return DTP20_USER_ABORT;
-		if (se == ICOM_TERM)
-			return DTP20_USER_TERM;
 		if (se == ICOM_TRIG)
 			return DTP20_USER_TRIG;
 		if (se == ICOM_CMND)
 			return DTP20_USER_CMND;
+		if (se == ICOM_TERM)
+			return DTP20_USER_TERM;
+		return DTP20_USER_ABORT;
 	}
 	if (se != ICOM_OK) {
 		if (se & ICOM_TO)
@@ -144,7 +143,7 @@ double to) {			/* Timout in seconts */
 	if (insize > 0) {
 		if ((se = p->icom->usb_control(p->icom, 0x41, 0x00, 0x00, 0x00, (unsigned char *)in, insize, to)) != ICOM_OK) {
 			if (isdeb) fprintf(stderr,"send failed ICOM err 0x%x\n",se);
-			/* If something other than a user terminat, trigger or command */
+			/* If something other than a user terminate, trigger or command */
 			if ((se & ~ICOM_USERM) != ICOM_OK || (se & ICOM_USERM) == ICOM_USER) {
 				p->icom->debug = isdeb;
 				return dtp20_interp_code((inst *)p, icoms2dtp20_err(se));
@@ -209,7 +208,7 @@ double top) {		/* Timout in seconds */
 	if (insize > 0) {
 		if ((se = p->icom->usb_control(p->icom, 0x41, 0x00, 0x00, 0x00, (unsigned char *)in, insize, top)) != ICOM_OK) {
 			if (isdeb) fprintf(stderr,"send failed ICOM err 0x%x\n",se);
-			/* If something other than a user terminat, trigger or command */
+			/* If something other than a user terminate, trigger or command */
 			if ((se & ~ICOM_USERM) != ICOM_OK || (se & ICOM_USERM) == ICOM_USER) {
 				p->icom->debug = isdeb;
 				return dtp20_interp_code((inst *)p, icoms2dtp20_err(se));

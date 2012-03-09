@@ -379,8 +379,8 @@ hcfr_comp_matrix(
 static inst_code
 hcfr_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) {
 	hcfr *p = (hcfr *) pp;
-	inst_code ev = inst_ok;
 	icomuflags usbflags = icomuf_no_open_clear | icomuf_detach;
+	inst_code ev = inst_ok;
 
 #if defined(__APPLE__) && defined(__i386__)
 	/* Except on Intel OS X 10.4/5 for some reasone. */
@@ -676,6 +676,9 @@ static inst_code hcfr_get_opt_details(
 inst *pp,
 inst_optdet_type m,	/* Requested option detail type */
 ...) {				/* Status parameters */                             
+	hcfr *p = (hcfr *)pp;
+	inst_code rv = inst_ok;
+
 	if (m == inst_optdet_disptypesel) {
 		va_list args;
 		int *pnsels;

@@ -77,17 +77,20 @@ static inst_code huey_check_unlock(huey *p);
 /* Implementation */
 
 /* Interpret an icoms error into a HUEY error */
-static int icoms2huey_err(int se) {
+/* If torc is nz, then a trigger or command is OK, */
+/* othewise  they are treated as an abort. */
+static int icoms2huey_err(int se, int torc) {
 	if (se & ICOM_USERM) {
 		se &= ICOM_USERM;
-		if (se == ICOM_USER)
-			return HUEY_USER_ABORT;
+		if (torc) {
+			if (se == ICOM_TRIG)
+				return HUEY_USER_TRIG;
+			if (se == ICOM_CMND)
+				return HUEY_USER_CMND;
+		}
 		if (se == ICOM_TERM)
 			return HUEY_USER_TERM;
-		if (se == ICOM_TRIG)
-			return HUEY_USER_TRIG;
-		if (se == ICOM_CMND)
-			return HUEY_USER_CMND;
+		return HUEY_USER_ABORT;
 	}
 	if (se != ICOM_OK)
 		return HUEY_COMS_FAIL;
@@ -219,11 +222,19 @@ huey_command(
 			return huey_interp_code((inst *)p, HUEY_COMS_FAIL);
 		}
 	}
-	rv = huey_interp_code((inst *)p, icoms2huey_err(ua));
+	rv = huey_interp_code((inst *)p, icoms2huey_err(ua, 0));
 	if (isdeb) fprintf(stderr," ICOM err 0x%x\n",ua);
-	if (wbytes != 8)
+
+	if (rv == inst_ok && wbytes != 8)
 		rv = huey_interp_code((inst *)p, HUEY_BAD_WR_LENGTH);
+
 	if (rv != inst_ok) {
+		/* Flush any response */
+		if (p->icom->is_hid) {
+			p->icom->hid_read(p->icom, buf, 8, &rbytes, to);
+		} else {
+			p->icom->usb_read(p->icom, 0x81, buf, 8, &rbytes, to);
+		} 
 		p->icom->debug = isdeb;
 		return rv;
 	}
@@ -246,12 +257,11 @@ huey_command(
 			return huey_interp_code((inst *)p, HUEY_COMS_FAIL);
 		}
 	}
-	rv = huey_interp_code((inst *)p, icoms2huey_err(ua));
-	if (rbytes != 8)
+	rv = huey_interp_code((inst *)p, icoms2huey_err(ua, 0));
+	if (rv == inst_ok && rbytes != 8)
 		rv = huey_interp_code((inst *)p, HUEY_BAD_RD_LENGTH);
-	if (rv == inst_ok && buf[1] != cc) {
+	if (rv == inst_ok && buf[1] != cc)
 		rv = huey_interp_code((inst *)p, HUEY_BAD_RET_CMD);
-	}
 		
 	/* Some commands don't use the first response, but need to */
 	/* fetch a second response, with a longer timeout. */
@@ -273,8 +283,8 @@ huey_command(
 				return huey_interp_code((inst *)p, HUEY_COMS_FAIL);
 			}
 		}
-		rv = huey_interp_code((inst *)p, icoms2huey_err(ua));
-		if (rbytes != 8)
+		rv = huey_interp_code((inst *)p, icoms2huey_err(ua, 0));
+		if (rv == inst_ok && rbytes != 8)
 			rv = huey_interp_code((inst *)p, HUEY_BAD_RD_LENGTH);
 		if (rv == inst_ok && buf[1] != cc) {
 			rv = huey_interp_code((inst *)p, HUEY_BAD_RET_CMD);
@@ -931,7 +941,7 @@ huey_read_all_regs(
 	/* LCD/user calibration time */
 	if ((ev = huey_rdreg_word(p, &p->LCD_caltime, 50) ) != inst_ok)
 		return ev;
-	DBG((dbgo,"LCD/user calibration time = 0x%x = %s\n",p->LCD_caltime, ctime((time_t *)&p->LCD_caltime)))
+	DBG((dbgo,"LCD/user calibration time = 0x%x = %s\n",p->LCD_caltime, ctime_32(&p->LCD_caltime)))
 
 
 	/* CRT/factory calibration values */
@@ -943,7 +953,7 @@ huey_read_all_regs(
 	/* CRT/factory calibration flag */
 	if ((ev = huey_rdreg_word(p, &p->CRT_caltime, 90) ) != inst_ok)
 		return ev;
-	DBG((dbgo,"CRT/factory flag = 0x%x = %s\n",p->CRT_caltime, ctime((time_t *)&p->CRT_caltime)))
+	DBG((dbgo,"CRT/factory flag = 0x%x = %s\n",p->CRT_caltime, ctime_32(&p->CRT_caltime)))
 
 
 	/* Hard coded in Huey */
@@ -993,6 +1003,7 @@ static inst_code
 huey_compute_factors(
 	huey *p				/* Object */
 ) {
+
 	/* Check that certain value are valid */
 	if (p->ser_no == 0xffffffff)
 		/* (It appears that some instruments have no serial number!) */
@@ -1159,7 +1170,7 @@ ipatch *val) {		/* Pointer to instrument patch value */
 		int se;
 		if ((se = icoms_poll_user(p->icom, 1)) != ICOM_TRIG) {
 			/* Abort, term or command */
-			return huey_interp_code((inst *)p, icoms2huey_err(se));
+			return huey_interp_code((inst *)p, icoms2huey_err(se, 1));
 		}
 		user_trig = 1;
 		if (p->trig_return)

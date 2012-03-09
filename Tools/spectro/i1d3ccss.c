@@ -24,6 +24,7 @@
 #include <string.h>
 #if defined (NT)
 #define WIN32_LEAN_AND_MEAN
+#include <io.h>
 #include <windows.h>
 #endif
 #ifdef UNIX
@@ -1592,7 +1593,7 @@ static xfile *inno_extract(xfile *xi, char *tfilename, int verb) {
 /* just need to identify where it is and its length. */
 /* (This will work on any file that has the .cab file uncompressed and contiguous) */
 static xfile *msi_extract(xfile *xi, char *tname, int verb) {
-	int i;
+	int i ;
 	xfile *xf = NULL;
 	char *fid = "i1d3.xrdevice";		/* File in .cab to look for */
 	unsigned long fle = strlen(fid);

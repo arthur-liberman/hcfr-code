@@ -13,27 +13,29 @@ CMDSEP    = &
 INCFLAG       = /I
 DEFFLAG       = /D
 UNDEFFLAG     = /U
-CCOPTFLAG     = /Ox /GB
+CCOPTFLAG     = /Ox
 CCDEBUGFLAG   = /Z7 /Od
 CCPROFFLAG    = /Z7
 LINKDEBUGFLAG = /DEBUG
 LINKPROFFLAG  = /PROFILE
 
-STDHDRSDEF   = $(MSVCDIR)\include
+STDHDRSDEF   = "$(VCINSTALLDIR)\include"
+LINKDIR      = $(MSSDK)
 
 MAKEU     = nmake
 LIBU      = lib
 LIBOF     = /OUT:
 RANLIB    = rem
 AS        = masm386
-CCFLAGSDEF   = /DNT  /MD /c			# DLL build by default
+CCFLAGSDEF   = /DNT  /MD /c /W3	 $(DEFFLAG)_CRT_SECURE_NO_DEPRECATE $(DEFFLAG)_CRT_NONSTDC_NO_DEPRECATE
 CC        = cl /nologo $(CCFLAGS) $(STDHDRS) $(WIN_STDHDRS)
 CCOF      = /Fo
-LINKLIBS  = $(MSVCDIR)/lib/user32.lib $(MSVCDIR)/lib/gdi32.lib $(MSVCDIR)/lib/advapi32.lib $(MSVCDIR)/lib/setupapi.lib $(MSVCDIR)/lib/ole32.lib
+LINKLIBS  = "$(LINKDIR)\lib\user32.lib" "$(LINKDIR)\lib\gdi32.lib" "$(LINKDIR)\lib\advapi32.lib" "$(LINKDIR)\lib\setupapi.lib" "$(LINKDIR)\lib\ole32.lib"
 LINKFLAGSDEF = /link /INCREMENTAL:NO
 LINK      = link $(LINKFLAGS)
 LINKOF    = /OUT:
 CP        = copy
+RM        = del
 
 .SUFFIXES:
 .SUFFIXES: .c $(SUFLIB) $(SUFOBJ) $(SUFEXE)

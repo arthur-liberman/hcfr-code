@@ -34,6 +34,7 @@ LINKLIBS  =
 LINK      = cc $(LINKFLAGS) $(LINKLIBS)
 LINKOF    = -o 
 CP        = cp
+RM        = rm
 
 .SUFFIXES:
 .SUFFIXES: .c $(SUFLIB) $(SUFOBJ) $(SUFEXE)
