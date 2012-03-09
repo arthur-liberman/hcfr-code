@@ -251,6 +251,63 @@ CColor ArgyllMeterWrapper::getLastReading() const
     return m_lastReading;
 }
 
+int ArgyllMeterWrapper::getNumberOfDisplayTypes()
+{
+    checkMeterIsInitialized();
+    if(m_meter->capabilities(m_meter) & inst_emis_disptype)
+    {
+        inst_disptypesel* displayTypes;
+        int numItems;
+        if (m_meter->get_opt_details(m_meter, inst_optdet_disptypesel, &numItems, &displayTypes) != inst_ok) 
+        {
+            return 0;
+        }
+        return numItems;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+const char* ArgyllMeterWrapper::getDisplayTypeText(int displayModeIndex)
+{
+    checkMeterIsInitialized();
+    if(m_meter->capabilities(m_meter) & inst_emis_disptype)
+    {
+        inst_disptypesel* displayTypes;
+        int numItems;
+        if (m_meter->get_opt_details(m_meter, inst_optdet_disptypesel, &numItems, &displayTypes) != inst_ok) 
+        {
+            return "Invalid Display Type";
+        }
+        if(displayModeIndex >= numItems)
+        {
+            return "Invalid Display Type";
+        }
+        return displayTypes[displayModeIndex].desc;
+    }
+    else
+    {
+        return "Invalid Display Type";
+    }
+}
+
+int ArgyllMeterWrapper::getDisplayType() const
+{
+    return m_displayType;
+}
+
+void ArgyllMeterWrapper::setDisplayType(int displayMode)
+{
+    m_displayType = displayMode;
+    inst_code instCode = m_meter->set_opt_mode(m_meter, inst_opt_disp_type, displayMode);
+    if(instCode != inst_ok)
+    {
+        throw std::logic_error("Set Display Type failed");
+    }
+}
+
 ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading()
 {
     checkMeterIsInitialized();

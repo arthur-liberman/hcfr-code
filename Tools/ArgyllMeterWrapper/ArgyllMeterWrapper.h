@@ -63,8 +63,10 @@ public:
 
     CColor getLastReading() const;
 
-    int getNumberOfDisplayModes() const;
-    const char* getDisplayModeText(int displayModeIndex);
+    int getNumberOfDisplayTypes();
+    const char* getDisplayTypeText(int displayModeIndex);
+    int getDisplayType() const;
+    void setDisplayType(int displayMode);
 
     // calibrate the meter
     // this should be called 
