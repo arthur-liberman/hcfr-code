@@ -27,7 +27,7 @@
 #include "libHCFR/Color.h"
 #include <string>
 #include <vector>
-#include <vadefs.h>
+#include <stdarg.h>
 
 struct _inst;
 

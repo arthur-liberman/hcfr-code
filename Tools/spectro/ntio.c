@@ -155,7 +155,7 @@ icoms *p
 		}
 		if ((p->paths[p->npaths] = malloc(sizeof(icompath))) == NULL)
 			error("icoms: malloc failed!");
-		if ((p->paths[p->npaths]->path = strdup(value)) == NULL)
+		if ((p->paths[p->npaths]->path = _strdup(value)) == NULL)
 			error("icoms: strdup failed!");
 #ifdef ENABLE_USB
 		p->paths[p->npaths]->dev = NULL;
@@ -277,7 +277,7 @@ word_length	 word)
 			if ((p->ppath = malloc(sizeof(icompath))) == NULL)
 				error("malloc() failed on com port path");
 			*p->ppath = *p->paths[port-1];				/* Structure copy */
-			if ((p->ppath->path = strdup(p->paths[port-1]->path)) == NULL)
+			if ((p->ppath->path = _strdup(p->paths[port-1]->path)) == NULL)
 				error("strdup() failed on com port path");
 			p->port = port;
 

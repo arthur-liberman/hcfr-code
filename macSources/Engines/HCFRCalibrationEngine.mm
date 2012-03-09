@@ -805,7 +805,7 @@
   catch (MatrixException e)
   {
     // on la converti en exception obj-c qui sera gérée par le calibration Engine.
-    [[NSException exceptionWithName:@"MatrixException" reason:[NSString stringWithCString:e.getMessage()] userInfo:nil] raise];
+    [[NSException exceptionWithName:@"MatrixException" reason:[NSString stringWithUTF8String:e.getMessage()] userInfo:nil] raise];
   }
   return IdentityMatrix(3);
 }

@@ -853,7 +853,7 @@ void HCFRSensorUpdaterDeviceAdded(void * refCon, io_iterator_t iterator)
   UInt16                      release;
 	HCFRSensorUpdater           *updater = (HCFRSensorUpdater*)refCon;
 
-  while (usbDevice = IOIteratorNext(iterator))
+  while ((usbDevice = IOIteratorNext(iterator)))
   {
     // on crée un plugin pour le device
     // ce plugin sera la connection entre l'appli et le kernel
@@ -905,7 +905,7 @@ void HCFRSensorUpdaterDeviceRemoved(void * refCon, io_iterator_t iterator)
 	kern_return_t               kr;
   io_service_t                object;
   
-  while (object = IOIteratorNext(iterator))
+  while ((object = IOIteratorNext(iterator)))
 	 {
     kr = IOObjectRelease(object);
     if (kr != kIOReturnSuccess)

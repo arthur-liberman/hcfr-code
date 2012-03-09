@@ -104,14 +104,14 @@ static HCFRKiDevice *sharedDevice = nil;
 {
   return self;
 }
-/*- (id)retain
+- (id)retain
 {
   return [super retain];
-}*/
-/*- (unsigned)retainCount
+}
+- (unsigned)retainCount
 {
   return UINT_MAX;  // Cet objet ne peut pas être releasé
-}*/
+}
 - (void)release
 {
   @synchronized(self) {
@@ -130,10 +130,10 @@ static HCFRKiDevice *sharedDevice = nil;
     }
   }
 }
-/*- (id)autorelease
+- (id)autorelease
 {
   return self;
-}*/
+}
 
 
 #pragma mark Fonctions d'initialisation
@@ -226,7 +226,7 @@ static HCFRKiDevice *sharedDevice = nil;
   if (returnCode <= 0)
     return @"N/A";
   
-  return [NSString stringWithCString:readBuffer];
+  return [NSString stringWithUTF8String:readBuffer];
 }
 -(NSString*) loadHardwareSensorVersion
 {
@@ -241,7 +241,7 @@ static HCFRKiDevice *sharedDevice = nil;
   if (returnCode <= 0)
     return @"N/A";
   
-  return [NSString stringWithCString:readBuffer];
+  return [NSString stringWithUTF8String:readBuffer];
 }
 /*!
     @function 
@@ -529,7 +529,7 @@ void deviceAdded(void * refCon, io_iterator_t iterator)
 //  NSLog (@"kiDevice : device added");
   
 //  NSLog (@"deviceAdded called, running through devices");
-	while (addedDevice = IOIteratorNext(iterator))
+  while ((addedDevice = IOIteratorNext(iterator)))
   {
 //    NSLog (@"processing device ...");
 
@@ -584,7 +584,7 @@ void deviceRemoved(void * refCon, io_iterator_t iterator)
   io_object_t   addedDevice;
   CFTypeRef     devicePathAsCFString = nil;
   
-	while (addedDevice = IOIteratorNext(iterator))
+	while ((addedDevice = IOIteratorNext(iterator)))
   {
     // on vérifie que le service série correspond bien à un périphérique USB
     io_service_t usbDevice;

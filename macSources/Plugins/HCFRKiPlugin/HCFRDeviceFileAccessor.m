@@ -144,7 +144,7 @@ unsigned int readData (int fileDescriptor, char* buff, int bufferSize, unsigned 
       returnCode = 0; // aucun caractère lu
     
     loopIndex ++;
-    NSLog (@"loop %d, return code %d", loopIndex, returnCode);
+    NSLog (@"loop %d, return code %ld", loopIndex, returnCode);
   }
   while ( (returnCode == -1) && (loopIndex < 2) );
   
@@ -199,7 +199,7 @@ unsigned int readData (int fileDescriptor, char* buff, int bufferSize, unsigned 
 
 -(NSString*)path
 {
-  return [NSString stringWithCString:filePath];
+  return [NSString stringWithCString:filePath encoding:NSUTF8StringEncoding];
 }
 @end
 
@@ -235,7 +235,7 @@ unsigned int readLine (int fileDescriptor, char* buff, int bufferSize, unsigned 
       if (returnCode == -1 && errno == EBADF)
         return -1;
       
-      NSLog (@"readline : returnCode = %d, errno = %d", returnCode, errno);
+      NSLog (@"readline : returnCode = %ld, errno = %d", returnCode, errno);
       
       loopCounter ++;
     }

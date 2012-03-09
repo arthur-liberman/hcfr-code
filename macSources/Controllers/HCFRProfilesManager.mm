@@ -383,7 +383,7 @@
       
       if (downloadedFileName != nil)
         [downloadedFileName release];
-      downloadedFileName = [[NSString stringWithCString:cFileName] retain];
+      downloadedFileName = [[NSString stringWithUTF8String:cFileName] retain];
       
       if ([self checkIfProfileNeedsUpdate:&currentProfileInfos])
       {
@@ -411,7 +411,7 @@
 
 -(BOOL) checkIfProfileNeedsUpdate:(ProfileFileInfos*)profile
 {
-  NSString    *profileName = [NSString stringWithCString:profile->fileName.c_str()];
+  NSString    *profileName = [NSString stringWithUTF8String:profile->fileName.c_str()];
   
   // on vérifie si le profile existe
   // Si il exite, on recupère le path complet

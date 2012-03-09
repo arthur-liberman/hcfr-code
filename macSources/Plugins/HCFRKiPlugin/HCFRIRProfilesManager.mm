@@ -529,10 +529,10 @@ const IRProfileCodeTypes  tagToTypeArray[5] = {IRProfileDownArrowCode, IRProfile
   [newProfile setName:[path lastPathComponent]];
   [newProfile setDescription:[NSString stringWithFormat:HCFRLocalizedString(@"This profile was imported from file %s",
                                                                             @"This profile was imported from file %s"), filePath]];
-  [newProfile setCode:[NSString stringWithCString:fileReader.getNextCodeString()] forType:IRProfileNextChapterCode];
-  [newProfile setCode:[NSString stringWithCString:fileReader.getOkCodeString()] forType:IRProfileOkCode];
-  [newProfile setCode:[NSString stringWithCString:fileReader.getDownCodeString()] forType:IRProfileDownArrowCode];
-  [newProfile setCode:[NSString stringWithCString:fileReader.getRightCodeString()] forType:IRProfileRightArrowCode];
+  [newProfile setCode:[NSString stringWithUTF8String:fileReader.getNextCodeString()] forType:IRProfileNextChapterCode];
+  [newProfile setCode:[NSString stringWithUTF8String:fileReader.getOkCodeString()] forType:IRProfileOkCode];
+  [newProfile setCode:[NSString stringWithUTF8String:fileReader.getDownCodeString()] forType:IRProfileDownArrowCode];
+  [newProfile setCode:[NSString stringWithUTF8String:fileReader.getRightCodeString()] forType:IRProfileRightArrowCode];
   
   [newProfile setDelay:fileReader.getMenuNavigationLatency() forType:IRProfileMenuNavigationDelay];
   [newProfile setDelay:fileReader.getMenuValidationLatency() forType:IRProfileMenuValidationDelay];

@@ -553,7 +553,7 @@ int xdg_bds(
 		for (cp = path; *cp != '\000';) {
 			int rlen = 0;	/* Number of chars of search path up to subpath & filename */
 			char *pp;
-
+	
 			/* Copy search path */
 			if ((ep = strchr(cp, SSEP)) == NULL)
 				ep = cp + strlen(cp);
