@@ -200,9 +200,15 @@ colorhug_command(colorhug *p,
 	rv = colorhug_interp_code((inst *)p, icoms2colorhug_err(ua));
 	if (isdeb)
 		fprintf(stderr,"colorhug: ICOM err 0x%x\n",ua);
-	if (wbytes != in_size + 1)
+	if (rv == inst_ok && wbytes != in_size + 1)
 		rv = colorhug_interp_code((inst *)p, COLORHUG_BAD_WR_LENGTH);
 	if (rv != inst_ok) {
+		/* Flush any response */
+		if (p->icom->is_hid) {
+			p->icom->hid_read(p->icom, buf, out_size + 2, &rbytes, timeout);
+		} else {
+			p->icom->usb_read(p->icom, 0x81, buf, out_size + 2, &rbytes, timeout);
+		}
 		p->icom->debug = isdeb;
 		return rv;
 	}
@@ -229,12 +235,14 @@ colorhug_command(colorhug *p,
 		/* deal with command error */
 		if (rbytes == 2 && buf[0] != COLORHUG_OK) {
 			rv = colorhug_interp_code((inst *)p, buf[0]);
+			p->icom->debug = isdeb;
 			return rv;
 		}
 
 		/* deal with underrun or overrun */
 		if (rbytes != out_size + 2) {
 			rv = colorhug_interp_code((inst *)p, COLORHUG_BAD_RD_LENGTH);
+			p->icom->debug = isdeb;
 			return rv;
 		}
 
@@ -250,15 +258,13 @@ colorhug_command(colorhug *p,
 		}
 	}
 	rv = colorhug_interp_code((inst *)p, icoms2colorhug_err(ua));
-	if (rv != inst_ok)
-		return rv;
 
 	/* check the command was the same */
-	if (buf[1] != cmd) {
+	if (rv == inst_ok && buf[1] != cmd) {
 		rv = colorhug_interp_code((inst *)p, COLORHUG_BAD_RET_CMD);
 		return rv;
 	}
-	if (out != NULL) {
+	if (rv == inst_ok && out != NULL) {
 		memcpy(out, buf + 2, out_size);
 	}
 	if (isdeb) {
@@ -302,7 +308,7 @@ colorhug_set_LEDs(colorhug *p, int mask)
 	ev = colorhug_command(p, ch_set_leds,
 						  ibuf, sizeof (ibuf), /* input */
 						  NULL, 0, /* output */
-						  1.0);
+						  2.0);
 	return ev;
 }
 
@@ -395,7 +401,7 @@ colorhug_set_multiplier (colorhug *p, int multiplier)
 	ev = colorhug_command(p, ch_set_mult,
 						  ibuf, sizeof (ibuf),
 						  NULL, 0,
-						  1.0);
+						  2.0);
 	return ev;
 }
 
@@ -411,7 +417,7 @@ colorhug_set_integral (colorhug *p, int integral)
 	ev = colorhug_command(p, ch_set_integral,
 						  ibuf, sizeof (ibuf),
 						  NULL, 0,
-						  1.0);
+						  2.0);
 	return ev;
 }
 

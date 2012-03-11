@@ -270,48 +270,63 @@ struct _icoms *p
 		/* Find all the matching HID devices */
 		for (;;) {
 			io_object_t ioob;						/* HID object found */
-		    CFMutableDictionaryRef hidprops = 0;	/* HID Device properties */
-			CFNumberRef vref, pref;
+			CFNumberRef vref, pref;					/* HID Vendor and Product ID propeties */
 			unsigned int vid = 0, pid = 0;
+			instType itype;
 
 		    if ((ioob = IOIteratorNext(mit)) == 0)
 				break;
 
-			/* Get the devices vid and pid */
-			if (IORegistryEntryCreateCFProperties(ioob, &hidprops,
-					kCFAllocatorDefault, kNilOptions) != KERN_SUCCESS || hidprops == 0)
-				goto continue1;
-
-			if ((vref = CFDictionaryGetValue(hidprops, CFSTR(kIOHIDVendorIDKey))) != 0) {
+			/* Get the two properies we need. [ Doing IORegistryEntryCreateCFProperty() is much faster */
+			/* than IORegistryEntryCreateCFProperties() in some cases.] */
+			if ((vref = IORegistryEntryCreateCFProperty(ioob, CFSTR(kIOHIDVendorIDKey),
+			                                         kCFAllocatorDefault,kNilOptions)) != 0) {
 				CFNumberGetValue(vref, kCFNumberIntType, &vid);
+			    CFRelease(vref);
 			}
-			if ((pref = CFDictionaryGetValue(hidprops, CFSTR(kIOHIDProductIDKey))) != 0) {
+			if ((pref = IORegistryEntryCreateCFProperty(ioob, CFSTR(kIOHIDProductIDKey),
+			                                         kCFAllocatorDefault,kNilOptions)) != 0) {
 				CFNumberGetValue(pref, kCFNumberIntType, &pid);
+			    CFRelease(pref);
 			}
-
-			CFRelease(hidprops);		// Wont crash if you don't free individual dictionary items that are owned by the dictionary
-			hidprops = NULL;
 
 			/* If it's a device we're looking for */
-			if (inst_usb_match(vid, pid) != instUnknown) {
-				int i;
-				for (i = 0; i < p->npaths; i++) {	/* Locate it in the current list */
-					if (p->paths[i]->dev != NULL
-					 && p->paths[i]->vid == vid && p->paths[i]->pid == pid) {
+			if ((itype = inst_usb_match(vid, pid)) != instUnknown) {
+				char pname[400];
+				if (p->debug) fprintf(stderr,"found HID device '%s' that we're looking for\n",inst_name(itype));
 
-						if ((p->paths[i]->hev = (hid_device *)calloc(sizeof(hid_device), 1)) == NULL)
-							error("icoms: calloc failed!");
-
-						p->paths[i]->hev->ioob = ioob;
-						usb_del_usb_device(p->paths[i]->dev);	/* Done with this */
-						p->paths[i]->dev = NULL;	/* (Points to libusb allocation) */
-						ioob = 0;
-						break;
-					}
+				/* Create human readable path/identification */
+				/* (There seems to be no easy way of creating an interface no, without */
+				/*  heroic efforts looking through the IO registry, so don't try.) */
+				sprintf(pname,"hid: (%s)", inst_name(itype));
+		
+				/* Add the path to the list */
+				if (p->paths == NULL) {
+					if ((p->paths = (icompath **)calloc(sizeof(icompath *), 1 + 1)) == NULL)
+						error("icoms: calloc failed!");
+				} else {
+					if ((p->paths = (icompath **)realloc(p->paths,
+					                     sizeof(icompath *) * (p->npaths + 2))) == NULL)
+						error("icoms: realloc failed!");
+					p->paths[p->npaths+1] = NULL;
 				}
+				if ((p->paths[p->npaths] = calloc(sizeof(icompath), 1)) == NULL)
+					error("icoms: calloc failed!");
+				p->paths[p->npaths]->vid = vid;
+				p->paths[p->npaths]->pid = pid;
+				p->paths[p->npaths]->dev = NULL;		/* Make sure it's NULL */
+				if ((p->paths[p->npaths]->hev = (hid_device *)calloc(sizeof(hid_device), 1))
+				                                                                     == NULL)
+					error("icoms: calloc failed!");
+				p->paths[p->npaths]->hev->ioob = ioob;
+				ioob = 0;			/* Don't release it */
+				p->paths[p->npaths]->itype = itype;
+				if ((p->paths[p->npaths]->path = strdup(pname)) == NULL)
+					error("icoms: strdup failed!");
+				p->npaths++;
+				p->paths[p->npaths] = NULL;
 			}
-		continue1:
-			if (ioob != 0)
+			if (ioob != 0)		/* If we haven't kept it */
 			    IOObjectRelease(ioob);		/* Release found object */
 		}
 	    IOObjectRelease(mit);			/* Release the itterator */
@@ -571,6 +586,11 @@ char **pnames			/* List of process names to try and kill before opening */
 			        != kIOReturnSuccess || p->hidd->evsrc == NULL)
 				error("Creating event source on HID device '%s' failed",p->ppath->path);
 
+//			p->hidd->rlr = CFRetain(CFRunLoopGetCurrent());
+			p->hidd->rlr = CFRunLoopGetCurrent();
+
+			CFRunLoopAddSource(p->hidd->rlr, p->hidd->evsrc, kCFRunLoopDefaultMode);
+
 		}
 #endif /* __APPLE__ */
 
@@ -671,10 +691,6 @@ icoms_hid_read_th(icoms *p,
 		/* Setup for callback */
 		p->hidd->result = -1;
 		p->hidd->bread = 0;
-        
-
-        p->hidd->rlr = CFRunLoopGetCurrent();
-        CFRunLoopAddSource(p->hidd->rlr, p->hidd->evsrc, kCFRunLoopDefaultMode);
 
 		if ((*(p->hidd->device))->setInterruptReportHandlerCallback(p->hidd->device,
 			rbuf, bsize, hid_read_callback, (void *)p, NULL) != kIOReturnSuccess)
@@ -690,7 +706,6 @@ icoms_hid_read_th(icoms *p,
 		} else if (result != kCFRunLoopRunStopped) {
 			lerr = ICOM_USBR; 
 		}
-        CFRunLoopRemoveSource(p->hidd->rlr, p->hidd->evsrc, kCFRunLoopDefaultMode);
 		if (p->hidd->result == -1) {		/* Callback wasn't called */
 			lerr = ICOM_TO; 
 		} else if (p->hidd->result != kIOReturnSuccess) {

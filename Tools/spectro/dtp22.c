@@ -41,7 +41,7 @@
 #ifndef SALONEINSTLIB
 #include "copyright.h"
 #include "aconfig.h"
-#include "numsup.h"
+#include "numlib.h"
 #else	/* !SALONEINSTLIB */
 #include "sa_config.h"
 #include "numsup.h"
