@@ -49,7 +49,6 @@
 
 #if defined(NT)
 #include <setupapi.h>
-#define strdup _strdup
 #endif
 
 #if defined(UNIX) && !defined(__APPLE__)
@@ -134,7 +133,7 @@ struct _icoms *p
 		PSP_DEVICE_INTERFACE_DETAIL_DATA pdidd = (PSP_DEVICE_INTERFACE_DETAIL_DATA)buf;
 		SP_DEVINFO_DATA dinfod;
 		int i;
-		unsigned short VendorID, ProductID;
+		unsigned short VendorID = 0, ProductID = 0;
 	
 		/* Make sure we've dynamically linked */
 		if (setup_dyn_calls() == 0) {
@@ -466,9 +465,6 @@ void hid_close_port(icoms *p) {
 #endif /* ENABLE_USB */
 }
 
-/* Declaration of needed function in ntio.c or unixio.c */
-void icoms_close_port(icoms *p);
-
 /* Open an HID port for all our uses. */
 static void hid_open_port(
 icoms *p,
@@ -481,7 +477,7 @@ char **pnames			/* List of process names to try and kill before opening */
 
 	if (port >= 1) {
 		if (p->is_open && port != p->port) {	/* If port number changes */
-			icoms_close_port(p);
+			p->close_port(p);
 		}
 	}
 
@@ -598,7 +594,12 @@ void *target,
 IOReturn result,
 void *refcon,
 void *sender,
-uint32_t size) {
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1050
+uint32_t size
+#else
+UInt32 size
+#endif
+) {
 	icoms *p = (icoms *)target;
 
 //printf("\n~1 callback called with size %d, result 0x%x\n",size,result);
@@ -863,7 +864,7 @@ char **pnames			/* List of process names to try and kill before opening */
 	if (p->debug) fprintf(stderr,"icoms: About to set hid port characteristics\n");
 
 	if (p->is_open) 
-		icoms_close_port(p);
+		p->close_port(p);
 
 	if (p->is_hid_portno(p, port) != instUnknown) {
 
@@ -887,6 +888,8 @@ icoms *p
 ) {
 	p->is_hid_portno  = hid_is_hid_portno;
 	p->set_hid_port   = icoms_set_hid_port;
+	p->hid_read_th    = icoms_hid_read_th;
+	p->hid_write_th   = icoms_hid_write_th;
 	p->hid_read       = icoms_hid_read;
 	p->hid_write      = icoms_hid_write;
 
