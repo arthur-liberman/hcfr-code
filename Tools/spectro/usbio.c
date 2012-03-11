@@ -1463,6 +1463,7 @@ int icoms_usb_cancel_io(
 	void *hcancel
 ) {
 	int rv = 0;
+	int rv = -1;
 #ifdef USE_LIBUSB1
 	if (hcancel != NULL)
 		rv = libusb_cancel_transfer((struct libusb_transfer *)hcancel);

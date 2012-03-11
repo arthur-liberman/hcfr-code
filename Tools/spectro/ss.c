@@ -1925,6 +1925,8 @@ ss_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 			case inst_opt_filter_Custom:
 				p->filt = ss_aft_CustomFilter;
 				return inst_ok;
+			case inst_opt_filter_unknown:
+				return inst_unsupported;
 			default:
 				break;
 		}

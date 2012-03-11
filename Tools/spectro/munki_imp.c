@@ -872,6 +872,8 @@ munki_code munki_imp_set_mode(
 			m->mmode = mmode;
 			m->spec_en = spec_en ? 1 : 0;
 			return MUNKI_OK;
+		case mk_no_modes:
+			return MUNKI_INT_ILLEGALMODE;
 		default:
 			break;
 	}

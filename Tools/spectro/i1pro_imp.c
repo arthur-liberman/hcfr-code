@@ -945,6 +945,8 @@ i1pro_code i1pro_imp_set_mode(
 			m->mmode = mmode;
 			m->spec_en = spec_en ? 1 : 0;
 			return I1PRO_OK;
+		case i1p_no_modes:
+			return I1PRO_INT_ILLEGALMODE;
 		default:
 			break;
 	}
