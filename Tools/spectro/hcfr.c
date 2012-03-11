@@ -676,9 +676,6 @@ static inst_code hcfr_get_opt_details(
 inst *pp,
 inst_optdet_type m,	/* Requested option detail type */
 ...) {				/* Status parameters */                             
-	hcfr *p = (hcfr *)pp;
-	inst_code rv = inst_ok;
-
 	if (m == inst_optdet_disptypesel) {
 		va_list args;
 		int *pnsels;

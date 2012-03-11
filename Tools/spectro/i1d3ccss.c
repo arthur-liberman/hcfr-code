@@ -895,7 +895,7 @@ static ccss *parse_EDR(
 	int j;
 	unsigned char *nbuf;
 	unsigned long nlen;
-	ORD64 edrdate;
+	INR64 edrdate;
 	char creatdate[30];
 	char dispdesc[256];
 	int ttmin, ttmax;	/* Min & max technology strings (inclusive) */

@@ -907,7 +907,7 @@ i1d3_set_LEDs(
 #define NPER (PERMAX - PERMIN + 1)
 #define PWIDTH (4 * PBPMS)			/* 4 msec bin spread to look for peak in */
 
-i1d3_measure_refresh(
+inst_code i1d3_measure_refresh(
 	i1d3 *p,			/* Object */
 	double *period
 ) {
@@ -916,7 +916,7 @@ i1d3_measure_refresh(
 	double ucalf = 1.0;				/* usec_time calibration factor */
 	double inttimel = 0.0003;
 	double inttimeh = 0.0040;
-	double sutime, putime, cutime, eutime;
+	double sutime, putime, cutime;
 	unsigned int randn = 0x12345678;
 	struct {
 		double itime;	/* Integration time */
@@ -1248,7 +1248,7 @@ i1d3_take_emis_measurement(
 	i1d3_mmode mode,	/* Measurement mode */
 	double *rgb			/* Return the cooked emsissive RGB values */
 ) {
-	int i, k;
+	int i;
 	int pos;
 	inst_code ev;
 	double rmeas[3] = { -1.0, -1.0, -1.0 };	/* raw measurement */
@@ -1550,7 +1550,6 @@ printf("samples %d, maxmax = %f chan %d, min %f\n",i, maxmax,maxch,minv[maxch]);
 		 			return ev;
 	
 				for (i = 0; i < 3; i++) {
-					double tt;
 					if ((mask & (1 << i)) == 0)
 						continue;
 	
