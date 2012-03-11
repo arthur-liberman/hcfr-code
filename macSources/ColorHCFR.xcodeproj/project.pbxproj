@@ -2781,10 +2781,16 @@
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				HEADER_SEARCH_PATHS = ../Tools/spectro;
+				GCC_PREPROCESSOR_DEFINITIONS = USE_LIBUSB1;
+				HEADER_SEARCH_PATHS = (
+					../Tools/libusb1/libusb/,
+					../Tools/macSources/spectro/build/Debug/,
+					../Tools/spectro,
+				);
 				INSTALL_PATH = /usr/local/lib;
 				PREBINDING = NO;
 				PRODUCT_NAME = ArgyllWrapper;
+				USER_HEADER_SEARCH_PATHS = ../libHCFR/;
 			};
 			name = Debug;
 		};
@@ -2796,10 +2802,16 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_MODEL_TUNING = G5;
-				HEADER_SEARCH_PATHS = ../Tools/spectro;
+				GCC_PREPROCESSOR_DEFINITIONS = USE_LIBUSB1;
+				HEADER_SEARCH_PATHS = (
+					../Tools/libusb1/libusb/,
+					../Tools/macSources/spectro/build/Release/,
+					../Tools/spectro,
+				);
 				INSTALL_PATH = /usr/local/lib;
 				PREBINDING = NO;
 				PRODUCT_NAME = ArgyllWrapper;
+				USER_HEADER_SEARCH_PATHS = ../libHCFR/;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -3249,11 +3261,10 @@
 		C01FCF4F08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				FRAMEWORK_SEARCH_PATHS = (
-					"../libHCFR/mac\\ project\\ files/build/Debug/",
-				);
+				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_OBJC_CALL_CXX_CDTORS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = USE_LIBUSB1;
 				GCC_TREAT_IMPLICIT_FUNCTION_DECLARATIONS_AS_ERRORS = YES;
 				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
 				GCC_VERSION = 4.0;
@@ -3266,19 +3277,20 @@
 				GCC_WARN_SIGN_COMPARE = NO;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "";
 				PREBINDING = NO;
 				SDKROOT = macosx10.5;
+				USER_HEADER_SEARCH_PATHS = "";
 			};
 			name = Debug;
 		};
 		C01FCF5008A954540054247B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				FRAMEWORK_SEARCH_PATHS = (
-					"../libHCFR/mac\\ project\\ files/build/Release/",
-				);
+				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_OBJC_CALL_CXX_CDTORS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = USE_LIBUSB1;
 				GCC_TREAT_IMPLICIT_FUNCTION_DECLARATIONS_AS_ERRORS = YES;
 				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
 				GCC_VERSION = 4.0;
@@ -3291,10 +3303,12 @@
 				GCC_WARN_SIGN_COMPARE = NO;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "";
 				IBC_FLATTEN_NIBS = NO;
 				PREBINDING = NO;
 				RUN_CLANG_STATIC_ANALYZER = YES;
 				SDKROOT = macosx10.5;
+				USER_HEADER_SEARCH_PATHS = "";
 				VALID_ARCHS = i386;
 			};
 			name = Release;

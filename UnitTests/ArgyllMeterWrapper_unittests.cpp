@@ -56,14 +56,18 @@ protected:
     // user to indicate when they are ready to move to the next step
     void autoDetectMeter()
     {
-        std::vector<ArgyllMeterWrapper*> meters = ArgyllMeterWrapper::getDetectedMeters();
+        std::string errorDescription;
+        std::vector<ArgyllMeterWrapper*> meters = ArgyllMeterWrapper::getDetectedMeters(errorDescription);
         if(meters.size() == 0)
         {
+            if(!errorDescription.empty())
+            {
+                std::cout << errorDescription << std::endl;
+            }
             return;
         }
         ArgyllMeterWrapper& meter = *meters[0];
 
-        std::string errorDescription;
         if(!meter.connectAndStartMeter(errorDescription, ArgyllMeterWrapper::DISPLAY))
         {
             std::cout << errorDescription << std::endl;

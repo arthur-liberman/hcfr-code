@@ -21,7 +21,7 @@
 {
 	[super init];
 	
-	m_DisplayType = ArgyllMeterWrapper::LCD;
+	m_DisplayType = 0;
 	m_ReadingType = ArgyllMeterWrapper::DISPLAY;
 	m_PortNumber  = 1;
 	m_meter		  = nil;
@@ -33,7 +33,7 @@
 
 -(void) dealloc
 {
-	delete m_meter;
+	m_meter = NULL;
 	[super dealloc];
 }
 
@@ -51,17 +51,17 @@
 {
 	if(!m_meter)
 	{
-		m_meter = new ArgyllMeterWrapper(ArgyllMeterWrapper::AUTODETECT,
-										 m_DisplayType,
-										 m_ReadingType,
-										 m_PortNumber);
-		std::string errorDescription;
-		if(!m_meter->connectAndStartMeter(errorDescription))
+        std::string errorMessage;
+        std::vector<ArgyllMeterWrapper*> meters = ArgyllMeterWrapper::getDetectedMeters(errorMessage);
+        if(!meters.empty())
+        {
+            m_meter = meters[0];
+        }
+        else
 		{
 			[[NSException exceptionWithName:kHCFRSensorFailureException
 									 reason:HCFRLocalizedString(@"The sensor has not been activated.",@"The sensor has not been activated.")
 								   userInfo:nil] raise];
-			delete m_meter;
 			m_meter = NULL;
 			return NO;
 		}

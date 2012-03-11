@@ -135,7 +135,12 @@ void CSensorSelectionPropPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_SENSORCHOICE_COMBO, m_sensorChoiceCtrl);
     if(m_sensorChoiceCtrl.GetCount() == 0)
     {
-        std::vector<ArgyllMeterWrapper*> argyllMeters = ArgyllMeterWrapper::getDetectedMeters();
+        std::string errorMessage;
+        std::vector<ArgyllMeterWrapper*> argyllMeters = ArgyllMeterWrapper::getDetectedMeters(errorMessage);
+        if(!errorMessage.empty())
+        {
+            MessageBox(errorMessage.c_str(), "Argyll Error", MB_OK | MB_ICONEXCLAMATION);
+        }
         for(size_t i(0); i < argyllMeters.size(); ++i)
         {
             AddSensor(argyllMeters[i]->getMeterName().c_str(), (int)argyllMeters[i]);

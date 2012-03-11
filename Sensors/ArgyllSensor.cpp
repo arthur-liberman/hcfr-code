@@ -131,7 +131,8 @@ void CArgyllSensor::Serialize(CArchive& archive)
         // if we leave here with nothing then 
         // we should ge replaced by the simulated meter
         // in the higher up object
-        std::vector<ArgyllMeterWrapper*> meters = ArgyllMeterWrapper::getDetectedMeters();
+        std::string errorMessage;
+        std::vector<ArgyllMeterWrapper*> meters = ArgyllMeterWrapper::getDetectedMeters(errorMessage);
         if(meters.size() > 0)
         {
             m_meter = meters[0];
