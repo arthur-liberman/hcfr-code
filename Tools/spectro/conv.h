@@ -91,12 +91,8 @@ void empty_con_chars(void);
 void msec_sleep(unsigned int msec);
 
 /* Return the current time in msec since */
-/* the first invokation of msec_time() */
+/* the process started. */
 unsigned int msec_time();
-
-/* Return the current time in usec */
-/* the first invokation of usec_time() */
-double usec_time();
 
 /* Activate the system beeper after a delay */
 /* (Note frequancy and duration may not be honoured on all systems) */
@@ -128,7 +124,6 @@ struct _athread {
 #if defined (UNIX) || defined(__APPLE__)
 	pthread_t thid;			/* Thread ID */
 #endif
-	int finished;			/* Set when the thread returned */
 	int result;				/* Return code from thread function */
 
 	/* Thread function to call */
@@ -136,9 +131,6 @@ struct _athread {
 
 	/* And the context to call it with */
 	void *context;
-
-	/* Wait for the thread to exit. Return the result */
-	int (*wait)(struct _athread *p);
 
     /* Kill the thread and delete the object */
 	/* (Killing it may have side effects, so this is a last */

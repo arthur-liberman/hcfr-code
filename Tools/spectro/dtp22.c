@@ -41,7 +41,7 @@
 #ifndef SALONEINSTLIB
 #include "copyright.h"
 #include "aconfig.h"
-#include "numlib.h"
+#include "numsup.h"
 #else	/* !SALONEINSTLIB */
 #include "sa_config.h"
 #include "numsup.h"
@@ -230,7 +230,7 @@ dtp22_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) 
 
 	while (msec_time() < etime) {
 
-		if (p->debug) fprintf(stderr,"dtp22: Trying different baud rates (%u msec to go)\n",etime - msec_time());
+		if (p->debug) fprintf(stderr,"dtp22: Trying different baud rates (%lu msec to go)\n",etime - msec_time());
 
 		/* Until we time out, find the correct baud rate */
 		for (i = ci; msec_time() < etime;) {

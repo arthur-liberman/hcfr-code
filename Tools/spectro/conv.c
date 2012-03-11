@@ -208,43 +208,10 @@ void msec_sleep(unsigned int msec) {
 }
 
 /* Return the current time in msec since */
-/* the first invokation of msec_time() */
+/* the process started. */
 /* (Is this based on timeGetTime() ? ) */
 unsigned int msec_time() {
-	unsigned int rv;
-	static unsigned int startup = 0;
-
-	rv =  GetTickCount();
-	if (startup == 0)
-		startup = rv;
-
-	return rv - startup;
-}
-
-/* Return the current time in usec */
-/* since the first invokation of usec_time() */
-/* Return -1.0 if not available */
-double usec_time() {
-	double rv;
-	LARGE_INTEGER val;
-	static double scale = 0.0;
-	static LARGE_INTEGER startup;
-
-	if (scale == 0.0) {
-		if (QueryPerformanceFrequency(&val) == 0)
-			return -1.0;
-		scale = 1000000.0/val.QuadPart;
-		QueryPerformanceCounter(&val);
-		startup.QuadPart = val.QuadPart;
-
-	} else {
-		QueryPerformanceCounter(&val);
-	}
-	val.QuadPart -= startup.QuadPart;
-
-	rv = val.QuadPart * scale;
-		
-	return rv;
+	return GetTickCount();
 }
 
 static athread *beep_thread = NULL;
@@ -274,8 +241,6 @@ void msec_beep(int delay, int freq, int msec) {
 	}
 }
 
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
 #ifdef NEVER    /* Not currently needed, or effective */
 
 /* Set the current threads priority */
@@ -296,17 +261,6 @@ int set_normal_priority() {
 
 #undef USE_BEGINTHREAD
 
-/* Wait for the thread to exit. Return the result */
-static int athread_wait(struct _athread *p) {
-
-	if (p->finished)
-		return p->result;
-
-	WaitForSingleObject(p->th, INFINITE);
-
-	return p->result;
-}
-
 /* Destroy the thread */
 static void athread_del(
 athread *p
@@ -316,11 +270,9 @@ athread *p
 	if (p == NULL)
 		return;
 
-	if (p->th != NULL) {
-		if (!p->finished) {
+	if (p->th != NULL) {		/* Oops. this isn't good. */
 			DBG("athread_del calling TerminateThread() because thread hasn't finished\n");
 			TerminateThread(p->th, (DWORD)-1);		/* But it is worse to leave it hanging around */
-		}
 		CloseHandle(p->th);
 	}
 
@@ -342,7 +294,8 @@ DWORD WINAPI threadproc(
 	athread *p = (athread *)lpParameter;
 
 	p->result = p->function(p->context);
-	p->finished = 1;
+	CloseHandle(p->th);
+	p->th = NULL;
 #ifdef USE_BEGINTHREAD
 #else
 	return 0;
@@ -362,7 +315,6 @@ athread *new_athread(
 
 	p->function = function;
 	p->context = context;
-	p->wait = athread_wait;
 	p->del = athread_del;
 
 	/* Create a thread */
@@ -374,7 +326,6 @@ athread *new_athread(
 	if (p->th == NULL) {
 #endif
 		DBG("Failed to create thread\n");
-		p->th = NULL;
 		athread_del(p);
 		return NULL;
 	}
@@ -382,8 +333,6 @@ athread *new_athread(
 	DBG("About to exit new_athread()\n");
 	return p;
 }
-
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 /* Delete a file */
 void delete_file(char *fname) {
@@ -537,8 +486,7 @@ void msec_sleep(unsigned int msec) {
 #endif
 }
 
-/* Return the current time in msec */
-/* since the first invokation of msec_time() */
+/* Return the current time in msec. This is not related to any particular epoch */
 unsigned int msec_time() {
 	unsigned int rv;
 	static struct timeval startup = { 0, 0 };
@@ -564,37 +512,6 @@ unsigned int msec_time() {
 
 	/* Convert usec to msec */
 	rv = cv.tv_sec * 1000 + cv.tv_usec / 1000;
-
-	return rv;
-}
-
-/* Return the current time in usec */
-/* since the first invokation of usec_time() */
-double usec_time() {
-	double rv;
-	static struct timeval startup = { 0, 0 };
-	struct timeval cv;
-
-	/* Is this monotonic ? */
-	/* On Linux, should clock_gettime with CLOCK_MONOTONIC/CLOCK_REALTIME/CLOCK_REALTIME_HR ? */
-	/* On OS X, should mach_absolute_time() be used ? */
-	/* or host_get_clock_service(mach_host_self(), SYSTEM_CLOCK, &clk) */
-	gettimeofday(&cv, NULL);
-
-	/* Set time to 0 on first invocation */
-	if (startup.tv_sec == 0 && startup.tv_usec == 0)
-		startup = cv;
-
-	/* Subtract, taking care of carry */
-	cv.tv_sec -= startup.tv_sec;
-	if (startup.tv_usec > cv.tv_usec) {
-		cv.tv_sec--;
-		cv.tv_usec += 1000000;
-	}
-	cv.tv_usec -= startup.tv_usec;
-
-	/* Convert to usec */
-	rv = cv.tv_sec * 1000000.0 + cv.tv_usec;
 
 	return rv;
 }
@@ -692,11 +609,7 @@ static int beep_msec;
 static int delayed_beep(void *pp) {
 	msec_sleep(beep_delay);
 #ifdef __APPLE__
-# if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1050
-	AudioServicesPlayAlertSound(kUserPreferredAlert);
-# else
 	SysBeep((beep_msec * 60)/1000);
-# endif
 #else
 	fprintf(stdout, "\a"); fflush(stdout);
 #endif 
@@ -715,11 +628,7 @@ void msec_beep(int delay, int freq, int msec) {
 			error("Delayed beep failed to create thread");
 	} else {
 #ifdef __APPLE__
-# if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1050
-			AudioServicesPlayAlertSound(kUserPreferredAlert);
-# else
 			SysBeep((msec * 60)/1000);
-# endif
 #else
 		/* Linux is pretty lame in this regard... */
 		fprintf(stdout, "\a"); fflush(stdout);
@@ -777,17 +686,6 @@ XBell(..);
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - */
 
-/* Wait for the thread to exit. Return the result */
-static int athread_wait(struct _athread *p) {
-
-	if (p->finished)
-		return p->result;
-
-	pthread_join(p->thid, NULL);
-
-	return p->result;
-}
-
 /* Destroy the thread */
 static void athread_del(
 athread *p
@@ -797,9 +695,7 @@ athread *p
 	if (p == NULL)
 		return;
 
-	if (!p->finished) {
 		pthread_cancel(p->thid);
-	}
 	pthread_join(p->thid, NULL);
 
 	free(p);
@@ -811,8 +707,6 @@ static void *threadproc(
 	athread *p = (athread *)param;
 
 	p->result = p->function(p->context);
-	p->finished = 1;
-
 	return 0;
 }
  
@@ -830,7 +724,6 @@ athread *new_athread(
 
 	p->function = function;
 	p->context = context;
-	p->wait = athread_wait;
 	p->del = athread_del;
 
 	/* Create a thread */
