@@ -14,7 +14,7 @@
 @interface ArgyllSensor : HCFRSensor {
 	IBOutlet NSView*					setupView;
 	
-	ArgyllMeterWrapper::eDisplayType	m_DisplayType;
+	int                                 m_DisplayType;
 	ArgyllMeterWrapper::eReadingType	m_ReadingType;
 	uint32_t							m_PortNumber;
 	bool								m_HiRes;

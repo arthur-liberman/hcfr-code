@@ -39,6 +39,7 @@
 #include "libusbi.h"
 #undef SALONEINSTLIB
 #include <stdexcept>
+#include <stdexcept>
 
 namespace
 {
@@ -502,8 +503,17 @@ bool ArgyllMeterWrapper::isSameMeter(ArgyllMeterWrapper* otherMeter) const
     }
     if(m_meter->icom->is_hid)
     {
+#if defined(NT)
         // a guess at a unique thing
         return (strcmp(m_meter->icom->hidd->dpath, otherMeter->m_meter->icom->hidd->dpath) == 0);
+#endif
+#if defined (__APPLE__)
+        return (m_meter->icom->hidd->ioob == otherMeter->m_meter->icom->hidd->ioob);
+#endif
+#if !defined (__APPLE__) && !defined(NT)
+        return ((m_meter->icom->vid == otherMeter->m_meter->icom->vid) &&
+                (m_meter->icom->pid == otherMeter->m_meter->icom->pid));
+#endif
     }
     else if(m_meter->icom->is_usb)
     {
@@ -523,8 +533,9 @@ bool ArgyllMeterWrapper::isMeterStillValid() const
     return m_meter && m_meter->icom;
 }
 
-std::vector<ArgyllMeterWrapper*> ArgyllMeterWrapper::getDetectedMeters()
+std::vector<ArgyllMeterWrapper*> ArgyllMeterWrapper::getDetectedMeters(std::string& errorMessage)
 {
+    errorMessage = "";
     // only detect meters once if some are found
     // means that we don't support an extra meter being adding during the
     // run at the moment, but I can live with this
@@ -540,7 +551,7 @@ std::vector<ArgyllMeterWrapper*> ArgyllMeterWrapper::getDetectedMeters()
                 {
                     // avoid COM ports for now until we work out how to handle 
                     // them properly
-                    if(strnicmp("COM", paths[i]->path, 3) != 0)
+                    if(strncmp("COM", paths[i]->path, 3) != 0 && strncmp("com", paths[i]->path, 3) != 0)
                     {
                         _inst* meter = 0;
                         try
@@ -561,15 +572,13 @@ std::vector<ArgyllMeterWrapper*> ArgyllMeterWrapper::getDetectedMeters()
                             else
                             {
                                 meter->del(meter);
-                                LPCSTR Msg = "Starting communications with the meter failed";
-                                MessageBox(NULL,Msg,"Argyll Error",MB_ICONERROR | MB_OK);
+                                errorMessage = "Starting communications with the meter failed";
                             }
                         }
                         catch(std::logic_error&)
                         {
                             meter->del(meter);
-                            LPCSTR Msg = "Incorrect driver - Starting communications with the meter failed with severe error";
-                            MessageBox(NULL,Msg,"Argyll Error",MB_ICONERROR | MB_OK);
+                            errorMessage = "Incorrect driver - Starting communications with the meter failed with severe error";
                         }
                     }
                 }
