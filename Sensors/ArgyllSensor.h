@@ -79,6 +79,7 @@ public:
     virtual void GetUniqueIdentifier( CString & strId );
     static bool isInDebugMode() {return m_debugMode;}
     virtual bool isValid() const {return (m_meter != 0);}
+    void FillDisplayTypeCombo(CComboBox& comboToFill);
 };
 
 #endif // !defined(AFX_ARGYLLSENSOR_H__1493C213_6A02_44C5_8EB7_55B469092E14__INCLUDED_)

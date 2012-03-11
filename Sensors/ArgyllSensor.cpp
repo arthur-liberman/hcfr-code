@@ -146,25 +146,15 @@ void CArgyllSensor::SetPropertiesSheetValues()
 
     m_ArgyllSensorPropertiesPage.m_DisplayType=m_DisplayType;
     m_ArgyllSensorPropertiesPage.m_ReadingType=m_ReadingType;
-    m_ArgyllSensorPropertiesPage.m_PortNumber = 0;
     m_ArgyllSensorPropertiesPage.m_DebugMode=m_debugMode;
     m_ArgyllSensorPropertiesPage.m_DebugMode=m_HiRes;
+    m_ArgyllSensorPropertiesPage.m_MeterName = m_meter->getMeterName().c_str();
+    m_ArgyllSensorPropertiesPage.m_HiResCheckBoxEnabled = m_meter->doesSupportHiRes();
 }
 
 void CArgyllSensor::GetPropertiesSheetValues()
 {
     COneDeviceSensor::GetPropertiesSheetValues();
-
-    if(m_HiRes != m_ArgyllSensorPropertiesPage.m_HiRes)
-    {
-        SetModifiedFlag(TRUE);
-        m_HiRes = m_ArgyllSensorPropertiesPage.m_HiRes;
-        GetConfig () -> WriteProfileInt ( "Argyll", "HiRes", m_HiRes );
-        if(m_meter)
-        {
-            m_meter->setHiResMode(!!m_HiRes);
-        }
-    }
 
     if(m_debugMode != !!m_ArgyllSensorPropertiesPage.m_DebugMode) 
     {
@@ -173,12 +163,19 @@ void CArgyllSensor::GetPropertiesSheetValues()
         GetConfig () -> WriteProfileInt ( "Argyll", "DebugMode", m_debugMode?1:0);
     }
 
-    if(m_ReadingType != m_ArgyllSensorPropertiesPage.m_ReadingType) 
+    if(m_ReadingType != m_ArgyllSensorPropertiesPage.m_ReadingType ||
+        m_DisplayType != m_ArgyllSensorPropertiesPage.m_DisplayType ||
+        m_HiRes != m_ArgyllSensorPropertiesPage.m_HiRes)
     {
         SetModifiedFlag(TRUE);
         m_ReadingType=m_ArgyllSensorPropertiesPage.m_ReadingType;
+        m_DisplayType=m_ArgyllSensorPropertiesPage.m_DisplayType;
+        m_HiRes = m_ArgyllSensorPropertiesPage.m_HiRes;
 
         GetConfig () -> WriteProfileInt ( "Argyll", "ReadingType", m_ReadingType );
+        GetConfig () -> WriteProfileInt ( "Argyll", "DisplayType", m_DisplayType );
+        GetConfig () -> WriteProfileInt ( "Argyll", "HiRes", m_HiRes );
+        Init(FALSE);
     }
 }
 
@@ -192,6 +189,7 @@ BOOL CArgyllSensor::Init( BOOL bForSimultaneousMeasures )
         return FALSE;
     }
     m_meter->setHiResMode(!!m_HiRes);
+    m_meter->setDisplayType(m_DisplayType);
     return TRUE;
 }
 
@@ -229,7 +227,7 @@ CColor CArgyllSensor::MeasureColor(COLORREF aRGBValue)
 
 void CArgyllSensor::Calibrate()
 {
-    if(!m_meter) if(!Init(FALSE)) return;
+    if(!Init(FALSE)) return;
     if(!m_meter->doesMeterSupportCalibration()) return;
 
     ArgyllMeterWrapper::eMeterState state(ArgyllMeterWrapper::NEEDS_MANUAL_CALIBRATION);
@@ -260,6 +258,20 @@ void CArgyllSensor::GetUniqueIdentifier( CString & strId )
     strId = "Argyll Meter";
 }
 
+void CArgyllSensor::FillDisplayTypeCombo(CComboBox& comboToFill)
+{
+    int numDisplayTypes(m_meter->getNumberOfDisplayTypes());
+
+    if(numDisplayTypes > 0)
+    {
+        for(int i(0); i < numDisplayTypes; ++i)
+        {
+            comboToFill.AddString(m_meter->getDisplayTypeText(i));
+        }
+    }
+}
+
+
 // very basic logging and error handling to override
 // the standard argyll verion
 // should use whatever log library we end up with
@@ -275,3 +287,5 @@ void ArgyllLogMessage(const char* messageType, char *fmt, va_list& args)
         fclose(logFile);
     }
 }
+
+

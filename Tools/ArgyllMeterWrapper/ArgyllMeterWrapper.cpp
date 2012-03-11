@@ -138,9 +138,6 @@ ArgyllMeterWrapper::ArgyllMeterWrapper(_inst* meter) :
     m_nextCalibration(0),
     m_meterType(meter->get_itype(meter))
 {
-    error = error_imp;
-    warning = warning_imp;
-    verbose = verbose_imp;
 
 }
 
@@ -159,13 +156,17 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
 
     instCode = m_meter->set_opt_mode(m_meter, inst_opt_set_filter, inst_opt_filter_none);
 
-    instCode = m_meter->init_inst(m_meter);
-    if(instCode != inst_ok)
+    // allow this function to be called repeatedly on a meter
+    if(!m_meter->inited)
     {
-        m_meter->del(m_meter);
-        m_meter = 0;
-        errorDescription = "Failed to initialize the instrument";
-        return false;
+        instCode = m_meter->init_inst(m_meter);
+        if(instCode != inst_ok)
+        {
+            m_meter->del(m_meter);
+            m_meter = 0;
+            errorDescription = "Failed to initialize the instrument";
+            return false;
+        }
     }
 
     inst_mode displayMode = inst_mode_emis_spot;
@@ -183,11 +184,6 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
 
     if(m_readingType == PROJECTOR)
     {
-//        if(capabilities & (inst_emis_proj_crt | inst_emis_proj_lcd))
-//        {
-//            instCode = m_meter->set_opt_mode(m_meter, m_displayType == CRT?inst_opt_proj_crt:inst_opt_proj_lcd);
-//            mode = inst_mode_emis_proj;
-//        }
         if(capabilities & (inst_emis_tele))
         {
             mode = inst_mode_emis_tele;
@@ -196,13 +192,6 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
         {
             mode = inst_mode_emis_proj;
         }
-    }
-    else
-    {
-//        if (capabilities & (inst_emis_disp_crt | inst_emis_disp_lcd)) 
-//        {
-//           instCode = m_meter->set_opt_mode(m_meter, m_displayType == CRT?inst_opt_disp_crt:inst_opt_disp_lcd);
-//        }
     }
 
     instCode = m_meter->set_mode(m_meter, mode);
@@ -226,6 +215,8 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
         errorDescription = "Couldn't set trigger mode";
         return false;
     }
+    // reset the calibration
+    m_nextCalibration = 0;
     return true;
 }
 
@@ -300,11 +291,14 @@ int ArgyllMeterWrapper::getDisplayType() const
 
 void ArgyllMeterWrapper::setDisplayType(int displayMode)
 {
-    m_displayType = displayMode;
-    inst_code instCode = m_meter->set_opt_mode(m_meter, inst_opt_disp_type, displayMode);
-    if(instCode != inst_ok)
+    if(displayMode < getNumberOfDisplayTypes())
     {
-        throw std::logic_error("Set Display Type failed");
+        m_displayType = displayMode;
+        inst_code instCode = m_meter->set_opt_mode(m_meter, inst_opt_disp_type, displayMode + 1);
+        if(instCode != inst_ok)
+        {
+            throw std::logic_error("Set Display Type failed");
+        }
     }
 }
 
@@ -485,6 +479,12 @@ void ArgyllMeterWrapper::setHiResMode(bool enableHiRes)
     }
 }
 
+bool ArgyllMeterWrapper::doesSupportHiRes() const
+{
+    return (m_meterType == instI1Pro || m_meterType == instColorMunki);
+}
+
+
 std::string ArgyllMeterWrapper::getMeterName() const
 {
     return inst_name((instType)m_meterType);
@@ -525,6 +525,10 @@ bool ArgyllMeterWrapper::isMeterStillValid() const
 
 std::vector<ArgyllMeterWrapper*> ArgyllMeterWrapper::getDetectedMeters()
 {
+    error = error_imp;
+    warning = warning_imp;
+    verbose = verbose_imp;
+
     // only detect meters once if some are found
     // means that we don't support an extra meter being adding during the
     // run at the moment, but I can live with this
@@ -540,7 +544,7 @@ std::vector<ArgyllMeterWrapper*> ArgyllMeterWrapper::getDetectedMeters()
                 {
                     // avoid COM ports for now until we work out how to handle 
                     // them properly
-                    if(strnicmp("COM", paths[i]->path, 3) != 0)
+                    if(strncasecmp("COM", paths[i]->path, 3) != 0)
                     {
                         _inst* meter = 0;
                         try

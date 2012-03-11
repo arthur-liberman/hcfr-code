@@ -133,9 +133,9 @@ void CSensorSelectionPropPage::DoDataExchange(CDataExchange* pDX)
 	CPropertyPageWithHelp::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_SENSORTRAININGFILE_COMBO, m_trainingFileCombo);
 	DDX_Control(pDX, IDC_SENSORCHOICE_COMBO, m_sensorChoiceCtrl);
-    std::vector<ArgyllMeterWrapper*> argyllMeters = ArgyllMeterWrapper::getDetectedMeters();
     if(m_sensorChoiceCtrl.GetCount() == 0)
     {
+        std::vector<ArgyllMeterWrapper*> argyllMeters = ArgyllMeterWrapper::getDetectedMeters();
         for(size_t i(0); i < argyllMeters.size(); ++i)
         {
             AddSensor(argyllMeters[i]->getMeterName().c_str(), (int)argyllMeters[i]);

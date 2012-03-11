@@ -87,8 +87,11 @@ public:
     /// what the user needs to do next
     std::string getIncorrectPositionInstructions();
 
-    /// Enable/Disable hi resolution mode on i1Pro
+    /// Enable/Disable high resolution mode on i1Pro
     void setHiResMode(bool enableHiRes);
+    /// Does device support high resolution mode on i1Pro
+    bool doesSupportHiRes() const;
+
     /// get the name of the meter given the meter
     std::string getMeterName() const;
 
