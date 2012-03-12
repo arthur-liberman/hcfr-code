@@ -402,7 +402,10 @@ int usbi_pipe(int filedes[2])
  */
 struct winfd *usbi_create_fd(HANDLE handle, int access_mode, int num_urbs)
 {
-	int i, j, fd;
+#if defined(DYNAMIC_FDS)
+	int j;
+#endif
+	int i, fd;
 	struct winfd *wfd = NULL;
 	struct winurb* urbs = NULL;
 

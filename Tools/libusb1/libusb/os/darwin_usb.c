@@ -283,7 +283,7 @@ static void *event_thread_main (void *arg0) {
   if (kresult != kIOReturnSuccess) {
     usbi_err (ctx, "could not add hotplug event source: %s", darwin_error_str (kresult));
 
-    pthread_exit ((void *)kresult);
+    pthread_exit ((void *)(unsigned long)kresult);
   }
 
   /* arm notifiers */

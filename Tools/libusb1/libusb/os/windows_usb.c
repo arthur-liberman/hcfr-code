@@ -2570,7 +2570,6 @@ static int winusb_claim_interface(struct libusb_device_handle *dev_handle, int i
 	bool is_composite = (priv->apib->id == USB_API_COMPOSITE);
 	HANDLE file_handle, winusb_handle;
 	USB_INTERFACE_DESCRIPTOR if_desc;
-	int i;
 
 	CHECK_WINUSB_AVAILABLE;
 
