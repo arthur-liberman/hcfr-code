@@ -248,10 +248,6 @@ struct _icoms *p
 #endif /* NT */
 
 #ifdef __APPLE__
-	/* On OS X the general USB driver will locate the HID devices, but */
-	/* not be able to claim the interfaces without using a kext to stop */
-	/* the HID driver grabing the interfaces. We switch them from libusb */
-	/* access to OS X HID driver access to avoid the problem. */
 	{
 	    kern_return_t kstat; 
 	    CFMutableDictionaryRef sdict;		/* HID Device  dictionary */
@@ -262,7 +258,7 @@ struct _icoms *p
         	warning("IOServiceMatching returned a NULL dictionary");
 		}
 
-		/* Init itterator to find matching types */
+		/* Init itterator to find matching types. Consumes sdict reference */
 		if ((kstat = IOServiceGetMatchingServices(kIOMasterPortDefault, sdict, &mit))
 			                                                          != KERN_SUCCESS) 
         	error("IOServiceGetMatchingServices returned %d", kstat);

@@ -1024,6 +1024,9 @@ dtp92_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 		ix = va_arg(args, int);
 		va_end(args);
 
+		if (ix == 0 && p->itype == instDTP92)
+			return inst_ok;
+			
 		if (ix == 1) {
 			if (p->itype == instDTP94) {
 				if ((ev = dtp92_command(p, "0116CF\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)

@@ -109,11 +109,11 @@ struct _i1disp {
 	int     reg90_W;			/* cal valid/time flag.  0xffffffff = invalid, */
 								/* time in secs from January 1, 1970, UTC */
 
-	int     reg40_S;			/* Calibration factor, typically 1000 */
-	int     reg42_S;			/* Calibration factor, typically 10000 */
-	int     reg44_S[3];			/* Calibration factors, typically 100 */
+	int     reg40_S;			/* Integration clock perod in nsec reg40S, typically 1000 */
+	int     reg42_S;			/* Int cal. factor denominator, typically 10000 */
+	int     reg44_S[3];			/* Int cal. factors numerator/100, typically 100 */
 
-	double  clk_prd;			/* Master clock period, typically aprox. 1e-6 */
+	double  clk_prd;			/* Master clock period, reg94F, typically 1e-6 */
 
 	int     reg98_W;			/* A time value. Date of manufacture ? */
 								/* Reg 40-44 write date ? */
@@ -135,20 +135,25 @@ struct _i1disp {
 
 	/* Computed factors and state */
 	int     crt;				/* NZ if set to CRT */ 
-	double  clk_freq;			/* Inverted reg94_F, ie master clock frequency, typically apx 1e6 */
-	double  rgbadj1[3];			/* RGB adjustment values, typically 1e6 */
-	double  rgbadj2[3];			/* RGB adjustment values, typically 1.0 */
+	double  iclk_freq;			/* Integration clock (from reg40_S), typically 1e6 */
+	double  clk_freq;			/* Measurement clock (from reg94_F), typically 1e6 */
+	double  rgbadj[3];			/* RGB adjustment values for period meas., typically 1.0 */
 	double  amb[9];				/* Ambient measurement matrix = ref144[] * average of LCD & CRT */
 
 	double ccmat[3][3];			/* Colorimeter correction matrix */
 
 	/* For dtype == 1 (Eye-One Display2) */
-	int     itset;				/* Flag, nz if the integration time has been measured and set */
-	double  sampfreq;			/* Refresh rate for i1d2, CRT default 60, LCD = 100 */
-	int     sampno;				/* Number of refresh rate samples we're aiming to take, def 100 */
-	double  samptime;			/* Total sample time in seconds (= sampno * sampfreq) */
 	int     nmeasprds;       	/* Number of disp refresh period measurments to average, deflt 5 */
-	int     int_clocks;			/* Integration time in clocks */
+	int     rrset;				/* Flag, nz if the refresh rate has been determined */
+	double refperiod;           /* if > 0.0 in refmode, target int time quantization */
+
+	double dinttime;			/* default integration time = 1.1 seconds */
+	double inttime;				/* current integration time = 1.0 seconds */
+
+	int     int_clocks;			/* Currently set integration time in clocks */
+
+	/* misc */
+	int 	last_com_err;		/* Last icoms error code */
 
 }; typedef struct _i1disp i1disp;
 

@@ -125,7 +125,7 @@ struct _i1d3 {
 	int refmode;				/* nz if in refresh display mode double int. time */
 	int rrset;					/* Flag, nz if the refresh rate has been determined */
 	double refperiod;			/* if > 0.0 in refmode, target int time quantization */
-	double clkrate;				/* Clockrate (12Mhz) */
+	double clk_freq;			/* Clock frequency (12Mhz) */
 	double dinttime;			/* default integration time = 0.2 seconds */
 	double inttime;				/* current integration time = 0.2 seconds */
 

@@ -135,7 +135,7 @@ icoms *p
 		/* Set value to match to RS232 type serial */
         CFDictionarySetValue(sdict, CFSTR(kIOSerialBSDTypeKey), CFSTR(kIOSerialBSDRS232Type));
 
-		/* Init itterator to find matching types */
+		/* Init itterator to find matching types. Consumes sdict reference */
 		if ((kstat = IOServiceGetMatchingServices(kIOMasterPortDefault, sdict, &mit))
 		                                                                     != KERN_SUCCESS) 
         	error("IOServiceGetMatchingServices returned %d\n", kstat);
@@ -191,7 +191,6 @@ icoms *p
 		    IOObjectRelease(ioob);		/* Release found object */
 		}
 	    IOObjectRelease(mit);			/* Release the itterator */
-		/* Don't have to release sdict ? */
 	}
 #else
 	/* Other UNIX like systems */

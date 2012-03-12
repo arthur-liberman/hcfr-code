@@ -747,6 +747,8 @@ hcfr_set_opt_mode(inst *pp, inst_opt_mode m, ...) {
 		ix = va_arg(args, int);
 		va_end(args);
 
+		if (ix == 0)		/* Map default to 2 */
+			ix = 2;
 		if (ix == 1) {
 			p->cal_mode = 0;
 			return inst_ok;

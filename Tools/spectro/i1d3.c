@@ -746,7 +746,7 @@ i1d3_read_external_eeprom(
 static inst_code
 i1d3_freq_measure(
 	i1d3 *p,				/* Object */
-	double *inttime,		/* Integration time in seconds. (Return rounded) */
+	double *inttime,		/* Integration time in seconds. (Return clock rounded) */
 	double rgb[3]			/* Return the RGB values */
 ) {
 	int intclks;
@@ -761,8 +761,8 @@ i1d3_freq_measure(
 		*inttime = 20.0;
 
 	/* Max = 357.9 seconds ? */
-	intclks = (int)(*inttime * p->clkrate + 0.5);
-	*inttime = (double)intclks / p->clkrate;
+	intclks = (int)(*inttime * p->clk_freq + 0.5);
+	*inttime = (double)intclks / p->clk_freq;
 
 	int2buf(todev + 1, intclks);
 
@@ -837,8 +837,8 @@ i1d3_set_LEDs(
 	memset(todev, 0, 64);
 	memset(fromdev, 0, 64);
 
-	mul1 = p->clkrate/(1 << 23);
-	mul2 = p->clkrate/(1 << 19);
+	mul1 = p->clk_freq/(1 << 23);
+	mul2 = p->clk_freq/(1 << 19);
 
 	ftime = (int)(0.5 + offtime * mul2);
 	if (ftime < 0)
@@ -907,7 +907,8 @@ i1d3_set_LEDs(
 #define NPER (PERMAX - PERMIN + 1)
 #define PWIDTH (4 * PBPMS)			/* 4 msec bin spread to look for peak in */
 
-inst_code i1d3_measure_refresh(
+static inst_code
+i1d3_measure_refresh(
 	i1d3 *p,			/* Object */
 	double *period
 ) {
@@ -951,7 +952,7 @@ inst_code i1d3_measure_refresh(
 	 		return ev;
 	}
 
-#ifdef NEVER
+#ifdef NEVER		/* This appears to be unnecessary */
 	/* Calibrate the usec timer against the instrument */
 	{
 		double inttime1, inttime2;
@@ -1035,8 +1036,9 @@ inst_code i1d3_measure_refresh(
 		samp[i].sec *= ucalf;
 		if (samp[i].sec > maxt)
 			maxt = samp[i].sec;
-		for (j = 0; j < 3; j++)
+		for (j = 0; j < 3; j++) {
 			samp[i].rgb[j] /= samp[i].itime;
+	}
 	}
 
 	/* Create PBPMS bins and interpolate readings into them */
@@ -1343,7 +1345,7 @@ printf("samples %d, maxmax = %f chan %d, min %f\n",i, maxmax,maxch,minv[maxch]);
 
 		/* Convert to frequency (assume raw meas is both edges count over integration time) */
 		for (i = 0; i < 3; i++) {
-			rgb[i] = (rmeas[i] * 0.5)/p->inttime;
+			rgb[i] = (0.5 * rmeas[i])/p->inttime;
 		}
 
 		DBG(("Got %s raw, %s Hz\n",icmPdv(3,rmeas),icmPdv(3,rgb)));
@@ -1388,7 +1390,7 @@ printf("samples %d, maxmax = %f chan %d, min %f\n",i, maxmax,maxch,minv[maxch]);
 					/* Convert rmeas[i] from frequency to period equivalent */
 					/* for subsequent calculations */
 					freq = (rmeas[i] * 0.5)/p->inttime;
-					rmeas[i] = (0.5 * edgec[i] * p->clkrate)/freq; 
+					rmeas[i] = (0.5 * edgec[i] * p->clk_freq)/freq; 
 					DBG(("chan %d has sufficient frequeny count to avoid pre-measure (rmeas_p %f)\n",i,rmeas[i]));
 				}
 			}
@@ -1401,7 +1403,9 @@ printf("samples %d, maxmax = %f chan %d, min %f\n",i, maxmax,maxch,minv[maxch]);
 		 			return ev;
 
 				DBG(("Got %s raw %f %f %f Hz\n",icmPdv(3,rmeas),
-				     p->clkrate/rmeas[0], p->clkrate/rmeas[1], p->clkrate/rmeas[2]));
+				     0.5 * edgec[0] * p->clk_freq/rmeas2[0],
+				     0.5 * edgec[1] * p->clk_freq/rmeas2[1],
+				     0.5 * edgec[2] * p->clk_freq/rmeas2[2]));
 
 				/* Do 2nd initial measurement if the count is small, in case */
 				/* we are measuring a CRT with a refresh rate which adds innacuracy, */
@@ -1418,7 +1422,7 @@ printf("samples %d, maxmax = %f chan %d, min %f\n",i, maxmax,maxch,minv[maxch]);
 
 							/* Compute number of edges needed for a clock count */
 							/* of 0.050 seconds */
-							nedgec = edgec[i] * 0.050 * p->clkrate/rmeas[i];
+							nedgec = edgec[i] * 0.050 * p->clk_freq/rmeas[i];
 
 							DBG(("chan %d target edges %f\n",i,nedgec));
 
@@ -1452,9 +1456,9 @@ printf("samples %d, maxmax = %f chan %d, min %f\n",i, maxmax,maxch,minv[maxch]);
 				 			return ev;
 
 						DBG(("Got %s raw %f %f %f Hz\n",icmPdv(3,rmeas2),
-						     0.5 * edgec[0] * p->clkrate/rmeas2[0],
-						     0.5 * edgec[1] * p->clkrate/rmeas2[1],
-						     0.5 * edgec[2] * p->clkrate/rmeas2[2]));
+						     0.5 * edgec[0] * p->clk_freq/rmeas2[0],
+						     0.5 * edgec[1] * p->clk_freq/rmeas2[1],
+						     0.5 * edgec[2] * p->clk_freq/rmeas2[2]));
 
 						/* Transfer updated counts from 2nd initial measurement */
 						for (i = 0; i < 3; i++) {
@@ -1486,7 +1490,7 @@ printf("samples %d, maxmax = %f chan %d, min %f\n",i, maxmax,maxch,minv[maxch]);
 
 					/* Compute number of edges needed for a clock count */
 					/* of 2 * p->inttime (typically 0.4) seconds (ie. typical 2.4e6 clocks). */
-					nedgec = edgec[i] * 2.0 * p->inttime * p->clkrate/rmeas[i];
+					nedgec = edgec[i] * 2.0 * p->inttime * p->clk_freq/rmeas[i];
 
 					DBG(("chan %d target edges %f\n",i,nedgec));
 
@@ -1505,7 +1509,7 @@ printf("samples %d, maxmax = %f chan %d, min %f\n",i, maxmax,maxch,minv[maxch]);
 					if (edgec[i] == 2) {
 
 						/* Use measurement from 2 edges */
-						rgb[i] = (p->clkrate * 0.5 * edgec[i])/rmeas[i];
+						rgb[i] = (p->clk_freq * 0.5 * edgec[i])/rmeas[i];
 						mask &= ~(1 << i);
 						edgec[i] = 0;
 
@@ -1554,9 +1558,9 @@ printf("samples %d, maxmax = %f chan %d, min %f\n",i, maxmax,maxch,minv[maxch]);
 						continue;
 	
 					/* Compute the frequency from period measurement */
-					rgb[i] = (p->clkrate * 0.5 * edgec[i])/rmeas[i];
+					rgb[i] = (p->clk_freq * 0.5 * edgec[i])/rmeas[i];
 					DBG(("chan %d raw %f frequency %f (%f Sec)\n",i,rmeas[i],trgb[i],
-					                            rmeas[i]/p->clkrate));
+					                            rmeas[i]/p->clk_freq));
 
 				}
 			}
@@ -2055,7 +2059,7 @@ i1d3_init_inst(inst *pp) {
 	}
 
 	/* Set known constants */
-	p->clkrate = 12e6;		/* 12 Mhz */
+	p->clk_freq = 12e6;		/* 12 Mhz */
 	p->dinttime = 0.2;		/* 0.2 second integration time default */
 	p->inttime = p->dinttime;	/* Start in non-refresh mode */
 
@@ -2626,7 +2630,7 @@ i1d3_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 			}
 			p->rrset = 0;					/* This is a hint we may have swapped displays */
 			return inst_ok;
-		} else if (ix == 2) {
+		} else if (ix == 0 || ix == 2) {	/* Default or 2 */
 			p->refmode = 0;					/* Non-Refresh mode */
 			p->inttime = p->dinttime;		/* Normal integration time */
 			p->rrset = 0;					/* This is a hint we may have swapped displays */

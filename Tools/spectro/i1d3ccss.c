@@ -22,6 +22,7 @@
 #include <stdarg.h>
 #include <fcntl.h>
 #include <string.h>
+#include <ctype.h>
 #if defined (NT)
 #define WIN32_LEAN_AND_MEAN
 #include <io.h>
@@ -759,7 +760,7 @@ static void dump_bytes(FILE *fp, char *pfx, unsigned char *buf, int len) {
 				if (isprint(buf[j]))
 					fprintf(fp,"%c",buf[j]);
 				else
-					fprintf(fp,".",buf[j]);
+					fprintf(fp,".");
 			}
 			fprintf(fp,"\n");
 		}

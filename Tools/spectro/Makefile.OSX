@@ -29,11 +29,11 @@ LIBOF     =
 RANLIB    = ranlib
 AS        = as
 CCFLAGSDEF   = -DUNIX -c
-CC        = clang -arch i386 -arch x86_64 $(WARNINGS) $(CCFLAGS) $(STDHDRS)
+CC        = clang -arch x86_64 $(WARNINGS) $(CCFLAGS) $(STDHDRS)
 CCOF      = -o
 LINKFLAGSDEF = -lm -framework AudioToolbox -framework IOKit -framework CoreFoundation
 LINKLIBS  = 
-LINK      = clang -arch i386 -arch x86_64 $(LINKFLAGS) $(LINKLIBS)
+LINK      = clang -arch x86_64 $(LINKFLAGS) $(LINKLIBS)
 LINKOF    = -o 
 CP        = cp
 

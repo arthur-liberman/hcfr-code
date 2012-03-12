@@ -3497,6 +3497,8 @@ spyd2_set_opt_mode(inst *pp, inst_opt_mode m, ...) {
 			p->calix = 1;				/* Calibration is always second table for hwv = 7 */
 
 			calix4 = 0;
+			if (ix == 0)				/* Default maps to 2 */
+				ix = 2;
 			if (ix == 1) {
 				if (p->ref == 0)
 					p->rrset = 0;		/* This is a hint we may have swapped displays */
@@ -3518,6 +3520,8 @@ spyd2_set_opt_mode(inst *pp, inst_opt_mode m, ...) {
 
 		/* Spyder 1, 2, or 3 */
 		} else {
+			if (p->itype == instSpyder3 && ix == 0)	/* Default maps to 2 for Spyder 3 */
+				ix = 2;
 			if (ix == 1) {
 				if (p->ref == 0)
 					p->rrset = 0;		/* This is a hint we may have swapped displays */

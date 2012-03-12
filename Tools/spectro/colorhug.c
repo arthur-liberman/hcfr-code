@@ -764,7 +764,11 @@ colorhug_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 		ix = va_arg(args, int);
 		va_end(args);
 
+		if (ix == 0)		/* Map default to 0 */
+			ix = 1;
+
 		/* The HW handles up to 6 calibrations */
+		ix -= 1;			/* Convert to 0 based index */
 		if (ix < 0 || ix > 3)
 			return inst_unsupported;
 		p->calix = ix;

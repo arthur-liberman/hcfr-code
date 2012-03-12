@@ -117,7 +117,7 @@ typedef enum {
     i1d_unlock       = 0x0e,		/* BBBB:-      Unlock the interface */
     i1d_m_red_2      = 0x13,		/* B:2:W       Measure the red channel in freq mode, 1,10sec */
 									/* B = sync mode, typically 2 */
-    i1d_m_rgb_edge_2 = 0x16,		/* SSS:2:WB    Measure RGB Edge period mode, 1,70sec */
+    i1d_m_rgb_edge_2 = 0x16,		/* SSS:2:WB    Measure RGB edge/period mode, 1.70sec, ret red */
 									/* 2nd return value is not used ? */
     i1d_rdambient    = 0x17,		/* BB:2:BWB    Read Ambient, 1,10sec */
 									/* Returns first B param as first response */
@@ -545,11 +545,13 @@ huey_wr_int_time(
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - */
 
-/* Take a raw initial (CRT) measurement from the device for a huey */
+/* Take a raw measurement using a given integration time. */
+/* The measureent is the count of (both) edges from the L2V */
+/* over the integration time */
 static inst_code
-huey_take_first_raw_measurement_2(
+huey_freq_measure(
 	huey *p,				/* Object */
-	double rgb[3]			/* Return the RGB values */
+	double rgb[3]			/* Return the RGB edge count values */
 ) {
 	unsigned char ibuf[8];
 	unsigned char obuf[8];
@@ -574,9 +576,11 @@ huey_take_first_raw_measurement_2(
 	return inst_ok;
 }
 
-/* Take a raw subsequent (CRT + LCD) mesurement from the device for a huey */
+/* Take a raw measurement that returns the number of clocks */
+/* between and initial edge and edgec[] subsequent edges of the L2F. */
+/* Both edges are counted. */
 static inst_code
-huey_take_raw_measurement_2(
+huey_period_measure(
 	huey *p,			/* Object */
 	int edgec[3],		/* Measurement edge count for each channel */
 	double rgb[3]		/* Return the RGB values */
@@ -674,7 +678,7 @@ huey_take_measurement_2(
 	/* For CRT mode, do an initial set of syncromized measurements */
 	if (crtm) {
 
-		if ((ev = huey_take_first_raw_measurement_2(p, rgb)) != inst_ok)
+		if ((ev = huey_freq_measure(p, rgb)) != inst_ok)
 			return ev;
 
 		DBG((dbgo,"Raw initial CRT RGB = %f %f %f\n",rgb[0],rgb[1],rgb[2]))
@@ -693,7 +697,7 @@ huey_take_measurement_2(
 		double rgb2[3];
 
 		/* Do a first or second set of measurements */
-		if ((ev = huey_take_raw_measurement_2(p, edgec, rgb2)) != inst_ok)
+		if ((ev = huey_period_measure(p, edgec, rgb2)) != inst_ok)
 			return ev;
 		DBG((dbgo,"Raw initial/subsequent ecount %d %d %d RGB = %f %f %f\n",
 		     edgec[0], edgec[1], edgec[2], rgb2[0], rgb2[1], rgb2[2]))
@@ -718,7 +722,7 @@ huey_take_measurement_2(
 		if (edgec[0] > 1 || edgec[1] > 1 || edgec[2] > 1) {
 			double rgb3[3];		/* 2nd RGB Readings */
 	
-			if ((ev = huey_take_raw_measurement_2(p, edgec, rgb3)) != inst_ok)
+			if ((ev = huey_period_measure(p, edgec, rgb3)) != inst_ok)
 				return ev;
 	
 			DBG((dbgo,"Raw subsequent2 ecount %d %d %d RGB = %f %f %f\n",

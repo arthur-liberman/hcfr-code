@@ -296,6 +296,7 @@ typedef enum {
 	inst_opt_noautocalib        = 0x0002,	/* Disable auto calibration [No args] */
 
 	inst_opt_disp_type          = 0x0003,	/* Set display type by inst_disptypesel index [int] */
+											/* 0 sets to default, if no inst_emis_disptypem */ 
 
 	inst_opt_set_filter         = 0x0007,	/* Set a filter configuration */
 											/* [1 argument type inst_opt_filter] */
