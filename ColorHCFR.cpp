@@ -43,6 +43,7 @@
 
 #include "EyeOneSensor.h"
 #include "SerialCom.h"
+#include "VersionInfoFromFile.h"
 
 #include "ximage.h"
 
@@ -1236,7 +1237,17 @@ UINT CColorHCFRApp::GetLuxMeasure ( double * pLuxValue )
 BOOL CAboutDlg::OnInitDialog() 
 {
 	CDialog::OnInitDialog();
-	char	szSensor [ 256 ];
+
+    VersionInfoFromFile verInfo;
+    std::string versionNumberString("Version x.x");
+    if(verInfo.getProductVersion(versionNumberString))
+    {
+        versionNumberString = std::string("Version ") + versionNumberString;
+    }
+    m_Version.SetWindowText(versionNumberString.c_str());
+
+
+	char	szSensor[256];
 	char	szDevApp [ 256 ];
 	char	szSensorAndApp [ 256 ];
 	char	szExpert [ 256 ];
@@ -1283,9 +1294,6 @@ BOOL CAboutDlg::OnInitDialog()
 							"CXPGroupBox: <font style='b'>JackCa</font>","http://www.codeproject.com/miscctrl/xpgroupbox.asp" };
 	int classesNb=(sizeof(classesStrings)/sizeof(char *));
 	CString	str;
-
-	::LoadString ( ::GetModuleHandle ( NULL ), IDS_STRING_VERSION, szSensor, sizeof ( szSensor ) );
-	m_Version.SetWindowText ( szSensor );
 
     // disable donations for now
 	//str.LoadString ( IDS_DONATION_HYPERLINK );

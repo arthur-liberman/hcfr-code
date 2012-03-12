@@ -1285,6 +1285,10 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath=".\Tools\VersionInfoFromFile.cpp"
+					>
+				</File>
+				<File
 					RelativePath="Tools\XPGroupBox.cpp"
 					>
 					<FileConfiguration
@@ -2907,6 +2911,10 @@
 				</File>
 				<File
 					RelativePath="Tools\Subclass.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Tools\VersionInfoFromFile.h"
 					>
 				</File>
 				<File
