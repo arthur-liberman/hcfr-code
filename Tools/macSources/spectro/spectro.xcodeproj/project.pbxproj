@@ -100,6 +100,10 @@
 		01D8896114F84FC5002DC664 /* libusb-1.0A.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 01D8893114F84CA3002DC664 /* libusb-1.0A.a */; };
 		01D88DCF15017806002DC664 /* ccss.c in Sources */ = {isa = PBXBuildFile; fileRef = 01D88DCE15017806002DC664 /* ccss.c */; };
 		01D88DF315017939002DC664 /* xdg_bds.c in Sources */ = {isa = PBXBuildFile; fileRef = 01D88DF215017939002DC664 /* xdg_bds.c */; };
+		523043A7150F303800206683 /* aglob.c in Sources */ = {isa = PBXBuildFile; fileRef = 523043A3150F303800206683 /* aglob.c */; };
+		523043A8150F303800206683 /* aglob.h in Headers */ = {isa = PBXBuildFile; fileRef = 523043A4150F303800206683 /* aglob.h */; };
+		523043A9150F303800206683 /* colorhug.c in Sources */ = {isa = PBXBuildFile; fileRef = 523043A5150F303800206683 /* colorhug.c */; };
+		523043AA150F303800206683 /* colorhug.h in Headers */ = {isa = PBXBuildFile; fileRef = 523043A6150F303800206683 /* colorhug.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -207,6 +211,10 @@
 		01D8893114F84CA3002DC664 /* libusb-1.0A.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libusb-1.0A.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		01D88DCE15017806002DC664 /* ccss.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ccss.c; path = ../../spectro/ccss.c; sourceTree = SOURCE_ROOT; };
 		01D88DF215017939002DC664 /* xdg_bds.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xdg_bds.c; path = ../../spectro/xdg_bds.c; sourceTree = SOURCE_ROOT; };
+		523043A3150F303800206683 /* aglob.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = aglob.c; path = ../../spectro/aglob.c; sourceTree = SOURCE_ROOT; };
+		523043A4150F303800206683 /* aglob.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aglob.h; path = ../../spectro/aglob.h; sourceTree = SOURCE_ROOT; };
+		523043A5150F303800206683 /* colorhug.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = colorhug.c; path = ../../spectro/colorhug.c; sourceTree = SOURCE_ROOT; };
+		523043A6150F303800206683 /* colorhug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = colorhug.h; path = ../../spectro/colorhug.h; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -233,6 +241,8 @@
 		01D8885014F83A64002DC664 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				523043A3150F303800206683 /* aglob.c */,
+				523043A5150F303800206683 /* colorhug.c */,
 				01D88DF215017939002DC664 /* xdg_bds.c */,
 				01D88DCE15017806002DC664 /* ccss.c */,
 				01D8886114F83B4C002DC664 /* insttypes.c */,
@@ -275,6 +285,8 @@
 		01D888ED14F83C5B002DC664 /* Headers */ = {
 			isa = PBXGroup;
 			children = (
+				523043A4150F303800206683 /* aglob.h */,
+				523043A6150F303800206683 /* colorhug.h */,
 				01D8889B14F83C56002DC664 /* ccss.h */,
 				01D8889C14F83C56002DC664 /* cgats.h */,
 				01D8889D14F83C56002DC664 /* conv.h */,
@@ -382,6 +394,8 @@
 				01D888EA14F83C56002DC664 /* usbio.h in Headers */,
 				01D888EB14F83C56002DC664 /* xdg_bds.h in Headers */,
 				01D888EC14F83C56002DC664 /* xspect.h in Headers */,
+				523043A8150F303800206683 /* aglob.h in Headers */,
+				523043AA150F303800206683 /* colorhug.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -542,6 +556,8 @@
 				01D8889814F83C1C002DC664 /* LzmaDec.c in Sources */,
 				01D88DCF15017806002DC664 /* ccss.c in Sources */,
 				01D88DF315017939002DC664 /* xdg_bds.c in Sources */,
+				523043A7150F303800206683 /* aglob.c in Sources */,
+				523043A9150F303800206683 /* colorhug.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
