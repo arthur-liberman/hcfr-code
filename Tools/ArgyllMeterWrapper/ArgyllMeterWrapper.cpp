@@ -292,7 +292,8 @@ int ArgyllMeterWrapper::getDisplayType() const
 
 void ArgyllMeterWrapper::setDisplayType(int displayMode)
 {
-    if(displayMode < getNumberOfDisplayTypes())
+    int numTypes(getNumberOfDisplayTypes());
+    if(numTypes > 0 && displayMode < numTypes)
     {
         m_displayType = displayMode;
         inst_code instCode = m_meter->set_opt_mode(m_meter, inst_opt_disp_type, displayMode + 1);
