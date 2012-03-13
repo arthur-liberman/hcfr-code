@@ -220,7 +220,6 @@ int vwrite_output(unsigned char *buf, unsigned int len) {
 archive *new_arch(char *name, int verb) {
 	FILE *ifp;
 	unsigned int bread, i;
-	int rv = 0;
 	archive *p;
 
 	if ((p = (archive *)calloc(sizeof(archive),1)) == NULL)
@@ -378,7 +377,6 @@ archive *new_arch(char *name, int verb) {
 int write_bin(char *name, unsigned char *fbuf, unsigned int fsize, int verb) {
 	FILE *fp;
 	unsigned int rfsize;	/* rounded fsize */
-	int i, j;
 
 	if (verb)
 		printf("About to write binary '%s'\n",name);
@@ -449,8 +447,6 @@ main(int argc, char *argv[]) {
 	archive *va;
 	unsigned char *fbuf;
 	unsigned int fsize;
-	int i;
-	int rv = 0;
 	
 	set_exe_path(argv[0]);		/* Set global exe_path and error_program */
 

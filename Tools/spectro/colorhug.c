@@ -160,7 +160,6 @@ colorhug_command(colorhug *p,
 				 unsigned char *out, unsigned int out_size,
 				 double timeout)
 {
-	int i;
 	unsigned char buf[64];
 	int wbytes;
 	int rbytes;
@@ -292,7 +291,6 @@ static double packed_float_to_double (int32_t pf)
 static inst_code
 colorhug_set_LEDs(colorhug *p, int mask)
 {
-	int i;
 	unsigned char ibuf[4];
 	inst_code ev;
 
@@ -628,7 +626,6 @@ colorhug_del(inst *pp) {
 
 /* Return the instrument capabilities */
 inst_capability colorhug_capabilities(inst *pp) {
-	colorhug *p = (colorhug *)pp;
 	inst_capability rv;
 
 	rv = inst_emis_spot
@@ -643,7 +640,6 @@ inst_capability colorhug_capabilities(inst *pp) {
 
 /* Return the instrument capabilities 2 */
 inst2_capability colorhug_capabilities2(inst *pp) {
-	colorhug *p = (colorhug *)pp;
 	inst2_capability rv = 0;
 
 	rv |= inst2_prog_trig;
@@ -692,8 +688,6 @@ static inst_code colorhug_get_opt_details(
 inst *pp,
 inst_optdet_type m,	/* Requested option detail type */
 ...) {				/* Status parameters */                             
-	colorhug *p = (colorhug *)pp;
-	inst_code rv = inst_ok;
 
 	if (m == inst_optdet_disptypesel) {
 		va_list args;
@@ -748,7 +742,6 @@ static inst_code
 colorhug_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 {
 	colorhug *p = (colorhug *)pp;
-	inst_code ev = inst_ok;
 
 	if (!p->gotcoms)
 		return inst_no_coms;
