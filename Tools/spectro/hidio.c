@@ -582,11 +582,6 @@ char **pnames			/* List of process names to try and kill before opening */
 			        != kIOReturnSuccess || p->hidd->evsrc == NULL)
 				error("Creating event source on HID device '%s' failed",p->ppath->path);
 
-//			p->hidd->rlr = CFRetain(CFRunLoopGetCurrent());
-			p->hidd->rlr = CFRunLoopGetCurrent();
-
-			CFRunLoopAddSource(p->hidd->rlr, p->hidd->evsrc, kCFRunLoopDefaultMode);
-
 		}
 #endif /* __APPLE__ */
 
@@ -688,6 +683,9 @@ icoms_hid_read_th(icoms *p,
 		p->hidd->result = -1;
 		p->hidd->bread = 0;
 
+		p->hidd->rlr = CFRunLoopGetCurrent();
+		CFRunLoopAddSource(p->hidd->rlr, p->hidd->evsrc, kCFRunLoopDefaultMode);
+
 		if ((*(p->hidd->device))->setInterruptReportHandlerCallback(p->hidd->device,
 			rbuf, bsize, hid_read_callback, (void *)p, NULL) != kIOReturnSuccess)
 			error("Setting callback handler for HID '%s' failed", p->ppath->path);
@@ -702,6 +700,9 @@ icoms_hid_read_th(icoms *p,
 		} else if (result != kCFRunLoopRunStopped) {
 			lerr = ICOM_USBR; 
 		}
+
+		CFRunLoopRemoveSource(p->hidd->rlr, p->hidd->evsrc, kCFRunLoopDefaultMode);
+
 		if (p->hidd->result == -1) {		/* Callback wasn't called */
 			lerr = ICOM_TO; 
 		} else if (p->hidd->result != kIOReturnSuccess) {
