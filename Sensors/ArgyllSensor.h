@@ -74,8 +74,6 @@ public:
     virtual BOOL SensorNeedCalibration () { return FALSE; }
     virtual BOOL SensorAcceptCalibration () { return ( GetConfig()->m_bUseCalibrationFilesOnAllProbes ); }
 
-    virtual BOOL HasSpectrumCapabilities ( int * pNbBands, int * pMinWaveLength, int * pMaxWaveLength, int * pBandWidth );
-
     virtual void GetUniqueIdentifier( CString & strId );
     static bool isInDebugMode() {return m_debugMode;}
     virtual bool isValid() const {return (m_meter != 0);}

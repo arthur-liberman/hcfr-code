@@ -97,7 +97,6 @@ public:
 	// returns unique sensor identifier (for simultaneous measures: cannot use twice the same sensor on two documents)
 	virtual void GetUniqueIdentifier( CString & strId ) { strId = m_name; }
 
-	virtual BOOL HasSpectrumCapabilities ( int * pNbBands, int * pMinWaveLength, int * pMaxWaveLength, int * pBandWidth ) { return FALSE; }
     virtual bool isValid() const {return true;}
 };
 

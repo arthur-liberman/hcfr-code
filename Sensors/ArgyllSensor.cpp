@@ -249,11 +249,6 @@ void CArgyllSensor::Calibrate()
     MessageBox(NULL, "Device is now calibrated.  If the device requires it return to the correct measurement position.", "Calibration Complete", MB_OK);
 }
 
-BOOL CArgyllSensor::HasSpectrumCapabilities ( int * pNbBands, int * pMinWaveLength, int * pMaxWaveLength, int * pBandWidth )
-{
-    return FALSE;
-}
-
 void CArgyllSensor::GetUniqueIdentifier( CString & strId )
 {
     strId = "Argyll Meter";

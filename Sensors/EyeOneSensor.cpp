@@ -635,21 +635,6 @@ CColor CEyeOneSensor::MeasureColor(COLORREF aRGBValue)
 	return EyeOneColor;
 }
 
-BOOL CEyeOneSensor::HasSpectrumCapabilities ( int * pNbBands, int * pMinWaveLength, int * pMaxWaveLength, int * pBandWidth )
-{
-	if ( m_CalibrationMode >= 3 )
-	{
-		* pNbBands = SPECTRUM_BANDS;
-		* pMinWaveLength = SPECTRUM_WAVELENGTH_MIN;
-		* pMaxWaveLength = SPECTRUM_WAVELENGTH_MAX;
-		* pBandWidth = SPECTRUM_WAVELENGTH_BANDWIDTH;
-
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
 void CEyeOneSensor::GetUniqueIdentifier( CString & strId )
 {
 	sprintf ( strId.GetBuffer(64), "%s %s", (LPCSTR) m_name, ( m_CalibrationMode == 3 ? "Pro" : "Display" ) );

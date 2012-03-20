@@ -257,17 +257,3 @@ void CSimulatedSensor::GetUniqueIdentifier( CString & strId )
 	sprintf ( strId.GetBuffer(64), "%s-%08X", (LPCSTR) m_name, (DWORD) this );
 	strId.ReleaseBuffer (); 
 }
-
-BOOL CSimulatedSensor::HasSpectrumCapabilities ( int * pNbBands, int * pMinWaveLength, int * pMaxWaveLength, int * pBandWidth )
-{
-	return FALSE;
-/*
-	* pNbBands = 18;
-	* pMinWaveLength = 380;
-	* pMaxWaveLength = 730;
-	* pBandWidth = 20;
-
-	return TRUE;
-*/
-}
-

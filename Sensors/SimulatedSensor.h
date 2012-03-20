@@ -51,8 +51,6 @@ public:
 
 	virtual LPCSTR GetStandardSubDir ()	{ return "Etalon_Simulation"; }
 
-	virtual BOOL HasSpectrumCapabilities ( int * pNbBands, int * pMinWaveLength, int * pMaxWaveLength, int * pBandWidth );
-
 	// returns unique sensor identifier (for simultaneous measures: cannot use twice the same sensor on two documents)
 	virtual void GetUniqueIdentifier( CString & strId );
 
