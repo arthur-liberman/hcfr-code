@@ -339,7 +339,16 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading()
         throw std::logic_error("Taking Reading failed");
     }
 
+    m_lastReading.ResetSpectrum();
     m_lastReading = CColor(argyllReading.aXYZ[0], argyllReading.aXYZ[1], argyllReading.aXYZ[2]);
+    if(argyllReading.sp.spec_n > 0)
+    {
+        int shortWavelength((int)(argyllReading.sp.spec_wl_short + 0.5));
+        int longWavelength((int)(argyllReading.sp.spec_wl_long + 0.5));
+        int bandWidth((int)((argyllReading.sp.spec_wl_long - argyllReading.sp.spec_wl_short) / (double)argyllReading.sp.spec_n + 0.5));
+        CSpectrum spectrum(argyllReading.sp.spec_n, shortWavelength, longWavelength, bandWidth, argyllReading.sp.spec);
+        m_lastReading.SetSpectrum(spectrum);
+    }
     return READY;
 }
 
