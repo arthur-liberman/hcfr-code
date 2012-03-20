@@ -11,8 +11,7 @@
 
 @implementation ArgyllSensor (Private)
 -(void) nibDidLoad
-{
-	
+{	
 }
 @end
 

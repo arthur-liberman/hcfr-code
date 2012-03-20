@@ -132,7 +132,6 @@ extern "C"
     extern void (*verbose)(int level, char *fmt, ...);
 }
 
-
 ArgyllMeterWrapper::ArgyllMeterWrapper(_inst* meter) :
     m_readingType(DISPLAY),
     m_meter(meter),
