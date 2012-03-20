@@ -180,7 +180,7 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
     }
 
     int capabilities = m_meter->capabilities(m_meter);
-    inst_mode mode = inst_mode_emis_spot;
+    int mode = inst_mode_emis_spot;
 
     if(m_readingType == PROJECTOR)
     {
@@ -194,7 +194,12 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
         }
     }
 
-    instCode = m_meter->set_mode(m_meter, mode);
+    if ((capabilities & inst_spectral) != 0)
+    {
+        mode |= inst_mode_spectral;
+    }
+
+    instCode = m_meter->set_mode(m_meter, (inst_mode)mode);
     if(instCode == inst_unsupported && mode != inst_mode_emis_spot)
     {
         instCode = m_meter->set_mode(m_meter, inst_mode_emis_spot);
