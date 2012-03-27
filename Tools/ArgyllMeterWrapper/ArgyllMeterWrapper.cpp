@@ -39,7 +39,6 @@
 #include "libusbi.h"
 #undef SALONEINSTLIB
 #include <stdexcept>
-#include <stdexcept>
 
 namespace
 {
@@ -574,7 +573,7 @@ std::vector<ArgyllMeterWrapper*> ArgyllMeterWrapper::getDetectedMeters(std::stri
                         _inst* meter = 0;
                         try
                         {
-                            meter = new_inst(i + 1, 0, 0, 0);
+                            meter = new_inst(i + 1, 0, 1, 0);
                         }
                         catch(std::logic_error&)
                         {
@@ -590,13 +589,14 @@ std::vector<ArgyllMeterWrapper*> ArgyllMeterWrapper::getDetectedMeters(std::stri
                             else
                             {
                                 meter->del(meter);
-                                errorMessage = "Starting communications with the meter failed";
+                                errorMessage += "Starting communications with the meter failed. ";
                             }
                         }
-                        catch(std::logic_error&)
+                        catch(std::logic_error& e)
                         {
                             meter->del(meter);
-                            errorMessage = "Incorrect driver - Starting communications with the meter failed with severe error";
+                            errorMessage += "Incorrect driver - Starting communications with the meter failed with severe error. ";
+                            errorMessage += e.what();
                         }
                     }
                 }
