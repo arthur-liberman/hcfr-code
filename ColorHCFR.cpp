@@ -117,6 +117,10 @@ CColorHCFRApp::CColorHCFRApp()
 	m_nFirstValidMeasure = 0;
 	m_MeasuredLuxValue = 0.0;
 	m_MeasuredLuxValue_Initial = 0.0;
+
+    freopen( "stdout.log", "w", stdout ); 
+    freopen( "stderr.log", "w", stderr ); 
+
 }
 
 CColorHCFRApp::~CColorHCFRApp()
