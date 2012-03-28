@@ -330,12 +330,13 @@ void CFullScreenWindow::DisplayRGBColor ( COLORREF clr, BOOL bDisableWaiting )
 		MSG		Msg;
 		HWND	hEscapeWnd = NULL;
 		DWORD	dwWait = GetConfig () -> GetProfileInt ( "Debug", "WaitAfterDisplayPattern", 80 );
-		DWORD	dwEnd = GetTickCount () + dwWait;
+		DWORD	dwStart = GetTickCount();
+		DWORD	dwNow = dwStart;
 		
 		// Wait until dwWait time is expired, but ensures all posted messages are treated even if wait time is zero
-		while ( ! dwWait || GetTickCount () < dwEnd )
+		while((dwNow - dwStart) < dwWait)
 		{
-			if ( PeekMessage ( & Msg, NULL, NULL, NULL, TRUE ) )
+			while(PeekMessage(&Msg, NULL, NULL, NULL, PM_REMOVE))
 			{
 				if ( ( Msg.message == WM_KEYDOWN || Msg.message == WM_KEYUP ) && Msg.wParam == VK_ESCAPE )
 				{
@@ -347,14 +348,9 @@ void CFullScreenWindow::DisplayRGBColor ( COLORREF clr, BOOL bDisableWaiting )
 					TranslateMessage ( & Msg );
 					DispatchMessage ( & Msg );
 				}
+				Sleep(0);
 			}
-			else
-			{
-				if ( ! dwWait )
-					break;
-				else
-					Sleep(0);
-			}
+			dwNow = GetTickCount();
 		}
 
 		if ( hEscapeWnd )
