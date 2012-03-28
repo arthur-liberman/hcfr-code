@@ -578,20 +578,13 @@ UINT CMeasure::GetLuxMeasure ( double * pValue )
 		if ( bContinue )
 		{
 			// Sleep 50 ms while dispatching messages to the advisor dialog
-			MSG	Msg;
-			DWORD	dwEnd = GetTickCount () + 50;
+			Sleep(50);
 			
-			while ( GetTickCount () < dwEnd )
+			MSG	Msg;
+			while(PeekMessage(&Msg, NULL, NULL, NULL, PM_REMOVE))
 			{
-				if ( PeekMessage ( & Msg, NULL, NULL, NULL, TRUE ) )
-				{
-					TranslateMessage ( & Msg );
-					DispatchMessage ( & Msg );
-				}
-				else
-				{
-					Sleep(0);
-				}
+				TranslateMessage( &Msg );
+				DispatchMessage( &Msg );
 			}
 		}
 	} while ( bContinue );
@@ -3777,20 +3770,22 @@ void CMeasure::SetSensorMatrix(const Matrix & aMatrix, BOOL doPreserveSensorValu
 
 BOOL CMeasure::WaitForDynamicIris ( BOOL bIgnoreEscape )
 {
-	BOOL	bEscape = FALSE;
-	int		nLatencyTime = GetConfig () -> m_latencyTime;
+	BOOL bEscape = FALSE;
+	DWORD nLatencyTime = (DWORD)GetConfig()->m_latencyTime;
 
 	if ( nLatencyTime > 0 )
 	{
 		// Sleep nLatencyTime ms while dispatching messages
 		MSG	Msg;
-		DWORD	dwEnd = GetTickCount () + nLatencyTime;
-																
-		while ( ! bEscape && GetTickCount () < dwEnd )
+		DWORD dwStart = GetTickCount();
+		DWORD dwNow = dwStart;
+
+		while((!bEscape) && ((dwNow - dwStart) < nLatencyTime))
 		{
-			if ( PeekMessage ( & Msg, NULL, NULL, NULL, TRUE ) )
+			Sleep(0);
+			while(PeekMessage(&Msg, NULL, NULL, NULL, TRUE ))
 			{
-				if ( ! bIgnoreEscape )
+				if (!bIgnoreEscape )
 				{
 					if ( Msg.message == WM_KEYDOWN )
 					{
@@ -3802,10 +3797,7 @@ BOOL CMeasure::WaitForDynamicIris ( BOOL bIgnoreEscape )
 				TranslateMessage ( & Msg );
 				DispatchMessage ( & Msg );
 			}
-			else
-			{
-				Sleep(0);
-			}
+			dwNow = GetTickCount();
 		}
 	}
 

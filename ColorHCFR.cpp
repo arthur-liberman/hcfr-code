@@ -1211,19 +1211,11 @@ UINT CColorHCFRApp::GetLuxMeasure ( double * pLuxValue )
 			{
 				// Sleep 20 ms while dispatching messages
 				MSG	Msg;
-				DWORD	dwEnd = GetTickCount () + 20;
-																		
-				while ( GetTickCount () < dwEnd )
+				Sleep(20);
+				while(PeekMessage(& Msg, NULL, NULL, NULL, PM_REMOVE))
 				{
-					if ( PeekMessage ( & Msg, NULL, NULL, NULL, TRUE ) )
-					{
-						TranslateMessage ( & Msg );
-						DispatchMessage ( & Msg );
-					}
-					else
-					{
-						Sleep(0);
-					}
+					TranslateMessage ( & Msg );
+					DispatchMessage ( & Msg );
 				}
 			}
 		
