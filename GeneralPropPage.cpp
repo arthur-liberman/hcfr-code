@@ -64,7 +64,7 @@ void CGeneralPropPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_MULTIPLEINSTANCE, m_doMultipleInstance);
 	DDX_Check(pDX, IDC_CHECK_COLORS, m_bDisplayTestColors);
 	DDX_Text(pDX, IDC_EDIT_IRIS_TIME, m_latencyTime);
-	DDV_MinMaxInt(pDX, m_latencyTime, 0, 30000);
+	DDV_MinMaxInt(pDX, m_latencyTime, 100, 30000);
 	DDX_Check(pDX, IDC_CHECK_SAVEPOSITION, m_doSavePosition);
 	DDX_Check(pDX, IDC_CHECK_CONTINUOUS, m_bContinuousMeasures);
 	DDX_Check(pDX, IDC_CHECK_BEEP, m_bLatencyBeep);
