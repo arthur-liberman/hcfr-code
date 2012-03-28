@@ -54,6 +54,7 @@
 				AdditionalIncludeDirectories="Tools/CxImage,./,Tools,Tools/NewMenu,Tools/Graph,Tools/ButtonST,Tools/GridCtrl,Tools/CppTooltip,Generators,Sensors,Controls,Views,Tools/spectro,libHCFR,Tools/ArgyllMeterWrapper"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USE_32BIT_TIME_T"
 				StringPooling="true"
+				ExceptionHandling="2"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				RuntimeTypeInfo="true"
@@ -148,6 +149,7 @@
 				AdditionalIncludeDirectories="Tools/CxImage,./,Tools,Tools/NewMenu,Tools/Graph,Tools/ButtonST,Tools/GridCtrl,Tools/CppTooltip,Generators,Sensors,Controls,Views,Tools/spectro,libHCFR,Tools/ArgyllMeterWrapper"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USE_32BIT_TIME_T"
 				MinimalRebuild="true"
+				ExceptionHandling="2"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				RuntimeTypeInfo="true"
@@ -324,6 +326,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\CrashDump.cpp"
+				>
 			</File>
 			<File
 				RelativePath="DataSetDoc.cpp"
@@ -2714,6 +2720,10 @@
 			</File>
 			<File
 				RelativePath="ColorHCFRConfig.h"
+				>
+			</File>
+			<File
+				RelativePath=".\CrashDump.h"
 				>
 			</File>
 			<File

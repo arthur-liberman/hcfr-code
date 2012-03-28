@@ -46,6 +46,7 @@
 				AdditionalIncludeDirectories="..\..\include"
 				PreprocessorDefinitions="_DEBUG;_LIB;WIN32;_USE_32BIT_TIME_T;CPPUNIT_HAVE_RTTI=0"
 				MinimalRebuild="true"
+				ExceptionHandling="2"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				RuntimeTypeInfo="true"
@@ -120,6 +121,7 @@
 				AdditionalIncludeDirectories="..\..\include"
 				PreprocessorDefinitions="NDEBUG;_LIB;WIN32;_USE_32BIT_TIME_T;CPPUNIT_HAVE_RTTI=0"
 				StringPooling="true"
+				ExceptionHandling="2"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				RuntimeTypeInfo="true"
@@ -374,11 +376,11 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\include\cppunit\TextTestRunner.h"
+				RelativePath="..\..\include\cppunit\ui\text\TextTestRunner.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\cppunit\ui\text\TextTestRunner.h"
+				RelativePath="..\..\include\cppunit\TextTestRunner.h"
 				>
 			</File>
 		</Filter>
@@ -1641,11 +1643,11 @@
 			>
 		</File>
 		<File
-			RelativePath="..\..\include\cppunit\Makefile.am"
+			RelativePath="Makefile.am"
 			>
 		</File>
 		<File
-			RelativePath="Makefile.am"
+			RelativePath="..\..\include\cppunit\Makefile.am"
 			>
 		</File>
 	</Files>

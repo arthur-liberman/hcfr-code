@@ -37,6 +37,7 @@
 #include "WinAppEx.h"
 #include "HelpID.h"
 #include "Color.h"
+#include "CrashDump.h"
 
 // Return codes for CColorHCFRApp::GetLuxMeasure
 
@@ -198,6 +199,8 @@ public:
 	afx_msg void OnUpdateViewMeasuresCombo(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+private:
+    CrashDump m_enablesCrashDump;
 };
 
 inline CColorHCFRApp * GetColorApp () { return (CColorHCFRApp *) AfxGetApp (); }
