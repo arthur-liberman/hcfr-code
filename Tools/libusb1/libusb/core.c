@@ -501,7 +501,7 @@ struct libusb_device *usbi_alloc_device(struct libusb_context *ctx,
 	unsigned long session_id)
 {
 	size_t priv_size = usbi_backend->device_priv_size;
-	struct libusb_device *dev = malloc(sizeof(*dev) + priv_size);
+	struct libusb_device *dev = calloc(sizeof(*dev) + priv_size, 1);
 	int r;
 
 	if (!dev)
@@ -909,7 +909,7 @@ API_EXPORTED int libusb_open(libusb_device *dev, libusb_device_handle **handle)
 	ssize_t r;
 	usbi_dbg("open %d.%d", dev->bus_number, dev->device_address);
 
-	_handle = malloc(sizeof(*_handle) + priv_size);
+	_handle = calloc(sizeof(*_handle) + priv_size, 1);
 	if (!_handle)
 		return LIBUSB_ERROR_NO_MEM;
 
