@@ -514,7 +514,8 @@ bool ArgyllMeterWrapper::isSameMeter(ArgyllMeterWrapper* otherMeter) const
     {
         return false;
     }
-    if(m_meter->icom->is_hid)
+    if(m_meter->icom->is_hid && otherMeter->m_meter->icom->is_hid &&
+        m_meter->icom->hidd->dpath && otherMeter->m_meter->icom->hidd->dpath)
     {
 #if defined(NT)
         // a guess at a unique thing
@@ -528,7 +529,8 @@ bool ArgyllMeterWrapper::isSameMeter(ArgyllMeterWrapper* otherMeter) const
                 (m_meter->icom->pid == otherMeter->m_meter->icom->pid));
 #endif
     }
-    else if(m_meter->icom->is_usb)
+    else if(m_meter->icom->is_usb && otherMeter->m_meter->icom->is_usb && 
+         m_meter->icom->usbd && otherMeter->m_meter->icom->usbd)
     {
         return (m_meter->icom->vid == otherMeter->m_meter->icom->vid) &&
                 (m_meter->icom->pid == otherMeter->m_meter->icom->pid) &&
