@@ -514,12 +514,19 @@ bool ArgyllMeterWrapper::isSameMeter(ArgyllMeterWrapper* otherMeter) const
     {
         return false;
     }
-    if(m_meter->icom->is_hid && otherMeter->m_meter->icom->is_hid &&
-        m_meter->icom->hidd->dpath && otherMeter->m_meter->icom->hidd->dpath)
+    if(m_meter->icom->is_hid && otherMeter->m_meter->icom->is_hid)
     {
 #if defined(NT)
-        // a guess at a unique thing
-        return (strcmp(m_meter->icom->hidd->dpath, otherMeter->m_meter->icom->hidd->dpath) == 0);
+        if(m_meter->icom->hidd && otherMeter->m_meter->icom->hidd &&
+            m_meter->icom->hidd->dpath && otherMeter->m_meter->icom->hidd->dpath)
+        {
+            // a guess at a unique thing
+            return (strcmp(m_meter->icom->hidd->dpath, otherMeter->m_meter->icom->hidd->dpath) == 0);
+        }
+        else
+        {
+            return false;
+        }
 #endif
 #if defined (__APPLE__)
         return (m_meter->icom->hidd->ioob == otherMeter->m_meter->icom->hidd->ioob);
