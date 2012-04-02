@@ -265,11 +265,23 @@ LPCSTR CSensorSelectionPropPage::GetThcFileSubDir ( int nSensorID )
 		case 6:
 			 return ( GetConfig()->m_bUseCalibrationFilesOnAllProbes ? "Etalon_S3" : "" );
 
-		case 7:
-            return ( GetConfig()->m_bUseCalibrationFilesOnAllProbes ? "Etalon_Argyll" : "" );
-
 		default:
-			 return "";
+            if(GetConfig()->m_bUseCalibrationFilesOnAllProbes)
+            {
+                return "Etalon_Argyll";
+            }
+            else
+            {
+                ArgyllMeterWrapper* meter = (ArgyllMeterWrapper*)nSensorID;
+                if(meter->isColorimeter())
+                {
+                    return "Etalon_Argyll";
+                }
+                else
+                {
+                    return "";
+                }
+            }
 	} 
 }
 

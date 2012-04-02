@@ -71,8 +71,8 @@ public:
 
     void Calibrate();
 
-    virtual BOOL SensorNeedCalibration () { return FALSE; }
-    virtual BOOL SensorAcceptCalibration () { return ( GetConfig()->m_bUseCalibrationFilesOnAllProbes ); }
+    virtual BOOL SensorNeedCalibration();
+    virtual BOOL SensorAcceptCalibration();
 
     virtual void GetUniqueIdentifier( CString & strId );
     static bool isInDebugMode() {return m_debugMode;}

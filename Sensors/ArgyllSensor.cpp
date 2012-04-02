@@ -285,4 +285,19 @@ void ArgyllLogMessage(const char* messageType, char *fmt, va_list& args)
     }
 }
 
+BOOL CArgyllSensor::SensorNeedCalibration()
+{
+    return FALSE;
+}
 
+BOOL CArgyllSensor::SensorAcceptCalibration()
+{
+    if(GetConfig()->m_bUseCalibrationFilesOnAllProbes)
+    {
+        return true;
+    }
+    else
+    {
+        return m_meter->isColorimeter()?TRUE:FALSE;
+    }
+}
