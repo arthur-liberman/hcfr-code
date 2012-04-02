@@ -130,10 +130,10 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     LTEXT           "Select a sensor in this list",IDC_STATIC,20,15,80,8
     COMBOBOX        IDC_SENSORCHOICE_COMBO,20,25,146,95,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    LTEXT           "How do you want to calibrate the sensor ?",IDC_STATIC,20,50,134,8
-    CONTROL         "Use existing calibration file",IDC_SENSORTRAININGMODE_RADIO1,
+    LTEXT           "Do you want to apply a meter correction matrix?",IDC_STATIC,20,50,150,8
+    CONTROL         "Use existing meter correction file",IDC_SENSORTRAININGMODE_RADIO1,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,20,64,124,10
-    CONTROL         "Create a new calibration file",IDC_SENSORTRAININGMODE_RADIO2,
+    CONTROL         "Create a new meter correction file",IDC_SENSORTRAININGMODE_RADIO2,
                     "Button",BS_AUTORADIOBUTTON,20,100,146,10
     COMBOBOX        IDC_SENSORTRAININGFILE_COMBO,20,77,146,105,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
 END
@@ -791,7 +791,7 @@ BEGIN
     CONTROL         "Activate controlled mode",IDC_CHECK_CONTROLLED_MODE,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,103,19,94,10
     GROUPBOX        "Calibration files - Advanced use",IDC_STATIC,7,38,199,40,WS_GROUP
-    CONTROL         "Activate calibration files on all tri-stimulus probes",IDC_CHECK_CALIBRATION_EX,
+    CONTROL         "Activate meter correction files on all tri-stimulus probes",IDC_CHECK_CALIBRATION_EX,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,50,166,10
     CONTROL         "Do not use white in matrix calculus (R1.x)",IDC_CHECK_CALIBRATION_OLD,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,62,145,10
@@ -820,7 +820,7 @@ STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Signature"
 FONT 8, "MS Sans Serif"
 BEGIN
-    LTEXT           "Type your name or pseudo, which will be included as a signature in the calibration file.",IDC_STATIC,7,7,172,18
+    LTEXT           "Type your name or pseudonym, which will be included as a signature in the correction file.",IDC_STATIC,7,7,172,18
     EDITTEXT        IDC_EDIT_NAME,7,27,172,14,ES_AUTOHSCROLL | WS_GROUP
     DEFPUSHBUTTON   "OK",IDOK,37,52,50,14,WS_GROUP
     PUSHBUTTON      "Aide",IDHELP,99,52,50,14,WS_GROUP
@@ -1718,14 +1718,14 @@ BEGIN
             MENUITEM "Display Patterns",            IDM_PATTERN_DISPLAY
         END
         MENUITEM SEPARATOR
-        POPUP "Calibration file"
+        POPUP "Meter Correction file"
         BEGIN
-            MENUITEM "Build a basic calibration file...", IDM_CALIBRATE_SENSOR
+            MENUITEM "Build a basic correction file...", IDM_CALIBRATE_SENSOR
             MENUITEM SEPARATOR
             MENUITEM "Build using simultaneous measures", IDM_CALIBRATION_SIM
             MENUITEM "Build manually using reference colorimeter", IDM_CALIBRATION_MANUAL
             MENUITEM SEPARATOR
-            MENUITEM "Save calibration file...",    IDM_SAVE_CALIBRATION_FILE
+            MENUITEM "Save meter correction file...",    IDM_SAVE_CALIBRATION_FILE
         END
         POPUP "Simultaneous measures"
         BEGIN
@@ -1757,7 +1757,7 @@ BEGIN
         POPUP "Updates"
         BEGIN
             MENUITEM "Download updated software",   IDM_UPDATE_SOFT
-            MENUITEM "Download the calibration files", IDM_UPDATE_ETALONS
+            MENUITEM "Download correction files", IDM_UPDATE_ETALONS
             MENUITEM "Download IR profiles files",  IDM_UPDATE_IRPROFILES
         END
         MENUITEM SEPARATOR
@@ -2486,7 +2486,7 @@ BEGIN
     IDM_CONFIGURE_GENERATOR "Configure generator parameters"
     IDM_CHANGE_SENSOR       "Select sensor"
     IDM_CHANGE_GENERATOR    "Select generator"
-    IDM_CALIBRATE_SENSOR    "Build a basic calibration file regarding theoretical projector characteristics (very low reliability)"
+    IDM_CALIBRATE_SENSOR    "Build a basic correction file using theoretical projector characteristics (very low accuracy)"
 END
 
 STRINGTABLE 
@@ -2790,7 +2790,7 @@ BEGIN
     IDS_UNKNOWNGENERATOR2   "Unknown generator class."
     IDS_INVALIDFILEFORMAT   "Invalid file format..."
     IDS_PRESERVESENSORDATA  "Keep sensor data ? \n(If no, keep XYZ values)"
-    IDS_SAVECALDATA         "Save calibration data ?"
+    IDS_SAVECALDATA         "Save data ?"
     IDS_CONFIRMSENSORCHANGE "Warning: actual sensor parameters will be lost...\nDo you really want to change current sensor ?"
     IDS_SENSOR              "Sensor"
     IDS_EXPORT              "Export"
@@ -2900,8 +2900,8 @@ BEGIN
     IDM_SIM_GRAYSCALE       "Perform simultaneous measuring of gray scale using all opened documents sensors\nSimultaneous measures"
     IDM_SIM_PRIMARIES       "Perform simultaneous measuring of primary colors using all opened documents sensors\nSimultaneous measures of primary colors"
     IDM_SIM_SECONDARIES     "Perform simultaneous measuring of secondary colors using all opened documents sensors\nSimultaneous measures of primary and secondary colors"
-    IDM_CALIBRATION_SIM     "Build a calibration file using simultaneous measures between current document and another document using a reference sensor\nBuild calibration file using simultaneous measures"
-    IDM_CALIBRATION_MANUAL  "Build a calibration file using primary color measures and simultaneous manual measures from a reference colorimeter\nBuild calibration file using manually a reference colorimeter"
+    IDM_CALIBRATION_SIM     "Build a correction file using simultaneous measures between current document and another document using a reference sensor\nBuild correction file using simultaneous measures"
+    IDM_CALIBRATION_MANUAL  "Build a correction file using primary color measures and simultaneous manual measures from a reference colorimeter\nBuild correction file using manually a reference colorimeter"
     IDM_DUPLICATEDOC        "Duplicate active document\nDuplicate"
     IDM_SHOWVIEWFORALLDOC   "Show selected view for all documents"
 END
@@ -2913,14 +2913,14 @@ BEGIN
                             "Cannot perform simultaneous measures: many documents use sensor %s."
     IDS_CANNOTINITDOC       "Error during simultaneous measures initialization for document %s.\nOperation cancelled."
     IDS_ONLYONEDOC          "You need more than one opened document to use simultaneous measures on many documents.\nOperation cancelled."
-    IDS_RUN_SIM_CALIBRATION "Create calibration file using simultaneous measures on current document and reference document ?\nWarning: actual data will be lost..."
-    IDS_SIM_CAL_ERROR1      "To create a calibration file, you must define a reference document using a reference colorimeter.\nOperation cancelled."
-    IDS_SIM_CAL_ERROR2      "To create a calibration file, the current document must use a sensor needing calibration file.\nOperation cancelled."
-    IDS_SIM_CAL_ERROR3      "To create a calibration file, the current document must NOT be the reference document.\nOperation canceled."
+    IDS_RUN_SIM_CALIBRATION "Create correction file using simultaneous measures on current document and reference document ?\nWarning: actual data will be lost..."
+    IDS_SIM_CAL_ERROR1      "To create a correction file, you must define a reference document using a reference colorimeter.\nOperation cancelled."
+    IDS_SIM_CAL_ERROR2      "To create a correction file, the current document must use a sensor needing a correction file.\nOperation cancelled."
+    IDS_SIM_CAL_ERROR3      "To create a correction file, the current document must NOT be the reference document.\nOperation canceled."
     IDS_MEASUREGRAYANDCOLORS 
                             "Measure gray scale, primary and secondary colors simultaneously ?\nWarning: actual data will be lost...\n\nNote: you can cancel measuring using ESCAPE key."
     IDS_RUN_MANUAL_CALIBRATION 
-                            "Create calibration file using manual measuring of primary colors and white using a reference colorimeter ?\n\nWARNING: To display next color, type ENTER key - after taking notes of values measured from your reference colorimeter.\nYou can cancel measuring using ESCAPE key."
+                            "Create correction file using manual measuring of primary colors and white using a reference colorimeter ?\n\nWARNING: To display next color, type ENTER key - after taking notes of values measured from your reference colorimeter.\nYou can cancel measuring using ESCAPE key."
     IDS_DISTANCEINCIEXY     "Distance from reference in CIExy"
     IDS_CANNOTMEASUREGRAYANDCOLORS 
                             "%s cannot display gray scale, primaries and secondaries in one single series.\nPlease use single commands instead of this one."
@@ -2940,7 +2940,7 @@ BEGIN
     IDM_PATTERN_ANIM_WHITE  "Display animated test pattern with two stripes at IRE 98 and 99 on a white background\nAnimated white level test pattern"
     ID_VIEW_SPECTRUM        "Display or hide spectrum window\nSpectrum"
     IDM_UPDATE_SOFT         "Test if a new software release is available on hcfr.sourceforge.net website and download it\nDownload software updates"
-    IDM_UPDATE_ETALONS      "Download updated and new calibration files from hcfr.sourceforge.net site\nDownload calibration files"
+    IDM_UPDATE_ETALONS      "Download updated and new correction files from hcfr.sourceforge.net site\nDownload correction files"
     IDM_TRAIN_METER         "Compute the conversion matrix XYZ sensor values match reference document coordinates\nCompute conversion matrix from reference document"
     IDM_SINGLE_MEASUREMENT  "Perform a unique measure\nPerform a unique measure"
     IDM_CONTINUOUS_MEASUREMENT 
@@ -3070,7 +3070,7 @@ BEGIN
     IDM_MEASURE_SAT_PRIMARIES 
                             "Measure primary colors saturation scales\nMeasure primary colors saturation scales"
     IDM_MEASURE_CONTRAST    "Measure contrast\nMeasure contrast"
-    IDM_SAVE_CALIBRATION_FILE "Save calibration file\nSave calibration file"
+    IDM_SAVE_CALIBRATION_FILE "Save correction file\nSave correction file"
     IDM_UPDATE_IRPROFILES   "Download updated and new IR profiles from hcfr.sourceforge.net site\nDownload IR profiles"
 END
 
@@ -3083,8 +3083,8 @@ BEGIN
     IDS_DATAREF_CYAN        "Reference document Cyan"
     IDS_DATAREF_MAGENTA     "Reference document Magenta"
     IDS_RUNPRIMSATON        "Run primary saturation measures on"
-    IDS_CREATE_CALIBRATION_FILE "Create a new calibration file"
-    IDS_DONOTUSE_CALIBRATION "Do not use calibration file"
+    IDS_CREATE_CALIBRATION_FILE "Create a new meter correction file"
+    IDS_DONOTUSE_CALIBRATION "Do not use a meter correction file"
     ID_CONTROL_MODE         "000000"
     IDS_ERRMTCSDLL1         "MTCSApi.DLL not found. Cannot use MTCS-C2 device. This DLL can be found in probe software installation directory. Please copy it inside HCFR Colorimeter installation directory. "
     IDS_ERRMTCSDLL2         "Invalid MTCSApi.DLL. Cannot use MTCS-C2 device."
