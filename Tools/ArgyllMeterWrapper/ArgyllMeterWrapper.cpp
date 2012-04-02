@@ -615,3 +615,9 @@ std::vector<ArgyllMeterWrapper*> ArgyllMeterWrapper::getDetectedMeters(std::stri
     }
     return ArgyllMeters::getInstance().getDetectedMeters();
 }
+
+bool ArgyllMeterWrapper::isColorimeter()
+{
+    checkMeterIsInitialized();
+    return !!(m_meter->capabilities(m_meter) & inst_colorimeter);
+}

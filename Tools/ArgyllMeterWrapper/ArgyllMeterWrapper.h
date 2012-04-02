@@ -108,6 +108,9 @@ public:
     // or delete the returned objects
     static std::vector<ArgyllMeterWrapper*> getDetectedMeters(std::string& errorMessage);
 
+    // is the meter a colorimeter rather than a spectrometer
+    bool isColorimeter();
+
 private:
     /// ArgyllMeterWrapper constructor
     /// Create a USB meter object
