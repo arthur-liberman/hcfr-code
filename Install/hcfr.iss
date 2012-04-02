@@ -57,6 +57,7 @@ InfoBeforeClickLabel=When you are ready and happy to continue with Setup, click 
 
 [Dirs]
 Name: "{app}"; Permissions: everyone-modify
+Name: "{app}\Etalon_Argyll"; Permissions: everyone-modify
 
 [Components]
 Name: "main"; Description: "Main Files"; Types: full; Flags: fixed
