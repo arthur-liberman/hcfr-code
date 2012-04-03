@@ -51,9 +51,18 @@ void CRGBLevelWnd::Refresh()
 		CColor aColor = m_pRefColor -> GetxyYValue();
 		CColor normColor;
 
-		normColor[0]=(aColor[0]/aColor[1]);
-		normColor[1]=1.0;
-		normColor[2]=((1.0-(aColor[0]+aColor[1]))/aColor[1]);
+        if(aColor[1] > 0.0)
+        {
+            normColor[0]=(aColor[0]/aColor[1]);
+            normColor[1]=1.0;
+            normColor[2]=((1.0-(aColor[0]+aColor[1]))/aColor[1]);
+        }
+        else
+        {
+            normColor[0]=0.0;
+            normColor[1]=0.0;
+            normColor[2]=0.0;
+        }
 
 		CColor aMeasure(normColor);
 		normColor=aMeasure.GetRGBValue(GetColorReference());
