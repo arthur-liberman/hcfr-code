@@ -788,6 +788,10 @@ BOOL CDataSetDoc::OnNewDocument()
                 else if(propSheet.m_Page2.GetCurrentID() > 6)
                 {
                     m_pSensor->Configure();
+                    if(propSheet.m_Page2.m_sensorTrainingMode != 1)
+                    {
+                        m_pSensor->LoadCalibrationFile(propSheet.m_Page2.m_trainingFileName);
+                    }
                 }
 				else
 				{
