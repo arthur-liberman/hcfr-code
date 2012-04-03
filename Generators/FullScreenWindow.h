@@ -91,11 +91,11 @@ protected:
 public:
 	void MoveToMonitor ( HMONITOR hMon );
 
-	void InitOverlay ();
+	bool InitOverlay ();
 	void ExitOverlay ();
 	void SetOverlayPosition ();
 
-	void InitVMR9 ();
+	bool InitVMR9 ();
 	void ExitVMR9 ();
 
 	void SetDisplayMode (UINT nMode = DISPLAY_GDI);

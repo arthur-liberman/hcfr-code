@@ -1074,10 +1074,20 @@ void CFullScreenWindow::SetDisplayMode(UINT nMode)
 
 	m_nDisplayMode = nMode;
 
-	if ( m_nDisplayMode == DISPLAY_OVERLAY )
-		InitOverlay ();
-	else if ( m_nDisplayMode == DISPLAY_VMR9 )
-		InitVMR9 ();
+    if ( m_nDisplayMode == DISPLAY_OVERLAY )
+    {
+        if(!InitOverlay())
+        {
+            m_nDisplayMode = DISPLAY_VMR9;
+        }
+    }
+    if ( m_nDisplayMode == DISPLAY_VMR9 )
+    {
+        if(!InitVMR9())
+        {
+            m_nDisplayMode = DISPLAY_GDI;
+        }
+    }
 }
 
 
@@ -1107,7 +1117,7 @@ static BOOL WINAPI MonitorCallback ( GUID *lpGUID, LPSTR lpDriverDescription, LP
 	return TRUE;
 }
 
-void CFullScreenWindow::InitOverlay () 
+bool CFullScreenWindow::InitOverlay () 
 {
 	int				i, j;
     HRESULT			ddrval;
@@ -1117,27 +1127,26 @@ void CFullScreenWindow::InitOverlay ()
 	MonitorEnumCtx	MonCtx;
 	char			szError [ 256 ];
 	char			szMsg [ 256 ];
-    HINSTANCE		hLib  = 0;
+    static HINSTANCE		hLib  = 0;
 	HRESULT ( WINAPI * pDirectDrawEnumerateEx ) ( LPDDENUMCALLBACKEXA lpCallback, LPVOID lpContext, DWORD dwFlags) = NULL;
     HRESULT ( WINAPI * pDirectDrawCreate ) ( GUID FAR *lpGUID, LPDIRECTDRAW FAR *lplpDD, IUnknown FAR *pUnkOuter );
 
 	ASSERT ( m_lpDD == NULL && m_lpDDPrimarySurface == NULL && m_lpDDOverlay == NULL );
 
     if(!hLib)
-	    hLib = GetModuleHandle ( "ddraw.dll" );
-    
+        hLib = LoadLibrary("ddraw.dll");
+
     if ( hLib )
 		pDirectDrawCreate = (HRESULT (WINAPI *) (GUID*, LPDIRECTDRAW*, IUnknown*) ) GetProcAddress ( hLib, "DirectDrawCreate" );
     else
-        return;
+    {
+        m_nDisplayMode = DISPLAY_GDI;
+        return false;
+    }
 
 	if ( m_hCurrentMon )
 	{
-		// Retrieve DirectDraw GUID for current monitor
-		hLib = GetModuleHandle ( "ddraw.dll" );
-
-		if ( hLib )
-			pDirectDrawEnumerateEx = ( HRESULT (WINAPI*) (LPDDENUMCALLBACKEXA, LPVOID, DWORD) ) GetProcAddress ( hLib, "DirectDrawEnumerateExA" );
+		pDirectDrawEnumerateEx = ( HRESULT (WINAPI*) (LPDDENUMCALLBACKEXA, LPVOID, DWORD) ) GetProcAddress ( hLib, "DirectDrawEnumerateExA" );
 
 		if ( pDirectDrawEnumerateEx )
 		{
@@ -1301,11 +1310,13 @@ void CFullScreenWindow::InitOverlay ()
 			// Set overlay position
 			SetOverlayPosition ();
 		}
+        return true;
 	}
 	else
 	{
 		// Error: Release direct draw objects
 		ExitOverlay ();
+        return false;
 	}
 }
 
@@ -1476,9 +1487,10 @@ void CFullScreenWindow::GetOverlayErrorText ( HRESULT ddrval, LPSTR lpszText )
 }
 
 
-void CFullScreenWindow::InitVMR9 ()
+bool CFullScreenWindow::InitVMR9 ()
 {
 	// TODO
+    return false;
 }
 
 void CFullScreenWindow::ExitVMR9 ()
