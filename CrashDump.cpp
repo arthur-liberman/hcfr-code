@@ -30,6 +30,7 @@ namespace
 
     void SETranslate(unsigned int u, EXCEPTION_POINTERS* pExp)
     {
+        fflush(stderr);
         if(pMiniDumpWriteDump)
         {
             BOOL bMiniDumpSuccessful;
@@ -45,10 +46,8 @@ namespace
 
             bMiniDumpSuccessful = pMiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), hDumpFile, MiniDumpWithDataSegs, &ExpParam, NULL, NULL);
         }
-
         throw std::runtime_error("SEH Exception Occured");
     }
-
 }
 
 

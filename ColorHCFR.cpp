@@ -118,9 +118,7 @@ CColorHCFRApp::CColorHCFRApp()
 	m_MeasuredLuxValue = 0.0;
 	m_MeasuredLuxValue_Initial = 0.0;
 
-    freopen( "stdout.log", "w", stdout ); 
     freopen( "stderr.log", "w", stderr ); 
-
 }
 
 CColorHCFRApp::~CColorHCFRApp()
@@ -165,6 +163,7 @@ CColorHCFRApp::~CColorHCFRApp()
     }
 
     DeleteCriticalSection ( & m_LuxCritSec );
+    fflush(stderr);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -550,67 +549,95 @@ extern void DrawCIEChartWhiteSurrounding(CDC* pDC, int cxMax, int cyMax, BOOL bC
 
 DWORD WINAPI CreateCIEBitmapsThreadFunc ( LPVOID )
 {	
-	CDC ScreenDC;
-	CDC BmpDC;
-	CDC WhiteBmpDC;
-	CColorHCFRApp *	pApp = GetColorApp();
-    
-	ScreenDC.CreateDC ( "DISPLAY", NULL, NULL, NULL );
-	BmpDC.CreateCompatibleDC ( & ScreenDC );
-	WhiteBmpDC.CreateCompatibleDC ( & ScreenDC );
+    CrashDump useInThisThread;
+    try
+    {
+	    CDC ScreenDC;
+	    CDC BmpDC;
+	    CDC WhiteBmpDC;
+	    CColorHCFRApp *	pApp = GetColorApp();
+        
+	    ScreenDC.CreateDC ( "DISPLAY", NULL, NULL, NULL );
+	    BmpDC.CreateCompatibleDC ( & ScreenDC );
+	    WhiteBmpDC.CreateCompatibleDC ( & ScreenDC );
 
-	pApp -> m_chartBitmap.CreateCompatibleBitmap ( & ScreenDC, CX_CIE_BITMAP, CY_CIE_BITMAP );
-	pApp -> m_lightenChartBitmap.CreateCompatibleBitmap ( & ScreenDC, CX_CIE_BITMAP, CY_CIE_BITMAP );
+	    pApp -> m_chartBitmap.CreateCompatibleBitmap ( & ScreenDC, CX_CIE_BITMAP, CY_CIE_BITMAP );
+	    pApp -> m_lightenChartBitmap.CreateCompatibleBitmap ( & ScreenDC, CX_CIE_BITMAP, CY_CIE_BITMAP );
 
-	pApp -> m_chartBitmap_white.CreateCompatibleBitmap ( & ScreenDC, CX_CIE_BITMAP, CY_CIE_BITMAP );
+	    pApp -> m_chartBitmap_white.CreateCompatibleBitmap ( & ScreenDC, CX_CIE_BITMAP, CY_CIE_BITMAP );
 
-	pApp -> m_chartBitmap_uv.CreateCompatibleBitmap ( & ScreenDC, CX_CIE_BITMAP, CY_CIE_BITMAP );
-	pApp -> m_lightenChartBitmap_uv.CreateCompatibleBitmap ( & ScreenDC, CX_CIE_BITMAP, CY_CIE_BITMAP );
+	    pApp -> m_chartBitmap_uv.CreateCompatibleBitmap ( & ScreenDC, CX_CIE_BITMAP, CY_CIE_BITMAP );
+	    pApp -> m_lightenChartBitmap_uv.CreateCompatibleBitmap ( & ScreenDC, CX_CIE_BITMAP, CY_CIE_BITMAP );
 
-	pApp -> m_chartBitmap_uv_white.CreateCompatibleBitmap ( & ScreenDC, CX_CIE_BITMAP, CY_CIE_BITMAP );
+	    pApp -> m_chartBitmap_uv_white.CreateCompatibleBitmap ( & ScreenDC, CX_CIE_BITMAP, CY_CIE_BITMAP );
 
-	ScreenDC.DeleteDC ();
+	    ScreenDC.DeleteDC ();
 
-    CBitmap * pOldBitmap = BmpDC.SelectObject ( & pApp -> m_chartBitmap );
-	BmpDC.FillSolidRect ( 0, 0, CX_CIE_BITMAP, CY_CIE_BITMAP, RGB(0,0,0) );
-	DrawCIEChart ( & BmpDC, CX_CIE_BITMAP, CY_CIE_BITMAP, FALSE, TRUE, FALSE );
+        CBitmap * pOldBitmap = BmpDC.SelectObject ( & pApp -> m_chartBitmap );
+	    BmpDC.FillSolidRect ( 0, 0, CX_CIE_BITMAP, CY_CIE_BITMAP, RGB(0,0,0) );
+	    DrawCIEChart ( & BmpDC, CX_CIE_BITMAP, CY_CIE_BITMAP, FALSE, TRUE, FALSE );
 
-    CBitmap * pOldBitmap2 = WhiteBmpDC.SelectObject ( & pApp -> m_chartBitmap_white );
-	WhiteBmpDC.BitBlt ( 0, 0, CX_CIE_BITMAP, CY_CIE_BITMAP, & BmpDC, 0, 0, SRCCOPY );
-	DrawCIEChartWhiteSurrounding( & WhiteBmpDC, CX_CIE_BITMAP, CY_CIE_BITMAP, FALSE );
+        CBitmap * pOldBitmap2 = WhiteBmpDC.SelectObject ( & pApp -> m_chartBitmap_white );
+	    WhiteBmpDC.BitBlt ( 0, 0, CX_CIE_BITMAP, CY_CIE_BITMAP, & BmpDC, 0, 0, SRCCOPY );
+	    DrawCIEChartWhiteSurrounding( & WhiteBmpDC, CX_CIE_BITMAP, CY_CIE_BITMAP, FALSE );
 
-    BmpDC.SelectObject ( & pApp -> m_lightenChartBitmap );
-	BmpDC.FillSolidRect ( 0, 0, CX_CIE_BITMAP, CY_CIE_BITMAP, RGB(0,0,0) );
-	DrawCIEChart ( & BmpDC, CX_CIE_BITMAP, CY_CIE_BITMAP, TRUE, TRUE, FALSE );
+        BmpDC.SelectObject ( & pApp -> m_lightenChartBitmap );
+	    BmpDC.FillSolidRect ( 0, 0, CX_CIE_BITMAP, CY_CIE_BITMAP, RGB(0,0,0) );
+	    DrawCIEChart ( & BmpDC, CX_CIE_BITMAP, CY_CIE_BITMAP, TRUE, TRUE, FALSE );
 
-    BmpDC.SelectObject ( & pApp -> m_chartBitmap_uv );
-	BmpDC.FillSolidRect ( 0, 0, CX_CIE_BITMAP, CY_CIE_BITMAP, RGB(0,0,0) );
-	DrawCIEChart ( & BmpDC, CX_CIE_BITMAP, CY_CIE_BITMAP, FALSE, TRUE, TRUE );
+        BmpDC.SelectObject ( & pApp -> m_chartBitmap_uv );
+	    BmpDC.FillSolidRect ( 0, 0, CX_CIE_BITMAP, CY_CIE_BITMAP, RGB(0,0,0) );
+	    DrawCIEChart ( & BmpDC, CX_CIE_BITMAP, CY_CIE_BITMAP, FALSE, TRUE, TRUE );
 
-    WhiteBmpDC.SelectObject ( & pApp -> m_chartBitmap_uv_white );
-	WhiteBmpDC.BitBlt ( 0, 0, CX_CIE_BITMAP, CY_CIE_BITMAP, & BmpDC, 0, 0, SRCCOPY );
-	DrawCIEChartWhiteSurrounding( & WhiteBmpDC, CX_CIE_BITMAP, CY_CIE_BITMAP, TRUE );
+        WhiteBmpDC.SelectObject ( & pApp -> m_chartBitmap_uv_white );
+	    WhiteBmpDC.BitBlt ( 0, 0, CX_CIE_BITMAP, CY_CIE_BITMAP, & BmpDC, 0, 0, SRCCOPY );
+	    DrawCIEChartWhiteSurrounding( & WhiteBmpDC, CX_CIE_BITMAP, CY_CIE_BITMAP, TRUE );
 
-    BmpDC.SelectObject ( & pApp -> m_lightenChartBitmap_uv );
-	BmpDC.FillSolidRect ( 0, 0, CX_CIE_BITMAP, CY_CIE_BITMAP, RGB(0,0,0) );
-	DrawCIEChart ( & BmpDC, CX_CIE_BITMAP, CY_CIE_BITMAP, TRUE, TRUE, TRUE );
+        BmpDC.SelectObject ( & pApp -> m_lightenChartBitmap_uv );
+	    BmpDC.FillSolidRect ( 0, 0, CX_CIE_BITMAP, CY_CIE_BITMAP, RGB(0,0,0) );
+	    DrawCIEChart ( & BmpDC, CX_CIE_BITMAP, CY_CIE_BITMAP, TRUE, TRUE, TRUE );
 
-	BmpDC.SelectObject ( pOldBitmap );
-	WhiteBmpDC.SelectObject ( pOldBitmap2 );
-	
-	BmpDC.DeleteDC ();
-	WhiteBmpDC.DeleteDC ();
+	    BmpDC.SelectObject ( pOldBitmap );
+	    WhiteBmpDC.SelectObject ( pOldBitmap2 );
+    	
+	    BmpDC.DeleteDC ();
+	    WhiteBmpDC.DeleteDC ();
 
-	Sleep ( 0 );
-	SetEvent ( pApp -> m_hCIEEvent );
-	
-	if ( pApp -> m_hCIEThread )
-	{
-		CloseHandle ( pApp -> m_hCIEThread );
-		pApp -> m_hCIEThread = NULL;
-	}
-		
+	    Sleep ( 0 );
+	    SetEvent ( pApp -> m_hCIEEvent );
+    	
+	    if ( pApp -> m_hCIEThread )
+	    {
+		    CloseHandle ( pApp -> m_hCIEThread );
+		    pApp -> m_hCIEThread = NULL;
+	    }
+    }
+    catch(std::exception& e)
+    {
+        std::cerr << "Exception in bitmap create thread : " << e.what() << std::endl;
+    }
+    catch(...)
+    {
+        std::cerr << "Unexpected Exception in bitmap create thread" << std::endl;
+    }
 	return 0;
+}
+
+int CColorHCFRApp::Run()
+{
+    try
+    {
+        return CWinApp::Run();
+    }
+    catch(std::exception& e)
+    {
+        std::cerr << "Exception in main thread : " << e.what() << std::endl;
+    }
+    catch(...)
+    {
+        std::cerr << "Unexpected Exception in main thread" << std::endl;
+    }
+    return 0;
 }
 
 void CColorHCFRApp::CreateCIEBitmaps ( BOOL bBackGround )
@@ -667,115 +694,127 @@ void CColorHCFRApp::CreateCIEBitmaps ( BOOL bBackGround )
 	
 DWORD WINAPI LuxMeterThreadFunc ( LPVOID lParam )
 {	
-	int				i;
-	BOOL			bRecord = FALSE;
-	BOOL			bEndPacket = FALSE;
-	BYTE			data = 0;
-	DWORD			dwBytesTransferred;
-	DWORD			dwStartTick;
-	CColorHCFRApp *	pApp = (CColorHCFRApp *) lParam;
-	char			szBuf [ 256 ];
-	HANDLE			hCom;
-	COMMCONFIG		cc;
-	COMMTIMEOUTS	ct;
+    CrashDump useInThisThread;
+    try
+    {
+	    int				i;
+	    BOOL			bRecord = FALSE;
+	    BOOL			bEndPacket = FALSE;
+	    BYTE			data = 0;
+	    DWORD			dwBytesTransferred;
+	    DWORD			dwStartTick;
+	    CColorHCFRApp *	pApp = (CColorHCFRApp *) lParam;
+	    char			szBuf [ 256 ];
+	    HANDLE			hCom;
+	    COMMCONFIG		cc;
+	    COMMTIMEOUTS	ct;
 
-	hCom = CreateFile ( pApp -> m_LuxPort, GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL );
+	    hCom = CreateFile ( pApp -> m_LuxPort, GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL );
 
-	if ( hCom == INVALID_HANDLE_VALUE )
-	{
-		// Error, exit with error code 1
-		return 1;
-	} 
+	    if ( hCom == INVALID_HANDLE_VALUE )
+	    {
+		    // Error, exit with error code 1
+		    return 1;
+	    } 
 
-	memset ( & cc, 0, sizeof(cc) );
-	cc.dwSize = sizeof(cc);
-	cc.dcb.DCBlength = sizeof(cc.dcb);
-	
-	dwBytesTransferred = sizeof(cc);
-	GetDefaultCommConfig ( pApp -> m_LuxPort, & cc, & dwBytesTransferred );
+	    memset ( & cc, 0, sizeof(cc) );
+	    cc.dwSize = sizeof(cc);
+	    cc.dcb.DCBlength = sizeof(cc.dcb);
+    	
+	    dwBytesTransferred = sizeof(cc);
+	    GetDefaultCommConfig ( pApp -> m_LuxPort, & cc, & dwBytesTransferred );
 
-	cc.dcb.BaudRate = CBR_9600;
-	cc.dcb.fBinary = TRUE;
-	cc.dcb.ByteSize = 8;
-	cc.dcb.Parity = NOPARITY;
-	cc.dcb.StopBits = ONESTOPBIT;
+	    cc.dcb.BaudRate = CBR_9600;
+	    cc.dcb.fBinary = TRUE;
+	    cc.dcb.ByteSize = 8;
+	    cc.dcb.Parity = NOPARITY;
+	    cc.dcb.StopBits = ONESTOPBIT;
 
-	if ( ! SetCommConfig ( hCom, & cc, sizeof(cc) ) )
-	{
-		CloseHandle ( hCom );
-		
-		// Exit with error code 2
-		return 2;
-	} 
+	    if ( ! SetCommConfig ( hCom, & cc, sizeof(cc) ) )
+	    {
+		    CloseHandle ( hCom );
+    		
+		    // Exit with error code 2
+		    return 2;
+	    } 
 
-	if ( ! SetCommMask ( hCom, 0 ) )
-	{
-		CloseHandle ( hCom );
+	    if ( ! SetCommMask ( hCom, 0 ) )
+	    {
+		    CloseHandle ( hCom );
 
-		// Exit with error code 3
-		return 3;
-	} 
+		    // Exit with error code 3
+		    return 3;
+	    } 
 
-	if ( ! PurgeComm ( hCom, PURGE_RXCLEAR ) )
-	{
-		CloseHandle ( hCom );
+	    if ( ! PurgeComm ( hCom, PURGE_RXCLEAR ) )
+	    {
+		    CloseHandle ( hCom );
 
-		// Exit with error code 4
-		return 4;
-	}
+		    // Exit with error code 4
+		    return 4;
+	    }
 
-	ct.ReadIntervalTimeout = 0;
-	ct.ReadTotalTimeoutConstant = 1000;
-	ct.ReadTotalTimeoutMultiplier = 0;
-	ct.WriteTotalTimeoutConstant = 0;
-	ct.WriteTotalTimeoutMultiplier = 0;
+	    ct.ReadIntervalTimeout = 0;
+	    ct.ReadTotalTimeoutConstant = 1000;
+	    ct.ReadTotalTimeoutMultiplier = 0;
+	    ct.WriteTotalTimeoutConstant = 0;
+	    ct.WriteTotalTimeoutMultiplier = 0;
 
-	if ( ! SetCommTimeouts ( hCom, & ct ) )
-	{
-		CloseHandle ( hCom );
+	    if ( ! SetCommTimeouts ( hCom, & ct ) )
+	    {
+		    CloseHandle ( hCom );
 
-		// Exit with error code 3
-		return 3;
-	} 
+		    // Exit with error code 3
+		    return 3;
+	    } 
 
-	do
-	{
-		if ( ReadFile ( hCom, & data, 1, & dwBytesTransferred, NULL ) )
-		{
-			if ( dwBytesTransferred > 0 )
-			{
-				if ( data == 0x02 )
-				{
-					dwStartTick = GetTickCount ();
-					bRecord = TRUE;
-					i = 0;
-				}
+	    do
+	    {
+		    if ( ReadFile ( hCom, & data, 1, & dwBytesTransferred, NULL ) )
+		    {
+			    if ( dwBytesTransferred > 0 )
+			    {
+				    if ( data == 0x02 )
+				    {
+					    dwStartTick = GetTickCount ();
+					    bRecord = TRUE;
+					    i = 0;
+				    }
 
-				if ( bRecord )
-				{
-					szBuf [ i ++ ] = (char) data;
+				    if ( bRecord )
+				    {
+					    szBuf [ i ++ ] = (char) data;
 
-					if ( data == 0x0D )
-					{
-						bRecord = FALSE;
-						szBuf [ i ] = '\0';
+					    if ( data == 0x0D )
+					    {
+						    bRecord = FALSE;
+						    szBuf [ i ] = '\0';
 
-						// Interpret data
-						pApp -> SetLuxmeterValue ( szBuf, dwStartTick );
+						    // Interpret data
+						    pApp -> SetLuxmeterValue ( szBuf, dwStartTick );
 
-						bEndPacket = TRUE;
-					}
-				}
-			}
-		}
-		if ( bEndPacket )
-		{
-			bEndPacket = FALSE;
-			Sleep ( 10 );
-		}
-	} while ( ! pApp -> m_bStopLuxThread );
+						    bEndPacket = TRUE;
+					    }
+				    }
+			    }
+		    }
+		    if ( bEndPacket )
+		    {
+			    bEndPacket = FALSE;
+			    Sleep ( 10 );
+		    }
+	    } while ( ! pApp -> m_bStopLuxThread );
 
-	CloseHandle ( hCom );
+	    CloseHandle ( hCom );
+    }
+    catch(std::exception& e)
+    {
+        std::cerr << "Exception in lux meter thread : " << e.what() << std::endl;
+    }
+    catch(...)
+    {
+        std::cerr << "Unexpected Exception in lux meter thread" << std::endl;
+    }
 	return 0;
 }
 

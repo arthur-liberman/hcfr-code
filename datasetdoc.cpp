@@ -116,111 +116,123 @@ volatile BOOL			g_bInsideBkgndRefresh = FALSE;
 
 static UINT __cdecl BkgndThreadFunc ( LPVOID lpParameter )
 {
-	CSensor *		pSensor = g_pDataDocRunningThread -> m_pSensor;	// Assume sensor is initialized
-	CGenerator *	pGenerator = g_pDataDocRunningThread -> m_pGenerator;
+    CrashDump useInThisThread;
+    try
+    {
+	    CSensor *		pSensor = g_pDataDocRunningThread -> m_pSensor;	// Assume sensor is initialized
+	    CGenerator *	pGenerator = g_pDataDocRunningThread -> m_pGenerator;
+    	
+	    CColor			measuredColor;
+	    CString			Msg;
+
+	    CView *			pView;
+	    POSITION		pos;
+
+	    do
+	    {
+		    // Main loop
+		    if ( g_bTerminateThread )
+		    {
+			    // Exit
+			    break;
+		    }
+
+		    if ( g_bGDIGeneratorRunning )
+		    {
+			    COLORREF clr = ( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.GetColor ();
+			    clr &= 0x00FFFFFF;
+    			
+			    if ( g_CurrentColor != clr )
+			    {
+				    g_CurrentColor = clr;
+				    pGenerator->DisplayRGBColor(clr,CGenerator::MT_UNKNOWN);
+			    }
+		    }
+
+		    // Perform one measure
+		    measuredColor=pSensor->MeasureColor(g_CurrentColor);  // don't know the color to measure so default value to mid gray...
+		    if ( g_bTerminateThread )
+		    {
+			    // Exit
+			    break;
+		    }
+
+		    if(pSensor->IsMeasureValid())
+		    {
+			    if ( ! g_bTerminateThread )
+			    {
+				    CColor * pMeasurement = new CColor;
+				    pMeasurement -> SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
+				    pMeasurement -> SetSensorValue(measuredColor);
+
+				    while ( g_bInsideBkgndRefresh )
+					    Sleep ( 50 );
+
+				    EnterCriticalSection (& g_CritSec );
+				    g_MeasuredColorList.AddTail ( pMeasurement );
+				    LeaveCriticalSection (& g_CritSec );
+
+				    // Post message to first document view (this message is treated by the document object)
+				    AfxGetMainWnd () -> PostMessage ( WM_BKGND_MEASURE_READY, (WPARAM) g_pDataDocRunningThread );
+			    }
+		    }
+		    else
+		    {
+			    // Error: close thread
+			    g_hThread = NULL;
+			    g_bTerminateThread = FALSE;
+
+			    if ( GetConfig()->m_bContinuousMeasures )
+			    {
+				    pos = g_pDataDocRunningThread -> GetFirstViewPosition ();
+				    while ( pos )
+				    {
+					    pView = g_pDataDocRunningThread -> GetNextView ( pos );
+					    if ( IsWindow ( pView -> m_hWnd ) && pView -> IsKindOf ( RUNTIME_CLASS ( CMainView ) ) )
+					    {
+						    // Reset button image to the green arrow only when in free measures mode
+						    if ( ( (CMainView*) pView ) -> m_displayMode == 2 )
+						    {
+							    //( (CMainView*) pView ) -> m_grayScaleButton.SetIcon(IDI_START_ICON,24,24);
+		 					    ( (CMainView*) pView ) -> m_grayScaleButton.SetBitmaps(IDB_MEAS_CONT,RGB(0,0,0));
+							    Msg.LoadString ( IDS_RUNCONTINUOUS );
+							    ( (CMainView*) pView ) -> m_grayScaleButton.SetTooltipText(Msg);
+						    }
+					    }
+				    }
+			    }
+    			
+			    if ( g_bGDIGeneratorRunning )
+			    {
+				    g_pDataDocRunningThread->GetGenerator()->Release();
+
+				    if ( g_bGeneratorUsesScreenBlanking )
+				    {
+					    g_pDataDocRunningThread->GetGenerator()->m_doScreenBlanking = TRUE;
+					    g_bGeneratorUsesScreenBlanking = FALSE;
+				    }
+
+				    g_bGDIGeneratorRunning = FALSE;
+			    }
+    			
+			    g_pDataDocRunningThread = NULL;
+			    break;
+		    }
+
+	    } while ( TRUE );
+
+	    pSensor -> Release ();
+	    DeleteCriticalSection (& g_CritSec );
 	
-	CColor			measuredColor;
-	CString			Msg;
-
-	CView *			pView;
-	POSITION		pos;
-
-	do
-	{
-		// Main loop
-		if ( g_bTerminateThread )
-		{
-			// Exit
-			break;
-		}
-
-		if ( g_bGDIGeneratorRunning )
-		{
-			COLORREF clr = ( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.GetColor ();
-			clr &= 0x00FFFFFF;
-			
-			if ( g_CurrentColor != clr )
-			{
-				g_CurrentColor = clr;
-				pGenerator->DisplayRGBColor(clr,CGenerator::MT_UNKNOWN);
-			}
-		}
-
-		// Perform one measure
-		measuredColor=pSensor->MeasureColor(g_CurrentColor);  // don't know the color to measure so default value to mid gray...
-		if ( g_bTerminateThread )
-		{
-			// Exit
-			break;
-		}
-
-		if(pSensor->IsMeasureValid())
-		{
-			if ( ! g_bTerminateThread )
-			{
-				CColor * pMeasurement = new CColor;
-				pMeasurement -> SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-				pMeasurement -> SetSensorValue(measuredColor);
-
-				while ( g_bInsideBkgndRefresh )
-					Sleep ( 50 );
-
-				EnterCriticalSection (& g_CritSec );
-				g_MeasuredColorList.AddTail ( pMeasurement );
-				LeaveCriticalSection (& g_CritSec );
-
-				// Post message to first document view (this message is treated by the document object)
-				AfxGetMainWnd () -> PostMessage ( WM_BKGND_MEASURE_READY, (WPARAM) g_pDataDocRunningThread );
-			}
-		}
-		else
-		{
-			// Error: close thread
-			g_hThread = NULL;
-			g_bTerminateThread = FALSE;
-
-			if ( GetConfig()->m_bContinuousMeasures )
-			{
-				pos = g_pDataDocRunningThread -> GetFirstViewPosition ();
-				while ( pos )
-				{
-					pView = g_pDataDocRunningThread -> GetNextView ( pos );
-					if ( IsWindow ( pView -> m_hWnd ) && pView -> IsKindOf ( RUNTIME_CLASS ( CMainView ) ) )
-					{
-						// Reset button image to the green arrow only when in free measures mode
-						if ( ( (CMainView*) pView ) -> m_displayMode == 2 )
-						{
-							//( (CMainView*) pView ) -> m_grayScaleButton.SetIcon(IDI_START_ICON,24,24);
-		 					( (CMainView*) pView ) -> m_grayScaleButton.SetBitmaps(IDB_MEAS_CONT,RGB(0,0,0));
-							Msg.LoadString ( IDS_RUNCONTINUOUS );
-							( (CMainView*) pView ) -> m_grayScaleButton.SetTooltipText(Msg);
-						}
-					}
-				}
-			}
-			
-			if ( g_bGDIGeneratorRunning )
-			{
-				g_pDataDocRunningThread->GetGenerator()->Release();
-
-				if ( g_bGeneratorUsesScreenBlanking )
-				{
-					g_pDataDocRunningThread->GetGenerator()->m_doScreenBlanking = TRUE;
-					g_bGeneratorUsesScreenBlanking = FALSE;
-				}
-
-				g_bGDIGeneratorRunning = FALSE;
-			}
-			
-			g_pDataDocRunningThread = NULL;
-			break;
-		}
-
-	} while ( TRUE );
-
-	pSensor -> Release ();
-	DeleteCriticalSection (& g_CritSec );
-	
+    }
+    catch(std::exception& e)
+    {
+        std::cerr << "Exception in measurement thread : " << e.what() << std::endl;
+    }
+    catch(...)
+    {
+        std::cerr << "Unexpected Exception in measurement thread" << std::endl;
+    }
 	return 0;
 }
 

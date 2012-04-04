@@ -3809,38 +3809,49 @@ BOOL CMeasure::WaitForDynamicIris ( BOOL bIgnoreEscape )
 
 static DWORD WINAPI BkGndMeasureThreadFunc ( LPVOID lpParameter )
 {
-	CMeasure *		pMeasure = (CMeasure *) lpParameter;
-	CSensor *		pSensor = pMeasure -> m_pBkMeasureSensor;	// Assume sensor is initialized
-	
-	do
-	{
-		// Wait for execution request
-		WaitForSingleObject ( pMeasure -> m_hEventRun, INFINITE );
-		ResetEvent ( pMeasure -> m_hEventRun );
+    CrashDump useInThisThread;
+    try
+    {
+	    CMeasure *		pMeasure = (CMeasure *) lpParameter;
+	    CSensor *		pSensor = pMeasure -> m_pBkMeasureSensor;	// Assume sensor is initialized
+    	
+	    do
+	    {
+		    // Wait for execution request
+		    WaitForSingleObject ( pMeasure -> m_hEventRun, INFINITE );
+		    ResetEvent ( pMeasure -> m_hEventRun );
 
-		if ( pMeasure -> m_bTerminateThread )
-		{
-			// Exit thread
-			break;
-		}
+		    if ( pMeasure -> m_bTerminateThread )
+		    {
+			    // Exit thread
+			    break;
+		    }
 
-		// Perform one measure
-		( * pMeasure -> m_pBkMeasuredColor ) [ pMeasure -> m_nBkMeasureStep ] = pSensor -> MeasureColor ( pMeasure -> m_clrToMeasure );
+		    // Perform one measure
+		    ( * pMeasure -> m_pBkMeasuredColor ) [ pMeasure -> m_nBkMeasureStep ] = pSensor -> MeasureColor ( pMeasure -> m_clrToMeasure );
 
-		if ( ! pSensor -> IsMeasureValid () )
-		{
-			// Register error
-			pMeasure -> m_bErrorOccurred = TRUE;
-		}
+		    if ( ! pSensor -> IsMeasureValid () )
+		    {
+			    // Register error
+			    pMeasure -> m_bErrorOccurred = TRUE;
+		    }
 
-		// Indicate measure is done
-		SetEvent ( pMeasure -> m_hEventDone );
+		    // Indicate measure is done
+		    SetEvent ( pMeasure -> m_hEventDone );
 
-	} while ( TRUE );
+	    } while ( TRUE );
 
-	// Release sensor
-	pSensor -> Release ();
-	
+	    // Release sensor
+	    pSensor -> Release ();
+    }
+    catch(std::exception& e)
+    {
+        std::cerr << "Exception in measurement thread : " << e.what() << std::endl;
+    }
+    catch(...)
+    {
+        std::cerr << "Unexpected Exception in measurement thread" << std::endl;
+    }
 	return 0;
 }
 

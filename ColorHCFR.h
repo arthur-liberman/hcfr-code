@@ -147,6 +147,7 @@ public:
 
 	void BeginLuxMeasure ();
 	UINT GetLuxMeasure ( double * pLuxValue );
+	virtual int Run();
 
 	// Luxmeter connection handling
 	HANDLE	m_hLuxThread;		// Background thread handling luxmeter
