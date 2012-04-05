@@ -1597,7 +1597,7 @@ API_EXPORTED void libusb_exit(struct libusb_context *ctx)
 void usbi_log_v(struct libusb_context *ctx, enum usbi_log_level level,
 	const char *function, const char *format, va_list args)
 {
-	FILE *stream = stdout;
+	FILE *stream = stderr;
 	const char *prefix;
 
 #ifndef ENABLE_DEBUG_LOGGING
