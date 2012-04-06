@@ -822,16 +822,20 @@ i1pro_getmisc(
 i1pro_code
 i1pro_getmeasparams(
 	i1pro *p,
-	int *intclocks,		/* Number of integration clocks */
-	int *lampclocks,	/* Number of lamp turn on sub-clocks */
-	int *nummeas,		/* Number of measurements */
-	int *measmodeflags	/* Measurement mode flags */
+	int *intclocks,		/* Number of integration clocks (Up to 65535) */
+	int *lampclocks,	/* Number of lamp turn on sub-clocks (Up to 65535) */
+	int *nummeas,		/* Number of measurements (Up to 65535) */
+	int *measmodeflags	/* Measurement mode flags (4 bits, see below) */
 );
 
 #define I1PRO_MMF_SCAN		0x01	/* Scan mode bit, else spot mode */
 #define I1PRO_MMF_NOLAMP	0x02	/* No lamp mode, else use illumination lamp */
 #define I1PRO_MMF_GAINMODE	0x04	/* Normal gain mode, else high gain */
 #define I1PRO_MMF_UNKN		0x08	/* Unknown. Not usually set */
+
+/* Scan mode continues measuring until the user releases the button. */
+/* (Does scan mode do the given number of readings as a minimum ???) */
+/* Spot mode does the given number of readings. */
 
 /* Set the measurement parameters */
 i1pro_code

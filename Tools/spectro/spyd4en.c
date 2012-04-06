@@ -506,10 +506,9 @@ main(int argc, char *argv[]) {
 			char *pf = NULL;
 
 			char *paths[] = {		/* Typical instalation locations ??? */
-									/* These are almost certainly wrong. */
 				"\\Datacolor\\Spyder4Express\\dccmtr.dll",
-				"\\Datacolor\\Spyder4pro\\dccmtr.dll",
-				"\\Datacolor\\Spyder4elite\\dccmtr.dll",
+				"\\Datacolor\\Spyder4Pro\\dccmtr.dll",
+				"\\Datacolor\\Spyder4Elite\\dccmtr.dll",
 				""
 			};
 
@@ -518,11 +517,11 @@ main(int argc, char *argv[]) {
 				""
 			};
 
+			/* See if we can find the installed files */
 			for (i = 0;;i++) {
 				if (paths[i][0] == '\000')
 					break;
 
-				/* Where the normal instalation goes */
 				if ((pf = getenv("PROGRAMFILES")) != NULL)
 					strcpy(in_name, pf);
 				else

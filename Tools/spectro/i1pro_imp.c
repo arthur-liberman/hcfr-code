@@ -990,6 +990,7 @@ inst_cal_type i1pro_imp_needs_calibration(
 	} else if (   (s->trans && !s->cal_valid)
 	           || (s->trans && s->need_calib && !m->noautocalib)) {
 		return inst_calt_trans_white;
+
 	} else if (s->emiss && !s->scan && !s->adaptive && !s->done_dintcal) {
 		return inst_calt_disp_int_time; 
 	}
@@ -1145,7 +1146,7 @@ i1pro_code i1pro_imp_calibrate(
 
 		nummeas = i1pro_comp_nummeas(p, s->dcaltime, s->inttime);
 
-		DBG((dbgo,"Doing display black calibration with dcaltime %f, int_time %f, nummeas %d, gainmode %d\n", s->dcaltime, s->inttime, nummeas, s->gainmode))
+		DBG((dbgo,"Doing emissive (flash) black calibration with dcaltime %f, int_time %f, nummeas %d, gainmode %d\n", s->dcaltime, s->inttime, nummeas, s->gainmode))
 		stm = msec_time();
 		if ((ev = i1pro_dark_measure(p, s->dark_data, nummeas, &s->inttime, s->gainmode))
 	                                                                         != I1PRO_OK) {
@@ -3555,8 +3556,8 @@ i1pro_trigger_one_measure(
 	int nummeas,			/* Minimum number of measurements to make */
 	double *inttime, 		/* Integration time to use/used */
 	int gainmode,			/* Gain mode to use, 0 = normal, 1 = high */
-	int calib_measure,		/* flag - nz if this is a calibration measurement */
-	int dark_measure		/* flag - nz if this is a dark measurement */
+	int calib_measure,		/* flag - nz if this is a calibration measurement (no scan) */
+	int dark_measure		/* flag - nz if this is a dark measurement (no lamp) */
 ) {
 	i1pro_code ev = I1PRO_OK;
 	i1proimp *m = (i1proimp *)p->m;

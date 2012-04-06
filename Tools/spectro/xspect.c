@@ -2046,8 +2046,6 @@ int write_nxspect(char *fname, xspect *sp, int nspec, int type) {
 	return 0;
 }
 
-#define DEBUG
-
 /* restore a set of spectrum from a CGATS file. */
 /* Up to nspec will be restored starting at offset off.. */
 /* The number restored from the file will be written to *nret */
@@ -2170,7 +2168,6 @@ int read_nxspect(xspect *sp, char *fname, int *nret, int off, int nspec, int typ
 
 	return 0;
 }
-#undef DEBUG
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 

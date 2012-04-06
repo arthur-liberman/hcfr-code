@@ -135,6 +135,7 @@ struct _spyd2 {
 
 	/* Computed factors and state */
 	int prevraw[8];				/* Previous raw reading values */
+	int prevrawinv;				/* Previous raw readings invalid flag - after an abort */
 	int     ref;				/* 0 for constant, 1 for refresh display */ 
 	int     rrset;				/* Flag, nz if the refresh rate has been determined */
 	double  rrate;				/* Current refresh rate. Set to DEFREFR if !determined */

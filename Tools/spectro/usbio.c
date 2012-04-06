@@ -1778,6 +1778,7 @@ icoms_tohex(unsigned char *s, int len) {
 	int i;
 	char *d;
 
+	buf[0] = '\000';
 	for(i = 0, d = buf; i < 64 && i < len; i++, s++) {
 		sprintf(d, "%s%02x", i > 0 ? " " : "", *s);
 		d += strlen(d);

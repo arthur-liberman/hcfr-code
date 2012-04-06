@@ -202,7 +202,7 @@ huey_command(
 	if (isdeb) fprintf(stderr,"huey: Sending cmd '%s' args '%s'",inst_desc(cc), icoms_tohex(in, 7));
 
 	/* Send the command using the control interface */
-	buf[0] = cc;				/* Construct the command */
+	buf[0] = cc;				/* Construct the command == HID report number */
 	memmove(buf + 1, in, 7);
 
 	if (p->icom->is_hid) {

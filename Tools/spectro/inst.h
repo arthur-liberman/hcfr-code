@@ -74,7 +74,7 @@ struct _ipatch {
 /* Instrument interface abstract base class */
 
 /* Abstract return codes in ms byte. */
-/* Machine dependant codes in ls byte. */
+/* Instrument dependant codes in ls byte. */
 /* Note :- update inst_interp_error() in inst.c if anything here is changed. */
 /* and also check all the instrument specific XXX_interp_code() routines too. */
 typedef enum {
@@ -296,7 +296,7 @@ typedef enum {
 	inst_opt_noautocalib        = 0x0002,	/* Disable auto calibration [No args] */
 
 	inst_opt_disp_type          = 0x0003,	/* Set display type by inst_disptypesel index [int] */
-											/* 0 sets to default, if no inst_emis_disptypem */ 
+											/* 0 sets to default, if not inst_emis_disptypem */ 
 
 	inst_opt_set_filter         = 0x0007,	/* Set a filter configuration */
 											/* [1 argument type inst_opt_filter] */
@@ -457,7 +457,7 @@ typedef enum {
 	inst_calc_message          = 0x00020000  /* Issue a message. - see id[] */
 } inst_cal_cond;
 
-#define CALIDLEN 200
+#define CALIDLEN 200	/* Maxumum length of calibration tile ID string */
 
 /* Color instrument interface base object */
 /* Note that some methods work after creation, while many */

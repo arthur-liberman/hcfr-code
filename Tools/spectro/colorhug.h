@@ -51,6 +51,8 @@
 #define COLORHUG_OVERFLOW_ADDITION		0x0e
 #define COLORHUG_OVERFLOW_SENSOR		0x0f
 #define COLORHUG_OVERFLOW_STACK			0x10
+#define COLORHUG_DEVICE_DEACTIVATED		0x11
+#define COLORHUG_INCOMPLETE_REQUEST		0x12
 
 /* Internal errors */
 #define COLORHUG_NO_COMS  				0x22
@@ -71,7 +73,8 @@ struct _colorhug {
 	int trig_return;			/* Emit "\n" after trigger */
 
 	int ser_no;					/* Serial number */
-	int calix;					/* Calibration matrix index */
+	int calix;					/* Calibration matrix index, 9 = Raw */
+	double postscale;			/* Post scale factor (for Raw) */
 	double ccmat[3][3];			/* Colorimeter correction matrix */
 	int	 led_state;				/* Current LED state */
 

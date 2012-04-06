@@ -501,7 +501,7 @@ struct libusb_device *usbi_alloc_device(struct libusb_context *ctx,
 	unsigned long session_id)
 {
 	size_t priv_size = usbi_backend->device_priv_size;
-	struct libusb_device *dev = calloc(sizeof(*dev) + priv_size, 1);
+	struct libusb_device *dev = calloc(1, sizeof(*dev) + priv_size);
 	int r;
 
 	if (!dev)
@@ -516,7 +516,7 @@ struct libusb_device *usbi_alloc_device(struct libusb_context *ctx,
 	dev->ctx = ctx;
 	dev->refcnt = 1;
 	dev->session_data = session_id;
-	memset(&dev->os_priv, 0, priv_size);
+//	memset(&dev->os_priv, 0, priv_size);
 
 	usbi_mutex_lock(&ctx->usb_devs_lock);
 	list_add(&dev->list, &ctx->usb_devs);
@@ -909,7 +909,7 @@ API_EXPORTED int libusb_open(libusb_device *dev, libusb_device_handle **handle)
 	ssize_t r;
 	usbi_dbg("open %d.%d", dev->bus_number, dev->device_address);
 
-	_handle = calloc(sizeof(*_handle) + priv_size, 1);
+	_handle = calloc(1, sizeof(*_handle) + priv_size);
 	if (!_handle)
 		return LIBUSB_ERROR_NO_MEM;
 
@@ -921,7 +921,7 @@ API_EXPORTED int libusb_open(libusb_device *dev, libusb_device_handle **handle)
 
 	_handle->dev = libusb_ref_device(dev);
 	_handle->claimed_interfaces = 0;
-	memset(&_handle->os_priv, 0, priv_size);
+//	memset(&_handle->os_priv, 0, priv_size);
 
 	r = usbi_backend->open(_handle);
 	if (r < 0) {

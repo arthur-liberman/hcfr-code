@@ -905,26 +905,18 @@ inst_cal_type munki_imp_needs_calibration(
 		s->cal_valid = 0;
 	}
 
-//printf("~1 idark_valid = %d, dark_valid = %d, cal_valid = %d\n",
-//s->idark_valid,s->dark_valid,s->cal_valid); 
-//printf("~1 need_calib = %d, need_dcalib = %d, noautocalib = %d\n",
-//s->need_calib,s->need_dcalib, m->noautocalib); 
-
 	if ((s->emiss && s->adaptive && !s->idark_valid)
 	 || ((!s->emiss || !s->adaptive) && !s->dark_valid)
 	 || (s->need_dcalib && !m->noautocalib)
 	 || (s->reflective && !s->cal_valid)
 	 || (s->reflective && s->need_calib && !m->noautocalib)) {
-//printf("~1 need cal ref white\n");
 		return inst_calt_ref_white;
 
 	} else if (   (s->trans && !s->cal_valid)
 	           || (s->trans && s->need_calib && !m->noautocalib)) {
-//printf("~1 need cal trans white\n");
 		return inst_calt_trans_white;
 
 	} else if (s->emiss && !s->scan && !s->adaptive && !s->done_dintcal) {
-//printf("~1 need cal disp/proj inttime\n");
 		if (s->projector)
 			return inst_calt_proj_int_time; 
 		else
@@ -1009,45 +1001,60 @@ munki_code munki_imp_calibrate(
 			*calc = inst_calc_man_cal_smode;
 			return MUNKI_CAL_SETUP;
 		}
-		if (!m->nosposcheck && spos != mk_spos_calib)
+		if (!m->nosposcheck && spos != mk_spos_calib) {
 			return MUNKI_SPOS_CALIB;
+		}
 	} else if (calt == inst_calt_em_dark) {		/* Emissive Dark calib */
 		id[0] = '\000';
 		if (*calc != inst_calc_man_cal_smode) {
 			*calc = inst_calc_man_cal_smode;
 			return MUNKI_CAL_SETUP;
 		}
-		if (!m->nosposcheck && spos != mk_spos_calib)
+		if (!m->nosposcheck && spos != mk_spos_calib) {
 			return MUNKI_SPOS_CALIB;
+		}
 	} else if (calt == inst_calt_trans_dark) {	/* Transmissive dark */
 		id[0] = '\000';
 		if (*calc != inst_calc_man_cal_smode) {
 			*calc = inst_calc_man_cal_smode;
 			return MUNKI_CAL_SETUP;
 		}
-		if (!m->nosposcheck && spos != mk_spos_calib)
+		if (!m->nosposcheck && spos != mk_spos_calib) {
 			return MUNKI_SPOS_CALIB;
+		}
 	} else if (calt == inst_calt_trans_white) {	/* Transmissive white */
 		id[0] = '\000';
 		if (*calc != inst_calc_man_trans_white) {
 			*calc = inst_calc_man_trans_white;
 			return MUNKI_CAL_SETUP;
 		}
-		if (!m->nosposcheck && spos != mk_spos_surf)
+		if (!m->nosposcheck && spos != mk_spos_surf) {
 			return MUNKI_SPOS_SURF;
+		}
+	}
+
+	/* Sanity check scan mode settings, in case something strange */
+	/* has been restored from the persistence file. */
+	if (s->scan && s->inttime > (2.1 * m->min_int_time)) {
+		s->inttime = m->min_int_time;	/* Maximize scan rate */
 	}
 
 	/* We are now either in inst_calc_man_cal_smode, */ 
 	/* inst_calc_man_trans_white, inst_calc_disp_white or inst_calc_proj_white */
-	/* condition for it. */
+	/* sequenced in that order, and in the appropriate condition for it. */
 
-	/* Reflective uses on the fly black, but we need a black for white calib. */
-	if (s->reflective && *calc == inst_calc_man_cal_smode) {
+	/* Reflective uses on the fly black, even for adaptive. */
+	/* Emiss and trans can use single black ref only for non-adaptive */
+	/* using the current inttime & gainmode, while display mode */
+	/* does an extra fallback black cal for bright displays. */
+	if ((s->reflective && *calc == inst_calc_man_ref_white)
+	 || (s->emiss && !s->adaptive && !s->scan && *calc == inst_calc_man_cal_smode)
+	 || (s->trans && !s->adaptive && *calc == inst_calc_man_cal_smode)) {
 		int stm;
 
 		nummeas = munki_comp_nummeas(p, s->dcaltime, s->inttime);
 
-		DBG((dbgo,"Doing initial reflective black calibration with dcaltime %f, int_time %f, nummeas %d, gainmode %d\n", s->dcaltime, s->inttime, nummeas, s->gainmode))
+		DBG((dbgo,"Doing initial display black calibration with dcaltime %f, int_time %f, nummeas %d, gainmode %d\n", s->dcaltime, s->inttime, nummeas, s->gainmode))
 		stm = msec_time();
 		if ((ev = munki_dark_measure(p, s->dark_data, nummeas, &s->inttime, s->gainmode))
 	                                                                         != MUNKI_OK) {
@@ -1055,6 +1062,28 @@ munki_code munki_imp_calibrate(
 		}
 		if (p->debug) fprintf(stderr,"Execution time of dark calib time %f sec = %d msec\n",s->inttime,msec_time() - stm);
 
+		/* Special display mode alternate integration time black measurement */
+		if (s->emiss && !s->scan && !s->adaptive) {
+			nummeas = munki_comp_nummeas(p, s->dcaltime2, s->dark_int_time2);
+			DBG((dbgo,"Doing 2nd initial black calibration with dcaltime2 %f, dark_int_time2 %f, nummeas %d, gainmode %d\n", s->dcaltime2, s->dark_int_time2, nummeas, s->gainmode))
+			stm = msec_time();
+			if ((ev = munki_dark_measure(p, s->dark_data2, nummeas, &s->dark_int_time2,
+			                                                   s->gainmode)) != MUNKI_OK) {
+				return ev;
+			}
+			if (p->debug) fprintf(stderr,"Execution time of 2nd dark calib time %f sec = %d msec\n",s->inttime,msec_time() - stm);
+	
+			nummeas = munki_comp_nummeas(p, s->dcaltime3, s->dark_int_time3);
+			DBG((dbgo,"Doing 3rd initial black calibration with dcaltime3 %f, dark_int_time3 %f, nummeas %d, gainmode %d\n", s->dcaltime3, s->dark_int_time3, nummeas, s->gainmode))
+			nummeas = munki_comp_nummeas(p, s->dcaltime3, s->dark_int_time3);
+			stm = msec_time();
+			if ((ev = munki_dark_measure(p, s->dark_data3, nummeas, &s->dark_int_time3,
+				                                                   s->gainmode)) != MUNKI_OK) {
+				return ev;
+			}
+			if (p->debug) fprintf(stderr,"Execution time of 3rd dark calib time %f sec = %d msec\n",s->inttime,msec_time() - stm);
+	
+		}
 		s->dark_valid = 1;
 		s->need_dcalib = 0;
 		s->ddate = time(NULL);
@@ -1062,13 +1091,13 @@ munki_code munki_imp_calibrate(
 		s->dark_gain_mode = s->gainmode;
 	}
 
-	/* Emsissive scan uses the fastest possible scan rate (??) */
+	/* Emsissive scan (flash) uses the fastest possible scan rate (??) */
 	if (s->emiss && !s->adaptive && s->scan && *calc == inst_calc_man_cal_smode) {
 		int stm;
 
 		nummeas = munki_comp_nummeas(p, s->dcaltime, s->inttime);
 
-		DBG((dbgo,"Doing display black calibration with dcaltime %f, int_time %f, nummeas %d, gainmode %d\n", s->dcaltime, s->inttime, nummeas, s->gainmode))
+		DBG((dbgo,"Doing emissive (flash) black calibration with dcaltime %f, int_time %f, nummeas %d, gainmode %d\n", s->dcaltime, s->inttime, nummeas, s->gainmode))
 		stm = msec_time();
 		if ((ev = munki_dark_measure(p, s->dark_data, nummeas, &s->inttime, s->gainmode))
 	                                                                         != MUNKI_OK) {
@@ -1101,7 +1130,7 @@ munki_code munki_imp_calibrate(
 	}
 
 	/* Emmissive adaptive and transmissive black reference. */
-	/* The integration time and gain needs to be variable. */
+	/* in non-scan mode, where the integration time and gain may vary. */
 	if ((s->emiss && s->adaptive && !s->scan && *calc == inst_calc_man_cal_smode)
 	 || (s->trans && s->adaptive && !s->scan && *calc == inst_calc_man_cal_smode)) {
 		/* Adaptive where we can't measure the black reference on the fly, */
@@ -1109,10 +1138,7 @@ munki_code munki_imp_calibrate(
 		/* The black reference is probably temperature dependent, but */
 		/* there's not much we can do about this. */
 
-		if (s->scan)
-			s->idark_int_time[0] = s->inttime;		/* Use nominal time for scan */
-		else
-			s->idark_int_time[0] = m->min_int_time;
+		s->idark_int_time[0] = m->min_int_time;
 		nummeas = munki_comp_nummeas(p, s->dcaltime, s->idark_int_time[0]);
 		DBG((dbgo,"Doing adaptive interpolated black calibration, dcaltime %f, idark_int_time[0] %f, nummeas %d, gainmode %d\n", s->dcaltime, s->idark_int_time[0], nummeas, 0))
 		if ((ev = munki_dark_measure(p, s->idark_data[0], nummeas, &s->idark_int_time[0], 0))
@@ -1128,10 +1154,7 @@ munki_code munki_imp_calibrate(
 			return ev;
 		}
 	
-		if (s->scan)
-			s->idark_int_time[2] = s->inttime;		/* Use nominal time for scan */
-		else
-			s->idark_int_time[2] = m->min_int_time;
+		s->idark_int_time[2] = m->min_int_time;
 		nummeas = munki_comp_nummeas(p, s->dcaltime, s->idark_int_time[2]);
 		DBG((dbgo,"Doing adaptive interpolated black calibration, dcaltime %f, idark_int_time[2] %f, nummeas %d, gainmode %d\n", s->dcaltime, s->idark_int_time[2], nummeas, 1))
 		if ((ev = munki_dark_measure(p, s->idark_data[2], nummeas, &s->idark_int_time[2], 1))
@@ -1162,6 +1185,7 @@ munki_code munki_imp_calibrate(
 		s->dark_gain_mode = s->gainmode;
 
 		/* Save the calib to all similar modes */
+		DBG((dbgo,"Saving adaptive black calib to similar modes\n"))
 		for (i = 0; i < mk_no_modes; i++) {
 			munki_state *ss = &m->ms[i];
 			if (ss == s)
@@ -1228,14 +1252,77 @@ munki_code munki_imp_calibrate(
 
 	}
 
-	/* Emiss non-adaptive (display/projector) needs three pre-set black */
-	/* references, so it has fallback intergration times. */
-	if (s->emiss && !s->adaptive && !s->scan && *calc == inst_calc_man_cal_smode) {
+	/* Deal with an emissive/transmisive adaptive black reference */
+	/* when in scan mode. */
+	if ((s->emiss && s->adaptive && s->scan && *calc == inst_calc_man_cal_smode)
+	 || (s->trans && s->adaptive && s->scan && *calc == inst_calc_man_cal_smode)) {
+		int j;
+		/* We know scan is locked to the minimum integration time, */
+		/* so we can measure the dark data at that integration time, */
+		/* but we don't know what gain mode will be used, so measure both, */
+		/* and choose the appropriate one on the fly. */
+	
+		s->idark_int_time[0] = s->inttime;
+		nummeas = munki_comp_nummeas(p, s->dcaltime, s->idark_int_time[0]);
+		DBG((dbgo,"Doing adaptive scan black calibration, dcaltime %f, idark_int_time[0] %f, nummeas %d, gainmode %d\n", s->dcaltime, s->idark_int_time[0], nummeas, s->gainmode))
+		if ((ev = munki_dark_measure(p, s->idark_data[0], nummeas, &s->idark_int_time[0], 0))
+		                                                                          != MUNKI_OK)
+			return ev;
+	
+		s->idark_int_time[2] = s->inttime;
+		nummeas = munki_comp_nummeas(p, s->dcaltime, s->idark_int_time[2]);
+		DBG((dbgo,"Doing adaptive scan black calibration, dcaltime %f, idark_int_time[2] %f, nummeas %d, gainmode %d\n", s->dcaltime, s->idark_int_time[2], nummeas, s->gainmode))
+		if ((ev = munki_dark_measure(p, s->idark_data[2], nummeas, &s->idark_int_time[2], 1))
+		                                                                          != MUNKI_OK)
+			return ev;
+	
+		s->idark_valid = 1;
+		s->iddate = time(NULL);
+
+		if (s->gainmode) {
+			for (j = 0; j < m->nraw; j++)
+				s->dark_data[j] = s->idark_data[2][j];
+		} else {
+			for (j = 0; j < m->nraw; j++)
+				s->dark_data[j] = s->idark_data[0][j];
+		}
+		s->dark_valid = 1;
+		s->need_dcalib = 0;
+		s->ddate = s->iddate;
+		s->dark_int_time = s->inttime;
+		s->dark_gain_mode = s->gainmode;
+
+		DBG((dbgo,"Done adaptive scan black calibration\n"))
+
+		/* Save the calib to all similar modes */
+		DBG((dbgo,"Saving adaptive scan black calib to similar modes\n"))
+		for (i = 0; i < mk_no_modes; i++) {
+			munki_state *ss = &m->ms[i];
+			if (ss == s)
+				continue;
+			if ((ss->emiss || ss->trans) && ss->adaptive && s->scan) {
+				ss->idark_valid = s->idark_valid;
+				ss->need_dcalib = s->need_dcalib;
+				ss->iddate = s->iddate;
+				ss->dark_int_time = s->dark_int_time;
+				ss->dark_gain_mode = s->dark_gain_mode;
+				for (j = 0; j < 4; j++) {
+					ss->idark_int_time[j] = s->idark_int_time[j];
+					for (k = 0; k < m->nraw; k++)
+						ss->idark_data[j][k] = s->idark_data[j][k];
+				}
+			}
+		}
+	}
+
+	/* Reflective uses on the fly black, but we need a black for white calib */
+	/* (because of the way the Munki subtracts the black ??) */
+	if (s->reflective && *calc == inst_calc_man_cal_smode) {
 		int stm;
 
 		nummeas = munki_comp_nummeas(p, s->dcaltime, s->inttime);
 
-		DBG((dbgo,"Doing initial display black calibration with dcaltime %f, int_time %f, nummeas %d, gainmode %d\n", s->dcaltime, s->inttime, nummeas, s->gainmode))
+		DBG((dbgo,"Doing initial reflective black calibration with dcaltime %f, int_time %f, nummeas %d, gainmode %d\n", s->dcaltime, s->inttime, nummeas, s->gainmode))
 		stm = msec_time();
 		if ((ev = munki_dark_measure(p, s->dark_data, nummeas, &s->inttime, s->gainmode))
 	                                                                         != MUNKI_OK) {
@@ -1243,49 +1330,11 @@ munki_code munki_imp_calibrate(
 		}
 		if (p->debug) fprintf(stderr,"Execution time of dark calib time %f sec = %d msec\n",s->inttime,msec_time() - stm);
 
-		nummeas = munki_comp_nummeas(p, s->dcaltime2, s->dark_int_time2);
-		DBG((dbgo,"Doing 2nd initial black calibration with dcaltime2 %f, dark_int_time2 %f, nummeas %d, gainmode %d\n", s->dcaltime2, s->dark_int_time2, nummeas, s->gainmode))
-		stm = msec_time();
-		if ((ev = munki_dark_measure(p, s->dark_data2, nummeas, &s->dark_int_time2,
-		                                                   s->gainmode)) != MUNKI_OK) {
-			return ev;
-		}
-		if (p->debug) fprintf(stderr,"Execution time of 2nd dark calib time %f sec = %d msec\n",s->inttime,msec_time() - stm);
-
-		nummeas = munki_comp_nummeas(p, s->dcaltime3, s->dark_int_time3);
-		DBG((dbgo,"Doing 3rd initial black calibration with dcaltime3 %f, dark_int_time3 %f, nummeas %d, gainmode %d\n", s->dcaltime3, s->dark_int_time3, nummeas, s->gainmode))
-		nummeas = munki_comp_nummeas(p, s->dcaltime3, s->dark_int_time3);
-		stm = msec_time();
-		if ((ev = munki_dark_measure(p, s->dark_data3, nummeas, &s->dark_int_time3,
-			                                                   s->gainmode)) != MUNKI_OK) {
-			return ev;
-		}
-		if (p->debug) fprintf(stderr,"Execution time of 3rd dark calib time %f sec = %d msec\n",s->inttime,msec_time() - stm);
-
 		s->dark_valid = 1;
 		s->need_dcalib = 0;
 		s->ddate = time(NULL);
 		s->dark_int_time = s->inttime;
 		s->dark_gain_mode = s->gainmode;
-
-		/* Save the calib to all similar modes */
-		for (i = 0; i < mk_no_modes; i++) {
-			munki_state *ss = &m->ms[i];
-			if (ss == s)
-				continue;
-			if (ss->emiss && !ss->adaptive && !ss->scan) {
-				ss->dark_valid = s->dark_valid;
-				ss->need_dcalib = s->need_dcalib;
-				ss->ddate = s->ddate;
-				ss->dark_int_time = s->dark_int_time;
-				ss->dark_gain_mode = s->dark_gain_mode;
-				for (k = 0; k < m->nraw; k++) {
-					ss->dark_data[k] = s->dark_data[k];
-					ss->dark_data2[k] = s->dark_data2[k];
-					ss->dark_data3[k] = s->dark_data3[k];
-				}
-			}
-		}
 	}
 
 	/* Now deal with white calibrations */
@@ -1302,7 +1351,7 @@ munki_code munki_imp_calibrate(
 		double llimit = m->optsval / m->maxsval;	/* Lower scale needed limit */
 		double fllimit = sqrt(llimit);				/* Fast exit limit */
 
-		DBG((dbgo,"Doing initial reflective white calibration with current inttime %f, gainmode %d\n",
+		DBG((dbgo,"Doing initial white calibration with current inttime %f, gainmode %d\n",
 		                                                   s->inttime, s->gainmode))
 		DBG((dbgo,"ulimit %f, llimit %f\n",ulimit,llimit))
 		DBG((dbgo,"fulimit %f, fllimit %f\n",fulimit,fllimit))
@@ -1318,7 +1367,7 @@ munki_code munki_imp_calibrate(
 			RDBG((dbgo,"Doing a white calibration with trial int_time %f, gainmode %d\n",
 			                                                 s->inttime,s->gainmode))
 
-			if (s->trans) {
+			if (s->trans && s->adaptive) {
 				/* compute interpolated dark refence for chosen inttime & gainmode */
 				RDBG((dbgo,"Interpolate dark calibration reference\n"))
 				if ((ev = munki_interp_dark(p, s->dark_data, s->inttime, s->gainmode))

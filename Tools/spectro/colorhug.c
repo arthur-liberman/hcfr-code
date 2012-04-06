@@ -61,11 +61,13 @@ static int icoms2colorhug_err(int se) {
 
 /* ColorHug commands that we care about */
 typedef enum {
-	ch_set_mult		= 0x04,		/* Set multiplier value */
-	ch_set_integral	= 0x06,		/* Set integral time */
-	ch_get_serial	= 0x0b,		/* Gets the serial number */
-	ch_set_leds		= 0x0e,		/* Sets the LEDs */
-	ch_take_reading	= 0x23		/* Takes an XYZ reading */
+	ch_set_mult		    = 0x04,		/* Set multiplier value */
+	ch_set_integral	    = 0x06,		/* Set integral time */
+	ch_get_serial	    = 0x0b,		/* Gets the serial number */
+	ch_set_leds		    = 0x0e,		/* Sets the LEDs */
+	ch_take_reading     = 0x22,		/* Takes a raw reading minus dark offset */
+	ch_take_reading_xyz	= 0x23,		/* Takes an XYZ reading using the current matrix */
+	ch_get_post_scale   = 0x2a		/* Get the post scaling factor */
 } ColorHugCmd;
 
 /* Diagnostic - return a description given the instruction code */
@@ -80,8 +82,12 @@ static char *inst_desc(int cc) {
 		return "GetSerial";
 	case 0x0e:
 		return "SetLeds";
+	case 0x22:
+		return "TakeReading";
 	case 0x23:
 		return "TakeReadingXYZ";
+	case 0x2a:
+		return "GetPostScale";
 	}
 	sprintf(buf,"Unknown %02x",cc);
 	return buf;
@@ -141,6 +147,10 @@ colorhug_interp_error(inst *pp, int ec) {
 			return "Sensor overflow";
 		case COLORHUG_OVERFLOW_STACK:
 			return "Stack overflow";
+		case COLORHUG_DEVICE_DEACTIVATED:
+			return "Device deactivated";
+		case COLORHUG_INCOMPLETE_REQUEST:
+			return "Incomplete request";
 
 		/* Internal errors */
 		case COLORHUG_NO_COMS:
@@ -201,8 +211,9 @@ colorhug_command(colorhug *p,
 		fprintf(stderr,"colorhug: ICOM err 0x%x\n",ua);
 	if (rv == inst_ok && wbytes != in_size + 1)
 		rv = colorhug_interp_code((inst *)p, COLORHUG_BAD_WR_LENGTH);
+
 	if (rv != inst_ok) {
-		/* Flush any response */
+		/* Flush any response if write failed */
 		if (p->icom->is_hid) {
 			p->icom->hid_read(p->icom, buf, out_size + 2, &rbytes, timeout);
 		} else {
@@ -274,17 +285,80 @@ colorhug_command(colorhug *p,
 	return rv;
 }
 
+/* --------------------------------------------- */
+/* Little endian wire format conversion routines */
+
+/* Take an int, and convert it into a byte buffer */
+static void int2buf_le(unsigned char *buf, int inv) {
+	buf[0] = (inv >> 0) & 0xff;
+	buf[1] = (inv >> 8) & 0xff;
+	buf[2] = (inv >> 16) & 0xff;
+	buf[3] = (inv >> 24) & 0xff;
+}
+
+/* Take an unsigned int, and convert it into a byte buffer */
+static void uint2buf_le(unsigned char *buf, unsigned int inv) {
+	buf[0] = (inv >> 0) & 0xff;
+	buf[1] = (inv >> 8) & 0xff;
+	buf[2] = (inv >> 16) & 0xff;
+	buf[3] = (inv >> 24) & 0xff;
+}
+
 /* Take a short, and convert it into a byte buffer */
-static void short2buf(unsigned char *buf, int inv)
-{
+static void short2buf_le(unsigned char *buf, int inv) {
 	buf[0] = (inv >> 0) & 0xff;
 	buf[1] = (inv >> 8) & 0xff;
 }
 
-/* Converts a packed float to a double */
-static double packed_float_to_double (int32_t pf)
+/* Take an unsigned short, and convert it into a byte buffer */
+static void ushort2buf_le(unsigned char *buf, unsigned int inv) {
+	buf[0] = (inv >> 0) & 0xff;
+	buf[1] = (inv >> 8) & 0xff;
+}
+
+/* Take a word sized buffer, and convert it to an int */
+static int buf2int_le(unsigned char *buf) {
+	int val;
+	val =               buf[3];
+	val = ((val << 8) + buf[2]);
+	val = ((val << 8) + buf[1]);
+	val = ((val << 8) + buf[0]);
+	return val;
+}
+
+/* Take a word sized buffer, and convert it to an unsigned int */
+static unsigned int buf2uint_le(unsigned char *buf) {
+	unsigned int val;
+	val =               buf[3];
+	val = ((val << 8) + buf[2]);
+	val = ((val << 8) + buf[1]);
+	val = ((val << 8) + buf[0]);
+	return val;
+}
+
+/* Take a short sized buffer, and convert it to an int */
+static int buf2short_le(unsigned char *buf) {
+	int val;
+	val =               buf[1];
+	val = ((val << 8) + buf[0]);
+	return val;
+}
+
+/* Take an unsigned short sized buffer, and convert it to an int */
+static unsigned int buf2ushort_le(unsigned char *buf) {
+	unsigned int val;
+	val =               buf[1];
+	val = ((val << 8) + buf[0]);
+	return val;
+}
+
+/* --------------------------------------------- */
+
+
+/* Converts 4 bytes of packed float into a double */
+static double buf2pfdouble(unsigned char *buf)
 {
-	return (double) pf / (double) 0x10000;
+ 	return (double) buf2int_le(buf) / (double) 0x10000;
 }
 
 /* Set the device LED state */
@@ -310,32 +384,65 @@ colorhug_set_LEDs(colorhug *p, int mask)
 	return ev;
 }
 
-/* Take a XYZ measurement from the device */
+/* Take a measurement from the device */
+/* There are 64 calibration matricies, index 0..63 */
+/* 0 is the factory calibration, while 1..63 are */
+/* applied on top of the factory calibration as corrections. */
+/* Index 64..70 are mapped via the mapping table */
+/* to an index between 0 and 63, and notionaly correspond */
+/* as follows:        */
+/*	LCD      = 0      */
+/*	CRT      = 1      */
+/*	Projector    = 2  */
+/*	LED      = 3      */
+/*	Custom1  = 4      */
+/*	Custom2  = 5      */
 static inst_code
-colorhug_take_XYZ_measurement(colorhug *p, double XYZ[3])
+colorhug_take_measurement(colorhug *p, double XYZ[3])
 {
 	inst_code ev;
 	int i;
 	uint8_t ibuf[2];
-	uint32_t obuf[3];
 
 	if (!p->inited)
 		return colorhug_interp_code((inst *)p, COLORHUG_NOT_INITED);
 
-	/* Choose the calibration matrix */
-	short2buf(ibuf + 0, p->calix + 64);
+	if (p->calix == 11) {		/* Raw */
+		unsigned char obuf[3 * 4];
 
-	/* Do the measurement, and return the values */
-	ev = colorhug_command(p, ch_take_reading,
-						  ibuf, sizeof (ibuf),
-						  (unsigned char *) obuf, sizeof (obuf),
-						  30.0);
-	if (ev != inst_ok)
-		return ev;
+		/* Do the measurement, and return the values */
+		ev = colorhug_command(p, ch_take_reading,
+							  NULL, 0,
+							  obuf, 3 * 4,
+							  30.0);
+		if (ev != inst_ok)
+			return ev;
+	
+		/* Convert to doubles */
+		for (i = 0; i < 3; i++)
+			XYZ[i] = p->postscale * buf2pfdouble(obuf + i * 4);
+	} else {
+		int calix = 64 + p->calix;
+		unsigned char obuf[3 * 4];
 
-	/* Convert to doubles */
-	for (i = 0; i < 3; i++)
-		XYZ[i] = packed_float_to_double (obuf[i]);
+		if (p->calix == 10)	/* Factory */	
+			calix = 0;
+
+		/* Choose the calibration matrix */
+		short2buf_le(ibuf + 0, calix);
+	
+		/* Do the measurement, and return the values */
+		ev = colorhug_command(p, ch_take_reading_xyz,
+							  ibuf, sizeof (ibuf),
+							  obuf, 3 * 4,
+							  30.0);
+		if (ev != inst_ok)
+			return ev;
+	
+		/* Convert to doubles */
+		for (i = 0; i < 3; i++)
+			XYZ[i] = buf2pfdouble(obuf + i * 4);
+	}
 
 	/* Apply the colorimeter correction matrix */
 	icmMulBy3x3(XYZ, p->ccmat, XYZ);
@@ -411,11 +518,27 @@ colorhug_set_integral (colorhug *p, int integral)
 	unsigned char ibuf[2];
 
 	/* Set the desired integral time */
-	short2buf(ibuf + 0, integral);
+	short2buf_le(ibuf + 0, integral);
 	ev = colorhug_command(p, ch_set_integral,
 						  ibuf, sizeof (ibuf),
 						  NULL, 0,
 						  2.0);
+	return ev;
+}
+
+/* Get the post scale factor */
+static inst_code
+colorhug_get_postscale (colorhug *p, double *postscale)
+{
+	inst_code ev;
+	unsigned char obuf[4];
+
+	/* Hmm. The post scale is in the 2nd short returned */
+	ev = colorhug_command(p, ch_get_post_scale,
+						  NULL, 0,
+						  obuf, 4,
+						  2.0);
+	*postscale = buf2pfdouble(obuf);
 	return ev;
 }
 
@@ -445,6 +568,11 @@ colorhug_init_inst(inst *pp)
 
 	/* Set the integral time to maximum precision */
 	ev = colorhug_set_integral(p, 0xffff);
+	if (ev != inst_ok)
+		return ev;
+
+	/* Get the post scale factor */
+	ev = colorhug_get_postscale(p, &p->postscale);
 	if (ev != inst_ok)
 		return ev;
 
@@ -500,7 +628,7 @@ ipatch *val) {		/* Pointer to instrument patch value */
 	}
 
 	/* Read the XYZ value */
-	if ((rv = colorhug_take_XYZ_measurement(p, val->aXYZ)) != inst_ok) {
+	if ((rv = colorhug_take_measurement(p, val->aXYZ)) != inst_ok) {
 		return rv;
 	}
 
@@ -597,6 +725,8 @@ colorhug_interp_code(inst *pp, int ec) {
 		case COLORHUG_OVERFLOW_ADDITION:
 		case COLORHUG_OVERFLOW_SENSOR:
 		case COLORHUG_OVERFLOW_STACK:
+		case COLORHUG_DEVICE_DEACTIVATED:
+		case COLORHUG_INCOMPLETE_REQUEST:
 		case COLORHUG_BAD_WR_LENGTH:
 		case COLORHUG_BAD_RD_LENGTH:
 		case COLORHUG_BAD_RET_CMD:
@@ -649,8 +779,8 @@ inst2_capability colorhug_capabilities2(inst *pp) {
 	return rv;
 }
 
-/* The HW handles up to 6 */
-inst_disptypesel colorhug_disptypesel[5] = {
+/* The HW handles up to 6, + 2 special */
+inst_disptypesel colorhug_disptypesel[7] = {
 	{
 		1,
 		"l",
@@ -673,6 +803,18 @@ inst_disptypesel colorhug_disptypesel[5] = {
 		4,
 		"e",
 		"ColorHug: LCD, White LED Backlight",
+		0
+	},
+	{
+		11,
+		"F",
+		"ColorHug: Factory calibration (For calibration)",
+		0
+	},
+	{
+		12,
+		"R",
+		"ColorHug: Raw Reading (For Factory Matrix Calibration)",
 		0
 	},
 	{
@@ -699,7 +841,7 @@ inst_optdet_type m,	/* Requested option detail type */
 		psels = va_arg(args, inst_disptypesel **);
 		va_end(args);
 
-		*pnsels = 4;
+		*pnsels = 6;
 		*psels = colorhug_disptypesel;
 		
 		return inst_ok;
@@ -762,7 +904,7 @@ colorhug_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 
 		/* The HW handles up to 6 calibrations */
 		ix -= 1;			/* Convert to 0 based index */
-		if (ix < 0 || ix > 3)
+		if (ix != 10 && ix != 11 && (ix < 0 || ix > 3))
 			return inst_unsupported;
 		p->calix = ix;
 		return inst_ok;

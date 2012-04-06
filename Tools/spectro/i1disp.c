@@ -864,16 +864,16 @@ i1d2_take_measurement(
 //	if (crtm) {
 		/* Do an initial fixed integration time frequency measurement. */
 		DBG((dbgo,"Doing fixed period frequency measurement over %f secs\n",p->inttime))
-
+	
 		if ((ev = i1d2_freq_measure(p, &p->inttime, rmeas)) != inst_ok)
 			return ev;
-
+	
 		for (i = 0; i < 3; i++)
 			rgb[i] = p->rgbadj[i] * 0.5 * rmeas[i]/p->inttime;
-
+	
 		DBG((dbgo,"Got %f %f %f raw, %f %f %f Hz\n",
 		rmeas[0], rmeas[1], rmeas[2], rgb[0], rgb[1], rgb[2]))
-
+	
 		/* Decide whether any channels need re-measuring, */
 		/* and computed cooked values. Threshold is a count of 75 */
 		for (i = 0; i < 3; i++) {
@@ -891,8 +891,8 @@ i1d2_take_measurement(
 //	} else {
 //		mask = 0x7;
 //	}
-		DBG((dbgo,"Re-measure mask = 0x%x\n",mask))
-		DBG((dbgo,"cdgec = %d %d %d\n",cdgec[0],cdgec[1],cdgec[2]))
+	DBG((dbgo,"Re-measure mask = 0x%x\n",mask))
+	DBG((dbgo,"cdgec = %d %d %d\n",cdgec[0],cdgec[1],cdgec[2]))
 
 	/* If any need re-measuring */
 	if (mask != 0) {
@@ -996,7 +996,7 @@ i1d2_take_measurement(
 }
 
 #else
-/* Less precise (more quatization errors), but more robust */
+/* Less precise (worse quatization errors), but more robust */
 /* against excessive delays if the light level drops during measurement. */
 /* Limits period measurement to an edge count < 35, but that can */
 /* still take a long time in the dark. */
@@ -1080,6 +1080,10 @@ i1d2_take_measurement(
 	DBG((dbgo,"cdgec = %d %d %d\n",cdgec[0],cdgec[1],cdgec[2]))
 
 	/* If there is a frequency re-measure */
+	/* ** This doesn't actually work. The quantization error */
+	/* for each read is 0.5, but averaging 2 reads it drops */
+	/* to 0.354, not the desired 0.25 that would have been */
+	/* acheived with double the integration time. ** */ 
 	if (fmask != 0) {
 		DBG((dbgo,"Doing frequency re-measurement over %f secs\n",p->inttime))
 		if ((ev = i1d2_freq_measure(p, &p->inttime, rmeas)) != inst_ok)
@@ -1328,9 +1332,7 @@ i1disp_do_fcal_setit(
 
 		/* Compute the measurement frequency */
 		if (measp != 0.0) {
-printf("~1 measp = %f, p->clk_freq = %f, p->nmeasprds = %d\n", measp, p->clk_freq, p->nmeasprds);
 			p->refperiod = measp/(p->clk_freq * (double)p->nmeasprds);	
-printf("~1 refperiod = %f\n", p->refperiod);
 			DBG((dbgo,"Sample frequency measured = %f\n",1.0/p->refperiod))
 		} else {
 			DBG((dbgo,"No discernable refresh frequency measured\n"))
@@ -1642,7 +1644,7 @@ i1disp_compute_factors(
 
 	/* Master/Measurement clock frequency */
 	p->clk_freq = 1.0/p->clk_prd;
-	
+
 	/* RGB channel calibration factors */
 	for (i = 0; i < 3; i++) {
 

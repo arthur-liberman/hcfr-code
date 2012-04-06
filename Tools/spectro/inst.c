@@ -89,7 +89,9 @@ inst *p) {
 
 /* Return the instrument type */
 static instType get_itype(inst *p) {
+	if (p != NULL)
 	return p->itype;
+	return instUnknown;
 }
 
 /* Return the instrument serial number. */
@@ -742,6 +744,7 @@ inst_code inst_handle_calibrate(
 
 		DBG((dbgo,"About to call calibrate at top of loop\n"))
 	    ev = p->calibrate(p, calt, &calc, id);
+		DBG((dbgo,"calibrate returned calt 0x%x, calc 0x%x\n",calt,calc))
 
 		/* We're done */
 		if ((ev & inst_mask) == inst_ok) {

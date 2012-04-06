@@ -61,9 +61,6 @@
 #undef SAVE_SPECTRA		/* Save the sensor senitivity spectra to "sensors.cmf" */
 #undef PLOT_REFRESH		/* Plot data used to determine refresh rate */
 
-#undef DO_SYNCHRONIZE	/* Try and synchronize a refresh display read */
-						/* (Appears to be of no benifit) */
-
 #ifdef DEBUG
 #define DBG(xxx) printf xxx ;
 #else
@@ -72,6 +69,20 @@
 
 static inst_code i1d3_interp_code(inst *pp, int ec);
 static inst_code i1d3_check_unlock(i1d3 *p);
+
+/* ------------------------------------------------------------------- */
+#if defined(__APPLE__) && defined(__POWERPC__)
+
+/* Workaround for a PPC gcc 3.3 optimiser bug... */
+/* It seems to cause a segmentation fault instead of */
+/* converting an integer loop index into a float, */
+/* when there are sufficient variables in play. */
+static int gcc_bug_fix(int i) {
+	static int nn;
+	nn += i;
+	return nn;
+}
+#endif	/* APPLE */
 
 /* ------------------------------------------------------------------------ */
 /* Implementation */
@@ -192,7 +203,7 @@ i1d3_command(
 		p->icom->debug = 0;
 	
 	/* Send the command using interrupt transfer to EP 0x01 */
-	send[0] = cmd = (cc >> 8) & 0xff;	/* Major command */
+	send[0] = cmd = (cc >> 8) & 0xff;	/* Major command == HID report number */
 	if (cmd == 0x00)
 		send[1] = (cc & 0xff);	/* Minor command */
 
@@ -278,7 +289,6 @@ i1d3_command(
 	if (isdeb) fprintf(stderr," '%s' ICOM err 0x%x\n",icoms_tohex(recv, 14),ua);
 	p->icom->debug = isdeb;
 
-if (ua != 0) printf("~1 returning rv = 0x%x\n",rv);
 	return rv; 
 }
 
@@ -543,7 +553,8 @@ i1d3_lock_status(
 	return inst_ok;
 }
 
-static void create_unlock_response(unsigned char *k, unsigned char *c, unsigned char *r);
+static void create_unlock_response(unsigned int *k, unsigned char *c, unsigned char *r);
+
 
 /* Unlock the device */
 static inst_code
@@ -554,18 +565,14 @@ i1d3_unlock(
 	unsigned char fromdev[64];
 	struct {
 		char *pname;							/* Product name */
-		unsigned char key[8];					/* Unlock code */
+		unsigned int key[2];					/* Unlock code */
 		i1d3_dtype dtype;						/* Base type enumerator */
 		i1d3_dtype stype;						/* Sub type enumerator */
 	} codes[] = {
-		{ "i1Display3 ",
-			{ 0x61, 0xcd, 0xd1, 0x1e, 0x9d, 0x9c, 0x16, 0x72 }, i1d3_disppro, i1d3_disppro },
-		{ "Colormunki Display ",
-			{ 0xf6, 0x22, 0x91, 0x9d, 0xe1, 0x8b, 0x1f, 0xda }, i1d3_munkdisp, i1d3_munkdisp },
-		{ "i1Display3 ",
-			{ 0xd4, 0x9f, 0xd4, 0xa4, 0x59, 0x7e, 0x35, 0xcf }, i1d3_disppro, i1d3_oem },
-		{ "i1Display3 ",
-			{ 0x87, 0x9f, 0x6b, 0x78, 0xee, 0xe9, 0x56, 0xa4 }, i1d3_disppro, i1d3_nec_ssp },
+		{ "i1Display3 ",         { 0xe9622e9f, 0x8d63e133 }, i1d3_disppro, i1d3_disppro },
+		{ "Colormunki Display ", { 0xe01e6e0a, 0x257462de }, i1d3_munkdisp, i1d3_munkdisp },
+		{ "i1Display3 ",         { 0xcaa62b2c, 0x30815b61 }, i1d3_disppro, i1d3_oem },
+		{ "i1Display3 ",         { 0xa9119479, 0x5b168761 }, i1d3_disppro, i1d3_nec_ssp },
 		{ NULL } 
 	}; 
 	inst_code ev;
@@ -588,9 +595,8 @@ i1d3_unlock(
 			continue;
 		}
 
-//		if (isdeb) fprintf(stderr,"i1d3: Trying unlock key 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\n",
-//			codes[ix].key[0], codes[ix].key[1], codes[ix].key[2], codes[ix].key[3],
-//			codes[ix].key[4], codes[ix].key[5], codes[ix].key[6], codes[ix].key[7]);
+//		if (isdeb) fprintf(stderr,"i1d3: Trying unlock key 0x%08x 0x%08x\n",
+//			codes[ix].key[0], codes[ix].key[1]);
 
 		p->dtype = codes[ix].dtype;
 		p->stype = codes[ix].stype;
@@ -881,13 +887,15 @@ i1d3_set_LEDs(
 
 	determining the refresh rate for a refresh type display;
 
-	Read 1500 .5 msec samples as fast as possible, and
+	Read 1300 .5 msec samples as fast as possible, and
 	timestamp them.
 	Interpolate values up to .05 msec regular samples.
 	Do an auto-correlation on the samples.
-	Pick the longest peak as the best sample period.
+	Pick the longest peak between 10 andf 40Hz as the best sample period,
+	and halve this to use as the quantization value (ie. make
+	it lie between 20 and 80 Hz).
 
-	If there is an error, return it.
+	If there was no error, return refresh quanization period it.
 
 	If there is no aparent refresh, or the refresh rate is not determinable,
 	return a period of 0.0 and inst_ok;
@@ -899,11 +907,13 @@ i1d3_set_LEDs(
 #ifndef PSRAND32L 
 # define PSRAND32L(S) ((S) * 1664525L + 1013904223L)
 #endif
-#define NFSAMPS 1000		/* Number of samples to read */
-#define NFMXTIME 4.0		/* Maximum time to take */
+#define NFSAMPS 1300		/* Number of samples to read */
+#define NFMXTIME 6.0		/* Maximum time to take (2000 == 6) */
 #define PBPMS 20		/* bins per msec */
-#define PERMIN ((1000 * PBPMS)/80)	/* 80 Hz */
-#define PERMAX ((1000 * PBPMS)/20)	/* 20 Hz*/
+//#define PERMIN ((1000 * PBPMS)/80)	/* 80 Hz */
+//#define PERMAX ((1000 * PBPMS)/20)	/* 20 Hz*/
+#define PERMIN ((1000 * PBPMS)/40)	/* 40 Hz */
+#define PERMAX ((1000 * PBPMS)/10)	/* 10 Hz*/
 #define NPER (PERMAX - PERMIN + 1)
 #define PWIDTH (4 * PBPMS)			/* 4 msec bin spread to look for peak in */
 
@@ -1038,7 +1048,7 @@ i1d3_measure_refresh(
 			maxt = samp[i].sec;
 		for (j = 0; j < 3; j++) {
 			samp[i].rgb[j] /= samp[i].itime;
-	}
+		}
 	}
 
 	/* Create PBPMS bins and interpolate readings into them */
@@ -1054,9 +1064,14 @@ i1d3_measure_refresh(
 		sbin = (int)(samp[k].sec * 1000.0 * PBPMS + 0.5);
 		ebin = (int)(samp[k+1].sec * 1000.0 * PBPMS + 0.5);
 		for (i = sbin; i <= ebin; i++) {
-			double bl = (i - sbin)/(double)(ebin - sbin);	/* 0.0 to 1.0 */
-			for (j = 0; j < 3; j++)
+			double bl;
+#if defined(__APPLE__) && defined(__POWERPC__)
+			gcc_bug_fix(i);
+#endif
+			bl = (i - sbin)/(double)(ebin - sbin);	/* 0.0 to 1.0 */
+			for (j = 0; j < 3; j++) {
 				bins[j][i] = (1.0 - bl) * samp[k].rgb[j] + bl * samp[k+1].rgb[j];
+			}
 		} 
 	}
 
@@ -1127,6 +1142,10 @@ i1d3_measure_refresh(
 	}
 #endif /* PLOT_REFRESH */
 
+	/* An approach to improving the accuracy might be to */
+	/* detect every peak and then average the distannce between */
+	/* them - but would have to cope with missing peaks. */
+
 	/* Locate the first peak starting at the longest correllation */
 	for (i = (NPER-1-PWIDTH); i >= 0; i--) {
 		double v1, v2, v3;
@@ -1175,12 +1194,28 @@ i1d3_measure_refresh(
 		bl = (bl + 1.0)/2.0;
 		ii = bl * pki + (1.0 - bl) * j;
 		pval = (ii + PERMIN)/(double)PBPMS;
-		if (p->verb) printf("Refresh period = %f msec\n",pval);
-		/* Error against my 85Hz CRT - GWG */
-//		printf("Refresh error = %f msec\n",fabs(pval - 4000.0/85.0));	
-		if (p->debug) fprintf(stderr,"i1d3: Refresh period = %f msec\n",pval);
 	}
-	*period = pval/1000.0;
+
+	pval /= 2000.0;		/* Halve and convert to seconds */
+
+#ifdef NEVER
+	/* Scale the period up to be just faster than 20 Hz */
+	{
+		int scale;
+		for (scale = 1; scale < 5; scale++) {
+			if ((scale * pval) >= 1.0/20.0)
+				break;
+		}
+		pval *= (scale - 1.0);
+	}
+#endif
+
+	if (p->verb) printf("Refresh period = %f msec\n",pval * 1000);
+	if (p->debug) fprintf(stderr,"i1d3: Refresh period = %f msec\n",pval);
+	/* Error against my 85Hz CRT - GWG */
+//	printf("Refresh error = %f msec = %.4f%%\n",1000.0 * fabs(pval - 4.0/85.0), 100.0 * fabs(pval/4.0 - 1.0/85.0)/(1.0/85.0));	
+
+	*period = pval;
 
 	return inst_ok;
 }
@@ -1237,7 +1272,6 @@ i1d3_take_amb_measurement(
 
 /* - - - - - - - - - - - - - - - - - - - - - - */
 
-// ~~99
 //#define DEBUG
 //#undef DBG
 //#define DBG(xxx) printf xxx ;
@@ -1259,13 +1293,6 @@ i1d3_take_emis_measurement(
 #ifdef DEBUG
 	int msecstart = msec_time();
 #endif
-#ifdef DO_SYNCHRONIZE
-	int synccount = 30;
-	double syncinttime = 0.001;
-	int maxch;
-	double maxmax, shighth, slowth;
-	double syncfail = 0;
-#endif
 
 	if (p->inited == 0)
 		return i1d3_interp_code((inst *)p, I1D3_NOT_INITED);
@@ -1285,59 +1312,6 @@ i1d3_take_emis_measurement(
 
 		/* Typically this is 200msec */
 		DBG(("Doing fixed period frequency measurement over %f secs\n",p->inttime));
-
-#ifdef DO_SYNCHRONIZE
-		if (p->refmode && p->refperiod  > 0.0) {
-			double stime;
-			double trgb[3];
-			double maxv[3] = {-1e9, -1e9, -1e9};
-			double minv[3] = {1e9, 1e9, 1e9};
-			int i, j, m;
-		
-			/* Discover the min and max values */
-			stime = usec_time();
-			for (i = 0; i < synccount ;i++) {
-				if ((ev = i1d3_freq_measure(p, &syncinttime, trgb)) != inst_ok)
-		 			return ev;
-				for (j = 0; j < 3; j++) {
-					if (trgb[j] < minv[j])
-						minv[j] = trgb[j];
-					if (trgb[j] > maxv[j])
-						maxv[j] = trgb[j];
-				}
-			}
-printf("Neasured for %f msec\n", (usec_time() - stime) / 1000.0);
-
-			/* Locate the maximum value of any of the channels */
-			maxmax = -1e9;
-			for (j = 0; j < 3; j++) {
-				if (maxv[j] > maxmax) {
-					maxmax = maxv[j];
-					maxch = j;
-				}
-			}
-			/* Set high and low thresholds */
-			shighth = 0.9 * (maxmax - minv[maxch]) + minv[maxch];
-			slowth = 0.1 * (maxmax - minv[maxch]) + minv[maxch];
-printf("samples %d, maxmax = %f chan %d, min %f\n",i, maxmax,maxch,minv[maxch]);
-		
-			/* Wait till we get the high then low value */
-			for (m = i = 0; i < synccount; i++) {
-				if ((ev = i1d3_freq_measure(p, &syncinttime, trgb)) != inst_ok)
-		 			return ev;
-				if (m) {
-					if (trgb[maxch] <= slowth)
-						break;
-//					m = 0;
-					continue;
-				}
-				if (trgb[maxch] >= shighth)
-					m = 1;
-			}
-			if (i == synccount)
-				syncfail = 1;
-		}
-#endif /* DO_SYNCHRONIZE */
 
 		/* Take a frequency measurement over a fixed period */
 		if ((ev = i1d3_freq_measure(p, &p->inttime, rmeas)) != inst_ok)
@@ -1398,14 +1372,14 @@ printf("samples %d, maxmax = %f chan %d, min %f\n",i, maxmax,maxch,minv[maxch]);
 				int mask3 = 0x0;
 
 				DBG(("Doing 1st period pre-measurement mask 0x%x, edgec %s\n",mask2,icmPiv(3,edgec)));
-				/* Take an initial period  measurement over 2 edges */
-				if ((ev = i1d3_period_measure(p, edgec, mask, rmeas)) != inst_ok)
+				/* Take an initial period pre-measurement over 2 edges */
+				if ((ev = i1d3_period_measure(p, edgec, mask2, rmeas)) != inst_ok)
 		 			return ev;
 
 				DBG(("Got %s raw %f %f %f Hz\n",icmPdv(3,rmeas),
-				     0.5 * edgec[0] * p->clk_freq/rmeas2[0],
-				     0.5 * edgec[1] * p->clk_freq/rmeas2[1],
-				     0.5 * edgec[2] * p->clk_freq/rmeas2[2]));
+				     0.5 * edgec[0] * p->clk_freq/rmeas[0],
+				     0.5 * edgec[1] * p->clk_freq/rmeas[1],
+				     0.5 * edgec[2] * p->clk_freq/rmeas[2]));
 
 				/* Do 2nd initial measurement if the count is small, in case */
 				/* we are measuring a CRT with a refresh rate which adds innacuracy, */
@@ -1413,7 +1387,7 @@ printf("samples %d, maxmax = %f chan %d, min %f\n",i, maxmax,maxch,minv[maxch]);
 				/* Don't do this for Munki Display, because of its slow measurements. */
 				if (p->dtype != i1d3_munkdisp) {
 					for (i = 0; i < 3; i++) {
-						if ((mask & (1 << i)) == 0)
+						if ((mask2 & (1 << i)) == 0)
 							continue;
 
 						if (rmeas[i] > 0.5) {
@@ -1421,8 +1395,8 @@ printf("samples %d, maxmax = %f chan %d, min %f\n",i, maxmax,maxch,minv[maxch]);
 							int inedgec;
 
 							/* Compute number of edges needed for a clock count */
-							/* of 0.050 seconds */
-							nedgec = edgec[i] * 0.050 * p->clk_freq/rmeas[i];
+							/* of 0.100 seconds */
+							nedgec = edgec[i] * 0.100 * p->clk_freq/rmeas[i];
 
 							DBG(("chan %d target edges %f\n",i,nedgec));
 
@@ -1450,7 +1424,7 @@ printf("samples %d, maxmax = %f chan %d, min %f\n",i, maxmax,maxch,minv[maxch]);
 					if (mask3 != 0x0) {
 						double rmeas2[3];
 
-						DBG(("Doing 2nd initial period measurement mask 0x%x, edgec %s\n",mask,icmPiv(3,edgec)));
+						DBG(("Doing 2nd initial period measurement mask 0x%x, edgec %s\n",mask3,icmPiv(3,edgec)));
 						/* Take a 2nd initial period  measurement */
 						if ((ev = i1d3_period_measure(p, edgec, mask3, rmeas2)) != inst_ok)
 				 			return ev;
@@ -1526,30 +1500,7 @@ printf("samples %d, maxmax = %f chan %d, min %f\n",i, maxmax,maxch,minv[maxch]);
 			if (mask != 0x0) {
 				DBG(("Doing period re-measure mask 0x%x, edgec %s\n",mask,icmPiv(3,edgec)));
 
-#ifdef DO_SYNCHRONIZE
-				if (p->refmode && p->refperiod  > 0.0) {
-					double trgb[3];
-					int m;
-				
-					/* Wait till we get the high then low value */
-					for (m = i = 0; i < synccount; i++) {
-						if ((ev = i1d3_freq_measure(p, &syncinttime, trgb)) != inst_ok)
-				 			return ev;
-						if (m) {
-							if (trgb[maxch] <= slowth)
-								break;
-//								m = 0;
-							continue;
-						}
-						if (trgb[maxch] >= shighth)
-							m = 1;
-					}
-					if (i == synccount)
-						syncfail = 1;
-				}
-#endif /* DO_SYNCHRONIZE */
-
-				/* Measure again with desired precision, taking up to 0.2 secs */
+				/* Measure again with desired precision, taking up to 0.4/0.8 secs */
 				if ((ev = i1d3_period_measure(p, edgec, mask, rmeas)) != inst_ok)
 		 			return ev;
 	
@@ -1558,8 +1509,11 @@ printf("samples %d, maxmax = %f chan %d, min %f\n",i, maxmax,maxch,minv[maxch]);
 						continue;
 	
 					/* Compute the frequency from period measurement */
-					rgb[i] = (p->clk_freq * 0.5 * edgec[i])/rmeas[i];
-					DBG(("chan %d raw %f frequency %f (%f Sec)\n",i,rmeas[i],trgb[i],
+					if (rmeas[i] < 0.5)		/* Number of edges wasn't counted */
+						rgb[i] = 0.0;
+					else
+						rgb[i] = (p->clk_freq * 0.5 * edgec[i])/rmeas[i];
+					DBG(("chan %d raw %f frequency %f (%f Sec)\n",i,rmeas[i],rgb[i],
 					                            rmeas[i]/p->clk_freq));
 
 				}
@@ -1569,15 +1523,6 @@ printf("samples %d, maxmax = %f chan %d, min %f\n",i, maxmax,maxch,minv[maxch]);
 	}
 
 	DBG(("Took %d msec to measure\n", msec_time() - msecstart));
-
-#ifdef DO_SYNCHRONIZE
-	if (p->verb && p->refmode && p->refperiod > 0.0) {
-		if (syncfail)
-			printf("Synchronization failed\n");
-		else
-			printf("Synchronization succeeded\n");
-	}
-#endif
 
 	/* Subtract black level */
 	for (i = 0; i < 3; i++) {
@@ -1591,7 +1536,6 @@ printf("samples %d, maxmax = %f chan %d, min %f\n",i, maxmax,maxch,minv[maxch]);
 	return inst_ok;
 }
 
-// ~~99
 //#undef DEBUG
 //#undef DBG
 //#define DBG(xxx) 
@@ -2794,8 +2738,9 @@ extern i1d3 *new_i1d3(icoms *icom, instType itype, int debug, int verb)
 }
 
 
-/* Combine the 8 byte key and 64 byte challenge into a 64 bit response.  */
-static void create_unlock_response(unsigned char *k, unsigned char *c, unsigned char *r) {
+
+/* Combine the 2 word key and 64 byte challenge into a 64 bit response.  */
+static void create_unlock_response(unsigned int *k, unsigned char *c, unsigned char *r) {
 	int i;
 	unsigned char sc[8], sr[16];	/* Sub-challeng and response */
 
@@ -2806,76 +2751,59 @@ static void create_unlock_response(unsigned char *k, unsigned char *c, unsigned 
 	
 	/* Combine key with 16 byte challenge to create core 16 byte response */
 	{
-		unsigned int ci[4];		/* key amd challenge as 4 ints */
+		unsigned int ci[2];		/* challenge as 4 ints */
 		unsigned int co[4];		/* product, difference of 4 ints */
 		unsigned int sum;		/* Sum of all input bytes */
 		unsigned char s0, s1;	/* Byte components of sum. */
 
-		/* If key == -1, return -1. This allows limited functionality ? */
-		for (i = 0; i < 8; i++) {
-			if (k[i] != 0xff)
-				break;
-		}
-		if (i >= 8) {
-			for (i = 0; i < 16; i++)
-				sr[i] = 0xff;
+		/* Shuffle bytes into 32 bit ints to be able to use 32 bit computation. */
+		ci[0] = (sc[3] << 24)
+              + (sc[0] << 16)
+              + (sc[4] << 8)
+              + (sc[6]);
 
-		/* Got a real key */
-		} else {
+		ci[1] = (sc[1] << 24)
+              + (sc[7] << 16)
+              + (sc[2] << 8)
+              + (sc[5]);
+	
+		/* Computation on the ints */
+		co[0] = -k[0] - ci[1];
+		co[1] = -k[1] - ci[0];
+		co[2] = ci[1] * -k[0];
+		co[3] = ci[0] * -k[1];
+	
+		/* Sum of challenge bytes */
+		for (sum = 0, i = 0; i < 8; i++)
+			sum += sc[i];
 
-			/* Shuffle bytes into 32 bit ints to be able to use 32 bit computation. */
-			ci[0] = (k[6] << 24)
-	              + (k[4] << 16)
-	              + (k[2] << 8)
-	              + (k[0]);
+		/* Minus the two key values as bytes */
+		sum += (0xff & -k[0]) + (0xff & (-k[0] >> 8))
+	        + (0xff & (-k[0] >> 16)) + (0xff & (-k[0] >> 24));
+		sum += (0xff & -k[1]) + (0xff & (-k[1] >> 8))
+	         + (0xff & (-k[1] >> 16)) + (0xff & (-k[1] >> 24));
 	
-			ci[1] = (k[7] << 24)
-	              + (k[5] << 16)
-	              + (k[3] << 8)
-	              + (k[1]);
+		/* Convert sum to bytes. Only need 2, because sum of 16 bytes can't exceed 16 bits. */
+		s0 =  sum       & 0xff;
+		s1 = (sum >> 8) & 0xff;
 	
-			ci[2] = (sc[3] << 24)
-	              + (sc[0] << 16)
-	              + (sc[4] << 8)
-	              + (sc[6]);
-	
-			ci[3] = (sc[1] << 24)
-	              + (sc[7] << 16)
-	              + (sc[2] << 8)
-	              + (sc[5]);
-	
-			/* Computation on the ints */
-			co[0] = ci[0] - ci[3];
-			co[1] = ci[1] - ci[2];
-			co[2] = ci[3] * ci[0];
-			co[3] = ci[2] * ci[1];
-	
-			/* Sum of key and challenge bytes */
-			for (sum = 0, i = 0; i < 8; i++)
-				sum += k[i] + sc[i];
-	
-			/* Convert sum to bytes. Only need 2, because sum of 16 bytes can't exceed 16 bits. */
-			s0 =  sum       & 0xff;
-			s1 = (sum >> 8) & 0xff;
-	
-			/* Final computation of bytes from 4 ints + sum bytes */
-			sr[0] =  ((co[0] >> 16) & 0xff) + s0;
-			sr[1] =  ((co[2] >>  8) & 0xff) - s1;
-			sr[2] =  ( co[3]        & 0xff) + s1;
-			sr[3] =  ((co[1] >> 16) & 0xff) + s0;
-			sr[4] =  ((co[2] >> 16) & 0xff) - s1;
-			sr[5] =  ((co[3] >> 16) & 0xff) - s0;
-			sr[6] =  ((co[1] >> 24) & 0xff) - s0;
-			sr[7] =  ( co[0]        & 0xff) - s1;
-			sr[8] =  ((co[3] >>  8) & 0xff) + s0;
-			sr[9] =  ((co[2] >> 24) & 0xff) - s1;
-			sr[10] = ((co[0] >>  8) & 0xff) + s0;
-			sr[11] = ((co[1] >>  8) & 0xff) - s1;
-			sr[12] = ( co[1]        & 0xff) + s1;
-			sr[13] = ((co[3] >> 24) & 0xff) + s1;
-			sr[14] = ( co[2]        & 0xff) + s0;
-			sr[15] = ((co[0] >> 24) & 0xff) - s0;
-		}
+		/* Final computation of bytes from 4 ints + sum bytes */
+		sr[0] =  ((co[0] >> 16) & 0xff) + s0;
+		sr[1] =  ((co[2] >>  8) & 0xff) - s1;
+		sr[2] =  ( co[3]        & 0xff) + s1;
+		sr[3] =  ((co[1] >> 16) & 0xff) + s0;
+		sr[4] =  ((co[2] >> 16) & 0xff) - s1;
+		sr[5] =  ((co[3] >> 16) & 0xff) - s0;
+		sr[6] =  ((co[1] >> 24) & 0xff) - s0;
+		sr[7] =  ( co[0]        & 0xff) - s1;
+		sr[8] =  ((co[3] >>  8) & 0xff) + s0;
+		sr[9] =  ((co[2] >> 24) & 0xff) - s1;
+		sr[10] = ((co[0] >>  8) & 0xff) + s0;
+		sr[11] = ((co[1] >>  8) & 0xff) - s1;
+		sr[12] = ( co[1]        & 0xff) + s1;
+		sr[13] = ((co[3] >> 24) & 0xff) + s1;
+		sr[14] = ( co[2]        & 0xff) + s0;
+		sr[15] = ((co[0] >> 24) & 0xff) - s0;
 	}
 
 	/* The OEM driver sets the resonse to random bytes, */

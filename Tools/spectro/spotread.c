@@ -965,7 +965,7 @@ int main(int argc, char *argv[])
 			}
 			if (cx->read_ccmx(cx,ccxxname) == 0) {
 				if ((cap & inst_ccmx) == 0) {
-					printf("\nInstrument doesn't have Colorimeter Correction Matix capability\n");
+					printf("\nInstrument doesn't have Colorimeter Correction Matrix capability\n");
 					it->del(it);
 					return -1;
 				}

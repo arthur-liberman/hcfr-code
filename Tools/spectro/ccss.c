@@ -8,6 +8,7 @@
  *
  * Copyright 2010 Graeme W. Gill
  * All rights reserved.
+ *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
  * see the License2.txt file for licencing details.
  */

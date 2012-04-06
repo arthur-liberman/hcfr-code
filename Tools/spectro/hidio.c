@@ -476,6 +476,7 @@ void hid_close_port(icoms *p) {
 #endif /* ENABLE_USB */
 }
 
+
 /* Open an HID port for all our uses. */
 static void hid_open_port(
 icoms *p,
@@ -683,15 +684,15 @@ icoms_hid_read_th(icoms *p,
 		p->hidd->result = -1;
 		p->hidd->bread = 0;
 
-		p->hidd->rlr = CFRunLoopGetCurrent();
-		CFRunLoopAddSource(p->hidd->rlr, p->hidd->evsrc, kCFRunLoopDefaultMode);
-
 		if ((*(p->hidd->device))->setInterruptReportHandlerCallback(p->hidd->device,
 			rbuf, bsize, hid_read_callback, (void *)p, NULL) != kIOReturnSuccess)
 			error("Setting callback handler for HID '%s' failed", p->ppath->path);
 		if ((*(p->hidd->device))->startAllQueues(p->hidd->device) != kIOReturnSuccess)
 			error("Starting queues for HID '%s' failed", p->ppath->path);
+
 		/* Call runloop, but exit after handling one callback */
+		p->hidd->rlr = CFRunLoopGetCurrent();
+		CFRunLoopAddSource(p->hidd->rlr, p->hidd->evsrc, kCFRunLoopDefaultMode);
 		result = CFRunLoopRunInMode(kCFRunLoopDefaultMode, tout, false);
 		if ((*(p->hidd->device))->stopAllQueues(p->hidd->device) != kIOReturnSuccess)
 			error("Stopping queues for HID '%s' failed", p->ppath->path);
@@ -700,7 +701,6 @@ icoms_hid_read_th(icoms *p,
 		} else if (result != kCFRunLoopRunStopped) {
 			lerr = ICOM_USBR; 
 		}
-
 		CFRunLoopRemoveSource(p->hidd->rlr, p->hidd->evsrc, kCFRunLoopDefaultMode);
 
 		if (p->hidd->result == -1) {		/* Callback wasn't called */
@@ -779,7 +779,7 @@ icoms_hid_write_th(icoms *p,
 		if ((wbuf2 = malloc(bsize + 1)) == NULL)
 			error("icoms_hid_write, malloc failed");
 		memmove(wbuf2+1,wbuf,bsize);
-		wbuf2[0] = 0;		/* Extra report ID byte */
+		wbuf2[0] = 0;		/* Extra report ID byte (why ?) */
 		if (WriteFile(p->hidd->fh, wbuf2, bsize+1, (LPDWORD)&bwritten, &p->hidd->ols) == 0) { 
 			if (GetLastError() != ERROR_IO_PENDING) {
 				lerr = ICOM_USBW; 

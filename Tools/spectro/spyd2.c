@@ -101,6 +101,8 @@
 
 #undef PLOT_SPECTRA        /* Plot the sensor senitivity spectra */
 #undef SAVE_SPECTRA			/* Save the sensor senitivity spectra to "sensors.sp" */
+#undef SAVE_XYZSPECTRA		/* Save the XYZ senitivity spectra to "sensorsxyz.sp" (scale 1.4) */
+#undef SAVE_STDXYZ			/* save 1931 2 degree to stdobsxyz.sp */
 
 #undef DEBUG
 
@@ -682,8 +684,8 @@ spyd2_GetRefRate_ll(
 static inst_code
 spyd2_GetReading_ll(
 	spyd2 *p,
-	int *clocks,		/* Nominal/Maximum number of clocks to use */
-	int nframes,		/* Number of frames being measured */
+	int *clocks,		/* Nominal/Maximum number of integration clocks to use */
+	int nframes,		/* Number of refresh frames being measured (not used ?) */
 	int thresh,			/* Frame detection threshold */
 	int *minfclks,		/* Minimum number of clocks per frame */
 	int *maxfclks,		/* Maximum number of clocks per frame */
@@ -710,7 +712,7 @@ spyd2_GetReading_ll(
 	isdeb = p->icom->debug;
 	p->icom->debug = 0;
 
-	if (isdeb >= 2) fprintf(stderr,"\nspyd2: Get Reading, clocks = %d, minfc = %d, maxfc = %d\n",*clocks,*minfclks,*maxfclks);
+	if (p->debug >= 2) fprintf(stderr,"\nspyd2: Get Reading, clocks = %d, minfc = %d, maxfc = %d\n",*clocks,*minfclks,*maxfclks);
 
 	/* Setup the triggering parameters */
 	if (*clocks > 0xffffff)
@@ -735,6 +737,22 @@ spyd2_GetReading_ll(
 	short2buf(&buf1[4], *minfclks);
 	short2buf(&buf1[6], *maxfclks);
 
+	/* If we aborted a read, the prevraw values are now invalid. */
+	/* We fix it by doing a dumy reading. */
+	if (p->hwver < 4 && p->prevrawinv) {
+		int clocks = 500;
+		int minfclks = 0;
+		int maxfclks = 0;
+		p->prevrawinv = 0;
+		if (p->debug >= 2) fprintf(stderr,"\nspyd2: Doing dummy read to get prevraw\n");
+		if ((rv = spyd2_GetReading_ll(p, &clocks, 10, 0, &minfclks, &maxfclks, NULL, NULL, NULL)) != inst_ok) {
+			if (p->debug >= 2) fprintf(stderr,"\nspyd2: Dummy read failed\n");
+			p->prevrawinv = 1;
+			p->icom->debug = isdeb;
+			return rv;
+		}
+	}
+
 	/* The Spyder comms seems especially flakey... */
 	for (retr = 0, nords = 1; ; retr++, nords++) {
 
@@ -750,8 +768,9 @@ spyd2_GetReading_ll(
 			msec_sleep(*clocks/MSECDIV);
 			for (i = 0; i < (1+9); i++)
 				p->icom->usb_read(p->icom, 0x81, buf2, 8, &rwbytes, 1.0);
+			p->prevrawinv = 1;		/* prevraw are now invalid */
 
-			if (isdeb) fprintf(stderr,"\nspyd2: Get Reading Trig failed with ICOM err 0x%x\n",se);
+			if (p->debug) fprintf(stderr,"\nspyd2: Get Reading Trig failed with ICOM err 0x%x\n",se);
 			p->icom->debug = isdeb;
 			return spyd2_interp_code((inst *)p, icoms2spyd2_err(se));
 		}
@@ -760,13 +779,14 @@ spyd2_GetReading_ll(
 			msec_sleep(*clocks/MSECDIV);
 			for (i = 0; i < (1+9); i++)
 				p->icom->usb_read(p->icom, 0x81, buf2, 8, &rwbytes, 1.0);
+			p->prevrawinv = 1;		/* prevraw are now invalid */
 
 			msec_sleep(500);
-			if (isdeb) fprintf(stderr,"\nspyd2: Get Reading Trig retry with ICOM err 0x%x\n",se);
+			if (p->debug) fprintf(stderr,"\nspyd2: Get Reading Trig retry with ICOM err 0x%x\n",se);
 			continue;
 		}
 
-		if (isdeb >= 2) fprintf(stderr,"Trigger Get Reading returns ICOM code 0x%x\n", se);
+		if (p->debug >= 2) fprintf(stderr,"Trigger Get Reading returns ICOM code 0x%x\n", se);
 
 //printf("~1 sleeping %d msecs\n",*clocks/MSECDIV);
 		/* Allow some time for the instrument to respond */
@@ -775,10 +795,11 @@ spyd2_GetReading_ll(
 		/* Now read the first 8 bytes (status etc.) */
 		se = p->icom->usb_read(p->icom, 0x81, buf2, 8, &rwbytes, 5.0);
 		if ((se & ICOM_USERM) || (se != ICOM_OK && retr >= RETRIES)) {
-			if (isdeb) fprintf(stderr,"\nspyd2: Get Reading Stat failed with ICOM err 0x%x\n",se);
+			if (p->debug) fprintf(stderr,"\nspyd2: Get Reading Stat failed with ICOM err 0x%x\n",se);
 			/* Complete the operation so as not to leave the instrument in a hung state */
-			for (i = 0; i < 9; i++)
-				p->icom->usb_read(p->icom, 0x81, buf2, 8, &rwbytes, 1.0);
+			for (i = 0; i < (1+9); i++)
+				p->icom->usb_read(p->icom, 0x81, buf2, 8, &rwbytes, 0.5);
+			p->prevrawinv = 1;		/* prevraw are now invalid */
 			msec_sleep(500);
 
 			p->icom->debug = isdeb;
@@ -787,19 +808,21 @@ spyd2_GetReading_ll(
 //printf("~1 trig -> read = %d msec\n",msec_time() - start);
 
 		if (se != ICOM_OK) {
-			if (isdeb >= 2) fprintf(stderr,"Get Reading Stat retry with ICOM err 0x%x\n", se);
+			if (p->debug >= 2) fprintf(stderr,"Get Reading Stat retry with ICOM err 0x%x\n", se);
 			/* Complete the operation so as not to leave the instrument in a hung state */
-			for (i = 0; i < 9; i++)
-				p->icom->usb_read(p->icom, 0x81, buf2, 8, &rwbytes, 1.0);
+			for (i = 0; i < (1+9); i++)
+				p->icom->usb_read(p->icom, 0x81, buf2, 8, &rwbytes, 0.5);
+			p->prevrawinv = 1;		/* prevraw are now invalid */
 			msec_sleep(500);
 			continue;		/* Retry the whole command */
 		}
 
 		if (rwbytes != 8) {
-			if (isdeb) fprintf(stderr,"\nspyd2: Get Reading Stat got short data read %d",rwbytes);
+			if (p->debug) fprintf(stderr,"\nspyd2: Get Reading Stat got short data read %d",rwbytes);
 			/* Complete the operation so as not to leave the instrument in a hung state */
-			for (i = 0; i < 9; i++)
-				p->icom->usb_read(p->icom, 0x81, buf2, 8, &rwbytes, 1.0);
+			for (i = 0; i < (1+9); i++)
+				p->icom->usb_read(p->icom, 0x81, buf2, 8, &rwbytes, 0.5);
+			p->prevrawinv = 1;		/* prevraw are now invalid */
 			msec_sleep(500);
 
 			p->icom->debug = isdeb;
@@ -810,14 +833,14 @@ spyd2_GetReading_ll(
 
 		/* Spyder2 */
 		if (p->hwver < 4 && flag == 1) {
-			if (isdeb) fprintf(stderr,"\nspyd2: Reading Stat is trigger timeout");
+			if (p->debug) fprintf(stderr,"\nspyd2: Reading Stat is trigger timeout");
 			p->icom->debug = isdeb;
 			return spyd2_interp_code((inst *)p, SPYD2_TRIGTIMEOUT);
 		}
 
 		/* Spyder2 */
 		if (p->hwver < 4 && flag == 2) {
-			if (isdeb) fprintf(stderr,"\nspyd2: Reading Stat is overall timeout");
+			if (p->debug) fprintf(stderr,"\nspyd2: Reading Stat is overall timeout");
 			p->icom->debug = isdeb;
 			return spyd2_interp_code((inst *)p, SPYD2_OVERALLTIMEOUT);
 		}
@@ -829,28 +852,31 @@ spyd2_GetReading_ll(
 			if ((se & ICOM_USERM) || (se != ICOM_OK && retr >= RETRIES)) {
 				int ii = i;
 				/* Complete the operation so as not to leave the instrument in a hung state */
-				for (; ii < 9; ii++)
-					p->icom->usb_read(p->icom, 0x81, buf2 + i * 8, 8, &rwbytes, 1.0);
+				for (; ii < (1+9); ii++)
+					p->icom->usb_read(p->icom, 0x81, buf2 + i * 8, 8, &rwbytes, 0.5);
+				p->prevrawinv = 1;		/* prevraw are now invalid */
 
-				if (isdeb) fprintf(stderr,"\nspyd2: Get Reading failed with ICOM err 0x%x\n",se);
+				if (p->debug) fprintf(stderr,"\nspyd2: Get Reading failed with ICOM err 0x%x\n",se);
 				p->icom->debug = isdeb;
 				return spyd2_interp_code((inst *)p, icoms2spyd2_err(se));
 			}
 			if (se != ICOM_OK) {
 				int ii = i;
 				/* Complete the operation so as not to leave the instrument in a hung state */
-				for (; ii < 9; ii++)
-					p->icom->usb_read(p->icom, 0x81, buf2 + i * 8, 8, &rwbytes, 1.0);
+				for (; ii < (1+9); ii++)
+					p->icom->usb_read(p->icom, 0x81, buf2 + i * 8, 8, &rwbytes, 0.5);
+				p->prevrawinv = 1;		/* prevraw are now invalid */
 
 				break;
 			}
 			if (rwbytes != 8) {
 				int ii = i;
-				if (isdeb) fprintf(stderr,"\nspyd2: Get Reading got short data read %d",rwbytes);
+				if (p->debug) fprintf(stderr,"\nspyd2: Get Reading got short data read %d",rwbytes);
 
 				/* Complete the operation so as not to leave the instrument in a hung state */
-				for (; ii < 9; ii++)
-					p->icom->usb_read(p->icom, 0x81, buf2 + i * 8, 8, &rwbytes, 1.0);
+				for (; ii < (1+9); ii++)
+					p->icom->usb_read(p->icom, 0x81, buf2 + i * 8, 8, &rwbytes, 0.5);
+				p->prevrawinv = 1;		/* prevraw are now invalid */
 
 				p->icom->debug = isdeb;
 				return spyd2_interp_code((inst *)p, SPYD2_BADREADSIZE);
@@ -861,19 +887,14 @@ spyd2_GetReading_ll(
 			break;		/* We're done */
 
 		msec_sleep(500);
-		if (isdeb) fprintf(stderr,"\nspyd2: Get Reading retry with ICOM err 0x%x\n",se);
+		if (p->debug) fprintf(stderr,"\nspyd2: Get Reading retry with ICOM err 0x%x\n",se);
 
-		if (isdeb) fprintf(stderr,"\nspyd2: Resetting end point\n");
+		if (p->debug) fprintf(stderr,"\nspyd2: Resetting end point\n");
 #ifdef DO_RESETEP				/* Do the miscelanous resetep()'s */
 		p->icom->usb_resetep(p->icom, 0x81);
 		msec_sleep(1);			/* Let device recover ? */
 #endif /*  DO_RESETEP */
 	}	/* End of whole command retries */
-
-	if (sensv == NULL) {
-		p->icom->debug = isdeb;
-		return rv;
-	}
 
 #ifdef NEVER
 	printf("Got bytes:\n");
@@ -913,14 +934,16 @@ spyd2_GetReading_ll(
 			}
 		}
 
-		/* And convert 3 integers per sensor into sensor values */
+		/* And convert 3 values per sensor into sensor values */
 		for (k = 0; k < 8; k++) {
 			int transcnt, intclks;
 
 //printf("~1 sensor %d:\n",k);
 
-			/* Compute difference of third integer to previous value */
+			/* Compute difference of L2F count to previous value */
 			/* read, modulo 24 bits */
+			if (p->debug >= 5)
+				fprintf(stderr,"%d: transcnt %d, previous %d\n",k,rvals[2][k],p->prevraw[k]);
 			if (p->prevraw[k] <= rvals[2][k]) {
 				transcnt = rvals[2][k] - p->prevraw[k];
 //printf("~1 transcnt = %d - %d = %d\n",rvals[2][k], p->prevraw[k],transcnt);
@@ -931,28 +954,30 @@ spyd2_GetReading_ll(
 
 			p->prevraw[k] = rvals[2][k];	/* New previuos value */
 
-			/* Compute difference of first integer to second */
+			/* Compute difference of 1MHz clock count of first to second value */
 			intclks = rvals[0][k] - rvals[1][k];
 //printf("~1 intclks = %d - %d = %d\n",rvals[0][k], rvals[1][k]);
 
 			if (transcnt == 0 || intclks <= 0) {		/* It's too dark ... */
-				sensv[k] = 0.0;
+				if (sensv != NULL)
+					sensv[k] = 0.0;
 				_mintcnt = 0;
-			} else {			/* Transitions within integration period */
-								/* hence one is discarded ? */
-				sensv[k] = ((double)transcnt - 1.0) * (double)CLKRATE
-				         / ((double)nords * (double)intclks);
+			} else {			/* We discard 0'th L2F transion to give transitions */
+								/* over the time period. */
+				if (sensv != NULL)
+					sensv[k] = ((double)transcnt - 1.0) * (double)CLKRATE
+					         / ((double)nords * (double)intclks);
 				if (transcnt > _maxtcnt)
 					_maxtcnt = transcnt;
 				if (transcnt < _mintcnt)
 					_mintcnt = transcnt;
 			}
-			if (p->debug >= 4)
+			if (p->debug >= 4 && sensv != NULL)
 				fprintf(stderr,"%d: initial senv %f from transcnt %d and intclls %d\n",k,sensv[k],transcnt,intclks);
 
 #ifdef NEVER	/* This seems to make repeatability worse ??? */
 			/* If CRT and bright enough */
-			if (sensv[k] > 1.5 && p->ref != 0) {
+			if (sensv != NULL && sensv[k] > 1.5 && p->ref != 0) {
 				sensv[k] = ((double)transcnt) * (double)p->rrate/(double)nframes;
 //printf("~1 %d: corrected senv %f\n",k,sensv[k]);
 			}
@@ -998,18 +1023,20 @@ spyd2_GetReading_ll(
 //printf("~1 %d: intclks = %d - %d = %d\n",k, 65 * rvals[0][k]/8, 65 * rvals[1][k]/8, intclks * 65/8);
 
 			if (transcnt == 0 || intclks <= 0) {		/* It's too dark ... */
-				sensv[k] = 0.0;
+				if (sensv != NULL)
+					sensv[k] = 0.0;
 				_mintcnt = 0;
 			} else {			/* Transitions within integration period */
 								/* hence one is discarded ? */
-				sensv[k] = ((double)transcnt - 1.0) * (double)CLKRATE
-				         / ((double)intclks * 8.125);
+				if (sensv != NULL)
+					sensv[k] = ((double)transcnt - 1.0) * (double)CLKRATE
+					         / ((double)intclks * 8.125);
 				if (transcnt > _maxtcnt)
 					_maxtcnt = transcnt;
 				if (transcnt < _mintcnt)
 					_mintcnt = transcnt;
 			}
-			if (p->debug >= 4)
+			if (p->debug >= 4 && sensv != NULL)
 				fprintf(stderr,"%d: initial senv %f from transcnt %d and intclls %d\n",k,sensv[k],transcnt,intclks);
 		}
 	}
@@ -1699,9 +1726,9 @@ spyd2_GetReading(
 	if (p->debug) fprintf(stderr,"spyd2: about to get a reading\n");
 
 	if (p->ref)
-		inttime = RINTTIME;		/* ie. 4 seconds */
+		inttime = RINTTIME;		/* ie. 1 second */
 	else
-		inttime = NINTTIME;		/* ie. 2 seconds */
+		inttime = NINTTIME;		/* ie. 1 second */
 
 	/* Compute number of frames for desired base read time */
 	nframes = (int)(inttime * p->rrate + 0.5);
@@ -1717,7 +1744,7 @@ spyd2_GetReading(
 	thresh = (max - min)/5 + min;			/* Threshold is at 80% of max brightness */
 	if (thresh == 0)
 		thresh = 65535;						/* Set to max, otherwise reading will be 0 */
-	frclocks = (int)(CLKRATE/p->rrate + 0.5);
+	frclocks = (int)(CLKRATE/p->rrate + 0.5);	/* Nominal clocks per frame */
 	minfclks = frclocks/3;					/* Allow for 180 Hz */
 	maxfclks = (frclocks * 5)/2;			/* Allow for 24 Hz */
 
@@ -1768,7 +1795,7 @@ spyd2_GetReading(
 		
 #ifdef DO_ADAPTIVE
 		if (p->debug)
-			printf("Maxtcnt = %d, Mintcnt = %d\n",maxtcnt,mintcnt);
+			fprintf(stderr,"Maxtcnt = %d, Mintcnt = %d\n",maxtcnt,mintcnt);
 		if (i > 0)
 			break;			/* Done adaptive */
 
@@ -2063,6 +2090,36 @@ spyd4_set_cal(
 		do_plot10(xx, yp[0], yp[1], yp[2], yp[3], yp[4], yp[5], yp[6], yp[7], yp[8], yp[9], 81, 0);
 	}
 #endif /* PLOT_SPECTRA */
+
+#ifdef SAVE_XYZSPECTRA		/* Save the default XYZ senitivity spectra to "sensorsxyz.sp" */
+	{
+		int i, j, k;
+		xspect xyz[3];
+		double wl;
+	
+		for (j = 0; j < 3; j++) {
+			xyz[j].spec_n = 81;
+			xyz[j].spec_wl_short = 380;
+			xyz[j].spec_wl_long = 780;
+			xyz[j].norm = 1.0;
+			for (i = 0; i < 81; i++) {
+				wl = 380.0 + i * 5.0;
+				xyz[j].spec[i] = 0.0;
+				for (k = 0; k < 7; k++)
+					xyz[j].spec[i] += p->cal_A[1][j][k+2] * value_xspect(&p->sens[k], wl);
+				xyz[j].spec[i] *= 1.4;	/* Align with std XYZ */
+			}
+		}
+		write_nxspect("sensorsxyz.sp", xyz, 3, 0);
+	}
+#endif
+#ifdef SAVE_STDXYZ
+	{
+		xspect xyz[3];
+		standardObserver(&xyz[0], &xyz[1], &xyz[2],icxOT_CIE_1931_2);
+		write_nxspect("stdobsxyz.sp", xyz, 3, 0);
+	}
+#endif /* SAVE_STDXYZ */
 	
 	p->calix4 = ix;
 	return inst_ok;
@@ -2785,6 +2842,7 @@ spyd2_init_inst(inst *pp) {
 	p->rrate = DEFRRATE;
 	for (i = 0; i < 8; i++)
 		p->prevraw[i] = 0;			/* Internal counters will be reset */
+	p->prevrawinv = 0;				/* prevraw is valid */
 
 	/* For Spyder 1 & 2, reset the hardware and wait for it to become ready. */
 	if (p->itype != instSpyder3
@@ -2855,7 +2913,7 @@ spyd2_init_inst(inst *pp) {
 			return ev;
 	}
 
-	/* Do a dumy sensor read */
+	/* Do a dumy sensor read. This will set prevraw[] values.  */
 	{
 		int clocks = 500;
 		int minfclks = 0;
@@ -3234,7 +3292,7 @@ inst_capability spyd2_capabilities(inst *pp) {
 	rv = inst_emis_spot
 	   | inst_emis_disp
 	   | inst_colorimeter
-	   | inst_ccss
+	   | inst_ccmx
 	     ;
 
 	if (p->itype == instSpyder3
