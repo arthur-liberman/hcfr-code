@@ -2117,7 +2117,7 @@ ipatch *val) {		/* Pointer to instrument patch value */
 		p->rrset = 1;
 
 		/* Quantize the sample time */
-		if (p->refperiod > 0.0) {		/* If we have a refresh period *?
+		if (p->refperiod > 0.0) {		/* If we have a refresh period */
 			int n;
 			n = (int)ceil(p->dinttime/p->refperiod);
 			p->inttime = n * p->refperiod;
