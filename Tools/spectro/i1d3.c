@@ -915,7 +915,8 @@ i1d3_set_LEDs(
 #define PERMIN ((1000 * PBPMS)/40)	/* 40 Hz */
 #define PERMAX ((1000 * PBPMS)/10)	/* 10 Hz*/
 #define NPER (PERMAX - PERMIN + 1)
-#define PWIDTH (4 * PBPMS)			/* 4 msec bin spread to look for peak in */
+#define PWIDTH (3 * PBPMS)			/* 3 msec bin spread to look for peak in */
+#define MAXPKS 20					/* Number of peaks to find */
 
 static inst_code
 i1d3_measure_refresh(
@@ -941,9 +942,9 @@ i1d3_measure_refresh(
 	double corr[NPER];	/* Correlation for each period value */
 	double mincv, maxcv;	/* Max and min correlation values */
 	double crange;			/* Correlation range */
-	int pki;			/* Peak index */
-	double pkv;			/* Peak value */
-	double pval;		/* Period value */
+	double peaks[MAXPKS];		/* Each peak from longest to shortest */
+	int npeaks = 0;				/* Number of peaks */
+	double pval;			/* Period value */
 	int isdeb, iscdeb;
 
 	if (usec_time() < 0.0) {
@@ -1108,7 +1109,7 @@ i1d3_measure_refresh(
 
 	/* Compute auto-correlation at 1/PBPMS msec intervals */
 	/* from 12.5 msec (80Hz) to 50msec (20 Hz) */
-	mincv = 1e6, maxcv = -1.0;
+	mincv = 1e48, maxcv = -1e48;
 	for (i = 0; i < NPER; i++) {
 		int poff = PERMIN + i;		/* Offset to corresponding sample */
 		corr[i] = 0.0;
@@ -1125,7 +1126,7 @@ i1d3_measure_refresh(
 			mincv = corr[i];
 	}
 	crange = maxcv - mincv;
-	DBG(("Corr value range %f - %f = %f\n",mincv, maxcv,crange))
+	DBG(("Corr value range %f - %f = %f = %f%%\n",mincv, maxcv,crange, 100.0 * (maxcv-mincv)/maxcv))
 
 #ifdef PLOT_REFRESH
 	/* Plot auto correlation */
@@ -1142,78 +1143,117 @@ i1d3_measure_refresh(
 	}
 #endif /* PLOT_REFRESH */
 
-	/* An approach to improving the accuracy might be to */
-	/* detect every peak and then average the distannce between */
-	/* them - but would have to cope with missing peaks. */
+	/* If there is distict correlations */
+	if ((maxcv-mincv)/maxcv > 0.20) {
 
-	/* Locate the first peak starting at the longest correllation */
-	for (i = (NPER-1-PWIDTH); i >= 0; i--) {
-		double v1, v2, v3;
-		v1 = corr[i];
-		v2 = corr[i + PWIDTH/2];
-		v3 = corr[i + PWIDTH];
+		/* Locate all the peaks starting at the longest correllation */
+		for (i = (NPER-1-PWIDTH); i >= 0 && npeaks < MAXPKS; i--) {
+			double v1, v2, v3;
+			v1 = corr[i];
+			v2 = corr[i + PWIDTH/2];
+			v3 = corr[i + PWIDTH];
 
-		if (fabs(v3 - v1) < (0.1 * crange)
-		 && (v2 - v1) > (0.05 * crange)
-		 && (v2 - v3) > (0.05 * crange)) {
-			DBG(("First max between %f and %f msec\n",(i + PERMIN)/(double)PBPMS,(i + PWIDTH + PERMIN)/(double)PBPMS))
-			break;
+			if (fabs(v3 - v1) < (0.1 * crange)
+			 && (v2 - v1) > (0.05 * crange)
+			 && (v2 - v3) > (0.05 * crange)) {
+				double pkv;			/* Peak value */
+				int pki;			/* Peak index */
+				double ii, bl;
+
+				DBG(("Max between %f and %f msec\n",(i + PERMIN)/(double)PBPMS,(i + PWIDTH + PERMIN)/(double)PBPMS))
+
+				/* Locate the actual peak */
+				pkv = -1.0;
+				pki = 0;
+				for (j = i; j < (i + PWIDTH); j++) {
+					if (corr[j] > pkv) {
+						pkv = corr[j];
+						pki = j;
+					}
+				}
+				DBG(("Peak is at %f msec, %f corr\n", (pki + PERMIN)/(double)PBPMS, pkv))
+
+				/* Interpolate the peak value for higher precision */
+				/* j = bigest */
+				if (corr[pki-1] > corr[pki+1])  {
+					j = pki-1;
+					k = pki+1;
+				} else {
+					j = pki+1;
+					k = pki-1;
+				}
+				bl = (corr[pki] - corr[j])/(corr[pki] - corr[k]);
+				bl = (bl + 1.0)/2.0;
+				ii = bl * pki + (1.0 - bl) * j;
+				pval = (ii + PERMIN)/(double)PBPMS;
+
+				DBG(("Interpolated peak is at %f msec\n", pval))
+
+				peaks[npeaks++] = pval;
+
+				i -= PWIDTH;
+			}
 		}
 	}
-	if (i < 0) {
+
+	DBG(("Number of peaks located = %d\n",npeaks))
+	if (npeaks == 0) {
 		*period = 0.0;
 		if (p->verb) printf("No distict refresh period\n");
 		if (p->debug) fprintf(stderr,"i1d3: Couldn't find a distinct refresh frequency\n");
 		return inst_ok; 
 	}
 
-	/* Locate the actual peak */
-	pkv = -1.0;
-	pki = 0;
-	for (j = i; i < (j + PWIDTH); i++) {
-		if (corr[i] > pkv) {
-			pkv = corr[i];
-			pki = i;
-		}
-	}
-	DBG(("Peak is at %f msec, %f corr\n", (pki + PERMIN)/(double)PBPMS, pkv))
+	if (npeaks == 1) {
+		pval = peaks[0] / 2000.0;	/* Scale by half and convert to seconds */
 
-	/* Interpolate the peak value for higher precision */
-	/* (Is this worth it ??) */
-	{
-		double ii, bl;
-		/* j = bigest */
-		if (corr[pki-1] > corr[pki+1])  {
-			j = pki-1;
-			k = pki+1;
+	} else {
+		double div;
+		double avg, ano;
+		/* Try and locate a common divisor amongst all the peaks. */
+		/* This is likely to be the underlying refresh rate. */
+		for (j = 1; j < 6; j++) {
+			div = peaks[npeaks-1]/(double)j;
+			avg = ano = 0.0;
+			for (i = 0; i < npeaks; i++) {
+				double rem, cnt;
+
+				rem = peaks[i]/div;
+				cnt = floor(rem + 0.5);
+				rem = fabs(rem - cnt);
+
+//printf("~1 remainder for peak %d = %f\n",i,rem);
+				if (rem > 0.04)
+					break;
+				avg += peaks[i];		/* Already weighted by cnt */
+				ano += cnt;
+			}
+
+			if (i >= npeaks)
+				break;		/* Sucess */
+			
+		}
+		if (j >= 6) {
+			DBG(("Failed to locate common divisor\n"))
+			pval = peaks[0] / 2000.0;	/* Scale by half and convert to seconds */
 		} else {
-			j = pki+1;
-			k = pki-1;
+			int mul;
+			pval = avg/ano;
+			pval /= 1000.0;		/* Convert to seconds */
+
+			if (p->verb) printf("Refresh rate = %f Hz\n",1.0/pval);
+
+			/* Error against my 85Hz CRT - GWG */
+//			printf("Refresh rate error = %.4f%%\n",100.0 * fabs(1.0/pval - 85.0)/(85.0));	
+
+			/* Scale to just above 20 Hz */
+			mul = (int)floor((1.0/20) / pval);
+			pval *= mul;
 		}
-		bl = (corr[pki] - corr[j])/(corr[pki] - corr[k]);
-		bl = (bl + 1.0)/2.0;
-		ii = bl * pki + (1.0 - bl) * j;
-		pval = (ii + PERMIN)/(double)PBPMS;
 	}
 
-	pval /= 2000.0;		/* Halve and convert to seconds */
-
-#ifdef NEVER
-	/* Scale the period up to be just faster than 20 Hz */
-	{
-		int scale;
-		for (scale = 1; scale < 5; scale++) {
-			if ((scale * pval) >= 1.0/20.0)
-				break;
-		}
-		pval *= (scale - 1.0);
-	}
-#endif
-
-	if (p->verb) printf("Refresh period = %f msec\n",pval * 1000);
-	if (p->debug) fprintf(stderr,"i1d3: Refresh period = %f msec\n",pval);
-	/* Error against my 85Hz CRT - GWG */
-//	printf("Refresh error = %f msec = %.4f%%\n",1000.0 * fabs(pval - 4.0/85.0), 100.0 * fabs(pval/4.0 - 1.0/85.0)/(1.0/85.0));	
+	if (p->verb) printf("Refresh wampling period = %f msec\n",pval * 1000);
+	if (p->debug) fprintf(stderr,"i1d3: Refresh sampling period = %f msec\n",pval);
 
 	*period = pval;
 
@@ -2077,14 +2117,14 @@ ipatch *val) {		/* Pointer to instrument patch value */
 		p->rrset = 1;
 
 		/* Quantize the sample time */
-		if (p->refperiod > 0.0) {
+		if (p->refperiod > 0.0) {		/* If we have a refresh period *?
 			int n;
 			n = (int)ceil(p->dinttime/p->refperiod);
 			p->inttime = n * p->refperiod;
-//p->inttime = 2.0 * p->dinttime;	/* Double integration time */
 			if (p->debug) fprintf(stderr,"i1d3: integration time quantize to %f secs\n",p->inttime);
-		} else {
-			p->inttime = 2.0 * p->dinttime;	/* Double integration time */
+
+		} else {	/* We don't have a period, so simply double the default */
+			p->inttime = 2.0 * p->dinttime;
 			if (p->debug) fprintf(stderr,"i1d3: integration time doubled to %f secs\n",p->inttime);
 		}
 	}
