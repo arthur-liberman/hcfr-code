@@ -136,7 +136,7 @@ END_MESSAGE_MAP()
 void CTargetWnd::OnPaint() 
 {
 	CPaintDC dc(this); // device context for painting
-    CMemDC pDC(&dc);
+    CHMemDC pDC(&dc);
 	
 	CRect rect;
 	GetClientRect(&rect);

@@ -17,7 +17,7 @@
 //   http://www.codeproject.com/miscctrl/colorbutton.asp
 //   http://www.codeproject.com/wtl/wtlcolorbutton.asp
 //
-// Thanks to Keith Rule for his CMemDC class (see MemDC.h).
+// Thanks to Keith Rule for his CHMemDC class (see MemDC.h).
 // Thanks to Pål Kristian Tønder for his CXPTheme class, which is based on
 // the CVisualStyleXP class of David Yuheng Zhao (see XPTheme.cpp).
 //

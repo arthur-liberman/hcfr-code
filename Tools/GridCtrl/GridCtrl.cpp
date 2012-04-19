@@ -572,7 +572,7 @@ void CGridCtrl::OnPaint()
 
     if (m_bDoubleBuffer)    // Use a memory DC to remove flicker
     {
-        CMemDC MemDC(&dc);
+        CHMemDC MemDC(&dc);
         OnDraw(&MemDC);
     }
     else                    // Draw raw - this helps in debugging vis problems.

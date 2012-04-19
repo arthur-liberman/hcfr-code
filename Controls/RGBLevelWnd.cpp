@@ -101,7 +101,7 @@ void CRGBLevelWnd::OnPaint()
 
 	CPaintDC dc(this); // device context for painting
 	
-    CMemDC pDC(&dc);
+    CHMemDC pDC(&dc);
 //	CDC *pDC=&dc;
 
 	CRect rect;

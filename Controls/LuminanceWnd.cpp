@@ -93,7 +93,7 @@ BOOL CLuminanceWnd::OnEraseBkgnd(CDC* pDC)
 void CLuminanceWnd::OnPaint() 
 {
 	CPaintDC dc(this); // device context for painting
-    CMemDC pDC(&dc);
+    CHMemDC pDC(&dc);
 //	CDC *pDC=&dc;
 
 	CRect rect;

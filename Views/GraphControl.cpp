@@ -831,8 +831,8 @@ void CGraphControl::DrawAxis(CDC *pDC, CRect rect, BOOL bWhiteBkgnd)
 void CGraphControl::OnPaint() 
 {
 	CPaintDC dc(this); // device context for painting
-	CMemDC MemDC(&dc);
-	CMemDC * pDC = & MemDC;
+	CHMemDC MemDC(&dc);
+	CHMemDC * pDC = & MemDC;
 
     CRect rect;
     GetClientRect(&rect);
