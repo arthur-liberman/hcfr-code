@@ -509,6 +509,7 @@ main(int argc, char *argv[]) {
 				"\\Datacolor\\Spyder4Express\\dccmtr.dll",
 				"\\Datacolor\\Spyder4Pro\\dccmtr.dll",
 				"\\Datacolor\\Spyder4Elite\\dccmtr.dll",
+				"\\Datacolor\\Spyder4TV HD\\dccmtr.dll",
 				""
 			};
 

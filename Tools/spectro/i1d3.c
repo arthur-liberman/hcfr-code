@@ -904,6 +904,8 @@ i1d3_set_LEDs(
 	is randomized slightly.
 */
 
+//#define DBG(xxx) printf xxx ;
+
 #ifndef PSRAND32L 
 # define PSRAND32L(S) ((S) * 1664525L + 1013904223L)
 #endif
@@ -937,6 +939,8 @@ i1d3_measure_refresh(
 	} samp[NFSAMPS];
 	int nfsamps;		/* Actual samples read */
 	double maxt;		/* Time range */
+	double rms[3];		/* RMS value of each channel */
+	double trms;		/* Total RMS */
 	int nbins;
 	double *bins[3];	/* PBPMS sample bins */
 	double corr[NPER];	/* Correlation for each period value */
@@ -997,7 +1001,7 @@ i1d3_measure_refresh(
 		randn = PSRAND32L(randn); 
 		rval = (double)randn/4294967295.0;
 		rval *= rval;
-		rval *= rval;		/* Sharpen it up */
+		rval *= rval;		/* Sharpen random time up */
 		samp[i].itime = (inttimeh - inttimel) * rval + inttimel;
 
 		if ((ev = i1d3_freq_measure(p, &samp[i].itime, samp[i].rgb)) != inst_ok)
@@ -1042,6 +1046,7 @@ i1d3_measure_refresh(
 
 	/* Re-zero the sample times, normalise int time, and calibrate it. */
 	maxt = -1e6;
+	rms[0] = rms[1] = rms[2] = 0.0;
 	for (i = nfsamps-1; i >= 0; i--) {
 		samp[i].sec -= samp[0].sec; 
 		samp[i].sec *= ucalf;
@@ -1049,8 +1054,25 @@ i1d3_measure_refresh(
 			maxt = samp[i].sec;
 		for (j = 0; j < 3; j++) {
 			samp[i].rgb[j] /= samp[i].itime;
+			rms[j] += samp[i].rgb[j] * samp[i].rgb[j];
 		}
 	}
+	trms = 0.0;
+	for (j = 0; j < 3; j++) {
+		rms[j] /= (double)nfsamps;
+		trms += rms[j];
+		rms[j] = sqrt(rms[j]);
+	}
+	trms = sqrt(trms);
+	DBG(("RMS = %f %f %f, total %f\n", rms[0], rms[1], rms[2], trms))
+
+#ifdef NEVER
+	// ~~9999
+	for (i = nfsamps-1; i >= 0; i--) {
+		for (j = 0; j < 3; j++)
+			samp[i].rgb[j] -= rms[j];
+	}
+#endif
 
 	/* Create PBPMS bins and interpolate readings into them */
 	nbins = 1 + (int)(maxt * 1000.0 * PBPMS + 0.5);
@@ -1108,17 +1130,19 @@ i1d3_measure_refresh(
 #endif /* PLOT_REFRESH */
 
 	/* Compute auto-correlation at 1/PBPMS msec intervals */
-	/* from 12.5 msec (80Hz) to 50msec (20 Hz) */
+	/* from 25 msec (40Hz) to 100msec (10 Hz) */
 	mincv = 1e48, maxcv = -1e48;
 	for (i = 0; i < NPER; i++) {
 		int poff = PERMIN + i;		/* Offset to corresponding sample */
 		corr[i] = 0.0;
 
-		for (k = 0; (k + poff) < nbins; k++) {
-			for (j = 0; j < 3; j++) {
-				corr[i] += bins[j][k] * bins[j][k + poff];
-			}
-		}
+		for (k = 0; (k + poff) < nbins; k++)
+			corr[i] += bins[0][k] * bins[0][k + poff];
+		for (k = 0; (k + poff) < nbins; k++)
+			corr[i] += bins[1][k] * bins[1][k + poff];
+		for (k = 0; (k + poff) < nbins; k++)
+			corr[i] += bins[2][k] * bins[2][k + poff];
+
 		corr[i] /= (double)k;		/* Normalize */
 		if (corr[i] > maxcv)
 			maxcv = corr[i];
@@ -1143,8 +1167,8 @@ i1d3_measure_refresh(
 	}
 #endif /* PLOT_REFRESH */
 
-	/* If there is distict correlations */
-	if ((maxcv-mincv)/maxcv > 0.20) {
+	/* If there is sufficient level and distict correlations */
+	if (trms >= 1000 && (maxcv-mincv)/maxcv >= 0.10) {
 
 		/* Locate all the peaks starting at the longest correllation */
 		for (i = (NPER-1-PWIDTH); i >= 0 && npeaks < MAXPKS; i--) {
@@ -1265,6 +1289,8 @@ i1d3_measure_refresh(
 #undef PERMAX
 #undef NPER
 #undef PWIDTH
+
+//#define DBG(xxx) 
 
 /* - - - - - - - - - - - - - - - - - - - - - - */
 
@@ -1410,16 +1436,23 @@ i1d3_take_emis_measurement(
 			}
 			if (mask2 != 0x0) {
 				int mask3 = 0x0;
+				double rmeas2[3];
 
 				DBG(("Doing 1st period pre-measurement mask 0x%x, edgec %s\n",mask2,icmPiv(3,edgec)));
 				/* Take an initial period pre-measurement over 2 edges */
-				if ((ev = i1d3_period_measure(p, edgec, mask2, rmeas)) != inst_ok)
+				if ((ev = i1d3_period_measure(p, edgec, mask2, rmeas2)) != inst_ok)
 		 			return ev;
 
-				DBG(("Got %s raw %f %f %f Hz\n",icmPdv(3,rmeas),
-				     0.5 * edgec[0] * p->clk_freq/rmeas[0],
-				     0.5 * edgec[1] * p->clk_freq/rmeas[1],
-				     0.5 * edgec[2] * p->clk_freq/rmeas[2]));
+				DBG(("Got %s raw %f %f %f Hz\n",icmPdv(3,rmeas2),
+				     0.5 * edgec[0] * p->clk_freq/rmeas2[0],
+				     0.5 * edgec[1] * p->clk_freq/rmeas2[1],
+				     0.5 * edgec[2] * p->clk_freq/rmeas2[2]));
+
+				/* Transfer updated counts from 1st initial measurement */
+				for (i = 0; i < 3; i++) {
+					if ((mask2 & (1 << i)) != 0)
+						rmeas[i]  = rmeas2[i];
+				}
 
 				/* Do 2nd initial measurement if the count is small, in case */
 				/* we are measuring a CRT with a refresh rate which adds innacuracy, */
@@ -1430,13 +1463,13 @@ i1d3_take_emis_measurement(
 						if ((mask2 & (1 << i)) == 0)
 							continue;
 
-						if (rmeas[i] > 0.5) {
+						if (rmeas2[i] > 0.5) {
 							double nedgec;
 							int inedgec;
 
 							/* Compute number of edges needed for a clock count */
 							/* of 0.100 seconds */
-							nedgec = edgec[i] * 0.100 * p->clk_freq/rmeas[i];
+							nedgec = edgec[i] * 0.100 * p->clk_freq/rmeas2[i];
 
 							DBG(("chan %d target edges %f\n",i,nedgec));
 
@@ -1462,7 +1495,6 @@ i1d3_take_emis_measurement(
 #endif
 					}
 					if (mask3 != 0x0) {
-						double rmeas2[3];
 
 						DBG(("Doing 2nd initial period measurement mask 0x%x, edgec %s\n",mask3,icmPiv(3,edgec)));
 						/* Take a 2nd initial period  measurement */
@@ -1476,19 +1508,8 @@ i1d3_take_emis_measurement(
 
 						/* Transfer updated counts from 2nd initial measurement */
 						for (i = 0; i < 3; i++) {
-							if ((mask3 & (1 << i)) == 0)
-								continue;
-#ifdef DEBUG
-							{
-								double ratio;
-								if (rmeas2[i] > rmeas[i])
-									ratio = rmeas2[i] / rmeas[i];
-								else
-									ratio = rmeas[i] / rmeas2[i];
-								printf("Chan %d 1st to 2nd initial value ratio %f\n",i,ratio);
-							}
-#endif
-							rmeas[i]  = rmeas2[i];
+							if ((mask3 & (1 << i)) != 0)
+								rmeas[i]  = rmeas2[i];
 						}
 					}
 				}

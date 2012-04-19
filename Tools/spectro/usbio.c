@@ -166,16 +166,20 @@ struct _icoms *p
 ) {
 #ifdef ENABLE_USB
 	ssize_t i, nlist;
-
 	struct libusb_device **list;
 
 	/* Scan the USB busses for instruments we recognise */
-	/* We're not expecting any of our unstruments to be an interface on a device. */
+	/* We're not expecting any of our instruments to be an interface on a device. */
 
-   	libusb_init(NULL);
+	if (p->ctx == NULL) {
+		int rv;
+	   	if ((rv = libusb_init(&p->ctx)) != 0) {
+			error("libusb_init() failed with %d",rv);
+		}
+	}
 
 	if (p->debug > 8)
-		libusb_set_debug(NULL, p->debug);
+		libusb_set_debug(p->ctx, p->debug);
 
 	nlist = libusb_get_device_list(NULL, &list);
     
@@ -238,6 +242,16 @@ void usb_del_usb_device(struct usb_device *dev) {
 #endif
 }
 
+/* Cleanup any USB specific icoms */
+void usb_del_usb(icoms *p) {
+
+#ifdef USE_LIBUSB1
+	if (p->ctx != NULL) {
+	   	libusb_exit(p->ctx);
+		p->ctx = NULL;
+	}
+#endif /* USE_LIBUSB1 */
+}
 
 /* Return the instrument type if the port number is USB, */
 /* and instUnknown if it is not. */

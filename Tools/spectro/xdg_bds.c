@@ -234,6 +234,7 @@ static void xdg_ifree(char ***paths, char **fnames, int nopaths) {
 			if (fnames[i] != NULL)
 				free (fnames[i]);
 		}
+		free(fnames);
 	}
 }
 

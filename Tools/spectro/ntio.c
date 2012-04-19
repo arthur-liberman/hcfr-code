@@ -650,6 +650,9 @@ icoms_del(icoms *p) {
 			free(p->ppath->path);
 		free(p->ppath);
 	}
+#ifdef ENABLE_USB
+	usb_del_usb(p);
+#endif
 	free (p);
 }
 

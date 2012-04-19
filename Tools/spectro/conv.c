@@ -1129,8 +1129,10 @@ iccss *list_iccss(int *no) {
 			if (no != NULL) *no = -1;
 			return NULL;
 		}
-		if (cs->read_ccss(cs, paths[i]))
+		if (cs->read_ccss(cs, paths[i])) {
+			cs->del(cs);
 			continue;		/* Skip any unreadable ccss's */
+		}
 
 		if ((tech = cs->tech) == NULL)
 			tech = "";
@@ -1142,6 +1144,7 @@ iccss *list_iccss(int *no) {
 				free(rv[j].path);
 				free(rv[j].desc);
 			}
+			cs->del(cs);
 			free(rv);
 			xdg_free(paths, npaths);
 			if (no != NULL) *no = -1;
@@ -1152,6 +1155,7 @@ iccss *list_iccss(int *no) {
 				free(rv[j].path);
 				free(rv[j].desc);
 			}
+			cs->del(cs);
 			free(rv);
 			free(pp);
 			xdg_free(paths, npaths);

@@ -237,6 +237,9 @@ struct _icoms {
 
 #ifdef ENABLE_USB
 	/* USB port parameters */
+#ifdef USE_LIBUSB1
+	libusb_context *ctx; 
+#endif
 	unsigned int vid, pid; 		/* USB vendor and product id's */
 	struct usb_device *usbd;
 	struct usb_dev_handle *usbh;

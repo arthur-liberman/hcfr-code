@@ -290,7 +290,7 @@ double mtx[3][3]	/* Transform matrix to copy from */
 	return 0;
 }
 
-#ifdef SALONEINSTLIB
+#ifndef SALONEINSTLIB
 
 /* ------------------------------------------- */
 /* Modified version that de-weights Luminance errors by 5: */
@@ -504,7 +504,7 @@ double (*cols)[3]		/* Array of XYZ values from colorimeter */
 	return 0;
 }
 
-#else /* !SALONEINSTLIB */
+#else /* SALONEINSTLIB */
 
 /* Create a ccmx from measurements. return nz on error. */
 static int create_ccmx(ccmx *p,
@@ -517,11 +517,11 @@ int npat,			/* Number of samples in following arrays */
 double (*refs)[3],	/* Array of XYZ values from spectrometer */
 double (*cols)[3]		/* Array of XYZ values from colorimeter */
 ) {
-	sprintf(p->err, "set_ccmx: not supported");
+	sprintf(p->err, "set_ccmx: not implemented in ccxx.x");
 	return 1;
 }
 
-#endif /* !SALONEINSTLIB */
+#endif /* SALONEINSTLIB */
 
 /* Delete it */
 static void del_ccmx(ccmx *p) {
@@ -556,7 +556,6 @@ ccmx *new_ccmx(void) {
 
 	return p;
 }
-
 
 
 

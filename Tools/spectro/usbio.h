@@ -49,6 +49,9 @@ void usb_delete_from_cleanup_list(icoms *p);
 /* Cleanup and then free a usb dev entry */
 void usb_del_usb_device(struct usb_device *dev);
 
+/* Cleanup any USB specific icoms */
+void usb_del_usb(icoms *p);
+
 #ifdef __cplusplus
 	}
 #endif
