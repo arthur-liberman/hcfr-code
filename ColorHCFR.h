@@ -97,7 +97,7 @@ void	UpdateDataRef(BOOL ActiveDataRef, CDataSetDoc * pDoc);	//Ki
 
 CColorHCFRConfig * GetConfig();
 
-class CColorHCFRApp : public CWinAppEx
+class CColorHCFRApp : public CHWinAppEx
 {
 public:
 
@@ -110,7 +110,7 @@ public:
 	~CColorHCFRApp();
 
 
-	afx_msg void OnFileNew()	{ CWinAppEx::OnFileNew (); }
+	afx_msg void OnFileNew()	{ CHWinAppEx::OnFileNew (); }
 
 	void CreateCIEBitmaps ( BOOL bBackGround = FALSE );
 	

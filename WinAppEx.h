@@ -20,15 +20,15 @@
 #endif
 */
 
-// CWinAppEx
+// CHWinAppEx
 
-class CWinAppEx : public CWinApp
+class CHWinAppEx : public CWinApp
 {
-	DECLARE_DYNCREATE( CWinAppEx )
+	DECLARE_DYNCREATE( CHWinAppEx )
 
 protected:
-	CWinAppEx( LPCTSTR lpszAppName = NULL );
-	virtual ~CWinAppEx( void );
+	CHWinAppEx( LPCTSTR lpszAppName = NULL );
+	virtual ~CHWinAppEx( void );
 	
 public:	
 	BOOL PostInstanceMessage( WPARAM wParam, LPARAM lParam );		
@@ -55,13 +55,13 @@ protected:
 	
 };
 
-AFX_INLINE CWinAppEx* GetApp( void )
-	{ return STATIC_DOWNCAST( CWinAppEx, AfxGetApp() ); }
+AFX_INLINE CHWinAppEx* GetApp( void )
+	{ return STATIC_DOWNCAST( CHWinAppEx, AfxGetApp() ); }
 
-AFX_INLINE void CWinAppEx::RegisterShellFileTypes( BOOL bCompat /*FALSE*/ )
+AFX_INLINE void CHWinAppEx::RegisterShellFileTypes( BOOL bCompat /*FALSE*/ )
 	{ RegisterShellFileTypesEx( bCompat, TRUE ); }
 
-AFX_INLINE void CWinAppEx::UnregisterShellFileTypes( void) 
+AFX_INLINE void CHWinAppEx::UnregisterShellFileTypes( void) 
 	{ RegisterShellFileTypesEx( FALSE, FALSE ); }
 
 #endif // __WINAPP_H__

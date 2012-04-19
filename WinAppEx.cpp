@@ -8,26 +8,26 @@
 #include "WinAppEx.h"
 #include <atlbase.h>	// Required for the CRegKey
 
-// CWinAppEx
+// CHWinAppEx
  
-IMPLEMENT_DYNCREATE( CWinAppEx, CWinApp)
-CWinAppEx::CWinAppEx( LPCTSTR lpszAppName /*NULL*/ )
+IMPLEMENT_DYNCREATE( CHWinAppEx, CWinApp)
+CHWinAppEx::CHWinAppEx( LPCTSTR lpszAppName /*NULL*/ )
 		 : CWinApp( lpszAppName )
 		 , m_uMsgCheckInst( NULL )
 {	
 }
 
-CWinAppEx::~CWinAppEx( void )
+CHWinAppEx::~CHWinAppEx( void )
 {	
 	m_uMsgCheckInst = NULL;	
 }
 
-BEGIN_MESSAGE_MAP(CWinAppEx, CWinApp)	
+BEGIN_MESSAGE_MAP(CHWinAppEx, CWinApp)	
 END_MESSAGE_MAP()
 
-// CWinAppEx message handlers
+// CHWinAppEx message handlers
 
-BOOL CWinAppEx::PreTranslateMessage( LPMSG pMsg )
+BOOL CHWinAppEx::PreTranslateMessage( LPMSG pMsg )
 {
 	if( pMsg->message == m_uMsgCheckInst )
 		return OnAnotherInstanceMessage( pMsg );	
@@ -35,9 +35,9 @@ BOOL CWinAppEx::PreTranslateMessage( LPMSG pMsg )
 	return CWinApp::PreTranslateMessage( pMsg );	
 }
 
-// CWinAppEx functions
+// CHWinAppEx functions
 
-BOOL CWinAppEx::InitInstance( LPCTSTR lpszUID /*NULL*/ )
+BOOL CHWinAppEx::InitInstance( LPCTSTR lpszUID /*NULL*/ )
 {		
 	if( lpszUID != NULL )
 	{
@@ -79,7 +79,7 @@ BOOL CWinAppEx::InitInstance( LPCTSTR lpszUID /*NULL*/ )
 	return CWinApp::InitInstance();
 }
 
-BOOL CWinAppEx::FindAnotherInstance( LPCTSTR lpszUID )
+BOOL CHWinAppEx::FindAnotherInstance( LPCTSTR lpszUID )
 {
 	ASSERT( lpszUID != NULL );
 		
@@ -103,7 +103,7 @@ BOOL CWinAppEx::FindAnotherInstance( LPCTSTR lpszUID )
 	return FALSE;
 }
 
-BOOL CWinAppEx::PostInstanceMessage( WPARAM wParam, LPARAM lParam )
+BOOL CHWinAppEx::PostInstanceMessage( WPARAM wParam, LPARAM lParam )
 {
 	ASSERT( m_uMsgCheckInst != NULL );
 
@@ -125,7 +125,7 @@ BOOL CWinAppEx::PostInstanceMessage( WPARAM wParam, LPARAM lParam )
 	return (BOOL)( lRet != -1 );
 }
 
-BOOL CWinAppEx::OnAnotherInstanceMessage( LPMSG pMsg )
+BOOL CHWinAppEx::OnAnotherInstanceMessage( LPMSG pMsg )
 {
 	// Get command line arguments (if any) from new instance.
 	
@@ -173,7 +173,7 @@ BOOL CWinAppEx::OnAnotherInstanceMessage( LPMSG pMsg )
 	return TRUE;
 }
 
-BOOL CWinAppEx::EnableTokenPrivilege( LPCTSTR lpszSystemName, 
+BOOL CHWinAppEx::EnableTokenPrivilege( LPCTSTR lpszSystemName, 
 									  BOOL    bEnable /*TRUE*/ )
 {
 	ASSERT( lpszSystemName != NULL );
@@ -208,7 +208,7 @@ BOOL CWinAppEx::EnableTokenPrivilege( LPCTSTR lpszSystemName,
 	return bRetVal;
 }
 
-void CWinAppEx::RegisterShellFileTypesEx( BOOL bCompat   /*FALSE*/, 
+void CHWinAppEx::RegisterShellFileTypesEx( BOOL bCompat   /*FALSE*/, 
 										  BOOL bRegister /*TRUE*/ )
 {
 	// Register all application document types:

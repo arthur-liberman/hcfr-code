@@ -287,7 +287,7 @@ BOOL CColorHCFRApp::InitInstance()
 
 	LoadStdProfileSettings();  // Load standard INI file options (including MRU)
 
-	if( !CWinAppEx::InitInstance( _T("{B7C56C2E-F858-4f2b-9054-2F5626377F03}") ) )
+	if( !CHWinAppEx::InitInstance( _T("{B7C56C2E-F858-4f2b-9054-2F5626377F03}") ) )
 		if(!m_pConfig->m_doMultipleInstance)
 			return FALSE;
 
@@ -1322,7 +1322,7 @@ BOOL CAboutDlg::OnInitDialog()
 							"CSerialCom: <font style='b'>Shibu K.V</font>","http://www.codeproject.com/system/cserialcom.asp",
 							"CSizingControlBar: <font style='b'>Cristi Posea</font>","http://www.codeproject.com/docking/sizecbar.asp",
 							"CSpreadSheet: <font style='b'>Yap Chun Wei</font>","http://www.codeproject.com/database/cspreadsheet.asp",
-							"CWinAppEx: <font style='b'>Armen Hakobyan</font>","http://www.codeproject.com/threads/singleinstancemfc.asp",
+							"CHWinAppEx: <font style='b'>Armen Hakobyan</font>","http://www.codeproject.com/threads/singleinstancemfc.asp",
 							"CxImage: <font style='b'>Davide Pizzolato</font>","http://www.codeproject.com/bitmap/cximage.asp",
 							"CCustomTabCtrl: <font style='b'>Andrzej Markowski</font>","http://www.codeproject.com/tabctrl/AMCustomTabCtrlDemo.asp",
 							
