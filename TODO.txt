@@ -33,5 +33,5 @@ Convert project to UNICODE
 
 Replace ini file with registry to allow for saving unicode strings?
 
-
- 
+Wizard mode for guiding an unsophisticated user through the process of calibrating 
+something along the lines of http://www.curtpalme.com/forum/viewtopic.php?t=10457 
