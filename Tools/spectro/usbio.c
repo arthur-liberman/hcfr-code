@@ -174,7 +174,8 @@ struct _icoms *p
 	if (p->ctx == NULL) {
 		int rv;
 	   	if ((rv = libusb_init(&p->ctx)) != 0) {
-			error("libusb_init() failed with %d",rv);
+			warning("libusb_init() failed with %d",rv);
+			p->ctx = NULL;
 		}
 	}
 
