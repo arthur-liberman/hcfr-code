@@ -19,7 +19,9 @@
 
 // FullScreenWindow.h : Defines the full screen color window
 //
+#if !defined(_MSC_VER) || _MSC_VER < 1600
 #include <multimon.h>
+#endif // _MSC_VER
 #include <ddraw.h>
 
 // Display modes

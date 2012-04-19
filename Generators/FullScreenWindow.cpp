@@ -23,6 +23,10 @@
 
 #include "stdafx.h"
 #include "../ColorHCFR.h"
+#if _MSC_VER >= 1600
+#define COMPILE_MULTIMON_STUBS
+#include <multimon.h>
+#endif
 #include "FullScreenWindow.h"
 #include <math.h>
 #include "ximage.h"
