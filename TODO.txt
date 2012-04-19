@@ -1,25 +1,27 @@
-Create Installer
-
-Remove old non-free meter code
-
 Create support for plug-in meter code
+
+Create support for plug-in genertaor code
+
+Add DirectX generator
+
+Add extra colour diff functions
+
+Replace CColor with typed triplets
 
 Notes
 =====
 
 Replace critical sections with RAII code from DScaler
 
-Getting memory leaks on exit after some operations switch to smart pointers 
+Getting memory leaks on exit after some operations switch to smart pointers and remove some pointless pointer use.
 
-Getting exceptions thrown in normal operation, try and change
+Getting exceptions thrown in normal operation, try and change - Remove themeing?
 
 Move common Delta E target stuff into a function
 
 Review english dialog labels for double negatives
 
 Review threading code and protection of arrays
-
-Remove themeing?
 
 
 Thoughts
@@ -34,4 +36,6 @@ Convert project to UNICODE
 Replace ini file with registry to allow for saving unicode strings?
 
 Wizard mode for guiding an unsophisticated user through the process of calibrating 
-something along the lines of http://www.curtpalme.com/forum/viewtopic.php?t=10457 
+something along the lines of http://www.curtpalme.com/forum/viewtopic.php?t=10457
+It would good to have user defineable process files that contain the targets and any help text.
+   
