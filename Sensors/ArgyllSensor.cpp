@@ -14,8 +14,9 @@
 //  GNU General Public License for more details
 /////////////////////////////////////////////////////////////////////////////
 //  Author(s):
-//  Georges GALLERAND
-//  John Adcock
+//      Georges GALLERAND
+//      John Adcock
+//      Ian C
 /////////////////////////////////////////////////////////////////////////////
 
 // ArgyllSensor.cpp: implementation of the Argyll class.
@@ -25,6 +26,7 @@
 #include "stdafx.h"
 #include "ColorHCFR.h"
 #include "ArgyllSensor.h"
+#include "SpectralSampleFiles.h"
 
 #include <math.h>
 
@@ -44,6 +46,7 @@ IMPLEMENT_SERIAL(CArgyllSensor, COneDeviceSensor, 1) ;
 CArgyllSensor::CArgyllSensor() :
     m_DisplayType(0),
     m_ReadingType(0),
+    m_SpectralType(""),
     m_meterIndex(-1),
     m_meter(0),
     m_HiRes(1)
@@ -55,6 +58,17 @@ CArgyllSensor::CArgyllSensor() :
     m_PropertySheetTitle = IDS_ARGYLLSENSOR_PROPERTIES_TITLE;
 
     SetName("Argyll Meter");
+
+    // Retrieve the list of installed ccss files to display
+	
+    try
+    {
+        m_spectralSamples = new SpectralSampleFiles;		
+    }
+    catch (std::logic_error& e)
+    {
+        MessageBox(NULL, e.what(), "Argyll Meter", MB_OK+MB_ICONHAND);
+    }
 }
 
 CArgyllSensor::CArgyllSensor(ArgyllMeterWrapper* meter) :
@@ -65,9 +79,15 @@ CArgyllSensor::CArgyllSensor(ArgyllMeterWrapper* meter) :
     std::string meterName(m_meter->getMeterName());
     m_DisplayType = GetConfig()->GetProfileInt(meterName.c_str(), "DisplayType", 1);
     m_ReadingType = GetConfig()->GetProfileInt(meterName.c_str(), "ReadingType", 0);
+    m_SpectralType = GetConfig()->GetProfileString(meterName.c_str(), "SpectralType", 0);
     m_debugMode = !!GetConfig()->GetProfileInt(meterName.c_str(), "DebugMode", 0);
     m_HiRes = GetConfig()->GetProfileInt(meterName.c_str(), "HiRes", 1);
 
+    if (m_SpectralType == "")
+    {
+        m_SpectralType = "<None>";
+    }
+    
     m_ArgyllSensorPropertiesPage.m_pSensor = this;
 
     m_pDevicePage = & m_ArgyllSensorPropertiesPage;  // Add Argyll settings page to property sheet
@@ -75,11 +95,25 @@ CArgyllSensor::CArgyllSensor(ArgyllMeterWrapper* meter) :
     m_PropertySheetTitle = IDS_ARGYLLSENSOR_PROPERTIES_TITLE;
 
     SetName(CString(meterName.c_str()));
+
+    // Retrieve the list of installed ccss files to display
+
+    try
+    {
+        m_spectralSamples = new SpectralSampleFiles;		
+    }
+    catch (std::logic_error& e)
+    {
+        MessageBox(NULL, e.what(), "Argyll Meter", MB_OK+MB_ICONHAND);
+    }
 }
 
 CArgyllSensor::~CArgyllSensor()
 {
     // we don't own the meter don't delete it
+
+    delete m_spectralSamples;
+
 }
 
 void CArgyllSensor::Copy(CSensor * p)
@@ -88,12 +122,19 @@ void CArgyllSensor::Copy(CSensor * p)
 
     m_DisplayType = ((CArgyllSensor*)p)->m_DisplayType;
     m_ReadingType = ((CArgyllSensor*)p)->m_ReadingType;
+    m_SpectralType = ((CArgyllSensor*)p)->m_SpectralType;
     m_meterIndex = ((CArgyllSensor*)p)->m_meterIndex;
     m_HiRes = ((CArgyllSensor*)p)->m_HiRes;
+ 
     if(m_meter >= 0)
     {
         m_meter = ((CArgyllSensor*)p)->m_meter;
         SetName(CString(m_meter->getMeterName().c_str()));
+    }
+
+    if(m_spectralSamples)
+    {
+        *m_spectralSamples = *(((CArgyllSensor*)p)->m_spectralSamples);
     }
 }
 
@@ -107,6 +148,7 @@ void CArgyllSensor::Serialize(CArchive& archive)
         archive << version;
         archive << m_DisplayType;
         archive << m_ReadingType;
+        archive << m_SpectralType;
         archive << m_meterIndex;
         archive << m_debugMode;
         archive << m_HiRes;
@@ -120,6 +162,7 @@ void CArgyllSensor::Serialize(CArchive& archive)
             AfxThrowArchiveException ( CArchiveException::badSchema );
         archive >> m_DisplayType;
         archive >> m_ReadingType;
+        archive >> m_SpectralType;
         archive >> dummy;
         archive >> m_debugMode;
         archive >> m_HiRes;
@@ -144,6 +187,7 @@ void CArgyllSensor::SetPropertiesSheetValues()
 
     m_ArgyllSensorPropertiesPage.m_DisplayType=m_DisplayType;
     m_ArgyllSensorPropertiesPage.m_ReadingType=m_ReadingType;
+    m_ArgyllSensorPropertiesPage.m_SpectralType=m_SpectralType;
     m_ArgyllSensorPropertiesPage.m_DebugMode=m_debugMode;
     m_ArgyllSensorPropertiesPage.m_DebugMode=m_HiRes;
     m_ArgyllSensorPropertiesPage.m_MeterName = m_meter->getMeterName().c_str();
@@ -163,15 +207,18 @@ void CArgyllSensor::GetPropertiesSheetValues()
     }
 
     if(m_ReadingType != m_ArgyllSensorPropertiesPage.m_ReadingType ||
+        m_SpectralType != m_ArgyllSensorPropertiesPage.m_SpectralType ||
         m_DisplayType != m_ArgyllSensorPropertiesPage.m_DisplayType ||
         m_HiRes != m_ArgyllSensorPropertiesPage.m_HiRes)
     {
         SetModifiedFlag(TRUE);
         m_ReadingType=m_ArgyllSensorPropertiesPage.m_ReadingType;
+        m_SpectralType=m_ArgyllSensorPropertiesPage.m_SpectralType;
         m_DisplayType=m_ArgyllSensorPropertiesPage.m_DisplayType;
         m_HiRes = m_ArgyllSensorPropertiesPage.m_HiRes;
 
         GetConfig()->WriteProfileInt(meterName.c_str(), "ReadingType", m_ReadingType );
+        GetConfig()->WriteProfileString(meterName.c_str(), "SpectralType", m_SpectralType );
         GetConfig()->WriteProfileInt(meterName.c_str(), "DisplayType", m_DisplayType );
         GetConfig()->WriteProfileInt(meterName.c_str(), "HiRes", m_HiRes );
         Init(FALSE);
@@ -191,6 +238,26 @@ BOOL CArgyllSensor::Init( BOOL bForSimultaneousMeasures )
     if(m_DisplayType != 0xFFFFFFFF)
     {
         m_meter->setDisplayType(m_DisplayType);
+    }
+    
+    // Cause the meter to load the user-specified spectral calibration .ccss file
+ 
+    try
+    {
+        if (m_meter->doesMeterSupportSpectralSamples())
+        {
+            if (!m_meter->isSpectralSampleLoaded((LPCSTR)m_SpectralType))
+            {
+                SpectralSample spectralSample = spectralSample;
+                (void)m_spectralSamples->getSample(spectralSample, (LPCSTR)m_SpectralType);
+                return m_meter->loadSpectralSample(spectralSample);
+            }
+        }
+    }
+    catch (std::logic_error& e)
+    {
+        MessageBox(NULL, e.what(), "Argyll Meter", MB_OK+MB_ICONHAND);
+        return FALSE;
     }
     return TRUE;
 }
@@ -257,6 +324,7 @@ void CArgyllSensor::GetUniqueIdentifier( CString & strId )
 
 void CArgyllSensor::FillDisplayTypeCombo(CComboBox& comboToFill)
 {
+
     int numDisplayTypes(m_meter->getNumberOfDisplayTypes());
 
     if(numDisplayTypes > 0)
@@ -266,6 +334,32 @@ void CArgyllSensor::FillDisplayTypeCombo(CComboBox& comboToFill)
             comboToFill.AddString(m_meter->getDisplayTypeText(i));
         }
     }
+}
+
+void CArgyllSensor::FillSpectralTypeCombo(CComboBox& comboToFill)
+{
+    if (!m_meter->doesMeterSupportSpectralSamples())
+	{
+        return;    
+	}
+	
+	comboToFill.AddString("<None>");
+
+    try
+    {			
+        std::vector<SpectralSample>::iterator iter;
+
+        for (iter = m_spectralSamples->getList()->begin(); iter != m_spectralSamples->getList()->end(); iter++)
+        {
+            comboToFill.AddString(iter->getDescription());
+        }
+        comboToFill.EnableWindow((comboToFill.GetCount() != 0)?TRUE:FALSE);
+    }
+    catch (std::logic_error& e)
+    {
+        MessageBox(NULL, e.what(), "Argyll Meter", MB_OK+MB_ICONHAND);
+    }
+    
 }
 
 

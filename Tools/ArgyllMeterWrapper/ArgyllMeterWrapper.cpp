@@ -15,11 +15,13 @@
 /////////////////////////////////////////////////////////////////////////////
 //  Author(s):
 //    John Adcock
+//    Ian C
 /////////////////////////////////////////////////////////////////////////////
 
 // ArgyllMeterWrapper.h: Wrapper for the argyll spectro library.
 //
 //////////////////////////////////////////////////////////////////////
+
 
 #include "ArgyllMeterWrapper.h"
 #include "CriticalSection.h"
@@ -37,8 +39,13 @@
 #include "hidio.h"
 #include "libusb.h"
 #include "libusbi.h"
+#include "conv.h"
+#include "ccss.h"
 #undef SALONEINSTLIB
 #include <stdexcept>
+
+
+
 
 namespace
 {
@@ -84,6 +91,8 @@ namespace
         std::vector<ArgyllMeterWrapper*> m_meters;
         ArgyllMeters()
         {
+            // technically we're supposed to call libusb_init() before calling any routines in libusb
+            libusb_init(0);
         }
         ~ArgyllMeters()
         {
@@ -94,6 +103,7 @@ namespace
             m_meters.clear();
             // good as place as any to clear up usb
             libusb_exit(NULL);
+            
         }
     public:
         static ArgyllMeters& getInstance()
@@ -136,8 +146,8 @@ ArgyllMeterWrapper::ArgyllMeterWrapper(_inst* meter) :
     m_meter(meter),
     m_nextCalibration(0),
     m_meterType(meter->get_itype(meter))
+    
 {
-
 }
 
 ArgyllMeterWrapper::~ArgyllMeterWrapper()
@@ -287,6 +297,7 @@ const char* ArgyllMeterWrapper::getDisplayTypeText(int displayModeIndex)
         return "Invalid Display Type";
     }
 }
+
 
 int ArgyllMeterWrapper::getDisplayType() const
 {
@@ -620,4 +631,55 @@ bool ArgyllMeterWrapper::isColorimeter()
 {
     checkMeterIsInitialized();
     return !!(m_meter->capabilities(m_meter) & inst_colorimeter);
+}
+
+
+
+bool ArgyllMeterWrapper::doesMeterSupportSpectralSamples()
+{
+    checkMeterIsInitialized();
+    return !!(m_meter->capabilities(m_meter) & inst_ccss);
+}
+
+bool ArgyllMeterWrapper::loadSpectralSample(SpectralSample &sample)
+{
+    std::string errorMessage;
+
+    if (!doesMeterSupportSpectralSamples())
+    {
+        throw std::logic_error("Instrument doesn't have Colorimeter Calibration Spectral Sample capability");		
+    }
+
+    if (m_Sample == sample)
+    {
+        // We're already loaded
+        return true;
+    }
+    
+    inst_code instCode = m_meter->col_cal_spec_set(m_meter, icxOT_default, NULL, sample.getCCSS()->samples, sample.getCCSS()->no_samp);
+    if (instCode != inst_ok) 
+    {
+        errorMessage = "Setting Colorimeter Calibration Spectral Samples failed with error :'";
+        errorMessage += m_meter->inst_interp_error(m_meter, instCode);
+        errorMessage += "' (";
+        errorMessage += m_meter->interp_error(m_meter, instCode);
+        errorMessage += ")";
+        throw std::logic_error(errorMessage);
+    }		
+
+    // Keep a copy of the loaded sample so we don't reload it unnecessarily
+    m_Sample = sample;
+    return true;
+}
+
+bool ArgyllMeterWrapper::isSpectralSampleLoaded(const char* sampleDescription)
+{
+    if (sampleDescription != NULL)
+    {
+        if (m_Sample.m_Description == sampleDescription)
+        {
+            return true;
+        }
+    }
+    return false;
 }

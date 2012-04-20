@@ -25,6 +25,10 @@
 
 /* ------------------------------------------------------------------------------ */
 
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
 struct _ccss {
 
   /* Public: */
@@ -62,6 +66,10 @@ struct _ccss {
 
 /* Create a new, uninitialised ccss */
 ccss *new_ccss(void);
+
+#ifdef __cplusplus
+	}
+#endif
 
 #endif /* CCSS_H */
 

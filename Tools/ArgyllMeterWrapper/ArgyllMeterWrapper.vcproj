@@ -159,6 +159,28 @@
 				>
 			</File>
 		</Filter>
+
+		<Filter
+			Name="Source Files"
+			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
+			UniqueIdentifier="{735A1224-09A3-4dd3-98BA-D31295C78632}"
+			>
+			<File
+				RelativePath=".\SpectralSample.cpp"
+				>
+			</File>
+		</Filter>
+
+		<Filter
+			Name="Source Files"
+			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
+			UniqueIdentifier="{B40FC404-B6E1-459d-891C-DF69F089EDE1}"
+			>
+			<File
+				RelativePath=".\SpectralSampleFiles.cpp"
+				>
+			</File>
+		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
@@ -166,6 +188,26 @@
 			>
 			<File
 				RelativePath=".\ArgyllMeterWrapper.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Header Files"
+			Filter="h;hpp;hxx;hm;inl;inc;xsd"
+			UniqueIdentifier="{8A79294E-AEC5-402b-84C4-A64A41BC50B7}"
+			>
+			<File
+				RelativePath=".\SpectralSample.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Header Files"
+			Filter="h;hpp;hxx;hm;inl;inc;xsd"
+			UniqueIdentifier="{5AAFBFC2-D556-4973-887E-B7B34DC1BAA9}"
+			>
+			<File
+				RelativePath=".\SpectralSampleFiles.h"
 				>
 			</File>
 		</Filter>

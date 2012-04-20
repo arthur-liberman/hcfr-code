@@ -15,6 +15,7 @@
 /////////////////////////////////////////////////////////////////////////////
 //  Author(s):
 //    John Adcock
+//    Ian C
 /////////////////////////////////////////////////////////////////////////////
 
 // ArgyllMeterWrapper.h: Wrapper for the argyll spectro library.
@@ -29,7 +30,11 @@
 #include <vector>
 #include <stdarg.h>
 
+
+#include "SpectralSampleFiles.h" 
+
 struct _inst;
+
 
 class ArgyllMeterWrapper
 {
@@ -67,6 +72,15 @@ public:
     const char* getDisplayTypeText(int displayModeIndex);
     int getDisplayType() const;
     void setDisplayType(int displayMode);
+
+	// Determine if the meter supports spectral sample files
+    bool doesMeterSupportSpectralSamples();
+
+	// Load the supplied spectral sample 
+    bool loadSpectralSample(SpectralSample& sample);
+
+	// Determine if a spectral sample identified by a textual description is already loaded
+    bool isSpectralSampleLoaded(const char* sampleDescription);
 
     // calibrate the meter
     // this should be called 
@@ -111,6 +125,8 @@ public:
     // is the meter a colorimeter rather than a spectrometer
     bool isColorimeter();
 
+
+
 private:
     /// ArgyllMeterWrapper constructor
     /// Create a USB meter object
@@ -123,7 +139,9 @@ private:
     eReadingType m_readingType;
     CColor m_lastReading;
     int m_nextCalibration;
-    char m_calibrationMessage[200];
+    char m_calibrationMessage[200];  
+
+    SpectralSample m_Sample;
 };
 
 extern void ArgyllLogMessage(const char* messageType, char *fmt, va_list& args);

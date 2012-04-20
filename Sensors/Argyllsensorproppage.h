@@ -15,9 +15,11 @@
 //  GNU General Public License for more details
 /////////////////////////////////////////////////////////////////////////////
 //  Author(s):
-//   Georges GALLERAND
-//   John Adcock
+//    Georges GALLERAND
+//    John Adcock
+//    Ian C
 /////////////////////////////////////////////////////////////////////////////
+
 
 #if !defined(AFX_ArgyllSensorPropPage_H__4A28F0DD_80F3_4CE4_BD25_AD38CBF304C9__INCLUDED_)
 #define AFX_ArgyllSensorPropPage_H__4A28F0DD_80F3_4CE4_BD25_AD38CBF304C9__INCLUDED_
@@ -46,11 +48,13 @@ public:
     //{{AFX_DATA(CArgyllSensorPropPage)
     enum { IDD = IDD_ARGYLL_SENSOR_PROP_PAGE };
     int        m_DisplayType;
+    CString	   m_SpectralType;
     int        m_ReadingType;
     BOOL       m_DebugMode;
     BOOL       m_HiRes;
     CString    m_MeterName;
     CComboBox  m_DisplayTypeCombo;
+    CComboBox  m_SpectralTypeCombo;
     CButton    m_HiResCheckBox;
     BOOL       m_HiResCheckBoxEnabled;
     //}}AFX_DATA

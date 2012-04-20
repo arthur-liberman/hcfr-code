@@ -683,6 +683,7 @@
 #define IDC_ARGYLLSENSOR__METER_NAME    1269
 #define IDC_ARGYLLSENSOR_METER_NAME     1269
 #define IDC_ARGYLL_SENSOR_HIRES         1270
+#define IDC_ARGYLLSENSOR_SPECTRALTYPE_COMBO 1271
 #define IDC_COLORTEMPHISTO_GRAPH        11003
 #define IDC_RGBHISTO_GRAPH              11101
 #define IDC_RGBHISTO_GRAPH2             11102
@@ -1294,7 +1295,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        376
 #define _APS_NEXT_COMMAND_VALUE         33027
-#define _APS_NEXT_CONTROL_VALUE         1270
+#define _APS_NEXT_CONTROL_VALUE         1272
 #define _APS_NEXT_SYMED_VALUE           140
 #endif
 #endif

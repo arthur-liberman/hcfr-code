@@ -15,8 +15,9 @@
 //  GNU General Public License for more details
 /////////////////////////////////////////////////////////////////////////////
 //  Author(s):
-//  Georges GALLERAND
-//  John Adcock
+//      Georges GALLERAND
+//      John Adcock
+//      Ian C
 /////////////////////////////////////////////////////////////////////////////
 
 // ArgyllSensor.h: interface for the ArgyllSensor class.
@@ -44,12 +45,14 @@ protected:
     static bool m_debugMode;
 
 public:
-    UINT    m_DisplayType;
-    UINT    m_ReadingType;
-    UINT    m_meterIndex;
-    BOOL    m_HiRes;
+    UINT		m_DisplayType;
+    UINT		m_ReadingType;
+    CString		m_SpectralType;
+    UINT		m_meterIndex;
+    BOOL		m_HiRes;
 private:
     ArgyllMeterWrapper* m_meter;
+    SpectralSampleFiles *m_spectralSamples;
 
 public:
     CArgyllSensor();
@@ -78,6 +81,7 @@ public:
     static bool isInDebugMode() {return m_debugMode;}
     virtual bool isValid() const {return (m_meter != 0);}
     void FillDisplayTypeCombo(CComboBox& comboToFill);
+    void FillSpectralTypeCombo(CComboBox& comboToFill);
 };
 
 #endif // !defined(AFX_ARGYLLSENSOR_H__1493C213_6A02_44C5_8EB7_55B469092E14__INCLUDED_)

@@ -14,8 +14,10 @@
 /* Message logging */
 #define ENABLE_LOGGING 1
 
+#if !defined(OS_WINDOWS)
 /* Windows backend */
 #define OS_WINDOWS /**/
+#endif
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
