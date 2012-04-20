@@ -213,7 +213,7 @@ Matrix::~Matrix()
 		delete[] m_pData[i];
 		m_pData[i] = NULL;
 	}
-  delete[] m_pData;
+	delete[] m_pData;
 	m_pData = NULL;
 }
 
@@ -411,14 +411,19 @@ Matrix& Matrix::operator =(const Matrix& obj)
 	if(m_nRows | m_nCols) {
 		for(int i=0; i<m_nRows; ++i) {
 			delete[] m_pData[i];
+			m_pData[i] = NULL;
 		}
 		delete[] m_pData;
+		m_pData = NULL;
 	}
 
 	m_nRows = obj.m_nRows;
 	m_nCols = obj.m_nCols;
 
-	m_pData = new double*[m_nRows];
+	if (m_nRows > 0)
+	{
+		m_pData = new double*[m_nRows];
+	}
 	for(int i=0; i<m_nRows; ++i) {
 		m_pData[i] = new double[m_nCols];
 		for(int j=0; j<m_nCols; ++j) {
