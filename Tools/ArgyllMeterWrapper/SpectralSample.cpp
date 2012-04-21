@@ -22,24 +22,17 @@
 //
 //////////////////////////////////////////////////////////////////////
 
+#include "SpectralSample.h"
 #include "ArgyllMeterWrapper.h"
+#include "SpectralSampleFiles.h"
+#include <stdexcept>
 
 #define SALONEINSTLIB
 #define ENABLE_USB
 #define ENABLE_SERIAL
-#if defined(_MSC_VER)
-#pragma warning(disable:4200)
-#include <winsock.h>
-#endif
 #include "xspect.h"
-#include "inst.h"
-#include "hidio.h"
-#include "conv.h"
 #include "ccss.h"
 #undef SALONEINSTLIB
-#include <stdexcept>
-#include "SpectralSampleFiles.h"
-#include "SpectralSample.h" 
 
 
 SpectralSample::SpectralSample(void) :
@@ -81,7 +74,7 @@ SpectralSample::~SpectralSample(void)
 
 bool SpectralSample::operator==(const SpectralSample& s) const
 {
-    if (m_Path == s.m_Path) 
+    if (m_Path == s.m_Path)
     {
         return true;
     }
@@ -106,27 +99,31 @@ SpectralSample& SpectralSample::operator=(const SpectralSample& s)
 }
 
 
-bool SpectralSample::Read(std::string samplePath)
+bool SpectralSample::Read(const std::string& samplePath)
 {
-    if (samplePath != "")
+    if (!samplePath.empty())
     {
         if (m_ccss->read_ccss(m_ccss, (char *)samplePath.c_str()))
-        {                
-                return false;
+        {
+            return false;
         }
     
         m_Path = samplePath;
         m_Display = m_ccss->desc;
         m_Tech = m_ccss->tech;
         setDescription(m_ccss->tech, m_ccss->disp); 
-    }	
-    return true;
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 
-bool SpectralSample::Verify(std::string samplePath)
+bool SpectralSample::Verify(const std::string& samplePath)
 {
-    if (samplePath != "")
+    if (!samplePath.empty())
     {
         ccss *cs = NULL;
     
@@ -136,43 +133,48 @@ bool SpectralSample::Verify(std::string samplePath)
         }
   
         if (cs->read_ccss(cs, (char *)samplePath.c_str()))
-        {                
+        {
+            cs->del(cs);
             return false;
-        }	
+        }
     
         setAll(cs->tech, cs->disp, (char *)samplePath.c_str());
         cs->del(cs);
-    }	
-    return true;
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 
 
-const char* SpectralSample::getDescription()
+const char* SpectralSample::getDescription() const
 {
-    return (const char*)m_Description.c_str();
+    return m_Description.c_str();
 }
 
 
-const char* SpectralSample::getDisplay()
+const char* SpectralSample::getDisplay() const
 {
-    return (const char*)m_Display.c_str();
+    return m_Display.c_str();
 }
 
 
-const char* SpectralSample::getTech()
+const char* SpectralSample::getTech() const
 {
-    return (const char*)m_Tech.c_str();
+    return m_Tech.c_str();
 }
 
 
-const char* SpectralSample::getPath()
+const char* SpectralSample::getPath() const
 {
-    return (const char*)m_Path.c_str();
+    return m_Path.c_str();
 }
 
 
-void SpectralSample::setDescription(char* tech, char *disp)
+void SpectralSample::setDescription(const char* tech, const char *disp)
 {
     // we use exactly the same convention as argyll
     // ccss files are not required to have both the display or the tech specified,
@@ -187,25 +189,25 @@ void SpectralSample::setDescription(char* tech, char *disp)
 }
 
 
-void SpectralSample::setDisplay(char* disp)
+void SpectralSample::setDisplay(const char* disp)
 {
     m_Display = disp;
 }
 
 
-void SpectralSample::setTech(char* tech)
+void SpectralSample::setTech(const char* tech)
 {
     m_Tech = tech;
 }
 
 
-void SpectralSample::setPath(char* path)
+void SpectralSample::setPath(const char* path)
 {
     m_Path = path;
 }
 
 
-void SpectralSample::setAll(char* tech, char* disp, char* path )
+void SpectralSample::setAll(const char* tech, const char* disp, const char* path )
 {
     m_Display = disp;
     m_Tech = tech;

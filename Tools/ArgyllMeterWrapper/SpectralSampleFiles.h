@@ -37,11 +37,13 @@ public:
     SpectralSampleFiles(const SpectralSampleFiles& s);
     ~SpectralSampleFiles(void);
 
+    typedef std::vector<SpectralSample> SpectralSamples;
+
     bool getSample(SpectralSample& sample, std::string sampleDescription);
-    std::vector<SpectralSample>* getList(); 
+    const SpectralSamples& getList() const;
 
 private:	
-    std::vector<SpectralSample> m_Samples;   
+    SpectralSamples m_Samples;
     const char* getPath(std::string sampleDescription);
 };
 

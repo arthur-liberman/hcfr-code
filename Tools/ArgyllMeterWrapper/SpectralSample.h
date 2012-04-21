@@ -34,11 +34,6 @@ typedef _ccss ccss;
 
 class SpectralSample
 {
-    // ArgyllMeterWrapper needs access to the ccss data structure to load up a ccss file
-    // which is provided by the protected member function getCCSS()
-
-    friend class ArgyllMeterWrapper;
-
 public:
     SpectralSample(void);
     SpectralSample(const SpectralSample& s);
@@ -47,29 +42,26 @@ public:
     bool operator==(const SpectralSample& s) const;
     SpectralSample& operator=(const SpectralSample& s);
 
-    bool Read(std::string samplePath);
-    bool Verify(std::string samplePath);
+    bool Read(const std::string& samplePath);
+    bool Verify(const std::string& samplePath);
 
     // Get information about the sample. Currently we're only using getDescription()
     // getTech() and getDisplay() are included for future flexibility
+    const char* getDescription() const;
+    const char* getDisplay() const;
+    const char* getTech() const;
+    const char* getPath() const;
 
-    const char* getDescription();
-    const char* getDisplay();    
-    const char* getTech();	
-    const char* getPath();
+    void setDescription(const char* tech, const char* disp);
+    void setDisplay(const char* disp);
+    void setTech(const char* tech);
+    void setPath(const char* path);
+    void setAll(const char* tech, const char* disp, const char* path);
 
-protected:
-    void setDescription(char* tech, char* disp);
-    void setDisplay(char* disp);    
-    void setTech(char* tech);
-    void setPath(char* path);
-    void setAll(char* tech, char* disp, char* path );
-
-    // ArgyllMeterWrapper may access these member functions. It needs to be able to retrieve
-    // a ccss structure in order to load it into the meter. However, we really don't want any
-    // other class touching this very implementation specific data structure, hence the protected
-	// nature and the friend class declaration above
-
+    // ArgyllMeterWrapper may access this member functions. It needs to be able to retrieve
+    // a ccss structure in order to load it into the meter.
+    // This is really implementation specific and is only of any use if you have loaded 
+    // up the argyll header and so use should be limited to the ArgyllMeterWrapper library
     ccss* getCCSS();
 
 private:

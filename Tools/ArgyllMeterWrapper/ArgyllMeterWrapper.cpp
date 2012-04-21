@@ -26,6 +26,7 @@
 #include "ArgyllMeterWrapper.h"
 #include "CriticalSection.h"
 #include "LockWhileInScope.h"
+#include <stdexcept>
 
 #define SALONEINSTLIB
 #define ENABLE_USB
@@ -42,7 +43,6 @@
 #include "conv.h"
 #include "ccss.h"
 #undef SALONEINSTLIB
-#include <stdexcept>
 
 
 
@@ -566,7 +566,7 @@ bool ArgyllMeterWrapper::isMeterStillValid() const
     return m_meter && m_meter->icom;
 }
 
-std::vector<ArgyllMeterWrapper*> ArgyllMeterWrapper::getDetectedMeters(std::string& errorMessage)
+ArgyllMeterWrapper::ArgyllMeterWrappers ArgyllMeterWrapper::getDetectedMeters(std::string& errorMessage)
 {
     error = error_imp;
     warning = warning_imp;
@@ -676,7 +676,7 @@ bool ArgyllMeterWrapper::isSpectralSampleLoaded(const char* sampleDescription)
 {
     if (sampleDescription != NULL)
     {
-        if (m_Sample.m_Description == sampleDescription)
+        if (strcmp(m_Sample.getDescription(), sampleDescription) == 0)
         {
             return true;
         }

@@ -172,7 +172,7 @@ void CArgyllSensor::Serialize(CArchive& archive)
         // we should ge replaced by the simulated meter
         // in the higher up object
         std::string errorMessage;
-        std::vector<ArgyllMeterWrapper*> meters = ArgyllMeterWrapper::getDetectedMeters(errorMessage);
+        ArgyllMeterWrapper::ArgyllMeterWrappers meters = ArgyllMeterWrapper::getDetectedMeters(errorMessage);
         if(meters.size() > 0)
         {
             m_meter = meters[0];
@@ -347,9 +347,9 @@ void CArgyllSensor::FillSpectralTypeCombo(CComboBox& comboToFill)
 
     try
     {			
-        std::vector<SpectralSample>::iterator iter;
+        SpectralSampleFiles::SpectralSamples::const_iterator iter;
 
-        for (iter = m_spectralSamples->getList()->begin(); iter != m_spectralSamples->getList()->end(); iter++)
+        for (iter = m_spectralSamples->getList().begin(); iter != m_spectralSamples->getList().end(); iter++)
         {
             comboToFill.AddString(iter->getDescription());
         }

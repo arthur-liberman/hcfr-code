@@ -57,7 +57,7 @@ protected:
     void autoDetectMeter()
     {
         std::string errorDescription;
-        std::vector<ArgyllMeterWrapper*> meters = ArgyllMeterWrapper::getDetectedMeters(errorDescription);
+        ArgyllMeterWrapper::ArgyllMeterWrappers meters = ArgyllMeterWrapper::getDetectedMeters(errorDescription);
         if(meters.size() == 0)
         {
             if(!errorDescription.empty())

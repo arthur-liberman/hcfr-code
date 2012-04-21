@@ -134,7 +134,7 @@ void CSensorSelectionPropPage::DoDataExchange(CDataExchange* pDX)
     if(m_sensorChoiceCtrl.GetCount() == 0)
     {
         std::string errorMessage;
-        std::vector<ArgyllMeterWrapper*> argyllMeters = ArgyllMeterWrapper::getDetectedMeters(errorMessage);
+        ArgyllMeterWrapper::ArgyllMeterWrappers argyllMeters = ArgyllMeterWrapper::getDetectedMeters(errorMessage);
         if(!errorMessage.empty())
         {
             MessageBox(errorMessage.c_str(), "Argyll Error", MB_OK | MB_ICONEXCLAMATION);

@@ -21,23 +21,17 @@
 // SpectralSampleFiles.cpp vector/iterator for the argyll ccss files
 //
 //////////////////////////////////////////////////////////////////////
+
+#include "SpectralSampleFiles.h"
 #include "ArgyllMeterWrapper.h"
+#include <stdexcept>
 
 #define SALONEINSTLIB
 #define ENABLE_USB
 #define ENABLE_SERIAL
-#if defined(_MSC_VER)
-#pragma warning(disable:4200)
-#include <winsock.h>
-#endif
 #include "xspect.h"
-#include "inst.h"
-#include "hidio.h"
-#include "conv.h"
 #include "ccss.h"
 #undef SALONEINSTLIB
-#include <stdexcept>
-#include "SpectralSampleFiles.h"
 
 
 
@@ -104,7 +98,7 @@ bool SpectralSampleFiles::getSample(SpectralSample& sample, std::string sampleDe
     return true;
 }
 
-std::vector<SpectralSample>* SpectralSampleFiles::getList()
+const SpectralSampleFiles::SpectralSamples& SpectralSampleFiles::getList() const
 {
-    return &m_Samples;
+    return m_Samples;
 }

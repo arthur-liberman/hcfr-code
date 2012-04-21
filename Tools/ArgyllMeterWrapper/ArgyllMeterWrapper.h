@@ -117,10 +117,12 @@ public:
     // not expected to be useful to client code but harmless
     bool isMeterStillValid() const;
 
+    typedef std::vector<ArgyllMeterWrapper*> ArgyllMeterWrappers;
+
     // get a list of pointer to meters, the life time of the
     // pointers is handled at a global level and there is no need to free
     // or delete the returned objects
-    static std::vector<ArgyllMeterWrapper*> getDetectedMeters(std::string& errorMessage);
+    static ArgyllMeterWrappers getDetectedMeters(std::string& errorMessage);
 
     // is the meter a colorimeter rather than a spectrometer
     bool isColorimeter();
