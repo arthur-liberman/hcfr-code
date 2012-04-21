@@ -293,6 +293,10 @@
 		02FEDF250D3FD4CB00F7FAC9 /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02FEDF240D3FD4CB00F7FAC9 /* Sparkle.framework */; };
 		02FEDF440D3FD90900F7FAC9 /* Sparkle.framework in Copy frameworks */ = {isa = PBXBuildFile; fileRef = 02FEDF240D3FD4CB00F7FAC9 /* Sparkle.framework */; };
 		02FEE1310D41259E00F7FAC9 /* splash_shadowed.png in Resources */ = {isa = PBXBuildFile; fileRef = 02FEE1300D41259E00F7FAC9 /* splash_shadowed.png */; };
+		5297C6561542B9960001DAFF /* SpectralSample.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5297C6521542B9960001DAFF /* SpectralSample.cpp */; };
+		5297C6571542B9960001DAFF /* SpectralSample.h in Headers */ = {isa = PBXBuildFile; fileRef = 5297C6531542B9960001DAFF /* SpectralSample.h */; };
+		5297C6581542B9960001DAFF /* SpectralSampleFiles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5297C6541542B9960001DAFF /* SpectralSampleFiles.cpp */; };
+		5297C6591542B9960001DAFF /* SpectralSampleFiles.h in Headers */ = {isa = PBXBuildFile; fileRef = 5297C6551542B9960001DAFF /* SpectralSampleFiles.h */; };
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 /* End PBXBuildFile section */
@@ -918,6 +922,10 @@
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		32CA4F630368D1EE00C91783 /* ColorHCFR_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ColorHCFR_Prefix.pch; sourceTree = "<group>"; };
+		5297C6521542B9960001DAFF /* SpectralSample.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SpectralSample.cpp; path = ../Tools/ArgyllMeterWrapper/SpectralSample.cpp; sourceTree = SOURCE_ROOT; };
+		5297C6531542B9960001DAFF /* SpectralSample.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SpectralSample.h; path = ../Tools/ArgyllMeterWrapper/SpectralSample.h; sourceTree = SOURCE_ROOT; };
+		5297C6541542B9960001DAFF /* SpectralSampleFiles.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SpectralSampleFiles.cpp; path = ../Tools/ArgyllMeterWrapper/SpectralSampleFiles.cpp; sourceTree = SOURCE_ROOT; };
+		5297C6551542B9960001DAFF /* SpectralSampleFiles.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SpectralSampleFiles.h; path = ../Tools/ArgyllMeterWrapper/SpectralSampleFiles.h; sourceTree = SOURCE_ROOT; };
 		8D1107310486CEB800E47090 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = English; path = English.lproj/Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* ColorHCFR.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ColorHCFR.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -1078,6 +1086,10 @@
 		01D88D4D14F98D3F002DC664 /* Class */ = {
 			isa = PBXGroup;
 			children = (
+				5297C6521542B9960001DAFF /* SpectralSample.cpp */,
+				5297C6531542B9960001DAFF /* SpectralSample.h */,
+				5297C6541542B9960001DAFF /* SpectralSampleFiles.cpp */,
+				5297C6551542B9960001DAFF /* SpectralSampleFiles.h */,
 				01D88D4E14F98D62002DC664 /* ArgyllMeterWrapper.cpp */,
 				01D88D4F14F98D62002DC664 /* ArgyllMeterWrapper.h */,
 				01D88DDF1501789E002DC664 /* Logging.h */,
@@ -1774,6 +1786,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				01D88DE11501789E002DC664 /* Logging.h in Headers */,
+				5297C6571542B9960001DAFF /* SpectralSample.h in Headers */,
+				5297C6591542B9960001DAFF /* SpectralSampleFiles.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2302,6 +2316,8 @@
 			files = (
 				01D88D5014F98D92002DC664 /* ArgyllMeterWrapper.cpp in Sources */,
 				01D88DE21501789E002DC664 /* Logging.cpp in Sources */,
+				5297C6561542B9960001DAFF /* SpectralSample.cpp in Sources */,
+				5297C6581542B9960001DAFF /* SpectralSampleFiles.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

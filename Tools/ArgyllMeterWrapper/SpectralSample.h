@@ -28,11 +28,9 @@
 #include <string>
 #include <vector>
 #include <stdarg.h>
-#define SALONEINSTLIB
-#include "xspect.h"
-#include "conv.h"
-#include "ccss.h"
-#undef SALONEINSTLIB
+
+struct _ccss;
+typedef _ccss ccss;
 
 class SpectralSample
 {
