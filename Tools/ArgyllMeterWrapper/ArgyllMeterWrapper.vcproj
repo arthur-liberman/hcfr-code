@@ -159,26 +159,6 @@
 				>
 			</File>
 		</Filter>
-
-		<Filter
-			Name="Source Files"
-			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
-			>
-			<File
-				RelativePath=".\SpectralSample.cpp"
-				>
-			</File>
-		</Filter>
-
-		<Filter
-			Name="Source Files"
-			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
-			>
-			<File
-				RelativePath=".\SpectralSampleFiles.cpp"
-				>
-			</File>
-		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
@@ -186,24 +166,6 @@
 			>
 			<File
 				RelativePath=".\ArgyllMeterWrapper.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl;inc;xsd"
-			>
-			<File
-				RelativePath=".\SpectralSample.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl;inc;xsd"
-			>
-			<File
-				RelativePath=".\SpectralSampleFiles.h"
 				>
 			</File>
 		</Filter>
