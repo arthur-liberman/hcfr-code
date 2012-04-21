@@ -1372,7 +1372,8 @@ BOOL CAboutDlg::OnInitDialog()
     s+=CString(classesStyle)+ "Instlib (c) Graeme Gill</font>";
     s+=CString(classesStyle)+ "libusb (c) Daniel Drake, Johannes Erdfelt</font>";
     s+=CString(classesStyle)+ "libjpeg (c) Thomas G. Lane</font>";
-    s+=CString(classesStyle)+ "libpng (c) Glenn Randers-Pehrson, Andreas Dilger, Guy Eric Schalnat, Group 42, Inc.</font>";
+    s+=CString(classesStyle)+ "libpng (c) Glenn Randers-Pehrson, Andreas Dilger,</font>";
+    s+=CString(classesStyle)+ "Guy Eric Schalnat, Group 42, Inc.</font>";
     s+=CString(classesStyle)+ "zlib (c) Jean-loup Gailly and Mark Adler</font>";
 
     s += "<vspace size='80'>"; 
