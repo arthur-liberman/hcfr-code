@@ -51,7 +51,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="1"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="Tools/CxImage,./,Tools,Tools/NewMenu,Tools/Graph,Tools/ButtonST,Tools/GridCtrl,Tools/CppTooltip,Generators,Sensors,Controls,Views,Tools/spectro,libHCFR,Tools/ArgyllMeterWrapper"
+				AdditionalIncludeDirectories="Tools/CxImage,./,Tools,Tools/NewMenu,Tools/Graph,Tools/ButtonST,Tools/GridCtrl,Tools/CppTooltip,Generators,Sensors,Controls,Views,libHCFR,Tools/ArgyllMeterWrapper"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USE_32BIT_TIME_T"
 				StringPooling="true"
 				ExceptionHandling="2"
@@ -146,7 +146,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="Tools/CxImage,./,Tools,Tools/NewMenu,Tools/Graph,Tools/ButtonST,Tools/GridCtrl,Tools/CppTooltip,Generators,Sensors,Controls,Views,Tools/spectro,libHCFR,Tools/ArgyllMeterWrapper"
+				AdditionalIncludeDirectories="Tools/CxImage,./,Tools,Tools/NewMenu,Tools/Graph,Tools/ButtonST,Tools/GridCtrl,Tools/CppTooltip,Generators,Sensors,Controls,Views,libHCFR,Tools/ArgyllMeterWrapper"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USE_32BIT_TIME_T"
 				MinimalRebuild="true"
 				ExceptionHandling="2"
