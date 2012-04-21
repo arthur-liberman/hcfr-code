@@ -158,6 +158,14 @@
 				RelativePath=".\ArgyllMeterWrapper.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\SpectralSample.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SpectralSampleFiles.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -166,6 +174,14 @@
 			>
 			<File
 				RelativePath=".\ArgyllMeterWrapper.h"
+				>
+			</File>		
+			<File
+				RelativePath=".\SpectralSample.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SpectralSampleFiles.h"
 				>
 			</File>
 		</Filter>
