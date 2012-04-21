@@ -31,13 +31,6 @@
 #include "OneDeviceSensor.h"
 #include "SpyderIISensorPropPage.h"
 
-#define NT
-#define SALONEINSTLIB
-#include "xspect.h"
-#include "inst.h"
-#undef SALONEINSTLIB
-#undef NT
-
 class CSpyderIISensor : public COneDeviceSensor  
 {
 public:
