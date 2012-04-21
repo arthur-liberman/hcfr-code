@@ -1291,6 +1291,7 @@ BOOL CAboutDlg::OnInitDialog()
 	char	szValidation [ 256 ];
 	char	szGermanVersion [ 256 ];
 	char *auteurStyle[2]={"<p><font style='b' size='12' color='56,76,104'>","<br><font style='i' size='12' color='64,64,64'>"};
+	// there must be even number of authors pad with empty of required
 	char *auteurStrings[]={	"Patrice AFFLATET",szSensor,
 							"Benoit SEGUIN",szSensorAndApp,
 							"François-Xavier CHABOUD",szDevApp,
@@ -1305,6 +1306,8 @@ BOOL CAboutDlg::OnInitDialog()
 							"Franck CAREDDU",szValidation,
 							"Maik OPITZ", szGermanVersion,
 							"John ADCOCK",szDevApp,
+							"Nick BLIEVERS",szDevApp,
+							"Ian C",szDevApp,
     };
 	int auteursNb=(sizeof(auteurStrings)/sizeof(char *));
 
