@@ -140,7 +140,7 @@ void CTestColorWnd::OnPaint()
 	COLORREF oldbkclr = dc.SetBkColor ( clr );
 
 	CFont* def_font = dc.SelectObject(&font);
-	dc.TextOut(rect.left + 3,rect.bottom - 17, szBuf);
+	dc.TextOut(m_colorPickerRect.left + m_colorPickerRect.Width() + 3, m_colorPickerRect.top + 3, szBuf); 
 	dc.SelectObject(def_font);
 
 	dc.SetTextColor ( oldtxtclr );
@@ -154,7 +154,8 @@ int CTestColorWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	
 	CString Msg;
 	Msg.LoadString ( IDS_COLOR );
-	m_colorPicker.Create(Msg,WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,CRect(0,0,40,20),this,IDC_TESTCOLOR_BUTTON);
+	m_colorPickerRect.SetRect(0,0,40,20);
+	m_colorPicker.Create(Msg,WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,m_colorPickerRect,this,IDC_TESTCOLOR_BUTTON);
 	
 	return 0;
 }
