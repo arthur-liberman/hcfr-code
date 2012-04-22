@@ -39,12 +39,11 @@ public:
 
     typedef std::vector<SpectralSample> SpectralSamples;
 
-    bool getSample(SpectralSample& sample, std::string sampleDescription);
+    const SpectralSample& getSample(std::string sampleDescription);
     const SpectralSamples& getList() const;
 
 private:	
     SpectralSamples m_Samples;
-    const char* getPath(std::string sampleDescription);
 };
 
 

@@ -45,16 +45,18 @@ SpectralSampleFiles::SpectralSampleFiles(void)
     {
         throw std::logic_error("Error retrieving list of installed spectral sample files");
     }
-    m_Samples.resize(num);
 
     // I prefer to verify that the files are readable and parseable here. It makes for less
     // explicit error checking later on. We just silently ignore those that are not
-
     for (int i = 0; i < num; i++)
-    {        
-        (void)m_Samples[i].Verify(cl[i].path);
+    {
+        SpectralSample newSample;
+        if(newSample.Read(cl[i].path))
+        {
+            m_Samples.push_back(newSample);
+        }
     }
-    free_iccss(cl); 
+    free_iccss(cl);
 }
 
 
@@ -68,7 +70,7 @@ SpectralSampleFiles::~SpectralSampleFiles(void)
 }
 
 
-const char* SpectralSampleFiles::getPath(std::string sampleDescription)
+const SpectralSample& SpectralSampleFiles::getSample(std::string sampleDescription)
 {
     std::vector<SpectralSample>::iterator iter;
 
@@ -76,26 +78,10 @@ const char* SpectralSampleFiles::getPath(std::string sampleDescription)
     {
         if (sampleDescription == iter->getDescription())
         {
-            return iter->getPath();
+            return *iter;
         }
-    }	
-    return NULL;
-}
-
-bool SpectralSampleFiles::getSample(SpectralSample& sample, std::string sampleDescription)
-{    
-    const char *path = getPath(sampleDescription);
-    if (path == NULL)
-    {
-        return false;
     }
-    if (!sample.Read(path))
-    {                
-        std::string errorMessage = "Could not read spectral calibration file ";
-        errorMessage += path;
-        throw std::logic_error(errorMessage);
-    }
-    return true;
+    throw std::logic_error("Spectral sample not found in list");
 }
 
 const SpectralSampleFiles::SpectralSamples& SpectralSampleFiles::getList() const

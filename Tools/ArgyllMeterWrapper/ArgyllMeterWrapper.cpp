@@ -641,7 +641,7 @@ bool ArgyllMeterWrapper::doesMeterSupportSpectralSamples()
     return !!(m_meter->capabilities(m_meter) & inst_ccss);
 }
 
-bool ArgyllMeterWrapper::loadSpectralSample(SpectralSample &sample)
+bool ArgyllMeterWrapper::loadSpectralSample(const SpectralSample &sample)
 {
     std::string errorMessage;
 

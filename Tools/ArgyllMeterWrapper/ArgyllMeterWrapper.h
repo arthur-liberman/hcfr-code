@@ -77,7 +77,7 @@ public:
     bool doesMeterSupportSpectralSamples();
 
 	// Load the supplied spectral sample 
-    bool loadSpectralSample(SpectralSample& sample);
+    bool loadSpectralSample(const SpectralSample& sample);
 
 	// Determine if a spectral sample identified by a textual description is already loaded
     bool isSpectralSampleLoaded(const char* sampleDescription);

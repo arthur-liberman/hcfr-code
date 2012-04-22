@@ -248,8 +248,7 @@ BOOL CArgyllSensor::Init( BOOL bForSimultaneousMeasures )
         {
             if (!m_meter->isSpectralSampleLoaded((LPCSTR)m_SpectralType))
             {
-                SpectralSample spectralSample = spectralSample;
-                (void)m_spectralSamples->getSample(spectralSample, (LPCSTR)m_SpectralType);
+                const SpectralSample& spectralSample(m_spectralSamples->getSample((LPCSTR)m_SpectralType));
                 return m_meter->loadSpectralSample(spectralSample);
             }
         }

@@ -107,7 +107,6 @@ bool SpectralSample::Read(const std::string& samplePath)
         {
             return false;
         }
-    
         m_Path = samplePath;
         m_Display = m_ccss->desc;
         m_Tech = m_ccss->tech;
@@ -119,36 +118,6 @@ bool SpectralSample::Read(const std::string& samplePath)
         return false;
     }
 }
-
-
-bool SpectralSample::Verify(const std::string& samplePath)
-{
-    if (!samplePath.empty())
-    {
-        ccss *cs = NULL;
-    
-        if ((cs = new_ccss()) == NULL)
-        {
-            return false;
-        }
-  
-        if (cs->read_ccss(cs, (char *)samplePath.c_str()))
-        {
-            cs->del(cs);
-            return false;
-        }
-    
-        setAll(cs->tech, cs->disp, (char *)samplePath.c_str());
-        cs->del(cs);
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-
-
 
 const char* SpectralSample::getDescription() const
 {
@@ -215,7 +184,7 @@ void SpectralSample::setAll(const char* tech, const char* disp, const char* path
     setDescription(tech, disp);
 }
 
-ccss* SpectralSample::getCCSS()
+ccss* SpectralSample::getCCSS() const
 {
     return m_ccss;
 }

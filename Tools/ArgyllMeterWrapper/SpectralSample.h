@@ -43,7 +43,6 @@ public:
     SpectralSample& operator=(const SpectralSample& s);
 
     bool Read(const std::string& samplePath);
-    bool Verify(const std::string& samplePath);
 
     // Get information about the sample. Currently we're only using getDescription()
     // getTech() and getDisplay() are included for future flexibility
@@ -62,7 +61,7 @@ public:
     // a ccss structure in order to load it into the meter.
     // This is really implementation specific and is only of any use if you have loaded 
     // up the argyll header and so use should be limited to the ArgyllMeterWrapper library
-    ccss* getCCSS();
+    ccss* getCCSS() const;
 
 private:
     ccss* m_ccss;
