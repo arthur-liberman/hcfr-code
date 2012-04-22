@@ -47,6 +47,7 @@ public:
 public:
 	ColourTableEntry m_colorTableBackup[44];
 	CColourPickerXP m_colorPicker;
+	CRect m_colorPickerRect;
 
 // Operations
 public:
