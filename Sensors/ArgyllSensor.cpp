@@ -241,15 +241,27 @@ BOOL CArgyllSensor::Init( BOOL bForSimultaneousMeasures )
     }
     
     // Cause the meter to load the user-specified spectral calibration .ccss file
- 
     try
     {
         if (m_meter->doesMeterSupportSpectralSamples())
         {
-            if (!m_meter->isSpectralSampleLoaded((LPCSTR)m_SpectralType))
+            // see if the sample exists, otherwise reset
+            // thus the <None> string or translation will cause a reset as required
+            if (m_spectralSamples->doesSampleDescriptionExist((LPCSTR)m_SpectralType))
             {
-                const SpectralSample& spectralSample(m_spectralSamples->getSample((LPCSTR)m_SpectralType));
-                return m_meter->loadSpectralSample(spectralSample);
+                if (m_meter->currentSpectralSampleDescription() != (LPCSTR)m_SpectralType)
+                {
+                    const SpectralSample& spectralSample(m_spectralSamples->getSample((LPCSTR)m_SpectralType));
+                    m_meter->loadSpectralSample(spectralSample);
+                }
+                else
+                {
+                    ; // do nothing - already in correct state
+                }
+            }
+            else
+            {
+                m_meter->resetSpectralSample();
             }
         }
     }
@@ -345,12 +357,12 @@ void CArgyllSensor::FillSpectralTypeCombo(CComboBox& comboToFill)
 	comboToFill.AddString("<None>");
 
     try
-    {			
-        SpectralSampleFiles::SpectralSamples::const_iterator iter;
+    {
+        SpectralSampleFiles::SpectralSampleDescriptions::const_iterator iter;
 
-        for (iter = m_spectralSamples->getList().begin(); iter != m_spectralSamples->getList().end(); iter++)
+        for (iter = m_spectralSamples->getDescriptions().begin(); iter != m_spectralSamples->getDescriptions().end(); iter++)
         {
-            comboToFill.AddString(iter->getDescription());
+            comboToFill.AddString(iter->c_str());
         }
         comboToFill.EnableWindow((comboToFill.GetCount() != 0)?TRUE:FALSE);
     }

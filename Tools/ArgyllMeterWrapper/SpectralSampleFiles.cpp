@@ -25,6 +25,7 @@
 #include "SpectralSampleFiles.h"
 #include "ArgyllMeterWrapper.h"
 #include <stdexcept>
+#include <algorithm>
 
 #define SALONEINSTLIB
 #define ENABLE_USB
@@ -32,8 +33,6 @@
 #include "xspect.h"
 #include "ccss.h"
 #undef SALONEINSTLIB
-
-
 
 SpectralSampleFiles::SpectralSampleFiles(void)
 {
@@ -51,40 +50,41 @@ SpectralSampleFiles::SpectralSampleFiles(void)
     for (int i = 0; i < num; i++)
     {
         SpectralSample newSample;
-        if(newSample.Read(cl[i].path))
+        if (newSample.Read(cl[i].path))
         {
-            m_Samples.push_back(newSample);
+            m_SampleDescriptions.push_back(newSample.getDescription());
+            m_SamplePaths.push_back(newSample.getPath());
         }
     }
     free_iccss(cl);
 }
 
-
-SpectralSampleFiles::SpectralSampleFiles(const SpectralSampleFiles &s)
+SpectralSample SpectralSampleFiles::getSample(std::string sampleDescription) const
 {
-    m_Samples = s.m_Samples;
-}
-
-SpectralSampleFiles::~SpectralSampleFiles(void)
-{
-}
-
-
-const SpectralSample& SpectralSampleFiles::getSample(std::string sampleDescription)
-{
-    std::vector<SpectralSample>::iterator iter;
-
-    for (iter = m_Samples.begin(); iter != m_Samples.end(); iter++)
+    for (size_t i(0); i < m_SampleDescriptions.size(); ++i)
     {
-        if (sampleDescription == iter->getDescription())
+        if (sampleDescription == m_SampleDescriptions[i])
         {
-            return *iter;
+            SpectralSample newSample;
+            if (newSample.Read(m_SamplePaths[i]))
+            {
+                return newSample;
+            }
+            else
+            {
+                throw std::logic_error("Failed to load Spectral sample");
+            }
         }
     }
     throw std::logic_error("Spectral sample not found in list");
 }
 
-const SpectralSampleFiles::SpectralSamples& SpectralSampleFiles::getList() const
+const SpectralSampleFiles::SpectralSampleDescriptions& SpectralSampleFiles::getDescriptions() const
 {
-    return m_Samples;
+    return m_SampleDescriptions;
+}
+
+bool SpectralSampleFiles::doesSampleDescriptionExist(std::string sampleDescription) const
+{
+    return (std::find(m_SampleDescriptions.begin(), m_SampleDescriptions.end(), sampleDescription) != m_SampleDescriptions.end());
 }

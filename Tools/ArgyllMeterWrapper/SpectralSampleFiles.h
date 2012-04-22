@@ -34,16 +34,17 @@ class SpectralSampleFiles
 {
 public:
     SpectralSampleFiles(void);
-    SpectralSampleFiles(const SpectralSampleFiles& s);
-    ~SpectralSampleFiles(void);
 
-    typedef std::vector<SpectralSample> SpectralSamples;
+    typedef std::vector<std::string> SpectralSampleDescriptions;
 
-    const SpectralSample& getSample(std::string sampleDescription);
-    const SpectralSamples& getList() const;
+    SpectralSample getSample(std::string sampleDescription) const;
+    const SpectralSampleDescriptions& getDescriptions() const;
+    bool doesSampleDescriptionExist(std::string sampleDescription) const;
 
 private:	
-    SpectralSamples m_Samples;
+    typedef std::vector<std::string> SpectralSamplePaths;
+    SpectralSampleDescriptions m_SampleDescriptions;
+    SpectralSamplePaths m_SamplePaths;
 };
 
 

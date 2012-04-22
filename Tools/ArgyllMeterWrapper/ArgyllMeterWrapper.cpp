@@ -643,14 +643,12 @@ bool ArgyllMeterWrapper::doesMeterSupportSpectralSamples()
 
 bool ArgyllMeterWrapper::loadSpectralSample(const SpectralSample &sample)
 {
-    std::string errorMessage;
-
     if (!doesMeterSupportSpectralSamples())
     {
-        throw std::logic_error("Instrument doesn't have Colorimeter Calibration Spectral Sample capability");		
+        throw std::logic_error("Instrument doesn't have Colorimeter Calibration Spectral Sample capability");
     }
 
-    if (m_Sample == sample)
+    if (m_SampleDescription == sample.getDescription())
     {
         // We're already loaded
         return true;
@@ -659,27 +657,37 @@ bool ArgyllMeterWrapper::loadSpectralSample(const SpectralSample &sample)
     inst_code instCode = m_meter->col_cal_spec_set(m_meter, icxOT_default, NULL, sample.getCCSS()->samples, sample.getCCSS()->no_samp);
     if (instCode != inst_ok) 
     {
-        errorMessage = "Setting Colorimeter Calibration Spectral Samples failed with error :'";
+        std::string errorMessage("Setting Colorimeter Calibration Spectral Samples failed with error :'");
         errorMessage += m_meter->inst_interp_error(m_meter, instCode);
         errorMessage += "' (";
         errorMessage += m_meter->interp_error(m_meter, instCode);
         errorMessage += ")";
         throw std::logic_error(errorMessage);
-    }		
+    }
 
-    // Keep a copy of the loaded sample so we don't reload it unnecessarily
-    m_Sample = sample;
+    // Keep a copy of the loaded sample description so we don't reload it unnecessarily
+    m_SampleDescription = sample.getDescription();
     return true;
 }
 
-bool ArgyllMeterWrapper::isSpectralSampleLoaded(const char* sampleDescription)
+const std::string& ArgyllMeterWrapper::currentSpectralSampleDescription()
 {
-    if (sampleDescription != NULL)
+    return m_SampleDescription;
+}
+
+void ArgyllMeterWrapper::resetSpectralSample()
+{
+    // reset the current description
+    m_SampleDescription.clear();
+
+    inst_code instCode = m_meter->col_cal_spec_set(m_meter, icxOT_default, NULL, NULL, NULL);
+    if (instCode != inst_ok) 
     {
-        if (strcmp(m_Sample.getDescription(), sampleDescription) == 0)
-        {
-            return true;
-        }
+        std::string errorMessage("Resetting Colorimeter Calibration Spectral Samples failed with error :'");
+        errorMessage += m_meter->inst_interp_error(m_meter, instCode);
+        errorMessage += "' (";
+        errorMessage += m_meter->interp_error(m_meter, instCode);
+        errorMessage += ")";
+        throw std::logic_error(errorMessage);
     }
-    return false;
 }

@@ -76,11 +76,14 @@ public:
 	// Determine if the meter supports spectral sample files
     bool doesMeterSupportSpectralSamples();
 
-	// Load the supplied spectral sample 
+	// Load the supplied spectral sample
     bool loadSpectralSample(const SpectralSample& sample);
 
-	// Determine if a spectral sample identified by a textual description is already loaded
-    bool isSpectralSampleLoaded(const char* sampleDescription);
+	// return current spectral sample identified by a textual description
+    const std::string& currentSpectralSampleDescription();
+
+    // Remove any spectral sample
+    void resetSpectralSample();
 
     // calibrate the meter
     // this should be called 
@@ -141,9 +144,9 @@ private:
     eReadingType m_readingType;
     CColor m_lastReading;
     int m_nextCalibration;
-    char m_calibrationMessage[200];  
+    char m_calibrationMessage[200];
 
-    SpectralSample m_Sample;
+    std::string m_SampleDescription;
 };
 
 extern void ArgyllLogMessage(const char* messageType, char *fmt, va_list& args);
