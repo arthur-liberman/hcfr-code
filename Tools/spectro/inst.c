@@ -428,7 +428,7 @@ icoms *icom		/* Optional icoms to hand in */
 	instType itype;		/* Actual type */
 	inst *p;
 
-	if ((icom != NULL) || (icom = new_icoms()) == NULL) {
+	if ((icom == NULL) && (icom = new_icoms()) == NULL) {
 		return NULL;
 	}
 

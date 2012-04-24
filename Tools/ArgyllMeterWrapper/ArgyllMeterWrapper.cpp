@@ -621,7 +621,7 @@ ArgyllMeterWrapper::ArgyllMeterWrappers ArgyllMeterWrapper::getDetectedMeters(st
                     }
                 }
             }
-            icom->del(icom);
+            //icom->del(icom);
         }
     }
     return ArgyllMeters::getInstance().getDetectedMeters();
