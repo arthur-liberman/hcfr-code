@@ -422,13 +422,13 @@ extern inst *new_inst(
 int comport,
 int nocoms,			/* Don't open if communications are needed to establish inst type */
 int debug,			/* Coms and instrument debug level */
-int verb			/* Verbosity flag */
+int verb,			/* Verbosity flag */
+icoms *icom		/* Optional icoms to hand in */
 ) {			/* Debug flag */
 	instType itype;		/* Actual type */
-	icoms *icom;		/* Optional icoms to hand in */
 	inst *p;
 
-	if ((icom = new_icoms()) == NULL) {
+	if ((icom != NULL) || (icom = new_icoms()) == NULL) {
 		return NULL;
 	}
 
@@ -963,7 +963,7 @@ inst_capability inst_show_disptype_options(FILE *fp, char *oline, icoms *icom) {
 		inst_capability cap;
 		int k;
 
-		if ((it = new_inst(i+1, 1, 0, 0)) == NULL) {
+		if ((it = new_inst(i+1, 1, 0, 0, icom)) == NULL) {
 			notall = 1;
 			continue;
 		}

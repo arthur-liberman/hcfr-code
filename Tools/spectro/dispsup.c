@@ -195,7 +195,7 @@ int debug				/* Debug flag */
 	if (verb)
 		printf("Setting up the instrument\n");
 
-	if ((p = new_inst(comport, itype, debug, verb)) == NULL) {
+	if ((p = new_inst(comport, itype, debug, verb, NULL)) == NULL) {
 		DBG((dbgo,"new_inst failed\n"))
 		return -1;
 	}
@@ -2008,7 +2008,7 @@ char *fake_name		/* Name of profile to use as a fake device */
 		if (verb)
 			fprintf(p->df,"Setting up the instrument\n");
 	
-		if ((p->it = new_inst(comport, p->itype, debug, verb)) == NULL) {
+		if ((p->it = new_inst(comport, p->itype, debug, verb, NULL)) == NULL) {
 			DBG((stderr,"new_disprd failed because new_inst failed\n"));
 			p->del(p);
 			if (errc != NULL) *errc = 2;

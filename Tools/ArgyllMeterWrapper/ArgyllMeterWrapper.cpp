@@ -593,7 +593,7 @@ ArgyllMeterWrapper::ArgyllMeterWrappers ArgyllMeterWrapper::getDetectedMeters(st
                         _inst* meter = 0;
                         try
                         {
-                            meter = new_inst(i + 1, 0, 1, 0);
+                            meter = new_inst(i + 1, 0, 1, 0, icom);
                         }
                         catch(std::logic_error&)
                         {

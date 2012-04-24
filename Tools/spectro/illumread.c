@@ -430,7 +430,7 @@ int main(int argc, char *argv[])
 
 			if (it == NULL) {
 				/* Open the instrument */
-				if ((it = new_inst(comno, instUnknown, debug, verb)) == NULL) {
+				if ((it = new_inst(comno, instUnknown, debug, verb, NULL)) == NULL) {
 					printf("!!! Unknown, inappropriate or no instrument detected !!!\n");
 					continue;
 				}

@@ -734,7 +734,8 @@ extern inst *new_inst(
 	int comport,		/* icom communication port number */
 	int nocoms,			/* Don't open if communications are needed to establish inst type */
 	int debug,			/* Debug level, 0 = off */
-	int verb			/* Verbose level, 0  = off */
+	int verb,			/* Verbose level, 0  = off */
+	icoms *icom			/* Optional icoms to hand in */
 );
 
 /* ======================================================================= */
