@@ -99,7 +99,7 @@ namespace
         icoms* m_icom;
         ArgyllMeters()
         {
-            if ((m_icom = new_icoms()) != NULL) 
+            if ((m_icom = new_icoms()) == NULL) 
             {
                 throw std::logic_error("Can't create new icoms");
             }
@@ -111,7 +111,10 @@ namespace
                 delete m_meters[i];
             }
             m_meters.clear();
-            m_icom->del(m_icom);
+            if(m_icom)
+            {
+                m_icom->del(m_icom);
+            }
         }
     public:
         static ArgyllMeters& getInstance()
@@ -156,7 +159,7 @@ namespace
                                 inst_code instCode = meter->init_coms(meter, i + 1, baud_38400, fc_nc, 15.0);
                                 if(instCode == inst_ok)
                                 {
-                                    m_meters.push_back(newMeter);
+                                    m_meters.push_back(new ArgyllMeterWrapper(meter));
                                 }
                                 else
                                 {
