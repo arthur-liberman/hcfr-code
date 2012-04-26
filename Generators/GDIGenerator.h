@@ -85,6 +85,7 @@ public:
 
 protected:
 	void GetMonitorList();
+	std::string GetMonitorName(MONITORINFOEX *m);
 };
 
 #endif // !defined(AFX_GDIGENERATOR_H__B88C4ECA_B358_4964_B549_69B51A691C42__INCLUDED_)

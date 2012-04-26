@@ -26,6 +26,9 @@
 #include "ColorHCFR.h"
 #include "GDIGenerator.h"
 
+
+#include <string>
+
 #ifdef _DEBUG
 #undef THIS_FILE
 static char THIS_FILE[]=__FILE__;
@@ -124,9 +127,46 @@ void CGDIGenerator::GetMonitorList()
 	for(UINT i=0; i<m_monitorNb; i++)
 	{
 		GetMonitorInfo ( m_hMonitor[i], & mi );
-		m_GDIGenePropertiesPage.m_monitorNameArray.Add(mi.szDevice+4); // Remove first 4 ugly char '\\.\'
+		std::string sMonitor = GetMonitorName(&mi);
+		m_GDIGenePropertiesPage.m_monitorNameArray.Add(sMonitor.c_str());		
 		m_GDIGenePropertiesPage.m_monitorHandle [ i ] = m_hMonitor [ i ];
 	}
+}
+
+std::string CGDIGenerator::GetMonitorName(MONITORINFOEX *m)
+{
+	// Windows is a little ugly about how it handles monitors. ColorHCFR uses a HMONITOR in operations to write to the
+	// screen. However, the En umDisplayMonitors() function that returns the HMONITOR handle does not return a friendly name
+	// for the monitor. The function that DOES return the friendly name for the monitor, EnumDisplayDevices() on the 
+	// other hand, does not return a HMONITOR. So we need to call first EnumDisplayMonitors() to get the handle, and then call
+	// EnumDisplayDevices() to find the friendly monitor name.
+
+    DISPLAY_DEVICE  dd, dm;
+    
+    SecureZeroMemory(&dd, sizeof(dd));
+    dd.cb = sizeof(dd);
+
+	SecureZeroMemory(&dm, sizeof(dm));
+    dm.cb = sizeof(dm);   
+
+	std::string sMonitor;
+
+    for (DWORD numAdapter = 0; m && EnumDisplayDevices(NULL, numAdapter, &dd, EDD_GET_DEVICE_INTERFACE_NAME); numAdapter++)
+	{
+		if (!(dd.StateFlags & DISPLAY_DEVICE_ATTACHED_TO_DESKTOP)) 
+		{
+			; // silently ignore as it's disabled or virtual
+		}
+		else if (strcmp(dd.DeviceName, m->szDevice))
+		{
+			; // silently ignore as it's not the right monitor
+		}
+		else if (EnumDisplayDevices(dd.DeviceName, 0, &dm, 0))
+		{			
+			sMonitor = dm.DeviceString;
+		}
+	}
+	return sMonitor;
 }
 
 BOOL CGDIGenerator::IsOnOtherMonitor ()
