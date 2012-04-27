@@ -111,6 +111,29 @@ BOOL CGDIGenePropPage::OnSetActive()
 	return CPropertyPageWithHelp::OnSetActive();
 }
 
+BOOL CGDIGenePropPage::OnKillActive() 
+{
+	m_activeMonitorNum=m_monitorComboCtrl.GetCurSel();	
+	
+	if ( IsDlgButtonChecked ( IDC_RADIO2 ) )
+	{
+		m_nDisplayMode = DISPLAY_OVERLAY;
+	}
+	else
+	{
+		m_nDisplayMode = DISPLAY_GDI;
+	}
+	if ( IsDlgButtonChecked ( IDC_RGBLEVEL_RADIO2 ) )
+	{
+		m_b16_235 = TRUE;
+	}
+	else
+	{
+		m_b16_235 = FALSE;
+	}
+	return CPropertyPageWithHelp::OnKillActive();
+}
+
 void CGDIGenePropPage::OnTestOverlay() 
 {
 	CFullScreenWindow	OverlayWnd ( TRUE );
