@@ -151,7 +151,7 @@ std::string CGDIGenerator::GetMonitorName(const MONITORINFOEX *m) const
 
 	std::string sMonitor;
 
-	for (DWORD numAdapter = 0; m && EnumDisplayDevices(NULL, numAdapter, &dd, EDD_GET_DEVICE_INTERFACE_NAME); numAdapter++)
+	for (DWORD numAdapter = 0; m && EnumDisplayDevices(NULL, numAdapter, &dd, 1); numAdapter++)
 	{
 		if (!(dd.StateFlags & DISPLAY_DEVICE_ATTACHED_TO_DESKTOP)) 
 		{
