@@ -35,6 +35,13 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
+// we use multimon stubs to
+// allow backwards compatibilty and
+// this doesn't get defined
+#if (WINVER < 0x0500)
+#define EDD_GET_DEVICE_INTERFACE_NAME 0x00000001
+#endif
+
 BOOL CALLBACK MonitorEnumProc( HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData )
 {
 	CGDIGenerator *pClass=(CGDIGenerator *)dwData;
@@ -151,7 +158,7 @@ std::string CGDIGenerator::GetMonitorName(const MONITORINFOEX *m) const
 
 	std::string sMonitor;
 
-	for (DWORD numAdapter = 0; m && EnumDisplayDevices(NULL, numAdapter, &dd, 1); numAdapter++)
+	for (DWORD numAdapter = 0; m && EnumDisplayDevices(NULL, numAdapter, &dd, EDD_GET_DEVICE_INTERFACE_NAME); numAdapter++)
 	{
 		if (!(dd.StateFlags & DISPLAY_DEVICE_ATTACHED_TO_DESKTOP)) 
 		{
