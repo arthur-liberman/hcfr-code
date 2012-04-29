@@ -109,7 +109,7 @@ const char* CGATSFile::getPath() const
 bool CGATSFile::Read(const std::string& samplePath)
 {
 	if (!samplePath.empty())
-    {
+	{
 		AllowAnySignature();
 
         if (m_CGATS->read_name(m_CGATS, (char *)samplePath.c_str()))

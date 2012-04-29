@@ -40,9 +40,9 @@ public:
 	~CGATSFile(void);
 
 	bool operator==(const CGATSFile& s) const;
-    CGATSFile& operator=(const CGATSFile& s);
+	CGATSFile& operator=(const CGATSFile& s);
 
-    const char* getPath() const;
+	const char* getPath() const;
 	bool Read(const std::string& samplePath);
 	bool FindKeyword(const std::string& keyWord, const int tableNum, int& index) const;
 	bool FindField(const std::string& field, const int tableNum, int& index) const;
