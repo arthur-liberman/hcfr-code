@@ -27,6 +27,8 @@
 #include "SpectralSampleFiles.h"
 #include "CGATSFile.h"
 #include <stdexcept>
+#include <sstream>
+#include <iomanip>
 
 #define SALONEINSTLIB
 #define ENABLE_USB
@@ -188,7 +190,6 @@ bool SpectralSample::Create(const std::string& sampleCCSSPath, const std::string
 		
 		// Find the fields for spectral values 
 
-		char buf[100];
 		int  spi[XSPECT_MAX_BANDS];
 
 		for (int j = 0; j < sp.spec_n; j++) 
@@ -199,16 +200,18 @@ bool SpectralSample::Create(const std::string& sampleCCSSPath, const std::string
 
 			nm = (int)(sp.spec_wl_short + ((double)j/(sp.spec_n-1.0)) * (sp.spec_wl_long - sp.spec_wl_short) + 0.5);
 			
-			sprintf_s(buf,"SPEC_%03d",nm);
+			std::stringstream sFormatter (stringstream::in | stringstream::out);
+			sFormatter << setw(3) << setfill('0') << nm;
+			std::string sField = "SPEC_" + sFormatter.str();
 
-			if (cgats.FindField(buf, 0, fieldIndex))
+			if (cgats.FindField(sField, 0, fieldIndex))
 			{
 				spi[j] = fieldIndex;
 			}
 			else
 			{
 				errorMessage = "Can't find field ";
-				errorMessage += buf;
+				errorMessage += sField;
 				errorMessage += " in input file ";
 				errorMessage += sampleReadingsPath;
 				delete [] samples;
