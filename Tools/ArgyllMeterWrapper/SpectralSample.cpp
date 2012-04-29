@@ -25,6 +25,7 @@
 #include "SpectralSample.h"
 #include "ArgyllMeterWrapper.h"
 #include "SpectralSampleFiles.h"
+#include "CGATSFile.h"
 #include <stdexcept>
 
 #define SALONEINSTLIB
@@ -117,6 +118,170 @@ bool SpectralSample::Read(const std::string& samplePath)
     {
         return false;
     }
+}
+
+bool SpectralSample::Create(const std::string& sampleCCSSPath, const std::string& sampleReadingsPath, const std::string& displayName, const std::string& displayTech, std::string& errorMessage)
+{
+	CGATSFile cgats;
+
+	// Either displayname or displaytech should be non-null. There is no reason we should not enforce both
+
+	if (displayName.empty() || displayTech.empty())
+	{
+		errorMessage = "Display name and tech must be supplied";
+		return false;
+	}
+
+	if (cgats.Read(sampleReadingsPath))
+	{
+		if (cgats.getNumberOfTables() <= 0)
+		{
+			errorMessage = "Input file ";
+			errorMessage += sampleReadingsPath;
+			errorMessage += " must contain at least one table";
+			return false;
+		}
+		if (cgats.getNumberOfDataSets(0) <= 0)
+		{
+			errorMessage = "Input file ";
+			errorMessage += sampleReadingsPath;
+			errorMessage += " must contain at least one data set";
+			return false;
+		}
+
+		int indexInstrument, indexSpectralBands, indexSpectralStart, indexSpectralEnd;
+
+		if (!cgats.FindKeyword("TARGET_INSTRUMENT", 0, indexInstrument))
+		{			
+			errorMessage = "Can't find keyword TARGET_INSTRUMENT in  ";
+			errorMessage += sampleReadingsPath;
+			return false;
+		}
+		if (!cgats.FindKeyword("SPECTRAL_BANDS", 0, indexSpectralBands))
+		{			
+			errorMessage = "Can't find keyword SPECTRAL_BANDS in  ";
+			errorMessage += sampleReadingsPath;
+			return false;
+		}
+		if (!cgats.FindKeyword("SPECTRAL_START_NM", 0, indexSpectralStart))
+		{			
+			errorMessage = "Can't find keyword SPECTRAL_START_NM in  ";
+			errorMessage += sampleReadingsPath;
+			return false;
+		}
+		if (!cgats.FindKeyword("SPECTRAL_END_NM", 0, indexSpectralEnd))
+		{			
+			errorMessage = "Can't find keyword SPECTRAL_END_NM in  ";
+			errorMessage += sampleReadingsPath;
+			return false;
+		}
+			
+		xspect sp, *samples = NULL;
+		samples = new xspect[cgats.getNumberOfDataSets(0)];
+
+		std::string refInstrument = cgats.getStringKeywordValue(0, indexInstrument);
+
+		sp.spec_n = cgats.getIntKeywordValue(0, indexSpectralBands);
+		sp.spec_wl_short = cgats.getDoubleKeywordValue(0, indexSpectralStart);
+		sp.spec_wl_long = cgats.getDoubleKeywordValue(0, indexSpectralEnd);
+		sp.norm = 1.0;
+		
+		// Find the fields for spectral values 
+
+		char buf[100];
+		int  spi[XSPECT_MAX_BANDS];
+
+		for (int j = 0; j < sp.spec_n; j++) 
+		{
+			int nm, fieldIndex;
+	
+			// Compute nearest integer wavelength 
+
+			nm = (int)(sp.spec_wl_short + ((double)j/(sp.spec_n-1.0)) * (sp.spec_wl_long - sp.spec_wl_short) + 0.5);
+			
+			sprintf_s(buf,"SPEC_%03d",nm);
+
+			if (cgats.FindField(buf, 0, fieldIndex))
+			{
+				spi[j] = fieldIndex;
+			}
+			else
+			{
+				errorMessage = "Can't find field ";
+				errorMessage += buf;
+				errorMessage += " in input file ";
+				errorMessage += sampleReadingsPath;
+				delete [] samples;
+				return false;
+			}
+		}
+
+		// Transfer all the spectral values 
+
+		for (int i = 0; i < cgats.getNumberOfDataSets(0); i++) 
+		{
+
+			XSPECT_COPY_INFO(&samples[i], &sp);
+	
+			for (int j = 0; j < sp.spec_n; j++) 
+			{
+				samples[i].spec[j] = cgats.getDoubleFieldValue(0, i, spi[j]);
+			}
+		}
+
+		std::string displayDescription = displayTech + " (" + displayName + ")";
+
+		// See what the highest value is
+		
+		double bigv = -1e60;
+		
+		for (int i = 0; i < cgats.getNumberOfDataSets(0); i++) // For all grid points 
+		{	
+
+			for (int j = 0; j < samples[i].spec_n; j++) 
+			{
+				if (samples[i].spec[j] > bigv)
+				{
+					bigv = samples[i].spec[j];
+				}
+			}
+		}
+			
+		// Normalize the values 
+
+		for (int i = 0; i < cgats.getNumberOfDataSets(0); i++) // For all grid points 
+		{	
+			double scale = 100.0;
+
+			for (int j = 0; j < samples[i].spec_n; j++)
+			{
+				samples[i].spec[j] *= scale / bigv;
+			}
+		}		
+
+		if (m_ccss->set_ccss(m_ccss, "HCFR ccss generator", NULL, 
+									(char *)displayDescription.c_str(), 
+									(char *)displayName.c_str(), 
+									(char *)displayTech.c_str(), 
+									(char *)refInstrument.c_str(), 
+									samples, cgats.getNumberOfDataSets(0))) 
+		{
+			errorMessage = "set_ccss failed with '%s'";
+			errorMessage += m_ccss->err;
+		}
+		else if(m_ccss->write_ccss(m_ccss, (char *)sampleCCSSPath.c_str()) == 0)
+		{
+			return true;
+		}
+		else
+		{
+			errorMessage = "Writing CCSS file failed";
+			delete [] samples;
+			return false;
+		}
+
+	}
+	return false;
 }
 
 const char* SpectralSample::getDescription() const

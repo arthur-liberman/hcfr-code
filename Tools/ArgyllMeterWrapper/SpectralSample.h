@@ -44,6 +44,16 @@ public:
 
     bool Read(const std::string& samplePath);
 
+	// Create a CCSS file from a .ti3 cgats file containing spectrometer readings for a display
+	bool Create
+	(
+		const std::string& sampleCCSSPath,      // Path to write out the file
+		const std::string& sampleReadingsPath,  // Input data file in .ti3 format
+		const std::string& displayName,         // Text display name
+		const std::string& displayTech,         // Text technology type
+		std::string& errorMessage               // Error message, if any
+	);
+
     // Get information about the sample. Currently we're only using getDescription()
     // getTech() and getDisplay() are included for future flexibility
     const char* getDescription() const;
