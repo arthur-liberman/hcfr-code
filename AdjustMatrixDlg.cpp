@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005-2008 Association Homecinema Francophone.  All rights reserved.
+// Copyright (c) 2005-2011 Association Homecinema Francophone.  All rights reserved.
 /////////////////////////////////////////////////////////////////////////////
 //
 //  This file is subject to the terms of the GNU General Public License as
@@ -123,7 +123,7 @@ void CAdjustMatrixDlg::OnGridEndEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 	CString aNewStr=m_pGrid->GetItemText(pItem->iRow,pItem->iColumn);
 	aNewStr.Replace(",",".");	// replace decimal separator if necessary
  	float aVal;
-	BOOL bAcceptChange = !aNewStr.IsEmpty() && sscanf(aNewStr,"%f",&aVal);
+	BOOL bAcceptChange = !aNewStr.IsEmpty() && sscanf_s((LPCSTR)aNewStr,"%f",&aVal);
 	if(bAcceptChange)
 	{
 		m_matrix[pItem->iRow][pItem->iColumn]=aVal;

@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005-2008 Association Homecinema Francophone.  All rights reserved.
+// Copyright (c) 2005-2011 Association Homecinema Francophone.  All rights reserved.
 /////////////////////////////////////////////////////////////////////////////
 //
 //  This file is subject to the terms of the GNU General Public License as
@@ -254,6 +254,7 @@ void CMainView::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_SENSORNAME_STATIC, m_sensorName);
 	DDX_Control(pDX, IDC_TARGET, m_TargetStatic);
 	DDX_Control(pDX, IDC_RGBLEVELS, m_RGBLevelsStatic);
+	DDX_Control(pDX, IDC_STATIC_RGBLEVELS, m_RGBLevelsLabel);
 	DDX_Control(pDX, IDC_ANSICONTRAST_PATTERN_TEST_BUTTON, m_testAnsiPatternButton);
 	//}}AFX_DATA_MAP
 }
@@ -346,6 +347,7 @@ void CMainView::OnInitialUpdate()
 		ScreenToClient ( & Rect );
 		m_RGBLevels.Create ( NULL, NULL, WS_CHILD | WS_VISIBLE, Rect, this, IDC_RGBLEVELS2, NULL );
 		m_RGBLevels.m_pRefColor = & m_SelectedColor;
+		m_RGBLevels.m_pDocument = GetDocument();
 	}
 
 	RefreshSelection ();

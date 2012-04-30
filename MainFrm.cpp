@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005-2008 Association Homecinema Francophone.  All rights reserved.
+// Copyright (c) 2005-2011 Association Homecinema Francophone.  All rights reserved.
 /////////////////////////////////////////////////////////////////////////////
 //
 //  This file is subject to the terms of the GNU General Public License as
@@ -680,7 +680,7 @@ LRESULT CMainFrame::OnDDEExecute(WPARAM wParam, LPARAM lParam)
 					if ( nCount == 0 )
 					{
 						i = lpStr - lpStart;
-						strncpy ( szBuf, lpStart, i );
+						strncpy_s ( szBuf, lpStart, i );
 						szBuf [ i ] = '\0';
 						CmdList.AddTail ( szBuf );
 						bOk = TRUE;
@@ -843,7 +843,7 @@ LRESULT CMainFrame::OnDDEExecute(WPARAM wParam, LPARAM lParam)
 					// Retrieve log file name
 					strParam = CmdParams.GetHead ();
 
-					strcpy ( GetConfig () -> m_logFileName, (LPCSTR) strParam );
+					strcpy_s ( GetConfig () -> m_logFileName, (LPCSTR) strParam );
 				}
 			}
 		}
@@ -1063,7 +1063,7 @@ void CMainFrame::OnLanguage()
 	{
 		do
 		{
-			strcpy ( szBuf, wfd.cFileName + strlen ( LANG_PREFIX ) );
+			strcpy_s ( szBuf, wfd.cFileName + strlen ( LANG_PREFIX ) );
 			lpStr = strrchr ( szBuf, '.' );
 			if ( lpStr )
 				lpStr [ 0 ] = '\0';
@@ -1096,15 +1096,15 @@ void CMainFrame::OnRefreshLux()
 	EnterCriticalSection ( & pApp -> m_LuxCritSec );
 	
 	if ( pApp -> m_bHighLuxValue )
-		strcpy ( szBuf, "++++" );
+		strcpy_s ( szBuf, "++++" );
 	else if ( pApp -> m_bLowLuxValue )
-		strcpy ( szBuf, "----" );
+		strcpy_s ( szBuf, "----" );
 	else
 	{
 		if ( GetConfig () ->m_bUseImperialUnits )
-			sprintf ( szBuf, "%.5g Ft-cd", pApp -> m_CurrentLuxValue * 0.0929 );
+			sprintf_s ( szBuf, "%.5g Ft-cd", pApp -> m_CurrentLuxValue * 0.0929 );
 		else
-			sprintf ( szBuf, "%.5g Lux", pApp -> m_CurrentLuxValue );
+			sprintf_s ( szBuf, "%.5g Lux", pApp -> m_CurrentLuxValue );
 	}
 
 	LeaveCriticalSection ( & pApp -> m_LuxCritSec );

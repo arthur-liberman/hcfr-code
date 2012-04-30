@@ -1,4 +1,4 @@
-﻿/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
 // Copyright (c) 2005-2007 Association Homecinema Francophone.  All rights reserved.
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -568,17 +568,15 @@ CColor::CColor(ifstream &theFile):Matrix(0.0,3,1)
 //  readDoubleMatrix(readMatrix, 3, 3, theFile);
   m_SensorToXYZMatrix = Matrix(theFile);
   
-  if ( version == 2 || version == 4 )
-    m_pSpectrum = new CSpectrum (theFile);
-  if ( version == 3 || version == 4 )
+  if ( version == 2 || version == 4 || version == 5 || version == 6 )
+    m_pSpectrum = new CSpectrum (theFile, (version == 2 || version == 4));
+  if ( version == 3 || version == 4 || version == 6 )
   {
     double readValue;
-    theFile.read((char*)&readValue, 4);
+    theFile.read((char*)&readValue, 8);
     readValue = littleEndianDoubleToHost(readValue);
-    m_pLuxValue = new double;
-    memcpy(m_pLuxValue,&readValue,4);
+    m_pLuxValue = new double(readValue);
   }
-      
 }
 CColor::~CColor()
 {
@@ -1069,13 +1067,13 @@ void CColor::Serialize(CArchive& archive)
 		if ( m_pLuxValue )
 		{
 			if ( m_pSpectrum )
-				version = 4;
+				version = 6;
 			else
 				version = 3;
 		}
 		else if ( m_pSpectrum )
 		{
-			version = 2;
+			version = 5;
 		}
 
 		archive << version;
@@ -1100,7 +1098,7 @@ void CColor::Serialize(CArchive& archive)
 		int version;
 		archive >> version;
 		
-		if ( version > 4 )
+		if ( version > 6 )
 			AfxThrowArchiveException ( CArchiveException::badSchema );
 		
 		Matrix::Serialize(archive) ;
@@ -1119,18 +1117,28 @@ void CColor::Serialize(CArchive& archive)
 			m_pLuxValue = NULL;
 		}
 
-		if ( version == 2 || version == 4 )
+		if ( version == 2 || version == 4 || version == 5 || version == 6 )
 		{
-			int NbBands, WaveLengthMin, WaveLengthMax, BandWidth;
+			int NbBands, WaveLengthMin, WaveLengthMax;
+			double dBandWidth;
 			archive >> NbBands;
 			archive >> WaveLengthMin;
 			archive >> WaveLengthMax;
-			archive >> BandWidth;
-			m_pSpectrum = new CSpectrum ( NbBands, WaveLengthMin, WaveLengthMax, BandWidth );
+			if ( version == 2 || version == 4 )
+			{
+				int nBandWidth;
+				archive >> nBandWidth;
+				dBandWidth = nBandWidth;
+			}
+			else
+			{
+				archive >> dBandWidth;
+			}
+			m_pSpectrum = new CSpectrum ( NbBands, WaveLengthMin, WaveLengthMax, dBandWidth );
 			m_pSpectrum -> Serialize(archive);
 		}
 
-		if ( version == 3 || version == 4 )
+		if ( version == 3 || version == 4 || version == 6 )
 		{
 			m_pLuxValue = new double;
 			archive >> (* m_pLuxValue);
@@ -1142,14 +1150,14 @@ void CColor::Serialize(CArchive& archive)
 /////////////////////////////////////////////////////////////////////
 // Implementation of the CSpectrum class.
 
-CSpectrum::CSpectrum(int NbBands, int WaveLengthMin, int WaveLengthMax, int BandWidth) : Matrix(0.0,NbBands,1)
+CSpectrum::CSpectrum(int NbBands, int WaveLengthMin, int WaveLengthMax, double BandWidth) : Matrix(0.0,NbBands,1)
 {
 	m_WaveLengthMin	= WaveLengthMin;
 	m_WaveLengthMax = WaveLengthMax;
 	m_BandWidth = BandWidth;    
 }
 
-CSpectrum::CSpectrum(int NbBands, int WaveLengthMin, int WaveLengthMax, int BandWidth, double * pValues) : Matrix(0.0,NbBands,1)
+CSpectrum::CSpectrum(int NbBands, int WaveLengthMin, int WaveLengthMax, double BandWidth, double * pValues) : Matrix(0.0,NbBands,1)
 {
 	m_WaveLengthMin	= WaveLengthMin;
 	m_WaveLengthMax = WaveLengthMax;
@@ -1166,17 +1174,27 @@ CSpectrum::CSpectrum(const CSpectrum &aSpectrum):Matrix(aSpectrum)
 	m_BandWidth = aSpectrum.m_BandWidth;    
 }
 
-CSpectrum::CSpectrum (ifstream &theFile):Matrix()
+CSpectrum::CSpectrum (ifstream &theFile, bool oldFileFormat):Matrix()
 {
-  uint32_t NbBands, WaveLengthMin, WaveLengthMax, BandWidth;
+  uint32_t NbBands, WaveLengthMin, WaveLengthMax;
   theFile.read((char*)&NbBands, 4);
   NbBands = littleEndianUint32ToHost(NbBands);
   theFile.read((char*)&WaveLengthMin, 4);
   m_WaveLengthMin = littleEndianUint32ToHost(WaveLengthMin);
   theFile.read((char*)&WaveLengthMax, 4);
   m_WaveLengthMax = littleEndianUint32ToHost(WaveLengthMax);
-  theFile.read((char*)&BandWidth, 4);
-  m_BandWidth = littleEndianUint32ToHost(BandWidth);
+  if(oldFileFormat)
+  {
+      uint32_t nBandwidth;
+      theFile.read((char*)&nBandwidth, 4);
+      m_BandWidth = littleEndianUint32ToHost(nBandwidth);
+  }
+  else
+  {
+      double value;
+      theFile.read((char*)&value, 8);
+      m_BandWidth = littleEndianDoubleToHost(value);
+  }
   
   // on saute la version (toujours a 1)
   theFile.seekg(4, ios::cur);
@@ -1420,4 +1438,3 @@ double GrayLevelToGrayProp ( double Level, bool bIRE )
 		return Level / 100.0;
 	}
 }
-

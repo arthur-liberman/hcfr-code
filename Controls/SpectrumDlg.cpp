@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005-2008 Association Homecinema Francophone.  All rights reserved.
+// Copyright (c) 2005-2011 Association Homecinema Francophone.  All rights reserved.
 /////////////////////////////////////////////////////////////////////////////
 //
 //  This file is subject to the terms of the GNU General Public License as
@@ -91,14 +91,15 @@ void CSpectrumWnd::Refresh ()
 {
 	if ( m_pRefColor && (*m_pRefColor) != noDataColor && m_pRefColor -> HasSpectrum () )
 	{
+		int			i;
 		CSpectrum	Spectrum = m_pRefColor -> GetSpectrum ();
-		double		dMax = 0.0, dInterval;
+		double		dMax = 0.0, dInterval, WaveLength;
 
 		m_graphCtrl.ClearGraph(m_SpectrumGraphID);
 
-		m_graphCtrl.SetXAxisProps("nm", Spectrum.m_BandWidth * 5, Spectrum.m_WaveLengthMin, Spectrum.m_WaveLengthMax);
+		m_graphCtrl.SetXAxisProps("nm", 50, Spectrum.m_WaveLengthMin, Spectrum.m_WaveLengthMax);
 
-		for ( int i = 0, WaveLength = Spectrum.m_WaveLengthMin ; i < Spectrum.GetRows () ; WaveLength += Spectrum.m_BandWidth, i ++ )
+		for ( i = 0, WaveLength = (double) Spectrum.m_WaveLengthMin ; i < Spectrum.GetRows () ; WaveLength += Spectrum.m_BandWidth, i ++ )
 		{
 			m_graphCtrl.AddPoint(m_SpectrumGraphID, WaveLength, Spectrum[i]);
 			if ( Spectrum[i] > dMax )

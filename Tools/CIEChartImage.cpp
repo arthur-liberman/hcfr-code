@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005-2008 Association Homecinema Francophone.  All rights reserved.
+// Copyright (c) 2005-2011 Association Homecinema Francophone.  All rights reserved.
 /////////////////////////////////////////////////////////////////////////////
 //
 //  This file is subject to the terms of the GNU General Public License as
@@ -331,7 +331,8 @@ void DrawCIEChart(CDC* pDC, int cxMax, int cyMax, BOOL doFullChart, BOOL doShowB
 	int			AbsDeltaY;
 	int			delta;
 	int			nMaxRgbVal = ( doFullChart ? 255 : 192 );
-	double		d, squared_white_ray = 0.02;
+	double		d;
+	double		squared_white_ray = 0.02;	// defines a diffusion zone around white point, to make it esthetically visible
 	double		xCie, yCie, zCie, yCieLine;
 	double		uCie, vCie;
 	double		val_r, val_g, val_b;
@@ -343,9 +344,11 @@ void DrawCIEChart(CDC* pDC, int cxMax, int cyMax, BOOL doFullChart, BOOL doShowB
 	double		(*pLeft) [2];
 	double		(*pRight) [2];
 
-	// Variables for CIExy to rgb conversion
-	const double gamma = 1.0 / 2.2;
+	// Beautifying: something between 1 and 1/2.2 is fine. 
+	// Value 1 make primary colors larger than secondary, 1/2.2 makes large secondaries and reduces primaries 
+	const double gamma = 1.0 / 1.5;
 
+	// Variables for CIExy to rgb conversion
     CColor	WhiteReference = GetColorReference().GetWhite ();
 	CColor	RedReference = GetColorReference().GetRed();
 	CColor	GreenReference = GetColorReference().GetGreen();
@@ -600,7 +603,7 @@ void DrawCIEChart(CDC* pDC, int cxMax, int cyMax, BOOL doFullChart, BOOL doShowB
 				}
 			}
 			
-			if ( Y_Cour == TB [ i ].Last_Y )
+			if ( Y_Cour == TB [ i ].Last_Y && Y_Cour < MaxY )
 			{
 				// We need to change to the next segment
 				nCurrentPoint [ i ] ++;

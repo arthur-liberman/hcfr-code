@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005-2008 Association Homecinema Francophone.  All rights reserved.
+// Copyright (c) 2005-2011 Association Homecinema Francophone.  All rights reserved.
 /////////////////////////////////////////////////////////////////////////////
 //
 //  This file is subject to the terms of the GNU General Public License as
@@ -680,7 +680,7 @@ COLORREF CColorHCFRConfig::GetProfileColor(LPCTSTR lpszSection,LPCTSTR lpszEntry
    if(colorStr=="Auto")
 	   return CLR_DEFAULT;
    int r,g,b;
-   sscanf(colorStr,"RGB(%d,%d,%d)",&r,&g,&b);
+   sscanf_s(colorStr,"RGB(%d,%d,%d)",&r,&g,&b);
    return RGB(r,g,b);
 }
 

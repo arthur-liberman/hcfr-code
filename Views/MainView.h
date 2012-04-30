@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005-2008 Association Homecinema Francophone.  All rights reserved.
+// Copyright (c) 2005-2011 Association Homecinema Francophone.  All rights reserved.
 /////////////////////////////////////////////////////////////////////////////
 //
 //  This file is subject to the terms of the GNU General Public License as
@@ -74,6 +74,7 @@ public:
 	CString	m_sensorName;
 	CStatic	m_TargetStatic;
 	CStatic	m_RGBLevelsStatic;
+	CStatic		m_RGBLevelsLabel;
 	CComboBox	m_comboDisplay;
 	CButtonST	m_testAnsiPatternButton;
 	//}}AFX_DATA
