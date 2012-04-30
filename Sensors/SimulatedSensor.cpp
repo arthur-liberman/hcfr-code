@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005-2008 Association Homecinema Francophone.  All rights reserved.
+// Copyright (c) 2005-2011 Association Homecinema Francophone.  All rights reserved.
 /////////////////////////////////////////////////////////////////////////////
 //
 //  This file is subject to the terms of the GNU General Public License as
@@ -258,7 +258,7 @@ void CSimulatedSensor::GetUniqueIdentifier( CString & strId )
 	strId.ReleaseBuffer (); 
 }
 
-BOOL CSimulatedSensor::HasSpectrumCapabilities ( int * pNbBands, int * pMinWaveLength, int * pMaxWaveLength, int * pBandWidth )
+BOOL CSimulatedSensor::HasSpectrumCapabilities ( int * pNbBands, int * pMinWaveLength, int * pMaxWaveLength, double * pBandWidth )
 {
 	return FALSE;
 /*

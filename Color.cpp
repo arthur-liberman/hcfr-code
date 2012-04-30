@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005-2008 Association Homecinema Francophone.  All rights reserved.
+// Copyright (c) 2005-2011 Association Homecinema Francophone.  All rights reserved.
 /////////////////////////////////////////////////////////////////////////////
 //
 //  This file is subject to the terms of the GNU General Public License as
@@ -486,7 +486,7 @@ CColor::CColor():Matrix(1.0,3,1)
 	m_pLuxValue = NULL;
 }
 
-CColor::CColor(CColor &aColor):Matrix(aColor)
+CColor::CColor(const CColor &aColor):Matrix(aColor)
 {
 	m_XYZtoSensorMatrix = aColor.m_XYZtoSensorMatrix;
 	m_SensorToXYZMatrix = aColor.m_SensorToXYZMatrix;
@@ -500,7 +500,7 @@ CColor::CColor(CColor &aColor):Matrix(aColor)
 		m_pLuxValue = new double ( *aColor.m_pLuxValue );
 }
 
-CColor::CColor(Matrix aMatrix):Matrix(aMatrix)
+CColor::CColor(const Matrix aMatrix):Matrix(aMatrix)
 {
 	ASSERT(aMatrix.GetColumns() == 1);
 	ASSERT(aMatrix.GetRows() == 3);
@@ -581,6 +581,13 @@ CColor& CColor::operator =(const CColor& aColor)
 
 void CColor::Serialize(CArchive& archive)
 {
+	// versions:
+	// 1: color with no other info
+	// 2: color with spectrum (old style with int bandwidth)
+	// 3: color with lux value
+	// 4: color with lux value and spectrum (old style with int bandwidth)
+	// 5: color with spectrum (new style with double bandwidth)
+	// 6: color with lux value and spectrum (new style with double bandwidth)
 	if (archive.IsStoring())
 	{
 		int version=1;
@@ -588,13 +595,13 @@ void CColor::Serialize(CArchive& archive)
 		if ( m_pLuxValue )
 		{
 			if ( m_pSpectrum )
-				version = 4;
+				version = 6;
 			else
 				version = 3;
 		}
 		else if ( m_pSpectrum )
 		{
-			version = 2;
+			version = 5;
 		}
 
 		archive << version;
@@ -619,7 +626,7 @@ void CColor::Serialize(CArchive& archive)
 		int version;
 		archive >> version;
 		
-		if ( version > 4 )
+		if ( version > 6 )
 			AfxThrowArchiveException ( CArchiveException::badSchema );
 		
 		Matrix::Serialize(archive) ;
@@ -638,18 +645,28 @@ void CColor::Serialize(CArchive& archive)
 			m_pLuxValue = NULL;
 		}
 
-		if ( version == 2 || version == 4 )
+		if ( version == 2 || version == 4 || version == 5 || version == 6 )
 		{
-			int NbBands, WaveLengthMin, WaveLengthMax, BandWidth;
+			int NbBands, WaveLengthMin, WaveLengthMax, nBandWidth; 
+			double dBandWidth;
 			archive >> NbBands;
 			archive >> WaveLengthMin;
 			archive >> WaveLengthMax;
-			archive >> BandWidth;
-			m_pSpectrum = new CSpectrum ( NbBands, WaveLengthMin, WaveLengthMax, BandWidth );
+			if ( version == 2 || version == 4 )
+			{
+				archive >> nBandWidth;
+				m_pSpectrum = new CSpectrum ( NbBands, WaveLengthMin, WaveLengthMax, (double) nBandWidth );
+			}
+			else
+			{
+				archive >> dBandWidth;
+				m_pSpectrum = new CSpectrum ( NbBands, WaveLengthMin, WaveLengthMax, dBandWidth );
+			}
+			
 			m_pSpectrum -> Serialize(archive);
 		}
 
-		if ( version == 3 || version == 4 )
+		if ( version == 3 || version == 4 || version == 6 )
 		{
 			m_pLuxValue = new double;
 			archive >> (* m_pLuxValue);
@@ -1101,14 +1118,14 @@ double CColor::GetPreferedLuxValue () const
 /////////////////////////////////////////////////////////////////////
 // Implementation of the CSpectrum class.
 
-CSpectrum::CSpectrum(int NbBands, int WaveLengthMin, int WaveLengthMax, int BandWidth) : Matrix(0.0,NbBands,1)
+CSpectrum::CSpectrum(int NbBands, int WaveLengthMin, int WaveLengthMax, double BandWidth) : Matrix(0.0,NbBands,1)
 {
 	m_WaveLengthMin	= WaveLengthMin;
 	m_WaveLengthMax = WaveLengthMax;
 	m_BandWidth = BandWidth;    
 }
 
-CSpectrum::CSpectrum(int NbBands, int WaveLengthMin, int WaveLengthMax, int BandWidth, double * pValues) : Matrix(0.0,NbBands,1)
+CSpectrum::CSpectrum(int NbBands, int WaveLengthMin, int WaveLengthMax, double BandWidth, double * pValues) : Matrix(0.0,NbBands,1)
 {
 	m_WaveLengthMin	= WaveLengthMin;
 	m_WaveLengthMax = WaveLengthMax;

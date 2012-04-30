@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005-2008 Association Homecinema Francophone.  All rights reserved.
+// Copyright (c) 2005-2011 Association Homecinema Francophone.  All rights reserved.
 /////////////////////////////////////////////////////////////////////////////
 //
 //  This file is subject to the terms of the GNU General Public License as
@@ -343,7 +343,7 @@ BOOL CKiGenerator::InitRealComPort()
 					cb = sizeof ( szBuf );
 					if ( ERROR_SUCCESS == RegQueryValueEx ( hSubKey, "PortName", NULL, NULL, (LPBYTE) szBuf, & cb ) )
 					{
-						if ( strnicmp ( szBuf, "COM", 3 ) == 0 )
+						if ( _strnicmp ( szBuf, "COM", 3 ) == 0 )
 							PotentialComList.AddTail ( szBuf );
 					}
 					RegCloseKey ( hSubKey );
@@ -368,7 +368,7 @@ BOOL CKiGenerator::InitRealComPort()
 					cb = sizeof ( szBuf );
 					if ( ERROR_SUCCESS == RegQueryValueEx ( hSubKey, "PortName", NULL, NULL, (LPBYTE) szBuf, & cb ) )
 					{
-						if ( strnicmp ( szBuf, "COM", 3 ) == 0 )
+						if ( _strnicmp ( szBuf, "COM", 3 ) == 0 )
 							PotentialComList.AddTail ( szBuf );
 					}
 					RegCloseKey ( hSubKey );
@@ -387,9 +387,9 @@ BOOL CKiGenerator::InitRealComPort()
 			cb2 = sizeof ( szBuf2 );
 			while ( ERROR_SUCCESS == RegEnumValue ( hKey, nKeyIndex, szBuf, & cb, NULL, & dwType, (LPBYTE) szBuf2, & cb2 ) )
 			{
-				if ( strnicmp ( szBuf, "\\Device\\USBSER", 14 ) == 0 && dwType == REG_SZ )
+				if ( _strnicmp ( szBuf, "\\Device\\USBSER", 14 ) == 0 && dwType == REG_SZ )
 				{
-					if ( strnicmp ( szBuf2, "COM", 3 ) == 0 )
+					if ( _strnicmp ( szBuf2, "COM", 3 ) == 0 )
 						ExistingComList.AddTail ( szBuf2 );
 				}
 				nKeyIndex ++;

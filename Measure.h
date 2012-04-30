@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005-2008 Association Homecinema Francophone.  All rights reserved.
+// Copyright (c) 2005-2011 Association Homecinema Francophone.  All rights reserved.
 /////////////////////////////////////////////////////////////////////////////
 //
 //  This file is subject to the terms of the GNU General Public License as
@@ -201,7 +201,7 @@ public:
 	void SetMeasurementsSize(int size) { m_measurementsArray.SetSize(size); m_isModified=TRUE; }
 	void DeleteMeasurements(int i,int count) { m_measurementsArray.RemoveAt(i,count); m_isModified=TRUE; }
 	void SetMeasuredMeasurement(int i, const CColor & aColor, const Matrix & SensorMatrix) { m_measurementsArray.InsertAt(i,noDataColor);m_measurementsArray[i].SetSensorToXYZMatrix(SensorMatrix); m_measurementsArray[i].SetSensorValue(aColor); m_isModified=TRUE; }
-	void InsertMeasurement(int i, const CColor & aColor) { m_measurementsArray.InsertAt(i,aColor); m_isModified=TRUE; }
+	void InsertMeasurement(int i, CColor & aColor) { m_measurementsArray.InsertAt(i,aColor); m_isModified=TRUE; }
 	void FreeMeasurementAppended();
 
 	CString GetInfoString() const { return m_infoStr; }

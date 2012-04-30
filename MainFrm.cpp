@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005-2008 Association Homecinema Francophone.  All rights reserved.
+// Copyright (c) 2005-2011 Association Homecinema Francophone.  All rights reserved.
 /////////////////////////////////////////////////////////////////////////////
 //
 //  This file is subject to the terms of the GNU General Public License as
@@ -569,7 +569,7 @@ LRESULT CMainFrame::OnDDEInitiate(WPARAM wParam, LPARAM lParam)
 		if ( nAtomAppli != AfxGetApp () -> m_atomApp )
 		{
 			GlobalGetAtomName ( nAtomAppli, szBuf, sizeof ( szBuf ) );
-			if ( stricmp ( szBuf, g_szShortApplicationName ) == 0 || stricmp ( szBuf, g_szLongApplicationName ) == 0 )
+			if ( _stricmp ( szBuf, g_szShortApplicationName ) == 0 || _stricmp ( szBuf, g_szLongApplicationName ) == 0 )
 			{
 				// Received	good name, compressed or not. Get good atom name
 				nAtomAppli = AfxGetApp () -> m_atomApp;
@@ -582,7 +582,7 @@ LRESULT CMainFrame::OnDDEInitiate(WPARAM wParam, LPARAM lParam)
 			if ( nAtomTopic )
 			{
 				GlobalGetAtomName ( nAtomTopic, szBuf, sizeof ( szBuf ) );
-				if ( stricmp ( szBuf, g_szDDETopicName ) == 0 )
+				if ( _stricmp ( szBuf, g_szDDETopicName ) == 0 )
 					bOk = TRUE;
 			}
 			else
@@ -680,7 +680,7 @@ LRESULT CMainFrame::OnDDEExecute(WPARAM wParam, LPARAM lParam)
 					if ( nCount == 0 )
 					{
 						i = lpStr - lpStart;
-						strncpy ( szBuf, lpStart, i );
+						strncpy_s ( szBuf, lpStart, i );
 						szBuf [ i ] = '\0';
 						CmdList.AddTail ( szBuf );
 						bOk = TRUE;
@@ -702,7 +702,7 @@ LRESULT CMainFrame::OnDDEExecute(WPARAM wParam, LPARAM lParam)
 
 			bOk = FALSE;
 			DdeParseString ( (LPCSTR) strCommand, strCmd, CmdParams );
-			if ( stricmp ( (LPCSTR) strCmd, "OpenColorDataSet" ) == 0 || stricmp ( (LPCSTR) strCmd, "Open" ) == 0 )
+			if ( _stricmp ( (LPCSTR) strCmd, "OpenColorDataSet" ) == 0 || _stricmp ( (LPCSTR) strCmd, "Open" ) == 0 )
 			{
 				lRes = 0;
 				nCount = CmdParams.GetCount ();
@@ -719,7 +719,7 @@ LRESULT CMainFrame::OnDDEExecute(WPARAM wParam, LPARAM lParam)
 						bOk = FALSE;
 				}
 			}
-			else if ( stricmp ( (LPCSTR) strCmd, "NewColorDataSet" ) == 0 )
+			else if ( _stricmp ( (LPCSTR) strCmd, "NewColorDataSet" ) == 0 )
 			{
 				nCount = CmdParams.GetCount ();
 				
@@ -776,7 +776,7 @@ LRESULT CMainFrame::OnDDEExecute(WPARAM wParam, LPARAM lParam)
 				
 				lRes = 0;
 			}
-			else if ( stricmp ( (LPCSTR) strCmd, "NewColorDataSetWithThc" ) == 0 )
+			else if ( _stricmp ( (LPCSTR) strCmd, "NewColorDataSetWithThc" ) == 0 )
 			{
 				nCount = CmdParams.GetCount ();
 				
@@ -831,7 +831,7 @@ LRESULT CMainFrame::OnDDEExecute(WPARAM wParam, LPARAM lParam)
 				
 				lRes = 0;
 			}
-			else if ( stricmp ( (LPCSTR) strCmd, "SetLogFileName" ) == 0 )
+			else if ( _stricmp ( (LPCSTR) strCmd, "SetLogFileName" ) == 0 )
 			{
 				nCount = CmdParams.GetCount ();
 				
@@ -843,7 +843,7 @@ LRESULT CMainFrame::OnDDEExecute(WPARAM wParam, LPARAM lParam)
 					// Retrieve log file name
 					strParam = CmdParams.GetHead ();
 
-					strcpy ( GetConfig () -> m_logFileName, (LPCSTR) strParam );
+					strcpy_s ( GetConfig () -> m_logFileName, (LPCSTR) strParam );
 				}
 			}
 		}
@@ -1063,12 +1063,12 @@ void CMainFrame::OnLanguage()
 	{
 		do
 		{
-			strcpy ( szBuf, wfd.cFileName + strlen ( LANG_PREFIX ) );
+			strcpy_s ( szBuf, wfd.cFileName + strlen ( LANG_PREFIX ) );
 			lpStr = strrchr ( szBuf, '.' );
 			if ( lpStr )
 				lpStr [ 0 ] = '\0';
 			
-			if ( stricmp ( szBuf, "PATTERNS" ) != 0 )
+			if ( _stricmp ( szBuf, "PATTERNS" ) != 0 )
 				dlg.m_Languages.AddTail ( szBuf );
 		} while ( FindNextFile ( hFind, & wfd ) );
 
@@ -1096,15 +1096,15 @@ void CMainFrame::OnRefreshLux()
 	EnterCriticalSection ( & pApp -> m_LuxCritSec );
 	
 	if ( pApp -> m_bHighLuxValue )
-		strcpy ( szBuf, "++++" );
+		strcpy_s ( szBuf, "++++" );
 	else if ( pApp -> m_bLowLuxValue )
-		strcpy ( szBuf, "----" );
+		strcpy_s ( szBuf, "----" );
 	else
 	{
 		if ( GetConfig () ->m_bUseImperialUnits )
-			sprintf ( szBuf, "%.5g Ft-cd", pApp -> m_CurrentLuxValue * 0.0929 );
+			sprintf_s ( szBuf, "%.5g Ft-cd", pApp -> m_CurrentLuxValue * 0.0929 );
 		else
-			sprintf ( szBuf, "%.5g Lux", pApp -> m_CurrentLuxValue );
+			sprintf_s ( szBuf, "%.5g Lux", pApp -> m_CurrentLuxValue );
 	}
 
 	LeaveCriticalSection ( & pApp -> m_LuxCritSec );

@@ -56,7 +56,7 @@ private:
         CString strBuffer = GetConfig()->GetProfileString(m_strSection, m_strEntry); // fx mod: AfxGetApp() -> GetConfig()
         bool bRead= !strBuffer.IsEmpty();
         if (bRead){
-	        int nRead = _stscanf(strBuffer,m_strFormat ,
+	        int nRead = _stscanf_s(strBuffer,m_strFormat ,
 		        &wp.flags, &wp.showCmd,
 		        &wp.ptMinPosition.x, &wp.ptMinPosition.y,
 		        &wp.ptMaxPosition.x, &wp.ptMaxPosition.y,

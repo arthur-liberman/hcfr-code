@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005-2008 Association Homecinema Francophone.  All rights reserved.
+// Copyright (c) 2005-2011 Association Homecinema Francophone.  All rights reserved.
 /////////////////////////////////////////////////////////////////////////////
 //
 //  This file is subject to the terms of the GNU General Public License as
@@ -169,7 +169,7 @@ static DWORD WINAPI BkgndThreadFunc ( LPVOID lpParameter )
 				LeaveCriticalSection (& g_CritSec );
 
 				// Post message to first document view (this message is treated by the document object)
-				AfxGetMainWnd () -> PostMessage ( WM_BKGND_MEASURE_READY, (WPARAM) g_pDataDocRunningThread );
+				AfxGetApp () -> m_pMainWnd -> PostMessage ( WM_BKGND_MEASURE_READY, (WPARAM) g_pDataDocRunningThread );
 			}
 		}
 		else

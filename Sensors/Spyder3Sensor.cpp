@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005-2008 Association Homecinema Francophone.  All rights reserved.
+// Copyright (c) 2005-2011 Association Homecinema Francophone.  All rights reserved.
 /////////////////////////////////////////////////////////////////////////////
 //
 //  This file is subject to the terms of the GNU General Public License as
@@ -167,7 +167,7 @@ BOOL CSpyder3Sensor::Init( BOOL bForSimultaneousMeasures )
 
 		GetModuleBaseName ( hProcess, NULL, szBuf, sizeof ( szBuf ) );
 
-		if ( stricmp ( szBuf, "Spyder3Utility.exe" ) == 0 )
+		if ( _stricmp ( szBuf, "Spyder3Utility.exe" ) == 0 )
 		{
 			// Cannot use Spyder 3 when Spyder3Utility is running: propose to terminate the process
 			Msg.LoadString ( IDS_SPYDER3UTILITYRUNNING );

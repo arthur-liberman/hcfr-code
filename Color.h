@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005-2008 Association Homecinema Francophone.  All rights reserved.
+// Copyright (c) 2005-2011 Association Homecinema Francophone.  All rights reserved.
 /////////////////////////////////////////////////////////////////////////////
 //
 //  This file is subject to the terms of the GNU General Public License as
@@ -60,8 +60,8 @@ class CColor: public Matrix
 {
 public:
 	CColor();
-	CColor(CColor &aColor);
-	CColor(Matrix aMatrix);
+	CColor(const CColor &aColor);
+	CColor(const Matrix aMatrix);
 	CColor(double aX,double aY, double aZ);	// XYZ initialisation
 	CColor(double ax,double ay);			// xy initialisation
 	~CColor();
@@ -125,8 +125,8 @@ protected:
 class CSpectrum: public Matrix
 {
 public:
-	CSpectrum(int NbBands, int WaveLengthMin, int WaveLengthMax, int BandWidth );
-	CSpectrum(int NbBands, int WaveLengthMin, int WaveLengthMax, int BandWidth, double * pValues );
+	CSpectrum(int NbBands, int WaveLengthMin, int WaveLengthMax, double BandWidth );
+	CSpectrum(int NbBands, int WaveLengthMin, int WaveLengthMax, double BandWidth, double * pValues );
 	CSpectrum(CSpectrum &aSpectrum);
 	~CSpectrum();
 
@@ -138,7 +138,7 @@ public:
 public:
 	int		m_WaveLengthMin;
 	int		m_WaveLengthMax;
-	int		m_BandWidth;
+	double	m_BandWidth;
 };
 
 class CIRELevel

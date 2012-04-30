@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005-2008 Association Homecinema Francophone.  All rights reserved.
+// Copyright (c) 2005-2011 Association Homecinema Francophone.  All rights reserved.
 /////////////////////////////////////////////////////////////////////////////
 //
 //  This file is subject to the terms of the GNU General Public License as
@@ -23,6 +23,8 @@
 
 #include "stdafx.h"
 #include "ColorHCFR.h"
+#include "DataSetDoc.h"
+#include "MainView.h"
 #include "RGBLevelWnd.h"
 #include "Color.h"
 
@@ -38,6 +40,8 @@ static char THIS_FILE[] = __FILE__;
 CRGBLevelWnd::CRGBLevelWnd()
 {
 	m_pRefColor = NULL;
+	m_pDocument = NULL;
+	m_bLumaMode = FALSE;
 }
 
 CRGBLevelWnd::~CRGBLevelWnd()
@@ -46,11 +50,65 @@ CRGBLevelWnd::~CRGBLevelWnd()
 
 void CRGBLevelWnd::Refresh()
 {
+	BOOL bWasLumaMode = m_bLumaMode;
+	m_bLumaMode = FALSE;
 	if ( m_pRefColor && (*m_pRefColor) != noDataColor )
 	{
+		double RefLuma = 1.0;
+
+		if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetRed() ) < 120 )
+		{
+			m_bLumaMode = TRUE;
+			RefLuma = GetColorReference().GetRedReferenceLuma ();
+		}
+		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetGreen() ) < 50 )
+		{
+			m_bLumaMode = TRUE;
+			RefLuma = GetColorReference().GetGreenReferenceLuma ();
+		}
+		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetBlue() ) < 200 )
+		{
+			m_bLumaMode = TRUE;
+			RefLuma = GetColorReference().GetBlueReferenceLuma ();
+		}
+		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetYellow() ) < 40 )
+		{
+			m_bLumaMode = TRUE;
+			RefLuma = GetColorReference().GetRedReferenceLuma () + GetColorReference().GetGreenReferenceLuma ();
+		}
+		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetCyan() ) < 40 )
+		{
+			m_bLumaMode = TRUE;
+			RefLuma = GetColorReference().GetGreenReferenceLuma () + GetColorReference().GetBlueReferenceLuma ();
+		}
+		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetMagenta() ) < 100 )
+		{
+			m_bLumaMode = TRUE;
+			RefLuma = GetColorReference().GetRedReferenceLuma () + GetColorReference().GetBlueReferenceLuma ();
+		}
+		
+		if (m_bLumaMode)
+		{
+			CColor white = m_pDocument->GetMeasure()->GetOnOffWhite();
+			
+			m_redValue=0;
+			m_greenValue=0;
+			m_blueValue=0;
+
+			if ( white != noDataColor && white.GetPreferedLuxValue() > 0.0001 )
+			{
+				double d = m_pRefColor -> GetPreferedLuxValue() / white.GetPreferedLuxValue();
+
+				m_greenValue = (int) ( ( d / RefLuma ) * 100.0 );
+			}
+		}
+		else
+		{
 		CColor aColor = m_pRefColor -> GetxyYValue();
 		CColor normColor;
 
+			if (aColor[1]>0.0)
+			{
 		normColor[0]=(aColor[0]/aColor[1]);
 		normColor[1]=1.0;
 		normColor[2]=((1.0-(aColor[0]+aColor[1]))/aColor[1]);
@@ -68,7 +126,22 @@ void CRGBLevelWnd::Refresh()
 		m_greenValue=0;
 		m_blueValue=0;
 	}
+		}
+	}
+	else
+	{
+		m_redValue=0;
+		m_greenValue=0;
+		m_blueValue=0;
+	}
 	Invalidate(FALSE);
+
+	if (m_bLumaMode != bWasLumaMode)
+	{
+		CString title;
+		title.LoadString(m_bLumaMode ? IDS_LUMINANCE : IDS_RGBLEVELS);
+		((CMainView *)GetParent())->m_RGBLevelsLabel.SetWindowText ((LPCSTR)title);
+	}
 }
 
 
@@ -119,7 +192,7 @@ void CRGBLevelWnd::OnPaint()
 
 	float yScale;
 	if(maxYValue < 200 )
-		yScale=(float)drawRect.Height()/200.0;		// if value is bellow 200% => scale is 0-200% 
+		yScale=(float)drawRect.Height()/200.0f;		// if value is bellow 200% => scale is 0-200% 
 	else		
 		yScale=(float)drawRect.Height()/(float)maxYValue;	// else scale is 0-max value
 	
@@ -131,29 +204,52 @@ void CRGBLevelWnd::OnPaint()
 	{
 		CPen aPen(PS_DOT,1,RGB(128,128,128));
 		pDC->SelectObject(&aPen);
-		pDC->MoveTo(0,rect.Height()-(int)100.0*yScale-heightMargin);
-		pDC->LineTo(rect.Width(),rect.Height()-(int)100.0*yScale-heightMargin);
+		pDC->MoveTo(0,rect.Height()-(int)(100.0*yScale)-heightMargin);
+		pDC->LineTo(rect.Width(),rect.Height()-(int)(100.0*yScale)-heightMargin);
 	}
 
-	int redBarHeight=(int)m_redValue*yScale;
+	int redBarHeight=(int)(m_redValue*yScale);
 	int redBarX=widthMargin;
 	int redBarY=rect.Height()-redBarHeight-heightMargin;
 	
-	int greenBarHeight= (int)m_greenValue*yScale;
+	int greenBarHeight= (int)(m_greenValue*yScale);
 	int greenBarX=widthMargin+barWidth+interBarMargin;
 	int greenBarY=rect.Height()-greenBarHeight-heightMargin;
 
-	int blueBarHeight= (int)m_blueValue*yScale;
+	int blueBarHeight= (int)(m_blueValue*yScale);
 	int blueBarX=widthMargin+2*barWidth+2*interBarMargin;
 	int blueBarY=rect.Height()-blueBarHeight-heightMargin;
 
 	// draw RGB bars
+	int ellipseHeight=barWidth/4;
+	if (m_bLumaMode)
+	{
+		DrawGradientBar(pDC,RGB(255,255,0),greenBarX,greenBarY,barWidth,greenBarHeight);
+
+		// Display elipse on top of bar
+		if(ellipseHeight > 3)
+		{
+			CPen *pOldPen;
+			CPen anEllipsePen(PS_SOLID,1,RGB(0,0,0));
+			pOldPen=pDC->SelectObject(&anEllipsePen);
+			// Red ellipse
+			CBrush *pOldBrush;
+			CBrush anEllipseBrush;
+			anEllipseBrush.CreateSolidBrush(RGB(164,164,0));
+			pOldBrush=pDC->SelectObject(&anEllipseBrush);
+			pDC->Ellipse(greenBarX,greenBarY-ellipseHeight/2,greenBarX+barWidth,greenBarY+ellipseHeight/2);
+
+			pDC->SelectObject(pOldBrush);
+			pDC->SelectObject(pOldPen);
+		}
+	}
+	else
+	{
 	DrawGradientBar(pDC,RGB(255,0,0),redBarX,redBarY,barWidth,redBarHeight);
 	DrawGradientBar(pDC,RGB(0,255,0),greenBarX,greenBarY,barWidth,greenBarHeight);
 	DrawGradientBar(pDC,RGB(0,0,255),blueBarX,blueBarY,barWidth,blueBarHeight);
 
 	// Display elipses on top of bars
-	int ellipseHeight=barWidth/4;
 	if(ellipseHeight > 3)
 	{
 		CPen *pOldPen;
@@ -180,6 +276,7 @@ void CRGBLevelWnd::OnPaint()
 
 		pDC->SelectObject(pOldBrush);
 		pDC->SelectObject(pOldPen);
+	}
 	}
 
 	// Display values on top of bars
@@ -209,13 +306,16 @@ void CRGBLevelWnd::OnPaint()
 	// Do something with the font just created...
 	CFont* pOldFont = pDC->SelectObject(&font);
 
-	char aBuf[10];
+	char aBuf[32];
+	if (! m_bLumaMode)
+	{
 	sprintf(aBuf,"%3d%%",m_redValue);
 	pDC->TextOut(redBarX+barWidth/2,redBarY-ellipseHeight/2,aBuf);
+		sprintf(aBuf,"%3d%%",m_blueValue);
+		pDC->TextOut(blueBarX+barWidth/2,blueBarY-ellipseHeight/2,aBuf);
+	}
 	sprintf(aBuf,"%3d%%",m_greenValue);
 	pDC->TextOut(greenBarX+barWidth/2,greenBarY-ellipseHeight/2,aBuf);
-	sprintf(aBuf,"%3d%%",m_blueValue);
-	pDC->TextOut(blueBarX+barWidth/2,blueBarY-ellipseHeight/2,aBuf);
 
 	pDC->SelectObject(pOldFont);
 
