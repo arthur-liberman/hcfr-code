@@ -96,13 +96,8 @@ namespace
     private:
         CriticalSection m_MeterCritSection;
         std::vector<ArgyllMeterWrapper*> m_meters;
-        icoms* m_icom;
         ArgyllMeters()
         {
-            if ((m_icom = new_icoms()) == NULL) 
-            {
-                throw std::logic_error("Can't create new icoms");
-            }
         }
         ~ArgyllMeters()
         {
@@ -111,10 +106,6 @@ namespace
                 delete m_meters[i];
             }
             m_meters.clear();
-            if(m_icom)
-            {
-                m_icom->del(m_icom);
-            }
         }
     public:
         static ArgyllMeters& getInstance()
@@ -136,8 +127,14 @@ namespace
             // run at the moment, but I can live with this
             if(m_meters.empty())
             {
+                std::vector<int> pathsToUse;
+                icoms* icom;
+                if ((icom = new_icoms()) == NULL) 
+                {
+                    throw std::logic_error("Can't create new icoms");
+                }
                 icompath **paths;
-                if ((paths = m_icom->get_paths(m_icom)) != NULL)
+                if ((paths = icom->get_paths(icom)) != NULL)
                 {
                     for (int i(0); paths[i] != NULL; ++i) 
                     {
@@ -145,35 +142,53 @@ namespace
                         // them properly
                         if(strncmp("COM", paths[i]->path, 3) != 0 && strncmp("com", paths[i]->path, 3) != 0)
                         {
-                            _inst* meter = 0;
-                            try
+                            // open the i1pro first until we work out how to handle the
+                            // driver path properly in icoms
+                            if(paths[i]->itype == instI1Pro)
                             {
-                                meter = new_inst(i + 1, 0, 1, 0, m_icom);
+                                pathsToUse.insert(pathsToUse.begin(), i + 1);
                             }
-                            catch(std::logic_error&)
+                            else
                             {
-                                throw std::logic_error("No meter found at detected port- Create new Argyll instrument failed with severe error");
-                            }
-                            try
-                            {
-                                inst_code instCode = meter->init_coms(meter, i + 1, baud_38400, fc_nc, 15.0);
-                                if(instCode == inst_ok)
-                                {
-                                    m_meters.push_back(new ArgyllMeterWrapper(meter));
-                                }
-                                else
-                                {
-                                    meter->del(meter);
-                                    errorMessage += "Starting communications with the meter failed. ";
-                                }
-                            }
-                            catch(std::logic_error& e)
-                            {
-                                meter->del(meter);
-                                errorMessage += "Incorrect driver - Starting communications with the meter failed with severe error. ";
-                                errorMessage += e.what();
+                                pathsToUse.push_back(i + 1);
                             }
                         }
+                    }
+                }
+                if(icom)
+                {
+                    icom->del(icom);
+                }
+
+                for (int i(0); i != pathsToUse.size(); ++i)
+                {
+                    _inst* meter = 0;
+                    try
+                    {
+                        meter = new_inst(pathsToUse[i], 0, 1, 0, 0);
+                    }
+                    catch(std::logic_error&)
+                    {
+                        throw std::logic_error("No meter found at detected port- Create new Argyll instrument failed with severe error");
+                    }
+                    try
+                    {
+                        inst_code instCode = meter->init_coms(meter, i + 1, baud_38400, fc_nc, 15.0);
+                        if(instCode == inst_ok)
+                        {
+                            m_meters.push_back(new ArgyllMeterWrapper(meter));
+                        }
+                        else
+                        {
+                            meter->del(meter);
+                            errorMessage += "Starting communications with the meter failed. ";
+                        }
+                    }
+                    catch(std::logic_error& e)
+                    {
+                        meter->del(meter);
+                        errorMessage += "Incorrect driver - Starting communications with the meter failed with severe error. ";
+                        errorMessage += e.what();
                     }
                 }
             }
