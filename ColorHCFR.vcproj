@@ -3261,6 +3261,7 @@
 				<File
 					RelativePath="Sensors\SpyderIIsensorproppage.h"
 					>
+				</File>
 				<File
 					RelativePath="Sensors\SpectralSampleDlg.h"
 					>
