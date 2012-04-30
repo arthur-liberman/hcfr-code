@@ -927,6 +927,20 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,15,152,184,10
 END
 
+IDD_GENERATE_SPECTRAL_SAMPLE DIALOGEX 0, 0, 225, 86
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION
+CAPTION "Colorimeter Calibration Spectral Sample"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_DISPLAY_NAME,89,17,115,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_DISPLAY_TECH,89,36,115,14,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,107,65,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,161,65,50,14
+    GROUPBOX        "Reference Display",IDC_DISPLAY_GROUP,7,7,204,50
+    RTEXT           "Display name",IDC_STATIC,28,20,55,15
+    RTEXT           "Display technology",IDC_STATIC,17,38,66,15
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1724,6 +1738,7 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "Build using simultaneous measures", IDM_CALIBRATION_SIM
             MENUITEM "Build manually using reference colorimeter", IDM_CALIBRATION_MANUAL
+            MENUITEM "Build colorimeter calibration spectral sample", IDM_CALIBRATION_SPECTRAL
             MENUITEM SEPARATOR
             MENUITEM "Save meter correction file...", IDM_SAVE_CALIBRATION_FILE
         END
@@ -2231,9 +2246,17 @@ BEGIN
     BEGIN
     END
 
+    IDD_REFERENCE_PROP_PAGE, DIALOG
+    BEGIN
+    END
+
     IDD_GENERAL_PROP_PAGE, DIALOG
     BEGIN
         BOTTOMMARGIN, 184
+    END
+
+    IDD_EXPORTXLS_DIALOG, DIALOG
+    BEGIN
     END
 
     IDD_ONEDEVICESENSOR_PROP_PAGE, DIALOG
@@ -2247,6 +2270,10 @@ BEGIN
     IDD_GENERATOR_GDI_PROP_PAGE, DIALOG
     BEGIN
         RIGHTMARGIN, 176
+    END
+
+    IDD_KISENSOR_PROP_PAGE, DIALOG
+    BEGIN
     END
 
     IDD_COLORTEST, DIALOG
@@ -2266,6 +2293,10 @@ BEGIN
     IDD_DUPLICATEDOC_DIALOG, DIALOG
     BEGIN
         BOTTOMMARGIN, 139
+    END
+
+    IDD_REF_COLOR_VALUES, DIALOG
+    BEGIN
     END
 
     IDD_GENERATOR_KI_PROP_PAGE, DIALOG
@@ -2315,6 +2346,14 @@ BEGIN
         RIGHTMARGIN, 205
         TOPMARGIN, 7
         BOTTOMMARGIN, 130
+    END
+
+    IDD_GENERATE_SPECTRAL_SAMPLE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 218
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 79
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -3140,11 +3179,28 @@ BEGIN
     IDS_SPYDER3UTILITYRUNNING 
                             "Spyder3Utility is currently running. ColorHCFR cannot use Spyder3 device. Do you want ColorHCFR close Spyder3Utility process ?"
     IDS_SENSORHWVERSION     "Sensor HW version:"
+    IDS_SPECTRAL_SAMPLE     "Colorimeter Calibration Spectral Sample"
+    IDS_SPECTRAL_SAMPLE_NEED_FIELDS 
+                            "You must supply both a display name and a technology description"
+    IDS_SPECTRAL_SAMPLE_GENERATOR 
+                            "You must use the 'view images' generator to create a colorimeter spectral sample calibration file"
 END
 
 STRINGTABLE
 BEGIN
     ID_VIEW_MEASURE_SAT_BAR "Display or hide saturation measures toolbar\nSaturation measures toolbar"
+    IDM_CALIBRATION_SPECTRAL 
+                            "Build a colorimeter correction file using a reference spectrometer"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_SPECTRAL_SAMPLE_USE_SPECTRO 
+                            "You must use a spectrometer as the reference instrument to create a colorimeter calibration spectral sample"
+    IDS_SPECTRAL_SAMPLE_CREATE 
+                            "Position the sensor on the screen and click yes to continue.\nYou may interrupt the readings by pressing the <ESC> key"
+    IDS_SPECTRAL_SAMPLE_UNEXPECTED_EXCEPTION 
+                            "Unexpected exception while generating colorimeter calibration spectral sample"
 END
 
 #endif    // English (United States) resources

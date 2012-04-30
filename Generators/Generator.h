@@ -106,6 +106,8 @@ public:
 	CString GetName() { return m_name; }
 	void SetName(CString aStr) { m_name=aStr; } 
 
+	virtual CString GetActiveDisplayName() { return ""; }
+
 protected:
 	void AddPropertyPage(CPropertyPageWithHelp *apPage);
 };

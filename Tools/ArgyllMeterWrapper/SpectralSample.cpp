@@ -22,6 +22,7 @@
 //
 //////////////////////////////////////////////////////////////////////
 
+#include "Color.h"
 #include "SpectralSample.h"
 #include "ArgyllMeterWrapper.h"
 #include "SpectralSampleFiles.h"
@@ -36,7 +37,6 @@
 #include "xspect.h"
 #include "ccss.h"
 #undef SALONEINSTLIB
-
 
 SpectralSample::SpectralSample(void) :
     m_ccss(NULL)
@@ -59,6 +59,7 @@ SpectralSample::SpectralSample(const SpectralSample& s) :
     m_Display = s.m_Display;
     m_Tech = s.m_Tech;
     m_Description = s.m_Description;
+	m_RefInstrument = s.m_RefInstrument;
 
     if (s.m_ccss != NULL)
     {
@@ -92,6 +93,7 @@ SpectralSample& SpectralSample::operator=(const SpectralSample& s)
         m_Display = s.m_Display;
         m_Tech = s.m_Tech;
         m_Description = s.m_Description;
+		m_RefInstrument = s.m_RefInstrument;
     
         if (s.m_ccss != NULL)
         {
@@ -113,6 +115,7 @@ bool SpectralSample::Read(const std::string& samplePath)
         m_Path = samplePath;
         m_Display = m_ccss->desc;
         m_Tech = m_ccss->tech;
+		m_RefInstrument = m_ccss->ref;
         setDescription(m_ccss->tech, m_ccss->disp); 
         return true;
     }
@@ -122,67 +125,82 @@ bool SpectralSample::Read(const std::string& samplePath)
     }
 }
 
-bool SpectralSample::Create(const std::string& sampleCCSSPath, const std::string& sampleReadingsPath, const std::string& displayName, const std::string& displayTech, std::string& errorMessage)
+
+bool SpectralSample::Write(const std::string& samplePath)
+{	
+	if(m_ccss->write_ccss(m_ccss, (char *)samplePath.c_str()) == 0)
+	{
+		return true;
+	}
+	else
+	{
+		throw std::logic_error("Writing CCSS file failed");
+		return false;
+	}
+}
+
+
+bool SpectralSample::createFromTI3(const std::string& ti3Path)
 {
 	CGATSFile cgats;
 
 	// Either displayname or displaytech should be non-null. There is no reason we should not enforce both
 
-	if (displayName.empty() || displayTech.empty())
+	if (m_Display.empty() || m_Tech.empty())
 	{
-		errorMessage = "Display name and tech must be supplied";
-		return false;
+		throw std::logic_error("Display name and tech must be supplied");
 	}
+	setDescription(m_Tech.c_str(), m_Display.c_str()); 
 
-	if (cgats.Read(sampleReadingsPath))
+	if (cgats.Read(ti3Path))
 	{
 		if (cgats.getNumberOfTables() <= 0)
 		{
-			errorMessage = "Input file ";
-			errorMessage += sampleReadingsPath;
+			std::string errorMessage = "Input file ";
+			errorMessage += ti3Path;
 			errorMessage += " must contain at least one table";
-			return false;
+			throw std::logic_error(errorMessage);
 		}
 		if (cgats.getNumberOfDataSets(0) <= 0)
 		{
-			errorMessage = "Input file ";
-			errorMessage += sampleReadingsPath;
+			std::string errorMessage = "Input file ";
+			errorMessage += ti3Path;
 			errorMessage += " must contain at least one data set";
-			return false;
+			throw std::logic_error(errorMessage);
 		}
 
 		int indexInstrument, indexSpectralBands, indexSpectralStart, indexSpectralEnd;
 
 		if (!cgats.FindKeyword("TARGET_INSTRUMENT", 0, indexInstrument))
 		{			
-			errorMessage = "Can't find keyword TARGET_INSTRUMENT in  ";
-			errorMessage += sampleReadingsPath;
-			return false;
+			std::string errorMessage = "Can't find keyword TARGET_INSTRUMENT in  ";
+			errorMessage += ti3Path;
+			throw std::logic_error(errorMessage);
 		}
 		if (!cgats.FindKeyword("SPECTRAL_BANDS", 0, indexSpectralBands))
 		{			
-			errorMessage = "Can't find keyword SPECTRAL_BANDS in  ";
-			errorMessage += sampleReadingsPath;
-			return false;
+			std::string errorMessage = "Can't find keyword SPECTRAL_BANDS in  ";
+			errorMessage += ti3Path;
+			throw std::logic_error(errorMessage);
 		}
 		if (!cgats.FindKeyword("SPECTRAL_START_NM", 0, indexSpectralStart))
 		{			
-			errorMessage = "Can't find keyword SPECTRAL_START_NM in  ";
-			errorMessage += sampleReadingsPath;
+			std::string errorMessage = "Can't find keyword SPECTRAL_START_NM in  ";
+			errorMessage += ti3Path;
 			return false;
 		}
 		if (!cgats.FindKeyword("SPECTRAL_END_NM", 0, indexSpectralEnd))
 		{			
-			errorMessage = "Can't find keyword SPECTRAL_END_NM in  ";
-			errorMessage += sampleReadingsPath;
-			return false;
+			std::string errorMessage = "Can't find keyword SPECTRAL_END_NM in  ";
+			errorMessage += ti3Path;
+			throw std::logic_error(errorMessage);
 		}
 			
 		xspect sp, *samples = NULL;
 		samples = new xspect[cgats.getNumberOfDataSets(0)];
 
-		std::string refInstrument = cgats.getStringKeywordValue(0, indexInstrument);
-
+		m_RefInstrument = cgats.getStringKeywordValue(0, indexInstrument);
+		
 		sp.spec_n = cgats.getIntKeywordValue(0, indexSpectralBands);
 		sp.spec_wl_short = cgats.getDoubleKeywordValue(0, indexSpectralStart);
 		sp.spec_wl_long = cgats.getDoubleKeywordValue(0, indexSpectralEnd);
@@ -210,12 +228,12 @@ bool SpectralSample::Create(const std::string& sampleCCSSPath, const std::string
 			}
 			else
 			{
-				errorMessage = "Can't find field ";
+				std::string errorMessage = "Can't find field ";
 				errorMessage += sField;
 				errorMessage += " in input file ";
-				errorMessage += sampleReadingsPath;
+				errorMessage += ti3Path;
 				delete [] samples;
-				return false;
+				throw std::logic_error(errorMessage);
 			}
 		}
 
@@ -223,7 +241,6 @@ bool SpectralSample::Create(const std::string& sampleCCSSPath, const std::string
 
 		for (int i = 0; i < cgats.getNumberOfDataSets(0); i++) 
 		{
-
 			XSPECT_COPY_INFO(&samples[i], &sp);
 	
 			for (int j = 0; j < sp.spec_n; j++) 
@@ -232,15 +249,12 @@ bool SpectralSample::Create(const std::string& sampleCCSSPath, const std::string
 			}
 		}
 
-		std::string displayDescription = displayTech + " (" + displayName + ")";
-
 		// See what the highest value is
 		
 		double bigv = -1e60;
 		
 		for (int i = 0; i < cgats.getNumberOfDataSets(0); i++) // For all grid points 
 		{	
-
 			for (int j = 0; j < samples[i].spec_n; j++) 
 			{
 				if (samples[i].spec[j] > bigv)
@@ -260,32 +274,108 @@ bool SpectralSample::Create(const std::string& sampleCCSSPath, const std::string
 			{
 				samples[i].spec[j] *= scale / bigv;
 			}
-		}		
+		}	
 
-		if (m_ccss->set_ccss(m_ccss, "HCFR ccss generator", NULL, 
-									(char *)displayDescription.c_str(), 
-									(char *)displayName.c_str(), 
-									(char *)displayTech.c_str(), 
-									(char *)refInstrument.c_str(), 
-									samples, cgats.getNumberOfDataSets(0))) 
+		bool bRet = !m_ccss->set_ccss(m_ccss, "HCFR ccss generator", NULL, 	
+									(char *)m_Description.c_str(), 
+									(char *)m_Display.c_str(), 
+									(char *)m_Tech.c_str(), 	
+									(char *)m_RefInstrument.c_str(), 
+									samples, cgats.getNumberOfDataSets(0));
+
+		delete [] samples;
+
+		if (!bRet) 
 		{
-			errorMessage = "set_ccss failed with '%s'";
+			std::string errorMessage = "set_ccss failed with '%s'";
 			errorMessage += m_ccss->err;
+			throw std::logic_error(errorMessage);
 		}
-		else if(m_ccss->write_ccss(m_ccss, (char *)sampleCCSSPath.c_str()) == 0)
-		{
-			return true;
-		}
-		else
-		{
-			errorMessage = "Writing CCSS file failed";
-			delete [] samples;
-			return false;
-		}
-
+		return bRet;
 	}
 	return false;
 }
+
+
+
+bool SpectralSample::createFromMeasurements(const CColor spectralReadings[], const int nReadings)
+{
+	// Either displayname or displaytech should be non-null. There is no reason we should not enforce both
+
+	if (m_Display.empty() || m_Tech.empty())
+	{
+		std::string errorMessage = "Display name and tech must be supplied";
+		throw std::logic_error(errorMessage);
+	}
+	setDescription(m_Tech.c_str(), m_Display.c_str()); 
+
+	// First check to see what the highest value is
+
+	double bigv = -1e60;
+
+	for (int nColors = 0; nColors < nReadings; nColors++)
+	{
+		CSpectrum spectrum = spectralReadings[nColors].GetSpectrum();
+
+		// Check if we have spectral data
+
+		if (spectrum.GetRows() <= 0)
+		{
+			std::string errorMessage = "Did not manage to read any spectral values!";
+			throw std::logic_error(errorMessage);
+		}
+		for (int i = 0; i < spectrum.GetRows(); i++)
+		{
+			if (spectrum[i] > bigv)
+			{
+				bigv = spectrum[i];
+			}
+		}
+	}
+	
+	// Now normalize the values
+	
+	xspect *samples = new xspect[nReadings];
+
+	for (int nColors = 0; nColors < nReadings; nColors++)
+	{
+		CSpectrum spectrum = spectralReadings[nColors].GetSpectrum();
+		double scale = 100;
+
+		// We can safely ignore the bandwidth and scale members of the xspect struct
+		// as they are unused. The ccss algorithm only uses wl_short and wl_long and
+		// the spectral values. 
+
+		samples[nColors].spec_n = spectrum.GetRows();
+		samples[nColors].spec_wl_short = spectrum.m_WaveLengthMin;
+		samples[nColors].spec_wl_long = spectrum.m_WaveLengthMax;
+
+		for (int nSpec = 0; nSpec < samples[nColors].spec_n && nSpec < XSPECT_MAX_BANDS; nSpec++)
+		{
+			samples[nColors].spec[nSpec] = spectrum[nSpec];
+			samples[nColors].spec[nSpec] *= scale / bigv;
+		}
+	}
+
+	bool bRet = !m_ccss->set_ccss(m_ccss, "HCFR ccss generator", NULL, 	
+									(char *)m_Description.c_str(), 
+									(char *)m_Display.c_str(), 
+									(char *)m_Tech.c_str(), 	
+									(char *)m_RefInstrument.c_str(), 
+									samples, nReadings);
+
+	delete [] samples;
+
+	if (!bRet) 
+	{
+		std::string errorMessage = "set_ccss failed with '%s'";
+		errorMessage += m_ccss->err;
+		throw std::logic_error(errorMessage);
+	}
+
+	return bRet;
+}
+
 
 const char* SpectralSample::getDescription() const
 {
@@ -302,6 +392,12 @@ const char* SpectralSample::getDisplay() const
 const char* SpectralSample::getTech() const
 {
     return m_Tech.c_str();
+}
+
+
+const char* SpectralSample::getReferenceInstrument() const
+{
+    return m_RefInstrument.c_str();
 }
 
 
@@ -338,17 +434,19 @@ void SpectralSample::setTech(const char* tech)
 }
 
 
-void SpectralSample::setPath(const char* path)
+
+void SpectralSample::setReferenceInstrument(const char* instr)
 {
-    m_Path = path;
+    m_RefInstrument = instr;
 }
 
 
-void SpectralSample::setAll(const char* tech, const char* disp, const char* path )
+void SpectralSample::setAll(const char* tech, const char* disp, const char *instr, const char* path )
 {
     m_Display = disp;
     m_Tech = tech;
     m_Path = path;
+	m_RefInstrument = instr;
     setDescription(tech, disp);
 }
 
@@ -356,3 +454,4 @@ ccss* SpectralSample::getCCSS() const
 {
     return m_ccss;
 }
+

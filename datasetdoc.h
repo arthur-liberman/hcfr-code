@@ -189,6 +189,7 @@ protected:
 	afx_msg void OnCalibrationSim();
 	afx_msg void OnUpdateCalibrationSim(CCmdUI* pCmdUI);
 	afx_msg void OnCalibrationManual();
+	afx_msg void OnCalibrationSpectralSample();
 	afx_msg void OnUpdateCalibrationManual(CCmdUI* pCmdUI);
 	afx_msg void OnSimGrayscale();
 	afx_msg void OnSimPrimaries();

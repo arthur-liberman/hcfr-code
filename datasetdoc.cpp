@@ -53,6 +53,7 @@
 #include "MTCSSensor.h"
 #include "Spyder3Sensor.h"
 #include "ArgyllSensor.h"
+#include "SpectralSampleDlg.h"
 
 #include "Matrix.h"
 #include "NewDocWizard.h"
@@ -446,6 +447,7 @@ BEGIN_MESSAGE_MAP(CDataSetDoc, CDocument)
 	ON_UPDATE_COMMAND_UI(IDM_CALIBRATION_SIM, OnUpdateCalibrationSim)
 	ON_COMMAND(IDM_CALIBRATION_MANUAL, OnCalibrationManual)
 	ON_UPDATE_COMMAND_UI(IDM_CALIBRATION_MANUAL, OnUpdateCalibrationManual)
+	ON_COMMAND(IDM_CALIBRATION_SPECTRAL, OnCalibrationSpectralSample)
 	ON_COMMAND(IDM_SIM_GRAYSCALE, OnSimGrayscale)
 	ON_COMMAND(IDM_SIM_PRIMARIES, OnSimPrimaries)
 	ON_COMMAND(IDM_SIM_SECONDARIES, OnSimSecondaries)
@@ -1930,6 +1932,298 @@ void CDataSetDoc::OnCalibrationManual()
 					m_pSensor->SaveCalibrationFile();
 			}
 		}
+	}
+}
+
+void CDataSetDoc::OnCalibrationSpectralSample() 
+{
+	int		i;
+	MSG		Msg;
+	BOOL	bEscape, bReturn;
+	CColor	measuredColor[4];
+	CString	strMsg, Title;
+
+	// TODO: Put in a check to enable / disable the menu item depending on whether the instrument is a colorimeter or spectrometer
+
+	if (m_pSensor->isColorimeter())
+	{
+		Title.LoadString ( IDS_ERROR );
+		strMsg.LoadString(IDS_SPECTRAL_SAMPLE_USE_SPECTRO);
+		MessageBox(NULL, strMsg, Title ,MB_ICONERROR | MB_OK);  
+		return;
+	}
+
+	CString displayName = m_pGenerator->GetActiveDisplayName();
+	
+	if (displayName.IsEmpty()) // If the displayname is empty, we're not using the GDIGenerator, and so cannot display any patches
+	{
+		Title.LoadString ( IDS_ERROR );
+		strMsg.LoadString(IDS_SPECTRAL_SAMPLE_GENERATOR);
+		MessageBox(NULL, strMsg, Title ,MB_ICONERROR | MB_OK);  
+		return;
+	}
+
+	if ( IDYES == AfxMessageBox ( IDS_SPECTRAL_SAMPLE_CREATE, MB_YESNO | MB_ICONQUESTION ) )
+	{
+		if(m_pGenerator->Init(5) != TRUE)
+		{
+			Title.LoadString ( IDS_ERROR );
+			strMsg.LoadString ( IDS_ERRINITGENERATOR );
+			GetColorApp()->InMeasureMessageBox(strMsg,Title,MB_ICONERROR | MB_OK);
+			return;
+		}
+
+		if(m_pSensor->Init(FALSE) != TRUE)
+		{
+			Title.LoadString ( IDS_ERROR );
+			strMsg.LoadString ( IDS_ERRINITSENSOR );
+			GetColorApp()->InMeasureMessageBox(strMsg,Title,MB_ICONERROR | MB_OK);
+			m_pGenerator->Release();
+			return;
+		}
+
+		double primaryIRELevel=100.0;	
+		CColor measure;
+		
+		// Measure red primary 
+		for ( i = 0; i < 1 ; i ++ )
+		{
+			if( m_pGenerator->DisplayRGBColor(CIRELevel(primaryIRELevel,0,0,FALSE),CGenerator::MT_PRIMARY) )
+			{
+				bEscape = m_measure.WaitForDynamicIris ();
+				bReturn = FALSE;
+
+				if ( ! bEscape )
+					measure=m_pSensor->MeasureColor(CIRELevel(primaryIRELevel,0,0,FALSE));
+				
+				while ( PeekMessage ( & Msg, NULL, WM_KEYDOWN, WM_KEYUP, TRUE ) )
+				{
+					if ( Msg.message == WM_KEYDOWN && Msg.wParam == VK_ESCAPE )
+						bEscape = TRUE;
+				}
+
+				if ( bEscape )
+				{
+					m_pSensor->Release();
+					m_pGenerator->Release();
+					strMsg.LoadString ( IDS_MEASURESCANCELED );
+					GetColorApp()->InMeasureMessageBox ( strMsg, NULL, MB_OK | MB_ICONINFORMATION );
+					return;
+				}
+
+				if(!m_pSensor->IsMeasureValid())
+				{
+					Title.LoadString ( IDS_ERROR );
+					strMsg.LoadString ( IDS_ANERROROCCURED );
+					int result=GetColorApp()->InMeasureMessageBox(strMsg+m_pSensor->GetErrorString(),Title,MB_ABORTRETRYIGNORE | MB_ICONERROR);
+					if(result == IDABORT)
+					{
+						m_pSensor->Release();
+						m_pGenerator->Release();
+						return;
+					}
+					if(result == IDRETRY)
+						i--;
+				}
+				else
+					measuredColor[0]=measure;
+			}
+			else
+			{
+				m_pSensor->Release();
+				m_pGenerator->Release();
+				return;
+			}
+		}
+
+		// Measure green primary 
+		for ( i = 0; i < 1 ; i ++ )
+		{
+			if( m_pGenerator->DisplayRGBColor(CIRELevel(0,primaryIRELevel,0,FALSE),CGenerator::MT_PRIMARY) )
+			{
+				bEscape = m_measure.WaitForDynamicIris ();
+				bReturn = FALSE;
+
+				if ( ! bEscape )
+					measure=m_pSensor->MeasureColor(CIRELevel(0,primaryIRELevel,0,FALSE));
+				
+				while ( PeekMessage ( & Msg, NULL, WM_KEYDOWN, WM_KEYUP, TRUE ) )
+				{
+					if ( Msg.message == WM_KEYDOWN && Msg.wParam == VK_ESCAPE )
+						bEscape = TRUE;
+				}
+
+				if ( bEscape )
+				{
+					m_pSensor->Release();
+					m_pGenerator->Release();
+					strMsg.LoadString ( IDS_MEASURESCANCELED );
+					GetColorApp()->InMeasureMessageBox ( strMsg, NULL, MB_OK | MB_ICONINFORMATION );
+					return;
+				}
+
+				if(!m_pSensor->IsMeasureValid())
+				{
+					Title.LoadString ( IDS_ERROR );
+					strMsg.LoadString ( IDS_ANERROROCCURED );
+					int result=GetColorApp()->InMeasureMessageBox(strMsg+m_pSensor->GetErrorString(),Title,MB_ABORTRETRYIGNORE | MB_ICONERROR);
+					if(result == IDABORT)
+					{
+						m_pSensor->Release();
+						m_pGenerator->Release();
+						return;
+					}
+					if(result == IDRETRY)
+						i--;
+				}
+				else
+					measuredColor[1]=measure;
+			}
+			else
+			{
+				m_pSensor->Release();
+				m_pGenerator->Release();
+				return;
+			}
+		}
+
+		// Measure blue primary 
+		for ( i = 0; i < 1 ; i ++ )
+		{
+			if( m_pGenerator->DisplayRGBColor(CIRELevel(0,0,primaryIRELevel,FALSE),CGenerator::MT_PRIMARY) )
+			{
+				bEscape = m_measure.WaitForDynamicIris ();
+				bReturn = FALSE;
+
+				if ( ! bEscape )
+					measure=m_pSensor->MeasureColor(CIRELevel(0,0,primaryIRELevel,FALSE));
+				
+				while ( PeekMessage ( & Msg, NULL, WM_KEYDOWN, WM_KEYUP, TRUE ) )
+				{
+					if ( Msg.message == WM_KEYDOWN && Msg.wParam == VK_ESCAPE )
+						bEscape = TRUE;
+				}
+
+				if ( bEscape )
+				{
+					m_pSensor->Release();
+					m_pGenerator->Release();
+					strMsg.LoadString ( IDS_MEASURESCANCELED );
+					GetColorApp()->InMeasureMessageBox( strMsg, NULL, MB_OK | MB_ICONINFORMATION );
+					return;
+				}
+
+				if(!m_pSensor->IsMeasureValid())
+				{
+					Title.LoadString ( IDS_ERROR );
+					strMsg.LoadString ( IDS_ANERROROCCURED );
+					int result=GetColorApp()->InMeasureMessageBox(strMsg+m_pSensor->GetErrorString(),Title,MB_ABORTRETRYIGNORE | MB_ICONERROR);
+					if(result == IDABORT)
+					{
+						m_pSensor->Release();
+						m_pGenerator->Release();
+						return;
+					}
+					if(result == IDRETRY)
+						i--;
+				}
+				else
+					measuredColor[2]=measure;
+			}
+			else
+			{
+				m_pSensor->Release();
+				m_pGenerator->Release();
+				return;
+			}
+		}
+
+		// Measure white reference
+		for ( i = 0; i < 1 ; i ++ )
+		{
+			if( m_pGenerator->DisplayRGBColor(CIRELevel(primaryIRELevel,primaryIRELevel,primaryIRELevel,FALSE),CGenerator::MT_PRIMARY) )
+			{
+				bEscape = m_measure.WaitForDynamicIris ();
+				bReturn = FALSE;
+
+				if ( ! bEscape )
+					measure=m_pSensor->MeasureColor(CIRELevel(primaryIRELevel,primaryIRELevel,primaryIRELevel,FALSE));
+				
+				while ( PeekMessage ( & Msg, NULL, WM_KEYDOWN, WM_KEYUP, TRUE ) )
+				{
+					if ( Msg.message == WM_KEYDOWN && Msg.wParam == VK_ESCAPE )
+						bEscape = TRUE;
+				}
+
+				if ( bEscape )
+				{
+					m_pSensor->Release();
+					m_pGenerator->Release();
+					strMsg.LoadString ( IDS_MEASURESCANCELED );
+					GetColorApp()->InMeasureMessageBox ( strMsg, NULL, MB_OK | MB_ICONINFORMATION );
+					return;
+				}
+
+				if(!m_pSensor->IsMeasureValid())
+				{
+					Title.LoadString ( IDS_ERROR );
+					strMsg.LoadString ( IDS_ANERROROCCURED );
+					int result=GetColorApp()->InMeasureMessageBox(strMsg+m_pSensor->GetErrorString(),Title,MB_ABORTRETRYIGNORE | MB_ICONERROR);
+					if(result == IDABORT)
+					{
+						m_pSensor->Release();
+						m_pGenerator->Release();
+						return;
+					}
+					if(result == IDRETRY)
+						i--;
+				}
+				else
+					measuredColor[3]=measure;
+			}
+			else
+			{
+				m_pSensor->Release();
+				m_pGenerator->Release();
+				return;
+			}
+		}
+
+		std::string savePath = GetConfig()->m_ApplicationPath;
+		CFileDialog fileSaveDialog( FALSE, "ccss", NULL, OFN_HIDEREADONLY, "Colorimeter Calibration Spectral Sample (*.ccss)|*.ccss||" );
+		fileSaveDialog.m_ofn.lpstrInitialDir = savePath.c_str();
+		CSpectralSampleDlg spectralSampleDialog(displayName);
+
+		if(spectralSampleDialog.DoModal() == IDOK && fileSaveDialog.DoModal() == IDOK)
+		{
+			std::string saveFilename = savePath + (LPCSTR)fileSaveDialog.GetFileName();
+			try
+			{	
+				SpectralSample ss;
+				ss.setDisplay(spectralSampleDialog.m_displayName);
+				ss.setTech(spectralSampleDialog.m_displayTech);
+				ss.setReferenceInstrument(m_pSensor->GetName());
+				
+				// Ignore return values as any error will throw an exception	
+
+				(void)ss.createFromMeasurements(measuredColor, 4); 
+				(void)ss.Write(saveFilename);
+			}
+			catch (std::logic_error& e)
+			{
+				Title.LoadString(IDS_ERROR);
+				MessageBox(NULL, e.what(), Title, MB_ICONERROR | MB_OK);
+			}
+			catch (...)
+			{
+				Title.LoadString(IDS_ERROR);
+				strMsg.LoadString(IDS_SPECTRAL_SAMPLE_UNEXPECTED_EXCEPTION);
+				MessageBox(NULL, strMsg, Title, MB_ICONERROR | MB_OK); 
+			}
+		}
+		
+		m_pSensor->Release();
+		m_pGenerator->Release();
 	}
 }
 

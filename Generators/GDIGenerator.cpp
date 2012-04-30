@@ -384,3 +384,8 @@ BOOL CGDIGenerator::Release(INT nbNext)
 
 	return bOk;
 }
+
+CString CGDIGenerator::GetActiveDisplayName() 
+{ 
+	return m_GDIGenePropertiesPage.m_monitorNameArray[m_activeMonitorNum];
+}

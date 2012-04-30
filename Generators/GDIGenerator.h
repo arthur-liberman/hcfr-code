@@ -83,6 +83,8 @@ public:
 	virtual void SetPropertiesSheetValues();
 	virtual void GetPropertiesSheetValues();
 
+	virtual CString GetActiveDisplayName();
+
 protected:
 	void GetMonitorList();
 	std::string GetMonitorName(const MONITORINFOEX *m) const;
