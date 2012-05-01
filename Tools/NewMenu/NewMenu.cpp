@@ -7784,10 +7784,10 @@ void CNewMenu::SynchronizeMenu()
   CTypedPtrArray<CPtrArray, CNewMenuItemData*> temp;
   CNewMenuItemData *pItemData;
   CString string;
-  UINT submenu,state;
+  UINT submenu,state,j;
 
   InitializeMenuList(0);
-  for(int j=0;j<GetMenuItemCount();++j)
+  for(j=0;j<GetMenuItemCount();++j)
   {
     MENUITEMINFO menuInfo = {0};
     menuInfo.cbSize = sizeof(menuInfo);
