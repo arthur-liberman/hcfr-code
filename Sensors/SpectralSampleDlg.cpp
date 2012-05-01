@@ -17,12 +17,11 @@
 //	Ian C
 /////////////////////////////////////////////////////////////////////////////
 
-// SensorPropPage.cpp : implementation file
+// SpectralSampleDlg.cpp : implementation file
 //
 
 #include "stdafx.h"
 #include "ColorHCFR.h"
-#include "SensorPropPage.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -32,7 +31,6 @@ static char THIS_FILE[] = __FILE__;
 
 #include "stdafx.h"
 #include "SpectralSampleDlg.h"
-#include "afxdialogex.h"
 #include <string>
 
 // CSpectralSampleDlg dialog
