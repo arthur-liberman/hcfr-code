@@ -630,7 +630,7 @@ ArgyllMeterWrapper::ArgyllMeterWrappers ArgyllMeterWrapper::getDetectedMeters(st
 bool ArgyllMeterWrapper::isColorimeter()
 {
     checkMeterIsInitialized();
-    return !!(m_meter->capabilities(m_meter) & inst_colorimeter);
+    return !(m_meter->capabilities(m_meter) & inst_spectral);
 }
 
 

@@ -406,3 +406,9 @@ BOOL CArgyllSensor::SensorAcceptCalibration()
         return m_meter->isColorimeter()?TRUE:FALSE;
     }
 }
+
+bool CArgyllSensor::isColorimeter() const
+{
+    return m_meter->isColorimeter();
+}
+
