@@ -45,6 +45,7 @@ public:
 
     bool Read(const std::string& samplePath);
 	bool Write(const std::string& samplePath);
+	bool loadMeasurementsFromTI3(const std::string& ti3Path, CColor** readings, int& nReadings);
 	bool createFromTI3(const std::string& ti3Path);
 	bool createFromMeasurements(const CColor spectralReadings[], const int nReadings);
 

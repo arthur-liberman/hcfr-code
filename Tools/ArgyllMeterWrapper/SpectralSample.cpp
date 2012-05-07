@@ -113,10 +113,10 @@ bool SpectralSample::Read(const std::string& samplePath)
             return false;
         }
         m_Path = samplePath;
-        m_Display = m_ccss->desc;
-        m_Tech = m_ccss->tech;
-		m_RefInstrument = m_ccss->ref;
-        setDescription(m_ccss->tech, m_ccss->disp); 
+        m_Display = m_ccss->disp ? m_ccss->disp : "";
+        m_Tech = m_ccss->tech ? m_ccss->tech : "";
+		m_RefInstrument = m_ccss->ref ? m_ccss->ref : "";
+        setDescription(m_Tech.c_str(), m_Display.c_str()); 
         return true;
     }
     else
@@ -139,6 +139,148 @@ bool SpectralSample::Write(const std::string& samplePath)
 	}
 }
 
+bool SpectralSample::loadMeasurementsFromTI3(const std::string& ti3Path, CColor** readings, int& nReadings)
+{
+	CGATSFile cgats;
+
+	if (cgats.Read(ti3Path))
+	{
+		if (cgats.getNumberOfTables() <= 0)
+		{
+			std::string errorMessage = "Input file ";
+			errorMessage += ti3Path;
+			errorMessage += " must contain at least one table";
+			throw std::logic_error(errorMessage);
+		}
+		if (cgats.getNumberOfDataSets(0) <= 0)
+		{
+			std::string errorMessage = "Input file ";
+			errorMessage += ti3Path;
+			errorMessage += " must contain at least one data set";
+			throw std::logic_error(errorMessage);
+		}
+
+		int indexInstrument, indexSpectralBands, indexSpectralStart, indexSpectralEnd;
+
+		if (!cgats.FindKeyword("TARGET_INSTRUMENT", 0, indexInstrument))
+		{			
+			std::string errorMessage = "Can't find keyword TARGET_INSTRUMENT in  ";
+			errorMessage += ti3Path;
+			throw std::logic_error(errorMessage);
+		}
+		if (!cgats.FindKeyword("SPECTRAL_BANDS", 0, indexSpectralBands))
+		{			
+			std::string errorMessage = "Can't find keyword SPECTRAL_BANDS in  ";
+			errorMessage += ti3Path;
+			throw std::logic_error(errorMessage);
+		}
+		if (!cgats.FindKeyword("SPECTRAL_START_NM", 0, indexSpectralStart))
+		{			
+			std::string errorMessage = "Can't find keyword SPECTRAL_START_NM in  ";
+			errorMessage += ti3Path;
+			return false;
+		}
+		if (!cgats.FindKeyword("SPECTRAL_END_NM", 0, indexSpectralEnd))
+		{			
+			std::string errorMessage = "Can't find keyword SPECTRAL_END_NM in  ";
+			errorMessage += ti3Path;
+			throw std::logic_error(errorMessage);
+		}
+			
+		xspect sp, *samples = NULL;
+		samples = new xspect[cgats.getNumberOfDataSets(0)];
+
+		m_RefInstrument = cgats.getStringKeywordValue(0, indexInstrument);
+
+		// Get colours index
+		
+		int xIndex, yIndex, zIndex;
+		if (!cgats.FindField("XYZ_X", 0, xIndex))
+		{
+			std::string errorMessage = "Can't find keyword XYZ_X in  ";
+			errorMessage += ti3Path;
+			throw std::logic_error(errorMessage);
+		}
+		if (!cgats.FindField("XYZ_Y", 0, yIndex))
+		{
+			std::string errorMessage = "Can't find keyword XYZ_Y in  ";
+			errorMessage += ti3Path;
+			throw std::logic_error(errorMessage);
+		}
+		if (!cgats.FindField("XYZ_Z", 0, zIndex))
+		{
+			std::string errorMessage = "Can't find keyword XYZ_Z in  ";
+			errorMessage += ti3Path;
+			throw std::logic_error(errorMessage);
+		}
+		
+		sp.spec_n = cgats.getIntKeywordValue(0, indexSpectralBands);
+		sp.spec_wl_short = cgats.getDoubleKeywordValue(0, indexSpectralStart);
+		sp.spec_wl_long = cgats.getDoubleKeywordValue(0, indexSpectralEnd);
+		sp.norm = 1.0;
+
+		int shortWavelength((int)(sp.spec_wl_short + 0.5));
+		int longWavelength((int)(sp.spec_wl_long + 0.5));
+		int bandWidth((int)((sp.spec_wl_long - sp.spec_wl_short) / (double)sp.spec_n + 0.5));
+		
+		// Find the fields for spectral values 
+
+		int  spi[XSPECT_MAX_BANDS];
+
+		for (int j = 0; j < sp.spec_n; j++) 
+		{
+			int nm, fieldIndex;
+	
+			// Compute nearest integer wavelength 
+
+			nm = (int)(sp.spec_wl_short + ((double)j/(sp.spec_n-1.0)) * (sp.spec_wl_long - sp.spec_wl_short) + 0.5);
+			
+			std::stringstream sFormatter (stringstream::in | stringstream::out);
+			sFormatter << setw(3) << setfill('0') << nm;
+			std::string sField = "SPEC_" + sFormatter.str();
+
+			if (cgats.FindField(sField, 0, fieldIndex))
+			{
+				spi[j] = fieldIndex;
+			}
+			else
+			{
+				std::string errorMessage = "Can't find field ";
+				errorMessage += sField;
+				errorMessage += " in input file ";
+				errorMessage += ti3Path;
+				delete [] samples;
+				throw std::logic_error(errorMessage);
+			}
+		}
+
+		// Transfer all the spectral values 
+		*readings = new CColor[cgats.getNumberOfDataSets(0)];
+
+		for (int i = 0; i < cgats.getNumberOfDataSets(0); i++) 
+		{
+			XSPECT_COPY_INFO(&samples[i], &sp);
+	
+			for (int j = 0; j < sp.spec_n; j++) 
+			{
+				samples[i].spec[j] = cgats.getDoubleFieldValue(0, i, spi[j]);
+			}
+			(*readings)[i] = CColor(cgats.getDoubleFieldValue(0, i, xIndex), cgats.getDoubleFieldValue(0, i, yIndex), cgats.getDoubleFieldValue(0, i, zIndex));
+			CSpectrum spectrum(sp.spec_n, shortWavelength, longWavelength, bandWidth, samples[i].spec);
+			(*readings)[i].SetSpectrum(spectrum);
+		}
+
+
+		delete [] samples;
+		nReadings = cgats.getNumberOfDataSets(0);
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
 
 bool SpectralSample::createFromTI3(const std::string& ti3Path)
 {

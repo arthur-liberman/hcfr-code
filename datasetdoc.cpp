@@ -2206,6 +2206,21 @@ void CDataSetDoc::OnCalibrationSpectralSample()
 				
 				// Ignore return values as any error will throw an exception	
 
+#if defined(LIBHCFR_HAS_MFC) && defined(_DEBUG)
+
+				std::string saveReadings = savePath + (LPCSTR)fileSaveDialog.GetFileTitle() + ".xyz";
+				CFile fileReadings;
+				if( fileReadings.Open(saveReadings.c_str(), CFile::modeCreate|CFile::modeWrite))
+				{
+					CArchive ar(&fileReadings, CArchive::store);
+					for (int i = 0; i < 4; i++)
+					{
+						measuredColor[i].Serialize(ar);
+					}
+					ar.Close();
+					fileReadings.Close();
+				}
+#endif
 				(void)ss.createFromMeasurements(measuredColor, 4); 
 				(void)ss.Write(saveFilename);
 			}
