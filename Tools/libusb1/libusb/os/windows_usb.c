@@ -1568,14 +1568,14 @@ static int set_device_paths(struct libusb_context *ctx, struct discovered_devs *
 
 				// See if the descriports match
 				if (priv->usb_interface[0].apib->id == USB_API_LIBUSB0
-				 && priv->libusb0_matched == 0
+				/* && priv->libusb0_matched == 0 */
 				 && memcmp(&dev_descriptor, &priv->dev_descriptor,
 				                             sizeof(USB_DEVICE_DESCRIPTOR)) == 0) {
 
 
 					free(priv->path);
 					priv->path = safe_strdup(filename);
-				 	priv->libusb0_matched = 1;
+				 	/* priv->libusb0_matched = 1; */
 					break;
 				}
 			}
