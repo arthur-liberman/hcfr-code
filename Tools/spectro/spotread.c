@@ -695,7 +695,7 @@ int main(int argc, char *argv[])
 
 	/* - - - - - - - - - - - - - - - - - - -  */
 	/* Setup the instrument ready to do reads */
-	if ((it = new_inst(comport, 0, debug, verb, NULL)) == NULL) {
+	if ((it = new_inst(comport, 0, debug, verb)) == NULL) {
 		warning("Unknown, inappropriate or no instrument detected");
 		usage(debug, cl);
 	}

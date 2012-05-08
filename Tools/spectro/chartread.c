@@ -235,7 +235,7 @@ int debug			/* Debug level */
 			nextrap = 2;
 		}
 
-		if ((it = new_inst(comport, instUnknown, debug, verb, NULL)) == NULL) {
+		if ((it = new_inst(comport, instUnknown, debug, verb)) == NULL) {
 			printf("Unknown, inappropriate or no instrument detected\n");
 			return -1;
 		}

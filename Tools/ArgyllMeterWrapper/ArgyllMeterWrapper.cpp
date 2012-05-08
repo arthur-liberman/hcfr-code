@@ -165,7 +165,7 @@ namespace
                     _inst* meter = 0;
                     try
                     {
-                        meter = new_inst(pathsToUse[i], 0, 1, 0, 0);
+                        meter = new_inst(pathsToUse[i], 0, 1, 0);
                     }
                     catch(std::logic_error&)
                     {
@@ -192,7 +192,7 @@ namespace
                     }
                 }
             }
-			
+
             std::vector<ArgyllMeterWrapper*> result(m_meters);
             return result;
         }
