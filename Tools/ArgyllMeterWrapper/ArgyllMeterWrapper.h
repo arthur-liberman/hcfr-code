@@ -52,6 +52,9 @@ public:
         INCORRECT_POSITION,
     } eMeterState;
 
+    /// ArgyllMeterWrapper constructor
+    /// Create a USB meter object
+    ArgyllMeterWrapper(_inst* meter);
     ~ArgyllMeterWrapper();
 
     /// initialize the meter
@@ -133,10 +136,6 @@ public:
 
 
 private:
-    /// ArgyllMeterWrapper constructor
-    /// Create a USB meter object
-    ArgyllMeterWrapper(_inst* meter);
-
     void checkMeterIsInitialized();
     _inst* m_meter;
     int m_displayType;

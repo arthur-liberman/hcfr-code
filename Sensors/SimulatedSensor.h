@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005-2008 Association Homecinema Francophone.  All rights reserved.
+// Copyright (c) 2005-2011 Association Homecinema Francophone.  All rights reserved.
 /////////////////////////////////////////////////////////////////////////////
 //
 //  This file is subject to the terms of the GNU General Public License as
@@ -50,6 +50,8 @@ public:
 	virtual void GetPropertiesSheetValues();
 
 	virtual LPCSTR GetStandardSubDir ()	{ return "Etalon_Simulation"; }
+
+	virtual BOOL HasSpectrumCapabilities ( int * pNbBands, int * pMinWaveLength, int * pMaxWaveLength, double * pBandWidth );
 
 	// returns unique sensor identifier (for simultaneous measures: cannot use twice the same sensor on two documents)
 	virtual void GetUniqueIdentifier( CString & strId );

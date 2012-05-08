@@ -46,6 +46,13 @@
 
 
 
+// define the error handlers so we can change them
+extern "C"
+{
+    extern void (*error)(char *fmt, ...);
+    extern void (*warning)(char *fmt, ...);
+    extern void (*verbose)(int level, char *fmt, ...);
+}
 
 namespace
 {
@@ -83,7 +90,7 @@ namespace
     {
         return ((fullInstCode & inst_mask) == partialInstCode);
     }
-    
+   
     class ArgyllMeters
     {
     private:
@@ -91,8 +98,6 @@ namespace
         std::vector<ArgyllMeterWrapper*> m_meters;
         ArgyllMeters()
         {
-            // technically we're supposed to call libusb_init() before calling any routines in libusb
-            libusb_init(0);
         }
         ~ArgyllMeters()
         {
@@ -101,9 +106,6 @@ namespace
                 delete m_meters[i];
             }
             m_meters.clear();
-            // good as place as any to clear up usb
-            libusb_exit(NULL);
-            
         }
     public:
         static ArgyllMeters& getInstance()
@@ -111,34 +113,90 @@ namespace
             static ArgyllMeters theInstance;
             return theInstance;
         }
-        void addMeter(ArgyllMeterWrapper* newMeter)
+
+        std::vector<ArgyllMeterWrapper*> getDetectedMeters(std::string& errorMessage)
         {
             CLockWhileInScope usingThis(m_MeterCritSection);
-            for(size_t i(0); i < m_meters.size(); ++i)
+            error = error_imp;
+            warning = warning_imp;
+            verbose = verbose_imp;
+            errorMessage = "";
+
+            // only detect meters once if some are found
+            // means that we don't support an extra meter being adding during the
+            // run at the moment, but I can live with this
+            if(m_meters.empty())
             {
-                if(m_meters[i]->isSameMeter(newMeter))
+                std::vector<int> pathsToUse;
+                icoms* icom;
+                if ((icom = new_icoms()) == NULL) 
                 {
-                    delete newMeter;
-                    return;
+                    throw std::logic_error("Can't create new icoms");
+                }
+                icompath **paths;
+                if ((paths = icom->get_paths(icom)) != NULL)
+                {
+                    for (int i(0); paths[i] != NULL; ++i) 
+                    {
+                        // avoid COM ports for now until we work out how to handle 
+                        // them properly
+                        if(strncmp("COM", paths[i]->path, 3) != 0 && strncmp("com", paths[i]->path, 3) != 0)
+                        {
+                            // open the i1pro first until we work out how to handle the
+                            // driver path properly in icoms
+                            if(paths[i]->itype == instI1Pro)
+                            {
+                                pathsToUse.insert(pathsToUse.begin(), i + 1);
+                            }
+                            else
+                            {
+                                pathsToUse.push_back(i + 1);
+                            }
+                        }
+                    }
+                }
+                if(icom)
+                {
+                    icom->del(icom);
+                }
+
+                for (int i(0); i != pathsToUse.size(); ++i)
+                {
+                    _inst* meter = 0;
+                    try
+                    {
+                        meter = new_inst(pathsToUse[i], 0, 1, 0, 0);
+                    }
+                    catch(std::logic_error&)
+                    {
+                        throw std::logic_error("No meter found at detected port- Create new Argyll instrument failed with severe error");
+                    }
+                    try
+                    {
+                        inst_code instCode = meter->init_coms(meter, i + 1, baud_38400, fc_nc, 15.0);
+                        if(instCode == inst_ok)
+                        {
+                            m_meters.push_back(new ArgyllMeterWrapper(meter));
+                        }
+                        else
+                        {
+                            meter->del(meter);
+                            errorMessage += "Starting communications with the meter failed. ";
+                        }
+                    }
+                    catch(std::logic_error& e)
+                    {
+                        meter->del(meter);
+                        errorMessage += "Incorrect driver - Starting communications with the meter failed with severe error. ";
+                        errorMessage += e.what();
+                    }
                 }
             }
-            m_meters.push_back(newMeter);
-        }
-        std::vector<ArgyllMeterWrapper*> getDetectedMeters()
-        {
-            CLockWhileInScope usingThis(m_MeterCritSection);
+			
             std::vector<ArgyllMeterWrapper*> result(m_meters);
             return result;
         }
     };
-}
-
-// define the error handlers so we can change them
-extern "C"
-{
-    extern void (*error)(char *fmt, ...);
-    extern void (*warning)(char *fmt, ...);
-    extern void (*verbose)(int level, char *fmt, ...);
 }
 
 ArgyllMeterWrapper::ArgyllMeterWrapper(_inst* meter) :
@@ -568,63 +626,7 @@ bool ArgyllMeterWrapper::isMeterStillValid() const
 
 ArgyllMeterWrapper::ArgyllMeterWrappers ArgyllMeterWrapper::getDetectedMeters(std::string& errorMessage)
 {
-    error = error_imp;
-    warning = warning_imp;
-    verbose = verbose_imp;
-    errorMessage = "";
-
-    // only detect meters once if some are found
-    // means that we don't support an extra meter being adding during the
-    // run at the moment, but I can live with this
-    if(ArgyllMeters::getInstance().getDetectedMeters().empty())
-    {
-        icoms *icom = 0;
-        if ((icom = new_icoms()) != NULL) 
-        {
-            icompath **paths;
-            if ((paths = icom->get_paths(icom)) != NULL)
-            {
-                for (int i(0); paths[i] != NULL; ++i) 
-                {
-                    // avoid COM ports for now until we work out how to handle 
-                    // them properly
-                    if(strncmp("COM", paths[i]->path, 3) != 0 && strncmp("com", paths[i]->path, 3) != 0)
-                    {
-                        _inst* meter = 0;
-                        try
-                        {
-                            meter = new_inst(i + 1, 0, 1, 0, icom);
-                        }
-                        catch(std::logic_error&)
-                        {
-                            throw std::logic_error("No meter found at detected port- Create new Argyll instrument failed with severe error");
-                        }
-                        try
-                        {
-                            inst_code instCode = meter->init_coms(meter, i + 1, baud_38400, fc_nc, 15.0);
-                            if(instCode == inst_ok)
-                            {
-                                ArgyllMeters::getInstance().addMeter(new ArgyllMeterWrapper(meter));
-                            }
-                            else
-                            {
-                                meter->del(meter);
-                                errorMessage += "Starting communications with the meter failed. ";
-                            }
-                        }
-                        catch(std::logic_error& e)
-                        {
-                            meter->del(meter);
-                            errorMessage += "Incorrect driver - Starting communications with the meter failed with severe error. ";
-                            errorMessage += e.what();
-                        }
-                    }
-                }
-            }
-            //icom->del(icom);
-        }
-    }
-    return ArgyllMeters::getInstance().getDetectedMeters();
+    return ArgyllMeters::getInstance().getDetectedMeters(errorMessage);
 }
 
 bool ArgyllMeterWrapper::isColorimeter()

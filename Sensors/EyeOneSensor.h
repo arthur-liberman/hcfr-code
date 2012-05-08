@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005-2008 Association Homecinema Francophone.  All rights reserved.
+// Copyright (c) 2005-2011 Association Homecinema Francophone.  All rights reserved.
 /////////////////////////////////////////////////////////////////////////////
 //
 //  This file is subject to the terms of the GNU General Public License as
@@ -73,6 +73,8 @@ public:
 	virtual LPCSTR GetStandardSubDir ()	{ return ( GetConfig()->m_bUseCalibrationFilesOnAllProbes && m_CalibrationMode < 3 ) ? "Etalon_I1" : ""; }
 	virtual BOOL SensorNeedCalibration () { return FALSE; }
 	virtual BOOL SensorAcceptCalibration () { return ( GetConfig()->m_bUseCalibrationFilesOnAllProbes && m_CalibrationMode < 3 ); }
+
+	virtual BOOL HasSpectrumCapabilities ( int * pNbBands, int * pMinWaveLength, int * pMaxWaveLength, double * pBandWidth );
 
 	virtual void GetUniqueIdentifier( CString & strId );
 #ifdef USE_NON_FREE_CODE

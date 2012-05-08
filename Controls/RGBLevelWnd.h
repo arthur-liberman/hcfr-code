@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005-2008 Association Homecinema Francophone.  All rights reserved.
+// Copyright (c) 2005-2011 Association Homecinema Francophone.  All rights reserved.
 /////////////////////////////////////////////////////////////////////////////
 //
 //  This file is subject to the terms of the GNU General Public License as
@@ -38,11 +38,13 @@ public:
 
 // Attributes
 public:
-	int m_redValue;
-	int m_greenValue;
-	int m_blueValue;
+	int				m_redValue;
+	int				m_greenValue;
+	int				m_blueValue;
+	BOOL			m_bLumaMode;
 
-	CColor *	m_pRefColor;
+	CColor *		m_pRefColor;
+	CDataSetDoc *	m_pDocument;
 
 // Operations
 public:

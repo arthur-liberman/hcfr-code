@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005-2008 Association Homecinema Francophone.  All rights reserved.
+// Copyright (c) 2005-2011 Association Homecinema Francophone.  All rights reserved.
 /////////////////////////////////////////////////////////////////////////////
 //
 //  This file is subject to the terms of the GNU General Public License as
@@ -1066,7 +1066,7 @@ void CColorHCFRApp::SetLuxmeterValue ( LPCSTR lpszString, DWORD dwStartTick )
 	char	szBuf [ 256 ];
 	if ( ( fabs ( m_MeasuredLuxValue_Initial - m_MeasuredLuxValue ) / m_MeasuredLuxValue ) > 0.0001 )
 	{
-		sprintf ( szBuf, "Luxmeter approximation: %6f (actual) instead of %6f (initial) : %.1f %%\n", m_MeasuredLuxValue, m_MeasuredLuxValue_Initial, ( fabs ( m_MeasuredLuxValue_Initial - m_MeasuredLuxValue ) / m_MeasuredLuxValue ) * 100.0 );
+		sprintf_s ( szBuf, "Luxmeter approximation: %6f (actual) instead of %6f (initial) : %.1f %%\n", m_MeasuredLuxValue, m_MeasuredLuxValue_Initial, ( fabs ( m_MeasuredLuxValue_Initial - m_MeasuredLuxValue ) / m_MeasuredLuxValue ) * 100.0 );
 		OutputDebugString ( szBuf );
 	}
 }
@@ -1121,9 +1121,9 @@ void CColorHCFRApp::SetLuxmeterValue ( LPCSTR lpszString, DWORD dwStartTick )
 #ifdef _DEBUG
 char	szBuf [ 256 ];
 if ( m_bLuxMeasureValid )
-	sprintf ( szBuf, "Luxmeter value: %6f -> %6f validated\n", m_CurrentLuxValue, m_MeasuredLuxValue );
+	sprintf_s ( szBuf, "Luxmeter value: %6f -> %6f validated\n", m_CurrentLuxValue, m_MeasuredLuxValue );
 else
-	sprintf ( szBuf, "Luxmeter value: %6f\n", m_CurrentLuxValue );
+	sprintf_s ( szBuf, "Luxmeter value: %6f\n", m_CurrentLuxValue );
 OutputDebugString ( szBuf );
 #endif
 					}
@@ -1337,23 +1337,23 @@ BOOL CAboutDlg::OnInitDialog()
 	//m_donationHyperLink.SetURL ( str );
 
 	str.LoadString ( IDS_ABOUT_SENSOR );
-	strcpy ( szSensor, (LPCSTR) str );
+	strcpy_s ( szSensor, (LPCSTR) str );
 	str.LoadString ( IDS_ABOUT_DEVAPP );
-	strcpy ( szDevApp, (LPCSTR) str );
+	strcpy_s ( szDevApp, (LPCSTR) str );
 	str.LoadString ( IDS_ABOUT_EXPERT );
-	strcpy ( szExpert, (LPCSTR) str );
+	strcpy_s ( szExpert, (LPCSTR) str );
 	str.LoadString ( IDS_ABOUT_GRAPHICS );
-	strcpy ( szGraphics, (LPCSTR) str );
+	strcpy_s ( szGraphics, (LPCSTR) str );
 	str.LoadString ( IDS_ABOUT_DVD );
-	strcpy ( szDVD, (LPCSTR) str );
+	strcpy_s ( szDVD, (LPCSTR) str );
 	str.LoadString ( IDS_ABOUT_VALIDATION );
-	strcpy ( szValidation, (LPCSTR) str );
+	strcpy_s ( szValidation, (LPCSTR) str );
 	str.LoadString ( IDS_GERMANVERSION );
-	strcpy ( szGermanVersion, (LPCSTR) str );
+	strcpy_s ( szGermanVersion, (LPCSTR) str );
 
-	strcpy ( szSensorAndApp, szSensor );
-	strcat ( szSensorAndApp, "\n" );
-	strcat ( szSensorAndApp, szDevApp );
+	strcpy_s ( szSensorAndApp, szSensor );
+	strcat_s ( szSensorAndApp, "\n" );
+	strcat_s ( szSensorAndApp, szDevApp );
 
 	// Content	
 	CString s;

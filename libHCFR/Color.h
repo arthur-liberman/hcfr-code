@@ -60,7 +60,7 @@ class CColor: public Matrix
 public:
 	CColor();
 	CColor(const CColor& aColor);
-	CColor(Matrix aMatrix);
+	CColor(const Matrix aMatrix);
 	CColor(double aX,double aY, double aZ);	// XYZ initialisation
 	CColor(double ax,double ay);			// xy initialisation
     CColor(ifstream &theFile);
@@ -127,10 +127,10 @@ protected:
 class CSpectrum: public Matrix
 {
 public:
-	CSpectrum(int NbBands, int WaveLengthMin, int WaveLengthMax, int BandWidth );
-	CSpectrum(int NbBands, int WaveLengthMin, int WaveLengthMax, int BandWidth, double * pValues );
+	CSpectrum(int NbBands, int WaveLengthMin, int WaveLengthMax, double BandWidth );
+	CSpectrum(int NbBands, int WaveLengthMin, int WaveLengthMax, double BandWidth, double * pValues );
 	CSpectrum(const CSpectrum &aSpectrum);
-    CSpectrum (ifstream &theFile);
+    CSpectrum (ifstream &theFile, bool oldFileFormat = false);
 	~CSpectrum();
 
 	double& operator[](const int nRow) const;
@@ -144,7 +144,7 @@ public:
 public:
 	int		m_WaveLengthMin;
 	int		m_WaveLengthMax;
-	int		m_BandWidth;
+	double	m_BandWidth;
 };
 
 class CIRELevel

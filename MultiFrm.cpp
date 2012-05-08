@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005-2008 Association Homecinema Francophone.  All rights reserved.
+// Copyright (c) 2005-2011 Association Homecinema Francophone.  All rights reserved.
 /////////////////////////////////////////////////////////////////////////////
 //
 //  This file is subject to the terms of the GNU General Public License as
@@ -2275,7 +2275,7 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 			{
 				bOk = TRUE;
 				
-				LPSTR lpStr = strrchr ( (LPSTR)(LPCSTR) strParam, '.' );
+				LPCSTR lpStr = strrchr ( (LPCSTR) strParam, '.' );
 				if ( lpStr )
 				{
 					if ( _stricmp ( lpStr, ".thc" ) != 0 )

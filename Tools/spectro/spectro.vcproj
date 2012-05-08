@@ -318,14 +318,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\dispsup.h"
-				>
-			</File>
-			<File
-				RelativePath=".\dispwin.h"
-				>
-			</File>
-			<File
 				RelativePath=".\dtp20.h"
 				>
 			</File>
