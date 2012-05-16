@@ -63,7 +63,6 @@
 
 #include "RefColorDlg.h"
 #include "ScaleSizes.h"
-#include "AdjustMatrixDlg.h"
 
 #include "DocEnumerator.h"
 #include <math.h>
@@ -162,8 +161,7 @@ static UINT __cdecl BkgndThreadFunc ( LPVOID lpParameter )
 			    if ( ! g_bTerminateThread )
 			    {
 				    CColor * pMeasurement = new CColor;
-				    pMeasurement -> SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-				    pMeasurement -> SetSensorValue(measuredColor);
+				    *pMeasurement = measuredColor;
 
 				    while ( g_bInsideBkgndRefresh )
 					    Sleep ( 50 );
@@ -246,9 +244,6 @@ BOOL StartBackgroundMeasures ( CDataSetDoc * pDoc )
 
 	if ( pDoc && g_pDataDocRunningThread == NULL && g_hThread == NULL )
 	{
-		if(!pDoc->m_pSensor->IsCalibrated())
-			pDoc->CalibrateSensor(FALSE);
-
 		if(pDoc->m_pSensor->Init(FALSE) != TRUE)
 		{
 			Msg.LoadString ( IDS_ERRINITSENSOR );
@@ -435,8 +430,6 @@ BEGIN_MESSAGE_MAP(CDataSetDoc, CDocument)
 	//{{AFX_MSG_MAP(CDataSetDoc)
 	ON_COMMAND(IDM_CONFIGURE_SENSOR, OnConfigureSensor)
 	ON_COMMAND(IDM_CONFIGURE_GENERATOR, OnConfigureGenerator)
-	ON_COMMAND(IDM_CALIBRATE_SENSOR, OnCalibrateSensor)
-	ON_UPDATE_COMMAND_UI(IDM_CALIBRATE_SENSOR, OnUpdateCalibrateSensor)
 	ON_COMMAND(IDM_CHANGE_GENERATOR, OnChangeGenerator)
 	ON_COMMAND(IDM_CHANGE_SENSOR, OnChangeSensor)
 	ON_COMMAND(IDM_EXPORT_XLS, OnExportXls)
@@ -452,7 +445,6 @@ BEGIN_MESSAGE_MAP(CDataSetDoc, CDocument)
 	ON_COMMAND(IDM_SIM_GRAYSCALE_AND_COLORS, OnSimGrayscaleAndColors)
 	ON_COMMAND(IDM_PATTERN_ANIM_BLACK, OnPatternAnimBlack)
 	ON_COMMAND(IDM_PATTERN_ANIM_WHITE, OnPatternAnimWhite)
-	ON_COMMAND(IDM_TRAIN_METER, OnTrainMeter)
 	ON_COMMAND(IDM_SINGLE_MEASUREMENT, OnSingleMeasurement)
 	ON_COMMAND(IDM_CONTINUOUS_MEASUREMENT, OnContinuousMeasurement)
 	ON_COMMAND(IDM_MEASURE_GRAYSCALE, OnMeasureGrayscale)
@@ -494,9 +486,6 @@ BEGIN_MESSAGE_MAP(CDataSetDoc, CDocument)
 	ON_COMMAND(IDM_SIM_SAT_CYAN, OnSimSatCyan)
 	ON_COMMAND(IDM_SIM_SAT_MAGENTA, OnSimSatMagenta)
 	ON_COMMAND(IDM_SIM_SINGLEMEASURE, OnSimSingleMeasurement)
-	ON_COMMAND(IDM_RESET_CONVERSION_MATRIX, OnResetConversionMatrix)
-	ON_UPDATE_COMMAND_UI(IDM_RESET_CONVERSION_MATRIX, OnUpdateResetConversionMatrix)
-	ON_COMMAND(IDM_EDIT_CONVERSION_MATRIX, OnEditConversionMatrix)
 	ON_COMMAND(IDM_MEASURE_SAT_PRIMARIES, OnMeasureSatPrimaries)
 	ON_UPDATE_COMMAND_UI(IDM_MEASURE_SAT_PRIMARIES, OnUpdateMeasureSatPrimaries)
 	ON_COMMAND(IDM_SAVE_CALIBRATION_FILE, OnSaveCalibrationFile)
@@ -788,11 +777,10 @@ BOOL CDataSetDoc::OnNewDocument()
 
 				if ( propSheet.m_Page2.GetCurrentID() < 2)
 				{
-					// HCFR sensor or simulated sensor, needing calibration
+					// HCFR sensor or simulated sensor,
 					if(propSheet.m_Page2.m_sensorTrainingMode == 1)
 					{
-						if(m_pSensor->Configure())
-							CalibrateSensor(FALSE);
+						m_pSensor->Configure();
 					}
 					else
 						m_pSensor->LoadCalibrationFile(propSheet.m_Page2.m_trainingFileName);
@@ -856,8 +844,6 @@ BOOL CDataSetDoc::OnNewDocument()
 					m_measure.Copy(&g_DocToDuplicate->m_measure,DUPLCONTRAST);
 				if (Dlg.m_DuplInfoCheck)
 					m_measure.Copy(&g_DocToDuplicate->m_measure,DUPLINFO);
-				if (Dlg.m_DuplXYZCheck)
-					m_measure.Copy(&g_DocToDuplicate->m_measure,DUPLXYZADJUST);
 			}
 			else	// Default
 			{
@@ -865,8 +851,6 @@ BOOL CDataSetDoc::OnNewDocument()
 			}
 		}
 	}
-
-	m_measure.SetSensorMatrix(m_pSensor->GetSensorMatrix());
 
 	return TRUE;
 }
@@ -1095,9 +1079,6 @@ void CDataSetDoc::MeasureGrayScale()
 {
 	StopBackgroundMeasures ();
 
-	if(!m_pSensor->IsCalibrated())
-		CalibrateSensor(FALSE);
-
 	if(m_measure.MeasureGrayScale(m_pSensor,m_pGenerator))
 	{
 		SetModifiedFlag(m_measure.IsModified());
@@ -1108,9 +1089,6 @@ void CDataSetDoc::MeasureGrayScale()
 void CDataSetDoc::MeasureGrayScaleAndColors() 
 {
 	StopBackgroundMeasures ();
-
-	if(!m_pSensor->IsCalibrated())
-		CalibrateSensor(FALSE);
 
 	if(m_measure.MeasureGrayScaleAndColors(m_pSensor,m_pGenerator))
 	{
@@ -1123,9 +1101,6 @@ void CDataSetDoc::MeasureNearBlackScale()
 {
 	StopBackgroundMeasures ();
 
-	if(!m_pSensor->IsCalibrated())
-		CalibrateSensor(FALSE);
-
 	if(m_measure.MeasureNearBlackScale(m_pSensor,m_pGenerator))
 	{
 		SetModifiedFlag(m_measure.IsModified());
@@ -1136,9 +1111,6 @@ void CDataSetDoc::MeasureNearBlackScale()
 void CDataSetDoc::MeasureNearWhiteScale() 
 {
 	StopBackgroundMeasures ();
-
-	if(!m_pSensor->IsCalibrated())
-		CalibrateSensor(FALSE);
 
 	if(m_measure.MeasureNearWhiteScale(m_pSensor,m_pGenerator))
 	{
@@ -1151,9 +1123,6 @@ void CDataSetDoc::MeasureRedSatScale()
 {
 	StopBackgroundMeasures ();
 
-	if(!m_pSensor->IsCalibrated())
-		CalibrateSensor(FALSE);
-
 	if(m_measure.MeasureRedSatScale(m_pSensor,m_pGenerator))
 	{
 		SetModifiedFlag(m_measure.IsModified());
@@ -1164,9 +1133,6 @@ void CDataSetDoc::MeasureRedSatScale()
 void CDataSetDoc::MeasureGreenSatScale() 
 {
 	StopBackgroundMeasures ();
-
-	if(!m_pSensor->IsCalibrated())
-		CalibrateSensor(FALSE);
 
 	if(m_measure.MeasureGreenSatScale(m_pSensor,m_pGenerator))
 	{
@@ -1179,9 +1145,6 @@ void CDataSetDoc::MeasureBlueSatScale()
 {
 	StopBackgroundMeasures ();
 
-	if(!m_pSensor->IsCalibrated())
-		CalibrateSensor(FALSE);
-
 	if(m_measure.MeasureBlueSatScale(m_pSensor,m_pGenerator))
 	{
 		SetModifiedFlag(m_measure.IsModified());
@@ -1192,9 +1155,6 @@ void CDataSetDoc::MeasureBlueSatScale()
 void CDataSetDoc::MeasureYellowSatScale() 
 {
 	StopBackgroundMeasures ();
-
-	if(!m_pSensor->IsCalibrated())
-		CalibrateSensor(FALSE);
 
 	if(m_measure.MeasureYellowSatScale(m_pSensor,m_pGenerator))
 	{
@@ -1207,9 +1167,6 @@ void CDataSetDoc::MeasureCyanSatScale()
 {
 	StopBackgroundMeasures ();
 
-	if(!m_pSensor->IsCalibrated())
-		CalibrateSensor(FALSE);
-
 	if(m_measure.MeasureCyanSatScale(m_pSensor,m_pGenerator))
 	{
 		SetModifiedFlag(m_measure.IsModified());
@@ -1220,9 +1177,6 @@ void CDataSetDoc::MeasureCyanSatScale()
 void CDataSetDoc::MeasureMagentaSatScale() 
 {
 	StopBackgroundMeasures ();
-
-	if(!m_pSensor->IsCalibrated())
-		CalibrateSensor(FALSE);
 
 	if(m_measure.MeasureMagentaSatScale(m_pSensor,m_pGenerator))
 	{
@@ -1235,9 +1189,6 @@ void CDataSetDoc::MeasureAllSaturationScales()
 {
 	StopBackgroundMeasures ();
 
-	if(!m_pSensor->IsCalibrated())
-		CalibrateSensor(FALSE);
-
 	if(m_measure.MeasureAllSaturationScales(m_pSensor,m_pGenerator,FALSE))
 	{
 		SetModifiedFlag(m_measure.IsModified());
@@ -1248,9 +1199,6 @@ void CDataSetDoc::MeasureAllSaturationScales()
 void CDataSetDoc::MeasurePrimarySaturationScales() 
 {
 	StopBackgroundMeasures ();
-
-	if(!m_pSensor->IsCalibrated())
-		CalibrateSensor(FALSE);
 
 	if(m_measure.MeasureAllSaturationScales(m_pSensor,m_pGenerator,TRUE))
 	{
@@ -1263,9 +1211,6 @@ void CDataSetDoc::MeasurePrimaries()
 {
 	StopBackgroundMeasures ();
 
-	if(!m_pSensor->IsCalibrated())
-		CalibrateSensor(FALSE);
-
 	if(m_measure.MeasurePrimaries(m_pSensor,m_pGenerator))
 	{
 		SetModifiedFlag(m_measure.IsModified());
@@ -1276,9 +1221,6 @@ void CDataSetDoc::MeasurePrimaries()
 void CDataSetDoc::MeasureSecondaries() 
 {
 	StopBackgroundMeasures ();
-
-	if(!m_pSensor->IsCalibrated())
-		CalibrateSensor(FALSE);
 
 	if(m_measure.MeasureSecondaries(m_pSensor,m_pGenerator))
 	{
@@ -1291,9 +1233,6 @@ void CDataSetDoc::MeasureContrast()
 {
 	StopBackgroundMeasures ();
 
-	if(!m_pSensor->IsCalibrated())
-		CalibrateSensor(FALSE);
-
 	if(m_measure.MeasureContrast(m_pSensor,m_pGenerator))
 	{
 		SetModifiedFlag(m_measure.IsModified());
@@ -1305,9 +1244,6 @@ void CDataSetDoc::AddMeasurement()
 {
 	StopBackgroundMeasures ();
 
-	if(!m_pSensor->IsCalibrated())
-		CalibrateSensor(FALSE);
-
 	if(m_measure.AddMeasurement(m_pSensor,m_pGenerator))
 	{
 		SetModifiedFlag(m_measure.IsModified());
@@ -1315,39 +1251,6 @@ void CDataSetDoc::AddMeasurement()
 	}
 }
 
-void CDataSetDoc::CalibrateSensor(BOOL doUpdateValues) 
-{
-	CString		Msg, Title;
-	StopBackgroundMeasures ();
-
-	if (!m_pSensor->SensorNeedCalibration())
-		return;
-
-	if(m_pSensor->CalibrateSensor(m_pGenerator) != TRUE)
-		return;
-
-	if(m_pSensor->IsModified() != TRUE)  // calibration didn't change anything
-		return;
-
-	if(doUpdateValues)
-	{
-		Msg.LoadString ( IDS_PRESERVESENSORDATA );
-		Title.LoadString ( IDS_CALIBRATION );
-
-		if(MessageBox(NULL,Msg,Title,MB_ICONQUESTION | MB_YESNO) == IDYES)
-			m_measure.SetSensorMatrix(m_pSensor->GetSensorMatrix(), TRUE);
-		else	// preserve XYZ values
-			m_measure.SetSensorMatrix(m_pSensor->GetSensorMatrix(), FALSE);
-
-		SetModifiedFlag(TRUE);
-		UpdateAllViews(NULL, UPD_EVERYTHING);
-	}
-
-	Msg.LoadString ( IDS_SAVECALDATA );
-	Title.LoadString ( IDS_CALIBRATION );
-	if(MessageBox(NULL,Msg,Title,MB_ICONQUESTION | MB_YESNO) == IDYES)
-		m_pSensor->SaveCalibrationFile();
-}
 
 void CDataSetDoc::OnConfigureSensor() 
 {
@@ -1356,7 +1259,6 @@ void CDataSetDoc::OnConfigureSensor()
 	m_pSensor->Configure();
 	if( m_pSensor->IsModified() )
 	{
-		m_measure.SetSensorMatrix(m_pSensor->GetSensorMatrix());
 		SetModifiedFlag(TRUE);
 		UpdateAllViews(NULL, UPD_SENSORCONFIG);
 	}
@@ -1409,16 +1311,6 @@ BOOL CDataSetDoc::OnOpenDocument(LPCTSTR lpszPathName)
 		return FALSE;
 }
 
-void CDataSetDoc::OnCalibrateSensor() 
-{
-	CalibrateSensor();
-}
-
-void CDataSetDoc::OnUpdateCalibrateSensor(CCmdUI* pCmdUI) 
-{
-	pCmdUI -> Enable ( m_pSensor->SensorNeedCalibration () );
-}
-
 void CDataSetDoc::OnChangeGenerator() 
 {
 	StopBackgroundMeasures ();
@@ -1466,13 +1358,9 @@ void CDataSetDoc::OnChangeSensor()
 		if(m_pSensor==NULL)
 			return;	// Something went wrong during creation
 
-		if(page.m_sensorTrainingMode == 1)
-			CalibrateSensor(FALSE);
-		else
+		if(page.m_sensorTrainingMode != 1)
 			m_pSensor->LoadCalibrationFile(page.m_trainingFileName);
 
-		m_measure.SetSensorMatrix(m_pSensor->GetSensorMatrix());
-		
 		UpdateAllViews(NULL, UPD_SENSORCONFIG);	// To update sensor name displayed
 		SetModifiedFlag(TRUE);
 	}
@@ -1550,15 +1438,6 @@ void CDataSetDoc::OnCalibrationSim()
 		return;
 	}
 
-	if ( ! m_pSensor -> SensorAcceptCalibration () )
-	{
-		// Current sensor does not need calibration
-		Msg.LoadString ( IDS_SIM_CAL_ERROR2 );
-		Title.LoadString ( IDS_ERROR );
-		MessageBox(NULL,Msg,Title,MB_ICONERROR | MB_OK);
-		return;
-	}
-
 	if ( pDataRef == this )
 	{
 		// Ref document cannot be current document
@@ -1572,7 +1451,8 @@ void CDataSetDoc::OnCalibrationSim()
 	if ( IDYES == AfxMessageBox ( Msg, MB_YESNO | MB_ICONQUESTION ) )
 	{
 		// Use special simultaneous mode
-		PerformSimultaneousMeasures ( -1, 1 /* Calibration mode */ );
+		PerformSimultaneousMeasures ( -2 );
+        ComputeAdjustmentMatrix();
 	}
 }
 
@@ -1589,15 +1469,6 @@ void CDataSetDoc::OnCalibrationManual()
 	BOOL	bEscape, bReturn;
 	CColor	measuredColor[4];
 	CString	strMsg, Title;
-
-	if ( ! m_pSensor -> SensorAcceptCalibration () )
-	{
-		// Current sensor does not need calibration
-		strMsg.LoadString ( IDS_SIM_CAL_ERROR2 );
-		Title.LoadString ( IDS_ERROR );
-		MessageBox(NULL,strMsg,Title,MB_ICONERROR | MB_OK);
-		return;
-	}
 
 	if ( IDYES == AfxMessageBox ( IDS_RUN_MANUAL_CALIBRATION, MB_YESNO | MB_ICONQUESTION ) )
 	{
@@ -1895,40 +1766,29 @@ void CDataSetDoc::OnCalibrationManual()
 			
 			CColor white = measuredColor[3];
 
-			CColor blackRef = noDataColor;
-			CColor black = noDataColor;
+            Matrix oldMatrix = m_pSensor->GetSensorMatrix();
+            Matrix ConvMatrix = ComputeConversionMatrix (measures, references, white, whiteRef, GetConfig () -> m_bUseOnlyPrimaries );
+            // Ok: set adjustment matrix
+            Matrix newMatrix = ConvMatrix * oldMatrix;
+            m_measure.ApplySensorAdjustmentMatrix( oldMatrix, newMatrix );
 
-			// Calibrate sensor
-			if ( m_pSensor -> CalibrateSensor ( measures, references, white, whiteRef, black, blackRef ) )
-			{
-				// Sensor calibrated: transfer sensor matrix to measure object
-				m_measure.SetSensorMatrix(m_pSensor->GetSensorMatrix(), TRUE);
-				SetModifiedFlag ();
+            SetModifiedFlag ();
 
-				CColor aColor;
+			m_measure.SetRedPrimary (ConvMatrix * measuredColor[0]);
 
-				aColor.SetSensorToXYZMatrix(m_pSensor->GetSensorMatrix());
+			m_measure.SetGreenPrimary (ConvMatrix * measuredColor[1]);
 
-				aColor.SetSensorValue(measuredColor[0]);
-				m_measure.SetRedPrimary (aColor);
+			m_measure.SetBluePrimary (ConvMatrix * measuredColor[2]);
 
-				aColor.SetSensorValue(measuredColor[1]);
-				m_measure.SetGreenPrimary (aColor);
+			m_measure.SetOnOffWhite (ConvMatrix * measuredColor[3]);
 
-				aColor.SetSensorValue(measuredColor[2]);
-				m_measure.SetBluePrimary (aColor);
+			UpdateAllViews ( NULL, UPD_EVERYTHING );
 
-				aColor.SetSensorValue(measuredColor[3]);
-				m_measure.SetOnOffWhite (aColor);
-
-				UpdateAllViews ( NULL, UPD_EVERYTHING );
-
-				// Save file
-				strMsg.LoadString ( IDS_SAVECALDATA );
-				Title.LoadString ( IDS_CALIBRATION );
-				if(GetColorApp()->InMeasureMessageBox(strMsg,Title,MB_ICONQUESTION | MB_YESNO) == IDYES)
-					m_pSensor->SaveCalibrationFile();
-			}
+			// Save file
+			strMsg.LoadString ( IDS_SAVECALDATA );
+			Title.LoadString ( IDS_CALIBRATION );
+			if(GetColorApp()->InMeasureMessageBox(strMsg,Title,MB_ICONQUESTION | MB_YESNO) == IDYES)
+				m_pSensor->SaveCalibrationFile();
 		}
 	}
 }
@@ -1936,7 +1796,7 @@ void CDataSetDoc::OnCalibrationManual()
 void CDataSetDoc::OnUpdateCalibrationManual(CCmdUI* pCmdUI) 
 {
 	// TODO: Add your command update UI handler code here
-	//pCmdUI -> Enable ( m_pSensor -> SensorAcceptCalibration () );
+	pCmdUI -> Enable ( TRUE );
 }
 
 BOOL CDataSetDoc::ComputeAdjustmentMatrix() 
@@ -1960,46 +1820,34 @@ BOOL CDataSetDoc::ComputeAdjustmentMatrix()
 	references(1,2) = pDataRef -> m_measure.GetBluePrimary ().GetY();
 	references(2,2) = pDataRef -> m_measure.GetBluePrimary ().GetZ();
 
-	measures(0,0) = m_measure.GetRedPrimary (TRUE).GetX();  
-	measures(1,0) = m_measure.GetRedPrimary (TRUE).GetY();  
-	measures(2,0) = m_measure.GetRedPrimary (TRUE).GetZ();  
-	measures(0,1) = m_measure.GetGreenPrimary (TRUE).GetX();
-	measures(1,1) = m_measure.GetGreenPrimary (TRUE).GetY();
-	measures(2,1) = m_measure.GetGreenPrimary (TRUE).GetZ();
-	measures(0,2) = m_measure.GetBluePrimary (TRUE).GetX(); 
-	measures(1,2) = m_measure.GetBluePrimary (TRUE).GetY(); 
-	measures(2,2) = m_measure.GetBluePrimary (TRUE).GetZ(); 
+	measures(0,0) = m_measure.GetRedPrimary ().GetX();  
+	measures(1,0) = m_measure.GetRedPrimary ().GetY();  
+	measures(2,0) = m_measure.GetRedPrimary ().GetZ();  
+	measures(0,1) = m_measure.GetGreenPrimary ().GetX();
+	measures(1,1) = m_measure.GetGreenPrimary ().GetY();
+	measures(2,1) = m_measure.GetGreenPrimary ().GetZ();
+	measures(0,2) = m_measure.GetBluePrimary ().GetX(); 
+	measures(1,2) = m_measure.GetBluePrimary ().GetY(); 
+	measures(2,2) = m_measure.GetBluePrimary ().GetZ(); 
 	
 	CColor whiteRef = pDataRef -> m_measure.GetOnOffWhite();
 	
-	CColor white = m_measure.GetOnOffWhite(TRUE);
+	CColor white = m_measure.GetOnOffWhite();
 
 	// check that measure matrix is inversible
 	if ( measures.Determinant() != 0.0 ) 
 	{
+        Matrix oldMatrix = m_pSensor->GetSensorMatrix();
 		Matrix ConvMatrix = ComputeConversionMatrix (measures, references, white, whiteRef, GetConfig () -> m_bUseOnlyPrimaries );
 
 		// check that matrix is inversible
 		if ( ConvMatrix.Determinant() != 0.0 )	
 		{
 			// Ok: set adjustment matrix
-			m_measure.SetAdjustmentMatrix ( ConvMatrix );
+            Matrix newMatrix = ConvMatrix * oldMatrix;
+			m_measure.ApplySensorAdjustmentMatrix( oldMatrix, newMatrix );
+            m_pSensor->SetSensorMatrix(newMatrix);
 			SetModifiedFlag(TRUE);
-
-			if ( white != noDataColor )
-			{
-				CString	str;
-				CColor	blackRef = noDataColor;
-				CColor	black = noDataColor;
-
-				CCalibrationInfo info ( measures, references, white, whiteRef, black, blackRef, str );
-				info.GetAdditivityInfoText ( m_measure.m_XYZAdjustmentComment, ConvMatrix, FALSE );
-			}
-			else
-			{
-				m_measure.m_XYZAdjustmentComment.Empty ();
-			}
-
 			bOk = TRUE;
 		}
 		else
@@ -2015,81 +1863,6 @@ BOOL CDataSetDoc::ComputeAdjustmentMatrix()
 	return bOk;
 }
 
-void CDataSetDoc::OnTrainMeter() 
-{
-	CDataSetDoc * pDataRef = GetDataRef();
-	
-	if ( pDataRef )
-	{
-		if ( pDataRef != this ) 
-		{
-			if ( pDataRef -> m_measure.GetBluePrimary () != noDataColor && m_measure.GetBluePrimary () != noDataColor )
-			{
-				if ( IDYES == AfxMessageBox ( IDS_CONFIRMTRAINING, MB_YESNO | MB_ICONQUESTION ) )
-				{
-					// Create calibration data
-					if ( ComputeAdjustmentMatrix() )
-					{
-						m_measure.EnableAdjustmentMatrix ( TRUE );
-						UpdateAllViews ( NULL, UPD_EVERYTHING );
-						AfxGetMainWnd () -> SendMessageToDescendants ( WM_COMMAND, IDM_REFRESH_REFERENCE );
-					}
-				} 
-			}
-			else
-			{
-				AfxMessageBox ( IDS_TRAININGNEEDPRIMARY, MB_OK | MB_ICONEXCLAMATION );
-			}
-		}
-		else
-		{
-			AfxMessageBox ( IDS_TRAININGNOTREF, MB_OK | MB_ICONEXCLAMATION );
-		}
-	}
-	else
-	{
-		AfxMessageBox ( IDS_TRAININGNEEDREF, MB_OK | MB_ICONEXCLAMATION );
-	}
-}
-
-void CDataSetDoc::OnResetConversionMatrix() 
-{
-	if ( m_measure.HasAdjustmentMatrix() )
-	{
-		if ( IDYES == AfxMessageBox ( IDS_CANCELTRAINING, MB_YESNO | MB_ICONQUESTION ) )
-		{
-			m_measure.ResetAdjustmentMatrix();
-			SetModifiedFlag ();
-
-			UpdateAllViews ( NULL, UPD_EVERYTHING );
-		}
-	}
-}
-
-void CDataSetDoc::OnUpdateResetConversionMatrix(CCmdUI* pCmdUI) 
-{
-	pCmdUI -> Enable ( m_measure.HasAdjustmentMatrix() );
-}
-
-void CDataSetDoc::OnEditConversionMatrix() 
-{
-	CAdjustMatrixDlg	dlg;
-
-	dlg.m_matrix = m_measure.GetAdjustmentMatrix();
-	dlg.m_strComment = m_measure.m_XYZAdjustmentComment;
-
-	if ( dlg.DoModal () == IDOK )
-	{
-		m_measure.m_XYZAdjustmentComment = dlg.m_strComment;
-		m_measure.SetAdjustmentMatrix(dlg.m_matrix);
-		m_measure.EnableAdjustmentMatrix ( m_measure.HasAdjustmentMatrix() );
-		SetModifiedFlag ();
-
-		UpdateAllViews ( NULL, UPD_EVERYTHING );
-		AfxGetMainWnd () -> SendMessageToDescendants ( WM_COMMAND, IDM_REFRESH_REFERENCE );
-	}
-	
-}
 void CDataSetDoc::OnSimGrayscale() 
 {
 	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( IDS_MEASUREGRAYSCALE_SIM, MB_YESNO | MB_ICONQUESTION ) )
@@ -2177,7 +1950,7 @@ void CDataSetDoc::OnSimSingleMeasurement()
 		PerformSimultaneousMeasures ( -4 );
 }
 
-void CDataSetDoc::PerformSimultaneousMeasures ( int nMode, UINT nCalibrationOrControlled )
+void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 {
 	int				i, j;
 	int				NbDocs = 0;
@@ -2206,13 +1979,6 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode, UINT nCalibrationOrCo
 
 	BOOL (CMeasure::*pValidationFunc) ( BOOL, double * ) = NULL;
 	
-	// Calibration mode available only when measuring primary colors
-	if ( nCalibrationOrControlled == 1 && nMode != -1 )
-	{
-		AfxMessageBox ( "Internal error" );
-		return;
-	}
-
 	memset ( hEvents, 0, sizeof ( hEvents ) );
 	memset ( bIRE, 0, sizeof ( bIRE ) );
 
@@ -2298,6 +2064,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode, UINT nCalibrationOrCo
 			 lHint = UPD_MAGENTASAT;
 			 break;
 
+		case -5:
 		case -1:
 			 mType [ 0 ] = CGenerator::MT_PRIMARY;
 			 mType [ 1 ] = CGenerator::MT_PRIMARY;
@@ -2306,7 +2073,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode, UINT nCalibrationOrCo
 			 mType [ 4 ] = CGenerator::MT_PRIMARY;
 			 nSteps = ( 3 + GetConfig () -> m_BWColorsToAdd );
 			 nMaxSteps = 5;
-			 if ( nCalibrationOrControlled == 1 && nSteps < 4 )
+			 if ( nMode == -5 && nSteps < 4 )
 				nSteps = 4;
 			 GenColors [ 0 ] = CIRELevel(100,0,0,FALSE, m_pGenerator->m_b16_235);		// red
 			 GenColors [ 1 ] = CIRELevel(0,100,0,FALSE, m_pGenerator->m_b16_235);		// green
@@ -2404,9 +2171,9 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode, UINT nCalibrationOrCo
 	m_pSensor -> GetUniqueIdentifier ( strId );
 	SensorList.AddTail ( strId );
 
-	if ( nCalibrationOrControlled != 0 )
+	if ( nMode == -5 )
 	{
-		// Calibration mode (1) or controlled mode (2)
+		// Calibration mode (1)
 		// take only reference document as secondary document
 		pDoc = GetDataRef ();
 		if ( pDoc )
@@ -2457,17 +2224,6 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode, UINT nCalibrationOrCo
 		Msg.LoadString ( IDS_ONLYONEDOC );
 		Title.LoadString ( IDS_ERROR );
 		MessageBox(NULL,Msg,Title,MB_ICONERROR | MB_OK);
-	}
-
-	if ( nCalibrationOrControlled != 1 )
-	{
-		// Ensure all sensors are calibrated
-		for ( i	= 0; bOk && i < NbDocs ; i ++ )
-		{
-			if( ! pDocs [ i ] -> m_pSensor -> IsCalibrated () )
-				if ( pDocs [ i ] -> m_pSensor -> CalibrateSensor ( m_pGenerator ) != TRUE )
-					bOk = FALSE;
-		}
 	}
 	
 	if ( bOk )
@@ -2586,21 +2342,6 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode, UINT nCalibrationOrCo
 				pDocs [ i ] -> SetModifiedFlag ( pDocs [ i ] -> m_measure.IsModified () );
 			}
 
-			if ( nCalibrationOrControlled == 2 && ( nMode > -4 && nMode < 0 ) )
-			{
-				// Primary colors updated: update XYZ conversion matrix
-				BOOL bHadAdjustementMatrix = m_measure.HasAdjustmentMatrix();
-				if ( ComputeAdjustmentMatrix() )
-				{
-					if ( ! bHadAdjustementMatrix )
-					{
-						m_measure.EnableAdjustmentMatrix ( TRUE );
-						UpdateAllViews ( NULL, UPD_EVERYTHING, NULL );
-						AfxGetMainWnd () -> SendMessageToDescendants ( WM_COMMAND, IDM_REFRESH_REFERENCE );
-					}
-				}
-			}
-
 			for ( i	= 0 ; i < NbDocs ; i ++ )
 			{
 				// Update graphical views
@@ -2611,53 +2352,6 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode, UINT nCalibrationOrCo
 			SetSelectedColor ( noDataColor );
 			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
 
-			if ( nCalibrationOrControlled == 1 )
-			{
-				// Create calibration data
-				Matrix measures(0.0,3,3);
-				Matrix references(0.0,3,3);
-				
-				pDoc = GetDataRef ();
-				references(0,0) = pDoc -> m_measure.GetRedPrimary ().GetX();
-				references(1,0) = pDoc -> m_measure.GetRedPrimary ().GetY();
-				references(2,0) = pDoc -> m_measure.GetRedPrimary ().GetZ();
-				references(0,1) = pDoc -> m_measure.GetGreenPrimary ().GetX();
-				references(1,1) = pDoc -> m_measure.GetGreenPrimary ().GetY();
-				references(2,1) = pDoc -> m_measure.GetGreenPrimary ().GetZ();
-				references(0,2) = pDoc -> m_measure.GetBluePrimary ().GetX();
-				references(1,2) = pDoc -> m_measure.GetBluePrimary ().GetY();
-				references(2,2) = pDoc -> m_measure.GetBluePrimary ().GetZ();
-
-				measures(0,0) = m_measure.GetRedPrimary ().GetSensorValue().GetX();  
-				measures(1,0) = m_measure.GetRedPrimary ().GetSensorValue().GetY();  
-				measures(2,0) = m_measure.GetRedPrimary ().GetSensorValue().GetZ();  
-				measures(0,1) = m_measure.GetGreenPrimary ().GetSensorValue().GetX();
-				measures(1,1) = m_measure.GetGreenPrimary ().GetSensorValue().GetY();
-				measures(2,1) = m_measure.GetGreenPrimary ().GetSensorValue().GetZ();
-				measures(0,2) = m_measure.GetBluePrimary ().GetSensorValue().GetX(); 
-				measures(1,2) = m_measure.GetBluePrimary ().GetSensorValue().GetY(); 
-				measures(2,2) = m_measure.GetBluePrimary ().GetSensorValue().GetZ(); 
-				
-				CColor whiteRef = pDoc -> m_measure.GetOnOffWhite();
-				CColor blackRef = pDoc -> m_measure.GetOnOffBlack();
-				
-				CColor white = m_measure.GetOnOffWhite().GetSensorValue();
-				CColor black = m_measure.GetOnOffBlack().GetSensorValue();
-
-				// Calibrate sensor
-				if ( m_pSensor -> CalibrateSensor ( measures, references, white, whiteRef, black, blackRef ) )
-				{
-					// Sensor calibrated: transfer sensor matrix to measure object
-					m_measure.SetSensorMatrix(m_pSensor->GetSensorMatrix(), TRUE);
-					UpdateAllViews ( NULL, UPD_EVERYTHING );
-
-					// Save file
-					Msg.LoadString ( IDS_SAVECALDATA );
-					Title.LoadString ( IDS_CALIBRATION );
-					if(GetColorApp()->InMeasureMessageBox(Msg,Title,MB_ICONQUESTION | MB_YESNO) == IDYES)
-						m_pSensor->SaveCalibrationFile();
-				}
-			}
 		}
 		else
 		{
@@ -3050,10 +2744,7 @@ void CDataSetDoc::OnMeasureGrayscale()
 	Msg += TmpStr + MsgQueue;
 	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
 	{
-		if ( IsControlledModeActive () )
-			PerformSimultaneousMeasures ( 0, 2 /* controlled mode */ );
-		else
-			MeasureGrayScale();
+		MeasureGrayScale();
 
 		SetSelectedColor ( noDataColor );
 		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
@@ -3070,10 +2761,7 @@ void CDataSetDoc::OnMeasurePrimaries()
 {
 	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( IDS_RUNPRIMARIES, MB_ICONQUESTION | MB_YESNO ) )
 	{
-		if ( IsControlledModeActive () )
-			PerformSimultaneousMeasures ( -1, 2 /* controlled mode */ );
-		else
-			MeasurePrimaries();
+		MeasurePrimaries();
 		
 		SetSelectedColor ( noDataColor );
 		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
@@ -3090,10 +2778,7 @@ void CDataSetDoc::OnMeasureSecondaries()
 {
 	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( IDS_RUNSECONDARIES, MB_ICONQUESTION | MB_YESNO ) )
 	{
-		if ( IsControlledModeActive () )
-			PerformSimultaneousMeasures ( -2, 2 /* controlled mode */ );
-		else
-			MeasureSecondaries();
+		MeasureSecondaries();
 		
 		SetSelectedColor ( noDataColor );
 		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
@@ -3119,10 +2804,7 @@ void CDataSetDoc::OnMeasureNearblack()
 	Msg += TmpStr + MsgQueue;
 	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
 	{
-		if ( IsControlledModeActive () )
-			PerformSimultaneousMeasures ( 1, 2 /* controlled mode */ );
-		else
-			MeasureNearBlackScale();
+		MeasureNearBlackScale();
 
 		SetSelectedColor ( noDataColor );
 		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
@@ -3146,10 +2828,7 @@ void CDataSetDoc::OnMeasureNearwhite()
 	Msg += TmpStr + MsgQueue;
 	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
 	{
-		if ( IsControlledModeActive () )
-			PerformSimultaneousMeasures ( 2, 2 /* controlled mode */ );
-		else
-			MeasureNearWhiteScale();
+		MeasureNearWhiteScale();
 
 		SetSelectedColor ( noDataColor );
 		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
@@ -3173,10 +2852,7 @@ void CDataSetDoc::OnMeasureSatRed()
 	Msg += TmpStr + MsgQueue;
 	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
 	{
-		if ( IsControlledModeActive () )
-			PerformSimultaneousMeasures ( 3, 2 /* controlled mode */ );
-		else
-			MeasureRedSatScale();
+		MeasureRedSatScale();
 
 		SetSelectedColor ( noDataColor );
 		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
@@ -3200,10 +2876,7 @@ void CDataSetDoc::OnMeasureSatGreen()
 	Msg += TmpStr + MsgQueue;
 	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
 	{
-		if ( IsControlledModeActive () )
-			PerformSimultaneousMeasures ( 4, 2 /* controlled mode */ );
-		else
-			MeasureGreenSatScale();
+		MeasureGreenSatScale();
 
 		SetSelectedColor ( noDataColor );
 		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
@@ -3227,10 +2900,7 @@ void CDataSetDoc::OnMeasureSatBlue()
 	Msg += TmpStr + MsgQueue;
 	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
 	{
-		if ( IsControlledModeActive () )
-			PerformSimultaneousMeasures ( 5, 2 /* controlled mode */ );
-		else
-			MeasureBlueSatScale();
+		MeasureBlueSatScale();
 
 		SetSelectedColor ( noDataColor );
 		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
@@ -3254,10 +2924,7 @@ void CDataSetDoc::OnMeasureSatYellow()
 	Msg += TmpStr + MsgQueue;
 	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
 	{
-		if ( IsControlledModeActive () )
-			PerformSimultaneousMeasures ( 6, 2 /* controlled mode */ );
-		else
-			MeasureYellowSatScale();
+		MeasureYellowSatScale();
 
 		SetSelectedColor ( noDataColor );
 		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
@@ -3281,10 +2948,7 @@ void CDataSetDoc::OnMeasureSatCyan()
 	Msg += TmpStr + MsgQueue;
 	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
 	{
-		if ( IsControlledModeActive () )
-			PerformSimultaneousMeasures ( 7, 2 /* controlled mode */ );
-		else
-			MeasureCyanSatScale();
+		MeasureCyanSatScale();
 
 		SetSelectedColor ( noDataColor );
 		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
@@ -3308,10 +2972,7 @@ void CDataSetDoc::OnMeasureSatMagenta()
 	Msg += TmpStr + MsgQueue;
 	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
 	{
-		if ( IsControlledModeActive () )
-			PerformSimultaneousMeasures ( 8, 2 /* controlled mode */ );
-		else
-			MeasureMagentaSatScale();
+		MeasureMagentaSatScale();
 
 		SetSelectedColor ( noDataColor );
 		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
@@ -3379,10 +3040,7 @@ void CDataSetDoc::OnMeasureGrayscaleColors()
 	Msg += TmpStr + MsgQueue;
 	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
 	{
-		if ( IsControlledModeActive () )
-			PerformSimultaneousMeasures ( -3, 2 /* controlled mode */ );
-		else
-			MeasureGrayScaleAndColors();
+		MeasureGrayScaleAndColors();
 
 		SetSelectedColor ( noDataColor );
 		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
@@ -3428,7 +3086,7 @@ void CDataSetDoc::OnSaveCalibrationFile()
 
 void CDataSetDoc::OnUpdateSaveCalibrationFile(CCmdUI* pCmdUI) 
 {
-	pCmdUI -> Enable ( m_pSensor -> SensorAcceptCalibration () && m_pSensor -> IsCalibrated () );
+	pCmdUI -> Enable ( m_pSensor -> IsCalibrated () );
 }
 
 

@@ -84,9 +84,6 @@ CMeasure::CMeasure()
 	m_AnsiBlack=m_AnsiWhite=noDataColor;
 	m_infoStr="";
 	
-	m_bUseAdjustmentMatrix = FALSE;
-	m_XYZAdjustmentMatrix = IdentityMatrix ( 3 );
-
 	m_bIREScaleMode = GetConfig()->GetProfileInt("References","IRELevels",FALSE);
 
 	m_hThread = NULL;
@@ -187,12 +184,6 @@ void CMeasure::Copy(CMeasure * p,UINT nId)
 			m_infoStr=p->m_infoStr;
 			break;
 
-		case DUPLXYZADJUST:
-			m_XYZAdjustmentMatrix=p->m_XYZAdjustmentMatrix;
-			m_bUseAdjustmentMatrix=p->m_bUseAdjustmentMatrix;
-			m_XYZAdjustmentComment=p->m_XYZAdjustmentComment;
-			break;
-
 		default:
 			break;
 	}
@@ -204,7 +195,7 @@ void CMeasure::Serialize(CArchive& ar)
 
 	if (ar.IsStoring())
 	{
-	    int version=6;
+	    int version=7;
 		ar << version;
 
 		ar << m_grayMeasureArray.GetSize();
@@ -265,10 +256,6 @@ void CMeasure::Serialize(CArchive& ar)
 
 		ar << m_infoStr;
 
-		ar << m_bUseAdjustmentMatrix;
-		m_XYZAdjustmentMatrix.Serialize(ar);
-		ar << m_XYZAdjustmentComment;
-
 		ar << m_bIREScaleMode;
 	}
 	else
@@ -276,7 +263,7 @@ void CMeasure::Serialize(CArchive& ar)
 	    int version;
 		ar >> version;
 
-		if ( version > 6 )
+		if ( version > 7 )
 			AfxThrowArchiveException ( CArchiveException::badSchema );
 
 		int size;
@@ -380,17 +367,14 @@ void CMeasure::Serialize(CArchive& ar)
 
 		ar >> m_infoStr;
 
-		if ( version > 4 )
+		if ( version > 4 && version < 7 )
 		{
-			ar >> m_bUseAdjustmentMatrix;
-			m_XYZAdjustmentMatrix.Serialize(ar);
-			ar >> m_XYZAdjustmentComment;
-		}
-		else
-		{
-			m_bUseAdjustmentMatrix = FALSE;
-			m_XYZAdjustmentMatrix = IdentityMatrix ( 3 );
-			m_XYZAdjustmentComment.Empty ();
+            BOOL bUseAdjustmentMatrix;
+            Matrix XYZAdjustmentMatrix;
+            CString XYZAdjustmentComment;
+			ar >> bUseAdjustmentMatrix;
+			XYZAdjustmentMatrix.Serialize(ar);
+			ar >> XYZAdjustmentComment;
 		}
 
 		if ( version > 5 )
@@ -748,9 +732,8 @@ BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator)
 			}
 			else
 			{
-				previousColor = lastColor;			
-				lastColor.SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-				lastColor.SetSensorValue(measuredColor[i]);
+				previousColor = lastColor;
+				lastColor = measuredColor[i];
 	
 				if(i != 0)
 				{
@@ -778,8 +761,7 @@ BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator)
 
 	for(int i=0;i<size;i++)
 	{
-		m_grayMeasureArray[i].SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-		m_grayMeasureArray[i].SetSensorValue(measuredColor[i]);
+		m_grayMeasureArray[i] = measuredColor[i];
 
 		if ( bUseLuxValues )
 			m_grayMeasureArray[i].SetLuxValue ( measuredLux[i] );
@@ -935,8 +917,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 			else
 			{
 				previousColor = lastColor;			
-				lastColor.SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-				lastColor.SetSensorValue(measuredColor[i]);
+				lastColor = measuredColor[i];
 	
 				if(i != 0)
 				{
@@ -1054,8 +1035,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 			else
 			{
 				previousColor = lastColor;			
-				lastColor.SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-				lastColor.SetSensorValue(measuredColor[size+i]);
+				lastColor = measuredColor[size+i];
 	
 				if (!pGenerator->HasPatternChanged(CGenerator::MT_SECONDARY,previousColor,lastColor))
 				{
@@ -1080,8 +1060,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 
 	for(int i=0;i<size;i++)
 	{
-		m_grayMeasureArray[i].SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-		m_grayMeasureArray[i].SetSensorValue(measuredColor[i]);
+		m_grayMeasureArray[i] = measuredColor[i];
 
 		if ( bUseLuxValues )
 			m_grayMeasureArray[i].SetLuxValue ( measuredLux[i] );
@@ -1091,8 +1070,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 
 	for(int i=0;i<3;i++)
 	{
-		m_primariesArray[i].SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-		m_primariesArray[i].SetSensorValue(measuredColor[i+size]);
+		m_primariesArray[i] = measuredColor[i+size];
 
 		if ( bUseLuxValues )
 			m_primariesArray[i].SetLuxValue ( measuredLux[i+size] );
@@ -1102,8 +1080,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 
 	for(int i=0;i<3;i++)
 	{
-		m_secondariesArray[i].SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-		m_secondariesArray[i].SetSensorValue(measuredColor[i+size+3]);
+		m_secondariesArray[i] = measuredColor[i+size+3];
 
 		if ( bUseLuxValues )
 			m_secondariesArray[i].SetLuxValue ( measuredLux[i+size+3] );
@@ -1111,10 +1088,8 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 			m_secondariesArray[i].ResetLuxValue ();
 	}
 
-	m_OnOffWhite.SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-	m_OnOffWhite.SetSensorValue(measuredColor[size-1]);                
-	m_OnOffBlack.SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-	m_OnOffBlack.SetSensorValue(measuredColor[0]);                
+	m_OnOffWhite = measuredColor[size-1];
+	m_OnOffBlack = measuredColor[0];
 
 	if ( bUseLuxValues )
 	{
@@ -1276,8 +1251,7 @@ BOOL CMeasure::MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator)
 			else
 			{
 				previousColor = lastColor;			
-				lastColor.SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-				lastColor.SetSensorValue(measuredColor[i]);
+				lastColor = measuredColor[i];
 	
 				if(i != 0)
 				{
@@ -1305,8 +1279,7 @@ BOOL CMeasure::MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator)
 
 	for(int i=0;i<size;i++)
 	{
-		m_nearBlackMeasureArray[i].SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-		m_nearBlackMeasureArray[i].SetSensorValue(measuredColor[i]);
+		m_nearBlackMeasureArray[i] = measuredColor[i];
 		if ( bUseLuxValues )
 			m_nearBlackMeasureArray[i].SetLuxValue ( measuredLux[i] );
 		else
@@ -1428,8 +1401,7 @@ BOOL CMeasure::MeasureNearWhiteScale(CSensor *pSensor, CGenerator *pGenerator)
 			else
 			{
 				previousColor = lastColor;			
-				lastColor.SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-				lastColor.SetSensorValue(measuredColor[i]);
+				lastColor = measuredColor[i];
 	
 				if(i != 0)
 				{
@@ -1457,8 +1429,7 @@ BOOL CMeasure::MeasureNearWhiteScale(CSensor *pSensor, CGenerator *pGenerator)
 
 	for(int i=0;i<size;i++)
 	{
-		m_nearWhiteMeasureArray[i].SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-		m_nearWhiteMeasureArray[i].SetSensorValue(measuredColor[i]);
+		m_nearWhiteMeasureArray[i] = measuredColor[i];
 		if ( bUseLuxValues )
 			m_nearWhiteMeasureArray[i].SetLuxValue ( measuredLux[i] );
 		else
@@ -1583,8 +1554,7 @@ BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator)
 			else
 			{
 				previousColor = lastColor;			
-				lastColor.SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-				lastColor.SetSensorValue(measuredColor[i]);
+				lastColor = measuredColor[i];
 	
 				if(i != 0)
 				{
@@ -1612,8 +1582,7 @@ BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator)
 
 	for(int i=0;i<size;i++)
 	{
-		m_redSatMeasureArray[i].SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-		m_redSatMeasureArray[i].SetSensorValue(measuredColor[i]);
+		m_redSatMeasureArray[i] = measuredColor[i];
 		if ( bUseLuxValues )
 			m_redSatMeasureArray[i].SetLuxValue ( measuredLux[i] );
 		else
@@ -1738,8 +1707,7 @@ BOOL CMeasure::MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator)
 			else
 			{
 				previousColor = lastColor;			
-				lastColor.SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-				lastColor.SetSensorValue(measuredColor[i]);
+				lastColor = measuredColor[i];
 	
 				if(i != 0)
 				{
@@ -1767,8 +1735,7 @@ BOOL CMeasure::MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator)
 
 	for(int i=0;i<size;i++)
 	{
-		m_greenSatMeasureArray[i].SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-		m_greenSatMeasureArray[i].SetSensorValue(measuredColor[i]);
+		m_greenSatMeasureArray[i] = measuredColor[i];
 		if ( bUseLuxValues )
 			m_greenSatMeasureArray[i].SetLuxValue ( measuredLux[i] );
 		else
@@ -1893,8 +1860,7 @@ BOOL CMeasure::MeasureBlueSatScale(CSensor *pSensor, CGenerator *pGenerator)
 			else
 			{
 				previousColor = lastColor;			
-				lastColor.SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-				lastColor.SetSensorValue(measuredColor[i]);
+				lastColor = measuredColor[i];
 	
 				if(i != 0)
 				{
@@ -1922,8 +1888,7 @@ BOOL CMeasure::MeasureBlueSatScale(CSensor *pSensor, CGenerator *pGenerator)
 
 	for(int i=0;i<size;i++)
 	{
-		m_blueSatMeasureArray[i].SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-		m_blueSatMeasureArray[i].SetSensorValue(measuredColor[i]);
+		m_blueSatMeasureArray[i] = measuredColor[i];
 		if ( bUseLuxValues )
 			m_blueSatMeasureArray[i].SetLuxValue ( measuredLux[i] );
 		else
@@ -2048,8 +2013,7 @@ BOOL CMeasure::MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator)
 			else
 			{
 				previousColor = lastColor;			
-				lastColor.SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-				lastColor.SetSensorValue(measuredColor[i]);
+				lastColor = measuredColor[i];
 	
 				if(i != 0)
 				{
@@ -2078,8 +2042,7 @@ BOOL CMeasure::MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator)
 
 	for(int i=0;i<size;i++)
 	{
-		m_yellowSatMeasureArray[i].SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-		m_yellowSatMeasureArray[i].SetSensorValue(measuredColor[i]);
+		m_yellowSatMeasureArray[i] = measuredColor[i];
 		if ( bUseLuxValues )
 			m_yellowSatMeasureArray[i].SetLuxValue ( measuredLux[i] );
 		else
@@ -2204,8 +2167,7 @@ BOOL CMeasure::MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator)
 			else
 			{
 				previousColor = lastColor;			
-				lastColor.SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-				lastColor.SetSensorValue(measuredColor[i]);
+				lastColor = measuredColor[i];
 	
 				if(i != 0)
 				{
@@ -2234,8 +2196,7 @@ BOOL CMeasure::MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator)
 
 	for(int i=0;i<size;i++)
 	{
-		m_cyanSatMeasureArray[i].SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-		m_cyanSatMeasureArray[i].SetSensorValue(measuredColor[i]);
+		m_cyanSatMeasureArray[i] = measuredColor[i];
 		if ( bUseLuxValues )
 			m_cyanSatMeasureArray[i].SetLuxValue ( measuredLux[i] );
 		else
@@ -2360,8 +2321,7 @@ BOOL CMeasure::MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator)
 			else
 			{
 				previousColor = lastColor;			
-				lastColor.SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-				lastColor.SetSensorValue(measuredColor[i]);
+				lastColor = measuredColor[i];
 	
 				if(i != 0)
 				{
@@ -2389,8 +2349,7 @@ BOOL CMeasure::MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator)
 
 	for(int i=0;i<size;i++)
 	{
-		m_magentaSatMeasureArray[i].SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-		m_magentaSatMeasureArray[i].SetSensorValue(measuredColor[i]);
+		m_magentaSatMeasureArray[i] = measuredColor[i];
 		if ( bUseLuxValues )
 			m_magentaSatMeasureArray[i].SetLuxValue ( measuredLux[i] );
 		else
@@ -2533,8 +2492,7 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 				else
 				{
 					previousColor = lastColor;			
-					lastColor.SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-					lastColor.SetSensorValue(measuredColor[(j*size)+i]);
+					lastColor = measuredColor[(j*size)+i];
 		
 					if(i != 0)
 					{
@@ -2574,14 +2532,11 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 
 	for ( i = 0 ; i < size ; i ++ )
 	{
-		m_redSatMeasureArray[i].SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-		m_redSatMeasureArray[i].SetSensorValue(measuredColor[i]);
+		m_redSatMeasureArray[i] = measuredColor[i];
 
-		m_greenSatMeasureArray[i].SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-		m_greenSatMeasureArray[i].SetSensorValue(measuredColor[size+i]);
+		m_greenSatMeasureArray[i] = measuredColor[size+i];
 
-		m_blueSatMeasureArray[i].SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-		m_blueSatMeasureArray[i].SetSensorValue(measuredColor[(2*size)+i]);
+		m_blueSatMeasureArray[i] = measuredColor[(2*size)+i];
 
 		if ( bUseLuxValues )
 		{
@@ -2598,14 +2553,11 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 
 		if ( ! bPrimaryOnly )
 		{
-			m_yellowSatMeasureArray[i].SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-			m_yellowSatMeasureArray[i].SetSensorValue(measuredColor[(3*size)+i]);
+			m_yellowSatMeasureArray[i] = measuredColor[(3*size)+i];
 
-			m_cyanSatMeasureArray[i].SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-			m_cyanSatMeasureArray[i].SetSensorValue(measuredColor[(4*size)+i]);
+			m_cyanSatMeasureArray[i] = measuredColor[(4*size)+i];
 
-			m_magentaSatMeasureArray[i].SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-			m_magentaSatMeasureArray[i].SetSensorValue(measuredColor[(5*size)+i]);
+			m_magentaSatMeasureArray[i] = measuredColor[(5*size)+i];
 
 			if ( bUseLuxValues )
 			{
@@ -2745,8 +2697,7 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
 			else
 			{
 				previousColor = lastColor;			
-				lastColor.SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-				lastColor.SetSensorValue(measuredColor[i]);
+				lastColor = measuredColor[i];
 	
 				if (!pGenerator->HasPatternChanged(CGenerator::MT_PRIMARY,previousColor,lastColor))
 				{
@@ -2765,8 +2716,7 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
 
 	for(int i=0;i<3;i++)
 	{
-		m_primariesArray[i].SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-		m_primariesArray[i].SetSensorValue(measuredColor[i]);
+		m_primariesArray[i] = measuredColor[i];
 		if ( bUseLuxValues )
 			m_primariesArray[i].SetLuxValue ( measuredLux[i] );
 		else
@@ -2775,8 +2725,7 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
 
 	if ( GetConfig () -> m_BWColorsToAdd > 0 )
 	{
-		m_OnOffWhite.SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-		m_OnOffWhite.SetSensorValue(measuredColor[3]);                
+		m_OnOffWhite = measuredColor[3];                
 		if ( bUseLuxValues )
 			m_OnOffWhite.SetLuxValue ( measuredLux[3] );
 		else
@@ -2789,8 +2738,7 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
 
 	if ( GetConfig () -> m_BWColorsToAdd > 1 )
 	{
-		m_OnOffBlack.SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-		m_OnOffBlack.SetSensorValue(measuredColor[4]);                
+		m_OnOffBlack = measuredColor[4];                
 		if ( bUseLuxValues )
 			m_OnOffBlack.SetLuxValue ( measuredLux[4] );
 		else
@@ -2935,8 +2883,7 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator)
 			else
 			{
 				previousColor = lastColor;			
-				lastColor.SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-				lastColor.SetSensorValue(measuredColor[i]);
+				lastColor = measuredColor[i];
 	
 				if (!pGenerator->HasPatternChanged(CGenerator::MT_SECONDARY,previousColor,lastColor))
 				{
@@ -2954,8 +2901,7 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator)
 	}
 	for(int i=0;i<3;i++)
 	{
-		m_primariesArray[i].SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-		m_primariesArray[i].SetSensorValue(measuredColor[i]);
+		m_primariesArray[i] = measuredColor[i];
 		if ( bUseLuxValues )
 			m_primariesArray[i].SetLuxValue ( measuredLux[i] );
 		else
@@ -2964,8 +2910,7 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator)
 
 	for(int i=0;i<3;i++)
 	{
-		m_secondariesArray[i].SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-		m_secondariesArray[i].SetSensorValue(measuredColor[i+3]);
+		m_secondariesArray[i] = measuredColor[i+3];
 		if ( bUseLuxValues )
 			m_secondariesArray[i].SetLuxValue ( measuredLux[i+3] );
 		else
@@ -2974,8 +2919,7 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator)
 
 	if ( GetConfig () -> m_BWColorsToAdd > 0 )
 	{
-		m_OnOffWhite.SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-		m_OnOffWhite.SetSensorValue(measuredColor[6]);                
+		m_OnOffWhite = measuredColor[6];                
 		if ( bUseLuxValues )
 			m_OnOffWhite.SetLuxValue ( measuredLux[6] );
 		else
@@ -2988,8 +2932,7 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator)
 
 	if ( GetConfig () -> m_BWColorsToAdd > 1 )
 	{
-		m_OnOffBlack.SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-		m_OnOffBlack.SetSensorValue(measuredColor[7]);                
+		m_OnOffBlack = measuredColor[7];                
 		if ( bUseLuxValues )
 			m_OnOffBlack.SetLuxValue ( measuredLux[7] );
 		else
@@ -3149,8 +3092,7 @@ BOOL CMeasure::MeasureContrast(CSensor *pSensor, CGenerator *pGenerator)
 			}
 			else
 			{
-				m_OnOffBlack.SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-				m_OnOffBlack.SetSensorValue(measure);
+				m_OnOffBlack = measure;
 			}
 		}
 		else
@@ -3229,8 +3171,7 @@ BOOL CMeasure::MeasureContrast(CSensor *pSensor, CGenerator *pGenerator)
 			}
 			else
 			{
-				lastColor.SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-				lastColor.SetSensorValue(measure);
+				lastColor = measure;
 	
 				if (!pGenerator->HasPatternChanged(CGenerator::MT_CONTRAST,m_OnOffBlack,lastColor))
 				{
@@ -3239,8 +3180,7 @@ BOOL CMeasure::MeasureContrast(CSensor *pSensor, CGenerator *pGenerator)
 				}
 				else
 				{
-					m_OnOffWhite.SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-					m_OnOffWhite.SetSensorValue(measure);
+					m_OnOffWhite = measure;
 
 					if ( bUseLuxValues )
 					{
@@ -3363,8 +3303,7 @@ BOOL CMeasure::MeasureContrast(CSensor *pSensor, CGenerator *pGenerator)
 				}
 				else
 				{
-					m_AnsiBlack.SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-					m_AnsiBlack.SetSensorValue(measure);
+					m_AnsiBlack = measure;
 				}
 			}
 			else
@@ -3470,8 +3409,7 @@ BOOL CMeasure::MeasureContrast(CSensor *pSensor, CGenerator *pGenerator)
 				}
 				else
 				{
-					m_AnsiWhite.SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-					m_AnsiWhite.SetSensorValue(measure);
+					m_AnsiWhite = measure;
 
 					if ( bUseLuxValues )
 					{
@@ -3633,8 +3571,7 @@ BOOL CMeasure::AddMeasurement(CSensor *pSensor, CGenerator *pGenerator)
 	}
 
 	CColor measurement;
-	measurement.SetSensorToXYZMatrix(pSensor->GetSensorMatrix());
-	measurement.SetSensorValue(measuredColor);
+	measurement = measuredColor;
 	m_measurementsArray.InsertAt(m_measurementsArray.GetSize(),measurement);
 	
 	FreeMeasurementAppended();
@@ -3647,125 +3584,81 @@ BOOL CMeasure::AddMeasurement(CSensor *pSensor, CGenerator *pGenerator)
 	return TRUE;
 }
 
-void CMeasure::SetSensorMatrix(const Matrix & aMatrix, BOOL doPreserveSensorValues)
+void CMeasure::ApplySensorAdjustmentMatrix(const Matrix & oldMatrix, const Matrix & newMatrix)
 {
-	if(doPreserveSensorValues)
+	CColor color;
+
+    Matrix oldInverse(oldMatrix);
+    oldInverse.Invert();
+    Matrix aMatrix = newMatrix * oldInverse;
+
+	for(int i=0;i<m_grayMeasureArray.GetSize();i++)  // Preserve sensor values 
 	{
-		CColor color;
-
-		for(int i=0;i<m_grayMeasureArray.GetSize();i++)  // Preserve sensor values 
-		{
-			color=m_grayMeasureArray[i].GetSensorValue();
-			m_grayMeasureArray[i].SetSensorToXYZMatrix(aMatrix);
-			m_grayMeasureArray[i].SetSensorValue(color);
-		}
-		for(int i=0;i<m_nearBlackMeasureArray.GetSize();i++)  // Preserve sensor values 
-		{
-			color=m_nearBlackMeasureArray[i].GetSensorValue();
-			m_nearBlackMeasureArray[i].SetSensorToXYZMatrix(aMatrix);
-			m_nearBlackMeasureArray[i].SetSensorValue(color);
-		}
-		for(int i=0;i<m_nearWhiteMeasureArray.GetSize();i++)  // Preserve sensor values 
-		{
-			color=m_nearWhiteMeasureArray[i].GetSensorValue();
-			m_nearWhiteMeasureArray[i].SetSensorToXYZMatrix(aMatrix);
-			m_nearWhiteMeasureArray[i].SetSensorValue(color);
-		}
-		for(int i=0;i<m_redSatMeasureArray.GetSize();i++)  // Preserve sensor values 
-		{
-			color=m_redSatMeasureArray[i].GetSensorValue();
-			m_redSatMeasureArray[i].SetSensorToXYZMatrix(aMatrix);
-			m_redSatMeasureArray[i].SetSensorValue(color);
-		}
-		for(int i=0;i<m_greenSatMeasureArray.GetSize();i++)  // Preserve sensor values 
-		{
-			color=m_greenSatMeasureArray[i].GetSensorValue();
-			m_greenSatMeasureArray[i].SetSensorToXYZMatrix(aMatrix);
-			m_greenSatMeasureArray[i].SetSensorValue(color);
-		}
-		for(int i=0;i<m_blueSatMeasureArray.GetSize();i++)  // Preserve sensor values 
-		{
-			color=m_blueSatMeasureArray[i].GetSensorValue();
-			m_blueSatMeasureArray[i].SetSensorToXYZMatrix(aMatrix);
-			m_blueSatMeasureArray[i].SetSensorValue(color);
-		}
-		for(int i=0;i<m_yellowSatMeasureArray.GetSize();i++)  // Preserve sensor values 
-		{
-			color=m_yellowSatMeasureArray[i].GetSensorValue();
-			m_yellowSatMeasureArray[i].SetSensorToXYZMatrix(aMatrix);
-			m_yellowSatMeasureArray[i].SetSensorValue(color);
-		}
-		for(int i=0;i<m_cyanSatMeasureArray.GetSize();i++)  // Preserve sensor values 
-		{
-			color=m_cyanSatMeasureArray[i].GetSensorValue();
-			m_cyanSatMeasureArray[i].SetSensorToXYZMatrix(aMatrix);
-			m_cyanSatMeasureArray[i].SetSensorValue(color);
-		}
-		for(int i=0;i<m_magentaSatMeasureArray.GetSize();i++)  // Preserve sensor values 
-		{
-			color=m_magentaSatMeasureArray[i].GetSensorValue();
-			m_magentaSatMeasureArray[i].SetSensorToXYZMatrix(aMatrix);
-			m_magentaSatMeasureArray[i].SetSensorValue(color);
-		}
-		for(int i=0;i<3;i++)
-		{
-			color=m_primariesArray[i].GetSensorValue();
-			m_primariesArray[i].SetSensorToXYZMatrix(aMatrix);
-			m_primariesArray[i].SetSensorValue(color);
-		}
-		for(int i=0;i<3;i++)
-		{
-			color=m_secondariesArray[i].GetSensorValue();
-			m_secondariesArray[i].SetSensorToXYZMatrix(aMatrix);
-			m_secondariesArray[i].SetSensorValue(color);
-		}
-		
-		color=m_OnOffBlack.GetSensorValue();
-		m_OnOffBlack.SetSensorToXYZMatrix(aMatrix);
-		m_OnOffBlack.SetSensorValue(color);        
-		
-		color=m_OnOffWhite.GetSensorValue();
-		m_OnOffWhite.SetSensorToXYZMatrix(aMatrix);
-		m_OnOffWhite.SetSensorValue(color);        
-
-		color=m_AnsiBlack.GetSensorValue();
-		m_AnsiBlack.SetSensorToXYZMatrix(aMatrix);
-		m_AnsiBlack.SetSensorValue(color);        
-		
-		color=m_AnsiWhite.GetSensorValue();
-		m_AnsiWhite.SetSensorToXYZMatrix(aMatrix);
-		m_AnsiWhite.SetSensorValue(color);        
+		color= aMatrix * m_grayMeasureArray[i];
+		m_grayMeasureArray[i] = color;
 	}
-	else
+	for(int i=0;i<m_nearBlackMeasureArray.GetSize();i++)  // Preserve sensor values 
 	{
-		for(int i=0;i<m_grayMeasureArray.GetSize();i++)
-			m_grayMeasureArray[i].SetSensorToXYZMatrix(aMatrix);
-		for(int i=0;i<m_nearBlackMeasureArray.GetSize();i++)
-			m_nearBlackMeasureArray[i].SetSensorToXYZMatrix(aMatrix);
-		for(int i=0;i<m_nearWhiteMeasureArray.GetSize();i++)
-			m_nearWhiteMeasureArray[i].SetSensorToXYZMatrix(aMatrix);
-		for(int i=0;i<m_redSatMeasureArray.GetSize();i++)
-			m_redSatMeasureArray[i].SetSensorToXYZMatrix(aMatrix);
-		for(int i=0;i<m_greenSatMeasureArray.GetSize();i++)
-			m_greenSatMeasureArray[i].SetSensorToXYZMatrix(aMatrix);
-		for(int i=0;i<m_blueSatMeasureArray.GetSize();i++)
-			m_blueSatMeasureArray[i].SetSensorToXYZMatrix(aMatrix);
-		for(int i=0;i<m_yellowSatMeasureArray.GetSize();i++)
-			m_yellowSatMeasureArray[i].SetSensorToXYZMatrix(aMatrix);
-		for(int i=0;i<m_cyanSatMeasureArray.GetSize();i++)
-			m_cyanSatMeasureArray[i].SetSensorToXYZMatrix(aMatrix);
-		for(int i=0;i<m_magentaSatMeasureArray.GetSize();i++)
-			m_magentaSatMeasureArray[i].SetSensorToXYZMatrix(aMatrix);
-		for(int i=0;i<3;i++)
-			m_primariesArray[i].SetSensorToXYZMatrix(aMatrix);
-		for(int i=0;i<3;i++)
-			m_secondariesArray[i].SetSensorToXYZMatrix(aMatrix);
-
-		m_OnOffBlack.SetSensorToXYZMatrix(aMatrix);
-		m_OnOffWhite.SetSensorToXYZMatrix(aMatrix);
-		m_AnsiBlack.SetSensorToXYZMatrix(aMatrix);
-		m_AnsiWhite.SetSensorToXYZMatrix(aMatrix);
+		color= aMatrix * m_nearBlackMeasureArray[i];
+		m_nearBlackMeasureArray[i] = color;
 	}
+	for(int i=0;i<m_nearWhiteMeasureArray.GetSize();i++)  // Preserve sensor values 
+	{
+		color= aMatrix * m_nearWhiteMeasureArray[i];
+		m_nearWhiteMeasureArray[i] = color;
+	}
+	for(int i=0;i<m_redSatMeasureArray.GetSize();i++)  // Preserve sensor values 
+	{
+		color= aMatrix * m_redSatMeasureArray[i];
+		m_redSatMeasureArray[i] = color;
+	}
+	for(int i=0;i<m_greenSatMeasureArray.GetSize();i++)  // Preserve sensor values 
+	{
+		color= aMatrix * m_greenSatMeasureArray[i];
+		m_greenSatMeasureArray[i] = color;
+	}
+	for(int i=0;i<m_blueSatMeasureArray.GetSize();i++)  // Preserve sensor values 
+	{
+		color= aMatrix * m_blueSatMeasureArray[i];
+		m_blueSatMeasureArray[i] = color;
+	}
+	for(int i=0;i<m_yellowSatMeasureArray.GetSize();i++)  // Preserve sensor values 
+	{
+		color= aMatrix * m_yellowSatMeasureArray[i];
+		m_yellowSatMeasureArray[i] = color;
+	}
+	for(int i=0;i<m_cyanSatMeasureArray.GetSize();i++)  // Preserve sensor values 
+	{
+		color= aMatrix * m_cyanSatMeasureArray[i];
+		m_cyanSatMeasureArray[i] = color;
+	}
+	for(int i=0;i<m_magentaSatMeasureArray.GetSize();i++)  // Preserve sensor values 
+	{
+		color= aMatrix * m_magentaSatMeasureArray[i];
+		m_magentaSatMeasureArray[i] = color;
+	}
+	for(int i=0;i<3;i++)
+	{
+		color= aMatrix * m_primariesArray[i];
+		m_primariesArray[i] = color;
+	}
+	for(int i=0;i<3;i++)
+	{
+		color= aMatrix * m_secondariesArray[i];
+		m_secondariesArray[i] = color;
+	}
+	
+	color= aMatrix * m_OnOffBlack;
+	m_OnOffBlack = color;        
+	
+	color= aMatrix * m_OnOffWhite;
+	m_OnOffWhite = color;        
+
+	color= aMatrix * m_AnsiBlack;
+	m_AnsiBlack = color;        
+	
+	color= aMatrix * m_AnsiWhite;
+	m_AnsiWhite = color;        
 }
 
 BOOL CMeasure::WaitForDynamicIris ( BOOL bIgnoreEscape )
@@ -3965,8 +3858,7 @@ BOOL CMeasure::ValidateBackgroundGrayScale ( BOOL bUseLuxValues, double * pLuxVa
 		SetGrayScaleSize(m_nBkMeasureStepCount);
 		for ( int i = 0; i < m_nBkMeasureStepCount ; i++ )
 		{
-			m_grayMeasureArray[i].SetSensorToXYZMatrix(m_pBkMeasureSensor->GetSensorMatrix());
-			m_grayMeasureArray[i].SetSensorValue((*m_pBkMeasuredColor)[i]);
+			m_grayMeasureArray[i] = (*m_pBkMeasuredColor)[i];
 
 			if ( bUseLuxValues )
 				m_grayMeasureArray[i].SetLuxValue ( pLuxValues[i] );
@@ -3992,8 +3884,7 @@ BOOL CMeasure::ValidateBackgroundSingleMeasurement ( BOOL bUseLuxValues, double 
 
 		CColor measurement;
 
-		measurement.SetSensorToXYZMatrix(m_pBkMeasureSensor->GetSensorMatrix());
-		measurement.SetSensorValue((*m_pBkMeasuredColor)[0]);
+		measurement = (*m_pBkMeasuredColor)[0];
 
 		if ( bUseLuxValues )
 			measurement.SetLuxValue ( pLuxValues[0] );
@@ -4068,8 +3959,7 @@ BOOL CMeasure::ValidateBackgroundNearBlack ( BOOL bUseLuxValues, double * pLuxVa
 		SetNearBlackScaleSize(m_nBkMeasureStepCount);
 		for ( int i = 0; i < m_nBkMeasureStepCount ; i++ )
 		{
-			m_nearBlackMeasureArray[i].SetSensorToXYZMatrix(m_pBkMeasureSensor->GetSensorMatrix());
-			m_nearBlackMeasureArray[i].SetSensorValue((*m_pBkMeasuredColor)[i]);
+			m_nearBlackMeasureArray[i] = (*m_pBkMeasuredColor)[i];
 
 			if ( bUseLuxValues )
 				m_nearBlackMeasureArray[i].SetLuxValue ( pLuxValues[i] );
@@ -4096,8 +3986,7 @@ BOOL CMeasure::ValidateBackgroundNearWhite ( BOOL bUseLuxValues, double * pLuxVa
 		SetNearWhiteScaleSize(m_nBkMeasureStepCount);
 		for ( int i = 0; i < m_nBkMeasureStepCount ; i++ )
 		{
-			m_nearWhiteMeasureArray[i].SetSensorToXYZMatrix(m_pBkMeasureSensor->GetSensorMatrix());
-			m_nearWhiteMeasureArray[i].SetSensorValue((*m_pBkMeasuredColor)[i]);
+			m_nearWhiteMeasureArray[i] = (*m_pBkMeasuredColor)[i];
 
 			if ( bUseLuxValues )
 				m_nearWhiteMeasureArray[i].SetLuxValue ( pLuxValues[i] );
@@ -4124,8 +4013,7 @@ BOOL CMeasure::ValidateBackgroundPrimaries ( BOOL bUseLuxValues, double * pLuxVa
 		ASSERT ( m_nBkMeasureStepCount == 3 || m_nBkMeasureStepCount == 4 || m_nBkMeasureStepCount == 5 );
 		for ( int i = 0; i < 3 ; i++ )
 		{
-			m_primariesArray[i].SetSensorToXYZMatrix(m_pBkMeasureSensor->GetSensorMatrix());
-			m_primariesArray[i].SetSensorValue((*m_pBkMeasuredColor)[i]);
+			m_primariesArray[i] = (*m_pBkMeasuredColor)[i];
 
 			if ( bUseLuxValues )
 				m_primariesArray[i].SetLuxValue ( pLuxValues[i] );
@@ -4135,8 +4023,7 @@ BOOL CMeasure::ValidateBackgroundPrimaries ( BOOL bUseLuxValues, double * pLuxVa
 		if ( m_nBkMeasureStepCount >= 4 )
 		{
 			// Store reference white.
-			m_OnOffWhite.SetSensorToXYZMatrix(m_pBkMeasureSensor->GetSensorMatrix());
-			m_OnOffWhite.SetSensorValue((*m_pBkMeasuredColor)[3]);
+			m_OnOffWhite = (*m_pBkMeasuredColor)[3];
 
 			if ( bUseLuxValues )
 				m_OnOffWhite.SetLuxValue ( pLuxValues[3] );
@@ -4149,8 +4036,7 @@ BOOL CMeasure::ValidateBackgroundPrimaries ( BOOL bUseLuxValues, double * pLuxVa
 		if ( m_nBkMeasureStepCount >= 5 )
 		{
 			// Store reference white.
-			m_OnOffBlack.SetSensorToXYZMatrix(m_pBkMeasureSensor->GetSensorMatrix());
-			m_OnOffBlack.SetSensorValue((*m_pBkMeasuredColor)[4]);
+			m_OnOffBlack = (*m_pBkMeasuredColor)[4];
 
 			if ( bUseLuxValues )
 				m_OnOffBlack.SetLuxValue ( pLuxValues[4] );
@@ -4179,8 +4065,7 @@ BOOL CMeasure::ValidateBackgroundSecondaries ( BOOL bUseLuxValues, double * pLux
 		ASSERT ( m_nBkMeasureStepCount == 6 || m_nBkMeasureStepCount == 7 || m_nBkMeasureStepCount == 8 );
 		for ( int i = 0; i < 3 ; i++ )
 		{
-			m_primariesArray[i].SetSensorToXYZMatrix(m_pBkMeasureSensor->GetSensorMatrix());
-			m_primariesArray[i].SetSensorValue((*m_pBkMeasuredColor)[i]);
+			m_primariesArray[i] = (*m_pBkMeasuredColor)[i];
 
 			if ( bUseLuxValues )
 				m_primariesArray[i].SetLuxValue ( pLuxValues[i] );
@@ -4189,8 +4074,7 @@ BOOL CMeasure::ValidateBackgroundSecondaries ( BOOL bUseLuxValues, double * pLux
 		}
 		for (int i = 0; i < 3 ; i++ )
 		{
-			m_secondariesArray[i].SetSensorToXYZMatrix(m_pBkMeasureSensor->GetSensorMatrix());
-			m_secondariesArray[i].SetSensorValue((*m_pBkMeasuredColor)[i+3]);
+			m_secondariesArray[i] = (*m_pBkMeasuredColor)[i+3];
 
 			if ( bUseLuxValues )
 				m_secondariesArray[i].SetLuxValue ( pLuxValues[i+3] );
@@ -4201,8 +4085,7 @@ BOOL CMeasure::ValidateBackgroundSecondaries ( BOOL bUseLuxValues, double * pLux
 		if ( m_nBkMeasureStepCount >= 7 )
 		{
 			// Store reference white.
-			m_OnOffWhite.SetSensorToXYZMatrix(m_pBkMeasureSensor->GetSensorMatrix());
-			m_OnOffWhite.SetSensorValue((*m_pBkMeasuredColor)[6]);
+			m_OnOffWhite = (*m_pBkMeasuredColor)[6];
 
 			if ( bUseLuxValues )
 				m_OnOffWhite.SetLuxValue ( pLuxValues[6] );
@@ -4215,8 +4098,7 @@ BOOL CMeasure::ValidateBackgroundSecondaries ( BOOL bUseLuxValues, double * pLux
 		if ( m_nBkMeasureStepCount >= 8 )
 		{
 			// Store reference white.
-			m_OnOffBlack.SetSensorToXYZMatrix(m_pBkMeasureSensor->GetSensorMatrix());
-			m_OnOffBlack.SetSensorValue((*m_pBkMeasuredColor)[7]);
+			m_OnOffBlack = (*m_pBkMeasuredColor)[7];
 
 			if ( bUseLuxValues )
 				m_OnOffBlack.SetLuxValue ( pLuxValues[7] );
@@ -4245,8 +4127,7 @@ BOOL CMeasure::ValidateBackgroundGrayScaleAndColors ( BOOL bUseLuxValues, double
 		SetGrayScaleSize(m_nBkMeasureStepCount-6);
 		for ( int i = 0; i < m_nBkMeasureStepCount-6 ; i++ )
 		{
-			m_grayMeasureArray[i].SetSensorToXYZMatrix(m_pBkMeasureSensor->GetSensorMatrix());
-			m_grayMeasureArray[i].SetSensorValue((*m_pBkMeasuredColor)[i]);
+			m_grayMeasureArray[i] = (*m_pBkMeasuredColor)[i];
 
 			if ( bUseLuxValues )
 				m_grayMeasureArray[i].SetLuxValue ( pLuxValues[i] );
@@ -4255,8 +4136,7 @@ BOOL CMeasure::ValidateBackgroundGrayScaleAndColors ( BOOL bUseLuxValues, double
 		}
 		for (int i = 0; i < 3 ; i++ )
 		{
-			m_primariesArray[i].SetSensorToXYZMatrix(m_pBkMeasureSensor->GetSensorMatrix());
-			m_primariesArray[i].SetSensorValue((*m_pBkMeasuredColor)[m_nBkMeasureStepCount-6+i]);
+			m_primariesArray[i] = (*m_pBkMeasuredColor)[m_nBkMeasureStepCount-6+i];
 
 			if ( bUseLuxValues )
 				m_primariesArray[i].SetLuxValue ( pLuxValues[m_nBkMeasureStepCount-6+i] );
@@ -4265,8 +4145,7 @@ BOOL CMeasure::ValidateBackgroundGrayScaleAndColors ( BOOL bUseLuxValues, double
 		}
 		for (int i = 0; i < 3 ; i++ )
 		{
-			m_secondariesArray[i].SetSensorToXYZMatrix(m_pBkMeasureSensor->GetSensorMatrix());
-			m_secondariesArray[i].SetSensorValue((*m_pBkMeasuredColor)[m_nBkMeasureStepCount-3+i]);
+			m_secondariesArray[i] = (*m_pBkMeasuredColor)[m_nBkMeasureStepCount-3+i];
 
 			if ( bUseLuxValues )
 				m_secondariesArray[i].SetLuxValue ( pLuxValues[m_nBkMeasureStepCount-3+i] );
@@ -4274,10 +4153,8 @@ BOOL CMeasure::ValidateBackgroundGrayScaleAndColors ( BOOL bUseLuxValues, double
 				m_secondariesArray[i].ResetLuxValue ();
 		}
 
-		m_OnOffWhite.SetSensorToXYZMatrix(m_pBkMeasureSensor->GetSensorMatrix());
-		m_OnOffWhite.SetSensorValue((*m_pBkMeasuredColor)[m_nBkMeasureStepCount-7]);
-		m_OnOffBlack.SetSensorToXYZMatrix(m_pBkMeasureSensor->GetSensorMatrix());
-		m_OnOffBlack.SetSensorValue((*m_pBkMeasuredColor)[0]);
+		m_OnOffWhite = (*m_pBkMeasuredColor)[m_nBkMeasureStepCount-7];
+		m_OnOffBlack = (*m_pBkMeasuredColor)[0];
 
 		if ( bUseLuxValues )
 		{
@@ -4309,8 +4186,7 @@ BOOL CMeasure::ValidateBackgroundRedSatScale ( BOOL bUseLuxValues, double * pLux
 		SetSaturationSize(m_nBkMeasureStepCount);
 		for ( int i = 0; i < m_nBkMeasureStepCount ; i++ )
 		{
-			m_redSatMeasureArray[i].SetSensorToXYZMatrix(m_pBkMeasureSensor->GetSensorMatrix());
-			m_redSatMeasureArray[i].SetSensorValue((*m_pBkMeasuredColor)[i]);
+			m_redSatMeasureArray[i] = (*m_pBkMeasuredColor)[i];
 
 			if ( bUseLuxValues )
 				m_redSatMeasureArray[i].SetLuxValue ( pLuxValues[i] );
@@ -4337,8 +4213,7 @@ BOOL CMeasure::ValidateBackgroundGreenSatScale ( BOOL bUseLuxValues, double * pL
 		SetSaturationSize(m_nBkMeasureStepCount);
 		for ( int i = 0; i < m_nBkMeasureStepCount ; i++ )
 		{
-			m_greenSatMeasureArray[i].SetSensorToXYZMatrix(m_pBkMeasureSensor->GetSensorMatrix());
-			m_greenSatMeasureArray[i].SetSensorValue((*m_pBkMeasuredColor)[i]);
+			m_greenSatMeasureArray[i] = (*m_pBkMeasuredColor)[i];
 
 			if ( bUseLuxValues )
 				m_greenSatMeasureArray[i].SetLuxValue ( pLuxValues[i] );
@@ -4365,8 +4240,7 @@ BOOL CMeasure::ValidateBackgroundBlueSatScale ( BOOL bUseLuxValues, double * pLu
 		SetSaturationSize(m_nBkMeasureStepCount);
 		for ( int i = 0; i < m_nBkMeasureStepCount ; i++ )
 		{
-			m_blueSatMeasureArray[i].SetSensorToXYZMatrix(m_pBkMeasureSensor->GetSensorMatrix());
-			m_blueSatMeasureArray[i].SetSensorValue((*m_pBkMeasuredColor)[i]);
+			m_blueSatMeasureArray[i] = (*m_pBkMeasuredColor)[i];
 
 			if ( bUseLuxValues )
 				m_blueSatMeasureArray[i].SetLuxValue ( pLuxValues[i] );
@@ -4393,8 +4267,7 @@ BOOL CMeasure::ValidateBackgroundYellowSatScale ( BOOL bUseLuxValues, double * p
 		SetSaturationSize(m_nBkMeasureStepCount);
 		for ( int i = 0; i < m_nBkMeasureStepCount ; i++ )
 		{
-			m_yellowSatMeasureArray[i].SetSensorToXYZMatrix(m_pBkMeasureSensor->GetSensorMatrix());
-			m_yellowSatMeasureArray[i].SetSensorValue((*m_pBkMeasuredColor)[i]);
+			m_yellowSatMeasureArray[i] = (*m_pBkMeasuredColor)[i];
 
 			if ( bUseLuxValues )
 				m_yellowSatMeasureArray[i].SetLuxValue ( pLuxValues[i] );
@@ -4421,8 +4294,7 @@ BOOL CMeasure::ValidateBackgroundCyanSatScale ( BOOL bUseLuxValues, double * pLu
 		SetSaturationSize(m_nBkMeasureStepCount);
 		for ( int i = 0; i < m_nBkMeasureStepCount ; i++ )
 		{
-			m_cyanSatMeasureArray[i].SetSensorToXYZMatrix(m_pBkMeasureSensor->GetSensorMatrix());
-			m_cyanSatMeasureArray[i].SetSensorValue((*m_pBkMeasuredColor)[i]);
+			m_cyanSatMeasureArray[i] = (*m_pBkMeasuredColor)[i];
 
 			if ( bUseLuxValues )
 				m_cyanSatMeasureArray[i].SetLuxValue ( pLuxValues[i] );
@@ -4449,8 +4321,7 @@ BOOL CMeasure::ValidateBackgroundMagentaSatScale ( BOOL bUseLuxValues, double * 
 		SetSaturationSize(m_nBkMeasureStepCount);
 		for ( int i = 0; i < m_nBkMeasureStepCount ; i++ )
 		{
-			m_magentaSatMeasureArray[i].SetSensorToXYZMatrix(m_pBkMeasureSensor->GetSensorMatrix());
-			m_magentaSatMeasureArray[i].SetSensorValue((*m_pBkMeasuredColor)[i]);
+			m_magentaSatMeasureArray[i] = (*m_pBkMeasuredColor)[i];
 
 			if ( bUseLuxValues )
 				m_magentaSatMeasureArray[i].SetLuxValue ( pLuxValues[i] );
@@ -4467,194 +4338,128 @@ BOOL CMeasure::ValidateBackgroundMagentaSatScale ( BOOL bUseLuxValues, double * 
 
 CColor CMeasure::GetGray(int i) const 
 {
-	if ( m_bUseAdjustmentMatrix )
-		return ComputeAdjustedColor(m_grayMeasureArray[i]);
-	else
-		return m_grayMeasureArray[i]; 
+	return m_grayMeasureArray[i]; 
 } 
 
 CColor CMeasure::GetNearBlack(int i) const 
 { 
-	if ( m_bUseAdjustmentMatrix )
-		return ComputeAdjustedColor(m_nearBlackMeasureArray[i]);
-	else
-		return m_nearBlackMeasureArray[i]; 
+	return m_nearBlackMeasureArray[i]; 
 } 
 
 CColor CMeasure::GetNearWhite(int i) const 
 { 
-	if ( m_bUseAdjustmentMatrix )
-		return ComputeAdjustedColor(m_nearWhiteMeasureArray[i]);
-	else
-		return m_nearWhiteMeasureArray[i]; 
+	return m_nearWhiteMeasureArray[i]; 
 } 
 
 CColor CMeasure::GetRedSat(int i) const 
 { 
-	if ( m_bUseAdjustmentMatrix )
-		return ComputeAdjustedColor(m_redSatMeasureArray[i]);
-	else
-		return m_redSatMeasureArray[i]; 
+	return m_redSatMeasureArray[i]; 
 } 
 
 CColor CMeasure::GetGreenSat(int i) const 
 { 
-	if ( m_bUseAdjustmentMatrix )
-		return ComputeAdjustedColor(m_greenSatMeasureArray[i]);
-	else
-		return m_greenSatMeasureArray[i]; 
+	return m_greenSatMeasureArray[i]; 
 } 
 
 CColor CMeasure::GetBlueSat(int i) const 
 { 
-	if ( m_bUseAdjustmentMatrix )
-		return ComputeAdjustedColor(m_blueSatMeasureArray[i]);
-	else
-		return m_blueSatMeasureArray[i]; 
+	return m_blueSatMeasureArray[i]; 
 } 
 
 CColor CMeasure::GetYellowSat(int i) const 
 { 
-	if ( m_bUseAdjustmentMatrix )
-		return ComputeAdjustedColor(m_yellowSatMeasureArray[i]);
-	else
-		return m_yellowSatMeasureArray[i]; 
+	return m_yellowSatMeasureArray[i]; 
 } 
 
 CColor CMeasure::GetCyanSat(int i) const 
 { 
-	if ( m_bUseAdjustmentMatrix )
-		return ComputeAdjustedColor(m_cyanSatMeasureArray[i]);
-	else
-		return m_cyanSatMeasureArray[i]; 
+	return m_cyanSatMeasureArray[i]; 
 } 
 
 CColor CMeasure::GetMagentaSat(int i) const 
 { 
-	if ( m_bUseAdjustmentMatrix )
-		return ComputeAdjustedColor(m_magentaSatMeasureArray[i]);
-	else
-		return m_magentaSatMeasureArray[i]; 
+	return m_magentaSatMeasureArray[i]; 
 } 
 
 CColor CMeasure::GetPrimary(int i) const 
 { 
-	if ( m_bUseAdjustmentMatrix )
-		return ComputeAdjustedColor(m_primariesArray[i]);
-	else
-		return m_primariesArray[i]; 
+	return m_primariesArray[i]; 
 } 
 
-CColor CMeasure::GetRedPrimary(BOOL bBypassAdjust) const 
+CColor CMeasure::GetRedPrimary() const 
 { 
-	if ( bBypassAdjust )
-		return m_primariesArray[0];
-	else
-		return GetPrimary(0);
+	return GetPrimary(0);
 } 
 
-CColor CMeasure::GetGreenPrimary(BOOL bBypassAdjust) const 
+CColor CMeasure::GetGreenPrimary() const 
 { 
-	if ( bBypassAdjust )
-		return m_primariesArray[1];
-	else
-		return GetPrimary(1);
+	return GetPrimary(1);
 } 
 
-CColor CMeasure::GetBluePrimary(BOOL bBypassAdjust) const 
+CColor CMeasure::GetBluePrimary() const 
 { 
-	if ( bBypassAdjust )
-		return m_primariesArray[2];
-	else
-		return GetPrimary(2);
+	return GetPrimary(2);
 } 
 
 CColor CMeasure::GetSecondary(int i) const 
 { 
-	if ( m_bUseAdjustmentMatrix )
-		return ComputeAdjustedColor(m_secondariesArray[i]);
-	else
-		return m_secondariesArray[i]; 
+	return m_secondariesArray[i]; 
 } 
 
-CColor CMeasure::GetYellowSecondary(BOOL bBypassAdjust) const 
+CColor CMeasure::GetYellowSecondary() const 
 { 
-	if ( bBypassAdjust )
-		return m_secondariesArray[0];
-	else
-		return GetSecondary(0);
+	return GetSecondary(0);
 } 
 
-CColor CMeasure::GetCyanSecondary(BOOL bBypassAdjust) const 
+CColor CMeasure::GetCyanSecondary() const 
 { 
-	if ( bBypassAdjust )
-		return m_secondariesArray[1];
-	else
-		return GetSecondary(1);
+	return GetSecondary(1);
 } 
 
-CColor CMeasure::GetMagentaSecondary(BOOL bBypassAdjust) const 
+CColor CMeasure::GetMagentaSecondary() const 
 { 
-	if ( bBypassAdjust )
-		return m_secondariesArray[2];
-	else
-		return GetSecondary(2);
+	return GetSecondary(2);
 } 
 
-CColor CMeasure::GetAnsiBlack(BOOL bBypassAdjust) const 
+CColor CMeasure::GetAnsiBlack() const 
 { 
 	CColor clr;
 
-	if ( m_bUseAdjustmentMatrix && ! bBypassAdjust )
-		clr = ComputeAdjustedColor(m_AnsiBlack);
-	else
-		clr = m_AnsiBlack; 
+	clr = m_AnsiBlack; 
 
 	return clr;
 } 
 
-CColor CMeasure::GetAnsiWhite(BOOL bBypassAdjust) const 
+CColor CMeasure::GetAnsiWhite() const 
 { 
 	CColor clr;
 
-	if ( m_bUseAdjustmentMatrix && ! bBypassAdjust )
-		clr = ComputeAdjustedColor(m_AnsiWhite);
-	else
-		clr = m_AnsiWhite; 
+	clr = m_AnsiWhite; 
 
 	return clr;
 } 
 
-CColor CMeasure::GetOnOffBlack(BOOL bBypassAdjust) const 
+CColor CMeasure::GetOnOffBlack() const 
 { 
 	CColor clr;
 
-	if ( m_bUseAdjustmentMatrix && ! bBypassAdjust )
-		clr = ComputeAdjustedColor(m_OnOffBlack);
-	else
-		clr = m_OnOffBlack; 
+	clr = m_OnOffBlack; 
 
 	return clr;
 } 
 
-CColor CMeasure::GetOnOffWhite(BOOL bBypassAdjust) const 
+CColor CMeasure::GetOnOffWhite() const 
 { 
 	CColor clr;
 
-	if ( m_bUseAdjustmentMatrix && ! bBypassAdjust )
-		clr = ComputeAdjustedColor(m_OnOffWhite);
-	else
-		clr = m_OnOffWhite; 
+	clr = m_OnOffWhite; 
 
 	return clr;
 } 
 
 CColor CMeasure::GetMeasurement(int i) const 
 { 
-	if ( m_bUseAdjustmentMatrix )
-		return ComputeAdjustedColor(m_measurementsArray[i]);
-	else
-		return m_measurementsArray[i]; 
+	return m_measurementsArray[i]; 
 } 
 
 void CMeasure::AppendMeasurements(const CColor & aColor) 
@@ -4669,27 +4474,6 @@ void CMeasure::AppendMeasurements(const CColor & aColor)
 	m_isModified=TRUE; 
 
 	FreeMeasurementAppended(); 
-}
-
-CColor CMeasure::ComputeAdjustedColor(const CColor & aColor) const 
-{
-	CColor clr;
-
-	if ( aColor != noDataColor )
-	{
-		clr = m_XYZAdjustmentMatrix*aColor;
-
-		if ( aColor.HasLuxValue () )
-			clr.SetLuxValue ( aColor.GetLuxValue () );
-
-		if ( aColor.HasSpectrum () )
-			clr.SetSpectrum ( aColor.GetSpectrum () );
-	}
-	else
-	{
-		clr = noDataColor;
-	}
-	return clr;
 }
 
 CColor CMeasure::GetRefPrimary(int i) const

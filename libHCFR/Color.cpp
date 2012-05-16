@@ -489,16 +489,12 @@ CIRELevel::operator COLORREF()
 
 CColor::CColor():Matrix(1.0,3,1)
 {
-	m_XYZtoSensorMatrix = defaultXYZToSensorMatrix;
-	m_SensorToXYZMatrix = defaultSensorToXYZMatrix;
 	m_pSpectrum = NULL;
 	m_pLuxValue = NULL;
 }
 
 CColor::CColor(const CColor &aColor):Matrix(aColor)
 {
-	m_XYZtoSensorMatrix = aColor.m_XYZtoSensorMatrix;
-	m_SensorToXYZMatrix = aColor.m_SensorToXYZMatrix;
 	m_pSpectrum = NULL;
 	m_pLuxValue = NULL;
 
@@ -514,8 +510,6 @@ CColor::CColor(Matrix aMatrix):Matrix(aMatrix)
 	assert(aMatrix.GetColumns() == 1);
 	assert(aMatrix.GetRows() == 3);
 
-	m_XYZtoSensorMatrix = defaultXYZToSensorMatrix;
-	m_SensorToXYZMatrix = defaultSensorToXYZMatrix;
 	m_pSpectrum = NULL;
 	m_pLuxValue = NULL;
 }
@@ -525,8 +519,6 @@ CColor::CColor(double ax,double ay):Matrix(0.0,3,1)
   CColor tempColor(ax,ay,1);
 	SetxyYValue(tempColor);
 
-	m_XYZtoSensorMatrix = defaultXYZToSensorMatrix;
-	m_SensorToXYZMatrix = defaultSensorToXYZMatrix;
 	m_pSpectrum = NULL;
 	m_pLuxValue = NULL;
 }
@@ -537,8 +529,6 @@ CColor::CColor(double aX,double aY, double aZ):Matrix(0.0,3,1)
 	SetY(aY);
 	SetZ(aZ);
 
-	m_XYZtoSensorMatrix = defaultXYZToSensorMatrix;
-	m_SensorToXYZMatrix = defaultSensorToXYZMatrix;
 	m_pSpectrum = NULL;
 	m_pLuxValue = NULL;
 }
@@ -562,11 +552,11 @@ CColor::CColor(ifstream &theFile):Matrix(0.0,3,1)
   
   // la matrice XYZToSensor
 //  readDoubleMatrix(readMatrix, 3, 3, theFile);
-  m_XYZtoSensorMatrix = Matrix(theFile);
+  Matrix XYZtoSensorMatrix = Matrix(theFile);
   
   // la matrice sensorToXYZ
 //  readDoubleMatrix(readMatrix, 3, 3, theFile);
-  m_SensorToXYZMatrix = Matrix(theFile);
+  Matrix SensorToXYZMatrix = Matrix(theFile);
   
   if ( version == 2 || version == 4 || version == 5 || version == 6 )
     m_pSpectrum = new CSpectrum (theFile, (version == 2 || version == 4));
@@ -599,9 +589,6 @@ CColor& CColor::operator =(const CColor& aColor)
 		return *this;
 
 	Matrix::operator=(aColor);
-
-	m_XYZtoSensorMatrix = aColor.m_XYZtoSensorMatrix;
-	m_SensorToXYZMatrix = aColor.m_SensorToXYZMatrix;
 
 	if ( m_pSpectrum )
 	{
@@ -738,22 +725,6 @@ CColor CColor::GetRGBValue(CColorReference colorReference) const
 	return clr;
 }
 
-CColor CColor::GetSensorValue() const 
-{
-	CColor clr;
-
-	if(*this != noDataColor)
-	{
-        CLockWhileInScope dummy(m_matrixSection);
-		clr = m_XYZtoSensorMatrix*(*this);
-	}
-	else 
-		clr = noDataColor;
-
-	return clr;
-}
-
-
 CColor CColor::GetxyYValue() const 
 {
 	if(*this == noDataColor)
@@ -877,44 +848,6 @@ void CColor::SetRGBValue(const CColor & aColor, CColorReference colorReference)
 	SetZ(temp.GetZ()); 
 }
 
-void CColor::SetSensorValue(const CColor & aColor) 
-{
-	if(aColor == noDataColor)
-	{
-		*this=aColor;
-		return;
-	}
-
-	CColor temp;
-    
-    {
-        CLockWhileInScope dummy(m_matrixSection);
-        temp=m_SensorToXYZMatrix*aColor;
-    }
-	
-	SetX(temp.GetX()); 
-	SetY(temp.GetY()); 
-	SetZ(temp.GetZ()); 
-
-	if ( m_pSpectrum )
-	{
-		delete m_pSpectrum;
-		m_pSpectrum = NULL;
-	}
-
-	if ( aColor.m_pSpectrum )
-		m_pSpectrum = new CSpectrum ( *aColor.m_pSpectrum );
-
-	if ( m_pLuxValue )
-	{
-		delete m_pLuxValue;
-		m_pLuxValue = NULL;
-	}
-
-	if ( aColor.m_pLuxValue )
-		m_pLuxValue = new double ( *aColor.m_pLuxValue );
-}
-
 void CColor::SetxyYValue(const CColor & aColor) 
 {
 	if(aColor == noDataColor)
@@ -970,19 +903,6 @@ void CColor::SetLabValue(const CColor & aColor, CColorReference colorReference)
 	SetX(colorReference.GetWhite().GetX() * var_X);    
 	SetY(colorReference.GetWhite().GetY() * var_Y);    
 	SetZ(colorReference.GetWhite().GetZ() * var_Z);    
-}
-
-void CColor::SetSensorToXYZMatrix(const Matrix & aMatrix) 
-{ 
-	m_SensorToXYZMatrix=aMatrix; 
-
-    CLockWhileInScope dummy(m_matrixSection);
-    m_XYZtoSensorMatrix = m_SensorToXYZMatrix.GetInverse();
-}
-
-Matrix CColor::GetSensorToXYZMatrix() const
-{
-	return m_SensorToXYZMatrix; 
 }
 
 void CColor::SetSpectrum ( CSpectrum & aSpectrum )
@@ -1078,8 +998,10 @@ void CColor::Serialize(CArchive& archive)
 
 		archive << version;
 		Matrix::Serialize(archive) ;
-		m_XYZtoSensorMatrix.Serialize(archive);
-		m_SensorToXYZMatrix.Serialize(archive);
+
+        Matrix ignore(0.0, 3, 3);
+		ignore.Serialize(archive);
+		ignore.Serialize(archive);
 
 		if ( m_pSpectrum )
 		{
@@ -1102,8 +1024,9 @@ void CColor::Serialize(CArchive& archive)
 			AfxThrowArchiveException ( CArchiveException::badSchema );
 		
 		Matrix::Serialize(archive) ;
-		m_XYZtoSensorMatrix.Serialize(archive);
-		m_SensorToXYZMatrix.Serialize(archive);
+        Matrix ignore(0.0, 3, 3);
+		ignore.Serialize(archive);
+		ignore.Serialize(archive);
 
 		if ( m_pSpectrum )
 		{

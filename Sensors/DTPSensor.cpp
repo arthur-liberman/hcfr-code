@@ -280,7 +280,7 @@ BOOL CDTPSensor::Release()
 	return CSensor::Release();
 }
 
-CColor CDTPSensor::MeasureColor(COLORREF aRGBValue)
+CColor CDTPSensor::MeasureColorInternal(COLORREF aRGBValue)
 {
 	UINT		nLoops;
 	BOOL		bContinue = FALSE;
@@ -339,7 +339,7 @@ CColor CDTPSensor::MeasureColor(COLORREF aRGBValue)
 					DTPColor[1]= yy;
 					DTPColor[2]= zz;
 
-					colMeasure.SetSensorValue(DTPColor);
+					colMeasure = DTPColor;
 				}
 			}
 			else
@@ -355,7 +355,7 @@ CColor CDTPSensor::MeasureColor(COLORREF aRGBValue)
 		return noDataColor;
 	}
 	
-	return colMeasure.GetSensorValue();
+	return colMeasure;
 }
 
 BOOL CDTPSensor::SendAndReceive ( LPCSTR lpszCmd, LPSTR lpszResponse, size_t nBufferSize )

@@ -555,7 +555,6 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,92,183,13
     CONTROL         "Mesure du contraste",IDC_DUPLCONTRAST_CHECK,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,105,183,13
     CONTROL         "Informations",IDC_DUPLINFO_CHECK,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,118,183,13
-    CONTROL         "Matrice d'ajustement XYZ",IDC_DUPLXYZ_CHECK,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,131,183,13
     PUSHBUTTON      "Effacer",IDC_CLEAR_BUTTON,222,7,50,14
     PUSHBUTTON      "Inverser",IDC_INVERT_BUTTON,222,28,50,14
     PUSHBUTTON      "Aide",ID_HELP,222,63,50,14
@@ -802,22 +801,6 @@ BEGIN
     COMBOBOX        IDC_INFO_DISPLAY,182,167,170,123,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     LTEXT           "",IDC_STATIC_VIEW,182,183,327,138,NOT WS_VISIBLE,WS_EX_TRANSPARENT
     PUSHBUTTON      "",IDC_ANSICONTRAST_PATTERN_TEST_BUTTON,502,170,8,8
-END
-
-IDD_CONVERSION_MATRIX DIALOG  0, 0, 199, 163
-STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Matrice de conversion XYZ"
-FONT 8, "MS Sans Serif"
-BEGIN
-    LTEXT           "Matrice d'ajustement des mesures XYZ:",IDC_STATIC,10,11,130,10
-    CONTROL         "",IDC_SENSORMATRIX_STATIC,"Static",SS_ETCHEDFRAME,10,24,122,34
-    PUSHBUTTON      "Load...",IDC_LOAD,140,24,50,14,WS_GROUP
-    PUSHBUTTON      "Save...",IDC_SAVE,140,43,50,14,WS_GROUP
-    LTEXT           "Commentaire:",IDC_STATIC,10,67,121,8
-    EDITTEXT        IDC_EDIT_COMMENT,10,78,180,50,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL | WS_GROUP
-    DEFPUSHBUTTON   "OK",IDOK,10,139,50,14,WS_GROUP
-    PUSHBUTTON      "Cancel",IDCANCEL,75,139,50,14,WS_GROUP
-    PUSHBUTTON      "Aide",IDHELP,140,139,49,14,WS_GROUP
 END
 
 IDD_ADVANCED_PROP_PAGE DIALOGEX 0, 0, 212, 217
@@ -1836,13 +1819,6 @@ BEGIN
     END
     POPUP "A&vancé"
     BEGIN
-        POPUP "Matrice d'ajustement des coordonnées XYZ"
-        BEGIN
-            MENUITEM "Calculer la matrice de conversion à partir du document de référence", IDM_TRAIN_METER
-            MENUITEM "Efface la matrice de conversion XYZ", IDM_RESET_CONVERSION_MATRIX
-            MENUITEM "Edition manuelle de la matrice de conversion XYZ...", IDM_EDIT_CONVERSION_MATRIX
-        END
-        MENUITEM SEPARATOR
         POPUP "&Mires"
         BEGIN
             MENUITEM "Mire animée de niveau de noir", IDM_PATTERN_ANIM_BLACK
@@ -1852,8 +1828,6 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "Fichier étalon"
         BEGIN
-            MENUITEM "Fabriquer un étalon élémentaire...", IDM_CALIBRATE_SENSOR
-            MENUITEM SEPARATOR
             MENUITEM "Fabriquer un étalon à partir de mesures simultanées", IDM_CALIBRATION_SIM
             MENUITEM "Fabriquer un étalon manuellement à partir d'un colorimètre de référence", IDM_CALIBRATION_MANUAL
             MENUITEM SEPARATOR
@@ -2542,7 +2516,6 @@ BEGIN
     IDM_CONFIGURE_GENERATOR "Configure les paramètres du générateur"
     IDM_CHANGE_SENSOR       "Sélectionne le capteur à utiliser"
     IDM_CHANGE_GENERATOR    "Selectionne le générateur à utiliser"
-    IDM_CALIBRATE_SENSOR    "Etalonne le capteur en fonction des caractéristiques attendues du diffuseur (méthode très peu précise)"
 END
 
 STRINGTABLE 
@@ -3000,7 +2973,6 @@ BEGIN
     ID_VIEW_SPECTRUM        "Affiche ou masque la fenêtre de spectres\nSpectre"
     IDM_UPDATE_SOFT         "Vérifie l'existence d'une mise à jour du logiciel sur le site hcfr.sourceforge.net et la télécharge\nTélécharge une mise à jour du logiciel"
     IDM_UPDATE_ETALONS      "Met à jour les fichiers étalons du colorimètre HCFR en téléchargeant les nouveautés sur le site hcfr.sourceforge.net\nTéléchargement des étalons"
-    IDM_TRAIN_METER         "Définit la matrice de correction des valeurs mesurées pour faire coincider les coordonnées XYZ avec celles du document de référence\nDéfinit la matrice de conversion à partir du document de référence"
     IDM_SINGLE_MEASUREMENT  "Effectue une mesure unique\nEffectue une mesure unique"
     IDM_CONTINUOUS_MEASUREMENT 
                             "Lance ou arrête les mesures en continu\nLance ou arrête les mesures en continu"
@@ -3118,10 +3090,6 @@ END
 STRINGTABLE 
 BEGIN
     ID_VIEW_MEASURE_BAR     "Affiche ou masque la barre mesures\nBarre mesures"
-    IDM_RESET_CONVERSION_MATRIX 
-                            "Efface la matrice de conversion XYZ\nEfface la matrice de conversion XYZ"
-    IDM_EDIT_CONVERSION_MATRIX 
-                            "Edition manuelle de la matrice de conversion XYZ. Permet également de sauvegarder la matrice dans un fichier.\nEdition manuelle de la matrice de conversion."
     IDM_TAB_ACTIVATE_ON_ALL "Affiche ou masque la barre mesures étendues\nBarre mesures étendues"
     ID_VIEW_MEASURE_EXT_BAR "Affiche ou masque la barre mesures étendues\nBarre mesures étendues"
     IDM_SIM_SINGLEMEASURE   "Effectue une mesure libre unique sur tous les documents simultanément\nMesure libre simultanée"

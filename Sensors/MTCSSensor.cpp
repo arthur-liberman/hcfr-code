@@ -303,7 +303,7 @@ BOOL CMTCSSensor::Release()
 	return CSensor::Release();
 }
 
-CColor CMTCSSensor::MeasureColor(COLORREF aRGBValue)
+CColor CMTCSSensor::MeasureColorInternal(COLORREF aRGBValue)
 {
 #ifdef USE_NON_FREE_CODE
 	UINT		nTicks;
@@ -357,7 +357,7 @@ CColor CMTCSSensor::MeasureColor(COLORREF aRGBValue)
 			LeaveCriticalSection ( & GetConfig () -> LogFileCritSec );
 		}
 
-		colMeasure.SetSensorValue(MTCSColor);
+		colMeasure = MTCSColor;
 	}
 	else 
 	{
@@ -365,7 +365,7 @@ CColor CMTCSSensor::MeasureColor(COLORREF aRGBValue)
 		return noDataColor;
 	}
 
-	return colMeasure.GetSensorValue();
+	return colMeasure;
 #else
     return noDataColor;
 #endif

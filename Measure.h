@@ -42,7 +42,6 @@
 #define	DUPLSECONDARIESCOL	6
 #define	DUPLCONTRAST		7
 #define	DUPLINFO			8
-#define DUPLXYZADJUST		9
 
 
 #define LUX_NOMEASURE	0
@@ -74,10 +73,7 @@ protected:
 	CArray<CColor,CColor> m_cyanSatMeasureArray;
 	CArray<CColor,CColor> m_magentaSatMeasureArray;
 	CString m_infoStr;
-    BOOL	m_bUseAdjustmentMatrix;
-	Matrix	m_XYZAdjustmentMatrix;
 public:
-	CString m_XYZAdjustmentComment;
 	BOOL	m_bIREScaleMode;
 
 	// Internal data used by background measures threads (not serialized)
@@ -107,25 +103,22 @@ public:
 	BOOL MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator);
 	BOOL MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerator);
 	CColor GetGray(int i) const;
-	void SetGray(int i,const CColor & aColor) {m_grayMeasureArray[i]=aColor; } 
+	void SetGray(int i,const CColor & aColor) {m_grayMeasureArray[i]=aColor; m_isModified=TRUE;} 
 	int GetGrayScaleSize() const { return m_grayMeasureArray.GetSize(); }
 	void SetGrayScaleSize(int steps);
 	void SetIREScaleMode(BOOL bIRE);
-	void SetMeasuredGray(int i, const CColor & aColor, const Matrix & SensorMatrix) { m_grayMeasureArray[i].SetSensorToXYZMatrix(SensorMatrix); m_grayMeasureArray[i].SetSensorValue(aColor); m_isModified=TRUE; }
 
 	BOOL MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator);
 	CColor GetNearBlack(int i) const;
-	void SetNearBlack(int i,const CColor & aColor) {m_nearBlackMeasureArray[i]=aColor; } 
+	void SetNearBlack(int i,const CColor & aColor) {m_nearBlackMeasureArray[i]=aColor; m_isModified=TRUE;} 
 	int GetNearBlackScaleSize() const { return m_nearBlackMeasureArray.GetSize(); }
 	void SetNearBlackScaleSize(int steps);
-	void SetMeasuredNearBlack(int i, const CColor & aColor, const Matrix & SensorMatrix) { m_nearBlackMeasureArray[i].SetSensorToXYZMatrix(SensorMatrix); m_nearBlackMeasureArray[i].SetSensorValue(aColor); m_isModified=TRUE; }
 
 	BOOL MeasureNearWhiteScale(CSensor *pSensor, CGenerator *pGenerator);
 	CColor GetNearWhite(int i) const;
-	void SetNearWhite(int i,const CColor & aColor) {m_nearWhiteMeasureArray[i]=aColor; } 
+	void SetNearWhite(int i,const CColor & aColor) {m_nearWhiteMeasureArray[i]=aColor; m_isModified=TRUE;} 
 	int GetNearWhiteScaleSize() const { return m_nearWhiteMeasureArray.GetSize(); }
 	void SetNearWhiteScaleSize(int steps);
-	void SetMeasuredNearWhite(int i, const CColor & aColor, const Matrix & SensorMatrix) { m_nearWhiteMeasureArray[i].SetSensorToXYZMatrix(SensorMatrix); m_nearWhiteMeasureArray[i].SetSensorValue(aColor); m_isModified=TRUE; }
 
 	BOOL MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator);
 	BOOL MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator);
@@ -149,40 +142,33 @@ public:
 	CColor GetMagentaSat(int i) const;
 	void SetMagentaSat(int i,const CColor & aColor) {m_magentaSatMeasureArray[i]=aColor; m_isModified=TRUE; } 
 	
-	void SetMeasuredRedSat(int i, const CColor & aColor, const Matrix & SensorMatrix) { m_redSatMeasureArray[i].SetSensorToXYZMatrix(SensorMatrix); m_redSatMeasureArray[i].SetSensorValue(aColor); m_isModified=TRUE; }
-	void SetMeasuredGreenSat(int i, const CColor & aColor, const Matrix & SensorMatrix) { m_greenSatMeasureArray[i].SetSensorToXYZMatrix(SensorMatrix); m_greenSatMeasureArray[i].SetSensorValue(aColor); m_isModified=TRUE; }
-	void SetMeasuredBlueSat(int i, const CColor & aColor, const Matrix & SensorMatrix) { m_blueSatMeasureArray[i].SetSensorToXYZMatrix(SensorMatrix); m_blueSatMeasureArray[i].SetSensorValue(aColor); m_isModified=TRUE; }
-	void SetMeasuredYellowSat(int i, const CColor & aColor, const Matrix & SensorMatrix) { m_yellowSatMeasureArray[i].SetSensorToXYZMatrix(SensorMatrix); m_yellowSatMeasureArray[i].SetSensorValue(aColor); m_isModified=TRUE; }
-	void SetMeasuredCyanSat(int i, const CColor & aColor, const Matrix & SensorMatrix) { m_cyanSatMeasureArray[i].SetSensorToXYZMatrix(SensorMatrix); m_cyanSatMeasureArray[i].SetSensorValue(aColor); m_isModified=TRUE; }
-	void SetMeasuredMagentaSat(int i, const CColor & aColor, const Matrix & SensorMatrix) { m_magentaSatMeasureArray[i].SetSensorToXYZMatrix(SensorMatrix); m_magentaSatMeasureArray[i].SetSensorValue(aColor); m_isModified=TRUE; }
-
 	BOOL MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator);
 	CColor GetPrimary(int i) const;
-	CColor GetRedPrimary(BOOL bBypassAdjust=FALSE) const;
-	CColor GetGreenPrimary(BOOL bBypassAdjust=FALSE) const;
-	CColor GetBluePrimary(BOOL bBypassAdjust=FALSE) const;
+	CColor GetRedPrimary() const;
+	CColor GetGreenPrimary() const;
+	CColor GetBluePrimary() const;
 	void SetRedPrimary(const CColor & aColor) { m_primariesArray[0]=aColor; m_isModified=TRUE; }
 	void SetGreenPrimary(const CColor & aColor) { m_primariesArray[1]=aColor; m_isModified=TRUE; }
 	void SetBluePrimary(const CColor & aColor) { m_primariesArray[2]=aColor; m_isModified=TRUE; }
-	void SetMeasuredPrimary(int i, const CColor & aColor, const Matrix & SensorMatrix) { m_primariesArray[i].SetSensorToXYZMatrix(SensorMatrix); m_primariesArray[i].SetSensorValue(aColor); m_isModified=TRUE; }
+	void SetPrimary(int i, const CColor & aColor) { m_primariesArray[i] = aColor; m_isModified=TRUE; }
  
 	BOOL MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator);
 	CColor GetSecondary(int i) const;
-	CColor GetYellowSecondary(BOOL bBypassAdjust=FALSE) const;
-	CColor GetCyanSecondary(BOOL bBypassAdjust=FALSE) const;
-	CColor GetMagentaSecondary(BOOL bBypassAdjust=FALSE) const;
+	CColor GetYellowSecondary() const;
+	CColor GetCyanSecondary() const;
+	CColor GetMagentaSecondary() const;
 	void SetYellowSecondary(const CColor & aColor) { m_secondariesArray[0]=aColor; m_isModified=TRUE; }
 	void SetCyanSecondary(const CColor & aColor) { m_secondariesArray[1]=aColor; m_isModified=TRUE; }
 	void SetMagentaSecondary(const CColor & aColor) { m_secondariesArray[2]=aColor; m_isModified=TRUE; }
-	void SetMeasuredSecondary(int i, const CColor & aColor, const Matrix & SensorMatrix) { m_secondariesArray[i].SetSensorToXYZMatrix(SensorMatrix); m_secondariesArray[i].SetSensorValue(aColor); m_isModified=TRUE; }
+	void SetSecondary(int i, const CColor & aColor) { m_secondariesArray[i] = aColor; m_isModified=TRUE; }
 
-	CColor GetAnsiBlack(BOOL bBypassAdjust=FALSE) const;
-	CColor GetAnsiWhite(BOOL bBypassAdjust=FALSE) const;
+	CColor GetAnsiBlack() const;
+	CColor GetAnsiWhite() const;
 	void SetAnsiBlack(const CColor & aColor) { m_AnsiBlack=aColor; m_isModified=TRUE; }
 	void SetAnsiWhite(const CColor & aColor) { m_AnsiWhite=aColor; m_isModified=TRUE; }
 
-	CColor GetOnOffBlack(BOOL bBypassAdjust=FALSE) const;
-	CColor GetOnOffWhite(BOOL bBypassAdjust=FALSE) const;
+	CColor GetOnOffBlack() const;
+	CColor GetOnOffWhite() const;
 	void SetOnOffBlack(const CColor & aColor) { m_OnOffBlack=aColor; m_isModified=TRUE; }
 	void SetOnOffWhite(const CColor & aColor) { m_OnOffWhite=aColor; m_isModified=TRUE; }
 
@@ -200,7 +186,6 @@ public:
 	int GetMeasurementsSize() const { return m_measurementsArray.GetSize(); }
 	void SetMeasurementsSize(int size) { m_measurementsArray.SetSize(size); m_isModified=TRUE; }
 	void DeleteMeasurements(int i,int count) { m_measurementsArray.RemoveAt(i,count); m_isModified=TRUE; }
-	void SetMeasuredMeasurement(int i, const CColor & aColor, const Matrix & SensorMatrix) { m_measurementsArray.InsertAt(i,noDataColor);m_measurementsArray[i].SetSensorToXYZMatrix(SensorMatrix); m_measurementsArray[i].SetSensorValue(aColor); m_isModified=TRUE; }
 	void InsertMeasurement(int i, CColor & aColor) { m_measurementsArray.InsertAt(i,aColor); m_isModified=TRUE; }
 	void FreeMeasurementAppended();
 
@@ -212,15 +197,8 @@ public:
 	CColor GetRefSat(int i, double sat_percent) const;
 
 	BOOL IsModified() { return m_isModified; }
-	void SetSensorMatrix(const Matrix & aMatrix, BOOL doPreserveSensorValues=FALSE);
-	
-	void ResetAdjustmentMatrix() { m_XYZAdjustmentMatrix = IdentityMatrix(3); m_bUseAdjustmentMatrix = FALSE; m_XYZAdjustmentComment.Empty (); }
-	void SetAdjustmentMatrix(const Matrix & aMatrix) { m_XYZAdjustmentMatrix = aMatrix; }
-	BOOL HasAdjustmentMatrix() const { return ! m_XYZAdjustmentMatrix.IsIdentity (); }
-	Matrix GetAdjustmentMatrix() const { return m_XYZAdjustmentMatrix; }
-	void EnableAdjustmentMatrix(BOOL bEnable) { m_bUseAdjustmentMatrix = bEnable; }
-	BOOL IsAdjustmentMatrixEnabled() const { return m_bUseAdjustmentMatrix && HasAdjustmentMatrix(); }
-	CColor ComputeAdjustedColor(const CColor & aColor) const;
+
+    void ApplySensorAdjustmentMatrix(const Matrix & oldMatrix, const Matrix & newMatrix);
 
 	BOOL WaitForDynamicIris ( BOOL bIgnoreEscape = FALSE );
 

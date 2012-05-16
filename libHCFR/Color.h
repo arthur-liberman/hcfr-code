@@ -81,16 +81,11 @@ public:
 	CColor GetxyYValue() const;
 	CColor GetLabValue(double YWhiteRef, CColorReference colorReference) const;
 	CColor GetLCHValue(double YWhiteRef, CColorReference colorReference) const;
-	CColor GetSensorValue() const;
-
-	Matrix GetSensorToXYZMatrix() const;
-	void SetSensorToXYZMatrix(const Matrix & aMatrix);
 
 	void SetXYZValue(const CColor & aColor);
 	void SetRGBValue(const CColor & aColor, CColorReference colorReference);
 	void SetxyYValue(const CColor & aColor);
 	void SetLabValue(const CColor & aColor, CColorReference colorReference);
-	void SetSensorValue(const CColor & aColor);
 
 	void SetX(double aX) { Matrix::operator ()(0,0)=aX; }
 	void SetY(double aY) { Matrix::operator ()(1,0)=aY; }
@@ -117,9 +112,6 @@ public:
 #endif
 
 protected:
-    Matrix m_XYZtoSensorMatrix;
-    Matrix m_SensorToXYZMatrix;
-
 	CSpectrum *	m_pSpectrum;
 	double *	m_pLuxValue;
 };

@@ -401,8 +401,8 @@ BOOL CMultiFrame::OnCreateClient( LPCREATESTRUCT lpcs, CCreateContext* pContext 
 		if ( GetDataRef () == GetDocument () )
 			m_RefCheckDlg.m_RefCheck.SetCheck ( TRUE );
 
-		m_RefCheckDlg.m_XYZCheck.EnableWindow ( GetDocument()->GetMeasure()->HasAdjustmentMatrix() );
-		m_RefCheckDlg.m_XYZCheck.SetCheck ( GetDocument ()->GetMeasure()->IsAdjustmentMatrixEnabled () );
+		m_RefCheckDlg.m_XYZCheck.EnableWindow ( FALSE );
+		m_RefCheckDlg.m_XYZCheck.SetCheck ( FALSE );
 
 		m_TabCtrl.Create ( WS_CHILD | WS_VISIBLE | CTCS_TOOLTIPS | CTCS_CLOSEBUTTON | CTCS_DRAGMOVE | (m_bTabUp?CTCS_TOP:0), Rect, this, IDC_TABCTRL );
 
@@ -1066,15 +1066,6 @@ void CMultiFrame::OnChangeRef ( BOOL bSet )
 	AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
 }
  
-void CMultiFrame::OnChangeXYZ ( BOOL bSet )
-{
-	GetDocument () -> GetMeasure () -> EnableAdjustmentMatrix ( bSet );
-	GetDocument () -> UpdateAllViews ( NULL, UPD_EVERYTHING );
-
-	AfxGetMainWnd () -> SendMessage ( WM_COMMAND, IDM_REFRESH_CONTROLS, NULL );	// refresh mainframe controls
-	AfxGetMainWnd () -> SendMessageToDescendants ( WM_COMMAND, IDM_REFRESH_REFERENCE );
-}
- 
 LRESULT CMultiFrame::OnAppCommand(WPARAM /*wParam*/, LPARAM lParam )
 {
     LRESULT lResult = 0;
@@ -1126,8 +1117,8 @@ void CMultiFrame::OnRefreshReference()
 	if ( m_bDisplayTab )
 	{
 		m_RefCheckDlg.m_RefCheck.SetCheck ( GetDataRef () == GetDocument () );
-		m_RefCheckDlg.m_XYZCheck.EnableWindow ( GetDocument()->GetMeasure()->HasAdjustmentMatrix() );
-		m_RefCheckDlg.m_XYZCheck.SetCheck ( GetDocument ()->GetMeasure()->IsAdjustmentMatrixEnabled () );
+		m_RefCheckDlg.m_XYZCheck.EnableWindow ( FALSE);
+		m_RefCheckDlg.m_XYZCheck.SetCheck ( FALSE );
 	}
 }
 
@@ -1639,7 +1630,7 @@ LRESULT CMultiFrame::OnDDERequest(WPARAM wParam, LPARAM lParam)
 							strData.Format("%.3f,%.3f,%.3f",aColor[0],aColor[1],aColor[2]);
 							break;
 						case HCFR_SENSORRGB_VIEW:
-							aColor=ReqColor.GetSensorValue();
+							aColor=ReqColor.GetXYZValue();
 							strData.Format("%.3f,%.3f,%.3f",aColor[0],aColor[1],aColor[2]);
 							break;
 						case HCFR_RGB_VIEW:
@@ -1743,8 +1734,6 @@ LRESULT CMultiFrame::OnDDEPoke(WPARAM wParam, LPARAM lParam)
 		{	
 			bOk = TRUE;
 
-			ReceivedColor.SetSensorToXYZMatrix(GetDocument()->m_pSensor->GetSensorMatrix());
-
 			GlobalGetAtomName ( nAtom, szBuf, sizeof ( szBuf ) );
 			DdeParseString ( szBuf, strCmd, CmdParams ); 
 
@@ -1779,7 +1768,7 @@ LRESULT CMultiFrame::OnDDEPoke(WPARAM wParam, LPARAM lParam)
 						ReceivedColor.SetXYZValue(aColor);
 						break;
 					case HCFR_SENSORRGB_VIEW:
-						ReceivedColor.SetSensorValue(aColor);
+						ReceivedColor = aColor;
 						break;
 					case HCFR_RGB_VIEW:
 						ReceivedColor.SetRGBValue(aColor, GetColorReference());
@@ -2271,7 +2260,7 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 
 			COneDeviceSensor * pSensor = ( COneDeviceSensor * ) GetDocument() -> m_pSensor;
 
-			if ( pSensor -> SensorAcceptCalibration () && pSensor -> GetStandardSubDir () [ 0 ] != '\0' )
+			if (pSensor -> GetStandardSubDir () [ 0 ] != '\0' )
 			{
 				bOk = TRUE;
 				
@@ -2620,15 +2609,15 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 							switch ( nCategory )
 							{
 								case CLRCAT_PRIMARY:
-									GetDocument()->m_measure.SetMeasuredPrimary ( nClrIndex, MeasuredColor, GetDocument()->m_pSensor->GetSensorMatrix());
+									GetDocument()->m_measure.SetPrimary ( nClrIndex, MeasuredColor);
 									break;
 
 								case CLRCAT_SECONDARY:
-									GetDocument()->m_measure.SetMeasuredSecondary ( nClrIndex, MeasuredColor, GetDocument()->m_pSensor->GetSensorMatrix());
+									GetDocument()->m_measure.SetSecondary ( nClrIndex, MeasuredColor);
 									break;
 
 								case CLRCAT_FREE:
-									GetDocument()->m_measure.SetMeasuredMeasurement ( nClrIndex, MeasuredColor, GetDocument()->m_pSensor->GetSensorMatrix());
+									GetDocument()->m_measure.SetMeasurements ( nClrIndex, MeasuredColor);
 									break;
 							}
 						 }
@@ -2652,7 +2641,7 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 						 
 						 if ( bOk )
 						 {
-							GetDocument()->m_measure.SetMeasuredGray ( nClrIndex, MeasuredColor, GetDocument()->m_pSensor->GetSensorMatrix());
+							GetDocument()->m_measure.SetGray ( nClrIndex, MeasuredColor);
 						 }
 						 break;
 
@@ -2674,7 +2663,7 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 						 
 						 if ( bOk )
 						 {
-							GetDocument()->m_measure.SetMeasuredNearBlack ( nClrIndex, MeasuredColor, GetDocument()->m_pSensor->GetSensorMatrix());
+							GetDocument()->m_measure.SetNearBlack ( nClrIndex, MeasuredColor);
 						 }
 						 break;
 
@@ -2696,7 +2685,7 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 						 
 						 if ( bOk )
 						 {
-							GetDocument()->m_measure.SetMeasuredNearWhite ( nClrIndex, MeasuredColor, GetDocument()->m_pSensor->GetSensorMatrix());
+							GetDocument()->m_measure.SetNearWhite ( nClrIndex, MeasuredColor);
 						 }
 						 break;
 
@@ -2837,7 +2826,6 @@ void CRefCheckDlg::OnCheckRef()
 
 void CRefCheckDlg::OnCheckXYZ() 
 {
-	( (CMultiFrame *) GetParent () ) -> OnChangeXYZ ( m_XYZCheck.GetCheck () );
 }
 
 void CRefCheckDlg::OnButtonMenu() 

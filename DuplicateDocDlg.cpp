@@ -47,7 +47,6 @@ CDuplicateDocDlg::CDuplicateDocDlg(CWnd* pParent /*=NULL*/)
 	m_DuplPrimariesColCheck = FALSE;
 	m_DuplSecondariesColCheck = FALSE;
 	m_DuplInfoCheck = FALSE;
-	m_DuplXYZCheck = FALSE;
 	//}}AFX_DATA_INIT
 }
 
@@ -65,7 +64,6 @@ void CDuplicateDocDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_DUPLPRIMARIESCOL_CHECK, m_DuplPrimariesColCheck);
 	DDX_Check(pDX, IDC_DUPLSECONDARIESCOL_CHECK, m_DuplSecondariesColCheck);
 	DDX_Check(pDX, IDC_DUPLINFO_CHECK, m_DuplInfoCheck);
-	DDX_Check(pDX, IDC_DUPLXYZ_CHECK, m_DuplXYZCheck);
 	//}}AFX_DATA_MAP
 }
 
@@ -94,7 +92,6 @@ void CDuplicateDocDlg::OnInvertButton()
 	m_DuplSecondariesColCheck =!m_DuplSecondariesColCheck;
 	m_DuplContrastCheck =!m_DuplContrastCheck;
 	m_DuplInfoCheck =!m_DuplInfoCheck;
-	m_DuplXYZCheck =!m_DuplXYZCheck;
 	UpdateData(FALSE);
 }
 
@@ -110,8 +107,7 @@ void CDuplicateDocDlg::OnClearButton()
 	m_DuplSecondariesColCheck = FALSE;
 	m_DuplContrastCheck = FALSE;
 	m_DuplInfoCheck = FALSE;
-	m_DuplXYZCheck = FALSE;
-	UpdateData(FALSE);
+    UpdateData(FALSE);
 }
 
 void CDuplicateDocDlg::OnHelp() 

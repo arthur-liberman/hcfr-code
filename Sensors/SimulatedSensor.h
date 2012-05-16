@@ -44,7 +44,6 @@ public:
 	virtual void Serialize(CArchive& archive); 
 
 	virtual BOOL Init( BOOL bForSimultaneousMeasures );
-	virtual CColor MeasureColor(COLORREF aRGBValue);
 
 	virtual void SetPropertiesSheetValues();
 	virtual void GetPropertiesSheetValues();
@@ -72,6 +71,8 @@ protected:
 	double m_offsetR;
 	double m_offsetG;
 	double m_offsetB;
+private:
+    virtual CColor MeasureColorInternal(COLORREF aRGBValue);
 };
 
 #endif // !defined(AFX_SIMULATEDSENSOR_H__0A1F47AC_62BE_4C6A_8B0B_F00C8F09C40E__INCLUDED_)

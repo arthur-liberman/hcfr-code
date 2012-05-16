@@ -522,8 +522,6 @@ BEGIN
     CONTROL         "Sekundärfarben",IDC_DUPLSECONDARIESCOL_CHECK,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,92,183,13
     CONTROL         "Kontrast",IDC_DUPLCONTRAST_CHECK,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,105,183,13
     CONTROL         "Informationen",IDC_DUPLINFO_CHECK,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,118,183,13
-    CONTROL         "XYZ Koordinaten Abstimmungsmatrix",IDC_DUPLXYZ_CHECK,
-                    "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,131,183,13
     PUSHBUTTON      "Löschen",IDC_CLEAR_BUTTON,222,7,50,14
     PUSHBUTTON      "Invertieren",IDC_INVERT_BUTTON,222,28,50,14
     PUSHBUTTON      "Hilfe",ID_HELP,222,63,50,14
@@ -790,22 +788,6 @@ BEGIN
     COMBOBOX        IDC_INFO_DISPLAY,182,167,170,123,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     LTEXT           "",IDC_STATIC_VIEW,182,183,327,138,NOT WS_VISIBLE,WS_EX_TRANSPARENT
     PUSHBUTTON      "",IDC_ANSICONTRAST_PATTERN_TEST_BUTTON,502,170,8,8
-END
-
-IDD_CONVERSION_MATRIX DIALOG  0, 0, 199, 163
-STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "XYZ Konvertierungsmatrix"
-FONT 8, "MS Sans Serif"
-BEGIN
-    LTEXT           "XYZ Koordinaten Abstimmungsmatrix:",IDC_STATIC,10,11,130,10
-    CONTROL         "",IDC_SENSORMATRIX_STATIC,"Static",SS_ETCHEDFRAME,10,24,122,34
-    PUSHBUTTON      "Laden...",IDC_LOAD,140,24,50,14,WS_GROUP
-    PUSHBUTTON      "Speichern...",IDC_SAVE,140,43,50,14,WS_GROUP
-    LTEXT           "Kommentar:",IDC_STATIC,10,67,121,8
-    EDITTEXT        IDC_EDIT_COMMENT,10,78,180,50,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL | WS_GROUP
-    DEFPUSHBUTTON   "OK",IDOK,10,139,50,14,WS_GROUP
-    PUSHBUTTON      "Abbrechen",IDCANCEL,75,139,50,14,WS_GROUP
-    PUSHBUTTON      "Hilfe",IDHELP,140,139,49,14,WS_GROUP
 END
 
 IDD_ADVANCED_PROP_PAGE DIALOGEX 0, 0, 212, 217
@@ -1725,13 +1707,6 @@ BEGIN
     END
     POPUP "&Erweitert"
     BEGIN
-        POPUP "XYZ Koordinaten Abstimmungsmatrix"
-        BEGIN
-            MENUITEM "Errechne Konvertierungsmatrix von &Referenzdokument", IDM_TRAIN_METER
-            MENUITEM "&Lösche XYZ Konvertierungsmatrix", IDM_RESET_CONVERSION_MATRIX
-            MENUITEM "&Manuelles Ändern der XYZ Kovertierungsmatrix...", IDM_EDIT_CONVERSION_MATRIX
-        END
-        MENUITEM SEPARATOR
         POPUP "Testbilder"
         BEGIN
             MENUITEM "Animiertes Schwarzwert Testbild", IDM_PATTERN_ANIM_BLACK
@@ -1741,8 +1716,6 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "Kalibrierungsdatei"
         BEGIN
-            MENUITEM "Eine einfache Kalibrierungsdatei erstellen...", IDM_CALIBRATE_SENSOR
-            MENUITEM SEPARATOR
             MENUITEM "Aus simultanen Messungen erstellen", IDM_CALIBRATION_SIM
             MENUITEM "Manuell mit einem Referenz Colorimeter erstellen", IDM_CALIBRATION_MANUAL
             MENUITEM SEPARATOR
@@ -2497,7 +2470,6 @@ BEGIN
     IDM_CONFIGURE_GENERATOR "Bildquellenparameter konfigurieren"
     IDM_CHANGE_SENSOR       "Sensor auswählen"
     IDM_CHANGE_GENERATOR    "Bildquelle auswählen"
-    IDM_CALIBRATE_SENSOR    "Eine einfache Kalibrierungsdatei anhand theoretischer Projektorcharakteristiken erstellen (sehr ungenau)"
 END
 
 STRINGTABLE 
@@ -2940,7 +2912,6 @@ BEGIN
     IDM_PATTERN_ANIM_BLACK  "Animiertes Schwarzwert Testbild mit zwei Streifen bei IRE 1 und 2 auf einem schwarzen Hintergrund anzeigen\nAnimiertes Schwarzwert Testbild"
     IDM_PATTERN_ANIM_WHITE  "Animiertes Weißwert Testbild mit zwei Streifen bei IRE 98 und 99 auf einem weißen Hintergrund anzeigen\nAnimiertes Weißwert Testbild"
     ID_VIEW_SPECTRUM        "Blendet das Spektrum Fenster ein oder aus\nSpektrum"
-    IDM_TRAIN_METER         "Konvertierungsmatrix XYZ Sensorwerte errechnen, damit sie mit den Koordinaten eines Referenzdokumentes übereinstimmen\nKonvertierungsmatrix aus einem Referenzdokument errechnen"
     IDM_SINGLE_MEASUREMENT  "Eine einmalige Messung ausführen\nEine einmalige Messung ausführen"
     IDM_CONTINUOUS_MEASUREMENT 
                             "Kontinuierliche Messungen starten oder stoppen\nKontinuierliche Messungen starten oder stoppen"
@@ -3059,10 +3030,6 @@ END
 STRINGTABLE 
 BEGIN
     ID_VIEW_MEASURE_BAR     "Blendet die Messungen Symbole ein oder aus\nMessungen Symbole"
-    IDM_RESET_CONVERSION_MATRIX 
-                            "Die XYZ Konvertierungsmatrix löschen\nDie XYZ Kovertierungsmatrix löschen"
-    IDM_EDIT_CONVERSION_MATRIX 
-                            "Die XYZ Konvertierungsmatrix manuell ändern. Die Matrix kann in einer Datei gespeichert werden.\nDie XYZ Konvertierungsmatrix manuell ändern"
     IDM_TAB_ACTIVATE_ON_ALL "Diesen Reiter bei allen Dokumenten aktivieren"
     ID_VIEW_MEASURE_EXT_BAR "Blendet die Erweiterte Messungen Symbole ein oder aus\nErweiterte Messungen Symbole"
     IDM_SIM_SINGLEMEASURE   "Eine einmalige freie Messung simultan für alle Dokumente ausführen\nSimultane freie Messung"

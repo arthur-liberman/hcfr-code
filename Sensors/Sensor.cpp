@@ -124,16 +124,6 @@ CColor CSensor::MeasureGray(double aLevel, BOOL bIRE)
 	return MeasureColor(CIRELevel(aLevel,bIRE)); 
 }
 
-BOOL CSensor::CalibrateSensor(CGenerator *apGenerator)
-{
-	return TRUE;
-}
-
-BOOL CSensor::CalibrateSensor(Matrix & measures, Matrix & references, CColor & WhiteTest, CColor & WhiteRef, CColor & BlackTest, CColor & BlackRef)
-{
-	return TRUE;
-}
-
 BOOL CSensor::Configure()
 {
 	CString	str;
@@ -145,11 +135,8 @@ BOOL CSensor::Configure()
 
 	if ( m_pDevicePage )
 		propertySheet.AddPage ( m_pDevicePage );
-	if ( m_pCalibrationPage && SensorNeedCalibration () )
-		propertySheet.AddPage ( m_pCalibrationPage );
 
-	if ( SensorAcceptCalibration () || ! m_sensorToXYZMatrix.IsIdentity () )
-		propertySheet.AddPage ( & m_SensorPropertiesPage );
+	propertySheet.AddPage ( & m_SensorPropertiesPage );
 
 	propertySheet.SetActivePage(0);
 	SetPropertiesSheetValues();

@@ -246,7 +246,7 @@ BOOL CSpyder3Sensor::Release()
 	return CSensor::Release();
 }
 
-CColor CSpyder3Sensor::MeasureColor(COLORREF aRGBValue)
+CColor CSpyder3Sensor::MeasureColorInternal(COLORREF aRGBValue)
 {
 #ifdef USE_NON_FREE_CODE
 	UINT		nLoops;
@@ -339,7 +339,7 @@ CColor CSpyder3Sensor::MeasureColor(COLORREF aRGBValue)
 					LeaveCriticalSection ( & GetConfig () -> LogFileCritSec );
 				}
 
-				colMeasure.SetSensorValue(Spyder3Color);
+				colMeasure = Spyder3Color;
 			}
 		}
 		else 
@@ -349,7 +349,7 @@ CColor CSpyder3Sensor::MeasureColor(COLORREF aRGBValue)
 		}
 	} while ( bContinue );
 
-	return colMeasure.GetSensorValue();
+	return colMeasure;
 #else
     return noDataColor;
 #endif

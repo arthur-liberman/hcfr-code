@@ -119,7 +119,7 @@ public:
 	void MeasureSecondaries();
 	void MeasureContrast();
 	void AddMeasurement();
-	void CalibrateSensor(BOOL doUpdateValues=TRUE);
+	//void CalibrateSensor(BOOL doUpdateValues=TRUE);
 
 	CMeasure *GetMeasure() { return &m_measure; }
 	CGenerator *GetGenerator() { return m_pGenerator; }
@@ -168,7 +168,7 @@ protected:
 	void DuplicateSensor(CDataSetDoc * pDoc);
 	void DuplicateGenerator(CDataSetDoc * pDoc);
 
-	void PerformSimultaneousMeasures ( int nMode, UINT nCalibrationOrControlled = 0 );
+	void PerformSimultaneousMeasures ( int nMode );
 	
 	virtual void UpdateFrameCounts();
 
@@ -179,8 +179,6 @@ protected:
 	//{{AFX_MSG(CDataSetDoc)
 	afx_msg void OnConfigureSensor();
 	afx_msg void OnConfigureGenerator();
-	afx_msg void OnCalibrateSensor();
-	afx_msg void OnUpdateCalibrateSensor(CCmdUI* pCmdUI);
 	afx_msg void OnChangeGenerator();
 	afx_msg void OnChangeSensor();
 	afx_msg void OnExportXls();
@@ -196,7 +194,6 @@ protected:
 	afx_msg void OnSimGrayscaleAndColors();
 	afx_msg void OnPatternAnimBlack();
 	afx_msg void OnPatternAnimWhite();
-	afx_msg void OnTrainMeter();
 	afx_msg void OnSingleMeasurement();
 	afx_msg void OnContinuousMeasurement();
 	afx_msg void OnMeasureGrayscale();
@@ -238,9 +235,6 @@ protected:
 	afx_msg void OnSimSatCyan();
 	afx_msg void OnSimSatMagenta();
 	afx_msg void OnSimSingleMeasurement();
-	afx_msg void OnResetConversionMatrix();
-	afx_msg void OnUpdateResetConversionMatrix(CCmdUI* pCmdUI);
-	afx_msg void OnEditConversionMatrix();
 	afx_msg void OnMeasureSatPrimaries();
 	afx_msg void OnUpdateMeasureSatPrimaries(CCmdUI* pCmdUI);
 	afx_msg void OnSaveCalibrationFile();

@@ -493,7 +493,7 @@ BOOL CEyeOneSensor::Release()
 	return CSensor::Release();
 }
 
-CColor CEyeOneSensor::MeasureColor(COLORREF aRGBValue)
+CColor CEyeOneSensor::MeasureColorInternal(COLORREF aRGBValue)
 {
 	CColor		EyeOneColor;
 #ifdef USE_NON_FREE_CODE

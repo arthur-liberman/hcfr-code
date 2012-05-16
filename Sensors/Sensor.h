@@ -60,17 +60,17 @@ public:
 	virtual void Serialize(CArchive& archive); 
 
 	virtual BOOL Init( BOOL bForSimultaneousMeasures );
-	virtual CColor MeasureColor(COLORREF aRGBValue); // need to be overriden
+	CColor MeasureColor(COLORREF aRGBValue);
 	virtual CColor MeasureGray(double aIRELevel,BOOL bIRE);
 	virtual BOOL Release();
 
-	virtual BOOL CalibrateSensor(CGenerator *apGenerator);
-	virtual BOOL CalibrateSensor(Matrix & measures, Matrix & references, CColor & WhiteTest, CColor & WhiteRef, CColor & BlackTest, CColor & BlackRef);
+	//virtual BOOL CalibrateSensor(CGenerator *apGenerator);
+	//virtual BOOL CalibrateSensor(Matrix & measures, Matrix & references, CColor & WhiteTest, CColor & WhiteRef, CColor & BlackTest, CColor & BlackRef);
 	virtual void LoadCalibrationFile(CString & aFileName) { return ; }
 	virtual void SaveCalibrationFile() { return ; }
 
-	virtual void SetSensorMatrix(Matrix aMatrix) { m_sensorToXYZMatrix=aMatrix; m_calibrationTime=time(NULL);}
-	virtual Matrix GetSensorMatrix() {return m_sensorToXYZMatrix; }
+	void SetSensorMatrix(Matrix aMatrix) { m_sensorToXYZMatrix=aMatrix; m_calibrationTime=time(NULL);}
+	Matrix GetSensorMatrix() {return m_sensorToXYZMatrix; }
 
 	virtual BOOL IsMeasureValid() {return m_isMeasureValid; }
 	virtual void SetMeasureValidity(BOOL isValid) { m_isMeasureValid=isValid; }
@@ -85,11 +85,9 @@ public:
 	virtual void SetModifiedFlag( BOOL bModified ) { m_isModified = bModified; }
 
 	virtual LPCSTR GetStandardSubDir ()	{ return ""; }
-	virtual BOOL SensorNeedCalibration () { return TRUE; }
-	virtual BOOL SensorAcceptCalibration () { return TRUE; }
 
-	CTime GetCalibrationTime() { return SensorAcceptCalibration () ? CTime(m_calibrationTime) : CTime (2000,1,1,0,0,0,-1); }
-	BOOL IsCalibrated() { return SensorNeedCalibration () ? ( m_calibrationTime != 0 || ! m_sensorToXYZMatrix.IsIdentity () ) : TRUE; }
+	CTime GetCalibrationTime() { return CTime(m_calibrationTime); }
+	BOOL IsCalibrated() { return !m_sensorToXYZMatrix.IsIdentity (); }
 
 	CString GetName() { return m_name; }
 	void SetName(CString aStr) { m_name=aStr; } 
@@ -99,6 +97,8 @@ public:
 
     virtual bool isValid() const {return true;}
 	virtual BOOL HasSpectrumCapabilities ( int * pNbBands, int * pMinWaveLength, int * pMaxWaveLength, double * pBandWidth ) { return FALSE; }
+private:
+    virtual CColor MeasureColorInternal(COLORREF aRGBValue) { return noDataColor;};
 };
 
 #endif // !defined(AFX_SENSOR_H__FD0761AA_CBEC_4A38_8A67_ADB0963FBAE4__INCLUDED_)

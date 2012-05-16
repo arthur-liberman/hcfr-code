@@ -65,7 +65,6 @@ public:
 
 	virtual BOOL Init( BOOL bForSimultaneousMeasures );
 	virtual BOOL Release();
-	virtual CColor MeasureColor(COLORREF aRGBValue);
 	virtual BOOL acquire(char *com_port, int timeout, char command, char *sensVal);
 
 	virtual void SetPropertiesSheetValues();
@@ -79,6 +78,8 @@ public:
 protected:
 	void decodeKiStr(char *kiStr, int RGB[3]);
 	void GetRealComPort ( CString & ComPort );
+private:
+    virtual CColor MeasureColorInternal(COLORREF aRGBValue);
 };
 
 #endif // !defined(AFX_KISENSOR_H__1493C213_6A02_44C5_8EB7_55B469092E14__INCLUDED_)

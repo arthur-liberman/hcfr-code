@@ -117,7 +117,6 @@ public:
 	int	GetViewTabIndex ( int nIDName );
 
 	void OnChangeRef ( BOOL bSet );
-	void OnChangeXYZ ( BOOL bSet );
 	void OpenNewTabMenu ( POINT pt );
 
 	void OnRightToolbarButton(WPARAM wParam);

@@ -58,17 +58,16 @@ public:
 	virtual void Serialize(CArchive& archive); 
 
 	virtual BOOL Init( BOOL bForSimultaneousMeasures );
-	virtual CColor MeasureColor(COLORREF aRGBValue);
 	virtual BOOL Release();
 
 	virtual void SetPropertiesSheetValues();
 	virtual void GetPropertiesSheetValues();
 
-	virtual LPCSTR GetStandardSubDir ()	{ return GetConfig()->m_bUseCalibrationFilesOnAllProbes ? "Etalon_DTP94" : ""; }
-	virtual BOOL SensorNeedCalibration () { return FALSE; }
-	virtual BOOL SensorAcceptCalibration () { return GetConfig()->m_bUseCalibrationFilesOnAllProbes; }
+	virtual LPCSTR GetStandardSubDir ()	{ return "Etalon_DTP94"; }
 
 	virtual BOOL SendAndReceive ( LPCSTR lpszCmd, LPSTR lpszResponse, size_t nBufferSize );
+private:
+    virtual CColor MeasureColorInternal(COLORREF aRGBValue);
 };
 
 #endif // !defined(AFX_DTPSENSOR_H__1493C213_6A02_44C5_8EB7_55B469092E14__INCLUDED_)

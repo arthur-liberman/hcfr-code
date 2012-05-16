@@ -84,8 +84,6 @@ public:
 
 	virtual void Serialize(CArchive& archive); 
 
-	virtual BOOL CalibrateSensor(CGenerator *apGenerator);
-	virtual BOOL CalibrateSensor(Matrix & measures, Matrix & references, CColor & WhiteTest, CColor & WhiteRef, CColor & BlackTest, CColor & BlackRef);
 	virtual void LoadCalibrationFile(CString & aFileName);
 	virtual void SaveCalibrationFile();
 

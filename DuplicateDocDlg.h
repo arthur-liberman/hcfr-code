@@ -47,7 +47,6 @@ public:
 	BOOL	m_DuplPrimariesColCheck;
 	BOOL	m_DuplSecondariesColCheck;
 	BOOL	m_DuplInfoCheck;
-	BOOL	m_DuplXYZCheck;
 	//}}AFX_DATA
 
 

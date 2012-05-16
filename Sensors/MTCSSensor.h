@@ -64,19 +64,18 @@ public:
 	virtual void Serialize(CArchive& archive); 
 
 	virtual BOOL Init( BOOL bForSimultaneousMeasures );
-	virtual CColor MeasureColor(COLORREF aRGBValue);
 	virtual CColor MeasureBlackLevel(BOOL bUseOffsets);
 	virtual BOOL Release();
 
 	virtual void SetPropertiesSheetValues();
 	virtual void GetPropertiesSheetValues();
 
-	virtual LPCSTR GetStandardSubDir ()	{ return GetConfig()->m_bUseCalibrationFilesOnAllProbes ? "Etalon_MTCS" : ""; }
-	virtual BOOL SensorNeedCalibration () { return FALSE; }
-	virtual BOOL SensorAcceptCalibration () { return GetConfig()->m_bUseCalibrationFilesOnAllProbes; }
+	virtual LPCSTR GetStandardSubDir ()	{ return "Etalon_MTCS"; }
 #ifdef USE_NON_FREE_CODE
     virtual bool isValid() const {return false;}
 #endif
+private:
+    virtual CColor MeasureColorInternal(COLORREF aRGBValue);
 };
 
 #endif // !defined(AFX_MTCSSENSOR_H__1493C213_6A02_44C5_8EB7_55B469092E14__INCLUDED_)

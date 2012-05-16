@@ -271,13 +271,11 @@ void CMainView::OnInitialUpdate()
 	m_comboDisplay.SetCurSel ( 0 );
 	OnSelchangeInfoDisplay ();
 
-	if ( ! GetDocument () -> m_pSensor -> SensorAcceptCalibration () )
-	{
-		if ( m_displayType == HCFR_SENSORRGB_VIEW )
-			m_displayType = HCFR_XYZ_VIEW;
+    // doesn't really make sense to see sensor values
+	if ( m_displayType == HCFR_SENSORRGB_VIEW )
+		m_displayType = HCFR_XYZ_VIEW;
 
-		GetDlgItem ( IDC_SENSORRGB_RADIO ) -> EnableWindow ( FALSE );
-	}
+	GetDlgItem ( IDC_SENSORRGB_RADIO ) -> EnableWindow ( FALSE );
 
 	CheckDlgButton(IDC_XYZ_RADIO, m_displayType == HCFR_XYZ_VIEW ? BST_CHECKED : BST_UNCHECKED);  
 	CheckDlgButton(IDC_SENSORRGB_RADIO, m_displayType == HCFR_SENSORRGB_VIEW ? BST_CHECKED : BST_UNCHECKED);  
@@ -580,27 +578,11 @@ void CMainView::RefreshSelection()
 		Item.row = 20;
 		m_pSelectedColorGrid->SetItem(&Item);
 
-		if ( GetDocument () -> m_pSensor -> SensorNeedCalibration () )
+		Item.strText="";
+		for(i=21;i<24;i++)
 		{
-			aColor=m_SelectedColor.GetSensorValue();
-			Item.strText.Format("%.0f",aColor[0]);
-			Item.row = 21;
+			Item.row = i;
 			m_pSelectedColorGrid->SetItem(&Item);
-			Item.strText.Format("%.0f",aColor[1]);
-			Item.row = 22;
-			m_pSelectedColorGrid->SetItem(&Item);
-			Item.strText.Format("%.0f",aColor[2]);
-			Item.row = 23;
-			m_pSelectedColorGrid->SetItem(&Item);
-		}
-		else
-		{
-			Item.strText="";
-			for(i=21;i<24;i++)
-			{
-				Item.row = i;
-				m_pSelectedColorGrid->SetItem(&Item);
-			}
 		}
 	}
 	else
@@ -1203,21 +1185,14 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 		// Normal OnUpdate
 		CFormView::OnUpdate(pSender,lHint,pHint);
 
-		if ( ! GetDocument () -> m_pSensor -> SensorAcceptCalibration () )
+		if ( m_displayType == HCFR_SENSORRGB_VIEW )
 		{
-			if ( m_displayType == HCFR_SENSORRGB_VIEW )
-			{
-				m_displayType = HCFR_XYZ_VIEW;
-				CheckDlgButton(IDC_XYZ_RADIO, BST_CHECKED);  
-				CheckDlgButton(IDC_SENSORRGB_RADIO, BST_UNCHECKED);  
-			}
+			m_displayType = HCFR_XYZ_VIEW;
+			CheckDlgButton(IDC_XYZ_RADIO, BST_CHECKED);  
+			CheckDlgButton(IDC_SENSORRGB_RADIO, BST_UNCHECKED);  
+		}
 
-			GetDlgItem ( IDC_SENSORRGB_RADIO ) -> EnableWindow ( FALSE );
-		}
-		else
-		{
-			GetDlgItem ( IDC_SENSORRGB_RADIO ) -> EnableWindow ( TRUE );
-		}
+		GetDlgItem ( IDC_SENSORRGB_RADIO ) -> EnableWindow ( FALSE );
 
 		if ( ( lHint >= UPD_EVERYTHING && lHint <= UPD_FREEMEASURES ) || lHint == UPD_ARRAYSIZES || lHint == UPD_GENERALREFERENCES || lHint == UPD_DATAREFDOC || lHint == UPD_REFERENCEDATA )
 		{
@@ -1310,28 +1285,14 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 			}
 			else 
 			{
-				if ( GetDocument()->GetMeasure()->IsAdjustmentMatrixEnabled() ) 
-				{ 
-					m_grayScaleGroup.SetHilighted(2);
-					m_sensorGroup.SetHilighted(2);
-					m_generatorGroup.SetHilighted(2);
-					m_datarefGroup.SetHilighted(2);
-					m_displayGroup.SetHilighted(2);
-					m_paramGroup.SetHilighted(2);
-					m_selectGroup.SetHilighted(2);
-					m_viewGroup.SetHilighted(2);
-				}
-				else
-				{
-					m_grayScaleGroup.SetHilighted(0);
-					m_sensorGroup.SetHilighted(0);
-					m_generatorGroup.SetHilighted(0);
-					m_datarefGroup.SetHilighted(0);
-					m_displayGroup.SetHilighted(0);
-					m_paramGroup.SetHilighted(0);
-					m_selectGroup.SetHilighted(0);
-					m_viewGroup.SetHilighted(0);
-				}
+				m_grayScaleGroup.SetHilighted(0);
+				m_sensorGroup.SetHilighted(0);
+				m_generatorGroup.SetHilighted(0);
+				m_datarefGroup.SetHilighted(0);
+				m_displayGroup.SetHilighted(0);
+				m_paramGroup.SetHilighted(0);
+				m_selectGroup.SetHilighted(0);
+				m_viewGroup.SetHilighted(0);
 			}
 
 			//Update checkbox value
@@ -1341,10 +1302,10 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 				m_datarefCheckButton = FALSE;
 		}
 
-		m_AdjustXYZCheckButton.EnableWindow ( GetDocument()->GetMeasure()->HasAdjustmentMatrix() );
-		m_AdjustXYZCheckButton.SetCheck ( GetDocument()->GetMeasure()->IsAdjustmentMatrixEnabled() );
+		m_AdjustXYZCheckButton.EnableWindow ( FALSE );
+		m_AdjustXYZCheckButton.SetCheck ( FALSE );
 
-		if ( GetDocument()->GetMeasure()->IsAdjustmentMatrixEnabled() || m_displayType == HCFR_xyz2_VIEW )
+		if (m_displayType == HCFR_xyz2_VIEW )
 		{
 			if ( m_editCheckButton.GetCheck () )
 			{
@@ -1374,16 +1335,10 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 			double xyz[3];
 			switch(m_displayType)
 			{
+				case HCFR_SENSORRGB_VIEW:
 				case HCFR_XYZ_VIEW:
 					aColor=aMeasure.GetXYZValue();
 					str.Format("%.3f",aColor[aComponentNum]);
-					break;
-				case HCFR_SENSORRGB_VIEW:
-					aColor=aMeasure.GetSensorValue();
-					if ( GetDocument() -> m_pSensor -> SensorNeedCalibration () )
-						str.Format("%3.0f",aColor[aComponentNum]);
-					else
-						str.Format("%.3f",aColor[aComponentNum]);
 					break;
 				case HCFR_RGB_VIEW:
 					aColor=aMeasure.GetRGBValue(GetColorReference());
@@ -1521,14 +1476,9 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 		case 0:
 			switch(m_displayType)
 			{
+				case HCFR_SENSORRGB_VIEW:
 				case HCFR_XYZ_VIEW:
 					return "X";
-					break;
-				case HCFR_SENSORRGB_VIEW:
-					if ( GetDocument() -> m_pSensor -> SensorNeedCalibration () )
-						return "R";
-					else
-						return "X";
 					break;
 				case HCFR_RGB_VIEW:
 					switch(GetConfig()->m_colorStandard)
@@ -1561,14 +1511,9 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 		case 1:
 			switch(m_displayType)
 			{
+				case HCFR_SENSORRGB_VIEW:
 				case HCFR_XYZ_VIEW:
 					return "Y";
-					break;
-				case HCFR_SENSORRGB_VIEW:
-					if ( GetDocument() -> m_pSensor -> SensorNeedCalibration () )
-						return "G";
-					else
-						return "Y";
 					break;
 				case HCFR_RGB_VIEW:
 					switch(GetConfig()->m_colorStandard)
@@ -1601,15 +1546,11 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 		case 2:
 			switch(m_displayType)
 			{
+				case HCFR_SENSORRGB_VIEW:
 				case HCFR_XYZ_VIEW:
 					return "Z";
 					break;
-				case HCFR_SENSORRGB_VIEW:
-					if ( GetDocument() -> m_pSensor -> SensorNeedCalibration () )
-						return "B";
-					else
-						return "Z";
-					break;
+
 				case HCFR_RGB_VIEW:
 					switch(GetConfig()->m_colorStandard)
 					{
@@ -2307,11 +2248,9 @@ void CMainView::OnGrayScaleGridBeginEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 		// Get color data from XYZ value 
 		switch(m_displayType)
 		{
+			case HCFR_SENSORRGB_VIEW:
 			case HCFR_XYZ_VIEW:
 				aColor=aColorMeasure.GetXYZValue();
-				break;
-			case HCFR_SENSORRGB_VIEW:
-				aColor=aColorMeasure.GetSensorValue();
 				break;
 			case HCFR_RGB_VIEW:
 				aColor=aColorMeasure.GetRGBValue(GetColorReference());
@@ -2439,7 +2378,6 @@ void CMainView::OnGrayScaleGridEndEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 		{
 			// No color value: build a color from reference white
 			aColorMeasure = GetColorReference().GetWhite ();
-			aColorMeasure.SetSensorToXYZMatrix ( GetDocument()->m_pSensor->GetSensorMatrix() );
 		}
 
 		CColor aColor;
@@ -2451,7 +2389,7 @@ void CMainView::OnGrayScaleGridEndEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 				aColor=aColorMeasure.GetXYZValue();
 				break;
 			case HCFR_SENSORRGB_VIEW:
-				aColor=aColorMeasure.GetSensorValue();
+				aColor=aColorMeasure.GetXYZValue();
 				break;
 			case HCFR_RGB_VIEW:
 				aColor=aColorMeasure.GetRGBValue(GetColorReference());
@@ -2471,7 +2409,7 @@ void CMainView::OnGrayScaleGridEndEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 				aColorMeasure.SetXYZValue(aColor);
 				break;
 			case HCFR_SENSORRGB_VIEW:
-				aColorMeasure.SetSensorValue(aColor);
+				aColorMeasure.SetXYZValue(aColor);
 				break;
 			case HCFR_RGB_VIEW:
 				aColorMeasure.SetRGBValue(aColor, GetColorReference());
@@ -3930,27 +3868,7 @@ void CMainView::OnDatarefCheck()
 
 void CMainView::OnAdjustXYZCheck()
 {
-	BOOL	bAdjust = m_AdjustXYZCheckButton.GetCheck ();
-	
-	if ( ! GetDocument()->GetMeasure()->HasAdjustmentMatrix() )
-	{
-		ASSERT(0);
-		bAdjust = FALSE;
-		m_AdjustXYZCheckButton.SetCheck(FALSE);
-	}
-
-	if ( m_pGrayScaleGrid->GetSelectedCellRange().IsValid () )
-	{
-		m_pGrayScaleGrid->SetSelectedRange(-1,-1,-1,-1);
-		m_pGrayScaleGrid->SetFocusCell(-1,-1);
-		SetSelectedColor ( noDataColor );
-		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
-	}
-
-	GetDocument()->GetMeasure()->EnableAdjustmentMatrix(bAdjust);
-	GetDocument()->UpdateAllViews ( NULL, UPD_EVERYTHING );
-
-	AfxGetMainWnd () -> SendMessageToDescendants ( WM_COMMAND, IDM_REFRESH_REFERENCE );
+    ///\todo remove
 }
 
 

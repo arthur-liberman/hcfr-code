@@ -207,7 +207,6 @@
 #define IDD_MAINVIEW_FORM               336
 #define IDI_NEWTAB_ICON                 336
 #define IDR_GAMMAHISTOVIEW_TMPL         337
-#define IDD_CONVERSION_MATRIX           337
 #define IDI_SPECTRUM_ICON               338
 #define IDI_GRAYSCALE_ICON              339
 #define IDI_COLORS_ICON                 340
@@ -611,7 +610,6 @@
 #define IDC_BLUE_1                      1219
 #define IDC_NEWIRPROFILE                1219
 #define IDC_CHECK_XYZ                   1219
-#define IDC_DUPLXYZ_CHECK               1219
 #define IDC_BLUE_2                      1220
 #define IDC_BLUE_3                      1221
 #define IDC_MODIFYIRPROFILE             1221
@@ -716,7 +714,6 @@
 #define IDM_CONFIGURE_GENERATOR         32819
 #define IDM_CHANGE_SENSOR               32820
 #define IDM_CHANGE_GENERATOR            32821
-#define IDM_CALIBRATE_SENSOR            32822
 #define ID_AFFICHAGE_BARREVUES          32838
 #define ID_VIEW_VIEW_BAR                32839
 #define IDM_APPEARANCE_CONFIG           32840
@@ -835,7 +832,6 @@
 #define ID_VIEW_SPECTRUM                32963
 #define IDM_UPDATE_SOFT                 32964
 #define IDM_UPDATE_ETALONS              32966
-#define IDM_TRAIN_METER                 32968
 #define IDM_SINGLE_MEASUREMENT          32969
 #define IDM_CONTINUOUS_MEASUREMENT      32970
 #define IDM_PATTERN_DISPLAY             32971
@@ -873,8 +869,6 @@
 #define IDM_RGB_GRAPH_Y_SCALE3          33004
 #define IDM_PREV_TAB                    33005
 #define ID_VIEW_MEASURE_BAR             33013
-#define IDM_RESET_CONVERSION_MATRIX     33014
-#define IDM_EDIT_CONVERSION_MATRIX      33015
 #define IDM_TAB_ACTIVATE_ON_ALL         33016
 #define ID_VIEW_MEASURE_EXT_BAR         33017
 #define IDM_SIM_SINGLEMEASURE           33019

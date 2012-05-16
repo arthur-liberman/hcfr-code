@@ -278,7 +278,7 @@ BOOL CArgyllSensor::Release()
     return CSensor::Release();
 }
 
-CColor CArgyllSensor::MeasureColor(COLORREF aRGBValue)
+CColor CArgyllSensor::MeasureColorInternal(COLORREF aRGBValue)
 {
     if(!m_meter) if(!Init(FALSE)) return noDataColor;
 
@@ -387,22 +387,5 @@ void ArgyllLogMessage(const char* messageType, char *fmt, va_list& args)
         va_end(args);
         fprintf(logFile,"\n");
         fclose(logFile);
-    }
-}
-
-BOOL CArgyllSensor::SensorNeedCalibration()
-{
-    return FALSE;
-}
-
-BOOL CArgyllSensor::SensorAcceptCalibration()
-{
-    if(GetConfig()->m_bUseCalibrationFilesOnAllProbes)
-    {
-        return true;
-    }
-    else
-    {
-        return m_meter->isColorimeter()?TRUE:FALSE;
     }
 }
