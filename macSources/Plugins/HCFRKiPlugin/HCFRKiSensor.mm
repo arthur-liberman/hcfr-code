@@ -295,8 +295,8 @@
   colorsMatrix[2][0] = (float)colors[2];
   
 //  NSLog (@"HCFRKiSensor : read values : R=%f G=%f B=%f", colorsMatrix[0][0], colorsMatrix[1][0], colorsMatrix[2][0]);
-  
-  HCFRColor *measure = [[HCFRColor alloc] initWithSensorMatrix:colorsMatrix calibrationMatrix:[self getSensorToXYZMatrix]];
+  Matrix adjustedColorsMatrix([self getSensorToXYZMatrix] * colorsMatrix);
+  HCFRColor *measure = [[HCFRColor alloc] initWithMatrix:adjustedColorsMatrix];
   return [measure autorelease];
 }
 

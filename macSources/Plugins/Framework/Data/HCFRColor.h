@@ -34,7 +34,6 @@
     CColor  *color;
 }
 -(HCFRColor*) initWithMatrix:(Matrix)newMatrix;
--(HCFRColor*) initWithSensorMatrix:(Matrix)newMatrix calibrationMatrix:(Matrix)calibrationMatrix;
 -(HCFRColor*) initWithRGBMatrix:(Matrix)newMatrix colorReference:(HCFRColorReference*)reference;
 -(HCFRColor*) initWithColor:(CColor)newColor;
 -(id) initWithCoder:(NSCoder*)coder;
@@ -90,12 +89,6 @@
    (TODO : decrire le fonctionnement de cette fameuse fonction)
 */
 -(double) temperatureWithColorReference:(HCFRColorReference*)reference;
-/*!
-  @function 
-   @abstract   Retourn le resultat de getSensorValue de CColor
-   @discussion Cette fonction est juste un pont pour son equivalent de la classe CColor
-(TODO : decrire le fonctionnement de cette fameuse fonction)*/
--(CColor) sensorColor;
 /*!
     @function 
     @abstract   Affiche la couleur sur la sortie standard
