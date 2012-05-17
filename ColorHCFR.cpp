@@ -89,7 +89,11 @@ END_MESSAGE_MAP()
 
 CColorHCFRApp::CColorHCFRApp()
 {
-	// TODO: add construction code here,
+#ifdef _DEBUG
+    // uncomment to put on full memory checking which we still have lots of mem leaks/issues
+    //_CrtSetDbgFlag(0x37);
+#endif
+
 	// Place all significant initialization in InitInstance
 	m_hCIEThread = NULL;
 	m_hCIEEvent = CreateEvent ( NULL, TRUE, FALSE, NULL );	// Manual event starting non-signaled
@@ -150,11 +154,6 @@ CColorHCFRApp::~CColorHCFRApp()
     if(m_pColorReference)
     {
         delete m_pColorReference;
-    }
-
-    if(m_pConfig)
-    {
-        delete m_pConfig;
     }
 
     if(m_pReferenceData)
@@ -471,6 +470,12 @@ int CColorHCFRApp::ExitInstance()
 #ifdef USE_NON_FREE_CODE
 	DisconnectDevice3();
 #endif
+
+    if(m_pConfig)
+    {
+        delete m_pConfig;
+        m_pConfig = NULL;
+    }
 
 	return CWinApp::ExitInstance();
 }
