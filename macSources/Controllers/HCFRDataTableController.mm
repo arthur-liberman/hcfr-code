@@ -245,7 +245,7 @@
     else if (currentMode == kRGBDisplayMode)
       theColor = [[theEntry value] RGBColorWithColorReference:colorReference];
     else if (currentMode == kSensorDisplayMode)
-      theColor = [[theEntry value] sensorColor];
+      theColor = [[theEntry value] XYZColor];
     else if (currentMode == kxyYDisplayMode)
       theColor = [[theEntry value] xyYColor];
     

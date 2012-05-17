@@ -37,19 +37,6 @@
   return self;
 }
 
--(HCFRColor*) initWithSensorMatrix:(Matrix)newMatrix calibrationMatrix:(Matrix)calibrationMatrix
-{
-  [super init];
-  
-  CColor newColor (newMatrix);
-
-  color = new CColor();
-  color->SetSensorToXYZMatrix(calibrationMatrix);
-  color->SetSensorValue(newColor);
-
-  return self;
-}
-
 -(HCFRColor*) initWithRGBMatrix:(Matrix)newMatrix colorReference:(HCFRColorReference*)reference
 {
   [super init];
@@ -80,20 +67,7 @@
   color->SetX([coder decodeDoubleForKey:@"X"]);
   color->SetY([coder decodeDoubleForKey:@"Y"]);
   color->SetZ([coder decodeDoubleForKey:@"Z"]);
-    
-  Matrix sensorToXYZ(0.0,3,3);
-  sensorToXYZ[0][0] = [coder decodeDoubleForKey:@"sensorToXYZ00"];
-  sensorToXYZ[0][1] = [coder decodeDoubleForKey:@"sensorToXYZ01"];
-  sensorToXYZ[0][2] = [coder decodeDoubleForKey:@"sensorToXYZ02"];
-  sensorToXYZ[1][0] = [coder decodeDoubleForKey:@"sensorToXYZ10"];
-  sensorToXYZ[1][1] = [coder decodeDoubleForKey:@"sensorToXYZ11"];
-  sensorToXYZ[1][2] = [coder decodeDoubleForKey:@"sensorToXYZ12"];
-  sensorToXYZ[2][0] = [coder decodeDoubleForKey:@"sensorToXYZ20"];
-  sensorToXYZ[2][1] = [coder decodeDoubleForKey:@"sensorToXYZ21"];
-  sensorToXYZ[2][2] = [coder decodeDoubleForKey:@"sensorToXYZ22"];
-  
-  color->SetSensorToXYZMatrix(sensorToXYZ);
-    
+       
   return self;
 }
 
@@ -110,17 +84,7 @@
   [coder encodeDouble:[self X] forKey:@"X"];
   [coder encodeDouble:[self Y] forKey:@"Y"];
   [coder encodeDouble:[self Z] forKey:@"Z"];
-  
-  Matrix sensorToXYZ = color->GetSensorToXYZMatrix();
-  [coder encodeDouble:sensorToXYZ[0][0] forKey:@"sensorToXYZ00"];
-  [coder encodeDouble:sensorToXYZ[0][1] forKey:@"sensorToXYZ01"];
-  [coder encodeDouble:sensorToXYZ[0][2] forKey:@"sensorToXYZ02"];
-  [coder encodeDouble:sensorToXYZ[1][0] forKey:@"sensorToXYZ10"];
-  [coder encodeDouble:sensorToXYZ[1][1] forKey:@"sensorToXYZ11"];
-  [coder encodeDouble:sensorToXYZ[1][2] forKey:@"sensorToXYZ12"];
-  [coder encodeDouble:sensorToXYZ[2][0] forKey:@"sensorToXYZ20"];
-  [coder encodeDouble:sensorToXYZ[2][1] forKey:@"sensorToXYZ21"];
-  [coder encodeDouble:sensorToXYZ[2][2] forKey:@"sensorToXYZ22"];
+
 }
 #pragma mark Fonctions reprises de CColor
 -(double) X
@@ -160,10 +124,7 @@
 {
   return color->GetColorTemp([reference cColorReference]);
 }
--(CColor) sensorColor
-{
-  return color->GetSensorValue();
-}
+
 -(void) display
 {
   cout << [self X] << ", " << [self Y] << ", " << [self Z] << endl;

@@ -668,12 +668,12 @@
   // faute de quoi on risque un plantage violent du logiciel en cas d'erreur
   try
   {
-    // on récupère les différentes mesures sous forme de matrice (XZYColor retourne la valeur non modifiée)
-    CColor measuredRedMatrix = [redMeasure sensorColor];//XYZColor];
-    CColor measuredGreenMatrix = [greenMeasure sensorColor];//XYZColor];
-    CColor measuredBlueMatrix = [blueMeasure sensorColor];//XYZColor];
-    CColor measuredBlackMatrix = [blackMeasure sensorColor];//XYZColor];
-    CColor measuredWhiteMatrix = [whiteMeasure sensorColor];//XYZColor];
+    // on récupère les différentes mesures sous forme de matrice
+    CColor measuredRedMatrix = [redMeasure XYZColor];
+    CColor measuredGreenMatrix = [greenMeasure XYZColor];
+    CColor measuredBlueMatrix = [blueMeasure XYZColor];
+    CColor measuredBlackMatrix = [blackMeasure XYZColor];
+    CColor measuredWhiteMatrix = [whiteMeasure XYZColor];
             
     if (YES)//compensateBlack) // TODO gérer ça via les prefs
     {
