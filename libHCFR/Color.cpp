@@ -611,10 +611,16 @@ CColor& CColor::operator =(const CColor& aColor)
 	return *this;
 }
 
-double & CColor::operator[](const int nRow) const
+const double & CColor::operator[](const int nRow) const
 { 
 	assert(nRow < GetRows());
-	return Matrix::operator ()(nRow,0); 
+	return Matrix::operator ()(nRow,0);
+}
+
+double & CColor::operator[](const int nRow)
+{ 
+	assert(nRow < GetRows());
+	return Matrix::operator ()(nRow,0);
 }
 
 double CColor::GetLuminance() const
@@ -1130,7 +1136,7 @@ CSpectrum::~CSpectrum()
 {
 }
 
-double & CSpectrum::operator[](const int nRow) const
+const double & CSpectrum::operator[](const int nRow) const
 { 
 	assert(nRow < GetRows());
 	return Matrix::operator ()(nRow,0); 

@@ -68,7 +68,8 @@ public:
 
 	CColor& operator =(const CColor& obj);
 
-	double& operator[](const int nRow) const;
+	const double& operator[](const int nRow) const;
+	double& operator[](const int nRow);
 
 	double GetLuminance() const;
 	int GetColorTemp(CColorReference colorReference) const;
@@ -125,7 +126,7 @@ public:
     CSpectrum (ifstream &theFile, bool oldFileFormat = false);
 	~CSpectrum();
 
-	double& operator[](const int nRow) const;
+	const double& operator[](const int nRow) const;
 
 	CColor GetXYZValue() const;
 
