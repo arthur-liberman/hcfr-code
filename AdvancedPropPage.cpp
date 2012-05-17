@@ -39,8 +39,6 @@ CAdvancedPropPage::CAdvancedPropPage() : CPropertyPageWithHelp(CAdvancedPropPage
 {
 	//{{AFX_DATA_INIT(CAdvancedPropPage)
 	m_bConfirmMeasures = TRUE;
-	m_bUseCalibrationFilesOnAllProbes = FALSE;
-	m_bControlledMode = FALSE;
 	m_comPort = _T("");
 	m_bUseOnlyPrimaries = FALSE;
 	m_bUseImperialUnits = FALSE;
@@ -64,8 +62,6 @@ void CAdvancedPropPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_CHECK_OLD_DELTAE, m_OldDeltaE);
 	DDX_Control(pDX, IDC_CHECK_DELTAE_GRAY_LUMA, m_DeltaEGray);
 	DDX_Check(pDX, IDC_CHECK_CONFIRM, m_bConfirmMeasures);
-	DDX_Check(pDX, IDC_CHECK_CALIBRATION_EX, m_bUseCalibrationFilesOnAllProbes);
-	DDX_Check(pDX, IDC_CHECK_CONTROLLED_MODE, m_bControlledMode);
 	DDX_CBString(pDX, IDC_LUXMETER_COM_COMBO, m_comPort);
 	DDX_Check(pDX, IDC_CHECK_CALIBRATION_OLD, m_bUseOnlyPrimaries);
 	DDX_Check(pDX, IDC_CHECK_IMPERIAL, m_bUseImperialUnits);
@@ -79,8 +75,6 @@ void CAdvancedPropPage::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CAdvancedPropPage, CPropertyPageWithHelp)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_CONFIRM, IDC_CHECK_CONFIRM, OnControlClicked)
-    ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_CONTROLLED_MODE, IDC_CHECK_CONTROLLED_MODE, OnControlClicked)
-    ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_CALIBRATION_EX, IDC_CHECK_CALIBRATION_EX, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_CALIBRATION_OLD, IDC_CHECK_CALIBRATION_OLD, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_IMPERIAL, IDC_CHECK_IMPERIAL, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_PREFER_LUXMETER, IDC_CHECK_PREFER_LUXMETER, OnControlClicked)

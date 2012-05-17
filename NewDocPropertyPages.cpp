@@ -249,37 +249,22 @@ LPCSTR CSensorSelectionPropPage::GetThcFileSubDir ( int nSensorID )
 			 return "Etalon_Simulation";
 
 		case 2:
-			 return ( GetConfig()->m_bUseCalibrationFilesOnAllProbes ? "Etalon_S2" : "" );
+			 return "Etalon_S2";
 
 		case 3: 
-			 return ( GetConfig()->m_bUseCalibrationFilesOnAllProbes ? "Etalon_DTP94" : "" );
+			 return "Etalon_DTP94";
 
 		case 4: 
-			 return ( GetConfig()->m_bUseCalibrationFilesOnAllProbes ? "Etalon_I1" : "" );
+			 return "Etalon_I1";
 
 		case 5: 
-			 return ( GetConfig()->m_bUseCalibrationFilesOnAllProbes ? "Etalon_MTCS" : "" );
+			 return "Etalon_MTCS";
 
 		case 6:
-			 return ( GetConfig()->m_bUseCalibrationFilesOnAllProbes ? "Etalon_S3" : "" );
+			 return "Etalon_S3";
 
 		default:
-            if(GetConfig()->m_bUseCalibrationFilesOnAllProbes)
-            {
-                return "Etalon_Argyll";
-            }
-            else
-            {
-                ArgyllMeterWrapper* meter = (ArgyllMeterWrapper*)nSensorID;
-                if(meter->isColorimeter())
-                {
-                    return "Etalon_Argyll";
-                }
-                else
-                {
-                    return "";
-                }
-            }
+            return "Etalon_Argyll";
 	} 
 }
 

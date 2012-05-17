@@ -149,7 +149,6 @@ public:
 public:
 	virtual void SetModifiedFlag( BOOL bModified = TRUE );
 	virtual BOOL IsModified( );
-	virtual BOOL IsControlledModeActive ();
 
 // Implementation
 public:

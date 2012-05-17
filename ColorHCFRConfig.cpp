@@ -279,8 +279,6 @@ void CColorHCFRConfig::InitDefaults()
 	m_TBViewsRightClickMode = 0;
 	m_TBViewsMiddleClickMode = 1;
 	m_bConfirmMeasures = TRUE;
-	m_bUseCalibrationFilesOnAllProbes = FALSE;
-	m_bControlledMode = FALSE;
 	m_bUseOnlyPrimaries = FALSE;
 	m_bUseImperialUnits = FALSE;
 	m_nLuminanceCurveMode = 0;
@@ -337,8 +335,6 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_TBViewsRightClickMode = GetProfileInt("Advanced","TBViewsRightClickMode",0);
 	m_TBViewsMiddleClickMode = GetProfileInt("Advanced","TBViewsMiddleClickMode",1);
 	m_bConfirmMeasures = GetProfileInt("Advanced","ConfirmMeasures",1);
-	m_bUseCalibrationFilesOnAllProbes = GetProfileInt("Advanced","UseCalibrationFilesOnAllProbes",0);
-	m_bControlledMode = GetProfileInt("Advanced","ControlledMode",0);
 	m_bUseOnlyPrimaries = GetProfileInt("Advanced","UseOnlyPrimaries",0);
 	m_bUseImperialUnits = GetProfileInt("Advanced","UseImperialUnits",0);
 	m_nLuminanceCurveMode = GetProfileInt("Advanced","LuminanceCurveMode",0);
@@ -385,8 +381,6 @@ void CColorHCFRConfig::SaveSettings()
 	WriteProfileInt("Advanced","TBViewsRightClickMode",m_TBViewsRightClickMode);
 	WriteProfileInt("Advanced","TBViewsMiddleClickMode",m_TBViewsMiddleClickMode);
 	WriteProfileInt("Advanced","ConfirmMeasures",m_bConfirmMeasures);
-	WriteProfileInt("Advanced","UseCalibrationFilesOnAllProbes",m_bUseCalibrationFilesOnAllProbes);
-	WriteProfileInt("Advanced","ControlledMode",m_bControlledMode);
 	WriteProfileInt("Advanced","UseOnlyPrimaries",m_bUseOnlyPrimaries);
 	WriteProfileInt("Advanced","UseImperialUnits",m_bUseImperialUnits);
 	WriteProfileInt("Advanced","LuminanceCurveMode",m_nLuminanceCurveMode);
@@ -456,8 +450,6 @@ void CColorHCFRConfig::SetPropertiesSheetValues()
 	m_toolbarPropertiesPage.m_TBViewsMiddleClickMode = m_TBViewsMiddleClickMode;
 
 	m_advancedPropertiesPage.m_bConfirmMeasures = m_bConfirmMeasures;
-	m_advancedPropertiesPage.m_bUseCalibrationFilesOnAllProbes = m_bUseCalibrationFilesOnAllProbes;
-	m_advancedPropertiesPage.m_bControlledMode = m_bControlledMode;
 	m_advancedPropertiesPage.m_comPort = GetColorApp() -> m_LuxPort;
 	m_advancedPropertiesPage.m_bUseOnlyPrimaries = m_bUseOnlyPrimaries;
 	m_advancedPropertiesPage.m_bUseImperialUnits = m_bUseImperialUnits;
@@ -538,8 +530,6 @@ BOOL CColorHCFRConfig::GetPropertiesSheetValues()
 	m_TBViewsRightClickMode = m_toolbarPropertiesPage.m_TBViewsRightClickMode;
 	m_TBViewsMiddleClickMode = m_toolbarPropertiesPage.m_TBViewsMiddleClickMode;
 	m_bConfirmMeasures = m_advancedPropertiesPage.m_bConfirmMeasures;
-	m_bUseCalibrationFilesOnAllProbes = m_advancedPropertiesPage.m_bUseCalibrationFilesOnAllProbes;
-	m_bControlledMode = m_advancedPropertiesPage.m_bControlledMode;
 	m_bUseOnlyPrimaries = m_advancedPropertiesPage.m_bUseOnlyPrimaries;
 	m_bUseImperialUnits = m_advancedPropertiesPage.m_bUseImperialUnits;
 	m_nLuminanceCurveMode = m_advancedPropertiesPage.m_nLuminanceCurveMode;

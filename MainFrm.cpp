@@ -92,7 +92,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CNewMDIFrameWnd)
 	ON_COMMAND(ID_VIEW_MEASURE_EXT_BAR, OnViewMeasureExBar)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_MEASURE_EXT_BAR, OnUpdateViewMeasureExBar)
 	ON_COMMAND(IDM_UPDATE_IRPROFILES, OnUpdateIRProfiles)
-	ON_UPDATE_COMMAND_UI(ID_CONTROL_MODE, OnUpdateControlMode)
 	ON_COMMAND(IDM_HELP, OnHelp)
 	ON_COMMAND(IDM_PATTERN_DISPLAY, OnPatternDisplay)
 	ON_COMMAND(ID_VIEW_MEASURE_SAT_BAR, OnViewMeasureSatBar)
@@ -111,7 +110,6 @@ END_MESSAGE_MAP()
 static UINT indicators[] =
 {
 	ID_SEPARATOR,           // status line indicator
-	ID_CONTROL_MODE,
 	ID_LUX_VALUE,
 	ID_INDICATOR_CAPS,
 	ID_INDICATOR_NUM,
@@ -130,14 +128,10 @@ CMainFrame::CMainFrame()
 	m_measureToolbarID = IDR_MEDIUMTOOLBAR_MEASURES;
 	m_measureexToolbarID = IDR_MEDIUMTOOLBAR_MEASURES_EX;
 	m_measuresatToolbarID = IDR_MEDIUMTOOLBAR_MEASURES_SAT;
-
-	m_hIconControlledMode = NULL;
 }
 
 CMainFrame::~CMainFrame()
 {
-	if ( m_hIconControlledMode )
-		DestroyIcon ( m_hIconControlledMode );
 }
 
 BOOL CMainFrame::LoadToolbars()
@@ -163,8 +157,6 @@ BOOL CMainFrame::LoadToolbars()
 		return FALSE;
 	if(!m_wndToolBarMeasuresSat.LoadHiColor(MAKEINTRESOURCE(IDB_MEDIUMTOOLBAR_MEAS_SAT_HICOL),RGB(0,0,0)))
 		return FALSE;
-
-	m_hIconControlledMode = AfxGetApp () -> LoadIcon ( IDI_ICON_CONTROLLED_MODE );
 
 	return TRUE;
 }
@@ -307,15 +299,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	// Clear initial lux value
 	m_wndStatusBar.SetPaneText ( m_wndStatusBar.CommandToIndex ( ID_LUX_VALUE ), "" );
-
-	// Set initialize pane for controlled mode icon
-	int nPos = m_wndStatusBar.CommandToIndex ( ID_CONTROL_MODE );
-	UINT nID;
-	UINT nStyle;
-	int cxWidth;
-	m_wndStatusBar.SetPaneText ( nPos, "" );
-	m_wndStatusBar.GetPaneInfo ( nPos, nID, nStyle, cxWidth );
-	m_wndStatusBar.SetPaneInfo ( nPos, nID, nStyle, 28 );
 
 	return 0;
 }
@@ -1284,26 +1267,5 @@ void CMainFrame::OnUpdateViewLuminance(CCmdUI* pCmdUI)
 
 	pCmdUI -> SetCheck ( m_wndLuminanceWnd.m_hWnd != NULL && m_wndLuminanceWnd.IsWindowVisible () );
 
-}
-
-
-
-void CMainFrame::OnUpdateControlMode(CCmdUI* pCmdUI) 
-{
-	// TODO: Add your command update UI handler code here
-	BOOL			bControlledMode = FALSE;
-	CMDIChildWnd *	pActiveFrame = MDIGetActive();
-	CDataSetDoc *	pDoc = NULL;
-
-	if ( pActiveFrame )
-		pDoc = (CDataSetDoc*) pActiveFrame -> GetActiveDocument ();
-	
-	if ( pDoc )
-		bControlledMode = pDoc -> IsControlledModeActive ();
-
-	CStatusBar* pStatusBar = (CStatusBar*) pCmdUI -> m_pOther;
-	
-	if ( pStatusBar )
-		pStatusBar -> GetStatusBarCtrl().SetIcon ( pStatusBar -> CommandToIndex ( ID_CONTROL_MODE ), bControlledMode ? m_hIconControlledMode : NULL );
 }
 

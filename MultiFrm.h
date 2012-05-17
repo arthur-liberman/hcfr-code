@@ -49,7 +49,6 @@ public:
 	enum { IDD = IDD_REF_CHECKBOX };
 	CButtonST	m_ButtonMenu;
 	CButton		m_RefCheck;
-	CButton		m_XYZCheck;
 	//}}AFX_DATA
 
 	BOOL	m_bTop;
@@ -68,7 +67,6 @@ protected:
 	//{{AFX_MSG(CRefCheckDlg)
 	afx_msg void OnPaint();
 	afx_msg void OnCheckRef();
-	afx_msg void OnCheckXYZ();
 	afx_msg void OnButtonMenu();
 	virtual BOOL OnInitDialog();
 	//}}AFX_MSG

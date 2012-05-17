@@ -103,7 +103,6 @@ IDI_GRAYCOLORS_ICON     ICON                    "res\\graycolo.ico"
 IDI_GRAYSCALE_ICON      ICON                    "res\\grayscal.ico"
 IDI_NEARWHITE_ICON      ICON                    "res\\nearwhit.ico"
 IDI_NEARBLACK_ICON      ICON                    "res\\nearblac.ico"
-IDI_ICON_CONTROLLED_MODE ICON                    "res\\icon_controlled.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -673,7 +672,6 @@ STYLE DS_SETFONT | WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
     PUSHBUTTON      "",IDC_BUTTON_MENU,0,1,10,10
-    CONTROL         "XYZ Abst.",IDC_CHECK_XYZ,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,1,48,10
     CONTROL         "Referenzmessung",IDC_CHECK_REF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,64,1,73,10
 END
 
@@ -797,11 +795,7 @@ FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Start einer Messung",IDC_STATIC,7,7,199,28,WS_GROUP
     CONTROL         "Bestätigungsnachricht",IDC_CHECK_CONFIRM,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,19,86,10
-    CONTROL         "Geführten Modus aktivieren",IDC_CHECK_CONTROLLED_MODE,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,103,19,103,10
     GROUPBOX        "Kalibrierungsdateien - Erweiterte Nutzung",IDC_STATIC,7,38,199,40,WS_GROUP
-    CONTROL         "Kalibrierungsdateien bei allen tri-stimulus Messungen",IDC_CHECK_CALIBRATION_EX,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,50,180,10
     CONTROL         "Weiß bei der Matrix Kalkulation nicht benutzen (R1.x)",IDC_CHECK_CALIBRATION_OLD,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,62,183,10
     GROUPBOX        "Luxmeter LX-1108",IDC_STATIC,8,82,199,86,WS_GROUP
@@ -3052,7 +3046,6 @@ BEGIN
     IDS_RUNPRIMSATON        "Primär-Sättigungsmessung ausführen mit"
     IDS_CREATE_CALIBRATION_FILE "Neue Kalibrierungsdatei anlegen"
     IDS_DONOTUSE_CALIBRATION "Kalibrierungsdatei nicht benutzen"
-    ID_CONTROL_MODE         "000000"
     IDS_ERRMTCSDLL1         "MTCSApi.DLL nicht gefunden. MTCS-C2 kann nicht benutzt werden."
     IDS_ERRMTCSDLL2         "Ungültige MTCSApi.DLL. MTCS-C2 kann nicht benutzt werden."
     IDS_MTCSERROR           "MTCSApi.dll gab einen Fehler bei der Initialisierung zurück."

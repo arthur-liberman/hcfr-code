@@ -1002,24 +1002,6 @@ BOOL CDataSetDoc::IsModified( )
 	return docIsModified;
 }
 
-BOOL CDataSetDoc::IsControlledModeActive ()
-{
-	BOOL			bControlledMode = FALSE;
-	CString			strId1, strId2;
-	CDataSetDoc *	pRefDoc = GetDataRef ();
-
-	if ( pRefDoc && pRefDoc != this && GetConfig ()->m_bControlledMode && pRefDoc -> m_measure.m_bIREScaleMode == m_measure.m_bIREScaleMode )
-	{
-		m_pSensor -> GetUniqueIdentifier ( strId1 );
-		pRefDoc -> m_pSensor -> GetUniqueIdentifier ( strId2 );
-		
-		if ( strId1 != strId2 )
-			bControlledMode = TRUE;
-	}
-	
-	return bControlledMode;
-}
-
 void CDataSetDoc::OnCloseDocument() 
 {
 	StopBackgroundMeasures ();

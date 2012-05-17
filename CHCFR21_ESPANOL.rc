@@ -103,7 +103,6 @@ IDI_COLORS_ICON         ICON                    "res\\colors_i.ico"
 IDI_GRAYCOLORS_ICON     ICON                    "res\\graycolo.ico"
 IDI_NEARBLACK_ICON      ICON                    "res\\nearblac.ico"
 IDI_NEARWHITE_ICON      ICON                    "res\\nearwhit.ico"
-IDI_ICON_CONTROLLED_MODE ICON                    "res\\icon_controlled.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -739,7 +738,6 @@ STYLE DS_SETFONT | WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
     PUSHBUTTON      "",IDC_BUTTON_MENU,0,1,10,10
-    CONTROL         "Ajustement XYZ",IDC_CHECK_XYZ,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,1,67,10
     CONTROL         "Référence",IDC_CHECK_REF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,80,1,49,10
 END
 
@@ -811,11 +809,7 @@ FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Lancement mesures",IDC_STATIC,7,7,199,28,WS_GROUP
     CONTROL         "Demande confirmation",IDC_CHECK_CONFIRM,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,19,87,10
-    CONTROL         "Autorise le mode asservi",IDC_CHECK_CONTROLLED_MODE,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,106,19,92,10
     GROUPBOX        "Fichiers étalons - utilisation avancée",IDC_STATIC,7,38,199,40,WS_GROUP
-    CONTROL         "Active les étalons pour toutes les sondes tri-stimulus",IDC_CHECK_CALIBRATION_EX,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,50,178,10
     CONTROL         "Ne pas utiliser le blanc lors des calculs matriciels (V1.x)",IDC_CHECK_CALIBRATION_OLD,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,62,187,10
     GROUPBOX        "Luxmètre LX-1108",IDC_STATIC,7,82,199,86,WS_GROUP
@@ -3113,7 +3107,6 @@ BEGIN
     IDS_RUNPRIMSATON        "Lancer la mesure des saturations primaires sur"
     IDS_CREATE_CALIBRATION_FILE "Lancer un nouvel étalonnage du capteur"
     IDS_DONOTUSE_CALIBRATION "Ne pas utiliser de fichier d'étalonnage"
-    ID_CONTROL_MODE         "000000"
     IDS_ERRMTCSDLL1         "MTCSApi.DLL not found. Cannot use MTCS-C2 device."
     IDS_ERRMTCSDLL2         "Invalid MTCSApi.DLL. Cannot use MTCS-C2 device."
     IDS_MTCSERROR           "MTCSApi.dll returned an error during initialization."

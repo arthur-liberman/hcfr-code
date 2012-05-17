@@ -401,9 +401,6 @@ BOOL CMultiFrame::OnCreateClient( LPCREATESTRUCT lpcs, CCreateContext* pContext 
 		if ( GetDataRef () == GetDocument () )
 			m_RefCheckDlg.m_RefCheck.SetCheck ( TRUE );
 
-		m_RefCheckDlg.m_XYZCheck.EnableWindow ( FALSE );
-		m_RefCheckDlg.m_XYZCheck.SetCheck ( FALSE );
-
 		m_TabCtrl.Create ( WS_CHILD | WS_VISIBLE | CTCS_TOOLTIPS | CTCS_CLOSEBUTTON | CTCS_DRAGMOVE | (m_bTabUp?CTCS_TOP:0), Rect, this, IDC_TABCTRL );
 
 		m_TabCtrl.SetDragCursors(AfxGetApp()->LoadCursor(IDC_CURSORMOVE),NULL);
@@ -1117,8 +1114,6 @@ void CMultiFrame::OnRefreshReference()
 	if ( m_bDisplayTab )
 	{
 		m_RefCheckDlg.m_RefCheck.SetCheck ( GetDataRef () == GetDocument () );
-		m_RefCheckDlg.m_XYZCheck.EnableWindow ( FALSE);
-		m_RefCheckDlg.m_XYZCheck.SetCheck ( FALSE );
 	}
 }
 
@@ -2779,7 +2774,6 @@ void CRefCheckDlg::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CRefCheckDlg)
 	DDX_Control(pDX, IDC_BUTTON_MENU, m_ButtonMenu);
 	DDX_Control(pDX, IDC_CHECK_REF, m_RefCheck);
-	DDX_Control(pDX, IDC_CHECK_XYZ, m_XYZCheck);
 	//}}AFX_DATA_MAP
 }
 
@@ -2788,7 +2782,6 @@ BEGIN_MESSAGE_MAP(CRefCheckDlg, CDialog)
 	//{{AFX_MSG_MAP(CRefCheckDlg)
 	ON_WM_PAINT()
 	ON_BN_CLICKED(IDC_CHECK_REF, OnCheckRef)
-	ON_BN_CLICKED(IDC_CHECK_XYZ, OnCheckXYZ)
 	ON_BN_CLICKED(IDC_BUTTON_MENU, OnButtonMenu)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -2822,10 +2815,6 @@ void CRefCheckDlg::OnPaint()
 void CRefCheckDlg::OnCheckRef() 
 {
 	( (CMultiFrame *) GetParent () ) -> OnChangeRef ( m_RefCheck.GetCheck () );
-}
-
-void CRefCheckDlg::OnCheckXYZ() 
-{
 }
 
 void CRefCheckDlg::OnButtonMenu() 

@@ -93,8 +93,6 @@ public:
 	int		m_TBViewsRightClickMode;
 	int		m_TBViewsMiddleClickMode;
 	BOOL	m_bConfirmMeasures;
-	BOOL	m_bUseCalibrationFilesOnAllProbes;
-	BOOL	m_bControlledMode;
 	BOOL	m_bUseOnlyPrimaries;
 	BOOL	m_bUseImperialUnits;
 	int		m_nLuminanceCurveMode;

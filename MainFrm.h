@@ -64,7 +64,6 @@ public:
 
 // Attributes
 public:
-	HICON		m_hIconControlledMode;
 	CPPToolTip	m_tooltip;
 	int m_mainToolbarID,m_viewToolbarID,m_measureToolbarID,m_measureexToolbarID,m_measuresatToolbarID;
 
@@ -142,7 +141,6 @@ protected:
 	afx_msg void OnViewMeasureExBar();
 	afx_msg void OnUpdateViewMeasureExBar(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateIRProfiles();
-	afx_msg void OnUpdateControlMode(CCmdUI* pCmdUI);
 	afx_msg void OnViewMeasureSatBar();
 	afx_msg void OnUpdateViewMeasureSatBar(CCmdUI* pCmdUI);
 	//}}AFX_MSG

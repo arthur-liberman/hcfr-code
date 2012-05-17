@@ -103,7 +103,6 @@ IDI_GRAYCOLORS_ICON     ICON                    "res\\graycolo.ico"
 IDI_COLORS_ICON         ICON                    "res\\colors_i.ico"
 IDI_NEARBLACK_ICON      ICON                    "res\\nearblac.ico"
 IDI_NEARWHITE_ICON      ICON                    "res\\nearwhit.ico"
-IDI_ICON_CONTROLLED_MODE ICON                    "res\\icon_controlled.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -702,7 +701,6 @@ STYLE DS_SETFONT | WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
     PUSHBUTTON      "",IDC_BUTTON_MENU,0,1,10,10
-    CONTROL         "Adjust XYZ",IDC_CHECK_XYZ,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,1,51,10
     CONTROL         "Reference",IDC_CHECK_REF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,64,1,49,10
 END
 
@@ -773,11 +771,7 @@ FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Measure launch",IDC_STATIC,7,7,199,28,WS_GROUP
     CONTROL         "Confirmation message",IDC_CHECK_CONFIRM,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,19,85,10
-    CONTROL         "Activate controlled mode",IDC_CHECK_CONTROLLED_MODE,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,103,19,94,10
     GROUPBOX        "Calibration files - Advanced use",IDC_STATIC,7,38,199,40,WS_GROUP
-    CONTROL         "Activate meter correction files on all tri-stimulus probes",IDC_CHECK_CALIBRATION_EX,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,50,166,10
     CONTROL         "Do not use white in matrix calculus (R1.x)",IDC_CHECK_CALIBRATION_OLD,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,62,145,10
     GROUPBOX        "Luxmeter LX-1108",IDC_STATIC,8,82,198,86,WS_GROUP
@@ -3061,7 +3055,6 @@ BEGIN
     IDS_RUNPRIMSATON        "Run primary saturation measures on"
     IDS_CREATE_CALIBRATION_FILE "Create a new meter correction file"
     IDS_DONOTUSE_CALIBRATION "Do not use a meter correction file"
-    ID_CONTROL_MODE         "000000"
     IDS_ERRMTCSDLL1         "MTCSApi.DLL not found. Cannot use MTCS-C2 device. This DLL can be found in probe software installation directory. Please copy it inside HCFR Colorimeter installation directory. "
     IDS_ERRMTCSDLL2         "Invalid MTCSApi.DLL. Cannot use MTCS-C2 device."
     IDS_MTCSERROR           "MTCSApi.dll returned an error during initialization."

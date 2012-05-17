@@ -46,8 +46,6 @@ public:
 	CButton	m_OldDeltaE;
 	CButton	m_DeltaEGray;
 	BOOL	m_bConfirmMeasures;
-	BOOL	m_bUseCalibrationFilesOnAllProbes;
-	BOOL	m_bControlledMode;
 	CString	m_comPort;
 	BOOL	m_bUseOnlyPrimaries;
 	BOOL	m_bUseImperialUnits;

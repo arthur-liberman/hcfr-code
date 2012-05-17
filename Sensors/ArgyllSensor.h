@@ -69,7 +69,7 @@ public:
     virtual void SetPropertiesSheetValues();
     virtual void GetPropertiesSheetValues();
 
-    virtual LPCSTR GetStandardSubDir ()    { return ( GetConfig()->m_bUseCalibrationFilesOnAllProbes) ? "Calibration Argyll" : ""; }
+    virtual LPCSTR GetStandardSubDir ()    { return "Calibration Argyll"; }
 
     void Calibrate();
 

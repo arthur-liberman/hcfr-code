@@ -241,7 +241,6 @@
 #define IDB_CONTRAST                    369
 #define IDD_SIGNATURE                   370
 #define IDB_MEDIUMTOOLBAR_MEAS_SAT_HICOL 370
-#define IDI_ICON_CONTROLLED_MODE        371
 #define IDD_MTCSSENSOR_PROP_PAGE        372
 #define IDD_LUXMETER_SCALE              373
 #define IDD_TOOLBAR_PROP_PAGE           374
@@ -609,7 +608,6 @@
 #define IDC_LUXMETER_COM_COMBO          1218
 #define IDC_BLUE_1                      1219
 #define IDC_NEWIRPROFILE                1219
-#define IDC_CHECK_XYZ                   1219
 #define IDC_BLUE_2                      1220
 #define IDC_BLUE_3                      1221
 #define IDC_MODIFYIRPROFILE             1221
@@ -651,7 +649,6 @@
 #define IDC_BK_WHITE_SCREEN             1249
 #define IDC_BK_WHITE_FILE               1250
 #define IDC_EDIT_NAME                   1250
-#define IDC_CHECK_CALIBRATION_EX        1251
 #define IDC_EDIT_INFOS                  1252
 #define IDC_CHECK_CALIBRATION_OLD       1252
 #define IDC_CHECK_IMPERIAL              1253
@@ -689,7 +686,6 @@
 #define IDC_LUMINANCEHISTOLOG_GRAPH     11104
 #define IDC_COMBO_EDIT_GRAYS            11105
 #define IDC_COMBO_GRAYS                 11106
-#define IDC_CHECK_CONTROLLED_MODE       11107
 #define IDM_VIEW_LUMINANCE              32771
 #define IDM_VIEW_CIECHART               32774
 #define IDM_VIEW_LUMINANCEHISTO         32776
@@ -1259,7 +1255,6 @@
 #define IDS_RUNPRIMSATON                41814
 #define IDS_CREATE_CALIBRATION_FILE     41815
 #define IDS_DONOTUSE_CALIBRATION        41816
-#define ID_CONTROL_MODE                 41817
 #define IDS_ERRMTCSDLL1                 41818
 #define IDS_ERRMTCSDLL2                 41819
 #define IDS_MTCSERROR                   41820
