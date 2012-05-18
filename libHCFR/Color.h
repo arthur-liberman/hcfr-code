@@ -55,12 +55,73 @@ typedef enum
 class CSpectrum;
 class CColorReference;
 
-class CColor: public Matrix
+class ColorTriplet : public Matrix
+{
+public:
+    ColorTriplet();
+    ColorTriplet(const Matrix& matrix);
+    ColorTriplet(double a, double b, double c);
+    const double& operator[](const int nRow) const;
+    double& operator[](const int nRow);
+    bool isValid() const;
+};
+
+class ColorRGB;
+class ColorxyY;
+
+class ColorXYZ : public ColorTriplet
+{
+public:
+    ColorXYZ();
+    ColorXYZ(const Matrix& matrix);
+    ColorXYZ(const ColorRGB& RGB, CColorReference colorReference);
+    ColorXYZ(const ColorxyY& xyY);
+    ColorXYZ(double X, double Y, double Z);
+};
+
+class ColorxyY: public ColorTriplet
+{
+public:
+    ColorxyY();
+    ColorxyY(const Matrix& matrix);
+    ColorxyY(const ColorXYZ& XYZ);
+    ColorxyY(double x, double y, double YY);
+};
+
+class ColorRGB: public ColorTriplet
+{
+public:
+    ColorRGB();
+    ColorRGB(const Matrix& matrix);
+    ColorRGB(const ColorXYZ& XYZ, CColorReference colorReference);
+    ColorRGB(double r, double g, double b);
+};
+
+class ColorLab: public ColorTriplet
+{
+public:
+    ColorLab();
+    ColorLab(const Matrix& matrix);
+    ColorLab(const ColorXYZ& XYZ, double YWhiteRef, CColorReference colorReference);
+    ColorLab(double L, double a, double b);
+};
+
+class ColorLCH: public ColorTriplet
+{
+public:
+    ColorLCH();
+    ColorLCH(const Matrix& matrix);
+    ColorLCH(const ColorXYZ& XYZ, double YWhiteRef, CColorReference colorReference);
+    ColorLCH(double L, double C, double H);
+};
+
+
+class CColor
 {
 public:
 	CColor();
 	CColor(const CColor& aColor);
-	CColor(const Matrix aMatrix);
+	CColor(const ColorXYZ& aMatrix);
 	CColor(double aX,double aY, double aZ);	// XYZ initialisation
 	CColor(double ax,double ay);			// xy initialisation
     CColor(ifstream &theFile);
@@ -71,30 +132,33 @@ public:
 	const double& operator[](const int nRow) const;
 	double& operator[](const int nRow);
 
+    bool isValid() const;
+
 	double GetLuminance() const;
 	int GetColorTemp(CColorReference colorReference) const;
     double GetDeltaE(double YWhite, const CColor & refColor, double YWhiteRef, const CColorReference & colorReference, bool useOldDeltaEFormula) const;
     double GetDeltaE(const CColor & refColor) const;
 	double GetDeltaxy(const CColor & refColor) const;
 	double GetLValue(double YWhiteRef) const;	// L for Lab or LCH
-	CColor GetXYZValue() const;
-	CColor GetRGBValue(CColorReference colorReference) const;
-	CColor GetxyYValue() const;
-	CColor GetLabValue(double YWhiteRef, CColorReference colorReference) const;
-	CColor GetLCHValue(double YWhiteRef, CColorReference colorReference) const;
+	ColorXYZ GetXYZValue() const;
+	ColorRGB GetRGBValue(CColorReference colorReference) const;
+	ColorxyY GetxyYValue() const;
+	ColorLab GetLabValue(double YWhiteRef, CColorReference colorReference) const;
+	ColorLCH GetLCHValue(double YWhiteRef, CColorReference colorReference) const;
 
-	void SetXYZValue(const CColor & aColor);
-	void SetRGBValue(const CColor & aColor, CColorReference colorReference);
-	void SetxyYValue(const CColor & aColor);
-	void SetLabValue(const CColor & aColor, CColorReference colorReference);
+	void SetXYZValue(const ColorXYZ& aColor);
+	void SetRGBValue(const ColorRGB& aColor, CColorReference colorReference);
+	void SetxyYValue(double x, double y, double Y);
+    void SetxyYValue(const ColorxyY& aColor);
+	void SetLabValue(const ColorLab& aColor, CColorReference colorReference);
 
-	void SetX(double aX) { Matrix::operator ()(0,0)=aX; }
-	void SetY(double aY) { Matrix::operator ()(1,0)=aY; }
-	void SetZ(double aZ) { Matrix::operator ()(2,0)=aZ; }
+	void SetX(double aX) { m_XYZValues[0]=aX; }
+	void SetY(double aY) { m_XYZValues[1]=aY; }
+	void SetZ(double aZ) { m_XYZValues[2]=aZ; }
 
-	double GetX() const { return Matrix::operator ()(0,0); } 
-	double GetY() const { return Matrix::operator ()(1,0); }
-	double GetZ() const { return Matrix::operator ()(2,0); }
+	double GetX() const { return m_XYZValues[0]; } 
+	double GetY() const { return m_XYZValues[1]; }
+	double GetZ() const { return m_XYZValues[2]; }
 
 	void SetSpectrum ( CSpectrum & aSpectrum );
 	void ResetSpectrum ();
@@ -108,11 +172,14 @@ public:
 	double GetLuxOrLumaValue (const int luminanceCurveMode) const;
 	double GetPreferedLuxValue (bool preferLuxmeter) const;
 
+    void Output(ostream& ostr) const;
+
 #ifdef LIBHCFR_HAS_MFC
     void Serialize(CArchive& archive);
 #endif
 
 protected:
+    ColorXYZ m_XYZValues;
 	CSpectrum *	m_pSpectrum;
 	double *	m_pLuxValue;
 };
@@ -122,9 +189,7 @@ class CSpectrum: public Matrix
 public:
 	CSpectrum(int NbBands, int WaveLengthMin, int WaveLengthMax, double BandWidth );
 	CSpectrum(int NbBands, int WaveLengthMin, int WaveLengthMax, double BandWidth, double * pValues );
-	CSpectrum(const CSpectrum &aSpectrum);
     CSpectrum (ifstream &theFile, bool oldFileFormat = false);
-	~CSpectrum();
 
 	const double& operator[](const int nRow) const;
 
@@ -199,11 +264,14 @@ public:
 	double GetRedReferenceLuma () const { return RGBtoXYZMatrix(1,0); /*0.212671 in Rec709*/ }
 	double GetGreenReferenceLuma () const { return RGBtoXYZMatrix(1,1); /*0.715160 in Rec709*/ }
 	double GetBlueReferenceLuma () const { return RGBtoXYZMatrix(1,2); /*0.072169 in Rec709*/ }
+
 	
 #ifdef LIBHCFR_HAS_MFC
     void Serialize(CArchive& archive);
 #endif
 };
+
+ostream& operator <<(ostream& ostr, const CColor& obj);
 
 extern CColorReference GetStandardColorReference(ColorStandard aColorStandard);
 
@@ -214,7 +282,7 @@ extern CColor noDataColor;
 #ifdef LIBHCFR_HAS_WIN32_API
 extern void GenerateSaturationColors (const CColorReference& colorReference, COLORREF * GenColors, int nSteps, BOOL bRed, BOOL bGreen, BOOL bBlue, BOOL b16_235 );
 #endif
-extern Matrix ComputeConversionMatrix(Matrix & measures, Matrix & references, CColor & WhiteTest, CColor & WhiteRef, bool	bUseOnlyPrimaries);
+extern Matrix ComputeConversionMatrix(Matrix & measures, Matrix & references, ColorXYZ & WhiteTest, ColorXYZ & WhiteRef, bool	bUseOnlyPrimaries);
 double ArrayIndexToGrayLevel ( int nCol, int nSize, bool bIRE );
 double GrayLevelToGrayProp ( double Level, bool bIRE );
 

@@ -169,7 +169,7 @@ double primariesRec709[3][2] ={	{ 0.6400, 0.3300 },
 								{ 0.3000, 0.6000 },
 								{ 0.1500, 0.0600 }	};
 
-Matrix ComputeRGBtoXYZMatrix(Matrix primariesChromacities,CColor whiteChromacity)
+Matrix ComputeRGBtoXYZMatrix(Matrix primariesChromacities,Matrix whiteChromacity)
 {
 	// Compute RGB to XYZ matrix
 	Matrix coefJ(0.0,3,1);
@@ -221,12 +221,9 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
 			whiteColor=illuminantD65;
 			whiteName="D65";
 			m_white=D65;
-			CColor redColor(primariesPAL[0][0],primariesPAL[0][1],1);
-			CColor greenColor(primariesPAL[1][0],primariesPAL[1][1],1);
-			CColor blueColor(primariesPAL[2][0],primariesPAL[2][1],1);
-			redPrimary.  SetxyYValue(redColor);
-			greenPrimary.SetxyYValue(greenColor);
-			bluePrimary. SetxyYValue(blueColor);
+			redPrimary.  SetxyYValue(primariesPAL[0][0],primariesPAL[0][1],1);
+			greenPrimary.SetxyYValue(primariesPAL[1][0],primariesPAL[1][1],1);
+			bluePrimary. SetxyYValue(primariesPAL[2][0],primariesPAL[2][1],1);
 			break;
 		}
 		case SDTV:
@@ -235,12 +232,9 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
 			whiteColor=illuminantD65;
 			m_white=D65;
 			whiteName="D65";
-			CColor redColor(primariesRec601[0][0],primariesRec601[0][1],1);
-			CColor greenColor(primariesRec601[1][0],primariesRec601[1][1],1);
-			CColor blueColor(primariesRec601[2][0],primariesRec601[2][1],1);
-			redPrimary.  SetxyYValue(redColor);
-			greenPrimary.SetxyYValue(greenColor);
-			bluePrimary. SetxyYValue(blueColor);
+			redPrimary.  SetxyYValue(primariesRec601[0][0],primariesRec601[0][1],1);
+			greenPrimary.SetxyYValue(primariesRec601[1][0],primariesRec601[1][1],1);
+			bluePrimary. SetxyYValue(primariesRec601[2][0],primariesRec601[2][1],1);
 			break;
 		}
 		case HDTV:
@@ -249,12 +243,9 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
 			whiteColor=illuminantD65;
 			whiteName="D65";
 			m_white=D65;
-			CColor redColor(primariesRec709[0][0],primariesRec709[0][1],1);
-			CColor greenColor(primariesRec709[1][0],primariesRec709[1][1],1);
-			CColor blueColor(primariesRec709[2][0],primariesRec709[2][1],1);
-			redPrimary.  SetxyYValue(redColor);
-			greenPrimary.SetxyYValue(greenColor);
-			bluePrimary. SetxyYValue(blueColor);
+			redPrimary.  SetxyYValue(primariesRec709[0][0],primariesRec709[0][1],1);
+			greenPrimary.SetxyYValue(primariesRec709[1][0],primariesRec709[1][1],1);
+			bluePrimary. SetxyYValue(primariesRec709[2][0],primariesRec709[2][1],1);
 			break;
 		}
 		case sRGB:
@@ -263,12 +254,9 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
 			whiteColor=illuminantD65;
 			whiteName="D65";
 			m_white=D65;
-			CColor redColor(primariesRec709[0][0],primariesRec709[0][1],1);
-			CColor greenColor(primariesRec709[1][0],primariesRec709[1][1],1);
-			CColor blueColor(primariesRec709[2][0],primariesRec709[2][1],1);
-			redPrimary.  SetxyYValue(redColor);
-			greenPrimary.SetxyYValue(greenColor);
-			bluePrimary. SetxyYValue(blueColor);
+			redPrimary.  SetxyYValue(primariesRec709[0][0],primariesRec709[0][1],1);
+			greenPrimary.SetxyYValue(primariesRec709[1][0],primariesRec709[1][1],1);
+			bluePrimary. SetxyYValue(primariesRec709[2][0],primariesRec709[2][1],1);
 			break;
 		}
 		default:
@@ -277,12 +265,9 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
 			whiteColor=illuminantD65;
 			whiteName="D65";
 			m_white=D65;
-			CColor redColor(primariesRec601[0][0],primariesRec601[0][1],1);
-			CColor greenColor(primariesRec601[1][0],primariesRec601[1][1],1);
-			CColor blueColor(primariesRec601[2][0],primariesRec601[2][1],1);
-			redPrimary.  SetxyYValue(redColor);
-			greenPrimary.SetxyYValue(greenColor);
-			bluePrimary. SetxyYValue(blueColor);
+			redPrimary.  SetxyYValue(primariesRec601[0][0],primariesRec601[0][1],1);
+			greenPrimary.SetxyYValue(primariesRec601[1][0],primariesRec601[1][1],1);
+			bluePrimary. SetxyYValue(primariesRec601[2][0],primariesRec601[2][1],1);
 		}
 	}
 
@@ -336,32 +321,30 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
 	}
 
 	// Compute u'v' for current white
-	double x = whiteColor.GetxyYValue () [ 0 ];
-	double y = whiteColor.GetxyYValue () [ 1 ];
+	double x = whiteColor.GetxyYValue ()[0];
+	double y = whiteColor.GetxyYValue ()[1];
 	u_white = 4.0*x / (-2.0*x + 12.0*y + 3.0); 
 	v_white = 9.0*y / (-2.0*x + 12.0*y + 3.0); 
   
 	// Compute transformation matrices
 	Matrix primariesMatrix;
-	primariesMatrix=redPrimary;
-	primariesMatrix.CMAC(greenPrimary);
-	primariesMatrix.CMAC(bluePrimary);
-	RGBtoXYZMatrix=ComputeRGBtoXYZMatrix(primariesMatrix, whiteColor);
+	primariesMatrix=redPrimary.GetXYZValue();
+	primariesMatrix.CMAC(greenPrimary.GetXYZValue());
+	primariesMatrix.CMAC(bluePrimary.GetXYZValue());
+	RGBtoXYZMatrix=ComputeRGBtoXYZMatrix(primariesMatrix, whiteColor.GetXYZValue());
 	XYZtoRGBMatrix=RGBtoXYZMatrix.GetInverse();
 
 	// Adjust reference primary colors Y values relatively to white Y
-	CColor aColor;
-
-	aColor = redPrimary.GetxyYValue ();
-	aColor.SetZ ( GetRedReferenceLuma () );
+	ColorTriplet aColor = redPrimary.GetxyYValue ();
+	aColor[2] = GetRedReferenceLuma ();
 	redPrimary.SetxyYValue ( aColor );
 
 	aColor = greenPrimary.GetxyYValue ();
-	aColor.SetZ ( GetGreenReferenceLuma () );
+	aColor[2] = GetGreenReferenceLuma ();
 	greenPrimary.SetxyYValue ( aColor );
 
 	aColor = bluePrimary.GetxyYValue ();
-	aColor.SetZ ( GetBlueReferenceLuma () );
+	aColor[2] = GetBlueReferenceLuma ();
 	bluePrimary.SetxyYValue ( aColor );
 
     UpdateSecondary ( yellowSecondary, redPrimary, greenPrimary, bluePrimary );
@@ -398,7 +381,7 @@ void CColorReference::UpdateSecondary ( CColor & secondary, const CColor & prima
 	
 	double k = ( ( ( x2 - x1 ) / dx1 ) + ( dx2 / ( dx1 * dy2 ) ) * ( y1 - y2 ) ) / ( 1.0 - ( ( dx2 * dy1 ) / ( dx1 * dy2 ) ) );
 
-	CColor	aColor ( x1 + k * dx1, y1 + k * dy1, primary1.GetY() + primary2.GetY() );
+	ColorTriplet aColor ( x1 + k * dx1, y1 + k * dy1, primary1.GetY() + primary2.GetY() );
 
 	secondary.SetxyYValue ( aColor );
 }
@@ -483,17 +466,255 @@ CIRELevel::operator COLORREF()
 #endif // #ifdef LIBHCFR_HAS_WIN32_API
 
 /////////////////////////////////////////////////////////////////////
+// implementation of the ColorTriplet class.
+//////////////////////////////////////////////////////////////////////
+ColorTriplet::ColorTriplet() :
+    Matrix(FX_NODATA, 3, 1)
+{
+}
+
+ColorTriplet::ColorTriplet(const Matrix& matrix) :
+    Matrix(matrix)
+{
+    if(GetRows() != 3 || GetColumns() != 1)
+    {
+        throw std::logic_error("matrix not right shape to create color");
+    }
+}
+
+ColorTriplet::ColorTriplet(double a, double b, double c) :
+    Matrix(FX_NODATA, 3, 1)
+{
+    (*this)[0] = a;
+    (*this)[1] = b;
+    (*this)[2] = c;
+}
+
+const double& ColorTriplet::operator[](const int nRow) const
+{
+    return (*this)(nRow, 0);
+}
+
+double& ColorTriplet::operator[](const int nRow)
+{
+    return (*this)(nRow, 0);
+}
+
+bool ColorTriplet::isValid() const
+{
+    return ((*this)[0] != FX_NODATA) && ((*this)[1] != FX_NODATA) && ((*this)[2] != FX_NODATA);
+}
+
+/////////////////////////////////////////////////////////////////////
+// implementation of the ColorXYZ class.
+//////////////////////////////////////////////////////////////////////
+ColorXYZ::ColorXYZ()
+{
+}
+
+ColorXYZ::ColorXYZ(const Matrix& matrix) :
+    ColorTriplet(matrix)
+{
+}
+
+ColorXYZ::ColorXYZ(const ColorRGB& RGB, CColorReference colorReference)
+{
+    if(RGB.isValid())
+    {
+        CLockWhileInScope dummy(m_matrixSection);
+        *this = colorReference.RGBtoXYZMatrix*RGB;
+    }
+}
+
+ColorXYZ::ColorXYZ(const ColorxyY& xyY)
+{
+    if(xyY.isValid())
+    {
+        double aX,aY,aZ;
+        if(xyY[1] != 0)
+        {
+            (*this)[0] = (xyY[0]/xyY[1])*xyY[2];
+            (*this)[1] = xyY[2];
+            (*this)[2] = ((1.0 - xyY[0] - xyY[1])*xyY[2])/xyY[1];
+        }
+        else
+        {
+            aX=aY=aZ=0.0;
+        }
+    }
+}
+
+ColorXYZ::ColorXYZ(double X, double Y, double Z) :
+    ColorTriplet(X, Y, Z)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+// implementation of the ColorxyY class.
+//////////////////////////////////////////////////////////////////////
+ColorxyY::ColorxyY()
+{
+}
+
+ColorxyY::ColorxyY(const Matrix& matrix) :
+    ColorTriplet(matrix)
+{
+}
+
+ColorxyY::ColorxyY(const ColorXYZ& XYZ)
+{
+    if(XYZ.isValid())
+    {
+        double sum = XYZ[0] + XYZ[1] + XYZ[2];
+        if(sum > 0.0)
+        {
+            (*this)[0] = XYZ[0] / sum;
+            (*this)[1] = XYZ[1] / sum;
+            (*this)[2] = XYZ[1];
+        }
+    }
+}
+
+ColorxyY::ColorxyY(double x, double y, double YY) :
+    ColorTriplet(x, y, YY)
+{
+}
+////////////////////////////////////////////////////////////////////
+// implementation of the ColorRGB class.
+//////////////////////////////////////////////////////////////////////
+ColorRGB::ColorRGB()
+{
+}
+
+ColorRGB::ColorRGB(const Matrix& matrix) :
+    ColorTriplet(matrix)
+{
+}
+
+ColorRGB::ColorRGB(const ColorXYZ& XYZ, CColorReference colorReference)
+{
+    if(XYZ.isValid())
+    {
+        CLockWhileInScope dummy(m_matrixSection);
+        *this = colorReference.XYZtoRGBMatrix*XYZ;
+    }
+}
+
+ColorRGB::ColorRGB(double r, double g, double b) :
+    ColorTriplet(r, g, b)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+// implementation of the ColorLab class.
+//////////////////////////////////////////////////////////////////////
+ColorLab::ColorLab()
+{
+}
+
+ColorLab::ColorLab(const Matrix& matrix) :
+    ColorTriplet(matrix)
+{
+}
+
+ColorLab::ColorLab(const ColorXYZ& XYZ, double YWhiteRef, CColorReference colorReference)
+{
+    if(XYZ.isValid())
+    {
+        double scaling = YWhiteRef/colorReference.GetWhite().GetY();
+
+        double var_X = XYZ[0]/(colorReference.GetWhite().GetX()*scaling);
+        double var_Y = XYZ[1]/(colorReference.GetWhite().GetY()*scaling);
+        double var_Z = XYZ[2]/(colorReference.GetWhite().GetZ()*scaling);
+
+        if ( var_X > 0.008856 )
+        {
+            var_X = pow(var_X,1.0/3.0);
+        }
+        else
+        {
+            var_X = (7.787*var_X)+(16.0/116.0);
+        }
+
+        if (var_Y > 0.008856)
+        {
+            var_Y = pow(var_Y,1.0/3.0);
+        }
+        else
+        {
+            var_Y = (7.787*var_Y)+(16/116.0);
+        }
+
+        if (var_Z > 0.008856)
+        {
+            var_Z = pow(var_Z,1.0/3.0);
+        }
+        else
+        {
+            var_Z = (7.787*var_Z)+(16.0/116.0);
+        }
+
+        (*this)[0] = 116.0*var_Y-16.0;	 // CIE-L*
+        (*this)[1] = 500.0*(var_X-var_Y); // CIE-a*
+        (*this)[2] = 200.0*(var_Y-var_Z); //CIE-b*
+    }
+}
+
+ColorLab::ColorLab(double l, double a, double b) :
+    ColorTriplet(l, a, b)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+// implementation of the ColorLCH class.
+//////////////////////////////////////////////////////////////////////
+ColorLCH::ColorLCH()
+{
+}
+
+ColorLCH::ColorLCH(const Matrix& matrix) :
+    ColorTriplet(matrix)
+{
+}
+
+ColorLCH::ColorLCH(const ColorXYZ& XYZ, double YWhiteRef, CColorReference colorReference)
+{
+    if(XYZ.isValid())
+    {
+        ColorLab Lab(XYZ, YWhiteRef, colorReference);
+
+        double L = Lab[0];
+        double C = sqrt ( (Lab[1]*Lab[1]) + (Lab[2]*Lab[2]) );
+        double H = atan2 ( Lab[2], Lab[1] ) / acos(-1.0) * 180.0;
+
+        if ( H < 0.0 )
+        {
+            H += 360.0;
+        }
+
+        (*this)[0] = L;
+        (*this)[1] = C;
+        (*this)[2] = H;
+    }
+}
+
+ColorLCH::ColorLCH(double l, double c, double h) :
+    ColorTriplet(l, c, h)
+{
+}
+
+/////////////////////////////////////////////////////////////////////
 // ColorMeasure.cpp: implementation of the CColor class.
 //
 //////////////////////////////////////////////////////////////////////
 
-CColor::CColor():Matrix(1.0,3,1)
+CColor::CColor():m_XYZValues(1.0,3,1)
 {
 	m_pSpectrum = NULL;
 	m_pLuxValue = NULL;
 }
 
-CColor::CColor(const CColor &aColor):Matrix(aColor)
+CColor::CColor(const CColor &aColor):m_XYZValues(aColor.m_XYZValues)
 {
 	m_pSpectrum = NULL;
 	m_pLuxValue = NULL;
@@ -505,7 +726,7 @@ CColor::CColor(const CColor &aColor):Matrix(aColor)
 		m_pLuxValue = new double ( *aColor.m_pLuxValue );
 }
 
-CColor::CColor(Matrix aMatrix):Matrix(aMatrix)
+CColor::CColor(const ColorXYZ& aMatrix):m_XYZValues(aMatrix)
 {
 	assert(aMatrix.GetColumns() == 1);
 	assert(aMatrix.GetRows() == 3);
@@ -514,16 +735,16 @@ CColor::CColor(Matrix aMatrix):Matrix(aMatrix)
 	m_pLuxValue = NULL;
 }
 
-CColor::CColor(double ax,double ay):Matrix(0.0,3,1)
+CColor::CColor(double ax,double ay):m_XYZValues(0.0,3,1)
 {
-  CColor tempColor(ax,ay,1);
-	SetxyYValue(tempColor);
+    ColorTriplet tempColor(ax,ay,1);
+    SetxyYValue(tempColor);
 
 	m_pSpectrum = NULL;
 	m_pLuxValue = NULL;
 }
 
-CColor::CColor(double aX,double aY, double aZ):Matrix(0.0,3,1)
+CColor::CColor(double aX,double aY, double aZ):m_XYZValues(0.0,3,1)
 {
 	SetX(aX);
 	SetY(aY);
@@ -533,40 +754,30 @@ CColor::CColor(double aX,double aY, double aZ):Matrix(0.0,3,1)
 	m_pLuxValue = NULL;
 }
 
-CColor::CColor(ifstream &theFile):Matrix(0.0,3,1)
+CColor::CColor(ifstream &theFile):m_XYZValues(0.0,3,1)
 {
-	uint32_t  version = 0;
-  
-	m_pSpectrum = NULL;
-	m_pLuxValue = NULL;
+    uint32_t  version = 0;
 
-  theFile.read((char*)&version, 4);
-  version = littleEndianUint32ToHost(version);
-  
-  // les données XYZ (on utilise le constructeur de Matrix)
-  Matrix    readMatrix = Matrix(theFile);
-//  readDoubleMatrix(readMatrix, 3, 3, theFile);
-  SetX(readMatrix[0][0]);
-  SetY(readMatrix[1][0]);
-  SetZ(readMatrix[2][0]);
-  
-  // la matrice XYZToSensor
-//  readDoubleMatrix(readMatrix, 3, 3, theFile);
-  Matrix XYZtoSensorMatrix = Matrix(theFile);
-  
-  // la matrice sensorToXYZ
-//  readDoubleMatrix(readMatrix, 3, 3, theFile);
-  Matrix SensorToXYZMatrix = Matrix(theFile);
-  
-  if ( version == 2 || version == 4 || version == 5 || version == 6 )
-    m_pSpectrum = new CSpectrum (theFile, (version == 2 || version == 4));
-  if ( version == 3 || version == 4 || version == 6 )
-  {
-    double readValue;
-    theFile.read((char*)&readValue, 8);
-    readValue = littleEndianDoubleToHost(readValue);
-    m_pLuxValue = new double(readValue);
-  }
+    m_pSpectrum = NULL;
+    m_pLuxValue = NULL;
+
+    theFile.read((char*)&version, 4);
+    version = littleEndianUint32ToHost(version);
+
+    // les données XYZ (on utilise le constructeur de Matrix)
+    m_XYZValues = Matrix(theFile);
+
+    Matrix XYZtoSensorMatrix = Matrix(theFile);
+    Matrix SensorToXYZMatrix = Matrix(theFile);
+    if ( version == 2 || version == 4 || version == 5 || version == 6 )
+        m_pSpectrum = new CSpectrum (theFile, (version == 2 || version == 4));
+    if ( version == 3 || version == 4 || version == 6 )
+    {
+        double readValue;
+        theFile.read((char*)&readValue, 8);
+        readValue = littleEndianDoubleToHost(readValue);
+        m_pLuxValue = new double(readValue);
+    }
 }
 CColor::~CColor()
 {
@@ -588,7 +799,7 @@ CColor& CColor::operator =(const CColor& aColor)
 	if(&aColor == this)
 		return *this;
 
-	Matrix::operator=(aColor);
+	m_XYZValues = aColor.m_XYZValues;
 
 	if ( m_pSpectrum )
 	{
@@ -613,14 +824,14 @@ CColor& CColor::operator =(const CColor& aColor)
 
 const double & CColor::operator[](const int nRow) const
 { 
-	assert(nRow < GetRows());
-	return Matrix::operator ()(nRow,0);
+	assert(nRow < m_XYZValues.GetRows());
+	return m_XYZValues[nRow];
 }
 
 double & CColor::operator[](const int nRow)
 { 
-	assert(nRow < GetRows());
-	return Matrix::operator ()(nRow,0);
+	assert(nRow < m_XYZValues.GetRows());
+	return m_XYZValues[nRow];
 }
 
 double CColor::GetLuminance() const
@@ -631,8 +842,8 @@ double CColor::GetLuminance() const
 double CColor::GetDeltaE(double YWhite, const CColor & refColor, double YWhiteRef, const CColorReference & colorReference, bool useOldDeltaEFormula) const
 {
 	double dE;
-	double x=this->GetxyYValue()[0];
-	double y=this->GetxyYValue()[1];
+	double x=GetxyYValue()[0];
+	double y=GetxyYValue()[1];
 	double u = 4.0*x / (-2.0*x + 12.0*y + 3.0); 
 	double v = 9.0*y / (-2.0*x + 12.0*y + 3.0); 
 	double xRef=refColor.GetxyYValue()[0];
@@ -665,8 +876,8 @@ double CColor::GetDeltaE(double YWhite, const CColor & refColor, double YWhiteRe
 double CColor::GetDeltaE(const CColor & refColor) const
 {
 	double dE;
-	double x=this->GetxyYValue()[0];
-	double y=this->GetxyYValue()[1];
+	double x=GetxyYValue()[0];
+	double y=GetxyYValue()[1];
 	double u = 4.0*x / (-2.0*x + 12.0*y + 3.0); 
 	double v = 9.0*y / (-2.0*x + 12.0*y + 3.0); 
 	double xRef=refColor.GetxyYValue()[0];
@@ -681,8 +892,8 @@ double CColor::GetDeltaE(const CColor & refColor) const
 
 double CColor::GetDeltaxy(const CColor & refColor) const
 {
-	double x=this->GetxyYValue()[0];
-	double y=this->GetxyYValue()[1];
+	double x=GetxyYValue()[0];
+	double y=GetxyYValue()[1];
 	double xRef=refColor.GetxyYValue()[0];
 	double yRef=refColor.GetxyYValue()[1];
 	double dxy = sqrt ( pow((x - xRef),2) + pow((y - yRef),2) );
@@ -711,204 +922,107 @@ int CColor::GetColorTemp(CColorReference colorReference) const
 	}
 }
 
-CColor CColor::GetXYZValue() const 
+ColorXYZ CColor::GetXYZValue() const 
 {
-	return *this;
+	return m_XYZValues;
 }
 
-CColor CColor::GetRGBValue(CColorReference colorReference) const 
+ColorRGB CColor::GetRGBValue(CColorReference colorReference) const 
 {
-	CColor clr;
-
-	if(*this != noDataColor)
+	if(isValid())
 	{
         CLockWhileInScope dummy(m_matrixSection);
-		clr = colorReference.XYZtoRGBMatrix*(*this);
+		return colorReference.XYZtoRGBMatrix*(m_XYZValues);
 	}
-	else 
-		clr = noDataColor;
-
-	return clr;
+	else
+    {
+        return ColorRGB();
+    }
 }
 
-CColor CColor::GetxyYValue() const 
+ColorxyY CColor::GetxyYValue() const 
 {
-	if(*this == noDataColor)
-		return noDataColor;
-
-	CColor aColor;
-	double sum = GetX() + GetY() +GetZ();
-	aColor.SetX(sum!=0.0?(GetX()/sum):0.0);
-	aColor.SetY(sum!=0.0?(GetY()/sum):0.0);
-	aColor.SetZ(GetY());
-
-	return aColor;
+    return ColorxyY(m_XYZValues);
 }
 
 double CColor::GetLValue(double YWhiteRef) const 
 {
-	if(*this == noDataColor)
-		return 0.0;
-
-	if ( YWhiteRef <= 0.0 )
-	{
-		// No white reference: use full luma value (use of default value for Delta E)
-		return 100.0;
-	}
-
-	double var_Y = GetY()/YWhiteRef;
-
-	if (var_Y > 0.008856)
-		var_Y = pow(var_Y,1.0/3.0);
-	else
-		var_Y = (7.787*var_Y)+(16/116.0);
-
-	return 116.0*var_Y-16.0;
+    return ColorLab(m_XYZValues)[0];
 }
 
-CColor CColor::GetLabValue(double YWhiteRef, CColorReference colorReference) const 
+ColorLab CColor::GetLabValue(double YWhiteRef, CColorReference colorReference) const 
 {
-	if(*this == noDataColor)
-		return noDataColor;
-
-	CColor aColor;
-//	double var_X = GetX()/95.047;          //Observer = 2∞, Illuminant = D65
-//	double var_Y = GetY()/100.000;
-//	double var_Z = GetZ()/108.883;
-
-	double scaling = YWhiteRef/colorReference.GetWhite().GetY();
-
-	double var_X = GetX()/(colorReference.GetWhite().GetX()*scaling);
-	double var_Y = GetY()/(colorReference.GetWhite().GetY()*scaling);
-	double var_Z = GetZ()/(colorReference.GetWhite().GetZ()*scaling);
-
-	if ( var_X > 0.008856 ) 
-		var_X = pow(var_X,1.0/3.0);
-	else
-		var_X = (7.787*var_X)+(16.0/116.0);
-
-	if (var_Y > 0.008856)
-		var_Y = pow(var_Y,1.0/3.0);
-	else
-		var_Y = (7.787*var_Y)+(16/116.0);
-
-	if (var_Z > 0.008856)
-		var_Z = pow(var_Z,1.0/3.0);
-	else
-		var_Z = (7.787*var_Z)+(16.0/116.0);
-
-	aColor.SetX(116.0*var_Y-16.0);	 // CIE-L*
-	aColor.SetY(500.0*(var_X-var_Y)); // CIE-a*
-	aColor.SetZ(200.0*(var_Y-var_Z)); //CIE-b*
-
-	return aColor;
+    return ColorLab(m_XYZValues, YWhiteRef, colorReference);
 }
 
-CColor CColor::GetLCHValue(double YWhiteRef, CColorReference colorReference) const 
+ColorLCH CColor::GetLCHValue(double YWhiteRef, CColorReference colorReference) const 
 {
-	if(*this == noDataColor)
-		return noDataColor;
-
-	CColor Lab = GetLabValue (YWhiteRef, colorReference);
-
-	double L = Lab[0];
-	double C = sqrt ( (Lab[1]*Lab[1]) + (Lab[2]*Lab[2]) );
-	double H = atan2 ( Lab[2], Lab[1] ) / acos(-1.0) * 180.0;
-
-	if ( H < 0.0 )
-		H += 360.0;
-
-	CColor aColor;
-
-	aColor.SetX(L);
-	aColor.SetY(C);
-	aColor.SetZ(H);
-
-	return aColor;
+    return ColorLCH(m_XYZValues, YWhiteRef, colorReference);
 }
 
-void CColor::SetXYZValue(const CColor & aColor) 
+void CColor::SetXYZValue(const ColorXYZ& aColor) 
 {
-	SetX(aColor.GetX()); 
-	SetY(aColor.GetY()); 
-	SetZ(aColor.GetZ()); 
+    m_XYZValues = aColor;
 }
 
-void CColor::SetRGBValue(const CColor & aColor, CColorReference colorReference) 
+void CColor::SetRGBValue(const ColorRGB& aColor, CColorReference colorReference) 
 {
-	if(aColor == noDataColor)
-	{
-		*this=aColor;
-		return;
-	}
-
-	CColor temp;
-
+    if(!aColor.isValid())
     {
-        CLockWhileInScope dummy(m_matrixSection);
-        temp=colorReference.RGBtoXYZMatrix*aColor;
+        m_XYZValues = ColorXYZ();
+        return;
     }
 
-	SetX(temp.GetX()); 
-	SetY(temp.GetY()); 
-	SetZ(temp.GetZ()); 
+    CLockWhileInScope dummy(m_matrixSection);
+    m_XYZValues = ColorXYZ(colorReference.RGBtoXYZMatrix*aColor);
 }
 
-void CColor::SetxyYValue(const CColor & aColor) 
+void CColor::SetxyYValue(double x, double y, double Y) 
 {
-	if(aColor == noDataColor)
-	{
-		*this=aColor;
-		return;
-	}
-
-	double aX,aY,aZ;
-	if(aColor.GetY() != 0)
-	{
-		aX=(aColor.GetX()/aColor.GetY())*aColor.GetZ();
-		aY=aColor.GetZ();
-		aZ=((1.0 - aColor.GetX() - aColor.GetY())*aColor.GetZ())/aColor.GetY();
-	}
-	else
-	{
-		aX=aY=aZ=0.0;
-	}
-
-	SetX(aX); 
-	SetY(aY); 
-	SetZ(aZ); 
+    ColorxyY xyY(x, y, Y);
+    m_XYZValues = ColorXYZ(xyY);
 }
 
-void CColor::SetLabValue(const CColor & aColor, CColorReference colorReference) 
+void CColor::SetxyYValue(ColorxyY xyY) 
 {
-	if(aColor == noDataColor)
-	{
-		*this=aColor;
-		return;
-	}
+    m_XYZValues = ColorXYZ(xyY);
+}
 
-	double var_Y = ( aColor.GetX() + 16.0 ) / 116.0;
-	double var_X = aColor.GetY() / 500.0 + var_Y;
-	double var_Z = var_Y - aColor.GetZ() / 200.0;
+bool CColor::isValid() 
+{
+    return m_XYZValues.isValid();
+}
 
-	if ( pow(var_Y,3) > 0.008856 ) 
-		var_Y = pow(var_Y,3);
-	else                      
-		var_Y = ( var_Y - 16.0 / 116.0 ) / 7.787;
+void CColor::SetLabValue(const ColorLab& aColor, CColorReference colorReference) 
+{
+    if(!aColor.isValid())
+    {
+        m_XYZValues = ColorXYZ();
+        return;
+    }
 
-	if ( pow(var_X,3) > 0.008856 ) 
-		var_X = pow(var_X,3);
-	else                      
-		var_X = ( var_X - 16.0 / 116.0 ) / 7.787;
+    double var_Y = ( aColor[0] + 16.0 ) / 116.0;
+    double var_X = aColor[1] / 500.0 + var_Y;
+    double var_Z = var_Y - aColor[2] / 200.0;
 
-	if ( pow(var_Z,3) > 0.008856 ) 
-		var_Z = pow(var_Z,3);
-	else                      
-		var_Z = ( var_Z - 16.0 / 116.0 ) / 7.787;
+    if ( pow(var_Y,3) > 0.008856 ) 
+        var_Y = pow(var_Y,3);
+    else                      
+        var_Y = ( var_Y - 16.0 / 116.0 ) / 7.787;
 
-	SetX(colorReference.GetWhite().GetX() * var_X);    
-	SetY(colorReference.GetWhite().GetY() * var_Y);    
-	SetZ(colorReference.GetWhite().GetZ() * var_Z);    
+    if ( pow(var_X,3) > 0.008856 ) 
+        var_X = pow(var_X,3);
+    else                      
+        var_X = ( var_X - 16.0 / 116.0 ) / 7.787;
+
+    if ( pow(var_Z,3) > 0.008856 ) 
+        var_Z = pow(var_Z,3);
+    else                      
+        var_Z = ( var_Z - 16.0 / 116.0 ) / 7.787;
+
+    m_XYZValues = ColorXYZ(colorReference.GetWhite().GetX() * var_X, 
+        colorReference.GetWhite().GetY() * var_Y,
+        colorReference.GetWhite().GetZ() * var_Z);
 }
 
 void CColor::SetSpectrum ( CSpectrum & aSpectrum )
@@ -983,6 +1097,17 @@ double CColor::GetPreferedLuxValue (bool preferLuxmeter) const
 	return ( preferLuxmeter && m_pLuxValue ? (*m_pLuxValue) : GetY() );
 }
 
+void CColor::Output(ostream& ostr) const
+{
+    m_XYZValues.Output(ostr);
+}
+
+ostream& operator <<(ostream& ostr, const CColor& obj)
+{
+    obj.Output(ostr);
+    return ostr;
+}
+
 #ifdef LIBHCFR_HAS_MFC
 void CColor::Serialize(CArchive& archive)
 {
@@ -1003,7 +1128,7 @@ void CColor::Serialize(CArchive& archive)
 		}
 
 		archive << version;
-		Matrix::Serialize(archive) ;
+		m_XYZValues.Serialize(archive) ;
 
         Matrix ignore(0.0, 3, 3);
 		ignore.Serialize(archive);
@@ -1029,8 +1154,8 @@ void CColor::Serialize(CArchive& archive)
 		if ( version > 6 )
 			AfxThrowArchiveException ( CArchiveException::badSchema );
 		
-		Matrix::Serialize(archive) ;
-        Matrix ignore(0.0, 3, 3);
+		m_XYZValues.Serialize(archive) ;
+		Matrix ignore(0.0, 3, 3);
 		ignore.Serialize(archive);
 		ignore.Serialize(archive);
 
@@ -1096,13 +1221,6 @@ CSpectrum::CSpectrum(int NbBands, int WaveLengthMin, int WaveLengthMax, double B
 		Matrix::operator()(i,0) = pValues [ i ];
 }
 
-CSpectrum::CSpectrum(const CSpectrum &aSpectrum):Matrix(aSpectrum)
-{
-	m_WaveLengthMin	= aSpectrum.m_WaveLengthMin;
-	m_WaveLengthMax = aSpectrum.m_WaveLengthMax;
-	m_BandWidth = aSpectrum.m_BandWidth;    
-}
-
 CSpectrum::CSpectrum (ifstream &theFile, bool oldFileFormat):Matrix()
 {
   uint32_t NbBands, WaveLengthMin, WaveLengthMax;
@@ -1130,10 +1248,6 @@ CSpectrum::CSpectrum (ifstream &theFile, bool oldFileFormat):Matrix()
   
   Matrix::readFromFile(theFile);
   
-}
-                      
-CSpectrum::~CSpectrum()
-{
 }
 
 const double & CSpectrum::operator[](const int nRow) const
@@ -1180,12 +1294,12 @@ void GenerateSaturationColors (const CColorReference& colorReference, COLORREF *
 	double luma = K * 255.0;	// Luma for pure color
 
 	// Compute vector between neutral gray and saturated color in CIExy space
-	CColor Clr1, Clr2, Clr3;
+	ColorRGB Clr1;
 	double	xstart, ystart, xend, yend;
 
 	// Retrieve gray xy coordinates
-	xstart = colorReference.GetWhite().GetxyYValue().GetX();
-	ystart = colorReference.GetWhite().GetxyYValue().GetY();
+	xstart = colorReference.GetWhite().GetxyYValue()[0];
+	ystart = colorReference.GetWhite().GetxyYValue()[1];
 
 	// Define target color in RGB mode
 	Clr1[0] = ( bRed ? 255.0 : 0.0 );
@@ -1193,8 +1307,8 @@ void GenerateSaturationColors (const CColorReference& colorReference, COLORREF *
 	Clr1[2] = ( bBlue ? 255.0 : 0.0 );
 
 	// Compute xy coordinates of 100% saturated color
-	Clr2.SetRGBValue(Clr1, colorReference);
-	Clr3=Clr2.GetxyYValue();
+	ColorXYZ Clr2(Clr1, colorReference);
+    ColorxyY Clr3(Clr2);
 	xend=Clr3[0];
 	yend=Clr3[1];
 
@@ -1219,12 +1333,11 @@ void GenerateSaturationColors (const CColorReference& colorReference, COLORREF *
 			x = xstart + ( (xend - xstart) * (double) i / (double) (nSteps - 1) );
 			y = ystart + ( (yend - ystart) * (double) i / (double)(nSteps - 1) );
 
-			CColor UnsatClr_xyY(x,y,luma);
+			ColorxyY UnsatClr_xyY(x,y,luma);
 
-			CColor UnsatClr;
-			UnsatClr.SetxyYValue (UnsatClr_xyY);
+			ColorXYZ UnsatClr(UnsatClr_xyY);
 
-			CColor UnsatClr_rgb = UnsatClr.GetRGBValue (colorReference);
+			ColorRGB UnsatClr_rgb(UnsatClr, colorReference);
 
 			// Both components are theoretically equal, get medium value
 			clr = ( ( ( bRed ? UnsatClr_rgb[0] : 0.0 ) + ( bGreen ? UnsatClr_rgb[1] : 0.0 ) + ( bBlue ? UnsatClr_rgb[2] : 0.0 ) ) / (double) ( bRed + bGreen + bBlue ) );
@@ -1266,12 +1379,11 @@ void GenerateSaturationColors (const CColorReference& colorReference, COLORREF *
 }
 #endif
 
-Matrix ComputeConversionMatrix(Matrix & measures, Matrix & references, CColor & WhiteTest, CColor & WhiteRef, bool	bUseOnlyPrimaries)
+Matrix ComputeConversionMatrix(Matrix & measures, Matrix & references, ColorXYZ & WhiteTest, ColorXYZ & WhiteRef, bool	bUseOnlyPrimaries)
 {
 	Matrix	m;
-//	bool	bUseOnlyPrimaries = GetConfig () -> m_bUseOnlyPrimaries; // passÈ en argument
 
-	if ( WhiteTest == noDataColor || WhiteRef == noDataColor )
+	if (!WhiteTest.isValid() || !WhiteRef.isValid())
 	{
 		// TODO: add a messagebox
 		bUseOnlyPrimaries = true;

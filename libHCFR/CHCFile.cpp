@@ -89,7 +89,7 @@ void CHCFile::readFile (const char* path)
   for (loopIndex = 0; loopIndex < arraySize; loopIndex ++)
   {
     CColor newColor (file);
-    if (newColor != noDataColor)
+    if (newColor.isValid())
       grayColors.push_back(newColor);
   }
 
@@ -102,7 +102,7 @@ void CHCFile::readFile (const char* path)
     for (loopIndex = 0; loopIndex < arraySize; loopIndex ++)
     {
       CColor newColor (file);
-      if (newColor != noDataColor)
+      if (newColor.isValid())
         nearBlackColors.push_back(newColor);
     }
 
@@ -112,7 +112,7 @@ void CHCFile::readFile (const char* path)
     for (loopIndex = 0; loopIndex < arraySize; loopIndex ++)
     {
       CColor newColor (file);
-      if (newColor != noDataColor)
+      if (newColor.isValid())
         nearWhiteColors.push_back(newColor);
     }
   }
@@ -126,7 +126,7 @@ void CHCFile::readFile (const char* path)
     for (loopIndex = 0; loopIndex < arraySize; loopIndex ++)
     {
       CColor newColor (file);
-      if (newColor != noDataColor)
+      if (newColor.isValid())
         redSaturationColors.push_back(newColor);
     }
 
@@ -136,7 +136,7 @@ void CHCFile::readFile (const char* path)
     for (loopIndex = 0; loopIndex < arraySize; loopIndex ++)
     {
       CColor newColor (file);
-      if (newColor != noDataColor)
+      if (newColor.isValid())
         greenSaturationColors.push_back(newColor);
     }
 
@@ -146,7 +146,7 @@ void CHCFile::readFile (const char* path)
     for (loopIndex = 0; loopIndex < arraySize; loopIndex ++)
     {
       CColor newColor (file);
-      if (newColor != noDataColor)
+      if (newColor.isValid())
         blueSaturationColors.push_back(newColor);
     }
 
@@ -156,7 +156,7 @@ void CHCFile::readFile (const char* path)
     for (loopIndex = 0; loopIndex < arraySize; loopIndex ++)
     {
       CColor newColor (file);
-      if (newColor != noDataColor)
+      if (newColor.isValid())
         yellowSaturationColors.push_back(newColor);
     }
 
@@ -166,7 +166,7 @@ void CHCFile::readFile (const char* path)
     for (loopIndex = 0; loopIndex < arraySize; loopIndex ++)
     {
       CColor newColor (file);
-      if (newColor != noDataColor)
+      if (newColor.isValid())
         cyanSaturationColors.push_back(newColor);
     }
 
@@ -176,7 +176,7 @@ void CHCFile::readFile (const char* path)
     for (loopIndex = 0; loopIndex < arraySize; loopIndex ++)
     {
       CColor newColor (file);
-      if (newColor != noDataColor)
+      if (newColor.isValid())
         magentaSaturationColors.push_back(newColor);
     }
   }
@@ -187,7 +187,7 @@ void CHCFile::readFile (const char* path)
   for (loopIndex = 0; loopIndex < arraySize; loopIndex ++)
   {
     CColor newColor (file);
-    if (newColor != noDataColor)
+    if (newColor.isValid())
       freeMeasuresColors.push_back(newColor);
   }
   
@@ -196,7 +196,7 @@ void CHCFile::readFile (const char* path)
   for (loopIndex = 0; loopIndex < arraySize; loopIndex ++)
   {
     CColor newColor (file);
-    if (newColor != noDataColor)
+    if (newColor.isValid())
       componnentsColors.push_back(newColor);
   }
   
@@ -205,7 +205,7 @@ void CHCFile::readFile (const char* path)
   for (loopIndex = 0; loopIndex < arraySize; loopIndex ++)
   {
     CColor newColor (file);
-    if (newColor != noDataColor)
+    if (newColor.isValid())
       fullscreenContrastColors.push_back(newColor);
   }
 
@@ -214,7 +214,7 @@ void CHCFile::readFile (const char* path)
   for (loopIndex = 0; loopIndex < arraySize; loopIndex ++)
   {
     CColor newColor (file);
-    if (newColor != noDataColor)
+    if (newColor.isValid())
       ansiContrastColors.push_back(newColor);
   }
   
