@@ -74,9 +74,9 @@ class ColorXYZ : public ColorTriplet
 {
 public:
     ColorXYZ();
-    ColorXYZ(const Matrix& matrix);
+    explicit ColorXYZ(const Matrix& matrix);
     ColorXYZ(const ColorRGB& RGB, CColorReference colorReference);
-    ColorXYZ(const ColorxyY& xyY);
+    explicit ColorXYZ(const ColorxyY& xyY);
     ColorXYZ(double X, double Y, double Z);
 };
 
@@ -84,8 +84,8 @@ class ColorxyY: public ColorTriplet
 {
 public:
     ColorxyY();
-    ColorxyY(const Matrix& matrix);
-    ColorxyY(const ColorXYZ& XYZ);
+    explicit ColorxyY(const Matrix& matrix);
+    explicit ColorxyY(const ColorXYZ& XYZ);
     ColorxyY(double x, double y, double YY);
 };
 
@@ -93,8 +93,8 @@ class Colorxyz: public ColorTriplet
 {
 public:
     Colorxyz();
-    Colorxyz(const Matrix& matrix);
-    Colorxyz(const ColorXYZ& XYZ);
+    explicit Colorxyz(const Matrix& matrix);
+    explicit Colorxyz(const ColorXYZ& XYZ);
     Colorxyz(double x, double y, double z);
 };
 
@@ -102,7 +102,7 @@ class ColorRGB: public ColorTriplet
 {
 public:
     ColorRGB();
-    ColorRGB(const Matrix& matrix);
+    explicit ColorRGB(const Matrix& matrix);
     ColorRGB(const ColorXYZ& XYZ, CColorReference colorReference);
     ColorRGB(double r, double g, double b);
 };
@@ -111,7 +111,7 @@ class ColorLab: public ColorTriplet
 {
 public:
     ColorLab();
-    ColorLab(const Matrix& matrix);
+    explicit ColorLab(const Matrix& matrix);
     ColorLab(const ColorXYZ& XYZ, double YWhiteRef, CColorReference colorReference);
     ColorLab(double L, double a, double b);
 };
@@ -120,7 +120,7 @@ class ColorLCH: public ColorTriplet
 {
 public:
     ColorLCH();
-    ColorLCH(const Matrix& matrix);
+    explicit ColorLCH(const Matrix& matrix);
     ColorLCH(const ColorXYZ& XYZ, double YWhiteRef, CColorReference colorReference);
     ColorLCH(double L, double C, double H);
 };
@@ -131,7 +131,7 @@ class CColor
 public:
 	CColor();
 	CColor(const CColor& aColor);
-	CColor(const ColorXYZ& aMatrix);
+	explicit CColor(const ColorXYZ& aMatrix);
 	CColor(double aX,double aY, double aZ);	// XYZ initialisation
 	CColor(double ax,double ay);			// xy initialisation
     CColor(ifstream &theFile);
