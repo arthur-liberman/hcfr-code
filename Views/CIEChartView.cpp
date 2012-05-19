@@ -413,13 +413,13 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 		Msg3.LoadString ( IDS_REC709BLUEREF );
 	}
 
-	CColor RedClr = GetColorReference().GetRed ().GetxyYValue();
-	CColor GreenClr = GetColorReference().GetGreen ().GetxyYValue();
-	CColor BlueClr = GetColorReference().GetBlue ().GetxyYValue();
-	CColor YellowClr = GetColorReference().GetYellow ().GetxyYValue();
-	CColor CyanClr = GetColorReference().GetCyan ().GetxyYValue();
-	CColor MagentaClr = GetColorReference().GetMagenta ().GetxyYValue();
-	CColor WhiteClr = GetColorReference().GetWhite ().GetxyYValue();
+	ColorxyY RedClr = GetColorReference().GetRed ().GetxyYValue();
+	ColorxyY GreenClr = GetColorReference().GetGreen ().GetxyYValue();
+	ColorxyY BlueClr = GetColorReference().GetBlue ().GetxyYValue();
+	ColorxyY YellowClr = GetColorReference().GetYellow ().GetxyYValue();
+	ColorxyY CyanClr = GetColorReference().GetCyan ().GetxyYValue();
+	ColorxyY MagentaClr = GetColorReference().GetMagenta ().GetxyYValue();
+	ColorxyY WhiteClr = GetColorReference().GetWhite ().GetxyYValue();
 
 	CCIEGraphPoint refRedPrimaryPoint(RedClr[0], RedClr[1], GetColorReference().GetRed().GetLValue (1.0), Msg, m_bCIEuv);
 	CCIEGraphPoint refGreenPrimaryPoint(GreenClr[0], GreenClr[1], GetColorReference().GetGreen().GetLValue (1.0), Msg2, m_bCIEuv);
@@ -449,9 +449,9 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	CCIEGraphPoint colorTempPoint5500(0.3346,0.3451,100.0,Msg+" 5500", m_bCIEuv);   
 	CCIEGraphPoint colorTempPoint9300(0.2866,0.2950,100.0,Msg+" 9300", m_bCIEuv);   
 
-	CColor redPrimaryColor=pDoc->GetMeasure()->GetRedPrimary().GetxyYValue();
-	CColor greenPrimaryColor=pDoc->GetMeasure()->GetGreenPrimary().GetxyYValue();
-	CColor bluePrimaryColor=pDoc->GetMeasure()->GetBluePrimary().GetxyYValue();
+	ColorxyY redPrimaryColor=pDoc->GetMeasure()->GetRedPrimary().GetxyYValue();
+	ColorxyY greenPrimaryColor=pDoc->GetMeasure()->GetGreenPrimary().GetxyYValue();
+	ColorxyY bluePrimaryColor=pDoc->GetMeasure()->GetBluePrimary().GetxyYValue();
 
 	BOOL hasPrimaries= redPrimaryColor.isValid() && greenPrimaryColor.isValid() &&
 					   bluePrimaryColor.isValid();
@@ -469,25 +469,25 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	}
 
 	Msg.LoadString ( IDS_REDPRIMARY );
-	CCIEGraphPoint redPrimaryPoint(redPrimaryColor.GetX(),redPrimaryColor.GetY(),pDoc->GetMeasure()->GetRedPrimary().GetLValue(YWhite), Msg, m_bCIEuv);
+	CCIEGraphPoint redPrimaryPoint(redPrimaryColor[0],redPrimaryColor[1],pDoc->GetMeasure()->GetRedPrimary().GetLValue(YWhite), Msg, m_bCIEuv);
 	Msg.LoadString ( IDS_GREENPRIMARY );
-	CCIEGraphPoint greenPrimaryPoint(greenPrimaryColor.GetX(),greenPrimaryColor.GetY(),pDoc->GetMeasure()->GetGreenPrimary().GetLValue(YWhite), Msg, m_bCIEuv);
+	CCIEGraphPoint greenPrimaryPoint(greenPrimaryColor[0],greenPrimaryColor[1],pDoc->GetMeasure()->GetGreenPrimary().GetLValue(YWhite), Msg, m_bCIEuv);
 	Msg.LoadString ( IDS_BLUEPRIMARY );
-	CCIEGraphPoint bluePrimaryPoint(bluePrimaryColor.GetX(),bluePrimaryColor.GetY(),pDoc->GetMeasure()->GetBluePrimary().GetLValue(YWhite), Msg, m_bCIEuv);
+	CCIEGraphPoint bluePrimaryPoint(bluePrimaryColor[0],bluePrimaryColor[1],pDoc->GetMeasure()->GetBluePrimary().GetLValue(YWhite), Msg, m_bCIEuv);
 
-	CColor yellowSecondaryColor=pDoc->GetMeasure()->GetYellowSecondary().GetxyYValue();
-	CColor cyanSecondaryColor=pDoc->GetMeasure()->GetCyanSecondary().GetxyYValue();
-	CColor magentaSecondaryColor=pDoc->GetMeasure()->GetMagentaSecondary().GetxyYValue();
+	ColorxyY yellowSecondaryColor=pDoc->GetMeasure()->GetYellowSecondary().GetxyYValue();
+	ColorxyY cyanSecondaryColor=pDoc->GetMeasure()->GetCyanSecondary().GetxyYValue();
+	ColorxyY magentaSecondaryColor=pDoc->GetMeasure()->GetMagentaSecondary().GetxyYValue();
 
 	BOOL hasSecondaries= yellowSecondaryColor.isValid() && cyanSecondaryColor.isValid() &&
 					   magentaSecondaryColor.isValid();
 
 	Msg.LoadString ( IDS_YELLOWSECONDARY );
-	CCIEGraphPoint yellowSecondaryPoint(yellowSecondaryColor.GetX(),yellowSecondaryColor.GetY(),pDoc->GetMeasure()->GetYellowSecondary().GetLValue(YWhite), Msg, m_bCIEuv);
+	CCIEGraphPoint yellowSecondaryPoint(yellowSecondaryColor[0],yellowSecondaryColor[1],pDoc->GetMeasure()->GetYellowSecondary().GetLValue(YWhite), Msg, m_bCIEuv);
 	Msg.LoadString ( IDS_CYANSECONDARY );
-	CCIEGraphPoint cyanSecondaryPoint(cyanSecondaryColor.GetX(),cyanSecondaryColor.GetY(),pDoc->GetMeasure()->GetCyanSecondary().GetLValue(YWhite), Msg, m_bCIEuv);
+	CCIEGraphPoint cyanSecondaryPoint(cyanSecondaryColor[0],cyanSecondaryColor[1],pDoc->GetMeasure()->GetCyanSecondary().GetLValue(YWhite), Msg, m_bCIEuv);
 	Msg.LoadString ( IDS_MAGENTASECONDARY );
-	CCIEGraphPoint magentaSecondaryPoint(magentaSecondaryColor.GetX(),magentaSecondaryColor.GetY(),pDoc->GetMeasure()->GetMagentaSecondary().GetLValue(YWhite), Msg, m_bCIEuv);
+	CCIEGraphPoint magentaSecondaryPoint(magentaSecondaryColor[0],magentaSecondaryColor[1],pDoc->GetMeasure()->GetMagentaSecondary().GetLValue(YWhite), Msg, m_bCIEuv);
 
 	ColorxyY datarefRed;
 	ColorxyY datarefGreen;
