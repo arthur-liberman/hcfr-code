@@ -135,7 +135,7 @@ void CRefColorDlg::OnOK()
 	}
 	else
 	{
-		CColor	aColor;
+		ColorxyY aColor;
 		
 		aColor[0]=m_red1;
 		aColor[1]=m_red2;
@@ -172,6 +172,25 @@ BOOL CRefColorDlg::OnHelpInfo(HELPINFO* pHelpInfo)
 	return TRUE;
 }
 
+void convertxyYtoXYZ(double& value1, double& value2, double& value3)
+{
+    ColorxyY aColor(value1, value2, value3);
+    ColorXYZ aColor2(aColor);
+    value1=floor( aColor2[0] * 1000.0 + 0.5 ) / 1000.0;
+    value2=floor( aColor2[1] * 1000.0 + 0.5 ) / 1000.0;
+    value3=floor( aColor2[2] * 1000.0 + 0.5 ) / 1000.0;
+}
+
+void convertXYZtoxyY(double& value1, double& value2, double& value3)
+{
+    ColorXYZ aColor(value1, value2, value3);
+    ColorxyY aColor2(aColor);
+    value1=floor( aColor2[0] * 1000.0 + 0.5 ) / 1000.0;
+    value2=floor( aColor2[1] * 1000.0 + 0.5 ) / 1000.0;
+    value3=floor( aColor2[2] * 1000.0 + 0.5 ) / 1000.0;
+}
+
+
 void CRefColorDlg::OnRadio1() 
 {
 	// TODO: Add your control notification handler code here
@@ -183,42 +202,13 @@ void CRefColorDlg::OnRadio1()
 	{
 		// Convert xyY values to XYZ values
 		UpdateData(TRUE);
-		
-		CColor	aColor, aColor2;
-		
-		aColor[0]=m_red1;
-		aColor[1]=m_red2;
-		aColor[2]=m_red3;
-		aColor2.SetxyYValue(aColor);
-		m_red1=floor( aColor2.GetX() * 1000.0 + 0.5 ) / 1000.0;
-		m_red2=floor( aColor2.GetY() * 1000.0 + 0.5 ) / 1000.0;
-		m_red3=floor( aColor2.GetZ() * 1000.0 + 0.5 ) / 1000.0;
-		
-		aColor[0]=m_green1;
-		aColor[1]=m_green2;
-		aColor[2]=m_green3;
-		aColor2.SetxyYValue(aColor);
-		m_green1=floor( aColor2.GetX() * 1000.0 + 0.5 ) / 1000.0;
-		m_green2=floor( aColor2.GetY() * 1000.0 + 0.5 ) / 1000.0;
-		m_green3=floor( aColor2.GetZ() * 1000.0 + 0.5 ) / 1000.0;
-		
-		aColor[0]=m_blue1;
-		aColor[1]=m_blue2;
-		aColor[2]=m_blue3;
-		aColor2.SetxyYValue(aColor);
-		m_blue1=floor( aColor2.GetX() * 1000.0 + 0.5 ) / 1000.0;
-		m_blue2=floor( aColor2.GetY() * 1000.0 + 0.5 ) / 1000.0;
-		m_blue3=floor( aColor2.GetZ() * 1000.0 + 0.5 ) / 1000.0;
-		
-		aColor[0]=m_white1;
-		aColor[1]=m_white2;
-		aColor[2]=m_white3;
-		aColor2.SetxyYValue(aColor);
-		m_white1=floor( aColor2.GetX() * 1000.0 + 0.5 ) / 1000.0;
-		m_white2=floor( aColor2.GetY() * 1000.0 + 0.5 ) / 1000.0;
-		m_white3=floor( aColor2.GetZ() * 1000.0 + 0.5 ) / 1000.0;
-		
-		UpdateData(FALSE);
+
+        convertxyYtoXYZ(m_red1, m_red2, m_red3);
+        convertxyYtoXYZ(m_green1, m_green2, m_green3);
+        convertxyYtoXYZ(m_blue1, m_blue2, m_blue3);
+        convertxyYtoXYZ(m_white1, m_white2, m_white3);
+
+        UpdateData(FALSE);
 	}
 
 	m_bxyY = FALSE;
@@ -236,39 +226,10 @@ void CRefColorDlg::OnRadio2()
 		// Convert XYZ values to xyY values
 		UpdateData(TRUE);
 		
-		CColor	aColor, aColor2;
-		
-		aColor[0]=m_red1;
-		aColor[1]=m_red2;
-		aColor[2]=m_red3;
-		aColor2=aColor.GetxyYValue();
-		m_red1=floor( aColor2.GetX() * 1000.0 + 0.5 ) / 1000.0;
-		m_red2=floor( aColor2.GetY() * 1000.0 + 0.5 ) / 1000.0;
-		m_red3=floor( aColor2.GetZ() * 1000.0 + 0.5 ) / 1000.0;
-		
-		aColor[0]=m_green1;
-		aColor[1]=m_green2;
-		aColor[2]=m_green3;
-		aColor2=aColor.GetxyYValue();
-		m_green1=floor( aColor2.GetX() * 1000.0 + 0.5 ) / 1000.0;
-		m_green2=floor( aColor2.GetY() * 1000.0 + 0.5 ) / 1000.0;
-		m_green3=floor( aColor2.GetZ() * 1000.0 + 0.5 ) / 1000.0;
-		
-		aColor[0]=m_blue1;
-		aColor[1]=m_blue2;
-		aColor[2]=m_blue3;
-		aColor2=aColor.GetxyYValue();
-		m_blue1=floor( aColor2.GetX() * 1000.0 + 0.5 ) / 1000.0;
-		m_blue2=floor( aColor2.GetY() * 1000.0 + 0.5 ) / 1000.0;
-		m_blue3=floor( aColor2.GetZ() * 1000.0 + 0.5 ) / 1000.0;
-		
-		aColor[0]=m_white1;
-		aColor[1]=m_white2;
-		aColor[2]=m_white3;
-		aColor2=aColor.GetxyYValue();
-		m_white1=floor( aColor2.GetX() * 1000.0 + 0.5 ) / 1000.0;
-		m_white2=floor( aColor2.GetY() * 1000.0 + 0.5 ) / 1000.0;
-		m_white3=floor( aColor2.GetZ() * 1000.0 + 0.5 ) / 1000.0;
+        convertXYZtoxyY(m_red1, m_red2, m_red3);
+        convertXYZtoxyY(m_green1, m_green2, m_green3);
+        convertXYZtoxyY(m_blue1, m_blue2, m_blue3);
+        convertXYZtoxyY(m_white1, m_white2, m_white3);
 		
 		UpdateData(FALSE);
 	}

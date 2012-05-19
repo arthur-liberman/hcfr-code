@@ -440,11 +440,22 @@ LRESULT CMainView::OnSetUserInfoPostInitialUpdate(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+void CMainView::AddColorToGrid(const ColorTriplet& color, GV_ITEM& Item, const char* format)
+{
+    Item.strText.Format(format, color[0]);
+    ++Item.row;
+    m_pSelectedColorGrid->SetItem(&Item);
+    Item.strText.Format(format, color[1]);
+    ++Item.row;
+    m_pSelectedColorGrid->SetItem(&Item);
+    Item.strText.Format(format, color[2]);
+    ++Item.row;
+    m_pSelectedColorGrid->SetItem(&Item);
+}
+
 void CMainView::RefreshSelection()
 {
 	int		i, aColorTemp;
-	double	sum;
-	double	xyz[3];
 	double	YWhite = 1.0;
 	CColor	aColor;
 	GV_ITEM Item;
@@ -458,15 +469,15 @@ void CMainView::RefreshSelection()
 	m_Target.Refresh();
 	m_RGBLevels.Refresh();
 
-	if(m_SelectedColor != noDataColor)
+	if(m_SelectedColor.isValid())
 	{
 		// Retrieve measured white luminance to compute exact delta E, Lab and LCH values
-		if ( GetDocument() -> GetMeasure () -> GetOnOffWhite () != noDataColor )
+		if ( GetDocument() -> GetMeasure () -> GetOnOffWhite ().isValid() )
 			YWhite = GetDocument() -> GetMeasure () -> GetOnOffWhite () [ 1 ];
 		else 
 		{
 			i = GetDocument() -> GetMeasure () -> GetGrayScaleSize ();
-			if ( GetDocument() -> GetMeasure () -> GetGray ( i - 1 ) != noDataColor )
+			if ( GetDocument() -> GetMeasure () -> GetGray ( i - 1 ).isValid() )
 				YWhite = GetDocument() -> GetMeasure () -> GetGray ( i - 1 ) [ 1 ];
 		}
 
@@ -499,95 +510,16 @@ void CMainView::RefreshSelection()
 			m_pSelectedColorGrid->SetItem(&Item);
 		}
 
-		aColor=m_SelectedColor.GetXYZValue();
-		Item.strText.Format("%.3f",aColor[0]);
-		Item.row = 3;
-		m_pSelectedColorGrid->SetItem(&Item);
-		Item.strText.Format("%.3f",aColor[1]);
-		Item.row = 4;
-		m_pSelectedColorGrid->SetItem(&Item);
-		Item.strText.Format("%.3f",aColor[2]);
-		Item.row = 5;
-		m_pSelectedColorGrid->SetItem(&Item);
-
-		sum = aColor[0]+aColor[1]+aColor[2];
-		if ( sum != 0.0 )
-		{
-			xyz[0] = aColor[0] / sum;
-			xyz[1] = aColor[1] / sum;
-			xyz[2] = 1.0 - xyz[0] - xyz[1];
-		}
-		else
-		{
-			xyz[0] = 0.0;
-			xyz[1] = 0.0;
-			xyz[2] = 0.0;
-		}
-
-		Item.strText.Format("%.3f",xyz[0]);
-		Item.row = 12;
-		m_pSelectedColorGrid->SetItem(&Item);
-		Item.strText.Format("%.3f",xyz[1]);
-		Item.row = 13;
-		m_pSelectedColorGrid->SetItem(&Item);
-		Item.strText.Format("%.3f",xyz[2]);
-		Item.row = 14;
-		m_pSelectedColorGrid->SetItem(&Item);
-
-		aColor=m_SelectedColor.GetRGBValue(GetColorReference());
-		Item.strText.Format("%.3f",aColor[0]);
-		Item.row = 6;
-		m_pSelectedColorGrid->SetItem(&Item);
-		Item.strText.Format("%.3f",aColor[1]);
-		Item.row = 7;
-		m_pSelectedColorGrid->SetItem(&Item);
-		Item.strText.Format("%.3f",aColor[2]);
-		Item.row = 8;
-		m_pSelectedColorGrid->SetItem(&Item);
-
-		aColor=m_SelectedColor.GetxyYValue();
-		Item.strText.Format("%.3f",aColor[0]);
-		Item.row = 9;
-		m_pSelectedColorGrid->SetItem(&Item);
-		Item.strText.Format("%.3f",aColor[1]);
-		Item.row = 10;
-		m_pSelectedColorGrid->SetItem(&Item);
-		Item.strText.Format("%.3f",aColor[2]);
-		Item.row = 11;
-		m_pSelectedColorGrid->SetItem(&Item);
-
-		aColor=m_SelectedColor.GetLabValue(YWhite, GetColorReference());
-		Item.strText.Format("%.1f",aColor[0]);
-		Item.row = 15;
-		m_pSelectedColorGrid->SetItem(&Item);
-		Item.strText.Format("%.1f",aColor[1]);
-		Item.row = 16;
-		m_pSelectedColorGrid->SetItem(&Item);
-		Item.strText.Format("%.1f",aColor[2]);
-		Item.row = 17;
-		m_pSelectedColorGrid->SetItem(&Item);
-
-		aColor=m_SelectedColor.GetLCHValue(YWhite, GetColorReference());
-		Item.strText.Format("%.1f",aColor[0]);
-		Item.row = 18;
-		m_pSelectedColorGrid->SetItem(&Item);
-		Item.strText.Format("%.1f",aColor[1]);
-		Item.row = 19;
-		m_pSelectedColorGrid->SetItem(&Item);
-		Item.strText.Format("%.1f",aColor[2]);
-		Item.row = 20;
-		m_pSelectedColorGrid->SetItem(&Item);
-
-		Item.strText="";
-		for(i=21;i<24;i++)
-		{
-			Item.row = i;
-			m_pSelectedColorGrid->SetItem(&Item);
-		}
+        AddColorToGrid(m_SelectedColor.GetXYZValue(), Item, "%.3f");
+        AddColorToGrid(m_SelectedColor.GetRGBValue(GetColorReference()), Item, "%.3f");
+        AddColorToGrid(m_SelectedColor.GetxyYValue(), Item, "%.3f");
+        AddColorToGrid(m_SelectedColor.GetxyzValue(), Item, "%.3f");
+        AddColorToGrid(m_SelectedColor.GetLabValue(YWhite, GetColorReference()), Item, "%.1f");
+        AddColorToGrid(m_SelectedColor.GetLCHValue(YWhite, GetColorReference()), Item, "%.1f");
 	}
 	else
 	{
-		for(i=0;i<24;i++)
+		for(i=0;i<21;i++)
 		{
 			Item.row = i;
 			Item.strText="";
@@ -650,7 +582,7 @@ void CMainView::InitGrid()
 		bHasLuxValues = GetDocument()->GetMeasure()->GetRedPrimary().HasLuxValue ();
 		if ( bHasLuxValues )
 		{
-			if ( GetDocument()->GetMeasure()->GetOnOffWhite() != noDataColor )
+			if ( GetDocument()->GetMeasure()->GetOnOffWhite().isValid() )
 				bHasLuxDelta = TRUE;
 		}
 	}
@@ -989,7 +921,7 @@ void CMainView::InitSelectedColorGrid()
 
 	m_pSelectedColorGrid->SetFixedColumnCount(1);
 
-    m_pSelectedColorGrid->SetRowCount(24);     
+    m_pSelectedColorGrid->SetRowCount(21);
     m_pSelectedColorGrid->SetColumnCount(2);
 	
 	m_pSelectedColorGrid->SetFixedColumnSelection(FALSE);
@@ -1011,9 +943,9 @@ void CMainView::InitSelectedColorGrid()
 	GV_ITEM Item;
 	Item.mask = GVIF_TEXT|GVIF_FORMAT;
 	Item.nFormat = DT_CENTER|DT_WORDBREAK;
-	static char * RowLabels [] = { "cd/m²", "ftL", "T°", "X", "Y", "Z", "R", "G", "B", "x", "y", "Y", "x", "y", "z", "L", "a", "b", "L", "C", "H", "Rc", "Gc", "Bc" };
+	static char * RowLabels [] = { "cd/m²", "ftL", "T°", "X", "Y", "Z", "R", "G", "B", "x", "y", "Y", "x", "y", "z", "L", "a", "b", "L", "C", "H"};
 
-	for(int i=0;i<24;i++)
+	for(int i=0;i<21;i++)
 	{
 		Item.row = i;
 		Item.col = 0;
@@ -1326,44 +1258,24 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aReference, CColor & aRefDocColor, double YWhiteRefDoc, int aComponentNum, int nCol, double Offset)
 {
 	CString str;
-	if(aMeasure != noDataColor)
+	if(aMeasure.isValid())
 	{
 		if ( aComponentNum < 3 )
 		{
-			CColor aColor;
-			double sum;
-			double xyz[3];
 			switch(m_displayType)
 			{
 				case HCFR_SENSORRGB_VIEW:
 				case HCFR_XYZ_VIEW:
-					aColor=aMeasure.GetXYZValue();
-					str.Format("%.3f",aColor[aComponentNum]);
+					str.Format("%.3f",aMeasure.GetXYZValue()[aComponentNum]);
 					break;
 				case HCFR_RGB_VIEW:
-					aColor=aMeasure.GetRGBValue(GetColorReference());
-					str.Format("%.3f",aColor[aComponentNum]);
+					str.Format("%.3f",aMeasure.GetRGBValue(GetColorReference())[aComponentNum]);
 					break;
 				case HCFR_xyz2_VIEW:
-					aColor=aMeasure.GetXYZValue();
-					sum = aColor[0]+aColor[1]+aColor[2];
-					if ( sum != 0.0 )
-					{
-						xyz[0] = aColor[0] / sum;
-						xyz[1] = aColor[1] / sum;
-						xyz[2] = 1.0 - xyz[0] - xyz[1];
-					}
-					else
-					{
-						xyz[0] = 0.0;
-						xyz[1] = 0.0;
-						xyz[2] = 0.0;
-					}
-					str.Format("%.3f",xyz[aComponentNum]);
+					str.Format("%.3f",aMeasure.GetxyzValue()[aComponentNum]);
 					break;
 				case HCFR_xyY_VIEW:
-					aColor=aMeasure.GetxyYValue();
-					str.Format("%.3f",aColor[aComponentNum]);
+					str.Format("%.3f",aMeasure.GetxyYValue()[aComponentNum]);
 					break;
 			}
 			if ( str == "-99999.990" ) // Printed FX_NODATA value, coming from partially updated noDataColor
@@ -1371,28 +1283,28 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 		}
 		else if ( aComponentNum == 3 )
 		{
-			if ( aReference != noDataColor )
+			if ( aReference.isValid() )
 				str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula) );
 			else
 				str.Empty ();
 		}
 		else if ( aComponentNum == 4 )
 		{
-			if ( aReference != noDataColor )
+			if ( aReference.isValid() )
 				str.Format("%.3f",aMeasure.GetDeltaxy ( aReference ) );
 			else
 				str.Empty ();
 		}
 		else if ( aComponentNum == 5 )
 		{
-			if ( aRefDocColor != noDataColor )
+			if ( aRefDocColor.isValid() )
 				str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aRefDocColor, YWhiteRefDoc, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula) );
 			else
 				str.Empty ();
 		}
 		else if ( aComponentNum == 6 )
 		{
-			if ( aRefDocColor != noDataColor )
+			if ( aRefDocColor.isValid() )
 				str.Format("%.3f",aMeasure.GetDeltaxy ( aRefDocColor ) );
 			else
 				str.Empty ();
@@ -1414,7 +1326,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				{
 					CColor White = GetDocument() -> GetMeasure () -> GetGray ( nGrayScaleSize - 1 );
 
-					if ( White != noDataColor )
+					if ( White.isValid() )
 					{
 						double x, valx, valy;
 						double yblack = 0.0;
@@ -1447,7 +1359,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				
 				CColor white = GetDocument()->GetMeasure()->GetOnOffWhite();
 				
-				if ( nCol < 7 && white != noDataColor && white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) > 0.0001 )
+				if ( nCol < 7 && white.isValid() && white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) > 0.0001 )
 				{
 					double d = aMeasure.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) / white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter);
 
@@ -1644,20 +1556,20 @@ void CMainView::UpdateGrid()
 			pDataRef = NULL;
 
 		// Retrieve measured white luminance to compute exact delta E, Lab and LCH values
-		if ( GetDocument() -> GetMeasure () -> GetOnOffWhite () != noDataColor )
+		if ( GetDocument() -> GetMeasure () -> GetOnOffWhite ().isValid() )
 			YWhiteOnOff = GetDocument() -> GetMeasure () -> GetOnOffWhite () [ 1 ];
 
 		nCount = GetDocument() -> GetMeasure () -> GetGrayScaleSize ();
-		if ( GetDocument() -> GetMeasure () -> GetGray ( nCount - 1 ) != noDataColor )
+		if ( GetDocument() -> GetMeasure () -> GetGray ( nCount - 1 ).isValid() )
 			YWhiteGray = GetDocument() -> GetMeasure () -> GetGray ( nCount - 1 ) [ 1 ];
 
 		if ( pDataRef )
 		{
-			if ( pDataRef -> GetMeasure () -> GetOnOffWhite () != noDataColor )
+			if ( pDataRef -> GetMeasure () -> GetOnOffWhite ().isValid() )
 				YWhiteOnOffRefDoc = pDataRef -> GetMeasure () -> GetOnOffWhite () [ 1 ];
 
 			nCount = pDataRef -> GetMeasure () -> GetGrayScaleSize ();
-			if ( pDataRef -> GetMeasure () -> GetGray ( nCount - 1 ) != noDataColor )
+			if ( pDataRef -> GetMeasure () -> GetGray ( nCount - 1 ).isValid() )
 				YWhiteGrayRefDoc = pDataRef -> GetMeasure () -> GetGray ( nCount - 1 ) [ 1 ];
 		}
 
@@ -1682,7 +1594,7 @@ void CMainView::UpdateGrid()
 					refLuxColor = GetDocument()->GetMeasure()->GetGray(nCount-1);
 
 				 // Retrieve gamma and offset
-				 if ( nCount && GetDocument()->GetMeasure()->GetGray(0) != noDataColor )
+				 if ( nCount && GetDocument()->GetMeasure()->GetGray(0).isValid() )
 					GetDocument()->ComputeGammaAndOffset(&Gamma, &Offset, 3, 1, nCount);
 
 				 break;
@@ -1694,7 +1606,7 @@ void CMainView::UpdateGrid()
 				 bHasLuxValues = GetDocument()->GetMeasure()->GetRedPrimary().HasLuxValue ();
 				 if ( bHasLuxValues )
 				 {
-					if ( GetDocument()->GetMeasure()->GetOnOffWhite() != noDataColor )
+					if ( GetDocument()->GetMeasure()->GetOnOffWhite().isValid() )
 					{
 						bHasLuxDelta = TRUE;
 						refLuxColor = GetDocument()->GetMeasure()->GetOnOffWhite();
@@ -1805,8 +1717,8 @@ void CMainView::UpdateGrid()
 						double valx=(GrayLevelToGrayProp(x,bIRE)+Offset)/(1.0+Offset);
 						double valy=pow(valx, GetConfig()->m_GammaRef);
 						
-						CColor tmpColor = GetColorReference().GetWhite().GetxyYValue();
-						tmpColor.SetZ(valy);
+						ColorxyY tmpColor = GetColorReference().GetWhite().GetxyYValue();
+						tmpColor[2] = valy;
 						refColor.SetxyYValue(tmpColor);
 					 }
 					 else
@@ -2018,7 +1930,7 @@ void CMainView::UpdateGrid()
 				
 				if ( bHasLuxValues && i == nRows - ( 1 + bHasLuxDelta ) )
 				{
-					if ( aColor != noDataColor && aColor.HasLuxValue () )
+					if ( aColor.isValid() && aColor.HasLuxValue () )
 					{
 						if ( GetConfig () -> m_bUseImperialUnits )
 							Item.strText.Format ( "%.5g", aColor.GetLuxValue () * 0.0929 );
@@ -2030,7 +1942,7 @@ void CMainView::UpdateGrid()
 				}
 				else if ( bHasLuxValues && bHasLuxDelta && i == nRows - 1 )
 				{
-					if ( aColor != noDataColor )
+					if ( aColor.isValid() )
 					{
 						double dRef = refLuxColor.GetY() / refLuxColor.GetLuxValue ();
 						double dColor = aColor.GetY() / aColor.GetLuxValue ();
@@ -2085,7 +1997,7 @@ void CMainView::UpdateGrid()
 			Msg.LoadString ( IDS_GRAYSCALE );
 			m_grayScaleGroup.SetText ( Msg );
 
-			if (GetDocument()->GetMeasure()->GetGray(0)!=noDataColor)
+			if (GetDocument()->GetMeasure()->GetGray(0).isValid())
 			{
 				char	szBuf [ 256 ];
 
@@ -2241,9 +2153,9 @@ void CMainView::OnGrayScaleGridBeginEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 			 break;
 	}
 	
-	CColor aColor = noDataColor;
+	ColorTriplet aColor = ColorXYZ();
 
-	if ( aColorMeasure != noDataColor )
+	if ( aColorMeasure.isValid() )
 	{
 		// Get color data from XYZ value 
 		switch(m_displayType)
@@ -2264,7 +2176,7 @@ void CMainView::OnGrayScaleGridBeginEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 	// Retrieve correct row value
 	CString aNewStr;
 
-	if ( aColor != noDataColor )
+	if ( aColor.isValid() )
 	{
 		double aVal;
 		aVal = aColor[pItem->iRow-1];
@@ -2374,13 +2286,13 @@ void CMainView::OnGrayScaleGridEndEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 				 break;
 		}
 		
-		if ( aColorMeasure == noDataColor )
+		if ( !aColorMeasure.isValid() )
 		{
 			// No color value: build a color from reference white
 			aColorMeasure = GetColorReference().GetWhite ();
 		}
 
-		CColor aColor;
+		ColorTriplet aColor = ColorXYZ();
 
 		// Get color data from XYZ value 
 		switch(m_displayType)
@@ -2406,16 +2318,16 @@ void CMainView::OnGrayScaleGridEndEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 		switch(m_displayType)
 		{
 			case HCFR_XYZ_VIEW:
-				aColorMeasure.SetXYZValue(aColor);
+				aColorMeasure.SetXYZValue(ColorXYZ(aColor));
 				break;
 			case HCFR_SENSORRGB_VIEW:
-				aColorMeasure.SetXYZValue(aColor);
+				aColorMeasure.SetXYZValue(ColorXYZ(aColor));
 				break;
 			case HCFR_RGB_VIEW:
-				aColorMeasure.SetRGBValue(aColor, GetColorReference());
+				aColorMeasure.SetRGBValue(ColorRGB(aColor), GetColorReference());
 				break;
 			case HCFR_xyY_VIEW:
-				aColorMeasure.SetxyYValue(aColor);
+				aColorMeasure.SetxyYValue(ColorxyY(aColor));
 				break;
 		}
 

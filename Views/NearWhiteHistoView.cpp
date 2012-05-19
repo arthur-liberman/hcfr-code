@@ -129,10 +129,10 @@ void CNearWhiteGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		}
 	}
 	
-	if (pDoc->GetMeasure()->GetNearWhite(0)!=noDataColor)
+	if (pDoc->GetMeasure()->GetNearWhite(0).isValid())
 		bDataPresent = TRUE;
 
-	if (pDataRef && pDataRef->GetMeasure()->GetNearWhite(0)==noDataColor)
+	if (pDataRef && !pDataRef->GetMeasure()->GetNearWhite(0).isValid())
 		pDataRef = NULL;
 
 	if(IsWindow(m_graphCtrl.m_hWnd))

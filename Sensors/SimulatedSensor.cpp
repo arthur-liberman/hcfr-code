@@ -200,7 +200,7 @@ BOOL CSimulatedSensor::Init( BOOL bForSimultaneousMeasures )
 
 CColor CSimulatedSensor::MeasureColorInternal(COLORREF aRGBValue)
 {
-	CColor simulColor;
+	ColorRGB simulColor;
 	double offset=0.0, gain=1.0 ,gamma=2.2;
 	double value;
 
@@ -239,10 +239,9 @@ CColor CSimulatedSensor::MeasureColorInternal(COLORREF aRGBValue)
 
 	Sleep(200);		// Sleep 200 ms to simulate acquisition
 
-	CColor colMeasure, colSensor;
-	colMeasure.SetRGBValue(simulColor, GetColorReference());
+	ColorRGB colMeasure(simulColor);
 	
-	colSensor = m_sensorToXYZMatrix * colMeasure;
+	CColor colSensor(ColorXYZ(colMeasure, GetColorReference()));
 
 	double		Spectrum[18] = { 0.001, 0.01, 0.1, 0.15, 0.2, 0.4, 0.5, 0.6, 0.7, 1.2, 1.0, 1.1, 0.8, 0.9, 0.6, 0.5, 0.4, 0.15 };
 	colSensor.SetSpectrum ( CSpectrum ( 18, 380, 730, 20, Spectrum ) );

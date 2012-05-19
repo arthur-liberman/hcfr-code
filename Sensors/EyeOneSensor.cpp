@@ -171,13 +171,6 @@ void CEyeOneSensor::GetPropertiesSheetValues()
 		SetModifiedFlag(TRUE);
 
 		GetConfig () -> WriteProfileInt ( "EyeOne", "DeviceCalibrationMode", m_CalibrationMode );
-
-		if ( m_CalibrationMode >= 3 )
-		{
-			// Eye One pro cannot have calibration matrix: delete it if present
-			m_sensorToXYZMatrix=IdentityMatrix(3);
-			m_calibrationTime=0;
-		}
 	}
 
 	if( m_debugMode != m_EyeOneSensorPropertiesPage.m_debugMode ) {

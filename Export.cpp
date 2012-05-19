@@ -325,7 +325,7 @@ bool CExport::SaveGrayScaleSheet()
 	// Retrieve white reference, gamma and offset
 	double		Gamma,Offset;
 	CColor		refColor = GetColorReference().GetWhite();
-	if ( size && m_pDoc->GetMeasure()->GetGray(0) != noDataColor )
+	if ( size && m_pDoc->GetMeasure()->GetGray(0).isValid() )
 		m_pDoc->ComputeGammaAndOffset(&Gamma, &Offset, 3, 1, size);
 
 	Rows.RemoveAll();
@@ -341,8 +341,8 @@ bool CExport::SaveGrayScaleSheet()
 			double valx=(GrayLevelToGrayProp(x,bIRE)+Offset)/(1.0+Offset);
 			double valy=pow(valx, GetConfig()->m_GammaRef);
 			
-			CColor tmpColor = GetColorReference().GetWhite().GetxyYValue();
-			tmpColor.SetZ(valy);
+			ColorxyY tmpColor = GetColorReference().GetWhite().GetxyYValue();
+			tmpColor[2] = valy;
 			refColor.SetxyYValue(tmpColor);
 		}
 		else

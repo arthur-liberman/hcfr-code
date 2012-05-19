@@ -130,13 +130,13 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		}
 	}
 	
-	CColor ClrRGB;
+	ColorRGB ClrRGB;
 	double	xstart, ystart, xend, yend;
 	double	satshift, deltaE;
 
 	// Retrieve gray xy coordinates
-	xstart = GetColorReference().GetWhite().GetxyYValue().GetX();
-	ystart = GetColorReference().GetWhite().GetxyYValue().GetY();
+	xstart = GetColorReference().GetWhite().GetxyYValue()[0];
+	ystart = GetColorReference().GetWhite().GetxyYValue()[1];
 
 	if(IsWindow(m_graphCtrl.m_hWnd))
 		m_graphCtrl.ShowWindow(SW_SHOW);
@@ -153,7 +153,7 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	
 	m_graphCtrl.ClearGraph(m_redSatGraphID);
 	m_graphCtrl2.ClearGraph(m_redColorGraphID);
-	if (m_showRed && m_redSatGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetRedSat(0) != noDataColor )
+	if (m_showRed && m_redSatGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetRedSat(0).isValid() )
 	{
 		// Compute vector between neutral gray and saturated color in CIExy space
 		// Define target color in RGB mode
@@ -177,7 +177,7 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 	m_graphCtrl.ClearGraph(m_greenSatGraphID);
 	m_graphCtrl2.ClearGraph(m_greenColorGraphID);
-	if (m_showGreen && m_greenSatGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetGreenSat(0) != noDataColor )
+	if (m_showGreen && m_greenSatGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetGreenSat(0).isValid() )
 	{
 		// Compute vector between neutral gray and saturated color in CIExy space
 		// Define target color in RGB mode
@@ -201,7 +201,7 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 	m_graphCtrl.ClearGraph(m_blueSatGraphID);
 	m_graphCtrl2.ClearGraph(m_blueColorGraphID);
-	if (m_showBlue && m_blueSatGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetBlueSat(0) != noDataColor )
+	if (m_showBlue && m_blueSatGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetBlueSat(0).isValid() )
 	{
 		// Compute vector between neutral gray and saturated color in CIExy space
 		// Define target color in RGB mode
@@ -225,7 +225,7 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 	m_graphCtrl.ClearGraph(m_yellowSatGraphID);
 	m_graphCtrl2.ClearGraph(m_yellowColorGraphID);
-	if (m_showYellow && m_yellowSatGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetYellowSat(0) != noDataColor )
+	if (m_showYellow && m_yellowSatGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetYellowSat(0).isValid() )
 	{
 		// Compute vector between neutral gray and saturated color in CIExy space
 		// Define target color in RGB mode
@@ -249,7 +249,7 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 	m_graphCtrl.ClearGraph(m_cyanSatGraphID);
 	m_graphCtrl2.ClearGraph(m_cyanColorGraphID);
-	if (m_showCyan && m_cyanSatGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetCyanSat(0) != noDataColor )
+	if (m_showCyan && m_cyanSatGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetCyanSat(0).isValid() )
 	{
 		// Compute vector between neutral gray and saturated color in CIExy space
 		// Define target color in RGB mode
@@ -273,7 +273,7 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 	m_graphCtrl.ClearGraph(m_magentaSatGraphID);
 	m_graphCtrl2.ClearGraph(m_magentaColorGraphID);
-	if (m_showMagenta && m_magentaSatGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetMagentaSat(0) != noDataColor )
+	if (m_showMagenta && m_magentaSatGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetMagentaSat(0).isValid() )
 	{
 		// Compute vector between neutral gray and saturated color in CIExy space
 		// Define target color in RGB mode
@@ -310,7 +310,7 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 	if ((m_showDataRef)&&(pDataRef !=NULL)&&(pDataRef !=pDoc))
 	{
-		if (m_showRed && m_redSatDataRefGraphID != -1 && size > 0 && pDataRef->GetMeasure()->GetRedSat(0) != noDataColor )
+		if (m_showRed && m_redSatDataRefGraphID != -1 && size > 0 && pDataRef->GetMeasure()->GetRedSat(0).isValid() )
 		{
 			// Compute vector between neutral gray and saturated color in CIExy space
 			// Define target color in RGB mode
@@ -332,7 +332,7 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			}
 		}
 
-		if (m_showGreen && m_greenSatDataRefGraphID != -1 && size > 0 && pDataRef->GetMeasure()->GetGreenSat(0) != noDataColor )
+		if (m_showGreen && m_greenSatDataRefGraphID != -1 && size > 0 && pDataRef->GetMeasure()->GetGreenSat(0).isValid() )
 		{
 			// Compute vector between neutral gray and saturated color in CIExy space
 			// Define target color in RGB mode
@@ -354,7 +354,7 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			}
 		}
 
-		if (m_showBlue && m_blueSatDataRefGraphID != -1 && size > 0 && pDataRef->GetMeasure()->GetBlueSat(0) != noDataColor )
+		if (m_showBlue && m_blueSatDataRefGraphID != -1 && size > 0 && pDataRef->GetMeasure()->GetBlueSat(0).isValid() )
 		{
 			// Compute vector between neutral gray and saturated color in CIExy space
 			// Define target color in RGB mode
@@ -376,7 +376,7 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			}
 		}
 
-		if (m_showYellow && m_yellowSatDataRefGraphID != -1 && size > 0 && pDataRef->GetMeasure()->GetYellowSat(0) != noDataColor )
+		if (m_showYellow && m_yellowSatDataRefGraphID != -1 && size > 0 && pDataRef->GetMeasure()->GetYellowSat(0).isValid() )
 		{
 			// Compute vector between neutral gray and saturated color in CIExy space
 			// Define target color in RGB mode
@@ -398,7 +398,7 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			}
 		}
 
-		if (m_showCyan && m_cyanSatDataRefGraphID != -1 && size > 0 && pDataRef->GetMeasure()->GetCyanSat(0) != noDataColor )
+		if (m_showCyan && m_cyanSatDataRefGraphID != -1 && size > 0 && pDataRef->GetMeasure()->GetCyanSat(0).isValid() )
 		{
 			// Compute vector between neutral gray and saturated color in CIExy space
 			// Define target color in RGB mode
@@ -420,7 +420,7 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			}
 		}
 
-		if (m_showMagenta && m_magentaSatDataRefGraphID != -1 && size > 0 && pDataRef->GetMeasure()->GetMagentaSat(0) != noDataColor )
+		if (m_showMagenta && m_magentaSatDataRefGraphID != -1 && size > 0 && pDataRef->GetMeasure()->GetMagentaSat(0).isValid() )
 		{
 			// Compute vector between neutral gray and saturated color in CIExy space
 			// Define target color in RGB mode
@@ -444,27 +444,25 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	}
 }
 
-void CSatLumShiftGrapher::GetEndPoint ( double & xend, double & yend, CColor & SaturatedColor, CColor & ClrRGB )
+void CSatLumShiftGrapher::GetEndPoint ( double & xend, double & yend, CColor & SaturatedColor, const ColorRGB & ClrRGB )
 {
-	if ( GetConfig () -> m_bSatUseMeasuredRef && SaturatedColor != noDataColor )
+	if ( GetConfig () -> m_bSatUseMeasuredRef && SaturatedColor.isValid() )
 	{
 		// Use measured saturated color as target
-		xend = SaturatedColor.GetxyYValue().GetX();
-		yend = SaturatedColor.GetxyYValue().GetY();
+		xend = SaturatedColor.GetxyYValue()[0];
+		yend = SaturatedColor.GetxyYValue()[0];
 	}
 	else
-	{
-		CColor Clr2, Clr3;
-		
-		Clr2.SetRGBValue(ClrRGB, GetColorReference());
-		Clr3=Clr2.GetxyYValue();
+	{		
+		ColorXYZ Clr2(ClrRGB, GetColorReference());
+		ColorxyY Clr3(Clr2);
 		
 		xend=Clr3[0];
 		yend=Clr3[1];
 	}
 }
 
-void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, CColor SatColor, int num, int count, double xstart, double ystart, double xend, double yend )
+void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, const ColorxyY& SatColor, int num, int count, double xstart, double ystart, double xend, double yend )
 {
 	double	k;
 	double	xtarget, ytarget;
@@ -475,8 +473,8 @@ void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, CCol
 	double	upoint, vpoint;
 
 	// Retrieve measured point coordinates
-	xmeasure = SatColor.GetX();
-	ymeasure = SatColor.GetY();
+	xmeasure = SatColor[0];
+	ymeasure = SatColor[1];
 	
 	// Compute color target coordinates
 	xtarget = xstart + ( (xend - xstart) * (double) num / (double) (count - 1) );

@@ -310,7 +310,7 @@ CColor CMTCSSensor::MeasureColorInternal(COLORREF aRGBValue)
 	UINT		nAdjustedReadTime;
 	DWORD		amp, r, g, b;
 	double		d;
-	CColor		MTCSColor, DeviceColor, colMeasure;
+	ColorRGB		MTCSColor, DeviceColor, colMeasure;
 	
 	if ( m_bAdjustTime )
 	{

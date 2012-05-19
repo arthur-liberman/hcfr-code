@@ -58,7 +58,7 @@ void CTargetWnd::Refresh()
 {
 	if ( m_pRefColor )
 	{
-		CColor aColor = m_pRefColor -> GetxyYValue();
+		ColorxyY aColor = m_pRefColor -> GetxyYValue();
 
 		const double referenceX=GetColorReference().GetWhite().GetxyYValue()[0];
 		const double referenceY=GetColorReference().GetWhite().GetxyYValue()[1];
@@ -234,7 +234,7 @@ void CTargetWnd::OnPaint()
 		}
 	}
 
-	if( m_pRefColor == NULL || (*m_pRefColor) == noDataColor)
+	if( m_pRefColor == NULL || !m_pRefColor->isValid())
 		return;		// Draw nothing more
 
 	CPoint targetPoint=rect.CenterPoint();
@@ -475,7 +475,7 @@ void CTargetWnd::NotifyDisplayTooltip(NMHDR * pNMHDR, LRESULT * result)
     NM_PPTOOLTIP_DISPLAY * pNotify = (NM_PPTOOLTIP_DISPLAY*)pNMHDR;
 	CString valueStr;
     
-	if( m_pRefColor && (*m_pRefColor) != noDataColor)
+	if( m_pRefColor && (*m_pRefColor).isValid())
 		valueStr.Format("<b>delta x</b>: %.1f%% <br><b>delta y</b>: %.1f%%",m_deltax*100.0,m_deltay*100.0);
 	else
 		valueStr="No data";

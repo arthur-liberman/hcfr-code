@@ -138,7 +138,7 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	}
 	
 	m_graphCtrl.ClearGraph(m_redLumGraphID);
-	if (m_showPrimaries && m_redLumGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetRedSat(0) != noDataColor )
+	if (m_showPrimaries && m_redLumGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetRedSat(0).isValid() )
 	{
 		double red_coeff = ( KR * 100.0 ) / pDoc->GetMeasure()->GetRedSat(size-1).GetLuminance();
 		
@@ -151,7 +151,7 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	}
 
 	m_graphCtrl.ClearGraph(m_greenLumGraphID);
-	if (m_showPrimaries && m_greenLumGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetGreenSat(0) != noDataColor )
+	if (m_showPrimaries && m_greenLumGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetGreenSat(0).isValid() )
 	{
 		double green_coeff = ( KG * 100.0 ) / pDoc->GetMeasure()->GetGreenSat(size-1).GetLuminance();
 		
@@ -164,7 +164,7 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	}
 
 	m_graphCtrl.ClearGraph(m_blueLumGraphID);
-	if (m_showPrimaries && m_blueLumGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetBlueSat(0) != noDataColor )
+	if (m_showPrimaries && m_blueLumGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetBlueSat(0).isValid() )
 	{
 		double blue_coeff = ( KB * 100.0 ) / pDoc->GetMeasure()->GetBlueSat(size-1).GetLuminance();
 		
@@ -177,7 +177,7 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	}
 
 	m_graphCtrl.ClearGraph(m_yellowLumGraphID);
-	if (m_showSecondaries && m_yellowLumGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetYellowSat(0) != noDataColor )
+	if (m_showSecondaries && m_yellowLumGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetYellowSat(0).isValid() )
 	{
 		double yellow_coeff = ( KY * 100.0 ) / pDoc->GetMeasure()->GetYellowSat(size-1).GetLuminance();
 		
@@ -190,7 +190,7 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	}
 
 	m_graphCtrl.ClearGraph(m_cyanLumGraphID);
-	if (m_showSecondaries && m_cyanLumGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetCyanSat(0) != noDataColor )
+	if (m_showSecondaries && m_cyanLumGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetCyanSat(0).isValid() )
 	{
 		double cyan_coeff = ( KC * 100.0 ) / pDoc->GetMeasure()->GetCyanSat(size-1).GetLuminance();
 		
@@ -203,7 +203,7 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	}
 
 	m_graphCtrl.ClearGraph(m_magentaLumGraphID);
-	if (m_showSecondaries && m_magentaLumGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetMagentaSat(0) != noDataColor )
+	if (m_showSecondaries && m_magentaLumGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetMagentaSat(0).isValid() )
 	{
 		double magenta_coeff = ( KM * 100.0 ) / pDoc->GetMeasure()->GetMagentaSat(size-1).GetLuminance();
 		
@@ -224,7 +224,7 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 	if ((m_showDataRef)&&(pDataRef !=NULL)&&(pDataRef !=pDoc))
 	{
-		if (m_showPrimaries && m_redLumDataRefGraphID != -1 && size > 0 && pDataRef->GetMeasure()->GetRedSat(0) != noDataColor )
+		if (m_showPrimaries && m_redLumDataRefGraphID != -1 && size > 0 && pDataRef->GetMeasure()->GetRedSat(0).isValid() )
 		{
 			double red_coeff = ( KR * 100.0 ) / pDataRef->GetMeasure()->GetRedSat(size-1).GetLuminance();
 			
@@ -236,7 +236,7 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			}
 		}
 
-		if (m_showPrimaries && m_greenLumDataRefGraphID != -1 && size > 0 && pDataRef->GetMeasure()->GetGreenSat(0) != noDataColor )
+		if (m_showPrimaries && m_greenLumDataRefGraphID != -1 && size > 0 && pDataRef->GetMeasure()->GetGreenSat(0).isValid() )
 		{
 			double green_coeff = ( KG * 100.0 ) / pDataRef->GetMeasure()->GetGreenSat(size-1).GetLuminance();
 			
@@ -248,7 +248,7 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			}
 		}
 
-		if (m_showPrimaries && m_blueLumDataRefGraphID != -1 && size > 0 && pDataRef->GetMeasure()->GetBlueSat(0) != noDataColor )
+		if (m_showPrimaries && m_blueLumDataRefGraphID != -1 && size > 0 && pDataRef->GetMeasure()->GetBlueSat(0).isValid() )
 		{
 			double blue_coeff = ( KB * 100.0 ) / pDataRef->GetMeasure()->GetBlueSat(size-1).GetLuminance();
 			
@@ -260,7 +260,7 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			}
 		}
 
-		if (m_showSecondaries && m_yellowLumDataRefGraphID != -1 && size > 0 && pDataRef->GetMeasure()->GetYellowSat(0) != noDataColor )
+		if (m_showSecondaries && m_yellowLumDataRefGraphID != -1 && size > 0 && pDataRef->GetMeasure()->GetYellowSat(0).isValid() )
 		{
 			double yellow_coeff = ( KY * 100.0 ) / pDataRef->GetMeasure()->GetYellowSat(size-1).GetLuminance();
 			
@@ -272,7 +272,7 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			}
 		}
 
-		if (m_showSecondaries && m_cyanLumDataRefGraphID != -1 && size > 0 && pDataRef->GetMeasure()->GetCyanSat(0) != noDataColor )
+		if (m_showSecondaries && m_cyanLumDataRefGraphID != -1 && size > 0 && pDataRef->GetMeasure()->GetCyanSat(0).isValid() )
 		{
 			double cyan_coeff = ( KC * 100.0 ) / pDataRef->GetMeasure()->GetCyanSat(size-1).GetLuminance();
 			
@@ -284,7 +284,7 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			}
 		}
 
-		if (m_showSecondaries && m_magentaLumDataRefGraphID != -1 && size > 0 && pDataRef->GetMeasure()->GetMagentaSat(0) != noDataColor )
+		if (m_showSecondaries && m_magentaLumDataRefGraphID != -1 && size > 0 && pDataRef->GetMeasure()->GetMagentaSat(0).isValid() )
 		{
 			double magenta_coeff = ( KM * 100.0 ) / pDataRef->GetMeasure()->GetMagentaSat(size-1).GetLuminance();
 			

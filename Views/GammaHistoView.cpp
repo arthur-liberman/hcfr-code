@@ -109,10 +109,10 @@ void CGammaGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		}
 	}
 
-	if (pDoc->GetMeasure()->GetGray(0)!=noDataColor)
+	if (pDoc->GetMeasure()->GetGray(0).isValid())
 		bDataPresent = TRUE;
 
-	if (pDataRef && pDataRef->GetMeasure()->GetGray(0)==noDataColor)
+	if (pDataRef && !pDataRef->GetMeasure()->GetGray(0).isValid())
 		pDataRef = NULL;
 
 	m_graphCtrl.ClearGraph(m_refLogGraphID);

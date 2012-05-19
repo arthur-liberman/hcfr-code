@@ -381,7 +381,7 @@ void CColorReference::UpdateSecondary ( CColor & secondary, const CColor & prima
 	
 	double k = ( ( ( x2 - x1 ) / dx1 ) + ( dx2 / ( dx1 * dy2 ) ) * ( y1 - y2 ) ) / ( 1.0 - ( ( dx2 * dy1 ) / ( dx1 * dy2 ) ) );
 
-	ColorTriplet aColor ( x1 + k * dx1, y1 + k * dy1, primary1.GetY() + primary2.GetY() );
+	ColorxyY aColor ( x1 + k * dx1, y1 + k * dy1, primary1.GetY() + primary2.GetY() );
 
 	secondary.SetxyYValue ( aColor );
 }
@@ -530,16 +530,11 @@ ColorXYZ::ColorXYZ(const ColorxyY& xyY)
 {
     if(xyY.isValid())
     {
-        double aX,aY,aZ;
         if(xyY[1] != 0)
         {
-            (*this)[0] = (xyY[0]/xyY[1])*xyY[2];
+            (*this)[0] = (xyY[0]*xyY[2])/xyY[1];
             (*this)[1] = xyY[2];
             (*this)[2] = ((1.0 - xyY[0] - xyY[1])*xyY[2])/xyY[1];
-        }
-        else
-        {
-            aX=aY=aZ=0.0;
         }
     }
 }
@@ -579,6 +574,38 @@ ColorxyY::ColorxyY(double x, double y, double YY) :
     ColorTriplet(x, y, YY)
 {
 }
+
+////////////////////////////////////////////////////////////////////
+// implementation of the Colorxyz class.
+//////////////////////////////////////////////////////////////////////
+Colorxyz::Colorxyz()
+{
+}
+
+Colorxyz::Colorxyz(const Matrix& matrix) :
+    ColorTriplet(matrix)
+{
+}
+
+Colorxyz::Colorxyz(const ColorXYZ& XYZ)
+{
+    if(XYZ.isValid())
+    {
+        double sum = XYZ[0] + XYZ[1] + XYZ[2];
+        if(sum > 0.0)
+        {
+            (*this)[0] = XYZ[0] / sum;
+            (*this)[1] = XYZ[1] / sum;
+            (*this)[2] = XYZ[2] / sum;
+        }
+    }
+}
+
+Colorxyz::Colorxyz(double x, double y, double z) :
+    ColorTriplet(x, y, z)
+{
+}
+
 ////////////////////////////////////////////////////////////////////
 // implementation of the ColorRGB class.
 //////////////////////////////////////////////////////////////////////
@@ -737,7 +764,7 @@ CColor::CColor(const ColorXYZ& aMatrix):m_XYZValues(aMatrix)
 
 CColor::CColor(double ax,double ay):m_XYZValues(0.0,3,1)
 {
-    ColorTriplet tempColor(ax,ay,1);
+    ColorxyY tempColor(ax,ay,1);
     SetxyYValue(tempColor);
 
 	m_pSpectrum = NULL;
@@ -940,9 +967,14 @@ ColorRGB CColor::GetRGBValue(CColorReference colorReference) const
     }
 }
 
-ColorxyY CColor::GetxyYValue() const 
+ColorxyY CColor::GetxyYValue() const
 {
     return ColorxyY(m_XYZValues);
+}
+
+Colorxyz CColor::GetxyzValue() const
+{
+    return Colorxyz(m_XYZValues);
 }
 
 double CColor::GetLValue(double YWhiteRef) const 
@@ -983,12 +1015,12 @@ void CColor::SetxyYValue(double x, double y, double Y)
     m_XYZValues = ColorXYZ(xyY);
 }
 
-void CColor::SetxyYValue(ColorxyY xyY) 
+void CColor::SetxyYValue(const ColorxyY& xyY)
 {
     m_XYZValues = ColorXYZ(xyY);
 }
 
-bool CColor::isValid() 
+bool CColor::isValid() const
 {
     return m_XYZValues.isValid();
 }

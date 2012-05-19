@@ -130,10 +130,10 @@ void CCalibrationInfo::GetAdditivityInfoText ( CString & strResult, Matrix & sen
 		strResult+=str;
 	}
 	
-	if ( m_WhiteTest != noDataColor && m_WhiteRef != noDataColor )
+	if ( m_WhiteTest.isValid() && m_WhiteRef.isValid() )
 	{
 		CString str;
-		CColor ConvertedWhiteTest = sensorToXYZMatrix * m_WhiteTest;
+		CColor ConvertedWhiteTest = ColorXYZ(sensorToXYZMatrix * m_WhiteTest.GetXYZValue());
 
 		strResult += "\r\n";
 		Msg.LoadString ( IDS_WHITE );
@@ -147,10 +147,10 @@ void CCalibrationInfo::GetAdditivityInfoText ( CString & strResult, Matrix & sen
 		strResult+=str;
 	}
 
-	if ( m_BlackTest != noDataColor && m_BlackRef != noDataColor )
+	if ( m_BlackTest.isValid() && m_BlackRef.isValid() )
 	{
 		CString str;
-		CColor ConvertedBlackTest = sensorToXYZMatrix * m_BlackTest;
+		CColor ConvertedBlackTest = ColorXYZ(sensorToXYZMatrix * m_BlackTest.GetXYZValue());
 
 		strResult += "\r\n";
 		Msg.LoadString ( IDS_BLACK );

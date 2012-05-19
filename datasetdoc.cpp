@@ -1744,9 +1744,9 @@ void CDataSetDoc::OnCalibrationManual()
 			measures(1,2) = measuredColor[2].GetY(); 
 			measures(2,2) = measuredColor[2].GetZ(); 
 			
-			CColor whiteRef = dlg.m_WhiteColor;
+			ColorXYZ whiteRef = dlg.m_WhiteColor.GetXYZValue();
 			
-			CColor white = measuredColor[3];
+			ColorXYZ white(measuredColor[3].GetXYZValue());
 
             Matrix oldMatrix = m_pSensor->GetSensorMatrix();
             Matrix ConvMatrix = ComputeConversionMatrix (measures, references, white, whiteRef, GetConfig () -> m_bUseOnlyPrimaries );
@@ -1756,13 +1756,13 @@ void CDataSetDoc::OnCalibrationManual()
 
             SetModifiedFlag ();
 
-			m_measure.SetRedPrimary (ConvMatrix * measuredColor[0]);
+			m_measure.SetRedPrimary (ColorXYZ(ConvMatrix * measuredColor[0].GetXYZValue()));
 
-			m_measure.SetGreenPrimary (ConvMatrix * measuredColor[1]);
+			m_measure.SetGreenPrimary (ColorXYZ(ConvMatrix * measuredColor[1].GetXYZValue()));
 
-			m_measure.SetBluePrimary (ConvMatrix * measuredColor[2]);
+			m_measure.SetBluePrimary (ColorXYZ(ConvMatrix * measuredColor[2].GetXYZValue()));
 
-			m_measure.SetOnOffWhite (ConvMatrix * measuredColor[3]);
+			m_measure.SetOnOffWhite (ColorXYZ(ConvMatrix * measuredColor[3].GetXYZValue()));
 
 			UpdateAllViews ( NULL, UPD_EVERYTHING );
 
@@ -1786,7 +1786,7 @@ BOOL CDataSetDoc::ComputeAdjustmentMatrix()
 	BOOL			bOk = FALSE;
 	CDataSetDoc *	pDataRef = GetDataRef();
 	
-	ASSERT ( pDataRef && pDataRef != this && pDataRef -> m_measure.GetBluePrimary () != noDataColor && m_measure.GetBluePrimary () != noDataColor );
+	ASSERT ( pDataRef && pDataRef != this && pDataRef -> m_measure.GetBluePrimary ().isValid() && m_measure.GetBluePrimary ().isValid());
 
 	// Create calibration data
 	Matrix measures(0.0,3,3);
@@ -1812,9 +1812,9 @@ BOOL CDataSetDoc::ComputeAdjustmentMatrix()
 	measures(1,2) = m_measure.GetBluePrimary ().GetY(); 
 	measures(2,2) = m_measure.GetBluePrimary ().GetZ(); 
 	
-	CColor whiteRef = pDataRef -> m_measure.GetOnOffWhite();
+	ColorXYZ whiteRef = pDataRef -> m_measure.GetOnOffWhite().GetXYZValue();
 	
-	CColor white = m_measure.GetOnOffWhite();
+	ColorXYZ white = m_measure.GetOnOffWhite().GetXYZValue();
 
 	// check that measure matrix is inversible
 	if ( measures.Determinant() != 0.0 ) 

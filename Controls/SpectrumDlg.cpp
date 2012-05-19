@@ -89,7 +89,7 @@ int CSpectrumWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 void CSpectrumWnd::Refresh ()
 {
-	if ( m_pRefColor && (*m_pRefColor) != noDataColor && m_pRefColor -> HasSpectrum () )
+	if ( m_pRefColor && (*m_pRefColor).isValid() && m_pRefColor -> HasSpectrum () )
 	{
 		int			i;
 		CSpectrum	Spectrum = m_pRefColor -> GetSpectrum ();

@@ -249,15 +249,10 @@ void CMeasuresHistoView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 		if ( Y > YMax )
 			YMax = Y;
 
-		CColor aColor=GetDocument()->GetMeasure()->GetMeasurement(i).GetxyYValue();
-		CColor normColor;
+		ColorxyY aColor=GetDocument()->GetMeasure()->GetMeasurement(i).GetxyYValue();
 
-		normColor[0]=(aColor[0]/aColor[1]);
-		normColor[1]=(1.0);
-		normColor[2]=((1.0-(aColor[0]+aColor[1]))/aColor[1]);
-
-		CColor aMeasure(normColor);
-		normColor=aMeasure.GetRGBValue(GetColorReference());
+		ColorXYZ aMeasure(aColor[0]/aColor[1], 1.0, (1.0-(aColor[0]+aColor[1]))/aColor[1]);
+		ColorRGB normColor(aMeasure, GetColorReference());
 
 		m_graphCtrl.AddPoint(m_luminanceGraphID, j, Y);
 

@@ -80,7 +80,9 @@ public:
 	//}}AFX_DATA
 
 private:
-	BOOL		m_bPositionsInit;
+    void AddColorToGrid(const ColorTriplet& color, GV_ITEM& Item, const char* format);
+
+    BOOL		m_bPositionsInit;
 	POINT		m_InitialWindowSize;
 	RECT		m_OriginalRect;
 	CPtrList	m_CtrlInitPos;

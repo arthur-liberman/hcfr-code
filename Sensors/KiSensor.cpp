@@ -527,8 +527,8 @@ BOOL CKiSensor::acquire(char *com_port, int timeout, char command, char *sensVal
 
 CColor CKiSensor::MeasureColorInternal(COLORREF aRGBValue)
 {
-	CColor kiColor;
-	CColor colMeasure;
+	ColorRGB kiColor;
+	ColorXYZ colMeasure;
 	char mStr[255];
 	char cmd[1] = "";
 	
@@ -543,11 +543,11 @@ CColor CKiSensor::MeasureColorInternal(COLORREF aRGBValue)
 		kiColor[0]= RGB[0];
 		kiColor[1]= RGB[1];
 		kiColor[2]= RGB[2];
-        double defaultSensorToXYZ[3][3] = { {   7.79025E-05,  5.06389E-05,   6.02556E-05  }, 
-                                            {   3.08665E-05,  0.000131285,   2.94813E-05  },
-                                            {  -9.41924E-07, -4.42599E-05,   0.000271669  } };
+        double defaultSensorToXYZ[] = {    7.79025E-05,  5.06389E-05,   6.02556E-05  , 
+                                           3.08665E-05,  0.000131285,   2.94813E-05  ,
+                                           -9.41924E-07, -4.42599E-05,   0.000271669 };
 
-        Matrix defaultSensorToXYZMatrix(&defaultSensorToXYZ[0][0],3,3);
+        Matrix defaultSensorToXYZMatrix(defaultSensorToXYZ,3,3);
 
         colMeasure = defaultSensorToXYZMatrix * kiColor;
 	} 

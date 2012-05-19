@@ -129,10 +129,10 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		}
 	}
 	
-	if (pDataRef && pDataRef->GetMeasure()->GetGray(0)==noDataColor)
+	if (pDataRef && pDataRef->GetMeasure()->GetGray(0).isValid())
 		pDataRef = NULL;
 
-	if (pDoc->GetMeasure()->GetGray(0)!=noDataColor)
+	if (pDoc->GetMeasure()->GetGray(0).isValid())
 	{
 		// Retrieve gamma and offset
 		CColor			refColor = GetColorReference().GetWhite();
@@ -143,15 +143,9 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		YWhite = pDoc->GetMeasure()->GetGray(size-1)[1];
 		for (int i=0; i<size; i++)
 		{
-			CColor aColor=pDoc->GetMeasure()->GetGray(i).GetxyYValue();
-			CColor normColor;
-
-			normColor[0]=(aColor[0]/aColor[1]);
-			normColor[1]=(1.0);
-			normColor[2]=((1.0-(aColor[0]+aColor[1]))/aColor[1]);
-
-			CColor aMeasure(normColor);
-			normColor=aMeasure.GetRGBValue(GetColorReference());
+			ColorxyY aColor=pDoc->GetMeasure()->GetGray(i).GetxyYValue();
+			ColorXYZ aMeasure(aColor[0]/aColor[1], 1.0, (1.0-(aColor[0]+aColor[1]))/aColor[1]);
+			ColorRGB normColor(aMeasure, GetColorReference());
 
 			double x = ArrayIndexToGrayLevel ( i, size, bIRE );
 
@@ -168,8 +162,8 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 					double valx=(GrayLevelToGrayProp(x,bIRE)+Offset)/(1.0+Offset);
 					double valy=pow(valx, GetConfig()->m_GammaRef);
 					
-					CColor tmpColor = GetColorReference().GetWhite().GetxyYValue();
-					tmpColor.SetZ(valy);
+					ColorxyY tmpColor = GetColorReference().GetWhite().GetxyYValue();
+					tmpColor[2] = valy;
 					refColor.SetxyYValue(tmpColor);
 				}
 				else
@@ -184,10 +178,10 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 	if((m_showDataRef)&&(pDataRef !=NULL)&&(pDataRef !=pDoc)) 
 	{
-		BOOL			bMainDocHasColors = (pDoc->GetMeasure()->GetGray(0)!=noDataColor);
+		BOOL			bMainDocHasColors = (pDoc->GetMeasure()->GetGray(0).isValid());
 		CColor			refColor = GetColorReference().GetWhite();
 
-		if ( size && pDataRef->GetMeasure()->GetGray(0) != noDataColor )
+		if ( size && pDataRef->GetMeasure()->GetGray(0).isValid() )
 			pDataRef->ComputeGammaAndOffset(&Gamma, &OffsetRef, 3, 1, size);
 
 		if ( bMainDocHasColors )
@@ -197,20 +191,15 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 		for (int i=0; i<size; i++)
 		{
-			CColor aColor;
+			ColorxyY aColor;
 			
 			if ( bMainDocHasColors )
 				aColor=pDoc->GetMeasure()->GetGray(i).GetxyYValue();
 
-			CColor aColorRef=pDataRef->GetMeasure()->GetGray(i).GetxyYValue();
-			CColor normColor;
+			ColorxyY aColorRef=pDataRef->GetMeasure()->GetGray(i).GetxyYValue();
 
-			normColor[0]=(aColorRef[0]/aColorRef[1]);
-			normColor[1]=(1.0);
-			normColor[2]=((1.0-(aColorRef[0]+aColorRef[1]))/aColorRef[1]);
-
-			CColor aMeasure(normColor);
-			normColor=aMeasure.GetRGBValue(GetColorReference());
+			ColorXYZ aMeasure(aColorRef[0]/aColorRef[1], 1.0, (1.0-(aColorRef[0]+aColorRef[1]))/aColorRef[1]);
+			ColorRGB normColor(aMeasure, GetColorReference());
 
 			double x = ArrayIndexToGrayLevel ( i, size, bIRE );
 
@@ -227,8 +216,8 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 					double valxref=(GrayLevelToGrayProp(x,bIRE)+OffsetRef)/(1.0+OffsetRef);
 					double valyref=pow(valxref, GetConfig()->m_GammaRef);
 					
-					CColor tmpColor = GetColorReference().GetWhite().GetxyYValue();
-					tmpColor.SetZ(valyref);
+					ColorxyY tmpColor = GetColorReference().GetWhite().GetxyYValue();
+					tmpColor[2] = valyref;
 					refColor.SetxyYValue(tmpColor);
 				}
 				else

@@ -52,7 +52,7 @@ void CRGBLevelWnd::Refresh()
 {
 	BOOL bWasLumaMode = m_bLumaMode;
 	m_bLumaMode = FALSE;
-	if ( m_pRefColor && (*m_pRefColor) != noDataColor )
+	if ( m_pRefColor && (*m_pRefColor).isValid() )
 	{
 		double RefLuma = 1.0;
 
@@ -95,7 +95,7 @@ void CRGBLevelWnd::Refresh()
 			m_greenValue=0;
 			m_blueValue=0;
 
-			if ( white != noDataColor && white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) > 0.0001 )
+			if ( white.isValid() && white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) > 0.0001 )
 			{
 				double d = m_pRefColor -> GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) / white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter);
 
@@ -104,9 +104,8 @@ void CRGBLevelWnd::Refresh()
 		}
 		else
 		{
-		    CColor aColor = m_pRefColor -> GetxyYValue();
-		    CColor normColor;
-
+            ColorxyY aColor = m_pRefColor -> GetxyYValue();
+            ColorXYZ normColor;
             if(aColor[1] > 0.0)
             {
                 normColor[0]=(aColor[0]/aColor[1]);
@@ -120,13 +119,12 @@ void CRGBLevelWnd::Refresh()
                 normColor[2]=0.0;
             }
 
-		    CColor aMeasure(normColor);
-		    normColor=aMeasure.GetRGBValue(GetColorReference());
+            ColorRGB normColorRGB(normColor, GetColorReference());
 
-		    m_redValue=(int)(normColor[0]*100.0);
-		    m_greenValue=(int)(normColor[1]*100.0);
-		    m_blueValue=(int)(normColor[2]*100.0);
-	    }
+            m_redValue=(int)(normColorRGB[0]*100.0);
+            m_greenValue=(int)(normColorRGB[1]*100.0);
+            m_blueValue=(int)(normColorRGB[2]*100.0);
+        }
     }
 	else
 	{

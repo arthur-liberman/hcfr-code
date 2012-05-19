@@ -453,18 +453,18 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	CColor greenPrimaryColor=pDoc->GetMeasure()->GetGreenPrimary().GetxyYValue();
 	CColor bluePrimaryColor=pDoc->GetMeasure()->GetBluePrimary().GetxyYValue();
 
-	BOOL hasPrimaries= redPrimaryColor != noDataColor && greenPrimaryColor != noDataColor &&
-					   bluePrimaryColor != noDataColor;
+	BOOL hasPrimaries= redPrimaryColor.isValid() && greenPrimaryColor.isValid() &&
+					   bluePrimaryColor.isValid();
 
 	// Take sum of primary colors Y by default, in case of no white measure found
 	double YWhite = redPrimaryColor[2]+greenPrimaryColor[2]+bluePrimaryColor[2];
 	
-	if ( pDoc -> GetMeasure () -> GetOnOffWhite () != noDataColor )
+	if ( pDoc -> GetMeasure () -> GetOnOffWhite ().isValid() )
 		YWhite = pDoc -> GetMeasure () -> GetOnOffWhite () [ 1 ];
 	else 
 	{
 		int i = pDoc -> GetMeasure () -> GetGrayScaleSize ();
-		if ( pDoc -> GetMeasure () -> GetGray ( i - 1 ) != noDataColor )
+		if ( pDoc -> GetMeasure () -> GetGray ( i - 1 ).isValid() )
 			YWhite = pDoc -> GetMeasure () -> GetGray ( i - 1 ) [ 1 ];
 	}
 
@@ -479,8 +479,8 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	CColor cyanSecondaryColor=pDoc->GetMeasure()->GetCyanSecondary().GetxyYValue();
 	CColor magentaSecondaryColor=pDoc->GetMeasure()->GetMagentaSecondary().GetxyYValue();
 
-	BOOL hasSecondaries= yellowSecondaryColor != noDataColor && cyanSecondaryColor != noDataColor &&
-					   magentaSecondaryColor != noDataColor;
+	BOOL hasSecondaries= yellowSecondaryColor.isValid() && cyanSecondaryColor.isValid() &&
+					   magentaSecondaryColor.isValid();
 
 	Msg.LoadString ( IDS_YELLOWSECONDARY );
 	CCIEGraphPoint yellowSecondaryPoint(yellowSecondaryColor.GetX(),yellowSecondaryColor.GetY(),pDoc->GetMeasure()->GetYellowSecondary().GetLValue(YWhite), Msg, m_bCIEuv);
@@ -489,12 +489,12 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	Msg.LoadString ( IDS_MAGENTASECONDARY );
 	CCIEGraphPoint magentaSecondaryPoint(magentaSecondaryColor.GetX(),magentaSecondaryColor.GetY(),pDoc->GetMeasure()->GetMagentaSecondary().GetLValue(YWhite), Msg, m_bCIEuv);
 
-	CColor datarefRed = noDataColor;
-	CColor datarefGreen = noDataColor;
-	CColor datarefBlue = noDataColor;
-	CColor datarefYellow = noDataColor;
-	CColor datarefCyan = noDataColor;
-	CColor datarefMagenta = noDataColor;
+	ColorxyY datarefRed;
+	ColorxyY datarefGreen;
+	ColorxyY datarefBlue;
+	ColorxyY datarefYellow;
+	ColorxyY datarefCyan;
+	ColorxyY datarefMagenta;
 	
 	BOOL hasdatarefPrimaries = FALSE;
 	BOOL hasdatarefSecondaries = FALSE;
@@ -517,17 +517,17 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 		datarefCyan=pDataRef->GetMeasure()->GetCyanSecondary().GetxyYValue();
 		datarefMagenta=pDataRef->GetMeasure()->GetMagentaSecondary().GetxyYValue();
 
-		hasdatarefPrimaries = datarefRed != noDataColor && datarefGreen != noDataColor && datarefBlue != noDataColor;
-		hasdatarefSecondaries = datarefYellow != noDataColor && datarefCyan != noDataColor && datarefMagenta != noDataColor;
+		hasdatarefPrimaries = datarefRed.isValid() && datarefGreen.isValid() && datarefBlue.isValid();
+		hasdatarefSecondaries = datarefYellow.isValid() && datarefCyan.isValid() && datarefMagenta.isValid();
 
 		YWhiteRef = datarefRed[2]+datarefGreen[2]+datarefBlue[2];
 		
-		if ( pDataRef -> GetMeasure () -> GetOnOffWhite () != noDataColor )
+		if ( pDataRef -> GetMeasure () -> GetOnOffWhite ().isValid() )
 			YWhiteRef = pDataRef -> GetMeasure () -> GetOnOffWhite () [ 1 ];
 		else 
 		{
 			int i = pDataRef -> GetMeasure () -> GetGrayScaleSize ();
-			if ( pDataRef -> GetMeasure () -> GetGray ( i - 1 ) != noDataColor )
+			if ( pDataRef -> GetMeasure () -> GetGray ( i - 1 ).isValid() )
 				YWhiteRef = pDataRef -> GetMeasure () -> GetGray ( i - 1 ) [ 1 ];
 		}
 		
@@ -540,18 +540,18 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	}
 	
 	Msg.LoadString ( IDS_DATAREF_RED );
-	CCIEGraphPoint datarefRedPoint(datarefRed.GetX(),datarefRed.GetY(),datarefRed_L,Msg, m_bCIEuv);
+	CCIEGraphPoint datarefRedPoint(datarefRed[0],datarefRed[1],datarefRed_L,Msg, m_bCIEuv);
 	Msg.LoadString ( IDS_DATAREF_GREEN );
-	CCIEGraphPoint datarefGreenPoint(datarefGreen.GetX(),datarefGreen.GetY(),datarefGreen_L,Msg, m_bCIEuv);
+	CCIEGraphPoint datarefGreenPoint(datarefGreen[0],datarefGreen[1],datarefGreen_L,Msg, m_bCIEuv);
 	Msg.LoadString ( IDS_DATAREF_BLUE );
-	CCIEGraphPoint datarefBluePoint(datarefBlue.GetX(),datarefBlue.GetY(),datarefBlue_L,Msg, m_bCIEuv);
+	CCIEGraphPoint datarefBluePoint(datarefBlue[0],datarefBlue[1],datarefBlue_L,Msg, m_bCIEuv);
 
 	Msg.LoadString ( IDS_DATAREF_YELLOW );
-	CCIEGraphPoint datarefYellowPoint(datarefYellow.GetX(),datarefYellow.GetY(),datarefYellow_L,Msg, m_bCIEuv);
+	CCIEGraphPoint datarefYellowPoint(datarefYellow[0],datarefYellow[1],datarefYellow_L,Msg, m_bCIEuv);
 	Msg.LoadString ( IDS_DATAREF_CYAN );
-	CCIEGraphPoint datarefCyanPoint(datarefCyan.GetX(),datarefCyan.GetY(),datarefCyan_L,Msg, m_bCIEuv);
+	CCIEGraphPoint datarefCyanPoint(datarefCyan[0],datarefCyan[1],datarefCyan_L,Msg, m_bCIEuv);
 	Msg.LoadString ( IDS_DATAREF_MAGENTA );
-	CCIEGraphPoint datarefMagentaPoint(datarefMagenta.GetX(),datarefMagenta.GetY(),datarefMagenta_L,Msg, m_bCIEuv);
+	CCIEGraphPoint datarefMagentaPoint(datarefMagenta[0],datarefMagenta[1],datarefMagenta_L,Msg, m_bCIEuv);
 
 
 	// Draw background bitmap
@@ -778,7 +778,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 				
 				YGray = YWhiteGray * valy;
 				
-				GrayClr.SetxyYValue(CColor(WhiteClr[0],WhiteClr[1],YGray));
+				GrayClr.SetxyYValue(WhiteClr[0],WhiteClr[1],YGray);
 				grayRef.L = GrayClr.GetLValue(YWhiteGray);
 				L_Gray = pDoc->GetMeasure()->GetGray(i).GetLValue(YWhiteGray);
 			}
@@ -789,8 +789,8 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 				L_Gray = 100;
 			}
 
-			CCIEGraphPoint grayPoint(pDoc->GetMeasure()->GetGray(i).GetxyYValue().GetX(),
-								  pDoc->GetMeasure()->GetGray(i).GetxyYValue().GetY(),
+			CCIEGraphPoint grayPoint(pDoc->GetMeasure()->GetGray(i).GetxyYValue()[0],
+								  pDoc->GetMeasure()->GetGray(i).GetxyYValue()[1],
 								  L_Gray,
 								  str, m_bCIEuv);
 
@@ -806,48 +806,48 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 
 			Msg.LoadString ( IDS_REDSATPERCENT );
 			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
-			CCIEGraphPoint RedPoint(pDoc->GetMeasure()->GetRedSat(i).GetxyYValue().GetX(),
-								  pDoc->GetMeasure()->GetRedSat(i).GetxyYValue().GetY(),
+			CCIEGraphPoint RedPoint(pDoc->GetMeasure()->GetRedSat(i).GetxyYValue()[0],
+								  pDoc->GetMeasure()->GetRedSat(i).GetxyYValue()[1],
 								  pDoc->GetMeasure()->GetRedSat(i).GetLValue(YWhite),
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,RedPoint,&m_redPrimaryBitmap,rect,pTooltip,pWnd);
 
 			Msg.LoadString ( IDS_GREENSATPERCENT );
 			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
-			CCIEGraphPoint GreenPoint(pDoc->GetMeasure()->GetGreenSat(i).GetxyYValue().GetX(),
-								  pDoc->GetMeasure()->GetGreenSat(i).GetxyYValue().GetY(),
+			CCIEGraphPoint GreenPoint(pDoc->GetMeasure()->GetGreenSat(i).GetxyYValue()[0],
+								  pDoc->GetMeasure()->GetGreenSat(i).GetxyYValue()[1],
 								  pDoc->GetMeasure()->GetGreenSat(i).GetLValue(YWhite),
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,GreenPoint,&m_greenPrimaryBitmap,rect,pTooltip,pWnd);
 
 			Msg.LoadString ( IDS_BLUESATPERCENT );
 			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
-			CCIEGraphPoint BluePoint(pDoc->GetMeasure()->GetBlueSat(i).GetxyYValue().GetX(),
-								  pDoc->GetMeasure()->GetBlueSat(i).GetxyYValue().GetY(),
+			CCIEGraphPoint BluePoint(pDoc->GetMeasure()->GetBlueSat(i).GetxyYValue()[0],
+								  pDoc->GetMeasure()->GetBlueSat(i).GetxyYValue()[1],
 								  pDoc->GetMeasure()->GetBlueSat(i).GetLValue(YWhite),
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,BluePoint,&m_bluePrimaryBitmap,rect,pTooltip,pWnd);
 
 			Msg.LoadString ( IDS_YELLOWSATPERCENT );
 			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
-			CCIEGraphPoint YellowPoint(pDoc->GetMeasure()->GetYellowSat(i).GetxyYValue().GetX(),
-								  pDoc->GetMeasure()->GetYellowSat(i).GetxyYValue().GetY(),
+			CCIEGraphPoint YellowPoint(pDoc->GetMeasure()->GetYellowSat(i).GetxyYValue()[0],
+								  pDoc->GetMeasure()->GetYellowSat(i).GetxyYValue()[1],
 								  pDoc->GetMeasure()->GetYellowSat(i).GetLValue(YWhite),
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,YellowPoint,&m_yellowSecondaryBitmap,rect,pTooltip,pWnd);
 
 			Msg.LoadString ( IDS_CYANSATPERCENT );
 			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
-			CCIEGraphPoint CyanPoint(pDoc->GetMeasure()->GetCyanSat(i).GetxyYValue().GetX(),
-								  pDoc->GetMeasure()->GetCyanSat(i).GetxyYValue().GetY(),
+			CCIEGraphPoint CyanPoint(pDoc->GetMeasure()->GetCyanSat(i).GetxyYValue()[0],
+								  pDoc->GetMeasure()->GetCyanSat(i).GetxyYValue()[1],
 								  pDoc->GetMeasure()->GetCyanSat(i).GetLValue(YWhite),
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,CyanPoint,&m_cyanSecondaryBitmap,rect,pTooltip,pWnd);
 
 			Msg.LoadString ( IDS_MAGENTASATPERCENT );
 			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
-			CCIEGraphPoint MagentaPoint(pDoc->GetMeasure()->GetMagentaSat(i).GetxyYValue().GetX(),
-								  pDoc->GetMeasure()->GetMagentaSat(i).GetxyYValue().GetY(),
+			CCIEGraphPoint MagentaPoint(pDoc->GetMeasure()->GetMagentaSat(i).GetxyYValue()[0],
+								  pDoc->GetMeasure()->GetMagentaSat(i).GetxyYValue()[1],
 								  pDoc->GetMeasure()->GetMagentaSat(i).GetLValue(YWhite),
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,MagentaPoint,&m_magentaSecondaryBitmap,rect,pTooltip,pWnd);
@@ -860,18 +860,18 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			CString str;
 			Msg.LoadString ( IDS_MEASURENUM );
 			str.Format(Msg,i);
-			CCIEGraphPoint measurePoint(pDoc->GetMeasure()->GetMeasurement(i).GetxyYValue().GetX(),
-								  pDoc->GetMeasure()->GetMeasurement(i).GetxyYValue().GetY(),
+			CCIEGraphPoint measurePoint(pDoc->GetMeasure()->GetMeasurement(i).GetxyYValue()[0],
+								  pDoc->GetMeasure()->GetMeasurement(i).GetxyYValue()[1],
 								  100.0,
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,measurePoint,&m_measurePlotBitmap,rect,pTooltip,pWnd);
 		}
 
-	if ( pDoc->m_SelectedColor != noDataColor)
+	if ( pDoc->m_SelectedColor.isValid())
 	{
 		Msg.LoadString ( IDS_SELECTION );
-		CCIEGraphPoint measurePoint(pDoc->m_SelectedColor.GetxyYValue().GetX(),
-								 pDoc->m_SelectedColor.GetxyYValue().GetY(),
+		CCIEGraphPoint measurePoint(pDoc->m_SelectedColor.GetxyYValue()[0],
+								 pDoc->m_SelectedColor.GetxyYValue()[1],
 								 100.0,
 								 Msg, m_bCIEuv);
 		DrawAlphaBitmap(pDC,measurePoint,&m_selectedPlotBitmap,rect,pTooltip,pWnd);
@@ -1498,7 +1498,7 @@ void CCIEChartView::UpdateTestColor ( CPoint point )
 	double	cmax;
 	double	base, coef;
 	double	gamma = 0.45;
-	CColor	RGBColor;
+	ColorRGB	RGBColor;
 
 	GetReferenceRect ( & rect );
 

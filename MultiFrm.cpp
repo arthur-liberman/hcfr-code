@@ -1445,14 +1445,11 @@ LRESULT CMultiFrame::OnDDERequest(WPARAM wParam, LPARAM lParam)
 	WORD		wFormat = LOWORD(lParam);
 	ATOM		nAtomData = (ATOM) HIWORD(lParam);
 	char		szBuf [ 256 ];
-	double		sum;
-	double		xyz[3];
 	CString		strData;
 	CString		strTemp;
 	CString		strCmd;
 	CStringList	CmdParams;
 	CColor		ReqColor=noDataColor;
-	CColor		aColor;
 	DDEACK		Ack;
 	HGLOBAL		hMem = NULL;
 	DDEDATA *	pDdeData;
@@ -1592,7 +1589,7 @@ LRESULT CMultiFrame::OnDDERequest(WPARAM wParam, LPARAM lParam)
 
 			if ( bOk )
 			{
-				if ( ReqColor == noDataColor )
+				if ( !ReqColor.isValid() )
 				{
 					strData = "-1,-1,-1";
 				}
@@ -1621,37 +1618,29 @@ LRESULT CMultiFrame::OnDDERequest(WPARAM wParam, LPARAM lParam)
 							}
 							break;
 						case HCFR_XYZ_VIEW:
-							aColor=ReqColor.GetXYZValue();
-							strData.Format("%.3f,%.3f,%.3f",aColor[0],aColor[1],aColor[2]);
-							break;
 						case HCFR_SENSORRGB_VIEW:
-							aColor=ReqColor.GetXYZValue();
-							strData.Format("%.3f,%.3f,%.3f",aColor[0],aColor[1],aColor[2]);
+                            {
+							    ColorXYZ aColor=ReqColor.GetXYZValue();
+							    strData.Format("%.3f,%.3f,%.3f",aColor[0],aColor[1],aColor[2]);
+                            }
 							break;
 						case HCFR_RGB_VIEW:
-							aColor=ReqColor.GetRGBValue(GetColorReference());
-							strData.Format("%.3f,%.3f,%.3f",aColor[0],aColor[1],aColor[2]);
+                            {
+							    ColorRGB aColor=ReqColor.GetRGBValue(GetColorReference());
+							    strData.Format("%.3f,%.3f,%.3f",aColor[0],aColor[1],aColor[2]);
+                            }
 							break;
 						case HCFR_xyz2_VIEW:
-							aColor=ReqColor.GetXYZValue();
-							sum = aColor[0]+aColor[1]+aColor[2];
-							if ( sum != 0.0 )
-							{
-								xyz[0] = aColor[0] / sum;
-								xyz[1] = aColor[1] / sum;
-								xyz[2] = 1.0 - xyz[0] - xyz[1];
-							}
-							else
-							{
-								xyz[0] = 0.0;
-								xyz[1] = 0.0;
-								xyz[2] = 0.0;
-							}
-							strData.Format("%.3f,%.3f,%.3f",xyz[0],xyz[1],xyz[2]);
+                            {
+							    ColorxyY aColor=ReqColor.GetxyzValue();
+							    strData.Format("%.3f,%.3f,%.3f",aColor[0],aColor[1],aColor[2]);
+                            }
 							break;
 						case HCFR_xyY_VIEW:
-							aColor=ReqColor.GetxyYValue();
-							strData.Format("%.3f,%.3f,%.3f",aColor[0],aColor[1],aColor[2]);
+                            {
+							    ColorxyY aColor=ReqColor.GetxyYValue();
+							    strData.Format("%.3f,%.3f,%.3f",aColor[0],aColor[1],aColor[2]);
+                            }
 							break;
 					}
 				}
@@ -1715,7 +1704,6 @@ LRESULT CMultiFrame::OnDDEPoke(WPARAM wParam, LPARAM lParam)
 	CString		strTemp;
 	CString		strCmd;
 	CStringList	CmdParams;
-	CColor		aColor;
 	CColor		ReceivedColor=noDataColor;
 
 	UnpackDDElParam ( WM_DDE_POKE, lParam, (unsigned int *) & hMem, (unsigned int *) & nAtom );
@@ -1752,24 +1740,21 @@ LRESULT CMultiFrame::OnDDEPoke(WPARAM wParam, LPARAM lParam)
 
 			if ( a >= 0.0 && b >= 0.0 && c >= 0.0 )
 			{
-				aColor [ 0 ] = a;
-				aColor [ 1 ] = b;
-				aColor [ 2 ] = c;
 
 				// Convert back color data to XYZ
 				switch(nFormat)
 				{
 					case HCFR_XYZ_VIEW:
-						ReceivedColor.SetXYZValue(aColor);
+						ReceivedColor.SetXYZValue(ColorXYZ(a, b, c));
 						break;
 					case HCFR_SENSORRGB_VIEW:
-						ReceivedColor = aColor;
+						ReceivedColor = ColorXYZ(a, b, c);
 						break;
 					case HCFR_RGB_VIEW:
-						ReceivedColor.SetRGBValue(aColor, GetColorReference());
+						ReceivedColor.SetRGBValue(ColorRGB(a, b, c), GetColorReference());
 						break;
 					case HCFR_xyY_VIEW:
-						ReceivedColor.SetxyYValue(aColor);
+						ReceivedColor.SetxyYValue(a, b, c);
 						break;
 				}
 			}

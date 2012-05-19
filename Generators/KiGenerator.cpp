@@ -1083,7 +1083,7 @@ BOOL CKiGenerator::CanDisplayScale ( MeasureType nScaleType, int nbLevels, BOOL 
 
 BOOL CKiGenerator::HasPatternChanged( MeasureType nScaleType,CColor previousColor,CColor lastColor)
 {
-	CColor pRGBColor,lRGBColor;
+	ColorRGB pRGBColor,lRGBColor;
 	float	redDif,greenDif,blueDif;
 		
 	pRGBColor=previousColor.GetRGBValue(GetColorReference());

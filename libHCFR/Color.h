@@ -57,10 +57,11 @@ class CColorReference;
 
 class ColorTriplet : public Matrix
 {
-public:
+protected:
     ColorTriplet();
     ColorTriplet(const Matrix& matrix);
     ColorTriplet(double a, double b, double c);
+public:
     const double& operator[](const int nRow) const;
     double& operator[](const int nRow);
     bool isValid() const;
@@ -86,6 +87,15 @@ public:
     ColorxyY(const Matrix& matrix);
     ColorxyY(const ColorXYZ& XYZ);
     ColorxyY(double x, double y, double YY);
+};
+
+class Colorxyz: public ColorTriplet
+{
+public:
+    Colorxyz();
+    Colorxyz(const Matrix& matrix);
+    Colorxyz(const ColorXYZ& XYZ);
+    Colorxyz(double x, double y, double z);
 };
 
 class ColorRGB: public ColorTriplet
@@ -143,6 +153,7 @@ public:
 	ColorXYZ GetXYZValue() const;
 	ColorRGB GetRGBValue(CColorReference colorReference) const;
 	ColorxyY GetxyYValue() const;
+	Colorxyz GetxyzValue() const;
 	ColorLab GetLabValue(double YWhiteRef, CColorReference colorReference) const;
 	ColorLCH GetLCHValue(double YWhiteRef, CColorReference colorReference) const;
 
