@@ -327,15 +327,14 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
 	v_white = 9.0*y / (-2.0*x + 12.0*y + 3.0); 
   
 	// Compute transformation matrices
-	Matrix primariesMatrix;
-	primariesMatrix=redPrimary.GetXYZValue();
+	Matrix primariesMatrix(redPrimary.GetXYZValue());
 	primariesMatrix.CMAC(greenPrimary.GetXYZValue());
 	primariesMatrix.CMAC(bluePrimary.GetXYZValue());
 	RGBtoXYZMatrix=ComputeRGBtoXYZMatrix(primariesMatrix, whiteColor.GetXYZValue());
 	XYZtoRGBMatrix=RGBtoXYZMatrix.GetInverse();
 
 	// Adjust reference primary colors Y values relatively to white Y
-	ColorTriplet aColor = redPrimary.GetxyYValue ();
+	ColorxyY aColor = redPrimary.GetxyYValue ();
 	aColor[2] = GetRedReferenceLuma ();
 	redPrimary.SetxyYValue ( aColor );
 
@@ -365,10 +364,10 @@ CColorReference GetStandardColorReference(ColorStandard aColorStandard)
 void CColorReference::UpdateSecondary ( CColor & secondary, const CColor & primary1, const CColor & primary2, const CColor & primaryOpposite )
 {
 	// Compute intersection between line (primary1-primary2) and line (primaryOpposite-white)
-	CColor	prim1 = primary1.GetxyYValue ();
-	CColor	prim2 = primary2.GetxyYValue ();
-	CColor	primOppo = primaryOpposite.GetxyYValue ();
-	CColor	white = GetWhite ().GetxyYValue ();
+	ColorxyY	prim1 = primary1.GetxyYValue ();
+	ColorxyY	prim2 = primary2.GetxyYValue ();
+	ColorxyY	primOppo = primaryOpposite.GetxyYValue ();
+	ColorxyY	white = GetWhite ().GetxyYValue ();
 
 	double x1 = prim1[0];
 	double y1 = prim1[1];
