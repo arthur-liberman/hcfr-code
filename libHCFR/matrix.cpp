@@ -613,7 +613,7 @@ Matrix& Matrix::CMAC(const Matrix& obj)
     {
         for(int j=0; j<m_nCols; ++j) 
         {
-            temp.m_pData[j * temp.m_nCols + j] = m_pData[j * m_nCols + j];
+            temp.m_pData[i * temp.m_nCols + j] = m_pData[i * m_nCols + j];
         }
         for(int j=0; j<obj.m_nCols; ++j)
         {
