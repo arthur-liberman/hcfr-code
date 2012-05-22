@@ -115,7 +115,9 @@ BOOL CSensor::Release()
 
 CColor CSensor::MeasureColor(COLORREF aRGBValue)
 {
-	return noDataColor; 
+    CColor result(MeasureColorInternal(aRGBValue));
+    result.applyAdjustmentMatrix(m_sensorToXYZMatrix);
+    return result;
 }
 
 CColor CSensor::MeasureGray(double aLevel, BOOL bIRE)

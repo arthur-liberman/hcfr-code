@@ -1433,7 +1433,7 @@ void CDataSetDoc::OnCalibrationSim()
 	if ( IDYES == AfxMessageBox ( Msg, MB_YESNO | MB_ICONQUESTION ) )
 	{
 		// Use special simultaneous mode
-		PerformSimultaneousMeasures ( -2 );
+		PerformSimultaneousMeasures ( -5 );
         ComputeAdjustmentMatrix();
 	}
 }

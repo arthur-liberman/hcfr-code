@@ -330,7 +330,7 @@ void CArgyllSensor::Calibrate()
 
 void CArgyllSensor::GetUniqueIdentifier( CString & strId )
 {
-    strId = "Argyll Meter";
+    strId = m_meter->getMeterName().c_str();
 }
 
 void CArgyllSensor::FillDisplayTypeCombo(CComboBox& comboToFill)

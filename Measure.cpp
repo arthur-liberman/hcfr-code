@@ -3761,7 +3761,9 @@ HANDLE CMeasure::InitBackgroundMeasures ( CSensor *pSensor, int nSteps )
 
 		if ( m_hEventRun && m_hEventDone )
 		{
-			m_hThread = CreateThread ( NULL, 0, BkGndMeasureThreadFunc, this, 0, & dw );
+            ResetEvent ( m_hEventDone );
+            ResetEvent ( m_hEventRun );
+            m_hThread = CreateThread ( NULL, 0, BkGndMeasureThreadFunc, this, 0, & dw );
 
 			if ( ! m_hThread )
 			{
@@ -3792,6 +3794,7 @@ BOOL CMeasure::BackgroundMeasureColor ( int nCurStep, COLORREF aRGBValue )
 	{
 		// Reset event indicating that a measure is ready
 		ResetEvent ( m_hEventDone );
+		ResetEvent ( m_hEventRun );
 		
 		// Request a new background measure
 		m_nBkMeasureStep = nCurStep;

@@ -501,7 +501,8 @@ double& ColorTriplet::operator[](const int nRow)
 
 bool ColorTriplet::isValid() const
 {
-    return ((*this)[0] != FX_NODATA) && ((*this)[1] != FX_NODATA) && ((*this)[2] != FX_NODATA);
+    // allow small negative values but reject anything based off FX_NODATA
+    return ((*this)[0] > -1.0) && ((*this)[1] > -1.0) && ((*this)[2] > -1.0);
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -1130,8 +1131,11 @@ double CColor::GetPreferedLuxValue (bool preferLuxmeter) const
 
 void CColor::applyAdjustmentMatrix(const Matrix& adjustment)
 {
-    ColorXYZ newValue(adjustment * m_XYZValues);
-    m_XYZValues = newValue;
+    if(m_XYZValues.isValid())
+    {
+        ColorXYZ newValue(adjustment * m_XYZValues);
+        m_XYZValues = newValue;
+    }
 }
 
 void CColor::Output(ostream& ostr) const
