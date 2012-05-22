@@ -3594,71 +3594,56 @@ void CMeasure::ApplySensorAdjustmentMatrix(const Matrix & oldMatrix, const Matri
 
 	for(int i=0;i<m_grayMeasureArray.GetSize();i++)  // Preserve sensor values 
 	{
-		color= aMatrix * m_grayMeasureArray[i].GetXYZValue();
-		m_grayMeasureArray[i] = color;
+		m_grayMeasureArray[i].applyAdjustmentMatrix(aMatrix);
 	}
 	for(int i=0;i<m_nearBlackMeasureArray.GetSize();i++)  // Preserve sensor values 
 	{
-		color= aMatrix * m_nearBlackMeasureArray[i].GetXYZValue();
-		m_nearBlackMeasureArray[i] = color;
+		m_nearBlackMeasureArray[i].applyAdjustmentMatrix(aMatrix);
 	}
 	for(int i=0;i<m_nearWhiteMeasureArray.GetSize();i++)  // Preserve sensor values 
 	{
-		color= aMatrix * m_nearWhiteMeasureArray[i].GetXYZValue();
-		m_nearWhiteMeasureArray[i] = color;
+		m_nearWhiteMeasureArray[i].applyAdjustmentMatrix(aMatrix);
 	}
 	for(int i=0;i<m_redSatMeasureArray.GetSize();i++)  // Preserve sensor values 
 	{
-		color= aMatrix * m_redSatMeasureArray[i].GetXYZValue();
-		m_redSatMeasureArray[i] = color;
+		m_redSatMeasureArray[i].applyAdjustmentMatrix(aMatrix);
 	}
 	for(int i=0;i<m_greenSatMeasureArray.GetSize();i++)  // Preserve sensor values 
 	{
-		color= aMatrix * m_greenSatMeasureArray[i].GetXYZValue();
-		m_greenSatMeasureArray[i] = color;
+		m_greenSatMeasureArray[i].applyAdjustmentMatrix(aMatrix);
 	}
 	for(int i=0;i<m_blueSatMeasureArray.GetSize();i++)  // Preserve sensor values 
 	{
-		color= aMatrix * m_blueSatMeasureArray[i].GetXYZValue();
-		m_blueSatMeasureArray[i] = color;
+		m_blueSatMeasureArray[i].applyAdjustmentMatrix(aMatrix);
 	}
 	for(int i=0;i<m_yellowSatMeasureArray.GetSize();i++)  // Preserve sensor values 
 	{
-		color= aMatrix * m_yellowSatMeasureArray[i].GetXYZValue();
-		m_yellowSatMeasureArray[i] = color;
+		m_yellowSatMeasureArray[i].applyAdjustmentMatrix(aMatrix);
 	}
 	for(int i=0;i<m_cyanSatMeasureArray.GetSize();i++)  // Preserve sensor values 
 	{
-		color= aMatrix * m_cyanSatMeasureArray[i].GetXYZValue();
-		m_cyanSatMeasureArray[i] = color;
+		m_cyanSatMeasureArray[i].applyAdjustmentMatrix(aMatrix);
 	}
 	for(int i=0;i<m_magentaSatMeasureArray.GetSize();i++)  // Preserve sensor values 
 	{
-		color= aMatrix * m_magentaSatMeasureArray[i].GetXYZValue();
-		m_magentaSatMeasureArray[i] = color;
+		m_magentaSatMeasureArray[i].applyAdjustmentMatrix(aMatrix);
 	}
 	for(int i=0;i<3;i++)
 	{
-		color= aMatrix * m_primariesArray[i].GetXYZValue();
-		m_primariesArray[i] = color;
+		m_primariesArray[i].applyAdjustmentMatrix(aMatrix);
 	}
 	for(int i=0;i<3;i++)
 	{
-		color= aMatrix * m_secondariesArray[i].GetXYZValue();
-		m_secondariesArray[i] = color;
+		m_secondariesArray[i].applyAdjustmentMatrix(aMatrix);
 	}
 	
-	color= aMatrix * m_OnOffBlack.GetXYZValue();
-	m_OnOffBlack = color;        
+	m_OnOffBlack.applyAdjustmentMatrix(aMatrix);
 	
-	color= aMatrix * m_OnOffWhite.GetXYZValue();
-	m_OnOffWhite = color;        
+	m_OnOffWhite.applyAdjustmentMatrix(aMatrix);
 
-	color= aMatrix * m_AnsiBlack.GetXYZValue();
-	m_AnsiBlack = color;        
+	m_AnsiBlack.applyAdjustmentMatrix(aMatrix);
 	
-	color= aMatrix * m_AnsiWhite.GetXYZValue();
-	m_AnsiWhite = color;        
+	m_AnsiWhite.applyAdjustmentMatrix(aMatrix);
 }
 
 BOOL CMeasure::WaitForDynamicIris ( BOOL bIgnoreEscape )
@@ -4523,7 +4508,7 @@ CColor CMeasure::GetRefSecondary(int i) const
 CColor CMeasure::GetRefSat(int i, double sat_percent) const
 {
 	CColor	refColor;
-	CColor	refWhite = GetColorReference().GetWhite().GetxyYValue();
+	ColorxyY	refWhite = GetColorReference().GetWhite().GetxyYValue();
 	
 	double	x, y;
 	double	xstart = refWhite[0];
