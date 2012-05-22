@@ -549,7 +549,7 @@ CColor CKiSensor::MeasureColorInternal(COLORREF aRGBValue)
 
         Matrix defaultSensorToXYZMatrix(defaultSensorToXYZ,3,3);
 
-        colMeasure = defaultSensorToXYZMatrix * kiColor;
+        colMeasure = ColorXYZ(defaultSensorToXYZMatrix * kiColor);
 	} 
     else 
 	{

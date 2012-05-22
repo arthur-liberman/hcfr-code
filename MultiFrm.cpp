@@ -1632,7 +1632,7 @@ LRESULT CMultiFrame::OnDDERequest(WPARAM wParam, LPARAM lParam)
 							break;
 						case HCFR_xyz2_VIEW:
                             {
-							    ColorxyY aColor=ReqColor.GetxyzValue();
+							    Colorxyz aColor=ReqColor.GetxyzValue();
 							    strData.Format("%.3f,%.3f,%.3f",aColor[0],aColor[1],aColor[2]);
                             }
 							break;

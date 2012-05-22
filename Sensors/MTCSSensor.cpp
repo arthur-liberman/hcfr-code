@@ -310,7 +310,8 @@ CColor CMTCSSensor::MeasureColorInternal(COLORREF aRGBValue)
 	UINT		nAdjustedReadTime;
 	DWORD		amp, r, g, b;
 	double		d;
-	ColorRGB		MTCSColor, DeviceColor, colMeasure;
+	ColorRGB		DeviceColor;
+    ColorXYZ  colMeasure;
 	
 	if ( m_bAdjustTime )
 	{
@@ -344,7 +345,7 @@ CColor CMTCSSensor::MeasureColorInternal(COLORREF aRGBValue)
 		DeviceColor[1]= ((double)g/(double)nTicks) - ( (double)m_nBlackGOffset + m_DeviceBlackLevel(1,0) );
 		DeviceColor[2]= ((double)b/(double)nTicks) - ( (double)m_nBlackBOffset + m_DeviceBlackLevel(2,0) );
 
-		MTCSColor = m_DeviceMatrix*DeviceColor;
+		colMeasure = ColorXYZ(m_DeviceMatrix*DeviceColor);
 
 		if (m_debugMode) 
 		{
@@ -356,13 +357,10 @@ CColor CMTCSSensor::MeasureColorInternal(COLORREF aRGBValue)
 			fclose(f);
 			LeaveCriticalSection ( & GetConfig () -> LogFileCritSec );
 		}
-
-		colMeasure = MTCSColor;
 	}
 	else 
 	{
 		MessageBox(0, "No data from Sensor","Error",MB_OK+MB_ICONINFORMATION);
-		return noDataColor;
 	}
 
 	return colMeasure;
