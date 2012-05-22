@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\Tools\cppunit\include;..\Tools\spectro;..;..\Tools\libusb1\msvc;..\Tools\ArgyllMeterWrapper"
+				AdditionalIncludeDirectories="..\Tools\cppunit\include;..\Tools\spectro;..;..\Tools\libusb1\msvc;..\Tools\ArgyllMeterWrapper;..\libHCFR"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;WINVER=0x510;_USE_32BIT_TIME_T;CPPUNIT_HAVE_RTTI=0"
 				MinimalRebuild="true"
 				ExceptionHandling="2"
@@ -119,7 +119,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\Tools\cppunit\include;..\Tools\spectro;..;..\Tools\libusb1\msvc;..\Tools\ArgyllMeterWrapper"
+				AdditionalIncludeDirectories="..\Tools\cppunit\include;..\Tools\spectro;..;..\Tools\libusb1\msvc;..\Tools\ArgyllMeterWrapper;..\libHCFR"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;WINVER=0x510;_USE_32BIT_TIME_T;CPPUNIT_HAVE_RTTI=0"
 				ExceptionHandling="2"
 				RuntimeLibrary="0"
@@ -180,6 +180,14 @@
 			>
 			<File
 				RelativePath=".\ArgyllMeterWrapper_unittests.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Color_unittests.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\MatrixAdjustment_unittests.cpp"
 				>
 			</File>
 			<File
