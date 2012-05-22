@@ -1721,32 +1721,20 @@ void CDataSetDoc::OnCalibrationManual()
 		if ( dlg.DoModal () == IDOK )
 		{
 			// Create calibration data
-			Matrix measures(0.0,3,3);
-			Matrix references(0.0,3,3);
-			
-			references(0,0) = dlg.m_RedColor.GetX();
-			references(1,0) = dlg.m_RedColor.GetY();
-			references(2,0) = dlg.m_RedColor.GetZ();
-			references(0,1) = dlg.m_GreenColor.GetX();
-			references(1,1) = dlg.m_GreenColor.GetY();
-			references(2,1) = dlg.m_GreenColor.GetZ();
-			references(0,2) = dlg.m_BlueColor.GetX();
-			references(1,2) = dlg.m_BlueColor.GetY();
-			references(2,2) = dlg.m_BlueColor.GetZ();
+            ColorXYZ measures[3] = {
+                                        dlg.m_RedColor.GetXYZValue(),
+                                        dlg.m_GreenColor.GetXYZValue(),
+                                        dlg.m_BlueColor.GetXYZValue()
+                                    };
+            ColorXYZ references[3] = {
+                                        measuredColor[0].GetXYZValue(),
+                                        measuredColor[1].GetXYZValue(),
+                                        measuredColor[2].GetXYZValue()
+                                    };
 
-			measures(0,0) = measuredColor[0].GetX();  
-			measures(1,0) = measuredColor[0].GetY();  
-			measures(2,0) = measuredColor[0].GetZ();  
-			measures(0,1) = measuredColor[1].GetX();
-			measures(1,1) = measuredColor[1].GetY();
-			measures(2,1) = measuredColor[1].GetZ();
-			measures(0,2) = measuredColor[2].GetX(); 
-			measures(1,2) = measuredColor[2].GetY(); 
-			measures(2,2) = measuredColor[2].GetZ(); 
-			
-			ColorXYZ whiteRef = dlg.m_WhiteColor.GetXYZValue();
-			
-			ColorXYZ white(measuredColor[3].GetXYZValue());
+            ColorXYZ whiteRef = dlg.m_WhiteColor.GetXYZValue();
+
+            ColorXYZ white(measuredColor[3].GetXYZValue());
 
             Matrix oldMatrix = m_pSensor->GetSensorMatrix();
             Matrix ConvMatrix = ComputeConversionMatrix (measures, references, white, whiteRef, GetConfig () -> m_bUseOnlyPrimaries );
@@ -1788,60 +1776,39 @@ BOOL CDataSetDoc::ComputeAdjustmentMatrix()
 	
 	ASSERT ( pDataRef && pDataRef != this && pDataRef -> m_measure.GetBluePrimary ().isValid() && m_measure.GetBluePrimary ().isValid());
 
-	// Create calibration data
-	Matrix measures(0.0,3,3);
-	Matrix references(0.0,3,3);
-	
-	references(0,0) = pDataRef -> m_measure.GetRedPrimary ().GetX();
-	references(1,0) = pDataRef -> m_measure.GetRedPrimary ().GetY();
-	references(2,0) = pDataRef -> m_measure.GetRedPrimary ().GetZ();
-	references(0,1) = pDataRef -> m_measure.GetGreenPrimary ().GetX();
-	references(1,1) = pDataRef -> m_measure.GetGreenPrimary ().GetY();
-	references(2,1) = pDataRef -> m_measure.GetGreenPrimary ().GetZ();
-	references(0,2) = pDataRef -> m_measure.GetBluePrimary ().GetX();
-	references(1,2) = pDataRef -> m_measure.GetBluePrimary ().GetY();
-	references(2,2) = pDataRef -> m_measure.GetBluePrimary ().GetZ();
+        ColorXYZ measures[3] = {
+                                    m_measure.GetRedPrimary().GetXYZValue(),
+                                    m_measure.GetGreenPrimary().GetXYZValue(),
+                                    m_measure.GetBluePrimary().GetXYZValue()
+                                };
+        ColorXYZ references[3] = {
+                                    pDataRef->m_measure.GetRedPrimary().GetXYZValue(),
+                                    pDataRef->m_measure.GetGreenPrimary().GetXYZValue(),
+                                    pDataRef->m_measure.GetBluePrimary().GetXYZValue()
+                                };
 
-	measures(0,0) = m_measure.GetRedPrimary ().GetX();  
-	measures(1,0) = m_measure.GetRedPrimary ().GetY();  
-	measures(2,0) = m_measure.GetRedPrimary ().GetZ();  
-	measures(0,1) = m_measure.GetGreenPrimary ().GetX();
-	measures(1,1) = m_measure.GetGreenPrimary ().GetY();
-	measures(2,1) = m_measure.GetGreenPrimary ().GetZ();
-	measures(0,2) = m_measure.GetBluePrimary ().GetX(); 
-	measures(1,2) = m_measure.GetBluePrimary ().GetY(); 
-	measures(2,2) = m_measure.GetBluePrimary ().GetZ(); 
-	
-	ColorXYZ whiteRef = pDataRef -> m_measure.GetOnOffWhite().GetXYZValue();
-	
-	ColorXYZ white = m_measure.GetOnOffWhite().GetXYZValue();
+    ColorXYZ whiteRef = pDataRef -> m_measure.GetOnOffWhite().GetXYZValue();
 
-	// check that measure matrix is inversible
-	if ( measures.Determinant() != 0.0 ) 
+    ColorXYZ white = m_measure.GetOnOffWhite().GetXYZValue();
+
+    // check that measure matrix is inversible
+    Matrix oldMatrix = m_pSensor->GetSensorMatrix();
+    Matrix ConvMatrix = ComputeConversionMatrix (measures, references, white, whiteRef, GetConfig () -> m_bUseOnlyPrimaries );
+
+	// check that matrix is inversible
+	if ( ConvMatrix.Determinant() != 0.0 )
 	{
-        Matrix oldMatrix = m_pSensor->GetSensorMatrix();
-		Matrix ConvMatrix = ComputeConversionMatrix (measures, references, white, whiteRef, GetConfig () -> m_bUseOnlyPrimaries );
-
-		// check that matrix is inversible
-		if ( ConvMatrix.Determinant() != 0.0 )	
-		{
-			// Ok: set adjustment matrix
-            Matrix newMatrix = ConvMatrix * oldMatrix;
-			m_measure.ApplySensorAdjustmentMatrix( oldMatrix, newMatrix );
-            m_pSensor->SetSensorMatrix(newMatrix);
-			SetModifiedFlag(TRUE);
-			bOk = TRUE;
-		}
-		else
-		{
-			AfxMessageBox ( IDS_INVALIDMEASUREMATRIX, MB_OK | MB_ICONERROR );
-		}
+		// Ok: set adjustment matrix
+        Matrix newMatrix = ConvMatrix * oldMatrix;
+		m_measure.ApplySensorAdjustmentMatrix( oldMatrix, newMatrix );
+        m_pSensor->SetSensorMatrix(newMatrix);
+		SetModifiedFlag(TRUE);
+		bOk = TRUE;
 	}
 	else
 	{
 		AfxMessageBox ( IDS_INVALIDMEASUREMATRIX, MB_OK | MB_ICONERROR );
 	}
-
 	return bOk;
 }
 

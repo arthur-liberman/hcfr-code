@@ -1416,66 +1416,78 @@ void GenerateSaturationColors (const CColorReference& colorReference, COLORREF *
 }
 #endif
 
-Matrix ComputeConversionMatrix(Matrix & measures, Matrix & references, ColorXYZ & WhiteTest, ColorXYZ & WhiteRef, bool	bUseOnlyPrimaries)
+Matrix ComputeConversionMatrix3Colour(const ColorXYZ measures[3], const ColorXYZ references[3])
 {
-	Matrix	m;
+    Matrix measuresXYZ(measures[0]);
+    measuresXYZ.CMAC(measures[1]);
+    measuresXYZ.CMAC(measures[2]);
 
-	if (!WhiteTest.isValid() || !WhiteRef.isValid())
-	{
-		// TODO: add a messagebox
-		bUseOnlyPrimaries = true;
-	}
+    Matrix referencesXYZ(references[0]);
+    referencesXYZ.CMAC(references[1]);
+    referencesXYZ.CMAC(references[2]);
 
-	if ( ! bUseOnlyPrimaries )
-	{
-		if(references.Determinant() == 0) // check that reference matrix is inversible
-		{
-			// TODO: we can also exit with an error message... should check what is the best solution...
-			bUseOnlyPrimaries = true;
-		}
-	}
+    if(measuresXYZ.Determinant() == 0) // check that reference matrix is inversible
+    {
+        throw std::logic_error("Can't invert measures matrix");
+    }
 
-	if ( bUseOnlyPrimaries )
-	{
-		// Use only primary colors to compute transformation matrix
-		Matrix invT=measures.GetInverse();
-		m=references*invT;
-	}
-	else
-	{
-		// Use primary colors and white to compute transformation matrix
-		// Compute component gain for reference white
-		Matrix invR=references.GetInverse();
-		Matrix RefWhiteGain=invR*WhiteRef;
+    // Use only primary colors to compute transformation matrix
+    Matrix result = referencesXYZ*measuresXYZ.GetInverse();
+    return result;
+}
 
-		// Compute component gain for measured white
-		Matrix invM=measures.GetInverse();
-		Matrix MeasWhiteGain=invM*WhiteTest;
+Matrix ComputeConversionMatrix(const ColorXYZ measures[3], const ColorXYZ references[3], const ColorXYZ & WhiteTest, const ColorXYZ & WhiteRef, bool	bUseOnlyPrimaries)
+{
+    if (!WhiteTest.isValid() || !WhiteRef.isValid() || bUseOnlyPrimaries)
+    {
+        return ComputeConversionMatrix3Colour(measures, references);
+    }
 
-		// Transform component gain matrix into a diagonal matrix
-		Matrix RefDiagWhite(0.0,3,3);
-		RefDiagWhite(0,0)=RefWhiteGain(0,0);
-		RefDiagWhite(1,1)=RefWhiteGain(1,0);
-		RefDiagWhite(2,2)=RefWhiteGain(2,0);
+    // implement algorithm from :
+    // http://www.avsforum.com/avs-vb/attachment.php?attachmentid=246852&d=1337250619
 
-		// Transform component gain matrix into a diagonal matrix
-		Matrix MeasDiagWhite(0.0,3,3);
-		MeasDiagWhite(0,0)=MeasWhiteGain(0,0);
-		MeasDiagWhite(1,1)=MeasWhiteGain(1,0);
-		MeasDiagWhite(2,2)=MeasWhiteGain(2,0);
+    // get the inputs as xyz
+    Matrix measuresxyz = Colorxyz(measures[0]);
+    measuresxyz.CMAC(Colorxyz(measures[1]));
+    measuresxyz.CMAC(Colorxyz(measures[2]));
+    Matrix referencesxyz = Colorxyz(references[0]);
+    referencesxyz.CMAC(Colorxyz(references[1]));
+    referencesxyz.CMAC(Colorxyz(references[2]));
+    Colorxyz whiteMeasurexyz(WhiteTest);
+    Colorxyz whiteReferencexyz(WhiteRef);
 
-		// Compute component distribution for reference white
-		Matrix RefWhiteComponentMatrix=references*RefDiagWhite;
+    Matrix RefWhiteGain(referencesxyz.GetInverse() * whiteReferencexyz);
+    Matrix MeasWhiteGain(measuresxyz.GetInverse() * whiteMeasurexyz);
 
-		// Compute component distribution for measured white
-		Matrix MeasWhiteComponentMatrix=measures*MeasDiagWhite;
+    // Transform component gain matrix into a diagonal matrix
+    Matrix kr(0.0,3,3);
+    kr(0,0) = RefWhiteGain(0,0);
+    kr(1,1) = RefWhiteGain(1,0);
+    kr(2,2) = RefWhiteGain(2,0);
 
-		// Compute XYZ transformation matrix
-		Matrix	invT=MeasWhiteComponentMatrix.GetInverse();
-		m=RefWhiteComponentMatrix*invT;
-	}
+    // Transform component gain matrix into a diagonal matrix
+    Matrix km(0.0,3,3);
+    km(0,0) = MeasWhiteGain(0,0);
+    km(1,1) = MeasWhiteGain(1,0);
+    km(2,2) = MeasWhiteGain(2,0);
 
-	return m;
+    // Compute component distribution for reference white
+    Matrix N(referencesxyz * kr);
+
+    // Compute component distribution for measured white
+    Matrix M(measuresxyz * km);
+
+    // Compute transformation matrix
+    Matrix transform(N * M.GetInverse());
+
+    // find out error adjustment in white value with this matrix
+    ColorXYZ testResult(transform * WhiteTest);
+    double errorAdjustment(WhiteRef[1] / testResult[1]);
+
+    // and scale the matrix with this value
+    transform *= errorAdjustment;
+
+    return transform;
 }
 
 double ArrayIndexToGrayLevel ( int nCol, int nSize, bool bIRE )

@@ -294,7 +294,7 @@ extern CColor noDataColor;
 #ifdef LIBHCFR_HAS_WIN32_API
 extern void GenerateSaturationColors (const CColorReference& colorReference, COLORREF * GenColors, int nSteps, BOOL bRed, BOOL bGreen, BOOL bBlue, BOOL b16_235 );
 #endif
-extern Matrix ComputeConversionMatrix(Matrix & measures, Matrix & references, ColorXYZ & WhiteTest, ColorXYZ & WhiteRef, bool	bUseOnlyPrimaries);
+extern Matrix ComputeConversionMatrix(const ColorXYZ measures[3], const ColorXYZ references[3], const ColorXYZ & WhiteTest, const ColorXYZ & WhiteRef, bool	bUseOnlyPrimaries);
 double ArrayIndexToGrayLevel ( int nCol, int nSize, bool bIRE );
 double GrayLevelToGrayProp ( double Level, bool bIRE );
 
