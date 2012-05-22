@@ -521,7 +521,7 @@ ColorXYZ::ColorXYZ(const ColorRGB& RGB, CColorReference colorReference)
     if(RGB.isValid())
     {
         CLockWhileInScope dummy(m_matrixSection);
-        *this = colorReference.RGBtoXYZMatrix*RGB;
+        *this = ColorXYZ(colorReference.RGBtoXYZMatrix*RGB);
     }
 }
 
@@ -622,7 +622,7 @@ ColorRGB::ColorRGB(const ColorXYZ& XYZ, CColorReference colorReference)
     if(XYZ.isValid())
     {
         CLockWhileInScope dummy(m_matrixSection);
-        *this = colorReference.XYZtoRGBMatrix*XYZ;
+        *this = ColorRGB(colorReference.XYZtoRGBMatrix*XYZ);
     }
 }
 
@@ -791,7 +791,7 @@ CColor::CColor(ifstream &theFile):m_XYZValues(0.0,3,1)
     version = littleEndianUint32ToHost(version);
 
     // les données XYZ (on utilise le constructeur de Matrix)
-    m_XYZValues = Matrix(theFile);
+    m_XYZValues = ColorXYZ(Matrix(theFile));
 
     Matrix XYZtoSensorMatrix = Matrix(theFile);
     Matrix SensorToXYZMatrix = Matrix(theFile);
@@ -958,7 +958,7 @@ ColorRGB CColor::GetRGBValue(CColorReference colorReference) const
 	if(isValid())
 	{
         CLockWhileInScope dummy(m_matrixSection);
-		return colorReference.XYZtoRGBMatrix*(m_XYZValues);
+		return ColorRGB(colorReference.XYZtoRGBMatrix*(m_XYZValues));
 	}
 	else
     {
@@ -1126,6 +1126,12 @@ double CColor::GetPreferedLuxValue (bool preferLuxmeter) const
 {
 	// Return Luxmeter value when option authorize it and luxmeter value exists.
 	return ( preferLuxmeter && m_pLuxValue ? (*m_pLuxValue) : GetY() );
+}
+
+void CColor::applyAdjustmentMatrix(const Matrix& adjustment)
+{
+    ColorXYZ newValue(adjustment * m_XYZValues);
+    m_XYZValues = newValue;
 }
 
 void CColor::Output(ostream& ostr) const

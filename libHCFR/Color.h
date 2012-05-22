@@ -131,7 +131,7 @@ class CColor
 public:
 	CColor();
 	CColor(const CColor& aColor);
-	explicit CColor(const ColorXYZ& aMatrix);
+	CColor(const ColorXYZ& aMatrix);
 	CColor(double aX,double aY, double aZ);	// XYZ initialisation
 	CColor(double ax,double ay);			// xy initialisation
     CColor(ifstream &theFile);
@@ -182,6 +182,7 @@ public:
 	double GetLuxValue () const;
 	double GetLuxOrLumaValue (const int luminanceCurveMode) const;
 	double GetPreferedLuxValue (bool preferLuxmeter) const;
+    void applyAdjustmentMatrix(const Matrix& adjustment);
 
     void Output(ostream& ostr) const;
 
