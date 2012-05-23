@@ -198,7 +198,7 @@ public:
 
 	BOOL IsModified() { return m_isModified; }
 
-    void ApplySensorAdjustmentMatrix(const Matrix & oldMatrix, const Matrix & newMatrix);
+    void ApplySensorAdjustmentMatrix(const Matrix & matrixAdjustment);
 
 	BOOL WaitForDynamicIris ( BOOL bIgnoreEscape = FALSE );
 

@@ -3584,14 +3584,8 @@ BOOL CMeasure::AddMeasurement(CSensor *pSensor, CGenerator *pGenerator)
 	return TRUE;
 }
 
-void CMeasure::ApplySensorAdjustmentMatrix(const Matrix & oldMatrix, const Matrix & newMatrix)
+void CMeasure::ApplySensorAdjustmentMatrix(const Matrix& aMatrix)
 {
-	ColorXYZ color;
-
-    Matrix oldInverse(oldMatrix);
-    oldInverse.Invert();
-    Matrix aMatrix = newMatrix * oldInverse;
-
 	for(int i=0;i<m_grayMeasureArray.GetSize();i++)  // Preserve sensor values 
 	{
 		m_grayMeasureArray[i].applyAdjustmentMatrix(aMatrix);
