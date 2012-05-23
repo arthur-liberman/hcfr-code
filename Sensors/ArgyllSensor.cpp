@@ -47,7 +47,6 @@ CArgyllSensor::CArgyllSensor() :
     m_DisplayType(0),
     m_ReadingType(0),
     m_SpectralType(""),
-    m_meterIndex(-1),
     m_meter(0),
     m_HiRes(1)
 {
@@ -123,7 +122,6 @@ void CArgyllSensor::Copy(CSensor * p)
     m_DisplayType = ((CArgyllSensor*)p)->m_DisplayType;
     m_ReadingType = ((CArgyllSensor*)p)->m_ReadingType;
     m_SpectralType = ((CArgyllSensor*)p)->m_SpectralType;
-    m_meterIndex = ((CArgyllSensor*)p)->m_meterIndex;
     m_HiRes = ((CArgyllSensor*)p)->m_HiRes;
  
     if(m_meter >= 0)
@@ -144,39 +142,64 @@ void CArgyllSensor::Serialize(CArchive& archive)
 
     if (archive.IsStoring())
     {
-        int version=1;
+        int version=2;
         archive << version;
         archive << m_DisplayType;
         archive << m_ReadingType;
         archive << m_SpectralType;
-        archive << m_meterIndex;
         archive << m_debugMode;
         archive << m_HiRes;
+        if(m_meter)
+        {
+            archive << CString(m_meter->getMeterName().c_str());
+        }
     }
     else
     {
         int version;
-        int dummy;
         archive >> version;
-        if ( version > 1 )
+        if ( version > 2 )
             AfxThrowArchiveException ( CArchiveException::badSchema );
         archive >> m_DisplayType;
         archive >> m_ReadingType;
         archive >> m_SpectralType;
-        archive >> dummy;
+        if(version == 1)
+        {
+            UINT dummy;
+            archive >> dummy;
+        }
         archive >> m_debugMode;
         archive >> m_HiRes;
 
-        // open whatever the first meter is
-        // if we leave here with nothing then 
-        // we should ge replaced by the simulated meter
-        // in the higher up object
         std::string errorMessage;
         ArgyllMeterWrapper::ArgyllMeterWrappers meters = ArgyllMeterWrapper::getDetectedMeters(errorMessage);
-        if(meters.size() > 0)
+        if(version > 1)
         {
-            m_meter = meters[0];
-            SetName(CString(m_meter->getMeterName().c_str()));
+            // try and open the same meter we were saved with
+            // otherwise exit so that we get the simulated meter
+            CString meterName;
+            archive >> meterName;
+            for(size_t i(0); i < meters.size(); ++i)
+            {
+                if(meters[i]->getMeterName().c_str() == meterName)
+                {
+                    m_meter = meters[0];
+                    SetName(CString(m_meter->getMeterName().c_str()));
+                }
+            }
+        }
+        else
+        {
+            // if we don't yet have a meter
+            // open whatever the first meter is
+            // if we leave here with nothing then 
+            // we should ge replaced by the simulated meter
+            // in the higher up object
+            if(meters.size() > 0)
+            {
+                m_meter = meters[0];
+                SetName(CString(m_meter->getMeterName().c_str()));
+            }
         }
     }
 }

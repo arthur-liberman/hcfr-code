@@ -48,7 +48,6 @@ public:
     UINT		m_DisplayType;
     UINT		m_ReadingType;
     CString		m_SpectralType;
-    UINT		m_meterIndex;
     BOOL		m_HiRes;
 private:
     ArgyllMeterWrapper* m_meter;
