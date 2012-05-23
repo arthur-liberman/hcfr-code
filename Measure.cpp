@@ -4505,7 +4505,7 @@ CColor CMeasure::GetRefSecondary(int i) const
 CColor CMeasure::GetRefSat(int i, double sat_percent) const
 {
 	CColor	refColor;
-	ColorxyY	refWhite = GetColorReference().GetWhite().GetxyYValue();
+	ColorxyY	refWhite(GetColorReference().GetWhite());
 	
 	double	x, y;
 	double	xstart = refWhite[0];

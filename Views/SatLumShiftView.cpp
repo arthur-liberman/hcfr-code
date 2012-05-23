@@ -135,8 +135,9 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	double	satshift, deltaE;
 
 	// Retrieve gray xy coordinates
-	xstart = GetColorReference().GetWhite().GetxyYValue()[0];
-	ystart = GetColorReference().GetWhite().GetxyYValue()[1];
+    ColorxyY whitexyY(GetColorReference().GetWhite());
+	xstart = whitexyY[0];
+	ystart = whitexyY[1];
 
 	if(IsWindow(m_graphCtrl.m_hWnd))
 		m_graphCtrl.ShowWindow(SW_SHOW);

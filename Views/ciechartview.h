@@ -42,10 +42,11 @@ class CCIEGraphPoint
 {
 // Operations
 public:
-	CCIEGraphPoint(double aX, double aY, double aL, CString aName, BOOL bConvertCIEuv);
+	CCIEGraphPoint(const ColorXYZ& color, double WhiteYRef, CString aName, BOOL bConvertCIEuv);
 	int GetGraphX(CRect rect);
 	int GetGraphY(CRect rect);
 	CPoint GetGraphPoint(CRect rect);
+    ColorXYZ GetNormalizedColor() const {return m_color;}
 
 // Attributes
 public:
@@ -54,6 +55,7 @@ public:
 	double	L;
 	CString name;
 	BOOL	bCIEuv;
+    ColorXYZ m_color;
 };
 
 class CCIEChartGrapher

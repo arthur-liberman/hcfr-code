@@ -162,7 +162,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 					double valx=(GrayLevelToGrayProp(x,bIRE)+Offset)/(1.0+Offset);
 					double valy=pow(valx, GetConfig()->m_GammaRef);
 					
-					ColorxyY tmpColor = GetColorReference().GetWhite().GetxyYValue();
+					ColorxyY tmpColor(GetColorReference().GetWhite());
 					tmpColor[2] = valy;
 					refColor.SetxyYValue(tmpColor);
 				}
@@ -216,7 +216,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 					double valxref=(GrayLevelToGrayProp(x,bIRE)+OffsetRef)/(1.0+OffsetRef);
 					double valyref=pow(valxref, GetConfig()->m_GammaRef);
 					
-					ColorxyY tmpColor = GetColorReference().GetWhite().GetxyYValue();
+					ColorxyY tmpColor(GetColorReference().GetWhite());
 					tmpColor[2] = valyref;
 					refColor.SetxyYValue(tmpColor);
 				}

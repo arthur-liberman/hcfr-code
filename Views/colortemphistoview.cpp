@@ -90,13 +90,13 @@ void CColorTempGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 	for (int i=0; i<size; i++)
 	{
-		int colorTemp=pDoc->GetMeasure()->GetGray(i).GetColorTemp(GetColorReference());
+		int colorTemp=pDoc->GetMeasure()->GetGray(i).GetXYZValue().GetColorTemp(GetColorReference());
 		if(colorTemp > 1500 && colorTemp < 12000)
 			m_graphCtrl.AddPoint(m_ColorTempGraphID, ArrayIndexToGrayLevel ( i, size, bIRE ), colorTemp);
 
 		if ( m_showDataRef && pDataRef !=NULL && pDataRef != pDoc )
 		{
-			colorTemp = pDataRef->GetMeasure()->GetGray(i).GetColorTemp(GetColorReference());
+			colorTemp = pDataRef->GetMeasure()->GetGray(i).GetXYZValue().GetColorTemp(GetColorReference());
 			if(colorTemp > 1500 && colorTemp < 12000)
 				m_graphCtrl.AddPoint(m_ColorTempDataRefGraphID, ArrayIndexToGrayLevel ( i, size, bIRE ), colorTemp);
 		}

@@ -58,51 +58,45 @@ void CTargetWnd::Refresh()
 {
 	if ( m_pRefColor )
 	{
-		ColorxyY aColor = m_pRefColor -> GetxyYValue();
-
-		const double referenceX=GetColorReference().GetWhite().GetxyYValue()[0];
-		const double referenceY=GetColorReference().GetWhite().GetxyYValue()[1];
-
-		m_deltax = (aColor[0]-referenceX)/referenceX;
-		m_deltay = (aColor[1]-referenceY)/referenceY;
+        ColorXYZ centerXYZ = GetColorReference().GetWhite();
 		m_clr = RGB(64,64,64);
 
 		if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetRed() ) < 120 )
 		{
-			m_deltax = (aColor[0]-GetColorReference().GetRed().GetxyYValue()[0])/referenceX;
-			m_deltay = (aColor[1]-GetColorReference().GetRed().GetxyYValue()[1])/referenceY;
+			centerXYZ = GetColorReference().GetRed();
 			m_clr = RGB(192,0,0);
 		}
 		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetGreen() ) < 50 )
 		{
-			m_deltax = (aColor[0]-GetColorReference().GetGreen().GetxyYValue()[0])/referenceX;
-			m_deltay = (aColor[1]-GetColorReference().GetGreen().GetxyYValue()[1])/referenceY;
+			centerXYZ = GetColorReference().GetGreen();
 			m_clr = RGB(0,192,0);
 		}
 		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetBlue() ) < 200 )
 		{
-			m_deltax = (aColor[0]-GetColorReference().GetBlue().GetxyYValue()[0])/referenceX;
-			m_deltay = (aColor[1]-GetColorReference().GetBlue().GetxyYValue()[1])/referenceY;
+			centerXYZ = GetColorReference().GetBlue();
 			m_clr = RGB(0,0,192);
 		}
 		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetYellow() ) < 40 )
 		{
-			m_deltax = (aColor[0]-GetColorReference().GetYellow().GetxyYValue()[0])/referenceX;
-			m_deltay = (aColor[1]-GetColorReference().GetYellow().GetxyYValue()[1])/referenceY;
+			centerXYZ = GetColorReference().GetYellow();
 			m_clr = RGB(192,192,0);
 		}
 		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetCyan() ) < 40 )
 		{
-			m_deltax = (aColor[0]-GetColorReference().GetCyan().GetxyYValue()[0])/referenceX;
-			m_deltay = (aColor[1]-GetColorReference().GetCyan().GetxyYValue()[1])/referenceY;
+			centerXYZ = GetColorReference().GetCyan();
 			m_clr = RGB(0,192,192);
 		}
 		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetMagenta() ) < 100 )
 		{
-			m_deltax = (aColor[0]-GetColorReference().GetMagenta().GetxyYValue()[0])/referenceX;
-			m_deltay = (aColor[1]-GetColorReference().GetMagenta().GetxyYValue()[1])/referenceY;
+			centerXYZ = GetColorReference().GetMagenta();
 			m_clr = RGB(192,0,192);
 		}
+
+        ColorxyY aColor = m_pRefColor -> GetxyYValue();
+        ColorxyY centerxyY(centerXYZ);
+
+		m_deltax = (aColor[0]-centerxyY[0])/centerxyY[0];
+		m_deltay = (aColor[1]-centerxyY[1])/centerxyY[1];
 		
 		if ( m_tooltip.IsWindowVisible() )
 		{

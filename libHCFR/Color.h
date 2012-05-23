@@ -78,6 +78,10 @@ public:
     ColorXYZ(const ColorRGB& RGB, CColorReference colorReference);
     explicit ColorXYZ(const ColorxyY& xyY);
     ColorXYZ(double X, double Y, double Z);
+    int GetColorTemp(const CColorReference& colorReference) const;
+    double GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhiteRef, const CColorReference & colorReference, bool useOldDeltaEFormula) const;
+    double GetOldDeltaE(const ColorXYZ& refColor) const;
+	double GetDeltaxy(const ColorXYZ& refColor, const CColorReference& colorReference) const;
 };
 
 class ColorxyY: public ColorTriplet
@@ -86,7 +90,7 @@ public:
     ColorxyY();
     explicit ColorxyY(const Matrix& matrix);
     explicit ColorxyY(const ColorXYZ& XYZ);
-    ColorxyY(double x, double y, double YY);
+    ColorxyY(double x, double y, double YY = 1.0);
 };
 
 class Colorxyz: public ColorTriplet
@@ -114,6 +118,15 @@ public:
     explicit ColorLab(const Matrix& matrix);
     ColorLab(const ColorXYZ& XYZ, double YWhiteRef, CColorReference colorReference);
     ColorLab(double L, double a, double b);
+};
+
+class ColorLuv: public ColorTriplet
+{
+public:
+    ColorLuv();
+    explicit ColorLuv(const Matrix& matrix);
+    ColorLuv(const ColorXYZ& XYZ, double YWhiteRef, CColorReference colorReference);
+    ColorLuv(double L, double u, double v);
 };
 
 class ColorLCH: public ColorTriplet
@@ -145,11 +158,9 @@ public:
     bool isValid() const;
 
 	double GetLuminance() const;
-	int GetColorTemp(CColorReference colorReference) const;
     double GetDeltaE(double YWhite, const CColor & refColor, double YWhiteRef, const CColorReference & colorReference, bool useOldDeltaEFormula) const;
     double GetDeltaE(const CColor & refColor) const;
-	double GetDeltaxy(const CColor & refColor) const;
-	double GetLValue(double YWhiteRef) const;	// L for Lab or LCH
+	double GetDeltaxy(const CColor & refColor, const CColorReference& colorReference) const;
 	ColorXYZ GetXYZValue() const;
 	ColorRGB GetRGBValue(CColorReference colorReference) const;
 	ColorxyY GetxyYValue() const;
@@ -161,7 +172,6 @@ public:
 	void SetRGBValue(const ColorRGB& aColor, CColorReference colorReference);
 	void SetxyYValue(double x, double y, double Y);
     void SetxyYValue(const ColorxyY& aColor);
-	void SetLabValue(const ColorLab& aColor, CColorReference colorReference);
 
 	void SetX(double aX) { m_XYZValues[0]=aX; }
 	void SetY(double aY) { m_XYZValues[1]=aY; }
@@ -240,37 +250,33 @@ public:
 	ColorStandard m_standard;
 	WhiteTarget m_white;
 
-	CColor whiteColor;
-	double u_white;	// CIE u' v' for reference white (useful for Delta E)
-	double v_white;
+	ColorXYZ whiteColor;
 	string standardName;
 	const char *whiteName;
-	CColor redPrimary;
-	CColor greenPrimary;
-	CColor bluePrimary;
-	CColor yellowSecondary;
-	CColor cyanSecondary;
-	CColor magentaSecondary;
+	ColorXYZ redPrimary;
+	ColorXYZ greenPrimary;
+	ColorXYZ bluePrimary;
+	ColorXYZ yellowSecondary;
+	ColorXYZ cyanSecondary;
+	ColorXYZ magentaSecondary;
 	double gamma;
 	Matrix RGBtoXYZMatrix;
 	Matrix XYZtoRGBMatrix;
 
-    void	UpdateSecondary ( CColor & secondary, const CColor & primary1, const CColor & primary2, const CColor & primaryOpposite );
+    void	UpdateSecondary ( ColorXYZ& secondary, const ColorXYZ& primary1, const ColorXYZ& primary2, const ColorXYZ& primaryOpposite );
 
 public:
 	CColorReference(ColorStandard aStandard, WhiteTarget aWhiteTarget=Default, double aGamma=-1.0, string strModified=" modified");
 	~CColorReference();
-	CColor GetWhite() const { return whiteColor; } 
-	double GetWhite_uValue() const { return u_white; }
-	double GetWhite_vValue() const { return v_white; }
+	ColorXYZ GetWhite() const { return whiteColor; } 
 	string GetName() const {return standardName;}
 	const char *GetWhiteName() const {return whiteName; }
-	CColor GetRed() const { return redPrimary; }
-	CColor GetGreen() const { return greenPrimary; }
-	CColor GetBlue() const { return bluePrimary; }
-	CColor GetYellow() const { return yellowSecondary; }
-	CColor GetCyan() const { return cyanSecondary; }
-	CColor GetMagenta() const { return magentaSecondary; }
+	ColorXYZ GetRed() const { return redPrimary; }
+	ColorXYZ GetGreen() const { return greenPrimary; }
+	ColorXYZ GetBlue() const { return bluePrimary; }
+	ColorXYZ GetYellow() const { return yellowSecondary; }
+	ColorXYZ GetCyan() const { return cyanSecondary; }
+	ColorXYZ GetMagenta() const { return magentaSecondary; }
 	
 	// Primary colors relative-to-white luminance, depending on color standard. White luma reference value is 1.
 	double GetRedReferenceLuma () const { return RGBtoXYZMatrix(1,0); /*0.212671 in Rec709*/ }

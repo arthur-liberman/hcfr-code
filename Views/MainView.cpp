@@ -489,7 +489,7 @@ void CMainView::RefreshSelection()
 		Item.row = 1;
 		m_pSelectedColorGrid->SetItem(&Item);
 
-		aColorTemp = m_SelectedColor.GetColorTemp(GetColorReference());
+		aColorTemp = m_SelectedColor.GetXYZValue().GetColorTemp(GetColorReference());
 		
 		if ( aColorTemp < 1500 )
 		{
@@ -1291,7 +1291,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 		else if ( aComponentNum == 4 )
 		{
 			if ( aReference.isValid() )
-				str.Format("%.3f",aMeasure.GetDeltaxy ( aReference ) );
+				str.Format("%.3f",aMeasure.GetDeltaxy ( aReference, GetColorReference()) );
 			else
 				str.Empty ();
 		}
@@ -1305,7 +1305,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 		else if ( aComponentNum == 6 )
 		{
 			if ( aRefDocColor.isValid() )
-				str.Format("%.3f",aMeasure.GetDeltaxy ( aRefDocColor ) );
+				str.Format("%.3f",aMeasure.GetDeltaxy ( aRefDocColor, GetColorReference()) );
 			else
 				str.Empty ();
 		}
@@ -1717,7 +1717,7 @@ void CMainView::UpdateGrid()
 						double valx=(GrayLevelToGrayProp(x,bIRE)+Offset)/(1.0+Offset);
 						double valy=pow(valx, GetConfig()->m_GammaRef);
 						
-						ColorxyY tmpColor = GetColorReference().GetWhite().GetxyYValue();
+						ColorxyY tmpColor(GetColorReference().GetWhite());
 						tmpColor[2] = valy;
 						refColor.SetxyYValue(tmpColor);
 					 }

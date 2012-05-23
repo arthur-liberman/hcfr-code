@@ -243,7 +243,7 @@ void CMeasuresHistoView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
 	for (i=nStart, j=0; i<nEnd; i++, j++)
 	{
-		int colorTemp=GetDocument()->GetMeasure()->GetMeasurement(i).GetColorTemp(GetColorReference());
+		int colorTemp=GetDocument()->GetMeasure()->GetMeasurement(i).GetXYZValue().GetColorTemp(GetColorReference());
 		double Y=GetDocument()->GetMeasure()->GetMeasurement(i).GetXYZValue()[1];
 		
 		if ( Y > YMax )

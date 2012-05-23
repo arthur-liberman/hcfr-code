@@ -318,7 +318,7 @@ bool CExport::SaveGrayScaleSheet()
 	Rows.RemoveAll();
 	Rows.Add("ColorTemp");
 	for(j=0;j<size;j++)
-		Rows.Add((float)m_pDoc->GetMeasure()->GetGray(j).GetColorTemp(GetColorReference()));
+		Rows.Add((float)m_pDoc->GetMeasure()->GetGray(j).GetXYZValue().GetColorTemp(GetColorReference()));
 	result&=graySS.AddRow(Rows,rowNb,m_doReplace);
 	rowNb++;
 
@@ -341,7 +341,7 @@ bool CExport::SaveGrayScaleSheet()
 			double valx=(GrayLevelToGrayProp(x,bIRE)+Offset)/(1.0+Offset);
 			double valy=pow(valx, GetConfig()->m_GammaRef);
 			
-			ColorxyY tmpColor = GetColorReference().GetWhite().GetxyYValue();
+			ColorxyY tmpColor(GetColorReference().GetWhite());
 			tmpColor[2] = valy;
 			refColor.SetxyYValue(tmpColor);
 		}
