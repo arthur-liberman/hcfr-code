@@ -43,9 +43,9 @@ class CCIEGraphPoint
 // Operations
 public:
 	CCIEGraphPoint(const ColorXYZ& color, double WhiteYRef, CString aName, BOOL bConvertCIEuv);
-	int GetGraphX(CRect rect);
-	int GetGraphY(CRect rect);
-	CPoint GetGraphPoint(CRect rect);
+	int GetGraphX(CRect rect) const;
+	int GetGraphY(CRect rect) const;
+	CPoint GetGraphPoint(CRect rect) const;
     ColorXYZ GetNormalizedColor() const {return m_color;}
 
 // Attributes
@@ -107,7 +107,7 @@ class CCIEChartGrapher
 
 // Operations
 	void MakeBgBitmap(CRect rect,BOOL bWhiteBkgnd);
-	void DrawAlphaBitmap(CDC *pDC, CCIEGraphPoint aGraphPoint, CBitmap *pBitmap, CRect rect, CPPToolTip * pTooltip, CWnd * pWnd, CCIEGraphPoint * pRefPoint = NULL);
+	void DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoint, CBitmap *pBitmap, CRect rect, CPPToolTip * pTooltip, CWnd * pWnd, CCIEGraphPoint * pRefPoint = NULL);
 	void DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPToolTip * pTooltip, CWnd * pWnd);
 	
 	void SaveGraphFile ( CDataSetDoc * pDoc, CSize ImageSize, LPCSTR lpszPathName, int ImageFormat = 0, int ImageQuality = 95 );

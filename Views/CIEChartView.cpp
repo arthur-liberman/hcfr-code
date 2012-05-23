@@ -71,17 +71,17 @@ CCIEGraphPoint::CCIEGraphPoint(const ColorXYZ& color, double WhiteYRef, CString 
 	}
 }
 
-int CCIEGraphPoint::GetGraphX(CRect rect) 
+int CCIEGraphPoint::GetGraphX(CRect rect) const
 {
 	return (int)(x*(double)rect.Width()/(bCIEuv?0.7:0.8));	// graph is from 0 to 0.8 in width
 }
 
-int CCIEGraphPoint::GetGraphY(CRect rect) 
+int CCIEGraphPoint::GetGraphY(CRect rect) const
 {
 	return (int)((double)rect.bottom-y*(double)rect.Height()/(bCIEuv?0.7:0.9));	// graph is from 0 to 0.9 in height
 }
 
-CPoint CCIEGraphPoint::GetGraphPoint(CRect rect)
+CPoint CCIEGraphPoint::GetGraphPoint(CRect rect) const
 {
 	return CPoint(GetGraphX(rect),GetGraphY(rect));
 }
@@ -275,7 +275,7 @@ void CCIEChartGrapher::MakeBgBitmap(CRect rect, BOOL bWhiteBkgnd)	// Create back
 	bgDC.SelectObject(pOldBitmap);
 }
 
-void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, CCIEGraphPoint aGraphPoint, CBitmap *pBitmap, CRect rect, CPPToolTip * pTooltip, CWnd * pWnd, CCIEGraphPoint * pRefPoint)
+void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoint, CBitmap *pBitmap, CRect rect, CPPToolTip * pTooltip, CWnd * pWnd, CCIEGraphPoint * pRefPoint)
 {
 	ASSERT(pBitmap);
 	ASSERT(pDC);
