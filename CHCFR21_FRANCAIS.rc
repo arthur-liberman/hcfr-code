@@ -1822,6 +1822,7 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "Fichier étalon"
         BEGIN
+            MENUITEM "Create using Existing Reference Measures", IDM_CALIBRATION_EXISTING
             MENUITEM "Fabriquer un étalon à partir de mesures simultanées", IDM_CALIBRATION_SIM
             MENUITEM "Fabriquer un étalon manuellement à partir d'un colorimètre de référence", IDM_CALIBRATION_MANUAL
             MENUITEM SEPARATOR

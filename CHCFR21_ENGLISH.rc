@@ -1692,6 +1692,7 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "Meter Correction file"
         BEGIN
+            MENUITEM "Create using Existing Reference Measures", IDM_CALIBRATION_EXISTING
             MENUITEM "Build using simultaneous measures", IDM_CALIBRATION_SIM
             MENUITEM "Build manually using reference colorimeter", IDM_CALIBRATION_MANUAL
             MENUITEM SEPARATOR

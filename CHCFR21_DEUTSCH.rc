@@ -1710,6 +1710,7 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "Kalibrierungsdatei"
         BEGIN
+            MENUITEM "Create using Existing Reference Measures", IDM_CALIBRATION_EXISTING
             MENUITEM "Aus simultanen Messungen erstellen", IDM_CALIBRATION_SIM
             MENUITEM "Manuell mit einem Referenz Colorimeter erstellen", IDM_CALIBRATION_MANUAL
             MENUITEM SEPARATOR

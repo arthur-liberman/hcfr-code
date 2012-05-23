@@ -436,9 +436,8 @@ BEGIN_MESSAGE_MAP(CDataSetDoc, CDocument)
 	ON_COMMAND(IDM_EXPORT_CSV, OnExportCsv)
 	ON_UPDATE_COMMAND_UI(IDM_EXPORT_XLS, OnUpdateExportXls)
 	ON_COMMAND(IDM_CALIBRATION_SIM, OnCalibrationSim)
-	ON_UPDATE_COMMAND_UI(IDM_CALIBRATION_SIM, OnUpdateCalibrationSim)
 	ON_COMMAND(IDM_CALIBRATION_MANUAL, OnCalibrationManual)
-	ON_UPDATE_COMMAND_UI(IDM_CALIBRATION_MANUAL, OnUpdateCalibrationManual)
+	ON_COMMAND(IDM_CALIBRATION_EXISTING, OnCalibrationExisting)
 	ON_COMMAND(IDM_SIM_GRAYSCALE, OnSimGrayscale)
 	ON_COMMAND(IDM_SIM_PRIMARIES, OnSimPrimaries)
 	ON_COMMAND(IDM_SIM_SECONDARIES, OnSimSecondaries)
@@ -1433,18 +1432,38 @@ void CDataSetDoc::OnCalibrationSim()
 	if ( IDYES == AfxMessageBox ( Msg, MB_YESNO | MB_ICONQUESTION ) )
 	{
 		// Use special simultaneous mode
-		PerformSimultaneousMeasures ( -2 );
+		PerformSimultaneousMeasures ( -5 );
         ComputeAdjustmentMatrix();
 	}
 }
 
-void CDataSetDoc::OnUpdateCalibrationSim(CCmdUI* pCmdUI) 
+void CDataSetDoc::OnCalibrationExisting() 
 {
-	// TODO: Add your command update UI handler code here
-	//pCmdUI -> Enable ( m_pSensor -> SensorAcceptCalibration () );
+	CString	Msg, Title;
+	CDataSetDoc *pDataRef = GetDataRef();
+
+	if ( pDataRef == NULL )
+	{
+		// No data ref.
+		Msg.LoadString ( IDS_SIM_CAL_ERROR1 );
+		Title.LoadString ( IDS_ERROR );
+		MessageBox(NULL,Msg,Title,MB_ICONERROR | MB_OK);
+		return;
+	}
+
+	if ( pDataRef == this )
+	{
+		// Ref document cannot be current document
+		Msg.LoadString ( IDS_SIM_CAL_ERROR3 );
+		Title.LoadString ( IDS_ERROR );
+		MessageBox(NULL,Msg,Title,MB_ICONERROR | MB_OK);
+		return;
+	}
+
+    ComputeAdjustmentMatrix();
 }
 
-void CDataSetDoc::OnCalibrationManual() 
+void CDataSetDoc::OnCalibrationManual()
 {
 	int		i;
 	MSG		Msg;
@@ -1740,7 +1759,7 @@ void CDataSetDoc::OnCalibrationManual()
             Matrix ConvMatrix = ComputeConversionMatrix (measures, references, white, whiteRef, GetConfig () -> m_bUseOnlyPrimaries );
             // Ok: set adjustment matrix
             Matrix newMatrix = ConvMatrix * oldMatrix;
-            m_measure.ApplySensorAdjustmentMatrix( oldMatrix, newMatrix );
+            m_measure.ApplySensorAdjustmentMatrix( ConvMatrix );
 
             SetModifiedFlag ();
 
@@ -1761,12 +1780,6 @@ void CDataSetDoc::OnCalibrationManual()
 				m_pSensor->SaveCalibrationFile();
 		}
 	}
-}
-
-void CDataSetDoc::OnUpdateCalibrationManual(CCmdUI* pCmdUI) 
-{
-	// TODO: Add your command update UI handler code here
-	pCmdUI -> Enable ( TRUE );
 }
 
 BOOL CDataSetDoc::ComputeAdjustmentMatrix() 
@@ -1800,7 +1813,7 @@ BOOL CDataSetDoc::ComputeAdjustmentMatrix()
 	{
 		// Ok: set adjustment matrix
         Matrix newMatrix = ConvMatrix * oldMatrix;
-		m_measure.ApplySensorAdjustmentMatrix( oldMatrix, newMatrix );
+		m_measure.ApplySensorAdjustmentMatrix( ConvMatrix );
         m_pSensor->SetSensorMatrix(newMatrix);
 		SetModifiedFlag(TRUE);
 		bOk = TRUE;

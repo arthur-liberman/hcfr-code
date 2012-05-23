@@ -184,9 +184,8 @@ protected:
 	afx_msg void OnExportCsv();
 	afx_msg void OnUpdateExportXls(CCmdUI* pCmdUI);
 	afx_msg void OnCalibrationSim();
-	afx_msg void OnUpdateCalibrationSim(CCmdUI* pCmdUI);
 	afx_msg void OnCalibrationManual();
-	afx_msg void OnUpdateCalibrationManual(CCmdUI* pCmdUI);
+	afx_msg void OnCalibrationExisting();
 	afx_msg void OnSimGrayscale();
 	afx_msg void OnSimPrimaries();
 	afx_msg void OnSimSecondaries();
