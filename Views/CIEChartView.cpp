@@ -688,8 +688,6 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			YWhiteGray = pDoc -> GetMeasure () -> GetGray ( nSize - 1 ) [ 1 ];
 		
 		
-		CCIEGraphPoint grayRef(GetColorReference().GetWhite(), 1.0,"", m_bCIEuv);
-		
 		CColor GrayClr;
 		
 		double Gamma, Offset;
@@ -700,16 +698,33 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			CString str;
 			Msg.LoadString ( IDS_GRAYIRE );
 			str.Format(Msg,i*100/(pDoc->GetMeasure()->GetGrayScaleSize()-1));
+            ColorXYZ aColor(pDoc->GetMeasure()->GetGray(i).GetXYZValue());
+            ColorXYZ refColor(GetColorReference().GetWhite());
 
-			if (!GetConfig () -> m_bUseDeltaELumaOnGrays )
-			{
+            // Determine Reference Y luma for Delta E calculus
+            if ( GetConfig () -> m_bUseDeltaELumaOnGrays )
+            {
+                // Compute reference Luma regarding actual offset and reference gamma
+                double x = ArrayIndexToGrayLevel (i, nSize );
+
+                double valx=(GrayLevelToGrayProp(x)+Offset)/(1.0+Offset);
+                double valy=pow(valx, GetConfig()->m_GammaRef);
+
+                ColorxyY tmpColor(GetColorReference().GetWhite());
+                tmpColor[2] = valy;
+                refColor = ColorXYZ(tmpColor);
+            }
+            else
+            {
                 // Use actual gray luma as correct reference (Delta E will check color only, not brightness)
-                YWhiteGray = pDoc->GetMeasure()->GetGray(i)[1];
-			}
+                YWhiteGray = aColor [ 1 ];
+            }
 
-			CCIEGraphPoint grayPoint(pDoc->GetMeasure()->GetGray(i).GetXYZValue(), YWhiteGray, str, m_bCIEuv);
+            CCIEGraphPoint grayRef(refColor, 1.0,"", m_bCIEuv);
 
-			DrawAlphaBitmap(pDC,grayPoint,&m_grayPlotBitmap,rect,pTooltip,pWnd,&grayRef);
+            CCIEGraphPoint grayPoint(pDoc->GetMeasure()->GetGray(i).GetXYZValue(), YWhiteGray, str, m_bCIEuv);
+
+            DrawAlphaBitmap(pDC,grayPoint,&m_grayPlotBitmap,rect,pTooltip,pWnd,&grayRef);
 		}
 	}
 
