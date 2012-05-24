@@ -76,6 +76,7 @@ public:
 	BOOL					m_bResizePict;
 
 protected:
+	void DisplayRGBColorInternal(COLORREF clr, BOOL bDisableWaiting);
 	BOOL					m_bAnimated;
 	BOOL					m_bWhite;
 	UINT					m_IdTimer;

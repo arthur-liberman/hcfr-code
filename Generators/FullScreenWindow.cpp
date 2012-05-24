@@ -160,6 +160,11 @@ void CFullScreenWindow::MoveToMonitor ( HMONITOR hMon )
 
 void CFullScreenWindow::DisplayRGBColor(const ColorRGBDisplay& clr, BOOL bDisableWaiting )
 {
+    DisplayRGBColorInternal(clr.GetColorRef(m_b16_235), bDisableWaiting);
+}
+
+void CFullScreenWindow::DisplayRGBColorInternal(COLORREF clr, BOOL bDisableWaiting)
+{
 	int				nColorFlag;
 	int				nPadWidth, nPadHeight;
 	int				R, G, B;
@@ -172,7 +177,7 @@ void CFullScreenWindow::DisplayRGBColor(const ColorRGBDisplay& clr, BOOL bDisabl
 	char			szError [ 256 ];
 	char			szMsg [ 256 ];
 	
-	m_Color = clr.GetColorRef(m_b16_235);
+	m_Color = clr;
 
 	if ( m_nDisplayMode == DISPLAY_OVERLAY )
 	{
@@ -368,8 +373,8 @@ void CFullScreenWindow::DisplayRGBColor(const ColorRGBDisplay& clr, BOOL bDisabl
 
 void CFullScreenWindow::DisplayAnsiBWRects(BOOL bInvert)
 {
-	// Use simulated colors
-	DisplayRGBColor ( bInvert ? 0xFF000000 : 0xFE000000 );
+    // Use simulated colors
+    DisplayRGBColorInternal ( (bInvert ? 0xFF000000 : 0xFE000000), FALSE);
 }
 
 void CFullScreenWindow::DisplayAnimatedBlack()
