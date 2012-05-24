@@ -2571,7 +2571,7 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 					case CLRCAT_FREE:
 						 if ( bDisplay )
 						 {
-							if ( GetDocument()->m_pGenerator->DisplayRGBColor(clrref,CGenerator::MT_UNKNOWN) )
+							if ( GetDocument()->m_pGenerator->DisplayRGBColor( ColorRGBDisplay(clrref),CGenerator::MT_UNKNOWN) )
 								GetDocument()->m_measure.WaitForDynamicIris ( TRUE );
 							else
 								bOk = FALSE;
@@ -2579,7 +2579,7 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 						 
 						 if ( bOk )
 						 {
-							MeasuredColor = GetDocument()->m_pSensor->MeasureColor ( clrref );
+							MeasuredColor = GetDocument()->m_pSensor->MeasureColor ( ColorRGBDisplay(clrref) );
 							if ( ! GetDocument()->m_pSensor->IsMeasureValid() )
 								bOk = FALSE;
 						 }

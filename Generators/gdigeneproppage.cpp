@@ -143,7 +143,7 @@ void CGDIGenePropPage::OnTestOverlay()
 	OverlayWnd.MoveToMonitor(m_monitorHandle[m_activeMonitorNum]);
 
 	if ( OverlayWnd.m_nDisplayMode == DISPLAY_OVERLAY )
-		OverlayWnd.DisplayRGBColor ( 0x00808080, TRUE );
+		OverlayWnd.DisplayRGBColor ( ColorRGBDisplay(0.5), TRUE );
 
 	if ( OverlayWnd.m_nDisplayMode == DISPLAY_OVERLAY )
 		MessageBox ( "Overlay window created (small grey rectangle on top-right). You can use advanced display properties to change settings.\r\nClick OK to close overlay window.", "Overlay", MB_OK | MB_ICONINFORMATION );

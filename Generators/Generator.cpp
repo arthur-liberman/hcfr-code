@@ -125,9 +125,9 @@ BOOL CGenerator::Init(UINT nbMeasure)
 
 	if(m_doScreenBlanking)
 	{
-		m_blankingWindow.DisplayRGBColor(RGB(0,0,0), TRUE);	// show black screen
+		m_blankingWindow.DisplayRGBColor(ColorRGBDisplay(0.0), TRUE);	// show black screen
 		Sleep(50);
-		m_blankingWindow.DisplayRGBColor(RGB(0,0,0), TRUE);	// show black screen again to be sure task bar is hidden
+		m_blankingWindow.DisplayRGBColor(ColorRGBDisplay(0.0), TRUE);	// show black screen again to be sure task bar is hidden
 	}
 	
 	GetColorApp() -> BeginMeasureCursor ();
