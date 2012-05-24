@@ -57,7 +57,7 @@ void CManualDVDGenerator::Copy(CGenerator * p)
 	CGenerator::Copy(p);
 }
 
-BOOL CManualDVDGenerator::DisplayGray(double aLevel, BOOL bIRE, MeasureType nPatternType,BOOL bChangePattern)
+BOOL CManualDVDGenerator::DisplayGray(double aLevel, MeasureType nPatternType,BOOL bChangePattern)
 {
 	BOOL	bRet;
 	CString str, Msg, Title;
@@ -77,10 +77,11 @@ BOOL CManualDVDGenerator::DisplayGray(double aLevel, BOOL bIRE, MeasureType nPat
 	return bRet;
 }
 
-BOOL CManualDVDGenerator::DisplayRGBColor( COLORREF clr ,MeasureType nPatternType, UINT nPatternInfo,  BOOL bChangePattern,BOOL bSilentMode)
+BOOL CManualDVDGenerator::DisplayRGBColor( const ColorRGBDisplay& clrIn ,MeasureType nPatternType, UINT nPatternInfo,  BOOL bChangePattern,BOOL bSilentMode)
 {
 	BOOL	bRet;
 	CString Msg, str1,str2,str3, Title;
+    COLORREF clr(clrIn.GetColorRef(false));
 
 	Title.LoadString ( IDS_INFORMATION );
 

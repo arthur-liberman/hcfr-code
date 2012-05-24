@@ -78,7 +78,7 @@ public:
     void FillDisplayTypeCombo(CComboBox& comboToFill);
     void FillSpectralTypeCombo(CComboBox& comboToFill);
 private:
-    virtual CColor MeasureColorInternal(COLORREF aRGBValue);
+    virtual CColor MeasureColorInternal(const ColorRGBDisplay& aRGBValue);
 };
 
 #endif // !defined(AFX_ARGYLLSENSOR_H__1493C213_6A02_44C5_8EB7_55B469092E14__INCLUDED_)

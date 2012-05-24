@@ -61,7 +61,6 @@ CSimulatedSensor::CSimulatedSensor()
 	str.LoadString(IDS_SIMULATEDSENSOR_NAME);
 	SetName(str);
 
-	SetSensorMatrix ( defaultSensorToXYZMatrix );
 	m_calibrationTime = 0;
 }
 
@@ -198,7 +197,7 @@ BOOL CSimulatedSensor::Init( BOOL bForSimultaneousMeasures )
 	return TRUE;
 }
 
-CColor CSimulatedSensor::MeasureColorInternal(COLORREF aRGBValue)
+CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 {
 	ColorRGB simulColor;
 	double offset=0.0, gain=1.0 ,gamma=2.2;
@@ -212,8 +211,8 @@ CColor CSimulatedSensor::MeasureColorInternal(COLORREF aRGBValue)
 	if(m_doGammaError)
 		gamma=2.2+(m_gammaErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1.0 : 1.0);
 
-	value=max(GetRValue(aRGBValue)*gain+offset,0);
-	simulColor[0]=(pow(value/255.0,gamma));
+	value=max(aRGBValue[0]*gain+offset,0.0);
+	simulColor[0]=(pow(value/100.0,gamma));
 
 	offset=m_offsetG;
 	if(m_doOffsetError)
@@ -223,8 +222,8 @@ CColor CSimulatedSensor::MeasureColorInternal(COLORREF aRGBValue)
 	if(m_doGammaError)
 		gamma=2.2+(m_gammaErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1 : 1);
 
-	value=max(GetGValue(aRGBValue)*gain+offset,0);
-	simulColor[1]=(pow(value/255.0,gamma));
+	value=max(aRGBValue[1]*gain+offset,0);
+	simulColor[1]=(pow(value/100.0,gamma));
 
 	offset=m_offsetB;
 	if(m_doOffsetError)
@@ -234,8 +233,8 @@ CColor CSimulatedSensor::MeasureColorInternal(COLORREF aRGBValue)
 	if(m_doGammaError)
 		gamma=2.2+(m_gammaErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1 : 1);
 
-	value=max(GetBValue(aRGBValue)*gain+offset,0);
-	simulColor[2]=(pow(value/255.0,gamma));
+	value=max(aRGBValue[2]*gain+offset,0);
+	simulColor[2]=(pow(value/100.0,gamma));
 
 	Sleep(200);		// Sleep 200 ms to simulate acquisition
 

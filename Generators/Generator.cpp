@@ -135,7 +135,7 @@ BOOL CGenerator::Init(UINT nbMeasure)
 	return TRUE;
 }
 
-BOOL CGenerator::DisplayRGBColor(COLORREF aRGBColor,MeasureType nPatternType, UINT nPatternInfo,  BOOL bChangePattern,BOOL bSilentMode )
+BOOL CGenerator::DisplayRGBColor(const ColorRGBDisplay& aRGBColor,MeasureType nPatternType, UINT nPatternInfo,  BOOL bChangePattern,BOOL bSilentMode )
 {
 	return TRUE;	  // need to be overriden
 }
@@ -160,10 +160,10 @@ BOOL CGenerator::CanDisplayAnsiBWRects()
 	return FALSE;	  // need to be overriden if display AnsiBWRects is implemented
 }
 
-BOOL CGenerator::DisplayGray(double aLevel, BOOL bIRE, MeasureType nPatternType ,  BOOL bChangePattern)
+BOOL CGenerator::DisplayGray(double aLevel, MeasureType nPatternType , BOOL bChangePattern)
 {
 	// by default use virtual DisplayRGBColor function
-	return DisplayRGBColor(CIRELevel(aLevel,bIRE,m_b16_235),nPatternType ,bChangePattern); 
+	return DisplayRGBColor(ColorRGBDisplay(aLevel), nPatternType ,bChangePattern); 
 }
 
 BOOL CGenerator::Release(INT nbNext)

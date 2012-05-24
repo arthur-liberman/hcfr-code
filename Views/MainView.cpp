@@ -735,9 +735,9 @@ void CMainView::InitGrid()
 		{
 			case 0:
 				 if ( bIRE && i==0 )
-					Item.strText.Format("%.1f",ArrayIndexToGrayLevel ( i, size, bIRE ));
+					Item.strText.Format("%.1f",ArrayIndexToGrayLevel ( i, size ));
 				 else
-					Item.strText.Format("%d", (int) ArrayIndexToGrayLevel ( i, size, bIRE ) );
+					Item.strText.Format("%d", (int) ArrayIndexToGrayLevel ( i, size ) );
 				 break;
 
 			case 1:
@@ -1335,9 +1335,9 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						if ( GetConfig ()->m_GammaOffsetType == 1 )
 							yblack = GetDocument() -> GetMeasure () -> GetGray ( 0 ).GetY ();
 
-						x = ArrayIndexToGrayLevel ( nCol - 1, nGrayScaleSize, bIRE );
+						x = ArrayIndexToGrayLevel ( nCol - 1, nGrayScaleSize );
 
-						valx=(GrayLevelToGrayProp(x,bIRE)+Offset)/(1.0+Offset);
+						valx=(GrayLevelToGrayProp(x)+Offset)/(1.0+Offset);
 						valy=pow(valx, GetConfig()->m_GammaRef);
 						
 						str.Format ( "%.3f", yblack + ( valy * ( White.GetY () - yblack ) ) );
@@ -1712,9 +1712,9 @@ void CMainView::UpdateGrid()
 					 if ( GetConfig () -> m_bUseDeltaELumaOnGrays )
 					 {
 						// Compute reference Luma regarding actual offset and reference gamma
-						double x = ArrayIndexToGrayLevel ( j, nCount, bIRE );
+						double x = ArrayIndexToGrayLevel ( j, nCount );
 
-						double valx=(GrayLevelToGrayProp(x,bIRE)+Offset)/(1.0+Offset);
+						double valx=(GrayLevelToGrayProp(x)+Offset)/(1.0+Offset);
 						double valy=pow(valx, GetConfig()->m_GammaRef);
 						
 						ColorxyY tmpColor(GetColorReference().GetWhite());

@@ -106,13 +106,12 @@ CDataSetDoc * g_DocToDuplicate;
        CDataSetDoc *	g_pDataDocRunningThread = NULL;	// View running background thread
 static BOOL				g_bGDIGeneratorRunning = FALSE;
 static BOOL				g_bGeneratorUsesScreenBlanking = FALSE;
-static COLORREF			g_CurrentColor = 0x00000000;
+static ColorRGBDisplay	g_CurrentColor;
 static CRITICAL_SECTION g_CritSec;
 static CPtrList			g_MeasuredColorList;
 volatile BOOL			g_bInsideBkgndRefresh = FALSE;
 
 // The background thread function
-
 static UINT __cdecl BkgndThreadFunc ( LPVOID lpParameter )
 {
     CrashDump useInThisThread;
@@ -138,8 +137,7 @@ static UINT __cdecl BkgndThreadFunc ( LPVOID lpParameter )
 
 		    if ( g_bGDIGeneratorRunning )
 		    {
-			    COLORREF clr = ( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.GetColor ();
-			    clr &= 0x00FFFFFF;
+			    ColorRGBDisplay clr((( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.GetColor ())& 0x00FFFFFF);
     			
 			    if ( g_CurrentColor != clr )
 			    {
@@ -254,7 +252,7 @@ BOOL StartBackgroundMeasures ( CDataSetDoc * pDoc )
 		
 		pDoc->EnsureVisibleViewMeasuresCombo();
 
-		g_CurrentColor = RGB(128,128,128);
+		g_CurrentColor = ColorRGBDisplay(0.5, 0.5, 0.5);
 
 		CString str, str2;
 		str.LoadString(IDS_GDIGENERATOR_NAME);
@@ -284,8 +282,7 @@ BOOL StartBackgroundMeasures ( CDataSetDoc * pDoc )
 					return FALSE;
 				}
 
-				COLORREF clr = ( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.GetColor ();
-				clr &= 0x00FFFFFF;
+				ColorRGBDisplay clr((( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.GetColor ()) & 0x00ffffff);
 				
 				g_CurrentColor = clr;
 
@@ -1496,13 +1493,13 @@ void CDataSetDoc::OnCalibrationManual()
 		// Measure red primary 
 		for ( i = 0; i < 1 ; i ++ )
 		{
-			if( m_pGenerator->DisplayRGBColor(CIRELevel(primaryIRELevel,0,0,FALSE),CGenerator::MT_PRIMARY) )
+			if( m_pGenerator->DisplayRGBColor(ColorRGBDisplay(primaryIRELevel),CGenerator::MT_PRIMARY) )
 			{
 				bEscape = m_measure.WaitForDynamicIris ();
 				bReturn = FALSE;
 
 				if ( ! bEscape )
-					measure=m_pSensor->MeasureColor(CIRELevel(primaryIRELevel,0,0,FALSE));
+					measure=m_pSensor->MeasureColor(ColorRGBDisplay(primaryIRELevel));
 				
 				while ( ! bEscape && ! bReturn )
 				{
@@ -1556,13 +1553,13 @@ void CDataSetDoc::OnCalibrationManual()
 		// Measure green primary 
 		for ( i = 0; i < 1 ; i ++ )
 		{
-			if( m_pGenerator->DisplayRGBColor(CIRELevel(0,primaryIRELevel,0,FALSE),CGenerator::MT_PRIMARY) )
+			if( m_pGenerator->DisplayRGBColor(ColorRGBDisplay(0,primaryIRELevel,0),CGenerator::MT_PRIMARY) )
 			{
 				bEscape = m_measure.WaitForDynamicIris ();
 				bReturn = FALSE;
 
 				if ( ! bEscape )
-					measure=m_pSensor->MeasureColor(CIRELevel(0,primaryIRELevel,0,FALSE));
+					measure=m_pSensor->MeasureColor(ColorRGBDisplay(0,primaryIRELevel,0));
 				
 				while ( ! bEscape && ! bReturn )
 				{
@@ -1616,13 +1613,13 @@ void CDataSetDoc::OnCalibrationManual()
 		// Measure blue primary 
 		for ( i = 0; i < 1 ; i ++ )
 		{
-			if( m_pGenerator->DisplayRGBColor(CIRELevel(0,0,primaryIRELevel,FALSE),CGenerator::MT_PRIMARY) )
+			if( m_pGenerator->DisplayRGBColor(ColorRGBDisplay(0,0,primaryIRELevel),CGenerator::MT_PRIMARY) )
 			{
 				bEscape = m_measure.WaitForDynamicIris ();
 				bReturn = FALSE;
 
 				if ( ! bEscape )
-					measure=m_pSensor->MeasureColor(CIRELevel(0,0,primaryIRELevel,FALSE));
+					measure=m_pSensor->MeasureColor(ColorRGBDisplay(0,0,primaryIRELevel));
 				
 				while ( ! bEscape && ! bReturn )
 				{
@@ -1676,13 +1673,13 @@ void CDataSetDoc::OnCalibrationManual()
 		// Measure white reference
 		for ( i = 0; i < 1 ; i ++ )
 		{
-			if( m_pGenerator->DisplayRGBColor(CIRELevel(primaryIRELevel,primaryIRELevel,primaryIRELevel,FALSE),CGenerator::MT_PRIMARY) )
+			if( m_pGenerator->DisplayRGBColor(ColorRGBDisplay(primaryIRELevel,primaryIRELevel,primaryIRELevel),CGenerator::MT_PRIMARY) )
 			{
 				bEscape = m_measure.WaitForDynamicIris ();
 				bReturn = FALSE;
 
 				if ( ! bEscape )
-					measure=m_pSensor->MeasureColor(CIRELevel(primaryIRELevel,primaryIRELevel,primaryIRELevel,FALSE));
+					measure=m_pSensor->MeasureColor(ColorRGBDisplay(primaryIRELevel,primaryIRELevel,primaryIRELevel));
 				
 				while ( ! bEscape && ! bReturn )
 				{
@@ -1918,7 +1915,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 	int				NbDocs = 0;
 	int				nSteps = 0;
 	int				nMaxSteps;
-	int				GenIRE [ 256 ];
+	double			GenIRE [ 256 ];
 	BOOL			bIRE [ 256 ];
 	LPARAM			lHint = UPD_EVERYTHING;
 	BOOL			bOk = TRUE;
@@ -1930,7 +1927,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 	CStringList		SensorList;
 	CString			strId, strTmp;
 	CString			Msg, Title;
-	COLORREF		GenColors [ 256 ];
+	ColorRGBDisplay	GenColors [ 256 ];
 	CGenerator::MeasureType	mType[256];
 
 	double			dLuxValue;
@@ -1952,7 +1949,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 for ( i = 0; i < nSteps ; i ++ )
 			 {
 				GenIRE [ i ] = i;
-				GenColors [ i ] = CIRELevel(i,i,i,FALSE, m_pGenerator->m_b16_235);
+				GenColors [ i ] = ColorRGBDisplay(i,i,i);
 				mType [ i ] = CGenerator::MT_NEARBLACK;
 			 }
 			 pValidationFunc = &CMeasure::ValidateBackgroundNearBlack;
@@ -1965,7 +1962,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 for ( i = 0; i < nSteps ; i ++ )
 			 {
 				GenIRE [ i ] = 101-nSteps+i;
-				GenColors [ i ] = CIRELevel(101-nSteps+i,101-nSteps+i,101-nSteps+i,FALSE, m_pGenerator->m_b16_235);
+				GenColors [ i ] = ColorRGBDisplay(101-nSteps+i,101-nSteps+i,101-nSteps+i);
 				mType [ i ] = CGenerator::MT_NEARWHITE;
 			 }
 			 pValidationFunc = &CMeasure::ValidateBackgroundNearWhite;
@@ -1976,7 +1973,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nSteps = GetMeasure () -> GetSaturationSize ();
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_RED;
-			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, TRUE, FALSE, FALSE, m_pGenerator->m_b16_235 );
+			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, TRUE, FALSE, FALSE );
 			 pValidationFunc = &CMeasure::ValidateBackgroundRedSatScale;
 			 lHint = UPD_REDSAT;
 			 break;
@@ -1985,7 +1982,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nSteps = GetMeasure () -> GetSaturationSize ();
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_GREEN;
-			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, FALSE, TRUE, FALSE, m_pGenerator->m_b16_235 );
+			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, FALSE, TRUE, FALSE );
 			 pValidationFunc = &CMeasure::ValidateBackgroundGreenSatScale;
 			 lHint = UPD_GREENSAT;
 			 break;
@@ -1994,7 +1991,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nSteps = GetMeasure () -> GetSaturationSize ();
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_BLUE;
-			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, FALSE, FALSE, TRUE, m_pGenerator->m_b16_235 );
+			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, FALSE, FALSE, TRUE );
 			 pValidationFunc = &CMeasure::ValidateBackgroundBlueSatScale;
 			 lHint = UPD_BLUESAT;
 			 break;
@@ -2003,7 +2000,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nSteps = GetMeasure () -> GetSaturationSize ();
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_YELLOW;
-			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, TRUE, TRUE, FALSE, m_pGenerator->m_b16_235 );
+			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, TRUE, TRUE, FALSE );
 			 pValidationFunc = &CMeasure::ValidateBackgroundYellowSatScale;
 			 lHint = UPD_YELLOWSAT;
 			 break;
@@ -2012,7 +2009,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nSteps = GetMeasure () -> GetSaturationSize ();
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_CYAN;
-			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, FALSE, TRUE, TRUE, m_pGenerator->m_b16_235 );
+			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, FALSE, TRUE, TRUE );
 			 pValidationFunc = &CMeasure::ValidateBackgroundCyanSatScale;
 			 lHint = UPD_CYANSAT;
 			 break;
@@ -2021,7 +2018,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nSteps = GetMeasure () -> GetSaturationSize ();
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_MAGENTA;
-			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, TRUE, FALSE, TRUE, m_pGenerator->m_b16_235 );
+			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, TRUE, FALSE, TRUE );
 			 pValidationFunc = &CMeasure::ValidateBackgroundMagentaSatScale;
 			 lHint = UPD_MAGENTASAT;
 			 break;
@@ -2037,11 +2034,11 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nMaxSteps = 5;
 			 if ( nMode == -5 && nSteps < 4 )
 				nSteps = 4;
-			 GenColors [ 0 ] = CIRELevel(100,0,0,FALSE, m_pGenerator->m_b16_235);		// red
-			 GenColors [ 1 ] = CIRELevel(0,100,0,FALSE, m_pGenerator->m_b16_235);		// green
-			 GenColors [ 2 ] = CIRELevel(0,0,100,FALSE, m_pGenerator->m_b16_235);		// blue
-			 GenColors [ 3 ] = CIRELevel(100,100,100,FALSE, m_pGenerator->m_b16_235);	// white (to control additivity)
-			 GenColors [ 4 ] = CIRELevel(0,0,0,FALSE, m_pGenerator->m_b16_235);			// black
+			 GenColors [ 0 ] = ColorRGBDisplay(100,0,0);		// red
+			 GenColors [ 1 ] = ColorRGBDisplay(0,100,0);		// green
+			 GenColors [ 2 ] = ColorRGBDisplay(0,0,100);		// blue
+			 GenColors [ 3 ] = ColorRGBDisplay(100,100,100);	// white (to control additivity)
+			 GenColors [ 4 ] = ColorRGBDisplay(0,0,0);			// black
 			 pValidationFunc = &CMeasure::ValidateBackgroundPrimaries;
 			 lHint = UPD_PRIMARIES;
 			 break;
@@ -2057,14 +2054,14 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 mType [ 7 ] = CGenerator::MT_SECONDARY;
 			 nSteps = 6 + GetConfig () -> m_BWColorsToAdd;
 			 nMaxSteps = 8;
-			 GenColors [ 0 ] = CIRELevel(100,0,0,FALSE, m_pGenerator->m_b16_235);		// red
-			 GenColors [ 1 ] = CIRELevel(0,100,0,FALSE, m_pGenerator->m_b16_235);		// green
-			 GenColors [ 2 ] = CIRELevel(0,0,100,FALSE, m_pGenerator->m_b16_235);		// blue
-			 GenColors [ 3 ] = CIRELevel(100,100,0,FALSE, m_pGenerator->m_b16_235);		// yellow
-			 GenColors [ 4 ] = CIRELevel(0,100,100,FALSE, m_pGenerator->m_b16_235);		// cyan
-			 GenColors [ 5 ] = CIRELevel(100,0,100,FALSE, m_pGenerator->m_b16_235);		// magenta
-			 GenColors [ 6 ] = CIRELevel(100,100,100,FALSE, m_pGenerator->m_b16_235);	// white (to control additivity)
-			 GenColors [ 7 ] = CIRELevel(0,0,0,FALSE, m_pGenerator->m_b16_235);			// black
+			 GenColors [ 0 ] = ColorRGBDisplay(100,0,0);		// red
+			 GenColors [ 1 ] = ColorRGBDisplay(0,100,0);		// green
+			 GenColors [ 2 ] = ColorRGBDisplay(0,0,100);		// blue
+			 GenColors [ 3 ] = ColorRGBDisplay(100,100,0);		// yellow
+			 GenColors [ 4 ] = ColorRGBDisplay(0,100,100);		// cyan
+			 GenColors [ 5 ] = ColorRGBDisplay(100,0,100);		// magenta
+			 GenColors [ 6 ] = ColorRGBDisplay(100,100,100);	// white (to control additivity)
+			 GenColors [ 7 ] = ColorRGBDisplay(0,0,0);			// black
 			 pValidationFunc = &CMeasure::ValidateBackgroundSecondaries;
 			 lHint = UPD_SECONDARIES;
 			 break;
@@ -2073,23 +2070,23 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nSteps = GetMeasure () -> GetGrayScaleSize ();
 			 for (i = 0; i < nSteps ; i ++ )
 			 {
-				GenIRE [ i ] = (int)ArrayIndexToGrayLevel ( i, nSteps, GetMeasure () -> m_bIREScaleMode );
+				GenIRE [ i ] = ArrayIndexToGrayLevel ( i, nSteps);
 				bIRE [ i ] = GetMeasure () -> m_bIREScaleMode;
-				GenColors [ i ] = CIRELevel(GenIRE[i],bIRE[i], m_pGenerator->m_b16_235);
+				GenColors [ i ] = ColorRGBDisplay(GenIRE[i]);
 			 	mType [ i ] = CGenerator::MT_IRE;
 			 }
 
-			 GenColors [ nSteps + 0 ] = CIRELevel(100,0,0,FALSE, m_pGenerator->m_b16_235);	// red
+			 GenColors [ nSteps + 0 ] = ColorRGBDisplay(100,0,0);	// red
 			 mType [ nSteps + 0 ] = CGenerator::MT_SECONDARY;
-			 GenColors [ nSteps + 1 ] = CIRELevel(0,100,0,FALSE, m_pGenerator->m_b16_235);	// green
+			 GenColors [ nSteps + 1 ] = ColorRGBDisplay(0,100,0);	// green
 			 mType [ nSteps + 1 ] = CGenerator::MT_SECONDARY;
-			 GenColors [ nSteps + 2 ] = CIRELevel(0,0,100,FALSE, m_pGenerator->m_b16_235);	// blue
+			 GenColors [ nSteps + 2 ] = ColorRGBDisplay(0,0,100);	// blue
 			 mType [ nSteps + 2 ] = CGenerator::MT_SECONDARY;
-			 GenColors [ nSteps + 3 ] = CIRELevel(100,100,0,FALSE, m_pGenerator->m_b16_235);	// yellow
+			 GenColors [ nSteps + 3 ] = ColorRGBDisplay(100,100,0);	// yellow
 			 mType [ nSteps + 3 ] = CGenerator::MT_SECONDARY;
-			 GenColors [ nSteps + 4 ] = CIRELevel(0,100,100,FALSE, m_pGenerator->m_b16_235);	// cyan
+			 GenColors [ nSteps + 4 ] = ColorRGBDisplay(0,100,100);	// cyan
 			 mType [ nSteps + 4 ] = CGenerator::MT_SECONDARY;
-			 GenColors [ nSteps + 5 ] = CIRELevel(100,0,100,FALSE, m_pGenerator->m_b16_235);	// magenta
+			 GenColors [ nSteps + 5 ] = ColorRGBDisplay(100,0,100);	// magenta
 			 mType [ nSteps + 5 ] = CGenerator::MT_SECONDARY;
 			 nSteps += 6;
 			 nMaxSteps = nSteps;
@@ -2100,7 +2097,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 		case -4:
 			 nSteps = 1;
 			 nMaxSteps = nSteps;
-			 GenColors [ 0 ] = ( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.GetColor () & 0x00FFFFFF;
+			 GenColors [ 0 ] = ColorRGBDisplay(( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.GetColor () & 0x00FFFFFF);
 			 mType [ 0 ] = CGenerator::MT_UNKNOWN;
 			 pValidationFunc = &CMeasure::ValidateBackgroundSingleMeasurement;
 			 lHint = UPD_FREEMEASUREAPPENDED;
@@ -2115,9 +2112,9 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nMaxSteps = nSteps;
 			 for (i = 0; i < nSteps ; i ++ )
 			 {
-				GenIRE [ i ] = (int)ArrayIndexToGrayLevel ( i, nSteps, GetMeasure () -> m_bIREScaleMode );
+				GenIRE [ i ] = (int)ArrayIndexToGrayLevel ( i, nSteps);
 				bIRE [ i ] = GetMeasure () -> m_bIREScaleMode;
-				GenColors [ i ] = CIRELevel(GenIRE[i],bIRE[i], m_pGenerator->m_b16_235);
+				GenColors [ i ] = ColorRGBDisplay(GenIRE[i]);
  			 	mType [ i ] = CGenerator::MT_IRE;
 			 }
 
@@ -2227,7 +2224,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			{
 				BOOL bresult;
 				if ((mType[i] == CGenerator::MT_IRE)||(mType[i] == CGenerator::MT_NEARWHITE)||(mType[i] == CGenerator::MT_NEARWHITE))
-					bresult = pGenerator -> DisplayGray ( GenIRE [ i ], bIRE [ i ], mType[i] );
+					bresult = pGenerator -> DisplayGray ( GenIRE [ i ], mType[i] );
 				else
 					bresult = pGenerator -> DisplayRGBColor ( GenColors [ i ] , mType[i] );
 				if (bresult )
@@ -2577,8 +2574,8 @@ void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int Col
 
 				for (i=0; i<Size; i++)
 				{
-					double x = ArrayIndexToGrayLevel ( i, Size, bIRE );
-					tmpx[i] = GrayLevelToGrayProp(x,bIRE);
+					double x = ArrayIndexToGrayLevel ( i, Size);
+					tmpx[i] = GrayLevelToGrayProp(x);
 				}
 
 				for (int nbopt=0; nbopt <2; nbopt ++)
@@ -2627,8 +2624,8 @@ void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int Col
 
 			for (int i=0; i<Size; i++)
 			{
-				x = ArrayIndexToGrayLevel ( i, Size, bIRE );
-				v = GrayLevelToGrayProp(x,bIRE);
+				x = ArrayIndexToGrayLevel ( i, Size);
+				v = GrayLevelToGrayProp(x);
 
 				valx[i]=(v+Offset_opt)/(1.0+Offset_opt);
 			}

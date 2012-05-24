@@ -246,12 +246,11 @@ BOOL CSpyder3Sensor::Release()
 	return CSensor::Release();
 }
 
-CColor CSpyder3Sensor::MeasureColorInternal(COLORREF aRGBValue)
+CColor CSpyder3Sensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 {
 #ifdef USE_NON_FREE_CODE
 	UINT		nLoops;
 	BOOL		bContinue = FALSE;
-	UINT		r, g, b;
 	UINT		nAdjustedReadTime;
 	double		d;
 	double		x, y, z;
@@ -260,15 +259,11 @@ CColor CSpyder3Sensor::MeasureColorInternal(COLORREF aRGBValue)
 	
 	if ( m_bAdjustTime )
 	{
-		r = GetRValue ( aRGBValue );
-		g = GetGValue ( aRGBValue );
-		b = GetBValue ( aRGBValue );
-
 		// Retrieve darker component
-		d = (double) min ( r, min (g, b) );
+		d = min ( aRGBValue[0], min (aRGBValue[1], aRGBValue[2]) );
 
 		// Increase read time for dark component readings
-		if ( d < 80.0 )
+		if ( d < 32.0 )
 		{
 			nAdjustedReadTime = (UINT) ( 3.0 * ( 1.0 - ( d / 80.0 ) ) * (double) m_ReadTime ) + m_ReadTime;
 			
@@ -334,7 +329,7 @@ CColor CSpyder3Sensor::MeasureColorInternal(COLORREF aRGBValue)
 					CTime theTime = CTime::GetCurrentTime(); 
 					CString s = theTime.Format( "%d/%m/%y %H:%M:%S" );		
 					FILE *f = fopen ( GetConfig () -> m_logFileName, "a" );
-					fprintf(f, "Spyder 3 - %s : R:%3d G:%3d B:%3d (%d loops) : X:%5.3f Y:%5.3f Z:%5.3f\n", s, GetRValue(aRGBValue), GetGValue(aRGBValue), GetBValue(aRGBValue), nLoops, xx, yy, zz );
+					fprintf(f, "Spyder 3 - %s : R:%3f G:%3f B:%3f (%d loops) : X:%5.3f Y:%5.3f Z:%5.3f\n", s, aRGBValue[0], aRGBValue[1], aRGBValue[2], nLoops, xx, yy, zz );
 					fclose(f);
 					LeaveCriticalSection ( & GetConfig () -> LogFileCritSec );
 				}

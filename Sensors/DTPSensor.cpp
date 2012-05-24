@@ -280,7 +280,7 @@ BOOL CDTPSensor::Release()
 	return CSensor::Release();
 }
 
-CColor CDTPSensor::MeasureColorInternal(COLORREF aRGBValue)
+CColor CDTPSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 {
 	UINT		nLoops;
 	BOOL		bContinue = FALSE;

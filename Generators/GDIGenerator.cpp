@@ -296,7 +296,7 @@ BOOL CGDIGenerator::Init(UINT nbMeasure)
 	return bOk;
 }
 
-BOOL CGDIGenerator::DisplayRGBColor( COLORREF clr , MeasureType nPatternType , UINT nPatternInfo , BOOL bChangePattern,BOOL bSilentMode)
+BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nPatternType , UINT nPatternInfo , BOOL bChangePattern,BOOL bSilentMode)
 {
 	m_displayWindow.DisplayRGBColor(clr);
 
@@ -332,13 +332,13 @@ BOOL CGDIGenerator::DisplayAnimatedWhite()
 	return TRUE;
 }
 
-BOOL CGDIGenerator::DisplayDotPattern( COLORREF clr , BOOL dot2, UINT nPads)
+BOOL CGDIGenerator::DisplayDotPattern( const ColorRGBDisplay& clr , BOOL dot2, UINT nPads)
 {
 	m_displayWindow.DisplayDotPattern(clr, dot2, nPads);
 	return TRUE;
 }
 
-BOOL CGDIGenerator::DisplayHVLinesPattern( COLORREF clr , BOOL dot2, BOOL vLines)
+BOOL CGDIGenerator::DisplayHVLinesPattern( const ColorRGBDisplay& clr , BOOL dot2, BOOL vLines)
 {
 	m_displayWindow.DisplayHVLinesPattern(clr, dot2, vLines);
 	return TRUE;

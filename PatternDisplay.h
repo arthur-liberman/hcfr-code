@@ -58,8 +58,8 @@ public:
 protected:
 	void CreateGenerator();
 	void WaitKey();
-	void DisplayPattern(COLORREF clr, UINT iMode); 
-	void DisplayHVLinesPattern(COLORREF clr, BOOL vLines); 
+	void DisplayPattern(const ColorRGBDisplay& clr, UINT iMode); 
+	void DisplayHVLinesPattern(const ColorRGBDisplay& clr, BOOL vLines); 
 	void DisplayColorLevelPattern(INT clrLevel);
 	void DisplayPatternPicture(HMODULE hPatterns, UINT iMode); 
 

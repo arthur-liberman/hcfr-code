@@ -303,27 +303,24 @@ BOOL CMTCSSensor::Release()
 	return CSensor::Release();
 }
 
-CColor CMTCSSensor::MeasureColorInternal(COLORREF aRGBValue)
+CColor CMTCSSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 {
 #ifdef USE_NON_FREE_CODE
 	UINT		nTicks;
 	UINT		nAdjustedReadTime;
-	DWORD		amp, r, g, b;
+	DWORD		amp;
+    DWORD r, g, b;
 	double		d;
 	ColorRGB		DeviceColor;
     ColorXYZ  colMeasure;
 	
 	if ( m_bAdjustTime )
 	{
-		r = GetRValue ( aRGBValue );
-		g = GetGValue ( aRGBValue );
-		b = GetBValue ( aRGBValue );
-
 		// Retrieve darker component
-		d = (double) min ( r, min (g, b) );
+		d = min ( aRGBValue[0], min (aRGBValue[1], aRGBValue[2]) );
 
 		// Increase read time for dark component readings
-		if ( d < 80.0 )
+		if ( d < 32.0 )
 		{
 			nAdjustedReadTime = (UINT) ( 3.0 * ( 1.0 - ( d / 80.0 ) ) * (double) m_ReadTime ) + m_ReadTime;
 			
@@ -353,7 +350,7 @@ CColor CMTCSSensor::MeasureColorInternal(COLORREF aRGBValue)
 			CTime theTime = CTime::GetCurrentTime(); 
 			CString s = theTime.Format( "%d/%m/%y %H:%M:%S" );		
 			FILE *f = fopen ( GetConfig () -> m_logFileName, "a" );
-			fprintf(f, "MTCS-C2 - %s : R:%3d G:%3d B:%3d : amp:%d Ticks:%6d RVal:%6d GVal:%6d BVal:%6d\n", s, GetRValue(aRGBValue), GetGValue(aRGBValue), GetBValue(aRGBValue), amp, nTicks, r, g, b );
+			fprintf(f, "MTCS-C2 - %s : R:%3f G:%3f B:%3f : amp:%d Ticks:%6d RVal:%6d GVal:%6d BVal:%6d\n", s, aRGBValue[0], aRGBValue[1], aRGBValue[2], amp, nTicks, r, g, b );
 			fclose(f);
 			LeaveCriticalSection ( & GetConfig () -> LogFileCritSec );
 		}

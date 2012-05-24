@@ -525,7 +525,7 @@ BOOL CKiSensor::acquire(char *com_port, int timeout, char command, char *sensVal
 	return FALSE;
 }
 
-CColor CKiSensor::MeasureColorInternal(COLORREF aRGBValue)
+CColor CKiSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 {
 	ColorRGB kiColor;
 	ColorXYZ colMeasure;

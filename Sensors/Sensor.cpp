@@ -113,17 +113,17 @@ BOOL CSensor::Release()
 	return TRUE;
 }
 
-CColor CSensor::MeasureColor(COLORREF aRGBValue)
+CColor CSensor::MeasureColor(const ColorRGBDisplay& aRGBValue)
 {
     CColor result(MeasureColorInternal(aRGBValue));
     result.applyAdjustmentMatrix(m_sensorToXYZMatrix);
     return result;
 }
 
-CColor CSensor::MeasureGray(double aLevel, BOOL bIRE)
+CColor CSensor::MeasureGray(double aLevel)
 {
 	// by default use pure virtual DisplayRGBColor function
-	return MeasureColor(CIRELevel(aLevel,bIRE)); 
+	return MeasureColor(ColorRGBDisplay(aLevel)); 
 }
 
 BOOL CSensor::Configure()

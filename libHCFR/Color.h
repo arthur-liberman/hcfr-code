@@ -138,6 +138,19 @@ public:
     ColorLCH(double L, double C, double H);
 };
 
+class ColorRGBDisplay : public ColorTriplet
+{
+public:
+    ColorRGBDisplay();
+    explicit ColorRGBDisplay(double aGreyPercent);
+    ColorRGBDisplay(double aRedPercent,double aGreenPercent,double aBluePercent);
+
+#ifdef LIBHCFR_HAS_WIN32_API
+    explicit ColorRGBDisplay(COLORREF aColor);
+    COLORREF GetColorRef(bool is16_235) const;
+    static BYTE ConvertPercentToBYTE(double percent, bool is16_235);
+#endif
+};
 
 class CColor
 {
@@ -227,23 +240,6 @@ public:
 	double	m_BandWidth;
 };
 
-class CIRELevel
-{
-public:
-	double m_redIRELevel;
-	double m_greenIRELevel;
-	double m_blueIRELevel;
-	bool m_b16_235;
-
-public:
-	CIRELevel(double aIRELevel,bool bIRE,bool b16_235=false);
-	CIRELevel(double aRedIRELevel,double aGreenIRELevel,double aBlueIRELevel,bool bIRE,bool b16_235=false);
-
-#ifdef WIN32
-    operator COLORREF();
-#endif
-};
-
 class CColorReference
 {
 public:
@@ -297,12 +293,10 @@ extern CColor theMeasure;
 extern CColor noDataColor;
 
 // Tool functions
-#ifdef LIBHCFR_HAS_WIN32_API
-extern void GenerateSaturationColors (const CColorReference& colorReference, COLORREF * GenColors, int nSteps, BOOL bRed, BOOL bGreen, BOOL bBlue, BOOL b16_235 );
-#endif
+extern void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int nSteps, BOOL bRed, BOOL bGreen, BOOL bBlue);
 extern Matrix ComputeConversionMatrix(const ColorXYZ measures[3], const ColorXYZ references[3], const ColorXYZ & WhiteTest, const ColorXYZ & WhiteRef, bool	bUseOnlyPrimaries);
-double ArrayIndexToGrayLevel ( int nCol, int nSize, bool bIRE );
-double GrayLevelToGrayProp ( double Level, bool bIRE );
+double ArrayIndexToGrayLevel ( int nCol, int nSize);
+double GrayLevelToGrayProp ( double Level );
 
 
 #endif // !defined(COLOR_H_INCLUDED_)

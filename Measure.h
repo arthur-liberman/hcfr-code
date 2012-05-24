@@ -85,7 +85,7 @@ public:
 	BOOL					m_bErrorOccurred;
 	int						m_nBkMeasureStepCount;
 	int						m_nBkMeasureStep;
-	COLORREF				m_clrToMeasure;
+	ColorRGBDisplay			m_clrToMeasure;
 	CSensor *				m_pBkMeasureSensor;
 	CArray<CColor,int> *	m_pBkMeasuredColor;
 	int						m_nbMaxMeasurements;
@@ -203,7 +203,7 @@ public:
 	BOOL WaitForDynamicIris ( BOOL bIgnoreEscape = FALSE );
 
 	HANDLE InitBackgroundMeasures ( CSensor *pSensor, int nSteps );
-	BOOL BackgroundMeasureColor ( int nCurStep, COLORREF aRGBValue );
+	BOOL BackgroundMeasureColor ( int nCurStep, const ColorRGBDisplay& aRGBValue );
 	void CancelBackgroundMeasures ();
 	BOOL ValidateBackgroundGrayScale ( BOOL bUseLuxValues, double * pLuxValues );
 	BOOL ValidateBackgroundNearBlack ( BOOL bUseLuxValues, double * pLuxValues );

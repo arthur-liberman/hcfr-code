@@ -2606,7 +2606,7 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 					case CLRCAT_IRE:
 						 if ( bDisplay )
 						 {
-							if ( GetDocument()->m_pGenerator->DisplayGray(ire,GetDocument()->GetMeasure()->m_bIREScaleMode,CGenerator::MT_IRE) )
+							if ( GetDocument()->m_pGenerator->DisplayGray(ire,CGenerator::MT_IRE) )
 								GetDocument()->m_measure.WaitForDynamicIris ( TRUE );
 							else
 								bOk = FALSE;
@@ -2614,7 +2614,7 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 						 
 						 if ( bOk )
 						 {
-							MeasuredColor = GetDocument()->m_pSensor->MeasureGray (ire,GetDocument()->GetMeasure()->m_bIREScaleMode);
+							MeasuredColor = GetDocument()->m_pSensor->MeasureGray (ire);
 							if ( ! GetDocument()->m_pSensor->IsMeasureValid() )
 								bOk = FALSE;
 						 }
@@ -2628,7 +2628,7 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 					case CLRCAT_NEARBLACK:
 						 if ( bDisplay )
 						 {
-							if ( GetDocument()->m_pGenerator->DisplayGray(ire,FALSE,CGenerator::MT_NEARBLACK) )
+							if ( GetDocument()->m_pGenerator->DisplayGray(ire,CGenerator::MT_NEARBLACK) )
 								GetDocument()->m_measure.WaitForDynamicIris ( TRUE );
 							else
 								bOk = FALSE;
@@ -2636,7 +2636,7 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 						 
 						 if ( bOk )
 						 {
-							MeasuredColor = GetDocument()->m_pSensor->MeasureGray (ire,FALSE);
+							MeasuredColor = GetDocument()->m_pSensor->MeasureGray (ire);
 							if ( ! GetDocument()->m_pSensor->IsMeasureValid() )
 								bOk = FALSE;
 						 }
@@ -2650,7 +2650,7 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 					case CLRCAT_NEARWHITE:
 						 if ( bDisplay )
 						 {
-							if ( GetDocument()->m_pGenerator->DisplayGray(ire,FALSE,CGenerator::MT_NEARWHITE) )
+							if ( GetDocument()->m_pGenerator->DisplayGray(ire,CGenerator::MT_NEARWHITE) )
 								GetDocument()->m_measure.WaitForDynamicIris ( TRUE );
 							else
 								bOk = FALSE;
@@ -2658,7 +2658,7 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 						 
 						 if ( bOk )
 						 {
-							MeasuredColor = GetDocument()->m_pSensor->MeasureGray (ire,FALSE);
+							MeasuredColor = GetDocument()->m_pSensor->MeasureGray (ire);
 							if ( ! GetDocument()->m_pSensor->IsMeasureValid() )
 								bOk = FALSE;
 						 }

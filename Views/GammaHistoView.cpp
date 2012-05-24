@@ -135,9 +135,9 @@ void CGammaGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		for (int i=1; i<size-1; i++)
 		{
 			double x, valx, valy;
-			x = ArrayIndexToGrayLevel ( i, size, bIRE );
+			x = ArrayIndexToGrayLevel ( i, size );
 
-			valx=(GrayLevelToGrayProp(x,bIRE)+GammaOffset)/(1.0+GammaOffset);
+			valx=(GrayLevelToGrayProp(x)+GammaOffset)/(1.0+GammaOffset);
 			valy=pow(valx, GetConfig()->m_GammaRef);
 
 /*
@@ -162,7 +162,7 @@ void CGammaGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		// ne se fait plus avec l'échelle des x = % de blanc mais avec la formule : 
 		// (x + offset) / (1+offset) 
 		for (int i=1; i<size-1; i++)
-			m_graphCtrl.AddPoint(m_avgLogGraphID, ArrayIndexToGrayLevel ( i, size, bIRE ), GammaOpt);
+			m_graphCtrl.AddPoint(m_avgLogGraphID, ArrayIndexToGrayLevel ( i, size ), GammaOpt);
 	}
 
 	if ( GetConfig () -> m_nLuminanceCurveMode == 2 )
@@ -173,7 +173,7 @@ void CGammaGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			// ne se fait plus avec l'échelle des x = % de blanc mais avec la formule : 
 			// (x + offset) / (1+offset) 
 			for (int i=1; i<size-1; i++)
-				m_graphCtrl.AddPoint(m_luxmeterAvgLogGraphID, ArrayIndexToGrayLevel ( i, size, bIRE ), LuxGammaOpt);
+				m_graphCtrl.AddPoint(m_luxmeterAvgLogGraphID, ArrayIndexToGrayLevel ( i, size ), LuxGammaOpt);
 		}
 	}
 
@@ -312,9 +312,9 @@ void CGammaGrapher::AddPointtoLumGraph(int ColorSpace,int ColorIndex,int Size,in
 
 	if((GraphID != -1)&&(PointIndex != 0 && PointIndex != (Size-1)) && colorlevel > 0.0001)	// log scale is not valid for first and last value nor for negative values
 	{
-		double x = ArrayIndexToGrayLevel ( PointIndex, Size, bIRE );
+		double x = ArrayIndexToGrayLevel ( PointIndex, Size );
 
-		double valxprime=(GrayLevelToGrayProp(x,bIRE)+GammaOffset)/(1.0+GammaOffset);
+		double valxprime=(GrayLevelToGrayProp(x)+GammaOffset)/(1.0+GammaOffset);
 
 		m_graphCtrl.AddPoint(GraphID, x, log((colorlevel)/whitelvl)/log(valxprime), lpMsg);
 	}

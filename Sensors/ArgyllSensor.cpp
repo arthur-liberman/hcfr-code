@@ -301,7 +301,7 @@ BOOL CArgyllSensor::Release()
     return CSensor::Release();
 }
 
-CColor CArgyllSensor::MeasureColorInternal(COLORREF aRGBValue)
+CColor CArgyllSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 {
     if(!m_meter) if(!Init(FALSE)) return noDataColor;
 

@@ -60,8 +60,8 @@ public:
 	virtual void Serialize(CArchive& archive); 
 
 	virtual BOOL Init( BOOL bForSimultaneousMeasures );
-	CColor MeasureColor(COLORREF aRGBValue);
-	virtual CColor MeasureGray(double aIRELevel,BOOL bIRE);
+	CColor MeasureColor(const ColorRGBDisplay& aRGBValue);
+	virtual CColor MeasureGray(double aIRELevel);
 	virtual BOOL Release();
 
 	//virtual BOOL CalibrateSensor(CGenerator *apGenerator);
@@ -98,7 +98,7 @@ public:
     virtual bool isValid() const {return true;}
 	virtual BOOL HasSpectrumCapabilities ( int * pNbBands, int * pMinWaveLength, int * pMaxWaveLength, double * pBandWidth ) { return FALSE; }
 private:
-    virtual CColor MeasureColorInternal(COLORREF aRGBValue) { return noDataColor;};
+    virtual CColor MeasureColorInternal(const ColorRGBDisplay& aRGBValue) { return noDataColor;};
 };
 
 #endif // !defined(AFX_SENSOR_H__FD0761AA_CBEC_4A38_8A67_ADB0963FBAE4__INCLUDED_)

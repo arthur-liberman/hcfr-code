@@ -92,7 +92,7 @@ CMeasure::CMeasure()
 	m_bTerminateThread = FALSE;
 	m_bErrorOccurred = FALSE;
 	m_nBkMeasureStep = 0;
-	m_clrToMeasure = 0;
+	m_clrToMeasure = ColorRGBDisplay(0.0);
 	m_nBkMeasureStepCount = 0;
 	m_pBkMeasureSensor = NULL;
 	m_pBkMeasuredColor = NULL;
@@ -633,7 +633,7 @@ BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator)
 
 	for(int i=0;i<size;i++)
 	{
-		if( pGenerator->DisplayGray(ArrayIndexToGrayLevel ( i, size, m_bIREScaleMode ),m_bIREScaleMode,CGenerator::MT_IRE ,!bRetry))
+		if( pGenerator->DisplayGray(ArrayIndexToGrayLevel ( i, size),CGenerator::MT_IRE ,!bRetry))
 		{
 			bEscape = WaitForDynamicIris ();
 			bRetry = FALSE;
@@ -643,7 +643,7 @@ BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator)
 				if ( bUseLuxValues )
 					StartLuxMeasure ();
 
-				measuredColor[i]=pSensor->MeasureGray(ArrayIndexToGrayLevel ( i, size, m_bIREScaleMode ),m_bIREScaleMode);
+				measuredColor[i]=pSensor->MeasureGray(ArrayIndexToGrayLevel ( i, size));
 				
 				if ( bUseLuxValues )
 				{
@@ -817,7 +817,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 
 	for(int i=0;i<size;i++)
 	{
-		if( pGenerator->DisplayGray(ArrayIndexToGrayLevel ( i, size, m_bIREScaleMode ),m_bIREScaleMode,CGenerator::MT_IRE ,!bRetry))
+		if( pGenerator->DisplayGray(ArrayIndexToGrayLevel ( i, size),CGenerator::MT_IRE ,!bRetry))
 		{
 			bEscape = WaitForDynamicIris ();
 			bRetry = FALSE;
@@ -827,7 +827,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 				if ( bUseLuxValues )
 					StartLuxMeasure ();
 
-				measuredColor[i]=pSensor->MeasureGray(ArrayIndexToGrayLevel ( i, size, m_bIREScaleMode ),m_bIREScaleMode);
+				measuredColor[i]=pSensor->MeasureGray(ArrayIndexToGrayLevel ( i, size ));
 				
 				if ( bUseLuxValues )
 				{
@@ -948,23 +948,23 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 	double primaryIRELevel=100.0;	
 	
 	// Measure primary and secondary colors
-	COLORREF	GenColors [ 6 ] = 
+	ColorRGBDisplay	GenColors [ 6 ] = 
 								{	
-									CIRELevel(primaryIRELevel,0,0,FALSE,pGenerator->m_b16_235),
-									CIRELevel(0,primaryIRELevel,0,FALSE,pGenerator->m_b16_235),
-									CIRELevel(0,0,primaryIRELevel,FALSE,pGenerator->m_b16_235),
-									CIRELevel(primaryIRELevel,primaryIRELevel,0,FALSE,pGenerator->m_b16_235),
-									CIRELevel(0,primaryIRELevel,primaryIRELevel,FALSE,pGenerator->m_b16_235),
-									CIRELevel(primaryIRELevel,0,primaryIRELevel,FALSE,pGenerator->m_b16_235)
+									ColorRGBDisplay(primaryIRELevel,0,0),
+									ColorRGBDisplay(0,primaryIRELevel,0),
+									ColorRGBDisplay(0,0,primaryIRELevel),
+									ColorRGBDisplay(primaryIRELevel,primaryIRELevel,0),
+									ColorRGBDisplay(0,primaryIRELevel,primaryIRELevel),
+									ColorRGBDisplay(primaryIRELevel,0,primaryIRELevel)
 								};
-	COLORREF	MeasColors [ 6 ] = 
+	ColorRGBDisplay	MeasColors [ 6 ] = 
 								{	
-									CIRELevel(primaryIRELevel,0,0,FALSE,FALSE),
-									CIRELevel(0,primaryIRELevel,0,FALSE,FALSE),
-									CIRELevel(0,0,primaryIRELevel,FALSE,FALSE),
-									CIRELevel(primaryIRELevel,primaryIRELevel,0,FALSE,FALSE),
-									CIRELevel(0,primaryIRELevel,primaryIRELevel,FALSE,FALSE),
-									CIRELevel(primaryIRELevel,0,primaryIRELevel,FALSE,FALSE)
+									ColorRGBDisplay(primaryIRELevel,0,0),
+									ColorRGBDisplay(0,primaryIRELevel,0),
+									ColorRGBDisplay(0,0,primaryIRELevel),
+									ColorRGBDisplay(primaryIRELevel,primaryIRELevel,0),
+									ColorRGBDisplay(0,primaryIRELevel,primaryIRELevel),
+									ColorRGBDisplay(primaryIRELevel,0,primaryIRELevel)
 								};
 	for (int i = 0; i < 6 ; i ++ )
 	{
@@ -1151,7 +1151,7 @@ BOOL CMeasure::MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator)
 
 	for(int i=0;i<size;i++)
 	{
-		if( pGenerator->DisplayGray(i,FALSE,CGenerator::MT_NEARBLACK,!bRetry) )
+		if( pGenerator->DisplayGray(i,CGenerator::MT_NEARBLACK,!bRetry) )
 		{
 			bEscape = WaitForDynamicIris ();
 			bRetry = FALSE;
@@ -1161,7 +1161,7 @@ BOOL CMeasure::MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator)
 				if ( bUseLuxValues )
 					StartLuxMeasure ();
 
-				measuredColor[i]=pSensor->MeasureGray(i,FALSE);
+				measuredColor[i]=pSensor->MeasureGray(i);
 				
 				if ( bUseLuxValues )
 				{
@@ -1335,7 +1335,7 @@ BOOL CMeasure::MeasureNearWhiteScale(CSensor *pSensor, CGenerator *pGenerator)
 	
 	for(int i=0;i<size;i++)
 	{
-		if( pGenerator->DisplayGray(101-size+i,FALSE,CGenerator::MT_NEARWHITE,!bRetry ) )
+		if( pGenerator->DisplayGray(101-size+i,CGenerator::MT_NEARWHITE,!bRetry ) )
 		{
 			bEscape = WaitForDynamicIris ();
 			bRetry = FALSE;
@@ -1345,7 +1345,7 @@ BOOL CMeasure::MeasureNearWhiteScale(CSensor *pSensor, CGenerator *pGenerator)
 				if ( bUseLuxValues )
 					StartLuxMeasure ();
 
-				measuredColor[i]=pSensor->MeasureGray(101-size+i,FALSE);
+				measuredColor[i]=pSensor->MeasureGray(101-size+i);
 				
 				if ( bUseLuxValues )
 				{
@@ -1448,7 +1448,7 @@ BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	BOOL		bRetry = FALSE;
 	int			size = GetSaturationSize ();
 	CString		strMsg, Title;
-	COLORREF	GenColors [ 256 ];
+	ColorRGBDisplay	GenColors [ 256 ];
 	double		dLuxValue;
 
 	CArray<CColor,int> measuredColor;
@@ -1484,7 +1484,7 @@ BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	}
 
 	// Generate saturation colors for red
-	GenerateSaturationColors (GetColorReference(), GenColors, size, TRUE, FALSE, FALSE, pGenerator->m_b16_235 );
+	GenerateSaturationColors (GetColorReference(), GenColors, size, TRUE, FALSE, FALSE );
 
 	for(int i=0;i<size;i++)
 	{
@@ -1601,7 +1601,7 @@ BOOL CMeasure::MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	BOOL		bRetry = FALSE;
 	int			size = GetSaturationSize ();
 	CString		strMsg, Title;
-	COLORREF	GenColors [ 256 ];
+	ColorRGBDisplay	GenColors [ 256 ];
 	double		dLuxValue;
 
 	CArray<CColor,int> measuredColor;
@@ -1637,7 +1637,7 @@ BOOL CMeasure::MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	}
 
 	// Generate saturation colors for green
-	GenerateSaturationColors (GetColorReference(), GenColors, size, FALSE, TRUE, FALSE, pGenerator->m_b16_235 );
+	GenerateSaturationColors (GetColorReference(), GenColors, size, FALSE, TRUE, FALSE );
 
 	for(int i=0;i<size;i++)
 	{
@@ -1754,7 +1754,7 @@ BOOL CMeasure::MeasureBlueSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	BOOL		bRetry = FALSE;
 	int			size = GetSaturationSize ();
 	CString		strMsg, Title;
-	COLORREF	GenColors [ 256 ];
+	ColorRGBDisplay	GenColors [ 256 ];
 	double		dLuxValue;
 
 	CArray<CColor,int> measuredColor;
@@ -1790,7 +1790,7 @@ BOOL CMeasure::MeasureBlueSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	}
 
 	// Generate saturation colors for blue
-	GenerateSaturationColors (GetColorReference(), GenColors, size, FALSE, FALSE, TRUE, pGenerator->m_b16_235 );
+	GenerateSaturationColors (GetColorReference(), GenColors, size, FALSE, FALSE, TRUE );
 
 	for(int i=0;i<size;i++)
 	{
@@ -1907,7 +1907,7 @@ BOOL CMeasure::MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	BOOL		bRetry = FALSE;
 	int			size = GetSaturationSize ();
 	CString		strMsg, Title;
-	COLORREF	GenColors [ 256 ];
+	ColorRGBDisplay	GenColors [ 256 ];
 	double		dLuxValue;
 
 	CArray<CColor,int> measuredColor;
@@ -1943,7 +1943,7 @@ BOOL CMeasure::MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	}
 
 	// Generate saturation colors for yellow
-	GenerateSaturationColors (GetColorReference(), GenColors, size, TRUE, TRUE, FALSE, pGenerator->m_b16_235 );
+	GenerateSaturationColors (GetColorReference(), GenColors, size, TRUE, TRUE, FALSE );
 
 	for(int i=0;i<size;i++)
 	{
@@ -2061,7 +2061,7 @@ BOOL CMeasure::MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	BOOL		bRetry = FALSE;
 	int			size = GetSaturationSize ();
 	CString		strMsg, Title;
-	COLORREF	GenColors [ 256 ];
+	ColorRGBDisplay	GenColors [ 256 ];
 	double		dLuxValue;
 
 	CArray<CColor,int> measuredColor;
@@ -2097,7 +2097,7 @@ BOOL CMeasure::MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	}
 
 	// Generate saturation colors for cyan
-	GenerateSaturationColors (GetColorReference(), GenColors, size, FALSE, TRUE, TRUE, pGenerator->m_b16_235 );
+	GenerateSaturationColors (GetColorReference(), GenColors, size, FALSE, TRUE, TRUE );
 
 	for(int i=0;i<size;i++)
 	{
@@ -2215,7 +2215,7 @@ BOOL CMeasure::MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	BOOL		bRetry = FALSE;
 	int			size = GetSaturationSize ();
 	CString		strMsg, Title;
-	COLORREF	GenColors [ 256 ];
+	ColorRGBDisplay	GenColors [ 256 ];
 	double		dLuxValue;
 
 	CArray<CColor,int> measuredColor;
@@ -2251,7 +2251,7 @@ BOOL CMeasure::MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	}
 
 	// Generate saturation colors for magenta
-	GenerateSaturationColors (GetColorReference(), GenColors, size, TRUE, FALSE, TRUE, pGenerator->m_b16_235 );
+	GenerateSaturationColors (GetColorReference(), GenColors, size, TRUE, FALSE, TRUE );
 
 	for(int i=0;i<size;i++)
 	{
@@ -2369,7 +2369,7 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 	BOOL		bRetry = FALSE;
 	int			size = GetSaturationSize ();
 	CString		strMsg, Title;
-	COLORREF	GenColors [ 6 * 256 ];
+	ColorRGBDisplay	GenColors [ 6 * 256 ];
 	double		dLuxValue;
 	
 	CGenerator::MeasureType	SaturationType [ 6 ] =
@@ -2415,12 +2415,12 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 	}
 
 	// Generate saturations for all colors
-	GenerateSaturationColors (GetColorReference(), GenColors, size, TRUE, FALSE, FALSE, pGenerator->m_b16_235 );				// Red
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 1 ], size, FALSE, TRUE, FALSE, pGenerator->m_b16_235 );	// Green
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 2 ], size, FALSE, FALSE, TRUE, pGenerator->m_b16_235 );	// Blue
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 3 ], size, TRUE, TRUE, FALSE, pGenerator->m_b16_235 );	// Yellow
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 4 ], size, FALSE, TRUE, TRUE, pGenerator->m_b16_235 );	// Cyan
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 5 ], size, TRUE, FALSE, TRUE, pGenerator->m_b16_235 );	// Magenta
+	GenerateSaturationColors (GetColorReference(), GenColors, size, TRUE, FALSE, FALSE );				// Red
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 1 ], size, FALSE, TRUE, FALSE );	// Green
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 2 ], size, FALSE, FALSE, TRUE );	// Blue
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 3 ], size, TRUE, TRUE, FALSE );	// Yellow
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 4 ], size, FALSE, TRUE, TRUE );	// Cyan
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 5 ], size, TRUE, FALSE, TRUE );	// Magenta
 
 	for ( j = 0 ; j < ( bPrimaryOnly ? 3 : 6 ) ; j ++ )
 	{
@@ -2612,21 +2612,21 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
 
 	// Measure primary and secondary colors
 	double		IRELevel=100.0;	
-	COLORREF	GenColors [ 5 ] = 
+	ColorRGBDisplay	GenColors [ 5 ] = 
 								{	
-									CIRELevel(IRELevel,0,0,FALSE,pGenerator->m_b16_235),
-									CIRELevel(0,IRELevel,0,FALSE,pGenerator->m_b16_235),
-									CIRELevel(0,0,IRELevel,FALSE,pGenerator->m_b16_235),
-									CIRELevel(IRELevel,IRELevel,IRELevel,FALSE,pGenerator->m_b16_235),
-									CIRELevel(0,0,0,FALSE,pGenerator->m_b16_235)
+									ColorRGBDisplay(IRELevel,0,0),
+									ColorRGBDisplay(0,IRELevel,0),
+									ColorRGBDisplay(0,0,IRELevel),
+									ColorRGBDisplay(IRELevel,IRELevel,IRELevel),
+									ColorRGBDisplay(0,0,0)
 								};
-	COLORREF	MeasColors [ 5 ] = 
+	ColorRGBDisplay	MeasColors [ 5 ] = 
 								{	
-									CIRELevel(IRELevel,0,0,FALSE,FALSE),
-									CIRELevel(0,IRELevel,0,FALSE,FALSE),
-									CIRELevel(0,0,IRELevel,FALSE,FALSE),
-									CIRELevel(IRELevel,IRELevel,IRELevel,FALSE,FALSE),
-									CIRELevel(0,0,0,FALSE,FALSE)
+									ColorRGBDisplay(IRELevel,0,0),
+									ColorRGBDisplay(0,IRELevel,0),
+									ColorRGBDisplay(0,0,IRELevel),
+									ColorRGBDisplay(IRELevel,IRELevel,IRELevel),
+									ColorRGBDisplay(0,0,0)
 								};
 
 	for ( i = 0; i < ( 3 + GetConfig () -> m_BWColorsToAdd ) ; i ++ )
@@ -2793,27 +2793,27 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator)
 
 	// Measure primary and secondary colors
 	double		IRELevel=100.0;	
-	COLORREF	GenColors [ 8 ] = 
+	ColorRGBDisplay	GenColors [ 8 ] = 
 								{	
-									CIRELevel(IRELevel,0,0,FALSE,pGenerator->m_b16_235),
-									CIRELevel(0,IRELevel,0,FALSE,pGenerator->m_b16_235),
-									CIRELevel(0,0,IRELevel,FALSE,pGenerator->m_b16_235),
-									CIRELevel(IRELevel,IRELevel,0,FALSE,pGenerator->m_b16_235),
-									CIRELevel(0,IRELevel,IRELevel,FALSE,pGenerator->m_b16_235),
-									CIRELevel(IRELevel,0,IRELevel,FALSE,pGenerator->m_b16_235),
-									CIRELevel(IRELevel,IRELevel,IRELevel,FALSE,pGenerator->m_b16_235),
-									CIRELevel(0,0,0,FALSE,pGenerator->m_b16_235)
+									ColorRGBDisplay(IRELevel,0,0),
+									ColorRGBDisplay(0,IRELevel,0),
+									ColorRGBDisplay(0,0,IRELevel),
+									ColorRGBDisplay(IRELevel,IRELevel,0),
+									ColorRGBDisplay(0,IRELevel,IRELevel),
+									ColorRGBDisplay(IRELevel,0,IRELevel),
+									ColorRGBDisplay(IRELevel,IRELevel,IRELevel),
+									ColorRGBDisplay(0,0,0)
 								};
-	COLORREF	MeasColors [ 8 ] = 
+	ColorRGBDisplay	MeasColors [ 8 ] = 
 								{	
-									CIRELevel(IRELevel,0,0,FALSE,FALSE),
-									CIRELevel(0,IRELevel,0,FALSE,FALSE),
-									CIRELevel(0,0,IRELevel,FALSE,FALSE),
-									CIRELevel(IRELevel,IRELevel,0,FALSE,FALSE),
-									CIRELevel(0,IRELevel,IRELevel,FALSE,FALSE),
-									CIRELevel(IRELevel,0,IRELevel,FALSE,FALSE),
-									CIRELevel(IRELevel,IRELevel,IRELevel,FALSE,FALSE),
-									CIRELevel(0,0,0,FALSE,FALSE)
+									ColorRGBDisplay(IRELevel,0,0),
+									ColorRGBDisplay(0,IRELevel,0),
+									ColorRGBDisplay(0,0,IRELevel),
+									ColorRGBDisplay(IRELevel,IRELevel,0),
+									ColorRGBDisplay(0,IRELevel,IRELevel),
+									ColorRGBDisplay(IRELevel,0,IRELevel),
+									ColorRGBDisplay(IRELevel,IRELevel,IRELevel),
+									ColorRGBDisplay(0,0,0)
 								};
 	for ( i = 0; i < ( 6 + GetConfig () -> m_BWColorsToAdd ); i ++ )
 	{
@@ -2993,7 +2993,7 @@ BOOL CMeasure::MeasureContrast(CSensor *pSensor, CGenerator *pGenerator)
 	// Measure black for on/off contrast
 	for ( i = 0; i < 1 ; i ++ )
 	{
-		if( pGenerator->DisplayGray(BlackIRELevel,FALSE,CGenerator::MT_CONTRAST,!bRetry ) )
+		if( pGenerator->DisplayGray(BlackIRELevel,CGenerator::MT_CONTRAST,!bRetry ) )
 		{
 			bEscape = WaitForDynamicIris ();
 			bRetry = FALSE;
@@ -3003,7 +3003,7 @@ BOOL CMeasure::MeasureContrast(CSensor *pSensor, CGenerator *pGenerator)
 				if ( bUseLuxValues )
 					StartLuxMeasure ();
 
-				measure=pSensor->MeasureColor(CIRELevel(BlackIRELevel,FALSE));
+				measure=pSensor->MeasureColor(ColorRGBDisplay(BlackIRELevel));
 				
 				if ( bUseLuxValues )
 				{
@@ -3106,7 +3106,7 @@ BOOL CMeasure::MeasureContrast(CSensor *pSensor, CGenerator *pGenerator)
 	// Measure white for on/off contrast
 	for ( i = 0; i < 1 ; i ++ )
 	{
-		if( pGenerator->DisplayGray(WhiteIRELevel,FALSE,CGenerator::MT_CONTRAST,!bRetry ))
+		if( pGenerator->DisplayGray(WhiteIRELevel,CGenerator::MT_CONTRAST,!bRetry ))
 		{
 			bEscape = WaitForDynamicIris ();
 			bRetry = FALSE;
@@ -3116,7 +3116,7 @@ BOOL CMeasure::MeasureContrast(CSensor *pSensor, CGenerator *pGenerator)
 				if ( bUseLuxValues )
 					StartLuxMeasure ();
 
-				measure=pSensor->MeasureColor(CIRELevel(WhiteIRELevel,FALSE));
+				measure=pSensor->MeasureColor(ColorRGBDisplay(WhiteIRELevel));
 				
 				if ( bUseLuxValues )
 				{
@@ -3217,7 +3217,7 @@ BOOL CMeasure::MeasureContrast(CSensor *pSensor, CGenerator *pGenerator)
 					if ( bUseLuxValues )
 						StartLuxMeasure ();
 
-					measure=pSensor->MeasureColor(CIRELevel(NearBlackIRELevel,FALSE));	// Assume Black
+					measure=pSensor->MeasureColor(ColorRGBDisplay(NearBlackIRELevel));	// Assume Black
 					
 					if ( bUseLuxValues )
 					{
@@ -3322,7 +3322,7 @@ BOOL CMeasure::MeasureContrast(CSensor *pSensor, CGenerator *pGenerator)
 				if ( bUseLuxValues )
 					StartLuxMeasure ();
 
-				measure=pSensor->MeasureColor(CIRELevel(NearWhiteIRELevel,FALSE));	// Assume White
+				measure=pSensor->MeasureColor(ColorRGBDisplay(NearWhiteIRELevel));	// Assume White
 				
 				bEscape = FALSE;
 			
@@ -3530,24 +3530,25 @@ BOOL CMeasure::AddMeasurement(CSensor *pSensor, CGenerator *pGenerator)
 		return FALSE;
 	}
 
-	if ( bDisplayColor )
+	if ( bDisplayColor ) 
 	{
 		// Display test color
 		clr = ( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.GetColor ();
 		clr &= 0x00FFFFFF;
-		bOk = pGenerator->DisplayRGBColor(clr,CGenerator::MT_ACTUAL);
+		bOk = pGenerator->DisplayRGBColor(ColorRGBDisplay(clr),CGenerator::MT_ACTUAL);
 		if ( bOk )
 			WaitForDynamicIris ( TRUE );
 	}
 	else
 	{
+        // don't know the color to measure so default value to mid gray...
 		clr = RGB(128,128,128);
 		bOk = TRUE;
 	}
 
 	if ( bOk )
 	{
-		measuredColor=pSensor->MeasureColor(clr);  // don't know the color to measure so default value to mid gray...
+		measuredColor=pSensor->MeasureColor(ColorRGBDisplay(clr));
 		if(!pSensor->IsMeasureValid())
 		{
 			Title.LoadString ( IDS_ERROR );
@@ -3734,7 +3735,7 @@ HANDLE CMeasure::InitBackgroundMeasures ( CSensor *pSensor, int nSteps )
 	m_bTerminateThread = FALSE;
 	m_bErrorOccurred = FALSE;
 	m_nBkMeasureStep = 0;
-	m_clrToMeasure = 0;
+	m_clrToMeasure = ColorRGBDisplay(0.0);
 	m_hEventRun = NULL;
 	m_hEventDone = NULL;
 	
@@ -3782,7 +3783,7 @@ HANDLE CMeasure::InitBackgroundMeasures ( CSensor *pSensor, int nSteps )
 	return m_hEventDone;
 }
 
-BOOL CMeasure::BackgroundMeasureColor ( int nCurStep, COLORREF aRGBValue )
+BOOL CMeasure::BackgroundMeasureColor ( int nCurStep, const ColorRGBDisplay& aRGBValue )
 {
 	if ( m_hThread )
 	{

@@ -480,7 +480,7 @@ BOOL CKiGenerator::ChangePatternSeries()
 	return Flag;
 }
 
-BOOL CKiGenerator::DisplayGray(double aLevel, BOOL bIRE, MeasureType nPatternType, BOOL bChangePattern)
+BOOL CKiGenerator::DisplayGray(double aLevel, MeasureType nPatternType, BOOL bChangePattern)
 {
 	CString str, Msg, Title;
 	BOOL	Flag = FALSE;
@@ -682,7 +682,7 @@ BOOL CKiGenerator::DisplayGray(double aLevel, BOOL bIRE, MeasureType nPatternTyp
 	return Flag;
 }
 
-BOOL CKiGenerator::DisplayRGBColor( COLORREF clr  ,MeasureType nPatternType, UINT nPatternInfo, BOOL bChangePattern,BOOL bSilentMode)
+BOOL CKiGenerator::DisplayRGBColor( const ColorRGBDisplay& clrIn  ,MeasureType nPatternType, UINT nPatternInfo, BOOL bChangePattern,BOOL bSilentMode)
 {
 	BOOL	foundColor=TRUE;
 	CString str;
@@ -698,6 +698,7 @@ BOOL CKiGenerator::DisplayRGBColor( COLORREF clr  ,MeasureType nPatternType, UIN
 	int		nFirstSaturationMenuPos = 0;
 	char	mStr[255];
 	char	m[1] = "";
+    COLORREF clr(clrIn.GetColorRef(false));
 
 	if ( m_NbNextCodeToAdd > 0 )
 		m_NbNextCodeToAdd --;

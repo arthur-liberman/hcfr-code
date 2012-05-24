@@ -66,7 +66,7 @@ CFullScreenWindow::CFullScreenWindow(BOOL bTestOverlay)
 
 	// PatternDisplay
 	m_bPatternMode = FALSE;
-	m_clrPattern = CIRELevel(0,FALSE,m_b16_235);
+	m_clrPattern = ColorRGBDisplay( 0.0 ).GetColorRef(m_b16_235);
 	m_nPadsPattern = 25;
 	m_dot2Pattern = FALSE;
 	m_bHLines = FALSE;
@@ -158,7 +158,7 @@ void CFullScreenWindow::MoveToMonitor ( HMONITOR hMon )
 	}
 }
 
-void CFullScreenWindow::DisplayRGBColor ( COLORREF clr, BOOL bDisableWaiting )
+void CFullScreenWindow::DisplayRGBColor(const ColorRGBDisplay& clr, BOOL bDisableWaiting )
 {
 	int				nColorFlag;
 	int				nPadWidth, nPadHeight;
@@ -172,7 +172,7 @@ void CFullScreenWindow::DisplayRGBColor ( COLORREF clr, BOOL bDisableWaiting )
 	char			szError [ 256 ];
 	char			szMsg [ 256 ];
 	
-	m_Color = clr;
+	m_Color = clr.GetColorRef(m_b16_235);
 
 	if ( m_nDisplayMode == DISPLAY_OVERLAY )
 	{
@@ -378,7 +378,7 @@ void CFullScreenWindow::DisplayAnimatedBlack()
 	m_bAnimated = TRUE;
 	m_bWhite = FALSE;
 	m_XCurrent = -1;
-	DisplayRGBColor ( CIRELevel ( 0, FALSE, m_b16_235 ), TRUE );	// request a black background
+	DisplayRGBColor ( ColorRGBDisplay ( 0.0 ), TRUE );	// request a black background
 	m_IdTimer = SetTimer
 	 ( 1, 40, NULL );
 	OnTimer ( m_IdTimer );
@@ -390,28 +390,28 @@ void CFullScreenWindow::DisplayAnimatedWhite()
 	m_bAnimated = TRUE;
 	m_bWhite = TRUE;
 	m_XCurrent = -1;
-	DisplayRGBColor ( CIRELevel ( 100, FALSE, m_b16_235 ), TRUE );	// request a white background
+	DisplayRGBColor ( ColorRGBDisplay ( 100.0 ), TRUE );	// request a white background
 	m_IdTimer = SetTimer ( 123, 40, NULL );
 	OnTimer ( m_IdTimer );
 }
 
 
-void CFullScreenWindow::DisplayDotPattern( COLORREF clr , BOOL dot2, UINT nPads)
+void CFullScreenWindow::DisplayDotPattern( const ColorRGBDisplay& clr , BOOL dot2, UINT nPads)
 {
 	m_bPatternMode = TRUE;
-	m_clrPattern = clr;
+	m_clrPattern = clr.GetColorRef(m_b16_235);
 	m_nPadsPattern = nPads;
 	m_dot2Pattern = dot2;
-	DisplayRGBColor ( CIRELevel(0,FALSE,m_b16_235), TRUE );
+	DisplayRGBColor ( ColorRGBDisplay(0.0), TRUE );
 }
 
-void CFullScreenWindow::DisplayHVLinesPattern( COLORREF clr , BOOL dot2, BOOL vLines)
+void CFullScreenWindow::DisplayHVLinesPattern( const ColorRGBDisplay& clr , BOOL dot2, BOOL vLines)
 {
 	m_bVLines = vLines ? vLines : FALSE;
 	m_bHLines = vLines ? FALSE : TRUE;
-	m_clrPattern = clr;
+	m_clrPattern = clr.GetColorRef(m_b16_235);
 	m_dot2Pattern = dot2;
-	DisplayRGBColor ( CIRELevel(0,FALSE,m_b16_235), TRUE );
+	DisplayRGBColor ( ColorRGBDisplay(0.0), TRUE );
 }
 
 void CFullScreenWindow::DisplayColorLevelPattern(INT clrLevel , BOOL dot2, UINT nPads)
@@ -420,7 +420,7 @@ void CFullScreenWindow::DisplayColorLevelPattern(INT clrLevel , BOOL dot2, UINT 
 	m_iClrLevel = clrLevel;
 	m_nPadsPattern = (clrLevel==8 || clrLevel==9) ? 15 : nPads;
 	m_dot2Pattern = dot2;
-	DisplayRGBColor ( CIRELevel(0,FALSE,m_b16_235), TRUE );
+	DisplayRGBColor ( ColorRGBDisplay(0.0), TRUE );
 }
 
 void CFullScreenWindow::DisplayConvPattern(BOOL dot2, UINT nPads)
@@ -428,7 +428,7 @@ void CFullScreenWindow::DisplayConvPattern(BOOL dot2, UINT nPads)
 	m_bConv = TRUE;
 	m_nPadsPattern = nPads;
 	m_dot2Pattern = dot2;
-	DisplayRGBColor ( CIRELevel(0,FALSE,m_b16_235), TRUE );
+	DisplayRGBColor ( ColorRGBDisplay(0.0), TRUE );
 }
 
 void CFullScreenWindow::DisplayGeomPattern(BOOL dot2, UINT nPads)
@@ -436,14 +436,14 @@ void CFullScreenWindow::DisplayGeomPattern(BOOL dot2, UINT nPads)
 	m_bGeom = TRUE;
 	m_nPadsPattern = nPads;
 	m_dot2Pattern = dot2;
-	DisplayRGBColor ( CIRELevel(0,FALSE,m_b16_235), TRUE );
+	DisplayRGBColor ( ColorRGBDisplay(0.0), TRUE );
 }
 
 void CFullScreenWindow::DisplayColorPattern(BOOL dot2)
 {
 	m_bColorPattern = TRUE;
 	m_dot2Pattern = dot2;
-	DisplayRGBColor ( CIRELevel(0,FALSE,m_b16_235), TRUE );
+	DisplayRGBColor ( ColorRGBDisplay(0.0), TRUE );
 }
 
 void CFullScreenWindow::DisplayPatternPicture(HMODULE hInst, UINT nIDResource, BOOL bResizePict)
@@ -452,7 +452,7 @@ void CFullScreenWindow::DisplayPatternPicture(HMODULE hInst, UINT nIDResource, B
 	m_hPatternInst = hInst;
 	m_bResizePict = bResizePict;
 	m_uiPictRess = nIDResource;
-	DisplayRGBColor ( CIRELevel(0,FALSE,m_b16_235), TRUE );
+	DisplayRGBColor ( ColorRGBDisplay(0.0), TRUE );
 }
 
 
@@ -809,8 +809,8 @@ void CFullScreenWindow::OnPaint()
 		if (halfCircle > (maxY / 4)) 
 			halfCircle = (maxY / 4) - 1;
 
-		ePen.CreatePen(PS_SOLID, 1, CIRELevel(100,FALSE,m_b16_235));
-		br1.CreateSolidBrush (CIRELevel(0,FALSE,m_b16_235));
+		ePen.CreatePen(PS_SOLID, 1, ColorRGBDisplay(100.0).GetColorRef(m_b16_235));
+		br1.CreateSolidBrush (ColorRGBDisplay(0.0).GetColorRef(m_b16_235));
 		dc.SelectObject(&ePen);
 		dc.SelectObject(&br1);
 		dc.Ellipse(halfCircle, 0,maxX-halfCircle,maxY);
@@ -821,7 +821,7 @@ void CFullScreenWindow::OnPaint()
 		br1.DeleteObject ();
 		ePen.DeleteObject ();
 
-		br0.CreateSolidBrush (CIRELevel(100,FALSE,m_b16_235));
+		br0.CreateSolidBrush (ColorRGBDisplay(100.0).GetColorRef(m_b16_235));
 		for ( i = offset; i < maxX-1; i+=(int)(stepX*ratio) )
 		{
 			SetRect ( &aRect, i, 0, i+1, maxY );
@@ -855,15 +855,15 @@ void CFullScreenWindow::OnTimer(UINT nIDEvent)
 		{
 			if ( m_bWhite )
 			{
-				br0.CreateSolidBrush ( CIRELevel ( 100,FALSE,m_b16_235 ) );
-				br1.CreateSolidBrush ( CIRELevel ( 99,FALSE,m_b16_235 ) );
-				br2.CreateSolidBrush ( CIRELevel ( 98,FALSE,m_b16_235 ) );
+				br0.CreateSolidBrush ( ColorRGBDisplay ( 100.0 ).GetColorRef(m_b16_235) );
+				br1.CreateSolidBrush ( ColorRGBDisplay ( 99.0 ).GetColorRef(m_b16_235) );
+				br2.CreateSolidBrush ( ColorRGBDisplay ( 98.0 ).GetColorRef(m_b16_235) );
 			}
 			else
 			{
-				br0.CreateSolidBrush ( CIRELevel ( 0,FALSE,m_b16_235 ) );
-				br1.CreateSolidBrush ( CIRELevel ( 1,FALSE,m_b16_235 ) );
-				br2.CreateSolidBrush ( CIRELevel ( 2,FALSE,m_b16_235 ) );
+				br0.CreateSolidBrush ( ColorRGBDisplay ( 0.0 ).GetColorRef(m_b16_235) );
+				br1.CreateSolidBrush ( ColorRGBDisplay ( 1.0 ).GetColorRef(m_b16_235) );
+				br2.CreateSolidBrush ( ColorRGBDisplay ( 2.0 ).GetColorRef(m_b16_235) );
 			}
 			GetClientRect ( &rect );
 			
@@ -1056,7 +1056,7 @@ void CFullScreenWindow::ClearFlags()
 	m_bAnimated = FALSE;
 	m_bWhite = FALSE;
 	m_bPatternMode = FALSE;
-	m_clrPattern = CIRELevel(0,FALSE,m_b16_235);
+	m_clrPattern = ColorRGBDisplay( 0.0 ).GetColorRef(m_b16_235);
 	m_nPadsPattern = 25;
 	m_dot2Pattern = FALSE;
 	m_bHLines = FALSE;

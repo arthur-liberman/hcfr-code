@@ -217,7 +217,7 @@ void CPatternDisplay::WaitKey()
 	}
 }
 
-void CPatternDisplay::DisplayPattern(COLORREF clr, UINT iMode) 
+void CPatternDisplay::DisplayPattern(const ColorRGBDisplay& clr, UINT iMode) 
 {
 	BOOL	bKeyTyped = FALSE;
 	BOOL	doDisplay = FALSE;
@@ -269,7 +269,7 @@ void CPatternDisplay::DisplayPattern(COLORREF clr, UINT iMode)
 	m_patternDGenerator->Release();
 }
 
-void CPatternDisplay::DisplayHVLinesPattern(COLORREF clr, BOOL vLines) 
+void CPatternDisplay::DisplayHVLinesPattern(const ColorRGBDisplay& clr, BOOL vLines) 
 {
 	BOOL	bKeyTyped = FALSE;
 	BOOL	doDisplay = FALSE;
@@ -284,26 +284,27 @@ void CPatternDisplay::DisplayHVLinesPattern(COLORREF clr, BOOL vLines)
 		{
 			if ( Msg.message == WM_KEYDOWN )
 			{
+                ColorRGBDisplay clr2;
 				doDisplay = TRUE;
 				if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
 					bKeyTyped = TRUE;
 				else if ( Msg.wParam == VK_ADD || Msg.wParam == VK_PRIOR ) currentColor++;
 				else if ( Msg.wParam == VK_SUBTRACT || Msg.wParam == VK_NEXT ) currentColor--;         
-				else if ( Msg.wParam == VK_MULTIPLY || Msg.wParam == VK_HOME ) clr = CIRELevel(100,100,100,FALSE);
+				else if ( Msg.wParam == VK_MULTIPLY || Msg.wParam == VK_HOME ) clr2 = ColorRGBDisplay(100,100,100);
 				else if ( Msg.wParam == VK_SPACE ) m_Dot2 = !m_Dot2;
 				else doDisplay = FALSE;
 				if (currentColor > 3) currentColor = 0;
 				if (currentColor < 0) currentColor = 3;
 
 				switch (currentColor) {
-					case 0: clr = CIRELevel(100,100,100,FALSE); break;
-					case 1: clr = CIRELevel(100,0,0,FALSE); break;
-					case 2: clr = CIRELevel(0,100,0,FALSE); break;
-					case 3: clr = CIRELevel(0,0,100,FALSE); break;
+					case 0: clr2 = ColorRGBDisplay(100,100,100); break;
+					case 1: clr2 = ColorRGBDisplay(100,0,0); break;
+					case 2: clr2 = ColorRGBDisplay(0,100,0); break;
+					case 3: clr2 = ColorRGBDisplay(0,0,100); break;
 				}
 
 				if (doDisplay && !bKeyTyped)
-					m_patternDGenerator->DisplayHVLinesPattern(clr, m_Dot2, vLines);
+					m_patternDGenerator->DisplayHVLinesPattern(clr2, m_Dot2, vLines);
 
 			}
 			else if ( Msg.message == WM_TIMER )
@@ -364,7 +365,7 @@ void CPatternDisplay::DisplayColorLevelPattern(INT clrLevel)
 void CPatternDisplay::OnPatternBlack() 
 {
 	m_patternDGenerator->Init();
-	m_patternDGenerator->DisplayRGBColor(CIRELevel(0,0,0,FALSE),CGenerator::MT_PRIMARY);
+	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(0,0,0),CGenerator::MT_PRIMARY);
 	WaitKey();
 	m_patternDGenerator->Release();
 }
@@ -372,7 +373,7 @@ void CPatternDisplay::OnPatternBlack()
 void CPatternDisplay::OnPatternWhite() 
 {
 	m_patternDGenerator->Init();
-	m_patternDGenerator->DisplayRGBColor(CIRELevel(100,100,100,FALSE),CGenerator::MT_PRIMARY);
+	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(100,100,100),CGenerator::MT_PRIMARY);
 	WaitKey();
 	m_patternDGenerator->Release();
 }
@@ -380,7 +381,7 @@ void CPatternDisplay::OnPatternWhite()
 void CPatternDisplay::OnPatternRed() 
 {
 	m_patternDGenerator->Init();
-	m_patternDGenerator->DisplayRGBColor(CIRELevel(100,0,0,FALSE),CGenerator::MT_PRIMARY);
+	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(100,0,0),CGenerator::MT_PRIMARY);
 	WaitKey();
 	m_patternDGenerator->Release();
 }
@@ -388,7 +389,7 @@ void CPatternDisplay::OnPatternRed()
 void CPatternDisplay::OnPatternGreen() 
 {
 	m_patternDGenerator->Init();
-	m_patternDGenerator->DisplayRGBColor(CIRELevel(0,100,0,FALSE),CGenerator::MT_PRIMARY);
+	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(0,100,0),CGenerator::MT_PRIMARY);
 	WaitKey();
 	m_patternDGenerator->Release();
 }
@@ -396,7 +397,7 @@ void CPatternDisplay::OnPatternGreen()
 void CPatternDisplay::OnPatternBlue() 
 {
 	m_patternDGenerator->Init();
-	m_patternDGenerator->DisplayRGBColor(CIRELevel(0,0,100,FALSE),CGenerator::MT_PRIMARY);
+	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(0,0,100),CGenerator::MT_PRIMARY);
 	WaitKey();
 	m_patternDGenerator->Release();
 }
@@ -404,7 +405,7 @@ void CPatternDisplay::OnPatternBlue()
 void CPatternDisplay::OnPatternCyan() 
 {
 	m_patternDGenerator->Init();
-	m_patternDGenerator->DisplayRGBColor(CIRELevel(0,100,100,FALSE),CGenerator::MT_PRIMARY);
+	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(0,100,100),CGenerator::MT_PRIMARY);
 	WaitKey();
 	m_patternDGenerator->Release();
 }
@@ -412,7 +413,7 @@ void CPatternDisplay::OnPatternCyan()
 void CPatternDisplay::OnPatternMagenta() 
 {
 	m_patternDGenerator->Init();
-	m_patternDGenerator->DisplayRGBColor(CIRELevel(100,0,100,FALSE),CGenerator::MT_PRIMARY);
+	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(100,0,100),CGenerator::MT_PRIMARY);
 	WaitKey();
 	m_patternDGenerator->Release();
 }
@@ -420,7 +421,7 @@ void CPatternDisplay::OnPatternMagenta()
 void CPatternDisplay::OnPatternGrey() 
 {
 	m_patternDGenerator->Init();
-	m_patternDGenerator->DisplayRGBColor(CIRELevel(50,50,50,FALSE),CGenerator::MT_PRIMARY);
+	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(50,50,50),CGenerator::MT_PRIMARY);
 	WaitKey();
 	m_patternDGenerator->Release();
 }
@@ -428,39 +429,39 @@ void CPatternDisplay::OnPatternGrey()
 void CPatternDisplay::OnPatternYellow() 
 {
 	m_patternDGenerator->Init();
-	m_patternDGenerator->DisplayRGBColor(CIRELevel(100,100,0,FALSE),CGenerator::MT_PRIMARY);
+	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(100,100,0),CGenerator::MT_PRIMARY);
 	WaitKey();
 	m_patternDGenerator->Release();
 }
 
 void CPatternDisplay::OnPatternWhiteDot() 
 {
-	DisplayPattern(CIRELevel(100,100,100,FALSE),0);
+	DisplayPattern(ColorRGBDisplay(100,100,100),0);
 }
 
 void CPatternDisplay::OnPatternRedDot() 
 {
-	DisplayPattern(CIRELevel(100,0,0,FALSE),0);
+	DisplayPattern(ColorRGBDisplay(100,0,0),0);
 }
 
 void CPatternDisplay::OnPatternGreenDot() 
 {
-	DisplayPattern(CIRELevel(0,100,0,FALSE),0);
+	DisplayPattern(ColorRGBDisplay(0,100,0),0);
 }
 
 void CPatternDisplay::OnPatternBlueDot() 
 {
-	DisplayPattern(CIRELevel(0,0,100,FALSE),0);
+	DisplayPattern(ColorRGBDisplay(0,0,100),0);
 }
 
 void CPatternDisplay::OnPatternHLine() 
 {
-	DisplayHVLinesPattern(CIRELevel(100,100,100,FALSE), FALSE);
+	DisplayHVLinesPattern(ColorRGBDisplay(100,100,100), FALSE);
 }
 
 void CPatternDisplay::OnPatternVLine() 
 {
-	DisplayHVLinesPattern(CIRELevel(100,100,100,FALSE), TRUE);
+	DisplayHVLinesPattern(ColorRGBDisplay(100,100,100), TRUE);
 }
 
 void CPatternDisplay::OnPatternBw() 
@@ -513,7 +514,7 @@ void CPatternDisplay::OnPatternBlackP()
 	int iPercent=0;
 
 	m_patternDGenerator->Init();
-	m_patternDGenerator->DisplayRGBColor(CIRELevel(iPercent,FALSE),CGenerator::MT_PRIMARY);
+	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(double(iPercent)),CGenerator::MT_PRIMARY);
 	while ( ! bKeyTyped )
 	{
 		while ( PeekMessage ( & Msg, NULL, WM_KEYDOWN, WM_MOUSELAST, TRUE ) )
@@ -529,7 +530,7 @@ void CPatternDisplay::OnPatternBlackP()
 				else doDisplay = FALSE;
 				
 				if (doDisplay && !bKeyTyped)
-					m_patternDGenerator->DisplayRGBColor(CIRELevel(iPercent,FALSE),CGenerator::MT_PRIMARY);
+					m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(double(iPercent)),CGenerator::MT_PRIMARY);
 			}
 			else if ( Msg.message == WM_TIMER )
 			{
@@ -553,12 +554,12 @@ void CPatternDisplay::OnPatternColor()
 
 void CPatternDisplay::OnPatternConvGrid() 
 {
-	DisplayPattern(CIRELevel(0,0,0,FALSE),1);
+	DisplayPattern(ColorRGBDisplay(0,0,0),1);
 }
 
 void CPatternDisplay::OnPatternGeom() 
 {
-	DisplayPattern(CIRELevel(0,0,0,FALSE),2);
+	DisplayPattern(ColorRGBDisplay(0,0,0),2);
 }
 
 void CPatternDisplay::OnPatternPicture() 

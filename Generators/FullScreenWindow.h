@@ -102,13 +102,13 @@ public:
 
 	void SetDisplayMode (UINT nMode = DISPLAY_GDI);
 	void SetRGBScale (BOOL b16_235);
-	void DisplayRGBColor ( COLORREF clr, BOOL bDisableWaiting = FALSE );
+	void DisplayRGBColor(const ColorRGBDisplay& clr, BOOL bDisableWaiting = FALSE );
 	void DisplayAnsiBWRects(BOOL bInvert);
 	void DisplayAnimatedBlack();
 	void DisplayAnimatedWhite();
 	//Patterns
-	void DisplayDotPattern( COLORREF clr , BOOL dot2, UINT nPads);
-	void DisplayHVLinesPattern( COLORREF clr , BOOL dot2, BOOL vLines);
+	void DisplayDotPattern( const ColorRGBDisplay&  clr , BOOL dot2, UINT nPads);
+	void DisplayHVLinesPattern( const ColorRGBDisplay&  clr , BOOL dot2, BOOL vLines);
 	void DisplayColorLevelPattern(INT clrLevel , BOOL dot2, UINT nPads);
 	void DisplayGeomPattern(BOOL dot2, UINT nPads);
 	void DisplayConvPattern(BOOL dot2, UINT nPads);

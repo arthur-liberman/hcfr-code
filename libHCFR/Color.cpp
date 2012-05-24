@@ -365,67 +365,74 @@ Matrix defaultXYZToSensorMatrix=defaultSensorToXYZMatrix.GetInverse();
 CColor noDataColor(FX_NODATA,FX_NODATA,FX_NODATA);
 
 /////////////////////////////////////////////////////////////////////
-// CIRELevel Class
+// ColorRGBDisplay Class
 //
 //////////////////////////////////////////////////////////////////////
 
-CIRELevel::CIRELevel(double aIRELevel, bool bIRE, bool b16_235)
+ColorRGBDisplay::ColorRGBDisplay()
 {
-	m_b16_235 = b16_235;
-	if ( bIRE )
-	{
-		// IRE levels: adjust 7.5-100 scale to percent scale
-		if ( aIRELevel <= 7.5 )
-			aIRELevel = 0;
-		else 
-			aIRELevel = (aIRELevel-7.5)/0.925;
-	}
-
-	m_redIRELevel=m_greenIRELevel=m_blueIRELevel=aIRELevel;
 }
 
-CIRELevel::CIRELevel(double aRedIRELevel,double aGreenIRELevel,double aBlueIRELevel,bool bIRE,bool b16_235)
+ColorRGBDisplay::ColorRGBDisplay(double aGreyPercent)
 {
-	m_b16_235 = b16_235;
-	if ( bIRE )
-	{
-		// IRE levels: adjust 7.5-100 scale to percent scale
-		if ( aRedIRELevel <= 7.5 )
-			aRedIRELevel = 0;
-		else 
-			aRedIRELevel = (aRedIRELevel-7.5)/0.925;
+    (*this)[0] = aGreyPercent;
+    (*this)[1] = aGreyPercent;
+    (*this)[2] = aGreyPercent;
+}
 
-		if ( aGreenIRELevel <= 7.5 )
-			aGreenIRELevel = 0;
-		else 
-			aGreenIRELevel = (aGreenIRELevel-7.5)/0.925;
-
-		if ( aBlueIRELevel <= 7.5 )
-			aBlueIRELevel = 0;
-		else 
-			aBlueIRELevel = (aBlueIRELevel-7.5)/0.925;
-	}
-
-	m_redIRELevel=aRedIRELevel;
-	m_greenIRELevel=aGreenIRELevel;
-	m_blueIRELevel=aBlueIRELevel;
+ColorRGBDisplay::ColorRGBDisplay(double aRedPercent,double aGreenPercent,double aBluePercent)
+{
+    (*this)[0] = aRedPercent;
+    (*this)[1] = aGreenPercent;
+    (*this)[2] = aBluePercent;
 }
 
 #ifdef LIBHCFR_HAS_WIN32_API
-CIRELevel::operator COLORREF()
-{
-	double coef;
 
-	if ( m_b16_235 )
-	{
-		coef=(235.0-16.0)/100.0;
-		return RGB((BYTE)(16.0+ceil(m_redIRELevel*coef)),(BYTE)(16.0+ceil(m_greenIRELevel*coef)),(BYTE)(16.0+ceil(m_blueIRELevel*coef)));
-	}
-	else
-	{
-		coef=255.0/100.0;
-		return RGB((BYTE)(ceil(m_redIRELevel*coef)),(BYTE)(ceil(m_greenIRELevel*coef)),(BYTE)(ceil(m_blueIRELevel*coef)));
-	}
+ColorRGBDisplay::ColorRGBDisplay(COLORREF aColor)
+{
+    (*this)[0] = double(GetRValue(aColor)) / 2.55;
+    (*this)[1] = double(GetGValue(aColor)) / 2.55;
+    (*this)[2] = double(GetBValue(aColor)) / 2.55;
+}
+
+COLORREF ColorRGBDisplay::GetColorRef(bool is16_235) const
+{
+    BYTE r(ConvertPercentToBYTE((*this)[0], is16_235));
+    BYTE g(ConvertPercentToBYTE((*this)[1], is16_235));
+    BYTE b(ConvertPercentToBYTE((*this)[2], is16_235));
+    return RGB(r, g, b);
+}
+
+BYTE ColorRGBDisplay::ConvertPercentToBYTE(double percent, bool is16_235)
+{
+    double coef;
+    double offset;
+
+    if (is16_235)
+    {
+        coef = (235.0 - 16.0) / 100.0;
+        offset = 16.0;
+    }
+    else
+    {
+        coef = 255.0 / 100.0;
+        offset = 0.0;
+    }
+
+    int result((int)floor(offset + percent * coef + 0.5));
+    if(result < 0)
+    {
+        return 0;
+    }
+    else if(result > 255)
+    {
+        return 255;
+    }
+    else
+    {
+        return (BYTE)result;
+    }
 }
 #endif // #ifdef LIBHCFR_HAS_WIN32_API
 
@@ -1315,103 +1322,90 @@ void CSpectrum::Serialize(CArchive& archive)
 }
 #endif
 
-#ifdef LIBHCFR_HAS_WIN32_API
-void GenerateSaturationColors (const CColorReference& colorReference, COLORREF * GenColors, int nSteps, BOOL bRed, BOOL bGreen, BOOL bBlue, BOOL b16_235 )
+void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int nSteps, BOOL bRed, BOOL bGreen, BOOL bBlue)
 {
-	// Retrieve color luma coefficients matching actual reference
-	const double KR = colorReference.GetRedReferenceLuma ();  
-	const double KG = colorReference.GetGreenReferenceLuma ();
-	const double KB = colorReference.GetBlueReferenceLuma (); 
+    // Retrieve color luma coefficients matching actual reference
+    const double KR = colorReference.GetRedReferenceLuma ();  
+    const double KG = colorReference.GetGreenReferenceLuma ();
+    const double KB = colorReference.GetBlueReferenceLuma (); 
 
-	double K = ( bRed ? KR : 0.0 ) + ( bGreen ? KG : 0.0 ) + ( bBlue ? KB : 0.0 );
-	double luma = K * 255.0;	// Luma for pure color
+    double K = ( bRed ? KR : 0.0 ) + ( bGreen ? KG : 0.0 ) + ( bBlue ? KB : 0.0 );
 
-	// Compute vector between neutral gray and saturated color in CIExy space
-	ColorRGB Clr1;
-	double	xstart, ystart, xend, yend;
+    // Compute vector between neutral gray and saturated color in CIExy space
+    ColorRGB Clr1;
+    double	xstart, ystart, xend, yend;
 
-	// Retrieve gray xy coordinates
+    // Retrieve gray xy coordinates
     ColorxyY whitexyY(colorReference.GetWhite());
-	xstart = whitexyY[0];
-	ystart = whitexyY[1];
+    xstart = whitexyY[0];
+    ystart = whitexyY[1];
 
-	// Define target color in RGB mode
-	Clr1[0] = ( bRed ? 255.0 : 0.0 );
-	Clr1[1] = ( bGreen ? 255.0 : 0.0 );
-	Clr1[2] = ( bBlue ? 255.0 : 0.0 );
+    // Define target color in RGB mode
+    Clr1[0] = ( bRed ? 1.0 : 0.0 );
+    Clr1[1] = ( bGreen ? 1.0 : 0.0 );
+    Clr1[2] = ( bBlue ? 1.0 : 0.0 );
 
-	// Compute xy coordinates of 100% saturated color
-	ColorXYZ Clr2(Clr1, colorReference);
+    // Compute xy coordinates of 100% saturated color
+    ColorXYZ Clr2(Clr1, colorReference);
     ColorxyY Clr3(Clr2);
-	xend=Clr3[0];
-	yend=Clr3[1];
+    xend=Clr3[0];
+    yend=Clr3[1];
 
-	for ( int i = 0; i < nSteps ; i++ )
-	{
-		double	clr, comp;
+    for ( int i = 0; i < nSteps ; i++ )
+    {
+        double	clr, comp;
 
-		if ( i == 0 )
-		{
-			clr = luma;
-			comp = luma;
-		}
-		else if ( i == nSteps - 1 )
-		{
-			clr = 255.0;
-			comp = 0.0;
-		}
-		else
-		{
-			double x, y;
+        if ( i == 0 )
+        {
+            clr = K;
+            comp = K;
+        }
+        else if ( i == nSteps - 1 )
+        {
+            clr = 1.0;
+            comp = 0.0;
+        }
+        else
+        {
+            double x, y;
 
-			x = xstart + ( (xend - xstart) * (double) i / (double) (nSteps - 1) );
-			y = ystart + ( (yend - ystart) * (double) i / (double)(nSteps - 1) );
+            x = xstart + ( (xend - xstart) * (double) i / (double) (nSteps - 1) );
+            y = ystart + ( (yend - ystart) * (double) i / (double)(nSteps - 1) );
 
-			ColorxyY UnsatClr_xyY(x,y,luma);
+            ColorxyY UnsatClr_xyY(x,y,K);
+            ColorXYZ UnsatClr(UnsatClr_xyY);
 
-			ColorXYZ UnsatClr(UnsatClr_xyY);
+            ColorRGB UnsatClr_rgb(UnsatClr, colorReference);
 
-			ColorRGB UnsatClr_rgb(UnsatClr, colorReference);
+            // Both components are theoretically equal, get medium value
+            clr = ( ( ( bRed ? UnsatClr_rgb[0] : 0.0 ) + ( bGreen ? UnsatClr_rgb[1] : 0.0 ) + ( bBlue ? UnsatClr_rgb[2] : 0.0 ) ) / (double) ( bRed + bGreen + bBlue ) );
+            comp = ( ( K - ( K * (double) clr ) ) / ( 1.0 - K ) );
 
-			// Both components are theoretically equal, get medium value
-			clr = ( ( ( bRed ? UnsatClr_rgb[0] : 0.0 ) + ( bGreen ? UnsatClr_rgb[1] : 0.0 ) + ( bBlue ? UnsatClr_rgb[2] : 0.0 ) ) / (double) ( bRed + bGreen + bBlue ) );
-			comp = ( ( luma - ( K * (double) clr ) ) / ( 1.0 - K ) );
+            if ( clr < 0.0 )
+            {
+                clr = 0.0;
+            }
+            else if ( clr > 1.0 )
+            {
+                clr = 1.0;
+            }
+            if ( comp < 0.0 )
+            {
+                comp = 0.0;
+            }
+            else if ( comp > 255.0 )
+            {
+                comp = 255.0;
+            }
 
-			if ( clr < 0.0 )
-				clr = 0.0;
-			else if ( clr > 255.0 )
-				clr = 255.0;
+            // adjust "color gamma"
+            double clr2 = ( 100.0 * pow ( clr , 0.45 ) );
+            double comp2 = ( 100.0 * pow ( comp , 0.45 ) );
 
-			if ( comp < 0.0 )
-				comp = 0.0;
-			else if ( comp > 255.0 )
-				comp = 255.0;
-		}
-
-		// adjust "color gamma"
-		int	clr2, comp2;
-
-		if ( b16_235 )
-		{
-			clr2 = 16 + (int) ( 219.0 * pow ( clr / 255.0, 0.45 ) );
-			comp2 = 16 + (int) ( 219.0 * pow ( comp / 255.0, 0.45 ) );
-		}
-		else
-		{
-			clr2 = (int) ( 255.0 * pow ( clr / 255.0, 0.45 ) );
-			comp2 = (int) ( 255.0 * pow ( comp / 255.0, 0.45 ) );
-		}
-
-		GenColors [ i ] = RGB ( ( bRed ? clr2 : comp2 ), ( bGreen ? clr2 : comp2 ), ( bBlue ? clr2 : comp2 ) );
-
-#if 0
-	char szBuf [ 256 ];
-	sprintf(szBuf, "Color %d : R%3d, G%3d, B%3d\n", i, ( bRed ? clr2 : comp2 ), ( bGreen ? clr2 : comp2 ), ( bBlue ? clr2 : comp2 ) );
-	OutputDebugString ( szBuf );
-#endif
-	}
+            GenColors [ i ] = ColorRGBDisplay( ( bRed ? clr2 : comp2 ), ( bGreen ? clr2 : comp2 ), ( bBlue ? clr2 : comp2 ) );
+        }
+    }
 }
-#endif
 
 Matrix ComputeConversionMatrix3Colour(const ColorXYZ measures[3], const ColorXYZ references[3])
 {
@@ -1487,41 +1481,14 @@ Matrix ComputeConversionMatrix(const ColorXYZ measures[3], const ColorXYZ refere
     return transform;
 }
 
-double ArrayIndexToGrayLevel ( int nCol, int nSize, bool bIRE )
+double ArrayIndexToGrayLevel ( int nCol, int nSize)
 {
-	if ( bIRE )
-	{
-		// IRE levels: return value between 7.5 and 100
-		// Level 0 (black) is always 7.5,
-		// When there is less than 10 measure points, values are like percents (except black)
-		// When there is at least 11 points, level 1 is always 10, and other levels are regular
-		if ( nCol == 0 )
-			return 7.5;
-		else if ( nSize <= 11 )
-			return ( (double)nCol*100.0/(double)(nSize-1) );
-		else 
-			return ( 10.0 + ( (double)(nCol-1)*90.0/(double)(nSize-2) ) );
-	}
-	else
-	{
-		// Gray percent: return a value between 0 and 100
-		return ( (double)nCol*100.0/(double)(nSize-1) );
-	}
+    // Gray percent: return a value between 0 and 100
+    return ( (double)nCol*100.0/(double)(nSize-1) );
 }
 
-double GrayLevelToGrayProp ( double Level, bool bIRE )
+double GrayLevelToGrayProp ( double Level)
 {
-	if ( bIRE )
-	{
-		// IRE levels: return value between 0 and 1 from value between 7.5 and 100
-		if ( Level <= 7.5 )
-			return 0.0;
-		else
-			return ( Level - 7.5 ) / 92.5;
-	}
-	else
-	{
-		// Gray Level: return a value between 0 and 1
-		return Level / 100.0;
-	}
+    // Gray Level: return a value between 0 and 1
+    return Level / 100.0;
 }

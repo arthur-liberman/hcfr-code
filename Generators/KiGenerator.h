@@ -93,8 +93,8 @@ public:
 	virtual BOOL InitRealComPort();
 	virtual BOOL Release(INT nbNext = -1);
 	virtual BOOL ChangePatternSeries();
-	virtual BOOL DisplayGray(double aLevel, BOOL bIRE, MeasureType nPatternType, BOOL bChangePattern = TRUE);
-	virtual BOOL DisplayRGBColor(COLORREF aRGBColor , MeasureType nPatternType, UINT nPatternInfo = 0, BOOL bChangePattern = TRUE,BOOL bSilentMode = FALSE);
+	virtual BOOL DisplayGray(double aLevel, MeasureType nPatternType, BOOL bChangePattern = TRUE);
+	virtual BOOL DisplayRGBColor(const ColorRGBDisplay& aRGBColor , MeasureType nPatternType, UINT nPatternInfo = 0, BOOL bChangePattern = TRUE,BOOL bSilentMode = FALSE);
 	virtual BOOL DisplayAnsiBWRects(BOOL bInvert);
 	virtual BOOL CanDisplayAnsiBWRects(); 
 	virtual BOOL CanDisplayGrayAndColorsSeries();

@@ -66,7 +66,7 @@ public:
     virtual bool isValid() const {return false;}
 #endif
 private:
-    virtual CColor MeasureColorInternal(COLORREF aRGBValue);
+    virtual CColor MeasureColorInternal(const ColorRGBDisplay& aRGBValue);
 };
 
 #endif // !defined(AFX_SPYDER3SENSOR_H__1493C213_6A02_44C5_8EB7_55B469092E14__INCLUDED_)

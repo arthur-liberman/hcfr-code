@@ -75,13 +75,13 @@ public:
 	virtual void Serialize(CArchive& archive); 
 
 	virtual BOOL Init(UINT nbMeasure = 0);
-	virtual BOOL DisplayGray(double aLevel,BOOL bIRE,MeasureType nPatternType, BOOL bChangePattern = TRUE);
-	virtual BOOL DisplayRGBColor(COLORREF aRGBColor,MeasureType nPatternType, UINT nPatternInfo = 0,BOOL bChangePattern = TRUE,BOOL bSilentMode = FALSE);	// need to be overriden
+	virtual BOOL DisplayGray(double aLevel,MeasureType nPatternType, BOOL bChangePattern = TRUE);
+	virtual BOOL DisplayRGBColor(const ColorRGBDisplay& aRGBColor,MeasureType nPatternType, UINT nPatternInfo = 0,BOOL bChangePattern = TRUE,BOOL bSilentMode = FALSE);	// need to be overriden
 	virtual BOOL DisplayAnsiBWRects(BOOL bInvert);		// need to be overriden
 	virtual BOOL DisplayAnimatedBlack();				// need to be overriden
 	virtual BOOL DisplayAnimatedWhite();				// need to be overriden
-	virtual BOOL DisplayDotPattern( COLORREF clr , BOOL dot2, UINT nPads)  { return TRUE; };
-	virtual BOOL DisplayHVLinesPattern( COLORREF clr , BOOL dot2, BOOL vLines)  { return TRUE; };
+	virtual BOOL DisplayDotPattern(const ColorRGBDisplay& clr , BOOL dot2, UINT nPads)  { return TRUE; };
+	virtual BOOL DisplayHVLinesPattern(const ColorRGBDisplay& clr , BOOL dot2, BOOL vLines)  { return TRUE; };
 	virtual BOOL DisplayColorLevelPattern( INT clrLevel , BOOL dot2, UINT nPads) { return TRUE; };
 	virtual BOOL DisplayGeomPattern(BOOL dot2, UINT nPads) { return TRUE; };
 	virtual BOOL DisplayConvPattern(BOOL dot2, UINT nPads) { return TRUE; };

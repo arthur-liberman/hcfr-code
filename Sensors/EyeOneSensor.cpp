@@ -486,7 +486,7 @@ BOOL CEyeOneSensor::Release()
 	return CSensor::Release();
 }
 
-CColor CEyeOneSensor::MeasureColorInternal(COLORREF aRGBValue)
+CColor CEyeOneSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 {
 	CColor		EyeOneColor;
 #ifdef USE_NON_FREE_CODE
@@ -606,7 +606,7 @@ CColor CEyeOneSensor::MeasureColorInternal(COLORREF aRGBValue)
 					CTime theTime = CTime::GetCurrentTime(); 
 					CString s = theTime.Format( "%d/%m/%y %H:%M:%S" );		
 					FILE *f = fopen ( GetConfig () -> m_logFileName, "a" );
-					fprintf(f, "Eye One - %s : R:%3d G:%3d B:%3d (%d loops) : X:%5.3f Y:%5.3f Z:%5.3f |", s, GetRValue(aRGBValue), GetGValue(aRGBValue), GetBValue(aRGBValue), nLoops, xx, yy, zz );
+					fprintf(f, "Eye One - %s : R:%3f G:%3f B:%3f (%d loops) : X:%5.3f Y:%5.3f Z:%5.3f |", s, aRGBValue[0], aRGBValue[1], aRGBValue[2], nLoops, xx, yy, zz );
 					if ( bSpectrumOk )
 					{
 						for (int i = 0; i < SPECTRUM_BANDS ; i++ )

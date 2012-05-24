@@ -160,9 +160,9 @@ void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		for (int i=0; i<size; i++)
 		{
 			double x, valx, valy;
-			x = ArrayIndexToGrayLevel ( i, size, bIRE );
+			x = ArrayIndexToGrayLevel ( i, size);
 
-			valx=(GrayLevelToGrayProp(x,bIRE)+GammaOffset)/(1.0+GammaOffset);
+			valx=(GrayLevelToGrayProp(x)+GammaOffset)/(1.0+GammaOffset);
 			valy=pow(valx, GetConfig()->m_GammaRef);
 
 /*
@@ -191,9 +191,9 @@ void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		for (int i=0; i<size; i++)
 		{
 			double x, valx, valy;
-			x = ArrayIndexToGrayLevel ( i, size, bIRE );
+			x = ArrayIndexToGrayLevel ( i, size);
 
-			valx=(GrayLevelToGrayProp(x,bIRE)+GammaOffset)/(1.0+GammaOffset);
+			valx=(GrayLevelToGrayProp(x)+GammaOffset)/(1.0+GammaOffset);
 			valy=pow(valx, GammaOpt );
 
 			m_graphCtrl.AddPoint(m_avgGraphID, x, valy*100.0);
@@ -213,9 +213,9 @@ void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			for (int i=0; i<size; i++)
 			{
 				double x, valx, valy;
-				x = ArrayIndexToGrayLevel ( i, size, bIRE );
+				x = ArrayIndexToGrayLevel ( i, size );
 
-				valx=(GrayLevelToGrayProp(x,bIRE)+LuxGammaOffset)/(1.0+LuxGammaOffset);
+				valx=(GrayLevelToGrayProp(x)+LuxGammaOffset)/(1.0+LuxGammaOffset);
 				valy=pow(valx, LuxGammaOpt );
 
 				m_graphCtrl.AddPoint(m_luxmeterAvgGraphID, x, valy*100.0);
@@ -356,7 +356,7 @@ void CLuminanceGrapher::AddPointtoLumGraph(int ColorSpace,int ColorIndex,int Siz
 	// ne se fait plus avec l'échelle des x = % de blanc mais avec la formule : 
 	// (x + offset) / (1+offset) 
 
-	double x = ArrayIndexToGrayLevel ( PointIndex, Size, bIRE );
+	double x = ArrayIndexToGrayLevel ( PointIndex, Size );
 
 	m_graphCtrl.AddPoint(GraphID, x, (colorlevel/whitelvl)*100.0, lpMsg);
 }
