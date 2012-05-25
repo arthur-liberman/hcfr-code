@@ -411,7 +411,10 @@ LRESULT CMainView::OnSetUserInfoPostInitialUpdate(WPARAM wParam, LPARAM lParam)
 		OnSelchangeComboMode();
 
 		// Set m_displayType
-		SendMessage ( WM_COMMAND, IDC_XYZ_RADIO + ( ( m_dwInitialUserInfo >> 6 ) & 0x000F ) );
+        // this doesn't work and means there is a mismtach between what's shown in the
+        // radio buttons and the grid 
+        ///\todo fix this
+		//SendMessage ( WM_COMMAND, IDC_XYZ_RADIO + ( ( m_dwInitialUserInfo >> 6 ) & 0x000F ) );
 
 		// Set m_infoDisplay
 		m_comboDisplay.SetCurSel ( ( m_dwInitialUserInfo >> 10 ) & 0x003F );
