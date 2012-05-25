@@ -98,7 +98,7 @@ public:
 	static Matrix IdentityMatrix(int Diagonal);
 private:
     Matrix& AddRows(const int SourceRow, const int DestRow, const double factor);
-    Matrix& Matrix::DivideRow(const int Row, const double factor);
+    Matrix& DivideRow(const int Row, const double factor);
     Matrix& REF();
     Matrix& RREF();
 

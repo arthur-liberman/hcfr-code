@@ -1484,7 +1484,7 @@ BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	}
 
 	// Generate saturation colors for red
-	GenerateSaturationColors (GetColorReference(), GenColors, size, TRUE, FALSE, FALSE );
+	GenerateSaturationColors (GetColorReference(), GenColors, size, true, false, false );
 
 	for(int i=0;i<size;i++)
 	{
@@ -1637,7 +1637,7 @@ BOOL CMeasure::MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	}
 
 	// Generate saturation colors for green
-	GenerateSaturationColors (GetColorReference(), GenColors, size, FALSE, TRUE, FALSE );
+	GenerateSaturationColors (GetColorReference(), GenColors, size, false, true, false );
 
 	for(int i=0;i<size;i++)
 	{
@@ -1790,7 +1790,7 @@ BOOL CMeasure::MeasureBlueSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	}
 
 	// Generate saturation colors for blue
-	GenerateSaturationColors (GetColorReference(), GenColors, size, FALSE, FALSE, TRUE );
+	GenerateSaturationColors (GetColorReference(), GenColors, size, false, false, true );
 
 	for(int i=0;i<size;i++)
 	{
@@ -1943,7 +1943,7 @@ BOOL CMeasure::MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	}
 
 	// Generate saturation colors for yellow
-	GenerateSaturationColors (GetColorReference(), GenColors, size, TRUE, TRUE, FALSE );
+	GenerateSaturationColors (GetColorReference(), GenColors, size, true, true, false );
 
 	for(int i=0;i<size;i++)
 	{
@@ -2097,7 +2097,7 @@ BOOL CMeasure::MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	}
 
 	// Generate saturation colors for cyan
-	GenerateSaturationColors (GetColorReference(), GenColors, size, FALSE, TRUE, TRUE );
+	GenerateSaturationColors (GetColorReference(), GenColors, size, false, true, true );
 
 	for(int i=0;i<size;i++)
 	{
@@ -2251,7 +2251,7 @@ BOOL CMeasure::MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	}
 
 	// Generate saturation colors for magenta
-	GenerateSaturationColors (GetColorReference(), GenColors, size, TRUE, FALSE, TRUE );
+	GenerateSaturationColors (GetColorReference(), GenColors, size, true, false, true );
 
 	for(int i=0;i<size;i++)
 	{
@@ -2415,12 +2415,12 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 	}
 
 	// Generate saturations for all colors
-	GenerateSaturationColors (GetColorReference(), GenColors, size, TRUE, FALSE, FALSE );				// Red
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 1 ], size, FALSE, TRUE, FALSE );	// Green
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 2 ], size, FALSE, FALSE, TRUE );	// Blue
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 3 ], size, TRUE, TRUE, FALSE );	// Yellow
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 4 ], size, FALSE, TRUE, TRUE );	// Cyan
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 5 ], size, TRUE, FALSE, TRUE );	// Magenta
+	GenerateSaturationColors (GetColorReference(), GenColors, size, true, false, false );				// Red
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 1 ], size, false, true, false );	// Green
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 2 ], size, false, false, true );	// Blue
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 3 ], size, true, true, false );	// Yellow
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 4 ], size, false, true, true );	// Cyan
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 5 ], size, true, false, true );	// Magenta
 
 	for ( j = 0 ; j < ( bPrimaryOnly ? 3 : 6 ) ; j ++ )
 	{

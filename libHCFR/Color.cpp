@@ -1322,7 +1322,7 @@ void CSpectrum::Serialize(CArchive& archive)
 }
 #endif
 
-void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int nSteps, BOOL bRed, BOOL bGreen, BOOL bBlue)
+void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int nSteps, bool bRed, bool bGreen, bool bBlue)
 {
     // Retrieve color luma coefficients matching actual reference
     const double KR = colorReference.GetRedReferenceLuma ();  
