@@ -36,6 +36,7 @@
 -(HCFRColor*) initWithMatrix:(Matrix)newMatrix;
 -(HCFRColor*) initWithRGBMatrix:(Matrix)newMatrix colorReference:(HCFRColorReference*)reference;
 -(HCFRColor*) initWithColor:(CColor)newColor;
+-(HCFRColor*) initWithColorXYZ:(ColorXYZ)newColor;
 -(id) initWithCoder:(NSCoder*)coder;
 
 -(double) X;
@@ -60,21 +61,21 @@
  XYZ (c'est a dire l'instance interne, sans modification)
    @result     Une variable CColor.
 */
--(CColor) XYZColor;
+-(ColorXYZ) XYZColor;
   /*!
   @function 
    @abstract   Retourn une instance de CColor contenant les données RGB.
    @discussion 
    @result     Une variable CColor. Ce devrait être une matrice.
 */
--(CColor) RGBColorWithColorReference:(HCFRColorReference*)reference;
+-(ColorRGB) RGBColorWithColorReference:(HCFRColorReference*)reference;
 /*!
     @function 
     @abstract   Retourn le resultat de GetxyYValue de CColor
     @discussion Cette fonction est juste un pont pour son equivalent de la classe CColor
  (TODO : decrire le fonctionnement de cette fameuse fonction)
 */
--(CColor) xyYColor;
+-(ColorxyY) xyYColor;
 /*!
   @function 
    @abstract   Retourn le resultat de getLuminance de CColor

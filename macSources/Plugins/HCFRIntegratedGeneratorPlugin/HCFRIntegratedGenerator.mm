@@ -620,13 +620,14 @@
   double luma = K * 255.0;	// Luma for pure color
   
   // Compute vector between neutral gray and saturated color in CIExy space
-  CColor Clr1, Clr2, Clr3;
+  ColorRGB Clr1;
+  CColor Clr2;
   double	xstart, ystart, xend, yend;
   
   // Retrieve gray xy coordinates
-  CColor whitexyYValues = [colorReference white].GetxyYValue();
-  xstart = whitexyYValues.GetX();
-  ystart = whitexyYValues.GetY();
+  ColorxyY whitexyYValues = [colorReference white].GetxyYValue();
+  xstart = whitexyYValues[0];
+  ystart = whitexyYValues[1];
   
   // Define target color in RGB mode
   Clr1[0] = ( redSaturation ? 255.0 : 0.0 );
@@ -635,7 +636,7 @@
   
   // Compute xy coordinates of 100% saturated color
   Clr2.SetRGBValue(Clr1, [colorReference cColorReference]);
-  Clr3=Clr2.GetxyYValue();
+  ColorxyY Clr3=Clr2.GetxyYValue();
   xend=Clr3[0];
   yend=Clr3[1];
   
@@ -658,12 +659,12 @@
     x = xstart + ( (xend - xstart) * (percentage/100.0) );
     y = ystart + ( (yend - ystart) * (percentage/100.0) );
     
-    CColor UnsatClr_xyY(x,y,luma);
+    ColorxyY UnsatClr_xyY(x,y,luma);
     
     CColor UnsatClr;
     UnsatClr.SetxyYValue (UnsatClr_xyY);
     
-    CColor UnsatClr_rgb = UnsatClr.GetRGBValue ([colorReference cColorReference]);
+    ColorRGB UnsatClr_rgb = UnsatClr.GetRGBValue ([colorReference cColorReference]);
     
     // Both components are theoretically equal, get medium value
     clr = ( ( redSaturation ? UnsatClr_rgb[0] : 0.0 ) + ( greenSaturation ? UnsatClr_rgb[1] : 0.0 ) + ( blueSaturation ? UnsatClr_rgb[2] : 0.0 ) ) /

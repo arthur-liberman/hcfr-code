@@ -422,28 +422,28 @@ const float referenceSerieCurvesAlpha = 0.2;
   HCFRDataStoreEntry *firstEntry = [currentSerie entryAtIndex:0 forType:kLuminanceDataType];
   double  maxLumValue, maxRedValue, maxGreenValue, maxBlueValue;
   double  minLumValue, minRedValue, minGreenValue, minBlueValue;
-  CColor  minRGBColor = [[firstEntry value] RGBColorWithColorReference:[self colorReference]];
-  CColor  maxRGBColor = [[lastEntry value] RGBColorWithColorReference:[self colorReference]];
+  ColorRGB  minRGBColor = [[firstEntry value] RGBColorWithColorReference:[self colorReference]];
+  ColorRGB  maxRGBColor = [[lastEntry value] RGBColorWithColorReference:[self colorReference]];
   
   minLumValue = [[firstEntry value] luminance:true];
-  minRedValue = minRGBColor.GetX();
-  minGreenValue = minRGBColor.GetY();
-  minBlueValue = minRGBColor.GetZ();
+  minRedValue = minRGBColor[0];
+  minGreenValue = minRGBColor[1];
+  minBlueValue = minRGBColor[2];
   
   if ([[lastEntry referenceNumber] doubleValue] < 99)
   {
     float maxRef = [[lastEntry referenceNumber] doubleValue];
     maxLumValue = ([[lastEntry value] luminance:true] - minLumValue) * 100 / maxRef;
-    maxRedValue = (maxRGBColor.GetX() - minRedValue) * 100 / maxRef;
-    maxGreenValue = (maxRGBColor.GetY() - minGreenValue) * 100 / maxRef;
-    maxBlueValue = (maxRGBColor.GetZ() - minBlueValue) * 100 / maxRef;
+    maxRedValue = (maxRGBColor[0] - minRedValue) * 100 / maxRef;
+    maxGreenValue = (maxRGBColor[1] - minGreenValue) * 100 / maxRef;
+    maxBlueValue = (maxRGBColor[2] - minBlueValue) * 100 / maxRef;
   }
   else
   {
     maxLumValue = [[lastEntry value] luminance:true] - minLumValue;
-    maxRedValue = maxRGBColor.GetX() - minRedValue;
-    maxGreenValue = maxRGBColor.GetY() - minGreenValue;
-    maxBlueValue = maxRGBColor.GetZ() - minBlueValue;
+    maxRedValue = maxRGBColor[0] - minRedValue;
+    maxGreenValue = maxRGBColor[1] - minGreenValue;
+    maxBlueValue = maxRGBColor[2] - minBlueValue;
   }
   
   // on prépare les valeurs du graph des mesures

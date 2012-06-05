@@ -239,7 +239,7 @@
     NSAssert2(rowIndex < [currentSerie countForType:currentDataType], @"Entry #%d not available for type %d", rowIndex, currentDataType);
     HCFRDataStoreEntry  *theEntry = [currentSerie entryAtIndex:rowIndex forType:currentDataType];
 
-    CColor theColor;
+    Matrix theColor;
     if (currentMode == kXYZDisplayMode)
       theColor = [[theEntry value] XYZColor];
     else if (currentMode == kRGBDisplayMode)
@@ -303,11 +303,11 @@
       }
     }
     else if ([@"X" isEqualToString:[aTableColumn identifier]])
-      return [NSNumber numberWithDouble:theColor[0]];
+      return [NSNumber numberWithDouble:theColor[0][0]];
     else if ([@"Y" isEqualToString:[aTableColumn identifier]])
-      return [NSNumber numberWithDouble:theColor[1]];
+      return [NSNumber numberWithDouble:theColor[1][0]];
     else if ([@"Z" isEqualToString:[aTableColumn identifier]])
-      return [NSNumber numberWithDouble:theColor[02]];
+      return [NSNumber numberWithDouble:theColor[2][0]];
   }
   
   return @"N/A";

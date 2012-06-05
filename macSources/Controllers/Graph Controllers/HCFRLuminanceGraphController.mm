@@ -519,15 +519,15 @@ const float referenceSerieCurvesGamma = 0.2;
   HCFRDataStoreEntry *firstEntry = [currentSerie entryAtIndex:0 forType:kLuminanceDataType];
   double  maxLumValue, maxRedValue, maxGreenValue, maxBlueValue;
   double  minLumValue, minRedValue, minGreenValue, minBlueValue;
-  CColor  minRGBColor = [[firstEntry value] RGBColorWithColorReference:[self colorReference]];
-  CColor  maxRGBColor = [[lastEntry value] RGBColorWithColorReference:[self colorReference]];
+  ColorRGB  minRGBColor = [[firstEntry value] RGBColorWithColorReference:[self colorReference]];
+  ColorRGB  maxRGBColor = [[lastEntry value] RGBColorWithColorReference:[self colorReference]];
   
   if ([[NSUserDefaults standardUserDefaults] boolForKey:@"LuminanceGraphCompensate"])
   {
     minLumValue = [[firstEntry value] luminance:true]; // utilisée si l'option "compensate" est active
-    minRedValue = minRGBColor.GetX(); // utilisée si l'option "compensate" est active
-    minGreenValue = minRGBColor.GetY(); // utilisée si l'option "compensate" est active
-    minBlueValue = minRGBColor.GetZ(); // utilisée si l'option "compensate" est active
+    minRedValue = minRGBColor[0]; // utilisée si l'option "compensate" est active
+    minGreenValue = minRGBColor[1]; // utilisée si l'option "compensate" est active
+    minBlueValue = minRGBColor[2]; // utilisée si l'option "compensate" est active
   }
   else
   {
@@ -541,16 +541,16 @@ const float referenceSerieCurvesGamma = 0.2;
   {
     float maxRef = [[lastEntry referenceNumber] doubleValue];
     maxLumValue = ([[lastEntry value] luminance:true] - minLumValue) * 100 / maxRef;
-    maxRedValue = (maxRGBColor.GetX() - minRedValue) * 100 / maxRef;
-    maxGreenValue = (maxRGBColor.GetY() - minGreenValue) * 100 / maxRef;
-    maxBlueValue = (maxRGBColor.GetZ() - minBlueValue) * 100 / maxRef;
+    maxRedValue = (maxRGBColor[0] - minRedValue) * 100 / maxRef;
+    maxGreenValue = (maxRGBColor[1] - minGreenValue) * 100 / maxRef;
+    maxBlueValue = (maxRGBColor[2] - minBlueValue) * 100 / maxRef;
   }
   else
   {
     maxLumValue = [[lastEntry value] luminance:true] - minLumValue;
-    maxRedValue = maxRGBColor.GetX() - minRedValue;
-    maxGreenValue = maxRGBColor.GetY() - minGreenValue;
-    maxBlueValue = maxRGBColor.GetZ() - minBlueValue;
+    maxRedValue = maxRGBColor[0] - minRedValue;
+    maxGreenValue = maxRGBColor[1] - minGreenValue;
+    maxBlueValue = maxRGBColor[2] - minBlueValue;
   }
   
   // on applique la correction gamma à la valeur max
@@ -573,10 +573,10 @@ const float referenceSerieCurvesGamma = 0.2;
     // on applique la compensation du noir (minLumValue vaut 0 si l'option est inactivée)
     lumPoint.y = [[entry value] luminance:true]-minLumValue; // en pourcentage de la valeur max
     
-    CColor  rgbColor = [[entry value] RGBColorWithColorReference:[self colorReference]];
-    redPoint.y = rgbColor.GetX() - minRedValue;
-    greenPoint.y = rgbColor.GetY() - minGreenValue;
-    bluePoint.y = rgbColor.GetZ() - minBlueValue;
+    ColorRGB  rgbColor = [[entry value] RGBColorWithColorReference:[self colorReference]];
+    redPoint.y = rgbColor[0] - minRedValue;
+    greenPoint.y = rgbColor[1] - minGreenValue;
+    bluePoint.y = rgbColor[2] - minBlueValue;
     
     // et on applique le gamma
     //    newPoint.x = (newPoint.x+[self getCurrentGamma])/(1+[self getCurrentGamma]);

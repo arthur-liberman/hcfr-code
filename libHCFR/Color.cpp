@@ -33,6 +33,7 @@
 #include "LockWhileInScope.h"
 #include <math.h>
 #include <assert.h>
+#include <stdexcept>
 
 // critical section to be used in this file to
 // ensure config matrices don't get changed mid-calculation

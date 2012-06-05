@@ -152,8 +152,8 @@ typedef enum
                                                  forType:kLuminanceDataType];
     
     // on calcul la quantité de chaque primaire par rapport aux autres
-    CColor measureXyY=[[entry value] xyYColor];
-    CColor normColor;
+    ColorxyY measureXyY=[[entry value] xyYColor];
+    ColorXYZ normColor;
     
     normColor[0]=(measureXyY[0]/measureXyY[1]);
     normColor[1]=(1.0);
@@ -161,17 +161,17 @@ typedef enum
     
     // puis on converti le résultat en RGB pour affichage
     CColor tempColor(normColor);
-    normColor=tempColor.GetRGBValue([[self colorReference] cColorReference]);
+    ColorRGB normColorRGB=tempColor.GetRGBValue([[self colorReference] cColorReference]);
     
-    [redArray addObject:NSStringFromPoint(NSMakePoint([[entry referenceNumber] doubleValue], normColor[0]*100))];
-    [greenArray addObject:NSStringFromPoint(NSMakePoint([[entry referenceNumber] doubleValue], normColor[1]*100))];
-    [blueArray addObject:NSStringFromPoint(NSMakePoint([[entry referenceNumber] doubleValue], normColor[2]*100))];
+    [redArray addObject:NSStringFromPoint(NSMakePoint([[entry referenceNumber] doubleValue], normColorRGB[0]*100))];
+    [greenArray addObject:NSStringFromPoint(NSMakePoint([[entry referenceNumber] doubleValue], normColorRGB[1]*100))];
+    [blueArray addObject:NSStringFromPoint(NSMakePoint([[entry referenceNumber] doubleValue], normColorRGB[2]*100))];
     
     // on met à jour le min et le max
     for (int i=0; i<3; i++)
     {
-      maxDisplayedValue = fmax(maxDisplayedValue, normColor[i]*100);
-      minDisplayedValue = fmin(minDisplayedValue, normColor[i]*100);
+      maxDisplayedValue = fmax(maxDisplayedValue, normColorRGB[i]*100);
+      minDisplayedValue = fmin(minDisplayedValue, normColorRGB[i]*100);
     }
   }
 }

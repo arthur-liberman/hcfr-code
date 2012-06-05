@@ -340,14 +340,14 @@
     maxDisplayedValue = fmax(lumPoint.y, maxDisplayedValue);
     minDisplayedValue = fmin(lumPoint.y, minDisplayedValue);
     
-    CColor  rgbColor = [[entry value] RGBColorWithColorReference:[self colorReference]];
-    redPoint.y = rgbColor.GetX();
+    ColorRGB  rgbColor = [[entry value] RGBColorWithColorReference:[self colorReference]];
+    redPoint.y = rgbColor[0];
     maxDisplayedValue = fmax(redPoint.y, maxDisplayedValue);
     minDisplayedValue = fmin(redPoint.y, minDisplayedValue);
-    greenPoint.y = rgbColor.GetY();
+    greenPoint.y = rgbColor[1];
     maxDisplayedValue = fmax(greenPoint.y, maxDisplayedValue);
     minDisplayedValue = fmin(greenPoint.y, minDisplayedValue);
-    bluePoint.y = rgbColor.GetZ();
+    bluePoint.y = rgbColor[2];
     maxDisplayedValue = fmax(bluePoint.y, maxDisplayedValue);
     minDisplayedValue = fmin(bluePoint.y, minDisplayedValue);
     

@@ -183,11 +183,11 @@ enum {
     return;
   
   // On charge les coordonnées du blanc de référence
-	double xStart = [[self colorReference] white].GetxyYValue().GetX();
-	double yStart = [[self colorReference] white].GetxyYValue().GetY();
+	double xStart = [[self colorReference] white].GetxyYValue()[0];
+	double yStart = [[self colorReference] white].GetxyYValue()[1];
   
   // on prend le point à 100% de saturation, ou une couleur theorique si il n'a pas encore été mesurée.
-  CColor endColor;
+  ColorxyY endColor;
   double xEnd;
   double yEnd;
   if ([[[serie lastEntryForType:kRedSaturationDataType] referenceNumber] intValue] == 100)
@@ -200,8 +200,8 @@ enum {
   {
 		endColor=saturatedColor.GetxyYValue();
   }
-  xEnd = endColor.GetX();
-  yEnd = endColor.GetY();
+  xEnd = endColor[0];
+  yEnd = endColor[1];
   
   // Enfin, on calcul les valeurs
   int nbValues = [serie countForType:dataType];
@@ -210,9 +210,9 @@ enum {
   {
     HCFRDataStoreEntry  *currentEntry = [serie entryAtIndex:index forType:dataType];
     // la mesure
-    CColor              xyYEntry = [[currentEntry value] xyYColor];
-    double              xMeasure = xyYEntry.GetX();
-    double              yMeasure = xyYEntry.GetY();
+    ColorxyY              xyYEntry = [[currentEntry value] xyYColor];
+    double              xMeasure = xyYEntry[0];
+    double              yMeasure = xyYEntry[1];
         
     // la cible : on interpole linérairement entre le premier et le dernier point
     double xTarget = xStart + (xEnd - xStart) * [[currentEntry referenceNumber] intValue] / 100.0;
@@ -597,7 +597,7 @@ enum {
 #pragma mark Surcharge des fonctions de listener de HCFRGraphController
 -(void) entryAdded:(HCFRDataStoreEntry*)newEntry toSerie:(HCFRDataSerie*)serie forDataType:(HCFRDataType)dataType
 {
-  CColor rgbMatrix;
+  ColorRGB rgbMatrix;
   CColor tempColor;
     
    // Comme on calcule les valeur par rapport à la dernière valeur du graph, on doit retracer le
@@ -646,7 +646,7 @@ enum {
 }
 -(void) serie:(HCFRDataSerie*)serie changedForDataType:(HCFRDataType)dataType
 {
-  CColor rgbMatrix;
+  ColorRGB rgbMatrix;
   CColor tempColor;
   
   if (serie == [self currentSerie])
@@ -690,7 +690,7 @@ enum {
 }
 -(void) colorReferenceChanged:(HCFRColorReference*)oldReference
 {
-  CColor rgbMatrix;
+  ColorRGB rgbMatrix;
   CColor tempColor;
 
   // On recalcule les deux série (la série courante et la série de référence
@@ -737,7 +737,7 @@ enum {
 
 -(void) currentDataSerieChanged:(HCFRDataSerie*)oldSerie
 {
-  CColor rgbMatrix;
+  ColorRGB rgbMatrix;
   CColor tempColor;
 
   if (oldSerie != nil)
@@ -777,7 +777,7 @@ enum {
 }
 -(void) referenceDataSerieChanged:(HCFRDataSerie*)oldSerie
 {
-  CColor rgbMatrix;
+  ColorRGB rgbMatrix;
   CColor tempColor;
 
   rgbMatrix[0]=255; rgbMatrix[1]=0; rgbMatrix[2]=0;

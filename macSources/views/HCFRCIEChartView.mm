@@ -849,8 +849,8 @@ static double fBlackBody_xy[][2] = {
 #pragma mark Les fonctions de traduction couleur <-> coordonnées
 -(NSPoint) colorToCoordinates:(CColor)color
 {
-  CColor xyyValue = color.GetxyYValue();
-  NSPoint xyPoint = NSMakePoint(xyyValue.GetX(),xyyValue.GetY());
+  ColorxyY xyyValue = color.GetxyYValue();
+  NSPoint xyPoint = NSMakePoint(xyyValue[0],xyyValue[1]);
 
   return [self colorPointToCIECoordienates:xyPoint];
 }

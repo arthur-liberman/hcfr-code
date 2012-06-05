@@ -669,11 +669,11 @@
   try
   {
     // on récupère les différentes mesures sous forme de matrice
-    CColor measuredRedMatrix = [redMeasure XYZColor];
-    CColor measuredGreenMatrix = [greenMeasure XYZColor];
-    CColor measuredBlueMatrix = [blueMeasure XYZColor];
-    CColor measuredBlackMatrix = [blackMeasure XYZColor];
-    CColor measuredWhiteMatrix = [whiteMeasure XYZColor];
+    ColorXYZ measuredRedMatrix = [redMeasure XYZColor];
+    ColorXYZ measuredGreenMatrix = [greenMeasure XYZColor];
+    ColorXYZ measuredBlueMatrix = [blueMeasure XYZColor];
+    ColorXYZ measuredBlackMatrix = [blackMeasure XYZColor];
+    ColorXYZ measuredWhiteMatrix = [whiteMeasure XYZColor];
             
     if (YES)//compensateBlack) // TODO gérer ça via les prefs
     {
@@ -771,7 +771,7 @@
       
       // component gain for measured white
       Matrix invertedMeasures = measures.GetInverse();
-      Matrix measuredWhiteGain=invertedMeasures*measuredWhiteMatrix;
+      Matrix measuredWhiteGain =invertedMeasures*measuredWhiteMatrix;
       
       // transforme component gain matrix into a diagonal matrix
       Matrix diagonalReferenceWhite(0.0,3,3);
