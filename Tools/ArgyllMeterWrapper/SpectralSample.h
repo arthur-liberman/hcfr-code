@@ -31,6 +31,7 @@
 
 struct _ccss;
 typedef _ccss ccss;
+class CColor;
 
 class SpectralSample
 {
@@ -43,6 +44,10 @@ public:
     SpectralSample& operator=(const SpectralSample& s);
 
     bool Read(const std::string& samplePath);
+	bool Write(const std::string& samplePath);
+	bool loadMeasurementsFromTI3(const std::string& ti3Path, CColor** readings, int& nReadings);
+	bool createFromTI3(const std::string& ti3Path);
+	bool createFromMeasurements(const CColor spectralReadings[], const int nReadings);
 
     // Get information about the sample. Currently we're only using getDescription()
     // getTech() and getDisplay() are included for future flexibility
@@ -50,12 +55,14 @@ public:
     const char* getDisplay() const;
     const char* getTech() const;
     const char* getPath() const;
+	const char* getReferenceInstrument() const;
 
     void setDescription(const char* tech, const char* disp);
     void setDisplay(const char* disp);
     void setTech(const char* tech);
+	void setReferenceInstrument(const char* instr);
     void setPath(const char* path);
-    void setAll(const char* tech, const char* disp, const char* path);
+    void setAll(const char* tech, const char* disp, const char* instr, const char* path);
 
     // ArgyllMeterWrapper may access this member functions. It needs to be able to retrieve
     // a ccss structure in order to load it into the meter.
@@ -69,6 +76,7 @@ private:
     std::string m_Description;
     std::string m_Display;
     std::string m_Tech;
+	std::string m_RefInstrument;
 };
 
 

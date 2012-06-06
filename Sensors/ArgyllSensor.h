@@ -77,6 +77,7 @@ public:
     virtual bool isValid() const {return (m_meter != 0);}
     void FillDisplayTypeCombo(CComboBox& comboToFill);
     void FillSpectralTypeCombo(CComboBox& comboToFill);
+    virtual bool isColorimeter() const;
 private:
     virtual CColor MeasureColorInternal(const ColorRGBDisplay& aRGBValue);
 };

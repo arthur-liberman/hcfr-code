@@ -186,6 +186,7 @@ protected:
 	afx_msg void OnCalibrationSim();
 	afx_msg void OnCalibrationManual();
 	afx_msg void OnCalibrationExisting();
+	afx_msg void OnCalibrationSpectralSample();
 	afx_msg void OnSimGrayscale();
 	afx_msg void OnSimPrimaries();
 	afx_msg void OnSimSecondaries();

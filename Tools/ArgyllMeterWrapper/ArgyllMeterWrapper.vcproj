@@ -166,6 +166,10 @@
 				RelativePath=".\SpectralSampleFiles.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\CGATSFile.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -182,6 +186,10 @@
 			</File>
 			<File
 				RelativePath=".\SpectralSampleFiles.h"
+				>
+			</File>
+			<File
+				RelativePath=".\CGATSFile.h"
 				>
 			</File>
 		</Filter>

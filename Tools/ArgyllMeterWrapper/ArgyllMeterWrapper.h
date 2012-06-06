@@ -131,7 +131,7 @@ public:
     static ArgyllMeterWrappers getDetectedMeters(std::string& errorMessage);
 
     // is the meter a colorimeter rather than a spectrometer
-    bool isColorimeter();
+    virtual bool isColorimeter();
 
 
 

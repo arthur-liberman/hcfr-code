@@ -412,3 +412,8 @@ void ArgyllLogMessage(const char* messageType, char *fmt, va_list& args)
         fclose(logFile);
     }
 }
+
+bool CArgyllSensor::isColorimeter() const
+{
+    return m_meter->isColorimeter();
+}

@@ -97,6 +97,7 @@ public:
 
     virtual bool isValid() const {return true;}
 	virtual BOOL HasSpectrumCapabilities ( int * pNbBands, int * pMinWaveLength, int * pMaxWaveLength, double * pBandWidth ) { return FALSE; }
+    virtual bool isColorimeter() const { return true; }
 private:
     virtual CColor MeasureColorInternal(const ColorRGBDisplay& aRGBValue) { return noDataColor;};
 };

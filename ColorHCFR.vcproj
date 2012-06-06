@@ -2622,6 +2622,28 @@
 						/>
 					</FileConfiguration>
 				</File>
+				<File
+					RelativePath="Sensors\SpectralSampleDlg.cpp"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+				</File>
 			</Filter>
 			<Filter
 				Name="Color"
@@ -3212,6 +3234,10 @@
 				</File>
 				<File
 					RelativePath="Sensors\SpyderIIsensorproppage.h"
+					>
+				</File>
+				<File
+					RelativePath="Sensors\SpectralSampleDlg.h"
 					>
 				</File>
 			</Filter>
