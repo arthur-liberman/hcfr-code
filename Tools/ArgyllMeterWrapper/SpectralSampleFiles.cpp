@@ -29,7 +29,6 @@
 
 #define SALONEINSTLIB
 #define ENABLE_USB
-#define ENABLE_SERIAL
 #include "xspect.h"
 #include "ccss.h"
 #undef SALONEINSTLIB
