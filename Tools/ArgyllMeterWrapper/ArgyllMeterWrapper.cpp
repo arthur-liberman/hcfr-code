@@ -97,6 +97,9 @@ namespace
         std::vector<ArgyllMeterWrapper*> m_meters;
         ArgyllMeters()
         {
+            // technically we're supposed to call libusb_init() before calling any routines in libusb
+			// reinserted to prevent exception in io.c
+			libusb_init(0);
         }
         ~ArgyllMeters()
         {
@@ -105,6 +108,9 @@ namespace
                 delete m_meters[i];
             }
             m_meters.clear();
+            // good as place as any to clear up usb
+            libusb_exit(NULL);
+            
         }
     public:
         static ArgyllMeters& getInstance()
@@ -142,15 +148,16 @@ namespace
                         if(strncmp("COM", paths[i]->path, 3) != 0 && strncmp("com", paths[i]->path, 3) != 0)
                         {
                             // open the i1pro first until we work out how to handle the
-                            // driver path properly in icoms
-                            if(paths[i]->itype == instI1Pro)
+                            // driver path properly in icoms:no longer needed
+/*                            if(paths[i]->itype == instI1Pro)
                             {
                                 pathsToUse.insert(pathsToUse.begin(), i + 1);
-                            }
-                            else
-                            {
-                                pathsToUse.push_back(i + 1);
-                            }
+                            }  
+                            else 
+                           {
+*/
+							pathsToUse.push_back(i + 1);
+//                           } 
                         }
                     }
                 }
