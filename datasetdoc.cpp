@@ -487,7 +487,15 @@ BEGIN_MESSAGE_MAP(CDataSetDoc, CDocument)
 	ON_COMMAND(IDM_MEASURE_SAT_PRIMARIES, OnMeasureSatPrimaries)
 	ON_UPDATE_COMMAND_UI(IDM_MEASURE_SAT_PRIMARIES, OnUpdateMeasureSatPrimaries)
 	ON_COMMAND(IDM_SAVE_CALIBRATION_FILE, OnSaveCalibrationFile)
+	ON_COMMAND(IDM_MANUALLY_EDIT_SENSOR, OnConfigureSensor ) 
+	ON_COMMAND(IDM_LOAD_CALIBRATION_FILE, OnLoadCalibrationFile ) 
 	ON_UPDATE_COMMAND_UI(IDM_SAVE_CALIBRATION_FILE, OnUpdateSaveCalibrationFile)
+	ON_UPDATE_COMMAND_UI(IDM_LOAD_CALIBRATION_FILE, OnUpdateLoadCalibrationFile)
+	ON_UPDATE_COMMAND_UI(IDM_MANUALLY_EDIT_SENSOR, OnUpdateLoadCalibrationFile)
+	ON_UPDATE_COMMAND_UI(IDM_CALIBRATION_MANUAL, OnUpdateLoadCalibrationFile)
+	ON_UPDATE_COMMAND_UI(IDM_CALIBRATION_EXISTING, OnUpdateLoadCalibrationFile)
+	ON_UPDATE_COMMAND_UI(IDM_CALIBRATION_SIM, OnUpdateLoadCalibrationFile)
+	ON_UPDATE_COMMAND_UI(IDM_CALIBRATION_SPECTRAL, OnUpdateLoadCalibrationFile)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -1235,12 +1243,15 @@ void CDataSetDoc::AddMeasurement()
 void CDataSetDoc::OnConfigureSensor() 
 {
 	StopBackgroundMeasures ();
-
 	m_pSensor->Configure();
 	if( m_pSensor->IsModified() )
 	{
+		m_measure.ApplySensorAdjustmentMatrix(m_pSensor->GetSensorMatrix() );
+		m_pSensor->SetSensorMatrixOld( Matrix::IdentityMatrix(3) );
 		SetModifiedFlag(TRUE);
-		UpdateAllViews(NULL, UPD_SENSORCONFIG);
+		UpdateAllViews ( NULL, UPD_EVERYTHING );
+		AfxGetMainWnd () -> SendMessageToDescendants ( WM_COMMAND, IDM_REFRESH_REFERENCE );
+
 	}
 }
 
@@ -1460,6 +1471,7 @@ void CDataSetDoc::OnCalibrationExisting()
 	}
 
     ComputeAdjustmentMatrix();
+
 }
 
 void CDataSetDoc::OnCalibrationManual()
@@ -2121,6 +2133,7 @@ BOOL CDataSetDoc::ComputeAdjustmentMatrix()
         Matrix newMatrix = ConvMatrix * oldMatrix;
 		m_measure.ApplySensorAdjustmentMatrix( ConvMatrix );
         m_pSensor->SetSensorMatrix(newMatrix);
+		m_pSensor->SetSensorMatrixOld(Matrix::IdentityMatrix(3));
 		SetModifiedFlag(TRUE);
 		bOk = TRUE;
 	}
@@ -2128,6 +2141,9 @@ BOOL CDataSetDoc::ComputeAdjustmentMatrix()
 	{
 		AfxMessageBox ( IDS_INVALIDMEASUREMATRIX, MB_OK | MB_ICONERROR );
 	}
+	this->UpdateAllViews ( NULL, UPD_EVERYTHING );
+	AfxGetMainWnd () -> SendMessageToDescendants ( WM_COMMAND, IDM_REFRESH_REFERENCE );
+
 	return bOk;
 }
 
@@ -2869,9 +2885,9 @@ void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int Col
 			else
 				Offset_opt = 0.099;
 */			break;
-		case 4:
+		case 4: //optimized, we should replace with bt.1886
 			{
-				int		i;
+/*				int		i;
 				double	deltamin = -1;
 				double	offsetMin = 0;
 				double	offsetMax = 0.200;
@@ -2922,13 +2938,14 @@ void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int Col
 					gammaMax = Gamma_opt + gammaStep;
 					offsetStep /= 10.0;
 					gammaStep /= 10.0;
-				}
+				}*/
+				Offset_opt = 0.0;
 			}
 			break;
 		}
-
-		if ( nConfigOffsetType == 0 || nConfigOffsetType == 1 || nConfigOffsetType == 2 || nConfigOffsetType == 3 )
-		{
+// get point gammas for all config types now
+//		if ( nConfigOffsetType == 0 || nConfigOffsetType == 1 || nConfigOffsetType == 2 || nConfigOffsetType == 3 )
+//		{
 			double x, v;
 
 			for (int i=0; i<Size; i++)
@@ -2950,7 +2967,7 @@ void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int Col
 				}
 			}
 			Gamma_opt = avg / ( nb ? nb : 1 );
-		}
+//		}
 	}
 	*Offset = Offset_opt;
 	*Gamma = Gamma_opt;
@@ -3352,9 +3369,40 @@ void CDataSetDoc::OnSaveCalibrationFile()
 	m_pSensor -> SaveCalibrationFile ();
 }
 
-void CDataSetDoc::OnUpdateSaveCalibrationFile(CCmdUI* pCmdUI) 
+void CDataSetDoc::OnLoadCalibrationFile() 
 {
-	pCmdUI -> Enable ( m_pSensor -> IsCalibrated () );
+	CString		Msg, Title;
+
+	StopBackgroundMeasures ();
+
+	CPropertySheetWithHelp propSheet;
+	CSensorSelectionPropPage page;
+	propSheet.AddPage(&page);
+	propSheet.m_psh.dwFlags |= PSH_NOAPPLYNOW;
+
+	Title.LoadString ( IDM_LOAD_CALIBRATION_FILE );
+	propSheet.SetTitle ( Title );
+
+	page.m_sensorChoice=m_pSensor->GetName(); 	// default selection is current sensor
+	if( propSheet.DoModal() == IDOK )
+	{
+
+		if(page.m_sensorTrainingMode != 1)
+			m_pSensor->LoadCalibrationFile(page.m_trainingFileName);
+		m_pSensor->SetSensorMatrixOld(Matrix::IdentityMatrix(3));
+		m_measure.ApplySensorAdjustmentMatrix( m_pSensor->GetSensorMatrix() );
+		UpdateAllViews ( NULL, UPD_EVERYTHING );
+		SetModifiedFlag(TRUE);
+	}
 }
 
 
+void CDataSetDoc::OnUpdateLoadCalibrationFile(CCmdUI* pCmdUI) 
+{
+	pCmdUI -> Enable ( m_pSensor -> IsCalibrated () != 1 );
+}
+
+void CDataSetDoc::OnUpdateSaveCalibrationFile(CCmdUI* pCmdUI) 
+{
+	pCmdUI -> Enable ( m_pSensor -> IsCalibrated () == 1 );
+}
