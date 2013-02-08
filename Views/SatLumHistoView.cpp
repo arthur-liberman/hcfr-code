@@ -138,13 +138,14 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	}
 	
 	m_graphCtrl.ClearGraph(m_redLumGraphID);
+	double luma_coeff = ( 100.0 ) / pDoc->GetMeasure()->GetOnOffWhite().GetLuminance();
 	if (m_showPrimaries && m_redLumGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetRedSat(0).isValid() )
 	{
-		double red_coeff = ( KR * 100.0 ) / pDoc->GetMeasure()->GetRedSat(size-1).GetLuminance();
+//		double red_coeff = ( KR * 100.0 ) / pDoc->GetMeasure()->GetRedSat(size-1).GetLuminance();
 		
 		for (int i=0; i<size; i++)
 		{
-			double red_val = pDoc->GetMeasure()->GetRedSat(i).GetLuminance() * red_coeff;
+			double red_val = pDoc->GetMeasure()->GetRedSat(i).GetLuminance() * luma_coeff;
 			
 			m_graphCtrl.AddPoint(m_redLumGraphID, i*100/(size-1), red_val);
 		}
@@ -153,11 +154,11 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	m_graphCtrl.ClearGraph(m_greenLumGraphID);
 	if (m_showPrimaries && m_greenLumGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetGreenSat(0).isValid() )
 	{
-		double green_coeff = ( KG * 100.0 ) / pDoc->GetMeasure()->GetGreenSat(size-1).GetLuminance();
+//		double green_coeff = ( KG * 100.0 ) / pDoc->GetMeasure()->GetGreenSat(size-1).GetLuminance();
 		
 		for (int i=0; i<size; i++)
 		{
-			double green_val = pDoc->GetMeasure()->GetGreenSat(i).GetLuminance() * green_coeff;
+			double green_val = pDoc->GetMeasure()->GetGreenSat(i).GetLuminance() * luma_coeff;
 			
 			m_graphCtrl.AddPoint(m_greenLumGraphID, i*100/(size-1), green_val);
 		}
@@ -166,11 +167,11 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	m_graphCtrl.ClearGraph(m_blueLumGraphID);
 	if (m_showPrimaries && m_blueLumGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetBlueSat(0).isValid() )
 	{
-		double blue_coeff = ( KB * 100.0 ) / pDoc->GetMeasure()->GetBlueSat(size-1).GetLuminance();
+//		double blue_coeff = ( KB * 100.0 ) / pDoc->GetMeasure()->GetBlueSat(size-1).GetLuminance();
 		
 		for (int i=0; i<size; i++)
 		{
-			double blue_val = pDoc->GetMeasure()->GetBlueSat(i).GetLuminance() * blue_coeff;
+			double blue_val = pDoc->GetMeasure()->GetBlueSat(i).GetLuminance() * luma_coeff;
 			
 			m_graphCtrl.AddPoint(m_blueLumGraphID, i*100/(size-1), blue_val);
 		}
@@ -179,11 +180,11 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	m_graphCtrl.ClearGraph(m_yellowLumGraphID);
 	if (m_showSecondaries && m_yellowLumGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetYellowSat(0).isValid() )
 	{
-		double yellow_coeff = ( KY * 100.0 ) / pDoc->GetMeasure()->GetYellowSat(size-1).GetLuminance();
+//		double yellow_coeff = ( KY * 100.0 ) / pDoc->GetMeasure()->GetYellowSat(size-1).GetLuminance();
 		
 		for (int i=0; i<size; i++)
 		{
-			double yellow_val = pDoc->GetMeasure()->GetYellowSat(i).GetLuminance() * yellow_coeff;
+			double yellow_val = pDoc->GetMeasure()->GetYellowSat(i).GetLuminance() * luma_coeff;
 			
 			m_graphCtrl.AddPoint(m_yellowLumGraphID, i*100/(size-1), yellow_val);
 		}
@@ -192,11 +193,11 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	m_graphCtrl.ClearGraph(m_cyanLumGraphID);
 	if (m_showSecondaries && m_cyanLumGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetCyanSat(0).isValid() )
 	{
-		double cyan_coeff = ( KC * 100.0 ) / pDoc->GetMeasure()->GetCyanSat(size-1).GetLuminance();
+//		double cyan_coeff = ( KC * 100.0 ) / pDoc->GetMeasure()->GetCyanSat(size-1).GetLuminance();
 		
 		for (int i=0; i<size; i++)
 		{
-			double cyan_val = pDoc->GetMeasure()->GetCyanSat(i).GetLuminance() * cyan_coeff;
+			double cyan_val = pDoc->GetMeasure()->GetCyanSat(i).GetLuminance() * luma_coeff;
 			
 			m_graphCtrl.AddPoint(m_cyanLumGraphID, i*100/(size-1), cyan_val);
 		}
@@ -205,11 +206,11 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	m_graphCtrl.ClearGraph(m_magentaLumGraphID);
 	if (m_showSecondaries && m_magentaLumGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetMagentaSat(0).isValid() )
 	{
-		double magenta_coeff = ( KM * 100.0 ) / pDoc->GetMeasure()->GetMagentaSat(size-1).GetLuminance();
+//		double magenta_coeff = ( KM * 100.0 ) / pDoc->GetMeasure()->GetMagentaSat(size-1).GetLuminance();
 		
 		for (int i=0; i<size; i++)
 		{
-			double magenta_val = pDoc->GetMeasure()->GetMagentaSat(i).GetLuminance() * magenta_coeff;
+			double magenta_val = pDoc->GetMeasure()->GetMagentaSat(i).GetLuminance() * luma_coeff;
 			
 			m_graphCtrl.AddPoint(m_magentaLumGraphID, i*100/(size-1), magenta_val);
 		}
@@ -226,11 +227,11 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	{
 		if (m_showPrimaries && m_redLumDataRefGraphID != -1 && size > 0 && pDataRef->GetMeasure()->GetRedSat(0).isValid() )
 		{
-			double red_coeff = ( KR * 100.0 ) / pDataRef->GetMeasure()->GetRedSat(size-1).GetLuminance();
+//			double red_coeff = ( KR * 100.0 ) / pDataRef->GetMeasure()->GetRedSat(size-1).GetLuminance();
 			
 			for (int i=0; i<size; i++)
 			{
-				double red_val = pDataRef->GetMeasure()->GetRedSat(i).GetLuminance() * red_coeff;
+				double red_val = pDataRef->GetMeasure()->GetRedSat(i).GetLuminance() * luma_coeff;
 				
 				m_graphCtrl.AddPoint(m_redLumDataRefGraphID, i*100/(size-1), red_val);
 			}
@@ -238,11 +239,11 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 		if (m_showPrimaries && m_greenLumDataRefGraphID != -1 && size > 0 && pDataRef->GetMeasure()->GetGreenSat(0).isValid() )
 		{
-			double green_coeff = ( KG * 100.0 ) / pDataRef->GetMeasure()->GetGreenSat(size-1).GetLuminance();
+//			double green_coeff = ( KG * 100.0 ) / pDataRef->GetMeasure()->GetGreenSat(size-1).GetLuminance();
 			
 			for (int i=0; i<size; i++)
 			{
-				double green_val = pDataRef->GetMeasure()->GetGreenSat(i).GetLuminance() * green_coeff;
+				double green_val = pDataRef->GetMeasure()->GetGreenSat(i).GetLuminance() * luma_coeff;
 				
 				m_graphCtrl.AddPoint(m_greenLumDataRefGraphID, i*100/(size-1), green_val);
 			}
@@ -250,11 +251,11 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 		if (m_showPrimaries && m_blueLumDataRefGraphID != -1 && size > 0 && pDataRef->GetMeasure()->GetBlueSat(0).isValid() )
 		{
-			double blue_coeff = ( KB * 100.0 ) / pDataRef->GetMeasure()->GetBlueSat(size-1).GetLuminance();
+//			double blue_coeff = ( KB * 100.0 ) / pDataRef->GetMeasure()->GetBlueSat(size-1).GetLuminance();
 			
 			for (int i=0; i<size; i++)
 			{
-				double blue_val = pDataRef->GetMeasure()->GetBlueSat(i).GetLuminance() * blue_coeff;
+				double blue_val = pDataRef->GetMeasure()->GetBlueSat(i).GetLuminance() * luma_coeff;
 				
 				m_graphCtrl.AddPoint(m_blueLumDataRefGraphID, i*100/(size-1), blue_val);
 			}
@@ -262,11 +263,11 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 		if (m_showSecondaries && m_yellowLumDataRefGraphID != -1 && size > 0 && pDataRef->GetMeasure()->GetYellowSat(0).isValid() )
 		{
-			double yellow_coeff = ( KY * 100.0 ) / pDataRef->GetMeasure()->GetYellowSat(size-1).GetLuminance();
+//			double yellow_coeff = ( KY * 100.0 ) / pDataRef->GetMeasure()->GetYellowSat(size-1).GetLuminance();
 			
 			for (int i=0; i<size; i++)
 			{
-				double yellow_val = pDataRef->GetMeasure()->GetYellowSat(i).GetLuminance() * yellow_coeff;
+				double yellow_val = pDataRef->GetMeasure()->GetYellowSat(i).GetLuminance() * luma_coeff;
 				
 				m_graphCtrl.AddPoint(m_yellowLumDataRefGraphID, i*100/(size-1), yellow_val);
 			}
@@ -274,11 +275,11 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 		if (m_showSecondaries && m_cyanLumDataRefGraphID != -1 && size > 0 && pDataRef->GetMeasure()->GetCyanSat(0).isValid() )
 		{
-			double cyan_coeff = ( KC * 100.0 ) / pDataRef->GetMeasure()->GetCyanSat(size-1).GetLuminance();
+//			double cyan_coeff = ( KC * 100.0 ) / pDataRef->GetMeasure()->GetCyanSat(size-1).GetLuminance();
 			
 			for (int i=0; i<size; i++)
 			{
-				double cyan_val = pDataRef->GetMeasure()->GetCyanSat(i).GetLuminance() * cyan_coeff;
+				double cyan_val = pDataRef->GetMeasure()->GetCyanSat(i).GetLuminance() * luma_coeff;
 				
 				m_graphCtrl.AddPoint(m_cyanLumDataRefGraphID, i*100/(size-1), cyan_val);
 			}
@@ -286,11 +287,11 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 		if (m_showSecondaries && m_magentaLumDataRefGraphID != -1 && size > 0 && pDataRef->GetMeasure()->GetMagentaSat(0).isValid() )
 		{
-			double magenta_coeff = ( KM * 100.0 ) / pDataRef->GetMeasure()->GetMagentaSat(size-1).GetLuminance();
+//			double magenta_coeff = ( KM * 100.0 ) / pDataRef->GetMeasure()->GetMagentaSat(size-1).GetLuminance();
 			
 			for (int i=0; i<size; i++)
 			{
-				double magenta_val = pDataRef->GetMeasure()->GetMagentaSat(i).GetLuminance() * magenta_coeff;
+				double magenta_val = pDataRef->GetMeasure()->GetMagentaSat(i).GetLuminance() * luma_coeff;
 				
 				m_graphCtrl.AddPoint(m_magentaLumDataRefGraphID, i*100/(size-1), magenta_val);
 			}

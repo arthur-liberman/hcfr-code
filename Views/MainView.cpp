@@ -39,6 +39,7 @@
 #include "MeasuresHistoView.h"
 #include "SpectrumDlg.h"
 
+
 #include "DocEnumerator.h"	//Ki
 
 #include <math.h>
@@ -1220,14 +1221,28 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 			}
 			else 
 			{
-				m_grayScaleGroup.SetHilighted(0);
-				m_sensorGroup.SetHilighted(0);
-				m_generatorGroup.SetHilighted(0);
-				m_datarefGroup.SetHilighted(0);
-				m_displayGroup.SetHilighted(0);
-				m_paramGroup.SetHilighted(0);
-				m_selectGroup.SetHilighted(0);
-				m_viewGroup.SetHilighted(0);
+				if ( GetDocument()->m_pSensor->IsCalibrated() == 1 ) 
+				{ 
+					m_grayScaleGroup.SetHilighted(2);
+					m_sensorGroup.SetHilighted(2);
+					m_generatorGroup.SetHilighted(2);
+					m_datarefGroup.SetHilighted(2);
+					m_displayGroup.SetHilighted(2);
+					m_paramGroup.SetHilighted(2);
+					m_selectGroup.SetHilighted(2);
+					m_viewGroup.SetHilighted(2);
+				}
+				else
+				{
+					m_grayScaleGroup.SetHilighted(0);
+					m_sensorGroup.SetHilighted(0);
+					m_generatorGroup.SetHilighted(0);
+					m_datarefGroup.SetHilighted(0);
+					m_displayGroup.SetHilighted(0);
+					m_paramGroup.SetHilighted(0);
+					m_selectGroup.SetHilighted(0);
+					m_viewGroup.SetHilighted(0);
+				}
 			}
 
 			//Update checkbox value
@@ -1236,11 +1251,11 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 			else
 				m_datarefCheckButton = FALSE;
 		}
+		
+		m_AdjustXYZCheckButton.EnableWindow ( GetDocument()->m_pSensor->IsCalibrated () > 0 );
+		m_AdjustXYZCheckButton.SetCheck ( GetDocument()->m_pSensor->IsCalibrated () == 1 );
 
-		m_AdjustXYZCheckButton.EnableWindow ( FALSE );
-		m_AdjustXYZCheckButton.SetCheck ( FALSE );
-
-		if (m_displayType == HCFR_xyz2_VIEW )
+		if ( GetDocument()->m_pSensor->IsCalibrated () == 1 || m_displayType == HCFR_xyz2_VIEW )
 		{
 			if ( m_editCheckButton.GetCheck () )
 			{
@@ -1287,7 +1302,14 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 		else if ( aComponentNum == 3 )
 		{
 			if ( aReference.isValid() )
-				str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula) );
+				// Use original u'v' dE for grey scale as this is standard practice
+				if (m_displayMode == 0)
+					if ( nCol > 1 )
+						str.Format("%.1f",aMeasure.GetDeltaE ( aReference ));
+					else
+						str.Empty ();
+				else
+					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula) );
 			else
 				str.Empty ();
 		}
@@ -1301,7 +1323,10 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 		else if ( aComponentNum == 5 )
 		{
 			if ( aRefDocColor.isValid() )
-				str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aRefDocColor, YWhiteRefDoc, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula) );
+				if (m_displayMode == 0)
+					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aRefDocColor, YWhiteRefDoc, GetColorReference(), true ));
+				else
+					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aRefDocColor, YWhiteRefDoc, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula) );
 			else
 				str.Empty ();
 		}
@@ -1328,6 +1353,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				if ( nCol > 1 && nCol < nGrayScaleSize )
 				{
 					CColor White = GetDocument() -> GetMeasure () -> GetGray ( nGrayScaleSize - 1 );
+					CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
 
 					if ( White.isValid() )
 					{
@@ -1339,11 +1365,23 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 							yblack = GetDocument() -> GetMeasure () -> GetGray ( 0 ).GetY ();
 
 						x = ArrayIndexToGrayLevel ( nCol - 1, nGrayScaleSize );
-
+						if (GetConfig()->m_GammaOffsetType == 4)
+						{
+							//BT.1886 L = a(max[(V + b),0])^2.4
+							double maxL = White.GetY();
+							double minL = Black.GetY();
+							double a = pow ( ( pow (maxL,1.0/2.4 ) - pow ( minL,1.0/2.4 ) ),2.4 );
+							double b = ( pow ( minL,1.0/2.4 ) ) / ( pow (maxL,1.0/2.4 ) - pow ( minL,1.0/2.4 ) );
+							valx = GrayLevelToGrayProp(x);
+							valy = ( a * pow ( (valx + b)<0?0:(valx+b), 2.4 ) );
+							str.Format ( "%.3f", valy );
+						}
+						else
+						{
 						valx=(GrayLevelToGrayProp(x)+Offset)/(1.0+Offset);
 						valy=pow(valx, GetConfig()->m_GammaRef);
-						
 						str.Format ( "%.3f", yblack + ( valy * ( White.GetY () - yblack ) ) );
+						}
 					}
 				}
 			}
@@ -1852,7 +1890,8 @@ void CMainView::UpdateGrid()
 				case 5:
 					 aColor = GetDocument()->GetMeasure()->GetRedSat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefSat(0,(double)j/(double)(nCount-1));
-					 YWhite = GetDocument()->GetMeasure()->GetRedSat(nCount-1).GetY() / refColor.GetY ();
+//					 YWhite = GetDocument()->GetMeasure()->GetRedSat(nCount-1).GetY() / refColor.GetY ();
+					 YWhite = YWhiteOnOff;
 
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetRedSat(j);
@@ -1861,7 +1900,8 @@ void CMainView::UpdateGrid()
 				case 6:
 					 aColor = GetDocument()->GetMeasure()->GetGreenSat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefSat(1,(double)j/(double)(nCount-1));
-					 YWhite = GetDocument()->GetMeasure()->GetGreenSat(nCount-1).GetY() / refColor.GetY ();
+//					 YWhite = GetDocument()->GetMeasure()->GetGreenSat(nCount-1).GetY() / refColor.GetY ();
+					 YWhite = YWhiteOnOff;
 
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetGreenSat(j);
@@ -1870,7 +1910,8 @@ void CMainView::UpdateGrid()
 				case 7:
 					 aColor = GetDocument()->GetMeasure()->GetBlueSat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefSat(2,(double)j/(double)(nCount-1));
-					 YWhite = GetDocument()->GetMeasure()->GetBlueSat(nCount-1).GetY() / refColor.GetY ();
+//					 YWhite = GetDocument()->GetMeasure()->GetBlueSat(nCount-1).GetY() / refColor.GetY ();
+					 YWhite = YWhiteOnOff;
 
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetBlueSat(j);
@@ -1879,7 +1920,8 @@ void CMainView::UpdateGrid()
 				case 8:
 					 aColor = GetDocument()->GetMeasure()->GetYellowSat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefSat(3,(double)j/(double)(nCount-1));
-					 YWhite = GetDocument()->GetMeasure()->GetYellowSat(nCount-1).GetY() / refColor.GetY ();
+//					 YWhite = GetDocument()->GetMeasure()->GetYellowSat(nCount-1).GetY() / refColor.GetY ();
+					 YWhite = YWhiteOnOff;
 
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetYellowSat(j);
@@ -1888,7 +1930,8 @@ void CMainView::UpdateGrid()
 				case 9:
 					 aColor = GetDocument()->GetMeasure()->GetCyanSat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefSat(4,(double)j/(double)(nCount-1));
-					 YWhite = GetDocument()->GetMeasure()->GetCyanSat(nCount-1).GetY() / refColor.GetY ();
+//					 YWhite = GetDocument()->GetMeasure()->GetCyanSat(nCount-1).GetY() / refColor.GetY ();
+					 YWhite = YWhiteOnOff;
 					 
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetCyanSat(j);
@@ -1897,7 +1940,8 @@ void CMainView::UpdateGrid()
 				case 10:
 					 aColor = GetDocument()->GetMeasure()->GetMagentaSat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefSat(5,(double)j/(double)(nCount-1));
-					 YWhite = GetDocument()->GetMeasure()->GetMagentaSat(nCount-1).GetY() / refColor.GetY ();
+//					 YWhite = GetDocument()->GetMeasure()->GetMagentaSat(nCount-1).GetY() / refColor.GetY ();
+					 YWhite = YWhiteOnOff;
 
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetMagentaSat(j);
@@ -2010,13 +2054,14 @@ void CMainView::UpdateGrid()
 				sprintf ( szBuf, ": %.2f, ", Gamma );
 				Msg += szBuf;
 					
-				if ( GetConfig () -> m_GammaOffsetType == 4 )
+/*				if ( GetConfig () -> m_GammaOffsetType == 4 )  //removed when replacing with BT.1886
 				{
 					Tmp.LoadString ( IDS_OFFSET );
 					Msg += Tmp;
 					sprintf ( szBuf, ": %.4f, ", Offset );
 					Msg += szBuf;
 				}
+*/
 
 				Tmp.LoadString ( IDS_CONTRAST );
 				Msg += Tmp;
@@ -3783,7 +3828,37 @@ void CMainView::OnDatarefCheck()
 
 void CMainView::OnAdjustXYZCheck()
 {
-    ///\todo remove
+	BOOL	bAdjust = m_AdjustXYZCheckButton.GetCheck ();
+	Matrix CurrentMatrix = GetDocument ()->m_pSensor->GetSensorMatrix();
+	
+
+	if (!bAdjust) //restore uncorrected sensor values
+	{
+		ASSERT(0);
+		GetDocument ()->m_pSensor->SetSensorMatrixOld( CurrentMatrix );
+		GetDocument ()->m_pSensor->SetSensorMatrix( Matrix::IdentityMatrix(3) );
+		GetDocument ()->m_measure.ApplySensorAdjustmentMatrix( CurrentMatrix.GetInverse() );
+		m_AdjustXYZCheckButton.SetCheck(FALSE);
+	}
+	else  //reapply saved correction matrix
+	{
+		ASSERT(0);
+		GetDocument ()->m_pSensor->SetSensorMatrix( GetDocument ()->m_pSensor->GetSensorMatrixOld() );
+		GetDocument ()->m_measure.ApplySensorAdjustmentMatrix(GetDocument ()->m_pSensor->GetSensorMatrixOld() );
+		GetDocument ()->m_pSensor->SetSensorMatrixOld( Matrix::IdentityMatrix(3) );
+		m_AdjustXYZCheckButton.SetCheck(TRUE);
+	}
+
+	if ( m_pGrayScaleGrid->GetSelectedCellRange().IsValid () )
+	{
+		m_pGrayScaleGrid->SetSelectedRange(-1,-1,-1,-1);
+		m_pGrayScaleGrid->SetFocusCell(-1,-1);
+		SetSelectedColor ( noDataColor );
+		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+	}
+
+	GetDocument()->UpdateAllViews ( NULL, UPD_EVERYTHING );
+	AfxGetMainWnd () -> SendMessageToDescendants ( WM_COMMAND, IDM_REFRESH_REFERENCE );
 }
 
 

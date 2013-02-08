@@ -111,9 +111,8 @@ void CGammaGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 	if (pDoc->GetMeasure()->GetGray(0).isValid())
 		bDataPresent = TRUE;
-
 	if (pDataRef && !pDataRef->GetMeasure()->GetGray(0).isValid())
-		pDataRef = NULL;
+	    	pDataRef = NULL;
 
 	m_graphCtrl.ClearGraph(m_refLogGraphID);
 	m_graphCtrl.ClearGraph(m_avgLogGraphID);
@@ -132,14 +131,26 @@ void CGammaGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	if (m_showReference && m_refLogGraphID != -1 && size > 0)
 	{	
 		// log scale is not valid for first and last value
+
 		for (int i=1; i<size-1; i++)
 		{
 			double x, valx, valy;
 			x = ArrayIndexToGrayLevel ( i, size );
-
-			valx=(GrayLevelToGrayProp(x)+GammaOffset)/(1.0+GammaOffset);
-			valy=pow(valx, GetConfig()->m_GammaRef);
-
+			if (GetConfig()->m_GammaOffsetType == 4)
+			{
+				//BT.1886 L = a(max[(V + b),0])^2.4
+				double maxL = pDoc->GetMeasure()->GetGray(size-1).GetY();
+				double minL = pDoc->GetMeasure()->GetGray(0).GetY();
+				double a = pow ( ( pow (maxL,1.0/2.4 ) - pow ( minL,1.0/2.4 ) ),2.4 );
+				double b = ( pow ( minL,1.0/2.4 ) ) / ( pow (maxL,1.0/2.4 ) - pow ( minL,1.0/2.4 ) );
+				valx = GrayLevelToGrayProp(x);
+				valy = ( a * pow ( (valx + b)<0?0:(valx+b), 2.4 ) ) / maxL ;
+			}
+			else
+			{
+				valx=(GrayLevelToGrayProp(x)+GammaOffset)/(1.0+GammaOffset);
+				valy=pow(valx, GetConfig()->m_GammaRef);
+			}
 /*
 			if ( GetConfig()->m_bUseReferenceGamma )
 			{
@@ -151,7 +162,7 @@ void CGammaGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 */
 
 			if( valy > 0 && valx > 0)
-				m_graphCtrl.AddPoint(m_refLogGraphID, x, log(valy)/log(valx));
+				m_graphCtrl.AddPoint(m_refLogGraphID, x, log(valy)/ log(valx));
 		}
 	}
 	
