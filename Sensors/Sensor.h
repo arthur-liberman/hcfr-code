@@ -44,6 +44,7 @@ protected:
 	CString m_errorString;
 	BOOL m_isMeasureValid;
 	Matrix m_sensorToXYZMatrix;
+	Matrix m_sensorToXYZMatrixOld;
 	time_t m_calibrationTime;
 	int		m_PropertySheetTitle;
 	CSensorPropPage m_SensorPropertiesPage;
@@ -70,7 +71,9 @@ public:
 	virtual void SaveCalibrationFile() { return ; }
 
 	void SetSensorMatrix(Matrix aMatrix) { m_sensorToXYZMatrix=aMatrix; m_calibrationTime=time(NULL);}
+	void SetSensorMatrixOld(Matrix aMatrix) { m_sensorToXYZMatrixOld=aMatrix; m_calibrationTime=time(NULL);}
 	Matrix GetSensorMatrix() {return m_sensorToXYZMatrix; }
+	Matrix GetSensorMatrixOld() {return m_sensorToXYZMatrixOld; }
 
 	virtual BOOL IsMeasureValid() {return m_isMeasureValid; }
 	virtual void SetMeasureValidity(BOOL isValid) { m_isMeasureValid=isValid; }
@@ -87,8 +90,18 @@ public:
 	virtual LPCSTR GetStandardSubDir ()	{ return ""; }
 
 	CTime GetCalibrationTime() { return CTime(m_calibrationTime); }
-	BOOL IsCalibrated() { return !m_sensorToXYZMatrix.IsIdentity (); }
-
+	//BOOL IsCalibrated() { return (!m_sensorToXYZMatrix.IsIdentity () || !m_sensorToXYZMatrixOld.IsIdentity ()); }
+	int IsCalibrated() 
+	{ 
+		if (m_sensorToXYZMatrix.IsIdentity () && m_sensorToXYZMatrixOld.IsIdentity ())
+			return 0;
+		else
+			if (!m_sensorToXYZMatrix.IsIdentity ())
+				return 1;
+		return 2;
+	}
+	
+	
 	CString GetName() { return m_name; }
 	void SetName(CString aStr) { m_name=aStr; } 
 

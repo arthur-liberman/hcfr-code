@@ -43,6 +43,7 @@ CSensor::CSensor()
 	m_isModified=FALSE;
 	m_isMeasureValid=TRUE;
 	m_sensorToXYZMatrix=IdentityMatrix(3);
+	m_sensorToXYZMatrixOld=IdentityMatrix(3);
 
 	m_calibrationTime=0;
 
@@ -139,7 +140,6 @@ BOOL CSensor::Configure()
 		propertySheet.AddPage ( m_pDevicePage );
 
 	propertySheet.AddPage ( & m_SensorPropertiesPage );
-
 	propertySheet.SetActivePage(0);
 	SetPropertiesSheetValues();
 	int result=propertySheet.DoModal();

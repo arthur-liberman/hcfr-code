@@ -423,7 +423,7 @@ void COneDeviceSensor::SaveCalibrationFile()
 		CFileDialog fileSaveDialog( FALSE, "thc", ( strFileName.IsEmpty () ? NULL : (LPCSTR) strFileName ), OFN_HIDEREADONLY | OFN_NOCHANGEDIR, "Sensor Training File (*.thc)|*.thc||" );
 		fileSaveDialog.m_ofn.lpstrInitialDir = (LPCSTR) strPath;
 
-		if(fileSaveDialog.DoModal()==IDOK)
+		if(fileSaveDialog.DoModal() == IDOK)
 		{
 			strFileName = strPath + fileSaveDialog.GetFileName();
 			if ( strFileName.CompareNoCase ( fileSaveDialog.GetPathName() ) == 0 )
@@ -435,6 +435,7 @@ void COneDeviceSensor::SaveCalibrationFile()
 				COneDeviceSensor::Serialize(ar);
 
 				m_CalibrationFileName = loadFile.GetFileTitle ();
+				
 			}
 			else
 			{
