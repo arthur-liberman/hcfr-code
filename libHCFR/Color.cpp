@@ -548,13 +548,27 @@ double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhit
 {
     if ( useOldDeltaEFormula )
     {
-        return GetOldDeltaE(refColor);
-    }
-    else
-    {
+		//LUV
         ColorLuv LuvRef(refColor, YWhiteRef, colorReference);
         ColorLuv Luv(*this, YWhite, colorReference);
         double dE = sqrt ( pow ((Luv[0] - LuvRef[0]),2) + pow((Luv[1] - LuvRef[1]),2) + pow((Luv[2] - LuvRef[2]),2) );
+        return dE;
+//        return GetOldDeltaE(refColor);
+    }
+    else
+    {
+		//CIE94
+        ColorLab LabRef(refColor, YWhiteRef, colorReference);
+        ColorLab Lab(*this, YWhite, colorReference);
+		double dL2 = pow ((LabRef[0] - Lab[0]),2.0);
+		double C1 = sqrt ( pow (Lab[1],2.0) + pow (Lab[2],2.0));
+		double C2 = sqrt ( pow (LabRef[1],2.0) + pow (LabRef[2],2.0));
+		double dC2 = pow ((C1-C2),2.0);
+		double da2 = pow (LabRef[1] - Lab[1],2.0);
+		double db2 = pow (LabRef[2] - Lab[2],2.0);
+		double dH2 = (da2 + db2 - dC2);
+		//kl=kc=kh=1
+		double dE = sqrt ( dL2 + dC2/pow((1+0.045*C1),2.0) + dH2/pow((1+0.015*C1),2.0) );
         return dE;
     }
 }
@@ -981,6 +995,7 @@ double CColor::GetDeltaE(const CColor & refColor) const
     return m_XYZValues.GetOldDeltaE(refColor.m_XYZValues);
 }
 
+
 double CColor::GetDeltaxy(const CColor & refColor, const CColorReference& colorReference) const
 {
     return m_XYZValues.GetDeltaxy(refColor.m_XYZValues, colorReference);
@@ -1348,6 +1363,7 @@ void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDi
 
     // Compute xy coordinates of 100% saturated color
     ColorXYZ Clr2(Clr1, colorReference);
+
     ColorxyY Clr3(Clr2);
     xend=Clr3[0];
     yend=Clr3[1];
@@ -1394,17 +1410,15 @@ void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDi
             {
                 comp = 0.0;
             }
-            else if ( comp > 255.0 )
+            else if ( comp > 1.0 )
             {
-                comp = 255.0;
+                comp = 1.0;
             }
-
-            // adjust "color gamma"
-            double clr2 = ( 100.0 * pow ( clr , 0.45 ) );
-            double comp2 = ( 100.0 * pow ( comp , 0.45 ) );
-
-            GenColors [ i ] = ColorRGBDisplay( ( bRed ? clr2 : comp2 ), ( bGreen ? clr2 : comp2 ), ( bBlue ? clr2 : comp2 ) );
         }
+        // adjust "color gamma"
+        double clr2 = ( 100.0 * pow ( clr , 0.45 ) );
+        double comp2 = ( 100.0 * pow ( comp , 0.45 ) );
+        GenColors [ i ] = ColorRGBDisplay( ( bRed ? clr2 : comp2 ), ( bGreen ? clr2 : comp2 ), ( bBlue ? clr2 : comp2 ) );
     }
 }
 
