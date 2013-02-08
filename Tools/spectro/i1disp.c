@@ -1709,7 +1709,7 @@ static inst_code
 i1disp_init_inst(inst *pp) {
 	i1disp *p = (i1disp *)pp;
 	inst_code ev = inst_ok;
-
+	p->rrset = 0;
 	if (p->debug) fprintf(dbgo,"i1disp: About to init instrument\n");
 
 	if (p->gotcoms == 0)
@@ -2168,7 +2168,8 @@ i1disp_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 
 		if (ix == 1) {
 			if (p->crt == 0)
-				p->rrset = 0;		/* This is a hint we may have swapped displays */
+		//preserve rrset if already synced
+//				p->rrset = 0;		/* This is a hint we may have swapped displays */
 			p->crt = 1;
 			return inst_ok;
 		} else if (ix == 2) {

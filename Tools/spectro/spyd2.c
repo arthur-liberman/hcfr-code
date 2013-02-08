@@ -3559,7 +3559,8 @@ spyd2_set_opt_mode(inst *pp, inst_opt_mode m, ...) {
 				ix = 2;
 			if (ix == 1) {
 				if (p->ref == 0)
-					p->rrset = 0;		/* This is a hint we may have swapped displays */
+					//preserve rrset if already synced
+//					p->rrset = 0;		/* This is a hint we may have swapped displays */
 				p->ref = 1;
 			} else {	/* 2..7 */
 				if (p->ref != 0)
