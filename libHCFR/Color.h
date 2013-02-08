@@ -36,7 +36,8 @@ typedef enum
 	PALSECAM = 0,
 	SDTV = 1,
 	HDTV = 2,
-	sRGB = 3,
+	HDTVa = 3,
+	sRGB = 4,
 } ColorStandard;
 
 typedef enum 
@@ -275,9 +276,10 @@ public:
 	ColorXYZ GetMagenta() const { return magentaSecondary; }
 	
 	// Primary colors relative-to-white luminance, depending on color standard. White luma reference value is 1.
-	double GetRedReferenceLuma () const { return RGBtoXYZMatrix(1,0); /*0.212671 in Rec709*/ }
-	double GetGreenReferenceLuma () const { return RGBtoXYZMatrix(1,1); /*0.715160 in Rec709*/ }
-	double GetBlueReferenceLuma () const { return RGBtoXYZMatrix(1,2); /*0.072169 in Rec709*/ }
+	//standard 3 added 75% of rec709 colorspace to be used with 75% saturation patterns so ref luma is the same as full colorspace
+	double GetRedReferenceLuma () const { return m_standard == 3 ? 0.212671 : RGBtoXYZMatrix(1,0); }/*0.212671 in Rec709*/
+	double GetGreenReferenceLuma () const { return m_standard == 3 ? 0.715160 : RGBtoXYZMatrix(1,1); }/*0.715160 in Rec709*/
+	double GetBlueReferenceLuma () const { return m_standard == 3 ? 0.072169 : RGBtoXYZMatrix(1,2); }/*0.072169 in Rec709*/
 
 	
 #ifdef LIBHCFR_HAS_MFC

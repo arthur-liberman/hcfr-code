@@ -170,6 +170,10 @@ ColorxyY primariesRec709[3] ={	ColorxyY(0.6400, 0.3300),
 								ColorxyY(0.3000, 0.6000),
 								ColorxyY(0.1500, 0.0600) };
 
+ColorxyY primariesRec709a[3] ={	ColorxyY(0.558, 0.330), //75% sat/lum Rec709 w/2.22 gamma
+								ColorxyY(0.303, 0.531),
+								ColorxyY(0.191, 0.128) };
+
 Matrix ComputeRGBtoXYZMatrix(Matrix primariesChromacities,Matrix whiteChromacity)
 {
 	// Compute RGB to XYZ matrix
@@ -218,6 +222,15 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
 			whiteName="D65";
 			m_white=D65;
             primaries = primariesRec709;
+			break;
+		}
+		case HDTVa:
+		{
+			standardName="75% HDTV Rec709";
+			whiteColor=illuminantD65;
+			whiteName="D65";
+			m_white=D65;
+            primaries = primariesRec709a;
 			break;
 		}
 		case sRGB:
