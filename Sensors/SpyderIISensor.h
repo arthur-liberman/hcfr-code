@@ -62,7 +62,7 @@ public:
 	virtual void SetPropertiesSheetValues();
 	virtual void GetPropertiesSheetValues();
 
-	virtual LPCSTR GetStandardSubDir ()	{ return "Etalon_S3"; }
+	virtual LPCSTR GetStandardSubDir ()	{ return "Etalon_S2"; }
 #ifdef USE_NON_FREE_CODE
     virtual bool isValid() const {return false;}
 #endif
