@@ -174,6 +174,7 @@
 #include "stdafx.h"        // Standard windows header file
 #include "NewMenu.h"       // CNewMenu class declaration
 #include "fxcolor.h"
+
 // Those two following constants should be only defined for tracing.
 // Normally they are commented out.
 //#define _TRACE_MENU_
