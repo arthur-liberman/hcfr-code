@@ -251,7 +251,8 @@ BEGIN
                     "Button",BS_AUTORADIOBUTTON,12,85,153,10
     CONTROL         "Camera Gamma, Manual Offset :",IDC_GAMMA_OFFSET_RADIO4,
                     "Button",BS_AUTORADIOBUTTON,12,97,117,10,WS_EX_TRANSPARENT
-    CONTROL         "Optimized (Regression)",IDC_GAMMA_OFFSET_RADIO5,"Button",BS_AUTORADIOBUTTON,12,109,93,10,WS_EX_TRANSPARENT
+//    CONTROL         "Optimized (Regression)",IDC_GAMMA_OFFSET_RADIO5,"Button",BS_AUTORADIOBUTTON,12,109,93,10,WS_EX_TRANSPARENT
+    CONTROL         "ITU-R BT.1886",IDC_GAMMA_OFFSET_RADIO5,"Button",BS_AUTORADIOBUTTON,12,109,93,10,WS_EX_TRANSPARENT
     EDITTEXT        IDC_EDIT_MANUAL_GOFFSET,131,95,41,13,ES_AUTOHSCROLL | WS_GROUP
     GROUPBOX        "Reference Gamma",IDC_STATIC,7,126,84,29,WS_GROUP
     EDITTEXT        IDC_EDIT_GAMMA_REF,17,136,61,14,ES_AUTOHSCROLL | WS_GROUP
@@ -788,8 +789,8 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,153,185,10
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ | WS_GROUP,7,149,199,1
     GROUPBOX        "Delta E",IDC_STATIC,7,171,199,38,WS_GROUP
-    CONTROL         "Do not use luminance in delta E formula (V1.x)",IDC_CHECK_OLD_DELTAE,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,183,161,10
+    CONTROL         "Use Luv instead of CIE94 delta E formula (V2.x)",IDC_CHECK_OLD_DELTAE,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,183,170,10
     CONTROL         "Use gamma reference to compute gray scale delta E",IDC_CHECK_DELTAE_GRAY_LUMA,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,195,181,10
 END
@@ -1706,12 +1707,15 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "Meter Correction file"
         BEGIN
+			MENUITEM "Manually edit XYZ matrix", IDM_MANUALLY_EDIT_SENSOR
+			MENUITEM SEPARATOR
             MENUITEM "Create using Existing Reference Measures", IDM_CALIBRATION_EXISTING
             MENUITEM "Build using simultaneous measures", IDM_CALIBRATION_SIM
             MENUITEM "Build manually using reference colorimeter", IDM_CALIBRATION_MANUAL
             MENUITEM "Build colorimeter calibration spectral sample", IDM_CALIBRATION_SPECTRAL
             MENUITEM SEPARATOR
-            MENUITEM "Save meter correction file...", IDM_SAVE_CALIBRATION_FILE
+            MENUITEM "Save meter correction file...", IDM_SAVE_CALIBRATION_FILE			
+            MENUITEM "Load meter correction file...", IDM_LOAD_CALIBRATION_FILE			
         END
         POPUP "Simultaneous measures"
         BEGIN
@@ -2526,6 +2530,7 @@ BEGIN
     IDM_CONFIGURE_GENERATOR "Configure generator parameters"
     IDM_CHANGE_SENSOR       "Select sensor"
     IDM_CHANGE_GENERATOR    "Select generator"
+	IDM_LOAD_CALIBRATION_FILE "Select new calibration file"
 END
 
 STRINGTABLE 
