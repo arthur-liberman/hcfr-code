@@ -388,20 +388,23 @@ const double& Matrix::operator ()(const int _i, const int _j) const
 //returns true if the calling matrix is an identity matrix
 bool Matrix::IsIdentity() const
 {
+	Matrix temp(*this);
     if(m_nCols != m_nRows) return false;
 
     for(int i=0; i<m_nCols; ++i) 
     {
         for(int j=0; j<m_nRows; ++j) 
         {
-            if(i == j && m_pData[i * m_nCols + j] != 1.0)
-            {
-                return false;
-            }
-            else if(m_pData[i * m_nCols + j] != 0.0) 
-            {
-                return false;
-            }
+			if (temp[i][j] != 1 && temp[j][i] != 0)
+				return false;
+//            if(i == j && m_pData[i * m_nCols + j] != 1.0) //this doesn't work
+//            {
+//                return false;
+//            }
+//            else if(m_pData[i * m_nCols + j] != 0.0) 
+//            {
+//                return false;
+//            }
         }
     }
     return true;
