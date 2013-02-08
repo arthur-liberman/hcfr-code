@@ -34,6 +34,15 @@
    and agreed to support.
  */
 
+/* modifications by zoyd 2/1/2013:
+	-Changed dinttime default to 1.2 seconds, this is best compromise to get better precision at 10-30% stimulus and rapid measurements
+	 in adaptive mode >30% for plasmas
+	-Commented out rrset=0 in i1d3_set_opt_mode so if we get sync once it will remain until calibration is initiated
+	-Changed munkidisp int from 2*dinttime to inttime since we have already upped the baseline
+
+	*Note that non-refresh mode is just as accurate as refresh (synced or unsynced) based on measurements on my plasma*
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -573,6 +582,7 @@ i1d3_unlock(
 		{ "Colormunki Display ", { 0xe01e6e0a, 0x257462de }, i1d3_munkdisp, i1d3_munkdisp },
 		{ "i1Display3 ",         { 0xcaa62b2c, 0x30815b61 }, i1d3_disppro, i1d3_oem },
 		{ "i1Display3 ",         { 0xa9119479, 0x5b168761 }, i1d3_disppro, i1d3_nec_ssp },
+//        { "i1Display3 ",         { 0x160eb6ae, 0x14440e70 }, i1d3_disppro, i1d3_quato_sh3 },
 		{ NULL } 
 	}; 
 	inst_code ev;
@@ -910,15 +920,15 @@ i1d3_set_LEDs(
 # define PSRAND32L(S) ((S) * 1664525L + 1013904223L)
 #endif
 #define NFSAMPS 1300		/* Number of samples to read */
-#define NFMXTIME 6.0		/* Maximum time to take (2000 == 6) */
+#define NFMXTIME 4.0		/* Maximum time to take (2000 == 6) */
 #define PBPMS 20		/* bins per msec */
 //#define PERMIN ((1000 * PBPMS)/80)	/* 80 Hz */
 //#define PERMAX ((1000 * PBPMS)/20)	/* 20 Hz*/
 #define PERMIN ((1000 * PBPMS)/40)	/* 40 Hz */
 #define PERMAX ((1000 * PBPMS)/10)	/* 10 Hz*/
 #define NPER (PERMAX - PERMIN + 1)
-#define PWIDTH (3 * PBPMS)			/* 3 msec bin spread to look for peak in */
-#define MAXPKS 20					/* Number of peaks to find */
+#define PWIDTH (12 * PBPMS)			/* 3 msec bin spread to look for peak in */
+#define MAXPKS 10					/* Number of peaks to find */
 
 static inst_code
 i1d3_measure_refresh(
@@ -1277,7 +1287,7 @@ i1d3_measure_refresh(
 	}
 
 	if (p->verb) printf("Refresh wampling period = %f msec\n",pval * 1000);
-	if (p->debug) fprintf(stderr,"i1d3: Refresh sampling period = %f msec\n",pval);
+	if (p->debug) fprintf(stderr,"i1d3: Refresh sampling period = %f msec\n",pval * 1000);
 
 	*period = pval;
 
@@ -1984,6 +1994,9 @@ i1d3_init_inst(inst *pp) {
 
 	p->rrset = 0;
 
+	if (p->debug) fprintf(stderr,"rrset=0 in init, inttime=%f\n",p->inttime);
+
+
 	if (p->gotcoms == 0)
 		return i1d3_interp_code((inst *)p, I1D3_NO_COMS);	/* Must establish coms first */
 
@@ -2065,7 +2078,8 @@ i1d3_init_inst(inst *pp) {
 
 	/* Set known constants */
 	p->clk_freq = 12e6;		/* 12 Mhz */
-	p->dinttime = 0.2;		/* 0.2 second integration time default */
+//Perhaps make dinttime user selectable?
+	p->dinttime = 1.2;		/* 0.2 second integration time default is too fast for 30% stim and below needs to be set to LOW-LIGHT value!!!*/
 	p->inttime = p->dinttime;	/* Start in non-refresh mode */
 
 	/* Create the default calibrations */
@@ -2138,14 +2152,14 @@ ipatch *val) {		/* Pointer to instrument patch value */
 		p->rrset = 1;
 
 		/* Quantize the sample time */
-		if (p->refperiod > 0.0) {		/* If we have a refresh period */
+		if (p->refperiod > 0.0) {		/* If we have a refresh period, set int to integer multiple of refperiods */
 			int n;
 			n = (int)ceil(p->dinttime/p->refperiod);
 			p->inttime = n * p->refperiod;
 			if (p->debug) fprintf(stderr,"i1d3: integration time quantize to %f secs\n",p->inttime);
 
-		} else {	/* We don't have a period, so simply double the default */
-			p->inttime = 2.0 * p->dinttime;
+		} else {	/* We don't have a period, so default to dinttime */
+			p->inttime = p->dinttime; 
 			if (p->debug) fprintf(stderr,"i1d3: integration time doubled to %f secs\n",p->inttime);
 		}
 	}
@@ -2300,7 +2314,7 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 			p->inttime = n * p->refperiod;
 			if (p->debug) fprintf(stderr,"i1d3: integration time quantize to %f secs\n",p->inttime);
 		} else {
-			p->inttime = 2.0 * p->dinttime;	/* Double integration time */
+			p->inttime = p->dinttime; 
 			if (p->debug) fprintf(stderr,"i1d3: integration time doubled to %f secs\n",p->inttime);
 		}
 		return inst_ok;
@@ -2628,17 +2642,23 @@ i1d3_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 
 		if (ix == 1) {
 			p->refmode = 1;					/* Refresh mode */
+/*
 			if (p->dtype == i1d3_munkdisp) {
-				p->inttime = 2.0 * p->dinttime;	/* Double integration time */
+				p->inttime = 2.0 * p->dinttime;	// Double integration time
 			} else {
-				p->inttime = p->dinttime;		/* Normal integration time */
+				p->inttime = p->dinttime;		// Normal integration time
 			}
-			p->rrset = 0;					/* This is a hint we may have swapped displays */
+*/
+			p->inttime = p->dinttime; // higher baseline should be better for munkdisp too
+			// keep state of rrset as-is (preserve previous sync calibration)
+//			p->rrset = 0;					/* This is a hint we may have swapped displays */
+			if (p->debug) fprintf(stderr,"rrset=0 in set-opt mode refresh, inttime=%f\n",p->inttime);
 			return inst_ok;
 		} else if (ix == 0 || ix == 2) {	/* Default or 2 */
 			p->refmode = 0;					/* Non-Refresh mode */
 			p->inttime = p->dinttime;		/* Normal integration time */
 			p->rrset = 0;					/* This is a hint we may have swapped displays */
+			if (p->debug) fprintf(stderr,"rrset=0 in set-opt mode non-refresh, inttime=%f\n",p->inttime);
 			return inst_ok;
 		} else {
 			return inst_unsupported;
