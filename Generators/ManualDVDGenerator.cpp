@@ -116,17 +116,17 @@ BOOL CManualDVDGenerator::DisplayRGBColor( const ColorRGBDisplay& clrIn ,Measure
 			case MT_PRIMARY:
 			case MT_SECONDARY:
 				if((GetRValue(clr) > GetGValue(clr)) && (GetRValue(clr) > GetBValue(clr)))
-					str2.LoadString ( IDS_REDPRIMARY );
+					str2.LoadString ( GetColorReference().m_standard!=4?IDS_REDPRIMARY:IDS_CC6REDPRIMARY );
 				else if((GetGValue(clr) > GetRValue(clr)) && (GetGValue(clr) > GetBValue(clr)))
-					str2.LoadString ( IDS_GREENPRIMARY );
+					str2.LoadString ( GetColorReference().m_standard!=4?IDS_GREENPRIMARY:IDS_CC6GREENPRIMARY );
 				else if((GetBValue(clr) > GetRValue(clr)) && (GetBValue(clr) > GetGValue(clr)))
-					str2.LoadString ( IDS_BLUEPRIMARY );
+					str2.LoadString ( GetColorReference().m_standard!=4?IDS_BLUEPRIMARY:IDS_CC6BLUEPRIMARY );
 				else if((GetRValue(clr) == GetGValue(clr)) && (GetRValue(clr) > GetBValue(clr)))
-					str2.LoadString ( IDS_YELLOWSECONDARY );
+					str2.LoadString ( GetColorReference().m_standard!=4?IDS_YELLOWSECONDARY:IDS_CC6YELLOWSECONDARY );
 				else if((GetGValue(clr) == GetBValue(clr)) && (GetGValue(clr) > GetRValue(clr)))
-					str2.LoadString ( IDS_CYANSECONDARY );
+					str2.LoadString ( GetColorReference().m_standard!=4?IDS_CYANSECONDARY:IDS_CC6CYANSECONDARY );
 				else if((GetRValue(clr) == GetBValue(clr)) && (GetRValue(clr) > GetGValue(clr)))
-					str2.LoadString ( IDS_MAGENTASECONDARY );
+					str2.LoadString ( GetColorReference().m_standard!=4?IDS_MAGENTASECONDARY:IDS_CC6MAGENTASECONDARY );
 				else if(GetRValue(clr) == 255 && GetGValue(clr) == 255 && GetBValue(clr) == 255)
 					str2.LoadString ( IDS_WHITE );
 				else if(GetRValue(clr) == 0 && GetGValue(clr) == 0 && GetBValue(clr) == 0)

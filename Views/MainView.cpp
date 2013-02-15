@@ -748,27 +748,27 @@ void CMainView::InitGrid()
 				 switch ( i )
 				 {
 					case 0:
-						 Item.strText.LoadString(IDS_RED);
+						Item.strText.LoadString(GetColorReference().m_standard==4?IDS_CC6a:IDS_RED);
 						 break;
 
 					case 1:
-						 Item.strText.LoadString(IDS_GREEN);
+						 Item.strText.LoadString(GetColorReference().m_standard==4?IDS_CC6b:IDS_GREEN);
 						 break;
 
 					case 2:
-						 Item.strText.LoadString(IDS_BLUE);
+						 Item.strText.LoadString(GetColorReference().m_standard==4?IDS_CC6c:IDS_BLUE);
 						 break;
 
 					case 3:
-						 Item.strText.LoadString(IDS_YELLOW);
+						 Item.strText.LoadString(GetColorReference().m_standard==4?IDS_CC6d:IDS_YELLOW);
 						 break;
 
 					case 4:
-						 Item.strText.LoadString(IDS_CYAN);
+						 Item.strText.LoadString(GetColorReference().m_standard==4?IDS_CC6e:IDS_CYAN);
 						 break;
 
 					case 5:
-						 Item.strText.LoadString(IDS_MAGENTA);
+						 Item.strText.LoadString(GetColorReference().m_standard==4?IDS_CC6f:IDS_MAGENTA);
 						 break;
 
 					case 6:
@@ -1394,9 +1394,9 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				RefLuma [ 0 ] = GetColorReference().GetRedReferenceLuma ();
 				RefLuma [ 1 ] = GetColorReference().GetGreenReferenceLuma ();
 				RefLuma [ 2 ] = GetColorReference().GetBlueReferenceLuma ();
-				RefLuma [ 3 ] = RefLuma [ 0 ] + RefLuma [ 1 ];
-				RefLuma [ 4 ] = RefLuma [ 1 ] + RefLuma [ 2 ];
-				RefLuma [ 5 ] = RefLuma [ 0 ] + RefLuma [ 2 ];
+				RefLuma [ 3 ] = GetColorReference().GetYellowReferenceLuma ();
+				RefLuma [ 4 ] = GetColorReference().GetCyanReferenceLuma ();
+				RefLuma [ 5 ] = GetColorReference().GetMagentaReferenceLuma ();
 				
 				CColor white = GetDocument()->GetMeasure()->GetOnOffWhite();
 				
@@ -1448,6 +1448,12 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 						case PALSECAM:
 							return "Rpal";
 							break;
+						case HDTVa:
+							return "R709(75%)";
+							break;
+						case CC6:
+							return "RCC6";
+							break;
 						default:
 							return "R?";
 							break;
@@ -1482,6 +1488,12 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 							break;
 						case PALSECAM:
 							return "Gpal";
+							break;
+						case HDTVa:
+							return "G709(75%)";
+							break;
+						case CC6:
+							return "GCC6";
 							break;
 						default:
 							return "G?";
@@ -1518,6 +1530,12 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 							break;
 						case PALSECAM:
 							return "Bpal";
+							break;
+						case HDTVa:
+							return "B709(75%)";
+							break;
+						case CC6:
+							return "BCC6";
 							break;
 						default:
 							return "B?";
@@ -1839,7 +1857,7 @@ void CMainView::UpdateGrid()
 						clrSpecial1 = RGB(192,255,192);
 						clrSpecial2 = RGB(224,255,224);
 					 }
-					 else if ( aColor.GetDeltaE ( GetColorReference().GetBlue () ) < 200 )
+					 else if ( aColor.GetDeltaE ( GetColorReference().GetBlue () ) < 120 )
 					 {
 						refColor = GetColorReference().GetBlue ();
 						clrSpecial1 = RGB(192,192,255);

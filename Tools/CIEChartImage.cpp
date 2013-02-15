@@ -349,12 +349,12 @@ void DrawCIEChart(CDC* pDC, int cxMax, int cyMax, BOOL doFullChart, BOOL doShowB
 	const double gamma = 1.0 / 1.5;
 
 	// Variables for CIExy to rgb conversion
-    CColor	WhiteReference = GetColorReference().GetWhite ();
+    CColor	WhiteReference = GetColorReference().GetWhite();
 	CColor	RedReference = GetColorReference().GetRed();
 	CColor	GreenReference = GetColorReference().GetGreen();
 	CColor	BlueReference = GetColorReference().GetBlue();
 
-	const double xr = RedReference.GetxyYValue()[0];
+/*	const double xr = RedReference.GetxyYValue()[0];
 	const double yr = RedReference.GetxyYValue()[1];
 	const double zr = 1 - (xr + yr);
 
@@ -364,6 +364,18 @@ void DrawCIEChart(CDC* pDC, int cxMax, int cyMax, BOOL doFullChart, BOOL doShowB
 
     const double xb = BlueReference.GetxyYValue()[0];
 	const double yb = BlueReference.GetxyYValue()[1];
+	const double zb = 1 - (xb + yb);
+*/
+	const double xr = 0.6400;
+	const double yr = 0.3300;
+	const double zr = 1 - (xr + yr);
+
+    const double xg = 0.3000;
+	const double yg = 0.6000;
+	const double zg = 1 - (xg + yg);
+
+    const double xb = 0.1500;
+	const double yb = 0.0600;
 	const double zb = 1 - (xb + yb);
 
     const double xw = WhiteReference.GetxyYValue()[0];

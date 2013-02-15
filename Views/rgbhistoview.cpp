@@ -141,7 +141,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			pDoc->ComputeGammaAndOffset(&Gamma, &Offset, 3, 1, size);
 
 		YWhite = pDoc->GetMeasure()->GetGray(size-1)[1];
-		for (int i=0; i<size; i++)
+		for (int i=1; i<size; i++)
 		{
 			ColorxyY aColor=pDoc->GetMeasure()->GetGray(i).GetxyYValue();
 			ColorXYZ aMeasure(aColor[0]/aColor[1], 1.0, (1.0-(aColor[0]+aColor[1]))/aColor[1]);
@@ -190,7 +190,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 		YWhiteRefDoc = pDataRef->GetMeasure()->GetGray(size-1)[1];
 
-		for (int i=0; i<size; i++)
+		for (int i=1; i<size; i++)
 		{
 			ColorxyY aColor;
 			

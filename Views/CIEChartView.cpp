@@ -370,19 +370,33 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 		Msg3.LoadString ( IDS_REC709BLUEREF );
 	}
 
+	if(GetConfig()->m_colorStandard == HDTVa)
+	{
+		Msg.LoadString ( IDS_REC709aREDREF );
+		Msg2.LoadString ( IDS_REC709aGREENREF );
+		Msg3.LoadString ( IDS_REC709aBLUEREF );
+	}
+
+	if(GetConfig()->m_colorStandard == CC6)
+	{
+		Msg.LoadString ( IDS_RECCC6REDREF );
+		Msg2.LoadString ( IDS_RECCC6GREENREF );
+		Msg3.LoadString ( IDS_RECCC6BLUEREF );
+	}
+
 	CCIEGraphPoint refRedPrimaryPoint(GetColorReference().GetRed(), 1.0, Msg, m_bCIEuv);
 	CCIEGraphPoint refGreenPrimaryPoint(GetColorReference().GetGreen(), 1.0, Msg2, m_bCIEuv);
 	CCIEGraphPoint refBluePrimaryPoint(GetColorReference().GetBlue(), 1.0, Msg3, m_bCIEuv);
 
 	CCIEGraphPoint whiteRef(GetColorReference().GetWhite(), 1.0, "", m_bCIEuv);
 
-	Msg.LoadString ( IDS_YELLOWSECONDARYREF );
+	Msg.LoadString ( GetColorReference().m_standard!=4?IDS_YELLOWSECONDARYREF:IDS_CC6YELLOWSECONDARYREF );
 	CCIEGraphPoint refYellowSecondaryPoint(GetColorReference().GetYellow(), 1.0, Msg, m_bCIEuv);
 
-	Msg.LoadString ( IDS_CYANSECONDARYREF );
+	Msg.LoadString ( GetColorReference().m_standard!=4?IDS_CYANSECONDARYREF:IDS_CC6CYANSECONDARYREF );
 	CCIEGraphPoint refCyanSecondaryPoint(GetColorReference().GetCyan(), 1.0, Msg, m_bCIEuv);
 
-	Msg.LoadString ( IDS_MAGENTASECONDARYREF );
+	Msg.LoadString ( GetColorReference().m_standard!=4?IDS_MAGENTASECONDARYREF:IDS_CC6MAGENTASECONDARYREF );
 	CCIEGraphPoint refMagentaSecondaryPoint(GetColorReference().GetMagenta(), 1.0, Msg, m_bCIEuv);
 
 	CCIEGraphPoint illuminantA(ColorXYZ(ColorxyY(0.4476,0.4074)),1.0, "Illuminant A", m_bCIEuv);

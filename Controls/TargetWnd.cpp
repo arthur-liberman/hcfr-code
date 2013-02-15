@@ -71,7 +71,7 @@ void CTargetWnd::Refresh()
 			centerXYZ = GetColorReference().GetGreen();
 			m_clr = RGB(0,192,0);
 		}
-		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetBlue() ) < 200 )
+		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetBlue() ) < 120 )
 		{
 			centerXYZ = GetColorReference().GetBlue();
 			m_clr = RGB(0,0,192);
