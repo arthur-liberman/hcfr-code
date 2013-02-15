@@ -110,9 +110,9 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	const double KR = GetColorReference().GetRedReferenceLuma ();  
 	const double KG = GetColorReference().GetGreenReferenceLuma ();
 	const double KB = GetColorReference().GetBlueReferenceLuma (); 
-	const double KY = KR + KG;
-	const double KC = KG + KB;
-	const double KM = KR + KB;
+	const double KY = GetColorReference().GetYellowReferenceLuma (); 
+	const double KC = GetColorReference().GetCyanReferenceLuma (); 
+	const double KM = GetColorReference().GetMagentaReferenceLuma (); ;
 
 	if(IsWindow(m_graphCtrl.m_hWnd))
 		m_graphCtrl.ShowWindow(SW_SHOW);

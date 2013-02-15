@@ -1032,6 +1032,8 @@ BEGIN
 0x4448, 0x5654, 0x2d20, 0x5220, 0x4345, 0x3720, 0x3930, "\000" 
     IDC_COLORREF_COMBO, 0x403, 21, 0
 0x4448, 0x5654, 0x2d20, 0x5220, 0x4345, 0x3720, 0x3930, 0x2820, 0x3537, 0x2925, "\000" 
+    IDC_COLORREF_COMBO, 0x403, 4, 0
+0x4343, 0x0036,
     IDC_COLORREF_COMBO, 0x403, 5, 0
 0x5273, 0x4247, "\000" 
     IDC_WHITETARGET_COMBO, 0x403, 4, 0
@@ -2188,12 +2190,12 @@ BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "CompanyName", "Association Homecinema Francophone"
             VALUE "FileDescription", "HCFR Colorimeter resources"
-            VALUE "FileVersion", "2, 1, 0, 0"
+            VALUE "FileVersion", "3, 0, 4, 1"
             VALUE "InternalName", "CHCFR21_ENGLISH"
             VALUE "LegalCopyright", "Copyright (C) 2005-2008"
             VALUE "OriginalFilename", "CHCFR21_ENGLISH.DLL"
             VALUE "ProductName", "HCFR Colorimeter English langage"
-            VALUE "ProductVersion", "2, 1, 0, 0"
+            VALUE "ProductVersion", "3, 0, 4, 1"
         END
     END
     BLOCK "VarFileInfo"
@@ -2598,6 +2600,9 @@ BEGIN
     IDS_GREEN               "Green"
     IDS_S2SENSOR_NAME       "Spyder II"
     IDS_BLUE                "Blue"
+    IDS_CC6a                 "Light Skin"
+    IDS_CC6b                "Blue Sky"
+    IDS_CC6c                "Foliage"
     IDS_WHITE               "White"
     IDS_BLACK               "Black"
     IDS_ERRADDITIVITY       "Additivity error"
@@ -2636,6 +2641,9 @@ BEGIN
     IDS_YELLOW              "Yellow"
     IDS_CYAN                "Cyan"
     IDS_MAGENTA             "Magenta"
+    IDS_CC6d				"Blue Flower"
+    IDS_CC6e                "Yellow Green"
+    IDS_CC6f				"Orange Yellow"
     IDS_MEASURENEARBLACK    "Measure near black scale"
     IDS_MEASURENEARWHITE    "Measure near white scale"
     IDS_MEASURESATRED       "Measure saturations for Red"
@@ -2696,12 +2704,24 @@ BEGIN
     IDS_REC709REDREF        "Rec709 Red Reference"
     IDS_REC709GREENREF      "Rec709 Green Reference"
     IDS_REC709BLUEREF       "Rec709 Blue Reference"
+	IDS_REC709aREDREF        "Rec709 (75%) Red Reference"
+    IDS_REC709aGREENREF      "Rec709 (75%) Green Reference"
+    IDS_REC709aBLUEREF       "Rec709 (75%) Blue Reference"
+	IDS_RECCC6REDREF        "Light Skin Reference"
+    IDS_RECCC6GREENREF      "Blue Sky  Reference"
+    IDS_RECCC6BLUEREF       "Foliage Reference"
     IDS_REDPRIMARY          "Red Primary"
     IDS_GREENPRIMARY        "Green Primary"
     IDS_BLUEPRIMARY         "Blue Primary"
     IDS_YELLOWSECONDARY     "Yellow Secondary"
     IDS_CYANSECONDARY       "Cyan Secondary"
     IDS_MAGENTASECONDARY    "Magenta Secondary"
+    IDS_CC6REDPRIMARY          "Light Skin"
+    IDS_CC6GREENPRIMARY			"Blue Sky"
+    IDS_CC6BLUEPRIMARY          "Foliage"
+    IDS_CC6YELLOWSECONDARY        "Blue Flower"
+    IDS_CC6CYANSECONDARY		"Yellow Green"
+    IDS_CC6MAGENTASECONDARY		"Orange Yellow"
     IDS_GRAYIRE             "Gray %d IRE"
 END
 
@@ -2918,6 +2938,9 @@ BEGIN
     IDS_YELLOWSECONDARYREF  "Yellow secondary reference"
     IDS_CYANSECONDARYREF    "Cyan secondary reference"
     IDS_MAGENTASECONDARYREF "Magenta secondary reference"
+    IDS_CC6YELLOWSECONDARYREF  "Blue Flower reference"
+    IDS_CC6CYANSECONDARYREF    "Yellow Green reference"
+    IDS_CC6MAGENTASECONDARYREF "Orange Yellow reference"
     IDS_DELTAEBETWEENDATAANDREF "Delta E between measure and reference"
     IDS_GERMANVERSION       "German translation"
     IDS_EYEONE              "Eye One"

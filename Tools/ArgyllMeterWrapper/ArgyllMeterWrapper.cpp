@@ -379,7 +379,7 @@ void ArgyllMeterWrapper::setDisplayType(int displayMode)
         {
             throw std::logic_error("Set Display Type failed");
         }
-    }
+    } 
 }
 
 ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading()

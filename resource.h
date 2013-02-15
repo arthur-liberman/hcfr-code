@@ -1290,6 +1290,24 @@
 #define IDS_REC709aREDREF                41843
 #define IDS_REC709aGREENREF              41844
 #define IDS_REC709aBLUEREF               41845
+#define IDS_RECCC6REDREF			     41846
+#define IDS_RECCC6GREENREF               41847
+#define IDS_RECCC6BLUEREF                41848
+#define IDS_CC6a						 41849
+#define IDS_CC6b                         41850
+#define IDS_CC6c						 41851
+#define IDS_CC6d						 41852
+#define IDS_CC6e                         41853
+#define IDS_CC6f						 41854
+#define IDS_CC6REDPRIMARY                41855
+#define IDS_CC6GREENPRIMARY              41856
+#define IDS_CC6BLUEPRIMARY               41857
+#define IDS_CC6YELLOWSECONDARY           41858
+#define IDS_CC6CYANSECONDARY             41859
+#define IDS_CC6MAGENTASECONDARY          41860
+#define IDS_CC6YELLOWSECONDARYREF          41861
+#define IDS_CC6CYANSECONDARYREF            41862
+#define IDS_CC6MAGENTASECONDARYREF         41863
 #define IDS_ARGYLLSENSOR_PROPERTIES_TITLE 59394
 #define IDS_ARGYLLSENSOR_NAME           59395
 

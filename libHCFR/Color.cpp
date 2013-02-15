@@ -170,9 +170,38 @@ ColorxyY primariesRec709[3] ={	ColorxyY(0.6400, 0.3300),
 								ColorxyY(0.3000, 0.6000),
 								ColorxyY(0.1500, 0.0600) };
 
-ColorxyY primariesRec709a[3] ={	ColorxyY(0.558, 0.330), //75% sat/lum Rec709 w/2.22 gamma
-								ColorxyY(0.303, 0.531),
-								ColorxyY(0.191, 0.128) };
+ColorxyY primariesRec709a[3] ={	ColorxyY(0.5575, 0.3298), //75% sat/lum Rec709 w/2.22 gamma
+								ColorxyY(0.3032, 0.5313),
+								ColorxyY(0.1911, 0.1279) };
+
+ColorxyY primariesCC6[3] ={	ColorxyY(0.3877, 0.3528), //some color check references, secondardies will add 3 more
+								ColorxyY(0.2472, 0.2663),
+								ColorxyY(0.3415, 0.4315)};
+/* color checker
+*/
+ColorxyY CC24[23] = {	ColorxyY(0.3127, 0.3290, 0.35),
+						ColorxyY(0.3127, 0.3290, 0.50),
+						ColorxyY(0.3127, 0.3290, 0.65),
+						ColorxyY(0.3127, 0.3290, 0.80),
+						ColorxyY(0.3127, 0.3290, 1.0),
+						ColorxyY(0.4063, 0.3645, 0.099),
+						ColorxyY(0.3780, 0.3562, 0.355),
+						ColorxyY(0.2489, 0.2653, 0.190),
+						ColorxyY(0.3416, 0.4319, 0.131),
+						ColorxyY(0.2686, 0.2528, 0.238),
+						ColorxyY(0.2614, 0.3594, 0.424),
+						ColorxyY(0.5146, 0.4095, 0.286),
+						ColorxyY(0.2147, 0.1891, 0.128),
+						ColorxyY(0.4641, 0.3122, 0.186),
+						ColorxyY(0.2882, 0.2165, 0.065),
+						ColorxyY(0.3774, 0.4955, 0.437),
+						ColorxyY(0.4749, 0.4427, 0.429),
+						ColorxyY(0.1883, 0.1349, 0.060),
+						ColorxyY(0.3049, 0.4948, 0.233),
+						ColorxyY(0.5474, 0.3187, 0.116),
+						ColorxyY(0.4477, 0.4759, 0.598),
+						ColorxyY(0.3738, 0.2441, 0.190),
+						ColorxyY(0.2080, 0.2688, 0.197) };
 
 Matrix ComputeRGBtoXYZMatrix(Matrix primariesChromacities,Matrix whiteChromacity)
 {
@@ -231,6 +260,15 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
 			whiteName="D65";
 			m_white=D65;
             primaries = primariesRec709a;
+			break;
+		}
+		case CC6:
+		{
+			standardName="Color Checker 6";
+			whiteColor=illuminantD65;
+			whiteName="D65";
+			m_white=D65;
+            primaries = primariesCC6;
 			break;
 		}
 		case sRGB:
@@ -359,8 +397,17 @@ void CColorReference::UpdateSecondary ( ColorXYZ & secondary, const ColorXYZ& pr
 	
 	double k = ( ( ( x2 - x1 ) / dx1 ) + ( dx2 / ( dx1 * dy2 ) ) * ( y1 - y2 ) ) / ( 1.0 - ( ( dx2 * dy1 ) / ( dx1 * dy2 ) ) );
 
-	ColorxyY aColor ( x1 + k * dx1, y1 + k * dy1, prim1[2] + prim2[2] );
-
+	ColorxyY aColor;
+	if (CColorReference::m_standard != 4)
+	{
+    	aColor = ColorxyY ( x1 + k * dx1, y1 + k * dy1, prim1[2] + prim2[2] );
+	}
+	else
+	{
+		if (x1 > 0.38) aColor =  ColorxyY(0.2680,	0.2535,	.233);
+		if (x1 > 0.2 && x1 < 0.3) aColor = ColorxyY(0.3755,	0.4970,	.444); 
+		if (x1 > 0.3 && x1 < 0.38) aColor = ColorxyY(0.4763, 0.4431, .426); 
+	}
 	secondary = ColorXYZ(aColor);
 }
 

@@ -773,6 +773,8 @@ BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator)
 	return TRUE;
 }
 
+
+
 BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerator)
 {
 	MSG		Msg;
@@ -946,7 +948,6 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 		}
 
 	double primaryIRELevel=100.0;	
-	
 	// Measure primary and secondary colors
 	ColorRGBDisplay	GenColors [ 6 ] = 
 								{	
@@ -957,6 +958,25 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 									ColorRGBDisplay(0,primaryIRELevel,primaryIRELevel),
 									ColorRGBDisplay(primaryIRELevel,0,primaryIRELevel)
 								};
+	if (GetColorReference().m_standard == 4) //CC6
+	{
+		GenColors [ 0 ] = ColorRGBDisplay(78.0,58.0,51.0);
+		GenColors [ 1 ] = ColorRGBDisplay(36.0,48.0,61.0);
+		GenColors [ 2 ] = ColorRGBDisplay(36.0,42.0,26.0);
+		GenColors [ 3 ] = ColorRGBDisplay(51.0,50.0,68.0);
+		GenColors [ 4 ] = ColorRGBDisplay(62.0,74.0,26.0);
+		GenColors [ 5 ] = ColorRGBDisplay(90.0,63.0,17.0);
+	}
+	else if (GetColorReference().m_standard == 3) //75%
+	{ 
+		GenColors [ 0 ] = ColorRGBDisplay(68.0,20.0,20.0);
+		GenColors [ 1 ] = ColorRGBDisplay(28.0,73.0,28.0);
+		GenColors [ 2 ] = ColorRGBDisplay(19.0,19.0,50.0);
+		GenColors [ 3 ] = ColorRGBDisplay(75.0,75.0,33.0);
+		GenColors [ 4 ] = ColorRGBDisplay(36.0,73.0,73.0);
+		GenColors [ 5 ] = ColorRGBDisplay(64.0,29.0,64.0);
+	}
+
 	ColorRGBDisplay	MeasColors [ 6 ] = 
 								{	
 									ColorRGBDisplay(primaryIRELevel,0,0),
@@ -2611,7 +2631,7 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
 	}
 
 	// Measure primary and secondary colors
-	double		IRELevel=100.0;	
+	double		IRELevel=100.0;
 	ColorRGBDisplay	GenColors [ 5 ] = 
 								{	
 									ColorRGBDisplay(IRELevel,0,0),
@@ -2620,6 +2640,24 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
 									ColorRGBDisplay(IRELevel,IRELevel,IRELevel),
 									ColorRGBDisplay(0,0,0)
 								};
+
+	if (GetColorReference().m_standard == 4) //CC6
+	{
+		GenColors [ 0 ] = ColorRGBDisplay(78.0,58.0,51.0);
+		GenColors [ 1 ] = ColorRGBDisplay(36.0,48.0,61.0);
+		GenColors [ 2 ] = ColorRGBDisplay(36.0,42.0,26.0);
+		GenColors [ 3 ] = ColorRGBDisplay(IRELevel,IRELevel,IRELevel);
+		GenColors [ 4 ] = ColorRGBDisplay(0,0,0);
+	}
+	else if (GetColorReference().m_standard == 3) //75%
+	{ 
+		GenColors [ 0 ] = ColorRGBDisplay(68.0,20.0,20.0);
+		GenColors [ 1 ] = ColorRGBDisplay(28.0, 73.0,28.0);
+		GenColors [ 2 ] = ColorRGBDisplay(19.0,19.0,50.0);
+		GenColors [ 3 ] = ColorRGBDisplay(75.0,75.0,75.0);
+		GenColors [ 4 ] = ColorRGBDisplay(0,0,0);
+	
+	}
 	ColorRGBDisplay	MeasColors [ 5 ] = 
 								{	
 									ColorRGBDisplay(IRELevel,0,0),
@@ -2804,6 +2842,28 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator)
 									ColorRGBDisplay(IRELevel,IRELevel,IRELevel),
 									ColorRGBDisplay(0,0,0)
 								};
+	if (GetColorReference().m_standard == 4) //CC6
+	{
+		GenColors [ 0 ] = ColorRGBDisplay(78.0,58.0,51.0);
+		GenColors [ 1 ] = ColorRGBDisplay(36.0,48.0,61.0);
+		GenColors [ 2 ] = ColorRGBDisplay(36.0,42.0,26.0);
+		GenColors [ 3 ] = ColorRGBDisplay(51.0,50.0,68.0);
+		GenColors [ 4 ] = ColorRGBDisplay(62.0,74.0,26.0);
+		GenColors [ 5 ] = ColorRGBDisplay(90.0,63.0,17.0);
+		GenColors [ 6 ] = ColorRGBDisplay(IRELevel,IRELevel,IRELevel);
+		GenColors [ 7 ] = ColorRGBDisplay(0,0,0);
+	}
+	else if (GetColorReference().m_standard == 3) //75%
+	{ 
+		GenColors [ 0 ] = ColorRGBDisplay(68.0,20.0,20.0);
+		GenColors [ 1 ] = ColorRGBDisplay(28.0,73.0,28.0);
+		GenColors [ 2 ] = ColorRGBDisplay(19.0,19.0,50.0);
+		GenColors [ 3 ] = ColorRGBDisplay(75.0,75.0,33.0);
+		GenColors [ 4 ] = ColorRGBDisplay(36.0,73.0,73.0);
+		GenColors [ 5 ] = ColorRGBDisplay(64.0,29.0,64.0);
+		GenColors [ 6 ] = ColorRGBDisplay(75.0,75.0,75.0);
+		GenColors [ 7 ] = ColorRGBDisplay(0,0,0);	
+	}
 	ColorRGBDisplay	MeasColors [ 8 ] = 
 								{	
 									ColorRGBDisplay(IRELevel,0,0),
@@ -3906,7 +3966,7 @@ void CMeasure::FreeMeasurementAppended()
 				// Copy real color to primary (not LastMeasure which may have been adjusted)
 				SetGreenPrimary ( m_measurementsArray[n-1] );
 			}
-			else if ( LastMeasure.GetDeltaE ( GetColorReference().GetBlue () ) < 200 )
+			else if ( LastMeasure.GetDeltaE ( GetColorReference().GetBlue () ) < 120 )
 			{
 				// Copy real color to primary (not LastMeasure which may have been adjusted)
 				SetBluePrimary ( m_measurementsArray[n-1] );
