@@ -204,7 +204,6 @@ typedef struct _inst_disptypesel {
 	int  ref;				/* Refresh mode flag */
 } inst_disptypesel;
 
-
 /* Instrument measurement modes and sub-modes */
 /* We assume that there can only be one measurement mode at a time */
 typedef enum {
@@ -764,6 +763,7 @@ inst_capability inst_show_disptype_options(FILE *fp, char *oline, icoms *icom);
 /* A helper function to turn a -y flag into a selection index */
 /* Return 0 on error */
 int inst_get_disptype_index(inst *it, int c);
+
 
 #ifdef __cplusplus
 	}

@@ -15,6 +15,8 @@
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
  * see the License2.txt file for licencing details.
+ *
+ * V1.4.0 relase with backported V1.5.0 refr & measurement code
  */
 
 /* 
@@ -82,7 +84,8 @@ typedef enum {
 	i1d3_disppro    = 0,	/* i1 DisplayPro */
 	i1d3_munkdisp   = 1,	/* ColorMunki Display */
 	i1d3_oem        = 2,	/* OEM */
-	i1d3_nec_ssp    = 3 	/* NEC SpectraSensor Pro */
+	i1d3_nec_ssp    = 3, 	/* NEC SpectraSensor Pro */
+	i1d3_quato_sh3  = 4 	/* Quato Silver Haze 3 */
 } i1d3_dtype;
 
 /* Measurement mode */
