@@ -1845,37 +1845,37 @@ void CMainView::UpdateGrid()
 					 }
 					 
 					 bSpecialRef = TRUE;
-					 if ( aColor.GetDeltaE ( GetColorReference().GetRed () ) < 30 )
+					 if ( aColor.GetDeltaE ( GetColorReference().GetRed () ) < (GetColorReference().m_standard==4 ? 30:75) )
 					 {
 						refColor = GetColorReference().GetRed ();
 						clrSpecial1 = RGB(255,192,192);
 						clrSpecial2 = RGB(255,224,224);
 					 }
-					 else if ( aColor.GetDeltaE ( GetColorReference().GetGreen () ) < 30 )
+					 else if ( aColor.GetDeltaE ( GetColorReference().GetGreen () ) < (GetColorReference().m_standard==4 ? 30:75) )
 					 {
 						refColor = GetColorReference().GetGreen ();
 						clrSpecial1 = RGB(192,255,192);
 						clrSpecial2 = RGB(224,255,224);
 					 }
-					 else if ( aColor.GetDeltaE ( GetColorReference().GetBlue () ) < 30 )
+					 else if ( aColor.GetDeltaE ( GetColorReference().GetBlue () ) < (GetColorReference().m_standard==4 ? 30:75) )
 					 {
 						refColor = GetColorReference().GetBlue ();
 						clrSpecial1 = RGB(192,192,255);
 						clrSpecial2 = RGB(224,224,255);
 					 }
-					 else if ( aColor.GetDeltaE ( GetColorReference().GetYellow () ) < 30 )
+					 else if ( aColor.GetDeltaE ( GetColorReference().GetYellow () ) < (GetColorReference().m_standard==4 ? 30:75) )
 					 {
 						refColor = GetColorReference().GetYellow ();
 						clrSpecial1 = RGB(255,255,192);
 						clrSpecial2 = RGB(255,255,224);
 					 }
-					 else if ( aColor.GetDeltaE ( GetColorReference().GetCyan () ) < 30 )
+					 else if ( aColor.GetDeltaE ( GetColorReference().GetCyan () ) < (GetColorReference().m_standard==4 ? 30:75) )
 					 {
 						refColor = GetColorReference().GetCyan ();
 						clrSpecial1 = RGB(192,255,255);
 						clrSpecial2 = RGB(224,255,255);
 					 }
-					 else if ( aColor.GetDeltaE ( GetColorReference().GetMagenta () ) < 30 )
+					 else if ( aColor.GetDeltaE ( GetColorReference().GetMagenta () ) < (GetColorReference().m_standard==4 ? 30:75) )
 					 {
 						refColor = GetColorReference().GetMagenta ();
 						clrSpecial1 = RGB(255,192,255);
@@ -3227,37 +3227,37 @@ void CMainView::UpdateMeasurementsAfterBkgndMeasure ()
 		}
 
 		bSpecialRef = TRUE;
-		if ( MeasuredColor.GetDeltaE ( GetColorReference().GetRed () ) < 30 )
+		if ( MeasuredColor.GetDeltaE ( GetColorReference().GetRed () ) < (GetColorReference().m_standard==4 ? 30:75) )
 		{
 			refColor = GetColorReference().GetRed ();
 			clrSpecial1 = RGB(255,192,192);
 			clrSpecial2 = RGB(255,224,224);
 		}
-		else if ( MeasuredColor.GetDeltaE ( GetColorReference().GetGreen () ) < 30 )
+		else if ( MeasuredColor.GetDeltaE ( GetColorReference().GetGreen () ) < (GetColorReference().m_standard==4 ? 30:75) )
 		{
 			refColor = GetColorReference().GetGreen ();
 			clrSpecial1 = RGB(192,255,192);
 			clrSpecial2 = RGB(224,255,224);
 		}
-		else if ( MeasuredColor.GetDeltaE ( GetColorReference().GetBlue () ) < 30 )
+		else if ( MeasuredColor.GetDeltaE ( GetColorReference().GetBlue () ) < (GetColorReference().m_standard==4 ? 30:75) )
 		{
 			refColor = GetColorReference().GetBlue ();
 			clrSpecial1 = RGB(192,192,255);
 			clrSpecial2 = RGB(224,224,255);
 		}
-		else if ( MeasuredColor.GetDeltaE ( GetColorReference().GetYellow () ) < 30 )
+		else if ( MeasuredColor.GetDeltaE ( GetColorReference().GetYellow () ) < (GetColorReference().m_standard==4 ? 30:75) )
 		{
 			refColor = GetColorReference().GetYellow ();
 			clrSpecial1 = RGB(255,255,192);
 			clrSpecial2 = RGB(255,255,224);
 		}
-		else if ( MeasuredColor.GetDeltaE ( GetColorReference().GetCyan () ) < 30 )
+		else if ( MeasuredColor.GetDeltaE ( GetColorReference().GetCyan () ) < (GetColorReference().m_standard==4 ? 30:75) )
 		{
 			refColor = GetColorReference().GetCyan ();
 			clrSpecial1 = RGB(192,255,255);
 			clrSpecial2 = RGB(224,255,255);
 		}
-		else if ( MeasuredColor.GetDeltaE ( GetColorReference().GetMagenta () ) < 30 )
+		else if ( MeasuredColor.GetDeltaE ( GetColorReference().GetMagenta () ) < (GetColorReference().m_standard==4 ? 30:75) )
 		{
 			refColor = GetColorReference().GetMagenta ();
 			clrSpecial1 = RGB(255,192,255);

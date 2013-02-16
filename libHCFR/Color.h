@@ -340,7 +340,7 @@ public:
 				luma = 0.939;
 				break;
 			case 4:
-				luma = 0.233;
+				luma = 0.116;
 				break;
 			default:
 				luma = RGBtoXYZMatrix(1,1)+RGBtoXYZMatrix(1,0); 
