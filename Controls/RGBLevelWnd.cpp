@@ -56,32 +56,32 @@ void CRGBLevelWnd::Refresh()
 	{
 		double RefLuma = 1.0;
 
-		if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetRed() ) < 120 )
+		if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetRed() ) < 30 )
 		{
 			m_bLumaMode = TRUE;
 			RefLuma = GetColorReference().GetRedReferenceLuma ();
 		}
-		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetGreen() ) < 50 )
+		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetGreen() ) < 30 )
 		{
 			m_bLumaMode = TRUE;
 			RefLuma = GetColorReference().GetGreenReferenceLuma ();
 		}
-		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetBlue() ) < 200 )
+		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetBlue() ) < 30 )
 		{
 			m_bLumaMode = TRUE;
 			RefLuma = GetColorReference().GetBlueReferenceLuma ();
 		}
-		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetYellow() ) < 40 )
+		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetYellow() ) < 30 )
 		{
 			m_bLumaMode = TRUE;
 			RefLuma = GetColorReference().GetYellowReferenceLuma ();
 		}
-		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetCyan() ) < 40 )
+		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetCyan() ) < 30 )
 		{
 			m_bLumaMode = TRUE;
 			RefLuma = GetColorReference().GetCyanReferenceLuma ();
 		}
-		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetMagenta() ) < 100 )
+		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetMagenta() ) < 30 )
 		{
 			m_bLumaMode = TRUE;
 			RefLuma = GetColorReference().GetMagentaReferenceLuma ();

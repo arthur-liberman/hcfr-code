@@ -1087,8 +1087,8 @@ BOOL CKiGenerator::HasPatternChanged( MeasureType nScaleType,CColor previousColo
 	ColorRGB pRGBColor,lRGBColor;
 	float	redDif,greenDif,blueDif;
 		
-	pRGBColor=previousColor.GetRGBValue(GetColorReference());
-	lRGBColor=lastColor.GetRGBValue(GetColorReference());
+	pRGBColor=previousColor.GetRGBValue((GetColorReference()));
+	lRGBColor=lastColor.GetRGBValue((GetColorReference()));
 
 	float a = (float)pRGBColor[0];
 	float b = (float)pRGBColor[1];

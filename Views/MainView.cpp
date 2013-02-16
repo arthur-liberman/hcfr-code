@@ -515,7 +515,7 @@ void CMainView::RefreshSelection()
 		}
 
         AddColorToGrid(m_SelectedColor.GetXYZValue(), Item, "%.3f");
-        AddColorToGrid(m_SelectedColor.GetRGBValue(GetColorReference()), Item, "%.3f");
+        AddColorToGrid(m_SelectedColor.GetRGBValue((GetColorReference())), Item, "%.3f");
         AddColorToGrid(m_SelectedColor.GetxyYValue(), Item, "%.3f");
         AddColorToGrid(m_SelectedColor.GetxyzValue(), Item, "%.3f");
         AddColorToGrid(m_SelectedColor.GetLabValue(YWhite, GetColorReference()), Item, "%.1f");
@@ -1287,7 +1287,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 					str.Format("%.3f",aMeasure.GetXYZValue()[aComponentNum]);
 					break;
 				case HCFR_RGB_VIEW:
-					str.Format("%.3f",aMeasure.GetRGBValue(GetColorReference())[aComponentNum]);
+					str.Format("%.3f",aMeasure.GetRGBValue((GetColorReference()))[aComponentNum]);
 					break;
 				case HCFR_xyz2_VIEW:
 					str.Format("%.3f",aMeasure.GetxyzValue()[aComponentNum]);
@@ -1845,37 +1845,37 @@ void CMainView::UpdateGrid()
 					 }
 					 
 					 bSpecialRef = TRUE;
-					 if ( aColor.GetDeltaE ( GetColorReference().GetRed () ) < 120 )
+					 if ( aColor.GetDeltaE ( GetColorReference().GetRed () ) < 30 )
 					 {
 						refColor = GetColorReference().GetRed ();
 						clrSpecial1 = RGB(255,192,192);
 						clrSpecial2 = RGB(255,224,224);
 					 }
-					 else if ( aColor.GetDeltaE ( GetColorReference().GetGreen () ) < 50 )
+					 else if ( aColor.GetDeltaE ( GetColorReference().GetGreen () ) < 30 )
 					 {
 						refColor = GetColorReference().GetGreen ();
 						clrSpecial1 = RGB(192,255,192);
 						clrSpecial2 = RGB(224,255,224);
 					 }
-					 else if ( aColor.GetDeltaE ( GetColorReference().GetBlue () ) < 120 )
+					 else if ( aColor.GetDeltaE ( GetColorReference().GetBlue () ) < 30 )
 					 {
 						refColor = GetColorReference().GetBlue ();
 						clrSpecial1 = RGB(192,192,255);
 						clrSpecial2 = RGB(224,224,255);
 					 }
-					 else if ( aColor.GetDeltaE ( GetColorReference().GetYellow () ) < 40 )
+					 else if ( aColor.GetDeltaE ( GetColorReference().GetYellow () ) < 30 )
 					 {
 						refColor = GetColorReference().GetYellow ();
 						clrSpecial1 = RGB(255,255,192);
 						clrSpecial2 = RGB(255,255,224);
 					 }
-					 else if ( aColor.GetDeltaE ( GetColorReference().GetCyan () ) < 40 )
+					 else if ( aColor.GetDeltaE ( GetColorReference().GetCyan () ) < 30 )
 					 {
 						refColor = GetColorReference().GetCyan ();
 						clrSpecial1 = RGB(192,255,255);
 						clrSpecial2 = RGB(224,255,255);
 					 }
-					 else if ( aColor.GetDeltaE ( GetColorReference().GetMagenta () ) < 100 )
+					 else if ( aColor.GetDeltaE ( GetColorReference().GetMagenta () ) < 30 )
 					 {
 						refColor = GetColorReference().GetMagenta ();
 						clrSpecial1 = RGB(255,192,255);
@@ -2231,7 +2231,7 @@ void CMainView::OnGrayScaleGridBeginEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 				aColor=aColorMeasure.GetXYZValue();
 				break;
 			case HCFR_RGB_VIEW:
-				aColor=aColorMeasure.GetRGBValue(GetColorReference());
+				aColor=aColorMeasure.GetRGBValue((GetColorReference()));
 				break;
 			case HCFR_xyY_VIEW:
 				aColor=aColorMeasure.GetxyYValue();
@@ -2370,7 +2370,7 @@ void CMainView::OnGrayScaleGridEndEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 				aColor=aColorMeasure.GetXYZValue();
 				break;
 			case HCFR_RGB_VIEW:
-				aColor=aColorMeasure.GetRGBValue(GetColorReference());
+				aColor=aColorMeasure.GetRGBValue((GetColorReference()));
 				break;
 			case HCFR_xyY_VIEW:
 				aColor=aColorMeasure.GetxyYValue();
@@ -3227,37 +3227,37 @@ void CMainView::UpdateMeasurementsAfterBkgndMeasure ()
 		}
 
 		bSpecialRef = TRUE;
-		if ( MeasuredColor.GetDeltaE ( GetColorReference().GetRed () ) < 120 )
+		if ( MeasuredColor.GetDeltaE ( GetColorReference().GetRed () ) < 30 )
 		{
 			refColor = GetColorReference().GetRed ();
 			clrSpecial1 = RGB(255,192,192);
 			clrSpecial2 = RGB(255,224,224);
 		}
-		else if ( MeasuredColor.GetDeltaE ( GetColorReference().GetGreen () ) < 50 )
+		else if ( MeasuredColor.GetDeltaE ( GetColorReference().GetGreen () ) < 30 )
 		{
 			refColor = GetColorReference().GetGreen ();
 			clrSpecial1 = RGB(192,255,192);
 			clrSpecial2 = RGB(224,255,224);
 		}
-		else if ( MeasuredColor.GetDeltaE ( GetColorReference().GetBlue () ) < 200 )
+		else if ( MeasuredColor.GetDeltaE ( GetColorReference().GetBlue () ) < 30 )
 		{
 			refColor = GetColorReference().GetBlue ();
 			clrSpecial1 = RGB(192,192,255);
 			clrSpecial2 = RGB(224,224,255);
 		}
-		else if ( MeasuredColor.GetDeltaE ( GetColorReference().GetYellow () ) < 40 )
+		else if ( MeasuredColor.GetDeltaE ( GetColorReference().GetYellow () ) < 30 )
 		{
 			refColor = GetColorReference().GetYellow ();
 			clrSpecial1 = RGB(255,255,192);
 			clrSpecial2 = RGB(255,255,224);
 		}
-		else if ( MeasuredColor.GetDeltaE ( GetColorReference().GetCyan () ) < 40 )
+		else if ( MeasuredColor.GetDeltaE ( GetColorReference().GetCyan () ) < 30 )
 		{
 			refColor = GetColorReference().GetCyan ();
 			clrSpecial1 = RGB(192,255,255);
 			clrSpecial2 = RGB(224,255,255);
 		}
-		else if ( MeasuredColor.GetDeltaE ( GetColorReference().GetMagenta () ) < 100 )
+		else if ( MeasuredColor.GetDeltaE ( GetColorReference().GetMagenta () ) < 30 )
 		{
 			refColor = GetColorReference().GetMagenta ();
 			clrSpecial1 = RGB(255,192,255);

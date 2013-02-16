@@ -61,35 +61,53 @@ void CTargetWnd::Refresh()
         ColorXYZ centerXYZ = GetColorReference().GetWhite();
 		m_clr = RGB(64,64,64);
 
-		if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetRed() ) < 120 )
+		if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetRed() ) < 30 )
 		{
 			centerXYZ = GetColorReference().GetRed();
-			m_clr = RGB(192,0,0);
+			if (GetColorReference().m_standard != 4)
+   			  m_clr = RGB(192,0,0);
+			else
+			  m_clr = RGB(222,188,175);
 		}
-		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetGreen() ) < 50 )
+		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetGreen() ) < 30 )
 		{
 			centerXYZ = GetColorReference().GetGreen();
-			m_clr = RGB(0,192,0);
+			if (GetColorReference().m_standard != 4)
+   			  m_clr = RGB(0,192,0);
+			else
+			  m_clr = RGB(145,170,193);
 		}
-		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetBlue() ) < 120 )
+		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetBlue() ) < 30 )
 		{
 			centerXYZ = GetColorReference().GetBlue();
-			m_clr = RGB(0,0,192);
+			if (GetColorReference().m_standard != 4)
+   			  m_clr = RGB(0,0,192);
+			else
+			  m_clr = RGB(144,158,122);
 		}
-		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetYellow() ) < 40 )
+		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetYellow() ) < 30 )
 		{
 			centerXYZ = GetColorReference().GetYellow();
-			m_clr = RGB(192,192,0);
+			if (GetColorReference().m_standard != 4)
+   			  m_clr = RGB(192,192,0);
+			else
+			  m_clr = RGB(175,174,207);
 		}
-		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetCyan() ) < 40 )
+		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetCyan() ) < 30 )
 		{
 			centerXYZ = GetColorReference().GetCyan();
-			m_clr = RGB(0,192,192);
+			if (GetColorReference().m_standard != 4)
+   			  m_clr = RGB(0,192,192);
+			else
+			  m_clr = RGB(196,216,120);
 		}
-		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetMagenta() ) < 100 )
+		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetMagenta() ) < 30 )
 		{
 			centerXYZ = GetColorReference().GetMagenta();
-			m_clr = RGB(192,0,192);
+			if (GetColorReference().m_standard != 4)
+   			  m_clr = RGB(192,0,192);
+			else
+			  m_clr = RGB(240,197,96);
 		}
 
         ColorxyY aColor = m_pRefColor -> GetxyYValue();
