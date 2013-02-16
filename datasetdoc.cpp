@@ -2802,8 +2802,8 @@ void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int Col
 
 	if (ColorSpace == 0) 
 	{
-		blacklvl=GetMeasure()->GetGray(0).GetRGBValue(GetColorReference())[ColorIndex];
-		whitelvl=GetMeasure()->GetGray(Size-1).GetRGBValue(GetColorReference())[ColorIndex];
+		blacklvl=GetMeasure()->GetGray(0).GetRGBValue((GetColorReference()))[ColorIndex];
+		whitelvl=GetMeasure()->GetGray(Size-1).GetRGBValue((GetColorReference()))[ColorIndex];
 	}
 	else if (ColorSpace == 1) 
 	{
@@ -2838,7 +2838,7 @@ void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int Col
 	for (int i=0; i<Size; i++)
 	{	
 		if (ColorSpace == 0)
-			graylvl=GetMeasure()->GetGray(i).GetRGBValue(GetColorReference())[ColorIndex];
+			graylvl=GetMeasure()->GetGray(i).GetRGBValue((GetColorReference()))[ColorIndex];
 		else if (ColorSpace == 1)
 			graylvl=GetMeasure()->GetGray(i).GetLuxOrLumaValue(GetConfig () -> m_nLuminanceCurveMode);
 		else if (ColorSpace == 2) 

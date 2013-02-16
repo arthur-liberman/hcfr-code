@@ -1636,7 +1636,7 @@ LRESULT CMultiFrame::OnDDERequest(WPARAM wParam, LPARAM lParam)
 							break;
 						case HCFR_RGB_VIEW:
                             {
-							    ColorRGB aColor=ReqColor.GetRGBValue(GetColorReference());
+							    ColorRGB aColor=ReqColor.GetRGBValue((GetColorReference()));
 							    strData.Format("%.3f,%.3f,%.3f",aColor[0],aColor[1],aColor[2]);
                             }
 							break;

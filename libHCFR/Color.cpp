@@ -177,37 +177,13 @@ ColorxyY primariesRec709a[3] ={	ColorxyY(0.5575, 0.3298), //75% sat/lum Rec709 w
 ColorxyY primariesCC6[3] ={	ColorxyY(0.3877, 0.3528), //some color check references, secondardies will add 3 more
 								ColorxyY(0.2472, 0.2663),
 								ColorxyY(0.3415, 0.4315)};
-/* color checker
-*/
-ColorxyY CC24[23] = {	ColorxyY(0.3127, 0.3290, 0.35),
-						ColorxyY(0.3127, 0.3290, 0.50),
-						ColorxyY(0.3127, 0.3290, 0.65),
-						ColorxyY(0.3127, 0.3290, 0.80),
-						ColorxyY(0.3127, 0.3290, 1.0),
-						ColorxyY(0.4063, 0.3645, 0.099),
-						ColorxyY(0.3780, 0.3562, 0.355),
-						ColorxyY(0.2489, 0.2653, 0.190),
-						ColorxyY(0.3416, 0.4319, 0.131),
-						ColorxyY(0.2686, 0.2528, 0.238),
-						ColorxyY(0.2614, 0.3594, 0.424),
-						ColorxyY(0.5146, 0.4095, 0.286),
-						ColorxyY(0.2147, 0.1891, 0.128),
-						ColorxyY(0.4641, 0.3122, 0.186),
-						ColorxyY(0.2882, 0.2165, 0.065),
-						ColorxyY(0.3774, 0.4955, 0.437),
-						ColorxyY(0.4749, 0.4427, 0.429),
-						ColorxyY(0.1883, 0.1349, 0.060),
-						ColorxyY(0.3049, 0.4948, 0.233),
-						ColorxyY(0.5474, 0.3187, 0.116),
-						ColorxyY(0.4477, 0.4759, 0.598),
-						ColorxyY(0.3738, 0.2441, 0.190),
-						ColorxyY(0.2080, 0.2688, 0.197) };
 
 Matrix ComputeRGBtoXYZMatrix(Matrix primariesChromacities,Matrix whiteChromacity)
 {
 	// Compute RGB to XYZ matrix
 	Matrix coefJ(0.0,3,1);
 	coefJ=primariesChromacities.GetInverse();
+
 	coefJ=coefJ*whiteChromacity;
 
 	Matrix scaling(0.0,3,3);
@@ -293,7 +269,6 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
     greenPrimary = ColorXYZ(primaries[1]);
     bluePrimary = ColorXYZ(primaries[2]);
 
-
 	if(aWhiteTarget != Default)
 		m_white = aWhiteTarget;
 
@@ -346,8 +321,10 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
     // Compute transformation matrices
 	Matrix primariesMatrix(redPrimary);
 	primariesMatrix.CMAC(greenPrimary);
-	primariesMatrix.CMAC(bluePrimary);
+	primariesMatrix.CMAC(bluePrimary);	
+	
 	RGBtoXYZMatrix=ComputeRGBtoXYZMatrix(primariesMatrix, whiteColor);
+
 	XYZtoRGBMatrix=RGBtoXYZMatrix.GetInverse();
 
 	// Adjust reference primary colors Y values relatively to white Y
@@ -1070,8 +1047,9 @@ ColorRGB CColor::GetRGBValue(CColorReference colorReference) const
 {
 	if(isValid())
 	{
+		CColorReference aColorRef=GetStandardColorReference(HDTV);
         CLockWhileInScope dummy(m_matrixSection);
-		return ColorRGB(colorReference.XYZtoRGBMatrix*(m_XYZValues));
+		return ColorRGB((colorReference.m_standard==3||colorReference.m_standard==4)?aColorRef.XYZtoRGBMatrix*(m_XYZValues):colorReference.XYZtoRGBMatrix*(m_XYZValues));
 	}
 	else
     {

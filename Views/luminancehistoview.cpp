@@ -317,9 +317,9 @@ void CLuminanceGrapher::AddPointtoLumGraph(int ColorSpace,int ColorIndex,int Siz
 
 	if (ColorSpace == 0) 
 	{
-		blacklvl=pDataSet->GetMeasure()->GetGray(0).GetRGBValue(GetColorReference())[ColorIndex];
-		whitelvl=pDataSet->GetMeasure()->GetGray(Size-1).GetRGBValue(GetColorReference())[ColorIndex];
-		colorlevel=pDataSet->GetMeasure()->GetGray(PointIndex).GetRGBValue(GetColorReference())[ColorIndex];
+		blacklvl=pDataSet->GetMeasure()->GetGray(0).GetRGBValue((GetColorReference()))[ColorIndex];
+		whitelvl=pDataSet->GetMeasure()->GetGray(Size-1).GetRGBValue((GetColorReference()))[ColorIndex];
+		colorlevel=pDataSet->GetMeasure()->GetGray(PointIndex).GetRGBValue((GetColorReference()))[ColorIndex];
 	}
 	else if (ColorSpace == 1) 
 	{

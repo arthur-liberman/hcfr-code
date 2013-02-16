@@ -3956,32 +3956,32 @@ void CMeasure::FreeMeasurementAppended()
 		{
 			LastMeasure=GetMeasurement(n-1);
 
-			if ( LastMeasure.GetDeltaE ( GetColorReference().GetRed ()) < 120 )
+			if ( LastMeasure.GetDeltaE ( GetColorReference().GetRed ()) < 30 )
 			{
 				// Copy real color to primary (not LastMeasure which may have been adjusted)
 				SetRedPrimary ( m_measurementsArray[n-1] );
 			}
-			else if ( LastMeasure.GetDeltaE ( GetColorReference().GetGreen () ) < 50 )
+			else if ( LastMeasure.GetDeltaE ( GetColorReference().GetGreen () ) < 30 )
 			{
 				// Copy real color to primary (not LastMeasure which may have been adjusted)
 				SetGreenPrimary ( m_measurementsArray[n-1] );
 			}
-			else if ( LastMeasure.GetDeltaE ( GetColorReference().GetBlue () ) < 120 )
+			else if ( LastMeasure.GetDeltaE ( GetColorReference().GetBlue () ) < 30 )
 			{
 				// Copy real color to primary (not LastMeasure which may have been adjusted)
 				SetBluePrimary ( m_measurementsArray[n-1] );
 			}
-			else if ( LastMeasure.GetDeltaE ( GetColorReference().GetYellow () ) < 40 )
+			else if ( LastMeasure.GetDeltaE ( GetColorReference().GetYellow () ) < 30 )
 			{
 				// Copy real color to primary (not LastMeasure which may have been adjusted)
 				SetYellowSecondary ( m_measurementsArray[n-1] );
 			}
-			else if ( LastMeasure.GetDeltaE ( GetColorReference().GetCyan () ) < 40 )
+			else if ( LastMeasure.GetDeltaE ( GetColorReference().GetCyan () ) < 30 )
 			{
 				// Copy real color to primary (not LastMeasure which may have been adjusted)
 				SetCyanSecondary ( m_measurementsArray[n-1] );
 			}
-			else if ( LastMeasure.GetDeltaE ( GetColorReference().GetMagenta () ) < 100 )
+			else if ( LastMeasure.GetDeltaE ( GetColorReference().GetMagenta () ) < 30 )
 			{
 				// Copy real color to primary (not LastMeasure which may have been adjusted)
 				SetMagentaSecondary ( m_measurementsArray[n-1] );
