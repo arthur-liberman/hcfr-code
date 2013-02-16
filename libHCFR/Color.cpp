@@ -178,6 +178,7 @@ ColorxyY primariesCC6[3] ={	ColorxyY(0.3877, 0.3528), //some color check referen
 								ColorxyY(0.2472, 0.2663),
 								ColorxyY(0.3415, 0.4315)};
 
+
 Matrix ComputeRGBtoXYZMatrix(Matrix primariesChromacities,Matrix whiteChromacity)
 {
 	// Compute RGB to XYZ matrix
@@ -381,7 +382,7 @@ void CColorReference::UpdateSecondary ( ColorXYZ & secondary, const ColorXYZ& pr
 	}
 	else
 	{
-		if (x1 > 0.38) aColor =  ColorxyY(0.2680,	0.2535,	.233);
+		if (x1 > 0.38) aColor =  ColorxyY(0.2076,	0.1799,	.116);
 		if (x1 > 0.2 && x1 < 0.3) aColor = ColorxyY(0.3755,	0.4970,	.444); 
 		if (x1 > 0.3 && x1 < 0.38) aColor = ColorxyY(0.4763, 0.4431, .426); 
 	}
