@@ -251,7 +251,6 @@ BEGIN
                     "Button",BS_AUTORADIOBUTTON,12,85,153,10
     CONTROL         "Camera Gamma, Manual Offset :",IDC_GAMMA_OFFSET_RADIO4,
                     "Button",BS_AUTORADIOBUTTON,12,97,117,10,WS_EX_TRANSPARENT
-//    CONTROL         "Optimized (Regression)",IDC_GAMMA_OFFSET_RADIO5,"Button",BS_AUTORADIOBUTTON,12,109,93,10,WS_EX_TRANSPARENT
     CONTROL         "ITU-R BT.1886",IDC_GAMMA_OFFSET_RADIO5,"Button",BS_AUTORADIOBUTTON,12,109,93,10,WS_EX_TRANSPARENT
     EDITTEXT        IDC_EDIT_MANUAL_GOFFSET,131,95,41,13,ES_AUTOHSCROLL | WS_GROUP
     GROUPBOX        "Reference Gamma",IDC_STATIC,7,126,84,29,WS_GROUP
@@ -947,15 +946,15 @@ IDB_CYANSECONDARY_BITMAP BITMAP                  "res\\cyansecondary.bmp"
 IDB_REDPRIMARY_BITMAP   BITMAP                  "res\\redprimary.bmp"
 IDB_GRAYPLOT_BITMAP     BITMAP                  "res\\grayplot.bmp"
 IDB_MEASUREPLOT_BITMAP  BITMAP                  "res\\measureplot.bmp"
-IDB_SELECTEDLOT_BITMAP  BITMAP                  "res\\selectedplot.bmp"
+IDB_SELECTEDPLOT_BITMAP  BITMAP                  "res\\selectedplot.bmp"
 IDB_ANSICONTRAST_BITMAP BITMAP                  "res\\bitmap1.bmp"
 IDB_LOGO                BITMAP                  "res\\logo.bmp"
 IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
 IDR_MEDIUMTOOLBAR_VIEWS BITMAP                  "res\\medtoot.bmp"
 IDR_MEDIUMTOOLBAR_MAIN  BITMAP                  "res\\mediumto.bmp"
-IDB_REFYELLOWSECONDARY_BITMAP BITMAP                  "res\\refyellowsecondary.bmp"
-IDB_REFCYANSECONDARY_BITMAP BITMAP                  "res\\refcyansecondary.bmp"
-IDB_REFMAGENTASECONDARY_BITMAP BITMAP                  "res\\refmagentasecondary.bmp"
+IDB_REFYELLOWSECONDARY_BITMAP BITMAP             "res\\refyellowsecondary.bmp"
+IDB_REFCYANSECONDARY_BITMAP BITMAP               "res\\refcyansecondary.bmp"
+IDB_REFMAGENTASECONDARY_BITMAP BITMAP            "res\\refmagentasecondary.bmp"
 IDR_MENUBARGRAPH        BITMAP                  "res\\menubarg.bmp"
 IDB_SATRED              BITMAP                  "res\\satred.bmp"
 IDB_SATGREEN            BITMAP                  "res\\satgreen.bmp"
