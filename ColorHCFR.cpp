@@ -1312,6 +1312,7 @@ BOOL CAboutDlg::OnInitDialog()
 							"John ADCOCK",szDevApp,
 							"Nick BLIEVERS",szDevApp,
 							"Ian C",szDevApp,
+							"zoyd",szExpert,
     };
 	int auteursNb=(sizeof(auteurStrings)/sizeof(char *));
 
