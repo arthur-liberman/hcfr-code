@@ -94,7 +94,7 @@
 #define IDR_GRAPH_MENU                  211
 #define IDB_MEASUREPLOT_BITMAP          212
 #define IDR_LUM_GRAPH_MENU              212
-#define IDB_SELECTEDLOT_BITMAP          213
+#define IDB_SELECTEDPLOT_BITMAP          213
 #define IDR_RGB_GRAPH_MENU              213
 #define IDR_COLORTEMP_GRAPH_MENU        214
 #define IDB_REFMAGENTASECONDARY_BITMAP  215

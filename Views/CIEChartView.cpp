@@ -108,7 +108,7 @@ CCIEChartGrapher::CCIEChartGrapher()
 	m_magentaSecondaryBitmap.LoadBitmap(IDB_MAGENTASECONDARY_BITMAP);
 	m_grayPlotBitmap.LoadBitmap(IDB_GRAYPLOT_BITMAP);
 	m_measurePlotBitmap.LoadBitmap(IDB_MEASUREPLOT_BITMAP);
-	m_selectedPlotBitmap.LoadBitmap(IDB_SELECTEDLOT_BITMAP);
+	m_selectedPlotBitmap.LoadBitmap(IDB_SELECTEDPLOT_BITMAP);
 
 	m_datarefRedBitmap.LoadBitmap(IDB_REFCROSS_RED);
 	m_datarefGreenBitmap.LoadBitmap(IDB_REFCROSS_GREEN);
