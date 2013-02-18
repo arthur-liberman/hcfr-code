@@ -1812,14 +1812,15 @@ void CDataSetDoc::OnCalibrationSpectralSample()
 	}
 
 	CString displayName = m_pGenerator->GetActiveDisplayName();
-	
-	if (displayName.IsEmpty()) // If the displayname is empty, we're not using the GDIGenerator, and so cannot display any patches
+//build using manually generated DVD patterns works fine	
+/*	if (displayName.IsEmpty()) // If the displayname is empty, we're not using the GDIGenerator, and so cannot display any patches
 	{
 		Title.LoadString ( IDS_ERROR );
 		strMsg.LoadString(IDS_SPECTRAL_SAMPLE_GENERATOR);
 		MessageBox(NULL, strMsg, Title ,MB_ICONERROR | MB_OK);  
 		return;
 	}
+*/
 
 	if ( IDYES == AfxMessageBox ( IDS_SPECTRAL_SAMPLE_CREATE, MB_YESNO | MB_ICONQUESTION ) )
 	{
