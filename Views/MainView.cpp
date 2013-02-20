@@ -1272,6 +1272,8 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 		UpdateData(FALSE);
 	}
 }
+		double			dEavg = 0.0;
+		int 			dEcnt = 0;
 
 CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aReference, CColor & aRefDocColor, double YWhiteRefDoc, int aComponentNum, int nCol, double Offset)
 {
@@ -1305,11 +1307,19 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				// Use original u'v' dE for grey scale as this is standard practice
 				if (m_displayMode == 0)
 					if ( nCol > 1 )
+					{
 						str.Format("%.1f",aMeasure.GetDeltaE ( aReference ));
+						dEavg+=aMeasure.GetDeltaE ( aReference );
+						dEcnt++;
+					}
 					else
 						str.Empty ();
 				else
+				{
 					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula) );
+					dEavg+=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula);
+					dEcnt++;
+				}
 			else
 				str.Empty ();
 		}
@@ -1610,6 +1620,9 @@ void CMainView::UpdateGrid()
 		int	nCount;
 		BOOL bHasLuxValues = FALSE;
 		BOOL bHasLuxDelta = FALSE;
+					
+		dEavg = 0.0;
+		dEcnt = 0;
 
 		if ( pDataRef == GetDocument () )
 			pDataRef = NULL;
@@ -1674,6 +1687,7 @@ void CMainView::UpdateGrid()
 				 break;
 
 			case 2:
+				 YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
 				 nCount = GetDocument()->GetMeasure()->GetMeasurementsSize();
 				 if ( pDataRef && pDataRef->GetMeasure()->GetMeasurementsSize() != nCount )
 					 pDataRef = NULL;
@@ -1828,6 +1842,7 @@ void CMainView::UpdateGrid()
 
 				case 2:
 					 aColor = GetDocument()->GetMeasure()->GetMeasurement(j);
+					 YWhite=YWhiteOnOff;
 					 if( m_pGrayScaleGrid -> GetColumnCount() <= j+1 )
 					 {
 						CString	str;
@@ -2070,17 +2085,7 @@ void CMainView::UpdateGrid()
 				Msg += " ( ";
 				Msg += Tmp;
 				sprintf ( szBuf, ": %.2f, ", Gamma );
-				Msg += szBuf;
-					
-/*				if ( GetConfig () -> m_GammaOffsetType == 4 )  //removed when replacing with BT.1886
-				{
-					Tmp.LoadString ( IDS_OFFSET );
-					Msg += Tmp;
-					sprintf ( szBuf, ": %.4f, ", Offset );
-					Msg += szBuf;
-				}
-*/
-
+				Msg += szBuf;					
 				Tmp.LoadString ( IDS_CONTRAST );
 				Msg += Tmp;
 
@@ -2093,8 +2098,47 @@ void CMainView::UpdateGrid()
 				{
 					Msg += ": ???:1 )";
 				}
+
+   			    if ( dEcnt > 0 )
+				{
+					Tmp.LoadString ( IDS_DELTAEAVERAGE );
+					Msg += " ( ";
+					Msg += Tmp;
+					sprintf ( szBuf, ": %.2f )", dEavg / dEcnt );
+					Msg += szBuf;					
+				}
 			}
 
+			m_grayScaleGroup.SetText ( Msg );
+		} else if ( m_displayMode == 1 )
+		{
+			CString	Msg, Tmp;;
+			Msg.LoadString ( IDS_SECONDARYCOLORS );
+			m_grayScaleGroup.SetText ( Msg );
+			if (GetDocument()->GetMeasure()->GetRedPrimary().isValid() && dEcnt > 0 )
+		    {
+				char	szBuf [ 256 ];
+				Tmp.LoadString ( IDS_DELTAEAVERAGE );
+				Msg += " ( ";
+				Msg += Tmp;
+				sprintf ( szBuf, ": %.2f )", dEavg / dEcnt );
+				Msg += szBuf;					
+			}
+			m_grayScaleGroup.SetText ( Msg );
+		} else if ( m_displayMode > 4 && m_displayMode < 11 )
+		{
+			CString	Msg, Tmp;;
+			Msg.LoadString ( IDS_SATURATIONCOLORS );
+			m_grayScaleGroup.SetText ( Msg );
+			if (GetDocument()->GetMeasure()->GetRedSat(0).isValid() && dEcnt > 0 )
+		    {
+				char	szBuf [ 256 ];
+				Tmp.LoadString ( IDS_DELTAEAVERAGE );
+				Msg += " ( ";
+				Msg += Tmp;
+				sprintf ( szBuf, ": %.2f )", dEavg / dEcnt );
+				Msg += szBuf;					
+			}
 			m_grayScaleGroup.SetText ( Msg );
 		}
 	}
@@ -3276,11 +3320,12 @@ void CMainView::UpdateMeasurementsAfterBkgndMeasure ()
 		else
 			refDocColor = noDataColor;
 
+		double YWhite = GetDocument() -> GetMeasure () -> GetOnOffWhite () [ 1 ];
 		for( int i = 0 ; i < ( pDataRef ? 7 : 5 ) ; i ++ )
 		{
 			Item.row = i+1;
 			Item.col = n;
-			Item.strText = GetItemText ( MeasuredColor, -1.0, refColor, refDocColor, -1.0, i, n, 0.0 );
+			Item.strText = GetItemText ( MeasuredColor, YWhite, refColor, refDocColor, -1.0, i, n, 0.0 );
 			
 			m_pGrayScaleGrid->SetItem(&Item);
 
