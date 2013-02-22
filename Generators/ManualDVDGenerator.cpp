@@ -65,7 +65,7 @@ BOOL CManualDVDGenerator::DisplayGray(double aLevel, MeasureType nPatternType,BO
 	Title.LoadString ( IDS_INFORMATION );
 
 	Msg.LoadString ( IDS_DVDMANPOS1 );
-	str.Format(Msg,aLevel);
+	str.Format(Msg,floor(aLevel+0.5));
 	bRet = ( MessageBox(NULL,str,Title,MB_ICONINFORMATION | MB_OKCANCEL | MB_TOPMOST) == IDOK );
 
 	if(m_doScreenBlanking)

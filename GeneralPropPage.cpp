@@ -47,7 +47,7 @@ CGeneralPropPage::CGeneralPropPage() : CPropertyPageWithHelp(CGeneralPropPage::I
 	m_bLatencyBeep = FALSE;
 	m_BWColorsToAdd = -1;
 	m_bDetectPrimaries = FALSE;
-	m_bSatUseMeasuredRef = TRUE;
+	m_bUseRoundDown = TRUE;
 	//}}AFX_DATA_INIT
 
 	m_isModified = FALSE;
@@ -70,7 +70,7 @@ void CGeneralPropPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_BEEP, m_bLatencyBeep);
 	DDX_Radio(pDX, IDC_RADIO1, m_BWColorsToAdd);
 	DDX_Check(pDX, IDC_CHECK_DETECT_PRIMARIES, m_bDetectPrimaries);
-	DDX_Check(pDX, IDC_CHECK_SATREF_MEASURES, m_bSatUseMeasuredRef);
+	DDX_Check(pDX, IDC_CHECK_USE_ROUNDDOWN, m_bUseRoundDown);
 	//}}AFX_DATA_MAP
 }
 
@@ -84,7 +84,7 @@ BEGIN_MESSAGE_MAP(CGeneralPropPage, CPropertyPageWithHelp)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_RADIO1, IDC_RADIO3, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_BEEP, IDC_CHECK_BEEP, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_DETECT_PRIMARIES, IDC_CHECK_DETECT_PRIMARIES, OnControlClicked)
-    ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_SATREF_MEASURES, IDC_CHECK_SATREF_MEASURES, OnControlClicked)
+    ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_USE_ROUNDDOWN, IDC_CHECK_USE_ROUNDDOWN, OnControlClicked)
 	//{{AFX_MSG_MAP(CGeneralPropPage)
 		// NOTE: the ClassWizard will add message map macros here
 	//}}AFX_MSG_MAP
@@ -98,9 +98,10 @@ void CGeneralPropPage::OnControlClicked(UINT nID)
 	// m_isModified becomes true only when Continuous Reading flag changes. This flag
 	// allow parent dialog to send a WM_SYSCOLORCHANGE message to all DataSetView to change
 	// measurement button look (camera or start icon).
-	if ( nID == IDC_CHECK_CONTINUOUS )
+	if ( nID == IDC_CHECK_CONTINUOUS || IDC_CHECK_USE_ROUNDDOWN )
 		m_isModified=TRUE;
 	
+//	UpdateAllViews ( NULL, UPD_EVERYTHING );
 	SetModified(TRUE);	
 }
 

@@ -633,7 +633,7 @@ BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator)
 
 	for(int i=0;i<size;i++)
 	{
-		if( pGenerator->DisplayGray(ArrayIndexToGrayLevel ( i, size),CGenerator::MT_IRE ,!bRetry))
+		if( pGenerator->DisplayGray(ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown),CGenerator::MT_IRE ,!bRetry))
 		{
 			bEscape = WaitForDynamicIris ();
 			bRetry = FALSE;
@@ -643,7 +643,7 @@ BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator)
 				if ( bUseLuxValues )
 					StartLuxMeasure ();
 
-				measuredColor[i]=pSensor->MeasureGray(ArrayIndexToGrayLevel ( i, size));
+				measuredColor[i]=pSensor->MeasureGray(ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown));
 				
 				if ( bUseLuxValues )
 				{
@@ -819,7 +819,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 
 	for(int i=0;i<size;i++)
 	{
-		if( pGenerator->DisplayGray(ArrayIndexToGrayLevel ( i, size),CGenerator::MT_IRE ,!bRetry))
+		if( pGenerator->DisplayGray(ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown),CGenerator::MT_IRE ,!bRetry))
 		{
 			bEscape = WaitForDynamicIris ();
 			bRetry = FALSE;
@@ -829,7 +829,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 				if ( bUseLuxValues )
 					StartLuxMeasure ();
 
-				measuredColor[i]=pSensor->MeasureGray(ArrayIndexToGrayLevel ( i, size ));
+				measuredColor[i]=pSensor->MeasureGray(ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown ));
 				
 				if ( bUseLuxValues )
 				{

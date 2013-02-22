@@ -288,8 +288,8 @@ BEGIN
     CONTROL         "Aucune",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,134,41,10
     CONTROL         "Blanc",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,69,134,34,10
     CONTROL         "Blanc et noir",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,115,134,55,10
-    GROUPBOX        "Couleurs de référence pour les courbes de saturation",IDC_STATIC,7,151,198,26,WS_GROUP
-    CONTROL         "Utilise les couleurs mesurées (si elles sont disponibles)",IDC_CHECK_SATREF_MEASURES,
+    GROUPBOX        "Gray levels rounding assumption",IDC_STATIC,7,151,198,26,WS_GROUP
+    CONTROL         "Use round down levels (AVSHD, DVE)",IDC_CHECK_USE_ROUNDDOWN,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,162,185,10
 END
 

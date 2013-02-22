@@ -447,20 +447,20 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 void CSatLumShiftGrapher::GetEndPoint ( double & xend, double & yend, CColor & SaturatedColor, const ColorRGB & ClrRGB )
 {
-	if ( GetConfig () -> m_bSatUseMeasuredRef && SaturatedColor.isValid() )
-	{
-		// Use measured saturated color as target
-		xend = SaturatedColor.GetxyYValue()[0];
-		yend = SaturatedColor.GetxyYValue()[0];
-	}
-	else
-	{		
+//	if ( GetConfig () -> m_bSatUseMeasuredRef && SaturatedColor.isValid() )
+//	{
+//		// Use measured saturated color as target
+//		xend = SaturatedColor.GetxyYValue()[0];
+//		yend = SaturatedColor.GetxyYValue()[0];
+//	}
+//	else
+//	{		
 		ColorXYZ Clr2(ClrRGB, GetColorReference());
 		ColorxyY Clr3(Clr2);
 		
 		xend=Clr3[0];
 		yend=Clr3[1];
-	}
+//	}
 }
 
 void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, const ColorxyY& SatColor, int num, int count, double xstart, double ystart, double xend, double yend )

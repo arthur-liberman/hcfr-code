@@ -147,7 +147,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			ColorXYZ aMeasure(aColor[0]/aColor[1], 1.0, (1.0-(aColor[0]+aColor[1]))/aColor[1]);
 			ColorRGB normColor(aMeasure, GetColorReference());
 
-			double x = ArrayIndexToGrayLevel ( i, size );
+			double x = ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown );
 
 			m_graphCtrl.AddPoint(m_redGraphID, x, normColor[0]*100.0);
 			m_graphCtrl.AddPoint(m_greenGraphID, x, normColor[1]*100.0);
@@ -159,7 +159,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 				if ( GetConfig () -> m_bUseDeltaELumaOnGrays )
 				{
 					// Compute reference Luma regarding actual offset and reference gamma
-					double valx=(GrayLevelToGrayProp(x)+Offset)/(1.0+Offset);
+					double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
 					double valy=pow(valx, GetConfig()->m_GammaRef);
 					
 					ColorxyY tmpColor(GetColorReference().GetWhite());
@@ -202,7 +202,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			ColorXYZ aMeasure(aColorRef[0]/aColorRef[1], 1.0, (1.0-(aColorRef[0]+aColorRef[1]))/aColorRef[1]);
 			ColorRGB normColor(aMeasure, GetColorReference());
 
-			double x = ArrayIndexToGrayLevel ( i, size );
+			double x = ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown );
 
 			m_graphCtrl.AddPoint(m_redDataRefGraphID, x, normColor[0]*100.0);
 			m_graphCtrl.AddPoint(m_greenDataRefGraphID, x, normColor[1]*100.0);
@@ -214,7 +214,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 				if ( GetConfig () -> m_bUseDeltaELumaOnGrays )
 				{
 					// Compute reference Luma regarding actual offset and reference gamma
-					double valxref=(GrayLevelToGrayProp(x)+OffsetRef)/(1.0+OffsetRef);
+					double valxref=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+OffsetRef)/(1.0+OffsetRef);
 					double valyref=pow(valxref, GetConfig()->m_GammaRef);
 					
 					ColorxyY tmpColor(GetColorReference().GetWhite());

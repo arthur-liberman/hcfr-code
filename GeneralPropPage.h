@@ -51,7 +51,7 @@ public:
 	BOOL	m_bLatencyBeep;
 	int		m_BWColorsToAdd;
 	BOOL	m_bDetectPrimaries;
-	BOOL	m_bSatUseMeasuredRef;
+	BOOL	m_bUseRoundDown;
 	//}}AFX_DATA
 
 	virtual UINT GetHelpId ( LPSTR lpszTopic );

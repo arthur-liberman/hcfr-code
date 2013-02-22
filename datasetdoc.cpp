@@ -2396,7 +2396,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nSteps = GetMeasure () -> GetGrayScaleSize ();
 			 for (i = 0; i < nSteps ; i ++ )
 			 {
-				GenIRE [ i ] = ArrayIndexToGrayLevel ( i, nSteps);
+				GenIRE [ i ] = ArrayIndexToGrayLevel ( i, nSteps, GetConfig () -> m_bUseRoundDown);
 				bIRE [ i ] = GetMeasure () -> m_bIREScaleMode;
 				GenColors [ i ] = ColorRGBDisplay(GenIRE[i]);
 			 	mType [ i ] = CGenerator::MT_IRE;
@@ -2438,7 +2438,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nMaxSteps = nSteps;
 			 for (i = 0; i < nSteps ; i ++ )
 			 {
-				GenIRE [ i ] = (int)ArrayIndexToGrayLevel ( i, nSteps);
+				GenIRE [ i ] = (int)ArrayIndexToGrayLevel ( i, nSteps, GetConfig () -> m_bUseRoundDown);
 				bIRE [ i ] = GetMeasure () -> m_bIREScaleMode;
 				GenColors [ i ] = ColorRGBDisplay(GenIRE[i]);
  			 	mType [ i ] = CGenerator::MT_IRE;
@@ -2881,78 +2881,19 @@ void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int Col
 			break;
 		case 3:
 			Offset_opt = GetConfig() -> m_manualGOffset;
-/*			if(Offset_opt == 0 && GetConfig()->m_colorStandard == sRGB)
-				Offset_opt = 0.055;
-			else
-				Offset_opt = 0.099;
-*/			break;
+			break;
 		case 4: //optimized, we should replace with bt.1886
 			{
-/*				int		i;
-				double	deltamin = -1;
-				double	offsetMin = 0;
-				double	offsetMax = 0.200;
-				double	offsetStep = 0.01;
-				double	gammaMin = 1.5;
-				double	gammaMax = 4.0;
-				double	gammaStep = 0.1;
-				double	offset, offset_plus_one;
-
-				for (i=0; i<Size; i++)
-				{
-					double x = ArrayIndexToGrayLevel ( i, Size);
-					tmpx[i] = GrayLevelToGrayProp(x);
-				}
-
-				for (int nbopt=0; nbopt <2; nbopt ++)
-				{
-					for (offset = offsetMin; offset < offsetMax; offset += offsetStep)
-					{
-						offset_plus_one = offset + 1.0;
-						for (i=0; i<Size; i++)
-						{
-							valx[i] = (tmpx[i]+offset) / offset_plus_one;
-						}
-		
-						for (double gamma = gammaMin; gamma < gammaMax; gamma += gammaStep)
-						{
-							double	sum = 0;
-							for (i=0; i<Size; i++)
-							{		
-								double valy, ecart;
-								valy=pow(valx[i], gamma);
-								ecart = (lumlvl[i] - valy);
-								sum += ecart * ecart;
-							}
-							sum /= ( Size ? Size : 1 );
-							if ((sum < deltamin) || (deltamin < 0))
-							{
-								deltamin = sum;
-								Gamma_opt = gamma;
-								Offset_opt = offset;
-							}
-						}	
-					}
-					offsetMin = Offset_opt - offsetStep;
-					offsetMax = Offset_opt + offsetStep;
-					gammaMin = Gamma_opt - gammaStep;
-					gammaMax = Gamma_opt + gammaStep;
-					offsetStep /= 10.0;
-					gammaStep /= 10.0;
-				}*/
 				Offset_opt = 0.0;
 			}
 			break;
 		}
-// get point gammas for all config types now
-//		if ( nConfigOffsetType == 0 || nConfigOffsetType == 1 || nConfigOffsetType == 2 || nConfigOffsetType == 3 )
-//		{
 			double x, v;
 
 			for (int i=0; i<Size; i++)
 			{
-				x = ArrayIndexToGrayLevel ( i, Size);
-				v = GrayLevelToGrayProp(x);
+				x = ArrayIndexToGrayLevel ( i, Size, GetConfig () -> m_bUseRoundDown);
+				v = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
 
 				valx[i]=(v+Offset_opt)/(1.0+Offset_opt);
 			}
@@ -2968,7 +2909,6 @@ void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int Col
 				}
 			}
 			Gamma_opt = avg / ( nb ? nb : 1 );
-//		}
 	}
 	*Offset = Offset_opt;
 	*Gamma = Gamma_opt;
