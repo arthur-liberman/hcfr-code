@@ -398,8 +398,8 @@ extern CColor noDataColor;
 // Tool functions
 extern void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int nSteps, bool bRed, bool bGreen, bool bBlue);
 extern Matrix ComputeConversionMatrix(const ColorXYZ measures[3], const ColorXYZ references[3], const ColorXYZ & WhiteTest, const ColorXYZ & WhiteRef, bool	bUseOnlyPrimaries);
-double ArrayIndexToGrayLevel ( int nCol, int nSize);
-double GrayLevelToGrayProp ( double Level );
+double ArrayIndexToGrayLevel ( int nCol, int nSize, bool m_bUseRoundDown);
+double GrayLevelToGrayProp ( double Level, bool m_bUseRoundDown );
 
 
 #endif // !defined(COLOR_H_INCLUDED_)

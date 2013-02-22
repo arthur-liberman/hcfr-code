@@ -177,6 +177,22 @@ ColorxyY primariesRec709a[3] ={	ColorxyY(0.5575, 0.3298), //75% sat/lum Rec709 w
 ColorxyY primariesCC6[3] ={	ColorxyY(0.3877, 0.3528), //some color check references, secondardies will add 3 more
 								ColorxyY(0.2472, 0.2663),
 								ColorxyY(0.3415, 0.4315)};
+/* The 75% saturation 75% amplitude and color checker xy locations are calculated assuming gamma=2.22 and starting with the follow triplets
+and then used as pseudo-primaries/secondaries as follows
+
+75% (16-235)
+	R	G	B	Y	C	M
+R'	165	77	58	180	95	156
+G'	60	176	58	180	176	80
+B'	60	77	126	88	176	156
+
+CC6 (16-235)
+	R	G	B	Y	C	M
+R'	187	95	94	77	152	213
+G'	142	121	109	95	178	154
+B'	127	149	74	161	100	54
+
+*/
 
 
 Matrix ComputeRGBtoXYZMatrix(Matrix primariesChromacities,Matrix whiteChromacity)
@@ -1535,14 +1551,27 @@ Matrix ComputeConversionMatrix(const ColorXYZ measures[3], const ColorXYZ refere
     return transform;
 }
 
-double ArrayIndexToGrayLevel ( int nCol, int nSize)
+double ArrayIndexToGrayLevel ( int nCol, int nSize, bool m_bUseRoundDown)
 {
     // Gray percent: return a value between 0 and 100
-    return ( (double)nCol*100.0/(double)(nSize-1) );
+	// normal rounding (GCD disk), round down (AVSHD disk)
+
+//    return ( (double)nCol*100.0/(double)(nSize-1) );
+	if (m_bUseRoundDown)
+		return ( floor((double)nCol / (double)(nSize-1) * 219.0) / 219.0 * 100.0 );
+	else
+		return ( floor((double)nCol / (double)(nSize-1) * 219.0 + 0.5) / 219.0 * 100.0 );
+
+
 }
 
-double GrayLevelToGrayProp ( double Level)
+double GrayLevelToGrayProp ( double Level, bool m_bUseRoundDown)
 {
     // Gray Level: return a value between 0 and 1
-    return Level / 100.0;
+//    normal rounding (GCD disk), round down (AVSHD disk)
+	if (m_bUseRoundDown)
+    	return Level = (floor(Level / 100.0 * 219.0 + 16.0) - 16.0) / 219.0;
+	else
+		return Level = (floor(Level / 100.0 * 219.0 + 16.5) - 16.0) / 219.0;
 }
+

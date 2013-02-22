@@ -64,7 +64,7 @@ public:
 	BOOL m_bDetectPrimaries;
 	int m_latencyTime;
 	BOOL m_bLatencyBeep;
-	BOOL m_bSatUseMeasuredRef;
+	BOOL m_bUseRoundDown;
 	int m_BWColorsToAdd;
 	double m_GammaRef;
 	double m_manualGOffset;

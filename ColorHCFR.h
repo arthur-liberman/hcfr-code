@@ -36,7 +36,7 @@
 #include "resource.h"       // main symbols
 #include "WinAppEx.h"
 #include "HelpID.h"
-#include "Color.h"
+#include  "Color.h"
 #include "CrashDump.h"
 
 // Return codes for CColorHCFRApp::GetLuxMeasure

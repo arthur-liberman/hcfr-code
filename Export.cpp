@@ -290,7 +290,7 @@ bool CExport::SaveGrayScaleSheet()
 	Rows.Add(bIRE ? "IRE" : GetConfig()->m_PercentGray);
 	for(j=0;j<size;j++)
 	{
-		Rows.Add((float)(ArrayIndexToGrayLevel ( j, size)));
+		Rows.Add((float)(ArrayIndexToGrayLevel ( j, size, GetConfig () -> m_bUseRoundDown)));
 	}
 	result&=graySS.AddRow(Rows,rowNb,m_doReplace);
 	rowNb++;
@@ -337,8 +337,8 @@ bool CExport::SaveGrayScaleSheet()
 		if ( GetConfig () -> m_bUseDeltaELumaOnGrays )
 		{
 			// Compute reference Luma regarding actual offset and reference gamma
-			double x = ArrayIndexToGrayLevel ( j, size);
-			double valx=(GrayLevelToGrayProp(x)+Offset)/(1.0+Offset);
+			double x = ArrayIndexToGrayLevel ( j, size, GetConfig () -> m_bUseRoundDown);
+			double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
 			double valy=pow(valx, GetConfig()->m_GammaRef);
 			
 			ColorxyY tmpColor(GetColorReference().GetWhite());

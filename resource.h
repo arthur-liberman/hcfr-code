@@ -665,7 +665,7 @@
 #define IDC_FLASH_EEPROM_BLACK          1259
 #define IDC_EDIT_BLACK_1                1260
 #define IDC_EDIT_BLACK_2                1261
-#define IDC_CHECK_SATREF_MEASURES       1261
+#define IDC_CHECK_USE_ROUNDDOWN       1261
 #define IDC_EDIT_BLACK_3                1262
 #define IDC_MEASURE_BLACK               1263
 #define IDC_FLASH_EEPROM_FILE           1264

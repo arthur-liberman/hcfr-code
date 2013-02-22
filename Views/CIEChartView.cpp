@@ -719,9 +719,9 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
             if ( GetConfig () -> m_bUseDeltaELumaOnGrays )
             {
                 // Compute reference Luma regarding actual offset and reference gamma
-                double x = ArrayIndexToGrayLevel (i, nSize );
+                double x = ArrayIndexToGrayLevel (i, nSize, GetConfig () -> m_bUseRoundDown );
 
-                double valx=(GrayLevelToGrayProp(x)+Offset)/(1.0+Offset);
+                double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
                 double valy=pow(valx, GetConfig()->m_GammaRef);
 
                 ColorxyY tmpColor(GetColorReference().GetWhite());

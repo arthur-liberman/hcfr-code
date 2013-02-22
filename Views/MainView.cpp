@@ -739,9 +739,9 @@ void CMainView::InitGrid()
 		{
 			case 0:
 				 if ( bIRE && i==0 )
-					Item.strText.Format("%.1f",ArrayIndexToGrayLevel ( i, size ));
+					Item.strText.Format("%.1f",ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown ));
 				 else
-					Item.strText.Format("%d", (int) ArrayIndexToGrayLevel ( i, size ) );
+					Item.strText.Format("%d", (int) floor(ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown )+0.5) );
 				 break;
 
 			case 1:
@@ -1305,7 +1305,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 		{
 			if ( aReference.isValid() )
 				// Use original u'v' dE for grey scale as this is standard practice
-				if (m_displayMode == 0)
+				if (m_displayMode == 0 || m_displayMode == 2)
 					if ( nCol > 1 )
 					{
 						str.Format("%.1f",aMeasure.GetDeltaE ( aReference ));
@@ -1374,7 +1374,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						if ( GetConfig ()->m_GammaOffsetType == 1 )
 							yblack = GetDocument() -> GetMeasure () -> GetGray ( 0 ).GetY ();
 
-						x = ArrayIndexToGrayLevel ( nCol - 1, nGrayScaleSize );
+						x = ArrayIndexToGrayLevel ( nCol - 1, nGrayScaleSize, GetConfig () -> m_bUseRoundDown );
 						if (GetConfig()->m_GammaOffsetType == 4)
 						{
 							//BT.1886 L = a(max[(V + b),0])^2.4
@@ -1382,13 +1382,13 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 							double minL = Black.GetY();
 							double a = pow ( ( pow (maxL,1.0/2.4 ) - pow ( minL,1.0/2.4 ) ),2.4 );
 							double b = ( pow ( minL,1.0/2.4 ) ) / ( pow (maxL,1.0/2.4 ) - pow ( minL,1.0/2.4 ) );
-							valx = GrayLevelToGrayProp(x);
+							valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
 							valy = ( a * pow ( (valx + b)<0?0:(valx+b), 2.4 ) );
 							str.Format ( "%.3f", valy );
 						}
 						else
 						{
-						valx=(GrayLevelToGrayProp(x)+Offset)/(1.0+Offset);
+						valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
 						valy=pow(valx, GetConfig()->m_GammaRef);
 						str.Format ( "%.3f", yblack + ( valy * ( White.GetY () - yblack ) ) );
 						}
@@ -1785,9 +1785,9 @@ void CMainView::UpdateGrid()
 					 if ( GetConfig () -> m_bUseDeltaELumaOnGrays )
 					 {
 						// Compute reference Luma regarding actual offset and reference gamma
-						double x = ArrayIndexToGrayLevel ( j, nCount );
+						double x = ArrayIndexToGrayLevel ( j, nCount, GetConfig () -> m_bUseRoundDown );
 
-						double valx=(GrayLevelToGrayProp(x)+Offset)/(1.0+Offset);
+						double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
 						double valy=pow(valx, GetConfig()->m_GammaRef);
 						
 						ColorxyY tmpColor(GetColorReference().GetWhite());
@@ -1842,7 +1842,6 @@ void CMainView::UpdateGrid()
 
 				case 2:
 					 aColor = GetDocument()->GetMeasure()->GetMeasurement(j);
-					 YWhite=YWhiteOnOff;
 					 if( m_pGrayScaleGrid -> GetColumnCount() <= j+1 )
 					 {
 						CString	str;
@@ -1860,37 +1859,37 @@ void CMainView::UpdateGrid()
 					 }
 					 
 					 bSpecialRef = TRUE;
-					 if ( aColor.GetDeltaE ( GetColorReference().GetRed () ) < (GetColorReference().m_standard==4 ? 30:75) )
+					 if ( aColor.GetDeltaE ( GetColorReference().GetRed () ) < (GetColorReference().m_standard==4||GetColorReference().m_standard==3 ? 30:75) )
 					 {
 						refColor = GetColorReference().GetRed ();
 						clrSpecial1 = RGB(255,192,192);
 						clrSpecial2 = RGB(255,224,224);
 					 }
-					 else if ( aColor.GetDeltaE ( GetColorReference().GetGreen () ) < (GetColorReference().m_standard==4 ? 30:75) )
+					 else if ( aColor.GetDeltaE ( GetColorReference().GetGreen () ) < (GetColorReference().m_standard==4||GetColorReference().m_standard==3 ? 30:75) )
 					 {
 						refColor = GetColorReference().GetGreen ();
 						clrSpecial1 = RGB(192,255,192);
 						clrSpecial2 = RGB(224,255,224);
 					 }
-					 else if ( aColor.GetDeltaE ( GetColorReference().GetBlue () ) < (GetColorReference().m_standard==4 ? 30:75) )
+					 else if ( aColor.GetDeltaE ( GetColorReference().GetBlue () ) < (GetColorReference().m_standard==4||GetColorReference().m_standard==3 ? 30:75) )
 					 {
 						refColor = GetColorReference().GetBlue ();
 						clrSpecial1 = RGB(192,192,255);
 						clrSpecial2 = RGB(224,224,255);
 					 }
-					 else if ( aColor.GetDeltaE ( GetColorReference().GetYellow () ) < (GetColorReference().m_standard==4 ? 30:75) )
+					 else if ( aColor.GetDeltaE ( GetColorReference().GetYellow () ) < (GetColorReference().m_standard==4||GetColorReference().m_standard==3 ? 30:75) )
 					 {
 						refColor = GetColorReference().GetYellow ();
 						clrSpecial1 = RGB(255,255,192);
 						clrSpecial2 = RGB(255,255,224);
 					 }
-					 else if ( aColor.GetDeltaE ( GetColorReference().GetCyan () ) < (GetColorReference().m_standard==4 ? 30:75) )
+					 else if ( aColor.GetDeltaE ( GetColorReference().GetCyan () ) < (GetColorReference().m_standard==4||GetColorReference().m_standard==3 ? 30:75) )
 					 {
 						refColor = GetColorReference().GetCyan ();
 						clrSpecial1 = RGB(192,255,255);
 						clrSpecial2 = RGB(224,255,255);
 					 }
-					 else if ( aColor.GetDeltaE ( GetColorReference().GetMagenta () ) < (GetColorReference().m_standard==4 ? 30:75) )
+					 else if ( aColor.GetDeltaE ( GetColorReference().GetMagenta () ) < (GetColorReference().m_standard==4||GetColorReference().m_standard==3 ? 30:75) )
 					 {
 						refColor = GetColorReference().GetMagenta ();
 						clrSpecial1 = RGB(255,192,255);
@@ -3271,37 +3270,37 @@ void CMainView::UpdateMeasurementsAfterBkgndMeasure ()
 		}
 
 		bSpecialRef = TRUE;
-		if ( MeasuredColor.GetDeltaE ( GetColorReference().GetRed () ) < (GetColorReference().m_standard==4 ? 30:75) )
+		if ( MeasuredColor.GetDeltaE ( GetColorReference().GetRed () ) < (GetColorReference().m_standard==4||GetColorReference().m_standard==3 ? 30:75) )
 		{
 			refColor = GetColorReference().GetRed ();
 			clrSpecial1 = RGB(255,192,192);
 			clrSpecial2 = RGB(255,224,224);
 		}
-		else if ( MeasuredColor.GetDeltaE ( GetColorReference().GetGreen () ) < (GetColorReference().m_standard==4 ? 30:75) )
+		else if ( MeasuredColor.GetDeltaE ( GetColorReference().GetGreen () ) < (GetColorReference().m_standard==4||GetColorReference().m_standard==3 ? 30:75) )
 		{
 			refColor = GetColorReference().GetGreen ();
 			clrSpecial1 = RGB(192,255,192);
 			clrSpecial2 = RGB(224,255,224);
 		}
-		else if ( MeasuredColor.GetDeltaE ( GetColorReference().GetBlue () ) < (GetColorReference().m_standard==4 ? 30:75) )
+		else if ( MeasuredColor.GetDeltaE ( GetColorReference().GetBlue () ) < (GetColorReference().m_standard==4||GetColorReference().m_standard==3 ? 30:75) )
 		{
 			refColor = GetColorReference().GetBlue ();
 			clrSpecial1 = RGB(192,192,255);
 			clrSpecial2 = RGB(224,224,255);
 		}
-		else if ( MeasuredColor.GetDeltaE ( GetColorReference().GetYellow () ) < (GetColorReference().m_standard==4 ? 30:75) )
+		else if ( MeasuredColor.GetDeltaE ( GetColorReference().GetYellow () ) < (GetColorReference().m_standard==4||GetColorReference().m_standard==3 ? 30:75) )
 		{
 			refColor = GetColorReference().GetYellow ();
 			clrSpecial1 = RGB(255,255,192);
 			clrSpecial2 = RGB(255,255,224);
 		}
-		else if ( MeasuredColor.GetDeltaE ( GetColorReference().GetCyan () ) < (GetColorReference().m_standard==4 ? 30:75) )
+		else if ( MeasuredColor.GetDeltaE ( GetColorReference().GetCyan () ) < (GetColorReference().m_standard==4||GetColorReference().m_standard==3 ? 30:75) )
 		{
 			refColor = GetColorReference().GetCyan ();
 			clrSpecial1 = RGB(192,255,255);
 			clrSpecial2 = RGB(224,255,255);
 		}
-		else if ( MeasuredColor.GetDeltaE ( GetColorReference().GetMagenta () ) < (GetColorReference().m_standard==4 ? 30:75) )
+		else if ( MeasuredColor.GetDeltaE ( GetColorReference().GetMagenta () ) < (GetColorReference().m_standard==4||GetColorReference().m_standard==3 ? 30:75) )
 		{
 			refColor = GetColorReference().GetMagenta ();
 			clrSpecial1 = RGB(255,192,255);
