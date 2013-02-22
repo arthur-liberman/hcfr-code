@@ -2896,7 +2896,7 @@ i1d3_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 			return inst_ok;
 		} else if (ix == 0 || ix == 2) {	/* Default or 2 */
 			p->refmode = 0;					/* Non-Refresh mode */
-			p->inttime = p->dinttime;		/* Normal integration time */
+			p->inttime = 2.0 * p->dinttime;		/* Normal integration time */
 			p->rrset = 0;					/* This is a hint we may have swapped displays */
 			return inst_ok;
 		} else {
