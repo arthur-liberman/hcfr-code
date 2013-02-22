@@ -1859,7 +1859,13 @@ void CMainView::UpdateGrid()
 					 }
 					 
 					 bSpecialRef = TRUE;
-					 if ( aColor.GetDeltaE ( GetColorReference().GetRed () ) < (GetColorReference().m_standard==4||GetColorReference().m_standard==3 ? 30:75) )
+
+					 if ( aColor.GetDeltaE ( GetColorReference().GetWhite() ) < 30 )
+ 					 {
+						bSpecialRef = FALSE;
+						refColor = GetColorReference().GetWhite();
+					 }
+					 else if ( aColor.GetDeltaE ( GetColorReference().GetRed () ) < (GetColorReference().m_standard==4||GetColorReference().m_standard==3 ? 30:75) )
 					 {
 						refColor = GetColorReference().GetRed ();
 						clrSpecial1 = RGB(255,192,192);
@@ -1895,11 +1901,11 @@ void CMainView::UpdateGrid()
 						clrSpecial1 = RGB(255,192,255);
 						clrSpecial2 = RGB(255,224,255);
 					 }
-					 else
-					 {
-						bSpecialRef = FALSE;
-						refColor = GetColorReference().GetWhite();
-					 }
+//					 else
+//					 {
+//						bSpecialRef = FALSE;
+//						refColor = GetColorReference().GetWhite();
+//					 }
 					 
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetMeasurement(j);
@@ -3270,6 +3276,11 @@ void CMainView::UpdateMeasurementsAfterBkgndMeasure ()
 		}
 
 		bSpecialRef = TRUE;
+		if ( MeasuredColor.GetDeltaE ( GetColorReference().GetWhite() ) < 30 )
+ 		{
+			bSpecialRef = FALSE;
+			refColor = GetColorReference().GetWhite();
+		}
 		if ( MeasuredColor.GetDeltaE ( GetColorReference().GetRed () ) < (GetColorReference().m_standard==4||GetColorReference().m_standard==3 ? 30:75) )
 		{
 			refColor = GetColorReference().GetRed ();
@@ -3306,11 +3317,11 @@ void CMainView::UpdateMeasurementsAfterBkgndMeasure ()
 			clrSpecial1 = RGB(255,192,255);
 			clrSpecial2 = RGB(255,224,255);
 		}
-		else
-		{
-			bSpecialRef = FALSE;
-			refColor = GetColorReference().GetWhite();
-		}
+//		else
+//		{
+//			bSpecialRef = FALSE;
+//			refColor = GetColorReference().GetWhite();
+//		}
 
 		CColor refDocColor;
 
