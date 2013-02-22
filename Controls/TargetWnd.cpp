@@ -61,7 +61,11 @@ void CTargetWnd::Refresh()
         ColorXYZ centerXYZ = GetColorReference().GetWhite();
 		m_clr = RGB(64,64,64);
 
-		if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetRed() ) < (GetColorReference().m_standard==4||GetColorReference().m_standard==3 ? 30:75) )
+		if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetWhite() ) < 25 )
+ 		{
+ 			m_clr = RGB(128,128,128);
+		}
+		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetRed() ) < (GetColorReference().m_standard==4||GetColorReference().m_standard==3 ? 30:75) )
 		{
 			centerXYZ = GetColorReference().GetRed();
 			if (GetColorReference().m_standard != 4)

@@ -55,8 +55,12 @@ void CRGBLevelWnd::Refresh()
 	if ( m_pRefColor && (*m_pRefColor).isValid() )
 	{
 		double RefLuma = 1.0;
-
-		if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetRed() ) < (GetColorReference().m_standard==4||GetColorReference().m_standard==3 ? 30:75) )
+		//look for white first
+		if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetWhite() ) < 25 )
+		{
+			m_bLumaMode = FALSE;
+		}
+		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetRed() ) < (GetColorReference().m_standard==4||GetColorReference().m_standard==3 ? 30:75) )
 		{
 			m_bLumaMode = TRUE;
 			RefLuma = GetColorReference().GetRedReferenceLuma ();
