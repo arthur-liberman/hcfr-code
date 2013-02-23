@@ -4572,19 +4572,27 @@ CColor CMeasure::GetRefSat(int i, double sat_percent) const
 	double	xstart = refWhite[0];
 	double	ystart = refWhite[1];
 	double	YLuma;
-	//should always be using ref primaries here
-//	if ( i < 3 )
-//		refColor = GetPrimary(i);
-//	else
-//		refColor = GetSecondary(i-3);
-
-//	if ( !refColor.isValid())
-//	{
+	CColor pRef[3] = { CColor(0.6400, 0.3300),
+		CColor(0.3000, 0.6000),
+		CColor(0.1500, 0.0600) };
+	CColor sRef[3] = { CColor(0.4193, 0.5053),
+		CColor(0.2306, 0.3262),
+		CColor(0.3144, 0.1606) };
+//display rec709 sat points in special colorspace modes	
+	if (!(GetColorReference().m_standard == 3 || GetColorReference().m_standard == 4))
+	{
 		if ( i < 3 )
 			refColor = GetRefPrimary(i);
 		else
 			refColor = GetRefSecondary(i-3);
-//	}
+	}
+	else
+	{
+		if ( i < 3 )
+			refColor = pRef[i];
+		else
+			refColor = sRef[i-3];
+	}
 
 	if ( i < 3 )
 		YLuma = GetRefPrimary(i) [ 1 ];
