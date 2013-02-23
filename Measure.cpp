@@ -4572,19 +4572,19 @@ CColor CMeasure::GetRefSat(int i, double sat_percent) const
 	double	xstart = refWhite[0];
 	double	ystart = refWhite[1];
 	double	YLuma;
+	//should always be using ref primaries here
+//	if ( i < 3 )
+//		refColor = GetPrimary(i);
+//	else
+//		refColor = GetSecondary(i-3);
 
-	if ( i < 3 )
-		refColor = GetPrimary(i);
-	else
-		refColor = GetSecondary(i-3);
-
-	if ( !refColor.isValid())
-	{
+//	if ( !refColor.isValid())
+//	{
 		if ( i < 3 )
 			refColor = GetRefPrimary(i);
 		else
 			refColor = GetRefSecondary(i-3);
-	}
+//	}
 
 	if ( i < 3 )
 		YLuma = GetRefPrimary(i) [ 1 ];

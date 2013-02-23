@@ -106,6 +106,12 @@ CCIEChartGrapher::CCIEChartGrapher()
 	m_yellowSecondaryBitmap.LoadBitmap(IDB_YELLOWSECONDARY_BITMAP);
 	m_cyanSecondaryBitmap.LoadBitmap(IDB_CYANSECONDARY_BITMAP);
 	m_magentaSecondaryBitmap.LoadBitmap(IDB_MAGENTASECONDARY_BITMAP);
+	m_redSatRefBitmap.LoadBitmap(IDB_REFREDSAT_BITMAP);
+	m_greenSatRefBitmap.LoadBitmap(IDB_REFGREENSAT_BITMAP);
+	m_blueSatRefBitmap.LoadBitmap(IDB_REFBLUESAT_BITMAP);
+	m_yellowSatRefBitmap.LoadBitmap(IDB_REFYELLOWSAT_BITMAP);
+	m_cyanSatRefBitmap.LoadBitmap(IDB_REFCYANSAT_BITMAP);
+	m_magentaSatRefBitmap.LoadBitmap(IDB_REFMAGENTASAT_BITMAP);
 	m_grayPlotBitmap.LoadBitmap(IDB_GRAYPLOT_BITMAP);
 	m_measurePlotBitmap.LoadBitmap(IDB_MEASUREPLOT_BITMAP);
 	m_selectedPlotBitmap.LoadBitmap(IDB_SELECTEDPLOT_BITMAP);
@@ -760,7 +766,6 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			CCIEGraphPoint GreenPoint(pDoc->GetMeasure()->GetGreenSat(i).GetXYZValue(),
 								  YWhite,
 								  str, m_bCIEuv);
-			DrawAlphaBitmap(pDC,GreenPoint,&m_greenPrimaryBitmap,rect,pTooltip,pWnd);
 
 			Msg.LoadString ( IDS_BLUESATPERCENT );
 			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
@@ -789,6 +794,45 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 								  YWhite,
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,MagentaPoint,&m_magentaSecondaryBitmap,rect,pTooltip,pWnd);
+			if (i != 0)
+			{
+			Msg.LoadString ( IDS_REDSATPERCENTREF );
+			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
+			CCIEGraphPoint RedPointRef(pDoc->GetMeasure()->GetRefSat(0, (double)i / (double)(pDoc->GetMeasure()->GetSaturationSize()-1)).GetXYZValue(),
+								  YWhite,
+								  str, m_bCIEuv);
+			DrawAlphaBitmap(pDC,RedPointRef,&m_redSatRefBitmap,rect,pTooltip,pWnd);
+			Msg.LoadString ( IDS_GREENSATPERCENTREF );
+			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
+			CCIEGraphPoint GreenPointRef(pDoc->GetMeasure()->GetRefSat(1, (double)i / (double)(pDoc->GetMeasure()->GetSaturationSize()-1)).GetXYZValue(),
+								  YWhite,
+								  str, m_bCIEuv);
+			DrawAlphaBitmap(pDC,GreenPointRef,&m_greenSatRefBitmap,rect,pTooltip,pWnd);
+						Msg.LoadString ( IDS_BLUESATPERCENTREF );
+			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
+			CCIEGraphPoint BluePointRef(pDoc->GetMeasure()->GetRefSat(2, (double)i / (double)(pDoc->GetMeasure()->GetSaturationSize()-1)).GetXYZValue(),
+								  YWhite,
+								  str, m_bCIEuv);
+			DrawAlphaBitmap(pDC,BluePointRef,&m_blueSatRefBitmap,rect,pTooltip,pWnd);
+			Msg.LoadString ( IDS_YELLOWSATPERCENTREF );
+			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
+			CCIEGraphPoint YellowPointRef(pDoc->GetMeasure()->GetRefSat(3, (double)i / (double)(pDoc->GetMeasure()->GetSaturationSize()-1)).GetXYZValue(),
+								  YWhite,
+								  str, m_bCIEuv);
+			DrawAlphaBitmap(pDC,YellowPointRef,&m_yellowSatRefBitmap,rect,pTooltip,pWnd);
+			Msg.LoadString ( IDS_CYANSATPERCENTREF );
+			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
+			CCIEGraphPoint CyanPointRef(pDoc->GetMeasure()->GetRefSat(4, (double)i / (double)(pDoc->GetMeasure()->GetSaturationSize()-1)).GetXYZValue(),
+								  YWhite,
+								  str, m_bCIEuv);
+			DrawAlphaBitmap(pDC,CyanPointRef,&m_cyanSatRefBitmap,rect,pTooltip,pWnd);
+			Msg.LoadString ( IDS_MAGENTASATPERCENTREF );
+			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
+			CCIEGraphPoint MagentaPointRef(pDoc->GetMeasure()->GetRefSat(5, (double)i / (double)(pDoc->GetMeasure()->GetSaturationSize()-1)).GetXYZValue(),
+								  YWhite,
+								  str, m_bCIEuv);
+			DrawAlphaBitmap(pDC,MagentaPointRef,&m_magentaSatRefBitmap,rect,pTooltip,pWnd);
+			}
 		}
 	}
 

@@ -80,6 +80,12 @@ class CCIEChartGrapher
 	CBitmap m_yellowSecondaryBitmap;
 	CBitmap m_cyanSecondaryBitmap;
 	CBitmap m_magentaSecondaryBitmap;
+	CBitmap m_redSatRefBitmap;
+	CBitmap m_greenSatRefBitmap;
+	CBitmap m_blueSatRefBitmap;
+	CBitmap m_yellowSatRefBitmap;
+	CBitmap m_cyanSatRefBitmap;
+	CBitmap m_magentaSatRefBitmap;
 	CBitmap m_grayPlotBitmap;
 	CBitmap m_measurePlotBitmap;
 	CBitmap m_selectedPlotBitmap;
