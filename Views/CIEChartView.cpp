@@ -766,6 +766,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			CCIEGraphPoint GreenPoint(pDoc->GetMeasure()->GetGreenSat(i).GetXYZValue(),
 								  YWhite,
 								  str, m_bCIEuv);
+			DrawAlphaBitmap(pDC,GreenPoint,&m_greenPrimaryBitmap,rect,pTooltip,pWnd);
 
 			Msg.LoadString ( IDS_BLUESATPERCENT );
 			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
