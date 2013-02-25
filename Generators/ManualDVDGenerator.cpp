@@ -117,7 +117,9 @@ BOOL CManualDVDGenerator::DisplayRGBColor( const ColorRGBDisplay& clrIn ,Measure
 			case MT_SECONDARY: //needs fixing
 			  if (GetColorReference().m_standard!=4)
 			  {
-    			if(GetRValue(clr) == GetGValue(clr) && GetBValue(clr) == GetGValue(clr))
+				if(GetRValue(clr) == 0 && GetGValue(clr) == 0 && GetBValue(clr) == 0)
+					str2.LoadString ( IDS_BLACK );
+    			else if(GetRValue(clr) == GetGValue(clr) && GetBValue(clr) == GetGValue(clr))
 					str2.LoadString ( IDS_WHITE );
 				else if((GetRValue(clr) > GetGValue(clr)) && (GetRValue(clr) > GetBValue(clr)))
 					str2.LoadString ( IDS_REDPRIMARY );
@@ -131,8 +133,6 @@ BOOL CManualDVDGenerator::DisplayRGBColor( const ColorRGBDisplay& clrIn ,Measure
 					str2.LoadString ( IDS_CYANSECONDARY );
 				else if((GetRValue(clr) == GetBValue(clr)) && (GetRValue(clr) > GetGValue(clr)))
 					str2.LoadString ( IDS_MAGENTASECONDARY );
-				else if(GetRValue(clr) == 0 && GetGValue(clr) == 0 && GetBValue(clr) == 0)
-					str2.LoadString ( IDS_BLACK );
 				break;
 			  }
 			  else
@@ -143,7 +143,9 @@ BOOL CManualDVDGenerator::DisplayRGBColor( const ColorRGBDisplay& clrIn ,Measure
 //129	128	175
 //158	189	65
 //229	161	44
-				if(GetRValue(clr) == GetGValue(clr) && GetGValue(clr) == GetBValue(clr))
+				if(GetRValue(clr) == 0 && GetGValue(clr) == 0 && GetBValue(clr) == 0)
+					str2.LoadString ( IDS_BLACK );
+				else if(GetRValue(clr) == GetGValue(clr) && GetGValue(clr) == GetBValue(clr))
 					str2.LoadString ( IDS_WHITE );
 				else if(GetRValue(clr) > 180 && GetBValue(clr) > 120)
 					str2.LoadString ( IDS_CC6REDPRIMARY );
@@ -157,8 +159,6 @@ BOOL CManualDVDGenerator::DisplayRGBColor( const ColorRGBDisplay& clrIn ,Measure
 					str2.LoadString ( IDS_CC6CYANSECONDARY );
 				else if(GetRValue(clr) > 220 && GetBValue(clr) < 50)
 					str2.LoadString ( IDS_CC6MAGENTASECONDARY );
-				else if(GetRValue(clr) == 0 && GetGValue(clr) == 0 && GetBValue(clr) == 0)
-					str2.LoadString ( IDS_BLACK );
 				break;
 			  }
 			default:

@@ -662,7 +662,7 @@ void CMainView::InitGrid()
 	else
 		nRows = 7;
 
-	if ( m_displayMode <= 1 )
+	if ( m_displayMode <= 1 || (m_displayMode >= 5 && m_displayMode <=10) )
 		nRows ++;
 
 	if ( bHasLuxValues )
@@ -1397,29 +1397,59 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 			}
 			else
 			{
-				// Display primary/secondary colors delta luma
+				// Display primary/secondary/saturations colors delta luma
 				double RefLuma [6];
+				int		nCol2 = nCol;
 				
 				// Retrieve color luma coefficients matching actual reference
-				RefLuma [ 0 ] = GetColorReference().GetRedReferenceLuma ();
-				RefLuma [ 1 ] = GetColorReference().GetGreenReferenceLuma ();
-				RefLuma [ 2 ] = GetColorReference().GetBlueReferenceLuma ();
-				RefLuma [ 3 ] = GetColorReference().GetYellowReferenceLuma ();
-				RefLuma [ 4 ] = GetColorReference().GetCyanReferenceLuma ();
-				RefLuma [ 5 ] = GetColorReference().GetMagentaReferenceLuma ();
+				switch (m_displayMode)
+				{
+					case 1:
+  						RefLuma [ 0 ] = GetColorReference().GetRedReferenceLuma ();
+						RefLuma [ 1 ] = GetColorReference().GetGreenReferenceLuma ();
+						RefLuma [ 2 ] = GetColorReference().GetBlueReferenceLuma ();
+						RefLuma [ 3 ] = GetColorReference().GetYellowReferenceLuma ();
+						RefLuma [ 4 ] = GetColorReference().GetCyanReferenceLuma ();
+						RefLuma [ 5 ] = GetColorReference().GetMagentaReferenceLuma ();
+						break ;
+					case 5:
+  						RefLuma [ 0 ] = GetColorReference().GetRedReferenceLuma ();
+						nCol2 = 1;
+						break;
+					case 6:
+  						RefLuma [ 0 ] = GetColorReference().GetGreenReferenceLuma ();
+						nCol2 = 1;
+						break;
+					case 7:
+  						RefLuma [ 0 ] = GetColorReference().GetBlueReferenceLuma ();
+						nCol2 = 1;
+						break;
+					case 8:
+  						RefLuma [ 0 ] = GetColorReference().GetYellowReferenceLuma ();
+						nCol2 = 1;
+						break;
+					case 9:
+  						RefLuma [ 0 ] = GetColorReference().GetCyanReferenceLuma ();
+						nCol2 = 1;
+						break;
+					case 10:
+  						RefLuma [ 0 ] = GetColorReference().GetMagentaReferenceLuma ();
+						nCol2 = 1;
+						break;
+				}
 				
 				CColor white = GetDocument()->GetMeasure()->GetOnOffWhite();
 				
-				if ( nCol < 7 && white.isValid() && white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) > 0.0001 )
+				if ( nCol2 < 7 && white.isValid() && white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) > 0.0001 )
 				{
 					double d = aMeasure.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) / white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter);
 
-					if ( fabs ( ( RefLuma [ nCol - 1 ] - d ) / RefLuma [ nCol - 1 ] ) < 0.001 )
+					if ( fabs ( ( RefLuma [ nCol2 - 1 ] - d ) / RefLuma [ nCol2 - 1 ] ) < 0.001 )
 						str = "=";
-					else if ( d < RefLuma [ nCol - 1 ] )
-						str.Format("-%.1f %%", 100.0 * ( RefLuma [ nCol - 1 ] - d ) / RefLuma [ nCol - 1 ] );
+					else if ( d < RefLuma [ nCol2 - 1 ] )
+						str.Format("-%.1f %%", 100.0 * ( RefLuma [ nCol2 - 1 ] - d ) / RefLuma [ nCol2 - 1 ] );
 					else
-						str.Format("+%.1f %%", 100.0 * ( d - RefLuma [ nCol - 1 ] ) / RefLuma [ nCol - 1 ] );
+						str.Format("+%.1f %%", 100.0 * ( d - RefLuma [ nCol2 - 1 ] ) / RefLuma [ nCol2 - 1 ] );
 				}
 				else
 					str.Empty();
@@ -1759,7 +1789,7 @@ void CMainView::UpdateGrid()
 		if ( pDataRef )
 			nRows = 7;
 
-		if ( m_displayMode <= 1 )
+		if ( m_displayMode <= 1 || (m_displayMode >= 5 && m_displayMode <=10) )
 			nRows ++;
 
 		if ( bHasLuxValues )

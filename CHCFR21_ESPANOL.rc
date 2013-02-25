@@ -1465,6 +1465,7 @@ BEGIN
     BEGIN
         MENUITEM "Affiche les gris",            IDM_CIE_SHOWGRAYSCALE
         MENUITEM "Affiche les saturations",     IDM_CIE_SHOWSATURATIONSCALE
+        MENUITEM "Display saturations targets", IDM_CIE_SHOWSATURATIONSCALETARG
         MENUITEM "Affiches les mesures libres", IDM_CIE_SHOWMEASUREMENTS
         MENUITEM "Affiche la mesure de référence", IDM_LUM_GRAPH_DATAREF
         MENUITEM SEPARATOR
@@ -2537,6 +2538,8 @@ BEGIN
     IDM_VIEW_TESTCOLOR      "Affiche les couleurs de test\nCouleurs de test"
     IDM_CIE_SHOWSATURATIONSCALE 
                             "Affiche les points correspondants aux mesures des échelles de saturation\nAffiche les saturations"
+	IDM_CIE_SHOWSATURATIONSCALETARG
+							"Show saturation scale targets\nDisplay saturation targets"
     ID_UNITS_xyz_2          "xyz"
 END
 
