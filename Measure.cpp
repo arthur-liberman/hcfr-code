@@ -97,7 +97,7 @@ CMeasure::CMeasure()
 	m_pBkMeasureSensor = NULL;
 	m_pBkMeasuredColor = NULL;
 
-	m_nbMaxMeasurements = GetConfig()->GetProfileInt("General","MaxMeasurements",250);
+	m_nbMaxMeasurements = GetConfig()->GetProfileInt("General","MaxMeasurements",2500);
 	if ( m_nbMaxMeasurements < 100 )
 		m_nbMaxMeasurements = 100;
 	else if ( m_nbMaxMeasurements > 30000 )
@@ -4576,8 +4576,8 @@ CColor CMeasure::GetRefSat(int i, double sat_percent) const
 		CColor(0.3000, 0.6000),
 		CColor(0.1500, 0.0600) };
 	CColor sRef[3] = { CColor(0.4193, 0.5053),
-		CColor(0.2306, 0.3262),
-		CColor(0.3144, 0.1606) };
+		CColor(0.2246, 0.3287),
+		CColor(0.3209, 0.1542) };
 //display rec709 sat points in special colorspace modes	
 	if (!(GetColorReference().m_standard == 3 || GetColorReference().m_standard == 4))
 	{
