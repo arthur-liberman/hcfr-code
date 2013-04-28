@@ -8,7 +8,7 @@
  * Author: Graeme W. Gill
  * Date:   19/10/2006
  *
- * Copyright 2006 - 2007, Graeme W. Gill
+ * Copyright 2006 - 2013, Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -43,10 +43,6 @@
 #define I1DISP_COMS_FAIL				0x62		/* Communication failure */
 #define I1DISP_UNKNOWN_MODEL			0x63		/* Not an i1display */
 #define I1DISP_DATA_PARSE_ERROR  		0x64		/* Read data parsing error */
-#define I1DISP_USER_ABORT			    0x65		/* User hit abort */
-#define I1DISP_USER_TERM		    	0x66		/* User hit terminate */
-#define I1DISP_USER_TRIG 			    0x67		/* User hit trigger */
-#define I1DISP_USER_CMND		    	0x68		/* User hit command */
 
 /* Real error code */
 #define I1DISP_OK   					0x00
@@ -81,7 +77,7 @@
 struct _i1disp {
 	INST_OBJ_BASE
 
-	int       dtype;			/* Device type: 0 = i1D1, 1 = i1D2 */	
+	int       dtype;			/* Device type: 0 = i1D1, 1 = i1D2, 2 = Smile */	
 	int       lite;				/* i1D2: 0 = normal, 1 = "Lite" */
 	int       munki;			/* i1D2: 0 = normal, 1 = "Munk" */
 	int       hpdream;			/* i1D2: 0 = normal, 1 = "ObiW" */
@@ -89,14 +85,14 @@ struct _i1disp {
 	int       chroma4;			/* 0 = other, 1 = Sequel Chroma 4 (i1D1 based) */
 	inst_mode mode;				/* Currently selected mode */
 
-	inst_opt_mode trig;			/* Reading trigger mode */
-	int trig_return;			/* Emit "\n" after trigger */
+	inst_opt_type trig;			/* Reading trigger mode */
 
 	/* EEPROM registers */
 	/* Number is the register address, and B, S, W, F indicate the type/size */
 	int     reg0_W;				/* Serial number */
 
 	double  reg4_F[9];			/* LCD 3x3 calibration matrix (also known as "user") */
+								/* Smile LED backlight */
 	int     reg50_W;			/* Calibration time in secs from January 1, 1970, UTC */
 	int     reg126_S;			/* LCD cal valid/state flag. For the i1disp this is 0xd, */
 								/* perhaps meaning that it is the LCD matrix. */
@@ -106,7 +102,8 @@ struct _i1disp {
 								/* (Heidelberg Viewmaker & Lacie Blue Eye) */
 
 	double  reg54_F[9];			/* CRT 3x3 calibration matrix (also known as "factory") */
-	int     reg90_W;			/* cal valid/time flag.  0xffffffff = invalid, */
+								/* Smile CCFL backlight */
+	int     reg90_W;			/* CRT cal valid/time flag.  0xffffffff = invalid, */
 								/* time in secs from January 1, 1970, UTC */
 
 	int     reg40_S;			/* Integration clock perod in nsec reg40S, typically 1000 */
@@ -134,23 +131,33 @@ struct _i1disp {
 								/* ??? Default to 1.0 if not set in EEPROM */
 
 	/* Computed factors and state */
-	int     crt;				/* NZ if set to CRT */ 
 	double  iclk_freq;			/* Integration clock (from reg40_S), typically 1e6 */
 	double  clk_freq;			/* Measurement clock (from reg94_F), typically 1e6 */
 	double  rgbadj[3];			/* RGB adjustment values for period meas., typically 1.0 */
 	double  amb[9];				/* Ambient measurement matrix = ref144[] * average of LCD & CRT */
 
-	double ccmat[3][3];			/* Colorimeter correction matrix */
+	inst_disptypesel *_dtlist;	/* Base list */
+	inst_disptypesel *dtlist;	/* Display Type list */
+	int     ndtlist;			/* Number of valid dtlist entries */
+	int     icx;				/* 0 = LCD, 1 = CRT/CCFL matrix */
+	int     cbid;				/* calibration base ID, 0 if not a base */
+	double  ccmat[3][3];		/* Colorimeter correction matrix */
 
 	/* For dtype == 1 (Eye-One Display2) */
 	int     nmeasprds;       	/* Number of disp refresh period measurments to average, deflt 5 */
+	int     refrmode;			/* 0 for constant, 1 for refresh display */ 
 	int     rrset;				/* Flag, nz if the refresh rate has been determined */
-	double refperiod;           /* if > 0.0 in refmode, target int time quantization */
+	double  refperiod;          /* if > 0.0 in refmode, target int time quantization */
+	double  refrate;			/* Measured refresh rate in Hz */
+	int     refrvalid;			/* nz if refrate is valid */
 
 	double dinttime;			/* default integration time = 1.1 seconds */
 	double inttime;				/* current integration time = 1.0 seconds */
 
 	int     int_clocks;			/* Currently set integration time in clocks */
+
+	/* For dtype == 2 (ColorMunki Smile) */
+	char serno[20];				/* Ascii serial number */
 
 	/* misc */
 	int 	last_com_err;		/* Last icoms error code */
@@ -158,7 +165,7 @@ struct _i1disp {
 }; typedef struct _i1disp i1disp;
 
 /* Constructor */
-extern i1disp *new_i1disp(icoms *icom, instType itype, int debug, int verb);
+extern i1disp *new_i1disp(icoms *icom, instType itype);
 
 
 #define I1DISP_H

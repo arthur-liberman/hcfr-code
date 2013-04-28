@@ -8,7 +8,7 @@
  * Author: Graeme W. Gill
  * Date:   17/11/2006
  *
- * Copyright 2001 - 2007, Graeme W. Gill
+ * Copyright 2001 - 2013, Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -43,10 +43,6 @@
 #define DTP22_COMS_FAIL					0x62		/* Communication failure */
 #define DTP22_UNKNOWN_MODEL				0x63		/* Not a DPT22 */
 #define DTP22_DATA_PARSE_ERROR  		0x64		/* Read data parsing error */
-#define DTP22_USER_ABORT		    	0x65		/* User hit abort */
-#define DTP22_USER_TERM		    		0x66		/* User hit terminate */
-#define DTP22_USER_TRIG 		    	0x67		/* User hit trigger */
-#define DTP22_USER_CMND		    		0x68		/* User hit command */
 #define DTP22_UNKN_OEM		    		0x69		/* Unrecognized OEM */
 #define DTP22_BAD_PASSWORD	    		0x6A		/* Password wasn't accepted */
 
@@ -97,13 +93,12 @@ struct _dtp22 {
 	inst_mode    lastmode;		/* Last requested mode */
 	int	need_cal;				/* White calibration needed flag */
 	int noutocalib;				/* Don't mode change or auto calibrate */
-	inst_opt_mode trig;			/* Reading trigger mode */
-	int trig_return;			/* Emit "\n" after trigger */
+	inst_opt_type trig;			/* Reading trigger mode */
 
 	}; typedef struct _dtp22 dtp22;
 
 /* Constructor */
-extern dtp22 *new_dtp22(icoms *icom, instType itype, int debug, int verb);
+extern dtp22 *new_dtp22(icoms *icom, instType itype);
 
 
 #define DTP22_H

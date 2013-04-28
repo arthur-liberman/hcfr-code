@@ -24,6 +24,7 @@
 #ifdef UNIX
 #include <unistd.h>
 #include <sys/param.h>
+#include <pthread.h>
 #endif
 
 #include "numsup.h"
@@ -39,13 +40,11 @@
 /* Globals */
 
 char *exe_path = "\000";			/* Directory executable resides in ('/' dir separator) */
-char *error_program = "Unknown";	/* Name to report as responsible for an error */
-#define ERROR_OUT_DEFAULT stderr
-#define WARN_OUT_DEFAULT stderr
-#define VERBOSE_OUT_DEFAULT stdout
-int verbose_level = 6;			/* Current verbosity level */
-								/* 0 = none */
-								/* !0 = diagnostics */
+//char *error_program = "Unknown";	/* Name to report as responsible for an error */
+
+static int g_log_init = 0;	/* Initialised ? */
+extern a1log default_log;
+extern a1log *g_log;
 
 /* Should Vector/Matrix Support functions return NULL on error, */
 /* or call error() ? */
@@ -60,10 +59,12 @@ int ret_null_on_malloc_fail = 0;	/* Call error() */
 void set_exe_path(char *argv0) {
 	int i;
 
-	error_program = argv0;
+	g_log->tag = argv0;
 	i = strlen(argv0);
-	if ((exe_path = malloc(i + 5)) == NULL)
-		error("set_exe_path: malloc %d bytes failed",i+5);
+	if ((exe_path = malloc(i + 5)) == NULL) {
+		a1loge(g_log, 1, "set_exe_path: malloc %d bytes failed",i+5);
+		return;
+	}
 	strcpy(exe_path, argv0);
 
 #ifdef NT	/* CMD.EXE doesn't give us the full path in argv[0] :-( */
@@ -77,17 +78,28 @@ void set_exe_path(char *argv0) {
 		if (i < 4 || _stricmp(exe_path +i -4, ".exe") != 0)
 			strcat(exe_path, ".exe");
 
-		if ((mh = GetModuleHandle(exe_path)) == NULL)
-			error("set_exe_path: GetModuleHandle '%s' failed",exe_path);
+		if ((mh = GetModuleHandle(exe_path)) == NULL) {
+			a1loge(g_log, 1, "set_exe_path: GetModuleHandle '%s' failed with%d",
+			                                            exe_path,GetLastError());
+			exe_path[0] = '\000';
+			return;
+		}
 		
 		/* Retry until we don't truncate the returned path */
 		for (pl = 100; ; pl *= 2) {
 			if (tpath != NULL)
 				free(tpath);
-			if ((tpath = malloc(pl)) == NULL)
-				error("set_exe_path: malloc %d bytes failed",pl);
-			if ((i = GetModuleFileName(mh, tpath, pl)) == 0)
-				error("set_exe_path: GetModuleFileName failed");
+			if ((tpath = malloc(pl)) == NULL) {
+				a1loge(g_log, 1, "set_exe_path: malloc %d bytes failed",pl);
+				exe_path[0] = '\000';
+			return;
+			}
+			if ((i = GetModuleFileName(mh, tpath, pl)) == 0) {
+				a1loge(g_log, 1, "set_exe_path: GetModuleFileName '%s' failed with%d",
+				                                                tpath,GetLastError());
+				exe_path[0] = '\000';
+				return;
+			}
 			if (i < pl)		/* There was enough space */
 				break;
 		}
@@ -121,8 +133,11 @@ void set_exe_path(char *argv0) {
 					ll = strlen(cp);
 				else
 					ll = p - cp;
-				if ((ll + 1 + strlen(exe_path) + 1) > PATH_MAX)
-					error("set_exe_path: Search path exceeds PATH_MAX");
+				if ((ll + 1 + strlen(exe_path) + 1) > PATH_MAX) {
+					a1loge(g_log, 1, "set_exe_path: Search path exceeds PATH_MAX");
+					exe_path[0] = '\000';
+					return;
+				}
 				strncpy(b1, cp, ll);		/* Element of path to search */
 				b1[ll] = '\000';
 				strcat(b1, "/");
@@ -131,8 +146,11 @@ void set_exe_path(char *argv0) {
 					if (access(b2, 0) == 0) {	/* See if exe exits */
 						found = 1;
 						free(exe_path);
-						if ((exe_path = malloc(strlen(b2)+1)) == NULL)
-							error("set_exe_path: malloc %d bytes failed",strlen(b2)+1);
+						if ((exe_path = malloc(strlen(b2)+1)) == NULL) {
+							a1loge(g_log, 1, "set_exe_path: malloc %d bytes failed",strlen(b2)+1);
+							exe_path[0] = '\000';
+							return;
+						}
 						strcpy(exe_path, b2);
 						break;
 					}
@@ -150,25 +168,28 @@ void set_exe_path(char *argv0) {
 	for (i = strlen(exe_path)-1; i >= 0; i--) {
 		if (exe_path[i] == '/') {
 			char *tpath;
-			if ((tpath = malloc(strlen(exe_path + i))) == NULL)
-				error("set_exe_path: malloc %d bytes failed",strlen(exe_path + i));
+			if ((tpath = malloc(strlen(exe_path + i))) == NULL) {
+				a1loge(g_log, 1, "set_exe_path: malloc %d bytes failed",strlen(exe_path + i));
+				exe_path[0] = '\000';
+				return;
+			}
 			strcpy(tpath, exe_path + i + 1);
-			error_program = tpath;				/* Set error_program to base name */
+			g_log->tag = tpath;				/* Set g_log->tag to base name */
 			exe_path[i+1] = '\000';				/* (The malloc never gets free'd) */
 			break;
 		}
 	}
-	/* strip off any .exe from the error_program to be more readable */
-	i = strlen(error_program);
+	/* strip off any .exe from the g_log->tag to be more readable */
+	i = strlen(g_log->tag);
 	if (i >= 4
-	 && error_program[i-4] == '.'
-	 && (error_program[i-3] == 'e' || error_program[i-3] == 'E')
-	 && (error_program[i-2] == 'x' || error_program[i-2] == 'X')
-	 && (error_program[i-1] == 'e' || error_program[i-1] == 'E'))
-		error_program[i-4] = '\000';
+	 && g_log->tag[i-4] == '.'
+	 && (g_log->tag[i-3] == 'e' || g_log->tag[i-3] == 'E')
+	 && (g_log->tag[i-2] == 'x' || g_log->tag[i-2] == 'X')
+	 && (g_log->tag[i-1] == 'e' || g_log->tag[i-1] == 'E'))
+		g_log->tag[i-4] = '\000';
 
-//printf("exe_path = '%s'\n",exe_path);
-//printf("error_program = '%s'\n",error_program);
+//	a1logd(g_log, 1, "exe_path = '%s'\n",exe_path);
+//	a1logd(g_log, 1, "g_log->tag = '%s'\n",g_log->tag);
 }
 
 /******************************************************************/
@@ -194,68 +215,307 @@ void check_if_not_interactive() {
 }
 
 /******************************************************************/
-/* Default error/debug output routines */
+/* Default verbose/debug/error loger                              */
+/* It's values can be overridden to redirect these messages.      */
 /******************************************************************/
 
-/* Globals - can be changed on the fly */
-FILE *error_out = NULL;
-FILE *warn_out = NULL;
-FILE *verbose_out = NULL;
+#ifdef NT
+# define A1LOG_LOCK(log)									\
+	if (g_log_init == 0) {									\
+	    InitializeCriticalSection(&log->lock);				\
+		g_log_init = 1;										\
+	}														\
+	EnterCriticalSection(&log->lock)
+# define A1LOG_UNLOCK(log) LeaveCriticalSection(&log->lock)
+#endif
+#ifdef UNIX
+# define A1LOG_LOCK(log)									\
+	if (g_log_init == 0) {									\
+	    pthread_mutex_init(&log->lock, NULL);				\
+		g_log_init = 1;										\
+	}														\
+	pthread_mutex_lock(&log->lock)
+# define A1LOG_UNLOCK(log) pthread_mutex_unlock(&log->lock)
+#endif
 
-/* Basic printf type error() and warning() routines */
-static void
-error_imp(char *fmt, ...) {
-	va_list args;
 
+/* Default verbose logging function - print to stdtout */
+static void a1_default_v_log(void *cntx, a1log *p, char *fmt, va_list args) {
+	vfprintf(stdout, fmt, args);
 	fflush(stdout);
-	if (error_out == NULL)
-		error_out = ERROR_OUT_DEFAULT;
-	fprintf(error_out,"%s: Error - ",error_program);
-	va_start(args, fmt);
-	vfprintf(error_out, fmt, args);
-	va_end(args);
-	fprintf(error_out, "\n");
-	fflush(error_out);
-	exit (1);
 }
 
-static void
-warning_imp(char *fmt, ...) {
-	va_list args;
-
-	fflush(stdout);
-	if (warn_out == NULL)
-		warn_out = WARN_OUT_DEFAULT;
-	fprintf(warn_out,"%s: Warning - ",error_program);
-	va_start(args, fmt);
-	vfprintf(warn_out, fmt, args);
-	va_end(args);
-	fprintf(warn_out, "\n");
-	fflush(warn_out);
+/* Default debug & error logging function - print to stderr */
+static void a1_default_de_log(void *cntx, a1log *p, char *fmt, va_list args) {
+	vfprintf(stderr, fmt, args);
+	fflush(stderr);
 }
 
-static void
-verbose_imp(int level, char *fmt, ...) {
-	va_list args;
+#define a1_default_d_log a1_default_de_log
+#define a1_default_e_log a1_default_de_log
 
-	fflush(stdout);
-	va_start(args, fmt);
-	if (verbose_level >= level)
-		{
-		if (verbose_out == NULL)
-			verbose_out = VERBOSE_OUT_DEFAULT;
-		fprintf(verbose_out,"%s: ",error_program);
-		vfprintf(verbose_out, fmt, args);
-		fprintf(verbose_out, "\n");
-		fflush(verbose_out);
+
+/* Global log */
+a1log default_log = {
+	1,			/* Refcount of 1 because this is not allocated or free'd */
+	"argyll",	/* Default tag */
+	0,			/* Vebose off */
+	0,			/* Debug off */
+	NULL,		/* Context */
+	&a1_default_v_log,	/* Default verbose to stdout */
+	&a1_default_d_log,	/* Default debug to stderr */
+	&a1_default_e_log,	/* Default error to stderr */
+	0,					/* error code 0 */			
+	{ '\000' }			/* No error message */
+};
+a1log *g_log = &default_log;
+
+/* If log NULL, allocate a new log and return it, */
+/* otherwise increment reference count and return existing log, */
+/* exit() if malloc fails. */
+a1log *new_a1log(
+	a1log *log,						/* Existing log to reference, NULL if none */
+	int verb,						/* Verbose level to set */
+	int debug,						/* Debug level to set */
+	void *cntx,						/* Function context value */
+		/* Vebose log function to call - stdout if NULL */
+	void (*logv)(void *cntx, a1log *p, char *fmt, va_list args),
+		/* Debug log function to call - stderr if NULL */
+	void (*logd)(void *cntx, a1log *p, char *fmt, va_list args),
+		/* Warning/error Log function to call - stderr if NULL */
+	void (*loge)(void *cntx, a1log *p, char *fmt, va_list args)
+) {
+	if (log != NULL) {
+		log->refc++;
+		return log;
+	}
+	if ((log = (a1log *)calloc(sizeof(a1log), 1)) == NULL) {
+		a1loge(g_log, 1, "new_a1log: malloc of a1log failed, calling exit(1)\n");
+		exit(1);
+	}
+	log->verb = verb;
+	log->debug = debug;
+
+	log->cntx = cntx;
+	if (logv != NULL)
+		log->logv = logv;
+	else
+		log->logv = a1_default_v_log;
+
+	if (logd != NULL)
+		log->logd = logd;
+	else
+		log->logd = a1_default_d_log;
+
+	if (loge != NULL)
+		log->loge = loge;
+	else
+		log->loge = a1_default_e_log;
+
+	log->errc = 0;
+	log->errm[0] = '\000';
+
+	return log;
+}
+
+/* Same as above but set default functions */
+a1log *new_a1log_d(a1log *log) {
+	return new_a1log(log, 0, 0, NULL, NULL, NULL, NULL);
+}
+
+/* Decrement reference count and free log. */
+/* Returns NULL */
+a1log *del_a1log(a1log *log) {
+	if (log != NULL) {
+		if (--log->refc <= 0) {
+#ifdef NT
+			DeleteCriticalSection(&log->lock);
+#endif
+#ifdef UNIX
+			pthread_mutex_destroy(&log->lock);
+#endif
+			free(log);
 		}
+	}
+	return NULL;
+}
+
+/* Set the tag. Note that the tage string is NOT copied, just referenced */
+void a1log_tag(a1log *log, char *tag) {
+	log->tag = tag;
+}
+
+/* Log a verbose message if level >= verb */
+void a1logv(a1log *log, int level, char *fmt, ...) {
+	if (log != NULL) {
+		if (log->verb >= level) {
+			va_list args;
+	
+			A1LOG_LOCK(log);
+			va_start(args, fmt);
+			log->logv(log->cntx, log, fmt, args);
+			va_end(args);
+			A1LOG_UNLOCK(log);
+		}
+	}
+}
+
+/* Log a debug message if level >= debug */
+void a1logd(a1log *log, int level, char *fmt, ...) {
+	if (log != NULL) {
+		if (log->debug >= level) {
+			va_list args;
+	
+			A1LOG_LOCK(log);
+			va_start(args, fmt);
+			log->loge(log->cntx, log, fmt, args);
+			va_end(args);
+			A1LOG_UNLOCK(log);
+		}
+	}
+}
+
+/* log a warning message to the verbose, debug and error output, */
+void a1logw(a1log *log, char *fmt, ...) {
+	if (log != NULL) {
+		va_list args;
+	
+		/* log to all the outputs, but only log once */
+		A1LOG_LOCK(log);
+		va_start(args, fmt);
+		log->loge(log->cntx, log, fmt, args);
+		va_end(args);
+		A1LOG_UNLOCK(log);
+		if (log->logd != log->loge) {
+			A1LOG_LOCK(log);
+			va_start(args, fmt);
+			log->logd(log->cntx, log, fmt, args);
+			va_end(args);
+			A1LOG_UNLOCK(log);
+		}
+		if (log->logv != log->loge && log->logv != log->logd) {
+			A1LOG_LOCK(log);
+			va_start(args, fmt);
+			log->logv(log->cntx, log, fmt, args);
+			va_end(args);
+			A1LOG_UNLOCK(log);
+		}
+	}
+}
+
+/* log an error message to the verbose, debug and error output, */
+/* and latch the error if it is the first. */
+/* ecode = system, icoms or instrument error */
+void a1loge(a1log *log, int ecode, char *fmt, ...) {
+	if (log != NULL) {
+		va_list args;
+	
+		if (log->errc == 0) {
+			A1LOG_LOCK(log);
+			log->errc = ecode;
+			va_start(args, fmt);
+			vsnprintf(log->errm, A1_LOG_BUFSIZE, fmt, args);
+			va_end(args);
+			A1LOG_UNLOCK(log);
+		}
+		va_start(args, fmt);
+		/* log to all the outputs, but only log once */
+		A1LOG_LOCK(log);
+		va_start(args, fmt);
+		log->loge(log->cntx, log, fmt, args);
+		va_end(args);
+		A1LOG_UNLOCK(log);
+		if (log->logd != log->loge) {
+			A1LOG_LOCK(log);
+			va_start(args, fmt);
+			log->logd(log->cntx, log, fmt, args);
+			va_end(args);
+			A1LOG_UNLOCK(log);
+		}
+		if (log->logv != log->loge && log->logv != log->logd) {
+			A1LOG_LOCK(log);
+			va_start(args, fmt);
+			log->logv(log->cntx, log, fmt, args);
+			va_end(args);
+			A1LOG_UNLOCK(log);
+		}
+	}
+}
+
+/* Unlatch an error message. */
+/* This just resets errc and errm */
+void a1logue(a1log *log) {
+	if (log != NULL) {
+		log->errc = 0;
+		log->errm[0] = '\000';
+	}
+}
+
+/******************************************************************/
+/* Default verbose/warning/error output routines                  */
+/* These fall through to, and can be re-director using the        */
+/* above log class.                                               */
+/******************************************************************/
+
+/* Some utilities to allow us to format output to log functions */
+/* (Caller aquires lock) */
+static void g_logv(char *fmt, ...) {
+	va_list args;
+	va_start(args, fmt);
+	g_log->logv(g_log->cntx, g_log, fmt, args);
 	va_end(args);
 }
 
-/* Globals - can be changed on the fly */
-void (*error)(char *fmt, ...) = error_imp;
-void (*warning)(char *fmt, ...) = warning_imp;
-void (*verbose)(int level, char *fmt, ...) = verbose_imp;
+static void g_loge(char *fmt, ...) {
+	va_list args;
+	va_start(args, fmt);
+	g_log->loge(g_log->cntx, g_log, fmt, args);
+	va_end(args);
+}
+
+void
+verbose(int level, char *fmt, ...) {
+	if (level >= g_log->verb) {
+		va_list args;
+
+		A1LOG_LOCK(g_log);
+		g_logv("%s: ",g_log->tag);
+		va_start(args, fmt);
+		g_log->logv(g_log->cntx, g_log, fmt, args);
+		va_end(args);
+		g_logv("\n");
+		A1LOG_UNLOCK(g_log);
+	}
+}
+
+void
+warning(char *fmt, ...) {
+	va_list args;
+
+	A1LOG_LOCK(g_log);
+	g_loge("%s: Warning - ",g_log->tag);
+	va_start(args, fmt);
+	g_log->loge(g_log->cntx, g_log, fmt, args);
+	va_end(args);
+	g_loge("\n");
+	A1LOG_UNLOCK(g_log);
+}
+
+ATTRIBUTE_NORETURN void
+error(char *fmt, ...) {
+	va_list args;
+
+	A1LOG_LOCK(g_log);
+	g_loge("%s: Error - ",g_log->tag);
+	va_start(args, fmt);
+	g_log->loge(g_log->cntx, g_log, fmt, args);
+	va_end(args);
+	g_loge("\n");
+	A1LOG_UNLOCK(g_log);
+
+	exit(1);
+}
+
 
 /******************************************************************/
 /* Numerical Recipes Vector/Matrix Support functions              */
@@ -1094,17 +1354,17 @@ int matrix_mult(
 	return 0;
 }
 
-/* Diagnostic */
+/* Diagnostic - print to g_log debug */
 void matrix_print(char *c, double **a, int nr,  int nc) {
 	int i, j;
-	printf("%s, %d x %d\n",c,nr,nc);
+	a1logd(g_log, 0, "%s, %d x %d\n",c,nr,nc);
 
 	for (j = 0; j < nr; j++) {
-		printf(" ");
+		a1logd(g_log, 0, " ");
 		for (i = 0; i < nc; i++) {
-			printf(" %.2f",a[j][i]);
+			a1logd(g_log, 0, " %.2f",a[j][i]);
 		}
-		printf("\n");
+		a1logd(g_log, 0, "\n");
 	}
 }
 

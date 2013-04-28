@@ -7,7 +7,7 @@
  * Author: Graeme W. Gill
  * Date:   28/9/97
  *
- * Copyright 1997 - 2010 Graeme W. Gill
+ * Copyright 1997 - 2013 Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -55,15 +55,14 @@
 #ifndef SALONEINSTLIB
 #include "copyright.h"
 #include "aconfig.h"
+#else
+#include "sa_config.h"
 #endif
 #include "numsup.h"
 #include "xspect.h"
-#include "ccss.h"
 #include "insttypes.h"
-#include "icoms.h"
 #include "conv.h"
-#include "usbio.h"
-#include "sort.h"
+#include "icoms.h"
 
 #ifdef __APPLE__
 //#include <stdbool.h>
@@ -78,14 +77,17 @@
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1050
 # include <AudioToolbox/AudioServices.h>
 #endif
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
+# include <objc/objc-auto.h>
+#endif
 #endif /* __APPLE__ */
 
 #undef DEBUG
 
 #ifdef DEBUG
-# define errout stderr
-# define DBG(xx)	fprintf(errout, xx )
-# define DBGF(xx)	fprintf xx
+# define DBG(xx)	a1logd(g_log, 0, xx )
+# define DBGA g_log, 0 		/* First argument to DBGF() */
+# define DBGF(xx)	a1logd xx
 #else
 # define DBG(xx)
 # define DBGF(xx)
@@ -268,7 +270,7 @@ void msec_beep(int delay, int freq, int msec) {
 		beep_freq = freq;
 		beep_msec = msec;
 		if ((beep_thread = new_athread(delayed_beep, NULL)) == NULL)
-			error("Delayed beep failed to create thread");
+			a1logw(g_log, "msec_beep: Delayed beep failed to create thread\n");
 	} else {
 		Beep(freq, msec);
 	}
@@ -357,8 +359,11 @@ athread *new_athread(
 	athread *p = NULL;
 
 	DBG("new_athread called\n");
-	if ((p = (athread *)calloc(sizeof(athread), 1)) == NULL)
+
+	if ((p = (athread *)calloc(sizeof(athread), 1)) == NULL) {
+		a1loge(g_log, 1, "new_athread: calloc failed\n");
 		return NULL;
+	}
 
 	p->function = function;
 	p->context = context;
@@ -373,13 +378,13 @@ athread *new_athread(
 	p->th = CreateThread(NULL, 0, threadproc, (void *)p, 0, NULL);
 	if (p->th == NULL) {
 #endif
-		DBG("Failed to create thread\n");
+		a1loge(g_log, 1, "new_athread: CreateThread failed with %d\n",GetLastError());
 		p->th = NULL;
 		athread_del(p);
 		return NULL;
 	}
 
-	DBG("About to exit new_athread()\n");
+	DBG("new_athread returning OK\n");
 	return p;
 }
 
@@ -423,6 +428,7 @@ int create_parent_directories(char *path) {
 /* ============================================================= */
 /*                          UNIX/OS X                            */
 /* ============================================================= */
+
 #if defined(UNIX)
 
 /* Wait for and return the next character from the keyboard */
@@ -435,13 +441,13 @@ int next_con_char(void) {
 	if (!not_interactive) {
 		/* Configure stdin to be ready with just one character */
 		if (tcgetattr(STDIN_FILENO, &origs) < 0)
-			error("tcgetattr failed with '%s' on stdin", strerror(errno));
+			a1logw(g_log, "next_con_char: tcgetattr failed with '%s' on stdin", strerror(errno));
 		news = origs;
 		news.c_lflag &= ~(ICANON | ECHO);
 		news.c_cc[VTIME] = 0;
 		news.c_cc[VMIN] = 1;
 		if (tcsetattr(STDIN_FILENO,TCSANOW, &news) < 0)
-			error("next_con_char: tcsetattr failed with '%s' on stdin", strerror(errno));
+			a1logw(g_log, "next_con_char: tcsetattr failed with '%s' on stdin", strerror(errno));
 	}
 
 	/* Wait for stdin to have a character */
@@ -459,12 +465,13 @@ int next_con_char(void) {
 	} else {
 		if (!not_interactive)
 			tcsetattr(STDIN_FILENO, TCSANOW, &origs);
-		error("poll on stdin returned unexpected value 0x%x",pa[0].revents);
+		a1logw(g_log, "next_con_char: poll on stdin returned unexpected value 0x%x",pa[0].revents);
 	}
 
 	/* Restore stdin */
-	if (!not_interactive && tcsetattr(STDIN_FILENO, TCSANOW, &origs) < 0)
-		error("tcsetattr failed with '%s' on stdin", strerror(errno));
+	if (!not_interactive && tcsetattr(STDIN_FILENO, TCSANOW, &origs) < 0) {
+		a1logw(g_log, "next_con_char: tcsetattr failed with '%s' on stdin", strerror(errno));
+	}
 
 	return rv;
 }
@@ -479,13 +486,13 @@ int poll_con_char(void) {
 	if (!not_interactive) {
 		/* Configure stdin to be ready with just one character */
 		if (tcgetattr(STDIN_FILENO, &origs) < 0)
-			error("tcgetattr failed with '%s' on stdin", strerror(errno));
+			a1logw(g_log, "poll_con_char: tcgetattr failed with '%s' on stdin", strerror(errno));
 		news = origs;
 		news.c_lflag &= ~(ICANON | ECHO);
 		news.c_cc[VTIME] = 0;
 		news.c_cc[VMIN] = 1;
 		if (tcsetattr(STDIN_FILENO,TCSANOW, &news) < 0)
-			error("next_con_char: tcsetattr failed with '%s' on stdin", strerror(errno));
+			a1logw(g_log, "poll_con_char: tcsetattr failed with '%s' on stdin", strerror(errno));
 	}
 
 	/* Wait for stdin to have a character */
@@ -504,7 +511,7 @@ int poll_con_char(void) {
 
 	/* Restore stdin */
 	if (!not_interactive && tcsetattr(STDIN_FILENO, TCSANOW, &origs) < 0)
-		error("tcsetattr failed with '%s' on stdin", strerror(errno));
+		a1logw(g_log, "poll_con_char: tcsetattr failed with '%s' on stdin", strerror(errno));
 
 	return rv;
 }
@@ -616,7 +623,7 @@ int set_interactive_priority() {
         TASK_CATEGORY_POLICY, (thread_policy_t)&tcatpolicy,
         TASK_CATEGORY_POLICY_COUNT) != KERN_SUCCESS)
 		rv = 1;
-printf("~1 set to forground got %d\n",rv);
+//		a1logd(g_log, 8, "set_interactive_priority: set to forground got %d\n",rv);
 	return rv;
 #else
     int rv = 0;
@@ -628,7 +635,7 @@ printf("~1 set to forground got %d\n",rv);
         THREAD_PRECEDENCE_POLICY, (thread_policy_t)&tppolicy,
         THREAD_PRECEDENCE_POLICY_COUNT) != KERN_SUCCESS)
 		rv = 1;
-printf("~1 set to important got %d\n",rv);
+//		a1logd(g_log, 8, "set_interactive_priority: set to important got %d\n",rv);
 	return rv;
 #endif /* NEVER */
 #else /* !APPLE */
@@ -638,7 +645,7 @@ printf("~1 set to important got %d\n",rv);
 
 	/* This doesn't work unless we're running as su :-( */
 	rv = pthread_setschedparam(pthread_self(), SCHED_FIFO, &param);
-//printf("Set got %d\n",rv);
+//		a1logd(g_log, 8, "set_interactive_priority: set got %d\n",rv);
 	return rv;
 #endif /* !APPLE */
 }
@@ -655,7 +662,7 @@ int set_normal_priority() {
         TASK_CATEGORY_POLICY, (thread_policy_t)&tcatpolicy,
         TASK_CATEGORY_POLICY_COUNT) != KERN_SUCCESS)
 		rev = 1;
-printf("~1 set to normal got %d\n",rv);
+//		a1logd(g_log, 8, "set_normal_priority: set to normal got %d\n",rv);
 #else
     int rv = 0;
     struct thread_precedence_policy tppolicy;
@@ -666,7 +673,7 @@ printf("~1 set to normal got %d\n",rv);
         THREAD_STANDARD_POLICY, (thread_policy_t)&tppolicy,
         THREAD_STANDARD_POLICY_COUNT) != KERN_SUCCESS)
 		rv = 1;
-printf("~1 set to standard got %d\n",rv);
+//		a1logd(g_log, 8, "set_normal_priority: set to standard got %d\n",rv);
 	return rv;
 #endif /* NEVER */
 #else /* !APPLE */
@@ -675,7 +682,7 @@ printf("~1 set to standard got %d\n",rv);
 	int rv;
 
 	rv = pthread_setschedparam(pthread_self(), SCHED_OTHER, &param);
-//printf("Reset got %d\n",rv);
+//		a1logd(g_log, 8, "set_normal_priority: reset got %d\n",rv);
 	return rv;
 #endif /* !APPLE */
 }
@@ -697,7 +704,8 @@ static int delayed_beep(void *pp) {
 # else
 	SysBeep((beep_msec * 60)/1000);
 # endif
-#else
+#else	/* UNIX */
+	/* Linux is pretty lame in this regard... */
 	fprintf(stdout, "\a"); fflush(stdout);
 #endif 
 	return 0;
@@ -712,7 +720,7 @@ void msec_beep(int delay, int freq, int msec) {
 		beep_freq = freq;
 		beep_msec = msec;
 		if ((beep_thread = new_athread(delayed_beep, NULL)) == NULL)
-			error("Delayed beep failed to create thread");
+			a1logw(g_log, "msec_beep: Delayed beep failed to create thread\n");
 	} else {
 #ifdef __APPLE__
 # if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1050
@@ -720,8 +728,7 @@ void msec_beep(int delay, int freq, int msec) {
 # else
 			SysBeep((msec * 60)/1000);
 # endif
-#else
-		/* Linux is pretty lame in this regard... */
+#else	/* UNIX */
 		fprintf(stdout, "\a"); fflush(stdout);
 #endif
 	}
@@ -729,50 +736,46 @@ void msec_beep(int delay, int freq, int msec) {
 
 
 #ifdef NEVER
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* If we're UNIX and running on X11, we could do this */
-/* sort of thing (from xset), IF we were linking with X11: */
+/* sort of thing (from xset) to sound a beep, */
+/* IF we were linking with X11: */
 
 static void
-set_bell_vol(Display *dpy, int percent)
-{
-XKeyboardControl values;
-XKeyboardState kbstate;
-values.bell_percent = percent;
-if (percent == DEFAULT_ON)
-  values.bell_percent = SERVER_DEFAULT;
-XChangeKeyboardControl(dpy, KBBellPercent, &values);
-if (percent == DEFAULT_ON) {
-  XGetKeyboardControl(dpy, &kbstate);
-  if (!kbstate.bell_percent) {
-    values.bell_percent = -percent;
-    XChangeKeyboardControl(dpy, KBBellPercent, &values);
-  }
-}
-return;
-}
-
-static void
-set_bell_pitch(Display *dpy, int pitch)
-{
-XKeyboardControl values;
-values.bell_pitch = pitch;
-XChangeKeyboardControl(dpy, KBBellPitch, &values);
-return;
+set_bell_vol(Display *dpy, int percent) {
+	XKeyboardControl values;
+	XKeyboardState kbstate;
+	values.bell_percent = percent;
+	if (percent == DEFAULT_ON)
+	  values.bell_percent = SERVER_DEFAULT;
+	XChangeKeyboardControl(dpy, KBBellPercent, &values);
+	if (percent == DEFAULT_ON) {
+	  XGetKeyboardControl(dpy, &kbstate);
+	  if (!kbstate.bell_percent) {
+	    values.bell_percent = -percent;
+	    XChangeKeyboardControl(dpy, KBBellPercent, &values);
+	  }
+	}
+	return;
 }
 
 static void
-set_bell_dur(Display *dpy, int duration)
-{
-XKeyboardControl values;
-values.bell_duration = duration;
-XChangeKeyboardControl(dpy, KBBellDuration, &values);
-return;
+set_bell_pitch(Display *dpy, int pitch) {
+	XKeyboardControl values;
+	values.bell_pitch = pitch;
+	XChangeKeyboardControl(dpy, KBBellPitch, &values);
+	return;
+}
+
+static void
+set_bell_dur(Display *dpy, int duration) {
+	XKeyboardControl values;
+	values.bell_duration = duration;
+	XChangeKeyboardControl(dpy, KBBellDuration, &values);
+	return;
 }
 
 XBell(..);
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 #endif /* NEVER */
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -801,7 +804,6 @@ athread *p
 		pthread_cancel(p->thid);
 	}
 	pthread_join(p->thid, NULL);
-
 	free(p);
 }
 
@@ -809,6 +811,11 @@ static void *threadproc(
 	void *param
 ) {
 	athread *p = (athread *)param;
+
+	/* Register this thread with the Objective-C garbage collector */
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
+	 objc_registerThreadWithCollector();
+#endif
 
 	p->result = p->function(p->context);
 	p->finished = 1;
@@ -825,8 +832,11 @@ athread *new_athread(
 	athread *p = NULL;
 
 	DBG("new_athread called\n");
-	if ((p = (athread *)calloc(sizeof(athread), 1)) == NULL)
+
+	if ((p = (athread *)calloc(sizeof(athread), 1)) == NULL) {
+		a1loge(g_log, 1, "new_athread: calloc failed\n");
 		return NULL;
+	}
 
 	p->function = function;
 	p->context = context;
@@ -836,7 +846,7 @@ athread *new_athread(
 	/* Create a thread */
 	rv = pthread_create(&p->thid, NULL, threadproc, (void *)p);
 	if (rv != 0) {
-		DBG("Failed to create thread\n");
+		a1loge(g_log, 1, "new_athread: pthread_create failed with %d\n",rv);
 		athread_del(p);
 		return NULL;
 	}
@@ -887,7 +897,7 @@ static int th_kkill_nprocess(void *pp) {
 	kkill_nproc_ctx *ctx = (kkill_nproc_ctx *)pp;
 
 	while(ctx->stop == 0) {
-		kill_nprocess(ctx->pname, ctx->debug);
+		kill_nprocess(ctx->pname, ctx->log);
 		msec_sleep(20);			/* Don't hog the CPU */
 	}
 	ctx->done = 1;
@@ -906,10 +916,11 @@ static void kkill_nprocess_del(kkill_nproc_ctx *p) {
 	}
 
 	if (p->done == 0) {			/* Hmm */
-		DBG("kkill_nprocess del failed to stop - killing thread\n");
+		a1logw(p->log,"kkill_nprocess del failed to stop - killing thread\n");
 		p->th->del(p->th);
 	}
 
+	del_a1log(p->log);
 	free(p);
 
 	DBG("kkill_nprocess del done\n");
@@ -917,29 +928,29 @@ static void kkill_nprocess_del(kkill_nproc_ctx *p) {
 
 /* Start a thread to constantly kill a process. */
 /* Call ctx->del() when done */
-kkill_nproc_ctx *kkill_nprocess(char **pname, int debug) {
+kkill_nproc_ctx *kkill_nprocess(char **pname, a1log *log) {
 	kkill_nproc_ctx *p;
 
 	DBG("kkill_nprocess called\n");
-	if (debug) {
+	if (log != NULL && log->debug >= 8) {
 		int i;
-		fprintf(stderr,"kkill_nprocess called with");
+		a1logv(log, 8, "kkill_nprocess called with");
 		for (i = 0; pname[i] != NULL; i++)
-			fprintf(stderr," '%s'",pname[i]);
-		fprintf(stderr,"\n");
+			a1logv(log, 8, " '%s'",pname[i]);
+		a1logv(log, 8, "\n");
 	}
 
 	if ((p = (kkill_nproc_ctx *)calloc(sizeof(kkill_nproc_ctx), 1)) == NULL) {
-		DBG("kkill_nprocess calloc failed\n");
+		a1loge(log, 1, "kkill_nprocess: calloc failed\n");
 		return NULL;
 	}
 
 	p->pname = pname;
-	p->debug = debug;
+	p->log = new_a1log_d(log);
 	p->del = kkill_nprocess_del;
 
 	if ((p->th = new_athread(th_kkill_nprocess, p)) == NULL) {
-		DBG("kkill_nprocess new_athread failed\n");
+		del_a1log(p->log);
 		free(p);
 		return NULL;
 	}
@@ -953,7 +964,7 @@ kkill_nproc_ctx *kkill_nprocess(char **pname, int debug) {
 /* return < 0 if this fails. */
 /* return 0 if there is no such process */
 /* return 1 if a process was killed */
-int kill_nprocess(char **pname, int debug) {
+int kill_nprocess(char **pname, a1log *log) {
 	PROCESSENTRY32 entry;
 	HANDLE snapshot;
 	int j;
@@ -969,27 +980,25 @@ int kill_nprocess(char **pname, int debug) {
 		if (strcmp(entry.szExeFile, "spotread.exe") == 0
 		 && (proc = OpenProcess(PROCESS_TERMINATE, FALSE, entry.th32ProcessID)) != NULL) {
 			if (TerminateProcess(proc,0) == 0) {
-				printf("Failed to kill '%s'\n",entry.szExeFile);
+				a1logv(log, 8, "kill_nprocess: Failed to kill '%s'\n",entry.szExeFile);
 			} else {
-				printf("Killed '%s'\n",entry.szExeFile);
+				a1logv(log, 8, "kill_nprocess: Killed '%s'\n",entry.szExeFile);
 			}
 			CloseHandle(proc);
 		}
 		for (j = 0;; j++) {
 			if (pname[j] == NULL)	/* End of list */
 				break;
-			if (debug >= 8)
-				fprintf(stderr,"Checking process '%s' against list '%s'\n",entry.szExeFile,pname[j]);
+			a1logv(log, 8, "kill_nprocess: Checking process '%s' against list '%s'\n",
+			                                                  entry.szExeFile,pname[j]);
 			if (strcmp(entry.szExeFile,pname[j]) == 0) {
-				if (debug)
-					fprintf(stderr,"Killing process '%s'\n",entry.szExeFile);
-				DBGF((errout,"killing process '%s' pid %d\n",entry.szExeFile,entry.th32ProcessID));
+				a1logv(log, 1, "kill_nprocess: killing process '%s' pid %d\n",
+				                            entry.szExeFile,entry.th32ProcessID);
 
 				if ((proc = OpenProcess(PROCESS_TERMINATE, FALSE, entry.th32ProcessID)) == NULL
 				 || TerminateProcess(proc,0) == 0) {
-					if (debug)
-						fprintf(stderr,"kill process '%s' failed with %d\n",pname[j],GetLastError());
-					DBGF((errout,"kill process '%s' failed with %d\n",pname[j],GetLastError()));
+					a1logv(log, 1, "kill_nprocess: kill process '%s' failed with %d\n",
+					                                             pname[j],GetLastError());
 					CloseHandle(proc);
 					CloseHandle(snapshot);
 					return -1;
@@ -1014,7 +1023,7 @@ int kill_nprocess(char **pname, int debug) {
 /* return < 0 if this fails. */
 /* return 0 if there is no such process */
 /* return 1 if a process was killed */
-int kill_nprocess(char **pname, int debug) {
+int kill_nprocess(char **pname, a1log *log) {
 	struct kinfo_proc *procList = NULL;
 	size_t procCount = 0;
 	static int name[] = { CTL_KERN, KERN_PROC, KERN_PROC_ALL, 0 };
@@ -1031,14 +1040,14 @@ int kill_nprocess(char **pname, int debug) {
 		if (sysctl(name, (sizeof(name) / sizeof(*name)) - 1,
                       NULL, &length,
                       NULL, 0) == -1) {
-			DBGF((errout,"sysctl #1 failed with %d\n", errno));
+			DBGF((DBGA,"sysctl #1 failed with %d\n", errno));
 			return -1;
 		}
 	
 		/* Add some more entries in case the number of processors changed */
 		length += 10 * sizeof(struct kinfo_proc);
 		if ((procList = malloc(length)) == NULL) {
-			DBGF((errout,"malloc failed for %d bytes\n", length));
+			DBGF((DBGA,"malloc failed for %d bytes\n", length));
 			return -1;
 		}
 
@@ -1046,7 +1055,7 @@ int kill_nprocess(char **pname, int debug) {
 		if ((err = sysctl(name, (sizeof(name) / sizeof(*name)) - 1,
                           procList, &length,
                           NULL, 0)) == -1) {
-			DBGF((errout,"sysctl #1 failed with %d\n", errno));
+			DBGF((DBGA,"sysctl #1 failed with %d\n", errno));
 			free(procList);
 			return -1;
 		}
@@ -1065,16 +1074,14 @@ int kill_nprocess(char **pname, int debug) {
 		for (j = 0;; j++) {
 			if (pname[j] == NULL)	/* End of list */
 				break;
-			if (debug >= 8)
-				fprintf(stderr,"Checking process '%s' against list '%s'\n",procList[i].kp_proc.p_comm,pname[j]);
+			a1logv(log, 8, "kill_nprocess: Checking process '%s' against list '%s'\n",
+			                                         procList[i].kp_proc.p_comm,pname[j]);
 			if (strncmp(procList[i].kp_proc.p_comm,pname[j],MAXCOMLEN) == 0) {
-				if (debug)
-					fprintf(stderr,"Killing process '%s'\n",procList[i].kp_proc.p_comm);
-				DBGF((errout,"killing process '%s' pid %d\n",pname[j],procList[i].kp_proc.p_pid));
+				a1logv(log, 1, "kill_nprocess: killing process '%s' pid %d\n",
+				                            pname[j],procList[i].kp_proc.p_pid);
 				if (kill(procList[i].kp_proc.p_pid, SIGTERM) != 0) {
-					if (debug)
-						fprintf(stderr,"kill process '%s' failed with %d\n",pname[j],errno);
-					DBGF((errout,"kill process '%s' failed with %d\n",pname[j],errno));
+					a1logv(log, 1, "kill_nprocess: kill process '%s' failed with %d\n",
+					                                                    pname[j],errno);
 					free(procList);
 					return -1;
 				}
@@ -1091,113 +1098,6 @@ int kill_nprocess(char **pname, int debug) {
 #endif /* __APPLE__ */
 
 #endif /* __APPLE__ || NT */
-
-/* ============================================================= */
-/* CCSS location support */
-
-/* return a list of installed ccss files. */
-/* The list is sorted by description and terminated by a NULL entry. */
-/* If no is != NULL, return the number in the list */
-/* Return NULL and -1 if there is a malloc error */
-iccss *list_iccss(int *no) {
-	int i, j;
-	iccss *rv;
-
-	char **paths = NULL;
-	int npaths = 0;
-
-	npaths = xdg_bds(NULL, &paths, xdg_data, xdg_read, xdg_user, "color/*.ccss");
-
-	if ((rv = malloc(sizeof(iccss) * (npaths + 1))) == NULL) {
-		xdg_free(paths, npaths);
-		if (no != NULL) *no = -1;
-		return NULL;
-	}
-	
-	for (i = j = 0; i < npaths; i++) {
-		ccss *cs;
-		int len;
-		char *pp;
-		char *tech, *disp;
-
-		if ((cs = new_ccss()) == NULL) {
-			for (--j; j>= 0; j--) {
-				free(rv[j].path);
-				free(rv[j].desc);
-			}
-			xdg_free(paths, npaths);
-			if (no != NULL) *no = -1;
-			return NULL;
-		}
-		if (cs->read_ccss(cs, paths[i])) {
-			cs->del(cs);
-			continue;		/* Skip any unreadable ccss's */
-		}
-
-		if ((tech = cs->tech) == NULL)
-			tech = "";
-		if ((disp = cs->disp) == NULL)
-			disp = "";
-		len = strlen(tech) + strlen(disp) + 4;
-		if ((pp = malloc(len)) == NULL) {
-			for (--j; j >= 0; j--) {
-				free(rv[j].path);
-				free(rv[j].desc);
-			}
-			cs->del(cs);
-			free(rv);
-			xdg_free(paths, npaths);
-			if (no != NULL) *no = -1;
-			return NULL;
-		}
-		if ((rv[j].path = strdup(paths[i])) == NULL) {
-			for (--j; j >= 0; j--) {
-				free(rv[j].path);
-				free(rv[j].desc);
-			}
-			cs->del(cs);
-			free(rv);
-			free(pp);
-			xdg_free(paths, npaths);
-			if (no != NULL) *no = -1;
-			return NULL;
-		}
-		strcpy(pp, tech);
-		strcat(pp, " (");
-		strcat(pp, disp);
-		strcat(pp, ")");
-		rv[j].desc = pp;
-		cs->del(cs);
-		j++;
-	}
-	xdg_free(paths, npaths);
-	rv[j].path = NULL;
-	rv[j].desc = NULL;
-	if (no != NULL)
-		*no = j;
-
-	/* Sort the list */
-#define HEAP_COMPARE(A,B) (strcmp(A.desc, B.desc) < 0) 
-	HEAPSORT(iccss, rv, j)
-#undef HEAP_COMPARE
-
-	return rv;
-}
-
-/* Free up a iccss list */
-void free_iccss(iccss *list) {
-	int i;
-
-	if (list != NULL) {
-		for (i = 0; list[i].path != NULL || list[i].desc != NULL; i++) {
-			if (list[i].path != NULL)
-				free(list[i].path);
-			if (list[i].desc != NULL)
-				free(list[i].desc);
-		}
-		free(list);
-	}
-}
 
 /* ============================================================= */
 
@@ -1360,6 +1260,13 @@ void sa_Scale3(double out[3], double in[3], double rat) {
 	out[0] = in[0] * rat;
 	out[1] = in[1] * rat;
 	out[2] = in[2] * rat;
+}
+
+/* Clamp a 3 vector to be +ve */
+void sa_Clamp3(double out[3], double in[3]) {
+	int i;
+	for (i = 0; i < 3; i++)
+		out[i] = in[i] < 0.0 ? 0.0 : in[i];
 }
 
 /* Return the normal Delta E given two Lab values */

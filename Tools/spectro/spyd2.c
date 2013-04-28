@@ -7,7 +7,7 @@
  * Author: Graeme W. Gill
  * Date:   17/9/2007
  *
- * Copyright 2006 - 2012, Graeme W. Gill
+ * Copyright 2006 - 2013, Graeme W. Gill
  * All rights reserved.
  *
  * (Based initially on i1disp.c)
@@ -32,7 +32,6 @@
 	[ The Spyder 3 & 4 don't need a PLD firmware file. ]
 
 
-
     The Spyder 4 instrument will not have the full range of manufacturer
 	calibration settings available without the vendor calibration data.
     This calibration day is not provided with Argyll, since it is not
@@ -52,6 +51,9 @@
 	It's not possible to get it going without an instrument to verify on.
 	(Perhaps it has only 4 sensors ?) 
 
+	The frequency measurement is not very accurate, particularly for
+	the Spyder 3 & 4, being too low by about 3.5%.
+	
  */
 
 /* 
@@ -95,22 +97,16 @@
 #endif /* SALONEINSTLIB */
 #include "xspect.h"
 #include "insttypes.h"
-#include "icoms.h"
 #include "conv.h"
+#include "icoms.h"
 #include "spyd2.h"
 
-#undef PLOT_SPECTRA        /* Plot the sensor senitivity spectra */
+#undef PLOT_SPECTRA			/* Plot the sensor senitivity spectra */
+#undef PLOT_SPECTRA_EXTRA	/* Plot the sensor senitivity spectra extra values */
 #undef SAVE_SPECTRA			/* Save the sensor senitivity spectra to "sensors.sp" */
 #undef SAVE_XYZSPECTRA		/* Save the XYZ senitivity spectra to "sensorsxyz.sp" (scale 1.4) */
 #undef SAVE_STDXYZ			/* save 1931 2 degree to stdobsxyz.sp */
 
-#undef DEBUG
-
-#ifdef DEBUG
-#define DBG(xxx) printf xxx ;
-#else
-#define DBG(xxx) 
-#endif
 
 #define DO_RESETEP				/* Do the miscelanous resetep()'s */
 #define CLKRATE 1000000			/* Clockrate the Spyder 2 hardware runs at */
@@ -123,8 +119,8 @@
 #define RETRIES 4				/* usb_reads are unreliable - bug in spyder H/W ?*/
 
 #ifdef DO_ADAPTIVE
-# define RINTTIME 1.0			/* Base time to integrate reading over - refresh display */ 
-# define NINTTIME 1.0			/* Base time to integrate reading over - non-refresh display */ 
+# define RINTTIME 2.0			/* Base time to integrate reading over - refresh display */ 
+# define NINTTIME 2.0			/* Base time to integrate reading over - non-refresh display */ 
 #else /* !DO_ADAPTIVE */
 # define RINTTIME 5.0			/* Integrate over fixed longer time (manufacturers default) */ 
 # define NINTTIME 5.0			/* Integrate over fixed longer time (manufacturers default) */ 
@@ -137,17 +133,6 @@ static inst_code spyd2_interp_code(inst *pp, int ec);
 
 /* Interpret an icoms error into a SPYD2 error */
 static int icoms2spyd2_err(int se) {
-	if (se & ICOM_USERM) {
-		se &= ICOM_USERM;
-		if (se == ICOM_USER)
-			return SPYD2_USER_ABORT;
-		if (se == ICOM_TERM)
-			return SPYD2_USER_TERM;
-		if (se == ICOM_TRIG)
-			return SPYD2_USER_TRIG;
-		if (se == ICOM_CMND)
-			return SPYD2_USER_CMND;
-	}
 	if (se != ICOM_OK)
 		return SPYD2_COMS_FAIL;
 	return SPYD2_OK;
@@ -265,35 +250,28 @@ spyd2_reset(
 	spyd2 *p
 ) {
 	int se;
-	int isdeb = 0;
 	int retr;
 	inst_code rv = inst_ok;
 
-	/* Turn off low level debug messages, and sumarise them here */
-	isdeb = p->icom->debug;
-	p->icom->debug = 0;
-
-	if (isdeb) fprintf(stderr,"\nspyd2: Instrument reset\n");
+	a1logd(p->log, 3, "spyd2_reset: called\n");
 
 	for (retr = 0; ; retr++) {
 		se = p->icom->usb_control(p->icom,
-		               USB_ENDPOINT_OUT | USB_TYPE_VENDOR | USB_RECIP_DEVICE,
+		               IUSB_ENDPOINT_OUT | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
 	                   0xC7, 0, 0, NULL, 0, 5.0);
 
 		if (se == ICOM_OK) {
-			if (isdeb) fprintf(stderr,"Reset complete, ICOM code 0x%x\n",se);
+			a1logd(p->log, 6, "spyd2_reset: complete, ICOM code 0x%x\n",se);
 			break;
 		}
-		if ((se & ICOM_USERM) || retr >= RETRIES ) {
-			if (isdeb) fprintf(stderr,"\nspyd2: Reset failed with  ICOM err 0x%x\n",se);
-			p->icom->debug = isdeb;
+		if (retr >= RETRIES ) {
+			a1logd(p->log, 1, "spyd2_reset: failed with ICOM err 0x%x\n",se);
 			return spyd2_interp_code((inst *)p, icoms2spyd2_err(se));
 		}
 		msec_sleep(500);
-		if (isdeb) fprintf(stderr,"\nspyd2: Reset retry with  ICOM err 0x%x\n",se);
+		a1logd(p->log, 1, "spyd2_reset: reset retry with  ICOM err 0x%x\n",se);
 	}
 
-	p->icom->debug = isdeb;
 	return rv;
 }
 
@@ -307,39 +285,31 @@ spyd2_getstatus(
 	unsigned char pbuf[8];	/* status bytes read */
 	int _stat;
 	int se;
-	int isdeb = 0;
 	int retr;
 	inst_code rv = inst_ok;
 
-	/* Turn off low level debug messages, and sumarise them here */
-	isdeb = p->icom->debug;
-	p->icom->debug = 0;
-
-	if (isdeb) fprintf(stderr,"\nspyd2: Get Status\n");
+	a1logd(p->log, 3, "spyd2_getstatus: called\n");
 
 	for (retr = 0; ; retr++) {
 		se = p->icom->usb_control(p->icom,
-		               USB_ENDPOINT_IN | USB_TYPE_VENDOR | USB_RECIP_DEVICE,
+		               IUSB_ENDPOINT_IN | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
 	                   0xC6, 0, 0, pbuf, 8, 5.0);
 
 		if (se == ICOM_OK)
 			break;
-		if ((se & ICOM_USERM) || retr >= RETRIES ) {
-			if (isdeb) fprintf(stderr,"\nspyd2: Get Status failed with ICOM err 0x%x\n",se);
-			p->icom->debug = isdeb;
+		if (retr >= RETRIES ) {
+			a1logd(p->log, 1, "spyd2_getstatus: failed with ICOM err 0x%x\n",se);
 			return spyd2_interp_code((inst *)p, icoms2spyd2_err(se));
 		}
 		msec_sleep(500);
-		if (isdeb) fprintf(stderr,"\nspyd2: Get Status retry with ICOM err 0x%x\n",se);
+		a1logd(p->log, 1, "spyd2_getstatus: retry with ICOM err 0x%x\n",se);
 	}
 	msec_sleep(100);		/* Limit rate status commands can be given */
 
 	_stat = pbuf[0];		/* Only the first byte is examined. */
 							/* Other bytes have information, but SW ignores them */
 
-	if (isdeb) fprintf(stderr,"Get Status returns %d ICOM err 0x%x\n", _stat, se);
-
-	p->icom->debug = isdeb;
+	a1logd(p->log, 3, "spyd2_getstatus: returns %d ICOM err 0x%x\n", _stat, se);
 
 	if (stat != NULL) *stat = _stat;
 
@@ -356,15 +326,10 @@ spyd2_readEEProm_imp(
 	int size	/* Number of bytes to read, 0 - 128 (ie. max of  bank) */
 ) {
 	int se;
-	int isdeb = 0;
 	int retr;
 	inst_code rv = inst_ok;
 
-	/* Turn off low level debug messages, and sumarise them here */
-	isdeb = p->icom->debug;
-	p->icom->debug = 0;
-
-	if (isdeb >= 2) fprintf(stderr,"\nspyd2: Read EEProm addr %d, bytes %d\n",addr,size);
+	a1logd(p->log, 3, "spyd2_readEEProm_imp: addr %d, bytes %d\n",addr,size);
 
 	if (addr < 0
 	 || (p->hwver < 7 && (addr + size) > 512)
@@ -376,23 +341,20 @@ spyd2_readEEProm_imp(
 
 	for (retr = 0; ; retr++) {
 		se = p->icom->usb_control(p->icom,
-			               USB_ENDPOINT_IN | USB_TYPE_VENDOR | USB_RECIP_DEVICE,
+			               IUSB_ENDPOINT_IN | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
 		                   0xC4, addr, size, buf, size, 5.0);
 		if (se == ICOM_OK)
 			break;
-		if ((se & ICOM_USERM) || retr >= RETRIES ) {
-			if (isdeb) fprintf(stderr,"\nspyd2: Read bytes failed with ICOM err 0x%x\n",se);
-			p->icom->debug = isdeb;
+		if (retr >= RETRIES) {
+			a1logd(p->log, 1, "spyd2_readEEProm_imp: failed with ICOM err 0x%x\n",se);
 			return spyd2_interp_code((inst *)p, icoms2spyd2_err(se));
 		}
 		msec_sleep(500);
-		if (isdeb) fprintf(stderr,"\nspyd2: Read bytes retry with ICOM err 0x%x\n",se);
+		a1logd(p->log, 1, "spyd2_readEEProm_imp: retry with ICOM err 0x%x\n",se);
 	}
 
 
-	if (isdeb >= 2) fprintf(stderr,"Read EEProm ICOM err 0x%x\n", se);
-
-	p->icom->debug = isdeb;
+	a1logd(p->log, 3, "spyd2_readEEProm_imp: returning ICOM err 0x%x\n", se);
 
 	return rv;
 }
@@ -431,35 +393,27 @@ spyd2_loadPLD(
 	int size				/* Number of bytes */
 ) {
 	int se;
-	int isdeb = 0;
 	int retr;
 	inst_code rv = inst_ok;
 
-	/* Turn off low level debug messages, and sumarise them here */
-	isdeb = p->icom->debug;
-	p->icom->debug = 0;
-
-	if (isdeb >= 2) fprintf(stderr,"\nspyd2: Load PLD %d bytes\n",size);
+	a1logd(p->log, 6, "spyd2_loadPLD: Load PLD %d bytes\n",size);
 
 	for (retr = 0; ; retr++) {
 		se = p->icom->usb_control(p->icom,
-		               USB_ENDPOINT_OUT | USB_TYPE_VENDOR | USB_RECIP_DEVICE,
+		               IUSB_ENDPOINT_OUT | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
 	                   0xC0, 0, 0, buf, size, 5.0);
 
 		if (se == ICOM_OK)
 			break;
-		if ((se & ICOM_USERM) || retr >= RETRIES ) {
-			if (isdeb) fprintf(stderr,"\nspyd2: Load PLD failed with ICOM err 0x%x\n",se);
-			p->icom->debug = isdeb;
+		if (retr >= RETRIES ) {
+			a1logd(p->log, 1, "spyd2_loadPLD: failed with ICOM err 0x%x\n",se);
 			return spyd2_interp_code((inst *)p, icoms2spyd2_err(se));
 		}
 		msec_sleep(500);
-		if (isdeb) fprintf(stderr,"\nspyd2: Load PLD retry with ICOM err 0x%x\n",se);
+		a1logd(p->log, 1, "spyd2_loadPLD: retry with ICOM err 0x%x\n",se);
 	}
 
-	if (isdeb >= 2) fprintf(stderr,"Load PLD returns ICOM err 0x%x\n", se);
-
-	p->icom->debug = isdeb;
+	a1logd(p->log, 6, "spyd2_loadPLD: returns ICOM err 0x%x\n", se);
 
 	return rv;
 }
@@ -481,18 +435,13 @@ spyd2_GetMinMax(
 ) {
 	int rwbytes;			/* Data bytes read or written */
 	int se;
-	int isdeb = 0;
 	inst_code rv = inst_ok;
 	int value;
 	int index;
 	int retr;
 	unsigned char buf[8];	/* return bytes read */
 
-	/* Turn off low level debug messages, and sumarise them here */
-	isdeb = p->icom->debug;
-	p->icom->debug = 0;
-
-	if (isdeb >= 2) fprintf(stderr,"\nspyd2: Get Min/Max, %d clocks\n",*clocks);
+	a1logd(p->log, 2, "spyd2_GetMinMax: %d clocks\n",*clocks);
 
 	/* Issue the triggering command */
 	if (*clocks > 0xffffff)
@@ -505,64 +454,60 @@ spyd2_GetMinMax(
 	for (retr = 0; ; retr++) {
 		/* Issue the trigger command */
 		se = p->icom->usb_control(p->icom,
-		               USB_ENDPOINT_OUT | USB_TYPE_VENDOR | USB_RECIP_DEVICE,
+		               IUSB_ENDPOINT_OUT | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
 	                   0xC2, value, index, NULL, 0, 5.0);
 
-		if ((se & ICOM_USERM) || (se != ICOM_OK && retr >= RETRIES)) {
+		if ((se != ICOM_OK && retr >= RETRIES)) {
 			/* Complete the operation so as not to leave the instrument in a hung state */
 			msec_sleep(*clocks/MSECDIV);
-			p->icom->usb_read(p->icom, 0x81, buf, 8, &rwbytes, 1.0);
+			p->icom->usb_read(p->icom, NULL, 0x81, buf, 8, &rwbytes, 1.0);
 
-			if (isdeb) fprintf(stderr,"\nspyd2: Get Min/Max Trig failed with ICOM err 0x%x\n",se);
-			p->icom->debug = isdeb;
+			a1logd(p->log, 1, "spyd2_GetMinMax: trig failed with ICOM err 0x%x\n",se);
 			return spyd2_interp_code((inst *)p, icoms2spyd2_err(se));
 		}
 		if (se != ICOM_OK) {
 			/* Complete the operation so as not to leave the instrument in a hung state */
 			msec_sleep(*clocks/MSECDIV);
-			p->icom->usb_read(p->icom, 0x81, buf, 8, &rwbytes, 1.0);
+			p->icom->usb_read(p->icom, NULL, 0x81, buf, 8, &rwbytes, 1.0);
 
 			msec_sleep(500);
-			if (isdeb) fprintf(stderr,"\nspyd2: Get Min/Max Trig retry with ICOM err 0x%x\n",se);
+			a1logd(p->log, 1, "spyd2_GetMinMax: trig retry with ICOM err 0x%x\n",se);
 			continue;
 		}
 
-		if (isdeb >= 2) fprintf(stderr,"Trigger Min/Max returns ICOM err 0x%x\n", se);
+		a1logd(p->log, 3, "spyd2_GetMinMax: trig returns ICOM err 0x%x\n", se);
 	
 		/* Allow some time for the instrument to respond */
 		msec_sleep(*clocks/MSECDIV);
 	
 		/* Now read the bytes */
-		se = p->icom->usb_read(p->icom, 0x81, buf, 8, &rwbytes, 5.0);
+		se = p->icom->usb_read(p->icom, NULL, 0x81, buf, 8, &rwbytes, 5.0);
 		if (se == ICOM_OK)
 			break;
-		if ((se & ICOM_USERM) || retr >= RETRIES ) {
-			if (isdeb) fprintf(stderr,"\nspyd2: Get Min/Max failed with ICOM err 0x%x\n",se);
-			p->icom->debug = isdeb;
+		if (retr >= RETRIES) {
+			a1logd(p->log, 1, "spyd2_GetMinMax: get failed with ICOM err 0x%x\n",se);
 			return spyd2_interp_code((inst *)p, icoms2spyd2_err(se));
 		}
 		msec_sleep(500);
-		if (isdeb) fprintf(stderr,"\nspyd2: Get Min/Max retry with ICOM err 0x%x\n",se);
+		a1logd(p->log, 1, "spyd2_GetMinMax: get retry with ICOM err 0x%x\n",se);
 	}
 
 	if (rwbytes != 8) {
-		if (isdeb) fprintf(stderr,"\nspyd2: Get Min/Max got short data read %d",rwbytes);
-		p->icom->debug = isdeb;
+		a1logd(p->log, 1, "spyd2_GetMinMax: got short data read %d",rwbytes);
 		return spyd2_interp_code((inst *)p, SPYD2_BADREADSIZE);
 	}
 
 	*min = buf2ushort(&buf[0]);
 	*max = buf2ushort(&buf[2]);
 
-	if (isdeb >= 2) fprintf(stderr,"Get Min/Max got %d/%d returns ICOM err 0x%x\n", *min, *max, se);
-	p->icom->debug = isdeb;
+	a1logd(p->log, 3, "spyd2_GetMinMax: got %d/%d returns ICOM err 0x%x\n", *min, *max, se);
 
 	return rv;
 }
 
 /* Get refresh rate (low level) command */
 /* (This isn't used by the manufacturers Spyder3 driver, */
-/*  but the instrument seems to impliment it.) */
+/*  but the instrument seems to implement it.) */
 static inst_code
 spyd2_GetRefRate_ll(
 	spyd2 *p,
@@ -575,7 +520,6 @@ spyd2_GetRefRate_ll(
 ) {
 	int rwbytes;			/* Data bytes read or written */
 	int se;
-	int isdeb = 0;
 	inst_code rv = inst_ok;
 	int value;
 	int index;
@@ -584,11 +528,7 @@ spyd2_GetRefRate_ll(
 	unsigned char buf1[8];	/* send bytes */
 	unsigned char buf2[8];	/* return bytes read */
 
-	/* Turn off low level debug messages, and sumarise them here */
-	isdeb = p->icom->debug;
-	p->icom->debug = 0;
-
-	if (isdeb >= 2) fprintf(stderr,"\nspyd2: Get Refresh Rate, %d clocks\n",*clocks);
+	a1logd(p->log, 3, "spyd2_GetRefRate_ll: %d clocks\n",*clocks);
 
 	/* Setup the triggering parameters */
 	if (*clocks > 0xffffff)		/* Enforce hardware limits */
@@ -611,49 +551,46 @@ spyd2_GetRefRate_ll(
 	/* Issue the triggering command */
 	for (retr = 0; ; retr++) {
 		se = p->icom->usb_control(p->icom,
-		               USB_ENDPOINT_OUT | USB_TYPE_VENDOR | USB_RECIP_DEVICE,
+		               IUSB_ENDPOINT_OUT | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
 	                   0xC3, value, index, buf1, 8, 5.0);
 
-		if ((se & ICOM_USERM) || (se != ICOM_OK && retr >= RETRIES)) {
+		if (se != ICOM_OK && retr >= RETRIES) {
 			/* Complete the operation so as not to leave the instrument in a hung state */
 			msec_sleep(*clocks/MSECDIV);
-			p->icom->usb_read(p->icom, 0x81, buf2, 8, &rwbytes, 1.0);
+			p->icom->usb_read(p->icom, NULL, 0x81, buf2, 8, &rwbytes, 1.0);
 
-			if (isdeb) fprintf(stderr,"\nspyd2: Get Refresh Rate Trig failed with ICOM err 0x%x\n",se);
-			p->icom->debug = isdeb;
+			a1logd(p->log, 1, "spyd2_GetRefRate_ll: trig failed with ICOM err 0x%x\n",se);
 			return spyd2_interp_code((inst *)p, icoms2spyd2_err(se));
 		}
 		if (se != ICOM_OK) {
 			/* Complete the operation so as not to leave the instrument in a hung state */
 			msec_sleep(*clocks/MSECDIV);
-			p->icom->usb_read(p->icom, 0x81, buf2, 8, &rwbytes, 1.0);
+			p->icom->usb_read(p->icom, NULL, 0x81, buf2, 8, &rwbytes, 1.0);
 
 			msec_sleep(500);
-			if (isdeb) fprintf(stderr,"\nspyd2: Get Refresh Rate Trig retry with ICOM err 0x%x\n",se);
+			a1logd(p->log, 1, "spyd2_GetRefRate_ll: trig retry with ICOM err 0x%x\n",se);
 			continue;
 		}
 
-		if (isdeb >= 2) fprintf(stderr,"Trigger Get Refresh Rate returns ICOM err 0x%x\n", se);
+		a1logd(p->log, 3, "spyd2_GetRefRate_ll: trig returns ICOM err 0x%x\n", se);
 
 		/* Allow some time for the instrument to respond */
 		msec_sleep(*clocks/MSECDIV);
 	
 		/* Now read the bytes */
-		se = p->icom->usb_read(p->icom, 0x81, buf2, 8, &rwbytes, 5.0);
+		se = p->icom->usb_read(p->icom, NULL, 0x81, buf2, 8, &rwbytes, 5.0);
 		if (se == ICOM_OK)
 			break;
-		if ((se & ICOM_USERM) || retr >= RETRIES ) {
-			if (isdeb) fprintf(stderr,"\nspyd2: Get Refresh Rate failed with ICOM err 0x%x\n",se);
-			p->icom->debug = isdeb;
+		if (retr >= RETRIES) {
+			a1logd(p->log, 3, "spyd2_GetRefRate_ll: get failed with ICOM err 0x%x\n",se);
 			return spyd2_interp_code((inst *)p, icoms2spyd2_err(se));
 		}
 		msec_sleep(500);
-		if (isdeb) fprintf(stderr,"\nspyd2: Get Refresh Rate retry with ICOM err 0x%x\n",se);
+		a1logd(p->log, 1, "spyd2_GetRefRate_ll: get retry with ICOM err 0x%x\n",se);
 	}
 
 	if (rwbytes != 8) {
-		if (isdeb) fprintf(stderr,"\nspyd2: Get Refresh Rate got short data read %d",rwbytes);
-		p->icom->debug = isdeb;
+		a1logd(p->log, 1, "spyd2_GetRefRate_ll: got short data read %d",rwbytes);
 		return spyd2_interp_code((inst *)p, SPYD2_BADREADSIZE);
 	}
 
@@ -662,20 +599,17 @@ spyd2_GetRefRate_ll(
 
 	/* Spyder2 */
 	if (p->hwver < 4 && flag == 1) {
-		if (isdeb) fprintf(stderr,"\nspyd2: Get Refresh Rate got trigger timeout");
-		p->icom->debug = isdeb;
+		a1logd(p->log, 1, "spyd2_GetRefRate_ll: got trigger timeout");
 		return spyd2_interp_code((inst *)p, SPYD2_TRIGTIMEOUT);
 	}
 
 	/* Spyder2 */
 	if (p->hwver < 4 && flag == 2) {
-		if (isdeb) fprintf(stderr,"\nspyd2: Get Refresh Rate got overall timeout");
-		p->icom->debug = isdeb;
+		a1logd(p->log, 1, "spyd2_GetRefRate_ll: got overall timeout");
 		return spyd2_interp_code((inst *)p, SPYD2_OVERALLTIMEOUT);
 	}
 
-	if (isdeb >= 2) fprintf(stderr,"Get Refresh Rate got %d, returns ICOM err 0x%x\n", *clkcnt, se);
-	p->icom->debug = isdeb;
+	a1logd(p->log, 3, "spyd2_GetRefRate_ll: result  %d, returns ICOM err 0x%x\n", *clkcnt, se);
 
 	return rv;
 }
@@ -695,7 +629,6 @@ spyd2_GetReading_ll(
 ) {
 	int rwbytes;			/* Data bytes read or written */
 	int se;
-	int isdeb = 0;
 	inst_code rv = inst_ok;
 	int value;
 	int index;
@@ -708,11 +641,7 @@ spyd2_GetReading_ll(
 	int _mintcnt = 0x7fffffff;	/* Minumum transition count */
 	int i, j, k;
 
-	/* Turn off low level debug messages, and sumarise them here */
-	isdeb = p->icom->debug;
-	p->icom->debug = 0;
-
-	if (p->debug >= 2) fprintf(stderr,"\nspyd2: Get Reading, clocks = %d, minfc = %d, maxfc = %d\n",*clocks,*minfclks,*maxfclks);
+	a1logd(p->log, 3, "spyd2_GetReading_ll: clocks = %d, minfc = %d, maxfc = %d\n",*clocks,*minfclks,*maxfclks);
 
 	/* Setup the triggering parameters */
 	if (*clocks > 0xffffff)
@@ -744,11 +673,10 @@ spyd2_GetReading_ll(
 		int minfclks = 0;
 		int maxfclks = 0;
 		p->prevrawinv = 0;
-		if (p->debug >= 2) fprintf(stderr,"\nspyd2: Doing dummy read to get prevraw\n");
+		a1logd(p->log, 3, "spyd2_GetReading_ll: doing dummy read to get prevraw\n");
 		if ((rv = spyd2_GetReading_ll(p, &clocks, 10, 0, &minfclks, &maxfclks, NULL, NULL, NULL)) != inst_ok) {
-			if (p->debug >= 2) fprintf(stderr,"\nspyd2: Dummy read failed\n");
+			a1logd(p->log, 1, "spyd2_GetReading_ll: dummy read failed\n");
 			p->prevrawinv = 1;
-			p->icom->debug = isdeb;
 			return rv;
 		}
 	}
@@ -760,72 +688,68 @@ spyd2_GetReading_ll(
 
 		/* Issue the triggering command */
 		se = p->icom->usb_control(p->icom,
-		               USB_ENDPOINT_OUT | USB_TYPE_VENDOR | USB_RECIP_DEVICE,
+		               IUSB_ENDPOINT_OUT | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
 	                   0xC1, value, index, buf1, 8, 5.0);
 
-		if ((se & ICOM_USERM) || (se != ICOM_OK && retr >= RETRIES)) {
+		if (se != ICOM_OK && retr >= RETRIES) {
 			/* Complete the operation so as not to leave the instrument in a hung state */
 			msec_sleep(*clocks/MSECDIV);
 			for (i = 0; i < (1+9); i++)
-				p->icom->usb_read(p->icom, 0x81, buf2, 8, &rwbytes, 1.0);
+				p->icom->usb_read(p->icom, NULL, 0x81, buf2, 8, &rwbytes, 1.0);
 			p->prevrawinv = 1;		/* prevraw are now invalid */
 
-			if (p->debug) fprintf(stderr,"\nspyd2: Get Reading Trig failed with ICOM err 0x%x\n",se);
-			p->icom->debug = isdeb;
+			a1logd(p->log, 1, "spyd2_GetReading_ll: trig failed with ICOM err 0x%x\n",se);
 			return spyd2_interp_code((inst *)p, icoms2spyd2_err(se));
 		}
 		if (se != ICOM_OK) {
 			/* Complete the operation so as not to leave the instrument in a hung state */
 			msec_sleep(*clocks/MSECDIV);
 			for (i = 0; i < (1+9); i++)
-				p->icom->usb_read(p->icom, 0x81, buf2, 8, &rwbytes, 1.0);
+				p->icom->usb_read(p->icom, NULL, 0x81, buf2, 8, &rwbytes, 1.0);
 			p->prevrawinv = 1;		/* prevraw are now invalid */
 
 			msec_sleep(500);
-			if (p->debug) fprintf(stderr,"\nspyd2: Get Reading Trig retry with ICOM err 0x%x\n",se);
+			a1logd(p->log, 1, "spyd2_GetReading_ll: trig retry with ICOM err 0x%x\n",se);
 			continue;
 		}
 
-		if (p->debug >= 2) fprintf(stderr,"Trigger Get Reading returns ICOM code 0x%x\n", se);
+		a1logd(p->log, 3, "spyd2_GetReading_ll: reading returns ICOM code 0x%x\n", se);
 
-//printf("~1 sleeping %d msecs\n",*clocks/MSECDIV);
 		/* Allow some time for the instrument to respond */
 		msec_sleep(*clocks/MSECDIV);
 	
 		/* Now read the first 8 bytes (status etc.) */
-		se = p->icom->usb_read(p->icom, 0x81, buf2, 8, &rwbytes, 5.0);
-		if ((se & ICOM_USERM) || (se != ICOM_OK && retr >= RETRIES)) {
-			if (p->debug) fprintf(stderr,"\nspyd2: Get Reading Stat failed with ICOM err 0x%x\n",se);
+		se = p->icom->usb_read(p->icom, NULL, 0x81, buf2, 8, &rwbytes, 5.0);
+		if (se != ICOM_OK && retr >= RETRIES) {
+			a1logd(p->log, 1, "spyd2_GetReading_ll: read stat failed with ICOM err 0x%x\n",se);
 			/* Complete the operation so as not to leave the instrument in a hung state */
 			for (i = 0; i < (1+9); i++)
-				p->icom->usb_read(p->icom, 0x81, buf2, 8, &rwbytes, 0.5);
+				p->icom->usb_read(p->icom, NULL, 0x81, buf2, 8, &rwbytes, 0.5);
 			p->prevrawinv = 1;		/* prevraw are now invalid */
 			msec_sleep(500);
 
-			p->icom->debug = isdeb;
 			return spyd2_interp_code((inst *)p, icoms2spyd2_err(se));
 		}
 //printf("~1 trig -> read = %d msec\n",msec_time() - start);
 
 		if (se != ICOM_OK) {
-			if (p->debug >= 2) fprintf(stderr,"Get Reading Stat retry with ICOM err 0x%x\n", se);
+			a1logd(p->log, 1, "spyd2_GetReading_ll: read stat retry with ICOM err 0x%x\n", se);
 			/* Complete the operation so as not to leave the instrument in a hung state */
 			for (i = 0; i < (1+9); i++)
-				p->icom->usb_read(p->icom, 0x81, buf2, 8, &rwbytes, 0.5);
+				p->icom->usb_read(p->icom, NULL, 0x81, buf2, 8, &rwbytes, 0.5);
 			p->prevrawinv = 1;		/* prevraw are now invalid */
 			msec_sleep(500);
 			continue;		/* Retry the whole command */
 		}
 
 		if (rwbytes != 8) {
-			if (p->debug) fprintf(stderr,"\nspyd2: Get Reading Stat got short data read %d",rwbytes);
+			a1logd(p->log, 1, "spyd2_GetReading_ll: read stat got short data read %d",rwbytes);
 			/* Complete the operation so as not to leave the instrument in a hung state */
 			for (i = 0; i < (1+9); i++)
-				p->icom->usb_read(p->icom, 0x81, buf2, 8, &rwbytes, 0.5);
+				p->icom->usb_read(p->icom, NULL, 0x81, buf2, 8, &rwbytes, 0.5);
 			p->prevrawinv = 1;		/* prevraw are now invalid */
 			msec_sleep(500);
 
-			p->icom->debug = isdeb;
 			return spyd2_interp_code((inst *)p, SPYD2_BADREADSIZE);
 		}
 	
@@ -833,52 +757,48 @@ spyd2_GetReading_ll(
 
 		/* Spyder2 */
 		if (p->hwver < 4 && flag == 1) {
-			if (p->debug) fprintf(stderr,"\nspyd2: Reading Stat is trigger timeout");
-			p->icom->debug = isdeb;
+			a1logd(p->log, 1, "spyd2_GetReading_ll: read stat is trigger timeout");
 			return spyd2_interp_code((inst *)p, SPYD2_TRIGTIMEOUT);
 		}
 
 		/* Spyder2 */
 		if (p->hwver < 4 && flag == 2) {
-			if (p->debug) fprintf(stderr,"\nspyd2: Reading Stat is overall timeout");
-			p->icom->debug = isdeb;
+			a1logd(p->log, 1, "spyd2_GetReading_ll: read stat is overall timeout");
 			return spyd2_interp_code((inst *)p, SPYD2_OVERALLTIMEOUT);
 		}
 
 		/* Now read the following 9 x 8 bytes of sensor data */
 		for (i = 0; i < 9; i++) {
 
-			se = p->icom->usb_read(p->icom, 0x81, buf2 + i * 8, 8, &rwbytes, 5.0);
-			if ((se & ICOM_USERM) || (se != ICOM_OK && retr >= RETRIES)) {
+			se = p->icom->usb_read(p->icom, NULL, 0x81, buf2 + i * 8, 8, &rwbytes, 5.0);
+			if (se != ICOM_OK && retr >= RETRIES) {
 				int ii = i;
 				/* Complete the operation so as not to leave the instrument in a hung state */
 				for (; ii < (1+9); ii++)
-					p->icom->usb_read(p->icom, 0x81, buf2 + i * 8, 8, &rwbytes, 0.5);
+					p->icom->usb_read(p->icom, NULL, 0x81, buf2 + i * 8, 8, &rwbytes, 0.5);
 				p->prevrawinv = 1;		/* prevraw are now invalid */
 
-				if (p->debug) fprintf(stderr,"\nspyd2: Get Reading failed with ICOM err 0x%x\n",se);
-				p->icom->debug = isdeb;
+				a1logd(p->log, 1, "spyd2_GetReading_ll: get reading failed with ICOM err 0x%x\n",se);
 				return spyd2_interp_code((inst *)p, icoms2spyd2_err(se));
 			}
 			if (se != ICOM_OK) {
 				int ii = i;
 				/* Complete the operation so as not to leave the instrument in a hung state */
 				for (; ii < (1+9); ii++)
-					p->icom->usb_read(p->icom, 0x81, buf2 + i * 8, 8, &rwbytes, 0.5);
+					p->icom->usb_read(p->icom, NULL, 0x81, buf2 + i * 8, 8, &rwbytes, 0.5);
 				p->prevrawinv = 1;		/* prevraw are now invalid */
 
 				break;
 			}
 			if (rwbytes != 8) {
 				int ii = i;
-				if (p->debug) fprintf(stderr,"\nspyd2: Get Reading got short data read %d",rwbytes);
+				a1logd(p->log, 1, "spyd2_GetReading_ll: got short data read %d",rwbytes);
 
 				/* Complete the operation so as not to leave the instrument in a hung state */
 				for (; ii < (1+9); ii++)
-					p->icom->usb_read(p->icom, 0x81, buf2 + i * 8, 8, &rwbytes, 0.5);
+					p->icom->usb_read(p->icom, NULL, 0x81, buf2 + i * 8, 8, &rwbytes, 0.5);
 				p->prevrawinv = 1;		/* prevraw are now invalid */
 
-				p->icom->debug = isdeb;
 				return spyd2_interp_code((inst *)p, SPYD2_BADREADSIZE);
 			}
 		}
@@ -887,23 +807,23 @@ spyd2_GetReading_ll(
 			break;		/* We're done */
 
 		msec_sleep(500);
-		if (p->debug) fprintf(stderr,"\nspyd2: Get Reading retry with ICOM err 0x%x\n",se);
+		a1logd(p->log, 1, "spyd2_GetReading_ll: reading retry with ICOM err 0x%x\n",se);
 
-		if (p->debug) fprintf(stderr,"\nspyd2: Resetting end point\n");
 #ifdef DO_RESETEP				/* Do the miscelanous resetep()'s */
+		a1logd(p->log, 1, "spyd2_GetReading_ll: resetting end point\n");
 		p->icom->usb_resetep(p->icom, 0x81);
 		msec_sleep(1);			/* Let device recover ? */
 #endif /*  DO_RESETEP */
 	}	/* End of whole command retries */
 
-#ifdef NEVER
-	printf("Got bytes:\n");
-	for (i = 0; i < 9; i++) {
-		printf(" %d: 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n",i * 8,
-		buf2[i * 8 + 0], buf2[i * 8 + 1], buf2[i * 8 + 2], buf2[i * 8 + 3],
-		buf2[i * 8 + 4], buf2[i * 8 + 5], buf2[i * 8 + 6], buf2[i * 8 + 7]);
+	if (p->log->debug >= 5) {
+		a1logd(p->log, 5, "spyd2_GetReading_ll: got bytes:\n");
+		for (i = 0; i < 9; i++) {
+			a1logd(p->log, 5, " %d: 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n",i * 8,
+			buf2[i * 8 + 0], buf2[i * 8 + 1], buf2[i * 8 + 2], buf2[i * 8 + 3],
+			buf2[i * 8 + 4], buf2[i * 8 + 5], buf2[i * 8 + 6], buf2[i * 8 + 7]);
+		}
 	}
-#endif
 
 	/* Spyder 2 decoding */
 	/* Spyder2 */
@@ -930,7 +850,7 @@ spyd2_GetReading_ll(
 		for (i = j = 0; j < 3; j++) {
 			for (k = 0; k < 8; k++, i += 3) {
 				rvals[j][k] = buf2uint24lens(buf2 + i);
-//printf("~1 got rvals[%d][%d] = 0x%x\n",j,k,rvals[j][k]);
+//				a1logd(p->log, 1, "got rvals[%d][%d] = 0x%x\n",j,k,rvals[j][k]);
 			}
 		}
 
@@ -938,25 +858,19 @@ spyd2_GetReading_ll(
 		for (k = 0; k < 8; k++) {
 			int transcnt, intclks;
 
-//printf("~1 sensor %d:\n",k);
-
 			/* Compute difference of L2F count to previous value */
 			/* read, modulo 24 bits */
-			if (p->debug >= 5)
-				fprintf(stderr,"%d: transcnt %d, previous %d\n",k,rvals[2][k],p->prevraw[k]);
+			a1logd(p->log, 5, "%d: transcnt %d, previous %d\n", k,rvals[2][k],p->prevraw[k]);
 			if (p->prevraw[k] <= rvals[2][k]) {
 				transcnt = rvals[2][k] - p->prevraw[k];
-//printf("~1 transcnt = %d - %d = %d\n",rvals[2][k], p->prevraw[k],transcnt);
 			} else {
 				transcnt = rvals[2][k] + 0x1000000 - p->prevraw[k];
-//printf("~1 transcnt = %d + %d - %d = %d\n",rvals[2][k], 0x1000000, p->prevraw[k],transcnt);
 			}
 
 			p->prevraw[k] = rvals[2][k];	/* New previuos value */
 
 			/* Compute difference of 1MHz clock count of first to second value */
 			intclks = rvals[0][k] - rvals[1][k];
-//printf("~1 intclks = %d - %d = %d\n",rvals[0][k], rvals[1][k]);
 
 			if (transcnt == 0 || intclks <= 0) {		/* It's too dark ... */
 				if (sensv != NULL)
@@ -972,14 +886,14 @@ spyd2_GetReading_ll(
 				if (transcnt < _mintcnt)
 					_mintcnt = transcnt;
 			}
-			if (p->debug >= 4 && sensv != NULL)
-				fprintf(stderr,"%d: initial senv %f from transcnt %d and intclls %d\n",k,sensv[k],transcnt,intclks);
+			if (p->log->debug >= 4 && sensv != NULL)
+				a1logd(p->log, 4, "%d: initial senv %f from transcnt %d and intclls %d\n",
+				                                              k,sensv[k],transcnt,intclks);
 
 #ifdef NEVER	/* This seems to make repeatability worse ??? */
 			/* If CRT and bright enough */
-			if (sensv != NULL && sensv[k] > 1.5 && p->ref != 0) {
-				sensv[k] = ((double)transcnt) * (double)p->rrate/(double)nframes;
-//printf("~1 %d: corrected senv %f\n",k,sensv[k]);
+			if (sensv != NULL && sensv[k] > 1.5 && p->refrmode != 0) {
+				sensv[k] = ((double)transcnt) * (double)p->refrate/(double)nframes;
 			}
 #endif
 		}
@@ -1006,7 +920,7 @@ spyd2_GetReading_ll(
 		for (j = 0; j < 3; j++) {
 			for (k = 0; k < 8; k++) {
 				rvals[j][k] = buf2uint24le(buf2 + (j * 24 + map[k] * 3));
-//printf("~1 got rvals[%d][%d] = 0x%x\n",j,k,rvals[j][k]);
+//				a1logd(p->log, 1, "got rvals[%d][%d] = 0x%x\n",j,k,rvals[j][k]);
 			}
 		}
 
@@ -1016,11 +930,9 @@ spyd2_GetReading_ll(
 
 			/* Number of sensor transitions */
 			transcnt = rvals[2][k];
-//printf("~1 %d: transcnt = %d\n",k, rvals[2][k]);
 
 			/* Compute difference of first integer to second */
 			intclks = rvals[0][k] - rvals[1][k];
-//printf("~1 %d: intclks = %d - %d = %d\n",k, 65 * rvals[0][k]/8, 65 * rvals[1][k]/8, intclks * 65/8);
 
 			if (transcnt == 0 || intclks <= 0) {		/* It's too dark ... */
 				if (sensv != NULL)
@@ -1036,8 +948,9 @@ spyd2_GetReading_ll(
 				if (transcnt < _mintcnt)
 					_mintcnt = transcnt;
 			}
-			if (p->debug >= 4 && sensv != NULL)
-				fprintf(stderr,"%d: initial senv %f from transcnt %d and intclls %d\n",k,sensv[k],transcnt,intclks);
+			if (p->log->debug >= 4 && sensv != NULL)
+				a1logd(p->log, 4, "%d: initial senv %f from transcnt %d and intclls %d\n",
+				                                             k,sensv[k],transcnt,intclks);
 		}
 	}
 
@@ -1046,7 +959,6 @@ spyd2_GetReading_ll(
 	if (mintcnt != NULL)
 		*mintcnt = _mintcnt;
 
-	p->icom->debug = isdeb;
 	return rv;
 }
 
@@ -1058,16 +970,11 @@ spyd2_setLED(
 	double period		/* Pulse period in seconds */
 ) {
 	int se;
-	int isdeb = 0;
 	inst_code rv = inst_ok;
 	int value;
 	int index;
 	int retr;
 	int ptime;			/* Pulse time, 1 - 255 x 20 msec */
-
-	/* Turn off low level debug messages, and sumarise them here */
-	isdeb = p->icom->debug;
-	p->icom->debug = 0;
 
 	if (mode < 0)
 		mode = 0;
@@ -1079,11 +986,11 @@ spyd2_setLED(
 	else if (ptime > 255)
 		ptime = 255;
 
-	if (isdeb >= 2) {
+	if (p->log->debug >= 2) {
 		if (mode == 1)
-			fprintf(stderr,"\nspyd2: Set LED to pulse, %f secs\n",ptime * 0.02);
+			a1logd(p->log, 3, "spyd2_setLED: set to pulse, %f secs\n",ptime * 0.02);
 		else
-			fprintf(stderr,"\nspyd2: Set LED to %s\n",mode == 0 ? "off" : "on");
+			a1logd(p->log, 3, "spyd2_setLED: set to %s\n",mode == 0 ? "off" : "on");
 	}
 
 	value = mode;				/* Leave little endian */
@@ -1092,23 +999,20 @@ spyd2_setLED(
 	for (retr = 0; ; retr++) {
 		/* Issue the trigger command */
 		se = p->icom->usb_control(p->icom,
-		               USB_ENDPOINT_OUT | USB_TYPE_VENDOR | USB_RECIP_DEVICE,
+		               IUSB_ENDPOINT_OUT | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
 	                   0xF6, value, index, NULL, 0, 5.0);
 
 		if (se == ICOM_OK) {
-			if (isdeb) fprintf(stderr,"SetLED OK, ICOM code 0x%x\n",se);
+			a1logd(p->log, 5, "spyd2_setLED: OK, ICOM code 0x%x\n",se);
 			break;
 		}
-		if ((se & ICOM_USERM) || retr >= RETRIES ) {
-			if (isdeb) fprintf(stderr,"\nspyd2: SetLED failed with  ICOM err 0x%x\n",se);
-			p->icom->debug = isdeb;
+		if (retr >= RETRIES) {
+			a1logd(p->log, 1, "spyd2_setLED: failed with ICOM err 0x%x\n",se);
 			return spyd2_interp_code((inst *)p, icoms2spyd2_err(se));
 		}
 		msec_sleep(500);
-		if (isdeb) fprintf(stderr,"\nspyd2: SetLED retry with ICOM err 0x%x\n",se);
+		a1logd(p->log, 1, "spyd2_setLED: retry with ICOM err 0x%x\n",se);
 	}
-
-	p->icom->debug = isdeb;
 
 	return rv;
 }
@@ -1121,17 +1025,11 @@ spyd2_SetAmbReg(
 	int val			/* 8 bit ambient config register value */
 ) {
 	int se;
-	int isdeb = 0;
 	inst_code rv = inst_ok;
 	int value;
 	int retr;
 
-	/* Turn off low level debug messages, and sumarise them here */
-	isdeb = p->icom->debug;
-	p->icom->debug = 0;
-
-	if (isdeb >= 2)
-		fprintf(stderr,"\nspyd2: Set Ambient control register to %d\n",val);
+	a1logd(p->log, 3, "spyd2_SetAmbReg: control register to %d\n",val);
 
 	if (val < 0)
 		val = 0;
@@ -1142,23 +1040,20 @@ spyd2_SetAmbReg(
 	for (retr = 0; ; retr++) {
 		/* Issue the trigger command */
 		se = p->icom->usb_control(p->icom,
-		               USB_ENDPOINT_OUT | USB_TYPE_VENDOR | USB_RECIP_DEVICE,
+		               IUSB_ENDPOINT_OUT | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
 	                   0xF3, value, 0, NULL, 0, 5.0);
 
 		if (se == ICOM_OK) {
-			if (isdeb) fprintf(stderr,"Set Ambient control register OK, ICOM code 0x%x\n",se);
+			a1logd(p->log, 5, "spyd2_SetAmbReg: OK, ICOM code 0x%x\n",se);
 			break;
 		}
-		if ((se & ICOM_USERM) || retr >= RETRIES ) {
-			if (isdeb) fprintf(stderr,"\nspyd2: Set Ambient control register failed with  ICOM err 0x%x\n",se);
-			p->icom->debug = isdeb;
+		if (retr >= RETRIES) {
+			a1logd(p->log, 1, "spyd2_SetAmbReg: failed with  ICOM err 0x%x\n",se);
 			return spyd2_interp_code((inst *)p, icoms2spyd2_err(se));
 		}
 		msec_sleep(500);
-		if (isdeb) fprintf(stderr,"\nspyd2: Set Ambient control register retry with ICOM err 0x%x\n",se);
+		a1logd(p->log, 1, "spyd2_SetAmbReg: retry with ICOM err 0x%x\n",se);
 	}
-
-	p->icom->debug = isdeb;
 
 	return rv;
 }
@@ -1176,37 +1071,29 @@ spyd2_ReadAmbTiming(
 	unsigned char pbuf[1];	/* Timing value read */
 	int _val;
 	int se;
-	int isdeb = 0;
 	int retr;
 	inst_code rv = inst_ok;
 
-	/* Turn off low level debug messages, and sumarise them here */
-	isdeb = p->icom->debug;
-	p->icom->debug = 0;
-
-	if (isdeb) fprintf(stderr,"\nspyd2: Read Ambient Timing\n");
+	a1logd(p->log, 3, "spyd2_ReadAmbTiming: called\n");
 
 	for (retr = 0; ; retr++) {
 		se = p->icom->usb_control(p->icom,
-		               USB_ENDPOINT_IN | USB_TYPE_VENDOR | USB_RECIP_DEVICE,
+		               IUSB_ENDPOINT_IN | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
 	                   0xF4, 0, 0, pbuf, 1, 5.0);
 
 		if (se == ICOM_OK)
 			break;
-		if ((se & ICOM_USERM) || retr >= RETRIES ) {
-			if (isdeb) fprintf(stderr,"\nspyd2: Read Ambient Timing failed with ICOM err 0x%x\n",se);
-			p->icom->debug = isdeb;
+		if (retr >= RETRIES) {
+			a1logd(p->log, 1, "spyd2_ReadAmbTiming: failed with ICOM err 0x%x\n",se);
 			return spyd2_interp_code((inst *)p, icoms2spyd2_err(se));
 		}
 		msec_sleep(500);
-		if (isdeb) fprintf(stderr,"\nspyd2: Read Ambient Timing retry with ICOM err 0x%x\n",se);
+		a1logd(p->log, 1, "spyd2_ReadAmbTiming: retry with ICOM err 0x%x\n",se);
 	}
 
 	_val = pbuf[0];
 
-	if (isdeb) fprintf(stderr,"Read Ambient Timing returns %d ICOM err 0x%x\n", _val, se);
-
-	p->icom->debug = isdeb;
+	a1logd(p->log, 5, "spyd2_ReadAmbTiming: returning val %d ICOM err 0x%x\n",_val, se);
 
 	if (val != NULL) *val = _val;
 
@@ -1224,39 +1111,31 @@ spyd2_ReadAmbChan(
 	unsigned char pbuf[2];	/* Channel value read */
 	int _val;
 	int se;
-	int isdeb = 0;
 	int retr;
 	inst_code rv = inst_ok;
 
-	/* Turn off low level debug messages, and sumarise them here */
-	isdeb = p->icom->debug;
-	p->icom->debug = 0;
-
 	chan &= 1;
 
-	if (isdeb) fprintf(stderr,"\nspyd2: Read Ambient channel %d\n",chan);
+	a1logd(p->log, 3, "spyd2_ReadAmbChan: channel %d\n",chan);
 
 	for (retr = 0; ; retr++) {
 		se = p->icom->usb_control(p->icom,
-		               USB_ENDPOINT_IN | USB_TYPE_VENDOR | USB_RECIP_DEVICE,
+		               IUSB_ENDPOINT_IN | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
 	                   0xF0 + chan, 0, 0, pbuf, 2, 5.0);
 
 		if (se == ICOM_OK)
 			break;
-		if ((se & ICOM_USERM) || retr >= RETRIES ) {
-			if (isdeb) fprintf(stderr,"\nspyd2: Read Ambient channel failed with ICOM err 0x%x\n",se);
-			p->icom->debug = isdeb;
+		if (retr >= RETRIES) {
+			a1logd(p->log, 2, "spyd2_ReadAmbChan: failed with ICOM err 0x%x\n",se);
 			return spyd2_interp_code((inst *)p, icoms2spyd2_err(se));
 		}
 		msec_sleep(500);
-		if (isdeb) fprintf(stderr,"\nspyd2: Read Ambient channel retry with ICOM err 0x%x\n",se);
+		a1logd(p->log, 2, "spyd2_ReadAmbChan: retry with ICOM err 0x%x\n",se);
 	}
 
 	_val = buf2ushort(pbuf);
 
-	if (isdeb) fprintf(stderr,"Read Ambient channel %d returns %d ICOM err 0x%x\n", chan, _val, se);
-
-	p->icom->debug = isdeb;
+	a1logd(p->log, 3, "spyd2_ReadAmbChan: chan %d returning %d ICOM err 0x%x\n", chan, _val, se);
 
 	if (val != NULL) *val = _val;
 
@@ -1274,37 +1153,29 @@ spyd2_ReadTempConfig(
 	unsigned char pbuf[1];	/* Config value read */
 	int _val;
 	int se;
-	int isdeb = 0;
 	int retr;
 	inst_code rv = inst_ok;
 
-	/* Turn off low level debug messages, and sumarise them here */
-	isdeb = p->icom->debug;
-	p->icom->debug = 0;
-
-	if (isdeb) fprintf(stderr,"\nspyd2: Read Temp Config\n");
+	a1logd(p->log, 3, "spyd2_ReadTempConfig: called\n");
 
 	for (retr = 0; ; retr++) {
 		se = p->icom->usb_control(p->icom,
-		               USB_ENDPOINT_IN | USB_TYPE_VENDOR | USB_RECIP_DEVICE,
+		               IUSB_ENDPOINT_IN | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
 	                   0xE1, 0, 0, pbuf, 1, 5.0);
 
 		if (se == ICOM_OK)
 			break;
-		if ((se & ICOM_USERM) || retr >= RETRIES ) {
-			if (isdeb) fprintf(stderr,"\nspyd2: Read Temp Config failed with ICOM err 0x%x\n",se);
-			p->icom->debug = isdeb;
+		if (retr >= RETRIES) {
+			a1logd(p->log, 1, "spyd2_ReadTempConfig: failed with ICOM err 0x%x\n",se);
 			return spyd2_interp_code((inst *)p, icoms2spyd2_err(se));
 		}
 		msec_sleep(500);
-		if (isdeb) fprintf(stderr,"\nspyd2: Read Temp Config retry with ICOM err 0x%x\n",se);
+		a1logd(p->log, 1, "spyd2_ReadTempConfig: retry with ICOM err 0x%x\n",se);
 	}
 
 	_val = pbuf[0];
 
-	if (isdeb) fprintf(stderr,"Read Temp Config returns %d ICOM err 0x%x\n", _val, se);
-
-	p->icom->debug = isdeb;
+	a1logd(p->log, 3, "spyd2_ReadTempConfig: returning %d ICOM err 0x%x\n", _val, se);
 
 	if (val != NULL) *val = _val;
 
@@ -1319,17 +1190,11 @@ spyd2_WriteReg(
 	int val			/* 8 bit temp config register value */
 ) {
 	int se;
-	int isdeb = 0;
 	inst_code rv = inst_ok;
 	int value;
 	int retr;
 
-	/* Turn off low level debug messages, and sumarise them here */
-	isdeb = p->icom->debug;
-	p->icom->debug = 0;
-
-	if (isdeb >= 2)
-		fprintf(stderr,"\nspyd2: Write val %d to Register %d\n",reg, val);
+	a1logd(p->log, 3, "spyd2_WriteReg: val %d to register %d\n",reg, val);
 
 	if (val < 0)
 		val = 0;
@@ -1343,23 +1208,20 @@ spyd2_WriteReg(
 	for (retr = 0; ; retr++) {
 		/* Issue the trigger command */
 		se = p->icom->usb_control(p->icom,
-		               USB_ENDPOINT_OUT | USB_TYPE_VENDOR | USB_RECIP_DEVICE,
+		               IUSB_ENDPOINT_OUT | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
 	                   0xE2, value, 0, NULL, 0, 5.0);
 
 		if (se == ICOM_OK) {
-			if (isdeb) fprintf(stderr,"Write Register OK, ICOM code 0x%x\n",se);
+			a1logd(p->log, 5, "spyd2_WriteReg: OK, ICOM code 0x%x\n",se);
 			break;
 		}
-		if ((se & ICOM_USERM) || retr >= RETRIES ) {
-			if (isdeb) fprintf(stderr,"\nspyd2: Write Register failed with  ICOM err 0x%x\n",se);
-			p->icom->debug = isdeb;
+		if (retr >= RETRIES) {
+			a1logd(p->log, 5, "spyd2_WriteReg: failed with  ICOM err 0x%x\n",se);
 			return spyd2_interp_code((inst *)p, icoms2spyd2_err(se));
 		}
 		msec_sleep(500);
-		if (isdeb) fprintf(stderr,"\nspyd2: Write Register retry with ICOM err 0x%x\n",se);
+		a1logd(p->log, 5, "spyd2_WriteReg: retry with ICOM err 0x%x\n",se);
 	}
-
-	p->icom->debug = isdeb;
 
 	return rv;
 }
@@ -1376,40 +1238,32 @@ spyd2_ReadRegister(
 	int ival;
 //	double _val;
 	int se;
-	int isdeb = 0;
 	int retr;
 	inst_code rv = inst_ok;
 
-	/* Turn off low level debug messages, and sumarise them here */
-	isdeb = p->icom->debug;
-	p->icom->debug = 0;
-
 	reg &= 0xff;
 
-	if (isdeb) fprintf(stderr,"\nspyd2: Read Register %d\n",reg);
+	a1logd(p->log, 3, "spyd2_ReadRegister: register %d\n",reg);
 
 	for (retr = 0; ; retr++) {
 		se = p->icom->usb_control(p->icom,
-		               USB_ENDPOINT_IN | USB_TYPE_VENDOR | USB_RECIP_DEVICE,
+		               IUSB_ENDPOINT_IN | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
 	                   0xE0, reg, 0, pbuf, 2, 5.0);
 
 		if (se == ICOM_OK)
 			break;
-		if ((se & ICOM_USERM) || retr >= RETRIES ) {
-			if (isdeb) fprintf(stderr,"\nspyd2: Read Register failed with ICOM err 0x%x\n",se);
-			p->icom->debug = isdeb;
+		if (retr >= RETRIES) {
+			a1logd(p->log, 1, "spyd2_ReadRegister: failed with ICOM err 0x%x\n",se);
 			return spyd2_interp_code((inst *)p, icoms2spyd2_err(se));
 		}
 		msec_sleep(500);
-		if (isdeb) fprintf(stderr,"\nspyd2: Read Register retry with ICOM err 0x%x\n",se);
+		a1logd(p->log, 1, "spyd2_ReadRegister: retry with ICOM err 0x%x\n",se);
 	}
 
 	ival = buf2ushort(&pbuf[0]);
 //	_val = (double)ival * 12.5;		/* Read temperature */
 
-	if (isdeb) fprintf(stderr,"Read Register %d returns %d ICOM err 0x%x\n", ival, rv, se);
-
-	p->icom->debug = isdeb;
+	a1logd(p->log, 1, "spyd2_ReadRegister: reg %d returning %d ICOM err 0x%x\n", ival, rv, se);
 
 	if (pval != NULL) *pval = ival;
 
@@ -1535,7 +1389,7 @@ static void spyd4_crc32_init(void) {
                 crc = crc >> 1;
         }
         spyd4_crctab[i] = crc;
-//		printf("crctab[%d] = 0x%08x\n",i,crctab[i]);
+//		a1logd(p->log, 1, "spyd4_crc32_init: crctab[%d] = 0x%08x\n",i,crctab[i]);
     }
 }
 
@@ -1573,7 +1427,7 @@ spyd2_checkEECRC(
 		crc = spyd4_crctab[(crc ^ *bp) & 0xff] ^ (crc >> 8);
     crc = ~crc;
 
-	if (p->debug) fprintf(stderr,"spyd2: EEProm CRC is 0x%x, should be 0x%x\n",crc,crct);
+	a1logd(p->log, 4, "spyd2_checkEECRC: EEProm CRC is 0x%x, should be 0x%x\n",crc,crct);
 
 	if (crc != crct)
 		return spyd2_interp_code((inst *)p, SPYD2_BAD_EE_CRC);
@@ -1647,20 +1501,21 @@ spyd2_rdreg_7x41xshort(
 	return inst_ok;
 }
 
-/* Get refresh rate command. Return 0.0 */
+/* Get refresh rate command. Set it to DEFRRATE if not detectable */
 /* if no refresh rate can be established */
 /* (This isn't used by the manufacturers Spyder3/4 driver, */
 /*  but the instrument seems to impliment it.) */
 static inst_code
-spyd2_GetRefRate(
-	spyd2 *p,
-	double *refrate		/* return the refresh rate */
+spyd2_read_refrate(
+	inst *pp,
+	double *ref_rate
 ) {
+	spyd2 *p = (spyd2 *)pp;
 	inst_code ev;
 	int clocks;			/* Clocks to run commands */
 	int min, max;		/* min and max light intensity frequency periods */
 
-	if (p->debug) fprintf(stderr,"spyd2: about to get the refresh rate\n");
+	a1logd(p->log, 3, "spyd2_read_refrate: called\n");
 
 	/* Establish the frame rate detect threshold level */
 	clocks = (10 * CLKRATE)/DEFRRATE;
@@ -1669,8 +1524,10 @@ spyd2_GetRefRate(
 		return ev; 
 
 	if (min == 0 || max < (5 * min)) {
-		if (p->debug) fprintf(stderr,"spyd2: no refresh rate detectable\n");
-		*refrate = 0.0;
+		a1logd(p->log, 3, "spyd2_read_refrate: no refresh rate detectable\n");
+		if (ref_rate != NULL)
+			*ref_rate = 0.0;
+		return inst_ok;
 	} else {
 		int frclocks;		/* notional clocks per frame */
 		int nframes;		/* Number of frames to count */
@@ -1691,10 +1548,39 @@ spyd2_GetRefRate(
 			return ev; 
 
 		/* Compute the refresh rate */
-		*refrate = ((double)nframes * (double)CLKRATE)/(double)clkcnt;
-		if (p->debug) fprintf(stderr,"spyd2: refresh rate is %f Hz\n",*refrate);
+		if (ref_rate != NULL)
+			*ref_rate = ((double)nframes * (double)CLKRATE)/(double)clkcnt;
+		return inst_ok;
 	}
-	return ev;
+}
+
+/* Get refresh rate command. Set it to DEFRRATE if not detectable */
+/* if no refresh rate can be established */
+/* (This isn't used by the manufacturers Spyder3/4 driver, */
+/*  but the instrument seems to impliment it.) */
+static inst_code
+spyd2_GetRefRate(
+	spyd2 *p
+) {
+	int i;
+	inst_code ev;
+
+	a1logd(p->log, 3, "Frequency calibration called\n");
+
+	if ((ev = spyd2_read_refrate((inst *)p, &p->refrate)) != inst_ok) {
+		return ev;
+	}
+	if (p->refrate != 0.0) {
+		a1logd(p->log, 3, "spyd2_GetRefRate: refresh rate is %f Hz\n",p->refrate);
+		p->refrvalid = 1;
+	} else {
+		a1logd(p->log, 3, "spyd2_GetRefRate: no refresh rate detectable\n");
+		p->refrate = DEFRRATE;
+		p->refrvalid = 0;
+	}
+	p->rrset = 1;
+
+	return inst_ok;
 }
 
 /* Do a reading. */
@@ -1723,19 +1609,19 @@ spyd2_GetReading(
 	int i, j, k;
 	double inttime = 0.0;
 
-	if (p->debug) fprintf(stderr,"spyd2: about to get a reading\n");
+	a1logd(p->log, 3, "spyd2_GetReading: called\n");
 
-	if (p->ref)
+	if (p->refrmode)
 		inttime = RINTTIME;		/* ie. 1 second */
 	else
 		inttime = NINTTIME;		/* ie. 1 second */
 
 	/* Compute number of frames for desired base read time */
-	nframes = (int)(inttime * p->rrate + 0.5);
+	nframes = (int)(inttime * p->refrate + 0.5);
 
 	/* Establish the frame rate detect threshold level */
 	/* (The Spyder 3 doesn't use this ?) */
-	clocks1 = (int)((nframes * CLKRATE)/(10 * p->rrate) + 0.5);		/* Use 10% of measurement clocks */
+	clocks1 = (int)((nframes * CLKRATE)/(10 * p->refrate) + 0.5);		/* Use 10% of measurement clocks */
 
 	if ((ev = spyd2_GetMinMax(p, &clocks1, &min, &max)) != inst_ok)
 		return ev; 
@@ -1744,24 +1630,28 @@ spyd2_GetReading(
 	thresh = (max - min)/5 + min;			/* Threshold is at 80% of max brightness */
 	if (thresh == 0)
 		thresh = 65535;						/* Set to max, otherwise reading will be 0 */
-	frclocks = (int)(CLKRATE/p->rrate + 0.5);	/* Nominal clocks per frame */
+	frclocks = (int)(CLKRATE/p->refrate + 0.5);	/* Nominal clocks per frame */
 	minfclks = frclocks/3;					/* Allow for 180 Hz */
 	maxfclks = (frclocks * 5)/2;			/* Allow for 24 Hz */
 
 	if (p->hwver < 7) {
 		/* Check calibration is valid */
-		if (p->calix == 0 && (p->fbits & 1) == 0)
-			return spyd2_interp_code((inst *)p, SPYD2_NOCRTCAL);
+		if ((p->icx & 1) == 0 && (p->fbits & 1) == 0) {
+//			return spyd2_interp_code((inst *)p, SPYD2_NOCRTCAL);
+			a1logd(p->log, 1, "spyd2_GetReading: instrument appears to have no CRT calibration "
+			                                                     "table! Proceeding anyway..\n");
+		}
 	
-		if (p->calix == 1 && (p->fbits & 2) == 0)
-			return spyd2_interp_code((inst *)p, SPYD2_NOLCDCAL);
+		if ((p->icx & 1) == 1 && (p->fbits & 2) == 0) {
+//			return spyd2_interp_code((inst *)p, SPYD2_NOLCDCAL);
+			a1logd(p->log, 1, "spyd2_GetReading: instrument appears to have no LCD calibration "
+			                                                     "table! Proceeding anyway..\n");
+		}
 	}
 
-	if (p->debug) {
-		fprintf(stderr,"Using cal table %d\n",p->calix);
-		if (p->hwver)
-			fprintf(stderr,"Using spectral cal table %d\n",p->calix4);
-	}
+	a1logd(p->log, 3, "spyd2_GetReading: Using cal table %d\n",(p->icx & 1));
+	if (p->hwver)
+		a1logd(p->log, 3, "spyd2_GetReading: using spectral cal table %d\n",p->icx >> 1);
 
 	for (k = 0; k < 8; k++) 	/* Zero weighted average */
 		a_sensv[k] = a_w[k] = 0.0;
@@ -1770,20 +1660,20 @@ spyd2_GetReading(
 	for (i = 0;; i++) {
 		double itime;		/* Integration time */
 
-		clocks2 = (int)((double)nframes/p->rrate * (double)CLKRATE + 0.5);
+		clocks2 = (int)((double)nframes/p->refrate * (double)CLKRATE + 0.5);
 
 		if ((ev = spyd2_GetReading_ll(p, &clocks2, nframes, thresh, &minfclks, &maxfclks,
 		                                 sensv, &maxtcnt, &mintcnt)) != inst_ok)
 			return ev; 
-//printf("~1 returned number of clocks = %d\n",clocks2);
+//		a1logd(p->log, 3, "spyd2_GetReading: returned number of clocks = %d\n",clocks2);
 
-		if (p->debug) {
+		if (p->log->debug >= 3) {
 			for (k = 0; k < 8; k++)
-				fprintf(stderr,"Sensor %d value = %f\n",k,sensv[k]);
+				a1logd(p->log, 3, "Sensor %d value = %f\n",k,sensv[k]);
 		}
 
 		itime = (double)clocks2 / (double)CLKRATE;
-//printf("~1 reading %d was %f secs\n",i,itime);
+//		a1logd(p->log, 3, "spyd2_GetReading: reading %d was %f secs\n",i,itime);
 
 		/* Accumulate it for weighted average */
 		for (k = 0; k < 8; k++) {
@@ -1794,8 +1684,7 @@ spyd2_GetReading(
 		}
 		
 #ifdef DO_ADAPTIVE
-		if (p->debug)
-			fprintf(stderr,"Maxtcnt = %d, Mintcnt = %d\n",maxtcnt,mintcnt);
+		a1logd(p->log, 3, "spyd2_GetReading: Maxtcnt = %d, Mintcnt = %d\n",maxtcnt,mintcnt);
 		if (i > 0)
 			break;			/* Done adaptive */
 
@@ -1803,18 +1692,19 @@ spyd2_GetReading(
 
 		if (maxtcnt <= (100/16)) {
 			nframes *= 16;			/* Typically 16 seconds */
-			if (p->debug) fprintf(stderr,"Using maximum integration time\n");
+			a1logd(p->log, 3, "spyd2_GetReading: using maximum integration time\n");
 		} else if (maxtcnt < 100) {
 			double mulf;
 			mulf = 100.0/maxtcnt;
 			mulf -= 0.8;			/* Just want to accumulate up to target, not re-do it */
 			nframes = (int)(nframes * mulf + 0.5);
-			if (p->debug) fprintf(stderr,"Increasing total integration time by %.1f times\n",1+mulf);
+			a1logd(p->log, 3, "spyd2_GetReading: increasing total integration time "
+			                                               "by %.1f times\n",1+mulf);
 		} else {
 			break;			/* No need for another reading */
 		}
 #else /* !DO_ADAPTIVE */
-		fprintf(stderr,"!!!! Spyder 2 DO_ADAPTIVE is off !!!!\n");
+		a1logw(p->log, "!!!! Spyder 2 DO_ADAPTIVE is off !!!!\n");
 		break;
 #endif /* !DO_ADAPTIVE */
 	}
@@ -1834,26 +1724,27 @@ spyd2_GetReading(
 			return ev; 
 
 		gainscale = (double)v381/p->gain;
-		if (p->debug) fprintf(stderr,"spyd2: hwver5 v381 = %d, gain = %f, gainscale = %f\n",v381,p->gain,gainscale);
+		a1logd(p->log, 3, "spyd2_GetReading: hwver5 v381 = %d, gain = %f, gainscale = %f\n",
+		                                                         v381,p->gain,gainscale);
 		/* Convert sensor readings to XYZ value */
 		for (j = 0; j < 3; j++) {
-			XYZ[j] = p->cal_A[p->calix][j][0];		/* First entry is a constant */
+			XYZ[j] = p->cal_A[p->icx & 1][j][0];		/* First entry is a constant */
 			for (k = 1; k < 8; k++)
-				XYZ[j] += a_sensv[k] * p->cal_A[p->calix][j][k+2] * gainscale;
+				XYZ[j] += a_sensv[k] * p->cal_A[p->icx & 1][j][k+2] * gainscale;
 		}
 
 	} else {
 		/* Convert sensor readings to XYZ value */
 		for (j = 0; j < 3; j++) {
-			XYZ[j] = p->cal_A[p->calix][j][0];		/* First entry is a constant */
+			XYZ[j] = p->cal_A[p->icx & 1][j][0];		/* First entry is a constant */
 			for (k = 1; k < 8; k++)
-				XYZ[j] += a_sensv[k] * p->cal_A[p->calix][j][k+1];
+				XYZ[j] += a_sensv[k] * p->cal_A[p->icx & 1][j][k+1];
 		}
 	}
 
-//printf("~1 real Y = %f\n",XYZ[1]);
+//	a1logd(p->log, 3, "spyd2_GetReading: real Y = %f\n",XYZ[1]);
+	a1logd(p->log, 3, "spyd2_GetReading: initial XYZ reading %f %f %f\n",XYZ[0], XYZ[1], XYZ[2]);
 
-	if (p->debug) fprintf(stderr,"spyd2: got initial XYZ reading %f %f %f\n",XYZ[0], XYZ[1], XYZ[2]);
 #ifdef LEVEL2
 	/* Add "level 2" correction factors */
 	pows[0] = XYZ[0];
@@ -1871,10 +1762,10 @@ spyd2_GetReading(
 		XYZ[j] = 0.0;
 
 		for (k = 0; k < 9; k++) {
-			XYZ[j] += pows[k] * p->cal_B[p->calix][j][k];
+			XYZ[j] += pows[k] * p->cal_B[p->icx & 1][j][k];
 		}
 	}
-	if (p->debug) fprintf(stderr,"spyd2: got 2nd level XYZ reading %f %f %f\n",XYZ[0], XYZ[1], XYZ[2]);
+	a1logd(p->log, 3, "spyd2_GetReading: 2nd level XYZ reading %f %f %f\n",XYZ[0], XYZ[1], XYZ[2]);
 #endif
 
 	/* Protect against silliness (This may stuff up averages though!) */
@@ -1882,7 +1773,7 @@ spyd2_GetReading(
 		if (XYZ[j] < 0.0)
 			XYZ[j] = 0.0;
 	}
-	if (p->debug) fprintf(stderr,"spyd2: got final XYZ reading %f %f %f\n",XYZ[0], XYZ[1], XYZ[2]);
+	a1logd(p->log, 3, "spyd2_GetReading: final XYZ reading %f %f %f\n",XYZ[0], XYZ[1], XYZ[2]);
 
 	return ev;
 }
@@ -1920,7 +1811,7 @@ spyd2_GetAmbientReading(
 	double sfact;
 	int i;
 
-	if (p->debug) fprintf(stderr,"spyd2: about to get an ambient reading\n");
+	a1logd(p->log, 3, "spyd2_GetAmbientReading: called\n");
 
 	/* Set the ambient control register to 3 */
 	if ((ev = spyd2_SetAmbReg(p, 3)) != inst_ok)
@@ -1932,7 +1823,7 @@ spyd2_GetAmbientReading(
 	/* Read the ambient timing config value */
 	if ((ev = spyd2_ReadAmbTiming(p, &tconf)) != inst_ok)
 		return ev;
-//printf("~1 ambient timing = %d\n",tconf);
+//	a1logd(p->log, 4, "spyd2_GetAmbientReading: timing = %d\n",tconf);
 
 	/* Read the ambient values */
 	if ((ev = spyd2_ReadAmbChan(p, 0, &iamb0)) != inst_ok)
@@ -1940,7 +1831,7 @@ spyd2_GetAmbientReading(
 	if ((ev = spyd2_ReadAmbChan(p, 1, &iamb1)) != inst_ok)
 		return ev;
 
-//printf("~1 ambient values = %d, %d\n",iamb0,iamb1);
+//	a1logd(p->log, 4, "spyd2_GetAmbientReading: values = %d, %d\n",iamb0,iamb1);
 	amb0 = iamb0/128.0;
 	amb1 = iamb1/128.0;
 
@@ -1971,11 +1862,11 @@ spyd2_GetAmbientReading(
 		if (trv <= thr[i])
 			break;
 	}
-//printf("~1 trv = %f, s0 = %f, s1 = %f\n",trv, s0[i],s1[i]);
+//	a1logd(p->log, 4, "spyd2_GetAmbientReading: trv = %f, s0 = %f, s1 = %f\n",trv, s0[i],s1[i]);
 	/* Compute ambient in Lux */
 	amb = s0[i] * amb0 - s1[i] * amb1;
 		
-//printf("~1 combined ambient = %f Lux\n",amb);
+//	a1logd(p->log, 4, "spyd2_GetAmbientReading: combined ambient = %f Lux\n",amb);
 	/* Compute the Y value */
 
 	XYZ[1] = amb;						/* cd/m^2 ??? - not very accurate, due to */
@@ -1983,7 +1874,7 @@ spyd2_GetAmbientReading(
 	XYZ[0] = icmD50.X * XYZ[1];			/* Convert to D50 neutral */
 	XYZ[2] = icmD50.Z * XYZ[1];
 
-	if (p->debug) fprintf(stderr,"spyd2: got ambient reading %f %f %f\n",XYZ[0],XYZ[1],XYZ[2]);
+	a1logd(p->log, 3, "spyd2_GetAmbientReading: returning %f %f %f\n",XYZ[0],XYZ[1],XYZ[2]);
 
 	return ev;
 }
@@ -2003,7 +1894,7 @@ spyd4_set_cal(
 	int ix			/* Selection, 0 .. spyd4_nocals-1 */ 
 ) {
 	int i, j, k;
-	xspect oc[3];			/* The XYZ observer curves */
+	xspect *oc[3];			/* The XYZ observer curves */
 
 	if (ix < 0 || ix >= spyd4_nocals) {
 		return spyd2_interp_code((inst *)p, SPYD2_DISP_SEL_RANGE) ;
@@ -2016,7 +1907,7 @@ spyd4_set_cal(
 	/* default calibration selections, to be faithful to the Manufacturers */
 	/* intentions. */
 
-	if (standardObserver(&oc[0], &oc[1], &oc[2], icxOT_CIE_1931_2)) {
+	if (standardObserver(oc, icxOT_CIE_1931_2)) {
 		return spyd2_interp_code((inst *)p, SPYD2_DISP_SEL_RANGE) ;
 	}
 
@@ -2030,7 +1921,7 @@ spyd4_set_cal(
 		/* and mW Lumoinance efficiency factor. */
 		for (i = 0; i < 81; i++) {
 			double nm = 380.0 + i * 5.0;
-			target[i] = value_xspect(&spyd4_cals[ix], nm) * value_xspect(&oc[k], nm) * 0.683002;
+			target[i] = value_xspect(&spyd4_cals[ix], nm) * value_xspect(oc[k], nm) * 0.683002;
 		}
 
 		/* Load up the sensor curves and weight by the display spectrum */
@@ -2061,7 +1952,7 @@ spyd4_set_cal(
 			if (matrix_mult(&cc, 1, 7, &tt, 1, 81, psisens, 81, 7))
 				return spyd2_interp_code((inst *)p, SPYD2_CAL_FAIL) ;
 			}
-//			printf("Cal %d = %f %f %f %f %f %f %f\n", k, p->cal_A[1][k][2], p->cal_A[1][k][3], p->cal_A[1][k][4], p->cal_A[1][k][5], p->cal_A[1][k][6], p->cal_A[1][k][7], p->cal_A[1][k][8]);
+//			a1logd(p->log, 3, "Cal %d = %f %f %f %f %f %f %f\n", k, p->cal_A[1][k][2], p->cal_A[1][k][3], p->cal_A[1][k][4], p->cal_A[1][k][5], p->cal_A[1][k][6], p->cal_A[1][k][7], p->cal_A[1][k][8]);
 		}
 
 #ifdef PLOT_SPECTRA
@@ -2121,7 +2012,6 @@ spyd4_set_cal(
 	}
 #endif /* SAVE_STDXYZ */
 	
-	p->calix4 = ix;
 	return inst_ok;
 }
 
@@ -2143,8 +2033,8 @@ spyd4_comp_calmat(
 	spyd2 *p,
 	icxObserverType obType,	/* XYZ Observer type */
 	xspect custObserver[3],	/* Optional custom observer */					\
-	xspect *samples,	/* Array of nsamp spectral samples */
-	int nsamp			/* Number of real samples */
+	xspect *samples,		/* Array of nsamp spectral samples */
+	int nsamp				/* Number of real samples */
 ) {
 	int i, j;
 	int nasamp = nsamp + 81; /* Number of real + augmented samples */
@@ -2171,12 +2061,12 @@ spyd4_comp_calmat(
 	}
 
 	/* Compute XYZ of the real sample array. */
-	if ((conv = new_xsp2cie(icxIT_none, NULL, obType, custObserver, icSigXYZData)) == NULL)
+	if ((conv = new_xsp2cie(icxIT_none, NULL, obType, custObserver, icSigXYZData, icxClamp)) == NULL)
 		return spyd2_interp_code((inst *)p, SPYD2_INT_CIECONVFAIL);
 	sampXYZ = dmatrix(0, nasamp-1, 0, 3-1);
 	for (i = 0; i < nsamp; i++) {
 		conv->convert(conv, sampXYZ[i], &samples[i]); 
-//printf("~1 asamp[%d] XYZ = %f %f %f\n", i,sampXYZ[nsamp+i][0],sampXYZ[nsamp+i][1], sampXYZ[nsamp+i][2]);
+//		a1logd(p->log, 3, "asamp[%d] XYZ = %f %f %f\n", i,sampXYZ[nsamp+i][0],sampXYZ[nsamp+i][1], sampXYZ[nsamp+i][2]);
 	}
 
 	/* Create extra spectral samples */
@@ -2186,7 +2076,7 @@ spyd4_comp_calmat(
 			sampXYZ[nsamp+i][j] = exwt * value_xspect(&white, wl)
 			                    * value_xspect(&conv->observer[j], wl) * 0.683002;
 		}
-//printf("~1 asamp[%d] XYZ = %f %f %f\n", i,sampXYZ[nsamp+i][0],sampXYZ[nsamp+i][1], sampXYZ[nsamp+i][2]);
+//		a1logd(p->log, 3, "asamp[%d] XYZ = %f %f %f\n", i,sampXYZ[nsamp+i][0],sampXYZ[nsamp+i][1], sampXYZ[nsamp+i][2]);
 	}
 	conv->del(conv);
 
@@ -2207,12 +2097,12 @@ spyd4_comp_calmat(
 			wl = 380.0 + i * 5;
 			sampSENS[nsamp+i][j] = exwt * value_xspect(&white, wl) * value_xspect(&p->sens[j], wl); 
 		}
-//printf("~1 asamp[%d] Sens = %f %f %f %f %f %f %f\n", i,
-//sampSENS[nsamp+i][0],sampSENS[nsamp+i][1], sampSENS[nsamp+i][2],
-//sampSENS[nsamp+i][3],sampSENS[nsamp+i][4], sampSENS[nsamp+i][5],
-//sampSENS[nsamp+i][6]);
+//		a1logd(p->log, 3, "asamp[%d] Sens = %f %f %f %f %f %f %f\n", i,
+//		       sampSENS[nsamp+i][0],sampSENS[nsamp+i][1], sampSENS[nsamp+i][2],
+//		       sampSENS[nsamp+i][3],sampSENS[nsamp+i][4], sampSENS[nsamp+i][5],
+//		       sampSENS[nsamp+i][6]);
 	}
-#if defined(DEBUG) && defined(PLOT_SPECTRA)
+#if defined(PLOT_SPECTRA_EXTRA)
 	/* Plot the target extra values */
 	{
 		int i, j, k;
@@ -2246,7 +2136,7 @@ spyd4_comp_calmat(
 		printf("The given extra sensor values\n");
 		do_plot10(xx, yp[0], yp[1], yp[2], yp[3], yp[4], yp[5], yp[6], yp[7], yp[8], yp[9], 81, 0);
 	}
-#endif /* PLOT_SPECTRA */
+#endif /* PLOT_SPECTRA_EXTRA */
 
 
 	isampSENS = dmatrix(0, 7-1, 0, nasamp-1);
@@ -2355,7 +2245,7 @@ spyd2_read_all_regs(
 ) {
 	inst_code ev;
 
-	if (p->debug) fprintf(stderr,"spyd2: about to read all the EEProm values\n");
+	a1logd(p->log, 3, "spyd2_read_all_regs: about to read all the EEProm values\n");
 
 	/* HW version */
 	if ((ev = spyd2_rd_ee_uchar(p, &p->hwver, 5)) != inst_ok)
@@ -2365,7 +2255,7 @@ spyd2_read_all_regs(
 	if ((ev = spyd2_rd_ee_uchar(p, &p->fbits, 6)) != inst_ok)
 		return ev;
 
-	if (p->debug >= 1) fprintf(stderr,"hwver = 0x%02x%02x\n",p->hwver,p->fbits);
+	a1logd(p->log, 3, "spyd2_read_all_regs: hwver = 0x%02x%02x\n",p->hwver,p->fbits);
 
 	/* Check the EEProm checksum */
 	if (p->hwver == 7) {
@@ -2377,114 +2267,103 @@ spyd2_read_all_regs(
 	if ((ev = spyd2_readEEProm(p, (unsigned char *)p->serno, 8, 8)) != inst_ok)
 		return ev;
 	p->serno[8] = '\000';
-	if (p->debug >= 4) fprintf(stderr,"serno = '%s'\n",p->serno);
+	a1logd(p->log, 3, "spyd2_read_all_regs: serno = '%s'\n",p->serno);
 
 	if (p->hwver < 7) {
 
+		/* Hmm. We deliberately ignore the fbits 0, 1 & 2 here, in case they are faulty */
 		/* (Not sure if we should look at fbits 1 or not) */
-		if (p->fbits & 1) {
 
-			/* Spyde2: CRT calibration values */
-			/* Spyde3: Unknown calibration values */
-			if ((ev = spyd2_rdreg_3x9xfloat(p, p->cal_A[0][0], p->cal_A[0][1], p->cal_A[0][2], 16))
-			                                                                            != inst_ok)
-				return ev;
-			if ((ev = spyd2_rdreg_3x9xfloat(p, p->cal_B[0][0], p->cal_B[0][1], p->cal_B[0][2], 128))
-			                                                                            != inst_ok)
-				return ev;
-	
-	
-			/* Hmm. The 0 table seems to sometimes be scaled. Is this a bug ? */
-			/* (might be gain factor ?) */
-			/* The spyder 3/4 doesn't use this anyway. */
-			if (p->hwver >= 4) {
-				int j, k, i;
-				double avgmag = 0.0;
-			
-				for (i = j = 0; j < 3; j++) {
-					for (k = 0; k < 9; k++) {
-						if (p->cal_A[0][j][k] != 0.0) {
-							avgmag += fabs(p->cal_A[0][j][k]);
-							i++;
-						}
+		/* Spyde2: CRT calibration values */
+		/* Spyde3: Unknown calibration values */
+		if ((ev = spyd2_rdreg_3x9xfloat(p, p->cal_A[0][0], p->cal_A[0][1], p->cal_A[0][2], 16))
+		                                                                            != inst_ok)
+			return ev;
+		if ((ev = spyd2_rdreg_3x9xfloat(p, p->cal_B[0][0], p->cal_B[0][1], p->cal_B[0][2], 128))
+		                                                                            != inst_ok)
+			return ev;
+
+
+		/* Hmm. The 0 table seems to sometimes be scaled. Is this a bug ? */
+		/* (might be gain factor ?) */
+		/* The spyder 3/4 doesn't use this anyway. */
+		if (p->hwver >= 4) {
+			int j, k, i;
+			double avgmag = 0.0;
+		
+			for (i = j = 0; j < 3; j++) {
+				for (k = 0; k < 9; k++) {
+					if (p->cal_A[0][j][k] != 0.0) {
+						avgmag += fabs(p->cal_A[0][j][k]);
+						i++;
 					}
 				}
-				avgmag /= (double)(i);
-				if (p->debug >= 4) fprintf(stderr,"Cal_A avgmag = %f\n",avgmag);
-	
-				if (avgmag < 0.05) {
-					if (p->debug >= 4) fprintf(stderr,"Scaling Cal_A by 16\n");
-					for (j = 0; j < 3; j++) {
-						for (k = 0; k < 9; k++) {
-							p->cal_A[0][j][k] *= 16.0;
-						}
+			}
+			avgmag /= (double)(i);
+			a1logd(p->log, 4, "spyd2_read_all_regs: Cal_A avgmag = %f\n",avgmag);
+
+			if (avgmag < 0.05) {
+				a1logd(p->log, 5, "spyd2_read_all_regs: Scaling Cal_A by 16\n");
+				for (j = 0; j < 3; j++) {
+					for (k = 0; k < 9; k++) {
+						p->cal_A[0][j][k] *= 16.0;
 					}
 				}
 			}
 		}
 
-		if (p->fbits & 2) {
-			/* Spyder2: LCD calibration values */
-			/* Spyder3: Normal CRT/LCD calibration values */
-			if ((ev = spyd2_rdreg_3x9xfloat(p, p->cal_A[1][0], p->cal_A[1][1], p->cal_A[1][2], 256))
-			                                                                            != inst_ok)
-				return ev;
-			if ((ev = spyd2_rdreg_3x9xfloat(p, p->cal_B[1][0], p->cal_B[1][1], p->cal_B[1][2], 384))
-			                                                                            != inst_ok)
-				return ev;
-		}
+		/* Spyder2: LCD calibration values */
+		/* Spyder3: Normal CRT/LCD calibration values */
+		if ((ev = spyd2_rdreg_3x9xfloat(p, p->cal_A[1][0], p->cal_A[1][1], p->cal_A[1][2], 256))
+		                                                                            != inst_ok)
+			return ev;
+		if ((ev = spyd2_rdreg_3x9xfloat(p, p->cal_B[1][0], p->cal_B[1][1], p->cal_B[1][2], 384))
+		                                                                            != inst_ok)
+			return ev;
 
 		/* The monochrome "TOKIOBLUE" calibration */
 		/* (Not sure if this is fbits 2 and 4 or not) */
-		if (p->fbits & 4) {
 
-			/* Luminence only calibration values ??? */
-			if ((ev = spyd2_rdreg_float(p, &p->cal_F[0], 240)) != inst_ok)
-				return ev;
-			if ((ev = spyd2_rdreg_float(p, &p->cal_F[1], 244)) != inst_ok)
-				return ev;
-			if ((ev = spyd2_rdreg_float(p, &p->cal_F[2], 248)) != inst_ok)
-				return ev;
-			if ((ev = spyd2_rdreg_float(p, &p->cal_F[3], 252)) != inst_ok)
-				return ev;
-			if ((ev = spyd2_rdreg_float(p, &p->cal_F[4], 364)) != inst_ok)
-				return ev;
-			if ((ev = spyd2_rdreg_float(p, &p->cal_F[5], 368)) != inst_ok)
-				return ev;
-			if ((ev = spyd2_rdreg_float(p, &p->cal_F[6], 372)) != inst_ok)
-				return ev;
-		}
+		/* Luminence only calibration values ??? */
+		if ((ev = spyd2_rdreg_float(p, &p->cal_F[0], 240)) != inst_ok)
+			return ev;
+		if ((ev = spyd2_rdreg_float(p, &p->cal_F[1], 244)) != inst_ok)
+			return ev;
+		if ((ev = spyd2_rdreg_float(p, &p->cal_F[2], 248)) != inst_ok)
+			return ev;
+		if ((ev = spyd2_rdreg_float(p, &p->cal_F[3], 252)) != inst_ok)
+			return ev;
+		if ((ev = spyd2_rdreg_float(p, &p->cal_F[4], 364)) != inst_ok)
+			return ev;
+		if ((ev = spyd2_rdreg_float(p, &p->cal_F[5], 368)) != inst_ok)
+			return ev;
+		if ((ev = spyd2_rdreg_float(p, &p->cal_F[6], 372)) != inst_ok)
+			return ev;
 
-		if (p->debug >= 4) {
+		if (p->log->debug >= 4) {
 			int i, j, k;
 
-			if (p->fbits & 1) {
-				fprintf(stderr,"Cal_A:\n");
-				for (i = 0; i < 2;i++) {
-					for (j = 0; j < 3; j++) {
-						for (k = 0; k < 9; k++) {
-							fprintf(stderr,"Cal_A [%d][%d][%d] = %f\n",i,j,k,p->cal_A[i][j][k]);
-						}
+			a1logd(p->log, 4, "Cal_A:\n");
+			for (i = 0; i < 2;i++) {
+				for (j = 0; j < 3; j++) {
+					for (k = 0; k < 9; k++) {
+						a1logd(p->log, 4, "Cal_A [%d][%d][%d] = %f\n",i,j,k,p->cal_A[i][j][k]);
 					}
 				}
 			}
-			if (p->fbits & 2) {
-				fprintf(stderr,"\nCal_B:\n");
-				for (i = 0; i < 2;i++) {
-					for (j = 0; j < 3; j++) {
-						for (k = 0; k < 9; k++) {
-							fprintf(stderr,"Cal_B [%d][%d][%d] = %f\n",i,j,k,p->cal_B[i][j][k]);
-						}
+			a1logd(p->log, 4, "\nCal_B:\n");
+			for (i = 0; i < 2;i++) {
+				for (j = 0; j < 3; j++) {
+					for (k = 0; k < 9; k++) {
+						a1logd(p->log, 4, "Cal_B [%d][%d][%d] = %f\n",i,j,k,p->cal_B[i][j][k]);
 					}
 				}
 			}
-			if (p->fbits & 4) {
-				fprintf(stderr,"\nCal_F:\n");
-				for (i = 0; i < 7;i++) {
-					fprintf(stderr,"Cal_F [%d] = %f\n",i,p->cal_F[i]);
-				}
+			a1logd(p->log, 4, "\nCal_F:\n");
+			for (i = 0; i < 7;i++) {
+				a1logd(p->log, 4, "Cal_F [%d] = %f\n",i,p->cal_F[i]);
 			}
-			fprintf(stderr,"\n");
+			a1logd(p->log, 4, "\n");
 		}
 
 	} else if (p->hwver == 7) {
@@ -2569,7 +2448,7 @@ spyd2_read_all_regs(
 
 	}
 
-	if (p->debug) fprintf(stderr,"spyd2: all EEProm read OK\n");
+	a1logd(p->log, 3, "spyd2_read_all_regs: all EEProm read OK\n");
 
 	return inst_ok;
 }
@@ -2590,10 +2469,10 @@ spyd2_download_pld(
 	int stat;
 	int i;
 
-	if (p->debug) fprintf(stderr,"spyd2: about to download the PLD pattern\n");
+	a1logd(p->log, 2, "spyd2_download_pld: called\n");
 
 	if (*spyder2_pld_size == 0 || *spyder2_pld_size == 0x11223344) {
-		if (p->debug) fprintf(stderr,"spyd2: No PLD pattern available! (have you run spyd2en ?)\n");
+		a1logd(p->log, 1, "spyd2_download_pld: No PLD pattern available! (have you run spyd2en ?)\n");
 		return spyd2_interp_code((inst *)p, SPYD2_NO_PLD_PATTERN) ;
 	}
 		
@@ -2616,11 +2495,11 @@ spyd2_download_pld(
 		return ev;
 
 	if (stat != 0) {
-		if (p->debug) fprintf(stderr,"spyd2: PLD download failed!\n");
+		a1logd(p->log, 1, "spyd2_download_pld: PLD download failed!\n");
 		return spyd2_interp_code((inst *)p, SPYD2_PLDLOAD_FAILED);
 	}
 
-	if (p->debug) fprintf(stderr,"spyd2: PLD pattern downloaded\n");
+	a1logd(p->log, 2, "spyd2_download_pld: PLD download OK\n");
 
 	msec_sleep(500);
 #ifdef DO_RESETEP				/* Do the miscelanous resetep()'s */
@@ -2638,7 +2517,7 @@ spyd2_download_pld(
 /* Load the manufacturers Spyder4 calibration data */
 /* Return a SPYD2_ error value */
 static int
-spyd4_load_cal(int debug) {
+spyd4_load_cal(spyd2 *p) {
 	char **bin_paths = NULL;
 	int no_paths = 0;
 	unsigned int size;
@@ -2651,8 +2530,11 @@ spyd4_load_cal(int debug) {
 	if (spyd4_nocals != 0)
 		return SPYD2_OK;
 
+
 	for (;;) {		/* So we can break */
-		if ((no_paths = xdg_bds(NULL, &bin_paths, xdg_data, xdg_read, xdg_user, "color/spyd4cal.bin")) < 1)
+		if ((no_paths = xdg_bds(NULL, &bin_paths, xdg_data, xdg_read, xdg_user,
+			            "ArgyllCMS/spyd4cal.bin" XDG_FUDGE "color/spyd4cal.bin"
+			)) < 1)
 			break;
 
 		/* open binary file */
@@ -2676,14 +2558,14 @@ spyd4_load_cal(int debug) {
 
 		if ((size % (41 * 8)) != 0) {
 			fclose(fp);
-			if (debug) fprintf(stderr,"spyd2: calibration file '%s' is unexpected size\n",bin_paths[0]);
+			a1logd(p->log, 1, "spyd4_load_cal: calibration file '%s' is unexpected size\n",bin_paths[0]);
 			break;
 		}
 
 		nocals = size/(41 * 8);
 		if (nocals != 6) {
 			fclose(fp);
-			if (debug) fprintf(stderr,"spyd2: calibration file '%s' is unexpected number of calibrations (%d)\n",bin_paths[0],nocals);
+			a1logd(p->log, 1, "spyd4_load_cal: calibration file '%s' is unexpected number of calibrations (%d)\n",bin_paths[0],nocals);
 			break;
 		}
 
@@ -2732,7 +2614,7 @@ spyd4_load_cal(int debug) {
 
 				val = buf2ord64(bp);
 				spyd4_cals[i].spec[j] = IEEE754_64todouble(val);
-//				printf("cal[%d][%d] = %f\n",i,j,spyd4_cals[i].spec[j]);
+//				a1logd(p->log, 3, "cal[%d][%d] = %f\n",i,j,spyd4_cals[i].spec[j]);
 			}
 		}
 
@@ -2762,21 +2644,19 @@ spyd4_load_cal(int debug) {
 /* If it's a serial port, use the baud rate given, and timeout in to secs */
 /* Return DTP_COMS_FAIL on failure to establish communications */
 static inst_code
-spyd2_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) {
+spyd2_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	spyd2 *p = (spyd2 *) pp;
+	int se;
 	icomuflags usbflags = icomuf_none;
 
-	if (p->debug) {
-		p->icom->debug = p->debug;	/* Turn on debugging */
-		fprintf(stderr,"spyd2: About to init coms\n");
+	a1logd(p->log, 2, "spyd2_init_coms: about to init coms\n");
+
+	if (p->icom->port_type(p->icom) != icomt_usb) {
+		a1logd(p->log, 1, "spyd2_init_coms: coms is not the right type!\n");
+		return spyd2_interp_code((inst *)p, SPYD2_UNKNOWN_MODEL);
 	}
 
-	if (p->icom->is_usb_portno(p->icom, port) == instUnknown) {
-		if (p->debug) fprintf(stderr,"spyd2: init_coms called to wrong device!\n");
-			return spyd2_interp_code((inst *)p, SPYD2_UNKNOWN_MODEL);
-	}
-
-	if (p->debug) fprintf(stderr,"spyd2: About to init USB\n");
+	a1logd(p->log, 2, "spyd2_init_coms: about to init USB\n");
 
 	/* On MSWindows the Spyder 3 doesn't work reliably unless each */
 	/* read is preceeded by a reset endpoint. */
@@ -2793,14 +2673,14 @@ spyd2_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) 
 #endif
 
 	/* On OS X the Spyder 2 can't close properly */
-#if defined(UNIX) && defined(__APPLE__)			/* OS X*/
+#if defined(__APPLE__)			/* OS X*/
 	if (p->itype == instSpyder2) {
 		usbflags |= icomuf_reset_before_close;		/* The spyder 2 USB is buggy ? */
 	}
 #endif
 
 #ifdef NEVER	/* Don't want this now that we avoid 2nd set_config on Linux */
-#if defined(UNIX) && !defined(__APPLE__)		/* Linux*/
+#if defined(UNIX_X11)		/* Linux*/
 	/* On Linux the Spyder 2 doesn't work reliably unless each */
 	/* read is preceeded by a reset endpoint. */
 	if (p->itype == instSpyder2) {
@@ -2811,13 +2691,18 @@ spyd2_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) 
 
 	/* Set config, interface, write end point, read end point */
 	/* ("serial" end points aren't used - the spyd2lay uses USB control messages) */
-	p->icom->set_usb_port(p->icom, port, 1, 0x00, 0x00, usbflags, 0, NULL); 
+	if ((se = p->icom->set_usb_port(p->icom, 1, 0x00, 0x00, usbflags, 0, NULL)) != ICOM_OK) { 
+		a1logd(p->log, 1, "spyd2_init_coms: failed ICOM err 0x%x\n",se);
+		return spyd2_interp_code((inst *)p, icoms2spyd2_err(se));
+	}
 
-	if (p->debug) fprintf(stderr,"spyd2: init coms has suceeded\n");
+	a1logd(p->log, 2, "spyd2_init_coms: suceeded\n");
 
 	p->gotcoms = 1;
 	return inst_ok;
 }
+
+static inst_code set_default_disp_type(spyd2 *p);
 
 /* Initialise the SPYD2 */
 /* return non-zero on an error, with an inst_code */
@@ -2828,7 +2713,7 @@ spyd2_init_inst(inst *pp) {
 	int stat;
 	int i;
 
-	if (p->debug) fprintf(stderr,"spyd2: About to init instrument\n");
+	a1logd(p->log, 2, "spyd2_init_inst: called\n");
 
 	if (p->gotcoms == 0) /* Must establish coms before calling init */
 		return spyd2_interp_code((inst *)p, SPYD2_NO_COMS);
@@ -2838,8 +2723,7 @@ spyd2_init_inst(inst *pp) {
 	 && p->itype != instSpyder4)
 		return spyd2_interp_code((inst *)p, SPYD2_UNKNOWN_MODEL);
 
-	p->rrset = 0;
-	p->rrate = DEFRRATE;
+	p->refrate = DEFRRATE;
 	for (i = 0; i < 8; i++)
 		p->prevraw[i] = 0;			/* Internal counters will be reset */
 	p->prevrawinv = 0;				/* prevraw is valid */
@@ -2876,8 +2760,8 @@ spyd2_init_inst(inst *pp) {
 		int rwbytes;			/* Data bytes read or written */
 
 		
-		for (i = 0; i < 50; i++) {
-			if ((p->icom->usb_read(p->icom, 0x81, buf, 8, &rwbytes, 0.1) & ICOM_TO)
+		for (i = 0; i < 10; i++) {
+			if ((p->icom->usb_read(p->icom, NULL, 0x81, buf, 8, &rwbytes, 0.1) & ICOM_TO)
 			 && i > 9)
 				break; 		/* Done when read times out */
 		}
@@ -2901,16 +2785,8 @@ spyd2_init_inst(inst *pp) {
 	}
 
 	/* Set a default calibration */
-	if (p->hwver < 7) {
-		p->ref = 0;
-		p->calix = 1;
-	} else {
-		p->ref = 0;
-		p->calix = 1;		/* 3 & 4 alays use the second table */
-
-		/* Set the default calibration */
-		if ((ev = spyd4_set_cal(p, 0)) != inst_ok)
-			return ev;
+	if ((ev = set_default_disp_type(p)) != inst_ok) {
+		return ev;
 	}
 
 	/* Do a dumy sensor read. This will set prevraw[] values.  */
@@ -2923,14 +2799,11 @@ spyd2_init_inst(inst *pp) {
 			return ev;
 	}
 
-	p->trig = inst_opt_trig_keyb;		/* default trigger mode */
+	p->trig = inst_opt_trig_user;		/* default trigger mode */
 
-	if (ev == inst_ok) {
-		p->inited = 1;
-		if (p->debug) fprintf(stderr,"spyd2: instrument inited OK\n");
-	}
+	p->inited = 1;
+	a1logd(p->log, 2, "spyd2_init_inst: inited OK\n");
 
-	
 	if (p->hwver >= 4) {
 		/* Flash the LED, just cos we can! */
 		if ((ev = spyd2_setLED(p, 2, 0.0)) != inst_ok)
@@ -2940,13 +2813,12 @@ spyd2_init_inst(inst *pp) {
 			return ev;
 	}
 
-	if (p->verb) {
-		printf("Instrument Type:   %s\n",inst_name(p->itype));
-		printf("Serial Number:     %s\n",p->serno);
-		printf("Hardware version:  0x%02x%02x\n",p->hwver,p->fbits);
-	}
+	a1logv(p->log, 1, "Instrument Type:   %s\n"
+		              "Serial Number:     %s\n"
+		              "Hardware version:  0x%02x%02x\n"
+	                  ,inst_name(p->itype) ,p->serno ,p->hwver,p->fbits);
 
-	return ev;
+	return inst_ok;
 }
 
 /* Read a single sample */
@@ -2955,7 +2827,8 @@ static inst_code
 spyd2_read_sample(
 inst *pp,
 char *name,			/* Strip name (7 chars) */
-ipatch *val) {		/* Pointer to instrument patch value */
+ipatch *val,		 /* Pointer to instrument patch value */
+instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	spyd2 *p = (spyd2 *)pp;
 	int user_trig = 0;
 	inst_code ev = inst_protocol_error;
@@ -2965,46 +2838,65 @@ ipatch *val) {		/* Pointer to instrument patch value */
 	if (!p->inited)
 		return inst_no_init;
 
-	if (p->trig == inst_opt_trig_keyb) {
-		int se;
-		if ((se = icoms_poll_user(p->icom, 1)) != ICOM_TRIG) {
-			/* Abort, term or command */
-			return spyd2_interp_code((inst *)p, icoms2spyd2_err(se));
+	if (p->trig == inst_opt_trig_user) {
+
+		if (p->uicallback == NULL) {
+			a1logd(p->log, 1, "sptyd2: inst_opt_trig_user but no uicallback function set!\n");
+			return inst_unsupported;
 		}
-		user_trig = 1;
-		if (p->trig_return)
-			printf("\n");
+
+		for (;;) {
+			if ((ev = p->uicallback(p->uic_cntx, inst_armed)) != inst_ok) {
+				if (ev == inst_user_abort)
+					return ev;				/* Abort */
+				if (ev == inst_user_trig) {
+					user_trig = 1;
+					break;					/* Trigger */
+				}
+			}
+			msec_sleep(200);
+		}
+		/* Notify of trigger */
+		if (p->uicallback)
+			p->uicallback(p->uic_cntx, inst_triggered); 
+
+	/* Progromatic Trigger */
+	} else {
+		/* Check for abort */
+		if (p->uicallback != NULL
+		 && (ev = p->uicallback(p->uic_cntx, inst_armed)) == inst_user_trig)
+			return ev;				/* Abort */
 	}
 
-	if ((p->mode & inst_mode_measurement_mask) == inst_mode_emis_ambient) {
-		if ((ev = spyd2_GetAmbientReading(p, val->aXYZ)) != inst_ok)
+	if (IMODETST(p->mode, inst_mode_emis_ambient)) {
+		if ((ev = spyd2_GetAmbientReading(p, val->XYZ)) != inst_ok)
 			return ev;
 
 	} else {
 
 		/* Attempt a CRT frame rate calibration if needed */
-		if (p->ref != 0 && p->rrset == 0) { 
-			double refrate;
-
-			if ((ev = spyd2_GetRefRate(p, &refrate)) != inst_ok)
+		if (p->refrmode != 0 && p->rrset == 0) { 
+			if ((ev = spyd2_GetRefRate(p)) != inst_ok)
 				return ev; 
-			if (refrate != 0.0) {
-				p->rrate = refrate;
-				p->rrset = 1;
-			}
 		}
 
 		/* Read the XYZ value */
-		if ((ev = spyd2_GetReading(p, val->aXYZ)) != inst_ok)
+		if ((ev = spyd2_GetReading(p, val->XYZ)) != inst_ok)
 			return ev;
 
 		/* Apply the colorimeter correction matrix */
-		icmMulBy3x3(val->aXYZ, p->ccmat, val->aXYZ);
+		icmMulBy3x3(val->XYZ, p->ccmat, val->XYZ);
 	}
+	/* This may not change anything since instrument may clamp */
+	if (clamp)
+		icmClamp3(val->XYZ, val->XYZ);
 
-	val->XYZ_v = 0;
-	val->aXYZ_v = 1;		/* These are absolute XYZ readings ? */
-	val->Lab_v = 0;
+	val->loc[0] = '\000';
+	if (IMODETST(p->mode, inst_mode_emis_ambient))
+		val->mtype = inst_mrt_ambient;
+	else
+		val->mtype = inst_mrt_emission;
+	val->XYZ_v = 1;		/* These are absolute XYZ readings ? */
 	val->sp.spec_n = 0;
 	val->duration = 0.0;
 
@@ -3027,10 +2919,15 @@ double mtx[3][3]
 	if (!p->inited)
 		return inst_no_init;
 
-	if (mtx == NULL)
+	if (mtx == NULL) {
 		icmSetUnity3x3(p->ccmat);
-	else
+	} else {
+		if (p->cbid == 0) {
+			a1loge(p->log, 1, "spyd2: can't set col_cor_mat over non base display type\n");
+			return inst_wrong_setup;
+		}
 		icmCpy3x3(p->ccmat, mtx);
+	}
 		
 	return inst_ok;
 }
@@ -3041,8 +2938,6 @@ double mtx[3][3]
 /* To set calibration back to default, pass NULL for sets. */
 inst_code spyd2_col_cal_spec_set(
 inst *pp,
-icxObserverType obType,
-xspect custObserver[3],
 xspect *sets,
 int no_sets
 ) {
@@ -3056,34 +2951,37 @@ int no_sets
 	if (p->hwver < 7)
 		return inst_unsupported;
 
-	if (obType == icxOT_default)
-		obType = icxOT_CIE_1931_2;
-		
 	if (sets == NULL || no_sets <= 0) {
-		if ((ev = spyd4_set_cal(p, 0)) != inst_ok)
+		if ((ev = set_default_disp_type(p)) != inst_ok)
 			return ev;
 	} else {
 		/* Use given spectral samples */
-		if ((ev = spyd4_comp_calmat(p, obType, custObserver, sets, no_sets)) != inst_ok)
+		if ((ev = spyd4_comp_calmat(p, p->obType, p->custObserver, sets, no_sets)) != inst_ok)
 			return ev;
+		p->icx = (99 << 1) | 1;		/* Out of range index */
 	}
 	return ev;
 }
 
-/* Determine if a calibration is needed. Returns inst_calt_none if not, */
-/* inst_calt_unknown if it is unknown, or inst_calt_crt_freq */
-/* if the display refresh rate has not bee determined, */
-/* and we are in CRT mode */
-inst_cal_type spyd2_needs_calibration(inst *pp) {
+/* Return needed and available inst_cal_type's */
+static inst_code spyd2_get_n_a_cals(inst *pp, inst_cal_type *pn_cals, inst_cal_type *pa_cals) {
 	spyd2 *p = (spyd2 *)pp;
 
-	if (!p->gotcoms)
-		return inst_no_coms;
-	if (!p->inited)
-		return inst_no_init;
+	inst_cal_type n_cals = inst_calt_none;
+	inst_cal_type a_cals = inst_calt_none;
+		
+	if (p->refrmode != 0) {
+		if (p->rrset == 0)
+			n_cals |= inst_calt_ref_freq;
+		a_cals |= inst_calt_ref_freq;
+	}
 
-	if (p->ref != 0 && p->rrset == 0)
-		return inst_calt_crt_freq;
+	if (pn_cals != NULL)
+		*pn_cals = n_cals;
+
+	if (pa_cals != NULL)
+		*pa_cals = a_cals;
+
 	return inst_ok;
 }
 
@@ -3096,12 +2994,13 @@ inst_cal_type spyd2_needs_calibration(inst *pp) {
 /* user to do so, each time the error inst_cal_setup is returned. */
 inst_code spyd2_calibrate(
 inst *pp,
-inst_cal_type calt,		/* Calibration type. inst_calt_all for all neeeded */
+inst_cal_type *calt,	/* Calibration type to do/remaining */
 inst_cal_cond *calc,	/* Current condition/desired condition */
 char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 ) {
 	spyd2 *p = (spyd2 *)pp;
 	inst_code ev = inst_ok;
+    inst_cal_type needed, available;
 
 	if (!p->gotcoms)
 		return inst_no_coms;
@@ -3110,35 +3009,77 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 
 	id[0] = '\000';
 
-	/* Translate default into what's needed or expected default */
-	if (calt == inst_calt_all) {
-		if (p->ref != 0)
-			calt = inst_calt_crt_freq;
+	if ((ev = spyd2_get_n_a_cals((inst *)p, &needed, &available)) != inst_ok)
+		return ev;
+
+	/* Translate inst_calt_all/needed into something specific */
+	if (*calt == inst_calt_all
+	 || *calt == inst_calt_needed
+	 || *calt == inst_calt_available) {
+		if (*calt == inst_calt_all) 
+			*calt = (needed & inst_calt_n_dfrble_mask) | inst_calt_ap_flag;
+		else if (*calt == inst_calt_needed)
+			*calt = needed & inst_calt_n_dfrble_mask;
+		else if (*calt == inst_calt_available)
+			*calt = available & inst_calt_n_dfrble_mask;
+
+		a1logd(p->log,4,"spyd2_calibrate: doing calt 0x%x\n",calt);
+
+		if ((*calt & inst_calt_n_dfrble_mask) == 0)		/* Nothing todo */
+			return inst_ok;
 	}
 
-	if (calt == inst_calt_crt_freq && p->ref != 0) {
-		double refrate;
+	if ((*calt & inst_calt_ref_freq) && p->refrmode != 0) {
 
-		if (*calc != inst_calc_disp_white) {
-			*calc = inst_calc_disp_white;
+		if (*calc != inst_calc_emis_white) {
+			*calc = inst_calc_emis_white;
 			return inst_cal_setup;
 		}
 
 		/* Do CRT frame rate calibration */
-		if ((ev = spyd2_GetRefRate(p, &refrate)) != inst_ok)
+		if ((ev = spyd2_GetRefRate(p)) != inst_ok)
 			return ev; 
 
-		if (refrate == 0.0) {
-			p->rrate = DEFRRATE;
-		} else {
-			p->rrate = refrate;
-			p->rrset = 1;
-		}
-
-		return inst_ok;
+		*calt &= ~inst_calt_ref_freq;
 	}
 
-	return inst_unsupported;
+	return inst_ok;
+}
+
+/* Return the last calibrated refresh rate in Hz. Returns: */
+static inst_code spyd2_get_refr_rate(inst *pp,
+double *ref_rate
+) {
+	spyd2 *p = (spyd2 *)pp;
+	if (p->refrvalid) {
+		*ref_rate = p->refrate;
+		return inst_ok;
+	} else if (p->rrset) {
+		*ref_rate = 0.0;
+		return inst_misread;
+	}
+	return inst_needs_cal;
+}
+
+/* Set the calibrated refresh rate in Hz. */
+/* Set refresh rate to 0.0 to mark it as invalid */
+/* Rates outside the range 5.0 to 150.0 Hz will return an error */
+static inst_code spyd2_set_refr_rate(inst *pp,
+double ref_rate
+) {
+	spyd2 *p = (spyd2 *)pp;
+
+	if (ref_rate != 0.0 && (ref_rate < 5.0 || ref_rate > 150.0))
+		return inst_bad_parameter;
+
+	p->refrate = ref_rate;
+	if (ref_rate == 0.0)
+		p->refrate = DEFRRATE;
+	else
+		p->refrvalid = 1;
+	p->rrset = 1;
+
+	return inst_ok;
 }
 
 /* Error codes interpretation */
@@ -3155,14 +3096,6 @@ spyd2_interp_error(inst *pp, int ec) {
 			return "Not a Spyder 2 or 3";
 		case SPYD2_DATA_PARSE_ERROR:
 			return "Data from i1 Display didn't parse as expected";
-		case SPYD2_USER_ABORT:
-			return "User hit Abort key";
-		case SPYD2_USER_TERM:
-			return "User hit Terminate key";
-		case SPYD2_USER_TRIG:
-			return "User hit Trigger key";
-		case SPYD2_USER_CMND:
-			return "User hit a Command key";
 
 		case SPYD2_OK:
 			return "No device error";
@@ -3253,15 +3186,6 @@ spyd2_interp_code(inst *pp, int ec) {
 
 //			return inst_protocol_error | ec;
 
-		case SPYD2_USER_ABORT:
-			return inst_user_abort | ec;
-		case SPYD2_USER_TERM:
-			return inst_user_term | ec;
-		case SPYD2_USER_TRIG:
-			return inst_user_trig | ec;
-		case SPYD2_USER_CMND:
-			return inst_user_cmnd | ec;
-
 		case SPYD2_NOCRTCAL:
 		case SPYD2_NOLCDCAL:
 		case SPYD2_PLDLOAD_FAILED:
@@ -3269,7 +3193,7 @@ spyd2_interp_code(inst *pp, int ec) {
 			return inst_hardware_fail | ec;
 
 		case SPYD2_DISP_SEL_RANGE:
-			return inst_wrong_config | ec;
+			return inst_wrong_setup | ec;
 
 	}
 	return inst_other_error | ec;
@@ -3281,335 +3205,463 @@ spyd2_del(inst *pp) {
 	spyd2 *p = (spyd2 *)pp;
 	if (p->icom != NULL)
 		p->icom->del(p->icom);
+	inst_del_disptype_list(p->dtlist, p->ndtlist);
 	free(p);
 }
 
-/* Return the instrument capabilities */
-inst_capability spyd2_capabilities(inst *pp) {
+/* Return the instrument mode capabilities */
+void spyd2_capabilities(inst *pp,
+inst_mode *pcap1,
+inst2_capability *pcap2,
+inst3_capability *pcap3) {
 	spyd2 *p = (spyd2 *)pp;
-	inst_capability rv = 0;
+	inst_mode cap1= 0;
+	inst2_capability cap2 = 0;
 
-	rv = inst_emis_spot
-	   | inst_emis_disp
-	   | inst_colorimeter
-	   | inst_ccmx
-	     ;
-
-	if (p->itype == instSpyder3
-	 || p->itype == instSpyder4) {
-		rv |= inst_emis_disptype;
-	} else {
-		rv |= inst_emis_disptype;
-		rv |= inst_emis_disptypem;
-	}
+	cap1 |= inst_mode_emis_spot
+	     |  inst_mode_emis_refresh_ovd
+	     |  inst_mode_emis_norefresh_ovd
+	     |  inst_mode_colorimeter
+	        ;
 
 	/* We don't seem to have a way of detecting the lack */
 	/* of ambinent capability, short of doing a read */
 	/* and noticing the result is zero. */
 	if (p->itype == instSpyder3
 	 || p->itype == instSpyder4) {
-		rv |= inst_emis_ambient;
-		rv |= inst_emis_ambient_mono;
+		cap1 |= inst_mode_emis_ambient;
 	}
 
-	if (p->itype == instSpyder4)
-		rv |= inst_ccss;		/* Spyder4 has spectral sensiivities */
-
-	return rv;
-}
-
-/* Return the instrument capabilities 2 */
-inst2_capability spyd2_capabilities2(inst *pp) {
-	spyd2 *p = (spyd2 *)pp;
-	inst2_capability rv = 0;
-
-	rv = inst2_cal_crt_freq
-	   | inst2_prog_trig
-	   | inst2_keyb_trig
-	     ;
+	cap2 |= inst2_prog_trig
+	     |  inst2_user_trig
+	     |  inst2_ccmx
+	     |  inst2_refresh_rate
+	     |  inst2_emis_refr_meas
+	        ;
 
 	if (p->itype == instSpyder3
 	 || p->itype == instSpyder4) {
-		rv |= inst2_has_leds;
+		cap2 |= inst2_disptype;
+		cap2 |= inst2_has_leds;
+		cap2 |= inst2_ambient_mono;
+	} else {
+		cap2 |= inst2_disptype;
 	}
-	return rv;
+
+	if (p->itype == instSpyder4)
+		cap2 |= inst2_ccss;		/* Spyder4 has spectral sensiivities */
+
+	if (pcap1 != NULL)
+		*pcap1 = cap1;
+	if (pcap2 != NULL)
+		*pcap2 = cap2;
+	if (pcap3 != NULL)
+		*pcap3 = inst3_none;
 }
 
-inst_disptypesel spyd2_disptypesel[3] = {
-	{
-		1,
-		"c",
-		"Spyder2: CRT display",
-		1
-	},
-	{
-		2,
-		"l",
-		"Spyder2: LCD display",
-		0
-	},
-	{
-		0,
-		"",
-		"",
-		-1
-	}
-};
-
-inst_disptypesel spyd3_disptypesel[3] = {
-	{
-		1,
-		"rc",
-		"Spyder3: Refresh display",
-		1
-	},
-	{
-		2,
-		"nl",
-		"Spyder3: Non-Refresh display [Default]",
-		0
-	},
-	{
-		0,
-		"",
-		"",
-		-1
-	}
-};
-
-inst_disptypesel spyd4_disptypesel_1[8] = {
-	{
-		1,
-		"rc1",
-		"Spyder4: Generic Refresh Display",
-		1
-	},
-	{
-		2,
-		"nl2",
-		"Spyder4: Generic Non-Refresh Display [Default]",
-		1
-	},
-	{
-		0,
-		"",
-		"",
-		-1
-	}
-};
-
-inst_disptypesel spyd4_disptypesel[8] = {
-	{
-		1,
-		"rc1",
-		"Spyder4: Generic Refresh Display",
-		1
-	},
-	{
-		2,
-		"nl2",
-		"Spyder4: Generic Non-Refresh Display [Default]",
-		1
-	},
-	{
-		3,
-		"3",
-		"Spyder4: LCD, CCFL Backlight",
-		0
-	},
-	{
-		4,
-		"4",
-		"Spyder4: Wide Gamut LCD, CCFL Backlight",
-		0
-	},
-	{
-		5,
-		"5",
-		"Spyder4: LCD, White LED Backlight",
-		0
-	},
-	{
-		6,
-		"6",
-		"Spyder4: Wide Gamut LCD, RGB LED Backlight",
-		0
-	},
-	{
-		7,
-		"7",
-		"Spyder4: LCD, CCFL Type 2 Backlight",
-		0
-	},
-	{
-		0,
-		"",
-		"",
-		-1
-	}
-};
-
-/* Get mode and option details */
-static inst_code spyd2_get_opt_details(
-inst *pp,
-inst_optdet_type m,	/* Requested option detail type */
-...) {				/* Status parameters */                             
+/* Check device measurement mode */
+inst_code spyd2_check_mode(inst *pp, inst_mode m) {
 	spyd2 *p = (spyd2 *)pp;
+	inst_mode cap;
 
-	if (m == inst_optdet_disptypesel) {
-		va_list args;
-		int *pnsels;
-		inst_disptypesel **psels;
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
 
-		va_start(args, m);
-		pnsels = va_arg(args, int *);
-		psels = va_arg(args, inst_disptypesel **);
-		va_end(args);
+	pp->capabilities(pp, &cap, NULL, NULL);
 
-		if (p->itype == instSpyder4) {
-			if (spyd4_nocals <= 1) {
-				*pnsels = 2;
-				*psels = spyd4_disptypesel_1;
-			} else {
-				*pnsels = 7;
-				*psels = spyd4_disptypesel;
-			}
-		} else if (p->itype == instSpyder3) {
-			*pnsels = 2;
-			*psels = spyd3_disptypesel;
-		} else {
-			*pnsels = 2;
-			*psels = spyd2_disptypesel;
-		}
-		
-		return inst_ok;
+	/* Simple test */
+	if (m & ~cap)
+		return inst_unsupported;
+
+	if (!IMODETST(m, inst_mode_emis_spot)
+	 && !IMODETST(m, inst_mode_emis_ambient)) {
+			return inst_unsupported;
 	}
 
-	return inst_unsupported;
+	return inst_ok;
 }
 
 /* Set device measurement mode */
 inst_code spyd2_set_mode(inst *pp, inst_mode m) {
 	spyd2 *p = (spyd2 *)pp;
-	inst_mode mm;		/* Measurement mode */
+	inst_code ev;
+
+	if ((ev = spyd2_check_mode(pp, m)) != inst_ok)
+		return ev;
+
+	p->mode = m;
+
+	if (     IMODETST(p->mode, inst_mode_emis_norefresh_ovd))	/* Must test this first! */
+		p->refrmode = 0;
+	else if (IMODETST(p->mode, inst_mode_emis_refresh_ovd))
+		p->refrmode = 1;
+
+	return inst_ok;
+}
+
+inst_disptypesel spyd2_disptypesel[3] = {
+	{
+		inst_dtflags_default,
+		1,
+		"l",
+		"LCD display",
+		0,
+		1
+	},
+	{
+		inst_dtflags_none,			/* flags */
+		2,							/* cbid */
+		"c",						/* sel */
+		"CRT display",				/* desc */
+		1,							/* refr */
+		0							/* ix */
+	},
+	{
+		inst_dtflags_end,
+		0,
+		"",
+		"",
+		0,
+		0
+	}
+};
+
+inst_disptypesel spyd3_disptypesel[3] = {
+	{
+		inst_dtflags_default,
+		1,
+		"nl",
+		"Non-Refresh display",
+		0,
+		1
+	},
+	{
+		inst_dtflags_none,			/* flags */
+		2,							/* cbid */
+		"rc",						/* sel */
+		"Refresh display",			/* desc */
+		1,							/* refr */
+		1							/* ix */
+	},
+	{
+		inst_dtflags_end,
+		0,
+		"",
+		"",
+		0,
+		0
+	}
+};
+
+inst_disptypesel spyd4_disptypesel_1[8] = {
+	{
+		inst_dtflags_default,
+		1,
+		"nl",
+		"Generic Non-Refresh Display",
+		0,
+		1
+	},
+	{
+		inst_dtflags_none,			/* flags */
+		2,							/* cbid */
+		"rc",						/* sel */
+		"Generic Refresh Display",	/* desc */
+		1,							/* refr */
+		1							/* ix */
+	},
+	{
+		inst_dtflags_end,
+		0,
+		"",
+		"",
+		0,
+		0
+	}
+};
+
+inst_disptypesel spyd4_disptypesel[8] = {
+	{
+		inst_dtflags_default,
+		1,
+		"n",
+		"Generic Non-Refresh Display",
+		0,
+		1
+	},
+	{
+		inst_dtflags_none,			/* flags */
+		2,							/* cbid */
+		"r",						/* sel */
+		"Generic Refresh Display",	/* desc */
+		1,							/* refr */
+		1							/* ix = hw bit + spec table << 1 */
+	},
+	{
+		inst_dtflags_none,			/* flags */
+		0,
+		"f",
+		"LCD, CCFL Backlight",
+		0,
+		(1 << 1) | 1
+	},
+	{
+		inst_dtflags_none,			/* flags */
+		0,
+		"L",
+		"Wide Gamut LCD, CCFL Backlight",
+		0,
+		(2 << 1) | 1
+	},
+	{
+		inst_dtflags_none,			/* flags */
+		0,
+		"e",
+		"LCD, White LED Backlight",
+		0,
+		(3 << 1) | 1
+	},
+	{
+		inst_dtflags_none,			/* flags */
+		0,
+		"B",
+		"Wide Gamut LCD, RGB LED Backlight",
+		0,
+		(4 << 1) | 1
+	},
+	{
+		inst_dtflags_none,			/* flags */
+		0,
+		"x",
+		"LCD, CCFL Backlight (Laptop ?)",
+		0,
+		(5 << 1) | 1
+	},
+	{
+		inst_dtflags_end,
+		0,
+		"",
+		"",
+		0,
+		0
+	}
+};
+
+static void set_base_disptype_list(spyd2 *p) {
+	/* set the base display type list */
+	if (p->itype == instSpyder4) {
+		if (spyd4_nocals <= 1) {
+			p->_dtlist = spyd4_disptypesel_1;
+		} else {
+			p->_dtlist = spyd4_disptypesel;
+		}
+	} else if (p->itype == instSpyder3) {
+		p->_dtlist = spyd3_disptypesel;
+	} else {
+		p->_dtlist = spyd2_disptypesel;
+	}
+}
+
+/* Get mode and option details */
+static inst_code spyd2_get_disptypesel(
+inst *pp,
+int *pnsels,				/* Return number of display types */
+inst_disptypesel **psels,	/* Return the array of display types */
+int allconfig,				/* nz to return list for all configs, not just current. */
+int recreate				/* nz to re-check for new ccmx & ccss files */
+) {
+	spyd2 *p = (spyd2 *)pp;
+	inst_code rv = inst_ok;
+
+	/* Create/Re-create a current list of abailable display types */
+	if (p->dtlist == NULL || recreate) {
+		if ((rv = inst_creat_disptype_list(pp, &p->ndtlist, &p->dtlist,
+		    p->_dtlist, p->hwver >= 7 ? 1 : 0 /* doccss*/, 1 /* doccmx */)) != inst_ok)
+			return rv;
+	}
+
+	if (pnsels != NULL)
+		*pnsels = p->ndtlist;
+
+	if (psels != NULL)
+		*psels = p->dtlist;
+
+	return inst_ok;
+}
+
+/* Given a display type entry, setup for that type */
+static inst_code set_disp_type(spyd2 *p, inst_disptypesel *dentry) {
+	inst_code ev;
+	int refrmode;
+
+	p->icx = dentry->ix;
+	p->cbid = dentry->cbid;
+	refrmode = dentry->refr;
+
+	if (     IMODETST(p->mode, inst_mode_emis_norefresh_ovd)) {	/* Must test this first! */
+		refrmode = 0;
+	} else if (IMODETST(p->mode, inst_mode_emis_refresh_ovd)) {
+		refrmode = 1;
+	}
+
+	if (p->refrmode != refrmode) {
+		p->rrset = 0;					/* This is a hint we may have swapped displays */
+		p->refrvalid = 0;
+	}
+	p->refrmode = refrmode; 
+
+	if (dentry->flags & inst_dtflags_ccss) {
+
+		if ((ev = spyd4_comp_calmat(p, p->obType, p->custObserver, dentry->sets, dentry->no_sets))
+			                                                                          != inst_ok) {
+			a1logd(p->log, 1, "spyd4_set_disp_type: comp_calmat ccss failed with rv = 0x%x\n",ev);
+			return ev;
+		}
+		p->icx = (99 << 1) | 1;		/* Out of range index */
+		icmSetUnity3x3(p->ccmat);
+
+	} else {
+
+		if (p->hwver >= 7) {
+			if ((p->icx >> 1) > spyd4_nocals)
+				return inst_unsupported; 
+
+			/* Create the calibration matrix */
+			if ((ev = spyd4_set_cal(p, p->icx >> 1)) != inst_ok)
+				return ev;
+		}
+
+		if (dentry->flags & inst_dtflags_ccmx) {
+			icmCpy3x3(p->ccmat, dentry->mat);
+		} else {
+			icmSetUnity3x3(p->ccmat);
+		}
+	}
+
+	return inst_ok;
+}
+
+
+/* Setup the default display type */
+static inst_code set_default_disp_type(spyd2 *p) {
+	inst_code ev;
+	int i;
+
+	if (p->dtlist == NULL) {
+		if ((ev = inst_creat_disptype_list((inst *)p, &p->ndtlist, &p->dtlist,
+		    p->_dtlist, p->hwver >= 7 ? 1 : 0 /* doccss*/, 1 /* doccmx */)) != inst_ok)
+			return ev;
+	}
+
+	for (i = 0; !(p->dtlist[i].flags & inst_dtflags_end); i++) {
+		if (p->dtlist[i].flags & inst_dtflags_default)
+			break;
+	}
+	if (p->dtlist[i].flags & inst_dtflags_end) {
+		a1loge(p->log, 1, "set_default_disp_type: failed to find type!\n");
+		return inst_internal_error; 
+	}
+	if ((ev = set_disp_type(p, &p->dtlist[i])) != inst_ok) {
+		return ev;
+	}
+
+	return inst_ok;
+}
+
+/* Set the display type */
+static inst_code spyd2_set_disptype(inst *pp, int ix) {
+	spyd2 *p = (spyd2 *)pp;
+	inst_code ev;
+	inst_disptypesel *dentry;
 
 	if (!p->gotcoms)
 		return inst_no_coms;
 	if (!p->inited)
 		return inst_no_init;
 
-	/* The measurement mode portion of the mode */
-	mm = m & inst_mode_measurement_mask;
-
-	if (p->hwver < 4) {
-
-		/* only display emission mode supported */
-		if (mm != inst_mode_emis_spot
-		 && mm != inst_mode_emis_disp) {
-			return inst_unsupported;
-		}
-
-	} else {
-		/* only display emission mode and ambient supported */
-		if (mm != inst_mode_emis_spot
-		 && mm != inst_mode_emis_disp
-		 && mm != inst_mode_emis_ambient) {
-			return inst_unsupported;
-		}
+	if (p->dtlist == NULL) {
+		if ((ev = inst_creat_disptype_list(pp, &p->ndtlist, &p->dtlist,
+		    p->_dtlist, p->hwver >= 7 ? 1 : 0 /* doccss*/, 1 /* doccmx */)) != inst_ok)
+			return ev;
 	}
 
-	/* Spectral mode is not supported */
-	if (m & inst_mode_spectral)
+	if (ix < 0 || ix >= p->ndtlist)
 		return inst_unsupported;
 
-	p->mode = m;
+	dentry = &p->dtlist[ix];
+
+	if ((ev = set_disp_type(p, dentry)) != inst_ok) {
+		return ev;
+	}
+
 	return inst_ok;
 }
 
 /* 
  * set or reset an optional mode
- * We assume that the instrument has been initialised.
+ *
+ * Some options talk to the instrument, and these will
+ * error if it hasn't been initialised.
+ * [We could fix this by setting a flag and adding
+ *  some extra logic in init()]
  */
 static inst_code
-spyd2_set_opt_mode(inst *pp, inst_opt_mode m, ...) {
+spyd2_get_set_opt(inst *pp, inst_opt_type m, ...) {
 	spyd2 *p = (spyd2 *)pp;
 	inst_code ev = inst_ok;
+
+	/* Record the trigger mode */
+	if (m == inst_opt_trig_prog
+	 || m == inst_opt_trig_user) {
+		p->trig = m;
+		return inst_ok;
+	}
 
 	if (!p->gotcoms)
 		return inst_no_coms;
 	if (!p->inited)
 		return inst_no_init;
 
-	/* Set the display type */
-	if (m == inst_opt_disp_type) {
+	/* Get the display type information */
+	if (m == inst_opt_get_dtinfo) {
 		va_list args;
-		int ix;
+		int *refrmode, *cbid;
 
 		va_start(args, m);
-		ix = va_arg(args, int);
+		refrmode = va_arg(args, int *);
+		cbid = va_arg(args, int *);
 		va_end(args);
 
-		if (p->hwver >= 7) {
-			int calix4;
+		if (refrmode != NULL)
+			*refrmode = p->refrmode;
+		if (cbid != NULL)
+			*cbid = p->cbid;
 
-			p->calix = 1;				/* Calibration is always second table for hwv = 7 */
+		return inst_ok;
+	}
 
-			calix4 = 0;
-			if (ix == 0)				/* Default maps to 2 */
-				ix = 2;
-			if (ix == 1) {
-				if (p->ref == 0)
-					p->rrset = 0;		/* This is a hint we may have swapped displays */
-				p->ref = 1;
-			} else {	/* 2..7 */
-				if (p->ref != 0)
-					p->rrset = 0;		/* This is a hint we may have swapped displays */
-				p->ref = 0;
-				calix4 = ix-2;
-				if (calix4 > spyd4_nocals)
-					return inst_unsupported; 
-			}
-			/* Create the spectral calibration if its changed */
-			if (p->calix4 != calix4) {
-				if ((ev = spyd4_set_cal(p, calix4)) != inst_ok)
-					return ev;
-			}
-			return inst_ok;
+	/* Set the ccss observer type */
+	if (m == inst_opt_set_ccss_obs) {
+		va_list args;
+		icxObserverType obType;
+		xspect *custObserver;
 
-		/* Spyder 1, 2, or 3 */
-		} else {
-			if (p->itype == instSpyder3 && ix == 0)	/* Default maps to 2 for Spyder 3 */
-				ix = 2;
-			if (ix == 1) {
-				if (p->ref == 0)
-					p->rrset = 0;		/* This is a hint we may have swapped displays */
-				p->ref = 1;
-			} else if (ix == 2) {
-				if (p->ref != 0)
-					p->rrset = 0;		/* This is a hint we may have swapped displays */
-				p->ref = 0;
-			} else {
-				return inst_unsupported;
-			}
-			if (p->hwver >= 4)
-				p->calix = 1;			/* Spyder 3+ uses a single calibration */
-			else
-				p->calix = ix-1;		/* Spyder 2: 0 = CRT, 1 = LCD */
-			return inst_ok;
+		va_start(args, m);
+		obType = va_arg(args, icxObserverType);
+		custObserver = va_arg(args, xspect *);
+		va_end(args);
+
+		if (obType == icxOT_default)
+			obType = icxOT_CIE_1931_2;
+		p->obType = obType;
+		if (obType == icxOT_custom) {
+			p->custObserver[0] = custObserver[0];
+			p->custObserver[1] = custObserver[1];
+			p->custObserver[2] = custObserver[2];
 		}
-	}
 
-	/* Record the trigger mode */
-	if (m == inst_opt_trig_prog
-	 || m == inst_opt_trig_keyb) {
-		p->trig = m;
-		return inst_ok;
-	}
-	if (m == inst_opt_trig_return) {
-		p->trig_return = 1;
-		return inst_ok;
-	} else if (m == inst_opt_trig_no_return) {
-		p->trig_return = 0;
 		return inst_ok;
 	}
 
@@ -3701,48 +3753,55 @@ spyd2_set_opt_mode(inst *pp, inst_opt_mode m, ...) {
 }
 
 /* Constructor */
-extern spyd2 *new_spyd2(icoms *icom, instType itype, int debug, int verb)
-{
+extern spyd2 *new_spyd2(icoms *icom, instType itype) {
 	spyd2 *p;
-	if ((p = (spyd2 *)calloc(sizeof(spyd2),1)) == NULL)
-		error("spyd2: malloc failed!");
+	if ((p = (spyd2 *)calloc(sizeof(spyd2),1)) == NULL) {
+		a1loge(icom->log, 1, "new_spyd2: malloc failed!\n");
+		return NULL;
+	}
 
-	if (icom == NULL)
-		p->icom = new_icoms();
-	else
-		p->icom = icom;
-
-	p->debug = debug;
-	p->verb = verb;
-
-	icmSetUnity3x3(p->ccmat);	/* Set the colorimeter correction matrix to do nothing */
+	p->log = new_a1log_d(icom->log);
 
 	p->init_coms         = spyd2_init_coms;
 	p->init_inst         = spyd2_init_inst;
 	p->capabilities      = spyd2_capabilities;
-	p->capabilities2     = spyd2_capabilities2;
-	p->get_opt_details   = spyd2_get_opt_details;
+	p->check_mode        = spyd2_check_mode;
 	p->set_mode          = spyd2_set_mode;
-	p->set_opt_mode      = spyd2_set_opt_mode;
+	p->get_disptypesel   = spyd2_get_disptypesel;
+	p->set_disptype      = spyd2_set_disptype;
+	p->get_set_opt       = spyd2_get_set_opt;
 	p->read_sample       = spyd2_read_sample;
-	p->needs_calibration = spyd2_needs_calibration;
+	p->read_refrate      = spyd2_read_refrate;
+	p->get_n_a_cals      = spyd2_get_n_a_cals;
 	p->calibrate         = spyd2_calibrate;
 	p->col_cor_mat       = spyd2_col_cor_mat;
 	p->col_cal_spec_set  = spyd2_col_cal_spec_set;
+	p->get_refr_rate     = spyd2_get_refr_rate;
+	p->set_refr_rate     = spyd2_set_refr_rate;
 	p->interp_error      = spyd2_interp_error;
 	p->del               = spyd2_del;
 
-	p->itype = itype;
+	p->icom = icom;
+	p->itype = icom->itype;
 
 	/* Load manufacturers Spyder4 calibrations */
 	if (itype == instSpyder4) {
 		int rv;
-		if ((rv = spyd4_load_cal(debug)) != SPYD2_OK && debug) {
-			printf("Loading Spyder4 calibrations failed with '%s'\n",p->interp_error((inst *)p, rv));
-		}
-		if (spyd4_nocals < 1 && debug)
-			printf("Spyder4 calibrations not available\n");
+		p->hwver = 7;		/* Set preliminary version */
+		if ((rv = spyd4_load_cal(p)) != SPYD2_OK)
+			a1logd(p->log, 1, "Loading Spyder4 calibrations failed with '%s'\n",p->interp_error((inst *)p, rv));
+		if (spyd4_nocals < 1)
+			a1logd(p->log, 1, "Spyder4 choice of calibrations not available\n");
 	}
+	if (itype == instSpyder3) {
+		p->hwver = 4;		/* Set preliminary version */
+	}
+	if (itype == instSpyder2) {
+		p->hwver = 3;		/* Set preliminary version */
+	}
+
+	icmSetUnity3x3(p->ccmat);	/* Set the colorimeter correction matrix to do nothing */
+	set_base_disptype_list(p);
 
 	return p;
 }

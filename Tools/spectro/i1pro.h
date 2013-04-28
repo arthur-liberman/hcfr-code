@@ -8,7 +8,7 @@
  * Author: Graeme W. Gill
  * Date:   24/11/2006
  *
- * Copyright 2006 - 2007, Graeme W. Gill
+ * Copyright 2006 - 2013, Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -42,14 +42,15 @@ struct _i1pro {
 	int       dtype;			/* Device type: 0 = ?? */	
 
 	/* *** i1pro private data **** */
-	inst_capability  cap;		/* Instrument capability */
+	inst_mode  cap;				/* Instrument mode capability */
 	inst2_capability cap2;		/* Instrument capability 2 */
+	inst3_capability cap3;		/* Instrument capability 3 */
 
 	void *m;					/* Implementation - i1proimp type */
 }; typedef struct _i1pro i1pro;
 
 /* Constructor */
-extern i1pro *new_i1pro(icoms *icom, instType itype, int debug, int verb);
+extern i1pro *new_i1pro(icoms *icom, instType itype);
 
 #define I1PRO_H
 #endif /* I1PRO_H */

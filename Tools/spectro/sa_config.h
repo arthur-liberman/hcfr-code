@@ -20,6 +20,7 @@
 #endif
 
 #ifndef SALONEINSTLIB
+#define ENABLE_SERIAL	/* Enable access to serial instruments */
 #define ENABLE_USB		/* Enable access to USB instruments using libusb */
 #endif /* !SALONEINSTLIB */
 

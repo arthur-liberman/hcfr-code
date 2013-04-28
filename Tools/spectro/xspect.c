@@ -23,6 +23,21 @@
 /*
  * TTBD:
  *
+ * If needed by ISO 13655-1009:
+ * fwa_convert() function takes two illuminants:
+ * first one is the measurement illumination to correct to,
+ * the second is the assumed illumination spectrum for XYZ conversion. 
+ * so we compute the spectral reflectance as if the instrument had
+ * one sort of practical illuminant (and taking into account FWA),
+ * and then convert to D50 equivalent.
+ * Need to bypass FWA if inst illum == simulated inst. illum.
+ * Need to modify tools to allow optional param to -f which is
+ * the simulated instrument illum, then make -i have -M0, -M1, -M2 options.
+ *
+ * [Does this make any sense though ? That is what's happening
+ *  for a standard A illuminant instrument emitting D50 XYZ values,
+ *  but doesn't represent actually viewing under a (say) M2 illuminant.
+ *  But is M0 actual A illuminant, or notional D50 measured by an A illuminant ?]
  */
 
 #include <stdlib.h>
@@ -31,22 +46,43 @@
 #include <string.h>
 #include <math.h>
 #ifndef SALONEINSTLIB
-#include "numlib.h"
-#include "cgats.h"
-#include "plot.h"			/* For debugging */
+# include "numlib.h"
+# include "cgats.h"
+# include "plot.h"			/* For debugging */
+#else
+# include "numsup.h"
 #endif
 #include "xspect.h"
 
+#define CLAMP_XYZ			/* [def] Clamp XYZ to be >= 0.0 */
+
 #ifndef SALONEINSTLIB
 
-#undef DEBUG
-#undef DOPLOT				/* Plot FWA setup */
-#undef DOPLOT_ALL_FWA		/* Plot all FWA corrected conversions */
-#undef WRITE_FWA1_STIM		/* Write file "fwa1_stip.sp" when FWA is setup */
+#undef STOCKFWA				/* [und] Use table shape else compute from flat line estimate*/
 
-#undef STOCKFWA			/* Use table shape else compute from flat line estimate*/
+#undef DEBUG				/* [und] Extra printouts + debugging messages */
+#undef DOPLOT				/* [und] Plot FWA setup */
+#undef DOPLOT_ALL_FWA		/* [und] Plot all FWA corrected conversions */
+#undef WRITE_FWA1_STIM		/* [und] Write file "fwa1_stip.sp" when FWA is setup */
 
 #endif /* !SALONEINSTLIB */
+
+#ifndef CLAMP_XYZ
+# pragma message("###### CLAMP_XYZ is not defined ######")
+#endif
+
+#if defined(DEBUG) || defined(DOPLOT) || defined(DOPLOT_ALL_FWA) || defined(WRITE_FWA1_STIM)
+# pragma message("###### xspect debugging is on ######")
+#endif
+
+#ifdef DEBUG
+# define DBG(xx)	a1logd(g_log, 0, xx )
+# define DBGA g_log, 0 		/* First argument to DBGF() */
+# define DBGF(xx)	a1logd xx
+#else
+# define DBG(xx)
+# define DBGF(xx)
+#endif
 
 /* ======================================================== */
 #if defined(__APPLE__) && defined(__POWERPC__)
@@ -154,6 +190,13 @@ static xspect il_D50 = {
 		78.23, 67.96, 57.69, 70.31, 82.92, 80.60, 78.27, 78.91, 79.55, 76.48,
 		73.40, 68.66, 63.92, 67.35, 70.78, 72.61, 74.44
 	}
+};
+ 
+/* D50M2 illuminant spectra, UV filtered */
+/* Computed from il_D50 */
+static xspect il_D50M2 = {
+	0, 0.0, 0.0,
+	0.0
 };
  
  
@@ -391,6 +434,27 @@ static xspect il_Spectrocam = {
 };
 
 #endif /* !SALONEINSTLIB */
+
+/* Apply ISO 13655:2009 UV filter to the given spectrum. */
+/* The filter is applied point by point. */
+static void uv_filter(xspect *dst, xspect *src) {
+	int i;
+
+	XSPECT_COPY_INFO(dst, src);
+	for (i = 0; i < src->spec_n; i++) {
+		double wl = XSPECT_XWL(src, i);
+		double ff = 1.0;
+
+		if (wl <= 395.0) {
+			ff = 0.0;
+		} else if (wl < 425.0) {
+			ff = (wl - 395.0)/(425.0 - 395.0);
+			ff = ff * ff * (3.0 - 2.0 * ff);    /* Cubic spline */
+		}
+		dst->spec[i] = ff * src->spec[i];
+	}
+}
+
 /* Fill in an xpsect with a standard illuminant spectrum */
 /* return 0 on sucecss, nz if not matched */
 int standardIlluminant(
@@ -404,14 +468,19 @@ double temp					/* Optional temperature in degrees kelvin, for Dtemp and Ptemp *
 	    case icxIT_custom:
 			return 1;
 	    case icxIT_A:
-			*sp = il_A;
+			*sp = il_A;		/* Struct copy */
 			return 0;
 	    case icxIT_C:
-			*sp = il_C;
+			*sp = il_C;		/* " */
 			return 0;
 	    case icxIT_default:
 	    case icxIT_D50:
-			*sp = il_D50;
+			*sp = il_D50;	/* etc */
+			return 0;
+	    case icxIT_D50M2:
+			if (il_D50M2.spec_n == 0)
+				uv_filter(&il_D50M2, &il_D50);
+			*sp = il_D50M2;
 			return 0;
 	    case icxIT_D65:
 			*sp = il_D65;
@@ -442,7 +511,20 @@ double temp					/* Optional temperature in degrees kelvin, for Dtemp and Ptemp *
 }
 
 /* ------------- */
-/* Observer Data */
+
+/* Spectral locus poligon cache */
+typedef struct {
+	int    n;					/* Number of spectral vertexes, 0 if uninit */
+	double xmin, xmax, ymin, ymax;	/* Boundint box */
+	double tx[3], ty[3];		/* Fast inner triangle test, RGB */
+	double be[3][3];    		/* baricentric equations of triangle */
+//	double eed[3];				/* Distance of triangle points to 0.3, 0.3 */
+	double x[XSPECT_MAX_BANDS];	/* x value of vertex */
+	double y[XSPECT_MAX_BANDS];	/* y value of vertex */
+} xslpoly;
+
+/* ------------- */
+/* Observer Data and locus poligon cache */
 
 /* Standard CIE 1931 2 degree */
 static xspect ob_CIE_1931_2[3] = {
@@ -750,6 +832,8 @@ static xspect ob_CIE_1931_2[3] = {
 		}
 	}
 };
+
+static xslpoly poly_CIE_1931_2 = { 0 };
 			
 /* Standard CIE 1964 10 degree */
 static xspect ob_CIE_1964_10[3] = {
@@ -1057,6 +1141,8 @@ static xspect ob_CIE_1964_10[3] = {
 		}
 	}
 };
+
+static xslpoly poly_CIE_1964_10 = { 0 };
 
 #ifndef SALONEINSTLIB
 /* Standard CIE 1964 10 degree observer, */
@@ -1368,6 +1454,8 @@ static xspect ob_CIE_1964_10c[3] = {
 	}
 };
 
+static xslpoly poly_CIE_1964_10c = { 0 };
+
 /* Judd & Voss 1978 2 degree */
 static xspect ob_Judd_Voss_2[3] = {
 	{
@@ -1444,6 +1532,8 @@ static xspect ob_Judd_Voss_2[3] = {
 	}
 };
 
+static xslpoly poly_Judd_Voss_2 = { 0 };
+
 
 /* Stiles & Burch 1955 2 degree, */
 /* rotated to align with 1931 XYZ space, */
@@ -1511,6 +1601,8 @@ static xspect ob_Stiles_Burch_2[3] = {
 	}
 };
 
+static xslpoly poly_Stiles_Burch_2 = { 0 };
+
 /* Shaw & Fairchild 1997 2 degree observer. */
 /* From Mark Shaw's Masters thesis: */
 /* "Evaluating the 1931 CIE Color Matching Functions" */
@@ -1573,14 +1665,15 @@ static xspect ob_Shaw_Fairchild_2[3] = {
 		}
 	}
 };
+
+static xslpoly poly_Shaw_Fairchild_2 = { 0 };
+
 #endif /* !SALONEINSTLIB */
 
-/* Fill in three xpsects with a standard observer weighting curves */
+/* Return pointers to three xpsects with a standard observer weighting curves */
 /* return 0 on sucecss, nz if not matched */
 int standardObserver(
-xspect *sp0,
-xspect *sp1,
-xspect *sp2,				/* Xspects to fill in */
+xspect *sp[3],				/* Return 3 pointers */
 icxObserverType obType		/* Type of observer */
 ) {
 	switch (obType) {
@@ -1590,35 +1683,35 @@ icxObserverType obType		/* Type of observer */
 			return 1;
     	case icxOT_default:
     	case icxOT_CIE_1931_2:
-			*sp0 = ob_CIE_1931_2[0];
-			*sp1 = ob_CIE_1931_2[1];
-			*sp2 = ob_CIE_1931_2[2];
+			sp[0] = &ob_CIE_1931_2[0];
+			sp[1] = &ob_CIE_1931_2[1];
+			sp[2] = &ob_CIE_1931_2[2];
 			return 0;
     	case icxOT_CIE_1964_10:
-			*sp0 = ob_CIE_1964_10[0];
-			*sp1 = ob_CIE_1964_10[1];
-			*sp2 = ob_CIE_1964_10[2];
+			sp[0] = &ob_CIE_1964_10[0];
+			sp[1] = &ob_CIE_1964_10[1];
+			sp[2] = &ob_CIE_1964_10[2];
 			return 0;
 #ifndef SALONEINSTLIB
     	case icxOT_Stiles_Burch_2:
-			*sp0 = ob_Stiles_Burch_2[0];
-			*sp1 = ob_Stiles_Burch_2[1];
-			*sp2 = ob_Stiles_Burch_2[2];
+			sp[0] = &ob_Stiles_Burch_2[0];
+			sp[1] = &ob_Stiles_Burch_2[1];
+			sp[2] = &ob_Stiles_Burch_2[2];
 			return 0;
     	case icxOT_Judd_Voss_2:
-			*sp0 = ob_Judd_Voss_2[0];
-			*sp1 = ob_Judd_Voss_2[1];
-			*sp2 = ob_Judd_Voss_2[2];
+			sp[0] = &ob_Judd_Voss_2[0];
+			sp[1] = &ob_Judd_Voss_2[1];
+			sp[2] = &ob_Judd_Voss_2[2];
 			return 0;
     	case icxOT_CIE_1964_10c:
-			*sp0 = ob_CIE_1964_10c[0];
-			*sp1 = ob_CIE_1964_10c[1];
-			*sp2 = ob_CIE_1964_10c[2];
+			sp[0] = &ob_CIE_1964_10c[0];
+			sp[1] = &ob_CIE_1964_10c[1];
+			sp[2] = &ob_CIE_1964_10c[2];
 			return 0;
     	case icxOT_Shaw_Fairchild_2:
-			*sp0 = ob_Shaw_Fairchild_2[0];
-			*sp1 = ob_Shaw_Fairchild_2[1];
-			*sp2 = ob_Shaw_Fairchild_2[2];
+			sp[0] = &ob_Shaw_Fairchild_2[0];
+			sp[1] = &ob_Shaw_Fairchild_2[1];
+			sp[2] = &ob_Shaw_Fairchild_2[2];
 			return 0;
 #endif /* !SALONEINSTLIB */
 		default:
@@ -1651,6 +1744,37 @@ char *standardObserverDescription(icxObserverType obType) {
 	}
 	return "Unknown observer";
 }
+
+/* Return a pointer to the spectral locus poligon */
+/* return NULL on failure. */
+static xslpoly *spectral_locus_poligon(
+icxObserverType obType		/* Type of observer */
+) {
+	switch (obType) {
+    	case icxOT_custom:
+			return NULL;
+    	case icxOT_none:
+			return NULL;
+    	case icxOT_default:
+    	case icxOT_CIE_1931_2:
+			return &poly_CIE_1931_2;
+    	case icxOT_CIE_1964_10:
+			return &poly_CIE_1964_10;
+#ifndef SALONEINSTLIB
+    	case icxOT_Stiles_Burch_2:
+			return &poly_Stiles_Burch_2;
+    	case icxOT_Judd_Voss_2:
+			return &poly_Judd_Voss_2;
+    	case icxOT_CIE_1964_10c:
+			return &poly_CIE_1964_10c;
+    	case icxOT_Shaw_Fairchild_2:
+			return &poly_Shaw_Fairchild_2;
+#endif /* !SALONEINSTLIB */
+		default:
+			return NULL;
+	}
+}
+
 
 #ifndef SALONEINSTLIB
 /* ----------------------------------- */
@@ -1809,16 +1933,16 @@ static xspect CIE1995_TCS[] = {
 		1.0,				/* Scale factor */
 
 		{
-			0.08, 0.08, 0.08, 0.09, 0.1, 0.13, 0.17, 0.24, 0.32, 0.42, 
-			0.46, 0.48, 0.49, 0.49, 0.48, 0.47, 0.46, 0.45, 0.44, 0.43, 
-			0.41, 0.4, 0.38, 0.37, 0.35, 0.34, 0.33, 0.31, 0.3, 0.29, 
-			0.28, 0.28, 0.27, 0.26, 0.26, 0.25, 0.25, 0.25, 0.25, 0.26, 
-			0.26, 0.27, 0.27, 0.27, 0.28, 0.28, 0.3, 0.32, 0.35, 0.38, 
-			0.43, 0.48, 0.53, 0.57, 0.6, 0.63, 0.65, 0.66, 0.68, 0.69, 
-			0.69, 0.7, 0.71, 0.71, 0.71, 0.72, 0.72, 0.72, 0.72, 0.72, 
-			0.72, 0.72, 0.73, 0.73, 0.73, 0.73, 0.73, 0.73, 0.73, 0.73, 
-			0.73, 0.73, 0.73, 0.73, 0.73, 0.73, 0.73, 0.73, 0.73, 0.73, 
-			0.73, 0.73, 0.73, 0.73, 0.73
+			0.069, 0.072, 0.073, 0.070, 0.066, 0.062, 0.058, 0.055, 0.052, 0.052,
+			0.051, 0.050, 0.050, 0.049, 0.048, 0.047, 0.046, 0.044, 0.042, 0.041,
+			0.038, 0.035, 0.033, 0.031, 0.030, 0.029, 0.028, 0.028, 0.028, 0.029,
+			0.030, 0.030, 0.031, 0.031, 0.032, 0.032, 0.033, 0.034, 0.035, 0.037,
+			0.041, 0.044, 0.048, 0.052, 0.060, 0.076, 0.102, 0.136, 0.190, 0.256,
+			0.336, 0.418, 0.505, 0.581, 0.641, 0.682, 0.717, 0.740, 0.758, 0.770,
+			0.781, 0.790, 0.797, 0.803, 0.809, 0.814, 0.819, 0.824, 0.828, 0.830,
+			0.831, 0.833, 0.835, 0.836, 0.836, 0.837, 0.838, 0.839, 0.839, 0.839,
+			0.839, 0.839, 0.839, 0.839, 0.839, 0.839, 0.839, 0.839, 0.839, 0.839,
+			0.838, 0.837, 0.837, 0.836, 0.836
 		}
 	},
 	/* TCS10  5 Y 8/10  Strong yellow */
@@ -2034,9 +2158,7 @@ int write_nxspect(char *fname, xspect *sp, int nspec, int type) {
 	}
 
 	if (ocg->write_name(ocg, fname)) {
-#ifdef NEVER
-		printf("CGATS file write error : %s\n",ocg->err);
-#endif
+		DBGF((DBGA,"CGATS file write error : %s\n",ocg->err));
 		return 1;
 	}
 
@@ -2049,7 +2171,7 @@ int write_nxspect(char *fname, xspect *sp, int nspec, int type) {
 /* restore a set of spectrum from a CGATS file. */
 /* Up to nspec will be restored starting at offset off.. */
 /* The number restored from the file will be written to *nret */
-/* type  = any, 1 = SPECT, 2 = CMF, 3 = both */
+/* type: 0 = any, mask: 1 = SPECT, 2 = CMF, 4 = ccss */
 /* Return NZ on error */
 /* (Would be nice to return an error message!) */
 int read_nxspect(xspect *sp, char *fname, int *nret, int off, int nspec, int type) {
@@ -2061,9 +2183,7 @@ int read_nxspect(xspect *sp, char *fname, int *nret, int off, int nspec, int typ
 
 	/* Open and look at the spectrum file */
 	if ((icg = new_cgats()) == NULL) {	/* Create a CGATS structure */
-#ifdef DEBUG
-		printf("new_cgats() failed");
-#endif
+		DBG("new_cgats() failed");
 		icg->del(icg);
 		return 1;
 	}
@@ -2071,60 +2191,50 @@ int read_nxspect(xspect *sp, char *fname, int *nret, int off, int nspec, int typ
 		icg->add_other(icg, "");    /* Allow any signature file */
 	} else {
 		if (type & 1)
-			icg->add_other(icg, "SPECT");    /* Allow any signature file */
+			icg->add_other(icg, "SPECT");	/* Spectrum file */
 		if (type & 2)
-			icg->add_other(icg, "CMF");    /* Allow any signature file */
+			icg->add_other(icg, "CMF");		/* Color Matching Functions */
+		if (type & 4)
+			icg->add_other(icg, "CCSS");    /* Color Correction Spectral Samples */
 	}
 
 	if (icg->read_name(icg, fname)) {
-#ifdef DEBUG
-		printf("CGATS file read error : %s\n",icg->err);
-#endif
+		DBGF((DBGA,"CGATS file read error : %s\n",icg->err));
 		icg->del(icg);
 		return 1;
 	}
 
 	if (icg->ntables != 1) {
-#ifdef DEBUG
-		printf ("Input file doesn't contain exactly one table\n");
-#endif
+		DBG("Input file doesn't contain exactly one table\n");
 		icg->del(icg);
 		return 1;
 	}
 
 	if ((ii = icg->find_kword(icg, 0, "SPECTRAL_BANDS")) < 0) {
-#ifdef DEBUG
-		printf ("Input file doesn't contain keyword SPECTRAL_BANDS\n");
-#endif
+		DBG ("Input file doesn't contain keyword SPECTRAL_BANDS\n");
 		icg->del(icg);
 		return 1;
 	}
 	proto.spec_n = atoi(icg->t[0].kdata[ii]);
 	if ((ii = icg->find_kword(icg, 0, "SPECTRAL_START_NM")) < 0) {
-#ifdef DEBUG
-		printf ("Input file doesn't contain keyword SPECTRAL_START_NM\n");
-#endif
+		DBG("Input file doesn't contain keyword SPECTRAL_START_NM\n");
 		icg->del(icg);
 		return 1;
 	}
 	proto.spec_wl_short = atof(icg->t[0].kdata[ii]);
 	if ((ii = icg->find_kword(icg, 0, "SPECTRAL_END_NM")) < 0) {
-#ifdef DEBUG
-		printf ("Input file doesn't contain keyword SPECTRAL_END_NM\n");
-#endif
+		DBG("Input file doesn't contain keyword SPECTRAL_END_NM\n");
 		icg->del(icg);
 		return 1;
 	}
 	proto.spec_wl_long = atof(icg->t[0].kdata[ii]);
 
 	if ((ii = icg->find_kword(icg, 0, "SPECTRAL_NORM")) < 0) {
-#ifdef DEBUG
-		printf ("Input file doesn't contain keyword SPECTRAL_NORM\n");
-#endif
-		icg->del(icg);
-		return 1;
+		DBG("Input file doesn't contain keyword SPECTRAL_NORM - assuming 1.0\n");
+		proto.norm = 1.0;
+	} else {
+		proto.norm = atof(icg->t[0].kdata[ii]);
 	}
-	proto.norm = atof(icg->t[0].kdata[ii]);
 
 	/* Find the fields for spectral values */
 	for (i = 0; i < proto.spec_n; i++) {
@@ -2135,17 +2245,13 @@ int read_nxspect(xspect *sp, char *fname, int *nret, int off, int nspec, int typ
 		sprintf(buf,"SPEC_%03d",nm);
 
 		if ((fi = icg->find_field(icg, 0, buf)) < 0) {
-#ifdef DEBUG
-			printf("Input file doesn't contain field %s\n",buf);
-#endif
+			DBGF((DBGA,"Input file doesn't contain field %s\n",buf));
 			icg->del(icg);
 			return 1;
 		}
 
 		if (icg->t[0].ftype[fi] != r_t) {
-#ifdef DEBUG
-			printf ("Field %s in specrum is wrong type - should be a float\n",buf);
-#endif
+			DBGF((DBGA,"Field %s in specrum is wrong type - should be a float\n",buf));
 			icg->del(icg);
 			return 1;
 		}
@@ -2186,9 +2292,7 @@ int read_xspect(xspect *sp, char *fname) {
 	if ((rv = read_nxspect(sp, fname, &nret, 0, 1, 1)) != 0)
 		return rv;
 	if (nret != 1) {
-#ifdef DEBUG
-		printf ("Didn't read one spectra\n");
-#endif
+		DBG("Didn't read one spectra\n");
 		return 1;
 	}
 
@@ -2211,9 +2315,7 @@ int read_cmf(xspect sp[3], char *fname) {
 	if ((rv = read_nxspect(sp, fname, &nret, 0, 3, 2)) != 0)
 		return rv;
 	if (nret != 3) {
-#ifdef DEBUG
-		printf ("Didn't read three spectra\n");
-#endif
+		DBG("Didn't read three spectra\n");
 		return 1;
 	}
 
@@ -2294,10 +2396,14 @@ static int getval_raw_xspec_poly3(xspect *sp, double *rv, double xw) {
 	   + y[3] * (w3 - w2);
 #endif
 
+#ifdef NEVER	// ~~99
 	/* Calibration issues or interpolation overshoot can give -ve values, */
 	/* so protect against this. */
+	/* On the other hand, not allowing -ve values wrecks black level */
+	/* by not averaging out the noise. */
 	if (yw < 0.0)
 		yw = 0.0;
+#endif /* NEVER */
 
 	*rv = yw;
 	return rc;
@@ -2336,10 +2442,14 @@ static int getval_raw_xspec_lin(xspect *sp, double *rv, double wl) {
 	/* Compute interpolated value */
 	*rv = (1.0 - w) * sp->spec[i] + w * sp->spec[i+1];
 
+#ifdef NEVER
 	/* Calibration issues or interpolation overshoot can give -ve values, */
 	/* so protect against this. */
+	/* On the other hand, not allowing -ve values wrecks black level */
+	/* by not averaging out the noise. */
 	if (*rv < 0.0)
 		*rv = 0.0;
+#endif /* NEVER */
 
 	return rc;
 }
@@ -2376,10 +2486,14 @@ static int getval_raw_xspec_nn(xspect *sp, double *rv, double wl) {
 	/* Compute interpolated value */
 	*rv = sp->spec[i];
 
+#ifdef NEVER
 	/* Calibration issues or interpolation overshoot can give -ve values, */
 	/* so protect against this. */
+	/* On the other hand, not allowing -ve values wrecks black level */
+	/* by not averaging out the noise. */
 	if (*rv < 0.0)
 		*rv = 0.0;
+#endif /* NEVER */
 
 	return rc;
 }
@@ -2498,7 +2612,7 @@ void xsp_setUV(xspect *out, xspect *in, double uvlevel) {
 	
 	/* Copy from input and merge in the UV */
 	for (i = 0; i < out->spec_n; i++) {
-		double inv, uvv, bl, nbl;
+		double inv, uvv, bl, nbl, outv;
 
 		ww = XSPECT_XWL(out, i);
 		getval_raw_xspec_lin(&cin, &inv, ww);
@@ -2510,11 +2624,11 @@ void xsp_setUV(xspect *out, xspect *in, double uvlevel) {
 		inv *= bl;
 
 		/* Add/subtract UV in */
-		out->spec[i] = inv + uvv * uvlevel * avg;;
+		outv = inv + uvv * uvlevel * avg;;
 
-		/* Protect against negative output */
-		if (out->spec[i] < 0.0)
-			out->spec[i] = 0.0;
+		/* Protect against creating negative output */
+		if (outv >= out->spec[i])
+			out->spec[i] = outv;
 	}
 }
 
@@ -2523,6 +2637,8 @@ void xsp_setUV(xspect *out, xspect *in, double uvlevel) {
 
 /* Set Media White. This enables extracting and applying the */
 /* colorant reflectance value from/to the meadia. */
+// ~~99 this is confused. ->media is set from ->imedia in fwa setup.
+// ~~99 what's going on here ? The API needs fixing.
 static int xsp2cie_set_mw(xsp2cie *p,	/* this */
 xspect *media		/* Spectrum of plain media measured under that instrument */
 ) {
@@ -2638,9 +2754,10 @@ static int xsp2cie_fwa_apply(xsp2cie *p, xspect *out, xspect *in);
    "A Practical Approach to Measuring and Modelling Paper Fluorescense 
    for Improved Colorimetric Characterisation of Printing Processes"
    ISBN: 0-89208-248-8
+   for more information about the fwa compensation approach.
  */
 
-static int xsp2cie_set_fwa_imp(xsp2cie *p)	{
+static int xsp2cie_set_fwa_imp(xsp2cie *p) {
 	double ww;
 	int i, j;
 	int flag;
@@ -2661,23 +2778,24 @@ static int xsp2cie_set_fwa_imp(xsp2cie *p)	{
 	write_xspect("fwa1_stip.sp", &FWA1_stim);
 #endif
 
-#ifdef DEBUG
-	printf("set_fwa started\n"); fflush(stdout);
-#endif
+	DBG("set_fwa started\n");
 
 	p->bw = 1.0;		/* Intergrate over 1nm bands */
-	p->illum = p->illuminant;	/* Take copy of target illuminant */
-	xspect_denorm(&p->illum);
+	p->oillum = p->illuminant;	/* Take copy of observer illuminant */
+	xspect_denorm(&p->oillum);
+	if (p->tillum.spec_n == 0) {	/* If not set by set_fwa(), use observer illuminant */
+		p->tillum = p->oillum;		/* as target/simulated instrument illuminant. */
+	}
 
-	/* Compute normalised instrument illuminant spectrum */
+	/* Compute Y = 1 normalised instrument illuminant spectrum */
 	{
 		double scale = 0.0;
-		double Iim;		/* Instrument illuminant multiplier */
+		double Iim;		/* illuminant multiplier */
 
 		Iim = 0.0;
 		for (ww = p->observer[1].spec_wl_short; ww <= p->observer[1].spec_wl_long; ww += p->bw) {
 			double O, I;
-			getval_lxspec(&p->instr, &I, ww);
+			getval_lxspec(&p->iillum, &I, ww);
 			getval_lxspec(&p->observer[1], &O, ww);
 			scale += O;			/* Integrate Y observer values */
 			Iim += O * I;
@@ -2686,22 +2804,21 @@ static int xsp2cie_set_fwa_imp(xsp2cie *p)	{
 
 		Iim = 1.0/Iim;			/* Scale factor to make illuminant integral 1.0 */
 
-		for (j = 0; j < p->instr.spec_n; j++)
-			p->instr.spec[j] *= Iim;
-#ifdef DEBUG
-		printf("~1 Instrument Illum normal multiplier Iim = %f\n",Iim); fflush(stdout);
-#endif
+		for (j = 0; j < p->iillum.spec_n; j++)
+			p->iillum.spec[j] *= Iim;
+		DBGF((DBGA,"Instrument Illum normal multiplier Iim = %f\n",Iim));
 	}
 
-	/* Compute normalised target illuminant spectrum */
+	/* Compute Y = 1 normalised target illuminant spectrum */
 	{
-		double scale = 0.0;
-		double Itm;		/* Target illuminant multiplier */
+		double scale;
+		double Itm;		/* illuminant multiplier */
 
+		scale = 0.0;
 		Itm = 0.0;
 		for (ww = p->observer[1].spec_wl_short; ww <= p->observer[1].spec_wl_long; ww += p->bw) {
 			double O, I;
-			getval_lxspec(&p->illum, &I, ww);
+			getval_lxspec(&p->tillum, &I, ww);
 			getval_lxspec(&p->observer[1], &O, ww);
 			scale += O;			/* Integrate Y observer values */
 			Itm += O * I;
@@ -2709,22 +2826,66 @@ static int xsp2cie_set_fwa_imp(xsp2cie *p)	{
 		Itm /= scale;			/* Scale Y observer to unity */
 		Itm = 1.0/Itm;			/* Scale factor to make illuminant integral 1.0 */
 
-		for (j = 0; j < p->illum.spec_n; j++)
-			p->illum.spec[j] *= Itm;
+		for (j = 0; j < p->tillum.spec_n; j++)
+			p->tillum.spec[j] *= Itm;
+	}
+
+	/* Check if the instrument and target/simulated illuminant are the same. */
+	/* If they are, FWA compensation can be bypassed. */
+	/* (We check for an almost exact matcg on the assumption that these will */
+	/* both be xspect presets) */
+#define DEQ(A, B)  (fabs(A - B) < 1e-6)
+	p->insteqtarget = 0;
+	if (p->iillum.spec_n == p->tillum.spec_n
+	 && DEQ(p->iillum.spec_wl_short, p->tillum.spec_wl_short)
+	 && DEQ(p->iillum.spec_wl_long, p->tillum.spec_wl_long)) {
+		for (i = 0; i < p->iillum.spec_n; i++) {
+			if (!DEQ(p->tillum.spec[i], p->iillum.spec[i]))
+				break;
+		}
+		if (i >= p->iillum.spec_n) {
+			p->insteqtarget = 1;
+			DBGF((DBGA,"###### inst equals target illuminant #####\n"));
+		}
+	}
+#undef DEQ
+
+	/* Compute Y = 1 normalised observer illuminant spectrum */
+	{
+		double scale;
+		double Itm;		/* Target illuminant multiplier */
+
+		scale = 0.0;
+		Itm = 0.0;
+		for (ww = p->observer[1].spec_wl_short; ww <= p->observer[1].spec_wl_long; ww += p->bw) {
+			double O, I;
+			getval_lxspec(&p->oillum, &I, ww);
+			getval_lxspec(&p->observer[1], &O, ww);
+			scale += O;			/* Integrate Y observer values */
+			Itm += O * I;
+		}
+		Itm /= scale;			/* Scale Y observer to unity */
+		Itm = 1.0/Itm;			/* Scale factor to make illuminant integral 1.0 */
+
+		for (j = 0; j < p->oillum.spec_n; j++)
+			p->oillum.spec[j] *= Itm;
 	}
 
 	/* Estimate the amount of generic FWA in the media. */
 	/* and also compute an estimated media minus FWA spectrum */
 	/* by creating a target white line from the media spectrum */
 
+	/* This is quite good for "normal" media, which has a fairly */
+	/* flat underlying (non FWA) response, but doesn't work so */
+	/* well for meadia that rolls off at short wavelengths and uses */
+	/* FWA to compensate for this. */
+	
 	/* Find darkest point between 450 and 510nm */
 	ar = 1e6;
 	for (ww = 450.0; ww <= 510.0; ww += p->bw) {	
 		double rr;
 		getval_lxspec(&p->imedia, &rr, ww);
-#ifdef DEBUG
-		printf("~1 media %f = %f\n",ww,rr);
-#endif
+		DBGF((DBGA,"media %f = %f\n",ww,rr));
 
 		if (rr < ar) {
 			aw = ww;
@@ -2737,9 +2898,7 @@ static int xsp2cie_set_fwa_imp(xsp2cie *p)	{
 	for (ww = aw+70.0; ww <= 630.0; ww += p->bw) {
 		double rr;
 		getval_lxspec(&p->imedia, &rr, ww);
-#ifdef DEBUG
-		printf("~1 media %f = %f\n",ww,rr);
-#endif
+		DBGF((DBGA,"media %f = %f\n",ww,rr));
 		if (rr > br) {
 			bw = ww;
 			br = rr;
@@ -2748,9 +2907,7 @@ static int xsp2cie_set_fwa_imp(xsp2cie *p)	{
 	if (br < ar)
 		br = ar;		/* Make flat rather than slope to the right */
 	
-#ifdef DEBUG
-	printf("~1 Cuttoff line params: A = %f %f, B = %f %f\n", aw, ar, bw, br); fflush(stdout);
-#endif
+	DBGF((DBGA,"Cuttoff line params: A = %f %f, B = %f %f\n", aw, ar, bw, br));
 
 #ifdef STOCKFWA			/* Use table shape as FWA basis */
 
@@ -2769,27 +2926,23 @@ static int xsp2cie_set_fwa_imp(xsp2cie *p)	{
 			double Eu;
 			double mm;
 
-			getval_lxspec(&p->instr, &Ii, ww);	/* Normalised illuminant at this wavelength */
+			getval_lxspec(&p->iillum, &Ii, ww);	/* Normalised illuminant at this wavelength */
 			if (Ii < 1e-9)
 				Ii = 1e-9;
 			getval_lxspec(&FWA1_emit, &Eu, ww);	/* FWA emission at this wavelength */
 			mm = ((rr - Rl) * Ii)/Eu;
 			if (mm > Em) {
-#ifdef DEBUG
-				printf("Update Em to %f at %fnm for target %f\n",mm,ww,rr-Rl);
-#endif
+				DBGF((DBGA,"Update Em to %f at %fnm for target %f\n",mm,ww,rr-Rl));
 				Em = mm;		/* Greater multiplier to explain bump */
 			}
 		}
 	}
-#ifdef DEBUG
-	printf("~1 Em = %f\n",Em); fflush(stdout);
-#endif
+	DBGF((DBGA,"Em = %f\n",Em));
 
 	/* Setup spectrum to hold result over exected range */
 	/* and base media reflectance */
-	p->media = p->imedia;	/* Take copy of media white */
-	p->emits = p->imedia;	/* Structure copy */
+	p->media = p->imedia;		/* Take copy of media white */
+	p->emits = p->imedia;		/* Structure copy */
 	xspect_denorm(&p->media);	/* Set norm to 1.0 */
 	xspect_denorm(&p->emits);
 
@@ -2811,7 +2964,7 @@ static int xsp2cie_set_fwa_imp(xsp2cie *p)	{
 		p->emits.spec[i] = p->emits.norm * Eu;	/* Remember FWA spectrum */
 
 		Rm = p->media.spec[i]/p->media.norm; 	/* Media at this point */
-		getval_lxspec(&p->instr, &Ii, ww);	/* Normalised illuminant at this wavelength */
+		getval_lxspec(&p->iillum, &Ii, ww);	/* Normalised illuminant at this wavelength */
 		if (Ii < 1e-9)
 			Ii = 1e-9;
 		Rm *= Ii;						/* Light reflected from media */
@@ -2820,9 +2973,7 @@ static int xsp2cie_set_fwa_imp(xsp2cie *p)	{
 		if (Rmb < 0.01)
 			Rmb = 0.01;					/* This would be silly */
 		p->media.spec[i] = p->media.norm * Rmb/Ii;	/* Convert media to base media */
-#ifdef DEBUG
-		printf("~1 ww %f, Eu %f, Rm %f, Rmb %f\n",ww, Eu, Rm, Rmb);
-#endif
+		DBGF((DBGA,"ww %f, Eu %f, Rm %f, Rmb %f\n",ww, Eu, Rm, Rmb));
 
 	}
 	/* Prevent silliness */
@@ -2883,7 +3034,7 @@ static int xsp2cie_set_fwa_imp(xsp2cie *p)	{
 		Rl = (ww - aw)/(bw - aw) * (br - ar) + ar;		/* Line at this point */
 
 		getval_lxspec(&p->imedia, &Rm, ww);		/* Media at this point */
-//printf("~1 ww %f, Rl %f, Rm %f, Rmb %f\n",ww,Rl,Rm,Rmb);
+		DBGF((DBGA,"ww %f, Rl %f, Rm %f, Rmb %f\n",ww,Rl,Rm,Rmb));
 
 		/* Stop following the filter once the actual media has crossed over it */
 		if (ww < 450.0 && Rm < Rmb)
@@ -2897,14 +3048,12 @@ static int xsp2cie_set_fwa_imp(xsp2cie *p)	{
 			double Ii;
 
 			p->media.spec[i] = p->media.norm * Rmb;		/* Convert media to base media */
-			getval_lxspec(&p->instr, &Ii, ww);	/* Normalised illuminant at this wavelength */
+			getval_lxspec(&p->iillum, &Ii, ww);	/* Normalised illuminant at this wavelength */
 			if (Ii < 1e-9)
 				Ii = 1e-9;
 
 			p->emits.spec[i] = p->emits.norm * (Rm - Rmb) * Ii;
-#ifdef DEBUG
-			printf("~1 ww %fnm, Rm %f, Rmb %f, Eu %f\n",ww, Rm, Rmb, p->emits.spec[i]/p->emits.norm);
-#endif
+			DBGF((DBGA,"ww %fnm, Rm %f, Rmb %f, Eu %f\n",ww, Rm, Rmb, p->emits.spec[i]/p->emits.norm));
 			
 		} else {
 			p->emits.spec[i] = 0.0;
@@ -2932,15 +3081,13 @@ static int xsp2cie_set_fwa_imp(xsp2cie *p)	{
 		double Ii;
 		double Su;
 
-		getval_lxspec(&p->instr, &Ii, ww);	/* Normalised illuminant at this wavelength */
+		getval_lxspec(&p->iillum, &Ii, ww);	/* Normalised illuminant at this wavelength */
 		if (Ii < 1e-9)
 			Ii = 1e-9;
 		getval_lxspec(&FWA1_stim, &Su, ww);	/* FWA stimulation profile at this wavelength */
 		p->Sm += Su * Ii;
 	}
-#ifdef DEBUG
-	printf("~1 Sm = %f\n",p->Sm); fflush(stdout);
-#endif
+	DBGF((DBGA,"Sm = %f\n",p->Sm));
 
 	/* Compute FWA content of this media, for information purposes */
 	p->FWAc = 0.0;
@@ -2951,9 +3098,7 @@ static int xsp2cie_set_fwa_imp(xsp2cie *p)	{
 		p->FWAc += Eu;
 	}
 	p->FWAc /= p->Sm;		/* Divided by stimulation */
-#ifdef DEBUG
-	printf("~1 FWA content = %f\n",p->FWAc); fflush(stdout);
-#endif
+	DBGF((DBGA,"FWA content = %f\n",p->FWAc));
 
 	/* Turn on FWA compensation */
 	p->convert  = xsp2cie_fwa_convert;
@@ -2972,15 +3117,13 @@ static int xsp2cie_set_fwa_imp(xsp2cie *p)	{
 
 		getval_lxspec(&p->imedia, &Rm, ww);	/* Media at this point */
 		getval_lxspec(&p->media, &Rmb, ww);	/* Base Media */ 
-		getval_lxspec(&p->instr, &Ii, ww);	/* Normalised illuminant at this wavelength */
+		getval_lxspec(&p->iillum, &Ii, ww);	/* Normalised illuminant at this wavelength */
 		if (Ii < 1e-9)
 			Ii = 1e-9;
 		getval_lxspec(&p->emits, &Eu, ww);	/* FWA emission at this wavelength */
 
 		Rmd = ((Ii * Rmb) + Eu)/Ii;			/* Base Media plus FWA */
-#ifdef DEBUG
-		printf("~1 %fnm, is %f should be %f, Rmb %f, Eu %f\n",ww, Rm, Rmd, Rmb, Eu);
-#endif
+		DBGF((DBGA,"%fnm, is %f should be %f, Rmb %f, Eu %f\n",ww, Rm, Rmd, Rmb, Eu));
 
 #ifdef DOPLOT
 		xx[i] = ww;
@@ -2996,21 +3139,26 @@ static int xsp2cie_set_fwa_imp(xsp2cie *p)	{
 #endif
 #endif /* DEBUG */
 
-#ifdef DEBUG
-	printf("~1 We're done\n"); fflush(stdout);
-#endif
+	DBGF((DBGA,"We're done\n"));
 	return 0;
 }
 
 /* Set FWA given instrument illuminant and white media measurement */
 static int xsp2cie_set_fwa(xsp2cie *p,	/* this */
-xspect *instr,		/* Spectrum of instrument illuminent */
+xspect *iillum,		/* Spectrum of instrument illuminent */
+xspect *tillum,		/* Spectrum of target/simulated instrument illuminant */
+					/* NULL to use observer illuminant. */
 xspect *media		/* Spectrum of plain media measured under that instrument */
 ) {
-	p->instr = *instr;	/* Take copy of instrument illuminant */
-	p->imedia = *media;	/* Take copy of measured media */
-
-	xspect_denorm(&p->instr); /* Remove normalisation factor on spectrum we've made copies of */
+	p->iillum = *iillum;			/* Take copy of instrument illuminant */
+	xspect_denorm(&p->iillum);		/* Remove normalisation factor */
+	if (tillum != NULL) {
+		p->tillum = *tillum;		/* Take copy of target/simulated instrument illuminant */
+		xspect_denorm(&p->tillum);	/* Remove normalisation factor */
+	} else {
+		p->tillum.spec_n = 0;
+	}
+	p->imedia = *media;		/* Take copy of measured media */
 
 	return xsp2cie_set_fwa_imp(p);
 }
@@ -3019,8 +3167,14 @@ xspect *media		/* Spectrum of plain media measured under that instrument */
 /* We assume that xsp2cie_set_fwa has been called first. */
 static int xsp2cie_update_fwa_custillum(
 xsp2cie *p,	/* this */
-xspect *custIllum		/* Updated custom illuminant */
+xspect *tillum,		/* Spectrum of target/simulated instrument illuminant, */
+                    /* NULL to use previous set_fwa() value. */
+xspect *custIllum	/* Spectrum of observer illuminant */
 ) {
+	if (tillum != NULL) {
+		p->tillum = *tillum;		/* Take copy of target/simulated instrument illuminant */
+		xspect_denorm(&p->tillum);	/* Remove normalisation factor */
+	}
 	p->illuminant = *custIllum;
 
 	return xsp2cie_set_fwa_imp(p);
@@ -3037,6 +3191,8 @@ double *FWAc) {
 }
 
 /* Do the FWA corrected spectral to CIE conversion. */
+/* If the instrument and target illuminant are the same, */
+/* then FWA correction is bypassed. */ 
 /* Note that the input spectrum normalisation value is used. */
 /* Emissive spectral values are assumed to be in mW/nm, and sampled */
 /* rather than integrated if they are not at 1nm spacing. */
@@ -3070,9 +3226,7 @@ xspect *in			/* Spectrum to be converted */
 	tsout.spec_wl_long = 0.0;
 	tsout.norm = 0.0;
 
-#define MIN_UVILLUM 1e-8		/* Minimum assumed UV illumination level at wavelength */
-#define MIN_UVREFL  1e-6		/* Minimum assumed UV reflectance at wavelength */
-#define MIN_ILLUM 1e-6		/* Minimum assumed illumination level at wavelength */
+#define MIN_ILLUM 1e-8		/* Minimum assumed illumination level at wavelength */
 #define MIN_REFL  1e-6		/* Minimum assumed reflectance at wavelength */
 
 	/* With colorant, estimate stimulation level of FWA for instrument illuminant */
@@ -3097,24 +3251,28 @@ xspect *in			/* Spectrum to be converted */
 			Kc  = Emc * Eu;						/* FWA contribution under inst. illum. */
 			Kct = Emct * Eu;					/* FWA contribution under target illum. */
 
-			getval_lxspec(&p->instr, &Ii, ww);	/* Normalised instr. illuminant at wavelength */
-			if (Ii < MIN_UVILLUM)
-				Ii = MIN_UVILLUM;
-			getval_lxspec(&p->illum, &It, ww);	/* Normalised target. illuminant at wavelength */
-			if (It < MIN_UVILLUM)
-				It = MIN_UVILLUM;
-			getval_lxspec(in, &Rc, ww)	;		/* Media + colorant reflectance at wavelength */
+			getval_lxspec(&p->iillum, &Ii, ww);	/* Normalised instr. illuminant at wavelength */
+			if (Ii < MIN_ILLUM)
+				Ii = MIN_ILLUM;
+
+			getval_lxspec(&p->tillum, &It, ww);/* Normalised target. illuminant at wavelength */
+			if (It < MIN_ILLUM)
+				It = MIN_ILLUM;
 
 			getval_lxspec(&p->media, &Rmb, ww);	/* Base media reflectance at this wavelength */
-			if (Rmb < MIN_UVREFL)
-				Rmb = MIN_UVREFL;
+			if (Rmb < MIN_REFL)
+				Rmb = MIN_REFL;
+
+			getval_lxspec(in, &Rc, ww)	;		/* Media + colorant reflectance at wavelength */
+			if (Rc < 0.0)
+				Rc = 0.0;
 
 #ifdef NEVER
 			Rcch = sqrt(Rc/Rmb);				/* Half reflectance estimate (valid if no FWA) */
 
 #else
 			/* Solve for underlying colorant half reflectance, discounting FWA */
-			if (Rmb <= MIN_UVREFL) /* Hmm. */
+			if (Rmb <= MIN_REFL) /* Hmm. */
 				Rcch = sqrt(fabs(Rmb));
 			else
 				Rcch = (-Kc + sqrt(Kc * Kc + 4.0 * Ii * Ii * Rmb * Rc))/(2.0 * Ii * Rmb);
@@ -3125,16 +3283,12 @@ xspect *in			/* Spectrum to be converted */
 
 			Smc  += Su * (Ii * Rcch + Kc);
 			Smct += Su * (It * Rcch + Kct);
-#ifdef DEBUG
-	printf("~1 at %.1fnm, Rmb %f, Rc %f, Rch %f, Rcch %f, Ii %f, It %f, Kct %f, Smc %f, Smct %f,\n",ww,Rmb,Rc,sqrt(Rc),Rcch,Ii,It,Kct,Su * (Ii * Rcch + Kc),Su * (It * Rcch + Kct));
-#endif
+			DBGF((DBGA,"at %.1fnm, Rmb %f, Rc %f, Rch %f, Rcch %f, Ii %f, It %f, Kct %f, Smc %f, Smct %f,\n",ww,Rmb,Rc,sqrt(Rc),Rcch,Ii,It,Kct,Su * (Ii * Rcch + Kc),Su * (It * Rcch + Kct)));
 		}
 		Emc  = Smc/p->Sm;	/* FWA Emmsion muliplier with colorant for instr. illum. */
 		Emct = Smct/p->Sm;	/* FWA Emmsion muliplier with colorant for target illum. */
 
-#ifdef DEBUG
-	printf("~1 Itteration %d, Smc %f, Smct %f, Emc %f, Emct %f\n",k, Smc,Smct,Emc,Emct); fflush(stdout);
-#endif
+		DBGF((DBGA,"Itteration %d, Smc %f, Smct %f, Emc %f, Emct %f\n\n",k, Smc,Smct,Emc,Emct));
 	}
 
 	for (j = 0; j < 3; j++) {
@@ -3151,22 +3305,33 @@ xspect *in			/* Spectrum to be converted */
 		double Kct;		/* FWA contribution for target illum */
 		double Ii;		/* Instrument illuminant level */
 		double It;		/* Target illuminant level */
+		double Io;		/* Observer illuminant level */
 		double Rmb;		/* Base media reflectance estimate */
 		double Eu;		/* FWA emmission profile */
 		double Rc;		/* Measured reflectance under inst. illum. */
 		/*     Rch         Measured half reflectance under inst. illum */
 		double Rcch;	/* Corrected Rc colorant half reflectance */
-		double RctI;	/* Corrected Rc for target illuminant times illuminant */
+		double Rct;		/* Corrected Rc for target illuminant */
 
 		getval_lxspec(&p->emits, &Eu, ww);	/* FWA emission at this wavelength */
 		Kc  = Emc * Eu;						/* FWA contribution under inst. illum. */
 		Kct = Emct * Eu;					/* FWA contribution under target illum. */
 
-		getval_lxspec(&p->media, &Rmb, ww);	/* Base Media */
-		getval_lxspec(in, &Rc, ww);			/* Media + colorant reflectance at wavelength + FWA */
-		getval_lxspec(&p->instr, &Ii, ww);	/* Normalised instrument illuminant */
+		getval_lxspec(&p->iillum, &Ii, ww);	/* Normalised instr. illuminant at wavelength */
 		if (Ii < MIN_ILLUM)
 			Ii = MIN_ILLUM;
+
+		getval_lxspec(&p->tillum, &It, ww);/* Normalised target. illuminant at wavelength */
+		if (It < MIN_ILLUM)
+			It = MIN_ILLUM;
+
+		getval_lxspec(&p->media, &Rmb, ww);	/* Base media reflectance at this wavelength */
+		if (Rmb < MIN_REFL)
+			Rmb = MIN_REFL;
+
+		getval_lxspec(in, &Rc, ww)	;		/* Media + colorant reflectance at wavelength */
+		if (Rc < 0.0)
+			Rc = 0.0;
 
 		/* Solve for underlying colorant half transmittance, discounting FWA */
 		if (Rmb <= MIN_REFL) /* Hmm. */
@@ -3174,38 +3339,34 @@ xspect *in			/* Spectrum to be converted */
 		else
 			Rcch = (-Kc + sqrt(Kc * Kc + 4.0 * Ii * Ii * Rmb * Rc))/(2.0 * Ii * Rmb);
 
-		/* Estimated reflectance times target illum. */
-		getval_lxspec(&p->illum, &It, ww);	/* Normalised target illuminant */
-		if (It < MIN_ILLUM)
-			It = MIN_ILLUM;
-		RctI = (It * Rcch * Rmb + Kct) * Rcch;
+		/* Estimated corrected reflectance */
+		Rct = ((It * Rcch * Rmb + Kct) * Rcch)/It;
 
-#ifdef DEBUG
-	printf("~1 at %.1fnm, Rmb %f, Rc %f, Rch %f, Rcch %f, Ii %f, It %f, Kct %f, RctI %f, CrdRef %f\n",ww,Rmb,Rc,sqrt(Rc),Rcch,Ii,It,Kct,RctI,RctI/It);
-#endif
+		DBGF((DBGA,"at %.1fnm, Rmb %f, Rc %f, Rch %f, Rcch %f, Ii %f, It %f, Kct %f, Rct %f\n",ww,Rmb,Rc,sqrt(Rc),Rcch,Ii,It,Kct,Rct));
 
-#undef MIN_UVILLUM 
-#undef MIN_UVREFL
-#undef MIN_ILLUM 
-#undef MIN_REFL
+		if (p->insteqtarget)		/* Ignore FWA corrected value if same illuminant */
+			Rct = Rc;
 
 #ifdef DOPLOT_ALL_FWA
 		xx[plix] = ww;
 		y1[plix] = Rc;			/* Uncorrected reflectance */
-//		y2[plix] = RctI/It - Rc;	/* Difference between corrected and uncorrected */
+//		y2[plix] = Rct - Rc;	/* Difference between corrected and uncorrected */
 //		y2[plix] = Rcch * Rcch;		/* Estimated underlying colorant reflectance without FWA */
-//		y2[plix] = Rmb;		/* Base media relectance estimate */
+//		y2[plix] = Rmb;			/* Base media relectance estimate */
 		y2[plix] = Kct;			/* FWA contribution under target illuminant */
-		y3[plix++] = RctI/It;	/* Corrected reflectance */
+		y3[plix++] = Rct;		/* Corrected reflectance */
 #endif /* DOPLOT_ALL_FWA */
+
+		/* Observer illuminant */
+		getval_lxspec(&p->oillum, &Io, ww);	/* Normalised observer illuminant */
 
 		/* Compute CIE result */
 		for (j = 0; j < 3; j++) {
 			double O;
 			getval_lxspec(&p->observer[j], &O, ww);
 			if (j == 1)
-				scale += It * O;			/* Integrate Y illuminant/observer values */
-			wout[j] += RctI * O;
+				scale += Io * O;			/* Integrate Y illuminant/observer values */
+			wout[j] += Rct * Io * O;		/* Corrected refl. * Observer illuminant */
 #ifdef DEBUG
 			chout[j] += Rc * It * O;
 #endif /* DEBUG */
@@ -3219,20 +3380,24 @@ xspect *in			/* Spectrum to be converted */
 	}
 	for (j = 0; j < 3; j++) {	/* Scale for illuminant/observer normalisation of Y */
 		wout[j] *= scale;
-		if (wout[j] < 0.0)
+#ifdef CLAMP_XYZ
+		if (p->clamp && wout[j] < 0.0)
 			wout[j] = 0.0;		/* Just to be sure we don't get silly values */
+#endif /* CLAMP_XYZ */
 	}
 
 #ifdef DEBUG
 	for (j = 0; j < 3; j++) {	/* Scale for illuminant/observer normalisation of Y */
-		chout[j] /= scale;
-		if (chout[j] < 0.0)
+		chout[j] *= scale;
+#ifdef CLAMP_XYZ
+		if (p->clamp && chout[j] < 0.0)
 			chout[j] = 0.0;		/* Just to be sure we don't get silly values */
+#endif /* CLAMP_XYZ */
 	}
 	icmXYZ2Lab(&icmD50, oout, wout);
 	icmXYZ2Lab(&icmD50, chout, chout);
-	printf("~1 Compensated %f %f %f, uncompensated %f %f %f\n",
-	oout[0], oout[1], oout[2], chout[0], chout[1], chout[2]);
+	DBGF((DBGA,"Compensated %f %f %f, uncompensated %f %f %f\n",
+	oout[0], oout[1], oout[2], chout[0], chout[1], chout[2]));
 #endif /* DEBUG */
 
 #ifdef DOPLOT_ALL_FWA
@@ -3251,12 +3416,12 @@ xspect *in			/* Spectrum to be converted */
 			double Kc;		/* FWA contribution for instrument illum */
 			double Kct;		/* FWA contribution for target illum */
 			double Ii;		/* Instrument illuminant level */
-			double It;		/* Target illuminant level */
+			double It;		/* Target/simulated instrument illuminant level */
 			double Rmb;		/* Base media reflectance estimate */
 			double Eu;		/* FWA emmission profile */
 			double Rc;		/* Reflectance under inst. illum. */
 			double Rcch;	/* Corrected Rc half reflectance */
-			double RctI;	/* Corrected Rc for target illuminant times illuminant */
+			double Rct;		/* Corrected Rc for target illuminant */
 	
 #if defined(__APPLE__) && defined(__POWERPC__)
 			gcc_bug_fix(i);
@@ -3268,24 +3433,33 @@ xspect *in			/* Spectrum to be converted */
 			Kc  = Emc * Eu;				/* FWA contribution under inst. illum. */
 			Kct = Emct * Eu;			/* FWA contribution under target illum. */
 	
-			getval_lxspec(&p->media, &Rmb, ww);	/* Base Media */
-			getval_lxspec(in, &Rc, ww);	/* Media + colorant reflectance at wavelength + FWA */
-			getval_lxspec(&p->instr, &Ii, ww);	/* Normalised instrument illuminant */
-			if (Ii < 1e-9)
-				Ii = 1e-9;
+			getval_lxspec(&p->iillum, &Ii, ww);	/* Normalised instr. illuminant at wavelength */
+			if (Ii < MIN_ILLUM)
+				Ii = MIN_ILLUM;
 	
-			if (Rmb < 1e-9) /* Hmm. */
+			getval_lxspec(&p->tillum, &It, ww);/* Normalised target. illuminant at wavelength */
+			if (It < MIN_ILLUM)
+				It = MIN_ILLUM;
+	
+			getval_lxspec(&p->media, &Rmb, ww);	/* Base media reflectance at this wavelength */
+			if (Rmb < MIN_REFL)
+				Rmb = MIN_REFL;
+	
+			getval_lxspec(in, &Rc, ww)	;		/* Media + colorant reflectance at wavelength */
+			if (Rc < 0.0)
+				Rc = 0.0;
+
+			if (Rmb < MIN_REFL) /* Hmm. */
 				Rcch = sqrt(fabs(Rmb));
 			else
 				Rcch = (-Kc + sqrt(Kc * Kc + 4.0 * Ii * Ii * Rmb * Rc))/(2.0 * Ii * Rmb);
 	
-			/* Estimated reflectance times target illum. */
-			getval_lxspec(&p->illum, &It, ww);	/* Normalised target illuminant */
-			if (It < 1e-9)
-				It = 1e-9;
-			RctI = (It * Rcch * Rmb + Kct) * Rcch;
-	
-			tsout.spec[i] = tsout.norm * RctI/It;		/* Corrected reflectance */
+			Rct = ((It * Rcch * Rmb + Kct) * Rcch)/It;
+
+			if (p->insteqtarget)		/* Ignore FWA corrected value if same illuminant */
+				Rct = Rc;
+
+			tsout.spec[i] = tsout.norm * Rct;
 		}
 	}
 
@@ -3303,6 +3477,10 @@ xspect *in			/* Spectrum to be converted */
 	if (sout != NULL) {
 		*sout = tsout;		/* Structure copy */
 	}
+
+#undef MIN_ILLUM 
+#undef MIN_REFL
+
 }
 
 /* Normal conversion without returning spectrum */
@@ -3349,7 +3527,7 @@ xspect *in				/* Spectrum to be converted, normalised by norm */
 
 			getval_lxspec(&p->media, &Rmb, ww);	/* Base Media */
 			getval_lxspec(in, &Rc, ww);			/* Media + colorant reflectance at wavelength + FWA */
-			getval_lxspec(&p->instr, &Ii, ww);	/* Normalised instrument illuminant */
+			getval_lxspec(&p->iillum, &Ii, ww);	/* Normalised instrument illuminant */
 			if (Ii < 1e-9)
 				Ii = 1e-9;
 
@@ -3361,16 +3539,14 @@ xspect *in				/* Spectrum to be converted, normalised by norm */
 			getval_lxspec(&FWA1_stim, &Su, ww);	/* FWA stimulation sensitivity this wavelength */
 			Smc  += Su * (Ii * Rcch + Kc);
 
-//printf("~1 ww = %f, Rmb %f, Rcch %f, Ii %f, Su %f, Smc %f\n", ww,Rmb,Rcch,Ii,Su,Smc);
+//DBGF((DBGA,"ww = %f, Rmb %f, Rcch %f, Ii %f, Su %f, Smc %f\n", ww,Rmb,Rcch,Ii,Su,Smc));
 		}
 		Emc  = Smc/p->Sm;	/* FWA Emmsion muliplier with colorant for instr. illum. */
 	}
 
-#ifdef DEBUG
-	printf("~1 extract:\n");
-	printf("~1 Smc = %f\n",Smc); fflush(stdout);
-	printf("~1 Emc = %f\n",Emc); fflush(stdout);
-#endif
+	DBGF((DBGA,"extract:\n"));
+	DBGF((DBGA,"Smc = %f\n",Smc));
+	DBGF((DBGA,"Emc = %f\n",Emc));
 
 	out->spec_n = in->spec_n;
 	out->spec_wl_short = in->spec_wl_short;
@@ -3396,7 +3572,7 @@ xspect *in				/* Spectrum to be converted, normalised by norm */
 
 		getval_lxspec(&p->media, &Rmb, ww);	/* Base Media */
 		getval_lxspec(in, &Rc, ww);			/* Media + colorant reflectance at wavelength + FWA */
-		getval_lxspec(&p->instr, &Ii, ww);	/* Normalised instrument illuminant */
+		getval_lxspec(&p->iillum, &Ii, ww);	/* Normalised instrument illuminant */
 		if (Ii < 1e-9)
 			Ii = 1e-9;
 
@@ -3462,22 +3638,21 @@ xspect *in				/* Colorant reflectance to be applied */
 			getval_lxspec(in, &Rcch, ww);		/* Colorant reflectance at wavelength */
 			Rcch = sqrt(Rcch);					/* Half reflectance estimate (valid if no FWA) */
 
-			getval_lxspec(&p->instr, &Ii, ww);	/* Normalised instr. illuminant at wavelength */
+			getval_lxspec(&p->iillum, &Ii, ww);	/* Normalised instr. illuminant at wavelength */
 			if (Ii < 1e-9)
 				Ii = 1e-9;
 
 			getval_lxspec(&FWA1_stim, &Su, ww);	/* FWA stimulation sensitivity this wavelength */
 			Smc  += Su * (Ii * Rcch + Kc);
-//printf("~1 ww = %f, Rcch %f, Ii %f, Su %f, Smc %f\n", ww,Rcch,Ii,Su,Smc);
+//DBGF((DBGA,"ww = %f, Rcch %f, Ii %f, Su %f, Smc %f\n", ww,Rcch,Ii,Su,Smc));
 		}
 		Emc  = Smc/p->Sm;	/* FWA Emmsion muliplier with colorant for instr. illum. */
 	}
 
-#ifdef DEBUG
-	printf("~1 apply:\n");
-	printf("~1 Smc = %f\n",Smc); fflush(stdout);
-	printf("~1 Emc = %f\n",Emc); fflush(stdout);
-#endif
+	DBGF((DBGA,"apply:\n"));
+	DBGF((DBGA,"Smc = %f\n",Smc));
+	DBGF((DBGA,"Emc = %f\n",Emc));
+
 	out->spec_n = in->spec_n;
 	out->spec_wl_short = in->spec_wl_short;
 	out->spec_wl_long = in->spec_wl_long;
@@ -3507,7 +3682,7 @@ xspect *in				/* Colorant reflectance to be applied */
 		if (Rmb < 1e-9) /* Hmm. */
 			Rcch = sqrt(fabs(Rmb));
 
-		getval_lxspec(&p->instr, &Ii, ww);	/* Normalised instrument illuminant */
+		getval_lxspec(&p->iillum, &Ii, ww);	/* Normalised instrument illuminant */
 		if (Ii < 1e-9)
 			Ii = 1e-9;
 
@@ -3577,8 +3752,10 @@ xspect *in			/* Spectrum to be converted */
 	}
 	for (j = 0; j < 3; j++) {	/* Scale for illuminant/observer normalisation of Y */
 		out[j] *= scale;
-		if (out[j] < 0.0)
+#ifdef CLAMP_XYZ
+		if (p->clamp && out[j] < 0.0)
 			out[j] = 0.0;		/* Just to be sure we don't get silly values */
+#endif /* CLAMP_XYZ */
 	}
 
 #ifndef SALONEINSTLIB
@@ -3611,8 +3788,9 @@ icxIllumeType ilType,			/* Illuminant */
 xspect        *custIllum,		/* Optional custom illuminant */
 icxObserverType obType,			/* Observer */
 xspect        custObserver[3],	/* Optional custom observer */
-icColorSpaceSignature  rcs		/* Return color space, icSigXYZData or icSigLabData */
+icColorSpaceSignature  rcs,		/* Return color space, icSigXYZData or icSigLabData */
 								/* ** Must be icSigXYZData if SALONEINSTLIB ** */
+icxClamping clamp				/* NZ to clamp XYZ/Lab to be +ve */
 ) {
 	xsp2cie *p;
 
@@ -3638,6 +3816,11 @@ icColorSpaceSignature  rcs		/* Return color space, icSigXYZData or icSigLabData 
 	    case icxIT_D50:
 			p->illuminant = il_D50;
 			break;
+	    case icxIT_D50M2:
+			if (il_D50M2.spec_n == 0)
+				uv_filter(&il_D50M2, &il_D50);
+			p->illuminant = il_D50M2;
+			break;
 	    case icxIT_D65:
 			p->illuminant = il_D65;
 			break;
@@ -3659,9 +3842,7 @@ icColorSpaceSignature  rcs		/* Return color space, icSigXYZData or icSigLabData 
 			break;
 #endif /* !SALONEINSTLIB */
 		default:
-#ifdef DEBUG
-			printf("new_xsp2cie() unrecognised illuminant 0x%x",ilType);
-#endif
+			DBGF((DBGA,"new_xsp2cie() unrecognised illuminant 0x%x\n",ilType));
 			free(p);
 			return NULL;
 	}
@@ -3707,9 +3888,7 @@ icColorSpaceSignature  rcs		/* Return color space, icSigXYZData or icSigLabData 
 			break;
 #endif /* !SALONEINSTLIB */
 		default:
-#ifdef DEBUG
-			printf("new_xsp2cie() unrecognised observer type 0x%x",obType);
-#endif
+			DBGF((DBGA,"new_xsp2cie() unrecognised observer type 0x%x\n",obType));
 			free(p);
 			return NULL;
 	}
@@ -3721,12 +3900,12 @@ icColorSpaceSignature  rcs		/* Return color space, icSigXYZData or icSigLabData 
 		p->doLab = 1;
 #endif /* !SALONEINSTLIB */
 	else {
-#ifdef DEBUG
-		printf("new_xsp2cie() unrecognised CIE type 0x%x",rcs);
-#endif
+		DBGF((DBGA,"new_xsp2cie() unrecognised CIE type 0x%x",rcs));
 		free(p);
 		return NULL;
 	}
+
+	p->clamp = clamp;
 
 	p->convert      = xsp2cie_convert;
 	p->sconvert     = xsp2cie_sconvert;
@@ -3747,128 +3926,208 @@ icColorSpaceSignature  rcs		/* Return color space, icSigXYZData or icSigLabData 
 #ifndef SALONEINSTLIB
 /* -------------------------------------------------------- */
 
-/* 2 degree spectrum locus in xy coordinates */
-/* nm, x, y, Y CMC */
-double icx_spectrum_locus[ICX_SPECTRUM_LOCUS_COUNT][4] = {
-	{ 380, 0.1741, 0.0050, 0.000039097450 },
-	{ 385, 0.1740, 0.0050, 0.000065464490 },
-	{ 390, 0.1738, 0.0049, 0.000121224052 },
-	{ 395, 0.1736, 0.0049, 0.000221434140 },
-	{ 400, 0.1733, 0.0048, 0.000395705080 },
-	{ 405, 0.1730, 0.0048, 0.000656030940 },
-	{ 410, 0.1726, 0.0048, 0.001222776600 },
-	{ 415, 0.1721, 0.0048, 0.002210898200 },
-	{ 420, 0.1714, 0.0051, 0.004069952000 },
-	{ 425, 0.1703, 0.0058, 0.007334133400 },
-	{ 430, 0.1689, 0.0069, 0.011637600000 },
-	{ 435, 0.1669, 0.0086, 0.016881322000 },
-	{ 440, 0.1644, 0.0109, 0.023015402000 },
-	{ 445, 0.1611, 0.0138, 0.029860866000 },
-	{ 450, 0.1566, 0.0177, 0.038072300000 },
-	{ 455, 0.1510, 0.0227, 0.048085078000 },
-	{ 460, 0.1440, 0.0297, 0.060063754000 },
-	{ 465, 0.1355, 0.0399, 0.074027114000 },
-	{ 470, 0.1241, 0.0578, 0.091168598000 },
-	{ 475, 0.1096, 0.0868, 0.112811680000 },
-	{ 480, 0.0913, 0.1327, 0.139122260000 },
-	{ 485, 0.0686, 0.2007, 0.169656160000 },
-	{ 490, 0.0454, 0.2950, 0.208513180000 },
-	{ 495, 0.0235, 0.4127, 0.259083420000 },
-	{ 500, 0.0082, 0.5384, 0.323943280000 },
-	{ 505, 0.0039, 0.6548, 0.407645120000 },
-	{ 510, 0.0139, 0.7502, 0.503483040000 },
-	{ 515, 0.0389, 0.8120, 0.608101540000 },
-	{ 520, 0.0743, 0.8338, 0.709073280000 },
-	{ 525, 0.1142, 0.8262, 0.792722560000 },
-	{ 530, 0.1547, 0.8059, 0.861314320000 },
-	{ 535, 0.1929, 0.7816, 0.914322820000 },
-	{ 540, 0.2296, 0.7543, 0.953482260000 },
-	{ 545, 0.2658, 0.7243, 0.979818740000 },
-	{ 550, 0.3016, 0.6923, 0.994576720000 },
-	{ 555, 0.3373, 0.6589, 0.999604300000 },
-	{ 560, 0.3731, 0.6245, 0.994513460000 },
-	{ 565, 0.4087, 0.5896, 0.978204680000 },
-	{ 570, 0.4441, 0.5547, 0.951588260000 },
-	{ 575, 0.4788, 0.5202, 0.915060800000 },
-	{ 580, 0.5125, 0.4866, 0.869647940000 },
-	{ 585, 0.5448, 0.4544, 0.816076000000 },
-	{ 590, 0.5752, 0.4242, 0.756904640000 },
-	{ 595, 0.6029, 0.3965, 0.694818180000 },
-	{ 600, 0.6270, 0.3725, 0.630997820000 },
-	{ 605, 0.6482, 0.3514, 0.566802360000 },
-	{ 610, 0.6658, 0.3340, 0.503096860000 },
-	{ 615, 0.6801, 0.3197, 0.441279360000 },
-	{ 620, 0.6915, 0.3083, 0.380961920000 },
-	{ 625, 0.7006, 0.2993, 0.321156580000 },
-	{ 630, 0.7079, 0.2920, 0.265374180000 },
-	{ 635, 0.7140, 0.2859, 0.217219520000 },
-	{ 640, 0.7190, 0.2809, 0.175199900000 },
-	{ 645, 0.7230, 0.2770, 0.138425720000 },
-	{ 650, 0.7260, 0.2740, 0.107242628000 },
-	{ 655, 0.7283, 0.2717, 0.081786794000 },
-	{ 660, 0.7300, 0.2700, 0.061166218000 },
-	{ 665, 0.7311, 0.2689, 0.044729418000 },
-	{ 670, 0.7320, 0.2680, 0.032160714000 },
-	{ 675, 0.7327, 0.2673, 0.023307860000 },
-	{ 680, 0.7334, 0.2666, 0.017028548000 },
-	{ 685, 0.7340, 0.2660, 0.011981432000 },
-	{ 690, 0.7344, 0.2656, 0.008259734600 },
-	{ 695, 0.7346, 0.2654, 0.005758363200 },
-	{ 700, 0.7347, 0.2653, 0.004117206200 }
-};
+/* Return the spectrum locus rangefor the given observer */
+/* return 0 on sucecss, nz if observer not known */
+int icx_spectrum_locus_range(double *min_wl, double *max_wl, icxObserverType obType) {
+	xspect *sp[3];
+	if (standardObserver(sp, obType))
+		return 1;
+	if (min_wl != NULL)
+		*min_wl = sp[0]->spec_wl_short;
+	if (max_wl != NULL)
+		*max_wl = sp[0]->spec_wl_long;
 
-/* Return an XYZ that is on the spectrum locus */
-/* t is 0 .. 1 for 380nm back to 380nm */
-void icx_interp_spectrum_locus(double xyz[3], double in) {
-	/* There are ICX_SPECTRUM_LOCUS_COUNT on the spectrum */
-	/* locus, and 20 on the purple line */
-	double count_1 = (double)(ICX_SPECTRUM_LOCUS_COUNT+20-1);
-	int    count_2 = ICX_SPECTRUM_LOCUS_COUNT+20-2;
-	unsigned int i;
-	unsigned int x[2];
-	double val;
-	double gvals[2][3];
-	double wt;
+	return 0;
+}
 
-//printf("~1 splocus %f\n",in);
-	val = in * count_1;
-	if (val < 0.0)
-		val = 0.0;
-	else if (val > count_1)
-		val = count_1;
+/* Return an XYZ that is on the spectrum locus for the given observer. */
+/* wl is the input wavelength in the range icx_spectrum_locus_range(), */
+/* and return clipped result if outside this range. */
+/* Return nz if observer unknown. */
+int icx_spectrum_locus(double xyz[3], double wl, icxObserverType obType) {
+	xspect *sp[3];
 
-	x[0] = (unsigned int)floor(val);		/* Grid coordinate */
-	if (x[0] > count_2)
-		x[0] = count_2;
-	wt = val - (double)x[0];	/* 1.0 - weight */
-	x[1] = x[0] + 1;
+	DBGF((DBGA,"icx_spectrum_locus got obs %d wl %f\n",obType, wl));
 
-//printf("~1 x0 = %d, x1 = %d, wt = %f\n",x[0],x[1],wt);
+	if (standardObserver(sp, obType))
+		return 1;
 
-	/* Lookup each grid point */
-	for (i = 0; i < 2; i++) {
-		if (x[i] < ICX_SPECTRUM_LOCUS_COUNT) {
-			gvals[i][0] = icx_spectrum_locus[x[i]][3];
-			gvals[i][1] = icx_spectrum_locus[x[i]][1];
-			gvals[i][2] = icx_spectrum_locus[x[i]][2];
-		} else {
-			double b = (x[i]-ICX_SPECTRUM_LOCUS_COUNT)/(20.0-1.0);
+	if (wl < sp[0]->spec_wl_short)
+		wl = sp[0]->spec_wl_short;
+	if (wl > sp[0]->spec_wl_long)
+		wl = sp[0]->spec_wl_long;
 
-			gvals[i][0] = b * icx_spectrum_locus[0][3]
-			            + (1.0 - b) * icx_spectrum_locus[ICX_SPECTRUM_LOCUS_COUNT-1][3];
-			gvals[i][1] = b * icx_spectrum_locus[0][1]
-			             + (1.0 - b) * icx_spectrum_locus[ICX_SPECTRUM_LOCUS_COUNT-1][1];
-			gvals[i][2] = b * icx_spectrum_locus[0][2]
-			             + (1.0 - b) * icx_spectrum_locus[ICX_SPECTRUM_LOCUS_COUNT-1][2];
+	xyz[0] = value_xspect(sp[0], wl);
+	xyz[1] = value_xspect(sp[1], wl);
+	xyz[2] = value_xspect(sp[2], wl);
+	
+	DBGF((DBGA,"returning %f %f %f\n", xyz[0], xyz[1], xyz[2]));
+
+	return 0;
+}
+
+/* Init a xslpoly */
+/* Return nz on error */
+static int icx_init_locus_poly(icxObserverType obType) {
+	xslpoly *poly;
+
+	if ((poly = spectral_locus_poligon(obType)) == NULL)
+		return 1;
+
+	/* Initialise (should have a mutex!) */
+	if (poly->n == 0) {
+		int i, j, c;
+		double Yxy[3];
+		double xyz[3];
+		xspect *sp[3];
+double tt[3][3];
+
+		if (standardObserver(sp, obType))
+			return 3;
+
+		poly->n = sp[0]->spec_n;
+		poly->xmin = poly->ymin = 1e6;
+		poly->xmax = poly->ymax = -1e6;
+
+		for (i = 0; i < poly->n; i++) {
+			xyz[0] = sp[0]->spec[i];
+			xyz[1] = sp[1]->spec[i];
+			xyz[2] = sp[2]->spec[i];
+
+			icmXYZ2Yxy(Yxy, xyz);
+
+			poly->x[i] = Yxy[1];
+			poly->y[i] = Yxy[2];
+			if (poly->x[i] < poly->xmin)
+				poly->xmin = poly->x[i];
+			if (poly->x[i] > poly->xmax)
+				poly->xmax = poly->x[i];
+			if (poly->y[i] < poly->ymin)
+				poly->ymin = poly->y[i];
+			if (poly->y[i] > poly->ymax)
+				poly->ymax = poly->y[i];
 		}
-		icmYxy2XYZ(gvals[i], gvals[i]);
+
+		/* Select 3 points for inner triangle in RGB order */
+		poly->tx[0] = poly->x[poly->n - 1];
+		poly->ty[0] = poly->y[poly->n - 1];
+
+		xyz[0] = value_xspect(sp[0], 517.0);
+		xyz[1] = value_xspect(sp[1], 517.0);
+		xyz[2] = value_xspect(sp[2], 517.0);
+		icmXYZ2Yxy(Yxy, xyz);
+		poly->tx[1] = Yxy[1];
+		poly->ty[1] = Yxy[2];
+
+		poly->tx[2] = poly->x[0];
+		poly->ty[2] = poly->y[0];
+
+		/* Compute distance from triangles to 0.3, 0.3 */
+//		for (i = 0; i < 3; i++) {
+//			poly->eed[i] = sqrt((poly->tx[i] - 0.3) * (poly->tx[i] - 0.3)
+//			                  + (poly->ty[i] - 0.3) * (poly->ty[i] - 0.3));
+//		}
+
+		/* Compute baricentric equations */
+		for (i = 0; i < 3; i++) {
+			tt[0][i] = poly->tx[i];
+			tt[1][i] = poly->ty[i];
+			tt[2][i] = 1.0;
+		}
+		if (icmInverse3x3(poly->be, tt))
+			error("icx_init_locus_poly: Matrix inversion failed");
+
+		/* Compute baricentric of 0.3 0.3 */
+		/* (Not currently used. How to move center to 0.3 0.3 ?? */ 
+//		for (i = 0; i < 3; i++)
+//			poly->eed[i] = poly->be[i][0] * 0.3 + poly->be[i][1] * 0.3 + poly->be[i][2]; 
 	}
-//printf("~1 val0 %f %f %f, val2 %f %f %f\n", gvals[0][0], gvals[0][1], gvals[0][2], gvals[1][0], gvals[1][1], gvals[1][2]);
+	return 0;
+}
 
-	/* Interpolate between grid points */
-	icmBlend3(xyz, gvals[0], gvals[1], wt);
+/* Determine whether the given XYZ is outside the spectrum locus */
+/* Return 0 if within locus */
+/* Return 1 if outside locus */
+/* Return 2 if unknown (bad observer) */
+int icx_outside_spec_locus(double xyz[3], icxObserverType obType) {
+	int i, j, c;
+	xslpoly *poly;
+	double Yxy[3];
 
-//printf("~1 returning %f %f %f\n", xyz[0], xyz[1], xyz[2]);
+	if ((poly = spectral_locus_poligon(obType)) == NULL)
+		return 2;
+
+	/* Init poly if needed */
+	if (poly->n == 0 && icx_init_locus_poly(obType))
+		return 2;
+
+	icmXYZ2Yxy(Yxy, xyz);
+
+	/* Quick test - bounding box */
+	if (Yxy[1] < poly->xmin || Yxy[1] > poly->xmax
+	 || Yxy[2] < poly->ymin || Yxy[2] > poly->ymax)
+		return 1;
+
+	/* Quick test - inner triangle */
+	for (c = 1, i = 0, j = 3-1; i < 3; j = i++) {
+		if ( ((poly->ty[i] > Yxy[2]) != (poly->ty[j] > Yxy[2]))
+		   && (Yxy[1] < (poly->tx[j] - poly->tx[i]) * (Yxy[2] - poly->ty[i])
+			        / (poly->ty[j] - poly->ty[i]) + poly->tx[i]) )
+		c = !c;
+	}
+	if (c == 0)
+		return 0;
+
+	/* Do point in poligon test */
+	/* (This could be speeded up in many ways) */
+	for (c = 1, i = 0, j = poly->n-1; i < poly->n; j = i++) {
+		if ( ((poly->y[i] > Yxy[2]) != (poly->y[j] > Yxy[2]))
+		   && (Yxy[1] < (poly->x[j] - poly->x[i]) * (Yxy[2] - poly->y[i])
+			        / (poly->y[j] - poly->y[i]) + poly->x[i]) )
+		c = !c;
+	}
+
+	return c;
+}
+
+/* Return an aproximate RGB value for coloring within the spectrum locus */
+void icx_spec_locus_color(double rgb[3], double xyz[3], icxObserverType obType) {
+	int i, j;
+	xslpoly *poly;
+	double Yxy[3];
+	double dtt[3];		/* Distances to triangle points */
+	double v[3];
+	double max;
+
+	if ((poly = spectral_locus_poligon(obType)) == NULL)
+		return;
+
+	/* Init poly if needed */
+	if (poly->n == 0 && icx_init_locus_poly(obType))
+		return;
+
+	icmXYZ2Yxy(Yxy, xyz);
+
+	/* Compute the baricentric coord for the input point, */
+	for (max = -1e6, i = 0; i < 3; i++) {
+		v[i] = poly->be[i][0] * Yxy[1] + poly->be[i][1] * Yxy[2] + poly->be[i][2]; 
+		if (v[i] < 0.0)
+			v[i] = 0.0;
+		else if (v[i] > 1.0)
+			v[i] = 1.0;
+
+		/* Normalise to put wp at 0.3 0.3 */
+		// ~~99
+
+		v[i] = pow(v[i], 1.0/2.2);
+
+		if (v[i] > max)
+			max = v[i];
+	}
+
+	for (i = 0; i < 3; i++) {
+		rgb[i] = v[i]/max;
+	}
 }
 
 /* -------------------------------------------------------- */
@@ -3995,14 +4254,14 @@ double *in				/* Input XYZ values */
 	int i, j;
 	double den[4];
 
-//printf("~1 icx_XYZ2den got %f %f %f\n",in[0],in[1],in[2]);
+//DBGF((DBGA,"icx_XYZ2den got %f %f %f\n",in[0],in[1],in[2]));
 	for (i = 0; i < 4; i++) {
 
 		den[i] = 0.0; 
 		for (j = 0; j < 3; j++)
 			den[i] += 0.83 * xyz2tden[i][j] * in[j];
 
-//printf("~1 icx_XYZ2den raw den %d = %f\n",i,den[i]);
+//DBGF((DBGA,"icx_XYZ2den raw den %d = %f\n",i,den[i]));
 		if (den[i] < 0.00001)
 			den[i] = 0.00001;		/* Just to be sure we don't get silly values */
 		else if (den[i] > 1.0)
@@ -4010,7 +4269,7 @@ double *in				/* Input XYZ values */
 
 		out[i] = -log10(den[i]);	/* Convert to density */
 	}
-//printf("~1 icx_XYZ2den returning densities %f %f %f\n",out[0],out[1],out[2]);
+//DBGF((DBGA,"icx_XYZ2den returning densities %f %f %f\n",out[0],out[1],out[2]));
 }
 
 /* Given a reflectance or transmission XYZ value, */
@@ -4094,7 +4353,7 @@ double ct				/* Input temperature in degrees K */
 ) {
 	double Yxy[3];
 
-//printf("~1 computing temperature %f\n",ct);
+//DBGF((DBGA,"computing temperature %f\n",ct));
 	/* Compute chromaticity coordinates */
 	if (ct < 7000.0) {
 		Yxy[1] = -4.6070e9/(ct * ct * ct) + 2.9678e6/(ct * ct) + 0.09911e3/ct + 0.244063;
@@ -4104,12 +4363,12 @@ double ct				/* Input temperature in degrees K */
 	Yxy[2] = -3.000 * Yxy[1] * Yxy[1] + 2.870 * Yxy[1] - 0.275;
 
 	Yxy[0] = 1.0;
-//printf("~1 Yxy = %f %f %f\n",Yxy[0],Yxy[1],Yxy[2]);
+//DBGF((DBGA,"Yxy = %f %f %f\n",Yxy[0],Yxy[1],Yxy[2]));
 
 	/* Convert to XYZ */
 	icmYxy2XYZ(out, Yxy);
 
-//printf("~1 XYZ = %f %f %f\n",out[0],out[1],out[2]);
+//DBGF((DBGA,"XYZ = %f %f %f\n",out[0],out[1],out[2]));
 }
 
 #endif
@@ -4135,7 +4394,7 @@ xspect *custIllum		/* Optional custom illuminant */
 	else if (standardIlluminant(&sp, ilType, ct) != 0)
 		return 1;
 
-	if ((conv = new_xsp2cie(icxIT_none, NULL, obType, custObserver, icSigXYZData)) == NULL)
+	if ((conv = new_xsp2cie(icxIT_none, NULL, obType, custObserver, icSigXYZData, 1)) == NULL)
 		return 1;
 
 	conv->convert(conv, xyz, &sp);
@@ -4197,7 +4456,7 @@ static double cct_func(void *fdata, double tp[]) {
 		}
 	}
 	
-//printf("~1 returning %f for temp = %f\n",rv,tp[0]);
+//DBGF((DBGA,"returning %f for temp = %f\n",rv,tp[0]));
 	return rv;
 
 }
@@ -4229,7 +4488,7 @@ int viscct				/* nz to use visual CIEDE2000, 0 to use CCT CIE 1960 UCS. */
 		return -1.0;
 	x.ilType = ilType;
 
-	if ((x.conv = new_xsp2cie(icxIT_none, NULL, obType, custObserver, icSigXYZData)) == NULL)
+	if ((x.conv = new_xsp2cie(icxIT_none, NULL, obType, custObserver, icSigXYZData, 1)) == NULL)
 		return -1;
 
 	if (xyz == NULL) {
@@ -4254,7 +4513,7 @@ int viscct				/* nz to use visual CIEDE2000, 0 to use CCT CIE 1960 UCS. */
 			ber = er;
 			bct = tc;
 		}
-//printf("~1 tc = %f, er = %f\n",tc,er);
+//DBGF((DBGA,"tc = %f, er = %f\n",tc,er));
 	}
 	cp[0] = bct;
 	s[0] = 500.0;
@@ -4288,7 +4547,7 @@ int viscct				/* nz to use visual CIEDE2000, 0 to use CCT CIE 1960 UCS. */
 	}
 	x.conv->del(x.conv);
 
-//printf("~1 returning %f with error %f delta E94 %f\n",cp[0],sqrt(rv));
+//DBGF((DBGA,"returning %f with error %f delta E94 %f\n",cp[0],sqrt(rv)));
 	return cp[0];
 }
 
@@ -4329,13 +4588,13 @@ xspect *sample			/* Illuminant sample to compute CRI of */
 	double c_ad, d_ad;	/* Chromatic adaptation scaling factors */
 	double cri = 0.0;
 	
-//printf("~1 icx_CIE1995_CRI called\n");
+//DBGF((DBGA,"icx_CIE1995_CRI called\n"));
 
 	/* First find the standard 2 degree observer plankian CCT */
 	if ((cct = icx_XYZ2ill_ct(NULL, icxIT_Ptemp, icxOT_CIE_1931_2, NULL, NULL, sample, 0)) < 0.0)
 		return -1.0;   
 
-//printf("~1 CCT = %f\n", cct);
+//DBGF((DBGA,"CCT = %f\n", cct));
 
 	/* Create a reference white spectrum with the same CCT */
 	if (cct < 5000.0) {
@@ -4346,15 +4605,15 @@ xspect *sample			/* Illuminant sample to compute CRI of */
 			return -1.0;
 	}
 
-	if ((tocie = new_xsp2cie(icxIT_none, NULL, icxOT_CIE_1931_2, NULL, icSigXYZData)) == NULL)
+	if ((tocie = new_xsp2cie(icxIT_none, NULL, icxOT_CIE_1931_2, NULL, icSigXYZData, 1)) == NULL)
 		return -1.0;   
 
 	/* Compute the XYZ of the reference white and sample */
 	tocie->convert(tocie, wt, &wts);
 	tocie->convert(tocie, sa, sample);
 
-//printf("~1 XYZ white = %f %f %f\n",wt[0],wt[1],wt[2]);
-//printf("~1 XYZ sampl = %f %f %f\n",sa[0],sa[1],sa[2]);
+//DBGF((DBGA,"XYZ white = %f %f %f\n",wt[0],wt[1],wt[2]));
+//DBGF((DBGA,"XYZ sampl = %f %f %f\n",sa[0],sa[1],sa[2]));
 
 	/* Normalize the spectra so as to create a normalized white */
 	wts.norm *= wt[1];
@@ -4363,8 +4622,8 @@ xspect *sample			/* Illuminant sample to compute CRI of */
 	tocie->convert(tocie, sa, sample);
 	tocie->del(tocie);
 
-//printf("~1 norm XYZ white = %f %f %f\n",wt[0],wt[1],wt[2]);
-//printf("~1 norm XYZ sampl = %f %f %f\n",sa[0],sa[1],sa[2]);
+//DBGF((DBGA,"norm XYZ white = %f %f %f\n",wt[0],wt[1],wt[2]));
+//DBGF((DBGA,"norm XYZ sampl = %f %f %f\n",sa[0],sa[1],sa[2]));
 
 	/* Convert to perceptual CIE 1960 UCS */
 	icmAry2XYZ(wtn, wt);		/* Use reference white as UCS white */
@@ -4376,13 +4635,13 @@ xspect *sample			/* Illuminant sample to compute CRI of */
 	c_ad = wt_Ycd[1]/sa_Ycd[1];	/* Chromatic adaptation scaling factors */
 	d_ad = wt_Ycd[2]/sa_Ycd[2];
 	
-//printf("~1 UCS white = %f %f %f\n",wt[0],wt[1],wt[2]);
-//printf("~1 UCS sampl = %f %f %f\n",sa[0],sa[1],sa[2]);
+//DBGF((DBGA,"UCS white = %f %f %f\n",wt[0],wt[1],wt[2]));
+//DBGF((DBGA,"UCS sampl = %f %f %f\n",sa[0],sa[1],sa[2]));
 
 	dc = sqrt((wt[1] - sa[1]) * (wt[1] - sa[1]) + (wt[2] - sa[2]) * (wt[2] - sa[2]));
 
-//printf("~1 dc = %f\n",dc);
-//if (dc > 0.0054) printf("~1 CRI is invalid\n");
+//DBGF((DBGA,"dc = %f\n",dc));
+//if (dc > 0.0054) DBGF((DBGA,"CRI is invalid\n"));
 
 	/* If dc > 0.0054 we should abort computing the CRI, */
 	/* but this means we fail on lots of real world lighting. */
@@ -4394,16 +4653,16 @@ xspect *sample			/* Illuminant sample to compute CRI of */
 	}
 		
 	/* Check out the delta E for each reflective sample */
-	if ((tocie = new_xsp2cie(icxIT_custom, &wts, icxOT_CIE_1931_2, NULL, icSigXYZData)) == NULL)
+	if ((tocie = new_xsp2cie(icxIT_custom, &wts, icxOT_CIE_1931_2, NULL, icSigXYZData, 1)) == NULL)
 		return -1.0;   
 	for (i = 0; i < 8; i++) {
 		tocie->convert(tocie, ref[i], &CIE1995_TCS[i]);
 		icmXYZ21964WUV(&wtn, ref[i], ref[i]);
-//printf("~1 ref samp %d = WUV %f %f %f\n", i,ref[i][0],ref[i][1],ref[i][2]);
+//DBGF((DBGA,"ref samp %d = WUV %f %f %f\n", i,ref[i][0],ref[i][1],ref[i][2]));
 	}
 	tocie->del(tocie);
 
-	if ((tocie = new_xsp2cie(icxIT_custom, sample, icxOT_CIE_1931_2, NULL, icSigXYZData)) == NULL)
+	if ((tocie = new_xsp2cie(icxIT_custom, sample, icxOT_CIE_1931_2, NULL, icSigXYZData, 1)) == NULL)
 		return -1.0;   
 	for (i = 0; i < 8; i++) {
 		double c, d;
@@ -4423,7 +4682,7 @@ xspect *sample			/* Illuminant sample to compute CRI of */
 
 		icm1960UCS21964WUV(&wtn, sam[i], sam[i]);
 
-//printf("~1 sam samp %d = WUV %f %f %f\n", i,sam[i][0],sam[i][1],sam[i][2]);
+//DBGF((DBGA,"sam samp %d = WUV %f %f %f\n", i,sam[i][0],sam[i][1],sam[i][2]));
 	}
 	tocie->del(tocie);
 
@@ -4433,16 +4692,16 @@ xspect *sample			/* Illuminant sample to compute CRI of */
 
 		de = icmLabDE(ref[i], sam[i]);
 		tcri = 100.0 - 4.6 * de;
-//printf("~1 sample %d: de = %f, CRI = %f\n",i,de,tcri);
+//DBGF((DBGA,"sample %d: de = %f, CRI = %f\n",i,de,tcri));
 		cri += tcri;
 	}
 	cri /= 8.0;
 
-//printf("~1 average CRI = %f\n",cri);
+//DBGF((DBGA,"average CRI = %f\n",cri));
 	if (cri < 0.0)
 		cri = -1.0;
 
-//printf("~1 returning CRI = %f\n",cri);
+//DBGF((DBGA,"returning CRI = %f\n",cri));
 	return cri;
 }
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - */

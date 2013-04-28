@@ -128,15 +128,16 @@ typedef enum {
     icxIT_A			 = 3,	/* Standard Illuminant A */
 	icxIT_C          = 4,	/* Standard Illuminant C */
     icxIT_D50		 = 5,	/* Daylight 5000K */
-    icxIT_D65		 = 6,	/* Daylight 6500K */
-    icxIT_E		     = 7,	/* Equal Energy */
+    icxIT_D50M2		 = 6,	/* Daylight 5000K, UV filtered (M2) */
+    icxIT_D65		 = 7,	/* Daylight 6500K */
+    icxIT_E		     = 8,	/* Equal Energy */
 #ifndef SALONEINSTLIB
-    icxIT_F5		 = 8,	/* Fluorescent, Standard, 6350K, CRI 72 */
-    icxIT_F8		 = 9,	/* Fluorescent, Broad Band 5000K, CRI 95 */
-    icxIT_F10		 = 10,	/* Fluorescent Narrow Band 5000K, CRI 81 */
-	icxIT_Spectrocam = 11,	/* Spectrocam Xenon Lamp */
-    icxIT_Dtemp		 = 12,	/* Daylight at specified temperature */
-    icxIT_Ptemp		 = 13	/* Planckian at specified temperature */
+    icxIT_F5		 = 9,	/* Fluorescent, Standard, 6350K, CRI 72 */
+    icxIT_F8		 = 10,	/* Fluorescent, Broad Band 5000K, CRI 95 */
+    icxIT_F10		 = 11,	/* Fluorescent Narrow Band 5000K, CRI 81 */
+	icxIT_Spectrocam = 12,	/* Spectrocam Xenon Lamp */
+    icxIT_Dtemp		 = 13,	/* Daylight at specified temperature */
+    icxIT_Ptemp		 = 14	/* Planckian at specified temperature */
 #endif /* !SALONEINSTLIB*/
 } icxIllumeType;
 
@@ -146,6 +147,11 @@ int standardIlluminant(
 xspect *sp,					/* Xspect to fill in */
 icxIllumeType ilType,		/* Type of illuminant */
 double temp);				/* Optional temperature in degrees kelvin, for Dtemp and Ptemp */
+
+/* Given an emission spectrum, set the UV output to the given level. */
+/* The shape of the UV is taken from FWA1_stim, and the level is */
+/* with respect to the average of the input spectrum. */
+void xsp_setUV(xspect *out, xspect *in, double uvlevel);
 
 
 /* Type of observer */
@@ -163,41 +169,40 @@ typedef enum {
 #endif /* !SALONEINSTLIB*/
 } icxObserverType;
 
-/* Fill in three xpsects with a standard observer weighting curves */
+/* Return pointers to three xpsects with a standard observer weighting curves */
 /* return 0 on sucecss, nz if not matched */
-int standardObserver(
-xspect *sp0,
-xspect *sp1,
-xspect *sp2,				/* Xspects to fill in */
-icxObserverType obType);	/* Type of observer */
+int standardObserver(xspect *sp[3], icxObserverType obType);
 
 /* Return a string describing the standard observer */
 char *standardObserverDescription(icxObserverType obType);
 
-/* Given an emission spectrum, set the UV output to the given level. */
-/* The shape of the UV is taken from FWA1_stim, and the level is */
-/* with respect to the average of the input spectrum. */
-void xsp_setUV(xspect *out, xspect *in, double uvlevel);
-
+/* Clamping state */
+typedef enum {
+    icxNoClamp			= 0,	/* Don't clamp XYZ/Lab to +ve */
+    icxClamp			= 1,	/* Clamp XYZ/Lab to +ve */
+} icxClamping;
 
 /* The conversion object */
 struct _xsp2cie {
 	/* Private: */
-	xspect illuminant;			/* Lookup illuminant */
+	xspect illuminant;			/* Lookup conversion/observer illuminant */
 	int isemis;					/* nz if we are doing an emission conversion */
 	xspect observer[3];
 	int doLab;					/* Return D50 Lab result */
+	icxClamping clamp;			/* Clamp XYZ and Lab to be +ve */
 
 #ifndef SALONEINSTLIB
 	/* FWA compensation */
 	double bw;		/* Integration bandwidth */
-	xspect instr;	/* Normalised instrument illuminant spectrum */
+	xspect iillum;	/* Y = 1 Normalised instrument illuminant spectrum */
 	xspect imedia;	/* Instrument measured media */
 	xspect emits;	/* Estimated FWA emmission spectrum */
 	xspect media;	/* Estimated base media (ie. minus FWA) */
-	xspect illum;	/* Normalised target illuminant spectrum */
+	xspect tillum;	/* Y = 1 Normalised target/simulated instrument illuminant spectrum */
+	xspect oillum;	/* Y = 1 Normalised observer illuminant spectrum */
 	double Sm;		/* FWA Stimulation level for emits contribution */
 	double FWAc;	/* FWA content (informational) */
+	int    insteqtarget;	/* iillum == tillum, bypass FWA */
 #endif /* !SALONEINSTLIB*/
 
 	/* Public: */
@@ -225,7 +230,8 @@ struct _xsp2cie {
 	                );
 
 #ifndef SALONEINSTLIB
-	/* Set Media White value */
+	/* Set Media White. This enables extracting and applying the */
+	/* colorant reflectance value from/to the meadia. */
 	/* return NZ if error */
 	int (*set_mw) (struct _xsp2cie *p,	/* this */
 	                xspect *white		/* Spectrum of plain media */
@@ -234,14 +240,20 @@ struct _xsp2cie {
 	/* Set Fluorescent Whitening Agent compensation */
 	/* return NZ if error */
 	int (*set_fwa) (struct _xsp2cie *p,	/* this */
-					xspect *inst,		/* Spectrum of instrument illuminant */
+					xspect *iillum,		/* Spectrum of instrument illuminant */
+					xspect *tillum,		/* Spectrum of target/simulated instrument illuminant, */
+										/* NULL to use observer illuminant. */
 	                xspect *white		/* Spectrum of plain media */
 	                );
 
 	/* Set FWA given updated conversion illuminant. */
 	/* (We assume that xsp2cie_set_fwa has been called first) */
 	/* return NZ if error */
-	int (*update_fwa_custillum) (struct _xsp2cie *p, xspect *custIllum);
+	int (*update_fwa_custillum) (struct _xsp2cie *p,
+					xspect *tillum,		/* Spectrum of target/simulated instrument illuminant, */
+										/* NULL to use set_fwa() value. */
+	                xspect *custIllum	/* Spectrum of observer illuminant */
+	                );	
 
 	/* Get Fluorescent Whitening Agent compensation information */
 	/* return NZ if error */
@@ -270,26 +282,38 @@ struct _xsp2cie {
 }; typedef struct _xsp2cie xsp2cie;
 
 xsp2cie *new_xsp2cie(
-	icxIllumeType ilType,			/* Illuminant */
+	icxIllumeType ilType,			/* Observer Illuminant to use */
 	xspect        *custIllum,
 
 	icxObserverType obType,			/* Observer */
 	xspect        custObserver[3],
-	icColorSpaceSignature  rcs		/* Return color space, icSigXYZData or icSigLabData */
+	icColorSpaceSignature  rcs,		/* Return color space, icSigXYZData or icSigLabData */
 									/* ** Must be icSigXYZData if SALONEINSTLIB ** */
+	icxClamping clamp				/* NZ to clamp XYZ/Lab to be +ve */
 );
 
 #ifndef SALONEINSTLIB
 /* --------------------------- */
 /* Spectrum locus              */
 
-/* wavelength, x, y, Y of 2 degree 1931 spectrum locus */
-#define ICX_SPECTRUM_LOCUS_COUNT 65
-extern double icx_spectrum_locus[ICX_SPECTRUM_LOCUS_COUNT][4];
+/* Return the spectrum locus range for the given observer. */
+/* return 0 on sucecss, nz if observer not known */
+int icx_spectrum_locus_range(double *min_wl, double *max_wl, icxObserverType obType);
 
-/* Return an XYZ that is on the spectrum locus */
-/* t is 0 .. 1 for 380nm back to 380nm */
-void icx_interp_spectrum_locus(double xyz[3], double t);
+/* Return an XYZ that is on the spectrum locus for the given observer. */
+/* wl is the input wavelength in the range icx_spectrum_locus_range(), */
+/* and return clipped result if outside this range. */
+/* Return nz if observer unknown. */
+int icx_spectrum_locus(double xyz[3], double in, icxObserverType obType);
+
+/* Determine whether the given XYZ is outside the spectrum locus */
+/* Return 0 if within locus */
+/* Return 1 if outside locus */
+/* Return 2 if unknown (bad observer) */
+int icx_outside_spec_locus(double xyz[3], icxObserverType obType);
+
+/* Return an aproximate RGB value for coloring within the spectrum locus */
+void icx_spec_locus_color(double rgb[3], double xyz[3], icxObserverType obType);
 
 /* --------------------------- */
 /* Density and other functions */

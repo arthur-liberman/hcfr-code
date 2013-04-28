@@ -3,7 +3,7 @@
  /* Implements equivalent cross platform functionality too. */
 
 /*************************************************************************
- Copyright 2011 Graeme W. Gill
+ Copyright 2011, 2013 Graeme W. Gill
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
@@ -63,7 +63,7 @@
 
 	OS X:
 		$XDG_DATA_HOME
-		$HOME/Library
+		$HOME/Library/Application Support
 
 		$XDG_CONF_HOME
 		$HOME/Library/Preferences
@@ -72,7 +72,7 @@
 		$HOME/Library/Caches
 
 		$XDG_DATA_DIRS
-		/Library
+		/Library/Application Support
 
 		$XDG_CONF_DIRS
 		/Library/Preferences
@@ -97,6 +97,7 @@
 		$ALLUSERSPROFILE
  */
 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -113,26 +114,19 @@
 #endif
 #include <sys/types.h>
 #include <sys/stat.h>
+#include "numsup.h"
 #include "conv.h"
 #include "aglob.h"
 #include "xdg_bds.h"
 
 #undef DEBUG
-#define dbgo stderr
 
 #ifdef DEBUG
-#define DBG(xxx) fprintf xxx ;
+#define DBGA g_log, 0
+#define DBG(xxx) a1logd xxx ;
 #else
 #define DBG(xxx) 
 #endif	/* DEBUG */
-
-#ifdef NT
-#define SSEP ';'		/* Since ':' is used for drive letter */
-#define SSEPS ";"
-#else
-#define SSEP ':'
-#define SSEPS ":"
-#endif
 
 #ifdef NT
 # define stat _stat
@@ -163,6 +157,7 @@ static char *append(char *in, char *app) {
 	char *rv;
 
 	if ((rv = malloc(strlen(in) + strlen(app) + 1)) == NULL) {
+		a1loge(g_log, 1, "xdg_bds: append malloc failed\n"); 
 		free(in);
 		return NULL;
 	}
@@ -181,6 +176,7 @@ static char *cappend(char *in, char *app) {
 	inlen = strlen(in);
 
 	if ((rv = malloc(inlen + 1 + strlen(app) + 1)) == NULL) {
+		a1loge(g_log, 1, "xdg_bds: cappend malloc failed\n"); 
 		free(in);
 		return NULL;
 	}
@@ -201,6 +197,7 @@ static char *dappend(char *in, char *app) {
 	inlen = strlen(in);
 
 	if ((rv = malloc(inlen + 1 + strlen(app) + 1)) == NULL) {
+		a1loge(g_log, 1, "xdg_bds: dappend malloc failed\n"); 
 		free(in);
 		return NULL;
 	}
@@ -259,7 +256,7 @@ void xdg_free(char **paths, int nopaths) {
 /* Wildcards should not be used for xdg_write. */
 /* The list should be free'd using xdg_free() after use. */
 /* XDG environment variables and the subpath are assumed to be using */
-/* the '/' path separator. */
+/* the '/' path separator. Multiple read paths are separated by SSEP */
 /* When "xdg_write", the necessary path to the file will be created. */
 /* If we're running as sudo and are creating a user dir/file, */
 /* we drop to using the underlying SUDO_UID/GID. If we are creating a */
@@ -271,14 +268,14 @@ int xdg_bds(
 	xdg_storage_type st,	/* Specify the storage type */
 	xdg_op_type op,			/* Operation type */
 	xdg_scope sc,			/* Scope if write */
-	char *pfname			/* Sub-path and file name */
+	char *pfname			/* Sub-path and file name(s) */
 ) {
 	char *path = NULL;		/* Directory paths to search, separated by ':' or ';' */
 	char **fnames = NULL;	/* Filename component of each path being returned */
 	int npaths = 0;			/* Number of paths being returned */
 	int napaths = 0;		/* Number of paths allocated */
 
-	DBG((dbgo,"xdg_bds called with st %s, op %s, sc %s, pfname '%s'\n",
+	DBG((DBGA,"xdg_bds called with st %s, op %s, sc %s, pfnames '%s'\n",
 	st == xdg_data ? "data" : st == xdg_conf ? "config" : st == xdg_cache ? "cache" : "unknown", 
 	op == xdg_write ? "write" : op == xdg_read ? "read" : "unknown", 
 	sc == xdg_user ? "user" : sc == xdg_local ? "local" : "unknown", 
@@ -289,7 +286,7 @@ int xdg_bds(
 	/* Initial, empty path */
 	if ((path = strdup("")) == NULL) {
 		if (er != NULL) *er = xdg_alloc;
-		DBG((dbgo,"malloc error\n"))
+		a1loge(g_log, 1, "xdg_bds: malloc failed\n"); 
 		xdg_ifree(paths, fnames, npaths);
 		return 0;
 	}
@@ -303,14 +300,14 @@ int xdg_bds(
 			if ((xdg = getenv("XDG_DATA_HOME")) != NULL) {
 				if ((path = cappend(path, xdg)) == NULL) {
 					if (er != NULL) *er = xdg_alloc;
-					DBG((dbgo,"malloc error\n"))
+					a1loge(g_log, 1, "xdg_bds: malloc failed\n"); 
 					return 0;
 				}
 #ifdef NT
 			} else if (getenv("HOME") == NULL && (xdg = getenv("APPDATA")) != NULL) {
 				if ((path = cappend(path, xdg)) == NULL) {
 					if (er != NULL) *er = xdg_alloc;
-					DBG((dbgo,"malloc error\n"))
+					a1loge(g_log, 1, "xdg_bds: malloc failed\n"); 
 					return 0;
 				}
 #endif
@@ -322,12 +319,12 @@ int xdg_bds(
 				) {
 					if (er != NULL) *er = xdg_nohome;
 					free(path);
-					DBG((dbgo,"no $HOME\n"))
+					DBG((DBGA,"no $HOME\n"))
 					return 0;
 				}
 				if ((path = cappend(path, home)) == NULL) {
 					if (er != NULL) *er = xdg_alloc;
-					DBG((dbgo,"malloc error\n"))
+					a1loge(g_log, 1, "xdg_bds: malloc failed\n"); 
 					return 0;
 				}
 #ifdef NT
@@ -335,14 +332,14 @@ int xdg_bds(
 					path = dappend(path, ".local/share");
 #else
 #ifdef __APPLE__
-				path = dappend(path, "Library");
+				path = dappend(path, "Library/Application Support");
 #else	/* Unix, Default */
 				path = dappend(path, ".local/share");
 #endif
 #endif
 				if (path == NULL) {
 					if (er != NULL) *er = xdg_alloc;
-					DBG((dbgo,"malloc error\n"))
+					a1loge(g_log, 1, "xdg_bds: malloc failed\n"); 
 					return 0;
 				}
 			}
@@ -351,14 +348,14 @@ int xdg_bds(
 			if ((xdg = getenv("XDG_CONF_HOME")) != NULL) {
 				if ((path = cappend(path, xdg)) == NULL) {
 					if (er != NULL) *er = xdg_alloc;
-					DBG((dbgo,"malloc error\n"))
+					a1loge(g_log, 1, "xdg_bds: malloc failed\n"); 
 					return 0;
 				}
 #ifdef NT
 			} else if (getenv("HOME") == NULL && (xdg = getenv("APPDATA")) != NULL) {
 				if ((path = cappend(path, xdg)) == NULL) {
 					if (er != NULL) *er = xdg_alloc;
-					DBG((dbgo,"malloc error\n"))
+					a1loge(g_log, 1, "xdg_bds: malloc failed\n"); 
 					return 0;
 				}
 #endif
@@ -370,12 +367,12 @@ int xdg_bds(
 				) {
 					if (er != NULL) *er = xdg_nohome;
 					free(path);
-					DBG((dbgo,"no $HOME\n"))
+					DBG((DBGA,"no $HOME\n"))
 					return 0;
 				}
 				if ((path = cappend(path, home)) == NULL) {
 					if (er != NULL) *er = xdg_alloc;
-					DBG((dbgo,"malloc error\n"))
+					a1loge(g_log, 1, "xdg_bds: malloc failed\n"); 
 					return 0;
 				}
 #ifdef NT
@@ -390,7 +387,7 @@ int xdg_bds(
 #endif
 				if (path == NULL) {
 					if (er != NULL) *er = xdg_alloc;
-					DBG((dbgo,"malloc error\n"))
+					a1loge(g_log, 1, "xdg_bds: malloc failed\n"); 
 					return 0;
 				}
 			}
@@ -399,19 +396,19 @@ int xdg_bds(
 			if ((xdg = getenv("XDG_CACHE_HOME")) != NULL) {
 				if ((path = cappend(path, xdg)) == NULL) {
 					if (er != NULL) *er = xdg_alloc;
-					DBG((dbgo,"malloc error\n"))
+					a1loge(g_log, 1, "xdg_bds: malloc failed\n"); 
 					return 0;
 				}
 #ifdef NT
 			} else if (getenv("HOME") == NULL && (xdg = getenv("APPDATA")) != NULL) {
 				if ((path = cappend(path, xdg)) == NULL) {
 					if (er != NULL) *er = xdg_alloc;
-					DBG((dbgo,"malloc error\n"))
+					a1loge(g_log, 1, "xdg_bds: malloc failed\n"); 
 					return 0;
 				}
 				if ((path = dappend(path, "Cache")) == NULL) {
 					if (er != NULL) *er = xdg_alloc;
-					DBG((dbgo,"malloc error\n"))
+					a1loge(g_log, 1, "xdg_bds: malloc failed\n"); 
 					return 0;
 				}
 #endif
@@ -423,12 +420,12 @@ int xdg_bds(
 				) {
 					if (er != NULL) *er = xdg_nohome;
 					free(path);
-					DBG((dbgo,"no $HOME\n"))
+					DBG((DBGA,"no $HOME\n"))
 					return 0;
 				}
 				if ((path = cappend(path, home)) == NULL) {
 					if (er != NULL) *er = xdg_alloc;
-					DBG((dbgo,"malloc error\n"))
+					a1loge(g_log, 1, "xdg_bds: malloc failed\n"); 
 					return 0;
 				}
 #ifdef NT
@@ -445,7 +442,7 @@ int xdg_bds(
 #endif
 				if (path == NULL) {
 					if (er != NULL) *er = xdg_alloc;
-					DBG((dbgo,"malloc error\n"))
+					a1loge(g_log, 1, "xdg_bds: malloc failed\n"); 
 					return 0;
 				}
 			}
@@ -458,7 +455,7 @@ int xdg_bds(
 			if ((xdg = getenv("XDG_DATA_DIRS")) != NULL) {
 				if ((path = cappend(path, xdg)) == NULL) {
 					if (er != NULL) *er = xdg_alloc;
-					DBG((dbgo,"malloc error\n"))
+					a1loge(g_log, 1, "xdg_bds: malloc failed\n"); 
 					return 0;
 				}
 			} else {
@@ -474,7 +471,7 @@ int xdg_bds(
 				) {
 					if (er != NULL) *er = xdg_noalluserprofile;
 					free(path);
-					DBG((dbgo,"no $ALLUSERSPROFILE\n"))
+					DBG((DBGA,"no $ALLUSERSPROFILE\n"))
 					return 0;
 				}
 				path = cappend(path, home);
@@ -487,7 +484,7 @@ int xdg_bds(
 #endif
 				if (path == NULL) {
 					if (er != NULL) *er = xdg_alloc;
-					DBG((dbgo,"malloc error\n"))
+					a1loge(g_log, 1, "xdg_bds: malloc failed\n"); 
 					return 0;
 				}
 			}
@@ -495,7 +492,7 @@ int xdg_bds(
 			if ((xdg = getenv("XDG_CONF_DIRS")) != NULL) {
 				if ((path = cappend(path, xdg)) == NULL) {
 					if (er != NULL) *er = xdg_alloc;
-					DBG((dbgo,"malloc error\n"))
+					a1loge(g_log, 1, "xdg_bds: malloc failed\n"); 
 					return 0;
 				}
 			} else {
@@ -505,7 +502,7 @@ int xdg_bds(
 				) {
 					if (er != NULL) *er = xdg_noalluserprofile;
 					free(path);
-					DBG((dbgo,"no $ALLUSERSPROFILE\n"))
+					DBG((DBGA,"no $ALLUSERSPROFILE\n"))
 					return 0;
 				}
 				path = cappend(path, home);
@@ -518,7 +515,7 @@ int xdg_bds(
 #endif
 				if (path == NULL) {
 					if (er != NULL) *er = xdg_alloc;
-					DBG((dbgo,"malloc error\n"))
+					a1loge(g_log, 1, "xdg_bds: malloc failed\n"); 
 					return 0;
 				}
 			}
@@ -536,7 +533,7 @@ int xdg_bds(
 	}
 #endif
 
-	DBG((dbgo,"Paths to search '%s'\n",path));
+	DBG((DBGA,"Paths to search '%s'\n",path));
 
 	/* Hmm. */
 	if (strlen(path) == 0) {
@@ -547,14 +544,14 @@ int xdg_bds(
 	}
 
 	{
-		char *spath = NULL;
+		char *spath = NULL;		/* sub path out of paths */
 		char *cp, *ep;
 
 		/* For each search path */
 		for (cp = path; *cp != '\000';) {
-			int rlen = 0;	/* Number of chars of search path up to subpath & filename */
-			char *pp;
-	
+			char *sname = NULL;		/* sub name out of pfnames */
+			char *ncp, *nep;
+
 			/* Copy search path */
 			if ((ep = strchr(cp, SSEP)) == NULL)
 				ep = cp + strlen(cp);
@@ -565,6 +562,7 @@ int xdg_bds(
 				return 0;
 			}
 			if ((spath = (char *)malloc(ep - cp + 1)) == NULL) {
+				a1loge(g_log, 1, "xdg_bds: malloc failed\n"); 
 				free(path);
 				if (er != NULL) *er = xdg_alloc;
 				xdg_ifree(paths, fnames, npaths);
@@ -573,198 +571,254 @@ int xdg_bds(
 			memmove(spath, cp, ep - cp);
 			spath[ep - cp] = '\000';
 
-			/* append subpath & filename */
-			if ((spath = dappend(spath, pfname)) == NULL) {
-				free(path);
-				if (er != NULL) *er = xdg_alloc;
-				xdg_ifree(paths, fnames, npaths);
-				return 0;
-			}
-			DBG((dbgo,"Full path to check '%s'\n",spath));
+			/* For each filename part */
+			for (ncp = pfname; *ncp != '\000';) {
+				int rlen = 0;	/* Number of chars of search path up to subpath & filename */
+				char *pp;
+				char *schpath;	/* Path to search */
 
-			/* Figure out where the filename starts */
-			if ((pp = strrchr(spath, '/')) == NULL)
-				rlen = 0;
-			else
-				rlen = pp - spath + 1;
-
-			if (op == xdg_read) {
-				char *fpath;			/* Full path of matched */
-				aglob gg;				/* Glob structure */
-
-				/* Setup the file glob */
-				if (aglob_create(&gg, spath)) {
-					free(path);
+				/* Copy filename path */
+				if ((nep = strchr(ncp, SSEP)) == NULL)
+					nep = ncp + strlen(ncp);
+				if ((nep - ncp) == 0) {
 					free(spath);
+					free(path);
+					if (er != NULL) *er = xdg_mallformed;
+					xdg_ifree(paths, fnames, npaths);
+					return 0;
+				}
+				if ((sname = (char *)malloc(nep - ncp + 1)) == NULL) {
+					a1loge(g_log, 1, "xdg_bds: malloc failed\n"); 
+					free(spath);
+					free(path);
 					if (er != NULL) *er = xdg_alloc;
 					xdg_ifree(paths, fnames, npaths);
 					return 0;
 				}
+				memmove(sname, ncp, nep - ncp);
+				sname[nep - ncp] = '\000';
 
-				/* While we have matching filenames */
-				DBG((dbgo,"Checking path '%s'\n",spath))
-				for (;;) {
-					int i;
-
-					if ((fpath = aglob_next(&gg)) == NULL) {
-						if (gg.merr) {	/* Malloc error */
-							free(path);
-							free(spath);
-							aglob_cleanup(&gg);
-							if (er != NULL) *er = xdg_alloc;
-							xdg_ifree(paths, fnames, npaths);
-							return 0;
-						}
-						break;		/* No more matches */
-					}
-					DBG((dbgo,"Found match with '%s'\n",fpath))
-
-					/* Check that this one hasn't already been found */
-					/* in a different search directory */
-					for (i = 0; i < npaths; i++) {
-						if (strcmp(fpath + rlen, fnames[i]) == 0) {
-							/* Already been found earlier - ignore it */
-							break;
-						}
-					}
-					if (i < npaths) {
-						free(fpath);
-						DBG((dbgo,"Ignoring it because it's already in list\n"))
-						continue;		/* Ignore it */
-					}
-
-					/* Found a file, so append it to the list */
-					if (npaths >= napaths) {	/* Need more space in arrays */
-						napaths = napaths * 2 + 1;
-						if ((*paths = realloc(*paths, sizeof(char *) * napaths)) == NULL
-						 || (fnames = realloc(fnames, sizeof(char *) * napaths)) == NULL) {
-							free(path);
-							free(spath);
-							free(fpath);
-							aglob_cleanup(&gg);
-							if (er != NULL) *er = xdg_alloc;
-							xdg_ifree(paths, fnames, npaths);
-							return 0;
-						}
-					}
-					if (((*paths)[npaths] = strdup(fpath)) == NULL) {
-						free(path);
-						free(spath);
-						free(fpath);
-						aglob_cleanup(&gg);
-						if (er != NULL) *er = xdg_alloc;
-						xdg_ifree(paths, fnames, npaths);
-						return 0;
-					}
-					/* The non-searchpath part of the name found */
-					if ((fnames[npaths] = strdup(fpath + rlen)) == NULL) {
-						free((*paths)[npaths]);
-						free(path);
-						free(spath);
-						free(fpath);
-						aglob_cleanup(&gg);
-						if (er != NULL) *er = xdg_alloc;
-						xdg_ifree(paths, fnames, npaths);
-						return 0;
-					}
-					free(fpath);
-					fpath = NULL;
-					npaths++;
+				/* append subpath & subname */
+				if ((schpath = strdup(spath)) == NULL
+				 || (schpath = dappend(schpath, sname)) == NULL) {
+					free(sname);
+					free(spath);
+					free(path);
+					if (er != NULL) *er = xdg_alloc;
+					xdg_ifree(paths, fnames, npaths);
+					return 0;
 				}
-				aglob_cleanup(&gg);
+				DBG((DBGA,"Full path to check '%s'\n",schpath));
 
-				/* Fall through to next search path */
-
-			} else {	/* op == xdg_write */
-				char *pp = spath;
-				struct stat sbuf;
-				mode_t mode = 0700;	/* Default directory mode */
-
-				if (sc == xdg_user)
-					mode = 0700;	/* Default directory mode for user */
+				/* Figure out where the filename starts */
+				if ((pp = strrchr(schpath, '/')) == NULL)
+					rlen = 0;
 				else
-					mode = 0755;	/* Default directory mode local system shared */
+					rlen = pp - schpath + 1;
+
+				if (op == xdg_read) {
+					char *fpath;			/* Full path of matched */
+					aglob gg;				/* Glob structure */
+
+					/* Setup the file glob */
+					if (aglob_create(&gg, schpath)) {
+						free(schpath);
+						free(sname);
+						free(spath);
+						free(path);
+						if (er != NULL) *er = xdg_alloc;
+						xdg_ifree(paths, fnames, npaths);
+						return 0;
+					}
+
+					/* While we have matching filenames */
+					DBG((DBGA,"Getting glob results for '%s'\n",schpath))
+					free(schpath);
+					for (;;) {
+						int i;
+
+						if ((fpath = aglob_next(&gg)) == NULL) {
+							if (gg.merr) {	/* Malloc error */
+								free(sname);
+								free(spath);
+								free(path);
+								aglob_cleanup(&gg);
+								if (er != NULL) *er = xdg_alloc;
+								xdg_ifree(paths, fnames, npaths);
+								return 0;
+							}
+							break;		/* No more matches */
+						}
+						DBG((DBGA,"Found match with '%s'\n",fpath))
+
+						/* Check that this one hasn't already been found */
+						/* in a different search directory */
+						for (i = 0; i < npaths; i++) {
+							if (strcmp(fpath + rlen, fnames[i]) == 0) {
+								/* Already been found earlier - ignore it */
+								break;
+							}
+						}
+						if (i < npaths) {
+							free(fpath);
+							DBG((DBGA,"Ignoring it because it's already in list\n"))
+							continue;		/* Ignore it */
+						}
+
+						/* Found a file, so append it to the list */
+						if (npaths >= napaths) {	/* Need more space in arrays */
+							napaths = napaths * 2 + 1;
+							if ((*paths = realloc(*paths, sizeof(char *) * napaths)) == NULL
+							 || (fnames = realloc(fnames, sizeof(char *) * napaths)) == NULL) {
+								a1loge(g_log, 1, "xdg_bds: realloc failed\n"); 
+								free(fpath);
+								free(sname);
+								free(spath);
+								free(path);
+								aglob_cleanup(&gg);
+								if (er != NULL) *er = xdg_alloc;
+								xdg_ifree(paths, fnames, npaths);
+								return 0;
+							}
+						}
+						if (((*paths)[npaths] = strdup(fpath)) == NULL) {
+							a1loge(g_log, 1, "xdg_bds: strdup failed\n"); 
+							free(fpath);
+							free(sname);
+							free(spath);
+							free(path);
+							aglob_cleanup(&gg);
+							if (er != NULL) *er = xdg_alloc;
+							xdg_ifree(paths, fnames, npaths);
+							return 0;
+						}
+						/* The non-searchpath part of the name found */
+						if ((fnames[npaths] = strdup(fpath + rlen)) == NULL) {
+							a1loge(g_log, 1, "xdg_bds: strdup failed\n"); 
+							free((*paths)[npaths]);
+							free(fpath);
+							free(sname);
+							free(spath);
+							free(path);
+							aglob_cleanup(&gg);
+							if (er != NULL) *er = xdg_alloc;
+							xdg_ifree(paths, fnames, npaths);
+							return 0;
+						}
+						free(fpath);
+						fpath = NULL;
+						npaths++;
+					}
+					aglob_cleanup(&gg);
+
+					/* Fall through to next search path */
+
+				} else {	/* op == xdg_write */
+					char *pp = schpath;
+					struct stat sbuf;
+					mode_t mode = 0700;	/* Default directory mode */
+
+					if (sc == xdg_user)
+						mode = 0700;	/* Default directory mode for user */
+					else
+						mode = 0755;	/* Default directory mode local system shared */
 #ifndef NT
-				/* If we're creating a user dir/file and running as root sudo */
-				if (sc == xdg_user && geteuid() == 0) {
-					char *uids, *gids;
-					int uid, gid;
-					DBG((dbgo,"We're setting a user dir/file running as root\n"))
-						
-					if ((uids = getenv("SUDO_UID")) != NULL
-					 && (gids = getenv("SUDO_GID")) != NULL) {
-						uid = atoi(uids);
-						gid = atoi(gids);
-						if (setegid(gid) || seteuid(uid)) {
-							DBG((dbgo,"seteuid or setegid failed\n"))
-						} else {
-							DBG((dbgo,"Set euid %d and egid %d\n",uid,gid))
+					/* If we're creating a user dir/file and running as root sudo */
+					if (sc == xdg_user && geteuid() == 0) {
+						char *uids, *gids;
+						int uid, gid;
+						DBG((DBGA,"We're setting a user dir/file running as root\n"))
+							
+						if ((uids = getenv("SUDO_UID")) != NULL
+						 && (gids = getenv("SUDO_GID")) != NULL) {
+							uid = atoi(uids);
+							gid = atoi(gids);
+							if (setegid(gid) || seteuid(uid)) {
+								DBG((DBGA,"seteuid or setegid failed\n"))
+							} else {
+								DBG((DBGA,"Set euid %d and egid %d\n",uid,gid))
+							}
+						}
+					/* If setting local system dir/file and not effective root, but sudo */
+					} else if (sc == xdg_local && getuid() == 0 && geteuid() != 0) {
+						if (getenv("SUDO_UID") != NULL
+						 && getenv("SUDO_GID") != NULL) {
+							DBG((DBGA,"We're setting a local system dir/file with uid = 0 && euid != 0\n"))
+							setegid(getgid());
+							seteuid(getuid());
+							DBG((DBGA,"Set euid %d, egid %d\n",geteuid(),getegid()))
 						}
 					}
-				/* If setting local system dir/file and not effective root, but sudo */
-				} else if (sc == xdg_local && getuid() == 0 && geteuid() != 0) {
-					if (getenv("SUDO_UID") != NULL
-					 && getenv("SUDO_GID") != NULL) {
-						DBG((dbgo,"We're setting a local system dir/file with uid = 0 && euid != 0\n"))
-						setegid(getgid());
-						seteuid(getuid());
-						DBG((dbgo,"Set euid %d, egid %d\n",geteuid(),getegid()))
-					}
-				}
 #endif	/* !NT */
 
 #ifdef NT
-				if (*pp != '\000'		/* Skip drive number */
-					&& ((*pp >= 'a' && *pp <= 'z') || (*pp >= 'A' && *pp <= 'Z'))
-				    && pp[1] == ':')
-					pp += 2;
+					if (*pp != '\000'		/* Skip drive number */
+						&& ((*pp >= 'a' && *pp <= 'z') || (*pp >= 'A' && *pp <= 'Z'))
+					    && pp[1] == ':')
+						pp += 2;
 #endif
-				if (*pp == '/')
-					pp++;			/* Skip root directory */
+					if (*pp == '/')
+						pp++;			/* Skip root directory */
 
-				/* Check each directory in hierarchy, and */
-				/* create it if it doesn't exist. */
-				for (;pp != NULL && *pp != '\000';) {
-					if ((pp = strchr(pp, '/')) != NULL) {
-						*pp = '\000';
-						DBG((dbgo,"Checking path '%s'\n",spath))
-						if (stat(spath,&sbuf) != 0) {
-							/* Doesn't exist */
-							DBG((dbgo,"Path '%s' doesn't exist\n",spath))
-							if (mkdir(spath, mode) != 0) {
-								DBG((dbgo,"mkdir failed - giving up on this one\n"))
-								break;
+					/* Check each directory in hierarchy, and */
+					/* create it if it doesn't exist. */
+					DBG((DBGA,"About to check & create whole path '%s'\n",schpath))
+					for (;pp != NULL && *pp != '\000';) {
+						if ((pp = strchr(pp, '/')) != NULL) {
+							*pp = '\000';
+							DBG((DBGA,"Checking path '%s'\n",schpath))
+							if (stat(schpath,&sbuf) != 0) {
+								/* Doesn't exist */
+								DBG((DBGA,"Path '%s' doesn't exist - creating it\n",schpath))
+								if (mkdir(schpath, mode) != 0) {
+									DBG((DBGA,"mkdir failed - giving up on this one\n"))
+									break;
+								}
+							} else {
+								mode = sbuf.st_mode;
 							}
-						} else {
-							mode = sbuf.st_mode;
+							*pp = '/';
+							pp++;
 						}
-						*pp = '/';
-						pp++;
+					}
+
+					/* If we got to the end of the hierarchy, */
+					/* then the path looks good to write to, */
+					/* so create a list of one and we're done */
+					if (pp == NULL || *pp == '\000') {
+					
+						if ((*paths = malloc(sizeof(char *))) == NULL) {
+							a1loge(g_log, 1, "xdg_bds: malloc failed\n"); 
+							free(schpath);
+							free(sname);
+							free(spath);
+							free(path);
+							if (er != NULL) *er = xdg_alloc;
+							return 0;
+						}
+						if (((*paths)[npaths] = schpath) == NULL) {
+							free(sname);
+							free(spath);
+							free(path);
+							if (er != NULL) *er = xdg_alloc;
+							free(*paths);
+							return 0;
+						}
+						npaths++;
+						DBG((DBGA,"Returning 0: '%s'\n",(*paths)[0]))
+						free(sname);
+						free(spath);
+						free(path);
+						return npaths;
 					}
 				}
 
-				/* If we got to the end of the hierarchy, */
-				/* then the path looks good to write to, */
-				/* so create a list of one and we're done */
-				if (pp == NULL || *pp == '\000') {
-				
-					if ((*paths = malloc(sizeof(char *))) == NULL) {
-						free(path);
-						free(spath);
-						if (er != NULL) *er = xdg_alloc;
-						return 0;
-					}
-					if (((*paths)[npaths] = spath) == NULL) {
-						free(path);
-						free(spath);
-						if (er != NULL) *er = xdg_alloc;
-						free(*paths);
-						return 0;
-					}
-					npaths++;
-					DBG((dbgo,"Returning 0: '%s'\n",(*paths)[0]))
-					return npaths;
-				}
+				/* Move on to the next name part */
+				free(sname); sname = NULL;
+				if (*nep == SSEP)
+					ncp = nep+1;
+				else
+					ncp = nep;
 			}
 
 			/* Move on to the next search path */
@@ -787,9 +841,9 @@ int xdg_bds(
 #ifdef DEBUG
 		{
 			int i;
-			fprintf(dbgo,"Returning list\n");
+			a1logd(DBGA,"Returning list\n");
 			for (i = 0; i < npaths; i++) 
-				fprintf(dbgo,"  %d: '%s'\n",i,(*paths)[i]);
+				a1logd(DBGA,"  %d: '%s'\n",i,(*paths)[i]);
 		}
 #endif
 	}
@@ -855,15 +909,15 @@ static int delpath(char *path, int depth) {
 	char *pp;
 
 	for (i = 0; i < depth;) {
-//printf("~1 deleting '%s'\n",path);
+//		a1logd(DBGA,"deleting '%s'\n",path);
 		if (i == 0) {
 			if (unlink(path)) {
-//printf("~1 unlink '%s' failed\n",path);
+//				a1logd(DBGA,"unlink '%s' failed\n",path);
 				return 1;
 			}
 		} else {
 			if (rmdir(path)) {
-//printf("~1 rmdir '%s' failed\n",path);
+//				a1logd(DBGA,"rmdir '%s' failed\n",path);
 				return 1;
 			}
 		}

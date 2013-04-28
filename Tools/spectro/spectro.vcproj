@@ -160,6 +160,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ccmx.c"
+				>
+			</File>
+			<File
 				RelativePath=".\ccss.c"
 				>
 			</File>
@@ -181,18 +185,6 @@
 			</File>
 			<File
 				RelativePath=".\dtp20.c"
-				>
-			</File>
-			<File
-				RelativePath=".\dtp22.c"
-				>
-			</File>
-			<File
-				RelativePath=".\dtp41.c"
-				>
-			</File>
-			<File
-				RelativePath=".\dtp51.c"
 				>
 			</File>
 			<File
@@ -228,6 +220,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\icoms.c"
+				>
+			</File>
+			<File
 				RelativePath=".\inst.c"
 				>
 			</File>
@@ -241,10 +237,6 @@
 			</File>
 			<File
 				RelativePath=".\munki_imp.c"
-				>
-			</File>
-			<File
-				RelativePath=".\ntio.c"
 				>
 			</File>
 			<File
@@ -265,14 +257,6 @@
 			</File>
 			<File
 				RelativePath=".\spyd2.c"
-				>
-			</File>
-			<File
-				RelativePath=".\ss.c"
-				>
-			</File>
-			<File
-				RelativePath=".\ss_imp.c"
 				>
 			</File>
 			<File

@@ -8,7 +8,7 @@
  * Author: Graeme W. Gill
  * Date:   10/1/2007
  *
- * Copyright 1996 - 2007 Graeme W. Gill
+ * Copyright 1996 - 2013 Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -42,10 +42,6 @@
 #define DTP20_COMS_FAIL					0x82			/* Communication failure */
 #define DTP20_UNKNOWN_MODEL				0x83			/* Not a DPT51 or DTP52 */
 #define DTP20_DATA_PARSE_ERROR  		0x84			/* Read data parsing error */
-#define DTP20_USER_ABORT		    	0x85			/* User hit abort */
-#define DTP20_USER_TERM		    		0x86			/* User hit terminate */
-#define DTP20_USER_TRIG 		    	0x87			/* User hit trigger */
-#define DTP20_USER_CMND		    		0x88			/* User hit command */
 
 #define DTP20_NOT_EMPTY					0x89			/* Trying to read strips when not empty */
 #define DTP20_UNEXPECTED_STATUS			0x90			/* Instrument has unexpected status */
@@ -59,7 +55,6 @@
 #define DTP20_BAD_PARAMETERS			0x12
 #define DTP20_PRM_RANGE_ERROR			0x13
 #define DTP20_BUSY						0x14
-#define DTP20_USER_ABORT_ERROR	    	0x15
 
 #define DTP20_MEASUREMENT_ERROR			0x20
 #define DTP20_TIMEOUT					0x21
@@ -123,20 +118,20 @@ struct _dtp20 {
 	INST_OBJ_BASE
 
 	/* *** DTP20 private data **** */
-	inst_capability  cap;		/* Instrument capability */
-	inst2_capability cap2;		/* Instrument capability */
+	inst_mode  cap;				/* Instrument mode capability */
+	inst2_capability cap2;		/* Instrument capability 2 */
+	inst3_capability cap3;		/* Instrument capability 3 */
 	inst_mode    mode;			/* Currently instrument mode */
 
 	int need_cal;				/* Got a need_cal error */
-	inst_opt_mode trig;			/* Reading trigger mode */
-	int trig_return;			/* Emit "\n" after trigger */
+	inst_opt_type trig;			/* Reading trigger mode */
 
 	int savix;					/* Index of last saved spot reading read */
 
 }; typedef struct _dtp20 dtp20;
 
 /* Constructor */
-extern dtp20 *new_dtp20(icoms *icom, instType itype, int debug, int verb);
+extern dtp20 *new_dtp20(icoms *icom, instType itype);
 
 
 

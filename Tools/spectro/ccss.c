@@ -37,6 +37,14 @@
 #include "xspect.h"
 #include "ccss.h"
 
+#ifdef NT       /* You'd think there might be some standards.... */
+# ifndef __BORLANDC__
+#  define stricmp _stricmp
+# endif
+#else
+# define stricmp strcasecmp
+#endif
+
 /* Forward declarations */
 static void free_ccss(ccss *p);
 
@@ -44,11 +52,11 @@ static void free_ccss(ccss *p);
 
 /* Method implimentations */
 
-/* Write out the ccss to a CGATS format .ccss file */
+/* Write out the ccss to a CGATS format object */
 /* Return nz on error */
-static int write_ccss(
+static int create_ccss_cgats(
 ccss *p,			/* This */
-char *outname	/* Filename to write to */
+cgats **pocg		/* return CGATS structure */
 ) {
 	int i, j;
 	time_t clk = time(0);
@@ -58,11 +66,6 @@ char *outname	/* Filename to write to */
 	int nsetel = 0;
 	cgats_set_elem *setel;	/* Array of set value elements */
 	char buf[100];
-
-	if (p->no_samp < 3) {
-		strcpy(p->err, "Need at least three spectral samples");
-		return 1;
-	}
 
 	atm[strlen(atm)-1] = '\000';	/* Remove \n from end */
 
@@ -88,10 +91,14 @@ char *outname	/* Filename to write to */
 	if (p->tech)
 		ocg->add_kword(ocg, 0, "TECHNOLOGY", p->tech,NULL);
 	if (p->disp == NULL && p->tech == NULL) {
-		sprintf(p->err, "write_ccss: ccss for file '%s' doesn't contain display or techology strings",outname);
+		sprintf(p->err, "write_ccss: ccss doesn't contain display or techology strings");
 		ocg->del(ocg);
 		return 1;
 	}
+	if (p->refrmode >= 0)
+		ocg->add_kword(ocg, 0, "DISPLAY_TYPE_REFRESH", p->refrmode ? "YES" : "NO", NULL);
+	if (p->sel != NULL)
+		ocg->add_kword(ocg, 0, "UI_SELECTORS", p->sel, NULL);
 	if (p->ref != NULL)
 		ocg->add_kword(ocg, 0, "REFERENCE",p->ref, NULL);
 
@@ -101,6 +108,8 @@ char *outname	/* Filename to write to */
 	ocg->add_kword(ocg, 0, "SPECTRAL_START_NM",buf, NULL);
 	sprintf(buf,"%f", p->samples[0].spec_wl_long);
 	ocg->add_kword(ocg, 0, "SPECTRAL_END_NM",buf, NULL);
+	sprintf(buf,"%f", p->samples[0].norm);
+	ocg->add_kword(ocg, 0, "SPECTRAL_NORM",buf, NULL);
 
 	/* Fields we want */
 	ocg->add_field(ocg, 0, "SAMPLE_ID", nqcs_t);
@@ -139,50 +148,106 @@ char *outname	/* Filename to write to */
 	}
 	free(setel);
 
-	/* Write it */
+	if (pocg != NULL)
+		*pocg = ocg;
+
+	return 0;
+}
+
+/* Write out the ccss to a CGATS format .ccss file */
+/* Return nz on error */
+static int write_ccss(
+ccss *p,		/* This */
+char *outname	/* Filename to write to */
+) {
+	int rv;
+	cgats *ocg;				/* CGATS structure */
+
+	if (p->no_samp < 3) {
+		strcpy(p->err, "Need at least three spectral samples");
+		return 1;
+	}
+
+	/* Create CGATS elements */
+	if ((rv = create_ccss_cgats(p, &ocg)) != 0) {
+		return rv;
+	}
+
+	/* Write it to file */
 	if (ocg->write_name(ocg, outname)) {
 		strcpy(p->err, ocg->err);
 		ocg->del(ocg);		/* Clean up */
 		return 1;
 	}
-
 	ocg->del(ocg);		/* Clean up */
 
 	return 0;
 }
 
-/* Read in the ccss CGATS .ccss file */
+/* write to a CGATS .ccss file to a memory buffer. */
+/* return nz on error, with message in err[] */
+static int buf_write_ccss(
+ccss *p,
+unsigned char **buf,		/* Return allocated buffer */
+int *len					/* Return length */
+) {
+	int rv;
+	cgats *ocg;				/* CGATS structure */
+	cgatsFile *fp;
+
+	if (p->no_samp < 3) {
+		strcpy(p->err, "Need at least three spectral samples");
+		return 1;
+	}
+
+	/* Create CGATS elements */
+	if ((rv = create_ccss_cgats(p, &ocg)) != 0) {
+		return rv;
+	}
+
+	if ((fp = new_cgatsFileMem(NULL, 0)) == NULL) {
+		strcpy(p->err, "new_cgatsFileMem failed");
+		return 2;
+	}
+
+	/* Write it to file */
+	if (ocg->write(ocg, fp)) {
+		strcpy(p->err, ocg->err);
+		ocg->del(ocg);		/* Clean up */
+		fp->del(fp);
+		return 1;
+	}
+
+	/* Get the buffer the ccss has been written to */
+	if (fp->get_buf(fp, buf, (size_t *)len)) {
+		strcpy(p->err, "cgatsFileMem get_buf failed");
+		return 2;
+	}
+
+	ocg->del(ocg);		/* Clean up */
+	fp->del(fp);
+
+	return 0;
+}
+
+/* Read in the ccss CGATS .ccss file from cgats */
 /* Return nz on error */
-static int read_ccss(
-ccss *p,			/* This */
-char *inname	/* Filename to read from */
+static int read_ccss_cgats(
+ccss *p,		/* This */
+cgats *icg		/* input cgats structure */
 ) {
 	int i, j;
-	cgats *icg;			/* input cgats structure */
 	int ti, ii;			/* Temporary CGATs index */
 	int  spi[XSPECT_MAX_BANDS];	/* CGATS indexes for each wavelength */
 	xspect sp;
 
-	/* Open and look at the .ccss file */
-	if ((icg = new_cgats()) == NULL) {		/* Create a CGATS structure */
-		sprintf(p->err, "read_ccss: new_cgats() failed");
-		return 2;
-	}
-	icg->add_other(icg, "CCSS");		/* our special type is Model Printer Profile */
-
-	if (icg->read_name(icg, inname)) {
-		strcpy(p->err, icg->err);
-		icg->del(icg);
-		return 1;
-	}
-
 	if (icg->ntables == 0 || icg->t[0].tt != tt_other || icg->t[0].oi != 0) {
-		sprintf(p->err, "read_ccss: Input file '%s' isn't a CCSS format file",inname);
+		sprintf(p->err, "read_ccss: Input file isn't a CCSS format file");
 		icg->del(icg);
 		return 1;
 	}
 	if (icg->ntables != 1) {
-		sprintf(p->err, "Input file '%s' doesn't contain exactly one table",inname);
+		sprintf(p->err, "Input file doesn't contain exactly one table");
 		icg->del(icg);
 		return 1;
 	}
@@ -226,9 +291,23 @@ char *inname	/* Filename to read from */
 		}
 	}
 	if (p->disp == NULL && p->tech == NULL) {
-		sprintf(p->err, "read_ccss: Input file '%s' doesn't contain keyword DISPLAY or TECHNOLOGY",inname);
+		sprintf(p->err, "read_ccss: Input file doesn't contain keyword DISPLAY or TECHNOLOGY");
 		icg->del(icg);
 		return 1;
+	}
+	if ((ti = icg->find_kword(icg, 0, "DISPLAY_TYPE_REFRESH")) >= 0) {
+		if (stricmp(icg->t[0].kdata[ti], "YES") == 0)
+			p->refrmode = 1;
+		else if (stricmp(icg->t[0].kdata[ti], "NO") == 0)
+			p->refrmode = 0;
+	}
+
+	if ((ti = icg->find_kword(icg, 0, "UI_SELECTORS")) >= 0) {
+		if ((p->sel = strdup(icg->t[0].kdata[ti])) == NULL) {
+			sprintf(p->err, "read_ccss: malloc failed");
+			icg->del(icg);
+			return 2;
+		}
 	}
 
 	if ((ti = icg->find_kword(icg, 0, "REFERENCE")) >= 0) {
@@ -240,24 +319,29 @@ char *inname	/* Filename to read from */
 	}
 
 	if ((ii = icg->find_kword(icg, 0, "SPECTRAL_BANDS")) < 0) {
-		sprintf(p->err,"Input file '%s' doesn't contain keyword SPECTRAL_BANDS",inname);
+		sprintf(p->err,"Input file doesn't contain keyword SPECTRAL_BANDS");
 		icg->del(icg);
 		return 1;
 	}
 	sp.spec_n = atoi(icg->t[0].kdata[ii]);
 	if ((ii = icg->find_kword(icg, 0, "SPECTRAL_START_NM")) < 0) {
-		sprintf(p->err,"Input file '%s' doesn't contain keyword SPECTRAL_START_NM",inname);
+		sprintf(p->err,"Input file doesn't contain keyword SPECTRAL_START_NM");
 		icg->del(icg);
 		return 1;
 	}
 	sp.spec_wl_short = atof(icg->t[0].kdata[ii]);
 	if ((ii = icg->find_kword(icg, 0, "SPECTRAL_END_NM")) < 0) {
-		sprintf(p->err,"Input file '%s' doesn't contain keyword SPECTRAL_END_NM",inname);
+		sprintf(p->err,"Input file doesn't contain keyword SPECTRAL_END_NM");
 		icg->del(icg);
 		return 1;
 	}
 	sp.spec_wl_long = atof(icg->t[0].kdata[ii]);
-	sp.norm = 1.0;
+
+	if ((ii = icg->find_kword(icg, 0, "SPECTRAL_NORM")) < 0) {
+		sp.norm = 1.0;			/* Older versions don't have SPECTRAL_NORM */
+	} else {
+		sp.norm = atof(icg->t[0].kdata[ii]);
+	}
 
 	/* Find the fields for spectral values */
 	for (j = 0; j < sp.spec_n; j++) {
@@ -271,14 +355,14 @@ char *inname	/* Filename to read from */
 		sprintf(buf,"SPEC_%03d",nm);
 
 		if ((spi[j] = icg->find_field(icg, 0, buf)) < 0) {
-			sprintf(p->err,"Input file '%s' doesn't contain field %s",inname,buf);
+			sprintf(p->err,"Input file doesn't contain field %s",buf);
 			icg->del(icg);
 			return 1;
 		}
 	}
 
 	if ((p->no_samp = icg->t[0].nsets) < 3) {
-		sprintf(p->err, "Input file '%s' doesn't contain at least three spectral samples",inname);
+		sprintf(p->err, "Input file doesn't contain at least three spectral samples");
 		p->no_samp = 0;
 		icg->del(icg);		/* Clean up */
 		return 1;
@@ -303,6 +387,78 @@ char *inname	/* Filename to read from */
 		}
 	}
 
+	return 0;
+}
+
+/* Read in the ccss CGATS .ccss file */
+/* Return nz on error */
+static int read_ccss(
+ccss *p,		/* This */
+char *inname	/* Filename to read from */
+) {
+	int rv;
+	cgats *icg;			/* input cgats structure */
+
+	/* Open and look at the .ccss file */
+	if ((icg = new_cgats()) == NULL) {		/* Create a CGATS structure */
+		sprintf(p->err, "read_ccss: new_cgats() failed");
+		return 2;
+	}
+	icg->add_other(icg, "CCSS");		/* our special type is Model Printer Profile */
+
+	if (icg->read_name(icg, inname)) {
+		strcpy(p->err, icg->err);
+		icg->del(icg);
+		return 1;
+	}
+
+	if ((rv = read_ccss_cgats(p, icg)) != 0) {
+		icg->del(icg);		/* Clean up */
+		return rv;
+	}
+
+	icg->del(icg);		/* Clean up */
+
+	return 0;
+}
+
+/* Read in the ccss CGATS .ccss file from a memory buffer */
+/* Return nz on error */
+static int buf_read_ccss(
+ccss *p,		/* This */
+unsigned char *buf,
+int len
+) {
+	int rv;
+	cgatsFile *fp;
+	cgats *icg;			/* input cgats structure */
+
+	if ((fp = new_cgatsFileMem(buf, len)) == NULL) {
+		strcpy(p->err, "new_cgatsFileMem failed");
+		return 2;
+	}
+
+	/* Open and look at the .ccss file */
+	if ((icg = new_cgats()) == NULL) {		/* Create a CGATS structure */
+		sprintf(p->err, "read_ccss: new_cgats() failed");
+		fp->del(fp);
+		return 2;
+	}
+	icg->add_other(icg, "CCSS");		/* our special type is Model Printer Profile */
+	
+	if (icg->read(icg, fp)) {
+		strcpy(p->err, icg->err);
+		icg->del(icg);
+		fp->del(fp);
+		return 1;
+	}
+	fp->del(fp);
+
+	if ((rv = read_ccss_cgats(p, icg)) != 0) {
+		icg->del(icg);		/* Clean up */
+		return rv;
+	}
+
 	icg->del(icg);		/* Clean up */
 
 	return 0;
@@ -316,7 +472,9 @@ char *crdate,		/* Creation date in ctime() format (May be NULL) */
 char *desc,			/* General description (optional) */
 char *disp,			/* Display make and model (optional if tech) */
 char *tech,			/* Display technology description (optional if disp) */
-char *ref,			/* Reference spectrometer description (optional) */
+int refrmode,		/* Display refresh mode, -1 = unknown, 0 = n, 1 = yes */
+char *sel,			/* UI selector characters - NULL for none */
+char *refd,			/* Reference spectrometer description (optional) */
 xspect *samples,	/* Arry of spectral samples. All assumed to be same dim as first */
 int no_samp			/* Number of spectral samples */
 ) {
@@ -353,8 +511,15 @@ int no_samp			/* Number of spectral samples */
 			return 2;
 		}
 	}
-	if (ref != NULL) {
-		if ((p->ref = strdup(ref)) == NULL) {
+	p->refrmode = refrmode;
+	if (sel != NULL) {
+		if ((p->sel = strdup(sel)) == NULL) {
+			sprintf(p->err, "set_ccss: malloc sel failed");
+			return 2;
+		}
+	}
+	if (refd != NULL) {
+		if ((p->ref = strdup(refd)) == NULL) {
 			sprintf(p->err, "set_ccss: malloc ref failed");
 			return 2;
 		}
@@ -404,6 +569,9 @@ static void free_ccss(ccss *p) {
 		if (p->tech != NULL)
 			free(p->tech);
 		p->tech = NULL;
+		if (p->sel != NULL)
+			free(p->sel);
+		p->sel = NULL;
 		if (p->ref != NULL)
 			free(p->ref);
 		p->ref = NULL;
@@ -431,10 +599,12 @@ ccss *new_ccss(void) {
 		return NULL;
 
 	/* Init method pointers */
-	p->del         = del_ccss;
-	p->set_ccss    = set_ccss;
-	p->write_ccss  = write_ccss;
-	p->read_ccss   = read_ccss;
+	p->del             = del_ccss;
+	p->set_ccss        = set_ccss;
+	p->write_ccss      = write_ccss;
+	p->buf_write_ccss  = buf_write_ccss;
+	p->read_ccss       = read_ccss;
+	p->buf_read_ccss   = buf_read_ccss;
 
 	return p;
 }

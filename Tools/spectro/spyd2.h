@@ -8,7 +8,7 @@
  * Author: Graeme W. Gill
  * Date:   19/10/2006
  *
- * Copyright 2006 - 2009, Graeme W. Gill
+ * Copyright 2006 - 2013, Graeme W. Gill
  * All rights reserved.
  *
  * (Based on i1disp.c)
@@ -45,10 +45,6 @@
 #define SPYD2_COMS_FAIL				0x62		/* Communication failure */
 #define SPYD2_UNKNOWN_MODEL			0x63		/* Not an spyd2lay */
 #define SPYD2_DATA_PARSE_ERROR  	0x64		/* Read data parsing error */
-#define SPYD2_USER_ABORT			0x65		/* User hit abort */
-#define SPYD2_USER_TERM		    	0x66		/* User hit terminate */
-#define SPYD2_USER_TRIG 			0x67		/* User hit trigger */
-#define SPYD2_USER_CMND		    	0x68		/* User hit command */
 
 /* Real error code */
 #define SPYD2_OK   					0x00
@@ -68,7 +64,7 @@
 #define SPYD2_NO_COMS  		        0x24
 #define SPYD2_NOT_INITED  		    0x25
 #define SPYD2_NOCRTCAL  		    0x26		/* No CRT calibration data */
-#define SPYD2_NOLCDCAL  		    0x27		/* No CRT calibration data */
+#define SPYD2_NOLCDCAL  		    0x27		/* No LCD calibration data */
 #define SPYD2_MALLOC     		    0x28
 #define SPYD2_OBS_SELECT   		    0x29		/* Observer */
 #define SPYD2_CAL_FAIL   		    0x2A
@@ -82,10 +78,9 @@
 struct _spyd2 {
 	INST_OBJ_BASE
 
-	inst_mode mode;				/* Currently selected mode */
+	inst_mode mode;				/* Currently selected mode (emis/ambient/etc.) */
 
-	inst_opt_mode trig;			/* Reading trigger mode */
-	int trig_return;			/* Emit "\n" after trigger */
+	inst_opt_type trig;			/* Reading trigger mode */
 
 	/* Serial EEPROM registers */
 								/* versioni & feature bits */
@@ -96,6 +91,9 @@ struct _spyd2 {
 								/* Spyder4 Pro     = 0x070F */
 
 	unsigned int hwver;			/* 5:B	Harware version number */
+								/* Spyder2 = 3 */
+								/* Spyder3 = 4 */
+								/* Spyder4 = 7 */
 
 	unsigned int fbits;			/* 6:B Feature bits 0,1,2,3 correspond to calibration types */
 								/* CRT/UNK, LCD/NORM, TOK, CRT/UNK  */
@@ -109,6 +107,10 @@ struct _spyd2 {
 	double  cal_A[2][3][9];		/* HW3..6: 16, 256  CRT/LCD A calibration matrix */
 	double  cal_B[2][3][9];		/* HW3..6: 128, 384 CRT/LCD B calibration matrix */
 
+								/* HW3 [0] = CRT/UNK, [1] = LCD/NORM */
+								/* HW4..6 [0] = not used, [1] = LCD */
+
+								/* HW7 [0] = No used */
 								/* HW7: cal_A[1] computed from sensor spectral data. */
 								/* HWy: cal_B[1] 60, 384 Linearity correction */
 
@@ -130,20 +132,27 @@ struct _spyd2 {
 								/* with no offset value (TOK type ?). */
 
 	/* hwver 7 (Spyder 4) uses computed calibrations */
-//	double sens[7][41];			/* Sensor sensitivity curves in Hz per mW/nm/m^2 */
 	xspect sens[7];				/* Sensor sensitivity curves in Hz per mW/nm/m^2 */
 
 	/* Computed factors and state */
+	inst_disptypesel *_dtlist;	/* Base list */
+	inst_disptypesel *dtlist;	/* Display Type list */
+	int ndtlist;				/* Number of valid dtlist entries */
+
+	int refrmode;				/* 0 for constant, 1 for refresh display */ 
+	int cbid;					/* calibration base ID, 0 if not a base */
+	int	icx;					/* Bit 0: Cal table index, 0 = CRT, 1 = LCD/normal */
+								/* Bits 31-1: Spyder 4 spectral cal index, 0..spyd4_nocals-1 */
+	int     rrset;				/* Flag, nz if the refresh rate has been determined */
+	double  refrate;			/* Current refresh rate. Set to DEFREFR if not measurable */
+	int     refrvalid;			/* nz if refrate was measured */
+	double  gain;				/* hwver == 5 gain value (default 4) */
+	double ccmat[3][3];			/* Colorimeter correction matrix */
+	icxObserverType obType;		/* ccss observer to use */
+	xspect custObserver[3];		/* Custom ccss observer to use */
+
 	int prevraw[8];				/* Previous raw reading values */
 	int prevrawinv;				/* Previous raw readings invalid flag - after an abort */
-	int     ref;				/* 0 for constant, 1 for refresh display */ 
-	int     rrset;				/* Flag, nz if the refresh rate has been determined */
-	double  rrate;				/* Current refresh rate. Set to DEFREFR if !determined */
-	int     calix;				/* Cal table index */
-	int     calix4;				/* Spyder 4 spectral cal index, last calix4, 0..spyd4_nocals-1 */
-	double  gain;				/* hwver == 5 gain value (default 4) */
-
-	double ccmat[3][3];			/* Colorimeter correction matrix */
 
 	/* Other state */
 	int     led_state;			/* Spyder 3: Current LED state */
@@ -152,7 +161,7 @@ struct _spyd2 {
 }; typedef struct _spyd2 spyd2;
 
 /* Constructor */
-extern spyd2 *new_spyd2(icoms *icom, instType itype, int debug, int verb);
+extern spyd2 *new_spyd2(icoms *icom, instType itype);
 
 
 #define SPYD2_H

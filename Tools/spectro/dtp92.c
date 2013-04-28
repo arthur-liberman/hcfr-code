@@ -6,7 +6,7 @@
  * Author: Graeme W. Gill
  * Date:   5/10/1996
  *
- * Copyright 1996 - 2007, Graeme W. Gill
+ * Copyright 1996 - 2013, Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -31,6 +31,12 @@
    and agreed to support.
  */
 
+/*
+	TTBD:
+		Should make DTP92 switch trigger a reading.
+
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -47,11 +53,9 @@
 #endif /* !SALONEINSTLIB */
 #include "xspect.h"
 #include "insttypes.h"
-#include "icoms.h"
 #include "conv.h"
+#include "icoms.h"
 #include "dtp92.h"
-
-#undef DEBUG
 
 /* Default flow control */
 #define DEFFC fc_none
@@ -90,19 +94,11 @@ extract_ec(char *s) {
 
 /* Interpret an icoms error into a DTP92 error */
 static int icoms2dtp92_err(int se) {
-	if (se & ICOM_USERM) {
-		se &= ICOM_USERM;
-		if (se == ICOM_USER)
-			return DTP92_USER_ABORT;
-		if (se == ICOM_TERM)
-			return DTP92_USER_TERM;
-		if (se == ICOM_TRIG)
-			return DTP92_USER_TRIG;
-		if (se == ICOM_CMND)
-			return DTP92_USER_CMND;
-	}
-	if (se != ICOM_OK)
+	if (se != ICOM_OK) {
+		if (se & ICOM_TO)
+			return DTP92_TIMEOUT; 
 		return DTP92_COMS_FAIL;
+	}
 	return DTP92_OK;
 }
 
@@ -123,9 +119,7 @@ dtp92_fcommand(
 	int rv, se;
 
 	if ((se = p->icom->write_read(p->icom, in, out, bsize, tc, ntc, to)) != 0) {
-#ifdef DEBUG
-		printf("dtp92 fcommand: serial i/o failure on write_read '%s'\n",icoms_fix(in));
-#endif
+		a1logd(p->log, 1, "dtp92_fcommand: serial i/o failure on write_read '%s'\n",icoms_fix(in));
 		return icoms2dtp92_err(se);
 	}
 	rv = DTP92_OK;
@@ -133,8 +127,8 @@ dtp92_fcommand(
 		rv = extract_ec(out);
 
 #ifdef NEVER
-if (strcmp(in, "0PR\r") == 0)
-rv = DTP92_NEEDS_OFFSET_DRIFT_CAL;		/* Emulate 1B error */
+	if (strcmp(in, "0PR\r") == 0)
+		rv = DTP92_NEEDS_OFFSET_DRIFT_CAL;		/* Emulate 1B error */
 #endif /* NEVER */
 
 		if (rv > 0) {
@@ -145,16 +139,14 @@ rv = DTP92_NEEDS_OFFSET_DRIFT_CAL;		/* Emulate 1B error */
 			}
 		}
 	}
-#ifdef DEBUG
-	printf("command '%s'",icoms_fix(in));
-	printf(" returned '%s', value 0x%x\n",icoms_fix(out),rv);
-#endif
+	a1logd(p->log, 4, "dtp92_fcommand: command '%s' returned '%s', value 0x%x\n",
+	                                          icoms_fix(in), icoms_fix(out),rv);
 
 #ifdef IGNORE_NEEDS_OFFSET_DRIFT_CAL_ERR
 	if (strcmp(in, "0PR\r") == 0 && rv == DTP92_NEEDS_OFFSET_DRIFT_CAL) {
 		static int warned = 0;
 		if (!warned) {
-			warning("Got error NEEDS_OFFSET_DRIFT_CAL on instrument reset - being ignored.");
+			a1logw(p->log,"dtp92: Got error NEEDS_OFFSET_DRIFT_CAL on instrument reset - being ignored.");
 			warned = 1;
 		}
 		rv = 0;
@@ -175,25 +167,21 @@ dtp92_command(dtp92 *p, char *in, char *out, int bsize, double to) {
 /* If it's a serial port, use the baud rate given, and timeout in to secs */
 /* Return DTP_COMS_FAIL on failure to establish communications */
 static inst_code
-dtp92_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) {
+dtp92_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	dtp92 *p = (dtp92 *) pp;
 	static char buf[MAX_MES_SIZE];
 	baud_rate brt[5] = { baud_9600, baud_19200, baud_4800, baud_2400, baud_1200 };
 	char *brc[5]     = { "30BR\r",  "60BR\r",   "18BR\r",  "0CBR\r",  "06BR\r" };
 	char *fcc;
 	unsigned int etime;
-	instType itype;
-	int ci, bi, i, rv;
+	instType itype = pp->itype;
+	int ci, bi, i, se;
 	inst_code ev = inst_ok;
 
-	if (p->debug) {
-		p->icom->debug = p->debug;	/* Turn on debugging */
-		fprintf(stderr,"dtp92: About to init coms\n");
-	}
+	if (p->icom->port_type(p->icom) == icomt_usb) {
+#ifdef ENABLE_USB
 
-	if ((itype = p->icom->is_usb_portno(p->icom, port)) != instUnknown) {
-
-		if (p->debug) fprintf(stderr,"dtp92Q/dtp94: About to init USB\n");
+		a1logd(p->log, 2, "dtp92_init_coms: About to init USB\n");
 
 		/* Note that the 92Q and 94 have a different  */
 		/* arrangement of end points: 				*/
@@ -208,18 +196,28 @@ dtp92_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) 
 		/*											*/
 		/* Set config, interface, write end point, read end point, read quanta */
 		if (itype == instDTP94)
-			p->icom->set_usb_port(p->icom, port, 1, 0x02, 0x81, icomuf_none, 0, NULL); 
+			se = p->icom->set_usb_port(p->icom, 1, 0x02, 0x81, icomuf_none, 0, NULL); 
 		else
-			p->icom->set_usb_port(p->icom, port, 1, 0x01, 0x81, icomuf_none, 0, NULL); 
+			se = p->icom->set_usb_port(p->icom, 1, 0x01, 0x81, icomuf_none, 0, NULL); 
+
+		if (se != ICOM_OK) { 
+			a1logd(p->log, 1, "dtp92_init_coms: set_usb_port failed ICOM err 0x%x\n",se);
+			return dtp92_interp_code((inst *)p, icoms2dtp92_err(se));
+		}
 
 		/* Blind reset it twice - it seems to sometimes hang up */
 		/* otherwise under OSX */
 		dtp92_command(p, "0PR\r", buf, MAX_MES_SIZE, 0.5);
 		dtp92_command(p, "0PR\r", buf, MAX_MES_SIZE, 0.5);
+#else	/* !ENABLE_USB */
+		a1logd(p->log, 1, "dtp20: Failed to find USB connection to instrument\n");
+		return inst_coms_fail;
+#endif	/* !ENABLE_USB */
 
 	} else {
 
-		if (p->debug) fprintf(stderr,"dtp92: About to init Serial I/O\n");
+#ifdef ENABLE_SERIAL
+		a1logd(p->log, 2, "dtp92_init_coms: About to init Serial I/O\n");
 
 		/* Deal with flow control setting */
 		if (fc == fc_nc)
@@ -254,23 +252,33 @@ dtp92_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) 
 
 		while (msec_time() < etime) {
 
-			if (p->debug) fprintf(stderr,"dtp92: Trying different baud rates (%u ticks to go)\n",etime - msec_time());
+			a1logd(p->log, 4, "dtp92_init_coms: Trying different baud rates (%u msec to go)\n",
+                                                              etime - msec_time());
 
 			/* Until we time out, find the correct baud rate */
 			for (i = ci; msec_time() < etime;) {
-				p->icom->set_ser_port(p->icom, port, fc_none, brt[i], parity_none,
-				                                                 stop_1, length_8);
-				if (((ev = dtp92_command(p, "\r", buf, MAX_MES_SIZE, 0.5)) & inst_mask)
-				                                                           != inst_coms_fail) {
-					break;		/* We've got coms or user abort */
+				if ((se = p->icom->set_ser_port(p->icom, fc_none, brt[i], parity_none,
+					                                    stop_1, length_8)) != ICOM_OK) { 
+					a1logd(p->log, 1, "dtp92_init_coms: set_ser_port failed ICOM err 0x%x\n",se);
+					return dtp92_interp_code((inst *)p, icoms2dtp92_err(se));
 				}
+
+				if (((ev = dtp92_command(p, "\r", buf, MAX_MES_SIZE, 0.5)) & inst_mask)
+					                                                 != inst_coms_fail)
+					break;		/* We've got coms or user abort */
+
+				/* Check for user abort */
+				if (p->uicallback != NULL) {
+					inst_code ev;
+					if ((ev = p->uicallback(p->uic_cntx, inst_negcoms)) == inst_user_abort) {
+						a1logd(p->log, 1, "dtp92_init_coms: user aborted\n");
+						return inst_user_abort;
+					}
+				}
+	
 				if (++i >= 5)
 					i = 0;
 			}
-
-			if ((ev & inst_mask) == inst_user_abort)
-				return ev;
-
 			break;		/* Got coms */
 		}
 
@@ -283,23 +291,31 @@ dtp92_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) 
 			return ev;
 
 		/* Change the baud rate to the rate we've been told */
-		if ((rv = p->icom->write_read(p->icom, brc[bi], buf, MAX_MES_SIZE, '>', 1, .2)) != 0) {
+		if ((se = p->icom->write_read(p->icom, brc[bi], buf, MAX_MES_SIZE, '>', 1, .2)) != 0) {
 			if (extract_ec(buf) != DTP92_OK)
 				return inst_coms_fail;
 		}
 
 		/* Configure our baud rate and handshaking as well */
-		p->icom->set_ser_port(p->icom, port, fc, brt[bi], parity_none, stop_1, length_8);
+		if ((se = p->icom->set_ser_port(p->icom, fc, brt[bi], parity_none,
+			                                    stop_1, length_8)) != ICOM_OK) { 
+			a1logd(p->log, 1, "dtp92_init_coms: set_ser_port failed ICOM err 0x%x\n",se);
+			return dtp92_interp_code((inst *)p, icoms2dtp92_err(se));
+		}
 
 		/* Loose a character (not sure why) */
 		p->icom->write_read(p->icom, "\r", buf, MAX_MES_SIZE, '>', 1, 0.1);
+#else	/* !ENABLE_SERIAL */
+		a1logd(p->log, 1, "dtp20: Failed to find serial connection to instrument\n");
+		return inst_coms_fail;
+#endif	/* !ENABLE_SERIAL */
 	}
 
 	/* Check instrument is responding, and reset it again. */
 	if ((ev = dtp92_command(p, "\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok
 	 || (ev = dtp92_command(p, "0PR\r", buf, MAX_MES_SIZE, 2.0)) != inst_ok) {
 
-		if (p->debug) fprintf(stderr,"dtp92: init coms has failed\n");
+		a1logd(p->log, 1, "dtp92_init_coms: failed with ICOM 0x%x\n",ev);
 
 #ifdef NEVER	/* Experimental code for fixing 0x1B "Offset Drift invalid" error */
 		if ((ev & inst_mask) == inst_hardware_fail) {
@@ -334,20 +350,16 @@ dtp92_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) 
 		
 		p->icom->del(p->icom);		/* Since caller may not clean up */
 		p->icom = NULL;
-#ifdef DEBUG
-		printf("^M failed to get a response, returning inst_coms_fail\n");
-#endif
 		return inst_coms_fail;
 	}
 
-	if (p->debug) fprintf(stderr,"dtp92: init coms has suceeded\n");
-#ifdef DEBUG
-	printf("Got communications\n");
-#endif
+	a1logd(p->log, 2, "dtp92_init_coms: init coms has suceeded\n");
 
 	p->gotcoms = 1;
 	return inst_ok;
 }
+
+static inst_code set_default_disp_type(dtp92 *p);
 
 /* Initialise the DTP92 */
 /* return non-zero on an error, with dtp error code */
@@ -357,7 +369,7 @@ dtp92_init_inst(inst *pp) {
 	static char buf[MAX_MES_SIZE];
 	inst_code ev = inst_ok;
 
-	if (p->debug) fprintf(stderr,"dtp92: About to init instrument\n");
+	a1logd(p->log, 2, "dtp92_init_inst: called\n");
 
 	if (p->gotcoms == 0)
 		return inst_internal_error;		/* Must establish coms before calling init */
@@ -466,7 +478,11 @@ dtp92_init_inst(inst *pp) {
 		if ((ev = dtp92_command(p, "10SS\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
 			return ev;
 	}
-	p->trig = inst_opt_trig_keyb;
+	p->trig = inst_opt_trig_user;
+
+	/* Set the default display type */
+	if ((ev = set_default_disp_type(p)) != inst_ok)
+		return ev;
 
 	/* ??? Need to set CTYP appropriately ??? */
 
@@ -483,21 +499,23 @@ dtp92_init_inst(inst *pp) {
 				return inst_coms_fail;
 			tb[0] = val;
 			tb[1] = '\000';
-			printf("Mem location 0x%04x = 0x%02x '%s'\n",i,val,icoms_fix(tb));
+			a1logd(p->log, 0, "Mem location 0x%04x = 0x%02x '%s'\n",i,val,icoms_fix(tb));
 		}
 	}
 #endif /* NEVER */
 
-	if (p->verb) {
+	if (p->log->verb) {
 		int i, j;
-		if ((ev = dtp92_command(p, "GI\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+		if ((ev = dtp92_command(p, "GI\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok) {
+			a1logd(p->log, 1, "dtp20: GI command failed with ICOM err 0x%x\n",ev);
 			return ev;
+		}
 		for (j = i = 0; ;i++) {
 			if (buf[i] == '<' || buf[i] == '\000')
 				break;
 			if (buf[i] == '\r') {
 				buf[i] = '\000';
-				printf(" %s\n",&buf[j]);
+				a1logv(p->log, 1, " %s\n",&buf[j]);
 				if (buf[i+1] == '\n')
 					i++;
 				j = i+1;
@@ -505,12 +523,10 @@ dtp92_init_inst(inst *pp) {
 		}
 	}
 
-	if (ev == inst_ok) {
-		p->inited = 1;
-		if (p->debug) fprintf(stderr,"dtp92: instrument inited OK\n");
-	}
+	p->inited = 1;
+	a1logd(p->log, 2, "dtp92_init_inst: instrument inited OK\n");
 
-	return ev;
+	return inst_ok;
 }
 
 /* The DTP92 seems to have a bug whereby it adds a spurious */
@@ -522,12 +538,13 @@ static inst_code
 dtp92_read_sample(
 inst *pp,
 char *name,			/* Strip name (7 chars) */
-ipatch *val) {		/* Pointer to instrument patch value */
+ipatch *val,		/* Pointer to instrument patch value */
+instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	dtp92 *p = (dtp92 *)pp;
 	char buf[MAX_RD_SIZE];
 	int tries;
 	int user_trig = 0;
-	int rv = inst_protocol_error;
+	inst_code rv = inst_protocol_error;
 
 	if (!p->gotcoms)
 		return inst_no_coms;
@@ -543,15 +560,34 @@ ipatch *val) {		/* Pointer to instrument patch value */
 	}
 #endif
 
-	if (p->trig == inst_opt_trig_keyb) {
-		int se;
-		if ((se = icoms_poll_user(p->icom, 1)) != ICOM_TRIG) {
-			/* Abort, term or command */
-			return dtp92_interp_code((inst *)p, icoms2dtp92_err(se));
+	if (p->trig == inst_opt_trig_user) {
+
+		if (p->uicallback == NULL) {
+			a1logd(p->log, 1, "dtp92: inst_opt_trig_user but no uicallback function set!\n");
+			return inst_unsupported;
 		}
-		user_trig = 1;
-		if (p->trig_return)
-			printf("\n");
+
+		for (;;) {
+			if ((rv = p->uicallback(p->uic_cntx, inst_armed)) != inst_ok) {
+				if (rv == inst_user_abort)
+					return rv;				/* Abort */
+				if (rv == inst_user_trig) {
+					user_trig = 1;
+					break;					/* Trigger */
+				}
+			}
+			msec_sleep(200);
+		}
+		/* Notify of trigger */
+		if (p->uicallback)
+			p->uicallback(p->uic_cntx, inst_triggered); 
+
+	/* Progromatic Trigger */
+	} else {
+		/* Check for abort */
+		if (p->uicallback != NULL
+		 && (rv = p->uicallback(p->uic_cntx, inst_armed)) == inst_user_abort)
+			return rv;				/* Abort */
 	}
 
 	/* Until we get a valid return */
@@ -562,26 +598,29 @@ ipatch *val) {		/* Pointer to instrument patch value */
 		if ((rv = dtp92_command(p, "RM\r", buf, MAX_RD_SIZE, 10.0)) != inst_ok) {
 			if ((rv & inst_imask) == DTP92_NEEDS_OFFSET_CAL)
 				p->need_offset_cal = 1;
-			else if ((rv & inst_imask) == DTP92_NEEDS_RATIO_CAL)
+			else if ((rv & inst_imask) == DTP92_NEEDS_RATIO_CAL)	/* DTP92 only */
 				p->need_ratio_cal = 1;
 			return rv;
 		}
 
 		if (sscanf(buf, " X%*c %lf\t Y%*c %lf\t Z%*c %lf ",
-	           &val->aXYZ[0], &val->aXYZ[1], &val->aXYZ[2]) == 3) {
+	           &val->XYZ[0], &val->XYZ[1], &val->XYZ[2]) == 3) {
 
 			/* Apply the colorimeter correction matrix */
-			icmMulBy3x3(val->aXYZ, p->ccmat, val->aXYZ);
+			icmMulBy3x3(val->XYZ, p->ccmat, val->XYZ);
 
-			val->XYZ_v = 0;
-			val->aXYZ_v = 1;		/* These are absolute XYZ readings */
-			val->Lab_v = 0;
+			/* This may not change anything since instrument may clamp */
+			if (clamp)
+				icmClamp3(val->XYZ, val->XYZ);
+			val->loc[0] = '\000';
+			val->mtype = inst_mrt_emission;
+			val->XYZ_v = 1;		/* These are absolute XYZ readings */
 			val->sp.spec_n = 0;
 			val->duration = 0.0;
 			rv = inst_ok;
 			break;
 		} else {
-//printf("~1 failed to parse string '%s'\n",buf);
+			a1logd(p->log, 1, "dtp92_read_sample: failed to parse string '%s'\n",buf);
 			rv = inst_coms_fail;
 		}
 	}
@@ -599,10 +638,48 @@ ipatch *val) {		/* Pointer to instrument patch value */
 	return rv;
 }
 
+/* Read an emissive refresh rate */
+static inst_code
+dtp92_read_refrate(
+inst *pp,
+double *ref_rate
+) {
+	dtp92 *p = (dtp92 *)pp;
+	char buf[MAX_RD_SIZE];
+	char buf2[MAX_RD_SIZE];
+	double refrate = 0.0;
+	inst_code rv;
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
+	/* Measure the refresh rate */
+	rv = dtp92_command(p, "00103RM\r", buf, MAX_RD_SIZE, 5.0);
+
+	if (rv != inst_ok) {
+		if ((rv & inst_imask) == DTP92_NO_DATA_AVAILABLE)
+			rv = inst_misread;
+		return rv;
+	}
+
+	if (sscanf(buf, "Hz %lf ", &refrate) != 1) {
+		a1logd(p->log, 1, "dtp92_read_refrate rate: failed to parse string '%s'\n",buf);
+		*ref_rate = 0.0;
+		return inst_misread;
+	}
+	if (refrate == 0.0) {
+		return inst_misread;
+	}
+	*ref_rate = refrate;
+	return inst_ok;
+}
+
 /* Insert a colorimetric correction matrix in the instrument XYZ readings */
 /* This is only valid for colorimetric instruments. */
 /* To remove the matrix, pass NULL for the filter filename */
-inst_code dtp92_col_cor_mat(
+static inst_code dtp92_col_cor_mat(
 inst *pp,
 double mtx[3][3]
 ) {
@@ -621,24 +698,29 @@ double mtx[3][3]
 	return inst_ok;
 }
 
-/* Determine if a calibration is needed. Returns inst_calt_none if not, */
-/* inst_calt_unknown if it is unknown, or inst_calt_XXX if needs calibration, */
-/* and the first type of calibration needed. */
-inst_cal_type dtp92_needs_calibration(inst *pp) {
+/* Return needed and available inst_cal_type's */
+static inst_code dtp92_get_n_a_cals(inst *pp, inst_cal_type *pn_cals, inst_cal_type *pa_cals) {
 	dtp92 *p = (dtp92 *)pp;
-
-	if (!p->gotcoms)
-		return inst_no_coms;
-	if (!p->inited)
-		return inst_no_init;
+	inst_cal_type n_cals = inst_calt_none;
+	inst_cal_type a_cals = inst_calt_none;
+		
+	if (p->itype == instDTP92) {
+		if (p->need_ratio_cal)
+			n_cals |= inst_calt_emis_ratio;
+		a_cals |= inst_calt_emis_ratio;
+	}
 
 	if (p->need_offset_cal)
-		return inst_calt_disp_offset;
+		n_cals |= inst_calt_emis_offset;
+	a_cals |= inst_calt_emis_offset;
 
-	else if (p->need_ratio_cal)
-		return inst_calt_disp_ratio;
+	if (pn_cals != NULL)
+		*pn_cals = n_cals;
 
-	return inst_calt_unknown;
+	if (pa_cals != NULL)
+		*pa_cals = a_cals;
+
+	return inst_ok;
 }
 
 /* Request an instrument calibration. */
@@ -648,81 +730,136 @@ inst_cal_type dtp92_needs_calibration(inst *pp) {
 /* returning inst_needs_cal. Initially use an inst_cal_cond of inst_calc_none, */
 /* and then be prepared to setup the right conditions, or ask the */
 /* user to do so, each time the error inst_cal_setup is returned. */
-inst_code dtp92_calibrate(
+static inst_code dtp92_calibrate(
 inst *pp,
-inst_cal_type calt,		/* Calibration type. inst_calt_all for all neeeded */
+inst_cal_type *calt,	/* Calibration type to do/remaining */
 inst_cal_cond *calc,	/* Current condition/desired condition */
 char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 ) {
 	dtp92 *p = (dtp92 *)pp;
 	char buf[MAX_RD_SIZE];
-	inst_code rv = inst_ok;
-	id[0] = '\000';
+	inst_code ev = inst_ok;
+    inst_cal_type needed, available;
 
 	if (!p->gotcoms)
 		return inst_no_coms;
 	if (!p->inited)
 		return inst_no_init;
 
-	/* Default to most likely calibration type */
-	if (calt == inst_calt_all) {
-		if (p->need_offset_cal)
-			calt = inst_calt_disp_offset;
-	
-		else if (p->need_ratio_cal)
-			calt = inst_calt_disp_ratio;
+	id[0] = '\000';
 
-		else
-			calt = inst_calt_disp_offset;
+	if ((ev = dtp92_get_n_a_cals((inst *)p, &needed, &available)) != inst_ok)
+		return ev;
+
+	/* Translate inst_calt_all/needed into something specific */
+	if (*calt == inst_calt_all
+	 || *calt == inst_calt_needed
+	 || *calt == inst_calt_available) {
+		if (*calt == inst_calt_all) 
+			*calt = (needed & inst_calt_n_dfrble_mask) | inst_calt_ap_flag;
+		else if (*calt == inst_calt_needed)
+			*calt = needed & inst_calt_n_dfrble_mask;
+		else if (*calt == inst_calt_available)
+			*calt = available & inst_calt_n_dfrble_mask;
+
+		a1logd(p->log,4,"dtp92_calibrate: doing calt 0x%x\n",calt);
+
+		if ((*calt & inst_calt_n_dfrble_mask) == 0)		/* Nothing todo */
+			return inst_ok;
 	}
 
 	/* See if it's a calibration we understand */
-	if (calt != inst_calt_disp_offset
-	 && calt != inst_calt_disp_ratio)
+	if (*calt & ~available & inst_calt_all_mask) { 
 		return inst_unsupported;
-		
-	/* Make sure the conditions are right for the calbration */
-	if (calt == inst_calt_disp_offset) {
+	}
+
+	if (*calt & inst_calt_emis_offset) {		/* Dark offset calibration */
+
 		if (*calc != inst_calc_man_em_dark) {
 			*calc = inst_calc_man_em_dark;
 			return inst_cal_setup;
 		}
-	} else if (calt == inst_calt_disp_ratio) {
-		if (*calc != inst_calc_disp_grey
-		 && *calc != inst_calc_disp_grey_darker
-		 && *calc != inst_calc_disp_grey_ligher) {
-			*calc = inst_calc_disp_grey;
-			return inst_cal_setup;
-		}
-	}
-
-	/* Now that setup is right, perform calibration */
-
-	if (calt == inst_calt_disp_offset) {		/* Dark offset calibration */
 
 		/* Do offset calibration */
-		if ((rv = dtp92_command(p, "CO\r", buf, MAX_RD_SIZE, 12)) != inst_ok)
-			return rv;
+		if ((ev = dtp92_command(p, "CO\r", buf, MAX_RD_SIZE, 12)) != inst_ok)
+			return ev;
 
-		return inst_ok;
-
-	} else if (calt == inst_calt_disp_ratio) {	/* Cell ratio calibration */
-
-		/* Do ratio calibration */
-		if ((rv = dtp92_command(p, "CR\r", buf, MAX_RD_SIZE, 25.0)) != inst_ok) {
-
-			if ((rv & inst_imask) == DTP92_TOO_MUCH_LIGHT) {
-				*calc = inst_calc_disp_grey_darker;
-				return inst_cal_setup;
-			} else if ((rv & inst_imask) == DTP92_NOT_ENOUGH_LIGHT) {
-				*calc = inst_calc_disp_grey_ligher;
-				return inst_cal_setup;
-			}
-			return rv;		/* Error */
-		}
+		*calt &= inst_calt_emis_offset;
 	}
 
-	return rv;
+	if (*calt & inst_calt_emis_ratio) {	/* Cell ratio calibration */
+
+		if (*calc != inst_calc_emis_grey
+		 && *calc != inst_calc_emis_grey_darker
+		 && *calc != inst_calc_emis_grey_ligher) {
+			*calc = inst_calc_emis_grey;
+			return inst_cal_setup;
+		}
+
+		/* Do ratio calibration */
+		if ((ev = dtp92_command(p, "CR\r", buf, MAX_RD_SIZE, 25.0)) != inst_ok) {
+
+			if ((ev & inst_imask) == DTP92_TOO_MUCH_LIGHT) {
+				*calc = inst_calc_emis_grey_darker;
+				return inst_cal_setup;
+			} else if ((ev & inst_imask) == DTP92_NOT_ENOUGH_LIGHT) {
+				*calc = inst_calc_emis_grey_ligher;
+				return inst_cal_setup;
+			}
+			return ev;		/* Error */
+		}
+		*calt &= inst_calt_emis_ratio;
+	}
+
+	return ev;
+}
+
+/* Return the last reading refresh rate in Hz. */
+static inst_code dtp92_get_refr_rate(inst *pp,
+double *ref_rate
+) {
+	dtp92 *p = (dtp92 *)pp;
+	char buf[MAX_RD_SIZE];
+	char buf2[MAX_RD_SIZE];
+	double refrate = 0.0;
+	inst_code rv;
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
+	/* Get the last readings refresh rate */
+	rv = dtp92_command(p, "10103RM\r", buf, MAX_RD_SIZE, 5.0);
+
+	if (rv != inst_ok) {
+		if ((rv & inst_imask) == DTP92_NO_DATA_AVAILABLE)
+			rv = inst_misread;
+		return rv;
+	}
+
+	if (sscanf(buf, "Hz %lf ", &refrate) != 1) {
+		a1logd(p->log, 1, "dtp92_read_refresh rate: failed to parse string '%s'\n",buf);
+		*ref_rate = 0.0;
+		return inst_misread;
+	}
+	if (refrate == 0.0) {
+		return inst_misread;
+	}
+	*ref_rate = refrate;
+	return inst_ok;
+}
+
+/* Set the calibrated refresh rate in Hz. */
+/* Set refresh rate to 0.0 to mark it as invalid */
+/* Rates outside the range 5.0 to 150.0 Hz will return an error */
+static inst_code dtp92_set_refr_rate(inst *pp,
+double ref_rate
+) {
+	dtp92 *p = (dtp92 *)pp;
+
+	/* The DTP92 can't have a refresh rate set */
+	return inst_unsupported;
 }
 
 /* Error codes interpretation */
@@ -739,14 +876,6 @@ dtp92_interp_error(inst *pp, int ec) {
 			return "Not a DTP92 or DTP94";
 		case DTP92_DATA_PARSE_ERROR:
 			return "Data from DTP didn't parse as expected";
-		case DTP92_USER_ABORT:
-			return "User hit Abort key";
-		case DTP92_USER_TERM:
-			return "User hit Terminate key";
-		case DTP92_USER_TRIG:
-			return "User hit Trigger key";
-		case DTP92_USER_CMND:
-			return "User hit a Command key";
 
 		case DTP92_OK:
 			return "No device error";
@@ -832,15 +961,6 @@ dtp92_interp_code(inst *pp, int ec) {
 		case DTP92_DATA_PARSE_ERROR:
 			return inst_protocol_error | ec;
 
-		case DTP92_USER_ABORT:
-			return inst_user_abort | ec;
-		case DTP92_USER_TERM:
-			return inst_user_term | ec;
-		case DTP92_USER_TRIG:
-			return inst_user_trig | ec;
-		case DTP92_USER_CMND:
-			return inst_user_cmnd | ec;
-
 		case DTP92_NO_MODULATION:		/* ?? */
 		case DTP92_TOO_MUCH_LIGHT:
 		case DTP92_NOT_ENOUGH_LIGHT:
@@ -868,193 +988,298 @@ dtp92_del(inst *pp) {
 	dtp92 *p = (dtp92 *)pp;
 	if (p->icom != NULL)
 		p->icom->del(p->icom);
+	inst_del_disptype_list(p->dtlist, p->ndtlist);
 	free(p);
 }
 
-/* Return the instrument capabilities */
-inst_capability dtp92_capabilities(inst *pp) {
+/* Return the instrument mode capabilities */
+void dtp92_capabilities(inst *pp,
+inst_mode *pcap1,
+inst2_capability *pcap2,
+inst3_capability *pcap3) {
 	dtp92 *p = (dtp92 *)pp;
-	inst_capability rv;
+	inst_mode cap1 = 0;
+	inst2_capability cap2 = 0;
 
-	rv = inst_emis_spot
-	   | inst_emis_disp
-	   | inst_colorimeter
-	   | inst_ccmx
-	     ;
+	cap1 |= inst_mode_emis_spot
+	     |  inst_mode_colorimeter
+	        ;
+
+	cap2 |= inst2_prog_trig
+	     |  inst2_user_trig
+	     |  inst2_ccmx
+	        ;				/* The '92 does have a switch, but we're not currently supporting it */
 
 	if (p->itype == instDTP94) {
-		rv |= inst_emis_disptype;
-		rv |= inst_emis_disptypem;
+		cap2 |= inst2_disptype;
+	} else {
+		cap2 |= inst2_refresh_rate;
+		cap2 |= inst2_emis_refr_meas;
 	}
 
-	return rv;
+	if (pcap1 != NULL)
+		*pcap1 = cap1;
+	if (pcap2 != NULL)
+		*pcap2 = cap2;
+	if (pcap3 != NULL)
+		*pcap3 = inst3_none;
 }
 
-/* Return the instrument capabilities 2 */
-inst2_capability dtp92_capabilities2(inst *pp) {
-	dtp92 *p = (dtp92 *)pp;
-	inst2_capability rv;
-
-	rv = inst2_cal_disp_offset
-	   | inst2_prog_trig
-	   | inst2_keyb_trig
-	   ;				/* The '92 does have a switch, but we're not currently supporting it */
-
-	if (p->itype == instDTP92)
-		rv |= inst2_cal_disp_ratio;
-
-	return rv;
-}
-
-inst_disptypesel dtp92_disptypesel[2] = {
-	{
-		1,
-		"c",
-		"DTP92: CRT display [Default]",
-		1
-	},
-	{
-		0,
-		"",
-		"",
-		-1
-	}
-};
-
-inst_disptypesel dtp94_disptypesel[3] = {
-	{
-		1,
-		"c",
-		"DTP94: CRT display",
-		1
-	},
-	{
-		2,
-		"l",
-		"DTP94: LCD display",
-		0
-	},
-	{
-		0,
-		"",
-		"",
-		-1
-	}
-};
-
-/* Get mode and option details */
-static inst_code dtp92_get_opt_details(
-inst *pp,
-inst_optdet_type m,	/* Requested option detail type */
-...) {				/* Status parameters */                             
-	dtp92 *p = (dtp92 *)pp;
-
-	if (m == inst_optdet_disptypesel) {
-		va_list args;
-		int *pnsels;
-		inst_disptypesel **psels;
-
-		va_start(args, m);
-		pnsels = va_arg(args, int *);
-		psels = va_arg(args, inst_disptypesel **);
-		va_end(args);
-
-		if (p->itype == instDTP94) {
-			*pnsels = 2;
-			*psels = dtp94_disptypesel;
-		} else {
-			*pnsels = 1;
-			*psels = dtp92_disptypesel;
-		}
-		
-		return inst_ok;
-	}
-
-	return inst_unsupported;
-}
-
-/* Set device measurement mode */
-inst_code dtp92_set_mode(inst *pp, inst_mode m)
-{
-	inst_mode mm;		/* Measurement mode */
+/* Check device measurement mode */
+inst_code dtp92_check_mode(inst *pp, inst_mode m) {
+	inst_mode cap;
 
 	if (!pp->gotcoms)
 		return inst_no_coms;
 	if (!pp->inited)
 		return inst_no_init;
 
-	/* The measurement mode portion of the mode */
-	mm = m & inst_mode_measurement_mask;
+	pp->capabilities(pp, &cap, NULL, NULL);
 
-	/* only display emission mode supported */
-	if (mm != inst_mode_emis_disp
-	 && mm != inst_mode_emis_spot) {
+	/* Simple test */
+	if (m & ~cap)
+		return inst_unsupported;
+
+	/* Only display emission mode supported */
+	if (!IMODETST(m, inst_mode_emis_spot)) {
 		return inst_unsupported;
 	}
-
-	/* Spectral mode is not supported */
-	if (m & inst_mode_spectral)
-		return inst_unsupported;
 
 	return inst_ok;
 }
 
-/* 
- * set or reset an optional mode
- * We assume that the instrument has been initialised.
- */
-static inst_code
-dtp92_set_opt_mode(inst *pp, inst_opt_mode m, ...)
-{
+/* Set device measurement mode */
+inst_code dtp92_set_mode(inst *pp, inst_mode m) {
+	inst_code ev;
+
+	if ((ev = dtp92_check_mode(pp, m)) != inst_ok)
+		return ev;
+
+	return inst_ok;
+}
+
+inst_disptypesel dtp92_disptypesel[2] = {
+	{
+		inst_dtflags_default,		/* flags */
+		2,							/* cbid */
+		"c",						/* sel */
+		"CRT display",				/* desc */
+		1,							/* refr */
+		0							/* ix */
+	},
+	{
+		inst_dtflags_end,
+		0,
+		"",
+		"",
+		0,
+		0
+	}
+};
+
+inst_disptypesel dtp94_disptypesel[4] = {
+	{
+		inst_dtflags_default,
+		1,
+		"l",
+		"LCD display",
+		0,
+		2
+	},
+	{
+		inst_dtflags_none,			/* flags */
+		2,							/* cbid */
+		"c",						/* sel */
+		"CRT display",				/* desc */
+		1,							/* refr */
+		1							/* ix */
+	},
+	{
+		inst_dtflags_none,
+		3,
+		"g",
+		"Generic display",
+		0,							/* Might be auto refresh detect ? */
+		0
+	},
+	{
+		inst_dtflags_end,
+		0,
+		"",
+		"",
+		0,
+		0
+	}
+};
+
+static void set_base_disptype_list(dtp92 *p) {
+	if (p->itype == instDTP94) {
+		p->_dtlist = dtp94_disptypesel;
+	} else {
+		p->_dtlist = dtp92_disptypesel;
+	}
+}
+
+/* Get mode and option details */
+static inst_code dtp92_get_disptypesel(
+inst *pp,
+int *pnsels,				/* Return number of display types */
+inst_disptypesel **psels,	/* Return the array of display types */
+int allconfig,				/* nz to return list for all configs, not just current. */
+int recreate				/* nz to re-check for new ccmx & ccss files */
+) {
 	dtp92 *p = (dtp92 *)pp;
-	char buf[MAX_MES_SIZE];
-	inst_code ev = inst_ok;
+	inst_code rv = inst_ok;
+
+	/* Create/Re-create a current list of abailable display types */
+	if (p->dtlist == NULL || recreate) {
+		if ((rv = inst_creat_disptype_list(pp, &p->ndtlist, &p->dtlist,
+		    p->_dtlist, 0 /* doccss*/, 1 /* doccmx */)) != inst_ok)
+			return rv;
+	}
+
+	if (pnsels != NULL)
+		*pnsels = p->ndtlist;
+
+	if (psels != NULL)
+		*psels = p->dtlist;
+
+	return inst_ok;
+}
+
+/* Given a display type entry, setup for that type */
+static inst_code set_disp_type(dtp92 *p, inst_disptypesel *dentry) {
+
+	p->icx = dentry->ix; 
+	p->cbid = dentry->cbid; 
+	p->refrmode = dentry->refr; 
+
+	if (p->itype == instDTP92) {
+		if (p->icx != 0)
+			return inst_unsupported;
+
+	} else {	/* DTP94 */
+		static char buf[MAX_MES_SIZE];
+		inst_code ev;
+		
+		if (p->icx == 0) {			/* Generic/Non-specific */
+			if ((ev = dtp92_command(p, "0016CF\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+				return ev;
+		} else if (p->icx == 1) {	/* CRT */
+			if ((ev = dtp92_command(p, "0116CF\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+				return ev;
+		} else if (p->icx == 2) {	/* LCD */
+			if ((ev = dtp92_command(p, "0216CF\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+				return ev;
+		} else {
+			return inst_unsupported;
+		}
+	}
+
+	if (dentry->flags & inst_dtflags_ccmx) {
+		icmCpy3x3(p->ccmat, dentry->mat);
+	} else {
+		icmSetUnity3x3(p->ccmat);
+	}
+
+	return inst_ok;
+}
+
+/* Setup the default display type */
+static inst_code set_default_disp_type(dtp92 *p) {
+	inst_code ev;
+	int i;
+
+	if (p->dtlist == NULL) {
+		if ((ev = inst_creat_disptype_list((inst *)p, &p->ndtlist, &p->dtlist,
+		    p->_dtlist, 0 /* doccss*/, 1 /* doccmx */)) != inst_ok)
+			return ev;
+	}
+
+	for (i = 0; !(p->dtlist[i].flags & inst_dtflags_end); i++) {
+		if (p->dtlist[i].flags & inst_dtflags_default)
+			break;
+	}
+	if (p->dtlist[i].flags & inst_dtflags_end) {
+		a1loge(p->log, 1, "set_default_disp_type: failed to find type!\n");
+		return inst_internal_error; 
+	}
+	if ((ev = set_disp_type(p, &p->dtlist[i])) != inst_ok) {
+		return ev;
+	}
+
+	return inst_ok;
+}
+
+/* Set the display type */
+static inst_code dtp92_set_disptype(inst *pp, int ix) {
+	dtp92 *p = (dtp92 *)pp;
+	inst_code ev;
+	inst_disptypesel *dentry;
 
 	if (!p->gotcoms)
 		return inst_no_coms;
 	if (!p->inited)
 		return inst_no_init;
 
-	/* Set the display type */
-	if (m == inst_opt_disp_type) {
-		va_list args;
-		int ix;
-
-		va_start(args, m);
-		ix = va_arg(args, int);
-		va_end(args);
-
-		if (ix == 0 && p->itype == instDTP92)
-			return inst_ok;
-			
-		if (ix == 1) {
-			if (p->itype == instDTP94) {
-				if ((ev = dtp92_command(p, "0116CF\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
-					return ev;
-			}
-			return inst_ok;
-		} else if (ix == 2) {
-			if (p->itype == instDTP92)
-				return inst_unsupported;
-			if ((ev = dtp92_command(p, "0216CF\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
-				return ev;
-			return inst_ok;
-		} else {
-			return inst_unsupported;
-		}
+	if (p->dtlist == NULL) {
+		if ((ev = inst_creat_disptype_list(pp, &p->ndtlist, &p->dtlist,
+		    p->_dtlist, 0 /* doccss*/, 1 /* doccmx */)) != inst_ok)
+			return ev;
 	}
+
+	if (ix < 0 || ix >= p->ndtlist)
+		return inst_unsupported;
+
+	dentry = &p->dtlist[ix];
+
+	if ((ev = set_disp_type(p, dentry)) != inst_ok) {
+		return ev;
+	}
+
+	return inst_ok;
+}
+
+/* 
+ * set or reset an optional mode
+ *
+ * Some options talk to the instrument, and these will
+ * error if it hasn't been initialised.
+ */
+static inst_code
+dtp92_get_set_opt(inst *pp, inst_opt_type m, ...)
+{
+	dtp92 *p = (dtp92 *)pp;
+	char buf[MAX_MES_SIZE];
+	inst_code ev = inst_ok;
 
 	/* Record the trigger mode */
 	if (m == inst_opt_trig_prog
-	 || m == inst_opt_trig_keyb) {
+	 || m == inst_opt_trig_user) {
 		p->trig = m;
 		return inst_ok;
 	}
-	if (m == inst_opt_trig_return) {
-		p->trig_return = 1;
-		return inst_ok;
-	} else if (m == inst_opt_trig_no_return) {
-		p->trig_return = 0;
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
+	/* Get the display type information */
+	if (m == inst_opt_get_dtinfo) {
+		va_list args;
+		int *refrmode, *cbid;
+
+		va_start(args, m);
+		refrmode = va_arg(args, int *);
+		cbid = va_arg(args, int *);
+		va_end(args);
+
+		if (refrmode != NULL)
+			*refrmode = p->refrmode;
+		if (cbid != NULL)
+			*cbid = p->cbid;
+
 		return inst_ok;
 	}
 
@@ -1062,37 +1287,38 @@ dtp92_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 }
 
 /* Constructor */
-extern dtp92 *new_dtp92(icoms *icom, instType itype, int debug, int verb)
-{
+extern dtp92 *new_dtp92(icoms *icom, instType itype) {
 	dtp92 *p;
-	if ((p = (dtp92 *)calloc(sizeof(dtp92),1)) == NULL)
-		error("dtp92: malloc failed!");
+	if ((p = (dtp92 *)calloc(sizeof(dtp92),1)) == NULL) {
+		a1loge(icom->log, 1, "new_dtp92: malloc failed!\n");
+		return NULL;
+	}
 
-	if (icom == NULL)
-		p->icom = new_icoms();
-	else
-		p->icom = icom;
-
-	p->debug = debug;
-	p->verb = verb;
-
-	icmSetUnity3x3(p->ccmat);	/* Set the colorimeter correction matrix to do nothing */
+	p->log = new_a1log_d(icom->log);
 
 	p->init_coms         = dtp92_init_coms;
 	p->init_inst         = dtp92_init_inst;
 	p->capabilities      = dtp92_capabilities;
-	p->capabilities2     = dtp92_capabilities2;
-	p->get_opt_details   = dtp92_get_opt_details;
+	p->check_mode        = dtp92_check_mode;
 	p->set_mode          = dtp92_set_mode;
-	p->set_opt_mode      = dtp92_set_opt_mode;
+	p->get_disptypesel   = dtp92_get_disptypesel;
+	p->set_disptype      = dtp92_set_disptype;
+	p->get_set_opt       = dtp92_get_set_opt;
 	p->read_sample       = dtp92_read_sample;
-	p->needs_calibration = dtp92_needs_calibration;
+	p->read_refrate      = dtp92_read_refrate;
+	p->get_n_a_cals      = dtp92_get_n_a_cals;
 	p->calibrate         = dtp92_calibrate;
 	p->col_cor_mat       = dtp92_col_cor_mat;
+	p->get_refr_rate     = dtp92_get_refr_rate;
+	p->set_refr_rate     = dtp92_set_refr_rate;
 	p->interp_error      = dtp92_interp_error;
 	p->del               = dtp92_del;
 
-	p->itype = itype;
+	p->icom = icom;
+	p->itype = icom->itype;
+
+	icmSetUnity3x3(p->ccmat);	/* Set the colorimeter correction matrix to do nothing */
+	set_base_disptype_list(p);
 
 	return p;
 }

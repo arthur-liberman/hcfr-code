@@ -37,16 +37,24 @@ struct _ccss {
 	/* Set the contents of the ccss. return nz on error. */
 	/* (Makes copies of all parameters) */
 	int (*set_ccss)(struct _ccss *p, char *orig, char *cdate,
-	                char *desc, char *disp, char *tech, char *ref,
-	                xspect *samples, int no_samp);	
+	                char *desc, char *disp, char *tech, int refrmode, char *sel,
+	                char *ref, xspect *samples, int no_samp);	
 
 	/* write to a CGATS .ccss file */
 	/* return nz on error, with message in err[] */
 	int (*write_ccss)(struct _ccss *p, char *filename);
 
+	/* write a CGATS .ccss file to a memory buffer. */
+	/* return nz on error, with message in err[] */
+	int (*buf_write_ccss)(struct _ccss *p, unsigned char **buf, int *len);
+
 	/* read from a CGATS .ccss file */
 	/* return nz on error, with message in err[] */
 	int (*read_ccss)(struct _ccss *p, char *filename);
+
+	/* read from a CGATS .ccss file from a memory buffer. */
+	/* return nz on error, with message in err[] */
+	int (*buf_read_ccss)(struct _ccss *p, unsigned char *buf, int len);
 
   /* Private: */
 	/* (All char * are owned by ccss) */
@@ -55,11 +63,13 @@ struct _ccss {
 	char *desc;			/* General Description (optional) */
 	char *disp;			/* Description of the display (Manfrr and Model No) (optional if tech) */
 	char *tech;			/* Technology (CRT, LCD + backlight type etc.) (optional if disp) */
+	int refrmode;		/* Refresh mode, -1 if unknown, 0 of no, 1 if yes */
+	char *sel;			/* Optional UI selector characters. May be NULL */
 	char *ref;			/* Name of reference spectrometer instrument (optional) */
 	xspect *samples;	/* Set of spectral samples */
 	int no_samp;		/* Number of samples */
 	
-	/* Houskeeping */
+	/* Houskeeping - should switch this to a1log ? */
 	int errc;				/* Error code */
 	char err[200];			/* Error message */
 }; typedef struct _ccss ccss;

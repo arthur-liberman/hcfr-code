@@ -36,9 +36,16 @@
 #include "numsup.h"
 #include "conv.h"
 #endif
-#include "icc.h"
 #include "cgats.h"
 #include "ccmx.h"
+
+#ifdef NT       /* You'd think there might be some standards.... */
+# ifndef __BORLANDC__
+#  define stricmp _stricmp
+# endif
+#else
+# define stricmp strcasecmp
+#endif
 
 /* Forward declarations */
 
@@ -48,9 +55,9 @@
 
 /* Write out the ccmx to a CGATS format .ccmx file */
 /* Return nz on error */
-static int write_ccmx(
+static int create_ccmx_cgats(
 ccmx *p,			/* This */
-char *outname	/* Filename to write to */
+cgats **pocg        /* return CGATS structure */
 ) {
 	int i, j, n;
 	time_t clk = time(0);
@@ -75,12 +82,20 @@ char *outname	/* Filename to write to */
 		ocg->add_kword(ocg, 0, "TECHNOLOGY",p->tech, NULL);
 	if (p->disp == NULL && p->tech == NULL) {
 #ifdef DEBUG
-		fprintf(stdout, "write_ccmx: ccmx for file '%s' doesn't contain display or techology strings",outname);
+		fprintf(stdout, "write_ccmx: ccmx doesn't contain display or techology strings");
 #endif
-		sprintf(p->err, "write_ccmx: ccmx for file '%s' doesn't contain display or techology strings",outname);
+		sprintf(p->err, "write_ccmx: ccmx doesn't contain display or techology strings");
 		ocg->del(ocg);
 		return 1;
 	}
+	if (p->cbid != 0) {
+		sprintf(buf, "%d", p->cbid);
+		ocg->add_kword(ocg, 0, "DISPLAY_TYPE_BASE_ID", buf, NULL);
+	}
+	if (p->refrmode >= 0)
+		ocg->add_kword(ocg, 0, "DISPLAY_TYPE_REFRESH", p->refrmode ? "YES" : "NO", NULL);
+	if (p->sel != NULL)
+		ocg->add_kword(ocg, 0, "UI_SELECTORS", p->sel, NULL);
 	if (p->ref != NULL)
 		ocg->add_kword(ocg, 0, "REFERENCE",p->ref, NULL);
 
@@ -99,20 +114,206 @@ char *outname	/* Filename to write to */
 		ocg->add_set(ocg, 0, p->matrix[i][0], p->matrix[i][1], p->matrix[i][2]);
 	}
 
-	/* Write it */
+    if (pocg != NULL)
+        *pocg = ocg;
+
+	return 0;
+}
+
+/* Write out the ccmx to a CGATS format .ccmx file */
+/* Return nz on error */
+static int write_ccmx(
+ccmx *p,		/* This */
+char *outname	/* Filename to write to */
+) {
+	int rv;
+	cgats *ocg;				/* CGATS structure */
+
+	/* Create CGATS elements */
+	if ((rv = create_ccmx_cgats(p, &ocg)) != 0) {
+		return rv;
+	}
+
+	/* Write it to file */
 	if (ocg->write_name(ocg, outname)) {
 		strcpy(p->err, ocg->err);
-#ifdef DEBUG
-		fprintf(stdout, "write_ccmx: CGATS write of '%s' failed",outname);
-#endif
+		ocg->del(ocg);		/* Clean up */
+		return 1;
+	}
+	ocg->del(ocg);		/* Clean up */
+
+	return 0;
+}
+
+/* write to a CGATS .ccmx file to a memory buffer. */
+/* return nz on error, with message in err[] */
+static int buf_write_ccmx(
+ccmx *p,
+unsigned char **buf,		/* Return allocated buffer */
+int *len					/* Return length */
+) {
+	int rv;
+	cgats *ocg;				/* CGATS structure */
+	cgatsFile *fp;
+
+	/* Create CGATS elements */
+	if ((rv = create_ccmx_cgats(p, &ocg)) != 0) {
+		return rv;
+	}
+
+	if ((fp = new_cgatsFileMem(NULL, 0)) == NULL) {
+		strcpy(p->err, "new_cgatsFileMem failed");
+		return 2;
+	}
+
+	/* Write it to file */
+	if (ocg->write(ocg, fp)) {
+		strcpy(p->err, ocg->err);
+		ocg->del(ocg);		/* Clean up */
+		fp->del(fp);
 		return 1;
 	}
 
-	ocg->del(ocg);		/* Clean up */
+	/* Get the buffer the ccmx has been written to */
+	if (fp->get_buf(fp, buf, (size_t *)len)) {
+		strcpy(p->err, "cgatsFileMem get_buf failed");
+		return 2;
+	}
 
-#ifdef DEBUG
-	fprintf(stdout, "write_ccmx: return OK");
-#endif
+	ocg->del(ocg);		/* Clean up */
+	fp->del(fp);
+
+	return 0;
+}
+
+/* Read in the ccmx CGATS .ccmx file */
+/* Return nz on error */
+static int read_ccmx_cgats(
+ccmx *p,			/* This */
+cgats *icg			/* input cgats structure */
+) {
+	int i, j, n, ix;
+	int ti;				/* Temporary CGATs index */
+	int  spi[3];		/* CGATS indexes for each band */
+	char *xyzfname[3] = { "XYZ_X", "XYZ_Y", "XYZ_Z" };
+
+	if (icg->ntables == 0 || icg->t[0].tt != tt_other || icg->t[0].oi != 0) {
+		sprintf(p->err, "read_ccmx: Input file isn't a CCMX format file");
+		icg->del(icg);
+		return 1;
+	}
+	if (icg->ntables != 1) {
+		sprintf(p->err, "Input file doesn't contain exactly one table");
+		icg->del(icg);
+		return 1;
+	}
+	if ((ti = icg->find_kword(icg, 0, "COLOR_REP")) < 0) {
+		sprintf(p->err, "read_ccmx: Input file doesn't contain keyword COLOR_REP");
+		icg->del(icg);
+		return 1;
+	}
+
+	if (strcmp(icg->t[0].kdata[ti],"XYZ") != 0) { 
+		sprintf(p->err, "read_ccmx: Input file doesn't have COLOR_REP of XYZ");
+		icg->del(icg);
+		return 1;
+	}
+
+	if ((ti = icg->find_kword(icg, 0, "DESCRIPTOR")) >= 0) {
+		if ((p->desc = strdup(icg->t[0].kdata[ti])) == NULL) {
+			sprintf(p->err, "read_ccmx: malloc failed");
+			icg->del(icg);
+			return 2;
+		}
+	}
+
+	if ((ti = icg->find_kword(icg, 0, "INSTRUMENT")) < 0) {
+		sprintf(p->err, "read_ccmx: Input file doesn't contain keyword INSTRUMENT");
+		icg->del(icg);
+		return 1;
+	}
+	if ((p->inst = strdup(icg->t[0].kdata[ti])) == NULL) {
+		sprintf(p->err, "read_ccmx: malloc failed");
+		icg->del(icg);
+		return 2;
+	}
+
+	if ((ti = icg->find_kword(icg, 0, "DISPLAY")) >= 0) {
+		if ((p->disp = strdup(icg->t[0].kdata[ti])) == NULL) {
+			sprintf(p->err, "read_ccmx: malloc failed");
+			icg->del(icg);
+			return 2;
+		}
+	}
+	if ((ti = icg->find_kword(icg, 0, "TECHNOLOGY")) >= 0) {
+		if ((p->tech = strdup(icg->t[0].kdata[ti])) == NULL) {
+			sprintf(p->err, "read_ccmx: malloc failed");
+			icg->del(icg);
+			return 2;
+		}
+	}
+	if (p->disp == NULL && p->tech == NULL) {
+		sprintf(p->err, "read_ccmx: Input file doesn't contain keyword DISPLAY or TECHNOLOGY");
+		icg->del(icg);
+		return 1;
+	}
+	if ((ti = icg->find_kword(icg, 0, "DISPLAY_TYPE_REFRESH")) >= 0) {
+		if (stricmp(icg->t[0].kdata[ti], "YES") == 0)
+			p->refrmode = 1;
+		else if (stricmp(icg->t[0].kdata[ti], "NO") == 0)
+			p->refrmode = 0;
+	} else {
+		p->refrmode = -1;
+	}
+	if ((ti = icg->find_kword(icg, 0, "DISPLAY_TYPE_BASE_ID")) >= 0) {
+		p->cbid = atoi(icg->t[0].kdata[ti]);
+	} else {
+		p->cbid = 0;
+	}
+
+	if ((ti = icg->find_kword(icg, 0, "UI_SELECTORS")) >= 0) {
+		if ((p->sel = strdup(icg->t[0].kdata[ti])) == NULL) {
+			sprintf(p->err, "read_ccmx: malloc failed");
+			icg->del(icg);
+			return 2;
+		}
+	}
+
+	if ((ti = icg->find_kword(icg, 0, "REFERENCE")) >= 0) {
+		if ((p->ref = strdup(icg->t[0].kdata[ti])) == NULL) {
+			sprintf(p->err, "read_ccmx: malloc failed");
+			icg->del(icg);
+			return 2;
+		}
+	}
+
+	/* Locate the fields */
+	for (i = 0; i < 3; i++) {	/* XYZ fields */
+		if ((spi[i] = icg->find_field(icg, 0, xyzfname[i])) < 0) {
+			sprintf(p->err, "read_ccmx: Input file doesn't contain field %s", xyzfname[i]);
+			icg->del(icg);
+			return 1;
+		}
+		if (icg->t[0].ftype[spi[i]] != r_t) {
+			sprintf(p->err, "read_ccmx: Input file field %s is wrong type", xyzfname[i]);
+			icg->del(icg);
+			return 1;
+		}
+	}
+
+	if (icg->t[0].nsets != 3) {
+		sprintf(p->err, "read_ccmx: Input file doesn't have exactly 3 sets");
+		icg->del(icg);
+		return 1;
+	}
+
+	/* Read the matrix values */
+	for (ix = 0; ix < icg->t[0].nsets; ix++) {
+		p->matrix[ix][0] = *((double *)icg->t[0].fdata[ix][spi[0]]);
+		p->matrix[ix][1] = *((double *)icg->t[0].fdata[ix][spi[1]]);
+		p->matrix[ix][2] = *((double *)icg->t[0].fdata[ix][spi[2]]);
+	}
+
 	return 0;
 }
 
@@ -122,11 +323,8 @@ static int read_ccmx(
 ccmx *p,			/* This */
 char *inname	/* Filename to read from */
 ) {
-	int i, j, n, ix;
+	int rv;
 	cgats *icg;			/* input cgats structure */
-	int ti;				/* Temporary CGATs index */
-	int  spi[3];		/* CGATS indexes for each band */
-	char *xyzfname[3] = { "XYZ_X", "XYZ_Y", "XYZ_Z" };
 
 	/* Open and look at the .ccmx */
 	if ((icg = new_cgats()) == NULL) {		/* Create a CGATS structure */
@@ -141,102 +339,51 @@ char *inname	/* Filename to read from */
 		return 1;
 	}
 
-	if (icg->ntables == 0 || icg->t[0].tt != tt_other || icg->t[0].oi != 0) {
-		sprintf(p->err, "read_ccmx: Input file '%s' isn't a CCMX format file",inname);
+	if ((rv = read_ccmx_cgats(p, icg)) != 0) {
 		icg->del(icg);
-		return 1;
-	}
-	if (icg->ntables != 1) {
-		sprintf(p->err, "Input file '%s' doesn't contain exactly one table",inname);
-		icg->del(icg);
-		return 1;
-	}
-	if ((ti = icg->find_kword(icg, 0, "COLOR_REP")) < 0) {
-		sprintf(p->err, "read_ccmx: Input file '%s' doesn't contain keyword COLOR_REP",inname);
-		icg->del(icg);
-		return 1;
+		return rv;
 	}
 
-	if (strcmp(icg->t[0].kdata[ti],"XYZ") != 0) { 
-		sprintf(p->err, "read_ccmx: Input file '%s' doesn't have COLOR_REP of XYZ",inname);
-		icg->del(icg);
-		return 1;
-	}
+	icg->del(icg);		/* Clean up */
 
-	if ((ti = icg->find_kword(icg, 0, "DESCRIPTOR")) >= 0) {
-		if ((p->desc = strdup(icg->t[0].kdata[ti])) == NULL) {
-			sprintf(p->err, "read_ccss: malloc failed");
-			icg->del(icg);
-			return 2;
-		}
-	}
+	return 0;
+}
 
-	if ((ti = icg->find_kword(icg, 0, "INSTRUMENT")) < 0) {
-		sprintf(p->err, "read_ccmx: Input file '%s' doesn't contain keyword INSTRUMENT",inname);
-		icg->del(icg);
-		return 1;
-	}
-	if ((p->inst = strdup(icg->t[0].kdata[ti])) == NULL) {
-		sprintf(p->err, "read_ccmx: malloc failed");
-		icg->del(icg);
+/* Read in the ccmx CGATS .ccmx file from a memory buffer */
+/* Return nz on error */
+static int buf_read_ccmx(
+ccmx *p,		/* This */
+unsigned char *buf,
+int len
+) {
+	int rv;
+	cgatsFile *fp;
+	cgats *icg;			/* input cgats structure */
+
+	if ((fp = new_cgatsFileMem(buf, len)) == NULL) {
+		strcpy(p->err, "new_cgatsFileMem failed");
 		return 2;
 	}
 
-	if ((ti = icg->find_kword(icg, 0, "DISPLAY")) >= 0) {
-		if ((p->disp = strdup(icg->t[0].kdata[ti])) == NULL) {
-			sprintf(p->err, "read_ccss: malloc failed");
-			icg->del(icg);
-			return 2;
-		}
+	/* Open and look at the .ccmx file */
+	if ((icg = new_cgats()) == NULL) {		/* Create a CGATS structure */
+		sprintf(p->err, "read_ccmx: new_cgats() failed");
+		fp->del(fp);
+		return 2;
 	}
-	if ((ti = icg->find_kword(icg, 0, "TECHNOLOGY")) >= 0) {
-		if ((p->tech = strdup(icg->t[0].kdata[ti])) == NULL) {
-			sprintf(p->err, "read_ccss: malloc failed");
-			icg->del(icg);
-			return 2;
-		}
-	}
-	if (p->disp == NULL && p->tech == NULL) {
-		sprintf(p->err, "read_ccmx: Input file '%s' doesn't contain keyword DISPLAY or TECHNOLOGY",inname);
+	icg->add_other(icg, "CCMX");		/* our special type is Model Printer Profile */
+	
+	if (icg->read(icg, fp)) {
+		strcpy(p->err, icg->err);
 		icg->del(icg);
+		fp->del(fp);
 		return 1;
 	}
+	fp->del(fp);
 
-	if ((ti = icg->find_kword(icg, 0, "REFERENCE")) >= 0) {
-		if ((p->ref = strdup(icg->t[0].kdata[ti])) == NULL) {
-			sprintf(p->err, "read_ccss: malloc failed");
-			icg->del(icg);
-			return 2;
-		}
-	}
-
-	/* Locate the fields */
-	for (i = 0; i < 3; i++) {	/* XYZ fields */
-		if ((spi[i] = icg->find_field(icg, 0, xyzfname[i])) < 0) {
-			sprintf(p->err, "read_ccmx: Input file '%s' doesn't contain field %s",
-			        inname, xyzfname[i]);
-			icg->del(icg);
-			return 1;
-		}
-		if (icg->t[0].ftype[spi[i]] != r_t) {
-			sprintf(p->err, "read_ccmx: Input file '%s' field %s is wrong type",
-			        inname, xyzfname[i]);
-			icg->del(icg);
-			return 1;
-		}
-	}
-
-	if (icg->t[0].nsets != 3) {
-		sprintf(p->err, "read_ccmx: Input file '%s' doesn't have exactly 3 sets", inname);
-		icg->del(icg);
-		return 1;
-	}
-
-	/* Read the matrix values */
-	for (ix = 0; ix < icg->t[0].nsets; ix++) {
-		p->matrix[ix][0] = *((double *)icg->t[0].fdata[ix][spi[0]]);
-		p->matrix[ix][1] = *((double *)icg->t[0].fdata[ix][spi[1]]);
-		p->matrix[ix][2] = *((double *)icg->t[0].fdata[ix][spi[2]]);
+	if ((rv = read_ccmx_cgats(p, icg)) != 0) {
+		icg->del(icg);		/* Clean up */
+		return rv;
 	}
 
 	icg->del(icg);		/* Clean up */
@@ -260,6 +407,9 @@ char *desc,			/* General description (optional) */
 char *inst,			/* Instrument description to copy from */
 char *disp,			/* Display make and model (optional if tech) */
 char *tech,			/* Display technology description (optional if disp) */
+int refrmode,		/* Display refresh mode, -1 = unknown, 0 = n, 1 = yes */
+int cbid,			/* Display type calibration base ID, 0 = unknown */
+char *sel,			/* UI selector characters - NULL for none */
 char *refd,			/* Reference spectrometer description (optional) */
 double mtx[3][3]	/* Transform matrix to copy from */
 ) {
@@ -280,6 +430,15 @@ double mtx[3][3]	/* Transform matrix to copy from */
 		return 2;
 	}
 
+	p->refrmode = refrmode;
+	p->cbid = cbid;
+
+	if (sel != NULL) {
+		if ((p->sel = strdup(sel)) == NULL) {
+			sprintf(p->err, "set_ccmx: malloc sel failed");
+			return 2;
+		}
+	}
 	if ((p->ref = refd) != NULL && (p->ref = strdup(refd)) == NULL) {
 		sprintf(p->err, "set_ccmx: malloc failed");
 		return 2;
@@ -400,6 +559,9 @@ char *desc,			/* General description (optional) */
 char *inst,			/* Instrument description to copy from */
 char *disp,			/* Display make and model (optional if tech) */
 char *tech,			/* Display technology description (optional if disp) */
+int refrmode,		/* Display refresh mode, -1 = unknown, 0 = n, 1 = yes */
+int cbid,			/* Display type calibration base index, 0 = unknown */
+char *sel,			/* UI selector characters - NULL for none */
 char *refd,			/* Reference spectrometer description (optional) */
 int npat,			/* Number of samples in following arrays */
 double (*refs)[3],	/* Array of XYZ values from spectrometer */
@@ -411,24 +573,32 @@ double (*cols)[3]		/* Array of XYZ values from colorimeter */
 	double cp[9], sa[9];
 
 	if ((p->desc = desc) != NULL && (p->desc = strdup(desc)) == NULL) {
-		sprintf(p->err, "set_ccmx: malloc failed");
+		sprintf(p->err, "create_ccmx: malloc failed");
 		return 2;
 	}
 	if ((p->inst = inst) != NULL && (p->inst = strdup(inst)) == NULL) {
-		sprintf(p->err, "set_ccmx: malloc failed");
+		sprintf(p->err, "create_ccmx: malloc failed");
 		return 2;
 	}
 	if ((p->disp = disp) != NULL && (p->disp = strdup(disp)) == NULL) {
-		sprintf(p->err, "set_ccmx: malloc failed");
+		sprintf(p->err, "create_ccmx: malloc failed");
 		return 2;
 	}
 	if ((p->tech = tech) != NULL && (p->tech = strdup(tech)) == NULL) {
-		sprintf(p->err, "set_ccmx: malloc failed");
+		sprintf(p->err, "create_ccmx: malloc failed");
 		return 2;
 	}
+	p->refrmode = refrmode;
+	p->cbid = cbid;
 
+	if (sel != NULL) {
+		if ((p->sel = strdup(sel)) == NULL) {
+			sprintf(p->err, "create_ccmx: malloc sel failed");
+			return 2;
+		}
+	}
 	if ((p->ref = refd) != NULL && (p->ref = strdup(refd)) == NULL) {
-		sprintf(p->err, "set_ccmx: malloc failed");
+		sprintf(p->err, "create_ccmx: malloc failed");
 		return 2;
 	}
 
@@ -460,7 +630,7 @@ double (*cols)[3]		/* Array of XYZ values from colorimeter */
 		sa[i] = 0.1;
 
 	if (powell(NULL, 9, cp, sa, 1e-6, 2000, optf, &cx, NULL, NULL) < 0.0) {
-		sprintf(p->err, "set_ccmx: powell() failed");
+		sprintf(p->err, "create_ccmx: powell() failed");
 		return 1;
 	}
 
@@ -512,12 +682,15 @@ char *desc,			/* General description (optional) */
 char *inst,			/* Instrument description to copy from */
 char *disp,			/* Display make and model (optional if tech) */
 char *tech,			/* Display technology description (optional if disp) */
+int refrmode,		/* Display refresh mode, -1 = unknown, 0 = n, 1 = yes */
+int cbid,			/* Display type calibration base ID, 0 = unknown */
+char *sel,			/* UI selector characters - NULL for none */
 char *refd,			/* Reference spectrometer description (optional) */
 int npat,			/* Number of samples in following arrays */
 double (*refs)[3],	/* Array of XYZ values from spectrometer */
 double (*cols)[3]		/* Array of XYZ values from colorimeter */
 ) {
-	sprintf(p->err, "set_ccmx: not implemented in ccxx.x");
+	sprintf(p->err, "create_ccmx: not implemented in ccmx.c");
 	return 1;
 }
 
@@ -532,6 +705,10 @@ static void del_ccmx(ccmx *p) {
 			free(p->inst);
 		if (p->disp != NULL)
 			free(p->disp);
+		if (p->tech != NULL)
+			free(p->tech);
+		if (p->sel != NULL)
+			free(p->sel);
 		if (p->ref != NULL)
 			free(p->ref);
 		free(p);
@@ -546,13 +723,18 @@ ccmx *new_ccmx(void) {
 	if ((p = (ccmx *)calloc(1, sizeof(ccmx))) == NULL)
 		return NULL;
 
+	p->refrmode = -1;
+	p->cbid = 0;
+
 	/* Init method pointers */
-	p->del         = del_ccmx;
-	p->set_ccmx    = set_ccmx;
-	p->create_ccmx = create_ccmx;
-	p->write_ccmx  = write_ccmx;
-	p->read_ccmx   = read_ccmx;
-	p->xform       = xform;
+	p->del            = del_ccmx;
+	p->set_ccmx       = set_ccmx;
+	p->create_ccmx    = create_ccmx;
+	p->write_ccmx     = write_ccmx;
+	p->buf_write_ccmx = buf_write_ccmx;
+	p->read_ccmx      = read_ccmx;
+	p->buf_read_ccmx  = buf_read_ccmx;
+	p->xform          = xform;
 
 	return p;
 }

@@ -9,7 +9,7 @@
  * Author: Graeme W. Gill
  * Date:   2007/10/10
  *
- * Copyright 2006 - 2010 Graeme W. Gill
+ * Copyright 2006 - 2013 Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -17,7 +17,6 @@
  */
 
 /* These routines supliement the class code in ntio.c and unixio.c */
-/* They do benign things if ENABLE_USB is undefined */
 
 #ifdef __APPLE__
 #include <sys/param.h>
@@ -34,27 +33,34 @@
 
 /* Add or modify paths to USB HID connected instruments, to the existing */
 /* icompath paths in the icoms structure, if HID access is supported. */
-void hid_get_paths(struct _icoms *p);
-
-/* Return the instrument type if the port number is HID, */
-/* and instUnknown if it is not. */
-instType hid_is_hid_portno(icoms *p, int port);
+/* return icom error */
+int hid_get_paths(struct _icompaths *p);
 
 void hid_close_port(icoms *p);
 
 /* Set the HID specific icoms methods */
 void hid_set_hid_methods(icoms *p);
 
+/* Copy hid_idevice contents */
+/* return icom error */
+int hid_copy_hid_idevice(icoms *d, icompath *s);
+
+/* Cleanup and then free a hid_del_hid_idevice */
+void hid_del_hid_idevice(struct hid_idevice *dev);
+
+/* Cleanup any HID specific icoms info */
+void hid_del_hid(icoms *p);
+
 /* Opaque structure to hid OS dependent HID details */
-struct _hid_device {
-	int temp;					/* Shut the compiler up */
+struct hid_idevice {
 #if defined(NT)
-	char *dpath;				/* Path to open the device */
+	char *dpath;				/* Device path */
 	/* Stuff setup when device is open: */
 	HANDLE fh;					/* File handle for write/read */
 	OVERLAPPED ols;				/* Overlapped structure for write/read */
 #endif
 #if defined(__APPLE__)
+	int lid;					/* Location ID */
 	io_object_t ioob;					/* Object to open */
 	/* Stuff setup when device is open: */
 	IOHIDDeviceInterface122 **device;	/* OS X HID device we've opened */
@@ -65,11 +71,12 @@ struct _hid_device {
     int bread;            				/* Bytes read by callback */
 #endif
 #if defined (UNIX) && !defined(__APPLE__)
+	int temp;					/* Shut the compiler up */
 #endif
-}; typedef struct _hid_device hid_device;
+};
 
-/* Cleanup and then free an hev entry */
-void hid_del_hid_device(hid_device *hev);
+/* Cleanup and then free an hidd entry */
+void hid_del_hid_idevice(struct hid_idevice *hidd);
 
 #ifdef __cplusplus
 	}

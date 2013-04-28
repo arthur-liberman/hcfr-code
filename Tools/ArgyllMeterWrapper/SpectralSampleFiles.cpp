@@ -31,6 +31,7 @@
 #define ENABLE_USB
 #include "xspect.h"
 #include "ccss.h"
+#include "inst.h"
 #undef SALONEINSTLIB
 
 SpectralSampleFiles::SpectralSampleFiles(void)

@@ -8,7 +8,7 @@
  * Author: Graeme W. Gill
  * Date:   19/10/2006
  *
- * Copyright 2006 - 2007, Graeme W. Gill
+ * Copyright 2006 - 2013, Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -36,6 +36,7 @@ extern unsigned char *spyder2_pld_bytes;
 /* Return 1 if Spyder 2 firmware is available from an external file */
 /* Return 2 if Spyder 2 firmware is part of this executable */
 int setup_spyd2() {
+#ifdef ENABLE_USB
 	static int loaded = 0;		/* Was loaded from a file */
 	char **bin_paths = NULL;
 	int no_paths = 0;
@@ -57,9 +58,14 @@ int setup_spyd2() {
 	/* If no firmware compiled in, see if there is a file to load from. */
 	if ((pld_size == 0 || pld_size == 0x11223344) && loaded == 0) {
 		
+
 		for (;;) {	/* So we can break out */
-			if ((no_paths = xdg_bds(NULL, &bin_paths, xdg_data, xdg_read, xdg_user, "color/spyd2PLD.bin")) < 1)
+			if ((no_paths = xdg_bds(NULL, &bin_paths, xdg_data, xdg_read, xdg_user,
+	                   "ArgyllCMS/spyd2PLD.bin" XDG_FUDGE "color/spyd2PLD.bin"
+)) < 1) {
+				a1logd(g_log, 1, "etup_spyd2: failed to find PLD file\n");
 				break;
+		}
 
 			/* open binary file */
 #if !defined(O_CREAT) && !defined(_O_CREAT)
@@ -94,8 +100,7 @@ int setup_spyd2() {
 			}
 			pld_size = size;
 			loaded = 1;			/* We've loaded it from a file */
-//printf("~1 bytes = 0x%x 0x%x 0x%x 0x%x\n",
-//pld_bytes[0], pld_bytes[1], pld_bytes[2], pld_bytes[3]);
+//			a1logd(g_log,0,"Spyder2 pld bytes = 0x%x 0x%x 0x%x 0x%x\n",pld_bytes[0], pld_bytes[1], pld_bytes[2], pld_bytes[3]);
 			fclose(fp);
 			break;
 		}
@@ -106,6 +111,7 @@ int setup_spyd2() {
 			return 1;			/* Was loaded from a file */
 		return 2;				/* Was compiled in */
 	}
+#endif /* ENABLE_USB */
 	return 0;					/* Not available */
 }
 

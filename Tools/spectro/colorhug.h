@@ -8,7 +8,7 @@
  * Author: Richard Hughes
  * Date:   30/11/2011
  *
- * Copyright 2006 - 2007, Graeme W. Gill
+ * Copyright 2006 - 2013, Graeme W. Gill
  * Copyright 2011, Richard Hughes
  * All rights reserved.
  *
@@ -28,10 +28,6 @@
 #define COLORHUG_COMS_FAIL				0x62		/* Communication failure */
 #define COLORHUG_UNKNOWN_MODEL			0x63		/* Not an colorhug */
 #define COLORHUG_DATA_PARSE_ERROR 		0x64		/* Read data parsing error */
-#define COLORHUG_USER_ABORT				0x65		/* User hit abort */
-#define COLORHUG_USER_TERM				0x66		/* User hit terminate */
-#define COLORHUG_USER_TRIG				0x67		/* User hit trigger */
-#define COLORHUG_USER_CMND				0x68		/* User hit command */
 
 /* Real error codes */
 #define COLORHUG_OK  					0x00
@@ -69,19 +65,25 @@ struct _colorhug {
 
 	inst_mode mode;				/* Currently selected mode */
 
-	inst_opt_mode trig;			/* Reading trigger mode */
-	int trig_return;			/* Emit "\n" after trigger */
+	inst_opt_type trig;			/* Reading trigger mode */
 
+	int maj, min, uro;			/* Version number */
 	int ser_no;					/* Serial number */
-	int calix;					/* Calibration matrix index, 9 = Raw */
+
+	inst_disptypesel *dtlist;	/* Display Type list */
+	int ndtlist;				/* Number of valid dtlist entries */
+	int icx;					/* Internal calibration matrix index, 11 = Raw */
+	int cbid;					/* calibration base ID, 0 if not a base */
+	int refrmode;				/* Refresh mode (always 0) */
 	double postscale;			/* Post scale factor (for Raw) */
 	double ccmat[3][3];			/* Colorimeter correction matrix */
+
 	int	 led_state;				/* Current LED state */
 
 }; typedef struct _colorhug colorhug;
 
 /* Constructor */
-extern colorhug *new_colorhug(icoms *icom, instType itype, int debug, int verb);
+extern colorhug *new_colorhug(icoms *icom, instType itype);
 
 
 #define COLORHUG_H

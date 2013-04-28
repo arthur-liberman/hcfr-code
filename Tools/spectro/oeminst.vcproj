@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="i1d3ccss"
-	ProjectGUID="{288469E5-FAD9-4674-8BFC-A3CC85912578}"
-	RootNamespace="i1d3ccss"
+	Name="oeminst"
+	ProjectGUID="{3AFE2419-04D8-404D-B581-EF4C78976D75}"
+	RootNamespace="spyd2en"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -171,6 +171,10 @@
 		</Configuration>
 	</Configurations>
 	<References>
+		<ProjectReference
+			ReferencedProjectIdentifier="{5AA3F412-D3AB-437E-A8CF-C1B9ACBCA25E}"
+			RelativePathToProject=".\Tools\spectro\spectro.vcproj"
+		/>
 	</References>
 	<Files>
 		<Filter
@@ -179,15 +183,27 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\i1d3ccss.c"
-				>
-			</File>
-			<File
 				RelativePath=".\inflate.c"
 				>
 			</File>
 			<File
 				RelativePath=".\LzmaDec.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mongoose.c"
+				>
+			</File>
+			<File
+				RelativePath=".\oemarch.c"
+				>
+			</File>
+			<File
+				RelativePath=".\oeminst.c"
+				>
+			</File>
+			<File
+				RelativePath=".\vinflate.c"
 				>
 			</File>
 		</Filter>
@@ -202,6 +218,14 @@
 			</File>
 			<File
 				RelativePath=".\LzmaTypes.h"
+				>
+			</File>
+			<File
+				RelativePath=".\mongoose.h"
+				>
+			</File>
+			<File
+				RelativePath=".\oemarch.h"
 				>
 			</File>
 		</Filter>

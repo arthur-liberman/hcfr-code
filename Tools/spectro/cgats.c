@@ -23,15 +23,10 @@
 #undef DEBUG				/* Debug only in slected places */
 
 #ifdef DEBUG
-
-#undef DBG
-#define dbgo stdout
-#define DBG(aaa) fprintf aaa, fflush(dbgo)
-
+# define DBGA g_log, 0 		/* First argument to DBGF() */
+# define DBGF(xx)	a1logd xx
 #else
-#undef DBG
-#define DBG(aaa) 
-
+# define DBGF(xx)
 #endif
 
 #ifdef STANDALONE_TEST
@@ -346,7 +341,7 @@ cgats_read(cgats *p, cgatsFile *fp) {
 	p->err[0] = '\000';
 
 	if ((pp = new_parse_al(p->al, fp)) == NULL) {
-		DBG((dbgo,"Failed to open parser for file\n"));
+		DBGF((DBGA,"Failed to open parser for file\n"));
 		return err(p, -1, "Unable to create file parser for file '%s'",fp->fname(fp));
 	}
 
@@ -364,7 +359,7 @@ cgats_read(cgats *p, cgatsFile *fp) {
 			if (pp->errc != 0) {		/* get_token got an error */
 				err(p, -1, "%s", pp->err);
 				pp->del(pp);
-				DBG((dbgo,"Get token got error '%s'\n",pp->err));
+				DBGF((DBGA,"Get token got error '%s'\n",pp->err));
 				return p->errc;
 			}
 			if ((rc = pp->read_line(pp)) == 0)
@@ -372,7 +367,7 @@ cgats_read(cgats *p, cgatsFile *fp) {
 			else if (rc == -1) {		/* read_line got an error */
 				err(p, -1, "%s", pp->err);
 				pp->del(pp);
-				DBG((dbgo,"Read line got error '%s'\n",pp->err));
+				DBGF((DBGA,"Read line got error '%s'\n",pp->err));
 				return p->errc;
 			}
 		}
@@ -384,11 +379,12 @@ cgats_read(cgats *p, cgatsFile *fp) {
 			case R_KWORDS: {	/* Expecting keyword, field def or data */
 				table_type tt = tt_none;
 				int oi = 0;		/* Index if tt_other */
-#ifdef DEBUG
-				printf("Got kword '%s'\n",tp);
-				if (rstate == R_IDENT)
-					printf("Expecting file identifier\n");
-#endif
+
+				DBGF((DBGA,"Got kword '%s'\n",tp));
+				if (rstate == R_IDENT) {
+					DBGF((DBGA,"Expecting file identifier\n"));
+				}
+
 				/* The standard says that keywords have to be at the start of a line */
 				if (pp->token != 1)			/* Be robust and ignore any problems */
 					break;
@@ -415,15 +411,12 @@ cgats_read(cgats *p, cgatsFile *fp) {
 						return p->errc;
 					}
 					strcpy(p->cgats_type,tp);
-#ifdef DEBUG
-					printf("Found CGATS file identifier\n");
-#endif
+					DBGF((DBGA,"Found CGATS file identifier\n"));
 					rstate = R_KWORDS;
 				} else {	/* See if it is an 'other' file identifier */
 					int iswild = 0;	
-#ifdef DEBUG
-					printf("Checking for 'other' identifier\n");
-#endif
+					DBGF((DBGA,"Checking for 'other' identifier\n"));
+
 					/* Check for non-wildcard "other" */
 					for (oi = 0; oi < p->nothers; oi++) {
 
@@ -433,9 +426,7 @@ cgats_read(cgats *p, cgatsFile *fp) {
 						}
 						/* If "other" is a specific string */
 						if(strcmp(tp,p->others[oi]) == 0) {
-#ifdef DEBUG
-							printf("Matches 'other' %s\n",p->others[oi]);
-#endif
+							DBGF((DBGA,"Matches 'other' %s\n",p->others[oi]));
 							tt = tt_other;
 							rstate = R_KWORDS;
 							break;
@@ -447,12 +438,10 @@ cgats_read(cgats *p, cgatsFile *fp) {
 					 && rstate == R_IDENT				/* First token after a table */
 					 && standard_kword(tp) == 0			/* And not an obvious kword */
 					 && reserved_kword(tp) == 0) {
-#ifdef DEBUG
-						printf("Matches 'other' wildcard\n");
-#endif
+						DBGF((DBGA,"Matches 'other' wildcard\n"));
 						if ((oi = add_other(p, tp)) == -2) {
 							pp->del(pp);
-							DBG((dbgo,"add_other for wilidcard failed\n"));
+							DBGF((DBGA,"add_other for wilidcard failed\n"));
 							return p->errc;
 						}
 						tt = tt_other;
@@ -464,7 +453,7 @@ cgats_read(cgats *p, cgatsFile *fp) {
 				if (tt == tt_none && p->ntables == 0) {
 					err(p,-1,"Error at line %d of file '%s': No CGATS file identifier found",pp->line,fp->fname(fp));
 					pp->del(pp);
-					DBG((dbgo,"Failed to match file identifier\n"));
+					DBGF((DBGA,"Failed to match file identifier\n"));
 					return p->errc;
 				}
 
@@ -473,12 +462,10 @@ cgats_read(cgats *p, cgatsFile *fp) {
 				if (p->ntables == tablef) {
 
 					if (tt != tt_none) {			/* Current token is a file identifier */
-#ifdef DEBUG
-						printf("Got file identifier, adding plain table\n");
-#endif
+						DBGF((DBGA,"Got file identifier, adding plain table\n"));
 	        			if (add_table(p, tt, oi) < 0) {
 							pp->del(pp);
-							DBG((dbgo,"Add table failed\n"));
+							DBGF((DBGA,"Add table failed\n"));
 							return p->errc;
 						}
 					} else {	/* Carry everything over from previous table the table type */
@@ -486,12 +473,11 @@ cgats_read(cgats *p, cgatsFile *fp) {
 						cgats_table *pt;
 						int ct;
 
-#ifdef DEBUG
-						printf("No file identifier, adding table copy of previous\n");
-#endif
+						DBGF((DBGA,"No file identifier, adding table copy of previous\n"));
+
 	        			if (add_table(p, p->t[p->ntables-1].tt, p->t[p->ntables-1].oi) < 0) {
 							pp->del(pp);
-							DBG((dbgo,"Add table failed\n"));
+							DBGF((DBGA,"Add table failed\n"));
 							return p->errc;
 						}
 
@@ -501,14 +487,14 @@ cgats_read(cgats *p, cgatsFile *fp) {
 						for (i = 0; i < pt->nkwords; i++) {
 							if (p->add_kword(p, ct, pt->ksym[i], pt->kdata[i], pt->kcom[i]) < 0) {
 								pp->del(pp);
-								DBG((dbgo,"Add keyword failed\n"));
+								DBGF((DBGA,"Add keyword failed\n"));
 								return p->errc;
 							}
 						}
 						for (i = 0; i < pt->nfields; i++)
 							if (p->add_field(p, ct, pt->fsym[i], none_t) < 0) {
 								pp->del(pp);
-								DBG((dbgo,"Add field failed\n"));
+								DBGF((DBGA,"Add field failed\n"));
 								return p->errc;
 							}
 					}
@@ -521,7 +507,7 @@ cgats_read(cgats *p, cgatsFile *fp) {
 						rstate = R_FIELDS;
 						if (clear_fields(p, p->ntables-1) < 0) {
 							pp->del(pp);
-							DBG((dbgo,"Clear field failed\n"));
+							DBGF((DBGA,"Clear field failed\n"));
 							return p->errc;
 						}
 						break;
@@ -530,7 +516,7 @@ cgats_read(cgats *p, cgatsFile *fp) {
 						rstate = R_FIELDS;
 						if (clear_fields(p, p->ntables-1) < 0) {
 							pp->del(pp);
-							DBG((dbgo,"Clear field failed\n"));
+							DBGF((DBGA,"Clear field failed\n"));
 							return p->errc;
 						}
 						goto first_field;
@@ -544,7 +530,7 @@ cgats_read(cgats *p, cgatsFile *fp) {
 					if ((kw = (char *)alloc_copy_data_type(p->al, cs_t, (void *)tp)) == NULL) {
 						err(p, -2, "cgats.alloc_copy_data_type() malloc fail");
 						pp->del(pp);
-						DBG((dbgo,"Alloc data type failed\n"));
+						DBGF((DBGA,"Alloc data type failed\n"));
 						return p->errc;
 					}
 					rstate = R_KWORD_VALUE;
@@ -554,9 +540,8 @@ cgats_read(cgats *p, cgatsFile *fp) {
 			case R_KWORD_VALUE: {
 				/* Add a keyword and its value */
 				
-#ifdef DEBUG
-				printf("Got keyword value '%s'\n",kw);
-#endif
+				DBGF((DBGA,"Got keyword value '%s'\n",kw));
+
 				/* Special case for read() use */
 				if(strcmp(kw,"NUMBER_OF_SETS") == 0)
 					expsets = atoi(tp);
@@ -568,12 +553,12 @@ cgats_read(cgats *p, cgatsFile *fp) {
 					unquote_cs(tp);
 					if ((ix = find_kword(p, p->ntables-1, kw)) < -1) {
 						pp->del(pp);
-						DBG((dbgo,"Failed to find keyword\n"));
+						DBGF((DBGA,"Failed to find keyword\n"));
 						return p->errc;
 					}
 					if (add_kword_at(p, p->ntables-1, ix, kw, tp, NULL) < 0) {
 						pp->del(pp);
-						DBG((dbgo,"Failed to add keyword '%s'\n",kw));
+						DBGF((DBGA,"Failed to add keyword '%s'\n",kw));
 						return p->errc;
 					}
 				}
@@ -582,9 +567,8 @@ cgats_read(cgats *p, cgatsFile *fp) {
 				break;
 			}
 			case R_FIELDS: {
-#ifdef DEBUG
-				printf("Got fields value '%s'\n",tp);
-#endif
+				DBGF((DBGA,"Got fields value '%s'\n",tp));
+
 				/* Add a list of field name declarations */
 				if(strcmp(tp,"END_DATA_FORMAT") == 0) {
 					rstate = R_KWORDS;
@@ -600,7 +584,7 @@ cgats_read(cgats *p, cgatsFile *fp) {
 					if ((kw = (char *)alloc_copy_data_type(p->al, cs_t, (void *)tp)) == NULL) {
 						err(p, -2, "cgats.alloc_copy_data_type() malloc fail");
 						pp->del(pp);
-						DBG((dbgo,"Alloc data type failed\n"));
+						DBGF((DBGA,"Alloc data type failed\n"));
 						return p->errc;
 					}
 					rstate = R_KWORD_VALUE;
@@ -609,7 +593,7 @@ cgats_read(cgats *p, cgatsFile *fp) {
 			  first_field:;	/* Direct leap - cope with faulty table */
 				if (p->add_field(p, p->ntables-1, tp, none_t) < 0)	/* none == cs untill figure type */ {
 					pp->del(pp);
-					DBG((dbgo,"Add field failed\n"));
+					DBGF((DBGA,"Add field failed\n"));
 					return p->errc;
 				}
 				break;
@@ -617,29 +601,27 @@ cgats_read(cgats *p, cgatsFile *fp) {
 			case R_DATA: {
 				cgats_table *ct = &p->t[p->ntables-1];
 
-#ifdef DEBUG
-				printf("Got data value '%s'\n",tp);
-#endif
+				DBGF((DBGA,"Got data value '%s'\n",tp));
 				if(strcmp(tp,"END_DATA") == 0) {
 					int i,j;
 #ifdef NEVER
 					if (ct->nsets == 0) {
 						err(p,-1,"Error at line %d of file '%s': End of data without any data being read",pp->line,fp->fname(fp));
 						pp->del(pp);
-						DBG((dbgo,"End of data without any data being read\n"));
+						DBGF((DBGA,"End of data without any data being read\n"));
 						return p->errc;
 					}
 #endif // NEVER
 					if (expsets != 0 && ct->nsets != expsets) {
 						err(p,-1,"Error at line %d of file '%s': Read %d sets, expected %d sets",pp->line,fp->fname(fp),ct->nsets,expsets);
 						pp->del(pp);
-						DBG((dbgo,"End of mimatch in number of sets\n"));
+						DBGF((DBGA,"End of mimatch in number of sets\n"));
 						return p->errc;
 					}
 					if (ct->ndf != 0) {
 						err(p,-1,"Error at line %d of file '%s': Data was not an integer multiple of fields (remainder %d out of %d)",pp->line,fp->fname(fp),ct->ndf,ct->nfields);
 						pp->del(pp);
-						DBG((dbgo,"Not an interger multiple of fields\n"));
+						DBGF((DBGA,"Not an interger multiple of fields\n"));
 						return p->errc;
 					}
 
@@ -677,7 +659,7 @@ cgats_read(cgats *p, cgatsFile *fp) {
 						if (st != none_t && st != bt) {
 							err(p, -1,"Error in file '%s': Field '%s' has unexpected type, should be '%s', is '%s'",fp->fname(fp),ct->fsym[i],data_type_desc[st],data_type_desc[bt]);
 							pp->del(pp);
-							DBG((dbgo,"Standard field has unexpected data type\n"));
+							DBGF((DBGA,"Standard field has unexpected data type\n"));
 							return p->errc;
 						}
 
@@ -691,7 +673,7 @@ cgats_read(cgats *p, cgatsFile *fp) {
 									if ((ct->fdata[j][i] = alloc_copy_data_type(p->al, bt, (void *)&dv)) == NULL) {
 										err(p, -2, "cgats.alloc_copy_data_type() malloc fail");
 										pp->del(pp);
-										DBG((dbgo,"Alloc copy data type failed\n"));
+										DBGF((DBGA,"Alloc copy data type failed\n"));
 										return p->errc;
 									}
 									break;
@@ -702,7 +684,7 @@ cgats_read(cgats *p, cgatsFile *fp) {
 									if ((ct->fdata[j][i] = alloc_copy_data_type(p->al, bt, (void *)&iv)) == NULL) {
 										err(p, -2, "cgats.alloc_copy_data_type() malloc fail");
 										pp->del(pp);
-										DBG((dbgo,"Alloc copy data type failed\n"));
+										DBGF((DBGA,"Alloc copy data type failed\n"));
 										return p->errc = -2;
 									}
 									break;
@@ -715,7 +697,7 @@ cgats_read(cgats *p, cgatsFile *fp) {
 = alloc_copy_data_type(p->al, bt, (void *)cv)) == NULL) {
 										err(p, -2, "cgats.alloc_copy_data_type() malloc fail");
 										pp->del(pp);
-										DBG((dbgo,"Alloc copy data type failed\n"));
+										DBGF((DBGA,"Alloc copy data type failed\n"));
 										return p->errc = -2;
 									}
 									unquote_cs((char *)ct->fdata[j][i]);
@@ -736,13 +718,13 @@ cgats_read(cgats *p, cgatsFile *fp) {
 				if (ct->nfields == 0) {
 					err(p, -1,"Error at line %d of file '%s': Found data without field definitions",pp->line,fp->fname(fp));
 					pp->del(pp);
-					DBG((dbgo,"Found data without field definition\n"));
+					DBGF((DBGA,"Found data without field definition\n"));
 					return p->errc;
 				}
 				/* Add the data item */
 				if (add_data_item(p, p->ntables-1, tp) < 0) {
 					pp->del(pp);
-					DBG((dbgo,"Adding data item failed\n"));
+					DBGF((DBGA,"Adding data item failed\n"));
 					return p->errc;
 				}
 				break;
@@ -887,18 +869,18 @@ add_kword_at(cgats *p, int table, int pos, const char *ksym, const char *kdata, 
 	p->errc = 0;
 	p->err[0] = '\000';
 	if (table < 0 || table >= p->ntables) {
-		DBG((dbgo,"add_kword_at: table is invalid\n"));
+		DBGF((DBGA,"add_kword_at: table is invalid\n"));
 		return err(p,-1, "cgats.add_kword(), table number '%d' is out of range",table);
 	}
 	t = &p->t[table];
 
 	if (ksym != NULL && cs_has_ws(ksym)) {	/* oops */
-		DBG((dbgo,"add_kword_at: keyword '%s' is illegal (embedded white space, quote or comment character)\n",ksym));
+		DBGF((DBGA,"add_kword_at: keyword '%s' is illegal (embedded white space, quote or comment character)\n",ksym));
 		return err(p,-1, "cgats.add_kword(), keyword '%s'is illegal",ksym);
 	}
 
 	if (ksym != NULL && reserved_kword(ksym)) { 	/* oops */
-		DBG((dbgo,"add_kword_at: keyword '%s' is illegal (reserved)\n",ksym));
+		DBGF((DBGA,"add_kword_at: keyword '%s' is illegal (reserved)\n",ksym));
 		return err(p,-1, "cgats.add_kword(), keyword '%s'is generated automatically",ksym);
 	}
 
@@ -1258,11 +1240,11 @@ cgats_write(cgats *p, cgatsFile *fp) {
 	p->errc = 0;
 	p->err[0] = '\000';
 
-	DBG((dbgo,"CGATS write called, ntables = %d\n",p->ntables));
+	DBGF((DBGA,"CGATS write called, ntables = %d\n",p->ntables));
 	for (table = 0; table < p->ntables; table++) {
 		cgats_table *t = &p->t[table];
 
-		DBG((dbgo,"CGATS writing table %d\n",table));
+		DBGF((DBGA,"CGATS writing table %d\n",table));
 
 		/* Figure out the standard and non-standard fields */
 		if (t->nfields > 0)
@@ -1412,7 +1394,7 @@ cgats_write(cgats *p, cgatsFile *fp) {
 		for (i = 0; i < t->nkwords; i++) {
 			char *qs = NULL;
 
-			DBG((dbgo,"CGATS writing keyword %d\n",i));
+			DBGF((DBGA,"CGATS writing keyword %d\n",i));
 
 			/* Keyword and data if it is present */
 			if (t->ksym[i] != NULL && t->kdata[i] != NULL) {
@@ -1474,7 +1456,7 @@ cgats_write(cgats *p, cgatsFile *fp) {
 			if (fp->gprintf(fp,"BEGIN_DATA_FORMAT\n") < 0)
 				goto write_error;
 			for (field = 0; field < t->nfields; field ++) {
-				DBG((dbgo,"CGATS writing field %d\n",field));
+				DBGF((DBGA,"CGATS writing field %d\n",field));
 				if (fp->gprintf(fp,"%s ",t->fsym[field]) < 0)
 					goto write_error;
 			}
@@ -1504,7 +1486,7 @@ cgats_write(cgats *p, cgatsFile *fp) {
 		if (fp->gprintf(fp,"BEGIN_DATA\n") < 0)
 			goto write_error;
 		for (set = 0; set < t->nsets; set++) {
-			DBG((dbgo,"CGATS writing set %d\n",set));
+			DBGF((DBGA,"CGATS writing set %d\n",set));
 			for (field = 0; field < t->nfields; field++) {
 				data_type tt;
 				if (t->ftype[field] == r_t) {

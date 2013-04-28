@@ -7,7 +7,7 @@
  * Author: Graeme W. Gill
  * Date:   18/10/2006
  *
- * Copyright 2006 - 2007, Graeme W. Gill
+ * Copyright 2006 - 2013, Graeme W. Gill
  * All rights reserved.
  *
  * (Based on i1disp.c)
@@ -51,17 +51,9 @@
 #endif /* SALONEINSTLIB */
 #include "xspect.h"
 #include "insttypes.h"
-#include "icoms.h"
 #include "conv.h"
+#include "icoms.h"
 #include "huey.h"
-
-#undef DEBUG
-
-#ifdef DEBUG
-#define DBG(xxx) fprintf xxx ;
-#else
-#define DBG(xxx) if (p->debug >= 5) fprintf xxx ;
-#endif
 
 #define dbgo stderr
 
@@ -80,18 +72,6 @@ static inst_code huey_check_unlock(huey *p);
 /* If torc is nz, then a trigger or command is OK, */
 /* othewise  they are treated as an abort. */
 static int icoms2huey_err(int se, int torc) {
-	if (se & ICOM_USERM) {
-		se &= ICOM_USERM;
-		if (torc) {
-			if (se == ICOM_TRIG)
-				return HUEY_USER_TRIG;
-			if (se == ICOM_CMND)
-				return HUEY_USER_CMND;
-		}
-		if (se == ICOM_TERM)
-			return HUEY_USER_TERM;
-		return HUEY_USER_ABORT;
-	}
 	if (se != ICOM_OK)
 		return HUEY_COMS_FAIL;
 	return HUEY_OK;
@@ -188,74 +168,57 @@ huey_command(
 	double to,					/* Timeout in seconds */
 	double to2					/* Timeout in seconds for 2nd read */
 ) {
+	int i;
 	unsigned char buf[8];	/* 8 bytes to write/read */
 	int wbytes;				/* bytes written */
 	int rbytes;				/* bytes read from ep */
 	int se, ua = 0, rv = inst_ok;
-	int isdeb = 0;
+	int ishid = p->icom->port_type(p->icom) == icomt_hid;
 
-	/* Turn off low level debug messages, and sumarise them here */
-	isdeb = p->icom->debug;
-	if (isdeb <= 2)
-		p->icom->debug = 0;
-	
-	if (isdeb) fprintf(stderr,"huey: Sending cmd '%s' args '%s'",inst_desc(cc), icoms_tohex(in, 7));
+	a1logd(p->log,5,"huey_command: Sending '%s' args '%s'\n",inst_desc(cc), icoms_tohex(in, 7));
 
 	/* Send the command using the control interface */
 	buf[0] = cc;				/* Construct the command == HID report number */
 	memmove(buf + 1, in, 7);
 
-	if (p->icom->is_hid) {
+	if (ishid) {
 		se = p->icom->hid_write(p->icom, buf, 8, &wbytes, to); 
 	} else {
 		se = p->icom->usb_control(p->icom,
-		      USB_ENDPOINT_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE, 0x9, 0x200, 0, buf, 8, to);
+		      IUSB_ENDPOINT_OUT | IUSB_REQ_TYPE_CLASS | IUSB_REQ_RECIP_INTERFACE, 0x9, 0x200, 0, buf, 8, to);
 		wbytes = 8;
 	}
 	if (se != 0) {
-		if (se & ICOM_USERM) {
-			ua = (se & ICOM_USERM);
-		}
-		if (se & ~ICOM_USERM) {
-			if (isdeb) fprintf(stderr,"\nhuey: Command send failed with ICOM err 0x%x\n",se);
-			p->icom->debug = isdeb;
-			return huey_interp_code((inst *)p, HUEY_COMS_FAIL);
-		}
+		a1logd(p->log,1,"huey_command: command send failed with ICOM err 0x%x\n",se);
+		return huey_interp_code((inst *)p, HUEY_COMS_FAIL);
 	}
 	rv = huey_interp_code((inst *)p, icoms2huey_err(ua, 0));
-	if (isdeb) fprintf(stderr," ICOM err 0x%x\n",ua);
 
 	if (rv == inst_ok && wbytes != 8)
 		rv = huey_interp_code((inst *)p, HUEY_BAD_WR_LENGTH);
 
+	a1logd(p->log,6,"huey_command: get inst code\n",rv);
+
 	if (rv != inst_ok) {
-		/* Flush any response */
-		if (p->icom->is_hid) {
+		/* Flush any response if write failed */
+		if (ishid)
 			p->icom->hid_read(p->icom, buf, 8, &rbytes, to);
-		} else {
-			p->icom->usb_read(p->icom, 0x81, buf, 8, &rbytes, to);
-		} 
-		p->icom->debug = isdeb;
+		else
+			p->icom->usb_read(p->icom, NULL, 0x81, buf, 8, &rbytes, to);
 		return rv;
 	}
 
 	/* Now fetch the response */
-	if (isdeb) fprintf(stderr,"huey: Reading response ");
+	a1logd(p->log,6,"huey_command: Reading response\n");
 
-	if (p->icom->is_hid) {
+	if (ishid) {
 		se = p->icom->hid_read(p->icom, buf, 8, &rbytes, to);
 	} else {
-		se = p->icom->usb_read(p->icom, 0x81, buf, 8, &rbytes, to);
+		se = p->icom->usb_read(p->icom, NULL, 0x81, buf, 8, &rbytes, to);
 	} 
 	if (se != 0) {
-		if (se & ICOM_USERM) {
-			ua = (se & ICOM_USERM);
-		}
-		if (se & ~ICOM_USERM) {
-			if (isdeb) fprintf(stderr,"\nhuey: Response read failed with ICOM err 0x%x\n",se);
-			p->icom->debug = isdeb;
-			return huey_interp_code((inst *)p, HUEY_COMS_FAIL);
-		}
+		a1logd(p->log,1,"huey_command: read failed with ICOM err 0x%x\n",se);
+		return huey_interp_code((inst *)p, HUEY_COMS_FAIL);
 	}
 	rv = huey_interp_code((inst *)p, icoms2huey_err(ua, 0));
 	if (rv == inst_ok && rbytes != 8)
@@ -267,21 +230,16 @@ huey_command(
 	/* fetch a second response, with a longer timeout. */
 	/* This seems to be all of the measurement trigger commands */
 	if (rv == inst_ok && buf[0] == 0x90) {	/* there is more */
+		a1logd(p->log,6,"huey_command: Reading extended response\n");
 
-		if (p->icom->is_hid) {
+		if (ishid) {
 			se = p->icom->hid_read(p->icom, buf, 8, &rbytes, to2);
 		} else {
-			se = p->icom->usb_read(p->icom, 0x81, buf, 8, &rbytes, to2);
+			se = p->icom->usb_read(p->icom, NULL, 0x81, buf, 8, &rbytes, to2);
 		} 
 		if (se != 0) {
-			if (se & ICOM_USERM) {
-				ua = (se & ICOM_USERM);
-			}
-			if (se & ~ICOM_USERM) {
-				if (isdeb) fprintf(stderr,"\nhuey: Response read failed with ICOM err 0x%x\n",se);
-				p->icom->debug = isdeb;
-				return huey_interp_code((inst *)p, HUEY_COMS_FAIL);
-			}
+			a1logd(p->log,1,"huey_command: read failed with ICOM err 0x%x\n",se);
+			return huey_interp_code((inst *)p, HUEY_COMS_FAIL);
 		}
 		rv = huey_interp_code((inst *)p, icoms2huey_err(ua, 0));
 		if (rv == inst_ok && rbytes != 8)
@@ -307,8 +265,7 @@ huey_command(
 	} else {
 		memset(out, 0, 6);
 	}
-	if (isdeb) fprintf(stderr," '%s' ICOM err 0x%x\n",icoms_tohex(out, 6),ua);
-	p->icom->debug = isdeb;
+	a1logd(p->log,5,"huey_command: returning '%s' ICOM err 0x%x\n",icoms_tohex(out, 6),ua);
 
 	return rv; 
 }
@@ -345,6 +302,7 @@ huey_rdreg_byte(
 	int addr				/* Register Address, 0 - 255 */
 ) {
 	unsigned char buf[8];
+	int rsize;
 	inst_code ev;
 
 	if (addr < 0 || addr > 255)
@@ -450,7 +408,9 @@ huey_wrreg_byte(
 	int inv,				/* Input value */
 	int addr				/* Register Address, 0 - 127 */
 ) {
+	int cval;
 	unsigned char ibuf[8], obuf[8];
+	int rsize;
 	inst_code ev;
 
 	ibuf[0] = addr;  
@@ -516,6 +476,7 @@ huey_rd_int_time(
 	int *outp				/* Where to write value */
 ) {
 	unsigned char buf[8];
+	int rsize;
 	inst_code ev;
 
 	if ((ev = huey_command(p, i1d_getintgt, buf, buf, 1.0, 1.0)) != inst_ok)
@@ -534,6 +495,7 @@ huey_wr_int_time(
 	int inv					/* Value to write */
 ) {
 	unsigned char buf[16];
+	int rsize;
 	inst_code ev;
 
 	int2buf(buf, inv);
@@ -553,6 +515,7 @@ huey_freq_measure(
 	huey *p,				/* Object */
 	double rgb[3]			/* Return the RGB edge count values */
 ) {
+	int i;
 	unsigned char ibuf[8];
 	unsigned char obuf[8];
 	inst_code ev;
@@ -585,8 +548,10 @@ huey_period_measure(
 	int edgec[3],		/* Measurement edge count for each channel */
 	double rgb[3]		/* Return the RGB values */
 ) {
+	int i;
 	unsigned char ibuf[16];
 	unsigned char obuf[16];
+	int rsize;
 	inst_code ev;
 
 	/* Set the edge count */
@@ -620,8 +585,10 @@ huey_take_raw_measurement_3(
 	int edgec[3],		/* Measurement edge count for each channel */
 	double rgb[3]		/* Return the RGB values */
 ) {
+	int i;
 	unsigned char ibuf[16];
 	unsigned char obuf[16];
+	int rsize;
 	inst_code ev;
 
 	/* Do the measurement, and return the Red value */
@@ -662,10 +629,10 @@ huey_take_raw_measurement_3(
 static inst_code
 huey_take_measurement_2(
 	huey *p,				/* Object */
-	int crtm,				/* nz if crt mode */
+	int refr,				/* nz if crt mode */
 	double rgb[3]			/* Return the rgb values */
 ) {
-	int i;
+	int i, j;
 	int edgec[3] = {1,1,1};	/* Measurement edge count for each channel */
 	int rem[3] = {1,1,1};	/* remeasure flags */
 	inst_code ev;
@@ -673,15 +640,15 @@ huey_take_measurement_2(
 	if (p->inited == 0)
 		return huey_interp_code((inst *)p, HUEY_NOT_INITED);
 
-	DBG((dbgo,"take_measurement_2 called with crtm = %d\n",crtm));
+	a1logd(p->log,4,"take_measurement_2 called with refr = %d\n",refr);
 
-	/* For CRT mode, do an initial set of syncromized measurements */
-	if (crtm) {
+	/* For Refresh mode, do an initial set of measurements over a fixed period */
+	if (refr) {
 
 		if ((ev = huey_freq_measure(p, rgb)) != inst_ok)
 			return ev;
 
-		DBG((dbgo,"Raw initial CRT RGB = %f %f %f\n",rgb[0],rgb[1],rgb[2]))
+		a1logd(p->log,4,"Raw initial CRT RGB = %f %f %f\n",rgb[0],rgb[1],rgb[2]);
 
 		/* Decide whether any channels need re-measuring, */
 		/* and computed cooked values. Threshold is typically 75 */
@@ -689,7 +656,7 @@ huey_take_measurement_2(
 			rem[i] = (rgb[i] <= (0.75 * (double)p->sampno)) ? 1 : 0;
 			rgb[i] = 0.5 * rgb[i] * 1e6/(double)p->int_clocks;
 		}
-		DBG((dbgo,"Re-measure flags = %d %d %d\n",rem[0],rem[1],rem[2]))
+		a1logd(p->log,4,"Re-measure flags = %d %d %d\n",rem[0],rem[1],rem[2]);
 	}
 
 	/* If any need re-measuring */
@@ -699,8 +666,8 @@ huey_take_measurement_2(
 		/* Do a first or second set of measurements */
 		if ((ev = huey_period_measure(p, edgec, rgb2)) != inst_ok)
 			return ev;
-		DBG((dbgo,"Raw initial/subsequent ecount %d %d %d RGB = %f %f %f\n",
-		     edgec[0], edgec[1], edgec[2], rgb2[0], rgb2[1], rgb2[2]))
+		a1logd(p->log,4,"Raw initial/subsequent ecount %d %d %d RGB = %f %f %f\n",
+		     edgec[0], edgec[1], edgec[2], rgb2[0], rgb2[1], rgb2[2]);
 
 		/* Compute adjusted edge count for channels we're remeasuring, */
 		/* aiming for count values of clk_freq (~1e6). */
@@ -725,8 +692,8 @@ huey_take_measurement_2(
 			if ((ev = huey_period_measure(p, edgec, rgb3)) != inst_ok)
 				return ev;
 	
-			DBG((dbgo,"Raw subsequent2 ecount %d %d %d RGB = %f %f %f\n",
-			     edgec[0], edgec[1], edgec[2], rgb3[0], rgb3[1], rgb3[2]))
+			a1logd(p->log,4,"Raw subsequent2 ecount %d %d %d RGB = %f %f %f\n",
+			     edgec[0], edgec[1], edgec[2], rgb3[0], rgb3[1], rgb3[2]);
 
 			/* Average readings if we repeated a measurement with the same threshold */
 			/* (Minor advantage, but may as well use it) */
@@ -742,19 +709,19 @@ huey_take_measurement_2(
 		for (i = 0; i < 3; i++) {
 			if (rem[i]) {
 				rgb[i] = ((double)edgec[i])/(rgb2[i] * 2.0 * p->clk_prd);
-				DBG((dbgo,"%d after scale = %f\n",i,rgb[i]))
+				a1logd(p->log,4,"%d after scale = %f\n",i,rgb[i]);
 		
 				rgb[i] -= p->dark_cal[i];		/* Subtract black level */
-				DBG((dbgo,"%d after sub black = %f\n",i,rgb[i]))
+				a1logd(p->log,4,"%d after sub black = %f\n",i,rgb[i]);
 		
 				if (rgb[i] < 0.0001)
 					rgb[i] = 0.0001;
-				DBG((dbgo,"%d after limit min = %f\n",i,rgb[i]))
+				a1logd(p->log,4,"%d after limit min = %f\n",i,rgb[i]);
 			}
 		}
 	}
 
-	DBG((dbgo,"Cooked RGB = %f %f %f\n",rgb[0],rgb[1],rgb[2]))
+	a1logd(p->log,4,"Cooked RGB = %f %f %f\n",rgb[0],rgb[1],rgb[2]);
 	
 	return inst_ok;
 }
@@ -768,8 +735,10 @@ huey_take_amb_measurement_1(
 	double *amb,		/* Return the raw ambient value */
 	int *rb				/* Returned byte */
 ) {
+	int i;
 	unsigned char ibuf[16];
 	unsigned char obuf[16];
+	int rsize;
 	inst_code ev;
 
 	a1 &= 0xff;
@@ -794,7 +763,7 @@ huey_take_amb_measurement_1(
 static inst_code
 huey_take_amb_measurement(
 	huey *p,			/* Object */
-	int crtm,			/* nz if crt mode */
+	int refr,			/* nz if refresh mode */
 	double *amb			/* Return the ambient value */
 ) {
 	int rb;				/* Returned byte - not used */
@@ -803,12 +772,12 @@ huey_take_amb_measurement(
 	if (p->inited == 0)
 		return huey_interp_code((inst *)p, HUEY_NOT_INITED);
 
-	DBG((dbgo,"take_amb_measurement_2 called with crtm = %d\n",crtm));
+	a1logd(p->log,4,"take_amb_measurement_2 called with refr = %d\n",refr);
 
 	/* First param is always 3, second is sync mode */
-	if ((ev = huey_take_amb_measurement_1(p, 3, crtm ? 2 : 0, amb, &rb)) != inst_ok)
+	if ((ev = huey_take_amb_measurement_1(p, 3, refr ? 2 : 0, amb, &rb)) != inst_ok)
  		return ev;
-	DBG((dbgo,"Raw ambient = %f\n",*amb))
+	a1logd(p->log,4,"Raw ambient = %f\n",*amb);
 	return inst_ok;
 }
 
@@ -820,6 +789,7 @@ huey_set_LEDs(
 	huey *p,			/* Object */
 	int mask			/* 8 bit LED mask */
 ) {
+	int i;
 	unsigned char ibuf[8];
 	unsigned char obuf[8];
 	inst_code ev;
@@ -850,17 +820,17 @@ huey_take_XYZ_measurement(
 	inst_code ev;
 	double *mat;		/* Pointer to matrix */
 
-	if ((p->mode & inst_mode_measurement_mask) == inst_mode_emis_ambient) {
-		if ((ev = huey_take_amb_measurement(p, p->crt, &XYZ[1])) != inst_ok)
+	if (IMODETST(p->mode, inst_mode_emis_ambient)) {
+		if ((ev = huey_take_amb_measurement(p, 0, &XYZ[1])) != inst_ok)
 			return ev;
 		XYZ[1] *= AMB_SCALE_FACTOR;		/* Times aproximate fudge factor */
 		XYZ[0] = icmD50.X * XYZ[1];		/* Convert to D50 neutral */
 		XYZ[2] = icmD50.Z * XYZ[1];
 	} else {
-		if ((ev = huey_take_measurement_2(p, p->crt, rgb)) != inst_ok)
+		if ((ev = huey_take_measurement_2(p, p->refrmode, rgb)) != inst_ok)
 			return ev;
 
-		if (p->crt)
+		if (p->icx)
 			mat = p->CRT_cal;		/* CRT/factory matrix */
 		else
 			mat = p->LCD_cal;		/* LCD/user matrix */
@@ -876,7 +846,7 @@ huey_take_XYZ_measurement(
 		/* Apply the colorimeter correction matrix */
 		icmMulBy3x3(XYZ, p->ccmat, XYZ);
 	}
-	DBG((dbgo,"returning XYZ = %f %f %f\n",XYZ[0],XYZ[1],XYZ[2]))
+	a1logd(p->log,3,"huey_take_XYZ_measurement: XYZ = %f %f %f\n",XYZ[0],XYZ[1],XYZ[2]);
 	return inst_ok;
 }
 
@@ -888,9 +858,12 @@ huey_check_unlock(
 	huey *p				/* Object */
 ) {
 	unsigned char buf[8];
+	int rsize;
 	inst_code ev;
+	int vv;
+	double ver;
 
-	if (p->debug) fprintf(stderr,"huey: about to check response and unlock instrument if needed\n");
+	a1logd(p->log,2,"huey_check_unlock: called\n");
 
 	/* Check the instrument status */
 	if ((ev = huey_command(p, i1d_status, buf, buf, 1.0,1.0)) != inst_ok)
@@ -911,11 +884,11 @@ huey_check_unlock(
 
 	if (strncmp((char *)buf, "huL002", 6) != 0		/* Lenovo Huey ? */
 	 && strncmp((char *)buf, "Cir001", 6) != 0) {	/* Huey */
-		if (p->debug) fprintf(stderr,"huey: unknown model '%s'\n",buf);
+		a1logd(p->log,1,"huey_check_unlock: unknown model '%s'\n",buf);
 		return huey_interp_code((inst *)p, HUEY_UNKNOWN_MODEL);
 	}
 
-	if (p->debug) fprintf(stderr,"huey: instrument is responding, unlocked, and right type\n");
+	a1logd(p->log,2,"huey_check_unlock: instrument is responding, unlocked, and right type\n");
 
 	return inst_ok;
 }
@@ -928,41 +901,40 @@ huey_read_all_regs(
 	inst_code ev;
 	int i;
 
-	if (p->debug) fprintf(stderr,"huey: about to read all the registers\n");
+	a1logd(p->log,2,"huey_check_unlock: about to read all the registers\n");
 
 	/* Serial number */
 	if ((ev = huey_rdreg_word(p, &p->ser_no, 0) ) != inst_ok)
 		return ev;
-	DBG((dbgo,"serial number = %d\n",p->ser_no))
+	a1logd(p->log,4,"serial number = %d\n",p->ser_no);
 
 
 	/* LCD/user calibration values */
 	for (i = 0; i < 9; i++) {
 		if ((ev = huey_rdreg_float(p, &p->LCD_cal[i], 4 + 4 * i) ) != inst_ok)
 			return ev;
-		DBG((dbgo,"LCD/user cal[%d] = %f\n",i,p->LCD_cal[i]))
+		a1logd(p->log,4,"LCD/user cal[%d] = %f\n",i,p->LCD_cal[i]);
 	}
 	/* LCD/user calibration time */
 	if ((ev = huey_rdreg_word(p, &p->LCD_caltime, 50) ) != inst_ok)
 		return ev;
-	DBG((dbgo,"LCD/user calibration time = 0x%x = %s\n",p->LCD_caltime, ctime_32(&p->LCD_caltime)))
-
+	a1logd(p->log,2,"LCD/user calibration time = 0x%x = %s\n",p->LCD_caltime, ctime_32(&p->LCD_caltime));
 
 	/* CRT/factory calibration values */
 	for (i = 0; i < 9; i++) {
 		if ((ev = huey_rdreg_float(p, &p->CRT_cal[i], 54 + 4 * i) ) != inst_ok)
 			return ev;
-		DBG((dbgo,"CRT/factory cal[%d] = %f\n",i,p->CRT_cal[i]))
+		a1logd(p->log,3,"CRT/factory cal[%d] = %f\n",i,p->CRT_cal[i]);
 	}
 	/* CRT/factory calibration flag */
 	if ((ev = huey_rdreg_word(p, &p->CRT_caltime, 90) ) != inst_ok)
 		return ev;
-	DBG((dbgo,"CRT/factory flag = 0x%x = %s\n",p->CRT_caltime, ctime_32(&p->CRT_caltime)))
+	a1logd(p->log,3,"CRT/factory flag = 0x%x = %s\n",p->CRT_caltime, ctime_32(&p->CRT_caltime));
 
 
 	/* Hard coded in Huey */
 	p->clk_prd = 1e-6;
-	DBG((dbgo,"Clock period = %f\n",p->clk_prd))
+	a1logd(p->log,3,"Clock period = %f\n",p->clk_prd);
 
 	/* Dark current calibration values */
 	for (i = 0; i < 3; i++) {
@@ -971,7 +943,7 @@ huey_read_all_regs(
 				return ev;
 			p->dark_cal[i] = 0.0;
 		}
-		DBG((dbgo,"darkcal[%d] = %f\n",i,p->dark_cal[i]))
+		a1logd(p->log,3,"darkcal[%d] = %f\n",i,p->dark_cal[i]);
 	}
 
 	/* Ambient darkcurrent calibration value ? */
@@ -980,7 +952,7 @@ huey_read_all_regs(
 			return ev;
 		p->amb_cal = 0.0;
 	}
-	DBG((dbgo,"Ambient cal = %f\n",p->amb_cal))
+	a1logd(p->log,3,"Ambient cal = %f\n",p->amb_cal);
 
 	/* Unlock string */
 	for (i = 0; i < 4; i++) {
@@ -990,14 +962,14 @@ huey_read_all_regs(
 		p->unlk_string[i] = (char)vv;
 	}
 	p->unlk_string[i] = '\000';
-	DBG((dbgo,"unlock string = '%s'\n",p->unlk_string))
+	a1logd(p->log,3,"unlock string = '%s'\n",p->unlk_string);
 
 	/* Read the integration time */
 	if ((ev = huey_rd_int_time(p, &p->int_clocks) ) != inst_ok)
 		return ev;
-	DBG((dbgo,"Integration time = %d\n",p->int_clocks))
+	a1logd(p->log,3,"Integration time = %d\n",p->int_clocks);
 
-	if (p->debug) fprintf(stderr,"huey: all registers read OK\n");
+	a1logd(p->log,2,"huey_check_unlock: all registers read OK\n");
 
 	return inst_ok;
 }
@@ -1007,12 +979,11 @@ static inst_code
 huey_compute_factors(
 	huey *p				/* Object */
 ) {
+	int i;
 
 	/* Check that certain value are valid */
-	if (p->ser_no == 0xffffffff)
-		/* (It appears that some instruments have no serial number!) */
-//		return huey_interp_code((inst *)p, HUEY_BAD_SERIAL_NUMBER);
-		warning("huey: bad instrument serial number");
+	if (p->ser_no == 0xffffffff) /* (It appears that some instruments have no serial number!) */
+		a1logw(p->log,"huey: bad instrument serial number\n");
 
 	if (p->LCD_caltime == 0xffffffff)
 		return huey_interp_code((inst *)p, HUEY_BAD_LCD_CALIBRATION);
@@ -1022,7 +993,7 @@ huey_compute_factors(
 
 	/* clk_prd inversion */
 	p->clk_freq = 1.0/p->clk_prd;
-	DBG((dbgo,"clk_freq = %f\n",p->clk_freq))
+	a1logd(p->log,3,"clk_freq = %f\n",p->clk_freq);
 	
 	/* Set some defaults */
 	p->sampno = 100;		/* Minimum sampling count */
@@ -1032,61 +1003,72 @@ huey_compute_factors(
 
 /* ------------------------------------------------------------------------ */
 
+static inst_code set_default_disp_type(huey *p);
+
 /* Establish communications with a HUEY */
 /* If it's a serial port, use the baud rate given, and timeout in to secs */
 /* Return DTP_COMS_FAIL on failure to establish communications */
 static inst_code
-huey_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) {
+huey_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	huey *p = (huey *) pp;
 	unsigned char buf[8];
+	int rsize;
+	long etime;
+	int bi, i, se, rv;
 	inst_code ev = inst_ok;
 	char **pnames = NULL;
 	int retries = 0;
 
-	if (p->debug) {
-		p->icom->debug = p->debug;	/* Turn on debugging */
-		fprintf(stderr,"huey: About to init coms\n");
-	}
+	a1logd(p->log, 2, "huey_init_coms: About to init coms\n");
 
 	/* Open as an HID if available */
-	if (p->icom->is_hid_portno(p->icom, port) != instUnknown) {
+	if (p->icom->port_type(p->icom) == icomt_hid) {
 
-		if (p->debug) fprintf(stderr,"huey: About to init HID\n");
+		a1logd(p->log, 3, "huey_init_coms: About to init HID\n");
 
 		/* Set config, interface */
-		p->icom->set_hid_port(p->icom, port, icomuf_none, retries, pnames); 
-
-		if (p->icom->vid == 0x0765 && p->icom->pid == 0x5001) {
-			if (p->debug) fprintf(stderr,"huey: Lenovo version\n");
-			p->lenovo = 1;
+		if ((se = p->icom->set_hid_port(p->icom, icomuf_none, retries, pnames)) != ICOM_OK) { 
+			a1logd(p->log, 1, "huey_init_coms: set_hid_port failed ICOM err 0x%x\n",se);
+			return huey_interp_code((inst *)p, icoms2huey_err(se, 0));
 		}
 
-	} else if (p->icom->is_usb_portno(p->icom, port) != instUnknown) {
+	} else if (p->icom->port_type(p->icom) == icomt_usb) {
 
-		if (p->debug) fprintf(stderr,"huey: About to init USB\n");
+		a1logd(p->log, 3, "huey_init_coms: About to init USB\n");
 
 		/* Set config, interface, write end point, read end point */
 		/* ("serial" end points aren't used - the huey uses USB control messages) */
 		/* We need to detatch the HID driver on Linux */
-		p->icom->set_usb_port(p->icom, port, 1, 0x00, 0x00, icomuf_detach, 0, NULL); 
 
-		if (p->icom->vid == 0x0765 && p->icom->pid == 0x5001) {
-			if (p->debug) fprintf(stderr,"huey: Lenovo version\n");
-			p->lenovo = 1;
+		if ((se = p->icom->set_usb_port(p->icom, 1, 0x00, 0x00, icomuf_detach, 0, NULL))
+		                                                                     != ICOM_OK) { 
+			a1logd(p->log, 1, "huey_init_coms: set_usb_port failed ICOM err 0x%x\n",se);
+			return huey_interp_code((inst *)p, icoms2huey_err(se, 0));
 		}
 
 	} else {
-		if (p->debug) fprintf(stderr,"huey: init_coms called to wrong device!\n");
-			return huey_interp_code((inst *)p, HUEY_UNKNOWN_MODEL);
+		a1logd(p->log, 1, "huey_init_coms: wrong communications type for device!\n");
+		return huey_interp_code((inst *)p, HUEY_UNKNOWN_MODEL);
+	}
+
+	if ((p->icom->vid == 0x0765 && p->icom->pid == 0x5001)
+	||  (p->icom->vid == 0x0765 && p->icom->pid == 0x5010)) { 
+		a1logd(p->log, 2, "huey_init_coms: Lenovo version\n");
+		p->lenovo = 1;
 	}
 
 	/* Check instrument is responding */
 	if ((ev = huey_command(p, i1d_status, buf, buf, 1.0, 1.0)) != inst_ok) {
-		if (p->debug) fprintf(stderr,"huey: init coms failed with rv = 0x%x\n",ev);
+		a1logd(p->log, 1, "huey_init_coms: instrument didn't respond 0x%x\n",ev);
 		return ev;
 	}
 
-	if (p->debug) fprintf(stderr,"huey: init coms has suceeded\n");
+	/* Setup the default display type */
+	if ((ev = set_default_disp_type(p)) != inst_ok) {
+		return ev;
+	}
+	
+	a1logd(p->log, 2, "huey_init_coms: inited coms OK\n");
 
 	p->gotcoms = 1;
 	return inst_ok;
@@ -1099,7 +1081,7 @@ huey_init_inst(inst *pp) {
 	huey *p = (huey *)pp;
 	inst_code ev = inst_ok;
 
-	if (p->debug) fprintf(stderr,"huey: About to init instrument\n");
+	a1logd(p->log, 2, "huey_init_inst: called\n");
 
 	if (p->gotcoms == 0)
 		return huey_interp_code((inst *)p, HUEY_NO_COMS);	/* Must establish coms first */
@@ -1119,12 +1101,10 @@ huey_init_inst(inst *pp) {
 	if ((ev = huey_compute_factors(p)) != inst_ok)
 		return ev;
 
-	p->trig = inst_opt_trig_keyb;
+	p->trig = inst_opt_trig_user;
 
-	if (ev == inst_ok) {
-		p->inited = 1;
-		if (p->debug) fprintf(stderr,"huey: instrument inited OK\n");
-	}
+	p->inited = 1;
+	a1logd(p->log, 2, "huey_init_inst: inited OK\n");
 
 	/* Flash the LEDs, just cos we can! */
 	if ((ev = huey_set_LEDs(p, 0x1)) != inst_ok)
@@ -1151,7 +1131,7 @@ huey_init_inst(inst *pp) {
 	if ((ev = huey_set_LEDs(p, 0x0)) != inst_ok)
 		return ev;
 
-	return ev;
+	return inst_ok;
 }
 
 /* Read a single sample */
@@ -1160,35 +1140,66 @@ static inst_code
 huey_read_sample(
 inst *pp,
 char *name,			/* Strip name (7 chars) */
-ipatch *val) {		/* Pointer to instrument patch value */
+ipatch *val,		/* Pointer to instrument patch value */
+instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	huey *p = (huey *)pp;
 	int user_trig = 0;
 	int rv = inst_protocol_error;
+
+a1logd(p->log, 1, "huey: huey_read_sample called\n");
 
 	if (!p->gotcoms)
 		return inst_no_coms;
 	if (!p->inited)
 		return inst_no_init;
 
-	if (p->trig == inst_opt_trig_keyb) {
-		int se;
-		if ((se = icoms_poll_user(p->icom, 1)) != ICOM_TRIG) {
-			/* Abort, term or command */
-			return huey_interp_code((inst *)p, icoms2huey_err(se, 1));
+	if (p->trig == inst_opt_trig_user) {
+
+		if (p->uicallback == NULL) {
+			a1logd(p->log, 1, "huey: inst_opt_trig_user but no uicallback function set!\n");
+			return inst_unsupported;
 		}
-		user_trig = 1;
-		if (p->trig_return)
-			printf("\n");
+
+a1logd(p->log, 1, "huey: about to wait for user trigger\n");
+		for (;;) {
+			if ((rv = p->uicallback(p->uic_cntx, inst_armed)) != inst_ok) {
+				if (rv == inst_user_abort)
+					return rv;				/* Abort */
+				if (rv == inst_user_trig) {
+					user_trig = 1;
+					break;					/* Trigger */
+				}
+			}
+			msec_sleep(200);
+		}
+		/* Notify of trigger */
+		if (p->uicallback)
+			p->uicallback(p->uic_cntx, inst_triggered); 
+
+	/* Progromatic Trigger */
+	} else {
+a1logd(p->log, 1, "huey: checking for abort\n");
+		/* Check for abort */
+		if (p->uicallback != NULL
+		 && (rv = p->uicallback(p->uic_cntx, inst_armed)) == inst_user_abort)
+			return rv;				/* Abort */
 	}
 
+a1logd(p->log, 1, "huey: about to call huey_take_XYZ_measurement\n");
 	/* Read the XYZ value */
-	if ((rv = huey_take_XYZ_measurement(p, val->aXYZ)) != inst_ok) {
+	if ((rv = huey_take_XYZ_measurement(p, val->XYZ)) != inst_ok) {
 		return rv;
 	}
+	/* This may not change anything since instrument may clamp */
+	if (clamp)
+		icmClamp3(val->XYZ, val->XYZ);
 
-	val->XYZ_v = 0;
-	val->aXYZ_v = 1;		/* These are absolute XYZ readings ? */
-	val->Lab_v = 0;
+	val->loc[0] = '\000';
+	if (IMODETST(p->mode, inst_mode_emis_ambient))
+		val->mtype = inst_mrt_ambient;
+	else
+		val->mtype = inst_mrt_none;
+	val->XYZ_v = 1;		/* These are absolute XYZ readings ? */
 	val->sp.spec_n = 0;
 	val->duration = 0.0;
 
@@ -1211,46 +1222,17 @@ double mtx[3][3]
 	if (!p->inited)
 		return inst_no_init;
 
-	if (mtx == NULL)
+	if (mtx == NULL) {
 		icmSetUnity3x3(p->ccmat);
-	else
+	} else {
+		if (p->cbid == 0) {
+			a1loge(p->log, 1, "huey: can't set col_cor_mat over non base display type\n");
+			return inst_wrong_setup;
+		}
 		icmCpy3x3(p->ccmat, mtx);
+	}
 		
 	return inst_ok;
-}
-
-/* Determine if a calibration is needed. Returns inst_calt_none if not, */
-/* inst_calt_unknown if it is unknown, or inst_calt_crt_freq for an */
-/* Eye-One Display 2 if a frequency calibration is needed, */
-/* and we are in CRT mode */
-inst_cal_type huey_needs_calibration(inst *pp) {
-	huey *p = (huey *)pp;
-
-	if (!p->gotcoms)
-		return inst_no_coms;
-	if (!p->inited)
-		return inst_no_init;
-
-	return inst_ok;
-}
-
-/* Request an instrument calibration. */
-inst_code huey_calibrate(
-inst *pp,
-inst_cal_type calt,		/* Calibration type. inst_calt_all for all neeeded */
-inst_cal_cond *calc,	/* Current condition/desired condition */
-char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
-) {
-	huey *p = (huey *)pp;
-
-	if (!p->gotcoms)
-		return inst_no_coms;
-	if (!p->inited)
-		return inst_no_init;
-
-	id[0] = '\000';
-
-	return inst_unsupported;
 }
 
 /* Error codes interpretation */
@@ -1267,14 +1249,6 @@ huey_interp_error(inst *pp, int ec) {
 			return "Not a known Huey Model";
 		case HUEY_DATA_PARSE_ERROR:
 			return "Data from i1 Display didn't parse as expected";
-		case HUEY_USER_ABORT:
-			return "User hit Abort key";
-		case HUEY_USER_TERM:
-			return "User hit Terminate key";
-		case HUEY_USER_TRIG:
-			return "User hit Trigger key";
-		case HUEY_USER_CMND:
-			return "User hit a Command key";
 
 		case HUEY_OK:
 			return "No device error";
@@ -1372,15 +1346,6 @@ huey_interp_code(inst *pp, int ec) {
 		case HUEY_BAD_COMMAND:
 			return inst_protocol_error | ec;
 
-		case HUEY_USER_ABORT:
-			return inst_user_abort | ec;
-		case HUEY_USER_TERM:
-			return inst_user_term | ec;
-		case HUEY_USER_TRIG:
-			return inst_user_trig | ec;
-		case HUEY_USER_CMND:
-			return inst_user_cmnd | ec;
-
 		case HUEY_BAD_SERIAL_NUMBER:
 		case HUEY_BAD_LCD_CALIBRATION:
 		case HUEY_BAD_CRT_CALIBRATION:
@@ -1399,160 +1364,239 @@ huey_del(inst *pp) {
 	huey *p = (huey *)pp;
 	if (p->icom != NULL)
 		p->icom->del(p->icom);
+	inst_del_disptype_list(p->dtlist, p->ndtlist);
 	free(p);
 }
 
-/* Return the instrument capabilities */
-inst_capability huey_capabilities(inst *pp) {
-	inst_capability rv;
-
-	rv = inst_emis_spot
-	   | inst_emis_disp
-	   | inst_emis_disptype
-	   | inst_emis_disptypem
-	   | inst_colorimeter
-	   | inst_ccmx
-	   | inst_emis_ambient
-	   | inst_emis_ambient_mono;
-	     ;
-
-	return rv;
-}
-
-/* Return the instrument capabilities 2 */
-inst2_capability huey_capabilities2(inst *pp) {
-	inst2_capability rv = 0;
-
-	rv |= inst2_prog_trig;
-	rv |= inst2_keyb_trig;
-	rv |= inst2_has_leds;
-
-	return rv;
-}
-
-inst_disptypesel huey_disptypesel[3] = {
-	{
-		1,
-		"c",
-		"Huey: CRT display",
-		1
-	},
-	{
-		2,
-		"l",
-		"Huey: LCD display",
-		0
-	},
-	{
-		0,
-		"",
-		"",
-		-1
-	}
-};
-
-/* Get mode and option details */
-static inst_code huey_get_opt_details(
-inst *pp,
-inst_optdet_type m,	/* Requested option detail type */
-...) {				/* Status parameters */                             
-	if (m == inst_optdet_disptypesel) {
-		va_list args;
-		int *pnsels;
-		inst_disptypesel **psels;
-
-		va_start(args, m);
-		pnsels = va_arg(args, int *);
-		psels = va_arg(args, inst_disptypesel **);
-		va_end(args);
-
-		*pnsels = 2;
-		*psels = huey_disptypesel;
-		
-		return inst_ok;
-	}
-
-	return inst_unsupported;
-}
-
-/* Set device measurement mode */
-inst_code huey_set_mode(inst *pp, inst_mode m)
-{
+/* Return the instrument mode capabilities */
+void huey_capabilities(inst *pp,
+inst_mode *pcap1,
+inst2_capability *pcap2,
+inst3_capability *pcap3) {
 	huey *p = (huey *)pp;
-	inst_mode mm;		/* Measurement mode */
+	inst_mode cap1 = 0;
+	inst2_capability cap2 = 0;
+
+	cap1 |= inst_mode_emis_spot
+	     |  inst_mode_emis_ambient
+	     |  inst_mode_colorimeter
+	        ;
+
+	cap2 |= inst2_prog_trig
+	     |  inst2_user_trig
+	     |  inst2_has_leds
+	     |  inst2_disptype
+	     |  inst2_ambient_mono
+	     |  inst2_ccmx
+		    ;
+
+	if (pcap1 != NULL)
+		*pcap1 = cap1;
+	if (pcap2 != NULL)
+		*pcap2 = cap2;
+	if (pcap3 != NULL)
+		*pcap3 = inst3_none;
+}
+
+/* Check device measurement mode */
+inst_code huey_check_mode(inst *pp, inst_mode m) {
+	huey *p = (huey *)pp;
+	inst_mode cap;
 
 	if (!p->gotcoms)
 		return inst_no_coms;
 	if (!p->inited)
 		return inst_no_init;
 
-	/* The measurement mode portion of the mode */
-	mm = m & inst_mode_measurement_mask;
+	pp->capabilities(pp, &cap, NULL, NULL);
+
+	/* Simple test */
+	if (m & ~cap)
+		return inst_unsupported;
 
 	/* only display emission mode and ambient supported */
-	if (mm != inst_mode_emis_spot
-	 && mm != inst_mode_emis_disp
-	 && mm != inst_mode_emis_ambient) {
+	if (!IMODETST(m, inst_mode_emis_spot)
+	 && !IMODETST(m, inst_mode_emis_ambient)) {
 		return inst_unsupported;
 	}
 
-	/* Spectral mode is not supported */
-	if (m & inst_mode_spectral)
-		return inst_unsupported;
+	return inst_ok;
+}
+
+/* Set device measurement mode */
+inst_code huey_set_mode(inst *pp, inst_mode m) {
+	huey *p = (huey *)pp;
+	inst_code ev;
+
+	if ((ev = huey_check_mode(pp, m)) != inst_ok)
+		return ev;
 
 	p->mode = m;
+
+	return inst_ok;
+}
+
+inst_disptypesel huey_disptypesel[3] = {
+	{
+		inst_dtflags_default,
+		1,
+		"l",
+		"LCD display",
+		0,
+		0
+	},
+	{
+		inst_dtflags_none,		/* flags */
+		2,						/* cbix */
+		"c",					/* sel */
+		"CRT display",			/* desc */
+		1,						/* refr */
+		1						/* ix */
+	},
+	{
+		inst_dtflags_end,
+		0,
+		"",
+		"",
+		0,
+		0
+	}
+};
+
+/* Get mode and option details */
+static inst_code huey_get_disptypesel(
+inst *pp,
+int *pnsels,				/* Return number of display types */
+inst_disptypesel **psels,	/* Return the array of display types */
+int allconfig,				/* nz to return list for all configs, not just current. */
+int recreate				/* nz to re-check for new ccmx & ccss files */
+) {
+	huey *p = (huey *)pp;
+	inst_code rv = inst_ok;
+
+	/* Create/Re-create a current list of abailable display types */
+	if (p->dtlist == NULL || recreate) {
+		if ((rv = inst_creat_disptype_list(pp, &p->ndtlist, &p->dtlist,
+		    huey_disptypesel, 0 /* doccss*/, 1 /* doccmx */)) != inst_ok)
+			return rv;
+	}
+
+	if (pnsels != NULL)
+		*pnsels = p->ndtlist;
+
+	if (psels != NULL)
+		*psels = p->dtlist;
+
+	return inst_ok;
+}
+
+/* Given a display type entry, setup for that type */
+static inst_code set_disp_type(huey *p, inst_disptypesel *dentry) {
+
+	p->icx = dentry->ix; 
+	p->refrmode = dentry->refr; 
+	p->cbid = dentry->cbid; 
+
+	if (dentry->flags & inst_dtflags_ccmx) {
+		icmCpy3x3(p->ccmat, dentry->mat);
+	} else {
+		icmSetUnity3x3(p->ccmat);
+	}
+
+	return inst_ok;
+}
+
+/* Setup the default display type */
+static inst_code set_default_disp_type(huey *p) {
+	inst_code ev;
+	int i;
+
+	if (p->dtlist == NULL) {
+		if ((ev = inst_creat_disptype_list((inst *)p, &p->ndtlist, &p->dtlist,
+		    huey_disptypesel, 0 /* doccss*/, 1 /* doccmx */)) != inst_ok)
+			return ev;
+	}
+
+	for (i = 0; !(p->dtlist[i].flags & inst_dtflags_end); i++) {
+		if (p->dtlist[i].flags & inst_dtflags_default)
+			break;
+	}
+	if (p->dtlist[i].flags & inst_dtflags_end) {
+		a1loge(p->log, 1, "set_default_disp_type: failed to find type!\n");
+		return inst_internal_error; 
+	}
+	if ((ev = set_disp_type(p, &p->dtlist[i])) != inst_ok) {
+		return ev;
+	}
+
+	return inst_ok;
+}
+
+/* Set the display type */
+static inst_code huey_set_disptype(inst *pp, int ix) {
+	huey *p = (huey *)pp;
+	inst_code ev;
+	inst_disptypesel *dentry;
+
+	if (p->dtlist == NULL) {
+		if ((ev = inst_creat_disptype_list(pp, &p->ndtlist, &p->dtlist,
+		    huey_disptypesel, 0 /* doccss*/, 1 /* doccmx */)) != inst_ok)
+			return ev;
+	}
+
+	if (ix < 0 || ix >= p->ndtlist)
+		return inst_unsupported;
+
+	dentry = &p->dtlist[ix];
+
+	if ((ev = set_disp_type(p, dentry)) != inst_ok) {
+		return ev;
+	}
+
 	return inst_ok;
 }
 
 /* 
  * set or reset an optional mode
- * We assume that the instrument has been initialised.
+ *
+ * Some options talk to the instrument, and these will
+ * error if it hasn't been initialised.
  */
 static inst_code
-huey_set_opt_mode(inst *pp, inst_opt_mode m, ...)
+huey_get_set_opt(inst *pp, inst_opt_type m, ...)
 {
 	huey *p = (huey *)pp;
+	inst_code ev = inst_ok;
+
+	/* Record the trigger mode */
+	if (m == inst_opt_trig_prog
+	 || m == inst_opt_trig_user) {
+		p->trig = m;
+		return inst_ok;
+	}
+
+	/* Get the display type information */
+	if (m == inst_opt_get_dtinfo) {
+		va_list args;
+		int *refrmode, *cbid;
+
+		va_start(args, m);
+		refrmode = va_arg(args, int *);
+		cbid = va_arg(args, int *);
+		va_end(args);
+
+		if (refrmode != NULL)
+			*refrmode = p->refrmode;
+		if (cbid != NULL)
+			*cbid = p->cbid;
+
+		return inst_ok;
+	}
 
 	if (!p->gotcoms)
 		return inst_no_coms;
 	if (!p->inited)
 		return inst_no_init;
-
-	/* Set the display type */
-	if (m == inst_opt_disp_type) {
-		va_list args;
-		int ix;
-
-		va_start(args, m);
-		ix = va_arg(args, int);
-		va_end(args);
-
-		if (ix == 1) {
-			if (p->crt == 0)
-			p->crt = 1;
-			return inst_ok;
-		} else if (ix == 2) {
-			if (p->crt != 0)
-			p->crt = 0;
-			return inst_ok;
-		} else {
-			return inst_unsupported;
-		}
-	}
-
-	/* Record the trigger mode */
-	if (m == inst_opt_trig_prog
-	 || m == inst_opt_trig_keyb) {
-		p->trig = m;
-		return inst_ok;
-	}
-	if (m == inst_opt_trig_return) {
-		p->trig_return = 1;
-		return inst_ok;
-	} else if (m == inst_opt_trig_no_return) {
-		p->trig_return = 0;
-		return inst_ok;
-	}
 
 	/* Operate the LEDS */
 	if (m == inst_opt_get_gen_ledmask) {
@@ -1587,37 +1631,32 @@ huey_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 }
 
 /* Constructor */
-extern huey *new_huey(icoms *icom, instType itype, int debug, int verb)
-{
+extern huey *new_huey(icoms *icom, instType itype) {
 	huey *p;
-	if ((p = (huey *)calloc(sizeof(huey),1)) == NULL)
-		error("huey: malloc failed!");
+	if ((p = (huey *)calloc(sizeof(huey),1)) == NULL) {
+		a1loge(icom->log, 1, "new_huey: malloc failed!\n");
+		return NULL;
+	}
 
-	if (icom == NULL)
-		p->icom = new_icoms();
-	else
-		p->icom = icom;
-
-	p->debug = debug;
-	p->verb = verb;
-
-	icmSetUnity3x3(p->ccmat);	/* Set the colorimeter correction matrix to do nothing */
+	p->log = new_a1log_d(icom->log);
 
 	p->init_coms         = huey_init_coms;
 	p->init_inst         = huey_init_inst;
 	p->capabilities      = huey_capabilities;
-	p->capabilities2     = huey_capabilities2;
-	p->get_opt_details   = huey_get_opt_details;
+	p->check_mode        = huey_check_mode;
 	p->set_mode          = huey_set_mode;
-	p->set_opt_mode      = huey_set_opt_mode;
+	p->get_disptypesel   = huey_get_disptypesel;
+	p->set_disptype      = huey_set_disptype;
+	p->get_set_opt       = huey_get_set_opt;
 	p->read_sample       = huey_read_sample;
-	p->needs_calibration = huey_needs_calibration;
 	p->col_cor_mat       = huey_col_cor_mat;
-	p->calibrate         = huey_calibrate;
 	p->interp_error      = huey_interp_error;
 	p->del               = huey_del;
 
-	p->itype = itype;
+	p->icom = icom;
+	p->itype = icom->itype;
+
+	icmSetUnity3x3(p->ccmat);	/* Set the colorimeter correction matrix to do nothing */
 
 	return p;
 }

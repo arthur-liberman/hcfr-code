@@ -8,7 +8,7 @@
  * Author: Graeme W. Gill
  * Date:   5/6/2001
  *
- * Copyright 2001 - 2007, Graeme W. Gill
+ * Copyright 2001 - 2013, Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -43,10 +43,6 @@
 #define DTP92_COMS_FAIL					0x62		/* Communication failure */
 #define DTP92_UNKNOWN_MODEL				0x63		/* Not a DPT92 */
 #define DTP92_DATA_PARSE_ERROR  		0x64		/* Read data parsing error */
-#define DTP92_USER_ABORT		    	0x65		/* User hit abort */
-#define DTP92_USER_TERM		    		0x66		/* User hit terminate */
-#define DTP92_USER_TRIG 		    	0x67		/* User hit trigger */
-#define DTP92_USER_CMND		    		0x68		/* User hit command */
 
 /* Real error code */
 #define DTP92_OK   						0x00
@@ -85,17 +81,22 @@
 struct _dtp92 {
 	INST_OBJ_BASE
 
+	inst_disptypesel *_dtlist;	/* Base list */
+	inst_disptypesel *dtlist;	/* Display Type list */
+	int ndtlist;				/* Number of valid dtlist entries */
+	int icx;					/* Internal calibration index, 0 = CRT, 1 = LCD */
+	int cbid;					/* calibration base ID, 0 if not a base */
+	int refrmode;				/* 0 for constant, 1 for refresh display */
 	double ccmat[3][3];			/* Colorimeter correction matrix */
 
 	int need_offset_cal;		/* Flags to indicate type of calibration needed */
 	int need_ratio_cal;
-	inst_opt_mode trig;			/* Reading trigger mode */
-	int trig_return;			/* Emit "\n" after trigger */
+	inst_opt_type trig;			/* Reading trigger mode */
 
 	}; typedef struct _dtp92 dtp92;
 
 /* Constructor */
-extern dtp92 *new_dtp92(icoms *icom, instType itype, int debug, int verb);
+extern dtp92 *new_dtp92(icoms *icom, instType itype);
 
 
 #define DTP92_H

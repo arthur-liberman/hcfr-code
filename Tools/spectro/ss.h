@@ -10,7 +10,7 @@
  * Author: Graeme W. Gill
  * Date:   13/7/2005
  *
- * Copyright 2005 - 2007 Graeme W. Gill
+ * Copyright 2005 - 2013 Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -53,8 +53,9 @@ struct _ss {
 	INST_OBJ_BASE
 
 	/* *** Spectroscan/lino private data **** */
-	inst_capability  cap;		/* Instrument capability */
+	inst_mode cap;				/* Instrument mode capability */
 	inst2_capability cap2;		/* Instrument capability 2 */
+	inst3_capability cap3;		/* Instrument capability 3 */
 	inst_mode	nextmode;		/* Next requested mode */
 	inst_mode	mode;			/* Currently instrument mode */
 
@@ -69,12 +70,11 @@ struct _ss {
 
 	int		calcount;			/* Calibration needed counter */
 	int     pisrow;             /* patches in a reading direction serpentine rows */
-	int		need_w_cal;			/* White/dark calibration needed flag */
+	int		need_wd_cal;		/* White/dark calibration needed flag */
 	int		need_t_cal;			/* Transmission calibration needed flag */
-	int     noautocalib;		/* Don't mode change or auto calibrate */
+	int     noinitcalib;		/* Don't mode change or do initilal calibrate */
 	int     forcecalib;			/* Force a calibration even if not near white tile */
-	inst_opt_mode trig;			/* Reading trigger mode */
-	int trig_return;			/* Emit "\n" after trigger */
+	inst_opt_type trig;			/* Reading trigger mode */
 	int     offline;			/* nz if we're off line */
 
 	/* Emulated manual transmission mode support */
@@ -109,7 +109,7 @@ struct _ss {
 	}; typedef struct _ss ss;
 
 /* Constructor */
-extern ss *new_ss(icoms *icom, instType itype, int debug, int verb);
+extern ss *new_ss(icoms *icom, instType itype);
 
 #define SS_H
 #endif /* SS_H */

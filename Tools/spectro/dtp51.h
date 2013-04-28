@@ -8,7 +8,7 @@
  * Author: Graeme W. Gill
  * Date:   5/10/1996
  *
- * Copyright 1996 - 2007, Graeme W. Gill
+ * Copyright 1996 - 2013, Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -40,10 +40,6 @@
 #define DTP51_COMS_FAIL				0x62			/* Communication failure */
 #define DTP51_UNKNOWN_MODEL			0x63			/* Not a DPT51 or DTP52 */
 #define DTP51_DATA_PARSE_ERROR  	0x64			/* Read data parsing error */
-#define DTP51_USER_ABORT		    0x65			/* User hit abort */
-#define DTP51_USER_TERM		    	0x66			/* User hit terminate */
-#define DTP51_USER_TRIG 		    0x67			/* User hit trigger */
-#define DTP51_USER_CMND		    	0x68			/* User hit command */
 
 /* Real error code */
 #define DTP51_OK   					0x00
@@ -93,13 +89,12 @@ struct _dtp51 {
 	INST_OBJ_BASE
 
 	int need_cal;				/* needs calibration */
-	inst_opt_mode trig;			/* Reading trigger mode */
-	int trig_return;			/* Emit "\n" after trigger */
+	inst_opt_type trig;			/* Reading trigger mode */
 	
 	}; typedef struct _dtp51 dtp51;
 
 /* Constructor */
-extern dtp51 *new_dtp51(icoms *icom, instType itype, int debug, int verb);
+extern dtp51 *new_dtp51(icoms *icom, instType itype);
 
 
 

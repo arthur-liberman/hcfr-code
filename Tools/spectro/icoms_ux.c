@@ -1,5 +1,5 @@
 
- /* Unix serial I/O class */
+ /* Unix icoms and serial I/O class */
 
 /* 
  * Argyll Color Correction System
@@ -7,7 +7,7 @@
  * Author: Graeme W. Gill
  * Date:   18/11/2000
  *
- * Copyright 1997 - 2010 Graeme W. Gill
+ * Copyright 1997 - 2013 Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -18,43 +18,12 @@
     TTBD:
  */
 
-#ifdef UNIX
-
-#include <sys/types.h>		/* Include sys/select.h ? */
+#include <sys/types.h>      /* Include sys/select.h ? */
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <termios.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdarg.h>
 #include <dirent.h>
-#include <time.h>
-#include <errno.h>
 #include <string.h>
-#ifndef SALONEINSTLIB
-#include "copyright.h"
-#include "aconfig.h"
-#endif
-#include "numsup.h"
-#include "xspect.h"
-#include "insttypes.h"
-#include "icoms.h"
-#include "conv.h"
-#include "usbio.h"
-#include "hidio.h"
-
-#undef DEBUG
-
-#ifdef DEBUG
-# define errout stderr
-# define DBG(xx)	fprintf(errout, xx )
-# define DBGF(xx)	fprintf xx
-#else
-# define errout stderr
-# define DBG(xx)
-# define DBGF(xx)
-#endif
 
 /* select() defined, but not poll(), so emulate poll() */
 #if defined(FD_CLR) && !defined(POLLIN)
@@ -77,45 +46,23 @@
 #include <mach/task_policy.h>
 #endif /* __APPLE__ */
 
-/* Return the port type */
-static icom_type icoms_port_type(
-icoms *p
-) {
-	if (p->is_hid)
-		return icomt_hid;
-	if (p->is_usb)
-		return icomt_usb;
-	return icomt_serial;
-}
-
 /* Create and return a list of available serial ports or USB instruments for this system */
-static icompath **
-icoms_get_paths(
-icoms *p 
-) {
-	int usbend = 0;
+/* return icom error */
+int icompaths_refresh_paths(icompaths *p) {
+	int rv, usbend = 0;
 	int i,j;
 
-	/* Free any old list */
-	if (p->paths != NULL) {
-		for (i = 0; i < p->npaths; i++) {
-			if (p->paths[i]->path != NULL)
-				free(p->paths[i]->path);
-#ifdef ENABLE_USB
-			if (p->paths[i]->dev != NULL)
-				usb_del_usb_device(p->paths[i]->dev);
-			if (p->paths[i]->hev != NULL)
-				hid_del_hid_device(p->paths[i]->hev);
-#endif /* ENABLE_USB */
-			free(p->paths[i]);
-		}
-		free(p->paths);
-		p->npaths = 0;
-		p->paths = NULL;
-	}
+	a1logd(p->log, 8, "icoms_get_paths: called\n");
 
-	hid_get_paths(p);
-	usb_get_paths(p);
+	/* Clear any existing paths */
+	p->clear(p);
+
+#ifdef ENABLE_USB
+	if ((rv = hid_get_paths(p)) != ICOM_OK)
+		return rv;
+	if ((rv = usb_get_paths(p)) != ICOM_OK)
+		return rv;
+#endif /* ENABLE_USB */
 	usbend = p->npaths;
 
 #ifdef ENABLE_SERIAL
@@ -123,13 +70,15 @@ icoms *p
 	/* Search the OSX registry for serial ports */
 	{
 	    kern_return_t kstat; 
+	    mach_port_t mp;						/* Master IO port */
 	    CFMutableDictionaryRef sdict;		/* Serial Port  dictionary */
 		io_iterator_t mit;					/* Matching itterator */
 		io_object_t ioob;					/* Serial object found */
 
 		/* Get dictionary of serial ports */
     	if ((sdict = IOServiceMatching(kIOSerialBSDServiceValue)) == NULL) {
-        	warning("IOServiceMatching returned a NULL dictionary");
+        	a1loge(p->log, ICOM_SYS, "IOServiceMatching returned a NULL dictionary\n");
+			return ICOM_OK;
 		}
 
 		/* Set value to match to RS232 type serial */
@@ -137,8 +86,10 @@ icoms *p
 
 		/* Init itterator to find matching types. Consumes sdict reference */
 		if ((kstat = IOServiceGetMatchingServices(kIOMasterPortDefault, sdict, &mit))
-		                                                                     != KERN_SUCCESS) 
-        	error("IOServiceGetMatchingServices returned %d\n", kstat);
+		                                                                     != KERN_SUCCESS) {
+        	a1loge(p->log, ICOM_SYS, "IOServiceGetMatchingServices returned %d\n", kstat);
+			return ICOM_SYS;
+		}
 
 		/* Find all the matching serial ports */
 		for (;;) {
@@ -165,25 +116,8 @@ icoms *p
 				goto continue2;
 
 			/* Add the port to the list */
-			if (p->paths == NULL) {
-				if ((p->paths = (icompath **)calloc(sizeof(icompath *), 1 + 1)) == NULL)
-					error("icoms: calloc failed!");
-			} else {
-				if ((p->paths = (icompath **)realloc(p->paths,
-				                     sizeof(icompath *) * (p->npaths + 2))) == NULL)
-					error("icoms: realloc failed!");
-				p->paths[p->npaths+1] = NULL;
-			}
-			if ((p->paths[p->npaths] = malloc(sizeof(icompath))) == NULL)
-				error("icoms: malloc failed!");
-			if ((p->paths[p->npaths]->path = strdup(pname)) == NULL)
-				error("icoms: strdup failed!");
-#ifdef ENABLE_USB
-			p->paths[p->npaths]->dev = NULL;
-			p->paths[p->npaths]->hev = NULL;
-#endif /* ENABLE_USB */
-			p->npaths++;
-			p->paths[p->npaths] = NULL;
+			p->add_serial(p, pname, pname);
+			a1logd(p->log, 8, "icoms_get_paths: Added path '%s'\n",pname);
 
 		continue2:
             CFRelease(dfp);
@@ -249,9 +183,8 @@ icoms *p
 		char *dirn = "/dev/";
 	
 		if ((dd = opendir(dirn)) == NULL) {
-//			DBGF((errout,"failed to open directory \"%s\"\n",dirn));
-			if (p->debug) fprintf(errout,"failed to open directory \"%s\"\n",dirn);
-			return p->paths;
+			a1loge(p->log, ICOM_SYS, "failed to open directory \"%s\"\n",dirn);
+			return ICOM_OK;
 		}
 
 		for (;;) {
@@ -277,7 +210,8 @@ icoms *p
 
 			if ((dpath = (char *)malloc(strlen(dirn) + strlen(de->d_name) + 1)) == NULL) {
 				closedir(dd);
-				error("icoms: malloc failed!");
+				a1loge(p->log, ICOM_SYS, "icompaths_refresh_paths() malloc failed!\n");
+				return ICOM_SYS;
 			}
 			strcpy(dpath, dirn);
 			strcat(dpath, de->d_name);
@@ -288,7 +222,7 @@ icoms *p
 				/* Hmm. This is probably a bad idea - it can upset other */
 				/* programs that use the serial ports ? */
 				if ((fd = open(dpath, O_RDONLY | O_NOCTTY | O_NONBLOCK)) < 0) {
-					if (p->debug) fprintf(errout,"failed to open serial \"%s\"\n",dpath);
+					a1logd(p->log, 8, "icoms_get_paths: failed to open serial \"%s\" - not real\n",dpath);
 					free(dpath);
 					continue;
 				}
@@ -306,107 +240,92 @@ icoms *p
 				 */
 				close(fd);
 			}
-			if (p->debug) fprintf(errout,"managed to open serial \"%s\"\n",dpath);
+			a1logd(p->log, 8, "icoms_get_paths: open'd serial \"%s\" - assume real\n",dpath);
 
 			/* Add the path to the list */
-			if (p->paths == NULL) {
-				if ((p->paths = (icompath **)calloc(sizeof(icompath *), 1 + 1)) == NULL) {
-					free(dpath);
-					closedir(dd);
-					error("icoms: calloc failed!");
-				}
-			} else {
-				if ((p->paths = (icompath **)realloc(p->paths,
-				                     sizeof(icompath *) * (p->npaths + 2))) == NULL) {
-					free(dpath);
-					closedir(dd);
-					error("icoms: realloc failed!");
-				}
-				p->paths[p->npaths+1] = NULL;
-			}
-			if ((p->paths[p->npaths] = malloc(sizeof(icompath))) == NULL) {
-				free(dpath);
-				closedir(dd);
-				error("icoms: malloc failed!");
-			}
-			p->paths[p->npaths]->path = dpath;
-#ifdef ENABLE_USB
-			p->paths[p->npaths]->dev = NULL;
-			p->paths[p->npaths]->hev = NULL;
-#endif /* ENABLE_USB */
-			p->npaths++;
-			p->paths[p->npaths] = NULL;
+			p->add_serial(p, dpath, dpath);
+			a1logd(p->log, 8, "icoms_get_paths: Added path '%s'\n",dpath);
 		}
 		closedir(dd);
 	}
 #endif /* ! __APPLE__ */
 #endif /* ENABLE_SERIAL */
 
-	/* Sort the /dev keys so people don't get confused... */
+	/* Sort the serial /dev keys so people don't get confused... */
+	/* Sort USB serial ports ahead of normal serial ports. */
 	for (i = usbend; i < (p->npaths-1); i++) {
 		for (j = i+1; j < p->npaths; j++) {
-			if (strcmp(p->paths[i]->path, p->paths[j]->path) > 0) {
+			if ((strncmp(p->paths[i]->name, "/dev/ttyUSB", 11) ||
+			     strncmp(p->paths[j]->name, "/dev/ttyS", 9)) &&
+			     strcmp(p->paths[i]->name, p->paths[j]->name) > 0) {
 				icompath *tt = p->paths[i];
 				p->paths[i] = p->paths[j];
 				p->paths[j] = tt;
 			}
 		}
 	}
-
-	return p->paths;
+	return ICOM_OK;
 }
 
+/* -------------------------------------------------------------------- */
 
 /* Close the port */
 static void icoms_close_port(icoms *p) {
 	if (p->is_open) {
-		if (p->is_usb) {
+#ifdef ENABLE_USB
+		if (p->usbd) {
 			usb_close_port(p);
-		} else if (p->is_hid) {
+		} else if (p->hidd) {
 			hid_close_port(p);
-		} else {
-			if (p->fd != -1)
-				close(p->fd);
-				p->fd = -1;
 		}
+#endif
+#ifdef ENABLE_SERIAL
+		if (p->fd != -1) {
+			close(p->fd);
+			p->fd = -1;
+		}
+#endif /* ENABLE_SERIAL */
 		p->is_open = 0;
 	}
 }
+
+#ifdef ENABLE_SERIAL
 
 static int icoms_ser_write(icoms *p, char *wbuf, double tout);
 static int icoms_ser_read(icoms *p, char *rbuf, int bsize, char tc, int ntc, double tout);
 
 /* Set the serial port number and characteristics */
-static void
+/* This always re-opens the port */
+/* return icom error */
+static int
 icoms_set_ser_port(
-icoms *p, 
-int 	 	 port,		/* serial com port, 1 - N. 0 for no change */
+icoms       *p, 
 flow_control fc,
 baud_rate	 baud,
 parity		 parity,
 stop_bits	 stop,
 word_length	 word
 ) {
+	int rv;
 	struct termios tio;
 	speed_t speed = 0;
 
-	if (p->debug) {
-		fprintf(stderr,"icoms: About to set port characteristics:\n");
-		fprintf(stderr,"       Port = %d\n",port);
-		fprintf(stderr,"       Flow control = %d\n",fc);
-		fprintf(stderr,"       Baud Rate = %d\n",baud);
-		fprintf(stderr,"       Parity = %d\n",parity);
-		fprintf(stderr,"       Stop bits = %d\n",stop);
-		fprintf(stderr,"       Word length = %d\n",word);
-	}
+	a1logd(p->log, 8, "icoms_set_ser_port: About to set port characteristics:\n"
+		              "       Port name = %s\n"
+		              "       Flow control = %d\n"
+		              "       Baud Rate = %d\n"
+		              "       Parity = %d\n"
+		              "       Stop bits = %d\n"
+		              "       Word length = %d\n"
+		              ,p->name ,fc ,baud ,parity ,stop ,word);
 
-	if (port >= 1) {
-		if (p->is_open && port != p->port) {	/* If port number changes */
-			p->close_port(p);
-		}
-	}
 
-	if (p->is_usb_portno(p, port) == instUnknown) {
+	if (p->is_open) 	/* Close it and re-open it */
+		p->close_port(p);
+
+	if (p->port_type(p) == icomt_serial) {
+
+		a1logd(p->log, 8, "icoms_set_ser_port: Make sure serial port is open\n");
 
 		if (fc != fc_nc)
 			p->fc = fc;
@@ -422,37 +341,19 @@ word_length	 word
 		/* Make sure the port is open */
 		if (!p->is_open) {
 
-			if (p->ppath != NULL) {
-				if (p->ppath->path != NULL)
-					free(p->ppath->path);
-				free(p->ppath);
-				p->ppath = NULL;
+			a1logd(p->log, 8, "icoms_set_ser_port: about to open serial port '%s'\n",p->spath);
+
+			if ((p->fd = open(p->spath, O_RDWR | O_NOCTTY )) < 0) {
+				a1loge(p->log, ICOM_SYS, "icoms_set_ser_port: open port '%s' failed with %d (%s)\n",p->spath,p->fd,strerror(errno));
+				return ICOM_SYS;
 			}
-
-			if (p->paths == NULL)
-				icoms_get_paths(p);
-		
-			if (port <= 0 || port > p->npaths)
-				error("icoms - set_ser_port: port number out of range!");
-
-			if ((p->ppath = malloc(sizeof(icompath))) == NULL)
-				error("malloc() failed on com port path");
-			*p->ppath = *p->paths[port-1];				/* Structure copy */
-			if ((p->ppath->path = strdup(p->paths[port-1]->path)) == NULL)
-				error("strdup() failed on com port path");
-			p->port = port;
-
-			if (p->debug) fprintf(stderr,"icoms: About to open port '%s'\n",p->ppath->path);
-
-			if ((p->fd = open(p->ppath->path, O_RDWR | O_NOCTTY )) < 0)
-				error("Opening COM port '%s' failed with '%s'",p->ppath->path, strerror(errno));
 			/* O_NONBLOCK O_SYNC */
-			if (p->debug) fprintf(stderr,"icoms: Opened port OK, fd = %d\n",p->fd);
 			p->is_open = 1;
 		}
 
-		if (tcgetattr(p->fd, &tio) < 0) {
-			error("tcgetattr failed with '%s' on serial port '%s'", strerror(errno),p->ppath->path);
+		if ((rv = tcgetattr(p->fd, &tio)) < 0) {
+			a1loge(p->log, ICOM_SYS, "icoms_set_ser_port: tcgetattr on '%s' failed with %d (%s)\n",p->spath,p->fd,strerror(errno));
+			return ICOM_SYS;
 		}
 
 		/* Clear everything in the tio, and just set what we want */
@@ -480,8 +381,9 @@ word_length	 word
 
 		switch (p->fc) {
 			case fc_nc:
-				error("icoms - set_ser_port: illegal flow control!");
-				break;
+				close(p->fd);
+				a1loge(p->log, ICOM_SYS, "icoms_set_ser_port: illegal flow control %d\n",p->fc);
+				return ICOM_SYS;
 			case fc_XonXOff:
 				/* Use Xon/Xoff bi-directional flow control */
 				tio.c_iflag |= IXON;		/* Enable XON/XOFF flow control on output */
@@ -504,7 +406,9 @@ word_length	 word
 
 		switch (p->py) {
 			case parity_nc:
-				error("icoms - set_ser_port: illegal parity setting!");
+				close(p->fd);
+				a1loge(p->log, ICOM_SYS, "icoms_set_ser_port: illegal parity setting %d\n",p->py);
+				return ICOM_SYS;
 				break;
 			case parity_none:
 				tio.c_iflag &= ~INPCK;		/* Disable input parity checking */
@@ -522,8 +426,9 @@ word_length	 word
 
 		switch (p->sb) {
 			case stop_nc:
-				error("icoms - set_ser_port: illegal stop bits!");
-				break;
+				close(p->fd);
+				a1loge(p->log, ICOM_SYS, "icoms_set_ser_port: illegal stop bits %d\n",p->sb);
+				return ICOM_SYS;
 			case stop_1:
 				break;		/* defaults to 1 */
 			case stop_2:
@@ -533,7 +438,9 @@ word_length	 word
 
 		switch (p->wl) {
 			case length_nc:
-				error("icoms - set_ser_port: illegal word length!");
+				close(p->fd);
+				a1loge(p->log, ICOM_SYS, "icoms_set_ser_port: illegal word length %d\n",p->wl);
+				return ICOM_SYS;
 			case length_5:
 				tio.c_cflag |= CS5;
 				break;
@@ -584,20 +491,30 @@ word_length	 word
 				speed = B115200;
 				break;
 			default:
-				error("icoms - set_ser_port: illegal baud rate!");
-				break;
+				close(p->fd);
+				a1loge(p->log, ICOM_SYS, "icoms_set_ser_port: illegal baud rate! (0x%x)\n",p->br);
+				return ICOM_SYS;
 		}
 
 		tcflush(p->fd, TCIOFLUSH);			/* Discard any current in/out data */
 
-		if (cfsetispeed(&tio,  speed) < 0)
-			error("cfsetispeed failed with '%s'", strerror(errno));
-		if (cfsetospeed(&tio,  speed) < 0)
-			error("cfsetospeed failed with '%s'", strerror(errno));
+		if ((rv = cfsetispeed(&tio,  speed)) < 0) {
+			close(p->fd);
+			a1loge(p->log, ICOM_SYS, "icoms_set_ser_port: cfsetispeed failed with '%s'\n", strerror(errno));
+			return ICOM_SYS;
+		}
+		if ((rv = cfsetospeed(&tio,  speed)) < 0) {
+			close(p->fd);
+			a1loge(p->log, ICOM_SYS, "icoms_set_ser_port: cfsetospeed failed with '%s'\n", strerror(errno));
+			return ICOM_SYS;
+		}
 
 		/* Make change immediately */
-		if (tcsetattr(p->fd, TCSANOW, &tio) < 0)
-			error("tcsetattr failed with '%s' on '%s'", strerror(errno), p->ppath->path);
+		if ((rv = tcsetattr(p->fd, TCSANOW, &tio)) < 0) {
+			close(p->fd);
+			a1loge(p->log, ICOM_SYS, "icoms_set_ser_port: tcsetattr failed with '%s'\n", strerror(errno));
+			return ICOM_SYS;
+		}
 
 		tcflush(p->fd, TCIOFLUSH);			/* Discard any current in/out data */
 
@@ -605,7 +522,9 @@ word_length	 word
 		p->read = icoms_ser_read;
 
 	}
-	if (p->debug) fprintf(stderr,"icoms: port characteristics set ok\n");
+	a1logd(p->log, 8, "icoms_set_ser_port: port characteristics set ok\n");
+
+	return ICOM_OK;
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -614,45 +533,35 @@ word_length	 word
 /* Write the characters in the buffer out */
 /* Data will be written up to the terminating nul */
 /* Return relevant error status bits */
+/* Set the icoms lserr value */
 static int
 icoms_ser_write(
 icoms *p,
 char *wbuf,
 double tout
 ) {
+	int rv, retrv = ICOM_OK;
 	int len, wbytes;
-	long toc, i, top;		/* Timout count, counter, timeout period */
-	struct pollfd pa[2];		/* Poll array to monitor serial write and stdin */
+	long toc, i, top;			/* Timout count, counter, timeout period */
+	struct pollfd pa[1];		/* Poll array to monitor serial write and stdin */
+	int nfd = 1;				/* Number of fd's to poll */
 	struct termios origs, news;
 
-	if (p->debug) fprintf(stderr,"About to write '%s' ",icoms_fix(wbuf));
-	if (p->fd == -1)
-		error("icoms_write: not initialised");
+	a1logd(p->log, 8, "icoms_ser_write: About to write '%s' ",icoms_fix(wbuf));
+	if (!p->is_open) {
+		a1loge(p->log, ICOM_SYS, "icoms_ser_write: device not initialised\n");
+		p->lserr = rv = ICOM_SYS;
+		return rv;
+	}
 
-	/* Configure stdin to be ready with just one character */
-	if (tcgetattr(STDIN_FILENO, &origs) < 0)
-		error("tcgetattr failed with '%s' on stdin", strerror(errno));
-	news = origs;
-	news.c_lflag &= ~(ICANON | ECHO);
-	news.c_cc[VTIME] = 0;
-	news.c_cc[VMIN] = 1;
-	if (tcsetattr(STDIN_FILENO,TCSANOW, &news) < 0)
-		error("tcsetattr failed with '%s' on stdin", strerror(errno));
-
-	/* Wait for serial output not block */
+	/* Setup to wait for serial output not block */
 	pa[0].fd = p->fd;
 	pa[0].events = POLLOUT;
 	pa[0].revents = 0;
 
-	/* Wait for stdin to have a character */
-	pa[1].fd = STDIN_FILENO;
-	pa[1].events = POLLIN | POLLPRI;
-	pa[1].revents = 0;
-
 	/* Until timed out, aborted, or transmitted */
 	len = strlen(wbuf);
 	tout *= 1000.0;		/* Timout in msec */
-	p->lerr = 0;
 
 	top = 100;						/* Timeout period in msecs */
 	toc = (int)(tout/top + 0.5);	/* Number of timout periods in timeout */
@@ -661,14 +570,18 @@ double tout
 
 	/* Until data is all written, we time out, or the user aborts */
 	for(i = toc; i > 0 && len > 0;) {
-		if (poll_x(pa, 2, top) > 0) {
+		if (poll_x(pa, nfd, top) > 0) {
 			if (pa[0].revents != 0) {
-				if (pa[0].revents != POLLOUT)
-					error("poll on serial out returned unexpected value 0x%x",pa[0].revents);
+				if (pa[0].revents != POLLOUT) {
+					a1loge(p->log, ICOM_SYS, "icoms_ser_write: poll returned "
+					                     "unexpected value 0x%x",pa[0].revents);
+					p->lserr = rv = ICOM_SYS;
+					return rv;
+				}
 				
 				/* We can write it without blocking */
 				if ((wbytes = write(p->fd, wbuf, len)) < 0) {
-					p->lerr |= ICOM_SERW;
+					retrv |= ICOM_SERW;
 					break;
 				} else if (wbytes > 0) {
 					i = toc;
@@ -676,39 +589,23 @@ double tout
 					wbuf += wbytes;
 				}
 			}
-			if (pa[1].revents != 0) {
-				char tb[10];
-				if (pa[1].revents != POLLIN && pa[1].revents != POLLPRI)
-					error("poll on stdin returned unexpected value 0x%x",pa[1].revents);
-				/* Check for user abort */
-				if (read(STDIN_FILENO, tb, 10) > 0 && p->uih[tb[0]] != ICOM_OK) {
-					p->cut = tb[0];
-					p->lerr = p->uih[tb[0]];
-					if (p->uih[tb[0]] == ICOM_USER
-					 || p->uih[tb[0]] == ICOM_TERM
-					 || p->uih[tb[0]] == ICOM_TRIG
-					 || p->uih[tb[0]] == ICOM_CMND)
-						break;
-				}
-			}
 		} else {
 			i--;		/* timeout (or error!) */
 		}
 	}
 	if (i <= 0) {		/* Timed out */
-		p->lerr |= ICOM_TO;
+		retrv |= ICOM_TO;
 	}
 
-	/* Restore stdin */
-	if (tcsetattr(STDIN_FILENO, TCSANOW, &origs) < 0)
-		error("tcsetattr failed with '%s' on stdin", strerror(errno));
+	a1logd(p->log, 8, "icoms_ser_write: returning ICOM err 0x%x\n",retrv);
 
-	if (p->debug) fprintf(stderr,"ICOM err 0x%x\n",p->lerr);
-	return p->lerr;
+	p->lserr = retrv;
+	return retrv;
 }
 
 /* Read characters into the buffer */
 /* Return string will be terminated with a nul */
+/* return icom error */
 static int
 icoms_ser_read(
 icoms *p,
@@ -718,18 +615,25 @@ char tc,			/* Terminating characer */
 int ntc,			/* Number of terminating characters */
 double tout			/* Time out in seconds */
 ) {
+	int rv, retrv = ICOM_OK;
 	int rbytes;
 	long j, toc, i, top;		/* Timout count, counter, timeout period */
-	struct pollfd pa[2];		/* Poll array to monitor serial read and stdin */
+	struct pollfd pa[1];		/* Poll array to monitor serial read and stdin */
+	int nfd = 1;				/* Number of fd's to poll */
 	struct termios origs, news;
 	char *rrbuf = rbuf;		/* Start of return buffer */
 
-	if (p->debug) fprintf(stderr,"icoms: Read called\n");
-	if (p->fd == -1)
-		error("icoms_read: not initialised");
+	if (!p->is_open) {
+		a1loge(p->log, ICOM_SYS, "icoms_ser_read: device not initialised\n");
+		p->lserr = rv = ICOM_SYS;
+		return rv;
+	}
 
-	if (bsize < 3)
-		error("icoms_read given too small a buffer");
+	if (bsize < 3) {
+		a1loge(p->log, ICOM_SYS, "icoms_ser_read: given too small a buffer\n");
+		p->lserr = rv = ICOM_SYS;
+		return rv;
+	}
 
 #ifdef NEVER
 	/* The Prolific 2303 USB<->serial seems to choke on this, */
@@ -737,43 +641,35 @@ double tout			/* Time out in seconds */
 	if (tc != p->tc) {	/* Set the termination char */
 		struct termios tio;
 
-		if (tcgetattr(p->fd, &tio) < 0)
-			error("tcgetattr failed with '%s' on '%s'", strerror(errno),p->ppath->path);
+		if (tcgetattr(p->fd, &tio) < 0) {
+			a1loge(p->log, ICOM_SYS, "icoms_ser_read: tcgetattr failed with '%s' on '%s'\n",
+			                                                     strerror(errno),p->spath);
+			p->lserr = rv = ICOM_SYS;
+			return rv;
+		}
 
 		tio.c_cc[VEOL] = tc;
 
 		/* Make change immediately */
 		tcflush(p->fd, TCIFLUSH);
-		if (tcsetattr(p->fd, TCSANOW, &tio) < 0)
-			error("tcsetattr failed with '%s' on '%s'", strerror(errno),p->ppath->path);
+		if (tcsetattr(p->fd, TCSANOW, &tio) < 0) {
+			a1loge(p->log, ICOM_SYS, "icoms_ser_read: tcsetattr failed with '%s' on '%s'\n",
+			                                                     strerror(errno),p->spath);
+			p->lserr = rv = ICOM_SYS;
+			return rv;
+		}
 
 		p->tc = tc;
 	}
 #endif
-
-	/* Configure stdin to be ready with just one character */
-	if (tcgetattr(STDIN_FILENO, &origs) < 0)
-		error("ycgetattr failed with '%s' on stdin", strerror(errno));
-	news = origs;
-	news.c_lflag &= ~(ICANON | ECHO);
-	news.c_cc[VTIME] = 0;
-	news.c_cc[VMIN] = 1;
-	if (tcsetattr(STDIN_FILENO,TCSANOW, &news) < 0)
-		error("tcsetattr failed with '%s' on stdin", strerror(errno));
 
 	/* Wait for serial input to have data */
 	pa[0].fd = p->fd;
 	pa[0].events = POLLIN | POLLPRI;
 	pa[0].revents = 0;
 
-	/* Wait for stdin to have a character */
-	pa[1].fd = STDIN_FILENO;
-	pa[1].events = POLLIN | POLLPRI;
-	pa[1].revents = 0;
-
 	bsize--;	/* Allow space for null */
 	tout *= 1000.0;		/* Timout in msec */
-	p->lerr = 0;
 
 	top = 100;						/* Timeout period in msecs */
 	toc = (int)(tout/top + 0.5);	/* Number of timout periods in timeout */
@@ -783,14 +679,18 @@ double tout			/* Time out in seconds */
 	/* Until data is all read, we time out, or the user aborts */
 	for(i = toc, j = 0; i > 0 && bsize > 1 && j < ntc ;) {
 
-		if (poll_x(pa, 2, top) > 0) {
+		if (poll_x(pa, nfd, top) > 0) {
 			if (pa[0].revents != 0) {
-				if (pa[0].revents != POLLIN &&  pa[0].revents != POLLPRI)
-					error("poll on serial in returned unexpected value 0x%x",pa[0].revents);
+				if (pa[0].revents != POLLIN &&  pa[0].revents != POLLPRI) {
+					a1loge(p->log, ICOM_SYS, "icoms_ser_read: poll on serin returned "
+					                     "unexpected value 0x%x",pa[0].revents);
+					p->lserr = rv = ICOM_SYS;
+					return rv;
+				}
 
 				/* We have data to read from input */
 				if ((rbytes = read(p->fd, rbuf, bsize)) < 0) {
-					p->lerr |= ICOM_SERR;
+					retrv |= ICOM_SERR;
 					break;
 				} else if (rbytes > 0) {
 					i = toc;		/* Reset time */
@@ -801,21 +701,6 @@ double tout			/* Time out in seconds */
 					}
 				}
 			}
-			if (pa[1].revents != 0) {
-				char tb[10];
-				if (pa[1].revents != POLLIN && pa[1].revents != POLLPRI)
-					error("poll on stdin returned unexpected value 0x%x",pa[1].revents);
-				/* Check for user abort */
-				if (read(STDIN_FILENO, tb, 10) > 0 && p->uih[tb[0]] != ICOM_OK) {
-					p->cut = tb[0];
-					p->lerr = p->uih[tb[0]];
-					if (p->uih[tb[0]] == ICOM_USER
-					 || p->uih[tb[0]] == ICOM_TERM
-					 || p->uih[tb[0]] == ICOM_TRIG
-					 || p->uih[tb[0]] == ICOM_CMND)
-						break;
-				}
-			}
 		} else {
 			i--;		/* We timed out (or error!) */
 		}
@@ -823,83 +708,32 @@ double tout			/* Time out in seconds */
 
 	*rbuf = '\000';
 	if (i <= 0) {			/* timed out */
-		p->lerr |= ICOM_TO;
+		retrv |= ICOM_TO;
 	}
-	if (p->debug) fprintf(stderr,"icoms: About to return read '%s' ICOM err 0x%x\n",icoms_fix(rrbuf),p->lerr);
 
-	/* Restore stdin */
-	if (tcsetattr(STDIN_FILENO, TCSANOW, &origs) < 0)
-		error("tcsetattr failed with '%s' on stdin", strerror(errno));
+	a1logd(p->log, 8, "icoms_ser_read: returning '%s' ICOM err 0x%x\n",icoms_fix(rrbuf),retrv);
 
-	if (p->debug) fprintf(stderr,"icoms: Read returning with 0x%x\n",p->lerr);
-
-	return p->lerr;
+	p->lserr = retrv;
+	return retrv;
 }
+
+#endif /* ENABLE_SERIAL */
 
 /* ---------------------------------------------------------------------------------*/
 
 /* Destroy ourselves */
 static void
 icoms_del(icoms *p) {
-	if (p->debug) fprintf(stderr,"icoms: delete called\n");
+	a1logd(p->log, 8, "icoms_del: called\n");
 	if (p->is_open) {
-		if (p->debug) fprintf(stderr,"icoms: closing port\n");
+		a1logd(p->log, 8, "icoms_del: closing port\n");
 		p->close_port(p);
 	}
-	if (p->paths != NULL) {
-		int i;
-		for (i = 0; i < p->npaths; i++) {
-			if (p->paths[i]->path != NULL)
-				free(p->paths[i]->path);
 #ifdef ENABLE_USB
-			if (p->paths[i]->dev != NULL)
-				usb_del_usb_device(p->paths[i]->dev);
-			if (p->paths[i]->hev != NULL)
-				hid_del_hid_device(p->paths[i]->hev);
-#endif /* ENABLE_USB */
-			free(p->paths[i]);
-		}
-		free(p->paths);
-	}
-	if (p->ppath != NULL) {
-		if (p->ppath->path != NULL)
-			free(p->ppath->path);
-		free(p->ppath);
-	}
+	usb_del_usb(p);
+	hid_del_hid(p);
+#endif
+	p->log = del_a1log(p->log);
 	free (p);
 }
 
-/* Constructor */
-icoms *new_icoms() {
-	icoms *p;
-	if ((p = (icoms *)calloc(sizeof(icoms), 1)) == NULL)
-		error("icoms: malloc failed!");
-
-	/* Init things to null values */
-	p->fd = -1;
-	p->lerr = 0;
-	p->ppath = NULL;
-	p->port = -1;
-	p->br = baud_nc;
-	p->py = parity_nc;
-	p->sb = stop_nc;
-	p->wl = length_nc;
-	p->debug = 0;
-	
-	p->close_port = icoms_close_port;
-
-	p->port_type = icoms_port_type;
-	p->get_paths = icoms_get_paths;
-	p->set_ser_port = icoms_set_ser_port;
-
-	p->write = NULL;
-	p->read = NULL;
-	p->del = icoms_del;
-
-	usb_set_usb_methods(p);
-	hid_set_hid_methods(p);
-
-	return p;
-}
-
-#endif /* UNIX */

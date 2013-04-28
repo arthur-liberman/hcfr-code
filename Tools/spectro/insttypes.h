@@ -9,7 +9,7 @@
  * Author: Graeme W. Gill
  * Date:   15/3/2001
  *
- * Copyright 2001 - 2010 Graeme W. Gill
+ * Copyright 2001 - 2013 Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -24,8 +24,8 @@
 /* ----------------------------- */
 /* Possible types of instruments */
 typedef enum {
-    instUnknown      = -1,		/* Undefined Instrument */
-    instDTP20        = 0,		/* Xrite DTP20 (Pulse)  */
+    instUnknown      = 0,		/* Undefined Instrument */
+    instDTP20,					/* Xrite DTP20 (Pulse)  */
     instDTP22,					/* Xrite DTP22 (Digital Swatchbook)  */
     instDTP41,       			/* Xrite DTP41 */
     instDTP51, 					/* Xrite DTP51 */
@@ -40,24 +40,32 @@ typedef enum {
 	instI1Disp3,				/* Xrite i1 DisplayPro, ColorMunki Display */
 	instI1Monitor,				/* GretagMacbeth i1 Monitor */
 	instI1Pro,					/* GretagMacbeth i1 Pro */
+	instI1Pro2,					/* X-Rite i1 Pro2 */
 	instColorMunki,				/* X-Rite ColorMunki */
 	instHCFR,					/* Colorimtre HCFR */
 	instSpyder2,				/* Datacolor/ColorVision Spyder2 */
 	instSpyder3,				/* Datacolor Spyder3 */
 	instSpyder4,				/* Datacolor Spyder4 */
 	instHuey,					/* GretagMacbeth Huey */
+	instSmile,					/* X-rite Colormunki Smile */
 	instColorHug,				/* Hughski ColorHug */
 
 } instType;
 
+struct _icoms;					/* Forward declaration */
+
 /* Utility functions in libinsttypes */
 
 /* Given its instrument type, return the matching */
-/* instrument identification name (static string), */
+/* short instrument name (static string), */
+extern char *inst_sname(instType itype);
+
+/* Given its instrument type, return the matching */
+/* long instrument identification name (static string), */
 extern char *inst_name(instType itype);
 
 
-/* Given an instrument identification name, return the matching */
+/* Given an instrument long identification name, return the matching */
 /* instType, or instUnknown if not matched */
 extern instType inst_enum(char *name);
 
@@ -67,8 +75,9 @@ extern instType inst_enum(char *name);
 /* return the matching instrument type, or */
 /* instUnknown if none match. */
 extern instType inst_usb_match(
-unsigned short idVendor,
-unsigned short idProduct);
+unsigned int idVendor,
+unsigned int idProduct,
+int nep);					/* Number of end points (0 for prelim match) */
 #endif /* ENABLE_USB */
 
 

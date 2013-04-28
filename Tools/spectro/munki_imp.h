@@ -9,7 +9,7 @@
  * Author: Graeme W. Gill
  * Date:   12/1/2009
  *
- * Copyright 2006 - 2010, Graeme W. Gill
+ * Copyright 2006 - 2013, Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -54,8 +54,8 @@ typedef int munki_code;		/* Type to use for error codes */
 typedef enum {
 	mk_refl_spot      = 0,
 	mk_refl_scan      = 1,
-	mk_disp_spot      = 2,		
-	mk_proj_spot      = 3,		
+	mk_emiss_spot_na  = 2,		
+	mk_tele_spot_na   = 3,		
 	mk_emiss_spot     = 4,
 	mk_tele_spot      = 5,
 	mk_emiss_scan     = 6,
@@ -67,6 +67,8 @@ typedef enum {
 } mk_mode;
 
 struct _munki_state {
+	mk_mode mode;		/* Mode number */
+
 	/* Just one of the following 3 must always be set */
 	int emiss;			/* flag - Emissive mode */
 	int trans;			/* flag - Transmissive mode */
@@ -85,6 +87,8 @@ struct _munki_state {
 
 	/* Configuration & state information */
 	double targoscale;	/* Optimal reading scale factor <= 1.0 */
+	double targmaxitime;/* maximum integration time to aim for  (ie. 2.0 sec) */
+	double targoscale2;	/* Proportion of targoscale allowed to meed targmaxitime */
 	int gainmode;		/* Gain mode, 0 = normal, 1 = high */
 	double inttime;		/* Integration time */
 	double invsampt;	/* Invalid sample time */
@@ -106,7 +110,7 @@ struct _munki_state {
 	int dark_valid;			/* dark calibration factor valid */
 	time_t ddate;			/* Date/time of last dark calibration */
 	double dark_int_time;	/* Integration time used for dark data */
-	double *dark_data;		/* [nraw] of dark level to subtract. Note that the dark value */
+	double *dark_data;		/* [-1 nraw] of dark level to subtract. Note that the dark value */
 							/* depends on integration time and gain mode. */
 	int dark_gain_mode;		/* Gain mode used for dark data */
 
@@ -114,31 +118,32 @@ struct _munki_state {
 	time_t cfdate;			/* Date/time of last cal factor calibration */
 	double *cal_factor;		/* [nwav] of calibration scale factor for this mode */
 	double *cal_factor1, *cal_factor2;	/* (Underlying tables for two resolutions) */
-	double *white_data;		/* [nraw] linear absolute dark subtracted white data */
+	double *white_data;		/* [-1 nraw] linear absolute dark subtracted white data */
 							/*        used to compute cal_factors (at reftemp) */
-	double **iwhite_data;	/* [nraw][2] LED temperature data to interpolate white_data from */
+	double **iwhite_data;	/* [-1 nraw][2] LED temperature data to interpolate white_data from */
 	double reftemp;			/* Reference temperature to correct to */
 
 	/* Adaptive emission/transparency black data */
 	int idark_valid;		/* idark calibration factors valid */
 	time_t iddate;			/* Date/time of last dark idark calibration */
 	double idark_int_time[4];
-	double **idark_data;	/* [4][nraw] of dark level for inttime/gains of : */
+	double **idark_data;	/* [4][-1 nraw] of dark level for inttime/gains of : */
 							/* 0.01 norm, 1.0 norm, 0.01 high, 1.0 high */
 							/* then it's converted to base + increment with inttime */
 
-	int need_calib;			/* White calibration needed anyway */
-	int need_dcalib;		/* Dark Calibration needed anyway */
+	int want_calib;			/* Initial White calibration wanted */
+	int want_dcalib;		/* Initial Dark Calibration wanted */
 
 	/* Display mode calibration state (emmis && !scan && !adaptive) */
 	int    dispswap;		/* 0 = default time, 1 = dark_int_time2, 2 = dark_int_time3 */
-	double done_dintcal;	/* A display integration time cal has been done */
+	double done_dintsel;	/* A display integration time selection has been done */
+	time_t diseldate;       /* Date/time of last display integration time selection */
 	double dcaltime2;		/* Target dark calibration time - sets number of readings */
 	double dark_int_time2;	/* Integration time used for dark data 2 */
-	double *dark_data2;		/* [nraw] of dark level to subtract for dark_int_time2. */
+	double *dark_data2;		/* [-1 nraw] of dark level to subtract for dark_int_time2. */
 	double dcaltime3;		/* Target dark calibration time - sets number of readings */
 	double dark_int_time3;	/* Integration time used for dark data 3 */
-	double *dark_data3;		/* [nraw] of dark level to subtract for dark_int_time3. */
+	double *dark_data3;		/* [-1 nraw] of dark level to subtract for dark_int_time3. */
 
 }; typedef struct _munki_state munki_state;
  
@@ -148,15 +153,16 @@ struct _munki_state {
 struct _munkiimp {
 	munki *p;
 
+	/* Misc. and top level */
 	struct _mkdata *data;		/* EEProm data container */
 	athread *th;				/* Switch monitoring thread (NULL if not used) */
 	volatile int switch_count;	/* Incremented in thread */
-	void *hcancel;				/* Context for canceling outstandin I/O */
+	volatile int hide_switch;	/* Set to supress switch event during read */
+	usb_cancelt cancelt;		/* Token to allow cancelling an outstanding I/O */
 	volatile int th_term;		/* Thread terminate on error rather than retry */
 	volatile int th_termed;		/* Thread has terminated */
-	inst_opt_mode trig;			/* Reading trigger mode */
-	int trig_return;			/* Emit "\n" after trigger */
-	int noautocalib;			/* Disable automatic calibration if not essential */
+	inst_opt_type trig;			/* Reading trigger mode */
+	int noinitcalib;			/* Disable initial calibration if not essential */
 	int nosposcheck;			/* Disable checking the sensor position */
 	int highres;				/* High resolution mode */
 	int hr_inited;				/* High resolution has been initialized */
@@ -217,9 +223,12 @@ struct _munkiimp {
 	double max_int_time;	/* Maximum integration time (secs) (fixed in sw) */
 
 	/* Underlying calibration information */
-	int nraw;				/* Raw sample bands stored = 133 */
-							/* Only 128 starting at offset 6 are actually valid. */
-	// ~~99 change this to rnwav, rwl_short, rwl_long, enwav, ewl_short, ewl_long ?? */
+	int nsen;				/* There are 137 provided from the device, with */
+							/* 6 skipped at the start, and 3 at the end. */
+							/* The first 4 are photo shielded. */
+							/* The last reading is the LED voltage drop */
+							/* 2 at the start and 2 at the end are unused. */
+	int nraw;				/* Raw sample bands stored = 128 (Must be signed!) */
 	int nwav;				/* Current cooked spectrum bands stored, usually = 36 */
 	double wl_short;		/* Cooked spectrum bands short wavelength, usually 380 */
 	double wl_long;			/* Cooked spectrum bands short wavelength, usually 730 */
@@ -264,7 +273,9 @@ struct _munkiimp {
 	double highgain;		/* High gain mode gain */
 	double scan_toll_ratio;	/* Modifier of scan tollerance */
 
-	/* Trigger houskeeping */
+	/* Trigger houskeeping & diagnostics */
+	int transwarn;			/* Transmission calibration warning state */
+	int lo_secs;            /* Seconds since last opened (from calibration file mod time) */
 	int tr_t1, tr_t2, tr_t3, tr_t4, tr_t5, tr_t6, tr_t7;	/* Trigger/read timing diagnostics */
 							/* 1->2 = time to execute trigger */
 							/* 2->3 = time to between end trigger and start of first read */
@@ -292,10 +303,9 @@ void del_munkiimp(munki *p);
 #define MUNKI_COMS_FAIL					0x72		/* Communication failure */
 #define MUNKI_UNKNOWN_MODEL				0x73		/* Not an munki */
 #define MUNKI_DATA_PARSE_ERROR  		0x74		/* Read data parsing error */
-#define MUNKI_USER_ABORT			    0x75		/* User hit abort */
-#define MUNKI_USER_TERM		    		0x76		/* User hit terminate */
-#define MUNKI_USER_TRIG 			    0x77		/* User hit trigger */
-#define MUNKI_USER_CMND		    		0x78		/* User hit command */
+
+#define MUNKI_USER_ABORT		    	0x75		/* uicallback returned abort */
+#define MUNKI_USER_TRIG 		    	0x76		/* uicallback retuned trigger */
 
 #define MUNKI_UNSUPPORTED		   		0x79		/* Unsupported function */
 #define MUNKI_CAL_SETUP                 0x7A		/* Cal. retry with correct setup is needed */
@@ -304,7 +314,6 @@ void del_munkiimp(munki *p);
 #define MUNKI_OK   						0x00
 
 /* EEprop parsing errors */
-#define MUNKI_DATA_COUNT			    0x01		/* count unexpectedly small */
 #define MUNKI_DATA_RANGE			    0x02		/* out of range of buffer */
 #define MUNKI_DATA_MEMORY 				0x03		/* memory alloc failure */
 
@@ -332,35 +341,44 @@ void del_munkiimp(munki *p);
 #define MUNKI_RD_NOTENOUGHSAMPLES       0x3D		/* Not enough samples per patch */
 #define MUNKI_RD_NOFLASHES              0x3E		/* No flashes recognized */
 #define MUNKI_RD_NOAMBB4FLASHES         0x3F		/* No ambient before flashes found */
+#define MUNKI_RD_NOREFR_FOUND           0x40		/* Unable to measure refresh rate */
 
-#define MUNKI_SPOS_PROJ                 0x40		/* Sensor needs to be in projector position */
-#define MUNKI_SPOS_SURF                 0x41		/* Sensor needs to be in surface position */
-#define MUNKI_SPOS_CALIB                0x42		/* Sensor needs to be in calibration position */
-#define MUNKI_SPOS_AMB                  0x43		/* Sensor needs to be in ambient position */
+#define MUNKI_SPOS_PROJ                 0x48		/* Sensor needs to be in projector position */
+#define MUNKI_SPOS_SURF                 0x49		/* Sensor needs to be in surface position */
+#define MUNKI_SPOS_CALIB                0x4A		/* Sensor needs to be in calibration position */
+#define MUNKI_SPOS_AMB                  0x4B		/* Sensor needs to be in ambient position */
 
 /* Internal errors */
 #define MUNKI_INT_NO_COMS 		        0x50
-#define MUNKI_INT_EEOUTOFRANGE 		    0x51		/* EEProm access is out of range */
-#define MUNKI_INT_CALTOOSMALL 		    0x52		/* Calibration EEProm size is too small */
-#define MUNKI_INT_CALTOOBIG 		    0x53		/* Calibration EEProm size is too big */
-#define MUNKI_INT_CALBADCHSUM 		    0x54		/* Calibration has a bad checksum */
-#define MUNKI_INT_ODDREADBUF 	        0x55		/* Measurment read buffer is not mult 274 */
-#define MUNKI_INT_INTTOOBIG				0x56		/* Integration time is too big */
-#define MUNKI_INT_INTTOOSMALL			0x57		/* Integration time is too small */
-#define MUNKI_INT_ILLEGALMODE			0x58		/* Illegal measurement mode selected */
-#define MUNKI_INT_ZEROMEASURES 			0x59		/* Number of measurements requested is zero */
-#define MUNKI_INT_WRONGPATCHES 			0x5A		/* Number of patches to match is wrong */
-#define MUNKI_INT_MEASBUFFTOOSMALL 		0x5B		/* Measurement read buffer is too small */
-#define MUNKI_INT_NOTIMPLEMENTED 		0x5C		/* Support not implemented */
-#define MUNKI_INT_NOTCALIBRATED 		0x5D		/* Unexpectedely invalid calibration */
-#define MUNKI_INT_THREADFAILED 		    0x5E		/* Creation of thread failed */
-#define MUNKI_INT_BUTTONTIMEOUT 	    0x5F		/* Switch status read timed out */
-#define MUNKI_INT_CIECONVFAIL 	        0x60		/* Creating spectral to CIE converted failed */
-#define MUNKI_INT_MALLOC                0x61		/* Error in mallocing memory */
-#define MUNKI_INT_CREATE_EEPROM_STORE   0x62		/* Error in creating EEProm store */
-#define MUNKI_INT_NEW_RSPL_FAILED       0x63		/* Creating RSPL object faild */
-#define MUNKI_INT_CAL_SAVE              0x64		/* Unable to save calibration to file */
-#define MUNKI_INT_CAL_RESTORE           0x65		/* Unable to restore calibration from file */
+#define MUNKI_INT_EESIZE                0x51        /* EEProm read size is too big */
+#define MUNKI_INT_EEOUTOFRANGE 		    0x52		/* EEProm size is unexpected */
+#define MUNKI_INT_CALTOOSMALL 		    0x53		/* Calibration EEProm size is too small */
+#define MUNKI_INT_CALTOOBIG 		    0x54		/* Calibration EEProm size is too big */
+#define MUNKI_INT_CALBADCHSUM 		    0x55		/* Calibration has a bad checksum */
+#define MUNKI_INT_ODDREADBUF 	        0x56		/* Measurment read buffer is not mult 274 */
+#define MUNKI_INT_INTTOOBIG				0x57		/* Integration time is too big */
+#define MUNKI_INT_INTTOOSMALL			0x58		/* Integration time is too small */
+#define MUNKI_INT_ILLEGALMODE			0x59		/* Illegal measurement mode selected */
+#define MUNKI_INT_ZEROMEASURES 			0x5A		/* Number of measurements requested is zero */
+#define MUNKI_INT_WRONGPATCHES 			0x5B		/* Number of patches to match is wrong */
+#define MUNKI_INT_MEASBUFFTOOSMALL 		0x5C		/* Measurement read buffer is too small */
+#define MUNKI_INT_NOTIMPLEMENTED 		0x5D		/* Support not implemented */
+#define MUNKI_INT_NOTCALIBRATED 		0x5E		/* Unexpectedely invalid calibration */
+#define MUNKI_INT_THREADFAILED 		    0x5F		/* Creation of thread failed */
+#define MUNKI_INT_BUTTONTIMEOUT 	    0x60		/* Switch status read timed out */
+#define MUNKI_INT_CIECONVFAIL 	        0x61		/* Creating spectral to CIE converted failed */
+#define MUNKI_INT_MALLOC                0x62		/* Error in mallocing memory */
+#define MUNKI_INT_CREATE_EEPROM_STORE   0x63		/* Error in creating EEProm store */
+#define MUNKI_INT_NEW_RSPL_FAILED       0x64		/* Creating RSPL object faild */
+#define MUNKI_INT_CAL_SAVE              0x65		/* Unable to save calibration to file */
+#define MUNKI_INT_CAL_RESTORE           0x66		/* Unable to restore calibration from file */
+#define MUNKI_INT_CAL_TOUCH             0x67        /* Unable to touch calibration file */
+
+
+#define MUNKI_INT_ASSERT                0x6F		/* Internal assert */
+
+
+int icoms2munki_err(int se);
 
 /* ============================================================ */
 /* High level implementatation */
@@ -377,14 +395,14 @@ munki_code munki_imp_set_mode(
 	mk_mode mmode,		/* munki mode to use */
 	int spec_en);		/* nz to enable reporting spectral */
 
-/* Determine if a calibration is needed. */
-inst_cal_type munki_imp_needs_calibration(munki *p);
+/* Implement get_n_a_cals */
+munki_code munki_imp_get_n_a_cals(munki *p, inst_cal_type *pn_cals, inst_cal_type *pa_cals);
 
 /* Calibrate for the current mode. */
 /* Request an instrument calibration of the current mode. */
 munki_code munki_imp_calibrate(
 munki *p,
-inst_cal_type calt,		/* Calibration type. inst_calt_all for all neeeded */
+inst_cal_type *calt,	/* Calibration type to do/remaining */
 inst_cal_cond *calc,	/* Current condition/desired condition */
 char id[100]			/* Condition identifier (ie. white reference ID) */
 );
@@ -393,7 +411,14 @@ char id[100]			/* Condition identifier (ie. white reference ID) */
 munki_code munki_imp_measure(
 	munki *p,
 	ipatch *val,		/* Pointer to array of instrument patch value */
-	int nvals			/* Number of values */	
+	int nvals,			/* Number of values */	
+	instClamping clamp	/* Clamp XYZ/Lab to be +ve */
+);
+
+/* Measure the emissive refresh rate */
+munki_code munki_imp_meas_refrate(
+	munki *p,
+	double *ref_rate
 );
 
 /* return nz if high res is supported */
@@ -432,7 +457,7 @@ munki_code munki_dark_measure_1(
 /* Take a dark reference measurement - part 2 */
 munki_code munki_dark_measure_2(
 	munki *p,
-	double *sens,			/* Return array [nraw] of sens values */
+	double *sens,			/* Return array [-1 nraw] of sens values */
 	int nummeas,			/* Number of readings to take */
 	double inttime, 		/* Integration time to use/used */
 	int gainmode,			/* Gain mode to use, 0 = normal, 1 = high */
@@ -443,7 +468,7 @@ munki_code munki_dark_measure_2(
 /* Take a dark measurement */
 munki_code munki_dark_measure(
 	munki *p,
-	double *sens,			/* Return array [nraw] of sens values */
+	double *sens,			/* Return array [-1 nraw] of sens values */
 	int nummeas,			/* Number of readings to take */
 	double *inttime, 		/* Integration time to use/used */
 	int gainmode			/* Gain mode to use, 0 = normal, 1 = high */
@@ -453,7 +478,7 @@ munki_code munki_dark_measure(
 /* (Subtracts black and processes into wavelenths) */
 munki_code munki_whitemeasure(
 	munki *p,
-	double *absraw,			/* Return array [nraw] of absraw values (may be NULL) */
+	double *absraw,			/* Return array [-1 nraw] of absraw values (may be NULL) */
 	double *optscale,		/* Factor to scale gain/int time by to make optimal (may be NULL) */
 	int nummeas,			/* Number of readings to take */
 	double *inttime, 		/* Integration time to use/used */
@@ -470,15 +495,15 @@ munki_code munki_compute_wav_whitemeas(
 	munki *p,
 	double *abswav1,		/* Return array [nwav1] of abswav values (may be NULL) */
 	double *abswav2,		/* Return array [nwav2] of abswav values (if hr_init, may be NULL) */
-	double *absraw			/* Given array [nraw] of absraw values */
+	double *absraw			/* Given array [-1 nraw] of absraw values */
 );
 
 /* Take a reflective white reference measurement, */
 /* subtracts black and decompose into base + LED temperature components */
 munki_code munki_ledtemp_whitemeasure(
 	munki *p,
-	double *white,			/* Return [nraw] of temperature compensated white reference */
-	double **iwhite,		/* Return array [nraw][2] of absraw base and scale values */
+	double *white,			/* Return [-1 nraw] of temperature compensated white reference */
+	double **iwhite,		/* Return array [-1 nraw][2] of absraw base and scale values */
 	double *reftemp,		/* Return a reference temperature to normalize to */
 	int nummeas,			/* Number of readings to take */
 	double inttime, 		/* Integration time to use */
@@ -490,7 +515,7 @@ munki_code munki_ledtemp_whitemeasure(
 /* given temperature */ 
 munki_code munki_ledtemp_white(
 	munki *p,
-	double *absraw,			/* Return array [nraw] of absraw base and scale values */
+	double *absraw,			/* Return array [-1 nraw] of absraw base and scale values */
 	double **iwhite,		/* ledtemp base and scale */
 	double ledtemp			/* LED temperature value */
 );
@@ -518,7 +543,7 @@ munki_code munki_whitemeasure_buf(
 	munki *p,
 	double *abswav1,		/* Return array [nwav1] of abswav values (may be NULL) */
 	double *abswav2,		/* Return array [nwav2] of abswav values (if hr_init, may be NULL) */
-	double *absraw,			/* Return array [nraw] of absraw values */
+	double *absraw,			/* Return array [-1 nraw] of absraw values */
 	double inttime, 		/* Integration time to used */
 	int gainmode,			/* Gain mode to use, 0 = normal, 1 = high */
 	unsigned char *buf		/* Raw buffer */
@@ -583,30 +608,31 @@ munki_trigger_one_measure(
 /* ============================================================ */
 /* lower level reading processing */
 
-/* Take a buffer full of raw readings, and convert them to */
-/* directly to floating point sensor values. Return nz if any is saturated */
-int munki_meas_to_sens(
+/* Take a buffer full of sensor readings, and convert them to */
+/* directly to floating point raw values. */
+/* Return MUNKI_RD_SENSORSATURATED if any is saturated */
+munki_code munki_sens_to_raw(
 	munki *p,
-	double **abssens,		/* Array of [nummeas-ninvalid][nraw] value to return */
+	double **raw,			/* Array of [nummeas-ninvalid][-1 nraw] value to return */
 	double *ledtemp,		/* Optional array [nummeas-ninvalid] LED temperature values to return */
-	unsigned char *buf,		/* Raw measurement data must be 274 * nummeas */
+	unsigned char *buf,		/* Sensor measurement data must be 274 * nummeas */
 	int nummeas,			/* Number of readings measured */
 	int ninvalid,			/* Number of initial invalid readings to skip */
 	double satthresh,		/* Sauration threshold in raw units */
 	double *darkthresh		/* Return a dark threshold value */
 );
 
-/* Subtract the black from sensor values and convert to */
+/* Subtract the black from raw values and convert to */
 /* absolute (integration & gain scaled), zero offset based, */
 /* linearized sensor values. */
-void munki_sub_sens_to_abssens(
+void munki_sub_raw_to_absraw(
 	munki *p,
 	int nummeas,			/* Return number of readings measured */
 	double inttime, 		/* Integration time used */
 	int gainmode,			/* Gain mode, 0 = normal, 1 = high */
-	double **abssens,		/* Source/Desination array [nraw] */
-	double *sub,			/* Value to subtract [nraw] */
-	double *trackmax, 		/* abssens values that should be offset the same as max */
+	double **absraw,		/* Source/Desination array [-1 nraw] */
+	double *sub,			/* Value to subtract [-1 nraw] */
+	double *trackmax, 		/* absraw values that should be offset the same as max */
 	int ntrackmax,			/* Number of trackmax values */
 	double *maxv			/* If not NULL, return the maximum value */
 );
@@ -618,8 +644,8 @@ void munki_sub_sens_to_abssens(
 /* Return the overall average. */
 int munki_average_multimeas(
 	munki *p,
-	double *avg,			/* return average [nraw] */
-	double **multimeas,		/* Array of [nummeas][nraw] value to average */
+	double *avg,			/* return average [-1 nraw] */
+	double **multimeas,		/* Array of [nummeas][-1 nraw] value to average */
 	int nummeas,			/* number of readings to be averaged */
 	double *poallavg,		/* If not NULL, return overall average of bands and measurements */
 	double darkthresh		/* Dark threshold (used for consistency check scaling) */
@@ -632,9 +658,9 @@ int munki_average_multimeas(
 munki_code munki_extract_patches_multimeas(
 	munki *p,
 	int *flags,             /* return flags */
-	double **pavg,			/* return patch average [naptch][nraw] */
+	double **pavg,			/* return patch average [naptch][-1 nraw] */
 	int npatch,				/* number of patches to recognise */
-	double **multimeas,		/* Array of [nummeas][nraw] value to extract from */
+	double **multimeas,		/* Array of [nummeas][-1 nraw] value to extract from */
 	int nummeas,			/* number of readings to recognise them from */
 	double inttime			/* Integration time (used to adjust consistency threshold) */
 );
@@ -646,37 +672,37 @@ munki_code munki_extract_patches_flash(
 	munki *p,
 	int *flags,				/* return flags */
 	double *duration,		/* return duration */
-	double *pavg,			/* return patch average [nraw] */
-	double **multimeas,		/* Array of [nummeas][nraw] value to extract from */
+	double *pavg,			/* return patch average [-1 nraw] */
+	double **multimeas,		/* Array of [nummeas][-1 nraw] value to extract from */
 	int nummeas,			/* number of readings made */
 	double inttime			/* Integration time (used to compute duration) */
 );
 
-/* Convert an abssens array from raw wavelengths to output wavelenths */
+/* Convert an absraw array from raw wavelengths to output wavelenths */
 /* for the current resolution */
-void munki_abssens_to_abswav(
+void munki_absraw_to_abswav(
 	munki *p,
 	int nummeas,			/* Return number of readings measured */
 	double **abswav,		/* Desination array [nwav] */
-	double **abssens		/* Source array [nraw] */
+	double **absraw		/* Source array [-1 nraw] */
 );
 
-/* Convert an abssens array from raw wavelengths to output wavelenths */
+/* Convert an absraw array from raw wavelengths to output wavelenths */
 /* for the standard resolution */
-void munki_abssens_to_abswav1(
+void munki_absraw_to_abswav1(
 	munki *p,
 	int nummeas,			/* Return number of readings measured */
 	double **abswav,		/* Desination array [nwav1] */
-	double **abssens		/* Source array [nraw] */
+	double **absraw		/* Source array [-1 nraw] */
 );
 
-/* Convert an abssens array from raw wavelengths to output wavelenths */
+/* Convert an absraw array from raw wavelengths to output wavelenths */
 /* for the high resolution */
-void munki_abssens_to_abswav2(
+void munki_absraw_to_abswav2(
 	munki *p,
 	int nummeas,			/* Return number of readings measured */
 	double **abswav,		/* Desination array [nwav2] */
-	double **abssens		/* Source array [nraw] */
+	double **absraw		/* Source array [-1 nraw] */
 );
 
 /* Convert an abswav array of output wavelengths to scaled output readings. */
@@ -692,7 +718,8 @@ munki_code munki_conv2XYZ(
 	munki *p,
 	ipatch *vals,		/* Values to return */
 	int nvals,			/* Number of values */
-	double **specrd		/* Spectral readings */
+	double **specrd,	/* Spectral readings */
+	instClamping clamp	/* Clamp XYZ/Lab to be +ve */
 );
 
 /* Compute a calibration factor given the reading of the white reference. */
@@ -756,14 +783,14 @@ munki_code munki_interp_dark(
 /* Create Reflective if ref nz, else create Emissive */
 munki_code munki_create_hr(munki *p, int ref);
 
-/* Set the noautocalib mode */
-void munki_set_noautocalib(munki *p, int v);
+/* Set the noinitcalib mode */
+void munki_set_noinitcalib(munki *p, int v, int losecs);
 
 /* Set the trigger config */
-void munki_set_trig(munki *p, inst_opt_mode trig);
+void munki_set_trig(munki *p, inst_opt_type trig);
 
 /* Return the trigger config */
-inst_opt_mode munki_get_trig(munki *p);
+inst_opt_type munki_get_trig(munki *p);
 
 /* Set the trigger return */
 void munki_set_trigret(munki *p, int val);
@@ -833,8 +860,8 @@ typedef enum {
 
 /* Munki switch state */
 typedef enum {
-	mk_but_button_release = 0x00,	/* Button is released */
-	mk_but_button_press   = 0x01	/* Button is pressed */
+	mk_but_switch_release = 0x00,	/* Button is released */
+	mk_but_switch_press   = 0x01	/* Button is pressed */
 } mk_but;
 
 /* Get the device status */
@@ -897,8 +924,8 @@ munki_setmcmode(
 /* parameter to simulate event */
 typedef enum {
 	mk_eve_none           = 0x0000,	/* No event */
-	mk_eve_button_press   = 0x0001,	/* Button has been pressed */
-	mk_eve_button_release = 0x0002,	/* Button has been released */
+	mk_eve_switch_press   = 0x0001,	/* Button has been pressed */
+	mk_eve_switch_release = 0x0002,	/* Button has been released */
 	mk_eve_spos_change    = 0x0100	/* Sensor position is being changed */
 } mk_eve;
 
@@ -924,8 +951,7 @@ struct _mkdata {
   /* private: */
 	munki *p;
 
-	int verb;
-	int debug;
+	a1log *log;
 	unsigned char *buf;		/* Buffer to parse */
 	int len;				/* Length of buffer */
 	
@@ -993,7 +1019,7 @@ struct _mkdata {
 }; typedef struct _mkdata mkdata;
 
 /* Constructor. Construct from the EEprom calibration contents */
-extern mkdata *new_mkdata(munki *p, unsigned char *buf, int len, int verb, int debug);
+extern mkdata *new_mkdata(munki *p, unsigned char *buf, int len);
 
 #ifdef __cplusplus
 	}

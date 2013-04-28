@@ -8,7 +8,7 @@
  * Author: Richard Hughes
  * Date:   30/11/2011
  *
- * Copyright 2006 - 2007, Graeme W. Gill
+ * Copyright 2006 - 2013, Graeme W. Gill
  * Copyright 2011, Richard Hughes
  * All rights reserved.
  *
@@ -35,25 +35,14 @@
 #endif /* SALONEINSTLIB */
 #include "xspect.h"
 #include "insttypes.h"
-#include "icoms.h"
 #include "conv.h"
+#include "icoms.h"
 #include "colorhug.h"
 
 static inst_code colorhug_interp_code(inst *pp, int ec);
 
 /* Interpret an icoms error into a ColorHug error */
 static int icoms2colorhug_err(int se) {
-	if (se & ICOM_USERM) {
-		se &= ICOM_USERM;
-		if (se == ICOM_USER)
-			return COLORHUG_USER_ABORT;
-		if (se == ICOM_TERM)
-			return COLORHUG_USER_TERM;
-		if (se == ICOM_TRIG)
-			return COLORHUG_USER_TRIG;
-		if (se == ICOM_CMND)
-			return COLORHUG_USER_CMND;
-	}
 	if (se != ICOM_OK)
 		return COLORHUG_COMS_FAIL;
 	return COLORHUG_OK;
@@ -61,13 +50,14 @@ static int icoms2colorhug_err(int se) {
 
 /* ColorHug commands that we care about */
 typedef enum {
-	ch_set_mult		    = 0x04,		/* Set multiplier value */
-	ch_set_integral	    = 0x06,		/* Set integral time */
-	ch_get_serial	    = 0x0b,		/* Gets the serial number */
-	ch_set_leds		    = 0x0e,		/* Sets the LEDs */
-	ch_take_reading     = 0x22,		/* Takes a raw reading minus dark offset */
-	ch_take_reading_xyz	= 0x23,		/* Takes an XYZ reading using the current matrix */
-	ch_get_post_scale   = 0x2a		/* Get the post scaling factor */
+	ch_set_mult		        = 0x04,		/* Set multiplier value */
+	ch_set_integral	        = 0x06,		/* Set integral time */
+	ch_get_firmware_version	= 0x07,		/* Get the Firmware version number */
+	ch_get_serial	        = 0x0b,		/* Gets the serial number */
+	ch_set_leds		        = 0x0e,		/* Sets the LEDs */
+	ch_take_reading         = 0x22,		/* Takes a raw reading minus dark offset */
+	ch_take_reading_xyz	    = 0x23,		/* Takes an XYZ reading using the current matrix */
+	ch_get_post_scale       = 0x2a		/* Get the post scaling factor */
 } ColorHugCmd;
 
 /* Diagnostic - return a description given the instruction code */
@@ -78,6 +68,8 @@ static char *inst_desc(int cc) {
 		return "SetMultiplier";
 	case 0x06:
 		return "SetIntegral";
+	case 0x07:
+		return "GetFirmwareVersion";
 	case 0x0b:
 		return "GetSerial";
 	case 0x0e:
@@ -104,14 +96,6 @@ colorhug_interp_error(inst *pp, int ec) {
 			return "Communications failure";
 		case COLORHUG_UNKNOWN_MODEL:
 			return "Not a known ColorHug Model";
-		case COLORHUG_USER_ABORT:
-			return "User hit Abort key";
-		case COLORHUG_USER_TERM:
-			return "User hit Terminate key";
-		case COLORHUG_USER_TRIG:
-			return "User hit Trigger key";
-		case COLORHUG_USER_CMND:
-			return "User hit a Command key";
 
 		case COLORHUG_OK:
 			return "OK";
@@ -170,71 +154,61 @@ colorhug_command(colorhug *p,
 				 unsigned char *out, unsigned int out_size,
 				 double timeout)
 {
+	int i;
 	unsigned char buf[64];
-	int wbytes;
-	int rbytes;
+	int xwbytes, wbytes;
+	int xrbytes, rbytes;
 	int se, ua = 0, rv = inst_ok;
-	int isdeb = 0;
+	int ishid = p->icom->port_type(p->icom) == icomt_hid;
 
-	/* Turn off low level debug messages, and sumarise them here */
-	isdeb = p->icom->debug;
-	if (isdeb <= 2)
-		p->icom->debug = 0;
-
-	if (isdeb) {
-		fprintf(stderr,"colorhug: Sending cmd '%s' args '%s'\n",
-				inst_desc(cmd), icoms_tohex(in, in_size));
-	}
+	a1logd(p->log,5,"colorhg_command: sending cmd '%s' args '%s'\n",
+				           inst_desc(cmd), icoms_tohex(in, in_size));
 
 	/* Send the command with any specified data */
+	memset(buf, 0, 64);
 	buf[0] = cmd;
 	if (in != NULL)
 		memcpy(buf + 1, in, in_size);
-	if (p->icom->is_hid) {
-		se = p->icom->hid_write(p->icom, buf, in_size + 1, &wbytes, timeout);
+	if (ishid) {
+		xwbytes = 64;
+		se = p->icom->hid_write(p->icom, buf, xwbytes, &wbytes, timeout);
 	} else {
-		se = p->icom->usb_write(p->icom, 0x01, buf, in_size + 1, &wbytes, timeout);
+//		xwbytes = in_size + 1;		/* cmd + arguments */
+		xwbytes = 64;
+		se = p->icom->usb_write(p->icom, NULL, 0x01, buf, xwbytes, &wbytes, timeout);
 	}
 	if (se != 0) {
-		if (se & ICOM_USERM) {
-			ua = (se & ICOM_USERM);
-		}
-		if (se & ~ICOM_USERM) {
-			if (isdeb)
-				fprintf(stderr,"colorhug: Command send failed with ICOM err 0x%x\n", se);
-			p->icom->debug = isdeb;
-			return colorhug_interp_code((inst *)p, COLORHUG_COMS_FAIL);
-		}
+		a1logd(p->log,1,"colorhug_command: command send failed with ICOM err 0x%x\n",se);
+		return colorhug_interp_code((inst *)p, COLORHUG_COMS_FAIL);
 	}
 	rv = colorhug_interp_code((inst *)p, icoms2colorhug_err(ua));
-	if (isdeb)
-		fprintf(stderr,"colorhug: ICOM err 0x%x\n",ua);
-	if (rv == inst_ok && wbytes != in_size + 1)
+	if (rv == inst_ok && wbytes != xwbytes)
 		rv = colorhug_interp_code((inst *)p, COLORHUG_BAD_WR_LENGTH);
+	a1logd(p->log,6,"colorhug_command: got inst code \n",rv);
 
 	if (rv != inst_ok) {
 		/* Flush any response if write failed */
-		if (p->icom->is_hid) {
-			p->icom->hid_read(p->icom, buf, out_size + 2, &rbytes, timeout);
-		} else {
-			p->icom->usb_read(p->icom, 0x81, buf, out_size + 2, &rbytes, timeout);
-		}
-		p->icom->debug = isdeb;
+		if (ishid)
+			p->icom->hid_read(p->icom, buf, 64, &rbytes, timeout);
+		else
+			p->icom->usb_read(p->icom, NULL, 0x81, buf, out_size + 2, &rbytes, timeout);
 		return rv;
 	}
 
 	/* Now fetch the response */
-	if (isdeb)
-		fprintf(stderr,"colorhug: Reading response\n");
+	a1logd(p->log,6,"colorhug_command: Reading response\n");
 
-	if (p->icom->is_hid) {
-		se = p->icom->hid_read(p->icom, buf, out_size + 2, &rbytes, timeout);
+	if (ishid) {
+		xrbytes = 64;
+		se = p->icom->hid_read(p->icom, buf, xrbytes, &rbytes, timeout);
 	} else {
-		se = p->icom->usb_read(p->icom, 0x81, buf, out_size + 2, &rbytes, timeout);
+//		xrbytes = out_size + 2;
+		xrbytes = 64;
+		se = p->icom->usb_read(p->icom, NULL, 0x81, buf, xrbytes, &rbytes, timeout);
 	}
 
-	if (isdeb && rbytes >= 2) {
-		fprintf(stderr,"Recieved cmd '%s' error '%s' args '%s'\n",
+	if (rbytes >= 2) {
+		a1logd(p->log,6,"colorhug_command: recieved cmd '%s' error '%s' args '%s'\n",
 				inst_desc(buf[1]),
 				colorhug_interp_error((inst *) p, buf[0]),
 				icoms_tohex(buf, rbytes - 2));
@@ -243,45 +217,37 @@ colorhug_command(colorhug *p,
 	if (se != 0) {
 
 		/* deal with command error */
-		if (rbytes == 2 && buf[0] != COLORHUG_OK) {
+//		if (rbytes == 2 && buf[0] != COLORHUG_OK) {
+		if (buf[0] != COLORHUG_OK) {
+			a1logd(p->log,1,"colorhug_command: Got Colorhug !OK\n");
 			rv = colorhug_interp_code((inst *)p, buf[0]);
-			p->icom->debug = isdeb;
 			return rv;
 		}
 
 		/* deal with underrun or overrun */
-		if (rbytes != out_size + 2) {
+		if (rbytes != xrbytes) {
+			a1logd(p->log,1,"colorhug_command: got underrun or overrun\n");
 			rv = colorhug_interp_code((inst *)p, COLORHUG_BAD_RD_LENGTH);
-			p->icom->debug = isdeb;
 			return rv;
 		}
 
 		/* there's another reason it failed */
-		if (se & ICOM_USERM) {
-			ua = (se & ICOM_USERM);
-		}
-		if (se & ~ICOM_USERM) {
-			if (isdeb)
-				fprintf(stderr,"colorhug: Response read failed with ICOM err 0x%x\n",se);
-			p->icom->debug = isdeb;
-			return colorhug_interp_code((inst *)p, COLORHUG_COMS_FAIL);
-		}
+		a1logd(p->log,1,"colorhug_command: read failed with ICOM err 0x%x\n",se);
+		return colorhug_interp_code((inst *)p, COLORHUG_COMS_FAIL);
 	}
 	rv = colorhug_interp_code((inst *)p, icoms2colorhug_err(ua));
 
 	/* check the command was the same */
 	if (rv == inst_ok && buf[1] != cmd) {
+		a1logd(p->log,1,"colorhug_command: command wasn't echo'd\n");
 		rv = colorhug_interp_code((inst *)p, COLORHUG_BAD_RET_CMD);
 		return rv;
 	}
-	if (rv == inst_ok && out != NULL) {
+	if (rv == inst_ok && out != NULL)
 		memcpy(out, buf + 2, out_size);
-	}
-	if (isdeb) {
-		fprintf(stderr,"colorhug: '%s' ICOM err 0x%x\n",
-				icoms_tohex(buf + 2, out_size),ua);
-	}
-	p->icom->debug = isdeb;
+
+	a1logd(p->log,5,"colorhg_command: returning '%s' ICOM err 0x%x\n",
+				                  icoms_tohex(buf + 2, out_size),ua);
 	return rv;
 }
 
@@ -365,6 +331,7 @@ static double buf2pfdouble(unsigned char *buf)
 static inst_code
 colorhug_set_LEDs(colorhug *p, int mask)
 {
+	int i;
 	unsigned char ibuf[4];
 	inst_code ev;
 
@@ -390,24 +357,24 @@ colorhug_set_LEDs(colorhug *p, int mask)
 /* applied on top of the factory calibration as corrections. */
 /* Index 64..70 are mapped via the mapping table */
 /* to an index between 0 and 63, and notionaly correspond */
-/* as follows:        */
-/*	LCD      = 0      */
-/*	CRT      = 1      */
-/*	Projector    = 2  */
-/*	LED      = 3      */
-/*	Custom1  = 4      */
-/*	Custom2  = 5      */
+/* as follows:       */
+/*	LCD       = 0    */
+/*	CRT       = 1    */
+/*	Projector = 2    */
+/*	LED       = 3    */
+/*	Custom1   = 4    */
+/*	Custom2   = 5    */
 static inst_code
 colorhug_take_measurement(colorhug *p, double XYZ[3])
 {
 	inst_code ev;
 	int i;
-	uint8_t ibuf[2];
+	ORD8 ibuf[2];
 
 	if (!p->inited)
 		return colorhug_interp_code((inst *)p, COLORHUG_NOT_INITED);
 
-	if (p->calix == 11) {		/* Raw */
+	if (p->icx == 11) {		/* Raw */
 		unsigned char obuf[3 * 4];
 
 		/* Do the measurement, and return the values */
@@ -422,14 +389,14 @@ colorhug_take_measurement(colorhug *p, double XYZ[3])
 		for (i = 0; i < 3; i++)
 			XYZ[i] = p->postscale * buf2pfdouble(obuf + i * 4);
 	} else {
-		int calix = 64 + p->calix;
+		int icx = 64 + p->icx;
 		unsigned char obuf[3 * 4];
 
-		if (p->calix == 10)	/* Factory */	
-			calix = 0;
+		if (p->icx == 10)	/* Factory */	
+			icx = 0;
 
 		/* Choose the calibration matrix */
-		short2buf_le(ibuf + 0, calix);
+		short2buf_le(ibuf + 0, icx);
 	
 		/* Do the measurement, and return the values */
 		ev = colorhug_command(p, ch_take_reading_xyz,
@@ -447,51 +414,74 @@ colorhug_take_measurement(colorhug *p, double XYZ[3])
 	/* Apply the colorimeter correction matrix */
 	icmMulBy3x3(XYZ, p->ccmat, XYZ);
 
-	if (p->debug) {
-		fprintf(stderr,"colorhug: returning XYZ = %f %f %f\n",
-				XYZ[0],XYZ[1],XYZ[2]);
-	}
+	a1logd(p->log,3,"colorhug_take_measurement: XYZ = %f %f %f\n",XYZ[0],XYZ[1],XYZ[2]);
+
 	return inst_ok;
 }
 
 /* Establish communications with a ColorHug */
 static inst_code
-colorhug_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) {
+colorhug_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
+	int se;
 	colorhug *p = (colorhug *) pp;
 
-	if (p->debug) {
-		p->icom->debug = p->debug;	/* Turn on debugging */
-		fprintf(stderr,"colorhug: About to init coms\n");
-	}
+	a1logd(p->log, 2, "colorhug_init_coms: About to init coms\n");
 
 	/* Open as an HID if available */
-	if (p->icom->is_hid_portno(p->icom, port) != instUnknown) {
+	if (p->icom->port_type(p->icom) == icomt_hid) {
 
-		if (p->debug)
-			fprintf(stderr,"colorhug: About to init HID\n");
+		a1logd(p->log, 3, "colorhug_init_coms: About to init HID\n");
 
 		/* Set config, interface */
-		p->icom->set_hid_port(p->icom, port, icomuf_none, 0, NULL);
+		if ((se = p->icom->set_hid_port(p->icom, icomuf_none, 0, NULL)) != ICOM_OK) {
+			a1logd(p->log, 1, "colorhug_init_coms: set_hid_port failed ICOM err 0x%x\n",se);
+			return colorhug_interp_code((inst *)p, icoms2colorhug_err(se));
+		}
 
-	} else if (p->icom->is_usb_portno(p->icom, port) != instUnknown) {
+	} else if (p->icom->port_type(p->icom) == icomt_usb) {
 
-		if (p->debug)
-			fprintf(stderr,"colorhug: About to init USB\n");
+		a1logd(p->log, 3, "colorhug_init_coms: About to init USB\n");
 
 		/* Set config, interface, write end point, read end point */
-		p->icom->set_usb_port(p->icom, port, 1, 0x00, 0x00, icomuf_detach, 0, NULL);
+		if ((se = p->icom->set_usb_port(p->icom, 1, 0x00, 0x00, icomuf_detach, 0, NULL))
+			                                                                 != ICOM_OK) { 
+			a1logd(p->log, 1, "colorhug_init_coms: set_usb_port failed ICOM err 0x%x\n",se);
+			return colorhug_interp_code((inst *)p, icoms2colorhug_err(se));
+		}
 
 	} else {
-		if (p->debug)
-			fprintf(stderr,"colorhug: init_coms called to wrong device!\n");
+		a1logd(p->log, 1, "colorhug_init_coms: wrong communications type for device!\n");
 		return colorhug_interp_code((inst *)p, COLORHUG_UNKNOWN_MODEL);
 	}
 
-	if (p->debug)
-		fprintf(stderr,"colorhug: init coms has suceeded\n");
+	a1logd(p->log, 2, "colorhug_init_coms: inited coms OK\n");
 
 	p->gotcoms = 1;
 	return inst_ok;
+}
+
+/* Get the firmware version */
+static inst_code
+colorhug_get_firmwareversion (colorhug *p)
+{
+	inst_code ev;
+	unsigned char obuf[6];
+
+	/* Hmm. The post scale is in the 2nd short returned */
+	ev = colorhug_command(p, ch_get_firmware_version,
+						  NULL, 0,
+						  obuf, 6,
+						  2.0);
+	if (ev != inst_ok)
+		return ev;
+
+	p->maj = buf2short_le(obuf + 0);
+	p->min = buf2short_le(obuf + 2);
+	p->uro = buf2short_le(obuf + 4);
+
+	a1logd(p->log,2,"colorhug: Firware version = %d.%d.%d\n",p->maj,p->min,p->uro); 
+
+	return ev;
 }
 
 /* Set the device multiplier */
@@ -542,19 +532,26 @@ colorhug_get_postscale (colorhug *p, double *postscale)
 	return ev;
 }
 
+static inst_code set_default_disp_type(colorhug *p);
+
 /* Initialise the ColorHug */
 static inst_code
 colorhug_init_inst(inst *pp)
 {
 	colorhug *p = (colorhug *)pp;
 	inst_code ev;
+	int i;
 
-	if (p->debug)
-		fprintf(stderr,"colorhug: About to init instrument\n");
+	a1logd(p->log, 2, "colorhug_init_coms: About to init coms\n");
 
 	/* Must establish coms first */
 	if (p->gotcoms == 0)
 		return colorhug_interp_code((inst *)p, COLORHUG_NO_COMS);
+
+	/* Get the firmware version */
+	ev = colorhug_get_firmwareversion(p);
+	if (ev != inst_ok)
+		return ev;
 
 	/* Turn the LEDs off */
 	ev = colorhug_set_LEDs(p, 0x0);
@@ -571,15 +568,28 @@ colorhug_init_inst(inst *pp)
 	if (ev != inst_ok)
 		return ev;
 
-	/* Get the post scale factor */
-	ev = colorhug_get_postscale(p, &p->postscale);
-	if (ev != inst_ok)
-		return ev;
+	if (p->maj <= 1 && p->min <= 1 && p->uro <= 4) {
 
-	p->trig = inst_opt_trig_keyb;
+		/* Get the post scale factor */
+		ev = colorhug_get_postscale(p, &p->postscale);
+		if (ev != inst_ok)
+			return ev;
+
+	
+	/* In firmware >= 1.1.5, the postscale is done in the firmware */
+	} else {
+		p->postscale = 1.0;
+	}
+
+	p->trig = inst_opt_trig_user;
+
+	/* Setup the default display type */
+	if ((ev = set_default_disp_type(p)) != inst_ok) {
+		return ev;
+	}
+
 	p->inited = 1;
-	if (p->debug)
-		fprintf(stderr,"colorhug: instrument inited OK\n");
+	a1logd(p->log, 2, "colorhug_init: inited coms OK\n");
 
 	/* Flash the LEDs */
 	ev = colorhug_set_LEDs(p, 0x1);
@@ -598,7 +608,7 @@ colorhug_init_inst(inst *pp)
 	if (ev != inst_ok)
 		return ev;
 
-	return ev;
+	return inst_ok;
 }
 
 /* Read a single sample */
@@ -606,7 +616,8 @@ static inst_code
 colorhug_read_sample(
 inst *pp,
 char *name,			/* Strip name (7 chars) */
-ipatch *val) {		/* Pointer to instrument patch value */
+ipatch *val,		/* Pointer to instrument patch value */
+instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	colorhug *p = (colorhug *)pp;
 	int user_trig = 0;
 	int rv = inst_protocol_error;
@@ -616,25 +627,46 @@ ipatch *val) {		/* Pointer to instrument patch value */
 	if (!p->inited)
 		return inst_no_init;
 
-	if (p->trig == inst_opt_trig_keyb) {
-		int se;
-		if ((se = icoms_poll_user(p->icom, 1)) != ICOM_TRIG) {
-			/* Abort, term or command */
-			return colorhug_interp_code((inst *)p, icoms2colorhug_err(se));
+	if (p->trig == inst_opt_trig_user) {
+
+		if (p->uicallback == NULL) {
+			a1logd(p->log, 1, "colorhug: inst_opt_trig_user but no uicallback function set!\n");
+			return inst_unsupported;
 		}
-		user_trig = 1;
-		if (p->trig_return)
-			printf("\n");
+
+		for (;;) {
+			if ((rv = p->uicallback(p->uic_cntx, inst_armed)) != inst_ok) {
+				if (rv == inst_user_abort)
+					return rv;				/* Abort */
+				if (rv == inst_user_trig) {
+					user_trig = 1;
+					break;					/* Trigger */
+				}
+			}
+			msec_sleep(200);
+		}
+		/* Notify of trigger */
+		if (p->uicallback)
+			p->uicallback(p->uic_cntx, inst_triggered); 
+
+	/* Progromatic Trigger */
+	} else {
+		/* Check for abort */
+		if (p->uicallback != NULL
+		 && (rv = p->uicallback(p->uic_cntx, inst_armed)) == inst_user_abort)
+			return rv;				/* Abort */
 	}
 
 	/* Read the XYZ value */
-	if ((rv = colorhug_take_measurement(p, val->aXYZ)) != inst_ok) {
+	if ((rv = colorhug_take_measurement(p, val->XYZ)) != inst_ok) {
 		return rv;
 	}
+	/* This may not change anything since instrument may clamp */
+	if (clamp)
+		icmClamp3(val->XYZ, val->XYZ);
 
-	val->XYZ_v = 0;
-	val->aXYZ_v = 1;		/* These are absolute XYZ readings ? */
-	val->Lab_v = 0;
+	val->mtype = inst_mrt_emission;
+	val->XYZ_v = 1;		/* These are absolute XYZ readings ? */
 	val->sp.spec_n = 0;
 	val->duration = 0.0;
 
@@ -655,38 +687,18 @@ double mtx[3][3]
 	if (!p->inited)
 		return inst_no_init;
 
-	if (mtx == NULL)
+
+	if (mtx == NULL) {
 		icmSetUnity3x3(p->ccmat);
-	else
+	} else {
+		if (p->cbid == 0) {
+			a1loge(p->log, 1, "colorhug: can't set col_cor_mat over non base display type\n");
+			return inst_wrong_setup;
+		}
 		icmCpy3x3(p->ccmat, mtx);
+	}
 
 	return inst_ok;
-}
-
-/* Determine if a calibration is needed */
-inst_cal_type colorhug_needs_calibration(inst *pp) {
-	if (!pp->gotcoms)
-		return inst_no_coms;
-	if (!pp->inited)
-		return inst_no_init;
-
-	return inst_ok;
-}
-
-/* Request an instrument calibration */
-inst_code colorhug_calibrate(
-inst *pp,
-inst_cal_type calt,		/* Calibration type. inst_calt_all for all neeeded */
-inst_cal_cond *calc,	/* Current condition/desired condition */
-char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
-) {
-	if (!pp->gotcoms)
-		return inst_no_coms;
-	if (!pp->inited)
-		return inst_no_init;
-
-	id[0] = '\000';
-	return inst_unsupported;
 }
 
 /* Convert a machine specific error code into an abstract dtp code */
@@ -732,15 +744,6 @@ colorhug_interp_code(inst *pp, int ec) {
 		case COLORHUG_BAD_RET_CMD:
 		case COLORHUG_BAD_RET_STAT:
 			return inst_protocol_error | ec;
-
-		case COLORHUG_USER_ABORT:
-			return inst_user_abort | ec;
-		case COLORHUG_USER_TERM:
-			return inst_user_term | ec;
-		case COLORHUG_USER_TRIG:
-			return inst_user_trig | ec;
-		case COLORHUG_USER_CMND:
-			return inst_user_cmnd | ec;
 	}
 	return inst_other_error | ec;
 }
@@ -749,178 +752,277 @@ colorhug_interp_code(inst *pp, int ec) {
 static void
 colorhug_del(inst *pp) {
 	colorhug *p = (colorhug *)pp;
-	if (p->icom != NULL)
-		p->icom->del(p->icom);
-	free(p);
+	if (p != NULL) {
+		if (p->icom != NULL)
+			p->icom->del(p->icom);
+		inst_del_disptype_list(p->dtlist, p->ndtlist);
+		free(p);
+	}
 }
 
-/* Return the instrument capabilities */
-inst_capability colorhug_capabilities(inst *pp) {
-	inst_capability rv;
+/* Return the instrument mode capabilities */
+void colorhug_capabilities(inst *pp,
+inst_mode *pcap1,
+inst2_capability *pcap2,
+inst3_capability *pcap3) {
+	colorhug *p = (colorhug *)pp;
+	inst_mode cap = 0;
+	inst2_capability cap2 = 0;
 
-	rv = inst_emis_spot
-	   | inst_emis_disp
-	   | inst_emis_disptype
-	   | inst_colorimeter
-	   | inst_ccmx
-	;
+	cap |= inst_mode_emis_spot
+	    |  inst_mode_colorimeter
+	       ;
 
-	return rv;
+	cap2 |= inst2_prog_trig
+	     |  inst2_user_trig
+	     |  inst2_has_leds
+	     |  inst2_disptype
+	     |  inst2_ccmx
+	        ;
+
+	if (pcap1 != NULL)
+		*pcap1 = cap;
+	if (pcap2 != NULL)
+		*pcap2 = cap2;
+	if (pcap3 != NULL)
+		*pcap3 = inst3_none;
 }
 
-/* Return the instrument capabilities 2 */
-inst2_capability colorhug_capabilities2(inst *pp) {
-	inst2_capability rv = 0;
+/* Check device measurement mode */
+inst_code colorhug_check_mode(inst *pp, inst_mode m) {
+	colorhug *p = (colorhug *)pp;
+	inst_mode cap;
 
-	rv |= inst2_prog_trig;
-	rv |= inst2_keyb_trig;
-	rv |= inst2_has_leds;
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
 
-	return rv;
+	pp->capabilities(pp, &cap, NULL, NULL);
+
+	/* Simple test */
+	if (m & ~cap)
+		return inst_unsupported;
+
+	/* only display emission mode and ambient supported */
+	if (!IMODETST(m, inst_mode_emis_spot)
+	 && !IMODETST(m, inst_mode_emis_ambient)) {
+		return inst_unsupported;
+	}
+
+	return inst_ok;
+}
+
+/* Set device measurement mode */
+inst_code colorhug_set_mode(inst *pp, inst_mode m) {
+	colorhug *p = (colorhug *)pp;
+	inst_code ev;
+
+	if ((ev = colorhug_check_mode(pp, m)) != inst_ok)
+		return ev;
+
+	p->mode = m;
+
+	return inst_ok;
 }
 
 /* The HW handles up to 6, + 2 special */
-inst_disptypesel colorhug_disptypesel[7] = {
+static inst_disptypesel colorhug_disptypesel[7] = {
 	{
-		1,
-		"l",
-		"ColorHug: LCD, CCFL Backlight [Default]",
-		0
+		inst_dtflags_default,				/* flags */
+		0,									/* cbix */
+		"l",								/* sel */
+		"LCD, CCFL Backlight",				/* desc */
+		0,									/* refr */
+		0									/* ix */
 	},
 	{
-		2,
+		inst_dtflags_none,
+		0,
 		"c",
-		"ColorHug: CRT display",
+		"CRT display",
+		0,
 		1
 	},
 	{
-		3,
+		inst_dtflags_none,
+		0,
 		"p",
-		"ColorHug: Projector",
-		0
+		"Projector",
+		0,
+		2
 	},
 	{
-		4,
+		inst_dtflags_none,
+		0,
 		"e",
-		"ColorHug: LCD, White LED Backlight",
-		0
+		"LCD, White LED Backlight",
+		0,
+		3
 	},
 	{
-		11,
+		inst_dtflags_none,
+		1,
 		"F",
-		"ColorHug: Factory calibration (For calibration)",
-		0
+		"Factory matrix (For Calibration)",
+		0,
+		10
 	},
 	{
-		12,
+		inst_dtflags_none,
+		2,
 		"R",
-		"ColorHug: Raw Reading (For Factory Matrix Calibration)",
-		0
+		"Raw Reading (For Factory matrix Calibration)",
+		0,
+		11
 	},
 	{
+		inst_dtflags_end,
 		0,
 		"",
 		"",
-		-1
+		0,
+		0
 	}
 };
 
 /* Get mode and option details */
-static inst_code colorhug_get_opt_details(
+static inst_code colorhug_get_disptypesel(
 inst *pp,
-inst_optdet_type m,	/* Requested option detail type */
-...) {				/* Status parameters */                             
-
-	if (m == inst_optdet_disptypesel) {
-		va_list args;
-		int *pnsels;
-		inst_disptypesel **psels;
-
-		va_start(args, m);
-		pnsels = va_arg(args, int *);
-		psels = va_arg(args, inst_disptypesel **);
-		va_end(args);
-
-		*pnsels = 6;
-		*psels = colorhug_disptypesel;
-		
-		return inst_ok;
-	}
-
-	return inst_unsupported;
-}
-
-/* Set device measurement mode */
-inst_code colorhug_set_mode(inst *pp, inst_mode m)
-{
+int *pnsels,				/* Return number of display types */
+inst_disptypesel **psels,	/* Return the array of display types */
+int allconfig,				/* nz to return list for all configs, not just current. */
+int recreate				/* nz to re-check for new ccmx & ccss files */
+) {
 	colorhug *p = (colorhug *)pp;
-	inst_mode mm;		/* Measurement mode */
+	inst_code rv = inst_ok;
 
-	if (!p->gotcoms)
-		return inst_no_coms;
-	if (!p->inited)
-		return inst_no_init;
-
-	/* The measurement mode portion of the mode */
-	mm = m & inst_mode_measurement_mask;
-
-	/* only display emission mode and ambient supported */
-	if (mm != inst_mode_emis_spot
-	 && mm != inst_mode_emis_disp
-	 && mm != inst_mode_emis_ambient) {
-		return inst_unsupported;
+	/* Create/Re-create a current list of abailable display types */
+	if (p->dtlist == NULL || recreate) {
+		if ((rv = inst_creat_disptype_list(pp, &p->ndtlist, &p->dtlist,
+		    colorhug_disptypesel, 0 /* doccss*/, 1 /* doccmx */)) != inst_ok)
+			return rv;
 	}
 
-	/* Spectral mode is not supported */
-	if (m & inst_mode_spectral)
-		return inst_unsupported;
+	if (pnsels != NULL)
+		*pnsels = p->ndtlist;
 
-	p->mode = m;
+	if (psels != NULL)
+		*psels = p->dtlist;
+
 	return inst_ok;
 }
 
-/* Set or reset an optional mode */
+/* Given a display type entry, setup for that type */
+static inst_code set_disp_type(colorhug *p, inst_disptypesel *dentry) {
+	int ix;
+
+	/* The HW handles up to 6 calibrations */
+	ix = dentry->ix; 
+	if (ix != 10 && ix != 11 && (ix < 0 || ix > 3))
+		return inst_unsupported;
+
+	p->icx = ix;
+	p->refrmode = dentry->refr; 
+	p->cbid = dentry->cbid; 
+	if (dentry->flags & inst_dtflags_ccmx) {
+		icmCpy3x3(p->ccmat, dentry->mat);
+	} else {
+		icmSetUnity3x3(p->ccmat);
+	}
+
+	return inst_ok;
+}
+
+/* Setup the default display type */
+static inst_code set_default_disp_type(colorhug *p) {
+	inst_code ev;
+	int i;
+
+	if (p->dtlist == NULL) {
+		if ((ev = inst_creat_disptype_list((inst *)p, &p->ndtlist, &p->dtlist,
+		    colorhug_disptypesel, 0 /* doccss*/, 1 /* doccmx */)) != inst_ok)
+			return ev;
+	}
+
+	for (i = 0; !(p->dtlist[i].flags & inst_dtflags_end); i++) {
+		if (p->dtlist[i].flags & inst_dtflags_default)
+			break;
+	}
+	if (p->dtlist[i].flags & inst_dtflags_end) {
+		a1loge(p->log, 1, "set_default_disp_type: failed to find type!\n");
+		return inst_internal_error; 
+	}
+	if ((ev = set_disp_type(p, &p->dtlist[i])) != inst_ok) {
+		return ev;
+	}
+
+	return inst_ok;
+}
+
+/* Set the display type */
+static inst_code colorhug_set_disptype(inst *pp, int ix) {
+	colorhug *p = (colorhug *)pp;
+	inst_code ev;
+	inst_disptypesel *dentry;
+
+	if (p->dtlist == NULL) {
+		if ((ev = inst_creat_disptype_list(pp, &p->ndtlist, &p->dtlist,
+		    colorhug_disptypesel, 0 /* doccss*/, 1 /* doccmx */)) != inst_ok)
+			return ev;
+	}
+
+	if (ix < 0 || ix >= p->ndtlist)
+		return inst_unsupported;
+
+	dentry = &p->dtlist[ix];
+
+	if ((ev = set_disp_type(p, dentry)) != inst_ok) {
+		return ev;
+	}
+
+	return inst_ok;
+}
+
+/*
+ * Set or reset an optional mode.
+ *
+ * Some options talk to the instrument, and these will
+ * error if it hasn't been initialised.
+ */
 static inst_code
-colorhug_set_opt_mode(inst *pp, inst_opt_mode m, ...)
+colorhug_get_set_opt(inst *pp, inst_opt_type m, ...)
 {
 	colorhug *p = (colorhug *)pp;
+	inst_code ev = inst_ok;
+
+	/* Record the trigger mode */
+	if (m == inst_opt_trig_prog
+	 || m == inst_opt_trig_user) {
+		p->trig = m;
+		return inst_ok;
+	}
 
 	if (!p->gotcoms)
 		return inst_no_coms;
 	if (!p->inited)
 		return inst_no_init;
 
-	/* Set the display type */
-	if (m == inst_opt_disp_type) {
+	/* Get the display type information */
+	if (m == inst_opt_get_dtinfo) {
 		va_list args;
-		int ix;
+		int *refrmode, *cbid;
 
 		va_start(args, m);
-		ix = va_arg(args, int);
+		refrmode = va_arg(args, int *);
+		cbid = va_arg(args, int *);
 		va_end(args);
 
-		if (ix == 0)		/* Map default to 0 */
-			ix = 1;
+		if (refrmode != NULL)
+			*refrmode = p->refrmode;
+		if (cbid != NULL)
+			*cbid = p->cbid;
 
-		/* The HW handles up to 6 calibrations */
-		ix -= 1;			/* Convert to 0 based index */
-		if (ix != 10 && ix != 11 && (ix < 0 || ix > 3))
-			return inst_unsupported;
-		p->calix = ix;
-		return inst_ok;
-	}
-
-	/* Record the trigger mode */
-	if (m == inst_opt_trig_prog
-	 || m == inst_opt_trig_keyb) {
-		p->trig = m;
-		return inst_ok;
-	}
-	if (m == inst_opt_trig_return) {
-		p->trig_return = 1;
-		return inst_ok;
-	} else if (m == inst_opt_trig_no_return) {
-		p->trig_return = 0;
 		return inst_ok;
 	}
 
@@ -957,38 +1059,34 @@ colorhug_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 }
 
 /* Constructor */
-extern colorhug *new_colorhug(icoms *icom, instType itype, int debug, int verb)
-{
+extern colorhug *new_colorhug(icoms *icom, instType itype) {
 	colorhug *p;
-	if ((p = (colorhug *)calloc(sizeof(colorhug),1)) == NULL)
-		error("colorhug: malloc failed!");
+	int i;
 
-	if (icom == NULL)
-		p->icom = new_icoms();
-	else
-		p->icom = icom;
+	if ((p = (colorhug *)calloc(sizeof(colorhug),1)) == NULL) {
+		a1loge(icom->log, 1, "new_colorhug: malloc failed!\n");
+		return NULL;
+	}
 
-	p->debug = debug;
-	p->verb = verb;
-
-	/* Set the colorimeter correction matrix to do nothing */
-	icmSetUnity3x3(p->ccmat);
+	p->log = new_a1log_d(icom->log);
 
 	p->init_coms         = colorhug_init_coms;
 	p->init_inst         = colorhug_init_inst;
 	p->capabilities      = colorhug_capabilities;
-	p->capabilities2     = colorhug_capabilities2;
-	p->get_opt_details   = colorhug_get_opt_details;
+	p->check_mode        = colorhug_check_mode;
 	p->set_mode          = colorhug_set_mode;
-	p->set_opt_mode      = colorhug_set_opt_mode;
+	p->get_disptypesel   = colorhug_get_disptypesel;
+	p->set_disptype      = colorhug_set_disptype;
+	p->get_set_opt       = colorhug_get_set_opt;
 	p->read_sample       = colorhug_read_sample;
-	p->needs_calibration = colorhug_needs_calibration;
 	p->col_cor_mat       = colorhug_col_cor_mat;
-	p->calibrate         = colorhug_calibrate;
 	p->interp_error      = colorhug_interp_error;
 	p->del               = colorhug_del;
 
-	p->itype = itype;
+	p->icom = icom;
+	p->itype = icom->itype;
+
+	icmSetUnity3x3(p->ccmat);
 
 	return p;
 }

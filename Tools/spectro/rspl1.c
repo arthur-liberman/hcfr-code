@@ -26,15 +26,12 @@
 #undef DEBUG
 
 #ifdef DEBUG
-#ifdef DBG
-#undef DBG
-#undef dbgo
-#endif
-#define dbgo stderr
-#define DBG(aaa) fprintf aaa
+# define DBGA g_log, 0 		/* First argument to DBGF() */
+# define DBGF(xx)	a1logd xx
 #else
-#define DBG(aaa) 
+# define DBGF(xx)
 #endif
+
 
 /* Do an interpolation based on the grid */
 /* Use a linear interp between grid points. */
@@ -101,19 +98,19 @@ static int fit_rspl_imp(
 	int n;
 	double cw;
 
-	DBG((dbgo, "rspl1:fit_rspl_imp() with %d points called, dtp = %d\n",ndp,dtp));
+	DBGF((DBGA, "rspl1:fit_rspl_imp() with %d points called, dtp = %d\n",ndp,dtp));
 
 	/* Allocate space for interpolation grid */
 	t->nig = *gres;
 
 	if ((t->x   = dvector(0, t->nig)) == NULL) {
-		DBG((dbgo, "rspl1:Malloc of vector x failed\n"));
+		DBGF((DBGA, "rspl1:Malloc of vector x failed\n"));
 		return 1;
 	}
 
 	/* Normalize curve weight to grid resolution. */
 	cw = 0.0000005 * smooth * pow((t->nig-1),4.0) / (t->nig - 2);
-	DBG((dbgo, "rspl1:cw = %e\n",cw));
+	DBGF((DBGA, "rspl1:cw = %e\n",cw));
 
 	/* cw is multiplied by the sum of grid curvature errors squared to keep */
 	/* the same ratio with the sum of data position errors squared */
@@ -136,7 +133,7 @@ static int fit_rspl_imp(
 			if (dd[n].v[0] > t->dh)
 				t->dh = dd[n].v[0];
 
-			DBG((dbgo, "rspl1:Point %d = %f, %f\n",n,dd[n].p[0],dd[n].v[0]));
+			DBGF((DBGA, "rspl1:Point %d = %f, %f\n",n,dd[n].p[0],dd[n].v[0]));
 		}
 	} else if (dtp == 1) {
 		cow *dd = (cow *)d;
@@ -150,10 +147,10 @@ static int fit_rspl_imp(
 				t->dl = dd[n].v[0];
 			if (dd[n].v[0] > t->dh)
 				t->dh = dd[n].v[0];
-			DBG((dbgo, "rspl1:Point %d = %f, %f (%f)\n",n,dd[n].p[0],dd[n].v[0],dd[n].w));
+			DBGF((DBGA, "rspl1:Point %d = %f, %f (%f)\n",n,dd[n].p[0],dd[n].v[0],dd[n].w));
 		}
 	} else {
-		DBG((dbgo, "rspl1:Internal error, unknown dtp value %d\n",dtp));
+		DBGF((DBGA, "rspl1:Internal error, unknown dtp value %d\n",dtp));
 		return 1;
 	}
 
@@ -172,7 +169,7 @@ static int fit_rspl_imp(
 	t->vl  = vlow != NULL ? *vlow : 0.0;
 	t->vw  = ((vhigh != NULL ? *vhigh : 1.0) - t->vl);
 
-	DBG((dbgo, "rspl1:gl %f, gh %f, gw %f, vl %f, vw %f\n",t->gl,t->gh,t->gw,t->vl,t->vw));
+	DBGF((DBGA, "rspl1:gl %f, gh %f, gw %f, vl %f, vw %f\n",t->gl,t->gh,t->gw,t->vl,t->vw));
 
 	/* create smoothed grid data */
 	{
@@ -182,13 +179,13 @@ static int fit_rspl_imp(
 
 		/* We just store the diagonal of the A matrix */
 		if ((A = dmatrix(0, t->nig, 0, 2)) == NULL) {
-			DBG((dbgo, "rspl1:Malloc of matrix A failed\n"));
+			DBGF((DBGA, "rspl1:Malloc of matrix A failed\n"));
 			return 1;
 		}
 
 		if ((b = dvector(0,t->nig)) == NULL) {
 			free_dvector(b,0,t->nig);
-			DBG((dbgo, "rspl1:Malloc of vector b failed\n"));
+			DBGF((DBGA, "rspl1:Malloc of vector b failed\n"));
 			return 1;
 		}
 
@@ -217,7 +214,7 @@ static int fit_rspl_imp(
 				yv = dd[n].v[0];
 				wv = dd[n].w;
 			} else {
-				DBG((dbgo, "rspl1:Internal error, unknown dtp value %d\n",dtp));
+				DBGF((DBGA, "rspl1:Internal error, unknown dtp value %d\n",dtp));
 				return 1;
 			}
 			yv = (yv - t->vl)/t->vw;	/* Normalize the value */
@@ -257,16 +254,14 @@ static int fit_rspl_imp(
 		}
 
 #ifdef DEBUG
-		fprintf(dbgo, "A matrix:\n");
+		DBGF((DBGA, "A matrix:\n"));
 		for (i = 0; i < t->nig; i++) {
-			for (k = 0; k < 3; k++) {
-				fprintf(dbgo, "A[%d][%d] = %f\n",i,k,A[i][k]);
-			}
+			for (k = 0; k < 3; k++)
+				DBGF((DBGA, "A[%d][%d] = %f\n",i,k,A[i][k]));
 		}
-		fprintf(dbgo, "b vector:\n");
-		for (i = 0; i < t->nig; i++) {
-			fprintf(dbgo, "b[%d] = %f\n",i,b[i]);
-		}
+		DBGF((DBGA, "b vector:\n"));
+		for (i = 0; i < t->nig; i++)
+			DBGF((DBGA, "b[%d] = %f\n",i,b[i]));
 #endif /* DEBUG */
 
 		/* Apply Cholesky decomposition to A[][] to create L[][] */
@@ -281,7 +276,7 @@ static int fit_rspl_imp(
 					if (sm <= 0.0) {
 						free_dvector(b,0,t->nig);
 						free_dmatrix(A,0,t->nig,0,2);
-						DBG((dbgo, "rspl1:Sum is -ve - loss of accuracy ?\n"));
+						DBGF((DBGA, "rspl1:Sum is -ve - loss of accuracy ?\n"));
 						return 1;
 					}
 					A[i][0] = sqrt(sm);
@@ -311,9 +306,9 @@ static int fit_rspl_imp(
 			t->x[i] = sm/A[i][0];
 		}
 #ifdef DEBUG
-		fprintf(dbgo, "Solution vector:\n");
+		DBGF((DBGA, "Solution vector:\n"));
 		for (i = 0; i < t->nig; i++) {
-			fprintf(dbgo, "x[%d] = %f\n",i,t->x[i]);
+			DBGF((DBGA, "x[%d] = %f\n",i,t->x[i]));
 		}
 #endif /* DEBUG */
 
@@ -372,12 +367,12 @@ rspl *new_rspl(int flags, int di, int fdi) {
 	rspl *t;	/* this */
 
 	if (flags != RSPL_NOFLAGS || di != 1 || fdi != 1) {
-		DBG((dbgo, "rspl1:Can't handle general rspl: flags %d, di %d, do %d\n",flags,di,fdi));
+		DBGF((DBGA, "rspl1:Can't handle general rspl: flags %d, di %d, do %d\n",flags,di,fdi));
 		return NULL;
 	}
 
 	if ((t = (rspl *)calloc(1, sizeof(rspl))) == NULL) {
-		DBG((dbgo, "rspl1:Malloc of structure failed\n"));
+		DBGF((DBGA, "rspl1:Malloc of structure failed\n"));
 		return NULL;
 	}
 

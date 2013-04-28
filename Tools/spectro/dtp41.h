@@ -8,7 +8,7 @@
  * Author: Graeme W. Gill
  * Date:   10/3/2001
  *
- * Copyright 1996 - 2007 Graeme W. Gill
+ * Copyright 1996 - 2013 Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -42,10 +42,6 @@
 #define DTP41_COMS_FAIL				0x62			/* Communication failure */
 #define DTP41_UNKNOWN_MODEL			0x63			/* Not a DPT51 or DTP52 */
 #define DTP41_DATA_PARSE_ERROR  	0x64			/* Read data parsing error */
-#define DTP41_USER_ABORT		    0x65			/* User hit abort */
-#define DTP41_USER_TERM		    	0x66			/* User hit terminate */
-#define DTP41_USER_TRIG 		    0x67			/* User hit trigger */
-#define DTP41_USER_CMND		    	0x68			/* User hit command */
 
 /* Real error code */
 #define DTP41_OK   					0x00
@@ -59,7 +55,6 @@
 #define DTP41_BAD_PARAMETERS		0x12
 #define DTP41_PRM_RANGE_ERROR		0x13
 #define DTP41_BUSY					0x14
-#define DTP41_USER_ABORT_ERROR	    0x15
 
 #define DTP41_MEASUREMENT_ERROR		0x20
 #define DTP41_TIMEOUT				0x21
@@ -96,20 +91,20 @@ struct _dtp41 {
 	INST_OBJ_BASE
 
 	/* *** DTP41 private data **** */
-	inst_capability  cap;		/* Instrument capability */
+	inst_mode  cap;				/* Instrument mode capability */
 	inst2_capability cap2;		/* Instrument capability */
+	inst3_capability cap3;		/* Instrument capability 3 */
 	inst_mode    mode;			/* Currently instrument mode */
 	inst_mode    lastmode;		/* Last requested mode */
 
 	int nstaticr;				/* Number of static readings */
 	int need_cal;				/* needs calibration */
-	inst_opt_mode trig;			/* Reading trigger mode */
-	int trig_return;			/* Emit "\n" after trigger */
+	inst_opt_type trig;			/* Reading trigger mode */
 	
 	}; typedef struct _dtp41 dtp41;
 
 /* Constructor */
-extern dtp41 *new_dtp41(icoms *icom, instType itype, int debug, int verb);
+extern dtp41 *new_dtp41(icoms *icom, instType itype);
 
 #define DTP41_H
 #endif /* DTP41_H */

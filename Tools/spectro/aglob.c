@@ -36,7 +36,7 @@
 # include <io.h>
 #endif
 
-#if defined (UNIX) || defined(__APPLE__)
+#if defined (UNIX)
 # include <unistd.h>
 # include <glob.h>
 # include <pthread.h>
@@ -50,6 +50,7 @@
 #include <string.h>
 #include <time.h>
 
+#include "numsup.h"
 #include "aglob.h"
 
 /* Create the aglob */
@@ -65,8 +66,10 @@ int aglob_create(aglob *g, char *spath) {
 	else
 		rlen = pp - spath + 1;
 
-	if ((g->base = malloc(rlen + 1)) == NULL)
+	if ((g->base = malloc(rlen + 1)) == NULL) {
+		a1loge(g_log, 1, "aglob_create: malloc failed\n");
 		return 1;
+	}
 
 	memmove(g->base, spath, rlen);
 	g->base[rlen] = '\000';
@@ -74,9 +77,13 @@ int aglob_create(aglob *g, char *spath) {
 	g->first = 1;
     g->ff = _findfirst(spath, &g->ffs);
 #else /* UNIX */
+	memset(&g->g, 0, sizeof(g->g));
 	g->rv = glob(spath, GLOB_NOSORT, NULL, &g->g);
-	if (g->rv == GLOB_NOSPACE)
+//a1loge(g_log, 0, "~1 glob '%s' returns %d and gl_pathc = %d\n",spath,g->rv,g->g.gl_pathc);
+	if (g->rv == GLOB_NOSPACE) {
+		a1loge(g_log, 1, "aglob_create: glob returned GLOB_NOSPACE\n");
 		return 1;
+	}
 	g->ix = 0;
 #endif
 	g->merr = 0;
@@ -101,6 +108,7 @@ char *aglob_next(aglob *g) {
 
 	/* Convert match filename to full path */
 	if ((fpath = malloc(strlen(g->base) + strlen(g->ffs.name) + 1)) == NULL) {
+		a1loge(g_log, 1, "aglob_next: malloc failed\n");
 		g->merr = 1;
 		return NULL;
 	}
@@ -111,6 +119,7 @@ char *aglob_next(aglob *g) {
 	if (g->rv != 0 || g->ix >= g->g.gl_pathc)
 		return NULL;
 	if ((fpath = strdup(g->g.gl_pathv[g->ix])) == NULL) {
+		a1loge(g_log, 1, "aglob_next: strdup failed\n");
 		g->merr = 1;
 		return NULL;
 	}
