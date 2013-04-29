@@ -24,6 +24,7 @@
 #include "stdafx.h"
 #include "ColorHCFR.h"
 #include "ManualDVDGenerator.h"
+#include "math.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
