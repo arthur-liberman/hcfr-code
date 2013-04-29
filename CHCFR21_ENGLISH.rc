@@ -1346,6 +1346,7 @@ BEGIN
     BEGIN
         MENUITEM "Display grays",               IDM_CIE_SHOWGRAYSCALE
         MENUITEM "Display saturations",         IDM_CIE_SHOWSATURATIONSCALE
+        MENUITEM "Display saturations targets", IDM_CIE_SHOWSATURATIONSCALETARG
         MENUITEM "Display free measures",       IDM_CIE_SHOWMEASUREMENTS
         MENUITEM "Display reference measure",   IDM_LUM_GRAPH_DATAREF
         MENUITEM SEPARATOR
@@ -2547,7 +2548,9 @@ BEGIN
     IDM_VIEW_TESTCOLOR      "Display test colors\nTest colors"
     IDM_CIE_SHOWSATURATIONSCALE 
                             "Show saturation scale points\nDisplay saturation points"
-    ID_UNITS_xyz_2          "xyz"
+	IDM_CIE_SHOWSATURATIONSCALETARG
+							"Show saturation scale targets\nDisplay saturation targets"
+	ID_UNITS_xyz_2          "xyz"
 END
 
 STRINGTABLE 

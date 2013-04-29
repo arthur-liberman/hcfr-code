@@ -1353,6 +1353,7 @@ BEGIN
     BEGIN
         MENUITEM "Grau anzeigen",               IDM_CIE_SHOWGRAYSCALE
         MENUITEM "Sättigung anzeigen",          IDM_CIE_SHOWSATURATIONSCALE
+        MENUITEM "Display saturations targets", IDM_CIE_SHOWSATURATIONSCALETARG
         MENUITEM "Messungen anzeigen",          IDM_CIE_SHOWMEASUREMENTS
         MENUITEM "Referenzmessung anzeigen",    IDM_LUM_GRAPH_DATAREF
         MENUITEM SEPARATOR
@@ -2489,6 +2490,8 @@ BEGIN
     IDM_VIEW_TESTCOLOR      "Farbtest anzeigen\nFarbtest"
     IDM_CIE_SHOWSATURATIONSCALE 
                             "Skalenpunkte Sättigung anzeigen\nSättigungspunkte anzeigen"
+	IDM_CIE_SHOWSATURATIONSCALETARG
+							"Show saturation scale targets\nDisplay saturation targets"
     ID_UNITS_xyz_2          "xyz"
 END
 

@@ -177,8 +177,9 @@ ColorxyY primariesRec709a[3] ={	ColorxyY(0.5575, 0.3298), //75% sat/lum Rec709 w
 ColorxyY primariesCC6[3] ={	ColorxyY(0.3877, 0.3528), //some color check references, secondardies will add 3 more
 								ColorxyY(0.2472, 0.2663),
 								ColorxyY(0.3415, 0.4315)};
-/* The 75% saturation 75% amplitude and color checker xy locations are calculated assuming gamma=2.22 and starting with the follow triplets
-and then used as pseudo-primaries/secondaries as follows
+
+/* The 75% saturation 75% amplitude and color checker xy locations are calculated 
+assuming gamma=2.22, starting with the follow triplets from the GCD disk, and then used as pseudo-primaries/secondaries
 
 75% (16-235)
 	R	G	B	Y	C	M
