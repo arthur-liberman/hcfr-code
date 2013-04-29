@@ -390,15 +390,15 @@ bool Matrix::IsIdentity() const
 {
     if(m_nCols != m_nRows) return false;
 
-    for(int i=0; i<m_nCols; ++i) 
+    for(int i=0; i<m_nRows; ++i) 
     {
-        for(int j=0; j<m_nRows; ++j) 
+        for(int j=0; j<m_nCols; ++j) 
         {
             if(i == j && m_pData[i * m_nCols + j] != 1.0)
             {
                 return false;
             }
-            else if(m_pData[i * m_nCols + j] != 0.0) 
+            if(i != j && m_pData[i * m_nCols + j] != 0.0) 
             {
                 return false;
             }
