@@ -36,7 +36,9 @@ typedef enum
 	PALSECAM = 0,
 	SDTV = 1,
 	HDTV = 2,
-	sRGB = 3,
+	HDTVa = 3,
+	CC6 = 4,
+	sRGB = 5
 } ColorStandard;
 
 typedef enum 
@@ -275,11 +277,112 @@ public:
 	ColorXYZ GetMagenta() const { return magentaSecondary; }
 	
 	// Primary colors relative-to-white luminance, depending on color standard. White luma reference value is 1.
-	double GetRedReferenceLuma () const { return RGBtoXYZMatrix(1,0); /*0.212671 in Rec709*/ }
-	double GetGreenReferenceLuma () const { return RGBtoXYZMatrix(1,1); /*0.715160 in Rec709*/ }
-	double GetBlueReferenceLuma () const { return RGBtoXYZMatrix(1,2); /*0.072169 in Rec709*/ }
+	//standard 3 added 75% of rec709 colorspace to be used with 75% saturation patterns so ref luma is the same as full colorspace
+	//standard 5 added a set of 6 color checker patterns
 
-	
+	double GetRedReferenceLuma () const
+	{ 
+		double luma;
+		switch(m_standard)
+		{
+			case 3:
+				luma = 0.214;
+				break;
+			case 4:
+				luma = 0.348;
+				break;
+			default:
+				luma = RGBtoXYZMatrix(1,0); 
+				break;
+		}
+		return luma;
+	}
+	double GetGreenReferenceLuma () const
+	{ 
+		double luma;
+		switch(m_standard)
+		{
+			case 3:
+				luma = 0.709;
+				break;
+			case 4:
+				luma = 0.186;
+				break;
+			default:
+				luma = RGBtoXYZMatrix(1,1); 
+				break;
+		}
+		return luma;
+	}
+	double GetBlueReferenceLuma () const
+	{ 
+		double luma;
+		switch(m_standard)
+		{
+			case 3:
+				luma = 0.075;
+				break;
+			case 4:
+				luma = 0.132;
+				break;
+			default:
+				luma = RGBtoXYZMatrix(1,2); 
+				break;
+		}
+		return luma;
+	}
+	double GetYellowReferenceLuma () const
+	{ 
+		double luma;
+		switch(m_standard)
+		{
+			case 3:
+				luma = 0.939;
+				break;
+			case 4:
+				luma = 0.116;
+				break;
+			default:
+				luma = RGBtoXYZMatrix(1,1)+RGBtoXYZMatrix(1,0); 
+				break;
+		}
+		return luma;
+	}
+	double GetCyanReferenceLuma () const
+	{ 
+		double luma;
+		switch(m_standard)
+		{
+			case 3:
+				luma = 0.787;
+				break;
+			case 4:
+				luma = 0.444;
+				break;
+			default:
+				luma = RGBtoXYZMatrix(1,1)+RGBtoXYZMatrix(1,2); 
+				break;
+		}
+		return luma;
+	}
+	double GetMagentaReferenceLuma () const
+	{ 
+		double luma;
+		switch(m_standard)
+		{
+			case 3:
+				luma = 0.289;
+				break;
+			case 4:
+				luma = 0.426;
+				break;
+			default:
+				luma = RGBtoXYZMatrix(1,0)+RGBtoXYZMatrix(1,2); 
+				break;
+		}
+		return luma;
+	}
+
 #ifdef LIBHCFR_HAS_MFC
     void Serialize(CArchive& archive);
 #endif
@@ -295,8 +398,8 @@ extern CColor noDataColor;
 // Tool functions
 extern void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int nSteps, bool bRed, bool bGreen, bool bBlue);
 extern Matrix ComputeConversionMatrix(const ColorXYZ measures[3], const ColorXYZ references[3], const ColorXYZ & WhiteTest, const ColorXYZ & WhiteRef, bool	bUseOnlyPrimaries);
-double ArrayIndexToGrayLevel ( int nCol, int nSize);
-double GrayLevelToGrayProp ( double Level );
+double ArrayIndexToGrayLevel ( int nCol, int nSize, bool m_bUseRoundDown);
+double GrayLevelToGrayProp ( double Level, bool m_bUseRoundDown );
 
 
 #endif // !defined(COLOR_H_INCLUDED_)

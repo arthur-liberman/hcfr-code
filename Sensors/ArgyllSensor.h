@@ -68,7 +68,7 @@ public:
     virtual void SetPropertiesSheetValues();
     virtual void GetPropertiesSheetValues();
 
-    virtual LPCSTR GetStandardSubDir ()    { return "Calibration Argyll"; }
+    virtual LPCSTR GetStandardSubDir ()    { return "Etalon_Argyll"; }
 
     void Calibrate();
 

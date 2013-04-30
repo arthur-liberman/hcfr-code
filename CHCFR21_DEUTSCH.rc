@@ -258,8 +258,8 @@ BEGIN
     CONTROL         "Keine",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,134,34,10
     CONTROL         "Weiß",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,69,134,33,10
     CONTROL         "Weiß und Schwarz",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,115,134,76,10
-    GROUPBOX        "Referenzfarben für Sättingungsgraphen",IDC_STATIC,7,151,198,26,WS_GROUP
-    CONTROL         "Gemessene Farben benutzen (wenn verfügbar)",IDC_CHECK_SATREF_MEASURES,
+    GROUPBOX        "Gray levels rounding assumption",IDC_STATIC,7,151,198,26,WS_GROUP
+    CONTROL         "Use round down levels (AVSHD, DVE)",IDC_CHECK_USE_ROUNDDOWN,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,162,164,10
 END
 
@@ -585,7 +585,8 @@ BEGIN
                     "Button",BS_AUTORADIOBUTTON,12,85,153,10
     CONTROL         "Kamera Gamma, manuelles Offset",IDC_GAMMA_OFFSET_RADIO4,
                     "Button",BS_AUTORADIOBUTTON,12,97,118,10,WS_EX_TRANSPARENT
-    CONTROL         "Optimiert (Regression)",IDC_GAMMA_OFFSET_RADIO5,"Button",BS_AUTORADIOBUTTON,12,109,90,10,WS_EX_TRANSPARENT
+//    CONTROL         "Optimiert (Regression)",IDC_GAMMA_OFFSET_RADIO5,"Button",BS_AUTORADIOBUTTON,12,109,90,10,WS_EX_TRANSPARENT
+	CONTROL         "ITU-R BT.1886",IDC_GAMMA_OFFSET_RADIO5,"Button",BS_AUTORADIOBUTTON,12,109,93,10,WS_EX_TRANSPARENT
     EDITTEXT        IDC_EDIT_MANUAL_GOFFSET,135,95,41,13,ES_AUTOHSCROLL | WS_GROUP
     GROUPBOX        "Gamma Referenz",IDC_STATIC,7,126,84,29,WS_GROUP
     EDITTEXT        IDC_EDIT_GAMMA_REF,18,137,58,12,ES_AUTOHSCROLL | WS_GROUP
@@ -770,9 +771,9 @@ BEGIN
     GROUPBOX        "Anzeige",IDC_DISPLAY_GROUP,466,40,49,65
     CONTROL         "Sensor",IDC_SENSORRGB_RADIO,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,470,54,44,8,WS_EX_TRANSPARENT
     CONTROL         "RGB",IDC_RGB_RADIO,"Button",BS_AUTORADIOBUTTON,470,64,44,8,WS_EX_TRANSPARENT
-    CONTROL         "XYZ",IDC_XYZ_RADIO,"Button",BS_AUTORADIOBUTTON,470,74,44,8
-    CONTROL         "xyz",IDC_XYZ_RADIO2,"Button",BS_AUTORADIOBUTTON,470,84,44,8
-    CONTROL         "xyY",IDC_XYY_RADIO,"Button",BS_AUTORADIOBUTTON,470,94,44,8
+    CONTROL         "XYZ",IDC_XYZ_RADIO,"Button",BS_AUTORADIOBUTTON,470,74,44,8,WS_EX_TRANSPARENT
+    CONTROL         "xyz",IDC_XYZ_RADIO2,"Button",BS_AUTORADIOBUTTON,470,84,44,8,WS_EX_TRANSPARENT
+    CONTROL         "xyY",IDC_XYY_RADIO,"Button",BS_AUTORADIOBUTTON,470,94,44,8,WS_EX_TRANSPARENT
     PUSHBUTTON      "Start",IDC_MEASUREGRAYSCALE_BUTTON,467,107,47,21
     PUSHBUTTON      "Löschen",IDC_DELETEGRAYSCALE_BUTTON,467,130,47,21,0,WS_EX_TRANSPARENT
     GROUPBOX        "Gewählte Farbe",IDC_SELECTION_GROUP,4,153,171,173
@@ -813,9 +814,11 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,153,189,10
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ | WS_GROUP,7,149,199,1
     GROUPBOX        "Delta E",IDC_STATIC,7,172,199,38,WS_GROUP
-    CONTROL         "Helligkeit nicht in der Delta E Formel verwenden (V1.x)",IDC_CHECK_OLD_DELTAE,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,183,187,10
-    CONTROL         "Gamma Referenz für Graustufen Delta E benutzen",IDC_CHECK_DELTAE_GRAY_LUMA,
+//    CONTROL         "Helligkeit nicht in der Delta E Formel verwenden (V1.x)",IDC_CHECK_OLD_DELTAE,
+//                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,183,187,10
+	CONTROL         "Use Luv instead of CIE94 delta E formula (V2.x)",IDC_CHECK_OLD_DELTAE,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,183,170,10
+	CONTROL         "Gamma Referenz für Graustufen Delta E benutzen",IDC_CHECK_DELTAE_GRAY_LUMA,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,195,174,10
 END
 
@@ -926,6 +929,12 @@ IDB_POINT_BITMAP        BITMAP                  "res\\target.bmp"
 IDB_REFBLUEPRIMARY_BITMAP BITMAP                  "res\\refblueprimary.bmp"
 IDB_REFGREENPRIMARY_BITMAP BITMAP                  "res\\refgreenprimary.bmp"
 IDB_REFREDPRIMARY_BITMAP BITMAP                  "res\\refredprimary.bmp"
+IDB_REFBLUESAT_BITMAP BITMAP                  "res\\refbluesat.bmp"
+IDB_REFGREENSAT_BITMAP BITMAP                  "res\\refgreensat.bmp"
+IDB_REFREDSAT_BITMAP BITMAP                  "res\\refredsat.bmp"
+IDB_REFYELLOWSAT_BITMAP BITMAP             "res\\refyellowsat.bmp"
+IDB_REFCYANSAT_BITMAP BITMAP               "res\\refcyansat.bmp"
+IDB_REFMAGENTASAT_BITMAP BITMAP            "res\\refmagentasat.bmp"
 IDB_ILLUMINANTPOINT_BITMAP BITMAP                  "res\\illuminantplot.bmp"
 IDB_COLORTEMPPOINT_BITMAP BITMAP                  "res\\colortempplot.bmp"
 IDB_BLUEPRIMARY_BITMAP  BITMAP                  "res\\blueprimary.bmp"
@@ -936,7 +945,7 @@ IDB_CYANSECONDARY_BITMAP BITMAP                  "res\\cyansecondary.bmp"
 IDB_REDPRIMARY_BITMAP   BITMAP                  "res\\redprimary.bmp"
 IDB_GRAYPLOT_BITMAP     BITMAP                  "res\\grayplot.bmp"
 IDB_MEASUREPLOT_BITMAP  BITMAP                  "res\\measureplot.bmp"
-IDB_SELECTEDLOT_BITMAP  BITMAP                  "res\\selectedplot.bmp"
+IDB_SELECTEDPLOT_BITMAP  BITMAP                  "res\\selectedplot.bmp"
 IDB_ANSICONTRAST_BITMAP BITMAP                  "res\\bitmap1.bmp"
 IDB_LOGO                BITMAP                  "res\\logo.bmp"
 IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
@@ -1102,6 +1111,10 @@ BEGIN
 0x4353, 0x0029, 
     IDC_COLORREF_COMBO, 0x403, 15, 0
 0x4448, 0x5654, 0x2d20, 0x5220, 0x4345, 0x3720, 0x3930, "\000" 
+    IDC_COLORREF_COMBO, 0x403, 21, 0
+0x4448, 0x5654, 0x2d20, 0x5220, 0x4345, 0x3720, 0x3930, 0x2820, 0x3537, 0x2925, "\000" 
+	IDC_COLORREF_COMBO, 0x403, 4, 0
+0x4343, 0x0036,
     IDC_COLORREF_COMBO, 0x403, 5, 0
 0x5273, 0x4247, "\000" 
     IDC_WHITETARGET_COMBO, 0x403, 4, 0
@@ -1340,6 +1353,7 @@ BEGIN
     BEGIN
         MENUITEM "Grau anzeigen",               IDM_CIE_SHOWGRAYSCALE
         MENUITEM "Sättigung anzeigen",          IDM_CIE_SHOWSATURATIONSCALE
+        MENUITEM "Display saturations targets", IDM_CIE_SHOWSATURATIONSCALETARG
         MENUITEM "Messungen anzeigen",          IDM_CIE_SHOWMEASUREMENTS
         MENUITEM "Referenzmessung anzeigen",    IDM_LUM_GRAPH_DATAREF
         MENUITEM SEPARATOR
@@ -1710,11 +1724,14 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "Kalibrierungsdatei"
         BEGIN
+			MENUITEM "Manually edit XYZ matrix", IDM_MANUALLY_EDIT_SENSOR  //translate
+			MENUITEM SEPARATOR
             MENUITEM "Create using Existing Reference Measures", IDM_CALIBRATION_EXISTING
             MENUITEM "Aus simultanen Messungen erstellen", IDM_CALIBRATION_SIM
             MENUITEM "Manuell mit einem Referenz Colorimeter erstellen", IDM_CALIBRATION_MANUAL
             MENUITEM SEPARATOR
             MENUITEM "Kalibrierungsdatei speichern...", IDM_SAVE_CALIBRATION_FILE
+            MENUITEM "Load meter correction file...", IDM_LOAD_CALIBRATION_FILE //translate
         END
         POPUP "Simultane Messungen"
         BEGIN
@@ -2186,12 +2203,12 @@ BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "CompanyName", "Association Homecinema Francophone"
             VALUE "FileDescription", "HCFR Colorimeter resources"
-            VALUE "FileVersion", "2, 1, 0, 0"
+            VALUE "FileVersion", "3, 0, 4, 2"
             VALUE "InternalName", "CHCFR21_DEUTSCH"
             VALUE "LegalCopyright", "Copyright (C) 2005-2008"
             VALUE "OriginalFilename", "CHCFR21_DEUTSCH.DLL"
             VALUE "ProductName", "HCFR Colorimeter German language"
-            VALUE "ProductVersion", "2, 1, 0, 0"
+            VALUE "ProductVersion", "3, 0, 4, 2"
         END
     END
     BLOCK "VarFileInfo"
@@ -2465,6 +2482,7 @@ BEGIN
     IDM_CONFIGURE_GENERATOR "Bildquellenparameter konfigurieren"
     IDM_CHANGE_SENSOR       "Sensor auswählen"
     IDM_CHANGE_GENERATOR    "Bildquelle auswählen"
+	IDM_LOAD_CALIBRATION_FILE "Select new calibration file" //translate
 END
 
 STRINGTABLE 
@@ -2472,6 +2490,8 @@ BEGIN
     IDM_VIEW_TESTCOLOR      "Farbtest anzeigen\nFarbtest"
     IDM_CIE_SHOWSATURATIONSCALE 
                             "Skalenpunkte Sättigung anzeigen\nSättigungspunkte anzeigen"
+	IDM_CIE_SHOWSATURATIONSCALETARG
+							"Show saturation scale targets\nDisplay saturation targets"
     ID_UNITS_xyz_2          "xyz"
 END
 
@@ -2527,6 +2547,9 @@ BEGIN
     IDS_GREEN               "Grün"
     IDS_S2SENSOR_NAME       "Spyder II"
     IDS_BLUE                "Blau"
+	IDS_CC6a                 "Light Skin"
+    IDS_CC6b                "Blue Sky"
+    IDS_CC6c                "Foliage"
     IDS_WHITE               "Weiß"
     IDS_BLACK               "Schwarz"
     IDS_ERRADDITIVITY       "Farbadditionsfehler"
@@ -2565,6 +2588,9 @@ BEGIN
     IDS_YELLOW              "Gelb"
     IDS_CYAN                "Cyan"
     IDS_MAGENTA             "Magenta"
+	IDS_CC6d				"Purplish Blue"
+    IDS_CC6e                "Yellow Green"
+    IDS_CC6f				"Orange Yellow"
     IDS_MEASURENEARBLACK    "Abstufungen nahe Schwarz messen"
     IDS_MEASURENEARWHITE    "Abstufungen nahe Weiß messen"
     IDS_MEASURESATRED       "Rot-Sättigung messen"
@@ -2625,12 +2651,24 @@ BEGIN
     IDS_REC709REDREF        "Rec709 Rot Referenz"
     IDS_REC709GREENREF      "Rec709 Grün Referenz"
     IDS_REC709BLUEREF       "Rec709 Blau Referenz"
+	IDS_REC709aREDREF        "Rec709 (75%) Red Reference"
+    IDS_REC709aGREENREF      "Rec709 (75%) Green Reference"
+    IDS_REC709aBLUEREF       "Rec709 (75%) Blue Reference"
+	IDS_RECCC6REDREF        "Light Skin Reference"
+    IDS_RECCC6GREENREF      "Blue Sky Reference"
+    IDS_RECCC6BLUEREF       "Foliage Reference"
     IDS_REDPRIMARY          "Primärfarbe Rot"
     IDS_GREENPRIMARY        "Primärfarbe Grün"
     IDS_BLUEPRIMARY         "Primärfarbe Blau"
     IDS_YELLOWSECONDARY     "Sekundärfarbe Gelb"
     IDS_CYANSECONDARY       "Sekundärfarbe Cyan"
     IDS_MAGENTASECONDARY    "Sekundärfarbe Magenta"
+	IDS_CC6REDPRIMARY       "Light Skin"
+    IDS_CC6GREENPRIMARY		"Blue Sky"
+    IDS_CC6BLUEPRIMARY      "Foliage"
+    IDS_CC6YELLOWSECONDARY  "Purplish Blue"
+    IDS_CC6CYANSECONDARY	"Yellow Green"
+    IDS_CC6MAGENTASECONDARY	"Orange Yellow"
     IDS_GRAYIRE             "Grau %d IRE"
 END
 
@@ -2642,6 +2680,12 @@ BEGIN
     IDS_YELLOWSATPERCENT    "Gelb gesättigt bei %d%%"
     IDS_CYANSATPERCENT      "Cyan gesättigt bei %d%%"
     IDS_MAGENTASATPERCENT   "Magenta gesättigt bei %d%%"
+	IDS_REDSATPERCENTREF       "Red Saturated at %d%% reference"
+    IDS_GREENSATPERCENTREF     "Green Saturated at %d%% reference"
+    IDS_BLUESATPERCENTREF      "Blue Saturated at %d%% reference"
+    IDS_YELLOWSATPERCENTREF    "Yellow Saturated at %d%% reference"
+    IDS_CYANSATPERCENTREF      "Cyan Saturated at %d%% reference"
+    IDS_MAGENTASATPERCENTREF   "Magenta Saturated at %d%% reference"
     IDS_MEASURENUM          "Messung %d"
     IDS_SELECTION           "Gewählte Farbe"
     IDS_COLORTEMP           "Farbtemperatur"
@@ -2847,6 +2891,9 @@ BEGIN
     IDS_YELLOWSECONDARYREF  "Referenz Sekundärfarbe Gelb"
     IDS_CYANSECONDARYREF    "Referenz Sekundärfarbe Cyan"
     IDS_MAGENTASECONDARYREF "Referenz Sekundärfarbe Magenta"
+	IDS_CC6YELLOWSECONDARYREF  "Purplish Blue reference"
+    IDS_CC6CYANSECONDARYREF    "Yellow Green reference"
+    IDS_CC6MAGENTASECONDARYREF "Orange Yellow reference"
     IDS_DELTAEBETWEENDATAANDREF "Delta E zwischen Messung und Referenz"
     IDS_GERMANVERSION       "Deutsche Übersetzung"
     IDS_EYEONE              "Eye One"

@@ -170,11 +170,38 @@ ColorxyY primariesRec709[3] ={	ColorxyY(0.6400, 0.3300),
 								ColorxyY(0.3000, 0.6000),
 								ColorxyY(0.1500, 0.0600) };
 
+ColorxyY primariesRec709a[3] ={	ColorxyY(0.5575, 0.3298), //75% sat/lum Rec709 w/2.22 gamma
+								ColorxyY(0.3032, 0.5313),
+								ColorxyY(0.1911, 0.1279) };
+
+ColorxyY primariesCC6[3] ={	ColorxyY(0.3877, 0.3528), //some color check references, secondardies will add 3 more
+								ColorxyY(0.2472, 0.2663),
+								ColorxyY(0.3415, 0.4315)};
+
+/* The 75% saturation 75% amplitude and color checker xy locations are calculated 
+assuming gamma=2.22, starting with the follow triplets from the GCD disk, and then used as pseudo-primaries/secondaries
+
+75% (16-235)
+	R	G	B	Y	C	M
+R'	165	77	58	180	95	156
+G'	60	176	58	180	176	80
+B'	60	77	126	88	176	156
+
+CC6 (16-235)
+	R	G	B	Y	C	M
+R'	187	95	94	77	152	213
+G'	142	121	109	95	178	154
+B'	127	149	74	161	100	54
+
+*/
+
+
 Matrix ComputeRGBtoXYZMatrix(Matrix primariesChromacities,Matrix whiteChromacity)
 {
 	// Compute RGB to XYZ matrix
 	Matrix coefJ(0.0,3,1);
 	coefJ=primariesChromacities.GetInverse();
+
 	coefJ=coefJ*whiteChromacity;
 
 	Matrix scaling(0.0,3,3);
@@ -220,6 +247,24 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
             primaries = primariesRec709;
 			break;
 		}
+		case HDTVa:
+		{
+			standardName="75% HDTV Rec709";
+			whiteColor=illuminantD65;
+			whiteName="D65";
+			m_white=D65;
+            primaries = primariesRec709a;
+			break;
+		}
+		case CC6:
+		{
+			standardName="Color Checker 6";
+			whiteColor=illuminantD65;
+			whiteName="D65";
+			m_white=D65;
+            primaries = primariesCC6;
+			break;
+		}
 		case sRGB:
 		{
 			standardName="sRGB";
@@ -241,7 +286,6 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
     redPrimary = ColorXYZ(primaries[0]);
     greenPrimary = ColorXYZ(primaries[1]);
     bluePrimary = ColorXYZ(primaries[2]);
-
 
 	if(aWhiteTarget != Default)
 		m_white = aWhiteTarget;
@@ -295,8 +339,10 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
     // Compute transformation matrices
 	Matrix primariesMatrix(redPrimary);
 	primariesMatrix.CMAC(greenPrimary);
-	primariesMatrix.CMAC(bluePrimary);
+	primariesMatrix.CMAC(bluePrimary);	
+	
 	RGBtoXYZMatrix=ComputeRGBtoXYZMatrix(primariesMatrix, whiteColor);
+
 	XYZtoRGBMatrix=RGBtoXYZMatrix.GetInverse();
 
 	// Adjust reference primary colors Y values relatively to white Y
@@ -346,8 +392,17 @@ void CColorReference::UpdateSecondary ( ColorXYZ & secondary, const ColorXYZ& pr
 	
 	double k = ( ( ( x2 - x1 ) / dx1 ) + ( dx2 / ( dx1 * dy2 ) ) * ( y1 - y2 ) ) / ( 1.0 - ( ( dx2 * dy1 ) / ( dx1 * dy2 ) ) );
 
-	ColorxyY aColor ( x1 + k * dx1, y1 + k * dy1, prim1[2] + prim2[2] );
-
+	ColorxyY aColor;
+	if (CColorReference::m_standard != 4)
+	{
+    	aColor = ColorxyY ( x1 + k * dx1, y1 + k * dy1, prim1[2] + prim2[2] );
+	}
+	else
+	{
+		if (x1 > 0.38) aColor =  ColorxyY(0.2076,	0.1799,	.116);
+		if (x1 > 0.2 && x1 < 0.3) aColor = ColorxyY(0.3755,	0.4970,	.444); 
+		if (x1 > 0.3 && x1 < 0.38) aColor = ColorxyY(0.4763, 0.4431, .426); 
+	}
 	secondary = ColorXYZ(aColor);
 }
 
@@ -548,13 +603,27 @@ double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhit
 {
     if ( useOldDeltaEFormula )
     {
-        return GetOldDeltaE(refColor);
-    }
-    else
-    {
+		//LUV
         ColorLuv LuvRef(refColor, YWhiteRef, colorReference);
         ColorLuv Luv(*this, YWhite, colorReference);
         double dE = sqrt ( pow ((Luv[0] - LuvRef[0]),2) + pow((Luv[1] - LuvRef[1]),2) + pow((Luv[2] - LuvRef[2]),2) );
+        return dE;
+//        return GetOldDeltaE(refColor);
+    }
+    else
+    {
+		//CIE94
+        ColorLab LabRef(refColor, YWhiteRef, colorReference);
+        ColorLab Lab(*this, YWhite, colorReference);
+		double dL2 = pow ((LabRef[0] - Lab[0]),2.0);
+		double C1 = sqrt ( pow (Lab[1],2.0) + pow (Lab[2],2.0));
+		double C2 = sqrt ( pow (LabRef[1],2.0) + pow (LabRef[2],2.0));
+		double dC2 = pow ((C1-C2),2.0);
+		double da2 = pow (LabRef[1] - Lab[1],2.0);
+		double db2 = pow (LabRef[2] - Lab[2],2.0);
+		double dH2 = (da2 + db2 - dC2);
+		//kl=kc=kh=1
+		double dE = sqrt ( dL2 + dC2/pow((1+0.045*C1),2.0) + dH2/pow((1+0.015*C1),2.0) );
         return dE;
     }
 }
@@ -981,6 +1050,7 @@ double CColor::GetDeltaE(const CColor & refColor) const
     return m_XYZValues.GetOldDeltaE(refColor.m_XYZValues);
 }
 
+
 double CColor::GetDeltaxy(const CColor & refColor, const CColorReference& colorReference) const
 {
     return m_XYZValues.GetDeltaxy(refColor.m_XYZValues, colorReference);
@@ -995,8 +1065,9 @@ ColorRGB CColor::GetRGBValue(CColorReference colorReference) const
 {
 	if(isValid())
 	{
+		CColorReference aColorRef=GetStandardColorReference(HDTV);
         CLockWhileInScope dummy(m_matrixSection);
-		return ColorRGB(colorReference.XYZtoRGBMatrix*(m_XYZValues));
+		return ColorRGB((colorReference.m_standard==3||colorReference.m_standard==4)?aColorRef.XYZtoRGBMatrix*(m_XYZValues):colorReference.XYZtoRGBMatrix*(m_XYZValues));
 	}
 	else
     {
@@ -1348,6 +1419,7 @@ void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDi
 
     // Compute xy coordinates of 100% saturated color
     ColorXYZ Clr2(Clr1, colorReference);
+
     ColorxyY Clr3(Clr2);
     xend=Clr3[0];
     yend=Clr3[1];
@@ -1394,17 +1466,15 @@ void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDi
             {
                 comp = 0.0;
             }
-            else if ( comp > 255.0 )
+            else if ( comp > 1.0 )
             {
-                comp = 255.0;
+                comp = 1.0;
             }
-
-            // adjust "color gamma"
-            double clr2 = ( 100.0 * pow ( clr , 0.45 ) );
-            double comp2 = ( 100.0 * pow ( comp , 0.45 ) );
-
-            GenColors [ i ] = ColorRGBDisplay( ( bRed ? clr2 : comp2 ), ( bGreen ? clr2 : comp2 ), ( bBlue ? clr2 : comp2 ) );
         }
+        // adjust "color gamma"
+        double clr2 = ( 100.0 * pow ( clr , 0.45 ) );
+        double comp2 = ( 100.0 * pow ( comp , 0.45 ) );
+        GenColors [ i ] = ColorRGBDisplay( ( bRed ? clr2 : comp2 ), ( bGreen ? clr2 : comp2 ), ( bBlue ? clr2 : comp2 ) );
     }
 }
 
@@ -1482,14 +1552,27 @@ Matrix ComputeConversionMatrix(const ColorXYZ measures[3], const ColorXYZ refere
     return transform;
 }
 
-double ArrayIndexToGrayLevel ( int nCol, int nSize)
+double ArrayIndexToGrayLevel ( int nCol, int nSize, bool m_bUseRoundDown)
 {
     // Gray percent: return a value between 0 and 100
-    return ( (double)nCol*100.0/(double)(nSize-1) );
+	// normal rounding (GCD disk), round down (AVSHD disk)
+
+//    return ( (double)nCol*100.0/(double)(nSize-1) );
+	if (m_bUseRoundDown)
+		return ( floor((double)nCol / (double)(nSize-1) * 219.0) / 219.0 * 100.0 );
+	else
+		return ( floor((double)nCol / (double)(nSize-1) * 219.0 + 0.5) / 219.0 * 100.0 );
+
+
 }
 
-double GrayLevelToGrayProp ( double Level)
+double GrayLevelToGrayProp ( double Level, bool m_bUseRoundDown)
 {
     // Gray Level: return a value between 0 and 1
-    return Level / 100.0;
+//    normal rounding (GCD disk), round down (AVSHD disk)
+	if (m_bUseRoundDown)
+    	return Level = (floor(Level / 100.0 * 219.0 + 16.0) - 16.0) / 219.0;
+	else
+		return Level = (floor(Level / 100.0 * 219.0 + 16.5) - 16.0) / 219.0;
 }
+

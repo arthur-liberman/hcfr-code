@@ -101,6 +101,7 @@ public:
 
 	void Copy(CMeasure * p,UINT nId);
 	BOOL MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator);
+	BOOL MeasureCC24(CSensor *pSensor, CGenerator *pGenerator);
 	BOOL MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerator);
 	CColor GetGray(int i) const;
 	void SetGray(int i,const CColor & aColor) {m_grayMeasureArray[i]=aColor; m_isModified=TRUE;} 

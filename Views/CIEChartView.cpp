@@ -106,9 +106,15 @@ CCIEChartGrapher::CCIEChartGrapher()
 	m_yellowSecondaryBitmap.LoadBitmap(IDB_YELLOWSECONDARY_BITMAP);
 	m_cyanSecondaryBitmap.LoadBitmap(IDB_CYANSECONDARY_BITMAP);
 	m_magentaSecondaryBitmap.LoadBitmap(IDB_MAGENTASECONDARY_BITMAP);
+	m_redSatRefBitmap.LoadBitmap(IDB_REFREDSAT_BITMAP);
+	m_greenSatRefBitmap.LoadBitmap(IDB_REFGREENSAT_BITMAP);
+	m_blueSatRefBitmap.LoadBitmap(IDB_REFBLUESAT_BITMAP);
+	m_yellowSatRefBitmap.LoadBitmap(IDB_REFYELLOWSAT_BITMAP);
+	m_cyanSatRefBitmap.LoadBitmap(IDB_REFCYANSAT_BITMAP);
+	m_magentaSatRefBitmap.LoadBitmap(IDB_REFMAGENTASAT_BITMAP);
 	m_grayPlotBitmap.LoadBitmap(IDB_GRAYPLOT_BITMAP);
 	m_measurePlotBitmap.LoadBitmap(IDB_MEASUREPLOT_BITMAP);
-	m_selectedPlotBitmap.LoadBitmap(IDB_SELECTEDLOT_BITMAP);
+	m_selectedPlotBitmap.LoadBitmap(IDB_SELECTEDPLOT_BITMAP);
 
 	m_datarefRedBitmap.LoadBitmap(IDB_REFCROSS_RED);
 	m_datarefGreenBitmap.LoadBitmap(IDB_REFCROSS_GREEN);
@@ -123,6 +129,7 @@ CCIEChartGrapher::CCIEChartGrapher()
 	m_doShowDataRef=GetConfig()->GetProfileInt("CIE Chart","Show Reference Data",TRUE);
 	m_doShowGrayScale=GetConfig()->GetProfileInt("CIE Chart","Display GrayScale",TRUE);
 	m_doShowSaturationScale=GetConfig()->GetProfileInt("CIE Chart","Display Saturation Scale",TRUE);
+	m_doShowSaturationScaleTarg=GetConfig()->GetProfileInt("CIE Chart","Display Saturation Scale Targets",TRUE);
 	m_doShowMeasurements=GetConfig()->GetProfileInt("CIE Chart","Show Measurements",TRUE);
 	m_bCIEuv=GetConfig()->GetProfileInt("CIE Chart","CIE uv mode",FALSE);
 
@@ -370,19 +377,33 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 		Msg3.LoadString ( IDS_REC709BLUEREF );
 	}
 
+	if(GetConfig()->m_colorStandard == HDTVa)
+	{
+		Msg.LoadString ( IDS_REC709aREDREF );
+		Msg2.LoadString ( IDS_REC709aGREENREF );
+		Msg3.LoadString ( IDS_REC709aBLUEREF );
+	}
+
+	if(GetConfig()->m_colorStandard == CC6)
+	{
+		Msg.LoadString ( IDS_RECCC6REDREF );
+		Msg2.LoadString ( IDS_RECCC6GREENREF );
+		Msg3.LoadString ( IDS_RECCC6BLUEREF );
+	}
+
 	CCIEGraphPoint refRedPrimaryPoint(GetColorReference().GetRed(), 1.0, Msg, m_bCIEuv);
 	CCIEGraphPoint refGreenPrimaryPoint(GetColorReference().GetGreen(), 1.0, Msg2, m_bCIEuv);
 	CCIEGraphPoint refBluePrimaryPoint(GetColorReference().GetBlue(), 1.0, Msg3, m_bCIEuv);
 
 	CCIEGraphPoint whiteRef(GetColorReference().GetWhite(), 1.0, "", m_bCIEuv);
 
-	Msg.LoadString ( IDS_YELLOWSECONDARYREF );
+	Msg.LoadString ( GetColorReference().m_standard!=4?IDS_YELLOWSECONDARYREF:IDS_CC6YELLOWSECONDARYREF );
 	CCIEGraphPoint refYellowSecondaryPoint(GetColorReference().GetYellow(), 1.0, Msg, m_bCIEuv);
 
-	Msg.LoadString ( IDS_CYANSECONDARYREF );
+	Msg.LoadString ( GetColorReference().m_standard!=4?IDS_CYANSECONDARYREF:IDS_CC6CYANSECONDARYREF );
 	CCIEGraphPoint refCyanSecondaryPoint(GetColorReference().GetCyan(), 1.0, Msg, m_bCIEuv);
 
-	Msg.LoadString ( IDS_MAGENTASECONDARYREF );
+	Msg.LoadString ( GetColorReference().m_standard!=4?IDS_MAGENTASECONDARYREF:IDS_CC6MAGENTASECONDARYREF );
 	CCIEGraphPoint refMagentaSecondaryPoint(GetColorReference().GetMagenta(), 1.0, Msg, m_bCIEuv);
 
 	CCIEGraphPoint illuminantA(ColorXYZ(ColorxyY(0.4476,0.4074)),1.0, "Illuminant A", m_bCIEuv);
@@ -705,9 +726,9 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
             if ( GetConfig () -> m_bUseDeltaELumaOnGrays )
             {
                 // Compute reference Luma regarding actual offset and reference gamma
-                double x = ArrayIndexToGrayLevel (i, nSize );
+                double x = ArrayIndexToGrayLevel (i, nSize, GetConfig () -> m_bUseRoundDown );
 
-                double valx=(GrayLevelToGrayProp(x)+Offset)/(1.0+Offset);
+                double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
                 double valy=pow(valx, GetConfig()->m_GammaRef);
 
                 ColorxyY tmpColor(GetColorReference().GetWhite());
@@ -728,7 +749,55 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 		}
 	}
 
-	if(m_doShowSaturationScale)
+	if(m_doShowSaturationScaleTarg) 
+	{
+		for(int i=0;i<pDoc->GetMeasure()->GetSaturationSize();i++)
+		{
+			CString str;
+
+			if (i != 0)
+			{
+			Msg.LoadString ( IDS_REDSATPERCENTREF );
+			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
+			CCIEGraphPoint RedPointRef(pDoc->GetMeasure()->GetRefSat(0, (double)i / (double)(pDoc->GetMeasure()->GetSaturationSize()-1)).GetXYZValue(),
+								  YWhite,
+								  str, m_bCIEuv);
+			DrawAlphaBitmap(pDC,RedPointRef,&m_redSatRefBitmap,rect,pTooltip,pWnd);
+			Msg.LoadString ( IDS_GREENSATPERCENTREF );
+			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
+			CCIEGraphPoint GreenPointRef(pDoc->GetMeasure()->GetRefSat(1, (double)i / (double)(pDoc->GetMeasure()->GetSaturationSize()-1)).GetXYZValue(),
+								  YWhite,
+								  str, m_bCIEuv);
+			DrawAlphaBitmap(pDC,GreenPointRef,&m_greenSatRefBitmap,rect,pTooltip,pWnd);
+						Msg.LoadString ( IDS_BLUESATPERCENTREF );
+			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
+			CCIEGraphPoint BluePointRef(pDoc->GetMeasure()->GetRefSat(2, (double)i / (double)(pDoc->GetMeasure()->GetSaturationSize()-1)).GetXYZValue(),
+								  YWhite,
+								  str, m_bCIEuv);
+			DrawAlphaBitmap(pDC,BluePointRef,&m_blueSatRefBitmap,rect,pTooltip,pWnd);
+			Msg.LoadString ( IDS_YELLOWSATPERCENTREF );
+			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
+			CCIEGraphPoint YellowPointRef(pDoc->GetMeasure()->GetRefSat(3, (double)i / (double)(pDoc->GetMeasure()->GetSaturationSize()-1)).GetXYZValue(),
+								  YWhite,
+								  str, m_bCIEuv);
+			DrawAlphaBitmap(pDC,YellowPointRef,&m_yellowSatRefBitmap,rect,pTooltip,pWnd);
+			Msg.LoadString ( IDS_CYANSATPERCENTREF );
+			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
+			CCIEGraphPoint CyanPointRef(pDoc->GetMeasure()->GetRefSat(4, (double)i / (double)(pDoc->GetMeasure()->GetSaturationSize()-1)).GetXYZValue(),
+								  YWhite,
+								  str, m_bCIEuv);
+			DrawAlphaBitmap(pDC,CyanPointRef,&m_cyanSatRefBitmap,rect,pTooltip,pWnd);
+			Msg.LoadString ( IDS_MAGENTASATPERCENTREF );
+			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
+			CCIEGraphPoint MagentaPointRef(pDoc->GetMeasure()->GetRefSat(5, (double)i / (double)(pDoc->GetMeasure()->GetSaturationSize()-1)).GetXYZValue(),
+								  YWhite,
+								  str, m_bCIEuv);
+			DrawAlphaBitmap(pDC,MagentaPointRef,&m_magentaSatRefBitmap,rect,pTooltip,pWnd);
+			}
+		}
+	}
+
+	if(m_doShowSaturationScale) 
 	{
 		for(int i=0;i<pDoc->GetMeasure()->GetSaturationSize();i++)
 		{
@@ -873,12 +942,14 @@ BEGIN_MESSAGE_MAP(CCIEChartView, CSavingView)
 	ON_COMMAND(IDM_CIE_SHOWDELTAE, OnCieShowDeltaE)
 	ON_COMMAND(IDM_CIE_SHOWGRAYSCALE, OnCieShowGrayScale)
 	ON_COMMAND(IDM_CIE_SHOWSATURATIONSCALE, OnCieShowSaturationScale)
+	ON_COMMAND(IDM_CIE_SHOWSATURATIONSCALETARG, OnCieShowSaturationScaleTarg)
 	ON_COMMAND(IDM_CIE_SHOWMEASUREMENTS, OnCieShowMeasurements)
 	ON_COMMAND(IDM_GRAPH_Y_ZOOM_IN, OnGraphZoomIn)
 	ON_COMMAND(IDM_GRAPH_Y_ZOOM_OUT, OnGraphZoomOut)
 	ON_UPDATE_COMMAND_UI(IDM_CIE_SHOWMEASUREMENTS, OnUpdateCieShowMeasurements)
 	ON_UPDATE_COMMAND_UI(IDM_CIE_SHOWGRAYSCALE, OnUpdateCieShowGrayScale)
 	ON_UPDATE_COMMAND_UI(IDM_CIE_SHOWSATURATIONSCALE, OnUpdateCieShowSaturationScale)
+	ON_UPDATE_COMMAND_UI(IDM_CIE_SHOWSATURATIONSCALETARG, OnUpdateCieShowSaturationScaleTarg)
 	ON_COMMAND(IDM_CIE_SAVECHART, OnCieSavechart)
 	ON_WM_LBUTTONDOWN()
 	ON_WM_LBUTTONUP()
@@ -953,8 +1024,9 @@ DWORD CCIEChartView::GetUserInfo ()
 		  + ( ( m_Grapher.m_doShowDataRef			& 0x0001 )	<< 3 )
 		  + ( ( m_Grapher.m_doShowGrayScale			& 0x0001 )	<< 4 )
 		  + ( ( m_Grapher.m_doShowSaturationScale	& 0x0001 )	<< 5 )
-		  + ( ( m_Grapher.m_doShowMeasurements		& 0x0001 )	<< 6 )
-		  + ( ( m_Grapher.m_bCIEuv					& 0x0001 )	<< 7 );
+		  + ( ( m_Grapher.m_doShowSaturationScaleTarg	& 0x0001 )	<< 6 )
+		  + ( ( m_Grapher.m_doShowMeasurements		& 0x0001 )	<< 7 )
+		  + ( ( m_Grapher.m_bCIEuv					& 0x0001 )	<< 8 );
 }
 
 void CCIEChartView::SetUserInfo ( DWORD dwUserInfo )
@@ -965,8 +1037,9 @@ void CCIEChartView::SetUserInfo ( DWORD dwUserInfo )
 	m_Grapher.m_doShowDataRef			= ( dwUserInfo >> 3 ) & 0x0001;
 	m_Grapher.m_doShowGrayScale			= ( dwUserInfo >> 4 ) & 0x0001;
 	m_Grapher.m_doShowSaturationScale	= ( dwUserInfo >> 5 ) & 0x0001;
-	m_Grapher.m_doShowMeasurements		= ( dwUserInfo >> 6 ) & 0x0001;
-	m_Grapher.m_bCIEuv					= ( dwUserInfo >> 7 ) & 0x0001;
+	m_Grapher.m_doShowSaturationScaleTarg	= ( dwUserInfo >> 6 ) & 0x0001;
+	m_Grapher.m_doShowMeasurements		= ( dwUserInfo >> 7 ) & 0x0001;
+	m_Grapher.m_bCIEuv					= ( dwUserInfo >> 8 ) & 0x0001;
 	
 	m_bDelayedUpdate = TRUE;
 }
@@ -1138,6 +1211,12 @@ void CCIEChartView::OnUpdateCieShowSaturationScale(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(m_Grapher.m_doShowSaturationScale);
 }
 
+void CCIEChartView::OnUpdateCieShowSaturationScaleTarg(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable();
+	pCmdUI->SetCheck(m_Grapher.m_doShowSaturationScaleTarg);
+}
+
 void CCIEChartView::OnUpdateCieShowMeasurements(CCmdUI* pCmdUI) 
 {
 	pCmdUI->Enable();
@@ -1190,6 +1269,13 @@ void CCIEChartView::OnCieShowSaturationScale()
 {
 	m_Grapher.m_doShowSaturationScale = !m_Grapher.m_doShowSaturationScale;
 	GetConfig()->WriteProfileInt("CIE Chart","Display Saturation Scale",m_Grapher.m_doShowSaturationScale);
+	Invalidate(TRUE);
+}
+
+void CCIEChartView::OnCieShowSaturationScaleTarg() 
+{
+	m_Grapher.m_doShowSaturationScaleTarg = !m_Grapher.m_doShowSaturationScaleTarg;
+	GetConfig()->WriteProfileInt("CIE Chart","Display Saturation Scale Targets",m_Grapher.m_doShowSaturationScaleTarg);
 	Invalidate(TRUE);
 }
 
@@ -1439,7 +1525,7 @@ void CCIEChartView::UpdateTestColor ( CPoint point )
 	{
 		CColor	ClickedColor ( x, y );
 
-		RGBColor = ClickedColor.GetRGBValue (GetColorReference());
+		RGBColor = ClickedColor.GetRGBValue ((GetColorReference()));
 		r = max(0.0,pow(RGBColor[0],gamma));
 		g = max(0.0,pow(RGBColor[1],gamma));
 		b = max(0.0,pow(RGBColor[2],gamma));

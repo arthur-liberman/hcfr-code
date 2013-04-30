@@ -72,13 +72,13 @@ void CArgyllSensorPropPage::DoDataExchange(CDataExchange* pDX)
         m_pSensor->FillSpectralTypeCombo(m_SpectralTypeCombo);
     }
     m_SpectralTypeCombo.EnableWindow((m_SpectralTypeCombo.GetCount() != 0)?TRUE:FALSE);
-    
+        
 
     m_HiResCheckBox.EnableWindow(m_HiResCheckBoxEnabled);
 
     DDX_CBIndex(pDX, IDC_ARGYLLSENSOR_DISPLAYTYPE_COMBO, m_DisplayType);
     DDX_CBString(pDX, IDC_ARGYLLSENSOR_SPECTRALTYPE_COMBO, m_SpectralType);
-    DDX_CBIndex(pDX, IDC_ARGYLLSENSOR_READINGTYPE_COMBO, m_ReadingType);
+	DDX_CBIndex(pDX, IDC_ARGYLLSENSOR_READINGTYPE_COMBO, m_ReadingType);
     DDX_Text(pDX, IDC_ARGYLLSENSOR_METER_NAME, m_MeterName);
     DDX_Check(pDX, IDC_ARGYLL_SENSOR_DEBUG_CB, m_DebugMode);
     DDX_Check(pDX, IDC_ARGYLL_SENSOR_HIRES, m_HiRes);

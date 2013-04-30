@@ -80,6 +80,9 @@ namespace
         ArgyllMeters() :
             m_ComPaths(0)
         {
+            // technically we're supposed to call libusb_init() before calling any routines in libusb
+            // reinserted to prevent exception in io.c
+            libusb_init(0);
         }
         ~ArgyllMeters()
         {
@@ -92,6 +95,8 @@ namespace
             {
                 m_ComPaths->del(m_ComPaths);
             }
+            // good as place as any to clear up usb
+            libusb_exit(NULL);
         }
     public:
         static ArgyllMeters& getInstance()
@@ -339,7 +344,7 @@ void ArgyllMeterWrapper::setDisplayType(int displayMode)
         {
             throw std::logic_error("Set Display Type failed");
         }
-    }
+    } 
 }
 
 ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading()

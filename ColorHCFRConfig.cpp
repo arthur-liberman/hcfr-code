@@ -241,14 +241,14 @@ CColorHCFRConfig::~CColorHCFRConfig()
 
 void CColorHCFRConfig::InitDefaults()
 {
-	m_colorStandard=SDTV;
+	m_colorStandard=HDTV;
 	m_whiteTarget=D65;
 	m_bDisplayTestColors=TRUE;
 	m_bContinuousMeasures=TRUE;
 	m_bDetectPrimaries=FALSE;
 	m_latencyTime=0;
 	m_bLatencyBeep=FALSE;
-	m_bSatUseMeasuredRef=TRUE;
+	m_bUseRoundDown=FALSE;
 	m_BWColorsToAdd=1;
 	m_GammaRef=2.22;
 	m_GammaOffsetType=1;
@@ -307,7 +307,7 @@ BOOL CColorHCFRConfig::LoadSettings()
     // to show the image 
     m_latencyTime = max(m_latencyTime, 100);
 	m_bLatencyBeep=GetProfileInt("References","IrisLatencyBeep",0);
-	m_bSatUseMeasuredRef=GetProfileInt("References","SatUseMeasuredRef",1);
+	m_bUseRoundDown=GetProfileInt("References","SatUseMeasuredRef",1);
 	m_GammaRef=GetProfileDouble("References","GammaRefValue",2.22);
 
 	m_GammaOffsetType=GetProfileInt("References","GammaOffsetType",1);
@@ -361,7 +361,7 @@ void CColorHCFRConfig::SaveSettings()
 	WriteProfileInt("References","DetectPrimaries",m_bDetectPrimaries);
 	WriteProfileInt("References","IrisLatencyTime",m_latencyTime);
 	WriteProfileInt("References","IrisLatencyBeep",m_bLatencyBeep);
-	WriteProfileInt("References","SatUseMeasuredRef",m_bSatUseMeasuredRef);
+	WriteProfileInt("References","SatUseMeasuredRef",m_bUseRoundDown);
 	WriteProfileDouble("References","GammaRefValue",m_GammaRef);
 
 	WriteProfileInt("Appearance","DrawMode",m_menuDrawMode);
@@ -407,7 +407,7 @@ void CColorHCFRConfig::SetPropertiesSheetValues()
 	m_generalPropertiesPage.m_bDetectPrimaries=m_bDetectPrimaries;
 	m_generalPropertiesPage.m_latencyTime=m_latencyTime;
 	m_generalPropertiesPage.m_bLatencyBeep=m_bLatencyBeep;
-	m_generalPropertiesPage.m_bSatUseMeasuredRef=m_bSatUseMeasuredRef;
+	m_generalPropertiesPage.m_bUseRoundDown=m_bUseRoundDown;
 	m_generalPropertiesPage.m_isModified=FALSE;
 
 	m_referencesPropertiesPage.m_colorStandard=m_colorStandard;
@@ -490,7 +490,7 @@ BOOL CColorHCFRConfig::GetPropertiesSheetValues()
 	m_bDetectPrimaries=m_generalPropertiesPage.m_bDetectPrimaries;
 	m_latencyTime=m_generalPropertiesPage.m_latencyTime;
 	m_bLatencyBeep=m_generalPropertiesPage.m_bLatencyBeep;
-	m_bSatUseMeasuredRef=m_generalPropertiesPage.m_bSatUseMeasuredRef;
+	m_bUseRoundDown=m_generalPropertiesPage.m_bUseRoundDown;
 
 	m_colorStandard=(ColorStandard)(m_referencesPropertiesPage.m_colorStandard);
 	m_whiteTarget=(WhiteTarget)m_referencesPropertiesPage.m_whiteTarget;

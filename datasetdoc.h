@@ -237,7 +237,9 @@ protected:
 	afx_msg void OnMeasureSatPrimaries();
 	afx_msg void OnUpdateMeasureSatPrimaries(CCmdUI* pCmdUI);
 	afx_msg void OnSaveCalibrationFile();
+	afx_msg void OnLoadCalibrationFile();
 	afx_msg void OnUpdateSaveCalibrationFile(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateLoadCalibrationFile(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

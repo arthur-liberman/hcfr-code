@@ -1062,6 +1062,16 @@ void CMultiFrame::OnChangeRef ( BOOL bSet )
 
 	AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
 }
+
+void CMultiFrame::OnChangeXYZ ( BOOL bSet )
+{
+
+//	GetDocument () -> GetMeasure () -> EnableAdjustmentMatrix ( bSet );
+	GetDocument () -> UpdateAllViews ( NULL, UPD_EVERYTHING );
+
+	AfxGetMainWnd () -> SendMessage ( WM_COMMAND, IDM_REFRESH_CONTROLS, NULL );	// refresh mainframe controls
+	AfxGetMainWnd () -> SendMessageToDescendants ( WM_COMMAND, IDM_REFRESH_REFERENCE );
+}
  
 LRESULT CMultiFrame::OnAppCommand(WPARAM /*wParam*/, LPARAM lParam )
 {
@@ -1626,7 +1636,7 @@ LRESULT CMultiFrame::OnDDERequest(WPARAM wParam, LPARAM lParam)
 							break;
 						case HCFR_RGB_VIEW:
                             {
-							    ColorRGB aColor=ReqColor.GetRGBValue(GetColorReference());
+							    ColorRGB aColor=ReqColor.GetRGBValue((GetColorReference()));
 							    strData.Format("%.3f,%.3f,%.3f",aColor[0],aColor[1],aColor[2]);
                             }
 							break;
@@ -1953,7 +1963,7 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 	BOOL		bDisplay = FALSE;
 	BOOL		bNoWait = FALSE;
 	BOOL		bUpdateName = FALSE;
-	BOOL		bSensorCalibrated = GetDocument() -> m_pSensor -> IsCalibrated ();
+	int			bSensorCalibrated = GetDocument() -> m_pSensor -> IsCalibrated ();
 	LPARAM		lHint = UPD_EVERYTHING;
 	Matrix		SensorMatrix ( 0.0, 3, 3 );
 	Matrix		WhiteMatrix ( 0.0, 3, 1 );
@@ -2013,6 +2023,7 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 			if ( nRow == 3 && nCol == 3 && pos == NULL )
 			{
 				GetDocument () -> m_pSensor -> SetSensorMatrix ( SensorMatrix );
+				GetDocument () -> m_pSensor -> SetSensorMatrixOld (Matrix::IdentityMatrix(3));
 			}
 			else
 			{
@@ -2759,6 +2770,7 @@ void CRefCheckDlg::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CRefCheckDlg)
 	DDX_Control(pDX, IDC_BUTTON_MENU, m_ButtonMenu);
 	DDX_Control(pDX, IDC_CHECK_REF, m_RefCheck);
+//	DDX_Control(pDX, IDC_CHECK_XYZ, m_XYZCheck);
 	//}}AFX_DATA_MAP
 }
 
@@ -2767,6 +2779,7 @@ BEGIN_MESSAGE_MAP(CRefCheckDlg, CDialog)
 	//{{AFX_MSG_MAP(CRefCheckDlg)
 	ON_WM_PAINT()
 	ON_BN_CLICKED(IDC_CHECK_REF, OnCheckRef)
+//	ON_BN_CLICKED(IDC_CHECK_XYZ, OnCheckXYZ)
 	ON_BN_CLICKED(IDC_BUTTON_MENU, OnButtonMenu)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -2800,6 +2813,11 @@ void CRefCheckDlg::OnPaint()
 void CRefCheckDlg::OnCheckRef() 
 {
 	( (CMultiFrame *) GetParent () ) -> OnChangeRef ( m_RefCheck.GetCheck () );
+}
+
+void CRefCheckDlg::OnCheckXYZ() 
+{
+	( (CMultiFrame *) GetParent () ) -> OnChangeXYZ ( m_XYZCheck.GetCheck () );
 }
 
 void CRefCheckDlg::OnButtonMenu() 

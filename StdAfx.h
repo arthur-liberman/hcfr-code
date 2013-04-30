@@ -12,8 +12,7 @@
 
 // undefine to allow use of orginal devlib dlls
 // these should not be linked in distributions
-#define USE_NON_FREE_CODE
-
+//#define USE_NON_FREE_CODE
 
 #if _MSC_VER >= 1600
 // visual studio 2010 ships with mfc that doesn't like 

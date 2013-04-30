@@ -487,7 +487,15 @@ BEGIN_MESSAGE_MAP(CDataSetDoc, CDocument)
 	ON_COMMAND(IDM_MEASURE_SAT_PRIMARIES, OnMeasureSatPrimaries)
 	ON_UPDATE_COMMAND_UI(IDM_MEASURE_SAT_PRIMARIES, OnUpdateMeasureSatPrimaries)
 	ON_COMMAND(IDM_SAVE_CALIBRATION_FILE, OnSaveCalibrationFile)
+	ON_COMMAND(IDM_MANUALLY_EDIT_SENSOR, OnConfigureSensor ) 
+	ON_COMMAND(IDM_LOAD_CALIBRATION_FILE, OnLoadCalibrationFile ) 
 	ON_UPDATE_COMMAND_UI(IDM_SAVE_CALIBRATION_FILE, OnUpdateSaveCalibrationFile)
+	ON_UPDATE_COMMAND_UI(IDM_LOAD_CALIBRATION_FILE, OnUpdateLoadCalibrationFile)
+	ON_UPDATE_COMMAND_UI(IDM_MANUALLY_EDIT_SENSOR, OnUpdateLoadCalibrationFile)
+	ON_UPDATE_COMMAND_UI(IDM_CALIBRATION_MANUAL, OnUpdateLoadCalibrationFile)
+	ON_UPDATE_COMMAND_UI(IDM_CALIBRATION_EXISTING, OnUpdateLoadCalibrationFile)
+	ON_UPDATE_COMMAND_UI(IDM_CALIBRATION_SIM, OnUpdateLoadCalibrationFile)
+	ON_UPDATE_COMMAND_UI(IDM_CALIBRATION_SPECTRAL, OnUpdateLoadCalibrationFile)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -1235,12 +1243,15 @@ void CDataSetDoc::AddMeasurement()
 void CDataSetDoc::OnConfigureSensor() 
 {
 	StopBackgroundMeasures ();
-
 	m_pSensor->Configure();
 	if( m_pSensor->IsModified() )
 	{
+		m_measure.ApplySensorAdjustmentMatrix(m_pSensor->GetSensorMatrix() );
+		m_pSensor->SetSensorMatrixOld( Matrix::IdentityMatrix(3) );
 		SetModifiedFlag(TRUE);
-		UpdateAllViews(NULL, UPD_SENSORCONFIG);
+		UpdateAllViews ( NULL, UPD_EVERYTHING );
+		AfxGetMainWnd () -> SendMessageToDescendants ( WM_COMMAND, IDM_REFRESH_REFERENCE );
+
 	}
 }
 
@@ -1460,6 +1471,7 @@ void CDataSetDoc::OnCalibrationExisting()
 	}
 
     ComputeAdjustmentMatrix();
+
 }
 
 void CDataSetDoc::OnCalibrationManual()
@@ -1800,14 +1812,15 @@ void CDataSetDoc::OnCalibrationSpectralSample()
 	}
 
 	CString displayName = m_pGenerator->GetActiveDisplayName();
-	
-	if (displayName.IsEmpty()) // If the displayname is empty, we're not using the GDIGenerator, and so cannot display any patches
+//build using manually generated DVD patterns works fine	
+/*	if (displayName.IsEmpty()) // If the displayname is empty, we're not using the GDIGenerator, and so cannot display any patches
 	{
 		Title.LoadString ( IDS_ERROR );
 		strMsg.LoadString(IDS_SPECTRAL_SAMPLE_GENERATOR);
 		MessageBox(NULL, strMsg, Title ,MB_ICONERROR | MB_OK);  
 		return;
 	}
+*/
 
 	if ( IDYES == AfxMessageBox ( IDS_SPECTRAL_SAMPLE_CREATE, MB_YESNO | MB_ICONQUESTION ) )
 	{
@@ -2121,6 +2134,7 @@ BOOL CDataSetDoc::ComputeAdjustmentMatrix()
         Matrix newMatrix = ConvMatrix * oldMatrix;
 		m_measure.ApplySensorAdjustmentMatrix( ConvMatrix );
         m_pSensor->SetSensorMatrix(newMatrix);
+		m_pSensor->SetSensorMatrixOld(Matrix::IdentityMatrix(3));
 		SetModifiedFlag(TRUE);
 		bOk = TRUE;
 	}
@@ -2128,6 +2142,9 @@ BOOL CDataSetDoc::ComputeAdjustmentMatrix()
 	{
 		AfxMessageBox ( IDS_INVALIDMEASUREMATRIX, MB_OK | MB_ICONERROR );
 	}
+	this->UpdateAllViews ( NULL, UPD_EVERYTHING );
+	AfxGetMainWnd () -> SendMessageToDescendants ( WM_COMMAND, IDM_REFRESH_REFERENCE );
+
 	return bOk;
 }
 
@@ -2379,7 +2396,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nSteps = GetMeasure () -> GetGrayScaleSize ();
 			 for (i = 0; i < nSteps ; i ++ )
 			 {
-				GenIRE [ i ] = ArrayIndexToGrayLevel ( i, nSteps);
+				GenIRE [ i ] = ArrayIndexToGrayLevel ( i, nSteps, GetConfig () -> m_bUseRoundDown);
 				bIRE [ i ] = GetMeasure () -> m_bIREScaleMode;
 				GenColors [ i ] = ColorRGBDisplay(GenIRE[i]);
 			 	mType [ i ] = CGenerator::MT_IRE;
@@ -2421,7 +2438,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nMaxSteps = nSteps;
 			 for (i = 0; i < nSteps ; i ++ )
 			 {
-				GenIRE [ i ] = (int)ArrayIndexToGrayLevel ( i, nSteps);
+				GenIRE [ i ] = (int)ArrayIndexToGrayLevel ( i, nSteps, GetConfig () -> m_bUseRoundDown);
 				bIRE [ i ] = GetMeasure () -> m_bIREScaleMode;
 				GenColors [ i ] = ColorRGBDisplay(GenIRE[i]);
  			 	mType [ i ] = CGenerator::MT_IRE;
@@ -2786,8 +2803,8 @@ void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int Col
 
 	if (ColorSpace == 0) 
 	{
-		blacklvl=GetMeasure()->GetGray(0).GetRGBValue(GetColorReference())[ColorIndex];
-		whitelvl=GetMeasure()->GetGray(Size-1).GetRGBValue(GetColorReference())[ColorIndex];
+		blacklvl=GetMeasure()->GetGray(0).GetRGBValue((GetColorReference()))[ColorIndex];
+		whitelvl=GetMeasure()->GetGray(Size-1).GetRGBValue((GetColorReference()))[ColorIndex];
 	}
 	else if (ColorSpace == 1) 
 	{
@@ -2822,7 +2839,7 @@ void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int Col
 	for (int i=0; i<Size; i++)
 	{	
 		if (ColorSpace == 0)
-			graylvl=GetMeasure()->GetGray(i).GetRGBValue(GetColorReference())[ColorIndex];
+			graylvl=GetMeasure()->GetGray(i).GetRGBValue((GetColorReference()))[ColorIndex];
 		else if (ColorSpace == 1)
 			graylvl=GetMeasure()->GetGray(i).GetLuxOrLumaValue(GetConfig () -> m_nLuminanceCurveMode);
 		else if (ColorSpace == 2) 
@@ -2864,77 +2881,19 @@ void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int Col
 			break;
 		case 3:
 			Offset_opt = GetConfig() -> m_manualGOffset;
-/*			if(Offset_opt == 0 && GetConfig()->m_colorStandard == sRGB)
-				Offset_opt = 0.055;
-			else
-				Offset_opt = 0.099;
-*/			break;
-		case 4:
+			break;
+		case 4: //optimized, we should replace with bt.1886
 			{
-				int		i;
-				double	deltamin = -1;
-				double	offsetMin = 0;
-				double	offsetMax = 0.200;
-				double	offsetStep = 0.01;
-				double	gammaMin = 1.5;
-				double	gammaMax = 4.0;
-				double	gammaStep = 0.1;
-				double	offset, offset_plus_one;
-
-				for (i=0; i<Size; i++)
-				{
-					double x = ArrayIndexToGrayLevel ( i, Size);
-					tmpx[i] = GrayLevelToGrayProp(x);
-				}
-
-				for (int nbopt=0; nbopt <2; nbopt ++)
-				{
-					for (offset = offsetMin; offset < offsetMax; offset += offsetStep)
-					{
-						offset_plus_one = offset + 1.0;
-						for (i=0; i<Size; i++)
-						{
-							valx[i] = (tmpx[i]+offset) / offset_plus_one;
-						}
-		
-						for (double gamma = gammaMin; gamma < gammaMax; gamma += gammaStep)
-						{
-							double	sum = 0;
-							for (i=0; i<Size; i++)
-							{		
-								double valy, ecart;
-								valy=pow(valx[i], gamma);
-								ecart = (lumlvl[i] - valy);
-								sum += ecart * ecart;
-							}
-							sum /= ( Size ? Size : 1 );
-							if ((sum < deltamin) || (deltamin < 0))
-							{
-								deltamin = sum;
-								Gamma_opt = gamma;
-								Offset_opt = offset;
-							}
-						}	
-					}
-					offsetMin = Offset_opt - offsetStep;
-					offsetMax = Offset_opt + offsetStep;
-					gammaMin = Gamma_opt - gammaStep;
-					gammaMax = Gamma_opt + gammaStep;
-					offsetStep /= 10.0;
-					gammaStep /= 10.0;
-				}
+				Offset_opt = 0.0;
 			}
 			break;
 		}
-
-		if ( nConfigOffsetType == 0 || nConfigOffsetType == 1 || nConfigOffsetType == 2 || nConfigOffsetType == 3 )
-		{
 			double x, v;
 
 			for (int i=0; i<Size; i++)
 			{
-				x = ArrayIndexToGrayLevel ( i, Size);
-				v = GrayLevelToGrayProp(x);
+				x = ArrayIndexToGrayLevel ( i, Size, GetConfig () -> m_bUseRoundDown);
+				v = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
 
 				valx[i]=(v+Offset_opt)/(1.0+Offset_opt);
 			}
@@ -2950,7 +2909,6 @@ void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int Col
 				}
 			}
 			Gamma_opt = avg / ( nb ? nb : 1 );
-		}
 	}
 	*Offset = Offset_opt;
 	*Gamma = Gamma_opt;
@@ -3352,9 +3310,40 @@ void CDataSetDoc::OnSaveCalibrationFile()
 	m_pSensor -> SaveCalibrationFile ();
 }
 
-void CDataSetDoc::OnUpdateSaveCalibrationFile(CCmdUI* pCmdUI) 
+void CDataSetDoc::OnLoadCalibrationFile() 
 {
-	pCmdUI -> Enable ( m_pSensor -> IsCalibrated () );
+	CString		Msg, Title;
+
+	StopBackgroundMeasures ();
+
+	CPropertySheetWithHelp propSheet;
+	CSensorSelectionPropPage page;
+	propSheet.AddPage(&page);
+	propSheet.m_psh.dwFlags |= PSH_NOAPPLYNOW;
+
+	Title.LoadString ( IDM_LOAD_CALIBRATION_FILE );
+	propSheet.SetTitle ( Title );
+
+	page.m_sensorChoice=m_pSensor->GetName(); 	// default selection is current sensor
+	if( propSheet.DoModal() == IDOK )
+	{
+
+		if(page.m_sensorTrainingMode != 1)
+			m_pSensor->LoadCalibrationFile(page.m_trainingFileName);
+		m_pSensor->SetSensorMatrixOld(Matrix::IdentityMatrix(3));
+		m_measure.ApplySensorAdjustmentMatrix( m_pSensor->GetSensorMatrix() );
+		UpdateAllViews ( NULL, UPD_EVERYTHING );
+		SetModifiedFlag(TRUE);
+	}
 }
 
 
+void CDataSetDoc::OnUpdateLoadCalibrationFile(CCmdUI* pCmdUI) 
+{
+	pCmdUI -> Enable ( m_pSensor -> IsCalibrated () != 1 );
+}
+
+void CDataSetDoc::OnUpdateSaveCalibrationFile(CCmdUI* pCmdUI) 
+{
+	pCmdUI -> Enable ( m_pSensor -> IsCalibrated () == 1 );
+}

@@ -255,7 +255,8 @@ BEGIN
     CONTROL         "Standard d'encodage",IDC_GAMMA_OFFSET_RADIO3,"Button",BS_AUTORADIOBUTTON,12,85,97,10
     CONTROL         "Standard d'encodage, Offset manuel :",IDC_GAMMA_OFFSET_RADIO4,
                     "Button",BS_AUTORADIOBUTTON,12,97,134,10,WS_EX_TRANSPARENT
-    CONTROL         "Optimisé",IDC_GAMMA_OFFSET_RADIO5,"Button",BS_AUTORADIOBUTTON,12,109,54,10,WS_EX_TRANSPARENT
+//    CONTROL         "Optimisé",IDC_GAMMA_OFFSET_RADIO5,"Button",BS_AUTORADIOBUTTON,12,109,54,10,WS_EX_TRANSPARENT
+	CONTROL         "ITU-R BT.1886",IDC_GAMMA_OFFSET_RADIO5,"Button",BS_AUTORADIOBUTTON,12,109,93,10,WS_EX_TRANSPARENT
     EDITTEXT        IDC_EDIT_MANUAL_GOFFSET,148,95,41,14,ES_AUTOHSCROLL | WS_GROUP
     GROUPBOX        "Réference Gamma",IDC_STATIC,7,126,84,29,WS_GROUP
     EDITTEXT        IDC_EDIT_GAMMA_REF,17,136,64,14,ES_AUTOHSCROLL | WS_GROUP
@@ -287,8 +288,8 @@ BEGIN
     CONTROL         "Aucune",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,134,41,10
     CONTROL         "Blanc",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,69,134,34,10
     CONTROL         "Blanc et noir",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,115,134,55,10
-    GROUPBOX        "Couleurs de référence pour les courbes de saturation",IDC_STATIC,7,151,198,26,WS_GROUP
-    CONTROL         "Utilise les couleurs mesurées (si elles sont disponibles)",IDC_CHECK_SATREF_MEASURES,
+    GROUPBOX        "Gray levels rounding assumption",IDC_STATIC,7,151,198,26,WS_GROUP
+    CONTROL         "Use round down levels (AVSHD, DVE)",IDC_CHECK_USE_ROUNDDOWN,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,162,185,10
 END
 
@@ -784,9 +785,9 @@ BEGIN
     GROUPBOX        "Unité",IDC_DISPLAY_GROUP,466,40,49,65
     CONTROL         "Capteur",IDC_SENSORRGB_RADIO,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,470,54,44,8,WS_EX_TRANSPARENT
     CONTROL         "RVB",IDC_RGB_RADIO,"Button",BS_AUTORADIOBUTTON,470,64,44,8,WS_EX_TRANSPARENT
-    CONTROL         "XYZ",IDC_XYZ_RADIO,"Button",BS_AUTORADIOBUTTON,470,74,44,8
-    CONTROL         "xyz",IDC_XYZ_RADIO2,"Button",BS_AUTORADIOBUTTON,470,84,44,8
-    CONTROL         "xyY",IDC_XYY_RADIO,"Button",BS_AUTORADIOBUTTON,470,94,44,8
+    CONTROL         "XYZ",IDC_XYZ_RADIO,"Button",BS_AUTORADIOBUTTON,470,74,44,8,WS_EX_TRANSPARENT
+    CONTROL         "xyz",IDC_XYZ_RADIO2,"Button",BS_AUTORADIOBUTTON,470,84,44,8,WS_EX_TRANSPARENT
+    CONTROL         "xyY",IDC_XYY_RADIO,"Button",BS_AUTORADIOBUTTON,470,94,44,8,WS_EX_TRANSPARENT
     PUSHBUTTON      "Go",IDC_MEASUREGRAYSCALE_BUTTON,467,107,47,21
     PUSHBUTTON      "Efface",IDC_DELETEGRAYSCALE_BUTTON,467,130,47,21,0,WS_EX_TRANSPARENT
     GROUPBOX        "Couleur sélectionnée",IDC_SELECTION_GROUP,4,153,171,173
@@ -812,6 +813,7 @@ BEGIN
     GROUPBOX        "Fichiers étalons - utilisation avancée",IDC_STATIC,7,38,199,40,WS_GROUP
     CONTROL         "Ne pas utiliser le blanc lors des calculs matriciels (V1.x)",IDC_CHECK_CALIBRATION_OLD,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,62,187,10
+
     GROUPBOX        "Luxmètre LX-1108",IDC_STATIC,7,82,199,86,WS_GROUP
     LTEXT           "Port COM",IDC_STATIC,17,94,43,8,0,0,HIDC_STATIC
     COMBOBOX        IDC_LUXMETER_COM_COMBO,65,92,52,118,CBS_DROPDOWN | WS_VSCROLL | WS_GROUP | WS_TABSTOP
@@ -826,8 +828,10 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,153,189,10
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ | WS_GROUP,7,149,199,1
     GROUPBOX        "Delta E",IDC_STATIC,7,171,199,38,WS_GROUP
-    CONTROL         "Ne pas utiliser la luminance dans le calcul (V1.x)",IDC_CHECK_OLD_DELTAE,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,183,167,10
+//    CONTROL         "Ne pas utiliser la luminance dans le calcul (V1.x)",IDC_CHECK_OLD_DELTAE,
+//                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,183,167,10
+	CONTROL         "Use Luv instead of CIE94 delta E formula (V2.x)",IDC_CHECK_OLD_DELTAE,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,183,170,10
     CONTROL         "Prendre en compte le gamma sur les niveaux de gris",IDC_CHECK_DELTAE_GRAY_LUMA,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,195,179,10
 END
@@ -1042,6 +1046,12 @@ IDB_POINT_BITMAP        BITMAP                  "res\\target.bmp"
 IDB_REFBLUEPRIMARY_BITMAP BITMAP                  "res\\refblueprimary.bmp"
 IDB_REFGREENPRIMARY_BITMAP BITMAP                  "res\\refgreenprimary.bmp"
 IDB_REFREDPRIMARY_BITMAP BITMAP                  "res\\refredprimary.bmp"
+IDB_REFBLUESAT_BITMAP BITMAP                  "res\\refbluesat.bmp"
+IDB_REFGREENSAT_BITMAP BITMAP                  "res\\refgreensat.bmp"
+IDB_REFREDSAT_BITMAP BITMAP                  "res\\refredsat.bmp"
+IDB_REFYELLOWSAT_BITMAP BITMAP             "res\\refyellowsat.bmp"
+IDB_REFCYANSAT_BITMAP BITMAP               "res\\refcyansat.bmp"
+IDB_REFMAGENTASAT_BITMAP BITMAP            "res\\refmagentasat.bmp"
 IDB_ILLUMINANTPOINT_BITMAP BITMAP                  "res\\illuminantplot.bmp"
 IDB_COLORTEMPPOINT_BITMAP BITMAP                  "res\\colortempplot.bmp"
 IDB_BLUEPRIMARY_BITMAP  BITMAP                  "res\\blueprimary.bmp"
@@ -1052,7 +1062,7 @@ IDB_CYANSECONDARY_BITMAP BITMAP                  "res\\cyansecondary.bmp"
 IDB_REDPRIMARY_BITMAP   BITMAP                  "res\\redprimary.bmp"
 IDB_GRAYPLOT_BITMAP     BITMAP                  "res\\grayplot.bmp"
 IDB_MEASUREPLOT_BITMAP  BITMAP                  "res\\measureplot.bmp"
-IDB_SELECTEDLOT_BITMAP  BITMAP                  "res\\selectedplot.bmp"
+IDB_SELECTEDPLOT_BITMAP  BITMAP                  "res\\selectedplot.bmp"
 IDB_ANSICONTRAST_BITMAP BITMAP                  "res\\bitmap1.bmp"
 IDB_LOGO                BITMAP                  "res\\logo.bmp"
 IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
@@ -1135,7 +1145,11 @@ BEGIN
 0x4353, 0x0029, 
     IDC_COLORREF_COMBO, 0x403, 15, 0
 0x4448, 0x5654, 0x2d20, 0x5220, 0x4345, 0x3720, 0x3930, "\000" 
-    IDC_COLORREF_COMBO, 0x403, 5, 0
+    IDC_COLORREF_COMBO, 0x403, 21, 0
+0x4448, 0x5654, 0x2d20, 0x5220, 0x4345, 0x3720, 0x3930, 0x2820, 0x3537, 0x2925, "\000" 
+	IDC_COLORREF_COMBO, 0x403, 4, 0
+0x4343, 0x0036,
+	IDC_COLORREF_COMBO, 0x403, 5, 0
 0x5273, 0x4247, "\000" 
     IDC_WHITETARGET_COMBO, 0x403, 4, 0
 0x3644, 0x0035, 
@@ -1451,6 +1465,7 @@ BEGIN
     BEGIN
         MENUITEM "Affiche les gris",            IDM_CIE_SHOWGRAYSCALE
         MENUITEM "Affiche les saturations",     IDM_CIE_SHOWSATURATIONSCALE
+        MENUITEM "Display saturations targets", IDM_CIE_SHOWSATURATIONSCALETARG
         MENUITEM "Affiches les mesures libres", IDM_CIE_SHOWMEASUREMENTS
         MENUITEM "Affiche la mesure de référence", IDM_LUM_GRAPH_DATAREF
         MENUITEM SEPARATOR
@@ -1823,11 +1838,14 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "Fichier étalon"
         BEGIN
+			MENUITEM "Manually edit XYZ matrix", IDM_MANUALLY_EDIT_SENSOR //translate
+			MENUITEM SEPARATOR
             MENUITEM "Create using Existing Reference Measures", IDM_CALIBRATION_EXISTING
             MENUITEM "Fabriquer un étalon à partir de mesures simultanées", IDM_CALIBRATION_SIM
             MENUITEM "Fabriquer un étalon manuellement à partir d'un colorimètre de référence", IDM_CALIBRATION_MANUAL
             MENUITEM SEPARATOR
             MENUITEM "Sauver le fichier étalon...", IDM_SAVE_CALIBRATION_FILE
+            MENUITEM "Load meter correction file...", IDM_LOAD_CALIBRATION_FILE //translate
         END
         POPUP "Mesures simultanées"
         BEGIN
@@ -2298,12 +2316,12 @@ BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "CompanyName", "Association Homecinema Francophone"
             VALUE "FileDescription", "Resources Colorimètre HCFR"
-            VALUE "FileVersion", "2, 1, 0, 0"
+            VALUE "FileVersion", "3, 0, 4, 2"
             VALUE "InternalName", "CHCFR21_ESPAÑOL"
             VALUE "LegalCopyright", "Copyright (C) 2005-2008"
             VALUE "OriginalFilename", "CHCFR21_ESPAÑOL.DLL"
             VALUE "ProductName", "Colorimètre HCFR langage Español"
-            VALUE "ProductVersion", "2, 1, 0, 0"
+            VALUE "ProductVersion", "3, 0, 4, 2"
         END
     END
     BLOCK "VarFileInfo"
@@ -2512,6 +2530,7 @@ BEGIN
     IDM_CONFIGURE_GENERATOR "Configure les paramètres du générateur"
     IDM_CHANGE_SENSOR       "Sélectionne le capteur à utiliser"
     IDM_CHANGE_GENERATOR    "Selectionne le générateur à utiliser"
+	IDM_LOAD_CALIBRATION_FILE "Select new calibration file" //translate
 END
 
 STRINGTABLE 
@@ -2519,6 +2538,8 @@ BEGIN
     IDM_VIEW_TESTCOLOR      "Affiche les couleurs de test\nCouleurs de test"
     IDM_CIE_SHOWSATURATIONSCALE 
                             "Affiche les points correspondants aux mesures des échelles de saturation\nAffiche les saturations"
+	IDM_CIE_SHOWSATURATIONSCALETARG
+							"Show saturation scale targets\nDisplay saturation targets"
     ID_UNITS_xyz_2          "xyz"
 END
 
@@ -2579,6 +2600,9 @@ BEGIN
     IDS_GREEN               "Vert"
     IDS_S2SENSOR_NAME       "Spyder II"
     IDS_BLUE                "Bleu"
+	IDS_CC6a                 "Light Skin"
+    IDS_CC6b                "Blue Sky"
+    IDS_CC6c                "Foliage"
     IDS_WHITE               "Blanc"
     IDS_BLACK               "Noir"
     IDS_ERRADDITIVITY       "Erreur additivité"
@@ -2617,6 +2641,9 @@ BEGIN
     IDS_YELLOW              "Jaune"
     IDS_CYAN                "Cyan"
     IDS_MAGENTA             "Magenta"
+	IDS_CC6d				"Purplish Blue"
+    IDS_CC6e                "Yellow Green"
+    IDS_CC6f				"Orange Yellow"
     IDS_MEASURENEARBLACK    "Mesure les gris au voisinage du noir"
     IDS_MEASURENEARWHITE    "Mesure les gris au voisinage du blanc"
     IDS_MEASURESATRED       "Mesure les saturations pour le rouge"
@@ -2677,12 +2704,24 @@ BEGIN
     IDS_REC709REDREF        "Référence rouge Rec709"
     IDS_REC709GREENREF      "Référence vert Rec709"
     IDS_REC709BLUEREF       "Référence bleu Rec709"
+	IDS_REC709aREDREF        "Rec709 (75%) Red Reference"
+    IDS_REC709aGREENREF      "Rec709 (75%) Green Reference"
+    IDS_REC709aBLUEREF       "Rec709 (75%) Blue Reference"
+	IDS_RECCC6REDREF        "Light Skin Reference"
+    IDS_RECCC6GREENREF      "Blue Sky Reference"
+    IDS_RECCC6BLUEREF       "Foliage Reference"
     IDS_REDPRIMARY          "Primaire Rouge"
     IDS_GREENPRIMARY        "Primaire Vert"
     IDS_BLUEPRIMARY         "Primaire Bleu"
     IDS_YELLOWSECONDARY     "Secondaire Jaune"
     IDS_CYANSECONDARY       "Secondaire Cyan"
     IDS_MAGENTASECONDARY    "Secondaire Magenta"
+	IDS_CC6REDPRIMARY       "Light Skin"
+    IDS_CC6GREENPRIMARY		"Blue Sky"
+    IDS_CC6BLUEPRIMARY      "Foliage"
+    IDS_CC6YELLOWSECONDARY  "Purplish Blue"
+    IDS_CC6CYANSECONDARY	"Yellow Green"
+    IDS_CC6MAGENTASECONDARY	"Orange Yellow"
     IDS_GRAYIRE             "Gris %d IRE"
 END
 
@@ -2694,6 +2733,12 @@ BEGIN
     IDS_YELLOWSATPERCENT    "Jaune Saturé à %d%%"
     IDS_CYANSATPERCENT      "Cyan Saturé à %d%%"
     IDS_MAGENTASATPERCENT   "Magenta Saturé à %d%%"
+    IDS_REDSATPERCENTREF       "Red Saturated at %d%% reference"
+    IDS_GREENSATPERCENTREF     "Green Saturated at %d%% reference"
+    IDS_BLUESATPERCENTREF      "Blue Saturated at %d%% reference"
+    IDS_YELLOWSATPERCENTREF    "Yellow Saturated at %d%% reference"
+    IDS_CYANSATPERCENTREF      "Cyan Saturated at %d%% reference"
+    IDS_MAGENTASATPERCENTREF   "Magenta Saturated at %d%% reference"
     IDS_MEASURENUM          "Mesure %d"
     IDS_SELECTION           "Couleur sélectionnée"
     IDS_COLORTEMP           "Température de couleur"
@@ -2899,6 +2944,9 @@ BEGIN
     IDS_YELLOWSECONDARYREF  "Référence Secondaire Jaune"
     IDS_CYANSECONDARYREF    "Référence Secondaire Cyan"
     IDS_MAGENTASECONDARYREF "Référence Secondaire Magenta"
+	IDS_CC6YELLOWSECONDARYREF  "Purplish Blue reference"
+    IDS_CC6CYANSECONDARYREF    "Yellow Green reference"
+    IDS_CC6MAGENTASECONDARYREF "Orange Yellow reference"
     IDS_DELTAEBETWEENDATAANDREF "Delta E entre mesure et référence"
     IDS_GERMANVERSION       "Traduction Allemande"
     IDS_EYEONE              "Eye One"
@@ -3160,8 +3208,8 @@ LANGUAGE LANG_SPANISH, SUBLANG_SPANISH_MODERN
 #pragma code_page(1252)
 #endif //_WIN32
 #include "res\ColorHCFR.rc2"  // non-Microsoft Visual C++ edited resources
-#include "l.esp\afxres.rc"          // Standard components
-#include "l.esp\afxprint.rc"        // printing/print preview resources
+#include "l.esn\afxres.rc"          // Standard components
+#include "l.esn\afxprint.rc"        // printing/print preview resources
 #endif
 
 /////////////////////////////////////////////////////////////////////////////

@@ -97,7 +97,7 @@ CMeasure::CMeasure()
 	m_pBkMeasureSensor = NULL;
 	m_pBkMeasuredColor = NULL;
 
-	m_nbMaxMeasurements = GetConfig()->GetProfileInt("General","MaxMeasurements",250);
+	m_nbMaxMeasurements = GetConfig()->GetProfileInt("General","MaxMeasurements",2500);
 	if ( m_nbMaxMeasurements < 100 )
 		m_nbMaxMeasurements = 100;
 	else if ( m_nbMaxMeasurements > 30000 )
@@ -633,7 +633,7 @@ BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator)
 
 	for(int i=0;i<size;i++)
 	{
-		if( pGenerator->DisplayGray(ArrayIndexToGrayLevel ( i, size),CGenerator::MT_IRE ,!bRetry))
+		if( pGenerator->DisplayGray(ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown),CGenerator::MT_IRE ,!bRetry))
 		{
 			bEscape = WaitForDynamicIris ();
 			bRetry = FALSE;
@@ -643,7 +643,7 @@ BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator)
 				if ( bUseLuxValues )
 					StartLuxMeasure ();
 
-				measuredColor[i]=pSensor->MeasureGray(ArrayIndexToGrayLevel ( i, size));
+				measuredColor[i]=pSensor->MeasureGray(ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown));
 				
 				if ( bUseLuxValues )
 				{
@@ -773,6 +773,8 @@ BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator)
 	return TRUE;
 }
 
+
+
 BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerator)
 {
 	MSG		Msg;
@@ -817,7 +819,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 
 	for(int i=0;i<size;i++)
 	{
-		if( pGenerator->DisplayGray(ArrayIndexToGrayLevel ( i, size),CGenerator::MT_IRE ,!bRetry))
+		if( pGenerator->DisplayGray(ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown),CGenerator::MT_IRE ,!bRetry))
 		{
 			bEscape = WaitForDynamicIris ();
 			bRetry = FALSE;
@@ -827,7 +829,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 				if ( bUseLuxValues )
 					StartLuxMeasure ();
 
-				measuredColor[i]=pSensor->MeasureGray(ArrayIndexToGrayLevel ( i, size ));
+				measuredColor[i]=pSensor->MeasureGray(ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown ));
 				
 				if ( bUseLuxValues )
 				{
@@ -946,7 +948,6 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 		}
 
 	double primaryIRELevel=100.0;	
-	
 	// Measure primary and secondary colors
 	ColorRGBDisplay	GenColors [ 6 ] = 
 								{	
@@ -957,6 +958,25 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 									ColorRGBDisplay(0,primaryIRELevel,primaryIRELevel),
 									ColorRGBDisplay(primaryIRELevel,0,primaryIRELevel)
 								};
+	if (GetColorReference().m_standard == 4) //CC6
+	{
+		GenColors [ 0 ] = ColorRGBDisplay(78.0,58.0,51.0);
+		GenColors [ 1 ] = ColorRGBDisplay(36.0,48.0,61.0);
+		GenColors [ 2 ] = ColorRGBDisplay(36.0,42.0,26.0);
+		GenColors [ 3 ] = ColorRGBDisplay(51.0,50.0,68.0);
+		GenColors [ 4 ] = ColorRGBDisplay(62.0,74.0,26.0);
+		GenColors [ 5 ] = ColorRGBDisplay(90.0,63.0,17.0);
+	}
+	else if (GetColorReference().m_standard == 3) //75%
+	{ 
+		GenColors [ 0 ] = ColorRGBDisplay(68.0,20.0,20.0);
+		GenColors [ 1 ] = ColorRGBDisplay(28.0,73.0,28.0);
+		GenColors [ 2 ] = ColorRGBDisplay(19.0,19.0,50.0);
+		GenColors [ 3 ] = ColorRGBDisplay(75.0,75.0,33.0);
+		GenColors [ 4 ] = ColorRGBDisplay(36.0,73.0,73.0);
+		GenColors [ 5 ] = ColorRGBDisplay(64.0,29.0,64.0);
+	}
+
 	ColorRGBDisplay	MeasColors [ 6 ] = 
 								{	
 									ColorRGBDisplay(primaryIRELevel,0,0),
@@ -2611,7 +2631,7 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
 	}
 
 	// Measure primary and secondary colors
-	double		IRELevel=100.0;	
+	double		IRELevel=100.0;
 	ColorRGBDisplay	GenColors [ 5 ] = 
 								{	
 									ColorRGBDisplay(IRELevel,0,0),
@@ -2620,6 +2640,24 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
 									ColorRGBDisplay(IRELevel,IRELevel,IRELevel),
 									ColorRGBDisplay(0,0,0)
 								};
+
+	if (GetColorReference().m_standard == 4) //CC6
+	{
+		GenColors [ 0 ] = ColorRGBDisplay(78.0,58.0,51.0);
+		GenColors [ 1 ] = ColorRGBDisplay(36.0,48.0,61.0);
+		GenColors [ 2 ] = ColorRGBDisplay(36.0,42.0,26.0);
+		GenColors [ 3 ] = ColorRGBDisplay(IRELevel,IRELevel,IRELevel);
+		GenColors [ 4 ] = ColorRGBDisplay(0,0,0);
+	}
+	else if (GetColorReference().m_standard == 3) //75%
+	{ 
+		GenColors [ 0 ] = ColorRGBDisplay(68.0,20.0,20.0);
+		GenColors [ 1 ] = ColorRGBDisplay(28.0, 73.0,28.0);
+		GenColors [ 2 ] = ColorRGBDisplay(19.0,19.0,50.0);
+		GenColors [ 3 ] = ColorRGBDisplay(75.0,75.0,75.0);
+		GenColors [ 4 ] = ColorRGBDisplay(0,0,0);
+	
+	}
 	ColorRGBDisplay	MeasColors [ 5 ] = 
 								{	
 									ColorRGBDisplay(IRELevel,0,0),
@@ -2804,6 +2842,28 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator)
 									ColorRGBDisplay(IRELevel,IRELevel,IRELevel),
 									ColorRGBDisplay(0,0,0)
 								};
+	if (GetColorReference().m_standard == 4) //CC6
+	{
+		GenColors [ 0 ] = ColorRGBDisplay(78.0,58.0,51.0);
+		GenColors [ 1 ] = ColorRGBDisplay(36.0,48.0,61.0);
+		GenColors [ 2 ] = ColorRGBDisplay(36.0,42.0,26.0);
+		GenColors [ 3 ] = ColorRGBDisplay(51.0,50.0,68.0);
+		GenColors [ 4 ] = ColorRGBDisplay(62.0,74.0,26.0);
+		GenColors [ 5 ] = ColorRGBDisplay(90.0,63.0,17.0);
+		GenColors [ 6 ] = ColorRGBDisplay(IRELevel,IRELevel,IRELevel);
+		GenColors [ 7 ] = ColorRGBDisplay(0,0,0);
+	}
+	else if (GetColorReference().m_standard == 3) //75%
+	{ 
+		GenColors [ 0 ] = ColorRGBDisplay(68.0,20.0,20.0);
+		GenColors [ 1 ] = ColorRGBDisplay(28.0,73.0,28.0);
+		GenColors [ 2 ] = ColorRGBDisplay(19.0,19.0,50.0);
+		GenColors [ 3 ] = ColorRGBDisplay(75.0,75.0,33.0);
+		GenColors [ 4 ] = ColorRGBDisplay(36.0,73.0,73.0);
+		GenColors [ 5 ] = ColorRGBDisplay(64.0,29.0,64.0);
+		GenColors [ 6 ] = ColorRGBDisplay(75.0,75.0,75.0);
+		GenColors [ 7 ] = ColorRGBDisplay(0,0,0);	
+	}
 	ColorRGBDisplay	MeasColors [ 8 ] = 
 								{	
 									ColorRGBDisplay(IRELevel,0,0),
@@ -3896,32 +3956,32 @@ void CMeasure::FreeMeasurementAppended()
 		{
 			LastMeasure=GetMeasurement(n-1);
 
-			if ( LastMeasure.GetDeltaE ( GetColorReference().GetRed ()) < 120 )
+			if ( LastMeasure.GetDeltaE ( GetColorReference().GetRed ()) < (GetColorReference().m_standard==4 ? 30:75) )
 			{
 				// Copy real color to primary (not LastMeasure which may have been adjusted)
 				SetRedPrimary ( m_measurementsArray[n-1] );
 			}
-			else if ( LastMeasure.GetDeltaE ( GetColorReference().GetGreen () ) < 50 )
+			else if ( LastMeasure.GetDeltaE ( GetColorReference().GetGreen () ) < (GetColorReference().m_standard==4 ? 30:75) )
 			{
 				// Copy real color to primary (not LastMeasure which may have been adjusted)
 				SetGreenPrimary ( m_measurementsArray[n-1] );
 			}
-			else if ( LastMeasure.GetDeltaE ( GetColorReference().GetBlue () ) < 200 )
+			else if ( LastMeasure.GetDeltaE ( GetColorReference().GetBlue () ) < (GetColorReference().m_standard==4 ? 30:75) )
 			{
 				// Copy real color to primary (not LastMeasure which may have been adjusted)
 				SetBluePrimary ( m_measurementsArray[n-1] );
 			}
-			else if ( LastMeasure.GetDeltaE ( GetColorReference().GetYellow () ) < 40 )
+			else if ( LastMeasure.GetDeltaE ( GetColorReference().GetYellow () ) < (GetColorReference().m_standard==4 ? 30:75) )
 			{
 				// Copy real color to primary (not LastMeasure which may have been adjusted)
 				SetYellowSecondary ( m_measurementsArray[n-1] );
 			}
-			else if ( LastMeasure.GetDeltaE ( GetColorReference().GetCyan () ) < 40 )
+			else if ( LastMeasure.GetDeltaE ( GetColorReference().GetCyan () ) < (GetColorReference().m_standard==4 ? 30:75) )
 			{
 				// Copy real color to primary (not LastMeasure which may have been adjusted)
 				SetCyanSecondary ( m_measurementsArray[n-1] );
 			}
-			else if ( LastMeasure.GetDeltaE ( GetColorReference().GetMagenta () ) < 100 )
+			else if ( LastMeasure.GetDeltaE ( GetColorReference().GetMagenta () ) < (GetColorReference().m_standard==4 ? 30:75) )
 			{
 				// Copy real color to primary (not LastMeasure which may have been adjusted)
 				SetMagentaSecondary ( m_measurementsArray[n-1] );
@@ -4512,18 +4572,26 @@ CColor CMeasure::GetRefSat(int i, double sat_percent) const
 	double	xstart = refWhite[0];
 	double	ystart = refWhite[1];
 	double	YLuma;
-
-	if ( i < 3 )
-		refColor = GetPrimary(i);
-	else
-		refColor = GetSecondary(i-3);
-
-	if ( !refColor.isValid())
+	CColor pRef[3] = { CColor(0.6400, 0.3300),
+		CColor(0.3000, 0.6000),
+		CColor(0.1500, 0.0600) };
+	CColor sRef[3] = { CColor(0.4193, 0.5053),
+		CColor(0.2246, 0.3287),
+		CColor(0.3209, 0.1542) };
+//display rec709 sat points in special colorspace modes	
+	if (!(GetColorReference().m_standard == 3 || GetColorReference().m_standard == 4))
 	{
 		if ( i < 3 )
 			refColor = GetRefPrimary(i);
 		else
 			refColor = GetRefSecondary(i-3);
+	}
+	else
+	{
+		if ( i < 3 )
+			refColor = pRef[i];
+		else
+			refColor = sRef[i-3];
 	}
 
 	if ( i < 3 )
