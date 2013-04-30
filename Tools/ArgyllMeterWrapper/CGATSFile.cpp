@@ -29,6 +29,10 @@
 
 #define SALONEINSTLIB
 #define ENABLE_USB
+#if defined(_MSC_VER)
+#pragma warning(disable:4200)
+#include <winsock.h>
+#endif
 #include "xspect.h"
 #include "cgats.h"
 #undef SALONEINSTLIB

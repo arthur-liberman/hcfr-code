@@ -89,7 +89,7 @@
 			ConfigurationType="4"
 			UseOfMFC="1"
 			CharacterSet="2"
-			WholeProgramOptimization="1"
+			WholeProgramOptimization="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
