@@ -26,6 +26,8 @@
 #include "ColorHCFR.h"
 #include "Generator.h"
 #include "Color.h"
+#include "madVRTestPattern.h"
+#include "GDIGenerator.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -122,6 +124,30 @@ BOOL CGenerator::Configure()
 BOOL CGenerator::Init(UINT nbMeasure)
 {
 	nMeasureNumber = nbMeasure;
+	CGDIGenerator Cgen;
+	if (Cgen.m_nDisplayMode == DISPLAY_madVR)
+	{
+	if (madVR_IsAvailable())
+	{
+	  if (madVR_BlindConnect())
+      {
+//      madVR_Disable3dlut(); no switch for this yet
+      madVR_SetOsdText(L"HCFR is measuring display, please wait...");
+	  madVR_ShowProgressBar(nMeasureNumber);			
+	  }
+	  else
+	  {
+	    MessageBox(0, "dll found but Blind Connect failed, is madVR running?", "Error", MB_ICONERROR);
+	    return false;
+	  }
+	}
+	else
+	{
+	    MessageBox(0, "madVR dll not found, is madVR installed?", "Error", MB_ICONERROR);
+	    return false;
+	}
+	}
+
 
 	if(m_doScreenBlanking)
 	{
@@ -135,10 +161,17 @@ BOOL CGenerator::Init(UINT nbMeasure)
 	return TRUE;
 }
 
-BOOL CGenerator::DisplayRGBColor(const ColorRGBDisplay& aRGBColor,MeasureType nPatternType, UINT nPatternInfo,  BOOL bChangePattern,BOOL bSilentMode )
+BOOL CGenerator::DisplayRGBColormadVR(const ColorRGBDisplay& aRGBColor,  MeasureType nPatternType, UINT nPatternInfo,  BOOL bChangePattern,BOOL bSilentMode )
 {
 	return TRUE;	  // need to be overriden
 }
+
+
+BOOL CGenerator::DisplayRGBColor(const ColorRGBDisplay& aRGBColor, MeasureType nPatternType, UINT nPatternInfo,  BOOL bChangePattern,BOOL bSilentMode )
+{
+	return TRUE;	  // need to be overriden
+}
+
 
 BOOL CGenerator::DisplayAnsiBWRects(BOOL bInvert)
 {
@@ -166,10 +199,15 @@ BOOL CGenerator::DisplayGray(double aLevel, MeasureType nPatternType , BOOL bCha
 	return DisplayRGBColor(ColorRGBDisplay(aLevel), nPatternType ,bChangePattern); 
 }
 
+
 BOOL CGenerator::Release(INT nbNext)
 {
-	GetColorApp() -> EndMeasureCursor ();
-
+	CGDIGenerator Cgen;
+	if (Cgen.m_nDisplayMode == DISPLAY_madVR)
+	{
+	  if (madVR_IsAvailable())
+	    madVR_Disconnect();
+	}
 	if(m_doScreenBlanking)
 		m_blankingWindow.Hide();
 	return TRUE;

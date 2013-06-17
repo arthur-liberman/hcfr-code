@@ -25,7 +25,7 @@
 #include "stdafx.h"
 #include "ColorHCFR.h"
 #include "GDIGenerator.h"
-
+#include "madVRTestPattern.h"
 
 #include <string>
 
@@ -296,12 +296,59 @@ BOOL CGDIGenerator::Init(UINT nbMeasure)
 	return bOk;
 }
 
+BOOL CGDIGenerator::DisplayRGBColormadVR( const ColorRGBDisplay& clr )
+{
+	//init done in generator.cpp
+      if (!madVR_ShowRGB(clr[0] / 100., clr[1] / 100., clr[2] / 100.))
+      {
+        MessageBox(0, "Test pattern failure.", "Error", MB_ICONERROR);
+		return false;
+      }
+	// Sleep 80 ms while dispatching messages to ensure window is really displayed
+		MSG		Msg;
+		HWND	hEscapeWnd = NULL;
+		DWORD	dwWait = GetConfig () -> GetProfileInt ( "Debug", "WaitAfterDisplayPattern", 80 );
+		DWORD	dwStart = GetTickCount();
+		DWORD	dwNow = dwStart;
+		
+		// Wait until dwWait time is expired, but ensures all posted messages are treated even if wait time is zero
+		while((dwNow - dwStart) < dwWait)
+		{
+			while(PeekMessage(&Msg, NULL, NULL, NULL, PM_REMOVE))
+			{
+				if ( ( Msg.message == WM_KEYDOWN || Msg.message == WM_KEYUP ) && Msg.wParam == VK_ESCAPE )
+				{
+					// Do not treat this message, store it for later use
+					hEscapeWnd = Msg.hwnd;
+				}
+				else
+				{
+					TranslateMessage ( & Msg );
+					DispatchMessage ( & Msg );
+				}
+				Sleep(0);
+			}
+			dwNow = GetTickCount();
+		}
+		if ( hEscapeWnd )
+		{
+			// Escape key detected and stored during above loop: put it again in message loop to allow detection
+			::PostMessage ( hEscapeWnd, WM_KEYDOWN, VK_ESCAPE, NULL );
+			::PostMessage ( hEscapeWnd, WM_KEYUP, VK_ESCAPE, NULL );
+		}
+
+return TRUE;
+}
+
 BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nPatternType , UINT nPatternInfo , BOOL bChangePattern,BOOL bSilentMode)
 {
-	m_displayWindow.DisplayRGBColor(clr);
-
+	if ( m_GDIGenePropertiesPage.m_nDisplayMode != DISPLAY_madVR )
+ 	  m_displayWindow.DisplayRGBColor(clr);
+	else
+	  DisplayRGBColormadVR (clr);
 	return TRUE;
 }
+
 
 BOOL CGDIGenerator::CanDisplayAnsiBWRects()
 {

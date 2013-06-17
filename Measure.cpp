@@ -791,10 +791,10 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 	BOOL	bUseLuxValues = TRUE;
 	CArray<double,int> measuredLux;
 
-	measuredColor.SetSize(size+8);
-	measuredLux.SetSize(size+8);
+	measuredColor.SetSize(size+6+GetConfig()->m_BWColorsToAdd);
+	measuredLux.SetSize(size+6+GetConfig()->m_BWColorsToAdd);
 
-	if(pGenerator->Init(size+8) != TRUE)
+	if(pGenerator->Init(size+6+GetConfig()->m_BWColorsToAdd) != TRUE)
 	{
 		Title.LoadString ( IDS_ERROR );
 		strMsg.LoadString ( IDS_ERRINITGENERATOR );
@@ -949,14 +949,16 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 
 	double primaryIRELevel=100.0;	
 	// Measure primary and secondary colors
-	ColorRGBDisplay	GenColors [ 6 ] = 
+	ColorRGBDisplay	GenColors [ 8 ] = 
 								{	
 									ColorRGBDisplay(primaryIRELevel,0,0),
 									ColorRGBDisplay(0,primaryIRELevel,0),
 									ColorRGBDisplay(0,0,primaryIRELevel),
 									ColorRGBDisplay(primaryIRELevel,primaryIRELevel,0),
 									ColorRGBDisplay(0,primaryIRELevel,primaryIRELevel),
-									ColorRGBDisplay(primaryIRELevel,0,primaryIRELevel)
+									ColorRGBDisplay(primaryIRELevel,0,primaryIRELevel),
+									ColorRGBDisplay(primaryIRELevel,primaryIRELevel,primaryIRELevel),
+									ColorRGBDisplay(0,0,0)
 								};
 	if (GetColorReference().m_standard == 4) //CC6
 	{
@@ -977,16 +979,18 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 		GenColors [ 5 ] = ColorRGBDisplay(64.0,29.0,64.0);
 	}
 
-	ColorRGBDisplay	MeasColors [ 6 ] = 
+	ColorRGBDisplay	MeasColors [ 8 ] = 
 								{	
 									ColorRGBDisplay(primaryIRELevel,0,0),
 									ColorRGBDisplay(0,primaryIRELevel,0),
 									ColorRGBDisplay(0,0,primaryIRELevel),
 									ColorRGBDisplay(primaryIRELevel,primaryIRELevel,0),
 									ColorRGBDisplay(0,primaryIRELevel,primaryIRELevel),
-									ColorRGBDisplay(primaryIRELevel,0,primaryIRELevel)
+									ColorRGBDisplay(primaryIRELevel,0,primaryIRELevel),
+									ColorRGBDisplay(primaryIRELevel,primaryIRELevel,primaryIRELevel),
+									ColorRGBDisplay(0,0,0)
 								};
-	for (int i = 0; i < 6 ; i ++ )
+	for (int i = 0; i < 6 + GetConfig()->m_BWColorsToAdd ; i ++ )
 	{
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SECONDARY,0,TRUE,TRUE) )
 
@@ -2613,7 +2617,7 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
 	BOOL	bUseLuxValues = TRUE;
 	double	measuredLux[5];
 
-	if(pGenerator->Init(5) != TRUE)
+	if(pGenerator->Init(3 + GetConfig () -> m_BWColorsToAdd) != TRUE)
 	{
 		Title.LoadString ( IDS_ERROR );
 		strMsg.LoadString ( IDS_ERRINITGENERATOR );
@@ -2631,13 +2635,13 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
 	}
 
 	// Measure primary and secondary colors
-	double		IRELevel=100.0;
+	double		primaryIRELevel=100.0;
 	ColorRGBDisplay	GenColors [ 5 ] = 
 								{	
-									ColorRGBDisplay(IRELevel,0,0),
-									ColorRGBDisplay(0,IRELevel,0),
-									ColorRGBDisplay(0,0,IRELevel),
-									ColorRGBDisplay(IRELevel,IRELevel,IRELevel),
+									ColorRGBDisplay(primaryIRELevel,0,0),
+									ColorRGBDisplay(0,primaryIRELevel,0),
+									ColorRGBDisplay(0,0,primaryIRELevel),
+									ColorRGBDisplay(primaryIRELevel,primaryIRELevel,primaryIRELevel),
 									ColorRGBDisplay(0,0,0)
 								};
 
@@ -2646,7 +2650,7 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
 		GenColors [ 0 ] = ColorRGBDisplay(78.0,58.0,51.0);
 		GenColors [ 1 ] = ColorRGBDisplay(36.0,48.0,61.0);
 		GenColors [ 2 ] = ColorRGBDisplay(36.0,42.0,26.0);
-		GenColors [ 3 ] = ColorRGBDisplay(IRELevel,IRELevel,IRELevel);
+		GenColors [ 3 ] = ColorRGBDisplay(primaryIRELevel,primaryIRELevel,primaryIRELevel);
 		GenColors [ 4 ] = ColorRGBDisplay(0,0,0);
 	}
 	else if (GetColorReference().m_standard == 3) //75%
@@ -2660,10 +2664,10 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
 	}
 	ColorRGBDisplay	MeasColors [ 5 ] = 
 								{	
-									ColorRGBDisplay(IRELevel,0,0),
-									ColorRGBDisplay(0,IRELevel,0),
-									ColorRGBDisplay(0,0,IRELevel),
-									ColorRGBDisplay(IRELevel,IRELevel,IRELevel),
+									ColorRGBDisplay(primaryIRELevel,0,0),
+									ColorRGBDisplay(0,primaryIRELevel,0),
+									ColorRGBDisplay(0,0,primaryIRELevel),
+									ColorRGBDisplay(primaryIRELevel,primaryIRELevel,primaryIRELevel),
 									ColorRGBDisplay(0,0,0)
 								};
 
@@ -2680,7 +2684,6 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
 					StartLuxMeasure ();
 
 				measuredColor[i]=pSensor->MeasureColor(MeasColors[i]);
-				
 				if ( bUseLuxValues )
 				{
 					switch ( GetLuxMeasure ( & dLuxValue ) )
@@ -2812,7 +2815,7 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator)
 	BOOL	bUseLuxValues = TRUE;
 	double	measuredLux[8];
 
-	if(pGenerator->Init(8) != TRUE)
+	if(pGenerator->Init(6+GetConfig()->m_BWColorsToAdd) != TRUE)
 	{
 		Title.LoadString ( IDS_ERROR );
 		strMsg.LoadString ( IDS_ERRINITGENERATOR );
