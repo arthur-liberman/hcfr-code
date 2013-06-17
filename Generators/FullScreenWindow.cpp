@@ -45,6 +45,7 @@ CFullScreenWindow::CFullScreenWindow(BOOL bTestOverlay)
 	m_Color = 0;
 	m_bTestOverlay = bTestOverlay;
 	m_rectSizePercent = 100;
+	m_bgStimPercent = 0;
 	
 	m_nDisplayMode = DISPLAY_GDI;
 	m_bDisableCursorHiding = FALSE;
@@ -179,6 +180,10 @@ void CFullScreenWindow::DisplayRGBColorInternal(COLORREF clr, BOOL bDisableWaiti
 	
 	m_Color = clr;
 
+	double m_rectAreaPercent;
+
+	m_rectAreaPercent = sqrt (m_rectSizePercent / 100.) * 100;
+	
 	if ( m_nDisplayMode == DISPLAY_OVERLAY )
 	{
 		// Set color directly in YUY2 format inside overlay surface
@@ -210,8 +215,8 @@ void CFullScreenWindow::DisplayRGBColorInternal(COLORREF clr, BOOL bDisableWaiti
 			else
 			{
 				// Define rectangle to draw
-				int deltaWidth=(int)(rect.Width()*(100-m_rectSizePercent)/100.0);
-				int deltaHeight=(int)(rect.Height()*(100-m_rectSizePercent)/100.0);
+				int deltaWidth=(int)(rect.Width()*(100-m_rectAreaPercent)/100.0);
+				int deltaHeight=(int)(rect.Height()*(100-m_rectAreaPercent)/100.0);
 				
 				patternRect.DeflateRect(deltaWidth/2,deltaHeight/2);
 				
@@ -496,6 +501,10 @@ void CFullScreenWindow::OnPaint()
 	CPaintDC	dc(this); // device context for painting
 
 	GetClientRect ( &rect );
+	double m_rectAreaPercent;
+    double bgstim = m_bgStimPercent / 100.;
+
+	m_rectAreaPercent = sqrt (m_rectSizePercent / 100.) * 100;
 
 	if ( m_nDisplayMode != 0 )
 	{
@@ -517,7 +526,7 @@ void CFullScreenWindow::OnPaint()
 		if ( m_Color == 0xFF000000 )
 			bDraw = TRUE;
 
-		brush.CreateSolidBrush ( RGB(255,255,255) );
+		brush.CreateSolidBrush ( RGB(bgstim*255,bgstim*255,bgstim*255) );
 		for ( row = 0; row < ANSI_CONTRAST_BLOCKS ; row ++ )
 		{
 			bDraw = ! bDraw;
@@ -541,13 +550,14 @@ void CFullScreenWindow::OnPaint()
 	{
 		if(m_rectSizePercent < 100)  // Need to draw background
 		{
-			brush.CreateSolidBrush ( RGB(0,0,0) );
+//			brush.CreateSolidBrush ( RGB(0,0,0) );
+			brush.CreateSolidBrush ( RGB(.22*255,.22*255,.22*255) );
 			dc.FillRect ( &rect, &brush );
 			brush.DeleteObject ();
 		}
 
-		int deltaWidth=(int)(rect.Width()*(100-m_rectSizePercent)/100.0);
-		int deltaHeight=(int)(rect.Height()*(100-m_rectSizePercent)/100.0);
+		int deltaWidth=(int)(rect.Width()*(100-m_rectAreaPercent)/100.0);
+		int deltaHeight=(int)(rect.Height()*(100-m_rectAreaPercent)/100.0);
 		CRect patternRect=rect;
 		patternRect.DeflateRect(deltaWidth/2,deltaHeight/2);
 
@@ -853,6 +863,10 @@ void CFullScreenWindow::OnTimer(UINT nIDEvent)
     HRESULT			ddrval;
     DDSURFACEDESC	SurfaceDesc;
 	
+	double m_rectAreaPercent;
+
+	m_rectAreaPercent = sqrt (m_rectSizePercent / 100.) * 100;
+
 	if ( m_IdTimer == nIDEvent )
 	{
 		// Initializations
@@ -916,8 +930,8 @@ void CFullScreenWindow::OnTimer(UINT nIDEvent)
 			{
 				if ( m_rectSizePercent < 100 && m_bWhite )
 				{
-					m_XMargin = ( ( rect.right / 2 ) * ( 100 - m_rectSizePercent ) ) / 100;
-					m_YMargin = ( ( rect.bottom / 2 ) * ( 100 - m_rectSizePercent ) ) / 100;
+					m_XMargin = ( ( rect.right / 2 ) * ( 100 - m_rectAreaPercent ) ) / 100;
+					m_YMargin = ( ( rect.bottom / 2 ) * ( 100 - m_rectAreaPercent ) ) / 100;
 				}
 				else
 				{

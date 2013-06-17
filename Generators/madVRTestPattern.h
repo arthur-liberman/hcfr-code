@@ -87,6 +87,12 @@ BOOL madVR_SetDeviceGammaRamp(LPVOID ramp);
 // "madVR_SetOsdText" shows a "text" on the top left of the video image.
 BOOL madVR_SetOsdText(LPCWSTR text);
 
+// "madVR_SetBackground" lets you define how much percect of the madVR
+// rendering window is painted in the test pattern color, and how much is
+// painted with a specific background color.
+// Using a background color can make sense for plasma measurements.
+BOOL madVR_SetBackground(int patternAreaInPercent, COLORREF backgroundColor);
+
 // "madVR_ShowProgressBar" initializes the madVR progress bar.
 // It will progress one step with every "madVR_ShowRGB" call (see below).
 BOOL madVR_ShowProgressBar(int numberOfRgbMeasurements);
@@ -125,7 +131,7 @@ BOOL madVR_IsAvailable();
 // ----------------------------------------------------------------------------
 // finding / enumerating madVR instances on the LAN
 
-// The following APIs let you automatically locate madVR instances running
+// The following API lets you automatically locate madVR instances running
 // anywhere on either the local PC or remote PCs connected via LAN.
 // For every found madVR instance this full information record is returned:
 
@@ -146,49 +152,6 @@ typedef struct _TMadVRInstance
   LPWSTR    monitorName;    // "JVC HD-350"     // "JVC HD-350"
 } TMadVRInstance, *PMadVRInstance;
 
-typedef struct _TMadVRInstances
-{
-  LONG_PTR count;
-  TMadVRInstance items[1];
-} TMadVRInstances, *PMadVRInstances;
-
-// Normally, a network search returns all running madVR instances in less than
-// a second. But under specific circumstances, the search can take several
-// seconds. Because of that there are different ways to perform a search:
-
-// (1) synchronous search
-// Calling "madVR_Find" (see below) with a timeout means that "madVR_Find" will
-// perform a network search and only return when the search is complete, or
-// when the timeout was reached.
-
-// (2) asynchronous search I
-// You can call "madVR_Find" with a timeout value of "0" to start the search.
-// "madVR_Find" will return at once, but starts a search in the background.
-// Later, when you see fit, you can call "madVR_Find" another time (with or
-// without a timeout value) to pick up the search results.
-
-// (3) asynchronous search II
-// Call "madVR_Find_Async" (see below) to start a background network search.
-// Whenever a new madVR instance is found (and also when a madVR instance is
-// closed), a message will be sent to a window of your choice.
-// When that message arrives, you can call "madVR_Find" with a 0 timeout value
-// to fetch the updated list of found madVR instances.
-
-// Here are the mentioned APIs:
-
-// "madVR_Find" starts a search for madVR instances running anywhere on the LAN
-// and returns information records about all found instances.
-// If the search isn't complete within the timeOut interval, "madVR_Find" will
-// return and report the instances found until then. The search continues in a
-// background thread until it's complete.
-// The memory is allocated by madVR, don't allocate nor free it.
-// The memory stays valid until the next "madVR_Find" call.
-#ifdef __cplusplus
-  PMadVRInstances madVR_Find(DWORD timeOut = 3000);
-#else
-  PMadVRInstances madVR_Find(DWORD timeOut       );
-#endif
-
 // "madVR_Find_Async" also starts a search for madVR instances, but instead of
 // returning information directly, it will send a message to the specified
 // "window" for every found madVR instance.
@@ -199,6 +162,7 @@ typedef struct _TMadVRInstances
 // wParam: 0 = a new madVR instance was detected
 //         1 = a known madVR instance closed down
 // lParam: "PMadVRInstance" of the new/closed madVR instance
+//         do not free the PMadVRInstance, the memory is managed by madVR
 BOOL madVR_Find_Async(HWND window, DWORD msg);
 
 // ----------------------------------------------------------------------------

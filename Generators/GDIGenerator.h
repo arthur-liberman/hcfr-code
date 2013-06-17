@@ -38,7 +38,6 @@ class CGDIGenerator : public CGenerator
 {
 public:
 	DECLARE_SERIAL(CGDIGenerator) ;
-	int		m_nDisplayMode;
 
 // Parameters
 protected:
@@ -51,7 +50,9 @@ protected:
 public:										// public because of callback
 	UINT m_monitorNb;						// number of detected monitors
 	HMONITOR m_hMonitor[MAX_MONITOR_NB];	// array of detected monitors handles
-
+	int		m_nDisplayMode;
+    int     m_rectSizePercent;
+	int     m_bgStimPercent;
 	BOOL	IsOnOtherMonitor ();
 
 // Implementation

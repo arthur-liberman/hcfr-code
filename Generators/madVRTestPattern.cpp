@@ -9,6 +9,7 @@
 // 2013-06-15 1.0.0 initial version
 
 // ----------------------------------------------------------------------------
+
 #include "stdafx.h"
 #include "madVRTestPattern.h"
 
@@ -24,11 +25,11 @@ static BOOL (WINAPI *ConnectToIp)(LPCSTR ipAddress, DWORD timeOut) = NULL;
 static BOOL (WINAPI *Disable3dlut)() = NULL;
 static BOOL (WINAPI *SetDeviceGammaRamp_)(LPVOID ramp) = NULL;
 static BOOL (WINAPI *SetOsdText)(LPCWSTR text) = NULL;
+static BOOL (WINAPI *SetBackground)(int patternAreaInPercent, COLORREF backgroundColor) = NULL;
 static BOOL (WINAPI *ShowProgressBar)(int numberOfRgbMeasurements) = NULL;
 static BOOL (WINAPI *ShowRGB)(double r, double g, double b) = NULL;
 static BOOL (WINAPI *Disconnect)() = NULL;
 static BOOL (WINAPI *IsAvailable)() = NULL;
-static PMadVRInstances (WINAPI *Find)(DWORD timeOut) = NULL;
 static BOOL (WINAPI *Find_Async)(HWND window, DWORD msg) = NULL;
 static BOOL (WINAPI *Connect)(HANDLE handle, ULONGLONG instance) = NULL;
 static void (WINAPI *LocConnectDialog)(LPCWSTR title, LPCWSTR text, LPCWSTR columns, LPCWSTR notListed, LPCWSTR select, LPCWSTR cancel) = NULL;
@@ -75,10 +76,10 @@ BOOL Init()
     *(FARPROC*)&Disable3dlut        = GetProcAddress(HcNetDll, "madVR_Disable3dlut"      );
     *(FARPROC*)&SetDeviceGammaRamp_ = GetProcAddress(HcNetDll, "madVR_SetDeviceGammaRamp");
     *(FARPROC*)&SetOsdText          = GetProcAddress(HcNetDll, "madVR_SetOsdText"        );
+    *(FARPROC*)&SetBackground       = GetProcAddress(HcNetDll, "madVR_SetBackground"     );
     *(FARPROC*)&ShowProgressBar     = GetProcAddress(HcNetDll, "madVR_ShowProgressBar"   );
     *(FARPROC*)&ShowRGB             = GetProcAddress(HcNetDll, "madVR_ShowRGB"           );
     *(FARPROC*)&Disconnect          = GetProcAddress(HcNetDll, "madVR_Disconnect"        );
-    *(FARPROC*)&Find                = GetProcAddress(HcNetDll, "madVR_Find"              );
     *(FARPROC*)&Find_Async          = GetProcAddress(HcNetDll, "madVR_Find_Async"        );
     *(FARPROC*)&Connect             = GetProcAddress(HcNetDll, "madVR_Connect"           );
     *(FARPROC*)&LocConnectDialog    = GetProcAddress(HcNetDll, "Localize_ConnectDialog"  );
@@ -89,10 +90,10 @@ BOOL Init()
                   (Disable3dlut       ) &&
                   (SetDeviceGammaRamp_) &&
                   (SetOsdText         ) &&
+                  (SetBackground      ) &&
                   (ShowProgressBar    ) &&
                   (ShowRGB            ) &&
                   (Disconnect         ) &&
-                  (Find               ) &&
                   (Find_Async         ) &&
                   (Connect            ) &&
                   (LocConnectDialog   ) &&
@@ -134,6 +135,11 @@ BOOL madVR_SetOsdText(LPCWSTR text)
   return Init() && SetOsdText(text);
 }
 
+BOOL madVR_SetBackground(int patternAreaInPercent, COLORREF backgroundColor)
+{
+  return Init() && SetBackground(patternAreaInPercent, backgroundColor);
+}
+
 BOOL madVR_ShowProgressBar(int numberOfRgbMeasurements)
 {
   return Init() && ShowProgressBar(numberOfRgbMeasurements);
@@ -147,14 +153,6 @@ BOOL madVR_ShowRGB(double r, double g, double b)
 BOOL madVR_Disconnect()
 {
   return Init() && Disconnect();
-}
-
-PMadVRInstances madVR_Find(DWORD timeOut)
-{
-  if (Init())
-    return Find(timeOut);
-  else
-    return NULL;
 }
 
 BOOL madVR_Find_Async(HWND window, DWORD msg)

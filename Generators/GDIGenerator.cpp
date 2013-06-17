@@ -62,6 +62,9 @@ CGDIGenerator::CGDIGenerator()
 {
 	m_bBlankingCanceled = FALSE;
 	m_displayWindow.m_rectSizePercent=GetConfig()->GetProfileInt("GDIGenerator","SizePercent",100);
+	m_displayWindow.m_bgStimPercent=GetConfig()->GetProfileInt("GDIGenerator","bgStimPercent",100);
+	m_rectSizePercent = m_displayWindow.m_rectSizePercent;
+	m_bgStimPercent = m_displayWindow.m_bgStimPercent;
 
 	GetMonitorList();
 	m_activeMonitorNum = m_monitorNb-1;
@@ -88,6 +91,7 @@ CGDIGenerator::CGDIGenerator(int nDisplayMode, BOOL b16_235)
 	m_bBlankingCanceled = FALSE;
 	m_doScreenBlanking = FALSE;
 	m_displayWindow.m_rectSizePercent=100;
+	m_displayWindow.m_bgStimPercent=100;
 
 	GetMonitorList();
 	m_activeMonitorNum = m_monitorNb-1;
@@ -204,6 +208,7 @@ void CGDIGenerator::Serialize(CArchive& archive)
 		int version=2;
 		archive << version;
 		archive << m_displayWindow.m_rectSizePercent;
+		archive << m_displayWindow.m_bgStimPercent;
 		archive << m_activeMonitorNum;
 		archive << m_nDisplayMode;
 	}
@@ -214,6 +219,7 @@ void CGDIGenerator::Serialize(CArchive& archive)
 		if ( version > 2 )
 			AfxThrowArchiveException ( CArchiveException::badSchema );
 		archive >> m_displayWindow.m_rectSizePercent;
+		archive >> m_displayWindow.m_bgStimPercent;
 		archive >> m_activeMonitorNum;
 		if ( version >= 2 )
 			archive >> m_nDisplayMode;
@@ -227,6 +233,7 @@ void CGDIGenerator::SetPropertiesSheetValues()
 	CGenerator::SetPropertiesSheetValues();
 
 	m_GDIGenePropertiesPage.m_rectSizePercent=m_displayWindow.m_rectSizePercent;
+	m_GDIGenePropertiesPage.m_bgStimPercent=m_displayWindow.m_bgStimPercent;
 	m_GDIGenePropertiesPage.m_activeMonitorNum=m_activeMonitorNum;
 	m_GDIGenePropertiesPage.m_nDisplayMode=m_nDisplayMode;
 	m_GDIGenePropertiesPage.m_b16_235=m_b16_235;
@@ -240,6 +247,13 @@ void CGDIGenerator::GetPropertiesSheetValues()
 	{
 		m_displayWindow.m_rectSizePercent=m_GDIGenePropertiesPage.m_rectSizePercent;
 		GetConfig()->WriteProfileInt("GDIGenerator","SizePercent",m_displayWindow.m_rectSizePercent);
+		SetModifiedFlag(TRUE);
+	}
+
+	if( m_displayWindow.m_bgStimPercent != m_GDIGenePropertiesPage.m_bgStimPercent )
+	{
+		m_displayWindow.m_bgStimPercent=m_GDIGenePropertiesPage.m_bgStimPercent;
+		GetConfig()->WriteProfileInt("GDIGenerator","bgStimPercent",m_displayWindow.m_bgStimPercent);
 		SetModifiedFlag(TRUE);
 	}
 

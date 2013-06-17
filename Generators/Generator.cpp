@@ -123,8 +123,10 @@ BOOL CGenerator::Configure()
 
 BOOL CGenerator::Init(UINT nbMeasure)
 {
+	//BOOL madVR_SetBackground(int patternAreaInPercent, COLORREF backgroundColor);
 	nMeasureNumber = nbMeasure;
 	CGDIGenerator Cgen;
+	double bgstim = Cgen.m_bgStimPercent / 100.;
 	if (Cgen.m_nDisplayMode == DISPLAY_madVR)
 	{
 	if (madVR_IsAvailable())
@@ -134,6 +136,7 @@ BOOL CGenerator::Init(UINT nbMeasure)
 //      madVR_Disable3dlut(); no switch for this yet
       madVR_SetOsdText(L"HCFR is measuring display, please wait...");
 	  madVR_ShowProgressBar(nMeasureNumber);			
+	  madVR_SetBackground(Cgen.m_rectSizePercent, RGB(bgstim*255,bgstim*255,bgstim*255) );
 	  }
 	  else
 	  {

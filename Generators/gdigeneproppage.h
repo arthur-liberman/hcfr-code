@@ -44,6 +44,7 @@ public:
 	enum { IDD = IDD_GENERATOR_GDI_PROP_PAGE };
 	CComboBox	m_monitorComboCtrl;
 	UINT	m_rectSizePercent;
+	UINT	m_bgStimPercent;
 	//}}AFX_DATA
 
 	CArray <CString,CString> m_monitorNameArray;
