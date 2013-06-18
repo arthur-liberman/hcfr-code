@@ -2415,7 +2415,7 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 	measuredColor.SetSize(size*6);
 	measuredLux.SetSize(size*6);
 
-	if(pGenerator->Init(size*6) != TRUE)
+	if(pGenerator->Init(size*(bPrimaryOnly?3:6)) != TRUE)
 	{
 		Title.LoadString ( IDS_ERROR );
 		strMsg.LoadString ( IDS_ERRINITGENERATOR );

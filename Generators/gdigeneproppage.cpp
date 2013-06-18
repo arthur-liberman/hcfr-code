@@ -42,6 +42,7 @@ CGDIGenePropPage::CGDIGenePropPage() : CPropertyPageWithHelp(CGDIGenePropPage::I
 	//{{AFX_DATA_INIT(CGDIGenePropPage)
 	m_rectSizePercent = 0;
 	m_bgStimPercent = 0;
+	m_Intensity = 0;
 	//}}AFX_DATA_INIT
 	m_activeMonitorNum = 0;
 	m_nDisplayMode = DISPLAY_GDI;
@@ -59,8 +60,10 @@ void CGDIGenePropPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_MONITOR_COMBO, m_monitorComboCtrl);
 	DDX_Text(pDX, IDC_PATTERNSIZE_EDIT, m_rectSizePercent);
 	DDX_Text(pDX, IDC_BGSTIM_EDIT, m_bgStimPercent);
-	DDV_MinMaxUInt(pDX, m_rectSizePercent, 5, 100);
+	DDX_Text(pDX, IDC_INTENSITY_EDIT, m_Intensity);
+	DDV_MinMaxUInt(pDX, m_rectSizePercent, 1, 100);
 	DDV_MinMaxUInt(pDX, m_bgStimPercent, 0, 100);
+	DDV_MinMaxUInt(pDX, m_Intensity, 1, 100);
 	//}}AFX_DATA_MAP
 }
 

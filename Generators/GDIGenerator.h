@@ -53,6 +53,7 @@ public:										// public because of callback
 	int		m_nDisplayMode;
     int     m_rectSizePercent;
 	int     m_bgStimPercent;
+	UINT    m_Intensity;
 	BOOL	IsOnOtherMonitor ();
 
 // Implementation

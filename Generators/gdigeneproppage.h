@@ -45,6 +45,7 @@ public:
 	CComboBox	m_monitorComboCtrl;
 	UINT	m_rectSizePercent;
 	UINT	m_bgStimPercent;
+	UINT	m_Intensity;
 	//}}AFX_DATA
 
 	CArray <CString,CString> m_monitorNameArray;

@@ -63,8 +63,10 @@ CGDIGenerator::CGDIGenerator()
 	m_bBlankingCanceled = FALSE;
 	m_displayWindow.m_rectSizePercent=GetConfig()->GetProfileInt("GDIGenerator","SizePercent",100);
 	m_displayWindow.m_bgStimPercent=GetConfig()->GetProfileInt("GDIGenerator","bgStimPercent",100);
+	m_displayWindow.m_Intensity=GetConfig()->GetProfileInt("GDIGenerator","Intensity",100);
 	m_rectSizePercent = m_displayWindow.m_rectSizePercent;
 	m_bgStimPercent = m_displayWindow.m_bgStimPercent;
+	m_Intensity = m_displayWindow.m_Intensity;
 
 	GetMonitorList();
 	m_activeMonitorNum = m_monitorNb-1;
@@ -91,7 +93,8 @@ CGDIGenerator::CGDIGenerator(int nDisplayMode, BOOL b16_235)
 	m_bBlankingCanceled = FALSE;
 	m_doScreenBlanking = FALSE;
 	m_displayWindow.m_rectSizePercent=100;
-	m_displayWindow.m_bgStimPercent=100;
+	m_displayWindow.m_bgStimPercent=0;
+	m_displayWindow.m_Intensity=100;
 
 	GetMonitorList();
 	m_activeMonitorNum = m_monitorNb-1;
@@ -209,6 +212,7 @@ void CGDIGenerator::Serialize(CArchive& archive)
 		archive << version;
 		archive << m_displayWindow.m_rectSizePercent;
 		archive << m_displayWindow.m_bgStimPercent;
+		archive << m_displayWindow.m_Intensity;
 		archive << m_activeMonitorNum;
 		archive << m_nDisplayMode;
 	}
@@ -220,6 +224,7 @@ void CGDIGenerator::Serialize(CArchive& archive)
 			AfxThrowArchiveException ( CArchiveException::badSchema );
 		archive >> m_displayWindow.m_rectSizePercent;
 		archive >> m_displayWindow.m_bgStimPercent;
+		archive >> m_displayWindow.m_Intensity;
 		archive >> m_activeMonitorNum;
 		if ( version >= 2 )
 			archive >> m_nDisplayMode;
@@ -234,6 +239,7 @@ void CGDIGenerator::SetPropertiesSheetValues()
 
 	m_GDIGenePropertiesPage.m_rectSizePercent=m_displayWindow.m_rectSizePercent;
 	m_GDIGenePropertiesPage.m_bgStimPercent=m_displayWindow.m_bgStimPercent;
+	m_GDIGenePropertiesPage.m_Intensity=m_displayWindow.m_Intensity;
 	m_GDIGenePropertiesPage.m_activeMonitorNum=m_activeMonitorNum;
 	m_GDIGenePropertiesPage.m_nDisplayMode=m_nDisplayMode;
 	m_GDIGenePropertiesPage.m_b16_235=m_b16_235;
@@ -254,6 +260,13 @@ void CGDIGenerator::GetPropertiesSheetValues()
 	{
 		m_displayWindow.m_bgStimPercent=m_GDIGenePropertiesPage.m_bgStimPercent;
 		GetConfig()->WriteProfileInt("GDIGenerator","bgStimPercent",m_displayWindow.m_bgStimPercent);
+		SetModifiedFlag(TRUE);
+	}
+
+	if( m_displayWindow.m_Intensity != m_GDIGenePropertiesPage.m_Intensity )
+	{
+		m_displayWindow.m_Intensity=m_GDIGenePropertiesPage.m_Intensity;
+		GetConfig()->WriteProfileInt("GDIGenerator","Intensity",m_displayWindow.m_Intensity);
 		SetModifiedFlag(TRUE);
 	}
 
@@ -356,22 +369,32 @@ return TRUE;
 
 BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nPatternType , UINT nPatternInfo , BOOL bChangePattern,BOOL bSilentMode)
 {
+
+	ColorRGBDisplay p_clr;
+	BOOL do_Intensity=false;
+	if ( nPatternType == MT_PRIMARY || nPatternType == MT_SECONDARY)
+	{
+		do_Intensity = true;
+	}
+	p_clr[0] = clr[0] * m_displayWindow.m_Intensity / 100;
+	p_clr[1] = clr[1] * m_displayWindow.m_Intensity / 100;
+	p_clr[2] = clr[2] * m_displayWindow.m_Intensity / 100;
 	if ( m_GDIGenePropertiesPage.m_nDisplayMode != DISPLAY_madVR )
- 	  m_displayWindow.DisplayRGBColor(clr);
+ 	  m_displayWindow.DisplayRGBColor(do_Intensity?p_clr:clr);
 	else
-	  DisplayRGBColormadVR (clr);
+	  DisplayRGBColormadVR (do_Intensity?p_clr:clr);
 	return TRUE;
 }
 
 
 BOOL CGDIGenerator::CanDisplayAnsiBWRects()
 {
-	return TRUE;	
+	return (m_GDIGenePropertiesPage.m_nDisplayMode != DISPLAY_madVR?TRUE:FALSE);
 }
 
 BOOL CGDIGenerator::CanDisplayAnimatedPatterns()
 {
-	return TRUE;	
+	return (m_GDIGenePropertiesPage.m_nDisplayMode != DISPLAY_madVR?TRUE:FALSE);
 }
 
 BOOL CGDIGenerator::DisplayAnsiBWRects(BOOL bInvert)

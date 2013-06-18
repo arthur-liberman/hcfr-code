@@ -47,6 +47,7 @@ public:
 	COLORREF				m_Color;
 	UINT					m_rectSizePercent;
 	UINT					m_bgStimPercent;
+	UINT 					m_Intensity;
 							
 	UINT					m_nDisplayMode;
 	BOOL					m_bDisableCursorHiding;
