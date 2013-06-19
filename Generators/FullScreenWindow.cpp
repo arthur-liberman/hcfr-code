@@ -526,7 +526,7 @@ void CFullScreenWindow::OnPaint()
 		if ( m_Color == 0xFF000000 )
 			bDraw = TRUE;
 
-		brush.CreateSolidBrush ( RGB(bgstim*255,bgstim*255,bgstim*255) );
+		brush.CreateSolidBrush ( RGB(255,255,255) );
 		for ( row = 0; row < ANSI_CONTRAST_BLOCKS ; row ++ )
 		{
 			bDraw = ! bDraw;
@@ -551,7 +551,7 @@ void CFullScreenWindow::OnPaint()
 		if(m_rectSizePercent < 100)  // Need to draw background
 		{
 //			brush.CreateSolidBrush ( RGB(0,0,0) );
-			brush.CreateSolidBrush ( RGB(.22*255,.22*255,.22*255) );
+			brush.CreateSolidBrush ( RGB(bgstim*255,bgstim*255,bgstim*255) );
 			dc.FillRect ( &rect, &brush );
 			brush.DeleteObject ();
 		}
