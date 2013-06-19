@@ -412,7 +412,7 @@ void CColorHCFRConfig::SetPropertiesSheetValues()
 
 	m_referencesPropertiesPage.m_colorStandard=m_colorStandard;
 	m_referencesPropertiesPage.m_whiteTarget=m_whiteTarget;
-	m_referencesPropertiesPage.m_GammaRef=m_GammaRef;
+  	m_referencesPropertiesPage.m_GammaRef=m_GammaRef;
 	m_referencesPropertiesPage.m_manualGOffset=m_manualGOffset;
 	m_referencesPropertiesPage.m_GammaOffsetType=m_GammaOffsetType;
 	m_appearancePropertiesPage.m_isModified=FALSE;

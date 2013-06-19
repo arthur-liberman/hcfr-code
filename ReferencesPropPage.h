@@ -44,6 +44,7 @@ public:
 
 	//{{AFX_DATA(CReferencesPropPage)
 	enum { IDD = IDD_REFERENCE_PROP_PAGE };
+	CEdit m_GammaRefEdit;
 	CComboBox	m_whiteTargetCombo;
 	int		m_whiteTarget;
 	int		m_colorStandard;

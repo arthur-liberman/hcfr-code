@@ -58,10 +58,11 @@ void CReferencesPropPage::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPageWithHelp::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CReferencesPropPage)
+	DDX_Control(pDX, IDC_EDIT_GAMMA_REF, m_GammaRefEdit);
 	DDX_Control(pDX, IDC_WHITETARGET_COMBO, m_whiteTargetCombo);
 	DDX_CBIndex(pDX, IDC_WHITETARGET_COMBO, m_whiteTarget);
 	DDX_CBIndex(pDX, IDC_COLORREF_COMBO, m_colorStandard);
-	DDX_Text(pDX, IDC_EDIT_GAMMA_REF, m_GammaRef);
+  	DDX_Text(pDX, IDC_EDIT_GAMMA_REF, m_GammaRef);
 	DDV_MinMaxDouble(pDX, m_GammaRef, 1., 5.);
 	DDX_Check(pDX, IDC_CHANGEWHITE_CHECK, m_changeWhiteCheck);
 	DDX_Radio(pDX, IDC_GAMMA_OFFSET_RADIO1, m_GammaOffsetType);
@@ -89,8 +90,14 @@ END_MESSAGE_MAP()
 
 void CReferencesPropPage::OnControlClicked(UINT nID) 
 {
+	UpdateData(TRUE);
+	if (m_GammaOffsetType == 4)
+  	  m_GammaRefEdit.EnableWindow (FALSE);
+	else
+  	  m_GammaRefEdit.EnableWindow (TRUE);
 	m_isModified=TRUE;
 	SetModified(TRUE);	
+	UpdateData(FALSE);
 }
 
 void CReferencesPropPage::OnCheckColors() 
@@ -124,6 +131,8 @@ BOOL CReferencesPropPage::OnInitDialog()
 		CheckRadioButton ( IDC_CHANGEWHITE_CHECK, IDC_CHANGEWHITE_CHECK, IDC_CHANGEWHITE_CHECK );
 		m_whiteTargetCombo.EnableWindow (TRUE);
 	}
+	if (GetConfig ()->m_GammaOffsetType == 4)
+  	  m_GammaRefEdit.EnableWindow (FALSE);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
