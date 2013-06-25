@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\Tools\libusb1\msvc"
+				AdditionalIncludeDirectories="..\..\Tools\msvc"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;WINVER=0x0600;_CRT_SECURE_NO_WARNINGS;_USE_32BIT_TIME_T"
 				MinimalRebuild="true"
 				ExceptionHandling="2"
@@ -110,7 +110,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\..\Tools\libusb1\msvc"
+				AdditionalIncludeDirectories="..\..\Tools\msvc"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;WINVER=0x0600;_CRT_SECURE_NO_WARNINGS;_USE_32BIT_TIME_T"
 				ExceptionHandling="2"
 				RuntimeLibrary="0"
