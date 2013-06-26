@@ -396,7 +396,7 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::calibrate()
     checkMeterIsInitialized();
     m_calibrationMessage[0] = '\0';
     inst_cal_type calType(inst_calt_all);
-    inst_code instCode = m_meter->calibrate(m_meter, &calType, (inst_cal_cond*)&m_nextCalibration, 0);
+    inst_code instCode = m_meter->calibrate(m_meter, &calType, (inst_cal_cond*)&m_nextCalibration, m_calibrationMessage);
     if(isInstCodeReason(instCode, inst_cal_setup))
     {
         // special case for colormunki when calibrating the
@@ -428,7 +428,7 @@ std::string ArgyllMeterWrapper::getCalibrationInstructions()
     if(m_nextCalibration == 0)
     {
         inst_cal_type calType(inst_calt_all);
-        instCode = m_meter->calibrate(m_meter, &calType, (inst_cal_cond*)&m_nextCalibration, 0);
+        instCode = m_meter->calibrate(m_meter, &calType, (inst_cal_cond*)&m_nextCalibration, m_calibrationMessage);
         if(instCode == inst_ok || isInstCodeReason(instCode, inst_unsupported))
         {
             // we don't need to do anything
