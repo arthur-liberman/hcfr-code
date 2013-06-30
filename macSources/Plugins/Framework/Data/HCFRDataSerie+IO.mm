@@ -121,7 +121,7 @@
     double          x, y, z;
     int             result = 0;
     
-    while (currentElement = strsep (&string, ","))
+    while ((currentElement = strsep (&string, ",")))
     {
       switch (elementIndex)
       {

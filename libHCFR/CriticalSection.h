@@ -24,7 +24,7 @@
 
 #ifdef LIBHCFR_HAS_WIN32_API
 #   include <windows.h>
-#else if LIBHCFR_HAS_PTHREADS
+#elseif LIBHCFR_HAS_PTHREADS
 #   include <pthread.h>
 #endif
 
@@ -43,7 +43,7 @@ public:
 private:
 #   ifdef LIBHCFR_HAS_WIN32_API
         CRITICAL_SECTION m_critcalSection;
-#   else if LIBHCFR_HAS_PTHREADS
+#   elseif LIBHCFR_HAS_PTHREADS
         pthread_mutex_t m_matrixMutex;
 #   endif
 };

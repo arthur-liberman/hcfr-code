@@ -105,10 +105,6 @@
 		01D8896114F84FC5002DC664 /* libusb-1.0A.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 01D8893114F84CA3002DC664 /* libusb-1.0A.a */; };
 		01D88DCF15017806002DC664 /* ccss.c in Sources */ = {isa = PBXBuildFile; fileRef = 01D88DCE15017806002DC664 /* ccss.c */; };
 		01D88DF315017939002DC664 /* xdg_bds.c in Sources */ = {isa = PBXBuildFile; fileRef = 01D88DF215017939002DC664 /* xdg_bds.c */; };
-		523043A7150F303800206683 /* aglob.c in Sources */ = {isa = PBXBuildFile; fileRef = 523043A3150F303800206683 /* aglob.c */; };
-		523043A8150F303800206683 /* aglob.h in Headers */ = {isa = PBXBuildFile; fileRef = 523043A4150F303800206683 /* aglob.h */; };
-		523043A9150F303800206683 /* colorhug.c in Sources */ = {isa = PBXBuildFile; fileRef = 523043A5150F303800206683 /* colorhug.c */; };
-		523043AA150F303800206683 /* colorhug.h in Headers */ = {isa = PBXBuildFile; fileRef = 523043A6150F303800206683 /* colorhug.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -221,10 +217,6 @@
 		01D8893114F84CA3002DC664 /* libusb-1.0A.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libusb-1.0A.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		01D88DCE15017806002DC664 /* ccss.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ccss.c; path = ../../spectro/ccss.c; sourceTree = SOURCE_ROOT; };
 		01D88DF215017939002DC664 /* xdg_bds.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xdg_bds.c; path = ../../spectro/xdg_bds.c; sourceTree = SOURCE_ROOT; };
-		523043A3150F303800206683 /* aglob.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = aglob.c; path = ../../spectro/aglob.c; sourceTree = SOURCE_ROOT; };
-		523043A4150F303800206683 /* aglob.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aglob.h; path = ../../spectro/aglob.h; sourceTree = SOURCE_ROOT; };
-		523043A5150F303800206683 /* colorhug.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = colorhug.c; path = ../../spectro/colorhug.c; sourceTree = SOURCE_ROOT; };
-		523043A6150F303800206683 /* colorhug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = colorhug.h; path = ../../spectro/colorhug.h; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -608,7 +600,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COPY_PHASE_STRIP = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				PRODUCT_NAME = libusb1;
 				ZERO_LINK = NO;
@@ -725,7 +717,7 @@
 		1DEB919408733D9F0010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					USE_LIBUSB1,
 					ENABLE_USB,
@@ -734,17 +726,17 @@
 				);
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				ONLY_ACTIVE_ARCH = YES;
+				ONLY_ACTIVE_ARCH = NO;
 				PREBINDING = NO;
-				SDKROOT = macosx10.5;
-				VALID_ARCHS = i386;
+				SDKROOT = macosx10.7;
+				VALID_ARCHS = "";
 			};
 			name = Debug;
 		};
 		1DEB919508733D9F0010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					USE_LIBUSB1,
 					ENABLE_USB,
@@ -753,9 +745,10 @@
 				);
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				ONLY_ACTIVE_ARCH = NO;
 				PREBINDING = NO;
-				SDKROOT = macosx10.5;
-				VALID_ARCHS = i386;
+				SDKROOT = macosx10.7;
+				VALID_ARCHS = "";
 			};
 			name = Release;
 		};

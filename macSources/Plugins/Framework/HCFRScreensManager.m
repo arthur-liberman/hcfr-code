@@ -58,7 +58,7 @@ static HCFRScreensManager *sharedManager = nil;
 {
   return UINT_MAX;  // Cet objet ne peut pas être releasé
 }
-- (void)release
+- (oneway void)release
 {
 }
 - (id)autorelease

@@ -46,6 +46,7 @@ typedef int16_t flex_int16_t;
 typedef uint16_t flex_uint16_t;
 typedef int32_t flex_int32_t;
 typedef uint32_t flex_uint32_t;
+typedef uint64_t flex_uint64_t;
 #else
 typedef signed char flex_int8_t;
 typedef short int flex_int16_t;
@@ -357,7 +358,7 @@ static void yy_fatal_error (yyconst char msg[]  );
  */
 #define YY_DO_BEFORE_ACTION \
 	(yytext_ptr) = yy_bp; \
-	yyleng = (size_t) (yy_cp - yy_bp); \
+	yyleng = (yy_size_t) (yy_cp - yy_bp); \
 	(yy_hold_char) = *yy_cp; \
 	*yy_cp = '\0'; \
 	(yy_c_buf_p) = yy_cp;
@@ -478,7 +479,7 @@ char *yytext;
 time_t iso8601ToTime_t(const char *time_string);
 
 ProfilesRepositoryIndexFileReader *currentObject;
-#line 482 "<stdout>"
+#line 483 "<stdout>"
 
 #define INITIAL 0
 
@@ -662,7 +663,7 @@ YY_DECL
     
 #line 35 "ProfilesRepositoryIndexFileReader.ll"
 
-#line 666 "<stdout>"
+#line 667 "<stdout>"
 
 	if ( !(yy_init) )
 		{
@@ -761,7 +762,7 @@ YY_RULE_SETUP
 #line 38 "ProfilesRepositoryIndexFileReader.ll"
 ECHO;
 	YY_BREAK
-#line 765 "<stdout>"
+#line 766 "<stdout>"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 

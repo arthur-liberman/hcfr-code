@@ -48,28 +48,29 @@
     [NSBundle loadNibNamed:@"AditionnalFrames" owner:self];
     
     [framesPopup removeAllItems];
-    NSMenuItem            *newItem;
-    HCFRWhiteAnimatedView *newView;
-
+    NSMenuItem              *newItem;
+    HCFRWhiteAnimatedView   *newWhiteView;
+    HCFRFullscreenImageView *newFullView;
+      
     // la vue animée blanche
     newItem = [[NSMenuItem alloc] init];
-    newView = [[HCFRWhiteAnimatedView alloc] initWithWhiteLevel:100 step:-1];
-    [(HCFRWhiteAnimatedView*)newView setFrameDescription:HCFRLocalizedString(@"This frame displays a white background and two slightly darker vertical bars, moving from left to right.\nIt is used to visualy tune the contrast setting for hight lights accuracy.\nModify the contrast setting until you can distinguish the two vertical bars.",
+    newWhiteView = [[HCFRWhiteAnimatedView alloc] initWithWhiteLevel:100 step:-1];
+    [(HCFRWhiteAnimatedView*)newWhiteView setFrameDescription:HCFRLocalizedString(@"This frame displays a white background and two slightly darker vertical bars, moving from left to right.\nIt is used to visualy tune the contrast setting for hight lights accuracy.\nModify the contrast setting until you can distinguish the two vertical bars.",
                                                                         @"White animated frame description")];
     [newItem setTitle:HCFRLocalizedString(@"White animated frame",@"White animated frame")];
-    [newItem setRepresentedObject:newView];
-    [newView release];
+    [newItem setRepresentedObject:newWhiteView];
+    [newWhiteView release];
     [[framesPopup menu] addItem:newItem];
     [newItem release];
 
     // la vue animée noire
     newItem = [[NSMenuItem alloc] init];
-    newView = [[HCFRWhiteAnimatedView alloc] initWithWhiteLevel:0 step:1];
-    [(HCFRWhiteAnimatedView*)newView setFrameDescription:HCFRLocalizedString(@"This frame displays a black background and two slightly lighter vertical bars, moving from left to right.\nIt is used to visualy tune the luminosity setting for low lights accuracy.\nModify the luminosity setting until you can distinguish the two vertical bars.",
+    newWhiteView = [[HCFRWhiteAnimatedView alloc] initWithWhiteLevel:0 step:1];
+    [(HCFRWhiteAnimatedView*)newWhiteView setFrameDescription:HCFRLocalizedString(@"This frame displays a black background and two slightly lighter vertical bars, moving from left to right.\nIt is used to visualy tune the luminosity setting for low lights accuracy.\nModify the luminosity setting until you can distinguish the two vertical bars.",
                                                                         @"black animated frame description")];
     [newItem setTitle:HCFRLocalizedString(@"Black animated frame",@"Black animated frame")];
-    [newItem setRepresentedObject:newView];
-    [newView release];
+    [newItem setRepresentedObject:newWhiteView];
+    [newWhiteView release];
     [[framesPopup menu] addItem:newItem];
     [newItem release];
 
@@ -77,37 +78,37 @@
     
     // l'image SMPTE - 4/3
     newItem = [[NSMenuItem alloc] init];
-    newView = [[HCFRFullscreenImageView alloc] init];
-    [newView setFrameDescription:HCFRLocalizedString(@"The SMPTE pattern for diffuser with a 4/3 ratio.",
+    newFullView = [[HCFRFullscreenImageView alloc] init];
+    [newFullView setFrameDescription:HCFRLocalizedString(@"The SMPTE pattern for diffuser with a 4/3 ratio.",
                                                      @"SMPTE 4/3 description")];
-    [(HCFRFullscreenImageView*)newView setImagePath:[[NSBundle bundleForClass:[self class]] pathForResource:@"smpte" ofType:@"png"]];
+    [(HCFRFullscreenImageView*)newFullView setImagePath:[[NSBundle bundleForClass:[self class]] pathForResource:@"smpte" ofType:@"png"]];
     [newItem setTitle:HCFRLocalizedString(@"SMPTE - 4/3",@"SMPTE - 4/3")];
-    [newItem setRepresentedObject:newView];
-    [newView release];
+    [newItem setRepresentedObject:newFullView];
+    [newFullView release];
     [[framesPopup menu] addItem:newItem];
     [newItem release];
     
     // l'image SMPTE - 16/9
     newItem = [[NSMenuItem alloc] init];
-    newView = [[HCFRFullscreenImageView alloc] init];
-    [newView setFrameDescription:HCFRLocalizedString(@"The SMPTE pattern for diffuser with a 16/9 ratio.",
+    newFullView = [[HCFRFullscreenImageView alloc] init];
+    [newFullView setFrameDescription:HCFRLocalizedString(@"The SMPTE pattern for diffuser with a 16/9 ratio.",
                                                      @"SMPTE 16/9 description")];
-    [(HCFRFullscreenImageView*)newView setImagePath:[[NSBundle bundleForClass:[self class]] pathForResource:@"smpte-hd" ofType:@"png"]];
+    [(HCFRFullscreenImageView*)newFullView setImagePath:[[NSBundle bundleForClass:[self class]] pathForResource:@"smpte-hd" ofType:@"png"]];
     [newItem setTitle:HCFRLocalizedString(@"SMPTE - 16/9",@"SMPTE - 16/9")];
-    [newItem setRepresentedObject:newView];
-    [newView release];
+    [newItem setRepresentedObject:newFullView];
+    [newFullView release];
     [[framesPopup menu] addItem:newItem];
     [newItem release];
 
     // l'image de test
     newItem = [[NSMenuItem alloc] init];
-    newView = [[HCFRFullscreenImageView alloc] init];
-    [newView setFrameDescription:HCFRLocalizedString(@"Simply an image to admire the result of your work ;-)",
+    newFullView = [[HCFRFullscreenImageView alloc] init];
+    [newFullView setFrameDescription:HCFRLocalizedString(@"Simply an image to admire the result of your work ;-)",
                                                      @"test image description")];
-    [(HCFRFullscreenImageView*)newView setImagePath:[[NSBundle bundleForClass:[self class]] pathForResource:@"testimg" ofType:@"jpg"]];
+    [(HCFRFullscreenImageView*)newFullView setImagePath:[[NSBundle bundleForClass:[self class]] pathForResource:@"testimg" ofType:@"jpg"]];
     [newItem setTitle:HCFRLocalizedString(@"Test image",@"Test image")];
-    [newItem setRepresentedObject:newView];
-    [newView release];
+    [newItem setRepresentedObject:newFullView];
+    [newFullView release];
     [[framesPopup menu] addItem:newItem];
     [newItem release];
     
@@ -171,7 +172,7 @@
   if (fullscreenWindow == nil)
   {
     fullscreenWindow = (AditionalFrameWindow*)[[AditionalFrameWindow alloc] initWithScreen:[[screensPopup selectedItem] representedObject]];
-    [fullscreenWindow setDelegate:self];
+    [fullscreenWindow setDelegate:nil];
     [fullscreenWindow setReleasedWhenClosed:NO];
     [fullscreenWindow setLevel:NSPopUpMenuWindowLevel];
   }
