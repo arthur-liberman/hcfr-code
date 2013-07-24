@@ -376,9 +376,20 @@ BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nP
 	{
 		do_Intensity = true;
 	}
+	
 	p_clr[0] = clr[0] * m_displayWindow.m_Intensity / 100;
 	p_clr[1] = clr[1] * m_displayWindow.m_Intensity / 100;
 	p_clr[2] = clr[2] * m_displayWindow.m_Intensity / 100;
+	
+/*	BOOL	bRet;
+	CString str, Msg, Title;
+
+	Title.LoadString ( IDS_INFORMATION );
+
+	Msg.LoadString ( IDS_DVDMANPOS1 );
+	str.Format(Msg,clr[0]);
+	bRet = ( MessageBox(NULL,str,Title,MB_ICONINFORMATION | MB_OKCANCEL | MB_TOPMOST) == IDOK );
+*/
 	if ( m_GDIGenePropertiesPage.m_nDisplayMode != DISPLAY_madVR )
  	  m_displayWindow.DisplayRGBColor(do_Intensity?p_clr:clr);
 	else

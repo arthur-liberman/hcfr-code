@@ -139,7 +139,6 @@ static UINT __cdecl BkgndThreadFunc ( LPVOID lpParameter )
 		    if ( g_bGDIGeneratorRunning )
 		    {
 			    ColorRGBDisplay clr((( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.GetColor ())& 0x00FFFFFF);
-    			
 			    if ( g_CurrentColor != clr )
 			    {
 				    g_CurrentColor = clr;
@@ -282,6 +281,7 @@ BOOL StartBackgroundMeasures ( CDataSetDoc * pDoc )
 					GetColorApp()->InMeasureMessageBox(Msg,Title,MB_ICONERROR | MB_OK);
 					return FALSE;
 				}
+
 
 				ColorRGBDisplay clr((( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.GetColor ()) & 0x00ffffff);
 				

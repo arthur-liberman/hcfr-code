@@ -235,7 +235,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	}
 
 	m_wndTestColorWnd.Create(CTestColorWnd::IDD, this);
-
 	m_tooltip.Create(this);	
 	m_tooltip.AddToolBar(&m_wndToolBar);
 	m_tooltip.AddToolBar(&m_wndToolBarMeasures);
