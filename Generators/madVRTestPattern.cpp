@@ -3,13 +3,12 @@
 //  -------------------------------------------------------------
 //  madVR test pattern / calibration remote controlling
 //  -------------------------------------------------------------
-//  Copyright (C) 2013 - 2013 www.madshi.net, All Rights Reserved
+//  Copyright (C) 2013 - 2013 www.madshi.net, BSD license
 // ***************************************************************
 
 // 2013-06-15 1.0.0 initial version
 
 // ----------------------------------------------------------------------------
-
 #include "stdafx.h"
 #include "madVRTestPattern.h"
 
@@ -23,10 +22,12 @@ static BOOL (WINAPI *ConnectDialog)(BOOL searchLan, HWND parentWindow) = NULL;
 static BOOL (WINAPI *BlindConnect)(BOOL searchLan, DWORD timeOut) = NULL;
 static BOOL (WINAPI *ConnectToIp)(LPCSTR ipAddress, DWORD timeOut) = NULL;
 static BOOL (WINAPI *Disable3dlut)() = NULL;
+static BOOL (WINAPI *GetDeviceGammaRamp_)(LPVOID ramp) = NULL;
 static BOOL (WINAPI *SetDeviceGammaRamp_)(LPVOID ramp) = NULL;
 static BOOL (WINAPI *SetOsdText)(LPCWSTR text) = NULL;
 static BOOL (WINAPI *SetBackground)(int patternAreaInPercent, COLORREF backgroundColor) = NULL;
 static BOOL (WINAPI *ShowProgressBar)(int numberOfRgbMeasurements) = NULL;
+static BOOL (WINAPI *SetProgressBarPos)(int currentPos, int maxPos) = NULL;
 static BOOL (WINAPI *ShowRGB)(double r, double g, double b) = NULL;
 static BOOL (WINAPI *Disconnect)() = NULL;
 static BOOL (WINAPI *IsAvailable)() = NULL;
@@ -74,10 +75,12 @@ BOOL Init()
     *(FARPROC*)&BlindConnect        = GetProcAddress(HcNetDll, "madVR_BlindConnect"      );
     *(FARPROC*)&ConnectToIp         = GetProcAddress(HcNetDll, "madVR_ConnectToIp"       );
     *(FARPROC*)&Disable3dlut        = GetProcAddress(HcNetDll, "madVR_Disable3dlut"      );
+    *(FARPROC*)&GetDeviceGammaRamp_ = GetProcAddress(HcNetDll, "madVR_GetDeviceGammaRamp");
     *(FARPROC*)&SetDeviceGammaRamp_ = GetProcAddress(HcNetDll, "madVR_SetDeviceGammaRamp");
     *(FARPROC*)&SetOsdText          = GetProcAddress(HcNetDll, "madVR_SetOsdText"        );
     *(FARPROC*)&SetBackground       = GetProcAddress(HcNetDll, "madVR_SetBackground"     );
     *(FARPROC*)&ShowProgressBar     = GetProcAddress(HcNetDll, "madVR_ShowProgressBar"   );
+    *(FARPROC*)&SetProgressBarPos   = GetProcAddress(HcNetDll, "madVR_SetProgressBarPos" );
     *(FARPROC*)&ShowRGB             = GetProcAddress(HcNetDll, "madVR_ShowRGB"           );
     *(FARPROC*)&Disconnect          = GetProcAddress(HcNetDll, "madVR_Disconnect"        );
     *(FARPROC*)&Find_Async          = GetProcAddress(HcNetDll, "madVR_Find_Async"        );
@@ -125,6 +128,11 @@ BOOL madVR_Disable3dlut()
   return Init() && Disable3dlut();
 }
 
+BOOL madVR_GetDeviceGammaRamp(LPVOID ramp)
+{
+  return Init() && (GetDeviceGammaRamp_) && GetDeviceGammaRamp_(ramp);
+}
+
 BOOL madVR_SetDeviceGammaRamp(LPVOID ramp)
 {
   return Init() && SetDeviceGammaRamp_(ramp);
@@ -143,6 +151,11 @@ BOOL madVR_SetBackground(int patternAreaInPercent, COLORREF backgroundColor)
 BOOL madVR_ShowProgressBar(int numberOfRgbMeasurements)
 {
   return Init() && ShowProgressBar(numberOfRgbMeasurements);
+}
+
+BOOL madVR_SetProgressBarPos(int currentPos, int maxPos)
+{
+  return Init() && (SetProgressBarPos) && SetProgressBarPos(currentPos, maxPos);
 }
 
 BOOL madVR_ShowRGB(double r, double g, double b)

@@ -3,7 +3,7 @@
 //  -------------------------------------------------------------
 //  madVR test pattern / calibration remote controlling
 //  -------------------------------------------------------------
-//  Copyright (C) 2013 - 2013 www.madshi.net, All Rights Reserved
+//  Copyright (C) 2013 - 2013 www.madshi.net, BSD license
 // ***************************************************************
 
 // 2013-06-15 1.0.0 initial version
@@ -80,9 +80,16 @@
 // calibration.
 BOOL madVR_Disable3dlut();
 
-// "madVR_SetDeviceGammaRamp" sets the madVR internal VideoLUTs.
-// Parameter is identical to the win32 API "SetDeviceGammaRamp".
-BOOL madVR_SetDeviceGammaRamp(LPVOID ramp);
+// "madVR_Get/SetDeviceGammaRamp" calls the win32 API "Get/SetDeviceGammaRamp"
+// on the target PC / display. A "NULL" ramp sets a linear ramp.
+// The original ramp is automatically restored when you close the connection.
+#ifdef __cplusplus
+  BOOL madVR_GetDeviceGammaRamp(LPVOID ramp);
+  BOOL madVR_SetDeviceGammaRamp(LPVOID ramp = NULL);
+#else
+  BOOL madVR_GetDeviceGammaRamp(LPVOID ramp);
+  BOOL madVR_SetDeviceGammaRamp(LPVOID ramp);
+#endif
 
 // "madVR_SetOsdText" shows a "text" on the top left of the video image.
 BOOL madVR_SetOsdText(LPCWSTR text);
@@ -96,6 +103,12 @@ BOOL madVR_SetBackground(int patternAreaInPercent, COLORREF backgroundColor);
 // "madVR_ShowProgressBar" initializes the madVR progress bar.
 // It will progress one step with every "madVR_ShowRGB" call (see below).
 BOOL madVR_ShowProgressBar(int numberOfRgbMeasurements);
+
+// "madVR_SetProgressBarPos" sets the madVR progress bar to a specific pos.
+// After calling this API, the progress bar will not automatically move
+// forward after calls to "madVR_ShowRGB", anymore. Calling this API means
+// you have to manually move the progress bar.
+BOOL madVR_SetProgressBarPos(int currentPos, int maxPos);
 
 // "madVR_ShowRGB" shows a specific RGB color test pattern.
 // Values are gamma corrected with "black = 0.0" and "white = 1.0".
