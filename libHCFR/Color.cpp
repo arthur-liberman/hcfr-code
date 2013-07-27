@@ -174,9 +174,10 @@ ColorxyY primariesRec709a[3] ={	ColorxyY(0.5575, 0.3298), //75% sat/lum Rec709 w
 								ColorxyY(0.3032, 0.5313),
 								ColorxyY(0.1911, 0.1279) };
 
-ColorxyY primariesCC6[3] ={	ColorxyY(0.3877, 0.3528), //some color check references, secondardies will add 3 more
+ColorxyY primariesCC6[3] ={	    ColorxyY(0.3877, 0.3528), //some color check references, secondardies will add 3 more
 								ColorxyY(0.2472, 0.2663),
 								ColorxyY(0.3415, 0.4315)};
+//light skin, blue sky, foliage
 
 /* The 75% saturation 75% amplitude and color checker xy locations are calculated 
 assuming gamma=2.22, starting with the follow triplets from the GCD disk, and then used as pseudo-primaries/secondaries
@@ -402,6 +403,7 @@ void CColorReference::UpdateSecondary ( ColorXYZ & secondary, const ColorXYZ& pr
 		if (x1 > 0.38) aColor =  ColorxyY(0.2076,	0.1799,	.116);
 		if (x1 > 0.2 && x1 < 0.3) aColor = ColorxyY(0.3755,	0.4970,	.444); 
 		if (x1 > 0.3 && x1 < 0.38) aColor = ColorxyY(0.4763, 0.4431, .426); 
+		//purplish blue, yellow green, orange yellow
 	}
 	secondary = ColorXYZ(aColor);
 }
@@ -1402,6 +1404,14 @@ void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDi
     const double KB = colorReference.GetBlueReferenceLuma (); 
 
     double K = ( bRed ? KR : 0.0 ) + ( bGreen ? KG : 0.0 ) + ( bBlue ? KB : 0.0 );
+
+	double gamma, offset = 0.0;
+	int ncount;
+
+	//retrieve gamma
+//	nCount = CDataSetDoc()->ComputeGammaAndOffset()  .g.GetDocument() -> GetMeasure () -> GetGrayScaleSize ();
+//	if ( nCount && GetDocument()->GetMeasure()->GetGray(0).isValid() )
+//					GetDocument()->ComputeGammaAndOffset(&Gamma, &Offset, 3, 1, nCount);
 
     // Compute vector between neutral gray and saturated color in CIExy space
     ColorRGB Clr1;
