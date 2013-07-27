@@ -223,10 +223,10 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	m_wndMenuBar.SetWindowText(_T("Menu standard"));
 	m_wndToolBar.SetWindowText(_T("Toolbar standard"));
-	m_wndToolBarViews.SetWindowText(_T("Toolbar vues"));
-	m_wndToolBarMeasures.SetWindowText(_T("Toolbar mesures"));
-	m_wndToolBarMeasuresEx.SetWindowText(_T("Toolbar mesures ext"));
-	m_wndToolBarMeasuresSat.SetWindowText(_T("Toolbar mesures sat"));
+	m_wndToolBarViews.SetWindowText(_T("Toolbar views"));
+	m_wndToolBarMeasures.SetWindowText(_T("Toolbar measures"));
+	m_wndToolBarMeasuresEx.SetWindowText(_T("Toolbar measures ext"));
+	m_wndToolBarMeasuresSat.SetWindowText(_T("Toolbar measures sat"));
 
 	if(!LoadToolbars())
 	{
