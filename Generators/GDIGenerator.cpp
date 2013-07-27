@@ -74,7 +74,7 @@ CGDIGenerator::CGDIGenerator()
 	m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI);
 	m_b16_235 = GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0);
 
-	m_displayWindow.SetDisplayMode();	// Always init in GDI mode during init
+	m_displayWindow.SetDisplayMode(m_nDisplayMode);	// Always init in GDI mode during init
 
 	CString str;
 	str.LoadString(IDS_GDIGENERATOR_PROPERTIES_TITLE);
