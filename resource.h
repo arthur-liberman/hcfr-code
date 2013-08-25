@@ -491,7 +491,7 @@
 #define IDC_RADIO1                      1147
 #define IDC_RADIO2                      1148
 #define IDC_RADIO3                      1149
-#define IDC_OVERLAY                     1150
+#define IDC_RADIO4                     1150
 #define IDC_SECONDARIESMATRIX_GRID      1151
 #define IDC_SECONDARIES_GRID            1152
 #define IDC_MEASURESECONDARIES_BUTTON   1153
@@ -690,6 +690,7 @@
 #define IDC_DISPLAY_TECH                1273
 #define IDC_BGSTIM_EDIT            1274
 #define IDC_INTENSITY_EDIT            1275
+#define IDC_OVERLAY                      1276
 #define IDC_COLORTEMPHISTO_GRAPH        11003
 #define IDC_RGBHISTO_GRAPH              11101
 #define IDC_RGBHISTO_GRAPH2             11102
