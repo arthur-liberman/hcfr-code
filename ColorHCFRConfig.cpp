@@ -297,20 +297,20 @@ BOOL CColorHCFRConfig::LoadSettings()
 	else if ( m_BWColorsToAdd > 2 ) 
 		m_BWColorsToAdd = 2;
 
-	m_colorStandard=(ColorStandard)GetProfileInt("References","ColorStandard",SDTV);
+	m_colorStandard=(ColorStandard)GetProfileInt("References","ColorStandard",HDTV);
 	m_whiteTarget=(WhiteTarget)GetProfileInt("References","WhiteTarget",D65);
 	m_bDisplayTestColors=GetProfileInt("References","DisplayTestColors",1);
 	m_bContinuousMeasures=GetProfileInt("References","ContinuousMeasures",1);
-	m_bDetectPrimaries=GetProfileInt("References","DetectPrimaries",0);
+	m_bDetectPrimaries=GetProfileInt("References","DetectPrimaries",1);
 	m_latencyTime=GetProfileInt("References","IrisLatencyTime",100);
     // don't allow less than 100ms for latency, give windows and display a chance
     // to show the image 
     m_latencyTime = max(m_latencyTime, 100);
 	m_bLatencyBeep=GetProfileInt("References","IrisLatencyBeep",0);
-	m_bUseRoundDown=GetProfileInt("References","SatUseMeasuredRef",1);
+	m_bUseRoundDown=GetProfileInt("References","SatUseMeasuredRef",0);
 	m_GammaRef=GetProfileDouble("References","GammaRefValue",2.22);
 
-	m_GammaOffsetType=GetProfileInt("References","GammaOffsetType",1);
+	m_GammaOffsetType=GetProfileInt("References","GammaOffsetType",4);
 	m_manualGOffset=GetProfileDouble("References","ManualGamOffset",0.099);
 
 	if (m_manualGOffset == 0) {

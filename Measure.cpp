@@ -2850,7 +2850,7 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator)
 		GenColors [ 0 ] = ColorRGBDisplay(78.0,58.0,51.0);
 		GenColors [ 1 ] = ColorRGBDisplay(36.0,48.0,61.0);
 		GenColors [ 2 ] = ColorRGBDisplay(36.0,42.0,26.0);
-		GenColors [ 3 ] = ColorRGBDisplay(51.0,50.0,68.0);
+		GenColors [ 3 ] = ColorRGBDisplay(28.0,36.0,66.0);
 		GenColors [ 4 ] = ColorRGBDisplay(62.0,74.0,26.0);
 		GenColors [ 5 ] = ColorRGBDisplay(90.0,63.0,17.0);
 		GenColors [ 6 ] = ColorRGBDisplay(IRELevel,IRELevel,IRELevel);

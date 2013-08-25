@@ -371,7 +371,7 @@ END
 
 IDD_APPEARANCE_PROP_PAGE DIALOG  0, 0, 212, 158
 STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
-CAPTION "Appearence"
+CAPTION "Appearance"
 FONT 8, "MS Sans Serif"
 BEGIN
     GROUPBOX        "Visual style",IDC_STATIC,7,7,199,45,WS_GROUP
@@ -2562,7 +2562,7 @@ STRINGTABLE
 BEGIN
     ID_AFFICHAGE_BARREVUES  "Display or hide views toolbar\nViews toolbar"
     ID_VIEW_VIEW_BAR        "Display or hide views toolbar\nViews toolbar"
-    IDM_APPEARANCE_CONFIG   "Configure appearence"
+    IDM_APPEARANCE_CONFIG   "Configure appearance"
     IDM_CIE_SHOWBACKGROUND  "Display background\nDisplay background"
     IDM_CIE_SHOWREFERENCES  "Display reference points on CIE diagram\nDisplay references"
     IDM_CIE_SHOWGRAYSCALE   "Display grayscale points\nDisplay grays"
@@ -2577,7 +2577,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDM_GENERAL_CONFIG      "Define general preferences, colorimetric references and software appearence"
+    IDM_GENERAL_CONFIG      "Define general preferences, colorimetric references and software appearance"
     IDM_REFERENCE_CONFIG    "Define references"
     IDM_EXPORT_CSV          "Export measures to .csv file\nExport to .csv"
     IDM_EXPORT_XLS          "Export measures to .xls file\nExport to .xls"

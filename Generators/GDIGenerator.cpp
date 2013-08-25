@@ -61,8 +61,8 @@ IMPLEMENT_SERIAL(CGDIGenerator,CGenerator,1) ;
 CGDIGenerator::CGDIGenerator()
 {
 	m_bBlankingCanceled = FALSE;
-	m_displayWindow.m_rectSizePercent=GetConfig()->GetProfileInt("GDIGenerator","SizePercent",100);
-	m_displayWindow.m_bgStimPercent=GetConfig()->GetProfileInt("GDIGenerator","bgStimPercent",100);
+	m_displayWindow.m_rectSizePercent=GetConfig()->GetProfileInt("GDIGenerator","SizePercent",10);
+	m_displayWindow.m_bgStimPercent=GetConfig()->GetProfileInt("GDIGenerator","bgStimPercent",0);
 	m_displayWindow.m_Intensity=GetConfig()->GetProfileInt("GDIGenerator","Intensity",100);
 	m_rectSizePercent = m_displayWindow.m_rectSizePercent;
 	m_bgStimPercent = m_displayWindow.m_bgStimPercent;
@@ -74,7 +74,7 @@ CGDIGenerator::CGDIGenerator()
 	m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI);
 	m_b16_235 = GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0);
 
-	m_displayWindow.SetDisplayMode();	// Always init in GDI mode during init
+	m_displayWindow.SetDisplayMode(m_nDisplayMode);	// Always init in GDI mode during init
 
 	CString str;
 	str.LoadString(IDS_GDIGENERATOR_PROPERTIES_TITLE);

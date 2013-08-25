@@ -3,7 +3,7 @@
 //  -------------------------------------------------------------
 //  various interfaces exported by madVR
 //  -------------------------------------------------------------
-//  Copyright (C) 2011 - 2013 www.madshi.net, All Rights Reserved
+//  Copyright (C) 2011 - 2013 www.madshi.net, BSD license
 // ***************************************************************
 
 // 2013-06-04 1.0.6 added IMadVRInfo
