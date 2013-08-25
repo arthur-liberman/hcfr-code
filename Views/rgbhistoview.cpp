@@ -171,8 +171,14 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 					// Use actual gray luma as correct reference (Delta E will check color only, not brightness)
 					YWhite = aColor [ 2 ];
 				}
-//				m_graphCtrl2.AddPoint(m_deltaEGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(YWhite, refColor, 1.0, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula));
-				m_graphCtrl2.AddPoint(m_deltaEGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(refColor));
+				if (GetConfig ()->m_bUseDeltaELumaOnGrays)
+				{
+					m_graphCtrl2.AddPoint(m_deltaEGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(YWhite, refColor, 1.0, GetColorReference(), true));
+				}
+				else
+				{
+					m_graphCtrl2.AddPoint(m_deltaEGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(refColor));
+				}
 			}
 		}
 	}
@@ -229,13 +235,24 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 					if ( bMainDocHasColors )
 						YWhite = aColor [ 2 ];
 				}
-
-//				m_graphCtrl2.AddPoint(m_deltaEDataRefGraphID, x, pDataRef->GetMeasure()->GetGray(i).GetDeltaE(YWhiteRefDoc, refColor, 1.0, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula));
-				m_graphCtrl2.AddPoint(m_deltaEDataRefGraphID, x, pDataRef->GetMeasure()->GetGray(i).GetDeltaE(refColor));
+				if (GetConfig ()->m_bUseDeltaELumaOnGrays)
+				{
+					m_graphCtrl2.AddPoint(m_deltaEDataRefGraphID, x, pDataRef->GetMeasure()->GetGray(i).GetDeltaE(YWhiteRefDoc, refColor, 1.0, GetColorReference(), true));
+				}
+				else
+				{
+					m_graphCtrl2.AddPoint(m_deltaEDataRefGraphID, x, pDataRef->GetMeasure()->GetGray(i).GetDeltaE(refColor));
+				}
 				
 				if (bMainDocHasColors)
-//					m_graphCtrl2.AddPoint(m_deltaEBetweenGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(YWhite,pDataRef->GetMeasure()->GetGray(i),YWhiteRefDoc, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula)); //Ki
-					m_graphCtrl2.AddPoint(m_deltaEBetweenGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(pDataRef->GetMeasure()->GetGray(i))); //Ki
+					if (GetConfig ()->m_bUseDeltaELumaOnGrays)
+					{
+						m_graphCtrl2.AddPoint(m_deltaEBetweenGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(YWhite,pDataRef->GetMeasure()->GetGray(i),YWhiteRefDoc, GetColorReference(), true)); //Ki
+					}
+					else
+					{
+						m_graphCtrl2.AddPoint(m_deltaEBetweenGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(pDataRef->GetMeasure()->GetGray(i))); //Ki
+					}
 			}
 		}
 	}

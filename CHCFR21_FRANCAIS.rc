@@ -831,9 +831,10 @@ BEGIN
     GROUPBOX        "Delta E",IDC_STATIC,7,171,199,38,WS_GROUP
 //    CONTROL         "Ne pas utiliser la luminance dans le calcul (V1.x)",IDC_CHECK_OLD_DELTAE,
 //                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,183,167,10
-    CONTROL         "Use Luv instead of CIE94 delta E formula (V2.x)",IDC_CHECK_OLD_DELTAE,
+    CONTROL         "Use CIELUV instead of CIE94 delta E formula (V2.x)",IDC_CHECK_OLD_DELTAE,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,183,170,10
-    CONTROL         "Prendre en compte le gamma sur les niveaux de gris",IDC_CHECK_DELTAE_GRAY_LUMA,
+//    CONTROL         "Prendre en compte le gamma sur les niveaux de gris",IDC_CHECK_DELTAE_GRAY_LUMA,
+    CONTROL          "Include L in grey scale delta E",IDC_CHECK_DELTAE_GRAY_LUMA,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,195,179,10
 END
 

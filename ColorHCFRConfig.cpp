@@ -284,7 +284,7 @@ void CColorHCFRConfig::InitDefaults()
 	m_nLuminanceCurveMode = 0;
 	m_bPreferLuxmeter = FALSE;
 	m_bUseOldDeltaEFormula = FALSE;
-	m_bUseDeltaELumaOnGrays = FALSE;
+	m_bUseDeltaELumaOnGrays = TRUE;
 }
 
 BOOL CColorHCFRConfig::LoadSettings()
@@ -340,7 +340,7 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_nLuminanceCurveMode = GetProfileInt("Advanced","LuminanceCurveMode",0);
 	m_bPreferLuxmeter = GetProfileInt("Advanced","PreferLuxmeter",0);
 	m_bUseOldDeltaEFormula = GetProfileInt("Advanced","UseOldDeltaEFormula",0);
-	m_bUseDeltaELumaOnGrays = GetProfileInt("Advanced","UseDeltaELumaOnGrays",0);
+	m_bUseDeltaELumaOnGrays = GetProfileInt("Advanced","UseDeltaELumaOnGrays",1);
 
 
 	return TRUE;

@@ -1304,11 +1304,18 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 		else if ( aComponentNum == 3 )
 		{
 			if ( aReference.isValid() )
-				// Use original u'v' dE for grey scale as this is standard practice
+				// Use original u'v' dE for grey scale as this is standard practice //added option to lightness inclusion
 				if (m_displayMode == 0 || m_displayMode == 2)
 					if ( nCol > 1 )
 					{
+					if (GetConfig ()->m_bUseDeltaELumaOnGrays)
+					{
+						str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), true) );
+					}
+					else
+					{
 						str.Format("%.1f",aMeasure.GetDeltaE ( aReference ));
+					}
 						dEavg+=aMeasure.GetDeltaE ( aReference );
 						dEcnt++;
 					}
