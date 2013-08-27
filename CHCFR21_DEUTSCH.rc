@@ -2209,12 +2209,12 @@ BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "CompanyName", "Association Homecinema Francophone"
             VALUE "FileDescription", "HCFR Colorimeter resources"
-            VALUE "FileVersion", "3, 0, 4, 3"
+            VALUE "FileVersion", "3, 0, 4, 4"
             VALUE "InternalName", "CHCFR21_DEUTSCH"
             VALUE "LegalCopyright", "Copyright (C) 2005-2008"
             VALUE "OriginalFilename", "CHCFR21_DEUTSCH.DLL"
             VALUE "ProductName", "HCFR Colorimeter German language"
-            VALUE "ProductVersion", "3, 0, 4, 3"
+            VALUE "ProductVersion", "3, 0, 4, 4"
         END
     END
     BLOCK "VarFileInfo"

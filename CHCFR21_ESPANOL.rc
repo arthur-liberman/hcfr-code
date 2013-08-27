@@ -2321,12 +2321,12 @@ BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "CompanyName", "Association Homecinema Francophone"
             VALUE "FileDescription", "Resources Colorimètre HCFR"
-            VALUE "FileVersion", "3, 0, 4, 3"
+            VALUE "FileVersion", "3, 0, 4, 4"
             VALUE "InternalName", "CHCFR21_ESPAÑOL"
             VALUE "LegalCopyright", "Copyright (C) 2005-2008"
             VALUE "OriginalFilename", "CHCFR21_ESPAÑOL.DLL"
             VALUE "ProductName", "Colorimètre HCFR langage Español"
-            VALUE "ProductVersion", "3, 0, 4, 3"
+            VALUE "ProductVersion", "3, 0, 4, 4"
         END
     END
     BLOCK "VarFileInfo"
