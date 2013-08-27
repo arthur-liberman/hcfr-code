@@ -57,6 +57,7 @@ CMeasure::CMeasure()
 	m_yellowSatMeasureArray.SetSize(5);
 	m_cyanSatMeasureArray.SetSize(5);
 	m_magentaSatMeasureArray.SetSize(5);
+	m_cc24SatMeasureArray.SetSize(24);
 
 	m_primariesArray[0]=m_primariesArray[1]=m_primariesArray[2]=noDataColor;
 	m_secondariesArray[0]=m_secondariesArray[1]=m_secondariesArray[2]=noDataColor;
@@ -79,6 +80,8 @@ CMeasure::CMeasure()
 		m_cyanSatMeasureArray[i]=noDataColor;
 		m_magentaSatMeasureArray[i]=noDataColor;
 	}
+	
+	for ( int i=0;i<m_cc24SatMeasureArray.GetSize();i++ )	m_cc24SatMeasureArray[i]=noDataColor;
 
 	m_OnOffBlack=m_OnOffWhite=noDataColor;
 	m_AnsiBlack=m_AnsiWhite=noDataColor;
@@ -139,6 +142,7 @@ void CMeasure::Copy(CMeasure * p,UINT nId)
 			m_yellowSatMeasureArray.SetSize(p->m_yellowSatMeasureArray.GetSize());
 			m_cyanSatMeasureArray.SetSize(p->m_cyanSatMeasureArray.GetSize());
 			m_magentaSatMeasureArray.SetSize(p->m_magentaSatMeasureArray.GetSize());
+			m_cc24SatMeasureArray.SetSize(p->m_cc24SatMeasureArray.GetSize());
 			for(int i=0;i<m_redSatMeasureArray.GetSize();i++)
 			{
 				m_redSatMeasureArray[i]=p->m_redSatMeasureArray[i];
@@ -154,12 +158,15 @@ void CMeasure::Copy(CMeasure * p,UINT nId)
 			m_yellowSatMeasureArray.SetSize(p->m_yellowSatMeasureArray.GetSize());
 			m_cyanSatMeasureArray.SetSize(p->m_cyanSatMeasureArray.GetSize());
 			m_magentaSatMeasureArray.SetSize(p->m_magentaSatMeasureArray.GetSize());
+			m_cc24SatMeasureArray.SetSize(p->m_magentaSatMeasureArray.GetSize());
 			for(int i=0;i<m_yellowSatMeasureArray.GetSize();i++)
 			{
 				m_yellowSatMeasureArray[i]=p->m_yellowSatMeasureArray[i];
 				m_cyanSatMeasureArray[i]=p->m_cyanSatMeasureArray[i];
 				m_magentaSatMeasureArray[i]=p->m_magentaSatMeasureArray[i];
 			}
+			for(int i=0;i<m_cc24SatMeasureArray.GetSize();i++)
+				m_cc24SatMeasureArray[i]=p->m_cc24SatMeasureArray[i];
 			break;
 
 		case DUPLPRIMARIESCOL:		// Primaries measure
@@ -235,6 +242,10 @@ void CMeasure::Serialize(CArchive& ar)
 		ar << m_magentaSatMeasureArray.GetSize();
 		for(int i=0;i<m_magentaSatMeasureArray.GetSize();i++)
 			m_magentaSatMeasureArray[i].Serialize(ar);
+
+		ar << m_cc24SatMeasureArray.GetSize();
+		for(int i=0;i<m_cc24SatMeasureArray.GetSize();i++)
+			m_cc24SatMeasureArray[i].Serialize(ar);
 
 		// Version 1 again
 		ar << m_measurementsArray.GetSize();
@@ -327,6 +338,10 @@ void CMeasure::Serialize(CArchive& ar)
 			m_magentaSatMeasureArray.SetSize(size);
 			for(int i=0;i<m_magentaSatMeasureArray.GetSize();i++)
 				m_magentaSatMeasureArray[i].Serialize(ar);
+			ar >> size;
+			m_cc24SatMeasureArray.SetSize(size);
+			for(int i=0;i<m_cc24SatMeasureArray.GetSize();i++)
+				m_cc24SatMeasureArray[i].Serialize(ar);
 		}
 		else
 		{
@@ -336,6 +351,9 @@ void CMeasure::Serialize(CArchive& ar)
 			m_yellowSatMeasureArray.SetSize(5);
 			m_cyanSatMeasureArray.SetSize(5);
 			m_magentaSatMeasureArray.SetSize(5);
+			m_cc24SatMeasureArray.SetSize(24);
+			for(int i=0;i<m_cc24SatMeasureArray.GetSize();i++) 
+				m_cc24SatMeasureArray[i]=noDataColor;
 			for(int i=0;i<m_redSatMeasureArray.GetSize();i++)
 			{
 				m_redSatMeasureArray[i]=noDataColor;
@@ -2384,6 +2402,159 @@ BOOL CMeasure::MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	return TRUE;
 }
 
+BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
+{
+	MSG			Msg;
+	BOOL		bEscape;
+	BOOL		bPatternRetry = FALSE;
+	BOOL		bRetry = FALSE;
+	int			size = 24;
+	CString		strMsg, Title;
+	ColorRGBDisplay	GenColors [ 256 ];
+	double		dLuxValue;
+
+	CArray<CColor,int> measuredColor;
+	CColor previousColor, lastColor;
+
+	BOOL	bUseLuxValues = TRUE;
+	CArray<double,int> measuredLux;
+
+	measuredColor.SetSize(size);
+	measuredLux.SetSize(size);
+
+	if(pGenerator->Init(size) != TRUE)
+	{
+		Title.LoadString ( IDS_ERROR );
+		strMsg.LoadString ( IDS_ERRINITGENERATOR );
+		GetColorApp()->InMeasureMessageBox(strMsg,Title,MB_ICONERROR | MB_OK);
+		return FALSE;
+	}
+
+	if(pGenerator->CanDisplayScale ( CGenerator::MT_SAT_CC24, size ) != TRUE)
+	{
+		pGenerator->Release();
+		return FALSE;
+	}
+
+	if(pSensor->Init(FALSE) != TRUE)
+	{
+		Title.LoadString ( IDS_ERROR );
+		strMsg.LoadString ( IDS_ERRINITSENSOR );
+		GetColorApp()->InMeasureMessageBox(strMsg,Title,MB_ICONERROR | MB_OK);
+		pGenerator->Release();
+		return FALSE;
+	}
+
+	// Generate saturation colors for color checker
+	GenerateCC24Colors (GenColors);
+
+	for(int i=0;i<size;i++)
+	{
+		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_CC24 ,!bRetry))
+		{
+			bEscape = WaitForDynamicIris ();
+			bRetry = FALSE;
+
+			if ( ! bEscape )
+			{
+				if ( bUseLuxValues )
+					StartLuxMeasure ();
+
+				measuredColor[i]=pSensor->MeasureColor(GenColors[i]);
+				
+				if ( bUseLuxValues )
+				{
+					switch ( GetLuxMeasure ( & dLuxValue ) )
+					{
+						case LUX_NOMEASURE:
+							 bUseLuxValues = FALSE;
+							 break;
+
+						case LUX_OK:
+							 measuredLux[i] = dLuxValue;
+							 break;
+
+						case LUX_CANCELED:
+							 bEscape = TRUE;
+							 break;
+					}
+				}
+			}
+
+			while ( PeekMessage ( & Msg, NULL, WM_KEYDOWN, WM_KEYUP, TRUE ) )
+			{
+				if ( Msg.message == WM_KEYDOWN && Msg.wParam == VK_ESCAPE )
+					bEscape = TRUE;
+			}
+
+			if ( bEscape )
+			{
+				pSensor->Release();
+				pGenerator->Release();
+				strMsg.LoadString ( IDS_MEASURESCANCELED );
+				GetColorApp()->InMeasureMessageBox ( strMsg, NULL, MB_OK | MB_ICONINFORMATION );
+				return FALSE;
+			}
+
+			if(!pSensor->IsMeasureValid())
+			{
+				Title.LoadString ( IDS_ERROR );
+				strMsg.LoadString ( IDS_ANERROROCCURED );
+				int result=GetColorApp()->InMeasureMessageBox(strMsg+pSensor->GetErrorString(),Title,MB_ABORTRETRYIGNORE | MB_ICONERROR);
+				if(result == IDABORT)
+				{
+					pSensor->Release();
+					pGenerator->Release();
+					return FALSE;
+				}
+				if(result == IDRETRY)
+				{
+					i--;
+					bRetry = TRUE;
+				}
+			}
+			else
+			{
+				previousColor = lastColor;			
+				lastColor = measuredColor[i];
+	
+				if(i != 0)
+				{
+					if (!pGenerator->HasPatternChanged(CGenerator::MT_SAT_CC24,previousColor,lastColor))
+					{
+						i--;
+						bPatternRetry = TRUE;
+					}
+				}
+			}
+		}
+		else
+		{
+			pSensor->Release();
+			pGenerator->Release();
+			return FALSE;
+		}
+	}
+
+	pSensor->Release();
+	pGenerator->Release();
+
+	if (bPatternRetry)
+		AfxMessageBox(pGenerator->GetRetryMessage(), MB_OK | MB_ICONWARNING);
+
+	for(int i=0;i<size;i++)
+	{
+		m_cc24SatMeasureArray[i] = measuredColor[i];
+		if ( bUseLuxValues )
+			m_cc24SatMeasureArray[i].SetLuxValue ( measuredLux[i] );
+		else
+			m_cc24SatMeasureArray[i].ResetLuxValue ();
+	}
+
+	m_isModified=TRUE;
+	return TRUE;
+}
+
 BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerator, BOOL bPrimaryOnly)
 {
 	int			i, j;
@@ -2393,17 +2564,18 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 	BOOL		bRetry = FALSE;
 	int			size = GetSaturationSize ();
 	CString		strMsg, Title;
-	ColorRGBDisplay	GenColors [ 6 * 256 ];
+	ColorRGBDisplay	GenColors [ 7 * 256 ];
 	double		dLuxValue;
 	
-	CGenerator::MeasureType	SaturationType [ 6 ] =
+	CGenerator::MeasureType	SaturationType [ 7 ] =
 							{
 								CGenerator::MT_SAT_RED,
 								CGenerator::MT_SAT_GREEN,
 								CGenerator::MT_SAT_BLUE,
 								CGenerator::MT_SAT_YELLOW,
 								CGenerator::MT_SAT_CYAN,
-								CGenerator::MT_SAT_MAGENTA
+								CGenerator::MT_SAT_MAGENTA,
+								CGenerator::MT_SAT_CC24
 							};
 
 	CArray<CColor,int> measuredColor;
@@ -2412,8 +2584,8 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 	BOOL	bUseLuxValues = TRUE;
 	CArray<double,int> measuredLux;
 
-	measuredColor.SetSize(size*6);
-	measuredLux.SetSize(size*6);
+	measuredColor.SetSize(size*6+24);
+	measuredLux.SetSize(size*6+24);
 
 	if(pGenerator->Init(size*(bPrimaryOnly?3:6)) != TRUE)
 	{
@@ -2445,12 +2617,13 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 3 ], size, true, true, false );	// Yellow
 	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 4 ], size, false, true, true );	// Cyan
 	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 5 ], size, true, false, true );	// Magenta
+	GenerateCC24Colors (& GenColors [ size * 6 ]); //color checker
 
-	for ( j = 0 ; j < ( bPrimaryOnly ? 3 : 6 ) ; j ++ )
+	for ( j = 0 ; j < ( bPrimaryOnly ? 3 : 7 ) ; j ++ )
 	{
-		for ( i = 0 ; i < size ; i ++ )
+		for ( i = 0 ; i < ( j == 6 ? 24 : size ) ; i ++ )
 		{
-			if( pGenerator->DisplayRGBColor(GenColors[(j*size)+i],SaturationType[j],100*i/(size - 1),!bRetry,(j>0)) )
+			if( pGenerator->DisplayRGBColor(GenColors[(j*size)+i],SaturationType[j],(j == 6 ? 0:100*i/(size - 1)),!bRetry,(j>0)) )
 			{
 				bEscape = WaitForDynamicIris ();
 				bRetry = FALSE;
@@ -2583,17 +2756,37 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 
 			m_magentaSatMeasureArray[i] = measuredColor[(5*size)+i];
 
+			m_cc24SatMeasureArray[i] = measuredColor[(6*size)+i];
+
 			if ( bUseLuxValues )
 			{
 				m_yellowSatMeasureArray[i].SetLuxValue ( measuredLux[(3*size)+i] );
 				m_cyanSatMeasureArray[i].SetLuxValue ( measuredLux[(4*size)+i] );
 				m_magentaSatMeasureArray[i].SetLuxValue ( measuredLux[(5*size)+i] );
+				m_cc24SatMeasureArray[i].SetLuxValue ( measuredLux[(6*size)+i] );
 			}
 			else
 			{
 				m_yellowSatMeasureArray[i].ResetLuxValue ();
 				m_cyanSatMeasureArray[i].ResetLuxValue ();
 				m_magentaSatMeasureArray[i].ResetLuxValue ();
+				m_cc24SatMeasureArray[i].ResetLuxValue ();
+			}
+		}
+	}
+	for ( i = 0 ; i < 24 ; i ++ )
+	{
+		if ( ! bPrimaryOnly )
+		{
+			m_cc24SatMeasureArray[i] = measuredColor[(6*size)+i];
+
+			if ( bUseLuxValues )
+			{
+				m_cc24SatMeasureArray[i].SetLuxValue ( measuredLux[(6*size)+i] );
+			}
+			else
+			{
+				m_cc24SatMeasureArray[i].ResetLuxValue ();
 			}
 		}
 	}
@@ -3686,6 +3879,10 @@ void CMeasure::ApplySensorAdjustmentMatrix(const Matrix& aMatrix)
 	{
 		m_magentaSatMeasureArray[i].applyAdjustmentMatrix(aMatrix);
 	}
+	for(int i=0;i<m_cc24SatMeasureArray.GetSize();i++)  // Preserve sensor values 
+	{
+		m_cc24SatMeasureArray[i].applyAdjustmentMatrix(aMatrix);
+	}
 	for(int i=0;i<3;i++)
 	{
 		m_primariesArray[i].applyAdjustmentMatrix(aMatrix);
@@ -4382,6 +4579,33 @@ BOOL CMeasure::ValidateBackgroundMagentaSatScale ( BOOL bUseLuxValues, double * 
 	return bOk;
 }
 
+BOOL CMeasure::ValidateBackgroundCC24SatScale ( BOOL bUseLuxValues, double * pLuxValues )
+{
+	BOOL	bOk = FALSE;
+
+	if ( ! m_bErrorOccurred )
+	{
+		bOk = TRUE;
+		m_isModified=TRUE;
+
+//		SetSaturationSize(m_nBkMeasureStepCount);
+		for ( int i = 0; i<m_cc24SatMeasureArray.GetSize() ; i++ )
+		{
+			m_cc24SatMeasureArray[i] = (*m_pBkMeasuredColor)[i];
+
+			if ( bUseLuxValues )
+				m_cc24SatMeasureArray[i].SetLuxValue ( pLuxValues[i] );
+			else
+				m_cc24SatMeasureArray[i].ResetLuxValue ();
+		}
+	}
+
+	// Close background thread and event objects
+	CancelBackgroundMeasures ();
+
+	return bOk;
+}
+
 CColor CMeasure::GetGray(int i) const 
 {
 	return m_grayMeasureArray[i]; 
@@ -4425,6 +4649,11 @@ CColor CMeasure::GetCyanSat(int i) const
 CColor CMeasure::GetMagentaSat(int i) const 
 { 
 	return m_magentaSatMeasureArray[i]; 
+} 
+
+CColor CMeasure::GetCC24Sat(int i) const 
+{ 
+	return m_cc24SatMeasureArray[i]; 
 } 
 
 CColor CMeasure::GetPrimary(int i) const 
@@ -4615,3 +4844,62 @@ CColor CMeasure::GetRefSat(int i, double sat_percent) const
 	return aColor;
 }
 
+CColor CMeasure::GetRefCC24Sat(int i) const
+{
+	CColor aColor;
+	CColor ccRef[24] = { 
+		CColor(0.3130, 0.3290),
+		CColor(0.3130, 0.3290),
+		CColor(0.3130, 0.3290), 
+		CColor(0.3130, 0.3290), 
+		CColor(0.3130, 0.3290), 
+		CColor(0.3130, 0.3290), 
+		CColor(0.4060, 0.3640), 
+		CColor(0.3780, 0.3560), 
+		CColor(0.2490, 0.2650), 
+		CColor(0.3420, 0.4320), 
+		CColor(0.2690, 0.2530), 
+		CColor(0.2610, 0.3590), 
+		CColor(0.5150, 0.4090), 
+		CColor(0.2150, 0.1890), 
+		CColor(0.4640, 0.3120), 
+		CColor(0.2880, 0.2160), 
+		CColor(0.3770, 0.4950), 
+		CColor(0.4750, 0.4430), 
+		CColor(0.1880, 0.1350), 
+		CColor(0.3050, 0.4950), 
+		CColor(0.5470, 0.3190), 
+		CColor(0.4480, 0.4760), 
+		CColor(0.3740, 0.2440), 
+		CColor(0.2080, 0.2690)
+	};
+//luma values for 2.2 gamma		
+double YLuma[24]={	0,
+					0.3506,
+					0.5013,
+					0.6496,
+					0.7922,
+					1.0,
+					0.0990,
+					0.3553,
+					0.1903,
+					0.1312,
+					0.2377,
+					0.4241,
+					0.2858,
+					0.1170,
+					0.1860,
+					0.0648,
+					0.4365,
+					0.4290,
+					0.0603,
+					0.2328,
+					0.1156,
+					0.5977,
+					0.1895,
+					0.1970
+};
+
+	aColor.SetxyYValue (ccRef[i].GetxyYValue()[0], ccRef[i].GetxyYValue()[1], YLuma[i]);	
+	return aColor;
+}

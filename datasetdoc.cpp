@@ -469,6 +469,8 @@ BEGIN_MESSAGE_MAP(CDataSetDoc, CDocument)
 	ON_UPDATE_COMMAND_UI(IDM_MEASURE_SAT_CYAN, OnUpdateMeasureSatCyan)
 	ON_COMMAND(IDM_MEASURE_SAT_MAGENTA, OnMeasureSatMagenta)
 	ON_UPDATE_COMMAND_UI(IDM_MEASURE_SAT_MAGENTA, OnUpdateMeasureSatMagenta)
+	ON_COMMAND(IDM_MEASURE_SAT_CC24, OnMeasureSatCC24)
+	ON_UPDATE_COMMAND_UI(IDM_MEASURE_SAT_CC24, OnUpdateMeasureSatCC24)
 	ON_COMMAND(IDM_MEASURE_CONTRAST, OnMeasureContrast)
 	ON_UPDATE_COMMAND_UI(IDM_MEASURE_CONTRAST, OnUpdateMeasureContrast)
 	ON_COMMAND(IDM_MEASURE_SAT_ALL, OnMeasureSatAll)
@@ -1170,6 +1172,17 @@ void CDataSetDoc::MeasureMagentaSatScale()
 	{
 		SetModifiedFlag(m_measure.IsModified());
 		UpdateAllViews(NULL, UPD_MAGENTASAT);
+	}
+}
+
+void CDataSetDoc::MeasureCC24SatScale() 
+{
+	StopBackgroundMeasures ();
+
+	if(m_measure.MeasureCC24SatScale(m_pSensor,m_pGenerator))
+	{
+		SetModifiedFlag(m_measure.IsModified());
+		UpdateAllViews(NULL, UPD_CC24SAT);
 	}
 }
 
@@ -2349,6 +2362,15 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 lHint = UPD_MAGENTASAT;
 			 break;
 
+		case 9:
+			 nSteps = 24;
+			 nMaxSteps = nSteps;
+			 mType [ 0 ] = CGenerator::MT_SAT_CC24;
+			 GenerateCC24Colors (GenColors );
+			 pValidationFunc = &CMeasure::ValidateBackgroundCC24SatScale;
+			 lHint = UPD_CC24SAT;
+			 break;
+
 		case -5:
 		case -1:
 			 mType [ 0 ] = CGenerator::MT_PRIMARY;
@@ -3205,9 +3227,33 @@ void CDataSetDoc::OnMeasureSatMagenta()
 	}
 }
 
+void CDataSetDoc::OnMeasureSatCC24() 
+{
+	CString	Msg, MsgQueue, TmpStr;
+//	int		nNbPoints = GetMeasure () -> GetSaturationSize () - 1;
+	int		nNbPoints = 24;
+	MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
+
+	Msg.LoadString ( IDS_RUNSATCC24ON );
+	TmpStr.Format ( " %d ", nNbPoints );
+	Msg += TmpStr + MsgQueue;
+	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+	{
+		MeasureCC24SatScale();
+
+		SetSelectedColor ( noDataColor );
+		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+	}
+}
+
 void CDataSetDoc::OnUpdateMeasureSatMagenta(CCmdUI* pCmdUI) 
 {
 	pCmdUI -> Enable ( m_pGenerator -> CanDisplayScale ( CGenerator::MT_SAT_MAGENTA, GetMeasure () -> GetSaturationSize(), TRUE ) );
+}
+
+void CDataSetDoc::OnUpdateMeasureSatCC24(CCmdUI* pCmdUI) 
+{
+	pCmdUI -> Enable ( m_pGenerator -> CanDisplayScale ( CGenerator::MT_SAT_CC24, 24, TRUE ) );
 }
 
 void CDataSetDoc::OnMeasureContrast() 

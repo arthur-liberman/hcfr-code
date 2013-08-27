@@ -113,6 +113,10 @@ BOOL CManualDVDGenerator::DisplayRGBColor( const ColorRGBDisplay& clrIn ,Measure
 				str3.LoadString ( IDS_MAGENTASATPERCENT );
 				str2.Format(str3,nPatternInfo);
 				break;
+			case MT_SAT_CC24:
+				str3.LoadString ( IDS_CC24SATPERCENT );
+				str2.Format(str3,nPatternInfo);
+				break;
 			case MT_PRIMARY:
 			case MT_SECONDARY: //needs fixing
 			  if (GetColorReference().m_standard!=4)

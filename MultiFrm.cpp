@@ -1949,6 +1949,7 @@ LRESULT CMultiFrame::OnDDETerminate(WPARAM wParam, LPARAM lParam)
 #define CLRCAT_SAT_YELLOW	10
 #define CLRCAT_SAT_CYAN		11
 #define CLRCAT_SAT_MAGENTA	12
+#define CLRCAT_SAT_CC24		13
 
 BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND hWndClient, LPARAM lParam, LPBOOL pbAckMsgSent )
 {
@@ -2442,7 +2443,7 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 					ire = i;
 					nClrIndex = i-100+j;
 				}
-				else if ( _stricmp ( (LPCSTR) strCmd, "saturation" ) == 0 && nCount == 2 )
+				else if ( _stricmp ( (LPCSTR) strCmd, "saturations" ) == 0 && nCount == 2 )
 				{
 					strParam = CmdParams.GetHead ();
 					if ( _stricmp ( (LPCSTR) strParam, "red" ) == 0 )
@@ -2474,6 +2475,11 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 					{
 						lHint = UPD_MAGENTASAT;
 						nCategory = CLRCAT_SAT_MAGENTA;
+					}
+					else if ( _stricmp ( (LPCSTR) strParam, "colorchecker" ) == 0 )
+					{
+						lHint = UPD_CC24SAT;
+						nCategory = CLRCAT_SAT_CC24;
 					}
 					
 					strParam = CmdParams.GetTail ();
@@ -2685,6 +2691,7 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 					case CLRCAT_SAT_BLUE:
 					case CLRCAT_SAT_YELLOW:
 					case CLRCAT_SAT_CYAN:
+					case CLRCAT_SAT_CC24:
 					case CLRCAT_SAT_MAGENTA:
 						 // GGA: TODO. Manque le calcul de clrref pour la saturation ire
 						 bOk = FALSE;

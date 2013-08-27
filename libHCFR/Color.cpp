@@ -1393,6 +1393,34 @@ void CSpectrum::Serialize(CArchive& archive)
 	}
 }
 #endif
+void GenerateCC24Colors (ColorRGBDisplay* GenColors)
+{
+        GenColors [ 0 ] = ColorRGBDisplay( 0, 0, 0 );
+        GenColors [ 1 ] = ColorRGBDisplay( 62, 62, 62 );
+        GenColors [ 2 ] = ColorRGBDisplay( 73, 73, 73 );
+        GenColors [ 3 ] = ColorRGBDisplay( 82, 82, 82 );
+        GenColors [ 4 ] = ColorRGBDisplay( 90, 90, 90 );
+        GenColors [ 5 ] = ColorRGBDisplay( 100, 100, 100 );
+        GenColors [ 6 ] = ColorRGBDisplay( 45.2, 31.96, 26.03 );
+        GenColors [ 7 ] = ColorRGBDisplay( 75.8, 58.9, 51.14 );
+        GenColors [ 8 ] = ColorRGBDisplay( 36.99, 47.95, 61.19 );
+        GenColors [ 9 ] = ColorRGBDisplay( 35.16,42.01,26.03);
+        GenColors [ 10 ] = ColorRGBDisplay( 51.14,50.23,68.95);
+        GenColors [ 11 ] = ColorRGBDisplay( 38.81,73.97,66.21 );
+        GenColors [ 12 ] = ColorRGBDisplay( 84.93,47.03,15.98);
+        GenColors [ 13 ] = ColorRGBDisplay( 29.22,36.07,63.93);
+        GenColors [ 14 ] = ColorRGBDisplay( 75.80, 32.88,37.90 );
+        GenColors [ 15 ] = ColorRGBDisplay( 36.07, 24.20, 42.01);
+        GenColors [ 16 ] = ColorRGBDisplay( 62.10, 73.06, 25.11 );
+        GenColors [ 17 ] = ColorRGBDisplay( 89.95, 63.01, 17.81 );
+        GenColors [ 18 ] = ColorRGBDisplay( 20.09, 24.20, 58.90);
+        GenColors [ 19 ] = ColorRGBDisplay( 27.85, 57.99, 27.85);
+        GenColors [ 20 ] = ColorRGBDisplay( 68.95, 19.18, 22.83);
+        GenColors [ 21 ] = ColorRGBDisplay( 93.15, 78.08, 12.79 );
+        GenColors [ 22 ] = ColorRGBDisplay( 73.06, 32.88, 57.08);
+        GenColors [ 23 ] = ColorRGBDisplay( 0, 52.05, 63.93);
+}
+
 
 void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int nSteps, bool bRed, bool bGreen, bool bBlue)
 {

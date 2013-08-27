@@ -72,6 +72,7 @@ protected:
 	CArray<CColor,CColor> m_yellowSatMeasureArray;
 	CArray<CColor,CColor> m_cyanSatMeasureArray;
 	CArray<CColor,CColor> m_magentaSatMeasureArray;
+	CArray<CColor,CColor> m_cc24SatMeasureArray;
 	CString m_infoStr;
 public:
 	BOOL	m_bIREScaleMode;
@@ -127,6 +128,7 @@ public:
 	BOOL MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator);
 	BOOL MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator);
 	BOOL MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator);
+	BOOL MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator);
 	BOOL MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerator,BOOL bPrimaryOnly);
 	int GetSaturationSize() const { return m_redSatMeasureArray.GetSize(); }
 	void SetSaturationSize(int steps);
@@ -142,6 +144,8 @@ public:
 	void SetCyanSat(int i,const CColor & aColor) {m_cyanSatMeasureArray[i]=aColor; m_isModified=TRUE; } 
 	CColor GetMagentaSat(int i) const;
 	void SetMagentaSat(int i,const CColor & aColor) {m_magentaSatMeasureArray[i]=aColor; m_isModified=TRUE; } 
+	CColor GetCC24Sat(int i) const;
+	void SetCC24Sat(int i,const CColor & aColor) {m_cc24SatMeasureArray[i]=aColor; m_isModified=TRUE; } 
 	
 	BOOL MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator);
 	CColor GetPrimary(int i) const;
@@ -196,6 +200,7 @@ public:
 	CColor GetRefPrimary(int i) const;
 	CColor GetRefSecondary(int i) const;
 	CColor GetRefSat(int i, double sat_percent) const;
+	CColor GetRefCC24Sat(int i) const;
 
 	BOOL IsModified() { return m_isModified; }
 
@@ -217,6 +222,7 @@ public:
 	BOOL ValidateBackgroundYellowSatScale ( BOOL bUseLuxValues, double * pLuxValues );
 	BOOL ValidateBackgroundCyanSatScale ( BOOL bUseLuxValues, double * pLuxValues );
 	BOOL ValidateBackgroundMagentaSatScale ( BOOL bUseLuxValues, double * pLuxValues );
+	BOOL ValidateBackgroundCC24SatScale ( BOOL bUseLuxValues, double * pLuxValues );
 	BOOL ValidateBackgroundGrayScaleAndColors ( BOOL bUseLuxValues, double * pLuxValues );
 	BOOL ValidateBackgroundSingleMeasurement ( BOOL bUseLuxValues, double * pLuxValues );
 };

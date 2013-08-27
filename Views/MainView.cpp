@@ -648,21 +648,26 @@ void CMainView::InitGrid()
 			}
 		}
 	}
-	else if ( m_displayMode == 11 )
+	else if ( m_displayMode == 11)
+	{
+		size = 24;		
+		bHasLuxValues = GetDocument()->GetMeasure()->GetCC24Sat(0).HasLuxValue ();
+	}
+	else if ( m_displayMode == 12 )
 	{
 		size = 6;
 		pDataRef = NULL;
 		bHasLuxValues = GetDocument()->GetMeasure()->GetOnOffWhite().HasLuxValue ();
 	}
 
-	if ( m_displayMode == 11 )
+	if ( m_displayMode == 12 )
 		nRows = 3;
 	else if ( ! pDataRef )
 		nRows = 5;
 	else
 		nRows = 7;
 
-	if ( m_displayMode <= 1 || (m_displayMode >= 5 && m_displayMode <=10) )
+	if ( m_displayMode <= 1 || (m_displayMode >= 5 && m_displayMode <=11) )
 		nRows ++;
 
 	if ( bHasLuxValues )
@@ -707,15 +712,19 @@ void CMainView::InitGrid()
 		case 0:
 			 Item.strText = ( bIRE ? "IRE" : GetConfig()->m_PercentGray );
 			 break;
-
+		case 1:
+			 Item.strText="Color";
+			 break;
+		case 2:
 		case 3:
 		case 4:
 			 Item.strText=GetConfig()->m_PercentGray;
 			 break;
 
-		case 1:
-		case 2:
 		case 11:
+			 Item.strText="Color Checker";
+			 break;
+		case 12:
 			 Item.strText=" ";
 			 break;
 
@@ -796,6 +805,107 @@ void CMainView::InitGrid()
 			case 11:
 				 switch ( i )
 				 {
+					 case 0:
+						Item.strText.LoadString(IDS_CC_1);
+						break;
+
+					 case 1:
+						Item.strText.LoadString(IDS_CC_2);
+						break;
+
+					 case 2:
+						Item.strText.LoadString(IDS_CC_3);
+						break;
+
+					 case 3:
+						Item.strText.LoadString(IDS_CC_4);
+						break;
+
+					 case 4:
+						Item.strText.LoadString(IDS_CC_5);
+						break;
+
+					 case 5:
+						Item.strText.LoadString(IDS_CC_6);
+						break;
+
+					 case 6:
+						Item.strText.LoadString(IDS_CC_7);
+						break;
+
+					 case 7:
+						Item.strText.LoadString(IDS_CC_8);
+						break;
+
+					 case 8:
+						Item.strText.LoadString(IDS_CC_9);
+						break;
+
+					 case 9:
+						Item.strText.LoadString(IDS_CC_10);
+						break;
+
+					 case 10:
+						Item.strText.LoadString(IDS_CC_11);
+						break;
+
+					 case 11:
+						Item.strText.LoadString(IDS_CC_12);
+						break;
+
+					 case 12:
+						Item.strText.LoadString(IDS_CC_13);
+						break;
+
+					 case 13:
+						Item.strText.LoadString(IDS_CC_14);
+						break;
+
+					 case 14:
+						Item.strText.LoadString(IDS_CC_15);
+						break;
+
+					 case 15:
+						Item.strText.LoadString(IDS_CC_16);
+						break;
+
+					 case 16:
+						Item.strText.LoadString(IDS_CC_17);
+						break;
+
+					 case 17:
+						Item.strText.LoadString(IDS_CC_18);
+						break;
+
+					 case 18:
+						Item.strText.LoadString(IDS_CC_19);
+						break;
+
+					 case 19:
+						Item.strText.LoadString(IDS_CC_20);
+						break;
+
+					 case 20:
+						Item.strText.LoadString(IDS_CC_21);
+						break;
+
+					 case 21:
+						Item.strText.LoadString(IDS_CC_22);
+						break;
+
+					 case 22:
+						Item.strText.LoadString(IDS_CC_23);
+						break;
+
+					 case 23:
+						Item.strText.LoadString(IDS_CC_24);
+						break;
+				 }
+				 break;
+
+			case 12:
+				 switch ( i )
+				 {
 					case 0:
 						 Item.strText.LoadString(IDS_BLACK);
 						 break;
@@ -842,7 +952,7 @@ void CMainView::InitGrid()
 		for ( i = 0 ; i < 3 + bHasLuxValues; i++ )
 		{
 			Item.row = i+1;
-			if ( m_displayMode == 11 )
+			if ( m_displayMode == 12 )
 			{
 				Item.strText = ( i==0 ? "ON/OFF:" : ( i==1 ? "ANSI:" : "" ) );
 				m_pGrayScaleGrid->SetItem(&Item);
@@ -863,7 +973,7 @@ void CMainView::InitGrid()
 			for ( i = 0 ; i < 3 + bHasLuxValues; i++ )
 			{
 				Item.row = i+1;
-				if ( m_displayMode == 11 )
+				if ( m_displayMode == 12 )
 				{
 					m_pGrayScaleGrid->SetItem(&Item);
 					m_pGrayScaleGrid->SetItemState ( Item.row,Item.col, m_pGrayScaleGrid->GetItemState(Item.row,Item.col) | GVIS_READONLY );
@@ -1087,14 +1197,21 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 					nForceMode = 10;
 				 break;
 
+			case UPD_CC24SAT:
+				 if ( m_displayMode != 11 )
+					nForceMode = 11;
+				 else
+					 UpdateGrid();
+				 break;
+
 			case UPD_ALLSATURATIONS:
-				 if ( m_displayMode < 5 || m_displayMode > 10 )
+				 if ( m_displayMode < 5 || m_displayMode > 11 )
 					nForceMode = 5;
 				 break;
 
 			case UPD_CONTRAST:
-				 if ( m_displayMode != 11 )
-					nForceMode = 11;
+				 if ( m_displayMode != 12 )
+					nForceMode = 12;
 				 break;
 		}
 
@@ -1405,7 +1522,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 			else
 			{
 				// Display primary/secondary/saturations colors delta luma
-				double RefLuma [6];
+				double RefLuma [24];
 				int		nCol2 = nCol;
 				
 				// Retrieve color luma coefficients matching actual reference
@@ -1443,11 +1560,14 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
   						RefLuma [ 0 ] = GetColorReference().GetMagentaReferenceLuma ();
 						nCol2 = 1;
 						break;
+					case 11:
+  						RefLuma [ nCol ] = GetColorReference().GetCC24ReferenceLuma (nCol);
+						break;
 				}
 				
-				CColor white = GetDocument()->GetMeasure()->GetOnOffWhite();
+				CColor white = (m_displayMode!=11 ? GetDocument()->GetMeasure()->GetOnOffWhite() :  GetDocument()->GetMeasure()->GetCC24Sat(5) );
 				
-				if ( nCol2 < 7 && white.isValid() && white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) > 0.0001 )
+				if ( nCol2 < (m_displayMode!=11 ? 7 : 25) && white.isValid() && white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) > 0.0001 )
 				{
 					double d = aMeasure.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) / white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter);
 
@@ -1748,7 +1868,7 @@ void CMainView::UpdateGrid()
 					bHasLuxValues = GetDocument()->GetMeasure()->GetNearWhite(0).HasLuxValue ();
 				 break;
 
-			case 11:
+			case 12:
 				 nCount = 4;
 				 nRows = 3;
 				 pDataRef = NULL;
@@ -1756,9 +1876,18 @@ void CMainView::UpdateGrid()
 				 break;
 
 			default:
-				 nCount = GetDocument()->GetMeasure()->GetSaturationSize();
+				 YWhite = YWhiteGray;
+				 YWhiteRefDoc = YWhiteGrayRefDoc;
+				 if (m_displayMode != 11) 
+				 {
+					nCount = GetDocument()->GetMeasure()->GetSaturationSize();
 				 if ( pDataRef && pDataRef->GetMeasure()->GetSaturationSize() != nCount )
 					pDataRef = NULL;
+				 }
+				 else
+				 {
+					 nCount = 24;
+				 }
 				 
 				 if ( nCount )
 				 {
@@ -1788,6 +1917,9 @@ void CMainView::UpdateGrid()
 							 bHasLuxValues = GetDocument()->GetMeasure()->GetMagentaSat(0).HasLuxValue ();
 							 break;
 
+						case 11:
+							 bHasLuxValues = GetDocument()->GetMeasure()->GetCC24Sat(0).HasLuxValue ();
+							 break;
 					}
 				 }
 				 break;
@@ -1796,7 +1928,7 @@ void CMainView::UpdateGrid()
 		if ( pDataRef )
 			nRows = 7;
 
-		if ( m_displayMode <= 1 || (m_displayMode >= 5 && m_displayMode <=10) )
+		if ( m_displayMode <= 1 || (m_displayMode >= 5 && m_displayMode <=11) )
 			nRows ++;
 
 		if ( bHasLuxValues )
@@ -2023,6 +2155,15 @@ void CMainView::UpdateGrid()
 					 break;
 
 				case 11:
+					 aColor = GetDocument()->GetMeasure()->GetCC24Sat(j);
+					 refColor = GetDocument()->GetMeasure()->GetRefCC24Sat(j);
+					 YWhite = GetDocument()->GetMeasure()->GetCC24Sat(5).GetY();
+
+					 if ( pDataRef )
+						refDocColor = pDataRef->GetMeasure()->GetCC24Sat(j);
+					 break;
+
+				case 12:
 					 refColor = noDataColor;
 					 refDocColor = noDataColor;
 					 switch ( j )
@@ -2106,7 +2247,7 @@ void CMainView::UpdateGrid()
 			m_pGrayScaleGrid -> SetColumnWidth ( m_pGrayScaleGrid->GetColumnCount() - 1, width * 11 / 10 );
 		}
 
-		if ( m_displayMode == 11 )
+		if ( m_displayMode == 12 )
 			UpdateContrastValuesInGrid ();
 
 		m_pGrayScaleGrid->Refresh();
@@ -2173,6 +2314,21 @@ void CMainView::UpdateGrid()
 			Msg.LoadString ( IDS_SATURATIONCOLORS );
 			m_grayScaleGroup.SetText ( Msg );
 			if (GetDocument()->GetMeasure()->GetRedSat(0).isValid() && dEcnt > 0 )
+		    {
+				char	szBuf [ 256 ];
+				Tmp.LoadString ( IDS_DELTAEAVERAGE );
+				Msg += " ( ";
+				Msg += Tmp;
+				sprintf ( szBuf, ": %.2f )", dEavg / dEcnt );
+				Msg += szBuf;					
+			}
+			m_grayScaleGroup.SetText ( Msg );
+		} else if (m_displayMode == 11)
+		{
+			CString	Msg, Tmp;;
+			Msg.LoadString ( IDS_CC24COLORS );
+			m_grayScaleGroup.SetText ( Msg );
+			if (GetDocument()->GetMeasure()->GetCC24Sat(0).isValid() && dEcnt > 0 )
 		    {
 				char	szBuf [ 256 ];
 				Tmp.LoadString ( IDS_DELTAEAVERAGE );
@@ -2284,6 +2440,10 @@ void CMainView::OnGrayScaleGridBeginEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 			 break;
 
 		case 11:
+			 aColorMeasure=GetDocument()->GetMeasure()->GetCC24Sat(pItem->iColumn-1);
+			 break;
+
+		case 12:
 			 switch ( pItem->iColumn )
 			 {
 				case 1:
@@ -2417,6 +2577,10 @@ void CMainView::OnGrayScaleGridEndEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 				 break;
 
 			case 11:
+				 aColorMeasure=GetDocument()->GetMeasure()->GetCC24Sat(pItem->iColumn-1);
+				 break;
+
+			case 12:
 				 switch ( pItem->iColumn )
 				 {
 					case 1:
@@ -2582,6 +2746,11 @@ void CMainView::OnGrayScaleGridEndEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 				 break;
 
 			case 11:
+				 GetDocument()->GetMeasure()->SetCC24Sat(pItem->iColumn-1,aColorMeasure);
+				 lHint = UPD_CC24SAT;
+				 break;
+
+			case 12:
 				 switch ( pItem->iColumn )
 				 {
 					case 1:
@@ -2666,6 +2835,10 @@ void CMainView::OnGrayScaleGridEndEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 				 break;
 
 			case 11:
+				 SetSelectedColor ( GetDocument()->GetMeasure()->GetCC24Sat(pItem->iColumn-1) );
+				 break;
+
+			case 12:
 				 switch ( pItem->iColumn )
 				 {
 					case 1:
@@ -2762,6 +2935,10 @@ void CMainView::OnGrayScaleGridEndSelChange(NMHDR *pNotifyStruct,LRESULT* pResul
 				 break;
 
 			case 11:
+				 SetSelectedColor ( GetDocument()->GetMeasure()->GetCC24Sat(minCol-1) );
+				 break;
+
+			case 12:
 				 switch ( minCol )
 				 {
 					case 1:
@@ -2848,7 +3025,7 @@ void CMainView::OnSelchangeComboMode()
 
 	m_displayMode = nNewMode;
 
-	if ( m_displayMode == 11 )
+	if ( m_displayMode == 12 )
 		m_testAnsiPatternButton.ShowWindow ( SW_SHOW );
 	else
 		m_testAnsiPatternButton.ShowWindow ( SW_HIDE );
@@ -2990,6 +3167,18 @@ void CMainView::OnSelchangeComboMode()
 			 break;
 
 		case 11:
+			 Msg.LoadString ( IDS_SATCC24 );
+			 m_grayScaleGroup.SetText ( Msg );
+			 Msg.LoadString ( IDS_MEASURESATCC24 );
+			 Msg += "\r\n";
+			 Msg += MsgAdd;
+			 m_grayScaleButton.SetTooltipText(Msg);
+		 	 m_grayScaleButton.SetBitmaps(IDB_SATCC24,RGB(0,0,0));
+			 Msg.LoadString ( IDS_DELETESATCC24 );
+			 m_grayScaleDeleteButton.SetTooltipText(Msg);
+			 break;
+
+		case 12:
 			 Msg.LoadString ( IDS_CONTRAST );
 			 m_grayScaleGroup.SetText ( Msg );
 			 Msg.LoadString ( IDS_MEASURECONTRAST );
@@ -3115,6 +3304,10 @@ void CMainView::OnMeasureGrayScale()
 				 break;
 
 			case 11:
+				 GetDocument()->OnMeasureSatCC24();
+				 break;
+
+			case 12:
 				 GetDocument()->OnMeasureContrast();
 				 break;
 		}
@@ -3231,6 +3424,12 @@ void CMainView::OnDeleteGrayscale()
 				 break;
 
 			case 11:
+				for(j=0;j<24 ;j++)
+					GetDocument()->GetMeasure()->SetCC24Sat(j,noDataColor);
+				 lHint = UPD_CC24SAT;
+				 break;
+
+			case 12:
 				 GetDocument()->GetMeasure()->DeleteContrast();
 				 lHint = UPD_CONTRAST;
 				 break;
@@ -3485,7 +3684,7 @@ void CMainView::InitButtons()
 	m_testAnsiPatternButton.OffsetColor(CButtonST::BTNST_COLOR_BK_IN, 30);
 	m_testAnsiPatternButton.OffsetColor(CButtonST::BTNST_COLOR_FG_IN, 30);
 
-	if ( m_displayMode == 11 )
+	if ( m_displayMode == 12 )
 		m_testAnsiPatternButton.ShowWindow ( SW_SHOW );
 	else
 		m_testAnsiPatternButton.ShowWindow ( SW_HIDE );
@@ -4095,7 +4294,7 @@ DWORD CMainView::GetUserInfo ()
 		dwSubViewUserInfo = ( (CSavingView *) ( ( (CSubFrame *) m_pInfoWnd ) -> GetActiveView () ) ) -> GetUserInfo ();
 	}
 		
-	// m_displayMode: selected grid - between 0 and 11						-> bits 0-5		0-64
+	// m_displayMode: selected grid - between 0 and 12						-> bits 0-5		0-64
 	// m_displayType: selected unit - between 0 and 4						-> bits 6-9		0-16
 	// m_infoDisplay: selected information screen - between 0 and 8			-> bits 10-15	0-64
 	// m_nSizeOffset: window offset (grid added height) - between 0 and 105	-> bits 16-23	0-256

@@ -537,6 +537,7 @@ BOOL CKiGenerator::DisplayGray(double aLevel, MeasureType nPatternType, BOOL bCh
 				case MT_SAT_YELLOW:
 				case MT_SAT_CYAN:
 				case MT_SAT_MAGENTA:
+				case MT_SAT_CC24:
 				case MT_CALIBRATE:
 				case MT_SAT_ALL:
 					 // Cannot occur here
@@ -767,6 +768,12 @@ BOOL CKiGenerator::DisplayRGBColor( const ColorRGBDisplay& clrIn  ,MeasureType n
 
 				case MT_SAT_MAGENTA:
 					 str.LoadString ( IDS_SATMAGENTA2 );
+					 bFirstSaturationSecondary = TRUE;
+					 nFirstSaturationMenuPos = 4;
+					 break;
+
+				case MT_SAT_CC24:
+					 str.LoadString ( IDS_SATCC242 );
 					 bFirstSaturationSecondary = TRUE;
 					 nFirstSaturationMenuPos = 4;
 					 break;
@@ -1061,6 +1068,11 @@ BOOL CKiGenerator::CanDisplayScale ( MeasureType nScaleType, int nbLevels, BOOL 
 			if (nbLevels != SATURATIONLVLNUMBER)
 				returnvalue = FALSE;
 			break;
+
+		case MT_SAT_CC24:
+			if (nbLevels != 24)
+				returnvalue = FALSE;
+			break;
 		
 		case MT_SAT_ALL:
 			if ((nbLevels != SATURATIONLVLNUMBER) || ! ( m_OkCodeLength > 0 && m_DownCodeLength > 0 && m_RightCodeLength > 0 ))
@@ -1165,6 +1177,7 @@ switch ( nScaleType )
 			case MT_SAT_YELLOW:
 			case MT_SAT_CYAN:
 			case MT_SAT_MAGENTA:
+			case MT_SAT_CC24:
 				if (!m_patternCheckOnSaturations)
 					return	TRUE;
 
@@ -1213,6 +1226,10 @@ switch ( nScaleType )
 					break;
 				case MT_SAT_MAGENTA:
 					str2.LoadString ( IDS_MAGENTASATPERCENT );
+					str.Format(str2,m_lastPatternInfo);
+					break;
+				case MT_SAT_CC24:
+					str2.LoadString ( IDS_CC24SATPERCENT );
 					str.Format(str2,m_lastPatternInfo);
 					break;
 				case MT_PRIMARY:

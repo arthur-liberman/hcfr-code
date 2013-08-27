@@ -796,7 +796,7 @@ BEGIN
     GROUPBOX        "Delta E",IDC_STATIC,7,171,199,38,WS_GROUP
     CONTROL         "Use CIELUV instead of CIE94 delta E formula",IDC_CHECK_OLD_DELTAE,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,183,170,10
-    CONTROL         "Include L in grey scale delta E",IDC_CHECK_DELTAE_GRAY_LUMA,
+    CONTROL         "Include L in gray scale delta E",IDC_CHECK_DELTAE_GRAY_LUMA,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,195,181,10
 END
 
@@ -948,6 +948,7 @@ IDB_REFREDSAT_BITMAP BITMAP                  "res\\refredsat.bmp"
 IDB_REFYELLOWSAT_BITMAP BITMAP             "res\\refyellowsat.bmp"
 IDB_REFCYANSAT_BITMAP BITMAP               "res\\refcyansat.bmp"
 IDB_REFMAGENTASAT_BITMAP BITMAP            "res\\refmagentasat.bmp"
+IDB_REFCC24SAT_BITMAP BITMAP            "res\\refcc24sat.bmp"
 IDB_ILLUMINANTPOINT_BITMAP BITMAP                  "res\\illuminantplot.bmp"
 IDB_COLORTEMPPOINT_BITMAP BITMAP                  "res\\colortempplot.bmp"
 IDB_BLUEPRIMARY_BITMAP  BITMAP                  "res\\blueprimary.bmp"
@@ -974,6 +975,7 @@ IDB_SATBLUE             BITMAP                  "res\\satblue.bmp"
 IDB_SATYELLOW           BITMAP                  "res\\satyellow.bmp"
 IDB_SATCYAN             BITMAP                  "res\\satcyan.bmp"
 IDB_SATMAGENTA          BITMAP                  "res\\satmagenta.bmp"
+IDB_SATCC24          BITMAP                  "res\\sat_all.bmp"
 IDB_SATALL              BITMAP                  "res\\sat_all.bmp"
 IDR_MEDIUMTOOLBAR_MEASURES BITMAP                  "res\\tbmeasures.bmp"
 IDR_MEDIUMTOOLBAR_MEASURES_EX BITMAP                  "res\\tbmeasures_ex.bmp"
@@ -1220,6 +1222,8 @@ BEGIN
     IDC_GRAYSCALESTEPS_COMBOMODE, 0x403, 25, 0
 0x614d, 0x6567, 0x746e, 0x2061, 0x6173, 0x7574, 0x6172, 0x6974, 0x6e6f, 
 0x7320, 0x6163, 0x656c, "\000" 
+    IDC_GRAYSCALESTEPS_COMBOMODE, 0x403, 14, 0
+0x6F43, 0x6F6c, 0x2072, 0x6843, 0x6365, 0x656b, 0x0072,
     IDC_GRAYSCALESTEPS_COMBOMODE, 0x403, 9, 0
 0x6f43, 0x746e, 0x6172, 0x7473, "\000" 
     IDC_INFO_DISPLAY, 0x403, 9, 0
@@ -1672,6 +1676,7 @@ BEGIN
             MENUITEM "&Yellow",                     IDM_MEASURE_SAT_YELLOW
             MENUITEM "&Cyan",                       IDM_MEASURE_SAT_CYAN
             MENUITEM "&Magenta",                    IDM_MEASURE_SAT_MAGENTA
+			MENUITEM "&ColorChecker",				IDM_MEASURE_SAT_CC24
             MENUITEM SEPARATOR
             MENUITEM "&Primary colors",             IDM_MEASURE_SAT_PRIMARIES
             MENUITEM "&All colors",                 IDM_MEASURE_SAT_ALL
@@ -2133,6 +2138,7 @@ BEGIN
     BUTTON      IDM_MEASURE_SAT_YELLOW
     BUTTON      IDM_MEASURE_SAT_CYAN
     BUTTON      IDM_MEASURE_SAT_MAGENTA
+    BUTTON      IDM_MEASURE_SAT_CC24
     BUTTON      IDM_MEASURE_SAT_PRIMARIES
     BUTTON      IDM_MEASURE_SAT_ALL
     SEPARATOR
@@ -2174,6 +2180,7 @@ BEGIN
     BUTTON      IDM_MEASURE_SAT_YELLOW
     BUTTON      IDM_MEASURE_SAT_CYAN
     BUTTON      IDM_MEASURE_SAT_MAGENTA
+    BUTTON      IDM_MEASURE_SAT_CC24
 END
 
 
@@ -2658,6 +2665,30 @@ BEGIN
     IDS_CC6d				"Purplish Blue"
     IDS_CC6e                "Yellow Green"
     IDS_CC6f				"Orange Yellow"
+	IDS_CC_1				"Black"
+	IDS_CC_2				"Gray 35"
+	IDS_CC_3				"Gray 50"
+	IDS_CC_4				"Gray 65"
+	IDS_CC_5				"Gray 80"
+	IDS_CC_6				"White"
+	IDS_CC_7				"Dark skin"
+	IDS_CC_8				"Light skin"
+	IDS_CC_9				"Blue sky"
+	IDS_CC_10				"Foliage"
+	IDS_CC_11				"Blue flower"
+	IDS_CC_12				"Bluish green"
+	IDS_CC_13				"Orange"
+	IDS_CC_14				"Purplish blue"
+	IDS_CC_15				"Moderate red"
+	IDS_CC_16				"Purple"
+	IDS_CC_17				"Yellow green"
+	IDS_CC_18				"Orange yellow"
+	IDS_CC_19				"Blue"
+	IDS_CC_20				"Green"
+	IDS_CC_21				"Red"
+	IDS_CC_22				"Yellow"
+	IDS_CC_23				"Magenta"
+	IDS_CC_24				"Cyan"
     IDS_MEASURENEARBLACK    "Measure near black scale"
     IDS_MEASURENEARWHITE    "Measure near white scale"
     IDS_MEASURESATRED       "Measure saturations for Red"
@@ -2670,6 +2701,7 @@ STRINGTABLE
 BEGIN
     IDS_MEASURESATCYAN      "Measure saturations for Cyan"
     IDS_MEASURESATMAGENTA   "Measure saturations for Magenta"
+    IDS_MEASURESATCC24   "Measure Color Checker Patterns"
     IDS_GRAYSCALE           "Gray Scale"
     IDS_NEARBLACK           "Near Black Scale"
     IDS_NEARWHITE           "Near White Scale"
@@ -2679,6 +2711,7 @@ BEGIN
     IDS_SATYELLOW           "Yellow Saturation Scale"
     IDS_SATCYAN             "Cyan Saturation Scale"
     IDS_SATMAGENTA          "Magenta Saturation Scale"
+    IDS_SATCC24          "Color Checker Patterns"
     IDS_DELETENEARBLACK     "Delete near black scale"
     IDS_DELETENEARWHITE     "Delete near white scale"
     IDS_DELETESATRED        "Delete saturations for Red"
@@ -2747,6 +2780,7 @@ BEGIN
     IDS_YELLOWSATPERCENT    "Yellow Saturated at %d%%"
     IDS_CYANSATPERCENT      "Cyan Saturated at %d%%"
     IDS_MAGENTASATPERCENT   "Magenta Saturated at %d%%"
+    IDS_CC24SATPERCENT   "Color Checker at %d"
     IDS_REDSATPERCENTREF       "Red Saturated at %d%% reference"
     IDS_GREENSATPERCENTREF     "Green Saturated at %d%% reference"
     IDS_BLUESATPERCENTREF      "Blue Saturated at %d%% reference"
@@ -2835,6 +2869,7 @@ BEGIN
     IDS_PRIMARYCOLORS       "Primary colors"
     IDS_SECONDARYCOLORS     "Primary and secondary colors"
 	IDS_SATURATIONCOLORS	"Saturation colors"
+	IDS_CC24COLORS	"Color Checker colors"
     IDS_DVDPOS6             "Check you are on the 'sensor calibration' menu with\ncurrent selection on the first image."
     IDS_SATRED2             "Red Saturation"
     IDS_SATGREEN2           "Green Saturation"
@@ -2842,6 +2877,7 @@ BEGIN
     IDS_SATYELLOW2          "Yellow Saturation"
     IDS_SATCYAN2            "Cyan Saturation"
     IDS_SATMAGENTA2         "Magenta Saturation"
+    IDS_SATCC242         "Color Checker"
     IDS_CONFIRMCOLOR        "Check you are on the image corresponding to the color to measure."
     IDS_DVDPOS7             "Check you are on the PRIMARY saturation DVD menu\nwith current selection on the Red."
     IDS_DVDPOS8             "Check you are on the SECONDARY saturation DVD menu\nwith current selection on the Yellow."
@@ -3103,6 +3139,7 @@ BEGIN
     IDS_RUNSATYELLOWON      "Run saturation measures for yellow on"
     IDS_RUNSATCYANON        "Run saturation measures for cyan on"
     IDS_RUNSATMAGENTAON     "Run saturation measures for magenta on"
+    IDS_RUNSATCC24ON		"Run color checker patterns on"
     IDS_RUNALLSATON         "Run all saturation measures on"
     IDS_MEASUREGRAYANDCOLORSON 
                             "Run primary colors, secondary colors and gray scale measures on"
@@ -3129,6 +3166,7 @@ BEGIN
     IDM_MEASURE_SAT_YELLOW  "Measure yellow saturation scale\nMeasure yellow saturation scale"
     IDM_MEASURE_SAT_CYAN    "Measure cyan saturation scale\nMeasure cyan saturation scale"
     IDM_MEASURE_SAT_MAGENTA "Measure magenta saturation scale\nMeasure magenta saturation scale"
+    IDM_MEASURE_SAT_CC24 "Measure 24 Color Checker Patterns\nMeasure 24 Color Checker Patterns"
 END
 
 STRINGTABLE 

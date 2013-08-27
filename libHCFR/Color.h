@@ -382,6 +382,36 @@ public:
 		}
 		return luma;
 	}
+	double GetCC24ReferenceLuma (int nCol) const
+	{ 
+		double YLuma[24]={	0,
+					0.3506,
+					0.5013,
+					0.6496,
+					0.7922,
+					1.0,
+					0.0990,
+					0.3553,
+					0.1903,
+					0.1312,
+					0.2377,
+					0.4241,
+					0.2858,
+					0.1170,
+					0.1860,
+					0.0648,
+					0.4365,
+					0.4290,
+					0.0603,
+					0.2328,
+					0.1156,
+					0.5977,
+					0.1895,
+					0.1970
+};
+
+		return YLuma[nCol];
+	}
 
 #ifdef LIBHCFR_HAS_MFC
     void Serialize(CArchive& archive);
@@ -397,6 +427,7 @@ extern CColor noDataColor;
 
 // Tool functions
 extern void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int nSteps, bool bRed, bool bGreen, bool bBlue);
+extern void GenerateCC24Colors (ColorRGBDisplay* GenColors);
 extern Matrix ComputeConversionMatrix(const ColorXYZ measures[3], const ColorXYZ references[3], const ColorXYZ & WhiteTest, const ColorXYZ & WhiteRef, bool	bUseOnlyPrimaries);
 double ArrayIndexToGrayLevel ( int nCol, int nSize, bool m_bUseRoundDown);
 double GrayLevelToGrayProp ( double Level, bool m_bUseRoundDown );

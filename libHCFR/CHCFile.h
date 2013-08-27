@@ -43,6 +43,7 @@ private :
   list<CColor>    blueSaturationColors; // la liste contenant les mesures de saturation bleu
   list<CColor>    cyanSaturationColors; // la liste contenant les mesures de saturation cyan
   list<CColor>    magentaSaturationColors; // la liste contenant les mesures de saturation magenta
+  list<CColor>    cc24SaturationColors; // la liste contenant les mesures de saturation magenta
   list<CColor>    yellowSaturationColors; // la liste contenant les mesures de saturation yellow
   list<CColor>    freeMeasuresColors; // la liste contenant les mesures libres
   list<CColor>    componnentsColors; // la liste contenant les composantes dans l'ordre suivant :
@@ -68,6 +69,7 @@ public :
   list<CColor>& getBlueSaturationColors ();
   list<CColor>& getCyanSaturationColors ();
   list<CColor>& getMagentaSaturationColors ();
+  list<CColor>& getCC24SaturationColors ();
   list<CColor>& getYellowSaturationColors ();
   list<CColor>& getFreeMeasuresColors ();
   list<CColor>& getComponnentsColors ();
