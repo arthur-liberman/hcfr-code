@@ -2450,7 +2450,7 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
 
 	for(int i=0;i<size;i++)
 	{
-		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_CC24 ,!bRetry))
+		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_CC24 ,i,!bRetry))
 		{
 			bEscape = WaitForDynamicIris ();
 			bRetry = FALSE;

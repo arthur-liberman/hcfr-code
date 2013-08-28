@@ -2190,8 +2190,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,1,0,0
- PRODUCTVERSION 2,1,0,0
+ FILEVERSION 3,0,4,4
+ PRODUCTVERSION 3,0,4,4
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2780,7 +2780,7 @@ BEGIN
     IDS_YELLOWSATPERCENT    "Yellow Saturated at %d%%"
     IDS_CYANSATPERCENT      "Cyan Saturated at %d%%"
     IDS_MAGENTASATPERCENT   "Magenta Saturated at %d%%"
-    IDS_CC24SATPERCENT   "Color Checker at %d"
+    IDS_CC24SATPERCENT		"%s"
     IDS_REDSATPERCENTREF       "Red Saturated at %d%% reference"
     IDS_GREENSATPERCENTREF     "Green Saturated at %d%% reference"
     IDS_BLUESATPERCENTREF      "Blue Saturated at %d%% reference"

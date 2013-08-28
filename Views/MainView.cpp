@@ -1428,12 +1428,13 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 					if (GetConfig ()->m_bUseDeltaELumaOnGrays)
 					{
 						str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), true) );
+						dEavg+=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), true);
 					}
 					else
 					{
 						str.Format("%.1f",aMeasure.GetDeltaE ( aReference ));
-					}
 						dEavg+=aMeasure.GetDeltaE ( aReference );
+					}
 						dEcnt++;
 					}
 					else

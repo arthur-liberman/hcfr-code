@@ -115,7 +115,81 @@ BOOL CManualDVDGenerator::DisplayRGBColor( const ColorRGBDisplay& clrIn ,Measure
 				break;
 			case MT_SAT_CC24:
 				str3.LoadString ( IDS_CC24SATPERCENT );
-				str2.Format(str3,nPatternInfo);
+				switch ( nPatternInfo )
+				{
+				case 0:
+				str2.Format(str3,"Black");
+				break;
+				case 1:
+				str2.Format(str3,"Gray 35");
+				break;
+				case 2:
+				str2.Format(str3,"Gray 50");
+				break;
+				case 3:
+				str2.Format(str3,"Gray 65");
+				break;
+				case 4:
+				str2.Format(str3,"Gray 80");
+				break;
+				case 5:
+				str2.Format(str3,"White");
+				break;
+				case 6:
+				str2.Format(str3,"Dark skin");
+				break;
+				case 7:
+				str2.Format(str3,"Light skin");
+				break;
+				case 8:
+				str2.Format(str3,"Blue sky");
+				break;
+				case 9:
+				str2.Format(str3,"Foliage");
+				break;
+				case 10:
+				str2.Format(str3,"Blue flower");
+				break;
+				case 11:
+				str2.Format(str3,"Bluish green");
+				break;
+				case 12:
+				str2.Format(str3,"Orange");
+				break;
+				case 13:
+				str2.Format(str3,"Purplish blue");
+				break;
+				case 14:
+				str2.Format(str3,"Moderate red");
+				break;
+				case 15:
+				str2.Format(str3,"Purple");
+				break;
+				case 16:
+				str2.Format(str3,"Yellow green");
+				break;
+				case 17:
+				str2.Format(str3,"Orange yellow");
+				break;
+				case 18:
+				str2.Format(str3,"Blue");
+				break;
+				case 19:
+				str2.Format(str3,"Green");
+				break;
+				case 20:
+				str2.Format(str3,"Red");
+				break;
+				case 21:
+				str2.Format(str3,"Yellow");
+				break;
+				case 22:
+				str2.Format(str3,"Magenta");
+				break;
+				case 23:
+				str2.Format(str3,"Cyan");
+				break;
+				}
 				break;
 			case MT_PRIMARY:
 			case MT_SECONDARY: //needs fixing
@@ -141,12 +215,6 @@ BOOL CManualDVDGenerator::DisplayRGBColor( const ColorRGBDisplay& clrIn ,Measure
 			  }
 			  else
 			  {
-//199	147	129
-//92	122	155
-//91	108	68
-//129	128	175
-//158	189	65
-//229	161	44
 				if(GetRValue(clr) == 0 && GetGValue(clr) == 0 && GetBValue(clr) == 0)
 					str2.LoadString ( IDS_BLACK );
 				else if(GetRValue(clr) == GetGValue(clr) && GetGValue(clr) == GetBValue(clr))
