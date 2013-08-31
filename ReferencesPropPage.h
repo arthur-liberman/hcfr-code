@@ -48,6 +48,7 @@ public:
 	CComboBox	m_whiteTargetCombo;
 	int		m_whiteTarget;
 	int		m_colorStandard;
+	int		m_CCMode;
 	double	m_GammaRef;
 	BOOL	m_changeWhiteCheck;
 	int		m_GammaOffsetType;
@@ -75,6 +76,7 @@ protected:
 	afx_msg void OnChangeEditGammaRef();
 	afx_msg void OnChangeWhiteCheck();
 	afx_msg void OnSelchangeColorrefCombo();
+	afx_msg void OnSelchangeCCmodeCombo();
 	afx_msg void OnChangeEditGammaOffset();
 	afx_msg void OnChangeEditManualGOffset();
 	//}}AFX_MSG

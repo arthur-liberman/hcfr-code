@@ -242,6 +242,7 @@ CColorHCFRConfig::~CColorHCFRConfig()
 void CColorHCFRConfig::InitDefaults()
 {
 	m_colorStandard=HDTV;
+	m_CCMode=GCD;
 	m_whiteTarget=D65;
 	m_bDisplayTestColors=TRUE;
 	m_bContinuousMeasures=TRUE;
@@ -298,6 +299,7 @@ BOOL CColorHCFRConfig::LoadSettings()
 		m_BWColorsToAdd = 2;
 
 	m_colorStandard=(ColorStandard)GetProfileInt("References","ColorStandard",HDTV);
+	m_CCMode=(CCPatterns)GetProfileInt("References","CCMode",GCD);
 	m_whiteTarget=(WhiteTarget)GetProfileInt("References","WhiteTarget",D65);
 	m_bDisplayTestColors=GetProfileInt("References","DisplayTestColors",1);
 	m_bContinuousMeasures=GetProfileInt("References","ContinuousMeasures",1);
@@ -309,7 +311,6 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_bLatencyBeep=GetProfileInt("References","IrisLatencyBeep",0);
 	m_bUseRoundDown=GetProfileInt("References","SatUseMeasuredRef",0);
 	m_GammaRef=GetProfileDouble("References","GammaRefValue",2.22);
-
 	m_GammaOffsetType=GetProfileInt("References","GammaOffsetType",4);
 	m_manualGOffset=GetProfileDouble("References","ManualGamOffset",0.099);
 
@@ -355,6 +356,7 @@ void CColorHCFRConfig::SaveSettings()
 	WriteProfileInt("References","GammaOffsetType",m_GammaOffsetType);
 	WriteProfileDouble("References","ManualGamOffset",m_manualGOffset);
 	WriteProfileInt("References","ColorStandard",m_colorStandard);
+	WriteProfileInt("References","CCMode",m_CCMode);
 	WriteProfileInt("References","WhiteTarget",m_whiteTarget);
 	WriteProfileInt("References","DisplayTestColors",m_bDisplayTestColors);
 	WriteProfileInt("References","ContinuousMeasures",m_bContinuousMeasures);
@@ -411,6 +413,7 @@ void CColorHCFRConfig::SetPropertiesSheetValues()
 	m_generalPropertiesPage.m_isModified=FALSE;
 
 	m_referencesPropertiesPage.m_colorStandard=m_colorStandard;
+	m_referencesPropertiesPage.m_CCMode=m_CCMode;
 	m_referencesPropertiesPage.m_whiteTarget=m_whiteTarget;
   	m_referencesPropertiesPage.m_GammaRef=m_GammaRef;
 	m_referencesPropertiesPage.m_manualGOffset=m_manualGOffset;
@@ -493,6 +496,7 @@ BOOL CColorHCFRConfig::GetPropertiesSheetValues()
 	m_bUseRoundDown=m_generalPropertiesPage.m_bUseRoundDown;
 
 	m_colorStandard=(ColorStandard)(m_referencesPropertiesPage.m_colorStandard);
+	m_CCMode=(CCPatterns)(m_referencesPropertiesPage.m_CCMode);
 	m_whiteTarget=(WhiteTarget)m_referencesPropertiesPage.m_whiteTarget;
 	m_GammaRef=m_referencesPropertiesPage.m_GammaRef;
 	m_manualGOffset=m_referencesPropertiesPage.m_manualGOffset;

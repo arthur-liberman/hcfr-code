@@ -2158,7 +2158,7 @@ void CMainView::UpdateGrid()
 				case 11:
 					 aColor = GetDocument()->GetMeasure()->GetCC24Sat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefCC24Sat(j);
-					 YWhite = GetDocument()->GetMeasure()->GetCC24Sat(5).GetY();
+					 YWhite = (GetConfig()->m_CCMode==GCD?GetDocument()->GetMeasure()->GetCC24Sat(5).GetY():YWhiteOnOff);
 
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetCC24Sat(j);

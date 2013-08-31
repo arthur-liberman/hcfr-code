@@ -41,6 +41,7 @@ CReferencesPropPage::CReferencesPropPage() : CPropertyPageWithHelp(CReferencesPr
 	//{{AFX_DATA_INIT(CReferencesPropPage)
 	m_whiteTarget = 0;
 	m_colorStandard = 1;
+	m_CCMode = GCD;
 	m_GammaRef = 2.22;
 	m_changeWhiteCheck = FALSE;
 	m_GammaOffsetType = 1;
@@ -62,6 +63,7 @@ void CReferencesPropPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_WHITETARGET_COMBO, m_whiteTargetCombo);
 	DDX_CBIndex(pDX, IDC_WHITETARGET_COMBO, m_whiteTarget);
 	DDX_CBIndex(pDX, IDC_COLORREF_COMBO, m_colorStandard);
+	DDX_CBIndex(pDX, IDC_CCMODE_COMBO, m_CCMode);
   	DDX_Text(pDX, IDC_EDIT_GAMMA_REF, m_GammaRef);
 	DDV_MinMaxDouble(pDX, m_GammaRef, 1., 5.);
 	DDX_Check(pDX, IDC_CHANGEWHITE_CHECK, m_changeWhiteCheck);
@@ -81,6 +83,7 @@ BEGIN_MESSAGE_MAP(CReferencesPropPage, CPropertyPageWithHelp)
 	ON_EN_CHANGE(IDC_EDIT_GAMMA_REF, OnChangeEditGammaRef)
 	ON_BN_CLICKED(IDC_CHANGEWHITE_CHECK, OnChangeWhiteCheck)
 	ON_CBN_SELCHANGE(IDC_COLORREF_COMBO, OnSelchangeColorrefCombo)
+	ON_CBN_SELCHANGE(IDC_CCMODE_COMBO, OnSelchangeCCmodeCombo)
 	ON_EN_CHANGE(IDC_EDIT_MANUAL_GOFFSET, OnChangeEditManualGOffset)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -181,6 +184,14 @@ void CReferencesPropPage::OnSelchangeColorrefCombo()
 	if(!m_changeWhiteCheck) // Restore default white
 		m_whiteTarget=(int)(GetStandardColorReference((ColorStandard)(m_colorStandard)).m_white);
 	UpdateData(FALSE);	
+}
+
+void CReferencesPropPage::OnSelchangeCCmodeCombo() 
+{
+	m_isModified=TRUE;
+	SetModified(TRUE);
+//	UpdateData(TRUE);	
+//	UpdateData(FALSE);	
 }
 
 void CReferencesPropPage::OnChangeEditGammaOffset() 

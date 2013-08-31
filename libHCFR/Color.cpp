@@ -1393,8 +1393,16 @@ void CSpectrum::Serialize(CArchive& archive)
 	}
 }
 #endif
-void GenerateCC24Colors (ColorRGBDisplay* GenColors)
+void GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 {
+	//four cases, one for GCD sequence, one for Mascior's disk (Chromapure based), and two different generator only cases
+	//GCD
+	//MCD
+	switch (aCCMode)
+	{
+	case 0:
+		{
+//GCD
         GenColors [ 0 ] = ColorRGBDisplay( 0, 0, 0 );
         GenColors [ 1 ] = ColorRGBDisplay( 62, 62, 62 );
         GenColors [ 2 ] = ColorRGBDisplay( 73, 73, 73 );
@@ -1419,6 +1427,46 @@ void GenerateCC24Colors (ColorRGBDisplay* GenColors)
         GenColors [ 21 ] = ColorRGBDisplay( 93.15, 78.08, 12.79 );
         GenColors [ 22 ] = ColorRGBDisplay( 73.06, 32.88, 57.08);
         GenColors [ 23 ] = ColorRGBDisplay( 0, 52.05, 63.93);
+		break;
+		}
+	case 1:
+		{
+	 	GenColors [ 23 ] = ColorRGBDisplay( 21, 20.5, 21 );
+        GenColors [ 22 ] = ColorRGBDisplay( 32.88, 32.88, 32.88 );
+        GenColors [ 21 ] = ColorRGBDisplay( 47.49, 47.49, 47.03 );
+        GenColors [ 20 ] = ColorRGBDisplay( 62.56, 62.56, 62.56 );
+        GenColors [ 19 ] = ColorRGBDisplay( 78.54, 78.54, 78.54 );
+        GenColors [ 18 ] = ColorRGBDisplay( 94.98, 94.98, 94.98 );
+        GenColors [ 0 ] = ColorRGBDisplay( 44.74, 31.51, 26.03 );
+        GenColors [ 1 ] = ColorRGBDisplay( 75.80, 58.45, 50.68 );
+        GenColors [ 2 ] = ColorRGBDisplay( 36.99, 47.95, 60.73 );
+        GenColors [ 3 ] = ColorRGBDisplay( 34.70,42.47,26.48);
+        GenColors [ 4 ] = ColorRGBDisplay( 50.68,50.22,68.49);
+        GenColors [ 5 ] = ColorRGBDisplay( 39.27,73.97,66.21 );
+        GenColors [ 6 ] = ColorRGBDisplay( 84.47,47.49,16.44);
+        GenColors [ 7 ] = ColorRGBDisplay( 28.77,35.62,64.38);
+        GenColors [ 8 ] = ColorRGBDisplay( 75.80, 33.33,38.36 );
+        GenColors [ 9 ] = ColorRGBDisplay( 36.07, 24.20, 42.01);
+        GenColors [ 10 ] = ColorRGBDisplay( 62.10, 73.06, 24.66 );
+        GenColors [ 11 ] = ColorRGBDisplay( 89.95, 63.47, 18.26 );
+        GenColors [ 12 ] = ColorRGBDisplay( 19.63, 24.20, 59.36);
+        GenColors [ 13 ] = ColorRGBDisplay( 28.31, 57.99, 27.85);
+        GenColors [ 14 ] = ColorRGBDisplay( 68.95, 19.18, 22.83);
+        GenColors [ 15 ] = ColorRGBDisplay( 93.15, 78.08, 12.79 );
+        GenColors [ 16 ] = ColorRGBDisplay( 72.61, 32.42, 57.53);
+        GenColors [ 17 ] = ColorRGBDisplay( 11.87, 51.60, 59.82);
+		break;
+		}
+/*	case 2:
+		{
+		}
+		//axis steps
+	case 3:
+		{
+		}
+		//OFPS*/
+	}
+
 }
 
 

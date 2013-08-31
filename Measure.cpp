@@ -202,7 +202,7 @@ void CMeasure::Serialize(CArchive& ar)
 
 	if (ar.IsStoring())
 	{
-	    int version=7;
+	    int version=8;
 		ar << version;
 
 		ar << m_grayMeasureArray.GetSize();
@@ -274,7 +274,7 @@ void CMeasure::Serialize(CArchive& ar)
 	    int version;
 		ar >> version;
 
-		if ( version > 7 )
+		if ( version > 8 )
 			AfxThrowArchiveException ( CArchiveException::badSchema );
 
 		int size;
@@ -283,7 +283,7 @@ void CMeasure::Serialize(CArchive& ar)
 		m_grayMeasureArray.SetSize(size);
 		for(int i=0;i<m_grayMeasureArray.GetSize();i++)
 			m_grayMeasureArray[i].Serialize(ar);
-
+					
 		if ( version > 2 )
 		{
 			ar >> size;
@@ -338,10 +338,15 @@ void CMeasure::Serialize(CArchive& ar)
 			m_magentaSatMeasureArray.SetSize(size);
 			for(int i=0;i<m_magentaSatMeasureArray.GetSize();i++)
 				m_magentaSatMeasureArray[i].Serialize(ar);
-			ar >> size;
-			m_cc24SatMeasureArray.SetSize(size);
-			for(int i=0;i<m_cc24SatMeasureArray.GetSize();i++)
-				m_cc24SatMeasureArray[i].Serialize(ar);
+
+			if ( version > 7)
+			{
+				ar >> size;
+				m_cc24SatMeasureArray.SetSize(size);
+				for(int i=0;i<m_cc24SatMeasureArray.GetSize();i++)
+					m_cc24SatMeasureArray[i].Serialize(ar);
+			}
+
 		}
 		else
 		{
@@ -2429,8 +2434,27 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
 		GetColorApp()->InMeasureMessageBox(strMsg,Title,MB_ICONERROR | MB_OK);
 		return FALSE;
 	}
+	// Generate saturation colors for color checker
+	CGenerator::MeasureType nPattern;
+	switch (GetConfig()->m_CCMode)
+	{
+	case GCD:
+		 nPattern=CGenerator::MT_SAT_CC24_GCD;
+		 break;
+	case MCD:
+		 nPattern=CGenerator::MT_SAT_CC24_MCD;		
+		 break;
+	case GRID:
+		 nPattern=CGenerator::MT_SAT_CC24_MCD;		
+		 size=80;
+		 break;
+	case OFPS:
+		 nPattern=CGenerator::MT_SAT_CC24_MCD;
+		 size=256;
+		 break;
+	}
 
-	if(pGenerator->CanDisplayScale ( CGenerator::MT_SAT_CC24, size ) != TRUE)
+	if(pGenerator->CanDisplayScale ( nPattern, size ) != TRUE)
 	{
 		pGenerator->Release();
 		return FALSE;
@@ -2445,12 +2469,12 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
 		return FALSE;
 	}
 
-	// Generate saturation colors for color checker
-	GenerateCC24Colors (GenColors);
+
+	GenerateCC24Colors (GenColors, GetConfig()->m_CCMode);
 
 	for(int i=0;i<size;i++)
 	{
-		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_CC24 ,i,!bRetry))
+		if( pGenerator->DisplayRGBColor(GenColors[i], nPattern ,i,!bRetry))
 		{
 			bEscape = WaitForDynamicIris ();
 			bRetry = FALSE;
@@ -2520,7 +2544,7 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
 	
 				if(i != 0)
 				{
-					if (!pGenerator->HasPatternChanged(CGenerator::MT_SAT_CC24,previousColor,lastColor))
+					if (!pGenerator->HasPatternChanged(nPattern,previousColor,lastColor))
 					{
 						i--;
 						bPatternRetry = TRUE;
@@ -2566,6 +2590,21 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 	CString		strMsg, Title;
 	ColorRGBDisplay	GenColors [ 7 * 256 ];
 	double		dLuxValue;
+	CGenerator::MeasureType nPattern;
+	switch (GetConfig()->m_CCMode)
+	{
+	case MCD:
+		 nPattern=CGenerator::MT_SAT_CC24_MCD;
+		 break;
+	case GCD:
+		 nPattern=CGenerator::MT_SAT_CC24_GCD;		
+		 break;
+	case GRID:
+		 nPattern=CGenerator::MT_SAT_CC24_GCD;		
+		 break;
+	case OFPS:
+		 nPattern=CGenerator::MT_SAT_CC24_GCD;		
+	}
 	
 	CGenerator::MeasureType	SaturationType [ 7 ] =
 							{
@@ -2575,7 +2614,7 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 								CGenerator::MT_SAT_YELLOW,
 								CGenerator::MT_SAT_CYAN,
 								CGenerator::MT_SAT_MAGENTA,
-								CGenerator::MT_SAT_CC24
+								nPattern
 							};
 
 	CArray<CColor,int> measuredColor;
@@ -2617,13 +2656,13 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 3 ], size, true, true, false );	// Yellow
 	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 4 ], size, false, true, true );	// Cyan
 	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 5 ], size, true, false, true );	// Magenta
-	GenerateCC24Colors (& GenColors [ size * 6 ]); //color checker
+	GenerateCC24Colors (& GenColors [ size * 6 ], GetConfig()->m_CCMode); //color checker
 
 	for ( j = 0 ; j < ( bPrimaryOnly ? 3 : 7 ) ; j ++ )
 	{
 		for ( i = 0 ; i < ( j == 6 ? 24 : size ) ; i ++ )
 		{
-			if( pGenerator->DisplayRGBColor(GenColors[(j*size)+i],SaturationType[j],(j == 6 ? 0:100*i/(size - 1)),!bRetry,(j>0)) )
+			if( pGenerator->DisplayRGBColor(GenColors[(j*size)+i],SaturationType[j],(j == 6 ? i:100*i/(size - 1)),!bRetry,(j>0)) )
 			{
 				bEscape = WaitForDynamicIris ();
 				bRetry = FALSE;
@@ -4653,7 +4692,48 @@ CColor CMeasure::GetMagentaSat(int i) const
 
 CColor CMeasure::GetCC24Sat(int i) const 
 { 
-	return m_cc24SatMeasureArray[i]; 
+	CColor ColorOrder[256];
+
+	switch (GetConfig()->m_CCMode)
+	{
+	case GCD:
+		ColorOrder[i]=m_cc24SatMeasureArray[i];
+		 break;
+	case MCD:
+		ColorOrder[0]=m_cc24SatMeasureArray[23];
+		ColorOrder[1]=m_cc24SatMeasureArray[22];
+		ColorOrder[2]=m_cc24SatMeasureArray[21];
+		ColorOrder[3]=m_cc24SatMeasureArray[20];
+		ColorOrder[4]=m_cc24SatMeasureArray[19];
+		ColorOrder[5]=m_cc24SatMeasureArray[18];
+		ColorOrder[6]=m_cc24SatMeasureArray[6];
+		ColorOrder[7]=m_cc24SatMeasureArray[7];
+		ColorOrder[8]=m_cc24SatMeasureArray[8];
+		ColorOrder[9]=m_cc24SatMeasureArray[9];
+		ColorOrder[10]=m_cc24SatMeasureArray[10];
+		ColorOrder[11]=m_cc24SatMeasureArray[11];
+		ColorOrder[12]=m_cc24SatMeasureArray[12];
+		ColorOrder[13]=m_cc24SatMeasureArray[13];
+		ColorOrder[14]=m_cc24SatMeasureArray[14];
+		ColorOrder[15]=m_cc24SatMeasureArray[15];
+		ColorOrder[16]=m_cc24SatMeasureArray[16];
+		ColorOrder[17]=m_cc24SatMeasureArray[17];
+		ColorOrder[18]=m_cc24SatMeasureArray[18];
+		ColorOrder[19]=m_cc24SatMeasureArray[19];
+		ColorOrder[20]=m_cc24SatMeasureArray[20];
+		ColorOrder[21]=m_cc24SatMeasureArray[21];
+		ColorOrder[22]=m_cc24SatMeasureArray[22];
+		ColorOrder[23]=m_cc24SatMeasureArray[23];
+		 break;
+	case GRID:
+		ColorOrder[i]=m_cc24SatMeasureArray[i];
+		 break;
+	case OFPS:
+		ColorOrder[i]=m_cc24SatMeasureArray[i];
+		break;
+	}
+
+	return ColorOrder[i]; 
 } 
 
 CColor CMeasure::GetPrimary(int i) const 
@@ -4847,7 +4927,7 @@ CColor CMeasure::GetRefSat(int i, double sat_percent) const
 CColor CMeasure::GetRefCC24Sat(int i) const
 {
 	CColor aColor;
-	CColor ccRef[24] = { 
+	CColor ccRef1[24] = { 
 		CColor(0.3130, 0.3290),
 		CColor(0.3130, 0.3290),
 		CColor(0.3130, 0.3290), 
@@ -4874,7 +4954,7 @@ CColor CMeasure::GetRefCC24Sat(int i) const
 		CColor(0.2080, 0.2690)
 	};
 //luma values for 2.2 gamma		
-double YLuma[24]={	0,
+double YLuma1[24]={	0,
 					0.3506,
 					0.5013,
 					0.6496,
@@ -4898,8 +4978,69 @@ double YLuma[24]={	0,
 					0.5977,
 					0.1895,
 					0.1970
-};
+				};
+	CColor ccRef2[24] = { 
+		CColor(0.4050, 0.3620), 
+		CColor(0.3800, 0.3560), 
+		CColor(0.2500, 0.2670), 
+		CColor(0.3380, 0.4320), 
+		CColor(0.2680, 0.2540), 
+		CColor(0.2620, 0.3590), 
+		CColor(0.5110, 0.4110), 
+		CColor(0.2120, 0.1850), 
+		CColor(0.4610, 0.3120), 
+		CColor(0.2880, 0.2160), 
+		CColor(0.3780, 0.4970), 
+		CColor(0.4730, 0.4430), 
+		CColor(0.1870, 0.1330), 
+		CColor(0.3060, 0.4940), 
+		CColor(0.5470, 0.3190), 
+		CColor(0.4480, 0.4760), 
+		CColor(0.3710, 0.2410), 
+		CColor(0.2130, 0.2850),
+		CColor(0.3160, 0.3340),
+		CColor(0.3140, 0.3300),
+		CColor(0.3130, 0.3290), 
+		CColor(0.3140, 0.3310), 
+		CColor(0.3130, 0.3290), 
+		CColor(0.3130, 0.3240) 
+	};
+//luma values for 2.2 gamma		
+double YLuma2[24]={	
+					0.0963,
+					0.3512,
+					0.1899,
+					0.1333,
+					0.2363,
+					0.4248,
+					0.2870,
+					0.1150,
+					0.1882,
+					0.0648,
+					0.4364,
+					0.4333,
+					0.0604,
+					0.2332,
+					0.1156,
+					0.5977,
+					0.1865,
+					0.1901,
+					0.8827,
+					0.5872,
+					0.3563,
+					0.1940,
+					0.0865,
+					0.0312
+				};
+	switch(GetConfig()->m_CCMode)
+	{
+	case GCD:
+	aColor.SetxyYValue (ccRef1[i].GetxyYValue()[0], ccRef1[i].GetxyYValue()[1], YLuma1[i]);	
+	break;		
+	case MCD:
+	aColor.SetxyYValue (ccRef2[i].GetxyYValue()[0], ccRef2[i].GetxyYValue()[1], YLuma2[i]);	
+	break;		
+	}
 
-	aColor.SetxyYValue (ccRef[i].GetxyYValue()[0], ccRef[i].GetxyYValue()[1], YLuma[i]);	
 	return aColor;
 }

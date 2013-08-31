@@ -2363,10 +2363,25 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 break;
 
 		case 9:
+			CGenerator::MeasureType nPattern;
+			switch (GetConfig()->m_CCMode)
+			{
+				case MCD:
+				 nPattern=CGenerator::MT_SAT_CC24_MCD;
+				 break;
+				case GCD:
+				nPattern=CGenerator::MT_SAT_CC24_GCD;		
+				 break;
+				case GRID:
+				nPattern=CGenerator::MT_SAT_CC24_GCD;		
+				 break;
+				case OFPS:
+				nPattern=CGenerator::MT_SAT_CC24_GCD;		
+			}
 			 nSteps = 24;
 			 nMaxSteps = nSteps;
-			 mType [ 0 ] = CGenerator::MT_SAT_CC24;
-			 GenerateCC24Colors (GenColors );
+			 mType [ 0 ] = nPattern;
+			 GenerateCC24Colors (GenColors, GetConfig()->m_CCMode );
 			 pValidationFunc = &CMeasure::ValidateBackgroundCC24SatScale;
 			 lHint = UPD_CC24SAT;
 			 break;
@@ -3253,7 +3268,23 @@ void CDataSetDoc::OnUpdateMeasureSatMagenta(CCmdUI* pCmdUI)
 
 void CDataSetDoc::OnUpdateMeasureSatCC24(CCmdUI* pCmdUI) 
 {
-	pCmdUI -> Enable ( m_pGenerator -> CanDisplayScale ( CGenerator::MT_SAT_CC24, 24, TRUE ) );
+		CGenerator::MeasureType nPattern;
+	switch (GetConfig()->m_CCMode)
+	{
+	case MCD:
+		 nPattern=CGenerator::MT_SAT_CC24_MCD;
+		 break;
+	case GCD:
+		 nPattern=CGenerator::MT_SAT_CC24_GCD;		
+		 break;
+	case GRID:
+		 nPattern=CGenerator::MT_SAT_CC24_GCD;		
+		 break;
+	case OFPS:
+		 nPattern=CGenerator::MT_SAT_CC24_GCD;		
+	}
+
+	pCmdUI -> Enable ( m_pGenerator -> CanDisplayScale ( nPattern, (nPattern<2?24:(nPattern==2?80:256)), TRUE ) );
 }
 
 void CDataSetDoc::OnMeasureContrast() 

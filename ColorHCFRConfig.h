@@ -58,6 +58,7 @@ public:
 
 	// Color settings
 	ColorStandard m_colorStandard;
+	CCPatterns	m_CCMode;
 	WhiteTarget m_whiteTarget;
 	BOOL m_bDisplayTestColors;
 	BOOL m_bContinuousMeasures;

@@ -938,7 +938,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 
 	if(m_doShowSaturationScale) 
 	{
-			CString str;
+			CString str,cc24str;
 		for(int i=0;i<pDoc->GetMeasure()->GetSaturationSize();i++)
 		{
 
