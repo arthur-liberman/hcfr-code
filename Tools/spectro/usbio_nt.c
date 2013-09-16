@@ -25,7 +25,7 @@
 #include <setupapi.h>
 #include <driver_api.h>
 
-#define DEBUG		/* Turn on debug messages */
+#undef DEBUG		/* Turn on debug messages */
 
 #define LIBUSBW1_MAX_DEVICES 255
 #define LIBUSBW1_PATH_MAX 512
@@ -117,7 +117,8 @@ icompaths *p
 		unsigned char buf[IUSB_DESC_TYPE_DEVICE_SIZE];
 
 		_snprintf(dpath, LIBUSBW1_PATH_MAX - 1,"\\\\.\\libusb0-%04d", i+1);
-		a1logd(p->log, 6, "usb_get_paths opening device '%s'\n",dpath);
+		if (i < 16) 	/* Suppress messages on unlikely ports */
+			a1logd(p->log, 6, "usb_get_paths opening device '%s'\n",dpath);
 
 		if ((handle = CreateFile(dpath, 0, 0, NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED,
 		                                                    NULL)) == INVALID_HANDLE_VALUE) {
@@ -269,7 +270,7 @@ icompaths *p
 						usbd->EPINFO(ad).addr = ad;
 						usbd->EPINFO(ad).packetsize = buf2ushort(bp + 4);
 						usbd->EPINFO(ad).type = bp[3] & IUSB_ENDPOINT_TYPE_MASK;
-						usbd->EPINFO(ad).interface = ifaceno;
+						usbd->EPINFO(ad).interfacenum = ifaceno;
 						a1logd(p->log, 6, "set ep ad 0x%x packetsize %d type %d\n",ad,usbd->EPINFO(ad).packetsize,usbd->EPINFO(ad).type);
 					}
 				}
@@ -323,6 +324,8 @@ icompaths *p
 			/* Add the path and ep info to the list */
 			if ((rv = p->add_usb(p, pname, vid, pid, nep10, usbd, itype)) != ICOM_OK)
 				return rv;
+
+
 		} else {
 			free(usbd);
 		}
@@ -408,10 +411,6 @@ void usb_close_port(icoms *p) {
 			}
 		}
 		CloseHandle(p->usbd->handle);
-
-		free(p->usbd->dpath);
-		free(p->usbd);
-		p->usbd = NULL;
 
 		a1logd(p->log, 6, "usb_close_port: usb port has been released and closed\n");
 	}
@@ -565,6 +564,7 @@ char **pnames		/* List of process names to try and kill before opening */
 /*  -------------------------------------------------------------- */
 
 /* Our universal USB transfer function */
+/* It appears that we may return a timeout with valid characters. */
 static int icoms_usb_transaction(
 	icoms *p,
 	usb_cancelt *cancelt,
@@ -596,12 +596,6 @@ static int icoms_usb_transaction(
 	if ((olaps.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL)) == NULL)
 		return ICOM_SYS;
 	
-	if (cancelt != NULL) {
-		usb_lock_cancel(cancelt);
-		cancelt->hcancel = (void *)&endpoint;
-		usb_unlock_cancel(cancelt);
-	}
-
 	memset(&req, 0, sizeof(libusb_request));
 	req.endpoint.endpoint = endpoint;
 
@@ -616,9 +610,17 @@ static int icoms_usb_transaction(
 			goto done;
 		}
 
+		if (cancelt != NULL) {
+			amutex_lock(cancelt->cmtx);
+			cancelt->hcancel = (void *)&endpoint;
+			cancelt->state = 1;
+			amutex_unlock(cancelt->cond);		/* Signal any thread waiting for IO start */
+			amutex_unlock(cancelt->cmtx);
+		}
+
 		if (WaitForSingleObject(olaps.hEvent, timeout) == WAIT_TIMEOUT) {
 
-			/* Cancel the operation */
+			/* Cancel the operation, because it timed out */
 			memset(&req, 0, sizeof(libusb_request));
 			req.endpoint.endpoint = endpoint;
 			req.timeout = LIBUSBW1_DEFAULT_TIMEOUT;
@@ -638,9 +640,12 @@ static int icoms_usb_transaction(
 	}
 done:;
 	if (cancelt != NULL) {
-		usb_lock_cancel(cancelt);
+		amutex_lock(cancelt->cmtx);
 		cancelt->hcancel = (void *)NULL;
-		usb_unlock_cancel(cancelt);
+		if (cancelt->state == 0)
+			amutex_unlock(cancelt->cond);		/* Make sure this gets unlocked */
+		cancelt->state = 2;
+		amutex_unlock(cancelt->cmtx);
 	}
 
 	CloseHandle(olaps.hEvent);
@@ -815,7 +820,7 @@ int icoms_usb_cancel_io(
 	usb_cancelt *cancelt
 ) {
 	int rv = ICOM_OK;
-	usb_lock_cancel(cancelt);
+	amutex_lock(cancelt->cmtx);
 	if (cancelt->hcancel != NULL) {
 		libusb_request req;
 
@@ -828,7 +833,7 @@ int icoms_usb_cancel_io(
 			a1logd(p->log, 1, "icoms_usb_cancel_io: failed with 0x%x\n",rv);
 		}
 	}
-	usb_unlock_cancel(cancelt);
+	amutex_unlock(cancelt->cmtx);
 
 	return rv;
 }

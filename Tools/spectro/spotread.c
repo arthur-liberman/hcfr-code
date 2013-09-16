@@ -287,10 +287,10 @@ usage(char *diag, ...) {
 	fprintf(stderr," -t                   Use transmission measurement mode\n");
 	fprintf(stderr," -e                   Use emissive measurement mode (absolute results)\n");
 	fprintf(stderr," -eb                  Use display white brightness relative measurement mode\n");
-	fprintf(stderr," -ew                  Use display white relative measurement mode\n");
+	fprintf(stderr," -ew                  Use display white point relative chromatically adjusted mode\n");
 	fprintf(stderr," -p                   Use telephoto measurement mode (absolute results)\n");
 	fprintf(stderr," -pb                  Use projector white brightness relative measurement mode\n");
-	fprintf(stderr," -pw                  Use projector white relative measurement mode\n");
+	fprintf(stderr," -pw                  Use projector white point relative chromatically adjusted mode\n");
 	fprintf(stderr," -a                   Use ambient measurement mode (absolute results)\n");
 	fprintf(stderr," -f                   Use ambient flash measurement mode (absolute results)\n");
 	cap2 = inst_show_disptype_options(stderr, " -y                   ", icmps, 0);
@@ -334,6 +334,7 @@ usage(char *diag, ...) {
 		fprintf(stderr," -X file.ccss         Use Colorimeter Calibration Spectral Samples for calibration\n");
 	}
 	fprintf(stderr," -Y r|n               Override refresh, non-refresh display mode\n");
+	fprintf(stderr," -Y R:rate            Override measured refresh rate with rate Hz\n");
 	fprintf(stderr," -Y A                 Use non-adaptive integration time mode (if available).\n");
 //	fprintf(stderr," -Y U                 Test i1pro2 UV measurement mode\n");
 	fprintf(stderr," -W n|h|x             Override serial port flow control: n = none, h = HW, x = Xon/Xoff\n");
@@ -361,7 +362,8 @@ int main(int argc, char *argv[]) {
 	int ambient = 0;				/* 1 = Use ambient emissive mode, 2 = ambient flash mode */
 	int highres = 0;				/* Use high res mode if available */
 	int uvmode = 0;					/* ~~~ i1pro2 test mode ~~~ */
-	int refrmode = -1;				/* -1 = default, 0 = non-refresh mode, 1 = non-refresh mode */
+	int refrmode = -1;				/* -1 = default, 0 = non-refresh mode, 1 = refresh mode */
+	double refrate = 0.0;			/* 0.0 = default, > 0.0 = override refresh rate */ 
 	int nadaptive = 0;				/* Use non-apative mode if available */
 	int doYxy= 0;					/* Display Yxy instead of Lab */
 	int doLCh= 0;					/* Display LCh instead of Lab */
@@ -398,6 +400,7 @@ int main(int argc, char *argv[]) {
 	xsp2cie *sp2cie = NULL;			/* default conversion */
 	xsp2cie *sp2cief[26];			/* FWA corrected conversions */
 	double wXYZ[3] = { -10.0, 0, 0 };/* White XYZ for display white relative */
+	double chmat[3][3];				/* Chromatic adapation matrix */
 	double Lab[3] = { -10.0, 0, 0};	/* Last Lab */
 	double rXYZ[3] = { 0.0, -10.0, 0};	/* Reference XYZ */
 	double rLab[3] = { -10.0, 0, 0};	/* Reference Lab */
@@ -702,6 +705,31 @@ int main(int argc, char *argv[]) {
 				if (na == NULL) usage("Parameter expected after -K");
 				strncpy(ccxxname,na,MAXNAMEL-1); ccxxname[MAXNAMEL-1] = '\000';
 
+			/* Extra flags */
+			} else if (argv[fa][1] == 'Y') {
+				if (na == NULL)
+					usage("Parameter expected after -Y");
+			
+				if (na[0] == 'A') {
+					nadaptive = 1;
+				} else if (na[0] == 'r') {
+					refrmode = 1;
+				} else if (na[0] == 'n') {
+					refrmode = 0;
+				} else if (na[0] == 'R') {
+					if (na[1] != ':')
+						usage("-Y R:rate syntax incorrect");
+					refrate = atof(na+2);
+					if (refrate < 5.0 || refrate > 150.0)
+						usage("-Y R:rate %f Hz not in valid range",refrate);
+				/* ~~~ i1pro2 test code ~~~ */
+				} else if (na[0] == 'U') {
+					uvmode = 1;
+				} else {
+					usage("-Y parameter '%c' not recognised",na[0]);
+				}
+				fa = nfa;
+
 			/* Serial port flow control */
 			} else if (argv[fa][1] == 'W') {
 				fa = nfa;
@@ -714,24 +742,6 @@ int main(int argc, char *argv[]) {
 					fc = fc_XonXOff;
 				else
 					usage("-W parameter '%c' not recognised",na[0]);
-
-			/* Extra flags */
-			} else if (argv[fa][1] == 'Y') {
-				if (na == NULL)
-					usage("Parameter expected after -Y");
-			
-				if (na[0] == 'A') {
-					nadaptive = 1;
-				} else if (na[0] == 'r') {
-					refrmode = 1;
-				} else if (na[0] == 'n') {
-					refrmode = 0;
-				/* ~~~ i1pro2 test code ~~~ */
-				} else if (na[0] == 'U') {
-					uvmode = 1;
-				} else {
-					usage("-Y parameter '%c' not recognised",na[0]);
-				}
 
 			} else 
 				usage("Flag -%c not recognised",argv[fa][1]);
@@ -852,14 +862,7 @@ int main(int argc, char *argv[]) {
 			 || it->check_mode(it, inst_mode_emis_ambient) != inst_ok) {
 				printf("Requested ambient light capability,\n");
 				printf("and instrument doesn't support it.\n");
-				if (!IMODETST(cap, inst_mode_emis_spot)) {
-					it->del(it);
-					return -1;
-				} else {
-					printf("Will use emissive mode instead,\n");
-					printf("but note that light level readings may be wrong!\n");
-
-				}
+				return -1;
 			} else {
 				if (verb) {
 					printf("Please make sure the instrument is fitted with\n");
@@ -883,6 +886,12 @@ int main(int argc, char *argv[]) {
 			}
 
 		} else if (emiss || tele) {
+
+			/* If there is a tele mode but no emission, use tele */
+			if (!IMODETST(cap, inst_mode_emis_spot)
+			 && IMODETST(cap, inst_mode_emis_tele)) {
+				tele = 1;
+			}
 
 			if (tele) {
 				if (!IMODETST(cap, inst_mode_emis_tele)
@@ -915,7 +924,6 @@ int main(int argc, char *argv[]) {
 					refrmode = -1;
 				}
 			}
-
 			/* Set display type */
 			if (dtype != 0) {
 
@@ -1128,6 +1136,21 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
+		if (refrate > 0.0) {
+			if (!(cap2 & inst2_set_refresh_rate)) {
+				if (verb)
+					printf("Attempted to set refresh rate and instrument doesn't support setting it (ignored)\n");
+				refrate = 0.0;
+			} else {
+				if ((rv = it->set_refr_rate(it, refrate)) != inst_ok) {
+					printf("\nSetting instrument refresh rate to %f Hz failed with error :'%s' (%s)\n",
+				     	       refrate, it->inst_interp_error(it, rv), it->interp_error(it, rv));
+					it->del(it);
+					return -1;
+				}
+			}
+		}
+
 		/* If non-standard observer wasn't set by a CCSS file above */
 		if (obType != icxOT_default && (cap2 & inst2_ccss) && ccssset == 0) {
 			if ((rv = it->get_set_opt(it, inst_opt_set_ccss_obs, obType, 0)) != inst_ok) {
@@ -1136,6 +1159,11 @@ int main(int argc, char *argv[]) {
 				it->del(it);
 				return -1;
 			}
+		}
+
+		/* Warm the user that they should do a frequency calibration */
+		if (it->needs_calibration(it) & inst_calt_ref_freq) {
+			printf("Please read an 80%% white patch first to calibrate refresh frequency\n");
 		}
 
 		/* If it batter powered, show the status of the battery */
@@ -1186,6 +1214,8 @@ int main(int argc, char *argv[]) {
 		inst_set_uih('K', 'K',   DUIH_CMND);
 		inst_set_uih('s', 's',   DUIH_CMND);
 		inst_set_uih('S', 'S',   DUIH_CMND);
+		if (cap2 & inst2_has_target)
+			inst_set_uih('t', 't',   DUIH_CMND);
 		inst_set_uih('f', 'f',   DUIH_CMND);
 		inst_set_uih('F', 'F',   DUIH_CMND);
 		inst_set_uih('q', 'q',   DUIH_ABORT);
@@ -1429,6 +1459,8 @@ int main(int argc, char *argv[]) {
 				printf("Hit 'r' to set reference\n");
 #endif /* SALONEINSTLIB */
 				printf("'h' to toggle high res., 'k' to do a calibration\n");
+				if (cap2 & inst2_has_target)
+					printf("'t' to toggle laser target\n");
 			}
 			if (uswitch)
 				printf("Hit ESC or Q to exit, instrument switch or any other key to take a reading: ");
@@ -1610,6 +1642,17 @@ int main(int argc, char *argv[]) {
 		if (ch == 0x1b || ch == 0x03 || ch == 'q' || ch == 'Q') {	/* Or ^C */
 			break;
 		}
+		if ((cap2 & inst2_has_target) && ch == 't') {	// Toggle target
+			inst_code ev;
+			if ((ev = it->get_set_opt(it, inst_opt_set_target_state, 2)) != inst_ok) {
+				printf("\nToggling target failed with error :'%s' (%s)\n",
+		       	       it->inst_interp_error(it, ev), it->interp_error(it, ev));
+				it->del(it);
+				return -1;
+			}
+			--ix;
+			continue;
+		}
 		if (ch == 'H' || ch == 'h') {	/* Toggle high res mode */
 			if (IMODETST(cap, inst_mode_highres)) {
 				inst_code ev;
@@ -1778,7 +1821,7 @@ int main(int argc, char *argv[]) {
 			double refr;
 			inst_code ev;
 
-			if (!(cap2 & inst2_refresh_rate)) {
+			if (!(cap2 & inst2_get_refresh_rate)) {
 				printf("\nInstrument isn't capable of refresh rate calibration\n");
 				--ix;
 				continue;
@@ -2063,7 +2106,7 @@ int main(int argc, char *argv[]) {
 #endif /* SALONEINSTLIB */
 
 			if (emiss > 1 || tele > 1) {
-				if (wXYZ[0] < 0.0) {
+				if (wXYZ[0] < 0.0) {		/* If we haven't save a white ref. yet */
 					if (XYZ[1] < 10.0)
 						error ("White of XYZ %f %f %f doesn't seem reasonable",XYZ[0], XYZ[1], XYZ[2]);
 					printf("\n Making result XYZ: %f %f %f, D50 Lab: %f %f %f white reference.\n",
@@ -2071,6 +2114,13 @@ int main(int argc, char *argv[]) {
 					wXYZ[0] = XYZ[0];
 					wXYZ[1] = XYZ[1];
 					wXYZ[2] = XYZ[2];
+#ifndef SALONEINSTLIB
+					{	/* Compute a Chromatic adapation matrix to D50 */
+						icmXYZNumber s_wp;
+						icmAry2XYZ(s_wp, wXYZ);
+						icmChromAdaptMatrix(ICM_CAM_BRADFORD, icmD50, s_wp, chmat);
+					}
+#endif /* !SALONEINSTLIB */
 					continue;
 				}
 				if (emiss == 2 || tele == 2) {
@@ -2080,12 +2130,14 @@ int main(int argc, char *argv[]) {
 					XYZ[2] = 100.0 * XYZ[2] / wXYZ[1];
 				} 
 #ifndef SALONEINSTLIB
-				  else {
+				  else {	/* emiss == 3, white point relative */
 
 					/* Normalize to white and scale to 0..100 */
-					XYZ[0] = XYZ[0] * icmD50_100.X / wXYZ[0];
-					XYZ[1] = XYZ[1] * icmD50_100.Y / wXYZ[1];
-					XYZ[2] = XYZ[2] * icmD50_100.Z / wXYZ[2];
+//					XYZ[0] = XYZ[0] * icmD50_100.X / wXYZ[0];
+//					XYZ[1] = XYZ[1] * icmD50_100.Y / wXYZ[1];
+//					XYZ[2] = XYZ[2] * icmD50_100.Z / wXYZ[2];
+					icmMulBy3x3(XYZ, chmat, XYZ);
+					icmScale3(XYZ, XYZ, 100.0);
 				}
 
 				/* recompute Lab */
@@ -2174,25 +2226,25 @@ int main(int argc, char *argv[]) {
 					printf(" Apparent flash duration = %f seconds\n",val.duration);
 				if (cap2 & inst2_ambient_mono) {
 					printf(" Ambient = %.1f Lux%s\n",
-						       3.141592658 * XYZ[1], ambient == 2 ? "-Seconds" : "");
+						       XYZ[1], ambient == 2 ? "-Seconds" : "");
 					if (ambient != 2) 
 						printf(" Suggested EV @ ISO100 for %.1f Lux incident light = %.1f\n",
-							       3.141592658 * XYZ[1],
-						           log(3.141592658 * XYZ[1]/2.5)/log(2.0));
+							       XYZ[1],
+						           log(XYZ[1]/2.5)/log(2.0));
 				} else {
 #ifndef SALONEINSTLIB
 					printf(" Ambient = %.1f Lux%s, CCT = %.0fK (Delta E %f)\n",
-					       3.1415926 * XYZ[1], ambient == 2 ? "-Seconds" : "",
+					       XYZ[1], ambient == 2 ? "-Seconds" : "",
 					       cct, cct_de);
 					if (ambient != 2) 
 						printf(" Suggested EV @ ISO100 for %.1f Lux incident light = %.1f\n",
-							       3.141592658 * XYZ[1],
-						           log(3.141592658 * XYZ[1]/2.5)/log(2.0));
+							       XYZ[1],
+						           log(XYZ[1]/2.5)/log(2.0));
 					printf(" Closest Planckian temperature = %.0fK (Delta E %f)\n",vct, vct_de);
 					printf(" Closest Daylight temperature  = %.0fK (Delta E %f)\n",vdt, vdt_de);
 #else /* SALONEINSTLIB */
 					printf(" Ambient = %.1f Lux%s\n",
-					       3.1415926 * XYZ[1], ambient == 2 ? "-Seconds" : "");
+					       XYZ[1], ambient == 2 ? "-Seconds" : "");
 #endif /* SALONEINSTLIB */
 				}
 #ifndef SALONEINSTLIB

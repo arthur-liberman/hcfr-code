@@ -58,6 +58,11 @@
 #undef PLOT_SPECTRA		/* Plot the sensor senitivity spectra */
 #undef SAVE_SPECTRA		/* Save the sensor senitivity spectra to "sensors.cmf" */
 #undef PLOT_REFRESH		/* Plot data used to determine refresh rate */
+#undef PLOT_UPDELAY		/* Plot data used to determine display update delay */
+
+#undef DEBUG_TWEAKS	/* Allow environment variable tweaks to int time etc. */
+/* I1D3_MIN_REF_QUANT_TIME		in seconds. Default 0.05 */
+/* I1D3_MIN_INT_TIME		    in seconds. Default 0.4 for refresh displays */
 
 static inst_code i1d3_interp_code(inst *pp, int ec);
 static inst_code i1d3_check_unlock(i1d3 *p);
@@ -534,6 +539,7 @@ i1d3_unlock(
 		{ "i1Display3 ",         { 0xcaa62b2c, 0x30815b61 }, i1d3_disppro, i1d3_oem },
 		{ "i1Display3 ",         { 0xa9119479, 0x5b168761 }, i1d3_disppro, i1d3_nec_ssp },
 		{ "i1Display3 ",         { 0x160eb6ae, 0x14440e70 }, i1d3_disppro, i1d3_quato_sh3 },
+		{ "i1Display3 ",         { 0x291e41d7, 0x51937bdd }, i1d3_disppro, i1d3_hp_dreamc },
 		{ NULL } 
 	}; 
 	inst_code ev;
@@ -546,7 +552,7 @@ i1d3_unlock(
 
 		/* If we've run out of unlock keys */
 		if (codes[ix].pname == NULL) {
-			a1logd(p->log, 1, "i1d3: Unknown lock code. Please contact ArgyllCMS for help\n");
+			a1logw(p->log, "i1d3: Unknown lock code. Please contact ArgyllCMS for help\n");
 			return i1d3_interp_code((inst *)p, I1D3_UNKNOWN_UNLOCK);
 		}
 
@@ -1354,6 +1360,7 @@ i1d3_imp_measure_refresh(
 		} else {
 			int mul;
 			double refrate;
+			double pval;
 
 			pval = avg/ano;
 			pval /= 1000.0;		/* Convert to seconds */
@@ -1365,10 +1372,25 @@ i1d3_imp_measure_refresh(
 			/* Error against my 85Hz CRT - GWG */
 //			a1logd(p->log, 1, "Refresh rate error = %.4f%%\n",100.0 * fabs(refrate - 85.0)/(85.0));
 
-			/* Scale to just above 20 Hz */
-			mul = floor((1.0/20) / pval);
-			if (mul > 1)
+			/* Scale to just above 20 Hz, but make it multiple of 2 or 4 */
+#ifdef DEBUG_TWEAKS
+			{
+				double quanttime = 1.0/20.0;
+				char *cp;
+				if ((cp = getenv("I1D3_MIN_REF_QUANT_TIME")) != NULL)
+					quanttime = atof(cp);
+				mul = (int)floor(quanttime / pval);
+			}
+#else
+			mul = (int)floor((1.0/20.0) / pval);
+#endif
+			if (mul > 1) {
+				if (mul >= 8)
+					mul = (mul + 3) & ~3;	/* Round up to mult of 4 */
+				else
+					mul = (mul + 1) & ~1;	/* Round up to mult of 2 */
 				pval *= mul;
+			}
 
 			a1logd(p->log, 1, "Refresh rate = %f Hz, quantizing to %f msec\n",refrate,pval);
 			a1logv(p->log, 1, "Refresh rate = %f Hz, quantizing to %f msec\n",refrate,pval);
@@ -1411,6 +1433,8 @@ i1d3_measure_set_refresh(
 
 /* - - - - - - - - - - - - - - - - - - - - - - */
 
+#ifdef NEVER	/* No longer used - use general measurement instead */
+
 /* Take an ambient measurement and return the cooked reading */
 /* The cooked reading is the frequency of the L2V */
 static inst_code
@@ -1451,11 +1475,11 @@ i1d3_take_amb_measurement(
 	return inst_ok;
 }
 
-
+#endif
 
 /* - - - - - - - - - - - - - - - - - - - - - - */
 
-/* Take an display measurement and return the cooked reading */
+/* Take a general measurement and return the cooked reading */
 /* The cooked reading is the frequency of the L2V */
 static inst_code
 i1d3_take_emis_measurement(
@@ -1464,7 +1488,6 @@ i1d3_take_emis_measurement(
 	double *rgb			/* Return the cooked emsissive RGB values */
 ) {
 	int i, k;
-	int pos;
 	inst_code ev;
 	double rmeas[3] = { -1.0, -1.0, -1.0 };	/* raw measurement */
 	int edgec[3] = {2,2,2};	/* Measurement edge count for each channel (not counting start edge) */
@@ -1476,14 +1499,6 @@ i1d3_take_emis_measurement(
 		return i1d3_interp_code((inst *)p, I1D3_NOT_INITED);
 
 	a1logd(p->log,3,"\ntake_emis_measurement called\n");
-
-	/* Check that the ambient filter is not in place */
-	if ((ev = i1d3_get_diffpos(p, &pos, 0)) != inst_ok)
- 		return ev;
-
-	if (pos != 0)
-		return i1d3_interp_code((inst *)p, I1D3_SPOS_EMIS);
-
 
 	/* If we should take a frequency measurement first */
 	if (mode == i1d3_adaptive || mode == i1d3_frequency) {
@@ -1659,7 +1674,7 @@ i1d3_take_emis_measurement(
 					continue;
 
 				/* Compute number of edges needed for a clock count */
-				/* of p->inttime (0.2 secs) */
+				/* of p->inttime (0.2/0.4 secs) */
 				nedgec = edgec[i] * p->inttime * p->clk_freq/rmeas[i];
 
 				/* If we will get less than 200 edges, raise the target integration */
@@ -1843,27 +1858,35 @@ i1d3_take_XYZ_measurement(
 	i1d3 *p,				/* Object */
 	double XYZ[3]			/* Return the XYZ values */
 ) {
+	int pos;
 	inst_code ev;
 
 	if (IMODETST(p->mode, inst_mode_emis_ambient)) {
-		if ((ev = i1d3_take_amb_measurement(p, XYZ)) != inst_ok)
+
+		/* Check that the ambient filter is in place */
+		if ((ev = i1d3_get_diffpos(p, &pos, 0)) != inst_ok)
+ 			return ev;
+	
+		if (pos != 1)
+			return i1d3_interp_code((inst *)p, I1D3_SPOS_EMIS);
+
+		/* Best type of reading, including refresh support */
+		if ((ev = i1d3_take_emis_measurement(p, i1d3_adaptive, XYZ)) != inst_ok)
 			return ev;
 
 		/* Multiply by ambient calibration matrix */
-		icmMulBy3x3(XYZ, p->ambi_cal, XYZ);
-		icmScale3(XYZ, XYZ, 1/3.141592654);		/* Convert from Lux to cd/m^2 */
+		icmMulBy3x3(XYZ, p->ambi_cal, XYZ);		/* Values in Lux */
 
 	} else {
 
-		/* Constant fast speed, poor accuracy for black */
-//		if ((ev = i1d3_take_emis_measurement(p, i1d3_frequency, XYZ)) != inst_ok)
-//			return ev;
+		/* Check that the ambient filter is not in place */
+		if ((ev = i1d3_get_diffpos(p, &pos, 0)) != inst_ok)
+ 			return ev;
+	
+		if (pos != 0)
+			return i1d3_interp_code((inst *)p, I1D3_SPOS_EMIS);
 
-		/* Most accurate ? */
-//		if ((ev = i1d3_take_emis_measurement(p, i1d3_period, XYZ)) != inst_ok)
-//			return ev;
-
-		/* Best combination */
+		/* Best type of reading, including refresh support */
 		if ((ev = i1d3_take_emis_measurement(p, i1d3_adaptive, XYZ)) != inst_ok)
 			return ev;
 
@@ -2175,8 +2198,8 @@ i1d3_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 		}
 
 	} else {
-		a1logd(p->log, 1, "i1d3_init_coms: wrong sort of coms!\n");
-		return i1d3_interp_code((inst *)p, I1D3_UNKNOWN_MODEL);
+		a1logd(p->log, 1, "i1d3_init_coms: wrong communications type for device!\n");
+		return inst_coms_fail;
 	}
 
 #if defined(__APPLE__)
@@ -2422,13 +2445,23 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	} else {
 		/* Check for abort */
 		if (p->uicallback != NULL
-		 && (rv = p->uicallback(p->uic_cntx, inst_armed)) == inst_user_abort)
+		 && (rv = p->uicallback(p->uic_cntx, inst_armed)) == inst_user_abort) {
 			return rv;				/* Abort */
+		}
 	}
 
 	/* Attempt a refresh display frame rate calibration if needed */
 	if (p->dtype != i1d3_munkdisp && p->refrmode != 0 && p->rrset == 0) {
 		inst_code ev = inst_ok;
+		double minint = 2.0 * p->dinttime;
+
+#ifdef DEBUG_TWEAKS
+		{
+			char *cp;
+			if ((cp = getenv("I1D3_MIN_INT_TIME")) != NULL)
+				minint = atof(cp);
+		}
+#endif
 
 		if ((ev = i1d3_measure_set_refresh(p)) != inst_ok)
 			return ev; 
@@ -2436,12 +2469,12 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 		/* Quantize the sample time */
 		if (p->refperiod > 0.0) {		/* If we have a refresh period */
 			int n;
-			n = (int)ceil(p->dinttime/p->refperiod);
-			p->inttime = 2.0 * n * p->refperiod;
+			n = (int)ceil(minint/p->refperiod);
+			p->inttime = n * p->refperiod;
 			a1logd(p->log, 3, "i1d3: integration time quantize to %f secs\n",p->inttime);
 
 		} else {	/* We don't have a period, so simply double the default */
-			p->inttime = 2.0 * p->dinttime;
+			p->inttime = minint;
 			a1logd(p->log, 3, "i1d3: integration time integration time doubled to %f secs\n",p->inttime);
 		}
 	}
@@ -2637,11 +2670,20 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 
 	if ((*calt & inst_calt_ref_freq) && p->dtype != i1d3_munkdisp && p->refrmode != 0) {
 		inst_code ev = inst_ok;
+		double minint = 2.0 * p->dinttime;
 
-		if (*calc != inst_calc_emis_white) {
-			*calc = inst_calc_emis_white;
+		if (*calc != inst_calc_emis_80pc) {
+			*calc = inst_calc_emis_80pc;
 			return inst_cal_setup;
 		}
+
+#ifdef DEBUG_TWEAKS
+		{
+			char *cp;
+			if ((cp = getenv("I1D3_MIN_INT_TIME")) != NULL)
+				minint = atof(cp);
+		}
+#endif
 
 		/* Do refresh display rate calibration */
 		if ((ev = i1d3_measure_set_refresh(p)) != inst_ok)
@@ -2650,11 +2692,11 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 		/* Quantize the sample time */
 		if (p->refperiod > 0.0) {
 			int n;
-			n = (int)ceil(p->dinttime/p->refperiod);
-			p->inttime = 2.0 * n * p->refperiod;
+			n = (int)ceil(minint/p->refperiod);
+			p->inttime = n * p->refperiod;
 			a1logd(p->log, 3, "i1d3: integration time quantize to %f secs\n",p->inttime);
 		} else {
-			p->inttime = 2.0 * p->dinttime;	/* Double default integration time */
+			p->inttime = minint;	/* Double default integration time */
 			a1logd(p->log, 3, "i1d3: integration time integration time doubled to %f secs\n",p->inttime);
 		}
 		*calt &= ~inst_calt_ref_freq;
@@ -2665,11 +2707,11 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 /* Measure a display update delay. It is assumed that a */
 /* white to black change has been made to the displayed color, */
 /* and this will measure the time it took for the update to */
-/* be noticed by the instrument, up to 0.5 seconds. */
+/* be noticed by the instrument, up to 0.6 seconds. */
 /* inst_misread will be returned on failure to find a transition to black. */
-#define NDSAMPS 60 
-#define DINTT 0.010
-#define NDMXTIME 0.6		/* Maximum time to take */
+#define NDSAMPS 200 
+#define DINTT 0.005			/* Too short hits blanking */
+#define NDMXTIME 1.0		/* Maximum time to take */
 
 inst_code i1d3_meas_delay(
 inst *pp,
@@ -2681,10 +2723,11 @@ int *msecdelay)	{	/* Return the number of msec */
 	struct {
 		double sec;
 		double rgb[3];
+		double tot;
 	} samp[NDSAMPS];
 	int ndsamps;
 	double inttime = DINTT;
-	double rgb[3];
+	double stot, etot, del, thr;
 	double etime;
 	int isdeb;
 
@@ -2709,6 +2752,7 @@ int *msecdelay)	{	/* Return the number of msec */
 		cutime = (usec_time() - sutime) / 1000000.0;
 		samp[i].sec = 0.5 * (putime + cutime);	/* Mean of before and after stamp */
 		putime = cutime;
+		samp[i].tot = samp[i].rgb[0] + samp[i].rgb[1] + samp[i].rgb[2];
 		if (cutime > NDMXTIME)
 			break; 
 	}
@@ -2722,53 +2766,64 @@ int *msecdelay)	{	/* Return the number of msec */
 		return inst_internal_error; 
 	}
 		
-#ifdef NEVER
+#ifdef PLOT_UPDELAY
 	/* Plot the raw sensor values */
 	{
 		double xx[NDSAMPS];
 		double y1[NDSAMPS];
 		double y2[NDSAMPS];
 		double y3[NDSAMPS];
+		double y4[NDSAMPS];
 
 		for (i = 0; i < ndsamps; i++) {
 			xx[i] = samp[i].sec;
 			y1[i] = samp[i].rgb[0];
 			y2[i] = samp[i].rgb[1];
 			y3[i] = samp[i].rgb[2];
-			//printf("%d: %f -> %f\n",i,samp[i].sec, samp[i].rgb[0]);
+			y4[i] = samp[i].tot;
+			//printf("%d: %f -> %f\n",i,samp[i].sec, samp[i].tot);
 		}
 		printf("Display update delay measure sensor values and time (sec)\n");
-		do_plot6(xx, y1, y2, y3, NULL, NULL, NULL, ndsamps);
+		do_plot6(xx, y1, y2, y3, y4, NULL, NULL, ndsamps);
 	}
 #endif
 
+	/* Over the first 100msec, locate the maximum value */
+	etime = samp[ndsamps-1].sec;
+	stot = -1e9;
+	for (i = 0; i < ndsamps; i++) {
+		if (samp[i].tot > stot)
+			stot = samp[i].tot;
+		if (samp[i].sec > 0.1)
+			break;
+	}
+
 	/* Over the last 100msec, locate the maximum value */
 	etime = samp[ndsamps-1].sec;
-	for (j = 0; j < 3; j++)
-		rgb[j] = 0.0;
+	etot = -1e9;
 	for (i = ndsamps-1; i >= 0; i--) {
-		for (j = 0; j < 3; j++) {
-			if (samp[i].rgb[j] > rgb[j])
-				rgb[j] = samp[i].rgb[j];
-		}
+		if (samp[i].tot > etot)
+			etot = samp[i].tot;
 		if ((etime - samp[i].sec) > 0.1)
 			break;
 	}
 
-//	a1logd(p->log, 3, "i1d3_meas_delay: end rgb = %f %f %f stopped at %d\n", rgb[0], rgb[1], rgb[2], i);
+	del = stot - etot;
+	thr = etot + 0.2 * del;		/* 20% of transition threshold */
 
-	if (rgb[0] > 10.0 || rgb[1] > 10.0 || rgb[2] > 10.0) {
-		a1logd(p->log, 1, "i1d3_meas_delay: measurement delay doesn't seem to be black\n");
+#ifdef PLOT_UPDELAY
+	a1logd(p->log, 0, "i1d3_meas_delay: start tot %f end tot %f del %f, thr %f\n", stot, etot, del, thr);
+#endif
+
+	/* Check that there has been a transition */
+	if (del < 10.0) {
+		a1logd(p->log, 1, "i1d3_meas_delay: can't detect change from white to black\n");
 		return inst_misread; 
 	}
 
-	/* Locate the time at which the values are above this */
+	/* Working from the end, locate the time at which the level was above the threshold */
 	for (i = ndsamps-1; i >= 0; i--) {
-		for (j = 0; j < 3; j++) {
-			if (samp[i].rgb[j] > (1.5 * rgb[j]))
-				break;
-		}
-		if (j < 3)
+		if (samp[i].tot > thr)
 			break;
 	}
 	if (i < 0)		/* Assume the update was so fast that we missed it */
@@ -2777,6 +2832,10 @@ int *msecdelay)	{	/* Return the number of msec */
 	a1logd(p->log, 2, "i1d3_meas_delay: stoped at sample %d time %f\n",i,samp[i].sec);
 
 	*msecdelay = (int)(samp[i].sec * 1000.0 + 0.5);
+
+#ifdef PLOT_UPDELAY
+	a1logd(p->log, 0, "i1d3_meas_delay: returning %d msec\n",*msecdelay);
+#endif
 
 	return inst_ok;
 }
@@ -2819,13 +2878,27 @@ double ref_rate
 		int mul;
 		double pval;
 
-		/* Scale to just above 20 Hz */
+		/* Scale to just above 20 Hz, but make it multiple of 2 or 4 */
 		pval = 1.0/ref_rate;
-		mul = floor((1.0/20) / pval);
-		if (mul > 1)
+#ifdef DEBUG_TWEAKS
+		{
+			double quanttime = 1.0/20.0;
+			char *cp;
+			if ((cp = getenv("I1D3_MIN_REF_QUANT_TIME")) != NULL)
+				quanttime = atof(cp);
+			mul = (int)floor(quanttime / pval);
+		}
+#else
+		mul = (int)floor((1.0/20.0) / pval);
+#endif
+		if (mul > 1) {
+			if (mul >= 8)
+				mul = (mul + 3) & ~3;	/* Round up to mult of 4 */
+			else
+				mul = (mul + 1) & ~1;	/* Round up to mult of 2 */
 			pval *= mul;
+		}
 		p->refperiod = pval;
-		
 		p->refrvalid = 1;
 	}
 	p->rrset = 1;
@@ -3011,7 +3084,7 @@ inst3_capability *pcap3) {
 	cap1 |= inst_mode_emis_spot
 	     |  inst_mode_emis_tele
 	     |  inst_mode_emis_ambient
-	     |  inst_mode_emis_refresh_ovd
+	     |  inst_mode_emis_refresh_ovd			/* (allow override ccmx & ccss mode) */
 	     |  inst_mode_emis_norefresh_ovd
 	     |  inst_mode_colorimeter
 	        ;
@@ -3027,7 +3100,8 @@ inst3_capability *pcap3) {
 
 	if (p->dtype != i1d3_munkdisp) {
 		cap2 |= inst2_meas_disp_update;
-		cap2 |= inst2_refresh_rate;
+		cap2 |= inst2_get_refresh_rate;
+		cap2 |= inst2_set_refresh_rate;
 		cap2 |= inst2_emis_refr_meas;
 	}
 	if (pcap1 != NULL)
@@ -3075,8 +3149,8 @@ int *conf_ix
 
 	/* Add the extra dependent and independent modes */
 	mval |= inst_mode_emis_refresh_ovd
-	     | inst_mode_emis_norefresh_ovd
-	     | inst_mode_colorimeter;
+	     |  inst_mode_emis_norefresh_ovd
+	     |  inst_mode_colorimeter;
 
 	if (mmodes != NULL)	
 		*mmodes = mval;
@@ -3152,7 +3226,7 @@ inst_disptypesel i1d3_disptypesel[3] = {
 	{
 		inst_dtflags_default,
 		1,
-		"n",
+		"nl",
 		"Non-Refresh display",
 		0,
 		0
@@ -3160,7 +3234,7 @@ inst_disptypesel i1d3_disptypesel[3] = {
 	{
 		inst_dtflags_none,			/* flags */
 		2,							/* cbid */
-		"r",						/* sel */
+		"rc",						/* sel */
 		"Refresh display",			/* desc */
 		1,							/* refr */
 		1							/* ix */
@@ -3186,7 +3260,7 @@ int recreate				/* nz to re-check for new ccmx & ccss files */
 	i1d3 *p = (i1d3 *)pp;
 	inst_code rv = inst_ok;
 
-	if (!allconfig && p->dpos) {	/* If set to Ambient */
+	if (!allconfig && p->dpos) {	/* If set to Ambient, there are no display types ? */
 
 		if (pnsels != NULL)
 			*pnsels = 0;
@@ -3242,14 +3316,15 @@ static inst_code set_disp_type(i1d3 *p, inst_disptypesel *dentry) {
 
 	if (dentry->flags & inst_dtflags_ccss) {
 
+		/* Create matrix for specified samples */
 		if ((ev = i1d3_comp_calmat(p, p->emis_cal, p->obType, p->custObserver,
-			               p->sens, dentry->sets, dentry->no_sets)) != inst_ok) {
+			                       p->sens, dentry->sets, dentry->no_sets)) != inst_ok) {
 			a1logd(p->log, 1, "i1d3_set_disp_type: comp_calmat ccss failed with rv = 0x%x\n",ev);
 			return ev;
 		}
 		/* Use MIbLSr for ambient */
-		if ((ev = i1d3_comp_calmat(p, p->ambi_cal, p->obType, p->custObserver, p->ambi,
-			                                                            p->ambi, 3)) != inst_ok)
+		if ((ev = i1d3_comp_calmat(p, p->ambi_cal, p->obType, p->custObserver,
+			                       p->ambi, p->ambi, 3)) != inst_ok)
 			return ev;
 
 		icmSetUnity3x3(p->ccmat);
@@ -3267,15 +3342,15 @@ static inst_code set_disp_type(i1d3 *p, inst_disptypesel *dentry) {
 
 	} else {	/* Assume matrix */
 
-		/* Create the default calibration matrix */
+		/* Create the default MIbLSr calibration matrix */
 		if ((ev = i1d3_comp_calmat(p, p->emis_cal, p->obType, p->custObserver,
-			                               p->sens, p->sens, 3)) != inst_ok) {
+			                              p->sens, p->sens, 3)) != inst_ok) {
 			a1logd(p->log, 1, "i1d3_set_disp_type: comp_calmat dflt failed with rv = 0x%x\n",ev);
 			return ev;
 		}
 		/* Use MIbLSr for ambient */
-		if ((ev = i1d3_comp_calmat(p, p->ambi_cal, p->obType, p->custObserver, p->ambi,
-			                                                            p->ambi, 3)) != inst_ok)
+		if ((ev = i1d3_comp_calmat(p, p->ambi_cal, p->obType, p->custObserver,
+			                              p->ambi, p->ambi, 3)) != inst_ok)
 			return ev;
 
 		if (dentry->flags & inst_dtflags_ccmx) {
@@ -3436,6 +3511,7 @@ i1d3_get_set_opt(inst *pp, inst_opt_type m, ...)
 		mask = va_arg(args, int);
 		va_end(args);
 
+		p->led_state = mask;
 		if (p->led_state & 0x1)
 			return i1d3_set_LEDs(p, i1d3_flash, 0.0, 100.0, 0x80);
 		else
@@ -3595,9 +3671,9 @@ static void create_unlock_response(unsigned int *k, unsigned char *c, unsigned c
 
 		/* Minus the two key values as bytes */
 		sum += (0xff & -k[0]) + (0xff & (-k[0] >> 8))
-	        + (0xff & (-k[0] >> 16)) + (0xff & (-k[0] >> 24));
+	        +  (0xff & (-k[0] >> 16)) + (0xff & (-k[0] >> 24));
 		sum += (0xff & -k[1]) + (0xff & (-k[1] >> 8))
-	         + (0xff & (-k[1] >> 16)) + (0xff & (-k[1] >> 24));
+	        +  (0xff & (-k[1] >> 16)) + (0xff & (-k[1] >> 24));
 	
 		/* Convert sum to bytes. Only need 2, because sum of 16 bytes can't exceed 16 bits. */
 		s0 =  sum       & 0xff;

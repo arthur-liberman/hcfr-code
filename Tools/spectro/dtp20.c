@@ -108,7 +108,7 @@ char *in,		/* In string */
 char *out,		/* Out string buffer */
 int bsize,				/* Out buffer size */
 double to) {			/* Timout in seconts */
-	char tc = '>';			/* Terminating character */
+	char *tc = ">";			/* Terminating character */
 	int ntc = 1;			/* Number of terminating characters */
 	int rv, se, insize;
 
@@ -128,7 +128,7 @@ double to) {			/* Timout in seconts */
 	}
 
 	rv = DTP20_OK;
-	if (tc == '>' && ntc == 1) {	/* Expecting DTP type error code */
+	if (tc[0] == '>' && ntc == 1) {	/* Expecting DTP type error code */
 		rv = extract_ec(out);
 		if (rv > 0) {
 			rv &= inst_imask;
@@ -221,8 +221,8 @@ dtp20_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 		dtp20_command(p, "0PR\r", buf, MAX_MES_SIZE, 0.5);
 
 	} else {
-		a1logd(p->log, 1, "dtp20: Failed to find connection to instrument\n");
-		return inst_coms_fail;
+		a1logd(p->log, 1, "dtp20: wrong communications type for device\n");
+		return inst_internal_error;
 	}
 
 	/* Check instrument is responding */

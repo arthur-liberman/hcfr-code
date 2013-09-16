@@ -41,6 +41,8 @@
 /* This really needs checking for each different platform. */
 /* Using C99 and MSC covers a lot of cases, */
 /* and the fallback default is pretty reliable with modern compilers and machines. */
+/* Note that MSWin is LLP64 == 32 bit long, while OS X/Linux is LP64 == 64 bit long. */
+/* so long shouldn't really be used in any code.... */
 /* (duplicated in icc.h) */ 
 
 #if (__STDC_VERSION__ >= 199901L)	/* C99 */
@@ -97,7 +99,7 @@
 #else  /* !_MSC_VER */
 
 /* The following works on a lot of modern systems, including */
-/* LP64 model 64 bit modes */
+/* LLP64 and LP64 models, but won't work with ILP64 which needs int32 */
 
 #define INR8   signed char		/* 8 bit signed */
 #define INR16  signed short		/* 16 bit signed */
@@ -371,6 +373,59 @@ char *ctime_32(const INR32 *timer);
 /* Return a string representation of a 64 bit ctime. */
 /* A static buffer is used. There is no \n at the end */
 char *ctime_64(const INR64 *timer);
+
+/*******************************************/
+/* Native to/from byte buffer functions    */
+/*******************************************/
+
+/* No overflow detection is done - numbers are clipped */
+
+/* be = Big Endian */
+/* le = Little Endian */
+
+/* Unsigned 8 bit */
+unsigned int read_ORD8(ORD8 *p);
+void write_ORD8(unsigned int d, ORD8 *p);
+
+/* Signed 8 bit */
+int read_INR8(ORD8 *p);
+void write_INR8(int d, ORD8 *p);
+
+/* Unsigned 16 bit */
+unsigned int read_ORD16_be(ORD8 *p);
+unsigned int read_ORD16_le(ORD8 *p);
+void write_ORD16_be(unsigned int d, ORD8 *p);
+void write_ORD16_le(unsigned int d, ORD8 *p);
+
+/* Signed 16 bit */
+int read_INR16_be(ORD8 *p);
+int read_INR16_le(ORD8 *p);
+void write_INR16_be(int d, ORD8 *p);
+void write_INR16_le(int d, ORD8 *p);
+
+/* Unsigned 32 bit */
+unsigned int read_ORD32_be(ORD8 *p);
+unsigned int read_ORD32_le(ORD8 *p);
+void write_ORD32_be(unsigned int d, ORD8 *p);
+void write_ORD32_le(unsigned int d, ORD8 *p);
+
+/* Signed 32 bit */
+int read_INR32_be(ORD8 *p);
+int read_INR32_le(ORD8 *p);
+void write_INR32_be(int d, ORD8 *p);
+void write_INR32_le(int d, ORD8 *p);
+
+/* Unsigned 64 bit */
+ORD64 read_ORD64_be(ORD8 *p);
+ORD64 read_ORD64_le(ORD8 *p);
+void write_ORD64_be(ORD64 d, ORD8 *p);
+void write_ORD64_le(ORD64 d, ORD8 *p);
+
+/* Signed 64 bit */
+INR64 read_INR64_be(ORD8 *p);
+INR64 read_INR64_le(ORD8 *p);
+void write_INR64_be(INR64 d, ORD8 *p);
+void write_INR64_le(INR64 d, ORD8 *p);
 
 #ifdef __cplusplus
 	}

@@ -1537,3 +1537,284 @@ char *ctime_64(const INR64 *timer) {
 
 	return rv;
 }
+
+/*******************************************/
+/* Native to/from byte buffer functions    */
+/*******************************************/
+
+/* No overflow detection is done - */
+/* numbers are clipped or truncated. */
+
+/* be = Big Endian */
+/* le = Little Endian */
+
+/* - - - - - - - - */
+/* Unsigned 8 bit */
+
+unsigned int read_ORD8(ORD8 *p) {
+	unsigned int rv;
+	rv = ((unsigned int)p[0]);
+	return rv;
+}
+
+void write_ORD8(unsigned int d, ORD8 *p) {
+	if (d > 0xff)
+		d = 0xff;
+	p[0] = (ORD8)(d);
+}
+
+/* - - - - - - - - */
+/* Signed 8 bit */
+
+int read_INR8(ORD8 *p) {
+	int rv;
+	rv = (int)(INR8)p[0];
+	return rv;
+}
+
+void write_INR8(int d, ORD8 *p) {
+	if (d > 0x7f)
+		d = 0x7f;
+	else if (d < -0x80)
+		d = -0x80;
+	p[0] = (ORD8)(d);
+}
+
+/* - - - - - - - - */
+/* Unsigned 16 bit */
+
+unsigned int read_ORD16_be(ORD8 *p) {
+	unsigned int rv;
+	rv = (((unsigned int)p[0]) << 8)
+	   + (((unsigned int)p[1]));
+	return rv;
+}
+
+unsigned int read_ORD16_le(ORD8 *p) {
+	unsigned int rv;
+	rv = (((unsigned int)p[0]))
+	   + (((unsigned int)p[1]) << 8);
+	return rv;
+}
+
+void write_ORD16_be(unsigned int d, ORD8 *p) {
+	if (d > 0xffff)
+		d = 0xffff;
+	p[0] = (ORD8)(d >> 8);
+	p[1] = (ORD8)(d);
+}
+
+void write_ORD16_le(unsigned int d, ORD8 *p) {
+	if (d > 0xffff)
+		d = 0xffff;
+	p[0] = (ORD8)(d);
+	p[1] = (ORD8)(d >> 8);
+}
+
+/* - - - - - - - - */
+/* Signed 16 bit */
+
+int read_INR16_be(ORD8 *p) {
+	int rv;
+	rv = (((int)(INR8)p[0]) << 8)
+	   + (((int)p[1]));
+	return rv;
+}
+
+int read_INR16_le(ORD8 *p) {
+	int rv;
+	rv = (((int)p[0]))
+	   + (((int)(INR8)p[1]) << 8);
+	return rv;
+}
+
+void write_INR16_be(int d, ORD8 *p) {
+	if (d > 0x7fff)
+		d = 0x7fff;
+	else if (d < -0x8000)
+		d = -0x8000;
+	p[0] = (ORD8)(d >> 8);
+	p[1] = (ORD8)(d);
+}
+
+void write_INR16_le(int d, ORD8 *p) {
+	if (d > 0x7fff)
+		d = 0x7fff;
+	else if (d < -0x8000)
+		d = -0x8000;
+	p[0] = (ORD8)(d);
+	p[1] = (ORD8)(d >> 8);
+}
+
+/* - - - - - - - - */
+/* Unsigned 32 bit */
+
+unsigned int read_ORD32_be(ORD8 *p) {
+	unsigned int rv;
+	rv = (((unsigned int)p[0]) << 24)
+	   + (((unsigned int)p[1]) << 16)
+	   + (((unsigned int)p[2]) << 8)
+	   + (((unsigned int)p[3]));
+	return rv;
+}
+
+unsigned int read_ORD32_le(ORD8 *p) {
+	unsigned int rv;
+	rv = (((unsigned int)p[0]))
+	   + (((unsigned int)p[1]) << 8)
+	   + (((unsigned int)p[2]) << 16)
+	   + (((unsigned int)p[3]) << 24);
+	return rv;
+}
+
+void write_ORD32_be(unsigned int d, ORD8 *p) {
+	p[0] = (ORD8)(d >> 24);
+	p[1] = (ORD8)(d >> 16);
+	p[2] = (ORD8)(d >> 8);
+	p[3] = (ORD8)(d);
+}
+
+void write_ORD32_le(unsigned int d, ORD8 *p) {
+	p[0] = (ORD8)(d);
+	p[1] = (ORD8)(d >> 8);
+	p[2] = (ORD8)(d >> 16);
+	p[3] = (ORD8)(d >> 24);
+}
+
+/* - - - - - - - - */
+/* Signed 32 bit */
+
+int read_INR32_be(ORD8 *p) {
+	int rv;
+	rv = (((int)(INR8)p[0]) << 24)
+	   + (((int)p[1]) << 16)
+	   + (((int)p[2]) << 8)
+	   + (((int)p[3]));
+	return rv;
+}
+
+int read_INR32_le(ORD8 *p) {
+	int rv;
+	rv = (((int)p[0]))
+	   + (((int)p[1]) << 8)
+	   + (((int)p[2]) << 16)
+	   + (((int)(INR8)p[3]) << 24);
+	return rv;
+}
+
+void write_INR32_be(int d, ORD8 *p) {
+	p[0] = (ORD8)(d >> 24);
+	p[1] = (ORD8)(d >> 16);
+	p[2] = (ORD8)(d >> 8);
+	p[3] = (ORD8)(d);
+}
+
+void write_INR32_le(int d, ORD8 *p) {
+	p[0] = (ORD8)(d);
+	p[1] = (ORD8)(d >> 8);
+	p[2] = (ORD8)(d >> 16);
+	p[3] = (ORD8)(d >> 24);
+}
+
+/* - - - - - - - - */
+/* Unsigned 64 bit */
+
+ORD64 read_ORD64_be(ORD8 *p) {
+	ORD64 rv;
+	rv = (((ORD64)p[0]) << 56)
+	   + (((ORD64)p[1]) << 48)
+	   + (((ORD64)p[2]) << 40)
+	   + (((ORD64)p[3]) << 32)
+	   + (((ORD64)p[4]) << 24)
+	   + (((ORD64)p[5]) << 16)
+	   + (((ORD64)p[6]) << 8)
+	   + (((ORD64)p[7]));
+	return rv;
+}
+
+ORD64 read_ORD64_le(ORD8 *p) {
+	ORD64 rv;
+	rv = (((ORD64)p[0]))
+	   + (((ORD64)p[1]) << 8)
+	   + (((ORD64)p[2]) << 16)
+	   + (((ORD64)p[3]) << 24)
+	   + (((ORD64)p[4]) << 32)
+	   + (((ORD64)p[5]) << 40)
+	   + (((ORD64)p[6]) << 48)
+	   + (((ORD64)p[7]) << 56);
+	return rv;
+}
+
+void write_ORD64_be(ORD64 d, ORD8 *p) {
+	p[0] = (ORD8)(d >> 56);
+	p[1] = (ORD8)(d >> 48);
+	p[2] = (ORD8)(d >> 40);
+	p[3] = (ORD8)(d >> 32);
+	p[4] = (ORD8)(d >> 24);
+	p[5] = (ORD8)(d >> 16);
+	p[6] = (ORD8)(d >> 8);
+	p[7] = (ORD8)(d);
+}
+
+void write_ORD64_le(ORD64 d, ORD8 *p) {
+	p[0] = (ORD8)(d);
+	p[1] = (ORD8)(d >> 8);
+	p[2] = (ORD8)(d >> 16);
+	p[3] = (ORD8)(d >> 24);
+	p[4] = (ORD8)(d >> 32);
+	p[5] = (ORD8)(d >> 40);
+	p[6] = (ORD8)(d >> 48);
+	p[7] = (ORD8)(d >> 56);
+}
+
+/* - - - - - - - - */
+/* Signed 64 bit */
+
+INR64 read_INR64_be(ORD8 *p) {
+	INR64 rv;
+	rv = (((INR64)(INR8)p[0]) << 56)
+	   + (((INR64)p[1]) << 48)
+	   + (((INR64)p[2]) << 40)
+	   + (((INR64)p[3]) << 32)
+	   + (((INR64)p[4]) << 24)
+	   + (((INR64)p[5]) << 16)
+	   + (((INR64)p[6]) << 8)
+	   + (((INR64)p[7]));
+	return rv;
+}
+
+INR64 read_INR64_le(ORD8 *p) {
+	INR64 rv;
+	rv = (((INR64)p[0]))
+	   + (((INR64)p[1]) << 8)
+	   + (((INR64)p[2]) << 16)
+	   + (((INR64)p[3]) << 24)
+	   + (((INR64)p[4]) << 32)
+	   + (((INR64)p[5]) << 40)
+	   + (((INR64)p[6]) << 48)
+	   + (((INR64)(INR8)p[7]) << 56);
+	return rv;
+}
+
+void write_INR64_be(INR64 d, ORD8 *p) {
+	p[0] = (ORD8)(d >> 56);
+	p[1] = (ORD8)(d >> 48);
+	p[2] = (ORD8)(d >> 40);
+	p[3] = (ORD8)(d >> 32);
+	p[4] = (ORD8)(d >> 24);
+	p[5] = (ORD8)(d >> 16);
+	p[6] = (ORD8)(d >> 8);
+	p[7] = (ORD8)(d);
+}
+
+void write_INR64_le(INR64 d, ORD8 *p) {
+	p[0] = (ORD8)(d);
+	p[1] = (ORD8)(d >> 8);
+	p[2] = (ORD8)(d >> 16);
+	p[3] = (ORD8)(d >> 24);
+	p[4] = (ORD8)(d >> 32);
+	p[5] = (ORD8)(d >> 40);
+	p[6] = (ORD8)(d >> 48);
+	p[7] = (ORD8)(d >> 56);
+}
+

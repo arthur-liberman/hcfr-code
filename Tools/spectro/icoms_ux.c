@@ -46,6 +46,10 @@
 #include <mach/task_policy.h>
 #endif /* __APPLE__ */
 
+#if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
+instType fast_ser_inst_type(icoms *p, int tryhard, void *, void *); 
+#endif /* ENABLE_SERIAL */
+
 /* Create and return a list of available serial ports or USB instruments for this system */
 /* return icom error */
 int icompaths_refresh_paths(icompaths *p) {
@@ -65,9 +69,10 @@ int icompaths_refresh_paths(icompaths *p) {
 #endif /* ENABLE_USB */
 	usbend = p->npaths;
 
-#ifdef ENABLE_SERIAL
+#if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
 #ifdef __APPLE__
 	/* Search the OSX registry for serial ports */
+// ~~99 need to identify FTDI serial ports and mark them "fast"
 	{
 	    kern_return_t kstat; 
 	    mach_port_t mp;						/* Master IO port */
@@ -94,6 +99,7 @@ int icompaths_refresh_paths(icompaths *p) {
 		/* Find all the matching serial ports */
 		for (;;) {
 			char pname[100];
+			int fast = 0;
 			
 	        CFTypeRef dfp;		/* Device file path */
 
@@ -115,10 +121,25 @@ int icompaths_refresh_paths(icompaths *p) {
 			 || strstr(pname, "Bluetooth") != NULL)
 				goto continue2;
 
-			/* Add the port to the list */
-			p->add_serial(p, pname, pname);
-			a1logd(p->log, 8, "icoms_get_paths: Added path '%s'\n",pname);
+			if (strstr(pname, "usbserial") != NULL)
+				fast = 1;
 
+			/* Add the port to the list */
+			p->add_serial(p, pname, pname, fast);
+			a1logd(p->log, 8, "icoms_get_paths: Added path '%s' fast %d\n",pname, fast);
+
+			/* If fast, try and identify it */
+			if (fast) {
+				icompath *path;
+				icoms *icom;
+				if ((path = p->get_last_path(p)) != NULL
+				 && (icom = new_icoms(path, p->log)) != NULL) {
+					instType itype = fast_ser_inst_type(icom, 0, NULL, NULL);
+					if (itype != instUnknown)
+						icompaths_set_serial_itype(path, itype);
+					icom->del(icom);
+				}
+			}
 		continue2:
             CFRelease(dfp);
 		continue1:
@@ -177,6 +198,7 @@ int icompaths_refresh_paths(icompaths *p) {
 	*/
 
 	/* Search for devices that match the pattern /dev/ttyS[0-9]* and /dev/ttyUSB* */
+	/* We will assume that ttyUSB* ports includes FTDI ports */
 	{
 		DIR *dd;
 		struct dirent *de;
@@ -190,6 +212,7 @@ int icompaths_refresh_paths(icompaths *p) {
 		for (;;) {
 			int fd;
 			char *dpath;
+			int fast = 0;
 
 			if ((de = readdir(dd)) == NULL)
 				break;
@@ -242,9 +265,25 @@ int icompaths_refresh_paths(icompaths *p) {
 			}
 			a1logd(p->log, 8, "icoms_get_paths: open'd serial \"%s\" - assume real\n",dpath);
 
+			if (strncmp(de->d_name, "ttyUSB", 5) == 0)
+				fast = 1;
+
 			/* Add the path to the list */
-			p->add_serial(p, dpath, dpath);
-			a1logd(p->log, 8, "icoms_get_paths: Added path '%s'\n",dpath);
+			p->add_serial(p, dpath, dpath, 0);
+			a1logd(p->log, 8, "icoms_get_paths: Added path '%s' fast %d\n",dpath,fast);
+
+			/* If fast, try and identify it */
+			if (fast) {
+				icompath *path;
+				icoms *icom;
+				if ((path = p->get_last_path(p)) != NULL
+				 && (icom = new_icoms(path, p->log)) != NULL) {
+					instType itype = fast_ser_inst_type(icom, 0, NULL, NULL);
+					if (itype != instUnknown)
+						icompaths_set_serial_itype(path, itype);
+					icom->del(icom);
+				}
+			}
 		}
 		closedir(dd);
 	}
@@ -252,12 +291,13 @@ int icompaths_refresh_paths(icompaths *p) {
 #endif /* ENABLE_SERIAL */
 
 	/* Sort the serial /dev keys so people don't get confused... */
-	/* Sort USB serial ports ahead of normal serial ports. */
+	/* Sort identified instruments ahead of unknown serial ports */
 	for (i = usbend; i < (p->npaths-1); i++) {
 		for (j = i+1; j < p->npaths; j++) {
-			if ((strncmp(p->paths[i]->name, "/dev/ttyUSB", 11) ||
-			     strncmp(p->paths[j]->name, "/dev/ttyS", 9)) &&
-			     strcmp(p->paths[i]->name, p->paths[j]->name) > 0) {
+			if ((p->paths[i]->itype == instUnknown && p->paths[j]->itype != instUnknown)
+			 || (((p->paths[i]->itype == instUnknown && p->paths[j]->itype == instUnknown)
+			   || (p->paths[i]->itype != instUnknown && p->paths[j]->itype != instUnknown))
+			  && strcmp(p->paths[i]->name, p->paths[j]->name) > 0)) {
 				icompath *tt = p->paths[i];
 				p->paths[i] = p->paths[j];
 				p->paths[j] = tt;
@@ -279,7 +319,7 @@ static void icoms_close_port(icoms *p) {
 			hid_close_port(p);
 		}
 #endif
-#ifdef ENABLE_SERIAL
+#if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
 		if (p->fd != -1) {
 			close(p->fd);
 			p->fd = -1;
@@ -289,10 +329,20 @@ static void icoms_close_port(icoms *p) {
 	}
 }
 
-#ifdef ENABLE_SERIAL
+#if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
 
 static int icoms_ser_write(icoms *p, char *wbuf, double tout);
-static int icoms_ser_read(icoms *p, char *rbuf, int bsize, char tc, int ntc, double tout);
+static int icoms_ser_read(icoms *p, char *rbuf, int bsize, char *tc, int ntc, double tout);
+
+
+#ifdef __APPLE__
+# ifndef IOSSIOSPEED
+#  define IOSSIOSPEED    _IOW('T', 2, speed_t)
+# endif
+# ifndef B921600
+#  define B921600 921600
+# endif
+#endif
 
 /* Set the serial port number and characteristics */
 /* This always re-opens the port */
@@ -344,7 +394,7 @@ word_length	 word
 			a1logd(p->log, 8, "icoms_set_ser_port: about to open serial port '%s'\n",p->spath);
 
 			if ((p->fd = open(p->spath, O_RDWR | O_NOCTTY )) < 0) {
-				a1loge(p->log, ICOM_SYS, "icoms_set_ser_port: open port '%s' failed with %d (%s)\n",p->spath,p->fd,strerror(errno));
+				a1logd(p->log, 1, "icoms_set_ser_port: open port '%s' failed with %d (%s)\n",p->spath,p->fd,strerror(errno));
 				return ICOM_SYS;
 			}
 			/* O_NONBLOCK O_SYNC */
@@ -490,6 +540,9 @@ word_length	 word
 			case baud_115200:
 				speed = B115200;
 				break;
+			case baud_921600:
+				speed = B921600;
+				break;
 			default:
 				close(p->fd);
 				a1loge(p->log, ICOM_SYS, "icoms_set_ser_port: illegal baud rate! (0x%x)\n",p->br);
@@ -498,6 +551,15 @@ word_length	 word
 
 		tcflush(p->fd, TCIOFLUSH);			/* Discard any current in/out data */
 
+#ifdef NEVER
+		// for osx >= 10.4 ? or >= 10.3 ??
+		// Doesn't actually seem to be needed... ??
+		if (speed > B115200) {
+			if (ioctl(p->fd, IOSSIOSPEED, &speed ) == -1)
+				printf( "Error %d calling ioctl( ..., IOSSIOSPEED, ... )\n", errno );
+	
+		}
+#endif
 		if ((rv = cfsetispeed(&tio,  speed)) < 0) {
 			close(p->fd);
 			a1loge(p->log, ICOM_SYS, "icoms_set_ser_port: cfsetispeed failed with '%s'\n", strerror(errno));
@@ -611,7 +673,7 @@ icoms_ser_read(
 icoms *p,
 char *rbuf,			/* Buffer to store characters read */
 int bsize,			/* Buffer size */
-char tc,			/* Terminating characer */
+char *tc,			/* Terminating characers, NULL for none */
 int ntc,			/* Number of terminating characters */
 double tout			/* Time out in seconds */
 ) {
@@ -634,34 +696,6 @@ double tout			/* Time out in seconds */
 		p->lserr = rv = ICOM_SYS;
 		return rv;
 	}
-
-#ifdef NEVER
-	/* The Prolific 2303 USB<->serial seems to choke on this, */
-	/* so we just put up with the 100msec delay at the end of each reply. */
-	if (tc != p->tc) {	/* Set the termination char */
-		struct termios tio;
-
-		if (tcgetattr(p->fd, &tio) < 0) {
-			a1loge(p->log, ICOM_SYS, "icoms_ser_read: tcgetattr failed with '%s' on '%s'\n",
-			                                                     strerror(errno),p->spath);
-			p->lserr = rv = ICOM_SYS;
-			return rv;
-		}
-
-		tio.c_cc[VEOL] = tc;
-
-		/* Make change immediately */
-		tcflush(p->fd, TCIFLUSH);
-		if (tcsetattr(p->fd, TCSANOW, &tio) < 0) {
-			a1loge(p->log, ICOM_SYS, "icoms_ser_read: tcsetattr failed with '%s' on '%s'\n",
-			                                                     strerror(errno),p->spath);
-			p->lserr = rv = ICOM_SYS;
-			return rv;
-		}
-
-		p->tc = tc;
-	}
-#endif
 
 	/* Wait for serial input to have data */
 	pa[0].fd = p->fd;
@@ -695,10 +729,18 @@ double tout			/* Time out in seconds */
 				} else if (rbytes > 0) {
 					i = toc;		/* Reset time */
 					bsize -= rbytes;
-					while(rbytes--) {	/* Count termination characters */
-						if (*rbuf++ == tc)
-							j++;
-					}
+					if (tc != NULL) {
+						while(rbytes--) {	/* Count termination characters */
+							char ch = *rbuf++, *tcp = tc;
+							
+							while(*tcp != '\000') {
+								if (ch == *tcp)
+									j++;
+								tcp++;
+							}
+						}
+					} else
+						rbuf += rbytes;
 				}
 			}
 		} else {

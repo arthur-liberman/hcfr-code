@@ -1295,7 +1295,7 @@ static xfile *edr_convert(xfile **pxf, xfile *xi, int verb) {
 	xfile *xf = NULL;
 	ccss *c;
 	
-	if (verb) printf("Translating '%s' (%zd bytes)\n",xi->name, xi->len);
+	if (verb) printf("Translating '%s' (%d bytes)\n",xi->name, (int)xi->len);
 
 	if ((c = parse_EDR(xi->buf, xi->len, xi->name, verb)) == NULL) {
 		if (verb) printf("Failed to parse EDR '%s'\n",xi->name);
@@ -1431,7 +1431,7 @@ static ccss *parse_EDR(
 	char dispdesc[256];
 	int ttmin, ttmax;	/* Min & max technology strings (inclusive) */
 	int *trefmodes;		/* Corresponding refresh mode for tecnology */
-	char **tsels;	/* Corresponding UI selection chars */
+	char **tsels;		/* Corresponding UI selection chars */
 	char **ttstrings;	/* Corresponding technology strings */
 	int ttype;			/* Technology type idex */
 	int nsets, set;
@@ -1480,7 +1480,7 @@ static ccss *parse_EDR(
 		trefmodes[15] = 0; tsels[15] = "o";  ttstrings[15] = "LED OLED";
 		trefmodes[16] = 0; tsels[16] = "a";  ttstrings[16] = "LED AMOLED";
 		trefmodes[17] = 1; tsels[17] = "m";  ttstrings[17] = "Plasma";
-		trefmodes[18] = 0; tsels[18] = NULL; ttstrings[18] = "LCD RG Phosphor";	// is this LCD ??
+		trefmodes[18] = 0; tsels[18] = NULL; ttstrings[18] = "LCD RG Phosphor";
 		trefmodes[19] = 1; tsels[19] = NULL; ttstrings[19] = "Projector RGB Filter Wheel";
 		trefmodes[20] = 1; tsels[10] = NULL; ttstrings[20] = "Projector RGBW Filter Wheel";
 		trefmodes[21] = 1; tsels[21] = NULL; ttstrings[21] = "Projector RGBCMY Filter Wheel";

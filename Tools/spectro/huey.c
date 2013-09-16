@@ -61,7 +61,8 @@ static inst_code huey_interp_code(inst *pp, int ec);
 static inst_code huey_check_unlock(huey *p);
 
 #define CALFACTOR 3.428         	/* Emissive magic calibration factor */
-#define AMB_SCALE_FACTOR 5.772e-3	/* Ambient mode scale factor */ 
+//#define AMB_SCALE_FACTOR 5.772e-3	/* Ambient mode scale factor Lux/pi*/ 
+#define AMB_SCALE_FACTOR 18.1333e-3	/* Ambient mode scale factor (Lux) */ 
 									/* This is only approximate, and were derived */
 									/* by matching readings from the i1pro. */
 
@@ -823,7 +824,7 @@ huey_take_XYZ_measurement(
 	if (IMODETST(p->mode, inst_mode_emis_ambient)) {
 		if ((ev = huey_take_amb_measurement(p, 0, &XYZ[1])) != inst_ok)
 			return ev;
-		XYZ[1] *= AMB_SCALE_FACTOR;		/* Times aproximate fudge factor */
+		XYZ[1] *= AMB_SCALE_FACTOR;		/* Times aproximate fudge factor to Lux */
 		XYZ[0] = icmD50.X * XYZ[1];		/* Convert to D50 neutral */
 		XYZ[2] = icmD50.Z * XYZ[1];
 	} else {
@@ -1048,7 +1049,7 @@ huey_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 
 	} else {
 		a1logd(p->log, 1, "huey_init_coms: wrong communications type for device!\n");
-		return huey_interp_code((inst *)p, HUEY_UNKNOWN_MODEL);
+		return inst_coms_fail;
 	}
 
 	if ((p->icom->vid == 0x0765 && p->icom->pid == 0x5001)
@@ -1146,7 +1147,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	int user_trig = 0;
 	int rv = inst_protocol_error;
 
-a1logd(p->log, 1, "huey: huey_read_sample called\n");
+	a1logd(p->log, 1, "huey: huey_read_sample called\n");
 
 	if (!p->gotcoms)
 		return inst_no_coms;
@@ -1160,7 +1161,6 @@ a1logd(p->log, 1, "huey: huey_read_sample called\n");
 			return inst_unsupported;
 		}
 
-a1logd(p->log, 1, "huey: about to wait for user trigger\n");
 		for (;;) {
 			if ((rv = p->uicallback(p->uic_cntx, inst_armed)) != inst_ok) {
 				if (rv == inst_user_abort)
@@ -1178,14 +1178,12 @@ a1logd(p->log, 1, "huey: about to wait for user trigger\n");
 
 	/* Progromatic Trigger */
 	} else {
-a1logd(p->log, 1, "huey: checking for abort\n");
 		/* Check for abort */
 		if (p->uicallback != NULL
 		 && (rv = p->uicallback(p->uic_cntx, inst_armed)) == inst_user_abort)
 			return rv;				/* Abort */
 	}
 
-a1logd(p->log, 1, "huey: about to call huey_take_XYZ_measurement\n");
 	/* Read the XYZ value */
 	if ((rv = huey_take_XYZ_measurement(p, val->XYZ)) != inst_ok) {
 		return rv;

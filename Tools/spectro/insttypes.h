@@ -21,6 +21,7 @@
 	extern "C" {
 #endif
 
+
 /* ----------------------------- */
 /* Possible types of instruments */
 typedef enum {
@@ -48,7 +49,11 @@ typedef enum {
 	instSpyder4,				/* Datacolor Spyder4 */
 	instHuey,					/* GretagMacbeth Huey */
 	instSmile,					/* X-rite Colormunki Smile */
+	instSpecbos1201,			/* JETI specbos 1201 */
+	instSpecbos,				/* JETI specbos XXXX */
 	instColorHug,				/* Hughski ColorHug */
+
+
 
 } instType;
 

@@ -63,7 +63,7 @@ int setup_spyd2() {
 			if ((no_paths = xdg_bds(NULL, &bin_paths, xdg_data, xdg_read, xdg_user,
 	                   "ArgyllCMS/spyd2PLD.bin" XDG_FUDGE "color/spyd2PLD.bin"
 )) < 1) {
-				a1logd(g_log, 1, "etup_spyd2: failed to find PLD file\n");
+				a1logd(g_log, 1, "setup_spyd2: failed to find PLD file\n");
 				break;
 		}
 

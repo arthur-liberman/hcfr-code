@@ -115,6 +115,7 @@
 #undef DEBUG			/* Turn on debug printfs */
 #undef PLOT_DEBUG		/* Use plot to show readings & processing */
 #undef PLOT_REFRESH 	/* Plot refresh rate measurement info */
+#undef PLOT_UPDELAY	/* Plot data used to determine display update delay */
 #undef DUMP_SCANV		/* Dump scan readings to a file "i1pdump.txt" */
 #undef DUMP_DARKM		/* Append raw dark readings to file "i1pddump.txt" */
 #undef APPEND_MEAN_EMMIS_VAL /* Append averaged uncalibrated reading to file "i1pdump.txt" */
@@ -124,6 +125,7 @@
 #undef IGNORE_WHITE_INCONS	/* Ignore define reference reading inconsistency */
 #undef HIGH_RES_DEBUG
 #undef HIGH_RES_PLOT
+#undef ANALIZE_EXISTING		/* Analize the manufacturers existing filter shape */
 #undef PLOT_BLACK_SUBTRACT	/* Plot temperature corrected black subtraction */
 #undef FAKE_AMBIENT		/* Fake the ambient mode for a Rev A */
 
@@ -143,18 +145,18 @@
 #define ADARKINT_MAX2 4.0		/* Max cal time for adaptive dark cal Rev E or no high gain */
 
 #define EMIS_SCALE_FACTOR 1.0	/* Emission mode scale factor */ 
-#define AMB_SCALE_FACTOR (1.0/3.141592654)	/* Ambient mode scale factor - convert */ 
-								/* from Lux to Lux/PI */
-								/* These factors get the same behaviour as the GMB drivers. */
+#define AMB_SCALE_FACTOR 1.0	/* Ambient mode scale factor for Lux */
+//#define AMB_SCALE_FACTOR (1.0/3.141592654)	/* Ambient mode scale factor - convert */ 
+//								/* from Lux to Lux/PI */
+//								/* These factors get the same behaviour as the GMB drivers. */
 
 #define NSEN_MAX 140			/* Maximum nsen value we can cope with */
 
 /* High res mode settings */
-#define HIGHRES_SHORT 350
-#define HIGHRES_LONG  740
+#define HIGHRES_SHORT 370.0		/* i1pro2 uses more of the CCD, */
+#define HIGHRES_LONG  730.0		/* leaving less scope for extenion */
 #define HIGHRES_WIDTH  (10.0/3.0) /* (The 3.3333 spacing and lanczos2 seems a good combination) */
 #define HIGHRES_REF_MIN 375.0	  /* Too much stray light below this in reflective mode */
-								  /* (i1pro2 could go lower with different correction) */
 
 #include "i1pro.h"
 #include "i1pro_imp.h"
@@ -162,6 +164,8 @@
 /* - - - - - - - - - - - - - - - - - - */
 #define LAMP_OFF_TIME 1500		/* msec to make sure lamp is dark for dark measurement */
 #define PATCH_CONS_THR 0.1		/* Dark measurement consistency threshold */
+
+#define USE_RD_SYNC				/* Use mutex syncronisation, else depend on TRIG_DELAY */
 #define TRIG_DELAY 10			/* Measure trigger delay to allow pending read, msec */
 
 /* - - - - - - - - - - - - - - - - - - */
@@ -260,6 +264,58 @@ void plot_wav_2(i1proimp *m, int hires, double *data1, double *data2) {
 
 /* ============================================================ */
 
+/* Return a linear interpolated spectral value. Clip to ends */
+static double wav_lerp(i1proimp *m, int hires, double *ary, double wl) {
+	int jj;
+	double wl0, wl1, bl;
+	double rv;
+
+	jj = (int)floor(XSPECT_DIX(m->wl_short[hires], m->wl_long[hires], m->nwav[hires], wl));
+	if (jj < 0)
+		jj = 0;
+	else if (jj > (m->nwav[hires]-2))
+		jj = m->nwav[hires]-2;
+
+	wl0 = XSPECT_WL(m->wl_short[hires], m->wl_long[hires], m->nwav[hires], jj); 
+	wl1 = XSPECT_WL(m->wl_short[hires], m->wl_long[hires], m->nwav[hires], jj+1); 
+
+	bl = (wl - wl0)/(wl1 - wl0);
+	if (bl < 0.0)
+		bl = 0;
+	else if (bl > 1.0)
+		bl = 1.0;
+
+	rv = (1.0 - bl) * ary[jj] + bl * ary[jj+1];
+
+	return rv;
+}
+
+/* Same as above, but return cv value on clip */
+static double wav_lerp_cv(i1proimp *m, int hires, double *ary, double wl, double cv) {
+	int jj;
+	double wl0, wl1, bl;
+	double rv;
+
+	jj = (int)floor(XSPECT_DIX(m->wl_short[hires], m->wl_long[hires], m->nwav[hires], wl));
+	if (jj < 0)
+		jj = 0;
+	else if (jj > (m->nwav[hires]-2))
+		jj = m->nwav[hires]-2;
+
+	wl0 = XSPECT_WL(m->wl_short[hires], m->wl_long[hires], m->nwav[hires], jj); 
+	wl1 = XSPECT_WL(m->wl_short[hires], m->wl_long[hires], m->nwav[hires], jj+1); 
+
+	bl = (wl - wl0)/(wl1 - wl0);
+	if (bl < 0.0 || bl > 1.0)
+		return cv;
+
+	rv = (1.0 - bl) * ary[jj] + bl * ary[jj+1];
+
+	return rv;
+}
+
+/* ============================================================ */
+
 /* Implementation struct */
 
 /* Add an implementation structure */
@@ -316,7 +372,8 @@ void del_i1proimp(i1pro *p) {
 				a1logd(p->log,5,"i1pro switch thread termination failed\n");
 			}
 			m->th->del(m->th);
-			usb_uninit_cancel(&m->cancelt);		/* Don't need cancel token now */
+			usb_uninit_cancel(&m->sw_cancel);		/* Don't need cancel token now */
+			usb_uninit_cancel(&m->rd_sync);			/* Don't need sync token now */
 		}
 		a1logd(p->log,5,"i1pro switch thread terminated\n");
 
@@ -403,7 +460,8 @@ i1pro_code i1pro_imp_init(i1pro *p) {
 	if ((ev = i1pro_reset(p, 0x1f)) != I1PRO_OK)
 		return ev;
 
-	usb_init_cancel(&m->cancelt);			/* Init cancel token */
+	usb_init_cancel(&m->sw_cancel);			/* Init switch cancel token */
+	usb_init_cancel(&m->rd_sync);			/* Init reading sync token */
 
 #ifdef USE_THREAD
 	/* Setup the switch monitoring thread */
@@ -1356,6 +1414,19 @@ i1pro_code i1pro_imp_get_n_a_cals(i1pro *p, inst_cal_type *pn_cals, inst_cal_typ
 		a_cals |= inst_calt_emis_int_time;
 	}
 
+	/* Special case high res. emissive cal fine calibration, */
+	/* needs reflective cal. */
+	/* Hmmm. Should we do this every time for emission, in case */
+	/* we switch to hires mode ??? */
+	if ((cs->emiss || cs->trans)			/* We're in an emissive mode */
+	 && m->hr_inited						/* and hi-res has been setup */
+	 && (!m->emis_hr_cal || (n_cals & inst_calt_em_dark)) /* and the emis cal hasn't been fine */
+											/* tuned or we will be doing a dark cal */
+	 && p->itype != instI1Monitor) {		/* i1Monitor doesn't have reflective cal capability */
+		n_cals |= inst_calt_ref_white;		/* Need a reflective white calibration */
+		a_cals |= inst_calt_ref_white;
+	}
+
 	if (pn_cals != NULL)
 		*pn_cals = n_cals;
 
@@ -1380,7 +1451,7 @@ i1pro_code i1pro_imp_calibrate(
 	i1proimp *m = (i1proimp *)p->m;
 	int mmode = m->mmode;
 	i1pro_state *cs = &m->ms[m->mmode];
-	int sx1, sx2, sx;
+	int sx1, sx2, sx3, sx;
 	time_t cdate = time(NULL);
 	int nummeas = 0;
 	int ltocmode = 0;			/* 1 = Lamp turn on compensation mode */
@@ -1411,17 +1482,26 @@ i1pro_code i1pro_imp_calibrate(
 
 	/* See if it's a calibration we understand */
 	if (*calt & ~available & inst_calt_all_mask) { 
+		a1logd(p->log,4,"i1pro_imp_calibrate: unsupported, calt 0x%x, available 0x%x\n",calt,available);
 		return I1PRO_UNSUPPORTED;
 	}
 
 	if (*calt & inst_calt_ap_flag) {
-		sx1 = 0; sx2 = i1p_no_modes;		/* Go through all the modes */
+		sx1 = 0; sx2 = sx3 = i1p_no_modes;		/* Go through all the modes */
 	} else {
-		sx1 = m->mmode; sx2 = sx1 + 1;		/* Just current mode */
+		/* Special case - doing reflective cal. to fix emiss hires */
+		if ((cs->emiss || cs->trans)			/* We're in an emissive mode */
+		 && (*calt & inst_calt_ref_white)) {		/* but we're asked for a ref white cal */
+			sx1 = m->mmode; sx2 = sx1 + 1;		/* Just current mode */
+			sx3 = i1p_refl_spot;				/* no extra mode */
+		} else {
+			sx1 = m->mmode; sx2 = sx1 + 1;		/* Just current mode */
+			sx3 = i1p_no_modes;					/* no extra mode */
+		}
 	}
 
 	/* Go through the modes we are going to cover */
-	for (sx = sx1; sx < sx2; sx++) {
+	for (sx = sx1; sx < sx2; (++sx >= sx2 && sx3 != i1p_no_modes) ? sx = sx3, sx2 = sx+1, sx3 = i1p_no_modes : 0) {
 		i1pro_state *s = &m->ms[sx];
 		m->mmode = sx;				/* A lot of functions we call rely on this */
 
@@ -1459,15 +1539,15 @@ i1pro_code i1pro_imp_calibrate(
 
 			free_dvector(wlraw, -1, m->nraw-1);
 
-			/* Compute normal res. reflective wavelength corrected filters */
-			if ((ev = i1pro2_compute_wav_filters(p, 1)) != I1PRO_OK) {
-				a1logd(p->log,2,"i1pro2_compute_wav_filters() failed\n");
+			/* Compute normal res. emissive/transmissive wavelength corrected filters */
+			if ((ev = i1pro_compute_wav_filters(p, 0, 0)) != I1PRO_OK) {
+				a1logd(p->log,2,"i1pro_compute_wav_filters() failed\n");
 				return ev;
 			}
 
-			/* Compute normal res. emissive/transmissive wavelength corrected filters */
-			if ((ev = i1pro2_compute_wav_filters(p, 0)) != I1PRO_OK) {
-				a1logd(p->log,2,"i1pro2_compute_wav_filters() failed\n");
+			/* Compute normal res. reflective wavelength corrected filters */
+			if ((ev = i1pro_compute_wav_filters(p, 0, 1)) != I1PRO_OK) {
+				a1logd(p->log,2,"i1pro_compute_wav_filters() failed\n");
 				return ev;
 			}
 
@@ -2112,13 +2192,28 @@ i1pro_code i1pro_imp_calibrate(
 					return ev;
 				}
 				/* Compute a calibration factor given the reading of the white reference. */
-				i1pro_compute_white_cal(p, s->cal_factor[0], m->white_ref[0], s->cal_factor[0],
-				                           s->cal_factor[1], m->white_ref[1], s->cal_factor[1]);
+				ev = i1pro_compute_white_cal(p,
+				                s->cal_factor[0], m->white_ref[0], s->cal_factor[0],
+				                s->cal_factor[1], m->white_ref[1], s->cal_factor[1],
+								!s->scan);		/* Use this for emis hires fine tune if not scan */
+
+				if (ev != I1PRO_RD_TRANSWHITEWARN && ev != I1PRO_OK) {
+					m->mmode = mmode;			/* Restore actual mode */
+					return ev;
+				}
 	
-			} else {
+			} else {	/* transmissive */
 				/* Compute a calibration factor given the reading of the white reference. */
-				m->transwarn |= i1pro_compute_white_cal(p, s->cal_factor[0], NULL, s->cal_factor[0],
-				                                       s->cal_factor[1], NULL, s->cal_factor[1]);
+				ev = i1pro_compute_white_cal(p, s->cal_factor[0], NULL, s->cal_factor[0],
+				                                s->cal_factor[1], NULL, s->cal_factor[1], 0);
+				if (ev == I1PRO_RD_TRANSWHITEWARN) {
+					m->transwarn |= 1;
+					ev = I1PRO_OK;
+				}
+				if (ev != I1PRO_OK) {
+					m->mmode = mmode;			/* Restore actual mode */
+					return ev;
+				}
 			}
 			s->cal_valid = 1;
 			s->cfdate = cdate;
@@ -2284,6 +2379,156 @@ int icoms2i1pro_err(int se) {
 		return I1PRO_COMS_FAIL;
 	return I1PRO_OK;
 }
+
+/* - - - - - - - - - - - - - - - - */
+/* Measure a display update delay. It is assumed that a */
+/* white to black change has been made to the displayed color, */
+/* and this will measure the time it took for the update to */
+/* be noticed by the instrument, up to 0.6 seconds. */
+/* inst_misread will be returned on failure to find a transition to black. */
+#define NDMXTIME 0.7		/* Maximum time to take */
+#define NDSAMPS 500			/* Debug samples */
+
+i1pro_code i1pro_read_patches_all(i1pro *p, double **specrd, int numpatches, double *inttime,int gainmode);
+
+typedef struct {
+	double sec;
+	double rgb[3];
+	double tot;
+} i1rgbdsamp;
+
+i1pro_code i1pro_imp_meas_delay(
+i1pro *p,
+int *msecdelay)	{	/* Return the number of msec */
+	i1pro_code ev = I1PRO_OK;
+	i1proimp *m = (i1proimp *)p->m;
+	i1pro_state *s = &m->ms[m->mmode];
+	int i, j, k, mm;
+	double **multimeas;			/* Spectral measurements */
+	int nummeas;
+	double rgbw[3] = { 610.0, 520.0, 460.0 };
+	double ucalf = 1.0;				/* usec_time calibration factor */
+	double inttime;
+	i1rgbdsamp *samp;
+	double stot, etot, del, thr;
+	double etime;
+	int isdeb;
+
+	/* Read the samples */
+	inttime = m->min_int_time;
+	nummeas = (int)(NDMXTIME/inttime + 0.5);
+	multimeas = dmatrix(0, nummeas-1, -1, m->nwav[m->highres]-1);
+	if ((samp = (i1rgbdsamp *)calloc(sizeof(i1rgbdsamp), nummeas)) == NULL) {
+		a1logd(p->log, 1, "i1pro_meas_delay: malloc failed\n");
+		return I1PRO_INT_MALLOC;
+	}
+
+//printf("~1 %d samples at %f int\n",nummeas,inttime);
+	if ((ev = i1pro_read_patches_all(p, multimeas, nummeas, &inttime, 0)) != inst_ok) {
+		free_dmatrix(multimeas, 0, nummeas-1, 0, m->nwav[m->highres]-1);
+		free(samp);
+		return ev;
+	} 
+
+	/* Convert the samples to RGB */
+	for (i = 0; i < nummeas; i++) {
+		samp[i].sec = i * inttime;
+		samp[i].rgb[0] = samp[i].rgb[1] = samp[i].rgb[2] = 0.0;
+		for (j = 0; j < m->nwav[m->highres]; j++) {
+			double wl = XSPECT_WL(m->wl_short[m->highres], m->wl_long[m->highres], m->nwav[m->highres], j);
+
+//printf("~1 multimeas %d %d = %f\n",i, j, multimeas[i][j]);
+			for (k = 0; k < 3; k++) {
+				double tt = (double)(wl - rgbw[k]);
+				tt = (50.0 - fabs(tt))/50.0;
+				if (tt < 0.0)
+					tt = 0.0;
+				samp[i].rgb[k] += sqrt(tt) * multimeas[i][j];
+			}
+		}
+		samp[i].tot = samp[i].rgb[0] + samp[i].rgb[1] + samp[i].rgb[2];
+	}
+	free_dmatrix(multimeas, 0, nummeas-1, 0, m->nwav[m->highres]-1);
+
+	a1logd(p->log, 3, "i1pro_measure_refresh: Read %d samples for refresh calibration\n",nummeas);
+
+#ifdef PLOT_UPDELAY
+	/* Plot the raw sensor values */
+	{
+		double xx[NDSAMPS];
+		double y1[NDSAMPS];
+		double y2[NDSAMPS];
+		double y3[NDSAMPS];
+		double y4[NDSAMPS];
+
+		for (i = 0; i < nummeas && i < NDSAMPS; i++) {
+			xx[i] = samp[i].sec;
+			y1[i] = samp[i].rgb[0];
+			y2[i] = samp[i].rgb[1];
+			y3[i] = samp[i].rgb[2];
+			y4[i] = samp[i].tot;
+//printf("%d: %f -> %f\n",i,samp[i].sec, samp[i].tot);
+		}
+		printf("Display update delay measure sensor values and time (sec)\n");
+		do_plot6(xx, y1, y2, y3, y4, NULL, NULL, nummeas);
+	}
+#endif
+
+	/* Over the first 100msec, locate the maximum value */
+	etime = samp[nummeas-1].sec;
+	stot = -1e9;
+	for (i = 0; i < nummeas; i++) {
+		if (samp[i].tot > stot)
+			stot = samp[i].tot;
+		if (samp[i].sec > 0.1)
+			break;
+	}
+
+	/* Over the last 100msec, locate the maximum value */
+	etime = samp[nummeas-1].sec;
+	etot = -1e9;
+	for (i = nummeas-1; i >= 0; i--) {
+		if (samp[i].tot > etot)
+			etot = samp[i].tot;
+		if ((etime - samp[i].sec) > 0.1)
+			break;
+	}
+
+	del = stot - etot;
+	thr = etot + 0.30 * del;		/* 30% of transition threshold */
+
+#ifdef PLOT_UPDELAY
+	a1logd(p->log, 0, "i1pro_meas_delay: start tot %f end tot %f del %f, thr %f\n", stot, etot, del, thr);
+#endif
+
+	/* Check that there has been a transition */
+	if (del < 5.0) {
+		free(samp);
+		a1logd(p->log, 1, "i1pro_meas_delay: can't detect change from white to black\n");
+		return I1PRO_RD_NOTRANS_FOUND; 
+	}
+
+	/* Locate the time at which the values are above the end values */
+	for (i = nummeas-1; i >= 0; i--) {
+		if (samp[i].tot > thr)
+			break;
+	}
+	if (i < 0)		/* Assume the update was so fast that we missed it */
+		i = 0;
+
+	a1logd(p->log, 2, "i1pro_meas_delay: stoped at sample %d time %f\n",i,samp[i].sec);
+
+	*msecdelay = (int)(samp[i].sec * 1000.0 + 0.5);
+
+#ifdef PLOT_UPDELAY
+	a1logd(p->log, 0, "i1pro_meas_delay: returning %d msec\n",*msecdelay);
+#endif
+	free(samp);
+
+	return I1PRO_OK;
+}
+#undef NDSAMPS
+#undef NDMXTIME
 
 /* - - - - - - - - - - - - - - - - */
 /* Measure a patch or strip in the current mode. */
@@ -2701,7 +2946,6 @@ i1pro_code i1pro_imp_measure(
 */
 
 i1pro_code i1pro_measure_rgb(i1pro *p, double *inttime, double *rgb);
-i1pro_code i1pro_read_patches_all(i1pro *p, double **specrd, int numpatches, double *inttime,int gainmode);
 
 #ifndef PSRAND32L 
 # define PSRAND32L(S) ((S) * 1664525L + 1013904223L)
@@ -2800,10 +3044,11 @@ i1pro_code i1pro_imp_meas_refrate(
 					tt = (40.0 - fabs(tt))/40.0;
 					if (tt < 0.0)
 						tt = 0.0;
-					samp[i].rgb[k] += tt * multimeas[i][j];
+					samp[i].rgb[k] += sqrt(tt) * multimeas[i][j];
 				}
 			}
 		}
+		free_dmatrix(multimeas, 0, nummeas-1, 0, m->nwav[m->highres]-1);
 		nfsamps = i;
 
 		a1logd(p->log, 3, "i1pro_measure_refresh: Read %d samples for refresh calibration\n",nfsamps);
@@ -3400,7 +3645,7 @@ i1pro_code i1pro_restore_refspot_cal(i1pro *p) {
 	} else
 		s->gainmode = 0;
 
-	/* Get the calibration integrattion time */
+	/* Get the calibration integration time */
 	if ((dp = m->data->get_doubles(m->data, &count, key_inttime + offst)) == NULL || count < 1) {
 		a1logd(p->log,2,"Failed to read calibration integration time from EEPRom\n");
 		return I1PRO_OK;
@@ -3471,8 +3716,12 @@ i1pro_code i1pro_restore_refspot_cal(i1pro *p) {
 		return I1PRO_OK;
 	}
 	/* Compute a calibration factor given the reading of the white reference. */
-	i1pro_compute_white_cal(p, s->cal_factor[0], m->white_ref[0], s->cal_factor[0],
-	                           s->cal_factor[1], m->white_ref[1], s->cal_factor[1]);
+	ev = i1pro_compute_white_cal(p, s->cal_factor[0], m->white_ref[0], s->cal_factor[0],
+	                               s->cal_factor[1], m->white_ref[1], s->cal_factor[1], 1);
+	if (ev != I1PRO_RD_TRANSWHITEWARN && ev != I1PRO_OK) {
+		a1logd(p->log,2,"i1pro_compute_white_cal failed to convert EEProm data to calibration\n");
+		return I1PRO_OK;
+	}
 
 	/* We've sucessfully restored the calibration */
 	s->cal_valid = 1;
@@ -4301,6 +4550,7 @@ i1pro_code i1pro_dark_measure_2(
 	/* absolute linearised sensor values. */
 	if ((ev = i1pro_sens_to_absraw(p, multimes, buf, nummeas, inttime, gainmode, &darkthresh))
 		                                                                          != I1PRO_OK) {
+		free_dmatrix(multimes, 0, nummeas-1, -1, m->nraw-1);
 		return ev;
 	}
 
@@ -5460,6 +5710,7 @@ i1pro_trigger_one_measure(
 	}
 
 	/* Trigger a measurement */
+	usb_reinit_cancel(&m->rd_sync);			/* Prepare to sync rd and trigger */
 	if (p->itype != instI1Pro2) {
 		if ((ev = i1pro_triggermeasure(p, TRIG_DELAY)) != I1PRO_OK)
 			return ev;
@@ -7449,9 +7700,11 @@ i1pro_code i1pro2_match_wl_meas(i1pro *p, double *pled_off, double *wlraw) {
 	return ev; 
 }
 
-/* Compute standard res. downsampling filters for the given mode */
-/* given the current wl_led_off, and set them as current. */
-i1pro_code i1pro2_compute_wav_filters(i1pro *p, int refl) {
+/* Compute standard/high res. downsampling filters for the given mode */
+/* given the current wl_led_off, and set them as current, */
+/* using triangular filters of the lagrange interpolation of the */
+/* CCD values. */
+i1pro_code i1pro_compute_wav_filters(i1pro *p, int hr, int refl) {
 	i1proimp *m = (i1proimp *)p->m;
 	i1pro_state *s = &m->ms[m->mmode];
 	i1pro_code ev = I1PRO_OK;
@@ -7462,28 +7715,28 @@ i1pro_code i1pro2_compute_wav_filters(i1pro *p, int refl) {
 	double trh, trx;	/* Triangle height and triangle equation x weighting */
 	int i, j, k;
 
-	a1logd(p->log,2,"i1pro2_compute_wav_filters called with correction %f raw\n",s->wl_led_off - m->wl_led_ref_off);
+	a1logd(p->log,2,"i1pro_compute_wav_filters called with correction %f raw\n",s->wl_led_off - m->wl_led_ref_off);
 
-	twidth = (m->wl_long[0] - m->wl_short[0])/(m->nwav[0] - 1.0);	/* Filter width */
+	twidth = (m->wl_long[hr] - m->wl_short[hr])/(m->nwav[hr] - 1.0);	/* Filter width */
 
 	trh = 1.0/twidth;		/* Triangle height */
 	trx = trh/twidth;		/* Triangle equation x weighting */
 
 	/* Allocate separate space for the calibrated versions, so that the */
 	/* original eeprom values are preserved */
-	if (m->mtx_c[0][refl].index == NULL) {
+	if (m->mtx_c[hr][refl].index == NULL) {
 
-		if ((m->mtx_c[0][refl].index = (int *)calloc(m->nwav[0], sizeof(int))) == NULL) {
+		if ((m->mtx_c[hr][refl].index = (int *)calloc(m->nwav[hr], sizeof(int))) == NULL) {
 			a1logd(p->log,1,"i1pro: malloc ndex1 failed!\n");
 			return I1PRO_INT_MALLOC;
 		}
 
-		if ((m->mtx_c[0][refl].nocoef = (int *)calloc(m->nwav[0], sizeof(int))) == NULL) {
+		if ((m->mtx_c[hr][refl].nocoef = (int *)calloc(m->nwav[hr], sizeof(int))) == NULL) {
 			a1logd(p->log,1,"i1pro: malloc nocoef failed!\n");
 			return I1PRO_INT_MALLOC;
 		}
 
-		if ((m->mtx_c[0][refl].coef = (double *)calloc(16 * m->nwav[0], sizeof(double)))
+		if ((m->mtx_c[hr][refl].coef = (double *)calloc(16 * m->nwav[hr], sizeof(double)))
 		                                                                        == NULL) {
 			a1logd(p->log,1,"i1pro: malloc coef failed!\n");
 			return I1PRO_INT_MALLOC;
@@ -7491,9 +7744,9 @@ i1pro_code i1pro2_compute_wav_filters(i1pro *p, int refl) {
 	}
 
 	/* For each output wavelength */
-	wlcop = m->mtx_c[0][refl].coef;
-	for (wlix = 0; wlix < m->nwav[0]; wlix++) {
-		double owl = wlix/(m->nwav[0]-1.0) * (m->wl_long[0] - m->wl_short[0]) + m->wl_short[0];
+	wlcop = m->mtx_c[hr][refl].coef;
+	for (wlix = 0; wlix < m->nwav[hr]; wlix++) {
+		double owl = wlix/(m->nwav[hr]-1.0) * (m->wl_long[hr] - m->wl_short[hr]) + m->wl_short[hr];
 		int lip;	/* Lagrange interpolation position */
 
 //		printf("Generating filter for %.1f nm width %.1f nm\n",owl, twidth);
@@ -7504,11 +7757,14 @@ i1pro_code i1pro2_compute_wav_filters(i1pro *p, int refl) {
 
 		/* Do a dumb search from high to low nm */
 		for (six = 0; six < m->nraw; six++) {
+//printf("~1 (raw2wav (six %d) %f <? (owl %f + twidth %f) %f\n",six,i1pro_raw2wav(p, refl, (double)six),owl,twidth,owl + twidth);
+
 			if (i1pro_raw2wav(p, refl, (double)six) < (owl + twidth))
 				break;
 		}
+
 		if (six < 2 || six >= m->nraw) {
-			a1loge(p->log,1,"i1pro: compute_wav_filters() six %d out of raw range to cover output filter %.1f nm width %.1f nm\n",six, owl, twidth);
+			a1loge(p->log,1,"i1pro: compute_wav_filters() six %d, exceeds raw range to cover output filter %.1f nm width %.1f nm\n",six, owl, twidth);
 			return I1PRO_INT_ASSERT;
 		}
 		eix = six;
@@ -7519,30 +7775,30 @@ i1pro_code i1pro2_compute_wav_filters(i1pro *p, int refl) {
 				break;
 		}
 		if (eix > (m->nraw - 2) ) {
-			a1loge(p->log,1,"i1pro: compute_wav_filters() eix %d out of raw range to cover output filter %.1f nm width %.1f nm\n",eix, owl, twidth);
+			a1loge(p->log,1,"i1pro: compute_wav_filters() eix %d, exceeds raw range to cover output filter %.1f nm width %.1f nm\n",eix, owl, twidth);
 			return I1PRO_INT_ASSERT;
 		}
-		eix += 2;
+		eix += 2;		/* Outside */
 
 //		for (j = six; j < eix; j++)
 //			printf("Using raw %d @ %.1f nm\n",j, i1pro_raw2wav(p, refl, (double)j));
 
 		/* Set start index for this wavelength */
-		m->mtx_c[0][refl].index[wlix] = six;
+		m->mtx_c[hr][refl].index[wlix] = six;
 
 		/* Set number of filter coefficients */
-		m->mtx_c[0][refl].nocoef[wlix] = eix - six;
+		m->mtx_c[hr][refl].nocoef[wlix] = eix - six;
 
-		if (m->mtx_c[0][refl].nocoef[wlix] > 16) {
-			a1loge(p->log,1,"i1pro: compute_wav_filters() too many filter %d\n",m->mtx_c[0][refl].nocoef[wlix]);
+		if (m->mtx_c[hr][refl].nocoef[wlix] > 16) {
+			a1loge(p->log,1,"i1pro: compute_wav_filters() too many filter %d\n",m->mtx_c[hr][refl].nocoef[wlix]);
 			return I1PRO_INT_ASSERT;
 		}
 
 		/* Start with zero filter weightings */
-		for (i = 0; i < m->mtx_c[0][refl].nocoef[wlix]; i++)
+		for (i = 0; i < m->mtx_c[hr][refl].nocoef[wlix]; i++)
 			wlcop[i] = 0.0;
 		
-		/* for each Lagrange interpolation position */
+		/* for each Lagrange interpolation position (adjacent CCD locations) */
 		for (lip = six; (lip + 3) < eix; lip++) {
 			double rwav[4];		/* Relative wavelength of these Lagrange points */
 			double den[4];		/* Denominator values for points */
@@ -7657,14 +7913,14 @@ i1pro_code i1pro2_compute_wav_filters(i1pro *p, int refl) {
 			}
 		}
 //		printf("~1 Weightings for for %.1f nm are:\n",owl);
-//		for (i = 0; i < m->mtx_c[0][refl].nocoef[wlix]; i++)
+//		for (i = 0; i < m->mtx_c[hr][refl].nocoef[wlix]; i++)
 //			printf("~1 comp %d weight %e\n",i,wlcop[i]);
 
-		wlcop += m->mtx_c[0][refl].nocoef[wlix];		/* Next group of weightings */
+		wlcop += m->mtx_c[hr][refl].nocoef[wlix];		/* Next group of weightings */
 	}
 #ifdef DEBUG 
 	/* Check against orginal filters */
-	{
+	if (!hr) {
 		int ix1, ix1c;
 		double aerr = 0.0;
 
@@ -7713,7 +7969,7 @@ i1pro_code i1pro2_compute_wav_filters(i1pro *p, int refl) {
 #endif /* DEBUG */
 
 	/* Switch normal res. to use wavelength calibrated version */
-	m->mtx[0][refl] = m->mtx_c[0][refl];
+	m->mtx[hr][refl] = m->mtx_c[hr][refl];
 
 	return ev;
 }
@@ -7722,15 +7978,33 @@ i1pro_code i1pro2_compute_wav_filters(i1pro *p, int refl) {
 /* =============================================== */
 #ifdef HIGH_RES
 
-#undef ANALIZE_EXISTING		/* Analize the manufacturers existing filter shape */
+/*
+	It turns out that using the sharpest possible resampling filter
+	may make accuracy worse (particularly on the RevE), because it
+	enhances bumps in the raw response that mightn't be there
+	after calibrating for the instrument spectral sensitivity.
+	A better scheme (which we could sythesise using the hi-res
+	emissive calibration logic) would be to calibrate the raw CCD
+	values and then resample with possible sharpening.
+	Another approach would be to sharpen after filtering with
+	non-sharpening resampling filters.
+	The bottom line is that it's best to use a gausian hi-res
+	filter to avoid sharpening in non calibrated spectral space. 
+ */
 
 /* High res congiguration */
 /* Pick one of these: */
-#define USE_LANCZOS2		/* [def] Use lanczos2 filter shape */
+#define USE_TRI_LAGRANGE		/* [und] Use normal res filter shape */
+#undef USE_LANCZOS2			/* [und] Use lanczos2 filter shape */
+#undef USE_LANCZOS3			/* [und] Use lanczos3 filter shape */
 #undef USE_DECONV			/* [und] Use deconvolution curve */
-#undef USE_GAUSSIAN			/* [und] Use gaussian filter shape*/
 #undef USE_BLACKMAN			/* [und] Use Blackman windowed sinc shape */
+#undef USE_GAUSSIAN		/* [def] Use gaussian filter shape*/
 #undef USE_CUBIC			/* [und] Use cubic spline filter */
+
+#define DO_CCDNORM			/* [def] Normalise CCD values to original */
+#define DO_CCDNORMAVG		/* [und] Normalise averages rather than per CCD bin */
+							/* (We relly on fine cal & white cal to fix it) */
 
 #undef COMPUTE_DISPERSION	/* Compute slit & optics dispersion from red laser data */
 
@@ -7767,7 +8041,7 @@ static void i1pro_debug_plot_mtx_coef(i1pro *p) {
 	free_dvector(xx, -1, m->nraw-1);
 	free_dmatrix(yy, 0, 2, -1, m->nraw-1);
 }
-#endif
+#endif	/* NEVER */
 
 #ifdef COMPUTE_DISPERSION
 
@@ -7949,9 +8223,19 @@ static double lanczos2(double wi, double x) {
 	x = fabs(1.0 * x/wi);
 	if (x >= 2.0)
 		return 0.0; 
-	if (x < 1e-5)
+	if (x < 1e-6)
 		return 1.0;
 	y = sin(DBL_PI * x)/(DBL_PI * x) * sin(DBL_PI * x/2.0)/(DBL_PI * x/2.0);
+#endif
+
+#ifdef USE_LANCZOS3
+	/* lanczos3 */
+	x = fabs(1.0 * x/wi);
+	if (x >= 3.0)
+		return 0.0; 
+	if (x < 1e-6)
+		return 1.0;
+	y = sin(DBL_PI * x)/(DBL_PI * x) * sin(DBL_PI * x/3.0)/(DBL_PI * x/3.0);
 #endif
 
 #ifdef USE_BLACKMAN		/* Use Blackman windowed sinc shape */
@@ -8035,16 +8319,122 @@ static int gcc_bug_fix(int i) {
 }
 #endif	/* APPLE */
 
+/* Re-create calibration factors for hi-res */
+/* Set emisonly to only recompute emissive factors */
+i1pro_code i1pro_create_hr_calfactors(i1pro *p, int eonly) {
+	i1proimp *m = (i1proimp *)p->m;
+	i1pro_code ev = I1PRO_OK;
+	int i, j;
+
+	/* Generate high res. per mode calibration factors. */
+	if (m->hr_inited) {
+
+		for (i = 0; i < i1p_no_modes; i++) {
+			i1pro_state *s = &m->ms[i];
+
+			if (s->cal_factor[1] == NULL)
+				s->cal_factor[1] = dvectorz(0, m->nwav[1]-1);
+
+			switch(i) {
+				case i1p_refl_spot:
+				case i1p_refl_scan:
+					if (eonly)
+						continue;
+					if (s->cal_valid) {
+						/* (Using cal_factor[] as temp. for i1pro_absraw_to_abswav()) */
+#ifdef NEVER
+						printf("~1 regenerating calibration for reflection\n");
+						printf("~1 raw white data:\n");
+						plot_raw(s->white_data);
+#endif	/* NEVER */
+						i1pro_absraw_to_abswav(p, 0, s->reflective, 1, &s->cal_factor[0], &s->white_data);
+#ifdef NEVER
+						printf("~1 Std res intmd. cal_factor:\n");
+						plot_wav(m, 0, s->cal_factor[0]);
+#endif	/* NEVER */
+						i1pro_absraw_to_abswav(p, 1, s->reflective, 1, &s->cal_factor[1], &s->white_data);
+#ifdef NEVER
+						printf("~1 High intmd. cal_factor:\n");
+						plot_wav(m, 1, s->cal_factor[1]);
+						printf("~1 Std res white ref:\n");
+						plot_wav(m, 0, m->white_ref[0]);
+						printf("~1 High res white ref:\n");
+						plot_wav(m, 1, m->white_ref[1]);
+#endif	/* NEVER */
+						ev = i1pro_compute_white_cal(p,
+						                   s->cal_factor[0], m->white_ref[0], s->cal_factor[0],
+						                   s->cal_factor[1], m->white_ref[1], s->cal_factor[1],
+						                   i == i1p_refl_spot);
+						if (ev != I1PRO_RD_TRANSWHITEWARN && ev != I1PRO_OK) {
+							return ev;
+						}
+#ifdef NEVER
+						printf("~1 Std res final cal_factor:\n");
+						plot_wav(m, 0, s->cal_factor[0]);
+						printf("~1 High final cal_factor:\n");
+						plot_wav(m, 1, s->cal_factor[1]);
+#endif	/* NEVER */
+					}
+					break;
+
+				case i1p_emiss_spot_na:
+				case i1p_emiss_spot:
+				case i1p_emiss_scan:
+					for (j = 0; j < m->nwav[1]; j++)
+						s->cal_factor[1][j] = EMIS_SCALE_FACTOR * m->emis_coef[1][j];
+					break;
+
+				case i1p_amb_spot:
+				case i1p_amb_flash:
+#ifdef FAKE_AMBIENT
+					for (j = 0; j < m->nwav[1]; j++)
+						s->cal_factor[1][j] = EMIS_SCALE_FACTOR * m->emis_coef[1][j];
+					s->cal_valid = 1;
+#else
+
+					if (m->amb_coef[0] != NULL) {
+						for (j = 0; j < m->nwav[1]; j++)
+							s->cal_factor[1][j] = AMB_SCALE_FACTOR * m->emis_coef[1][j] * m->amb_coef[1][j];
+						s->cal_valid = 1;
+					}
+#endif
+					break;
+				case i1p_trans_spot:
+				case i1p_trans_scan:
+					if (eonly)
+						continue;
+					if (s->cal_valid) {
+						/* (Using cal_factor[] as temp. for i1pro_absraw_to_abswav()) */
+						i1pro_absraw_to_abswav(p, 0, s->reflective, 1, &s->cal_factor[0], &s->white_data);
+						i1pro_absraw_to_abswav(p, 1, s->reflective, 1, &s->cal_factor[1], &s->white_data);
+						ev = i1pro_compute_white_cal(p, s->cal_factor[0], NULL, s->cal_factor[0],
+			                                            s->cal_factor[1], NULL, s->cal_factor[1], 0);
+						if (ev != I1PRO_RD_TRANSWHITEWARN && ev != I1PRO_OK) {
+							return ev;
+						}
+					}
+					break;
+			}
+		}
+	}
+	return ev;
+}
+
 /* Create or re-create high resolution mode references */
 i1pro_code i1pro_create_hr(i1pro *p) {
 	i1proimp *m = (i1proimp *)p->m;
 	i1pro_code ev = I1PRO_OK;
 	int refl;
+	double twidth = HIGHRES_WIDTH;
 	int i, j, k, cx, sx;
 	
 	/* If we don't have any way of converting raw2wav (ie. RevE polinomial equations), */
 	/* use the orginal filters to figure this out. */
-	if (p->itype != instI1Pro2 && m->raw2wav == NULL) {
+	if (m->raw2wav == NULL
+#ifndef ANALIZE_EXISTING
+	 && p->itype != instI1Pro2
+#endif
+	) {
 		i1pro_fc coeff[100][16];	/* Existing filter cooefficients */
 		i1pro_xp xp[101];			/* Crossover points each side of filter */
 		i1pro_fs fshape[100 * 16];  /* Existing filter shape */
@@ -8102,51 +8492,55 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 		}
 #endif /* HIGH_RES_PLOT */
 
+//		a1logd(p->log,3,"computing crossover points\n");
 		/* Compute the crossover points between each filter */
 		for (i = 0; i < (m->nwav[0]-1); i++) {
 			double den, y1, y2, y3, y4, yn, xn;	/* Location of intersection */
+			double eps = 1e-6;			/* Numerical tollerance */
+			double besty = -1e6;
 
 			/* between filter i and i+1, we want to find the two */
 			/* raw indexes where the weighting values cross over */
 			/* Do a brute force search to avoid making assumptions */
-			/* about the raw order */
+			/* about the raw order. */
 			for (j = 0; j < (m->mtx_o.nocoef[i]-1); j++) {
 				for (k = 0; k < (m->mtx_o.nocoef[i+1]-1); k++) {
-//					printf("~1 checking %d, %d: %d = %d, %d = %d\n",j,k, coeff[i][j].ix, coeff[i+1][k].ix, coeff[i][j+1].ix, coeff[i+1][k+1].ix);
 					if (coeff[i][j].ix == coeff[i+1][k].ix
-					 && coeff[i][j+1].ix == coeff[i+1][k+1].ix
-					 && coeff[i][j].we > 0.0 && coeff[i][j+1].we > 0.0
-					 && coeff[i][k].we > 0.0 && coeff[i][k+1].we > 0.0
-					 && ((   coeff[i][j].we >= coeff[i+1][k].we
-					 	 && coeff[i][j+1].we <= coeff[i+1][k+1].we)
-					  || (   coeff[i][j].we <= coeff[i+1][k].we
-					 	 && coeff[i][j+1].we >= coeff[i+1][k+1].we))) {
-//						printf("~1 got it at %d, %d: %d = %d, %d = %d\n",j,k, coeff[i][j].ix, coeff[i+1][k].ix, coeff[i][j+1].ix, coeff[i+1][k+1].ix);
-						goto gotit;
+					 && coeff[i][j+1].ix == coeff[i+1][k+1].ix) {
+
+//						a1logd(p->log,3,"got it at %d, %d: %d = %d, %d = %d\n",j,k, coeff[i][j].ix, coeff[i+1][k].ix, coeff[i][j+1].ix, coeff[i+1][k+1].ix);
+
+						/* Compute the intersection of the two line segments */
+						y1 = coeff[i][j].we;
+						y2 = coeff[i][j+1].we;
+						y3 = coeff[i+1][k].we;
+						y4 = coeff[i+1][k+1].we;
+//						a1logd(p->log,3,"y1 %f, y2 %f, y3 %f, y4 %f\n",y1, y2, y3, y4);
+						den = -y4 + y3 + y2 - y1;
+						if (fabs(den) < eps)
+							continue; 
+						yn = (y2 * y3 - y1 * y4)/den;
+						xn = (y3 - y1)/den;
+						if (xn < -eps || xn > (1.0 + eps))
+							continue;
+//						a1logd(p->log,3,"den = %f, yn = %f, xn = %f\n",den,yn,xn);
+						if (yn > besty) {
+							xp[i+1].wav = XSPECT_WL(m->wl_short[0], m->wl_long[0], m->nwav[0], i + 0.5);
+							xp[i+1].raw = (1.0 - xn) * coeff[i][j].ix + xn * coeff[i][j+1].ix;
+							xp[i+1].wei = yn;
+							besty = yn;
+//						a1logd(p->log,3,"Intersection %d: wav %f, raw %f, wei %f\n",i+1,xp[i+1].wav,xp[i+1].raw,xp[i+1].wei);
+//						a1logd(p->log,3,"Found new best y %f\n",yn);
+						}
+//					a1logd(p->log,3,"\n");
 					}
 				}
 			}
-		gotit:;
-			if (j >= m->mtx_o.nocoef[i]) {	/* Assert */
-				a1loge(p->log,1,"i1pro: failed to locate crossover between resampling filters\n");
+			if (besty < 0.0) {	/* Assert */
+				a1logw(p->log,"i1pro: failed to locate crossover between resampling filters\n");
 				return I1PRO_INT_ASSERT;
 			}
-//			printf("~1 %d: overlap at %d, %d: %f : %f, %f : %f\n",i, j,k, coeff[i][j].we, coeff[i+1][k].we, coeff[i][j+1].we, coeff[i+1][k+1].we);
-
-			/* Compute the intersection of the two line segments */
-			y1 = coeff[i][j].we;
-			y2 = coeff[i][j+1].we;
-			y3 = coeff[i+1][k].we;
-			y4 = coeff[i+1][k+1].we;
-			den = -y4 + y3 + y2 - y1;
-			yn = (y2 * y3 - y1 * y4)/den;
-			xn = (y3 - y1)/den;
-//			printf("~1 den = %f, yn = %f, xn = %f\n",den,yn,xn);
-			xp[i+1].wav = XSPECT_WL(m->wl_short[0], m->wl_long[0], m->nwav[0], i + 0.5);
-			xp[i+1].raw = (1.0 - xn) * coeff[i][j].ix + xn * coeff[i][j+1].ix;
-			xp[i+1].wei = yn;
-//			printf("Intersection %d: wav %f, raw %f, wei %f\n",i+1,xp[i+1].wav,xp[i+1].raw,xp[i+1].wei);
-//			printf("\n");
+//			a1logd(p->log,3,"\n");
 		}
 
 		/* Add the two points for the end filters */
@@ -8178,7 +8572,7 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 				}
 			}
 			if (j >= m->mtx_o.nocoef[0]) {	/* Assert */
-				a1loge(p->log,1,"i1pro: failed to end crossover\n");
+				a1loge(p->log,1,"i1pro: failed to find end crossover\n");
 				return I1PRO_INT_ASSERT;
 			}
 	
@@ -8217,7 +8611,7 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 				}
 			}
 			if (j >= m->mtx_o.nocoef[m->nwav[0]-1]) {	/* Assert */
-				a1loge(p->log,1,"i1pro: failed to end crossover\n");
+				a1loge(p->log,1,"i1pro: failed to find end crossover\n");
 				return I1PRO_INT_ASSERT;
 			}
 			den = -y4 + y3 + y2 - y1;
@@ -8278,6 +8672,7 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 			avgdev[0] = 0.0;
 			
 			m->raw2wav->fit_rspl(m->raw2wav, 0, sd, m->nwav[0]+1, glow, ghigh, gres, vlow, vhigh, 0.5, avgdev, NULL);
+		}
 
 #ifdef HIGH_RES_PLOT
 		/* Plot raw to wav lookup */
@@ -8300,99 +8695,98 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 			}
 
 			printf("CCD bin to wavelength mapping of original filters + rspl:\n");
-			do_plot6(xx, yy, y2, NULL, NULL, NULL, NULL, m->nwav+1);
+			do_plot6(xx, yy, y2, NULL, NULL, NULL, NULL, m->nwav[0]+1);
 			free_dvector(xx, 0, m->nwav[0]+1);
 			free_dvector(yy, 0, m->nwav[0]+1);
 			free_dvector(y2, 0, m->nwav[0]+1);
 		}
 #endif /* HIGH_RES_PLOT */
-		}
-	}
 
 #ifdef ANALIZE_EXISTING
-	/* Convert each weighting curves values into normalized values and */
-	/* accumulate into a single curve. */
-	if (!m->hr_inited) {
-		for (i = 0; i < m->nwav[0]; i++) {
-			double cwl;		/* center wavelegth */
-			double weight = 0.0;
+		/* Convert each weighting curves values into normalized values and */
+		/* accumulate into a single curve. */
+		if (!m->hr_inited) {
+			for (i = 0; i < m->nwav[0]; i++) {
+				double cwl;		/* center wavelegth */
+				double weight = 0.0;
 
-			for (j = 0; j < (m->mtx_o.nocoef[i]); j++) {
-				double w1, w2, cellw;
+				for (j = 0; j < (m->mtx_o.nocoef[i]); j++) {
+					double w1, w2, cellw;
 
-				/* Translate CCD cell boundaries index to wavelength */
-				w1 = i1pro_raw2wav_uncal(p, (double)coeff[i][j].ix - 0.5);
+					/* Translate CCD cell boundaries index to wavelength */
+					w1 = i1pro_raw2wav_uncal(p, (double)coeff[i][j].ix - 0.5);
 
-				w2 = i1pro_raw2wav_uncal(p, (double)coeff[i][j].ix + 0.5);
+					w2 = i1pro_raw2wav_uncal(p, (double)coeff[i][j].ix + 0.5);
 
-				cellw = fabs(w2 - w1);
+					cellw = fabs(w2 - w1);
 
-				cwl = XSPECT_WL(m->wl_short[0], m->wl_long[0], m->nwav[0], i);
+					cwl = XSPECT_WL(m->wl_short[0], m->wl_long[0], m->nwav[0], i);
 
-				/* Translate CCD index to wavelength */
-				fshape[ncp].wl = i1pro_raw2wav_uncal(p, (double)coeff[i][j].ix) - cwl;
-				fshape[ncp].we = coeff[i][j].we / (0.09 * cellw);
-				ncp++;
+					/* Translate CCD index to wavelength */
+					fshape[ncp].wl = i1pro_raw2wav_uncal(p, (double)coeff[i][j].ix) - cwl;
+					fshape[ncp].we = coeff[i][j].we / (0.09 * cellw);
+					ncp++;
+				}
 			}
-		}
 
-		/* Now sort by wavelength */
+			/* Now sort by wavelength */
 #define HEAP_COMPARE(A,B) (A.wl < B.wl)
-		HEAPSORT(i1pro_fs, fshape, ncp)
+			HEAPSORT(i1pro_fs, fshape, ncp)
 #undef HEAP_COMPARE
 
-		/* Strip out leading zero's */
-		for (i = 0; i < ncp; i++) {
-			if (fshape[i].we != 0.0)
-				break;
-		}
-		if (i > 1 && i < ncp) {
-			memmove(&fshape[0], &fshape[i-1], sizeof(i1pro_fs) * (ncp - i + 1));
-			ncp = ncp - i + 1;
+			/* Strip out leading zero's */
 			for (i = 0; i < ncp; i++) {
 				if (fshape[i].we != 0.0)
 					break;
 			}
-		}
+			if (i > 1 && i < ncp) {
+				memmove(&fshape[0], &fshape[i-1], sizeof(i1pro_fs) * (ncp - i + 1));
+				ncp = ncp - i + 1;
+				for (i = 0; i < ncp; i++) {
+					if (fshape[i].we != 0.0)
+						break;
+				}
+			}
 
 #ifdef HIGH_RES_PLOT
-		/* Plot the shape of the accumulated curve */
-		{
-			double *x1 = dvectorz(0, ncp-1);
-			double *y1 = dvectorz(0, ncp-1);
+			/* Plot the shape of the accumulated curve */
+			{
+				double *x1 = dvectorz(0, ncp-1);
+				double *y1 = dvectorz(0, ncp-1);
 
-			for (i = 0; i < ncp; i++) {
-				double x;
-				x1[i] = fshape[i].wl;
-				y1[i] = fshape[i].we;
+				for (i = 0; i < ncp; i++) {
+					double x;
+					x1[i] = fshape[i].wl;
+					y1[i] = fshape[i].we;
+				}
+				printf("Original accumulated curve:\n");
+				do_plot(x1, y1, NULL, NULL, ncp);
+
+				free_dvector(x1, 0, ncp-1);
+				free_dvector(y1, 0, ncp-1);
 			}
-			printf("Accumulated curve:\n");
-			do_plot(x1, y1, NULL, NULL, ncp);
-
-			free_dvector(x1, 0, ncp-1);
-			free_dvector(y1, 0, ncp-1);
-		}
 #endif /* HIGH_RES_PLOT */
 
 #ifdef HIGH_RES_DEBUG
-		/* Check that the orginal filter sums to a constant */
-		{
-			double x, sum;
+			/* Check that the orginal filter sums to a constant */
+			{
+				double x, sum;
 
-			for (x = 0.0; x < 10.0; x += 0.2) {
-				sum = 0;
-				sum += lin_fshape(fshape, ncp, x - 30.0);
-				sum += lin_fshape(fshape, ncp, x - 20.0);
-				sum += lin_fshape(fshape, ncp, x - 10.0);
-				sum += lin_fshape(fshape, ncp, x -  0.0);
-				sum += lin_fshape(fshape, ncp, x + 10.0);
-				sum += lin_fshape(fshape, ncp, x + 20.0);
-				printf("Offset %f, sum %f\n",x, sum);
+				for (x = 0.0; x < 10.0; x += 0.2) {
+					sum = 0;
+					sum += lin_fshape(fshape, ncp, x - 30.0);
+					sum += lin_fshape(fshape, ncp, x - 20.0);
+					sum += lin_fshape(fshape, ncp, x - 10.0);
+					sum += lin_fshape(fshape, ncp, x -  0.0);
+					sum += lin_fshape(fshape, ncp, x + 10.0);
+					sum += lin_fshape(fshape, ncp, x + 20.0);
+					printf("Offset %f, sum %f\n",x, sum);
+				}
 			}
-		}
 #endif /* HIGH_RES_DEBUG */
-	}
+		}
 #endif /* ANALIZE_EXISTING */
+	}	/* End of compute wavelength cal from existing filters */
 
 #ifdef COMPUTE_DISPERSION
 	if (!m->hr_inited) {
@@ -8499,7 +8893,7 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 		datao vlow, vhigh;
 		int gres[2];
 		double avgdev[2];
-		int ii;
+		int ix, ii;
 		co pp;
 
 		if ((trspl = new_rspl(RSPL_NOFLAGS, 1, 1)) == NULL) {
@@ -8507,6 +8901,7 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 			return I1PRO_INT_NEW_RSPL_FAILED;
 		}
 		
+		/* For ref, emis, ambient */
 		for (ii = 0; ii < 3; ii++) {
 			double **ref2, *ref1;
 			double smooth = 1.0;
@@ -8514,17 +8909,26 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 			if (ii == 0) {
 				ref1 = m->white_ref[0];
 				ref2 = &m->white_ref[1];
-				smooth = 0.5;
+//				smooth = 0.5;
+				smooth = 1.5;
 			} else if (ii == 1) {
+				/* Don't create high res. from low res., if there is */
+				/* a better, calibrated cal read from .cal file */
+				if (m->emis_coef[1] != NULL) {
+					if (m->emis_hr_cal) 
+						continue;
+					free(m->emis_coef[1]);		/* Regenerate it anyway */
+				}
 				ref1 = m->emis_coef[0];
 				ref2 = &m->emis_coef[1];
-				smooth = 500.0;			/* Hmm. Lagrange may work better ?? */
+				m->emis_hr_cal = 0;
+				smooth = 10.0;
 			} else {
 				if (m->amb_coef[0] == NULL)
 					break;
 				ref1 = m->amb_coef[0];
 				ref2 = &m->amb_coef[1];
-				smooth = 0.2;
+				smooth = 1.0;
 			}
 
 			if (ref1 == NULL)
@@ -8532,46 +8936,58 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 
 			vlow[0] = 1e6;
 			vhigh[0] = -1e6;
-			for (i = 0; i < m->nwav[0]; i++) {
+			for (ix = i = 0; i < m->nwav[0]; i++) {
 
-				sd[i].p[0] = XSPECT_WL(m->wl_short[0], m->wl_long[0], m->nwav[0], i);
-				sd[i].v[0] = ref1[i];
-				sd[i].w = 1.0;
+				sd[ix].p[0] = XSPECT_WL(m->wl_short[0], m->wl_long[0], m->nwav[0], i);
+				sd[ix].v[0] = ref1[i];
+				sd[ix].w = 1.0;
 
-				if (sd[i].v[0] < vlow[0])
-					vlow[0] = sd[i].v[0];
-				if (sd[i].v[0] > vhigh[0])
-				    vhigh[0] = sd[i].v[0];
+				if (sd[ix].v[0] < vlow[0])
+					vlow[0] = sd[ix].v[0];
+				if (sd[ix].v[0] > vhigh[0])
+				    vhigh[0] = sd[ix].v[0];
+				ix++;
 			}
 
-			if (ii == 1) {		/* fudge factors */
+			/* Our upsampling is OK for reflective and ambient cal's, */
+			/* but isn't so good for the emissive cal., especially */
+			/* on the i1pro2. We'll get an opportunity to fix it */
+			/* when we do a reflective calibration, by using the */
+			/* smoothness of the lamp as a reference. */
 
-#ifdef NEVER	/* Doesn't help */
-				/* Increase boost at short wavelegths */
-				if (m->wl_short[1] < 380.0) {
-					sd[i].p[0] = m->wl_short[1];
-					sd[i].v[0] = sd[0].v[0] * (1.0 + (380.0 - m->wl_short[1])/20.0);
-					sd[i++].w = 0.6;
-				}
-#endif
+			/* Add inbetween points to restrain dips and peaks in interp. */
+			for (i = 0; i < (m->nwav[0]-1); i++) {
 
-#ifdef NEVER	/* Doesn't help */
-				/* Reduces boost at long wavelegths */
-				if (m->wl_long[1] > 730.0) {
-					sd[i].p[0] = m->wl_long[1];
-					sd[i].v[0] = sd[m->nwav[0]-1].v[0] * (1.0 + (m->wl_long[1] - 730.0)/100.0);
-					sd[i++].w = 0.3;
-				}
-#endif
+				/* Use linear interp extra points */
+				double wt = 0.05;
+
+				sd[ix].p[0] = XSPECT_WL(m->wl_short[0], m->wl_long[0], m->nwav[0], i + 0.3333);
+				sd[ix].v[0] = (2.0 * ref1[i] + ref1[i+1])/3.0;
+				sd[ix].w = wt;
+
+				if (sd[ix].v[0] < vlow[0])
+					vlow[0] = sd[ix].v[0];
+				if (sd[ix].v[0] > vhigh[0])
+				    vhigh[0] = sd[ix].v[0];
+				ix++;
+
+				sd[ix].p[0] = XSPECT_WL(m->wl_short[0], m->wl_long[0], m->nwav[0], i + 0.66667);
+				sd[ix].v[0] = (ref1[i] + 2.0 * ref1[i+1])/3.0;
+				sd[ix].w = wt;
+
+				if (sd[ix].v[0] < vlow[0])
+					vlow[0] = sd[ix].v[0];
+				if (sd[ix].v[0] > vhigh[0])
+				    vhigh[0] = sd[ix].v[0];
+				ix++;
 			}
-			
+
 			glow[0] = m->wl_short[1];
 			ghigh[0] = m->wl_long[1];
-			gres[0] = m->nwav[1];
+			gres[0] = 3 * m->nwav[1];
 			avgdev[0] = 0.0;
 			
-			trspl->fit_rspl_w(trspl, 0, sd, i, glow, ghigh, gres, vlow, vhigh, smooth, avgdev, NULL);
-
+			trspl->fit_rspl_w(trspl, 0, sd, ix, glow, ghigh, gres, vlow, vhigh, smooth, avgdev, NULL);
 			if ((*ref2 = (double *)calloc(m->nwav[1], sizeof(double))) == NULL) {
 				trspl->del(trspl);
 				a1logw(p->log, "i1pro: malloc ref2 failed!\n");
@@ -8584,6 +9000,7 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 				trspl->interp(trspl, &pp);
 				(*ref2)[i] = pp.v[0];
 			}
+
 #ifdef HIGH_RES_PLOT
 			/* Plot original and upsampled reference */
 			{
@@ -8594,27 +9011,13 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 				for (i = 0; i < m->nwav[1]; i++) {
 					double wl = m->wl_short[1] + (double)i * (m->wl_long[1] - m->wl_short[1])/(m->nwav[1]-1.0);
 					x1[i] = wl;
-					y1[i] = (*ref2)[i];
-					if (wl < m->wl_short[0] || wl > m->wl_long[0]) {
-						y2[i] = 0.0;
-					} else {
-						double x, wl1, wl2;
-						for (j = 0; j < (m->nwav[0]-1); j++) {
-							wl1 = XSPECT_WL(m->wl_short[0], m->wl_long[0], m->nwav[0], j);
-							wl2 = XSPECT_WL(m->wl_short[0], m->wl_long[0], m->nwav[0], j+1);
-							if (wl >= wl1 && wl <= wl2)
-								break;
-						}
-						x = (wl - wl1)/(wl2 - wl1);
-						y2[i] = ref1[j] + (ref1[j+1] - ref1[j]) * x;
-					}
+					y1[i] = wav_lerp_cv(m, 0, ref1, wl, 0.0);
+					y2[i] = (*ref2)[i];
 				}
 				printf("Original and up-sampled ");
 				if (ii == 0) {
 					printf("Reflective cal. curve:\n");
 				} else if (ii == 1) {
-					ref1 = m->emis_coef[0];
-					ref2 = &m->emis_coef[1];
 					printf("Emission cal. curve:\n");
 				} else {
 					printf("Ambient cal. curve:\n");
@@ -8834,29 +9237,38 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 
 	/* Create or re-create the high resolution filters */
 	for (refl = 0; refl < 2; refl++) {	/* for emis/trans and reflective */
+#define MXNOWL 500		/* Max hires bands */
+#define MXNOFC 64		/* Max hires coeffs */
+
+#ifndef USE_TRI_LAGRANGE				/* Use decimation filter */
+		int super = 0;					/* nz if we're super sampling */
 		double fshmax;					/* filter shape max wavelength from center */
-#define MXNOFC 64
-		i1pro_fc coeff2[500][MXNOFC];	/* New filter cooefficients */
-		double twidth;
+		i1pro_fc coeff2[MXNOWL][MXNOFC];	/* New filter cooefficients */
 
 		/* Construct a set of filters that uses more CCD values */
-		twidth = HIGHRES_WIDTH;
 
-		if (m->nwav[1] > 500) {		/* Assert */
+		if (twidth < 3.0)
+			super = 1;
+
+		if (m->nwav[1] > MXNOWL) {		/* Assert */
 			a1loge(p->log,1,"High res filter has too many bands\n");
 			return I1PRO_INT_ASSERT;
 		}
 
-		/* Use a simple means of determining width */
-		for (fshmax = 50.0; fshmax >= 0.0; fshmax -= 0.1) {
-			if (fabs(lanczos2(twidth, fshmax)) > 0.0001) {
-				fshmax += 0.1;
-				break;
+		if (super) {
+			fshmax = 5.0;
+		} else {
+			/* Use a simple means of determining width */
+			for (fshmax = 50.0; fshmax >= 0.0; fshmax -= 0.1) {
+				if (fabs(lanczos2(twidth, fshmax)) > 0.0001) {
+					fshmax += 0.1;
+					break;
+				}
 			}
-		}
-		if (fshmax <= 0.0) {
-			a1logw(p->log, "i1pro: fshmax search failed\n");
-			return I1PRO_INT_ASSERT;
+			if (fshmax <= 0.0) {
+				a1logw(p->log, "i1pro: fshmax search failed\n");
+				return I1PRO_INT_ASSERT;
+			}
 		}
 	
 //		printf("~1 fshmax = %f\n",fshmax);
@@ -8887,61 +9299,103 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 			return I1PRO_INT_MALLOC;
 		}
 
-		/* For all the useful CCD bands */
-		for (i = 1; i < 127; i++) {
-			double w1, wl, w2;
+		if (super) {	/* Use linear interpolation */
 
-			/* Translate CCD center and boundaries to calibrated wavelength */
-			wl = i1pro_raw2wav(p, refl, (double)i);
-			w1 = i1pro_raw2wav(p, refl, (double)i - 0.5);
-			w2 = i1pro_raw2wav(p, refl, (double)i + 0.5);
+			/* For all the useful CCD bands */
+			for (i = 1; i < (127-1); i++) {
+				double wl, wh;
+
+				/* Translate CCD centers to calibrated wavelength */
+				wh = i1pro_raw2wav(p, refl, (double)(i+0));
+				wl = i1pro_raw2wav(p, refl, (double)(i+1));
+
+				/* For each filter */
+				for (j = 0; j < m->nwav[1]; j++) {
+					double cwl;		/* Center wavelength */
+					double we;		/* Weighting */
+					double wwwe = 1.0;
+
+					cwl = m->wl_short[1] + (double)j * (m->wl_long[1] - m->wl_short[1])
+					                                  /(m->nwav[1]-1.0);
+//printf("~1 wl %f, wh %f, cwl %f\n",wl,wh,cwl);
+					if (cwl < (wl - 1e-6) || cwl > (wh + 1e-6))
+						continue;		/* Doesn't fall into this filter */
+
+					if ((m->mtx_c[1][refl].nocoef[j]+1) >= MXNOFC) {
+						a1logw(p->log, "i1pro: run out of high res filter space\n");
+						return I1PRO_INT_ASSERT;
+					}
+
+					we = (cwl - wl)/(wh - wl);
+//					wwwe = 3.3/(wh - wl);
+
+					coeff2[j][m->mtx_c[1][refl].nocoef[j]].ix = i;
+					coeff2[j][m->mtx_c[1][refl].nocoef[j]++].we = wwwe * we; 
+//printf("~1 filter %d, cwl %f, ix %d, we %f, nocoefs %d\n",j,cwl,i,we,m->mtx_c[1][refl].nocoef[j]);
+					coeff2[j][m->mtx_c[1][refl].nocoef[j]].ix = i+1;
+					coeff2[j][m->mtx_c[1][refl].nocoef[j]++].we = wwwe * (1.0 - we); 
+//printf("~1 filter %d, cwl %f, ix %d, we %f, nocoefs %d\n",j,cwl,i+1,1.0-we,m->mtx_c[1][refl].nocoef[j]);
+				}
+			}
+
+		} else {
+			/* For all the useful CCD bands */
+			for (i = 1; i < 127; i++) {
+				double w1, wl, w2;
+
+				/* Translate CCD center and boundaries to calibrated wavelength */
+				wl = i1pro_raw2wav(p, refl, (double)i);
+				w1 = i1pro_raw2wav(p, refl, (double)i - 0.5);
+				w2 = i1pro_raw2wav(p, refl, (double)i + 0.5);
 
 //			printf("~1 CCD %d, w1 %f, wl %f, w2 %f\n",i,w1,wl,w2);
 
-			/* For each filter */
-			for (j = 0; j < m->nwav[1]; j++) {
-				double cwl, rwl;		/* center, relative wavelegth */
-				double we;
+				/* For each filter */
+				for (j = 0; j < m->nwav[1]; j++) {
+					double cwl, rwl;		/* center, relative wavelegth */
+					double we;
 
-				cwl = m->wl_short[1] + (double)j * (m->wl_long[1] - m->wl_short[1])/(m->nwav[1]-1.0);
-				rwl = wl - cwl;			/* relative wavelength to filter */
+					cwl = m->wl_short[1] + (double)j * (m->wl_long[1] - m->wl_short[1])
+					                                  /(m->nwav[1]-1.0);
+					rwl = wl - cwl;			/* relative wavelength to filter */
 
-				if (fabs(w1 - cwl) > fshmax && fabs(w2 - cwl) > fshmax)
-					continue;		/* Doesn't fall into this filter */
+					if (fabs(w1 - cwl) > fshmax && fabs(w2 - cwl) > fshmax)
+						continue;		/* Doesn't fall into this filter */
 
-				/* Integrate in 0.05 nm increments from filter shape */
-				/* using triangular integration. */
-				{
-					int nn;
-					double lw, ll;
+					/* Integrate in 0.05 nm increments from filter shape */
+					/* using triangular integration. */
+					{
+						int nn;
+						double lw, ll;
 
-					nn = (int)(fabs(w2 - w1)/0.05 + 0.5);		/* Number to integrate over */
-			
-					lw = w1;				/* start at lower boundary of CCD cell */
-					ll = lanczos2(twidth, w1- cwl);
-					we = 0.0;
-					for (k = 0; k < nn; k++) { 
-						double cw, cl;
+						nn = (int)(fabs(w2 - w1)/0.05 + 0.5);		/* Number to integrate over */
+				
+						lw = w1;				/* start at lower boundary of CCD cell */
+						ll = lanczos2(twidth, w1- cwl);
+						we = 0.0;
+						for (k = 0; k < nn; k++) { 
+							double cw, cl;
 
 #if defined(__APPLE__) && defined(__POWERPC__)
-						gcc_bug_fix(k);
+							gcc_bug_fix(k);
 #endif
-						cw = w1 + (k+1.0)/(nn +1.0) * (w2 - w1);	/* wl to sample */
-						cl = lanczos2(twidth, cw- cwl);
-						we += 0.5 * (cl + ll) * (lw - cw);			/* Area under triangle */
-						ll = cl;
-						lw = cw;
+							cw = w1 + (k+1.0)/(nn +1.0) * (w2 - w1);	/* wl to sample */
+							cl = lanczos2(twidth, cw- cwl);
+							we += 0.5 * (cl + ll) * (lw - cw);			/* Area under triangle */
+							ll = cl;
+							lw = cw;
+						}
 					}
-				}
 
-				if (m->mtx_c[1][refl].nocoef[j] >= MXNOFC) {
-					a1logw(p->log, "i1pro: run out of high res filter space\n");
-					return I1PRO_INT_ASSERT;
-				}
+					if (m->mtx_c[1][refl].nocoef[j] >= MXNOFC) {
+						a1logw(p->log, "i1pro: run out of high res filter space\n");
+						return I1PRO_INT_ASSERT;
+					}
 
-				coeff2[j][m->mtx_c[1][refl].nocoef[j]].ix = i;
-				coeff2[j][m->mtx_c[1][refl].nocoef[j]++].we = we; 
-//				printf("~1 filter %d, cwl %f, rwl %f, ix %d, we %f, nocoefs %d\n",j,cwl,rwl,i,we,m->mtx_c[1][refl].nocoef[j]-1);
+					coeff2[j][m->mtx_c[1][refl].nocoef[j]].ix = i;
+					coeff2[j][m->mtx_c[1][refl].nocoef[j]++].we = we; 
+//				printf("~1 filter %d, cwl %f, rwl %f, ix %d, we %f, nocoefs %d\n",j,cwl,rwl,i,we,m->mtx_c[1][refl].nocoef[j]);
+				}
 			}
 		}
 
@@ -8968,109 +9422,7 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 				}
 			}
 
-			printf("Hi-Res wavelength sampling curves:\n");
-			do_plot6(xx, yy[0], yy[1], yy[2], yy[3], yy[4], yy[5], m->nraw);
-			free_dvector(xx, -1, m->nraw-1);
-			free_dmatrix(yy, 0, 2, -1, m->nraw-1);
-		}
-#endif /* HIGH_RES_PLOT */
-
-		/* Normalise the filters area in CCD space, while maintaining the */
-		/* total contribution of each CCD at the target too. */
-		{
-			int ii;
-			double tot = 0.0;
-			double ccdweight[128], avgw;	/* Weighting determined by cell widths */
-			double ccdsum[128];
-
-			/* Normalize the overall filter weightings */
-			for (j = 0; j < m->nwav[1]; j++)
-				for (k = 0; k < m->mtx_c[1][refl].nocoef[j]; k++)
-					tot += coeff2[j][k].we;
-			tot /= (double)m->nwav[1];
-			for (j = 0; j < m->nwav[1]; j++)
-				for (k = 0; k < m->mtx_c[1][refl].nocoef[j]; k++)
-					coeff2[j][k].we /= tot;
-
-			/* Determine the relative weights for each CCD */
-			avgw = 0.0;
-			for (i = 1; i < 127; i++) {
-
-				ccdweight[i] = i1pro_raw2wav(p, refl, (double)i - 0.5)
-				             - i1pro_raw2wav(p, refl, (double)i + 0.5);
-				ccdweight[i] = fabs(ccdweight[i]);
-				avgw += ccdweight[i];
-			}
-			avgw /= 126.0;
-			// ~~this isn't right because not all CCD's get used!!
-
-#ifdef NEVER
-			/* Itterate */
-			for (ii = 0; ; ii++) {
-
-				/* Normalize the individual filter weightings */
-				for (j = 0; j < m->nwav[1]; j++) {
-					double err;
-					tot = 0.0;
-					for (k = 0; k < m->mtx_c[1][refl].nocoef[j]; k++)
-						tot += coeff2[j][k].we;
-					err = 1.0 - tot;
-	
-					for (k = 0; k < m->mtx_c[1][refl].nocoef[j]; k++)
-						coeff2[j][k].we += err/m->mtx_c[1][refl].nocoef[j];
-//					for (k = 0; k < m->mtx_c[1][refl].nocoef[j]; k++)
-//						coeff2[j][k].we *= 1.0/tot;
-				}
-
-				/* Check CCD sums */
-				for (i = 1; i < 127; i++) 
-					ccdsum[i] = 0.0;
-
-				for (j = 0; j < m->nwav[1]; j++) {
-					for (k = 0; k < m->mtx_c[1][refl].nocoef[j]; k++)
-						ccdsum[coeff2[j][k].ix] += coeff2[j][k].we;
-				}
-
-				if (ii >= 6)
-					break;
-
-				/* Readjust CCD sum */
-				for (i = 1; i < 127; i++) { 
-					ccdsum[i] = ccdtsum[i]/ccdsum[i];		/* Amount to adjust */
-				}
-
-				for (j = 0; j < m->nwav[1]; j++) {
-					for (k = 0; k < m->mtx_c[1][refl].nocoef[j]; k++)
-						coeff2[j][k].we *= ccdsum[coeff2[j][k].ix];
-				}
-			}
-#endif	/* NEVER */
-		}
-
-#ifdef HIGH_RES_PLOT
-		/* Plot resampled curves */
-		{
-			double *xx, *ss;
-			double **yy;
-
-			xx = dvectorz(-1, m->nraw-1);		/* X index */
-			yy = dmatrixz(0, 5, -1, m->nraw-1);	/* Curves distributed amongst 5 graphs */
-			
-			for (i = 0; i < m->nraw; i++)
-				xx[i] = i;
-
-			/* For each output wavelength */
-			for (j = 0; j < m->nwav[1]; j++) {
-				i = j % 5;
-
-				/* For each matrix value */
-				for (k = 0; k < m->mtx_c[1][refl].nocoef[j]; k++) {
-					yy[5][coeff2[j][k].ix] += 0.5 * coeff2[j][k].we;
-					yy[i][coeff2[j][k].ix] = coeff2[j][k].we;
-				}
-			}
-
-			printf("Normalized Hi-Res wavelength sampling curves:\n");
+			printf("Hi-Res wavelength sampling curves %s:\n",refl ? "refl" : "emis");
 			do_plot6(xx, yy[0], yy[1], yy[2], yy[3], yy[4], yy[5], m->nraw);
 			free_dvector(xx, -1, m->nraw-1);
 			free_dmatrix(yy, 0, 2, -1, m->nraw-1);
@@ -9110,92 +9462,228 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 			/* Set high res tables to new allocations */
 			m->mtx[1][refl] = m->mtx_c[1][refl];
 		}
-	}
 
-	/* Generate high res. per mode calibration factors. */
-	if (!m->hr_inited) {
+#else	/* USE_TRI_LAGRANGE, use triangle over lagrange interp */
 
-		m->hr_inited = 1;		/* Set so that i1pro_compute_white_cal() etc. does right thing */
-
-		for (i = 0; i < i1p_no_modes; i++) {
-			i1pro_state *s = &m->ms[i];
-
-			if (s->cal_factor[1] == NULL)
-				s->cal_factor[1] = dvectorz(0, m->nwav[1]-1);
-
-			switch(i) {
-				case i1p_refl_spot:
-				case i1p_refl_scan:
-					if (s->cal_valid) {
-						/* (Using cal_factor[] as temp. for i1pro_absraw_to_abswav()) */
-#ifdef NEVER
-						printf("~1 regenerating calibration for reflection\n");
-						printf("~1 raw white data:\n");
-						plot_raw(s->white_data);
-#endif	/* NEVER */
-						i1pro_absraw_to_abswav(p, 0, s->reflective, 1, &s->cal_factor[0], &s->white_data);
-#ifdef NEVER
-						printf("~1 Std res intmd. cal_factor:\n");
-						plot_wav(m, 0, s->cal_factor[0]);
-#endif	/* NEVER */
-						i1pro_absraw_to_abswav(p, 1, s->reflective, 1, &s->cal_factor[1], &s->white_data);
-#ifdef NEVER
-						printf("~1 High intmd. cal_factor:\n");
-						plot_wav(m, 1, s->cal_factor[1]);
-						printf("~1 Std res white ref:\n");
-						plot_wav(m, 0, m->white_ref[0]);
-						printf("~1 High res white ref:\n");
-						plot_wav(m, 1, m->white_ref[1]);
-#endif	/* NEVER */
-						i1pro_compute_white_cal(p, s->cal_factor[0], m->white_ref[0], s->cal_factor[0],
-						                           s->cal_factor[1], m->white_ref[1], s->cal_factor[1]);
-#ifdef NEVER
-						printf("~1 Std res final cal_factor:\n");
-						plot_wav(m, 0, s->cal_factor[0]);
-						printf("~1 High final cal_factor:\n");
-						plot_wav(m, 1, s->cal_factor[1]);
-#endif	/* NEVER */
-					}
-					break;
-
-				case i1p_emiss_spot_na:
-				case i1p_emiss_spot:
-				case i1p_emiss_scan:
-					for (j = 0; j < m->nwav[1]; j++)
-						s->cal_factor[1][j] = EMIS_SCALE_FACTOR * m->emis_coef[1][j];
-					break;
-
-				case i1p_amb_spot:
-				case i1p_amb_flash:
-#ifdef FAKE_AMBIENT
-					for (j = 0; j < m->nwav[1]; j++)
-						s->cal_factor[1][j] = EMIS_SCALE_FACTOR * m->emis_coef[1][j];
-					s->cal_valid = 1;
-#else
-
-					if (m->amb_coef[0] != NULL) {
-						for (j = 0; j < m->nwav[1]; j++)
-							s->cal_factor[1][j] = AMB_SCALE_FACTOR * m->emis_coef[1][j] * m->amb_coef[1][j];
-						s->cal_valid = 1;
-					}
-#endif
-					break;
-				case i1p_trans_spot:
-				case i1p_trans_scan:
-					if (s->cal_valid) {
-						/* (Using cal_factor[] as temp. for i1pro_absraw_to_abswav()) */
-						i1pro_absraw_to_abswav(p, 0, s->reflective, 1, &s->cal_factor[0], &s->white_data);
-						i1pro_absraw_to_abswav(p, 1, s->reflective, 1, &s->cal_factor[1], &s->white_data);
-						i1pro_compute_white_cal(p, s->cal_factor[0], NULL, s->cal_factor[0],
-			                                       s->cal_factor[1], NULL, s->cal_factor[1]);
-					}
-					break;
-			}
+		/* Compute high res. reflective wavelength corrected filters */
+		if ((ev = i1pro_compute_wav_filters(p, 1, refl)) != I1PRO_OK) {
+			a1logd(p->log,2,"i1pro_compute_wav_filters() failed\n");
+			return ev;
 		}
-	}
+#endif	/* USE_TRI_LAGRANGE */
+
+		/* Normalise the filters area in CCD space, while maintaining the */
+		/* total contribution of each CCD at the target too. */
+		/* Hmm. This will wreck super-sample. We should fix it */
+#ifdef DO_CCDNORM			/* Normalise CCD values to original */
+		{
+			double x[4], y[4];
+			double avg[2], max[2];
+			double ccdsum[2][128];			/* Target weight/actual for each CCD */
+			double dth[2];
+
+			avg[0] = avg[1] = 0.0;
+			max[0] = max[1] = 0.0;
+			for (j = 0; j < 128; j++) {
+				ccdsum[0][j] = 0.0;
+				ccdsum[1][j] = 0.0;
+			}
+
+			/* Compute the weighting of each CCD value in the normal output */
+			for (cx = j = 0; j < m->nwav[0]; j++) { /* For each wavelength */
+
+				/* For each matrix value */
+				sx = m->mtx_o.index[j];		/* Starting index */
+				for (k = 0; k < m->mtx_o.nocoef[j]; k++, cx++, sx++) {
+					ccdsum[0][sx] += m->mtx_o.coef[cx];
+//printf("~1 Norm CCD [%d] %f += [%d] %f\n",sx,ccdsum[0][sx],cx, m->mtx_o.coef[cx]);
+				}
+			}
+
+			/* Compute the weighting of each CCD value in the hires output */
+			for (cx = j = 0; j < m->nwav[1]; j++) { /* For each wavelength */
+
+				/* For each matrix value */
+				sx = m->mtx_c[1][refl].index[j];		/* Starting index */
+				for (k = 0; k < m->mtx_c[1][refl].nocoef[j]; k++, cx++, sx++) {
+					ccdsum[1][sx] += m->mtx_c[1][refl].coef[cx];
+//printf("~1 HiRes CCD [%d] %f += [%d] %f\n",sx,ccdsum[1][sx],cx, m->mtx_c[1][refl].coef[cx]);
+				}
+			}
+
+			/* Figure valid range and extrapolate to edges */
+			dth[0] = 0.0;		/* ref */
+//			dth[1] = 0.007;		/* hires */
+			dth[1] = 0.004;		/* hires */
+
+			for (k = 0; k < 2; k++) {
+
+				for (i = 0; i < 128; i++) {
+					if (ccdsum[k][i] > max[k])
+						max[k] = ccdsum[k][i];
+				}
+
+//printf("~1 max[%d] = %f\n",k, max[k]);
+				/* Figure out the valid range */
+				for (i = 64; i >= 0; i--) {
+					if (ccdsum[k][i] > (0.8 * max[k])) {
+						x[0] = (double)i;
+					} else {
+						break;
+					}
+				}
+				for (i = 64; i < 128; i++) {
+					if (ccdsum[k][i] > (0.8 * max[k])) {
+						x[3] = (double)i;
+					} else {
+						break;
+					}
+				}
+				/* Space off the last couple of entries */
+				x[0] += (3.0 + 3.0);
+				x[3] -= (3.0 + 3.0);
+				x[1] = floor((2 * x[0] + x[3])/3.0);
+				x[2] = floor((x[0] + 2 * x[3])/3.0);
+
+				for (i = 0; i < 4; i++) {
+					y[i] = 0.0;
+					for (j = -3; j < 4; j++) {
+						y[i] += ccdsum[k][(int)x[i]+j];
+					}
+					y[i] /= 7.0;
+				}
+
+//printf("~1 extrap nodes %f, %f, %f, %f\n",x[0],x[1],x[2],x[3]);
+//printf("~1 extrap value %f, %f, %f, %f\n",y[0],y[1],y[2],y[3]);
+
+				for (i = 0; i < 128; i++) {
+					double xw, yw;
+
+					xw = (double)i;
+	
+					/* Compute interpolated value using Lagrange: */
+					yw = y[0] * (xw-x[1]) * (xw-x[2]) * (xw-x[3])
+						      /((x[0]-x[1]) * (x[0]-x[2]) * (x[0]-x[3]))
+					   + y[1] * (xw-x[0]) * (xw-x[2]) * (xw-x[3])
+						      /((x[1]-x[0]) * (x[1]-x[2]) * (x[1]-x[3]))
+					   + y[2] * (xw-x[0]) * (xw-x[1]) * (xw-x[3])
+						      /((x[2]-x[0]) * (x[2]-x[1]) * (x[2]-x[3]))
+					   + y[3] * (xw-x[0]) * (xw-x[1]) * (xw-x[2])
+						      /((x[3]-x[0]) * (x[3]-x[1]) * (x[3]-x[2]));
+	
+					if ((xw < x[0] || xw > x[3])
+					 && fabs(ccdsum[k][i] - yw)/yw > dth[k]) {
+						ccdsum[k][i] = yw;
+					}
+					avg[k] += ccdsum[k][i];
+				}
+				avg[k] /= 128.0;
+			}
+
+#ifdef HIGH_RES_PLOT
+			/* Plot target CCD values */
+			{
+				double xx[128], y1[128], y2[128];
+	
+				for (i = 0; i < 128; i++) {
+					xx[i] = i;
+					y1[i] = ccdsum[0][i]/avg[0];
+					y2[i] = ccdsum[1][i]/avg[1];
+				}
+	
+				printf("Target and actual CCD weight sums:\n");
+				do_plot(xx, y1, y2, NULL, 128);
+			}
+#endif
+
+#ifdef DO_CCDNORMAVG	/* Just correct by average */
+			for (cx = j = 0; j < m->nwav[1]; j++) { /* For each wavelength */
+
+				/* For each matrix value */
+				sx = m->mtx_c[1][refl].index[j];		/* Starting index */
+				for (k = 0; k < m->mtx_c[1][refl].nocoef[j]; k++, cx++, sx++) {
+					m->mtx_c[1][refl].coef[cx] *= 10.0/twidth * avg[0]/avg[1];
+				}
+			}
+
+#else			/* Correct by CCD bin */
+
+			/* Correct the weighting of each CCD value in the hires output */
+			for (i = 0; i < 128; i++) {
+				ccdsum[1][i] = 10.0/twidth * ccdsum[0][i]/ccdsum[1][i];		/* Correction factor */
+			}
+			for (cx = j = 0; j < m->nwav[1]; j++) { /* For each wavelength */
+
+				/* For each matrix value */
+				sx = m->mtx_c[1][refl].index[j];		/* Starting index */
+				for (k = 0; k < m->mtx_c[1][refl].nocoef[j]; k++, cx++, sx++) {
+					m->mtx_c[1][refl].coef[cx] *= ccdsum[1][sx];
+				}
+			}
+#endif
+		}
+#endif /* DO_CCDNORM */
+
+#ifdef HIGH_RES_PLOT
+		{
+			static i1pro_fc coeff2[MXNOWL][MXNOFC];	
+			double *xx, *ss;
+			double **yy;
+
+			/* Convert the native filter cooeficient representation to */
+			/* a 2D array we can randomly index. */
+			for (cx = j = 0; j < m->nwav[1]; j++) { /* For each output wavelength */
+				if (j >= MXNOWL) {	/* Assert */
+					a1loge(p->log,1,"i1pro: number of hires output wavelenths is > %d\n",MXNOWL);
+					return I1PRO_INT_ASSERT;
+				}
+
+				/* For each matrix value */
+				sx = m->mtx[1][refl].index[j];		/* Starting index */
+				for (k = 0; k < m->mtx[1][refl].nocoef[j]; k++, cx++, sx++) {
+					if (k >= MXNOFC) {	/* Assert */
+						a1loge(p->log,1,"i1pro: number of hires filter coeefs is > %d\n",MXNOFC);
+						return I1PRO_INT_ASSERT;
+					}
+					coeff2[j][k].ix = sx;
+					coeff2[j][k].we = m->mtx[1][refl].coef[cx];
+//				printf("Output %d, filter %d weight = %e\n",j,k,coeff2[j][k].we);
+				}
+			}
+	
+			xx = dvectorz(-1, m->nraw-1);		/* X index */
+			yy = dmatrixz(0, 5, -1, m->nraw-1);	/* Curves distributed amongst 5 graphs */
+			
+			for (i = 0; i < m->nraw; i++)
+				xx[i] = i;
+
+			/* For each output wavelength */
+			for (j = 0; j < m->nwav[1]; j++) {
+				i = j % 5;
+
+				/* For each matrix value */
+				for (k = 0; k < m->mtx_c[1][refl].nocoef[j]; k++) {
+					yy[5][coeff2[j][k].ix] += 0.5 * coeff2[j][k].we;
+					yy[i][coeff2[j][k].ix] = coeff2[j][k].we;
+				}
+			}
+
+			printf("Normalized Hi-Res wavelength sampling curves: %s\n",refl ? "refl" : "emis");
+			do_plot6(xx, yy[0], yy[1], yy[2], yy[3], yy[4], yy[5], m->nraw);
+			free_dvector(xx, -1, m->nraw-1);
+			free_dmatrix(yy, 0, 2, -1, m->nraw-1);
+		}
+#endif /* HIGH_RES_PLOT */
+#undef MXNOWL
+#undef MXNOFC
+	}	/* Do next filter */
 
 	/* Hires has been initialised */
 	m->hr_inited = 1;
+
+	/* Generate high res. per mode calibration factors. */
+	if ((ev = i1pro_create_hr_calfactors(p, 0)) != I1PRO_OK)
+		return ev;
 
 	return ev;
 }
@@ -9448,20 +9936,280 @@ i1pro_code i1pro_check_white_reference1(
 }
 
 /* Compute a mode calibration factor given the reading of the white reference. */
-/* Return 1 if any of the transmission wavelengths are low. */
-int i1pro_compute_white_cal(
+/* We will also calibrate & smooth hi-res emis_coef[1] if they are present. */
+/* Return I1PRO_RD_TRANSWHITEWARN if any of the transmission wavelengths are low. */
+/* May return some other error (malloc) */
+i1pro_code i1pro_compute_white_cal(
 	i1pro *p,
 	double *cal_factor0,	/* [nwav[0]] Calibration factor to compute */
 	double *white_ref0,		/* [nwav[0]] White reference to aim for, NULL for 1.0 */
 	double *white_read0,	/* [nwav[0]] The white that was read */
 	double *cal_factor1,	/* [nwav[1]] Calibration factor to compute */
 	double *white_ref1,		/* [nwav[1]] White reference to aim for, NULL for 1.0 */
-	double *white_read1		/* [nwav[1]] The white that was read */
+	double *white_read1,	/* [nwav[1]] The white that was read */
+	int do_emis_ft			/* Do emission hires fine tune with this info. */
 ) {
 	i1proimp *m = (i1proimp *)p->m;
 	i1pro_state *s = &m->ms[m->mmode];
-	int j, warn = 0;;
+	int j, warn = I1PRO_OK;;
 	
+#ifdef HIGH_RES
+	/* If we need to, fine calibrate the emission */
+	/* calibration coefficients, using the reflectance cal. */
+	/* illuminant as an (assumed) smooth light source reference. */
+	/* (Do this first, befor white_read0/cal_factor0 is overwritten by white cal.) */
+	if (do_emis_ft && m->hr_inited != 0 && white_ref1 != NULL) {
+		i1pro_code ev = I1PRO_OK;
+		int i;
+		double *lincal;
+		double *fudge;
+		xspect illA;
+#ifdef HIGH_RES_PLOT
+		double *targ_smth;		/* Hires target in smooth space */
+		double *old_emis;
+		double avgl;
+
+		if ((targ_smth = (double *)calloc(m->nwav[1], sizeof(double))) == NULL) {
+			return I1PRO_INT_MALLOC;
+		}
+		if ((old_emis = (double *)calloc(m->nwav[1], sizeof(double))) == NULL) {
+			return I1PRO_INT_MALLOC;
+		}
+		for (i = 0; i < m->nwav[1]; i++)
+			old_emis[i] = m->emis_coef[1][i];
+#endif
+
+		if ((lincal = (double *)calloc(m->nwav[0], sizeof(double))) == NULL) {
+			return I1PRO_INT_MALLOC;
+		}
+		if ((fudge = (double *)calloc(m->nwav[0], sizeof(double))) == NULL) {
+			return I1PRO_INT_MALLOC;
+		}
+
+		/* Fill in an xpsect with a standard illuminant spectrum */
+		if (standardIlluminant(&illA, icxIT_Ptemp, 2990.0)) {
+			a1loge(p->log,1,"i1pro_compute_white_cal: standardIlluminant() failed");
+			return I1PRO_INT_ASSERT;
+		}
+
+		for (j = 0; j < m->nwav[0]; j++) {
+			double wl = XSPECT_WL(m->wl_short[0], m->wl_long[0], m->nwav[0], j); 
+
+			lincal[j] = white_read0[j] * m->emis_coef[0][j]
+			          / (white_ref0[j] * value_xspect(&illA, wl));
+		}
+
+#ifndef NEVER
+		/* Generate the hires emis_coef by interpolating lincal */
+		/* using rspl, and reversing computation through hi-res readings */
+		{
+			rspl *trspl;			/* Upsample rspl */
+			cow sd[40];		/* Scattered data points of existing references */
+			datai glow, ghigh;
+			datao vlow, vhigh;
+			int gres[1];
+			double avgdev[1];
+			int ix;
+			co pp;
+
+			if ((trspl = new_rspl(RSPL_NOFLAGS, 1, 1)) == NULL) {
+				a1logd(p->log,1,"i1pro: creating rspl for high res conversion failed\n");
+				return I1PRO_INT_NEW_RSPL_FAILED;
+			}
+			
+			vlow[0] = 1e6;
+			vhigh[0] = -1e6;
+			for (ix = i = 0; i < m->nwav[0]; i++) {
+
+				sd[ix].p[0] = XSPECT_WL(m->wl_short[0], m->wl_long[0], m->nwav[0], i);
+				sd[ix].v[0] = lincal[i];
+				sd[ix].w = 1.0;
+
+				if (sd[ix].v[0] < vlow[0])
+					vlow[0] = sd[ix].v[0];
+				if (sd[ix].v[0] > vhigh[0])
+				    vhigh[0] = sd[ix].v[0];
+				ix++;
+			}
+
+			glow[0] = m->wl_short[1];
+			ghigh[0] = m->wl_long[1];
+			gres[0] = 6 * m->nwav[1];
+			avgdev[0] = 0.0;
+		
+			/* The smoothness factor of 0.02 seems critical in tuning the RevE */
+			/* hires accuracy, as measured on an LCD display */
+			trspl->fit_rspl_w(trspl, 0, sd, ix, glow, ghigh, gres, vlow, vhigh, 0.05, avgdev, NULL);
+
+			/* Create a linear interp fudge factor to place interp at low */
+			/* res. exactly on lowres linear curve. This compensates */
+			/* if the rspl moves the target at the lowres points */
+			for (j = 0; j < m->nwav[0]; j++) {
+				double wl = XSPECT_WL(m->wl_short[0], m->wl_long[0], m->nwav[0], j); 
+	
+				pp.p[0] = wl;
+				trspl->interp(trspl, &pp);
+
+				fudge[j] = lincal[j] / pp.v[0];
+			}
+
+			/* Compute hires emis_coef */
+			for (i = 0; i < m->nwav[1]; i++) {
+				double wl = XSPECT_WL(m->wl_short[1], m->wl_long[1], m->nwav[1], i);
+				double ff;
+
+				pp.p[0] = wl;
+				trspl->interp(trspl, &pp);
+
+#ifdef HIGH_RES_PLOT
+				targ_smth[i] = pp.v[0];
+#endif
+				/* Invert lincal at high res */
+				ff = wav_lerp(m, 0, fudge, wl);
+				m->emis_coef[1][i] = (ff * pp.v[0] * white_ref1[i] * value_xspect(&illA, wl))
+				                     /white_read1[i];
+			}
+			trspl->del(trspl);
+		}
+
+#else
+		/* Generate the hires emis_coef by interpolating lincal */
+		/* using lagrange, and reversing computation through hi-res readings */
+		for (i = 0; i < m->nwav[1]; i++) {
+			int k;
+			double x[4], xw;
+			double y[4], yw;
+
+			xw = XSPECT_WL(m->wl_short[1], m->wl_long[1], m->nwav[1], i); 
+
+			/* Locate lowres index below it */
+			j = (int)floor(XSPECT_DIX(m->wl_short[0], m->wl_long[0], m->nwav[0], xw)) -1;
+			if (j < 0)
+				j = 0;
+			if (j > (m->nwav[0]-4))
+				j = (m->nwav[0]-4);
+
+			/* Setup the surrounding point values */
+			for (k = 0; k < 4; k++) {
+				x[k] = XSPECT_WL(m->wl_short[0], m->wl_long[0], m->nwav[0], j+k);
+				y[k] = lincal[j+k];
+			}
+
+			/* Compute interpolated value using Lagrange: */
+			yw = y[0] * (xw-x[1]) * (xw-x[2]) * (xw-x[3])
+				      /((x[0]-x[1]) * (x[0]-x[2]) * (x[0]-x[3]))
+			   + y[1] * (xw-x[0]) * (xw-x[2]) * (xw-x[3])
+				      /((x[1]-x[0]) * (x[1]-x[2]) * (x[1]-x[3]))
+			   + y[2] * (xw-x[0]) * (xw-x[1]) * (xw-x[3])
+				      /((x[2]-x[0]) * (x[2]-x[1]) * (x[2]-x[3]))
+			   + y[3] * (xw-x[0]) * (xw-x[1]) * (xw-x[2])
+				      /((x[3]-x[0]) * (x[3]-x[1]) * (x[3]-x[2]));
+
+			targ_smth[i] = yw;
+
+			/* Invert lincal at high res */
+			m->emis_coef[1][i] = (yw  * white_ref1[i] * value_xspect(&illA, xw))/white_read1[i];
+		}
+#endif /* NEVER */
+
+#ifdef HIGH_RES_PLOT
+		/* Plot linear target curve and measured curve */
+		{
+			double *xx, *y1, *y2, *y3, *y4;
+
+			xx = dvector(0, m->nwav[1]);		/* X  wl */
+			y1 = dvector(0, m->nwav[1]);
+			y2 = dvector(0, m->nwav[1]);
+			y3 = dvector(0, m->nwav[1]);
+			y4 = dvector(0, m->nwav[1]);
+			
+			for (j = 0; j < (m->nwav[1]); j++) {
+				xx[j] = XSPECT_WL(m->wl_short[1], m->wl_long[1], m->nwav[1], j);
+				y1[j] = wav_lerp_cv(m, 0, lincal, xx[j], 0.0);
+				y2[j] = targ_smth[j];
+				y3[j] = white_read1[j] * wav_lerp(m, 0, m->emis_coef[0], xx[j])
+				        /(white_ref1[j] * value_xspect(&illA, xx[j]));
+				y4[j] = white_read1[j] * old_emis[j]
+				        /(white_ref1[j] * value_xspect(&illA, xx[j]));
+			}
+
+			printf("stdres interp targ (bk), smoothed targ (rd), measured hires resp. (gn), previous cal resp.(bu):\n");
+			do_plot6(xx, y1, y2, y3, y4, NULL, NULL, m->nwav[1]);
+			free_dvector(xx, 0, m->nwav[1]);
+			free_dvector(y1, 0, m->nwav[1]);
+			free_dvector(y2, 0, m->nwav[1]);
+			free_dvector(y4, 0, m->nwav[1]);
+		}
+		/* Plot target and achieved smooth space responses */
+		{
+			double *xx, *y2;
+
+			xx = dvector(0, m->nwav[1]);
+			y2 = dvector(0, m->nwav[1]);
+			
+			for (j = 0; j < (m->nwav[1]); j++) {
+				xx[j] = XSPECT_WL(m->wl_short[1], m->wl_long[1], m->nwav[1], j);
+				y2[j] = white_read1[j] * m->emis_coef[1][j]
+				       /(white_ref1[j] * value_xspect(&illA, xx[j]));
+			}
+
+			printf("target smooth curve, achived smooth curve:\n");
+			do_plot6(xx, targ_smth, y2, NULL, NULL, NULL, NULL, m->nwav[1]);
+
+			free_dvector(xx, 0, m->nwav[1]);
+			free_dvector(y2, 0, m->nwav[1]);
+		}
+		/* Plot lowres and hires lamp response */
+		{
+			double *xx, *y1, *y2;
+
+			xx = dvector(0, m->nwav[1]);
+			y1 = dvector(0, m->nwav[1]);
+			y2 = dvector(0, m->nwav[1]);
+			
+			for (j = 0; j < (m->nwav[1]); j++) {
+				xx[j] = XSPECT_WL(m->wl_short[1], m->wl_long[1], m->nwav[1], j);
+				y1[j] = wav_lerp(m, 0, white_read0, xx[j]) * wav_lerp(m, 0, m->emis_coef[0], xx[j])
+				        /wav_lerp(m, 0, white_ref0, xx[j]);
+				y2[j] = white_read1[j] * m->emis_coef[1][j]
+				       /white_ref1[j];
+			}
+
+			printf("lowres, high res lamp response:\n");
+			do_plot6(xx, y1, y2, NULL, NULL, NULL, NULL, m->nwav[1]);
+
+			free_dvector(xx, 0, m->nwav[1]);
+			free_dvector(y1, 0, m->nwav[1]);
+			free_dvector(y2, 0, m->nwav[1]);
+		}
+		/* Plot hires emis calibration */
+		{
+			double *xx;
+
+			xx = dvector(0, m->nwav[1]);		/* X  wl */
+			
+			for (j = 0; j < (m->nwav[1]); j++) {
+				xx[j] = XSPECT_WL(m->wl_short[1], m->wl_long[1], m->nwav[1], j);
+			}
+
+			printf("orig upsampled + smoothed hires emis_coef:\n");
+			do_plot6(xx, old_emis, m->emis_coef[1], NULL, NULL, NULL, NULL, m->nwav[1]);
+			free_dvector(xx, 0, m->nwav[1]);
+		}
+		free(old_emis);
+		free(targ_smth);
+#endif /* HIGH_RES_PLOT */
+		free(fudge);
+		free(lincal);
+
+		m->emis_hr_cal = 1;		/* We don't have to do a reflective calibration */
+
+		/* Make sure these are updated */
+		if ((ev = i1pro_create_hr_calfactors(p, 1)) != I1PRO_OK)
+			return ev;
+	}
+#endif /* HIGH_RES */
+
 	if (white_ref0 == NULL) {		/* transmission white reference */
 		double avgwh = 0.0;
 
@@ -9475,7 +10223,7 @@ int i1pro_compute_white_cal(
 			/* If reference is < 0.4% of average */
 			if (white_read0[j]/avgwh < 0.004) {
 				cal_factor0[j] = 1.0/(0.004 * avgwh);
-				warn = 1;
+				warn = I1PRO_RD_TRANSWHITEWARN;
 			} else {
 				cal_factor0[j] = 1.0/white_read0[j];	
 			}
@@ -9509,7 +10257,7 @@ int i1pro_compute_white_cal(
 			/* If reference is < 0.4% of average */
 			if (white_read1[j]/avgwh < 0.004) {
 				cal_factor1[j] = 1.0/(0.004 * avgwh);
-				warn = 1;
+				warn = I1PRO_RD_TRANSWHITEWARN;
 			} else {
 				cal_factor1[j] = 1.0/white_read1[j];	
 			}
@@ -9524,8 +10272,8 @@ int i1pro_compute_white_cal(
 			else
 				cal_factor1[j] = white_ref1[j]/white_read1[j];	
 		}
-	}
 #endif /* HIGH_RES */
+	}
 	return warn;
 }
 
@@ -10137,8 +10885,12 @@ i1pro_delayed_trigger(void *pp) {
 
 	a1logd(p->log,2,"i1pro_delayed_trigger: start sleep @ %d msec\n", msec_time() - m->msec);
 
+#ifdef USE_RD_SYNC
+	p->icom->usb_wait_io(p->icom, &m->rd_sync);		/* Wait for read to start */
+#else
 	/* Delay the trigger */
 	msec_sleep(m->trig_delay);
+#endif
 
 	m->tr_t1 = msec_time();		/* Diagnostic */
 
@@ -10198,7 +10950,7 @@ i1pro_triggermeasure(i1pro *p, int delay) {
 /* A buffer full of bytes is returned. */
 /* (This will fail on a Rev. A if there is more than about a 40 msec delay */
 /* between triggering the measurement and starting this read. */
-/* It appears though that the read can be pending before triggering though. */
+/* It appears that the read can be pending before triggering though. */
 /* Scan reads will also terminate if there is too great a delay beteween each read.) */
 i1pro_code
 i1pro_readmeasurement(
@@ -10269,7 +11021,7 @@ i1pro_readmeasurement(
 		m->tr_t6 = msec_time();	/* Diagnostic, start of subsequent reads */
 		if (m->tr_t3 == 0) m->tr_t3 = m->tr_t6;		/* Diagnostic, start of first read */
 
-		se = p->icom->usb_read(p->icom, NULL, 0x82, buf, size, &rwbytes, top);
+		se = p->icom->usb_read(p->icom, &m->rd_sync, 0x82, buf, size, &rwbytes, top);
 
 		m->tr_t5 = m->tr_t7;
 		m->tr_t7 = msec_time();	/* Diagnostic, end of subsequent reads */
@@ -10539,7 +11291,7 @@ i1pro_code i1pro_waitfor_switch_th(i1pro *p, double top) {
 	                                                      (stime = msec_time()) - m->msec);
 
 	/* Now read 1 byte */
-	se = p->icom->usb_read(p->icom, &m->cancelt, 0x84, buf, 1, &rwbytes, top);
+	se = p->icom->usb_read(p->icom, &m->sw_cancel, 0x84, buf, 1, &rwbytes, top);
 
 	if (se & ICOM_TO) {
 		a1logd(p->log,2,"i1pro_waitfor_switch_th: read 0x%x bytes, timed out (%d msec)\n",
@@ -10597,7 +11349,7 @@ i1pro_terminate_switch(
 	msec_sleep(50);
 	if (m->th_termed == 0) {
 		a1logd(p->log,3,"i1pro terminate switch thread failed, canceling I/O\n");
-		p->icom->usb_cancel_io(p->icom, &m->cancelt);
+		p->icom->usb_cancel_io(p->icom, &m->sw_cancel);
 	}
 	
 	return rv;
@@ -10732,9 +11484,12 @@ i1pro2_delayed_trigger(void *pp) {
 
 	a1logd(p->log,2,"i1pro2_delayed_trigger: Rev E start sleep @ %d msec\n",
 	                                                 msec_time() - m->msec);
-
+#ifdef USE_RD_SYNC
+	p->icom->usb_wait_io(p->icom, &m->rd_sync);		/* Wait for read to start */
+#else
 	/* Delay the trigger */
 	msec_sleep(m->trig_delay);
+#endif
 
 	m->tr_t1 = msec_time();		/* Diagnostic */
 

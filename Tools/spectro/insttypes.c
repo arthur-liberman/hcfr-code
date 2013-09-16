@@ -86,6 +86,10 @@ char *inst_sname(instType itype) {
 			return "Huey";
 		case instSmile:
 			return "Smile";
+		case instSpecbos1201:
+			return "specbos 1201";
+		case instSpecbos:
+			return "specbos";
 		case instColorHug:
 			return "ColorHug";
 		default:
@@ -143,6 +147,10 @@ char *inst_name(instType itype) {
 			return "GretagMacbeth Huey";
 		case instSmile:
 			return "ColorMunki Smile";
+		case instSpecbos1201:
+			return "JETI specbos 1201";
+		case instSpecbos:
+			return "JETI specbos";
 		case instColorHug:
 			return "Hughski ColorHug";
 		default:
@@ -205,6 +213,10 @@ instType inst_enum(char *name) {
 		return instHuey;
 	else if (strcmp(name, "ColorMunki Smile") == 0)
 		return instSmile;
+	else if (strcmp(name, "JETI specbos 1201") == 0)
+		return instSpecbos1201;
+	else if (strcmp(name, "JETI specbos") == 0)
+		return instSpecbos;
 	else if (strcmp(name, "Hughski ColorHug") == 0)
 		return instColorHug;
 
@@ -285,6 +297,8 @@ int nep) {					/* Number of end points */
 		return instColorHug;
 	}
 	/* Add other instruments here */
+
+
 
 	return instUnknown;
 }
@@ -369,6 +383,10 @@ int inst_illuminant(xspect *sp, instType itype) {
 			return 1;										/* Not applicable */
 
 		case instSmile:
+			return 1;										/* Not applicable */
+
+		case instSpecbos1201:
+		case instSpecbos:
 			return 1;										/* Not applicable */
 
 		case instColorHug:

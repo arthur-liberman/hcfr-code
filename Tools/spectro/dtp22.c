@@ -126,7 +126,7 @@ dtp22_fcommand(
 	char *in,			/* In string */
 	char *out,			/* Out string buffer */
 	int bsize,			/* Out buffer size */
-	char tc,			/* Terminating character */
+	char *tc,			/* Terminating characters */
 	int ntc,			/* Number of terminating characters */
 	double to) {		/* Timout in seconds */
 	int se, rv = DTP22_OK;
@@ -135,7 +135,7 @@ dtp22_fcommand(
 		a1logd(p->log, 1, "dtp22_fcommand: serial i/o failure on write_read '%s'\n",icoms_fix(in));
 		return icoms2dtp22_err(se);
 	}
-	if (tc == '>' && ntc == 1) {
+	if (tc[0] == '>' && ntc == 1) {
 		rv = extract_ec(out);
 #ifdef NEVER		/* Simulate an error ?? */
 	if (strcmp(in, "0PR\r") == 0)
@@ -145,7 +145,7 @@ dtp22_fcommand(
 			rv &= inst_imask;
 			if (rv != DTP22_OK) {	/* Clear the error */
 				char buf[MAX_MES_SIZE];
-				p->icom->write_read(p->icom, "CE\r", buf, MAX_MES_SIZE, '>', 1, 0.5);
+				p->icom->write_read(p->icom, "CE\r", buf, MAX_MES_SIZE, ">", 1, 0.5);
 			}
 		}
 	}
@@ -158,7 +158,7 @@ dtp22_fcommand(
 /* Return the dtp error code */
 static inst_code
 dtp22_command(dtp22 *p, char *in, char *out, int bsize, double to) {
-	int rv = dtp22_fcommand(p, in, out, bsize, '>', 1, to);
+	int rv = dtp22_fcommand(p, in, out, bsize, ">", 1, to);
 	return dtp22_interp_code((inst *)p, rv);
 }
 
@@ -249,7 +249,7 @@ dtp22_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 		return ev;
 
 	/* Change the baud rate to the rate we've been told */
-	if ((se = p->icom->write_read(p->icom, brc[bi], buf, MAX_MES_SIZE, '>', 1, .2)) != 0) {
+	if ((se = p->icom->write_read(p->icom, brc[bi], buf, MAX_MES_SIZE, ">", 1, .2)) != 0) {
 		if (extract_ec(buf) != DTP22_OK)
 			return inst_coms_fail;
 	}
@@ -261,7 +261,7 @@ dtp22_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	}
 
 	/* Loose a character (not sure why) */
-	p->icom->write_read(p->icom, "\r", buf, MAX_MES_SIZE, '>', 1, 0.1);
+	p->icom->write_read(p->icom, "\r", buf, MAX_MES_SIZE, ">", 1, 0.1);
 
 	/* Check instrument is responding, and reset it again. */
 	if ((ev = dtp22_command(p, "\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok
@@ -481,7 +481,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 
 		/* Wait for the microswitch to be triggered, or the user to trigger */
 		for (;;) {
-			if ((se = p->icom->read(p->icom, buf, MAX_MES_SIZE, '>', 1, 1.0)) != 0) {
+			if ((se = p->icom->read(p->icom, buf, MAX_MES_SIZE, ">", 1, 1.0)) != 0) {
 				if ((se & ICOM_TO) == 0) {		/* Some sort of read error */
 					/* Disable the read microswitch */
 					dtp22_command(p, "2PB\r", buf, MAX_MES_SIZE, 0.2);
@@ -708,7 +708,7 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 
 		/* Wait for the microswitch to be triggered, or a user trigger via uicallback */
 		for (;;) {
-			if ((se = p->icom->read(p->icom, buf, MAX_MES_SIZE, '>', 1, 1.0)) != 0) {
+			if ((se = p->icom->read(p->icom, buf, MAX_MES_SIZE, ">", 1, 1.0)) != 0) {
 				if ((se & ICOM_TO) == 0) {		/* Some sort of read error */
 					ev = dtp22_interp_code((inst *)p, icoms2dtp22_err(se));
 					goto do_exit;

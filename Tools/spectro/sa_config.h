@@ -9,19 +9,21 @@
 /* minor number = 8 bits */
 /* major number = 8 bits */
 
-#define ARGYLL_VERSION 0x01040
-#define ARGYLL_VERSION_STR "1.4.0"
+#define ARGYLL_VERSION 0x01060
+#define ARGYLL_VERSION_STR "1.6.0"
 
 /* Maximum file path length */
 #define MAXNAMEL 1024
 
+/* A simpler #define to remove __APPLE__ from non OS X code */
+#if defined(UNIX) && !defined(__APPLE__)
+# define UNIX_X11       /* Unix like using X11 */
+#else
+# undef UNIX_X11
+#endif
+
 #if defined(UNIX) && !defined(__APPLE__)
 #define USE_UCMM		/* Enable the Unix micro CMM */
 #endif
-
-#ifndef SALONEINSTLIB
-#define ENABLE_SERIAL	/* Enable access to serial instruments */
-#define ENABLE_USB		/* Enable access to USB instruments using libusb */
-#endif /* !SALONEINSTLIB */
 
 #endif /* __CONFIG_H__ */

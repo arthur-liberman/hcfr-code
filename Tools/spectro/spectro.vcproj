@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\usb\driver"
-				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;NT;_CRT_SECURE_NO_WARNINGS;SALONEINSTLIB;ENABLE_USB;NATIVE_USB;_USE_32BIT_TIME_T;_CRT_NONSTDC_NO_DEPRECATE"
+				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;NT;_CRT_SECURE_NO_WARNINGS;SALONEINSTLIB;ENABLE_USB;ENABLE_FAST_SERIAL;_USE_32BIT_TIME_T;_CRT_NONSTDC_NO_DEPRECATE"
 				MinimalRebuild="true"
 				ExceptionHandling="2"
 				BasicRuntimeChecks="3"
@@ -109,7 +109,7 @@
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				AdditionalIncludeDirectories="..\usb\driver"
-				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;NT;_CRT_SECURE_NO_WARNINGS;SALONEINSTLIB;ENABLE_USB;NATIVE_USB;_USE_32BIT_TIME_T;_CRT_NONSTDC_NO_DEPRECATE"
+				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;NT;_CRT_SECURE_NO_WARNINGS;SALONEINSTLIB;ENABLE_USB;ENABLE_FAST_SERIAL;_USE_32BIT_TIME_T;_CRT_NONSTDC_NO_DEPRECATE"
 				ExceptionHandling="2"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -224,6 +224,26 @@
 				>
 			</File>
 			<File
+				RelativePath=".\icoms_nt.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\inst.c"
 				>
 			</File>
@@ -256,12 +276,36 @@
 				>
 			</File>
 			<File
+				RelativePath=".\specbos.c"
+				>
+			</File>
+			<File
 				RelativePath=".\spyd2.c"
 				>
 			</File>
 			<File
 				RelativePath=".\usbio.c"
 				>
+			</File>
+			<File
+				RelativePath=".\usbio_nt.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\xdg_bds.c"
@@ -387,6 +431,10 @@
 			</File>
 			<File
 				RelativePath=".\rspl1.h"
+				>
+			</File>
+			<File
+				RelativePath=".\specbos.h"
 				>
 			</File>
 			<File

@@ -82,7 +82,7 @@ typedef struct {
 
 /* Given a wavelength and address of an xspect, compute the nearest index */
 #define XSPECT_XIX(PXSP, WL) \
-((int)floor(XSPECT_DIX(PXSP, WL) + 0.5))
+((int)floor(XSPECT_XDIX(PXSP, WL) + 0.5))
 
 #ifndef SALONEINSTLIB
 
@@ -137,8 +137,8 @@ typedef enum {
     icxIT_F10		 = 11,	/* Fluorescent Narrow Band 5000K, CRI 81 */
 	icxIT_Spectrocam = 12,	/* Spectrocam Xenon Lamp */
     icxIT_Dtemp		 = 13,	/* Daylight at specified temperature */
-    icxIT_Ptemp		 = 14	/* Planckian at specified temperature */
 #endif /* !SALONEINSTLIB*/
+    icxIT_Ptemp		 = 14	/* Planckian at specified temperature */
 } icxIllumeType;
 
 /* Fill in an xpsect with a standard illuminant spectrum */
@@ -146,7 +146,7 @@ typedef enum {
 int standardIlluminant(
 xspect *sp,					/* Xspect to fill in */
 icxIllumeType ilType,		/* Type of illuminant */
-double temp);				/* Optional temperature in degrees kelvin, for Dtemp and Ptemp */
+double temp);				/* Optional temperature in degrees kelvin, For Dtemp and Ptemp */
 
 /* Given an emission spectrum, set the UV output to the given level. */
 /* The shape of the UV is taken from FWA1_stim, and the level is */
@@ -293,6 +293,21 @@ xsp2cie *new_xsp2cie(
 );
 
 #ifndef SALONEINSTLIB
+
+/* --------------------------- */
+/* Given a choice of temperature dependent illuminant (icxIT_Dtemp or icxIT_Ptemp), */
+/* return the closest correlated color temperature to the XYZ. */
+/* An observer type can be chosen for interpretting the spectrum of the input and */
+/* the illuminant. */
+/* Return -1.0 on erorr */
+double icx_XYZ2ill_ct2(
+double txyz[3],			/* If not NULL, return the XYZ of the locus temperature */
+icxIllumeType ilType,	/* Type of illuminant, icxIT_Dtemp or icxIT_Ptemp */
+icxObserverType obType,	/* Observer, CIE_1931_2 or CIE_1964_10 */
+double xyz[3],			/* Input XYZ value */
+int viscct				/* nz to use visual CIEDE2000, 0 to use CCT CIE 1960 UCS. */
+);
+
 /* --------------------------- */
 /* Spectrum locus              */
 
@@ -301,19 +316,27 @@ xsp2cie *new_xsp2cie(
 int icx_spectrum_locus_range(double *min_wl, double *max_wl, icxObserverType obType);
 
 /* Return an XYZ that is on the spectrum locus for the given observer. */
-/* wl is the input wavelength in the range icx_spectrum_locus_range(), */
+/* wl is the input wavelength in the range icx_chrom_locus_range(), */
 /* and return clipped result if outside this range. */
 /* Return nz if observer unknown. */
 int icx_spectrum_locus(double xyz[3], double in, icxObserverType obType);
 
-/* Determine whether the given XYZ is outside the spectrum locus */
-/* Return 0 if within locus */
-/* Return 1 if outside locus */
-/* Return 2 if unknown (bad observer) */
-int icx_outside_spec_locus(double xyz[3], icxObserverType obType);
+/* - - - - - - - - - - - - - - */
+/* Chromaticity locus support */
 
-/* Return an aproximate RGB value for coloring within the spectrum locus */
-void icx_spec_locus_color(double rgb[3], double xyz[3], icxObserverType obType);
+typedef struct _xslpoly xslpoly;
+
+typedef enum {
+    icxLT_none	     = 0,	
+    icxLT_spectral	 = 1,	
+    icxLT_daylight	 = 2,
+    icxLT_plankian	 = 3
+} icxLocusType;
+
+/* Return a pointer to the chromaticity locus object */
+/* return NULL on failure. */
+xslpoly *chrom_locus_poligon(icxLocusType locus_type, icxObserverType obType, int cspace);
+
 
 /* --------------------------- */
 /* Density and other functions */
@@ -346,6 +369,21 @@ double *wp,				/* Input XYZ white point (may be NULL) */
 double *in				/* Input XYZ values */
 );
 
+/* Given an XYZ value, return approximate RGB value */
+/* Desaurate to white by the given amount */
+void icx_XYZ2RGB_ds(
+double *out,			/* Return approximate sRGB values */
+double *in,				/* Input XYZ */
+double desat			/* 0.0 = full saturation, 1.0 = white */
+);
+
+/* Given a wavelengthm return approximate RGB value */
+/* Desaurate to white by the given amount */
+void icx_wl2RGB_ds(
+double *out,			/* Return approximate sRGB values */
+double wl,				/* Input wavelength in nm */
+double desat			/* 0.0 = full saturation, 1.0 = white */
+);
 
 
 /* Given an illuminant definition and an observer model, return */
@@ -356,7 +394,7 @@ double xyz[3],			/* Return XYZ value with Y == 1 */
 icxObserverType obType,	/* Observer */
 xspect custObserver[3],	/* Optional custom observer */
 icxIllumeType ilType,	/* Type of illuminant */
-double ct,				/* Input temperature in degrees K */
+double temp,			/* Input temperature in degrees K */
 xspect *custIllum);		/* Optional custom illuminant */
 
 
@@ -364,7 +402,6 @@ xspect *custIllum);		/* Optional custom illuminant */
 /* return the closest correlated color temperature to the given spectrum or XYZ. */
 /* An observer type can be chosen for interpretting the spectrum of the input and */
 /* the illuminant. */
-/* Note we're using CICDE94, rather than the traditional L*u*v* 2/3 space for CCT */
 /* Return -1 on erorr */
 double icx_XYZ2ill_ct(
 double txyz[3],			/* If not NULL, return the XYZ of the black body temperature */
@@ -383,6 +420,15 @@ double icx_CIE1995_CRI(
 int *invalid,			/* if not NULL, set to nz if invalid */
 xspect *sample			/* Illuminant sample to compute CRI of */
 );
+
+
+/* Return the maximum 24 hour exposure in seconds. */
+/* Limit is 8 hours */
+/* Returns -1 if the source sample doesn't go down to at least 350 nm */
+double icx_ARPANSA_UV_exp(
+xspect *sample			/* Illuminant sample to compute UV_exp of */
+);
+
 #endif /* !SALONEINSTLIB*/
 
 #ifdef __cplusplus

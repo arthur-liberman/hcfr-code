@@ -14,6 +14,29 @@
  * see the License.txt file in this directory for licensing details.
  */
 
+/*
+
+	To make this more portable for independent use,
+	should save/set/restore LC_NUMERIC locale before
+	printf/scanf from file. e.g.
+
+		include <locale.h>
+		char *old_locale, *saved_locale;
+     
+		old_locale = setlocale (LC_NUMERIC, NULL);
+		saved_locale = strdup (old_locale);
+		if (saved_locale == NULL)
+			error ("Out of memory");
+		setlocale (LC_NUMERIC, "C");
+
+		.... read or write ...
+     
+		setlocale (LC_NUMERIC, saved_locale);
+		free (saved_locale);
+
+	Also apply to pars.c
+ */
+
 #define _CGATS_C_				/* Turn on implimentation code */
 
 #include <stdio.h>
@@ -40,7 +63,7 @@ extern void error(const char *fmt, ...), warning(const char *fmt, ...);
 #include "pars.h"
 #include "cgats.h"
 
-#define REAL_SIGDIG 5		/* Number of significant digits in real representation */
+#define REAL_SIGDIG 6		/* Number of significant digits in real representation */
 
 static int cgats_read(cgats *p, cgatsFile *fp);
 static int find_kword(cgats *p, int table, const char *ksym);

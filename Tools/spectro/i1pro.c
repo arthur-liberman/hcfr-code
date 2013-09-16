@@ -100,8 +100,8 @@ i1pro_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	a1logd(p->log, 2, "i1pro_init_coms: called\n");
 
 	if (p->icom->port_type(p->icom) != icomt_usb) {
-		a1logd(p->log, 1, "i1pro_init_coms: wrong sort of coms!\n");
-		return i1pro_interp_code(p, I1PRO_UNKNOWN_MODEL);
+		a1logd(p->log, 1, "i1pro_init_coms: wrong communications type for device!\n");
+		return inst_coms_fail;
 	}
 
 	a1logd(p->log, 2, "i1pro_init_coms: about to init USB\n");
@@ -168,8 +168,10 @@ i1pro_determine_capabilities(i1pro *p) {
 	if (p->m != NULL) {
 		i1proimp *m = (i1proimp *)p->m;
 		i1pro_state *s = &m->ms[m->mmode];
-		if (s->emiss)
+		if (s->emiss) {
+			p->cap2 |= inst2_meas_disp_update;
 			p->cap2 |= inst2_emis_refr_meas;
+		}
 	}
 
 	p->cap3 = inst3_none;
@@ -272,6 +274,24 @@ double *ref_rate) {
 		return inst_no_init;
 
 	rv = i1pro_imp_meas_refrate(p, ref_rate);
+
+	return i1pro_interp_code(p, rv);
+}
+
+/* Read the display update delay */
+static inst_code
+i1pro_meas_delay(
+inst *pp,
+int *msecdelay) {
+	i1pro *p = (i1pro *)pp;
+	i1pro_code rv;
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
+	rv = i1pro_imp_meas_delay(p, msecdelay);
 
 	return i1pro_interp_code(p, rv);
 }
@@ -417,6 +437,8 @@ i1pro_interp_error(inst *pp, i1pro_code ec) {
 			return "No ambient found before first flash";
 		case I1PRO_RD_NOREFR_FOUND:
 			return "No refresh rate detected or failed to measure it";
+		case I1PRO_RD_NOTRANS_FOUND:
+			return "No delay calibration transition found";
 
 		case I1PRO_INT_NO_COMS:
 			return "Communications hasn't been established";
@@ -538,6 +560,7 @@ i1pro_interp_code(i1pro *p, i1pro_code ec) {
 		case I1PRO_RD_NOFLASHES:
 		case I1PRO_RD_NOAMBB4FLASHES:
 		case I1PRO_RD_NOREFR_FOUND:
+		case I1PRO_RD_NOTRANS_FOUND:
 			return inst_misread | ec;
 
 		case I1PRO_RD_NEEDS_CAL:
@@ -790,6 +813,7 @@ extern i1pro *new_i1pro(icoms *icom, instType itype) {
 	p->read_refrate      = i1pro_read_refrate;
 	p->get_n_a_cals      = i1pro_get_n_a_cals;
 	p->calibrate         = i1pro_calibrate;
+	p->meas_delay        = i1pro_meas_delay;
 	p->interp_error      = i1pro_interp_error;
 	p->del               = i1pro_del;
 

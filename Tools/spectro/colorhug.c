@@ -157,7 +157,7 @@ colorhug_command(colorhug *p,
 	int i;
 	unsigned char buf[64];
 	int xwbytes, wbytes;
-	int xrbytes, rbytes;
+	int xrbytes, xrbytes2, rbytes;
 	int se, ua = 0, rv = inst_ok;
 	int ishid = p->icom->port_type(p->icom) == icomt_hid;
 
@@ -177,6 +177,7 @@ colorhug_command(colorhug *p,
 		xwbytes = 64;
 		se = p->icom->usb_write(p->icom, NULL, 0x01, buf, xwbytes, &wbytes, timeout);
 	}
+	a1logd(p->log,8,"colorhug_command: Send %d bytes and %d sent\n",xwbytes,wbytes);
 	if (se != 0) {
 		a1logd(p->log,1,"colorhug_command: command send failed with ICOM err 0x%x\n",se);
 		return colorhug_interp_code((inst *)p, COLORHUG_COMS_FAIL);
@@ -199,14 +200,15 @@ colorhug_command(colorhug *p,
 	a1logd(p->log,6,"colorhug_command: Reading response\n");
 
 	if (ishid) {
-		xrbytes = 64;
+		xrbytes = xrbytes2 = 64;
 		se = p->icom->hid_read(p->icom, buf, xrbytes, &rbytes, timeout);
 	} else {
-//		xrbytes = out_size + 2;
 		xrbytes = 64;
+		xrbytes2 = out_size + 2;	/* For backwards compatibility with fw <= 1.1.8 */
 		se = p->icom->usb_read(p->icom, NULL, 0x81, buf, xrbytes, &rbytes, timeout);
 	}
 
+	a1logd(p->log,8,"colorhug_command: Read %d bytes and %d read\n",xrbytes,rbytes);
 	if (rbytes >= 2) {
 		a1logd(p->log,6,"colorhug_command: recieved cmd '%s' error '%s' args '%s'\n",
 				inst_desc(buf[1]),
@@ -217,7 +219,6 @@ colorhug_command(colorhug *p,
 	if (se != 0) {
 
 		/* deal with command error */
-//		if (rbytes == 2 && buf[0] != COLORHUG_OK) {
 		if (buf[0] != COLORHUG_OK) {
 			a1logd(p->log,1,"colorhug_command: Got Colorhug !OK\n");
 			rv = colorhug_interp_code((inst *)p, buf[0]);
@@ -225,15 +226,18 @@ colorhug_command(colorhug *p,
 		}
 
 		/* deal with underrun or overrun */
-		if (rbytes != xrbytes) {
+		if (rbytes != xrbytes
+		 && rbytes != xrbytes2) {
 			a1logd(p->log,1,"colorhug_command: got underrun or overrun\n");
 			rv = colorhug_interp_code((inst *)p, COLORHUG_BAD_RD_LENGTH);
 			return rv;
 		}
 
-		/* there's another reason it failed */
-		a1logd(p->log,1,"colorhug_command: read failed with ICOM err 0x%x\n",se);
-		return colorhug_interp_code((inst *)p, COLORHUG_COMS_FAIL);
+		if (se != ICOM_SHORT) {		/* Allow short read for firware compatibility */
+			/* there's another reason it failed */
+			a1logd(p->log,1,"colorhug_command: read failed with ICOM err 0x%x\n",se);
+			return colorhug_interp_code((inst *)p, COLORHUG_COMS_FAIL);
+		}
 	}
 	rv = colorhug_interp_code((inst *)p, icoms2colorhug_err(ua));
 
@@ -451,7 +455,7 @@ colorhug_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 
 	} else {
 		a1logd(p->log, 1, "colorhug_init_coms: wrong communications type for device!\n");
-		return colorhug_interp_code((inst *)p, COLORHUG_UNKNOWN_MODEL);
+		return inst_internal_error;
 	}
 
 	a1logd(p->log, 2, "colorhug_init_coms: inited coms OK\n");
@@ -467,7 +471,6 @@ colorhug_get_firmwareversion (colorhug *p)
 	inst_code ev;
 	unsigned char obuf[6];
 
-	/* Hmm. The post scale is in the 2nd short returned */
 	ev = colorhug_command(p, ch_get_firmware_version,
 						  NULL, 0,
 						  obuf, 6,
@@ -480,6 +483,27 @@ colorhug_get_firmwareversion (colorhug *p)
 	p->uro = buf2short_le(obuf + 4);
 
 	a1logd(p->log,2,"colorhug: Firware version = %d.%d.%d\n",p->maj,p->min,p->uro); 
+
+	return ev;
+}
+
+/* Get the serial number */
+static inst_code
+colorhug_get_serialnumber (colorhug *p)
+{
+	inst_code ev;
+	unsigned char obuf[6];
+
+	ev = colorhug_command(p, ch_get_serial,
+						  NULL, 0,
+						  obuf, 4,
+						  2.0);
+	if (ev != inst_ok)
+		return ev;
+
+	p->ser_no = buf2uint_le(obuf + 0);
+
+	a1logd(p->log,2,"colorhug: Serial number = %d\n",p->ser_no); 
 
 	return ev;
 }
@@ -553,6 +577,11 @@ colorhug_init_inst(inst *pp)
 	if (ev != inst_ok)
 		return ev;
 
+	/* Get the serial number */
+	ev = colorhug_get_serialnumber(p);
+	if (ev != inst_ok)
+		return ev;
+
 	/* Turn the LEDs off */
 	ev = colorhug_set_LEDs(p, 0x0);
 	if (ev != inst_ok)
@@ -590,6 +619,10 @@ colorhug_init_inst(inst *pp)
 
 	p->inited = 1;
 	a1logd(p->log, 2, "colorhug_init: inited coms OK\n");
+
+	a1logv(p->log,1,"Serial Number:     %06u\n"
+	                "Firmware Version:  %d.%d.%d\n"
+	                ,p->ser_no,p->maj,p->min,p->uro);
 
 	/* Flash the LEDs */
 	ev = colorhug_set_LEDs(p, 0x1);

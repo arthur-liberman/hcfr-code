@@ -23,8 +23,6 @@
 #endif
 
 
-#ifdef NATIVE_USB
-
 /* Standard USB protocol defines */
 # include "iusb.h"
 
@@ -131,6 +129,22 @@ struct usb_idevice {
 
 # if defined(UNIX) && !defined(__APPLE__)
 
+#  if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
+
+/* BSD USB context */
+struct usb_idevice {
+	/* icompath stuff: */
+	char *dpath;			/* Device path */
+	int nconfig;			/* Number of configurations */
+	int config;				/* This config (always 1) */
+	int nifce;				/* Number of interfaces */
+	usb_ep ep[32];			/* Information about each end point for general usb i/o */
+	/* Stuff setup when device is open: */
+	int fd;					/* Device file descriptor */
+};
+
+#  else
+
 /* Linux USB context */
 struct usb_idevice {
 	/* icompath stuff: */
@@ -150,43 +164,11 @@ struct usb_idevice {
 	pthread_mutex_t lock;		/* Protect reqs list */
 	struct _usbio_req *reqs;	/* linked list of current reqs */
 };
-	
-# endif	/* Linux */
 
-#else	/* !NATIVE_USB - Using libusb */
+#  endif /* Linux */
 
-# ifdef USE_LIBUSB1
+# endif	/* UNIX */
 
-# include "libusb.h"
-#  define usb_idevice libusb_device
-#  define IUSB_ENDPOINT_DIR_MASK   LIBUSB_ENDPOINT_DIR_MASK
-#  define IUSB_ENDPOINT_IN         LIBUSB_ENDPOINT_IN
-#  define IUSB_ENDPOINT_OUT        LIBUSB_ENDPOINT_OUT
-#  define IUSB_REQ_RECIP_DEVICE    LIBUSB_RECIPIENT_DEVICE
-#  define IUSB_REQ_RECIP_INTERFACE LIBUSB_RECIPIENT_INTERFACE
-#  define IUSB_REQ_RECIP_ENDPOINT  LIBUSB_RECIPIENT_ENDPOINT
-#  define IUSB_REQ_TYPE_STANDARD   LIBUSB_REQUEST_TYPE_STANDARD
-#  define IUSB_REQ_TYPE_CLASS      LIBUSB_REQUEST_TYPE_CLASS
-#  define IUSB_REQ_TYPE_VENDOR     LIBUSB_REQUEST_TYPE_VENDOR
-#  define IUSB_ENDPOINT_TYPE_MASK  LIBUSB_TRANSFER_TYPE_MASK
-
-# else
-
-#  include "usb.h"
-#  define usb_idevice usb_device
-#  define IUSB_ENDPOINT_DIR_MASK   USB_ENDPOINT_DIR_MASK
-#  define IUSB_ENDPOINT_IN         USB_ENDPOINT_IN
-#  define IUSB_ENDPOINT_OUT        USB_ENDPOINT_OUT
-#  define IUSB_REQ_RECIP_DEVICE    USB_RECIP_DEVICE
-#  define IUSB_REQ_RECIP_INTERFACE USB_RECIP_INTERFACE
-#  define IUSB_REQ_RECIP_ENDPOINT  USB_RECIP_ENDPOINT
-#  define IUSB_REQ_TYPE_STANDARD   USB_TYPE_STANDARD
-#  define IUSB_REQ_TYPE_CLASS      USB_TYPE_CLASS
-#  define IUSB_REQ_TYPE_VENDOR     USB_TYPE_VENDOR
-#  define IUSB_ENDPOINT_TYPE_MASK  USB_ENDPOINT_TYPE_MASK
-
-# endif
-#endif
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
@@ -202,6 +184,8 @@ typedef enum {
 /* Cancelation token. */
 struct _usb_cancelt {
 	amutex cmtx;
+	int state;			/* 0 = init, 1 = pending, 2 = complete */
+	amutex cond;		/* Wait for state 0->1 sync. mutex */
 	void *hcancel;		/* Pointer to implementation cancel handle */
 };
 
@@ -236,6 +220,9 @@ void usb_install_signal_handlers(icoms *p);
 /* Delete an icoms from our static signal cleanup list */
 /* (used inside usb_close_port(), hid_close_port() */
 void usb_delete_from_cleanup_list(icoms *p);
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 
 #ifdef __cplusplus
 	}

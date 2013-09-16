@@ -49,18 +49,22 @@
 #include "ccmx.h"
 #include "ccss.h"
 #include "conv.h"
-#include "insttypes.h"
 
+#include "insttypes.h"
 #include "icoms.h"
 #include "inst.h"
 #include "insttypeinst.h"
 
 #include "sort.h"
 
-#ifdef ENABLE_SERIAL
+#if defined(ENABLE_FAST_SERIAL)
+instType fast_ser_inst_type(icoms *p, int tryhard, 
+       inst_code (*uicallback)(void *cntx, inst_ui_purp purp), void *cntx);
+# if defined(ENABLE_SERIAL)
 static instType ser_inst_type(icoms *p, 
-inst_code (*uicallback)(void *cntx, inst_ui_purp purp), void *cntx);
-#endif /* ENABLE_SERIAL */
+       inst_code (*uicallback)(void *cntx, inst_ui_purp purp), void *cntx);
+# endif /* ENABLE_SERIAL */
+#endif /* ENABLE_FAST_SERIAL */
 
 /* ------------------------------------ */
 /* Default methods for instrument class */
@@ -521,13 +525,23 @@ void *cntx			/* Context for callback */
 	icoms *icom;
 	inst *p = NULL;
 
+	a1logd(log, 2, "new_inst: called with path '%s'\n",path->name);
+
 	if ((icom = new_icoms(path, log)) == NULL) {
+		a1logd(log, 2, "new_inst: new_icoms failed to open it\n");
 		return NULL;
 	}
 
+
 	/* Set instrument type from USB port, if not specified */
 	itype = icom->itype;		/* Instrument type if its known from usb/hid */
-#ifdef ENABLE_SERIAL
+
+#if defined(ENABLE_FAST_SERIAL)
+	if (itype == instUnknown && !nocoms && icom->fast)
+		itype = fast_ser_inst_type(icom, 1, uicallback, cntx);		/* Else type from serial */
+#endif /* ENABLE_FAST_SERIAL */
+
+#if defined(ENABLE_SERIAL)
 	if (itype == instUnknown && !nocoms)
 		itype = ser_inst_type(icom, uicallback, cntx);		/* Else type from serial */
 #endif /* ENABLE_SERIAL */
@@ -550,6 +564,12 @@ void *cntx			/* Context for callback */
 	else if (itype == instSpectrocam)
 		p = (inst *)new_spc(icom, itype);
 */
+#endif /* ENABLE_SERIAL */
+
+#ifdef ENABLE_FAST_SERIAL
+	if (itype == instSpecbos1201
+	 || itype == instSpecbos)
+		p = (inst *)new_specbos(icom, itype);
 #endif /* ENABLE_SERIAL */
 
 #ifdef ENABLE_USB
@@ -586,8 +606,11 @@ void *cntx			/* Context for callback */
 #endif /* ENABLE_USB */
 
 	/* Nothing matched */
-	if (p == NULL)
+	if (p == NULL) {
+		a1logd(log, 2, "new_inst: instrument type not recognised\n");
+		icom->del(icom);
 		return NULL;
+	}
 
 	/* Add default methods if constructor did not supply them */
 	if (p->init_coms == NULL)
@@ -696,6 +719,35 @@ void *cntx			/* Context for callback */
 	R		Raw sensor values
  */
 
+/* Default display technology strings:
+
+	"Color Matching Function"
+	"Custom"
+	"CRT"
+	"LCD CCFL IPS"
+	"LCD CCFL VPA"
+	"LCD CCFL TFT"
+	"LCD CCFL Wide Gamut IPS"
+	"LCD CCFL Wide Gamut VPA"
+	"LCD CCFL Wide Gamut TFT"
+	"LCD White LED IPS"
+	"LCD White LED VPA"
+	"LCD White LED TFT"
+	"LCD RGB LED IPS"
+	"LCD RGB LED VPA"
+	"LCD RGB LED TFT"
+	"LED OLED"
+	"LED AMOLED"
+	"Plasma"
+	"LCD RG Phosphor"
+	"Projector RGB Filter Wheel"
+	"Projector RGBW Filter Wheel"
+	"Projector RGBCMY Filter Wheel"
+	"Projector"
+	"Unknown"
+
+ */
+
 
 /* Free a display type list */
 void inst_del_disptype_list(inst_disptypesel *list, int no) {
@@ -751,17 +803,31 @@ static inst_disptypesel *expand_dlist(inst_disptypesel *list, int nlist, int *na
 	if no selector remain,
 		allocate a free one.
 	mark all used selectors
+
+	We treat the first selector as more important
+	than any aliases that come after it, so we need
+	to do two passes to resolve what gets used.
 */
 
 /* Set the selection characters */
 /* return NZ if we have run out */
-static int set_sel(char *sel, char *usels, int *k, char *asels) {
-	char *d, *s;
+/* If flag == 0, deal with all selectors */
+/* If flag == 1, deal with just primary selectors */
+/* If flag == 2, deal with just secondary selectors */
+static int set_sel(int flag, char *sel, char *usels, int *k, char *asels) {
+	char *d, *s, i;
 
 	/* First remove any used chars from selector */
-	for (d = s = sel; *s != '\000'; s++) {
-		if (usels[*s] == 0)
+	for (i = 0, d = s = sel; *s != '\000'; s++, i++) {
+		if ((flag == 2 && i == 0)		/* Ignore and keep primary selector */
+		 || (flag == 1 && i == 1)) {	/* Ignore and keep secondary selectors */
 			*d++ = *s;
+			continue;
+		}
+		if (usels[*s] == 0) {			/* If selector is not currently used */
+			*d++ = *s;
+			usels[*s] = 1;
+		}
 	}
 	*d = '\000';
 
@@ -805,9 +871,9 @@ int doccmx						/* Add matching installed ccmx files */
 
 	for (i = 0; i < 256; i++)
 		usels[i] = 0;
-	k = 0;
+	k = 0;		/* Next selector index */
 
-	/* Add entries from the static list */
+	/* Add entries from the static list and their primary selectors */
 	/* Count the number in the static list */
 	for (i = 0; !(sdtlist[i].flags & inst_dtflags_end); i++) {
 
@@ -816,13 +882,11 @@ int doccmx						/* Add matching installed ccmx files */
 
 		list[nlist-1] = sdtlist[i];		/* Struct copy */
 
-		if (set_sel(list[nlist-1].sel, usels, &k, asels)) {
+		if (set_sel(1, list[nlist-1].sel, usels, &k, asels)) {
 			a1loge(p->log, 1, "inst_creat_disptype_list run out of selectors\n");
 			break;
 		}
 	}
-
-	k = 0;		/* Next selector index */
 
 	/* Add any ccss's */
 	if (doccss) {
@@ -843,7 +907,7 @@ int doccmx						/* Add matching installed ccmx files */
 				strncpy(list[nlist-1].sel, ss_list[i].sel, INST_DTYPE_SEL_LEN);
 				list[nlist-1].sel[INST_DTYPE_SEL_LEN-1] = '\000';
 			}
-			if (set_sel(list[nlist-1].sel, usels, &k, asels)) {
+			if (set_sel(1, list[nlist-1].sel, usels, &k, asels)) {
 				a1loge(p->log, 1, "inst_creat_disptype_list run out of selectors\n");
 				break;
 			}
@@ -889,7 +953,7 @@ int doccmx						/* Add matching installed ccmx files */
 				strncpy(list[nlist-1].sel, ss_list[i].sel, INST_DTYPE_SEL_LEN);
 				list[nlist-1].sel[INST_DTYPE_SEL_LEN-1] = '\000';
 			}
-			if (set_sel(list[nlist-1].sel, usels, &k, asels)) {
+			if (set_sel(1, list[nlist-1].sel, usels, &k, asels)) {
 				a1loge(p->log, 1, "inst_creat_disptype_list run out of selectors\n");
 				break;
 			}
@@ -900,6 +964,11 @@ int doccmx						/* Add matching installed ccmx files */
 			list[nlist-1].path = ss_list[i].path; ss_list[i].path = NULL;
 			icmCpy3x3(list[nlist-1].mat, ss_list[i].mat);
 		}
+	}
+
+	/* Verify or delete any secondary selectors from the list */
+	for (i = 0; i < nlist; i++) {
+		set_sel(2, list[i].sel, usels, &k, asels);
 	}
 
 	if (pndtlist != NULL)
@@ -963,6 +1032,7 @@ iccmx *list_iccmx(char *inst, int *no) {
 		if (inst != NULL && cs->inst != NULL && strcmp(inst, cs->inst) != 0)
 			continue;
 
+		a1logd(g_log, 5, "Reading '%s'\n",paths[i]);
 		if ((tech = cs->tech) == NULL)
 			tech = "";
 		if ((disp = cs->disp) == NULL)
@@ -1089,6 +1159,7 @@ iccss *list_iccss(int *no) {
 			continue;		/* Skip any unreadable ccss's */
 		}
 
+		a1logd(g_log, 5, "Reading '%s'\n",paths[i]);
 		if ((tech = cs->tech) == NULL)
 			tech = "";
 		if ((disp = cs->disp) == NULL)
@@ -1170,6 +1241,102 @@ void free_iccss(iccss *list) {
 }
 
 /* ============================================================= */
+/* Detect fast serial instruments */
+
+#ifdef ENABLE_FAST_SERIAL
+static void hex2bin(char *buf, int len);
+
+/* Heuristicly determine the instrument type for */
+/* a fast serial connection, and instUnknown if not serial. */
+/* Set it in icoms and also return it. */
+instType fast_ser_inst_type(
+	icoms *p,
+	int tryhard,
+	inst_code (*uicallback)(void *cntx, inst_ui_purp purp),		/* optional uicallback */
+	void *cntx			/* Context for callback */
+) {
+	instType rv = instUnknown;
+	char buf[100];
+	baud_rate brt[] = { baud_921600, baud_115200, baud_38400, baud_nc };
+	unsigned int etime;
+	unsigned int i;
+	int se, len;
+	
+	if (p->port_type(p) != icomt_serial
+	 && p->port_type(p) != icomt_usbserial)
+		return p->itype;
+
+	/* The tick to give up on */
+	etime = msec_time() + (long)(2000.0 + 0.5);
+
+	a1logd(p->log, 1, "fser_inst_type: Trying different baud rates (%u msec to go)\n",etime - msec_time());
+
+	/* Until we time out, find the correct baud rate */
+	for (i = 0; msec_time() < etime; i++) {
+		if (brt[i] == baud_nc) {
+			i = 0;
+			if (!tryhard)
+				break;		/* try only once */
+		}
+		if ((se = p->set_ser_port(p, fc_none, brt[i], parity_none,
+			                         stop_1, length_8)) != ICOM_OK) { 
+			a1logd(p->log, 5, "fser_inst_type: set_ser_port failed with 0x%x\n",se);
+			return instUnknown;		/* Give up */
+		}
+
+//		a1logd(p->log, 5, "brt = %d\n",brt[i]);
+
+		/* See if it's a JETI specbos */
+		if ((se = p->write_read(p, "*idn?\r", buf, 100, "\r", 1, 0.050)) != inst_ok) {
+			/* Check for user abort */
+			if (uicallback != NULL) {
+				inst_code ev;
+				if ((ev = uicallback(cntx, inst_negcoms)) == inst_user_abort) {
+					a1logd(p->log, 5, "fser_inst_type: User aborted\n");
+					return instUnknown;
+				}
+			}
+			continue;
+		}
+		len = strlen(buf);
+
+		a1logd(p->log, 5, "len = %d\n",len);
+
+		/* JETI specbos returns "JETI_SBXXXX", where XXXX is the instrument type, */
+		/* except for the 1201 which returns "SB05" */
+
+		/* Is this a JETI specbos 1201 response ? */
+		if (strncmp(buf, "SB05", 4) == 0) {
+//			a1logd(p->log, 5, "specbos1201\n");
+			rv = instSpecbos1201;
+			break;
+		}
+		/* Is this a JETI specbos XXXX response ? */
+		if (len >= 11 && strncmp(buf, "JETI_SB", 7) == 0) {
+//			a1logd(p->log, 5, "specbos\n");
+			rv = instSpecbos;
+			break;
+		}
+	}
+
+	if (rv == instUnknown
+	 && msec_time() >= etime) {		/* We haven't established comms */
+		a1logd(p->log, 5, "fser_inst_type: Failed to establish coms\n");
+		p->itype = rv;
+		return instUnknown;
+	}
+
+	a1logd(p->log, 5, "fser_inst_type: Instrument type is '%s'\n", inst_name(rv));
+
+	p->itype = rv;
+
+	return rv;
+}
+
+#endif /* ENABLE_FAST_SERIAL */
+
+/* ============================================================= */
+/* Detect serial instruments */
 
 #ifdef ENABLE_SERIAL
 static void hex2bin(char *buf, int len);
@@ -1217,7 +1384,7 @@ static instType ser_inst_type(
 		}
 
 //		a1logd(p->log, 5, "brt = %d\n",brt[i]);
-		if ((se = p->write_read(p, ";D024\r\n", buf, 100, '\r', 1, 0.5)) != inst_ok) {
+		if ((se = p->write_read(p, ";D024\r\n", buf, 100, "\r", 1, 0.5)) != inst_ok) {
 			/* Check for user abort */
 			if (uicallback != NULL) {
 				inst_code ev;
@@ -1226,6 +1393,7 @@ static instType ser_inst_type(
 					return instUnknown;
 				}
 			}
+			continue;
 		}
 		len = strlen(buf);
 
@@ -1254,7 +1422,8 @@ static instType ser_inst_type(
 		}
 	}
 
-	if (msec_time() >= etime) {		/* We haven't established comms */
+	if (rv == instUnknown
+	 && msec_time() >= etime) {		/* We haven't established comms */
 		a1logd(p->log, 5, "ser_inst_type: Failed to establish coms\n");
 		return instUnknown;
 	}
@@ -1269,7 +1438,7 @@ static instType ser_inst_type(
 	/* SpectroScan */
 	if (ss) {
 		rv = instSpectroScan;
-		if ((se = p->write_read(p, ";D030\r\n", buf, 100, '\n', 1, 1.5)) == 0)  {
+		if ((se = p->write_read(p, ";D030\r\n", buf, 100, "\n", 1, 1.5)) == 0)  {
 			if (strlen(buf) >= 41) {
 				hex2bin(&buf[5], 12);
 //				a1logd(p->log, 5, "spectroscan type = '%s'\n",buf);
@@ -1281,7 +1450,7 @@ static instType ser_inst_type(
 	if (xrite) {
 
 		/* Get the X-Rite model and version number */
-		if ((se = p->write_read(p, "SV\r\n", buf, 100, '>', 1, 2.5)) != 0)
+		if ((se = p->write_read(p, "SV\r\n", buf, 100, ">", 1, 2.5)) != 0)
 			return instUnknown;
 	
 		if (strlen(buf) >= 12) {
@@ -1310,6 +1479,10 @@ static instType ser_inst_type(
 
 	return rv;
 }
+
+#endif /* ENABLE_SERIAL */
+
+#if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
 
 /* Convert an ASCII Hex character to an integer. */
 static int h2b(char c) {

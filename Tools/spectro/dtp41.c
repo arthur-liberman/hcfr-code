@@ -110,7 +110,7 @@ dtp41 *p,
 char *in,			/* In string */
 char *out,			/* Out string buffer */
 int bsize,			/* Out buffer size */
-char tc,			/* Terminating character */
+char *tc,			/* Terminating characters */
 int ntc,			/* Number of terminating characters */
 double to) {		/* Timout in seconts */
 	int rv, se;
@@ -120,13 +120,13 @@ double to) {		/* Timout in seconts */
 		return icoms2dtp41_err(se);
 	}
 	rv = DTP41_OK;
-	if (tc == '>' && ntc == 1) {
+	if (tc[0] == '>' && ntc == 1) {
 		rv = extract_ec(out);
 		if (rv > 0) {
 			rv &= inst_imask;
 			if (rv != DTP41_OK) {	/* Clear the error */
 				char buf[MAX_MES_SIZE];
-				p->icom->write_read(p->icom, "CE\r", buf, MAX_MES_SIZE, '>', 1, 0.5);
+				p->icom->write_read(p->icom, "CE\r", buf, MAX_MES_SIZE, ">", 1, 0.5);
 			}
 		}
 	}
@@ -139,7 +139,7 @@ double to) {		/* Timout in seconts */
 /* Return the instrument error code */
 static inst_code
 dtp41_command(dtp41 *p, char *in, char *out, int bsize, double to) {
-	int rv = dtp41_fcommand(p, in, out, bsize, '>', 1, to);
+	int rv = dtp41_fcommand(p, in, out, bsize, ">", 1, to);
 	return dtp41_interp_code((inst *)p, rv);
 }
 
@@ -228,13 +228,13 @@ dtp41_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 		return ev;
 
 	/* Set the handshaking (cope with coms breakdown) */
-	if ((se = p->icom->write_read(p->icom, fcc, buf, MAX_MES_SIZE, '>', 1, 1.5)) != 0) {
+	if ((se = p->icom->write_read(p->icom, fcc, buf, MAX_MES_SIZE, ">", 1, 1.5)) != 0) {
 		if (extract_ec(buf) != DTP41_OK)
 			return inst_coms_fail;
 	}
 
 	/* Change the baud rate to the rate we've been told (cope with coms breakdown) */
-	if ((se = p->icom->write_read(p->icom, brc[bi], buf, MAX_MES_SIZE, '>', 1, 1.5)) != 0) {
+	if ((se = p->icom->write_read(p->icom, brc[bi], buf, MAX_MES_SIZE, ">", 1, 1.5)) != 0) {
 		if (extract_ec(buf) != DTP41_OK)
 			return inst_coms_fail;
 	}
@@ -247,7 +247,7 @@ dtp41_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	}
 
 	/* Loose a character (not sure why) */
-	p->icom->write_read(p->icom, "\r", buf, MAX_MES_SIZE, '>', 1, 0.5);
+	p->icom->write_read(p->icom, "\r", buf, MAX_MES_SIZE, ">", 1, 0.5);
 
 	/* Check instrument is responding */
 	if ((ev = dtp41_command(p, "\r", buf, MAX_MES_SIZE, 1.5)) != inst_ok) {

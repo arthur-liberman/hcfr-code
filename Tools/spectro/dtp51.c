@@ -113,7 +113,7 @@ dtp51_fcommand(
 	char *in,			/* In string */
 	char *out,			/* Out string buffer */
 	int bsize,			/* Out buffer size */
-	char tc,			/* Terminating character */
+	char *tc,			/* Terminating character */
 	int ntc,			/* Number of terminating characters */
 	double to) {		/* Timout in seconts */
 	int rv, se;
@@ -123,13 +123,13 @@ dtp51_fcommand(
 		return icoms2dtp51_err(se);
 	}
 	rv = DTP51_OK;
-	if (tc == '>' && ntc == 1) {
+	if (tc == ">" && ntc == 1) {
 		rv = extract_ec(out);
 		if (rv > 0) {
 			rv &= inst_imask;
 			if (rv != DTP51_OK) {	/* Clear the error */
 				char buf[MAX_MES_SIZE];
-				p->icom->write_read(p->icom, "CE\r", buf, MAX_MES_SIZE, '>', 1, 0.5);
+				p->icom->write_read(p->icom, "CE\r", buf, MAX_MES_SIZE, ">", 1, 0.5);
 			}
 		}
 	}
@@ -142,7 +142,7 @@ dtp51_fcommand(
 /* Return the dtp error code */
 static inst_code
 dtp51_command(dtp51 *p, char *in, char *out, int bsize, double to) {
-	int rv = dtp51_fcommand(p, in, out, bsize, '>', 1, to);
+	int rv = dtp51_fcommand(p, in, out, bsize, ">", 1, to);
 	return dtp51_interp_code((inst *)p, rv);
 }
 
@@ -154,7 +154,7 @@ struct _dtp51 *p,
 char *out,			/* Out string buffer */
 int bsize,			/* Out buffer size */
 double to) {		/* Timout in seconts */
-	char tc = '>';		/* Terminating character */
+	char *tc = ">";		/* Terminating character */
 	int ntc = 1;		/* Number of terminating characters */
 	int rv, se;
 
@@ -163,13 +163,13 @@ double to) {		/* Timout in seconts */
 		return icoms2dtp51_err(se);
 	}
 	rv = DTP51_OK;
-	if (tc == '>' && ntc == 1) {
+	if (tc[0] == '>' && ntc == 1) {
 		rv = extract_ec(out);
 		if (rv > 0) {
 			rv &= inst_imask;
 			if (rv != DTP51_OK) {	/* Clear the error */
 				char buf[MAX_MES_SIZE];
-				p->icom->write_read(p->icom, "CE\r", buf, MAX_MES_SIZE, '>', 1, 0.5);
+				p->icom->write_read(p->icom, "CE\r", buf, MAX_MES_SIZE, ">", 1, 0.5);
 			}
 		}
 	}
@@ -262,7 +262,7 @@ dtp51_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 		return ev;
 
 	/* Change the baud rate to the rate we've been told */
-	if ((se = p->icom->write_read(p->icom, brc[bi], buf, MAX_MES_SIZE, '>', 1, 1.5)) != 0) {
+	if ((se = p->icom->write_read(p->icom, brc[bi], buf, MAX_MES_SIZE, ">", 1, 1.5)) != 0) {
 		if (extract_ec(buf) != DTP51_OK)
 			return inst_coms_fail;
 	}
@@ -275,7 +275,7 @@ dtp51_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	}
 
 	/* Loose a character (not sure why) */
-	p->icom->write_read(p->icom, "\r", buf, MAX_MES_SIZE, '>', 1, 0.5);
+	p->icom->write_read(p->icom, "\r", buf, MAX_MES_SIZE, ">", 1, 0.5);
 
 	/* Check instrument is responding */
 	if ((ev = dtp51_command(p, "\r", buf, MAX_MES_SIZE, 1.5)) != inst_ok)
@@ -440,7 +440,7 @@ dtp51_init_inst(inst *pp) {
 	/* Set a strip length of 1, to ensure parsing is invalidated */
 	build_strip(tbuf, "       ", 1, "   ", 30);
 	
-	if ((rv = dtp51_fcommand(p, "0105DS\r", buf, MAX_MES_SIZE, '*', 1, 0.5)) != DTP51_OK)
+	if ((rv = dtp51_fcommand(p, "0105DS\r", buf, MAX_MES_SIZE, "*", 1, 0.5)) != DTP51_OK)
 		return dtp51_interp_code(pp, rv); 
 
 	/* Expect '*' as response */
@@ -486,7 +486,7 @@ ipatch *vals) {		/* Pointer to array of instrument patch values */
 
 	build_strip(tbuf, name, npatch, pname, sguide);
 	
-	if ((rv = dtp51_fcommand(p, "0105DS\r", buf, MAX_RD_SIZE, '*', 1, 0.5)) != DTP51_OK)
+	if ((rv = dtp51_fcommand(p, "0105DS\r", buf, MAX_RD_SIZE, "*", 1, 0.5)) != DTP51_OK)
 		return dtp51_interp_code(pp, rv); 
 
 	/* Expect '*' as response */

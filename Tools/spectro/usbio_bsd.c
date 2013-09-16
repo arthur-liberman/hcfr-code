@@ -1,6 +1,5 @@
 
-/* General USB I/O support, Linux native implementation. */
-/* ("libusbx ? We don't need no stinking libusbx..." :-) */
+/* General USB I/O support, BSD native implementation. */
 /* This file is conditionaly #included into usbio.c */
  
 /* 
@@ -16,13 +15,30 @@
  * see the License2.txt file for licencing details.
  */
 
+/*
+
+	BSD uses fd per end point, so simplifies things.
+
+	No clear ep or abort i/o though, so we could try clear halt,
+	or close fd and see if that works in aborting transaction ?
+
+	Posix aio would probably work, but it's not loaded by default :-(
+
+	Could use libusb20 API, but not backwards or cross compatible ?
+ */
+
 #include <unistd.h>
 #include <dirent.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <glob.h>
 #include <sys/ioctl.h>
-#include <linux/usbdevice_fs.h>
+#if defined(__FreeBSD__)
+# include <dev/usb/usb_ioctl.h>		/* Not sure what's going on with FreeBSD... */
+#else
+# include <dev/usb/usb.h>			/* The usual include for BSD */
+#endif 
 
 /* select() defined, but not poll(), so emulate poll() */
 #if defined(FD_CLR) && !defined(POLLIN)
@@ -33,293 +49,140 @@
 #define poll_x poll
 #endif
 
-/* USB descriptors are little endian */
-
-/* Take a word sized return buffer, and convert it to an unsigned int */
-static unsigned int buf2uint(unsigned char *buf) {
-	unsigned int val;
-	val = buf[3];
-	val = ((val << 8) + (0xff & buf[2]));
-	val = ((val << 8) + (0xff & buf[1]));
-	val = ((val << 8) + (0xff & buf[0]));
-	return val;
-}
-
-/* Take a short sized return buffer, and convert it to an int */
-static unsigned int buf2ushort(unsigned char *buf) {
-	unsigned int val;
-	val = buf[1];
-	val = ((val << 8) + (0xff & buf[0]));
-	return val;
-}
-
-/* Take an int, and convert it into a byte buffer */
-static void int2buf(unsigned char *buf, int inv) {
-	buf[0] = (inv >> 0) & 0xff;
-	buf[1] = (inv >> 8) & 0xff;
-	buf[2] = (inv >> 16) & 0xff;
-	buf[3] = (inv >> 24) & 0xff;
-}
-
-/* Take a short, and convert it into a byte buffer */
-static void short2buf(unsigned char *buf, int inv) {
-	buf[0] = (inv >> 0) & 0xff;
-	buf[1] = (inv >> 8) & 0xff;
-}
-
-
-/* Check a USB Vendor and product ID by reading the device descriptors, */
-/* and add the device to the icoms path if it is supported. */
-/* Return icom nz error code on fatal error */
-static
-int usb_check_and_add(
-a1log *log,
-icompaths *pp,	/* icompaths to add to */
-char *dpath		/* path to device */
-) {
-	int rv;
-	unsigned char buf[IUSB_DESC_TYPE_DEVICE_SIZE];
-	unsigned vid, pid, nep10 = 0xffff;
-	unsigned int configix, nconfig, totlen;
-	instType itype;
-	struct usb_idevice *usbd = NULL;
-	int fd;			/* device file descriptor */
-
-	a1logd(log, 6, "usb_check_and_add: givem '%s'\n",dpath);
-
-	/* Open the device so that we can read it */
-	if ((fd = open(dpath, O_RDONLY)) < 0) {
-		a1logd(log, 1, "usb_check_and_add: failed to open '%s'\n",dpath);
-		return ICOM_OK;
-	}
-
-	/* Read the device descriptor */
-	if ((rv = read(fd, buf, IUSB_DESC_TYPE_DEVICE_SIZE)) < 0
-	  || rv != IUSB_DESC_TYPE_DEVICE_SIZE
-	  || buf[0] != IUSB_DESC_TYPE_DEVICE_SIZE
-	  || buf[1] != IUSB_DESC_TYPE_DEVICE) {
-		a1logd(log, 1, "usb_check_and_add: failed to read device descriptor\n");
-		close(fd);
-		return ICOM_OK;
-	}
-
-	/* Extract the vid and pid */ 	
-	vid = buf2ushort(buf + 8);
-	pid = buf2ushort(buf + 10);
-	nconfig = buf[17];
-	
-	a1logd(log, 6, "usb_check_and_add: checking vid 0x%04x, pid 0x%04x\n",vid,pid);
-
-	/* Do a preliminary match */
-	if ((itype = inst_usb_match(vid, pid, 0)) == instUnknown) {
-		a1logd(log, 6 , "usb_check_and_add: instrument not reconized\n");
-		close(fd);
-		return ICOM_OK;
-	}
-
-	/* Allocate an idevice so that we can fill in the end point information */
-	if ((usbd = (struct usb_idevice *) calloc(sizeof(struct usb_idevice), 1)) == NULL) {
-		a1loge(log, ICOM_SYS, "icoms: calloc failed!\n");
-		close(fd);
-		return ICOM_SYS;
-	}
-
-	usbd->nconfig = nconfig;
-
-	/* Read the configuration descriptors looking for the first configuration, first interface, */
-	/* and extract the number of end points */
-	for (configix = 0; configix < nconfig; configix++) {
-		int configno;
-		unsigned int ninfaces, inface, nep;
-		unsigned char *buf2, *bp, *zp;
-
-		/* Read the first 4 bytes to get the type and size */
-		if ((rv = read(fd, buf, 4)) < 0
-		  || rv != 4
-		  || buf[1] != IUSB_DESC_TYPE_CONFIG) {
-			a1logd(log, 1, "usb_check_and_add: failed to read device config\n");
-			free(usbd);
-			close(fd);
-			return ICOM_OK;
-		}
-
-		if ((totlen = buf2ushort(buf + 2)) < 6) {
-			a1logd(log, 1, "usb_check_and_add: config desc size strange\n");
-			free(usbd);
-			close(fd);
-			return ICOM_OK;;
-		}
-		if ((buf2 = calloc(1, totlen)) == NULL) {
-			a1loge(log, ICOM_SYS, "usb_check_and_add: calloc of descriptor failed!\n");
-			close(fd);
-			return ICOM_SYS;
-		}
-
-		memcpy(buf2, buf, 4);		/* First 4 bytes read */
-		if ((rv = read(fd, buf2 + 4, totlen - 4)) < 0		/* Read the remainder */
-		  || rv != (totlen - 4)) {
-			a1logd(log, 1, "usb_check_and_add: failed to read device config details\n");
-			free(buf2);
-			free(usbd);
-			close(fd);
-			return ICOM_SYS;
-		}
-
-		bp = buf2 + buf2[0];	/* Skip coniguration tag */
-		zp = buf2 + totlen;		/* Past last bytes */
-
-		/* We are at the first configuration. */
-		/* Just read tags and keep track of where we are */
-		ninfaces = 0;
-		nep = 0;
-		usbd->nifce = buf2[4];				/* number of interfaces */
-		usbd->config = configno = buf2[5];	/* current configuration */
-		for (;bp < zp; bp += bp[0]) {
-			int ifaceno;
-			if ((bp + 1) >= zp)
-				break;			/* Hmm - bodgy, give up */
-			if (bp[1] == IUSB_DESC_TYPE_INTERFACE) {
-				ninfaces++;
-				if ((bp + 2) >= zp)
-					break;			/* Hmm - bodgy, give up */
-				ifaceno = bp[2];	/* Get bInterfaceNumber */
-			} else if (bp[1] == IUSB_DESC_TYPE_ENDPOINT) {
-				nep++;
-				if ((bp + 5) >= zp)
-					break;			/* Hmm - bodgy */
-				/* At first config - */
-				/* record current nep and end point details */
-				if (configno == 1) {
-					int ad = bp[2];
-					nep10 = nep;
-					usbd->EPINFO(ad).valid = 1;
-					usbd->EPINFO(ad).addr = ad;
-					usbd->EPINFO(ad).packetsize = buf2ushort(bp + 4);
-					usbd->EPINFO(ad).type = bp[3] & IUSB_ENDPOINT_TYPE_MASK;
-					usbd->EPINFO(ad).interface = ifaceno;
-					a1logd(log, 6, "set ep ad 0x%x packetsize %d type %d\n",ad,usbd->EPINFO(ad).packetsize,usbd->EPINFO(ad).type);
-				}
-			}
-			/* Ignore other tags */
-		}
-		free(buf2);
-	}
-	if (nep10 == 0xffff) {			/* Hmm. Failed to find number of end points */
-		a1logd(log, 1, "usb_check_and_add: failed to find number of end points\n");
-		free(usbd);
-		close(fd);
-		return ICOM_SYS;
-	}
-
-	a1logd(log, 6, "usb_check_and_add: found nep10 %d\n",nep10);
-
-	/* Found a known instrument ? */
-	if ((itype = inst_usb_match(vid, pid, nep10)) != instUnknown) {
-		char pname[400];
-
-		a1logd(log, 2, "usb_check_and_add: found instrument vid 0x%04x, pid 0x%04x\n",vid,pid);
-
-		/* Create a path/identification */
-		/* (devnum doesn't seem valid ?) */
-		sprintf(pname,"%s (%s)", dpath, inst_name(itype));
-		if ((usbd->dpath = strdup(dpath)) == NULL) {
-			a1loge(log, ICOM_SYS, "usb_check_and_add: strdup path failed!\n");
-			free(usbd);
-			close(fd);
-			return ICOM_SYS;
-		}
-
-		/* Add the path and ep info to the list */
-		if ((rv = pp->add_usb(pp, pname, vid, pid, nep10, usbd, itype)) != ICOM_OK) {
-			close(fd);
-			return rv;
-		}
-
-
-
-	} else {
-		free(usbd);
-	}
-
-	close(fd);
-	return ICOM_OK;
-}
-
 /* Add paths to USB connected instruments */
 /* Return an icom error */
 int usb_get_paths(
 icompaths *p 
 ) {
+	int i, j;
+	char *paths[] = {
+#if defined(__FreeBSD__)
+	    "/dev/usb/[0-9]*.*.0",		/* FreeBSD >= 8 */
+	    "/dev/ugen[0-9]*",			/* FreeBSD < 8, but no .E */
+#else
+	    "/dev/ugen/[0-9]*.00",		/* NetBSD, OpenBSD */
+#endif
+	    NULL
+	};
 	int vid, pid;
+	int nconfig = 0, nep = 0;
+	char *dpath;
+	instType itype;
+	struct usb_idevice *usbd = NULL;
 
-	a1logd(p->log, 6, "usb_get_paths: about to look through buses:\n");
-	{
-		int j;
-		char *paths[3] = { "/dev/bus/usb", 		/* current, from udev */
-		                   "/proc/bus/usb",		/* old, deprecated */
-		                   "/dev" };			/* CONFIG_USB_DEVICE_CLASS, embeded, deprecated ? */
-	
-		/* See what device names to look for */
-		for (j = 0; j < 3; j++) {
-			DIR *d1;
-			struct dirent *e1;
-			int rv, found = 0;
-	
-			if ((d1 = opendir(paths[j])) == NULL)
-				continue;
-	
-			while ((e1 = readdir(d1)) != NULL) {
-				if (e1->d_name[0] == '.')
-					continue;
-				found = 1;
-				if (j < 2) {		/* Directory structure */
-					char path1[PATH_MAX];
-					char path2[PATH_MAX];
-					DIR *d2;
-					struct dirent *e2;
-					struct stat statbuf;
+	a1logd(p->log, 6, "usb_get_paths: about to look through usb devices:\n");
 
-	                snprintf(path1, PATH_MAX, "%s/%s", paths[j], e1->d_name);
+	/* See what device names to look for */
+	for (j = 0; ; j++) {
+		glob_t g;
+		int fd;
+		struct usb_device_info di;
+		int rv, found = 0;
 
-					if ((d2 = opendir(path1)) == NULL)
-						continue;
-					while ((e2 = readdir(d2)) != NULL) {
-						if (e2->d_name[0] == '.')
-							continue;
-	
-		                snprintf(path2, PATH_MAX, "%s/%s/%s", paths[j], e1->d_name, e2->d_name);
-						a1logd(p->log, 8, "usb_get_paths: about to stat %s\n",path2);
-						if (stat(path2, &statbuf) == 0 && S_ISCHR(statbuf.st_mode)) {
-							found = 1;
-							if ((rv = usb_check_and_add(p->log, p, path2)) != ICOM_OK) {
-								closedir(d1);
-								return rv;
-							}
-						}
-					}
-					closedir(d2);
-				} else {	/* Flat */
-					char path2[PATH_MAX];
-					struct stat statbuf;
+		if (paths[j] == NULL)
+			break;
 
-					/* Hmm. This will go badly wrong if this is a /dev/usbdev%d.%d_ep%d, */
-					/* since we're not expecting the end points to be separate devices. */
-					/* Maybe that's deprectated though... */
-	                snprintf(path2, PATH_MAX, "%s/%s", paths[j], e1->d_name);
-					a1logd(p->log, 8, "usb_get_paths: about to stat %s\n",path2);
-					if (stat(path2, &statbuf) == 0 && S_ISCHR(statbuf.st_mode)) {
-						found = 1;
-						if ((rv = usb_check_and_add(p->log, p, path2)) != ICOM_OK) {
-							closedir(d1);
-							return rv;
-						}
-					}
-				}
-			}
-			closedir(d1);
-			if (found)
-				break;
+		memset(&g, 0, sizeof(g));
+
+		if (glob(paths[j], GLOB_NOSORT, NULL, &g) != 0) {
+			continue;
 		}
+
+		/* For all the nodes found by the glob */
+		for (i = 0; i < g.gl_pathc; i++) {
+
+#if defined(__FreeBSD__)
+			/* Skip anything with an end point number */
+			if (j == 1 && strchr(g.gl_pathv[i], '.') != NULL)
+				continue;
+#endif
+			if ((fd = open(g.gl_pathv[i], O_RDONLY)) < 0)
+				continue;
+
+			if (ioctl(fd, USB_GET_DEVICEINFO, &di) < 0)
+				continue;
+
+			vid = di.udi_vendorNo;
+			pid = di.udi_productNo;
+
+			a1logd(p->log, 6, "usb_get_paths: checking vid 0x%04x, pid 0x%04x\n",vid,pid);
+
+			/* Do a preliminary match */
+			if ((itype = inst_usb_match(vid, pid, 0)) == instUnknown) {
+				a1logd(p->log, 6 , "usb_get_paths: instrument not reconized\n");
+				continue;
+			}
+
+			// ~~99 need to check number of end points ~~~
+			// ~~99 and number of configs
+			nconfig = 1;
+ 
+//USB_GET_DEVICEINFO	struct usb_device_info
+//USB_GET_DEVICE_DESC	struct usb_device_descriptor
+
+			/* Allocate an idevice so that we can fill in the end point information */
+			if ((usbd = (struct usb_idevice *) calloc(sizeof(struct usb_idevice), 1)) == NULL) {
+				a1loge(p->log, ICOM_SYS, "icoms: calloc failed!\n");
+				close(fd);
+				globfree(&g);
+				return ICOM_SYS;
+			}
+
+			usbd->nconfig = nconfig;
+			
+			/* Found a known instrument ? */
+			if ((itype = inst_usb_match(vid, pid, nep)) != instUnknown) {
+				char pname[400], *cp;
+		
+				a1logd(p->log, 2, "usb_get_paths: found instrument vid 0x%04x, pid 0x%04x\n",vid,pid);
+		
+				/* Create the base device path */
+				dpath = g.gl_pathv[i];
+#if defined(__FreeBSD__)
+				if (j == 0) {		/* Remove .0 */
+					if ((cp = strrchr(dpath, '.')) != NULL
+					 && cp[1] == '0' && cp[2] == '\000')
+						*cp = '\000';
+				}
+#else
+				/* Remove .00 */
+				if ((cp = strrchr(dpath, '.')) != NULL
+				 && cp[1] == '0' && cp[2] == '0' && cp[3] == '\000')
+					*cp = '\000';
+#endif
+				if ((usbd->dpath = strdup(dpath)) == NULL) {
+					a1loge(p->log, ICOM_SYS, "usb_get_paths: strdup path failed!\n");
+					free(usbd);
+					close(fd);
+					globfree(&g);
+					return ICOM_SYS;
+				}
+
+				/* Create a path/identification */
+				sprintf(pname,"%s (%s)", dpath, inst_name(itype));
+				if ((usbd->dpath = strdup(dpath)) == NULL) {
+					a1loge(p->log, ICOM_SYS, "usb_get_paths: strdup path failed!\n");
+					free(usbd);
+					close(fd);
+					globfree(&g);
+					return ICOM_SYS;
+				}
+		
+				/* Add the path and ep info to the list */
+				if ((rv = p->add_usb(p, pname, vid, pid, nep, usbd, itype)) != ICOM_OK)
+					return rv;
+
+
+			} else {
+				free(usbd);
+			}
+
+			close(fd);
+		}
+		globfree(&g);
+
+		/* Only try one glob string */
+		break;
 	}
 
 	a1logd(p->log, 8, "usb_get_paths: returning %d paths and ICOM_OK\n",p->npaths);
@@ -374,6 +237,7 @@ void usb_close_port(icoms *p) {
 
 	a1logd(p->log, 6, "usb_close_port: called\n");
 
+#ifdef NEVER    // ~~99
 	if (p->is_open && p->usbd != NULL) {
 		struct usbdevfs_urb urb;
 		unsigned char buf[8+IUSB_DESC_TYPE_DEVICE_SIZE];
@@ -411,6 +275,7 @@ void usb_close_port(icoms *p) {
 		a1logd(p->log, 6, "usb_close_port: usb port has been released and closed\n");
 	}
 	p->is_open = 0;
+#endif  // ~~99
 
 	/* Find it and delete it from our static cleanup list */
 	usb_delete_from_cleanup_list(p);
@@ -436,6 +301,7 @@ char **pnames		/* List of process names to try and kill before opening */
 	if (p->is_open)
 		p->close_port(p);
 
+#ifdef NEVER    // ~~99
 	/* Make sure the port is open */
 	if (!p->is_open) {
 		int rv, i, iface;
@@ -456,18 +322,6 @@ char **pnames		/* List of process names to try and kill before opening */
 				//msec_sleep(i_rand(50,100));
 				msec_sleep(77);
 			}
-
-			if ((rv = p->usbd->fd = open(p->usbd->dpath, O_RDWR)) < 0) {
-				a1logd(p->log, 8, "usb_open_port: open '%s' config %d failed (%d) (Permissions ?)\n",p->usbd->dpath,config,rv);
-				if (retries <= 0) {
-					if (kpc != NULL)
-						kpc->del(kpc); 
-					a1loge(p->log, ICOM_SYS, "usb_open_port: open '%s' config %d failed (%d) (Permissions ?)\n",p->usbd->dpath,config,rv);
-					return ICOM_SYS;
-				}
-				continue;
-			} else if (p->debug)
-				a1logd(p->log, 2, "usb_open_port: open port '%s' succeeded\n",p->usbd->dpath);
 
 			p->uflags = usbflags;
 
@@ -563,167 +417,11 @@ char **pnames		/* List of process names to try and kill before opening */
 		a1logd(p->log, 8, "usb_open_port: USB port is now open\n");
 	}
 
+#endif  // ~~99
 	/* Install the cleanup signal handlers, and add to our cleanup list */
 	usb_install_signal_handlers(p);
 
 	return ICOM_OK;
-}
-
-/*  -------------------------------------------------------------- */
-/* I/O structures */
-
-/* an icoms urb */
-typedef struct {
-	struct _usbio_req *req;		/* Request we're part of */
-	int urbno;					/* urb index within request */
-	struct usbdevfs_urb urb;	/* Linux urb */
-} usbio_urb;
-
-/* an i/o request */
-typedef struct _usbio_req {
-
-	int nurbs;					/* Number of urbs in urbs[] */
-	usbio_urb *urbs;			/* Allocated */
-	volatile int nourbs;		/* Number of outstanding urbs, 0 when done */
-	int cancelled;				/* All the URB's have been cancelled */
-
-	pthread_mutex_t lock;		/* Protect req & reaper access */
-	pthread_cond_t cond;		/* Signal to thread waiting on req */
-
-	struct _usbio_req *next;	/* Link to next in list */
-} usbio_req;
-
-/* - - - - - - - - - - - - - - - - - - - - - */
-
-/* Cancel a req's urbs from the last down to but not including thisurb. */
-/* return icom error */
-static int cancel_req(icoms *p, usbio_req *req, int thisurb) {
-	int i, rv = ICOM_OK;
-	for (i = req->nurbs-1; i > thisurb; i--) {
-		int ev;
-		// ~~99 can we skip done, errored or cancelled urbs ?
-		// Does it matter if there is a race between cancellers ? */
-		a1logd(p->log, 7, "cancel_req %d\n",i);
-		ev = ioctl(p->usbd->fd, USBDEVFS_DISCARDURB, &req->urbs[i].urb);
-		if (ev != 0 && ev != EINVAL) {
-			/* Hmmm */
-			a1loge(p->log, ICOM_SYS, "cancel_req: failed with %d\n",rv);
-			rv = ICOM_SYS;
-		}
-		req->urbs[i].urb.status = -ECONNRESET; 
-	}
-	req->cancelled = 1;		/* Don't cancel it again */
-	return ICOM_OK;
-}
-
-/* The reaper thread */
-static void *urb_reaper(void *context) {
-	icoms *p = (icoms *)context;
-	struct usbdevfs_urb *out = NULL;
-	int errc = 0;
-	int rv;
-	struct pollfd pa[2];        /* Poll array to monitor urb result or shutdown */
-
-	a1logd(p->log, 6, "urb_reaper: reap starting\n");
-
-	/* Wait for a URB, and signal the requester */
-	for (;;) {
-		usbio_urb *iurb;
-		usbio_req *req;
-
-		/* Setup to wait for serial output not block */
-		pa[0].fd = p->usbd->fd;
-		pa[0].events = POLLIN | POLLOUT;
-		pa[0].revents = 0;
-	
-		pa[1].fd = p->usbd->sd_pipe[0];
-		pa[1].events = POLLIN;
-		pa[1].revents = 0;
-
-		/* Wait for fd to become ready or shutdown */
-		if ((rv = poll_x(pa, 2, -1)) < 0 || pa[1].revents || pa[0].revents == 0) {
-			a1logd(p->log, 6, "urb_reaper: poll returned %d and events %d %d\n",rv,pa[0].revents,pa[1].revents);
-			p->usbd->shutdown = 1;
-			break;
-		}
-
-		/* Not sure what this returns if there is nothing there */
-		rv = ioctl(p->usbd->fd, USBDEVFS_REAPURBNDELAY, &out);
-
-		if (rv < 0) {
-			a1logd(p->log, 2, "urb_reaper: reap failed with %d\n",rv);
-				if (errc++ < 5) {
-				continue;
-			}
-			p->usbd->shutdown = 1;
-			break;
-		}
-
-		errc = 0;
-
-		if (out == NULL) {
-			a1logd(p->log, 2, "urb_reaper: reap returned NULL URB\n");
-			continue;
-		}
-
-		/* Normal reap */
-		iurb = (usbio_urb *)out->usercontext;
-		req = iurb->req;
-
-		a1logd(p->log, 8, "urb_reaper: urb reap URB %d with status %d bytes %d, urbs left %d\n",iurb->urbno, out->status, out->actual_length, req->nourbs-1);
-
-		pthread_mutex_lock(&req->lock);	/* Stop requester from missing reap */
-		req->nourbs--;					/* We're reaped one */
-
-		/* If urb failed or is done (but not cancelled), cancel all the following urbs */
-		if (req->nourbs > 0 && !req->cancelled
-		 && ((out->actual_length < out->buffer_length)
-		   || (out->status < 0 && out->status != -ECONNRESET))) {
-			a1logd(p->log, 6, "urb_reaper: reaper canceling failed or done urb's\n",rv);
-			if (cancel_req(p, req, iurb->urbno) != ICOM_OK) {
-				pthread_mutex_unlock(&req->lock);
-				/* Is this fatal ? Assume so for the moment ... */
-				break;
-			} 
-		}
-		if (req->nourbs <= 0)		/* Signal the requesting thread that we're done */
-			pthread_cond_signal(&req->cond);
-		pthread_mutex_unlock(&req->lock);
-	}
-
-	/* Clean up */
-	if (p->usbd->shutdown) {
-		usbio_req *req;
-
-		a1logd(p->log, 8, "urb_reaper: shutdown or too many failure\n");
-
-		/* Signal that any request should give up, and that the */
-		/* reaper thread is going to exit */
-		p->usbd->running = 0;
-
-		/* Go through the outstanding request list, and */
-		/* mark them as failed and signal them all */
-		pthread_mutex_lock(&p->usbd->lock);
-		req = p->usbd->reqs;
-		while(req != NULL) {
-			int i;
-
-			pthread_mutex_lock(&req->lock);	
-			for (i = req->nourbs-1; i >= 0; i--) {
-				req->urbs[i].urb.status = ICOM_SYS;
-			}
-			req->nourbs = 0;
-			pthread_cond_signal(&req->cond);
-			pthread_mutex_unlock(&req->lock);
-			req = req->next;
-		}
-		pthread_mutex_unlock(&p->usbd->lock);
-		a1logd(p->log, 1, "urb_reaper: cleared requests\n");
-	}
-	p->usbd->running = 0;
-
-	a1logd(p->log, 6, "urb_reaper: thread done\n");
-	return NULL;
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - */
@@ -738,14 +436,14 @@ static int icoms_usb_transaction(
 	int length,
 	unsigned int timeout		/* In msec */
 ) {
-	int reqrv = ICOM_OK, rv = 0;
-	usbio_req req, **preq;
 	int type;
 	int remlen;
 	unsigned char *bp;
 	int xlength = 0;
 	int i;
+	int reqrv = ICOM_OK;
 
+#ifdef NEVER    // ~~99
 	in_usb_rw++;
 	a1logd(p->log, 8, "icoms_usb_transaction: req type 0x%x ep 0x%x size %d\n",ttype,endpoint,length);
 
@@ -944,6 +642,7 @@ done:;
 	in_usb_rw--;
 
 	a1logd(p->log, 8, "coms_usb_transaction: returning err 0x%x and %d bytes\n",reqrv, xlength);
+#endif  // ~~99
 
 	return reqrv;
 }
@@ -962,6 +661,7 @@ int timeout) {
 
 	a1logd(p->log, 8, "icoms_usb_control_msg: type 0x%x req 0x%x size %d\n",requesttype,request,size);
 
+#ifdef NEVER    // ~~99
 	/* Allocate a buffer for the ctrl header + payload */
 	if ((buf = calloc(1, IUSB_REQ_HEADER_SIZE + size)) == NULL) {
 		a1loge(p->log, ICOM_SYS, "icoms_usb_control_msg: calloc failed\n");
@@ -991,6 +691,7 @@ int timeout) {
 
 	free(buf);
 
+#endif  // ~~99
 	a1logd(p->log, 8, "icoms_usb_control_msg: returning err 0x%x and %d bytes\n",reqrv, *transferred);
 	return reqrv;
 }
@@ -1008,14 +709,16 @@ int icoms_usb_cancel_io(
 	usb_cancelt *cancelt
 ) {
 	int rv = ICOM_OK;
+#ifdef NEVER    // ~~99
 	a1logd(p->log, 8, "icoms_usb_cancel_io called\n");
-	amutex_lock(cancelt->cmtx);
+	usb_lock_cancel(cancelt);
 	if (cancelt->hcancel != NULL)
 		rv = cancel_req(p, (usbio_req *)cancelt->hcancel, -1);
-	amutex_unlock(cancelt->cmtx);
+	usb_unlock_cancel(cancelt);
 
 	if (rv != ICOM_OK)	/* Assume this could be because of faulty device */
 		rv = ICOM_USBW;
+#endif  // ~~99
 
 	return rv;
 }
@@ -1028,10 +731,12 @@ int icoms_usb_resetep(
 ) {
 	int rv = ICOM_OK;
 
+#ifdef NEVER    // ~~99
 	if ((rv = ioctl(p->usbd->fd, USBDEVFS_RESETEP, &ep)) != 0) {
 		a1logd(p->log, 1, "icoms_usb_resetep failed with %d\n",rv);
 		rv = ICOM_USBW;
 	}
+#endif  // ~~99
 	return rv;
 }
 
@@ -1043,10 +748,12 @@ int icoms_usb_clearhalt(
 ) {
 	int rv = ICOM_OK;
 
+#ifdef NEVER    // ~~99
 	if ((rv = ioctl(p->usbd->fd, USBDEVFS_CLEAR_HALT, &ep)) != 0) {
 		a1logd(p->log, 1, "icoms_usb_clearhalt failed with %d\n",rv);
 		rv = ICOM_USBW;
 	}
+#endif  // ~~99
 	return rv;
 }
 

@@ -66,12 +66,12 @@
 #define ICOM_MAX_LOC_LEN 10
 
 /* Type of measurement result */
-typedef enum {						/* XYZ units,      spectral units */
+typedef enum {						/* XYZ units,      Spectral units */
 	inst_mrt_none           = 0,	/* Not set */
-	inst_mrt_emission       = 1,	/* cd/m^2,         mW/m^2/nm */
-	inst_mrt_ambient        = 2,	/* Lux/3.1415926   ?? */
-	inst_mrt_emission_flash = 3,	/* cd/m^2.s,       mW/m^2/nm.s*/
-	inst_mrt_ambient_flash  = 4,	/* Lux/3.1415926/s ?? */
+	inst_mrt_emission       = 1,	/* cd/m^2,         mW/(m^2.sr.nm) */
+	inst_mrt_ambient        = 2,	/* Lux             mW/(m^2.nm) */
+	inst_mrt_emission_flash = 3,	/* cd/(m^2.s),     mW/(m^2.sr.nm.s) */
+	inst_mrt_ambient_flash  = 4,	/* Lux/s           mW/(m^2.nm.s) */
 	inst_mrt_reflective     = 5,	/* %,              %/nm */
 	inst_mrt_transmissive   = 6		/* %,              %/nm */
 } inst_meas_type;
@@ -101,31 +101,31 @@ struct _ipatch {
 /* Note :- update inst_interp_error() in inst.c if anything here is changed. */
 /* and also check all the instrument specific XXX_interp_code() routines too. */
 typedef enum {
-	inst_ok                = 0x0000,
-	inst_notify            = 0x0100,	/* A Notification */
-	inst_warning           = 0x0200,	/* A Warning */
-	inst_no_coms           = 0x0300,	/* init_coms() hasn't been called yet */
-	inst_no_init           = 0x0400,	/* init_inst() hasn't been called yet */
-	inst_unsupported       = 0x0500,	/* Unsupported function */
-	inst_internal_error    = 0x0600,	/* Internal software error */
-	inst_coms_fail         = 0x0700,	/* Communication failure */
-	inst_unknown_model     = 0x0800,	/* Not the expected instrument */
-	inst_protocol_error    = 0x0900, 	/* Read or Write protocol error */
-	inst_user_abort        = 0x0A00,	/* User hit escape */
-	inst_user_trig         = 0x0C00,	/* User hit trigger key */
-	inst_misread           = 0x0E00,	/* Bad reading, or strip misread */
-	inst_nonesaved         = 0x0F00,	/* No saved data to read */
-	inst_nochmatch         = 0x1000,	/* Chart doesn't match */
-	inst_needs_cal         = 0x1100,	/* Instrument needs calibration, and read retried */
-	inst_cal_setup         = 0x1200,	/* Calibration retry with correct setup is needed */
-	inst_wrong_config      = 0x1300,	/* Retry with correct inst. config./sensor posn. needed */
-	inst_unexpected_reply  = 0x1400,	/* Unexpected Reply */
-	inst_wrong_setup       = 0x1500,    /* Setup is wrong or conflicting */
-	inst_hardware_fail     = 0x1600,    /* Hardware failure */
-	inst_bad_parameter     = 0x1700,	/* Bad parameter value */
-	inst_other_error       = 0x1800,	/* Some other error */
-	inst_mask              = 0xff00,	/* inst_code mask value */
-	inst_imask             = 0x00ff		/* instrument specific mask value */
+	inst_ok                = 0x000000,
+	inst_notify            = 0x010000,	/* A Notification */
+	inst_warning           = 0x020000,	/* A Warning */
+	inst_no_coms           = 0x030000,	/* init_coms() hasn't been called yet */
+	inst_no_init           = 0x040000,	/* init_inst() hasn't been called yet */
+	inst_unsupported       = 0x050000,	/* Unsupported function */
+	inst_internal_error    = 0x060000,	/* Internal software error */
+	inst_coms_fail         = 0x070000,	/* Communication failure */
+	inst_unknown_model     = 0x080000,	/* Not the expected instrument */
+	inst_protocol_error    = 0x090000, 	/* Read or Write protocol error */
+	inst_user_abort        = 0x0A0000,	/* User hit escape */
+	inst_user_trig         = 0x0C0000,	/* User hit trigger key */
+	inst_misread           = 0x0E0000,	/* Bad reading, or strip misread */
+	inst_nonesaved         = 0x0F0000,	/* No saved data to read */
+	inst_nochmatch         = 0x100000,	/* Chart doesn't match */
+	inst_needs_cal         = 0x110000,	/* Instrument needs calibration, and read retried */
+	inst_cal_setup         = 0x120000,	/* Calibration retry with correct setup is needed */
+	inst_wrong_config      = 0x130000,	/* Retry with correct inst. config./sensor posn. needed */
+	inst_unexpected_reply  = 0x140000,	/* Unexpected Reply */
+	inst_wrong_setup       = 0x150000,	/* Setup is wrong or conflicting */
+	inst_hardware_fail     = 0x160000,	/* Hardware failure */
+	inst_bad_parameter     = 0x170000,	/* Bad parameter value */
+	inst_other_error       = 0x180000,	/* Some other error */
+	inst_mask              = 0xff0000,	/* inst_code mask value */
+	inst_imask             = 0x00ffff	/* instrument specific mask value */
 } inst_code;
 
 /* Instrument capabilities & modes */
@@ -257,7 +257,11 @@ typedef enum {
 	inst2_xy_position       = 0x00000004, /* Can be positioned at a given location */
 
 	inst2_meas_disp_update  = 0x00000010, /* Is able to measure display update delay */
-	inst2_refresh_rate      = 0x00000020, /* Is able to retrieve the calibrated refresh rate */
+
+	inst2_get_refresh_rate  = 0x00000020, /* Is able to get the calibrated refresh rate */
+	inst2_set_refresh_rate  = 0x00000040, /* Is able to set the calibrated refresh rate */
+
+	inst2_emis_refr_meas    = 0x00000080, /* Has an emissive refresh rate measurement func. */
 
 	inst2_prog_trig         = 0x00000100, /* Progromatic trigger measure capability */
 	inst2_user_trig         = 0x00000200, /* User trigger measure capability */
@@ -270,17 +274,16 @@ typedef enum {
 	inst2_no_feedback       = 0x00008000, /* Instrument doesn't give any user feedback */
 
 	inst2_has_leds          = 0x00200000, /* Instrument has some user viewable indicator LEDs */
-	inst2_has_sensmode      = 0x00400000, /* Instrument can report it's sensors mode */
+	inst2_has_target        = 0x00400000, /* Instrument has aiming target */
+	inst2_has_sensmode      = 0x00800000, /* Instrument can report it's sensors mode */
 
-	inst2_has_battery       = 0x00800000, /* Instrument is battery powered */
+	inst2_has_battery       = 0x01000000, /* Instrument is battery powered */
 
-	inst2_disptype          = 0x01000000, /* Has a display type selector */
-	inst2_ccmx              = 0x02000000, /* Colorimeter Correction Matrix capability */
-	inst2_ccss              = 0x04000000, /* Colorimeter Cal. Spectral Set capability */
+	inst2_disptype          = 0x02000000, /* Has a display type selector */
+	inst2_ccmx              = 0x04000000, /* Colorimeter Correction Matrix capability */
+	inst2_ccss              = 0x08000000, /* Colorimeter Cal. Spectral Set capability */
 
-	inst2_ambient_mono      = 0x08000000, /* The ambient measurement is monochrome */
-
-	inst2_emis_refr_meas    = 0x10000000, /* Has an emissive refresh rate measurement func. */
+	inst2_ambient_mono      = 0x10000000  /* The ambient measurement is monochrome */
 
 } inst2_capability;
 
@@ -310,7 +313,7 @@ typedef struct _inst_disptypesel {
 	inst_dtflags flags;		/* Attribute flags */
 	int cbid;				/* Calibration base ID. NZ if valid ccmx calibration base. */
 							/* Should remain constant between releases */
-	char sel[INST_DTYPE_SEL_LEN];	/* String of selector characters */
+	char sel[INST_DTYPE_SEL_LEN];	/* String of selector character aliases */
 	char desc[INST_DTYPE_DESC_LEN];	/* Textural description */
 	int  refr;				/* Refresh mode flag */
 
@@ -383,7 +386,8 @@ typedef enum {
 	inst_opt_get_pulse_ledmask  = 0x0018,	/* Get the bitmask for pulseable ind. LEDs [*int] */
 	inst_opt_set_led_pulse_state= 0x0019,	/* Set the current LED state. [double period_in_secs, */
 	                                        /* double on_time_prop, double trans_time_prop] */
-	inst_opt_get_led_pulse_state= 0x001A	/* Get the current pulse LED state. [*double period, */
+	inst_opt_get_led_pulse_state= 0x001A,	/* Get the current pulse LED state. [*double period, */
+	inst_opt_set_target_state   = 0x001B	/* Set the aiming target state 0 = off, 1 == on, 2 = toggle [int] */
 
 } inst_opt_type;
 
@@ -480,9 +484,11 @@ typedef enum {
 	inst_calc_man_man_mask     = 0x000000F0, /* user configured calibration mask */ 
 
 	inst_calc_emis_white       = 0x00000100, /* Provide a white test patch */
-	inst_calc_emis_grey        = 0x00000200, /* Provide a grey test patch */
-	inst_calc_emis_grey_darker = 0x00000300, /* Provide a darker grey test patch */
-	inst_calc_emis_grey_ligher = 0x00000400, /* Provide a darker grey test patch */
+	inst_calc_emis_80pc        = 0x00000200, /* Provide an 80% white test patch */
+	inst_calc_emis_grey        = 0x00000300, /* Provide a grey test patch */
+	inst_calc_emis_grey_darker = 0x00000400, /* Provide a darker grey test patch */
+	inst_calc_emis_grey_ligher = 0x00000500, /* Provide a darker grey test patch */
+
 	inst_calc_emis_mask        = 0x00000F00, /* Emmissive/display provided reference patch */
 
 	inst_calc_change_filter    = 0x00010000, /* Filter needs changing on device - see id[] */
@@ -803,6 +809,7 @@ typedef enum {
 		int *msecdelay);		/* Return the number of msec */					\
 																				\
 	/* Return the last calibrated refresh rate in Hz. Returns: */				\
+	/* (Available if cap2 & inst2_get_refresh_rate) */ 							\
 	/* inst_unsupported - if this instrument doesn't suport a refresh mode */	\
 	/*                    or is unable to retrieve the refresh rate */			\
 	/* inst_needs_cal   - if the refresh rate value is not valid */				\
@@ -813,6 +820,7 @@ typedef enum {
 		double *ref_rate);		/* Return the Hz */								\
 																				\
 	/* Set the calibrated refresh rate in Hz. */								\
+	/* (Available if cap2 & inst2_set_refresh_rate) */ 							\
 	/* Set refresh rate to 0.0 to mark it as invalid */							\
 	/* Rates outside the range 5.0 to 150.0 Hz will return an error */			\
 	/* Note that not all instruments that can return a refresh rate, */			\

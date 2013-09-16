@@ -90,8 +90,8 @@ munki_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	a1logd(p->log, 2, "munki_init_coms: called\n");
 
 	if (p->icom->port_type(p->icom) != icomt_usb) {
-		a1logd(p->log, 1, "munki_init_coms: wrong sort of coms!\n");
-		return munki_interp_code(p, MUNKI_UNKNOWN_MODEL);
+		a1logd(p->log, 1, "munki_init_coms: wrong communications type for device!\n");
+		return inst_coms_fail;
 	}
 
 	a1logd(p->log, 2, "munki_init_coms: about to init USB\n");
@@ -145,8 +145,10 @@ munki_determine_capabilities(munki *p) {
 	if (p->m != NULL) {
 		munkiimp *m = (munkiimp *)p->m;
 		munki_state *s = &m->ms[m->mmode];
-		if (s->emiss)
+		if (s->emiss) {
 			p->cap2 |= inst2_emis_refr_meas;
+			p->cap2 |= inst2_meas_disp_update;
+		}
 	}
 
 	p->cap3 = inst3_none;
@@ -317,6 +319,24 @@ double *ref_rate) {
 	return munki_interp_code(p, rv);
 }
 
+/* Read the display update delay */
+static inst_code
+munki_meas_delay(
+inst *pp,
+int *msecdelay) {
+	munki *p = (munki *)pp;
+	munki_code rv;
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
+	rv = munki_imp_meas_delay(p, msecdelay);
+
+	return munki_interp_code(p, rv);
+}
+
 /* Return needed and available inst_cal_type's */
 static inst_code munki_get_n_a_cals(inst *pp, inst_cal_type *pn_cals, inst_cal_type *pa_cals) {
 	munki *p = (munki *)pp;
@@ -425,6 +445,8 @@ munki_interp_error(inst *pp, munki_code ec) {
 			return "No ambient found before first flash";
 		case MUNKI_RD_NOREFR_FOUND:
 			return "No refresh rate detected or failed to measure it";
+		case MUNKI_RD_NOTRANS_FOUND:
+			return "No delay calibration transition found";
 
 		case MUNKI_SPOS_PROJ:
 			return "Sensor should be in projector position";
@@ -557,6 +579,7 @@ munki_interp_code(munki *p, munki_code ec) {
 		case MUNKI_RD_NOFLASHES:
 		case MUNKI_RD_NOAMBB4FLASHES:
 		case MUNKI_RD_NOREFR_FOUND:
+		case MUNKI_RD_NOTRANS_FOUND:
 			return inst_misread | ec;
 
 		case MUNKI_INTERNAL_ERROR:
@@ -920,6 +943,7 @@ extern munki *new_munki(icoms *icom, instType itype) {
 	p->read_refrate      = munki_read_refrate;
 	p->get_n_a_cals      = munki_get_n_a_cals;
 	p->calibrate         = munki_calibrate;
+	p->meas_delay        = munki_meas_delay;
 	p->interp_error      = munki_interp_error;
 	p->config_enum       = munki_config_enum;
 	p->del               = munki_del;

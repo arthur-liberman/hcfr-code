@@ -18,26 +18,6 @@
  * Derived from serio.h
  */
 
-/*
-
-	Notes:	The user keyboard/interrupt handling is really broken.
-	It's not noticed most of the time because mostly keys are only
-	hit at the expected times. Serial instruments (X-Rite) are more
-	forgiving in interrupting coms to/from the instrument, as well
-	as being long winded and needing abort. For USB insruments it's
-	not necessarily robust to interrupt or terminate after a give
-	USB transaction. The handling of user commands and aborts
-	is not consistent either, possibly leaving some instruments
-	suseptable to bodgy results due to an unrecognised aborted
-	command. Really, the instrument driver should deterimine
-	at what points an operation can be aborted, and how to recover.
-
-	Because the instrument itself can be a source of commands,
-	some way of waiting for instrument or user input is needed.
-	Could a threaded approach with instrument abort work ?
-	
-*/
-
 /* Some MSWin specific stuff is in icoms, and used by usbio & hidio */
 #if defined (NT)
 #if !defined(_WIN32_WINNT) || _WIN32_WINNT < 0x0501
@@ -75,12 +55,13 @@ typedef struct {
 	int addr;			/* Address of end point */
 	int packetsize;		/* The max packet size */
 	int type;			/* 2 = bulk, 3 = interrupt */	
-#ifdef __cplusplus
-	int interfaceNum;		/* interface number */
-#else
-	int interface;		/* interface number */
-#endif
+	int interfacenum;	/* interface number */
+#if defined(__APPLE__)
 	int pipe;			/* pipe number (1..N, OS X only) */
+#endif
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
+	int fd;				/* ep file descriptor */
+#endif
 } usb_ep;
 
 #define ICOM_EP_TYPE_BULK 2
@@ -97,8 +78,9 @@ typedef struct {
 /* (Note a path doesn't have a reference to icompaths or its' log) */
 struct _icompath{
 	char *name;					/* instance description */
-#ifdef ENABLE_SERIAL
+#if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
 	char *spath;				/* Serial device path */
+	int   fast;					/* Virtual serial port that can be identified quickly */
 #endif
 #ifdef ENABLE_USB
 	int nep;					/* Number of end points */
@@ -121,9 +103,9 @@ struct _icompaths {
 	/* return icom error */
 	int (*refresh)(struct _icompaths *p);
 
-#ifdef ENABLE_SERIAL
+#if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
 	/* Add a serial path. path is copied. Return icom error */
-	int (*add_serial)(struct _icompaths *p, char *name, char *spath);
+	int (*add_serial)(struct _icompaths *p, char *name, char *spath, int fast);
 #endif /* ENABLE_SERIAL */
 
 #ifdef ENABLE_USB
@@ -135,6 +117,12 @@ struct _icompaths {
 	int (*add_hid)(struct _icompaths *p, char *name, unsigned int vid, unsigned int pid,
 	                int nep, struct hid_idevice *hidd, instType itype);
 #endif /* ENABLE_USB */
+
+	/* Delete the last path */
+	void (*del_last_path)(struct _icompaths *p);
+
+	/* Return the last path */
+	icompath *(*get_last_path)(struct _icompaths *p);
 
 	/* Return the path corresponding to the port number, or NULL if out of range */
 	icompath *(*get_path)(
@@ -179,7 +167,8 @@ typedef enum {
 	baud_19200   = 9,
 	baud_38400   = 10,
 	baud_57600   = 11,
-	baud_115200  = 12
+	baud_115200  = 12,
+	baud_921600  = 13
 } baud_rate;
 
 /* Possible parity */
@@ -218,6 +207,7 @@ typedef enum {
 /* Type of port */
 typedef enum {
 	icomt_serial,		/* Serial port */
+	icomt_usbserial,	/* USB Serial port */
 	icomt_usb,			/* USB port */
 	icomt_hid			/* HID (USB) port */
 } icom_type;
@@ -254,7 +244,7 @@ typedef struct _usb_cancelt usb_cancelt;
 #ifdef ENABLE_USB
 void usb_init_cancel(usb_cancelt *p);
 void usb_uninit_cancel(usb_cancelt *p);
-
+void usb_reinit_cancel(usb_cancelt *p);
 #endif
 
 struct _icoms {
@@ -266,7 +256,7 @@ struct _icoms {
 	
 	int is_open;				/* Flag, NZ if this port is open */
 
-#ifdef ENABLE_SERIAL
+#if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
 
 	/* Serial port parameters */
 	char *spath;				/* Serial port path */
@@ -279,6 +269,8 @@ struct _icoms {
 #if defined (UNIX) || defined(__APPLE__)
 	int fd;						/* Unix file descriptor */
 #endif
+	int fast;					/* Virtual serial port that can be identified quickly */
+
 	flow_control fc;
 	baud_rate	br;
 	parity		py;
@@ -291,13 +283,6 @@ struct _icoms {
 
 	/* USB port parameters */
 	struct usb_idevice *usbd;	/* USB port - copy of ppath->usbd */
-#ifndef NATIVE_USB				/* Hmm. could put all this within usb_idevice if not #defined ? */
-# ifdef USE_LIBUSB1
-	libusb_device_handle *usbh;
-# else
-	struct usb_dev_handle *usbh;
-# endif
-#endif
 	icomuflags uflags;		/* Bug workaround flags */
 
 	unsigned int vid, pid; 	/* USB vendor and product id's, used to distiguish instruments */
@@ -308,6 +293,8 @@ struct _icoms {
 	int nep;				/* Number of end points */
 	int wr_ep, rd_ep;		/* Default end points to use for "serial" read/write */
 	int rd_qa;				/* Read quanta size */
+	int ms_bytes;			/* No. Modem status bytes to strip from each read */
+	int latmsec;			/* Latency timeout in msec for modem status bytes */
 
 	usb_ep ep[32];			/* Information about each end point for general usb i/o */
 
@@ -321,7 +308,6 @@ struct _icoms {
 
 	/* General parameters */
 	int lserr;					/* Last serial communication error code */
-	int tc;						/* Current serial parser termination character (-1 if not set) */
 	a1log *log;					/* Debug & Error log */
 	int debug;					/* legacy - Flag, nz to print instrument io info to stderr */
 
@@ -333,7 +319,7 @@ struct _icoms {
 	/* Return the port type */
 	icom_type (*port_type)(struct _icoms *p);
 
-#ifdef ENABLE_SERIAL
+#if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
 	/* Select the serial communications port and characteristics */
 	/* return icom error */
 	int (*set_ser_port)(
@@ -386,8 +372,8 @@ struct _icoms {
 		struct _icoms *p,
 		char *buf,			/* Buffer to store characters read */
 		int bsize,			/* Buffer size */
-		char tc,			/* Terminating character */
-		int ntc,			/* Number of terminating characters */
+		char *tc,			/* Terminating characters */
+		int ntc,			/* Number of terminating characters seen */
 		double tout);		/* Timeout in seconds */
 
 	/* "Serial" write and read */
@@ -397,8 +383,8 @@ struct _icoms {
 		char *wbuf,			/* Write puffer */
 		char *rbuf,			/* Read buffer */
 		int bsize,			/* Buffer size */
-		char tc,			/* Terminating characer */
-		int ntc,			/* Number of terminating characters */
+		char *tc,			/* Terminating characers */
+		int ntc,			/* Number of terminating characters seen */
 		double tout);		/* Timeout in seconds */
 
 	/* For a USB device, do a control message */
@@ -431,6 +417,11 @@ struct _icoms {
 		int wsize,				/* Bytes to or write */
 		int *bwritten,			/* Bytes written */
 		double tout);			/* Timeout in seconds */
+
+	/* Wait until a read/write in another thread has started. */
+	/* return icom error */
+	int (*usb_wait_io)(struct _icoms *p,
+		usb_cancelt *cantelt);			/* Cancel handle */
 
 	/* Cancel a read/write in another thread */
 	/* return icom error */

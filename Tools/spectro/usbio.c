@@ -14,7 +14,7 @@
  * see the License2.txt file for licencing details.
  */
 
-/* These routines supliement the class code in ntio.c and unixio.c */
+/* These routines supliement the class code in icoms_nt.c and icoms_ux.c */
 /* with common and USB specific routines */
 
 #include <stdio.h>
@@ -51,35 +51,42 @@ int in_usb_rw = 0;
 void usb_init_cancel(usb_cancelt *p) {
 	
 	amutex_init(p->cmtx);
+	amutex_init(p->cond);
 
-#ifdef NATIVE_USB
 	p->hcancel = NULL;
-#else
-# ifdef USE_LIBUSB1
-	p->hcancel = NULL;
-# else
-	p->hcancel = (void *)-1;
-# endif
-#endif
 }
 
 void usb_uninit_cancel(usb_cancelt *p) {
 	amutex_del(p->cmtx);
+	amutex_del(p->cond);
 }
 
-/* Used by implementation */
-static void usb_lock_cancel(usb_cancelt *p) {
+/* Used by caller of icoms to re-init for wait_io */
+/* Must be called before icoms_usb_wait_io() */
+void usb_reinit_cancel(usb_cancelt *p) {
+	
 	amutex_lock(p->cmtx);
+
+	p->hcancel = NULL;
+	p->state = 0;
+	amutex_lock(p->cond);		/* Block until IO is started */
+
+	amutex_unlock(p->cmtx);
 }
 
-static void usb_unlock_cancel(usb_cancelt *p) {
-	amutex_unlock(p->cmtx);
+/* Wait for the given transaction to be pending or complete. */
+static int icoms_usb_wait_io(
+	icoms *p,
+	usb_cancelt *cancelt
+) {
+	amutex_lock(cancelt->cond);		/* Wait for unlock */
+	amutex_unlock(cancelt->cond);	/* Free it up for next time */
+	return ICOM_OK;
 }
 
 /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 /* Include the USB implementation dependent function implementations */
-#ifdef NATIVE_USB
 # ifdef NT
 #  include "usbio_nt.c"
 # endif
@@ -87,11 +94,12 @@ static void usb_unlock_cancel(usb_cancelt *p) {
 #  include "usbio_ox.c"
 # endif
 # if defined(UNIX_X11)
-#  include "usbio_lx.c"
+#  if defined(__FreeBSD__)
+#   include "usbio_bsd.c"
+#  else
+#   include "usbio_lx.c"
+#  endif
 # endif
-#else	/* Using libusb */
-# include "usbio_lusb.c"
-#endif
 
 /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /* I/O routines supported by icoms - uses platform independent */
@@ -415,15 +423,15 @@ double tout)
 
 /* Read characters into the buffer */
 /* Return string will be terminated with a nul */
-/* Read only in paket sized chunks, and retry if */
+/* Read only in packet sized chunks, and retry if */
 /* the bytes requested aren'r read, untill we get a */
 /* timeout or a terminating char is read */
 static int
 icoms_usb_ser_read(icoms *p,
 char *rbuf,			/* Buffer to store characters read */
 int bsize,			/* Buffer size */
-char tc,			/* Terminating characer */
-int ntc,			/* Number of terminating characters */
+char *tc,			/* Terminating characers, NULL if none */
+int ntc,			/* Number of terminating characters needed to terminate */
 double tout)		/* Time out in seconds */
 {
 	int j, rbytes;
@@ -465,13 +473,14 @@ double tout)		/* Time out in seconds */
 
 	for (i = 0; i < bsize; i++) rbuf[i] = 0;
  
-	tout *= 1000.0;		/* Timout in msec */
-	bsize--;	/* Allow space for null */
+	bsize -= 1;				/* Allow space for null */
+	bsize -= p->ms_bytes;	/* Allow space for modem status bytes */
 
-	/* Have to do this in one go, because libusb has no way */
-	/* of timing out and returning the number of characters read */
-	/* up to the timeout, and it looses characters. */
-	top = (int)(tout + 0.5);		/* Timeout period in msecs */
+	tout *= 1000.0;			/* Timout in msec */
+
+	/* This may not work with libusb 0.1m since it doesn't return the */
+	/* number of characters on a timeout ? */
+	top = 20;						/* Timeout period in msecs */
 	toc = (int)(tout/top + 0.5);	/* Number of timout periods in timeout */
 	if (toc < 1)
 		toc = 1;
@@ -486,6 +495,36 @@ double tout)		/* Time out in seconds */
 		/* We read one read quanta at a time (usually 8 bytes), to avoid */
 		/* problems with libusb loosing characters whenever it times out. */
 		rv = icoms_usb_transaction(p, NULL, &rbytes, type, (unsigned char)ep, (unsigned char *)rbuf, rsize, top);
+
+		/* Account for modem status bytes. Modem bytes are per usb read. */
+		if (rbytes > 0 && p->ms_bytes > 0 && rbytes <= p->ms_bytes) {
+			if (top > p->latmsec)
+				msec_sleep(top - p->latmsec);	/* because we returned after latency timeout */
+			rv |= ICOM_TO;
+		} else if (rbytes > 0) {	/* Account for bytes read */
+			if (p->ms_bytes) {		/* Throw away modem bytes */
+				rbytes -= p->ms_bytes;
+				memmove(rbuf, rbuf+p->ms_bytes, rbytes);
+			}
+			a1logd(p->log, 8, "icoms_usb_ser_read: read %d bytes, rbuf = '%s'\n",rbytes,icoms_fix(rrbuf));
+
+			i = toc;
+			bsize -= rbytes;
+			if (tc != NULL) {
+				while(rbytes--) {	/* Count termination characters */
+					char ch = *rbuf++, *tcp = tc;
+					
+					while(*tcp != '\000') {
+						if (ch == *tcp)
+							j++;
+						tcp++;
+					}
+				}
+			} else {
+				rbuf += rbytes;
+			}
+		}
+		/* Deal with any errors */
 		if (rv != 0 && rv != ICOM_SHORT) {
 			a1logd(p->log, 8, "icoms_usb_ser_read: read failed with 0x%x, rbuf = '%s'\n",rv,icoms_fix(rrbuf));
 			if (rv != ICOM_TO) {
@@ -493,15 +532,6 @@ double tout)		/* Time out in seconds */
 				break;
 			}
 			i--;	/* Timeout */
-		} else {	/* Account for bytes read */
-			a1logd(p->log, 8, "icoms_usb_ser_read: read read %d bytes, rbuf = '%s'\n",rbytes,icoms_fix(rrbuf));
-			i = toc;
-			bsize -= rbytes;
-			while(rbytes) {	/* Count termination characters */
-				if (*rbuf++ == tc)
-					j++;
-				rbytes--;
-			}
 		}
 	}
 
@@ -533,7 +563,8 @@ char **pnames			/* List of process names to try and kill before opening */
 ) {
 	a1logd(p->log, 8, "icoms_set_usb_port: About to set usb port characteristics\n");
 
-	if (p->port_type(p) == icomt_usb) {
+	if (p->port_type(p) == icomt_usb
+	 || p->port_type(p) == icomt_usbserial) {
 		int rv;
 
 		if (p->is_open) 
@@ -546,21 +577,12 @@ char **pnames			/* List of process names to try and kill before opening */
 		p->write = icoms_usb_ser_write;
 		p->read = icoms_usb_ser_read;
 
+	} else {
+		a1logd(p->log, 8, "icoms_set_usb_port: Not a USB port!\n");
+		return ICOM_NOTS;
 	}
 	a1logd(p->log, 6, "icoms_set_usb_port: usb port characteristics set ok\n");
 
-#ifndef NATIVE_USB
-	/* libusb doesn't have any facility for re-directing its */
-	/* debug messages. Since we're moving away from it, */
-	/* ignore the problem. */
-	if (p->log->debug >= 8) {		/* Could this go inside usb_open_port ? */
-# ifdef USE_LIBUSB1
-		libusb_set_debug(NULL, p->log->debug);
-# else
-		usb_set_debug(p->debug);
-# endif
-	}
-#endif /* NATIVE_USB */
 
 	return ICOM_OK;
 }
@@ -575,11 +597,13 @@ icoms *p
 	p->usb_control      = icoms_usb_control;
 	p->usb_read         = icoms_usb_rw;
 	p->usb_write        = icoms_usb_rw;
+	p->usb_wait_io      = icoms_usb_wait_io;
 	p->usb_cancel_io    = icoms_usb_cancel_io;
 	p->usb_resetep      = icoms_usb_resetep;
 	p->usb_clearhalt    = icoms_usb_clearhalt;
 }
 
 /* ---------------------------------------------------------------------------------*/
+
 
 #endif /* ENABLE_USB */

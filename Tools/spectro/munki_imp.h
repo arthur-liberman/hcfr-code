@@ -158,7 +158,7 @@ struct _munkiimp {
 	athread *th;				/* Switch monitoring thread (NULL if not used) */
 	volatile int switch_count;	/* Incremented in thread */
 	volatile int hide_switch;	/* Set to supress switch event during read */
-	usb_cancelt cancelt;		/* Token to allow cancelling an outstanding I/O */
+	usb_cancelt sw_cancel;		/* Token to allow cancelling switch I/O */
 	volatile int th_term;		/* Thread terminate on error rather than retry */
 	volatile int th_termed;		/* Thread has terminated */
 	inst_opt_type trig;			/* Reading trigger mode */
@@ -342,6 +342,7 @@ void del_munkiimp(munki *p);
 #define MUNKI_RD_NOFLASHES              0x3E		/* No flashes recognized */
 #define MUNKI_RD_NOAMBB4FLASHES         0x3F		/* No ambient before flashes found */
 #define MUNKI_RD_NOREFR_FOUND           0x40		/* Unable to measure refresh rate */
+#define MUNKI_RD_NOTRANS_FOUND          0x41		/* Unable to measure delay transition */
 
 #define MUNKI_SPOS_PROJ                 0x48		/* Sensor needs to be in projector position */
 #define MUNKI_SPOS_SURF                 0x49		/* Sensor needs to be in surface position */
@@ -419,6 +420,12 @@ munki_code munki_imp_measure(
 munki_code munki_imp_meas_refrate(
 	munki *p,
 	double *ref_rate
+);
+
+/* Measure the display update delay */
+munki_code munki_imp_meas_delay(
+	munki *p,
+	int *msecdelay
 );
 
 /* return nz if high res is supported */

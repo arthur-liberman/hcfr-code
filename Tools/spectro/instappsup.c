@@ -317,6 +317,19 @@ inst_code inst_handle_calibrate(
 					}
 					break;
 
+				case inst_calc_emis_80pc:
+					if (disp_setup == NULL || dwi == NULL) { /* No way of creating a test window */
+						printf("Place the instrument on a 80%% white test patch,\n");
+						printf(" and then hit any key to continue,\n"); 
+						printf(" or hit Esc or Q to abort: "); 
+					} else {
+						/* We need to display a 80% white patch to proceed with this */
+						/* type of calibration */
+						if ((rv = disp_setup(p, calc, dwi)) != inst_ok)
+							return rv; 
+					}
+					break;
+
 				case inst_calc_emis_grey:
 				case inst_calc_emis_grey_darker: 
 				case inst_calc_emis_grey_ligher:

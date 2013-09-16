@@ -186,6 +186,7 @@ icompaths *p
 				    IOObjectRelease(mit);		/* Release the itterator */
 					return rv;
 				}
+
 			}
 		} else {
 		    IOObjectRelease(ioob);		/* Release found object */
@@ -462,7 +463,7 @@ char **pnames		/* List of process names to try and kill before opening */
 					return ICOM_SYS;
 				}
 				(*pluginref)->Stop(pluginref);
-				IODestroyPlugInInterface(pluginref);
+				IODestroyPlugInInterface(pluginref);	// this stops IOServices though ??
 
 				if ((rv = (*(p->usbd->interfaces[i]))->USBInterfaceOpen(
 					           p->usbd->interfaces[i])) != kIOReturnSuccess) {
@@ -703,9 +704,11 @@ static int icoms_usb_transaction(
 	}
 
 	if (cancelt != NULL) {
-		usb_lock_cancel(cancelt);
+		amutex_lock(cancelt->cmtx);
 		cancelt->hcancel = (void *)&req;
-		usb_unlock_cancel(cancelt);
+		cancelt->state = 1;
+		amutex_unlock(cancelt->cond);		/* Signal any thread waiting for IO start */
+		amutex_unlock(cancelt->cmtx);
 	}
 				
 	/* Wait for the callback to complete */
@@ -787,9 +790,12 @@ static int icoms_usb_transaction(
 
 done:;
 	if (cancelt != NULL) {
-		usb_lock_cancel(cancelt);
+		amutex_lock(cancelt->cmtx);
 		cancelt->hcancel = (void *)NULL;
-		usb_unlock_cancel(cancelt);
+		if (cancelt->state == 0)
+			amutex_unlock(cancelt->cond);
+		cancelt->state = 2;
+		amutex_unlock(cancelt->cmtx);
 	}
 
 	pthread_cond_destroy(&req.cond);
@@ -865,7 +871,7 @@ int icoms_usb_cancel_io(
 ) {
 	int reqrv = ICOM_OK;
 
-	usb_lock_cancel(cancelt);
+	amutex_lock(cancelt->cmtx);
 	usbio_req *req = (usbio_req *)cancelt->hcancel;
 	if (req != NULL) {
 		IOReturn rv;
@@ -875,7 +881,7 @@ int icoms_usb_cancel_io(
 			reqrv = ICOM_USBW;
 		}
 	}
-	usb_unlock_cancel(cancelt);
+	amutex_unlock(cancelt->cmtx);
 
 	return reqrv;
 }

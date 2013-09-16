@@ -46,6 +46,51 @@
 /* Fake device */
 icompath icomFakeDevice = { "Fake Display Device" };
 
+/* Free an icompath */
+static
+void icompath_del_contents(icompath *p) {
+
+	if (p->name != NULL)
+		free(p->name);
+#if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
+	if (p->spath != NULL)
+		free(p->spath);
+#endif /* ENABLE_SERIAL */
+#ifdef ENABLE_USB
+	usb_del_usb_idevice(p->usbd);
+	hid_del_hid_idevice(p->hidd);
+#endif /* ENABLE_USB */
+}
+
+/* Free an icompath */
+static void icompath_del(icompath *p) {
+
+	icompath_del_contents(p);
+	free(p);
+}
+
+/* Delete the last path */
+static void icompaths_del_last_path(
+	icompaths *p
+) {
+	if (p->npaths == 0)
+		return;
+
+	icompath_del(p->paths[p->npaths-1]);
+	p->paths[p->npaths-1] = NULL;
+	p->npaths--;
+}
+
+/* Return the last path */
+static icompath *icompaths_get_last_path(
+	icompaths *p
+) {
+	if (p->npaths == 0)
+		return NULL;
+
+	return p->paths[p->npaths-1];
+}
+
 /* Return the path corresponding to the port number, or NULL if out of range */
 static icompath *icompaths_get_path(
 	icompaths *p, 
@@ -66,17 +111,7 @@ static void icompaths_clear(icompaths *p) {
 	if (p->paths != NULL) {
 		int i;
 		for (i = 0; i < p->npaths; i++) {
-			if (p->paths[i]->name != NULL)
-				free(p->paths[i]->name);
-#ifdef ENABLE_SERIAL
-			if (p->paths[i]->spath != NULL)
-				free(p->paths[i]->spath);
-#endif /* ENABLE_SERIAL */
-#ifdef ENABLE_USB
-			usb_del_usb_idevice(p->paths[i]->usbd);
-			hid_del_hid_idevice(p->paths[i]->hidd);
-#endif /* ENABLE_USB */
-			free(p->paths[i]);
+			icompath_del(p->paths[i]);
 		}
 		free(p->paths);
 		p->npaths = 0;
@@ -111,11 +146,11 @@ static int icompaths_add_path(icompaths *p) {
 	return ICOM_OK;
 }
 
-#ifdef ENABLE_SERIAL
+#if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
 
 /* Add a serial path */
 /* return icom error */
-static int icompaths_add_serial(icompaths *p, char *name, char *spath) {
+static int icompaths_add_serial(icompaths *p, char *name, char *spath, int fast) {
 	int rv;
 
 	if ((rv = icompaths_add_path(p)) != ICOM_OK)
@@ -129,6 +164,27 @@ static int icompaths_add_serial(icompaths *p, char *name, char *spath) {
 		a1loge(p->log, ICOM_SYS, "icompaths: strdup failed!\n");
 		return ICOM_SYS;
 	}
+	p->paths[p->npaths-1]->fast = fast;
+
+	return ICOM_OK;
+}
+
+/* Modify a serial path to add the instrument type */
+int icompaths_set_serial_itype(icompath *p, instType itype) {
+	char pname[400], *cp;
+
+	p->itype = itype;
+
+	/* Strip any existing description in brackets */
+	if ((cp = strchr(p->name, '(')) != NULL && cp > p->name)
+		cp[-1] = '\000';
+	sprintf(pname,"%s (%s)", p->name, inst_name(itype));
+	cp = p->name;
+	if ((p->name = strdup(pname)) == NULL) {
+		a1loge(g_log, ICOM_SYS, "icompaths_set_serial_itype: strdup path failed!\n");
+		return ICOM_SYS;
+	}
+	free(cp);
 	return ICOM_OK;
 }
 
@@ -138,6 +194,7 @@ static int icompaths_add_serial(icompaths *p, char *name, char *spath) {
 
 /* Set an icompath details */
 /* return icom error */
+static
 int icompath_set_usb(a1log *log, icompath *p, char *name, unsigned int vid, unsigned int pid,
                               int nep, struct usb_idevice *usbd, instType itype) {
 	int rv;
@@ -216,8 +273,10 @@ icompaths *new_icompaths(a1log *log) {
 
 	p->clear         = icompaths_clear;
 	p->refresh       = icompaths_refresh_paths;
+	p->del_last_path = icompaths_del_last_path;
+	p->get_last_path = icompaths_get_last_path;
 	p->get_path      = icompaths_get_path;
-#ifdef ENABLE_SERIAL
+#if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
 	p->add_serial    = icompaths_add_serial;
 #endif /* ENABLE_SERIAL */
 #ifdef ENABLE_USB
@@ -246,12 +305,13 @@ static int icom_copy_path_to_icom(icoms *p, icompath *pp) {
 		a1loge(p->log, ICOM_SYS, "copy_path_to_icom: malloc name failed\n");
 		return ICOM_SYS;
 	}
-#ifdef ENABLE_SERIAL
+#if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
 	if (pp->spath != NULL) {
 		if ((p->spath = strdup(pp->spath)) == NULL) {
 			a1loge(p->log, ICOM_SYS, "copy_path_to_icom: malloc spath failed\n");
 			return ICOM_SYS;
 		}
+		p->fast = pp->fast;
 	} else {
 		p->spath = NULL;
 	}
@@ -274,12 +334,14 @@ static int icom_copy_path_to_icom(icoms *p, icompath *pp) {
 static icom_type icoms_port_type(
 icoms *p
 ) {
+
 #ifdef ENABLE_USB
 	if (p->hidd != NULL)
 		return icomt_hid;
 	if (p->usbd != NULL)
 		return icomt_usb;
 #endif
+
 	return icomt_serial;
 }
 
@@ -301,8 +363,8 @@ icoms *p,
 char *wbuf,			/* Write puffer */
 char *rbuf,			/* Read buffer */
 int bsize,			/* Buffer size */
-char tc,			/* Terminating characer */
-int ntc,			/* Number of terminating characters */
+char *tc,			/* Terminating characers, NULL for none */
+int ntc,			/* Number of terminating characters needed to terminate */
 double tout
 ) {
 	int rv = ICOM_OK;
@@ -314,10 +376,11 @@ double tout
 		return ICOM_NOTS;
 	}
 
-#ifdef ENABLE_SERIAL
+#if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
 	/* Flush any stray chars if serial */
 	if (p->usbd == NULL && p->hidd == NULL) {
 		int debug = p->log->debug;
+
 		if (debug < 8)
 			p->log->debug =  0;
 		for (; rv == ICOM_OK;) 	/* Until we get a timeout */
@@ -368,7 +431,7 @@ icoms *new_icoms(
 		return NULL;
 	}
 
-#ifdef ENABLE_SERIAL
+#if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
 #ifdef NT
 	p->phandle = NULL;
 #endif
@@ -383,7 +446,7 @@ icoms *new_icoms(
 #endif	/* ENABLE_SERIAL */
 
 	p->lserr = 0;
-	p->tc = -1;
+//	p->tc = -1;
 
 	p->log = new_a1log_d(log);
 	p->debug = p->log->debug;		/* Legacy code */
@@ -391,7 +454,7 @@ icoms *new_icoms(
 	p->close_port = icoms_close_port;
 
 	p->port_type = icoms_port_type;
-#ifdef ENABLE_SERIAL
+#if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
 	p->set_ser_port = icoms_set_ser_port;
 #endif	/* ENABLE_SERIAL */
 
@@ -442,6 +505,10 @@ icoms_fix(char *ss) {
 	unsigned char *s = (unsigned char *)ss;
 	if (++ix >= 5)
 		ix = 0;
+	if (ss == NULL) {
+		strcpy((char *)buf[ix],"(null)");
+		return (char *)buf[ix];
+	}
 	for(d = buf[ix]; (d - buf[ix]) < 1000;) {
 		if (*s < ' ' && *s > '\000') {
 			*d++ = '^';

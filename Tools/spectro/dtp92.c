@@ -60,6 +60,8 @@
 /* Default flow control */
 #define DEFFC fc_none
 
+#define DEF_TIMEOUT 0.5
+
 #define IGNORE_NEEDS_OFFSET_DRIFT_CAL_ERR
 
 static inst_code dtp92_interp_code(inst *pp, int ec);
@@ -113,7 +115,7 @@ dtp92_fcommand(
 	char *in,			/* In string */
 	char *out,			/* Out string buffer */
 	int bsize,			/* Out buffer size */
-	char tc,			/* Terminating character */
+	char *tc,			/* Terminating characters */
 	int ntc,			/* Number of terminating characters */
 	double to) {		/* Timout in seconds */
 	int rv, se;
@@ -123,7 +125,7 @@ dtp92_fcommand(
 		return icoms2dtp92_err(se);
 	}
 	rv = DTP92_OK;
-	if (tc == '>' && ntc == 1) {
+	if (tc != NULL && tc[0] == '>' && ntc >= 1) {
 		rv = extract_ec(out);
 
 #ifdef NEVER
@@ -135,7 +137,7 @@ dtp92_fcommand(
 			rv &= inst_imask;
 			if (rv != DTP92_OK) {	/* Clear the error */
 				char buf[MAX_MES_SIZE];
-				p->icom->write_read(p->icom, "CE\r", buf, MAX_MES_SIZE, '>', 1, 0.5);
+				p->icom->write_read(p->icom, "CE\r", buf, MAX_MES_SIZE, ">", 1, 0.5);
 			}
 		}
 	}
@@ -159,7 +161,7 @@ dtp92_fcommand(
 /* Return the dtp error code */
 static inst_code
 dtp92_command(dtp92 *p, char *in, char *out, int bsize, double to) {
-	int rv = dtp92_fcommand(p, in, out, bsize, '>', 1, to);
+	int rv = dtp92_fcommand(p, in, out, bsize, ">", 1, to);
 	return dtp92_interp_code((inst *)p, rv);
 }
 
@@ -210,11 +212,11 @@ dtp92_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 		dtp92_command(p, "0PR\r", buf, MAX_MES_SIZE, 0.5);
 		dtp92_command(p, "0PR\r", buf, MAX_MES_SIZE, 0.5);
 #else	/* !ENABLE_USB */
-		a1logd(p->log, 1, "dtp20: Failed to find USB connection to instrument\n");
+		a1logd(p->log, 1, "dtp92: Failed to find USB connection to instrument\n");
 		return inst_coms_fail;
 #endif	/* !ENABLE_USB */
 
-	} else {
+	} else if (p->icom->port_type(p->icom) == icomt_serial) {
 
 #ifdef ENABLE_SERIAL
 		a1logd(p->log, 2, "dtp92_init_coms: About to init Serial I/O\n");
@@ -287,11 +289,11 @@ dtp92_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 		}
 
 		/* Set the handshaking */
-		if ((ev = dtp92_command(p, fcc, buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+		if ((ev = dtp92_command(p, fcc, buf, MAX_MES_SIZE, DEF_TIMEOUT)) != inst_ok)
 			return ev;
 
 		/* Change the baud rate to the rate we've been told */
-		if ((se = p->icom->write_read(p->icom, brc[bi], buf, MAX_MES_SIZE, '>', 1, .2)) != 0) {
+		if ((se = p->icom->write_read(p->icom, brc[bi], buf, MAX_MES_SIZE, ">", 1, .2)) != 0) {
 			if (extract_ec(buf) != DTP92_OK)
 				return inst_coms_fail;
 		}
@@ -304,15 +306,18 @@ dtp92_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 		}
 
 		/* Loose a character (not sure why) */
-		p->icom->write_read(p->icom, "\r", buf, MAX_MES_SIZE, '>', 1, 0.1);
+		p->icom->write_read(p->icom, "\r", buf, MAX_MES_SIZE, ">", 1, 0.1);
 #else	/* !ENABLE_SERIAL */
-		a1logd(p->log, 1, "dtp20: Failed to find serial connection to instrument\n");
+		a1logd(p->log, 1, "dtp92: Failed to find serial connection to instrument\n");
 		return inst_coms_fail;
 #endif	/* !ENABLE_SERIAL */
+	} else {
+		a1logd(p->log, 1, "dtp92: wrong communications type for device!\n");
+		return inst_coms_fail;
 	}
 
 	/* Check instrument is responding, and reset it again. */
-	if ((ev = dtp92_command(p, "\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok
+	if ((ev = dtp92_command(p, "\r", buf, MAX_MES_SIZE, DEF_TIMEOUT)) != inst_ok
 	 || (ev = dtp92_command(p, "0PR\r", buf, MAX_MES_SIZE, 2.0)) != inst_ok) {
 
 		a1logd(p->log, 1, "dtp92_init_coms: failed with ICOM 0x%x\n",ev);
@@ -348,8 +353,8 @@ dtp92_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 		}
 #endif	/* NEVER */
 		
-		p->icom->del(p->icom);		/* Since caller may not clean up */
-		p->icom = NULL;
+//		p->icom->del(p->icom);		/* Since caller may not clean up */
+//		p->icom = NULL;
 		return inst_coms_fail;
 	}
 
@@ -379,7 +384,7 @@ dtp92_init_inst(inst *pp) {
 		return ev;
 
 	/* Get the model and version number */
-	if ((ev = dtp92_command(p, "SV\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+	if ((ev = dtp92_command(p, "SV\r", buf, MAX_MES_SIZE, DEF_TIMEOUT)) != inst_ok)
 		return ev;
 
 	/* Check that it is a DTP92, DTP92Q or DTP94 */
@@ -395,36 +400,36 @@ dtp92_init_inst(inst *pp) {
 
 	if (p->itype == instDTP92) {
 		/* Turn echoing of characters off */
-		if ((ev = dtp92_command(p, "DEC\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+		if ((ev = dtp92_command(p, "DEC\r", buf, MAX_MES_SIZE, DEF_TIMEOUT)) != inst_ok)
 			return ev;
 	}
 
 	if (p->itype == instDTP92) {
 		/* Set decimal point on */
-		if ((ev = dtp92_command(p, "0106CF\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+		if ((ev = dtp92_command(p, "0106CF\r", buf, MAX_MES_SIZE, DEF_TIMEOUT)) != inst_ok)
 			return ev;
 	}
 
 	/* Set color data separator to TAB */
-	if ((ev = dtp92_command(p, "0207CF\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+	if ((ev = dtp92_command(p, "0207CF\r", buf, MAX_MES_SIZE, DEF_TIMEOUT)) != inst_ok)
 		return ev;
 
 	/* Set delimeter to CR */
-	if ((ev = dtp92_command(p, "0008CF\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+	if ((ev = dtp92_command(p, "0008CF\r", buf, MAX_MES_SIZE, DEF_TIMEOUT)) != inst_ok)
 		return ev;
 
 	/* Set extra digit resolution (X10) */
-	if ((ev = dtp92_command(p, "010ACF\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+	if ((ev = dtp92_command(p, "010ACF\r", buf, MAX_MES_SIZE, DEF_TIMEOUT)) != inst_ok)
 		return ev;
 
 	if (p->itype == instDTP92) {
 		/* Set absolute (luminance) calibration */
-		if ((ev = dtp92_command(p, "0118CF\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+		if ((ev = dtp92_command(p, "0118CF\r", buf, MAX_MES_SIZE, DEF_TIMEOUT)) != inst_ok)
 			return ev;
 	}
 
 	/* Set no black point subtraction */
-	if ((ev = dtp92_command(p, "0019CF\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+	if ((ev = dtp92_command(p, "0019CF\r", buf, MAX_MES_SIZE, DEF_TIMEOUT)) != inst_ok)
 		return ev;
 
 	/* Set to factory calibration */
@@ -439,43 +444,43 @@ dtp92_init_inst(inst *pp) {
 
 	if (p->itype == instDTP92) {
 		/* Enable ABS mode (in case firmware doesn't default to this after EFC) */
-		if ((ev = dtp92_command(p, "0118CF\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+		if ((ev = dtp92_command(p, "0118CF\r", buf, MAX_MES_SIZE, DEF_TIMEOUT)) != inst_ok)
 			return ev;
 	
 		/* Disable -BLK mode (in case firmware doesn't default to this after EFC) */
-		if ((ev = dtp92_command(p, "0019CF\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+		if ((ev = dtp92_command(p, "0019CF\r", buf, MAX_MES_SIZE, DEF_TIMEOUT)) != inst_ok)
 			return ev;
 	
 		/* Set to transmit just the colorimetric data */
-		if ((ev = dtp92_command(p, "0120CF\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+		if ((ev = dtp92_command(p, "0120CF\r", buf, MAX_MES_SIZE, DEF_TIMEOUT)) != inst_ok)
 			return ev;
 	
 		/* Transmit colorimetric data as XYZ */
-		if ((ev = dtp92_command(p, "0221CF\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+		if ((ev = dtp92_command(p, "0221CF\r", buf, MAX_MES_SIZE, DEF_TIMEOUT)) != inst_ok)
 			return ev;
 
 		/* Disable Luminance group */
-		if ((ev = dtp92_command(p, "0022CF\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+		if ((ev = dtp92_command(p, "0022CF\r", buf, MAX_MES_SIZE, DEF_TIMEOUT)) != inst_ok)
 			return ev;
 	
 		/* Disable Frequency group */
-		if ((ev = dtp92_command(p, "0023CF\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+		if ((ev = dtp92_command(p, "0023CF\r", buf, MAX_MES_SIZE, DEF_TIMEOUT)) != inst_ok)
 			return ev;
 	
 		/* Disable color temperature group */
-		if ((ev = dtp92_command(p, "0024CF\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+		if ((ev = dtp92_command(p, "0024CF\r", buf, MAX_MES_SIZE, DEF_TIMEOUT)) != inst_ok)
 			return ev;
 	
 		/* Disable RGB group */
-		if ((ev = dtp92_command(p, "0025CF\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+		if ((ev = dtp92_command(p, "0025CF\r", buf, MAX_MES_SIZE, DEF_TIMEOUT)) != inst_ok)
 			return ev;
 	
 		/* Disable pushbutton */
-		if ((ev = dtp92_command(p, "DPB\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+		if ((ev = dtp92_command(p, "DPB\r", buf, MAX_MES_SIZE, DEF_TIMEOUT)) != inst_ok)
 			return ev;
 
 		/* Set sample size to 16 (default is 16) */
-		if ((ev = dtp92_command(p, "10SS\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+		if ((ev = dtp92_command(p, "10SS\r", buf, MAX_MES_SIZE, DEF_TIMEOUT)) != inst_ok)
 			return ev;
 	}
 	p->trig = inst_opt_trig_user;
@@ -493,7 +498,7 @@ dtp92_init_inst(inst *pp) {
 
 		for (i = 0; i < 0x800; i++) {
 			sprintf(tb,"%04xRN\r",i);
-			if ((ev = dtp92_command(p, tb, buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+			if ((ev = dtp92_command(p, tb, buf, MAX_MES_SIZE, DEF_TIMEOUT)) != inst_ok)
 				return ev;
 			if (sscanf(buf,"%x",&val) != 1)
 				return inst_coms_fail;
@@ -506,8 +511,8 @@ dtp92_init_inst(inst *pp) {
 
 	if (p->log->verb) {
 		int i, j;
-		if ((ev = dtp92_command(p, "GI\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok) {
-			a1logd(p->log, 1, "dtp20: GI command failed with ICOM err 0x%x\n",ev);
+		if ((ev = dtp92_command(p, "GI\r", buf, MAX_MES_SIZE, DEF_TIMEOUT)) != inst_ok) {
+			a1logd(p->log, 1, "dtp92: GI command failed with ICOM err 0x%x\n",ev);
 			return ev;
 		}
 		for (j = i = 0; ;i++) {
@@ -555,7 +560,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 #ifdef NEVER
 	if (p->itype == instDTP92) {
 		/* Set sample size to 31 (default is 16) for low level readings */
-		if ((rv = dtp92_command(p, "1fSS\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+		if ((rv = dtp92_command(p, "1fSS\r", buf, MAX_MES_SIZE, DEF_TIMEOUT)) != inst_ok)
 			return rv;
 	}
 #endif
@@ -628,7 +633,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 #ifdef NEVER
 	if (p->itype == instDTP92) {
 		/* Set sample size back to 16 */
-		if ((rv = dtp92_command(p, "10SS\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+		if ((rv = dtp92_command(p, "10SS\r", buf, MAX_MES_SIZE, DEF_TIMEOUT)) != inst_ok)
 			return rv;
 	}
 #endif
@@ -850,18 +855,6 @@ double *ref_rate
 	return inst_ok;
 }
 
-/* Set the calibrated refresh rate in Hz. */
-/* Set refresh rate to 0.0 to mark it as invalid */
-/* Rates outside the range 5.0 to 150.0 Hz will return an error */
-static inst_code dtp92_set_refr_rate(inst *pp,
-double ref_rate
-) {
-	dtp92 *p = (dtp92 *)pp;
-
-	/* The DTP92 can't have a refresh rate set */
-	return inst_unsupported;
-}
-
 /* Error codes interpretation */
 static char *
 dtp92_interp_error(inst *pp, int ec) {
@@ -952,6 +945,7 @@ dtp92_interp_code(inst *pp, int ec) {
 		case DTP92_INTERNAL_ERROR:
 			return inst_internal_error | ec;
 
+		case DTP92_TIMEOUT:
 		case DTP92_COMS_FAIL:
 			return inst_coms_fail | ec;
 
@@ -1013,7 +1007,7 @@ inst3_capability *pcap3) {
 	if (p->itype == instDTP94) {
 		cap2 |= inst2_disptype;
 	} else {
-		cap2 |= inst2_refresh_rate;
+		cap2 |= inst2_get_refresh_rate;
 		cap2 |= inst2_emis_refr_meas;
 	}
 
@@ -1163,13 +1157,13 @@ static inst_code set_disp_type(dtp92 *p, inst_disptypesel *dentry) {
 		inst_code ev;
 		
 		if (p->icx == 0) {			/* Generic/Non-specific */
-			if ((ev = dtp92_command(p, "0016CF\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+			if ((ev = dtp92_command(p, "0016CF\r", buf, MAX_MES_SIZE, DEF_TIMEOUT)) != inst_ok)
 				return ev;
 		} else if (p->icx == 1) {	/* CRT */
-			if ((ev = dtp92_command(p, "0116CF\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+			if ((ev = dtp92_command(p, "0116CF\r", buf, MAX_MES_SIZE, DEF_TIMEOUT)) != inst_ok)
 				return ev;
 		} else if (p->icx == 2) {	/* LCD */
-			if ((ev = dtp92_command(p, "0216CF\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+			if ((ev = dtp92_command(p, "0216CF\r", buf, MAX_MES_SIZE, DEF_TIMEOUT)) != inst_ok)
 				return ev;
 		} else {
 			return inst_unsupported;
@@ -1310,7 +1304,6 @@ extern dtp92 *new_dtp92(icoms *icom, instType itype) {
 	p->calibrate         = dtp92_calibrate;
 	p->col_cor_mat       = dtp92_col_cor_mat;
 	p->get_refr_rate     = dtp92_get_refr_rate;
-	p->set_refr_rate     = dtp92_set_refr_rate;
 	p->interp_error      = dtp92_interp_error;
 	p->del               = dtp92_del;
 

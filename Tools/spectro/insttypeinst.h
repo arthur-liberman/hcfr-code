@@ -22,4 +22,5 @@
 #include "hcfr.h"
 #include "spyd2.h"
 #include "huey.h"
+#include "specbos.h"
 #include "colorhug.h"

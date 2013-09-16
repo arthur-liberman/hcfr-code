@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\usb\driver;..\msvc"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;NT;_CRT_SECURE_NO_WARNINGS;SALONEINSTLIB;ENABLE_USB;NATIVE_USB;_USE_32BIT_TIME_T;_CRT_NONSTDC_NO_DEPRECATE"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;NT;_CRT_SECURE_NO_WARNINGS;SALONEINSTLIB;ENABLE_USB;ENABLE_FAST_SERIAL;_USE_32BIT_TIME_T;_CRT_NONSTDC_NO_DEPRECATE"
 				MinimalRebuild="true"
 				ExceptionHandling="2"
 				BasicRuntimeChecks="3"
@@ -119,7 +119,7 @@
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				AdditionalIncludeDirectories="..\usb\driver;..\msvc"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;NT;_CRT_SECURE_NO_WARNINGS;SALONEINSTLIB;ENABLE_USB;NATIVE_USB;_USE_32BIT_TIME_T;_CRT_NONSTDC_NO_DEPRECATE"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;NT;_CRT_SECURE_NO_WARNINGS;SALONEINSTLIB;ENABLE_USB;ENABLE_FAST_SERIAL;_USE_32BIT_TIME_T;_CRT_NONSTDC_NO_DEPRECATE"
 				ExceptionHandling="2"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -191,10 +191,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\mongoose.c"
-				>
-			</File>
-			<File
 				RelativePath=".\oemarch.c"
 				>
 			</File>
@@ -218,10 +214,6 @@
 			</File>
 			<File
 				RelativePath=".\LzmaTypes.h"
-				>
-			</File>
-			<File
-				RelativePath=".\mongoose.h"
 				>
 			</File>
 			<File

@@ -88,6 +88,7 @@
 #undef DEBUG			/* Turn on extra messages & plots */
 #undef PLOT_DEBUG		/* Use plot to show readings & processing */
 #undef PLOT_REFRESH 	/* Plot refresh rate measurement info */
+#undef PLOT_UPDELAY		/* Plot data used to determine display update delay */
 #undef RAWR_DEBUG		/* Print out raw reading processing values */
 #undef DUMP_SCANV		/* Dump scan readings to a file "mkdump.txt" */
 #undef DUMP_DARKM		/* Append raw dark readings to file "mkddump.txt" */
@@ -122,15 +123,16 @@
 #define RDEAD_TIME 0.004432		/* Fudge figure to make reflecting intn. time scale linearly */
 					
 #define EMIS_SCALE_FACTOR 1.0	/* Emission mode scale factor */ 
-#define AMB_SCALE_FACTOR (1.0/3.141592654)	/* Ambient mode scale factor - convert */ 
-								/* from Lux to Lux/PI */
-								/* These factors get the same behaviour as the GMB drivers. */
+#define AMB_SCALE_FACTOR 1.0	/* Ambient mode scale factor for Lux */
+//#define AMB_SCALE_FACTOR (1.0/3.141592654)	/* Ambient mode scale factor - convert */ 
+//								/* from Lux to Lux/PI */
+//								/* These factors get the same behaviour as the GMB drivers. */
 
 #define NSEN_MAX 140            /* Maximum nsen/raw value we can cope with */
 
 /* High res mode settings */
-#define HIGHRES_SHORT 360		/* Wavelength to calculate */
-#define HIGHRES_LONG  740
+#define HIGHRES_SHORT 370		/* Wavelength to calculate */
+#define HIGHRES_LONG  730
 #define HIGHRES_WIDTH  (10.0/3.0) /* (The 3.3333 spacing and lanczos2 seems a good combination) */
 #define HIGHRES_REF_MIN 410.0	  /* Too much stray light below this in reflective mode */
 #define HIGHRES_TRANS_MIN 380.0	  /* Too much stray light below this in reflective mode */
@@ -331,7 +333,7 @@ void del_munkiimp(munki *p) {
 				a1logd(p->log,3,"Munki switch thread termination failed\n");
 			}
 			m->th->del(m->th);
-			usb_uninit_cancel(&m->cancelt);	/* Don't need cancel token now */
+			usb_uninit_cancel(&m->sw_cancel);	/* Don't need cancel token now */
 		}
 
 		/* Free any per mode data */
@@ -568,7 +570,7 @@ munki_code munki_imp_init(munki *p) {
 
 #ifdef USE_THREAD
 	/* Setup the switch monitoring thread */
-	usb_init_cancel(&m->cancelt);			/* Get cancel token ready */
+	usb_init_cancel(&m->sw_cancel);			/* Get cancel token ready */
 	if ((m->th = new_athread(munki_switch_thread, (void *)p)) == NULL)
 		return MUNKI_INT_THREADFAILED;
 #endif
@@ -1724,6 +1726,156 @@ int icoms2munki_err(int se) {
 	return MUNKI_OK;
 }
 
+/* - - - - - - - - - - - - - - - - */
+/* Measure a display update delay. It is assumed that a */
+/* white to black change has been made to the displayed color, */
+/* and this will measure the time it took for the update to */
+/* be noticed by the instrument, up to 0.6 seconds. */
+/* inst_misread will be returned on failure to find a transition to black. */
+#define NDMXTIME 0.7		/* Maximum time to take */
+#define NDSAMPS 500			/* Debug samples */
+
+munki_code munki_read_patches_all(munki *p, double **specrd, int numpatches, double *inttime,int gainmode);
+
+typedef struct {
+	double sec;
+	double rgb[3];
+	double tot;
+} i1rgbdsamp;
+
+munki_code munki_imp_meas_delay(
+munki *p,
+int *msecdelay)	{	/* Return the number of msec */
+	munki_code ev = MUNKI_OK;
+	munkiimp *m = (munkiimp *)p->m;
+	munki_state *s = &m->ms[m->mmode];
+	int i, j, k, mm;
+	double **multimeas;			/* Spectral measurements */
+	int nummeas;
+	double rgbw[3] = { 610.0, 520.0, 460.0 };
+	double ucalf = 1.0;				/* usec_time calibration factor */
+	double inttime;
+	i1rgbdsamp *samp;
+	double stot, etot, del, thr;
+	double etime;
+	int isdeb;
+
+	/* Read the samples */
+	inttime = m->min_int_time;
+	nummeas = (int)(NDMXTIME/inttime + 0.5);
+	multimeas = dmatrix(0, nummeas-1, -1, m->nwav-1);
+	if ((samp = (i1rgbdsamp *)calloc(sizeof(i1rgbdsamp), nummeas)) == NULL) {
+		a1logd(p->log, 1, "munki_meas_delay: malloc failed\n");
+		return MUNKI_INT_MALLOC;
+	}
+
+//printf("~1 %d samples at %f int\n",nummeas,inttime);
+	if ((ev = munki_read_patches_all(p, multimeas, nummeas, &inttime, 0)) != inst_ok) {
+		free_dmatrix(multimeas, 0, nummeas-1, 0, m->nwav-1);
+		free(samp);
+		return ev;
+	} 
+
+	/* Convert the samples to RGB */
+	for (i = 0; i < nummeas; i++) {
+		samp[i].sec = i * inttime;
+		samp[i].rgb[0] = samp[i].rgb[1] = samp[i].rgb[2] = 0.0;
+		for (j = 0; j < m->nwav; j++) {
+			double wl = XSPECT_WL(m->wl_short, m->wl_long, m->nwav, j);
+
+//printf("~1 multimeas %d %d = %f\n",i, j, multimeas[i][j]);
+			for (k = 0; k < 3; k++) {
+				double tt = (double)(wl - rgbw[k]);
+				tt = (50.0 - fabs(tt))/50.0;
+				if (tt < 0.0)
+					tt = 0.0;
+				samp[i].rgb[k] += sqrt(tt) * multimeas[i][j];
+			}
+		}
+		samp[i].tot = samp[i].rgb[0] + samp[i].rgb[1] + samp[i].rgb[2];
+	}
+	free_dmatrix(multimeas, 0, nummeas-1, 0, m->nwav-1);
+
+	a1logd(p->log, 3, "munki_measure_refresh: Read %d samples for refresh calibration\n",nummeas);
+
+#ifdef PLOT_UPDELAY
+	/* Plot the raw sensor values */
+	{
+		double xx[NDSAMPS];
+		double y1[NDSAMPS];
+		double y2[NDSAMPS];
+		double y3[NDSAMPS];
+		double y4[NDSAMPS];
+
+		for (i = 0; i < nummeas && i < NDSAMPS; i++) {
+			xx[i] = samp[i].sec;
+			y1[i] = samp[i].rgb[0];
+			y2[i] = samp[i].rgb[1];
+			y3[i] = samp[i].rgb[2];
+			y4[i] = samp[i].tot;
+//printf("%d: %f -> %f\n",i,samp[i].sec, samp[i].tot);
+		}
+		printf("Display update delay measure sensor values and time (sec)\n");
+		do_plot6(xx, y1, y2, y3, y4, NULL, NULL, nummeas);
+	}
+#endif
+
+	/* Over the first 100msec, locate the maximum value */
+	etime = samp[nummeas-1].sec;
+	stot = -1e9;
+	for (i = 0; i < nummeas; i++) {
+		if (samp[i].tot > stot)
+			stot = samp[i].tot;
+		if (samp[i].sec > 0.1)
+			break;
+	}
+
+	/* Over the last 100msec, locate the maximum value */
+	etime = samp[nummeas-1].sec;
+	etot = -1e9;
+	for (i = nummeas-1; i >= 0; i--) {
+		if (samp[i].tot > etot)
+			etot = samp[i].tot;
+		if ((etime - samp[i].sec) > 0.1)
+			break;
+	}
+
+	del = stot - etot;
+	thr = etot + 0.30 * del;		/* 30% of transition threshold */
+
+#ifdef PLOT_UPDELAY
+	a1logd(p->log, 0, "munki_meas_delay: start tot %f end tot %f del %f, thr %f\n", stot, etot, del, thr);
+#endif
+
+	/* Check that there has been a transition */
+	if (del < 5.0) {
+		free(samp);
+		a1logd(p->log, 1, "munki_meas_delay: can't detect change from white to black\n");
+		return MUNKI_RD_NOTRANS_FOUND; 
+	}
+
+	/* Locate the time at which the values are above the end values */
+	for (i = nummeas-1; i >= 0; i--) {
+		if (samp[i].tot > thr)
+			break;
+	}
+	if (i < 0)		/* Assume the update was so fast that we missed it */
+		i = 0;
+
+	a1logd(p->log, 2, "munki_meas_delay: stoped at sample %d time %f\n",i,samp[i].sec);
+
+	*msecdelay = (int)(samp[i].sec * 1000.0 + 0.5);
+
+#ifdef PLOT_UPDELAY
+	a1logd(p->log, 0, "munki_meas_delay: returning %d msec\n",*msecdelay);
+#endif
+	free(samp);
+
+	return MUNKI_OK;
+}
+#undef NDSAMPS
+#undef NDMXTIME
+
 
 /* - - - - - - - - - - - - - - - - */
 /* Measure a patch or strip or flash in the current mode. */
@@ -2178,7 +2330,6 @@ munki_code munki_imp_measure(
 */
 
 munki_code munki_measure_rgb(munki *p, double *inttime, double *rgb);
-munki_code munki_read_patches_all(munki *p, double **specrd, int numpatches, double *inttime,int gainmode);
 
 #ifndef PSRAND32L 
 # define PSRAND32L(S) ((S) * 1664525L + 1013904223L)
@@ -2277,7 +2428,7 @@ munki_code munki_imp_meas_refrate(
 					tt = (40.0 - fabs(tt))/40.0;
 					if (tt < 0.0)
 						tt = 0.0;
-					samp[i].rgb[k] += tt * multimeas[i][j];
+					samp[i].rgb[k] += sqrt(tt) * multimeas[i][j];
 				}
 			}
 		}
@@ -5845,6 +5996,9 @@ void munki_scale_specrd(
 #undef EXISTING_SHAPE		/* Else generate filter shape */
 #undef USE_GAUSSIAN			/* Use gaussian filter shape, else lanczos2 */
 
+#define DO_CCDNORM			/* [def] Normalise CCD values to original */
+#define DO_CCDNORMAVG		/* [unde] Normalise averages rather than per CCD bin */
+
 #ifdef NEVER
 /* Plot the matrix coefficients */
 void munki_debug_plot_mtx_coef(munki *p, int ref) {
@@ -5994,7 +6148,8 @@ munki_code munki_create_hr(munki *p, int ref) {
 		mtx_index1 = m->rmtx_index1;
 		mtx_nocoef1 = m->rmtx_nocoef1;
 		mtx_coef1 = m->rmtx_coef1;
-		mtx_index2 = mtx_nocoef2 = NULL;
+		mtx_index2 = NULL;
+		mtx_nocoef2 = NULL;
 		mtx_coef2 = NULL;
 		pmtx_index2 = &m->rmtx_index2;
 		pmtx_nocoef2 = &m->rmtx_nocoef2;
@@ -6003,7 +6158,8 @@ munki_code munki_create_hr(munki *p, int ref) {
 		mtx_index1 = m->emtx_index1;
 		mtx_nocoef1 = m->emtx_nocoef1;
 		mtx_coef1 = m->emtx_coef1;
-		mtx_index2 = mtx_nocoef2 = NULL;
+		mtx_index2 = NULL;
+		mtx_nocoef2 = NULL;
 		mtx_coef2 = NULL;
 		pmtx_index2 = &m->emtx_index2;
 		pmtx_nocoef2 = &m->emtx_nocoef2;
@@ -6021,7 +6177,7 @@ munki_code munki_create_hr(munki *p, int ref) {
 
 		/* For each matrix value */
 		sx = mtx_index1[j];		/* Starting index */
-		if (jj == 0 && (j+1) < m->nwav1 && sx == mtx_index1[j+1])  {	/* Same index */
+		if (j < (m->nwav1-1) && sx == mtx_index1[j+1]) {	/* Skip duplicates + last */
 //			printf("~1 skipping %d\n",j);
 			wl_short1 += wl_step1;
 			nwav1--;
@@ -6077,6 +6233,7 @@ munki_code munki_create_hr(munki *p, int ref) {
 	/* Compute the crossover points between each filter */
 	for (i = 0; i < (nwav1-1); i++) {
 		double den, y1, y2, y3, y4, yn, xn;	/* Location of intersection */
+		double eps = 1e-6;			/* Numerical tollerance */
 		double besty = -1e6;
 
 		/* between filter i and i+1, we want to find the two */
@@ -6086,13 +6243,8 @@ munki_code munki_create_hr(munki *p, int ref) {
 		for (j = 0; j < (mtx_nocoef1[i]-1); j++) {
 			for (k = 0; k < (mtx_nocoef1[i+1]-1); k++) {
 				if (coeff[i][j].ix == coeff[i+1][k].ix
-				 && coeff[i][j+1].ix == coeff[i+1][k+1].ix
-				 && coeff[i][j].we > 0.0 && coeff[i][j+1].we > 0.0
-				 && coeff[i+1][k].we > 0.0 && coeff[i+1][k+1].we > 0.0
-				 && ((   coeff[i][j].we >= coeff[i+1][k].we
-				 	 && coeff[i][j+1].we <= coeff[i+1][k+1].we)
-				  || (   coeff[i][j].we <= coeff[i+1][k].we
-				 	 && coeff[i][j+1].we >= coeff[i+1][k+1].we))) {
+				 && coeff[i][j+1].ix == coeff[i+1][k+1].ix) {
+
 //					a1logd(p->log,3,"got it at %d, %d: %d = %d, %d = %d\n",j,k, coeff[i][j].ix, coeff[i+1][k].ix, coeff[i][j+1].ix, coeff[i+1][k+1].ix);
 
 					/* Compute the intersection of the two line segments */
@@ -6100,17 +6252,22 @@ munki_code munki_create_hr(munki *p, int ref) {
 					y2 = coeff[i][j+1].we;
 					y3 = coeff[i+1][k].we;
 					y4 = coeff[i+1][k+1].we;
+//					a1logd(p->log,3,"y1 %f, y2 %f, y3 %f, y4 %f\n",y1, y2, y3, y4);
 					den = -y4 + y3 + y2 - y1;
+					if (fabs(den) < eps)
+						continue; 
 					yn = (y2 * y3 - y1 * y4)/den;
 					xn = (y3 - y1)/den;
+					if (xn < -eps || xn > (1.0 + eps))
+						continue;
 //					a1logd(p->log,3,"den = %f, yn = %f, xn = %f\n",den,yn,xn);
-//					a1logd(p->log,3,"Intersection %d: wav %f, raw %f, wei %f\n",i+1,xp[i+1].wav,xp[i+1].raw,xp[i+1].wei);
 					if (yn > besty) {
 						xp[i+1].wav = XSPECT_WL(wl_short1, wl_long1, nwav1, i + 0.5);
 						xp[i+1].raw = (1.0 - xn) * coeff[i][j].ix + xn * coeff[i][j+1].ix;
 						xp[i+1].wei = yn;
 						besty = yn;
-//					a1logd(p->log,3,"Found new best y\n");
+//					a1logd(p->log,3,"Intersection %d: wav %f, raw %f, wei %f\n",i+1,xp[i+1].wav,xp[i+1].raw,xp[i+1].wei);
+//					a1logd(p->log,3,"Found new best y %f\n",yn);
 					}
 //				a1logd(p->log,3,"\n");
 				}
@@ -6152,7 +6309,7 @@ munki_code munki_create_hr(munki *p, int ref) {
 			}
 		}
 		if (j >= mtx_nocoef1[0]) {	/* Assert */
-			a1logw(p->log,"munki: failed to end crossover\n");
+			a1logw(p->log,"munki: failed to find end crossover\n");
 			return MUNKI_INT_ASSERT;
 		}
 		den = -y4 + y3 + y2 - y1;
@@ -6190,7 +6347,7 @@ munki_code munki_create_hr(munki *p, int ref) {
 			}
 		}
 		if (j >= mtx_nocoef1[nwav1-1]) {	/* Assert */
-			a1logw(p->log, "munki: failed to end crossover\n");
+			a1logw(p->log, "munki: failed to find end crossover\n");
 			return MUNKI_INT_ASSERT;
 		}
 		den = -y4 + y3 + y2 - y1;
@@ -6398,14 +6555,15 @@ munki_code munki_create_hr(munki *p, int ref) {
 
 	{
 		double fshmax;				/* filter shape max wavelength from center */
+#define MXNOWL 500      /* Max hires bands */
 #define MXNOFC 64
-		munki_fc coeff2[500][MXNOFC];	/* New filter cooefficients */
+		munki_fc coeff2[MXNOWL][MXNOFC];	/* New filter cooefficients */
 		double twidth;
 
 		/* Construct a set of filters that uses more CCD values */
 		twidth = HIGHRES_WIDTH;
 
-		if (m->nwav2 > 500) {		/* Assert */
+		if (m->nwav2 > MXNOWL) {		/* Assert */
 			a1logw(p->log,"High res filter has too many bands\n");
 			return MUNKI_INT_ASSERT;
 		}
@@ -6576,112 +6734,6 @@ munki_code munki_create_hr(munki *p, int ref) {
 		}
 #endif /* HIGH_RES_PLOT */
 
-		/* Normalise the filters area in CCD space, while maintaining the */
-		/* total contribution of each CCD at the target too. */
-		{
-			int ii;
-			double tot = 0.0;
-			double ccdweight[NSEN_MAX], avgw;	/* Weighting determined by cell widths */
-			double ccdsum[NSEN_MAX];
-
-			/* Normalize the overall filter weightings */
-			for (j = 0; j < m->nwav2; j++)
-				for (k = 0; k < mtx_nocoef2[j]; k++)
-					tot += coeff2[j][k].we;
-			tot /= (double)m->nwav2;
-			for (j = 0; j < m->nwav2; j++)
-				for (k = 0; k < mtx_nocoef2[j]; k++)
-					coeff2[j][k].we /= tot;
-
-			/* Determine the relative weights for each CCD */
-			avgw = 0.0;
-			for (i = 0; i < m->nraw; i++) {
-				co pp;
-
-				pp.p[0] = i - 0.5;
-				raw2wav->interp(raw2wav, &pp);
-				ccdweight[i] = pp.v[0];
-
-				pp.p[0] = i + 0.5;
-				raw2wav->interp(raw2wav, &pp);
-				ccdweight[i] = fabs(ccdweight[i] - pp.v[0]);
-				avgw += ccdweight[i];
-			}
-			avgw /= 126.0;
-			// ~~this isn't right because not all CCD's get used!!
-
-#ifdef NEVER
-			/* Itterate */
-			for (ii = 0; ; ii++) {
-
-				/* Normalize the individual filter weightings */
-				for (j = 0; j < m->nwav2; j++) {
-					double err;
-					tot = 0.0;
-					for (k = 0; k < mtx_nocoef2[j]; k++)
-						tot += coeff2[j][k].we;
-					err = 1.0 - tot;
-	
-					for (k = 0; k < mtx_nocoef2[j]; k++)
-						coeff2[j][k].we += err/mtx_nocoef2[j];
-//					for (k = 0; k < mtx_nocoef2[j]; k++)
-//						coeff2[j][k].we *= 1.0/tot;
-				}
-
-				/* Check CCD sums */
-				for (i = 0; i < nraw; i++) 
-					ccdsum[i] = 0.0;
-
-				for (j = 0; j < m->nwav2; j++) {
-					for (k = 0; k < mtx_nocoef2[j]; k++)
-						ccdsum[coeff2[j][k].ix] += coeff2[j][k].we;
-				}
-
-				if (ii >= 6)
-					break;
-
-				/* Readjust CCD sum */
-				for (i = 0; i < nraw; i++) { 
-					ccdsum[i] = ccdtsum[i]/ccdsum[i];		/* Amount to adjust */
-				}
-
-				for (j = 0; j < m->nwav2; j++) {
-					for (k = 0; k < mtx_nocoef2[j]; k++)
-						coeff2[j][k].we *= ccdsum[coeff2[j][k].ix];
-				}
-			}
-#endif	/* NEVER */
-		}
-
-#ifdef HIGH_RES_PLOT
-		/* Plot resampled curves */
-		{
-			double *xx, *ss;
-			double **yy;
-
-			xx = dvectorz(-1, m->nraw-1);		/* X index */
-			yy = dmatrixz(0, 5, -1, m->nraw-1);	/* Curves distributed amongst 5 graphs */
-			
-			for (i = 0; i < m->nraw; i++)
-				xx[i] = i;
-
-			/* For each output wavelength */
-			for (j = 0; j < m->nwav2; j++) {
-				i = j % 5;
-
-				/* For each matrix value */
-				for (k = 0; k < mtx_nocoef2[j]; k++) {
-					yy[5][coeff2[j][k].ix] += 0.5 * coeff2[j][k].we;
-					yy[i][coeff2[j][k].ix] = coeff2[j][k].we;
-				}
-			}
-
-			printf("Normalized Hi-Res wavelength sampling curves:\n");
-			do_plot6(xx, yy[0], yy[1], yy[2], yy[3], yy[4], yy[5], m->nraw);
-			free_dvector(xx, -1, m->nraw-1);
-			free_dmatrix(yy, 0, 2, -1, m->nraw-1);
-		}
-#endif /* HIGH_RES_PLOT */
 		/* Convert into runtime format */
 		{
 			int xcount;
@@ -6706,6 +6758,227 @@ munki_code munki_create_hr(munki *p, int ref) {
 				for (k = 0; k < mtx_nocoef2[j]; k++, i++)
 					mtx_coef2[i] = coeff2[j][k].we;
 		}
+
+		/* Normalise the filters area in CCD space, while maintaining the */
+		/* total contribution of each CCD at the target too. */
+		/* Hmm. This will wreck super-sample. We should fix it */
+#ifdef DO_CCDNORM			/* Normalise CCD values to original */
+		{
+			double x[4], y[4];
+			double avg[2], max[2];
+			double ccdsum[2][128];			/* Target weight/actual for each CCD */
+			double dth[2];
+
+			avg[0] = avg[1] = 0.0;
+			max[0] = max[1] = 0.0;
+			for (j = 0; j < 128; j++) {
+				ccdsum[0][j] = 0.0;
+				ccdsum[1][j] = 0.0;
+			}
+
+			/* Compute the weighting of each CCD value in the normal output */
+			for (cx = j = 0; j < m->nwav1; j++) { /* For each wavelength */
+
+				/* For each matrix value */
+				sx = mtx_index1[j];		/* Starting index */
+				if (j < (m->nwav1-2) && sx == mtx_index1[j+1]) {
+					cx += mtx_nocoef1[j];
+					continue;			/* Skip all duplicate filters */
+				}
+				for (k = 0; k < mtx_nocoef1[j]; k++, cx++, sx++) {
+					ccdsum[0][sx] += mtx_coef1[cx];
+//printf("~1 Norm CCD [%d] %f += [%d] %f\n",sx,ccdsum[0][sx],cx, mtx_coef1[cx]);
+				}
+			}
+
+			/* Compute the weighting of each CCD value in the hires output */
+			for (cx = j = 0; j < m->nwav2; j++) { /* For each wavelength */
+
+				/* For each matrix value */
+				sx = mtx_index2[j];		/* Starting index */
+				for (k = 0; k < mtx_nocoef2[j]; k++, cx++, sx++) {
+					ccdsum[1][sx] += mtx_coef2[cx];
+//printf("~1 HiRes CCD [%d] %f += [%d] %f\n",sx,ccdsum[1][sx],cx, mtx_coef2[cx]);
+				}
+			}
+
+#ifdef HIGH_RES_PLOT
+			/* Plot target CCD values */
+			{
+				double xx[128], y1[128], y2[128];
+	
+				for (i = 0; i < 128; i++) {
+					xx[i] = i;
+					y1[i] = ccdsum[0][i];
+					y2[i] = ccdsum[1][i];
+				}
+	
+				printf("Raw target and actual CCD weight sums:\n");
+				do_plot(xx, y1, y2, NULL, 128);
+			}
+#endif
+
+			/* Figure valid range and extrapolate to edges */
+			dth[0] = 0.0;		/* ref */
+			dth[1] = 0.007;		/* hires */
+
+			for (k = 0; k < 2; k++) {
+
+				for (i = 0; i < 128; i++) {
+					if (ccdsum[k][i] > max[k])
+						max[k] = ccdsum[k][i];
+				}
+
+//printf("~1 max[%d] = %f\n",k, max[k]);
+				/* Figure out the valid range */
+				for (i = 64; i >= 0; i--) {
+					if (ccdsum[k][i] > (0.8 * max[k])) {
+						x[0] = (double)i;
+					} else {
+						break;
+					}
+				}
+				for (i = 64; i < 128; i++) {
+					if (ccdsum[k][i] > (0.8 * max[k])) {
+						x[3] = (double)i;
+					} else {
+						break;
+					}
+				}
+				/* Space off the last couple of entries */
+				x[0] += 2.0;
+				x[3] -= 6.0;
+				x[1] = floor((2 * x[0] + x[3])/3.0);
+				x[2] = floor((x[0] + 2 * x[3])/3.0);
+
+				for (i = 0; i < 4; i++)
+					y[i] = ccdsum[k][(int)x[i]];
+
+//printf("~1 extrap nodes %f, %f, %f, %f\n",x[0],x[1],x[2],x[3]);
+//printf("~1 extrap value %f, %f, %f, %f\n",y[0],y[1],y[2],y[3]);
+
+				for (i = 0; i < 128; i++) {
+					double xw, yw;
+
+					xw = (double)i;
+	
+					/* Compute interpolated value using Lagrange: */
+					yw = y[0] * (xw-x[1]) * (xw-x[2]) * (xw-x[3])
+						      /((x[0]-x[1]) * (x[0]-x[2]) * (x[0]-x[3]))
+					   + y[1] * (xw-x[0]) * (xw-x[2]) * (xw-x[3])
+						      /((x[1]-x[0]) * (x[1]-x[2]) * (x[1]-x[3]))
+					   + y[2] * (xw-x[0]) * (xw-x[1]) * (xw-x[3])
+						      /((x[2]-x[0]) * (x[2]-x[1]) * (x[2]-x[3]))
+					   + y[3] * (xw-x[0]) * (xw-x[1]) * (xw-x[2])
+						      /((x[3]-x[0]) * (x[3]-x[1]) * (x[3]-x[2]));
+	
+					if ((xw < x[0] || xw > x[3])
+					 && fabs(ccdsum[k][i] - yw)/yw > dth[k]) {
+						ccdsum[k][i] = yw;
+					}
+					avg[k] += ccdsum[k][i];
+				}
+				avg[k] /= 128.0;
+			}
+
+#ifdef HIGH_RES_PLOT
+			/* Plot target CCD values */
+			{
+				double xx[129], y1[129], y2[129];
+	
+				for (i = 0; i < 128; i++) {
+					xx[i] = i;
+					y1[i] = ccdsum[0][i]/avg[0];
+					y2[i] = ccdsum[1][i]/avg[1];
+				}
+				xx[i] = i;
+				y1[i] = 0.0;
+				y2[i] = 0.0;
+	
+				printf("Extrap. target and actual CCD weight sums:\n");
+				do_plot(xx, y1, y2, NULL, 129);
+			}
+#endif
+
+#ifdef DO_CCDNORMAVG	/* Just correct by average */
+			for (cx = j = 0; j < m->nwav2; j++) { /* For each wavelength */
+
+				/* For each matrix value */
+				sx = mtx_index2[j];		/* Starting index */
+				for (k = 0; k < mtx_nocoef2[j]; k++, cx++, sx++) {
+					mtx_coef2[cx] *= 10.0/twidth * avg[0]/avg[1];
+				}
+			}
+
+#else			/* Correct by CCD bin */
+
+			/* Correct the weighting of each CCD value in the hires output */
+			for (i = 0; i < 128; i++) {
+				ccdsum[1][i] = 10.0/twidth * ccdsum[0][i]/ccdsum[1][i];		/* Correction factor */
+			}
+			for (cx = j = 0; j < m->nwav2; j++) { /* For each wavelength */
+
+				/* For each matrix value */
+				sx = mtx_index2[j];		/* Starting index */
+				for (k = 0; k < mtx_nocoef2[j]; k++, cx++, sx++) {
+					mtx_coef2[cx] *= ccdsum[1][sx];
+				}
+			}
+#endif
+		}
+#endif /* DO_CCDNORM */
+
+#ifdef HIGH_RES_PLOT
+		{
+			static munki_fc coeff2[MXNOWL][MXNOFC];	
+			double *xx, *ss;
+			double **yy;
+
+			/* Convert the native filter cooeficient representation to */
+			/* a 2D array we can randomly index. */
+			for (cx = j = 0; j < m->nwav2; j++) { /* For each output wavelength */
+				if (j >= MXNOWL) {	/* Assert */
+					a1loge(p->log,1,"munki: number of hires output wavelenths is > %d\n",MXNOWL);
+					return MUNKI_INT_ASSERT;
+				}
+
+				/* For each matrix value */
+				sx = mtx_index2[j];		/* Starting index */
+				for (k = 0; k < mtx_nocoef2[j]; k++, cx++, sx++) {
+					if (k >= MXNOFC) {	/* Assert */
+						a1loge(p->log,1,"munki: number of hires filter coeefs is > %d\n",MXNOFC);
+						return MUNKI_INT_ASSERT;
+					}
+					coeff2[j][k].ix = sx;
+					coeff2[j][k].we = mtx_coef2[cx];
+				}
+			}
+	
+			xx = dvectorz(-1, m->nraw-1);		/* X index */
+			yy = dmatrixz(0, 5, -1, m->nraw-1);	/* Curves distributed amongst 5 graphs */
+			
+			for (i = 0; i < m->nraw; i++)
+				xx[i] = i;
+
+			/* For each output wavelength */
+			for (j = 0; j < m->nwav2; j++) {
+				i = j % 5;
+
+				/* For each matrix value */
+				for (k = 0; k < mtx_nocoef2[j]; k++) {
+					yy[5][coeff2[j][k].ix] += 0.5 * coeff2[j][k].we;
+					yy[i][coeff2[j][k].ix] = coeff2[j][k].we;
+				}
+			}
+
+			printf("Normalized Hi-Res wavelength sampling curves: %s\n",ref ? "refl" : "emis");
+			do_plot6(xx, yy[0], yy[1], yy[2], yy[3], yy[4], yy[5], m->nraw);
+			free_dvector(xx, -1, m->nraw-1);
+			free_dmatrix(yy, 0, 2, -1, m->nraw-1);
+		}
+#endif /* HIGH_RES_PLOT */
+#undef MXNOWL
+#undef MXNOFC
 
 		/* Basic capability is initialised */
 		m->hr_inited++;
@@ -6766,6 +7039,7 @@ munki_code munki_create_hr(munki *p, int ref) {
 						vhigh[0] = sd[i].v[0];
 				}
 
+#ifdef NEVER
 				/* Add some corrections at short wavelengths */
 				/* (The combination of the diffraction grating and */
 				/*  LED light source doesn't give us much to work with here.) */
@@ -6789,13 +7063,14 @@ munki_code munki_create_hr(munki *p, int ref) {
 					sd[i].v[0] = 0.2 * sd[0].v[0];
 					sd[i++].w = 1.0;
 				}
+#endif
 
 				glow[0] = m->wl_short2;
 				ghigh[0] = m->wl_long2;
 				gres[0] = m->nwav2;
 				avgdev[0] = 0.0;
 				
-				trspl->fit_rspl_w(trspl, 0, sd, i, glow, ghigh, gres, vlow, vhigh, 0.5, avgdev, NULL);
+				trspl->fit_rspl_w(trspl, 0, sd, i, glow, ghigh, gres, vlow, vhigh, 5.0, avgdev, NULL);
 
 				if ((*ref2 = (double *)calloc(m->nwav2, sizeof(double))) == NULL) {
 					raw2wav->del(raw2wav);
@@ -6814,6 +7089,7 @@ munki_code munki_create_hr(munki *p, int ref) {
 				}
 
 
+#ifdef NEVER
 				/* Add some corrections at short wavelengths */
 				if (ii == 0) {
 					/* 376.67 - 470 */
@@ -6840,6 +7116,7 @@ munki_code munki_create_hr(munki *p, int ref) {
 					}
 
 				}
+#endif
 
 #ifdef HIGH_RES_PLOT
 				/* Plot original and upsampled reference */
@@ -8247,7 +8524,7 @@ munki_code munki_simulate_event(munki *p, mk_eve ecode,  int timestamp) {
 	msec_sleep(50);
 	if (m->th_termed == 0) {
 		a1logd(p->log,1,"munki_simulate_event: terminate switch thread failed, canceling I/O\n");
-		p->icom->usb_cancel_io(p->icom, &m->cancelt);
+		p->icom->usb_cancel_io(p->icom, &m->sw_cancel);
 	}
 
 	return rv;
@@ -8324,7 +8601,7 @@ munki_code munki_waitfor_switch_th(munki *p, mk_eve *ecode, int *timest, double 
 	a1logd(p->log,2,"munki_waitfor_switch_th: Read 8 bytes from switch hit port\n");
 
 	/* Now read 8 bytes */
-	se = p->icom->usb_read(p->icom, &m->cancelt, 0x83, buf, 8, &rwbytes, top);
+	se = p->icom->usb_read(p->icom, &m->sw_cancel, 0x83, buf, 8, &rwbytes, top);
 
 	if (se & ICOM_TO) {
 		a1logd(p->log,1,"munki_waitfor_switch_th: read 0x%x bytes, timed out\n",rwbytes);

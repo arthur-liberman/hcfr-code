@@ -26,7 +26,7 @@
 
     The purchaser of a Spyder 2 instrument should have received a copy
     of this firmware along with their instrument, and should therefore be able to
-    enable the Argyll driver for this instrument by using the spyd2en utility
+    enable the Argyll driver for this instrument by using the oeminst utility
 	to create a spyd2PLD.bin file.
 
 	[ The Spyder 3 & 4 don't need a PLD firmware file. ]
@@ -1869,7 +1869,8 @@ spyd2_GetAmbientReading(
 //	a1logd(p->log, 4, "spyd2_GetAmbientReading: combined ambient = %f Lux\n",amb);
 	/* Compute the Y value */
 
-	XYZ[1] = amb;						/* cd/m^2 ??? - not very accurate, due to */
+//	XYZ[1] = amb;			/* cd/m^2 ??? - not very accurate, due to */
+	XYZ[1] = 3.141592654 * amb;			/* Lux ??? - not very accurate, due to */
 										/* spectral response and/or integration angle. */
 	XYZ[0] = icmD50.X * XYZ[1];			/* Convert to D50 neutral */
 	XYZ[2] = icmD50.Z * XYZ[1];
@@ -2472,7 +2473,7 @@ spyd2_download_pld(
 	a1logd(p->log, 2, "spyd2_download_pld: called\n");
 
 	if (*spyder2_pld_size == 0 || *spyder2_pld_size == 0x11223344) {
-		a1logd(p->log, 1, "spyd2_download_pld: No PLD pattern available! (have you run spyd2en ?)\n");
+		a1logd(p->log, 1, "spyd2_download_pld: No PLD pattern available! (have you run oeminst ?)\n");
 		return spyd2_interp_code((inst *)p, SPYD2_NO_PLD_PATTERN) ;
 	}
 		
@@ -2652,8 +2653,8 @@ spyd2_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	a1logd(p->log, 2, "spyd2_init_coms: about to init coms\n");
 
 	if (p->icom->port_type(p->icom) != icomt_usb) {
-		a1logd(p->log, 1, "spyd2_init_coms: coms is not the right type!\n");
-		return spyd2_interp_code((inst *)p, SPYD2_UNKNOWN_MODEL);
+		a1logd(p->log, 1, "spyd2_init_coms: wrong communications type for device!\n");
+		return inst_coms_fail;
 	}
 
 	a1logd(p->log, 2, "spyd2_init_coms: about to init USB\n");
@@ -2864,8 +2865,9 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	} else {
 		/* Check for abort */
 		if (p->uicallback != NULL
-		 && (ev = p->uicallback(p->uic_cntx, inst_armed)) == inst_user_trig)
+		 && (ev = p->uicallback(p->uic_cntx, inst_armed)) == inst_user_abort) {
 			return ev;				/* Abort */
+		}
 	}
 
 	if (IMODETST(p->mode, inst_mode_emis_ambient)) {
@@ -3031,8 +3033,8 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 
 	if ((*calt & inst_calt_ref_freq) && p->refrmode != 0) {
 
-		if (*calc != inst_calc_emis_white) {
-			*calc = inst_calc_emis_white;
+		if (*calc != inst_calc_emis_80pc) {
+			*calc = inst_calc_emis_80pc;
 			return inst_cal_setup;
 		}
 
@@ -3120,7 +3122,7 @@ spyd2_interp_error(inst *pp, int ec) {
 		case SPYD2_BAD_EE_SIZE:
 			return "Serial EEProm read size > 256";
 		case SPYD2_NO_PLD_PATTERN:
-			return "No PLD firmware pattern is available (have you run spyd2en ?)";
+			return "No PLD firmware pattern is available (have you run oeminst ?)";
 		case SPYD2_NO_COMS:
 			return "Communications hasn't been established";
 		case SPYD2_NOT_INITED:
@@ -3235,7 +3237,8 @@ inst3_capability *pcap3) {
 	cap2 |= inst2_prog_trig
 	     |  inst2_user_trig
 	     |  inst2_ccmx
-	     |  inst2_refresh_rate
+	     |  inst2_get_refresh_rate
+	     |  inst2_set_refresh_rate
 	     |  inst2_emis_refr_meas
 	        ;
 
@@ -3386,7 +3389,7 @@ inst_disptypesel spyd4_disptypesel[8] = {
 	{
 		inst_dtflags_default,
 		1,
-		"n",
+		"nl",
 		"Generic Non-Refresh Display",
 		0,
 		1
@@ -3394,7 +3397,7 @@ inst_disptypesel spyd4_disptypesel[8] = {
 	{
 		inst_dtflags_none,			/* flags */
 		2,							/* cbid */
-		"r",						/* sel */
+		"rc",						/* sel */
 		"Generic Refresh Display",	/* desc */
 		1,							/* refr */
 		1							/* ix = hw bit + spec table << 1 */

@@ -1232,13 +1232,8 @@ i1disp_take_XYZ_measurement(
 		if ((ev = i1d1_take_measurement(p, 0, rgb)) != inst_ok)
 			return ev;
 	} else {				/* i1 disp 2 or ColorMunki Smile */
-		int refreshm = 0;	/* Assume non-refresh mode */
 
-		if (p->refrmode && !IMODETST(p->mode, inst_mode_emis_ambient)) {
-			refreshm = 1; 
-		}
-
-		if ((ev = i1d2_take_measurement(p, refreshm, rgb)) != inst_ok)
+		if ((ev = i1d2_take_measurement(p, p->refrmode, rgb)) != inst_ok)
 			return ev;
 	}
 
@@ -1702,9 +1697,9 @@ i1disp_compute_factors(
 	if (p->reg90_W == 0xffffffff)
 		return i1disp_interp_code((inst *)p, I1DISP_BAD_CRT_CALIBRATION);
 
-	/* Compute ambient matrix */
+	/* Compute ambient matrix for Lux */
 	for (i = 0; i < 9; i++)
-		p->amb[i] = p->reg144_F[i % 3] * 0.5 * (p->reg4_F[i] + p->reg54_F[i]);
+		p->amb[i] = 3.141592654 * p->reg144_F[i % 3] * 0.5 * (p->reg4_F[i] + p->reg54_F[i]);
 
 	/* Integration clock frequency */
 	p->iclk_freq = 1.0/(p->reg40_S * 1e-9);
@@ -1745,8 +1740,8 @@ i1disp_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	a1logd(p->log, 2, "i1disp: About to init coms\n");
 
 	if (p->icom->port_type(p->icom) != icomt_usb) {
-		a1logd(p->log, 1, "i1disp_init_coms: coms is not the right type!\n");
-		return i1disp_interp_code((inst *)p, I1DISP_UNKNOWN_MODEL);
+		a1logd(p->log, 1, "i1disp_init_coms: wrong communications type for device!\n");
+		return inst_coms_fail;
 	}
 
 	/* Set config, interface, write end point, read end point */
@@ -2028,8 +2023,8 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 	} else {				/* Eye-One Display 2 */
 		if ((*calt & inst_calt_ref_freq) && p->refrmode != 0) {
 
-			if (*calc != inst_calc_emis_white) {
-				*calc = inst_calc_emis_white;
+			if (*calc != inst_calc_emis_80pc) {
+				*calc = inst_calc_emis_80pc;
 				return inst_cal_setup;
 			}
 
@@ -2242,7 +2237,8 @@ inst3_capability *pcap3) {
 	         |  inst_mode_emis_norefresh_ovd
 		        ;
 
-		cap2 |= inst2_refresh_rate
+		cap2 |= inst2_get_refresh_rate
+		     |  inst2_set_refresh_rate
 		     |  inst2_emis_refr_meas
 		        ;
 	}
@@ -2330,7 +2326,7 @@ inst_disptypesel smile_disptypesel[3] = {
 	{
 		inst_dtflags_default,		/* flags */
 		1,							/* cbix */
-		"f",						/* sel */
+		"fl",						/* sel */
 		"LCD with CCFL backlight",	/* desc */
 		0,							/* refr */
 		1							/* ix */

@@ -78,7 +78,7 @@ hcfr_command(
 ) {
 	int rv, se;
 
-	if ((se = p->icom->write_read(p->icom, in, out, bsize, '\n', 1, to)) != 0) {
+	if ((se = p->icom->write_read(p->icom, in, out, bsize, "\n", 1, to)) != 0) {
 		int ec;
 		a1logd(p->log, 1, "hcfr_command: serial i/o failure on write_read '%s'\n",icoms_fix(in));
 		return hcfr_interp_code((inst *)p, icoms2hcfr_err(se));
@@ -370,6 +370,9 @@ hcfr_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	if (p->icom->port_type(p->icom) != icomt_usb) {
 		a1logd(p->log, 1, "hcfr_init_coms: expect hcfr to be USB\n");
 		return hcfr_interp_code((inst *)p, HCFR_UNKNOWN_MODEL);
+	} else {
+		a1logd(p->log, 1, "hcfr_init_coms: wrong communications type for device!\n");
+		return inst_coms_fail;
 	}
 
 	/* Set config, interface, "Serial" write & read end points */

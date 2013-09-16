@@ -114,7 +114,6 @@ struct _i1pro_state {
 	double *cal_factor[2];	/* [low res, high res][nwav] calibration scale factor for this mode */
 	double *white_data;		/* [-1 nraw] linear absolute dark subtracted white data */
 							/*        used to compute cal_factor */
-//	double *cal_factor1, *cal_factor2;	/* (Underlying tables for two resolutions) */
 
 	/* Adaptive emission/transparency black data */
 	int idark_valid;		/* idark calibration factors valid */
@@ -163,9 +162,10 @@ struct _i1proimp {
 	athread *th;				/* Switch monitoring thread (NULL if not used) */
 	volatile int switch_count;	/* Incremented in thread */
 	volatile int hide_switch;	/* Set to supress switch event during read */
-	usb_cancelt cancelt;		/* Token to allow cancelling an outstanding I/O */
+	usb_cancelt sw_cancel;		/* Token to allow cancelling switch I/O */
 	volatile int th_term;		/* Terminate thread on next return */
 	volatile int th_termed;		/* Thread has terminated */
+	usb_cancelt rd_sync;		/* Token to allow meas. read to be synchronized */
 	inst_opt_type trig;			/* Reading trigger mode */
 	int noinitcalib;			/* Disable initial calibration if not essential */
 	int highres;				/* High resolution mode */
@@ -268,6 +268,7 @@ struct _i1proimp {
 	double *emis_coef[2];	/* [low res, high res][nwav] Emission cal coefficients */
 	double *amb_coef[2];	/* [low res, high res][nwav] Ambient light cal values */
 							/* (compound with Emission), NULL if ambient not supported */
+	int emis_hr_cal;		/* NZ if emis_coef[1] has been fine calibrated using reflective cal. */
 
 	double **straylight[2];		/* [nwav][nwav] Stray light convolution matrix (Rev E) */
 
@@ -392,6 +393,11 @@ void del_i1proimp(i1pro *p);
 #define I1PRO_RD_NOFLASHES              0x3E		/* No flashes recognized */
 #define I1PRO_RD_NOAMBB4FLASHES         0x3F		/* No ambient before flashes found */
 #define I1PRO_RD_NOREFR_FOUND           0x40		/* Unable to measure refresh rate */
+#define I1PRO_RD_NOTRANS_FOUND          0x41		/* Unable to measure delay transition */
+
+#define I1PRO_CAL_SETUP                 0x7A		/* Cal. retry with correct setup is needed */
+#define I1PRO_RD_TRANSWHITEWARN         0x7B		/* Transmission white ref wl are low */
+
 
 /* Internal errors */
 #define I1PRO_INT_NO_COMS 		        0x50
@@ -471,14 +477,20 @@ i1pro_code i1pro_imp_meas_refrate(
 	double *ref_rate
 );
 
+/* Measure the display update delay */
+i1pro_code i1pro_imp_meas_delay(
+	i1pro *p,
+	int *msecdelay
+);
+
 /* Given a raw measurement of the wavelength LED, */
 /* Compute the base offset that best fits it to the reference */
 i1pro_code i1pro2_match_wl_meas(i1pro *p, double *pled_off, double *wlraw);
 
-/* Compute standard res downsampling filters */
+/* Compute downsampling filters using the default filters. */
 /* mtx_index1, mtx_nocoef1, mtx_coef1 given the */
 /* current wl_led_off */
-i1pro_code i1pro2_compute_wav_filters(i1pro *p, int reflective);
+i1pro_code i1pro_compute_wav_filters(i1pro *p, int hires, int reflective);
 
 /* return nz if high res is supported */
 int i1pro_imp_highres(i1pro *p);
@@ -811,15 +823,16 @@ i1pro_code i1pro_check_white_reference1(
 );
 
 /* Compute a calibration factor given the reading of the white reference. */
-/* Return nz if any of the transmission wavelengths are low */
-int i1pro_compute_white_cal(
+/* Return I1PRO_RD_TRANSWHITEWARN if any of the transmission wavelengths are low */
+i1pro_code i1pro_compute_white_cal(
 	i1pro *p,
 	double *cal_factor0,	/* [nwav0] Calibration factor to compute */
 	double *white_ref0,		/* [nwav0] White reference to aim for, NULL for 1.0 */
 	double *white_read0,	/* [nwav0] The white that was read */
 	double *cal_factor1,	/* [nwav1] Calibration factor to compute */
 	double *white_ref1,		/* [nwav1] White reference to aim for, NULL for 1.0 */
-	double *white_read1		/* [nwav1] The white that was read */
+	double *white_read1,	/* [nwav1] The white that was read */
+	int do_emis_ft			/* Do emission hires fine tune with this info. */
 );
 
 /* For adaptive mode, compute a new integration time and gain mode */
