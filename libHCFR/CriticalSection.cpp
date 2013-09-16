@@ -23,7 +23,7 @@ CriticalSection::CriticalSection()
 {
 #ifdef LIBHCFR_HAS_WIN32_API
     InitializeCriticalSection(&m_critcalSection);
-#elseif LIBHCFR_HAS_PTHREADS
+#elif LIBHCFR_HAS_PTHREADS
     pthread_mutex_init(&m_matrixMutex, NULL);
 #endif
 }
@@ -31,7 +31,7 @@ CriticalSection::~CriticalSection()
 {
 #ifdef LIBHCFR_HAS_WIN32_API
     DeleteCriticalSection(&m_critcalSection);
-#elseif LIBHCFR_HAS_PTHREADS
+#elif LIBHCFR_HAS_PTHREADS
     pthread_mutex_destroy(&m_matrixMutex);
 #endif
 }
@@ -39,7 +39,7 @@ void CriticalSection::lock()
 {
 #ifdef LIBHCFR_HAS_WIN32_API
     EnterCriticalSection(&m_critcalSection);
-#elseif LIBHCFR_HAS_PTHREADS
+#elif LIBHCFR_HAS_PTHREADS
     pthread_mutex_lock(&m_matrixMutex);
 #endif
 }
@@ -48,7 +48,7 @@ void CriticalSection::unlock()
 {
 #ifdef LIBHCFR_HAS_WIN32_API
     LeaveCriticalSection(&m_critcalSection);
-#elseif LIBHCFR_HAS_PTHREADS
+#elif LIBHCFR_HAS_PTHREADS
     pthread_mutex_unlock (&m_matrixMutex);
 #endif
 }
