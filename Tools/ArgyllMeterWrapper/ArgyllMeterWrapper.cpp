@@ -30,10 +30,12 @@
 
 #define SALONEINSTLIB
 #define ENABLE_USB
+#define ENABLE_FAST_SERIAL
 #if defined(_MSC_VER)
 #pragma warning(disable:4200)
 #include <winsock.h>
 #endif
+#include "numsup.h"
 #include "xspect.h"
 #include "inst.h"
 #include "hidio.h"
@@ -133,24 +135,27 @@ namespace
                     {
                         throw std::logic_error("No meter found at detected port- Create new Argyll instrument failed with severe error");
                     }
-                    try
+                    if(meter != NULL)
                     {
-                        inst_code instCode = meter->init_coms(meter, baud_38400, fc_nc, 15.0);
-                        if(instCode == inst_ok)
+                        try
                         {
-                            m_meters.push_back(new ArgyllMeterWrapper(meter));
+                            inst_code instCode = meter->init_coms(meter, baud_38400, fc_nc, 15.0);
+                            if(instCode == inst_ok)
+                            {
+                                m_meters.push_back(new ArgyllMeterWrapper(meter));
+                            }
+                            else
+                            {
+                                meter->del(meter);
+                                errorMessage += "Starting communications with the meter failed. ";
+                            }
                         }
-                        else
+                        catch(std::logic_error& e)
                         {
                             meter->del(meter);
-                            errorMessage += "Starting communications with the meter failed. ";
+                            errorMessage += "Incorrect driver - Starting communications with the meter failed with severe error. ";
+                            errorMessage += e.what();
                         }
-                    }
-                    catch(std::logic_error& e)
-                    {
-                        meter->del(meter);
-                        errorMessage += "Incorrect driver - Starting communications with the meter failed with severe error. ";
-                        errorMessage += e.what();
                     }
                 }
             }
@@ -262,7 +267,7 @@ bool ArgyllMeterWrapper::doesMeterSupportCalibration()
     m_meter->capabilities(m_meter, &capabilities, &capabilities2, &capabilities3);
     return (IMODETST(capabilities, inst_mode_calibration) || 
             IMODETST(capabilities2, inst2_meas_disp_update) ||
-            IMODETST(capabilities2, inst2_refresh_rate));
+            IMODETST(capabilities2, inst2_get_refresh_rate));
 }
 
 CColor ArgyllMeterWrapper::getLastReading() const
