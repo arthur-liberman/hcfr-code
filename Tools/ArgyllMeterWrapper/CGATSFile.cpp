@@ -29,10 +29,12 @@
 
 #define SALONEINSTLIB
 #define ENABLE_USB
+#define ENABLE_FAST_SERIAL
 #if defined(_MSC_VER)
 #pragma warning(disable:4200)
 #include <winsock.h>
 #endif
+#include "numsup.h"
 #include "xspect.h"
 #include "cgats.h"
 #undef SALONEINSTLIB
