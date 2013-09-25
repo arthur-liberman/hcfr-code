@@ -45,7 +45,7 @@ typedef enum
 {
 	GCD = 0,
 	MCD = 1,
-	GRID = 2,
+	AXIS = 2,
 	OFPS = 3,
 } CCPatterns;
 
@@ -434,7 +434,7 @@ extern CColor theMeasure;
 extern CColor noDataColor;
 
 // Tool functions
-extern void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int nSteps, bool bRed, bool bGreen, bool bBlue);
+extern void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int nSteps, bool bRed, bool bGreen, bool bBlue, double gamma);
 extern void GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode);
 extern Matrix ComputeConversionMatrix(const ColorXYZ measures[3], const ColorXYZ references[3], const ColorXYZ & WhiteTest, const ColorXYZ & WhiteRef, bool	bUseOnlyPrimaries);
 double ArrayIndexToGrayLevel ( int nCol, int nSize, bool m_bUseRoundDown);

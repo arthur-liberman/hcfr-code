@@ -252,6 +252,8 @@ void CColorHCFRConfig::InitDefaults()
 	m_bUseRoundDown=FALSE;
 	m_BWColorsToAdd=1;
 	m_GammaRef=2.22;
+	m_GammaAvg=2.22;
+	m_useMeasuredGamma=FALSE;
 	m_GammaOffsetType=1;
 	m_manualGOffset=0.099;
 
@@ -311,6 +313,8 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_bLatencyBeep=GetProfileInt("References","IrisLatencyBeep",0);
 	m_bUseRoundDown=GetProfileInt("References","SatUseMeasuredRef",0);
 	m_GammaRef=GetProfileDouble("References","GammaRefValue",2.22);
+	m_GammaAvg=GetProfileDouble("References","GammaAvgValue",2.22);
+	m_useMeasuredGamma=GetProfileInt("References","UseMeasuredGamma",1);
 	m_GammaOffsetType=GetProfileInt("References","GammaOffsetType",4);
 	m_manualGOffset=GetProfileDouble("References","ManualGamOffset",0.099);
 
@@ -365,7 +369,8 @@ void CColorHCFRConfig::SaveSettings()
 	WriteProfileInt("References","IrisLatencyBeep",m_bLatencyBeep);
 	WriteProfileInt("References","SatUseMeasuredRef",m_bUseRoundDown);
 	WriteProfileDouble("References","GammaRefValue",m_GammaRef);
-
+	WriteProfileDouble("References","GammaAvgValue",m_GammaAvg);
+	WriteProfileInt("References","UseMeasuredGamma",1);
 	WriteProfileInt("Appearance","DrawMode",m_menuDrawMode);
 	WriteProfileInt("Appearance","DrawMemuBorder",m_drawMenuBorder);
 	WriteProfileInt("Appearance","SelectDisabledItem",m_doSelectDisabledItem);
@@ -416,6 +421,8 @@ void CColorHCFRConfig::SetPropertiesSheetValues()
 	m_referencesPropertiesPage.m_CCMode=m_CCMode;
 	m_referencesPropertiesPage.m_whiteTarget=m_whiteTarget;
   	m_referencesPropertiesPage.m_GammaRef=m_GammaRef;
+  	m_referencesPropertiesPage.m_GammaAvg=m_GammaAvg;
+  	m_referencesPropertiesPage.m_useMeasuredGamma=m_useMeasuredGamma;
 	m_referencesPropertiesPage.m_manualGOffset=m_manualGOffset;
 	m_referencesPropertiesPage.m_GammaOffsetType=m_GammaOffsetType;
 	m_appearancePropertiesPage.m_isModified=FALSE;
@@ -499,6 +506,8 @@ BOOL CColorHCFRConfig::GetPropertiesSheetValues()
 	m_CCMode=(CCPatterns)(m_referencesPropertiesPage.m_CCMode);
 	m_whiteTarget=(WhiteTarget)m_referencesPropertiesPage.m_whiteTarget;
 	m_GammaRef=m_referencesPropertiesPage.m_GammaRef;
+	m_GammaAvg=m_referencesPropertiesPage.m_GammaAvg;
+	m_useMeasuredGamma=m_referencesPropertiesPage.m_useMeasuredGamma;
 	m_manualGOffset=m_referencesPropertiesPage.m_manualGOffset;
 	m_GammaOffsetType=m_referencesPropertiesPage.m_GammaOffsetType;
 	switch(m_appearancePropertiesPage.m_themeComboIndex)

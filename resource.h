@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by CHCFR21_ENGLISH.rc
+// Used by CHCFR21_ESPANOL.rc
 //
 #define IDS_STRING_VERSION              1
 #define IDS_STRING_VERSION_WEB          2
@@ -42,6 +42,8 @@
 #define IDR_UNITS_MENU                  140
 #define IDC_CCMODE_COMBO                140
 #define IDR_LUMINANCEVIEW_TMPL          141
+#define IDC_EDIT_GAMMA_AVERAGE          141
+#define IDC_USE_MEASURED_GAMMA          142
 #define IDD_ONEDEVICESENSOR_PROP_PAGE   143
 #define IDD_AUDIO_SENSOR_PROP_PAGE      144
 #define IDD_SENSOR_PROP_PAGE            145
@@ -448,7 +450,6 @@
 #define IDC_RGBLEVEL_RADIO4             1126
 #define IDC_TARGETBAR                   1127
 #define IDC_CALIBRATIONDATE_STATIC      1127
-#define IDC_COLORREF_COMBO2             1127
 #define IDC_DATABAR                     1128
 #define IDC_GRAPH_NAME_COMBO            1129
 #define IDC_LUMINANCEWND                1130
@@ -695,6 +696,7 @@
 #define IDC_BGSTIM_EDIT                 1274
 #define IDC_INTENSITY_EDIT              1275
 #define IDC_OVERLAY                     1276
+#define IDC_CHECK1                      1279
 #define IDC_COLORTEMPHISTO_GRAPH        11003
 #define IDC_RGBHISTO_GRAPH              11101
 #define IDC_RGBHISTO_GRAPH2             11102
@@ -1370,9 +1372,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        380
+#define _APS_NEXT_RESOURCE_VALUE        382
 #define _APS_NEXT_COMMAND_VALUE         33030
-#define _APS_NEXT_CONTROL_VALUE         1278
-#define _APS_NEXT_SYMED_VALUE           141
+#define _APS_NEXT_CONTROL_VALUE         1280
+#define _APS_NEXT_SYMED_VALUE           143
 #endif
 #endif

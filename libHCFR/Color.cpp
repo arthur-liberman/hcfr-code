@@ -608,7 +608,6 @@ double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhit
         ColorLuv Luv(*this, YWhite, colorReference);
         double dE = sqrt ( pow ((Luv[0] - LuvRef[0]),2) + pow((Luv[1] - LuvRef[1]),2) + pow((Luv[2] - LuvRef[2]),2) );
         return dE;
-//        return GetOldDeltaE(refColor);
     }
     else
     {
@@ -1457,11 +1456,35 @@ void GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
         GenColors [ 17 ] = ColorRGBDisplay( 11.87, 51.60, 59.82);
 		break;
 		}
-/*	case 2:
+	case 2:
 		{
+        GenColors [ 0 ] = ColorRGBDisplay( 12, 0, 0 );
+        GenColors [ 1 ] = ColorRGBDisplay( 24, 0, 0 );
+        GenColors [ 2 ] = ColorRGBDisplay( 36, 0, 0 );
+        GenColors [ 3 ] = ColorRGBDisplay( 48, 0, 0 );
+        GenColors [ 4 ] = ColorRGBDisplay( 60, 0, 0 );
+        GenColors [ 5 ] = ColorRGBDisplay( 72, 0, 0 );
+        GenColors [ 6 ] = ColorRGBDisplay( 84, 0, 0 );
+        GenColors [ 7 ] = ColorRGBDisplay( 96, 0, 0 );
+        GenColors [ 8 ] = ColorRGBDisplay( 0, 12, 0 );
+        GenColors [ 9 ] = ColorRGBDisplay( 0, 24, 0 );
+        GenColors [ 10 ] = ColorRGBDisplay( 0, 36, 0 );
+        GenColors [ 11 ] = ColorRGBDisplay( 0, 48, 0 );
+        GenColors [ 12 ] = ColorRGBDisplay( 0, 60, 0 );
+        GenColors [ 13 ] = ColorRGBDisplay( 0, 72, 0 );
+        GenColors [ 14 ] = ColorRGBDisplay( 0, 84, 0 );
+        GenColors [ 15 ] = ColorRGBDisplay( 0, 96, 0 );
+        GenColors [ 16 ] = ColorRGBDisplay( 0, 0, 12 );
+        GenColors [ 17 ] = ColorRGBDisplay( 0, 0, 24 );
+        GenColors [ 18 ] = ColorRGBDisplay( 0, 0, 36 );
+        GenColors [ 19 ] = ColorRGBDisplay( 0, 0, 48 );
+        GenColors [ 20 ] = ColorRGBDisplay( 0, 0, 60 );
+        GenColors [ 21 ] = ColorRGBDisplay( 0, 0, 72 );
+        GenColors [ 22 ] = ColorRGBDisplay( 0, 0, 84 );
+        GenColors [ 23 ] = ColorRGBDisplay( 0, 0, 96 );		break;
 		}
 		//axis steps
-	case 3:
+/*	case 3:
 		{
 		}
 		//OFPS*/
@@ -1470,13 +1493,12 @@ void GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 }
 
 
-void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int nSteps, bool bRed, bool bGreen, bool bBlue)
+void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int nSteps, bool bRed, bool bGreen, bool bBlue, double gamma )
 {
     // Retrieve color luma coefficients matching actual reference
     const double KR = colorReference.GetRedReferenceLuma ();  
     const double KG = colorReference.GetGreenReferenceLuma ();
     const double KB = colorReference.GetBlueReferenceLuma (); 
-
     double K = ( bRed ? KR : 0.0 ) + ( bGreen ? KG : 0.0 ) + ( bBlue ? KB : 0.0 );
 
     // Compute vector between neutral gray and saturated color in CIExy space
@@ -1548,9 +1570,10 @@ void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDi
             }
         }
         // adjust "color gamma"
-        double clr2 = ( 100.0 * pow ( clr , 0.45 ) );
-        double comp2 = ( 100.0 * pow ( comp , 0.45 ) );
-        GenColors [ i ] = ColorRGBDisplay( ( bRed ? clr2 : comp2 ), ( bGreen ? clr2 : comp2 ), ( bBlue ? clr2 : comp2 ) );
+
+        double clr2 = ( 100.0 * pow ( clr , 1.0/gamma ) );
+        double comp2 = ( 100.0 * pow ( comp , 1.0/gamma ) );
+		GenColors [ i ] = ColorRGBDisplay( ( bRed ? clr2 : comp2 ), ( bGreen ? clr2 : comp2 ), ( bBlue ? clr2 : comp2 ) );
     }
 }
 

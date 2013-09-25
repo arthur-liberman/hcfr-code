@@ -795,140 +795,155 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,MagentaPointRef,&m_magentaSatRefBitmap,rect,pTooltip,pWnd);
 			}
+
 		}
-			Msg.LoadString ( IDS_CC_2 );
+//		for ( int i=0;i<24;i++)
+//		{
+//			Msg.LoadString ( GetConfig()->m_CCMode == GCD?IDS_CC_2:IDS_CC_7 );
+//			str.Format(Msg, 10);
+//			CCIEGraphPoint cc2Point(pDoc->GetMeasure()->GetRefCC24Sat(i).GetXYZValue(),
+//			YWhite,
+//			str, m_bCIEuv);
+//		}
+			Msg.LoadString ( GetConfig()->m_CCMode == GCD?IDS_CC_2:IDS_CC_7 );
+			str.Format(Msg, 10);
+			CCIEGraphPoint cc1Point(pDoc->GetMeasure()->GetRefCC24Sat(0).GetXYZValue(),
+								  YWhite,
+								  str, m_bCIEuv);
+			DrawAlphaBitmap(pDC,cc1Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
+			Msg.LoadString ( GetConfig()->m_CCMode == GCD?IDS_CC_2:IDS_CC_8 );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc2Point(pDoc->GetMeasure()->GetRefCC24Sat(1).GetXYZValue(),
 								  YWhite,
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,cc2Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
-			Msg.LoadString ( IDS_CC_3 );
+			Msg.LoadString ( GetConfig()->m_CCMode == GCD?IDS_CC_3:IDS_CC_9 );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc3Point(pDoc->GetMeasure()->GetRefCC24Sat(2).GetXYZValue(),
 								  YWhite,
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,cc3Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
-			Msg.LoadString ( IDS_CC_4 );
+			Msg.LoadString ( GetConfig()->m_CCMode == GCD?IDS_CC_4:IDS_CC_10 );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc4Point(pDoc->GetMeasure()->GetRefCC24Sat(3).GetXYZValue(),
 								  YWhite,
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,cc4Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
-			Msg.LoadString ( IDS_CC_5 );
+			Msg.LoadString ( GetConfig()->m_CCMode == GCD?IDS_CC_5:IDS_CC_11 );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc5Point(pDoc->GetMeasure()->GetRefCC24Sat(4).GetXYZValue(),
 								  YWhite,
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,cc5Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
-			Msg.LoadString ( IDS_CC_6 );
+			Msg.LoadString ( GetConfig()->m_CCMode == GCD?IDS_CC_6:IDS_CC_12 );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc6Point(pDoc->GetMeasure()->GetRefCC24Sat(5).GetXYZValue(),
 								  YWhite,
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,cc6Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
-			Msg.LoadString ( IDS_CC_7 );
+			Msg.LoadString ( GetConfig()->m_CCMode == GCD?IDS_CC_7:IDS_CC_13 );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc7Point(pDoc->GetMeasure()->GetRefCC24Sat(6).GetXYZValue(),
 								  YWhite,
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,cc7Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
-			Msg.LoadString ( IDS_CC_8 );
+			Msg.LoadString ( GetConfig()->m_CCMode == GCD?IDS_CC_8:IDS_CC_14 );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc8Point(pDoc->GetMeasure()->GetRefCC24Sat(7).GetXYZValue(),
 								  YWhite,
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,cc8Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
-			Msg.LoadString ( IDS_CC_9 );
+			Msg.LoadString ( GetConfig()->m_CCMode == GCD?IDS_CC_9:IDS_CC_15 );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc9Point(pDoc->GetMeasure()->GetRefCC24Sat(8).GetXYZValue(),
 								  YWhite,
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,cc9Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
-			Msg.LoadString ( IDS_CC_10 );
+			Msg.LoadString ( GetConfig()->m_CCMode == GCD?IDS_CC_10:IDS_CC_16 );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc10Point(pDoc->GetMeasure()->GetRefCC24Sat(9).GetXYZValue(),
 								  YWhite,
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,cc10Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
-			Msg.LoadString ( IDS_CC_11 );
+			Msg.LoadString ( GetConfig()->m_CCMode == GCD?IDS_CC_11:IDS_CC_17 );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc11Point(pDoc->GetMeasure()->GetRefCC24Sat(10).GetXYZValue(),
 								  YWhite,
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,cc11Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
-			Msg.LoadString ( IDS_CC_12 );
+			Msg.LoadString ( GetConfig()->m_CCMode == GCD?IDS_CC_12:IDS_CC_18 );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc12Point(pDoc->GetMeasure()->GetRefCC24Sat(11).GetXYZValue(),
 								  YWhite,
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,cc12Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
-			Msg.LoadString ( IDS_CC_13 );
+			Msg.LoadString ( GetConfig()->m_CCMode == GCD?IDS_CC_13:IDS_CC_19 );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc13Point(pDoc->GetMeasure()->GetRefCC24Sat(12).GetXYZValue(),
 								  YWhite,
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,cc13Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
-			Msg.LoadString ( IDS_CC_14 );
+			Msg.LoadString ( GetConfig()->m_CCMode == GCD?IDS_CC_14:IDS_CC_20 );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc14Point(pDoc->GetMeasure()->GetRefCC24Sat(13).GetXYZValue(),
 								  YWhite,
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,cc14Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
-			Msg.LoadString ( IDS_CC_15 );
+			Msg.LoadString ( GetConfig()->m_CCMode == GCD?IDS_CC_15:IDS_CC_21 );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc15Point(pDoc->GetMeasure()->GetRefCC24Sat(14).GetXYZValue(),
 								  YWhite,
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,cc15Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
-			Msg.LoadString ( IDS_CC_16 );
+			Msg.LoadString ( GetConfig()->m_CCMode == GCD?IDS_CC_16:IDS_CC_22 );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc16Point(pDoc->GetMeasure()->GetRefCC24Sat(15).GetXYZValue(),
 								  YWhite,
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,cc16Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
-			Msg.LoadString ( IDS_CC_17 );
+			Msg.LoadString ( GetConfig()->m_CCMode == GCD?IDS_CC_17:IDS_CC_23 );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc17Point(pDoc->GetMeasure()->GetRefCC24Sat(16).GetXYZValue(),
 								  YWhite,
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,cc17Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
-			Msg.LoadString ( IDS_CC_18 );
+			Msg.LoadString ( GetConfig()->m_CCMode == GCD?IDS_CC_18:IDS_CC_24 );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc18Point(pDoc->GetMeasure()->GetRefCC24Sat(17).GetXYZValue(),
 								  YWhite,
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,cc18Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
-			Msg.LoadString ( IDS_CC_19 );
+			Msg.LoadString ( GetConfig()->m_CCMode == GCD?IDS_CC_19:IDS_CC_6 );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc19Point(pDoc->GetMeasure()->GetRefCC24Sat(18).GetXYZValue(),
 								  YWhite,
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,cc19Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
-			Msg.LoadString ( IDS_CC_20 );
+			Msg.LoadString ( GetConfig()->m_CCMode == GCD?IDS_CC_20:IDS_CC_5 );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc20Point(pDoc->GetMeasure()->GetRefCC24Sat(19).GetXYZValue(),
 								  YWhite,
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,cc20Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
-			Msg.LoadString ( IDS_CC_21 );
+			Msg.LoadString ( GetConfig()->m_CCMode == GCD?IDS_CC_21:IDS_CC_4 );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc21Point(pDoc->GetMeasure()->GetRefCC24Sat(20).GetXYZValue(),
 								  YWhite,
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,cc21Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
-			Msg.LoadString ( IDS_CC_22 );
+			Msg.LoadString ( GetConfig()->m_CCMode == GCD?IDS_CC_22:IDS_CC_3 );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc22Point(pDoc->GetMeasure()->GetRefCC24Sat(21).GetXYZValue(),
 								  YWhite,
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,cc22Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
-			Msg.LoadString ( IDS_CC_23 );
+			Msg.LoadString ( GetConfig()->m_CCMode == GCD?IDS_CC_23:IDS_CC_2 );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc23Point(pDoc->GetMeasure()->GetRefCC24Sat(22).GetXYZValue(),
 								  YWhite,
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,cc23Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
-			Msg.LoadString ( IDS_CC_24 );
+			Msg.LoadString ( GetConfig()->m_CCMode == GCD?IDS_CC_24:IDS_CC_1 );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc24Point(pDoc->GetMeasure()->GetRefCC24Sat(23).GetXYZValue(),
 								  YWhite,

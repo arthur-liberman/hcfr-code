@@ -68,6 +68,8 @@ public:
 	BOOL m_bUseRoundDown;
 	int m_BWColorsToAdd;
 	double m_GammaRef;
+	double m_GammaAvg;
+	BOOL m_useMeasuredGamma;
 	double m_manualGOffset;
 	int m_GammaOffsetType;
 

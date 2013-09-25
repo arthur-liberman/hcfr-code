@@ -219,6 +219,9 @@
     <None Include="res\patterns\smpte-75-bars1024.png" />
     <None Include="res\patterns\testimg.jpg" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

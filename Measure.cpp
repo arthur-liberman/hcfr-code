@@ -1531,8 +1531,10 @@ BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	}
 
 	// Generate saturation colors for red
-	GenerateSaturationColors (GetColorReference(), GenColors, size, true, false, false );
+		double gamma=GetConfig()->m_GammaAvg;
 
+	GenerateSaturationColors (GetColorReference(), GenColors,size, true, false, false, gamma);
+	
 	for(int i=0;i<size;i++)
 	{
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_RED,100*i/(size - 1),!bRetry))
@@ -1682,9 +1684,9 @@ BOOL CMeasure::MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator)
 		pGenerator->Release();
 		return FALSE;
 	}
-
+		double gamma=GetConfig()->m_GammaAvg;
 	// Generate saturation colors for green
-	GenerateSaturationColors (GetColorReference(), GenColors, size, false, true, false );
+	GenerateSaturationColors (GetColorReference(), GenColors,size, false, true, false, gamma );
 
 	for(int i=0;i<size;i++)
 	{
@@ -1835,9 +1837,10 @@ BOOL CMeasure::MeasureBlueSatScale(CSensor *pSensor, CGenerator *pGenerator)
 		pGenerator->Release();
 		return FALSE;
 	}
+ 	double gamma=GetConfig()->m_GammaAvg;
 
 	// Generate saturation colors for blue
-	GenerateSaturationColors (GetColorReference(), GenColors, size, false, false, true );
+		GenerateSaturationColors (GetColorReference(), GenColors,size, false, false, true, gamma );
 
 	for(int i=0;i<size;i++)
 	{
@@ -1988,9 +1991,10 @@ BOOL CMeasure::MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator)
 		pGenerator->Release();
 		return FALSE;
 	}
+		double gamma=GetConfig()->m_GammaAvg;
 
 	// Generate saturation colors for yellow
-	GenerateSaturationColors (GetColorReference(), GenColors, size, true, true, false );
+	GenerateSaturationColors (GetColorReference(), GenColors,size, true, true, false, gamma );
 
 	for(int i=0;i<size;i++)
 	{
@@ -2142,9 +2146,10 @@ BOOL CMeasure::MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator)
 		pGenerator->Release();
 		return FALSE;
 	}
+		double gamma=GetConfig()->m_GammaAvg;
 
 	// Generate saturation colors for cyan
-	GenerateSaturationColors (GetColorReference(), GenColors, size, false, true, true );
+	GenerateSaturationColors (GetColorReference(), GenColors,size, false, true, true, gamma );
 
 	for(int i=0;i<size;i++)
 	{
@@ -2296,9 +2301,10 @@ BOOL CMeasure::MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator)
 		pGenerator->Release();
 		return FALSE;
 	}
+		double gamma=GetConfig()->m_GammaAvg;
 
 	// Generate saturation colors for magenta
-	GenerateSaturationColors (GetColorReference(), GenColors, size, true, false, true );
+	GenerateSaturationColors (GetColorReference(), GenColors,size, true, false, true, gamma );
 
 	for(int i=0;i<size;i++)
 	{
@@ -2444,9 +2450,9 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
 	case MCD:
 		 nPattern=CGenerator::MT_SAT_CC24_MCD;		
 		 break;
-	case GRID:
+	case AXIS:
 		 nPattern=CGenerator::MT_SAT_CC24_MCD;		
-		 size=80;
+//		 size=80;
 		 break;
 	case OFPS:
 		 nPattern=CGenerator::MT_SAT_CC24_MCD;
@@ -2589,6 +2595,7 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 	int			size = GetSaturationSize ();
 	CString		strMsg, Title;
 	ColorRGBDisplay	GenColors [ 7 * 256 ];
+
 	double		dLuxValue;
 	CGenerator::MeasureType nPattern;
 	switch (GetConfig()->m_CCMode)
@@ -2599,7 +2606,7 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 	case GCD:
 		 nPattern=CGenerator::MT_SAT_CC24_GCD;		
 		 break;
-	case GRID:
+	case AXIS:
 		 nPattern=CGenerator::MT_SAT_CC24_GCD;		
 		 break;
 	case OFPS:
@@ -2648,14 +2655,15 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 		pGenerator->Release();
 		return FALSE;
 	}
+		double gamma=GetConfig()->m_GammaAvg;
 
 	// Generate saturations for all colors
-	GenerateSaturationColors (GetColorReference(), GenColors, size, true, false, false );				// Red
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 1 ], size, false, true, false );	// Green
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 2 ], size, false, false, true );	// Blue
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 3 ], size, true, true, false );	// Yellow
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 4 ], size, false, true, true );	// Cyan
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 5 ], size, true, false, true );	// Magenta
+	GenerateSaturationColors (GetColorReference(), GenColors, size, true, false, false, gamma );				// Red
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 1 ], size, false, true, false, gamma );	// Green
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 2 ], size, false, false, true, gamma );	// Blue
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 3 ], size, true, true, false, gamma );	// Yellow
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 4 ], size, false, true, true, gamma );	// Cyan
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 5 ], size, true, false, true, gamma );	// Magenta
 	GenerateCC24Colors (& GenColors [ size * 6 ], GetConfig()->m_CCMode); //color checker
 
 	for ( j = 0 ; j < ( bPrimaryOnly ? 3 : 7 ) ; j ++ )
@@ -4725,7 +4733,7 @@ CColor CMeasure::GetCC24Sat(int i) const
 		ColorOrder[22]=m_cc24SatMeasureArray[22];
 		ColorOrder[23]=m_cc24SatMeasureArray[23];
 		 break;
-	case GRID:
+	case AXIS:
 		ColorOrder[i]=m_cc24SatMeasureArray[i];
 		 break;
 	case OFPS:
@@ -4917,130 +4925,117 @@ CColor CMeasure::GetRefSat(int i, double sat_percent) const
 	x = xstart + ( (xend - xstart) * sat_percent );
 	y = ystart + ( (yend - ystart) * sat_percent );
 
-	CColor	aColor;
-	
+	CColor	aColor;	
 	aColor.SetxyYValue (x, y, YLuma);
-	
+	ColorRGB rgb=aColor.GetRGBValue (GetColorReference());
+	double r,g,b;
+	r=min(max(rgb[0],0.00001),.99999);
+	g=min(max(rgb[1],0.00001),.99999);
+	b=min(max(rgb[2],0.00001),.99999);
+	double gamma=GetConfig()->m_GammaAvg;
+	aColor.SetRGBValue (ColorRGB(pow(pow(r,1./2.22),gamma),pow(pow(g,1./2.22),gamma),pow(pow(b,1./2.22),gamma)),GetColorReference());	
 	return aColor;
 }
 
 CColor CMeasure::GetRefCC24Sat(int i) const
 {
 	CColor aColor;
-	CColor ccRef1[24] = { 
-		CColor(0.3130, 0.3290),
-		CColor(0.3130, 0.3290),
-		CColor(0.3130, 0.3290), 
-		CColor(0.3130, 0.3290), 
-		CColor(0.3130, 0.3290), 
-		CColor(0.3130, 0.3290), 
-		CColor(0.4060, 0.3640), 
-		CColor(0.3780, 0.3560), 
-		CColor(0.2490, 0.2650), 
-		CColor(0.3420, 0.4320), 
-		CColor(0.2690, 0.2530), 
-		CColor(0.2610, 0.3590), 
-		CColor(0.5150, 0.4090), 
-		CColor(0.2150, 0.1890), 
-		CColor(0.4640, 0.3120), 
-		CColor(0.2880, 0.2160), 
-		CColor(0.3770, 0.4950), 
-		CColor(0.4750, 0.4430), 
-		CColor(0.1880, 0.1350), 
-		CColor(0.3050, 0.4950), 
-		CColor(0.5470, 0.3190), 
-		CColor(0.4480, 0.4760), 
-		CColor(0.3740, 0.2440), 
-		CColor(0.2080, 0.2690)
-	};
-//luma values for 2.2 gamma		
-double YLuma1[24]={	0,
-					0.3506,
-					0.5013,
-					0.6496,
-					0.7922,
-					1.0,
-					0.0990,
-					0.3553,
-					0.1903,
-					0.1312,
-					0.2377,
-					0.4241,
-					0.2858,
-					0.1170,
-					0.1860,
-					0.0648,
-					0.4365,
-					0.4290,
-					0.0603,
-					0.2328,
-					0.1156,
-					0.5977,
-					0.1895,
-					0.1970
-				};
-	CColor ccRef2[24] = { 
-		CColor(0.4050, 0.3620), 
-		CColor(0.3800, 0.3560), 
-		CColor(0.2500, 0.2670), 
-		CColor(0.3380, 0.4320), 
-		CColor(0.2680, 0.2540), 
-		CColor(0.2620, 0.3590), 
-		CColor(0.5110, 0.4110), 
-		CColor(0.2120, 0.1850), 
-		CColor(0.4610, 0.3120), 
-		CColor(0.2880, 0.2160), 
-		CColor(0.3780, 0.4970), 
-		CColor(0.4730, 0.4430), 
-		CColor(0.1870, 0.1330), 
-		CColor(0.3060, 0.4940), 
-		CColor(0.5470, 0.3190), 
-		CColor(0.4480, 0.4760), 
-		CColor(0.3710, 0.2410), 
-		CColor(0.2130, 0.2850),
-		CColor(0.3160, 0.3340),
-		CColor(0.3140, 0.3300),
-		CColor(0.3130, 0.3290), 
-		CColor(0.3140, 0.3310), 
-		CColor(0.3130, 0.3290), 
-		CColor(0.3130, 0.3240) 
-	};
-//luma values for 2.2 gamma		
-double YLuma2[24]={	
-					0.0963,
-					0.3512,
-					0.1899,
-					0.1333,
-					0.2363,
-					0.4248,
-					0.2870,
-					0.1150,
-					0.1882,
-					0.0648,
-					0.4364,
-					0.4333,
-					0.0604,
-					0.2332,
-					0.1156,
-					0.5977,
-					0.1865,
-					0.1901,
-					0.8827,
-					0.5872,
-					0.3563,
-					0.1940,
-					0.0865,
-					0.0312
-				};
-	switch(GetConfig()->m_CCMode)
+//switch over to user gamma
+	CColor ccRef[24];
+	double gamma=GetConfig()->m_GammaAvg;
+	switch (GetConfig()->m_CCMode)
 	{
-	case GCD:
-	aColor.SetxyYValue (ccRef1[i].GetxyYValue()[0], ccRef1[i].GetxyYValue()[1], YLuma1[i]);	
-	break;		
-	case MCD:
-	aColor.SetxyYValue (ccRef2[i].GetxyYValue()[0], ccRef2[i].GetxyYValue()[1], YLuma2[i]);	
-	break;		
+//GCD
+	case 0:
+		{
+			ccRef[0].SetRGBValue( ColorRGB( 0, 0, 0 ), GetColorReference() );
+			ccRef[1].SetRGBValue( ColorRGB( pow(.62,gamma), pow(.62,gamma), pow(.62,gamma) ), GetColorReference() );
+			ccRef[2].SetRGBValue( ColorRGB( pow(.73,gamma), pow(.73,gamma), pow(.73,gamma) ), GetColorReference() );
+			ccRef[3].SetRGBValue( ColorRGB( pow(.82,gamma), pow(.82,gamma), pow(.82,gamma) ), GetColorReference() );
+			ccRef[4].SetRGBValue( ColorRGB( pow(.90,gamma), pow(.90,gamma), pow(.90,gamma) ), GetColorReference() );
+			ccRef[5].SetRGBValue( ColorRGB( pow(1.0,gamma), pow(1.0,gamma), pow(1.0,gamma) ), GetColorReference() );
+			ccRef[6].SetRGBValue( ColorRGB( pow(.452,gamma), pow(.3196,gamma), pow(.2603,gamma) ), GetColorReference() );
+			ccRef[7].SetRGBValue( ColorRGB( pow(.758,gamma), pow(.589,gamma), pow(.5114,gamma) ), GetColorReference() );
+			ccRef[8].SetRGBValue( ColorRGB( pow(.3699,gamma), pow(.4795,gamma), pow(.6119,gamma) ), GetColorReference() );
+			ccRef[9].SetRGBValue( ColorRGB( pow(.3516,gamma), pow(.4201,gamma), pow(.2603,gamma) ), GetColorReference() );
+			ccRef[10].SetRGBValue( ColorRGB( pow(.5114,gamma), pow(.5023,gamma), pow(.6895,gamma) ), GetColorReference() );
+			ccRef[11].SetRGBValue( ColorRGB( pow(.3881,gamma), pow(.7397,gamma), pow(.6621,gamma) ), GetColorReference() );
+			ccRef[12].SetRGBValue( ColorRGB( pow(.8493,gamma), pow(.4703,gamma), pow(.1598,gamma) ), GetColorReference() );
+			ccRef[13].SetRGBValue( ColorRGB( pow(.2822,gamma), pow(.3607,gamma), pow(.6393,gamma) ), GetColorReference() );
+			ccRef[14].SetRGBValue( ColorRGB( pow(.7580,gamma), pow(.3288,gamma), pow(.3790,gamma) ), GetColorReference() );
+			ccRef[15].SetRGBValue( ColorRGB( pow(.3607,gamma), pow(.2420,gamma), pow(.4201,gamma) ), GetColorReference() );
+			ccRef[16].SetRGBValue( ColorRGB( pow(.6210,gamma), pow(.7306,gamma), pow(.2511,gamma) ), GetColorReference() );
+			ccRef[17].SetRGBValue( ColorRGB( pow(.8995,gamma), pow(.6301,gamma), pow(.1781,gamma) ), GetColorReference() );
+			ccRef[18].SetRGBValue( ColorRGB( pow(.2009,gamma), pow(.2420,gamma), pow(.5890,gamma) ), GetColorReference() );
+			ccRef[19].SetRGBValue( ColorRGB( pow(.2785,gamma), pow(.5799,gamma), pow(.2785,gamma) ), GetColorReference() );
+			ccRef[20].SetRGBValue( ColorRGB( pow(.6895,gamma), pow(.1918,gamma), pow(.2283,gamma) ), GetColorReference() );
+			ccRef[21].SetRGBValue( ColorRGB( pow(.9315,gamma), pow(.7808,gamma), pow(.1279,gamma) ), GetColorReference() );
+			ccRef[22].SetRGBValue( ColorRGB( pow(.7306,gamma), pow(.3288,gamma), pow(.5708,gamma) ), GetColorReference() );
+			ccRef[23].SetRGBValue( ColorRGB( 0.0, pow(.5205,gamma), pow(.6393,gamma) ), GetColorReference() );
+		break;
+		}
+//MCD
+	case 1:
+		{
+			ccRef[23].SetRGBValue( ColorRGB( pow(.21,gamma), pow(.205,gamma), pow(.21,gamma) ), GetColorReference() );
+			ccRef[22].SetRGBValue( ColorRGB( pow(.3288,gamma), pow(.3288,gamma), pow(.3288,gamma) ), GetColorReference() );
+			ccRef[21].SetRGBValue( ColorRGB( pow(.4749,gamma), pow(.4749,gamma), pow(.4703,gamma) ), GetColorReference() );
+			ccRef[20].SetRGBValue( ColorRGB( pow(.6256,gamma), pow(.6256,gamma), pow(.6256,gamma) ), GetColorReference() );
+			ccRef[19].SetRGBValue( ColorRGB( pow(.7854,gamma), pow(.7852,gamma), pow(.7854,gamma) ), GetColorReference() );
+			ccRef[18].SetRGBValue( ColorRGB( pow(.9498,gamma), pow(.9498,gamma), pow(.9498,gamma) ), GetColorReference() );
+			ccRef[0].SetRGBValue( ColorRGB( pow(.4474,gamma), pow(.3151,gamma), pow(.2603,gamma) ), GetColorReference() );
+			ccRef[1].SetRGBValue( ColorRGB( pow(.7580,gamma), pow(.5845,gamma), pow(.5068,gamma) ), GetColorReference() );
+			ccRef[2].SetRGBValue( ColorRGB( pow(.3699,gamma), pow(.4795,gamma), pow(.6073,gamma) ), GetColorReference() );
+			ccRef[3].SetRGBValue( ColorRGB( pow(.3470,gamma), pow(.4247,gamma), pow(.2648,gamma) ), GetColorReference() );
+			ccRef[4].SetRGBValue( ColorRGB( pow(.5068,gamma), pow(.5022,gamma), pow(.6849,gamma) ), GetColorReference() );
+			ccRef[5].SetRGBValue( ColorRGB( pow(.3927,gamma), pow(.7397,gamma), pow(.6621,gamma) ), GetColorReference() );
+			ccRef[6].SetRGBValue( ColorRGB( pow(.8447,gamma), pow(.4749,gamma), pow(.1644,gamma) ), GetColorReference() );
+			ccRef[7].SetRGBValue( ColorRGB( pow(.2877,gamma), pow(.3562,gamma), pow(.6438,gamma) ), GetColorReference() );
+			ccRef[8].SetRGBValue( ColorRGB( pow(.7580,gamma), pow(.3333,gamma), pow(.3836,gamma) ), GetColorReference() );
+			ccRef[9].SetRGBValue( ColorRGB( pow(.3607,gamma), pow(.2420,gamma), pow(.4201,gamma) ), GetColorReference() );
+			ccRef[10].SetRGBValue( ColorRGB( pow(.6210,gamma), pow(.7306,gamma), pow(.2466,gamma) ), GetColorReference() );
+			ccRef[11].SetRGBValue( ColorRGB( pow(.8995,gamma), pow(.6347,gamma), pow(.1826,gamma) ), GetColorReference() );
+			ccRef[12].SetRGBValue( ColorRGB( pow(.1963,gamma), pow(.2420,gamma), pow(.5936,gamma) ), GetColorReference() );
+			ccRef[13].SetRGBValue( ColorRGB( pow(.2831,gamma), pow(.5799,gamma), pow(.2785,gamma) ), GetColorReference() );
+			ccRef[14].SetRGBValue( ColorRGB( pow(.6895,gamma), pow(.1918,gamma), pow(.2283,gamma) ), GetColorReference() );
+			ccRef[15].SetRGBValue( ColorRGB( pow(.9315,gamma), pow(.7808,gamma), pow(.1279,gamma) ), GetColorReference() );
+			ccRef[16].SetRGBValue( ColorRGB( pow(.7261,gamma), pow(.3242,gamma), pow(.5753,gamma) ), GetColorReference() );
+			ccRef[17].SetRGBValue( ColorRGB( pow(.1187,gamma), pow(.5160,gamma), pow(.5982,gamma) ), GetColorReference() );
+		break;
+		}
+		//axis steps
+	case 2:
+		{
+			ccRef[0].SetRGBValue( ColorRGB( pow(0.12,gamma), 0, 0 ), GetColorReference() );
+			ccRef[1].SetRGBValue( ColorRGB( pow(.24,gamma), 0, 0 ), GetColorReference() );
+			ccRef[2].SetRGBValue( ColorRGB( pow(.36,gamma), 0, 0 ), GetColorReference() );
+			ccRef[3].SetRGBValue( ColorRGB( pow(.48,gamma), 0, 0 ), GetColorReference() );
+			ccRef[4].SetRGBValue( ColorRGB( pow(.60,gamma), 0, 0 ), GetColorReference() );
+			ccRef[5].SetRGBValue( ColorRGB( pow(.72,gamma), 0, 0 ), GetColorReference() );
+			ccRef[6].SetRGBValue( ColorRGB( pow(.84,gamma), 0, 0 ), GetColorReference() );
+			ccRef[7].SetRGBValue( ColorRGB( pow(.96,gamma), 0, 0 ), GetColorReference() );
+			ccRef[8].SetRGBValue( ColorRGB( 0, pow(0.12,gamma), 0 ), GetColorReference() );
+			ccRef[9].SetRGBValue( ColorRGB( 0, pow(.24,gamma), 0 ), GetColorReference() );
+			ccRef[10].SetRGBValue( ColorRGB( 0, pow(.36,gamma), 0 ), GetColorReference() );
+			ccRef[11].SetRGBValue( ColorRGB( 0, pow(.48,gamma), 0 ), GetColorReference() );
+			ccRef[12].SetRGBValue( ColorRGB( 0, pow(.60,gamma), 0 ), GetColorReference() );
+			ccRef[13].SetRGBValue( ColorRGB( 0, pow(.72,gamma), 0 ), GetColorReference() );
+			ccRef[14].SetRGBValue( ColorRGB( 0, pow(.84,gamma), 0 ), GetColorReference() );
+			ccRef[15].SetRGBValue( ColorRGB( 0, pow(.96,gamma), 0 ), GetColorReference() );
+			ccRef[16].SetRGBValue( ColorRGB( 0, 0, pow(0.12,gamma) ), GetColorReference() );
+			ccRef[17].SetRGBValue( ColorRGB( 0, 0,  pow(.24,gamma) ), GetColorReference() );
+			ccRef[18].SetRGBValue( ColorRGB( 0, 0, pow(.36,gamma) ), GetColorReference() );
+			ccRef[19].SetRGBValue( ColorRGB( 0, 0, pow(.48,gamma) ), GetColorReference() );
+			ccRef[20].SetRGBValue( ColorRGB( 0, 0, pow(.60,gamma) ), GetColorReference() );
+			ccRef[21].SetRGBValue( ColorRGB( 0, 0, pow(.72,gamma) ), GetColorReference() );
+			ccRef[22].SetRGBValue( ColorRGB( 0, 0, pow(.84,gamma) ), GetColorReference() );
+			ccRef[23].SetRGBValue( ColorRGB( 0, 0, pow(.96,gamma) ), GetColorReference() );
+		break;
+		}
+/*	case 3:
+		{
+		}
+		//OFPS*/
 	}
-
-	return aColor;
+	return ccRef[i];
 }

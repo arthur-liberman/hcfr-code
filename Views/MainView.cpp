@@ -1481,7 +1481,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 			{
 				// Display reference gamma Y
 				str.Empty();
-				double GammaTarget = GetConfig () -> m_GammaRef;
+//				double GammaTarget = GetConfig () -> m_GammaRef;
 
 				int nGrayScaleSize = GetDocument()->GetMeasure()->GetGrayScaleSize ();
 
@@ -1822,10 +1822,14 @@ void CMainView::UpdateGrid()
 				 bHasLuxDelta = bHasLuxValues;
 				 if ( bHasLuxDelta )
 					refLuxColor = GetDocument()->GetMeasure()->GetGray(nCount-1);
-
 				 // Retrieve gamma and offset
 				 if ( nCount && GetDocument()->GetMeasure()->GetGray(0).isValid() )
+				 {
 					GetDocument()->ComputeGammaAndOffset(&Gamma, &Offset, 3, 1, nCount);
+					Gamma = floorf(Gamma * 100) / 100;
+					if (GetConfig()->m_useMeasuredGamma)
+						GetConfig()->m_GammaAvg = (Gamma<1?2.22:Gamma);
+				 }
 
 				 break;
 

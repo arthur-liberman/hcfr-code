@@ -43,7 +43,9 @@ CReferencesPropPage::CReferencesPropPage() : CPropertyPageWithHelp(CReferencesPr
 	m_colorStandard = 1;
 	m_CCMode = GCD;
 	m_GammaRef = 2.22;
+	m_GammaAvg = 2.22;
 	m_changeWhiteCheck = FALSE;
+	m_useMeasuredGamma = FALSE;
 	m_GammaOffsetType = 1;
 	m_manualGOffset = 0.099;
 	//}}AFX_DATA_INIT
@@ -60,13 +62,17 @@ void CReferencesPropPage::DoDataExchange(CDataExchange* pDX)
 	CPropertyPageWithHelp::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CReferencesPropPage)
 	DDX_Control(pDX, IDC_EDIT_GAMMA_REF, m_GammaRefEdit);
+	DDX_Control(pDX, IDC_EDIT_GAMMA_AVERAGE, m_GammaAvgEdit);
 	DDX_Control(pDX, IDC_WHITETARGET_COMBO, m_whiteTargetCombo);
 	DDX_CBIndex(pDX, IDC_WHITETARGET_COMBO, m_whiteTarget);
 	DDX_CBIndex(pDX, IDC_COLORREF_COMBO, m_colorStandard);
 	DDX_CBIndex(pDX, IDC_CCMODE_COMBO, m_CCMode);
   	DDX_Text(pDX, IDC_EDIT_GAMMA_REF, m_GammaRef);
+  	DDX_Text(pDX, IDC_EDIT_GAMMA_AVERAGE, m_GammaAvg);
 	DDV_MinMaxDouble(pDX, m_GammaRef, 1., 5.);
+	DDV_MinMaxDouble(pDX, m_GammaAvg, .1, 50.);
 	DDX_Check(pDX, IDC_CHANGEWHITE_CHECK, m_changeWhiteCheck);
+	DDX_Check(pDX, IDC_USE_MEASURED_GAMMA, m_useMeasuredGamma);
 	DDX_Radio(pDX, IDC_GAMMA_OFFSET_RADIO1, m_GammaOffsetType);
 	DDX_Text(pDX, IDC_EDIT_MANUAL_GOFFSET, m_manualGOffset);
 	DDV_MinMaxDouble(pDX, m_manualGOffset, 0., 0.2);
@@ -81,7 +87,9 @@ BEGIN_MESSAGE_MAP(CReferencesPropPage, CPropertyPageWithHelp)
 	ON_BN_CLICKED(IDC_CHECK_COLORS, OnCheckColors)
 	ON_EN_CHANGE(IDC_EDIT_IRIS_TIME, OnChangeEditIrisTime)
 	ON_EN_CHANGE(IDC_EDIT_GAMMA_REF, OnChangeEditGammaRef)
+	ON_EN_CHANGE(IDC_EDIT_GAMMA_AVERAGE, OnChangeEditGammaAvg)
 	ON_BN_CLICKED(IDC_CHANGEWHITE_CHECK, OnChangeWhiteCheck)
+	ON_BN_CLICKED(IDC_USE_MEASURED_GAMMA, OnUseMeasuredGammaCheck)
 	ON_CBN_SELCHANGE(IDC_COLORREF_COMBO, OnSelchangeColorrefCombo)
 	ON_CBN_SELCHANGE(IDC_CCMODE_COMBO, OnSelchangeCCmodeCombo)
 	ON_EN_CHANGE(IDC_EDIT_MANUAL_GOFFSET, OnChangeEditManualGOffset)
@@ -134,6 +142,8 @@ BOOL CReferencesPropPage::OnInitDialog()
 		CheckRadioButton ( IDC_CHANGEWHITE_CHECK, IDC_CHANGEWHITE_CHECK, IDC_CHANGEWHITE_CHECK );
 		m_whiteTargetCombo.EnableWindow (TRUE);
 	}
+	if (m_useMeasuredGamma)
+		CheckRadioButton ( IDC_USE_MEASURED_GAMMA, IDC_USE_MEASURED_GAMMA, IDC_USE_MEASURED_GAMMA );
 	if (GetConfig ()->m_GammaOffsetType == 4)
   	  m_GammaRefEdit.EnableWindow (FALSE);
 
@@ -142,6 +152,12 @@ BOOL CReferencesPropPage::OnInitDialog()
 }
 
 void CReferencesPropPage::OnChangeEditGammaRef() 
+{
+	m_isModified=TRUE;
+	SetModified(TRUE);
+}
+
+void CReferencesPropPage::OnChangeEditGammaAvg() 
 {
 	m_isModified=TRUE;
 	SetModified(TRUE);
@@ -171,6 +187,13 @@ void CReferencesPropPage::OnChangeWhiteCheck()
 	m_whiteTargetCombo.EnableWindow (m_changeWhiteCheck);
 }
 
+void CReferencesPropPage::OnUseMeasuredGammaCheck() 
+{
+	m_isModified=TRUE;
+	SetModified(TRUE);	
+	UpdateData(TRUE);
+}
+
 void CReferencesPropPage::OnSelchangeColorrefCombo() 
 {
 	m_isModified=TRUE;
@@ -190,8 +213,7 @@ void CReferencesPropPage::OnSelchangeCCmodeCombo()
 {
 	m_isModified=TRUE;
 	SetModified(TRUE);
-//	UpdateData(TRUE);	
-//	UpdateData(FALSE);	
+	UpdateData(TRUE);	
 }
 
 void CReferencesPropPage::OnChangeEditGammaOffset() 
