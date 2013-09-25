@@ -1531,7 +1531,7 @@ BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	}
 
 	// Generate saturation colors for red
-		double gamma=GetConfig()->m_GammaAvg;
+	double gamma=GetConfig()->m_GammaAvg;
 
 	GenerateSaturationColors (GetColorReference(), GenColors,size, true, false, false, gamma);
 	
@@ -1684,7 +1684,7 @@ BOOL CMeasure::MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator)
 		pGenerator->Release();
 		return FALSE;
 	}
-		double gamma=GetConfig()->m_GammaAvg;
+	double gamma=GetConfig()->m_GammaAvg;
 	// Generate saturation colors for green
 	GenerateSaturationColors (GetColorReference(), GenColors,size, false, true, false, gamma );
 
@@ -1991,7 +1991,7 @@ BOOL CMeasure::MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator)
 		pGenerator->Release();
 		return FALSE;
 	}
-		double gamma=GetConfig()->m_GammaAvg;
+	double gamma=GetConfig()->m_GammaAvg;
 
 	// Generate saturation colors for yellow
 	GenerateSaturationColors (GetColorReference(), GenColors,size, true, true, false, gamma );
@@ -2146,7 +2146,7 @@ BOOL CMeasure::MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator)
 		pGenerator->Release();
 		return FALSE;
 	}
-		double gamma=GetConfig()->m_GammaAvg;
+	double gamma=GetConfig()->m_GammaAvg;
 
 	// Generate saturation colors for cyan
 	GenerateSaturationColors (GetColorReference(), GenColors,size, false, true, true, gamma );
@@ -2301,7 +2301,7 @@ BOOL CMeasure::MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator)
 		pGenerator->Release();
 		return FALSE;
 	}
-		double gamma=GetConfig()->m_GammaAvg;
+	double gamma=GetConfig()->m_GammaAvg;
 
 	// Generate saturation colors for magenta
 	GenerateSaturationColors (GetColorReference(), GenColors,size, true, false, true, gamma );
@@ -2655,7 +2655,7 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 		pGenerator->Release();
 		return FALSE;
 	}
-		double gamma=GetConfig()->m_GammaAvg;
+	double gamma=GetConfig()->m_GammaAvg;
 
 	// Generate saturations for all colors
 	GenerateSaturationColors (GetColorReference(), GenColors, size, true, false, false, gamma );				// Red
