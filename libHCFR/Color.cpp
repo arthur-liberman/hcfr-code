@@ -1495,10 +1495,13 @@ void GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 
 void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int nSteps, bool bRed, bool bGreen, bool bBlue, double gamma )
 {
+	//use fully saturated space if user has special color space modes set
+	int m_cRef=colorReference.m_standard;
+	CColorReference cRef=((m_cRef==3  || m_cRef==4)?CColorReference(HDTV,D65,2.2):colorReference);
     // Retrieve color luma coefficients matching actual reference
-    const double KR = colorReference.GetRedReferenceLuma ();  
-    const double KG = colorReference.GetGreenReferenceLuma ();
-    const double KB = colorReference.GetBlueReferenceLuma (); 
+    const double KR = cRef.GetRedReferenceLuma ();  
+    const double KG = cRef.GetGreenReferenceLuma ();
+    const double KB = cRef.GetBlueReferenceLuma (); 
     double K = ( bRed ? KR : 0.0 ) + ( bGreen ? KG : 0.0 ) + ( bBlue ? KB : 0.0 );
 
     // Compute vector between neutral gray and saturated color in CIExy space
@@ -1506,7 +1509,7 @@ void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDi
     double	xstart, ystart, xend, yend;
 
     // Retrieve gray xy coordinates
-    ColorxyY whitexyY(colorReference.GetWhite());
+    ColorxyY whitexyY(cRef.GetWhite());
     xstart = whitexyY[0];
     ystart = whitexyY[1];
 
@@ -1516,7 +1519,7 @@ void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDi
     Clr1[2] = ( bBlue ? 1.0 : 0.0 );
 
     // Compute xy coordinates of 100% saturated color
-    ColorXYZ Clr2(Clr1, colorReference);
+    ColorXYZ Clr2(Clr1, cRef);
 
     ColorxyY Clr3(Clr2);
     xend=Clr3[0];
@@ -1546,7 +1549,7 @@ void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDi
             ColorxyY UnsatClr_xyY(x,y,K);
             ColorXYZ UnsatClr(UnsatClr_xyY);
 
-            ColorRGB UnsatClr_rgb(UnsatClr, colorReference);
+            ColorRGB UnsatClr_rgb(UnsatClr, cRef);
 
             // Both components are theoretically equal, get medium value
             clr = ( ( ( bRed ? UnsatClr_rgb[0] : 0.0 ) + ( bGreen ? UnsatClr_rgb[1] : 0.0 ) + ( bBlue ? UnsatClr_rgb[2] : 0.0 ) ) / (double) ( bRed + bGreen + bBlue ) );

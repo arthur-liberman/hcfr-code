@@ -4898,8 +4898,9 @@ CColor CMeasure::GetRefSat(int i, double sat_percent) const
 	CColor sRef[3] = { CColor(0.4193, 0.5053),
 		CColor(0.2246, 0.3287),
 		CColor(0.3209, 0.1542) };
+	int m_cRef=GetColorReference().m_standard;
 //display rec709 sat points in special colorspace modes	
-	if (!(GetColorReference().m_standard == 3 || GetColorReference().m_standard == 4))
+	if (!(m_cRef == 3 || m_cRef == 4))
 	{
 		if ( i < 3 )
 			refColor = GetRefPrimary(i);
@@ -4925,22 +4926,26 @@ CColor CMeasure::GetRefSat(int i, double sat_percent) const
 	x = xstart + ( (xend - xstart) * sat_percent );
 	y = ystart + ( (yend - ystart) * sat_percent );
 
-	CColor	aColor;	
+	CColor	aColor;
+	CColorReference cRefD65=CColorReference(HDTV,D65,2.22);
 	aColor.SetxyYValue (x, y, YLuma);
-	ColorRGB rgb=aColor.GetRGBValue (GetColorReference());
+	ColorRGB rgb=aColor.GetRGBValue ( (m_cRef==3||m_cRef==4)?cRefD65:GetColorReference() );
 	double r,g,b;
 	r=min(max(rgb[0],0.00001),.99999);
 	g=min(max(rgb[1],0.00001),.99999);
 	b=min(max(rgb[2],0.00001),.99999);
 	double gamma=GetConfig()->m_GammaAvg;
-	aColor.SetRGBValue (ColorRGB(pow(pow(r,1./2.22),gamma),pow(pow(g,1./2.22),gamma),pow(pow(b,1./2.22),gamma)),GetColorReference());	
+	aColor.SetRGBValue (ColorRGB(pow(pow(r,1./2.22),gamma),pow(pow(g,1./2.22),gamma),pow(pow(b,1./2.22),gamma)),(m_cRef==3||m_cRef==4)?cRefD65:GetColorReference());	
 	return aColor;
 }
 
 CColor CMeasure::GetRefCC24Sat(int i) const
 {
 	CColor aColor;
-//switch over to user gamma
+	CColorReference cRefD65=CColorReference(HDTV,D65,2.22);
+	int m_cRef=GetColorReference().m_standard;
+    CColorReference cRef=((m_cRef==3||m_cRef==4)?cRefD65:GetColorReference());
+	//switch over to user gamma
 	CColor ccRef[24];
 	double gamma=GetConfig()->m_GammaAvg;
 	switch (GetConfig()->m_CCMode)
@@ -4948,88 +4953,89 @@ CColor CMeasure::GetRefCC24Sat(int i) const
 //GCD
 	case 0:
 		{
-			ccRef[0].SetRGBValue( ColorRGB( 0, 0, 0 ), GetColorReference() );
-			ccRef[1].SetRGBValue( ColorRGB( pow(.62,gamma), pow(.62,gamma), pow(.62,gamma) ), GetColorReference() );
-			ccRef[2].SetRGBValue( ColorRGB( pow(.73,gamma), pow(.73,gamma), pow(.73,gamma) ), GetColorReference() );
-			ccRef[3].SetRGBValue( ColorRGB( pow(.82,gamma), pow(.82,gamma), pow(.82,gamma) ), GetColorReference() );
-			ccRef[4].SetRGBValue( ColorRGB( pow(.90,gamma), pow(.90,gamma), pow(.90,gamma) ), GetColorReference() );
-			ccRef[5].SetRGBValue( ColorRGB( pow(1.0,gamma), pow(1.0,gamma), pow(1.0,gamma) ), GetColorReference() );
-			ccRef[6].SetRGBValue( ColorRGB( pow(.452,gamma), pow(.3196,gamma), pow(.2603,gamma) ), GetColorReference() );
-			ccRef[7].SetRGBValue( ColorRGB( pow(.758,gamma), pow(.589,gamma), pow(.5114,gamma) ), GetColorReference() );
-			ccRef[8].SetRGBValue( ColorRGB( pow(.3699,gamma), pow(.4795,gamma), pow(.6119,gamma) ), GetColorReference() );
-			ccRef[9].SetRGBValue( ColorRGB( pow(.3516,gamma), pow(.4201,gamma), pow(.2603,gamma) ), GetColorReference() );
-			ccRef[10].SetRGBValue( ColorRGB( pow(.5114,gamma), pow(.5023,gamma), pow(.6895,gamma) ), GetColorReference() );
-			ccRef[11].SetRGBValue( ColorRGB( pow(.3881,gamma), pow(.7397,gamma), pow(.6621,gamma) ), GetColorReference() );
-			ccRef[12].SetRGBValue( ColorRGB( pow(.8493,gamma), pow(.4703,gamma), pow(.1598,gamma) ), GetColorReference() );
-			ccRef[13].SetRGBValue( ColorRGB( pow(.2822,gamma), pow(.3607,gamma), pow(.6393,gamma) ), GetColorReference() );
-			ccRef[14].SetRGBValue( ColorRGB( pow(.7580,gamma), pow(.3288,gamma), pow(.3790,gamma) ), GetColorReference() );
-			ccRef[15].SetRGBValue( ColorRGB( pow(.3607,gamma), pow(.2420,gamma), pow(.4201,gamma) ), GetColorReference() );
-			ccRef[16].SetRGBValue( ColorRGB( pow(.6210,gamma), pow(.7306,gamma), pow(.2511,gamma) ), GetColorReference() );
-			ccRef[17].SetRGBValue( ColorRGB( pow(.8995,gamma), pow(.6301,gamma), pow(.1781,gamma) ), GetColorReference() );
-			ccRef[18].SetRGBValue( ColorRGB( pow(.2009,gamma), pow(.2420,gamma), pow(.5890,gamma) ), GetColorReference() );
-			ccRef[19].SetRGBValue( ColorRGB( pow(.2785,gamma), pow(.5799,gamma), pow(.2785,gamma) ), GetColorReference() );
-			ccRef[20].SetRGBValue( ColorRGB( pow(.6895,gamma), pow(.1918,gamma), pow(.2283,gamma) ), GetColorReference() );
-			ccRef[21].SetRGBValue( ColorRGB( pow(.9315,gamma), pow(.7808,gamma), pow(.1279,gamma) ), GetColorReference() );
-			ccRef[22].SetRGBValue( ColorRGB( pow(.7306,gamma), pow(.3288,gamma), pow(.5708,gamma) ), GetColorReference() );
-			ccRef[23].SetRGBValue( ColorRGB( 0.0, pow(.5205,gamma), pow(.6393,gamma) ), GetColorReference() );
+			ccRef[0].SetRGBValue( ColorRGB( 0, 0, 0 ), cRef );
+			ccRef[1].SetRGBValue( ColorRGB( pow(.62,gamma), pow(.62,gamma), pow(.62,gamma) ), cRef );
+			ccRef[2].SetRGBValue( ColorRGB( pow(.73,gamma), pow(.73,gamma), pow(.73,gamma) ), cRef );
+			ccRef[3].SetRGBValue( ColorRGB( pow(.82,gamma), pow(.82,gamma), pow(.82,gamma) ), cRef );
+			ccRef[4].SetRGBValue( ColorRGB( pow(.90,gamma), pow(.90,gamma), pow(.90,gamma) ), cRef );
+			ccRef[5].SetRGBValue( ColorRGB( pow(1.0,gamma), pow(1.0,gamma), pow(1.0,gamma) ), cRef );
+			ccRef[6].SetRGBValue( ColorRGB( pow(.452,gamma), pow(.3196,gamma), pow(.2603,gamma) ), cRef );
+			ccRef[7].SetRGBValue( ColorRGB( pow(.758,gamma), pow(.589,gamma), pow(.5114,gamma) ), cRef );
+			ccRef[8].SetRGBValue( ColorRGB( pow(.3699,gamma), pow(.4795,gamma), pow(.6119,gamma) ), cRef );
+			ccRef[9].SetRGBValue( ColorRGB( pow(.3516,gamma), pow(.4201,gamma), pow(.2603,gamma) ), cRef );
+			ccRef[10].SetRGBValue( ColorRGB( pow(.5114,gamma), pow(.5023,gamma), pow(.6895,gamma) ), cRef );
+			ccRef[11].SetRGBValue( ColorRGB( pow(.3881,gamma), pow(.7397,gamma), pow(.6621,gamma) ), cRef );
+			ccRef[12].SetRGBValue( ColorRGB( pow(.8493,gamma), pow(.4703,gamma), pow(.1598,gamma) ), cRef );
+			ccRef[13].SetRGBValue( ColorRGB( pow(.2822,gamma), pow(.3607,gamma), pow(.6393,gamma) ), cRef );
+			ccRef[14].SetRGBValue( ColorRGB( pow(.7580,gamma), pow(.3288,gamma), pow(.3790,gamma) ), cRef );
+			ccRef[15].SetRGBValue( ColorRGB( pow(.3607,gamma), pow(.2420,gamma), pow(.4201,gamma) ), cRef );
+			ccRef[16].SetRGBValue( ColorRGB( pow(.6210,gamma), pow(.7306,gamma), pow(.2511,gamma) ), cRef );
+			ccRef[17].SetRGBValue( ColorRGB( pow(.8995,gamma), pow(.6301,gamma), pow(.1781,gamma) ), cRef );
+			ccRef[18].SetRGBValue( ColorRGB( pow(.2009,gamma), pow(.2420,gamma), pow(.5890,gamma) ), cRef );
+			ccRef[19].SetRGBValue( ColorRGB( pow(.2785,gamma), pow(.5799,gamma), pow(.2785,gamma) ), cRef );
+			ccRef[20].SetRGBValue( ColorRGB( pow(.6895,gamma), pow(.1918,gamma), pow(.2283,gamma) ), cRef );
+			ccRef[21].SetRGBValue( ColorRGB( pow(.9315,gamma), pow(.7808,gamma), pow(.1279,gamma) ), cRef );
+			ccRef[22].SetRGBValue( ColorRGB( pow(.7306,gamma), pow(.3288,gamma), pow(.5708,gamma) ), cRef );
+			ccRef[23].SetRGBValue( ColorRGB( 0.0, pow(.5205,gamma), pow(.6393,gamma) ), cRef );
 		break;
 		}
 //MCD
 	case 1:
 		{
-			ccRef[23].SetRGBValue( ColorRGB( pow(.21,gamma), pow(.205,gamma), pow(.21,gamma) ), GetColorReference() );
-			ccRef[22].SetRGBValue( ColorRGB( pow(.3288,gamma), pow(.3288,gamma), pow(.3288,gamma) ), GetColorReference() );
-			ccRef[21].SetRGBValue( ColorRGB( pow(.4749,gamma), pow(.4749,gamma), pow(.4703,gamma) ), GetColorReference() );
-			ccRef[20].SetRGBValue( ColorRGB( pow(.6256,gamma), pow(.6256,gamma), pow(.6256,gamma) ), GetColorReference() );
-			ccRef[19].SetRGBValue( ColorRGB( pow(.7854,gamma), pow(.7852,gamma), pow(.7854,gamma) ), GetColorReference() );
-			ccRef[18].SetRGBValue( ColorRGB( pow(.9498,gamma), pow(.9498,gamma), pow(.9498,gamma) ), GetColorReference() );
-			ccRef[0].SetRGBValue( ColorRGB( pow(.4474,gamma), pow(.3151,gamma), pow(.2603,gamma) ), GetColorReference() );
-			ccRef[1].SetRGBValue( ColorRGB( pow(.7580,gamma), pow(.5845,gamma), pow(.5068,gamma) ), GetColorReference() );
-			ccRef[2].SetRGBValue( ColorRGB( pow(.3699,gamma), pow(.4795,gamma), pow(.6073,gamma) ), GetColorReference() );
-			ccRef[3].SetRGBValue( ColorRGB( pow(.3470,gamma), pow(.4247,gamma), pow(.2648,gamma) ), GetColorReference() );
-			ccRef[4].SetRGBValue( ColorRGB( pow(.5068,gamma), pow(.5022,gamma), pow(.6849,gamma) ), GetColorReference() );
-			ccRef[5].SetRGBValue( ColorRGB( pow(.3927,gamma), pow(.7397,gamma), pow(.6621,gamma) ), GetColorReference() );
-			ccRef[6].SetRGBValue( ColorRGB( pow(.8447,gamma), pow(.4749,gamma), pow(.1644,gamma) ), GetColorReference() );
-			ccRef[7].SetRGBValue( ColorRGB( pow(.2877,gamma), pow(.3562,gamma), pow(.6438,gamma) ), GetColorReference() );
-			ccRef[8].SetRGBValue( ColorRGB( pow(.7580,gamma), pow(.3333,gamma), pow(.3836,gamma) ), GetColorReference() );
-			ccRef[9].SetRGBValue( ColorRGB( pow(.3607,gamma), pow(.2420,gamma), pow(.4201,gamma) ), GetColorReference() );
-			ccRef[10].SetRGBValue( ColorRGB( pow(.6210,gamma), pow(.7306,gamma), pow(.2466,gamma) ), GetColorReference() );
-			ccRef[11].SetRGBValue( ColorRGB( pow(.8995,gamma), pow(.6347,gamma), pow(.1826,gamma) ), GetColorReference() );
-			ccRef[12].SetRGBValue( ColorRGB( pow(.1963,gamma), pow(.2420,gamma), pow(.5936,gamma) ), GetColorReference() );
-			ccRef[13].SetRGBValue( ColorRGB( pow(.2831,gamma), pow(.5799,gamma), pow(.2785,gamma) ), GetColorReference() );
-			ccRef[14].SetRGBValue( ColorRGB( pow(.6895,gamma), pow(.1918,gamma), pow(.2283,gamma) ), GetColorReference() );
-			ccRef[15].SetRGBValue( ColorRGB( pow(.9315,gamma), pow(.7808,gamma), pow(.1279,gamma) ), GetColorReference() );
-			ccRef[16].SetRGBValue( ColorRGB( pow(.7261,gamma), pow(.3242,gamma), pow(.5753,gamma) ), GetColorReference() );
-			ccRef[17].SetRGBValue( ColorRGB( pow(.1187,gamma), pow(.5160,gamma), pow(.5982,gamma) ), GetColorReference() );
+			ccRef[23].SetRGBValue( ColorRGB( pow(.21,gamma), pow(.205,gamma), pow(.21,gamma) ), cRef );
+			ccRef[22].SetRGBValue( ColorRGB( pow(.3288,gamma), pow(.3288,gamma), pow(.3288,gamma) ), cRef );
+			ccRef[21].SetRGBValue( ColorRGB( pow(.4749,gamma), pow(.4749,gamma), pow(.4703,gamma) ), cRef );
+			ccRef[21].SetRGBValue( ColorRGB( pow(.4749,gamma), pow(.4749,gamma), pow(.4703,gamma) ), cRef );
+			ccRef[20].SetRGBValue( ColorRGB( pow(.6256,gamma), pow(.6256,gamma), pow(.6256,gamma) ), cRef );
+			ccRef[19].SetRGBValue( ColorRGB( pow(.7854,gamma), pow(.7852,gamma), pow(.7854,gamma) ), cRef );
+			ccRef[18].SetRGBValue( ColorRGB( pow(.9498,gamma), pow(.9498,gamma), pow(.9498,gamma) ), cRef );
+			ccRef[0].SetRGBValue( ColorRGB( pow(.4474,gamma), pow(.3151,gamma), pow(.2603,gamma) ), cRef );
+			ccRef[1].SetRGBValue( ColorRGB( pow(.7580,gamma), pow(.5845,gamma), pow(.5068,gamma) ), cRef );
+			ccRef[2].SetRGBValue( ColorRGB( pow(.3699,gamma), pow(.4795,gamma), pow(.6073,gamma) ), cRef );
+			ccRef[3].SetRGBValue( ColorRGB( pow(.3470,gamma), pow(.4247,gamma), pow(.2648,gamma) ), cRef );
+			ccRef[4].SetRGBValue( ColorRGB( pow(.5068,gamma), pow(.5022,gamma), pow(.6849,gamma) ), cRef );
+			ccRef[5].SetRGBValue( ColorRGB( pow(.3927,gamma), pow(.7397,gamma), pow(.6621,gamma) ), cRef );
+			ccRef[6].SetRGBValue( ColorRGB( pow(.8447,gamma), pow(.4749,gamma), pow(.1644,gamma) ), cRef );
+			ccRef[7].SetRGBValue( ColorRGB( pow(.2877,gamma), pow(.3562,gamma), pow(.6438,gamma) ), cRef );
+			ccRef[8].SetRGBValue( ColorRGB( pow(.7580,gamma), pow(.3333,gamma), pow(.3836,gamma) ), cRef );
+			ccRef[9].SetRGBValue( ColorRGB( pow(.3607,gamma), pow(.2420,gamma), pow(.4201,gamma) ), cRef );
+			ccRef[10].SetRGBValue( ColorRGB( pow(.6210,gamma), pow(.7306,gamma), pow(.2466,gamma) ), cRef );
+			ccRef[11].SetRGBValue( ColorRGB( pow(.8995,gamma), pow(.6347,gamma), pow(.1826,gamma) ), cRef );
+			ccRef[12].SetRGBValue( ColorRGB( pow(.1963,gamma), pow(.2420,gamma), pow(.5936,gamma) ), cRef );
+			ccRef[13].SetRGBValue( ColorRGB( pow(.2831,gamma), pow(.5799,gamma), pow(.2785,gamma) ), cRef );
+			ccRef[14].SetRGBValue( ColorRGB( pow(.6895,gamma), pow(.1918,gamma), pow(.2283,gamma) ), cRef );
+			ccRef[15].SetRGBValue( ColorRGB( pow(.9315,gamma), pow(.7808,gamma), pow(.1279,gamma) ), cRef );
+			ccRef[16].SetRGBValue( ColorRGB( pow(.7261,gamma), pow(.3242,gamma), pow(.5753,gamma) ), cRef );
+			ccRef[17].SetRGBValue( ColorRGB( pow(.1187,gamma), pow(.5160,gamma), pow(.5982,gamma) ), cRef );
 		break;
 		}
 		//axis steps
 	case 2:
 		{
-			ccRef[0].SetRGBValue( ColorRGB( pow(0.12,gamma), 0, 0 ), GetColorReference() );
-			ccRef[1].SetRGBValue( ColorRGB( pow(.24,gamma), 0, 0 ), GetColorReference() );
-			ccRef[2].SetRGBValue( ColorRGB( pow(.36,gamma), 0, 0 ), GetColorReference() );
-			ccRef[3].SetRGBValue( ColorRGB( pow(.48,gamma), 0, 0 ), GetColorReference() );
-			ccRef[4].SetRGBValue( ColorRGB( pow(.60,gamma), 0, 0 ), GetColorReference() );
-			ccRef[5].SetRGBValue( ColorRGB( pow(.72,gamma), 0, 0 ), GetColorReference() );
-			ccRef[6].SetRGBValue( ColorRGB( pow(.84,gamma), 0, 0 ), GetColorReference() );
-			ccRef[7].SetRGBValue( ColorRGB( pow(.96,gamma), 0, 0 ), GetColorReference() );
-			ccRef[8].SetRGBValue( ColorRGB( 0, pow(0.12,gamma), 0 ), GetColorReference() );
-			ccRef[9].SetRGBValue( ColorRGB( 0, pow(.24,gamma), 0 ), GetColorReference() );
-			ccRef[10].SetRGBValue( ColorRGB( 0, pow(.36,gamma), 0 ), GetColorReference() );
-			ccRef[11].SetRGBValue( ColorRGB( 0, pow(.48,gamma), 0 ), GetColorReference() );
-			ccRef[12].SetRGBValue( ColorRGB( 0, pow(.60,gamma), 0 ), GetColorReference() );
-			ccRef[13].SetRGBValue( ColorRGB( 0, pow(.72,gamma), 0 ), GetColorReference() );
-			ccRef[14].SetRGBValue( ColorRGB( 0, pow(.84,gamma), 0 ), GetColorReference() );
-			ccRef[15].SetRGBValue( ColorRGB( 0, pow(.96,gamma), 0 ), GetColorReference() );
-			ccRef[16].SetRGBValue( ColorRGB( 0, 0, pow(0.12,gamma) ), GetColorReference() );
-			ccRef[17].SetRGBValue( ColorRGB( 0, 0,  pow(.24,gamma) ), GetColorReference() );
-			ccRef[18].SetRGBValue( ColorRGB( 0, 0, pow(.36,gamma) ), GetColorReference() );
-			ccRef[19].SetRGBValue( ColorRGB( 0, 0, pow(.48,gamma) ), GetColorReference() );
-			ccRef[20].SetRGBValue( ColorRGB( 0, 0, pow(.60,gamma) ), GetColorReference() );
-			ccRef[21].SetRGBValue( ColorRGB( 0, 0, pow(.72,gamma) ), GetColorReference() );
-			ccRef[22].SetRGBValue( ColorRGB( 0, 0, pow(.84,gamma) ), GetColorReference() );
-			ccRef[23].SetRGBValue( ColorRGB( 0, 0, pow(.96,gamma) ), GetColorReference() );
+			ccRef[0].SetRGBValue( ColorRGB( pow(0.12,gamma), 0, 0 ), cRef );
+			ccRef[1].SetRGBValue( ColorRGB( pow(.24,gamma), 0, 0 ), cRef );
+			ccRef[2].SetRGBValue( ColorRGB( pow(.36,gamma), 0, 0 ), cRef );
+			ccRef[3].SetRGBValue( ColorRGB( pow(.48,gamma), 0, 0 ), cRef );
+			ccRef[4].SetRGBValue( ColorRGB( pow(.60,gamma), 0, 0 ), cRef );
+			ccRef[5].SetRGBValue( ColorRGB( pow(.72,gamma), 0, 0 ), cRef );
+			ccRef[6].SetRGBValue( ColorRGB( pow(.84,gamma), 0, 0 ), cRef );
+			ccRef[7].SetRGBValue( ColorRGB( pow(.96,gamma), 0, 0 ), cRef );
+			ccRef[8].SetRGBValue( ColorRGB( 0, pow(0.12,gamma), 0 ), cRef );
+			ccRef[9].SetRGBValue( ColorRGB( 0, pow(.24,gamma), 0 ), cRef );
+			ccRef[10].SetRGBValue( ColorRGB( 0, pow(.36,gamma), 0 ), cRef );
+			ccRef[11].SetRGBValue( ColorRGB( 0, pow(.48,gamma), 0 ), cRef );
+			ccRef[12].SetRGBValue( ColorRGB( 0, pow(.60,gamma), 0 ), cRef );
+			ccRef[13].SetRGBValue( ColorRGB( 0, pow(.72,gamma), 0 ), cRef );
+			ccRef[14].SetRGBValue( ColorRGB( 0, pow(.84,gamma), 0 ), cRef );
+			ccRef[15].SetRGBValue( ColorRGB( 0, pow(.96,gamma), 0 ), cRef );
+			ccRef[16].SetRGBValue( ColorRGB( 0, 0, pow(0.12,gamma) ), cRef );
+			ccRef[17].SetRGBValue( ColorRGB( 0, 0,  pow(.24,gamma) ), cRef );
+			ccRef[18].SetRGBValue( ColorRGB( 0, 0, pow(.36,gamma) ), cRef );
+			ccRef[19].SetRGBValue( ColorRGB( 0, 0, pow(.48,gamma) ), cRef );
+			ccRef[20].SetRGBValue( ColorRGB( 0, 0, pow(.60,gamma) ), cRef );
+			ccRef[21].SetRGBValue( ColorRGB( 0, 0, pow(.72,gamma) ), cRef );
+			ccRef[22].SetRGBValue( ColorRGB( 0, 0, pow(.84,gamma) ), cRef );
+			ccRef[23].SetRGBValue( ColorRGB( 0, 0, pow(.96,gamma) ), cRef );
 		break;
 		}
 /*	case 3:
