@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by CHCFR21_ESPANOL.rc
+// Used by CHCFR21_FRANCAIS.rc
 //
 #define IDS_STRING_VERSION              1
 #define IDS_STRING_VERSION_WEB          2
@@ -1364,6 +1364,30 @@
 #define IDS_CC_22                       41900
 #define IDS_CC_23                       41901
 #define IDS_CC_24                       41902
+#define IDS_CC_1a                       41903
+#define IDS_CC_2a                       41904
+#define IDS_CC_3a                       41905
+#define IDS_CC_4a                       41906
+#define IDS_CC_5a                       41907
+#define IDS_CC_6a                       41908
+#define IDS_CC_7a                       41909
+#define IDS_CC_8a                       41910
+#define IDS_CC_9a                       41911
+#define IDS_CC_10a                      41912
+#define IDS_CC_11a                      41913
+#define IDS_CC_12a                      41914
+#define IDS_CC_13a                      41915
+#define IDS_CC_14a                      41916
+#define IDS_CC_15a                      41917
+#define IDS_CC_16a                      41918
+#define IDS_CC_17a                      41919
+#define IDS_CC_18a                      41920
+#define IDS_CC_19a                      41921
+#define IDS_CC_20a                      41922
+#define IDS_CC_21a                      41923
+#define IDS_CC_22a                      41924
+#define IDS_CC_23a                      41925
+#define IDS_CC_24a                      41926
 #define IDS_ARGYLLSENSOR_PROPERTIES_TITLE 59394
 #define IDS_ARGYLLSENSOR_NAME           59395
 

@@ -203,7 +203,10 @@ void CReferencesPropPage::OnSelchangeColorrefCombo()
 		m_manualGOffset = 0.055;
 	else
 		m_manualGOffset = 0.099;
-
+	if (m_colorStandard == CC6)
+		m_CCMode = GCD;
+	if (m_colorStandard == CC6a)
+		m_CCMode = MCD;	
 	if(!m_changeWhiteCheck) // Restore default white
 		m_whiteTarget=(int)(GetStandardColorReference((ColorStandard)(m_colorStandard)).m_white);
 	UpdateData(FALSE);	
@@ -213,7 +216,12 @@ void CReferencesPropPage::OnSelchangeCCmodeCombo()
 {
 	m_isModified=TRUE;
 	SetModified(TRUE);
-	UpdateData(TRUE);	
+	UpdateData(TRUE);
+	if (m_colorStandard == CC6)
+		m_CCMode = GCD;
+	if (m_colorStandard == CC6a)
+		m_CCMode = MCD;	
+	UpdateData(FALSE);
 }
 
 void CReferencesPropPage::OnChangeEditGammaOffset() 

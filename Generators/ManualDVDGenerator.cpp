@@ -270,8 +270,8 @@ BOOL CManualDVDGenerator::DisplayRGBColor( const ColorRGBDisplay& clrIn ,Measure
 				}
 				break;
 			case MT_PRIMARY:
-			case MT_SECONDARY: //needs fixing
-			  if (GetColorReference().m_standard!=4)
+			case MT_SECONDARY:
+			  if ( (GetColorReference().m_standard!=4&&GetColorReference().m_standard!=5))
 			  {
 				if(GetRValue(clr) == 0 && GetGValue(clr) == 0 && GetBValue(clr) == 0)
 					str2.LoadString ( IDS_BLACK );
