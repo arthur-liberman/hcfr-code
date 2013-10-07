@@ -285,8 +285,8 @@ public:
 	ColorXYZ GetCyan() const { return cyanSecondary; }
 	ColorXYZ GetMagenta() const { return magentaSecondary; }
 	
-	// Primary colors relative-to-white luminance, depending on color standard. White luma reference value is 1.
-	//standard 3 added 75% of rec709 colorspace to be used with 75% saturation patterns so ref luma is the same as full colorspace
+	// Primary colors relative-to-white luminance, depending on color standard. White luminance reference value is 1.
+	//standard 3 added 75% of rec709 colorspace to be used with 75% saturation patterns so ref luminance is the same as full colorspace
 	//standard 5 added a set of 6 color checker patterns
 
 	double GetRedReferenceLuma () const

@@ -265,7 +265,7 @@ void CGammaGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 }
 
 /*
-ColorSpace : 0 : RGB, 1 : Luma or Lux, 2 : Lux
+ColorSpace : 0 : RGB, 1 : Luminance or Lux, 2 : Lux
 ColorIndex : 0 : R, 1 : G, 2 : B
 Size : Total number of points
 PointIndex : Point index on graph

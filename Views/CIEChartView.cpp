@@ -131,6 +131,8 @@ CCIEChartGrapher::CCIEChartGrapher()
 	m_doShowGrayScale=GetConfig()->GetProfileInt("CIE Chart","Display GrayScale",TRUE);
 	m_doShowSaturationScale=GetConfig()->GetProfileInt("CIE Chart","Display Saturation Scale",TRUE);
 	m_doShowSaturationScaleTarg=GetConfig()->GetProfileInt("CIE Chart","Display Saturation Scale Targets",TRUE);
+	m_doShowCCScale=GetConfig()->GetProfileInt("CIE Chart","Display Color Checker Measures",TRUE);
+	m_doShowCCScaleTarg=GetConfig()->GetProfileInt("CIE Chart","Display Color Checker Targets",TRUE);
 	m_doShowMeasurements=GetConfig()->GetProfileInt("CIE Chart","Show Measurements",TRUE);
 	m_bCIEuv=GetConfig()->GetProfileInt("CIE Chart","CIE uv mode",FALSE);
 
@@ -758,10 +760,10 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
             ColorXYZ aColor(pDoc->GetMeasure()->GetGray(i).GetXYZValue());
             ColorXYZ refColor(GetColorReference().GetWhite());
 
-            // Determine Reference Y luma for Delta E calculus
+            // Determine Reference Y luminance for Delta E calculus
             if ( GetConfig () -> m_bUseDeltaELumaOnGrays )
             {
-                // Compute reference Luma regarding actual offset and reference gamma
+                // Compute reference Luminance regarding actual offset and reference gamma
                 double x = ArrayIndexToGrayLevel (i, nSize, GetConfig () -> m_bUseRoundDown );
 
                 double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
@@ -773,7 +775,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
             }
             else
             {
-                // Use actual gray luma as correct reference (Delta E will check color only, not brightness)
+                // Use actual gray luminance as correct reference (Delta E will check color only, not brightness)
                 YWhiteGray = aColor [ 1 ];
             }
 
@@ -787,7 +789,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 
 	if(m_doShowSaturationScaleTarg) 
 	{
-			CString str;
+		CString str;
 		for(int i=0;i<pDoc->GetMeasure()->GetSaturationSize();i++)
 		{
 
@@ -832,6 +834,10 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			}
 
 		}
+	}
+	if(m_doShowCCScaleTarg) 
+	{
+		CString str;
 			Msg.LoadString ( GetConfig()->m_CCMode == AXIS?IDS_CC_1a:IDS_CC_1 );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc1Point(pDoc->GetMeasure()->GetRefCC24Sat(0).GetXYZValue(),
@@ -1049,6 +1055,10 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,MagentaPoint,&m_magentaSecondaryBitmap,rect,pTooltip,pWnd);
 		}
+	}
+	if(m_doShowCCScale)
+	{
+		CString str;
 			Msg.LoadString ( GetConfig()->m_CCMode == AXIS?IDS_CC_1a:IDS_CC_1 );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc1Point(pDoc->GetMeasure()->GetCC24Sat(0).GetXYZValue(),
@@ -1314,6 +1324,8 @@ BEGIN_MESSAGE_MAP(CCIEChartView, CSavingView)
 	ON_COMMAND(IDM_CIE_SHOWGRAYSCALE, OnCieShowGrayScale)
 	ON_COMMAND(IDM_CIE_SHOWSATURATIONSCALE, OnCieShowSaturationScale)
 	ON_COMMAND(IDM_CIE_SHOWSATURATIONSCALETARG, OnCieShowSaturationScaleTarg)
+	ON_COMMAND(IDM_CIE_SHOWCCSCALE, OnCieShowCCScale)
+	ON_COMMAND(IDM_CIE_SHOWCCSCALETARG, OnCieShowCCScaleTarg)
 	ON_COMMAND(IDM_CIE_SHOWMEASUREMENTS, OnCieShowMeasurements)
 	ON_COMMAND(IDM_GRAPH_Y_ZOOM_IN, OnGraphZoomIn)
 	ON_COMMAND(IDM_GRAPH_Y_ZOOM_OUT, OnGraphZoomOut)
@@ -1321,6 +1333,8 @@ BEGIN_MESSAGE_MAP(CCIEChartView, CSavingView)
 	ON_UPDATE_COMMAND_UI(IDM_CIE_SHOWGRAYSCALE, OnUpdateCieShowGrayScale)
 	ON_UPDATE_COMMAND_UI(IDM_CIE_SHOWSATURATIONSCALE, OnUpdateCieShowSaturationScale)
 	ON_UPDATE_COMMAND_UI(IDM_CIE_SHOWSATURATIONSCALETARG, OnUpdateCieShowSaturationScaleTarg)
+	ON_UPDATE_COMMAND_UI(IDM_CIE_SHOWCCSCALE, OnUpdateCieShowCCScale)
+	ON_UPDATE_COMMAND_UI(IDM_CIE_SHOWCCSCALETARG, OnUpdateCieShowCCScaleTarg)
 	ON_COMMAND(IDM_CIE_SAVECHART, OnCieSavechart)
 	ON_WM_LBUTTONDOWN()
 	ON_WM_LBUTTONUP()
@@ -1396,8 +1410,10 @@ DWORD CCIEChartView::GetUserInfo ()
 		  + ( ( m_Grapher.m_doShowGrayScale			& 0x0001 )	<< 4 )
 		  + ( ( m_Grapher.m_doShowSaturationScale	& 0x0001 )	<< 5 )
 		  + ( ( m_Grapher.m_doShowSaturationScaleTarg	& 0x0001 )	<< 6 )
-		  + ( ( m_Grapher.m_doShowMeasurements		& 0x0001 )	<< 7 )
-		  + ( ( m_Grapher.m_bCIEuv					& 0x0001 )	<< 8 );
+		  + ( ( m_Grapher.m_doShowCCScale	& 0x0001 )	<< 7 )
+		  + ( ( m_Grapher.m_doShowCCScaleTarg	& 0x0001 )	<< 8 )
+		  + ( ( m_Grapher.m_doShowMeasurements		& 0x0001 )	<< 9 )
+		  + ( ( m_Grapher.m_bCIEuv					& 0x0001 )	<< 10 );
 }
 
 void CCIEChartView::SetUserInfo ( DWORD dwUserInfo )
@@ -1409,8 +1425,10 @@ void CCIEChartView::SetUserInfo ( DWORD dwUserInfo )
 	m_Grapher.m_doShowGrayScale			= ( dwUserInfo >> 4 ) & 0x0001;
 	m_Grapher.m_doShowSaturationScale	= ( dwUserInfo >> 5 ) & 0x0001;
 	m_Grapher.m_doShowSaturationScaleTarg	= ( dwUserInfo >> 6 ) & 0x0001;
-	m_Grapher.m_doShowMeasurements		= ( dwUserInfo >> 7 ) & 0x0001;
-	m_Grapher.m_bCIEuv					= ( dwUserInfo >> 8 ) & 0x0001;
+	m_Grapher.m_doShowCCScale	= ( dwUserInfo >> 7 ) & 0x0001;
+	m_Grapher.m_doShowCCScaleTarg	= ( dwUserInfo >> 8 ) & 0x0001;
+	m_Grapher.m_doShowMeasurements		= ( dwUserInfo >> 9 ) & 0x0001;
+	m_Grapher.m_bCIEuv					= ( dwUserInfo >> 10 ) & 0x0001;
 	
 	m_bDelayedUpdate = TRUE;
 }
@@ -1588,6 +1606,18 @@ void CCIEChartView::OnUpdateCieShowSaturationScaleTarg(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(m_Grapher.m_doShowSaturationScaleTarg);
 }
 
+void CCIEChartView::OnUpdateCieShowCCScale(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable();
+	pCmdUI->SetCheck(m_Grapher.m_doShowCCScale);
+}
+
+void CCIEChartView::OnUpdateCieShowCCScaleTarg(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable();
+	pCmdUI->SetCheck(m_Grapher.m_doShowCCScaleTarg);
+}
+
 void CCIEChartView::OnUpdateCieShowMeasurements(CCmdUI* pCmdUI) 
 {
 	pCmdUI->Enable();
@@ -1647,6 +1677,20 @@ void CCIEChartView::OnCieShowSaturationScaleTarg()
 {
 	m_Grapher.m_doShowSaturationScaleTarg = !m_Grapher.m_doShowSaturationScaleTarg;
 	GetConfig()->WriteProfileInt("CIE Chart","Display Saturation Scale Targets",m_Grapher.m_doShowSaturationScaleTarg);
+	Invalidate(TRUE);
+}
+
+void CCIEChartView::OnCieShowCCScale() 
+{
+	m_Grapher.m_doShowCCScale = !m_Grapher.m_doShowCCScale;
+	GetConfig()->WriteProfileInt("CIE Chart","Display Color Checker measures",m_Grapher.m_doShowCCScale);
+	Invalidate(TRUE);
+}
+
+void CCIEChartView::OnCieShowCCScaleTarg() 
+{
+	m_Grapher.m_doShowCCScaleTarg = !m_Grapher.m_doShowCCScaleTarg;
+	GetConfig()->WriteProfileInt("CIE Chart","Display Color Checker Targets",m_Grapher.m_doShowCCScaleTarg);
 	Invalidate(TRUE);
 }
 

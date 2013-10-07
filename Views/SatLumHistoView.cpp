@@ -106,7 +106,7 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		}
 	}
 	
-	// Retrieve color luma coefficients matching actual reference
+	// Retrieve color luminance coefficients matching actual reference
 	const double KR = GetColorReference().GetRedReferenceLuma ();  
 	const double KG = GetColorReference().GetGreenReferenceLuma ();
 	const double KB = GetColorReference().GetBlueReferenceLuma (); 

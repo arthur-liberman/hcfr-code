@@ -817,7 +817,7 @@ BEGIN
     CONTROL         "Zwei separate Helligkeitskurven anzeigen",IDC_RADIO3,
                     "Button",BS_AUTORADIOBUTTON,13,136,147,10
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ | WS_GROUP,7,109,199,1
-    CONTROL         "Kontrast und Delta Luma aus Luxmeter-Werten berech.",IDC_CHECK_PREFER_LUXMETER,
+    CONTROL         "Kontrast und Delta Luminance aus Luxmeter-Werten berech.",IDC_CHECK_PREFER_LUXMETER,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,153,189,10
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ | WS_GROUP,7,149,199,1
     GROUPBOX        "Delta E",IDC_STATIC,7,172,199,38,WS_GROUP
@@ -1371,6 +1371,8 @@ BEGIN
         MENUITEM "Grau anzeigen",               IDM_CIE_SHOWGRAYSCALE
         MENUITEM "Sättigung anzeigen",          IDM_CIE_SHOWSATURATIONSCALE
         MENUITEM "Display saturations targets", IDM_CIE_SHOWSATURATIONSCALETARG
+        MENUITEM "Display color checker measures", IDM_CIE_SHOWCCSCALE
+        MENUITEM "Display color checker targets", IDM_CIE_SHOWCCSCALETARG
         MENUITEM "Messungen anzeigen",          IDM_CIE_SHOWMEASUREMENTS
         MENUITEM "Referenzmessung anzeigen",    IDM_LUM_GRAPH_DATAREF
         MENUITEM SEPARATOR
@@ -1412,16 +1414,6 @@ BEGIN
                 MENUITEM "Zoom -",                      IDM_GRAPH_Y_ZOOM_OUT
                 MENUITEM "Nach oben",                   IDM_GRAPH_Y_SHIFT_TOP
                 MENUITEM "Nach unten",                  IDM_GRAPH_Y_SHIFT_BOTTOM
-            END
-            POPUP "IRE"
-            BEGIN
-                MENUITEM "0-100 IRE",                   IDM_GRAPH_X_SCALE1
-                MENUITEM "20-100 IRE",                  IDM_GRAPH_X_SCALE2
-                MENUITEM "Automatisch",                 IDM_GRAPH_X_SCALE_FIT
-                MENUITEM "Zoom +",                      IDM_GRAPH_X_ZOOM_IN
-                MENUITEM "Zoom -",                      IDM_GRAPH_X_ZOOM_OUT
-                MENUITEM "Nach rechts",                 IDM_GRAPH_X_SHIFT_RIGHT
-                MENUITEM "Nach links",                  IDM_GRAPH_X_SHIFT_LEFT
             END
             MENUITEM "Werte...     ",               IDM_GRAPH_SCALE_CUSTOM
         END
@@ -1536,16 +1528,6 @@ BEGIN
                 MENUITEM "Nach unten",                  IDM_DELTAE_GRAPH_Y_SHIFT_BOTTOM
                 MENUITEM "Werte...     ",               IDM_DELTAE_GRAPH_SCALE_CUSTOM
             END
-            POPUP "IRE"
-            BEGIN
-                MENUITEM "0-100 IRE",                   IDM_GRAPH_X_SCALE1
-                MENUITEM "20-100 IRE",                  IDM_GRAPH_X_SCALE2
-                MENUITEM "Automatisch",                 IDM_GRAPH_X_SCALE_FIT
-                MENUITEM "Zoom +",                      IDM_GRAPH_X_ZOOM_IN
-                MENUITEM "Zoom -",                      IDM_GRAPH_X_ZOOM_OUT
-                MENUITEM "Nach rechts",                 IDM_GRAPH_X_SHIFT_RIGHT
-                MENUITEM "Nach links",                  IDM_GRAPH_X_SHIFT_LEFT
-            END
         END
         MENUITEM "Parameter...",                IDM_GRAPH_SETTINGS
         MENUITEM SEPARATOR
@@ -1573,16 +1555,6 @@ BEGIN
                 MENUITEM "Zoom -",                      IDM_GRAPH_Y_ZOOM_OUT
                 MENUITEM "Nach oben",                   IDM_GRAPH_Y_SHIFT_TOP
                 MENUITEM "Nach unten",                  IDM_GRAPH_Y_SHIFT_BOTTOM
-            END
-            POPUP "IRE"
-            BEGIN
-                MENUITEM "0-100 IRE",                   IDM_GRAPH_X_SCALE1
-                MENUITEM "20-100 IRE",                  IDM_GRAPH_X_SCALE2
-                MENUITEM "Automatisch",                 IDM_GRAPH_X_SCALE_FIT
-                MENUITEM "Zoom +",                      IDM_GRAPH_X_ZOOM_IN
-                MENUITEM "Zoom -",                      IDM_GRAPH_X_ZOOM_OUT
-                MENUITEM "Nach rechts",                 IDM_GRAPH_X_SHIFT_RIGHT
-                MENUITEM "Nach links",                  IDM_GRAPH_X_SHIFT_LEFT
             END
             MENUITEM "Werte...     ",               IDM_GRAPH_SCALE_CUSTOM
         END
@@ -1693,6 +1665,7 @@ BEGIN
             MENUITEM "&ColorChecker",               IDM_MEASURE_SAT_CC24
             MENUITEM SEPARATOR
             MENUITEM "&Primärfarben",               IDM_MEASURE_SAT_PRIMARIES
+            MENUITEM "&Primary and Secondary colors", IDM_MEASURE_SAT_PRIMARIES_SECONDARIES
             MENUITEM "&Alle Farben",                IDM_MEASURE_SAT_ALL
         END
         MENUITEM "&Kontrast",                   IDM_MEASURE_CONTRAST
@@ -2026,16 +1999,6 @@ BEGIN
                 MENUITEM "Nach oben",                   32885
                 MENUITEM "Nach unten",                  32884
             END
-            POPUP "IRE"
-            BEGIN
-                MENUITEM "0-100 IRE",                   IDM_GRAPH_X_SCALE1
-                MENUITEM "20-100 IRE",                  IDM_GRAPH_X_SCALE2
-                MENUITEM "Automatisch",                 IDM_GRAPH_X_SCALE_FIT
-                MENUITEM "Zoom +",                      IDM_GRAPH_X_ZOOM_IN
-                MENUITEM "Zoom -",                      IDM_GRAPH_X_ZOOM_OUT
-                MENUITEM "Nach rechts",                 IDM_GRAPH_X_SHIFT_RIGHT
-                MENUITEM "Nach links",                  IDM_GRAPH_X_SHIFT_LEFT
-            END
             MENUITEM "Werte...     ",               IDM_GRAPH_SCALE_CUSTOM
         END
         MENUITEM "Parameter...",                IDM_GRAPH_SETTINGS
@@ -2184,6 +2147,7 @@ BEGIN
     BUTTON      IDM_MEASURE_NEARWHITE
     SEPARATOR
     BUTTON      IDM_MEASURE_SAT_ALL
+    BUTTON      IDM_MEASURE_SAT_PRIMARIES_SECONDARIES
 END
 
 IDR_MEDIUMTOOLBAR_MEASURES_SAT TOOLBAR 32, 32
@@ -2204,8 +2168,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,5,0
- PRODUCTVERSION 3,0,5,0
+ FILEVERSION 3,0,5,1
+ PRODUCTVERSION 3,0,5,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2223,12 +2187,12 @@ BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "CompanyName", "Association Homecinema Francophone"
             VALUE "FileDescription", "HCFR Colorimeter resources"
-            VALUE "FileVersion", "3, 0, 5, 0"
+            VALUE "FileVersion", "3, 0, 5, 1"
             VALUE "InternalName", "CHCFR21_DEUTSCH"
             VALUE "LegalCopyright", "Copyright (C) 2005-2008"
             VALUE "OriginalFilename", "CHCFR21_DEUTSCH.DLL"
             VALUE "ProductName", "HCFR Colorimeter German language"
-            VALUE "ProductVersion", "3, 0, 5, 0"
+            VALUE "ProductVersion", "3, 0, 5, 1"
         END
     END
     BLOCK "VarFileInfo"
@@ -2767,7 +2731,7 @@ BEGIN
     IDS_YELLOWSECONDARY     "Sekundärfarbe Gelb"
     IDS_CYANSECONDARY       "Sekundärfarbe Cyan"
     IDS_MAGENTASECONDARY    "Sekundärfarbe Magenta"
-    IDS_GRAYIRE             "Grau %d IRE"
+    IDS_GRAYIRE             "%d%% Grau video level"
 END
 
 STRINGTABLE
@@ -2844,13 +2808,13 @@ BEGIN
     IDS_DELTAEMAGENTA       "Delta E Magenta"
     IDS_COLORRGBVALUES      "R:%03d, G:%03d, B:%03d"
     IDS_COLOR               "Farbe"
-    IDS_REDIRE              "Rot %d IRE"
-    IDS_GREENIRE            "Grün %d IRE"
+    IDS_REDIRE              "%d%% Rot video level"
+    IDS_GREENIRE            "%d%% Grün video level"
 END
 
 STRINGTABLE
 BEGIN
-    IDS_BLUEIRE             "Blau %d IRE"
+    IDS_BLUEIRE             "%d%% Blau video level"
     IDS_INVALIDCODE1        "Ungültiges Zeichen. Nur hexadezimale Zeichen (0-9, A-F) und Leerzeichen sind gültig."
     IDS_INVALIDCODE2        "Falsche Anzahl Zeichen. Es muß ein Vielfaches von 4 sein."
     IDS_INVALIDCODE3        "Falscher Header. Gültige Werte sind 0000, 5000 und 6000."
@@ -2892,10 +2856,10 @@ STRINGTABLE
 BEGIN
     IDS_DVDPOS9             "Prüfen Sie, das Sie auf dem ersten Bild der 'Primärfarben' Serie sind."
     IDS_DVDPOS10            "Prüfen Sie, das Sie auf dem ersten Bild %s sind."
-    IDS_DVDMANPOS1          "Gehen Sie zum Testbild 'IRE %g' und klicken Sie OK"
+    IDS_DVDMANPOS1          "Gehen Sie zum Testbild '%g%% grau video level' und klicken Sie OK"
     IDS_DVDMANPOS2          "Gehen Sie zum Testbild '%s' und klicken Sie OK"
     IDS_DVDPOS11            "Prüfen Sie, das Sie im 'Advanced adjustments' DVD-Menü sind\nmit Auswahl auf Grau"
-    IDS_DVDPOS12            "Prüfen Sie, das Sie auf dem 0 IRE Bild im 'Advanced Adjustments' DVD-Menü stehen"
+    IDS_DVDPOS12            "Prüfen Sie, das Sie auf dem 0%% video level Bild im 'Advanced Adjustments' DVD-Menü stehen"
     IDS_ERRLEVELNUMBER      "Die Anzahl der Werte passt nicht zur HCFR Test-DVD"
     IDS_MTCSSENSOR_NAME     "Mazet MTCS-C2"
     IDS_MTCSSENSOR_PROPERTIES_TITLE "MTCS-C2 Parameter"
@@ -3058,8 +3022,8 @@ STRINGTABLE
 BEGIN
     IDM_SIM_GRAYSCALE_AND_COLORS 
                             "Simultane Messungen der Grautreppe, Primär- und Sekundärfarben in einem Schritt ausführen\nSimultane Messungen der Grautreppe, Primär- und Sekundärfarben"
-    IDM_PATTERN_ANIM_BLACK  "Animiertes Schwarzwert Testbild mit zwei Streifen bei IRE 1 und 2 auf einem schwarzen Hintergrund anzeigen\nAnimiertes Schwarzwert Testbild"
-    IDM_PATTERN_ANIM_WHITE  "Animiertes Weißwert Testbild mit zwei Streifen bei IRE 98 und 99 auf einem weißen Hintergrund anzeigen\nAnimiertes Weißwert Testbild"
+    IDM_PATTERN_ANIM_BLACK  "Animiertes Schwarzwert Testbild mit zwei Streifen bei 1%% video level und 2%% video level auf einem schwarzen Hintergrund anzeigen\nAnimiertes Schwarzwert Testbild"
+    IDM_PATTERN_ANIM_WHITE  "Animiertes Weißwert Testbild mit zwei Streifen bei 98%% video level und 99%% video level auf einem weißen Hintergrund anzeigen\nAnimiertes Weißwert Testbild"
     ID_VIEW_SPECTRUM        "Blendet das Spektrum Fenster ein oder aus\nSpektrum"
     IDM_SINGLE_MEASUREMENT  "Eine einmalige Messung ausführen\nEine einmalige Messung ausführen"
     IDM_CONTINUOUS_MEASUREMENT 

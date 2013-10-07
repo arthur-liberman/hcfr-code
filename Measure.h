@@ -130,6 +130,7 @@ public:
 	BOOL MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator);
 	BOOL MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator);
 	BOOL MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerator,BOOL bPrimaryOnly);
+	BOOL MeasurePrimarySecondarySaturationScales(CSensor *pSensor, CGenerator *pGenerator,BOOL bPrimaryOnly);
 	int GetSaturationSize() const { return m_redSatMeasureArray.GetSize(); }
 	void SetSaturationSize(int steps);
 	CColor GetRedSat(int i) const;

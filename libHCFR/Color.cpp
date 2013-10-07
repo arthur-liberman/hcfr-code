@@ -1517,7 +1517,7 @@ void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDi
 	//use fully saturated space if user has special color space modes set
 	int m_cRef=colorReference.m_standard;
 	CColorReference cRef=((m_cRef==3  || m_cRef==4 || m_cRef==5)?CColorReference(HDTV,D65,2.2):colorReference);
-    // Retrieve color luma coefficients matching actual reference
+    // Retrieve color luminance coefficients matching actual reference
     const double KR = cRef.GetRedReferenceLuma ();  
     const double KG = cRef.GetGreenReferenceLuma ();
     const double KB = cRef.GetBlueReferenceLuma (); 

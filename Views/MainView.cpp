@@ -1523,11 +1523,11 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 			}
 			else
 			{
-				// Display primary/secondary/saturations colors delta luma
+				// Display primary/secondary/saturations colors delta luminance
 				double RefLuma [24];
 				int		nCol2 = nCol;
 				
-				// Retrieve color luma coefficients matching actual reference
+				// Retrieve color luminance coefficients matching actual reference
 				switch (m_displayMode)
 				{
 					case 1:
@@ -1569,8 +1569,15 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						RefLuma [ nCol-1 ] = rLuma;
 						break;
 				}
+					CColor WhiteMCD;
+					int i;
+					i = GetDocument() -> GetMeasure () -> GetGrayScaleSize ();
+					if ( GetDocument() -> GetMeasure () -> GetGray ( i - 1 ).isValid() )
+						WhiteMCD = GetDocument() -> GetMeasure () -> GetGray ( i - 1 );
+					else
+						WhiteMCD = GetDocument()->GetMeasure()->GetOnOffWhite();
 				
-				CColor white = ( (m_displayMode!=11||GetConfig()->m_CCMode==MCD||GetConfig()->m_CCMode==AXIS) ? GetDocument()->GetMeasure()->GetOnOffWhite() :  GetDocument()->GetMeasure()->GetCC24Sat(5) );
+					CColor white = ( m_displayMode!=11 ?  GetDocument()->GetMeasure()->GetOnOffWhite() : (GetConfig()->m_CCMode==GCD)? GetDocument()->GetMeasure()->GetCC24Sat(5):WhiteMCD );
 				
 				if ( nCol2 < (m_displayMode!=11 ? 7 : 25) && white.isValid() && white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) > 0.0001 )
 				{
@@ -1746,7 +1753,7 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 		 	if ( GetDataRef() && GetDataRef() != GetDocument () )
 				return "dE / ref";
 			else
-				return ( m_displayMode == 0 ? "gamma Y" : "delta luma" );
+				return ( m_displayMode == 0 ? "gamma Y" : "delta luminance" );
 			break;
 
 		case 6:
@@ -1754,7 +1761,7 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 			break;
 
 		case 7:
-			return ( m_displayMode == 0 ? "gamma Y" : "delta luma" );
+			return ( m_displayMode == 0 ? "gamma Y" : "delta luminance" );
 			break;
 	}
 
@@ -1971,10 +1978,10 @@ void CMainView::UpdateGrid()
 						refDocColor = pDataRef->GetMeasure()->GetGray(j);
 					 }
 
-					 // Determine Reference Y luma for Delta E calculus
+					 // Determine Reference Y luminance for Delta E calculus
 					 if ( GetConfig () -> m_bUseDeltaELumaOnGrays )
 					 {
-						// Compute reference Luma regarding actual offset and reference gamma
+						// Compute reference Luminance regarding actual offset and reference gamma
 						double x = ArrayIndexToGrayLevel ( j, nCount, GetConfig () -> m_bUseRoundDown );
 
 						double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
@@ -1986,7 +1993,7 @@ void CMainView::UpdateGrid()
 					 }
 					 else
 					 {
-						// Use actual gray luma as correct reference (Delta E will check color only, not brightness)
+						// Use actual gray luminance as correct reference (Delta E will check color only, not brightness)
 						YWhite = aColor [ 1 ];
 						if ( pDataRef )
 							YWhiteRefDoc = refDocColor [ 1 ];
@@ -4000,7 +4007,7 @@ void CMainView::OnSelchangeInfoDisplay()
 			 m_pInfoWnd = pSpectrumWnd;
 			 break;
 
-		case 3: // luma
+		case 3: // luminance
 			 pFrame = new CSubFrame;
 
 			 pFrame -> Create ( NULL, NULL, WS_CHILD | WS_VISIBLE, Rect, this );

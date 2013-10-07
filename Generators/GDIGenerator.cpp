@@ -27,6 +27,8 @@
 #include "GDIGenerator.h"
 #include "madVRTestPattern.h"
 
+
+
 #include <string>
 
 #ifdef _DEBUG
@@ -390,10 +392,11 @@ BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nP
 	str.Format(Msg,clr[0]);
 	bRet = ( MessageBox(NULL,str,Title,MB_ICONINFORMATION | MB_OKCANCEL | MB_TOPMOST) == IDOK );
 */
-	if ( m_GDIGenePropertiesPage.m_nDisplayMode != DISPLAY_madVR )
- 	  m_displayWindow.DisplayRGBColor(do_Intensity?p_clr:clr);
+
+	if ( m_GDIGenePropertiesPage.m_nDisplayMode == DISPLAY_madVR)
+		DisplayRGBColormadVR (do_Intensity?p_clr:clr);
 	else
-	  DisplayRGBColormadVR (do_Intensity?p_clr:clr);
+		m_displayWindow.DisplayRGBColor(do_Intensity?p_clr:clr);
 	return TRUE;
 }
 

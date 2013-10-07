@@ -2904,6 +2904,227 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 	return TRUE;
 }
 
+BOOL CMeasure::MeasurePrimarySecondarySaturationScales(CSensor *pSensor, CGenerator *pGenerator, BOOL bPrimaryOnly)
+{
+	int			i, j;
+	MSG			Msg;
+	BOOL		bEscape;
+	BOOL		bPatternRetry = FALSE;
+	BOOL		bRetry = FALSE;
+	int			size = GetSaturationSize ();
+	CString		strMsg, Title;
+	ColorRGBDisplay	GenColors [ 6 * 256 ];
+
+	double		dLuxValue;
+	
+	CGenerator::MeasureType	SaturationType [ 6 ] =
+							{
+								CGenerator::MT_SAT_RED,
+								CGenerator::MT_SAT_GREEN,
+								CGenerator::MT_SAT_BLUE,
+								CGenerator::MT_SAT_YELLOW,
+								CGenerator::MT_SAT_CYAN,
+								CGenerator::MT_SAT_MAGENTA
+							};
+
+	CArray<CColor,int> measuredColor;
+	CColor previousColor, lastColor;
+
+	BOOL	bUseLuxValues = TRUE;
+	CArray<double,int> measuredLux;
+
+	measuredColor.SetSize(size*6);
+	measuredLux.SetSize(size*6);
+
+	if(pGenerator->Init(size*(bPrimaryOnly?3:6)) != TRUE)
+	{
+		Title.LoadString ( IDS_ERROR );
+		strMsg.LoadString ( IDS_ERRINITGENERATOR );
+		GetColorApp()->InMeasureMessageBox(strMsg,Title,MB_ICONERROR | MB_OK);
+		return FALSE;
+	}
+
+	if(pGenerator->CanDisplayScale ( CGenerator::MT_SAT_ALL, size ) != TRUE)
+	{
+		pGenerator->Release();
+		return FALSE;
+	}
+
+	if(pSensor->Init(FALSE) != TRUE)
+	{
+		Title.LoadString ( IDS_ERROR );
+		strMsg.LoadString ( IDS_ERRINITSENSOR );
+		GetColorApp()->InMeasureMessageBox(strMsg,Title,MB_ICONERROR | MB_OK);
+		pGenerator->Release();
+		return FALSE;
+	}
+
+	double gamma=GetConfig()->m_GammaAvg;
+
+	// Generate saturations for all colors
+	GenerateSaturationColors (GetColorReference(), GenColors, size, true, false, false, gamma );				// Red
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 1 ], size, false, true, false, gamma );	// Green
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 2 ], size, false, false, true, gamma );	// Blue
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 3 ], size, true, true, false, gamma );	// Yellow
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 4 ], size, false, true, true, gamma );	// Cyan
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 5 ], size, true, false, true, gamma );	// Magenta
+
+	for ( j = 0 ; j < ( bPrimaryOnly ? 3 : 6 ) ; j ++ )
+	{
+		for ( i = 0 ; i < size  ; i ++ )
+		{
+			if( pGenerator->DisplayRGBColor(GenColors[(j*size)+i],SaturationType[j],100*i/(size - 1),!bRetry,(j>0)) )
+			{
+				bEscape = WaitForDynamicIris ();
+				bRetry = FALSE;
+
+				if ( ! bEscape )
+				{
+					if ( bUseLuxValues )
+						StartLuxMeasure ();
+
+					measuredColor[(j*size)+i]=pSensor->MeasureColor(GenColors[(j*size)+i]);
+					
+					if ( bUseLuxValues )
+					{
+						switch ( GetLuxMeasure ( & dLuxValue ) )
+						{
+							case LUX_NOMEASURE:
+								 bUseLuxValues = FALSE;
+								 break;
+
+							case LUX_OK:
+								 measuredLux[(j*size)+i] = dLuxValue;
+								 break;
+
+							case LUX_CANCELED:
+								 bEscape = TRUE;
+								 break;
+						}
+					}
+				}
+
+				while ( PeekMessage ( & Msg, NULL, WM_KEYDOWN, WM_KEYUP, TRUE ) )
+				{
+					if ( Msg.message == WM_KEYDOWN && Msg.wParam == VK_ESCAPE )
+						bEscape = TRUE;
+				}
+
+				if ( bEscape )
+				{
+					pSensor->Release();
+					pGenerator->Release(size - i - 1);
+					strMsg.LoadString ( IDS_MEASURESCANCELED );
+					GetColorApp()->InMeasureMessageBox ( strMsg, NULL, MB_OK | MB_ICONINFORMATION );
+					return FALSE;
+				}
+
+				if(!pSensor->IsMeasureValid())
+				{
+					Title.LoadString ( IDS_ERROR );
+					strMsg.LoadString ( IDS_ANERROROCCURED );
+					int result=GetColorApp()->InMeasureMessageBox(strMsg+pSensor->GetErrorString(),Title,MB_ABORTRETRYIGNORE | MB_ICONERROR);
+					if(result == IDABORT)
+					{
+						pSensor->Release();
+						pGenerator->Release();
+						return FALSE;
+					}
+					if(result == IDRETRY)
+					{
+						i--;
+						bRetry = TRUE;
+					}
+				}
+				else
+				{
+					previousColor = lastColor;			
+					lastColor = measuredColor[(j*size)+i];
+		
+					if(i != 0)
+					{
+						if (!pGenerator->HasPatternChanged(SaturationType[j],previousColor,lastColor))
+						{
+							i--;
+							bPatternRetry = TRUE;
+						}
+					}
+				}
+			}
+			else
+			{
+				pSensor->Release();
+				pGenerator->Release();
+				return FALSE;
+			}
+		}
+		// Generator init to change pattern series if necessary
+		if (j < ( bPrimaryOnly ? 3 : 6 ) - 1)
+		{
+			if ( !pGenerator->ChangePatternSeries())
+			{
+				pSensor->Release();
+				pGenerator->Release();
+				return FALSE;
+			}
+		}
+
+	}
+
+	pSensor->Release();
+	pGenerator->Release();
+
+	if (bPatternRetry)
+		AfxMessageBox(pGenerator->GetRetryMessage(), MB_OK | MB_ICONWARNING);
+
+	for ( i = 0 ; i < size ; i ++ )
+	{
+		m_redSatMeasureArray[i] = measuredColor[i];
+
+		m_greenSatMeasureArray[i] = measuredColor[size+i];
+
+		m_blueSatMeasureArray[i] = measuredColor[(2*size)+i];
+
+		if ( bUseLuxValues )
+		{
+			m_redSatMeasureArray[i].SetLuxValue ( measuredLux[i] );
+			m_greenSatMeasureArray[i].SetLuxValue ( measuredLux[size+i] );
+			m_blueSatMeasureArray[i].SetLuxValue ( measuredLux[(2*size)+i] );
+		}
+		else
+		{
+			m_redSatMeasureArray[i].ResetLuxValue ();
+			m_greenSatMeasureArray[i].ResetLuxValue ();
+			m_blueSatMeasureArray[i].ResetLuxValue ();
+		}
+
+		if ( ! bPrimaryOnly )
+		{
+			m_yellowSatMeasureArray[i] = measuredColor[(3*size)+i];
+
+			m_cyanSatMeasureArray[i] = measuredColor[(4*size)+i];
+
+			m_magentaSatMeasureArray[i] = measuredColor[(5*size)+i];
+
+			if ( bUseLuxValues )
+			{
+				m_yellowSatMeasureArray[i].SetLuxValue ( measuredLux[(3*size)+i] );
+				m_cyanSatMeasureArray[i].SetLuxValue ( measuredLux[(4*size)+i] );
+				m_magentaSatMeasureArray[i].SetLuxValue ( measuredLux[(5*size)+i] );
+			}
+			else
+			{
+				m_yellowSatMeasureArray[i].ResetLuxValue ();
+				m_cyanSatMeasureArray[i].ResetLuxValue ();
+				m_magentaSatMeasureArray[i].ResetLuxValue ();
+			}
+		}
+	}
+
+	m_isModified=TRUE;
+	return TRUE;
+}
+
 BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
 {
 	int		i;

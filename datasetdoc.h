@@ -116,6 +116,7 @@ public:
 	void MeasureCC24SatScale();
 	void MeasureAllSaturationScales();
 	void MeasurePrimarySaturationScales();
+	void MeasurePrimarySecondarySaturationScales();
 
 	void MeasurePrimaries();
 	void MeasureSecondaries();
@@ -241,6 +242,8 @@ protected:
 	afx_msg void OnMeasureSatPrimaries();
 	afx_msg void OnUpdateMeasureSatPrimaries(CCmdUI* pCmdUI);
 	afx_msg void OnSaveCalibrationFile();
+	afx_msg void OnMeasureSatPrimariesSecondaries();
+	afx_msg void OnUpdateMeasureSatPrimariesSecondaries(CCmdUI* pCmdUI);
 	afx_msg void OnLoadCalibrationFile();
 	afx_msg void OnUpdateSaveCalibrationFile(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateLoadCalibrationFile(CCmdUI* pCmdUI);

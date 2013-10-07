@@ -506,7 +506,7 @@ void CFullScreenWindow::OnPaint()
 
 	m_rectAreaPercent = sqrt (m_rectSizePercent / 100.) * 100;
 
-	if ( m_nDisplayMode != 0 && m_nDisplayMode != 3 )
+	if ( m_nDisplayMode != DISPLAY_GDI && m_nDisplayMode != DISPLAY_GDI_nBG )
 	{
 		// Black is the color key
 		DisplayColor = 0x00000000;

@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by CHCFR21_FRANCAIS.rc
+// Used by CHCFR21_ENGLISH.rc
 //
 #define IDS_STRING_VERSION              1
 #define IDS_STRING_VERSION_WEB          2
@@ -832,7 +832,6 @@
 #define IDM_CLOSEALLVIEWS               32949
 #define ID_VUE_FERMERLESAUTRESVUES      32950
 #define IDM_CLOSEOTHERVIEWS             32951
-#define ID_BUTTON32952                  32952
 #define IDM_SIM_GRAYSCALE               32953
 #define IDM_SIM_PRIMARIES               32954
 #define IDM_SIM_SECONDARIES             32955
@@ -899,6 +898,13 @@
 #define IDM_LOAD_CALIBRATION_FILE       33030
 #define IDM_CIE_SHOWSATURATIONSCALETARG 33031
 #define IDM_MEASURE_SAT_CC24            33032
+#define ID_CIE_DISPLAYCOLORCHECKERTARGETS 33033
+#define ID_CIE_DISPLAYCOLORCHECKERTARGETS33034 33034
+#define DM_CIE_SHOWCCSCALE              33037
+#define IDM_CIE_SHOWCCSCALE             33038
+#define IDM_CIE_SHOWCCSCALETARG         33039
+#define ID_SATURATIONS_PRIMARY          33040
+#define IDM_MEASURE_SAT_PRIMARIES_SECONDARIES 33041
 #define IDS_LUMINANCEHISTOVIEW_NAME     41446
 #define IDS_COLORTEMPHISTOVIEW_NAME     41447
 #define IDS_RGBHISTOVIEW_NAME           41448
@@ -1279,6 +1285,7 @@
 #define IDS_RUNPRIMSATON                41814
 #define IDS_CREATE_CALIBRATION_FILE     41815
 #define IDS_DONOTUSE_CALIBRATION        41816
+#define IDS_RUNPRIMSATON2               41817
 #define IDS_ERRMTCSDLL1                 41818
 #define IDS_ERRMTCSDLL2                 41819
 #define IDS_MTCSERROR                   41820
@@ -1397,7 +1404,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        382
-#define _APS_NEXT_COMMAND_VALUE         33030
+#define _APS_NEXT_COMMAND_VALUE         33042
 #define _APS_NEXT_CONTROL_VALUE         1280
 #define _APS_NEXT_SYMED_VALUE           143
 #endif

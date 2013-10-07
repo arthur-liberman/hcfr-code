@@ -126,8 +126,10 @@ BOOL CGenerator::Init(UINT nbMeasure)
 	//BOOL madVR_SetBackground(int patternAreaInPercent, COLORREF backgroundColor);
 	nMeasureNumber = nbMeasure;
 	CGDIGenerator Cgen;
+	CString str;
+	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 	double bgstim = Cgen.m_bgStimPercent / 100.;
-	if (Cgen.m_nDisplayMode == DISPLAY_madVR)
+	if (Cgen.m_nDisplayMode == DISPLAY_madVR && m_name != str)
 	{
 	if (madVR_IsAvailable())
 	{
@@ -140,7 +142,7 @@ BOOL CGenerator::Init(UINT nbMeasure)
 	  }
 	  else
 	  {
-	    MessageBox(0, "dll found but Blind Connect failed, is madVR running?", "Error", MB_ICONERROR);
+	    MessageBox(0, "madVR dll found but BlindConnect() failed, is madVR running?", "Error", MB_ICONERROR);
 	    return false;
 	  }
 	}
@@ -164,13 +166,13 @@ BOOL CGenerator::Init(UINT nbMeasure)
 	return TRUE;
 }
 
-BOOL CGenerator::DisplayRGBColormadVR(const ColorRGBDisplay& aRGBColor,  MeasureType nPatternType, UINT nPatternInfo,  BOOL bChangePattern,BOOL bSilentMode )
+BOOL CGenerator::DisplayRGBColormadVR(const ColorRGBDisplay& aRGBColor )
 {
 	return TRUE;	  // need to be overriden
 }
 
 
-BOOL CGenerator::DisplayRGBColor(const ColorRGBDisplay& aRGBColor, MeasureType nPatternType, UINT nPatternInfo,  BOOL bChangePattern,BOOL bSilentMode )
+BOOL CGenerator::DisplayRGBColor(const ColorRGBDisplay& aRGBColor, MeasureType nPatternType, UINT nPatternInfo,  BOOL bChangePattern,BOOL bSilentMode)
 {
 	return TRUE;	  // need to be overriden
 }
