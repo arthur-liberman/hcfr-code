@@ -3195,6 +3195,7 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
 		GenColors [ 4 ] = ColorRGBDisplay(0,0,0);
 	
 	}
+
 	ColorRGBDisplay	MeasColors [ 5 ] = 
 								{	
 									ColorRGBDisplay(primaryIRELevel,0,0),

@@ -369,7 +369,7 @@ BOOL CGDIGenerator::DisplayRGBColormadVR( const ColorRGBDisplay& clr )
 return TRUE;
 }
 
-BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nPatternType , UINT nPatternInfo , BOOL bChangePattern,BOOL bSilentMode)
+BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nPatternType , UINT nPatternInfo , BOOL bChangePattern, BOOL bSilentMode)
 {
 
 	ColorRGBDisplay p_clr;
