@@ -152,7 +152,7 @@ int icompaths_refresh_paths(icompaths *p) {
 					a1logw(p->log, "icoms_get_paths: RegEnumValue '%s' didn't return stringz type\n",skname);
 					continue;
 				}
-				value[200-1] = '\000';
+				value[100-1] = '\000';
 
 				if ((fn = malloc(sizeof(fast_com_name))) == NULL) {
 					a1loge(p->log, 1, "icoms_get_paths: malloc failed\n");
