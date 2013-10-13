@@ -203,8 +203,50 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
         }
     }
 
-    inst_mode displayMode = inst_mode_emis_spot;
-    instCode = m_meter->set_mode(m_meter, displayMode);
+    // get the meter capabilties, not these may change after set_mode
+    inst_mode capabilities(inst_mode_none);
+    inst2_capability capabilities2(inst2_none);
+    inst3_capability capabilities3(inst3_none);
+    m_meter->capabilities(m_meter, &capabilities, &capabilities2, &capabilities3);
+
+    // create a suitable mode based on the requested display type
+    inst_mode mode = inst_mode_none;
+    if(m_readingType == PROJECTOR)
+    {
+        // prefer tele but fall back to spot for PROJECTOR
+        if(capabilities & (inst_mode_emission | inst_mode_tele))
+        {
+            mode = inst_mode_emis_tele;
+        }
+        else if(capabilities & (inst_mode_emission | inst_mode_spot))
+        {
+            mode = inst_mode_emis_spot;
+        }
+    }
+    else
+    {
+        // prefer spot but fall back to tele if user wants DISPLAY
+        if(capabilities & (inst_mode_emission | inst_mode_spot))
+        {
+            mode = inst_mode_emis_spot;
+        }
+        else if(capabilities & (inst_mode_emission | inst_mode_tele))
+        {
+            mode = inst_mode_emis_tele;
+        }
+    }
+
+    // make sure we've got a valid mode
+    if(mode == inst_mode_none)
+    {
+        m_meter->del(m_meter);
+        m_meter = 0;
+        errorDescription = "Unsuitable meter type";
+        return false;
+    }
+
+    // set the desired mode
+    instCode = m_meter->set_mode(m_meter, mode);
     if(instCode != inst_ok)
     {
         m_meter->del(m_meter);
@@ -213,36 +255,20 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
         return false;
     }
 
-    inst_mode capabilities(inst_mode_none);
-    inst2_capability capabilities2(inst2_none);
-    inst3_capability capabilities3(inst3_none);
+    //reget the capabilties as it may be mode dependant
     m_meter->capabilities(m_meter, &capabilities, &capabilities2, &capabilities3);
-    inst_mode mode = inst_mode_emis_spot;
-
-    if(m_readingType == PROJECTOR)
-    {
-        if(capabilities & (inst_mode_emission | inst_mode_tele))
-        {
-            mode = inst_mode_emis_tele;
-        }
-    }
 
     if ((capabilities & inst_mode_spectral) != 0)
     {
         mode = (inst_mode)(mode | inst_mode_spectral);
-    }
-
-    instCode = m_meter->set_mode(m_meter, mode);
-    if(instCode == inst_unsupported && mode != inst_mode_emis_spot)
-    {
-        instCode = m_meter->set_mode(m_meter, inst_mode_emis_spot);
-    }
-    if(instCode != inst_ok)
-    {
-        m_meter->del(m_meter);
-        m_meter = 0;
-        errorDescription = "Couldn't set meter mode";
-        return false;
+        instCode = m_meter->set_mode(m_meter, mode);
+        if(instCode != inst_ok)
+        {
+            m_meter->del(m_meter);
+            m_meter = 0;
+            errorDescription = "Couldn't set meter mode";
+            return false;
+        }
     }
 
     instCode = m_meter->get_set_opt(m_meter, inst_opt_trig_prog);
