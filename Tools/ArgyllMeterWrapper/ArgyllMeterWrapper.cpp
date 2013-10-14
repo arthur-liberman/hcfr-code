@@ -211,28 +211,31 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
 
     // create a suitable mode based on the requested display type
     inst_mode mode = inst_mode_none;
-    if(m_readingType == PROJECTOR)
+    if (capabilities & inst_mode_emission)
     {
-        // prefer tele but fall back to spot for PROJECTOR
-        if(capabilities & (inst_mode_emission | inst_mode_tele))
+        if(m_readingType == PROJECTOR)
         {
-            mode = inst_mode_emis_tele;
+            // prefer tele but fall back to spot for PROJECTOR
+            if(capabilities & inst_mode_tele)
+            {
+                mode = inst_mode_emis_tele;
+            }
+            else if(capabilities & inst_mode_spot)
+            {
+                mode = inst_mode_emis_spot;
+            }
         }
-        else if(capabilities & (inst_mode_emission | inst_mode_spot))
+        else
         {
-            mode = inst_mode_emis_spot;
-        }
-    }
-    else
-    {
-        // prefer spot but fall back to tele if user wants DISPLAY
-        if(capabilities & (inst_mode_emission | inst_mode_spot))
-        {
-            mode = inst_mode_emis_spot;
-        }
-        else if(capabilities & (inst_mode_emission | inst_mode_tele))
-        {
-            mode = inst_mode_emis_tele;
+            // prefer spot but fall back to tele if user wants DISPLAY
+            if(capabilities & inst_mode_spot)
+            {
+                mode = inst_mode_emis_spot;
+            }
+            else if(capabilities & inst_mode_tele)
+            {
+                mode = inst_mode_emis_tele;
+            }
         }
     }
 
