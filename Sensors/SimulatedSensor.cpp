@@ -43,15 +43,15 @@ IMPLEMENT_SERIAL(CSimulatedSensor, COneDeviceSensor, 1) ;
 
 CSimulatedSensor::CSimulatedSensor()
 {
-	m_offsetRed=12;
-	m_offsetGreen=12;
-	m_offsetBlue=12;
+	m_offsetRed=2;
+	m_offsetGreen=1;
+	m_offsetBlue=3;
 	m_doOffsetError=TRUE;
-	m_offsetErrorMax=5.0;
+	m_offsetErrorMax=1.0;
 	m_doGainError=TRUE;
-	m_gainErrorMax=0.1;		
+	m_gainErrorMax=0.01;		
 	m_doGammaError=TRUE;
-	m_gammaErrorMax=0.3;
+	m_gammaErrorMax=0.07;
 
 	m_pDevicePage = & m_simulatedSensorPropertiesPage;  // Add setting page to property sheet
 
@@ -232,16 +232,19 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 	if(m_doGainError)
 		gain=1+(m_gainErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1 : 1);
 	if(m_doGammaError)
-		gamma=2.2+(m_gammaErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1 : 1);
+		gamma=gamma+(m_gammaErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1 : 1);
 
 	value=max(aRGBValue[2]*gain+offset,0);
 	simulColor[2]=(pow(value/100.0,gamma));
 
-	Sleep(200);		// Sleep 200 ms to simulate acquisition
+	Sleep(750);		// Sleep 200 ms to simulate acquisition
 
 	ColorRGB colMeasure(simulColor);
 	
 	CColor colSensor(ColorXYZ(colMeasure, GetColorReference()));
+	colSensor.SetX(colSensor.GetX() * 100.);
+	colSensor.SetY(colSensor.GetY() * 100.);
+	colSensor.SetZ(colSensor.GetZ() * 100.);
 
 	double		Spectrum[18] = { 0.001, 0.01, 0.1, 0.15, 0.2, 0.4, 0.5, 0.6, 0.7, 1.2, 1.0, 1.1, 0.8, 0.9, 0.6, 0.5, 0.4, 0.15 };
 	colSensor.SetSpectrum ( CSpectrum ( 18, 380, 730, 20, Spectrum ) );

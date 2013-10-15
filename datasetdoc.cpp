@@ -136,7 +136,7 @@ static UINT __cdecl BkgndThreadFunc ( LPVOID lpParameter )
 			    break;
 		    }
 
-		    if ( g_bGDIGeneratorRunning )
+			if ( g_bGDIGeneratorRunning )
 		    {
 			    ColorRGBDisplay clr((( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.GetColor ())& 0x00FFFFFF);
 			    if ( g_CurrentColor != clr )
@@ -257,10 +257,11 @@ BOOL StartBackgroundMeasures ( CDataSetDoc * pDoc )
 		CString str, str2;
 		str.LoadString(IDS_GDIGENERATOR_NAME);
 		str2 = pDoc->GetGenerator()->GetName();
-
+		
 		if ( str == str2 )
 		{
-			if ( ( (CGDIGenerator*) pDoc->GetGenerator() ) -> IsOnOtherMonitor () )
+//			if ( ( ((CGDIGenerator*) pDoc->GetGenerator() ) -> IsOnOtherMonitor () || ( (CMainView*) pView ) -> m_displayMode == DISPLAY_madVR) && GetConfig()->m_bContinuousMeasures )
+			if ( GetConfig()->m_bDisplayTestColors )
 			{
 				// Remove screen blanking flag
 				g_bGeneratorUsesScreenBlanking = pDoc->GetGenerator()->m_doScreenBlanking;
@@ -282,9 +283,7 @@ BOOL StartBackgroundMeasures ( CDataSetDoc * pDoc )
 					return FALSE;
 				}
 
-
 				ColorRGBDisplay clr((( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.GetColor ()) & 0x00ffffff);
-				
 				g_CurrentColor = clr;
 
 				pDoc->GetGenerator()->DisplayRGBColor(clr,CGenerator::MT_UNKNOWN);

@@ -1920,7 +1920,7 @@ void CCIEChartView::UpdateTestColor ( CPoint point )
 	double	r, g, b;
 	double	cmax;
 	double	base, coef;
-	double	gamma = 0.45;
+	double	gamma = GetConfig()->m_GammaAvg;
 	ColorRGB	RGBColor;
 
 	GetReferenceRect ( & rect );

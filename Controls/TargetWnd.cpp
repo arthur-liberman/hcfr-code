@@ -26,6 +26,7 @@
 #include "TargetWnd.h"
 #include "Color.h"
 #include "BitmapTools.h"
+#include "MainFrm.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -54,60 +55,144 @@ CTargetWnd::~CTargetWnd()
 {
 }
 
-void CTargetWnd::Refresh()
+void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize)
 {
+	
 	if ( m_pRefColor )
 	{
-        ColorXYZ centerXYZ = GetColorReference().GetWhite();
-		m_clr = RGB(64,64,64);
+		int		nR = 0, nG = 0, nB = 0;
+		double x;
 
-		if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetWhite() ) < 25 )
- 		{
- 			m_clr = RGB(128,128,128);
+		// Assume gray scale 1st
+		ColorXYZ centerXYZ = GetColorReference().GetWhite();
+		// update grayscale window when selection valid
+		if (minCol != -1)
+		{
+			minCol = max(1,minCol);
+			if (m_b16_235)
+				x = floor((double)(minCol-1) / (double)(nSize-1) * 219.0 + 0.5) + 16;
+			else	
+				x = floor((double)(minCol-1) / (double)(nSize-1) * 255.0 + 0.5);
+ 			m_clr = RGB(x,x,x);
+			nR=x;
+			nG=x;
+			nB=x;
 		}
-		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetRed() ) < ((GetColorReference().m_standard==4||GetColorReference().m_standard==5)||GetColorReference().m_standard==3 ? 30:75) )
+		if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetRed(), GetColorReference() ) < 0.05 )
 		{
 			centerXYZ = GetColorReference().GetRed();
+			if (m_b16_235)
+			{
+				nR = 235;
+				nG = 16;
+				nB = 16;
+			}
+			else
+			{
+				nR = 255;
+				nG = 0;
+				nB = 0;
+			}
 			if (GetColorReference().m_standard != 4)
    			  m_clr = RGB(192,0,0);
 			else
 			  m_clr = RGB(222,188,175);
 		}
-		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetGreen() ) < ((GetColorReference().m_standard==4||GetColorReference().m_standard==5)||GetColorReference().m_standard==3 ? 30:75) )
+		else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetGreen(), GetColorReference() ) < 0.05 )
 		{
 			centerXYZ = GetColorReference().GetGreen();
+			if (m_b16_235)
+			{
+				nR = 16;
+				nG = 235;
+				nB = 16;
+			}
+			else
+			{
+				nR = 0;
+				nG = 255;
+				nB = 0;
+			}
 			if (GetColorReference().m_standard != 4)
    			  m_clr = RGB(0,192,0);
 			else
 			  m_clr = RGB(145,170,193);
 		}
-		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetBlue() ) < ((GetColorReference().m_standard==4||GetColorReference().m_standard==5)||GetColorReference().m_standard==3 ? 30:75) )
+		else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetBlue(), GetColorReference() ) < 0.05 )
 		{
 			centerXYZ = GetColorReference().GetBlue();
+			if (m_b16_235)
+			{
+				nR = 16;
+				nG = 16;
+				nB = 235;
+			}
+			else
+			{
+				nR = 0;
+				nG = 0;
+				nB = 255;
+			}
 			if (GetColorReference().m_standard != 4)
    			  m_clr = RGB(0,0,192);
 			else
 			  m_clr = RGB(144,158,122);
 		}
-		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetYellow() ) < ((GetColorReference().m_standard==4||GetColorReference().m_standard==5)||GetColorReference().m_standard==3 ? 30:75) )
+		else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetYellow(), GetColorReference() ) < 0.05 )
 		{
 			centerXYZ = GetColorReference().GetYellow();
+			if (m_b16_235)
+			{
+				nR = 235;
+				nG = 235;
+				nB = 16;
+			}
+			else
+			{
+				nR = 255;
+				nG = 255;
+				nB = 0;
+			}
 			if (GetColorReference().m_standard != 4)
    			  m_clr = RGB(192,192,0);
 			else
 			  m_clr = RGB(125,145,203);
 		}
-		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetCyan() ) < ((GetColorReference().m_standard==4||GetColorReference().m_standard==5)||GetColorReference().m_standard==3 ? 30:75) )
+		else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetCyan(), GetColorReference() ) < 0.05 )
 		{
 			centerXYZ = GetColorReference().GetCyan();
+			if (m_b16_235)
+			{
+				nR = 16;
+				nG = 235;
+				nB = 235;
+			}
+			else
+			{
+				nR = 0;
+				nG = 255;
+				nB = 255;
+			}
 			if (GetColorReference().m_standard != 4)
    			  m_clr = RGB(0,192,192);
 			else
 			  m_clr = RGB(196,216,120);
 		}
-		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetMagenta() ) < ((GetColorReference().m_standard==4||GetColorReference().m_standard==5)||GetColorReference().m_standard==3 ? 30:75) )
+		else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetMagenta(), GetColorReference() ) < 0.05 )
 		{
 			centerXYZ = GetColorReference().GetMagenta();
+			if (m_b16_235)
+			{
+				nR = 235;
+				nG = 0;
+				nB = 235;
+			}
+			else
+			{
+				nR = 255;
+				nG = 16;
+				nB = 255;
+			}
 			if (GetColorReference().m_standard != 4)
    			  m_clr = RGB(192,0,192);
 			else
@@ -116,6 +201,16 @@ void CTargetWnd::Refresh()
 
         ColorxyY aColor = m_pRefColor -> GetxyYValue();
         ColorxyY centerxyY(centerXYZ);
+		//Update test window for display when selected
+		BOOL		bDisplayColor = GetConfig () -> m_bDisplayTestColors;
+		if (minCol != -1)
+		{
+			if (bDisplayColor)
+			{
+				( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.SetColor ( RGB(nR,nG,nB) );
+				( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.RedrawWindow ();
+			}
+		}
 
 		m_deltax = (aColor[0]-centerxyY[0])/centerxyY[0];
 		m_deltay = (aColor[1]-centerxyY[1])/centerxyY[1];

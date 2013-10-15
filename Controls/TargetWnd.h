@@ -58,7 +58,7 @@ public:
 
 // Operations
 public:
-	void Refresh();
+	void Refresh(bool m_b16_235, int minCol, int nSize);
 
 protected:
 	int m_prev_cx; 
