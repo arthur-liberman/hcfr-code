@@ -58,6 +58,7 @@ public:
 
 	// Color settings
 	ColorStandard m_colorStandard;
+	CCPatterns	m_CCMode;
 	WhiteTarget m_whiteTarget;
 	BOOL m_bDisplayTestColors;
 	BOOL m_bContinuousMeasures;
@@ -67,6 +68,8 @@ public:
 	BOOL m_bUseRoundDown;
 	int m_BWColorsToAdd;
 	double m_GammaRef;
+	double m_GammaAvg;
+	BOOL m_useMeasuredGamma;
 	double m_manualGOffset;
 	int m_GammaOffsetType;
 

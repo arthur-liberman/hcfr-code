@@ -155,10 +155,10 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 			if(m_showDeltaE) 
 			{
-				// Determine Reference Y luma for Delta E calculus
+				// Determine Reference Y luminance for Delta E calculus
 				if ( GetConfig () -> m_bUseDeltaELumaOnGrays )
 				{
-					// Compute reference Luma regarding actual offset and reference gamma
+					// Compute reference luminance regarding actual offset and reference gamma
 					double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
 					double valy=pow(valx, GetConfig()->m_GammaRef);
 					
@@ -168,11 +168,17 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 				}
 				else
 				{
-					// Use actual gray luma as correct reference (Delta E will check color only, not brightness)
+					// Use actual gray luminance as correct reference (Delta E will check color only, not brightness)
 					YWhite = aColor [ 2 ];
 				}
-//				m_graphCtrl2.AddPoint(m_deltaEGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(YWhite, refColor, 1.0, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula));
-				m_graphCtrl2.AddPoint(m_deltaEGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(refColor));
+				if (GetConfig ()->m_bUseDeltaELumaOnGrays)
+				{
+					m_graphCtrl2.AddPoint(m_deltaEGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(YWhite, refColor, 1.0, GetColorReference(), true ));
+				}
+				else
+				{
+					m_graphCtrl2.AddPoint(m_deltaEGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(refColor));
+				}
 			}
 		}
 	}
@@ -210,10 +216,10 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 			if(m_showDeltaE) 
 			{
-				// Determine Reference Y luma for Delta E calculus
+				// Determine Reference Y luminance for Delta E calculus
 				if ( GetConfig () -> m_bUseDeltaELumaOnGrays )
 				{
-					// Compute reference Luma regarding actual offset and reference gamma
+					// Compute reference luminance regarding actual offset and reference gamma
 					double valxref=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+OffsetRef)/(1.0+OffsetRef);
 					double valyref=pow(valxref, GetConfig()->m_GammaRef);
 					
@@ -223,19 +229,30 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 				}
 				else
 				{
-					// Use actual gray luma as correct reference (Delta E will check color only, not brightness)
+					// Use actual gray luminance as correct reference (Delta E will check color only, not brightness)
 					YWhiteRefDoc = aColorRef [ 2 ];
 
 					if ( bMainDocHasColors )
 						YWhite = aColor [ 2 ];
 				}
-
-//				m_graphCtrl2.AddPoint(m_deltaEDataRefGraphID, x, pDataRef->GetMeasure()->GetGray(i).GetDeltaE(YWhiteRefDoc, refColor, 1.0, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula));
-				m_graphCtrl2.AddPoint(m_deltaEDataRefGraphID, x, pDataRef->GetMeasure()->GetGray(i).GetDeltaE(refColor));
+				if (GetConfig ()->m_bUseDeltaELumaOnGrays)
+				{
+					m_graphCtrl2.AddPoint(m_deltaEDataRefGraphID, x, pDataRef->GetMeasure()->GetGray(i).GetDeltaE(YWhiteRefDoc, refColor, 1.0, GetColorReference(), true ));
+				}
+				else
+				{
+					m_graphCtrl2.AddPoint(m_deltaEDataRefGraphID, x, pDataRef->GetMeasure()->GetGray(i).GetDeltaE(refColor));
+				}
 				
 				if (bMainDocHasColors)
-//					m_graphCtrl2.AddPoint(m_deltaEBetweenGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(YWhite,pDataRef->GetMeasure()->GetGray(i),YWhiteRefDoc, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula)); //Ki
-					m_graphCtrl2.AddPoint(m_deltaEBetweenGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(pDataRef->GetMeasure()->GetGray(i))); //Ki
+					if (GetConfig ()->m_bUseDeltaELumaOnGrays)
+					{
+						m_graphCtrl2.AddPoint(m_deltaEBetweenGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(YWhite,pDataRef->GetMeasure()->GetGray(i),YWhiteRefDoc, GetColorReference(), true )); //Ki
+					}
+					else
+					{
+						m_graphCtrl2.AddPoint(m_deltaEBetweenGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(pDataRef->GetMeasure()->GetGray(i))); //Ki
+					}
 			}
 		}
 	}

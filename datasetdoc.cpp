@@ -187,7 +187,7 @@ static UINT __cdecl BkgndThreadFunc ( LPVOID lpParameter )
 					    if ( IsWindow ( pView -> m_hWnd ) && pView -> IsKindOf ( RUNTIME_CLASS ( CMainView ) ) )
 					    {
 						    // Reset button image to the green arrow only when in free measures mode
-						    if ( ( (CMainView*) pView ) -> m_displayMode == 2 )
+						    if ( ( (CMainView*) pView ) -> m_displayMode == DISPLAY_madVR )
 						    {
 							    //( (CMainView*) pView ) -> m_grayScaleButton.SetIcon(IDI_START_ICON,24,24);
 		 					    ( (CMainView*) pView ) -> m_grayScaleButton.SetBitmaps(IDB_MEAS_CONT,RGB(0,0,0));
@@ -310,7 +310,7 @@ BOOL StartBackgroundMeasures ( CDataSetDoc * pDoc )
 					pView = g_pDataDocRunningThread -> GetNextView ( pos );
 					if ( IsWindow ( pView -> m_hWnd ) && pView -> IsKindOf ( RUNTIME_CLASS ( CMainView ) ) )
 					{
-						if ( ( (CMainView*) pView ) -> m_displayMode == 2 )
+						if ( ( (CMainView*) pView ) -> m_displayMode == DISPLAY_madVR )
 						{
 							//( (CMainView*) pView ) -> m_grayScaleButton.SetIcon(IDI_STOP_ICON,24,24);
 							( (CMainView*) pView ) -> m_grayScaleButton.SetBitmaps(IDB_MEAS_STOP,RGB(0,0,0));
@@ -392,7 +392,7 @@ void StopBackgroundMeasures ()
 				if ( IsWindow ( pView -> m_hWnd ) && pView -> IsKindOf ( RUNTIME_CLASS ( CMainView ) ) )
 				{
 					// Reset button image to the green arrow only when in free measures mode
-					if ( ( (CMainView*) pView ) -> m_displayMode == 2 )
+					if ( ( (CMainView*) pView ) -> m_displayMode == DISPLAY_madVR )
 					{
 						//( (CMainView*) pView ) -> m_grayScaleButton.SetIcon(IDI_START_ICON,24,24);
 						( (CMainView*) pView ) -> m_grayScaleButton.SetBitmaps(IDB_MEAS_CONT,RGB(0,0,0));
@@ -469,6 +469,8 @@ BEGIN_MESSAGE_MAP(CDataSetDoc, CDocument)
 	ON_UPDATE_COMMAND_UI(IDM_MEASURE_SAT_CYAN, OnUpdateMeasureSatCyan)
 	ON_COMMAND(IDM_MEASURE_SAT_MAGENTA, OnMeasureSatMagenta)
 	ON_UPDATE_COMMAND_UI(IDM_MEASURE_SAT_MAGENTA, OnUpdateMeasureSatMagenta)
+	ON_COMMAND(IDM_MEASURE_SAT_CC24, OnMeasureSatCC24)
+	ON_UPDATE_COMMAND_UI(IDM_MEASURE_SAT_CC24, OnUpdateMeasureSatCC24)
 	ON_COMMAND(IDM_MEASURE_CONTRAST, OnMeasureContrast)
 	ON_UPDATE_COMMAND_UI(IDM_MEASURE_CONTRAST, OnUpdateMeasureContrast)
 	ON_COMMAND(IDM_MEASURE_SAT_ALL, OnMeasureSatAll)
@@ -486,6 +488,8 @@ BEGIN_MESSAGE_MAP(CDataSetDoc, CDocument)
 	ON_COMMAND(IDM_SIM_SINGLEMEASURE, OnSimSingleMeasurement)
 	ON_COMMAND(IDM_MEASURE_SAT_PRIMARIES, OnMeasureSatPrimaries)
 	ON_UPDATE_COMMAND_UI(IDM_MEASURE_SAT_PRIMARIES, OnUpdateMeasureSatPrimaries)
+	ON_COMMAND(IDM_MEASURE_SAT_PRIMARIES_SECONDARIES, OnMeasureSatPrimariesSecondaries)
+	ON_UPDATE_COMMAND_UI(IDM_MEASURE_SAT_PRIMARIES_SECONDARIES, OnUpdateMeasureSatPrimariesSecondaries)
 	ON_COMMAND(IDM_SAVE_CALIBRATION_FILE, OnSaveCalibrationFile)
 	ON_COMMAND(IDM_MANUALLY_EDIT_SENSOR, OnConfigureSensor ) 
 	ON_COMMAND(IDM_LOAD_CALIBRATION_FILE, OnLoadCalibrationFile ) 
@@ -1173,6 +1177,17 @@ void CDataSetDoc::MeasureMagentaSatScale()
 	}
 }
 
+void CDataSetDoc::MeasureCC24SatScale() 
+{
+	StopBackgroundMeasures ();
+
+	if(m_measure.MeasureCC24SatScale(m_pSensor,m_pGenerator))
+	{
+		SetModifiedFlag(m_measure.IsModified());
+		UpdateAllViews(NULL, UPD_CC24SAT);
+	}
+}
+
 void CDataSetDoc::MeasureAllSaturationScales() 
 {
 	StopBackgroundMeasures ();
@@ -1189,6 +1204,17 @@ void CDataSetDoc::MeasurePrimarySaturationScales()
 	StopBackgroundMeasures ();
 
 	if(m_measure.MeasureAllSaturationScales(m_pSensor,m_pGenerator,TRUE))
+	{
+		SetModifiedFlag(m_measure.IsModified());
+		UpdateAllViews(NULL, UPD_ALLSATURATIONS);
+	}
+}
+
+void CDataSetDoc::MeasurePrimarySecondarySaturationScales() 
+{
+	StopBackgroundMeasures ();
+
+	if(m_measure.MeasurePrimarySecondarySaturationScales(m_pSensor,m_pGenerator,FALSE))
 	{
 		SetModifiedFlag(m_measure.IsModified());
 		UpdateAllViews(NULL, UPD_ALLSATURATIONS);
@@ -2259,7 +2285,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 	double			dLuxValue;
 	BOOL			bUseLuxValues = TRUE;
 	double			measuredLux [ 256 ];
-
+	double			gamma=GetConfig()->m_GammaAvg;
 	MSG				message;
 
 	BOOL (CMeasure::*pValidationFunc) ( BOOL, double * ) = NULL;
@@ -2299,7 +2325,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nSteps = GetMeasure () -> GetSaturationSize ();
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_RED;
-			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, true, false, false );
+			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, true, false, false, gamma);
 			 pValidationFunc = &CMeasure::ValidateBackgroundRedSatScale;
 			 lHint = UPD_REDSAT;
 			 break;
@@ -2308,7 +2334,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nSteps = GetMeasure () -> GetSaturationSize ();
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_GREEN;
-			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, false, true, false );
+			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, false, true, false, gamma );
 			 pValidationFunc = &CMeasure::ValidateBackgroundGreenSatScale;
 			 lHint = UPD_GREENSAT;
 			 break;
@@ -2317,7 +2343,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nSteps = GetMeasure () -> GetSaturationSize ();
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_BLUE;
-			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, false, false, true );
+			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, false, false, true, gamma );
 			 pValidationFunc = &CMeasure::ValidateBackgroundBlueSatScale;
 			 lHint = UPD_BLUESAT;
 			 break;
@@ -2326,7 +2352,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nSteps = GetMeasure () -> GetSaturationSize ();
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_YELLOW;
-			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, true, true, false );
+			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, true, true, false, gamma );
 			 pValidationFunc = &CMeasure::ValidateBackgroundYellowSatScale;
 			 lHint = UPD_YELLOWSAT;
 			 break;
@@ -2335,7 +2361,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nSteps = GetMeasure () -> GetSaturationSize ();
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_CYAN;
-			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, false, true, true );
+			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, false, true, true, gamma );
 			 pValidationFunc = &CMeasure::ValidateBackgroundCyanSatScale;
 			 lHint = UPD_CYANSAT;
 			 break;
@@ -2344,9 +2370,33 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nSteps = GetMeasure () -> GetSaturationSize ();
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_MAGENTA;
-			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, true, false, true );
+			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, true, false, true, gamma );
 			 pValidationFunc = &CMeasure::ValidateBackgroundMagentaSatScale;
 			 lHint = UPD_MAGENTASAT;
+			 break;
+
+		case 9:
+			CGenerator::MeasureType nPattern;
+			switch (GetConfig()->m_CCMode)
+			{
+				case MCD:
+				 nPattern=CGenerator::MT_SAT_CC24_MCD;
+				 break;
+				case GCD:
+				nPattern=CGenerator::MT_SAT_CC24_GCD;		
+				 break;
+				case AXIS:
+				nPattern=CGenerator::MT_SAT_CC24_GCD;		
+				 break;
+				case OFPS:
+				nPattern=CGenerator::MT_SAT_CC24_GCD;		
+			}
+			 nSteps = 24;
+			 nMaxSteps = nSteps;
+			 mType [ 0 ] = nPattern;
+			 GenerateCC24Colors (GenColors, GetConfig()->m_CCMode );
+			 pValidationFunc = &CMeasure::ValidateBackgroundCC24SatScale;
+			 lHint = UPD_CC24SAT;
 			 break;
 
 		case -5:
@@ -2821,7 +2871,7 @@ void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int Col
 		// ColorSpace == 3: special mode to display in main view
 		if ( nLumCurveMode > 0 )
 		{
-			// When luxmeter values are authorized in curves, use preference for contrast/delta luma
+			// When luxmeter values are authorized in curves, use preference for contrast/delta luminance
 			blacklvl=GetMeasure()->GetGray(0).GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter);
 			whitelvl=GetMeasure()->GetGray(Size-1).GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter);
 		}
@@ -3205,9 +3255,49 @@ void CDataSetDoc::OnMeasureSatMagenta()
 	}
 }
 
+void CDataSetDoc::OnMeasureSatCC24() 
+{
+	CString	Msg, MsgQueue, TmpStr;
+//	int		nNbPoints = GetMeasure () -> GetSaturationSize () - 1;
+	int		nNbPoints = 24;
+	MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
+
+	Msg.LoadString ( IDS_RUNSATCC24ON );
+	TmpStr.Format ( " %d ", nNbPoints );
+	Msg += TmpStr + MsgQueue;
+	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+	{
+		MeasureCC24SatScale();
+
+		SetSelectedColor ( noDataColor );
+		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+	}
+}
+
 void CDataSetDoc::OnUpdateMeasureSatMagenta(CCmdUI* pCmdUI) 
 {
 	pCmdUI -> Enable ( m_pGenerator -> CanDisplayScale ( CGenerator::MT_SAT_MAGENTA, GetMeasure () -> GetSaturationSize(), TRUE ) );
+}
+
+void CDataSetDoc::OnUpdateMeasureSatCC24(CCmdUI* pCmdUI) 
+{
+		CGenerator::MeasureType nPattern;
+	switch (GetConfig()->m_CCMode)
+	{
+	case MCD:
+		 nPattern=CGenerator::MT_SAT_CC24_MCD;
+		 break;
+	case GCD:
+		 nPattern=CGenerator::MT_SAT_CC24_GCD;		
+		 break;
+	case AXIS:
+		 nPattern=CGenerator::MT_SAT_CC24_GCD;		
+		 break;
+	case OFPS:
+		 nPattern=CGenerator::MT_SAT_CC24_GCD;		
+	}
+
+	pCmdUI -> Enable ( m_pGenerator -> CanDisplayScale ( nPattern, (nPattern<2?24:(nPattern==2?80:256)), TRUE ) );
 }
 
 void CDataSetDoc::OnMeasureContrast() 
@@ -3279,8 +3369,6 @@ void CDataSetDoc::OnUpdateMeasureGrayscaleColors(CCmdUI* pCmdUI)
 	pCmdUI -> Enable ( m_pGenerator -> CanDisplayGrayAndColorsSeries () );
 }
 
-
-
 void CDataSetDoc::OnMeasureSatPrimaries() 
 {
 	CString	Msg, MsgQueue, TmpStr;
@@ -3300,7 +3388,31 @@ void CDataSetDoc::OnMeasureSatPrimaries()
 	}
 }
 
+void CDataSetDoc::OnMeasureSatPrimariesSecondaries() 
+{
+	CString	Msg, MsgQueue, TmpStr;
+	int		nNbPoints = GetMeasure () -> GetSaturationSize () - 1;
+	
+	MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
+
+	Msg.LoadString ( IDS_RUNPRIMSATON2 );
+	TmpStr.Format ( " %d ", nNbPoints );
+	Msg += TmpStr + MsgQueue;
+	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+	{
+		MeasurePrimarySecondarySaturationScales();
+
+		SetSelectedColor ( noDataColor );
+		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+	}
+}
+
 void CDataSetDoc::OnUpdateMeasureSatPrimaries(CCmdUI* pCmdUI) 
+{
+	pCmdUI -> Enable ( m_pGenerator -> CanDisplayScale ( CGenerator::MT_SAT_ALL, GetMeasure () -> GetSaturationSize(), TRUE ) );
+}
+
+void CDataSetDoc::OnUpdateMeasureSatPrimariesSecondaries(CCmdUI* pCmdUI) 
 {
 	pCmdUI -> Enable ( m_pGenerator -> CanDisplayScale ( CGenerator::MT_SAT_ALL, GetMeasure () -> GetSaturationSize(), TRUE ) );
 }

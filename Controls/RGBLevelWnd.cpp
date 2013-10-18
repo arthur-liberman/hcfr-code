@@ -60,32 +60,32 @@ void CRGBLevelWnd::Refresh()
 		{
 			m_bLumaMode = FALSE;
 		}
-		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetRed() ) < (GetColorReference().m_standard==4||GetColorReference().m_standard==3 ? 30:75) )
+		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetRed() ) < ((GetColorReference().m_standard==4||GetColorReference().m_standard==5)||GetColorReference().m_standard==3 ? 30:75) )
 		{
 			m_bLumaMode = TRUE;
 			RefLuma = GetColorReference().GetRedReferenceLuma ();
 		}
-		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetGreen() ) < (GetColorReference().m_standard==4||GetColorReference().m_standard==3 ? 30:75) )
+		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetGreen() ) < ((GetColorReference().m_standard==4||GetColorReference().m_standard==5)||GetColorReference().m_standard==3 ? 30:75) )
 		{
 			m_bLumaMode = TRUE;
 			RefLuma = GetColorReference().GetGreenReferenceLuma ();
 		}
-		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetBlue() ) < (GetColorReference().m_standard==4 ? 30:75) )
+		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetBlue() ) < ((GetColorReference().m_standard==4||GetColorReference().m_standard==5) ? 30:75) )
 		{
 			m_bLumaMode = TRUE;
 			RefLuma = GetColorReference().GetBlueReferenceLuma ();
 		}
-		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetYellow() ) < (GetColorReference().m_standard==4||GetColorReference().m_standard==3 ? 30:75) )
+		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetYellow() ) < ((GetColorReference().m_standard==4||GetColorReference().m_standard==5)||GetColorReference().m_standard==3 ? 30:75) )
 		{
 			m_bLumaMode = TRUE;
 			RefLuma = GetColorReference().GetYellowReferenceLuma ();
 		}
-		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetCyan() ) < (GetColorReference().m_standard==4||GetColorReference().m_standard==3 ? 30:75) )
+		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetCyan() ) < ((GetColorReference().m_standard==4||GetColorReference().m_standard==5)||GetColorReference().m_standard==3 ? 30:75) )
 		{
 			m_bLumaMode = TRUE;
 			RefLuma = GetColorReference().GetCyanReferenceLuma ();
 		}
-		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetMagenta() ) < (GetColorReference().m_standard==4||GetColorReference().m_standard==3 ? 30:75) )
+		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetMagenta() ) < ((GetColorReference().m_standard==4||GetColorReference().m_standard==5)||GetColorReference().m_standard==3 ? 30:75) )
 		{
 			m_bLumaMode = TRUE;
 			RefLuma = GetColorReference().GetMagentaReferenceLuma ();

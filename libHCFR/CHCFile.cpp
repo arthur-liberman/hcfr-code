@@ -179,6 +179,15 @@ void CHCFile::readFile (const char* path)
       if (newColor.isValid())
         magentaSaturationColors.push_back(newColor);
     }
+    // saturation cc24
+    file.read((char*)&arraySize, 24);
+    arraySize = littleEndianUint32ToHost(arraySize);
+    for (loopIndex = 0; loopIndex < arraySize; loopIndex ++)
+    {
+      CColor newColor (file);
+      if (newColor.isValid())
+        cc24SaturationColors.push_back(newColor);
+    }
   }
   
   // mesures libres
@@ -252,6 +261,10 @@ list<CColor>& CHCFile::getCyanSaturationColors ()
 list<CColor>& CHCFile::getMagentaSaturationColors ()
 {
   return magentaSaturationColors;
+}
+list<CColor>& CHCFile::getCC24SaturationColors ()
+{
+  return cc24SaturationColors;
 }
 list<CColor>& CHCFile::getYellowSaturationColors ()
 {

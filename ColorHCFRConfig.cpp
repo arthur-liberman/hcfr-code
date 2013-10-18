@@ -242,6 +242,7 @@ CColorHCFRConfig::~CColorHCFRConfig()
 void CColorHCFRConfig::InitDefaults()
 {
 	m_colorStandard=HDTV;
+	m_CCMode=GCD;
 	m_whiteTarget=D65;
 	m_bDisplayTestColors=TRUE;
 	m_bContinuousMeasures=TRUE;
@@ -251,6 +252,8 @@ void CColorHCFRConfig::InitDefaults()
 	m_bUseRoundDown=FALSE;
 	m_BWColorsToAdd=1;
 	m_GammaRef=2.22;
+	m_GammaAvg=2.22;
+	m_useMeasuredGamma=FALSE;
 	m_GammaOffsetType=1;
 	m_manualGOffset=0.099;
 
@@ -284,7 +287,7 @@ void CColorHCFRConfig::InitDefaults()
 	m_nLuminanceCurveMode = 0;
 	m_bPreferLuxmeter = FALSE;
 	m_bUseOldDeltaEFormula = FALSE;
-	m_bUseDeltaELumaOnGrays = FALSE;
+	m_bUseDeltaELumaOnGrays = TRUE;
 }
 
 BOOL CColorHCFRConfig::LoadSettings()
@@ -298,6 +301,10 @@ BOOL CColorHCFRConfig::LoadSettings()
 		m_BWColorsToAdd = 2;
 
 	m_colorStandard=(ColorStandard)GetProfileInt("References","ColorStandard",HDTV);
+<<<<<<< HEAD
+=======
+	m_CCMode=(CCPatterns)GetProfileInt("References","CCMode",GCD);
+>>>>>>> 11eba09782d36722d9db9fe480caa6a9bde44ece
 	m_whiteTarget=(WhiteTarget)GetProfileInt("References","WhiteTarget",D65);
 	m_bDisplayTestColors=GetProfileInt("References","DisplayTestColors",1);
 	m_bContinuousMeasures=GetProfileInt("References","ContinuousMeasures",1);
@@ -309,7 +316,12 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_bLatencyBeep=GetProfileInt("References","IrisLatencyBeep",0);
 	m_bUseRoundDown=GetProfileInt("References","SatUseMeasuredRef",0);
 	m_GammaRef=GetProfileDouble("References","GammaRefValue",2.22);
+<<<<<<< HEAD
 
+=======
+	m_GammaAvg=GetProfileDouble("References","GammaAvgValue",2.22);
+	m_useMeasuredGamma=GetProfileInt("References","UseMeasuredGamma",1);
+>>>>>>> 11eba09782d36722d9db9fe480caa6a9bde44ece
 	m_GammaOffsetType=GetProfileInt("References","GammaOffsetType",4);
 	m_manualGOffset=GetProfileDouble("References","ManualGamOffset",0.099);
 
@@ -340,7 +352,7 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_nLuminanceCurveMode = GetProfileInt("Advanced","LuminanceCurveMode",0);
 	m_bPreferLuxmeter = GetProfileInt("Advanced","PreferLuxmeter",0);
 	m_bUseOldDeltaEFormula = GetProfileInt("Advanced","UseOldDeltaEFormula",0);
-	m_bUseDeltaELumaOnGrays = GetProfileInt("Advanced","UseDeltaELumaOnGrays",0);
+	m_bUseDeltaELumaOnGrays = GetProfileInt("Advanced","UseDeltaELumaOnGrays",1);
 
 
 	return TRUE;
@@ -355,6 +367,7 @@ void CColorHCFRConfig::SaveSettings()
 	WriteProfileInt("References","GammaOffsetType",m_GammaOffsetType);
 	WriteProfileDouble("References","ManualGamOffset",m_manualGOffset);
 	WriteProfileInt("References","ColorStandard",m_colorStandard);
+	WriteProfileInt("References","CCMode",m_CCMode);
 	WriteProfileInt("References","WhiteTarget",m_whiteTarget);
 	WriteProfileInt("References","DisplayTestColors",m_bDisplayTestColors);
 	WriteProfileInt("References","ContinuousMeasures",m_bContinuousMeasures);
@@ -363,7 +376,8 @@ void CColorHCFRConfig::SaveSettings()
 	WriteProfileInt("References","IrisLatencyBeep",m_bLatencyBeep);
 	WriteProfileInt("References","SatUseMeasuredRef",m_bUseRoundDown);
 	WriteProfileDouble("References","GammaRefValue",m_GammaRef);
-
+	WriteProfileDouble("References","GammaAvgValue",m_GammaAvg);
+	WriteProfileInt("References","UseMeasuredGamma",1);
 	WriteProfileInt("Appearance","DrawMode",m_menuDrawMode);
 	WriteProfileInt("Appearance","DrawMemuBorder",m_drawMenuBorder);
 	WriteProfileInt("Appearance","SelectDisabledItem",m_doSelectDisabledItem);
@@ -411,8 +425,11 @@ void CColorHCFRConfig::SetPropertiesSheetValues()
 	m_generalPropertiesPage.m_isModified=FALSE;
 
 	m_referencesPropertiesPage.m_colorStandard=m_colorStandard;
+	m_referencesPropertiesPage.m_CCMode=m_CCMode;
 	m_referencesPropertiesPage.m_whiteTarget=m_whiteTarget;
   	m_referencesPropertiesPage.m_GammaRef=m_GammaRef;
+  	m_referencesPropertiesPage.m_GammaAvg=m_GammaAvg;
+  	m_referencesPropertiesPage.m_useMeasuredGamma=m_useMeasuredGamma;
 	m_referencesPropertiesPage.m_manualGOffset=m_manualGOffset;
 	m_referencesPropertiesPage.m_GammaOffsetType=m_GammaOffsetType;
 	m_appearancePropertiesPage.m_isModified=FALSE;
@@ -493,8 +510,11 @@ BOOL CColorHCFRConfig::GetPropertiesSheetValues()
 	m_bUseRoundDown=m_generalPropertiesPage.m_bUseRoundDown;
 
 	m_colorStandard=(ColorStandard)(m_referencesPropertiesPage.m_colorStandard);
+	m_CCMode=(CCPatterns)(m_referencesPropertiesPage.m_CCMode);
 	m_whiteTarget=(WhiteTarget)m_referencesPropertiesPage.m_whiteTarget;
 	m_GammaRef=m_referencesPropertiesPage.m_GammaRef;
+	m_GammaAvg=m_referencesPropertiesPage.m_GammaAvg;
+	m_useMeasuredGamma=m_referencesPropertiesPage.m_useMeasuredGamma;
 	m_manualGOffset=m_referencesPropertiesPage.m_manualGOffset;
 	m_GammaOffsetType=m_referencesPropertiesPage.m_GammaOffsetType;
 	switch(m_appearancePropertiesPage.m_themeComboIndex)

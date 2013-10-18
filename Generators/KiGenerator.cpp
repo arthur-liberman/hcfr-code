@@ -537,6 +537,10 @@ BOOL CKiGenerator::DisplayGray(double aLevel, MeasureType nPatternType, BOOL bCh
 				case MT_SAT_YELLOW:
 				case MT_SAT_CYAN:
 				case MT_SAT_MAGENTA:
+				case MT_SAT_CC24_GCD:
+				case MT_SAT_CC24_MCD:
+				case MT_SAT_CC24_AXIS:
+				case MT_SAT_CC24_OFPS:
 				case MT_CALIBRATE:
 				case MT_SAT_ALL:
 					 // Cannot occur here
@@ -769,6 +773,30 @@ BOOL CKiGenerator::DisplayRGBColor( const ColorRGBDisplay& clrIn  ,MeasureType n
 					 str.LoadString ( IDS_SATMAGENTA2 );
 					 bFirstSaturationSecondary = TRUE;
 					 nFirstSaturationMenuPos = 4;
+					 break;
+
+				case MT_SAT_CC24_GCD:
+					 str.LoadString ( IDS_SATCC242 );
+					 bFirstSaturationSecondary = TRUE;
+					 nFirstSaturationMenuPos = 5;
+					 break;
+
+				case MT_SAT_CC24_MCD:
+					 str.LoadString ( IDS_SATCC242 );
+					 bFirstSaturationSecondary = TRUE;
+					 nFirstSaturationMenuPos = 5;
+					 break;
+
+				case MT_SAT_CC24_AXIS:
+					 str.LoadString ( IDS_SATCC242 );
+					 bFirstSaturationSecondary = TRUE;
+					 nFirstSaturationMenuPos = 5;
+					 break;
+
+				case MT_SAT_CC24_OFPS:
+					 str.LoadString ( IDS_SATCC242 );
+					 bFirstSaturationSecondary = TRUE;
+					 nFirstSaturationMenuPos = 5;
 					 break;
 
 				case MT_CALIBRATE:
@@ -1061,6 +1089,26 @@ BOOL CKiGenerator::CanDisplayScale ( MeasureType nScaleType, int nbLevels, BOOL 
 			if (nbLevels != SATURATIONLVLNUMBER)
 				returnvalue = FALSE;
 			break;
+
+		case MT_SAT_CC24_GCD:
+			if (nbLevels != 24)
+				returnvalue = FALSE;
+			break;
+
+		case MT_SAT_CC24_MCD:
+			if (nbLevels != 24)
+				returnvalue = FALSE;
+			break;
+
+		case MT_SAT_CC24_AXIS:
+			if (nbLevels != 80)
+				returnvalue = FALSE;
+			break;
+
+		case MT_SAT_CC24_OFPS:
+			if (nbLevels != 256)
+				returnvalue = FALSE;
+			break;
 		
 		case MT_SAT_ALL:
 			if ((nbLevels != SATURATIONLVLNUMBER) || ! ( m_OkCodeLength > 0 && m_DownCodeLength > 0 && m_RightCodeLength > 0 ))
@@ -1165,6 +1213,10 @@ switch ( nScaleType )
 			case MT_SAT_YELLOW:
 			case MT_SAT_CYAN:
 			case MT_SAT_MAGENTA:
+			case MT_SAT_CC24_GCD:
+			case MT_SAT_CC24_MCD:
+			case MT_SAT_CC24_AXIS:
+			case MT_SAT_CC24_OFPS:
 				if (!m_patternCheckOnSaturations)
 					return	TRUE;
 
@@ -1213,6 +1265,22 @@ switch ( nScaleType )
 					break;
 				case MT_SAT_MAGENTA:
 					str2.LoadString ( IDS_MAGENTASATPERCENT );
+					str.Format(str2,m_lastPatternInfo);
+					break;
+				case MT_SAT_CC24_GCD:
+					str2.LoadString ( IDS_CC24SATPERCENT );
+					str.Format(str2,m_lastPatternInfo);
+					break;
+				case MT_SAT_CC24_MCD:
+					str2.LoadString ( IDS_CC24SATPERCENT );
+					str.Format(str2,m_lastPatternInfo);
+					break;
+				case MT_SAT_CC24_AXIS:
+					str2.LoadString ( IDS_CC24SATPERCENT );
+					str.Format(str2,m_lastPatternInfo);
+					break;
+				case MT_SAT_CC24_OFPS:
+					str2.LoadString ( IDS_CC24SATPERCENT );
 					str.Format(str2,m_lastPatternInfo);
 					break;
 				case MT_PRIMARY:

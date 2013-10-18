@@ -50,6 +50,10 @@ public:
 		MT_SAT_YELLOW,
 		MT_SAT_CYAN,
 		MT_SAT_MAGENTA,
+		MT_SAT_CC24_GCD,
+		MT_SAT_CC24_MCD,
+		MT_SAT_CC24_AXIS,
+		MT_SAT_CC24_OFPS,
 		MT_CONTRAST,
 		MT_CALIBRATE,
 		MT_SAT_ALL
@@ -77,7 +81,7 @@ public:
 	virtual BOOL Init(UINT nbMeasure = 0);
 	virtual BOOL DisplayGray(double aLevel,MeasureType nPatternType, BOOL bChangePattern = TRUE);
 	virtual BOOL DisplayRGBColor(const ColorRGBDisplay& aRGBColor, MeasureType nPatternType, UINT nPatternInfo = 0,BOOL bChangePattern = TRUE,BOOL bSilentMode = FALSE);	// need to be overriden
-	virtual BOOL DisplayRGBColormadVR(const ColorRGBDisplay& aRGBColor, MeasureType nPatternType, UINT nPatternInfo = 0,BOOL bChangePattern = TRUE,BOOL bSilentMode = FALSE);	// need to be overriden
+	virtual BOOL DisplayRGBColormadVR(const ColorRGBDisplay& aRGBColor);	// need to be overriden
 	virtual BOOL DisplayAnsiBWRects(BOOL bInvert);		// need to be overriden
 	virtual BOOL DisplayAnimatedBlack();				// need to be overriden
 	virtual BOOL DisplayAnimatedWhite();				// need to be overriden

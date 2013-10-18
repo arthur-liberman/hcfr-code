@@ -57,6 +57,7 @@
 #define UPD_ARRAYSIZES					22
 #define UPD_GENERALREFERENCES			23
 #define UPD_FREEMEASUREAPPENDED			24
+#define UPD_CC24SAT					25
 
 class CColorTempHistoView;
 class CRGBHistoView;
@@ -112,8 +113,10 @@ public:
 	void MeasureYellowSatScale();
 	void MeasureCyanSatScale();
 	void MeasureMagentaSatScale();
+	void MeasureCC24SatScale();
 	void MeasureAllSaturationScales();
 	void MeasurePrimarySaturationScales();
+	void MeasurePrimarySecondarySaturationScales();
 
 	void MeasurePrimaries();
 	void MeasureSecondaries();
@@ -219,6 +222,8 @@ protected:
 	afx_msg void OnUpdateMeasureSatCyan(CCmdUI* pCmdUI);
 	afx_msg void OnMeasureSatMagenta();
 	afx_msg void OnUpdateMeasureSatMagenta(CCmdUI* pCmdUI);
+	afx_msg void OnMeasureSatCC24();
+	afx_msg void OnUpdateMeasureSatCC24(CCmdUI* pCmdUI);
 	afx_msg void OnMeasureContrast();
 	afx_msg void OnUpdateMeasureContrast(CCmdUI* pCmdUI);
 	afx_msg void OnMeasureSatAll();
@@ -237,6 +242,8 @@ protected:
 	afx_msg void OnMeasureSatPrimaries();
 	afx_msg void OnUpdateMeasureSatPrimaries(CCmdUI* pCmdUI);
 	afx_msg void OnSaveCalibrationFile();
+	afx_msg void OnMeasureSatPrimariesSecondaries();
+	afx_msg void OnUpdateMeasureSatPrimariesSecondaries(CCmdUI* pCmdUI);
 	afx_msg void OnLoadCalibrationFile();
 	afx_msg void OnUpdateSaveCalibrationFile(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateLoadCalibrationFile(CCmdUI* pCmdUI);

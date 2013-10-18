@@ -86,6 +86,7 @@ class CCIEChartGrapher
 	CBitmap m_yellowSatRefBitmap;
 	CBitmap m_cyanSatRefBitmap;
 	CBitmap m_magentaSatRefBitmap;
+	CBitmap m_cc24SatRefBitmap;
 	CBitmap m_grayPlotBitmap;
 	CBitmap m_measurePlotBitmap;
 	CBitmap m_selectedPlotBitmap;
@@ -104,6 +105,8 @@ class CCIEChartGrapher
 	BOOL m_doShowGrayScale;
 	BOOL m_doShowSaturationScale;
 	BOOL m_doShowSaturationScaleTarg;
+	BOOL m_doShowCCScale;
+	BOOL m_doShowCCScaleTarg;
 	BOOL m_doShowMeasurements;
 	BOOL m_bCIEuv;
 
@@ -192,6 +195,8 @@ protected:
 	afx_msg void OnCieShowGrayScale();
 	afx_msg void OnCieShowSaturationScale();
 	afx_msg void OnCieShowSaturationScaleTarg();
+	afx_msg void OnCieShowCCScale();
+	afx_msg void OnCieShowCCScaleTarg();
 	afx_msg void OnCieShowMeasurements();
 	afx_msg void OnGraphZoomIn();
 	afx_msg void OnGraphZoomOut();
@@ -199,6 +204,8 @@ protected:
 	afx_msg void OnUpdateCieShowGrayScale(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateCieShowSaturationScale(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateCieShowSaturationScaleTarg(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateCieShowCCScale(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateCieShowCCScaleTarg(CCmdUI* pCmdUI);
 	afx_msg void OnCieSavechart();
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);

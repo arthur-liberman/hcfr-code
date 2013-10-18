@@ -96,7 +96,7 @@ void CAdvancedPropPage::OnControlClicked(UINT nID)
 	// allow parent dialog to refresh all views to change data displayed
 	if ( nID == IDC_CHECK_IMPERIAL || nID == IDC_CHECK_PREFER_LUXMETER || nID == IDC_RADIO1 || nID == IDC_RADIO2 || nID == IDC_RADIO3 || nID == IDC_CHECK_OLD_DELTAE || nID == IDC_CHECK_DELTAE_GRAY_LUMA )
 		m_isModified=TRUE;
-	
+	/*
 	if ( nID == IDC_CHECK_OLD_DELTAE )
 	{
 		if ( m_OldDeltaE.GetCheck () )
@@ -110,6 +110,7 @@ void CAdvancedPropPage::OnControlClicked(UINT nID)
 			m_DeltaEGray.EnableWindow(TRUE);
 		}
 	}
+	*/
 	SetModified(TRUE);	
 }
 
@@ -134,7 +135,7 @@ UINT CAdvancedPropPage::GetHelpId ( LPSTR lpszTopic )
 BOOL CAdvancedPropPage::OnSetActive() 
 {
 	BOOL	bOk = CPropertyPageWithHelp::OnSetActive();
-
+/*
 	if ( m_bUseOldDeltaEFormula )
 	{
 		m_DeltaEGray.EnableWindow(FALSE);
@@ -145,6 +146,6 @@ BOOL CAdvancedPropPage::OnSetActive()
 	{
 		m_DeltaEGray.EnableWindow(TRUE);
 	}
-
+*/
 	return bOk;
 }

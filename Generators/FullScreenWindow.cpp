@@ -506,7 +506,7 @@ void CFullScreenWindow::OnPaint()
 
 	m_rectAreaPercent = sqrt (m_rectSizePercent / 100.) * 100;
 
-	if ( m_nDisplayMode != 0 )
+	if ( m_nDisplayMode != DISPLAY_GDI && m_nDisplayMode != DISPLAY_GDI_nBG )
 	{
 		// Black is the color key
 		DisplayColor = 0x00000000;
@@ -551,9 +551,12 @@ void CFullScreenWindow::OnPaint()
 		if(m_rectSizePercent < 100)  // Need to draw background
 		{
 //			brush.CreateSolidBrush ( RGB(0,0,0) );
-			brush.CreateSolidBrush ( RGB(bgstim*255,bgstim*255,bgstim*255) );
-			dc.FillRect ( &rect, &brush );
-			brush.DeleteObject ();
+			if (m_nDisplayMode != DISPLAY_GDI_nBG )
+			{
+				brush.CreateSolidBrush ( RGB(bgstim*255,bgstim*255,bgstim*255) );
+				dc.FillRect ( &rect, &brush );
+				brush.DeleteObject ();
+			}
 		}
 
 		int deltaWidth=(int)(rect.Width()*(100-m_rectAreaPercent)/100.0);
@@ -870,7 +873,7 @@ void CFullScreenWindow::OnTimer(UINT nIDEvent)
 	if ( m_IdTimer == nIDEvent )
 	{
 		// Initializations
-		if ( m_nDisplayMode == DISPLAY_GDI )
+		if ( (m_nDisplayMode == DISPLAY_GDI) || (m_nDisplayMode == DISPLAY_GDI_nBG) )
 		{
 			if ( m_bWhite )
 			{
@@ -945,7 +948,7 @@ void CFullScreenWindow::OnTimer(UINT nIDEvent)
 				m_XMax = rect.right - m_XMargin - ( m_XWidth * 3 );
 				m_YMax = rect.bottom - m_YMargin;
 
-				if ( m_nDisplayMode == DISPLAY_GDI )
+				if ((m_nDisplayMode == DISPLAY_GDI) || (m_nDisplayMode == DISPLAY_GDI_nBG) )
 				{
 					// Initial drawing
 					SetRect ( &rect, m_XCurrent, m_YMargin, m_XCurrent + m_XWidth + 1, m_YMax + 1 );
@@ -1004,7 +1007,7 @@ void CFullScreenWindow::OnTimer(UINT nIDEvent)
 			}
 
 			// Draw evolution
-			if ( m_nDisplayMode == DISPLAY_GDI )
+			if ((m_nDisplayMode == DISPLAY_GDI) || (m_nDisplayMode == DISPLAY_GDI_nBG) )
 			{
 				SetRect ( &rect, x0, m_YMargin, x0 + m_AbsDeltaX + 1, m_YMax + 1 );
 				pDC -> SelectObject ( & br0 );

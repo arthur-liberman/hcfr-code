@@ -118,12 +118,11 @@ public:
 	void	SetUserInfo ( DWORD dwUserInfo );
 
 protected:
+	void UpdateGrid();
 	void InitGrid();
 	void InitSelectedColorGrid();
 	void InitButtons();
 	void InitGroups();
-
-	void UpdateGrid();
 	void UpdateContrastValuesInGrid ();
 
 	CString GetItemText(CColor & aMeasure, double YWhite, CColor & aReference, CColor & aRefDocColor, double YWhiteRefDoc, int aComponentNum, int nCol, double Offset);

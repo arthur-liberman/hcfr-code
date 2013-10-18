@@ -143,7 +143,7 @@ void CCalibrationInfo::GetAdditivityInfoText ( CString & strResult, Matrix & sen
 		strResult+=str;
 		Msg.LoadString ( IDS_DELTAE );
 		strResult += Msg;
-		str.Format(" : %.1f\r\n",ConvertedWhiteTest.GetDeltaE(-1.0,m_WhiteRef,-1.0, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula));
+		str.Format(" : %.1f\r\n",ConvertedWhiteTest.GetDeltaE(-1.0,m_WhiteRef,-1.0, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula ));
 		strResult+=str;
 	}
 

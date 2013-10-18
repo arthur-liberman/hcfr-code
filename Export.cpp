@@ -333,10 +333,10 @@ bool CExport::SaveGrayScaleSheet()
 	double YWhite = m_pDoc->GetMeasure()->GetGray(size-1)[1];
 	for(j=0;j<size;j++)
 	{
-		// Determine Reference Y luma for Delta E calculus
+		// Determine Reference Y luminance for Delta E calculus
 		if ( GetConfig () -> m_bUseDeltaELumaOnGrays )
 		{
-			// Compute reference Luma regarding actual offset and reference gamma
+			// Compute reference Luminance regarding actual offset and reference gamma
 			double x = ArrayIndexToGrayLevel ( j, size, GetConfig () -> m_bUseRoundDown);
 			double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
 			double valy=pow(valx, GetConfig()->m_GammaRef);
@@ -347,11 +347,11 @@ bool CExport::SaveGrayScaleSheet()
 		}
 		else
 		{
-			// Use actual gray luma as correct reference (Delta E will check color only, not brightness)
+			// Use actual gray luminance as correct reference (Delta E will check color only, not brightness)
 			YWhite = m_pDoc->GetMeasure()->GetGray(j) [ 1 ];
 		}
 		
-		Rows.Add((float)m_pDoc->GetMeasure()->GetGray(j).GetDeltaE(YWhite, refColor, 1.0, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula));
+		Rows.Add((float)m_pDoc->GetMeasure()->GetGray(j).GetDeltaE(YWhite, refColor, 1.0, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula ));
 	}
 	result&=graySS.AddRow(Rows,rowNb,m_doReplace);
 	rowNb++;

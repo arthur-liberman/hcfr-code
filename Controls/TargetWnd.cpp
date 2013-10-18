@@ -65,7 +65,7 @@ void CTargetWnd::Refresh()
  		{
  			m_clr = RGB(128,128,128);
 		}
-		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetRed() ) < (GetColorReference().m_standard==4||GetColorReference().m_standard==3 ? 30:75) )
+		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetRed() ) < ((GetColorReference().m_standard==4||GetColorReference().m_standard==5)||GetColorReference().m_standard==3 ? 30:75) )
 		{
 			centerXYZ = GetColorReference().GetRed();
 			if (GetColorReference().m_standard != 4)
@@ -73,7 +73,7 @@ void CTargetWnd::Refresh()
 			else
 			  m_clr = RGB(222,188,175);
 		}
-		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetGreen() ) < (GetColorReference().m_standard==4||GetColorReference().m_standard==3 ? 30:75) )
+		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetGreen() ) < ((GetColorReference().m_standard==4||GetColorReference().m_standard==5)||GetColorReference().m_standard==3 ? 30:75) )
 		{
 			centerXYZ = GetColorReference().GetGreen();
 			if (GetColorReference().m_standard != 4)
@@ -81,7 +81,7 @@ void CTargetWnd::Refresh()
 			else
 			  m_clr = RGB(145,170,193);
 		}
-		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetBlue() ) < (GetColorReference().m_standard==4||GetColorReference().m_standard==3 ? 30:75) )
+		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetBlue() ) < ((GetColorReference().m_standard==4||GetColorReference().m_standard==5)||GetColorReference().m_standard==3 ? 30:75) )
 		{
 			centerXYZ = GetColorReference().GetBlue();
 			if (GetColorReference().m_standard != 4)
@@ -89,7 +89,7 @@ void CTargetWnd::Refresh()
 			else
 			  m_clr = RGB(144,158,122);
 		}
-		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetYellow() ) < (GetColorReference().m_standard==4||GetColorReference().m_standard==3 ? 30:75) )
+		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetYellow() ) < ((GetColorReference().m_standard==4||GetColorReference().m_standard==5)||GetColorReference().m_standard==3 ? 30:75) )
 		{
 			centerXYZ = GetColorReference().GetYellow();
 			if (GetColorReference().m_standard != 4)
@@ -97,7 +97,7 @@ void CTargetWnd::Refresh()
 			else
 			  m_clr = RGB(125,145,203);
 		}
-		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetCyan() ) < (GetColorReference().m_standard==4||GetColorReference().m_standard==3 ? 30:75) )
+		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetCyan() ) < ((GetColorReference().m_standard==4||GetColorReference().m_standard==5)||GetColorReference().m_standard==3 ? 30:75) )
 		{
 			centerXYZ = GetColorReference().GetCyan();
 			if (GetColorReference().m_standard != 4)
@@ -105,7 +105,7 @@ void CTargetWnd::Refresh()
 			else
 			  m_clr = RGB(196,216,120);
 		}
-		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetMagenta() ) < (GetColorReference().m_standard==4||GetColorReference().m_standard==3 ? 30:75) )
+		else if ( m_pRefColor -> GetDeltaE ( GetColorReference().GetMagenta() ) < ((GetColorReference().m_standard==4||GetColorReference().m_standard==5)||GetColorReference().m_standard==3 ? 30:75) )
 		{
 			centerXYZ = GetColorReference().GetMagenta();
 			if (GetColorReference().m_standard != 4)

@@ -38,8 +38,17 @@ typedef enum
 	HDTV = 2,
 	HDTVa = 3,
 	CC6 = 4,
-	sRGB = 5
+	CC6a = 5,
+	sRGB = 6
 } ColorStandard;
+
+typedef enum 
+{
+	GCD = 0,
+	MCD = 1,
+	AXIS = 2,
+	OFPS = 3,
+} CCPatterns;
 
 typedef enum 
 {
@@ -81,7 +90,7 @@ public:
     explicit ColorXYZ(const ColorxyY& xyY);
     ColorXYZ(double X, double Y, double Z);
     int GetColorTemp(const CColorReference& colorReference) const;
-    double GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhiteRef, const CColorReference & colorReference, bool useOldDeltaEFormula) const;
+    double GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhiteRef, const CColorReference & colorReference, bool useOldDeltaEFormula ) const;
     double GetOldDeltaE(const ColorXYZ& refColor) const;
 	double GetDeltaxy(const ColorXYZ& refColor, const CColorReference& colorReference) const;
 };
@@ -173,7 +182,7 @@ public:
     bool isValid() const;
 
 	double GetLuminance() const;
-    double GetDeltaE(double YWhite, const CColor & refColor, double YWhiteRef, const CColorReference & colorReference, bool useOldDeltaEFormula) const;
+    double GetDeltaE(double YWhite, const CColor & refColor, double YWhiteRef, const CColorReference & colorReference, bool useOldDeltaEFormula ) const;
     double GetDeltaE(const CColor & refColor) const;
 	double GetDeltaxy(const CColor & refColor, const CColorReference& colorReference) const;
 	ColorXYZ GetXYZValue() const;
@@ -276,8 +285,8 @@ public:
 	ColorXYZ GetCyan() const { return cyanSecondary; }
 	ColorXYZ GetMagenta() const { return magentaSecondary; }
 	
-	// Primary colors relative-to-white luminance, depending on color standard. White luma reference value is 1.
-	//standard 3 added 75% of rec709 colorspace to be used with 75% saturation patterns so ref luma is the same as full colorspace
+	// Primary colors relative-to-white luminance, depending on color standard. White luminance reference value is 1.
+	//standard 3 added 75% of rec709 colorspace to be used with 75% saturation patterns so ref luminance is the same as full colorspace
 	//standard 5 added a set of 6 color checker patterns
 
 	double GetRedReferenceLuma () const
@@ -382,6 +391,89 @@ public:
 		}
 		return luma;
 	}
+	double GetCC24ReferenceLuma (int nCol, int aCCMode)
+	{ 
+			double	YLumaGCD[24]={	0.0,
+					0.3473,
+					0.4982,
+					0.6470,
+					0.7905,
+					1.0,
+					0.0907,
+					0.3553,
+					0.1903,
+					0.1312,
+					0.2377,
+					0.4241,
+					0.2858,
+					0.1170,
+					0.1860,
+					0.0648,
+					0.4365,
+					0.4290,
+					0.0603,
+					0.2328,
+					0.1156,
+					0.5977,
+					0.1895,
+					0.1970
+					};
+			double YLumaMCD[24]={	
+					0.0302,
+					0.0846,
+					0.1911,
+					0.3531,
+					0.5834,
+					0.8817,
+					0.0944,
+					0.3480,
+					0.1871,
+					0.1309,
+					0.2333,
+					0.4218,
+					0.2845,
+					0.1128,
+					0.1860,
+					0.0633,
+					0.4333,
+					0.4305,
+					0.0591,
+					0.2305,
+					0.1142,
+					0.5953,
+					0.1843,
+					0.1877
+				}; 
+			double YLumaAXIS[24]={	
+					0.0019,
+					0.0089,
+					0.0220,
+					0.0417,
+					0.0684,
+					0.1026,
+					0.1444,
+					0.1942,
+					0.0065,
+					0.0301,
+					0.0740,
+					0.1402,
+					0.2301,
+					0.3449,
+					0.4856,
+					0.6532,
+					0.0007,
+					0.0030,
+					0.0075,
+					0.0141,
+					0.0232,
+					0.0348,
+					0.0490,
+					0.0659
+				}; 
+		return (aCCMode==GCD?YLumaGCD[nCol]:(aCCMode==MCD?YLumaMCD[nCol]:YLumaAXIS[nCol]));
+	}
+
+
 
 #ifdef LIBHCFR_HAS_MFC
     void Serialize(CArchive& archive);
@@ -396,10 +488,10 @@ extern CColor theMeasure;
 extern CColor noDataColor;
 
 // Tool functions
-extern void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int nSteps, bool bRed, bool bGreen, bool bBlue);
+extern void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int nSteps, bool bRed, bool bGreen, bool bBlue, double gamma);
+extern void GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode);
 extern Matrix ComputeConversionMatrix(const ColorXYZ measures[3], const ColorXYZ references[3], const ColorXYZ & WhiteTest, const ColorXYZ & WhiteRef, bool	bUseOnlyPrimaries);
 double ArrayIndexToGrayLevel ( int nCol, int nSize, bool m_bUseRoundDown);
 double GrayLevelToGrayProp ( double Level, bool m_bUseRoundDown );
-
 
 #endif // !defined(COLOR_H_INCLUDED_)
