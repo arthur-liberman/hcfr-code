@@ -1,0 +1,266 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>CHCFR21_ITALIAN</ProjectName>
+    <ProjectGuid>{72353A26-984A-4BCB-B5B3-BF632F02947F}</ProjectGuid>
+    <RootNamespace>CHCFR21_ENGLISH</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)$(Configuration)\$(ProjectName)\</IntDir>
+    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</IgnoreImportLibrary>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)$(Configuration)\$(ProjectName)\</IntDir>
+    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</IgnoreImportLibrary>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\Debug/CHCFR21_ENGLISH.tlb</TypeLibraryName>
+      <HeaderFileName>
+      </HeaderFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;CHCFR21_ENGLISH_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeaderOutputFile>.\Debug/CHCFR21_ENGLISH.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\Debug/</AssemblerListingLocation>
+      <ObjectFileName>.\Debug/</ObjectFileName>
+      <ProgramDataBaseFileName>.\Debug/</ProgramDataBaseFileName>
+      <BrowseInformation>true</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\Debug/CHCFR21_ENGLISH.dll</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+      <NoEntryPoint>true</NoEntryPoint>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <ImportLibrary>.\Debug/CHCFR21_ENGLISH.lib</ImportLibrary>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Debug/CHCFR21_ENGLISH.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\Release/CHCFR21_ENGLISH.tlb</TypeLibraryName>
+      <HeaderFileName>
+      </HeaderFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;CHCFR21_ENGLISH_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeaderOutputFile>.\Release/CHCFR21_ENGLISH.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\Release/</AssemblerListingLocation>
+      <ObjectFileName>.\Release/</ObjectFileName>
+      <ProgramDataBaseFileName>.\Release/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0410</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\Release/CHCFR21_ITALIAN.dll</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+      <NoEntryPoint>true</NoEntryPoint>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <ImportLibrary>.\Release/CHCFR21_ENGLISH.lib</ImportLibrary>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Release/CHCFR21_ENGLISH.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ResourceCompile Include="CHCFR21_ITALIAN.rc">
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">0x040c</Culture>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">0x0410</Culture>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\bitmap1.bmp" />
+    <None Include="res\bitmap2.bmp" />
+    <None Include="res\blueprimary.bmp" />
+    <None Include="res\blueprimaryplot.bmp" />
+    <None Include="res\camera.ico" />
+    <None Include="res\camera_b.bmp" />
+    <None Include="res\cieplot.ico" />
+    <None Include="res\ColorHCFR.ico" />
+    <None Include="res\ColorHCFR.rc2" />
+    <None Include="res\ColorMeasurementsDoc.ico" />
+    <None Include="res\colors_i.ico" />
+    <None Include="res\colortempplot.bmp" />
+    <None Include="res\contrast.bmp" />
+    <None Include="res\cursor_meas.cur" />
+    <None Include="res\cyansecondary.bmp" />
+    <None Include="res\delete.ico" />
+    <None Include="res\delete_b.bmp" />
+    <None Include="res\docref.ico" />
+    <None Include="res\DRAGMOVE.CUR" />
+    <None Include="res\graycolo.ico" />
+    <None Include="res\grayplot.bmp" />
+    <None Include="res\grayscal.ico" />
+    <None Include="res\greenprimary.bmp" />
+    <None Include="res\icon1.ico" />
+    <None Include="res\icon_controlled.ico" />
+    <None Include="res\idi_start.ico" />
+    <None Include="res\idi_stop.ico" />
+    <None Include="res\idr_ciec.ico" />
+    <None Include="res\idr_coltemp.ico" />
+    <None Include="res\idr_doct.ico" />
+    <None Include="res\idr_gamm.ico" />
+    <None Include="res\idr_lumi.ico" />
+    <None Include="res\idr_meas.ico" />
+    <None Include="res\idr_nebl.ico" />
+    <None Include="res\idr_newh.ico" />
+    <None Include="res\idr_prop.ico" />
+    <None Include="res\idr_rgbh.ico" />
+    <None Include="res\idr_rgbv.ico" />
+    <None Include="res\idr_slum.ico" />
+    <None Include="res\idr_sshi.ico" />
+    <None Include="res\illuminantplot.bmp" />
+    <None Include="res\logo.bmp" />
+    <None Include="res\magentasecondary.bmp" />
+    <None Include="res\meas_cont.bmp" />
+    <None Include="res\meas_g.bmp" />
+    <None Include="res\meas_p.bmp" />
+    <None Include="res\meas_ps.bmp" />
+    <None Include="res\meas_psg.bmp" />
+    <None Include="res\meas_stop.bmp" />
+    <None Include="res\measureplot.bmp" />
+    <None Include="res\medium_t.bmp" />
+    <None Include="res\medium_tb_main_hicol.bmp" />
+    <None Include="res\medium_tb_measures_ex_hicol.bmp" />
+    <None Include="res\medium_tb_measures_hicol.bmp" />
+    <None Include="res\medium_tb_measures_sat_hicol.bmp" />
+    <None Include="res\medium_tb_sensor_hicol.bmp" />
+    <None Include="res\medium_tb_views_hicol.bmp" />
+    <None Include="res\mediumto.bmp" />
+    <None Include="res\medtoot.bmp" />
+    <None Include="res\menubarg.bmp" />
+    <None Include="res\nearblac.ico" />
+    <None Include="res\nearblack.bmp" />
+    <None Include="res\nearwhit.ico" />
+    <None Include="res\nearwhite.bmp" />
+    <None Include="res\newtab_i.ico" />
+    <None Include="res\point.bmp" />
+    <None Include="res\properties.ico" />
+    <None Include="res\redprimary.bmp" />
+    <None Include="res\refblueprimary.bmp" />
+    <None Include="res\refbluesat.bmp" />
+    <None Include="res\refcc24sat.bmp" />
+    <None Include="res\refcrossblue.bmp" />
+    <None Include="res\refcrosscyan.bmp" />
+    <None Include="res\refcrossgreen.bmp" />
+    <None Include="res\refcrossmagenta.bmp" />
+    <None Include="res\refcrossred.bmp" />
+    <None Include="res\refcrossyellow.bmp" />
+    <None Include="res\refcyansat.bmp" />
+    <None Include="res\refcyansecondary.bmp" />
+    <None Include="res\refgreenprimary.bmp" />
+    <None Include="res\refgreensat.bmp" />
+    <None Include="res\refmagentasat.bmp" />
+    <None Include="res\refmagentasecondary.bmp" />
+    <None Include="res\refredprimary.bmp" />
+    <None Include="res\refredsat.bmp" />
+    <None Include="res\refyellowsat.bmp" />
+    <None Include="res\refyellowsecondary.bmp" />
+    <None Include="res\sat_all.bmp" />
+    <None Include="res\satblue.bmp" />
+    <None Include="res\satcyan.bmp" />
+    <None Include="res\satgreen.bmp" />
+    <None Include="res\satmagenta.bmp" />
+    <None Include="res\satred.bmp" />
+    <None Include="res\satyellow.bmp" />
+    <None Include="res\selectedplot.bmp" />
+    <None Include="res\settings.ico" />
+    <None Include="res\spectrum.ico" />
+    <None Include="res\target.bmp" />
+    <None Include="res\tbmeasures.bmp" />
+    <None Include="res\tbmeasures_ex.bmp" />
+    <None Include="res\tbmeasures_sat.bmp" />
+    <None Include="res\Toolbar.bmp" />
+    <None Include="res\trash.ico" />
+    <None Include="res\yellowsecondary.bmp" />
+    <None Include="resource.hm" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
