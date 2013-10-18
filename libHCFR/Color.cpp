@@ -1453,8 +1453,8 @@ void GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
         GenColors [ 22 ] = ColorRGBDisplay( 32.88, 32.88, 32.88 );
         GenColors [ 21 ] = ColorRGBDisplay( 47.49, 47.49, 47.03 );
         GenColors [ 20 ] = ColorRGBDisplay( 62.56, 62.56, 62.56 );
-        GenColors [ 19 ] = ColorRGBDisplay( 78.54, 78.54, 78.54 );
-        GenColors [ 18 ] = ColorRGBDisplay( 94.98, 94.98, 94.98 );
+        GenColors [ 19 ] = ColorRGBDisplay( 78.54, 78.54, 78.08 );
+        GenColors [ 18 ] = ColorRGBDisplay( 94.98, 94.52, 92.69 );
         GenColors [ 0 ] = ColorRGBDisplay( 44.74, 31.51, 26.03 );
         GenColors [ 1 ] = ColorRGBDisplay( 75.80, 58.45, 50.68 );
         GenColors [ 2 ] = ColorRGBDisplay( 36.99, 47.95, 60.73 );

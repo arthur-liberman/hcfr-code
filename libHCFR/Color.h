@@ -298,7 +298,10 @@ public:
 				luma = 0.214;
 				break;
 			case 4:
-				luma = 0.348;
+				luma = 0.3553;
+				break;
+			case 5:
+				luma = 0.3480;
 				break;
 			default:
 				luma = RGBtoXYZMatrix(1,0); 
@@ -315,7 +318,10 @@ public:
 				luma = 0.709;
 				break;
 			case 4:
-				luma = 0.186;
+				luma = 0.1903;
+				break;
+			case 5:
+				luma = 0.1871;
 				break;
 			default:
 				luma = RGBtoXYZMatrix(1,1); 
@@ -332,7 +338,10 @@ public:
 				luma = 0.075;
 				break;
 			case 4:
-				luma = 0.132;
+				luma = 0.1312;
+				break;
+			case 5:
+				luma = 0.1309;
 				break;
 			default:
 				luma = RGBtoXYZMatrix(1,2); 
@@ -349,7 +358,10 @@ public:
 				luma = 0.939;
 				break;
 			case 4:
-				luma = 0.116;
+				luma = 0.1171;
+				break;
+			case 5:
+				luma = 0.1128;
 				break;
 			default:
 				luma = RGBtoXYZMatrix(1,1)+RGBtoXYZMatrix(1,0); 
@@ -366,7 +378,10 @@ public:
 				luma = 0.787;
 				break;
 			case 4:
-				luma = 0.444;
+				luma = 0.4365;
+				break;
+			case 5:
+				luma = 0.4333;
 				break;
 			default:
 				luma = RGBtoXYZMatrix(1,1)+RGBtoXYZMatrix(1,2); 
@@ -383,7 +398,10 @@ public:
 				luma = 0.289;
 				break;
 			case 4:
-				luma = 0.426;
+				luma = 0.4290;
+				break;
+			case 5:
+				luma = 0.4305;
 				break;
 			default:
 				luma = RGBtoXYZMatrix(1,0)+RGBtoXYZMatrix(1,2); 

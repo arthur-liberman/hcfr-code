@@ -2055,12 +2055,12 @@ void CMainView::UpdateGrid()
 					 
 					 bSpecialRef = TRUE;
 					 //assume white 1st
-					 if ( aColor.GetDeltaxy ( GetColorReference().GetWhite(), GetColorReference() ) < 0.1 )
+					 if ( aColor.GetDeltaxy ( GetColorReference().GetWhite(), GetColorReference() ) < 0.05 )
  					 {
 						bSpecialRef = FALSE;
 						refColor = GetColorReference().GetWhite();
 					 }
-					 if ( aColor.GetDeltaxy ( GetColorReference().GetRed (), GetColorReference() ) < 0.05 )
+					 else if ( aColor.GetDeltaxy ( GetColorReference().GetRed (), GetColorReference() ) < 0.05 )
 					 {
 						refColor = GetColorReference().GetRed ();
 						clrSpecial1 = RGB(255,192,192);
@@ -3538,7 +3538,7 @@ void CMainView::UpdateMeasurementsAfterBkgndMeasure ()
 		}
 
 		bSpecialRef = TRUE;
-		if ( MeasuredColor.GetDeltaxy ( GetColorReference().GetWhite(), GetColorReference() ) < 0.1 )
+		if ( MeasuredColor.GetDeltaxy ( GetColorReference().GetWhite(), GetColorReference() ) < 0.05 )
  		{
 			bSpecialRef = FALSE;
 			refColor = GetColorReference().GetWhite();

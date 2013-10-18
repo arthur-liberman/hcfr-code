@@ -987,12 +987,12 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 	{
 		if (GetConfig()->m_CCMode == GCD)
 		{
-			GenColors [ 0 ] = ColorRGBDisplay(78.08,57.53,50.68);
-			GenColors [ 1 ] = ColorRGBDisplay(36.07,47.95,60.73);
-			GenColors [ 2 ] = ColorRGBDisplay(35.61,42.47,26.48);
-			GenColors [ 3 ] = ColorRGBDisplay(27.85,36.07,66.21);
-			GenColors [ 4 ] = ColorRGBDisplay(62.1,73.97,25.57);
-			GenColors [ 5 ] = ColorRGBDisplay(89.95,63.01,17.35);
+			GenColors [ 0 ] = ColorRGBDisplay(75.80,58.90,51.14);
+			GenColors [ 1 ] = ColorRGBDisplay(36.99,47.95,61.19);
+			GenColors [ 2 ] = ColorRGBDisplay(35.16,42.01,26.03);
+			GenColors [ 3 ] = ColorRGBDisplay(29.22,36.07,63.93);
+			GenColors [ 4 ] = ColorRGBDisplay(62.1,73.06,25.11);
+			GenColors [ 5 ] = ColorRGBDisplay(89.95,63.01,17.81);
 		} else
 		{
 			GenColors [ 0 ] = ColorRGBDisplay(75.8,58.45,50.68); //light skin
@@ -1160,6 +1160,15 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 		m_OnOffBlack.ResetLuxValue ();
 	}
 
+	if ( GetConfig () -> m_BWColorsToAdd > 0 )
+	{
+		m_OnOffWhite = measuredColor[size+6];                
+		if ( bUseLuxValues )
+			m_OnOffWhite.SetLuxValue ( measuredLux[size+6] );
+		else
+			m_OnOffWhite.ResetLuxValue ();
+	}
+		
 	m_isModified=TRUE;
 	return TRUE;
 }
@@ -3172,9 +3181,9 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
 	{
 		if ( GetConfig()->m_CCMode == GCD )
 		{
-			GenColors [ 0 ] = ColorRGBDisplay(78.08,57.53,50.68);
-			GenColors [ 1 ] = ColorRGBDisplay(36.07,47.95,60.73);
-			GenColors [ 2 ] = ColorRGBDisplay(35.61,42.47,26.48);
+			GenColors [ 0 ] = ColorRGBDisplay(75.80,58.90,51.14);
+			GenColors [ 1 ] = ColorRGBDisplay(36.99,47.95,61.19);
+			GenColors [ 2 ] = ColorRGBDisplay(35.16,42.01,26.03);
 			GenColors [ 3 ] = ColorRGBDisplay(primaryIRELevel,primaryIRELevel,primaryIRELevel);
 			GenColors [ 4 ] = ColorRGBDisplay(0,0,0);
 		} else
@@ -3383,12 +3392,12 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator)
 	{
 		if ( GetConfig()->m_CCMode == GCD )
 		{
-			GenColors [ 0 ] = ColorRGBDisplay(78.08,57.53,50.68);
-			GenColors [ 1 ] = ColorRGBDisplay(36.07,47.95,60.73);
-			GenColors [ 2 ] = ColorRGBDisplay(35.61,42.47,26.48);
-			GenColors [ 3 ] = ColorRGBDisplay(27.85,36.07,66.21);
-			GenColors [ 4 ] = ColorRGBDisplay(62.1,73.97,25.57);
-			GenColors [ 5 ] = ColorRGBDisplay(89.95,63.01,17.35);
+			GenColors [ 0 ] = ColorRGBDisplay(75.80,58.90,51.14);
+			GenColors [ 1 ] = ColorRGBDisplay(36.99,47.95,61.19);
+			GenColors [ 2 ] = ColorRGBDisplay(35.16,42.01,26.03);
+			GenColors [ 3 ] = ColorRGBDisplay(29.22,36.07,63.93);
+			GenColors [ 4 ] = ColorRGBDisplay(62.1,73.06,25.11);
+			GenColors [ 5 ] = ColorRGBDisplay(89.95,63.01,17.81);
 			GenColors [ 6 ] = ColorRGBDisplay(IRELevel,IRELevel,IRELevel);
 			GenColors [ 7 ] = ColorRGBDisplay(0,0,0);
 		} else
@@ -5300,8 +5309,8 @@ CColor CMeasure::GetRefCC24Sat(int i) const
 			ccRef[1].SetRGBValue( ColorRGB( pow(.3288,gamma), pow(.3288,gamma), pow(.3288,gamma) ), cRef );
 			ccRef[2].SetRGBValue( ColorRGB( pow(.4749,gamma), pow(.4749,gamma), pow(.4703,gamma) ), cRef );
 			ccRef[3].SetRGBValue( ColorRGB( pow(.6256,gamma), pow(.6256,gamma), pow(.6256,gamma) ), cRef );
-			ccRef[4].SetRGBValue( ColorRGB( pow(.7854,gamma), pow(.7852,gamma), pow(.7854,gamma) ), cRef );
-			ccRef[5].SetRGBValue( ColorRGB( pow(.9498,gamma), pow(.9498,gamma), pow(.9498,gamma) ), cRef );
+			ccRef[4].SetRGBValue( ColorRGB( pow(.7854,gamma), pow(.7854,gamma), pow(.7808,gamma) ), cRef );
+			ccRef[5].SetRGBValue( ColorRGB( pow(.9498,gamma), pow(.9452,gamma), pow(.9269,gamma) ), cRef );
 			ccRef[6].SetRGBValue( ColorRGB( pow(.4474,gamma), pow(.3151,gamma), pow(.2603,gamma) ), cRef );
 			ccRef[7].SetRGBValue( ColorRGB( pow(.7580,gamma), pow(.5845,gamma), pow(.5068,gamma) ), cRef );
 			ccRef[8].SetRGBValue( ColorRGB( pow(.3699,gamma), pow(.4795,gamma), pow(.6073,gamma) ), cRef );
