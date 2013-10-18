@@ -174,12 +174,6 @@ ColorxyY primariesRec709a[3] ={	ColorxyY(0.5575, 0.3298), //75% sat/lum Rec709 w
 								ColorxyY(0.3032, 0.5313),
 								ColorxyY(0.1911, 0.1279) };
 
-<<<<<<< HEAD
-ColorxyY primariesCC6[3] ={	    ColorxyY(0.3877, 0.3528), //some color check references, secondardies will add 3 more
-								ColorxyY(0.2472, 0.2663),
-								ColorxyY(0.3415, 0.4315)};
-//light skin, blue sky, foliage
-=======
 ColorxyY primariesCC6[3] ={	ColorxyY(0.3787, 0.3564), //some color check references, secondardies will add 3 more, GCD values
 								ColorxyY(0.2484, 0.2647),
 								ColorxyY(0.3418, 0.4327)};
@@ -188,7 +182,6 @@ ColorxyY primariesCC6a[3] ={	ColorxyY(0.3804, 0.3565), //some color check refere
 								ColorxyY(0.2493, 0.2667),
 								ColorxyY(0.3379, 0.4327)};
 
->>>>>>> 11eba09782d36722d9db9fe480caa6a9bde44ece
 
 /* The 75% saturation 75% amplitude and color checker xy locations are calculated 
 assuming gamma=2.22, starting with the follow triplets from the GCD disk, and then used as pseudo-primaries/secondaries
@@ -420,16 +413,9 @@ void CColorReference::UpdateSecondary ( ColorXYZ & secondary, const ColorXYZ& pr
 	}
 	else
 	{
-<<<<<<< HEAD
-		if (x1 > 0.38) aColor =  ColorxyY(0.2076,	0.1799,	.116);
-		if (x1 > 0.2 && x1 < 0.3) aColor = ColorxyY(0.3755,	0.4970,	.444); 
-		if (x1 > 0.3 && x1 < 0.38) aColor = ColorxyY(0.4763, 0.4431, .426); 
-		//purplish blue, yellow green, orange yellow
-=======
 		if (x1 > 0.37) aColor = ( (CColorReference::m_standard == CC6)?ColorxyY(0.2141,	0.1880,	0.1149):ColorxyY(0.2118, 0.1839, 0.1128) );
 		if (x1 > 0.2 && x1 < 0.3) aColor = ( (CColorReference::m_standard == CC6)?ColorxyY(0.3775,	0.4962,	0.4335):ColorxyY(0.3781, 0.4973, 0.4333) ); 
 		if (x1 > 0.3 && x1 < 0.36) aColor = ( (CColorReference::m_standard == CC6)?ColorxyY(0.4758, 0.4425, 0.4262):ColorxyY(0.4740, 0.4431, 0.4305) ); 
->>>>>>> 11eba09782d36722d9db9fe480caa6a9bde44ece
 	}
 	secondary = ColorXYZ(aColor);
 }
@@ -1467,8 +1453,8 @@ void GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
         GenColors [ 22 ] = ColorRGBDisplay( 32.88, 32.88, 32.88 );
         GenColors [ 21 ] = ColorRGBDisplay( 47.49, 47.49, 47.03 );
         GenColors [ 20 ] = ColorRGBDisplay( 62.56, 62.56, 62.56 );
-        GenColors [ 19 ] = ColorRGBDisplay( 78.54, 78.54, 78.54 );
-        GenColors [ 18 ] = ColorRGBDisplay( 94.98, 94.98, 94.98 );
+        GenColors [ 19 ] = ColorRGBDisplay( 78.54, 78.54, 78.08 );
+        GenColors [ 18 ] = ColorRGBDisplay( 94.98, 94.52, 92.69 );
         GenColors [ 0 ] = ColorRGBDisplay( 44.74, 31.51, 26.03 );
         GenColors [ 1 ] = ColorRGBDisplay( 75.80, 58.45, 50.68 );
         GenColors [ 2 ] = ColorRGBDisplay( 36.99, 47.95, 60.73 );
@@ -1536,14 +1522,6 @@ void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDi
     const double KG = cRef.GetGreenReferenceLuma ();
     const double KB = cRef.GetBlueReferenceLuma (); 
     double K = ( bRed ? KR : 0.0 ) + ( bGreen ? KG : 0.0 ) + ( bBlue ? KB : 0.0 );
-
-	double gamma, offset = 0.0;
-	int ncount;
-
-	//retrieve gamma
-//	nCount = CDataSetDoc()->ComputeGammaAndOffset()  .g.GetDocument() -> GetMeasure () -> GetGrayScaleSize ();
-//	if ( nCount && GetDocument()->GetMeasure()->GetGray(0).isValid() )
-//					GetDocument()->ComputeGammaAndOffset(&Gamma, &Offset, 3, 1, nCount);
 
     // Compute vector between neutral gray and saturated color in CIExy space
     ColorRGB Clr1;

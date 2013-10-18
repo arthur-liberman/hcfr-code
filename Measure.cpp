@@ -3381,16 +3381,6 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator)
 								};
 	if (GetColorReference().m_standard == CC6 || GetColorReference().m_standard == CC6a) //CC6
 	{
-<<<<<<< HEAD
-		GenColors [ 0 ] = ColorRGBDisplay(78.0,58.0,51.0);
-		GenColors [ 1 ] = ColorRGBDisplay(36.0,48.0,61.0);
-		GenColors [ 2 ] = ColorRGBDisplay(36.0,42.0,26.0);
-		GenColors [ 3 ] = ColorRGBDisplay(28.0,36.0,66.0);
-		GenColors [ 4 ] = ColorRGBDisplay(62.0,74.0,26.0);
-		GenColors [ 5 ] = ColorRGBDisplay(90.0,63.0,17.0);
-		GenColors [ 6 ] = ColorRGBDisplay(IRELevel,IRELevel,IRELevel);
-		GenColors [ 7 ] = ColorRGBDisplay(0,0,0);
-=======
 		if ( GetConfig()->m_CCMode == GCD )
 		{
 			GenColors [ 0 ] = ColorRGBDisplay(78.08,57.53,50.68);
@@ -3412,7 +3402,6 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator)
 			GenColors [ 6 ] = ColorRGBDisplay(IRELevel,IRELevel,IRELevel);
 			GenColors [ 7 ] = ColorRGBDisplay(0,0,0);
 		}
->>>>>>> 11eba09782d36722d9db9fe480caa6a9bde44ece
 	}
 	else if (GetColorReference().m_standard == 3) //75%
 	{ 

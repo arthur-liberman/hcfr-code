@@ -301,10 +301,7 @@ BOOL CColorHCFRConfig::LoadSettings()
 		m_BWColorsToAdd = 2;
 
 	m_colorStandard=(ColorStandard)GetProfileInt("References","ColorStandard",HDTV);
-<<<<<<< HEAD
-=======
 	m_CCMode=(CCPatterns)GetProfileInt("References","CCMode",GCD);
->>>>>>> 11eba09782d36722d9db9fe480caa6a9bde44ece
 	m_whiteTarget=(WhiteTarget)GetProfileInt("References","WhiteTarget",D65);
 	m_bDisplayTestColors=GetProfileInt("References","DisplayTestColors",1);
 	m_bContinuousMeasures=GetProfileInt("References","ContinuousMeasures",1);
@@ -316,12 +313,8 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_bLatencyBeep=GetProfileInt("References","IrisLatencyBeep",0);
 	m_bUseRoundDown=GetProfileInt("References","SatUseMeasuredRef",0);
 	m_GammaRef=GetProfileDouble("References","GammaRefValue",2.22);
-<<<<<<< HEAD
-
-=======
 	m_GammaAvg=GetProfileDouble("References","GammaAvgValue",2.22);
 	m_useMeasuredGamma=GetProfileInt("References","UseMeasuredGamma",1);
->>>>>>> 11eba09782d36722d9db9fe480caa6a9bde44ece
 	m_GammaOffsetType=GetProfileInt("References","GammaOffsetType",4);
 	m_manualGOffset=GetProfileDouble("References","ManualGamOffset",0.099);
 
