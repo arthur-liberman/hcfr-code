@@ -7,7 +7,7 @@
  * Author: Graeme W. Gill
  * Date:   24/11/2006
  *
- * Copyright 2006 - 2007, Graeme W. Gill
+ * Copyright 2006 - 2013, Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -53,29 +53,23 @@
 #include "copyright.h"
 #include "aconfig.h"
 #include "numlib.h"
+#include "rspl.h"
 #else /* SALONEINSTLIB */
 #include "sa_config.h"
 #include "numsup.h"
+#include "rspl1.h"
 #endif /* SALONEINSTLIB */
 #include "xspect.h"
 #include "insttypes.h"
-#include "icoms.h"
 #include "conv.h"
+#include "icoms.h"
 #include "i1pro.h"
 #include "i1pro_imp.h"
-
-#undef DEBUG
-
-#ifdef DEBUG
-#define DBG(xxx) printf xxx ;
-#else
-#define DBG(xxx) 
-#endif
 
 #define MAX_MES_SIZE 500		/* Maximum normal message reply size */
 #define MAX_RD_SIZE 5000		/* Maximum reading messagle reply size */
 
-/* Convert a machine specific error code into an abstract dtp code */
+/* Convert a machine specific error code into an abstract inst code */
 static inst_code i1pro_interp_code(i1pro *p, i1pro_code ec);
 
 /* ------------------------------------------------------------------------ */
@@ -84,8 +78,9 @@ static inst_code i1pro_interp_code(i1pro *p, i1pro_code ec);
 /* If it's a serial port, use the baud rate given, and timeout in to secs */
 /* Return DTP_COMS_FAIL on failure to establish communications */
 static inst_code
-i1pro_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) {
+i1pro_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	i1pro *p = (i1pro *) pp;
+	int rsize, se;
 	icomuflags usbflags = icomuf_none;
 #ifdef __APPLE__
 	/* If the X-Rite software has been installed, then there may */
@@ -102,24 +97,24 @@ i1pro_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) 
 	int retries = 0;
 #endif /* !__APPLE__ */
 
-	if (p->debug) {
-		p->icom->debug = p->debug;	/* Turn on debugging */
-		fprintf(stderr,"i1pro: About to init coms\n");
+	a1logd(p->log, 2, "i1pro_init_coms: called\n");
+
+	if (p->icom->port_type(p->icom) != icomt_usb) {
+		a1logd(p->log, 1, "i1pro_init_coms: wrong communications type for device!\n");
+		return inst_coms_fail;
 	}
 
-	if (p->icom->is_usb_portno(p->icom, port) == instUnknown) {
-		if (p->debug) fprintf(stderr,"i1pro: init_coms called to wrong device!\n");
-
-		return i1pro_interp_code(p, I1PRO_UNKNOWN_MODEL);
-	}
-
-	if (p->debug) fprintf(stderr,"i1pro: About to init USB\n");
+	a1logd(p->log, 2, "i1pro_init_coms: about to init USB\n");
 
 	/* Set config, interface, write end point, read end point, read quanta */
 	/* ("serial" end points aren't used - the i1display uses USB control messages) */
-	p->icom->set_usb_port(p->icom, port, 1, 0x00, 0x00, usbflags, retries, pnames); 
+	if ((se = p->icom->set_usb_port(p->icom, 1, 0x00, 0x00, usbflags, retries, pnames))
+		                                                                    != ICOM_OK) { 
+		a1logd(p->log, 1, "i1pro_init_coms: failed ICOM err 0x%x\n",se);
+		return i1pro_interp_code(p, icoms2i1pro_err(se));
+	}
 
-	if (p->debug) fprintf(stderr,"i1pro: init coms has suceeded\n");
+	a1logd(p->log, 2, "i1pro_init_coms: init coms has suceeded\n");
 
 	p->gotcoms = 1;
 	return inst_ok;
@@ -129,63 +124,79 @@ static inst_code
 i1pro_determine_capabilities(i1pro *p) {
 
 	/* Set the base Monitor/Pro capabilities mask */
-	p->cap =  inst_emis_spot
-	       |  inst_emis_disp
-	       |  inst_trans_spot		/* Support this manually using a light table */
-	       |  inst_trans_strip 
-	       |  inst_emis_strip		/* Also likely to be light table reading */
-	       |  inst_colorimeter
-	       |  inst_spectral
+	p->cap =  inst_mode_emis_spot
+	       |  inst_mode_emis_tele
+	       |  inst_mode_emis_strip		/* Also likely to be light table reading */
+	       |  inst_mode_trans_spot		/* Support this manually using a light table */
+	       |  inst_mode_trans_strip 
+	       |  inst_mode_emis_nonadaptive
+	       |  inst_mode_colorimeter
+	       |  inst_mode_spectral
 	       ;
 
-	p->cap2 = inst2_cal_trans_white 
-	        | inst2_cal_disp_int_time 
-	        | inst2_prog_trig 
-			| inst2_keyb_trig
-			| inst2_keyb_switch_trig
+	/* Set the Pro capabilities mask */
+	if (p->itype == instI1Pro
+	 || p->itype == instI1Pro2) {
+		p->cap |= inst_mode_ref_spot
+		       |  inst_mode_ref_strip
+		       ;
+	}
+
+	/* Set the Pro2 capabilities mask */
+	if (p->itype == instI1Pro2) {
+		p->cap |= inst_mode_ref_uv
+		       ;
+	}
+
+	if (i1pro_imp_highres(p))		/* This is static */
+		p->cap |= inst_mode_highres;
+
+	if (i1pro_imp_ambient(p)) {		/* This depends on the instrument */
+		p->cap |= inst_mode_emis_ambient
+		       |  inst_mode_emis_ambient_flash
+		       ;
+	}
+
+	p->cap2 = inst2_prog_trig 
+			| inst2_user_trig
+			| inst2_user_switch_trig
 			| inst2_bidi_scan
 			| inst2_has_scan_toll
 			| inst2_no_feedback
 	        ;
 
-	/* Set the Pro capabilities mask */
-	if (p->itype == instI1Pro) {
-		p->cap |= inst_ref_spot
-		       |  inst_ref_strip
-		       ;
-
-		p->cap2 |= inst2_cal_ref_white
-		        ;
+	if (p->m != NULL) {
+		i1proimp *m = (i1proimp *)p->m;
+		i1pro_state *s = &m->ms[m->mmode];
+		if (s->emiss) {
+			p->cap2 |= inst2_meas_disp_update;
+			p->cap2 |= inst2_emis_refr_meas;
+		}
 	}
 
-	if (i1pro_imp_highres(p))		/* This is static */
-		p->cap |= inst_highres;
+	p->cap3 = inst3_none;
 
-	if (i1pro_imp_ambient(p)) {		/* This depends on the instrument */
-		p->cap |= inst_emis_ambient
-		       |  inst_emis_ambient_flash
-		       ;
-	}
 	return inst_ok;
 }
 
 /* Initialise the I1PRO */
-/* return non-zero on an error, with dtp error code */
+/* return non-zero on an error, with inst error code */
 static inst_code
 i1pro_init_inst(inst *pp) {
 	i1pro *p = (i1pro *)pp;
 	i1pro_code ev = I1PRO_OK;
 
-	if (p->debug) fprintf(stderr,"i1pro: About to init instrument\n");
+	a1logd(p->log, 2, "i1pro_init_inst: called\n");
 
 	if (p->gotcoms == 0)
 		return i1pro_interp_code(p, I1PRO_INT_NO_COMS);	/* Must establish coms before calling init */
 	if ((ev = i1pro_imp_init(p)) != I1PRO_OK) {
-		if (p->debug) fprintf(stderr,"i1pro_imp_init() failed\n");
+		a1logd(p->log, 1, "i1pro_init_inst: failed with 0x%x\n",ev);
 		return i1pro_interp_code(p, ev);
 	}
 
 	p->inited = 1;
+	a1logd(p->log, 2, "i1pro_init_inst: instrument inited OK\n");
 
 	/* Now it's initied, we can get true capabilities */
 	i1pro_determine_capabilities(p);
@@ -205,7 +216,6 @@ static char *i1pro_get_serial_no(inst *pp) {
 }
 
 /* Read a set of strips */
-/* Return the dtp error code */
 static inst_code
 i1pro_read_strip(
 inst *pp,
@@ -225,18 +235,18 @@ ipatch *vals) {		/* Pointer to array of instrument patch values */
 	if (!p->inited)
 		return inst_no_init;
 
-	rv = i1pro_imp_measure(p, vals, npatch);
+	rv = i1pro_imp_measure(p, vals, npatch, 1);
 
 	return i1pro_interp_code(p, rv);
 }
 
 /* Read a single sample */
-/* Return the dtp error code */
 static inst_code
 i1pro_read_sample(
 inst *pp,
 char *name,			/* Strip name (7 chars) */
-ipatch *val) {		/* Pointer to instrument patch value */
+ipatch *val,		/* Pointer to instrument patch value */
+instClamping clamp) {		/* Clamp XYZ/Lab to be +ve */
 	i1pro *p = (i1pro *)pp;
 	i1pro_code rv;
 
@@ -245,35 +255,60 @@ ipatch *val) {		/* Pointer to instrument patch value */
 	if (!p->inited)
 		return inst_no_init;
 
-	rv = i1pro_imp_measure(p, val, 1);
+	rv = i1pro_imp_measure(p, val, 1, clamp);
 
 	return i1pro_interp_code(p, rv);
 }
 
-/* Determine if a calibration is needed. Returns inst_calt_none if not, */
-/* inst_calt_unknown if it is unknown, or inst_calt_XXX if needs calibration, */
-/* and the first type of calibration needed. */
-inst_cal_type i1pro_needs_calibration(inst *pp) {
+/* Read an emissive refresh rate */
+static inst_code
+i1pro_read_refrate(
+inst *pp,
+double *ref_rate) {
 	i1pro *p = (i1pro *)pp;
+	i1pro_code rv;
 
 	if (!p->gotcoms)
 		return inst_no_coms;
 	if (!p->inited)
 		return inst_no_init;
 
-	return i1pro_imp_needs_calibration(p);
+	rv = i1pro_imp_meas_refrate(p, ref_rate);
+
+	return i1pro_interp_code(p, rv);
+}
+
+/* Read the display update delay */
+static inst_code
+i1pro_meas_delay(
+inst *pp,
+int *msecdelay) {
+	i1pro *p = (i1pro *)pp;
+	i1pro_code rv;
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
+	rv = i1pro_imp_meas_delay(p, msecdelay);
+
+	return i1pro_interp_code(p, rv);
+}
+
+/* Return needed and available inst_cal_type's */
+static inst_code i1pro_get_n_a_cals(inst *pp, inst_cal_type *pn_cals, inst_cal_type *pa_cals) {
+	i1pro *p = (i1pro *)pp;
+	i1pro_code rv;
+
+	rv = i1pro_imp_get_n_a_cals(p, pn_cals, pa_cals);
+	return i1pro_interp_code(p, rv);
 }
 
 /* Request an instrument calibration. */
-/* This is use if the user decides they want to do a calibration, */
-/* in anticipation of a calibration (needs_calibration()) to avoid */
-/* requiring one during measurement, or in response to measuring */
-/* returning inst_needs_cal. Initially us an inst_cal_cond of inst_calc_none, */
-/* and then be prepared to setup the right conditions, or ask the */
-/* user to do so, each time the error inst_cal_setup is returned. */
 inst_code i1pro_calibrate(
 inst *pp,
-inst_cal_type calt,		/* Calibration type. inst_calt_all for all neeeded */
+inst_cal_type *calt,	/* Calibration type to do/remaining */
 inst_cal_cond *calc,	/* Current condition/desired condition */
 char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 ) {
@@ -305,13 +340,10 @@ i1pro_interp_error(inst *pp, i1pro_code ec) {
 			return "Data from i1 Display didn't parse as expected";
 
 		case I1PRO_USER_ABORT:
-			return "User hit Abort key";
-		case I1PRO_USER_TERM:
-			return "User hit Terminate key";
+			return "User abort";
+
 		case I1PRO_USER_TRIG:
-			return "User hit Trigger key";
-		case I1PRO_USER_CMND:
-			return "User hit a Command key";
+			return "User trigger";
 
 		case I1PRO_UNSUPPORTED:
 			return "Unsupported function";
@@ -346,14 +378,30 @@ i1pro_interp_error(inst *pp, i1pro_code ec) {
 
 		case I1PRO_HW_HIGHPOWERFAIL:
 			return "Failed to switch to high power mode";
+		case I1PRO_HW_EE_SIZE:
+			return "EEProm size is too small";
 		case I1PRO_HW_EE_SHORTREAD:
 			return "Read less bytes for EEProm read than expected";
+		case I1PRO_HW_EE_SHORTWRITE:
+			return "Wrote less bytes for EEProm write than expected";
 		case I1PRO_HW_ME_SHORTREAD:
 			return "Read less bytes for measurement read than expected";
 		case I1PRO_HW_ME_ODDREAD:
 			return "Read a number of bytes not a multiple of 256";
+		case I1PRO_HW_SW_SHORTREAD:
+			return "Read less bytes for Switch read than expected";
+		case I1PRO_HW_LED_SHORTWRITE:
+			return "Wrote fewer LED sequence bytes than expected";
+		case I1PRO_HW_UNEX_SPECPARMS:
+			return "Instrument has unexpected spectral parameters";
 		case I1PRO_HW_CALIBINFO:
 			return "Instrument calibration info is missing or corrupted";
+		case I1PRO_WL_TOOLOW:
+			return "Wavelength calibration reading is too low";
+		case I1PRO_WL_SHAPE:
+			return "Wavelength calibration reading shape is incorrect";
+		case I1PRO_WL_ERR2BIG:
+			return "Wavelength calibration correction is excessive";
 
 		case I1PRO_RD_DARKREADINCONS:
 			return "Dark calibration reading is inconsistent";
@@ -387,13 +435,17 @@ i1pro_interp_error(inst *pp, i1pro_code ec) {
 			return "No flashes recognized";
 		case I1PRO_RD_NOAMBB4FLASHES:
 			return "No ambient found before first flash";
+		case I1PRO_RD_NOREFR_FOUND:
+			return "No refresh rate detected or failed to measure it";
+		case I1PRO_RD_NOTRANS_FOUND:
+			return "No delay calibration transition found";
 
 		case I1PRO_INT_NO_COMS:
 			return "Communications hasn't been established";
 		case I1PRO_INT_EETOOBIG:
 			return "Read of EEProm is too big (> 65536)";
 		case I1PRO_INT_ODDREADBUF:
-			return "Measurement read buffer is not a multiple of 256";
+			return "Measurement read buffer is not a multiple of reading size";
 		case I1PRO_INT_SMALLREADBUF:
 			return "Measurement read buffer is too small for initial measurement";
 		case I1PRO_INT_INTTOOBIG:
@@ -407,7 +459,7 @@ i1pro_interp_error(inst *pp, i1pro_code ec) {
 		case I1PRO_INT_WRONGPATCHES:
 			return "Number of patches to match is wrong";
 		case I1PRO_INT_MEASBUFFTOOSMALL:
-			return "Measurement read buffer is too small";
+			return "Measurement exceeded read buffer";
 		case I1PRO_INT_NOTIMPLEMENTED:
 			return "Support not implemented";
 		case I1PRO_INT_NOTCALIBRATED:
@@ -438,8 +490,14 @@ i1pro_interp_error(inst *pp, i1pro_code ec) {
 			return "Unable to save calibration to file";
 		case I1PRO_INT_CAL_RESTORE:
 			return "Unable to restore calibration from file";
+		case I1PRO_INT_CAL_TOUCH:
+			return "Unable to update calibration file modification time";
 		case I1PRO_INT_ADARK_INVALID:
 			return "Adaptive dark calibration is invalid";
+		case I1PRO_INT_NO_HIGH_GAIN:
+			return "Rev E mode doesn't have a high gain mode";
+		case I1PRO_INT_ASSERT:
+			return "Assert fail";
 
 		default:
 			return "Unknown error code";
@@ -447,7 +505,7 @@ i1pro_interp_error(inst *pp, i1pro_code ec) {
 }
 
 
-/* Convert a machine specific error code into an abstract dtp code */
+/* Convert a machine specific error code into an abstract inst code */
 static inst_code 
 i1pro_interp_code(i1pro *p, i1pro_code ec) {
 
@@ -468,13 +526,10 @@ i1pro_interp_code(i1pro *p, i1pro_code ec) {
 			return inst_protocol_error | ec;
 
 		case I1PRO_USER_ABORT:
-			return inst_user_abort | ec;
-		case I1PRO_USER_TERM:
-			return inst_user_term | ec;
+			return inst_user_abort;
+
 		case I1PRO_USER_TRIG:
-			return inst_user_trig | ec;
-		case I1PRO_USER_CMND:
-			return inst_user_cmnd | ec;
+			return inst_user_trig;
 
 		case I1PRO_UNSUPPORTED:
 			return inst_unsupported | ec;
@@ -504,6 +559,8 @@ i1pro_interp_code(i1pro *p, i1pro_code ec) {
 		case I1PRO_RD_NOTENOUGHSAMPLES:
 		case I1PRO_RD_NOFLASHES:
 		case I1PRO_RD_NOAMBB4FLASHES:
+		case I1PRO_RD_NOREFR_FOUND:
+		case I1PRO_RD_NOTRANS_FOUND:
 			return inst_misread | ec;
 
 		case I1PRO_RD_NEEDS_CAL:
@@ -532,98 +589,167 @@ i1pro_interp_code(i1pro *p, i1pro_code ec) {
 		case I1PRO_INT_EEPROM_DATA_MISSING:
 		case I1PRO_INT_NEW_RSPL_FAILED:
 		case I1PRO_INT_CAL_SAVE:
+		case I1PRO_INT_CAL_RESTORE:
+		case I1PRO_INT_CAL_TOUCH:
 		case I1PRO_INT_ADARK_INVALID:
+		case I1PRO_INT_NO_HIGH_GAIN:
+		case I1PRO_INT_ASSERT:
 			return inst_internal_error | ec;
 	}
 	return inst_other_error | ec;
 }
 
 /* Return the instrument capabilities */
-inst_capability i1pro_capabilities(inst *pp) {
+void i1pro_capabilities(inst *pp,
+inst_mode *pcap1,
+inst2_capability *pcap2,
+inst3_capability *pcap3) {
 	i1pro *p = (i1pro *)pp;
 
-	return p->cap;
+	if (pcap1 != NULL)
+		*pcap1 = p->cap;
+	if (pcap2 != NULL)
+		*pcap2 = p->cap2;
+	if (pcap3 != NULL)
+		*pcap3 = p->cap3;
 }
 
-/* Return the instrument capabilities 2 */
-inst2_capability i1pro_capabilities2(inst *pp) {
+/* Return the corresponding i1pro measurement mode, */
+/* or i1p_no_modes if invalid */
+static i1p_mode i1pro_convert_mode(i1pro *p, inst_mode m) {
+	i1p_mode mmode = 0;	/* Instrument measurement mode */
+
+	/* Simple test */
+	if (m & ~p->cap) {
+		return i1p_no_modes;
+	}
+
+	if (IMODETST(m, inst_mode_ref_spot)) {
+		mmode = i1p_refl_spot;
+	} else if (IMODETST(m, inst_mode_ref_strip)) {
+		mmode = i1p_refl_scan;
+	} else if (IMODETST(m, inst_mode_trans_spot)) {
+		mmode = i1p_trans_spot;
+	} else if (IMODETST(m, inst_mode_trans_strip)) {
+		mmode = i1p_trans_scan;
+	} else if (IMODETST(m, inst_mode_emis_spot)
+	        || IMODETST(m, inst_mode_emis_tele)) {
+		if (IMODETST(m, inst_mode_emis_nonadaptive))
+			mmode = i1p_emiss_spot_na;
+		else
+			mmode = i1p_emiss_spot;
+	} else if (IMODETST(m, inst_mode_emis_strip)) {
+		mmode = i1p_emiss_scan;
+	} else if (IMODETST(m, inst_mode_emis_ambient)
+	        && (p->cap & inst_mode_emis_ambient)) {
+		mmode = i1p_amb_spot;
+	} else if (IMODETST(m, inst_mode_emis_ambient_flash)
+	        && (p->cap & inst_mode_emis_ambient_flash)) {
+		mmode = i1p_amb_flash;
+	} else {
+		return i1p_no_modes;
+	}
+
+	return mmode;
+}
+
+/* Check device measurement mode */
+inst_code i1pro_check_mode(inst *pp, inst_mode m) {
 	i1pro *p = (i1pro *)pp;
-	inst2_capability rv;
+	i1p_mode mmode = 0;	/* Instrument measurement mode */
 
-	rv = p->cap2;
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
 
-	return rv;
+	if (i1pro_convert_mode(p, m) == i1p_no_modes)
+		return inst_unsupported;
+
+	return inst_ok;
 }
 
 /* Set device measurement mode */
 inst_code i1pro_set_mode(inst *pp, inst_mode m) {
 	i1pro *p = (i1pro *)pp;
-	inst_mode mm;			/* Request measurement mode */
-	i1p_mode mmode = -1;	/* Instrument measurement mode */
+	i1p_mode mmode;		/* Instrument measurement mode */
+	inst_code rv;
 
 	if (!p->gotcoms)
 		return inst_no_coms;
 	if (!p->inited)
 		return inst_no_init;
 
-	/* The measurement mode portion of the mode */
-	mm = m & inst_mode_measurement_mask;
-
-	if ((mm & inst_mode_illum_mask) == inst_mode_reflection) {
-		if ((mm & inst_mode_sub_mask) == inst_mode_spot) {
-			mmode = i1p_refl_spot;
-		} else if ((mm & inst_mode_sub_mask) == inst_mode_strip) {
-			mmode = i1p_refl_scan;
-		} else {
-			return inst_unsupported;
-		}
-	} else if ((mm & inst_mode_illum_mask) == inst_mode_transmission) {
-		if ((mm & inst_mode_sub_mask) == inst_mode_spot) {
-			mmode = i1p_trans_spot;
-		} else if ((mm & inst_mode_sub_mask) == inst_mode_strip) {
-			mmode = i1p_trans_scan;
-		} else {
-			return inst_unsupported;
-		}
-	} else if ((mm & inst_mode_illum_mask) == inst_mode_emission) {
-		if ((mm & inst_mode_sub_mask) == inst_mode_spot) {
-			if ((mm & inst_mode_mod_mask) == inst_mode_disp) {
-				mmode = i1p_disp_spot;
-			} else {
-				mmode = i1p_emiss_spot;
-			}
-		} else if ((mm & inst_mode_sub_mask) == inst_mode_strip) {
-			mmode = i1p_emiss_scan;
-		} else if ((mm & inst_mode_sub_mask) == inst_mode_ambient
-		        && (p->cap & inst_emis_ambient)) {
-			mmode = i1p_amb_spot;
-		} else if ((mm & inst_mode_sub_mask) == inst_mode_ambient_flash
-		        && (p->cap & inst_emis_ambient_flash)) {
-			mmode = i1p_amb_flash;
-		} else {
-			return inst_unsupported;
-		}
-	} else {
+	if ((mmode = i1pro_convert_mode(p, m)) == i1p_no_modes)
 		return inst_unsupported;
-	}
-	return i1pro_interp_code(p, i1pro_imp_set_mode(p, mmode, m & inst_mode_spectral));
+
+	if ((rv = i1pro_interp_code(p, i1pro_imp_set_mode(p, mmode, m))) != inst_ok) 
+		return rv;
+
+	i1pro_determine_capabilities(p);
+
+	return inst_ok;
 }
 
-/* Get a (possibly) dynamic status */
-static inst_code i1pro_get_status(
-inst *pp,
-inst_status_type m,	/* Requested status type */
-...) {				/* Status parameters */                             
+/* 
+ * set or reset an optional mode
+ *
+ * Some options talk to the instrument, and these will
+ * error if it hasn't been initialised.
+ */
+static inst_code
+i1pro_get_set_opt(inst *pp, inst_opt_type m, ...)
+{
 	i1pro *p = (i1pro *)pp;
-	i1proimp *imp = (i1proimp *)p->m;
+
+	if (m == inst_opt_noinitcalib) {
+		va_list args;
+		int losecs = 0;
+
+		va_start(args, m);
+		losecs = va_arg(args, int);
+		va_end(args);
+
+		i1pro_set_noinitcalib(p, 1, losecs);
+		return inst_ok;
+
+	} else if (m == inst_opt_initcalib) {
+		i1pro_set_noinitcalib(p, 0, 0);
+		return inst_ok;
+
+	/* Record the trigger mode */
+	} else if (m == inst_opt_trig_prog
+	 || m == inst_opt_trig_user
+	 || m == inst_opt_trig_user_switch) {
+		i1pro_set_trig(p, m);
+		return inst_ok;
+	}
+
+	if (m == inst_opt_scan_toll) {
+		va_list args;
+		double toll_ratio = 1.0;
+
+		va_start(args, m);
+		toll_ratio = va_arg(args, double);
+		va_end(args);
+		return i1pro_interp_code(p, i1pro_set_scan_toll(p, toll_ratio));
+	}
 
 	if (!p->gotcoms)
 		return inst_no_coms;
 	if (!p->inited)
 		return inst_no_init;
+
+	/* Not sure if this can be set before init */
+	if (m == inst_opt_highres) {
+		return i1pro_interp_code(p, i1pro_set_highres(p));
+	} else if (m == inst_opt_stdres) {
+		return i1pro_interp_code(p, i1pro_set_stdres(p));
+	}
 
 	/* Return the filter */
 	if (m == inst_stat_get_filter) {
+		i1proimp *imp = (i1proimp *)p->m;
 		inst_opt_filter *filt;
 		va_list args;
 
@@ -639,63 +765,17 @@ inst_status_type m,	/* Requested status type */
 		return inst_ok;
 	}
 
-	return inst_unsupported;
-}
-
-/* 
- * set or reset an optional mode
- * We assume that the instrument has been initialised.
- */
-static inst_code
-i1pro_set_opt_mode(inst *pp, inst_opt_mode m, ...)
-{
-	i1pro *p = (i1pro *)pp;
-
-	if (!p->gotcoms)
-		return inst_no_coms;
-	if (!p->inited)
-		return inst_no_init;
-
-	if (m == inst_opt_noautocalib) {
-		i1pro_set_noautocalib(p, 1);
-		return inst_ok;
-
-	} else if (m == inst_opt_autocalib) {
-		i1pro_set_noautocalib(p, 0);
-		return inst_ok;
-
-	/* Record the trigger mode */
-	} else if (m == inst_opt_trig_prog
-	 || m == inst_opt_trig_keyb
-	 || m == inst_opt_trig_keyb_switch) {
-		i1pro_set_trig(p, m);
-		return inst_ok;
-	}
-	if (m == inst_opt_trig_return) {
-		i1pro_set_trigret(p, 1);
-		return inst_ok;
-	} else if (m == inst_opt_trig_no_return) {
-		i1pro_set_trigret(p, 0);
-		return inst_ok;
-	}
-
-	if (m == inst_opt_highres) {
-		return i1pro_interp_code(p, i1pro_set_highres(p));
-	} else if (m == inst_opt_stdres) {
-		return i1pro_interp_code(p, i1pro_set_stdres(p));
-	}
-
-	if (m == inst_opt_scan_toll) {
+	/* Use default implementation of other inst_opt_type's */
+	{
+		inst_code rv;
 		va_list args;
-		double toll_ratio = 1.0;
 
 		va_start(args, m);
-		toll_ratio = va_arg(args, double);
+		rv = inst_get_set_opt_def(pp, m, args);
 		va_end(args);
-		return i1pro_interp_code(p, i1pro_set_scan_toll(p, toll_ratio));
-	}
 
-	return inst_unsupported;
+		return rv;
+	}
 }
 
 /* Destroy ourselves */
@@ -710,43 +790,43 @@ i1pro_del(inst *pp) {
 }
 
 /* Constructor */
-extern i1pro *new_i1pro(icoms *icom, instType itype, int debug, int verb)
-{
+extern i1pro *new_i1pro(icoms *icom, instType itype) {
 	i1pro *p;
-	if ((p = (i1pro *)calloc(sizeof(i1pro),1)) == NULL)
-		error("i1pro: malloc failed!");
-
-	if (icom == NULL)
-		p->icom = new_icoms();
-	else
-		p->icom = icom;
-
-	i1pro_determine_capabilities(p);
-	p->debug = debug;
-	p->verb = verb;
-
-	if (add_i1proimp(p) != I1PRO_OK) {
-		free(p);
-		error("i1pro: creating i1proimp");
+	int rv;
+	if ((p = (i1pro *)calloc(sizeof(i1pro),1)) == NULL) {
+		a1loge(icom->log, 1, "new_i1pro: malloc failed!\n");
+		return NULL;
 	}
+
+	p->log = new_a1log_d(icom->log);
 
 	/* Inst methods */
 	p->init_coms         = i1pro_init_coms;
 	p->init_inst         = i1pro_init_inst;
 	p->capabilities      = i1pro_capabilities;
-	p->capabilities2     = i1pro_capabilities2;
 	p->get_serial_no     = i1pro_get_serial_no;
+	p->check_mode        = i1pro_check_mode;
 	p->set_mode          = i1pro_set_mode;
-	p->get_status        = i1pro_get_status;
-	p->set_opt_mode      = i1pro_set_opt_mode;
+	p->get_set_opt       = i1pro_get_set_opt;
 	p->read_strip        = i1pro_read_strip;
 	p->read_sample       = i1pro_read_sample;
-	p->needs_calibration = i1pro_needs_calibration;
+	p->read_refrate      = i1pro_read_refrate;
+	p->get_n_a_cals      = i1pro_get_n_a_cals;
 	p->calibrate         = i1pro_calibrate;
+	p->meas_delay        = i1pro_meas_delay;
 	p->interp_error      = i1pro_interp_error;
 	p->del               = i1pro_del;
 
-	p->itype = itype;
+	p->icom = icom;
+	p->itype = icom->itype;
+
+	i1pro_determine_capabilities(p);
+
+	if ((rv = add_i1proimp(p)) != I1PRO_OK) {
+		free(p);
+		a1loge(icom->log, 1, "new_i1pro: error %d creating i1proimp\n",rv);
+		return NULL;
+	}
 
 	return p;
 }

@@ -90,7 +90,7 @@ int inflate(void);
 unsigned int wp;             /* current position in slide */
 uch slide[32768];
 
-int flush_output(unsigned int w) {
+static int flush_output(unsigned int w) {
 	wp = w;
 
     if (wp == 0)

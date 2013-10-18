@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\spectro;..\..;..\libusb1\libusb;..\libusb1\msvc;..\..\libHCFR"
-				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;NT;WINVER=0x510;_USE_32BIT_TIME_T;USE_LIBUSB1;_CRT_NONSTDC_NO_DEPRECATE"
+				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;NT;WINVER=0x510;_USE_32BIT_TIME_T;NATIVE_USB;_CRT_NONSTDC_NO_DEPRECATE"
 				MinimalRebuild="true"
 				ExceptionHandling="2"
 				BasicRuntimeChecks="3"
@@ -86,7 +86,7 @@
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)\$(ProjectName)"
 			ConfigurationType="4"
 			CharacterSet="2"
-			WholeProgramOptimization="1"
+			WholeProgramOptimization="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -108,14 +108,13 @@
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				AdditionalIncludeDirectories="..\spectro;..\..;..\libusb1\libusb;..\libusb1\msvc;..\..\libHCFR"
-				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;NT;WINVER=0x510;_USE_32BIT_TIME_T;USE_LIBUSB1;_CRT_NONSTDC_NO_DEPRECATE"
+				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;NT;WINVER=0x510;_USE_32BIT_TIME_T;NATIVE_USB;_CRT_NONSTDC_NO_DEPRECATE"
 				ExceptionHandling="2"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
-				DisableSpecificWarnings="4200"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -159,15 +158,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CGATSFile.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\SpectralSample.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\SpectralSampleFiles.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\CGATSFile.cpp"
 				>
 			</File>
 		</Filter>
@@ -179,17 +178,17 @@
 			<File
 				RelativePath=".\ArgyllMeterWrapper.h"
 				>
-			</File>		
+			</File>
+			<File
+				RelativePath=".\CGATSFile.h"
+				>
+			</File>
 			<File
 				RelativePath=".\SpectralSample.h"
 				>
 			</File>
 			<File
 				RelativePath=".\SpectralSampleFiles.h"
-				>
-			</File>
-			<File
-				RelativePath=".\CGATSFile.h"
 				>
 			</File>
 		</Filter>

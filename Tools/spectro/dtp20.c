@@ -7,7 +7,7 @@
  * Author: Graeme W. Gill
  * Date:   10/3/2001
  *
- * Copyright 1996 - 2007, Graeme W. Gill
+ * Copyright 1996 - 2013, Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -47,22 +47,13 @@
 #include "aconfig.h"
 #else /* SALONEINSTLIB */
 #include "sa_config.h"
-#include "numsup.h"
 #endif /* SALONEINSTLIB */
+#include "numsup.h"
 #include "xspect.h"
 #include "insttypes.h"
-#include "icoms.h"
 #include "conv.h"
+#include "icoms.h"
 #include "dtp20.h"
-
-#undef DEBUG
-
-#ifdef DEBUG
-#define DBG(xxx) printf xxx ;
-#else
-#define DBG(xxx) 
-#endif
-
 
 static inst_code dtp20_interp_code(inst *pp, int ec);
 static inst_code activate_mode(dtp20 *p);
@@ -100,16 +91,6 @@ extract_ec(char *s) {
 
 /* Interpret an icoms error into a DTP20 error */
 static int icoms2dtp20_err(int se) {
-	if (se & ICOM_USERM) {
-		se &= ICOM_USERM;
-		if (se == ICOM_TRIG)
-			return DTP20_USER_TRIG;
-		if (se == ICOM_CMND)
-			return DTP20_USER_CMND;
-		if (se == ICOM_TERM)
-			return DTP20_USER_TERM;
-		return DTP20_USER_ABORT;
-	}
 	if (se != ICOM_OK) {
 		if (se & ICOM_TO)
 			return DTP20_TIMEOUT; 
@@ -127,44 +108,27 @@ char *in,		/* In string */
 char *out,		/* Out string buffer */
 int bsize,				/* Out buffer size */
 double to) {			/* Timout in seconts */
-	char tc = '>';			/* Terminating character */
+	char *tc = ">";			/* Terminating character */
 	int ntc = 1;			/* Number of terminating characters */
 	int rv, se, insize;
-	int isdeb = 0;
-	int xuserm = 0;			/* User flags from transmit operation */
 
-	/* Turn off low level debug messages, and sumarise them here */
-	isdeb = p->icom->debug;
-	p->icom->debug = 0;
-	
-	if (isdeb) fprintf(stderr,"dtp20: Sending '%s'",icoms_fix(in));
+	a1logd(p->log, 4, "dtp20: Sending '%s'",icoms_fix(in));
 
 	insize = strlen(in);
 	if (insize > 0) {
 		if ((se = p->icom->usb_control(p->icom, 0x41, 0x00, 0x00, 0x00, (unsigned char *)in, insize, to)) != ICOM_OK) {
-			if (isdeb) fprintf(stderr,"send failed ICOM err 0x%x\n",se);
-			/* If something other than a user terminate, trigger or command */
-			if ((se & ~ICOM_USERM) != ICOM_OK || (se & ICOM_USERM) == ICOM_USER) {
-				p->icom->debug = isdeb;
-				return dtp20_interp_code((inst *)p, icoms2dtp20_err(se));
-			} else {
-				xuserm = (se & ICOM_USERM);
-			}
+			a1logd(p->log, 1, "dtp20: send command failed ICOM err 0x%x\n",se);
+			return dtp20_interp_code((inst *)p, icoms2dtp20_err(se));
 		}
 	}
 
 	if ((se = p->icom->read(p->icom, out, bsize, tc, ntc, to)) != 0) {
-		if (isdeb) fprintf(stderr,"response failed ICOM err 0x%x\n",se);
-		p->icom->debug = isdeb;
+		a1logd(p->log, 1, "dtp20: read response failed ICOM err 0x%x\n",se);
 		return dtp20_interp_code((inst *)p, icoms2dtp20_err(se));
 	}
 
-	/* Deal with user terminate, trigger or command on send */
-	if (xuserm != ICOM_OK)
-		return dtp20_interp_code((inst *)p, icoms2dtp20_err(xuserm));
-
 	rv = DTP20_OK;
-	if (tc == '>' && ntc == 1) {	/* Expecting DTP type error code */
+	if (tc[0] == '>' && ntc == 1) {	/* Expecting DTP type error code */
 		rv = extract_ec(out);
 		if (rv > 0) {
 			rv &= inst_imask;
@@ -176,8 +140,7 @@ double to) {			/* Timout in seconts */
 		}
 	}
 
-	if (isdeb) fprintf(stderr,"response '%s' ICOM err 0x%x\n",icoms_fix(out),rv);
-	p->icom->debug = isdeb;
+	a1logd(p->log, 4, "dtp20: response '%s' ICOM err 0x%x\n",icoms_fix(out),rv);
 	return dtp20_interp_code((inst *)p, rv);
 }
 
@@ -195,26 +158,14 @@ double top) {		/* Timout in seconds */
 	int rv, se, insize;
 	int bread = 0;
 	char *op;
-	int isdeb = 0;
-	int xuserm = 0;			/* User flags from transmit operation */
 
-	/* Turn off low level debug messages, and sumarise them here */
-	isdeb = p->icom->debug;
-	p->icom->debug = 0;
-	
-	if (isdeb) fprintf(stderr,"dtp20: Sending '%s'",icoms_fix(in));
+	a1logd(p->log, 4, "dtp20: Sending '%s'",icoms_fix(in));
 
 	insize = strlen(in);
 	if (insize > 0) {
 		if ((se = p->icom->usb_control(p->icom, 0x41, 0x00, 0x00, 0x00, (unsigned char *)in, insize, top)) != ICOM_OK) {
-			if (isdeb) fprintf(stderr,"send failed ICOM err 0x%x\n",se);
-			/* If something other than a user terminate, trigger or command */
-			if ((se & ~ICOM_USERM) != ICOM_OK || (se & ICOM_USERM) == ICOM_USER) {
-				p->icom->debug = isdeb;
-				return dtp20_interp_code((inst *)p, icoms2dtp20_err(se));
-			} else {
-				xuserm = (se & ICOM_USERM);
-			}
+			a1logd(p->log, 1, "dtp20: send failed ICOM err 0x%x\n",se);
+			return dtp20_interp_code((inst *)p, icoms2dtp20_err(se));
 		}
 	}
 
@@ -224,53 +175,45 @@ double top) {		/* Timout in seconds */
 
 		if (rsize > bsize)
 			rsize = bsize;
-//printf("~1 doing %d, %d to go\n",rsize, bsize);
 
-		if ((se = p->icom->usb_read(p->icom, 0x81, (unsigned char *)op, rsize, &bread, top)) != ICOM_OK) {
+		if ((se = p->icom->usb_read(p->icom, NULL, 0x81, (unsigned char *)op, rsize, &bread, top)) != ICOM_OK) {
 			if (se == ICOM_SHORT) {
-				if (isdeb) fprintf(stderr,"response failed expected %d got %d ICOM err 0x%x\n",rsize,bread,se);
+				a1logd(p->log, 1, "dtp20: response failed expected %d got %d ICOM err 0x%x\n",
+				                                                              rsize,bread,se);
 			} else {
-				if (isdeb) fprintf(stderr,"response failed ICOM err 0x%x\n",se);
+				a1logd(p->log, 1, "dtp20: response failed ICOM err 0x%x\n",se);
 			}
-			p->icom->debug = isdeb;
 			return dtp20_interp_code((inst *)p, icoms2dtp20_err(se));
 		}
-//printf("~1 read %d\n",bread);
 		bsize -= bread;
 		op += bread; 
 	}
 		
-	/* Deal with user terminate, trigger or command on send */
-	if (xuserm != ICOM_OK)
-		return dtp20_interp_code((inst *)p, icoms2dtp20_err(xuserm));
-
 	rv = DTP20_OK;
 
-	if (isdeb) fprintf(stderr,"response '%s' ICOM err 0x%x\n",icoms_tohex((unsigned char *)out, bread),rv);
-	p->icom->debug = isdeb;
+	a1logd(p->log, 4, "dtp20: response '%s' ICOM err 0x%x\n",
+	            icoms_tohex((unsigned char *)out, bread),rv);
 	return dtp20_interp_code((inst *)p, rv);
 }
 
 /* Establish communications with a DTP20 */
-/* Use the baud rate given, and timeout in to secs */
 /* Return DTP_COMS_FAIL on failure to establish communications */
 static inst_code
-dtp20_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) {
+dtp20_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	dtp20 *p = (dtp20 *)pp;
 	char buf[MAX_MES_SIZE];
+	int se;
 	inst_code ev = inst_ok;
 
-	if (p->debug) {
-		p->icom->debug = p->debug;	/* Turn on debugging */
-		fprintf(stderr,"dtp20: About to init coms\n");
-	}
+	if (p->icom->port_type(p->icom) == icomt_usb) {
 
-	if (p->icom->is_usb_portno(p->icom, port) != instUnknown) {
-
-		if (p->debug) fprintf(stderr,"dtp20: About to init USB\n");
+		a1logd(p->log, 4, "dtp20: About to init USB\n");
 
 		/* Set config, interface, write end point, read end point, read quanta */
-		p->icom->set_usb_port(p->icom, port, 1, 0x00, 0x81, icomuf_none, 0, NULL); 
+		if ((se = p->icom->set_usb_port(p->icom, 1, 0x00, 0x81, icomuf_none, 0, NULL)) != ICOM_OK) { 
+			a1logd(p->log, 1, "dtp20: set_usbe_port failed ICOM err 0x%x\n",se);
+			return dtp20_interp_code((inst *)p, icoms2dtp20_err(se));
+		}
 
 		/* Blind reset it twice - it seems to sometimes hang up */
 		/* otherwise under OSX */
@@ -278,26 +221,29 @@ dtp20_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) 
 		dtp20_command(p, "0PR\r", buf, MAX_MES_SIZE, 0.5);
 
 	} else {
-		if (p->debug) fprintf(stderr,"dtp20: Failed to find connection to instrument\n");
-		return inst_coms_fail;
+		a1logd(p->log, 1, "dtp20: wrong communications type for device\n");
+		return inst_internal_error;
 	}
 
 	/* Check instrument is responding */
 	if ((ev = dtp20_command(p, "\r", buf, MAX_MES_SIZE, 1.5)) != inst_ok) {
-		if (p->debug) fprintf(stderr,"dtp20: Failed to get a response from instrument\n");
+		a1logd(p->log, 1, "dtp20: Failed to get a response from instrument\n");
 		return inst_coms_fail;
 	}
 
-	if (p->verb) {
+	/* Print the general information returned by instrument */
+	if (p->log->verb) {
 		int i, j;
-		if ((ev = dtp20_command(p, "GI\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+		if ((ev = dtp20_command(p, "GI\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok) {
+			a1logd(p->log, 1, "dtp20: GI command failed with ICOM err 0x%x\n",ev);
 			return ev;
+		}
 		for (j = i = 0; ;i++) {
 			if (buf[i] == '<' || buf[i] == '\000')
 				break;
 			if (buf[i] == '\r') {
 				buf[i] = '\000';
-				printf(" %s\n",&buf[j]);
+				a1logv(p->log, 1, " %s\n",&buf[j]);
 				if (buf[i+1] == '\n')
 					i++;
 				j = i+1;
@@ -305,7 +251,7 @@ dtp20_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) 
 		}
 	}
 
-	if (p->debug) fprintf(stderr,"dtp20: Got coms OK\n");
+	a1logd(p->log, 4, "dtp20: Got coms OK\n");
 
 	p->gotcoms = 1;
 	return inst_ok;
@@ -380,6 +326,8 @@ dtp20_init_inst(inst *pp) {
 	char buf[MAX_MES_SIZE];
 	inst_code rv = inst_ok;
 
+	a1logd(p->log, 2, "dtp20_init_inst: called\n");
+
 	if (p->gotcoms == 0)
 		return inst_no_coms;		/* Must establish coms before calling init */
 
@@ -394,7 +342,7 @@ dtp20_init_inst(inst *pp) {
 		return rv;
 
 	/* Get the model and version number */
-	if ((rv = dtp20_command(p, "SV\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+	if ((rv = dtp20_command(p, "SV\r", buf, MAX_MES_SIZE, 0.5)) != inst_ok)
 		return rv;
 
 	/* Check that it is a DTP20 */
@@ -405,6 +353,7 @@ dtp20_init_inst(inst *pp) {
 //	/* Set Beeper to off */
 //	if ((rv = dtp20_command(p, "0001CF\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
 //		return rv;
+
 	/* Set Beeper to on */
 	if ((rv = dtp20_command(p, "0101CF\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
 		return rv;
@@ -422,7 +371,7 @@ dtp20_init_inst(inst *pp) {
 		return rv;
 		
 	/* set default trigger mode */
-	p->trig = inst_opt_trig_keyb_switch;
+	p->trig = inst_opt_trig_user_switch;
 
 	/* - - - - - - - - - - - - - - - - - - - - - - - - */
 	/* Setup for the type of measurements we want to do */
@@ -441,8 +390,8 @@ dtp20_init_inst(inst *pp) {
 	/* Reset retrieval of saved spot readings */ 
 	p->savix = 0;
 
-	if (rv == inst_ok)
-		p->inited = 1;
+	a1logd(p->log, 2, "dtp20_init_inst: instrument inited OK\n");
+	p->inited = 1;
 
 	return inst_ok;
 }
@@ -474,7 +423,7 @@ ipatch *vals) {		/* Pointer to array of values */
 	if (!p->inited)
 		return inst_no_init;
 
-	if ((p->mode & inst_mode_measurement_mask) != inst_mode_s_ref_chart)
+	if (!IMODETST(p->mode,inst_mode_s_ref_chart))
 		return inst_unsupported;
 
 	/* Confirm that there is a chart ready to read */
@@ -512,12 +461,12 @@ ipatch *vals) {		/* Pointer to array of values */
 	if (ttlp != npatch
 	 || sl != sip
 	 || (id != -1 && id != chid)) {
-		if (p->debug) fprintf(stderr,"Got %d, xpt %d patches, got %d xpt %d strip lgth, got %d xpt %d chart id\n",ttlp,npatch,sl,sip,id,chid);
+		a1logd(p->log, 2, "dtp20: Got %d, xpt %d patches, got %d xpt %d strip lgth, "
+		                       "got %d xpt %d chart id\n",ttlp,npatch,sl,sip,id,chid);
 		return inst_nochmatch;
 	}
 
-	if (p->verb)
-		printf("Chart has %d patches, %d per strip, chart id %d\n",ttlp,sl,id);
+	a1logv(p->log, 1, "Chart has %d patches, %d per strip, chart id %d\n",ttlp,sl,id);
 
 	/* Disable multiple data output */
 	if ((ev = dtp20_command(p, "001ACF\r", buf, MAX_MES_SIZE, 0.5)) != inst_ok)
@@ -528,8 +477,7 @@ ipatch *vals) {		/* Pointer to array of values */
 		char *tp, cmd[10];
 		int i;
 
-		if (p->verb)
-			printf("Reading saved strip %d of %d\n",six,pich);
+		a1logv(p->log, 1, "Reading saved strip %d of %d\n",six,pich);
 
 		/* Select the strip to read */
 		sprintf(cmd, "%03d01TS\r",six);
@@ -558,9 +506,9 @@ ipatch *vals) {		/* Pointer to array of values */
 					return inst_protocol_error;
 				}
 			}
+			tvals[i].loc[0] = '\000';
+			tvals[i].mtype = inst_mrt_reflective;
 			tvals[i].XYZ_v = 1;
-			tvals[i].aXYZ_v = 0;
-			tvals[i].Lab_v = 0;
 			tvals[i].sp.spec_n = 0;
 			tvals[i].duration = 0.0;
 			tp += strlen(tp) + 1;
@@ -605,8 +553,7 @@ ipatch *vals) {		/* Pointer to array of values */
 		}
 	}
 
-	if (p->verb)
-		printf("All saved strips read\n");
+	a1logv(p->log, 1, "All saved strips read\n");
 	return inst_ok;
 }
 
@@ -637,8 +584,8 @@ ipatch *vals) {		/* Pointer to array of instrument patch values */
 		return inst_no_init;
 
 	/* This funtion isn't valid in saved data mode */
-	if ((p->mode & inst_mode_measurement_mask) != inst_mode_ref_strip)
-		return inst_wrong_config;
+	if (!IMODETST(p->mode, inst_mode_ref_strip))
+		return inst_wrong_setup;
 
 	/* Until we get the right status or give up */
 	for (i = 0;;i++) {
@@ -653,7 +600,7 @@ ipatch *vals) {		/* Pointer to array of instrument patch values */
 			return (inst_misread | DTP20_NOT_EMPTY);	/* Has onffline patches */	
 		if (i < 20) {
 			if (cs == 0 || (cs >= 4 && cs <= 12)) {	/* Ignore transient status */
-				msec_sleep(200);
+				msec_sleep(100);
 				continue;
 			}
 		}
@@ -664,51 +611,88 @@ ipatch *vals) {		/* Pointer to array of instrument patch values */
 	build_strip(p, tbuf, name, npatch, pname, sguide, pwid, gwid, twid);
 
 	if ((ev = dtp20_command(p, tbuf, buf, MAX_MES_SIZE, 1.5)) != inst_ok) {
-		if (p->verb)
-			printf("Interactive strip reading won't work on Firmware earlier than V1.03 !\n");
+		a1logv(p->log, 1, "Interactive strip reading won't work on Firmware earlier than V1.03 !\n");
 		return ev;
 	}
 
-	if (p->trig == inst_opt_trig_keyb_switch) {
+	if (p->trig == inst_opt_trig_user_switch) {
 		int touts = 0;
 
-		/* Wait for a strip value to turn up, or a user abort/command */
+		/* Wait for a strip value to turn up, or a user command/abort */
 		for (;;) {
-			if ((ev = dtp20_command(p, "CS\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok) {
-				if (ev == (inst_coms_fail | DTP20_TIMEOUT)) {
-					if (touts++ > 40)
-						return ev;
-					continue; 
-				}
+
+			ev = dtp20_command(p, "CS\r", buf, MAX_MES_SIZE, 0.2);
+
+			if (ev == (inst_coms_fail | DTP20_TIMEOUT)) {
+				/* Ignore transient timeouts */
+				if (touts++ > 40)
+					return ev;
+				continue; 
+
+			} else if (ev != inst_ok) {
 				if ((ev & inst_mask) == inst_needs_cal)
 					p->need_cal = 1;
-				if ((ev & inst_mask) != inst_user_trig)
-					return ev;
-				user_trig = 1;
-			} else {
+				return ev;				/* Error */
+			} else {					
 				int stat;
 				if (sscanf(buf, " %d ", &stat) != 1)
 					stat = 6;
-				/* Ingnore benign status */
+
+				/* Ignore benign status */
 				if (stat != 4 && stat != 6 && stat != 7) {
+					/* Not ready - Check for user trigger or command */
+					if (p->uicallback != NULL) {
+						if ((ev = p->uicallback(p->uic_cntx, inst_armed)) != inst_ok) {
+							if (ev == inst_user_abort) {
+								return ev;			/* Error or user abort */
+							} else if (ev == inst_user_trig) {
+								user_trig = 1;		/* User trigger */
+								break;
+							}
+						}
+					}
+					/* Keep waiting */
 					msec_sleep(200);
 					continue;
-				}
-				switch_trig = 1;
-			}
-			break;
-		}
-		if (p->trig_return)
-			printf("\n");
 
-	} else if (p->trig == inst_opt_trig_keyb) {
-		if ((se = icoms_poll_user(p->icom, 1)) != ICOM_TRIG) {
-			/* Abort, term or command */
-			return dtp20_interp_code((inst *)p, icoms2dtp20_err(se));
+				} else {
+					/* Ready - continue on */
+					switch_trig = 1;
+					break;
+				}
+			}
 		}
-		user_trig = 1;
-		if (p->trig_return)
-			printf("\n");
+		/* Notify of trigger */
+		if (p->uicallback)
+			p->uicallback(p->uic_cntx, inst_triggered); 
+
+	} else if (p->trig == inst_opt_trig_user) {
+		if (p->uicallback == NULL) {
+			a1logd(p->log, 1, "dtp20: inst_opt_trig_user but no uicallback function set!\n");
+			return inst_unsupported;
+		}
+
+		for (;;) {
+			if ((ev = p->uicallback(p->uic_cntx, inst_armed)) != inst_ok) {
+				if (ev == inst_user_abort) 
+					return ev;
+				if (ev == inst_user_trig) {
+					user_trig = 1;
+					break;					/* Trigger */
+				}
+			}
+			msec_sleep(200);
+		}
+		/* Notify of trigger */
+		if (p->uicallback)
+			p->uicallback(p->uic_cntx, inst_triggered); 
+	
+	/* Progromatic Trigger */
+	} else {
+		/* Check for abort */
+		if (p->uicallback != NULL
+		 && (ev = p->uicallback(p->uic_cntx, inst_armed)) == inst_user_abort)
+			return ev;
 	}
 
 	/* Trigger a read if the switch has not been used */
@@ -748,9 +732,9 @@ ipatch *vals) {		/* Pointer to array of instrument patch values */
 				return inst_protocol_error;
 			}
 		}
+		vals[i].loc[0] = '\000';
+		vals[i].mtype = inst_mrt_reflective;
 		vals[i].XYZ_v = 1;
-		vals[i].aXYZ_v = 0;
-		vals[i].Lab_v = 0;
 		vals[i].sp.spec_n = 0;
 		vals[i].duration = 0.0;
 		tp += strlen(tp) + 1;
@@ -820,7 +804,8 @@ static inst_code
 dtp20_read_sample(
 inst *pp,
 char *name,			/* Strip name (7 chars) */
-ipatch *val) {		/* Pointer to instrument patch value */
+ipatch *val,		/* Pointer to instrument patch value */
+instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	dtp20 *p = (dtp20 *)pp;
 	char buf[MAX_MES_SIZE], *tp;
 	int se;
@@ -834,28 +819,42 @@ ipatch *val) {		/* Pointer to instrument patch value */
 		return inst_no_init;
 
 	/* This combination doesn't make any sense... */
-	if ((p->mode & inst_mode_measurement_mask) == inst_mode_s_ref_spot
-	 && p->trig == inst_opt_trig_keyb_switch) {
-		return inst_wrong_config;
+	if (IMODETST(p->mode, inst_mode_s_ref_spot) && p->trig == inst_opt_trig_user_switch) {
+		return inst_wrong_setup;
 	}
 
-	if (p->trig == inst_opt_trig_keyb_switch) {
+	if (p->trig == inst_opt_trig_user_switch) {
 		int touts = 0;
 
-		/* Wait for a spot value to turn up, or a user abort/command */
+		/* Wait for a sample value to turn up, or a user abort */
 		for (;;) {
-			if ((ev = dtp20_command(p, "CS\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok) {
-				if (ev == (inst_coms_fail | DTP20_TIMEOUT)) {
-					if (touts++ > 20)
-						return ev;
-					continue; 
+
+			/* Check for user trigger */
+			if (p->uicallback != NULL) {
+				if ((ev = p->uicallback(p->uic_cntx, inst_armed)) != inst_ok) {
+					if (ev == inst_user_abort) 
+						return ev;			/* User abort */
+					if (ev == inst_user_trig) {
+						user_trig = 1;
+						break;
+					}
 				}
+			}
+
+			/* Check for an instrument switch trigger */
+			ev = dtp20_command(p, "CS\r", buf, MAX_MES_SIZE, 0.2);
+
+			if (ev == (inst_coms_fail | DTP20_TIMEOUT)) {	/* Assume we're waiting for trigger */
+				if (touts++ > 20)
+					return ev;
+				continue; 
+			
+			} else if (ev != inst_ok) {
 				if ((ev & inst_mask) == inst_needs_cal)
 					p->need_cal = 1;
-				if ((ev & inst_mask) != inst_user_trig)
-					return ev;
-				user_trig = 1;
-			} else {
+				return ev;				/* Error */
+
+			} else {	/* Got a CS response */
 				int stat;
 				if (sscanf(buf, " %d ", &stat) != 1)
 					stat = 6;
@@ -865,24 +864,44 @@ ipatch *val) {		/* Pointer to instrument patch value */
 					continue;
 				}
 				switch_trig = 1;
+				break;
 			}
-			break;
 		}
-		if (p->trig_return)
-			printf("\n");
+		/* Notify of trigger */
+		if (p->uicallback)
+			p->uicallback(p->uic_cntx, inst_triggered); 
 
-	} else if (p->trig == inst_opt_trig_keyb) {
-		if ((se = icoms_poll_user(p->icom, 1)) != ICOM_TRIG) {
-			/* Abort, term or command */
-			return dtp20_interp_code((inst *)p, icoms2dtp20_err(se));
+	} else if (p->trig == inst_opt_trig_user) {
+		if (p->uicallback == NULL) {
+			a1logd(p->log, 1, "dtp20: inst_opt_trig_user but no uicallback function set!\n");
+			return inst_unsupported;
 		}
-		user_trig = 1;
-		if (p->trig_return)
-			printf("\n");
+
+		for (;;) {
+			if ((ev = p->uicallback(p->uic_cntx, inst_armed)) != inst_ok) {
+				if (ev == inst_user_abort)
+					return ev;				/* Abort */
+				if (ev == inst_user_trig) {
+					user_trig = 1;
+					break;					/* Trigger */
+				}
+			}
+			msec_sleep(200);
+		}
+		/* Notify of trigger */
+		if (p->uicallback)
+			p->uicallback(p->uic_cntx, inst_triggered); 
+
+	/* Progromatic Trigger */
+	} else {
+		/* Check for abort */
+		if (p->uicallback != NULL
+		 && (ev = p->uicallback(p->uic_cntx, inst_armed)) == inst_user_abort)
+			return ev;				/* Abort */
 	}
 
 	/* Read saved spot values */
-	if ((p->mode & inst_mode_measurement_mask) == inst_mode_s_ref_spot) {
+	if (IMODETST(p->mode, inst_mode_s_ref_spot)) {
 		char cmd[10];
 		int nsr;
 
@@ -941,16 +960,19 @@ ipatch *val) {		/* Pointer to instrument patch value */
 	if (sscanf(buf, " %lf %lf %lf ", &val->XYZ[0], &val->XYZ[1], &val->XYZ[2]) != 3) {
 		return inst_protocol_error;
 	}
+	/* This may not change anything since instrument may clamp */
+	if (clamp)
+		icmClamp3(val->XYZ, val->XYZ);
+	val->loc[0] = '\000';
+	val->mtype = inst_mrt_reflective;
 	val->XYZ_v = 1;
-	val->aXYZ_v = 0;
-	val->Lab_v = 0;
 	val->sp.spec_n = 0;
 	val->duration = 0.0;
 
 	if (p->mode & inst_mode_spectral) {
 		int j;
 
-		/* Set to read speactral reflectance */
+		/* Set to read spectral reflectance */
 		if ((ev = dtp20_command(p, "0318CF\r", buf, MAX_MES_SIZE, 0.5)) != inst_ok)
 			return ev;
 		/* Set to binary */
@@ -984,7 +1006,7 @@ ipatch *val) {		/* Pointer to instrument patch value */
 			return ev;
 	}
 
-	if ((p->mode & inst_mode_measurement_mask) != inst_mode_s_ref_spot) {
+	if (!IMODETST(p->mode, inst_mode_s_ref_spot)) {
 
 		/* Clear the spot database so our reading doesn't appear as a stored reading */
 		if ((ev = dtp20_command(p, "02CD\r", buf, MAX_MES_SIZE, 1.0)) != inst_ok)
@@ -1009,22 +1031,23 @@ ipatch *val) {		/* Pointer to instrument patch value */
 	return inst_ok;
 }
 
-
-/* Determine if a calibration is needed. Returns inst_calt_none if not, */
-/* inst_calt_unknown if it is unknown, or inst_calt_XXX if needs calibration, */
-/* and the first type of calibration needed. */
-inst_cal_type dtp20_needs_calibration(inst *pp) {
+/* Return needed and available inst_cal_type's */
+static inst_code dtp20_get_n_a_cals(inst *pp, inst_cal_type *pn_cals, inst_cal_type *pa_cals) {
 	dtp20 *p = (dtp20 *)pp;
-	
-	if (!p->gotcoms)
-		return inst_no_coms;
-	if (!p->inited)
-		return inst_no_init;
+	inst_cal_type n_cals = inst_calt_none;
+	inst_cal_type a_cals = inst_calt_none;
+		
+	if (p->need_cal)
+		n_cals |= inst_calt_ref_white;
+	a_cals |= inst_calt_ref_white;
 
-	if (p->need_cal) {
-		return inst_calt_ref_white;
-	}
-	return inst_calt_unknown;
+	if (pn_cals != NULL)
+		*pn_cals = n_cals;
+
+	if (pa_cals != NULL)
+		*pa_cals = a_cals;
+
+	return inst_ok;
 }
 
 /* Request an instrument calibration. */
@@ -1036,46 +1059,69 @@ inst_cal_type dtp20_needs_calibration(inst *pp) {
 /* user to do so, each time the error inst_cal_setup is returned. */
 inst_code dtp20_calibrate(
 inst *pp,
-inst_cal_type calt,		/* Calibration type. inst_calt_all for all neeeded */
+inst_cal_type *calt,	/* Calibration type to do/remaining */
 inst_cal_cond *calc,	/* Current condition/desired condition */
 char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 ) {
 	dtp20 *p = (dtp20 *)pp;
-	inst_code ev = inst_ok;
 	char buf[MAX_MES_SIZE];
-	id[0] = '\000';
+	inst_code ev;
+    inst_cal_type needed, available;
 
 	if (!p->gotcoms)
 		return inst_no_coms;
 	if (!p->inited)
 		return inst_no_init;
 
-	if (calt == inst_calt_all)
-		calt = inst_calt_ref_white;
+	id[0] = '\000';
 
-	if (calt != inst_calt_ref_white) {
+	if ((ev = dtp20_get_n_a_cals((inst *)p, &needed, &available)) != inst_ok)
+		return ev;
+
+	/* Translate inst_calt_all/needed into something specific */
+	if (*calt == inst_calt_all
+	 || *calt == inst_calt_needed
+	 || *calt == inst_calt_available) {
+		if (*calt == inst_calt_all) 
+			*calt = (needed & inst_calt_n_dfrble_mask) | inst_calt_ap_flag;
+		else if (*calt == inst_calt_needed)
+			*calt = needed & inst_calt_n_dfrble_mask;
+		else if (*calt == inst_calt_available)
+			*calt = available & inst_calt_n_dfrble_mask;
+
+		a1logd(p->log,4,"dtp20_calibrate: doing calt 0x%x\n",calt);
+
+		if ((*calt & inst_calt_n_dfrble_mask) == 0)		/* Nothing todo */
+			return inst_ok;
+	}
+
+	/* See if it's a calibration we understand */
+	if (*calt & ~available & inst_calt_all_mask) { 
 		return inst_unsupported;
 	}
 
-	if (*calc == inst_calc_man_ref_white) {
+	if (*calt & inst_calt_ref_white) {
+
+		if (*calc != inst_calc_man_ref_white) {
+			char *cp;
+			if ((ev = dtp20_command(p, "04SN\r", buf, MAX_MES_SIZE, 4.5)) != inst_ok)
+				return ev;
+			for (cp = buf; *cp >= '0' && *cp <= '9'; cp++)
+				;
+			*cp = '\000';
+			strcpy(id, buf);
+			*calc = inst_calc_man_ref_white;
+			return inst_cal_setup;
+		}
+
 		if ((ev = dtp20_command(p, "CR\r", buf, MAX_MES_SIZE, 4.5)) != inst_ok)
 			return ev;
 		
 		p->need_cal = 0;
-		return inst_ok;	/* Calibration done */
-
-	} else {
-		char *cp;
-		if ((ev = dtp20_command(p, "04SN\r", buf, MAX_MES_SIZE, 4.5)) != inst_ok)
-			return ev;
-		for (cp = buf; *cp >= '0' && *cp <= '9'; cp++)
-			;
-		*cp = '\000';
-		strcpy(id, buf);
-		*calc = inst_calc_man_ref_white;	/* Need to ask user to do calibration */
-		return inst_cal_setup;
+		*calt &= ~inst_calt_ref_white;
 	}
-	return inst_unsupported;
+
+	return inst_ok;
 }
 
 /* Error codes interpretation */
@@ -1093,14 +1139,6 @@ dtp20_interp_error(inst *pp, int ec) {
 			return "Not a DTP20";
 		case DTP20_DATA_PARSE_ERROR:
 			return "Data from DTP didn't parse as expected";
-		case DTP20_USER_ABORT:
-			return "User hit Abort key";
-		case DTP20_USER_TERM:
-			return "User hit Terminate key";
-		case DTP20_USER_TRIG:
-			return "User hit Trigger key";
-		case DTP20_USER_CMND:
-			return "User hit a Command key";
 
 		case DTP20_NOT_EMPTY:
 			return "Trying to read strips when there is already\n"
@@ -1122,8 +1160,6 @@ dtp20_interp_error(inst *pp, int ec) {
 			return "One or more parameters are out of range";
 		case DTP20_BUSY:
 			return "Instrument is busy - command ignored";
-		case DTP20_USER_ABORT_ERROR:
-			return "User aborted process";
 			
 		case DTP20_MEASUREMENT_ERROR:
 			return "General measurement error";
@@ -1262,17 +1298,7 @@ dtp20_interp_code(inst *pp, int ec) {
 		case DTP20_BAD_PARAMETERS:
 		case DTP20_PRM_RANGE_ERROR:
 		case DTP20_BUSY:
-		case DTP20_USER_ABORT_ERROR:
 			return inst_protocol_error | ec;
-
-		case DTP20_USER_ABORT:
-			return inst_user_abort | ec;
-		case DTP20_USER_TERM:
-			return inst_user_term | ec;
-		case DTP20_USER_TRIG:
-			return inst_user_trig | ec;
-		case DTP20_USER_CMND:
-			return inst_user_cmnd | ec;
 
 		case DTP20_MEASUREMENT_ERROR:
 		case DTP20_BAD_STRIP:
@@ -1327,7 +1353,7 @@ dtp20_interp_code(inst *pp, int ec) {
 		case DTP20_STRIP_DEFINE_TOO_LONG:
 		case DTP20_BAD_STRIP_DEFINE:
 		case DTP20_BOOTLOADER_MODE:
-			return inst_wrong_config | ec;
+			return inst_wrong_setup | ec;
 	}
 	return inst_other_error | ec;
 }
@@ -1344,119 +1370,103 @@ dtp20_del(inst *pp) {
 /* Set the instrument capabilities */
 static void	set_capabilities(dtp20 *p) {
 
-	p->cap = inst_ref_spot
-	       | inst_ref_strip
-	       | inst_s_ref_spot
-	       | inst_s_ref_chart
-	       | inst_colorimeter
-	       | inst_spectral
+	p->cap = inst_mode_ref_spot
+	       | inst_mode_ref_strip
+	       | inst_mode_s_ref_spot
+	       | inst_mode_s_ref_chart
+	       | inst_mode_colorimeter
+	       | inst_mode_spectral
 	       ;
 
-	p->cap2 = inst2_cal_ref_white
-	        | inst2_prog_trig
-		    | inst2_keyb_switch_trig
-	        | inst2_keyb_trig
+	p->cap2 = inst2_prog_trig
+		    | inst2_user_switch_trig
+	        | inst2_user_trig
 	        | inst2_has_battery
 	        ;
+
+	p->cap3 = inst3_none;
 }
 
 
 /* Return the instrument capabilities */
-inst_capability dtp20_capabilities(inst *pp) {
+void dtp20_capabilities(inst *pp,
+inst_mode *cap1,
+inst2_capability *cap2,
+inst3_capability *cap3) {
 	dtp20 *p = (dtp20 *)pp;
 
-	if (p->cap == inst_unknown)
+	if (p->cap == inst_mode_none)
 		set_capabilities(p);
-	return p->cap;
+
+	if (cap1 != NULL)
+		*cap1 = p->cap;
+	if (cap2 != NULL)
+		*cap2 = p->cap2;
+	if (cap3 != NULL)
+		*cap3 = p->cap3;
 }
 
-/* Return the instrument capabilities 2 */
-inst2_capability dtp20_capabilities2(inst *pp) {
+/* 
+ * check measurement mode
+ */
+static inst_code
+dtp20_check_mode(inst *pp, inst_mode m) {
 	dtp20 *p = (dtp20 *)pp;
+	inst_mode cap;
 
-	if (p->cap2 == inst2_unknown)
-		set_capabilities(p);
-	return p->cap2;
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
+	pp->capabilities(pp, &cap, NULL, NULL);
+
+	/* Simple test */
+	if (m & ~cap)
+		return inst_unsupported;
+
+	/* Check specific modes */
+	if (!IMODETST(m, inst_mode_ref_spot)
+	 && !IMODETST(m, inst_mode_ref_strip)
+	 && !IMODETST(m, inst_mode_s_ref_spot)
+	 && !IMODETST(m, inst_mode_s_ref_chart)) {
+		return inst_unsupported;
+	}
+
+	return inst_ok;
 }
 
 /* 
  * set measurement mode
  */
 static inst_code
-dtp20_set_mode(inst *pp, inst_mode m)
-{
+dtp20_set_mode(inst *pp, inst_mode m) {
 	dtp20 *p = (dtp20 *)pp;
-	inst_capability  cap  = pp->capabilities(pp);
-	inst_mode mm;		/* Measurement mode */
+	inst_code ev;
 
-	if (!p->gotcoms)
-		return inst_no_coms;
-	if (!p->inited)
-		return inst_no_init;
-
-	/* The measurement mode portion of the mode */
-	mm = m & inst_mode_measurement_mask;
-
-	/* General check mode against specific capabilities logic: */
-	if (mm != inst_mode_ref_spot
-	 && mm != inst_mode_ref_strip
-	 && mm != inst_mode_s_ref_spot
-	 && mm != inst_mode_s_ref_chart) {
-		return inst_unsupported;
-	}
-
-	if (m & inst_mode_colorimeter)
-		if (!(cap & inst_colorimeter))
-			return inst_unsupported;
-		
-	if (m & inst_mode_spectral)
-		if (!(cap & inst_spectral))
-			return inst_unsupported;
+	if ((ev = dtp20_check_mode(pp, m)) != inst_ok)
+		return ev;
 
 	p->mode = m;
 
 	return inst_ok;
 }
 
-/* 
- * set or reset an optional mode
- */
-static inst_code
-dtp20_set_opt_mode(inst *pp, inst_opt_mode m, ...)
-{
+/* Get a status or get or set an option */
+static inst_code dtp20_get_set_opt(
+inst *pp,
+inst_opt_type m,	/* Requested status type */
+...) {				/* Status parameters */                             
 	dtp20 *p = (dtp20 *)pp;
-
-	if (!p->gotcoms)
-		return inst_no_coms;
-	if (!p->inited)
-		return inst_no_init;
 
 	/* Record the trigger mode */
 	if (m == inst_opt_trig_prog
-	 || m == inst_opt_trig_keyb
-	 || m == inst_opt_trig_keyb_switch) {
+	 || m == inst_opt_trig_user
+	 || m == inst_opt_trig_user_switch) {
 		p->trig = m;
 
 		return inst_ok;
 	}
-
-	if (m == inst_opt_trig_return) {
-		p->trig_return = 1;
-		return inst_ok;
-	} else if (m == inst_opt_trig_no_return) {
-		p->trig_return = 0;
-		return inst_ok;
-	}
-
-	return inst_unsupported;
-}
-
-/* Get a dynamic status */
-static inst_code dtp20_get_status(
-inst *pp,
-inst_status_type m,	/* Requested status type */
-...) {				/* Status parameters */                             
-	dtp20 *p = (dtp20 *)pp;
 
 	if (!p->gotcoms)
 		return inst_no_coms;
@@ -1639,42 +1649,47 @@ inst_status_type m,	/* Requested status type */
 	/* !! It's not clear if there is a way of knowing */
 	/* whether the instrument has a UV filter. */
 
-	return inst_unsupported;
+	/* Use default implementation of other inst_opt_type's */
+	{
+		inst_code rv;
+		va_list args;
+
+		va_start(args, m);
+		rv = inst_get_set_opt_def(pp, m, args);
+		va_end(args);
+
+		return rv;
+	}
 }
 
 /* Constructor */
-extern dtp20 *new_dtp20(icoms *icom, instType itype, int debug, int verb)
-{
+extern dtp20 *new_dtp20(icoms *icom, instType itype) {
 	dtp20 *p;
-	if ((p = (dtp20 *)calloc(sizeof(dtp20),1)) == NULL)
-		error("dtp20: malloc failed!");
+	if ((p = (dtp20 *)calloc(sizeof(dtp20),1)) == NULL) {
+		a1loge(icom->log, 1, "new_dtp20: malloc failed!\n");
+		return NULL;
+	}
 
-	if (icom == NULL)
-		p->icom = new_icoms();
-	else
-		p->icom = icom;
+	p->log = new_a1log_d(icom->log);
 
-	p->debug = debug;
-	p->verb = verb;
+	p->init_coms       = dtp20_init_coms;
+	p->init_inst       = dtp20_init_inst;
+	p->capabilities    = dtp20_capabilities;
+	p->check_mode      = dtp20_check_mode;
+	p->set_mode        = dtp20_set_mode;
+	p->get_set_opt     = dtp20_get_set_opt;
+	p->read_chart      = dtp20_read_chart;
+	p->read_strip      = dtp20_read_strip;
+	p->read_sample     = dtp20_read_sample;
+	p->get_n_a_cals    = dtp20_get_n_a_cals;
+	p->calibrate       = dtp20_calibrate;
+	p->interp_error    = dtp20_interp_error;
+	p->del             = dtp20_del;
 
-	p->init_coms     = dtp20_init_coms;
-	p->init_inst     = dtp20_init_inst;
-	p->capabilities  = dtp20_capabilities;
-	p->capabilities2 = dtp20_capabilities2;
-	p->set_mode      = dtp20_set_mode;
-	p->set_opt_mode  = dtp20_set_opt_mode;
-	p->get_status    = dtp20_get_status;
-	p->read_chart    = dtp20_read_chart;
-	p->read_strip    = dtp20_read_strip;
-	p->read_sample   = dtp20_read_sample;
-	p->needs_calibration = dtp20_needs_calibration;
-	p->calibrate     = dtp20_calibrate;
-	p->interp_error  = dtp20_interp_error;
-	p->del           = dtp20_del;
-
-	p->itype = itype;
-	p->cap = inst_unknown;				/* Unknown until set */
-	p->mode = inst_mode_unknown;		/* Not in a known mode yet */
+	p->icom = icom;
+	p->itype = icom->itype;
+	p->cap = inst_mode_none;		/* Unknown until set */
+	p->mode = inst_mode_none;		/* Not in a known mode yet */
 
 	return p;
 }

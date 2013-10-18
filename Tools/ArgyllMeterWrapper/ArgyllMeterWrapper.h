@@ -117,10 +117,6 @@ public:
 
     // do the meter objects point to the same underlying meter
     // not expected to be useful to client code but harmless
-    bool isSameMeter(ArgyllMeterWrapper* otherMeter) const;
-
-    // do the meter objects point to the same underlying meter
-    // not expected to be useful to client code but harmless
     bool isMeterStillValid() const;
 
     typedef std::vector<ArgyllMeterWrapper*> ArgyllMeterWrappers;

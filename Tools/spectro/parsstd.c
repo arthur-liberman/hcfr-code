@@ -196,7 +196,9 @@ cgatsAlloc *new_cgatsAllocStd() {
 
 /* Get the size of the file (Only valid for reading file. */
 static size_t cgatsFileStd_get_size(cgatsFile *pp) {
-	return pp->size;
+	cgatsFileStd *p = (cgatsFileStd *)pp;
+
+	return p->size;
 }
 
 /* Set current position to offset. Return 0 on success, nz on failure. */
@@ -266,6 +268,15 @@ cgatsFile *pp
 	cgatsFileStd *p = (cgatsFileStd *)pp;
 
 	return fflush(p->fp);
+}
+
+/* Return the memory buffer. Error if not cgatsFileMem */
+static int cgatsFileStd_get_buf(
+cgatsFile *pp,
+unsigned char **buf,
+size_t *len
+) {
+	return 1;
 }
 
 /* return the filename */
@@ -341,6 +352,7 @@ cgatsAlloc *al		/* heap allocator, NULL for default */
 	p->write    = cgatsFileStd_write;
 	p->gprintf  = cgatsFileStd_printf;
 	p->flush    = cgatsFileStd_flush;
+	p->get_buf  = cgatsFileStd_get_buf;
 	p->fname    = cgatsFileStd_fname;
 	p->del      = cgatsFileStd_delete;
 
@@ -398,6 +410,7 @@ cgatsAlloc *al			/* heap allocator, NULL for default */
 }
 
 /* Create a memory image file access class with the std allocator */
+/* Don't free the buffer on delete */
 cgatsFile *new_cgatsFileMem(
 void *base,			/* Pointer to base of memory buffer */
 size_t length		/* Number of bytes in buffer */
@@ -413,7 +426,29 @@ size_t length		/* Number of bytes in buffer */
 		return NULL;
 	}
 
-	((cgatsFileMem *)p)->del_al = 1;		/* Get cgatsFileMem->del to cleanup allocator */
+	((cgatsFileMem *)p)->del_al = 1;		/* Get cgatsFileMem->del to cleanup al */
+	return p;
+}
+
+/* Create a memory image file access class with the std allocator */
+/* Free buffer on delete */
+cgatsFile *new_cgatsFileMem_d(
+void *base,			/* Pointer to base of memory buffer */
+size_t length		/* Number of bytes in buffer */
+) {
+	cgatsFile *p;
+	cgatsAlloc *al;			/* memory allocator */
+
+	if ((al = new_cgatsAllocStd()) == NULL)
+		return NULL;
+
+	if ((p = new_cgatsFileMem_a(base, length, al)) == NULL) {
+		al->del(al);
+		return NULL;
+	}
+
+	((cgatsFileMem *)p)->del_al = 1;		/* Get cgatsFileMem->del to cleanup al */
+	((cgatsFileMem *)p)->del_buf = 1;		/* Get cgatsFileMem->del to cleanup buffer */
 	return p;
 }
 

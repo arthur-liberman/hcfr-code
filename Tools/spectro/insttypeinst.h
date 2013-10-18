@@ -2,7 +2,7 @@
 /* Add instrument instance headers here */
 
 /* 
- * Copyright 2001  - 2010 Graeme W. Gill
+ * Copyright 2001  - 2013 Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -22,4 +22,5 @@
 #include "hcfr.h"
 #include "spyd2.h"
 #include "huey.h"
+#include "specbos.h"
 #include "colorhug.h"

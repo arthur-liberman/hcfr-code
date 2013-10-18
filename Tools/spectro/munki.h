@@ -9,7 +9,7 @@
  * Author: Graeme W. Gill
  * Date:   12/1/2009
  *
- * Copyright 2006 - 2010, Graeme W. Gill
+ * Copyright 2006 - 2013, Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -49,8 +49,9 @@ struct _munki {
 	int       dtype;			/* Device type: 0 = ?? */	
 
 	/* *** munki private data **** */
-	inst_capability  cap;		/* Instrument capability */
+	inst_mode  cap;				/* Instrument mode capability */
 	inst2_capability cap2;		/* Instrument capability 2 */
+	inst3_capability cap3;		/* Instrument capability 3 */
 
 	void *m;					/* Implementation - munkiimp type */
 
@@ -61,7 +62,7 @@ struct _munki {
 }; typedef struct _munki munki;
 
 /* Constructor */
-extern munki *new_munki(icoms *icom, instType itype, int debug, int verb);
+extern munki *new_munki(icoms *icom, instType itype);
 
 #ifdef __cplusplus
 	}

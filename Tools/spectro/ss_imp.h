@@ -10,7 +10,7 @@
  * Author: Graeme W. Gill
  * Date:   13/7/2005
  *
- * Copyright 2005 - 2007 Graeme W. Gill
+ * Copyright 2005 - 2013 Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -261,10 +261,6 @@ typedef enum {
 
 	/* Add our own communication errors here too. */
 	ss_et_SerialFail         = 0xF0,
-	ss_et_UserAbort          = 0xF1,
-	ss_et_UserTerm           = 0xF2,
-	ss_et_UserTrig           = 0xF3,
-	ss_et_UserCmnd           = 0xF4,
 	ss_et_SendBufferFull     = 0xF5,
 	ss_et_RecBufferEmpty     = 0xF6,
 	ss_et_BadAnsFormat       = 0xF7,

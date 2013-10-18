@@ -11,7 +11,7 @@
  * Author: Graeme W. Gill
  * Date:   2008/2/9
  *
- * Copyright 1996 - 2008 Graeme W. Gill
+ * Copyright 1996 - 2013 Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -55,8 +55,23 @@
 #ifndef sys_read
 # define sys_read _read
 #endif
-
+#ifndef sys_utime
+# define sys_utime _utime
+# define sys_utimbuf _utimbuf
 #endif
+#ifndef sys_access
+# define sys_access _access
+#endif
+
+#ifndef snprintf
+# define snprintf _snprintf
+# define vsnprintf _vsnprintf
+#endif
+#ifndef stricmp
+# define stricmp _stricmp
+#endif
+
+#endif	/* NT */
 
 #if defined (UNIX)
 
@@ -69,8 +84,19 @@
 #ifndef sys_read
 # define sys_read read
 #endif
-
+#ifndef sys_utime
+# define sys_utime utime
+# define sys_utimbuf utimbuf
 #endif
+#ifndef sys_access
+# define sys_access access
+#endif
+
+#ifndef stricmp
+# define stricmp strcasecmp
+#endif
+
+#endif	/* UNIX */
 
 /* - - - - - - - - - - - - - - - - - - -- */
 /* System dependent convenience functions */
@@ -117,6 +143,31 @@ int set_interactive_priority();
 int set_normal_priority();
 
 #endif /* NEVER */
+
+/* - - - - - - - - - - - - - - - - - - -- */
+/* An Argyll mutex */
+
+/* amutex_trylock() returns nz if it can't lock the mutex */
+
+#ifdef NT
+# define amutex CRITICAL_SECTION 
+# define amutex_static(lock) CRITICAL_SECTION lock = { NULL, -1 } 
+# define amutex_init(lock) InitializeCriticalSection(&(lock))
+# define amutex_del(lock) DeleteCriticalSection(&(lock))
+# define amutex_lock(lock) EnterCriticalSection(&(lock))
+# define amutex_trylock(lock) (!TryEnterCriticalSection(&(lock)))
+# define amutex_unlock(lock) LeaveCriticalSection(&(lock))
+#endif
+
+#ifdef UNIX
+# define amutex pthread_mutex_t
+# define amutex_static(lock) pthread_mutex_t (lock) = PTHREAD_MUTEX_INITIALIZER
+# define amutex_init(lock) pthread_mutex_init(&(lock), NULL)
+# define amutex_del(lock) pthread_mutex_destroy(&(lock))
+# define amutex_lock(lock) pthread_mutex_lock(&(lock))
+# define amutex_trylock(lock) pthread_mutex_trylock(&(lock))
+# define amutex_unlock(lock) pthread_mutex_unlock(&(lock))
+#endif
 
 /* - - - - - - - - - - - - - - - - - - -- */
 
@@ -167,7 +218,7 @@ int create_parent_directories(char *path);
 struct _kkill_nproc_ctx {
 	athread *th;
 	char **pname;
-	int debug;
+	a1log *log;
 	int stop;
 	int done;
     void (*del)(struct _kkill_nproc_ctx *p);
@@ -179,32 +230,15 @@ struct _kkill_nproc_ctx {
 /* return < 0 if this fails. */
 /* return 0 if there is no such process */
 /* return 1 if a process was killed */
-int kill_nprocess(char **pname, int debug);
+int kill_nprocess(char **pname, a1log *log);
 
 /* Start a thread to constantly kill a process. */
 /* Call ctx->del() when done */
-kkill_nproc_ctx *kkill_nprocess(char **pname, int debug);
+kkill_nproc_ctx *kkill_nprocess(char **pname, a1log *log);
 
 #endif /* __APPLE__ || NT */
 
 #include "xdg_bds.h"
-
-/* - - - - - - - - - - - - - - - - - - -- */
-/* CCSS support */
-
-typedef struct {
-	char *path;		/* Path to the file */
-	char *desc;		/* Technolofy + display description */
-} iccss;
-
-/* return a list of installed ccss files. */
-/* The list is sorted by description and terminated by a NULL entry. */
-/* If no is != NULL, return the number in the list */
-/* Return NULL and -1 if there is a malloc error */
-iccss *list_iccss(int *no);
-
-/* Free up a iccss list */
-void free_iccss(iccss *list);
 
 /* - - - - - - - - - - - - - - - - - - -- */
 /* A very small subset of icclib */
@@ -230,7 +264,7 @@ int sa_Inverse3x3(double out[3][3], double in[3][3]);
 void sa_Transpose3x3(double out[3][3], double in[3][3]);
 void sa_Scale3(double out[3], double in[3], double rat);
 double sa_LabDE(double *in0, double *in1);
-
+void sa_Clamp3(double out[3], double in[3]);
 
 #define icmXYZNumber sa_XYZNumber
 #define icColorSpaceSignature sa_ColorSpaceSignature
@@ -244,6 +278,7 @@ double sa_LabDE(double *in0, double *in1);
 #define icmInverse3x3 sa_Inverse3x3
 #define icmTranspose3x3 sa_Transpose3x3
 #define icmScale3 sa_Scale3
+#define icmClamp3 sa_Clamp3
 #define icmLabDE sa_LabDE
 
 /* A subset of numlib */

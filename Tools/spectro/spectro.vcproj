@@ -41,8 +41,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\libusb1\libusb;..\libusb1\msvc"
-				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;NT;_CRT_SECURE_NO_WARNINGS;SALONEINSTLIB;ENABLE_USB;USE_LIBUSB1;_USE_32BIT_TIME_T;_CRT_NONSTDC_NO_DEPRECATE"
+				AdditionalIncludeDirectories="..\usb\driver"
+				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;NT;_CRT_SECURE_NO_WARNINGS;SALONEINSTLIB;ENABLE_USB;ENABLE_FAST_SERIAL;_USE_32BIT_TIME_T;_CRT_NONSTDC_NO_DEPRECATE"
 				MinimalRebuild="true"
 				ExceptionHandling="2"
 				BasicRuntimeChecks="3"
@@ -51,7 +51,7 @@
 				WarningLevel="3"
 				DebugInformationFormat="4"
 				CompileAs="1"
-				DisableSpecificWarnings="4101;4018;4146"
+				DisableSpecificWarnings="4101;4018;4146;4244"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -87,7 +87,7 @@
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)\$(ProjectName)"
 			ConfigurationType="4"
 			CharacterSet="2"
-			WholeProgramOptimization="1"
+			WholeProgramOptimization="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -108,15 +108,15 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\libusb1\libusb;..\libusb1\msvc"
-				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;NT;_CRT_SECURE_NO_WARNINGS;SALONEINSTLIB;ENABLE_USB;USE_LIBUSB1;_USE_32BIT_TIME_T;_CRT_NONSTDC_NO_DEPRECATE"
+				AdditionalIncludeDirectories="..\usb\driver"
+				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;NT;_CRT_SECURE_NO_WARNINGS;SALONEINSTLIB;ENABLE_USB;ENABLE_FAST_SERIAL;_USE_32BIT_TIME_T;_CRT_NONSTDC_NO_DEPRECATE"
 				ExceptionHandling="2"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
-				DisableSpecificWarnings="4101;4018;4146"
+				DisableSpecificWarnings="4101;4018;4146;4244"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -160,6 +160,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ccmx.c"
+				>
+			</File>
+			<File
 				RelativePath=".\ccss.c"
 				>
 			</File>
@@ -181,18 +185,6 @@
 			</File>
 			<File
 				RelativePath=".\dtp20.c"
-				>
-			</File>
-			<File
-				RelativePath=".\dtp22.c"
-				>
-			</File>
-			<File
-				RelativePath=".\dtp41.c"
-				>
-			</File>
-			<File
-				RelativePath=".\dtp51.c"
 				>
 			</File>
 			<File
@@ -228,6 +220,30 @@
 				>
 			</File>
 			<File
+				RelativePath=".\icoms.c"
+				>
+			</File>
+			<File
+				RelativePath=".\icoms_nt.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\inst.c"
 				>
 			</File>
@@ -241,10 +257,6 @@
 			</File>
 			<File
 				RelativePath=".\munki_imp.c"
-				>
-			</File>
-			<File
-				RelativePath=".\ntio.c"
 				>
 			</File>
 			<File
@@ -264,20 +276,36 @@
 				>
 			</File>
 			<File
+				RelativePath=".\specbos.c"
+				>
+			</File>
+			<File
 				RelativePath=".\spyd2.c"
-				>
-			</File>
-			<File
-				RelativePath=".\ss.c"
-				>
-			</File>
-			<File
-				RelativePath=".\ss_imp.c"
 				>
 			</File>
 			<File
 				RelativePath=".\usbio.c"
 				>
+			</File>
+			<File
+				RelativePath=".\usbio_nt.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\xdg_bds.c"
@@ -403,6 +431,10 @@
 			</File>
 			<File
 				RelativePath=".\rspl1.h"
+				>
+			</File>
+			<File
+				RelativePath=".\specbos.h"
 				>
 			</File>
 			<File

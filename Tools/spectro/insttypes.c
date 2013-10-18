@@ -7,7 +7,7 @@
  * Author: Graeme W. Gill
  * Date:   10/3/2001
  *
- * Copyright 2001 - 2010 Graeme W. Gill
+ * Copyright 2001 - 2013 Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -22,9 +22,14 @@
 #ifndef SALONEINSTLIB
 #include "copyright.h"
 #include "aconfig.h"
+#else
+#include "sa_config.h"
 #endif /* !SALONEINSTLIB */
+#include "numsup.h"
 #include "xspect.h"
 #include "insttypes.h"
+#include "conv.h"
+#include "icoms.h"
 
 /* NOTE NOTE NOTE: */
 /* Need to add a new instrument to new_inst() in */
@@ -32,7 +37,68 @@
 
 /* Utility functions */
 
-/* Return the instrument identification name (static string) */
+/* Return the short instrument identification name (static string) */
+char *inst_sname(instType itype) {
+	switch (itype) {
+		case instDTP20:
+			return "DTP20";
+		case instDTP22:
+			return "DTP22";
+		case instDTP41:
+			return "DTP41";
+		case instDTP51:
+			return "DTP51";
+		case instDTP92:
+			return "DTP92";
+		case instDTP94:
+			return "DTP94";
+		case instSpectrolino:
+			return "Spectrolino";
+		case instSpectroScan:
+			return "SpectroScan";
+		case instSpectroScanT:
+			return "SpectroScanT";
+		case instSpectrocam:
+			return "Spectrocam";
+		case instI1Disp1:
+			return "i1D1";
+		case instI1Disp2:
+			return "i1D2";
+		case instI1Disp3:
+			return "i1D3";
+		case instI1Monitor:
+			return "i1 Monitor";
+		case instI1Pro:
+			return "i1 Pro";
+		case instI1Pro2:
+			return "i1 Pro 2";
+		case instColorMunki:
+			return "ColorMunki";
+		case instHCFR:
+			return "HCFR";
+		case instSpyder2:
+			return "Spyder2";
+		case instSpyder3:
+			return "Spyder3";
+		case instSpyder4:
+			return "Spyder4";
+		case instHuey:
+			return "Huey";
+		case instSmile:
+			return "Smile";
+		case instSpecbos1201:
+			return "specbos 1201";
+		case instSpecbos:
+			return "specbos";
+		case instColorHug:
+			return "ColorHug";
+		default:
+			break;
+	}
+	return "Unknown";
+}
+
+/* Return the long instrument identification name (static string) */
 char *inst_name(instType itype) {
 	switch (itype) {
 		case instDTP20:
@@ -65,6 +131,8 @@ char *inst_name(instType itype) {
 			return "GretagMacbeth i1 Monitor";
 		case instI1Pro:
 			return "GretagMacbeth i1 Pro";
+		case instI1Pro2:
+			return "X-Rite i1 Pro 2";
 		case instColorMunki:
 			return "X-Rite ColorMunki";
 		case instHCFR:
@@ -77,6 +145,12 @@ char *inst_name(instType itype) {
 			return "Datacolor Spyder4";
 		case instHuey:
 			return "GretagMacbeth Huey";
+		case instSmile:
+			return "ColorMunki Smile";
+		case instSpecbos1201:
+			return "JETI specbos 1201";
+		case instSpecbos:
+			return "JETI specbos";
 		case instColorHug:
 			return "Hughski ColorHug";
 		default:
@@ -85,7 +159,7 @@ char *inst_name(instType itype) {
 	return "Unknown Instrument";
 }
 
-/* Given an instrument identification name, return the matching */
+/* Given a long instrument identification name, return the matching */
 /* instType, or instUnknown if not matched */
 instType inst_enum(char *name) {
 
@@ -123,6 +197,8 @@ instType inst_enum(char *name) {
 	else if (strcmp(name, "GretagMacbeth i1 Pro") == 0
 	      || strcmp(name, "Xrite i1 Pro") == 0)
 		return instI1Pro;
+	else if (strcmp(name, "Xrite i1 Pro 2") == 0)
+		return instI1Pro2;
 	else if (strcmp(name, "X-Rite ColorMunki") == 0)
 		return instColorMunki;
 	else if (strcmp(name, "Colorimtre HCFR") == 0)
@@ -135,6 +211,12 @@ instType inst_enum(char *name) {
 		return instSpyder4;
 	else if (strcmp(name, "GretagMacbeth Huey") == 0)
 		return instHuey;
+	else if (strcmp(name, "ColorMunki Smile") == 0)
+		return instSmile;
+	else if (strcmp(name, "JETI specbos 1201") == 0)
+		return instSpecbos1201;
+	else if (strcmp(name, "JETI specbos") == 0)
+		return instSpecbos;
 	else if (strcmp(name, "Hughski ColorHug") == 0)
 		return instColorHug;
 
@@ -146,34 +228,15 @@ instType inst_enum(char *name) {
 /* Given a USB vendor and product ID, */
 /* return the matching instrument type, or */
 /* instUnknown if none match. */
+/* If nep == 0, do preliminary match just on vid & pid */
 instType inst_usb_match(
-unsigned short idVendor,
-unsigned short idProduct) {
+unsigned int idVendor,
+unsigned int idProduct,
+int nep) {					/* Number of end points */
 
-	if (idVendor == 0x0765) {		/* X-Rite */
-		if (idProduct == 0xD020)	/* DTP20 */
-			return instDTP20;
-		if (idProduct == 0xD092)	/* DTP92Q */
-			return instDTP92;
-	  	if (idProduct == 0xD094)	/* DTP94 */
-			return instDTP94;
-	  	if (idProduct == 0x5001)	/* HueyL (Lenovo W70DS Laptop ?) */
-			return instHuey;
-	  	if (idProduct == 0x5020)	/* i1DisplayPro, ColorMunki Display (HID) */
-			return instI1Disp3;
-	}
-
-	if (idVendor == 0x0971) {		/* Gretag Macbeth */
-		if (idProduct == 0x2000)	/* i1 Pro */
-			return instI1Pro;
-		if (idProduct == 0x2001)	/* i1 Monitor */
-			return instI1Monitor;
-		if (idProduct == 0x2003)	/* i1 Display 2 */
-			return instI1Disp2;
-		if (idProduct == 0x2005)	/* Huey (HID) */
-			return instHuey;
-		if (idProduct == 0x2007)	/* ColorMunki */
-			return instColorMunki;
+	if (idVendor == 0x04DB) {
+		if (idProduct == 0x005B)	/* Colorimtre HCFR */
+			return instHCFR;
 	}
 
 	if (idVendor == 0x0670) {		/* Sequel Imaging */
@@ -182,9 +245,21 @@ unsigned short idProduct) {
 			return instI1Disp1;
 	}
 
-	if (idVendor == 0x04DB) {
-		if (idProduct == 0x005B)	/* Colorimtre HCFR */
-			return instHCFR;
+	if (idVendor == 0x0765) {		/* X-Rite */
+	  	if (idProduct == 0x5001)	/* HueyL (Lenovo W70DS Laptop ?) */
+			return instHuey;
+	  	if (idProduct == 0x5010)	/* HueyL (Lenovo W530 Laptop ?) */
+			return instHuey;
+	  	if (idProduct == 0x5020)	/* i1DisplayPro, ColorMunki Display (HID) */
+			return instI1Disp3;
+	  	if (idProduct == 0x6003)	/* ColorMinki Smile (aka. ColorMunki Display Lite) */
+			return instSmile;
+		if (idProduct == 0xD020)	/* DTP20 */
+			return instDTP20;
+		if (idProduct == 0xD092)	/* DTP92Q */
+			return instDTP92;
+	  	if (idProduct == 0xD094)	/* DTP94 */
+			return instDTP94;
 	}
 
 	if (idVendor == 0x085C) {		/* ColorVision */
@@ -198,12 +273,32 @@ unsigned short idProduct) {
 			return instSpyder4;
 	}
 
-	if (idVendor == 0x04d8) {		/* Microchip */
-		if (idProduct == 0xf8da)	/* Hughski ColorHug */
-			return instColorHug;
+	if (idVendor == 0x0971) {		/* Gretag Macbeth */
+		if (idProduct == 0x2000) {	/* i1 Pro or i1 Pro 2*/
+			
+			/* The i1pro2/rev E has 5 pipes - it has EP 85 */
+			if (nep >= 5)
+				return instI1Pro2;
+			else
+				return instI1Pro;
+		}
+		if (idProduct == 0x2001)	/* i1 Monitor */
+			return instI1Monitor;
+		if (idProduct == 0x2003)	/* i1 Display 2 */
+			return instI1Disp2;
+		if (idProduct == 0x2005)	/* Huey (HID) */
+			return instHuey;
+		if (idProduct == 0x2007)	/* ColorMunki */
+			return instColorMunki;
 	}
 
+	if ((idVendor == 0x04d8 && idProduct == 0xf8da)			/* Microchip & Hughski ColorHug (old) */
+	 || (idVendor == 0x273f && idProduct == 0x1001)) {		/* Hughski & ColorHug Fmw. >= 0.1.20 */
+		return instColorHug;
+	}
 	/* Add other instruments here */
+
+
 
 	return instUnknown;
 }
@@ -266,6 +361,7 @@ int inst_illuminant(xspect *sp, instType itype) {
 			return 1;										/* Not applicable */
 
 		case instI1Pro:
+		case instI1Pro2:
 			return standardIlluminant(sp, icxIT_A, 0);		/* Standard A type assumed */
 
 		case instColorMunki:
@@ -284,6 +380,13 @@ int inst_illuminant(xspect *sp, instType itype) {
 			return 1;										/* Not applicable */
 
 		case instHuey:
+			return 1;										/* Not applicable */
+
+		case instSmile:
+			return 1;										/* Not applicable */
+
+		case instSpecbos1201:
+		case instSpecbos:
 			return 1;										/* Not applicable */
 
 		case instColorHug:

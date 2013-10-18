@@ -7,7 +7,7 @@
  * Author: Graeme W. Gill
  * Date:   17/11/2006
  *
- * Copyright 1996 - 2007, Graeme W. Gill
+ * Copyright 1996 - 2013, Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -48,11 +48,9 @@
 #endif  /* !SALONEINSTLIB */
 #include "xspect.h"
 #include "insttypes.h"
-#include "icoms.h"
 #include "conv.h"
+#include "icoms.h"
 #include "dtp22.h"
-
-#undef DEBUG
 
 /* Default flow control (Instrument doesn't support HW flow control) */
 #define DEFFC fc_XonXOff
@@ -60,7 +58,7 @@
 static inst_code dtp22_interp_code(inst *pp, int ec);
 static int comp_password(char *out, char *in, unsigned char key[4]);
 static inst_code activate_mode(dtp22 *p);
-static inst_code dtp22_set_opt_mode(inst *pp, inst_opt_mode m, ...);
+static inst_code dtp22_get_set_opt(inst *pp, inst_opt_type m, ...);
 
 #define MAX_MES_SIZE 500		/* Maximum normal message reply size */
 #define MAX_RD_SIZE 5000		/* Maximum reading messagle reply size */
@@ -109,19 +107,11 @@ extract_ec(char *s) {
 
 /* Interpret an icoms error into a DTP22 error */
 static int icoms2dtp22_err(int se) {
-	if (se & ICOM_USERM) {
-		se &= ICOM_USERM;
-		if (se == ICOM_USER)
-			return DTP22_USER_ABORT;
-		if (se == ICOM_TERM)
-			return DTP22_USER_TERM;
-		if (se == ICOM_TRIG)
-			return DTP22_USER_TRIG;
-		if (se == ICOM_CMND)
-			return DTP22_USER_CMND;
-	}
-	if (se != ICOM_OK)
+	if (se != ICOM_OK) {
+		if (se & ICOM_TO)
+			return DTP22_TIMEOUT; 
 		return DTP22_COMS_FAIL;
+	}
 	return DTP22_OK;
 }
 
@@ -136,35 +126,31 @@ dtp22_fcommand(
 	char *in,			/* In string */
 	char *out,			/* Out string buffer */
 	int bsize,			/* Out buffer size */
-	char tc,			/* Terminating character */
+	char *tc,			/* Terminating characters */
 	int ntc,			/* Number of terminating characters */
 	double to) {		/* Timout in seconds */
 	int se, rv = DTP22_OK;
 
 	if ((se = p->icom->write_read(p->icom, in, out, bsize, tc, ntc, to)) != 0) {
-#ifdef DEBUG
-		printf("dtp22 fcommand: serial i/o failure on write_read '%s'\n",icoms_fix(in));
-#endif
+		a1logd(p->log, 1, "dtp22_fcommand: serial i/o failure on write_read '%s'\n",icoms_fix(in));
 		return icoms2dtp22_err(se);
 	}
-	if (tc == '>' && ntc == 1) {
+	if (tc[0] == '>' && ntc == 1) {
 		rv = extract_ec(out);
-#ifdef NEVER
-if (strcmp(in, "0PR\r") == 0)
-rv = 0x1b;
+#ifdef NEVER		/* Simulate an error ?? */
+	if (strcmp(in, "0PR\r") == 0)
+		rv = 0x1b;
 #endif /* NEVER */
 		if (rv > 0) {
 			rv &= inst_imask;
 			if (rv != DTP22_OK) {	/* Clear the error */
 				char buf[MAX_MES_SIZE];
-				p->icom->write_read(p->icom, "CE\r", buf, MAX_MES_SIZE, '>', 1, 0.5);
+				p->icom->write_read(p->icom, "CE\r", buf, MAX_MES_SIZE, ">", 1, 0.5);
 			}
 		}
 	}
-#ifdef DEBUG
-	printf("command '%s'",icoms_fix(in));
-	printf(" returned '%s', value 0x%x\n",icoms_fix(out),rv);
-#endif
+	a1logd(p->log, 4, "dtp22_fcommand: command '%s' returned '%s', value 0x%x\n",
+	                                            icoms_fix(in), icoms_fix(out),rv);
 	return rv;
 }
 
@@ -172,7 +158,7 @@ rv = 0x1b;
 /* Return the dtp error code */
 static inst_code
 dtp22_command(dtp22 *p, char *in, char *out, int bsize, double to) {
-	int rv = dtp22_fcommand(p, in, out, bsize, '>', 1, to);
+	int rv = dtp22_fcommand(p, in, out, bsize, ">", 1, to);
 	return dtp22_interp_code((inst *)p, rv);
 }
 
@@ -180,22 +166,17 @@ dtp22_command(dtp22 *p, char *in, char *out, int bsize, double to) {
 /* If it's a serial port, use the baud rate given, and timeout in to secs */
 /* Return DTP_COMS_FAIL on failure to establish communications */
 static inst_code
-dtp22_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) {
+dtp22_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	dtp22 *p = (dtp22 *) pp;
 	char buf[MAX_MES_SIZE];
 	baud_rate brt[5] = { baud_9600, baud_19200, baud_4800, baud_2400, baud_1200 };
 	char *brc[5]     = { "30BR\r",  "60BR\r",   "18BR\r",  "0CBR\r",  "06BR\r" };
 	char *fcc;
 	unsigned int etime;
-	int ci, bi, i, rv;
+	int ci, bi, i, se;
 	inst_code ev = inst_ok;
 
-	if (p->debug) {
-		p->icom->debug = p->debug;	/* Turn on debugging */
-		fprintf(stderr,"dtp22: About to init coms\n");
-	}
-
-	if (p->debug) fprintf(stderr,"dtp22: About to init Serial I/O\n");
+	a1logd(p->log, 2, "dtp22_init_coms: About to init Serial I/O\n");
 
 	/* Deal with flow control setting */
 	if (fc == fc_nc)
@@ -230,23 +211,32 @@ dtp22_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) 
 
 	while (msec_time() < etime) {
 
-		if (p->debug) fprintf(stderr,"dtp22: Trying different baud rates (%u msec to go)\n",etime - msec_time());
+		a1logd(p->log, 4, "dtp22_init_coms: Trying different baud rates (%u msec to go)\n",
+		                                                              etime - msec_time());
 
 		/* Until we time out, find the correct baud rate */
 		for (i = ci; msec_time() < etime;) {
-			p->icom->set_ser_port(p->icom, port, fc_none, brt[i], parity_none,
-			                                                 stop_1, length_8);
+
+			if ((se = p->icom->set_ser_port(p->icom, fc_none, brt[i], parity_none,
+			                                                 stop_1, length_8)) != ICOM_OK) { 
+				a1logd(p->log, 1, "dtp22_init_coms: set_ser_port failed ICOM err 0x%x\n",se);
+				return dtp22_interp_code((inst *)p, icoms2dtp22_err(se));
+			}
 			if (((ev = dtp22_command(p, "\r", buf, MAX_MES_SIZE, 0.5)) & inst_mask)
-			                                                           != inst_coms_fail) {
-				break;		/* We've got coms or user abort */
+				                                                 != inst_coms_fail)
+				break;		/* We've got coms */
+
+			/* Check for user abort */
+			if (p->uicallback != NULL) {
+				inst_code ev;
+				if ((ev = p->uicallback(p->uic_cntx, inst_negcoms)) == inst_user_abort) {
+					a1logd(p->log, 1, "dtp22_init_coms: user aborted\n");
+					return ev;
+				}
 			}
 			if (++i >= 5)
 				i = 0;
 		}
-
-		if ((ev & inst_mask) == inst_user_abort)
-			return ev;
-
 		break;		/* Got coms */
 	}
 
@@ -259,35 +249,32 @@ dtp22_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) 
 		return ev;
 
 	/* Change the baud rate to the rate we've been told */
-	if ((rv = p->icom->write_read(p->icom, brc[bi], buf, MAX_MES_SIZE, '>', 1, .2)) != 0) {
+	if ((se = p->icom->write_read(p->icom, brc[bi], buf, MAX_MES_SIZE, ">", 1, .2)) != 0) {
 		if (extract_ec(buf) != DTP22_OK)
 			return inst_coms_fail;
 	}
 
 	/* Configure our baud rate and handshaking as well */
-	p->icom->set_ser_port(p->icom, port, fc, brt[bi], parity_none, stop_1, length_8);
+	if ((se = p->icom->set_ser_port(p->icom, fc, brt[bi], parity_none, stop_1, length_8)) != ICOM_OK) {
+		a1logd(p->log, 1, "dtp22_init_coms: set_ser_port failed ICOM err 0x%x\n",se);
+		return dtp22_interp_code((inst *)p, icoms2dtp22_err(se));
+	}
 
 	/* Loose a character (not sure why) */
-	p->icom->write_read(p->icom, "\r", buf, MAX_MES_SIZE, '>', 1, 0.1);
+	p->icom->write_read(p->icom, "\r", buf, MAX_MES_SIZE, ">", 1, 0.1);
 
 	/* Check instrument is responding, and reset it again. */
 	if ((ev = dtp22_command(p, "\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok
 	 || (ev = dtp22_command(p, "0PR\r", buf, MAX_MES_SIZE, 2.0)) != inst_ok) {
 
-		if (p->debug) fprintf(stderr,"dtp22: init coms has failed\n");
+		a1logd(p->log, 1, "dtp22_init_coms: failed with ICOM 0x%x\n",ev);
 
 		p->icom->del(p->icom);		/* Since caller may not clean up */
 		p->icom = NULL;
-#ifdef DEBUG
-		printf("^M failed to get a response, returning inst_coms_fail\n");
-#endif
 		return inst_coms_fail;
 	}
 
-	if (p->debug) fprintf(stderr,"dtp22: init coms has suceeded\n");
-#ifdef DEBUG
-	printf("Got communications\n");
-#endif
+	a1logd(p->log, 2, "dtp22_init_coms: init coms has suceeded\n");
 
 	p->gotcoms = 1;
 	return inst_ok;
@@ -302,7 +289,7 @@ dtp22_init_inst(inst *pp) {
 	inst_code ev = inst_ok;
 	int i;
 
-	if (p->debug) fprintf(stderr,"dtp22: About to init instrument\n");
+	a1logd(p->log, 2, "dtp22_init_inst: called\n");
 
 	if (p->gotcoms == 0)
 		return inst_internal_error;		/* Must establish coms before calling init */
@@ -346,8 +333,10 @@ dtp22_init_inst(inst *pp) {
 
 	/* - - - - - - - - - - - - - - - - - - - - - - - - */
 	/* Get some information about the instrument */
-	if ((ev = dtp22_command(p, "GI\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+	if ((ev = dtp22_command(p, "GI\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok) {
+		a1logd(p->log, 1, "dtp22: GI command failed with ICOM err 0x%x\n",ev);
 		return ev;
+	}
 
 	/* Extract some of these */
 	if ((bp = strstr(buf, "Serial Number:")) != NULL) {
@@ -368,14 +357,14 @@ dtp22_init_inst(inst *pp) {
 	} else {
 		p->plaqueno = -1;
 	}
-	if (p->verb) {
+	if (p->log->verb) {
 		int i, j;
 		for (j = i = 0; ;i++) {
 			if (buf[i] == '<' || buf[i] == '\000')
 				break;
 			if (buf[i] == '\r') {
 				buf[i] = '\000';
-				printf(" %s\n",&buf[j]);
+				a1logv(p->log, 1, " %s\n",&buf[j]);
 				if (buf[i+1] == '\n')
 					i++;
 				j = i+1;
@@ -393,12 +382,12 @@ dtp22_init_inst(inst *pp) {
 	/* Disable the read microswitch by default */
 	if ((ev = dtp22_command(p, "0PB\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
 		return ev;
-	p->trig = inst_opt_trig_keyb;
+	p->trig = inst_opt_trig_user;
 
 	/* Set format to colorimetric */
 	if ((ev = dtp22_command(p, "0120CF\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
 		return ev;
-	p->mode &= ~inst_spectral;
+	p->mode &= ~inst_mode_spectral;
 
 	/* Set colorimetric to XYZ */
 	if ((ev = dtp22_command(p, "0221CF\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
@@ -433,12 +422,10 @@ dtp22_init_inst(inst *pp) {
 	if (keys[i].oemsn < 0)
 		return inst_unknown_model | DTP22_UNKN_OEM;
 
-	if (ev == inst_ok) {
-		p->inited = 1;
-		if (p->debug) fprintf(stderr,"dtp22: instrument inited OK\n");
-	}
+	p->inited = 1;
+	a1logd(p->log, 2, "dtp22_init_inst: instrument inited OK\n");
 
-	return ev;
+	return inst_ok;
 }
 
 /* Read a single sample */
@@ -447,7 +434,8 @@ static inst_code
 dtp22_read_sample(
 inst *pp,
 char *name,			/* Strip name (7 chars) */
-ipatch *val) {		/* Pointer to instrument patch value */
+ipatch *val,		/* Pointer to instrument patch value */
+instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	dtp22 *p = (dtp22 *)pp;
 	char *tp;
 	char buf[MAX_RD_SIZE];
@@ -485,24 +473,31 @@ ipatch *val) {		/* Pointer to instrument patch value */
 	if (strncmp(buf,"PASS", 4) != 0)
 		return inst_unknown_model | DTP22_BAD_PASSWORD;
 
-	if (p->trig == inst_opt_trig_keyb_switch) {
+	if (p->trig == inst_opt_trig_user_switch) {
 
 		/* Enable the read microswitch */
 		if ((ev = dtp22_command(p, "3PB\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
 			return ev;
 
-		/* Wait for the microswitch to be triggered, or the user to hit the keyboard */
+		/* Wait for the microswitch to be triggered, or the user to trigger */
 		for (;;) {
-			if ((se = p->icom->read(p->icom, buf, MAX_MES_SIZE, '>', 1, 1.0)) != 0) {
-				if ((se & ~ICOM_TO) != 0) {
-					if ((se & ICOM_USERM) == ICOM_TRIG) {
-						user_trig = 1;
-						break;				/* Measure triggered via keyboard */
-					}
-					/* Abort, term or command */
+			if ((se = p->icom->read(p->icom, buf, MAX_MES_SIZE, ">", 1, 1.0)) != 0) {
+				if ((se & ICOM_TO) == 0) {		/* Some sort of read error */
 					/* Disable the read microswitch */
 					dtp22_command(p, "2PB\r", buf, MAX_MES_SIZE, 0.2);
 					return dtp22_interp_code((inst *)p, icoms2dtp22_err(se));
+				}
+				/* Timed out */
+				if (p->uicallback != NULL) {	/* Check for user trigger */
+					if ((ev = p->uicallback(p->uic_cntx, inst_armed)) != inst_ok) {
+						if (ev == inst_user_abort) {
+							/* Disable the read microswitch */
+							dtp22_command(p, "2PB\r", buf, MAX_MES_SIZE, 0.2);
+							return ev;			/* User abort */
+						}
+						if (ev == inst_user_trig)
+							break;					/* Trigger */
+					}
 				}
 			} else {	/* Inst error or switch activated */
 				if (strlen(buf) >= 4
@@ -520,18 +515,35 @@ ipatch *val) {		/* Pointer to instrument patch value */
 		/* Disable the read microswitch */
 		if ((ev = dtp22_command(p, "2PB\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
 			return ev;
-		if (p->trig_return)
-			printf("\n");
+		/* Notify of trigger */
+		if (p->uicallback)
+			p->uicallback(p->uic_cntx, inst_triggered); 
 
-	} else if (p->trig == inst_opt_trig_keyb) {
+	} else if (p->trig == inst_opt_trig_user) {
 
-		if ((se = icoms_poll_user(p->icom, 1)) != ICOM_TRIG) {
-			/* Abort, term or command */
-			return dtp22_interp_code((inst *)p, icoms2dtp22_err(se));
+		if (p->uicallback == NULL) {
+			a1logd(p->log, 1, "dtp22: inst_opt_trig_user but no uicallback function set!\n");
+			return inst_unsupported;
 		}
-		user_trig = 1;
-		if (p->trig_return)
-			printf("\n");
+		for (;;) {
+			if ((ev = p->uicallback(p->uic_cntx, inst_armed)) != inst_ok) {
+				if (ev == inst_user_abort) 
+					return ev;				/* Abort */
+				if (ev == inst_user_trig)
+					break;					/* Trigger */
+			}
+			msec_sleep(200);
+		}
+		/* Notify of trigger */
+		if (p->uicallback)
+			p->uicallback(p->uic_cntx, inst_triggered); 
+
+	/* Progromatic Trigger */
+	} else {
+		/* Check for abort */
+		if (p->uicallback != NULL
+		 && (ev = p->uicallback(p->uic_cntx, inst_armed)) == inst_user_abort)
+			return ev;				/* Abort */
 	}
 
 	/* Trigger a read if the switch has not been used */
@@ -541,7 +553,7 @@ ipatch *val) {		/* Pointer to instrument patch value */
 		}
 	}
 
-	/* Gather the results in D50_2 XYZ */
+	/* Gather the results in D50_2 XYZ % reflectance */
 	if ((ev = dtp22_command(p, "0SR\r", buf, MAX_RD_SIZE, 5.0)) != inst_ok)
 		return ev; 	/* misread */
 
@@ -556,9 +568,12 @@ ipatch *val) {		/* Pointer to instrument patch value */
 		return inst_protocol_error;
 	}
 
+	/* This may not change anything since instrument may clamp */
+	if (clamp)
+		icmClamp3(val->XYZ, val->XYZ);
+	val->loc[0] = '\000';
+	val->mtype = inst_mrt_reflective;
 	val->XYZ_v = 1;
-	val->aXYZ_v = 0;
-	val->Lab_v = 0;
 	val->sp.spec_n = 0;
 	val->duration = 0.0;
 
@@ -595,21 +610,23 @@ ipatch *val) {		/* Pointer to instrument patch value */
 	return inst_ok;
 }
 
-/* Determine if a calibration is needed. Returns inst_calt_none if not, */
-/* inst_calt_unknown if it is unknown, or inst_calt_XXX if needs calibration, */
-/* and the first type of calibration needed. */
-inst_cal_type dtp22_needs_calibration(inst *pp) {
+/* Return needed and available inst_cal_type's */
+static inst_code dtp22_get_n_a_cals(inst *pp, inst_cal_type *pn_cals, inst_cal_type *pa_cals) {
 	dtp22 *p = (dtp22 *)pp;
-
-	if (!p->gotcoms)
-		return inst_no_coms;
-	if (!p->inited)
-		return inst_no_init;
-
+	inst_cal_type n_cals = inst_calt_none;
+	inst_cal_type a_cals = inst_calt_none;
+		
 	if (p->need_cal && p->noutocalib == 0)
-		return inst_calt_ref_white;
+		n_cals |= inst_calt_ref_white;
+	a_cals |= inst_calt_ref_white;
 
-	return inst_calt_none;
+	if (pn_cals != NULL)
+		*pn_cals = n_cals;
+
+	if (pa_cals != NULL)
+		*pa_cals = a_cals;
+
+	return inst_ok;
 }
 
 /* Request an instrument calibration. */
@@ -621,14 +638,16 @@ inst_cal_type dtp22_needs_calibration(inst *pp) {
 /* user to do so, each time the error inst_cal_setup is returned. */
 inst_code dtp22_calibrate(
 inst *pp,
-inst_cal_type calt,		/* Calibration type. inst_calt_all for all neeeded */
+inst_cal_type *calt,	/* Calibration type to do/remaining */
 inst_cal_cond *calc,	/* Current condition/desired condition */
 char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 ) {
 	dtp22 *p = (dtp22 *)pp;
 	char buf[MAX_RD_SIZE];
 	int se;
-	inst_code tv, rv = inst_ok;
+	inst_code tv, ev = inst_ok;
+    inst_cal_type needed, available;
+	int swen = 0;
 
 	if (!p->gotcoms)
 		return inst_no_coms;
@@ -637,91 +656,137 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 
 	id[0] = '\000';
 
-	/* Default to most likely calibration type */
-	if (calt == inst_calt_all) {
-		calt = inst_calt_ref_white;
+	if ((ev = dtp22_get_n_a_cals((inst *)p, &needed, &available)) != inst_ok)
+		return ev;
+
+	/* Translate inst_calt_all/needed into something specific */
+	if (*calt == inst_calt_all
+	 || *calt == inst_calt_needed
+	 || *calt == inst_calt_available) {
+		if (*calt == inst_calt_all) 
+			*calt = (needed & inst_calt_n_dfrble_mask) | inst_calt_ap_flag;
+		else if (*calt == inst_calt_needed)
+			*calt = needed & inst_calt_n_dfrble_mask;
+		else if (*calt == inst_calt_available)
+			*calt = available & inst_calt_n_dfrble_mask;
+
+		a1logd(p->log,4,"dtp22_calibrate: doing calt 0x%x\n",calt);
+
+		if ((*calt & inst_calt_n_dfrble_mask) == 0)		/* Nothing todo */
+			return inst_ok;
 	}
 
 	/* See if it's a calibration we understand */
-	if (calt != inst_calt_ref_white
-	 && calt != inst_calt_ref_dark)
+	if (*calt & ~available & inst_calt_all_mask) { 
 		return inst_unsupported;
+	}
 
-	/* Make sure the conditions are righte for the calbration */
-	if (calt == inst_calt_ref_white) {
+	if (*calt & inst_calt_ref_white) {		/* White calibration */
+
 		sprintf(id, "Serial no. %d",p->plaqueno);
 		if (*calc != inst_calc_man_ref_whitek) {
 			*calc = inst_calc_man_ref_whitek;
-			return inst_cal_setup;
+			ev = inst_cal_setup;
+			goto do_exit;
 		}
-	} else if (calt == inst_calt_ref_dark) {
-		if (*calc != inst_calc_man_ref_dark) {
-			*calc = inst_calc_man_ref_dark;
-			return inst_cal_setup;
+
+		/* Calibration only works when triggered by the read switch... */
+		if (!swen) {
+			if ((ev = dtp22_command(p, "3PB\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+				return ev;
+			swen = 1;
 		}
-	}
 
-	/* Calibration only works when triggered by the read switch... */
-	/* Enable the read microswitch */
-	if ((rv = dtp22_command(p, "3PB\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
-		return rv;
-
-	if (calt == inst_calt_ref_white) {		/* White calibration */
-		if ((rv = activate_mode(p)) != inst_ok) 
+		if ((ev = activate_mode(p)) != inst_ok) 
 			goto do_exit;
 
 		/* Issue white calibration */
 		if ((se = p->icom->write(p->icom, "1CA\r", 0.5)) != ICOM_OK) {
-			rv = dtp22_interp_code((inst *)p, icoms2dtp22_err(se));
+			ev = dtp22_interp_code((inst *)p, icoms2dtp22_err(se));
 			goto do_exit;
 		}
 
-		/* Wait for the microswitch to be triggered, or the user to hit the keyboard */
+		/* Wait for the microswitch to be triggered, or a user trigger via uicallback */
 		for (;;) {
-			if ((se = p->icom->read(p->icom, buf, MAX_MES_SIZE, '>', 1, 1.0)) != 0) {
-				if ((se & ~ICOM_TO) != 0) {
-					/* Abort - abort calibrate */
-					p->icom->write_read(p->icom, "CE\r", buf, MAX_MES_SIZE, '>', 1, 0.5);
-					rv = dtp22_interp_code((inst *)p, icoms2dtp22_err(se));
+			if ((se = p->icom->read(p->icom, buf, MAX_MES_SIZE, ">", 1, 1.0)) != 0) {
+				if ((se & ICOM_TO) == 0) {		/* Some sort of read error */
+					ev = dtp22_interp_code((inst *)p, icoms2dtp22_err(se));
 					goto do_exit;
+				}
+				/* Timed out - poll user */
+				if (p->uicallback != NULL) {	/* Check for user trigger */
+					if ((ev = p->uicallback(p->uic_cntx, inst_armed)) != inst_ok) {
+						if (ev == inst_user_abort)
+							goto do_exit;			/* User abort */
+						if (ev == inst_user_trig)
+							break;					/* User trigger */
+					}
 				}
 			} else {	/* Inst error or switch activated */
 				if (strlen(buf) >= 4
 				 && buf[0] == '<' && isdigit(buf[1]) && isdigit(buf[2]) && buf[3] == '>') {
-					if ((rv = dtp22_interp_code((inst *)p, extract_ec(buf))) != inst_ok) {
-						p->icom->write_read(p->icom, "CE\r", buf, MAX_MES_SIZE, '>', 1, 0.5);
+					if ((ev = dtp22_interp_code((inst *)p, extract_ec(buf))) != inst_ok) {
+						dtp22_command(p, "CE\r", buf, MAX_MES_SIZE, 0.5);
+						if (ev != inst_ok)
+							goto do_exit;			/* Error */
 					}
-					break;			/* Measure triggered via inst switch or error */
+					break;				/* Switch trigger */
 				}
 			}
 		}
-		if (p->trig_return)
-			printf("\n");
-		if (rv != inst_ok)
-			goto do_exit;
+
+		if (p->uicallback)	/* Notify of trigger */
+			p->uicallback(p->uic_cntx, inst_triggered); 
+
 		p->need_cal = 0;
+		*calt &= ~inst_calt_ref_white;
 
-	} else if (calt == inst_calt_ref_dark) {	/* Black calibration */
+	}
+	if (*calt & inst_calt_ref_dark) {	/* Black calibration */
 
-		if ((rv = activate_mode(p)) != inst_ok)
+		if (*calc != inst_calc_man_ref_dark) {
+			*calc = inst_calc_man_ref_dark;
+			ev = inst_cal_setup;
+			goto do_exit;
+		}
+
+		/* Check for abort */
+		if (p->uicallback != NULL
+		 && (ev = p->uicallback(p->uic_cntx, inst_armed)) == inst_user_abort) {
+			goto do_exit;
+		}
+
+		/* Calibration only works when triggered by the read switch... */
+		if (!swen) {
+			if ((ev = dtp22_command(p, "3PB\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok)
+				return ev;
+			swen = 1;
+		}
+
+		if ((ev = activate_mode(p)) != inst_ok)
 			goto do_exit;
 
 		/* Do black calibration */
-		if ((rv = dtp22_command(p, "1CB\r", buf, MAX_RD_SIZE, 20)) != inst_ok)
+		if ((ev = dtp22_command(p, "1CB\r", buf, MAX_RD_SIZE, 20)) != inst_ok)
 			goto do_exit;
 
 		/* Make calibration permanent */
-		if ((rv = dtp22_command(p, "MP\r", buf, MAX_RD_SIZE, 10.0)) != inst_ok)
+		if ((ev = dtp22_command(p, "MP\r", buf, MAX_RD_SIZE, 10.0)) != inst_ok)
 			goto do_exit;
+
+		*calt &= ~inst_calt_ref_dark;
 	}
 
  do_exit:
 
-	/* Disable the read microswitch */
-	if ((tv = dtp22_command(p, "3PB\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok && rv == inst_ok)
-		return tv;
+	if (swen) {
+		/* Disable the read microswitch */
+		if ((tv = dtp22_command(p, "3PB\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok && ev == inst_ok)
+			return tv;
+		swen = 0;
+	}
 
-	return rv;
+	return ev;
 }
 
 /* Error codes interpretation */
@@ -738,14 +803,6 @@ dtp22_interp_error(inst *pp, int ec) {
 			return "Not a DTP22 or DTP52";
 		case DTP22_DATA_PARSE_ERROR:
 			return "Data from DTP didn't parse as expected";
-		case DTP22_USER_ABORT:
-			return "User hit Abort key";
-		case DTP22_USER_TERM:
-			return "User hit Terminate key";
-		case DTP22_USER_TRIG:
-			return "User hit Trigger key";
-		case DTP22_USER_CMND:
-			return "User hit a Command key";
 		case DTP22_UNKN_OEM:
 			return "Instrument is an unknown OEM version";
 		case DTP22_BAD_PASSWORD:
@@ -840,15 +897,6 @@ dtp22_interp_code(inst *pp, int ec) {
 		case DTP22_DATA_PARSE_ERROR:
 			return inst_protocol_error | ec;
 
-		case DTP22_USER_ABORT:
-			return inst_user_abort | ec;
-		case DTP22_USER_TERM:
-			return inst_user_term | ec;
-		case DTP22_USER_TRIG:
-			return inst_user_trig | ec;
-		case DTP22_USER_CMND:
-			return inst_user_cmnd | ec;
-
 		case DTP22_POWER_INTR_READING:
 		case DTP22_RD_SWITCH_TO_SOON:
 		case DTP22_OVERRANGE:
@@ -886,37 +934,35 @@ dtp22_del(inst *pp) {
 }
 
 /* Return the instrument capabilities */
-inst_capability dtp22_capabilities(inst *pp) {
-	inst_capability rv;
+void dtp22_capabilities(inst *pp,
+inst_mode *pcap1,
+inst2_capability *pcap2,
+inst3_capability *pcap3) {
+	inst_mode cap1 = 0;
+	inst2_capability cap2 = 0;
 
-	rv =  
-	  inst_ref_spot
-	| inst_colorimeter
-	| inst_spectral
-	  ;
+	cap1 |= inst_mode_ref_spot
+	     |  inst_mode_colorimeter
+	     |  inst_mode_spectral
+	        ;
 
-	return rv;
-}
+	cap2 |= inst2_prog_trig
+	     |  inst2_user_trig
+	     |  inst2_user_switch_trig
+	     |  inst2_cal_using_switch		/* DTP22 special */
+	        ;
 
-/* Return the instrument capabilities 2 */
-inst2_capability dtp22_capabilities2(inst *pp) {
-	inst2_capability rv;
-
-	rv = inst2_cal_ref_white
-	   | inst2_cal_ref_dark
-	   | inst2_prog_trig
-	   | inst2_keyb_trig
-	   | inst2_keyb_switch_trig
-	   | inst2_cal_using_switch		/* DTP22 special */
-	   ;
-
-	return rv;
+	if (pcap1 != NULL)
+		*pcap1 = cap1;
+	if (pcap2 != NULL)
+		*pcap2 = cap2;
+	if (pcap3 != NULL)
+		*pcap3 = inst3_none;
 }
 
 /* Activate the last set mode */
 static inst_code
-activate_mode(dtp22 *p)
-{
+activate_mode(dtp22 *p) {
 	static char buf[MAX_MES_SIZE];
 	inst_code rv;
 
@@ -942,26 +988,43 @@ activate_mode(dtp22 *p)
 }
 
 /* 
- * set measurement mode
+ * check measurement mode
  */
 static inst_code
-dtp22_set_mode(inst *pp, inst_mode m)
-{
+dtp22_check_mode(inst *pp, inst_mode m) {
 	dtp22 *p = (dtp22 *)pp;
-	inst_mode mm;		/* Measurement mode */
+	inst_mode cap;
 
 	if (!p->gotcoms)
 		return inst_no_coms;
 	if (!p->inited)
 		return inst_no_init;
 
-	/* The measurement mode portion of the mode */
-	mm = m & inst_mode_measurement_mask;
+	pp->capabilities(pp, &cap, NULL, NULL);
+
+	/* Simple test */
+	if (m & ~cap)
+		return inst_unsupported;
 
 	/* General check mode against specific capabilities logic: */
-	if (mm != inst_mode_ref_spot) {
+	if (!IMODETST(m, inst_mode_ref_spot)) {
 		return inst_unsupported;
 	}
+
+	return inst_ok;
+}
+
+/* 
+ * set measurement mode
+ */
+static inst_code
+dtp22_set_mode(inst *pp, inst_mode m)
+{
+	dtp22 *p = (dtp22 *)pp;
+	inst_code ev;
+
+	if ((ev = dtp22_check_mode(pp, m)) != inst_ok)
+		return ev;
 
 	p->lastmode = m;
 
@@ -973,30 +1036,20 @@ dtp22_set_mode(inst *pp, inst_mode m)
 
 /* 
  * set or reset an optional mode
+ *
+ * Since there is no interaction with the instrument,
+ * was assume that all of these can be done before initialisation.
  */
 static inst_code
-dtp22_set_opt_mode(inst *pp, inst_opt_mode m, ...)
+dtp22_get_set_opt(inst *pp, inst_opt_type m, ...)
 {
 	dtp22 *p = (dtp22 *)pp;
 
-	if (!p->gotcoms)
-		return inst_no_coms;
-	if (!p->inited)
-		return inst_no_init;
-
 	/* Record the trigger mode */
 	if (m == inst_opt_trig_prog
-	 || m == inst_opt_trig_keyb
-	 || m == inst_opt_trig_keyb_switch) {
+	 || m == inst_opt_trig_user
+	 || m == inst_opt_trig_user_switch) {
 		p->trig = m;
-		return inst_ok;
-	}
-
-	if (m == inst_opt_trig_return) {
-		p->trig_return = 1;
-		return inst_ok;
-	} else if (m == inst_opt_trig_no_return) {
-		p->trig_return = 0;
 		return inst_ok;
 	}
 
@@ -1004,34 +1057,30 @@ dtp22_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 }
 
 /* Constructor */
-extern dtp22 *new_dtp22(icoms *icom, instType itype, int debug, int verb)
-{
+extern dtp22 *new_dtp22(icoms *icom, instType itype) {
 	dtp22 *p;
-	if ((p = (dtp22 *)calloc(sizeof(dtp22),1)) == NULL)
-		error("dtp22: malloc failed!");
+	if ((p = (dtp22 *)calloc(sizeof(dtp22),1)) == NULL) {
+		a1loge(icom->log, 1, "new_dtp22: malloc failed!\n");
+		return NULL;
+	}
 
-	if (icom == NULL)
-		p->icom = new_icoms();
-	else
-		p->icom = icom;
+	p->log = new_a1log_d(icom->log);
 
-	p->debug = debug;
-	p->verb = verb;
+	p->init_coms             = dtp22_init_coms;
+	p->init_inst             = dtp22_init_inst;
+	p->capabilities          = dtp22_capabilities;
+	p->check_mode            = dtp22_check_mode;
+	p->set_mode              = dtp22_set_mode;
+	p->get_set_opt           = dtp22_get_set_opt;
+	p->read_sample           = dtp22_read_sample;
+	p->get_n_a_cals          = dtp22_get_n_a_cals;
+	p->calibrate             = dtp22_calibrate;
+	p->interp_error          = dtp22_interp_error;
+	p->del                   = dtp22_del;
 
-	p->init_coms                 = dtp22_init_coms;
-	p->init_inst                 = dtp22_init_inst;
-	p->capabilities              = dtp22_capabilities;
-	p->capabilities2             = dtp22_capabilities2;
-	p->set_mode                  = dtp22_set_mode;
-	p->set_opt_mode              = dtp22_set_opt_mode;
-	p->read_sample               = dtp22_read_sample;
-	p->needs_calibration         = dtp22_needs_calibration;
-	p->calibrate                 = dtp22_calibrate;
-	p->interp_error              = dtp22_interp_error;
-	p->del                       = dtp22_del;
-
-	p->itype = itype;
-	p->mode = inst_mode_unknown;
+	p->icom = icom;
+	p->itype = icom->itype;
+	p->mode = inst_mode_none;
 	p->need_cal = 1;			/* Do a white calibration each time we open the device */
 
 	return p;

@@ -8,7 +8,7 @@
  * Author: Graeme W. Gill
  * Date:   20/12/2006
  *
- * Copyright 2006 - 2007 Graeme W. Gill
+ * Copyright 2006 - 2013 Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -47,7 +47,7 @@ typedef int i1pro_code;		/* Type to use for error codes */
 typedef enum {
 	i1p_refl_spot      = 0,
 	i1p_refl_scan      = 1,
-	i1p_disp_spot      = 2,
+	i1p_emiss_spot_na  = 2,
 	i1p_emiss_spot     = 3,
 	i1p_emiss_scan     = 4,
 	i1p_amb_spot       = 5,
@@ -58,6 +58,8 @@ typedef enum {
 } i1p_mode;
 
 struct _i1pro_state {
+	i1p_mode mode;		/* Mode number */
+
 	/* Just one of the following 3 must always be set */
 	int emiss;			/* flag - Emissive mode */
 	int trans;			/* flag - Transmissive mode */
@@ -76,6 +78,8 @@ struct _i1pro_state {
 	/* Configuration & state information */
 	double targoscale;	/* Optimal reading scale factor <= 1.0 */
 						/* Would determine scan sample rate, except we're not doing it that way! */ 
+	double targmaxitime;/* maximum integration time to aim for  (ie. 2.0 sec) */
+	double targoscale2;/* Proportion of targoscale allowed to meed targmaxitime */
 	int gainmode;		/* Gain mode, 0 = normal, 1 = high */
 	double inttime;		/* Integration time */
 	double lamptime;	/* Lamp turn on time */
@@ -94,66 +98,87 @@ struct _i1pro_state {
 	double min_wl;		/* Minimum wavelegth to report for this mode */
 
 	/* calibration information for this mode */
+	int wl_valid;			/* wavelength calibration factor valid */
+	time_t wldate;			/* Date/time of last wavelength calibration */
+	double wl_led_off;		/* Wavelength LED reference spectrum current offset */
+
 	int dark_valid;			/* dark calibration factor valid */
 	time_t ddate;			/* Date/time of last dark calibration */
 	double dark_int_time;	/* Integration time used for dark data */
-	double *dark_data;		/* [nraw] of dark level to subtract. Note that the dark value */
+	double *dark_data;		/* [-1 nraw] of dark level to subtract. Note that the dark value */
 							/* depends on integration time. */
 	int dark_gain_mode;		/* Gain mode used for dark data */
 
 	int cal_valid;			/* calibration factor valid */
 	time_t cfdate;			/* Date/time of last cal factor calibration */
-	double *cal_factor;		/* [nwav] of calibration scale factor for this mode */
-	double *white_data;		/* [nraw] linear absolute dark subtracted white data */
+	double *cal_factor[2];	/* [low res, high res][nwav] calibration scale factor for this mode */
+	double *white_data;		/* [-1 nraw] linear absolute dark subtracted white data */
 							/*        used to compute cal_factor */
-	double *cal_factor1, *cal_factor2;	/* (Underlying tables for two resolutions) */
 
 	/* Adaptive emission/transparency black data */
 	int idark_valid;		/* idark calibration factors valid */
 	time_t iddate;			/* Date/time of last dark idark calibration */
 	double idark_int_time[4];
-	double **idark_data;	/* [4][nraw] of dark level for inttime/gains of : */
-							/* 0.01 norm, 1.0 norm, 0.01 high, 1.0 high */
+	double **idark_data;	/* [4][-1 nraw] of dark level for inttime/gains of : */
+							/* 0.01 norm, 4.0 norm, 0.01 high, 2.0 high */
 
-	int need_calib;			/* White calibration needed anyway */
-	int need_dcalib;		/* Dark Calibration needed anyway */
+	int want_calib;			/* Want White calibration at start */
+	int want_dcalib;		/* Want Dark Calibration at start */
 
 	/* Display mode calibration state (emmis && !scan && !adaptive) */
 	int    dispswap;		/* 0 = default time, 1 = dark_int_time2, 2 = dark_int_time3 */
-	double done_dintcal;	/* A display integration time cal has been done */
+	double done_dintsel;	/* A display integration time selection has been done */
+	time_t diseldate;		/* Date/time of last display integration time selection */
 	double dcaltime2;		/* Target dark calibration time - sets number of readings */
 	double dark_int_time2;	/* Integration time used for dark data 2 */
-	double *dark_data2;		/* [nraw] of dark level to subtract for dark_int_time2. */
+	double *dark_data2;		/* [-1 nraw] of dark level to subtract for dark_int_time2. */
 	double dcaltime3;		/* Target dark calibration time - sets number of readings */
 	double dark_int_time3;	/* Integration time used for dark data 3 */
-	double *dark_data3;		/* [nraw] of dark level to subtract for dark_int_time3. */
+	double *dark_data3;		/* [-1 nraw] of dark level to subtract for dark_int_time3. */
 
 }; typedef struct _i1pro_state i1pro_state;
  
+/* Pointers to the three tables that allow a raw to wave filter conversion */
+typedef struct {
+	int *index;			/* [nwav] Matrix CCD sample starting index for each out wavelength */
+	int *nocoef; 		/* [nwav] Number of matrix cooeficients for each out wavelength */
+	double *coef;		/* [nwav * mtx_nocoef] Matrix cooeficients to compute each wavelength */
+} i1pro_r2wtab;
 
+/* RevE capability bits */
+#define I1PRO_CAP2_AMBIENT		0x01		/* Has ambient measurement capability */	
+#define I1PRO_CAP2_WL_LED		0x02		/* Has wavelenght LED */	
+#define I1PRO_CAP2_UV_LED		0x04		/* Has Ultra Violet LED */	
+#define I1PRO_CAP2_ZEB_RUL		0x08		/* Has zerbra ruler sensor */	
+#define I1PRO_CAP2_IND_LED		0x10		/* Has indicator LEDs */
+#define I1PRO_CAP2_UV_FILT		0x20		/* Has Ultra Violet Filter */
 
 /* I1PRO implementation class */
 struct _i1proimp {
 	i1pro *p;
 
+	/* Misc. and top level */
 	struct _i1data *data;		/* EEProm data container */
 	athread *th;				/* Switch monitoring thread (NULL if not used) */
 	volatile int switch_count;	/* Incremented in thread */
-	void *hcancel;				/* Handle to cancel the outstanding I/O */
+	volatile int hide_switch;	/* Set to supress switch event during read */
+	usb_cancelt sw_cancel;		/* Token to allow cancelling switch I/O */
 	volatile int th_term;		/* Terminate thread on next return */
 	volatile int th_termed;		/* Thread has terminated */
-	inst_opt_mode trig;			/* Reading trigger mode */
-	int trig_return;			/* Emit "\n" after trigger */
-	int noautocalib;			/* Disable automatic calibration if not essential */
+	usb_cancelt rd_sync;		/* Token to allow meas. read to be synchronized */
+	inst_opt_type trig;			/* Reading trigger mode */
+	int noinitcalib;			/* Disable initial calibration if not essential */
 	int highres;				/* High resolution mode */
 	int hr_inited;				/* High resolution has been initialized */
 
 	/* Current settings */
 	i1p_mode mmode;					/* Current measurement mode selected */
 	i1pro_state ms[i1p_no_modes];	/* Mode state */
-	int spec_en;				/* Enable reporting of spectral data */
+	int spec_en;				/* NZ to enable reporting of spectral data */
+	int uv_en;					/* NZ to do UV reflective measurement */
+								/* ~~ change this to uv_mode of none, uv, strip1, 2pass */
 
-	double intclkp;				/* Integration clock period */
+	double intclkp;				/* Integration clock period (typically 68 usec) */
 	int subclkdiv;				/* Sub clock divider ratio */
 	int subtmode;				/* Reading 127 subtract mode (version 301 or greater) */
 
@@ -166,6 +191,7 @@ struct _i1proimp {
 	int c_lampclocks;			/* Number of integration clocks (set using setmeasparams() */
 	int c_nummeas;				/* Number of measurements (set using setmeasparams() */
 	int c_measmodeflags;		/* Measurement mode flags (set using setmeasparams() */
+	int c_measmodeflags2;		/* Measurement mode flags Rev E (set using setmeasparams() */
 	unsigned int slamponoff;	/* The second last time the lamp was switched from on to off */
 	unsigned int llampoffon;	/* The last time the lamp was switched from off to on, in msec */
 	unsigned int llamponoff;	/* The last time the lamp was switched from on to off, in msec */
@@ -175,13 +201,21 @@ struct _i1proimp {
 	int fwrev;					/* int - Firmware revision number, from getmisc() */
 								/* Used for internal switching ?? */
 								/* 101 = Rev A, 202 = Rev A update, 302 = Rev B, 502 = Rev D */
+								/* 629 = Rev E (i1pro2) */
 
 	int cpldrev;				/* int - CPLD revision number in EEProm */
 								/* Not used internaly ???? */
 								/* 101 = Rev A, 2 = Rev A update, 301 = Rev B, 999 = Rev D */
 
+	unsigned char chipid[8];	/* HW serial number - Rev E */
+
+	int eesize;					/* EEProm size in bytes */
 	int maxpve;					/* Maximum +ve value of Sensor Data + 1 */
 	int powmode;				/* Power mode status, 0 = high, 8 = low */
+
+	/* Values from i1pro2_getmeaschar() */
+	double intclkp2;			/* Rev E Integration clock period (typically 36 usec) */
+	int subclkdiv2;				/* Sub clock divider ratio (typically 136) */
 
 	/* Values read from GetMeasureParameters() - are these needed ? */
 	int r_intclocks;			/* Number of integration clocks (read from instrument) */
@@ -197,16 +231,23 @@ struct _i1proimp {
 	int capabilities;		/* Capabilities flag */
 							/* Ambient capability if val & 0x6000 != 0 */
 	int physfilt;			/* int - physical filter */
-							/* 0x80 == no filter, 0x82 == UV filter */
+							/* 0x80 == no filter */
+							/* 0x81 == emission only ?? */
+							/* 0x82 == UV filter */
+	int capabilities2;		/* Rev E capabilities - set #defines above */
+							/* Also set for RevA-D */
 
 	/* Underlying calibration information */
-	int nraw;				/* Raw sample bands stored = 128 */
-	int nwav;				/* Current cooked spectrum bands stored, usually = 36 */
-	double wl_short;		/* Cooked spectrum bands short wavelength, usually 380 */
-	double wl_long;			/* Cooked spectrum bands short wavelength, usually 730 */
-
-	unsigned int nwav1, nwav2;	/* Available bands for standard and high-res modes */
-	double wl_short1, wl_short2, wl_long1, wl_long2;
+	int nsen;				/* Raw + extra sample bands read = 128 for i1pro, 136 for Rev E */
+							/* Rev <= D have exactly 128 */
+							/* Rev E has 134, of which 128 are measurements. */
+							/* 5 are skipped at the start, and 1 at the end */
+							/* The first 4 are used as a dark consistency check. */
+							/* ie. 4 + 1 + 128 + 1 */
+	int nraw;				/* Raw sample bands stored = 128 (Must be signed!) */
+	unsigned int nwav[2];	/* [low res, high res] cooked spectrum bands stored, ie = 36 */
+	double wl_short[2];		/* [low res, high res] cooked spectrum bands short wavelength, ie 380 */
+	double wl_long[2];		/* [low res, high res] cooked spectrum bands short wavelength, ie 730 */
 
 	unsigned int nlin0;		/* Number in array */
 	double *lin0;			/* Array of linearisation polinomial factors, normal gain. */
@@ -216,23 +257,20 @@ struct _i1proimp {
 		
 	double min_int_time;	/* Minimum integration time (secs) */
 	double max_int_time;	/* Maximum integration time (secs) */
-	int *mtx_index;			/* [nwav] Matrix CCD sample starting index for each out wavelength */
-	int *mtx_nocoef; 		/* [nwav] Number of matrix cooeficients for each out wavelength */
-	double *mtx_coef;		/* [nwav * mtx_nocoef] Matrix cooeficients to compute each wavelength */
 
-	int *mtx_index1, *mtx_index2;		/* Underlying arrays for the two resolutions */
-	int *mtx_nocoef1, *mtx_nocoef2;		/* first [nwav1], second [nwav2] */
-	double *mtx_coef1, *mtx_coef2;
+	i1pro_r2wtab mtx[2][2];	/* Raw to wav filters [normal res, high res][emis/trans, reflective] */
+							/* These are all pointers to tables allocated below */
 
-	double *white_ref;		/* [nwav] White calibration tile reflectance values */
-	double *emis_coef;		/* [nwav] Emission calibration coefficients */
-	double *amb_coef;		/* [nwav] Ambient light cal values (compound with Emission) */
-							/* NULL if ambient not supported */
-	double *white_ref1, *white_ref2;	/* Underlying tables */
-	double *emis_coef1, *emis_coef2;
-	double *amb_coef1, *amb_coef2;
-							/* NULL if ambient not supported */
+	i1pro_r2wtab mtx_o;		/* Underlying original filters from EEProm calibration info. */
+	i1pro_r2wtab mtx_c[2][2];	/* Underlying allocated for RevE wavelength and hi-res calibrated */
 
+	double *white_ref[2];	/* [low res, high res][nwav] White cal tile reflectance values */
+	double *emis_coef[2];	/* [low res, high res][nwav] Emission cal coefficients */
+	double *amb_coef[2];	/* [low res, high res][nwav] Ambient light cal values */
+							/* (compound with Emission), NULL if ambient not supported */
+	int emis_hr_cal;		/* NZ if emis_coef[1] has been fine calibrated using reflective cal. */
+
+	double **straylight[2];		/* [nwav][nwav] Stray light convolution matrix (Rev E) */
 
 	double highgain;		/* High gain mode gain */
 	double scan_toll_ratio;	/* Modifier of scan tollerance */
@@ -241,6 +279,21 @@ struct _i1proimp {
 	int sens_dark;			/* sensor dark reference threshold */
 	int sens_sat0;			/* Normal gain sensor saturated threshold */
 	int sens_sat1;			/* High gain sensor saturated threshold */
+
+	/* RevA-D alternative to RevE calibration information */
+	rspl *raw2wav;          /* Lookup from CCD index to wavelength, NULL until highres inited */
+
+	/* Rev E calibration information */
+	double wl_cal_inttime;	/* Wavelength calibration integration time */
+	double wl_cal_min_level;	/* Normalized wavelength calibration minumum peak level */
+	double wl_cal_fwhm;		/* Wavelength cal expected FWHM (nm) */
+	double wl_cal_fwhm_tol;	/* Wavelength cal expected FWHM tollerance (nm) */
+	double *wl_led_spec;	/* Wavelength LED reference spectrum */
+	unsigned int wl_led_count;	/* Wavelength LED reference spectrum number of entries */
+	double wl_led_ref_off;	/* Wavelength LED reference spectrum ref. offset */
+	double wl_err_max;		/* Wavelength error maximum value (ie. 5.0) */
+	double *wlpoly1, *wlpoly2;	/* CCD bin to wavelength polinomial equations */
+							/* for reflective and emissive/transmissuce modes respectively. */
 
 	/* log variables */
 	int meascount;			/* Total Measure (Emis/Remis/Ambient/Trans/Cal) count */
@@ -253,6 +306,8 @@ struct _i1proimp {
 	double lampage;			/* Total lamp usage time in seconds (??) */
 
 	/* Trigger houskeeping & diagnostics */
+	int transwarn;			/* Transmission calibration warning state */
+	int lo_secs;			/* Seconds since last opened (from calibration file mod time) */ 
 	int msec;				/* msec_time() at creation */
 	athread *trig_thread;	/* Delayed trigger thread */
 	int trig_delay;			/* Trigger delay in msec */
@@ -283,10 +338,9 @@ void del_i1proimp(i1pro *p);
 #define I1PRO_COMS_FAIL					0x72		/* Communication failure */
 #define I1PRO_UNKNOWN_MODEL				0x73		/* Not an i1pro */
 #define I1PRO_DATA_PARSE_ERROR  		0x74		/* Read data parsing error */
-#define I1PRO_USER_ABORT			    0x75		/* User hit abort */
-#define I1PRO_USER_TERM		    		0x76		/* User hit terminate */
-#define I1PRO_USER_TRIG 			    0x77		/* User hit trigger */
-#define I1PRO_USER_CMND		    		0x78		/* User hit command */
+
+#define I1PRO_USER_ABORT		    	0x75		/* uicallback returned abort */
+#define I1PRO_USER_TRIG 		    	0x76		/* uicallback retuned trigger */
 
 #define I1PRO_UNSUPPORTED		   		0x79		/* Unsupported function */
 #define I1PRO_CAL_SETUP                 0x7A		/* Cal. retry with correct setup is needed */
@@ -307,11 +361,19 @@ void del_i1proimp(i1pro *p);
 #define I1PRO_DATA_KEY_ENDMARK		    0x0b		/* And end section marker was missing */
 
 /* HW errors */
-#define I1PRO_HW_HIGHPOWERFAIL			0x20		/* Switch to high power mode failed */
-#define I1PRO_HW_EE_SHORTREAD		    0x21		/* Read fewer EEProm bytes than expected */
-#define I1PRO_HW_ME_SHORTREAD		    0x22		/* Read measurement bytes than expected */
-#define I1PRO_HW_ME_ODDREAD			    0x23		/* Read measurement bytes was not mult 256 */
-#define I1PRO_HW_CALIBINFO			    0x24		/* calibration info is missing or corrupted */
+#define I1PRO_HW_HIGHPOWERFAIL			0x10		/* Switch to high power mode failed */
+#define I1PRO_HW_EE_SIZE		        0x11		/* EEProm is too small */
+#define I1PRO_HW_EE_SHORTREAD		    0x12		/* Read fewer EEProm bytes than expected */
+#define I1PRO_HW_EE_SHORTWRITE		    0x13		/* Read fewer EEProm bytes than expected */
+#define I1PRO_HW_ME_SHORTREAD		    0x14		/* Read measurement bytes than expected */
+#define I1PRO_HW_ME_ODDREAD			    0x15		/* Read measurement bytes was not mult 256 */
+#define I1PRO_HW_SW_SHORTREAD           0x16		/* Read less bytes for Switch read than expected */
+#define I1PRO_HW_LED_SHORTWRITE         0x17		/* Wrote fewer LED sequence bytes than expected */
+#define I1PRO_HW_UNEX_SPECPARMS		    0x18		/* Unexpacted spectral parameter values */
+#define I1PRO_HW_CALIBINFO			    0x19		/* calibration info is missing or corrupted */
+#define I1PRO_WL_TOOLOW                 0x1A		/* WL calibration measurement too low */
+#define I1PRO_WL_SHAPE                  0x1B		/* WL calibration measurement shape is wrong */
+#define I1PRO_WL_ERR2BIG                0x1C		/* WL calibration correction is too big */
 
 /* Sample read operation errors */
 #define I1PRO_RD_DARKREADINCONS		    0x30		/* Dark calibration reading inconsistent */
@@ -330,35 +392,46 @@ void del_i1proimp(i1pro *p);
 #define I1PRO_RD_NOTENOUGHSAMPLES       0x3D		/* Not enough samples per patch */
 #define I1PRO_RD_NOFLASHES              0x3E		/* No flashes recognized */
 #define I1PRO_RD_NOAMBB4FLASHES         0x3F		/* No ambient before flashes found */
+#define I1PRO_RD_NOREFR_FOUND           0x40		/* Unable to measure refresh rate */
+#define I1PRO_RD_NOTRANS_FOUND          0x41		/* Unable to measure delay transition */
+
+#define I1PRO_CAL_SETUP                 0x7A		/* Cal. retry with correct setup is needed */
+#define I1PRO_RD_TRANSWHITEWARN         0x7B		/* Transmission white ref wl are low */
+
 
 /* Internal errors */
-#define I1PRO_INT_NO_COMS 		        0x40
-#define I1PRO_INT_EETOOBIG 		        0x41		/* EEProm read size is too big */
-#define I1PRO_INT_ODDREADBUF 	        0x42		/* Measurment read buffer is not mult 256 */
-#define I1PRO_INT_SMALLREADBUF 	        0x43		/* Measurment read buffer too small */
-#define I1PRO_INT_INTTOOBIG				0x45		/* Integration time is too big */
-#define I1PRO_INT_INTTOOSMALL			0x46		/* Integration time is too small */
-#define I1PRO_INT_ILLEGALMODE			0x47		/* Illegal measurement mode selected */
-#define I1PRO_INT_WRONGMODE  			0x48		/* In wrong mode for request */
-#define I1PRO_INT_ZEROMEASURES 			0x49		/* Number of measurements requested is zero */
-#define I1PRO_INT_WRONGPATCHES 			0x4A		/* Number of patches to match is wrong */
-#define I1PRO_INT_MEASBUFFTOOSMALL 		0x4B		/* Measurement read buffer is too small */
-#define I1PRO_INT_NOTIMPLEMENTED 		0x4C		/* Support not implemented */
-#define I1PRO_INT_NOTCALIBRATED 		0x4D		/* Unexpectedely invalid calibration */
-#define I1PRO_INT_NOINTERPDARK 		    0x4E		/* Need interpolated dark and don't have it */
-#define I1PRO_INT_THREADFAILED 		    0x4F		/* Creation of thread failed */
-#define I1PRO_INT_BUTTONTIMEOUT 	    0x50		/* Switch status read timed out */
-#define I1PRO_INT_CIECONVFAIL 	        0x51		/* Creating spectral to CIE converted failed */
-#define I1PRO_INT_PREP_LOG_DATA         0x52		/* Error in preparing log data */
-#define I1PRO_INT_MALLOC                0x53		/* Error in mallocing memory */
-#define I1PRO_INT_CREATE_EEPROM_STORE   0x54		/* Error in creating EEProm store */
-#define I1PRO_INT_SAVE_SUBT_MODE        0x55		/* Can't save calibration if in subt mode */
-#define I1PRO_INT_NO_CAL_TO_SAVE        0x56		/* No calibration data to save */
-#define I1PRO_INT_EEPROM_DATA_MISSING   0x57		/* EEProm data is missing */
-#define I1PRO_INT_NEW_RSPL_FAILED       0x58		/* Creating RSPL object faild */
-#define I1PRO_INT_CAL_SAVE              0x59		/* Unable to save calibration to file */
-#define I1PRO_INT_CAL_RESTORE           0x60		/* Unable to restore calibration from file */
-#define I1PRO_INT_ADARK_INVALID         0x61		/* Adaptive dark calibration is invalid */
+#define I1PRO_INT_NO_COMS 		        0x50
+#define I1PRO_INT_EETOOBIG 		        0x51		/* EEProm read size is too big */
+#define I1PRO_INT_ODDREADBUF 	        0x52		/* Measurment read buffer is not mult 256 */
+#define I1PRO_INT_SMALLREADBUF 	        0x53		/* Measurment read buffer too small */
+#define I1PRO_INT_INTTOOBIG				0x55		/* Integration time is too big */
+#define I1PRO_INT_INTTOOSMALL			0x56		/* Integration time is too small */
+#define I1PRO_INT_ILLEGALMODE			0x57		/* Illegal measurement mode selected */
+#define I1PRO_INT_WRONGMODE  			0x58		/* In wrong mode for request */
+#define I1PRO_INT_ZEROMEASURES 			0x59		/* Number of measurements requested is zero */
+#define I1PRO_INT_WRONGPATCHES 			0x5A		/* Number of patches to match is wrong */
+#define I1PRO_INT_MEASBUFFTOOSMALL 		0x5B		/* Measurement read buffer is too small */
+#define I1PRO_INT_NOTIMPLEMENTED 		0x5C		/* Support not implemented */
+#define I1PRO_INT_NOTCALIBRATED 		0x5D		/* Unexpectedely invalid calibration */
+#define I1PRO_INT_NOINTERPDARK 		    0x5E		/* Need interpolated dark and don't have it */
+#define I1PRO_INT_THREADFAILED 		    0x5F		/* Creation of thread failed */
+#define I1PRO_INT_BUTTONTIMEOUT 	    0x60		/* Switch status read timed out */
+#define I1PRO_INT_CIECONVFAIL 	        0x61		/* Creating spectral to CIE converted failed */
+#define I1PRO_INT_PREP_LOG_DATA         0x62		/* Error in preparing log data */
+#define I1PRO_INT_MALLOC                0x63		/* Error in mallocing memory */
+#define I1PRO_INT_CREATE_EEPROM_STORE   0x64		/* Error in creating EEProm store */
+#define I1PRO_INT_SAVE_SUBT_MODE        0x65		/* Can't save calibration if in subt mode */
+#define I1PRO_INT_NO_CAL_TO_SAVE        0x66		/* No calibration data to save */
+#define I1PRO_INT_EEPROM_DATA_MISSING   0x67		/* EEProm data is missing */
+#define I1PRO_INT_NEW_RSPL_FAILED       0x68		/* Creating RSPL object faild */
+#define I1PRO_INT_CAL_SAVE              0x69		/* Unable to save calibration to file */
+#define I1PRO_INT_CAL_RESTORE           0x6A		/* Unable to restore calibration from file */
+#define I1PRO_INT_CAL_TOUCH             0x6B		/* Unable to touch calibration file */
+#define I1PRO_INT_ADARK_INVALID         0x6C		/* Adaptive dark calibration is invalid */
+#define I1PRO_INT_NO_HIGH_GAIN          0x6D		/* Rev E mode doesn't support high gain mode */
+#define I1PRO_INT_ASSERT                0x6F		/* Internal assert */
+
+int icoms2i1pro_err(int se);
 
 /* ============================================================ */
 /* High level implementatation */
@@ -376,26 +449,48 @@ int i1pro_imp_ambient(i1pro *p);
 i1pro_code i1pro_imp_set_mode(
 	i1pro *p,
 	i1p_mode mmode,		/* i1pro mode to use */
-	int spec_en);		/* nz to enable reporting spectral */
+	inst_mode m);		/* full mode mask */
 
-/* Determine if a calibration is needed. */
-inst_cal_type i1pro_imp_needs_calibration(i1pro *p);
+/* Implement get_n_a_cals */
+i1pro_code i1pro_imp_get_n_a_cals(i1pro *p, inst_cal_type *pn_cals, inst_cal_type *pa_cals);
 
 /* Calibrate for the current mode. */
 /* Request an instrument calibration of the current mode. */
 i1pro_code i1pro_imp_calibrate(
-i1pro *p,
-inst_cal_type calt,		/* Calibration type. inst_calt_all for all neeeded */
-inst_cal_cond *calc,	/* Current condition/desired condition */
-char id[100]			/* Condition identifier (ie. white reference ID) */
+	i1pro *p,
+	inst_cal_type *calt,	/* Calibration type to do/remaining */
+	inst_cal_cond *calc,	/* Current condition/desired condition */
+	char id[100]			/* Condition identifier (ie. white reference ID) */
 );
 
 /* Measure a patch or strip in the current mode. */
 i1pro_code i1pro_imp_measure(
 	i1pro *p,
 	ipatch *val,		/* Pointer to array of instrument patch value */
-	int nvals			/* Number of values */	
+	int nvals,			/* Number of values */	
+	instClamping clamp	/* Clamp XYZ/Lab to be +ve */
 );
+
+/* Measure the emissive refresh rate */
+i1pro_code i1pro_imp_meas_refrate(
+	i1pro *p,
+	double *ref_rate
+);
+
+/* Measure the display update delay */
+i1pro_code i1pro_imp_meas_delay(
+	i1pro *p,
+	int *msecdelay
+);
+
+/* Given a raw measurement of the wavelength LED, */
+/* Compute the base offset that best fits it to the reference */
+i1pro_code i1pro2_match_wl_meas(i1pro *p, double *pled_off, double *wlraw);
+
+/* Compute downsampling filters using the default filters. */
+/* mtx_index1, mtx_nocoef1, mtx_coef1 given the */
+/* current wl_led_off */
+i1pro_code i1pro_compute_wav_filters(i1pro *p, int hires, int reflective);
 
 /* return nz if high res is supported */
 int i1pro_imp_highres(i1pro *p);
@@ -428,6 +523,10 @@ i1pro_code i1pro_save_calibration(i1pro *p);
 /* Restore the all modes calibration from the local system */
 i1pro_code i1pro_restore_calibration(i1pro *p);
 
+/* Update the modification time on the file, so we can */
+/* track when the instrument was last open. */
+i1pro_code i1pro_touch_calibration(i1pro *p);
+
 /* ============================================================ */
 /* Intermediate routines  - composite commands/processing */
 
@@ -446,7 +545,7 @@ i1pro_code i1pro_dark_measure_1(
 /* Take a dark reference measurement - part 2 */
 i1pro_code i1pro_dark_measure_2(
 	i1pro *p,
-	double *abssens,		/* Return array [nraw] of abssens values */
+	double *absraw,			/* Return array [-1 nraw] of absraw values */
 	int nummeas,			/* Number of readings to take */
 	double inttime, 		/* Integration time to use/used */
 	int gainmode,			/* Gain mode to use, 0 = normal, 1 = high */
@@ -457,7 +556,7 @@ i1pro_code i1pro_dark_measure_2(
 /* Take a dark measurement */
 i1pro_code i1pro_dark_measure(
 	i1pro *p,
-	double *abssens,		/* Return array [nraw] of abssens values */
+	double *absraw,			/* Return array [-1 nraw] of absraw values */
 	int nummeas,			/* Number of readings to take */
 	double *inttime, 		/* Integration time to use/used */
 	int gainmode			/* Gain mode to use, 0 = normal, 1 = high */
@@ -469,13 +568,14 @@ i1pro_code i1pro_whitemeasure_3(
 	i1pro *p,
 	double *abswav1,		/* Return array [nwav1] of abswav values (may be NULL) */
 	double *abswav2,		/* Return array [nwav2] of abswav values (if hr_init, may be NULL) */
-	double *absraw,			/* Return array [nraw] of absraw values */
+	double *absraw,			/* Return array [-1 nraw] of absraw values */
 	double *optscale,		/* Factor to scale gain/int time by to make optimal (may be NULL) */
 	int nummeas,			/* Number of readings to take */
 	double inttime, 		/* Integration time to use/used */
 	int gainmode,			/* Gain mode to use, 0 = normal, 1 = high */
-	double targoscale,		/* Optimal reading scale factor */
-	double **multimes		/* Multiple measurement results */
+	double targoscale,		/* Optimal reading target scale factor */
+	double **multimes,		/* Multiple measurement results */
+	double darkthresh		/* Raw dark threshold */
 );
 
 /* Take a white reference measurement */
@@ -484,7 +584,7 @@ i1pro_code i1pro_whitemeasure(
 	i1pro *p,
 	double *abswav1,		/* Return array [nwav1] of abswav values (may be NULL) */
 	double *abswav2,		/* Return array [nwav2] of abswav values (if hr_init, may be NULL) */
-	double *absraw,			/* Return array [nraw] of absraw values */
+	double *absraw,			/* Return array [-1 nraw] of absraw values */
 	double *optscale,		/* Factor to scale gain/int time by to make optimal (may be NULL) */
 	int nummeas,			/* Number of readings to take */
 	double *inttime, 		/* Integration time to use/used */
@@ -499,10 +599,20 @@ i1pro_code i1pro_whitemeasure_buf(
 	i1pro *p,
 	double *abswav1,		/* Return array [nwav1] of abswav values (may be NULL) */
 	double *abswav2,		/* Return array [nwav2] of abswav values (if hr_init, may be NULL) */
-	double *absraw,			/* Return array [nraw] of absraw values */
+	double *absraw,			/* Return array [-1 nraw] of absraw values */
 	double inttime, 		/* Integration time to used */
 	int gainmode,			/* Gain mode to use, 0 = normal, 1 = high */
 	unsigned char *buf		/* Raw buffer */
+);
+
+/* Take a wavelength reference measurement */
+/* (Measure and subtracts black and convert to absraw) */
+i1pro_code i1pro2_wl_measure(
+	i1pro *p,
+	double *absraw,			/* Return array [-1 nraw] of absraw values */
+	double *optscale,		/* Factor to scale gain/int time by to make optimal (may be NULL) */
+	double *inttime, 		/* Integration time to use/used */
+	double targoscale		/* Optimal reading scale factor */
 );
 
 /* Take a measurement reading using the current mode, part 1 */
@@ -557,6 +667,17 @@ i1pro_code i1pro_trialmeasure(
 	double targoscale		/* Optimal reading scale factor */
 );
 
+/* Measurement modifier. Modifes the default current measurement mode */
+/* for the measurement. Bit 0x10 indicates that incandescent illumination */
+/* is possible, bit 0x20 indicates that any scan mode is to be ignored */
+typedef enum {
+	i1p_norm         = 0x10,	/* Normal measurement for current mode */
+	i1p2_UV          = 0x01,	/* Measurement using UV LED instead of incandescent (Rev E) */
+	i1p_cal          = 0x32,	/* No scan, with current mode illumination */
+	i1p_dark_cal     = 0x23,	/* No scan, no illumination */
+	i1p2_wl_cal      = 0x24		/* No scan, wavelength reference LED illumination (Rev E) */
+} i1p_mmodif;
+
 /* Trigger a single measurement cycle. This could be a dark calibration, */
 /* a calibration, or a real measurement. Used to create the higher */
 /* level "calibrate" and "take reading" functions. */
@@ -568,26 +689,29 @@ i1pro_trigger_one_measure(
 	int nummeas,			/* Number of measurements to make */
 	double *inttime, 		/* Integration time to use/used */
 	int gainmode,			/* Gain mode to use, 0 = normal, 1 = high */
-	int calib_measure,		/* flag - nz if this is a calibration measurement */
-	int dark_measure		/* flag - nz if this is a dark measurement */
+	i1p_mmodif mmodif		/* Measurement modifier enum */
 );
 
 /* ============================================================ */
 /* lower level reading processing */
 
-/* Take a buffer full of raw readings, and convert them to */
-/* absolute linearised sensor values. */
-void i1pro_meas_to_abssens(
+/* Take a buffer full of sensor readings, and convert them to */
+/* absolute raw values. Linearise if Rev A..D */
+/* Note the rev E darkthresh returned has NOT been converted to an absolute raw value */
+i1pro_code i1pro_sens_to_absraw(
 	i1pro *p,
-	double **abssens,		/* Array of [nummeas][nraw] value to return */
+	double **absraw,		/* Array of [nummeas][-1 nraw] value to return */
 	unsigned char *buf,		/* Raw measurement data must be 256 * nummeas */
 	int nummeas,			/* Return number of readings measured */
 	double inttime, 		/* Integration time used */
-	int gainmode			/* Gain mode, 0 = normal, 1 = high */
+	int gainmode,			/* Gain mode, 0 = normal, 1 = high */
+	double *pdarkthresh     /* Return a dark threshold value (Rev E) */
 );
 
-/* Take a raw sensor value, and convert it into an absolute sensor value */
-double i1pro_raw_to_abssens(
+/* Take a raw value, and convert it into an absolute raw value. */
+/* Note that linearisation is ignored, since it is assumed to be insignificant */
+/* to the black threshold and saturation values. */
+double i1pro_raw_to_absraw(
 	i1pro *p,
 	double raw,				/* Input value */
 	double inttime, 		/* Integration time used */
@@ -595,15 +719,14 @@ double i1pro_raw_to_abssens(
 );
 
 /* Take a single set of absolute linearised sensor values and */
-/* convert them back into raw reading values. */
-i1pro_code i1pro_abssens_to_meas(
+/* convert them back into i1pro Rev A..D raw reading values. */
+i1pro_code i1pro_absraw_to_meas(
 	i1pro *p,
-	int meas[128],			/* Return raw measurement data */
-	double abssens[128],	/* Array of [nraw] value to process */
+	int *meas,				/* Return raw measurement data */
+	double *absraw,			/* Array of [-1 nraw] value to process */
 	double inttime, 		/* Integration time used */
 	int gainmode			/* Gain mode, 0 = normal, 1 = high */
 );
-
 
 /* Average a set of measurements into one. */
 /* Return zero if readings are consistent and not saturated. */
@@ -613,8 +736,8 @@ i1pro_code i1pro_abssens_to_meas(
 /* Return the overall average. */
 int i1pro_average_multimeas(
 	i1pro *p,
-	double *avg,			/* return average [nraw] */
-	double **multimeas,		/* Array of [nummeas][nraw] value to average */
+	double *avg,			/* return average [-1 nraw] */
+	double **multimeas,		/* Array of [nummeas][-1 nraw] value to average */
 	int nummeas,			/* Return number of readings measured */
 	double *phighest,		/* If not NULL, return highest value from all bands and msrmts. */
 	double *poallavg,		/* If not NULL, return overall average of bands and measurements */
@@ -631,9 +754,9 @@ int i1pro_average_multimeas(
 i1pro_code i1pro_extract_patches_multimeas(
 	i1pro *p,
 	int *flags,             /* return flags */
-	double **pavg,			/* return patch average [naptch][nraw] */
+	double **pavg,			/* return patch average [naptch][-1 nraw] */
 	int npatch,				/* number of patches to recognise */
-	double **multimeas,		/* Array of [nummeas][nraw] value to extract from */
+	double **multimeas,		/* Array of [nummeas][-1 nraw] value to extract from */
 	int nummeas,			/* number of readings to recognise them from */
 	double *phighest,		/* If not NULL, return highest value from all bands and msrmts. */
 	double satthresh,		/* Sauration threshold, 0 for none */
@@ -647,45 +770,32 @@ i1pro_code i1pro_extract_patches_flash(
 	i1pro *p,
 	int *flags,				/* return flags */
 	double *duration,		/* return duration */
-	double *pavg,			/* return patch average [nraw] */
-	double **multimeas,		/* Array of [nummeas][nraw] value to extract from */
+	double *pavg,			/* return patch average [-1 nraw] */
+	double **multimeas,		/* Array of [nummeas][-1 nraw] value to extract from */
 	int nummeas,			/* number of readings made */
 	double inttime			/* Integration time (used to compute duration) */
 );
 
-/* Subtract one abssens array from another */
-void i1pro_sub_abssens(
+/* Subtract one absraw array from another */
+/* If Rev E, also adjust according to shielded cells, and linearise. */
+void i1pro_sub_absraw(
 	i1pro *p,
 	int nummeas,			/* Return number of readings measured */
-	double **abssens,		/* Source/Desination array [nraw] */
-	double *sub				/* Value to subtract [nraw] */
+	double inttime,			/* Integration time used */
+	int gainmode,			/* Gain mode, 0 = normal, 1 = high */
+	double **absraw,		/* Source/Desination array [-1 nraw] */
+	double *sub				/* Black value to subtract [-1 nraw] */
 );
 
-/* Convert an abssens array from raw wavelengths to output wavelenths */
+/* Convert an absraw array from raw wavelengths to output wavelenths */
 /* for the current resolution */
-void i1pro_abssens_to_abswav(
+void i1pro_absraw_to_abswav(
 	i1pro *p,
+	int highres,
+	int reflective,
 	int nummeas,			/* Return number of readings measured */
 	double **abswav,		/* Desination array [nwav] */
-	double **abssens		/* Source array [nraw] */
-);
-
-/* Convert an abssens array from raw wavelengths to output wavelenths */
-/* for the standard resolution */
-void i1pro_abssens_to_abswav1(
-	i1pro *p,
-	int nummeas,			/* Return number of readings measured */
-	double **abswav,		/* Desination array [nwav1] */
-	double **abssens		/* Source array [nraw] */
-);
-
-/* Convert an abssens array from raw wavelengths to output wavelenths */
-/* for the high resolution */
-void i1pro_abssens_to_abswav2(
-	i1pro *p,
-	int nummeas,			/* Return number of readings measured */
-	double **abswav,		/* Desination array [nwav2] */
-	double **abssens		/* Source array [nraw] */
+	double **absraw			/* Source array [-1 nraw] */
 );
 
 /* Convert an abswav array of output wavelengths to scaled output readings. */
@@ -701,7 +811,8 @@ i1pro_code i1pro_conv2XYZ(
 	i1pro *p,
 	ipatch *vals,		/* Values to return */
 	int nvals,			/* Number of values */
-	double **specrd		/* Spectral readings */
+	double **specrd,	/* Spectral readings */
+	instClamping clamp	/* Clamp XYZ/Lab to be +ve */
 );
 
 /* Check a reflective white measurement, and check that */
@@ -712,15 +823,16 @@ i1pro_code i1pro_check_white_reference1(
 );
 
 /* Compute a calibration factor given the reading of the white reference. */
-/* Return nz if any of the transmission wavelengths are low */
-int i1pro_compute_white_cal(
+/* Return I1PRO_RD_TRANSWHITEWARN if any of the transmission wavelengths are low */
+i1pro_code i1pro_compute_white_cal(
 	i1pro *p,
+	double *cal_factor0,	/* [nwav0] Calibration factor to compute */
+	double *white_ref0,		/* [nwav0] White reference to aim for, NULL for 1.0 */
+	double *white_read0,	/* [nwav0] The white that was read */
 	double *cal_factor1,	/* [nwav1] Calibration factor to compute */
 	double *white_ref1,		/* [nwav1] White reference to aim for, NULL for 1.0 */
 	double *white_read1,	/* [nwav1] The white that was read */
-	double *cal_factor2,	/* [nwav2] Calibration factor to compute */
-	double *white_ref2,		/* [nwav2] White reference to aim for, NULL for 1.0 */
-	double *white_read2		/* [nwav2] The white that was read */
+	int do_emis_ft			/* Do emission hires fine tune with this info. */
 );
 
 /* For adaptive mode, compute a new integration time and gain mode */
@@ -757,17 +869,17 @@ i1pro_code i1pro_interp_dark(
 	int gainmode
 );
 
-/* Create high resolution mode references */
+/* Create or re-create high resolution mode references */
 i1pro_code i1pro_create_hr(i1pro *p);
 
-/* Set the noautocalib mode */
-void i1pro_set_noautocalib(i1pro *p, int v);
+/* Set the noinitcalib mode */
+void i1pro_set_noinitcalib(i1pro *p, int v, int losecs);
 
 /* Set the trigger config */
-void i1pro_set_trig(i1pro *p, inst_opt_mode trig);
+void i1pro_set_trig(i1pro *p, inst_opt_type trig);
 
 /* Return the trigger config */
-inst_opt_mode i1pro_get_trig(i1pro *p);
+inst_opt_type i1pro_get_trig(i1pro *p);
 
 /* Set the trigger return */
 void i1pro_set_trigret(i1pro *p, int val);
@@ -776,7 +888,7 @@ void i1pro_set_trigret(i1pro *p, int val);
 int i1pro_switch_thread(void *pp);
 
 /* ============================================================ */
-/* Low level commands */
+/* Low level i1pro commands */
 
 /* USB Commands */
 
@@ -828,9 +940,10 @@ i1pro_getmeasparams(
 	int *measmodeflags	/* Measurement mode flags (4 bits, see below) */
 );
 
+/* These bits correspond with the instruction flags */
 #define I1PRO_MMF_SCAN		0x01	/* Scan mode bit, else spot mode */
 #define I1PRO_MMF_NOLAMP	0x02	/* No lamp mode, else use illumination lamp */
-#define I1PRO_MMF_GAINMODE	0x04	/* Normal gain mode, else high gain */
+#define I1PRO_MMF_LOWGAIN	0x04	/* Normal gain mode, else high gain */
 #define I1PRO_MMF_UNKN		0x08	/* Unknown. Not usually set */
 
 /* Scan mode continues measuring until the user releases the button. */
@@ -862,8 +975,7 @@ i1pro_readmeasurement(
 	unsigned char *buf,		/* Where to read it to */
 	int bsize,				/* Bytes available in buffer */
 	int *nummeas,			/* Return number of readings measured */
-	int calib_measure,		/* flag - nz if this is a calibration measurement */
-	int dark_measure		/* flag - nz if this is a dark measurement */
+	i1p_mmodif mmodif		/* Measurement modifier enum */
 );
 
 
@@ -889,13 +1001,90 @@ i1pro_getmcmode(
 	int *subtmode		/* Subtract mode on read using average of value 127 */
 );
 
-/* Wait for a reply triggered by a key press */
+/* ============================================================ */
+/* Low level Rev E  commands */
+
+/* Get the EEProm size */
+i1pro_code
+i1pro2_geteesize(
+    i1pro *p,
+    int *eesize
+);
+
+/* Get the Chip ID (Also valid for Rev D) */
+/* Only returns a valid result after reading the EEProm ! */
+i1pro_code
+i1pro2_getchipid(
+    i1pro *p,
+    unsigned char chipid[8]
+);
+
+/* Get Extra Parameters */
+i1pro_code
+i1pro2_getmeaschar(
+  i1pro *p,
+    int *clkusec,
+    int *xraw,
+    int *nraw,
+    int *subdiv	
+);
+
+/* These bits correspond with the instruction flags */
+#define I1PRO2_MMF_LAMP 	   0x0100	/* Use the Incandescent Lamp as the illuminant */
+#define I1PRO2_MMF_UV_LED	   0x0200	/* Use the Ultra Violet LED as the illuminant */
+#define I1PRO2_MMF_WL_LED	   0x0300	/* Use the Wavelength Reference LED as the illuminant */
+//#define I1PRO2_MMF_HIGHGAIN    0x0000	/* Rev E mode has no high gain mode ? */
+#define I1PRO2_MMF_SCAN	       0x0001	/* Scan mode bit, else spot mode */ 
+#define I1PRO2_MMF_RULER_START 0x0004	/* Start ruler tracking in scan mode */
+#define I1PRO2_MMF_RULER_END   0x0008	/* End ruler tracking in scan mode */
+
+/* Delayed trigger implementation, called from thread */
+/* We assume that the Rev E measurement parameters have been set in */
+/* the i1proimp structure c_* values */
+static int
+i1pro2_delayed_trigger(void *pp);
+
+/* Trigger a measurement after the nominated delay */
+/* The actual return code will be in m->trig_rv after the delay. */
+/* This allows us to start the measurement read before the trigger, */
+/* ensuring that process scheduling latency can't cause the read to fail. */
+i1pro_code
+i1pro2_triggermeasure(i1pro *p, int delay);
+
+
+/* Get the UV before and after measurement voltage drop */
+i1pro_code
+i1pro2_getUVvolts(
+    i1pro *p,
+    int *before,
+    int *after
+);
+
+/* Terminate Ruler tracking (???) */
+/* The parameter seems to be always 0 ? */
+static int
+i1pro2_stop_ruler(void *pp, int parm);
+
+
+/* Send a LED sequence */
+static int
+i1pro2_indLEDseq(void *pp, unsigned char *buf, int size);
+
+/* Turn indicator LEDs off */
+static int
+i1pro2_indLEDoff(void *pp);
+
+// ~~~~9999
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+/* Wait for a reply triggered by a button press */
 i1pro_code i1pro_waitfor_switch(i1pro *p, double top);
 
-/* Wait for a reply triggered by a key press (thread version) */
+/* Wait for a reply triggered by a button press (thread version) */
 i1pro_code i1pro_waitfor_switch_th(i1pro *p, double top);
 
-/* Terminate switch handling ? */
+/* Terminate button handling ? */
 i1pro_code i1pro_terminate_switch(i1pro *p);
 
 /* -------------------------------------------------- */
@@ -1035,8 +1224,40 @@ typedef enum {
 								/* Possibly date of manufacture DDMMYYYY ? */
 								/* ie., decimal 10072002 would be 10/7/2002 ? */
 
-	key_hg_factor	= 0x04bd	/* double */
+	key_hg_factor	= 0x04bd,	/* double */
 								/* High gain mode gain factor, ie 9.5572.. */
+
+
+	key2_chip_id	= 0x2ee1,	/* uchar[8], chip id */
+
+	key2_capabilities = 0x2ee2,	/* int, capabilities bits */
+
+	key2_sens_target = 0x2eeb,	/* int - sensor optimal target value ? */
+								/* typical value 30000 */
+
+	key2_sens_sat 	= 0x2eec,	/* int - sensor saturation value ? */
+								/* typical value 55000 */
+
+	key2_uvcal_intt = 0x2ef9,	/* double, UV calibration initial integration time */
+
+	key2_wlcal_intt = 0x2efa,	/* double, wavelength calibration initial integration time */
+
+	key2_wlcal_minlev = 0x2efe,	/* int, wavelength calibration normalized minimum peak level */
+
+	key2_wlcal_spec = 0x2f44,	/* double[50], wavelength calibration reference spectrum */
+
+	key2_wlcal_ooff = 0x2f45,	/* int, Reference WL Led spectral offset */
+
+	key2_wlcal_fwhm  = 0x2f4e,	/* double, wavelength calibration nominal fwhm (nm) */
+	key2_wlcal_fwhm_tol  = 0x2f4f,	/* double, wavelength calibration fwhm tollerance (nm) */
+
+	key2_wlcal_max  = 0x2f46,	/* double, wavelength calibration error limit, ie. 5.0 */
+ 
+	key2_wlpoly_1   = 0x2f62,	/* double[4], CCD bin to wavelength polinomial #1 (normal) */
+	key2_wlpoly_2   = 0x2f63,	/* double[4], CCD bin to wavelength polinomial #2 ??? */
+
+	key2_straylight = 0x2f58,	/* int16[36][6] signed stray light values */
+	key2_straylight_scale = 0x2f59	/* double stray light scale factor */
 
 } i1key;
 
@@ -1044,9 +1265,11 @@ typedef enum {
 /* Data type */
 typedef enum {
 	i1_dtype_unknown = 0,
-	i1_dtype_int     = 2,		/* 32 bit int */
-	i1_dtype_double  = 3,		/* 64 bit double, serialized as 32 bit float */
-	i1_dtype_section = 4		/* End of section marker */
+	i1_dtype_char    = 1,		/* Array of bytes */
+	i1_dtype_short   = 2,		/* 16 bit int, date */
+	i1_dtype_int     = 3,		/* 32 bit int, date */
+	i1_dtype_double  = 4,		/* 64 bit double, serialized as 32 bit float */
+	i1_dtype_section = 5		/* End of section marker */
 } i1_dtype;
 
 /* A key/value entry */
@@ -1065,8 +1288,7 @@ struct _i1data {
 	i1pro *p;
 	i1proimp *m;
 
-	int verb;
-	int debug;
+	a1log *log;				/* reference to instrument log */
 	i1keyv *head;			/* Pointer to first in chain of keyv */
 	i1keyv *last;			/* Pointer to last in chain of keyv */
 	
@@ -1087,7 +1309,12 @@ struct _i1data {
 	/* Return the number of data items in a keyv. Return 0 if not found */
 	unsigned int (*get_count)(struct _i1data *d, i1key key);
 
-	/* Return a pointer to the int data for the key. */
+	/* Return a int pointer to the 16 bit int data for the key. */
+	/* Optionally return the number of items too. */
+	/* Return NULL if not found or wrong type */
+	int *(*get_shorts)(struct _i1data *d, unsigned int *count, i1key key);
+
+	/* Return a pointer to the 32 bit int data for the key. */
 	/* Optionally return the number of items too. */
 	/* Return NULL if not found or wrong type */
 	int *(*get_ints)(struct _i1data *d, unsigned int *count, i1key key);
@@ -1125,7 +1352,7 @@ struct _i1data {
 	i1pro_code (*ser_doubles)(struct _i1data *d, i1keyv *k, unsigned char *buf, unsigned int size);
 
 	/* Initialise the data from the EEprom contents */
-	i1pro_code (*parse_eeprom)(struct _i1data *d, unsigned char *buf, unsigned int len);
+	i1pro_code (*parse_eeprom)(struct _i1data *d, unsigned char *buf, unsigned int len, int extra);
 
 
 	/* Serialise all the keys up to the first marker into a buffer. */
@@ -1156,7 +1383,7 @@ struct _i1data {
 }; typedef struct _i1data i1data;
 
 /* Constructor. Construct from the EEprom contents */
-extern i1data *new_i1data(i1proimp *m, int verb, int debug);
+extern i1data *new_i1data(i1proimp *m);
 
 #define I1PRO_IMP
 #endif /* I1PRO_IMP */

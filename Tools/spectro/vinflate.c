@@ -4,15 +4,17 @@
    version c10p1, 10 January 1993
 
    Copied from gzip version 1.2.4 source, and modifed to work with
-   the VIZE installer flavour of DEFLATE by Graeme Gill, October 2007.
+   the VIZE installer flavour of DEFLATE by Graeme Gill, October 2007,
+   calling it vinflate.c to distinguish from the original.
 
    The modifications include reading data 16 bits at a time, big endian,
    aligning to 16 bits before a stored block, and backing out 16
    bits at a time at the end of a block.
 
-   (Note that this failes on the latest Spyder2 setup.exe, while
+   (Note that this fails on the latest Spyder2 setup.exe, while
     the vinflate inside InstExpl.exe works. See
-    http://www.totalcmd.net/plugring/InstallExplorer.html)
+    http://www.totalcmd.net/plugring/InstallExplorer.html
+	Or does this work now ?)
  
 */
 
@@ -72,11 +74,11 @@ extern int vwrite_output(unsigned char *buf, unsigned int len);
 static int huft_build(unsigned *, unsigned, unsigned, ush *, ush *,
                    struct huft **, int *);
 static int huft_free(struct huft *);
-static int inflate_codes(struct huft *, struct huft *, int, int);
-static int inflate_stored(void);
-static int inflate_fixed(void);
-static int inflate_dynamic(void);
-static int inflate_block(int *);
+static int vinflate_codes(struct huft *, struct huft *, int, int);
+static int vinflate_stored(void);
+static int vinflate_fixed(void);
+static int vinflate_dynamic(void);
+static int vinflate_block(int *);
 int vinflate(void);
 
 /*
@@ -93,7 +95,7 @@ int vinflate(void);
 unsigned int wp;             /* current position in slide */
 uch slide[32768];
 
-int flush_output(unsigned int w) {
+static int vflush_output(unsigned int w) {
 	wp = w;
 
     if (wp == 0)
@@ -132,7 +134,7 @@ static ush cpdext[] = {         /* Extra bits for distance codes */
    The usage is:
    
         NEEDBITS(j)
-        x = b & mask_bits[j];
+        x = b & vmask_bits[j];
         DUMPBITS(j)
 
    where NEEDBITS makes sure that b has at least j bits in it, and
@@ -161,7 +163,7 @@ static ush cpdext[] = {         /* Extra bits for distance codes */
 ulg bb;                         /* bit buffer */
 unsigned bk;                    /* bits in bit buffer */
 
-ush mask_bits[] = {
+ush vmask_bits[] = {
     0x0000,
     0x0001, 0x0003, 0x0007, 0x000f, 0x001f, 0x003f, 0x007f, 0x00ff,
     0x01ff, 0x03ff, 0x07ff, 0x0fff, 0x1fff, 0x3fff, 0x7fff, 0xffff
@@ -207,9 +209,9 @@ ush mask_bits[] = {
    the longer codes.  The time it costs to decode the longer codes is
    then traded against the time it takes to make longer tables.
 
-   This results of this trade are in the variables lbits and dbits
-   below.  lbits is the number of bits the first level table for literal/
-   length codes can decode in one step, and dbits is the same thing for
+   This results of this trade are in the variables vlbits and vdbits
+   below.  vlbits is the number of bits the first level table for literal/
+   length codes can decode in one step, and vdbits is the same thing for
    the distance codes.  Subsequent tables are also less than or equal to
    those sizes.  These values may be adjusted either when all of the
    codes are shorter than that, in which case the longest code length in
@@ -222,14 +224,14 @@ ush mask_bits[] = {
    codes 286 possible values, or in a flat code, a little over eight
    bits.  The distance table codes 30 possible values, or a little less
    than five bits, flat.  The optimum values for speed end up being
-   about one bit more than those, so lbits is 8+1 and dbits is 5+1.
+   about one bit more than those, so vlbits is 8+1 and vdbits is 5+1.
    The optimum values may differ though from machine to machine, and
    possibly even between compilers.  Your mileage may vary.
  */
 
 
-int lbits = 9;          /* bits in base literal/length lookup table */
-int dbits = 6;          /* bits in base distance lookup table */
+int vlbits = 9;          /* bits in base literal/length lookup table */
+int vdbits = 6;          /* bits in base distance lookup table */
 
 
 /* If BMAX needs to be larger than 16, then h and x[] should be ulg. */
@@ -472,7 +474,7 @@ struct huft *t;         /* table to free */
 
 /* inflate (decompress) the codes in a deflated (compressed) block.
    Return an error code or zero if it all goes ok. */
-static int inflate_codes(tl, td, bl, bd)
+static int vinflate_codes(tl, td, bl, bd)
 struct huft *tl, *td;   /* literal/length and distance decoder tables */
 int bl, bd;             /* number of bits decoded by tl[] and td[] */
 {
@@ -491,8 +493,8 @@ int bl, bd;             /* number of bits decoded by tl[] and td[] */
   w = wp;                       /* initialize window position */
 
   /* inflate the coded data */
-  ml = mask_bits[bl];           /* precompute masks for speed */
-  md = mask_bits[bd];
+  ml = vmask_bits[bl];           /* precompute masks for speed */
+  md = vmask_bits[bd];
   for (;;)                      /* do until end of block */
   {
     NEEDBITS((unsigned)bl)
@@ -509,14 +511,14 @@ int bl, bd;             /* number of bits decoded by tl[] and td[] */
         DUMPBITS(t->b)
         e -= 16;
         NEEDBITS(e)
-      } while ((e = (t = t->v.t + ((unsigned)b & mask_bits[e]))->e) > 16);
+      } while ((e = (t = t->v.t + ((unsigned)b & vmask_bits[e]))->e) > 16);
     DUMPBITS(t->b)
     if (e == 16)                /* then it's a literal */
     {
       slide[w++] = (uch)t->v.n;
       if (w == WSIZE)
       {
-        if (flush_output(w)) {
+        if (vflush_output(w)) {
           DBG(("Buffer was unexpectedly large\n"))
           return 1;
         }
@@ -531,7 +533,7 @@ int bl, bd;             /* number of bits decoded by tl[] and td[] */
 
       /* get length of block to copy */
       NEEDBITS(e)
-      n = t->v.n + ((unsigned)b & mask_bits[e]);
+      n = t->v.n + ((unsigned)b & vmask_bits[e]);
       DUMPBITS(e);
 
       /* decode distance of block to copy */
@@ -545,10 +547,10 @@ int bl, bd;             /* number of bits decoded by tl[] and td[] */
           DUMPBITS(t->b)
           e -= 16;
           NEEDBITS(e)
-        } while ((e = (t = t->v.t + ((unsigned)b & mask_bits[e]))->e) > 16);
+        } while ((e = (t = t->v.t + ((unsigned)b & vmask_bits[e]))->e) > 16);
       DUMPBITS(t->b)
       NEEDBITS(e)
-      d = w - t->v.n - ((unsigned)b & mask_bits[e]);
+      d = w - t->v.n - ((unsigned)b & vmask_bits[e]);
       DUMPBITS(e)
 
       /* do the copy */
@@ -568,7 +570,7 @@ int bl, bd;             /* number of bits decoded by tl[] and td[] */
           } while (--e);
         if (w == WSIZE)
         {
-          if (flush_output(w)) {
+          if (vflush_output(w)) {
             DBG(("Buffer was unexpectedly large\n"))
             return 1;
           }
@@ -590,7 +592,7 @@ int bl, bd;             /* number of bits decoded by tl[] and td[] */
 
 
 
-static int inflate_stored()
+static int vinflate_stored()
 /* "decompress" an inflated type 0 (stored) block. */
 {
   unsigned n;           /* number of bytes in block */
@@ -629,7 +631,7 @@ static int inflate_stored()
     slide[w++] = (uch)b;
     if (w == WSIZE)
     {
-      if (flush_output(w)) {
+      if (vflush_output(w)) {
         DBG(("Buffer was unexpectedly large\n"))
         return 1;
       }
@@ -651,7 +653,7 @@ static int inflate_stored()
 /* decompress an inflated type 1 (fixed Huffman codes) block.  We should
    either replace this with a custom decoder, or at least precompute the
    Huffman tables. */
-static int inflate_fixed()
+static int vinflate_fixed()
 {
   int i;                /* temporary variable */
   struct huft *tl;      /* literal/length code table */
@@ -687,7 +689,7 @@ static int inflate_fixed()
 
 
   /* decompress until an end-of-block code */
-  if (inflate_codes(tl, td, bl, bd))
+  if (vinflate_codes(tl, td, bl, bd))
     return 1;
 
 
@@ -700,7 +702,7 @@ static int inflate_fixed()
 
 
 /* decompress an inflated type 2 (dynamic Huffman codes) block. */
-static int inflate_dynamic()
+static int vinflate_dynamic()
 {
   int i;                /* temporary variables */
   unsigned j;
@@ -771,7 +773,7 @@ static int inflate_dynamic()
 
   /* read in literal and distance code lengths */
   n = nl + nd;
-  m = mask_bits[bl];
+  m = vmask_bits[bl];
   i = l = 0;
   while ((unsigned)i < n)
   {
@@ -836,7 +838,7 @@ static int inflate_dynamic()
 
 
   /* build the decoding tables for literal/length and distance codes */
-  bl = lbits;
+  bl = vlbits;
   if ((i = huft_build(ll, nl, 257, cplens, cplext, &tl, &bl)) != 0)
   {
     if (i == 1) {
@@ -845,7 +847,7 @@ static int inflate_dynamic()
     DBG(("Incomplete litteral tree\n"))
     return i;                   /* incomplete code set */
   }
-  bd = dbits;
+  bd = vdbits;
   if ((i = huft_build(ll + nl, nd, 0, cpdist, cpdext, &td, &bd)) != 0)
   {
     if (i == 1) {
@@ -864,8 +866,8 @@ static int inflate_dynamic()
 
 
   /* decompress until an end-of-block code */
-  if (inflate_codes(tl, td, bl, bd)) {
-    DBG(("inflate_codes failed\n"))
+  if (vinflate_codes(tl, td, bl, bd)) {
+    DBG(("vinflate_codes failed\n"))
     return 1;
   }
 
@@ -879,7 +881,7 @@ static int inflate_dynamic()
 
 
 /* decompress an inflated block */
-static int inflate_block(e)
+static int vinflate_block(e)
 int *e;                 /* last block flag */
 {
   unsigned t;           /* block type */
@@ -911,15 +913,15 @@ int *e;                 /* last block flag */
 
   /* inflate that block type */
   if (t == 2)
-    return inflate_dynamic();
+    return vinflate_dynamic();
   if (t == 0)
-    return inflate_stored();
+    return vinflate_stored();
 
 #ifdef NEVER
    /* Apparently VISE doesn't use this */
   if (t == 1) {
-    printf("WARNING: inflate fixed found\n");
-    return inflate_fixed();
+    printf("WARNING: vinflate fixed found\n");
+    return vinflate_fixed();
   }
 #endif
 
@@ -945,7 +947,7 @@ int vinflate()
   h = 0;
   do {
     hufts = 0;
-    if ((r = inflate_block(&e)) != 0)
+    if ((r = vinflate_block(&e)) != 0)
       return r;
     if (hufts > h)
       h = hufts;
@@ -960,7 +962,7 @@ int vinflate()
   }
 
   /* flush out slide */
-  if (flush_output(wp)) {
+  if (vflush_output(wp)) {
     DBG(("Buffer was unexpectedly large\n"))
     return 1;
   }

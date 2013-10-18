@@ -7,7 +7,7 @@
  * Author: Graeme W. Gill
  * Date:   20/1/2007
  *
- * Copyright 2007, Graeme W. Gill
+ * Copyright 2013, Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -48,12 +48,9 @@
 #endif /* SALONEINSTLIB */
 #include "xspect.h"
 #include "insttypes.h"
-#include "icoms.h"
 #include "conv.h"
+#include "icoms.h"
 #include "hcfr.h"
-
-#undef MEASURE_RAW		/* To facilitate calibration - return raw RGB values */
-#undef DEBUG
 
 static inst_code hcfr_interp_code(inst *pp, int ec);
 
@@ -64,17 +61,6 @@ static inst_code hcfr_interp_code(inst *pp, int ec);
 
 /* Interpret an icoms error into a HCFR error */
 static int icoms2hcfr_err(int se) {
-	if (se & ICOM_USERM) {
-		se &= ICOM_USERM;
-		if (se == ICOM_USER)
-			return HCFR_USER_ABORT;
-		if (se == ICOM_TERM)
-			return HCFR_USER_TERM;
-		if (se == ICOM_TRIG)
-			return HCFR_USER_TRIG;
-		if (se == ICOM_CMND)
-			return HCFR_USER_CMND;
-	}
 	if (se != ICOM_OK)
 		return HCFR_COMS_FAIL;
 	return HCFR_OK;
@@ -90,18 +76,15 @@ hcfr_command(
 	int bsize,		/* Out buffer size */
 	double to		/* Timeout in seconds */
 ) {
-	int se;
+	int rv, se;
 
-	if ((se = p->icom->write_read(p->icom, in, out, bsize, '\n', 1, to)) != 0) {
-#ifdef DEBUG
-		printf("hcfr fcommand: serial i/o failure on write_read '%s'\n",icoms_fix(in));
-#endif
+	if ((se = p->icom->write_read(p->icom, in, out, bsize, "\n", 1, to)) != 0) {
+		int ec;
+		a1logd(p->log, 1, "hcfr_command: serial i/o failure on write_read '%s'\n",icoms_fix(in));
 		return hcfr_interp_code((inst *)p, icoms2hcfr_err(se));
 	}
-#ifdef DEBUG
-	printf("command '%s'",icoms_fix(in));
-	printf(" returned '%s', value 0x%x\n",icoms_fix(out),HCFR_OK);
-#endif
+	a1logd(p->log, 4, "hcfr_command: command '%s' returned '%s', value 0x%x\n",
+	                                          icoms_fix(in), icoms_fix(out),HCFR_OK);
 	return hcfr_interp_code((inst *)p, HCFR_OK);
 }
 
@@ -110,23 +93,16 @@ inst_code
 hcfr_break(
 	hcfr *p
 ) {
+	int rwbytes;			/* Data bytes read or written */
 	int se, rv = inst_ok;
-	int isdeb = 0;
-
-	/* Turn off low level debug messages, and sumarise them here */
-	isdeb = p->icom->debug;
-	p->icom->debug = 0;
-
-	if (isdeb) printf("\nhcfr: Doing break\n");
 
 	se = p->icom->usb_control(p->icom,
-		               USB_ENDPOINT_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE,
+		               IUSB_ENDPOINT_OUT | IUSB_REQ_TYPE_CLASS | IUSB_REQ_RECIP_INTERFACE,
 	                   0x22, 0, 0, NULL, 0, 1.0);
 
 	rv = hcfr_interp_code((inst *)p, icoms2hcfr_err(se));
 
-	if (isdeb) printf("Break done, ICOM err 0x%x\n",se);
-	p->icom->debug = isdeb;
+	a1logd(p->log, 4, "hcfr_break: done, ICOM err 0x%x\n",se);
 
 	return rv;
 }
@@ -138,15 +114,15 @@ hcfr_flush(
 ) {
 	icoms *c = p->icom;
 	char buf[MAX_MES_SIZE];
+	inst_code ev = inst_ok;
+	int rv;
 
-	for (c->lerr = 0;;) {
-		int debug = c->debug; c->debug = 0;
-		c->read(c, buf, MAX_MES_SIZE, '\000', 100000, 0.05);
-		c->debug = debug;
-		if (c->lerr != 0)
+	for (rv = ICOM_OK;;) {
+		rv = c->read(c, buf, MAX_MES_SIZE, '\000', 100000, 0.05);
+		if (rv != ICOM_OK)
 			break;				/* Expect timeout with nothing to read */
 	}
-	c->lerr = 0;
+	a1logd(p->log, 5, "hcfr_flush: done\n");
 		
 	return inst_ok;
 }
@@ -163,7 +139,7 @@ hcfr_get_check_version(
 	inst_code ev = inst_ok;
 	int maj, min;
 
-	if (p->debug) fprintf(stderr,"hcfr: About to read firmware version\n");
+	a1logd(p->log, 4, "hcfr_get_check_version: called\n");
 
 	if (p->gotcoms == 0)
 		return inst_internal_error;
@@ -171,27 +147,25 @@ hcfr_get_check_version(
 	ibuf[0] = HCFR_GET_VERS;
 	ibuf[1] = 0x00;
 
-	if ((ev = hcfr_command(p, ibuf, buf, MAX_MES_SIZE, 1.0)) != inst_ok) {
-		if (p->debug) fprintf(stderr,"hcfr_command failed\n");
+	if ((ev = hcfr_command(p, ibuf, buf, MAX_MES_SIZE, 1.0)) != inst_ok)
 		return ev;
-	}
 
 	if (strlen(buf) < 6) {
-		if (p->debug) fprintf(stderr,"version string too short\n");
+		a1logd(p->log, 1, "hcfr_get_check_version: version string too short\n");
 		return hcfr_interp_code((inst *)p, HCFR_BAD_FIRMWARE);
 	}
 
 	if (sscanf(buf, "v%d.%d", &maj,&min) != 2) {
-		if (p->debug) fprintf(stderr,"version string doesn't match format\n");
+		a1logd(p->log, 1, "hcfr_get_check_version: version string doesn't match format\n");
 		return hcfr_interp_code((inst *)p, HCFR_BAD_FIRMWARE);
 	}
 
 	if (maj != HCFR_FIRMWARE_MAJOR_VERSION || min < HCFR_FIRMWARE_MINOR_VERSION) {
-		if (p->debug) fprintf(stderr,"version string out of range\n");
+		a1logd(p->log, 1, "hcfr_get_check_version: version string out of range\n");
 		return hcfr_interp_code((inst *)p, HCFR_BAD_FIRMWARE);
 	}
 
-	if (p->debug) fprintf(stderr,"hcfr: Got firmare version %d.%d\n",maj,min);
+	a1logd(p->log, 4, "hcfr_get_check_version: got firmare version %d.%d\n",maj,min);
 	if (pmaj != NULL)
 		*pmaj = maj;
 	if (pmin != NULL)
@@ -215,7 +189,7 @@ hcfr_get_rgb(
 	int onesens = 0;
 	int i;
 
-	if (p->debug) fprintf(stderr,"hcfr: About to read RGB value\n");
+	a1logd(p->log, 3, "hcfr_get_rgb: called\n");
 
 	if (p->gotcoms == 0)
 		return inst_internal_error;
@@ -230,18 +204,21 @@ hcfr_get_rgb(
 	ibuf[1] = 0x00;
 
 	if ((ev = hcfr_command(p, ibuf, buf, MAX_MES_SIZE, 60.0)) != inst_ok) {
-		if (p->debug) fprintf(stderr,"hcfr_command failed\n");
+		a1logd(p->log, 1, "hcfr_get_rgb: hcfr_command failed\n");
 		return ev;
 	}
 
-	if (strlen(buf) < 156)
+	if (strlen(buf) < 156) {
+		a1logd(p->log, 1, "hcfr_get_rgb: not enough bytes returned = expected %d, got %d\n",156,strlen(buf));
 		return hcfr_interp_code((inst *)p, HCFR_BAD_READING);
+	}
 		
 	if (strncmp(buf, "RGB_1:", 6) == 0)
 		onesens = 1;
-	else 
-	if (strncmp(buf, "RGB_2:", 6) != 0)
+	else if (strncmp(buf, "RGB_2:", 6) != 0) {
+		a1logd(p->log, 1, "hcfr_get_rgb: RGB_1 or RGB_2 not founde\n");
 		return hcfr_interp_code((inst *)p, HCFR_BAD_READING);
+	}
 
 	vbuf[3] = 0x00;
 	bp = buf + 6;
@@ -265,22 +242,19 @@ hcfr_get_rgb(
 		if (den == 0)		/* Hmm. */
 			vals[i] = -1.0;
 		else
-			vals[i] = 1e6 * (double)num * mul * div / (double)den;
-//printf("~1 vals[%d] = %f = num %d * mul %f * div %f / den %d\n", i, vals[i], num,mul,div,den);
+			vals[i] = 1e4 * (double)num * mul * div / (double)den;
+//		a1logd(p->log, 6,"vals[%d] = %f = num %d * mul %f * div %f / den %d\n", i, vals[i], num,mul,div,den);
 	}
 	if (onesens) {
 		rgb[0] = vals[0];
 		rgb[1] = vals[1];
 		rgb[2] = vals[2];
 	} else {
-//printf("~1 diff = %f%%\n",100.0 * vals[0]/vals[4]);
-//printf("~1 diff = %f%%\n",100.0 * vals[1]/vals[5]);
-//printf("~1 diff = %f%%\n",100.0 * vals[2]/vals[6]);
 		rgb[0] = 0.5 * (vals[0] + vals[4]);
 		rgb[1] = 0.5 * (vals[1] + vals[5]);
 		rgb[2] = 0.5 * (vals[2] + vals[6]);
 	}
-//printf("~1 done hcfr_get_rgb, about to return values %f %f %f\n",rgb[0],rgb[1],rgb[2]);
+	a1logd(p->log, 3, "hcfr_get_rgb: returning value %f %f %f\n",rgb[0],rgb[1],rgb[2]);
 
 	return inst_ok;
 }
@@ -300,27 +274,27 @@ hcfr_comp_matrix(
 	/* CRT */
 
 	/* Red test patch, sensor then reference */
-	tmat[0][0] = 7171.880890;
-	tmat[1][0] = 853.740337;
-	tmat[2][0] = 308.216218;
+	tmat[0][0] = 71.71880890;
+	tmat[1][0] = 8.53740337;
+	tmat[2][0] = 3.08216218;
 
 	xmat[0][0] = 21.988601;
 	xmat[1][0] = 12.131219;
 	xmat[2][0] = 1.312786;
 
 	/* Green test patch, sensor then reference */
-	tmat[0][1] = 626.299108; 
-	tmat[1][1] = 3749.843127;
-	tmat[2][1] = 1591.104086;
+	tmat[0][1] = 6.26299108; 
+	tmat[1][1] = 37.49843127;
+	tmat[2][1] = 15.91104086;
 
 	xmat[0][1] = 13.677691;
 	xmat[1][1] = 28.870823;
 	xmat[2][1] = 5.636190;
 
 	/* Blue test patch, sensor then reference */
-	tmat[0][2] = 130.620298; 
-	tmat[1][2] = 462.894673;
-	tmat[2][2] = 2757.654019;
+	tmat[0][2] = 1.30620298; 
+	tmat[1][2] = 4.62894673;
+	tmat[2][2] = 27.57654019;
 
 	xmat[0][2] = 6.387302;
 	xmat[1][2] = 2.755360;
@@ -336,27 +310,27 @@ hcfr_comp_matrix(
 	/* LCD */
 
 	/* Red test patch, sensor then reference */
-	tmat[0][0] = 3994.356609;
-	tmat[1][0] = 1159.679928;
-	tmat[2][0] = 818.430397;
+	tmat[0][0] = 39.94356609;
+	tmat[1][0] = 11.59679928;
+	tmat[2][0] = 8.18430397;
 
 	xmat[0][0] = 51.875052;
 	xmat[1][0] = 30.640815;
 	xmat[2][0] = 4.712397;
 
 	/* Green test patch, sensor then reference */
-	tmat[0][1] = 1445.920285;
-	tmat[1][1] = 3382.116329;
-	tmat[2][1] = 1764.558523;
+	tmat[0][1] = 14.45920285;
+	tmat[1][1] = 33.82116329;
+	tmat[2][1] = 17.64558523;
 
 	xmat[0][1] = 37.482638;
 	xmat[1][1] = 64.670821;
 	xmat[2][1] = 14.554874;
 
 	/* Blue test patch, sensor then reference */
-	tmat[0][2] = 829.727493;
-	tmat[1][2] = 1795.182031;
-	tmat[2][2] = 3820.123872;
+	tmat[0][2] = 8.29727493;
+	tmat[1][2] = 17.95182031;
+	tmat[2][2] = 38.20123872;
 
 	xmat[0][2] = 25.098392;
 	xmat[1][2] = 23.719352;
@@ -377,10 +351,13 @@ hcfr_comp_matrix(
 /* Establish communications with a HCFR */
 /* Return HCFR_COMS_FAIL on failure to establish communications */
 static inst_code
-hcfr_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) {
+hcfr_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	hcfr *p = (hcfr *) pp;
-	icomuflags usbflags = icomuf_no_open_clear | icomuf_detach;
+	int rsize;
+	long etime;
+	int bi, i, se;
 	inst_code ev = inst_ok;
+	icomuflags usbflags = icomuf_no_open_clear | icomuf_detach;
 
 #if defined(__APPLE__) && defined(__i386__)
 	/* Except on Intel OS X 10.4/5 for some reasone. */
@@ -388,48 +365,55 @@ hcfr_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) {
 	usbflags &= ~icomuf_no_open_clear;
 #endif
 
-	if (p->debug) {
-		p->icom->debug = p->debug;	/* Turn on debugging */
-		fprintf(stderr,"hcfr: About to init coms\n");
+	a1logd(p->log, 2, "hcfr_init_coms: About to init USB\n");
+
+	if (p->icom->port_type(p->icom) != icomt_usb) {
+		a1logd(p->log, 1, "hcfr_init_coms: expect hcfr to be USB\n");
+		return hcfr_interp_code((inst *)p, HCFR_UNKNOWN_MODEL);
+	} else {
+		a1logd(p->log, 1, "hcfr_init_coms: wrong communications type for device!\n");
+		return inst_coms_fail;
 	}
-
-	if (p->icom->is_usb_portno(p->icom, port) == instUnknown) {
-		if (p->debug) fprintf(stderr,"hcfr: init_coms called to wrong device!\n");
-
-		return HCFR_UNKNOWN_MODEL;
-	}
-
-	if (p->debug) fprintf(stderr,"hcfr: About to init USB\n");
 
 	/* Set config, interface, "Serial" write & read end points */
 	/* Note if we clear halt the interface hangs */
-	p->icom->set_usb_port(p->icom, port, 1, 0x03, 0x83, usbflags, 0, NULL); 
+	if ((se = p->icom->set_usb_port(p->icom, 1, 0x03, 0x83, usbflags, 0, NULL)) != ICOM_OK) { 
+		a1logd(p->log, 1, "hcfr_init_coms: set_usb_port failed ICOM err 0x%x\n",se);
+		return hcfr_interp_code((inst *)p, icoms2hcfr_err(se));
+	}
 
 	if ((ev = hcfr_break(p)) != inst_ok) {
-		if (p->debug) fprintf(stderr,"hcfr: Error doing break\n");
+		a1logd(p->log, 1, "hcfr_init_coms: break failed\n");
 		return ev;
 	}
 	p->gotcoms = 1;
 
+	a1logd(p->log, 2, "hcfr_init_coms: inited coms OK\n");
+
 	return inst_ok;
 }
+
+static inst_code set_default_disp_type(hcfr *p);
 
 /* Initialise the HCFR */
 /* return non-zero on an error, with dtp error code */
 static inst_code
 hcfr_init_inst(inst *pp) {
 	hcfr *p = (hcfr *)pp;
+	static char buf[MAX_MES_SIZE];
 	inst_code ev = inst_ok;
 
-	if (p->debug) fprintf(stderr,"hcfr: About to init instrument\n");
+	a1logd(p->log, 2, "hcfr_init_inst: called\n");
 
 	if (p->gotcoms == 0)
 		return inst_internal_error;		/* Must establish coms before calling init */
 
-	hcfr_flush(p);
+#ifndef NEVER		/* Doesn't work with OSX ? */
+//	hcfr_flush(p);
+#endif
 
 	if ((ev = hcfr_get_check_version(p, &p->maj, &p->min)) != inst_ok) {
-		if (p->debug) fprintf(stderr,"hcfr: Error with getting or version of firmware\n");
+		a1logd(p->log, 1, "hcfr_init_inst: check_version failed\n");
 		return ev;
 	}
 
@@ -437,14 +421,17 @@ hcfr_init_inst(inst *pp) {
 		return ev;
 	}
 
-	p->trig = inst_opt_trig_keyb;
+	p->trig = inst_opt_trig_user;
 
-	if (ev == inst_ok) {
-		p->inited = 1;
-		if (p->debug) fprintf(stderr,"hcfr: instrument inited OK\n");
+	/* Setup the default display type */
+	if ((ev = set_default_disp_type(p)) != inst_ok) {
+		return ev;
 	}
 
-	return ev;
+	p->inited = 1;
+	a1logd(p->log, 2, "hcfr_init_inst: instrument inited OK\n");
+
+	return inst_ok;
 }
 
 /* Read a single sample */
@@ -453,7 +440,8 @@ static inst_code
 hcfr_read_sample(
 inst *pp,
 char *name,			/* Strip name (7 chars) */
-ipatch *val) {		/* Pointer to instrument patch value */
+ipatch *val,		/* Pointer to instrument patch value */
+instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	hcfr *p = (hcfr *)pp;
 	inst_code ev;
 	double rgb[3];
@@ -464,38 +452,61 @@ ipatch *val) {		/* Pointer to instrument patch value */
 	if (!p->inited)
 		return inst_no_init;
 
-	if (p->trig == inst_opt_trig_keyb) {
-		int se;
-		if ((se = icoms_poll_user(p->icom, 1)) != ICOM_TRIG) {
-			/* Abort, term or command */
-			return hcfr_interp_code((inst *)p, icoms2hcfr_err(se));
+	if (p->trig == inst_opt_trig_user) {
+
+		if (p->uicallback == NULL) {
+			a1logd(p->log, 1, "hcfr: inst_opt_trig_user but no uicallback function set!\n");
+			return inst_unsupported;
 		}
-		user_trig = 1;
-		if (p->trig_return)
-			printf("\n");
+
+		for (;;) {
+			if ((ev = p->uicallback(p->uic_cntx, inst_armed)) != inst_ok) {
+				if (ev == inst_user_abort)
+					return ev;				/* Abort */
+				if (ev == inst_user_trig) {
+					user_trig = 1;
+					break;					/* Trigger */
+				}
+			}
+			msec_sleep(200);
+		}
+		/* Notify of trigger */
+		if (p->uicallback)
+			p->uicallback(p->uic_cntx, inst_triggered); 
+
+	/* Progromatic Trigger */
+	} else {
+		/* Check for abort */
+		if (p->uicallback != NULL
+		 && (ev = p->uicallback(p->uic_cntx, inst_armed)) == inst_user_abort)
+			return ev;				/* Abort */
 	}
 
 	if ((ev = hcfr_get_rgb(p, rgb)) != inst_ok)
 		return ev;
 
-	if (p->cal_mode == 0) {	/* CRT */
-		icmMulBy3x3(val->aXYZ, p->crt, rgb);
+	if (p->ix == 0) {			/* LCD */
+		icmMulBy3x3(val->XYZ, p->lcd, rgb);
 
-	} else if (p->cal_mode == 1) {	/* LCD */
-		icmMulBy3x3(val->aXYZ, p->lcd, rgb);
+	} else if (p->ix == 1) {	/* CRT */
+		icmMulBy3x3(val->XYZ, p->crt, rgb);
 
-	} else {				/* Raw */
-		val->aXYZ[0] = rgb[0];
-		val->aXYZ[1] = rgb[1];
-		val->aXYZ[2] = rgb[2];
+	} else {					/* Raw */
+		val->XYZ[0] = rgb[0];
+		val->XYZ[1] = rgb[1];
+		val->XYZ[2] = rgb[2];
 	}
 
 	/* Apply the colorimeter correction matrix */
-	icmMulBy3x3(val->aXYZ, p->ccmat, val->aXYZ);
+	icmMulBy3x3(val->XYZ, p->ccmat, val->XYZ);
 
-	val->aXYZ_v = 1;		/* These are absolute XYZ readings */
-	val->XYZ_v = 0;
-	val->Lab_v = 0;
+	/* This may not change anything since instrument may clamp */
+	if (clamp)
+		icmClamp3(val->XYZ, val->XYZ);
+
+	val->loc[0] = '\000';
+	val->mtype = inst_mrt_emission;
+	val->XYZ_v = 1;		/* These are absolute XYZ readings */
 	val->sp.spec_n = 0;
 	val->duration = 0.0;
 
@@ -518,10 +529,15 @@ double mtx[3][3]
 	if (!p->inited)
 		return inst_no_init;
 
-	if (mtx == NULL)
+	if (mtx == NULL) {
 		icmSetUnity3x3(p->ccmat);
-	else
+	} else {
+		if (p->cbid == 0) {
+			a1loge(p->log, 1, "hcfr: can't set col_cor_mat over non base display type\n");
+			return inst_wrong_setup;
+		}
 		icmCpy3x3(p->ccmat, mtx);
+	}
 		
 	return inst_ok;
 }
@@ -540,14 +556,6 @@ hcfr_interp_error(inst *pp, int ec) {
 			return "Not a HCFR or DTP52";
 		case HCFR_DATA_PARSE_ERROR:
 			return "Data from DTP didn't parse as expected";
-		case HCFR_USER_ABORT:
-			return "User hit Abort key";
-		case HCFR_USER_TERM:
-			return "User hit Terminate key";
-		case HCFR_USER_TRIG:
-			return "User hit Trigger key";
-		case HCFR_USER_CMND:
-			return "User hit a Command key";
 
 		case HCFR_OK:
 			return "No device error";
@@ -570,6 +578,7 @@ hcfr_interp_error(inst *pp, int ec) {
 /* Convert a machine specific error code into an abstract dtp code */
 static inst_code 
 hcfr_interp_code(inst *pp, int ec) {
+	hcfr *p = (hcfr *)pp;
 
 	ec &= inst_imask;
 	switch (ec) {
@@ -589,15 +598,6 @@ hcfr_interp_code(inst *pp, int ec) {
 		case HCFR_DATA_PARSE_ERROR:
 			return inst_protocol_error | ec;
 
-		case HCFR_USER_ABORT:
-			return inst_user_abort | ec;
-		case HCFR_USER_TERM:
-			return inst_user_term | ec;
-		case HCFR_USER_TRIG:
-			return inst_user_trig | ec;
-		case HCFR_USER_CMND:
-			return inst_user_cmnd | ec;
-
 		case HCFR_BAD_READING:
 			return inst_misread | ec;
 
@@ -610,167 +610,237 @@ hcfr_interp_code(inst *pp, int ec) {
 	return inst_other_error | ec;
 }
 
-/* Return the last communication error code */
-static int
-hcfr_last_comerr(inst *pp) {
-	hcfr *p = (hcfr *)pp;
-	return p->icom->lerr;
-}
-
 /* Destroy ourselves */
 static void
 hcfr_del(inst *pp) {
 	hcfr *p = (hcfr *)pp;
 	if (p->icom != NULL)
 		p->icom->del(p->icom);
+	inst_del_disptype_list(p->dtlist, p->ndtlist);
 	free(p);
 }
 
-/* Return the instrument capabilities */
-inst_capability hcfr_capabilities(inst *pp) {
-	inst_capability rv;
+/* Return the instrument mode capabilities */
+void hcfr_capabilities(inst *pp,
+inst_mode *pcap1,
+inst2_capability *pcap2,
+inst3_capability *pcap3) {
+	hcfr *p = (hcfr *)pp;
+	inst_mode cap = 0;
+	inst2_capability cap2 = 0;
 
-	rv = inst_emis_spot
-	   | inst_emis_disp
-	   | inst_colorimeter
-	   | inst_ccmx
-	   | inst_emis_disptype
-	   ;
-	return rv;
+	cap |= inst_mode_emis_spot
+	    |  inst_mode_colorimeter
+	       ;
+
+	cap2 |= inst2_prog_trig
+	     |  inst2_user_trig
+	     |  inst2_disptype
+	     |  inst2_ccmx
+	        ;
+
+	if (pcap1 != NULL)
+		*pcap1 = cap;
+	if (pcap2 != NULL)
+		*pcap2 = cap2;
+	if (pcap3 != NULL)
+		*pcap3 = inst3_none;
 }
 
-/* Return the instrument capabilities 2 */
-inst2_capability hcfr_capabilities2(inst *pp) {
-	inst2_capability rv;
-
-	rv = inst2_prog_trig
-	   | inst2_keyb_trig
-	   ;
-
-	return rv;
-}
-
-inst_disptypesel hcfr_disptypesel[3] = {
-	{
-		1,
-		"c",
-		"HCFR: CRT display",
-		1
-	},
-	{
-		2,
-		"l",
-		"HCFR: LCD display [Default]",
-		0
-	},
-	{
-		0,
-		"",
-		"",
-		-1
-	}
-};
-
-/* Get mode and option details */
-static inst_code hcfr_get_opt_details(
-inst *pp,
-inst_optdet_type m,	/* Requested option detail type */
-...) {				/* Status parameters */                             
-	if (m == inst_optdet_disptypesel) {
-		va_list args;
-		int *pnsels;
-		inst_disptypesel **psels;
-
-		va_start(args, m);
-		pnsels = va_arg(args, int *);
-		psels = va_arg(args, inst_disptypesel **);
-		va_end(args);
-
-		*pnsels = 2;
-		*psels = hcfr_disptypesel;
-		
-		return inst_ok;
-	}
-
-	return inst_unsupported;
-}
-
-/* Set device measurement mode */
-inst_code hcfr_set_mode(inst *pp, inst_mode m) {
-	inst_mode mm;		/* Measurement mode */
+/* Check device measurement mode */
+inst_code hcfr_check_mode(inst *pp, inst_mode m) {
+	inst_mode cap;
 
 	if (!pp->gotcoms)
 		return inst_no_coms;
 	if (!pp->inited)
 		return inst_no_init;
 
-	/* The measurement mode portion of the mode */
-	mm = m & inst_mode_measurement_mask;
+	pp->capabilities(pp, &cap, NULL, NULL);
+
+	/* Simple test */
+	if (m & ~cap)
+		return inst_unsupported;
 
 	/* only display emission mode supported */
-	if (mm != inst_mode_emis_disp
-	 && mm != inst_mode_emis_spot) {
+	if (!IMODETST(m, inst_mode_emis_spot)) {
 		return inst_unsupported;
 	}
 
-	/* Spectral mode is not supported */
-	if (m & inst_mode_spectral)
+	return inst_ok;
+}
+
+/* Set device measurement mode */
+inst_code hcfr_set_mode(inst *pp, inst_mode m) {
+	inst_code ev;
+
+	if ((ev = hcfr_check_mode(pp, m)) != inst_ok)
+		return ev;
+
+	return inst_ok;
+}
+
+inst_disptypesel hcfr_disptypesel[4] = {
+	{
+		inst_dtflags_default,
+		0,
+		"l",
+		"LCD display",
+		0,
+		0
+	},
+	{
+		inst_dtflags_none,		/* flags */
+		0,						/* cbix */
+		"c",					/* sel */
+		"CRT display",			/* desc */
+		0,						/* refr */
+		1						/* ix */
+	},
+	{
+		inst_dtflags_none,
+		1,
+		"R",
+		"Raw Reading",
+		0,
+		2
+	},
+	{
+		inst_dtflags_end,
+		0,
+		"",
+		"",
+		0,
+		0
+	}
+};
+
+/* Get mode and option details */
+static inst_code hcfr_get_disptypesel(
+inst *pp,
+int *pnsels,				/* Return number of display types */
+inst_disptypesel **psels,	/* Return the array of display types */
+int allconfig,				/* nz to return list for all configs, not just current. */
+int recreate				/* nz to re-check for new ccmx & ccss files */
+) {
+	hcfr *p = (hcfr *)pp;
+	inst_code rv = inst_ok;
+
+	/* Create/Re-create a current list of abailable display types */
+	if (p->dtlist == NULL || recreate) {
+		if ((rv = inst_creat_disptype_list(pp, &p->ndtlist, &p->dtlist,
+		    hcfr_disptypesel, 0 /* doccss*/, 1 /* doccmx */)) != inst_ok)
+			return rv;
+	}
+
+	if (pnsels != NULL)
+		*pnsels = p->ndtlist;
+
+	if (psels != NULL)
+		*psels = p->dtlist;
+
+	return inst_ok;
+}
+
+/* Given a display type entry, setup for that type */
+static inst_code set_disp_type(hcfr *p, inst_disptypesel *dentry) {
+
+	p->ix = dentry->ix; 
+	p->refrmode = dentry->refr; 
+	p->cbid = dentry->cbid; 
+
+	if (dentry->flags & inst_dtflags_ccmx) {
+		icmCpy3x3(p->ccmat, dentry->mat);
+	} else {
+		icmSetUnity3x3(p->ccmat);
+	}
+
+	return inst_ok;
+}
+
+/* Setup the default display type */
+static inst_code set_default_disp_type(hcfr *p) {
+	inst_code ev;
+	int i;
+
+	if (p->dtlist == NULL) {
+		if ((ev = inst_creat_disptype_list((inst *)p, &p->ndtlist, &p->dtlist,
+		    hcfr_disptypesel, 0 /* doccss*/, 1 /* doccmx */)) != inst_ok)
+			return ev;
+	}
+
+	for (i = 0; !(p->dtlist[i].flags & inst_dtflags_end); i++) {
+		if (p->dtlist[i].flags & inst_dtflags_default)
+			break;
+	}
+	if (p->dtlist[i].flags & inst_dtflags_end) {
+		a1loge(p->log, 1, "set_default_disp_type: failed to find type!\n");
+		return inst_internal_error; 
+	}
+	if ((ev = set_disp_type(p, &p->dtlist[i])) != inst_ok) {
+		return ev;
+	}
+
+	return inst_ok;
+}
+
+/* Set the display type */
+static inst_code hcfr_set_disptype(inst *pp, int ix) {
+	hcfr *p = (hcfr *)pp;
+	inst_code ev;
+	inst_disptypesel *dentry;
+
+	if (p->dtlist == NULL) {
+		if ((ev = inst_creat_disptype_list(pp, &p->ndtlist, &p->dtlist,
+		    hcfr_disptypesel, 0 /* doccss*/, 1 /* doccmx */)) != inst_ok)
+			return ev;
+	}
+
+	if (ix < 0 || ix >= p->ndtlist)
 		return inst_unsupported;
+
+	dentry = &p->dtlist[ix];
+
+	if ((ev = set_disp_type(p, dentry)) != inst_ok) {
+		return ev;
+	}
 
 	return inst_ok;
 }
 
 /* 
  * set or reset an optional mode
- * We assume that the instrument has been initialised.
+ *
+ * Since there is no interaction with the instrument,
+ * was assume that all of these can be done before initialisation.
  */
 static inst_code
-hcfr_set_opt_mode(inst *pp, inst_opt_mode m, ...) {
+hcfr_get_set_opt(inst *pp, inst_opt_type m, ...) {
 	hcfr *p = (hcfr *)pp;
-
-	if (!p->gotcoms)
-		return inst_no_coms;
-	if (!p->inited)
-		return inst_no_init;
-
-#ifdef MEASURE_RAW
-	p->cal_mode = 2;
-	return inst_ok;
-#endif
-
-	/* Set the display type */
-	if (m == inst_opt_disp_type) {
-		va_list args;
-		int ix;
-
-		va_start(args, m);
-		ix = va_arg(args, int);
-		va_end(args);
-
-		if (ix == 0)		/* Map default to 2 */
-			ix = 2;
-		if (ix == 1) {
-			p->cal_mode = 0;
-			return inst_ok;
-		} else if (ix == 2) {
-			p->cal_mode = 1;
-			return inst_ok;
-		} else {
-			return inst_unsupported;
-		}
-	}
+	inst_code ev = inst_ok;
 
 	/* Record the trigger mode */
 	if (m == inst_opt_trig_prog
-	 || m == inst_opt_trig_keyb) {
+	 || m == inst_opt_trig_user) {
 		p->trig = m;
 		return inst_ok;
 	}
-	if (m == inst_opt_trig_return) {
-		p->trig_return = 1;
-		return inst_ok;
-	} else if (m == inst_opt_trig_no_return) {
-		p->trig_return = 0;
+
+	/* Get the display type information */
+	if (m == inst_opt_get_dtinfo) {
+		va_list args;
+		int *refrmode, *cbid;
+
+		va_start(args, m);
+		refrmode = va_arg(args, int *);
+		cbid = va_arg(args, int *);
+		va_end(args);
+
+		if (refrmode != NULL)
+			*refrmode = p->refrmode;
+		if (cbid != NULL)
+			*cbid = p->cbid;
+
 		return inst_ok;
 	}
 
@@ -778,37 +848,32 @@ hcfr_set_opt_mode(inst *pp, inst_opt_mode m, ...) {
 }
 
 /* Constructor */
-extern hcfr *new_hcfr(icoms *icom, instType itype, int debug, int verb)
-{
+extern hcfr *new_hcfr(icoms *icom, instType itype) {
 	hcfr *p;
-	if ((p = (hcfr *)calloc(sizeof(hcfr),1)) == NULL)
-		error("hcfr: malloc failed!");
+	if ((p = (hcfr *)calloc(sizeof(hcfr),1)) == NULL) {
+		a1loge(icom->log, 1, "new_hcfr: malloc failed!\n");
+		return NULL;
+	}
 
-	if (icom == NULL)
-		p->icom = new_icoms();
-	else
-		p->icom = icom;
-
-	p->cal_mode = 1;		/* LCD is default */
-	p->debug = debug;
-	p->verb = verb;
-
-	icmSetUnity3x3(p->ccmat);	/* Set the colorimeter correction matrix to do nothing */
+	p->log = new_a1log_d(icom->log);
 
 	p->init_coms        = hcfr_init_coms;
 	p->init_inst        = hcfr_init_inst;
 	p->capabilities     = hcfr_capabilities;
-	p->capabilities2    = hcfr_capabilities2;
-	p->get_opt_details  = hcfr_get_opt_details;
+	p->check_mode       = hcfr_check_mode;
 	p->set_mode         = hcfr_set_mode;
-	p->set_opt_mode     = hcfr_set_opt_mode;
+	p->get_disptypesel  = hcfr_get_disptypesel;
+	p->set_disptype     = hcfr_set_disptype;
+	p->get_set_opt      = hcfr_get_set_opt;
 	p->read_sample      = hcfr_read_sample;
 	p->col_cor_mat      = hcfr_col_cor_mat;
 	p->interp_error     = hcfr_interp_error;
-	p->last_comerr      = hcfr_last_comerr;
 	p->del              = hcfr_del;
 
-	p->itype = itype;
+	p->icom = icom;
+	p->itype = icom->itype;
+
+	icmSetUnity3x3(p->ccmat);	/* Set the colorimeter correction matrix to do nothing */
 
 	return p;
 }

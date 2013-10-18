@@ -33,6 +33,12 @@
 
 #define SALONEINSTLIB
 #define ENABLE_USB
+#define ENABLE_FAST_SERIAL
+#if defined(_MSC_VER)
+#pragma warning(disable:4200)
+#include <winsock.h>
+#endif
+#include "numsup.h"
 #include "xspect.h"
 #include "ccss.h"
 #undef SALONEINSTLIB
@@ -62,7 +68,7 @@ SpectralSample::SpectralSample(const SpectralSample& s) :
 
     if (s.m_ccss != NULL)
     {
-        m_ccss->set_ccss(m_ccss, s.m_ccss->orig, s.m_ccss->crdate, s.m_ccss->desc, s.m_ccss->disp, s.m_ccss->tech, s.m_ccss->ref, s.m_ccss->samples, s.m_ccss->no_samp);
+        m_ccss->set_ccss(m_ccss, s.m_ccss->orig, s.m_ccss->crdate, s.m_ccss->desc, s.m_ccss->disp, s.m_ccss->tech, s.m_ccss->refrmode, s.m_ccss->sel, s.m_ccss->ref, s.m_ccss->samples, s.m_ccss->no_samp);
     }
 }
 
@@ -96,7 +102,7 @@ SpectralSample& SpectralSample::operator=(const SpectralSample& s)
     
         if (s.m_ccss != NULL)
         {
-            m_ccss->set_ccss(m_ccss, s.m_ccss->orig, s.m_ccss->crdate, s.m_ccss->desc, s.m_ccss->disp, s.m_ccss->tech, s.m_ccss->ref, s.m_ccss->samples, s.m_ccss->no_samp);
+            m_ccss->set_ccss(m_ccss, s.m_ccss->orig, s.m_ccss->crdate, s.m_ccss->desc, s.m_ccss->disp, s.m_ccss->tech, s.m_ccss->refrmode, s.m_ccss->sel, s.m_ccss->ref, s.m_ccss->samples, s.m_ccss->no_samp);
         }
     }
     return *this;
@@ -420,7 +426,9 @@ bool SpectralSample::createFromTI3(const std::string& ti3Path)
 		bool bRet = !m_ccss->set_ccss(m_ccss, "HCFR ccss generator", NULL, 	
 									(char *)m_Description.c_str(), 
 									(char *)m_Display.c_str(), 
-									(char *)m_Tech.c_str(), 	
+									(char *)m_Tech.c_str(), 
+                                    -1,
+                                    NULL,
 									(char *)m_RefInstrument.c_str(), 
 									samples, cgats.getNumberOfDataSets(0));
 
@@ -501,7 +509,9 @@ bool SpectralSample::createFromMeasurements(const CColor spectralReadings[], con
 	bool bRet = !m_ccss->set_ccss(m_ccss, "HCFR ccss generator", NULL, 	
 									(char *)m_Description.c_str(), 
 									(char *)m_Display.c_str(), 
-									(char *)m_Tech.c_str(), 	
+									(char *)m_Tech.c_str(), 
+                                    -1,
+                                    NULL,
 									(char *)m_RefInstrument.c_str(), 
 									samples, nReadings);
 

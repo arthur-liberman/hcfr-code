@@ -4,7 +4,7 @@
  /* XDG Base Directory Specifications support library */
 
 /*************************************************************************
- Copyright 2011 Graeme W. Gill
+ Copyright 2011, 2013 Graeme W. Gill
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
@@ -61,6 +61,21 @@ typedef enum {
 	xdg_mallformed	/* Malfomed path */
 } xdg_error;
 
+#ifdef NT
+#define SSEP ';'		/* Since ':' is used for drive letter */
+#define SSEPS ";"
+#else
+#define SSEP ':'
+#define SSEPS ":"
+#endif
+
+								/* ONLY use this for xdg_data type */
+#ifdef __APPLE__				/* fudge to assist OS X migration from */
+#define XDG_FUDGE SSEPS "../"	/* Library/color to Library/Application Support/ArgyllCMS */
+#else
+#define XDG_FUDGE SSEPS
+#endif
+
 /* Return the number of matching full paths to the given subpath for the */
 /* type of storage and access required. Return 0 if there is an error. */
 /* The files are always unique (ie. the first match to a given filename */
@@ -69,7 +84,7 @@ typedef enum {
 /* Wildcards should only be for the filename portion, and not be used for xdg_write. */
 /* The list should be free'd using xdg_free() after use. */
 /* XDG environment variables and the subpath are assumed to be using */
-/* the '/' path separator. */
+/* the '/' path separator. Multiple read paths are separated by SSEP */
 /* When "xdg_write", the necessary path to the file will be created. */
 /* If we're running as sudo and are creating a user dir/file, */
 /* we drop to using the underlying SUDO_UID/GID. If we are creating a */

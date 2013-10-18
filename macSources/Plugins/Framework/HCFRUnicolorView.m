@@ -121,9 +121,7 @@
     if ([colorSpaceName isEqualToString:NSDeviceRGBColorSpace] || 
         [colorSpaceName isEqualToString:NSCalibratedRGBColorSpace])
       brightness = [color brightnessComponent];
-    else if ([colorSpaceName isEqualToString:NSCalibratedBlackColorSpace] ||
-             [colorSpaceName isEqualToString:NSCalibratedWhiteColorSpace] ||
-             [colorSpaceName isEqualToString:NSDeviceBlackColorSpace] ||
+    else if ([colorSpaceName isEqualToString:NSCalibratedWhiteColorSpace] ||
              [colorSpaceName isEqualToString:NSDeviceWhiteColorSpace])
       brightness = [color whiteComponent];
     

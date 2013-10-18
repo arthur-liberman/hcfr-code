@@ -30,57 +30,38 @@
 
 #define SALONEINSTLIB
 #define ENABLE_USB
+#define ENABLE_FAST_SERIAL
 #if defined(_MSC_VER)
 #pragma warning(disable:4200)
 #include <winsock.h>
 #endif
+#include "numsup.h"
 #include "xspect.h"
 #include "inst.h"
 #include "hidio.h"
-#include "libusb.h"
-#include "libusbi.h"
 #include "conv.h"
 #include "ccss.h"
 #undef SALONEINSTLIB
 
-
-
-// define the error handlers so we can change them
-extern "C"
-{
-    extern void (*error)(char *fmt, ...);
-    extern void (*warning)(char *fmt, ...);
-    extern void (*verbose)(int level, char *fmt, ...);
-}
-
 namespace
 {
-    void warning_imp(char *fmt, ...) 
+    void warning_imp(void *cntx, struct _a1log *p, char *fmt, va_list args) 
     {
-        va_list args;
-        va_start(args, fmt);
         ArgyllLogMessage("Warning", fmt, args);
-        va_end(args);
     }
 
-    void verbose_imp(int level, char *fmt, ...) 
+    void verbose_imp(void *cntx, struct _a1log *p, char *fmt, va_list args) 
     {
-        va_list args;
-        va_start(args, fmt);
         ArgyllLogMessage("Trace", fmt, args);
-        va_end(args);
     }
 
     // get called for errors in argyll
     // can be called in normal situations
     // like no meters found or wrong drivers
     // convert to c++ exception
-    void error_imp(char *fmt, ...)
+    void error_imp(void *cntx, struct _a1log *p, char *fmt, va_list args)
     {
-        va_list args;
-        va_start(args, fmt);
         ArgyllLogMessage("Error", fmt, args);
-        va_end(args);
         throw std::logic_error("Argyll Error");
     }
 
@@ -95,11 +76,10 @@ namespace
     private:
         CriticalSection m_MeterCritSection;
         std::vector<ArgyllMeterWrapper*> m_meters;
-        ArgyllMeters()
+        icompaths* m_ComPaths;
+        ArgyllMeters() :
+            m_ComPaths(0)
         {
-            // technically we're supposed to call libusb_init() before calling any routines in libusb
-			// reinserted to prevent exception in io.c
-			libusb_init(0);
         }
         ~ArgyllMeters()
         {
@@ -108,9 +88,10 @@ namespace
                 delete m_meters[i];
             }
             m_meters.clear();
-            // good as place as any to clear up usb
-            libusb_exit(NULL);
-            
+            if(m_ComPaths)
+            {
+                m_ComPaths->del(m_ComPaths);
+            }
         }
     public:
         static ArgyllMeters& getInstance()
@@ -122,9 +103,9 @@ namespace
         std::vector<ArgyllMeterWrapper*> getDetectedMeters(std::string& errorMessage)
         {
             CLockWhileInScope usingThis(m_MeterCritSection);
-            error = error_imp;
-            warning = warning_imp;
-            verbose = verbose_imp;
+            g_log->loge = error_imp;
+            g_log->logd = warning_imp;
+            g_log->logv = verbose_imp;
             errorMessage = "";
 
             // only detect meters once if some are found
@@ -132,69 +113,49 @@ namespace
             // run at the moment, but I can live with this
             if(m_meters.empty())
             {
-                std::vector<int> pathsToUse;
-                icoms* icom;
-                if ((icom = new_icoms()) == NULL) 
+                if (m_ComPaths != 0)
                 {
-                    throw std::logic_error("Can't create new icoms");
-                }
-                icompath **paths;
-                if ((paths = icom->get_paths(icom)) != NULL)
-                {
-                    for (int i(0); paths[i] != NULL; ++i) 
-                    {
-                        // avoid COM ports for now until we work out how to handle 
-                        // them properly
-                        if(strncmp("COM", paths[i]->path, 3) != 0 && strncmp("com", paths[i]->path, 3) != 0)
-                        {
-                            // open the i1pro first until we work out how to handle the
-                            // driver path properly in icoms:no longer needed
-/*                            if(paths[i]->itype == instI1Pro)
-                            {
-                                pathsToUse.insert(pathsToUse.begin(), i + 1);
-                            }  
-                            else 
-                           {
-*/
-							pathsToUse.push_back(i + 1);
-//                           } 
-                        }
-                    }
-                }
-                if(icom)
-                {
-                    icom->del(icom);
+                    m_ComPaths->del(m_ComPaths);
                 }
 
-                for (int i(0); i != pathsToUse.size(); ++i)
+                m_ComPaths = new_icompaths(g_log);
+                if (m_ComPaths == 0)
+                {
+                    throw std::logic_error("Can't create new icompaths");
+                }
+
+                for (int i(0); i != m_ComPaths->npaths; ++i)
                 {
                     _inst* meter = 0;
                     try
                     {
-                        meter = new_inst(pathsToUse[i], 0, 1, 0);
+                        meter = new_inst(m_ComPaths->paths[i], 0, g_log, 0, 0);
                     }
                     catch(std::logic_error&)
                     {
                         throw std::logic_error("No meter found at detected port- Create new Argyll instrument failed with severe error");
                     }
-                    try
+                    if(meter != NULL)
                     {
-                        inst_code instCode = meter->init_coms(meter, i + 1, baud_38400, fc_nc, 15.0);
-                        if(instCode == inst_ok)
+                        try
                         {
-                            m_meters.push_back(new ArgyllMeterWrapper(meter));
+                            inst_code instCode = meter->init_coms(meter, baud_38400, fc_nc, 15.0);
+                            if(instCode == inst_ok)
+                            {
+                                m_meters.push_back(new ArgyllMeterWrapper(meter));
+                            }
+                            else
+                            {
+                                meter->del(meter);
+                                errorMessage += "Starting communications with the meter failed. ";
+                            }
                         }
-                        else
+                        catch(std::logic_error& e)
                         {
                             meter->del(meter);
-                            errorMessage += "Starting communications with the meter failed. ";
+                            errorMessage += "Incorrect driver - Starting communications with the meter failed with severe error. ";
+                            errorMessage += e.what();
                         }
-                    }
-                    catch(std::logic_error& e)
-                    {
-                        meter->del(meter);
-                        errorMessage += "Incorrect driver - Starting communications with the meter failed with severe error. ";
-                        errorMessage += e.what();
                     }
                 }
             }
@@ -227,7 +188,7 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
 {
     inst_code instCode;
 
-    instCode = m_meter->set_opt_mode(m_meter, inst_opt_set_filter, inst_opt_filter_none);
+    instCode = m_meter->get_set_opt(m_meter, inst_opt_set_filter, inst_opt_filter_none);
 
     // allow this function to be called repeatedly on a meter
     if(!m_meter->inited)
@@ -242,8 +203,53 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
         }
     }
 
-    inst_mode displayMode = inst_mode_emis_spot;
-    instCode = m_meter->set_mode(m_meter, displayMode);
+    // get the meter capabilties, not these may change after set_mode
+    inst_mode capabilities(inst_mode_none);
+    inst2_capability capabilities2(inst2_none);
+    inst3_capability capabilities3(inst3_none);
+    m_meter->capabilities(m_meter, &capabilities, &capabilities2, &capabilities3);
+
+    // create a suitable mode based on the requested display type
+    inst_mode mode = inst_mode_none;
+    if (capabilities & inst_mode_emission)
+    {
+        if(m_readingType == PROJECTOR)
+        {
+            // prefer tele but fall back to spot for PROJECTOR
+            if(capabilities & inst_mode_tele)
+            {
+                mode = inst_mode_emis_tele;
+            }
+            else if(capabilities & inst_mode_spot)
+            {
+                mode = inst_mode_emis_spot;
+            }
+        }
+        else
+        {
+            // prefer spot but fall back to tele if user wants DISPLAY
+            if(capabilities & inst_mode_spot)
+            {
+                mode = inst_mode_emis_spot;
+            }
+            else if(capabilities & inst_mode_tele)
+            {
+                mode = inst_mode_emis_tele;
+            }
+        }
+    }
+
+    // make sure we've got a valid mode
+    if(mode == inst_mode_none)
+    {
+        m_meter->del(m_meter);
+        m_meter = 0;
+        errorDescription = "Unsuitable meter type";
+        return false;
+    }
+
+    // set the desired mode
+    instCode = m_meter->set_mode(m_meter, mode);
     if(instCode != inst_ok)
     {
         m_meter->del(m_meter);
@@ -252,40 +258,23 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
         return false;
     }
 
-    int capabilities = m_meter->capabilities(m_meter);
-    int mode = inst_mode_emis_spot;
+    //reget the capabilties as it may be mode dependant
+    m_meter->capabilities(m_meter, &capabilities, &capabilities2, &capabilities3);
 
-    if(m_readingType == PROJECTOR)
+    if ((capabilities & inst_mode_spectral) != 0)
     {
-        if(capabilities & (inst_emis_tele))
+        mode = (inst_mode)(mode | inst_mode_spectral);
+        instCode = m_meter->set_mode(m_meter, mode);
+        if(instCode != inst_ok)
         {
-            mode = inst_mode_emis_tele;
+            m_meter->del(m_meter);
+            m_meter = 0;
+            errorDescription = "Couldn't set meter mode";
+            return false;
         }
-        else if(capabilities & (inst_emis_proj))
-        {
-            mode = inst_mode_emis_proj;
-        }
     }
 
-    if ((capabilities & inst_spectral) != 0)
-    {
-        mode |= inst_mode_spectral;
-    }
-
-    instCode = m_meter->set_mode(m_meter, (inst_mode)mode);
-    if(instCode == inst_unsupported && mode != inst_mode_emis_spot)
-    {
-        instCode = m_meter->set_mode(m_meter, inst_mode_emis_spot);
-    }
-    if(instCode != inst_ok)
-    {
-        m_meter->del(m_meter);
-        m_meter = 0;
-        errorDescription = "Couldn't set meter mode";
-        return false;
-    }
-
-    instCode = m_meter->set_opt_mode(m_meter, inst_opt_trig_prog);
+    instCode = m_meter->get_set_opt(m_meter, inst_opt_trig_prog);
     if(instCode != inst_ok)
     {
         m_meter->del(m_meter);
@@ -301,18 +290,13 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
 bool ArgyllMeterWrapper::doesMeterSupportCalibration()
 {
     checkMeterIsInitialized();
-    int capabilities2 = m_meter->capabilities2(m_meter);
-    return ((capabilities2 & (inst2_cal_ref_white |
-                            inst2_cal_ref_dark |
-                            inst2_cal_trans_white|
-                            inst2_cal_trans_dark|
-                            inst2_cal_disp_offset |
-                            inst2_cal_disp_ratio |
-                            inst2_cal_disp_int_time |
-                            inst2_cal_proj_offset |
-                            inst2_cal_proj_ratio |
-                            inst2_cal_proj_int_time |
-                            inst2_cal_crt_freq)) != 0);
+    inst_mode capabilities(inst_mode_none);
+    inst2_capability capabilities2(inst2_none);
+    inst3_capability capabilities3(inst3_none);
+    m_meter->capabilities(m_meter, &capabilities, &capabilities2, &capabilities3);
+    return (IMODETST(capabilities, inst_mode_calibration) || 
+            IMODETST(capabilities2, inst2_meas_disp_update) ||
+            IMODETST(capabilities2, inst2_get_refresh_rate));
 }
 
 CColor ArgyllMeterWrapper::getLastReading() const
@@ -323,11 +307,15 @@ CColor ArgyllMeterWrapper::getLastReading() const
 int ArgyllMeterWrapper::getNumberOfDisplayTypes()
 {
     checkMeterIsInitialized();
-    if(m_meter->capabilities(m_meter) & inst_emis_disptype)
+    inst_mode capabilities(inst_mode_none);
+    inst2_capability capabilities2(inst2_none);
+    inst3_capability capabilities3(inst3_none);
+    m_meter->capabilities(m_meter, &capabilities, &capabilities2, &capabilities3);
+    if(IMODETST(capabilities, inst_mode_emission))
     {
         inst_disptypesel* displayTypes;
         int numItems;
-        if (m_meter->get_opt_details(m_meter, inst_optdet_disptypesel, &numItems, &displayTypes) != inst_ok) 
+        if (m_meter->get_disptypesel(m_meter, &numItems, &displayTypes, 0, 0) != inst_ok) 
         {
             return 0;
         }
@@ -342,11 +330,15 @@ int ArgyllMeterWrapper::getNumberOfDisplayTypes()
 const char* ArgyllMeterWrapper::getDisplayTypeText(int displayModeIndex)
 {
     checkMeterIsInitialized();
-    if(m_meter->capabilities(m_meter) & inst_emis_disptype)
+    inst_mode capabilities(inst_mode_none);
+    inst2_capability capabilities2(inst2_none);
+    inst3_capability capabilities3(inst3_none);
+    m_meter->capabilities(m_meter, &capabilities, &capabilities2, &capabilities3);
+    if(IMODETST(capabilities, inst_mode_emission))
     {
         inst_disptypesel* displayTypes;
         int numItems;
-        if (m_meter->get_opt_details(m_meter, inst_optdet_disptypesel, &numItems, &displayTypes) != inst_ok) 
+        if (m_meter->get_disptypesel(m_meter, &numItems, &displayTypes, 0, 0) != inst_ok) 
         {
             return "Invalid Display Type";
         }
@@ -374,7 +366,7 @@ void ArgyllMeterWrapper::setDisplayType(int displayMode)
     if(numTypes > 0 && displayMode < numTypes)
     {
         m_displayType = displayMode;
-        inst_code instCode = m_meter->set_opt_mode(m_meter, inst_opt_disp_type, displayMode + 1);
+        inst_code instCode = m_meter->set_disptype(m_meter, displayMode);
         if(instCode != inst_ok)
         {
             throw std::logic_error("Set Display Type failed");
@@ -386,12 +378,13 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading()
 {
     checkMeterIsInitialized();
     ipatch argyllReading;
-    inst_code instCode = m_meter->read_sample(m_meter, "SPOT", &argyllReading);
+    inst_code instCode = m_meter->read_sample(m_meter, "SPOT", &argyllReading, instClamp);
     if(isInstCodeReason(instCode, inst_needs_cal))
     {
         // try autocalibration - we might get lucky
         m_nextCalibration = 0;
-        instCode = m_meter->calibrate(m_meter, inst_calt_all, (inst_cal_cond*)&m_nextCalibration, m_calibrationMessage);
+        inst_cal_type calType(inst_calt_needed);
+        instCode = m_meter->calibrate(m_meter, &calType, (inst_cal_cond*)&m_nextCalibration, m_calibrationMessage);
         // if that didn't work tell the user
         if(isInstCodeReason(instCode, inst_cal_setup))
         {
@@ -402,7 +395,7 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading()
             throw std::logic_error("Automatic calibration failed");
         }
         // otherwise try reading again
-        instCode = m_meter->read_sample(m_meter, "SPOT", &argyllReading);
+        instCode = m_meter->read_sample(m_meter, "SPOT", &argyllReading, instClamp);
         if(isInstCodeReason(instCode, inst_needs_cal))
         {
             // this would be an odd situation and will need
@@ -410,17 +403,17 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading()
             throw std::logic_error("Automatic calibration succeed but reading then failed wanting calibration again");
         }
     }
-    if(isInstCodeReason(instCode, inst_wrong_sensor_pos))
+    if(isInstCodeReason(instCode, inst_wrong_config))
     {
         return INCORRECT_POSITION;
     }
-    if(instCode != inst_ok || !argyllReading.aXYZ_v)
+    if(instCode != inst_ok || !argyllReading.XYZ_v)
     {
         throw std::logic_error("Taking Reading failed");
     }
 
     m_lastReading.ResetSpectrum();
-    m_lastReading = CColor(argyllReading.aXYZ[0], argyllReading.aXYZ[1], argyllReading.aXYZ[2]);
+    m_lastReading = CColor(argyllReading.XYZ[0], argyllReading.XYZ[1], argyllReading.XYZ[2]);
     if(argyllReading.sp.spec_n > 0)
     {
         int shortWavelength((int)(argyllReading.sp.spec_wl_short + 0.5));
@@ -436,7 +429,8 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::calibrate()
 {
     checkMeterIsInitialized();
     m_calibrationMessage[0] = '\0';
-    inst_code instCode = m_meter->calibrate(m_meter, inst_calt_all, (inst_cal_cond*)&m_nextCalibration, m_calibrationMessage);
+    inst_cal_type calType(inst_calt_all);
+    inst_code instCode = m_meter->calibrate(m_meter, &calType, (inst_cal_cond*)&m_nextCalibration, m_calibrationMessage);
     if(isInstCodeReason(instCode, inst_cal_setup))
     {
         // special case for colormunki when calibrating the
@@ -450,7 +444,7 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::calibrate()
             return NEEDS_MANUAL_CALIBRATION;
         }
     }
-    if(instCode == inst_wrong_sensor_pos)
+    if(instCode == inst_wrong_config)
     {
         return INCORRECT_POSITION;
     }
@@ -467,7 +461,8 @@ std::string ArgyllMeterWrapper::getCalibrationInstructions()
     inst_code instCode(inst_ok);
     if(m_nextCalibration == 0)
     {
-        instCode = m_meter->calibrate(m_meter, inst_calt_all, (inst_cal_cond*)&m_nextCalibration, m_calibrationMessage);
+        inst_cal_type calType(inst_calt_all);
+        instCode = m_meter->calibrate(m_meter, &calType, (inst_cal_cond*)&m_nextCalibration, m_calibrationMessage);
         if(instCode == inst_ok || isInstCodeReason(instCode, inst_unsupported))
         {
             // we don't need to do anything
@@ -508,26 +503,16 @@ std::string ArgyllMeterWrapper::getCalibrationInstructions()
             return "place instrument on transmissive dark reference";
         case inst_calc_man_man_mask:
             return "user configured calibration mask";
-        case inst_calc_disp_white:
+        case inst_calc_emis_white:
             return "Provide a white display test patch";
-        case inst_calc_disp_grey:
+        case inst_calc_emis_grey:
             return "Provide a grey display test patch";
-        case inst_calc_disp_grey_darker:
+        case inst_calc_emis_grey_darker:
             return "Provide a darker grey display test patch";
-        case inst_calc_disp_grey_ligher:
+        case inst_calc_emis_grey_ligher:
             return "Provide a darker grey display test patch";
-        case inst_calc_disp_mask:
+        case inst_calc_emis_mask:
             return "Display provided reference patch";
-        case inst_calc_proj_white
-            :return "Provide a white projector test patch";
-        case inst_calc_proj_grey:
-            return "Provide a grey projector test patch";
-        case inst_calc_proj_grey_darker:
-            return "Provide a darker grey projector test patch";
-        case inst_calc_proj_grey_ligher:
-            return "Provide a darker grey projector test patch";
-        case inst_calc_proj_mask:
-            return "Projector provided reference patch";
         case inst_calc_change_filter:
             return std::string("Filter needs changing on device - ") + m_calibrationMessage;
         case inst_calc_message:
@@ -564,7 +549,7 @@ void ArgyllMeterWrapper::setHiResMode(bool enableHiRes)
     // but just do nothing otherwise
     if(m_meterType == instI1Pro || m_meterType == instColorMunki)
     {
-        m_meter->set_opt_mode(m_meter, enableHiRes?inst_opt_highres:inst_opt_stdres);
+        m_meter->get_set_opt(m_meter, enableHiRes?inst_opt_highres:inst_opt_stdres);
     }
 }
 
@@ -579,51 +564,6 @@ std::string ArgyllMeterWrapper::getMeterName() const
     return inst_name((instType)m_meterType);
 }
 
-bool ArgyllMeterWrapper::isSameMeter(ArgyllMeterWrapper* otherMeter) const
-{
-    if(!isMeterStillValid())
-    {
-        return false;
-    }
-    if(!otherMeter->isMeterStillValid())
-    {
-        return false;
-    }
-    if(m_meter->icom->is_hid && otherMeter->m_meter->icom->is_hid)
-    {
-#if defined(NT)
-        if(m_meter->icom->hidd && otherMeter->m_meter->icom->hidd &&
-            m_meter->icom->hidd->dpath && otherMeter->m_meter->icom->hidd->dpath)
-        {
-            // a guess at a unique thing
-            return (strcmp(m_meter->icom->hidd->dpath, otherMeter->m_meter->icom->hidd->dpath) == 0);
-        }
-        else
-        {
-            return false;
-        }
-#endif
-#if defined (__APPLE__)
-        return (m_meter->icom->hidd->ioob == otherMeter->m_meter->icom->hidd->ioob);
-#endif
-#if !defined (__APPLE__) && !defined(NT)
-        return ((m_meter->icom->vid == otherMeter->m_meter->icom->vid) &&
-                (m_meter->icom->pid == otherMeter->m_meter->icom->pid));
-#endif
-    }
-    else if(m_meter->icom->is_usb && otherMeter->m_meter->icom->is_usb && 
-         m_meter->icom->usbd && otherMeter->m_meter->icom->usbd)
-    {
-        return (m_meter->icom->vid == otherMeter->m_meter->icom->vid) &&
-                (m_meter->icom->pid == otherMeter->m_meter->icom->pid) &&
-                (m_meter->icom->usbd->bus_number == otherMeter->m_meter->icom->usbd->bus_number) &&
-                (m_meter->icom->usbd->device_address == otherMeter->m_meter->icom->usbd->device_address);
-    }
-    else
-    {
-        return (m_meter->icom->port == otherMeter->m_meter->icom->port);
-    }
-}
 
 bool ArgyllMeterWrapper::isMeterStillValid() const
 {
@@ -638,7 +578,11 @@ ArgyllMeterWrapper::ArgyllMeterWrappers ArgyllMeterWrapper::getDetectedMeters(st
 bool ArgyllMeterWrapper::isColorimeter()
 {
     checkMeterIsInitialized();
-    return !(m_meter->capabilities(m_meter) & inst_spectral);
+    inst_mode capabilities(inst_mode_none);
+    inst2_capability capabilities2(inst2_none);
+    inst3_capability capabilities3(inst3_none);
+    m_meter->capabilities(m_meter, &capabilities, &capabilities2, &capabilities3);
+    return !IMODETST(capabilities, inst_mode_spectral);
 }
 
 
@@ -646,7 +590,11 @@ bool ArgyllMeterWrapper::isColorimeter()
 bool ArgyllMeterWrapper::doesMeterSupportSpectralSamples()
 {
     checkMeterIsInitialized();
-    return !!(m_meter->capabilities(m_meter) & inst_ccss);
+    inst_mode capabilities(inst_mode_none);
+    inst2_capability capabilities2(inst2_none);
+    inst3_capability capabilities3(inst3_none);
+    m_meter->capabilities(m_meter, &capabilities, &capabilities2, &capabilities3);
+    return IMODETST(capabilities2, inst2_ccss);
 }
 
 bool ArgyllMeterWrapper::loadSpectralSample(const SpectralSample &sample)
@@ -662,7 +610,7 @@ bool ArgyllMeterWrapper::loadSpectralSample(const SpectralSample &sample)
         return true;
     }
     
-    inst_code instCode = m_meter->col_cal_spec_set(m_meter, icxOT_default, NULL, sample.getCCSS()->samples, sample.getCCSS()->no_samp);
+    inst_code instCode = m_meter->col_cal_spec_set(m_meter, sample.getCCSS()->samples, sample.getCCSS()->no_samp);
     if (instCode != inst_ok) 
     {
         std::string errorMessage("Setting Colorimeter Calibration Spectral Samples failed with error :'");
@@ -688,7 +636,7 @@ void ArgyllMeterWrapper::resetSpectralSample()
     // reset the current description
     m_SampleDescription.clear();
 
-    inst_code instCode = m_meter->col_cal_spec_set(m_meter, icxOT_default, NULL, NULL, NULL);
+    inst_code instCode = m_meter->col_cal_spec_set(m_meter, 0, 0);
     if (instCode != inst_ok) 
     {
         std::string errorMessage("Resetting Colorimeter Calibration Spectral Samples failed with error :'");

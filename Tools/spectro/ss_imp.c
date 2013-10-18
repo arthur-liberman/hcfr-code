@@ -10,7 +10,7 @@
  * Author: Graeme W. Gill
  * Date:   14/7/2005
  *
- * Copyright 2005 - 2007 Graeme W. Gill
+ * Copyright 2005 - 2013 Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -52,8 +52,8 @@
 #endif /* SALONEINSTLIB */
 #include "xspect.h"
 #include "insttypes.h"
-#include "icoms.h"
 #include "conv.h"
+#include "icoms.h"
 #include "ss.h"
 
 /* ------------------------------------------- */
@@ -382,15 +382,6 @@ inst_code ss_inst_err(ss *p) {
 		case ss_et_NotAnSROrBoolean:
 			return inst_protocol_error | ec;
 
-		case ss_et_UserAbort:
-			return inst_user_abort | ec;
-		case ss_et_UserTerm:
-			return inst_user_term | ec;
-		case ss_et_UserTrig:
-			return inst_user_trig | ec;
-		case ss_et_UserCmnd:
-			return inst_user_cmnd | ec;
-
 		case ss_et_RemOverFlow:
 		case ss_et_MeasDisabled:
 		case ss_et_MeasurementError:
@@ -431,7 +422,7 @@ inst_code ss_inst_err(ss *p) {
 		case ss_et_NoValidValOrRef:
 		case ss_et_DeviceIsOffline:
 		case ss_et_NoDeviceFound:
-			return inst_wrong_config | ec;
+			return inst_wrong_setup | ec;
 
 		case ss_et_BackupError:
 		case ss_et_ProgramROMError:
@@ -504,17 +495,6 @@ void ss_incorp_comerr(ss *p, ss_cet se) {
 
 /* Interpret an icoms error into a SS error */
 int icoms2ss_err(int se) {
-	if (se & ICOM_USERM) {
-		se &= ICOM_USERM;
-		if (se == ICOM_USER)
-			return ss_et_UserAbort;
-		else if (se == ICOM_TERM)
-			return ss_et_UserTerm;
-		else if (se == ICOM_TRIG)
-			return ss_et_UserTrig;
-		else if (se == ICOM_CMND)
-			return ss_et_UserCmnd;
-	}
 	if (se != ICOM_OK)
 		return ss_et_SerialFail;
 	return ss_et_NoError;
@@ -532,7 +512,7 @@ void ss_command(ss *p, double tmo) {
 	p->sbuf[2] = '\00';					/* write_read terminates on nul */
 
 	p->rbuf = p->_rbuf;				/* Reset read pointer */
-	if ((se = p->icom->write_read(p->icom, p->_sbuf, p->_rbuf, SS_MAX_RD_SIZE, '\n', 1, tmo)) != 0) {
+	if ((se = p->icom->write_read(p->icom, p->_sbuf, p->_rbuf, SS_MAX_RD_SIZE, "\n", 1, tmo)) != 0) {
 		p->snerr = icoms2ss_err(se);
 		return;
 	}
@@ -1274,7 +1254,8 @@ ss_nmt *nm		/* Return New Measurement (None/Meas/White etc.) */
 	ss_add_soreq(p, ss_NewMeasureRequest);
 	ss_command(p, DF_TMO);
 	ss_sub_soans(p, ss_NewMeasureAnswer);
-	*nm = ss_sub_1(p);
+	if (nm != NULL)
+		*nm = ss_sub_1(p);
 	ss_sub_soans(p, 0x09);
 	chended(p);
 	return ss_inst_err(p);

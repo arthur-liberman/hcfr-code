@@ -1,6 +1,6 @@
 ;////////////////////////////////////////////////////////////////////////////
 ;// Based off DSCaler.iss Copyright (c) 2002 Rob Muller. All rights reserved.
-;// Copyright (c) 2012 John Adcock. All rights reserved.
+;// Copyright (c) 2012-3 John Adcock. All rights reserved.
 ;/////////////////////////////////////////////////////////////////////////////
 ;//
 ;//  This file is subject to the terms of the GNU General Public License as
@@ -36,7 +36,7 @@ AppMutex=HCFR
 ;required for installing the driver on NT platforms
 PrivilegesRequired=Admin
 DisableStartupPrompt=yes
-AppCopyright=Copyright (C) 2012 HCFR Team
+AppCopyright=Copyright (C) 2013 HCFR Team
 VersionInfoDescription=HCFR Setup
 VersionInfoProductVersion={#MyAppVersion}
 VersionInfoVersion={#MyAppVersion}
@@ -69,28 +69,19 @@ Name: "quicklaunchicon"; Description: "Create a &Quick Launch icon"; GroupDescri
 [Files]
 ; main
 Source: "..\Release\ColorHCFR.exe"; DestDir: "{app}"; Flags: ignoreversion; Components: main
-Source: "..\Release\spyd2en.exe"; DestDir: "{app}\Tools"; Flags: ignoreversion; Components: main
-Source: "..\Release\spyd4en.exe"; DestDir: "{app}\Tools"; Flags: ignoreversion; Components: main
-Source: "..\Release\i1d3ccss.exe"; DestDir: "{app}\Tools"; Flags: ignoreversion; Components: main
+Source: "..\Release\oeminst.exe"; DestDir: "{app}\Tools"; Flags: ignoreversion; Components: main
 Source: "..\Release\spotread.exe"; DestDir: "{app}\Tools"; Flags: ignoreversion; Components: main
 Source: "..\Release\*.dll"; DestDir: "{app}"; Flags: ignoreversion; Components: main
 Source: "..\Release\*.chm"; DestDir: "{app}"; Flags: ignoreversion; Components: main
 Source: "..\Install\Etalon_HCFR\*.thc"; DestDir: "{app}\Etalon_HCFR"; Flags: ignoreversion; Components: main
 Source: "..\Install\Profils_IR\*.ihc"; DestDir: "{app}\Profils_IR"; Flags: ignoreversion; Components: main
-Source: "..\Tools\libusb1\*.cat"; DestDir: "{app}\Drivers"; Flags: ignoreversion; Components: main
-Source: "..\Tools\libusb1\*.inf"; DestDir: "{app}\Drivers"; Flags: ignoreversion; Components: main
-Source: "..\Tools\libusb1\*.sys"; DestDir: "{app}\Drivers"; Flags: ignoreversion; Components: main
-Source: "..\Tools\libusb1\*.dll"; DestDir: "{app}\Drivers"; Flags: ignoreversion; Components: main
-Source: "..\Tools\libusb1\AUTHORS"; DestDir: "{app}\Drivers"; DestName: Authors.txt; Flags: ignoreversion; Components: main
-Source: "..\Tools\libusb1\COPYING"; DestDir: "{app}\Drivers"; DestName: Copying.txt; Flags: ignoreversion; Components: main
-Source: "..\Tools\libusb1\COPYING_GPL"; DestDir: "{app}\Drivers"; DestName: Copying_GPL.txt; Flags: ignoreversion; Components: main
-Source: "..\Tools\libusb1\KDRIVER_LICENSE"; DestDir: "{app}\Drivers"; DestName: KernelDriverLicense.txt; Flags: ignoreversion; Components: main
-Source: "..\Tools\libusb1\NEWS"; DestDir: "{app}\Drivers"; DestName: News.txt; Flags: ignoreversion; Components: main
-Source: "..\Tools\libusb1\THANKS"; DestDir: "{app}\Drivers"; DestName: Thanks.txt; Flags: ignoreversion; Components: main
-Source: "..\Tools\libusb1\TODO"; DestDir: "{app}\Drivers"; DestName: Todo.txt; Flags: ignoreversion; Components: main
-Source: "..\Tools\libusb1\license.rtf"; DestDir: "{app}\Drivers"; DestName: CoInstaller_License.rtf; Flags: ignoreversion; Components: main
-Source: "..\Tools\libusb1\WinCoInstallers\amd64\*.*"; DestDir: "{app}\Drivers\WinCoInstallers\amd64"; Flags: ignoreversion; Components: main
-Source: "..\Tools\libusb1\WinCoInstallers\x86\*.*"; DestDir: "{app}\Drivers\WinCoInstallers\x86"; Flags: ignoreversion; Components: main
+Source: "..\Tools\usb\*.cat"; DestDir: "{app}\Drivers"; Flags: ignoreversion; Components: main
+Source: "..\Tools\usb\*.inf"; DestDir: "{app}\Drivers"; Flags: ignoreversion; Components: main
+Source: "..\Tools\usb\*.txt"; DestDir: "{app}\Drivers"; Flags: ignoreversion; Components: main
+Source: "..\Tools\usb\bin\x86\*.sys"; DestDir: "{app}\Drivers\bin\x86"; Flags: ignoreversion; Components: main
+Source: "..\Tools\usb\bin\amd64\*.sys"; DestDir: "{app}\Drivers\bin\amd64"; Flags: ignoreversion; Components: main
+Source: "..\Tools\usb\bin\ia64\*.sys"; DestDir: "{app}\Drivers\bin\ia64"; Flags: ignoreversion; Components: main
+Source: "..\Tools\usb\bin\*.txt"; DestDir: "{app}\Drivers\bin"; Flags: ignoreversion; Components: main
 
 [INI]
 Filename: "{app}\HCFR.url"; Section: "InternetShortcut"; Key: "URL"; String: "http://hcfr.sourceforge.net/"

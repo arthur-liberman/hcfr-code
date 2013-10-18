@@ -7,7 +7,7 @@
  * Author: Graeme W. Gill
  * Date:   12/1/2009
  *
- * Copyright 2006 - 2010, Graeme W. Gill
+ * Copyright 2006 - 2013, Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -51,18 +51,10 @@
 #endif /* SALONEINSTLIB */
 #include "xspect.h"
 #include "insttypes.h"
-#include "icoms.h"
 #include "conv.h"
+#include "icoms.h"
 #include "munki.h"
 #include "munki_imp.h"
-
-#undef DEBUG
-
-#ifdef DEBUG
-#define DBG(xxx) printf xxx ;
-#else
-#define DBG(xxx) 
-#endif
 
 #define MAX_MES_SIZE 500		/* Maximum normal message reply size */
 #define MAX_RD_SIZE 5000		/* Maximum reading messagle reply size */
@@ -76,8 +68,9 @@ static inst_code munki_interp_code(munki *p, munki_code ec);
 /* If it's a serial port, use the baud rate given, and timeout in to secs */
 /* Return DTP_COMS_FAIL on failure to establish communications */
 static inst_code
-munki_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) {
+munki_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	munki *p = (munki *) pp;
+	int se;
 	icomuflags usbflags = icomuf_none;
 #ifdef __APPLE__
 	/* If the ColorMunki software has been installed, then there will */
@@ -94,55 +87,54 @@ munki_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) 
 	int retries = 0;
 #endif /* !__APPLE__ */
 
-	if (p->debug) {
-		p->icom->debug = p->debug;	/* Turn on debugging */
-		fprintf(stderr,"munki: About to init coms\n");
+	a1logd(p->log, 2, "munki_init_coms: called\n");
+
+	if (p->icom->port_type(p->icom) != icomt_usb) {
+		a1logd(p->log, 1, "munki_init_coms: wrong communications type for device!\n");
+		return inst_coms_fail;
 	}
 
-	if (p->icom->is_usb_portno(p->icom, port) == instUnknown) {
-		if (p->debug) fprintf(stderr,"munki: init_coms called to wrong device!\n");
-
-		return munki_interp_code(p, MUNKI_UNKNOWN_MODEL);
-	}
-
-	if (p->debug) fprintf(stderr,"munki: About to init USB\n");
+	a1logd(p->log, 2, "munki_init_coms: about to init USB\n");
 
 	/* Set config, interface, write end point, read end point, read quanta */
 	/* ("serial" end points aren't used - the Munki uses USB control messages) */
-	p->icom->set_usb_port(p->icom, port, 1, 0x00, 0x00, usbflags, retries, pnames); 
+	if ((se = p->icom->set_usb_port(p->icom, 1, 0x00, 0x00, usbflags, retries, pnames))
+		                                                                   != ICOM_OK) { 
+		a1logd(p->log, 1, "munki_init_coms: failed ICOM err 0x%x\n",se);
+		return munki_interp_code(p, icoms2munki_err(se));
+	}
 
-	if (p->debug) fprintf(stderr,"munki: init coms has suceeded\n");
+	a1logd(p->log, 2, "munki_init_coms: init coms has suceeded\n");
 
 	p->gotcoms = 1;
 	return inst_ok;
 }
 
 static inst_code
-munki_discover_capabilities(munki *p) {
+munki_determine_capabilities(munki *p) {
 
 	/* Set the Munki capabilities mask */
-	p->cap |= inst_ref_spot
-	       |  inst_ref_strip
-	       |  inst_emis_spot
-	       |  inst_emis_disp
-	       |  inst_emis_proj		/* Support of a specific projector mode */
-	       |  inst_emis_tele
-	       |  inst_trans_spot		/* Support this manually using a light table */
-	       |  inst_trans_strip 
-	       |  inst_emis_strip		/* Also likely to be light table reading */
-	       |  inst_colorimeter
-	       |  inst_spectral
-		   |  inst_emis_ambient
-		   |  inst_emis_ambient_flash
+	p->cap = inst_mode_ref_spot
+	       | inst_mode_ref_strip
+	       | inst_mode_emis_spot
+	       | inst_mode_emis_tele
+	       | inst_mode_trans_spot		/* Support this manually using a light table */
+	       | inst_mode_trans_strip 
+	       | inst_mode_emis_strip		/* Also likely to be light table reading */
+		   | inst_mode_emis_ambient
+		   | inst_mode_emis_ambient_flash
+	       | inst_mode_emis_nonadaptive
+	       | inst_mode_colorimeter
+	       | inst_mode_spectral
+	       | inst_mode_calibration		/* Can indicate cal configuration */
 	       ;
 
-	p->cap2 |= inst2_cal_ref_white
-	        | inst2_cal_trans_white 
-	        | inst2_cal_disp_int_time 
-	        | inst2_cal_proj_int_time 
-	        | inst2_prog_trig 
-			| inst2_keyb_trig
-			| inst2_keyb_switch_trig
+	if (munki_imp_highres(p))		/* Static */
+		p->cap |= inst_mode_highres;
+
+	p->cap2 = inst2_prog_trig 
+			| inst2_user_trig
+			| inst2_user_switch_trig
 			| inst2_bidi_scan
 			| inst2_has_scan_toll
 			| inst2_no_feedback
@@ -150,11 +142,82 @@ munki_discover_capabilities(munki *p) {
 			| inst2_has_sensmode
 	        ;
 
-	if (munki_imp_highres(p))		/* Static */
-		p->cap |= inst_highres;
+	if (p->m != NULL) {
+		munkiimp *m = (munkiimp *)p->m;
+		munki_state *s = &m->ms[m->mmode];
+		if (s->emiss) {
+			p->cap2 |= inst2_emis_refr_meas;
+			p->cap2 |= inst2_meas_disp_update;
+		}
+	}
+
+	p->cap3 = inst3_none;
 
 	return inst_ok;
 }
+
+/* Return current or given configuration available measurement modes. */
+static inst_code munki_meas_config(
+inst *pp,
+inst_mode *mmodes,
+inst_cal_cond *cconds,
+int *conf_ix
+) {
+	munki *p = (munki *)pp;
+	munki_code ev;
+	mk_spos spos;
+
+	if (mmodes != NULL)
+		*mmodes = inst_mode_none;
+	if (cconds != NULL)
+		*cconds = inst_calc_none;
+
+	if (conf_ix == NULL
+	 || *conf_ix < mk_spos_proj
+	 || *conf_ix > mk_spos_amb) {
+		/* Return current configuration measrement modes */
+		ev = munki_getstatus(p, &spos, NULL);
+		if (ev != MUNKI_OK)
+			return munki_interp_code(p, ev);
+	} else {
+		/* Return given configuration measurement modes */
+		spos = *conf_ix;
+	}
+
+	if (spos == mk_spos_proj) {
+		if (mmodes != NULL)
+			*mmodes = inst_mode_emis_tele;
+	} else if (spos == mk_spos_surf) {
+		if (mmodes != NULL)
+			*mmodes = inst_mode_ref_spot
+			        | inst_mode_ref_strip
+			        | inst_mode_emis_spot
+			        | inst_mode_trans_spot
+			        | inst_mode_trans_strip;
+	} else if (spos == mk_spos_calib) {
+		if (cconds != NULL)
+			*cconds = inst_calc_man_cal_smode;
+		if (mmodes != NULL)
+			*mmodes = inst_mode_calibration;
+	} else if (spos == mk_spos_amb) {
+		if (mmodes != NULL)
+			*mmodes = inst_mode_emis_ambient
+			        | inst_mode_emis_ambient_flash;
+	}
+
+	/* Return configuration index returned */
+	if (conf_ix != NULL)
+		*conf_ix = (int)spos;
+
+	/* Add the extra dependent and independent modes */
+	if (mmodes != NULL)
+		*mmodes |= inst_mode_emis_nonadaptive
+		        | inst_mode_colorimeter
+		        | inst_mode_spectral;
+
+	return inst_ok;
+}
+
 
 /* Initialise the MUNKI */
 /* return non-zero on an error, with dtp error code */
@@ -163,17 +226,19 @@ munki_init_inst(inst *pp) {
 	munki *p = (munki *)pp;
 	munki_code ev = MUNKI_OK;
 
-	if (p->debug) fprintf(stderr,"munki: About to init instrument\n");
+	a1logd(p->log, 2, "munki_init_inst: called\n");
 
 	if (p->gotcoms == 0)
 		return munki_interp_code(p, MUNKI_INT_NO_COMS);	/* Must establish coms before calling init */
 	if ((ev = munki_imp_init(p)) != MUNKI_OK) {
-		if (p->debug) fprintf(stderr,"munki_imp_init() failed\n");
+		a1logd(p->log, 1, "munki_init_inst: failed with 0x%x\n",ev);
 		return munki_interp_code(p, ev);
 	}
 
 	p->inited = 1;
-	munki_discover_capabilities(p);
+	a1logd(p->log, 2, "munki_init_inst: instrument inited OK\n");
+
+	munki_determine_capabilities(p);
 
 	return munki_interp_code(p, ev);
 }
@@ -210,7 +275,7 @@ ipatch *vals) {		/* Pointer to array of instrument patch values */
 	if (!p->inited)
 		return inst_no_init;
 
-	rv = munki_imp_measure(p, vals, npatch);
+	rv = munki_imp_measure(p, vals, npatch, 1);
 
 	return munki_interp_code(p, rv);
 }
@@ -221,7 +286,8 @@ static inst_code
 munki_read_sample(
 inst *pp,
 char *name,			/* Strip name (7 chars) */
-ipatch *val) {		/* Pointer to instrument patch value */
+ipatch *val,		/* Pointer to instrument patch value */
+instClamping clamp) {		/* Clamp XYZ/Lab to be +ve */
 	munki *p = (munki *)pp;
 	munki_code rv;
 
@@ -230,35 +296,60 @@ ipatch *val) {		/* Pointer to instrument patch value */
 	if (!p->inited)
 		return inst_no_init;
 
-	rv = munki_imp_measure(p, val, 1);
+	rv = munki_imp_measure(p, val, 1, clamp);
 
 	return munki_interp_code(p, rv);
 }
 
-/* Determine if a calibration is needed. Returns inst_calt_none if not, */
-/* inst_calt_unknown if it is unknown, or inst_calt_XXX if needs calibration, */
-/* and the first type of calibration needed. */
-inst_cal_type munki_needs_calibration(inst *pp) {
+/* Read an emissive refresh rate */
+static inst_code
+munki_read_refrate(
+inst *pp,
+double *ref_rate) {
 	munki *p = (munki *)pp;
+	munki_code rv;
 
 	if (!p->gotcoms)
 		return inst_no_coms;
 	if (!p->inited)
 		return inst_no_init;
 
-	return munki_imp_needs_calibration(p);
+	rv = munki_imp_meas_refrate(p, ref_rate);
+
+	return munki_interp_code(p, rv);
+}
+
+/* Read the display update delay */
+static inst_code
+munki_meas_delay(
+inst *pp,
+int *msecdelay) {
+	munki *p = (munki *)pp;
+	munki_code rv;
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
+	rv = munki_imp_meas_delay(p, msecdelay);
+
+	return munki_interp_code(p, rv);
+}
+
+/* Return needed and available inst_cal_type's */
+static inst_code munki_get_n_a_cals(inst *pp, inst_cal_type *pn_cals, inst_cal_type *pa_cals) {
+	munki *p = (munki *)pp;
+	munki_code rv;
+
+	rv = munki_imp_get_n_a_cals(p, pn_cals, pa_cals);
+	return munki_interp_code(p, rv);
 }
 
 /* Request an instrument calibration. */
-/* This is use if the user decides they want to do a calibration, */
-/* in anticipation of a calibration (needs_calibration()) to avoid */
-/* requiring one during measurement, or in response to measuring */
-/* returning inst_needs_cal. Initially us an inst_cal_cond of inst_calc_none, */
-/* and then be prepared to setup the right conditions, or ask the */
-/* user to do so, each time the error inst_cal_setup is returned. */
 inst_code munki_calibrate(
 inst *pp,
-inst_cal_type calt,		/* Calibration type. inst_calt_all for all neeeded */
+inst_cal_type *calt,	/* Calibration type to do/remaining */
 inst_cal_cond *calc,	/* Current condition/desired condition */
 char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 ) {
@@ -271,6 +362,7 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 		return inst_no_init;
 
 	rv = munki_imp_calibrate(p, calt, calc, id);
+
 	return munki_interp_code(p, rv);
 }
 
@@ -290,13 +382,10 @@ munki_interp_error(inst *pp, munki_code ec) {
 			return "Data from i1 Display didn't parse as expected";
 
 		case MUNKI_USER_ABORT:
-			return "User hit Abort key";
-		case MUNKI_USER_TERM:
-			return "User hit Terminate key";
+			return "User abort";
+
 		case MUNKI_USER_TRIG:
-			return "User hit Trigger key";
-		case MUNKI_USER_CMND:
-			return "User hit a Command key";
+			return "User trigger";
 
 		case MUNKI_UNSUPPORTED:
 			return "Unsupported function";
@@ -306,8 +395,6 @@ munki_interp_error(inst *pp, munki_code ec) {
 		case MUNKI_OK:
 			return "No device error";
 
-		case MUNKI_DATA_COUNT:
-			return "EEProm data count unexpected size";
 		case MUNKI_DATA_RANGE:
 			return "EEProm data count location out of range";
 		case MUNKI_DATA_MEMORY:
@@ -356,6 +443,10 @@ munki_interp_error(inst *pp, munki_code ec) {
 			return "No flashes recognized";
 		case MUNKI_RD_NOAMBB4FLASHES:
 			return "No ambient found before first flash";
+		case MUNKI_RD_NOREFR_FOUND:
+			return "No refresh rate detected or failed to measure it";
+		case MUNKI_RD_NOTRANS_FOUND:
+			return "No delay calibration transition found";
 
 		case MUNKI_SPOS_PROJ:
 			return "Sensor should be in projector position";
@@ -368,6 +459,8 @@ munki_interp_error(inst *pp, munki_code ec) {
 
 		case MUNKI_INT_NO_COMS:
 			return "Communications hasn't been established";
+		case MUNKI_INT_EESIZE:
+			return "EEProm is not the expected size";
 		case MUNKI_INT_EEOUTOFRANGE:
 			return "EEProm access is out of range";
 		case MUNKI_INT_CALTOOSMALL:
@@ -389,7 +482,7 @@ munki_interp_error(inst *pp, munki_code ec) {
 		case MUNKI_INT_WRONGPATCHES:
 			return "Number of patches to match is wrong";
 		case MUNKI_INT_MEASBUFFTOOSMALL:
-			return "Measurement read buffer is too small";
+			return "Measurement exceeded read buffer";
 		case MUNKI_INT_NOTIMPLEMENTED:
 			return "Support not implemented";
 		case MUNKI_INT_NOTCALIBRATED:
@@ -410,6 +503,10 @@ munki_interp_error(inst *pp, munki_code ec) {
 			return "Unable to save calibration to file";
 		case MUNKI_INT_CAL_RESTORE:
 			return "Unable to restore calibration from file";
+		case MUNKI_INT_CAL_TOUCH:
+			return "Unable to update calibration file modification time";
+		case MUNKI_INT_ASSERT:
+			return "Assert fail";
 		default:
 			return "Unknown error code";
 	}
@@ -437,13 +534,10 @@ munki_interp_code(munki *p, munki_code ec) {
 			return inst_protocol_error | ec;
 
 		case MUNKI_USER_ABORT:
-			return inst_user_abort | ec;
-		case MUNKI_USER_TERM:
-			return inst_user_term | ec;
+			return inst_user_abort;
+
 		case MUNKI_USER_TRIG:
-			return inst_user_trig | ec;
-		case MUNKI_USER_CMND:
-			return inst_user_cmnd | ec;
+			return inst_user_trig;
 
 		case MUNKI_UNSUPPORTED:
 			return inst_unsupported | ec;
@@ -458,9 +552,8 @@ munki_interp_code(munki *p, munki_code ec) {
 		case MUNKI_SPOS_PROJ:
 		case MUNKI_SPOS_SURF:
 		case MUNKI_SPOS_AMB:
-			return inst_wrong_sensor_pos | ec;
+			return inst_wrong_config | ec;
 
-		case MUNKI_DATA_COUNT:
 		case MUNKI_DATA_RANGE:
 		case MUNKI_DATA_MEMORY:
 		case MUNKI_HW_EE_SHORTREAD:
@@ -485,10 +578,13 @@ munki_interp_code(munki *p, munki_code ec) {
 		case MUNKI_RD_NOTENOUGHSAMPLES:
 		case MUNKI_RD_NOFLASHES:
 		case MUNKI_RD_NOAMBB4FLASHES:
+		case MUNKI_RD_NOREFR_FOUND:
+		case MUNKI_RD_NOTRANS_FOUND:
 			return inst_misread | ec;
 
 		case MUNKI_INTERNAL_ERROR:
 		case MUNKI_INT_NO_COMS:
+		case MUNKI_INT_EESIZE:
 		case MUNKI_INT_EEOUTOFRANGE:
 		case MUNKI_INT_CALTOOSMALL:
 		case MUNKI_INT_CALTOOBIG:
@@ -508,189 +604,165 @@ munki_interp_code(munki *p, munki_code ec) {
 		case MUNKI_INT_CREATE_EEPROM_STORE:
 		case MUNKI_INT_NEW_RSPL_FAILED:
 		case MUNKI_INT_CAL_SAVE:
-		case MUNKI_INT_WRONGPATCHES:
 		case MUNKI_INT_CAL_RESTORE:
+		case MUNKI_INT_CAL_TOUCH:
+		case MUNKI_INT_WRONGPATCHES:
+		case MUNKI_INT_ASSERT:
 			return inst_internal_error | ec;
 	}
 	return inst_other_error | ec;
 }
 
-/* Return the instrument capabilities */
-inst_capability munki_capabilities(inst *pp) {
-	munki *p = (munki *)pp;
+/* Convert instrument specific inst_wrong_config error to inst_config enum */
+static inst_config munki_config_enum(inst *pp, int ec) {
+//	munki *p = (munki *)pp;
 
-	return p->cap;
+	ec &= inst_imask;
+	switch (ec) {
+
+		case MUNKI_SPOS_PROJ:
+			return inst_conf_projector;
+
+		case MUNKI_SPOS_SURF:
+			return inst_conf_surface;
+
+		case MUNKI_SPOS_AMB:
+			return inst_conf_ambient;
+
+		case MUNKI_SPOS_CALIB:
+			return inst_conf_calibration;
+	}
+	return inst_conf_unknown;
 }
 
-/* Return the instrument capabilities 2 */
-inst2_capability munki_capabilities2(inst *pp) {
+/* Return the instrument capabilities */
+void munki_capabilities(inst *pp,
+inst_mode *pcap1,
+inst2_capability *pcap2,
+inst3_capability *pcap3) {
 	munki *p = (munki *)pp;
-	inst2_capability rv;
 
-	rv = p->cap2;
+	if (pcap1 != NULL)
+		*pcap1 = p->cap;
+	if (pcap2 != NULL)
+		*pcap2 = p->cap2;
+	if (pcap3 != NULL)
+		*pcap3 = p->cap3;
 
-	return rv;
+	return;
+}
+
+/* Return the corresponding munki measurement mode, */
+/* or mk_no_modes if invalid */
+static mk_mode munki_convert_mode(munki *p, inst_mode m) {
+	mk_mode mmode = 0;
+
+	/* Simple test */
+	if (m & ~p->cap)
+		return mk_no_modes;
+
+	if (IMODETST(m, inst_mode_ref_spot)) {
+		mmode = mk_refl_spot;
+	} else if (IMODETST(m, inst_mode_ref_strip)) {
+		mmode = mk_refl_scan;
+	} else if (IMODETST(m, inst_mode_trans_spot)) {
+		mmode = mk_trans_spot;
+	} else if (IMODETST(m, inst_mode_trans_strip)) {
+		mmode = mk_trans_scan;
+	} else if (IMODETST(m, inst_mode_emis_spot)) {
+		if (IMODETST(m, inst_mode_emis_nonadaptive))
+			mmode = mk_emiss_spot_na;
+		else
+			mmode = mk_emiss_spot;
+	} else if (IMODETST(m, inst_mode_emis_tele)) {
+		if (IMODETST(m, inst_mode_emis_nonadaptive))
+			mmode = mk_tele_spot_na;
+		else
+			mmode = mk_tele_spot;
+	} else if (IMODETST(m, inst_mode_emis_strip)) {
+		mmode = mk_emiss_scan;
+	} else if (IMODETST(m, inst_mode_emis_ambient)) {
+		mmode = mk_amb_spot;
+	} else if (IMODETST(m, inst_mode_emis_ambient_flash)) {
+		mmode = mk_amb_flash;
+	} else {
+		return mk_no_modes;
+	}
+
+	return mmode;
+}
+
+/* Check device measurement mode */
+inst_code munki_check_mode(inst *pp, inst_mode m) {
+	munki *p = (munki *)pp;
+	mk_mode mmode = 0;
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
+	if (munki_convert_mode(p, m) == mk_no_modes)
+		return inst_unsupported;
+
+	return inst_ok;
 }
 
 /* Set device measurement mode */
 inst_code munki_set_mode(inst *pp, inst_mode m) {
 	munki *p = (munki *)pp;
-	inst_mode mm;			/* Request measurement mode */
-	mk_mode mmode = -1;	/* Instrument measurement mode */
+	mk_mode mmode = 0;
+	inst_mode cap = p->cap;
+	inst_code rv;
 
 	if (!p->gotcoms)
 		return inst_no_coms;
 	if (!p->inited)
 		return inst_no_init;
 
-	/* The measurement mode portion of the mode */
-	mm = m & inst_mode_measurement_mask;
-
-	if ((mm & inst_mode_illum_mask) == inst_mode_reflection) {
-		if ((mm & inst_mode_sub_mask) == inst_mode_spot) {
-			mmode = mk_refl_spot;
-		} else if ((mm & inst_mode_sub_mask) == inst_mode_strip) {
-			mmode = mk_refl_scan;
-		} else {
-			return inst_unsupported;
-		}
-	} else if ((mm & inst_mode_illum_mask) == inst_mode_transmission) {
-		if ((mm & inst_mode_sub_mask) == inst_mode_spot) {
-			mmode = mk_trans_spot;
-		} else if ((mm & inst_mode_sub_mask) == inst_mode_strip) {
-			mmode = mk_trans_scan;
-		} else {
-			return inst_unsupported;
-		}
-	} else if ((mm & inst_mode_illum_mask) == inst_mode_emission) {
-		if ((mm & inst_mode_sub_mask) == inst_mode_spot) {
-			if ((mm & inst_mode_mod_mask) == inst_mode_disp) {
-				mmode = mk_disp_spot;
-			} else {
-				mmode = mk_emiss_spot;
-			}
-		} else if ((mm & inst_mode_sub_mask) == inst_mode_tele) {
-			if ((mm & inst_mode_mod_mask) == inst_mode_disp) {
-				mmode = mk_proj_spot;
-			} else {
-				mmode = mk_tele_spot;
-			}
-		} else if ((mm & inst_mode_sub_mask) == inst_mode_strip) {
-			mmode = mk_emiss_scan;
-		} else if ((mm & inst_mode_sub_mask) == inst_mode_ambient) {
-			mmode = mk_amb_spot;
-		} else if ((mm & inst_mode_sub_mask) == inst_mode_ambient_flash) {
-			mmode = mk_amb_flash;
-		} else {
-			return inst_unsupported;
-		}
-	} else {
+	if ((mmode = munki_convert_mode(p, m)) == mk_no_modes)
 		return inst_unsupported;
-	}
-	return munki_interp_code(p, munki_imp_set_mode(p, mmode, m & inst_mode_spectral));
-}
+	
+	if ((rv = munki_interp_code(p, munki_imp_set_mode(p, mmode, m & inst_mode_spectral)))
+	                                                                              != inst_ok)
+		return rv;
 
-/* Get a dynamic status */
-static inst_code munki_get_status(
-inst *pp,
-inst_status_type m,	/* Requested status type */
-...) {				/* Status parameters */                             
-	munki *p = (munki *)pp;
+	munki_determine_capabilities(p);
 
-	if (!p->gotcoms)
-		return inst_no_coms;
-	if (!p->inited)
-		return inst_no_init;
-
-	/* Return the sensor mode */
-	if (m == inst_stat_sensmode) {
-		munki_code ev;
-		inst_stat_smode *smode;
-		va_list args;
-		mk_spos spos;
-
-		va_start(args, m);
-		smode = va_arg(args, inst_stat_smode *);
-		va_end(args);
-
-		*smode = inst_stat_smode_unknown;
-
-		/* Get the device status */
-		ev = munki_getstatus(p, &spos, NULL);
-		if (ev != MUNKI_OK)
-			return munki_interp_code(p, ev);
-
-		if (spos == mk_spos_proj)
-			*smode = inst_stat_smode_proj;
-		else if (spos == mk_spos_surf)
-			*smode = inst_stat_smode_ref | inst_stat_smode_disp;
-		else if (spos == mk_spos_calib)
-			*smode = inst_stat_smode_calib;
-		else if (spos == mk_spos_amb)
-			*smode = inst_stat_smode_amb;
-
-		return inst_ok;
-	}
-
-	/* Return the filter */
-	else if (m == inst_stat_get_filter) {
-		inst_opt_filter *filt;
-		va_list args;
-
-		va_start(args, m);
-		filt = va_arg(args, inst_opt_filter *);
-		va_end(args);
-
-		/* The ColorMunki is always UV cut */
-		*filt = inst_opt_filter_UVCut;
-
-		return inst_ok;
-	}
-
-	return inst_unsupported;
+	return inst_ok;
 }
 
 /* 
  * set or reset an optional mode
- * We assume that the instrument has been initialised.
+ *
+ * Some options talk to the instrument, and these will
+ * error if it hasn't been initialised.
  */
 static inst_code
-munki_set_opt_mode(inst *pp, inst_opt_mode m, ...)
-{
+munki_get_set_opt(inst *pp, inst_opt_type m, ...) {
 	munki *p = (munki *)pp;
 
-	if (!p->gotcoms)
-		return inst_no_coms;
-	if (!p->inited)
-		return inst_no_init;
+	if (m == inst_opt_noinitcalib) {
+		va_list args;
+		int losecs = 0;
 
-	if (m == inst_opt_noautocalib) {
-		munki_set_noautocalib(p, 1);
+		va_start(args, m);
+		losecs = va_arg(args, int);
+		va_end(args);
+
+		munki_set_noinitcalib(p, 1, losecs);
 		return inst_ok;
 
-	} else if (m == inst_opt_autocalib) {
-		munki_set_noautocalib(p, 0);
+	} else if (m == inst_opt_initcalib) {
+		munki_set_noinitcalib(p, 0, 0);
 		return inst_ok;
 
 	/* Record the trigger mode */
 	} else if (m == inst_opt_trig_prog
-	 || m == inst_opt_trig_keyb
-	 || m == inst_opt_trig_keyb_switch) {
+	 || m == inst_opt_trig_user
+	 || m == inst_opt_trig_user_switch) {
 		munki_set_trig(p, m);
 		return inst_ok;
-	}
-	if (m == inst_opt_trig_return) {
-		munki_set_trigret(p, 1);
-		return inst_ok;
-	} else if (m == inst_opt_trig_no_return) {
-		munki_set_trigret(p, 0);
-		return inst_ok;
-	}
-
-	if (m == inst_opt_highres) {
-		return munki_interp_code(p, munki_set_highres(p));
-	} else if (m == inst_opt_stdres) {
-		return munki_interp_code(p, munki_set_stdres(p));
 	}
 
 	if (m == inst_opt_scan_toll) {
@@ -701,6 +773,18 @@ munki_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 		toll_ratio = va_arg(args, double);
 		va_end(args);
 		return munki_interp_code(p, munki_set_scan_toll(p, toll_ratio));
+	}
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
+	/* Not sure if hires can be set before init */
+	if (m == inst_opt_highres) {
+		return munki_interp_code(p, munki_set_highres(p));
+	} else if (m == inst_opt_stdres) {
+		return munki_interp_code(p, munki_set_stdres(p));
 	}
 
 	if (m == inst_opt_get_gen_ledmask) {
@@ -794,6 +878,32 @@ munki_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 		return inst_ok;
 	}
 
+	/* Return the filter */
+	if (m == inst_stat_get_filter) {
+		inst_opt_filter *filt;
+		va_list args;
+
+		va_start(args, m);
+		filt = va_arg(args, inst_opt_filter *);
+		va_end(args);
+
+		/* The ColorMunki is always UV cut */
+		*filt = inst_opt_filter_UVCut;
+
+		return inst_ok;
+	}
+
+	/* Use default implementation of other inst_opt_type's */
+	{
+		inst_code rv;
+		va_list args;
+
+		va_start(args, m);
+		rv = inst_get_set_opt_def(pp, m, args);
+		va_end(args);
+
+		return rv;
+	}
 	return inst_unsupported;
 }
 
@@ -809,44 +919,45 @@ munki_del(inst *pp) {
 }
 
 /* Constructor */
-extern munki *new_munki(icoms *icom, instType itype, int debug, int verb)
-{
+extern munki *new_munki(icoms *icom, instType itype) {
 	munki *p;
-	if ((p = (munki *)calloc(sizeof(munki),1)) == NULL)
-		error("munki: malloc failed!");
-
-	if (icom == NULL)
-		p->icom = new_icoms();
-	else
-		p->icom = icom;
-
-	/* Preliminary capabilities */
-	munki_discover_capabilities(p);
-	p->debug = debug;
-	p->verb = verb;
-
-	if (add_munkiimp(p) != MUNKI_OK) {
-		free(p);
-		error("munki: creating munkiimp");
+	int rv;
+	if ((p = (munki *)calloc(sizeof(munki),1)) == NULL) {
+		a1loge(icom->log, 1, "new_munki: malloc failed!\n");
+		return NULL;
 	}
+
+	p->log = new_a1log_d(icom->log);
 
 	/* Inst methods */
 	p->init_coms         = munki_init_coms;
 	p->init_inst         = munki_init_inst;
 	p->capabilities      = munki_capabilities;
-	p->capabilities2     = munki_capabilities2;
+	p->meas_config       = munki_meas_config;
 	p->get_serial_no     = munki_get_serial_no;
+	p->check_mode        = munki_check_mode;
 	p->set_mode          = munki_set_mode;
-	p->get_status        = munki_get_status;
-	p->set_opt_mode      = munki_set_opt_mode;
+	p->get_set_opt       = munki_get_set_opt;
 	p->read_strip        = munki_read_strip;
 	p->read_sample       = munki_read_sample;
-	p->needs_calibration = munki_needs_calibration;
+	p->read_refrate      = munki_read_refrate;
+	p->get_n_a_cals      = munki_get_n_a_cals;
 	p->calibrate         = munki_calibrate;
+	p->meas_delay        = munki_meas_delay;
 	p->interp_error      = munki_interp_error;
+	p->config_enum       = munki_config_enum;
 	p->del               = munki_del;
 
-	p->itype = itype;
+	p->icom = icom;
+	p->itype = icom->itype;
+
+	/* Preliminary capabilities */
+	munki_determine_capabilities(p);
+
+	if ((rv = add_munkiimp(p) != MUNKI_OK)) {
+		free(p);
+		a1loge(icom->log, 1, "new_munki: error %d creating munkiimp\n",rv);
+	}
 
 	return p;
 }

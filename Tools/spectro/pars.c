@@ -121,12 +121,14 @@ static size_t ssat_mul(size_t a, size_t b) {
 
 /* --------------------------------------------- */
 /* Memory image cgatsFile compatible class */
-/* Buffer is assumed to be a fixed size, and externally allocated */
-/* Writes therefore don't expand the buffer. */
+/* Buffer is assumed to have been allocated by the given allocator, */
+/* and will be expanded on write. */
 
 /* Get the size of the file (Only valid for memory file). */
 static size_t cgatsFileMem_get_size(cgatsFile *pp) {
-	return pp->size;
+	cgatsFileMem *p = (cgatsFileMem *)pp;
+
+	return p->end - p->start;
 }
 
 /* Set current position to offset. Return 0 on success, nz on failure. */
@@ -184,6 +186,35 @@ cgatsFile *pp
 	return c;
 }
 
+/* Expand the memory buffer file to hold up to pointer ep */
+/* Don't expand if realloc fails */
+static void cgatsFileMem_filemem_resize(cgatsFileMem *p, unsigned char *ep) {
+	size_t na, co, ce;
+	unsigned char *nstart;
+	
+	/* No need to realloc */
+	if (ep <= p->aend) {
+		return;
+	}
+
+	co = p->cur - p->start;		/* Current offset */
+	ce = p->end - p->start;		/* Current end */
+	na = ep - p->start;			/* new allocatd size */
+
+	/* Round new allocation up */
+	if (na <= 1024)
+		na += 1024;
+	else
+		na += 4096;
+
+	if ((nstart = p->al->realloc(p->al, p->start, na)) != NULL) {
+		p->start = nstart;
+		p->cur = nstart + co;
+		p->end = nstart + ce;
+		p->aend = nstart + na;
+	}
+}
+
 /* write count items of size length. Return number of items successfully written. */
 static size_t cgatsFileMem_write(
 cgatsFile *pp,
@@ -195,7 +226,10 @@ size_t count
 	size_t len;
 
 	len = ssat_mul(size, count);
-	if (len > (size_t)(p->end - p->cur)) { /* Too much */
+	if (len > (size_t)(p->end - p->cur))  /* Try and expand buffer */
+		cgatsFileMem_filemem_resize(p, p->start + len);
+
+	if (len > (size_t)(p->end - p->cur)) {
 		if (size > 0)
 			count = (p->end - p->cur)/size;
 		else
@@ -205,6 +239,8 @@ size_t count
 	if (len > 0)
 		memmove(p->cur, buffer, len);
 	p->cur += len;
+	if (p->end < p->cur)
+		p->end = p->cur;
 	return count;
 }
 
@@ -217,19 +253,48 @@ const char *format,
 	int rv;
 	va_list args;
 	cgatsFileMem *p = (cgatsFileMem *)pp;
+	int len;
 
 	va_start(args, format);
 
-#if ((defined(__IBMC__) || defined(__BORLANDC__)) && defined(_M_IX86))
-	rv = vsprintf((char *)p->cur, format, args);	/* This could overwrite the buffer !!! */
-#else
-	rv = vsnprintf((char *)p->cur, (p->end - p->cur), format, args);
-#endif
+	rv = 1;
+	len = 100;					/* Initial allocation for printf */
+	cgatsFileMem_filemem_resize(p, p->cur + len);
 
+	/* We have to use the available printf functions to resize the buffer if needed. */
+	for (;rv != 0;) {
+		/* vsnprintf() either returns -1 if it doesn't fit, or */
+		/* returns the size-1 needed in order to fit. */
+		len = vsnprintf((char *)p->cur, (p->aend - p->cur), format, args);
+
+		if (len > -1 && ((p->cur + len +1) <= p->aend))	/* Fitted in current allocation */
+			break;
+
+		if (len > -1)				/* vsnprintf returned needed size-1 */
+			len = len+2;			/* (In case vsnprintf returned 1 less than it needs) */
+		else
+			len *= 2;				/* We just have to guess */
+
+		/* Attempt to resize */
+		cgatsFileMem_filemem_resize(p, p->cur + len);
+
+		/* If resize failed */
+		if ((p->aend - p->cur) < len) {
+			rv = 0;
+			break;			
+		}
+	}
+	if (rv != 0) {
+		/* Figure out where end of printf is */
+		len = strlen((char *)p->cur);	/* Length excluding nul */
+		p->cur += len;
+		if (p->cur > p->end)
+			p->end = p->cur;
+		rv = len;
+	}
 	va_end(args);
 	return rv;
 }
-
 
 /* flush all write data out to secondary storage. Return nz on failure. */
 static int cgatsFileMem_flush(
@@ -238,10 +303,26 @@ cgatsFile *pp
 	return 0;
 }
 
+/* Return the memory buffer. Error if not cgatsFileMem */
+static int cgatsFileMem_get_buf(
+cgatsFile *pp,
+unsigned char **buf,
+size_t *len
+) {
+	cgatsFileMem *p = (cgatsFileMem *)pp;
+	if (buf != NULL)
+		*buf = p->start;
+	if (len != NULL)
+		*len = p->end - p->start;
+	return 0;
+}
+
 /* return the filename */
 static char *cgatsFileMem_fname(
 cgatsFile *pp
 ) {
+//	cgatsFileMem *p = (cgatsFileMem *)pp;
+
 	/* Memory doesn't have a name */
 	return "**Mem**";
 }
@@ -282,14 +363,13 @@ cgatsAlloc *al		/* heap allocator */
 	p->write    = cgatsFileMem_write;
 	p->gprintf  = cgatsFileMem_printf;
 	p->flush    = cgatsFileMem_flush;
+	p->get_buf  = cgatsFileMem_get_buf;
 	p->fname    = cgatsFileMem_fname;
 	p->del      = cgatsFileMem_delete;
 
 	p->start = (unsigned char *)base;
 	p->cur = p->start;
-	p->end = p->start + length;
-
-	p->size = length;
+	p->aend = p->end = p->start + length;
 
 	return (cgatsFile *)p;
 }
@@ -331,7 +411,7 @@ del_parse(parse *p) {
 /* and the error message in parse will be valid. */
 static int
 read_line(parse *p) {
-	char c;
+	int c;
 	p->bo = 0;			/* Reset pointer to the start of the line buffer */
 	p->q = 0;			/* Reset quoted flag */
 	p->errc = 0;		/* Reset error status */

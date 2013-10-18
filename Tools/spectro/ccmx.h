@@ -34,17 +34,25 @@ struct _ccmx {
 
 	/* Set the contents of the ccmx. return nz on error. */
 	int (*set_ccmx)(struct _ccmx *p, char *desc, char *inst, char *disp, char *tech,
-	                char *refd, double mtx[3][3]);	
+	                int refrmode, int cbid, char *sel, char *refd, double mtx[3][3]);	
 
 	/* Create a ccmx from measurements. return nz on error. */
 	int (*create_ccmx)(struct _ccmx *p, char *desc, char *inst, char *disp, char *tech,
-	               char *refd, int nsamples, double refs[][3], double cols[][3]);	
+	               int refrmode, int cbid, char *sel, char *refd,
+	               int nsamples, double refs[][3], double cols[][3]);	
 
 	/* write to a CGATS .ccmx file */
 	int (*write_ccmx)(struct _ccmx *p, char *filename);
 
+	/* write a CGATS .ccmx file to a memory buffer. */
+	/* return nz on error, with message in err[] */
+	int (*buf_write_ccmx)(struct _ccmx *p, unsigned char **buf, int *len);
+
 	/* read from a CGATS .ccmx file */
 	int (*read_ccmx)(struct _ccmx *p, char *filename);
+
+	/* read from a CGATS .ccmx file from a memory buffer. */
+	int (*buf_read_ccmx)(struct _ccmx *p, unsigned char *buf, int len);
 
 	/* Correct an XYZ value */
 	void (*xform) (struct _ccmx *p,
@@ -57,6 +65,9 @@ struct _ccmx {
 	char *inst;		/* Name of colorimeter instrument */
 	char *disp;		/* Name of display (optional if tech) */
 	char *tech;		/* Technology (CRT, LCD + backlight type etc.) (optional if disp) */
+	int cbid;		/* Calibration display type base ID, 0 if not known */
+	int refrmode;	/* Refresh mode, -1 if unknown, 0 of no, 1 if yes */
+	char *sel;			/* Optional UI selector characters. May be NULL */
 	char *ref;		/* Name of spectrometer instrument (optional) */
 	double matrix[3][3];	/* Transform matrix */
 	double av_err;			/* Average error of fit */
@@ -71,7 +82,6 @@ struct _ccmx {
 ccmx *new_ccmx(void);
 
 #endif /* CCMX_H */
-
 
 
 

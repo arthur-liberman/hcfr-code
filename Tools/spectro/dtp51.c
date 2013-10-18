@@ -6,7 +6,7 @@
  * Author: Graeme W. Gill
  * Date:   5/10/96
  *
- * Copyright 1996 - 2007, Graeme W. Gill
+ * Copyright 1996 - 2013, Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -31,6 +31,12 @@
    and agreed to support.
  */
 
+/* TTBD:
+
+	Recovery from needing calibration may not work properly ?
+
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -47,8 +53,8 @@
 #endif /* !SALONEINSTLIB */
 #include "xspect.h"
 #include "insttypes.h"
-#include "icoms.h"
 #include "conv.h"
+#include "icoms.h"
 #include "dtp51.h"
 
 #undef DEBUG
@@ -56,7 +62,7 @@
 /* Default flow control */
 #define DEFFC fc_Hardware
 
-static inst_code interp_code(inst *pp, int ec);
+static inst_code dtp51_interp_code(inst *pp, int ec);
 
 #define MAX_MES_SIZE 500		/* Maximum normal message reply size */
 #define MAX_RD_SIZE 5000		/* Maximum reading messagle reply size */
@@ -88,19 +94,11 @@ extract_ec(char *s) {
 
 /* Interpret an icoms error into a DTP51 error */
 static int icoms2dtp51_err(int se) {
-	if (se & ICOM_USERM) {
-		se &= ICOM_USERM;
-		if (se == ICOM_USER)
-			return DTP51_USER_ABORT;
-		if (se == ICOM_TERM)
-			return DTP51_USER_TERM;
-		if (se == ICOM_TRIG)
-			return DTP51_USER_TRIG;
-		if (se == ICOM_CMND)
-			return DTP51_USER_CMND;
-	}
-	if (se != ICOM_OK)
+	if (se != ICOM_OK) {
+		if (se & ICOM_TO)
+			return DTP51_TIMEOUT; 
 		return DTP51_COMS_FAIL;
+	}
 	return DTP51_OK;
 }
 
@@ -115,32 +113,28 @@ dtp51_fcommand(
 	char *in,			/* In string */
 	char *out,			/* Out string buffer */
 	int bsize,			/* Out buffer size */
-	char tc,			/* Terminating character */
+	char *tc,			/* Terminating character */
 	int ntc,			/* Number of terminating characters */
 	double to) {		/* Timout in seconts */
 	int rv, se;
 
 	if ((se = p->icom->write_read(p->icom, in, out, bsize, tc, ntc, to)) != 0) {
-#ifdef DEBUG
-		printf("dtp51 fcommand: serial i/o failure on write_read '%s'\n",icoms_fix(in));
-#endif
+		a1logd(p->log, 1, "dtp51_fcommand: serial i/o failure on write_read '%s'\n",icoms_fix(in));
 		return icoms2dtp51_err(se);
 	}
 	rv = DTP51_OK;
-	if (tc == '>' && ntc == 1) {
+	if (tc == ">" && ntc == 1) {
 		rv = extract_ec(out);
 		if (rv > 0) {
 			rv &= inst_imask;
 			if (rv != DTP51_OK) {	/* Clear the error */
 				char buf[MAX_MES_SIZE];
-				p->icom->write_read(p->icom, "CE\r", buf, MAX_MES_SIZE, '>', 1, 0.5);
+				p->icom->write_read(p->icom, "CE\r", buf, MAX_MES_SIZE, ">", 1, 0.5);
 			}
 		}
 	}
-#ifdef DEBUG
-	printf("command '%s'",icoms_fix(in));
-	printf(" returned '%s', value 0x%x\n",icoms_fix(out),rv);
-#endif
+	a1logd(p->log, 4, "dtp51_fcommand: command '%s' returned '%s', value 0x%x\n",
+	                                          icoms_fix(in), icoms_fix(out),rv);
 	return rv;
 }
 
@@ -148,26 +142,57 @@ dtp51_fcommand(
 /* Return the dtp error code */
 static inst_code
 dtp51_command(dtp51 *p, char *in, char *out, int bsize, double to) {
-	int rv = dtp51_fcommand(p, in, out, bsize, '>', 1, to);
-	return interp_code((inst *)p, rv);
+	int rv = dtp51_fcommand(p, in, out, bsize, ">", 1, to);
+	return dtp51_interp_code((inst *)p, rv);
+}
+
+/* Just read a response from the dtp51 */
+/* Return the dtp error code. */
+static int
+dtp51_read(
+struct _dtp51 *p,
+char *out,			/* Out string buffer */
+int bsize,			/* Out buffer size */
+double to) {		/* Timout in seconts */
+	char *tc = ">";		/* Terminating character */
+	int ntc = 1;		/* Number of terminating characters */
+	int rv, se;
+
+	if ((se = p->icom->read(p->icom, out, bsize, tc, ntc, to)) != 0) {
+		a1logd(p->log, 1, "dtp51_fcommand: serial i/o failure on read\n");
+		return icoms2dtp51_err(se);
+	}
+	rv = DTP51_OK;
+	if (tc[0] == '>' && ntc == 1) {
+		rv = extract_ec(out);
+		if (rv > 0) {
+			rv &= inst_imask;
+			if (rv != DTP51_OK) {	/* Clear the error */
+				char buf[MAX_MES_SIZE];
+				p->icom->write_read(p->icom, "CE\r", buf, MAX_MES_SIZE, ">", 1, 0.5);
+			}
+		}
+	}
+	a1logd(p->log, 4, "dtp51_read: returned '%s', value 0x%x\n", icoms_fix(out),rv);
+
+	return rv;
 }
 
 /* Establish communications with a DTP51 */
 /* Use the baud rate given, and timeout in to secs */
 /* Return DTP_COMS_FAIL on failure to establish communications */
 static inst_code
-dtp51_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) {
+dtp51_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	dtp51 *p = (dtp51 *)pp;
 	static char buf[MAX_MES_SIZE];
 	baud_rate brt[5] = { baud_9600, baud_19200, baud_4800, baud_2400, baud_1200 };
 	char *brc[5]     = { "30BR\r",  "60BR\r",   "18BR\r",  "0CBR\r",  "06BR\r" };
 	char *fcc;
 	unsigned int etime;
-	int ci, bi, i, rv;
+	int ci, bi, i, se;
 	inst_code ev = inst_ok;
 
-	if (p->debug)
-		p->icom->debug = p->debug;	/* Turn on debugging */
+	a1logd(p->log, 2, "dtp51_init_coms: About to init Serial I/O\n");
 
 	/* Deal with flow control setting */
 	if (fc == fc_nc)
@@ -204,17 +229,27 @@ dtp51_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) 
 
 		/* Until we time out, find the correct baud rate */
 		for (i = ci; msec_time() < etime;) {
-			p->icom->set_ser_port(p->icom, port, fc_none, brt[i], parity_none, stop_1, length_8);
+			if ((se = p->icom->set_ser_port(p->icom, fc_none, brt[i], parity_none,
+				                                    stop_1, length_8)) != ICOM_OK) { 
+				a1logd(p->log, 1, "dtp51_init_coms: set_ser_port failed ICOM err 0x%x\n",se);
+				return dtp51_interp_code((inst *)p, icoms2dtp51_err(se));
+			}
+
 			if (((ev = dtp51_command(p, "\r", buf, MAX_MES_SIZE, 0.5)) & inst_mask)
-			                                                    != inst_coms_fail)
-				break;		/* We've got coms or user abort */
+				                                                 != inst_coms_fail)
+				break;		/* We've got coms */
+
+			/* Check for user abort */
+			if (p->uicallback != NULL) {
+				inst_code ev;
+				if ((ev = p->uicallback(p->uic_cntx, inst_negcoms)) == inst_user_abort) {
+					a1logd(p->log, 1, "dtp22_init_coms: user aborted\n");
+					return inst_user_abort;
+				}
+			}
 			if (++i >= 5)
 				i = 0;
 		}
-
-		if ((ev & inst_mask) == inst_user_abort)
-			return ev;
-
 		break;		/* Got coms */
 	}
 
@@ -227,36 +262,40 @@ dtp51_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) 
 		return ev;
 
 	/* Change the baud rate to the rate we've been told */
-	if ((rv = p->icom->write_read(p->icom, brc[bi], buf, MAX_MES_SIZE, '>', 1, 1.5)) != 0) {
+	if ((se = p->icom->write_read(p->icom, brc[bi], buf, MAX_MES_SIZE, ">", 1, 1.5)) != 0) {
 		if (extract_ec(buf) != DTP51_OK)
 			return inst_coms_fail;
 	}
 
 	/* Configure our baud rate and handshaking as well */
-	p->icom->set_ser_port(p->icom, port, fc, brt[bi], parity_none, stop_1, length_8);
+	if ((se = p->icom->set_ser_port(p->icom, fc, brt[bi], parity_none, stop_1, length_8))
+		                                                                      != ICOM_OK) { 
+		a1logd(p->log, 1, "dtp51_init_coms: set_ser_port failed ICOM err 0x%x\n",se);
+		return dtp51_interp_code((inst *)p, icoms2dtp51_err(se));
+	}
 
 	/* Loose a character (not sure why) */
-	p->icom->write_read(p->icom, "\r", buf, MAX_MES_SIZE, '>', 1, 0.5);
+	p->icom->write_read(p->icom, "\r", buf, MAX_MES_SIZE, ">", 1, 0.5);
 
 	/* Check instrument is responding */
 	if ((ev = dtp51_command(p, "\r", buf, MAX_MES_SIZE, 1.5)) != inst_ok)
 		return inst_coms_fail;
 
-	if (p->verb) {
+	if (p->log->verb) {
 		int i, j;
 		if ((ev = dtp51_command(p, "GI\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok
 		 && (ev & inst_imask) != DTP51_BAD_COMMAND)
 			return ev;
 
 		if ((ev & inst_imask) == DTP51_BAD_COMMAND) { /* Some fimware doesn't support GI */
-			printf("Firware doesn't support GI command\n");
+			a1logv(p->log, 1, "dtp51: Firware doesn't support GI command\n");
 		} else {
 			for (j = i = 0; ;i++) {
 				if (buf[i] == '<' || buf[i] == '\000')
 					break;
 				if (buf[i] == '\r') {
 					buf[i] = '\000';
-					printf(" %s\n",&buf[j]);
+					a1logv(p->log, 1, " %s\n",&buf[j]);
 					if (buf[i+1] == '\n')
 						i++;
 					j = i+1;
@@ -265,9 +304,7 @@ dtp51_init_coms(inst *pp, int port, baud_rate br, flow_control fc, double tout) 
 		}
 	}
 
-#ifdef DEBUG
-	printf("Got communications\n");
-#endif
+	a1logd(p->log, 4, "dtp51: Got coms OK\n");
 	p->gotcoms = 1;
 	return inst_ok;
 }
@@ -321,6 +358,8 @@ dtp51_init_inst(inst *pp) {
 	static char tbuf[100], buf[MAX_MES_SIZE];
 	int rv;
 	inst_code ev = inst_ok;
+
+	a1logd(p->log, 2, "dtp51_init_inst: called\n");
 
 	if (p->gotcoms == 0)
 		return inst_internal_error;		/* Must establish coms before calling init */
@@ -401,8 +440,8 @@ dtp51_init_inst(inst *pp) {
 	/* Set a strip length of 1, to ensure parsing is invalidated */
 	build_strip(tbuf, "       ", 1, "   ", 30);
 	
-	if ((rv = dtp51_fcommand(p, "0105DS\r", buf, MAX_MES_SIZE, '*', 1, 0.5)) != DTP51_OK)
-		return interp_code(pp, rv); 
+	if ((rv = dtp51_fcommand(p, "0105DS\r", buf, MAX_MES_SIZE, "*", 1, 0.5)) != DTP51_OK)
+		return dtp51_interp_code(pp, rv); 
 
 	/* Expect '*' as response */
 	if (buf[0] != '*' || buf[1] != '\000')
@@ -415,10 +454,10 @@ dtp51_init_inst(inst *pp) {
 	/* This is the only mode supported */
 	p->trig = inst_opt_trig_switch;
 
-	if (ev == inst_ok)
-		p->inited = 1;
+	p->inited = 1;
+	a1logd(p->log, 2, "dtp51_init_inst: instrument inited OK\n");
 
-	return ev;
+	return inst_ok;
 }
 
 /* Read a set of strips */
@@ -447,8 +486,8 @@ ipatch *vals) {		/* Pointer to array of instrument patch values */
 
 	build_strip(tbuf, name, npatch, pname, sguide);
 	
-	if ((rv = dtp51_fcommand(p, "0105DS\r", buf, MAX_RD_SIZE, '*', 1, 0.5)) != DTP51_OK)
-		return interp_code(pp, rv); 
+	if ((rv = dtp51_fcommand(p, "0105DS\r", buf, MAX_RD_SIZE, "*", 1, 0.5)) != DTP51_OK)
+		return dtp51_interp_code(pp, rv); 
 
 	/* Expect '*' as response */
 	if (buf[0] != '*' || buf[1] != '\000')
@@ -465,25 +504,28 @@ ipatch *vals) {		/* Pointer to array of instrument patch values */
 		return ev;
 	}
 
-	/* Wait for the Read status, or a user abort - allow 5 munutes. */
-	ev = dtp51_command(p, "", buf, MAX_RD_SIZE, 5 * 60.0);
+	/* Wait for the Read status, or a user abort (no user trigger!) */
+	for (;;) {
+		if ((ev = dtp51_read(p, buf, MAX_RD_SIZE, 0.5)) != inst_ok) {
+			if ((ev & inst_mask) == inst_needs_cal)
+				p->need_cal = 1;
 
-#ifdef NEVER		/* Why was this being done /? */
-	/* Soft reset the unit */
-	dtp51_command(p, "0PR\r", buf, MAX_RD_SIZE); /* Soft Reset it */
+			if ((ev & inst_imask) == DTP51_TIMEOUT) {	/* Timed out */
+				if (p->uicallback != NULL) {	/* Check for user trigger */
+					if ((ev = p->uicallback(p->uic_cntx, inst_armed)) == inst_user_abort) {
+						return ev;		/* User abort */
+					}
+				}
+			} else
+				return ev;			/* Instrument or comms error */
 
-	if (ev != inst_user_abort && ev != inst_user_term && ev != inst_user_cmnd)
-		sleep(2);	/* Let it recover from reset */
-#endif
-
-	if (ev != inst_ok) {
-		if ((ev & inst_mask) == inst_needs_cal)
-			p->need_cal = 1;
-		return ev; 	/* misread or user abort */
+		} else {
+			break;					/* Switch activated */
+		}
 	}
 
-	if (p->trig_return)
-		printf("\n");
+	if (p->uicallback)	/* Notify of trigger */
+		p->uicallback(p->uic_cntx, inst_triggered); 
 
 	/* Gather the results */
 	if ((ev = dtp51_command(p, "TS\r", buf, MAX_RD_SIZE, 0.5 + npatch * 0.1)) != inst_ok)
@@ -498,20 +540,6 @@ ipatch *vals) {		/* Pointer to array of instrument patch values */
 	for (tp = buf, i = 0; i < npatch; i++) {
 		if (*tp == '\000')
 			return inst_protocol_error;
-#ifdef NEVER	/* Lab */
-		if (sscanf(tp, " L %lf a %lf b %lf ",
-		           &vals[i].Lab[0], &vals[i].Lab[1], &vals[i].Lab[2]) != 3) {
-			if (sscanf(tp, " l %lf a %lf b %lf ",
-			           &vals[i].Lab[0], &vals[i].Lab[1], &vals[i].Lab[2]) != 3) {
-				return inst_protocol_error;
-			}
-		}
-		vals[i].XYZ_v = 0;
-		vals[i].aXYZ_v = 0
-		vals[i].Lab_v = 1;
-		vals[i].sp.spec_n = 0;
-		vals[i].duration = 0.0;
-#else /* XYZ */
 		if (sscanf(tp, " X %lf Y %lf Z %lf ",
 		           &vals[i].XYZ[0], &vals[i].XYZ[1], &vals[i].XYZ[2]) != 3) {
 			if (sscanf(tp, " x %lf y %lf z %lf ",
@@ -519,12 +547,10 @@ ipatch *vals) {		/* Pointer to array of instrument patch values */
 				return inst_protocol_error;
 			}
 		}
+		vals[i].mtype = inst_mrt_reflective;
 		vals[i].XYZ_v = 1;
-		vals[i].aXYZ_v = 0;
-		vals[i].Lab_v = 0;
 		vals[i].sp.spec_n = 0;
 		vals[i].duration = 0.0;
-#endif
 		tp += strlen(tp) + 1;
 	}
 
@@ -537,20 +563,23 @@ ipatch *vals) {		/* Pointer to array of instrument patch values */
 	return inst_ok;
 }
 
-/* Determine if a calibration is needed. Returns inst_calt_none if not, */
-/* inst_calt_unknown if it is unknown, or inst_calt_XXX if needs calibration, */
-/* and the first type of calibration needed. */
-inst_cal_type dtp51_needs_calibration(inst *pp) {
+/* Return needed and available inst_cal_type's */
+static inst_code dtp51_get_n_a_cals(inst *pp, inst_cal_type *pn_cals, inst_cal_type *pa_cals) {
 	dtp51 *p = (dtp51 *)pp;
-
-	if (!p->gotcoms)
-		return inst_no_coms;
-	if (!p->inited)
-		return inst_no_init;
-
+	inst_cal_type n_cals = inst_calt_none;
+	inst_cal_type a_cals = inst_calt_none;
+		
 	if (p->need_cal)
-		return inst_calt_ref_white;
-	return inst_calt_unknown;
+		n_cals |= inst_calt_ref_white;
+	a_cals |= inst_calt_ref_white;
+
+	if (pn_cals != NULL)
+		*pn_cals = n_cals;
+
+	if (pa_cals != NULL)
+		*pa_cals = a_cals;
+
+	return inst_ok;
 }
 
 /* Request an instrument calibration. */
@@ -564,11 +593,13 @@ inst_cal_type dtp51_needs_calibration(inst *pp) {
 /* Perhaps we should do so ??? */
 inst_code dtp51_calibrate(
 inst *pp,
-inst_cal_type calt,		/* Calibration type. inst_calt_all for all neeeded */
+inst_cal_type *calt,	/* Calibration type to do/remaining */
 inst_cal_cond *calc,	/* Current condition/desired condition */
 char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 ) {
 	dtp51 *p = (dtp51 *)pp;
+	inst_code ev;
+    inst_cal_type needed, available;
 
 	if (!p->gotcoms)
 		return inst_no_coms;
@@ -577,19 +608,41 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 
 	id[0] = '\000';
 
-	if (calt == inst_calt_all)
-		calt = inst_calt_ref_white;
+	if ((ev = dtp51_get_n_a_cals((inst *)p, &needed, &available)) != inst_ok)
+		return ev;
 
-	if (calt != inst_calt_ref_white)
-		return inst_unsupported;
+	/* Translate inst_calt_all/needed into something specific */
+	if (*calt == inst_calt_all
+	 || *calt == inst_calt_needed
+	 || *calt == inst_calt_available) {
+		if (*calt == inst_calt_all) 
+			*calt = (needed & inst_calt_n_dfrble_mask) | inst_calt_ap_flag;
+		else if (*calt == inst_calt_needed)
+			*calt = needed & inst_calt_n_dfrble_mask;
+		else if (*calt == inst_calt_available)
+			*calt = available & inst_calt_n_dfrble_mask;
 
-	if (*calc == inst_calc_uop_ref_white) {
-		p->need_cal = 0;
-		return inst_ok;	/* Calibration done */
+		a1logd(p->log,4,"dtp51_calibrate: doing calt 0x%x\n",calt);
+
+		if ((*calt & inst_calt_n_dfrble_mask) == 0)		/* Nothing todo */
+			return inst_ok;
 	}
 
-	*calc = inst_calc_uop_ref_white;	/* Need to ask user to do calibration */
-	return inst_cal_setup;
+	/* See if it's a calibration we understand */
+	if (*calt & ~available & inst_calt_all_mask) { 
+		return inst_unsupported;
+	}
+
+	if (*calt & inst_calt_ref_white) {
+
+		if (*calc != inst_calc_uop_ref_white) {
+			*calc = inst_calc_uop_ref_white;	/* Ask user to do calibration */
+			return inst_cal_setup;
+		}
+		p->need_cal = 0;
+		*calt &= ~inst_calt_ref_white;
+	}
+	return inst_ok;
 }
 
 /* Error codes interpretation */
@@ -598,14 +651,6 @@ dtp51_interp_error(inst *pp, int ec) {
 //	dtp51 *p = (dtp51 *)pp;
 	ec &= inst_imask;
 	switch (ec) {
-		case DTP51_USER_ABORT:
-			return "User hit Abort key";
-		case DTP51_USER_TERM:
-			return "User hit Terminate key";
-		case DTP51_USER_TRIG:
-			return "User hit Trigger key";
-		case DTP51_USER_CMND:
-			return "User hit a Command key";
 		case DTP51_INTERNAL_ERROR:
 			return "Internal software error";
 		case DTP51_COMS_FAIL:
@@ -694,7 +739,7 @@ dtp51_interp_error(inst *pp, int ec) {
 
 /* Convert a machine specific error code into an abstract dtp code */
 static inst_code 
-interp_code(inst *pp, int ec) {
+dtp51_interp_code(inst *pp, int ec) {
 //	dtp51 *p = (dtp51 *)pp;
 
 	ec &= inst_imask;
@@ -714,15 +759,6 @@ interp_code(inst *pp, int ec) {
 
 		case DTP51_DATA_PARSE_ERROR:
 			return inst_protocol_error | ec;
-
-		case DTP51_USER_ABORT:
-			return inst_user_abort | ec;
-		case DTP51_USER_TERM:
-			return inst_user_term | ec;
-		case DTP51_USER_TRIG:
-			return inst_user_trig | ec;
-		case DTP51_USER_CMND:
-			return inst_user_cmnd | ec;
 
 		case DTP51_NO_DATA_AVAILABLE:
 		case DTP51_LAMP_MARGINAL:
@@ -753,48 +789,58 @@ dtp51_del(inst *pp) {
 	free(p);
 }
 
-/* Return the instrument capabilities */
-inst_capability dtp51_capabilities(inst *pp) {
-//	dtp51 *p = (dtp51 *)pp;
+/* Return the instrument mode capabilities */
+void dtp51_capabilities(inst *pp,
+inst_mode *pcap1,
+inst2_capability *pcap2,
+inst3_capability *pcap3) {
+	inst_mode cap1= 0;
+	inst2_capability cap2 = 0;
 
-	return 
-	  inst_ref_strip
-	| inst_colorimeter
-	  ;
+	cap1 |= inst_mode_ref_strip
+	     |  inst_mode_colorimeter
+	        ;
+
+	cap2 |= inst2_switch_trig	/* Can only be triggered by microswitch */
+	        ;
+
+	if (pcap1 != NULL)
+		*pcap1 = cap1;
+	if (pcap2 != NULL)
+		*pcap2 = cap2;
+	if (pcap3 != NULL)
+		*pcap3 = inst3_none;
 }
 
-/* Return the instrument capabilities 2 */
-inst2_capability dtp51_capabilities2(inst *pp) {
-	inst2_capability rv;
-
-	rv = inst2_cal_ref_white		/* Currently user operated though */
-	   | inst2_switch_trig		/* Can only be triggered by microswitch */
-	   ;
-
-	return rv;
-}
-
-/* Set device measurement mode */
-inst_code dtp51_set_mode(inst *pp, inst_mode m)
-{
-	inst_mode mm;		/* Measurement mode */
+/* Check device measurement mode */
+inst_code dtp51_check_mode(inst *pp, inst_mode m) {
+	inst_mode cap;
 
 	if (!pp->gotcoms)
 		return inst_no_coms;
 	if (!pp->inited)
 		return inst_no_init;
 
-	/* The measurement mode portion of the mode */
-	mm = m & inst_mode_measurement_mask;
+	pp->capabilities(pp, &cap, NULL, NULL);
+
+	/* Simple test */
+	if (m & ~cap)
+		return inst_unsupported;
 
 	/* only reflection strip measurement mode suported */
-	if (mm != inst_mode_ref_strip) {
+	if (!IMODETST(m, inst_mode_ref_strip)) {
 		return inst_unsupported;
 	}
 
-	/* Spectral mode is not supported */
-	if (m & inst_mode_spectral)
-		return inst_unsupported;
+	return inst_ok;
+}
+
+/* Set device measurement mode */
+inst_code dtp51_set_mode(inst *pp, inst_mode m) {
+	inst_code ev;
+
+	if ((ev = dtp51_check_mode(pp, m)) != inst_ok)
+		return ev;
 
 	return inst_ok;
 }
@@ -804,17 +850,14 @@ inst_code dtp51_set_mode(inst *pp, inst_mode m)
 
 /* 
  * set or reset an optional mode
- * We assume that the instrument has been initialised.
+ *
+ * Since there is no interaction with the instrument,
+ * was assume that all of these can be done before initialisation.
  */
 static inst_code
-dtp51_set_opt_mode(inst *pp, inst_opt_mode m, ...)
+dtp51_get_set_opt(inst *pp, inst_opt_type m, ...)
 {
 	dtp51 *p = (dtp51 *)pp;
-
-	if (!p->gotcoms)
-		return inst_no_coms;
-	if (!p->inited)
-		return inst_no_init;
 
 	/* Record the trigger mode */
 	if (m == inst_opt_trig_switch) {	/* Can only be triggered this way */
@@ -822,46 +865,33 @@ dtp51_set_opt_mode(inst *pp, inst_opt_mode m, ...)
 		return inst_ok;
 	}
 
-	if (m == inst_opt_trig_return) {
-		p->trig_return = 1;
-		return inst_ok;
-	} else if (m == inst_opt_trig_no_return) {
-		p->trig_return = 0;
-		return inst_ok;
-	}
-
 	return inst_unsupported;
 }
 
-
 /* Constructor */
-extern dtp51 *new_dtp51(icoms *icom, instType itype, int debug, int verb)
-{
+extern dtp51 *new_dtp51(icoms *icom, instType itype) {
 	dtp51 *p;
-	if ((p = (dtp51 *)calloc(sizeof(dtp51),1)) == NULL)
-		error("dtp51: malloc failed!");
+	if ((p = (dtp51 *)calloc(sizeof(dtp51),1)) == NULL) {
+		a1loge(icom->log, 1, "new_dtp51: malloc failed!\n");
+		return NULL;
+	}
 
-	if (icom == NULL)
-		p->icom = new_icoms();
-	else
-		p->icom = icom;
-
-	p->debug = debug;
-	p->verb = verb;
+	p->log = new_a1log_d(icom->log);
 
 	p->init_coms    	= dtp51_init_coms;
 	p->init_inst    	= dtp51_init_inst;
 	p->capabilities 	= dtp51_capabilities;
-	p->capabilities2 	= dtp51_capabilities2;
+	p->check_mode       = dtp51_check_mode;
 	p->set_mode     	= dtp51_set_mode;
-	p->set_opt_mode     = dtp51_set_opt_mode;
+	p->get_set_opt      = dtp51_get_set_opt;
 	p->read_strip   	= dtp51_read_strip;
-	p->needs_calibration = dtp51_needs_calibration;
+	p->get_n_a_cals     = dtp51_get_n_a_cals;
 	p->calibrate    	= dtp51_calibrate;
 	p->interp_error 	= dtp51_interp_error;
 	p->del          	= dtp51_del;
 
-	p->itype = itype;
+	p->icom = icom;
+	p->itype = icom->itype;
 
 	return p;
 }

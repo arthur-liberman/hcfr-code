@@ -26,7 +26,7 @@
 @abstract    Fenetre plein Žcran
 @discussion  Sous classe de NSWindow qui s'affiche en plein Žcran.
 */
-@interface HCFRFullScreenWindow : NSWindow {
+@interface HCFRFullScreenWindow : NSWindow<NSWindowDelegate> {
 }
 /*!
     @function 

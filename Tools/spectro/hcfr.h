@@ -8,7 +8,7 @@
  * Author: Graeme W. Gill
  * Date:   20/1/2007
  *
- * Copyright 2007, Graeme W. Gill
+ * Copyright 2013, Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -64,10 +64,6 @@
 #define HCFR_COMS_FAIL					0x62		/* Communication failure */
 #define HCFR_UNKNOWN_MODEL				0x63		/* Not an HCFR */
 #define HCFR_DATA_PARSE_ERROR  			0x64		/* Read data parsing error */
-#define HCFR_USER_ABORT		    		0x65		/* User hit abort */
-#define HCFR_USER_TERM		    		0x66		/* User hit terminate */
-#define HCFR_USER_TRIG 		    		0x67		/* User hit trigger */
-#define HCFR_USER_CMND		    		0x68		/* User hit command */
 
 /* Real error code */
 #define HCFR_OK   						0x00
@@ -84,23 +80,22 @@ struct _hcfr {
 
 	int maj, min;			/* Firmware version */
 
-	int cal_mode;			/* Calibration type */
-							/* 0 = CRT */
-							/* 1 = LCD */
-							/* 2 = raw RGB from sensors */
-
-	double crt[3][3];		/* CRT RGB->XYZ transformation matrix */
 	double lcd[3][3];		/* CRT RGB->XYZ transformation matrix */
+	double crt[3][3];		/* CRT RGB->XYZ transformation matrix */
 
-	double ccmat[3][3];		/* Colorimeter correction matrix */
+	inst_disptypesel *dtlist;	/* Display Type list */
+	int ndtlist;				/* Number of valid dtlist entries */
+	int ix;						/* 0 = CRT, 1 = LCD, 2 = raw RGB from sensors */
+	int cbid;					/* calibration base ID, 0 if not a base */
+	int refrmode;				/* Refresh mode (always 0) */
+	double ccmat[3][3];			/* Colorimeter correction matrix */
 
-	inst_opt_mode trig;		/* Reading trigger mode */
-	int trig_return;			/* Emit "\n" after trigger */
+	inst_opt_type trig;		/* Reading trigger mode */
 
 	}; typedef struct _hcfr hcfr;
 
 /* Constructor */
-extern hcfr *new_hcfr(icoms *icom, instType itype, int debug, int verb);
+extern hcfr *new_hcfr(icoms *icom, instType itype);
 
 
 #define HCFR_H

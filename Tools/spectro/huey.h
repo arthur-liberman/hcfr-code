@@ -8,7 +8,7 @@
  * Author: Graeme W. Gill
  * Date:   7/10/2007
  *
- * Copyright 2006 - 2007, Graeme W. Gill
+ * Copyright 2006 - 2013, Graeme W. Gill
  * All rights reserved.
  *
  * (Based on i1disp.h)
@@ -45,10 +45,6 @@
 #define HUEY_COMS_FAIL				0x62		/* Communication failure */
 #define HUEY_UNKNOWN_MODEL			0x63		/* Not an huey */
 #define HUEY_DATA_PARSE_ERROR  		0x64		/* Read data parsing error */
-#define HUEY_USER_ABORT			    0x65		/* User hit abort */
-#define HUEY_USER_TERM		    	0x66		/* User hit terminate */
-#define HUEY_USER_TRIG 			    0x67		/* User hit trigger */
-#define HUEY_USER_CMND		    	0x68		/* User hit command */
 
 /* Real error code */
 #define HUEY_OK   					0x00
@@ -91,8 +87,7 @@ struct _huey {
 
 	inst_mode mode;				/* Currently selected mode */
 
-	inst_opt_mode trig;			/* Reading trigger mode */
-	int trig_return;			/* Emit "\n" after trigger */
+	inst_opt_type trig;			/* Reading trigger mode */
 
 	/* EEPROM registers */
 	/* Number is the register address, and B, S, W, F indicate the type/size */
@@ -114,13 +109,17 @@ struct _huey {
 	double  amb_cal;			/* Ambient calibration value */
 
 	/* Computed factors and state */
-	int     crt;				/* NZ if set to CRT */ 
 	double  clk_freq;			/* Inverted clk_prd, ie master clock frequency, typically apx 1e6 */
 
 	int     sampno;				/* Number of CRT samples we're aiming to take, def 100 */
 	int     int_clocks;			/* Integration time in clocks */
 
-	double ccmat[3][3];			/* Colorimeter correction matrix */
+	inst_disptypesel *dtlist;	/* Display Type list */
+	int     ndtlist;			/* Number of valid dtlist entries */
+	int     icx;				/* 0 = LCD, 1 = CRT matrix */
+	int     cbid;				/* calibration base ID, 0 if not a base */
+	int     refrmode;			/* Refresh mode (always 0) */
+	double  ccmat[3][3];		/* Colorimeter correction matrix */
 
 	/* Other state */
 	int     led_state;			/* Current LED state */
@@ -128,7 +127,7 @@ struct _huey {
 }; typedef struct _huey huey;
 
 /* Constructor */
-extern huey *new_huey(icoms *icom, instType itype, int debug, int verb);
+extern huey *new_huey(icoms *icom, instType itype);
 
 
 #define HUEY_H
