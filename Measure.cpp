@@ -5117,7 +5117,7 @@ void CMeasure::AppendMeasurements(const CColor & aColor)
 CColor CMeasure::GetRefPrimary(int i) const
 {
 	double gamma=GetConfig()->m_GammaAvg;
-	bool isSpecial = (GetColorReference().m_standard==CC6||GetColorReference().m_standard==CC6||GetColorReference().m_standard==CC6);
+	bool isSpecial = (GetColorReference().m_standard==HDTVa||GetColorReference().m_standard==CC6||GetColorReference().m_standard==CC6a);
 	CColorReference cRef=GetColorReference();
 	CColor	aColorr,aColorg,aColorb;
 	aColorr.SetXYZValue (cRef.GetRed());
