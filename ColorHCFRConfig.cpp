@@ -306,7 +306,7 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_bDisplayTestColors=GetProfileInt("References","DisplayTestColors",1);
 	m_bContinuousMeasures=GetProfileInt("References","ContinuousMeasures",1);
 	m_bDetectPrimaries=GetProfileInt("References","DetectPrimaries",1);
-	m_latencyTime=GetProfileInt("References","IrisLatencyTime",100);
+	m_latencyTime=GetProfileInt("References","IrisLatencyTime",250);
     // don't allow less than 100ms for latency, give windows and display a chance
     // to show the image 
     m_latencyTime = max(m_latencyTime, 100);

@@ -237,7 +237,7 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 	value=max(aRGBValue[2]*gain+offset,0);
 	simulColor[2]=(pow(value/100.0,gamma));
 
-	Sleep(750);		// Sleep 200 ms to simulate acquisition
+	Sleep(100);		// Sleep 200 ms to simulate acquisition (iris delay adds additional)
 
 	ColorRGB colMeasure(simulColor);
 	
