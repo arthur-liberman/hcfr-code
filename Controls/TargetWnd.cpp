@@ -145,6 +145,7 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize)
 			centerXYZ = GetColorReference().GetBlue();
 			switch (GetConfig()->m_colorStandard)
 			{
+				case HDTVa:
 						nR = 49;
 						nG = 49;
 						nB = 128;

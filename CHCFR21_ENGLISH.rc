@@ -521,10 +521,10 @@ BEGIN
     LTEXT           "Reading Type",IDC_STATIC,13,53,60,8,0,0,HIDC_STATIC
     COMBOBOX        IDC_ARGYLLSENSOR_READINGTYPE_COMBO,81,50,205,82,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     CHECKBOX        "Use Hi-Res Mode (i1Pro && Colormunki Photo Only)",IDC_ARGYLL_SENSOR_HIRES,13,90,184,10,WS_GROUP
-    GROUPBOX        "Calibration",IDC_STATIC,6,110,142,39
-    PUSHBUTTON      "Calibrate meter",IDC_ARGYLL_CALIBRATE,15,124,116,14
+    GROUPBOX        "Calibration",IDC_STATIC,6,110,297,39
+    PUSHBUTTON      "Calibrate meter",IDC_ARGYLL_CALIBRATE,15,124,270,14
     CONTROL         "Debug (save data in decoder.log)",IDC_ARGYLL_SENSOR_DEBUG_CB,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,156,184,10
+                    "Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_DISABLED | WS_GROUP | WS_TABSTOP,14,156,184,10
     COMBOBOX        IDC_ARGYLLSENSOR_SPECTRALTYPE_COMBO,81,69,205,82,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     LTEXT           "Spectral Sample",IDC_STATIC,13,71,52,8
 END
@@ -1370,6 +1370,7 @@ BEGIN
         MENUITEM "Display saturations targets", IDM_CIE_SHOWSATURATIONSCALETARG
         MENUITEM "Display color checker measures", IDM_CIE_SHOWCCSCALE
         MENUITEM "Display color checker targets", IDM_CIE_SHOWCCSCALETARG
+        MENUITEM "Display free measures",       IDM_CIE_SHOWMEASUREMENTS
         MENUITEM "Display reference measure",   IDM_LUM_GRAPH_DATAREF
         MENUITEM SEPARATOR
         MENUITEM "Display background",          IDM_CIE_SHOWBACKGROUND
@@ -2165,8 +2166,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3, 0, 5, 2
- PRODUCTVERSION 3, 0, 5, 2
+ FILEVERSION 3, 1, 0, 0
+ PRODUCTVERSION 3, 1, 0, 0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2184,12 +2185,12 @@ BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "CompanyName", "Association Homecinema Francophone"
             VALUE "FileDescription", "HCFR Colorimeter resources"
-            VALUE "FileVersion", "3, 0, 5, 2"
+            VALUE "FileVersion", "3, 1, 0, 0"
             VALUE "InternalName", "CHCFR21_ENGLISH"
             VALUE "LegalCopyright", "Copyright (C) 2005-2008"
             VALUE "OriginalFilename", "CHCFR21_ENGLISH.DLL"
             VALUE "ProductName", "HCFR Colorimeter English langage"
-            VALUE "ProductVersion", "3, 0, 5, 2"
+            VALUE "ProductVersion", "3, 1, 0, 0"
         END
     END
     BLOCK "VarFileInfo"

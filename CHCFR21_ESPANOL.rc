@@ -1493,6 +1493,7 @@ BEGIN
         MENUITEM "Display saturations targets", IDM_CIE_SHOWSATURATIONSCALETARG
         MENUITEM "Display color checker measures", IDM_CIE_SHOWCCSCALE
         MENUITEM "Display color checker targets", IDM_CIE_SHOWCCSCALETARG
+        MENUITEM "Display free measures",       IDM_CIE_SHOWMEASUREMENTS
         MENUITEM "Affiche la mesure de référence", IDM_LUM_GRAPH_DATAREF
         MENUITEM SEPARATOR
         MENUITEM "Affiche le fond",             IDM_CIE_SHOWBACKGROUND
@@ -2289,8 +2290,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3, 0, 5, 2
- PRODUCTVERSION 3, 0, 5, 2
+ FILEVERSION 3, 1, 0, 0
+ PRODUCTVERSION 3, 1, 0, 0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2308,12 +2309,12 @@ BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "CompanyName", "Association Homecinema Francophone"
             VALUE "FileDescription", "Resources Colorimètre HCFR"
-            VALUE "FileVersion", "3, 0, 5, 2"
+            VALUE "FileVersion", "3, 1, 0, 0"
             VALUE "InternalName", "CHCFR21_ESPAÑOL"
             VALUE "LegalCopyright", "Copyright (C) 2005-2008"
             VALUE "OriginalFilename", "CHCFR21_ESPAÑOL.DLL"
             VALUE "ProductName", "Colorimètre HCFR langage Español"
-            VALUE "ProductVersion", "3, 0, 5, 2"
+            VALUE "ProductVersion", "3, 1, 0, 0"
         END
     END
     BLOCK "VarFileInfo"
