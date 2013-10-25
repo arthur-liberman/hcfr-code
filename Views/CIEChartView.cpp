@@ -42,7 +42,7 @@ extern void DrawCIEChart(CDC* pDC,int aWidth, int aHeight, BOOL doFullChart, BOO
 extern void DrawDeltaECurve(CDC* pDC, int cxMax, int cyMax, double DeltaE, BOOL bCIEuv );
 
 #define FX_MINSIZETOSHOW_SCALEDETAILS 300
-#define FX_MINSIZETOSHOW_TRIANGLEDETAILS 200
+#define FX_MINSIZETOSHOW_TRIANGLEDETAILS 100
 #define FX_MINSIZETOSHOW_REFDETAILS 300
 
 /////////////////////////////////////////////////////////////////////////////
