@@ -24,7 +24,7 @@
 			UseOfMFC="1"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
-			WholeProgramOptimization="1"
+			WholeProgramOptimization="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -2535,6 +2535,28 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath="Sensors\SpectralSampleDlg.cpp"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+				</File>
+				<File
 					RelativePath="Sensors\Spyder3Sensor.cpp"
 					>
 					<FileConfiguration
@@ -2602,28 +2624,6 @@
 				</File>
 				<File
 					RelativePath="Sensors\SpyderIIsensorproppage.cpp"
-					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="Sensors\SpectralSampleDlg.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -3221,6 +3221,10 @@
 					>
 				</File>
 				<File
+					RelativePath="Sensors\SpectralSampleDlg.h"
+					>
+				</File>
+				<File
 					RelativePath="Sensors\Spyder3Sensor.h"
 					>
 				</File>
@@ -3234,10 +3238,6 @@
 				</File>
 				<File
 					RelativePath="Sensors\SpyderIIsensorproppage.h"
-					>
-				</File>
-				<File
-					RelativePath="Sensors\SpectralSampleDlg.h"
 					>
 				</File>
 			</Filter>

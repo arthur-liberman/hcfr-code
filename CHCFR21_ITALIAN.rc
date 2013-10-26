@@ -18,10 +18,10 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// French (France) resources
+// Italian (Italian) resources
 
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRA)
-LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ITA)
+LANGUAGE LANG_ITALIAN, SUBLANG_ITALIAN
 #pragma code_page(1252)
 
 /////////////////////////////////////////////////////////////////////////////
@@ -92,7 +92,7 @@ BEGIN
 END
 #endif    // APSTUDIO_INVOKED
 
-#endif    // French (France) resources
+#endif    // Italian (Italian) Resources
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -366,9 +366,9 @@ BEGIN
     GROUPBOX        "Display mode",IDC_STATIC,9,48,177,35,WS_GROUP
     CONTROL         "GDI",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,61,29,10
     CONTROL         "Overlay",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,44,61,40,10
-    CONTROL         "madVR",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,82,61,40,10
+    CONTROL         "madVR",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,84,61,36,10
     CONTROL         "GDI(no background)",IDC_RADIO4,"Button",BS_AUTORADIOBUTTON,13,72,80,10
-    PUSHBUTTON      "Test Overlay",IDC_OVERLAY,122,68,51,12,WS_GROUP
+    PUSHBUTTON      "Test Overlay",IDC_OVERLAY,122,69,51,12,WS_GROUP
     GROUPBOX        "Gray Scale (GDI)",IDC_STATIC_GROUP,9,87,167,27,WS_GROUP
     CONTROL         "0 - 255",IDC_RGBLEVEL_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,99,38,10
     CONTROL         "16 - 235",IDC_RGBLEVEL_RADIO2,"Button",BS_AUTORADIOBUTTON,69,99,42,10
@@ -521,11 +521,12 @@ BEGIN
     COMBOBOX        IDC_ARGYLLSENSOR_DISPLAYTYPE_COMBO,81,32,206,82,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     LTEXT           "Reading Type",IDC_STATIC,13,53,60,8,0,0,HIDC_STATIC
     COMBOBOX        IDC_ARGYLLSENSOR_READINGTYPE_COMBO,81,50,205,82,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    CHECKBOX        "Use Hi-Res Mode (i1Pro && Colormunki Photo Only)",IDC_ARGYLL_SENSOR_HIRES,13,90,184,10,WS_GROUP
+    CONTROL         "Use Hi-Res Mode (i1Pro && Colormunki Photo Only)",IDC_ARGYLL_SENSOR_HIRES,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,90,184,10
     GROUPBOX        "Calibration",IDC_STATIC,6,110,297,39
     PUSHBUTTON      "Calibrate meter",IDC_ARGYLL_CALIBRATE,15,124,270,14
-    CONTROL         "Debug (save data in decoder.log)",IDC_ARGYLL_SENSOR_DEBUG_CB,
-                    "Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_DISABLED | WS_GROUP | WS_TABSTOP,14,156,184,10
+    CONTROL         "Debug (save data in HCFR.log)",IDC_ARGYLL_SENSOR_DEBUG_CB,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,156,184,10
     COMBOBOX        IDC_ARGYLLSENSOR_SPECTRALTYPE_COMBO,81,69,205,82,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     LTEXT           "Spectral Sample",IDC_STATIC,13,71,52,8
 END
@@ -721,7 +722,6 @@ BEGIN
     LTEXT           "Number of grayscale levels",IDC_STATIC,7,11,86,8
     COMBOBOX        IDC_COMBO_GRAYS,133,7,40,48,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     COMBOBOX        IDC_COMBO_EDIT_GRAYS,133,7,40,48,CBS_DROPDOWN | WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    CONTROL         "Grayscale in NTSC IRE Levels",IDC_CHECK_IRE,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_DISABLED | WS_TABSTOP,7,24,113,10
     LTEXT           "Number of near black levels",IDC_STATIC,7,40,89,8
     EDITTEXT        IDC_EDIT_NEARBLACK,133,36,40,14,ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "Number of near white levels",IDC_STATIC,7,57,88,8
@@ -730,7 +730,8 @@ BEGIN
     EDITTEXT        IDC_EDIT_SAT,133,70,40,14,ES_AUTOHSCROLL | WS_GROUP
     DEFPUSHBUTTON   "OK",IDOK,7,91,50,14,WS_GROUP
     PUSHBUTTON      "Cancel",IDCANCEL,65,91,50,14,WS_GROUP
-    PUSHBUTTON      "Aide",IDHELP,123,91,50,14,WS_GROUP
+    PUSHBUTTON      "Help",IDHELP,123,91,50,14,WS_GROUP
+    CONTROL         "Grayscale in NTSC IRE Levels",IDC_CHECK_IRE,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_DISABLED | WS_TABSTOP,7,24,113,10
 END
 
 IDD_MAINVIEW_FORM DIALOGEX 0, 0, 523, 333
@@ -1896,7 +1897,7 @@ BEGIN
     BEGIN
         MENUITEM "&Gray scale",                 IDM_MEASURE_GRAYSCALE
         MENUITEM "&Primary colors",             IDM_MEASURE_PRIMARIES
-        MENUITEM "Primary and &Secondary colors", IDM_MEASURE_SECONDARIES
+        MENUITEM "Primary and &Secondary colors \tF4", IDM_MEASURE_SECONDARIES
         MENUITEM "Gray scale and colors\tF5",   IDM_MEASURE_GRAYSCALE_COLORS
         MENUITEM SEPARATOR
         MENUITEM "Near &black gray scale",      IDM_MEASURE_NEARBLACK
@@ -1918,14 +1919,14 @@ BEGIN
         MENUITEM "&Contrast",                   IDM_MEASURE_CONTRAST
         MENUITEM SEPARATOR
         MENUITEM "&Unique free measure\tF7",    IDM_SINGLE_MEASUREMENT
-        MENUITEM "&Continuous measures\tF8",    IDM_CONTINUOUS_MEASUREMENT
+        MENUITEM "C&ontinuous measures\tF8",    IDM_CONTINUOUS_MEASUREMENT
         MENUITEM SEPARATOR
         POPUP "&Sensor"
         BEGIN
             MENUITEM "&Configure...",               IDM_CONFIGURE_SENSOR
             MENUITEM "&Select...",                  IDM_CHANGE_SENSOR
         END
-        POPUP "&Generator"
+        POPUP "G&enerator"
         BEGIN
             MENUITEM "&Configure...",               IDM_CONFIGURE_GENERATOR
             MENUITEM "&Select...",                  IDM_CHANGE_GENERATOR
@@ -2416,8 +2417,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,5,2
- PRODUCTVERSION 3,0,5,2
+ FILEVERSION 3,1,0,0
+ PRODUCTVERSION 3,1,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2435,12 +2436,12 @@ BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "CompanyName", "Association Homecinema Francophone"
             VALUE "FileDescription", "HCFR Colorimeter resources"
-            VALUE "FileVersion", "3, 0, 5, 2"
+            VALUE "FileVersion", "3, 1, 0, 0"
             VALUE "InternalName", "CHCFR21_ENGLISH"
             VALUE "LegalCopyright", "Copyright (C) 2005-2008"
             VALUE "OriginalFilename", "CHCFR21_ENGLISH.DLL"
             VALUE "ProductName", "HCFR Colorimeter English langage"
-            VALUE "ProductVersion", "3, 0, 5, 2"
+            VALUE "ProductVersion", "3, 1, 0, 0"
         END
     END
     BLOCK "VarFileInfo"
@@ -2664,7 +2665,7 @@ BEGIN
     IDM_LOAD_CALIBRATION_FILE "Select new calibration file"
     IDM_CIE_SHOWSATURATIONSCALETARG 
                             "Show saturation scale targets\nDisplay saturation targets"
-    IDM_MEASURE_SAT_CC24    "Measure 24 Color Checker Patterns\nMeasure 24 Color Checker Patterns"
+    IDM_MEASURE_SAT_CC24    "Measure color checker patterns\nMeasure color checker patterns"
 END
 
 STRINGTABLE
@@ -3317,7 +3318,7 @@ BEGIN
     IDM_TAB_NEWFRAME        "Open tab in a new window"
     IDM_TAB_DUPLICATE       "Duplicate tab"
     IDM_TAB_ACTIVATE        "Activate tab"
-    IDM_MEASURE_GRAYSCALE   "Mesure gray scale\nMesure gray scale"
+    IDM_MEASURE_GRAYSCALE   "Measure gray scale\nMeasure gray scale"
     IDM_MEASURE_PRIMARIES   "Measure primary colors\nMeasure primary colors"
     IDM_MEASURE_SECONDARIES "Measure primary and secondary colors\nMeasure primary and secondary colors"
     IDM_MEASURE_DEFINESCALE "Define measure parameters (number of levels)"
@@ -3335,7 +3336,7 @@ STRINGTABLE
 BEGIN
     IDM_MEASURE_SAT_ALL     "Measure all colors saturation scales\nMeasure all colors saturation scales"
     IDM_MEASURE_GRAYSCALE_COLORS 
-                            "Mesure gray scale, primary and secondary colors in one operation\nMesure gray scale, primary and secondary colors"
+                            "Measure gray scale, primary and secondary colors in one operation\nMesure gray scale, primary and secondary colors"
     IDM_SIM_NEARBLACK       "Perform simultaneous measuring of near black gray scale using all opened documents sensors\nSimultaneous measures of near black gray scale"
     IDM_SIM_NEARWHITE       "Perform simultaneous measuring of near white gray scale using all opened documents sensors\nSimultaneous measures of near white gray scale"
     IDM_SIM_SAT_RED         "Perform simultaneous measuring of red saturations using all opened documents sensors\nSimultaneous measures of red saturations"
@@ -3371,6 +3372,7 @@ BEGIN
     IDS_RUNPRIMSATON        "Run primary saturation measures on"
     IDS_CREATE_CALIBRATION_FILE "Create a new meter correction file"
     IDS_DONOTUSE_CALIBRATION "Do not use a meter correction file"
+    IDS_RUNPRIMSATON2       "Run primary secondary saturation measures on"
     IDS_ERRMTCSDLL1         "MTCSApi.DLL not found. Cannot use MTCS-C2 device. This DLL can be found in probe software installation directory. Please copy it inside HCFR Colorimeter installation directory. "
     IDS_ERRMTCSDLL2         "Invalid MTCSApi.DLL. Cannot use MTCS-C2 device."
     IDS_MTCSERROR           "MTCSApi.dll returned an error during initialization."

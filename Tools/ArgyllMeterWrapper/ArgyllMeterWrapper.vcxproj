@@ -19,7 +19,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
@@ -52,7 +52,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\spectro;..\..;..\libusb1\libusb;..\libusb1\msvc;..\..\libHCFR;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;NT;WINVER=0x510;_USE_32BIT_TIME_T;USE_LIBUSB1;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;NT;WINVER=0x510;_USE_32BIT_TIME_T;NATIVE_USB;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <ExceptionHandling>Async</ExceptionHandling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -69,7 +69,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>..\spectro;..\..;..\libusb1\libusb;..\libusb1\msvc;..\..\libHCFR;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;NT;WINVER=0x510;_USE_32BIT_TIME_T;USE_LIBUSB1;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;NT;WINVER=0x510;_USE_32BIT_TIME_T;NATIVE_USB;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -77,26 +77,22 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <DisableSpecificWarnings>4200;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ArgyllMeterWrapper.cpp" />
+    <ClCompile Include="CGATSFile.cpp" />
     <ClCompile Include="SpectralSample.cpp" />
     <ClCompile Include="SpectralSampleFiles.cpp" />
-    <ClCompile Include="CGATSFile.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ArgyllMeterWrapper.h" />
+    <ClInclude Include="CGATSFile.h" />
     <ClInclude Include="SpectralSample.h" />
     <ClInclude Include="SpectralSampleFiles.h" />
-    <ClInclude Include="CGATSFile.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\libusb1\libusb-static_2008.vcxproj">
-      <Project>{349ee8f9-7d25-4909-aaf5-ff3fade72187}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
     <ProjectReference Include="..\spectro\spectro.vcxproj">
       <Project>{5aa3f412-d3ab-437e-a8cf-c1b9acbca25e}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
