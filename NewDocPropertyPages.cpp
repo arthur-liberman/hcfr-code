@@ -144,13 +144,13 @@ void CSensorSelectionPropPage::DoDataExchange(CDataExchange* pDX)
             AddSensor(argyllMeters[i]->getMeterName().c_str(), (int)argyllMeters[i]);
         }
         AddSensor(_T("Simulated sensor"), 1);
-        AddSensor(_T("DTP-94"), 3);
-        AddSensor(_T("HCFR Sensor"), 0);
-#ifdef USE_NON_FREE_CODE
+#ifdef USE_NON_FREE_CODE //all should run under ArgyllCMS license
         AddSensor(_T("Spyder II"), 2);
         AddSensor(_T("Eye One"), 4);
         AddSensor(_T("Mazet MTCS-C2"), 5);
         AddSensor(_T("Spyder 3"), 6);
+        AddSensor(_T("DTP-94"), 3);
+        AddSensor(_T("HCFR Sensor"), 0);
 #endif
     }
 
