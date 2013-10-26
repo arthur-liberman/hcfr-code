@@ -3481,7 +3481,7 @@ int recreate				/* nz to re-check for new ccmx & ccss files */
 	/* Create/Re-create a current list of abailable display types */
 	if (p->dtlist == NULL || recreate) {
 		if ((rv = inst_creat_disptype_list(pp, &p->ndtlist, &p->dtlist,
-		    p->_dtlist, p->hwver >= 7 ? 1 : 0 /* doccss*/, 1 /* doccmx */)) != inst_ok)
+		    p->_dtlist, p->hwver >= 7 ? 1 : 0 /* doccss*/, 0 /* doccmx */)) != inst_ok)
 			return rv;
 	}
 
@@ -3554,7 +3554,7 @@ static inst_code set_default_disp_type(spyd2 *p) {
 
 	if (p->dtlist == NULL) {
 		if ((ev = inst_creat_disptype_list((inst *)p, &p->ndtlist, &p->dtlist,
-		    p->_dtlist, p->hwver >= 7 ? 1 : 0 /* doccss*/, 1 /* doccmx */)) != inst_ok)
+		    p->_dtlist, p->hwver >= 7 ? 1 : 0 /* doccss*/, 0 /* doccmx */)) != inst_ok)
 			return ev;
 	}
 
@@ -3586,7 +3586,7 @@ static inst_code spyd2_set_disptype(inst *pp, int ix) {
 
 	if (p->dtlist == NULL) {
 		if ((ev = inst_creat_disptype_list(pp, &p->ndtlist, &p->dtlist,
-		    p->_dtlist, p->hwver >= 7 ? 1 : 0 /* doccss*/, 1 /* doccmx */)) != inst_ok)
+		    p->_dtlist, p->hwver >= 7 ? 1 : 0 /* doccss*/, 0 /* doccmx */)) != inst_ok)
 			return ev;
 	}
 

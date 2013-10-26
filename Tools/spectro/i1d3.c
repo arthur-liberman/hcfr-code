@@ -2271,7 +2271,7 @@ int i1d3_diff_thread(void *pp) {
 		}
 		msec_sleep(100);
 	}
-	a1logd(p->log,3,"Diffuser thread returning\n");
+//	a1logd(p->log,3,"Diffuser thread returning\n"); //hangs program on close when debugging on
 	return rv;
 }
 
@@ -2288,7 +2288,7 @@ i1d3_init_inst(inst *pp) {
 	a1logd(p->log, 2, "i1d3_init_inst: called\n");
 
 	p->rrset = 0;
-
+	
 	if (p->gotcoms == 0)
 		return i1d3_interp_code((inst *)p, I1D3_NO_COMS);	/* Must establish coms first */
 
@@ -2413,6 +2413,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	i1d3 *p = (i1d3 *)pp;
 	int user_trig = 0;
 	int rv = inst_protocol_error;
+	char s_int [256];
 
 	if (!p->gotcoms)
 		return inst_no_coms;
@@ -2451,7 +2452,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	}
 
 	/* Attempt a refresh display frame rate calibration if needed */
-	if (p->dtype != i1d3_munkdisp && p->refrmode != 0 && p->rrset == 0) {
+	if (p->dtype != i1d3_munkdisp && p->refrmode != 0  && p->rrset == 0) {
 		inst_code ev = inst_ok;
 		double minint = 2.0 * p->dinttime;
 
@@ -2472,10 +2473,13 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 			n = (int)ceil(minint/p->refperiod);
 			p->inttime = n * p->refperiod;
 			a1logd(p->log, 3, "i1d3: integration time quantize to %f secs\n",p->inttime);
-
+			sprintf ( s_int, "Refresh rate found = %f Hz.  Integration time quantized to %f secs", 1./p->refperiod, p->inttime );
+			MessageBox(NULL, s_int, "Refresh Calculation Complete", MB_OK);
 		} else {	/* We don't have a period, so simply double the default */
 			p->inttime = minint;
 			a1logd(p->log, 3, "i1d3: integration time integration time doubled to %f secs\n",p->inttime);
+			sprintf ( s_int, "Refresh rate not found.  Integration time set to %f secs", p->inttime );
+			MessageBox(NULL, s_int , "Refresh Calculation Complete", MB_OK);
 		}
 	}
 
@@ -2635,6 +2639,7 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 	i1d3 *p = (i1d3 *)pp;
 	inst_code ev;
     inst_cal_type needed, available;
+	char s_int [256];
 
 	if (!p->gotcoms)
 		return inst_no_coms;
@@ -2662,6 +2667,7 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 		if ((*calt & inst_calt_n_dfrble_mask) == 0)		/* Nothing todo */
 			return inst_ok;
 	}
+		a1logd(p->log,4,"i1d3_calibrate: checking calt: available:%x, mask:%x \n",~available,inst_calt_all_mask);
 
 	/* See if it's a calibration we understand */
 	if (*calt & ~available & inst_calt_all_mask) { 
@@ -2695,9 +2701,13 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 			n = (int)ceil(minint/p->refperiod);
 			p->inttime = n * p->refperiod;
 			a1logd(p->log, 3, "i1d3: integration time quantize to %f secs\n",p->inttime);
+			sprintf ( s_int, "Refresh rate found = %f Hz.  Integration time quantized to %f secs", 1./p->refperiod, p->inttime );
+			MessageBox(NULL, s_int, "Refresh Calculation Complete", MB_OK);
 		} else {
 			p->inttime = minint;	/* Double default integration time */
 			a1logd(p->log, 3, "i1d3: integration time integration time doubled to %f secs\n",p->inttime);
+			sprintf ( s_int, "Refresh rate not found.  Integration time set to %f secs", p->inttime );
+			MessageBox(NULL, s_int , "Refresh Calculation Complete", MB_OK);
 		}
 		*calt &= ~inst_calt_ref_freq;
 	}
@@ -3274,7 +3284,7 @@ int recreate				/* nz to re-check for new ccmx & ccss files */
 	/* Create/Re-create a current list of abailable display types */
 	if (p->dtlist == NULL || recreate) {
 		if ((rv = inst_creat_disptype_list(pp, &p->ndtlist, &p->dtlist,
-		    i1d3_disptypesel, 1 /* doccss*/, 1 /* doccmx */)) != inst_ok) {
+		    i1d3_disptypesel, 0 /* doccss*/, 0 /* doccmx */)) != inst_ok) {
 			return rv;
 		}
 	}
@@ -3307,7 +3317,7 @@ static inst_code set_disp_type(i1d3 *p, inst_disptypesel *dentry) {
 		p->rrset = 0;					/* This is a hint we may have swapped displays */
 	p->refrmode = refrmode; 
 
-//	if (p->refrmode && p->dtype == i1d3_munkdisp) {
+	//	if (p->refrmode && p->dtype == i1d3_munkdisp) {
 	if (p->refrmode) {
 		p->inttime = 2.0 * p->dinttime;	/* Double integration time */
 	} else {
@@ -3370,7 +3380,7 @@ static inst_code set_default_disp_type(i1d3 *p) {
 
 	if (p->dtlist == NULL) {
 		if ((ev = inst_creat_disptype_list((inst *)p, &p->ndtlist, &p->dtlist,
-		    i1d3_disptypesel, 1 /* doccss*/, 1 /* doccmx */)) != inst_ok)
+		    i1d3_disptypesel, 0 /* doccss*/, 0 /* doccmx */)) != inst_ok)
 			return ev;
 	}
 
@@ -3402,7 +3412,7 @@ static inst_code i1d3_set_disptype(inst *pp, int ix) {
 
 	if (p->dtlist == NULL) {
 		if ((ev = inst_creat_disptype_list(pp, &p->ndtlist, &p->dtlist,
-		    i1d3_disptypesel, 1 /* doccss*/, 1 /* doccmx */)) != inst_ok)
+		    i1d3_disptypesel, 0 /* doccss*/, 0 /* doccmx */)) != inst_ok)
 			return ev;
 	}
 

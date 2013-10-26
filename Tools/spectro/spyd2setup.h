@@ -40,9 +40,9 @@ int setup_spyd2() {
 	static int loaded = 0;		/* Was loaded from a file */
 	char **bin_paths = NULL;
 	int no_paths = 0;
-	unsigned int size, rsize;
+	unsigned int size; //rsize;
 	FILE *fp;
-	int i;
+//	int i;
 
 	/* Spyder 2 Colorimeter Xilinx XCS05XL firmware pattern. */
 	/* This is a placeholder in the distributed files. */

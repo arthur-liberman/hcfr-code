@@ -85,7 +85,7 @@ CColorHCFRConfig::CColorHCFRConfig()
 	
 	// Build log file name
 	lpStr = strrchr ( m_logFileName, (int) '\\' );
-	strcpy ( lpStr + 1, "decoder.log" );
+	strcpy ( lpStr + 1, "HCFR.log" );
 
 	// Initialize language DLL, which is definitively loaded
 	strLang = GetProfileString ( "Options", "Language", "" );

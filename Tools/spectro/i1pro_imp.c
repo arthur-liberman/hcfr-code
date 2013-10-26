@@ -1459,7 +1459,10 @@ i1pro_code i1pro_imp_calibrate(
     inst_cal_type needed, available;
 
 	a1logd(p->log,2,"i1pro_imp_calibrate called with calt 0x%x, calc 0x%x\n",*calt, *calc);
-
+	i1pro2_indLEDonWhite(p);
+	msec_sleep(1000);
+	i1pro2_indLEDoff(p);
+	
 	if ((ev = i1pro_imp_get_n_a_cals(p, &needed, &available)) != I1PRO_OK)
 		return ev;
 
@@ -1506,6 +1509,9 @@ i1pro_code i1pro_imp_calibrate(
 		m->mmode = sx;				/* A lot of functions we call rely on this */
 
 		a1logd(p->log,2,"\nCalibrating mode %d\n", s->mode);
+		i1pro2_indLEDonWhite(p);
+		msec_sleep(1000);
+		i1pro2_indLEDoff(p);
 
 		/* Sanity check scan mode settings, in case something strange */
 		/* has been restored from the persistence file. */
@@ -11694,6 +11700,31 @@ i1pro2_indLEDoff(void *pp) {
 	a1logd(p->log,2,"i1pro2_indLEDoff: called\n");
 	rv = i1pro2_indLEDseq(p, seq, sizeof(seq));
 	a1logd(p->log,2,"i1pro2_indLEDoff: returning ICOM err 0x%x\n",rv);
+
+	return rv;
+}
+
+/* Turn indicator LEDs on white */
+static int
+i1pro2_indLEDonWhite(void *pp) {
+	i1pro *p = (i1pro *)pp;
+	int rv = I1PRO_OK;
+		unsigned char seq[] = {
+			0x00, 0x00, 0x00, 0x02,
+
+			0x00, 0x00, 0x00, 0x0a,
+			0x00, 0x00, 0x00, 0x01,
+			0x00, 0x36, 0x00,
+			0x00, 0x00, 0x01,
+
+			0x00, 0x00, 0x00, 0x0a,
+			0xff, 0xff, 0xff, 0xff,
+			0x3f, 0x36, 0x40,
+			0x00, 0x00, 0x01
+		};
+	a1logd(p->log,2,"i1pro2_indLEDonWhite: called\n");
+	rv = i1pro2_indLEDseq(p, seq, sizeof(seq));
+	a1logd(p->log,2,"i1pro2_indLEDonWhite: returning ICOM err 0x%x\n",rv);
 
 	return rv;
 }

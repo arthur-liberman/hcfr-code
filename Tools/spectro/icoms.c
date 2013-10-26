@@ -270,6 +270,8 @@ icompaths *new_icompaths(a1log *log) {
 	}
 
 	p->log = new_a1log_d(log);
+	p->log->verb = 5;
+	p->log->debug = 5;
 
 	p->clear         = icompaths_clear;
 	p->refresh       = icompaths_refresh_paths;

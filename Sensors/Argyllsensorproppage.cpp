@@ -46,7 +46,7 @@ CArgyllSensorPropPage::CArgyllSensorPropPage() : CPropertyPageWithHelp(CArgyllSe
     m_ReadingType = 0;
     m_MeterName = "";
     m_DebugMode = FALSE;
-    m_HiRes = TRUE;
+    m_HiRes = FALSE;
     //}}AFX_DATA_INIT
 }
 
@@ -75,6 +75,7 @@ void CArgyllSensorPropPage::DoDataExchange(CDataExchange* pDX)
         
 
     m_HiResCheckBox.EnableWindow(m_HiResCheckBoxEnabled);
+	m_HiRes = (m_HiResCheckBoxEnabled?m_HiRes:0);
 
     DDX_CBIndex(pDX, IDC_ARGYLLSENSOR_DISPLAYTYPE_COMBO, m_DisplayType);
     DDX_CBString(pDX, IDC_ARGYLLSENSOR_SPECTRALTYPE_COMBO, m_SpectralType);

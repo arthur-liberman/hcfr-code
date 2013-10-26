@@ -79,8 +79,8 @@ CArgyllSensor::CArgyllSensor(ArgyllMeterWrapper* meter) :
     m_DisplayType = GetConfig()->GetProfileInt(meterName.c_str(), "DisplayType", 1);
     m_ReadingType = GetConfig()->GetProfileInt(meterName.c_str(), "ReadingType", 0);
     m_SpectralType = GetConfig()->GetProfileString(meterName.c_str(), "SpectralType", 0);
-    m_debugMode = !!GetConfig()->GetProfileInt(meterName.c_str(), "DebugMode", 0);
-    m_HiRes = GetConfig()->GetProfileInt(meterName.c_str(), "HiRes", 1);
+    m_debugMode = GetConfig()->GetProfileInt(meterName.c_str(), "DebugMode", 0);
+    m_HiRes = GetConfig()->GetProfileInt(meterName.c_str(), "HiRes", 0);
 
     if (m_SpectralType == "")
     {
@@ -212,9 +212,9 @@ void CArgyllSensor::SetPropertiesSheetValues()
     m_ArgyllSensorPropertiesPage.m_ReadingType=m_ReadingType;
     m_ArgyllSensorPropertiesPage.m_SpectralType=m_SpectralType;
     m_ArgyllSensorPropertiesPage.m_DebugMode=m_debugMode;
-    m_ArgyllSensorPropertiesPage.m_DebugMode=m_HiRes;
-    m_ArgyllSensorPropertiesPage.m_MeterName = m_meter->getMeterName().c_str();
     m_ArgyllSensorPropertiesPage.m_HiResCheckBoxEnabled = m_meter->doesSupportHiRes();
+    m_ArgyllSensorPropertiesPage.m_HiRes=m_HiRes;
+    m_ArgyllSensorPropertiesPage.m_MeterName = m_meter->getMeterName().c_str();
 }
 
 void CArgyllSensor::GetPropertiesSheetValues()
@@ -272,7 +272,7 @@ BOOL CArgyllSensor::Init( BOOL bForSimultaneousMeasures )
             // thus the <None> string or translation will cause a reset as required
             if (m_spectralSamples->doesSampleDescriptionExist((LPCSTR)m_SpectralType))
             {
-                if (m_meter->currentSpectralSampleDescription() != (LPCSTR)m_SpectralType)
+                if (m_meter->currentSpectralSampleDescription() != (LPCSTR)m_SpectralType )
                 {
                     const SpectralSample& spectralSample(m_spectralSamples->getSample((LPCSTR)m_SpectralType));
                     m_meter->loadSpectralSample(spectralSample);

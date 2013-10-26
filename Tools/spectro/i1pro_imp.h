@@ -1073,6 +1073,7 @@ i1pro2_indLEDseq(void *pp, unsigned char *buf, int size);
 /* Turn indicator LEDs off */
 static int
 i1pro2_indLEDoff(void *pp);
+i1pro2_indLEDonWhite(void *pp);
 
 // ~~~~9999
 

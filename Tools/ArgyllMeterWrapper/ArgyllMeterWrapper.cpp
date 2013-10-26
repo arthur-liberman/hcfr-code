@@ -41,13 +41,15 @@
 #include "hidio.h"
 #include "conv.h"
 #include "ccss.h"
+#include <fcntl.h>
+#include "spyd2setup.h"
 #undef SALONEINSTLIB
 
 namespace
 {
     void warning_imp(void *cntx, struct _a1log *p, char *fmt, va_list args) 
     {
-        ArgyllLogMessage("Warning", fmt, args);
+        ArgyllLogMessage("Debug", fmt, args);
     }
 
     void verbose_imp(void *cntx, struct _a1log *p, char *fmt, va_list args) 
@@ -193,9 +195,14 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
     // allow this function to be called repeatedly on a meter
     if(!m_meter->inited)
     {
+		if (m_meter->get_itype(m_meter) == instSpyder2)
+		if (setup_spyd2() == 2)
+			MessageBox(NULL,"WARNING: This file contains a proprietary firmware image, and may not be freely distributed !","Loaded PLD",MB_OK);
+
         instCode = m_meter->init_inst(m_meter);
         if(instCode != inst_ok)
         {
+			MessageBox(NULL, m_meter->interp_error(m_meter,instCode), "init_inst",MB_OK);
             m_meter->del(m_meter);
             m_meter = 0;
             errorDescription = "Failed to initialize the instrument";
@@ -203,7 +210,7 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
         }
     }
 
-    // get the meter capabilties, not these may change after set_mode
+    // get the meter capabilties, note these may change after set_mode
     inst_mode capabilities(inst_mode_none);
     inst2_capability capabilities2(inst2_none);
     inst3_capability capabilities3(inst3_none);
@@ -384,6 +391,7 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading()
         // try autocalibration - we might get lucky
         m_nextCalibration = 0;
         inst_cal_type calType(inst_calt_needed);
+//        inst_cal_type calType(inst_calt_all);
         instCode = m_meter->calibrate(m_meter, &calType, (inst_cal_cond*)&m_nextCalibration, m_calibrationMessage);
         // if that didn't work tell the user
         if(isInstCodeReason(instCode, inst_cal_setup))
@@ -429,7 +437,8 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::calibrate()
 {
     checkMeterIsInitialized();
     m_calibrationMessage[0] = '\0';
-    inst_cal_type calType(inst_calt_all);
+//    inst_cal_type calType(inst_calt_all);
+    inst_cal_type calType(inst_calt_available);
     inst_code instCode = m_meter->calibrate(m_meter, &calType, (inst_cal_cond*)&m_nextCalibration, m_calibrationMessage);
     if(isInstCodeReason(instCode, inst_cal_setup))
     {
@@ -450,6 +459,7 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::calibrate()
     }
     if(instCode != inst_ok)
     {
+		MessageBox(NULL, m_meter->interp_error(m_meter, instCode), "Calibration Failed!", MB_OK);
         throw std::logic_error("Calibration failed");
     }
     return READY;
@@ -461,14 +471,20 @@ std::string ArgyllMeterWrapper::getCalibrationInstructions()
     inst_code instCode(inst_ok);
     if(m_nextCalibration == 0)
     {
-        inst_cal_type calType(inst_calt_all);
+//	inst_cal_type calType(inst_calt_ref_freq);
+	//        inst_cal_type calType(inst_calt_all);
+        inst_cal_type calType(inst_calt_available);
         instCode = m_meter->calibrate(m_meter, &calType, (inst_cal_cond*)&m_nextCalibration, m_calibrationMessage);
-        if(instCode == inst_ok || isInstCodeReason(instCode, inst_unsupported))
-        {
+		if(instCode == inst_ok || isInstCodeReason(instCode, inst_unsupported))
+       {
             // we don't need to do anything
             // and we are now calibrated
+  		    if (isInstCodeReason(instCode, inst_unsupported))
+				MessageBox(NULL, m_meter->interp_error(m_meter, instCode), "Calibration message", MB_OK);
+			else
+				MessageBox(NULL, "No calibrations needed.", "Calibration message", MB_OK);
             return "";
-        }
+       }
         if(!isInstCodeReason(instCode, inst_cal_setup))
         {
             throw std::logic_error("Automatic calibration failed");
@@ -505,6 +521,8 @@ std::string ArgyllMeterWrapper::getCalibrationInstructions()
             return "user configured calibration mask";
         case inst_calc_emis_white:
             return "Provide a white display test patch";
+		case 	inst_calc_emis_80pc: 
+			return "Provide an 80% white test patch";
         case inst_calc_emis_grey:
             return "Provide a grey display test patch";
         case inst_calc_emis_grey_darker:
@@ -547,7 +565,7 @@ void ArgyllMeterWrapper::setHiResMode(bool enableHiRes)
     checkMeterIsInitialized();
     // only suported on i1Pro and colormunki (photo not display)
     // but just do nothing otherwise
-    if(m_meterType == instI1Pro || m_meterType == instColorMunki)
+    if(m_meterType == instI1Pro || m_meterType == instColorMunki || m_meterType == instI1Pro2)
     {
         m_meter->get_set_opt(m_meter, enableHiRes?inst_opt_highres:inst_opt_stdres);
     }
@@ -555,7 +573,7 @@ void ArgyllMeterWrapper::setHiResMode(bool enableHiRes)
 
 bool ArgyllMeterWrapper::doesSupportHiRes() const
 {
-    return (m_meterType == instI1Pro || m_meterType == instColorMunki);
+    return (m_meterType == instI1Pro || m_meterType == instColorMunki || m_meterType == instI1Pro2);
 }
 
 
@@ -635,9 +653,12 @@ void ArgyllMeterWrapper::resetSpectralSample()
 {
     // reset the current description
     m_SampleDescription.clear();
-
-    inst_code instCode = m_meter->col_cal_spec_set(m_meter, 0, 0);
-    if (instCode != inst_ok) 
+	inst_code instCode;
+	instCode=inst_ok;
+    //inst_code instCode = m_meter->col_cal_spec_set(m_meter, 0, 0);
+    //drop through this for now, it breaks refresh cal for d3 when user initiates using calibration button
+	//if user goes from a known ccss to none this will be a problem
+	if (instCode != inst_ok) 
     {
         std::string errorMessage("Resetting Colorimeter Calibration Spectral Samples failed with error :'");
         errorMessage += m_meter->inst_interp_error(m_meter, instCode);

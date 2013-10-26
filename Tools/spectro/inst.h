@@ -441,7 +441,7 @@ typedef enum {
 
 	/* Calibrations that might be deferred until measurement */
 	inst_calt_emis_int_time  = 0x00100000, 	/* Emissive measurement range (integration time) */
-	inst_calt_ref_freq       = 0x00200000, 	/* Display refresh frequency calibration */
+	inst_calt_ref_freq       = 0x00001800, 	/* Display refresh frequency calibration - non-deferable in HCFR */
 
 	inst_calt_dfrble_mask    = 0x00f00000, 	/* Mask of deferrable calibrations */
 
