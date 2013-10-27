@@ -933,8 +933,8 @@ void CFullScreenWindow::OnTimer(UINT nIDEvent)
 			{
 				if ( m_rectSizePercent < 100 && m_bWhite )
 				{
-					m_XMargin = ( ( rect.right / 2 ) * ( 100 - m_rectAreaPercent ) ) / 100;
-					m_YMargin = ( ( rect.bottom / 2 ) * ( 100 - m_rectAreaPercent ) ) / 100;
+					m_XMargin = (int)( ( rect.right / 2.0 ) * ( 100.0 - m_rectAreaPercent ) / 100.0);
+					m_YMargin = (int)( ( rect.bottom / 2.0 ) * ( 100.0 - m_rectAreaPercent ) / 100.0);
 				}
 				else
 				{

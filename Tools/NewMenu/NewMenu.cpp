@@ -7788,7 +7788,7 @@ void CNewMenu::SynchronizeMenu()
   UINT submenu,state,j;
 
   InitializeMenuList(0);
-  for(j=0;j<GetMenuItemCount();++j)
+  for(j=0;j<(UINT)GetMenuItemCount();++j)
   {
     MENUITEMINFO menuInfo = {0};
     menuInfo.cbSize = sizeof(menuInfo);

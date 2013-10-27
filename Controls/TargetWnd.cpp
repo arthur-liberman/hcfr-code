@@ -27,6 +27,7 @@
 #include "Color.h"
 #include "BitmapTools.h"
 #include "MainFrm.h"
+#include <math.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -74,9 +75,9 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize)
 //			else	
 				x = floor((double)(minCol-1) / (double)(nSize-1) * 255.0 + 0.5);
  			m_clr = RGB(x,x,x);
-			nR=x;
-			nG=x;
-			nB=x;
+			nR=(int)x;
+			nG=(int)x;
+			nB=(int)x;
 		}
 		if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetRed(), GetColorReference() ) < 0.05 )
 		{
