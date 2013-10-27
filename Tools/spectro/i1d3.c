@@ -917,6 +917,8 @@ i1d3_imp_measure_refresh(
 	int npeaks = 0;			/* Number of peaks */
 	double pval;			/* Period value */
 	int isdeb;
+	char s_int [256];
+	int n;
 
 	if (prefrate != NULL)
 		*prefrate = 0.0;
@@ -1298,6 +1300,8 @@ i1d3_imp_measure_refresh(
 	if (npeaks == 0) {
 		a1logd(p->log, 2, "i1d3: Couldn't find a distinct refresh frequency\n");
 		a1logv(p->log, 1, "No distict refresh period\n");
+		sprintf ( s_int, "Refresh rate not found.  Integration time set to %f secs", p->dinttime * 2 );
+			MessageBox(NULL, s_int , "Refresh Calculation Complete", MB_OK);
 		return inst_ok;
 	}
 
@@ -1392,8 +1396,11 @@ i1d3_imp_measure_refresh(
 				pval *= mul;
 			}
 
+			n = (int)ceil(p->dinttime * refrate);	/* Quantize */
 			a1logd(p->log, 1, "Refresh rate = %f Hz, quantizing to %f msec\n",refrate,pval);
 			a1logv(p->log, 1, "Refresh rate = %f Hz, quantizing to %f msec\n",refrate,pval);
+			sprintf ( s_int, "Refresh rate found = %f Hz.  Integration time quantized to %f secs", refrate, 1./refrate * n );
+			MessageBox(NULL, s_int, "Refresh Calculation Complete", MB_OK);
 
 			if (ppval != NULL)
 				*ppval = pval;
@@ -2413,7 +2420,6 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	i1d3 *p = (i1d3 *)pp;
 	int user_trig = 0;
 	int rv = inst_protocol_error;
-	char s_int [256];
 
 	if (!p->gotcoms)
 		return inst_no_coms;
@@ -2473,13 +2479,9 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 			n = (int)ceil(minint/p->refperiod);
 			p->inttime = n * p->refperiod;
 			a1logd(p->log, 3, "i1d3: integration time quantize to %f secs\n",p->inttime);
-			sprintf ( s_int, "Refresh rate found = %f Hz.  Integration time quantized to %f secs", 1./p->refperiod, p->inttime );
-			MessageBox(NULL, s_int, "Refresh Calculation Complete", MB_OK);
 		} else {	/* We don't have a period, so simply double the default */
 			p->inttime = minint;
 			a1logd(p->log, 3, "i1d3: integration time integration time doubled to %f secs\n",p->inttime);
-			sprintf ( s_int, "Refresh rate not found.  Integration time set to %f secs", p->inttime );
-			MessageBox(NULL, s_int , "Refresh Calculation Complete", MB_OK);
 		}
 	}
 
@@ -2550,7 +2552,7 @@ double mtx[3][3]
 	else {
 		if (p->cbid == 0) {
 			a1loge(p->log, 1, "i1d3: can't set col_cor_mat over non base display type\n");
-			return inst_wrong_setup;
+			inst_wrong_setup;
 		}
 		icmCpy3x3(p->ccmat, mtx);
 	}
@@ -2701,13 +2703,9 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 			n = (int)ceil(minint/p->refperiod);
 			p->inttime = n * p->refperiod;
 			a1logd(p->log, 3, "i1d3: integration time quantize to %f secs\n",p->inttime);
-			sprintf ( s_int, "Refresh rate found = %f Hz.  Integration time quantized to %f secs", 1./p->refperiod, p->inttime );
-			MessageBox(NULL, s_int, "Refresh Calculation Complete", MB_OK);
 		} else {
 			p->inttime = minint;	/* Double default integration time */
 			a1logd(p->log, 3, "i1d3: integration time integration time doubled to %f secs\n",p->inttime);
-			sprintf ( s_int, "Refresh rate not found.  Integration time set to %f secs", p->inttime );
-			MessageBox(NULL, s_int , "Refresh Calculation Complete", MB_OK);
 		}
 		*calt &= ~inst_calt_ref_freq;
 	}

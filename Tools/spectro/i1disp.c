@@ -864,13 +864,9 @@ i1d2_take_measurement(
 			n = (int)ceil(p->dinttime/p->refperiod);
 			p->inttime = n * p->refperiod;
 			a1logd(p->log, 3, "i1disp: integration time quantize to %f secs\n",p->inttime);
-			sprintf ( s_int, "Refresh rate found = %f Hz.  Integration time quantized to %f secs", 1./p->refperiod, p->inttime );
-		    MessageBox(NULL, s_int, "Refresh Calculation Complete", MB_OK);
 		} else {
 			p->inttime = p->dinttime;	
 			a1logd(p->log, 3, "i1disp: integration time set to %f secs\n",p->inttime);
-			sprintf ( s_int, "Refresh rate not found.  Integration time set to %f secs", p->inttime );
-		    MessageBox(NULL, s_int , "Refresh Calculation Complete", MB_OK);
 		}
 	}
 
@@ -1363,6 +1359,7 @@ i1disp_do_fcal_setit(
 ) {
 	int i;
 	inst_code ev;
+	char s_int [256];
 
 	a1logd(p->log, 3, "Frequency calibration called\n");
 
@@ -1374,10 +1371,16 @@ i1disp_do_fcal_setit(
 		return ev;
 
 	if (p->refrate != 0.0) {
+		int n;
+		n = (int)ceil(p->dinttime/p->refperiod);
 		p->refperiod = 1.0/p->refrate;
 		p->refrvalid = 1;
+		sprintf ( s_int, "Refresh rate found = %f Hz.  Integration time quantized to %f secs",p->refrate, n * p->refperiod );
+		MessageBox(NULL, s_int, "Refresh Calculation Complete", MB_OK);
 	} else {
 		p->refrvalid = 0;
+		sprintf ( s_int, "Refresh rate not found.  Integration time set to %f secs", p->inttime );
+		MessageBox(NULL, s_int , "Refresh Calculation Complete", MB_OK);
 	}
 	p->rrset = 1;
 
@@ -1975,7 +1978,6 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 	i1disp *p = (i1disp *)pp;
 	inst_code ev;
     inst_cal_type needed, available;
-	char s_int [ 256 ];
 
 	if (!p->gotcoms)
 		return inst_no_coms;
@@ -2043,13 +2045,9 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 				n = (int)ceil(p->dinttime/p->refperiod);
 				p->inttime = n * p->refperiod;
 				a1logd(p->log, 3, "i1disp: integration time quantize to %f secs\n",p->inttime);
-				sprintf ( s_int, "Refresh rate found = %f Hz.  Integration time quantized to %f secs", 1./p->refperiod, p->inttime );
-			    MessageBox(NULL, s_int, "Refresh Calculation Complete", MB_OK);
 			} else {
 				p->inttime = p->dinttime;	
 				a1logd(p->log, 3, "i1disp: integration time set to %f secs\n",p->inttime);
-				sprintf ( s_int, "Refresh rate not found.  Integration time set to %f secs", p->inttime );
-			    MessageBox(NULL, s_int , "Refresh Calculation Complete", MB_OK);
 			}
 
 			*calt &= ~inst_calt_ref_freq;
