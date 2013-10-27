@@ -1399,7 +1399,7 @@ i1d3_imp_measure_refresh(
 			n = (int)ceil(p->dinttime * refrate);	/* Quantize */
 			a1logd(p->log, 1, "Refresh rate = %f Hz, quantizing to %f msec\n",refrate,pval);
 			a1logv(p->log, 1, "Refresh rate = %f Hz, quantizing to %f msec\n",refrate,pval);
-			sprintf ( s_int, "Refresh rate found = %f Hz.  Integration time quantized to %f secs", refrate, 1./refrate * n );
+			sprintf ( s_int, "Refresh rate found = %f Hz.  Integration time quantized to %f secs", refrate, 1./refrate * 2 * n );
 			MessageBox(NULL, s_int, "Refresh Calculation Complete", MB_OK);
 
 			if (ppval != NULL)
