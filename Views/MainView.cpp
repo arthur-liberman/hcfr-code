@@ -1826,7 +1826,7 @@ void CMainView::UpdateGrid()
 		if ( nCount && GetDocument()->GetMeasure()->GetGray(0).isValid() )
 		{
 			GetDocument()->ComputeGammaAndOffset(&Gamma, &Offset, 3, 1, nCount);
-			Gamma = floorf(Gamma * 100) / 100;
+			Gamma = floor(Gamma * 100) / 100;
 		}
 		if (GetConfig()->m_useMeasuredGamma)
 			GetConfig()->m_GammaAvg = (Gamma<1?2.22:Gamma);

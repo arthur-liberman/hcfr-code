@@ -2193,6 +2193,10 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath=".\Generators\madVRTestPattern.cpp"
+					>
+				</File>
+				<File
 					RelativePath="Generators\ManualDVDGenerator.cpp"
 					>
 					<FileConfiguration
