@@ -844,7 +844,6 @@ i1d2_take_measurement(
 	int cdgec[3] = {ME,ME,ME};	/* CRT computed edge count for re-measure */
 	int mask = 0x0;				/* Period measure mask */
 	inst_code ev;
-	char s_int [ 256 ];
 	
 	if (p->inited == 0)
 		return i1disp_interp_code((inst *)p, I1DISP_NOT_INITED);
@@ -1359,7 +1358,6 @@ i1disp_do_fcal_setit(
 ) {
 	int i;
 	inst_code ev;
-	char s_int [256];
 
 	a1logd(p->log, 3, "Frequency calibration called\n");
 
@@ -1375,12 +1373,8 @@ i1disp_do_fcal_setit(
 		n = (int)ceil(p->dinttime/p->refperiod);
 		p->refperiod = 1.0/p->refrate;
 		p->refrvalid = 1;
-		sprintf ( s_int, "Refresh rate found = %f Hz.  Integration time quantized to %f secs",p->refrate, n * p->refperiod );
-		MessageBox(NULL, s_int, "Refresh Calculation Complete", MB_OK);
 	} else {
 		p->refrvalid = 0;
-		sprintf ( s_int, "Refresh rate not found.  Integration time set to %f secs", p->inttime );
-		MessageBox(NULL, s_int , "Refresh Calculation Complete", MB_OK);
 	}
 	p->rrset = 1;
 

@@ -462,6 +462,22 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::calibrate()
 		MessageBox(NULL, m_meter->interp_error(m_meter, instCode), "Calibration Failed!", MB_OK);
         throw std::logic_error("Calibration failed");
     }
+    char s_int [ 256 ];
+	double refr;
+	inst_code ev;
+    ev = m_meter->get_refr_rate(m_meter, &refr);
+    if (ev != inst_unsupported)
+    {
+        if (ev == inst_ok)
+        {
+            sprintf(s_int,"Refresh rate found: %f Hz",refr);
+            MessageBox(NULL, s_int , "Refresh measurement performed", MB_OK);
+        }
+        else
+        {
+            MessageBox(NULL, m_meter->inst_interp_error(m_meter, ev), "Refresh measurement performed", MB_OK);
+        }
+    }
     return READY;
 }
 

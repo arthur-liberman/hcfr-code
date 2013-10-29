@@ -1562,8 +1562,6 @@ spyd2_GetRefRate(
 ) {
 	int i;
 	inst_code ev;
-	char s_int [256];
-
 	a1logd(p->log, 3, "Frequency calibration called\n");
 
 	if ((ev = spyd2_read_refrate((inst *)p, &p->refrate)) != inst_ok) {
@@ -1572,16 +1570,12 @@ spyd2_GetRefRate(
 	if (p->refrate != 0.0) {
 		a1logd(p->log, 3, "spyd2_GetRefRate: refresh rate is %f Hz\n",p->refrate);
 		p->refrvalid = 1;
-		sprintf ( s_int, "Refresh rate found = %f Hz.", p->refrate );
-		MessageBox(NULL, s_int, "Refresh Calculation Complete", MB_OK);
-	} else {
+
+    } else {
 		a1logd(p->log, 3, "spyd2_GetRefRate: no refresh rate detectable\n");
 		p->refrate = DEFRRATE;
-		p->refrvalid = 0;
-		MessageBox(NULL, "No refresh rate detectable", "Refresh Calculation Complete", MB_OK);
-	}
-	p->rrset = 1;
-
+    }
+    p->rrset = 1;
 	return inst_ok;
 }
 

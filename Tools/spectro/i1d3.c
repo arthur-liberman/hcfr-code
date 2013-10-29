@@ -917,8 +917,6 @@ i1d3_imp_measure_refresh(
 	int npeaks = 0;			/* Number of peaks */
 	double pval;			/* Period value */
 	int isdeb;
-	char s_int [256];
-	int n;
 
 	if (prefrate != NULL)
 		*prefrate = 0.0;
@@ -1300,8 +1298,6 @@ i1d3_imp_measure_refresh(
 	if (npeaks == 0) {
 		a1logd(p->log, 2, "i1d3: Couldn't find a distinct refresh frequency\n");
 		a1logv(p->log, 1, "No distict refresh period\n");
-		sprintf ( s_int, "Refresh rate not found.  Integration time set to %f secs", p->dinttime * 2 );
-			MessageBox(NULL, s_int , "Refresh Calculation Complete", MB_OK);
 		return inst_ok;
 	}
 
@@ -1396,12 +1392,8 @@ i1d3_imp_measure_refresh(
 				pval *= mul;
 			}
 
-			n = (int)ceil(p->dinttime * refrate);	/* Quantize */
 			a1logd(p->log, 1, "Refresh rate = %f Hz, quantizing to %f msec\n",refrate,pval);
 			a1logv(p->log, 1, "Refresh rate = %f Hz, quantizing to %f msec\n",refrate,pval);
-			sprintf ( s_int, "Refresh rate found = %f Hz.  Integration time quantized to %f secs", refrate, 1./refrate * 2 * n );
-			MessageBox(NULL, s_int, "Refresh Calculation Complete", MB_OK);
-
 			if (ppval != NULL)
 				*ppval = pval;
 		}
@@ -2641,7 +2633,6 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 	i1d3 *p = (i1d3 *)pp;
 	inst_code ev;
     inst_cal_type needed, available;
-	char s_int [256];
 
 	if (!p->gotcoms)
 		return inst_no_coms;
