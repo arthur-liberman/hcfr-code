@@ -308,7 +308,7 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 		
 		if ( pRefPoint )
 		{
-			double dE  = aGraphPoint.GetNormalizedColor().GetDeltaE(1.0, pRefPoint->GetNormalizedColor(), 1.0, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula );
+			double dE  = aGraphPoint.GetNormalizedColor().GetDeltaE(1.0, pRefPoint->GetNormalizedColor(), 1.0, GetColorReference(), 	GetConfig()->m_dE_form );
 			str2.Format ( ", Delta E: %.1f\n",dE );
 			str3.LoadString (IDS_DISTANCEINCIEXY);
 			str2 += str3;

@@ -173,7 +173,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 				}
 				if (GetConfig ()->m_bUseDeltaELumaOnGrays)
 				{
-					m_graphCtrl2.AddPoint(m_deltaEGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(YWhite, refColor, 1.0, GetColorReference(), true ));
+					m_graphCtrl2.AddPoint(m_deltaEGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(YWhite, refColor, 1.0, GetColorReference(), 0 ));
 				}
 				else
 				{
@@ -237,7 +237,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 				}
 				if (GetConfig ()->m_bUseDeltaELumaOnGrays)
 				{
-					m_graphCtrl2.AddPoint(m_deltaEDataRefGraphID, x, pDataRef->GetMeasure()->GetGray(i).GetDeltaE(YWhiteRefDoc, refColor, 1.0, GetColorReference(), true ));
+					m_graphCtrl2.AddPoint(m_deltaEDataRefGraphID, x, pDataRef->GetMeasure()->GetGray(i).GetDeltaE(YWhiteRefDoc, refColor, 1.0, GetColorReference(), 0 ));
 				}
 				else
 				{
@@ -247,7 +247,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 				if (bMainDocHasColors)
 					if (GetConfig ()->m_bUseDeltaELumaOnGrays)
 					{
-						m_graphCtrl2.AddPoint(m_deltaEBetweenGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(YWhite,pDataRef->GetMeasure()->GetGray(i),YWhiteRefDoc, GetColorReference(), true )); //Ki
+						m_graphCtrl2.AddPoint(m_deltaEBetweenGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(YWhite,pDataRef->GetMeasure()->GetGray(i),YWhiteRefDoc, GetColorReference(), 0 )); //Ki
 					}
 					else
 					{

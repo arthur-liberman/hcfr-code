@@ -1428,8 +1428,8 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 					{
 					if (GetConfig ()->m_bUseDeltaELumaOnGrays && m_displayMode < 3)
 					{
-						str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), true ) );						
-						dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), true );
+						str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), 0 ) );						
+						dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), 0 );
 						dEavg+=dE;
 					}
 					else
@@ -1440,7 +1440,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 					}
 					if (m_displayMode == 0)
 					{
-						clr = (dE<3?RGB(0,230,0):(dE<5?RGB(230,230,0):RGB(230,0,0)));
+						clr = (dE<3.5?RGB(0,230,0):(dE<7?RGB(230,230,0):RGB(230,0,0)));
 						m_pGrayScaleGrid->SetItemBkColour(4, nCol, clr);
 						m_pGrayScaleGrid -> SetItemFont ( 4, nCol, m_pGrayScaleGrid->GetItemFont(0,0) ); // Set the font to bold
 					}
@@ -1450,10 +1450,13 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						str.Empty ();
 				else
 				{
-					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula ) );
-					dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula );
+					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), 	GetConfig()->m_dE_form ) );
+					dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), 	GetConfig()->m_dE_form );
 					dEavg+=dE;
-					clr = (dE<2?RGB(0,230,0):(dE<4?RGB(230,230,0):RGB(230,0,0)));
+					if (GetConfig()->m_dE_form <= 1)
+						clr = (dE<3.5?RGB(0,230,0):(dE<7?RGB(230,230,0):RGB(230,0,0)));
+					else
+						clr = (dE<2?RGB(0,230,0):(dE<4?RGB(230,230,0):RGB(230,0,0)));
 					m_pGrayScaleGrid->SetItemBkColour(4, nCol, clr);
 					m_pGrayScaleGrid -> SetItemFont ( 4, nCol, m_pGrayScaleGrid->GetItemFont(0,0) ); // Set the font to bold
 					dEcnt++;
@@ -1471,10 +1474,10 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 		else if ( aComponentNum == 5 )
 		{
 			if ( aRefDocColor.isValid() )
-				if (m_displayMode == 0)
-					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aRefDocColor, YWhiteRefDoc, GetColorReference(), true ));
-				else
-					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aRefDocColor, YWhiteRefDoc, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula ) );
+//				if (m_displayMode == 0)
+//					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aRefDocColor, YWhiteRefDoc, GetColorReference(), 0 ));
+//				else
+					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aRefDocColor, YWhiteRefDoc, GetColorReference(), 	GetConfig()->m_dE_form ) );
 			else
 				str.Empty ();
 		}
@@ -2334,11 +2337,15 @@ void CMainView::UpdateGrid()
 
    			    if ( dEcnt > 0 )
 				{
+					CString dEform;
 					Tmp.LoadString ( IDS_DELTAEAVERAGE );
 					Msg += " ( ";
 					Msg += Tmp;
 					sprintf ( szBuf, ": %.2f )", dEavg / dEcnt );
-					Msg += szBuf;					
+					Msg += szBuf;
+					dEform = GetConfig()->m_bUseDeltaELumaOnGrays?"[CIELUV]":"[CIEu'v']";
+					Msg += dEform;
+					m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < 3 ? RGB(0,230,0):(dEavg / dEcnt < 5?RGB(230,230,0):RGB(230,0,0)));
 				}
 			}
 
@@ -2351,11 +2358,47 @@ void CMainView::UpdateGrid()
 			if (GetDocument()->GetMeasure()->GetRedPrimary().isValid() && dEcnt > 0 )
 		    {
 				char	szBuf [ 256 ];
+				CString dEform;
+				float a=2, b=4;
 				Tmp.LoadString ( IDS_DELTAEAVERAGE );
 				Msg += " ( ";
 				Msg += Tmp;
 				sprintf ( szBuf, ": %.2f )", dEavg / dEcnt );
 				Msg += szBuf;					
+					switch (GetConfig()->m_dE_form)
+					{
+					case 0:
+						{
+						dEform = "[CIELUV]";
+						a=3.5;
+						b=7;
+						break;
+						}
+					case 1:
+						{
+						dEform = "[CIE76]";
+						a=3.5;
+						b=7;
+						break;
+						}
+					case 2:
+						{
+						dEform = "[CIE94]";
+						break;
+						}
+					case 3:
+						{
+						dEform = "[CIE2000]";
+						break;
+						}
+					case 4:
+						{
+						dEform = "[CMC(1:1)]";
+						break;
+						}
+					}
+					Msg += dEform;
+					m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
 			}
 			m_grayScaleGroup.SetText ( Msg );
 		} else if ( m_displayMode > 4 && m_displayMode < 11 )
@@ -2366,11 +2409,47 @@ void CMainView::UpdateGrid()
 			if (GetDocument()->GetMeasure()->GetRedSat(0).isValid() && dEcnt > 0 )
 		    {
 				char	szBuf [ 256 ];
+				CString dEform;
+				float a=2, b=4;
 				Tmp.LoadString ( IDS_DELTAEAVERAGE );
 				Msg += " ( ";
 				Msg += Tmp;
 				sprintf ( szBuf, ": %.2f )", dEavg / dEcnt );
 				Msg += szBuf;					
+					switch (GetConfig()->m_dE_form)
+					{
+					case 0:
+						{
+						dEform = "[CIELUV]";
+						a=3.5;
+						b=7;
+						break;
+						}
+					case 1:
+						{
+						dEform = "[CIE76]";
+						a=3.5;
+						b=7;
+						break;
+						}
+					case 2:
+						{
+						dEform = "[CIE94]";
+						break;
+						}
+					case 3:
+						{
+						dEform = "[CIE2000]";
+						break;
+						}
+					case 4:
+						{
+						dEform = "[CMC(1:1)]";
+						break;
+						}
+					}
+					Msg += dEform;
+					m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
 			}
 			m_grayScaleGroup.SetText ( Msg );
 		} else if (m_displayMode == 11)
@@ -2381,11 +2460,50 @@ void CMainView::UpdateGrid()
 			if (GetDocument()->GetMeasure()->GetCC24Sat(0).isValid() && dEcnt > 0 )
 		    {
 				char	szBuf [ 256 ];
+				CString dEform;
+				float a=2, b=4;
 				Tmp.LoadString ( IDS_DELTAEAVERAGE );
 				Msg += " ( ";
 				Msg += Tmp;
 				sprintf ( szBuf, ": %.2f )", dEavg / dEcnt );
 				Msg += szBuf;					
+					switch (GetConfig()->m_dE_form)
+					{
+					case 0:
+						{
+						dEform = "[CIELUV]";
+						a=3.5;
+						b=7;
+						break;
+						}
+					case 1:
+						{
+						dEform = "[CIE76]";
+						a=3.5;
+						b=7;
+						break;
+						}
+					case 2:
+						{
+						dEform = "[CIE94]";
+						break;
+						}
+					case 3:
+						{
+						dEform = "[CIE2000]";
+						break;
+						}
+					case 4:
+						{
+						dEform = "[CMC(1:1)]";
+						break;
+						}
+					}
+					Msg += dEform;
+					m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
+					//hidden cookie
+					if (dEavg / dEcnt < 1.0)
+						Msg += "------>Awesome Calibration!";
 			}
 			m_grayScaleGroup.SetText ( Msg );
 		}

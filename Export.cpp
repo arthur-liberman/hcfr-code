@@ -351,7 +351,7 @@ bool CExport::SaveGrayScaleSheet()
 			YWhite = m_pDoc->GetMeasure()->GetGray(j) [ 1 ];
 		}
 		
-		Rows.Add((float)m_pDoc->GetMeasure()->GetGray(j).GetDeltaE(YWhite, refColor, 1.0, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula ));
+		Rows.Add((float)m_pDoc->GetMeasure()->GetGray(j).GetDeltaE(YWhite, refColor, 1.0, GetColorReference(), 	GetConfig()->m_dE_form ));
 	}
 	result&=graySS.AddRow(Rows,rowNb,m_doReplace);
 	rowNb++;

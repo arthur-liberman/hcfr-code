@@ -613,24 +613,34 @@ int ColorXYZ::GetColorTemp(const CColorReference& colorReference) const
     }
 }
 
-double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhiteRef, const CColorReference & colorReference, bool useOldDeltaEFormula ) const
+//double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhiteRef, const CColorReference & colorReference, bool useOldDeltaEFormula ) const
+double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form ) const
 {
 	CColorReference cRef=CColorReference(HDTV, D65, 2.22);
-	
+	double dE;
 	if (!(colorReference.m_standard == CC6a || colorReference.m_standard == CC6 || colorReference.m_standard == HDTVa))
 		cRef=colorReference;
-
-    if ( useOldDeltaEFormula )
-    {
+	switch (dE_form)
+	{
+		case 0:
+		{
 		//LUV
         ColorLuv LuvRef(refColor, YWhiteRef, cRef);
         ColorLuv Luv(*this, YWhite, cRef);
-        double dE = sqrt ( pow ((Luv[0] - LuvRef[0]),2) + pow((Luv[1] - LuvRef[1]),2) + pow((Luv[2] - LuvRef[2]),2) );
-        return dE;
-    }
-    else
-    {
+        dE = sqrt ( pow ((Luv[0] - LuvRef[0]),2) + pow((Luv[1] - LuvRef[1]),2) + pow((Luv[2] - LuvRef[2]),2) );
+		break;
+		}
+		case 1:
+		{
+		//CIE76
+        ColorLab LabRef(refColor, YWhiteRef, cRef);
+        ColorLab Lab(*this, YWhite, cRef);
+        dE = sqrt ( pow ((Lab[0] - LabRef[0]),2) + pow((Lab[1] - LabRef[1]),2) + pow((Lab[2] - LabRef[2]),2) );
+		break;
+		}
 		//CIE94
+		case 2:
+		{
         ColorLab LabRef(refColor, YWhiteRef, cRef);
         ColorLab Lab(*this, YWhite, cRef);
 		double dL2 = pow ((LabRef[0] - Lab[0]),2.0);
@@ -641,9 +651,78 @@ double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhit
 		double db2 = pow (LabRef[2] - Lab[2],2.0);
 		double dH2 = (da2 + db2 - dC2);
 		//kl=kc=kh=1
-		double dE = sqrt ( dL2 + dC2/pow((1+0.045*C1),2.0) + dH2/pow((1+0.015*C1),2.0) );
-        return dE;
-    }
+		dE = sqrt ( dL2 + dC2/pow((1+0.045*C1),2.0) + dH2/pow((1+0.015*C1),2.0) );
+		break;
+		}
+		case 3:
+		{
+		//CIE2000
+        ColorLab LabRef(refColor, YWhiteRef, cRef);
+        ColorLab Lab(*this, YWhite, cRef);
+		double L1 = LabRef[0];
+		double L2 = Lab[0];
+		double Lp = (L1 + L2) / 2.0;
+		double a1 = LabRef[1];
+		double a2 = Lab[1];
+		double b1 = LabRef[2];
+		double b2 = Lab[2];
+		double C1 = sqrt( pow(a1, 2.0) + pow(b1, 2.0) );
+		double C2 = sqrt( pow(a2, 2.0) + pow(b2, 2.0) );
+		double C = (C1 + C2) / 2.0;
+		double G = (1 - sqrt ( pow(C, 7.0) / (pow(C, 7.0) + pow(25, 7.0)) ) ) / 2;
+		double a1p = a1 * (1 + G);
+		double a2p = a2 * (1 + G);
+		double C1p = sqrt ( pow(a1p, 2.0) + pow(b1, 2.0) );
+		double C2p = sqrt ( pow(a2p, 2.0) + pow(b2, 2.0) );
+		double Cp = (C1p + C2p) / 2.0;
+		double h1p = (atan2(b1, a1p) >= 0?atan2(b1, a1p):atan2(b1, a1p) + PI * 2.0);
+		double h2p = (atan2(b2, a2p) >= 0?atan2(b2, a2p):atan2(b2, a2p) + PI * 2.0);
+		double Hp = ( abs(h1p - h2p) > PI ?(h1p + h2p + PI * 2) / 2.0:(h1p + h2p) / 2.0);
+		double T = 1 - 0.17 * cos(Hp - 30. / 180. * PI) + 0.24 * cos(2 * Hp) + 0.32 * cos(3 * Hp + 6.0 / 180. * PI) - 0.20 * cos(4 * Hp - 63.0 / 180. * PI);
+		double dhp = ( abs(h2p - h1p) <= PI?(h2p - h1p):((h2p <= h1p)?(h2p - h1p + 2 * PI):(h2p - h1p - 2 * PI)));
+		double dLp = L2 - L1;
+		double dCp = C2p - C1p;
+		double dHp = 2 * sqrt( C1p * C2p ) * sin( dhp / 2);
+		double SL = 1 + (0.015 * pow( (Lp - 50), 2.0 ) / sqrt( 20 + pow( Lp - 50, 2.0) ) );
+		double SC = 1 + 0.045 * Cp;
+		double SH = 1 + 0.015 * Cp * T;
+		double dtheta = 30 * exp( -1.0 * pow(( (Hp * 180. / PI - 275.0) / 25.0), 2.0) );
+		double RC = 2 * sqrt ( pow(Cp, 7.0) / (pow(Cp, 7.0) + pow(25.0, 7.0)) );
+		double RT = -1.0 * RC * sin(2 * dtheta / 180. * PI);
+		dE = sqrt ( pow( dLp / SL, 2.0) + pow( dCp / SC, 2.0) + pow( dHp / SH, 2.0) + RT * (dCp / SC) * (dHp / SH));
+		break;
+		}
+		case 4:
+			//CMC(1:1)
+		{
+	        ColorLab LabRef(refColor, YWhiteRef, cRef);
+		    ColorLab Lab(*this, YWhite, cRef);
+			double L1 = LabRef[0];
+			double L2 = Lab[0];
+			double a1 = LabRef[1];
+			double a2 = Lab[1];
+			double b1 = LabRef[2];
+			double b2 = Lab[2];
+			double C1 = sqrt (pow(a1, 2.0) + pow(b1,2.0));
+			double C2 = sqrt (pow(a2, 2.0) + pow(b2,2.0));
+			double dC = C1 - C2;
+			double dL = L1 - L2;
+			double da = a1 - a2;
+			double db = b1 - b2;
+			double dH = sqrt( abs(pow(da, 2.0) + pow(db,2.0) - pow(dC,2.0)) );
+			double SL = (L1 < 16?0.511:0.040975*L1/(1+0.01765*L1));
+			double SC = 0.0638 * C1/(1 + 0.0131*C1) + 0.638;
+			double F = sqrt ( pow(C1,4.0)/(pow(C1,4.0) + 1900) );
+			double H1 = atan2(b1,a1) / PI * 180.; 
+			H1 = (H1 < 0?H1 + 360:( (H1 >= 360) ? H1-360:H1 ) );
+			double T = (H1 <= 345 && H1 >= 164 ? 0.56 + abs(0.2 * cos ((H1 + 168)/180.*PI)) : 0.36 + abs(0.4 * cos((H1+35)/180.*PI)) ); 
+			double SH = SC * (F * T + 1 - F);
+			dE = sqrt( pow(dL/SL,2.0)  + pow(dC/SC,2.0) + pow(dH/SH,2.0) );
+			break;
+		}
+
+	}
+	return dE;
 }
 
 double ColorXYZ::GetOldDeltaE(const ColorXYZ& refColor) const
@@ -1058,9 +1137,9 @@ double CColor::GetLuminance() const
 	return GetY();
 }
 
-double CColor::GetDeltaE(double YWhite, const CColor & refColor, double YWhiteRef, const CColorReference & colorReference, bool useOldDeltaEFormula ) const
+double CColor::GetDeltaE(double YWhite, const CColor & refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form ) const
 {
-		return m_XYZValues.GetDeltaE(YWhite, refColor.m_XYZValues, YWhiteRef, colorReference, useOldDeltaEFormula );
+		return m_XYZValues.GetDeltaE(YWhite, refColor.m_XYZValues, YWhiteRef, colorReference, dE_form );
 }
 
 double CColor::GetDeltaE(const CColor & refColor) const

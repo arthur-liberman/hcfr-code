@@ -100,7 +100,7 @@ public:
 	BOOL	m_bUseImperialUnits;
 	int		m_nLuminanceCurveMode;
 	BOOL	m_bPreferLuxmeter;
-	BOOL	m_bUseOldDeltaEFormula;
+	int		m_dE_form;
 	BOOL	m_bUseDeltaELumaOnGrays;
 
 	// Global strings

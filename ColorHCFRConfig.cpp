@@ -286,7 +286,7 @@ void CColorHCFRConfig::InitDefaults()
 	m_bUseImperialUnits = FALSE;
 	m_nLuminanceCurveMode = 0;
 	m_bPreferLuxmeter = FALSE;
-	m_bUseOldDeltaEFormula = FALSE;
+	m_dE_form = 1;
 	m_bUseDeltaELumaOnGrays = TRUE;
 }
 
@@ -344,7 +344,7 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_bUseImperialUnits = GetProfileInt("Advanced","UseImperialUnits",0);
 	m_nLuminanceCurveMode = GetProfileInt("Advanced","LuminanceCurveMode",0);
 	m_bPreferLuxmeter = GetProfileInt("Advanced","PreferLuxmeter",0);
-	m_bUseOldDeltaEFormula = GetProfileInt("Advanced","UseOldDeltaEFormula",0);
+	m_dE_form = GetProfileInt("Advanced","dE_form",0);
 	m_bUseDeltaELumaOnGrays = GetProfileInt("Advanced","UseDeltaELumaOnGrays",1);
 
 
@@ -392,7 +392,7 @@ void CColorHCFRConfig::SaveSettings()
 	WriteProfileInt("Advanced","UseImperialUnits",m_bUseImperialUnits);
 	WriteProfileInt("Advanced","LuminanceCurveMode",m_nLuminanceCurveMode);
 	WriteProfileInt("Advanced","PreferLuxmeter",m_bPreferLuxmeter);
-	WriteProfileInt("Advanced","UseOldDeltaEFormula",m_bUseOldDeltaEFormula);
+	WriteProfileInt("Advanced","dE_form",m_dE_form);
 	WriteProfileInt("Advanced","UseDeltaELumaOnGrays",m_bUseDeltaELumaOnGrays);
 }
 
@@ -465,7 +465,7 @@ void CColorHCFRConfig::SetPropertiesSheetValues()
 	m_advancedPropertiesPage.m_bUseImperialUnits = m_bUseImperialUnits;
 	m_advancedPropertiesPage.m_nLuminanceCurveMode = m_nLuminanceCurveMode;
 	m_advancedPropertiesPage.m_bPreferLuxmeter = m_bPreferLuxmeter;
-	m_advancedPropertiesPage.m_bUseOldDeltaEFormula = m_bUseOldDeltaEFormula;
+	m_advancedPropertiesPage.m_dE_form = m_dE_form;
 	m_advancedPropertiesPage.m_bUseDeltaELumaOnGrays = m_bUseDeltaELumaOnGrays;
 
 	m_advancedPropertiesPage.m_isModified=FALSE;
@@ -547,7 +547,7 @@ BOOL CColorHCFRConfig::GetPropertiesSheetValues()
 	m_bUseImperialUnits = m_advancedPropertiesPage.m_bUseImperialUnits;
 	m_nLuminanceCurveMode = m_advancedPropertiesPage.m_nLuminanceCurveMode;
 	m_bPreferLuxmeter = m_advancedPropertiesPage.m_bPreferLuxmeter;
-	m_bUseOldDeltaEFormula = m_advancedPropertiesPage.m_bUseOldDeltaEFormula;
+	m_dE_form = m_advancedPropertiesPage.m_dE_form;
 	m_bUseDeltaELumaOnGrays = m_advancedPropertiesPage.m_bUseDeltaELumaOnGrays;
 
 	return needRestart;

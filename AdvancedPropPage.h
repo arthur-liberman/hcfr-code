@@ -47,11 +47,11 @@ public:
 	CButton	m_DeltaEGray;
 	BOOL	m_bConfirmMeasures;
 	CString	m_comPort;
+	int		m_dE_form;
 	BOOL	m_bUseOnlyPrimaries;
 	BOOL	m_bUseImperialUnits;
 	int		m_nLuminanceCurveMode;
 	BOOL	m_bPreferLuxmeter;
-	BOOL	m_bUseOldDeltaEFormula;
 	BOOL	m_bUseDeltaELumaOnGrays;
 	//}}AFX_DATA
 
@@ -72,6 +72,7 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(CAdvancedPropPage)
 	afx_msg void OnSelchangeLuxmeterComCombo();
+	afx_msg void OnSelchangedECombo();
 	//}}AFX_MSG
 	afx_msg void OnControlClicked(UINT nID);
 	DECLARE_MESSAGE_MAP()

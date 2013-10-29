@@ -44,7 +44,7 @@ CAdvancedPropPage::CAdvancedPropPage() : CPropertyPageWithHelp(CAdvancedPropPage
 	m_bUseImperialUnits = FALSE;
 	m_nLuminanceCurveMode = 0;
 	m_bPreferLuxmeter = FALSE;
-	m_bUseOldDeltaEFormula = FALSE;
+	m_dE_form = 1;
 	m_bUseDeltaELumaOnGrays = FALSE;
 	//}}AFX_DATA_INIT
 
@@ -59,15 +59,14 @@ void CAdvancedPropPage::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPageWithHelp::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CAdvancedPropPage)
-	DDX_Control(pDX, IDC_CHECK_OLD_DELTAE, m_OldDeltaE);
 	DDX_Control(pDX, IDC_CHECK_DELTAE_GRAY_LUMA, m_DeltaEGray);
 	DDX_Check(pDX, IDC_CHECK_CONFIRM, m_bConfirmMeasures);
 	DDX_CBString(pDX, IDC_LUXMETER_COM_COMBO, m_comPort);
+	DDX_CBIndex(pDX, IDC_COMBO_dE, m_dE_form);
 	DDX_Check(pDX, IDC_CHECK_CALIBRATION_OLD, m_bUseOnlyPrimaries);
 	DDX_Check(pDX, IDC_CHECK_IMPERIAL, m_bUseImperialUnits);
 	DDX_Radio(pDX, IDC_RADIO1, m_nLuminanceCurveMode);
 	DDX_Check(pDX, IDC_CHECK_PREFER_LUXMETER, m_bPreferLuxmeter);
-	DDX_Check(pDX, IDC_CHECK_OLD_DELTAE, m_bUseOldDeltaEFormula);
 	DDX_Check(pDX, IDC_CHECK_DELTAE_GRAY_LUMA, m_bUseDeltaELumaOnGrays);
 	//}}AFX_DATA_MAP
 }
@@ -75,15 +74,14 @@ void CAdvancedPropPage::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CAdvancedPropPage, CPropertyPageWithHelp)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_CONFIRM, IDC_CHECK_CONFIRM, OnControlClicked)
-    ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_CALIBRATION_OLD, IDC_CHECK_CALIBRATION_OLD, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_IMPERIAL, IDC_CHECK_IMPERIAL, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_PREFER_LUXMETER, IDC_CHECK_PREFER_LUXMETER, OnControlClicked)
-    ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_OLD_DELTAE, IDC_CHECK_OLD_DELTAE, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_DELTAE_GRAY_LUMA, IDC_CHECK_DELTAE_GRAY_LUMA, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_RADIO1, IDC_RADIO3, OnControlClicked)
 
 	//{{AFX_MSG_MAP(CAdvancedPropPage)
 	ON_CBN_SELCHANGE(IDC_LUXMETER_COM_COMBO, OnSelchangeLuxmeterComCombo)
+	ON_CBN_SELCHANGE(IDC_COMBO_dE, OnSelchangedECombo)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -94,28 +92,19 @@ void CAdvancedPropPage::OnControlClicked(UINT nID)
 {
 	// m_isModified becomes true only when imperial units or luminance curve display flag changes. This flag
 	// allow parent dialog to refresh all views to change data displayed
-	if ( nID == IDC_CHECK_IMPERIAL || nID == IDC_CHECK_PREFER_LUXMETER || nID == IDC_RADIO1 || nID == IDC_RADIO2 || nID == IDC_RADIO3 || nID == IDC_CHECK_OLD_DELTAE || nID == IDC_CHECK_DELTAE_GRAY_LUMA )
+	if ( nID == IDC_CHECK_IMPERIAL || nID == IDC_CHECK_PREFER_LUXMETER || nID == IDC_RADIO1 || nID == IDC_RADIO2 || nID == IDC_RADIO3 || nID == IDC_CHECK_DELTAE_GRAY_LUMA )
 		m_isModified=TRUE;
-	/*
-	if ( nID == IDC_CHECK_OLD_DELTAE )
-	{
-		if ( m_OldDeltaE.GetCheck () )
-		{
-			m_DeltaEGray.EnableWindow(FALSE);
-			m_DeltaEGray.SetCheck(FALSE);
-			m_bUseDeltaELumaOnGrays = FALSE;
-		}
-		else
-		{
-			m_DeltaEGray.EnableWindow(TRUE);
-		}
-	}
-	*/
 	SetModified(TRUE);	
 }
 
 void CAdvancedPropPage::OnSelchangeLuxmeterComCombo() 
 {
+	SetModified(TRUE);	
+}
+
+void CAdvancedPropPage::OnSelchangedECombo() 
+{
+	m_isModified=TRUE;
 	SetModified(TRUE);	
 }
 
@@ -135,17 +124,5 @@ UINT CAdvancedPropPage::GetHelpId ( LPSTR lpszTopic )
 BOOL CAdvancedPropPage::OnSetActive() 
 {
 	BOOL	bOk = CPropertyPageWithHelp::OnSetActive();
-/*
-	if ( m_bUseOldDeltaEFormula )
-	{
-		m_DeltaEGray.EnableWindow(FALSE);
-		m_DeltaEGray.SetCheck(FALSE);
-		m_bUseDeltaELumaOnGrays = FALSE;
-	}
-	else
-	{
-		m_DeltaEGray.EnableWindow(TRUE);
-	}
-*/
 	return bOk;
 }

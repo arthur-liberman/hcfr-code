@@ -26,6 +26,10 @@
 #if !defined(COLOR_H_INCLUDED_)
 #define COLOR_H_INCLUDED_
 
+#ifndef PI
+#define PI 3.141592653589793f
+#endif
+
 #define FX_NODATA -99999.99
 
 #include "libHCFR_Config.h"
@@ -90,7 +94,8 @@ public:
     explicit ColorXYZ(const ColorxyY& xyY);
     ColorXYZ(double X, double Y, double Z);
     int GetColorTemp(const CColorReference& colorReference) const;
-    double GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhiteRef, const CColorReference & colorReference, bool useOldDeltaEFormula ) const;
+//    double GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhiteRef, const CColorReference & colorReference, bool useOldDeltaEFormula ) const;
+    double GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form ) const;
     double GetOldDeltaE(const ColorXYZ& refColor) const;
 	double GetDeltaxy(const ColorXYZ& refColor, const CColorReference& colorReference) const;
 };
@@ -182,7 +187,7 @@ public:
     bool isValid() const;
 
 	double GetLuminance() const;
-    double GetDeltaE(double YWhite, const CColor & refColor, double YWhiteRef, const CColorReference & colorReference, bool useOldDeltaEFormula ) const;
+    double GetDeltaE(double YWhite, const CColor & refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form ) const;
     double GetDeltaE(const CColor & refColor) const;
 	double GetDeltaxy(const CColor & refColor, const CColorReference& colorReference) const;
 	ColorXYZ GetXYZValue() const;

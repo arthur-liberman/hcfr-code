@@ -260,7 +260,7 @@ void CMeasuresHistoView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 		m_graphCtrl1.AddPoint(m_greenGraphID, j, normColor[1]*100.0);
 		m_graphCtrl1.AddPoint(m_blueGraphID, j, normColor[2]*100.0);
 
-//		m_graphCtrl2.AddPoint(m_deltaEGraphID, j, GetDocument()->GetMeasure()->GetMeasurement(i).GetDeltaE(-1.0, GetColorReference().GetWhite(), 1.0, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula));
+//		m_graphCtrl2.AddPoint(m_deltaEGraphID, j, GetDocument()->GetMeasure()->GetMeasurement(i).GetDeltaE(-1.0, GetColorReference().GetWhite(), 1.0, GetColorReference(), 	GetConfig()->m_dE_form));
 		m_graphCtrl2.AddPoint(m_deltaEGraphID, j, GetDocument()->GetMeasure()->GetMeasurement(i).GetDeltaE(GetColorReference().GetWhite()));
 
 		if(colorTemp > 1500 && colorTemp < 12000)
