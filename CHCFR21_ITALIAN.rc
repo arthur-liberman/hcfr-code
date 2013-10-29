@@ -18,7 +18,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Italian (Italian) resources
+// Italian (Italy) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ITA)
 LANGUAGE LANG_ITALIAN, SUBLANG_ITALIAN
@@ -53,60 +53,6 @@ BEGIN
     COMBOBOX        IDC_COMBO_CODE_NAME,85,28,73,65,CBS_DROPDOWNLIST | WS_GROUP | WS_TABSTOP
     PUSHBUTTON      "Help",IDHELP,157,193,50,14
 END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog Info
-//
-
-IDD_IRPROFILE_PROP_PAGE DLGINIT
-BEGIN
-    IDC_COMBO_CODE_NAME, 0x403, 13, 0
-0x654e, 0x7478, 0x6320, 0x6168, 0x7470, 0x7265, "\000" 
-    IDC_COMBO_CODE_NAME, 0x403, 3, 0
-0x4b4f, "\000" 
-    IDC_COMBO_CODE_NAME, 0x403, 11, 0
-0x6f44, 0x6e77, 0x6120, 0x7272, 0x776f, "\000" 
-    IDC_COMBO_CODE_NAME, 0x403, 12, 0
-0x6952, 0x6867, 0x2074, 0x7261, 0x6f72, 0x0077, 
-    0
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO
-BEGIN
-    IDD_IRPROFILE_PROP_PAGE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 219
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 207
-    END
-END
-#endif    // APSTUDIO_INVOKED
-
-#endif    // Italian (Italian) Resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// Italian (Italy) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ITA)
-LANGUAGE LANG_ITALIAN, SUBLANG_ITALIAN
-#pragma code_page(1252)
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
 
 IDD_SENSOR_PROP_PAGE DIALOG 0, 0, 192, 191
 STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
@@ -798,10 +744,10 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,153,185,10
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ | WS_GROUP,7,149,199,1
     GROUPBOX        "Delta E",IDC_STATIC,7,171,199,38,WS_GROUP
-    CONTROL         "Use CIELUV instead of CIE94 delta E formula",IDC_CHECK_OLD_DELTAE,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,183,170,10
     CONTROL         "Include L in gray scale delta E",IDC_CHECK_DELTAE_GRAY_LUMA,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,195,181,10
+    LTEXT           "Color Difference Formula",IDC_STATIC,33,184,88,10
+    COMBOBOX        IDC_COMBO_dE,127,182,52,118,CBS_DROPDOWN | WS_VSCROLL | WS_GROUP | WS_TABSTOP
 END
 
 IDD_SIGNATURE DIALOG 0, 0, 186, 73
@@ -935,6 +881,19 @@ END
 //
 // Dialog Info
 //
+
+IDD_IRPROFILE_PROP_PAGE DLGINIT
+BEGIN
+    IDC_COMBO_CODE_NAME, 0x403, 13, 0
+0x654e, 0x7478, 0x6320, 0x6168, 0x7470, 0x7265, "\000" 
+    IDC_COMBO_CODE_NAME, 0x403, 3, 0
+0x4b4f, "\000" 
+    IDC_COMBO_CODE_NAME, 0x403, 11, 0
+0x6f44, 0x6e77, 0x6120, 0x7272, 0x776f, "\000" 
+    IDC_COMBO_CODE_NAME, 0x403, 12, 0
+0x6952, 0x6867, 0x2074, 0x7261, 0x6f72, 0x0077, 
+    0
+END
 
 IDD_SELECT_GENERATOR_PROPPAGE DLGINIT
 BEGIN
@@ -1232,6 +1191,16 @@ BEGIN
 0x4f43, 0x384d, "\000" 
     IDC_LUXMETER_COM_COMBO, 0x403, 5, 0
 0x4f43, 0x394d, "\000" 
+    IDC_COMBO_dE, 0x403, 7, 0
+0x4943, 0x4c45, 0x5655, "\000" 
+    IDC_COMBO_dE, 0x403, 6, 0
+0x4943, 0x3745, 0x0036, 
+    IDC_COMBO_dE, 0x403, 6, 0
+0x4943, 0x3945, 0x0034, 
+    IDC_COMBO_dE, 0x403, 8, 0
+0x4943, 0x3245, 0x3030, 0x0030, 
+    IDC_COMBO_dE, 0x403, 4, 0
+0x4d43, 0x0043, 
     0
 END
 
@@ -1253,164 +1222,16 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO
 BEGIN
-    IDD_SELECT_SENSOR_PROPPAGE, DIALOG
+    IDD_IRPROFILE_PROP_PAGE, DIALOG
     BEGIN
-    END
-
-    IDD_SELECT_GENERATOR_PROPPAGE, DIALOG
-    BEGIN
-    END
-
-    IDD_GRAPH_PROP_PAGE, DIALOG
-    BEGIN
-    END
-
-    IDD_GRAPH_SCALE_PROP_PAGE, DIALOG
-    BEGIN
-    END
-
-    IDD_GRAPH_SAVE_DIALOG, DIALOG
-    BEGIN
-    END
-
-    IDD_REFERENCE_PROP_PAGE, DIALOG
-    BEGIN
-        BOTTOMMARGIN, 161
-    END
-
-    IDD_GENERAL_PROP_PAGE, DIALOG
-    BEGIN
-        RIGHTMARGIN, 208
-        BOTTOMMARGIN, 183
-    END
-
-    IDD_EXPORTXLS_DIALOG, DIALOG
-    BEGIN
-    END
-
-    IDD_ABOUTBOX, DIALOG
-    BEGIN
-    END
-
-    IDD_ONEDEVICESENSOR_PROP_PAGE, DIALOG
-    BEGIN
-    END
-
-    IDD_GENERATOR_PROP_PAGE, DIALOG
-    BEGIN
-    END
-
-    IDD_GENERATOR_GDI_PROP_PAGE, DIALOG
-    BEGIN
-        RIGHTMARGIN, 176
-    END
-
-    IDD_APPEARANCE_PROP_PAGE, DIALOG
-    BEGIN
-    END
-
-    IDD_KISENSOR_PROP_PAGE, DIALOG
-    BEGIN
-    END
-
-    IDD_COLORTEST, DIALOG
-    BEGIN
-    END
-
-    IDD_LANGSELECTION, DIALOG
-    BEGIN
-    END
-
-    IDD_I1SENSOR_PROP_PAGE, DIALOG
-    BEGIN
-    END
-
-    IDD_ARGYLL_SENSOR_PROP_PAGE, DIALOG
-    BEGIN
-        RIGHTMARGIN, 303
-        BOTTOMMARGIN, 171
-    END
-
-    IDD_DUPLICATEDOC_DIALOG, DIALOG
-    BEGIN
-        BOTTOMMARGIN, 139
-    END
-
-    IDD_REF_COLOR_VALUES, DIALOG
-    BEGIN
-    END
-
-    IDD_SIMULATED_SENSOR_PROP_PAGE, DIALOG
-    BEGIN
-    END
-
-    IDD_WEB_UPDATE, DIALOG
-    BEGIN
-    END
-
-    IDD_GENERATOR_KI_PROP_PAGE, DIALOG
-    BEGIN
-    END
-
-    IDD_PATTERNS, DIALOG
-    BEGIN
-    END
-
-    IDD_SCALESIZES, DIALOG
-    BEGIN
-    END
-
-    IDD_MAINVIEW_FORM, DIALOG
-    BEGIN
-        BOTTOMMARGIN, 327
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 219
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 207
     END
 
     IDD_ADVANCED_PROP_PAGE, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 205
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 210
-    END
-
-    IDD_SIGNATURE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 179
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 66
-    END
-
-    IDD_MTCSSENSOR_PROP_PAGE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 205
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 272
-    END
-
-    IDD_LUXMETER_SCALE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 196
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 66
-    END
-
-    IDD_TOOLBAR_PROP_PAGE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 205
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 130
-    END
-
-    IDD_GENERATE_SPECTRAL_SAMPLE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 218
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 79
     END
 END
 #endif    // APSTUDIO_INVOKED
