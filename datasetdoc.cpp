@@ -3119,18 +3119,23 @@ void CDataSetDoc::OnMeasureSatRed()
 {
 	CString	Msg, MsgQueue, TmpStr;
 	int		nNbPoints = GetMeasure () -> GetSaturationSize () - 1;
-	
-	MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
-
-	Msg.LoadString ( IDS_RUNSATREDON );
-	TmpStr.Format ( " %d ", nNbPoints );
-	Msg += TmpStr + MsgQueue;
-	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
+	if (!m_YWhite)
+		MessageBox(NULL,"Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
+	else
 	{
-		MeasureRedSatScale();
+		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
 
-		SetSelectedColor ( noDataColor );
-		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+		Msg.LoadString ( IDS_RUNSATREDON );
+		TmpStr.Format ( " %d ", nNbPoints );
+		Msg += TmpStr + MsgQueue;
+		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+		{
+			MeasureRedSatScale();
+
+			SetSelectedColor ( noDataColor );
+			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+		}
 	}
 }
 
@@ -3143,18 +3148,23 @@ void CDataSetDoc::OnMeasureSatGreen()
 {
 	CString	Msg, MsgQueue, TmpStr;
 	int		nNbPoints = GetMeasure () -> GetSaturationSize () - 1;
-	
-	MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
-
-	Msg.LoadString ( IDS_RUNSATGREENON );
-	TmpStr.Format ( " %d ", nNbPoints );
-	Msg += TmpStr + MsgQueue;
-	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
+	if (!m_YWhite)
+		MessageBox(NULL,"Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
+	else
 	{
-		MeasureGreenSatScale();
+		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
 
-		SetSelectedColor ( noDataColor );
-		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+		Msg.LoadString ( IDS_RUNSATGREENON );
+		TmpStr.Format ( " %d ", nNbPoints );
+		Msg += TmpStr + MsgQueue;
+		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+		{
+			MeasureGreenSatScale();
+
+			SetSelectedColor ( noDataColor );
+			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+		}
 	}
 }
 
@@ -3167,18 +3177,23 @@ void CDataSetDoc::OnMeasureSatBlue()
 {
 	CString	Msg, MsgQueue, TmpStr;
 	int		nNbPoints = GetMeasure () -> GetSaturationSize () - 1;
-	
-	MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
-
-	Msg.LoadString ( IDS_RUNSATBLUEON );
-	TmpStr.Format ( " %d ", nNbPoints );
-	Msg += TmpStr + MsgQueue;
-	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
+	if (!m_YWhite)
+		MessageBox(NULL,"Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
+	else
 	{
-		MeasureBlueSatScale();
+		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
 
-		SetSelectedColor ( noDataColor );
-		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+		Msg.LoadString ( IDS_RUNSATBLUEON );
+		TmpStr.Format ( " %d ", nNbPoints );
+		Msg += TmpStr + MsgQueue;
+		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+		{
+			MeasureBlueSatScale();
+
+			SetSelectedColor ( noDataColor );
+			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+		}
 	}
 }
 
@@ -3191,18 +3206,23 @@ void CDataSetDoc::OnMeasureSatYellow()
 {
 	CString	Msg, MsgQueue, TmpStr;
 	int		nNbPoints = GetMeasure () -> GetSaturationSize () - 1;
-	
-	MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
-
-	Msg.LoadString ( IDS_RUNSATYELLOWON );
-	TmpStr.Format ( " %d ", nNbPoints );
-	Msg += TmpStr + MsgQueue;
-	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
+	if (!m_YWhite)
+		MessageBox(NULL,"Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
+	else
 	{
-		MeasureYellowSatScale();
+		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
 
-		SetSelectedColor ( noDataColor );
-		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+		Msg.LoadString ( IDS_RUNSATYELLOWON );
+		TmpStr.Format ( " %d ", nNbPoints );
+		Msg += TmpStr + MsgQueue;
+		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+		{
+			MeasureYellowSatScale();
+
+			SetSelectedColor ( noDataColor );
+			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+		}
 	}
 }
 
@@ -3215,18 +3235,23 @@ void CDataSetDoc::OnMeasureSatCyan()
 {
 	CString	Msg, MsgQueue, TmpStr;
 	int		nNbPoints = GetMeasure () -> GetSaturationSize () - 1;
-	
-	MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
-
-	Msg.LoadString ( IDS_RUNSATCYANON );
-	TmpStr.Format ( " %d ", nNbPoints );
-	Msg += TmpStr + MsgQueue;
-	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
+	if (!m_YWhite)
+		MessageBox(NULL,"Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
+	else
 	{
-		MeasureCyanSatScale();
+		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
 
-		SetSelectedColor ( noDataColor );
-		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+		Msg.LoadString ( IDS_RUNSATCYANON );
+		TmpStr.Format ( " %d ", nNbPoints );
+		Msg += TmpStr + MsgQueue;
+		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+		{
+			MeasureCyanSatScale();
+
+			SetSelectedColor ( noDataColor );
+			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+		}
 	}
 }
 
@@ -3239,18 +3264,23 @@ void CDataSetDoc::OnMeasureSatMagenta()
 {
 	CString	Msg, MsgQueue, TmpStr;
 	int		nNbPoints = GetMeasure () -> GetSaturationSize () - 1;
-	
-	MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
-
-	Msg.LoadString ( IDS_RUNSATMAGENTAON );
-	TmpStr.Format ( " %d ", nNbPoints );
-	Msg += TmpStr + MsgQueue;
-	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
+	if (!m_YWhite)
+		MessageBox(NULL,"Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
+	else
 	{
-		MeasureMagentaSatScale();
+		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
 
-		SetSelectedColor ( noDataColor );
-		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+		Msg.LoadString ( IDS_RUNSATMAGENTAON );
+		TmpStr.Format ( " %d ", nNbPoints );
+		Msg += TmpStr + MsgQueue;
+		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+		{
+			MeasureMagentaSatScale();
+
+			SetSelectedColor ( noDataColor );
+			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+		}
 	}
 }
 
@@ -3259,17 +3289,23 @@ void CDataSetDoc::OnMeasureSatCC24()
 	CString	Msg, MsgQueue, TmpStr;
 //	int		nNbPoints = GetMeasure () -> GetSaturationSize () - 1;
 	int		nNbPoints = 24;
-	MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
-
-	Msg.LoadString ( IDS_RUNSATCC24ON );
-	TmpStr.Format ( " %d ", nNbPoints );
-	Msg += TmpStr + MsgQueue;
-	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
+	if	(!m_YWhite)
+		MessageBox(NULL,"Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
+	else
 	{
-		MeasureCC24SatScale();
+		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
+		
+		Msg.LoadString ( IDS_RUNSATCC24ON );
+		TmpStr.Format ( " %d ", nNbPoints );
+		Msg += TmpStr + MsgQueue;
+		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+		{
+			MeasureCC24SatScale();
 
-		SetSelectedColor ( noDataColor );
-		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+			SetSelectedColor ( noDataColor );
+			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+		}
 	}
 }
 
@@ -3322,18 +3358,23 @@ void CDataSetDoc::OnMeasureSatAll()
 {
 	CString	Msg, MsgQueue, TmpStr;
 	int		nNbPoints = GetMeasure () -> GetSaturationSize () - 1;
-	
-	MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
-
-	Msg.LoadString ( IDS_RUNALLSATON );
-	TmpStr.Format ( " %d ", nNbPoints );
-	Msg += TmpStr + MsgQueue;
-	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
+	if	(!m_YWhite)
+		MessageBox(NULL,"Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
+	else
 	{
-		MeasureAllSaturationScales();
+		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
 
-		SetSelectedColor ( noDataColor );
-		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+		Msg.LoadString ( IDS_RUNALLSATON );
+		TmpStr.Format ( " %d ", nNbPoints );
+		Msg += TmpStr + MsgQueue;
+		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+		{
+			MeasureAllSaturationScales();
+
+			SetSelectedColor ( noDataColor );
+			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+		}
 	}
 }
 
@@ -3372,18 +3413,23 @@ void CDataSetDoc::OnMeasureSatPrimaries()
 {
 	CString	Msg, MsgQueue, TmpStr;
 	int		nNbPoints = GetMeasure () -> GetSaturationSize () - 1;
-	
-	MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
-
-	Msg.LoadString ( IDS_RUNPRIMSATON );
-	TmpStr.Format ( " %d ", nNbPoints );
-	Msg += TmpStr + MsgQueue;
-	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
+	if	(!m_YWhite)
+		MessageBox(NULL,"Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
+	else
 	{
-		MeasurePrimarySaturationScales();
+		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
 
-		SetSelectedColor ( noDataColor );
-		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+		Msg.LoadString ( IDS_RUNPRIMSATON );
+		TmpStr.Format ( " %d ", nNbPoints );
+		Msg += TmpStr + MsgQueue;
+		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+		{
+			MeasurePrimarySaturationScales();
+
+			SetSelectedColor ( noDataColor );
+			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+		}
 	}
 }
 
@@ -3391,18 +3437,23 @@ void CDataSetDoc::OnMeasureSatPrimariesSecondaries()
 {
 	CString	Msg, MsgQueue, TmpStr;
 	int		nNbPoints = GetMeasure () -> GetSaturationSize () - 1;
-	
-	MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
-
-	Msg.LoadString ( IDS_RUNPRIMSATON2 );
-	TmpStr.Format ( " %d ", nNbPoints );
-	Msg += TmpStr + MsgQueue;
-	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
+	if	(!m_YWhite)
+		MessageBox(NULL,"Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
+	else
 	{
-		MeasurePrimarySecondarySaturationScales();
+		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
 
-		SetSelectedColor ( noDataColor );
-		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+		Msg.LoadString ( IDS_RUNPRIMSATON2 );
+		TmpStr.Format ( " %d ", nNbPoints );
+		Msg += TmpStr + MsgQueue;
+		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+		{
+			MeasurePrimarySecondarySaturationScales();
+
+			SetSelectedColor ( noDataColor );
+			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+		}
 	}
 }
 
