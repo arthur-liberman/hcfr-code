@@ -1419,20 +1419,30 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 		}
 		else if ( aComponentNum == 3 )
 		{
+			COLORREF clr;
+			double dE;
 			if ( aReference.isValid() )
 				// Use original u'v' dE for grey scale as this is standard practice //added option to lightness inclusion
-				if (m_displayMode == 0 || m_displayMode == 2)
+				if (m_displayMode == 0 || m_displayMode == 2 || m_displayMode == 3 || m_displayMode == 4)
 					if ( nCol > 1 )
 					{
-					if (GetConfig ()->m_bUseDeltaELumaOnGrays)
+					if (GetConfig ()->m_bUseDeltaELumaOnGrays && m_displayMode < 3)
 					{
-						str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), true ) );
-						dEavg+=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), true );
+						str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), true ) );						
+						dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), true );
+						dEavg+=dE;
 					}
 					else
 					{
 						str.Format("%.1f",aMeasure.GetDeltaE ( aReference ));
-						dEavg+=aMeasure.GetDeltaE ( aReference );
+						dE=aMeasure.GetDeltaE ( aReference );
+						dEavg+=dE;
+					}
+					if (m_displayMode == 0)
+					{
+						clr = (dE<3?RGB(0,230,0):(dE<5?RGB(230,230,0):RGB(230,0,0)));
+						m_pGrayScaleGrid->SetItemBkColour(4, nCol, clr);
+						m_pGrayScaleGrid -> SetItemFont ( 4, nCol, m_pGrayScaleGrid->GetItemFont(0,0) ); // Set the font to bold
 					}
 						dEcnt++;
 					}
@@ -1441,7 +1451,11 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				else
 				{
 					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula ) );
-					dEavg+=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula );
+					dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_bUseOldDeltaEFormula );
+					dEavg+=dE;
+					clr = (dE<2?RGB(0,230,0):(dE<4?RGB(230,230,0):RGB(230,0,0)));
+					m_pGrayScaleGrid->SetItemBkColour(4, nCol, clr);
+					m_pGrayScaleGrid -> SetItemFont ( 4, nCol, m_pGrayScaleGrid->GetItemFont(0,0) ); // Set the font to bold
 					dEcnt++;
 				}
 			else
@@ -1876,6 +1890,8 @@ void CMainView::UpdateGrid()
 				 break;
 
 			case 3:
+				 YWhite = YWhiteGray;
+				 YWhiteRefDoc = YWhiteGrayRefDoc;
 				 nCount = GetDocument()->GetMeasure()->GetNearBlackScaleSize();
 				 if ( pDataRef && pDataRef->GetMeasure()->GetNearBlackScaleSize() != nCount )
 					pDataRef = NULL;
@@ -1885,6 +1901,8 @@ void CMainView::UpdateGrid()
 				 break;
 
 			case 4:
+				 YWhite = YWhiteGray;
+				 YWhiteRefDoc = YWhiteGrayRefDoc;
 				 nCount = GetDocument()->GetMeasure()->GetNearWhiteScaleSize();
 				 if ( pDataRef && pDataRef->GetMeasure()->GetNearWhiteScaleSize() != nCount )
 					pDataRef = NULL;
@@ -1905,9 +1923,9 @@ void CMainView::UpdateGrid()
 				 YWhiteRefDoc = YWhiteGrayRefDoc;
 				 if (m_displayMode != 11) 
 				 {
-					nCount = GetDocument()->GetMeasure()->GetSaturationSize();
-				 if ( pDataRef && pDataRef->GetMeasure()->GetSaturationSize() != nCount )
-					pDataRef = NULL;
+					 nCount = GetDocument()->GetMeasure()->GetSaturationSize();
+					 if ( pDataRef && pDataRef->GetMeasure()->GetSaturationSize() != nCount )
+						 pDataRef = NULL;
 				 }
 				 else
 				 {
@@ -2045,10 +2063,10 @@ void CMainView::UpdateGrid()
 						m_pGrayScaleGrid -> SetItemFont ( 0, j+1, m_pGrayScaleGrid->GetItemFont(0,j) ); // Set the font to bold
 
 						m_pGrayScaleGrid->SetItemState ( 4, j+1, m_pGrayScaleGrid->GetItemState(4,j+1) | GVIS_READONLY );
-						m_pGrayScaleGrid->SetItemBkColour ( 4, j+1, RGB(224,224,224) );
+//						m_pGrayScaleGrid->SetItemBkColour ( 4, j+1, RGB(224,224,224) );
 
 						m_pGrayScaleGrid->SetItemState ( 5, j+1, m_pGrayScaleGrid->GetItemState(5,j+1) | GVIS_READONLY );
-						m_pGrayScaleGrid->SetItemBkColour ( 5, j+1, RGB(240,240,240) );
+//						m_pGrayScaleGrid->SetItemBkColour ( 5, j+1, RGB(240,240,240) );
 
 						bAddedCol = TRUE;
 					 }
@@ -2107,12 +2125,18 @@ void CMainView::UpdateGrid()
 					 aColor = GetDocument()->GetMeasure()->GetNearBlack(j);
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetNearBlack(j);
+						YWhite = aColor [ 1 ];
+						if ( pDataRef )
+							YWhiteRefDoc = refDocColor [ 1 ];
 					 break;
 
 				case 4:
 					 aColor = GetDocument()->GetMeasure()->GetNearWhite(j);
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetNearWhite(j);
+						YWhite = aColor [ 1 ];
+						if ( pDataRef )
+							YWhiteRefDoc = refDocColor [ 1 ];
 					 break;
 
 				case 5:
@@ -3490,7 +3514,7 @@ void CMainView::UpdateMeasurementsAfterBkgndMeasure ()
 		CColor			refColor = GetColorReference().GetWhite();
 		BOOL			bAddedCol = FALSE;
 		BOOL			bSpecialRef = FALSE;
-		COLORREF		clrSpecial1, clrSpecial2;
+		COLORREF		clrSpecial1=RGB(128,128,128), clrSpecial2=RGB(128,128,128);
 		CDataSetDoc *	pDataRef = GetDataRef();
 
 		GV_ITEM Item;
