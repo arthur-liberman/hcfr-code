@@ -360,14 +360,15 @@ BEGIN
     LTEXT           "Pattern Intensity [%]",IDC_STATIC,86,40,75,8
     EDITTEXT        IDC_INTENSITY_EDIT,156,38,20,12,ES_AUTOHSCROLL | WS_GROUP
     GROUPBOX        "Display mode",IDC_STATIC,9,48,177,35,WS_GROUP
-    CONTROL         "GDI",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,61,29,10
-    CONTROL         "Overlay",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,44,61,40,10
-    CONTROL         "madVR",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,83,61,40,10
-    CONTROL         "GDI(no background)",IDC_RADIO4,"Button",BS_AUTORADIOBUTTON,13,72,80,10
-    PUSHBUTTON      "Overlay testen",IDC_OVERLAY,125,68,54,14,WS_GROUP
+    CONTROL         "GDI",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,59,29,10
+    CONTROL         "Overlay",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,44,59,40,10
+    CONTROL         "madVR",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,93,59,40,10
+    CONTROL         "GDI(no background)",IDC_RADIO4,"Button",BS_AUTORADIOBUTTON,13,71,80,10
+    PUSHBUTTON      "Overlay testen",IDC_OVERLAY,112,96,54,14,WS_GROUP
     GROUPBOX        "Grautreppe (GDI)",IDC_STATIC_GROUP,9,87,167,27,WS_GROUP
     CONTROL         "0 - 255",IDC_RGBLEVEL_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,99,38,10
     CONTROL         "16 - 235",IDC_RGBLEVEL_RADIO2,"Button",BS_AUTORADIOBUTTON,69,99,42,10
+    CONTROL         "disable madVR 3dLUT",IDC_MADVR_3D,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,93,69,85,13
 END
 
 IDD_APPEARANCE_PROP_PAGE DIALOG 0, 0, 212, 158
@@ -2759,6 +2760,7 @@ BEGIN
     IDS_CC6YELLOWSECONDARYREF "Purplish Blue reference"
     IDS_CC6CYANSECONDARYREF "Yellow Green reference"
     IDS_CC6MAGENTASECONDARYREF "Orange Yellow reference"
+    IDS_DELTAEAVERAGE       "Average dE"
     IDS_REDSATPERCENTREF    "Red Saturated at %d%% reference"
     IDS_GREENSATPERCENTREF  "Green Saturated at %d%% reference"
     IDS_BLUESATPERCENTREF   "Blue Saturated at %d%% reference"
@@ -2792,7 +2794,6 @@ BEGIN
     IDS_GAMMABLUE           "Blau Gamma"
     IDS_GAMMAREFERENCE      "Gamma Referenz"
     IDS_GAMMAAVERAGE        "Durchschnitt Gamma"
-    IDS_DELTAEAVERAGE       "Average dE"
     IDS_RGBREFERENCE        "RGB Referenz"
     IDS_RGBLEVELRED         "Rot Niveau"
     IDS_RGBLEVELGREEN       "Grün Niveau"

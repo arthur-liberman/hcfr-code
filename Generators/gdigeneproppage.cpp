@@ -48,6 +48,7 @@ CGDIGenePropPage::CGDIGenePropPage() : CPropertyPageWithHelp(CGDIGenePropPage::I
 	m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI);
 //	m_nDisplayMode = DISPLAY_GDI;
 	m_b16_235 = FALSE;
+    m_madVR_3d = FALSE;
 }
 
 CGDIGenePropPage::~CGDIGenePropPage()
@@ -65,6 +66,7 @@ void CGDIGenePropPage::DoDataExchange(CDataExchange* pDX)
 	DDV_MinMaxUInt(pDX, m_rectSizePercent, 1, 100);
 	DDV_MinMaxUInt(pDX, m_bgStimPercent, 0, 100);
 	DDV_MinMaxUInt(pDX, m_Intensity, 1, 100);
+	DDX_Check(pDX, IDC_MADVR_3D, m_madVR_3d);
 	//}}AFX_DATA_MAP
 }
 

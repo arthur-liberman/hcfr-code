@@ -62,6 +62,7 @@ public:
 	UINT nMeasureNumber;
 	BOOL m_doScreenBlanking;
 	BOOL m_b16_235;
+    BOOL m_madVR_3d;
 
 protected:
 	BOOL m_isModified;

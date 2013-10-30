@@ -52,6 +52,7 @@ public:
 	int m_activeMonitorNum;
 	int	m_nDisplayMode;
 	BOOL m_b16_235;
+    BOOL m_madVR_3d;
 
 	HMONITOR	m_monitorHandle [ 16 ];
 

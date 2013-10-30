@@ -135,8 +135,13 @@ BOOL CGenerator::Init(UINT nbMeasure)
 	{
 	  if (madVR_BlindConnect())
       {
-//      madVR_Disable3dlut(); no switch for this yet
-      madVR_SetOsdText(L"HCFR is measuring display, please wait...");
+      if (m_madVR_3d)
+      {
+          madVR_Disable3dlut();
+          madVR_SetOsdText(L"HCFR is measuring display, please wait...[3dlut disabled]");
+      }
+      else
+          madVR_SetOsdText(L"HCFR is measuring display, please wait...");
 	  madVR_ShowProgressBar(nMeasureNumber);			
 	  madVR_SetBackground(Cgen.m_rectSizePercent, RGB(bgstim*255,bgstim*255,bgstim*255) );
 	  }
