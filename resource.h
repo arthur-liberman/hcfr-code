@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by CHCFR21_ENGLISH.rc
+// Used by CHCFR21_ITALIAN.rc
 //
 #define IDS_STRING_VERSION              1
 #define IDS_STRING_VERSION_WEB          2
@@ -620,6 +620,8 @@
 #define IDC_LUXMETER_COM_COMBO          1218
 #define IDC_BLUE_1                      1219
 #define IDC_NEWIRPROFILE                1219
+#define IDC_dE_COMBO                    1219
+#define IDC_COMBO_dE                    1219
 #define IDC_BLUE_2                      1220
 #define IDC_BLUE_3                      1221
 #define IDC_MODIFYIRPROFILE             1221
@@ -697,6 +699,7 @@
 #define IDC_INTENSITY_EDIT              1275
 #define IDC_OVERLAY                     1276
 #define IDC_CHECK1                      1279
+#define IDC_MADVR_3D                    1279
 #define IDC_COLORTEMPHISTO_GRAPH        11003
 #define IDC_RGBHISTO_GRAPH              11101
 #define IDC_RGBHISTO_GRAPH2             11102
@@ -1407,7 +1410,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        382
 #define _APS_NEXT_COMMAND_VALUE         33044
-#define _APS_NEXT_CONTROL_VALUE         1280
+#define _APS_NEXT_CONTROL_VALUE         1281
 #define _APS_NEXT_SYMED_VALUE           143
 #endif
 #endif
