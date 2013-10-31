@@ -613,7 +613,6 @@ int ColorXYZ::GetColorTemp(const CColorReference& colorReference) const
     }
 }
 
-//double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhiteRef, const CColorReference & colorReference, bool useOldDeltaEFormula ) const
 double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form ) const
 {
 	CColorReference cRef=CColorReference(HDTV, D65, 2.22);

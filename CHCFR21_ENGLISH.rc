@@ -798,8 +798,8 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,153,185,10
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ | WS_GROUP,7,149,199,1
     GROUPBOX        "Delta E",IDC_STATIC,7,171,199,38,WS_GROUP
-    CONTROL         "Include L in gray scale delta E",IDC_CHECK_DELTAE_GRAY_LUMA,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,15,197,110,10
+    CONTROL         "Relative Y in gray scale dE",IDC_CHECK_DELTAE_GRAY_LUMA,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,15,197,166,10
     LTEXT           "Color Difference Formula",IDC_STATIC,21,182,88,10
     COMBOBOX        IDC_COMBO_dE,115,180,52,118,CBS_DROPDOWN | WS_VSCROLL | WS_GROUP | WS_TABSTOP
 END

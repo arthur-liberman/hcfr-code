@@ -94,7 +94,6 @@ public:
     explicit ColorXYZ(const ColorxyY& xyY);
     ColorXYZ(double X, double Y, double Z);
     int GetColorTemp(const CColorReference& colorReference) const;
-//    double GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhiteRef, const CColorReference & colorReference, bool useOldDeltaEFormula ) const;
     double GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form ) const;
     double GetOldDeltaE(const ColorXYZ& refColor) const;
 	double GetDeltaxy(const ColorXYZ& refColor, const CColorReference& colorReference) const;

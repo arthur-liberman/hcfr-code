@@ -1422,28 +1422,15 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 			COLORREF clr;
 			double dE;
 			if ( aReference.isValid() )
-				// Use original u'v' dE for grey scale as this is standard practice //added option to lightness inclusion
-				if (m_displayMode == 0 || m_displayMode == 2 || m_displayMode == 3 || m_displayMode == 4)
-					if ( nCol > 1 )
+				if (m_displayMode == 0 || m_displayMode == 3 || m_displayMode == 4)
+					if ( nCol > 1 || m_displayMode == 4 )
 					{
-					if (GetConfig ()->m_bUseDeltaELumaOnGrays && m_displayMode < 3)
-					{
-						str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), 0 ) );						
-						dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), 0 );
+                        str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form ) );						
+						dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form );
 						dEavg+=dE;
-					}
-					else
-					{
-						str.Format("%.1f",aMeasure.GetDeltaE ( aReference ));
-						dE=aMeasure.GetDeltaE ( aReference );
-						dEavg+=dE;
-					}
-					if (m_displayMode == 0)
-					{
-						clr = (dE<3.5?RGB(0,230,0):(dE<7?RGB(230,230,0):RGB(230,0,0)));
+						clr = (dE<2.5?RGB(0,230,0):(dE<5?RGB(230,230,0):RGB(230,0,0)));
 						m_pGrayScaleGrid->SetItemBkColour(4, nCol, clr);
 						m_pGrayScaleGrid -> SetItemFont ( 4, nCol, m_pGrayScaleGrid->GetItemFont(0,0) ); // Set the font to bold
-					}
 						dEcnt++;
 					}
 					else
@@ -1456,7 +1443,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 					if (GetConfig()->m_dE_form <= 1)
 						clr = (dE<3.5?RGB(0,230,0):(dE<7?RGB(230,230,0):RGB(230,0,0)));
 					else
-						clr = (dE<2?RGB(0,230,0):(dE<4?RGB(230,230,0):RGB(230,0,0)));
+						clr = (dE<2.5?RGB(0,230,0):(dE<5?RGB(230,230,0):RGB(230,0,0)));
 					m_pGrayScaleGrid->SetItemBkColour(4, nCol, clr);
 					m_pGrayScaleGrid -> SetItemFont ( 4, nCol, m_pGrayScaleGrid->GetItemFont(0,0) ); // Set the font to bold
 					dEcnt++;
@@ -1474,9 +1461,6 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 		else if ( aComponentNum == 5 )
 		{
 			if ( aRefDocColor.isValid() )
-//				if (m_displayMode == 0)
-//					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aRefDocColor, YWhiteRefDoc, GetColorReference(), 0 ));
-//				else
 					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aRefDocColor, YWhiteRefDoc, GetColorReference(), 	GetConfig()->m_dE_form ) );
 			else
 				str.Empty ();
@@ -2000,7 +1984,7 @@ void CMainView::UpdateGrid()
 					 // Determine Reference Y luminance for Delta E calculus
 					 if ( GetConfig () -> m_bUseDeltaELumaOnGrays )
 					 {
-						// Compute reference Luminance regarding actual offset and reference gamma
+						// Compute reference Luminance regarding actual offset and reference gamma (relative)
 						double x = ArrayIndexToGrayLevel ( j, nCount, GetConfig () -> m_bUseRoundDown );
 
 						double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
@@ -2012,7 +1996,7 @@ void CMainView::UpdateGrid()
 					 }
 					 else
 					 {
-						// Use actual gray luminance as correct reference (Delta E will check color only, not brightness)
+						// Use actual gray luminance as correct reference (absolute)
 						YWhite = aColor [ 1 ];
 						if ( pDataRef )
 							YWhiteRefDoc = refDocColor [ 1 ];
@@ -2338,14 +2322,48 @@ void CMainView::UpdateGrid()
    			    if ( dEcnt > 0 )
 				{
 					CString dEform;
+                    float a=2.5,b=5.0;
 					Tmp.LoadString ( IDS_DELTAEAVERAGE );
 					Msg += " ( ";
 					Msg += Tmp;
 					sprintf ( szBuf, ": %.2f )", dEavg / dEcnt );
 					Msg += szBuf;
-					dEform = GetConfig()->m_bUseDeltaELumaOnGrays?"[CIELUV]":"[CIEu'v']";
+					switch (GetConfig()->m_dE_form)
+					{
+					case 0:
+						{
+						dEform = " [CIELUV]";
+						break;
+						}
+					case 1:
+						{
+						dEform = " [CIE76]";
+						break;
+						}
+					case 2:
+						{
+						dEform = " [CIE94]";
+						break;
+						}
+					case 3:
+						{
+						dEform = " [CIE2000]";
+						break;
+						}
+					case 4:
+						{
+						dEform = " [CMC(1:1)]";
+						break;
+						}
+					}
 					Msg += dEform;
-					m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < 3 ? RGB(0,230,0):(dEavg / dEcnt < 5?RGB(230,230,0):RGB(230,0,0)));
+					dEform = GetConfig()->m_bUseDeltaELumaOnGrays?" [Relative Y]":" [Absolute Y]";
+					Msg += dEform;
+					m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
+					if (dEavg / dEcnt < a / 2 )
+						Msg += "------>Awesome Calibration!";
+                    else if (dEavg /dEcnt < a)
+                        Msg += "------>Very Nice Calibration!";
 				}
 			}
 
@@ -2359,7 +2377,7 @@ void CMainView::UpdateGrid()
 		    {
 				char	szBuf [ 256 ];
 				CString dEform;
-				float a=2, b=4;
+				float a=2.5, b=5;
 				Tmp.LoadString ( IDS_DELTAEAVERAGE );
 				Msg += " ( ";
 				Msg += Tmp;
@@ -2369,36 +2387,40 @@ void CMainView::UpdateGrid()
 					{
 					case 0:
 						{
-						dEform = "[CIELUV]";
+						dEform = " [CIELUV]";
 						a=3.5;
 						b=7;
 						break;
 						}
 					case 1:
 						{
-						dEform = "[CIE76]";
+						dEform = " [CIE76]";
 						a=3.5;
 						b=7;
 						break;
 						}
 					case 2:
 						{
-						dEform = "[CIE94]";
+						dEform = " [CIE94]";
 						break;
 						}
 					case 3:
 						{
-						dEform = "[CIE2000]";
+						dEform = " [CIE2000]";
 						break;
 						}
 					case 4:
 						{
-						dEform = "[CMC(1:1)]";
+						dEform = " [CMC(1:1)]";
 						break;
 						}
 					}
 					Msg += dEform;
 					m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
+					if (dEavg / dEcnt < a / 2)
+						Msg += "------>Awesome Calibration!";
+                    else if (dEavg /dEcnt < a)
+                        Msg += "------>Very Nice Calibration!";
 			}
 			m_grayScaleGroup.SetText ( Msg );
 		} else if ( m_displayMode > 4 && m_displayMode < 11 )
@@ -2410,7 +2432,7 @@ void CMainView::UpdateGrid()
 		    {
 				char	szBuf [ 256 ];
 				CString dEform;
-				float a=2, b=4;
+				float a=2.5, b=5;
 				Tmp.LoadString ( IDS_DELTAEAVERAGE );
 				Msg += " ( ";
 				Msg += Tmp;
@@ -2420,36 +2442,40 @@ void CMainView::UpdateGrid()
 					{
 					case 0:
 						{
-						dEform = "[CIELUV]";
+						dEform = " [CIELUV]";
 						a=3.5;
 						b=7;
 						break;
 						}
 					case 1:
 						{
-						dEform = "[CIE76]";
+						dEform = " [CIE76]";
 						a=3.5;
 						b=7;
 						break;
 						}
 					case 2:
 						{
-						dEform = "[CIE94]";
+						dEform = " [CIE94]";
 						break;
 						}
 					case 3:
 						{
-						dEform = "[CIE2000]";
+						dEform = " [CIE2000]";
 						break;
 						}
 					case 4:
 						{
-						dEform = "[CMC(1:1)]";
+						dEform = " [CMC(1:1)]";
 						break;
 						}
 					}
 					Msg += dEform;
 					m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
+					if (dEavg / dEcnt < a / 2)
+						Msg += "------>Awesome Calibration!";
+                    else if (dEavg /dEcnt < a)
+                        Msg += "------>Very Nice Calibration!";
 			}
 			m_grayScaleGroup.SetText ( Msg );
 		} else if (m_displayMode == 11)
@@ -2461,8 +2487,9 @@ void CMainView::UpdateGrid()
 		    {
 				char	szBuf [ 256 ];
 				CString dEform;
-				float a=2, b=4;
+				float a=2.5, b=5;
 				Tmp.LoadString ( IDS_DELTAEAVERAGE );
+                Msg += (GetConfig()->m_CCMode == GCD?" - GCD ":(GetConfig()->m_CCMode==MCD?" - MCD ":" - AXIS "));
 				Msg += " ( ";
 				Msg += Tmp;
 				sprintf ( szBuf, ": %.2f )", dEavg / dEcnt );
@@ -2471,39 +2498,41 @@ void CMainView::UpdateGrid()
 					{
 					case 0:
 						{
-						dEform = "[CIELUV]";
+						dEform = " [CIELUV]";
 						a=3.5;
 						b=7;
 						break;
 						}
 					case 1:
 						{
-						dEform = "[CIE76]";
+						dEform = " [CIE76]";
 						a=3.5;
 						b=7;
 						break;
 						}
 					case 2:
 						{
-						dEform = "[CIE94]";
+						dEform = " [CIE94]";
 						break;
 						}
 					case 3:
 						{
-						dEform = "[CIE2000]";
+						dEform = " [CIE2000]";
 						break;
 						}
 					case 4:
 						{
-						dEform = "[CMC(1:1)]";
+						dEform = " [CMC(1:1)]";
 						break;
 						}
 					}
 					Msg += dEform;
 					m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
 					//hidden cookie
-					if (dEavg / dEcnt < 1.0)
-						Msg += "------>Awesome Calibration!";
+					if (dEavg / dEcnt <= 1.0 )
+						Msg += "------>Super Awesome Calibration!";
+                    else if (dEavg /dEcnt < a)
+                        Msg += "------>Awesome Calibration!";
 			}
 			m_grayScaleGroup.SetText ( Msg );
 		}

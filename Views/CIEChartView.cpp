@@ -763,7 +763,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
             // Determine Reference Y luminance for Delta E calculus
             if ( GetConfig () -> m_bUseDeltaELumaOnGrays )
             {
-                // Compute reference Luminance regarding actual offset and reference gamma
+                // Compute reference Luminance regarding actual offset and reference gamma (relative)
                 double x = ArrayIndexToGrayLevel (i, nSize, GetConfig () -> m_bUseRoundDown );
 
                 double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
@@ -775,7 +775,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
             }
             else
             {
-                // Use actual gray luminance as correct reference (Delta E will check color only, not brightness)
+                // Use actual gray luminance as correct reference (absolute)
                 YWhiteGray = aColor [ 1 ];
             }
 
