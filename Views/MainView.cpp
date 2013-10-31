@@ -1971,6 +1971,7 @@ void CMainView::UpdateGrid()
 
 		for( int j = 0 ; j < nCount ; j ++ )
 		{
+            int i = GetDocument() -> GetMeasure () -> GetGrayScaleSize ();
 			switch ( m_displayMode )
 			{
 				case 0:
@@ -2205,8 +2206,8 @@ void CMainView::UpdateGrid()
 					 double YWhiteMCD;
 					 aColor = GetDocument()->GetMeasure()->GetCC24Sat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefCC24Sat(j);
-					 if ( GetDocument() -> GetMeasure () -> GetGray ( nCount - 1 ).isValid() )
-						 YWhiteMCD = GetDocument() -> GetMeasure () -> GetGray ( nCount - 1 ) [ 1 ];
+					 if ( GetDocument() -> GetMeasure () -> GetGray ( i - 1 ).isValid() )
+						 YWhiteMCD = GetDocument() -> GetMeasure () -> GetGray ( i - 1 ) [ 1 ];
 					 else
 						 YWhiteMCD = YWhiteOnOff;
 					 YWhite = (GetConfig()->m_CCMode==GCD?GetDocument()->GetMeasure()->GetCC24Sat(5).GetY():YWhiteMCD);
