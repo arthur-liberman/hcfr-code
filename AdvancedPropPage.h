@@ -43,16 +43,14 @@ public:
 
 	//{{AFX_DATA(CAdvancedPropPage)
 	enum { IDD = IDD_ADVANCED_PROP_PAGE };
-	CButton	m_OldDeltaE;
-	CButton	m_DeltaEGray;
 	BOOL	m_bConfirmMeasures;
 	CString	m_comPort;
 	int		m_dE_form;
+    int     m_dE_gray;
 	BOOL	m_bUseOnlyPrimaries;
 	BOOL	m_bUseImperialUnits;
 	int		m_nLuminanceCurveMode;
 	BOOL	m_bPreferLuxmeter;
-	BOOL	m_bUseDeltaELumaOnGrays;
 	//}}AFX_DATA
 
 	virtual UINT GetHelpId ( LPSTR lpszTopic );

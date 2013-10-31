@@ -325,6 +325,7 @@ bool CExport::SaveGrayScaleSheet()
 	// Retrieve white reference, gamma and offset
 	double		Gamma,Offset;
 	CColor		refColor = GetColorReference().GetWhite();
+    ColorXYZ aColor(m_pDoc->GetMeasure()->GetGray(i).GetXYZValue());
 	if ( size && m_pDoc->GetMeasure()->GetGray(0).isValid() )
 		m_pDoc->ComputeGammaAndOffset(&Gamma, &Offset, 3, 1, size);
 
@@ -334,15 +335,30 @@ bool CExport::SaveGrayScaleSheet()
 	for(j=0;j<size;j++)
 	{
 		// Determine Reference Y luminance for Delta E calculus
-		if ( GetConfig () -> m_bUseDeltaELumaOnGrays )
+		if ( GetConfig ()->m_dE_gray > 0 )
 		{
-			// Compute reference Luminance regarding actual offset and reference gamma
-			double x = ArrayIndexToGrayLevel ( j, size, GetConfig () -> m_bUseRoundDown);
-			double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
-			double valy=pow(valx, GetConfig()->m_GammaRef);
-			
-			ColorxyY tmpColor(GetColorReference().GetWhite());
+		    double x = ArrayIndexToGrayLevel ( j, size, GetConfig () -> m_bUseRoundDown );
+            double valy;
+            if (GetConfig()->m_GammaOffsetType == 4)
+			{
+            //BT.1886 L = a(max[(V + b),0])^2.4
+	            double maxL = m_pDoc->GetMeasure()->GetGray(size-1).GetY();
+		        double minL = m_pDoc->GetMeasure()->GetGray(0).GetY();
+			    double a = pow ( ( pow (maxL,1.0/2.4 ) - pow ( minL,1.0/2.4 ) ),2.4 );
+				double b = ( pow ( minL,1.0/2.4 ) ) / ( pow (maxL,1.0/2.4 ) - pow ( minL,1.0/2.4 ) );
+				double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
+				valy = ( a * pow ( (valx + b)<0?0:(valx+b), 2.4 ) ) / maxL ;
+			 }
+			 else
+			 {
+				double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
+				valy=pow(valx, GetConfig()->m_GammaRef);
+			 }
+
+            ColorxyY tmpColor(GetColorReference().GetWhite());
 			tmpColor[2] = valy;
+            if (GetConfig ()->m_dE_gray == 2)
+                tmpColor[2] = aColor [ 1 ] / YWhite;
 			refColor.SetxyYValue(tmpColor);
 		}
 		else

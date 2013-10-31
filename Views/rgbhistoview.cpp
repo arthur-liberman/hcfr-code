@@ -148,7 +148,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			ColorRGB normColor(aMeasure, GetColorReference());
 
 			double x = ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown );
-
+            double valy;
 			m_graphCtrl.AddPoint(m_redGraphID, x, normColor[0]*100.0);
 			m_graphCtrl.AddPoint(m_greenGraphID, x, normColor[1]*100.0);
 			m_graphCtrl.AddPoint(m_blueGraphID, x, normColor[2]*100.0);
@@ -156,14 +156,28 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			if(m_showDeltaE) 
 			{
 				// Determine Reference Y luminance for Delta E calculus
-				if ( GetConfig () -> m_bUseDeltaELumaOnGrays )
+				if ( GetConfig ()->m_dE_gray > 0 )
 				{
-					// Compute reference luminance regarding actual offset and reference gamma (relative)
-					double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
-					double valy=pow(valx, GetConfig()->m_GammaRef);
-					
-					ColorxyY tmpColor(GetColorReference().GetWhite());
+                    if (GetConfig()->m_GammaOffsetType == 4)
+			            {
+                            //BT.1886 L = a(max[(V + b),0])^2.4
+                            double maxL = pDoc->GetMeasure()->GetGray(size-1).GetY();
+                            double minL = pDoc->GetMeasure()->GetGray(0).GetY();
+                            double a = pow ( ( pow (maxL,1.0/2.4 ) - pow ( minL,1.0/2.4 ) ),2.4 );
+				            double b = ( pow ( minL,1.0/2.4 ) ) / ( pow (maxL,1.0/2.4 ) - pow ( minL,1.0/2.4 ) );
+				            double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
+				            valy = ( a * pow ( (valx + b)<0?0:(valx+b), 2.4 ) ) / maxL ;
+			            }
+			            else
+			            {
+				            double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
+				            valy=pow(valx, GetConfig()->m_GammaRef);
+			            }
+
+                    ColorxyY tmpColor(GetColorReference().GetWhite());
 					tmpColor[2] = valy;
+                    if (GetConfig ()->m_dE_gray == 2)
+                        tmpColor[2] = aColor [ 2 ] / YWhite;
 					refColor.SetxyYValue(tmpColor);
 				}
 				else
@@ -210,7 +224,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			if(m_showDeltaE) 
 			{
 				// Determine Reference Y luminance for Delta E calculus
-				if ( GetConfig () -> m_bUseDeltaELumaOnGrays )
+				if ( GetConfig ()->m_dE_gray > 0 )
 				{
 					// Compute reference luminance regarding actual offset and reference gamma
 					double valxref=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+OffsetRef)/(1.0+OffsetRef);
@@ -218,6 +232,8 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 					
 					ColorxyY tmpColor(GetColorReference().GetWhite());
 					tmpColor[2] = valyref;
+                    if (GetConfig ()->m_dE_gray == 2)
+                        tmpColor[ 2] = aColor [ 2 ] / YWhite;
 					refColor.SetxyYValue(tmpColor);
 				}
 				else

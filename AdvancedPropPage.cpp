@@ -45,7 +45,7 @@ CAdvancedPropPage::CAdvancedPropPage() : CPropertyPageWithHelp(CAdvancedPropPage
 	m_nLuminanceCurveMode = 0;
 	m_bPreferLuxmeter = FALSE;
 	m_dE_form = 1;
-	m_bUseDeltaELumaOnGrays = FALSE;
+	m_dE_gray = 2;
 	//}}AFX_DATA_INIT
 
 	m_isModified = FALSE;
@@ -59,15 +59,14 @@ void CAdvancedPropPage::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPageWithHelp::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CAdvancedPropPage)
-	DDX_Control(pDX, IDC_CHECK_DELTAE_GRAY_LUMA, m_DeltaEGray);
 	DDX_Check(pDX, IDC_CHECK_CONFIRM, m_bConfirmMeasures);
 	DDX_CBString(pDX, IDC_LUXMETER_COM_COMBO, m_comPort);
 	DDX_CBIndex(pDX, IDC_COMBO_dE, m_dE_form);
+	DDX_CBIndex(pDX, IDC_COMBO_dE_GRAY, m_dE_gray);
 	DDX_Check(pDX, IDC_CHECK_CALIBRATION_OLD, m_bUseOnlyPrimaries);
 	DDX_Check(pDX, IDC_CHECK_IMPERIAL, m_bUseImperialUnits);
 	DDX_Radio(pDX, IDC_RADIO1, m_nLuminanceCurveMode);
 	DDX_Check(pDX, IDC_CHECK_PREFER_LUXMETER, m_bPreferLuxmeter);
-	DDX_Check(pDX, IDC_CHECK_DELTAE_GRAY_LUMA, m_bUseDeltaELumaOnGrays);
 	//}}AFX_DATA_MAP
 }
 
@@ -82,6 +81,7 @@ BEGIN_MESSAGE_MAP(CAdvancedPropPage, CPropertyPageWithHelp)
 	//{{AFX_MSG_MAP(CAdvancedPropPage)
 	ON_CBN_SELCHANGE(IDC_LUXMETER_COM_COMBO, OnSelchangeLuxmeterComCombo)
 	ON_CBN_SELCHANGE(IDC_COMBO_dE, OnSelchangedECombo)
+	ON_CBN_SELCHANGE(IDC_COMBO_dE_GRAY, OnSelchangedECombo)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 

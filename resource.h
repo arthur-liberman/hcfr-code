@@ -623,6 +623,7 @@
 #define IDC_dE_COMBO                    1219
 #define IDC_COMBO_dE                    1219
 #define IDC_BLUE_2                      1220
+#define IDC_COMBO_dE_GRAY               1220
 #define IDC_BLUE_3                      1221
 #define IDC_MODIFYIRPROFILE             1221
 #define IDC_WHITE_1                     1222

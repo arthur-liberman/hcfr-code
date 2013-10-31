@@ -1503,8 +1503,8 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						if (GetConfig()->m_GammaOffsetType == 4)
 						{
 							//BT.1886 L = a(max[(V + b),0])^2.4
-							double maxL = White.GetY();
-							double minL = Black.GetY();
+                            double maxL = White.GetY();
+                            double minL = Black.GetY();
 							double a = pow ( ( pow (maxL,1.0/2.4 ) - pow ( minL,1.0/2.4 ) ),2.4 );
 							double b = ( pow ( minL,1.0/2.4 ) ) / ( pow (maxL,1.0/2.4 ) - pow ( minL,1.0/2.4 ) );
 							valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
@@ -1971,10 +1971,10 @@ void CMainView::UpdateGrid()
 
 		for( int j = 0 ; j < nCount ; j ++ )
 		{
-			int i = GetDocument() -> GetMeasure () -> GetGrayScaleSize ();
 			switch ( m_displayMode )
 			{
 				case 0:
+                    double valy;
 					 aColor = GetDocument()->GetMeasure()->GetGray(j);
 					 if ( pDataRef )
 					 {
@@ -1982,16 +1982,32 @@ void CMainView::UpdateGrid()
 					 }
 
 					 // Determine Reference Y luminance for Delta E calculus
-					 if ( GetConfig () -> m_bUseDeltaELumaOnGrays )
+					 if ( GetConfig ()->m_dE_gray > 0 )
 					 {
-						// Compute reference Luminance regarding actual offset and reference gamma (relative)
+						// Compute reference Luminance regarding actual offset and reference gamma 
+                        // fixed to use correct gamma predicts
+                        // and added option to assume perfect gamma
 						double x = ArrayIndexToGrayLevel ( j, nCount, GetConfig () -> m_bUseRoundDown );
+                        if (GetConfig()->m_GammaOffsetType == 4)
+			            {
+                            //BT.1886 L = a(max[(V + b),0])^2.4
+                            double maxL = GetDocument()->GetMeasure()->GetGray(nCount-1).GetY();
+                            double minL = GetDocument()->GetMeasure()->GetGray(0).GetY();
+                            double a = pow ( ( pow (maxL,1.0/2.4 ) - pow ( minL,1.0/2.4 ) ),2.4 );
+                            double b = ( pow ( minL,1.0/2.4 ) ) / ( pow (maxL,1.0/2.4 ) - pow ( minL,1.0/2.4 ) );
+                            double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
+                            valy = ( a * pow ( (valx + b)<0?0:(valx+b), 2.4 ) ) / maxL ;
+			            }
+			            else
+			            {
+				            double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
+				            valy=pow(valx, GetConfig()->m_GammaRef);
+			            }
 
-						double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
-						double valy=pow(valx, GetConfig()->m_GammaRef);
-						
-						ColorxyY tmpColor(GetColorReference().GetWhite());
+                        ColorxyY tmpColor(GetColorReference().GetWhite());
 						tmpColor[2] = valy;
+                        if (GetConfig ()->m_dE_gray == 2)
+                            tmpColor[2] = aColor [ 1 ] / YWhite; //perfect gamma
 						refColor.SetxyYValue(tmpColor);
 					 }
 					 else
@@ -2001,7 +2017,6 @@ void CMainView::UpdateGrid()
 						if ( pDataRef )
 							YWhiteRefDoc = refDocColor [ 1 ];
 					 }
-
 					 break;
 
 				case 1:
@@ -2190,8 +2205,8 @@ void CMainView::UpdateGrid()
 					 double YWhiteMCD;
 					 aColor = GetDocument()->GetMeasure()->GetCC24Sat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefCC24Sat(j);
-					 if ( GetDocument() -> GetMeasure () -> GetGray ( i - 1 ).isValid() )
-						 YWhiteMCD = GetDocument() -> GetMeasure () -> GetGray ( i - 1 ) [ 1 ];
+					 if ( GetDocument() -> GetMeasure () -> GetGray ( nCount - 1 ).isValid() )
+						 YWhiteMCD = GetDocument() -> GetMeasure () -> GetGray ( nCount - 1 ) [ 1 ];
 					 else
 						 YWhiteMCD = YWhiteOnOff;
 					 YWhite = (GetConfig()->m_CCMode==GCD?GetDocument()->GetMeasure()->GetCC24Sat(5).GetY():YWhiteMCD);
@@ -2357,7 +2372,7 @@ void CMainView::UpdateGrid()
 						}
 					}
 					Msg += dEform;
-					dEform = GetConfig()->m_bUseDeltaELumaOnGrays?" [Relative Y]":" [Absolute Y]";
+					dEform = GetConfig()->m_dE_gray==0?" [Relative Y]":(GetConfig ()->m_dE_gray == 1?" [Absolute Y w/gamma]":" [Absolute Y w/o gamma]");
 					Msg += dEform;
 					m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
 					if (dEavg / dEcnt < a / 2 )

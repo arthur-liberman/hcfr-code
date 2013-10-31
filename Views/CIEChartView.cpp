@@ -759,18 +759,32 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			str.Format(Msg,i*100/(pDoc->GetMeasure()->GetGrayScaleSize()-1));
             ColorXYZ aColor(pDoc->GetMeasure()->GetGray(i).GetXYZValue());
             ColorXYZ refColor(GetColorReference().GetWhite());
+            double valy;
 
             // Determine Reference Y luminance for Delta E calculus
-            if ( GetConfig () -> m_bUseDeltaELumaOnGrays )
+            if ( GetConfig ()->m_dE_gray > 0 )
             {
-                // Compute reference Luminance regarding actual offset and reference gamma (relative)
-                double x = ArrayIndexToGrayLevel (i, nSize, GetConfig () -> m_bUseRoundDown );
-
-                double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
-                double valy=pow(valx, GetConfig()->m_GammaRef);
+				double x = ArrayIndexToGrayLevel ( i, nSize, GetConfig () -> m_bUseRoundDown );
+                if (GetConfig()->m_GammaOffsetType == 4)
+			    {
+                    //BT.1886 L = a(max[(V + b),0])^2.4
+                   double maxL = pDoc->GetMeasure()->GetGray(nSize-1).GetY();
+                   double minL = pDoc->GetMeasure()->GetGray(0).GetY();
+			       double a = pow ( ( pow (maxL,1.0/2.4 ) - pow ( minL,1.0/2.4 ) ),2.4 );
+			       double b = ( pow ( minL,1.0/2.4 ) ) / ( pow (maxL,1.0/2.4 ) - pow ( minL,1.0/2.4 ) );
+				   double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
+				   valy = ( a * pow ( (valx + b)<0?0:(valx+b), 2.4 ) ) / maxL ;
+			    }
+			    else
+			    {
+				   double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
+				   valy=pow(valx, GetConfig()->m_GammaRef);
+			    }
 
                 ColorxyY tmpColor(GetColorReference().GetWhite());
                 tmpColor[2] = valy;
+                if ( GetConfig ()->m_dE_gray == 2 )
+                    tmpColor[2] = aColor [ 1 ] / YWhite;
                 refColor = ColorXYZ(tmpColor);
             }
             else

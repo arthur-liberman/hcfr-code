@@ -139,8 +139,8 @@ void CGammaGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			if (GetConfig()->m_GammaOffsetType == 4)
 			{
 				//BT.1886 L = a(max[(V + b),0])^2.4
-				double maxL = pDoc->GetMeasure()->GetGray(size-1).GetY();
-				double minL = pDoc->GetMeasure()->GetGray(0).GetY();
+                double maxL = pDoc->GetMeasure()->GetGray(size-1).GetY();
+                double minL = pDoc->GetMeasure()->GetGray(0).GetY();
 				double a = pow ( ( pow (maxL,1.0/2.4 ) - pow ( minL,1.0/2.4 ) ),2.4 );
 				double b = ( pow ( minL,1.0/2.4 ) ) / ( pow (maxL,1.0/2.4 ) - pow ( minL,1.0/2.4 ) );
 				valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);

@@ -101,7 +101,7 @@ public:
 	int		m_nLuminanceCurveMode;
 	BOOL	m_bPreferLuxmeter;
 	int		m_dE_form;
-	BOOL	m_bUseDeltaELumaOnGrays;
+    int     m_dE_gray;
 
 	// Global strings
 	CString	m_PercentGray;
