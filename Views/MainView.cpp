@@ -201,7 +201,7 @@ CMainView::CMainView()
 
 	m_pInfoWnd = NULL;
 
-	m_displayType=GetConfig()->GetProfileInt("MainView","Display type",HCFR_XYZ_VIEW);
+	m_displayType=GetConfig()->GetProfileInt("MainView","Display type",HCFR_xyY_VIEW);
 }
 
 CMainView::~CMainView()
@@ -275,7 +275,7 @@ void CMainView::OnInitialUpdate()
 
     // doesn't really make sense to see sensor values
 	if ( m_displayType == HCFR_SENSORRGB_VIEW )
-		m_displayType = HCFR_XYZ_VIEW;
+		m_displayType = HCFR_xyY_VIEW;
 
 	GetDlgItem ( IDC_SENSORRGB_RADIO ) -> EnableWindow ( FALSE );
 
@@ -1240,7 +1240,7 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
 		if ( m_displayType == HCFR_SENSORRGB_VIEW )
 		{
-			m_displayType = HCFR_XYZ_VIEW;
+			m_displayType = HCFR_xyY_VIEW;
 			CheckDlgButton(IDC_XYZ_RADIO, BST_CHECKED);  
 			CheckDlgButton(IDC_SENSORRGB_RADIO, BST_UNCHECKED);  
 		}
@@ -3183,7 +3183,7 @@ void CMainView::OnGrayScaleGridEndSelChange(NMHDR *pNotifyStruct,LRESULT* pResul
 void CMainView::OnXyzRadio() 
 {
 	m_editCheckButton.EnableWindow ( ! m_AdjustXYZCheckButton.GetCheck () );
-	m_displayType=HCFR_XYZ_VIEW;
+	m_displayType=HCFR_xyY_VIEW;
 	InitGrid();	// to update row labels
 	UpdateGrid();
 }
