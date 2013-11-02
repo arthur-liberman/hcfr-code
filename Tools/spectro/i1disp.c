@@ -844,7 +844,7 @@ i1d2_take_measurement(
 	int cdgec[3] = {ME,ME,ME};	/* CRT computed edge count for re-measure */
 	int mask = 0x0;				/* Period measure mask */
 	inst_code ev;
-	
+
 	if (p->inited == 0)
 		return i1disp_interp_code((inst *)p, I1DISP_NOT_INITED);
 
@@ -857,6 +857,7 @@ i1d2_take_measurement(
 	if (p->dtype == 1 && refreshm && p->rrset == 0) {
 		if ((ev = i1disp_do_fcal_setit(p)) != inst_ok)
 			return ev;
+
 		/* Quantize the sample time */
 		if (p->refperiod > 0.0) {
 			int n;
@@ -1369,8 +1370,6 @@ i1disp_do_fcal_setit(
 		return ev;
 
 	if (p->refrate != 0.0) {
-		int n;
-		n = (int)ceil(p->dinttime/p->refperiod);
 		p->refperiod = 1.0/p->refrate;
 		p->refrvalid = 1;
 	} else {
@@ -1942,7 +1941,7 @@ static inst_code i1disp_get_n_a_cals(inst *pp, inst_cal_type *pn_cals, inst_cal_
 	}
 
 	if (p->dtype == 1 && p->refrmode != 0) {
-		if (p->rrset == 0) 
+		if (p->rrset == 0)
 			n_cals |= inst_calt_ref_freq;
 		a_cals |= inst_calt_ref_freq;
 	}

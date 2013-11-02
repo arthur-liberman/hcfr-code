@@ -436,12 +436,12 @@ typedef enum {
 	inst_calt_trans_white    = 0x00000400,	/* Transmissive white reference calibration */
 	inst_calt_trans_vwhite   = 0x00000800,	/* Transmissive variable white reference calibration */
 	inst_calt_trans_dark     = 0x00001000,	/* Transmissive dark reference calibration */
+	inst_calt_ref_freq       = 0x00001800, 	/* Display refresh frequency calibration - non-deferable in HCFR */
 
 	inst_calt_n_dfrble_mask  = 0x0000fff0,	/* Mask of non-deferrable calibrations */
 
 	/* Calibrations that might be deferred until measurement */
 	inst_calt_emis_int_time  = 0x00100000, 	/* Emissive measurement range (integration time) */
-	inst_calt_ref_freq       = 0x00001800, 	/* Display refresh frequency calibration - non-deferable in HCFR */
 
 	inst_calt_dfrble_mask    = 0x00f00000, 	/* Mask of deferrable calibrations */
 
