@@ -1394,6 +1394,7 @@ i1d3_imp_measure_refresh(
 
 			a1logd(p->log, 1, "Refresh rate = %f Hz, quantizing to %f msec\n",refrate,pval);
 			a1logv(p->log, 1, "Refresh rate = %f Hz, quantizing to %f msec\n",refrate,pval);
+
 			if (ppval != NULL)
 				*ppval = pval;
 		}
@@ -2287,7 +2288,7 @@ i1d3_init_inst(inst *pp) {
 	a1logd(p->log, 2, "i1d3_init_inst: called\n");
 
 	p->rrset = 0;
-	
+
 	if (p->gotcoms == 0)
 		return i1d3_interp_code((inst *)p, I1D3_NO_COMS);	/* Must establish coms first */
 
@@ -2450,7 +2451,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	}
 
 	/* Attempt a refresh display frame rate calibration if needed */
-	if (p->dtype != i1d3_munkdisp && p->refrmode != 0  && p->rrset == 0) {
+	if (p->dtype != i1d3_munkdisp && p->refrmode != 0 && p->rrset == 0) {
 		inst_code ev = inst_ok;
 		double minint = 2.0 * p->dinttime;
 
@@ -2471,6 +2472,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 			n = (int)ceil(minint/p->refperiod);
 			p->inttime = n * p->refperiod;
 			a1logd(p->log, 3, "i1d3: integration time quantize to %f secs\n",p->inttime);
+
 		} else {	/* We don't have a period, so simply double the default */
 			p->inttime = minint;
 			a1logd(p->log, 3, "i1d3: integration time integration time doubled to %f secs\n",p->inttime);
@@ -2544,7 +2546,7 @@ double mtx[3][3]
 	else {
 		if (p->cbid == 0) {
 			a1loge(p->log, 1, "i1d3: can't set col_cor_mat over non base display type\n");
-			inst_wrong_setup;
+			return inst_wrong_setup;
 		}
 		icmCpy3x3(p->ccmat, mtx);
 	}
@@ -3306,7 +3308,7 @@ static inst_code set_disp_type(i1d3 *p, inst_disptypesel *dentry) {
 		p->rrset = 0;					/* This is a hint we may have swapped displays */
 	p->refrmode = refrmode; 
 
-	//	if (p->refrmode && p->dtype == i1d3_munkdisp) {
+//	if (p->refrmode && p->dtype == i1d3_munkdisp) {
 	if (p->refrmode) {
 		p->inttime = 2.0 * p->dinttime;	/* Double integration time */
 	} else {

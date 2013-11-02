@@ -608,7 +608,9 @@ spyd2_GetRefRate_ll(
 		a1logd(p->log, 1, "spyd2_GetRefRate_ll: got overall timeout");
 		return spyd2_interp_code((inst *)p, SPYD2_OVERALLTIMEOUT);
 	}
+
 	a1logd(p->log, 3, "spyd2_GetRefRate_ll: result  %d, returns ICOM err 0x%x\n", *clkcnt, se);
+
 	return rv;
 }
 
@@ -1562,6 +1564,7 @@ spyd2_GetRefRate(
 ) {
 	int i;
 	inst_code ev;
+
 	a1logd(p->log, 3, "Frequency calibration called\n");
 
 	if ((ev = spyd2_read_refrate((inst *)p, &p->refrate)) != inst_ok) {
@@ -1570,12 +1573,13 @@ spyd2_GetRefRate(
 	if (p->refrate != 0.0) {
 		a1logd(p->log, 3, "spyd2_GetRefRate: refresh rate is %f Hz\n",p->refrate);
 		p->refrvalid = 1;
-
-    } else {
+	} else {
 		a1logd(p->log, 3, "spyd2_GetRefRate: no refresh rate detectable\n");
 		p->refrate = DEFRRATE;
-    }
-    p->rrset = 1;
+		p->refrvalid = 0;
+	}
+	p->rrset = 1;
+
 	return inst_ok;
 }
 
