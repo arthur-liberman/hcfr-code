@@ -3215,7 +3215,7 @@ inst_code i1d3_set_mode(inst *pp, inst_mode m) {
 	if (p->refrmode) {
 		p->inttime = 2.0 * p->dinttime;	/* Double default integration time */
 	} else {
-		p->inttime = p->dinttime;		/* Normal integration time */
+		p->inttime = 2.0 * p->dinttime;		/* Normal integration time */
 	}
 
 	return inst_ok;
@@ -3310,7 +3310,7 @@ static inst_code set_disp_type(i1d3 *p, inst_disptypesel *dentry) {
 	if (p->refrmode) {
 		p->inttime = 2.0 * p->dinttime;	/* Double integration time */
 	} else {
-		p->inttime = p->dinttime;		/* Normal integration time */
+		p->inttime = 2.0 * p->dinttime;		/* Normal integration time */
 	}
 
 	if (dentry->flags & inst_dtflags_ccss) {
