@@ -42,7 +42,8 @@ public:
     typedef enum
     {
         DISPLAY,
-        PROJECTOR
+        PROJECTOR,
+        AMBIENT
     } eReadingType;
 
     typedef enum
@@ -74,6 +75,7 @@ public:
     int getNumberOfDisplayTypes();
     const char* getDisplayTypeText(int displayModeIndex);
     int getDisplayType() const;
+    int getReadingType() const;
     void setDisplayType(int displayMode);
 
 	// Determine if the meter supports spectral sample files

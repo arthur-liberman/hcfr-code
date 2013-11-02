@@ -191,7 +191,6 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
     inst_code instCode;
 
     instCode = m_meter->get_set_opt(m_meter, inst_opt_set_filter, inst_opt_filter_none);
-
     // allow this function to be called repeatedly on a meter
     if(!m_meter->inited)
     {
@@ -220,9 +219,10 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
     inst_mode mode = inst_mode_none;
     if (capabilities & inst_mode_emission)
     {
-        if(m_readingType == PROJECTOR)
+        if(readingType == PROJECTOR)
         {
             // prefer tele but fall back to spot for PROJECTOR
+            //TODO add other projector modes
             if(capabilities & inst_mode_tele)
             {
                 mode = inst_mode_emis_tele;
@@ -230,9 +230,10 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
             else if(capabilities & inst_mode_spot)
             {
                 mode = inst_mode_emis_spot;
+                readingType = DISPLAY;
             }
         }
-        else
+        else if (readingType == DISPLAY)
         {
             // prefer spot but fall back to tele if user wants DISPLAY
             if(capabilities & inst_mode_spot)
@@ -242,8 +243,23 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
             else if(capabilities & inst_mode_tele)
             {
                 mode = inst_mode_emis_tele;
+                readingType = PROJECTOR;
             }
         }
+        else //(AMBIENT)
+        {
+            // prefer ambient but fall back to spot if user wants AMBIENT
+            if(capabilities & inst_mode_ambient)
+            {
+                mode = inst_mode_emis_ambient;
+            }
+            else if(capabilities & inst_mode_spot)
+            {
+                mode = inst_mode_emis_spot;
+                readingType = DISPLAY;
+            }
+        }
+        m_readingType = readingType;
     }
 
     // make sure we've got a valid mode
@@ -365,6 +381,11 @@ const char* ArgyllMeterWrapper::getDisplayTypeText(int displayModeIndex)
 int ArgyllMeterWrapper::getDisplayType() const
 {
     return m_displayType;
+}
+
+int ArgyllMeterWrapper::getReadingType() const
+{
+    return m_readingType;
 }
 
 void ArgyllMeterWrapper::setDisplayType(int displayMode)
@@ -491,6 +512,7 @@ std::string ArgyllMeterWrapper::getCalibrationInstructions()
 	//        inst_cal_type calType(inst_calt_all);
         inst_cal_type calType(inst_calt_available);
         instCode = m_meter->calibrate(m_meter, &calType, (inst_cal_cond*)&m_nextCalibration, m_calibrationMessage);
+//		MessageBox(NULL, m_meter->interp_error(m_meter, m_nextCalibration), "Calibration message", MB_OK);
 		if(instCode == inst_ok || isInstCodeReason(instCode, inst_unsupported))
        {
             // we don't need to do anything
@@ -547,6 +569,8 @@ std::string ArgyllMeterWrapper::getCalibrationInstructions()
             return "Provide a darker grey display test patch";
         case inst_calc_emis_mask:
             return "Display provided reference patch";
+        case inst_calc_man_am_dark:
+            return "Place cap over ambient sensor (wl calib capable)";
         case inst_calc_change_filter:
             return std::string("Filter needs changing on device - ") + m_calibrationMessage;
         case inst_calc_message:

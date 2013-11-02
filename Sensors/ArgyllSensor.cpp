@@ -244,7 +244,7 @@ void CArgyllSensor::GetPropertiesSheetValues()
         GetConfig()->WriteProfileString(meterName.c_str(), "SpectralType", m_SpectralType );
         GetConfig()->WriteProfileInt(meterName.c_str(), "DisplayType", m_DisplayType );
         GetConfig()->WriteProfileInt(meterName.c_str(), "HiRes", m_HiRes );
-        Init(FALSE);
+        Init(TRUE);
     }
 }
 
@@ -292,6 +292,19 @@ BOOL CArgyllSensor::Init( BOOL bForSimultaneousMeasures )
     {
         MessageBox(NULL, e.what(), "Argyll Meter", MB_OK+MB_ICONHAND);
         return FALSE;
+    }
+    //Alert user if in ambient/lux mode
+    if (bForSimultaneousMeasures)
+    {
+        if (m_meter->getReadingType() == 2)
+            MessageBox(NULL, "Ambient mode set, values will be reported in LUX", "Argyll Meter set-up", MB_OK);
+        if (m_meter->getReadingType() != m_ReadingType)
+        {
+            char s1 [128];
+            sprintf(s1, "Reading mode not available, defaulting to %s",m_meter->getReadingType()==0?"DISPLAY":(m_meter->getReadingType()==1?"PROJECTOR":"AMBIENT"));
+            MessageBox(NULL, s1, "Argyll Meter set-up", MB_OK);
+            m_ReadingType = m_meter->getReadingType();
+        }   
     }
     return TRUE;
 }
