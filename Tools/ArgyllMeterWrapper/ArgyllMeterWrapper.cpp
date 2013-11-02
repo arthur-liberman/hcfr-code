@@ -186,9 +186,14 @@ ArgyllMeterWrapper::~ArgyllMeterWrapper()
     }
 }
 
-bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eReadingType readingType)
+bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eReadingType readingType, bool debugmode)
 {
     inst_code instCode;
+    if (debugmode)
+    {
+        m_meter->icom->log->verb = 5;
+        m_meter->icom->log->debug = 5;
+    }
 
     instCode = m_meter->get_set_opt(m_meter, inst_opt_set_filter, inst_opt_filter_none);
     // allow this function to be called repeatedly on a meter
@@ -588,7 +593,7 @@ void ArgyllMeterWrapper::checkMeterIsInitialized()
     if(!m_meter->inited)
     {
         std::string errorDescription;
-        if(!connectAndStartMeter(errorDescription, m_readingType))
+        if(!connectAndStartMeter(errorDescription, m_readingType, false))
         {
             throw std::logic_error(errorDescription);
         }

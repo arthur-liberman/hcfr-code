@@ -251,7 +251,7 @@ void CArgyllSensor::GetPropertiesSheetValues()
 BOOL CArgyllSensor::Init( BOOL bForSimultaneousMeasures )
 {
     std::string errorDescription;
-    if(!m_meter->connectAndStartMeter(errorDescription, (ArgyllMeterWrapper::eReadingType)m_ReadingType))
+    if(!m_meter->connectAndStartMeter(errorDescription, (ArgyllMeterWrapper::eReadingType)m_ReadingType, CArgyllSensor::isInDebugMode()) )
     {
         MessageBox(NULL, errorDescription.c_str(), "Argyll Meter", MB_OK+MB_ICONHAND);
         m_meter = 0;
