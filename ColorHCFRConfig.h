@@ -71,6 +71,8 @@ public:
 	double m_GammaAvg;
 	BOOL m_useMeasuredGamma;
 	double m_manualGOffset;
+	double m_manualWhitex;
+    double m_manualWhitey;
 	int m_GammaOffsetType;
 
 	// Appearance settings

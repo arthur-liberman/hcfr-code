@@ -1268,11 +1268,14 @@ void CDataSetDoc::AddMeasurement()
 void CDataSetDoc::OnConfigureSensor() 
 {
 	StopBackgroundMeasures ();
+    m_pSensor->SetSensorMatrixMod( m_pSensor->GetSensorMatrix() );
 	m_pSensor->Configure();
 	if( m_pSensor->IsModified() )
 	{
-		m_measure.ApplySensorAdjustmentMatrix(m_pSensor->GetSensorMatrix() );
-		m_pSensor->SetSensorMatrixOld( Matrix::IdentityMatrix(3) );
+        //unapply old - apply new
+        m_measure.ApplySensorAdjustmentMatrix( m_pSensor->GetSensorMatrixMod().GetInverse() );
+		m_measure.ApplySensorAdjustmentMatrix(m_pSensor->GetSensorMatrix());
+        m_pSensor->SetSensorMatrixMod( Matrix::IdentityMatrix(3) );
 		SetModifiedFlag(TRUE);
 		UpdateAllViews ( NULL, UPD_EVERYTHING );
 		AfxGetMainWnd () -> SendMessageToDescendants ( WM_COMMAND, IDM_REFRESH_REFERENCE );
@@ -1792,6 +1795,7 @@ void CDataSetDoc::OnCalibrationManual()
             ColorXYZ white(measuredColor[3].GetXYZValue());
 
             Matrix oldMatrix = m_pSensor->GetSensorMatrix();
+            m_pSensor->SetSensorMatrixMod( oldMatrix );
             Matrix ConvMatrix = ComputeConversionMatrix (measures, references, white, whiteRef, GetConfig () -> m_bUseOnlyPrimaries );
             // Ok: set adjustment matrix
             Matrix newMatrix = ConvMatrix * oldMatrix;
@@ -2159,7 +2163,7 @@ BOOL CDataSetDoc::ComputeAdjustmentMatrix()
         Matrix newMatrix = ConvMatrix * oldMatrix;
 		m_measure.ApplySensorAdjustmentMatrix( ConvMatrix );
         m_pSensor->SetSensorMatrix(newMatrix);
-		m_pSensor->SetSensorMatrixOld(Matrix::IdentityMatrix(3));
+		m_pSensor->SetSensorMatrixMod(Matrix::IdentityMatrix(3));
 		SetModifiedFlag(TRUE);
 		bOk = TRUE;
 	}
@@ -3492,7 +3496,7 @@ void CDataSetDoc::OnLoadCalibrationFile()
 
 		if(page.m_sensorTrainingMode != 1)
 			m_pSensor->LoadCalibrationFile(page.m_trainingFileName);
-		m_pSensor->SetSensorMatrixOld(Matrix::IdentityMatrix(3));
+		m_pSensor->SetSensorMatrixMod(Matrix::IdentityMatrix(3));
 		m_measure.ApplySensorAdjustmentMatrix( m_pSensor->GetSensorMatrix() );
 		UpdateAllViews ( NULL, UPD_EVERYTHING );
 		SetModifiedFlag(TRUE);

@@ -43,7 +43,7 @@ CSensor::CSensor()
 	m_isModified=FALSE;
 	m_isMeasureValid=TRUE;
 	m_sensorToXYZMatrix=IdentityMatrix(3);
-	m_sensorToXYZMatrixOld=IdentityMatrix(3);
+	m_sensorToXYZMatrixMod=IdentityMatrix(3);
 
 	m_calibrationTime=0;
 

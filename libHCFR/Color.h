@@ -65,6 +65,7 @@ typedef enum
 	B=5,
 	C=6,
 	E=7,
+    DCUST,
 } WhiteTarget;
 
 class CSpectrum;
@@ -277,7 +278,7 @@ public:
     void	UpdateSecondary ( ColorXYZ& secondary, const ColorXYZ& primary1, const ColorXYZ& primary2, const ColorXYZ& primaryOpposite );
 
 public:
-	CColorReference(ColorStandard aStandard, WhiteTarget aWhiteTarget=Default, double aGamma=-1.0, string strModified=" modified");
+	CColorReference(ColorStandard aStandard, WhiteTarget aWhiteTarget=Default, double aGamma=-1.0, string strModified=" modified", ColorXYZ c_whitecolor=ColorXYZ() );
 	~CColorReference();
 	ColorXYZ GetWhite() const { return whiteColor; } 
 	string GetName() const {return standardName;}

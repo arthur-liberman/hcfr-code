@@ -490,7 +490,10 @@ void CMainView::RefreshSelection()
 		Item.row = 0;
 		m_pSelectedColorGrid->SetItem(&Item);
 
-		Item.strText.Format("%.3f",m_SelectedColor.GetLuminance()*.29188558);
+        if (GetDocument()->m_pSensor->ReadingType() == 2)
+            Item.strText.Format("%.3f",m_SelectedColor.GetLuminance() / 10.764);
+        else
+            Item.strText.Format("%.3f",m_SelectedColor.GetLuminance()*.29188558);
 		Item.row = 1;
 		m_pSelectedColorGrid->SetItem(&Item);
 
@@ -1058,9 +1061,15 @@ void CMainView::InitSelectedColorGrid()
 	GV_ITEM Item;
 	Item.mask = GVIF_TEXT|GVIF_FORMAT;
 	Item.nFormat = DT_CENTER|DT_WORDBREAK;
-	static char * RowLabels [] = { "cd/m²", "ftL", "T°", "X", "Y", "Z", "R", "G", "B", "x", "y", "Y", "x", "y", "z", "L", "a", "b", "L", "C", "H"};
 
-	for(int i=0;i<21;i++)
+    static char * RowLabels [] = { "cd/m²", "ftL", "T°", "X", "Y", "Z", "R", "G", "B", "x", "y", "Y", "x", "y", "z", "L", "a", "b", "L", "C", "H"};
+    if (GetDocument()->m_pSensor->ReadingType() == 2)
+    {
+        RowLabels [0] = "lux";
+        RowLabels [1] = "ft-c";
+    }
+
+    for(int i=0;i<21;i++)
 	{
 		Item.row = i;
 		Item.col = 0;
@@ -3194,6 +3203,7 @@ void CMainView::OnSensorrgbRadio()
 	m_displayType=HCFR_SENSORRGB_VIEW;
 	InitGrid();	// to update row labels
 	UpdateGrid();
+    InitSelectedColorGrid();
 }
 
 void CMainView::OnRgbRadio() 
@@ -4356,7 +4366,7 @@ void CMainView::OnAdjustXYZCheck()
 	if (!bAdjust) //restore uncorrected sensor values
 	{
 		ASSERT(0);
-		GetDocument ()->m_pSensor->SetSensorMatrixOld( CurrentMatrix );
+		GetDocument ()->m_pSensor->SetSensorMatrixMod( CurrentMatrix );
 		GetDocument ()->m_pSensor->SetSensorMatrix( Matrix::IdentityMatrix(3) );
 		GetDocument ()->m_measure.ApplySensorAdjustmentMatrix( CurrentMatrix.GetInverse() );
 		m_AdjustXYZCheckButton.SetCheck(FALSE);
@@ -4364,9 +4374,9 @@ void CMainView::OnAdjustXYZCheck()
 	else  //reapply saved correction matrix
 	{
 		ASSERT(0);
-		GetDocument ()->m_pSensor->SetSensorMatrix( GetDocument ()->m_pSensor->GetSensorMatrixOld() );
-		GetDocument ()->m_measure.ApplySensorAdjustmentMatrix(GetDocument ()->m_pSensor->GetSensorMatrixOld() );
-		GetDocument ()->m_pSensor->SetSensorMatrixOld( Matrix::IdentityMatrix(3) );
+		GetDocument ()->m_pSensor->SetSensorMatrix( GetDocument ()->m_pSensor->GetSensorMatrixMod() );
+		GetDocument ()->m_measure.ApplySensorAdjustmentMatrix(GetDocument ()->m_pSensor->GetSensorMatrixMod() );
+		GetDocument ()->m_pSensor->SetSensorMatrixMod( Matrix::IdentityMatrix(3) );
 		m_AdjustXYZCheckButton.SetCheck(TRUE);
 	}
 

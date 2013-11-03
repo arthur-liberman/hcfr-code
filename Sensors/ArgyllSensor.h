@@ -75,6 +75,7 @@ public:
     virtual void GetUniqueIdentifier( CString & strId );
     static bool isInDebugMode() {return m_debugMode;}
     virtual bool isValid() const {return (m_meter != 0);}
+    virtual int ReadingType() const {return m_ReadingType;}
     void FillDisplayTypeCombo(CComboBox& comboToFill);
     void FillSpectralTypeCombo(CComboBox& comboToFill);
     virtual bool isColorimeter() const;

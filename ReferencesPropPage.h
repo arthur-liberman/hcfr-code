@@ -46,6 +46,8 @@ public:
 	enum { IDD = IDD_REFERENCE_PROP_PAGE };
 	CEdit m_GammaRefEdit;
 	CEdit m_GammaAvgEdit;
+	CEdit m_manualWhitexedit;
+	CEdit m_manualWhiteyedit;
 	CComboBox	m_whiteTargetCombo;
 	int		m_whiteTarget;
 	int		m_colorStandard;
@@ -56,6 +58,8 @@ public:
 	BOOL	m_useMeasuredGamma;
 	int		m_GammaOffsetType;
 	double	m_manualGOffset;
+	double	m_manualWhitex;
+	double	m_manualWhitey;
 	//}}AFX_DATA
 
 	virtual UINT GetHelpId ( LPSTR lpszTopic );

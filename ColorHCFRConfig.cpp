@@ -256,6 +256,8 @@ void CColorHCFRConfig::InitDefaults()
 	m_useMeasuredGamma=FALSE;
 	m_GammaOffsetType=1;
 	m_manualGOffset=0.099;
+    m_manualWhitex = 0.312712;
+    m_manualWhitey = 0.329008;
 
 		// Set drawing style of all menus to XP-Mode
 	CNewMenu::SetAcceleratorsDraw(TRUE);
@@ -317,6 +319,8 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_useMeasuredGamma=GetProfileInt("References","UseMeasuredGamma",1);
 	m_GammaOffsetType=GetProfileInt("References","GammaOffsetType",4);
 	m_manualGOffset=GetProfileDouble("References","ManualGamOffset",0.099);
+    m_manualWhitex = GetProfileDouble("References","ManualWhitex", 0.312712);
+    m_manualWhitey = GetProfileDouble("References","ManualWhitey",0.329008);
 
 	if (m_manualGOffset == 0) {
 		m_manualGOffset = 0.099;
@@ -358,6 +362,8 @@ void CColorHCFRConfig::SaveSettings()
 
 	WriteProfileInt("References","GammaOffsetType",m_GammaOffsetType);
 	WriteProfileDouble("References","ManualGamOffset",m_manualGOffset);
+	WriteProfileDouble("References","ManualWhitex",m_manualWhitex);
+	WriteProfileDouble("References","ManualWhitey",m_manualWhitey);
 	WriteProfileInt("References","ColorStandard",m_colorStandard);
 	WriteProfileInt("References","CCMode",m_CCMode);
 	WriteProfileInt("References","WhiteTarget",m_whiteTarget);
@@ -423,6 +429,8 @@ void CColorHCFRConfig::SetPropertiesSheetValues()
   	m_referencesPropertiesPage.m_GammaAvg=m_GammaAvg;
   	m_referencesPropertiesPage.m_useMeasuredGamma=m_useMeasuredGamma;
 	m_referencesPropertiesPage.m_manualGOffset=m_manualGOffset;
+	m_referencesPropertiesPage.m_manualWhitex=m_manualWhitex;
+	m_referencesPropertiesPage.m_manualWhitey=m_manualWhitey;
 	m_referencesPropertiesPage.m_GammaOffsetType=m_GammaOffsetType;
 	m_appearancePropertiesPage.m_isModified=FALSE;
 	switch(m_menuDrawMode)
@@ -508,6 +516,8 @@ BOOL CColorHCFRConfig::GetPropertiesSheetValues()
 	m_GammaAvg=m_referencesPropertiesPage.m_GammaAvg;
 	m_useMeasuredGamma=m_referencesPropertiesPage.m_useMeasuredGamma;
 	m_manualGOffset=m_referencesPropertiesPage.m_manualGOffset;
+	m_manualWhitex=m_referencesPropertiesPage.m_manualWhitex;
+	m_manualWhitey=m_referencesPropertiesPage.m_manualWhitey;
 	m_GammaOffsetType=m_referencesPropertiesPage.m_GammaOffsetType;
 	switch(m_appearancePropertiesPage.m_themeComboIndex)
 	{
@@ -585,7 +595,9 @@ void CColorHCFRConfig::ApplySettings(BOOL isStartupApply)
     {
         delete GetColorApp()->m_pColorReference;
     }
-    GetColorApp()->m_pColorReference = new CColorReference(m_colorStandard, m_whiteTarget,-1);
+    ColorxyY whitecolor=ColorxyY(m_manualWhitex,m_manualWhitey);
+
+    GetColorApp()->m_pColorReference = new CColorReference(m_colorStandard, m_whiteTarget,-1, "modified", ColorXYZ(whitecolor));
 	
 	if ( ! isStartupApply )
 	{

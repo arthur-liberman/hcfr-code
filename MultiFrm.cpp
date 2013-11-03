@@ -2024,7 +2024,7 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 			if ( nRow == 3 && nCol == 3 && pos == NULL )
 			{
 				GetDocument () -> m_pSensor -> SetSensorMatrix ( SensorMatrix );
-				GetDocument () -> m_pSensor -> SetSensorMatrixOld (Matrix::IdentityMatrix(3));
+				GetDocument () -> m_pSensor -> SetSensorMatrixMod (Matrix::IdentityMatrix(3));
 			}
 			else
 			{

@@ -44,7 +44,7 @@ protected:
 	CString m_errorString;
 	BOOL m_isMeasureValid;
 	Matrix m_sensorToXYZMatrix;
-	Matrix m_sensorToXYZMatrixOld;
+    Matrix m_sensorToXYZMatrixMod;
 	time_t m_calibrationTime;
 	int		m_PropertySheetTitle;
 	CSensorPropPage m_SensorPropertiesPage;
@@ -71,9 +71,9 @@ public:
 	virtual void SaveCalibrationFile() { return ; }
 
 	void SetSensorMatrix(Matrix aMatrix) { m_sensorToXYZMatrix=aMatrix; m_calibrationTime=time(NULL);}
-	void SetSensorMatrixOld(Matrix aMatrix) { m_sensorToXYZMatrixOld=aMatrix; m_calibrationTime=time(NULL);}
+	void SetSensorMatrixMod(Matrix aMatrix) { m_sensorToXYZMatrixMod=aMatrix; m_calibrationTime=time(NULL);}
 	Matrix GetSensorMatrix() {return m_sensorToXYZMatrix; }
-	Matrix GetSensorMatrixOld() {return m_sensorToXYZMatrixOld; }
+	Matrix GetSensorMatrixMod() {return m_sensorToXYZMatrixMod; }
 
 	virtual BOOL IsMeasureValid() {return m_isMeasureValid; }
 	virtual void SetMeasureValidity(BOOL isValid) { m_isMeasureValid=isValid; }
@@ -90,10 +90,9 @@ public:
 	virtual LPCSTR GetStandardSubDir ()	{ return ""; }
 
 	CTime GetCalibrationTime() { return CTime(m_calibrationTime); }
-	//BOOL IsCalibrated() { return (!m_sensorToXYZMatrix.IsIdentity () || !m_sensorToXYZMatrixOld.IsIdentity ()); }
 	int IsCalibrated() 
 	{ 
-		if (m_sensorToXYZMatrix.IsIdentity () && m_sensorToXYZMatrixOld.IsIdentity ())
+		if (m_sensorToXYZMatrix.IsIdentity () && m_sensorToXYZMatrixMod.IsIdentity ())
 			return 0;
 		else
 			if (!m_sensorToXYZMatrix.IsIdentity ())
@@ -111,6 +110,7 @@ public:
     virtual bool isValid() const {return true;}
 	virtual BOOL HasSpectrumCapabilities ( int * pNbBands, int * pMinWaveLength, int * pMaxWaveLength, double * pBandWidth ) { return FALSE; }
     virtual bool isColorimeter() const { return true; }
+    virtual int ReadingType() const {return 0;}
 private:
     virtual CColor MeasureColorInternal(const ColorRGBDisplay& aRGBValue) { return noDataColor;};
 };

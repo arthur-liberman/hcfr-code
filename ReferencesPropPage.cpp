@@ -48,7 +48,9 @@ CReferencesPropPage::CReferencesPropPage() : CPropertyPageWithHelp(CReferencesPr
 	m_useMeasuredGamma = FALSE;
 	m_GammaOffsetType = 1;
 	m_manualGOffset = 0.099;
-	//}}AFX_DATA_INIT
+    m_manualWhitex = 0.3127;
+    m_manualWhitey = 0.3290;
+    //}}AFX_DATA_INIT
 
 	m_isModified=FALSE;
 }
@@ -70,11 +72,17 @@ void CReferencesPropPage::DoDataExchange(CDataExchange* pDX)
   	DDX_Text(pDX, IDC_EDIT_GAMMA_REF, m_GammaRef);
   	DDX_Text(pDX, IDC_EDIT_GAMMA_AVERAGE, m_GammaAvg);
 	DDV_MinMaxDouble(pDX, m_GammaRef, 1., 5.);
-	DDV_MinMaxDouble(pDX, m_GammaAvg, .1, 50.);
+	DDV_MinMaxDouble(pDX, m_GammaAvg, 1., 5.);
 	DDX_Check(pDX, IDC_CHANGEWHITE_CHECK, m_changeWhiteCheck);
 	DDX_Check(pDX, IDC_USE_MEASURED_GAMMA, m_useMeasuredGamma);
 	DDX_Radio(pDX, IDC_GAMMA_OFFSET_RADIO1, m_GammaOffsetType);
 	DDX_Text(pDX, IDC_EDIT_MANUAL_GOFFSET, m_manualGOffset);
+	DDX_Text(pDX, IDC_WHITE_X, m_manualWhitex);
+	DDX_Text(pDX, IDC_WHITE_Y, m_manualWhitey);
+	DDV_MinMaxDouble(pDX, m_manualWhitex, .1, .9);
+	DDV_MinMaxDouble(pDX, m_manualWhitey, .1, .9);
+	DDX_Control(pDX, IDC_WHITE_X, m_manualWhitexedit);
+	DDX_Control(pDX, IDC_WHITE_Y, m_manualWhiteyedit);
 	DDV_MinMaxDouble(pDX, m_manualGOffset, 0., 0.2);
 	//}}AFX_DATA_MAP
 }
@@ -88,6 +96,8 @@ BEGIN_MESSAGE_MAP(CReferencesPropPage, CPropertyPageWithHelp)
 	ON_EN_CHANGE(IDC_EDIT_IRIS_TIME, OnChangeEditIrisTime)
 	ON_EN_CHANGE(IDC_EDIT_GAMMA_REF, OnChangeEditGammaRef)
 	ON_EN_CHANGE(IDC_EDIT_GAMMA_AVERAGE, OnChangeEditGammaAvg)
+	ON_EN_CHANGE(IDC_WHITE_X, OnChangeEditGammaAvg)
+	ON_EN_CHANGE(IDC_WHITE_Y, OnChangeEditGammaAvg)
 	ON_BN_CLICKED(IDC_CHANGEWHITE_CHECK, OnChangeWhiteCheck)
 	ON_BN_CLICKED(IDC_USE_MEASURED_GAMMA, OnUseMeasuredGammaCheck)
 	ON_CBN_SELCHANGE(IDC_COLORREF_COMBO, OnSelchangeColorrefCombo)
@@ -119,6 +129,16 @@ void CReferencesPropPage::OnCheckColors()
 
 BOOL CReferencesPropPage::OnApply() 
 {
+    if (m_whiteTarget == DCUST)
+    {
+        m_manualWhitexedit.EnableWindow (TRUE);
+        m_manualWhiteyedit.EnableWindow (TRUE);
+    }
+    else
+    {
+        m_manualWhitexedit.EnableWindow (FALSE);
+        m_manualWhiteyedit.EnableWindow (FALSE);
+    }
 	GetConfig()->ApplySettings(FALSE);
 	m_isModified=FALSE;
 	return CPropertyPageWithHelp::OnApply();
@@ -142,6 +162,12 @@ BOOL CReferencesPropPage::OnInitDialog()
 		CheckRadioButton ( IDC_CHANGEWHITE_CHECK, IDC_CHANGEWHITE_CHECK, IDC_CHANGEWHITE_CHECK );
 		m_whiteTargetCombo.EnableWindow (TRUE);
 	}
+    else
+    {
+        m_whiteTargetCombo.EnableWindow (FALSE);
+        m_manualWhitexedit.EnableWindow (FALSE);
+        m_manualWhiteyedit.EnableWindow (FALSE);        
+    }
 	if (m_useMeasuredGamma)
 		CheckRadioButton ( IDC_USE_MEASURED_GAMMA, IDC_USE_MEASURED_GAMMA, IDC_USE_MEASURED_GAMMA );
 	if (GetConfig ()->m_GammaOffsetType == 4)
