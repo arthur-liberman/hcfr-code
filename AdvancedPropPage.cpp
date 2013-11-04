@@ -46,6 +46,7 @@ CAdvancedPropPage::CAdvancedPropPage() : CPropertyPageWithHelp(CAdvancedPropPage
 	m_bPreferLuxmeter = FALSE;
 	m_dE_form = 1;
 	m_dE_gray = 2;
+    doHighlight = TRUE;
 	//}}AFX_DATA_INIT
 
 	m_isModified = FALSE;
@@ -64,6 +65,7 @@ void CAdvancedPropPage::DoDataExchange(CDataExchange* pDX)
 	DDX_CBIndex(pDX, IDC_COMBO_dE, m_dE_form);
 	DDX_CBIndex(pDX, IDC_COMBO_dE_GRAY, m_dE_gray);
 	DDX_Check(pDX, IDC_CHECK_CALIBRATION_OLD, m_bUseOnlyPrimaries);
+	DDX_Check(pDX, IDC_HIGHLIGHT, doHighlight);
 	DDX_Check(pDX, IDC_CHECK_IMPERIAL, m_bUseImperialUnits);
 	DDX_Radio(pDX, IDC_RADIO1, m_nLuminanceCurveMode);
 	DDX_Check(pDX, IDC_CHECK_PREFER_LUXMETER, m_bPreferLuxmeter);
@@ -77,6 +79,7 @@ BEGIN_MESSAGE_MAP(CAdvancedPropPage, CPropertyPageWithHelp)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_PREFER_LUXMETER, IDC_CHECK_PREFER_LUXMETER, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_DELTAE_GRAY_LUMA, IDC_CHECK_DELTAE_GRAY_LUMA, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_RADIO1, IDC_RADIO3, OnControlClicked)
+    ON_CONTROL_RANGE(BN_CLICKED, IDC_HIGHLIGHT, IDC_HIGHLIGHT, OnControlClicked)
 
 	//{{AFX_MSG_MAP(CAdvancedPropPage)
 	ON_CBN_SELCHANGE(IDC_LUXMETER_COM_COMBO, OnSelchangeLuxmeterComCombo)
@@ -92,7 +95,7 @@ void CAdvancedPropPage::OnControlClicked(UINT nID)
 {
 	// m_isModified becomes true only when imperial units or luminance curve display flag changes. This flag
 	// allow parent dialog to refresh all views to change data displayed
-	if ( nID == IDC_CHECK_IMPERIAL || nID == IDC_CHECK_PREFER_LUXMETER || nID == IDC_RADIO1 || nID == IDC_RADIO2 || nID == IDC_RADIO3 || nID == IDC_CHECK_DELTAE_GRAY_LUMA )
+	if ( nID == IDC_CHECK_IMPERIAL || nID == IDC_CHECK_PREFER_LUXMETER || nID == IDC_RADIO1 || nID == IDC_RADIO2 || nID == IDC_RADIO3 || nID == IDC_CHECK_DELTAE_GRAY_LUMA || nID == IDC_HIGHLIGHT )
 		m_isModified=TRUE;
 	SetModified(TRUE);	
 }

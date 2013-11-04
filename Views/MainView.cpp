@@ -1437,8 +1437,9 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
                         str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form ) );						
 						dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form );
 						dEavg+=dE;
-						clr = (dE<2.5?RGB(0,230,0):(dE<5?RGB(230,230,0):RGB(230,0,0)));
-						m_pGrayScaleGrid->SetItemBkColour(4, nCol, clr);
+						clr = (dE<2.5?RGB(175,255,175):(dE<5?RGB(255,255,175):RGB(255,175,175)));
+                        if (GetConfig()->doHighlight)
+                            m_pGrayScaleGrid->SetItemBkColour(4, nCol, clr);
 						m_pGrayScaleGrid -> SetItemFont ( 4, nCol, m_pGrayScaleGrid->GetItemFont(0,0) ); // Set the font to bold
 						dEcnt++;
 					}
@@ -1450,10 +1451,11 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 					dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), 	GetConfig()->m_dE_form );
 					dEavg+=dE;
 					if (GetConfig()->m_dE_form <= 1)
-						clr = (dE<3.5?RGB(0,230,0):(dE<7?RGB(230,230,0):RGB(230,0,0)));
+						clr = (dE<3.5?RGB(175,255,175):(dE<7?RGB(255,255,175):RGB(255,175,175)));
 					else
-						clr = (dE<2.5?RGB(0,230,0):(dE<5?RGB(230,230,0):RGB(230,0,0)));
-					m_pGrayScaleGrid->SetItemBkColour(4, nCol, clr);
+						clr = (dE<2.5?RGB(175,255,175):(dE<5?RGB(255,255,175):RGB(255,175,175)));
+                    if (GetConfig()->doHighlight)
+                        m_pGrayScaleGrid->SetItemBkColour(4, nCol, clr);
 					m_pGrayScaleGrid -> SetItemFont ( 4, nCol, m_pGrayScaleGrid->GetItemFont(0,0) ); // Set the font to bold
 					dEcnt++;
 				}
@@ -2384,7 +2386,8 @@ void CMainView::UpdateGrid()
 					Msg += dEform;
 					dEform = GetConfig()->m_dE_gray==0?" [Relative Y]":(GetConfig ()->m_dE_gray == 1?" [Absolute Y w/gamma]":" [Absolute Y w/o gamma]");
 					Msg += dEform;
-					m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
+                    if (GetConfig()->doHighlight)
+					    m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
 					if (dEavg / dEcnt < a / 2 )
 						Msg += "------>Awesome Calibration!";
                     else if (dEavg /dEcnt < a)
@@ -2441,7 +2444,8 @@ void CMainView::UpdateGrid()
 						}
 					}
 					Msg += dEform;
-					m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
+                    if (GetConfig()->doHighlight)
+                        m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
 					if (dEavg / dEcnt < a / 2)
 						Msg += "------>Awesome Calibration!";
                     else if (dEavg /dEcnt < a)
@@ -2496,7 +2500,8 @@ void CMainView::UpdateGrid()
 						}
 					}
 					Msg += dEform;
-					m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
+                    if (GetConfig()->doHighlight)
+					    m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
 					if (dEavg / dEcnt < a / 2)
 						Msg += "------>Awesome Calibration!";
                     else if (dEavg /dEcnt < a)
@@ -2552,7 +2557,8 @@ void CMainView::UpdateGrid()
 						}
 					}
 					Msg += dEform;
-					m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
+                    if (GetConfig()->doHighlight)
+					    m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
 					//hidden cookie
 					if (dEavg / dEcnt <= 1.0 )
 						Msg += "------>Super Awesome Calibration!";

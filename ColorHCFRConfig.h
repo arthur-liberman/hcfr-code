@@ -104,6 +104,7 @@ public:
 	BOOL	m_bPreferLuxmeter;
 	int		m_dE_form;
     int     m_dE_gray;
+    BOOL    doHighlight;
 
 	// Global strings
 	CString	m_PercentGray;

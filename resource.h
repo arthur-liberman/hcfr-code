@@ -701,6 +701,7 @@
 #define IDC_OVERLAY                     1276
 #define IDC_CHECK1                      1279
 #define IDC_MADVR_3D                    1279
+#define IDC_HIGHLIGHT                   1279
 #define IDC_WHITE_X                     1281
 #define IDC_WHITE_Y                     1282
 #define IDC_COLORTEMPHISTO_GRAPH        11003

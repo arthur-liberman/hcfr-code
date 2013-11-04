@@ -51,6 +51,7 @@ public:
 	BOOL	m_bUseImperialUnits;
 	int		m_nLuminanceCurveMode;
 	BOOL	m_bPreferLuxmeter;
+    BOOL    doHighlight;
 	//}}AFX_DATA
 
 	virtual UINT GetHelpId ( LPSTR lpszTopic );

@@ -290,6 +290,7 @@ void CColorHCFRConfig::InitDefaults()
 	m_bPreferLuxmeter = FALSE;
 	m_dE_form = 4;
     m_dE_gray = 2;
+    doHighlight = TRUE;
 }
 
 BOOL CColorHCFRConfig::LoadSettings()
@@ -345,6 +346,7 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_TBViewsMiddleClickMode = GetProfileInt("Advanced","TBViewsMiddleClickMode",1);
 	m_bConfirmMeasures = GetProfileInt("Advanced","ConfirmMeasures",1);
 	m_bUseOnlyPrimaries = GetProfileInt("Advanced","UseOnlyPrimaries",0);
+	doHighlight = GetProfileInt("Advanced","Highlight",0);
 	m_bUseImperialUnits = GetProfileInt("Advanced","UseImperialUnits",0);
 	m_nLuminanceCurveMode = GetProfileInt("Advanced","LuminanceCurveMode",0);
 	m_bPreferLuxmeter = GetProfileInt("Advanced","PreferLuxmeter",0);
@@ -394,6 +396,7 @@ void CColorHCFRConfig::SaveSettings()
 	WriteProfileInt("Advanced","TBViewsMiddleClickMode",m_TBViewsMiddleClickMode);
 	WriteProfileInt("Advanced","ConfirmMeasures",m_bConfirmMeasures);
 	WriteProfileInt("Advanced","UseOnlyPrimaries",m_bUseOnlyPrimaries);
+	WriteProfileInt("Advanced","Highlight",doHighlight);
 	WriteProfileInt("Advanced","UseImperialUnits",m_bUseImperialUnits);
 	WriteProfileInt("Advanced","LuminanceCurveMode",m_nLuminanceCurveMode);
 	WriteProfileInt("Advanced","PreferLuxmeter",m_bPreferLuxmeter);
@@ -469,6 +472,7 @@ void CColorHCFRConfig::SetPropertiesSheetValues()
 	m_advancedPropertiesPage.m_bConfirmMeasures = m_bConfirmMeasures;
 	m_advancedPropertiesPage.m_comPort = GetColorApp() -> m_LuxPort;
 	m_advancedPropertiesPage.m_bUseOnlyPrimaries = m_bUseOnlyPrimaries;
+	m_advancedPropertiesPage.doHighlight = doHighlight;
 	m_advancedPropertiesPage.m_bUseImperialUnits = m_bUseImperialUnits;
 	m_advancedPropertiesPage.m_nLuminanceCurveMode = m_nLuminanceCurveMode;
 	m_advancedPropertiesPage.m_bPreferLuxmeter = m_bPreferLuxmeter;
@@ -553,6 +557,7 @@ BOOL CColorHCFRConfig::GetPropertiesSheetValues()
 	m_TBViewsMiddleClickMode = m_toolbarPropertiesPage.m_TBViewsMiddleClickMode;
 	m_bConfirmMeasures = m_advancedPropertiesPage.m_bConfirmMeasures;
 	m_bUseOnlyPrimaries = m_advancedPropertiesPage.m_bUseOnlyPrimaries;
+	doHighlight = m_advancedPropertiesPage.doHighlight;
 	m_bUseImperialUnits = m_advancedPropertiesPage.m_bUseImperialUnits;
 	m_nLuminanceCurveMode = m_advancedPropertiesPage.m_nLuminanceCurveMode;
 	m_bPreferLuxmeter = m_advancedPropertiesPage.m_bPreferLuxmeter;
