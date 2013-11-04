@@ -2387,11 +2387,13 @@ void CMainView::UpdateGrid()
 					dEform = GetConfig()->m_dE_gray==0?" [Relative Y]":(GetConfig ()->m_dE_gray == 1?" [Absolute Y w/gamma]":" [Absolute Y w/o gamma]");
 					Msg += dEform;
                     if (GetConfig()->doHighlight)
+                    {
 					    m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
 					if (dEavg / dEcnt < a / 2 )
 						Msg += "------>Awesome Calibration!";
                     else if (dEavg /dEcnt < a)
                         Msg += "------>Very Nice Calibration!";
+                    }
 				}
 			}
 
@@ -2445,11 +2447,13 @@ void CMainView::UpdateGrid()
 					}
 					Msg += dEform;
                     if (GetConfig()->doHighlight)
+                    {
                         m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
 					if (dEavg / dEcnt < a / 2)
 						Msg += "------>Awesome Calibration!";
                     else if (dEavg /dEcnt < a)
                         Msg += "------>Very Nice Calibration!";
+                    }
 			}
 			m_grayScaleGroup.SetText ( Msg );
 		} else if ( m_displayMode > 4 && m_displayMode < 11 )
@@ -2501,11 +2505,13 @@ void CMainView::UpdateGrid()
 					}
 					Msg += dEform;
                     if (GetConfig()->doHighlight)
+                    {
 					    m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
 					if (dEavg / dEcnt < a / 2)
 						Msg += "------>Awesome Calibration!";
                     else if (dEavg /dEcnt < a)
                         Msg += "------>Very Nice Calibration!";
+                    }
 			}
 			m_grayScaleGroup.SetText ( Msg );
 		} else if (m_displayMode == 11)
@@ -2558,12 +2564,14 @@ void CMainView::UpdateGrid()
 					}
 					Msg += dEform;
                     if (GetConfig()->doHighlight)
+                    {
 					    m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
 					//hidden cookie
 					if (dEavg / dEcnt <= 1.0 )
 						Msg += "------>Super Awesome Calibration!";
                     else if (dEavg /dEcnt < a)
                         Msg += "------>Awesome Calibration!";
+                    }
 			}
 			m_grayScaleGroup.SetText ( Msg );
 		}
