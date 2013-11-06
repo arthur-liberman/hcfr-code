@@ -2723,6 +2723,38 @@ END
 
 STRINGTABLE
 BEGIN
+    IDS_CC_1b               "Skin#FFDFC4"
+    IDS_CC_2b               "Skin#F0D5BE"
+    IDS_CC_3b               "Skin#EECEB3"
+    IDS_CC_4b               "Skin#E1B899"
+    IDS_CC_5b               "Skin#E5C298"
+    IDS_CC_6b               "Skin#FFDCB2"
+    IDS_CC_7b               "Skin#E5B887"
+    IDS_CC_8b               "Skin#E5A073"
+    IDS_CC_9b               "Skin#E79E6D"
+    IDS_CC_10b              "Skin#DB9065"
+    IDS_CC_11b              "Skin#CE967C"
+    IDS_CC_12b              "Skin#C67856"
+    IDS_CC_13b              "Skin#BA6C49"
+    IDS_CC_14b              "Skin#A57257"
+    IDS_CC_15b              "Skin#F0C8C9"
+    IDS_CC_16b              "Skin#DDA8A0"
+    IDS_CC_17b              "Skin#B97C6D"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_CC_18b              "Skin#A87563"
+    IDS_CC_19b              "Skin#AD6452"
+    IDS_CC_20b              "Skin#5C3836"
+    IDS_CC_21b              "Skin#CB8442"
+    IDS_CC_22b              "Skin#BD723C"
+    IDS_CC_23b              "Skin#704139"
+    IDS_CC_24b              "Skin#A3866A"
+END
+
+STRINGTABLE
+BEGIN
     IDS_MEASURESATCYAN      "Cyan-Sättigung messen"
     IDS_MEASURESATMAGENTA   "Magenta-Sättigung messen"
     IDS_GRAYSCALE           "Grautreppe"
