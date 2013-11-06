@@ -288,7 +288,7 @@ void CColorHCFRConfig::InitDefaults()
 	m_bUseImperialUnits = FALSE;
 	m_nLuminanceCurveMode = 0;
 	m_bPreferLuxmeter = FALSE;
-	m_dE_form = 4;
+	m_dE_form = 5;
     m_dE_gray = 2;
     doHighlight = TRUE;
 }
@@ -350,7 +350,7 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_bUseImperialUnits = GetProfileInt("Advanced","UseImperialUnits",0);
 	m_nLuminanceCurveMode = GetProfileInt("Advanced","LuminanceCurveMode",0);
 	m_bPreferLuxmeter = GetProfileInt("Advanced","PreferLuxmeter",0);
-	m_dE_form = GetProfileInt("Advanced","dE_form",3);
+	m_dE_form = GetProfileInt("Advanced","dE_form",5);
 	m_dE_gray = GetProfileInt("Advanced","dE_gray",2);
 
 	return TRUE;

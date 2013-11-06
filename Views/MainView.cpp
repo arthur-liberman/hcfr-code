@@ -1434,8 +1434,8 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				if (m_displayMode == 0 || m_displayMode == 3 || m_displayMode == 4)
 					if ( nCol > 1 || m_displayMode == 4 )
 					{
-                        str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form ) );						
-						dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form );
+                        str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true ) );						
+						dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true );
 						dEavg+=dE;
 						clr = (dE<2.5?RGB(175,255,175):(dE<5?RGB(255,255,175):RGB(255,175,175)));
                         if (GetConfig()->doHighlight)
@@ -1447,8 +1447,8 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						str.Empty ();
 				else
 				{
-					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), 	GetConfig()->m_dE_form ) );
-					dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), 	GetConfig()->m_dE_form );
+					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), 	GetConfig()->m_dE_form, false ) );
+					dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), 	GetConfig()->m_dE_form, false );
 					dEavg+=dE;
 					if (GetConfig()->m_dE_form <= 1)
 						clr = (dE<3.5?RGB(175,255,175):(dE<7?RGB(255,255,175):RGB(255,175,175)));
@@ -1472,7 +1472,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 		else if ( aComponentNum == 5 )
 		{
 			if ( aRefDocColor.isValid() )
-					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aRefDocColor, YWhiteRefDoc, GetColorReference(), 	GetConfig()->m_dE_form ) );
+					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aRefDocColor, YWhiteRefDoc, GetColorReference(), 	GetConfig()->m_dE_form, false ) );
 			else
 				str.Empty ();
 		}
@@ -1573,10 +1573,9 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						nCol2 = 1;
 						break;
 					case 11:
-						bool isAXIS=GetConfig()->m_CCMode==AXIS;
-						bool isMCD=GetConfig()->m_CCMode==MCD;
-						double rLuma=GetColorReference().GetCC24ReferenceLuma (nCol-1, isAXIS?AXIS:(isMCD?MCD:GCD) );
-						RefLuma [ nCol-1 ] = rLuma;
+                        double rLuma=GetColorReference().GetCC24ReferenceLuma (nCol-1, GetConfig()->m_CCMode );
+                        //luminance is based on 2.2 gamma so we need to scale here actual reference gamma
+						RefLuma [ nCol-1 ] = pow(pow(rLuma,1. / 2.22),GetConfig()->m_GammaAvg);
 						break;
 				}
 					CColor WhiteMCD;
@@ -1994,7 +1993,7 @@ void CMainView::UpdateGrid()
 					 }
 
 					 // Determine Reference Y luminance for Delta E calculus
-					 if ( GetConfig ()->m_dE_gray > 0 )
+					 if ( GetConfig ()->m_dE_gray > 0 || GetConfig ()->m_dE_form == 5 )
 					 {
 						// Compute reference Luminance regarding actual offset and reference gamma 
                         // fixed to use correct gamma predicts
@@ -2018,7 +2017,7 @@ void CMainView::UpdateGrid()
 
                         ColorxyY tmpColor(GetColorReference().GetWhite());
 						tmpColor[2] = valy;
-                        if (GetConfig ()->m_dE_gray == 2)
+                        if (GetConfig ()->m_dE_gray == 2 || GetConfig ()->m_dE_form == 5 )
                             tmpColor[2] = aColor [ 1 ] / YWhite; //perfect gamma
 						refColor.SetxyYValue(tmpColor);
 					 }
@@ -2359,12 +2358,12 @@ void CMainView::UpdateGrid()
 					{
 					case 0:
 						{
-						dEform = " [CIELUV]";
+						dEform = " [CIE76(uv)]";
 						break;
 						}
 					case 1:
 						{
-						dEform = " [CIE76]";
+						dEform = " [CIE76(ab)]";
 						break;
 						}
 					case 2:
@@ -2382,6 +2381,11 @@ void CMainView::UpdateGrid()
 						dEform = " [CMC(1:1)]";
 						break;
 						}
+					case 5:
+						{
+						dEform = " [CIE76(uv)]";
+						break;
+						}
 					}
 					Msg += dEform;
 					dEform = GetConfig()->m_dE_gray==0?" [Relative Y]":(GetConfig ()->m_dE_gray == 1?" [Absolute Y w/gamma]":" [Absolute Y w/o gamma]");
@@ -2389,10 +2393,10 @@ void CMainView::UpdateGrid()
                     if (GetConfig()->doHighlight)
                     {
 					    m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
-					if (dEavg / dEcnt < a / 2 )
-						Msg += "------>Awesome Calibration!";
-                    else if (dEavg /dEcnt < a)
-                        Msg += "------>Very Nice Calibration!";
+					    if (dEavg / dEcnt < a / 2)
+						    Msg += "------>Awesome Calibration!";
+                        else if (dEavg /dEcnt < a)
+                            Msg += "------>Very Nice Calibration!";
                     }
 				}
 			}
@@ -2417,14 +2421,14 @@ void CMainView::UpdateGrid()
 					{
 					case 0:
 						{
-						dEform = " [CIELUV]";
+						dEform = " [CIE76(uv)]";
 						a=3.5;
 						b=7;
 						break;
 						}
 					case 1:
 						{
-						dEform = " [CIE76]";
+						dEform = " [CIE76(ab)]";
 						a=3.5;
 						b=7;
 						break;
@@ -2444,15 +2448,20 @@ void CMainView::UpdateGrid()
 						dEform = " [CMC(1:1)]";
 						break;
 						}
+					case 5:
+						{
+						dEform = " [CIE2000]";
+						break;
+						}
 					}
 					Msg += dEform;
                     if (GetConfig()->doHighlight)
                     {
                         m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
-					if (dEavg / dEcnt < a / 2)
-						Msg += "------>Awesome Calibration!";
-                    else if (dEavg /dEcnt < a)
-                        Msg += "------>Very Nice Calibration!";
+					    if (dEavg / dEcnt < a / 2)
+						    Msg += "------>Awesome Calibration!";
+                        else if (dEavg /dEcnt < a)
+                            Msg += "------>Very Nice Calibration!";
                     }
 			}
 			m_grayScaleGroup.SetText ( Msg );
@@ -2475,14 +2484,14 @@ void CMainView::UpdateGrid()
 					{
 					case 0:
 						{
-						dEform = " [CIELUV]";
+						dEform = " [CIE76(uv)]";
 						a=3.5;
 						b=7;
 						break;
 						}
 					case 1:
 						{
-						dEform = " [CIE76]";
+						dEform = " [CIE76(ab)]";
 						a=3.5;
 						b=7;
 						break;
@@ -2502,15 +2511,20 @@ void CMainView::UpdateGrid()
 						dEform = " [CMC(1:1)]";
 						break;
 						}
+					case 5:
+						{
+						dEform = " [CIE2000]";
+						break;
+						}
 					}
 					Msg += dEform;
                     if (GetConfig()->doHighlight)
                     {
 					    m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
-					if (dEavg / dEcnt < a / 2)
-						Msg += "------>Awesome Calibration!";
-                    else if (dEavg /dEcnt < a)
-                        Msg += "------>Very Nice Calibration!";
+					    if (dEavg / dEcnt < a / 2)
+						    Msg += "------>Awesome Calibration!";
+                        else if (dEavg /dEcnt < a)
+                            Msg += "------>Very Nice Calibration!";
                     }
 			}
 			m_grayScaleGroup.SetText ( Msg );
@@ -2525,7 +2539,7 @@ void CMainView::UpdateGrid()
 				CString dEform;
 				float a=2.5, b=5;
 				Tmp.LoadString ( IDS_DELTAEAVERAGE );
-                Msg += (GetConfig()->m_CCMode == GCD?" - GCD ":(GetConfig()->m_CCMode==MCD?" - MCD ":" - AXIS "));
+                Msg += (GetConfig()->m_CCMode == GCD?" - GCD ":(GetConfig()->m_CCMode==MCD?" - MCD ":(GetConfig()->m_CCMode==SKIN?" - SKIN ":" - AXIS ")));
 				Msg += " ( ";
 				Msg += Tmp;
 				sprintf ( szBuf, ": %.2f )", dEavg / dEcnt );
@@ -2534,14 +2548,14 @@ void CMainView::UpdateGrid()
 					{
 					case 0:
 						{
-						dEform = " [CIELUV]";
+						dEform = " [CIE76(uv)]";
 						a=3.5;
 						b=7;
 						break;
 						}
 					case 1:
 						{
-						dEform = " [CIE76]";
+						dEform = " [CIE76(ab)]";
 						a=3.5;
 						b=7;
 						break;
@@ -2559,6 +2573,11 @@ void CMainView::UpdateGrid()
 					case 4:
 						{
 						dEform = " [CMC(1:1)]";
+						break;
+						}
+					case 5:
+						{
+						dEform = " [CIE2000]";
 						break;
 						}
 					}

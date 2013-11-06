@@ -2472,11 +2472,9 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
 		 break;
 	case AXIS:
 		 nPattern=CGenerator::MT_SAT_CC24_MCD;		
-//		 size=80;
 		 break;
-	case OFPS:
+	case SKIN:
 		 nPattern=CGenerator::MT_SAT_CC24_MCD;
-		 size=256;
 		 break;
 	}
 
@@ -2496,7 +2494,8 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
 	}
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
-	if(pGenerator->GetName() == str&&GetConfig()->m_CCMode==AXIS)
+
+    if(pGenerator->GetName() == str&&(GetConfig()->m_CCMode==AXIS || GetConfig()->m_CCMode==SKIN) )
 	{		
 		Title.LoadString ( IDS_ERROR );
 		strMsg.LoadString ( IDS_ERRINITGENERATOR );
@@ -2647,7 +2646,7 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 	case AXIS:
 		 nPattern=CGenerator::MT_SAT_CC24_GCD;		
 		 break;
-	case OFPS:
+	case SKIN:
 		 nPattern=CGenerator::MT_SAT_CC24_GCD;		
 	}
 	
@@ -2696,7 +2695,7 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
-	if(pGenerator->GetName() == str&&GetConfig()->m_CCMode==AXIS)
+	if(pGenerator->GetName() == str&&(GetConfig()->m_CCMode==AXIS || GetConfig()->m_CCMode==SKIN))
 	{		
 		Title.LoadString ( IDS_ERROR );
 		strMsg.LoadString ( IDS_ERRINITGENERATOR );
@@ -5274,13 +5273,13 @@ CColor CMeasure::GetRefCC24Sat(int i) const
 	switch (GetConfig()->m_CCMode)
 	{
 //GCD
-	case 0:
+	case GCD:
 		{
 			ccRef[0].SetRGBValue( ColorRGB( 0, 0, 0 ), cRef );
-			ccRef[1].SetRGBValue( ColorRGB( pow(.62,gamma), pow(.62,gamma), pow(.62,gamma) ), cRef );
-			ccRef[2].SetRGBValue( ColorRGB( pow(.73,gamma), pow(.73,gamma), pow(.73,gamma) ), cRef );
-			ccRef[3].SetRGBValue( ColorRGB( pow(.82,gamma), pow(.82,gamma), pow(.82,gamma) ), cRef );
-			ccRef[4].SetRGBValue( ColorRGB( pow(.90,gamma), pow(.90,gamma), pow(.90,gamma) ), cRef );
+			ccRef[1].SetRGBValue( ColorRGB( pow(.6210,gamma), pow(.6210,gamma), pow(.6210,gamma) ), cRef );
+			ccRef[2].SetRGBValue( ColorRGB( pow(.7306,gamma), pow(.7306,gamma), pow(.7306,gamma) ), cRef );
+			ccRef[3].SetRGBValue( ColorRGB( pow(.8219,gamma), pow(.8219,gamma), pow(.8219,gamma) ), cRef );
+			ccRef[4].SetRGBValue( ColorRGB( pow(.8995,gamma), pow(.8995,gamma), pow(.8995,gamma) ), cRef );
 			ccRef[5].SetRGBValue( ColorRGB( pow(1.0,gamma), pow(1.0,gamma), pow(1.0,gamma) ), cRef );
 			ccRef[6].SetRGBValue( ColorRGB( pow(.452,gamma), pow(.3196,gamma), pow(.2603,gamma) ), cRef );
 			ccRef[7].SetRGBValue( ColorRGB( pow(.758,gamma), pow(.589,gamma), pow(.5114,gamma) ), cRef );
@@ -5289,7 +5288,7 @@ CColor CMeasure::GetRefCC24Sat(int i) const
 			ccRef[10].SetRGBValue( ColorRGB( pow(.5114,gamma), pow(.5023,gamma), pow(.6895,gamma) ), cRef );
 			ccRef[11].SetRGBValue( ColorRGB( pow(.3881,gamma), pow(.7397,gamma), pow(.6621,gamma) ), cRef );
 			ccRef[12].SetRGBValue( ColorRGB( pow(.8493,gamma), pow(.4703,gamma), pow(.1598,gamma) ), cRef );
-			ccRef[13].SetRGBValue( ColorRGB( pow(.2822,gamma), pow(.3607,gamma), pow(.6393,gamma) ), cRef );
+			ccRef[13].SetRGBValue( ColorRGB( pow(.2922,gamma), pow(.3607,gamma), pow(.6393,gamma) ), cRef );
 			ccRef[14].SetRGBValue( ColorRGB( pow(.7580,gamma), pow(.3288,gamma), pow(.3790,gamma) ), cRef );
 			ccRef[15].SetRGBValue( ColorRGB( pow(.3607,gamma), pow(.2420,gamma), pow(.4201,gamma) ), cRef );
 			ccRef[16].SetRGBValue( ColorRGB( pow(.6210,gamma), pow(.7306,gamma), pow(.2511,gamma) ), cRef );
@@ -5303,9 +5302,9 @@ CColor CMeasure::GetRefCC24Sat(int i) const
 		break;
 		}
 //MCD
-	case 1:
+	case MCD:
 		{
-			ccRef[0].SetRGBValue( ColorRGB( pow(.21,gamma), pow(.205,gamma), pow(.21,gamma) ), cRef );
+			ccRef[0].SetRGBValue( ColorRGB( pow(.21,gamma), pow(.2055,gamma), pow(.21,gamma) ), cRef );
 			ccRef[1].SetRGBValue( ColorRGB( pow(.3288,gamma), pow(.3288,gamma), pow(.3288,gamma) ), cRef );
 			ccRef[2].SetRGBValue( ColorRGB( pow(.4749,gamma), pow(.4749,gamma), pow(.4703,gamma) ), cRef );
 			ccRef[3].SetRGBValue( ColorRGB( pow(.6256,gamma), pow(.6256,gamma), pow(.6256,gamma) ), cRef );
@@ -5332,7 +5331,7 @@ CColor CMeasure::GetRefCC24Sat(int i) const
 		break;
 		}
 		//axis steps
-	case 2:
+	case AXIS:
 		{
 			ccRef[0].SetRGBValue( ColorRGB( pow(0.12,gamma), 0, 0 ), cRef );
 			ccRef[1].SetRGBValue( ColorRGB( pow(.24,gamma), 0, 0 ), cRef );
@@ -5360,10 +5359,35 @@ CColor CMeasure::GetRefCC24Sat(int i) const
 			ccRef[23].SetRGBValue( ColorRGB( 0, 0, pow(.96,gamma) ), cRef );
 		break;
 		}
-/*	case 3:
+	case SKIN:
 		{
-		}
-		//OFPS*/
+			ccRef[0].SetRGBValue( ColorRGB( pow(1,gamma), pow(0.8745,gamma), pow(0.7686,gamma) ), cRef );
+			ccRef[1].SetRGBValue( ColorRGB( pow(0.9412,gamma), pow(0.8353,gamma), pow(0.7451,gamma) ), cRef );
+			ccRef[2].SetRGBValue( ColorRGB( pow(0.9333,gamma), pow(0.8078,gamma), pow(0.7020,gamma) ), cRef );
+			ccRef[3].SetRGBValue( ColorRGB( pow(0.8824,gamma), pow(0.7216,gamma), pow(0.6000,gamma) ), cRef );
+			ccRef[4].SetRGBValue( ColorRGB( pow(0.8980,gamma), pow(0.7608,gamma), pow(0.5961,gamma) ), cRef );
+			ccRef[5].SetRGBValue( ColorRGB( pow(1,gamma), pow(0.8627,gamma), pow(0.6980,gamma) ), cRef );
+			ccRef[6].SetRGBValue( ColorRGB( pow(0.8980,gamma), pow(0.7215,gamma), pow(0.5608,gamma) ), cRef );
+			ccRef[7].SetRGBValue( ColorRGB( pow(0.8980,gamma), pow(0.6274,gamma), pow(0.4510,gamma) ), cRef );
+			ccRef[8].SetRGBValue( ColorRGB( pow(0.9059,gamma), pow(0.6196,gamma), pow(0.4275,gamma) ), cRef );
+			ccRef[9].SetRGBValue( ColorRGB( pow(0.8588,gamma), pow(0.5647,gamma), pow(0.3961,gamma) ), cRef );
+			ccRef[10].SetRGBValue( ColorRGB( pow(0.8078,gamma), pow(0.5882,gamma), pow(0.4863,gamma) ), cRef );
+			ccRef[11].SetRGBValue( ColorRGB( pow(0.7765,gamma), pow(0.4706,gamma), pow(0.3373,gamma) ), cRef );
+			ccRef[12].SetRGBValue( ColorRGB( pow(0.7294,gamma), pow(0.4235,gamma), pow(0.2863,gamma) ), cRef );
+			ccRef[13].SetRGBValue( ColorRGB( pow(0.6471,gamma), pow(0.4471,gamma), pow(0.3411,gamma) ), cRef );
+			ccRef[14].SetRGBValue( ColorRGB( pow(0.9412,gamma), pow(0.7843,gamma), pow(0.7882,gamma) ), cRef );
+			ccRef[15].SetRGBValue( ColorRGB( pow(0.8666,gamma), pow(0.6588,gamma), pow(0.6275,gamma) ), cRef );
+			ccRef[16].SetRGBValue( ColorRGB( pow(0.7255,gamma), pow(0.4863,gamma), pow(0.4275,gamma) ), cRef );
+			ccRef[17].SetRGBValue( ColorRGB( pow(0.6588,gamma), pow(0.4588,gamma), pow(0.4235,gamma) ), cRef );
+			ccRef[18].SetRGBValue( ColorRGB( pow(0.6784,gamma), pow(0.3922,gamma), pow(0.3216,gamma) ), cRef );
+			ccRef[19].SetRGBValue( ColorRGB( pow(0.3608,gamma), pow(0.2196,gamma), pow(0.2118,gamma) ), cRef );
+			ccRef[20].SetRGBValue( ColorRGB( pow(0.7961,gamma), pow(0.5176,gamma), pow(0.2588,gamma) ), cRef );
+			ccRef[21].SetRGBValue( ColorRGB( pow(0.7412,gamma), pow(0.4471,gamma), pow(0.2353,gamma) ), cRef );
+			ccRef[22].SetRGBValue( ColorRGB( pow(0.4392,gamma), pow(0.2549,gamma), pow(0.2235,gamma) ), cRef );
+			ccRef[23].SetRGBValue( ColorRGB( pow(0.6392,gamma), pow(0.5255,gamma), pow(0.4157,gamma) ), cRef );
+            break;
+        }
+		//SKIN
 	}
 	return ccRef[i];
 }

@@ -506,7 +506,7 @@ void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, cons
 	xtarget=xyy[0];
 	ytarget=xyy[1];
 	
-	deltaE = SatColor.GetDeltaE(YWhite, aColor, 1.0, (GetConfig()->m_colorStandard==CC6||GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==CC6a)?CColorReference(HDTV, D65):GetColorReference() , 	GetConfig()->m_dE_form );
+	deltaE = SatColor.GetDeltaE(YWhite, aColor, 1.0, (GetConfig()->m_colorStandard==CC6||GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==CC6a)?CColorReference(HDTV, D65):GetColorReference() , 	GetConfig()->m_dE_form, false );
 	
 	// Compute projection on line (xstart,ystart) - (xend,yend) from measured point
 	dx = xend - xstart; 

@@ -335,7 +335,7 @@ bool CExport::SaveGrayScaleSheet()
 	for(j=0;j<size;j++)
 	{
 		// Determine Reference Y luminance for Delta E calculus
-		if ( GetConfig ()->m_dE_gray > 0 )
+		if ( GetConfig ()->m_dE_gray > 0 || GetConfig ()->m_dE_form == 5 )
 		{
 		    double x = ArrayIndexToGrayLevel ( j, size, GetConfig () -> m_bUseRoundDown );
             double valy;
@@ -357,7 +357,7 @@ bool CExport::SaveGrayScaleSheet()
 
             ColorxyY tmpColor(GetColorReference().GetWhite());
 			tmpColor[2] = valy;
-            if (GetConfig ()->m_dE_gray == 2)
+            if (GetConfig ()->m_dE_gray == 2 || GetConfig ()->m_dE_form == 5 )
                 tmpColor[2] = aColor [ 1 ] / YWhite;
 			refColor.SetxyYValue(tmpColor);
 		}
@@ -367,7 +367,7 @@ bool CExport::SaveGrayScaleSheet()
 			YWhite = m_pDoc->GetMeasure()->GetGray(j) [ 1 ];
 		}
 		
-		Rows.Add((float)m_pDoc->GetMeasure()->GetGray(j).GetDeltaE(YWhite, refColor, 1.0, GetColorReference(), 	GetConfig()->m_dE_form ));
+		Rows.Add((float)m_pDoc->GetMeasure()->GetGray(j).GetDeltaE(YWhite, refColor, 1.0, GetColorReference(), 	GetConfig()->m_dE_form, true ));
 	}
 	result&=graySS.AddRow(Rows,rowNb,m_doReplace);
 	rowNb++;

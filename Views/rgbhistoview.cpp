@@ -156,7 +156,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			if(m_showDeltaE) 
 			{
 				// Determine Reference Y luminance for Delta E calculus
-				if ( GetConfig ()->m_dE_gray > 0 )
+				if ( GetConfig ()->m_dE_gray > 0 || GetConfig ()->m_dE_form == 5 )
 				{
                     if (GetConfig()->m_GammaOffsetType == 4)
 			            {
@@ -176,7 +176,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
                     ColorxyY tmpColor(GetColorReference().GetWhite());
 					tmpColor[2] = valy;
-                    if (GetConfig ()->m_dE_gray == 2)
+                    if (GetConfig ()->m_dE_gray == 2 || GetConfig ()->m_dE_form == 5 )
                         tmpColor[2] = aColor [ 2 ] / YWhite;
 					refColor.SetxyYValue(tmpColor);
 				}
@@ -185,7 +185,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 					// Use actual gray luminance as correct reference (absolute)
 					YWhite = aColor [ 2 ];
 				}
-					m_graphCtrl2.AddPoint(m_deltaEGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(YWhite, refColor, 1.0, GetColorReference(), GetConfig()->m_dE_form ));
+					m_graphCtrl2.AddPoint(m_deltaEGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(YWhite, refColor, 1.0, GetColorReference(), GetConfig()->m_dE_form, true ));
 			}
 		}
 	}
@@ -224,7 +224,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			if(m_showDeltaE) 
 			{
 				// Determine Reference Y luminance for Delta E calculus
-				if ( GetConfig ()->m_dE_gray > 0 )
+				if ( GetConfig ()->m_dE_gray > 0 || GetConfig ()->m_dE_form == 5 )
 				{
 					// Compute reference luminance regarding actual offset and reference gamma
 					double valxref=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+OffsetRef)/(1.0+OffsetRef);
@@ -232,7 +232,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 					
 					ColorxyY tmpColor(GetColorReference().GetWhite());
 					tmpColor[2] = valyref;
-                    if (GetConfig ()->m_dE_gray == 2)
+                    if (GetConfig ()->m_dE_gray == 2 || GetConfig ()->m_dE_form == 5)
                         tmpColor[ 2] = aColor [ 2 ] / YWhite;
 					refColor.SetxyYValue(tmpColor);
 				}
@@ -244,10 +244,10 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 					if ( bMainDocHasColors )
 						YWhite = aColor [ 2 ];
 				}
-					m_graphCtrl2.AddPoint(m_deltaEDataRefGraphID, x, pDataRef->GetMeasure()->GetGray(i).GetDeltaE(YWhiteRefDoc, refColor, 1.0, GetColorReference(), GetConfig()->m_dE_form ));
+					m_graphCtrl2.AddPoint(m_deltaEDataRefGraphID, x, pDataRef->GetMeasure()->GetGray(i).GetDeltaE(YWhiteRefDoc, refColor, 1.0, GetColorReference(), GetConfig()->m_dE_form, true ));
 				
 				if (bMainDocHasColors)
-						m_graphCtrl2.AddPoint(m_deltaEBetweenGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(YWhite,pDataRef->GetMeasure()->GetGray(i),YWhiteRefDoc, GetColorReference(), GetConfig()->m_dE_form )); //Ki
+						m_graphCtrl2.AddPoint(m_deltaEBetweenGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(YWhite,pDataRef->GetMeasure()->GetGray(i),YWhiteRefDoc, GetColorReference(), GetConfig()->m_dE_form, true )); //Ki
 			}
 		}
 	}

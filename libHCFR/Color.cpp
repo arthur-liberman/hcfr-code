@@ -618,9 +618,9 @@ int ColorXYZ::GetColorTemp(const CColorReference& colorReference) const
     }
 }
 
-double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form ) const
+double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form, bool isGS ) const
 {
-	CColorReference cRef=CColorReference(HDTV, D65, 2.22);
+	CColorReference cRef=CColorReference(HDTV, D65, 2.22); //special modes assume rec.709
 	double dE;
 	if (!(colorReference.m_standard == CC6a || colorReference.m_standard == CC6 || colorReference.m_standard == HDTVa))
 		cRef=colorReference;
@@ -628,7 +628,7 @@ double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhit
 	{
 		case 0:
 		{
-		//LUV
+		//CIE76uv
         ColorLuv LuvRef(refColor, YWhiteRef, cRef);
         ColorLuv Luv(*this, YWhite, cRef);
         dE = sqrt ( pow ((Luv[0] - LuvRef[0]),2) + pow((Luv[1] - LuvRef[1]),2) + pow((Luv[2] - LuvRef[2]),2) );
@@ -636,7 +636,7 @@ double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhit
 		}
 		case 1:
 		{
-		//CIE76
+		//CIE76ab
         ColorLab LabRef(refColor, YWhiteRef, cRef);
         ColorLab Lab(*this, YWhite, cRef);
         dE = sqrt ( pow ((Lab[0] - LabRef[0]),2) + pow((Lab[1] - LabRef[1]),2) + pow((Lab[2] - LabRef[2]),2) );
@@ -724,7 +724,54 @@ double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhit
 			dE = sqrt( pow(dL/SL,2.0)  + pow(dC/SC,2.0) + pow(dH/SH,2.0) );
 			break;
 		}
-
+		case 5:
+		{
+            if (isGS)
+            {
+    		//CIE76uv
+                ColorLuv LuvRef(refColor, YWhiteRef, cRef);
+                ColorLuv Luv(*this, YWhite, cRef);
+                dE = sqrt ( pow ((Luv[0] - LuvRef[0]),2) + pow((Luv[1] - LuvRef[1]),2) + pow((Luv[2] - LuvRef[2]),2) );
+            }
+            else
+            {
+        		//CIE2000
+                ColorLab LabRef(refColor, YWhiteRef, cRef);
+                ColorLab Lab(*this, YWhite, cRef);
+		        double L1 = LabRef[0];
+		        double L2 = Lab[0];
+		        double Lp = (L1 + L2) / 2.0;
+		        double a1 = LabRef[1];
+		        double a2 = Lab[1];
+		        double b1 = LabRef[2];
+		        double b2 = Lab[2];
+		        double C1 = sqrt( pow(a1, 2.0) + pow(b1, 2.0) );
+		        double C2 = sqrt( pow(a2, 2.0) + pow(b2, 2.0) );
+		        double C = (C1 + C2) / 2.0;
+		        double G = (1 - sqrt ( pow(C, 7.0) / (pow(C, 7.0) + pow(25, 7.0)) ) ) / 2;
+		        double a1p = a1 * (1 + G);
+		        double a2p = a2 * (1 + G);
+		        double C1p = sqrt ( pow(a1p, 2.0) + pow(b1, 2.0) );
+		        double C2p = sqrt ( pow(a2p, 2.0) + pow(b2, 2.0) );
+		        double Cp = (C1p + C2p) / 2.0;
+		        double h1p = (atan2(b1, a1p) >= 0?atan2(b1, a1p):atan2(b1, a1p) + PI * 2.0);
+		        double h2p = (atan2(b2, a2p) >= 0?atan2(b2, a2p):atan2(b2, a2p) + PI * 2.0);
+		        double Hp = ( abs(h1p - h2p) > PI ?(h1p + h2p + PI * 2) / 2.0:(h1p + h2p) / 2.0);
+		        double T = 1 - 0.17 * cos(Hp - 30. / 180. * PI) + 0.24 * cos(2 * Hp) + 0.32 * cos(3 * Hp + 6.0 / 180. * PI) - 0.20 * cos(4 * Hp - 63.0 / 180. * PI);
+		        double dhp = ( abs(h2p - h1p) <= PI?(h2p - h1p):((h2p <= h1p)?(h2p - h1p + 2 * PI):(h2p - h1p - 2 * PI)));
+		        double dLp = L2 - L1;
+		        double dCp = C2p - C1p;
+		        double dHp = 2 * sqrt( C1p * C2p ) * sin( dhp / 2);
+		        double SL = 1 + (0.015 * pow( (Lp - 50), 2.0 ) / sqrt( 20 + pow( Lp - 50, 2.0) ) );
+		        double SC = 1 + 0.045 * Cp;
+		        double SH = 1 + 0.015 * Cp * T;
+		        double dtheta = 30 * exp( -1.0 * pow(( (Hp * 180. / PI - 275.0) / 25.0), 2.0) );
+		        double RC = 2 * sqrt ( pow(Cp, 7.0) / (pow(Cp, 7.0) + pow(25.0, 7.0)) );
+		        double RT = -1.0 * RC * sin(2 * dtheta / 180. * PI);
+		        dE = sqrt ( pow( dLp / SL, 2.0) + pow( dCp / SC, 2.0) + pow( dHp / SH, 2.0) + RT * (dCp / SC) * (dHp / SH));
+            }
+		break;
+		}
 	}
 	return dE;
 }
@@ -1141,9 +1188,9 @@ double CColor::GetLuminance() const
 	return GetY();
 }
 
-double CColor::GetDeltaE(double YWhite, const CColor & refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form ) const
+double CColor::GetDeltaE(double YWhite, const CColor & refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form, bool isGS ) const
 {
-		return m_XYZValues.GetDeltaE(YWhite, refColor.m_XYZValues, YWhiteRef, colorReference, dE_form );
+		return m_XYZValues.GetDeltaE(YWhite, refColor.m_XYZValues, YWhiteRef, colorReference, dE_form, isGS );
 }
 
 double CColor::GetDeltaE(const CColor & refColor) const
@@ -1583,11 +1630,37 @@ void GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
         GenColors [ 20 ] = ColorRGBDisplay( 0, 0, 60 );
         GenColors [ 21 ] = ColorRGBDisplay( 0, 0, 72 );
         GenColors [ 22 ] = ColorRGBDisplay( 0, 0, 84 );
-        GenColors [ 23 ] = ColorRGBDisplay( 0, 0, 96 );		break;
+        GenColors [ 23 ] = ColorRGBDisplay( 0, 0, 96 );		
+        break;
 		}
 		//axis steps
-/*	case 3:
+	case 3:
 		{
+        GenColors [ 0 ] = ColorRGBDisplay( 100, 87.45, 76.86 );
+        GenColors [ 1 ] = ColorRGBDisplay( 94.12, 83.53, 74.51 );
+        GenColors [ 2 ] = ColorRGBDisplay( 93.33, 80.78, 70.20 );
+        GenColors [ 3 ] = ColorRGBDisplay( 88.24, 72.15, 60.00 );
+        GenColors [ 4 ] = ColorRGBDisplay( 89.80, 76.08, 59.61 );
+        GenColors [ 5 ] = ColorRGBDisplay( 100, 86.27, 69.80  );
+        GenColors [ 6 ] = ColorRGBDisplay( 89.80, 72.16, 56.08 );
+        GenColors [ 7 ] = ColorRGBDisplay( 89.80, 62.75, 45.10 );
+        GenColors [ 8 ] = ColorRGBDisplay( 90.59, 61.96, 42.75 );
+        GenColors [ 9 ] = ColorRGBDisplay( 85.88, 56.47, 39.61 );
+        GenColors [ 10 ] = ColorRGBDisplay( 80.78, 58.82, 48.63 );
+        GenColors [ 11 ] = ColorRGBDisplay( 77.65, 47.06, 33.73 );
+        GenColors [ 12 ] = ColorRGBDisplay( 72.94, 42.35, 28.63 );
+        GenColors [ 13 ] = ColorRGBDisplay( 64.71, 44.71, 34.12 );
+        GenColors [ 14 ] = ColorRGBDisplay( 94.12, 78.43, 78.82 );
+        GenColors [ 15 ] = ColorRGBDisplay( 86.67, 65.88, 62.75 );
+        GenColors [ 16 ] = ColorRGBDisplay( 72.55, 48.63, 42.75 );
+        GenColors [ 17 ] = ColorRGBDisplay( 65.88, 45.88, 42.35 );
+        GenColors [ 18 ] = ColorRGBDisplay( 67.84, 39.22, 32.16 );
+        GenColors [ 19 ] = ColorRGBDisplay( 36.08, 21.96, 21.18 );
+        GenColors [ 20 ] = ColorRGBDisplay( 79.61, 51.76, 25.88 );
+        GenColors [ 21 ] = ColorRGBDisplay( 74.12, 44.71, 23.53 );
+        GenColors [ 22 ] = ColorRGBDisplay( 43.92, 25.49, 22.35 );
+        GenColors [ 23 ] = ColorRGBDisplay( 63.92, 52.55, 41.57 );
+        break;
 		}
 		//OFPS*/
 	}

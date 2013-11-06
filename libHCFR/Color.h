@@ -51,7 +51,7 @@ typedef enum
 	GCD = 0,
 	MCD = 1,
 	AXIS = 2,
-	OFPS = 3,
+	SKIN = 3,
 } CCPatterns;
 
 typedef enum 
@@ -95,7 +95,7 @@ public:
     explicit ColorXYZ(const ColorxyY& xyY);
     ColorXYZ(double X, double Y, double Z);
     int GetColorTemp(const CColorReference& colorReference) const;
-    double GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form ) const;
+    double GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form, bool isGS ) const;
     double GetOldDeltaE(const ColorXYZ& refColor) const;
 	double GetDeltaxy(const ColorXYZ& refColor, const CColorReference& colorReference) const;
 };
@@ -187,7 +187,7 @@ public:
     bool isValid() const;
 
 	double GetLuminance() const;
-    double GetDeltaE(double YWhite, const CColor & refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form ) const;
+    double GetDeltaE(double YWhite, const CColor & refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form, bool isGS ) const;
     double GetDeltaE(const CColor & refColor) const;
 	double GetDeltaxy(const CColor & refColor, const CColorReference& colorReference) const;
 	ColorXYZ GetXYZValue() const;
@@ -422,31 +422,31 @@ public:
 					0.6470,
 					0.7905,
 					1.0,
-					0.0907,
-					0.3553,
-					0.1903,
-					0.1312,
-					0.2377,
-					0.4241,
-					0.2858,
-					0.1170,
-					0.1860,
-					0.0648,
-					0.4365,
-					0.4290,
-					0.0603,
-					0.2328,
-					0.1156,
-					0.5977,
-					0.1895,
-					0.1970
+					0.0970,
+					0.3521,
+					0.1875,
+					0.1288,
+					0.2347,
+					0.4211,
+					0.2832,
+					0.1149,
+					0.1839,
+					0.0633,
+					0.4335,
+					0.4262,
+					0.0590,
+					0.2300,
+					0.1142,
+					0.5953,
+					0.1872,
+					0.1946
 					};
 			double YLumaMCD[24]={	
 					0.0302,
 					0.0846,
 					0.1911,
 					0.3531,
-					0.5834,
+					0.5844,
 					0.8817,
 					0.0944,
 					0.3480,
@@ -465,7 +465,7 @@ public:
 					0.1142,
 					0.5953,
 					0.1843,
-					0.1877
+					0.1895
 				}; 
 			double YLumaAXIS[24]={	
 					0.0019,
@@ -493,7 +493,44 @@ public:
 					0.0490,
 					0.0659
 				}; 
-		return (aCCMode==GCD?YLumaGCD[nCol]:(aCCMode==MCD?YLumaMCD[nCol]:YLumaAXIS[nCol]));
+			double YLumaSKIN[24]={	
+					0.7839,
+					0.7031,
+					0.6607,
+					0.5309,
+					0.5802,
+					0.7605,
+					0.5340,
+					0.4339,
+					0.4288,
+					0.3620,
+					0.3672,
+					0.2619,
+					0.2162,
+					0.2073,
+					0.6455,
+					0.4636,
+					0.2595,
+					0.2218,
+					0.1852,
+					0.0491,
+					0.2976,
+					0.2320,
+					0.0712,
+					0.2604
+				}; 
+        switch(aCCMode)
+        {
+        case GCD:
+            return YLumaGCD[nCol];
+        case MCD:
+            return YLumaMCD[nCol];
+        case AXIS:
+            return YLumaAXIS[nCol];
+        case SKIN:
+            return YLumaSKIN[nCol];
+        }
+            return YLumaGCD[nCol];
 	}
 
 

@@ -308,7 +308,7 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 		
 		if ( pRefPoint )
 		{
-			double dE  = aGraphPoint.GetNormalizedColor().GetDeltaE(1.0, pRefPoint->GetNormalizedColor(), 1.0, GetColorReference(), 	GetConfig()->m_dE_form );
+			double dE  = aGraphPoint.GetNormalizedColor().GetDeltaE(1.0, pRefPoint->GetNormalizedColor(), 1.0, GetColorReference(), 	GetConfig()->m_dE_form, false );
 			str2.Format ( ", Delta E: %.1f\n",dE );
 			str3.LoadString (IDS_DISTANCEINCIEXY);
 			str2 += str3;
@@ -762,7 +762,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
             double valy;
 
             // Determine Reference Y luminance for Delta E calculus
-            if ( GetConfig ()->m_dE_gray > 0 )
+            if ( GetConfig ()->m_dE_gray > 0 || GetConfig ()->m_dE_form == 5 )
             {
 				double x = ArrayIndexToGrayLevel ( i, nSize, GetConfig () -> m_bUseRoundDown );
                 if (GetConfig()->m_GammaOffsetType == 4)
@@ -783,7 +783,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 
                 ColorxyY tmpColor(GetColorReference().GetWhite());
                 tmpColor[2] = valy;
-                if ( GetConfig ()->m_dE_gray == 2 )
+                if ( GetConfig ()->m_dE_gray == 2 || GetConfig ()->m_dE_form == 5 )
                     tmpColor[2] = aColor [ 1 ] / YWhite;
                 refColor = ColorXYZ(tmpColor);
             }

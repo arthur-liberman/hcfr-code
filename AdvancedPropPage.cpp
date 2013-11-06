@@ -44,7 +44,7 @@ CAdvancedPropPage::CAdvancedPropPage() : CPropertyPageWithHelp(CAdvancedPropPage
 	m_bUseImperialUnits = FALSE;
 	m_nLuminanceCurveMode = 0;
 	m_bPreferLuxmeter = FALSE;
-	m_dE_form = 1;
+	m_dE_form = 5;
 	m_dE_gray = 2;
     doHighlight = TRUE;
 	//}}AFX_DATA_INIT
@@ -113,6 +113,8 @@ void CAdvancedPropPage::OnSelchangedECombo()
 
 BOOL CAdvancedPropPage::OnApply() 
 {
+    if (m_dE_form == 5)
+        m_dE_gray = 2;
 	GetConfig()->ApplySettings(FALSE);
 	m_isModified=FALSE;
 	return CPropertyPageWithHelp::OnApply();

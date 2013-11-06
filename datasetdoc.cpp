@@ -2391,7 +2391,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 				case AXIS:
 				nPattern=CGenerator::MT_SAT_CC24_GCD;		
 				 break;
-				case OFPS:
+				case SKIN:
 				nPattern=CGenerator::MT_SAT_CC24_GCD;		
 			}
 			 nSteps = 24;
@@ -3332,7 +3332,7 @@ void CDataSetDoc::OnUpdateMeasureSatCC24(CCmdUI* pCmdUI)
 	case AXIS:
 		 nPattern=CGenerator::MT_SAT_CC24_GCD;		
 		 break;
-	case OFPS:
+	case SKIN:
 		 nPattern=CGenerator::MT_SAT_CC24_GCD;		
 	}
 
