@@ -258,17 +258,21 @@ BOOL CArgyllSensor::Init( BOOL bForSimultaneousMeasures )
         return FALSE;
     }
     m_meter->setHiResMode(!!m_HiRes);
+
     if(m_DisplayType != 0xFFFFFFFF)
     {
         m_meter->setDisplayType(m_DisplayType);
     }
-    
+    MessageBox(NULL, m_meter->getDisplayTypeText(m_meter->getDisplayType()), "Display Type", MB_OK);
+
+ //ccss is now loaded through display type
     // Cause the meter to load the user-specified spectral calibration .ccss file
-    try
+/*    try
     {
         if (m_meter->doesMeterSupportSpectralSamples())
         {
-            // see if the sample exists, otherwise reset
+                        MessageBox(NULL,(LPCSTR)m_SpectralType,"test",MB_OK);
+           // see if the sample exists, otherwise reset
             // thus the <None> string or translation will cause a reset as required
             if (m_spectralSamples->doesSampleDescriptionExist((LPCSTR)m_SpectralType))
             {
@@ -288,11 +292,13 @@ BOOL CArgyllSensor::Init( BOOL bForSimultaneousMeasures )
             }
         }
     }
+
     catch (std::logic_error& e)
     {
         MessageBox(NULL, e.what(), "Argyll Meter", MB_OK+MB_ICONHAND);
         return FALSE;
     }
+    */
     //Alert user if in ambient/lux mode
     if (bForSimultaneousMeasures)
     {
@@ -374,7 +380,7 @@ void CArgyllSensor::FillDisplayTypeCombo(CComboBox& comboToFill)
 
     int numDisplayTypes(m_meter->getNumberOfDisplayTypes());
 
-    if(numDisplayTypes > 0)
+    if(numDisplayTypes > 1)
     {
         for(int i(0); i < numDisplayTypes; ++i)
         {

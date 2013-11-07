@@ -810,99 +810,99 @@ void CMainView::InitGrid()
 				 switch ( i )
 				 {
 					 case 0:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_1a:IDS_CC_1);
+						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_1a:(GetConfig()->m_CCMode == SKIN?IDS_CC_1b:IDS_CC_1));
 						break;
 
 					 case 1:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_2a:IDS_CC_2);
+						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_2a:(GetConfig()->m_CCMode == SKIN?IDS_CC_2b:IDS_CC_2));
 						break;
 
 					 case 2:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_3a:IDS_CC_3);
+						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_3a:(GetConfig()->m_CCMode == SKIN?IDS_CC_3b:IDS_CC_3));
 						break;
 
 					 case 3:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_4a:IDS_CC_4);
+						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_4a:(GetConfig()->m_CCMode == SKIN?IDS_CC_4b:IDS_CC_4));
 						break;
 
 					 case 4:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_5a:IDS_CC_5);
+						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_5a:(GetConfig()->m_CCMode == SKIN?IDS_CC_5b:IDS_CC_5));
 						break;
 
 					 case 5:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_6a:IDS_CC_6);
+						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_6a:(GetConfig()->m_CCMode == SKIN?IDS_CC_6b:IDS_CC_6));
 						break;
 
 					 case 6:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_7a:IDS_CC_7);
+						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_7a:(GetConfig()->m_CCMode == SKIN?IDS_CC_7b:IDS_CC_7));
 						break;
 
 					 case 7:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_8a:IDS_CC_8);
+						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_8a:(GetConfig()->m_CCMode == SKIN?IDS_CC_8b:IDS_CC_8));
 						break;
 
 					 case 8:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_9a:IDS_CC_9);
+						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_9a:(GetConfig()->m_CCMode == SKIN?IDS_CC_9b:IDS_CC_9));
 						break;
 
 					 case 9:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_10a:IDS_CC_10);
+						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_10a:(GetConfig()->m_CCMode == SKIN?IDS_CC_10b:IDS_CC_10));
 						break;
 
 					 case 10:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_11a:IDS_CC_11);
+						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_11a:(GetConfig()->m_CCMode == SKIN?IDS_CC_11b:IDS_CC_11));
 						break;
 
 					 case 11:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_12a:IDS_CC_12);
+						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_12a:(GetConfig()->m_CCMode == SKIN?IDS_CC_12b:IDS_CC_12));
 						break;
 
 					 case 12:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_13a:IDS_CC_13);
+						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_13a:(GetConfig()->m_CCMode == SKIN?IDS_CC_13b:IDS_CC_13));
 						break;
 
 					 case 13:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_14a:IDS_CC_14);
+						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_14a:(GetConfig()->m_CCMode == SKIN?IDS_CC_14b:IDS_CC_14));
 						break;
 
 					 case 14:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_15a:IDS_CC_15);
+						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_15a:(GetConfig()->m_CCMode == SKIN?IDS_CC_15b:IDS_CC_15));
 						break;
 
 					 case 15:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_16a:IDS_CC_16);
+						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_16a:(GetConfig()->m_CCMode == SKIN?IDS_CC_16b:IDS_CC_16));
 						break;
 
 					 case 16:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_17a:IDS_CC_17);
+						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_17a:(GetConfig()->m_CCMode == SKIN?IDS_CC_17b:IDS_CC_17));
 						break;
 
 					 case 17:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_18a:IDS_CC_18);
+						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_18a:(GetConfig()->m_CCMode == SKIN?IDS_CC_18b:IDS_CC_18));
 						break;
 
 					 case 18:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_19a:IDS_CC_19);
+						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_19a:(GetConfig()->m_CCMode == SKIN?IDS_CC_19b:IDS_CC_19));
 						break;
 
 					 case 19:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_20a:IDS_CC_20);
+						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_20a:(GetConfig()->m_CCMode == SKIN?IDS_CC_20b:IDS_CC_20));
 						break;
 
 					 case 20:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_21a:IDS_CC_21);
+						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_21a:(GetConfig()->m_CCMode == SKIN?IDS_CC_21b:IDS_CC_21));
 						break;
 
 					 case 21:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_22a:IDS_CC_22);
+						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_22a:(GetConfig()->m_CCMode == SKIN?IDS_CC_22b:IDS_CC_22));
 						break;
 
 					 case 22:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_23a:IDS_CC_23);
+						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_23a:(GetConfig()->m_CCMode == SKIN?IDS_CC_23b:IDS_CC_23));
 						break;
 
 					 case 23:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_24a:IDS_CC_24);
+						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_24a:(GetConfig()->m_CCMode == SKIN?IDS_CC_24b:IDS_CC_24));
 						break;
 				 }
 				 break;

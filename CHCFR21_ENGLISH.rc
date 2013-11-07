@@ -532,8 +532,8 @@ BEGIN
     PUSHBUTTON      "Calibrate meter",IDC_ARGYLL_CALIBRATE,15,124,270,14
     CONTROL         "Debug (save data in HCFR.log)",IDC_ARGYLL_SENSOR_DEBUG_CB,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,156,184,10
-    COMBOBOX        IDC_ARGYLLSENSOR_SPECTRALTYPE_COMBO,81,69,205,82,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    LTEXT           "Spectral Sample",IDC_STATIC,13,71,52,8
+    COMBOBOX        IDC_ARGYLLSENSOR_SPECTRALTYPE_COMBO,81,69,205,82,CBS_DROPDOWNLIST | NOT WS_VISIBLE | WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    LTEXT           "Spectral Sample",IDC_STATIC,13,71,52,8,NOT WS_VISIBLE
 END
 
 IDD_DUPLICATEDOC_DIALOG DIALOG 0, 0, 279, 153
@@ -2826,10 +2826,6 @@ BEGIN
     IDS_CC_22a              "Blue 72"
     IDS_CC_23a              "Blue 84"
     IDS_CC_24a              "Blue 96"
-END
-
-STRINGTABLE
-BEGIN
     IDS_CC_1b               "Skin#FFDFC4"
     IDS_CC_2b               "Skin#F0D5BE"
     IDS_CC_3b               "Skin#EECEB3"
@@ -2839,6 +2835,10 @@ BEGIN
     IDS_CC_7b               "Skin#E5B887"
     IDS_CC_8b               "Skin#E5A073"
     IDS_CC_9b               "Skin#E79E6D"
+END
+
+STRINGTABLE
+BEGIN
     IDS_CC_10b              "Skin#DB9065"
     IDS_CC_11b              "Skin#CE967C"
     IDS_CC_12b              "Skin#C67856"
@@ -2847,10 +2847,6 @@ BEGIN
     IDS_CC_15b              "Skin#F0C8C9"
     IDS_CC_16b              "Skin#DDA8A0"
     IDS_CC_17b              "Skin#B97C6D"
-END
-
-STRINGTABLE
-BEGIN
     IDS_CC_18b              "Skin#A87563"
     IDS_CC_19b              "Skin#AD6452"
     IDS_CC_20b              "Skin#5C3836"

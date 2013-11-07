@@ -3275,7 +3275,7 @@ int recreate				/* nz to re-check for new ccmx & ccss files */
 	/* Create/Re-create a current list of abailable display types */
 	if (p->dtlist == NULL || recreate) {
 		if ((rv = inst_creat_disptype_list(pp, &p->ndtlist, &p->dtlist,
-		    i1d3_disptypesel, 0 /* doccss*/, 0 /* doccmx */)) != inst_ok) {
+		    i1d3_disptypesel, 1 /* doccss*/, 1 /* doccmx */)) != inst_ok) {
 			return rv;
 		}
 	}
@@ -3371,7 +3371,7 @@ static inst_code set_default_disp_type(i1d3 *p) {
 
 	if (p->dtlist == NULL) {
 		if ((ev = inst_creat_disptype_list((inst *)p, &p->ndtlist, &p->dtlist,
-		    i1d3_disptypesel, 0 /* doccss*/, 0 /* doccmx */)) != inst_ok)
+		    i1d3_disptypesel, 1 /* doccss*/, 1 /* doccmx */)) != inst_ok)
 			return ev;
 	}
 
@@ -3403,7 +3403,7 @@ static inst_code i1d3_set_disptype(inst *pp, int ix) {
 
 	if (p->dtlist == NULL) {
 		if ((ev = inst_creat_disptype_list(pp, &p->ndtlist, &p->dtlist,
-		    i1d3_disptypesel, 0 /* doccss*/, 0 /* doccmx */)) != inst_ok)
+		    i1d3_disptypesel, 1 /* doccss*/, 1 /* doccmx */)) != inst_ok)
 			return ev;
 	}
 
