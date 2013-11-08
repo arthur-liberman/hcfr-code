@@ -828,6 +828,12 @@ typedef enum {
 	inst_code (*set_refr_rate)(											        \
 		struct _inst *p,														\
 		double ref_rate);		/* Rate in Hz */								\
+	inst_code (*set_int_time)(											        \
+		struct _inst *p,														\
+		double int_time);		/* Rate in Hz */								\
+	inst_code (*get_int_time)(											        \
+		struct _inst *p,														\
+		double *int_time);		/* Rate in Hz */								\
 																				\
 	/* Insert a compensation filter in the instrument readings */				\
 	/* This is typically needed if an adapter is being used, that alters */     \

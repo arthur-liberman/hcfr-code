@@ -527,13 +527,15 @@ BEGIN
     LTEXT           "Reading Type",IDC_STATIC,13,53,60,8,0,0,HIDC_STATIC
     COMBOBOX        IDC_ARGYLLSENSOR_READINGTYPE_COMBO,81,50,205,82,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     CONTROL         "Use Hi-Res Mode (i1Pro && Colormunki Photo Only)",IDC_ARGYLL_SENSOR_HIRES,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,90,184,10
-    GROUPBOX        "Calibration",IDC_STATIC,6,110,297,39
-    PUSHBUTTON      "Calibrate meter",IDC_ARGYLL_CALIBRATE,15,124,270,14
+                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_GROUP | WS_TABSTOP,13,87,112,18
+    GROUPBOX        "Calibration",IDC_STATIC,6,110,120,39
+    PUSHBUTTON      "Calibrate meter",IDC_ARGYLL_CALIBRATE,15,124,87,14
     CONTROL         "Debug (save data in HCFR.log)",IDC_ARGYLL_SENSOR_DEBUG_CB,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,156,184,10
     COMBOBOX        IDC_ARGYLLSENSOR_SPECTRALTYPE_COMBO,81,69,205,82,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     LTEXT           "Observer Type",IDC_STATIC,13,71,48,8
+    COMBOBOX        IDC_ARGYLLSENSOR_INTTIME_COMBO,205,88,82,82,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    LTEXT           "Integration Time",IDC_STATIC,170,86,33,20
 END
 
 IDD_DUPLICATEDOC_DIALOG DIALOG 0, 0, 279, 153
@@ -1349,6 +1351,21 @@ BEGIN
 0x4943, 0x5f45, 0x3931, 0x3133, 0x325f, "\000" 
     IDC_ARGYLLSENSOR_SPECTRALTYPE_COMBO, 0x403, 12, 0
 0x4943, 0x5f45, 0x3931, 0x3436, 0x315f, 0x0030, 
+    IDC_ARGYLLSENSOR_INTTIME_COMBO, 0x403, 24, 0
+0x7241, 0x7967, 0x6c6c, 0x4420, 0x6665, 0x7561, 0x746c, 0x305b, 0x322e, 
+0x7320, 0x6365, 0x005d, 
+    IDC_ARGYLLSENSOR_INTTIME_COMBO, 0x403, 14, 0
+0x6542, 0x7473, 0x305b, 0x352e, 0x7320, 0x6365, 0x005d, 
+    IDC_ARGYLLSENSOR_INTTIME_COMBO, 0x403, 8, 0
+0x2e30, 0x2033, 0x6573, 0x0063, 
+    IDC_ARGYLLSENSOR_INTTIME_COMBO, 0x403, 8, 0
+0x2e30, 0x2034, 0x6573, 0x0063, 
+    IDC_ARGYLLSENSOR_INTTIME_COMBO, 0x403, 8, 0
+0x2e30, 0x2036, 0x6573, 0x0063, 
+    IDC_ARGYLLSENSOR_INTTIME_COMBO, 0x403, 8, 0
+0x2e30, 0x2038, 0x6573, 0x0063, 
+    IDC_ARGYLLSENSOR_INTTIME_COMBO, 0x403, 8, 0
+0x2e31, 0x2030, 0x6573, 0x0063, 
     0
 END
 
@@ -2225,12 +2242,12 @@ BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "CompanyName", "Association Homecinema Francophone"
             VALUE "FileDescription", "HCFR Colorimeter resources"
-            VALUE "FileVersion", "3, 0, 5, 3"
+            VALUE "FileVersion", "3, 1, 0, 0"
             VALUE "InternalName", "CHCFR21_ENGLISH"
             VALUE "LegalCopyright", "Copyright (C) 2005-2008"
             VALUE "OriginalFilename", "CHCFR21_ENGLISH.DLL"
             VALUE "ProductName", "HCFR Colorimeter English langage"
-            VALUE "ProductVersion", "3, 0, 5, 3"
+            VALUE "ProductVersion", "3, 1, 0, 0"
         END
     END
     BLOCK "VarFileInfo"

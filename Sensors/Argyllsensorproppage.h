@@ -49,15 +49,18 @@ public:
     enum { IDD = IDD_ARGYLL_SENSOR_PROP_PAGE };
     int        m_DisplayType;
     CString	   m_SpectralType;
+    int        m_intTime;
     int        m_ReadingType;
     BOOL       m_DebugMode;
     BOOL       m_HiRes;
     CString    m_MeterName;
     CComboBox  m_DisplayTypeCombo;
     CComboBox  m_SpectralTypeCombo;
+    CComboBox  m_IntTypeCombo;
     CButton    m_HiResCheckBox;
     BOOL       m_HiResCheckBoxEnabled;
     BOOL       m_obTypeEnabled;
+    BOOL       m_intTimeEnabled;
     //}}AFX_DATA
     
     CArgyllSensor* m_pSensor;

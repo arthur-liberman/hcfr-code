@@ -537,13 +537,15 @@ BEGIN
     LTEXT           "Reading Type",IDC_STATIC,13,53,60,8,0,0,HIDC_STATIC
     COMBOBOX        IDC_ARGYLLSENSOR_READINGTYPE_COMBO,81,50,205,82,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     CONTROL         "Use Hi-Res Mode (i1Pro && Colormunki Photo Only)",IDC_ARGYLL_SENSOR_HIRES,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,90,184,10
+                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_GROUP | WS_TABSTOP,13,84,98,17
     GROUPBOX        "Calibration",IDC_STATIC,6,110,297,39
-    PUSHBUTTON      "Calibrate meter",IDC_ARGYLL_CALIBRATE,15,124,270,14
+    PUSHBUTTON      "Calibrate meter",IDC_ARGYLL_CALIBRATE,15,124,101,14
     CONTROL         "Debug (save data in HCFR.log)",IDC_ARGYLL_SENSOR_DEBUG_CB,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,156,184,10
     COMBOBOX        IDC_ARGYLLSENSOR_SPECTRALTYPE_COMBO,81,69,205,82,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    LTEXT           "Spectral Sample",IDC_STATIC,13,71,52,8
+    LTEXT           "Observer Type",IDC_STATIC,13,71,48,8
+    COMBOBOX        IDC_ARGYLLSENSOR_INTTIME_COMBO,205,88,82,82,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    LTEXT           "Integration Time",IDC_STATIC,167,86,33,20
 END
 
 IDD_DUPLICATEDOC_DIALOG DIALOG 0, 0, 279, 153
@@ -961,6 +963,10 @@ BEGIN
     END
 
     IDD_GENERATOR_GDI_PROP_PAGE, DIALOG
+    BEGIN
+    END
+
+    IDD_ARGYLL_SENSOR_PROP_PAGE, DIALOG
     BEGIN
     END
 
@@ -1461,6 +1467,27 @@ BEGIN
 0x6f43, 0x746e, 0x6361, 0x0074, 
     IDC_ARGYLLSENSOR_READINGTYPE_COMBO, 0x403, 10, 0
 0x7250, 0x6a6f, 0x6365, 0x6f74, 0x0072, 
+    IDC_ARGYLLSENSOR_SPECTRALTYPE_COMBO, 0x403, 8, 0
+0x6544, 0x6166, 0x6c75, 0x0074, 
+    IDC_ARGYLLSENSOR_SPECTRALTYPE_COMBO, 0x403, 11, 0
+0x4943, 0x5f45, 0x3931, 0x3133, 0x325f, "\000" 
+    IDC_ARGYLLSENSOR_SPECTRALTYPE_COMBO, 0x403, 9, 0
+0x4943, 0x5f45, 0x3931, 0x3436, "\000" 
+    IDC_ARGYLLSENSOR_INTTIME_COMBO, 0x403, 24, 0
+0x7241, 0x7967, 0x6c6c, 0x4420, 0x6665, 0x7561, 0x746c, 0x305b, 0x322e, 
+0x7320, 0x6365, 0x005d, 
+    IDC_ARGYLLSENSOR_INTTIME_COMBO, 0x403, 14, 0
+0x6542, 0x7473, 0x305b, 0x352e, 0x7320, 0x6365, 0x005d, 
+    IDC_ARGYLLSENSOR_INTTIME_COMBO, 0x403, 8, 0
+0x2e30, 0x2033, 0x6573, 0x0063, 
+    IDC_ARGYLLSENSOR_INTTIME_COMBO, 0x403, 8, 0
+0x2e30, 0x2034, 0x6573, 0x0063, 
+    IDC_ARGYLLSENSOR_INTTIME_COMBO, 0x403, 8, 0
+0x2e30, 0x2036, 0x6573, 0x0063, 
+    IDC_ARGYLLSENSOR_INTTIME_COMBO, 0x403, 8, 0
+0x2e30, 0x2038, 0x6573, 0x0063, 
+    IDC_ARGYLLSENSOR_INTTIME_COMBO, 0x403, 8, 0
+0x2e31, 0x2030, 0x6573, 0x0063, 
     0
 END
 
@@ -2320,8 +2347,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,5,3
- PRODUCTVERSION 3,0,5,3
+ FILEVERSION 3, 1, 0, 0
+ PRODUCTVERSION 3, 1, 0, 0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2339,12 +2366,12 @@ BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "CompanyName", "Association Homecinema Francophone"
             VALUE "FileDescription", "Resources Colorimètre HCFR"
-            VALUE "FileVersion", "3, 0, 5, 3"
+            VALUE "FileVersion", "3, 1, 0, 0"
             VALUE "InternalName", "CHCFR21_FRANCAIS"
             VALUE "LegalCopyright", "Copyright (C) 2005-2008"
             VALUE "OriginalFilename", "CHCFR21_FRANCAIS.DLL"
             VALUE "ProductName", "Colorimètre HCFR langage Français"
-            VALUE "ProductVersion", "3, 0, 5, 3"
+            VALUE "ProductVersion", "3, 1, 0, 0"
         END
     END
     BLOCK "VarFileInfo"
@@ -2760,9 +2787,6 @@ BEGIN
     IDS_CC_22a              "Blue 72"
     IDS_CC_23a              "Blue 84"
     IDS_CC_24a              "Blue 96"
-END
-STRINGTABLE
-BEGIN
     IDS_CC_1b               "Skin#FFDFC4"
     IDS_CC_2b               "Skin#F0D5BE"
     IDS_CC_3b               "Skin#EECEB3"
@@ -2772,6 +2796,10 @@ BEGIN
     IDS_CC_7b               "Skin#E5B887"
     IDS_CC_8b               "Skin#E5A073"
     IDS_CC_9b               "Skin#E79E6D"
+END
+
+STRINGTABLE
+BEGIN
     IDS_CC_10b              "Skin#DB9065"
     IDS_CC_11b              "Skin#CE967C"
     IDS_CC_12b              "Skin#C67856"
@@ -2780,10 +2808,6 @@ BEGIN
     IDS_CC_15b              "Skin#F0C8C9"
     IDS_CC_16b              "Skin#DDA8A0"
     IDS_CC_17b              "Skin#B97C6D"
-END
-
-STRINGTABLE
-BEGIN
     IDS_CC_18b              "Skin#A87563"
     IDS_CC_19b              "Skin#AD6452"
     IDS_CC_20b              "Skin#5C3836"

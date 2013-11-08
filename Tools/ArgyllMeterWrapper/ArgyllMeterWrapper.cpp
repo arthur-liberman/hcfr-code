@@ -186,7 +186,7 @@ ArgyllMeterWrapper::~ArgyllMeterWrapper()
     }
 }
 
-bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eReadingType readingType, CString spectralType, bool debugmode)
+bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eReadingType readingType, CString spectralType, bool debugmode, double int_time, bool refresh)
 {
     inst_code instCode;
     if (debugmode)
@@ -312,7 +312,7 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
     }
 
     icxObserverType obType=icxOT_default;
-    
+ 
     if (spectralType == "CIE_1931_2")
         obType=icxOT_CIE_1931_2;
     if (spectralType == "CIE_1964_10")
@@ -332,9 +332,7 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
         {
             instCode = m_meter->get_set_opt(m_meter, inst_opt_set_ccss_obs, obType , 0);
             if (instCode != inst_ok)
-                MessageBox(NULL,"Must be in ccss mode to change observer type on colorimeters","New observer",MB_OK);
-            else
-                MessageBox(NULL,spectralType,"New observer",MB_OK);
+                MessageBox(NULL,m_meter->inst_interp_error(m_meter,instCode),"Error setting observer",MB_OK);
         }
         else
         {
@@ -342,7 +340,51 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
         }
     }
     
+        //custom inttime
+    if (m_meter->get_itype(m_meter) == instI1Disp3 )
+    {
+        double ref_rate, i_time;
+        int n;
+        double minint;
 
+        if (int_time == 0.0)
+            minint = 0.4;
+        else
+            minint = int_time;
+
+        if (refresh)
+        {//refresh mode, mimic argyllcms
+            inst_code ev;
+            ev = m_meter->get_refr_rate(m_meter, &ref_rate);
+            if (ev == inst_ok)
+            {
+    		    n = (int)ceil(minint*ref_rate);
+                i_time = n / ref_rate;
+            }
+            else
+            {
+                i_time = minint;
+            }
+        }
+        else
+        {
+            if (int_time == 0.0)
+                i_time = 0.2;
+            else
+                i_time = int_time;
+        }
+            double c_it;
+            instCode = m_meter->get_int_time(m_meter, &c_it);
+            instCode = m_meter->set_int_time(m_meter, i_time);
+            if (instCode != inst_ok)
+                MessageBox(NULL,m_meter->inst_interp_error(m_meter,instCode),"Integration time set error", MB_OK);
+            if (i_time != c_it)
+            {
+                char t [50];
+                sprintf(t,"New integration time is %f seconds.",i_time);
+                MessageBox(NULL,t,"Integration time set",MB_OK);
+            }
+    }
     // reset the calibration
     m_nextCalibration = 0;
     return true;
@@ -450,7 +492,6 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading()
         // try autocalibration - we might get lucky
         m_nextCalibration = 0;
         inst_cal_type calType(inst_calt_needed);
-//        inst_cal_type calType(inst_calt_all);
         instCode = m_meter->calibrate(m_meter, &calType, (inst_cal_cond*)&m_nextCalibration, m_calibrationMessage);
         // if that didn't work tell the user
         if(isInstCodeReason(instCode, inst_cal_setup))
@@ -496,7 +537,6 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::calibrate()
 {
     checkMeterIsInitialized();
     m_calibrationMessage[0] = '\0';
-//    inst_cal_type calType(inst_calt_all);
     inst_cal_type calType(inst_calt_available);
     inst_code instCode = m_meter->calibrate(m_meter, &calType, (inst_cal_cond*)&m_nextCalibration, m_calibrationMessage);
     if(isInstCodeReason(instCode, inst_cal_setup))
@@ -546,11 +586,8 @@ std::string ArgyllMeterWrapper::getCalibrationInstructions()
     inst_code instCode(inst_ok);
     if(m_nextCalibration == 0)
     {
-//	inst_cal_type calType(inst_calt_ref_freq);
-	//        inst_cal_type calType(inst_calt_all);
         inst_cal_type calType(inst_calt_available);
         instCode = m_meter->calibrate(m_meter, &calType, (inst_cal_cond*)&m_nextCalibration, m_calibrationMessage);
-//		MessageBox(NULL, m_meter->interp_error(m_meter, m_nextCalibration), "Calibration message", MB_OK);
 		if(instCode == inst_ok || isInstCodeReason(instCode, inst_unsupported))
        {
             // we don't need to do anything
@@ -626,7 +663,7 @@ void ArgyllMeterWrapper::checkMeterIsInitialized()
     if(!m_meter->inited)
     {
         std::string errorDescription;
-        if(!connectAndStartMeter(errorDescription, m_readingType, "Default", false))
+        if(!connectAndStartMeter(errorDescription, m_readingType, "Default", false, 0.0, false))
         {
             throw std::logic_error(errorDescription);
         }

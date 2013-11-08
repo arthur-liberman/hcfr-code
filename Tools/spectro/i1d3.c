@@ -2353,10 +2353,7 @@ i1d3_init_inst(inst *pp) {
 
 	/* Set known constants */
 	p->clk_freq = 12e6;			/* 12 Mhz */
-    if (p->dtype == i1d3_disppro)
-    	p->dinttime = 0.25;			/* 0.2 second integration time default */
-    else
-        p->dinttime = 0.40; //munki has 1 sec delay anyway
+    p->dinttime = 0.20;			/* 0.2 second integration time default */
 	p->inttime = p->dinttime;	/* Start in non-refresh mode */
 
 	/* Create the default calibrations */
@@ -2910,6 +2907,27 @@ double ref_rate
 	return inst_ok;
 }
 
+static inst_code i1d3_set_int_time(inst *pp,
+double int_time
+) {
+	i1d3 *p = (i1d3 *)pp;
+
+	if ((int_time < 0.2 || int_time > 2.0))
+		return inst_bad_parameter;
+
+    p->dinttime = int_time;
+	return inst_ok;
+}
+
+static inst_code i1d3_get_int_time(inst *pp,
+double *int_time
+) {
+	i1d3 *p = (i1d3 *)pp;
+
+    *int_time = p->dinttime;
+	return inst_ok;
+}
+
 /* Error codes interpretation */
 static char *
 i1d3_interp_error(inst *pp, int ec) {
@@ -3220,7 +3238,7 @@ inst_code i1d3_set_mode(inst *pp, inst_mode m) {
 	if (p->refrmode) {
 		p->inttime = 2.0 * p->dinttime;	/* Double default integration time */
 	} else {
-		p->inttime = 2.0 * p->dinttime;		/* Normal integration time */
+		p->inttime =  p->dinttime;		/* Normal integration time */
 	}
 
 	return inst_ok;
@@ -3620,6 +3638,8 @@ extern i1d3 *new_i1d3(icoms *icom, instType itype) {
 	p->meas_delay        = i1d3_meas_delay;
 	p->get_refr_rate     = i1d3_get_refr_rate;
 	p->set_refr_rate     = i1d3_set_refr_rate;
+	p->set_int_time     = i1d3_set_int_time;
+	p->get_int_time     = i1d3_get_int_time;
 	p->interp_error      = i1d3_interp_error;
 	p->config_enum       = i1d3_config_enum;
 	p->del               = i1d3_del;

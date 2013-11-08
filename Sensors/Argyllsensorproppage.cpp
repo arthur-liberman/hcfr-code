@@ -43,6 +43,7 @@ CArgyllSensorPropPage::CArgyllSensorPropPage() : CPropertyPageWithHelp(CArgyllSe
     //{{AFX_DATA_INIT(CArgyllSensorPropPage)
     m_DisplayType = 0;
     m_SpectralType = "Default";
+    m_intTime = 1;
     m_ReadingType = 0;
     m_MeterName = "";
     m_DebugMode = FALSE;
@@ -59,6 +60,7 @@ void CArgyllSensorPropPage::DoDataExchange(CDataExchange* pDX)
     CPropertyPageWithHelp::DoDataExchange(pDX);
     DDX_Control(pDX, IDC_ARGYLLSENSOR_DISPLAYTYPE_COMBO, m_DisplayTypeCombo);
     DDX_Control(pDX, IDC_ARGYLLSENSOR_SPECTRALTYPE_COMBO, m_SpectralTypeCombo);
+    DDX_Control(pDX, IDC_ARGYLLSENSOR_INTTIME_COMBO, m_IntTypeCombo);
     DDX_Control(pDX, IDC_ARGYLL_SENSOR_HIRES, m_HiResCheckBox);
 
     if(m_DisplayTypeCombo.GetCount() == 0)
@@ -66,18 +68,15 @@ void CArgyllSensorPropPage::DoDataExchange(CDataExchange* pDX)
         m_pSensor->FillDisplayTypeCombo(m_DisplayTypeCombo);
     }
     m_DisplayTypeCombo.EnableWindow((m_DisplayTypeCombo.GetCount() != 0)?TRUE:FALSE);
-//    if(m_SpectralTypeCombo.GetCount() == 0)
-//    {
-//        m_pSensor->FillSpectralTypeCombo(m_SpectralTypeCombo);
-//    }
-//        m_SpectralTypeCombo.EnableWindow((m_SpectralTypeCombo.GetCount() != 0)?TRUE:FALSE);
     m_SpectralTypeCombo.EnableWindow(m_obTypeEnabled);
+    m_IntTypeCombo.EnableWindow(m_intTimeEnabled);
         
     m_HiResCheckBox.EnableWindow(m_HiResCheckBoxEnabled);
 	m_HiRes = (m_HiResCheckBoxEnabled?m_HiRes:0);
 
     DDX_CBIndex(pDX, IDC_ARGYLLSENSOR_DISPLAYTYPE_COMBO, m_DisplayType);
     DDX_CBString(pDX, IDC_ARGYLLSENSOR_SPECTRALTYPE_COMBO, m_SpectralType);
+    DDX_CBIndex(pDX, IDC_ARGYLLSENSOR_INTTIME_COMBO, m_intTime);
 	DDX_CBIndex(pDX, IDC_ARGYLLSENSOR_READINGTYPE_COMBO, m_ReadingType);
     DDX_Text(pDX, IDC_ARGYLLSENSOR_METER_NAME, m_MeterName);
     DDX_Check(pDX, IDC_ARGYLL_SENSOR_DEBUG_CB, m_DebugMode);
@@ -111,6 +110,8 @@ UINT CArgyllSensorPropPage::GetHelpId ( LPSTR lpszTopic )
 BOOL CArgyllSensorPropPage::OnSetActive() 
 {
     // TODO: Add your specialized code here and/or call the base class
+    if (m_SpectralType == "")
+        m_SpectralType = "Default";
     BOOL bRet = CPropertyPageWithHelp::OnSetActive();
     return bRet;
 }

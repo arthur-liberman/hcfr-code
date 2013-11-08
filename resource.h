@@ -695,6 +695,7 @@
 #define IDC_ARGYLL_SENSOR_HIRES         1270
 #define IDC_ARGYLLSENSOR_SPECTRALTYPE_COMBO 1271
 #define IDC_DISPLAY_NAME                1272
+#define IDC_ARGYLLSENSOR_INTTIME_COMBO  1272
 #define IDC_DISPLAY_TECH                1273
 #define IDC_BGSTIM_EDIT                 1274
 #define IDC_INTENSITY_EDIT              1275

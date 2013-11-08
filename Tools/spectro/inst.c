@@ -393,6 +393,12 @@ double ref_rate) {
 	return inst_unsupported;
 }
 
+static inst_code get_int_time(
+struct _inst *p,
+double *int_time) {
+	return inst_unsupported;
+}
+
 /* Insert a compensation filter in the instrument readings */
 /* This is typically needed if an adapter is being used, that alters */     
 /* the spectrum of the light reaching the instrument */                     

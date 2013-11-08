@@ -47,8 +47,9 @@ CArgyllSensor::CArgyllSensor() :
     m_DisplayType(0),
     m_ReadingType(0),
     m_SpectralType("Default"),
+    m_intTime(1),
     m_meter(0),
-    m_HiRes(1)
+    m_HiRes(0)
 {
     m_ArgyllSensorPropertiesPage.m_pSensor = this;
 
@@ -78,14 +79,10 @@ CArgyllSensor::CArgyllSensor(ArgyllMeterWrapper* meter) :
     std::string meterName(m_meter->getMeterName());
     m_DisplayType = GetConfig()->GetProfileInt(meterName.c_str(), "DisplayType", 1);
     m_ReadingType = GetConfig()->GetProfileInt(meterName.c_str(), "ReadingType", 0);
-    m_SpectralType = GetConfig()->GetProfileString(meterName.c_str(), "SpectralType", "0");
+    m_SpectralType = GetConfig()->GetProfileString(meterName.c_str(), "SpectralType", "Default");
+    m_intTime = GetConfig()->GetProfileInt(meterName.c_str(), "IntTime", 1);
     m_debugMode = GetConfig()->GetProfileInt(meterName.c_str(), "DebugMode", 0);
     m_HiRes = GetConfig()->GetProfileInt(meterName.c_str(), "HiRes", 0);
-
-//    if (m_SpectralType == "")
-//    {
-//        m_SpectralType = "<None>";
-//    }
     
     m_ArgyllSensorPropertiesPage.m_pSensor = this;
 
@@ -122,6 +119,7 @@ void CArgyllSensor::Copy(CSensor * p)
     m_DisplayType = ((CArgyllSensor*)p)->m_DisplayType;
     m_ReadingType = ((CArgyllSensor*)p)->m_ReadingType;
     m_SpectralType = ((CArgyllSensor*)p)->m_SpectralType;
+    m_intTime = ((CArgyllSensor*)p)->m_intTime;
     m_HiRes = ((CArgyllSensor*)p)->m_HiRes;
  
     if(m_meter >= 0)
@@ -142,13 +140,14 @@ void CArgyllSensor::Serialize(CArchive& archive)
 
     if (archive.IsStoring())
     {
-        int version=2;
+        int version=3;
         archive << version;
         archive << m_DisplayType;
         archive << m_ReadingType;
         archive << m_SpectralType;
         archive << m_debugMode;
         archive << m_HiRes;
+        archive << m_intTime;
         if(m_meter)
         {
             archive << CString(m_meter->getMeterName().c_str());
@@ -158,11 +157,13 @@ void CArgyllSensor::Serialize(CArchive& archive)
     {
         int version;
         archive >> version;
-        if ( version > 2 )
+        if ( version > 3 )
             AfxThrowArchiveException ( CArchiveException::badSchema );
         archive >> m_DisplayType;
         archive >> m_ReadingType;
         archive >> m_SpectralType;
+        if ( version > 2)
+            archive >> m_intTime;
         if(version == 1)
         {
             UINT dummy;
@@ -211,9 +212,11 @@ void CArgyllSensor::SetPropertiesSheetValues()
     m_ArgyllSensorPropertiesPage.m_DisplayType=m_DisplayType;
     m_ArgyllSensorPropertiesPage.m_ReadingType=m_ReadingType;
     m_ArgyllSensorPropertiesPage.m_SpectralType=m_SpectralType;
+    m_ArgyllSensorPropertiesPage.m_intTime=m_intTime;
     m_ArgyllSensorPropertiesPage.m_DebugMode=m_debugMode;
     m_ArgyllSensorPropertiesPage.m_HiResCheckBoxEnabled = m_meter->doesSupportHiRes();
     m_ArgyllSensorPropertiesPage.m_obTypeEnabled = (m_meter->doesMeterSupportSpectralSamples() || !m_meter->isColorimeter());
+    m_ArgyllSensorPropertiesPage.m_intTimeEnabled = (m_meter->getMeterName() == "Xrite i1 DisplayPro, ColorMunki Display");
     m_ArgyllSensorPropertiesPage.m_HiRes=m_HiRes;
     m_ArgyllSensorPropertiesPage.m_MeterName = m_meter->getMeterName().c_str();
 }
@@ -233,16 +236,19 @@ void CArgyllSensor::GetPropertiesSheetValues()
     if(m_ReadingType != m_ArgyllSensorPropertiesPage.m_ReadingType ||
         m_SpectralType != m_ArgyllSensorPropertiesPage.m_SpectralType ||
         m_DisplayType != m_ArgyllSensorPropertiesPage.m_DisplayType ||
-        m_HiRes != m_ArgyllSensorPropertiesPage.m_HiRes)
+        m_HiRes != m_ArgyllSensorPropertiesPage.m_HiRes ||
+        m_intTime != m_ArgyllSensorPropertiesPage.m_intTime)
     {
         SetModifiedFlag(TRUE);
         m_ReadingType=m_ArgyllSensorPropertiesPage.m_ReadingType;
         m_SpectralType=m_ArgyllSensorPropertiesPage.m_SpectralType;
         m_DisplayType=m_ArgyllSensorPropertiesPage.m_DisplayType;
         m_HiRes = m_ArgyllSensorPropertiesPage.m_HiRes;
+        m_intTime=m_ArgyllSensorPropertiesPage.m_intTime;
 
         GetConfig()->WriteProfileInt(meterName.c_str(), "ReadingType", m_ReadingType );
         GetConfig()->WriteProfileString(meterName.c_str(), "SpectralType", m_SpectralType );
+        GetConfig()->WriteProfileInt(meterName.c_str(), "IntTime", m_intTime );
         GetConfig()->WriteProfileInt(meterName.c_str(), "DisplayType", m_DisplayType );
         GetConfig()->WriteProfileInt(meterName.c_str(), "HiRes", m_HiRes );
         Init(TRUE);
@@ -252,7 +258,31 @@ void CArgyllSensor::GetPropertiesSheetValues()
 BOOL CArgyllSensor::Init( BOOL bForSimultaneousMeasures )
 {
     std::string errorDescription;
-    if(!m_meter->connectAndStartMeter(errorDescription, (ArgyllMeterWrapper::eReadingType)m_ReadingType, m_SpectralType, CArgyllSensor::isInDebugMode()) )
+    double i_time=0.0;
+
+    switch (m_intTime)
+    {
+        case 1:
+            i_time = 0.50;
+            break;
+        case 2:
+            i_time = 0.30;
+            break;
+        case 3:
+            i_time = 0.40;
+            break;
+        case 4:
+            i_time = 0.60;
+            break;
+        case 5:
+            i_time = 0.8;
+            break;
+        case 6:
+            i_time = 1.0;
+            break;
+    }
+
+    if(!m_meter->connectAndStartMeter(errorDescription, (ArgyllMeterWrapper::eReadingType)m_ReadingType, m_SpectralType, CArgyllSensor::isInDebugMode(), i_time, (m_DisplayType == 1) ) )
     {
         MessageBox(NULL, errorDescription.c_str(), "Argyll Meter", MB_OK+MB_ICONHAND);
         m_meter = 0;
