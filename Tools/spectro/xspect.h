@@ -161,12 +161,12 @@ typedef enum {
     icxOT_custom			= 2,	/* Custom observer type weighting */
     icxOT_CIE_1931_2		= 3,	/* Standard CIE 1931 2 degree */
     icxOT_CIE_1964_10		= 4,	/* Standard CIE 1964 10 degree */
-#ifndef SALONEINSTLIB
+//#ifndef SALONEINSTLIB
     icxOT_Stiles_Burch_2	= 5,	/* Stiles & Burch 1955 2 degree */
     icxOT_Judd_Voss_2		= 6,	/* Judd & Voss 1978 2 degree */
     icxOT_CIE_1964_10c		= 7,	/* Standard CIE 1964 10 degree, 2 degree compatible */
     icxOT_Shaw_Fairchild_2	= 8		/* Shaw & Fairchild 1997 2 degree */
-#endif /* !SALONEINSTLIB*/
+//#endif /* !SALONEINSTLIB*/
 } icxObserverType;
 
 /* Return pointers to three xpsects with a standard observer weighting curves */

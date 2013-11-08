@@ -1122,7 +1122,7 @@ static xspect ob_CIE_1964_10[3] = {
 	}
 };
 
-#ifndef SALONEINSTLIB
+//#ifndef SALONEINSTLIB
 /* Standard CIE 1964 10 degree observer, */
 /* adjusted for compatibility with 2 degree observer. */
 /* This has a problem in that it will return -ve XYZ values !! */
@@ -1638,7 +1638,7 @@ static xspect ob_Shaw_Fairchild_2[3] = {
 	}
 };
 
-#endif /* !SALONEINSTLIB */
+//#endif /* !SALONEINSTLIB */
 
 /* Return pointers to three xpsects with a standard observer weighting curves */
 /* return 0 on sucecss, nz if not matched */
@@ -1662,7 +1662,7 @@ icxObserverType obType		/* Type of observer */
 			sp[1] = &ob_CIE_1964_10[1];
 			sp[2] = &ob_CIE_1964_10[2];
 			return 0;
-#ifndef SALONEINSTLIB
+//#ifndef SALONEINSTLIB
     	case icxOT_Stiles_Burch_2:
 			sp[0] = &ob_Stiles_Burch_2[0];
 			sp[1] = &ob_Stiles_Burch_2[1];
@@ -1683,7 +1683,7 @@ icxObserverType obType		/* Type of observer */
 			sp[1] = &ob_Shaw_Fairchild_2[1];
 			sp[2] = &ob_Shaw_Fairchild_2[2];
 			return 0;
-#endif /* !SALONEINSTLIB */
+//#endif /* !SALONEINSTLIB */
 		default:
 			return 1;
 	}
@@ -1701,7 +1701,7 @@ char *standardObserverDescription(icxObserverType obType) {
 			return "CIE 1931 2 degree observer";
     	case icxOT_CIE_1964_10:
 			return "CIE 1964 10 degree observer";
-#ifndef SALONEINSTLIB
+//#ifndef SALONEINSTLIB
     	case icxOT_Stiles_Burch_2:
 			return "Stiles & Burch 1955 2 degree observer (aligned)";
     	case icxOT_Judd_Voss_2:
@@ -1710,7 +1710,7 @@ char *standardObserverDescription(icxObserverType obType) {
 			return "CIE 1964 10 degree observer (aligned)";
     	case icxOT_Shaw_Fairchild_2:
 			return "Shaw & Fairchild 1997 2 degree observer";
-#endif /* !SALONEINSTLIB */
+//#endif /* !SALONEINSTLIB */
 	}
 	return "Unknown observer";
 }
@@ -3844,7 +3844,7 @@ icxClamping clamp				/* NZ to clamp XYZ/Lab to be +ve */
 			p->observer[1] = ob_CIE_1964_10[1];
 			p->observer[2] = ob_CIE_1964_10[2];
 			break;
-#ifndef SALONEINSTLIB
+//#ifndef SALONEINSTLIB
     	case icxOT_Stiles_Burch_2:
 			p->observer[0] = ob_Stiles_Burch_2[0];
 			p->observer[1] = ob_Stiles_Burch_2[1];
@@ -3865,7 +3865,7 @@ icxClamping clamp				/* NZ to clamp XYZ/Lab to be +ve */
 			p->observer[1] = ob_Shaw_Fairchild_2[1];
 			p->observer[2] = ob_Shaw_Fairchild_2[2];
 			break;
-#endif /* !SALONEINSTLIB */
+//#endif /* !SALONEINSTLIB */
 		default:
 			DBGF((DBGA,"new_xsp2cie() unrecognised observer type 0x%x\n",obType));
 			free(p);

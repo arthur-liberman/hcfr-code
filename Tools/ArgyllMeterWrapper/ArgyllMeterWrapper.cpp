@@ -317,7 +317,7 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
         obType=icxOT_CIE_1931_2;
     if (spectralType == "CIE_1964_10")
         obType=icxOT_CIE_1964_10;
-/*    if (spectralType == "Stiles_Burch_2")
+    if (spectralType == "Stiles_Burch_2")
         obType=icxOT_Stiles_Burch_2;
     if (spectralType == "Judd_Voss_2")
         obType=icxOT_Judd_Voss_2;
@@ -325,9 +325,7 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
         obType=icxOT_CIE_1964_10c;
     if (spectralType == "Shaw_Fairchild_2")
         obType=icxOT_Shaw_Fairchild_2;
-*/
-    if (obType != icxOT_default)
-    {
+
         if (isColorimeter())
         {
             instCode = m_meter->get_set_opt(m_meter, inst_opt_set_ccss_obs, obType , 0);
@@ -338,7 +336,6 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
         {
             //spec2cie
         }
-    }
     
         //custom inttime
     if (m_meter->get_itype(m_meter) == instI1Disp3 )
@@ -354,10 +351,10 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
 
         if (refresh)
         {//refresh mode, mimic argyllcms
-            inst_code ev;
-            ev = m_meter->get_refr_rate(m_meter, &ref_rate);
-            if (ev == inst_ok)
+            if (isRefresh())
             {
+                inst_code ev;
+                ev = m_meter->get_refr_rate(m_meter, &ref_rate);
     		    n = (int)ceil(minint*ref_rate);
                 i_time = n / ref_rate;
             }
@@ -718,6 +715,13 @@ bool ArgyllMeterWrapper::isColorimeter()
     return !IMODETST(capabilities, inst_mode_spectral);
 }
 
+bool ArgyllMeterWrapper::isRefresh()
+{
+    inst_code ev;
+    double ref_rate;
+    ev = m_meter->get_refr_rate(m_meter, &ref_rate);
+    return (ev == inst_ok);
+}
 
 
 bool ArgyllMeterWrapper::doesMeterSupportSpectralSamples()

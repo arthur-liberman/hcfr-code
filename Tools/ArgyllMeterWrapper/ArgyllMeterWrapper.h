@@ -131,6 +131,8 @@ public:
     // is the meter a colorimeter rather than a spectrometer
     virtual bool isColorimeter();
 
+    // is the meter in refresh mode
+    virtual bool isRefresh();
 
 
 private:

@@ -282,7 +282,7 @@ BOOL CArgyllSensor::Init( BOOL bForSimultaneousMeasures )
             break;
     }
 
-    if(!m_meter->connectAndStartMeter(errorDescription, (ArgyllMeterWrapper::eReadingType)m_ReadingType, m_SpectralType, CArgyllSensor::isInDebugMode(), i_time, (m_DisplayType == 1) ) )
+    if(!m_meter->connectAndStartMeter(errorDescription, (ArgyllMeterWrapper::eReadingType)m_ReadingType, m_SpectralType, CArgyllSensor::isInDebugMode(), i_time, ((m_DisplayType == 1) || CArgyllSensor::isRefresh()) && !(m_DisplayType == 0)  ) )
     {
         MessageBox(NULL, errorDescription.c_str(), "Argyll Meter", MB_OK+MB_ICONHAND);
         m_meter = 0;
@@ -468,4 +468,9 @@ void ArgyllLogMessage(const char* messageType, char *fmt, va_list& args)
 bool CArgyllSensor::isColorimeter() const
 {
     return m_meter->isColorimeter();
+}
+
+bool CArgyllSensor::isRefresh() const
+{
+    return m_meter->isRefresh();
 }
