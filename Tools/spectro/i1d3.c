@@ -2353,7 +2353,10 @@ i1d3_init_inst(inst *pp) {
 
 	/* Set known constants */
 	p->clk_freq = 12e6;			/* 12 Mhz */
-	p->dinttime = 0.2;			/* 0.2 second integration time default */
+    if (p->dtype == i1d3_disppro)
+    	p->dinttime = 0.25;			/* 0.2 second integration time default */
+    else
+        p->dinttime = 0.40; //munki has 1 sec delay anyway
 	p->inttime = p->dinttime;	/* Start in non-refresh mode */
 
 	/* Create the default calibrations */

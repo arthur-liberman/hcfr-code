@@ -76,8 +76,9 @@ public:
     static bool isInDebugMode() {return m_debugMode;}
     virtual bool isValid() const {return (m_meter != 0);}
     virtual int ReadingType() const {return m_ReadingType;}
+//    virtual int SpectralType() const {return m_SpectralType;}
     void FillDisplayTypeCombo(CComboBox& comboToFill);
-    void FillSpectralTypeCombo(CComboBox& comboToFill);
+//    void FillSpectralTypeCombo(CComboBox& comboToFill);
     virtual bool isColorimeter() const;
 private:
     virtual CColor MeasureColorInternal(const ColorRGBDisplay& aRGBValue);

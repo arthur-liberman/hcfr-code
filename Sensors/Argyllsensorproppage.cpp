@@ -42,7 +42,7 @@ CArgyllSensorPropPage::CArgyllSensorPropPage() : CPropertyPageWithHelp(CArgyllSe
 {
     //{{AFX_DATA_INIT(CArgyllSensorPropPage)
     m_DisplayType = 0;
-    m_SpectralType = "<None>";
+    m_SpectralType = "Default";
     m_ReadingType = 0;
     m_MeterName = "";
     m_DebugMode = FALSE;
@@ -66,14 +66,13 @@ void CArgyllSensorPropPage::DoDataExchange(CDataExchange* pDX)
         m_pSensor->FillDisplayTypeCombo(m_DisplayTypeCombo);
     }
     m_DisplayTypeCombo.EnableWindow((m_DisplayTypeCombo.GetCount() != 0)?TRUE:FALSE);
-
-    if(m_SpectralTypeCombo.GetCount() == 0)
-    {
-        m_pSensor->FillSpectralTypeCombo(m_SpectralTypeCombo);
-    }
-    m_SpectralTypeCombo.EnableWindow((m_SpectralTypeCombo.GetCount() != 0)?TRUE:FALSE);
+//    if(m_SpectralTypeCombo.GetCount() == 0)
+//    {
+//        m_pSensor->FillSpectralTypeCombo(m_SpectralTypeCombo);
+//    }
+//        m_SpectralTypeCombo.EnableWindow((m_SpectralTypeCombo.GetCount() != 0)?TRUE:FALSE);
+    m_SpectralTypeCombo.EnableWindow(m_obTypeEnabled);
         
-
     m_HiResCheckBox.EnableWindow(m_HiResCheckBoxEnabled);
 	m_HiRes = (m_HiResCheckBoxEnabled?m_HiRes:0);
 

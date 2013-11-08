@@ -46,7 +46,7 @@ IMPLEMENT_SERIAL(CArgyllSensor, COneDeviceSensor, 1) ;
 CArgyllSensor::CArgyllSensor() :
     m_DisplayType(0),
     m_ReadingType(0),
-    m_SpectralType(""),
+    m_SpectralType("Default"),
     m_meter(0),
     m_HiRes(1)
 {
@@ -78,14 +78,14 @@ CArgyllSensor::CArgyllSensor(ArgyllMeterWrapper* meter) :
     std::string meterName(m_meter->getMeterName());
     m_DisplayType = GetConfig()->GetProfileInt(meterName.c_str(), "DisplayType", 1);
     m_ReadingType = GetConfig()->GetProfileInt(meterName.c_str(), "ReadingType", 0);
-    m_SpectralType = GetConfig()->GetProfileString(meterName.c_str(), "SpectralType", 0);
+    m_SpectralType = GetConfig()->GetProfileString(meterName.c_str(), "SpectralType", "0");
     m_debugMode = GetConfig()->GetProfileInt(meterName.c_str(), "DebugMode", 0);
     m_HiRes = GetConfig()->GetProfileInt(meterName.c_str(), "HiRes", 0);
 
-    if (m_SpectralType == "")
-    {
-        m_SpectralType = "<None>";
-    }
+//    if (m_SpectralType == "")
+//    {
+//        m_SpectralType = "<None>";
+//    }
     
     m_ArgyllSensorPropertiesPage.m_pSensor = this;
 
@@ -213,6 +213,7 @@ void CArgyllSensor::SetPropertiesSheetValues()
     m_ArgyllSensorPropertiesPage.m_SpectralType=m_SpectralType;
     m_ArgyllSensorPropertiesPage.m_DebugMode=m_debugMode;
     m_ArgyllSensorPropertiesPage.m_HiResCheckBoxEnabled = m_meter->doesSupportHiRes();
+    m_ArgyllSensorPropertiesPage.m_obTypeEnabled = (m_meter->doesMeterSupportSpectralSamples() || !m_meter->isColorimeter());
     m_ArgyllSensorPropertiesPage.m_HiRes=m_HiRes;
     m_ArgyllSensorPropertiesPage.m_MeterName = m_meter->getMeterName().c_str();
 }
@@ -251,7 +252,7 @@ void CArgyllSensor::GetPropertiesSheetValues()
 BOOL CArgyllSensor::Init( BOOL bForSimultaneousMeasures )
 {
     std::string errorDescription;
-    if(!m_meter->connectAndStartMeter(errorDescription, (ArgyllMeterWrapper::eReadingType)m_ReadingType, CArgyllSensor::isInDebugMode()) )
+    if(!m_meter->connectAndStartMeter(errorDescription, (ArgyllMeterWrapper::eReadingType)m_ReadingType, m_SpectralType, CArgyllSensor::isInDebugMode()) )
     {
         MessageBox(NULL, errorDescription.c_str(), "Argyll Meter", MB_OK+MB_ICONHAND);
         m_meter = 0;
@@ -263,7 +264,9 @@ BOOL CArgyllSensor::Init( BOOL bForSimultaneousMeasures )
     {
         m_meter->setDisplayType(m_DisplayType);
     }
-    MessageBox(NULL, m_meter->getDisplayTypeText(m_meter->getDisplayType()), "Display Type", MB_OK);
+
+//    if (bForSimultaneousMeasures)
+//        MessageBox(NULL, m_meter->getDisplayTypeText(m_meter->getDisplayType()), "Display Type Set", MB_OK);
 
  //ccss is now loaded through display type
     // Cause the meter to load the user-specified spectral calibration .ccss file
@@ -388,7 +391,7 @@ void CArgyllSensor::FillDisplayTypeCombo(CComboBox& comboToFill)
         }
     }
 }
-
+/*
 void CArgyllSensor::FillSpectralTypeCombo(CComboBox& comboToFill)
 {
     if (!m_meter->doesMeterSupportSpectralSamples())
@@ -414,7 +417,7 @@ void CArgyllSensor::FillSpectralTypeCombo(CComboBox& comboToFill)
     }
     
 }
-
+*/
 
 // very basic logging and error handling to override
 // the standard argyll verion

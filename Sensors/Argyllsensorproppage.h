@@ -57,6 +57,7 @@ public:
     CComboBox  m_SpectralTypeCombo;
     CButton    m_HiResCheckBox;
     BOOL       m_HiResCheckBoxEnabled;
+    BOOL       m_obTypeEnabled;
     //}}AFX_DATA
     
     CArgyllSensor* m_pSensor;

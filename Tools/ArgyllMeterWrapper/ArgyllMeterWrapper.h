@@ -60,7 +60,7 @@ public:
 
     /// initialize the meter
     /// returns true on success
-    bool connectAndStartMeter(std::string& errorDescription, eReadingType readingType, bool debugmode);
+    bool connectAndStartMeter(std::string& errorDescription, eReadingType readingType, CString spectralType, bool debugmode);
 
     /// see if the meter supports calibration
     bool doesMeterSupportCalibration();

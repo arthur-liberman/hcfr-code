@@ -186,7 +186,7 @@ ArgyllMeterWrapper::~ArgyllMeterWrapper()
     }
 }
 
-bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eReadingType readingType, bool debugmode)
+bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eReadingType readingType, CString spectralType, bool debugmode)
 {
     inst_code instCode;
     if (debugmode)
@@ -310,6 +310,39 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
         errorDescription = "Couldn't set trigger mode";
         return false;
     }
+
+    icxObserverType obType=icxOT_default;
+    
+    if (spectralType == "CIE_1931_2")
+        obType=icxOT_CIE_1931_2;
+    if (spectralType == "CIE_1964_10")
+        obType=icxOT_CIE_1964_10;
+/*    if (spectralType == "Stiles_Burch_2")
+        obType=icxOT_Stiles_Burch_2;
+    if (spectralType == "Judd_Voss_2")
+        obType=icxOT_Judd_Voss_2;
+    if (spectralType == "CIE_1964_10c")
+        obType=icxOT_CIE_1964_10c;
+    if (spectralType == "Shaw_Fairchild_2")
+        obType=icxOT_Shaw_Fairchild_2;
+*/
+    if (obType != icxOT_default)
+    {
+        if (isColorimeter())
+        {
+            instCode = m_meter->get_set_opt(m_meter, inst_opt_set_ccss_obs, obType , 0);
+            if (instCode != inst_ok)
+                MessageBox(NULL,"Must be in ccss mode to change observer type on colorimeters","New observer",MB_OK);
+            else
+                MessageBox(NULL,spectralType,"New observer",MB_OK);
+        }
+        else
+        {
+            //spec2cie
+        }
+    }
+    
+
     // reset the calibration
     m_nextCalibration = 0;
     return true;
@@ -593,7 +626,7 @@ void ArgyllMeterWrapper::checkMeterIsInitialized()
     if(!m_meter->inited)
     {
         std::string errorDescription;
-        if(!connectAndStartMeter(errorDescription, m_readingType, false))
+        if(!connectAndStartMeter(errorDescription, m_readingType, "Default", false))
         {
             throw std::logic_error(errorDescription);
         }
