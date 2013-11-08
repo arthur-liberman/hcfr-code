@@ -68,7 +68,7 @@ protected:
         }
         ArgyllMeterWrapper& meter = *meters[0];
 
-        if(!meter.connectAndStartMeter(errorDescription, ArgyllMeterWrapper::DISPLAY, true) )
+        if(!meter.connectAndStartMeter(errorDescription, ArgyllMeterWrapper::DISPLAY, "Default", true) )
         {
             std::cout << errorDescription << std::endl;
             return;
