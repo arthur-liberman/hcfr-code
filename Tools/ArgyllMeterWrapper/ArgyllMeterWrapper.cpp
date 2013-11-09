@@ -334,9 +334,10 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
         if (instCode != inst_ok)
             MessageBox(NULL,m_meter->inst_interp_error(m_meter,instCode),"Error setting observer",MB_OK);
     }
-    
+//    m_meter->
+//if ((sp2cie = new_xsp2cie(illum, &cust_illum, obType, NULL, icSigXYZData,refstats ? icxNoClamp : icxClamp)) == NULL)    
     //custom inttime for d3 meters
-    if (m_meter->get_itype(m_meter) == instI1Disp3 || m_meter->get_itype(m_meter) == instColorMunki )
+    if ((m_meter->get_itype(m_meter) == instI1Disp3 || m_meter->get_itype(m_meter) == instColorMunki) && isColorimeter() )
     {
         double ref_rate, i_time;
         int n;
@@ -534,6 +535,8 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::calibrate()
     checkMeterIsInitialized();
     m_calibrationMessage[0] = '\0';
     inst_cal_type calType(inst_calt_available);
+//    ipatch argyllReading;
+//    inst_code instCode1 = m_meter->read_sample(m_meter, "SPOT", &argyllReading, instClamp);
     inst_code instCode = m_meter->calibrate(m_meter, &calType, (inst_cal_cond*)&m_nextCalibration, m_calibrationMessage);
     if(isInstCodeReason(instCode, inst_cal_setup))
     {
@@ -570,7 +573,7 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::calibrate()
         }
         else
         {
-            MessageBox(NULL, m_meter->inst_interp_error(m_meter, ev), "Refresh measurement performed", MB_OK);
+            MessageBox(NULL, "No discernible refresh rate found", "Refresh measurement performed", MB_OK);
         }
     }
     return READY;

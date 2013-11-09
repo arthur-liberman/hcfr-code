@@ -77,7 +77,7 @@ CArgyllSensor::CArgyllSensor(ArgyllMeterWrapper* meter) :
     m_meter(meter)
 {
     std::string meterName(m_meter->getMeterName());
-    m_DisplayType = GetConfig()->GetProfileInt(meterName.c_str(), "DisplayType", 1);
+    m_DisplayType = GetConfig()->GetProfileInt(meterName.c_str(), "DisplayType", 0);
     m_ReadingType = GetConfig()->GetProfileInt(meterName.c_str(), "ReadingType", 0);
     m_SpectralType = GetConfig()->GetProfileString(meterName.c_str(), "SpectralType", "Default");
     m_intTime = GetConfig()->GetProfileInt(meterName.c_str(), "IntTime", 1);
@@ -275,7 +275,7 @@ BOOL CArgyllSensor::Init( BOOL bForSimultaneousMeasures )
             i_time = 0.60;
             break;
         case 5:
-            i_time = 0.8;
+            i_time = 0.80;
             break;
         case 6:
             i_time = 1.0;
@@ -394,6 +394,7 @@ void CArgyllSensor::Calibrate()
             break;
         }
         MessageBox(NULL, meterInstructions.c_str(), "Calibration Instructions", MB_OK);
+        state = m_meter->takeReading(); //needed to calibration d2, dtp
         state = m_meter->calibrate();
         if(state == ArgyllMeterWrapper::INCORRECT_POSITION)
         {
