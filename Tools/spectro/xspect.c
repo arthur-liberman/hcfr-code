@@ -1638,6 +1638,56 @@ static xspect ob_Shaw_Fairchild_2[3] = {
 	}
 };
 
+/*  Stockman & Sharpe (2000) endorsed by the CIE as the CIE (2006)  */
+
+static xspect ob_Stockman_Sharpe_2006_2[3] = {
+	{
+		89, 390.0, 830.0,	/* 89 bands from 390.0 830.0 nm in 5nm steps */
+		1.0,				/* Scale factor */
+		{ 3.77E-03,9.38E-03,2.21E-02,4.74E-02,8.95E-02,1.45E-01,2.04E-01,2.49E-01,2.92E-01,
+            3.23E-01,3.48E-01,3.42E-01,3.22E-01,2.83E-01,2.49E-01,2.22E-01,1.81E-01,1.29E-01,8.18E-02,
+            4.60E-02,2.08E-02,7.10E-03,2.46E-03,3.65E-03,1.56E-02,4.32E-02,7.96E-02,1.27E-01,1.82E-01,
+            2.41E-01,3.10E-01,3.80E-01,4.49E-01,5.28E-01,6.13E-01,7.02E-01,7.97E-01,8.85E-01,9.64E-01,
+            1.05E+00,1.11E+00,1.14E+00,1.15E+00,1.13E+00,1.08E+00,
+            1.01E+00,9.14E-01,8.14E-01,6.92E-01,5.76E-01,4.73E-01,3.84E-01,3.00E-01,2.28E-01,1.71E-01,
+            1.26E-01,9.22E-02,6.64E-02,4.71E-02,3.29E-02,2.26E-02,1.58E-02,1.10E-02,7.61E-03,
+            5.21E-03,3.57E-03,2.46E-03,1.70E-03,1.19E-03,8.27E-04,5.76E-04,4.06E-04,2.86E-04,2.02E-04,
+            1.44E-04,1.02E-04,7.35E-05,5.26E-05,3.81E-05,2.76E-05,2.00E-05,1.46E-05,1.07E-05,
+            7.86E-06,5.77E-06,4.26E-06,3.17E-06,2.36E-06,1.76E-06
+		}
+	},
+	{
+		89, 390.0, 830.0,	/* 89 bands from 390.0 830.0 in 5nm steps */
+		1.0,				/* Scale factor */
+		{
+            4.15E-04,1.06E-03,2.45E-03,4.97E-03,9.08E-03,1.43E-02,2.03E-02,2.61E-02,3.32E-02,
+            4.16E-02,5.03E-02,5.74E-02,6.47E-02,7.24E-02,8.51E-02,1.06E-01,1.30E-01,1.54E-01,
+            1.79E-01,2.06E-01,2.38E-01,2.85E-01,3.48E-01,4.28E-01,5.20E-01,6.21E-01,7.18E-01,
+            7.95E-01,8.58E-01,9.07E-01,9.54E-01,9.81E-01,9.89E-01,9.99E-01,9.97E-01,9.90E-01,
+            9.73E-01,9.42E-01,8.96E-01,8.59E-01,8.12E-01,7.54E-01,6.92E-01,6.27E-01,5.58E-01,4.90E-01,4.23E-01,3.61E-01,
+            2.98E-01,2.42E-01,1.94E-01,1.55E-01,1.19E-01,8.98E-02,6.67E-02,4.90E-02,3.56E-02,2.55E-02,
+            1.81E-02,1.26E-02,8.66E-03,6.03E-03,4.20E-03,2.91E-03,2.00E-03,1.37E-03,9.45E-04,
+            6.54E-04,4.56E-04,3.18E-04,2.22E-04,1.57E-04,1.10E-04,7.83E-05,5.58E-05,3.98E-05,2.86E-05,2.05E-05,1.49E-05,
+            1.08E-05,7.86E-06,5.74E-06,4.21E-06,3.11E-06,2.29E-06,1.69E-06,1.26E-06,9.42E-07,7.05E-07
+		}
+	},
+	{
+		89, 390.0, 830.0,	/* 89 bands from 390.0 830.0 in 5nm steps */
+		1.0,				/* Scale factor */
+		{   1.85E-02,4.61E-02,1.10E-01,2.37E-01,4.51E-01,7.38E-01,1.05E+00,1.31E+00,1.55E+00,
+            1.75E+00,1.92E+00,1.92E+00,1.85E+00,1.66E+00,1.52E+00,1.43E+00,1.25E+00,9.99E-01,
+            7.55E-01,5.62E-01,4.10E-01,3.11E-01,2.38E-01,1.72E-01,1.18E-01,8.28E-02,5.65E-02,3.75E-02,
+            2.44E-02,1.57E-02,9.85E-03,6.13E-03,3.79E-03,2.33E-03,1.43E-03,8.82E-04,5.45E-04,3.39E-04,
+            2.12E-04,1.34E-04,8.49E-05,5.46E-05,3.55E-05,2.33E-05,1.55E-05,1.05E-05,0.00E+00,0.00E+00,
+            0.00E+00,0.00E+00,0.00E+00,0.00E+00,0.00E+00,0.00E+00,0.00E+00,0.00E+00,0.00E+00,0.00E+00,
+            0.00E+00,0.00E+00,0.00E+00,0.00E+00,0.00E+00,0.00E+00,0.00E+00,0.00E+00,0.00E+00,0.00E+00,
+            0.00E+00,0.00E+00,0.00E+00,0.00E+00,0.00E+00,0.00E+00,0.00E+00,0.00E+00,
+            0.00E+00,0.00E+00,0.00E+00,0.00E+00,0.00E+00,0.00E+00,0.00E+00,0.00E+00,0.00E+00,
+            0.00E+00,0.00E+00,0.00E+00,0.00E+00
+		}
+	}
+};
+
 //#endif /* !SALONEINSTLIB */
 
 /* Return pointers to three xpsects with a standard observer weighting curves */
@@ -1682,6 +1732,10 @@ icxObserverType obType		/* Type of observer */
 			sp[0] = &ob_Shaw_Fairchild_2[0];
 			sp[1] = &ob_Shaw_Fairchild_2[1];
 			sp[2] = &ob_Shaw_Fairchild_2[2];
+    	case icxOT_Stockman_Sharpe_2006_2:
+			sp[0] = &ob_Stockman_Sharpe_2006_2[0];
+			sp[1] = &ob_Stockman_Sharpe_2006_2[1];
+			sp[2] = &ob_Stockman_Sharpe_2006_2[2];
 			return 0;
 //#endif /* !SALONEINSTLIB */
 		default:
@@ -1710,6 +1764,8 @@ char *standardObserverDescription(icxObserverType obType) {
 			return "CIE 1964 10 degree observer (aligned)";
     	case icxOT_Shaw_Fairchild_2:
 			return "Shaw & Fairchild 1997 2 degree observer";
+    	case icxOT_Stockman_Sharpe_2006_2:
+			return "Under consideration 2 degree observer";
 //#endif /* !SALONEINSTLIB */
 	}
 	return "Unknown observer";
@@ -3864,6 +3920,11 @@ icxClamping clamp				/* NZ to clamp XYZ/Lab to be +ve */
 			p->observer[0] = ob_Shaw_Fairchild_2[0];
 			p->observer[1] = ob_Shaw_Fairchild_2[1];
 			p->observer[2] = ob_Shaw_Fairchild_2[2];
+			break;
+    	case icxOT_Stockman_Sharpe_2006_2:
+			p->observer[0] = ob_Stockman_Sharpe_2006_2[0];
+			p->observer[1] = ob_Stockman_Sharpe_2006_2[1];
+			p->observer[2] = ob_Stockman_Sharpe_2006_2[2];
 			break;
 //#endif /* !SALONEINSTLIB */
 		default:

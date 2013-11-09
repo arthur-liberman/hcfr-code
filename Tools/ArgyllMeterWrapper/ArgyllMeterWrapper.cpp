@@ -325,20 +325,18 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
         obType=icxOT_CIE_1964_10c;
     if (spectralType == "Shaw_Fairchild_2")
         obType=icxOT_Shaw_Fairchild_2;
+    if (spectralType == "Stockman_Sharpe_2006_2")
+        obType=icxOT_Stockman_Sharpe_2006_2;
 
-        if (isColorimeter())
-        {
-            instCode = m_meter->get_set_opt(m_meter, inst_opt_set_ccss_obs, obType , 0);
-            if (instCode != inst_ok)
-                MessageBox(NULL,m_meter->inst_interp_error(m_meter,instCode),"Error setting observer",MB_OK);
-        }
-        else
-        {
-            //spec2cie
-        }
+    if (doesMeterSupportSpectralSamples())
+    {
+        instCode = m_meter->get_set_opt(m_meter, inst_opt_set_ccss_obs, obType , 0);
+        if (instCode != inst_ok)
+            MessageBox(NULL,m_meter->inst_interp_error(m_meter,instCode),"Error setting observer",MB_OK);
+    }
     
-        //custom inttime
-    if (m_meter->get_itype(m_meter) == instI1Disp3 )
+    //custom inttime for d3 meters
+    if (m_meter->get_itype(m_meter) == instI1Disp3 || m_meter->get_itype(m_meter) == instColorMunki )
     {
         double ref_rate, i_time;
         int n;
@@ -382,6 +380,7 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
                 MessageBox(NULL,t,"Integration time set",MB_OK);
             }
     }
+
     // reset the calibration
     m_nextCalibration = 0;
     return true;

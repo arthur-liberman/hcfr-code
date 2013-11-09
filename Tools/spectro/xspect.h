@@ -165,7 +165,8 @@ typedef enum {
     icxOT_Stiles_Burch_2	= 5,	/* Stiles & Burch 1955 2 degree */
     icxOT_Judd_Voss_2		= 6,	/* Judd & Voss 1978 2 degree */
     icxOT_CIE_1964_10c		= 7,	/* Standard CIE 1964 10 degree, 2 degree compatible */
-    icxOT_Shaw_Fairchild_2	= 8		/* Shaw & Fairchild 1997 2 degree */
+    icxOT_Shaw_Fairchild_2	= 8,		/* Shaw & Fairchild 1997 2 degree */
+    icxOT_Stockman_Sharpe_2006_2	= 9		/* Current CIE based on Stockman & Sharp 2006 2 degree */
 //#endif /* !SALONEINSTLIB*/
 } icxObserverType;
 
