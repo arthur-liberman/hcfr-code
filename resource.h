@@ -705,6 +705,7 @@
 #define IDC_HIGHLIGHT                   1279
 #define IDC_WHITE_X                     1281
 #define IDC_WHITE_Y                     1282
+#define IDC_RICHEDIT21                  1282
 #define IDC_COLORTEMPHISTO_GRAPH        11003
 #define IDC_RGBHISTO_GRAPH              11101
 #define IDC_RGBHISTO_GRAPH2             11102
@@ -1439,7 +1440,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        382
 #define _APS_NEXT_COMMAND_VALUE         33044
-#define _APS_NEXT_CONTROL_VALUE         1282
+#define _APS_NEXT_CONTROL_VALUE         1283
 #define _APS_NEXT_SYMED_VALUE           143
 #endif
 #endif

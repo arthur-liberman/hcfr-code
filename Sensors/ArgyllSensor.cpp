@@ -401,8 +401,8 @@ void CArgyllSensor::Calibrate()
         {
             break;
         }
+
         MessageBox(NULL, meterInstructions.c_str(), "Calibration Instructions", MB_OK);
-        state = m_meter->takeReading("Default"); //need a pre-read for d2, dtp
         state = m_meter->calibrate();
         if(state == ArgyllMeterWrapper::INCORRECT_POSITION)
         {

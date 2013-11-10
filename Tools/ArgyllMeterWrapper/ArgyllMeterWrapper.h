@@ -77,9 +77,13 @@ public:
     int getDisplayType() const;
     int getReadingType() const;
     void setDisplayType(int displayMode);
+    int m_obType;
 
-	// Determine if the meter supports spectral sample files
+    // Determine if the meter supports spectral sample files
     bool doesMeterSupportSpectralSamples();
+
+    //Set the observer type used for meter->XYZ calcs, spectral devices only, return true if changed
+    bool setObType(CString SpectralType);
 
 	// Load the supplied spectral sample
     bool loadSpectralSample(const SpectralSample& sample);
@@ -143,8 +147,8 @@ private:
     eReadingType m_readingType;
     CColor m_lastReading;
     int m_nextCalibration;
-    char m_calibrationMessage[200];
-
+    char m_calibrationMessage[200];    
+    
     std::string m_SampleDescription;
 };
 

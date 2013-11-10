@@ -188,9 +188,6 @@ ArgyllMeterWrapper::~ArgyllMeterWrapper()
 
 bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eReadingType readingType, CString SpectralType, bool debugmode, double int_time, bool refresh)
 {
-	xsp2cie *sp2cie = NULL;			/* default conversion */
-	xspect cust_illum;				/* Custom illumination spectrum */
-	double refstats = 0;			/* Print running avg & stddev against ref */
    inst_code instCode;
    
    if (debugmode)
@@ -314,44 +311,18 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
         errorDescription = "Couldn't set trigger mode";
         return false;
     }
-
-    icxObserverType obType=icxOT_default;
- 
-    if (SpectralType == "CIE 1931 2 deg")
-        obType=icxOT_CIE_1931_2;
-    if (SpectralType == "CIE 1964 10 deg")
-        obType=icxOT_CIE_1964_10;
-    if (SpectralType == "Stiles&Burch 2 deg")
-        obType=icxOT_Stiles_Burch_2;
-    if (SpectralType == "Judd&Voss 2 deg")
-        obType=icxOT_Judd_Voss_2;
-    if (SpectralType == "CIE 1964 10/2 deg comp")
-        obType=icxOT_CIE_1964_10c;
-    if (SpectralType == "Shaw&Fairchild 2 deg")
-        obType=icxOT_Shaw_Fairchild_2;
-    if (SpectralType == "Stockman and Sharpe 2006 2 deg")
-        obType=icxOT_Stockman_Sharpe_2006_2;
-
-    if (doesMeterSupportSpectralSamples())
+    
+    if (doesMeterSupportSpectralSamples() && setObType(SpectralType))
     {
-        instCode = m_meter->get_set_opt(m_meter, inst_opt_set_ccss_obs, obType , 0);
+        instCode = m_meter->get_set_opt(m_meter, inst_opt_set_ccss_obs, static_cast<icxObserverType>(m_obType) , 0);
         if (instCode != inst_ok)
             MessageBox(NULL,m_meter->inst_interp_error(m_meter,instCode),"Error setting observer",MB_OK);
-//        else
-//            MessageBox(NULL,"Set observer to "+SpectralType,"Setting observer",MB_OK);
-    }
-
-    if (!isColorimeter())
-    {
-		if ((sp2cie = new_xsp2cie(icxIT_none, &cust_illum, obType, NULL, icSigXYZData,
-			                           refstats ? icxNoClamp : icxClamp)) == NULL)
-            MessageBox(NULL,"Creation of sp2cie object failed","Error setting observer",MB_OK);
-//        else
-//            MessageBox(NULL,"Set observer to "+SpectralType,"Setting observer",MB_OK);
+        else
+            MessageBox(NULL,"Set observer to "+SpectralType,"Setting observer",MB_OK);
     }
 
     //custom inttime for d3 meters
-    if ((m_meter->get_itype(m_meter) == instI1Disp3 || m_meter->get_itype(m_meter) == instColorMunki) && isColorimeter() )
+    if ( (m_meterType == instI1Disp3 || m_meterType == instColorMunki) && isColorimeter() )
     {
         double ref_rate, i_time;
         int n;
@@ -411,7 +382,8 @@ bool ArgyllMeterWrapper::doesMeterSupportCalibration()
     return (IMODETST(capabilities, inst_mode_calibration) || 
             IMODETST(capabilities2, inst2_meas_disp_update) ||
             IMODETST(capabilities2, inst2_get_refresh_rate) ||
-            IMODETST(capabilities2, inst2_emis_refr_meas) );
+            IMODETST(capabilities2, inst2_emis_refr_meas) ||
+            IMODETST(capabilities2, inst2_disptype) );
 }
 
 CColor ArgyllMeterWrapper::getLastReading() const
@@ -483,6 +455,7 @@ int ArgyllMeterWrapper::getReadingType() const
 void ArgyllMeterWrapper::setDisplayType(int displayMode)
 {
     int numTypes(getNumberOfDisplayTypes());
+
     if(numTypes > 0 && displayMode < numTypes)
     {
         m_displayType = displayMode;
@@ -494,16 +467,8 @@ void ArgyllMeterWrapper::setDisplayType(int displayMode)
     } 
 }
 
-ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading(CString SpectralType)
+bool ArgyllMeterWrapper::setObType(CString SpectralType)
 {
-    checkMeterIsInitialized();
-    ipatch argyllReading;
-	xsp2cie *sp2cie = NULL;			/* default conversion */
-	xspect cust_illum;				/* Custom illumination spectrum */
-	double refstats = 0;			/* Print running avg & stddev against ref */
-    inst_code instCode;
-
-
     icxObserverType obType=icxOT_default;
  
     if (SpectralType == "CIE 1931 2 deg")
@@ -512,23 +477,40 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading(CString Spectral
         obType=icxOT_CIE_1964_10;
     if (SpectralType == "Stiles&Burch 2 deg")
         obType=icxOT_Stiles_Burch_2;
-    if (SpectralType == "Judd&Voss 2 deg")
-        obType=icxOT_Judd_Voss_2;
+    if (SpectralType == "Judd&Vos 2 deg")
+        obType=icxOT_Judd_Vos_2;
     if (SpectralType == "CIE 1964 10/2 deg comp")
         obType=icxOT_CIE_1964_10c;
     if (SpectralType == "Shaw&Fairchild 2 deg")
         obType=icxOT_Shaw_Fairchild_2;
-    if (SpectralType == "Stockman and Sharpe 2006 2 deg")
-        obType=icxOT_Stockman_Sharpe_2006_2;
-
-    if (!isColorimeter())
+    if (SpectralType == "Stockman and Sharpe 2006 10 deg")
+        obType=icxOT_Stockman_Sharpe_2006_10;
+    if (obType != m_obType)
     {
-		if ((sp2cie = new_xsp2cie(icxIT_none, &cust_illum, obType, NULL, icSigXYZData,
-			                           refstats ? icxNoClamp : icxClamp)) == NULL)
+        m_obType = obType;
+        return true;
+    }
+    return false;
+}
+
+ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading(CString SpectralType)
+{
+    checkMeterIsInitialized();
+    ipatch argyllReading;
+	xsp2cie *sp2cie = NULL;			/* default conversion */
+	xspect cust_illum;				/* Custom illumination spectrum */
+    inst_code instCode;
+    
+    if (!isColorimeter()) //needs to be set each time
+    {
+        if (setObType(SpectralType))		
+            MessageBox(NULL,"Set observer to "+SpectralType,"Setting observer",MB_OK);
+        if ((sp2cie = new_xsp2cie(icxIT_none, &cust_illum, static_cast<icxObserverType>(m_obType), NULL, icSigXYZData,
+			                           icxNoClamp)) == NULL)
             MessageBox(NULL,"Creation of sp2cie object failed","Error setting observer",MB_OK);
     }
 
-    instCode = m_meter->read_sample(m_meter, "SPOT", &argyllReading,  refstats ? instNoClamp : instClamp);
+    instCode = m_meter->read_sample(m_meter, "SPOT", &argyllReading, instNoClamp);
     if(isInstCodeReason(instCode, inst_needs_cal))
     {
         // try autocalibration - we might get lucky
@@ -613,6 +595,8 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::calibrate()
         char s_int [ 256 ];
 	    double refr;
 	    inst_code ev;
+        if (m_meterType != instI1Disp3)
+            takeReading("Default"); //need a pre-read for d1, d2, dtp refresh mode but not needed for display pro
         ev = m_meter->get_refr_rate(m_meter, &refr);
         if (ev == inst_ok)
         {
@@ -727,7 +711,7 @@ void ArgyllMeterWrapper::setHiResMode(bool enableHiRes)
     checkMeterIsInitialized();
     // only suported on i1Pro and colormunki (photo not display)
     // but just do nothing otherwise
-    if(m_meterType == instI1Pro || m_meterType == instColorMunki || m_meterType == instI1Pro2)
+    if(doesSupportHiRes())
     {
         m_meter->get_set_opt(m_meter, enableHiRes?inst_opt_highres:inst_opt_stdres);
     }
