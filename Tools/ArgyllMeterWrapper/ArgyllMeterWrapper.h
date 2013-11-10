@@ -68,7 +68,7 @@ public:
     // try and do a reading
     // the client application will need to handle the
     // possible non success conditions
-    eMeterState takeReading();
+    eMeterState takeReading(CString SpectralType);
 
     CColor getLastReading() const;
 

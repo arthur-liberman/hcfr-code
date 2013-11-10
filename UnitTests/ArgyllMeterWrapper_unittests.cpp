@@ -83,7 +83,7 @@ protected:
         ArgyllMeterWrapper::eMeterState state(ArgyllMeterWrapper::NEEDS_MANUAL_CALIBRATION);
         while(state != ArgyllMeterWrapper::READY)
         {
-            state = meter.takeReading();
+            state = meter.takeReading("Default");
             if(state == ArgyllMeterWrapper::NEEDS_MANUAL_CALIBRATION)
             {
                 doCalibration(meter);

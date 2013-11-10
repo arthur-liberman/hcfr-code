@@ -362,7 +362,7 @@ CColor CArgyllSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
     {
         try
         {
-            state = m_meter->takeReading();
+            state = m_meter->takeReading(m_SpectralType);
         }
         catch(std::logic_error&)
         {
@@ -382,8 +382,16 @@ CColor CArgyllSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 
 void CArgyllSensor::Calibrate()
 {
-    if(!Init(FALSE)) return;
-    if(!m_meter->doesMeterSupportCalibration()) return;
+    if(!Init(FALSE)) {
+        MessageBox(NULL, "Meter failed init check","Meter initialization error",MB_OK);
+        return;
+    }
+
+    if(!m_meter->doesMeterSupportCalibration()) 
+    {
+        MessageBox(NULL, "No calibration capabilities are defined for this probe.","No Cals found",MB_OK);
+        return;
+    }
 
     ArgyllMeterWrapper::eMeterState state(ArgyllMeterWrapper::NEEDS_MANUAL_CALIBRATION);
     while(state != ArgyllMeterWrapper::READY)
@@ -394,7 +402,7 @@ void CArgyllSensor::Calibrate()
             break;
         }
         MessageBox(NULL, meterInstructions.c_str(), "Calibration Instructions", MB_OK);
-        state = m_meter->takeReading(); //needed to calibration d2, dtp
+        state = m_meter->takeReading("Default"); //need a pre-read for d2, dtp
         state = m_meter->calibrate();
         if(state == ArgyllMeterWrapper::INCORRECT_POSITION)
         {

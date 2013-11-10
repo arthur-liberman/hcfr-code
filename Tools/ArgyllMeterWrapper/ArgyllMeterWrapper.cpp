@@ -186,10 +186,14 @@ ArgyllMeterWrapper::~ArgyllMeterWrapper()
     }
 }
 
-bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eReadingType readingType, CString spectralType, bool debugmode, double int_time, bool refresh)
+bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eReadingType readingType, CString SpectralType, bool debugmode, double int_time, bool refresh)
 {
-    inst_code instCode;
-    if (debugmode)
+	xsp2cie *sp2cie = NULL;			/* default conversion */
+	xspect cust_illum;				/* Custom illumination spectrum */
+	double refstats = 0;			/* Print running avg & stddev against ref */
+   inst_code instCode;
+   
+   if (debugmode)
     {
         m_meter->icom->log->verb = 5;
         m_meter->icom->log->debug = 5;
@@ -313,19 +317,19 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
 
     icxObserverType obType=icxOT_default;
  
-    if (spectralType == "CIE_1931_2")
+    if (SpectralType == "CIE 1931 2 deg")
         obType=icxOT_CIE_1931_2;
-    if (spectralType == "CIE_1964_10")
+    if (SpectralType == "CIE 1964 10 deg")
         obType=icxOT_CIE_1964_10;
-    if (spectralType == "Stiles_Burch_2")
+    if (SpectralType == "Stiles&Burch 2 deg")
         obType=icxOT_Stiles_Burch_2;
-    if (spectralType == "Judd_Voss_2")
+    if (SpectralType == "Judd&Voss 2 deg")
         obType=icxOT_Judd_Voss_2;
-    if (spectralType == "CIE_1964_10c")
+    if (SpectralType == "CIE 1964 10/2 deg comp")
         obType=icxOT_CIE_1964_10c;
-    if (spectralType == "Shaw_Fairchild_2")
+    if (SpectralType == "Shaw&Fairchild 2 deg")
         obType=icxOT_Shaw_Fairchild_2;
-    if (spectralType == "Stockman_Sharpe_2006_2")
+    if (SpectralType == "Stockman and Sharpe 2006 2 deg")
         obType=icxOT_Stockman_Sharpe_2006_2;
 
     if (doesMeterSupportSpectralSamples())
@@ -333,9 +337,19 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
         instCode = m_meter->get_set_opt(m_meter, inst_opt_set_ccss_obs, obType , 0);
         if (instCode != inst_ok)
             MessageBox(NULL,m_meter->inst_interp_error(m_meter,instCode),"Error setting observer",MB_OK);
+//        else
+//            MessageBox(NULL,"Set observer to "+SpectralType,"Setting observer",MB_OK);
     }
-//    m_meter->
-//if ((sp2cie = new_xsp2cie(illum, &cust_illum, obType, NULL, icSigXYZData,refstats ? icxNoClamp : icxClamp)) == NULL)    
+
+    if (!isColorimeter())
+    {
+		if ((sp2cie = new_xsp2cie(icxIT_none, &cust_illum, obType, NULL, icSigXYZData,
+			                           refstats ? icxNoClamp : icxClamp)) == NULL)
+            MessageBox(NULL,"Creation of sp2cie object failed","Error setting observer",MB_OK);
+//        else
+//            MessageBox(NULL,"Set observer to "+SpectralType,"Setting observer",MB_OK);
+    }
+
     //custom inttime for d3 meters
     if ((m_meter->get_itype(m_meter) == instI1Disp3 || m_meter->get_itype(m_meter) == instColorMunki) && isColorimeter() )
     {
@@ -396,7 +410,8 @@ bool ArgyllMeterWrapper::doesMeterSupportCalibration()
     m_meter->capabilities(m_meter, &capabilities, &capabilities2, &capabilities3);
     return (IMODETST(capabilities, inst_mode_calibration) || 
             IMODETST(capabilities2, inst2_meas_disp_update) ||
-            IMODETST(capabilities2, inst2_get_refresh_rate));
+            IMODETST(capabilities2, inst2_get_refresh_rate) ||
+            IMODETST(capabilities2, inst2_emis_refr_meas) );
 }
 
 CColor ArgyllMeterWrapper::getLastReading() const
@@ -479,11 +494,41 @@ void ArgyllMeterWrapper::setDisplayType(int displayMode)
     } 
 }
 
-ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading()
+ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading(CString SpectralType)
 {
     checkMeterIsInitialized();
     ipatch argyllReading;
-    inst_code instCode = m_meter->read_sample(m_meter, "SPOT", &argyllReading, instClamp);
+	xsp2cie *sp2cie = NULL;			/* default conversion */
+	xspect cust_illum;				/* Custom illumination spectrum */
+	double refstats = 0;			/* Print running avg & stddev against ref */
+    inst_code instCode;
+
+
+    icxObserverType obType=icxOT_default;
+ 
+    if (SpectralType == "CIE 1931 2 deg")
+        obType=icxOT_CIE_1931_2;
+    if (SpectralType == "CIE 1964 10 deg")
+        obType=icxOT_CIE_1964_10;
+    if (SpectralType == "Stiles&Burch 2 deg")
+        obType=icxOT_Stiles_Burch_2;
+    if (SpectralType == "Judd&Voss 2 deg")
+        obType=icxOT_Judd_Voss_2;
+    if (SpectralType == "CIE 1964 10/2 deg comp")
+        obType=icxOT_CIE_1964_10c;
+    if (SpectralType == "Shaw&Fairchild 2 deg")
+        obType=icxOT_Shaw_Fairchild_2;
+    if (SpectralType == "Stockman and Sharpe 2006 2 deg")
+        obType=icxOT_Stockman_Sharpe_2006_2;
+
+    if (!isColorimeter())
+    {
+		if ((sp2cie = new_xsp2cie(icxIT_none, &cust_illum, obType, NULL, icSigXYZData,
+			                           refstats ? icxNoClamp : icxClamp)) == NULL)
+            MessageBox(NULL,"Creation of sp2cie object failed","Error setting observer",MB_OK);
+    }
+
+    instCode = m_meter->read_sample(m_meter, "SPOT", &argyllReading,  refstats ? instNoClamp : instClamp);
     if(isInstCodeReason(instCode, inst_needs_cal))
     {
         // try autocalibration - we might get lucky
@@ -508,6 +553,7 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading()
             throw std::logic_error("Automatic calibration succeed but reading then failed wanting calibration again");
         }
     }
+
     if(isInstCodeReason(instCode, inst_wrong_config))
     {
         return INCORRECT_POSITION;
@@ -516,7 +562,8 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading()
     {
         throw std::logic_error("Taking Reading failed");
     }
-
+    if (!isColorimeter() && sp2cie != NULL)
+        sp2cie->convert(sp2cie, argyllReading.XYZ, &argyllReading.sp);
     m_lastReading.ResetSpectrum();
     m_lastReading = CColor(argyllReading.XYZ[0], argyllReading.XYZ[1], argyllReading.XYZ[2]);
     if(argyllReading.sp.spec_n > 0)
@@ -527,6 +574,8 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading()
         CSpectrum spectrum(argyllReading.sp.spec_n, shortWavelength, longWavelength, bandWidth, argyllReading.sp.spec);
         m_lastReading.SetSpectrum(spectrum);
     }
+	if (sp2cie != NULL)
+		sp2cie->del(sp2cie);
     return READY;
 }
 
@@ -535,8 +584,6 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::calibrate()
     checkMeterIsInitialized();
     m_calibrationMessage[0] = '\0';
     inst_cal_type calType(inst_calt_available);
-//    ipatch argyllReading;
-//    inst_code instCode1 = m_meter->read_sample(m_meter, "SPOT", &argyllReading, instClamp);
     inst_code instCode = m_meter->calibrate(m_meter, &calType, (inst_cal_cond*)&m_nextCalibration, m_calibrationMessage);
     if(isInstCodeReason(instCode, inst_cal_setup))
     {
@@ -560,12 +607,13 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::calibrate()
 		MessageBox(NULL, m_meter->interp_error(m_meter, instCode), "Calibration Failed!", MB_OK);
         throw std::logic_error("Calibration failed");
     }
-    char s_int [ 256 ];
-	double refr;
-	inst_code ev;
-    ev = m_meter->get_refr_rate(m_meter, &refr);
-    if (ev != inst_unsupported)
+    //check if we need to try and get refresh rate
+    if (m_nextCalibration == inst_calc_emis_80pc)
     {
+        char s_int [ 256 ];
+	    double refr;
+	    inst_code ev;
+        ev = m_meter->get_refr_rate(m_meter, &refr);
         if (ev == inst_ok)
         {
             sprintf(s_int,"Refresh rate found: %f Hz",refr);
@@ -592,7 +640,7 @@ std::string ArgyllMeterWrapper::getCalibrationInstructions()
             // we don't need to do anything
             // and we are now calibrated
   		    if (isInstCodeReason(instCode, inst_unsupported))
-				MessageBox(NULL, m_meter->interp_error(m_meter, instCode), "Calibration message", MB_OK);
+				MessageBox(NULL, m_meter->inst_interp_error(m_meter, instCode), "Calibration message", MB_OK);
 			else
 				MessageBox(NULL, "No calibrations needed.", "Calibration message", MB_OK);
             return "";
