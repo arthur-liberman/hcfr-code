@@ -50,6 +50,7 @@ public:
     CString		m_SpectralType;
     UINT        m_intTime;
     BOOL		m_HiRes;
+    BOOL        m_Adapt;
 private:
     ArgyllMeterWrapper* m_meter;
     SpectralSampleFiles *m_spectralSamples;

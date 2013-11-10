@@ -115,6 +115,10 @@ public:
 
     /// Enable/Disable high resolution mode on i1Pro
     void setHiResMode(bool enableHiRes);
+
+    /// Enable/Disable adaptive averaging
+    void setAdaptMode(bool enableAdapt);
+
     /// Does device support high resolution mode on i1Pro
     bool doesSupportHiRes() const;
 
@@ -147,6 +151,7 @@ private:
     eReadingType m_readingType;
     CColor m_lastReading;
     int m_nextCalibration;
+    BOOL m_Adapt;
     char m_calibrationMessage[200];    
     
     std::string m_SampleDescription;

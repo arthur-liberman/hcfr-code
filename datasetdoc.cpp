@@ -1498,6 +1498,17 @@ void CDataSetDoc::OnCalibrationExisting()
 		return;
 	}
 
+    CColor YWhite = this->GetMeasure()->GetOnOffWhite();
+
+    if (!YWhite.isValid())
+    {
+        //No measurements
+		Msg.LoadString ( IDS_SIM_CAL_ERROR4 );
+		Title.LoadString ( IDS_ERROR );
+		MessageBox(NULL,Msg,Title,MB_ICONERROR | MB_OK);
+		return;
+    }
+
     ComputeAdjustmentMatrix();
 
 }

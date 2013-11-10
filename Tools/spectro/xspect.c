@@ -816,6 +816,7 @@ static xspect ob_CIE_1931_2[3] = {
 };
 
 /* Standard CIE 1964 10 degree */
+
 static xspect ob_CIE_1964_10[3] = {
 	{
 		471, 360.0, 830.0,	/* 471 bands from 360 to 830 nm in 1nm steps */

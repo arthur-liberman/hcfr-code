@@ -48,6 +48,7 @@ CArgyllSensorPropPage::CArgyllSensorPropPage() : CPropertyPageWithHelp(CArgyllSe
     m_MeterName = "";
     m_DebugMode = FALSE;
     m_HiRes = FALSE;
+    m_Adapt = FALSE;
     //}}AFX_DATA_INIT
 }
 
@@ -81,6 +82,7 @@ void CArgyllSensorPropPage::DoDataExchange(CDataExchange* pDX)
     DDX_Text(pDX, IDC_ARGYLLSENSOR_METER_NAME, m_MeterName);
     DDX_Check(pDX, IDC_ARGYLL_SENSOR_DEBUG_CB, m_DebugMode);
     DDX_Check(pDX, IDC_ARGYLL_SENSOR_HIRES, m_HiRes);
+    DDX_Check(pDX, IDC_ARGYLL_SENSOR_ADAPT, m_Adapt);
 }
 
 

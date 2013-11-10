@@ -53,12 +53,14 @@ public:
     int        m_ReadingType;
     BOOL       m_DebugMode;
     BOOL       m_HiRes;
+    BOOL       m_Adapt;
     CString    m_MeterName;
     CComboBox  m_DisplayTypeCombo;
     CComboBox  m_SpectralTypeCombo;
     CComboBox  m_IntTypeCombo;
     CButton    m_HiResCheckBox;
     BOOL       m_HiResCheckBoxEnabled;
+    BOOL       m_AdaptCheckBoxEnabled;
     BOOL       m_obTypeEnabled;
     BOOL       m_intTimeEnabled;
     //}}AFX_DATA

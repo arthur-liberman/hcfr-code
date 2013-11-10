@@ -547,7 +547,41 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading(CString Spectral
     if (!isColorimeter() && sp2cie != NULL)
         sp2cie->convert(sp2cie, argyllReading.XYZ, &argyllReading.sp);
     m_lastReading.ResetSpectrum();
-    m_lastReading = CColor(argyllReading.XYZ[0], argyllReading.XYZ[1], argyllReading.XYZ[2]);
+    
+    double X=argyllReading.XYZ[0];
+    double Y=argyllReading.XYZ[1];
+    double Z=argyllReading.XYZ[2];
+
+    int cnt = 0;
+    if (m_Adapt)
+    {
+        if (Y < 0.5)
+            cnt = 3; // 4 samples
+        else if (Y < 1.0)
+            cnt = 3; // 4 samples
+        else if (Y < 2.0)
+            cnt = 2; // 3 samples
+        else if (Y < 3.0)
+            cnt = 1; // 2 samples
+
+        if (cnt > 0)
+        {
+            for(int i(0); i < cnt; ++i)
+            {
+                instCode = m_meter->read_sample(m_meter, "SPOT", &argyllReading, instNoClamp);
+                if (!isColorimeter() && sp2cie != NULL)
+                    sp2cie->convert(sp2cie, argyllReading.XYZ, &argyllReading.sp);
+                    X+=argyllReading.XYZ[0];
+                    Y+=argyllReading.XYZ[1];
+                    Z+=argyllReading.XYZ[2];
+            }
+        }
+    }
+    X = X / (cnt+1);
+    Y = Y / (cnt+1);
+    Z = Z / (cnt+1);
+    
+    m_lastReading = CColor(X, Y, Z);
     if(argyllReading.sp.spec_n > 0)
     {
         int shortWavelength((int)(argyllReading.sp.spec_wl_short + 0.5));
@@ -715,6 +749,11 @@ void ArgyllMeterWrapper::setHiResMode(bool enableHiRes)
     {
         m_meter->get_set_opt(m_meter, enableHiRes?inst_opt_highres:inst_opt_stdres);
     }
+}
+
+void ArgyllMeterWrapper::setAdaptMode(bool enableAdapt)
+{
+        m_Adapt = enableAdapt;
 }
 
 bool ArgyllMeterWrapper::doesSupportHiRes() const

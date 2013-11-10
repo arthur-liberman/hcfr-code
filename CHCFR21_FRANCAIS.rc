@@ -539,7 +539,7 @@ BEGIN
     LTEXT           "Reading Type",IDC_STATIC,13,53,60,8,0,0,HIDC_STATIC
     COMBOBOX        IDC_ARGYLLSENSOR_READINGTYPE_COMBO,81,50,205,82,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     CONTROL         "Use Hi-Res Mode (i1Pro && Colormunki Photo Only)",IDC_ARGYLL_SENSOR_HIRES,
-                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_GROUP | WS_TABSTOP,13,84,98,17
+                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_GROUP | WS_TABSTOP,13,85,98,17
     GROUPBOX        "Calibration",IDC_STATIC,6,110,297,39
     PUSHBUTTON      "Calibrate meter",IDC_ARGYLL_CALIBRATE,15,124,101,14
     CONTROL         "Debug (save data in HCFR.log)",IDC_ARGYLL_SENSOR_DEBUG_CB,
@@ -549,6 +549,7 @@ BEGIN
     COMBOBOX        IDC_ARGYLLSENSOR_INTTIME_COMBO,205,88,82,82,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     LTEXT           "Integration Time",IDC_STATIC,167,86,33,20
     CTEXT           "After selecting your display, and reading types click the calibrate meter button to see if any calibrations are required. [Note that display types are not applicable when in ambient reading mode]",IDC_STATIC,131,118,165,45,WS_BORDER,WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE
+    CONTROL         "Adaptive averaging",IDC_ARGYLL_SENSOR_ADAPT,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_GROUP | WS_TABSTOP,113,84,50,18
 END
 
 IDD_DUPLICATEDOC_DIALOG DIALOG 0, 0, 279, 153
@@ -2368,8 +2369,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3, 1, 0, 1
- PRODUCTVERSION 3, 1, 0, 1
+ FILEVERSION 3,1,0,1
+ PRODUCTVERSION 3,1,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2836,6 +2837,7 @@ BEGIN
     IDS_CC_22b              "Skin#BD723C"
     IDS_CC_23b              "Skin#704139"
     IDS_CC_24b              "Skin#A3866A"
+    IDS_SIM_CAL_ERROR4      "To create a correction file, you must run a primaries measurement first.\nOperation cancelled."
 END
 
 STRINGTABLE

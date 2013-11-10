@@ -697,6 +697,8 @@
 #define IDC_DISPLAY_NAME                1272
 #define IDC_ARGYLLSENSOR_INTTIME_COMBO  1272
 #define IDC_DISPLAY_TECH                1273
+#define IDC_ARGYLL_SENSOR_HIRES2        1273
+#define IDC_ARGYLL_SENSOR_ADAPT         1273
 #define IDC_BGSTIM_EDIT                 1274
 #define IDC_INTENSITY_EDIT              1275
 #define IDC_OVERLAY                     1276
@@ -1430,6 +1432,7 @@
 #define IDS_CC_22b                      41948
 #define IDS_CC_23b                      41949
 #define IDS_CC_24b                      41950
+#define IDS_SIM_CAL_ERROR4              41951
 #define IDS_ARGYLLSENSOR_PROPERTIES_TITLE 59394
 #define IDS_ARGYLLSENSOR_NAME           59395
 
