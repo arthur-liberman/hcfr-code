@@ -143,7 +143,7 @@ void CArgyllSensor::Serialize(CArchive& archive)
 
     if (archive.IsStoring())
     {
-        int version=3;
+        int version=4;
         archive << version;
         archive << m_DisplayType;
         archive << m_ReadingType;
@@ -161,16 +161,15 @@ void CArgyllSensor::Serialize(CArchive& archive)
     {
         int version;
         archive >> version;
-        if ( version > 3 )
+        if ( version > 4 )
             AfxThrowArchiveException ( CArchiveException::badSchema );
         archive >> m_DisplayType;
         archive >> m_ReadingType;
         archive >> m_SpectralType;
-        if ( version > 2)
-        {
-            archive >> m_intTime;
+        if ( version > 3)
             archive >> m_Adapt;
-        }
+        if ( version > 2)
+            archive >> m_intTime;
         if(version == 1)
         {
             UINT dummy;
