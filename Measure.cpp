@@ -1555,7 +1555,7 @@ BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator)
 
 	GenerateSaturationColors (GetColorReference(), GenColors,size, true, false, false, gamma);
 	
-	for(int i=0;i<size;i++)
+    for(int i=0;i<size;i++)
 	{
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_RED,100*i/(size - 1),!bRetry))
 		{

@@ -571,8 +571,8 @@ int main(int argc, char *argv[]) {
 #ifndef SALONEINSTLIB
 				} else if (strcmp(na, "1955_2") == 0) {		/* Stiles and Burch 1955 2 degree */
 					obType = icxOT_Stiles_Burch_2;
-				} else if (strcmp(na, "1978_2") == 0) {		/* Judd and Voss 1978 2 degree */
-					obType = icxOT_Judd_Voss_2;
+				} else if (strcmp(na, "1978_2") == 0) {		/* Judd and Vos 1978 2 degree */
+					obType = icxOT_Judd_Vos_2;
 				} else if (strcmp(na, "shaw") == 0) {		/* Shaw and Fairchilds 1997 2 degree */
 					obType = icxOT_Shaw_Fairchild_2;
 #endif /* !SALONEINSTLIB */
