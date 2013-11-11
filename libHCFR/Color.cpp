@@ -648,12 +648,12 @@ double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhit
         ColorLab LabRef(refColor, YWhiteRef, cRef);
         ColorLab Lab(*this, YWhite, cRef);
 		double dL2 = pow ((LabRef[0] - Lab[0]),2.0);
-		double C1 = sqrt ( pow (Lab[1],2.0) + pow (Lab[2],2.0));
-		double C2 = sqrt ( pow (LabRef[1],2.0) + pow (LabRef[2],2.0));
+		double C1 = sqrt ( pow (LabRef[1],2.0) + pow (LabRef[2],2.0));
+		double C2 = sqrt ( pow (Lab[1],2.0) + pow (Lab[2],2.0));
 		double dC2 = pow ((C1-C2),2.0);
 		double da2 = pow (LabRef[1] - Lab[1],2.0);
 		double db2 = pow (LabRef[2] - Lab[2],2.0);
-		double dH2 = (da2 + db2 - dC2);
+		double dH2 =  (da2 + db2 - dC2);
 		//kl=kc=kh=1
 		dE = sqrt ( dL2 + dC2/pow((1+0.045*C1),2.0) + dH2/pow((1+0.015*C1),2.0) );
 		break;
