@@ -137,10 +137,10 @@ BEGIN
     LTEXT           "D3/munki and Spyder 4 users",IDC_STATIC,186,18,95,8
 END
 
-IDD_SELECT_GENERATOR_PROPPAGE DIALOG 0, 0, 183, 94
+IDD_SELECT_GENERATOR_PROPPAGE DIALOGEX 0, 0, 183, 94
 STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Generator selection"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     LTEXT           "Select a generator in this list:",IDC_STATIC,29,31,91,8
     COMBOBOX        IDC_GENERATORCHOICE_COMBO,30,43,106,43,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
@@ -539,7 +539,7 @@ BEGIN
     COMBOBOX        IDC_ARGYLLSENSOR_INTTIME_COMBO,205,88,82,82,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     LTEXT           "Integration Time",IDC_STATIC,170,86,33,20
     CTEXT           "After selecting your display, and reading types click the calibrate meter button to see if any calibrations are required. [Note that display types are not applicable when in ambient reading mode]",IDC_STATIC,131,118,165,45,WS_BORDER,WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE
-    CONTROL         "Adaptive averaging",IDC_ARGYLL_SENSOR_ADAPT,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_GROUP | WS_TABSTOP,113,87,50,18
+    CONTROL         "Adaptive averaging",IDC_ARGYLL_SENSOR_ADAPT,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | NOT WS_VISIBLE | WS_GROUP | WS_TABSTOP,113,87,50,18
 END
 
 IDD_DUPLICATEDOC_DIALOG DIALOG 0, 0, 279, 153
@@ -2897,6 +2897,7 @@ BEGIN
     IDS_CC_22b              "Skin#BD723C"
     IDS_CC_23b              "Skin#704139"
     IDS_CC_24b              "Skin#A3866A"
+    IDS_SIM_CAL_ERROR4      "To create a correction file, you must run a primaries measurement first.\nOperation cancelled."
 END
 
 STRINGTABLE
@@ -3238,7 +3239,6 @@ BEGIN
     IDS_SIM_CAL_ERROR1      "To create a correction file, you must define a reference document using a reference colorimeter.\nOperation cancelled."
     IDS_SIM_CAL_ERROR2      "To create a correction file, the current document must use a sensor needing a correction file.\nOperation cancelled."
     IDS_SIM_CAL_ERROR3      "To create a correction file, the current document must NOT be the reference document.\nOperation canceled."
-    IDS_SIM_CAL_ERROR4      "To create a correction file, you must run a primaries measurement first.\nOperation cancelled."
     IDS_MEASUREGRAYANDCOLORS 
                             "Measure gray scale, primary and secondary colors simultaneously ?\nWarning: actual data will be lost...\n\nNote: you can cancel measuring using ESCAPE key."
     IDS_RUN_MANUAL_CALIBRATION 

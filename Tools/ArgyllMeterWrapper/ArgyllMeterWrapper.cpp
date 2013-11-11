@@ -547,13 +547,15 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading(CString Spectral
     if (!isColorimeter() && sp2cie != NULL)
         sp2cie->convert(sp2cie, argyllReading.XYZ, &argyllReading.sp);
     m_lastReading.ResetSpectrum();
-    
+
     double X=argyllReading.XYZ[0];
     double Y=argyllReading.XYZ[1];
     double Z=argyllReading.XYZ[2];
 
+    //Simple low-light averager    
     int cnt = 0;
-    if (m_Adapt)
+//    if (m_Adapt)
+    if (FALSE)
     {
         if (Y < 0.5)
             cnt = 3; // 4 samples

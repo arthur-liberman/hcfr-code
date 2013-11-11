@@ -44,7 +44,7 @@ IMPLEMENT_SERIAL(CGenerator, CObject, 1) ;
 CGenerator::CGenerator()
 {
 	m_isModified=FALSE;
-	m_doScreenBlanking=GetConfig()->GetProfileInt("Generator","Blanking",1);
+	m_doScreenBlanking=GetConfig()->GetProfileInt("Generator","Blanking",0);
 	m_b16_235=FALSE;
 	AddPropertyPage(&m_GeneratorPropertiePage);
 

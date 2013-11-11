@@ -549,7 +549,7 @@ BEGIN
     COMBOBOX        IDC_ARGYLLSENSOR_INTTIME_COMBO,205,88,82,82,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     LTEXT           "Integration Time",IDC_STATIC,167,86,33,20
     CTEXT           "After selecting your display, and reading types click the calibrate meter button to see if any calibrations are required. [Note that display types are not applicable when in ambient reading mode]",IDC_STATIC,131,118,165,45,WS_BORDER,WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE
-    CONTROL         "Adaptive averaging",IDC_ARGYLL_SENSOR_ADAPT,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_GROUP | WS_TABSTOP,113,84,50,18
+    CONTROL         "Adaptive averaging",IDC_ARGYLL_SENSOR_ADAPT,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | NOT WS_VISIBLE | WS_GROUP | WS_TABSTOP,113,84,50,18
 END
 
 IDD_DUPLICATEDOC_DIALOG DIALOG 0, 0, 279, 153

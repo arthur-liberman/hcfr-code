@@ -59,6 +59,7 @@ public:
     CComboBox  m_SpectralTypeCombo;
     CComboBox  m_IntTypeCombo;
     CButton    m_HiResCheckBox;
+    CButton    m_AdaptCheckBox;
     BOOL       m_HiResCheckBoxEnabled;
     BOOL       m_AdaptCheckBoxEnabled;
     BOOL       m_obTypeEnabled;

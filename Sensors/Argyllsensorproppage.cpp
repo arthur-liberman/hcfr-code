@@ -63,6 +63,7 @@ void CArgyllSensorPropPage::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_ARGYLLSENSOR_SPECTRALTYPE_COMBO, m_SpectralTypeCombo);
     DDX_Control(pDX, IDC_ARGYLLSENSOR_INTTIME_COMBO, m_IntTypeCombo);
     DDX_Control(pDX, IDC_ARGYLL_SENSOR_HIRES, m_HiResCheckBox);
+    DDX_Control(pDX, IDC_ARGYLL_SENSOR_ADAPT, m_AdaptCheckBox);
 
     if(m_DisplayTypeCombo.GetCount() == 0)
     {
@@ -71,8 +72,9 @@ void CArgyllSensorPropPage::DoDataExchange(CDataExchange* pDX)
     m_DisplayTypeCombo.EnableWindow((m_DisplayTypeCombo.GetCount() != 0)?TRUE:FALSE);
     m_SpectralTypeCombo.EnableWindow(m_obTypeEnabled);
     m_IntTypeCombo.EnableWindow(m_intTimeEnabled);
-        
+
     m_HiResCheckBox.EnableWindow(m_HiResCheckBoxEnabled);
+    m_AdaptCheckBox.EnableWindow(FALSE);
 	m_HiRes = (m_HiResCheckBoxEnabled?m_HiRes:0);
 
     DDX_CBIndex(pDX, IDC_ARGYLLSENSOR_DISPLAYTYPE_COMBO, m_DisplayType);
