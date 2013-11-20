@@ -1,3 +1,4 @@
+
 /* 
  * Argyll Color Correction System
  *
@@ -367,7 +368,7 @@ i1disp_rdreg_float(
 	if ((ev = i1disp_rdreg_word(p, &val, addr)) != inst_ok)
 		return ev;
 
-	if (ev == 0xffffffff) {
+	if (val == 0xffffffff) {
 		return I1DISP_FLOAT_NOT_SET;
 	}
 
@@ -2575,7 +2576,7 @@ static void dump_bytes(a1log *log, char *pfx, unsigned char *buf, int base, int 
 					bp += sprintf(bp,".");
 			}
 			bp += sprintf(bp,"\n");
-			a1logd(log,0,oline);
+			a1logd(log,0,"%s",oline);
 			bp = oline;
 		}
 	}

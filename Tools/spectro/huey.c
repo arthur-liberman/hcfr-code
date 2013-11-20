@@ -393,7 +393,7 @@ huey_rdreg_float(
 	if ((ev = huey_rdreg_word(p, &val, addr)) != inst_ok)
 		return ev;
 
-	if (ev == 0xffffffff) {
+	if (val == 0xffffffff) {
 		return inst_ok;
 	}
 

@@ -589,7 +589,7 @@ BEGIN
     CONTROL         "Weiß ändern",IDC_CHANGEWHITE_CHECK,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,33,66,10
     COMBOBOX        IDC_WHITETARGET_COMBO,88,32,57,84,CBS_DROPDOWNLIST | WS_DISABLED | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     GROUPBOX        "Gamma Kalkulation",IDC_STATIC,7,51,198,73,WS_GROUP
-    CONTROL         "Anzeige Gamma",IDC_GAMMA_OFFSET_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,12,61,115,10
+    CONTROL         "Anzeige Gamma (power law)",IDC_GAMMA_OFFSET_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,12,61,115,10
     CONTROL         "Anzeige Gamma mit Schwarzkompensation",IDC_GAMMA_OFFSET_RADIO2,
                     "Button",BS_AUTORADIOBUTTON,12,73,154,10
     CONTROL         "Kamera Gamma (Standard Offset)",IDC_GAMMA_OFFSET_RADIO3,
@@ -3234,7 +3234,7 @@ BEGIN
     IDS_RUNALLSATON         "Alles Sättigungsmessung ausführen mit"
     IDS_MEASUREGRAYANDCOLORSON 
                             "Messung der Primärfarben, Sekundärfarben und Grautreppe fortsetzen"
-    IDS_PERCENTGRAY         "% Grau"
+    IDS_PERCENTGRAY         "% weiß"
     IDS_OPENNEWTAB          "Einen neuen Reiter öffnen"
     IDS_MEASURESINGLE_SIM   "Eine einmalige freie Messung in allen Dokumenten simultan ausführen ?"
 END

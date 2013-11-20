@@ -350,19 +350,22 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
         else
         {
             if (int_time == 0.0)
-                i_time = 0.2;
+                i_time = 0.0; //will reset to argyll defaults in meter code
             else
                 i_time = int_time;
         }
             double c_it;
-            instCode = m_meter->get_int_time(m_meter, &c_it);
-            instCode = m_meter->set_int_time(m_meter, i_time);
+            instCode = m_meter->get_set_opt(m_meter, inst_opt_get_min_int_time, &c_it);
+            instCode = m_meter->get_set_opt(m_meter, inst_opt_set_min_int_time, i_time);
             if (instCode != inst_ok)
                 MessageBox(NULL,m_meter->inst_interp_error(m_meter,instCode),"Integration time set error", MB_OK);
             if (i_time != c_it)
             {
                 char t [50];
-                sprintf(t,"New integration time is %f seconds.",i_time);
+                if (i_time != 0.0)
+                    sprintf(t,"New integration time is %f seconds.",i_time);
+                else
+                    sprintf(t,"New integration time is %f seconds.",c_it);
                 MessageBox(NULL,t,"Integration time set",MB_OK);
             }
     }
@@ -469,7 +472,7 @@ void ArgyllMeterWrapper::setDisplayType(int displayMode)
 
 bool ArgyllMeterWrapper::setObType(CString SpectralType)
 {
-    icxObserverType obType=icxOT_default;
+    icxObserverType obType=static_cast<icxObserverType>(m_obType);
  
     if (SpectralType == "CIE 1931 2 deg")
         obType=icxOT_CIE_1931_2;

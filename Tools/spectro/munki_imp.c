@@ -67,14 +67,20 @@
 #include "sort.h"
 
 /* Configuration */
-#undef USE_HIGH_GAIN_MODE /* [Und] Make use of high gain mode */
+#undef USE_HIGH_GAIN_MODE /* [Und] Make use of high gain mode in emissive measurements */
 #define USE_THREAD		/* [Def] Need to use thread, or there are 1.5 second internal */
 						/* instrument delays ! */
-#define ENABLE_NONVCAL	/* [Def] Enable saving calibration state between program runs in a file */
+#define ENABLE_NONVCAL	/* [Def] Enable saving calibration state between program runs to a file */
 #define ENABLE_NONLINCOR	/* [Def] Enable non-linear correction */
 						/* NOTE :- high gain scaling will be stuffed if disabled! */
 #define ENABLE_LEDTEMPC	/* [Def] Enable LED temperature compensation */
-#define ENABLE_SPOS_CHECK	/* [Def] Chech the sensor position is reasonable for measurement */
+#define ENABLE_BKDRIFTC	/* [Def] Enable Emis. Black drift compensation using sheilded cell values */
+#define HEURISTIC_BKDRIFTC	/* [Def] Use heusristic black drift correction version */
+#undef  ENABLE_REFSTRAYC	/* [Und] Enable Reflective stray light compensation */
+#define REFSTRAYC_FACTOR 0.000086 /* [0.00043] Compensation factor */
+#undef  ENABLE_REFLEDINTER	/* [Und] Enable Reflective LED interference correction */
+
+#define ENABLE_SPOS_CHECK	/* [Def] Check the sensor position is reasonable for measurement */
 #define DCALTOUT (1 * 60 * 60)		/* [1 Hrs] Dark Calibration timeout in seconds */
 #define WCALTOUT (24 * 60 * 60)		/* [24 Hrs] White Calibration timeout in seconds */
 #define MAXSCANTIME 20.0	/* [20 Sec] Maximum scan time in seconds */
@@ -83,6 +89,7 @@
 #define SINGLE_READ		/* [Def] Use a single USB read for scan to eliminate latency issues. */
 #define HIGH_RES		/* [Def] Enable high resolution spectral mode code. Disable */
 						/* to break dependency on rspl library. */
+# undef FAST_HIGH_RES_SETUP	/* Slightly better accuracy ? */
 
 /* Debug [Und] */
 #undef DEBUG			/* Turn on extra messages & plots */
@@ -92,16 +99,17 @@
 #undef RAWR_DEBUG		/* Print out raw reading processing values */
 #undef DUMP_SCANV		/* Dump scan readings to a file "mkdump.txt" */
 #undef DUMP_DARKM		/* Append raw dark readings to file "mkddump.txt" */
+#undef DUMP_BKLED		/* Save REFSTRAYC & REFLEDNOISE comp plot to "refbk1.txt" & "refbk2.txt" */
 #undef APPEND_MEAN_EMMIS_VAL /* Append averaged uncalibrated reading to file "mkdump.txt" */
 #undef IGNORE_WHITE_INCONS	/* Ignore define reference reading inconsistency */
 #undef TEST_DARK_INTERP	/* Test out the dark interpolation (need DEBUG for plot) */
 #undef PLOT_RCALCURVE	/* Plot the reflection reference curve */
 #undef PLOT_ECALCURVES	/* Plot the emission reference curves */
-#undef PLOT_TEMPCOMP	/* Plot before and after temp. compensation */
-#undef PATREC_DEBUG		/* Print & Plot patch/flash recognition information */
+#undef PLOT_TEMPCOMP	/* Plot before and after LED temp. compensation */
+#undef PLOT_PATREC		/* Print & Plot patch/flash recognition information */
 #undef HIGH_RES_DEBUG
 #undef HIGH_RES_PLOT
-#undef HIGH_RES_PLOT_STRAYL		/* Plot strat light upsample */
+#undef HIGH_RES_PLOT_STRAYL		/* Plot stray light upsample */
 
 
 #define DISP_INTT 0.7			/* Seconds per reading in display spot mode */
@@ -117,25 +125,22 @@
 #define ADARKINT_MAX 2.0		/* Max cal time for adaptive dark cal with high gain mode */
 #define ADARKINT_MAX2 4.0		/* Max cal time for adaptive dark for no high gain */
 
-#define SCAN_OP_LEV 0.10		/* Degree of optimimum sensor value to aim for */
-								/* Make it scan as fast as possible */
-
 #define RDEAD_TIME 0.004432		/* Fudge figure to make reflecting intn. time scale linearly */
 					
 #define EMIS_SCALE_FACTOR 1.0	/* Emission mode scale factor */ 
 #define AMB_SCALE_FACTOR 1.0	/* Ambient mode scale factor for Lux */
-//#define AMB_SCALE_FACTOR (1.0/3.141592654)	/* Ambient mode scale factor - convert */ 
-//								/* from Lux to Lux/PI */
-//								/* These factors get the same behaviour as the GMB drivers. */
 
 #define NSEN_MAX 140            /* Maximum nsen/raw value we can cope with */
 
+/* Wavelength to start duplicating values below, because it is too noisy */
+#define WL_REF_MIN 420.0
+#define WL_EMIS_MIN 400.0
+
 /* High res mode settings */
-#define HIGHRES_SHORT 370		/* Wavelength to calculate */
+#define HIGHRES_SHORT 380		/* Wavelength to calculate. Too noisy to try expanding range. */
 #define HIGHRES_LONG  730
 #define HIGHRES_WIDTH  (10.0/3.0) /* (The 3.3333 spacing and lanczos2 seems a good combination) */
-#define HIGHRES_REF_MIN 410.0	  /* Too much stray light below this in reflective mode */
-#define HIGHRES_TRANS_MIN 380.0	  /* Too much stray light below this in reflective mode */
+
 
 #include "munki.h"
 #include "munki_imp.h"
@@ -179,7 +184,7 @@ static void dump_bytes(a1log *log, char *pfx, unsigned char *buf, int base, int 
 					bp += sprintf(bp,".");
 			}
 			bp += sprintf(bp,"\n");
-			a1logd(log,0,oline);
+			a1logd(log,0,"%s",oline);
 			bp = oline;
 		}
 	}
@@ -188,7 +193,7 @@ static void dump_bytes(a1log *log, char *pfx, unsigned char *buf, int base, int 
 /* ============================================================ */
 /* Debugging plot support */
 
-#if defined(DEBUG) || defined(PLOT_DEBUG) || defined(PATREC_DEBUG) || defined(HIGH_RES_PLOT) ||  defined(HIGH_RES_PLOT_STRAYL)
+#if defined(DEBUG) || defined(PLOT_DEBUG) || defined(PLOT_PATREC) || defined(HIGH_RES_PLOT) ||  defined(HIGH_RES_PLOT_STRAYL)
 
 # include <plot.h>
 
@@ -591,6 +596,11 @@ munki_code munki_imp_init(munki *p) {
 			s->targmaxitime = 2.0;	/* Maximum integration time to aim for */
 			s->targoscale2 = 0.15;	/* Proportion of targoscale to meed targmaxitime */
 
+#ifdef USE_HIGH_GAIN_MODE
+			s->auto_gain = 1;		/* No high gain by default */
+#else
+			s->auto_gain = 0;		/* No high gain by default */
+#endif
 			s->gainmode = 0;		/* Normal gain mode */
 			s->inttime = 0.5;		/* Initial integration time */
 
@@ -610,18 +620,14 @@ munki_code munki_imp_init(munki *p) {
 			s->idark_valid = 0;		/* Interpolatable Dark cal invalid */
 			s->idark_data = dmatrixz(0, 3, -1, m->nraw-1);  
 
-			s->min_wl = 0.0;		/* Default minimum to report */
-
 			s->dark_int_time  = DISP_INTT;	/* 0.7 */
 			s->dark_int_time2 = DISP_INTT2;	/* 0.3 */
 			s->dark_int_time3 = DISP_INTT3;	/* 0.1 */
 
 			s->idark_int_time[0] = s->idark_int_time[2] = m->min_int_time;
-#ifdef USE_HIGH_GAIN_MODE
-			s->idark_int_time[1] = s->idark_int_time[3] = ADARKINT_MAX; /* 2.0 */
-#else
-			s->idark_int_time[1] = s->idark_int_time[3] = ADARKINT_MAX2; /* 4.0 */
-#endif
+			s->idark_int_time[1] = ADARKINT_MAX; /* 2.0 */
+			s->idark_int_time[3] = ADARKINT_MAX2; /* 4.0 */
+
 			s->want_calib = 1;		/* By default want an initial calibration */
 			s->want_dcalib = 1;
 		}
@@ -631,7 +637,8 @@ munki_code munki_imp_init(munki *p) {
 			s = &m->ms[i];
 			switch(i) {
 				case mk_refl_spot:
-					s->targoscale = 1.0;	/* Optimised sensor scaling to full */
+					s->auto_gain = 0;			/* Don't automatically set gain */
+					s->targoscale = 1.0;		/* Optimised sensor scaling to full */
 					s->reflective = 1;
 					s->adaptive = 0;
 					s->inttime = s->targoscale * m->cal_int_time;
@@ -644,17 +651,19 @@ munki_code munki_imp_init(munki *p) {
 					s->dreadtime = 0.5;			/* same as reading */
 					s->wreadtime = 0.5;
 					s->maxscantime = 0.0;
-					s->min_wl = HIGHRES_REF_MIN; /* Not enogh illumination to go below this */
 					break;
 
 				case mk_refl_scan:
-					s->targoscale = SCAN_OP_LEV;	/* Maximize scan rate */
+					s->auto_gain = 0;				/* Don't automatically set gain */
+					s->targoscale = 1.0;			/* Maximize level */
 					s->reflective = 1;
 					s->scan = 1;
 					s->adaptive = 0;
-					s->inttime = (s->targoscale * m->cal_int_time - RDEAD_TIME) + RDEAD_TIME;
-					if (s->inttime < m->min_int_time)
-						s->inttime = m->min_int_time;
+//					s->inttime = (s->targoscale * m->cal_int_time - RDEAD_TIME) + RDEAD_TIME;
+//					if (s->inttime < m->min_int_time)
+//						s->inttime = m->min_int_time;
+//					s->dark_int_time = s->inttime;
+					s->inttime = s->targoscale * m->cal_int_time;
 					s->dark_int_time = s->inttime;
 
 					s->dpretime = 0.20;		/* Pre-measure time */
@@ -664,7 +673,6 @@ munki_code munki_imp_init(munki *p) {
 					s->dreadtime = 0.10;
 					s->wreadtime = 0.10;
 					s->maxscantime = MAXSCANTIME;
-					s->min_wl = HIGHRES_REF_MIN; /* Not enogh illumination to go below this */
 					break;
 
 				case mk_emiss_spot_na:			/* Emissive spot not adaptive */
@@ -769,14 +777,13 @@ munki_code munki_imp_init(munki *p) {
 					s->dreadtime = 0.0;
 					s->wreadtime = 1.0;
 					s->maxscantime = 0.0;
-					s->min_wl = HIGHRES_TRANS_MIN;	/* Too much stray light below this ? */
 					break;
 
 				case mk_trans_scan:
-					s->targoscale = 0.90;		/* Allow extra 10% margine */
+					// ~~99 should we use high gain mode ??
+					s->targoscale = 0.10;		/* Scan as fast as possible */
 					s->trans = 1;
 					s->scan = 1;
-					s->targoscale = SCAN_OP_LEV;
 					s->inttime = s->targoscale * m->cal_int_time;
 					if (s->inttime < m->min_int_time)
 						s->inttime = m->min_int_time;
@@ -790,7 +797,6 @@ munki_code munki_imp_init(munki *p) {
 					s->dreadtime = 0.00;
 					s->wreadtime = 0.10;
 					s->maxscantime = MAXSCANTIME;
-					s->min_wl = HIGHRES_TRANS_MIN;	/* Too much stray light below this ? */
 					break;
 			}
 		}
@@ -839,12 +845,12 @@ char *munki_imp_get_serial_no(munki *p) {
 /* Set the measurement mode. It may need calibrating */
 munki_code munki_imp_set_mode(
 	munki *p,
-	mk_mode mmode,
-	int spec_en		/* nz to enable reporting spectral */
+	mk_mode mmode,		/* Operating mode */
+	inst_mode mode		/* Full mode mask for options */
 ) {
 	munkiimp *m = (munkiimp *)p->m;
 
-	a1logd(p->log,3,"munki_imp_set_mode called with %d\n",mmode);
+	a1logd(p->log,2,"munki_imp_set_mode called with mode no. %d and mask 0x%x\n",mmode,m);
 	switch(mmode) {
 		case mk_refl_spot:
 		case mk_refl_scan:
@@ -858,12 +864,21 @@ munki_code munki_imp_set_mode(
 		case mk_trans_spot:
 		case mk_trans_scan:
 			m->mmode = mmode;
-			m->spec_en = spec_en ? 1 : 0;
-			return MUNKI_OK;
-		default:
 			break;
+		default:
+			return MUNKI_INT_ILLEGALMODE;
 	}
-	return MUNKI_INT_ILLEGALMODE;
+	m->spec_en = (mode & inst_mode_spectral) != 0;
+
+	if ((mode & inst_mode_highres) != 0) {
+		munki_code rv;
+		if ((rv = munki_set_highres(p)) != MUNKI_OK)
+			return rv;
+	} else {
+		munki_set_stdres(p);	/* Ignore any error */
+	}
+
+	return MUNKI_OK;
 }
 
 /* Return needed and available inst_cal_type's */
@@ -877,7 +892,7 @@ munki_code munki_imp_get_n_a_cals(munki *p, inst_cal_type *pn_cals, inst_cal_typ
 	a1logd(p->log,3,"munki_imp_get_n_a_cals: checking mode %d\n",m->mmode);
 
 	/* Timout calibrations that are too old */
-	a1logd(p->log,4,"curtime = %u, iddate = %u\n",curtime,cs->iddate);
+	a1logd(p->log,4,"curtime %u, iddate %u, ddate %u, cfdate %u\n",curtime,cs->iddate,cs->ddate,cs->cfdate);
 	if ((curtime - cs->iddate) > DCALTOUT) {
 		a1logd(p->log,3,"Invalidating adaptive dark cal as %d secs from last cal\n",curtime - cs->iddate);
 		cs->idark_valid = 0;
@@ -974,7 +989,7 @@ munki_code munki_imp_calibrate(
 		else if (*calt == inst_calt_available)
 			*calt = available & inst_calt_n_dfrble_mask;
 
-		a1logd(p->log,4,"munki_imp_calibrate: doing calt 0x%x\n",calt);
+		a1logd(p->log,4,"munki_imp_calibrate: doing calt 0x%x\n",*calt);
 
 		if ((*calt & inst_calt_n_dfrble_mask) == 0)		/* Nothing todo */
 			return MUNKI_OK;
@@ -991,6 +1006,16 @@ munki_code munki_imp_calibrate(
 	}
 	a1logd(p->log,4,"munki sensor position = 0x%x\n",spos);
 
+#ifdef NEVER
+	/* We can set the *calc to the actual conditions, in which case */
+	/* the calibration will commence immediately. */
+	if (!m->nosposcheck && spos == mk_spos_calib) {
+		*calc = inst_calc_man_cal_smode;
+		a1logd(p->log,4,"munki set calc to cal conditions\n",spos);
+
+	}
+#endif
+
 	/* Make sure that the instrument configuration matches the */
 	/* conditions */
 	if (*calc == inst_calc_man_cal_smode) {
@@ -1001,13 +1026,6 @@ munki_code munki_imp_calibrate(
 		if (!m->nosposcheck && spos != mk_spos_surf) {
 			return MUNKI_SPOS_SURF;
 		}
-	}
-
-	/* If the instrument is in the calibration position, */
-	/* we know what the conditions are. */
-	if (!m->nosposcheck && spos == mk_spos_calib) {
-		*calc = inst_calc_man_cal_smode;
-		a1logd(p->log,4,"munki set calc to cal conditions\n",spos);
 	}
 
 	a1logd(p->log,4,"munki_imp_calibrate has right conditions\n");
@@ -1027,9 +1045,9 @@ munki_code munki_imp_calibrate(
 
 		/* Sanity check scan mode settings, in case something strange */
 		/* has been restored from the persistence file. */
-		if (s->scan && s->inttime > (2.1 * m->min_int_time)) {
-			s->inttime = m->min_int_time;	/* Maximize scan rate */
-		}
+//		if (s->scan && s->inttime > (2.1 * m->min_int_time)) {
+//			s->inttime = m->min_int_time;	/* Maximize scan rate */
+//		}
 	
 		/* We are now either in inst_calc_man_cal_smode, */ 
 		/* inst_calc_man_trans_white, inst_calc_disp_white or inst_calc_proj_white */
@@ -1055,7 +1073,7 @@ munki_code munki_imp_calibrate(
 	
 			nummeas = munki_comp_nummeas(p, s->dcaltime, s->inttime);
 	
-			a1logd(p->log,3,"\nDoing initial display black calibration with dcaltime %f, int_time %f, nummeas %d, gainmode %d\n", s->dcaltime, s->inttime, nummeas, s->gainmode);
+			a1logd(p->log,3,"\nDoing initial black calibration with dcaltime %f, int_time %f, nummeas %d, gainmode %d\n", s->dcaltime, s->inttime, nummeas, s->gainmode);
 			stm = msec_time();
 			if ((ev = munki_dark_measure(p, s->dark_data, nummeas, &s->inttime, s->gainmode))
 		                                                                         != MUNKI_OK) {
@@ -1209,25 +1227,25 @@ if (ss->dark_int_time2 != s->dark_int_time2
 				return ev;
 			}
 		
-#ifdef USE_HIGH_GAIN_MODE
-			s->idark_int_time[2] = m->min_int_time;	/* 0.01 */
-			nummeas = munki_comp_nummeas(p, s->dcaltime, s->idark_int_time[2]);
-			a1logd(p->log,3,"Doing adaptive interpolated black calibration, dcaltime %f, idark_int_time[2] %f, nummeas %d, gainmode %d\n", s->dcaltime, s->idark_int_time[2], nummeas, 1);
-			if ((ev = munki_dark_measure(p, s->idark_data[2], nummeas, &s->idark_int_time[2], 1))
-			                                                                          != MUNKI_OK) {
-				m->mmode = mmode;           /* Restore actual mode */
-				return ev;
+			if (s->auto_gain) {			/* If high gain is permitted */
+				s->idark_int_time[2] = m->min_int_time;	/* 0.01 */
+				nummeas = munki_comp_nummeas(p, s->dcaltime, s->idark_int_time[2]);
+				a1logd(p->log,3,"Doing adaptive interpolated black calibration, dcaltime %f, idark_int_time[2] %f, nummeas %d, gainmode %d\n", s->dcaltime, s->idark_int_time[2], nummeas, 1);
+				if ((ev = munki_dark_measure(p, s->idark_data[2], nummeas, &s->idark_int_time[2], 1))
+				                                                                          != MUNKI_OK) {
+					m->mmode = mmode;           /* Restore actual mode */
+					return ev;
+				}
+			
+				s->idark_int_time[3] = ADARKINT_MAX; /* 2.0 */
+				a1logd(p->log,3,"Doing adaptive interpolated black calibration, dcaltime %f, idark_int_time[3] %f, nummeas %d, gainmode %d\n", s->dcaltime, s->idark_int_time[3], nummeas, 1);
+				nummeas = munki_comp_nummeas(p, s->dcaltime, s->idark_int_time[3]);
+				if ((ev = munki_dark_measure(p, s->idark_data[3], nummeas, &s->idark_int_time[3], 1))
+				                                                                          != MUNKI_OK) {
+					m->mmode = mmode;           /* Restore actual mode */
+					return ev;
+				}
 			}
-		
-			s->idark_int_time[3] = ADARKINT_MAX; /* 2.0 */
-			a1logd(p->log,3,"Doing adaptive interpolated black calibration, dcaltime %f, idark_int_time[3] %f, nummeas %d, gainmode %d\n", s->dcaltime, s->idark_int_time[3], nummeas, 1);
-			nummeas = munki_comp_nummeas(p, s->dcaltime, s->idark_int_time[3]);
-			if ((ev = munki_dark_measure(p, s->idark_data[3], nummeas, &s->idark_int_time[3], 1))
-			                                                                          != MUNKI_OK) {
-				m->mmode = mmode;           /* Restore actual mode */
-				return ev;
-			}
-#endif /* USE_HIGH_GAIN_MODE */
 		
 			munki_prepare_idark(p);
 	
@@ -1265,12 +1283,7 @@ if (ss->dark_int_time != s->dark_int_time
  || ss->dark_gain_mode != s->dark_gain_mode)
 	a1logd(p->log,1,"copying cal to mode with different cal/gain mode: %d -> %d\n",s->mode, ss->mode);
 #endif
-#ifdef USE_HIGH_GAIN_MODE
-					for (j = 0; j < 4; j++)
-#else
-					for (j = 0; j < 2; j++)
-#endif
-					{
+					for (j = 0; j < (s->auto_gain ? 4 : 2); j++) {
 						ss->idark_int_time[j] = s->idark_int_time[j];
 #ifndef NEVER	// ~~99
 if (ss->idark_int_time[j] != s->idark_int_time[j])
@@ -1320,30 +1333,30 @@ if (ss->idark_int_time[j] != s->idark_int_time[j])
 				ddumpdarkm = 0;
 #endif
 	
-#ifdef USE_HIGH_GAIN_MODE
-	//			fprintf(stderr,"High gain offsets, base:\n");
-	//			plot_raw(s->idark_data[2]);
-	//			fprintf(stderr,"High gain offsets, multiplier:\n");
-	//			plot_raw(s->idark_data[3]);
+				if (s->auto_gain) {
+//					fprintf(stderr,"High gain offsets, base:\n");
+//					plot_raw(s->idark_data[2]);
+//					fprintf(stderr,"High gain offsets, multiplier:\n");
+//					plot_raw(s->idark_data[3]);
 				
-				for (tinttime = m->min_int_time; ; tinttime *= 2.0) {
-					if (tinttime >= m->max_int_time)
-						tinttime = m->max_int_time;
-	
-					nummeas = munki_comp_nummeas(p, s->dcaltime, tinttime);
-					if ((ev = munki_dark_measure(p, ref, nummeas, &tinttime, 1)) != MUNKI_OK) {
-						m->mmode = mmode;           /* Restore actual mode */
-						return ev;
-					}
-					munki_interp_dark(p, interp, tinttime, 1);
+					for (tinttime = m->min_int_time; ; tinttime *= 2.0) {
+						if (tinttime >= m->max_int_time)
+							tinttime = m->max_int_time;
+		
+						nummeas = munki_comp_nummeas(p, s->dcaltime, tinttime);
+						if ((ev = munki_dark_measure(p, ref, nummeas, &tinttime, 1)) != MUNKI_OK) {
+							m->mmode = mmode;           /* Restore actual mode */
+							return ev;
+						}
+						munki_interp_dark(p, interp, tinttime, 1);
 #ifdef DEBUG
-					printf("High gain, int time %f:\n",tinttime);
-					plot_raw2(ref, interp);
+						printf("High gain, int time %f:\n",tinttime);
+						plot_raw2(ref, interp);
 #endif
-					if ((tinttime * 1.1) > m->max_int_time)
-						break;
-				}
-#endif /* USE_HIGH_GAIN_MODE */
+						if ((tinttime * 1.1) > m->max_int_time)
+							break;
+					}
+			}
 			}
 #endif	/* TEST_DARK_INTERP */
 	
@@ -1372,27 +1385,24 @@ if (ss->idark_int_time[j] != s->idark_int_time[j])
 				return ev;
 			}
 		
-#ifdef USE_HIGH_GAIN_MODE
-			s->idark_int_time[2] = s->inttime;
-			nummeas = munki_comp_nummeas(p, s->dcaltime, s->idark_int_time[2]);
-			a1logd(p->log,3,"Doing adaptive scan black calibration, dcaltime %f, idark_int_time[2] %f, nummeas %d, gainmode %d\n", s->dcaltime, s->idark_int_time[2], nummeas, s->gainmode);
-			if ((ev = munki_dark_measure(p, s->idark_data[2], nummeas, &s->idark_int_time[2], 1))
-			                                                                          != MUNKI_OK) {
-				m->mmode = mmode;           /* Restore actual mode */
-				return ev;
+			if (s->auto_gain) {
+				s->idark_int_time[2] = s->inttime;
+				nummeas = munki_comp_nummeas(p, s->dcaltime, s->idark_int_time[2]);
+				a1logd(p->log,3,"Doing adaptive scan black calibration, dcaltime %f, idark_int_time[2] %f, nummeas %d, gainmode %d\n", s->dcaltime, s->idark_int_time[2], nummeas, s->gainmode);
+				if ((ev = munki_dark_measure(p, s->idark_data[2], nummeas, &s->idark_int_time[2], 1))
+				                                                                          != MUNKI_OK) {
+					m->mmode = mmode;           /* Restore actual mode */
+					return ev;
+				}
 			}
-#endif
 		
 			s->idark_valid = 1;
 			s->iddate = cdate;
 	
-#ifdef USE_HIGH_GAIN_MODE
-			if (s->gainmode) {
+			if (s->auto_gain && s->gainmode) {
 				for (j = -1; j < m->nraw; j++)
 					s->dark_data[j] = s->idark_data[2][j];
-			} else
-#endif
-			{
+			} else {
 				for (j = -1; j < m->nraw; j++)
 					s->dark_data[j] = s->idark_data[0][j];
 			}
@@ -1420,12 +1430,8 @@ if (ss->idark_int_time[j] != s->idark_int_time[j])
 					ss->iddate = s->iddate;
 					ss->dark_int_time = s->dark_int_time;
 					ss->dark_gain_mode = s->dark_gain_mode;
-#ifdef USE_HIGH_GAIN_MODE
-					for (j = 0; j < 4; j += 2)
-#else
-					for (j = 0; j < 2; j += 2)
-#endif
-					{
+
+					for (j = 0; j < (s->auto_gain ? 4 : 2); j += 2) {
 						ss->idark_int_time[j] = s->idark_int_time[j];
 						for (k = -1; k < m->nraw; k++)
 							ss->idark_data[j][k] = s->idark_data[j][k];
@@ -1734,8 +1740,6 @@ int icoms2munki_err(int se) {
 /* inst_misread will be returned on failure to find a transition to black. */
 #define NDMXTIME 0.7		/* Maximum time to take */
 #define NDSAMPS 500			/* Debug samples */
-
-munki_code munki_read_patches_all(munki *p, double **specrd, int numpatches, double *inttime,int gainmode);
 
 typedef struct {
 	double sec;
@@ -3613,7 +3617,8 @@ munki_code munki_dark_measure_2(
 	free_dmatrix(multimes, 0, nummeas-1, -1, m->nraw-1);
 
 #ifdef PLOT_DEBUG
-	printf("Average absolute sensor readings, average = %f, darkthresh %f\n",sensavg,darkthresh);
+	a1logd(p->log,4,"dark_measure_2: Avg abs. sensor readings = %f, sh/darkthresh %f\n",sensavg,darkthresh);
+	printf("sens data:\n");
 	plot_raw(sens);
 #endif
 
@@ -3833,6 +3838,7 @@ munki_code munki_whitemeasure(
 		a1logd(p->log,3,"Average absolute sensor readings, avg %f, max %f, darkth %f satth %f\n",
 		               sensavg,maxval,darkthresh,trackmax[2]);
 #ifdef PLOT_DEBUG
+		printf("absraw whitemeas:\n");
 		plot_raw(absraw);
 #endif
 	}
@@ -3872,7 +3878,7 @@ munki_code munki_compute_wav_whitemeas(
 		munki_absraw_to_abswav1(p, 1, &abswav1, &absraw);
 
 #ifdef PLOT_DEBUG
-		printf("Converted to wavelengths std res:\n");
+		printf("White meas converted to wavelengths std res:\n");
 		plot_wav1(m, abswav1);
 #endif
 	}
@@ -3962,7 +3968,7 @@ munki_code munki_ledtemp_whitemeasure(
 	*reftemp = 0.5 * (ledtemp[0] + ledtemp[nummeas-1]);
 
 #ifdef PLOT_DEBUG
-	printf("Dark data:\n");
+	printf("Ledtemp Dark data:\n");
 	plot_raw(s->dark_data);
 #endif
 
@@ -4113,8 +4119,7 @@ munki_code munki_ledtemp_comp(
 	return MUNKI_OK;
 }
 
-/* Take a measurement reading using the current mode, part 1 */
-/* Converts to completely processed output readings. */
+/* Trigger measure and gather raw readings using the current mode. */
 munki_code munki_read_patches_1(
 	munki *p,
 	int ninvmeas,			/* Number of extra invalid measurements at start */
@@ -4124,7 +4129,7 @@ munki_code munki_read_patches_1(
 	int gainmode,			/* Gain mode to use, 0 = normal, 1 = high */
 	int *nmeasuered,		/* Number actually measured (excluding ninvmeas) */
 	unsigned char *buf,		/* Raw USB reading buffer */
-	unsigned int bsize
+	unsigned int bsize		/* Raw USB readings buffer size in bytes */
 ) {
 	munki_code ev = MUNKI_OK;
 	munkiimp *m = (munkiimp *)p->m;
@@ -4154,8 +4159,8 @@ munki_code munki_read_patches_1(
 	return ev;
 }
 
-/* Take a measurement reading using the current mode, part 2 */
-/* Converts to completely processed output readings. */
+/* Given a buffer full of raw USB values, process them into */ 
+/* completely processed spectral output patch readings. */
 munki_code munki_read_patches_2(
 	munki *p,
 	double *duration,		/* Return flash duration in seconds */
@@ -4166,7 +4171,7 @@ munki_code munki_read_patches_2(
 	int ninvmeas,			/* Number of extra invalid measurements at start */
 	int nummeas,			/* Number of actual measurements */
 	unsigned char *buf,		/* Raw USB reading buffer */
-	unsigned int bsize
+	unsigned int bsize		/* Raw USB reading buffer size */
 ) {
 	munki_code ev = MUNKI_OK;
 	munkiimp *m = (munkiimp *)p->m;
@@ -4201,32 +4206,6 @@ munki_code munki_read_patches_2(
 	munki_sub_raw_to_absraw(p, nummeas, inttime, gainmode, multimes, s->dark_data,
 	                             &darkthresh, 1, NULL);
 
-#ifdef PLOT_TEMPCOMP
-	/* Plot the raw spectra, 6 at a time */
-	if (s->reflective) {
-		int i, j, k;
-		double *indx;
-		double **mod;
-		indx = dvectorz(0, nummeas-1);  
-	  	mod = dmatrix(0, 5, 0, nummeas-1);
-		for (i = 0; i < nummeas; i++)
-			indx[i] = (double)i;
-
-//		for (j = 0; (j+5) < m->nraw; j += 6) {
-		for (j = 50; (j+5) < 56; j += 6) {
-			for (i = 0; i < nummeas; i++) {
-				for (k = j; k < (j + 6); k++) {
-					mod[k-j][i] = multimes[i][k];
-				}
-			}
-
-			printf("Before temp comp, bands %d - %d\n",j, j+5);
-			do_plot6(indx, mod[0], mod[1], mod[2], mod[3], mod[4], mod[5], nummeas);
-		}
-		free_dvector(indx, 0, nummeas-1);  
-	  	free_dmatrix(mod, 0, 5, 0, nummeas-1);
-	}
-#endif
 #ifdef DUMP_SCANV
 	/* Dump raw scan readings to a file "mkdump.txt" */
 	{
@@ -4249,8 +4228,38 @@ munki_code munki_read_patches_2(
 #endif
 
 #ifdef ENABLE_LEDTEMPC
+
+
 	/* Do LED temperature compensation of absraw values */
 	if (s->reflective) {
+
+#ifdef PLOT_TEMPCOMP
+	/* Plot the raw spectra, 6 at a time */
+		{
+			int i, j, k;
+			double *indx;
+			double **mod;
+			indx = dvectorz(0, nummeas-1);  
+		  	mod = dmatrix(0, 5, 0, nummeas-1);
+			for (i = 0; i < nummeas; i++)
+				indx[i] = (double)i;
+	
+//		for (j = 0; (j+5) < m->nraw; j += 6) {
+			for (j = 50; (j+5) < 56; j += 6) {
+				for (i = 0; i < nummeas; i++) {
+					for (k = j; k < (j + 6); k++) {
+						mod[k-j][i] = multimes[i][k];
+					}
+				}
+	
+				printf("Before temp comp, bands %d - %d\n",j, j+5);
+				do_plot6(indx, mod[0], mod[1], mod[2], mod[3], mod[4], mod[5], nummeas);
+			}
+			free_dvector(indx, 0, nummeas-1);  
+		  	free_dmatrix(mod, 0, 5, 0, nummeas-1);
+		}
+#endif
+		/* Do the LED temperature compensation */
 		if ((ev = munki_ledtemp_comp(p, multimes, ledtemp, nummeas, s->reftemp, s->iwhite_data))
 		                                                                            != MUNKI_OK) {
 			free_dvector(ledtemp, 0, nummeas-1);
@@ -4329,7 +4338,7 @@ munki_code munki_read_patches_2(
 			/* Recognise the required number of ref/trans patch locations, */
 			/* and average the measurements within each patch. */
 			if ((ev = munki_extract_patches_multimeas(p, &rv, absraw, numpatches, multimes,
-			                                                 nummeas, inttime)) != MUNKI_OK) {
+			                                   nummeas, inttime)) != MUNKI_OK) {
 				free_dvector(ledtemp, 0, nummeas-1);
 				free_dmatrix(multimes, 0, nummeas-1, -1, m->nraw-1);
 				free_dmatrix(absraw, 0, numpatches-1, -1, m->nraw-1);
@@ -4346,6 +4355,52 @@ munki_code munki_read_patches_2(
 		a1logd(p->log,3,"munki_read_patches_2 spot read failed with inconsistent readings\n");
 		return MUNKI_RD_READINCONS;
 	}
+
+#ifdef ENABLE_REFSTRAYC	/* Enable Reflective stray light compensation */
+	if (s->reflective) {
+		int i, j;
+# if defined(PLOT_DEBUG) || defined(DUMP_BKLED)
+		double xx[140];
+		double yy[3][140];
+# endif
+
+		double fact = REFSTRAYC_FACTOR;		/* Slightly conservative */
+
+		for (i = 0; i < numpatches; i++) {
+
+			for (j = 0; j < m->nraw; j++) {
+# if defined(PLOT_DEBUG) || defined(DUMP_BKLED)
+				yy[0][j] = absraw[i][j];
+# endif
+				absraw[i][j] -= fact * s->white_data[j];
+# if defined(PLOT_DEBUG) || defined(DUMP_BKLED)
+				xx[j] = j;
+				yy[1][j] = fact * s->white_data[j];
+				yy[2][j] = absraw[i][j];
+# endif
+			}
+# ifdef PLOT_DEBUG
+			printf("Before/After subtracting stray ref. light %d:\n",i);
+			do_plot6(xx, yy[0], yy[1], yy[2], NULL, NULL, NULL, m->nraw);
+# endif
+# ifdef DUMP_BKLED		/* Save REFSTRAYC & REFLEDNOISE comp plot to "refbk1.txt" & "refbk2.txt" */
+		{
+			xspect sp[3];
+			for (i = 0; i < 3; i++) {
+				sp[i].spec_n = 128;
+				sp[i].spec_wl_short = 0.0;
+				sp[i].spec_wl_long = 127.0;
+				sp[i].norm = 1.0;
+				for (j = 0; j < 128; j++)
+					sp[i].spec[j] = yy[i][j];
+			}
+			write_nxspect("refbk2.txt", sp, 3, 0);
+# pragma message("######### munki DUMP_BKLED enabled! ########")
+		}
+# endif	/* DUMP_BKLED */
+		}
+	}
+#endif /* ENABLE_REFSTRAYC */
 
 	/* Convert an absraw array from raw wavelengths to output wavelenths */
 	munki_absraw_to_abswav(p, numpatches, specrd, absraw);
@@ -4395,9 +4450,11 @@ munki_code munki_read_patches_2(
 	return ev;
 }
 
-/* Take a measurement reading using the current mode, part 2a */
-/* Converts to completely processed output readings, */
+/* Given a buffer full of raw USB values, process them into */ 
+/* completely processed spectral output readings, */
 /* but don't average together or extract patches or flash. */
+/* This is used for delay & refresh rate measurement. */
+/* !! Doesn't do LED temperature compensation for reflective !! */
 /* (! Note that we aren't currently detecting saturation here!) */
 munki_code munki_read_patches_2a(
 	munki *p,
@@ -4461,7 +4518,8 @@ munki_code munki_read_patches_2a(
 
 /* Take a measurement reading using the current mode (combined parts 1 & 2a) */
 /* Converts to completely processed output readings, without averaging or extracting */
-/* sample patches. */
+/* sample patches, for emissive measurement mode. */
+/* This is used for delay & refresh rate measurement. */
 munki_code munki_read_patches_all(
 	munki *p,
 	double **specrd,		/* Return array [numpatches][nwav] of spectral reading values */
@@ -4687,7 +4745,7 @@ munki_code munki_sens_to_raw(
 	int ninvalid,			/* Number of initial invalid readings to skip */
 	int nummeas,			/* Number of readings measured */
 	double satthresh,		/* Saturation threshold to trigger error in raw units (if > 0.0) */
-	double *pdarkthresh		/* Return a dark threshold value */
+	double *pdarkthresh		/* Return a dark threshold value = sheilded cell values */
 ) {
 	munkiimp *m = (munkiimp *)p->m;
 	int i, j, k;
@@ -4700,11 +4758,6 @@ munki_code munki_sens_to_raw(
 
 	if ((m->nraw * 2 + sskip + eskip) != (m->nsen * 2)) {
 		a1logw(p->log,"NRAW %d and NRAWB %d don't match!\n",m->nraw,m->nsen * 2);
-		return MUNKI_INT_ASSERT;
-	}
-
-	if (ninvalid >= nummeas) {
-		a1logw(p->log,"ninvalid %d is >= nummeas %d!\n",ninvalid,nummeas);
 		return MUNKI_INT_ASSERT;
 	}
 
@@ -4776,12 +4829,13 @@ void munki_sub_raw_to_absraw(
 	double inttime, 		/* Integration time used */
 	int gainmode,			/* Gain mode, 0 = normal, 1 = high */
 	double **absraw,		/* Source/Desination array [-1 nraw] */
-	double *sub,			/* Value to subtract [-1 nraw] */
+	double *sub,			/* Value to subtract [-1 nraw] (ie. cal dark data) */
 	double *trackmax, 		/* absraw values that should be offset the same as max */
 	int ntrackmax,			/* Number of trackmax values */
 	double *maxv			/* If not NULL, return the maximum value */
 ) {
 	munkiimp *m = (munkiimp *)p->m;
+	munki_state *s = &m->ms[m->mmode];
 	int npoly;			/* Number of linearisation coefficients */
 	double *polys;		/* the coeficients */
 	double scale;		/* Absolute scale value */
@@ -4791,6 +4845,11 @@ void munki_sub_raw_to_absraw(
 	double rawmax, maxval = -1e38;
 	double maxzero = 0.0;
 	int i, j, k;
+
+	/* Heusristic correction for LED interference bump for 0.018 secs int_time */
+	int    pos[] = { 0,    20,   56,   62,   75,   127 };
+//	double off[] = { 0.7, 0.0,  0.6, -0.9,  -1.2, -0.7 };
+	double off[] = { 0.7, 0.0,  0.6, -0.9,  -0.8, -0.5 };
 	
 	if (gainmode) {				/* High gain */
 		npoly = m->nlin1;		/* Encodes gain too */
@@ -4833,18 +4892,129 @@ void munki_sub_raw_to_absraw(
 
 	a1logd(p->log,4,"Black shielded value = %f, Reading shielded value = %f\n",sub[-1], avgscell);
 
-	/* Compute the adjusted black */
-	for (j = 0; j < m->nraw; j++) {
-#ifdef NEVER
-		/* simple additive correction */
-# pragma message("######### munki Simple shielded cell temperature correction! ########")
-		asub[j] = sub[j] + avgscell - sub[-1];
+	/* Compute the adjusted black for each band */
+	if (s->reflective) {
+
+		/* It seems that having the LED on shifts the shielded cell values */
+		/* by about 2.5, and this stuffs up the reflective measurement. */
+		/* This seems to be from the LED PWM driver, which perhaps */
+		/* is synchronous to the sensor clock, and so switches */
+		/* at a certain point in the transfer of data from the sensor. */
+		/* The result is a step up from 0-60, and then down from 61-128. */
+		/* Perhaps altering the LED PWM setting and seeing if this point */
+		/* shifts would be a way of confirming this ? */
+		/* There is also some stray light reflected into the sensor */
+		/* from the LED, but due to the LED step, the sensor reading is */
+		/* less than the dark data at some wavelengths. */
+		/* The details of the LED step seem to be integration time dependent, */
+		/* but decresing the scanning rate therebye increasing integration */
+		/* time and light level reduces the impact of this error. */
+
+		/* Since we do an on the fly black measurement before each */
+		/* reflective measurement, ignoring the shielded cell values */
+		/* shouldn't affect accuracy so much. */
+
+#ifdef ENABLE_REFLEDINTER
+		/* A heuristic to correct for the LED noise. */
+		/* This is only valid for int_time of 0.0182 secs, */
+		/* and it's not clear how well it works across different */
+		/* temperatures or examples of the ColorMunki. */
+		/* in another revision ?? */
+		for (j = 0; j < m->nraw; j++) {
+			int ix;
+			double bl, val;
+
+			for (ix = 0; ; ix++) {
+				if (j >= pos[ix] && j <= pos[ix+1]) 
+					break;
+			}
+			bl = (j - pos[ix])/((double)pos[ix+1] - pos[ix]);
+			val = (1.0 - bl) * off[ix] + bl * off[ix+1];
+			asub[j] = sub[j] + val;
+		}
 #else
-		/* heuristic scaled correction */
-		asub[j] = zero - (zero - sub[j]) * (zero - avgscell)/(zero - sub[-1]);
+		for (j = 0; j < m->nraw; j++)
+			asub[j] = sub[j];		/* Just use the calibration dark data */
 #endif
+
+	} else {
+		/* No LED on operation - use sheilded cell values */
+		for (j = 0; j < m->nraw; j++) {
+#ifdef ENABLE_BKDRIFTC
+
+# ifdef HEURISTIC_BKDRIFTC
+			/* heuristic scaled correction */
+			asub[j] = zero - (zero - sub[j]) * (zero - avgscell)/(zero - sub[-1]);
+# else
+			/* simple additive correction */
+#  pragma message("######### munki Simple shielded cell temperature correction! ########")
+			asub[j] = sub[j] + (avgscell - sub[-1]);
+# endif
+#else
+#  pragma message("######### munki No shielded cell temperature correction! ########")
+			asub[j] = sub[j];		/* Just use the calibration dark data */
+#endif
+		}
 	}
-	
+
+#if defined(PLOT_DEBUG) || defined(DUMP_BKLED)
+	{
+	double xx[130];
+	double yy[3][130];
+
+	for (j = -1; j < m->nraw+1; j++)
+		yy[0][j+1] = 0.0;
+
+	for (i = 0; i < nummeas; i++) {
+		for (j = -1; j < m->nraw; j++)
+			yy[0][j+1] += absraw[i][j];
+	}
+	for (j = -1; j < m->nraw; j++)
+		yy[0][j+1] /= (double)nummeas;
+
+	for (j = -1; j < m->nraw; j++)
+		yy[1][j+1]= sub[j];
+
+	/* Show what ENABLE_REFLEDINTER would do */
+	for (j = 0; j < m->nraw; j++) {
+		int ix;
+		double bl, val;
+
+		for (ix = 0; ; ix++) {
+			if (j >= pos[ix] && j <= pos[ix+1]) 
+				break;
+		}
+		bl = (j - pos[ix])/((double)pos[ix+1] - pos[ix]);
+		val = (1.0 - bl) * off[ix] + bl * off[ix+1];
+		yy[2][j+1] = yy[0][j+1] - val;
+	}
+	yy[2][0] = yy[0][0];
+
+	for (j = -1; j < m->nraw; j++)
+		xx[j+1] = (double)j;
+
+	xx[0]= -10.0;
+
+# ifdef PLOT_DEBUG
+	printf("sub_raw_to_absraw %d samp avg - dark ref:\n",nummeas);
+	do_plot(xx, yy[0], yy[1], yy[2], 129);
+# endif
+# ifdef DUMP_BKLED
+	{
+		xspect sp[3];
+		for (i = 0; i < 3; i++) {
+			sp[i].spec_n = 128;
+			sp[i].spec_wl_short = 0.0;
+			sp[i].spec_wl_long = 127.0;
+			sp[i].norm = 1.0;
+			for (j = 0; j < 128; j++)
+				sp[i].spec[j] = yy[i][j+1];
+		}
+		write_nxspect("refbk1.txt", sp, 3, 0);
+	}
+# endif	/* DUMP_BKLED */
+	}
+#endif	/* PLOT_DEBUG || DUMP_BKLED */
 
 	/* For each measurement */
 	for (i = 0; i < nummeas; i++) {
@@ -4853,6 +5023,7 @@ void munki_sub_raw_to_absraw(
 		for (j = 0; j < m->nraw; j++) {
 
 			rval = absraw[i][j];
+
 			sval = rval - asub[j];		/* Make zero based */
 
 #ifdef ENABLE_NONLINCOR	
@@ -4977,7 +5148,7 @@ int munki_average_multimeas(
 #define BH 105	/* End */
 #define BW 5	/* Width */
 
-/* Record of possible patch */
+/* Record of possible patch within a reading buffer */
 typedef struct {
 	int ss;				/* Start sample index */
 	int no;				/* Number of samples */
@@ -5018,7 +5189,7 @@ munki_code munki_extract_patches_multimeas(
 	double white_avg;			/* Average of (aproximate) white data */
 	int rv = 0;
 	double patch_cons_thr = PATCH_CONS_THR * m->scan_toll_ratio;
-#ifdef PATREC_DEBUG
+#ifdef PLOT_PATREC
 	double **plot;
 #endif
 
@@ -5040,7 +5211,7 @@ munki_code munki_extract_patches_multimeas(
 			maxval[j] = 1.0;
 	}
 
-#ifdef PATREC_DEBUG
+#ifdef PLOT_PATREC
 	/* Plot out 6 lots of 6 values each */ 
 	plot = dmatrixz(0, 6, 0, nummeas-1);  
 //	for (j = 1; j < (m->nraw-6); j += 6) 			/* Plot all the bands */
@@ -5056,6 +5227,16 @@ munki_code munki_extract_patches_multimeas(
 		printf("Bands %d - %d\n",j,j+5);
 		do_plot6(plot[6], plot[0], plot[1], plot[2], plot[3], plot[4], plot[5], nummeas);
 	}
+#endif
+
+#ifdef NEVER
+	/* Plot the shielded cell value */
+	for (i = 0; i < nummeas; i++) { 
+		plot[0][i] = multimeas[i][-1];
+		plot[6][i] = (double)i;
+	}
+	printf("Sheilded values\n");
+	do_plot6(plot[6], plot[0], NULL, NULL, NULL, NULL, NULL, nummeas);
 #endif
 
 	sslope = dmatrixz(0, nummeas-1, -1, m->nraw-1);  
@@ -5296,7 +5477,7 @@ munki_code munki_extract_patches_multimeas(
 	}
 #endif
 
-#ifdef PATREC_DEBUG
+#ifdef PLOT_PATREC
 	printf("Slope filter output\n");
 	for (i = 0; i < nummeas; i++) { 
 		int jj;
@@ -5348,7 +5529,8 @@ munki_code munki_extract_patches_multimeas(
 	}
 	a1logd(p->log,7,"Number of patches = %d\n",npat);
 
-	/* We don't count the first and last patches, as we assume they are white leader */
+	/* We don't count the first and last patches, as we assume they are white leader. */
+	/* (They are marked !use in list anyway) */
 	if (npat < (tnpatch + 2)) {
 		free_ivector(sizepop, 0, nummeas-1);
 		free_dvector(slope, 0, nummeas-1);  
@@ -5366,7 +5548,7 @@ munki_code munki_extract_patches_multimeas(
 	}
 	avglegth /= (double)npat;
 
-#ifdef PATREC_DEBUG
+#ifdef PLOT_PATREC
 	for (i = 0; i < npat; i++) {
 		printf("Raw patch %d, start %d, length %d\n",i, pat[i].ss, pat[i].no);
 	}
@@ -5379,7 +5561,7 @@ munki_code munki_extract_patches_multimeas(
 	/* Locate the median potential patch width */
 	for (j = 0, i = 0; i < nummeas; i++) {
 		j += sizepop[i];
-		if (j >= ((npat-2)/2))
+		if (j > ((npat-2)/2))
 			break;
 	}
 	median = (double)i;
@@ -5460,7 +5642,7 @@ munki_code munki_extract_patches_multimeas(
 		return MUNKI_RD_NOTENOUGHPATCHES;
 	}
 
-#ifdef PATREC_DEBUG
+#ifdef PLOT_PATREC
 	printf("Got %d patches out of potentional %d:\n",tnpatch, npat);
 	printf("Average patch legth %f\n",avglegth);
 	for (i = 1; i < (npat-1); i++) {
@@ -5477,15 +5659,15 @@ munki_code munki_extract_patches_multimeas(
 		if (pat[k].use == 0)
 			continue;
 
-		
 		nno = (pat[k].no * 3)/4;
+//		nno = (pat[k].no * 2)/3;		// experimental tighter trim
 		trim = (pat[k].no - nno)/2;
 
 		pat[k].ss += trim;
 		pat[k].no = nno;
 	}
 
-#ifdef PATREC_DEBUG
+#ifdef PLOT_PATREC
 	printf("After trimming got:\n");
 	for (i = 1; i < (npat-1); i++) {
 		if (pat[i].use == 0)
@@ -5503,7 +5685,8 @@ munki_code munki_extract_patches_multimeas(
 			slope[i] = 0.0;
 	}
 
-	printf("Trimmed output:\n");
+	printf("Trimmed output - averaged bands:\n");
+	/* Plot box averaged bands */
 	for (i = 0; i < nummeas; i++) { 
 		int jj;
 		for (jj = 0, j = BL; jj < 6 && j < BH; jj++, j += ((BH-BL)/6)) {
@@ -5516,8 +5699,27 @@ munki_code munki_extract_patches_multimeas(
 	for (i = 0; i < nummeas; i++)
 		plot[6][i] = (double)i;
 	do_plot6(plot[6], slope, plot[0], plot[1], plot[2], plot[3], plot[4], nummeas);
+
+#ifdef NEVER
+	/* Plot all the bands */
+	printf("Trimmed output - all bands:\n");
+	for (j = 0; j < (m->nraw-5); j += 5) {
+		for (k = 0; k < 5; k ++) {
+			for (i = 0; i < nummeas; i++) { 
+				plot[k][i] = multimeas[i][j+k]/maxval[j+k];
+			}
+		}
+		for (i = 0; i < nummeas; i++)
+			plot[6][i] = (double)i;
+		printf("Bands %d - %d\n",j,j+5);
+		do_plot6(plot[6], slope, plot[0], plot[1], plot[2], plot[3], plot[4], nummeas);
+	}
 #endif
 
+#endif
+
+	/* Now compute averaged patch values */
+	
 	/* Compute average of (aproximate) white */
 	white_avg = 0.0;
 	for (j = 1; j < (m->nraw-1); j++) 
@@ -5581,14 +5783,14 @@ munki_code munki_extract_patches_multimeas(
 	if (flags != NULL)
 		*flags = rv;
 
-#ifdef PATREC_DEBUG
+#ifdef PLOT_PATREC
 	free_dmatrix(plot, 0, 6, 0, nummeas-1);  
 #endif
 
 	free_dvector(slope, 0, nummeas-1);  
 	free_ivector(sizepop, 0, nummeas-1);
 	free_dvector(maxval, -1, m->nraw-1);  
-	free(pat);
+	free(pat);		/* Otherwise caller will have to do it */
 
 	a1logd(p->log,3,"munki_extract_patches_multimeas done, sat = %s, inconsist = %s\n",
 	                  rv & 2 ? "true" : "false", rv & 1 ? "true" : "false");
@@ -5627,7 +5829,7 @@ munki_code munki_extract_patches_flash(
 	double *aavg;				/* ambient average [-1 nraw] */
 	double finttime;			/* Flash integration time */
 	int rv = 0;
-#ifdef PATREC_DEBUG
+#ifdef PLOT_PATREC
 	double **plot;
 #endif
 
@@ -5663,7 +5865,7 @@ munki_code munki_extract_patches_flash(
 	thresh = (3.0 * mean + maxval)/4.0;
 	a1logd(p->log,7,"munki_extract_patches_flash band %d minval %f maxval %f, mean = %f, thresh = %f\n",maxband,minval,maxval,mean, thresh);
 
-#ifdef PATREC_DEBUG
+#ifdef PLOT_PATREC
 	/* Plot out 6 lots of 6 values each */ 
 	plot = dmatrixz(0, 6, 0, nummeas-1);  
 	for (j = maxband -3; j>= 0 && j < (m->nraw-6); j += 100)		/* Do one set around max */
@@ -5681,7 +5883,7 @@ munki_code munki_extract_patches_flash(
 	free_dmatrix(plot,0,6,0,nummeas-1);
 #endif
 
-#ifdef PATREC_DEBUG
+#ifdef PLOT_PATREC
 	/* Plot just the pulses */
 	{
 		int start, end;
@@ -5993,8 +6195,8 @@ void munki_scale_specrd(
 #ifdef HIGH_RES
 
 /* High res congiguration */
-#undef EXISTING_SHAPE		/* Else generate filter shape */
-#undef USE_GAUSSIAN			/* Use gaussian filter shape, else lanczos2 */
+#undef EXISTING_SHAPE		/* [und] Else generate filter shape */
+#define USE_GAUSSIAN		/* [def] Use gaussian filter shape, else lanczos2 */
 
 #define DO_CCDNORM			/* [def] Normalise CCD values to original */
 #define DO_CCDNORMAVG		/* [unde] Normalise averages rather than per CCD bin */
@@ -6095,7 +6297,8 @@ static double lanczos2(double wi, double x) {
 	/* gausian */
 	wi = wi/(2.0 * sqrt(2.0 * log(2.0)));	/* Convert width at half max to std. dev. */
     x = x/(sqrt(2.0) * wi);
-    y = 1.0/(wi * sqrt(2.0 * DBL_PI)) * exp(-(x * x));
+//	y = 1.0/(wi * sqrt(2.0 * DBL_PI)) * exp(-(x * x));		/* Unity area */
+	y = exp(-(x * x));										/* Center at 1.0 */
 #else
 
 	/* lanczos2 */
@@ -6119,6 +6322,10 @@ static int gcc_bug_fix(int i) {
 }
 #endif	/* APPLE */
 
+#ifdef SALONEINSTLIB
+# define ONEDSTRAYLIGHTUS
+#endif
+
 /* Create high resolution mode references, */
 /* Create Reflective if ref nz, else create Emissive */
 /* We expect this to be called twice, once for each. */
@@ -6137,6 +6344,8 @@ munki_code munki_create_hr(munki *p, int ref) {
 	int *mtx_index1, **pmtx_index2, *mtx_index2;
 	int *mtx_nocoef1, **pmtx_nocoef2, *mtx_nocoef2;
 	double *mtx_coef1, **pmtx_coef2, *mtx_coef2;
+
+	double min_wl = ref ? WL_REF_MIN : WL_EMIS_MIN;
 	
 	/* Start with nominal values. May alter these if filters are not unique */
 	nwav1 = m->nwav1;
@@ -6633,7 +6842,7 @@ munki_code munki_create_hr(munki *p, int ref) {
 			raw2wav->interp(raw2wav, &pp);
 			w2 = pp.v[0];
 
-//			a1logd(p->log,1,"CCD %d, wl %f\n",i,wl);
+			a1logd(p->log,1,"CCD %d, wl %f - %f\n",i,w1,w2);
 
 			/* For each filter */
 			for (j = 0; j < m->nwav2; j++) {
@@ -6641,6 +6850,10 @@ munki_code munki_create_hr(munki *p, int ref) {
 				double we;
 
 				cwl = m->wl_short2 + (double)j * (m->wl_long2 - m->wl_short2)/(m->nwav2-1.0);
+
+				if (cwl < min_wl)		/* Duplicate below this wl */
+					cwl = min_wl;
+
 				rwl = wl - cwl;			/* relative wavelgth to filter */
 
 				if (fabs(w1 - cwl) > fshmax && fabs(w2 - cwl) > fshmax)
@@ -6651,8 +6864,12 @@ munki_code munki_create_hr(munki *p, int ref) {
 				{
 					int nn;
 					double lw, ll;
-
-					nn = (int)(fabs(w2 - w1)/0.05 + 0.5);
+#ifdef FAST_HIGH_RES_SETUP
+# define FINC 0.2
+#else
+# define FINC 0.05
+#endif
+					nn = (int)(fabs(w2 - w1)/FINC + 0.5);
 			
 					lw = w1;
 #ifdef EXISTING_SHAPE
@@ -6697,7 +6914,21 @@ munki_code munki_create_hr(munki *p, int ref) {
 
 				coeff2[j][mtx_nocoef2[j]].ix = i;
 				coeff2[j][mtx_nocoef2[j]++].we = we; 
-//				a1logd(p->log,1,"filter %d, cwl %f, rwl %f, ix %d, we %f\n",j,cwl,rwl,i,we);
+				a1logd(p->log,1,"filter %d, cwl %f, rwl %f, ix %d, we %f\n",j,cwl,rwl,i,we);
+			}
+		}
+
+		/* Dump the filter coefficients */
+		if (p->log->debug >= 1) {	
+
+			/* For each output wavelength */
+			for (j = 0; j < m->nwav2; j++) {
+
+				a1logd(p->log,1,"filter %d, cwl %f\n",j,XSPECT_WL(m->wl_short2, m->wl_long2, m->nwav2, j));
+				/* For each matrix value */
+				for (k = 0; k < mtx_nocoef2[j]; k++) {
+					a1logd(p->log,1," CCD %d, we %f\n",coeff2[j][k].ix,coeff2[j][k].we);
+				}
 			}
 		}
 
@@ -6796,6 +7027,10 @@ munki_code munki_create_hr(munki *p, int ref) {
 
 				/* For each matrix value */
 				sx = mtx_index2[j];		/* Starting index */
+				if (j < (m->nwav2-2) && sx == mtx_index2[j+1]) {
+					cx += mtx_nocoef2[j];
+					continue;			/* Skip all duplicate filters */
+				}
 				for (k = 0; k < mtx_nocoef2[j]; k++, cx++, sx++) {
 					ccdsum[1][sx] += mtx_coef2[cx];
 //printf("~1 HiRes CCD [%d] %f += [%d] %f\n",sx,ccdsum[1][sx],cx, mtx_coef2[cx]);
@@ -6987,9 +7222,9 @@ munki_code munki_create_hr(munki *p, int ref) {
 		/* If both reflective and emissive samplings have been created, */
 		/* deal with upsampling the references and calibrations */
 		if (m->hr_inited == 2) {
-#ifdef SALONEINSTLIB
+#ifdef ONEDSTRAYLIGHTUS
 			double **slp;			/* 2D Array of stray light values */
-#endif /* !SALONEINSTLIB */
+#endif /* !ONEDSTRAYLIGHTUS */
 			rspl *trspl;			/* Upsample rspl */
 			cow sd[40 * 40];		/* Scattered data points of existing references */
 			datai glow, ghigh;
@@ -7082,6 +7317,8 @@ munki_code munki_create_hr(munki *p, int ref) {
 				/* Create upsampled version */
 				for (i = 0; i < m->nwav2; i++) {
 					pp.p[0] = XSPECT_WL(m->wl_short2, m->wl_long2, m->nwav2, i);
+					if (pp.p[0] < min_wl)	/* Duplicate below this wl */
+						pp.p[0] = min_wl;
 					trspl->interp(trspl, &pp);
 					if (pp.v[0] < 0.0)
 						pp.v[0] = 0.0;
@@ -7163,7 +7400,7 @@ munki_code munki_create_hr(munki *p, int ref) {
 			}
 			trspl->del(trspl);
 
-#ifdef SALONEINSTLIB
+#ifdef ONEDSTRAYLIGHTUS
 			/* Then the 2D stray light using linear interpolation */
 			slp = dmatrix(0, m->nwav1-1, 0, m->nwav1-1);
 
@@ -7207,7 +7444,7 @@ munki_code munki_create_hr(munki *p, int ref) {
 					}
 				}
 			}
-#else	/* !SALONEINSTLIB */
+#else	/* !ONEDSTRAYLIGHTUS */
 			/* Then setup 2D stray light using rspl */
 			if ((trspl = new_rspl(RSPL_NOFLAGS, 2, 1)) == NULL) {
 				a1logd(p->log,3,"munki: creating rspl for high res conversion failed\n");
@@ -7239,7 +7476,7 @@ munki_code munki_create_hr(munki *p, int ref) {
 			avgdev[1] = 0.0;
 			
 			trspl->fit_rspl_w(trspl, 0, sd, m->nwav1 * m->nwav1, glow, ghigh, gres, NULL, NULL, 0.5, avgdev, NULL);
-#endif	/* !SALONEINSTLIB */
+#endif	/* !ONEDSTRAYLIGHTUS */
 
 			m->straylight2 = dmatrixz(0, m->nwav2-1, 0, m->nwav2-1);  
 
@@ -7248,8 +7485,12 @@ munki_code munki_create_hr(munki *p, int ref) {
 				for (j = 0; j < m->nwav2; j++) {	/* Input wavelength */
 					double p0, p1;
 					p0 = XSPECT_WL(m->wl_short2, m->wl_long2, m->nwav2, i);
+					if (p0 < min_wl)	/* Duplicate below this wl */
+						p0 = min_wl;
 					p1 = XSPECT_WL(m->wl_short2, m->wl_long2, m->nwav2, j);
-#ifdef SALONEINSTLIB
+					if (p1 < min_wl)	/* Duplicate below this wl */
+						p1 = min_wl;
+#ifdef ONEDSTRAYLIGHTUS
 					/* Do linear interp with clipping at ends */
 					{
 						int x0, x1, y0, y1;
@@ -7280,11 +7521,11 @@ munki_code munki_create_hr(munki *p, int ref) {
 						        + w1 * v0 * slp[x1][y0] 
 						        + w1 * v1 * slp[x1][y1]; 
 					}
-#else /* !SALONEINSTLIB */
+#else /* !ONEDSTRAYLIGHTUS */
 					pp.p[0] = p0;
 					pp.p[1] = p1;
 					trspl->interp(trspl, &pp);
-#endif /* !SALONEINSTLIB */
+#endif /* !ONEDSTRAYLIGHTUS */
 					m->straylight2[i][j] = pp.v[0] * HIGHRES_WIDTH/10.0;
 					if (m->straylight2[i][j] > 0.0)
 						m->straylight2[i][j] = 0.0;
@@ -7355,11 +7596,11 @@ munki_code munki_create_hr(munki *p, int ref) {
 			}
 #endif /* HIGH_RES_PLOT */
 
-#ifdef SALONEINSTLIB
+#ifdef ONEDSTRAYLIGHTUS
 			free_dmatrix(slp, 0, m->nwav1-1, 0, m->nwav1-1);
-#else /* !SALONEINSTLIB */
+#else /* !ONEDSTRAYLIGHTUS */
 			trspl->del(trspl);
-#endif /* !SALONEINSTLIB */
+#endif /* !ONEDSTRAYLIGHTUS */
 
 			/* - - - - - - - - - - - - - - - - - - - - - - - - - */
 			/* Allocate space for per mode calibration reference */
@@ -7556,22 +7797,9 @@ munki_code munki_conv2XYZ(
 	if (conv == NULL)
 		return MUNKI_INT_CIECONVFAIL;
 
-	/* Don't report any wavelengths below the minimum for this mode */
-	if ((s->min_wl-1e-3) > wl_short) {
-		double wl;
-		for (j = 0; j < m->nwav; j++) {
-			wl = XSPECT_WL(m->wl_short, m->wl_long, m->nwav, j);
-			if (wl >= (s->min_wl-1e-3))
-				break;
-		}
-		six = j;
-		wl_short = wl;
-		nwl -= six;
-	}
-
-	a1logd(p->log,3,"munki_conv2XYZ got wl_short %f, wl_long %f, nwav %d, min_wl %f\n"
+	a1logd(p->log,3,"munki_conv2XYZ got wl_short %f, wl_long %f, nwav %d\n"
 	                "      after skip got wl_short %f, nwl = %d\n",
-	                m->wl_short, m->wl_long, m->nwav, s->min_wl, wl_short, nwl);
+	                m->wl_short, m->wl_long, m->nwav, wl_short, nwl);
 
 	for (sms = 0.0, i = 1; i < 21; i++)
 		sms += opt_adj_weights[i];
@@ -7771,15 +7999,15 @@ munki_code munki_optimise_sensor(
 			new_int_time *= s->targoscale2;
 			a1logd(p->log,3,"Using compromse sensor target\n");
 		}
-#ifdef USE_HIGH_GAIN_MODE
-		/* Hmm. It may not be a good idea to use high gain mode if it compromises */
+		/* Hmm. It seems not be a good idea to use high gain mode if it compromises */
 		/* the longer integration time which reduces noise. */
-		if (new_int_time > m->max_int_time && permithg) {
-			new_int_time /= m->highgain;
-			new_gain_mode = 1;
-			a1logd(p->log,3,"Switching to high gain mode\n");
+		if (s->auto_gain) {
+			if (new_int_time > m->max_int_time && permithg) {
+				new_int_time /= m->highgain;
+				new_gain_mode = 1;
+				a1logd(p->log,3,"Switching to high gain mode\n");
+			}
 		}
-#endif
 	}
 	a1logd(p->log,3,"after low light adjust, inttime %f, gain mode %d\n",new_int_time,new_gain_mode);
 
@@ -7894,10 +8122,8 @@ munki_interp_dark(
 		return MUNKI_INT_NOTCALIBRATED;
 		
 	i = 0;
-#ifdef USE_HIGH_GAIN_MODE
-	if (gainmode)
+	if (s->auto_gain && gainmode)
 		i = 2;
-#endif
 
 	for (j = -1; j < m->nraw; j++) {
 		double tt;
@@ -8838,21 +9064,6 @@ munki_code munki_parse_eeprom(munki *p, unsigned char *buf, unsigned int len) {
 
 	if ((m->rmtx_coef1 = d->get_32_doubles(d, NULL, 184, 36 * 16)) == NULL)
 		return MUNKI_DATA_RANGE;
-
-#ifdef NEVER
-// ~~~ hack !!!
-m->rmtx_index1[4] = m->rmtx_index1[5] + 3;
-m->rmtx_index1[3] = m->rmtx_index1[4] + 3;
-m->rmtx_index1[2] = m->rmtx_index1[3] + 3;
-m->rmtx_index1[1] = m->rmtx_index1[2] + 3;
-m->rmtx_index1[0] = m->rmtx_index1[1] + 3;
-
-for(i = 0; i < 5; i++) {
-	for (j = 0; j < 16; j++) {
-		m->rmtx_coef1[i * 16 + j] = m->rmtx_coef1[5 * 16 + j]; 
-	}
-}
-#endif
 
 	if (p->log->debug >= 7) {
 		a1logd(p->log,7,"Reflectance matrix:\n");

@@ -66,8 +66,6 @@
 /* Default flow control */
 #define DEFFC fc_none
 
-#define IGNORE_NEEDS_OFFSET_DRIFT_CAL_ERR
-
 static inst_code specbos_interp_code(inst *pp, int ec);
 
 #define MAX_MES_SIZE 500		/* Maximum normal message reply size */
@@ -476,7 +474,7 @@ specbos_init_inst(inst *pp) {
 		return ev;
 	}
 	if (p->wl_long > 830.0)			/* Could go to 1000 with 1211 */
-		if (p->wl_long = 830.0)
+		p->wl_long = 830.0;
 
 	a1logd(p->log, 1, " Long wl range %f\n",p->wl_long);
 
@@ -1597,7 +1595,7 @@ specbos_get_set_opt(inst *pp, inst_opt_type m, ...)
 				a1loge(p->log, 1, "specbos_get_set_opt: failed to send laser? command\n");
 				return ev;
 			}
-			if (sscanf(buf, "laser: %ld ",&lstate) != 1) {
+			if (sscanf(buf, "laser: %d ",&lstate) != 1) {
 				amutex_unlock(p->lock);
 				a1loge(p->log, 1, "specbos_get_set_opt: failed to parse laser state\n");
 				return ev;

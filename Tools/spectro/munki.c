@@ -723,8 +723,7 @@ inst_code munki_set_mode(inst *pp, inst_mode m) {
 	if ((mmode = munki_convert_mode(p, m)) == mk_no_modes)
 		return inst_unsupported;
 	
-	if ((rv = munki_interp_code(p, munki_imp_set_mode(p, mmode, m & inst_mode_spectral)))
-	                                                                              != inst_ok)
+	if ((rv = munki_interp_code(p, munki_imp_set_mode(p, mmode, m))) != inst_ok)
 		return rv;
 
 	munki_determine_capabilities(p);

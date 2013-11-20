@@ -18,10 +18,37 @@
 
 /*
  * TTBD:
- *		As usual, Apple seem to have deprecated the routines used here.
+ *		As usual, Apple seem to have deprecated the routines used here,
+ *      and reccommend a new API for 10.5 and latter, so we should
+ *      switch to using this if compiled on 10.6 or latter.
  *		See IOHIDDeviceGetReportWithCallback & IOHIDDeviceSetReportWithCallback
+ *		<https://developer.apple.com/library/mac/technotes/tn2187/_index.html>
  *		for info on the replacements.
  */
+
+/*
+    New 10.5 and later code is not completely developed/debugged
+     - the read and write routines simply error out.
+
+    Perhaps we should try using
+
+        IOHIDDeviceRegisterInputReportCallback()
+    +   Handle_IOHIDDeviceIOHIDReportCallback()
+    +   what triggers it ?? How is this related to GetReport ?
+
+    +   OHIDDeviceGetReportWithCallback()
+    +   Handle_IOHIDDeviceGetReportCallback()
+
+    +   IOHIDDeviceSetReportWithCallback()
+    +   Handle_IOHIDDeviceSetReportCallback()
+
+    Plus IOHIDQueueScheduleWithRunLoop()
+         IOHIDQueueUnscheduleFromRunLoop()
+
+    + we probably have to call the run loop ?
+
+*/
+#undef USE_NEW_OSX_CODE
 
 /* These routines supliement the class code in ntio.c and unixio.c */
 /* with HID specific access routines for devices running on operating */
@@ -234,6 +261,88 @@ int hid_get_paths(icompaths *p) {
 #endif /* NT */
 
 #ifdef __APPLE__
+# if defined(USE_NEW_OSX_CODE) && __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
+	{
+		CFAllocatorContext alocctx;
+		IOHIDManagerRef mref;
+		CFSetRef setref;
+		CFIndex count, i;
+		IOHIDDeviceRef *values;
+
+		/* Create HID Manager reference */
+		if ((mref = IOHIDManagerCreate(kCFAllocatorDefault, kIOHIDManagerOptionNone)) == NULL) {
+        	a1loge(p->log, ICOM_SYS, "hid_get_paths() IOHIDManagerCreate returned NULL\n");
+			return ICOM_SYS;
+		}
+
+		/* Set to match all HID devices */
+		IOHIDManagerSetDeviceMatching(mref, NULL); 
+
+		/* Enumerate the devices (doesn't seem to have to open) */
+		if ((setref = IOHIDManagerCopyDevices(mref)) == NULL) {
+        	a1loge(p->log, ICOM_SYS, "hid_get_paths() IOHIDManagerCopyDevices failed\n");
+			CFRelease(mref);
+			return ICOM_SYS;
+		}
+
+		count = CFSetGetCount(setref);
+		if ((values = (IOHIDDeviceRef *)calloc(sizeof(IOHIDDeviceRef), count)) == NULL) {
+        	a1loge(p->log, ICOM_SYS, "hid_get_paths() calloc failed!\n");
+			CFRelease(setref);
+			CFRelease(mref);
+			return ICOM_SYS;
+		}
+
+		CFSetGetValues(setref, (const void **)values);
+
+		for (i = 0; i < count; i++) {
+			CFNumberRef vref, pref;					/* HID Vendor and Product ID propeties */
+			CFNumberRef lidpref;					/* Location ID properties */
+			unsigned int vid = 0, pid = 0, lid = 0;
+			instType itype;
+			IOHIDDeviceRef ioob = values[i];		/* HID object found */
+
+        	if ((vref = IOHIDDeviceGetProperty(ioob, CFSTR(kIOHIDVendorIDKey))) != NULL) {
+                CFNumberGetValue(vref, kCFNumberSInt32Type, &vid);
+				CFRelease(vref);
+            }
+        	if ((pref = IOHIDDeviceGetProperty(ioob, CFSTR(kIOHIDProductIDKey))) != NULL) {
+                CFNumberGetValue(pref, kCFNumberSInt32Type, &pid);
+				CFRelease(vref);
+            }
+			if ((lidpref = IOHIDDeviceGetProperty(ioob, CFSTR("LocationID"))) != NULL) {
+				CFNumberGetValue(lidpref, kCFNumberIntType, &lid);
+			    CFRelease(lidpref);
+			}
+
+			/* If it's a device we're looking for */
+			if ((itype = inst_usb_match(vid, pid, 0)) != instUnknown) {
+				struct hid_idevice *hidd;
+				char pname[400];
+
+	        	a1logd(p->log, 2, "found HID device '%s' lid 0x%x that we're looking for\n",inst_name(itype), lid);
+
+				/* Create human readable path/identification */
+				sprintf(pname,"hid%d: (%s)", lid >> 20, inst_name(itype));
+		
+				if ((hidd = (struct hid_idevice *)calloc(sizeof(struct hid_idevice), 1)) == NULL) {
+		        	a1loge(p->log, ICOM_SYS, "hid_get_paths calloc failed!\n");
+					return ICOM_SYS;
+				}
+				hidd->lid = lid;
+				CFRetain(ioob);				/* We're retaining it */
+				hidd->ioob = ioob;
+
+				/* Add the path to the list */
+				p->add_hid(p, pname, vid, pid, 0, hidd, itype);
+			}
+		}
+		/* Clean up */
+		free(values);
+		CFRelease(setref);
+		CFRelease(mref);
+	}
+#else	/* < 1060 */
 	{
 	    kern_return_t kstat; 
 	    CFMutableDictionaryRef sdict;		/* HID Device  dictionary */
@@ -307,6 +416,7 @@ int hid_get_paths(icompaths *p) {
 		}
 	    IOObjectRelease(mit);			/* Release the itterator */
 	}
+#endif	/* __MAC_OS_X_VERSION_MAX_ALLOWED < 1060 */
 #endif /* __APPLE__ */
 
 #if defined(UNIX_X11)
@@ -371,47 +481,35 @@ int hid_get_paths(icompaths *p) {
 
 /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-/* Close an open HID port */
-/* If we don't do this, the port and/or the device may be left in an unusable state. */
-void hid_close_port(icoms *p) {
-
-	a1logd(p->log, 8, "hid_close_port: called\n");
-
-	if (p->is_open && p->hidd != NULL) {
-
-#if defined(NT) 
-		CloseHandle(p->hidd->ols.hEvent);
-		CloseHandle(p->hidd->fh);
-#endif /* NT */
-
 #ifdef __APPLE__
-	    IOObjectRelease(p->hidd->port);
-		p->hidd->port = 0;
 
-		if (p->hidd->evsrc != NULL)
-			CFRelease(p->hidd->evsrc);
-		p->hidd->evsrc = NULL;
+/* HID Interrupt callback for OS X */
+/* This seems to only get called when the run loop is active. */
+static void hid_read_callback(
+void *target,
+IOReturn result,
+void *refcon,
+void *sender,
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1050
+uint32_t size
+#else
+UInt32 size
+#endif
+) {
+	icoms *p = (icoms *)target;
 
-		p->hidd->rlr = NULL;
+	a1logd(p->log, 8, "HID callback called with size %d, result 0x%x\n",size,result);
+	p->hidd->result = result;
+	p->hidd->bread = size;
+	if (p->hidd->rlr != NULL) 
+		CFRunLoopStop(p->hidd->rlr);		/* We're done */
+	else
+		a1logd(p->log, 8, "HID callback has no run loop\n");
+}
 
-		if ((*p->hidd->device)->close(p->hidd->device) != kIOReturnSuccess) {
-			a1loge(p->log, ICOM_SYS, "hid_close_port: closing HID port '%s' failed",p->name);
-			return;
-		}
-
-		if ((*p->hidd->device)->Release(p->hidd->device) != kIOReturnSuccess) {
-			a1loge(p->log, ICOM_SYS, "hid_close_port: Releasing HID port '%s' failed",p->name);
-		}
-		p->hidd->device = NULL;
 #endif /* __APPLE__ */
 
-		p->is_open = 0;
-		a1logd(p->log, 8, "hid_close_port: has been released and closed\n");
-	}
-
-	/* Find it and delete it from our static cleanup list */
-	usb_delete_from_cleanup_list(p);
-}
+/*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
 /* Open an HID port for all our uses. */
@@ -461,6 +559,15 @@ char **pnames			/* List of process names to try and kill before opening */
 #endif /* NT */
 
 #ifdef __APPLE__
+# if defined(USE_NEW_OSX_CODE) && __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
+		{
+			/* Open the device */
+			if (IOHIDDeviceOpen(p->hidd->ioob, kIOHIDOptionsTypeSeizeDevice) != kIOReturnSuccess) {
+				a1loge(p->log, ICOM_SYS, "hid_open_port: Opening HID device '%s' failed",p->name);
+				return ICOM_SYS;
+			}
+		}
+#else	/* < 1060 */
 		{
 			IOCFPlugInInterface **piif = NULL;
 			IOReturn result;
@@ -505,7 +612,25 @@ char **pnames			/* List of process names to try and kill before opening */
 				return ICOM_SYS;
 			}
 
+			/* Setup for read callback */
+			p->hidd->result = -1;
+			p->hidd->bread = 0;
+	
+			/* And set read callback routine */
+			if ((*(p->hidd->device))->setInterruptReportHandlerCallback(p->hidd->device,
+				p->hidd->rbuf, 256, hid_read_callback, (void *)p, NULL) != kIOReturnSuccess) {
+				a1loge(p->log, ICOM_SYS, "icoms_hid_read: Setting callback handler for "
+				                                             "HID '%s' failed\n", p->name);
+				return ICOM_SYS;
+			}
+
+			if ((*(p->hidd->device))->startAllQueues(p->hidd->device) != kIOReturnSuccess) {
+				a1loge(p->log, ICOM_SYS, "icoms_hid_read: Starting queues for "
+				                                   "HID '%s' failed\n", p->name);
+				return ICOM_SYS;
+			}
 		}
+#endif	/* __MAC_OS_X_VERSION_MAX_ALLOWED < 1060 */
 #endif /* __APPLE__ */
 
 		p->is_open = 1;
@@ -518,31 +643,63 @@ char **pnames			/* List of process names to try and kill before opening */
 	return ICOM_OK;
 }
 
-/* ========================================================= */
+/* Close an open HID port */
+/* If we don't do this, the port and/or the device may be left in an unusable state. */
+void hid_close_port(icoms *p) {
+
+	a1logd(p->log, 8, "hid_close_port: called\n");
+
+	if (p->is_open && p->hidd != NULL) {
+
+#if defined(NT) 
+		CloseHandle(p->hidd->ols.hEvent);
+		CloseHandle(p->hidd->fh);
+#endif /* NT */
 
 #ifdef __APPLE__
+# if defined(USE_NEW_OSX_CODE) && __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
+		if (IOHIDDeviceClose(p->hidd->ioob, kIOHIDOptionsTypeNone) != kIOReturnSuccess) {
+			a1loge(p->log, ICOM_SYS, "hid_close_port: closing HID port '%s' failed",p->name);
+			return;
+		}
+#else	/* < 1060 */
+		if ((*(p->hidd->device))->stopAllQueues(p->hidd->device) != kIOReturnSuccess) {
+			a1loge(p->log, ICOM_SYS, "icoms_hid_read: Stopping queues for "
+			                                    "HID '%s' failed\n", p->name);
+			return;
+		}
 
-/* HID Interrupt callback for OS X */
-static void hid_read_callback(
-void *target,
-IOReturn result,
-void *refcon,
-void *sender,
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1050
-uint32_t size
-#else
-UInt32 size
-#endif
-) {
-	icoms *p = (icoms *)target;
+	    IOObjectRelease(p->hidd->port);
+		p->hidd->port = 0;
 
-	a1logd(p->log, 8, "HID callback called with size %d, result 0x%x\n",size,result);
-	p->hidd->result = result;
-	p->hidd->bread = size;
-	CFRunLoopStop(p->hidd->rlr);		/* We're done */
+		if (p->hidd->evsrc != NULL)
+			CFRelease(p->hidd->evsrc);
+		p->hidd->evsrc = NULL;
+
+		p->hidd->rlr = NULL;
+
+		if ((*p->hidd->device)->close(p->hidd->device) != kIOReturnSuccess) {
+			a1loge(p->log, ICOM_SYS, "hid_close_port: closing HID port '%s' failed",p->name);
+			return;
+		}
+
+		if ((*p->hidd->device)->Release(p->hidd->device) != kIOReturnSuccess) {
+			a1loge(p->log, ICOM_SYS, "hid_close_port: Releasing HID port '%s' failed",p->name);
+		}
+		p->hidd->device = NULL;
+#endif	/* __MAC_OS_X_VERSION_MAX_ALLOWED < 1060 */
+#endif /* __APPLE__ */
+
+		p->is_open = 0;
+		a1logd(p->log, 8, "hid_close_port: has been released and closed\n");
+	}
+
+	/* Find it and delete it from our static cleanup list */
+	usb_delete_from_cleanup_list(p);
 }
 
-#endif /* __APPLE__ */
+
+/* ========================================================= */
 
 /* HID Interrupt pipe Read */
 /* Don't retry on a short read, return ICOM_SHORT. */
@@ -557,6 +714,8 @@ icoms_hid_read(icoms *p,
 ) {
 	int retrv = ICOM_OK;	/* Returned error value */
 	int bread = 0;
+
+	a1logd(p->log, 8, "icoms_hid_read: %d bytes, tout %f\n",bsize,tout);
 
 	if (!p->is_open) {
 		a1loge(p->log, ICOM_SYS, "icoms_hid_read: device not initialised\n");
@@ -599,52 +758,108 @@ icoms_hid_read(icoms *p,
 #endif /* NT */
 
 #ifdef __APPLE__
+# if defined(USE_NEW_OSX_CODE) && __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
+	{
+		IOReturn result;
+		CFIndex lbsize = bsize;
+
+		/* Normally the _write should have set the ->rlr */
+		/* but this may not be so if we are doing a flush ? */
+		if (p->hidd->rlr == NULL) {
+			p->hidd->rlr = CFRunLoopGetCurrent();
+			p->hidd->result = -1;
+			p->hidd->bread = 0;
+		}
+
+		IOHIDDeviceScheduleWithRunLoop(p->hidd->ioob, p->hidd->rlr, kCFRunLoopDefaultMode); 
+
 #ifndef NEVER
+		/* This doesn't work. Don't know why */
+		/* Returns 0xe000404f = kIOUSBPipeStalled, Pipe has stalled, error needs to be cleared */
+		if ((result = IOHIDDeviceGetReportWithCallback(
+			p->hidd->ioob,
+		    kIOHIDReportTypeInput, 
+			9, 				/* Bulk or Interrupt transfer ???  - or wbuf[0] ?? */
+			(uint8_t *)rbuf, 
+			&lbsize, 
+			tout,
+			NULL, NULL)) != kIOReturnSuccess) {
+printf("~1 IOHIDDeviceGetReportWithCallback returned 0x%x\n",result);
+			/* (We could detect other error codes and translate them to ICOM) */
+			if (result == kIOReturnTimeout)
+				retrv = ICOM_TO; 
+			else
+				retrv = ICOM_USBR; 
+		} else {
+			bsize = lbsize;
+			bread = bsize;
+		}
+#else
+		/* This doesn't work. Don't know why */
+		/* Returns 0xe000404f = kIOUSBPipeStalled, Pipe has stalled, error needs to be cleared */
+		if ((result = IOHIDDeviceGetReport(
+			p->hidd->ioob,
+		    kIOHIDReportTypeInput, 
+			9, 				/* Bulk or Interrupt transfer ???  - or wbuf[0] ?? */
+			(uint8_t *)rbuf, 
+			&lbsize)) != kIOReturnSuccess) {
+printf("~1 IOHIDDeviceGet returned 0x%x\n",result);
+			/* (We could detect other error codes and translate them to ICOM) */
+			if (result == kIOReturnTimeout)
+				retrv = ICOM_TO; 
+			else
+				retrv = ICOM_USBR; 
+		} else {
+			bsize = lbsize;
+			bread = bsize;
+		}
+#endif
+		
+		IOHIDDeviceUnscheduleFromRunLoop(p->hidd->ioob, p->hidd->rlr, kCFRunLoopDefaultMode);
+		p->hidd->rlr = NULL;
+	}
+#else	/* < 1060 */
+#ifndef NEVER	/* This works */
 	{
 		IOReturn result;
 
-		/* Setup for callback */
-		p->hidd->result = -1;
-		p->hidd->bread = 0;
-
-		if ((*(p->hidd->device))->setInterruptReportHandlerCallback(p->hidd->device,
-			rbuf, bsize, hid_read_callback, (void *)p, NULL) != kIOReturnSuccess) {
-			a1loge(p->log, ICOM_SYS, "icoms_hid_read: Setting callback handler for "
-			                                             "HID '%s' failed\n", p->name);
+		if (bsize > HID_RBUF_SIZE) {
+			a1loge(p->log, ICOM_SYS, "icoms_hid_read: Requested more bytes that HID_RBUF_SIZE\n", p->name);
 			return ICOM_SYS;
 		}
-		/* Call runloop, but exit after handling one callback */
-		p->hidd->rlr = CFRunLoopGetCurrent();
+
+		/* Normally the _write should have set the ->rlr */
+		/* but this may not be so if we are doing a flush ? */
+		if (p->hidd->rlr == NULL) {
+			p->hidd->rlr = CFRunLoopGetCurrent();
+			p->hidd->result = -1;
+			p->hidd->bread = 0;
+		} 
+
 		CFRunLoopAddSource(p->hidd->rlr, p->hidd->evsrc, kCFRunLoopDefaultMode);
-
-		if ((*(p->hidd->device))->startAllQueues(p->hidd->device) != kIOReturnSuccess) {
-			a1loge(p->log, ICOM_SYS, "icoms_hid_read: Starting queues for "
-			                                   "HID '%s' failed\n", p->name);
-			return ICOM_SYS;
-		}
 
 		result = CFRunLoopRunInMode(kCFRunLoopDefaultMode, tout, false);
 
-		if ((*(p->hidd->device))->stopAllQueues(p->hidd->device) != kIOReturnSuccess) {
-			a1loge(p->log, ICOM_SYS, "icoms_hid_read: Stopping queues for "
-			                                    "HID '%s' failed\n", p->name);
-			return ICOM_SYS;
-		}
 		if (result == kCFRunLoopRunTimedOut) {
 			retrv = ICOM_TO; 
 		} else if (result != kCFRunLoopRunStopped) {
 			retrv = ICOM_USBR; 
 		}
 		CFRunLoopRemoveSource(p->hidd->rlr, p->hidd->evsrc, kCFRunLoopDefaultMode);
+		p->hidd->rlr = NULL;				/* Callback is invalid now */
 
 		if (p->hidd->result == -1) {		/* Callback wasn't called */
 			retrv = ICOM_TO; 
 		} else if (p->hidd->result != kIOReturnSuccess) {
 			a1loge(p->log, ICOM_SYS, "icoms_hid_read: Callback for "
 			        "HID '%s' got unexpected return value\n", p->name);
+			p->hidd->result = -1;	/* Result is now invalid */
+			p->hidd->bread = 0;
 			return ICOM_SYS;
 		}
 		bread = p->hidd->bread;
+		if (bread > 0)
+			memcpy(rbuf, p->hidd->rbuf, bread > HID_RBUF_SIZE ? HID_RBUF_SIZE : bread);
 	}
 #else	// NEVER
 	/* This doesn't work. Don't know why */
@@ -670,6 +885,7 @@ icoms_hid_read(icoms *p,
 		}
 	}
 #endif	// NEVER
+#endif	/* __MAC_OS_X_VERSION_MAX_ALLOWED < 1060 */
 #endif /* __APPLE__ */
 
 	if (breadp != NULL)
@@ -694,6 +910,8 @@ icoms_hid_write(icoms *p,
 ) {
 	int retrv = ICOM_OK;	/* Returned error value */
 	int bwritten = 0;
+
+	a1logd(p->log, 8, "icoms_hid_write: %d bytes, tout %f\n",bsize,tout);
 
 	if (!p->is_open) {
 		a1loge(p->log, ICOM_SYS, "icoms_hid_write: device not initialised\n");
@@ -738,7 +956,57 @@ icoms_hid_write(icoms *p,
 #endif /* NT */
 
 #ifdef __APPLE__
+# if defined(USE_NEW_OSX_CODE) && __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
 	{
+		IOReturn result;
+#ifdef NEVER
+		/* This doesn't work. Don't know why */
+		/* Returns 0xe000404f = kIOUSBPipeStalled, Pipe has stalled, error needs to be cleared */
+		/* if we did a read that has timed out */
+		/* Returns 0xe00002c7 = kIOReturnUnsupported, without the failed read
+		if ((result = IOHIDDeviceSetReportWithCallback(
+			p->hidd->ioob,
+		    kIOHIDReportTypeOutput, 
+			9, 				/* Bulk or Interrupt transfer ???  - or wbuf[0] ?? */
+			(uint8_t *)wbuf, 
+			bsize, 
+			tout,
+			NULL, NULL)) != kIOReturnSuccess) {
+printf("~1 IOHIDDeviceSetReportWithCallback returned 0x%x\n",result);
+			/* (We could detect other error codes and translate them to ICOM) */
+			if (result == kIOReturnTimeout)
+				retrv = ICOM_TO; 
+			else
+				retrv = ICOM_USBW; 
+		} else {
+			bwritten = bsize;
+		}
+#else
+		/* This works, but has no timeout */
+		if ((result = IOHIDDeviceSetReport(
+			p->hidd->ioob,
+		    kIOHIDReportTypeOutput, 
+			9, 				/* Bulk or Interrupt transfer ???  - or wbuf[0] ?? */
+			(uint8_t *)wbuf, 
+			bsize)) != kIOReturnSuccess) {
+			/* (We could detect other error codes and translate them to ICOM) */
+			if (result == kIOReturnTimeout)
+				retrv = ICOM_TO; 
+			else
+				retrv = ICOM_USBW; 
+		} else {
+			bwritten = bsize;
+		}
+#endif
+	}
+#else	/* < 1060 */
+	{
+		/* Clear any existing read message */
+		/* (We're assuming it's all write then read measages !!) */
+		p->hidd->rlr = CFRunLoopGetCurrent();		// Our thread's run loop
+		p->hidd->result = -1;
+		p->hidd->bread = 0;
+
 		IOReturn result;
 		if ((result = (*p->hidd->device)->setReport(
 			p->hidd->device,
@@ -757,6 +1025,7 @@ icoms_hid_write(icoms *p,
 			bwritten = bsize;
 		}
 	}
+#endif	/* __MAC_OS_X_VERSION_MAX_ALLOWED < 1060 */
 #endif /* __APPLE__ */
 
 	if (bwrittenp != NULL)
@@ -820,9 +1089,14 @@ int hid_copy_hid_idevice(icoms *d, icompath *s) {
 	}
 #endif
 #if defined(__APPLE__)
+# if defined(USE_NEW_OSX_CODE) && __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
+	d->hidd->ioob = s->hidd->ioob;
+	CFRetain(d->hidd->ioob);
+#else
 	d->hidd->ioob = s->hidd->ioob;
 	IOObjectRetain(d->hidd->ioob);
-#endif
+#endif	/* __MAC_OS_X_VERSION_MAX_ALLOWED < 1060 */
+#endif	/* __APPLE__ */
 #if defined (UNIX_X11)
 #endif
 	return ICOM_OK;
@@ -838,9 +1112,14 @@ void hid_del_hid_idevice(struct hid_idevice *hidd) {
 		free(hidd->dpath);
 #endif
 #if defined(__APPLE__)
+# if defined(USE_NEW_OSX_CODE) && __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
+	if (hidd->ioob != 0)
+		CFRelease(hidd->ioob);
+#else
 	if (hidd->ioob != 0)
 		IOObjectRelease(hidd->ioob);
-#endif
+#endif	/* __MAC_OS_X_VERSION_MAX_ALLOWED < 1060 */
+#endif	/* __APPLE__ */
 #if defined (UNIX_X11)
 #endif
 	free(hidd);

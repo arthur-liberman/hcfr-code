@@ -220,6 +220,7 @@ instType inst_enum(char *name) {
 	else if (strcmp(name, "Hughski ColorHug") == 0)
 		return instColorHug;
 
+
 	return instUnknown;
 }
 

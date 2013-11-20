@@ -43,8 +43,9 @@
 
 /* ----------------------------------------------------- */
 
-/* Fake device */
-icompath icomFakeDevice = { "Fake Display Device" };
+/* Fake display & instrument device */
+icompath icomFakeDevice = { instFakeDisp, "Fake Display Device" };
+
 
 /* Free an icompath */
 static
@@ -96,8 +97,9 @@ static icompath *icompaths_get_path(
 	icompaths *p, 
 	int port		/* Enumerated port number, 1..n */
 ) {
-	if (port == -99)
+	if (port == FAKE_DEVICE_PORT)
 		return &icomFakeDevice;
+
 
 	if (port <= 0 || port > p->npaths)
 		return NULL;

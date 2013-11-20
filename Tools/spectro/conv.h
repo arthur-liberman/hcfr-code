@@ -264,7 +264,7 @@ int sa_Inverse3x3(double out[3][3], double in[3][3]);
 void sa_Transpose3x3(double out[3][3], double in[3][3]);
 void sa_Scale3(double out[3], double in[3], double rat);
 double sa_LabDE(double *in0, double *in1);
-void sa_Clamp3(double out[3], double in[3]);
+
 
 #define icmXYZNumber sa_XYZNumber
 #define icColorSpaceSignature sa_ColorSpaceSignature

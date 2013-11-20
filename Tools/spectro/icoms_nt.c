@@ -62,10 +62,13 @@ int icompaths_refresh_paths(icompaths *p) {
 		a1logd(p->log, 1, "icoms_get_paths: There don't appear to be any FTDI serial ports\n");
 	} else {
 
+#define MXKSIZE 500
+#define MXVSIZE 300
+
 		a1logd(p->log, 6, "icoms_get_paths: looking through FTDI ports\n");
 		for (i = 0; ; i++) {
-			char ftdiname[500];
-			DWORD ftdisize = 500;
+			char ftdiname[MXKSIZE];
+			DWORD ftdisize = MXKSIZE;
 			HKEY devkey;
 
 			stat = RegEnumKeyEx(
@@ -87,7 +90,7 @@ int icompaths_refresh_paths(icompaths *p) {
 				a1logw(p->log, "icoms_get_paths: RegEnumValue failed with %d\n",stat);
 				break;
 			}
-			ftdiname[500-1] = '\000';
+			ftdiname[MXKSIZE-1] = '\000';
 
 			/* Enumerate subkeys, looking for Device Parameters/PortName */
 			if ((stat = RegOpenKeyEx(sch, ftdiname, 0, KEY_READ, &devkey)) != ERROR_SUCCESS) {
@@ -98,12 +101,12 @@ int icompaths_refresh_paths(icompaths *p) {
 			a1logd(p->log, 6, "icoms_get_paths: looking through '%s'\n",ftdiname);
 
 			for (j = 0; ; j++) {
-				char skname[500];
-				DWORD sksize = 300;
+				char skname[MXKSIZE + 50];		/* Allow for cat of "\Device Parameters" */
+				DWORD sksize = MXKSIZE;
 				HKEY skkey;
 				DWORD vtype;
-				char value[100];
-				DWORD vsize = 100;
+				char value[MXVSIZE];
+				DWORD vsize = MXVSIZE;
 	
 				stat = RegEnumKeyEx(
 					devkey,		/* handle to key to enumerate */
@@ -124,7 +127,7 @@ int icompaths_refresh_paths(icompaths *p) {
 					a1logw(p->log, "icoms_get_paths: RegEnumValue failed with %d\n",stat);
 					break;
 				}
-				skname[300-1] = '\000';
+				skname[MXKSIZE-1] = '\000';
 	
 				/* See if there is a Device Parameters\PortName */
 				strcat(skname, "\\Device Parameters"); 
@@ -152,7 +155,7 @@ int icompaths_refresh_paths(icompaths *p) {
 					a1logw(p->log, "icoms_get_paths: RegEnumValue '%s' didn't return stringz type\n",skname);
 					continue;
 				}
-				value[100-1] = '\000';
+				value[MXVSIZE-1] = '\000';
 
 				if ((fn = malloc(sizeof(fast_com_name))) == NULL) {
 					a1loge(p->log, 1, "icoms_get_paths: malloc failed\n");
@@ -186,11 +189,11 @@ int icompaths_refresh_paths(icompaths *p) {
 	a1logd(p->log, 8, "icoms_get_paths: looking through all the values in the SERIALCOMM key\n");
 
 	for (i = 0; ; i++) {
-		char valname[500];
-		DWORD vnsize = 500;
+		char valname[MXKSIZE];
+		DWORD vnsize = MXKSIZE;
 		DWORD vtype;
-		char value[500];
-		DWORD vsize = 500;
+		char value[MXVSIZE];
+		DWORD vsize = MXVSIZE;
 		int fast = 0;
 
 		stat = RegEnumValue(
@@ -212,8 +215,8 @@ int icompaths_refresh_paths(icompaths *p) {
 			a1logw(p->log, "icoms_get_paths: RegEnumValue failed with %d\n",stat);
 			break;
 		}
-		valname[500-1] = '\000';
-		value[500-1] = '\000';
+		valname[MXKSIZE-1] = '\000';
+		value[MXVSIZE-1] = '\000';
 
 		if (vtype != REG_SZ) {
 			a1logw(p->log, "icoms_get_paths: RegEnumValue didn't return stringz type\n");

@@ -54,6 +54,7 @@ typedef enum {
 	instColorHug,				/* Hughski ColorHug */
 
 
+	instFakeDisp = 9998,		/* Fake display & instrument device id */
 
 } instType;
 

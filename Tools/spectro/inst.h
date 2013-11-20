@@ -73,7 +73,8 @@ typedef enum {						/* XYZ units,      Spectral units */
 	inst_mrt_emission_flash = 3,	/* cd/(m^2.s),     mW/(m^2.sr.nm.s) */
 	inst_mrt_ambient_flash  = 4,	/* Lux/s           mW/(m^2.nm.s) */
 	inst_mrt_reflective     = 5,	/* %,              %/nm */
-	inst_mrt_transmissive   = 6		/* %,              %/nm */
+	inst_mrt_transmissive   = 6,	/* %,              %/nm */
+	inst_mrt_frequency      = 7		/* Hz */
 } inst_meas_type;
 
 struct _ipatch {
@@ -283,7 +284,12 @@ typedef enum {
 	inst2_ccmx              = 0x04000000, /* Colorimeter Correction Matrix capability */
 	inst2_ccss              = 0x08000000, /* Colorimeter Cal. Spectral Set capability */
 
-	inst2_ambient_mono      = 0x10000000  /* The ambient measurement is monochrome */
+	inst2_ambient_mono      = 0x10000000, /* The ambient measurement is monochrome */
+
+	inst2_ambient_cardioid  = 0x20000000, /* The ambient measurement has a cardioid response */
+
+	inst2_get_min_int_time  = 0x40000000, /* Is able to get the minimum integration time */
+	inst2_set_min_int_time  = 0x80000000  /* Is able to set the minimum integration time */
 
 } inst2_capability;
 
@@ -356,7 +362,8 @@ typedef enum {
 	inst_opt_initcalib          = 0x0008,	/* Enable initial calibration (default) [No args] */
 	inst_opt_noinitcalib        = 0x0009,	/* Disable initial calibration if < losecs since last */											/* opened, or losecs == 0 [int losecs] */
 
-	inst_opt_set_ccss_obs       = 0x000A,	/* Set the observer used with ccss device types */
+	inst_opt_set_ccss_obs       = 0x000A,	/* Set the observer used with ccss device types - */
+											/* Not applicable to any other type of instrument. */
 											/* Only takes effect after inst_opt_set_disp_type */ 
 											/* or col_cal_spec_set() */
 											/* [args: icxObserverType obType,*/
@@ -374,7 +381,7 @@ typedef enum {
 	inst_opt_trig_switch        = 0x0010,	/* Trigger using instrument switch [No args] */
 	inst_opt_trig_user_switch   = 0x0011,	/* Trigger from user via uicallback or switch (def) [No args] */
 
-	inst_opt_highres            = 0x0012,	/* Enable high resolution spectral mode */
+	inst_opt_highres            = 0x0012,	/* Enable high res spectral mode indep. of set_mode() */
 	inst_opt_stdres             = 0x0013,	/* Revert to standard resolution spectral mode */
 
 	inst_opt_scan_toll          = 0x0014,	/* Modify the patch scan recognition tollnce [double] */
@@ -386,8 +393,11 @@ typedef enum {
 	inst_opt_get_pulse_ledmask  = 0x0018,	/* Get the bitmask for pulseable ind. LEDs [*int] */
 	inst_opt_set_led_pulse_state= 0x0019,	/* Set the current LED state. [double period_in_secs, */
 	                                        /* double on_time_prop, double trans_time_prop] */
-	inst_opt_get_led_pulse_state= 0x001A,	/* Get the current pulse LED state. [*double period, */
-	inst_opt_set_target_state   = 0x001B	/* Set the aiming target state 0 = off, 1 == on, 2 = toggle [int] */
+	inst_opt_get_led_pulse_state= 0x001A,	/* Get the current pulse LED state. [*double period] */
+	inst_opt_set_target_state   = 0x001B,	/* Set the aiming target state 0 = off, 1 == on, 2 = toggle [int] */
+
+	inst_opt_get_min_int_time   = 0x001C,	/* Get the minimum integration time [*double time] */
+	inst_opt_set_min_int_time   = 0x001D	/* Set the minimum integration time [double time] */
 
 } inst_opt_type;
 
@@ -828,16 +838,11 @@ typedef enum {
 	inst_code (*set_refr_rate)(											        \
 		struct _inst *p,														\
 		double ref_rate);		/* Rate in Hz */								\
-	inst_code (*set_int_time)(											        \
-		struct _inst *p,														\
-		double int_time);		/* Rate in Hz */								\
-	inst_code (*get_int_time)(											        \
-		struct _inst *p,														\
-		double *int_time);		/* Rate in Hz */								\
 																				\
 	/* Insert a compensation filter in the instrument readings */				\
 	/* This is typically needed if an adapter is being used, that alters */     \
 	/* the spectrum of the light reaching the instrument */                     \
+	/* Not fully implemented across all instrument types (spectrolino only ?) */ \
 	/* To remove the filter, pass NULL for the filter filename */               \
 	inst_code (*comp_filter)(											        \
 		struct _inst *p,														\

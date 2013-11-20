@@ -64,6 +64,9 @@
 /* I1D3_MIN_REF_QUANT_TIME		in seconds. Default 0.05 */
 /* I1D3_MIN_INT_TIME		    in seconds. Default 0.4 for refresh displays */
 
+#define I1D3_MEAS_TIMEOUT 40.0      /* Longest reading timeout in seconds */ 
+									/* Typically 20.0 is the maximum needed. */
+
 static inst_code i1d3_interp_code(inst *pp, int ec);
 static inst_code i1d3_check_unlock(i1d3 *p);
 
@@ -150,7 +153,7 @@ static char *inst_desc(i1Disp3CC cc) {
 		case i1d3_rd_sensor:
 			return "ReadAnalogSensor";
 		case i1d3_get_diff:
-			return "GetDiffuserPositio";
+			return "GetDiffuserPosition";
 		case i1d3_lockchal:
 			return "GetLockChallenge";
 		case i1d3_lockresp:
@@ -201,6 +204,12 @@ i1d3_command(
 	}
 	if (se != 0) {
 		if (!nd) a1logd(p->log, 1, "i1d3_command: Command send failed with ICOM err 0x%x\n",se);
+		/* Flush any response */
+		if (ishid) {
+			p->icom->hid_read(p->icom, recv, 64, &rbytes, to);
+		} else {
+			p->icom->usb_read(p->icom, NULL, 0x81, recv, 64, &rbytes, to);
+		}
 		amutex_unlock(p->lock);
 		return i1d3_interp_code((inst *)p, I1D3_COMS_FAIL);
 	}
@@ -218,7 +227,7 @@ i1d3_command(
 			p->icom->hid_read(p->icom, recv, 64, &rbytes, to);
 		} else {
 			p->icom->usb_read(p->icom, NULL, 0x81, recv, 64, &rbytes, to);
-		} 
+		}
 		amutex_unlock(p->lock);
 		return rv;
 	}
@@ -233,6 +242,12 @@ i1d3_command(
 	} 
 	if (se != 0) {
 		if (!nd) a1logd(p->log, 1, "i1d3_command: response read failed with ICOM err 0x%x\n",se);
+		/* Flush any extra response, in case responses are out of sync */
+		if (ishid) {
+			p->icom->hid_read(p->icom, recv, 64, &rbytes, 0.2);
+		} else {
+			p->icom->usb_read(p->icom, NULL, 0x81, recv, 64, &rbytes, 0.2);
+		}
 		amutex_unlock(p->lock);
 		return i1d3_interp_code((inst *)p, I1D3_COMS_FAIL);
 	}
@@ -242,12 +257,13 @@ i1d3_command(
 	}
 
 	/* The first byte returned seems to be a command result error code. */
-	/* The second byte is usually the command code being echo'd back, but not always. */
 	if (rv == inst_ok && recv[0] != 0x00) {
 		if (!nd) a1logd(p->log, 1, "i1d3_command: status byte != 00 = 0x%x\n",recv[0]);
 		rv = i1d3_interp_code((inst *)p, I1D3_BAD_RET_STAT);
 	}
 
+	/* The second byte is usually the command code being echo'd back, but not always. */
+	/* ie., get i1d3_get_diff returns the status instead. */
 	if (rv == inst_ok) {
 		if (cc != i1d3_get_diff) {
 			if (recv[1] != cmd) {
@@ -255,31 +271,30 @@ i1d3_command(
 				                                                               cmd,recv[1]);
 				rv = i1d3_interp_code((inst *)p, I1D3_BAD_RET_CMD);
 			}
+		} else {	/* i1d3_get_diff as special case */
+			int i;
+			for (i = 2; i < 64; i++) {
+				if (recv[i] != 0x00) {
+					if (!nd) a1logd(p->log, 1, "i1d3_command: i1d3_get_diff not zero filled\n");
+					rv = i1d3_interp_code((inst *)p, I1D3_BAD_RET_CMD);
+					break;
+				}
+			}
 		}
 	}
 
 	if (!nd) a1logd(p->log, 4, "i1d3_command: got '%s' ICOM err 0x%x\n",icoms_tohex(recv, 14),ua);
 
+	if (rv != inst_ok) {
+		/* Flush any extra response, in case responses are out of sync */
+		if (ishid) {
+			p->icom->hid_read(p->icom, recv, 64, &rbytes, 0.2);
+		} else {
+			p->icom->usb_read(p->icom, NULL, 0x81, recv, 64, &rbytes, 0.2);
+		}
+	}
+
 	amutex_unlock(p->lock);
-	return rv; 
-}
-
-/* Read a packet and time out or throw it away */
-static inst_code
-i1d3_dummy_read(
-	i1d3 *p					/* i1d3 object */
-) {
-	unsigned char buf[64];
-	int rbytes;				/* bytes read from ep */
-	int se, rv = inst_ok;
-	int ishid = p->icom->port_type(p->icom) == icomt_hid;
-
-	if (ishid) {
-		se = p->icom->hid_read(p->icom, buf, 64, &rbytes, 0.1);
-	} else {
-		se = p->icom->usb_read(p->icom, NULL, 0x81, buf, 64, &rbytes, 0.1);
-	} 
-
 	return rv; 
 }
 
@@ -740,7 +755,7 @@ i1d3_freq_measure(
 
 	todev[23] = 0;			/* Unknown parameter, always 0 */
 	
-	if ((ev = i1d3_command(p, i1d3_measure1, todev, fromdev, 20.0, 0)) != inst_ok)
+	if ((ev = i1d3_command(p, i1d3_measure1, todev, fromdev, I1D3_MEAS_TIMEOUT, 0)) != inst_ok)
 		return ev;
 	
 	rgb[0] = (double)buf2uint(fromdev + 2);
@@ -777,7 +792,7 @@ i1d3_period_measure(
 	todev[7] = (unsigned char)mask;	
 	todev[8] = 0;			/* Unknown parameter, always 0 */	
 	
-	if ((ev = i1d3_command(p, i1d3_measure2, todev, fromdev, 20.0, 0)) != inst_ok)
+	if ((ev = i1d3_command(p, i1d3_measure2, todev, fromdev, I1D3_MEAS_TIMEOUT, 0)) != inst_ok)
 		return ev;
 	
 	rgb[0] = (double)buf2uint(fromdev + 2);
@@ -917,6 +932,7 @@ i1d3_imp_measure_refresh(
 	int npeaks = 0;			/* Number of peaks */
 	double pval;			/* Period value */
 	int isdeb;
+	int isth;
 
 	if (prefrate != NULL)
 		*prefrate = 0.0;
@@ -928,14 +944,17 @@ i1d3_imp_measure_refresh(
 		return inst_internal_error; 
 	}
 
-	/* Turn debug off so that it doesn't intefere with measurement timing */
+	/* Turn debug and thread off so that they doesn't intefere with measurement timing */
 	isdeb = p->log->debug;
 	p->icom->log->debug = 0;
+	isth = p->th_en;
+	p->th_en = 0;
 
 	/* Do some measurement and throw them away, to make sure the code is in cache. */
 	for (i = 0; i < 5; i++) {
 		if ((ev = i1d3_freq_measure(p, &inttimeh, samp[i].rgb)) != inst_ok) {
 			p->log->debug = isdeb;
+			p->th_en = isth;
 	 		return ev;
 		}
 	}
@@ -951,6 +970,7 @@ i1d3_imp_measure_refresh(
 
 		if ((ev = i1d3_freq_measure(p, &inttime1, samp[0].rgb)) != inst_ok) {
 			p->log->debug = isdeb;
+			p->th_en = isth;
 	 		return ev;
 		}
 
@@ -958,6 +978,7 @@ i1d3_imp_measure_refresh(
 
 		if ((ev = i1d3_freq_measure(p, &inttime2, samp[0].rgb)) != inst_ok) {
 			p->log->debug = isdeb;
+			p->th_en = isth;
 	 		return ev;
 		}
 
@@ -983,10 +1004,10 @@ i1d3_imp_measure_refresh(
 
 		if ((ev = i1d3_freq_measure(p, &samp[i].itime, samp[i].rgb)) != inst_ok) {
 			p->log->debug = isdeb;
+			p->th_en = isth;
  			return ev;
 		}
 		cutime = (usec_time() - sutime) / 1000000.0;
-// ~~999
 		samp[i].sec = 0.5 * (putime + cutime);	/* Mean of before and after stamp */
 //samp[i].sec *= 85.0/20.0;		/* Test 20 Hz */
 //samp[i].sec *= 85.0/100.0;		/* Test 100 Hz */
@@ -994,7 +1015,9 @@ i1d3_imp_measure_refresh(
 		if (cutime > NFMXTIME)
 			break; 
 	}
+	/* Restore debug & thread */
 	p->log->debug = isdeb;
+	p->th_en = isth;
 
 	nfsamps = i;
 	if (nfsamps < 100) {
@@ -1494,11 +1517,16 @@ i1d3_take_emis_measurement(
 	int mask = 0x7;			/* Period measure mask */
 	int msecstart = msec_time();	/* Debug */
 	double rgb2[3] = { 0.0, 0.0, 0.0 };  /* Trial measurement RGB values */
+	int isth;
 
 	if (p->inited == 0)
 		return i1d3_interp_code((inst *)p, I1D3_NOT_INITED);
 
 	a1logd(p->log,3,"\ntake_emis_measurement called\n");
+
+	/* Suspend thread so that it doesn't intefere with measurement timing */
+	isth = p->th_en;
+	p->th_en = 0;
 
 	/* If we should take a frequency measurement first */
 	if (mode == i1d3_adaptive || mode == i1d3_frequency) {
@@ -1507,8 +1535,10 @@ i1d3_take_emis_measurement(
 		a1logd(p->log,3,"Doing fixed period frequency measurement over %f secs\n",p->inttime);
 
 		/* Take a frequency measurement over a fixed period */
-		if ((ev = i1d3_freq_measure(p, &p->inttime, rmeas)) != inst_ok)
+		if ((ev = i1d3_freq_measure(p, &p->inttime, rmeas)) != inst_ok) {
+			p->th_en = isth;
  			return ev;
+		}
 
 		/* Convert to frequency (assume raw meas is both edges count over integration time) */
 		for (i = 0; i < 3; i++) {
@@ -1570,8 +1600,10 @@ i1d3_take_emis_measurement(
 
 				a1logd(p->log,3,"Doing 1st period pre-measurement mask 0x%x, edgec %d %d %d\n",mask2,edgec[0],edgec[1],edgec[2]);
 				/* Take an initial period pre-measurement over 2 edges */
-				if ((ev = i1d3_period_measure(p, edgec, mask2, rmeas2)) != inst_ok)
+				if ((ev = i1d3_period_measure(p, edgec, mask2, rmeas2)) != inst_ok) {
+					p->th_en = isth;
 		 			return ev;
+				}
 
 				a1logd(p->log,3,"Got %f %f %f raw %f %f %f Hz\n",rmeas2[0],rmeas2[1],rmeas2[2],
 				     0.5 * edgec[0] * p->clk_freq/rmeas2[0],
@@ -1642,8 +1674,10 @@ i1d3_take_emis_measurement(
 
 						a1logd(p->log,3,"Doing 2nd initial period measurement mask 0x%x, edgec %d %d %d\n",mask2,edgec[0],edgec[1],edgec[2]);
 						/* Take a 2nd initial period  measurement */
-						if ((ev = i1d3_period_measure(p, edgec, mask3, rmeas2)) != inst_ok)
+						if ((ev = i1d3_period_measure(p, edgec, mask3, rmeas2)) != inst_ok) {
+							p->th_en = isth;
 				 			return ev;
+						}
 
 						a1logd(p->log,3,"Got %f %f %f raw %f %f %f Hz\n",rmeas2[0],rmeas2[1],rmeas2[2],
 						     0.5 * edgec[0] * p->clk_freq/rmeas2[0],
@@ -1795,8 +1829,10 @@ i1d3_take_emis_measurement(
 					a1logd(p->log,3,"Doing freq re-measure inttime %f\n",tinttime);
 
 					/* Take a frequency measurement over a fixed period */
-					if ((ev = i1d3_freq_measure(p, &tinttime, rmeas)) != inst_ok)
+					if ((ev = i1d3_freq_measure(p, &tinttime, rmeas)) != inst_ok) {
+						p->th_en = isth;
 			 			return ev;
+					}
 
 					/* Convert raw measurement to frequency */
 					for (i = 0; i < 3; i++) {
@@ -1814,8 +1850,10 @@ i1d3_take_emis_measurement(
 
 					a1logd(p->log,3,"Doing period re-measure mask 0x%x, edgec %d %d %d\n",mask,edgec[0],edgec[1],edgec[2]);
 					/* Measure again with desired precision, taking up to 0.4/0.8 secs */
-					if ((ev = i1d3_period_measure(p, edgec, mask, rmeas)) != inst_ok)
+					if ((ev = i1d3_period_measure(p, edgec, mask, rmeas)) != inst_ok) {
+						p->th_en = isth;
 			 			return ev;
+					}
 		
 					for (i = 0; i < 3; i++) {
 						double tt;
@@ -1835,6 +1873,7 @@ i1d3_take_emis_measurement(
 			}
 		}
 	}
+	p->th_en = isth;
 
 	a1logd(p->log,3,"Took %d msec to measure\n", msec_time() - msecstart);
 
@@ -1938,15 +1977,24 @@ static inst_code i1d3_decode_extEE(
 	unsigned int chsum, rchsum;
 	xspect tmp;
 
-	for (chsum = 0, i = 4; i < 6042; i++)
-		chsum += buf[i];
-
-	chsum &= 0xffff;		/* 16 bit sum */
-
 	rchsum = buf2short(buf + 2);
 
+	/* For the "A-01" revsions the checksum is from 4 to 0x179a, but */
+	/* it seems that the "A-02" revision sums from 4 to 0x178e. */
+	/* We will be flexible and accept anything that hits a match after */
+	/* the data we need. */
+	for (chsum = 0, i = 4; i < 8192; i++) {
+		chsum += buf[i];
+		if (i >= 0x1638 && (chsum & 0xffff) == rchsum) {
+			a1logd(p->log, 3, "i1d3_decode_extEE: chsum matches at count 0x%x\n",i+1);
+			break;
+		}
+	}
+
+	chsum &= 0xffff;
+
 	if (rchsum != chsum) {
-		a1logd(p->log, 3, "i1d3_decode_extEE: checksum failed\n");
+		a1logd(p->log, 3, "i1d3_decode_extEE: checksum failed, is 0x%x, should be 0x%x\n",chsum,rchsum);
 		return i1d3_interp_code((inst *)p, I1D3_BAD_EX_CHSUM);
 	}
 		
@@ -2202,11 +2250,6 @@ i1d3_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 		return inst_coms_fail;
 	}
 
-#if defined(__APPLE__)
-	/* We seem to have to clear any pending messages for OS X HID */
-	i1d3_dummy_read(p);
-#endif
-
 	/* Check instrument is responding */
 	if ((ev = i1d3_check_status(p,&stat)) != inst_ok) {
 		a1logd(p->log, 1, "i1d3_init_coms: failed with rv = 0x%x\n",ev);
@@ -2237,7 +2280,7 @@ static void dump_bytes(a1log *log, char *pfx, unsigned char *buf, int len) {
 					bp += sprintf(bp,".");
 			}
 			bp += sprintf(bp,"\n");
-			a1logd(log,0,oline);
+			a1logd(log,0, "%s", oline);
 			bp = oline;
 		}
 	}
@@ -2253,20 +2296,25 @@ int i1d3_diff_thread(void *pp) {
 	for (nfailed = 0; nfailed < 5;) {
 		int pos;
 
-		rv = i1d3_get_diffpos(p, &pos, 1); 
-		if (p->th_term) {
-			p->th_termed = 1;
-			break;
-		}
-		if (rv != inst_ok) {
-			nfailed++;
-			a1logd(p->log,3,"Diffuser thread failed with 0x%x\n",rv);
-			continue;
-		}
-		if (pos != p->dpos) {
-			p->dpos = pos;
-			if (p->eventcallback != NULL) {
-				p->eventcallback(p->event_cntx, inst_event_mconf);
+		/* Don't get diffpos if we're doing something else that */
+		/* is timing critical */
+		if (p->th_en) {
+//a1logd(p->log,3,"Diffuser thread loop debug = %d\n",p->log->debug);
+			rv = i1d3_get_diffpos(p, &pos, p->log->debug < 8 ? 1 : 0); 
+			if (p->th_term) {
+				p->th_termed = 1;
+				break;
+			}
+			if (rv != inst_ok) {
+				nfailed++;
+				a1logd(p->log,3,"Diffuser thread failed with 0x%x\n",rv);
+				continue;
+			}
+			if (pos != p->dpos) {
+				p->dpos = pos;
+				if (p->eventcallback != NULL) {
+					p->eventcallback(p->event_cntx, inst_event_mconf);
+				}
 			}
 		}
 		msec_sleep(100);
@@ -2285,7 +2333,7 @@ i1d3_init_inst(inst *pp) {
 	int i, stat;
 	unsigned char buf[8192];
 
-	a1logd(p->log, 2, "i1d3_init_inst: called\n");
+	a1logd(p->log, 2, "i1d3_init_inst: called, debug = %d\n",p->log->debug);
 
 	p->rrset = 0;
 
@@ -2352,9 +2400,11 @@ i1d3_init_inst(inst *pp) {
 		return ev;
 
 	/* Set known constants */
-	p->clk_freq = 12e6;			/* 12 Mhz */
-    p->dinttime = 0.20;			/* 0.2 second integration time default */
-	p->inttime = p->dinttime;	/* Start in non-refresh mode */
+	p->clk_freq = 12e6;				/* 12 Mhz */
+	p->omininttime = 0.0;			/* No override */
+	p->dinttime = 0.2;				/* 0.2 second integration time default */
+	p->inttime = p->dinttime;		/* Start in non-refresh mode */
+	p->mininttime = p->inttime;			/* Current value */
 
 	/* Create the default calibrations */
 
@@ -2392,12 +2442,15 @@ i1d3_init_inst(inst *pp) {
 	}
 
 	/* Start the diffuser monitoring thread */
+	p->th_en = 1;
 	if ((p->th = new_athread(i1d3_diff_thread, (void *)p)) == NULL)
-		return I1D3_INT_THREADFAILED;
+		return i1d3_interp_code((inst *)p, I1D3_INT_THREADFAILED);
 
 	/* Flash the LED, just cos we can! */
 	if ((ev = i1d3_set_LEDs(p, i1d3_flash, 0.2, 0.05, 2)) != inst_ok)
 		return ev;
+
+	a1logd(p->log, 2, "i1d3_init_inst: done\n");
 
 	return ev;
 }
@@ -2453,13 +2506,17 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	/* Attempt a refresh display frame rate calibration if needed */
 	if (p->dtype != i1d3_munkdisp && p->refrmode != 0 && p->rrset == 0) {
 		inst_code ev = inst_ok;
-		double minint = 2.0 * p->dinttime;
 
+		p->mininttime = 2.0 * p->dinttime;
+
+		if (p->omininttime != 0.0)
+			p->mininttime = p->omininttime;	/* Override */
+		
 #ifdef DEBUG_TWEAKS
 		{
 			char *cp;
 			if ((cp = getenv("I1D3_MIN_INT_TIME")) != NULL)
-				minint = atof(cp);
+				p->mininttime = atof(cp);
 		}
 #endif
 
@@ -2469,12 +2526,12 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 		/* Quantize the sample time */
 		if (p->refperiod > 0.0) {		/* If we have a refresh period */
 			int n;
-			n = (int)ceil(minint/p->refperiod);
+			n = (int)ceil(p->mininttime/p->refperiod);
 			p->inttime = n * p->refperiod;
 			a1logd(p->log, 3, "i1d3: integration time quantize to %f secs\n",p->inttime);
 
-		} else {	/* We don't have a period, so simply double the default */
-			p->inttime = minint;
+		} else {	/* We don't have a period, so simply use the double default */
+			p->inttime = p->mininttime;
 			a1logd(p->log, 3, "i1d3: integration time integration time doubled to %f secs\n",p->inttime);
 		}
 	}
@@ -2662,7 +2719,6 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 		if ((*calt & inst_calt_n_dfrble_mask) == 0)		/* Nothing todo */
 			return inst_ok;
 	}
-		a1logd(p->log,4,"i1d3_calibrate: checking calt: available:%x, mask:%x \n",~available,inst_calt_all_mask);
 
 	/* See if it's a calibration we understand */
 	if (*calt & ~available & inst_calt_all_mask) { 
@@ -2671,18 +2727,22 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 
 	if ((*calt & inst_calt_ref_freq) && p->dtype != i1d3_munkdisp && p->refrmode != 0) {
 		inst_code ev = inst_ok;
-		double minint = 2.0 * p->dinttime;
+
+		p->mininttime = 2.0 * p->dinttime;
 
 		if (*calc != inst_calc_emis_80pc) {
 			*calc = inst_calc_emis_80pc;
 			return inst_cal_setup;
 		}
 
+		if (p->omininttime != 0.0)
+			p->mininttime = p->omininttime;	/* Override */
+		
 #ifdef DEBUG_TWEAKS
 		{
 			char *cp;
 			if ((cp = getenv("I1D3_MIN_INT_TIME")) != NULL)
-				minint = atof(cp);
+				p->mininttime = atof(cp);
 		}
 #endif
 
@@ -2693,11 +2753,11 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 		/* Quantize the sample time */
 		if (p->refperiod > 0.0) {
 			int n;
-			n = (int)ceil(minint/p->refperiod);
+			n = (int)ceil(p->mininttime/p->refperiod);
 			p->inttime = n * p->refperiod;
 			a1logd(p->log, 3, "i1d3: integration time quantize to %f secs\n",p->inttime);
 		} else {
-			p->inttime = minint;	/* Double default integration time */
+			p->inttime = p->mininttime;	/* Double default integration time */
 			a1logd(p->log, 3, "i1d3: integration time integration time doubled to %f secs\n",p->inttime);
 		}
 		*calt &= ~inst_calt_ref_freq;
@@ -2731,15 +2791,18 @@ int *msecdelay)	{	/* Return the number of msec */
 	double stot, etot, del, thr;
 	double etime;
 	int isdeb;
+	int isth;
 
 	if (usec_time() < 0.0) {
 		a1loge(p->log, inst_internal_error, "i1d3_meas_delay: No high resolution timers\n");
 		return inst_internal_error; 
 	}
 
-	/* Turn debug off so that it doesn't intefere with measurement timing */
+	/* Turn debug and thread off so that they doesn't intefere with measurement timing */
 	isdeb = p->log->debug;
 	p->icom->log->debug = 0;
+	isth = p->th_en;
+	p->th_en = 0;
 
 	/* Read the samples */
 	sutime = usec_time();
@@ -2748,6 +2811,7 @@ int *msecdelay)	{	/* Return the number of msec */
 		if ((ev = i1d3_freq_measure(p, &inttime, samp[i].rgb)) != inst_ok) {
 			a1logd(p->log, 1, "i1d3_meas_delay: measurement failed\n");
 			p->log->debug = isdeb;
+			p->th_en = isth;
  			return ev;
 		}
 		cutime = (usec_time() - sutime) / 1000000.0;
@@ -2759,8 +2823,9 @@ int *msecdelay)	{	/* Return the number of msec */
 	}
 	ndsamps = i;
 
-	/* Restore debugging */
+	/* Restore debugging & thread */
 	p->log->debug = isdeb;
+	p->th_en = isth;
 
 	if (ndsamps == 0) {
 		a1logd(p->log, 1, "i1d3_meas_delay: No measurement samples returned in time\n");
@@ -2904,27 +2969,6 @@ double ref_rate
 	}
 	p->rrset = 1;
 
-	return inst_ok;
-}
-
-static inst_code i1d3_set_int_time(inst *pp,
-double int_time
-) {
-	i1d3 *p = (i1d3 *)pp;
-
-	if ((int_time < 0.2 || int_time > 2.0))
-		return inst_bad_parameter;
-
-    p->dinttime = int_time;
-	return inst_ok;
-}
-
-static inst_code i1d3_get_int_time(inst *pp,
-double *int_time
-) {
-	i1d3 *p = (i1d3 *)pp;
-
-    *int_time = p->dinttime;
 	return inst_ok;
 }
 
@@ -3118,6 +3162,8 @@ inst3_capability *pcap3) {
 	     |  inst2_disptype
 	     |  inst2_ccmx
 	     |  inst2_ccss
+	     |  inst2_get_min_int_time
+	     |  inst2_set_min_int_time
 	        ;
 
 	if (p->dtype != i1d3_munkdisp) {
@@ -3235,11 +3281,15 @@ inst_code i1d3_set_mode(inst *pp, inst_mode m) {
 	}
 	p->refrmode = refrmode; 
 
+	/* default before any refresh rate calibration */
 	if (p->refrmode) {
 		p->inttime = 2.0 * p->dinttime;	/* Double default integration time */
 	} else {
-		p->inttime =  p->dinttime;		/* Normal integration time */
+		p->inttime = p->dinttime;		/* Normal integration time */
 	}
+	if (p->omininttime != 0.0)
+		p->inttime = p->omininttime;	/* Override */
+	p->mininttime = p->inttime;			/* Current value */
 
 	return inst_ok;
 }
@@ -3329,12 +3379,14 @@ static inst_code set_disp_type(i1d3 *p, inst_disptypesel *dentry) {
 		p->rrset = 0;					/* This is a hint we may have swapped displays */
 	p->refrmode = refrmode; 
 
-//	if (p->refrmode && p->dtype == i1d3_munkdisp) {
 	if (p->refrmode) {
 		p->inttime = 2.0 * p->dinttime;	/* Double integration time */
 	} else {
-		p->inttime = 2.0 * p->dinttime;		/* Normal integration time */
+		p->inttime = p->dinttime;		/* Normal integration time */
 	}
+	if (p->omininttime != 0.0)
+		p->inttime = p->omininttime;	/* Override */
+	p->mininttime = p->inttime;			/* Current value */
 
 	if (dentry->flags & inst_dtflags_ccss) {
 
@@ -3482,6 +3534,66 @@ i1d3_get_set_opt(inst *pp, inst_opt_type m, ...)
 
 		return inst_ok;
 	}
+
+	/* Get the current minimum integration time */
+	if (m == inst_opt_get_min_int_time) {
+		va_list args;
+		double *dpoint;
+
+		va_start(args, m);
+		dpoint = va_arg(args, double *);
+		va_end(args);
+
+		if (dpoint != NULL)
+			*dpoint = p->mininttime;
+
+		return inst_ok;
+	}
+
+	/* Set the minimum integration time */
+	if (m == inst_opt_set_min_int_time) {
+		va_list args;
+		double dval;
+
+		va_start(args, m);
+		dval = va_arg(args, double);
+		va_end(args);
+
+		p->omininttime = dval;
+
+		/* Hmm. This code is duplicated a lot.. */
+		if (p->dtype != i1d3_munkdisp && p->refrmode != 0) {
+			inst_code ev = inst_ok;
+	
+			p->mininttime = 2.0 * p->dinttime;
+	
+			if (p->omininttime != 0.0)
+				p->mininttime = p->omininttime;	/* Override */
+			
+#ifdef DEBUG_TWEAKS
+			{
+				char *cp;
+				if ((cp = getenv("I1D3_MIN_INT_TIME")) != NULL)
+					p->mininttime = atof(cp);
+			}
+#endif
+	
+			/* Quantize the sample time if we have a refresh rate */
+			if (p->rrset && p->refperiod > 0.0) {		/* If we have a refresh period */
+				int n;
+				n = (int)ceil(p->mininttime/p->refperiod);
+				p->inttime = n * p->refperiod;
+				a1logd(p->log, 3, "i1d3: integration time quantize to %f secs\n",p->inttime);
+	
+			} else {	/* We don't have a period, so simply use the double default */
+				p->inttime = p->mininttime;
+				a1logd(p->log, 3, "i1d3: integration time integration time doubled to %f secs\n",p->inttime);
+			}
+		}
+
+		return inst_ok;
+	}
+
 
 	/* Set the ccss observer type */
 	if (m == inst_opt_set_ccss_obs) {
@@ -3638,8 +3750,6 @@ extern i1d3 *new_i1d3(icoms *icom, instType itype) {
 	p->meas_delay        = i1d3_meas_delay;
 	p->get_refr_rate     = i1d3_get_refr_rate;
 	p->set_refr_rate     = i1d3_set_refr_rate;
-	p->set_int_time     = i1d3_set_int_time;
-	p->get_int_time     = i1d3_get_int_time;
 	p->interp_error      = i1d3_interp_error;
 	p->config_enum       = i1d3_config_enum;
 	p->del               = i1d3_del;

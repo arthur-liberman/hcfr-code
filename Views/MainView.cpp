@@ -943,9 +943,80 @@ void CMainView::InitGrid()
 
 		for ( int i2 = 4; i2 <= nRows ; i2++ )
 		{
-			m_pGrayScaleGrid->SetItemState ( i2, i+1, m_pGrayScaleGrid->GetItemState(i2,i+1) | GVIS_READONLY );
 			m_pGrayScaleGrid->SetItemBkColour ( i2, i+1, ( (i2&1) ? RGB(240,240,240) : RGB(224,224,224) ) );
-		}
+			m_pGrayScaleGrid->SetItemState ( i2, i+1, m_pGrayScaleGrid->GetItemState(i2,i+1) | GVIS_READONLY );
+        }
+
+        if (m_displayMode < 13)
+        {
+            int i2=0;
+            double step = 120.0 / size;
+            m_pGrayScaleGrid->SetItemFgColour(i2, i+1, RGB(10,10,10));
+            m_pGrayScaleGrid->SetItemBkColour(i2, i+1, RGB(240,240,240));
+            switch (m_displayMode)
+            {
+            case 0:
+    			m_pGrayScaleGrid->SetItemBkColour ( i2, i+1, RGB(i*step+130,i*step+130,i*step+130) );
+                break;
+            case 1:
+                switch(i+1)
+                {
+                case 1:
+            			m_pGrayScaleGrid->SetItemBkColour ( i2, i+1, RGB(240,200,200) );
+                        break;
+                case 2:
+            			m_pGrayScaleGrid->SetItemBkColour ( i2, i+1, RGB(200,240,200) );
+                        break;
+                case 3:
+            			m_pGrayScaleGrid->SetItemBkColour ( i2, i+1, RGB(200,200,240) );
+                        break;
+                case 4:
+            			m_pGrayScaleGrid->SetItemBkColour ( i2, i+1, RGB(240,240,200) );
+                        break;
+                case 5:
+            			m_pGrayScaleGrid->SetItemBkColour ( i2, i+1, RGB(200,240,240) );
+                        break;
+                case 6:
+            			m_pGrayScaleGrid->SetItemBkColour ( i2, i+1, RGB(240,200,240) );
+                        break;
+                }
+            break;
+            case 2:
+            case 3:
+            case 4:
+    			m_pGrayScaleGrid->SetItemBkColour ( i2, i+1, RGB(i*step+130,i*step+130,i*step+130) );
+                break;
+            case 5:
+    			m_pGrayScaleGrid->SetItemBkColour ( i2, i+1, RGB(240,240-i*step*2,240-i*step*2) );
+                break;
+            case 6:
+    			m_pGrayScaleGrid->SetItemBkColour ( i2, i+1, RGB(240-i*step*2,240,240-i*step*2) );
+                break;
+            case 7:
+    			m_pGrayScaleGrid->SetItemBkColour ( i2, i+1, RGB(240-i*step*2,240-i*step*2,240) );
+                break;
+            case 8:
+    			m_pGrayScaleGrid->SetItemBkColour ( i2, i+1, RGB(240,240,240-i*step*2) );
+                break;
+            case 9:
+    			m_pGrayScaleGrid->SetItemBkColour ( i2, i+1, RGB(240-i*step*2,240,240) );
+                break;
+            case 10:
+    			m_pGrayScaleGrid->SetItemBkColour ( i2, i+1, RGB(240,240-i*step*2,240) );
+                break;
+            case 11:
+                CColor s_clr;
+                ColorRGB r_clr;
+                s_clr=GetDocument()->GetMeasure()->GetRefCC24Sat(i);     
+                r_clr=s_clr.GetRGBValue(GetColorReference());
+    			m_pGrayScaleGrid->SetItemBkColour ( i2, i+1, RGB(r_clr[0]*255.,r_clr[1]*255.,r_clr[2]*255.) );
+                if (GetColorReference().GetCC24ReferenceLuma(i,GetConfig()->m_CCMode) < 0.4)
+                    m_pGrayScaleGrid->SetItemFgColour(i2, i+1, RGB(240,240,240));
+                else
+                    m_pGrayScaleGrid->SetItemFgColour(i2, i+1, RGB(10,10,10));
+            break;
+            }
+        }
 	}
 
 	if ( size >= 5 )
@@ -965,7 +1036,7 @@ void CMainView::InitGrid()
 			}
 			else if ( i < 3 )
 			{
-				m_pGrayScaleGrid->SetItemBkColour ( Item.row,Item.col, RGB(255,255,255) );
+//				m_pGrayScaleGrid->SetItemBkColour ( Item.row,Item.col, RGB(255,255,255) );
 				m_pGrayScaleGrid->SetItemState ( Item.row,Item.col, m_pGrayScaleGrid->GetItemState(Item.row,Item.col) & (~GVIS_READONLY) );
 			}
 		}
@@ -1462,7 +1533,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 			else
 				str.Empty ();
 		}
-		else if ( aComponentNum == 4 )
+		else if ( aComponentNum == 4 && (m_displayMode == 0 || m_displayMode == 3)?(nCol > 1?true:false):true )
 		{
 			if ( aReference.isValid() )
 				str.Format("%.3f",aMeasure.GetDeltaxy ( aReference, GetColorReference()) );
@@ -1762,7 +1833,7 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 		 	if ( GetDataRef() && GetDataRef() != GetDocument () )
 				return "dE / ref";
 			else
-				return ( m_displayMode == 0 ? "gamma Y" : "delta luminance" );
+				return ( m_displayMode == 0 ? "Y target" : "delta luminance" );
 			break;
 
 		case 6:
@@ -1770,7 +1841,7 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 			break;
 
 		case 7:
-			return ( m_displayMode == 0 ? "gamma Y" : "delta luminance" );
+			return ( m_displayMode == 0 ? "Y target" : "delta luminance" );
 			break;
 	}
 
@@ -2393,10 +2464,10 @@ void CMainView::UpdateGrid()
                     if (GetConfig()->doHighlight)
                     {
 					    m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
-					    if (dEavg / dEcnt < a / 2)
-						    Msg += "------>Awesome Calibration!";
-                        else if (dEavg /dEcnt < a)
-                            Msg += "------>Very Nice Calibration!";
+//					    if (dEavg / dEcnt < a / 2)
+//						    Msg += "------>Awesome Calibration!";
+//                        else if (dEavg /dEcnt < a)
+//                            Msg += "------>Very Nice Calibration!";
                     }
 				}
 			}
@@ -2458,10 +2529,10 @@ void CMainView::UpdateGrid()
                     if (GetConfig()->doHighlight)
                     {
                         m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
-					    if (dEavg / dEcnt < a / 2)
-						    Msg += "------>Awesome Calibration!";
-                        else if (dEavg /dEcnt < a)
-                            Msg += "------>Very Nice Calibration!";
+//					    if (dEavg / dEcnt < a / 2)
+//						    Msg += "------>Awesome Calibration!";
+//                        else if (dEavg /dEcnt < a)
+//                            Msg += "------>Very Nice Calibration!";
                     }
 			}
 			m_grayScaleGroup.SetText ( Msg );
@@ -2521,10 +2592,10 @@ void CMainView::UpdateGrid()
                     if (GetConfig()->doHighlight)
                     {
 					    m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
-					    if (dEavg / dEcnt < a / 2)
-						    Msg += "------>Awesome Calibration!";
-                        else if (dEavg /dEcnt < a)
-                            Msg += "------>Very Nice Calibration!";
+//					    if (dEavg / dEcnt < a / 2)
+//						    Msg += "------>Awesome Calibration!";
+//                        else if (dEavg /dEcnt < a)
+//                            Msg += "------>Very Nice Calibration!";
                     }
 			}
 			m_grayScaleGroup.SetText ( Msg );
@@ -2586,10 +2657,10 @@ void CMainView::UpdateGrid()
                     {
 					    m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
 					//hidden cookie
-					if (dEavg / dEcnt <= 1.0 )
-						Msg += "------>Super Awesome Calibration!";
-                    else if (dEavg /dEcnt < a)
-                        Msg += "------>Awesome Calibration!";
+//					if (dEavg / dEcnt <= 1.0 )
+//						Msg += "------>Super Awesome Calibration!";
+//                    else if (dEavg /dEcnt < a)
+//                        Msg += "------>Awesome Calibration!";
                     }
 			}
 			m_grayScaleGroup.SetText ( Msg );

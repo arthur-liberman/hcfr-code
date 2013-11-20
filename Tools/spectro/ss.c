@@ -1940,8 +1940,6 @@ ss_get_set_opt(inst *pp, inst_opt_type m, ...) {
 			case inst_opt_filter_Custom:
 				p->filt = ss_aft_CustomFilter;
 				return inst_ok;
-			case inst_opt_filter_unknown:
-				return inst_unsupported;
 			default:
 				break;
 		}

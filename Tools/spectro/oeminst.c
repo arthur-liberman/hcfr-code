@@ -37,7 +37,7 @@ void usage(void) {
 	fprintf(stderr,"Install OEM data files, Version %s\n",ARGYLL_VERSION_STR);
 	fprintf(stderr,"Author: Graeme W. Gill, licensed under the GPL Version 2 or later\n");
 	fprintf(stderr,"usage: oeminst [-options] [infile(s)]\n");
-	fprintf(stderr," -v                      Verbose\n");
+	fprintf(stderr," -v [level]              Verbose\n");
 	fprintf(stderr," -n                      Don't install, show where files would be installed\n");
 	fprintf(stderr," -c                      Don't install, save files to current directory\n");
 	fprintf(stderr," -S d                    Specify the install scope u = user (def.), l = local system]\n");
@@ -88,6 +88,10 @@ main(int argc, char *argv[]) {
 			/* Verbosity */
 			else if (argv[fa][1] == 'v' || argv[fa][1] == 'V') {
 				verb = 1;
+				if (na != NULL && na[0] >= '0' && na[0] <= '9') {
+					verb = atoi(na);
+					fa = nfa;
+				}
 			}
 
 			/* No install */

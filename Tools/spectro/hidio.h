@@ -60,6 +60,12 @@ struct hid_idevice {
 	OVERLAPPED ols;				/* Overlapped structure for write/read */
 #endif
 #if defined(__APPLE__)
+# if defined(USE_NEW_OSX_CODE) && __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
+	int lid;							/* Location ID */
+	IOHIDDeviceRef ioob;				/* Object to open */
+	/* Stuff setup when device is open: */
+	CFRunLoopRef rlr;
+#else
 	int lid;					/* Location ID */
 	io_object_t ioob;					/* Object to open */
 	/* Stuff setup when device is open: */
@@ -68,7 +74,10 @@ struct hid_idevice {
 	CFRunLoopSourceRef evsrc;
 	CFRunLoopRef rlr;
 	IOReturn result;
+#   define HID_RBUF_SIZE 1024
+	unsigned char rbuf[HID_RBUF_SIZE];			/* Buffer for read callback */
     int bread;            				/* Bytes read by callback */
+#endif	/* __MAC_OS_X_VERSION_MAX_ALLOWED < 1060 */
 #endif
 #if defined (UNIX) && !defined(__APPLE__)
 	int temp;					/* Shut the compiler up */

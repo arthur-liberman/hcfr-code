@@ -248,7 +248,7 @@ BEGIN
     CONTROL         "Changer le blanc",IDC_CHANGEWHITE_CHECK,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,33,66,10
     COMBOBOX        IDC_WHITETARGET_COMBO,88,32,57,84,CBS_DROPDOWNLIST | WS_DISABLED | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     GROUPBOX        "Calcul du Gamma",IDC_STATIC,7,51,198,73,WS_GROUP
-    CONTROL         "Standard de visualisation",IDC_GAMMA_OFFSET_RADIO1,
+    CONTROL         "Standard de visualisation (power law)",IDC_GAMMA_OFFSET_RADIO1,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,12,61,115,10
     CONTROL         "Standard avec compensation du noir",IDC_GAMMA_OFFSET_RADIO2,
                     "Button",BS_AUTORADIOBUTTON,12,73,138,10
@@ -3283,7 +3283,7 @@ BEGIN
     IDS_RUNALLSATON         "Lancer la mesure de toutes les saturations sur"
     IDS_MEASUREGRAYANDCOLORSON 
                             "Lancer la mesure des couleurs primaires, secondaires et de l'échelle de gris sur"
-    IDS_PERCENTGRAY         "% Gris"
+    IDS_PERCENTGRAY         "% Blanc"
     IDS_OPENNEWTAB          "Ouvre un nouvel onglet"
     IDS_MEASURESINGLE_SIM   "Effectue une mesure libre unique sur tous les documents simultanément ?"
 END

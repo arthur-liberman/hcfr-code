@@ -21,6 +21,9 @@
 
 /* TTBD
  *
+ *	Make -V average the spectrum too (if present), and allow it to
+ *  be saved to a .sp file.
+ *
  *  Should fix plot so that it is a separate object running its own thread,
  *  so that it can be sent a graph without needing to be clicked in all the time.
  *
@@ -470,8 +473,10 @@ int main(int argc, char *argv[]) {
 			} else if (argv[fa][1] == 'c') {
 				fa = nfa;
 				if (na == NULL) usage("Paramater expected following -c");
-				comport = atoi(na);
-				if (comport < 1 || comport > 40) usage("-c parameter %d out of range",comport);
+				{
+					comport = atoi(na);
+					if (comport < 1 || comport > 40) usage("-c parameter %d out of range",comport);
+				}
 
 			/* Display type */
 			} else if (argv[fa][1] == 'y') {
@@ -775,7 +780,6 @@ int main(int argc, char *argv[]) {
 	if ((ipath = icmps->get_path(icmps, comport)) == NULL)
 		error("No instrument at port %d",comport);
 
-
 	/* Setup the instrument ready to do reads */
 	if ((it = new_inst(ipath, 0, g_log, DUIH_FUNC_AND_CONTEXT)) == NULL) {
 		usage("Unknown, inappropriate or no instrument detected");
@@ -981,21 +985,6 @@ int main(int argc, char *argv[]) {
 				printf("Disable initial-calibrate not supported\n");
 			}
 		}
-		if (highres) {
-			if (IMODETST(cap, inst_mode_highres)) {
-				inst_code ev;
-				if ((ev = it->get_set_opt(it, inst_opt_highres)) != inst_ok) {
-					printf("\nSetting high res mode failed with error :'%s' (%s)\n",
-			       	       it->inst_interp_error(it, ev), it->interp_error(it, ev));
-					it->del(it);
-					return -1;
-				}
-				highres = 1;
-			} else if (verb) {
-				printf("high resolution ignored - instrument doesn't support high res. mode\n");
-			}
-		}
-
 		/* Set it to the appropriate mode */
 
 		/* Should look at instrument type & user spec ??? */
@@ -1038,6 +1027,16 @@ int main(int argc, char *argv[]) {
 		if (spec || pspec || IMODETST(cap, inst_mode_spectral)) {
 			mode  |= inst_mode_spectral;
 			smode |= inst_mode_spectral;
+		}
+
+		if (highres) {
+			if (IMODETST(cap, inst_mode_highres)) {
+				mode  |= inst_mode_highres;
+				smode |= inst_mode_highres;
+			} else if (verb) {
+				printf("high resolution ignored - instrument doesn't support high res. mode\n");
+				highres = 0;
+			}
 		}
 
 		// ~~~ i1pro2 test code ~~~ */
@@ -1269,7 +1268,7 @@ int main(int argc, char *argv[]) {
 	/* Read spots until the user quits */
 	for (ix = 1;; ix++) {
 		ipatch val;
-		double XYZ[3];			/* XYZ scaled 0..100 or absolute */
+		double XYZ[3] = { 0.0, 0.0, 0.0 };		/* XYZ scaled 0..100 or absolute */
 		double tXYZ[3];
 #ifndef SALONEINSTLIB
 		double cct, vct, vdt;
@@ -1280,6 +1279,43 @@ int main(int argc, char *argv[]) {
 		int dofwa = 0;		/* Do FWA compensation */
 		int fidx = -1;		/* FWA compensated index, default = none */
 	
+#ifdef NEVER 	// test i1d3 min_int_time code
+		{
+			double cval;
+			char *cp;
+
+			if ((rv = it->get_set_opt(it, inst_opt_get_min_int_time, &cval)) != inst_ok) {
+				printf("\nGetting min_int)time failed with error :'%s' (%s)\n",
+		       	       it->inst_interp_error(it, rv), it->interp_error(it, rv));
+				it->del(it);
+				return -1;
+			}
+			printf("Current min int time = %f\n",cval);
+			
+			if ((cp = getenv("I1D3_MIN_INT_TIME")) != NULL) {
+				cval = atof(cp);
+
+				printf("Setting int time %f\n",cval);
+				if ((rv = it->get_set_opt(it, inst_opt_set_min_int_time, cval)) != inst_ok) {
+					printf("\nSetting min_int_time failed with error :'%s' (%s)\n",
+			       	       it->inst_interp_error(it, rv), it->interp_error(it, rv));
+					it->del(it);
+					return -1;
+				}
+			
+				if ((rv = it->get_set_opt(it, inst_opt_get_min_int_time, &cval)) != inst_ok) {
+					printf("\nGetting min_int)time failed with error :'%s' (%s)\n",
+			       	       it->inst_interp_error(it, rv), it->interp_error(it, rv));
+					it->del(it);
+					return -1;
+				}
+			
+				printf("Check current min int time = %f\n",cval);
+			}
+		}
+
+#endif // NEVER
+
 		if (savdrd != -1 && IMODETST(cap, inst_mode_s_ref_spot)
 			 && it->check_mode(it, inst_mode_s_ref_spot) == inst_ok) {
 			inst_stat_savdrd sv;
@@ -1656,6 +1692,7 @@ int main(int argc, char *argv[]) {
 		if (ch == 'H' || ch == 'h') {	/* Toggle high res mode */
 			if (IMODETST(cap, inst_mode_highres)) {
 				inst_code ev;
+				/* Hmm. Could simply re-do set_mode() here instead */
 				if (highres) {
 					if ((ev = it->get_set_opt(it, inst_opt_stdres)) != inst_ok) {
 						printf("\nSetting std res mode failed with error :'%s' (%s)\n",

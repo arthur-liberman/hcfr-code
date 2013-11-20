@@ -137,8 +137,10 @@ struct _i1d3 {
 	double refrate;				/* Measured refresh rate in Hz */
 	int    refrvalid;			/* nz if refrate is valid */
 	double clk_freq;			/* Clock frequency (12Mhz) */
+	double omininttime;			/* Override minimum integration time = 0.0 = none */
 	double dinttime;			/* default integration time = 0.2 seconds */
-	double inttime;				/* current integration time = 0.2 seconds */
+	double mininttime;			/* current minimum integration time (doubled for refresh) */
+	double inttime;				/* current (quantized, doubled) integration time = 0.2 seconds */
 
 	double transblend;			/* Blend between fixed and adaptive integration */
 								/* at low light levels */
@@ -148,6 +150,7 @@ struct _i1d3 {
 	double	led_period, led_on_time_prop, led_trans_time_prop;	/* Pulse state */
 
 	athread *th;                /* Diffuser position monitoring thread */
+	volatile int th_en;			/* Enable updating diffuser possition */
 	volatile int th_term;		/* nz to terminate thread */
 	volatile int th_termed;		/* nz when thread terminated */
 	int dpos;					/* Diffuser position, 0 = display, 1 = ambient */

@@ -77,6 +77,7 @@ typedef struct {
 /* Store information about a possible instrument communication path */
 /* (Note a path doesn't have a reference to icompaths or its' log) */
 struct _icompath{
+	instType itype;				/* Type of instrument if known */
 	char *name;					/* instance description */
 #if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
 	char *spath;				/* Serial device path */
@@ -88,7 +89,6 @@ struct _icompath{
 	struct usb_idevice *usbd;	/* USB port, NULL if not USB */
 	struct hid_idevice *hidd;	/* HID port, NULL if not HID */
 #endif /* ENABLE_USB */
-	instType itype;				/* Type of instrument if known */
 };
 
 extern icompath icomFakeDevice;	/* Declare fake device */
@@ -128,6 +128,8 @@ struct _icompaths {
 	icompath *(*get_path)(
 		struct _icompaths *p, 
 		int  	       port);		/* Enumerated port number, 1..n */
+#define FAKE_DEVICE_PORT -98		/* Fake display & instrument */
+#define DEMO_DEVICE_PORT -99		/* Fake Demo instrument */
 
 	/* Clear all the paths */
 	void (*clear)(struct _icompaths *p);
@@ -217,8 +219,8 @@ typedef enum {
 
 #define ICOM_NOTS 	0x001000		/* Not supported */
 #define ICOM_SIZE	0x002000		/* Request/response size exceeded limits */
-#define ICOM_TO		0x004000		/* Timed out */
-#define ICOM_SHORT	0x008000		/* Number of bytes wasn't read/written */
+#define ICOM_TO		0x004000		/* Timed out, but there may be bytes read/written */
+#define ICOM_SHORT	0x008000		/* No timeout but number of bytes wasn't read/written */
 #define ICOM_CANC	0x010000		/* Was cancelled */
 #define ICOM_SYS	0x020000		/* System error (ie. malloc, system call fail) */
 #define ICOM_VER	0x040000		/* Version error - need up to date kernel driver */

@@ -19,7 +19,7 @@ CCPROFFLAG    = /Z7
 LINKDEBUGFLAG = /DEBUG
 LINKPROFFLAG  = /PROFILE
 
-STDHDRSDEF   = "$(VCINSTALLDIR)\include"
+STDHDRSDEF   = $(VCINSTALLDIR)\include
 LINKDIR      = $(MSSDK)
 
 MAKEU     = nmake
@@ -27,10 +27,12 @@ LIBU      = lib
 LIBOF     = /OUT:
 RANLIB    = rem
 AS        = masm386
-CCFLAGSDEF   = /DNT  /MT /c /W3 /wd4101 /wd4018 /wd4146 /wd4244 $(DEFFLAG)_CRT_SECURE_NO_DEPRECATE $(DEFFLAG)_CRT_NONSTDC_NO_DEPRECATE $(DEFFLAG)_USE_32BIT_TIME_T
+# DLL build by default
+# /Wall /wd4820 /wd4100 /wd4255 /wd4711 /wd4668 /wd4018 /wd4389
+CCFLAGSDEF   = /DNT  /MD /c	 $(DEFFLAG)_CRT_SECURE_NO_DEPRECATE $(DEFFLAG)_CRT_NONSTDC_NO_DEPRECATE
 CC        = cl /nologo $(CCFLAGS) $(STDHDRS) $(WIN_STDHDRS)
 CCOF      = /Fo
-LINKLIBS  = "$(LINKDIR)\lib\user32.lib" "$(LINKDIR)\lib\gdi32.lib" "$(LINKDIR)\lib\advapi32.lib" "$(LINKDIR)\lib\setupapi.lib" "$(LINKDIR)\lib\ole32.lib"
+LINKLIBS  = $(LINKDIR)\lib\user32.lib $(LINKDIR)\lib\gdi32.lib $(LINKDIR)\lib\advapi32.lib $(LINKDIR)\lib\setupapi.lib $(LINKDIR)\lib\ole32.lib
 LINKFLAGSDEF = /link /INCREMENTAL:NO
 LINK      = link $(LINKFLAGS)
 LINKOF    = /OUT:

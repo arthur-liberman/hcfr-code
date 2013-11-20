@@ -89,6 +89,7 @@ struct _munki_state {
 	double targoscale;	/* Optimal reading scale factor <= 1.0 */
 	double targmaxitime;/* maximum integration time to aim for  (ie. 2.0 sec) */
 	double targoscale2;	/* Proportion of targoscale allowed to meed targmaxitime */
+	int auto_gain;		/* Whether high gain mode should be used */
 	int gainmode;		/* Gain mode, 0 = normal, 1 = high */
 	double inttime;		/* Integration time */
 	double invsampt;	/* Invalid sample time */
@@ -103,8 +104,6 @@ struct _munki_state {
 	double wreadtime;	/* Target white/sample reading time - sets number of readings */
 
 	double maxscantime;	/* Maximum scan time sets buffer size allocated */
-
-	double min_wl;		/* Minimum wavelegth to report for this mode */
 
 	/* calibration information for this mode */
 	int dark_valid;			/* dark calibration factor valid */
@@ -144,6 +143,8 @@ struct _munki_state {
 	double dcaltime3;		/* Target dark calibration time - sets number of readings */
 	double dark_int_time3;	/* Integration time used for dark data 3 */
 	double *dark_data3;		/* [-1 nraw] of dark level to subtract for dark_int_time3. */
+
+	char padding[1];		/* to change structure size to invalidate cal file */
 
 }; typedef struct _munki_state munki_state;
  
@@ -393,8 +394,9 @@ char *munki_imp_get_serial_no(munki *p);
 /* Set the measurement mode. It may need calibrating */
 munki_code munki_imp_set_mode(
 	munki *p,
-	mk_mode mmode,		/* munki mode to use */
-	int spec_en);		/* nz to enable reporting spectral */
+	mk_mode mmode,		/* Operating mode */
+	inst_mode mode		/* Full mode mask for options */
+);
 
 /* Implement get_n_a_cals */
 munki_code munki_imp_get_n_a_cals(munki *p, inst_cal_type *pn_cals, inst_cal_type *pa_cals);
@@ -554,6 +556,18 @@ munki_code munki_whitemeasure_buf(
 	double inttime, 		/* Integration time to used */
 	int gainmode,			/* Gain mode to use, 0 = normal, 1 = high */
 	unsigned char *buf		/* Raw buffer */
+);
+
+/* Take a measurement reading using the current mode (combined parts 1 & 2a) */
+/* Converts to completely processed output readings, without averaging or extracting */
+/* sample patches, for emissive measurement mode. */
+/* This is used for delay & refresh rate measurement. */
+munki_code munki_read_patches_all(
+	munki *p,
+	double **specrd,		/* Return array [numpatches][nwav] of spectral reading values */
+	int numpatches,			/* Number of sample to measure */
+	double *inttime, 		/* Integration time to use/used */
+	int gainmode			/* Gain mode to use, 0 = normal, 1 = high */
 );
 
 /* Take a measurement reading using the current mode, part 1 */

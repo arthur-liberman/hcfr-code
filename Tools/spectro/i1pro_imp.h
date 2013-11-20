@@ -615,6 +615,18 @@ i1pro_code i1pro2_wl_measure(
 	double targoscale		/* Optimal reading scale factor */
 );
 
+/* Take a measurement reading using the current mode (combined parts 1 & 2a) */
+/* Converts to completely processed output readings, without averaging or extracting */
+/* sample patches. */
+/* (NOTE:- this can't be used for calibration, as it implements uv mode) */
+i1pro_code i1pro_read_patches_all(
+	i1pro *p,
+	double **specrd,		/* Return array [numpatches][nwav] of spectral reading values */
+	int numpatches,			/* Number of sample to measure */
+	double *inttime, 		/* Integration time to use/used */
+	int gainmode			/* Gain mode to use, 0 = normal, 1 = high */
+);
+
 /* Take a measurement reading using the current mode, part 1 */
 /* Converts to completely processed output readings. */
 i1pro_code i1pro_read_patches_1(
@@ -1073,6 +1085,7 @@ i1pro2_indLEDseq(void *pp, unsigned char *buf, int size);
 /* Turn indicator LEDs off */
 static int
 i1pro2_indLEDoff(void *pp);
+static int
 i1pro2_indLEDonWhite(void *pp);
 
 // ~~~~9999

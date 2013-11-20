@@ -100,6 +100,8 @@
 #undef ENABLE_WRITE		/* [Und] Enable writing of calibration and log data to the EEProm */
 #define ENABLE_NONVCAL	/* [Def] Enable saving calibration state between program runs in a file */
 #define ENABLE_NONLINCOR	/* [Def] Enable non-linear correction */
+#define ENABLE_BKDRIFTC	/* [Def] Enable Emis. Black drift compensation using sheilded cell values */
+#define HEURISTIC_BKDRIFTC	/* [Def] Enable heusristic black drift correction */
 #define WLCALTOUT (24 * 60 * 60) /* [24 Hrs] Wavelength calibration timeout in seconds */
 #define DCALTOUT  (     60 * 60) /* [60 Minuites] Dark Calibration timeout in seconds */
 #define DCALTOUT2 ( 1 * 60 * 60) /* [1 Hr] i1pro2 Dark Calibration timeout in seconds */
@@ -110,6 +112,7 @@
 #define SINGLE_READ		/* [Def] Use a single USB read for scan to eliminate latency issues. */
 #define HIGH_RES		/* [Def] Enable high resolution spectral mode code. Dissable */
 						/* to break dependency on rspl library. */
+# undef FAST_HIGH_RES_SETUP	/* Slightly better accuracy ? */
 
 /* Debug [Und] */
 #undef DEBUG			/* Turn on debug printfs */
@@ -1304,7 +1307,7 @@ i1pro_code i1pro_imp_set_mode(
 ) {
 	i1proimp *m = (i1proimp *)p->m;
 
-	a1logd(p->log,2,"i1pro_imp_set_mode called with %d\n",mmode);
+	a1logd(p->log,2,"i1pro_imp_set_mode called with mode no %d and mask 0x%x\n",mmode,m);
 	switch(mmode) {
 		case i1p_refl_spot:
 		case i1p_refl_scan:
@@ -1324,6 +1327,15 @@ i1pro_code i1pro_imp_set_mode(
 			return I1PRO_INT_ILLEGALMODE;
 	}
 	m->spec_en = (mode & inst_mode_spectral) != 0;
+
+	if ((mode & inst_mode_highres) != 0) {
+		i1pro_code rv;
+		if ((rv = i1pro_set_highres(p)) != I1PRO_OK)
+			return rv;
+	} else {
+		i1pro_set_stdres(p);	/* Ignore any error */
+	}
+
 	m->uv_en = 0;
 
 	if (mmode == i1p_refl_spot
@@ -1420,8 +1432,8 @@ i1pro_code i1pro_imp_get_n_a_cals(i1pro *p, inst_cal_type *pn_cals, inst_cal_typ
 	/* we switch to hires mode ??? */
 	if ((cs->emiss || cs->trans)			/* We're in an emissive mode */
 	 && m->hr_inited						/* and hi-res has been setup */
-	 && (!m->emis_hr_cal || (n_cals & inst_calt_em_dark)) /* and the emis cal hasn't been fine */
-											/* tuned or we will be doing a dark cal */
+	 && (!m->emis_hr_cal || (n_cals & inst_calt_em_dark)) /* and the emis cal hasn't been */
+											/* fine tuned or we will be doing a dark cal */
 	 && p->itype != instI1Monitor) {		/* i1Monitor doesn't have reflective cal capability */
 		n_cals |= inst_calt_ref_white;		/* Need a reflective white calibration */
 		a_cals |= inst_calt_ref_white;
@@ -1477,7 +1489,7 @@ i1pro_code i1pro_imp_calibrate(
 		else if (*calt == inst_calt_available)
 			*calt = available & inst_calt_n_dfrble_mask;
 
-		a1logd(p->log,4,"i1pro_imp_calibrate: doing calt 0x%x\n",calt);
+		a1logd(p->log,4,"i1pro_imp_calibrate: doing calt 0x%x\n",*calt);
 
 		if ((*calt & inst_calt_n_dfrble_mask) == 0)		/* Nothing todo */
 			return I1PRO_OK;
@@ -1485,7 +1497,7 @@ i1pro_code i1pro_imp_calibrate(
 
 	/* See if it's a calibration we understand */
 	if (*calt & ~available & inst_calt_all_mask) { 
-		a1logd(p->log,4,"i1pro_imp_calibrate: unsupported, calt 0x%x, available 0x%x\n",calt,available);
+		a1logd(p->log,4,"i1pro_imp_calibrate: unsupported, calt 0x%x, available 0x%x\n",*calt,available);
 		return I1PRO_UNSUPPORTED;
 	}
 
@@ -2296,8 +2308,16 @@ i1pro_code i1pro_imp_calibrate(
 	}	/* Look at next mode */
 	m->mmode = mmode;			/* Restore actual mode */
 
-	/* Make sure there's the right condition for any remaining calibrations */
-	if (*calt & inst_calt_wavelength) {		/* Wavelength calibration */
+	/* Make sure there's the right condition for any remaining calibrations. */
+	/* Do ref_white first in case we are doing a high res fine tune. */
+
+	if (*calt & (inst_calt_ref_dark | inst_calt_ref_white)) {
+		sprintf(id, "Serial no. %d",m->serno);
+		if (*calc != inst_calc_man_ref_white) {
+			*calc = inst_calc_man_ref_white;	/* Calibrate using white tile */
+			return I1PRO_CAL_SETUP;
+		}
+	} else if (*calt & inst_calt_wavelength) {		/* Wavelength calibration */
 		if (cs->emiss && cs->ambient) {
 			id[0] = '\000';
 			if (*calc != inst_calc_man_am_dark) {
@@ -2310,12 +2330,6 @@ i1pro_code i1pro_imp_calibrate(
 				*calc = inst_calc_man_ref_white;	/* Calibrate using white tile */
 				return I1PRO_CAL_SETUP;
 			}
-		}
-	} else if (*calt & (inst_calt_ref_dark | inst_calt_ref_white)) {
-		sprintf(id, "Serial no. %d",m->serno);
-		if (*calc != inst_calc_man_ref_white) {
-			*calc = inst_calc_man_ref_white;	/* Calibrate using white tile */
-			return I1PRO_CAL_SETUP;
 		}
 	} else if (*calt & inst_calt_em_dark) {		/* Emissive Dark calib */
 		id[0] = '\000';
@@ -2394,8 +2408,6 @@ int icoms2i1pro_err(int se) {
 /* inst_misread will be returned on failure to find a transition to black. */
 #define NDMXTIME 0.7		/* Maximum time to take */
 #define NDSAMPS 500			/* Debug samples */
-
-i1pro_code i1pro_read_patches_all(i1pro *p, double **specrd, int numpatches, double *inttime,int gainmode);
 
 typedef struct {
 	double sec;
@@ -7077,14 +7089,21 @@ void i1pro_sub_absraw(
 
 		a1logd(p->log,2,"Black shielded value = %f, Reading shielded value = %f\n",sub[-1], avgscell);
 		/* Compute the adjusted black */
+		/* [ Unlike the ColorMunki, using the black drift comp. for reflective */
+		/*   seems to be OK and even beneficial. ] */
 		for (j = 0; j < m->nraw; j++) {
-#ifdef NEVER
-			/* simple additive correction */
-# pragma message("######### i1pro2 Simple shielded cell temperature correction! ########")
-			asub[j] = sub[j] + avgscell - sub[-1];
-#else
+#ifdef ENABLE_BKDRIFTC
+# ifdef HEURISTIC_BKDRIFTC
 			/* heuristic scaled correction */
 			asub[j] = zero - (zero - sub[j]) * (zero - avgscell)/(zero - sub[-1]);
+# else
+			/* simple additive correction */
+#  pragma message("######### i1pro2 Simple shielded cell temperature correction! ########")
+			asub[j] = sub[j] + avgscell - sub[-1];
+# endif
+#else
+#  pragma message("######### i1pro2 No shielded cell temperature correction! ########")
+			asub[j] = sub[j];		/* Just use the calibration dark data */
 #endif
 		}
 	
@@ -8000,12 +8019,12 @@ i1pro_code i1pro_compute_wav_filters(i1pro *p, int hr, int refl) {
 
 /* High res congiguration */
 /* Pick one of these: */
-#define USE_TRI_LAGRANGE		/* [und] Use normal res filter shape */
+#undef USE_TRI_LAGRANGE		/* [und] Use normal res filter shape */
 #undef USE_LANCZOS2			/* [und] Use lanczos2 filter shape */
 #undef USE_LANCZOS3			/* [und] Use lanczos3 filter shape */
 #undef USE_DECONV			/* [und] Use deconvolution curve */
 #undef USE_BLACKMAN			/* [und] Use Blackman windowed sinc shape */
-#undef USE_GAUSSIAN		/* [def] Use gaussian filter shape*/
+#define USE_GAUSSIAN		/* [def] Use gaussian filter shape*/
 #undef USE_CUBIC			/* [und] Use cubic spline filter */
 
 #define DO_CCDNORM			/* [def] Normalise CCD values to original */
@@ -8157,7 +8176,7 @@ static double lin_fshape(i1pro_fs *fsh, int n, double x) {
 /* Generate a sample from a lanczos2 filter shape */
 /* wi is the width of the filter */
 static double lanczos2(double wi, double x) {
-	double y;
+	double y = 0.0;
 
 #ifdef USE_DECONV
 	/* For 3.333, created by i1deconv.c */
@@ -8425,6 +8444,10 @@ i1pro_code i1pro_create_hr_calfactors(i1pro *p, int eonly) {
 	}
 	return ev;
 }
+
+#ifdef SALONEINSTLIB
+# define ONEDSTRAYLIGHTUS
+#endif
 
 /* Create or re-create high resolution mode references */
 i1pro_code i1pro_create_hr(i1pro *p) {
@@ -9040,7 +9063,7 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 
 		/* Upsample stray light */
 		if (p->itype == instI1Pro2) {
-#ifdef SALONEINSTLIB
+#ifdef ONEDSTRAYLIGHTUS
 			double **slp;			/* 2D Array of stray light values */
 
 			/* Then the 2D stray light using linear interpolation */
@@ -9086,7 +9109,7 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 					}
 				}
 			}
-#else	/* !SALONEINSTLIB */
+#else	/* !ONEDSTRAYLIGHTUS */
 			/* Then setup 2D stray light using rspl */
 			if ((trspl = new_rspl(RSPL_NOFLAGS, 2, 1)) == NULL) {
 				a1logd(p->log,1,"i1pro: creating rspl for high res conversion failed\n");
@@ -9117,7 +9140,7 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 			avgdev[1] = 0.0;
 			
 			trspl->fit_rspl_w(trspl, 0, sd, m->nwav[0] * m->nwav[0], glow, ghigh, gres, NULL, NULL, 0.5, avgdev, NULL);
-#endif	/* !SALONEINSTLIB */
+#endif	/* !ONEDSTRAYLIGHTUS */
 
 			m->straylight[1] = dmatrixz(0, m->nwav[1]-1, 0, m->nwav[1]-1);  
 
@@ -9127,7 +9150,7 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 					double p0, p1;
 					p0 = XSPECT_WL(m->wl_short[1], m->wl_long[1], m->nwav[1], i);
 					p1 = XSPECT_WL(m->wl_short[1], m->wl_long[1], m->nwav[1], j);
-#ifdef SALONEINSTLIB
+#ifdef ONEDSTRAYLIGHTUS
 					/* Do linear interp with clipping at ends */
 					{
 						int x0, x1, y0, y1;
@@ -9158,11 +9181,11 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 						        + w1 * v0 * slp[x1][y0] 
 						        + w1 * v1 * slp[x1][y1]; 
 					}
-#else /* !SALONEINSTLIB */
+#else /* !ONEDSTRAYLIGHTUS */
 					pp.p[0] = p0;
 					pp.p[1] = p1;
 					trspl->interp(trspl, &pp);
-#endif /* !SALONEINSTLIB */
+#endif /* !ONEDSTRAYLIGHTUS */
 					m->straylight[1][i][j] = pp.v[0] * HIGHRES_WIDTH/10.0;
 					if (m->straylight[1][i][j] > 0.0)
 						m->straylight[1][i][j] = 0.0;
@@ -9233,11 +9256,11 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 			}
 #endif /* HIGH_RES_PLOT */
 
-#ifdef SALONEINSTLIB
+#ifdef ONEDSTRAYLIGHTUS
 			free_dmatrix(slp, 0, m->nwav[0]-1, 0, m->nwav[0]-1);
-#else /* !SALONEINSTLIB */
+#else /* !ONEDSTRAYLIGHTUS */
 			trspl->del(trspl);
-#endif /* !SALONEINSTLIB */
+#endif /* !ONEDSTRAYLIGHTUS */
 		}
 	}
 
@@ -9373,8 +9396,12 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 					{
 						int nn;
 						double lw, ll;
-
-						nn = (int)(fabs(w2 - w1)/0.05 + 0.5);		/* Number to integrate over */
+#ifdef FAST_HIGH_RES_SETUP
+# define FINC 0.2
+#else
+# define FINC 0.05
+#endif
+						nn = (int)(fabs(w2 - w1)/0.2 + 0.5);		/* Number to integrate over */
 				
 						lw = w1;				/* start at lower boundary of CCD cell */
 						ll = lanczos2(twidth, w1- cwl);
@@ -12540,7 +12567,7 @@ static i1_dtype i1data_det_type(i1data *d, i1key key) {
 	if (key < 0x100)
 		return i1_dtype_section;
 
-	switch((int)key) {
+	switch(key) {
 		/* Log keys */
 		case key_meascount:
 		case key_meascount + 1000:
