@@ -317,8 +317,8 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
         instCode = m_meter->get_set_opt(m_meter, inst_opt_set_ccss_obs, static_cast<icxObserverType>(m_obType) , 0);
         if (instCode != inst_ok)
             MessageBox(NULL,m_meter->inst_interp_error(m_meter,instCode),"Error setting observer",MB_OK);
-        else
-            MessageBox(NULL,"Set observer to "+SpectralType,"Setting observer",MB_OK);
+//        else
+//            MessageBox(NULL,"Set observer to "+SpectralType,"Setting observer",MB_OK);
     }
 
     //custom inttime for d3 meters
@@ -472,7 +472,7 @@ void ArgyllMeterWrapper::setDisplayType(int displayMode)
 
 bool ArgyllMeterWrapper::setObType(CString SpectralType)
 {
-    icxObserverType obType=static_cast<icxObserverType>(m_obType);
+    icxObserverType obType=icxOT_default;
  
     if (SpectralType == "CIE 1931 2 deg")
         obType=icxOT_CIE_1931_2;
@@ -507,7 +507,7 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading(CString Spectral
     if (!isColorimeter()) //needs to be set each time
     {
         if (setObType(SpectralType))		
-            MessageBox(NULL,"Set observer to "+SpectralType,"Setting observer",MB_OK);
+//            MessageBox(NULL,"Set observer to "+SpectralType,"Setting observer",MB_OK);
         if ((sp2cie = new_xsp2cie(icxIT_none, &cust_illum, static_cast<icxObserverType>(m_obType), NULL, icSigXYZData,
 			                           icxNoClamp)) == NULL)
             MessageBox(NULL,"Creation of sp2cie object failed","Error setting observer",MB_OK);
