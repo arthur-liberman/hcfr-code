@@ -1736,7 +1736,9 @@ LRESULT CMultiFrame::OnDDEPoke(WPARAM wParam, LPARAM lParam)
 				strTemp = CmdParams.GetTail ();
 
 				// Default to "XYZ"
-				nFormat = HCFR_XYZ_VIEW;
+//				nFormat = HCFR_XYZ_VIEW;
+				// Default to "xyY"
+				nFormat = HCFR_xyY_VIEW;
 
 				if ( _stricmp ( (LPCSTR) strTemp, "SENSOR" ) == 0 )
 					nFormat = HCFR_SENSORRGB_VIEW;

@@ -2095,7 +2095,7 @@ void CMainView::UpdateGrid()
 					 else
 					 {
 						// Use actual gray luminance as correct reference (absolute)
-						YWhite = aColor [ 1 ];
+                        YWhite = aColor [ 1 ];
 						if ( pDataRef )
 							YWhiteRefDoc = refDocColor [ 1 ];
 					 }
@@ -3296,7 +3296,7 @@ void CMainView::OnGrayScaleGridEndSelChange(NMHDR *pNotifyStruct,LRESULT* pResul
 void CMainView::OnXyzRadio() 
 {
 	m_editCheckButton.EnableWindow ( ! m_AdjustXYZCheckButton.GetCheck () );
-	m_displayType=HCFR_xyY_VIEW;
+	m_displayType=HCFR_XYZ_VIEW;
 	InitGrid();	// to update row labels
 	UpdateGrid();
 }
