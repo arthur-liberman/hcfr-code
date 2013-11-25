@@ -87,6 +87,8 @@ oem_target oemtargs = {
 		{ "/Applications/Spyder2pro 2.2/Spyder2pro.app/Contents/MacOSClassic/Spyder.lib", targ_spyd_pld },
 
 		{ "/Library/Application Support/X-Rite/Devices/i1d3xrdevice/Contents/Resources/Calibrations/*.edr", targ_i1d3_edr },
+		{ "/Library/Application Support/X-Rite/Frameworks/XRiteDevice.framework/PlugIns/i1d3.xrdevice/Contents/Resources/Calibrations/*.edr",targ_i1d3_edr },
+
 		{ NULL }
 	},
 	{	/* Volume names */
@@ -168,7 +170,9 @@ int is_s4cal(xfile *xf);
 int is_inno(xfile *xf);
 int is_cab(xfile *xf);
 static xfile *inno_extract(xfile *xi, char *tfilename, int verb);
-static xfile *msi_extract(xfile **pxf, xfile *xi, char *tname, int verb);
+static xfile *ai_extract_cab(xfile **pxf, xfile *xi, char *tname, int verb);
+//static xfile *aifile_extract(xfile **pxf, xfile *xi, char *tname, int verb);
+static xfile *msi_extract_cab(xfile **pxf, xfile *xi, char *tname, int verb);
 static xfile *cab_extract(xfile **pxf, xfile *xi, char *text, int verb);
 
 /* edr to ccss functions */
@@ -180,6 +184,9 @@ int is_ccss(xfile *xf);
 int is_ccmx(xfile *xf);
 
 #ifdef DEBUG
+
+# pragma message("######### oemarch DEBUG is defined! ########")
+
 static void list_files(char *s, xfile *xf) {
 	int i;
 
@@ -281,28 +288,48 @@ xfile *oemarch_get_ifiles(xfile *files, int verb) {
 	
 		/* If this could be i1d3 .edr files: */
 		if (arch->ttype & targ_i1d3_edr) {
-			xfile *msi = NULL;		/* .msi */
+			xfile *exe = NULL;		/* .exe extracted */
+			xfile *msi = NULL;		/* .msi extracted */
 	
-#ifdef NEVER	/* Don't have to do it this way */
+#ifdef NEVER	/* Don't have to do it this way for most installs */
 			/* Extract .msi from it */
 			if ((msi = inno_extract(arch, "{tmp}\\XRD i1d3.msi", verb)) != NULL) {
 	
 				/* Extract the .cab from it */
-				if (msi_extract(&nfiles, msi, "XRD_i1d3.cab", verb) != NULL) {
+				if (msi_extract_cab(&nfiles, msi, "XRD_i1d3.cab", verb) != NULL) {
+					del_xf(msi);
+					continue;
+				}
+				if (msi_extract_cab(&nfiles, msi, "XRD_Manager.cab", verb) != NULL) {
 					del_xf(msi);
 					continue;
 				}
 				del_xf(msi);
 			}
+
+			/* Try and extract XRD Manager.exe from it */
+			if ((exe = inno_extract(arch, "{tmp}\\XRD Manager.exe", verb)) != NULL) {
+	
+				/* Extract the "disk1.cab" from the AI installer exectutable */
+				if ((ai_extract_cab(&nfiles, exe, "disk1.cab", verb)) != NULL) {
+					del_xf(exe);
+					continue;
+				}
+				del_xf(exe);
+			}
 #else
 			/* Extract the .cab directly from Setup.exe */
-			if (msi_extract(&nfiles, arch, "XRD_i1d3.cab", verb) != NULL)
+			if (msi_extract_cab(&nfiles, arch, "XRD_i1d3.cab", verb) != NULL)
 				continue;
-			if (msi_extract(&nfiles, arch, "XRD_Manager.cab", verb) != NULL)
+			if (msi_extract_cab(&nfiles, arch, "XRD_Manager.cab", verb) != NULL)
+				continue;
+
+			/* Extract the "disk1.cab" from the AI installer exectutable */
+			if ((ai_extract_cab(&nfiles, arch, "disk1.cab", verb)) != NULL)
 				continue;
 #endif
 		}
-		if (verb) printf("Warning: unhandled '%s' discarded\n",arch->name);
+		if (verb) printf("Warning: unhandled archive '%s' discarded\n",arch->name);
 	}
 	ofiles = files;		/* Swap to new list */
 	files = nfiles;
@@ -350,7 +377,7 @@ xfile *oemarch_get_ifiles(xfile *files, int verb) {
 			if (cab_extract(&nfiles, dllcab, ".edr", verb) != NULL)
 				continue;
 		}
-		if (verb) printf("Warning: unhandled '%s' discarded\n",dllcab->name);
+		if (verb) printf("Warning: unhandled dll/cab '%s' discarded\n",dllcab->name);
 	}
 	ofiles = files;		/* Swap to new list */
 	files = nfiles;
@@ -381,7 +408,7 @@ xfile *oemarch_get_ifiles(xfile *files, int verb) {
 		if (edr_convert(&nfiles, files + i, verb) != NULL)
 			continue;
 
-		if (verb) printf("Warning: unhandled '%s' discarded\n",files[i].name);
+		if (verb) printf("Warning: unhandled edr '%s' discarded\n",files[i].name);
 	}
 	ofiles = files;		/* Swap to new list */
 	files = nfiles;
@@ -1306,7 +1333,7 @@ static xfile *edr_convert(xfile **pxf, xfile *xi, int verb) {
 		unsigned char *buf;
 		int len;
 		if (c->buf_write_ccss(c, &buf, &len)) {
-			error("Failed to create ccss for '%s'",xi->name);
+			error("Failed to create ccss for '%s' error '%s'",xi->name,c->err);
 		}
 		/* Convert .edr file name to .ccss */
 	
@@ -1356,9 +1383,10 @@ static void dump_bytes(FILE *fp, char *pfx, unsigned char *buf, int len) {
 			fprintf(fp,"\n");
 		}
 	}
+	fflush(fp);
 }
 
-/* Take a 64 sized return buffer, and convert it to an ORD64 */
+/* Take a 64 sized return buffer, and convert it to an ORD64, little endian */
 static ORD64 buf2ord64(unsigned char *buf) {
 	ORD64 val;
 	val = buf[7];
@@ -1372,7 +1400,7 @@ static ORD64 buf2ord64(unsigned char *buf) {
 	return val;
 }
 
-/* Take a word sized return buffer, and convert it to an unsigned int */
+/* Take a word sized return buffer, and convert it to an unsigned int, little endian */
 static unsigned int buf2uint(unsigned char *buf) {
 	unsigned int val;
 	val = buf[3];
@@ -1382,7 +1410,17 @@ static unsigned int buf2uint(unsigned char *buf) {
 	return val;
 }
 
-/* Take a word sized return buffer, and convert it to an int */
+/* Inverted bytes version of above */
+static unsigned int ibuf2uint(unsigned char *buf) {
+	unsigned int val;
+	val = (0xff & ~buf[3]);
+	val = ((val << 8) + (0xff & ~buf[2]));
+	val = ((val << 8) + (0xff & ~buf[1]));
+	val = ((val << 8) + (0xff & ~buf[0]));
+	return val;
+}
+
+/* Take a word sized return buffer, and convert it to an int, little endian */
 static int buf2int(unsigned char *buf) {
 	int val;
 	val = buf[3];
@@ -1392,7 +1430,7 @@ static int buf2int(unsigned char *buf) {
 	return val;
 }
 
-/* Take a short sized return buffer, and convert it to an int */
+/* Take a short sized return buffer, and convert it to an int, little endian */
 static int buf2short(unsigned char *buf) {
 	int val;
 	val = buf[1];
@@ -1629,6 +1667,7 @@ static ccss *parse_EDR(
 			samples[set].spec[j] *= 1000.0;
 		}
 #ifdef PLOT_SAMPLES
+# pragma message("######### oemarch PLOT_SAMPLES defined! ########")
 		/* Plot the spectra */
 		{
 			double xx[500];
@@ -1911,7 +1950,26 @@ ELzmaFinishMode finishMode, ELzmaStatus *status, ISzAlloc *alloc) {
 	return res;
 }
 
-/* extract the given file from Setup.exe */
+/* extract the given file from Inno Setup.exe */
+/* Known versions needed:
+	5.3.5    ColorMunkiDisplaySetup.exe
+	5.3.10   i1d3Setup.exe
+    5.4.2    V1.5 i1ProfilerSetup.exe 
+*/
+
+/* Unicode to 8 bit strncmp */
+static int ustrncmp(char *w, char *c, int n) {
+	int i;
+	for (i = 0; i < n; i++, w += 2, c++) {
+		if ((w[0] == '\000' && w[1] == '\000')
+		  || c[0] == '\000')
+			return 0; 
+
+		if (w[0] != c[0] || w[1] != '\000')
+			return 1;
+	}
+	return 0;
+}
 
 /* Return a list of xfiles, with one entry if successful */
 /* Return NULL if not found or not inno file */
@@ -1919,8 +1977,12 @@ static xfile *inno_extract(xfile *xi, char *tfilename, int verb) {
 	int i, j, k;
 	unsigned char *ibuf;
 	unsigned long ilen;
-	char *headerid = "Inno Setup Setup Data (5.3.10)";
+	char *headerid = "Inno Setup Setup Data ";
 	int headerlen = strlen(headerid);
+	int maj, min, bfix;					/* Inno version */
+	int vers = 0;						/* Version as int max * 1000 + min * 100 + bfix */
+	int unicode = 0;					/* Is it unicode filenames ? */
+	int chsize = 1;						/* Bytes per character */
 	unsigned int ldrbase = 0;
 	unsigned long haddr, srclen;
 	unsigned char *d1buf, *d2buf;		/* Decompress buffer */
@@ -1939,14 +2001,15 @@ static xfile *inno_extract(xfile *xi, char *tfilename, int verb) {
 	ibuf = xi->buf;
 	ilen = xi->len;
 
-	/* Search for the start of the loader. All the file offsets */
-	/* are relative to this */
+	if (verb > 1) printf("inno_extract: ilen = %lu\n",ilen);
+
+	/* Search for the start of the loader. We need this because */
+	/* All the file offsets are relative to this. */
 	for (i = 0; i < (ilen - 4); i++) {
 		if (ibuf[i + 0] == 0x4d
 		 && ibuf[i + 1] == 0x5a
 		 && ibuf[i + 2] == 0x90
 		 && ibuf[i + 3] == 0x00) {
-			if (verb > 1) printf("Found archive base 0x%x\n",i);
 			ldrbase = i;
 			break;
 		}
@@ -1955,26 +2018,51 @@ static xfile *inno_extract(xfile *xi, char *tfilename, int verb) {
 		if (verb) printf("Failed to locate loader base\n");
 		return NULL;
 	}
+	if (verb > 1) printf("Found archive base 0x%x\n",ldrbase);
 
 	/* Search for inno header pattern. */
-	for (i = 0; i < (ilen - 64 - 4 - 5 - 4); i++) {
+	haddr = 0;
+	for (i = 1; i < (ilen - 64 - 4 - 5 - 4); i++) {
 		if (ibuf[i] == headerid[0]
 		 && strncmp((char *)ibuf + i, headerid, headerlen) == 0
 		 && ibuf[i + 64] != 'I'
 		 && ibuf[i + 65] != 'n'
 		 && ibuf[i + 66] != 'n'
 		 && ibuf[i + 67] != 'o') {
+
+			/* Grab the version */
+			for (j = 0; j < 64; j++) {
+				if (ibuf[i + j] == '\000')
+					break;
+			}
+			if (j >= 64) {
+				if (verb) printf("Failed to find null terminator after header\n");
+				continue;
+			}
+
+			if (sscanf((char *)ibuf + i + headerlen, " (%d.%d.%d) ",&maj,&min,&bfix) != 3) {
+				if (verb) printf("Failed to find Inno version number\n");
+				continue;
+			}
+			vers = maj * 1000 + min * 100 + bfix;
+
+			j = strlen((char *)ibuf + i);
+		 	if (strncmp((char *)ibuf + i + j -3, "(u)", 3) == 0) {
+				unicode = 1;
+				chsize = 2;
+			}
 			haddr = i;
 		}
 	}
-	if (i >= (ilen - 64 - 4 - 5 - 4)) {
+
+	if (haddr == 0) {
 		if (verb) printf("Failed to locate header pattern\n");
 		return NULL;
 	}
 
-	if (verb > 1) printf("Found header at 0x%x\n",i);
+	if (verb > 1) printf("Found header at 0x%x, Inno version %d.%d.%d%s\n",i,maj,min,bfix, unicode ? " Unicode" : "");
 
-	/* Use the last header found (or cound search all found ?) */
+	/* Use the last header found (or could search all found ?) */
 	haddr += 64;	/* Skip Inno header */
 
 	/* Next 9 bytes are the compression header */
@@ -1994,7 +2082,7 @@ static xfile *inno_extract(xfile *xi, char *tfilename, int verb) {
 	}
 	haddr += 5;	/* Skip compression header */
 
-	/* We'r now at the start of the compressed data */
+	/* We're now at the start of the compressed data which holds the filenames */
 
 	d1sz = cblocklen * 30;
 	if ((d1buf = (unsigned char *)malloc(d1sz)) == NULL) {
@@ -2016,6 +2104,7 @@ static xfile *inno_extract(xfile *xi, char *tfilename, int verb) {
 	}
 	if (verb > 1) printf("Decoded %ld bytes to created %ld bytes of Header output (ratio %.1f)\n",srclen,d1sz,(double)d1sz/srclen);
 
+//	printf("d1buf, file names:\n");
 //	dump_bytes(stdout, "  ", d1buf, d1sz);
 
 	/* - - - - - - - - - - - - - - - - -*/
@@ -2049,7 +2138,7 @@ static xfile *inno_extract(xfile *xi, char *tfilename, int verb) {
 	}
 	haddr += 5;	/* Skip compression header */
 
-	/* We're now at the start of the compressed data */
+	/* We're now at the start of the compressed data that holds the file data locations. */
 
 	d2sz = cblocklen * 10;
 	if ((d2buf = (unsigned char *)malloc(d2sz)) == NULL) {
@@ -2073,34 +2162,65 @@ static xfile *inno_extract(xfile *xi, char *tfilename, int verb) {
 	}
 	if (verb > 1) printf("Decoded %ld bytes to created %ld bytes of File Location output (ratio %.1f)\n",srclen,d1sz,(double)d1sz/srclen);
 
+//	printf("d2buf, file location data:\n");
 //	dump_bytes(stdout, "  ", d2buf, d2sz);
 
 	if (verb > 1) printf("Searching for file '%s' in Header\n",tfilename);
-	for (i = 0; i < (d1sz - 101); i++) {
-		if (d1buf[i+4] == tfilename[0]
-		 && strncmp((char *)d1buf + 4 + i, tfilename, filelen) == 0
-		 && d1buf[i+0] == filelen
-		 && d1buf[i+1] == 0
-		 && d1buf[i+2] == 0
-		 && d1buf[i+3] == 0) {
-			if (verb > 1) printf("Found it at 0x%x\n",i);
-			break;
+	if (unicode) {
+		for (i = 0; i < (d1sz - 101); i++) {
+			if (d1buf[i+4] == tfilename[0]
+			 && ustrncmp((char *)d1buf + 4 + i, tfilename, filelen) == 0
+			 && d1buf[i+0] == 2 * filelen
+			 && d1buf[i+1] == 0
+			 && d1buf[i+2] == 0
+			 && d1buf[i+3] == 0) {
+				if (verb > 1) printf("Found it at 0x%x\n",i);
+				break;
+			}
+		}
+		if (i >=  (d1sz - 101)) {
+			if (verb) printf("Failed to find file '%s'\n",tfilename);
+			free(d1buf);
+			free(d2buf);
+			return NULL;
+		}
+
+	} else {
+		for (i = 0; i < (d1sz - 101); i++) {
+			if (d1buf[i+4] == tfilename[0]
+			 && strncmp((char *)d1buf + 4 + i, tfilename, filelen) == 0
+			 && d1buf[i+0] == filelen
+			 && d1buf[i+1] == 0
+			 && d1buf[i+2] == 0
+			 && d1buf[i+3] == 0) {
+				if (verb > 1) printf("Found it at 0x%x\n",i);
+				break;
+			}
+		}
+		if (i >=  (d1sz - 101)) {
+			if (verb) printf("Failed to find file '%s'\n",tfilename);
+			free(d1buf);
+			free(d2buf);
+			return NULL;
 		}
 	}
-	if (i >=  (d1sz - 101)) {
-		if (verb) printf("Failed to find file '%s'\n",tfilename);
-		free(d1buf);
-		free(d2buf);
-		return NULL;
-	}
+	fflush(stdout);
 
-	/* Need to skip 8 more strings */
-	i += 4 + filelen;
+	/* Need to skip 8 more strings containing other info about the file */
+	i += 4 + chsize * filelen;
 	for (j = 0; j < 8; j++) {
 		unsigned long len;
 		len = buf2uint(d1buf + i);
 		i += 4 + len;
+		if (i >= d1sz) {
+			if (verb) printf("Failed to skip 8 strings\n");
+			free(d1buf);
+			free(d2buf);
+			return NULL;
+		}
 	}
+	if (verb > 1) printf("At 0x%x after skippin another 8 strings\n",i);
+
 	/* Skip another 40 bytes to location entry index */
 	i += 20;
 
@@ -2108,13 +2228,12 @@ static xfile *inno_extract(xfile *xi, char *tfilename, int verb) {
 
 	if (verb > 1) printf("Got file location index %ld at 0x%x\n",ix,i);
 
-
 	/* Now get the ix file entry information. */
 	/* They are in 74 byte structures */
 	i = ix * 74;
 
 	if ((i + 74) > d2sz) {
-		if (verb) printf("File location structure is out of range\n");
+		if (verb) printf("File location structure is out of range (%d > %lu)\n",i + 74, d2sz);
 		free(d1buf);
 		free(d2buf);
 		return NULL;
@@ -2141,7 +2260,8 @@ static xfile *inno_extract(xfile *xi, char *tfilename, int verb) {
 		free(d2buf);
 		return NULL;
 	}
-	/* Sanity check */
+#ifdef NEVER
+	/* Sanity check it's an .msi file */
 	if (ibuf[ldrbase + fileso + 0] != 0xd0
      || ibuf[ldrbase + fileso + 1] != 0xcf
      || ibuf[ldrbase + fileso + 2] != 0x11
@@ -2151,6 +2271,7 @@ static xfile *inno_extract(xfile *xi, char *tfilename, int verb) {
 		free(d2buf);
 		return NULL;
 	}
+#endif
 
 	/* Copy to new buffer and free everything */
 	msisz = filesz;
@@ -2180,6 +2301,9 @@ static xfile *inno_extract(xfile *xi, char *tfilename, int verb) {
 	}
 	xf->buf = msibuf;
 	xf->len = filesz;
+
+	xf->ftype = file_dllcab;
+	xf->ttype = xi->ttype;
 
 	if (verb) printf("Returning '%s' length %ld from '%s'\n",xf->name,xf->len, xi->name);
 
@@ -2274,22 +2398,25 @@ int is_dll(xfile *xf) {
 	return 0;
 }
 
-/* Extract the .cab file from another file. */
+// ~~99 something strange about this code - it doesn't look for *tname.
+//      ?? What's going on ??
+
+/* Extract a .cab file from another file. */
 /* It's stored in the .msi uncompressed and contiguous, so we */
 /* just need to identify where it is and its length. */
 /* (This will work on any file that has the .cab file uncompressed and contiguous) */
 /* Return NULL if not found */
-static xfile *msi_extract(xfile **pxf, xfile *xi, char *tname, int verb) {
+static xfile *msi_extract_cab(xfile **pxf, xfile *xi, char *tname, int verb) {
 	int i, j, k;
 	xfile *xf = NULL;
-	char *fid = "i1d3.xrdevice";		/* File in .cab to look for */
+	char *fid = "i1d3.xrdevice";		/* Known file in .cab to look for ???? */
 	unsigned long fle = strlen(fid);
 	unsigned long cabo, cabsz;
 	size_t len;
 
 	if (verb) printf("Attempting to extract '%s' from '%s'\n",tname,xi->name);
 
-	/* Search for a filename in the .cab */
+	/* Search for a filename that is expected to be in the right .cab */
 	for (i = 0; i < (xi->len - fle - 2); i++) {
 		if (xi->buf[i + 0] == 0x00
 		 && xi->buf[i + 1] == fid[0]
@@ -2299,7 +2426,7 @@ static xfile *msi_extract(xfile **pxf, xfile *xi, char *tname, int verb) {
 		}
 	}
 	if (i >= (xi->len - fle - 2)) {
-		if (verb) printf(".cab not found\n");
+		if (verb) printf(".cab identifier file not found\n");
 		return NULL;
 	}
 
@@ -2313,12 +2440,12 @@ static xfile *msi_extract(xfile **pxf, xfile *xi, char *tname, int verb) {
 		 && xi->buf[i + 5] == 0x00
 		 && xi->buf[i + 6] == 0x00
 		 && xi->buf[i + 7] == 0x00) {
-			if (verb > 1) printf("Found '%s' at 0x%x\n",tname,i);
+			if (verb > 1) printf("Found .cab sig at 0x%x\n",i);
 			break;
 		}
 	}
 	if (i < 0) {
-		if (verb) printf(".cab not found\n");
+		if (verb) printf(".cab sig not found\n");
 		return NULL;
 	}
 
@@ -2354,6 +2481,299 @@ static xfile *msi_extract(xfile **pxf, xfile *xi, char *tname, int verb) {
 	return xf;
 }
 
+/* Extract a .cab file from an "Advanced Installer" file. */
+/* It's stored in the file uncompressed and contiguous, but */
+/* with the first 0x200 bytes inverted, so we */
+/* just need to identify where it is and its length. */
+/* Return NULL if not found */
+static xfile *ai_extract_cab(xfile **pxf, xfile *xi, char *tname, int verb) {
+	int i, j, k;
+	xfile *xf = NULL;
+	unsigned long cabo, cabsz;
+	size_t len;
+
+	if (verb) printf("Attempting to extract '%s' from '%s'\n",tname,xi->name);
+
+	/* Search for inverted .cab signature */
+	for (i = 0; i < (xi->len - 8 - 4); i++) {
+		if (xi->buf[i + 0] == 0xb2
+		 && xi->buf[i + 1] == 0xac
+		 && xi->buf[i + 2] == 0xbc
+		 && xi->buf[i + 3] == 0xb9
+		 && xi->buf[i + 4] == 0xff
+		 && xi->buf[i + 5] == 0xff
+		 && xi->buf[i + 6] == 0xff
+		 && xi->buf[i + 7] == 0xff) {
+			if (verb > 1) printf("Found inverted .cab sig at 0x%x\n",i);
+			break;
+		}
+	}
+	if (i > (xi->len - 8 - 4)) {
+		if (verb) printf(".cab sig not found\n");
+		return NULL;
+	}
+
+	/* Lookup the .cab size (really 64 bit, but we don't care) */
+	len = ibuf2uint(xi->buf + i + 8);
+
+	if (verb > 1) printf("'%s' is length %ld\n",tname,len);
+
+	if ((xi->len - i) < len) {
+		if (verb) printf("Not enough room for .cab file in source\n");
+		return NULL;
+	}  
+
+	xf = add_xf(pxf);
+	xf->len = len;
+
+	if ((xf->buf = malloc(xf->len)) == NULL) {
+		fprintf(stderr,"maloc of .cab buffer failed\n");
+		exit(-1);
+	}
+	memmove(xf->buf, xi->buf + i ,xf->len);
+
+	/* Restor first 0x200 bytes */
+	for (i = 0; i < 0x200 && i < xf->len; i++) {
+		xf->buf[i] = ~xf->buf[i];
+	}
+
+	if ((xf->name = strdup(tname)) == NULL) {
+		fprintf(stderr,"maloc of .cab name failed\n");
+		exit(-1);
+	}
+
+	xf->ftype = file_dllcab;
+	xf->ttype = xi->ttype;
+
+	if (verb) printf("Extacted '%s' length %ld\n",xf->name,xf->len);
+
+save_xfile(xf, "temp.cab", NULL, verb);
+
+	return xf;
+}
+
+
+/* ================================================================ */
+
+/* Not used: */
+
+/* Given an offset into xfile, return the offset to any extra section in a PE file. */
+/* return 0 if none found or not a PE file */
+static int extraPEsection(xfile *xi, int boff, int verb) {
+	int i, j;
+	unsigned char *fbuf = xi->buf + boff;
+	int flen = xi->len - boff;
+	int off;
+	int nsect;			/* Number of sections */
+	int ophsz;			/* Optional header size */
+	int chars;			/* File characteristics */
+	int plus = 0;		/* PE32+ format */
+	int nddirs;			/* Number of data directories */
+	int ddirroff;		/* Offset of data directories */
+	unsigned int asects = 0;	/* Offset after all the sections */
+
+	if (flen < 0x40
+	 || fbuf[0] != 0x4d
+	 || fbuf[1] != 0x5a) {
+		if (verb) printf("'%s' is not an executable file\n",xi->name);
+		return 0;
+	}
+
+	off =  fbuf[0x3c]				/* Offset to PE header */
+	    + (fbuf[0x3d] << 8)
+	    + (fbuf[0x3e] << 16)
+	    + (fbuf[0x3f] << 24);
+
+	if (verb > 2) printf("PE header at 0x%x\n",off);
+
+	if (flen < (off + 0x18) || off > 0x1000 || (off & 7) != 0) {
+		if (verb) printf("'%s' is not a PE file (1)\n",xi->name);
+		return 0;
+	}
+		
+	if (fbuf[off + 0] != 0x50		/* "PE" */
+	 || fbuf[off + 1] != 0x45
+	 || fbuf[off + 2] != 0x00
+	 || fbuf[off + 3] != 0x00) {
+		if (verb) printf("'%s' is not a PE file (2)\n",xi->name);
+		return 0;
+	}
+
+	nsect =  fbuf[off + 0x06]			/* Number of sections */
+	      + (fbuf[off + 0x07] << 8);
+
+	ophsz =  fbuf[off + 0x14]			/* Optional header size */
+	      + (fbuf[off + 0x15] << 8);
+
+	chars =  fbuf[off + 0x16]			/* PE Characteristics */
+	      + (fbuf[off + 0x17] << 8);
+	/*
+		0x0002	 = executable (no unresolved refs)
+		0x1000	 = .sys driver
+		0x2000	 = DLL
+	 */
+
+	if (verb > 1) printf("Number of sections = %d, chars = 0x%x\n",nsect,chars);
+	if (verb > 1) printf("Opt header size = %d = 0x%x\n",ophsz,ophsz);
+
+	/* Skip to optional header */
+	off = off + 0x18;
+	if (flen < off + ophsz) {
+		if (verb) printf("'%s' not big enough for optional header\n",xi->name);
+		return 0;
+	}
+	if (verb > 2) printf("opt header at 0x%x\n",off);
+	if ( fbuf[off + 0] != 0x0b
+	 || (fbuf[off + 1] != 0x01 && fbuf[off + 1] != 0x02)) {
+		if (verb) printf("'%s' is not a PE file (3)\n",xi->name);
+		return 0;
+	}
+	if (fbuf[off + 1] == 0x02)
+		plus = 1;				/* PE32+ format */
+
+	if (plus) {
+		nddirs = fbuf[off+0x6c+0]
+	          + (fbuf[off+0x6c+1] << 8)
+	          + (fbuf[off+0x6c+2] << 16)
+	          + (fbuf[off+0x6c+3] << 24);
+		ddirroff = 0x70;
+	} else {
+		nddirs = fbuf[off+0x5c+0]
+	          + (fbuf[off+0x5c+1] << 8)
+	          + (fbuf[off+0x5c+2] << 16)
+	          + (fbuf[off+0x5c+3] << 24);
+		ddirroff = 0x60;
+	}
+
+	/* Go through each data directory */
+	for (i = 0; i < nddirs; i++) {
+		unsigned int addr, size;
+
+		j = off + ddirroff + 8 * i;
+
+		addr = fbuf[j+0]
+	        + (fbuf[j+1] << 8)
+	        + (fbuf[j+2] << 16)
+	        + (fbuf[j+3] << 24);
+		size = fbuf[j+4]
+	        + (fbuf[j+5] << 8)
+	        + (fbuf[j+6] << 16)
+	        + (fbuf[j+7] << 24);
+
+			if (verb > 2) printf("Data block %d addr 0x%x size %u\n",i,addr,size);
+	}
+
+	/* Skip to start of section headers */
+	off = off + ophsz;
+
+	/* Go through each section header and locat size used by them */
+	asects = 0;
+	for (i = 0; i < nsect; i++) {
+		char sname[9] = { '\000' };
+		unsigned int vaddr, vsize;
+		unsigned int paddr, psize;
+		unsigned int flags;
+
+		if (flen < (off + 0x28)) {
+			if (verb) printf("'%s' not big enough for section headers\n",xi->name);
+			return 0;
+		}
+
+		strncpy(sname, (char *)fbuf + off, 8);
+
+		vsize = fbuf[off+0x08+0]
+	         + (fbuf[off+0x08+1] << 8)
+	         + (fbuf[off+0x08+2] << 16)
+	         + (fbuf[off+0x08+3] << 24);
+
+		vaddr = fbuf[off+0x0c+0]
+	         + (fbuf[off+0x0c+1] << 8)
+	         + (fbuf[off+0x0c+2] << 16)
+	         + (fbuf[off+0x0c+3] << 24);
+
+		psize = fbuf[off+0x10+0]
+	         + (fbuf[off+0x10+1] << 8)
+	         + (fbuf[off+0x10+2] << 16)
+	         + (fbuf[off+0x10+3] << 24);
+
+		paddr = fbuf[off+0x14+0]
+	         + (fbuf[off+0x14+1] << 8)
+	         + (fbuf[off+0x14+2] << 16)
+	         + (fbuf[off+0x14+3] << 24);
+
+		flags = fbuf[off+0x24+0]
+	         + (fbuf[off+0x24+1] << 8)
+	         + (fbuf[off+0x24+2] << 16)
+	         + (fbuf[off+0x24+3] << 24);
+
+		if (verb > 1) printf("Section '%s' phys off 0x%x size %u\n",sname,paddr,psize);
+
+		if ((paddr + psize) > asects)
+			asects = paddr + psize;
+		off += 0x28;
+	}
+	if (verb > 2) printf("After section hedares at 0x%x\n",off);
+
+	if (flen <= asects) {
+		if (verb) printf("No extra section at end\n");
+		return 0;
+	}
+
+	if (verb > 1) printf("Extra data at 0x%x, %d bytes\n",asects, flen - asects);
+
+	return boff + asects;
+}
+
+/* Not used */
+
+/* Extract a module from a PE "Advance Installer" .exe file */
+/* Return NULL if not found */
+static xfile *aifile_extract(xfile **pxf, xfile *xi, char *tname, int verb) {
+	xfile *xf = NULL;
+	int i, j;
+	int asects;	/* Offset after all the sections */
+	int off;
+
+	/* First we parse up the PE to figure out how much room is */
+	/* used for known sections */
+	if ((asects = extraPEsection(xi, 0, verb)) == 0) {
+		return NULL;
+	}
+
+	/* Now we can search the "Advanced Installer" archive */
+	/* It seems to be a set of concatenated PE files ? */
+	
+	for (i= 0, off = asects; off != 0; i++) {
+		printf("\nPE %d at 0x%x\n",i,off);
+		off = extraPEsection(xi, off, verb > 2 ? 2 : verb);
+	}
+
+	if (verb) printf(" pefile_extract_mod not implemented yet\n");
+	return NULL;
+
+#ifdef NEVER
+	xf = add_xf(pxf);
+	xf->len = len;
+
+	if ((xf->buf = malloc(xf->len)) == NULL) {
+		fprintf(stderr,"maloc of .cab buffer failed\n");
+		exit(-1);
+	}
+	memmove(xf->buf, xi->buf + i ,xf->len);
+
+	if ((xf->name = strdup(tname)) == NULL) {
+		fprintf(stderr,"maloc of .cab name failed\n");
+		exit(-1);
+	}
+
+	xf->ftype = file_dllcab;
+	xf->ttype = xi->ttype;
+
+	if (verb) printf("Extacted '%s' length %ld\n",xf->name,xf->len);
+
+	return xf;
+#endif
+}
 
 /* ================================================================ */
 /* Extract files of a given type from a .cab file */
@@ -2407,6 +2827,8 @@ static xfile *cab_extract(xfile **pxf, xfile *xi, char *text, int verb) {
 	unsigned long len = xi->len;
 	unsigned long off;
 	unsigned long filesize, headeroffset, datastart;
+	int headerres = 0, folderres = 0, datares = 0;
+	int hextra = 0;
 	int nofolders, nofiles, flags, comptype;
 	unsigned int totubytes;
 	int ufiles = 0;
@@ -2443,18 +2865,28 @@ static xfile *cab_extract(xfile **pxf, xfile *xi, char *text, int verb) {
 		fprintf(stderr,"'%s' has more than one folder\n",xi->name);
 		exit(-1);
 	}
-	if (flags != 0) {
-		fprintf(stderr,"'%s' has non-zero flags\n",xi->name);
+	if (flags != 0 && flags != 4) {
+		fprintf(stderr,"'%s' has unhandled flags 0x%x\n",xi->name,flags);
 		exit(-1);
 	}
 
+	if (flags & 4) {		/* If researved fields */
+		// cbCFHeader, cbCFFolder, and cbCFData are present.
+		headerres = buf2short(buf + 0x24);
+		folderres = buf[0x26];
+		datares = buf[0x27];
+
+		hextra = 4 + headerres;
+	}
+
 	/* Read the first folders info (assumed flags == 0) */
-	datastart = buf2uint(buf + 0x24);
-	comptype = buf[0x2a];
+	datastart = buf2uint(buf + hextra + 0x24);
+	comptype = buf[hextra + 0x2a];
 	if (comptype!= 1) {
-		fprintf(stderr,"'%s' doesn't use MSZip compression\n",xi->name);
+		fprintf(stderr,"'%s' doesn't use MSZip compression, uses %d\n",xi->name,comptype);
 		exit(-1);
 	}
+	/* Should skip folderres bytes here */
 
 	if (verb > 1) printf(".cab headeroffset = 0x%lx, datastart = 0x%lx, nofiles = %d\n",headeroffset,datastart,nofiles);
 
@@ -2502,7 +2934,7 @@ static xfile *cab_extract(xfile **pxf, xfile *xi, char *text, int verb) {
 
 		totubytes += ubytes;
 
-		off += 8 + cbytes;
+		off += 8 + datares + cbytes;
 	}
 
 
@@ -2530,7 +2962,7 @@ static xfile *cab_extract(xfile **pxf, xfile *xi, char *text, int verb) {
 		cbytes = buf2short(buf + off + 0x04);
 		ubytes = buf2short(buf + off + 0x06);
 
-		i_buf = buf + off + 8;
+		i_buf = buf + off + 8 + datares;
 		i_len = cbytes;
 		i_ix = 0;
 
@@ -2548,7 +2980,7 @@ static xfile *cab_extract(xfile **pxf, xfile *xi, char *text, int verb) {
 		/* The history buffer is meant to survive from one block to the next. */
 		/* Not sure what that means, as it seems to work as is... */
 
-		off += 8 + cbytes;
+		off += 8 + datares + cbytes;
 	}
 
 	xf = add_xf(pxf);
@@ -2569,8 +3001,8 @@ static xfile *cab_extract(xfile **pxf, xfile *xi, char *text, int verb) {
 		fname[94] = '\000';
 		namelen = strlen(fname);
 
-		/* Lop of the junk in the filename */
-		if ((cp = strrchr(fname, '.')) != NULL)
+		/* Lop of the junk in the filename, if it's present */
+		if ((cp = strrchr(fname, '.')) != NULL && cp != strchr(fname, '.'))
 			*cp = '\000';
 		
 		/* See if it's the type of file we want */

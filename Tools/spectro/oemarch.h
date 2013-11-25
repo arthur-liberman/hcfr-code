@@ -29,7 +29,7 @@ typedef enum {
 	file_none              = 0x0000,	/* None */
 	file_vol               = 0x0001,	/* Volume name */
 	file_arch              = 0x0002,	/* Archive file */
-	file_dllcab            = 0x0004,	/* .dll or .cab */
+	file_dllcab            = 0x0004,	/* .dll or .cab - msi ?? */
 	file_data              = 0x0008		/* final data file */
 } file_type;
 

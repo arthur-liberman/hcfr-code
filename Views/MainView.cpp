@@ -1533,14 +1533,14 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 			else
 				str.Empty ();
 		}
-		else if ( aComponentNum == 4 && (m_displayMode == 0 || m_displayMode == 3)?(nCol > 1?true:false):true )
+		else if ( aComponentNum == 4 )
 		{
-			if ( aReference.isValid() )
+			if ( aReference.isValid() && (nCol > 1 || ( m_displayMode != 0 && m_displayMode !=3)) )
 				str.Format("%.3f",aMeasure.GetDeltaxy ( aReference, GetColorReference()) );
 			else
 				str.Empty ();
 		}
-		else if ( aComponentNum == 5 )
+		else if ( aComponentNum == 5 && (nCol > 1 || ( m_displayMode != 0 && m_displayMode !=3)) )
 		{
 			if ( aRefDocColor.isValid() )
 					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aRefDocColor, YWhiteRefDoc, GetColorReference(), 	GetConfig()->m_dE_form, false ) );
@@ -1549,7 +1549,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 		}
 		else if ( aComponentNum == 6 )
 		{
-			if ( aRefDocColor.isValid() )
+			if ( aRefDocColor.isValid() && (nCol > 1 || ( m_displayMode != 0 && m_displayMode !=3)) )
 				str.Format("%.3f",aMeasure.GetDeltaxy ( aRefDocColor, GetColorReference()) );
 			else
 				str.Empty ();
