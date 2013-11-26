@@ -49,6 +49,7 @@ public:
 	//}}AFX_DATA
 
 	CArray <CString,CString> m_monitorNameArray;
+    CEdit m_madVREdit;
 	int m_activeMonitorNum;
 	int	m_nDisplayMode;
 	BOOL m_b16_235;
@@ -74,6 +75,7 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(CGDIGenePropPage)
 	afx_msg void OnTestOverlay();
+	afx_msg void OnClickmadVR();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

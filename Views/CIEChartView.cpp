@@ -308,7 +308,7 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 		
 		if ( pRefPoint )
 		{
-			double dE  = aGraphPoint.GetNormalizedColor().GetDeltaE(1.0, pRefPoint->GetNormalizedColor(), 1.0, GetColorReference(), 	GetConfig()->m_dE_form, false );
+            double dE  = aGraphPoint.GetNormalizedColor().GetDeltaE(1.0, pRefPoint->GetNormalizedColor(), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 			str2.Format ( ", Delta E: %.1f\n",dE );
 			str3.LoadString (IDS_DISTANCEINCIEXY);
 			str2 += str3;
@@ -789,8 +789,8 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
             }
             else
             {
-                // Use actual gray luminance as correct reference (absolute)
-                YWhiteGray = aColor [ 1 ];
+                // Use actual gray luminance as correct reference (absolute) 
+                    YWhiteGray = aColor [ 1 ];
             }
 
             CCIEGraphPoint grayRef(refColor, 1.0,"", m_bCIEuv);

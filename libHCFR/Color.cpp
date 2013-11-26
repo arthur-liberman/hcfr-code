@@ -618,10 +618,25 @@ int ColorXYZ::GetColorTemp(const CColorReference& colorReference) const
     }
 }
 
-double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form, bool isGS ) const
+double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form, bool isGS, int gw_Weight ) const
 {
 	CColorReference cRef=CColorReference(HDTV, D65, 2.22); //special modes assume rec.709
 	double dE;
+    //gray world weighted white reference
+    switch (gw_Weight)
+    {
+    case 1:
+    {
+        YWhiteRef = 0.15 * YWhiteRef;
+        YWhite = 0.15 * YWhite;
+        break;
+    }
+    case 2:
+    {
+        YWhiteRef = 0.05 * YWhiteRef;
+        YWhite = 0.05 * YWhite;
+    }
+    }
 	if (!(colorReference.m_standard == CC6a || colorReference.m_standard == CC6 || colorReference.m_standard == HDTVa))
 		cRef=colorReference;
 	switch (dE_form)
@@ -1188,9 +1203,9 @@ double CColor::GetLuminance() const
 	return GetY();
 }
 
-double CColor::GetDeltaE(double YWhite, const CColor & refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form, bool isGS ) const
+double CColor::GetDeltaE(double YWhite, const CColor & refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form, bool isGS, int gw_Weight ) const
 {
-		return m_XYZValues.GetDeltaE(YWhite, refColor.m_XYZValues, YWhiteRef, colorReference, dE_form, isGS );
+		return m_XYZValues.GetDeltaE(YWhite, refColor.m_XYZValues, YWhiteRef, colorReference, dE_form, isGS, gw_Weight );
 }
 
 double CColor::GetDeltaE(const CColor & refColor) const

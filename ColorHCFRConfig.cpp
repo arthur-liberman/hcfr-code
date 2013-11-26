@@ -290,6 +290,7 @@ void CColorHCFRConfig::InitDefaults()
 	m_bPreferLuxmeter = FALSE;
 	m_dE_form = 5;
     m_dE_gray = 2;
+    gw_Weight = 0;
     doHighlight = TRUE;
 }
 
@@ -352,6 +353,7 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_bPreferLuxmeter = GetProfileInt("Advanced","PreferLuxmeter",0);
 	m_dE_form = GetProfileInt("Advanced","dE_form",5);
 	m_dE_gray = GetProfileInt("Advanced","dE_gray",2);
+	m_dE_gray = GetProfileInt("Advanced","gw_Weight",0);
 
 	return TRUE;
 }
@@ -402,6 +404,7 @@ void CColorHCFRConfig::SaveSettings()
 	WriteProfileInt("Advanced","PreferLuxmeter",m_bPreferLuxmeter);
 	WriteProfileInt("Advanced","dE_form",m_dE_form);
 	WriteProfileInt("Advanced","dE_gray",m_dE_gray);
+	WriteProfileInt("Advanced","gw_Weight",gw_Weight);
 }
 
 void CColorHCFRConfig::ChangeSettings(int aPage)
@@ -478,6 +481,7 @@ void CColorHCFRConfig::SetPropertiesSheetValues()
 	m_advancedPropertiesPage.m_bPreferLuxmeter = m_bPreferLuxmeter;
 	m_advancedPropertiesPage.m_dE_form = m_dE_form;
 	m_advancedPropertiesPage.m_dE_gray = m_dE_gray;
+	m_advancedPropertiesPage.gw_Weight = gw_Weight;
 
 	m_advancedPropertiesPage.m_isModified=FALSE;
 }
@@ -563,6 +567,7 @@ BOOL CColorHCFRConfig::GetPropertiesSheetValues()
 	m_bPreferLuxmeter = m_advancedPropertiesPage.m_bPreferLuxmeter;
 	m_dE_form = m_advancedPropertiesPage.m_dE_form;
 	m_dE_gray = m_advancedPropertiesPage.m_dE_gray;
+	gw_Weight = m_advancedPropertiesPage.gw_Weight;
 
 	return needRestart;
 }

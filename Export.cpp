@@ -364,10 +364,10 @@ bool CExport::SaveGrayScaleSheet()
 		else
 		{
 			// Use actual gray luminance as correct reference (Delta E will check color only, not brightness)
-			YWhite = m_pDoc->GetMeasure()->GetGray(j) [ 1 ];
+			    YWhite = m_pDoc->GetMeasure()->GetGray(j) [ 1 ];
 		}
 		
-		Rows.Add((float)m_pDoc->GetMeasure()->GetGray(j).GetDeltaE(YWhite, refColor, 1.0, GetColorReference(), 	GetConfig()->m_dE_form, true ));
+		Rows.Add((float)m_pDoc->GetMeasure()->GetGray(j).GetDeltaE(YWhite, refColor, 1.0, GetColorReference(), 	GetConfig()->m_dE_form, true, GetConfig()->gw_Weight ));
 	}
 	result&=graySS.AddRow(Rows,rowNb,m_doReplace);
 	rowNb++;

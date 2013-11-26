@@ -104,6 +104,7 @@ public:
 	BOOL	m_bPreferLuxmeter;
 	int		m_dE_form;
     int     m_dE_gray;
+    int     gw_Weight;
     BOOL    doHighlight;
 
 	// Global strings

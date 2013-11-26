@@ -46,6 +46,7 @@ CAdvancedPropPage::CAdvancedPropPage() : CPropertyPageWithHelp(CAdvancedPropPage
 	m_bPreferLuxmeter = FALSE;
 	m_dE_form = 5;
 	m_dE_gray = 2;
+    gw_Weight = 0;
     doHighlight = TRUE;
 	//}}AFX_DATA_INIT
 
@@ -60,10 +61,13 @@ void CAdvancedPropPage::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPageWithHelp::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CAdvancedPropPage)
+    DDX_Control(pDX, IDC_COMBO_dE_WEIGHT, m_gwWeightEdit);
+    DDX_Control(pDX, IDC_COMBO_dE_GRAY, m_dEgrayEdit);
 	DDX_Check(pDX, IDC_CHECK_CONFIRM, m_bConfirmMeasures);
 	DDX_CBString(pDX, IDC_LUXMETER_COM_COMBO, m_comPort);
 	DDX_CBIndex(pDX, IDC_COMBO_dE, m_dE_form);
 	DDX_CBIndex(pDX, IDC_COMBO_dE_GRAY, m_dE_gray);
+	DDX_CBIndex(pDX, IDC_COMBO_dE_WEIGHT, gw_Weight);
 	DDX_Check(pDX, IDC_CHECK_CALIBRATION_OLD, m_bUseOnlyPrimaries);
 	DDX_Check(pDX, IDC_HIGHLIGHT, doHighlight);
 	DDX_Check(pDX, IDC_CHECK_IMPERIAL, m_bUseImperialUnits);
@@ -85,6 +89,7 @@ BEGIN_MESSAGE_MAP(CAdvancedPropPage, CPropertyPageWithHelp)
 	ON_CBN_SELCHANGE(IDC_LUXMETER_COM_COMBO, OnSelchangeLuxmeterComCombo)
 	ON_CBN_SELCHANGE(IDC_COMBO_dE, OnSelchangedECombo)
 	ON_CBN_SELCHANGE(IDC_COMBO_dE_GRAY, OnSelchangedECombo)
+	ON_CBN_SELCHANGE(IDC_COMBO_dE_WEIGHT, OnSelchangedECombo)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -113,8 +118,20 @@ void CAdvancedPropPage::OnSelchangedECombo()
 
 BOOL CAdvancedPropPage::OnApply() 
 {
+    m_gwWeightEdit.EnableWindow(TRUE);
+    m_dEgrayEdit.EnableWindow(TRUE);
     if (m_dE_form == 5)
+    {
         m_dE_gray = 2;
+        m_dEgrayEdit.EnableWindow(FALSE);
+        gw_Weight = 0;
+        m_gwWeightEdit.EnableWindow(FALSE);
+    }
+    else if (m_dE_gray == 0)
+    {
+        gw_Weight = 0;
+        m_gwWeightEdit.EnableWindow(FALSE);
+    }
 	GetConfig()->ApplySettings(FALSE);
 	m_isModified=FALSE;
 	return CPropertyPageWithHelp::OnApply();

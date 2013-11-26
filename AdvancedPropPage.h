@@ -43,10 +43,13 @@ public:
 
 	//{{AFX_DATA(CAdvancedPropPage)
 	enum { IDD = IDD_ADVANCED_PROP_PAGE };
+    CEdit   m_gwWeightEdit;
+    CEdit   m_dEgrayEdit;
 	BOOL	m_bConfirmMeasures;
 	CString	m_comPort;
 	int		m_dE_form;
     int     m_dE_gray;
+    int     gw_Weight;
 	BOOL	m_bUseOnlyPrimaries;
 	BOOL	m_bUseImperialUnits;
 	int		m_nLuminanceCurveMode;

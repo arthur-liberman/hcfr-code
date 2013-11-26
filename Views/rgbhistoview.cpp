@@ -183,9 +183,9 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 				else
 				{
 					// Use actual gray luminance as correct reference (absolute)
-					YWhite = aColor [ 2 ];
+	    				YWhite = aColor [ 2 ];
 				}
-					m_graphCtrl2.AddPoint(m_deltaEGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(YWhite, refColor, 1.0, GetColorReference(), GetConfig()->m_dE_form, true ));
+					m_graphCtrl2.AddPoint(m_deltaEGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(YWhite, refColor, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->gw_Weight ));
 			}
 		}
 	}
@@ -239,15 +239,15 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 				else
 				{
 					// Use actual gray luminance as correct reference (Delta E will check color only, not brightness)
-					YWhiteRefDoc = aColorRef [ 2 ];
+	    				YWhiteRefDoc = aColorRef [ 2 ];
 
 					if ( bMainDocHasColors )
 						YWhite = aColor [ 2 ];
 				}
-					m_graphCtrl2.AddPoint(m_deltaEDataRefGraphID, x, pDataRef->GetMeasure()->GetGray(i).GetDeltaE(YWhiteRefDoc, refColor, 1.0, GetColorReference(), GetConfig()->m_dE_form, true ));
+					m_graphCtrl2.AddPoint(m_deltaEDataRefGraphID, x, pDataRef->GetMeasure()->GetGray(i).GetDeltaE(YWhiteRefDoc, refColor, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->gw_Weight ));
 				
 				if (bMainDocHasColors)
-						m_graphCtrl2.AddPoint(m_deltaEBetweenGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(YWhite,pDataRef->GetMeasure()->GetGray(i),YWhiteRefDoc, GetColorReference(), GetConfig()->m_dE_form, true )); //Ki
+						m_graphCtrl2.AddPoint(m_deltaEBetweenGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(YWhite,pDataRef->GetMeasure()->GetGray(i),YWhiteRefDoc, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->gw_Weight )); //Ki
 			}
 		}
 	}

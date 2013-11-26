@@ -95,7 +95,7 @@ public:
     explicit ColorXYZ(const ColorxyY& xyY);
     ColorXYZ(double X, double Y, double Z);
     int GetColorTemp(const CColorReference& colorReference) const;
-    double GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form, bool isGS ) const;
+    double GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form, bool isGS, int gw_Weight ) const;
     double GetOldDeltaE(const ColorXYZ& refColor) const;
 	double GetDeltaxy(const ColorXYZ& refColor, const CColorReference& colorReference) const;
 };
@@ -187,7 +187,7 @@ public:
     bool isValid() const;
 
 	double GetLuminance() const;
-    double GetDeltaE(double YWhite, const CColor & refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form, bool isGS ) const;
+    double GetDeltaE(double YWhite, const CColor & refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form, bool isGS, int gw_Weight ) const;
     double GetDeltaE(const CColor & refColor) const;
 	double GetDeltaxy(const CColor & refColor, const CColorReference& colorReference) const;
 	ColorXYZ GetXYZValue() const;

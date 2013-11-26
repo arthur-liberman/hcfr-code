@@ -823,7 +823,7 @@ BEGIN
     PUSHBUTTON      "",IDC_ANSICONTRAST_PATTERN_TEST_BUTTON,502,170,8,8
 END
 
-IDD_ADVANCED_PROP_PAGE DIALOGEX 0, 0, 212, 217
+IDD_ADVANCED_PROP_PAGE DIALOGEX 0, 0, 212, 238
 STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Avancé"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
@@ -846,12 +846,14 @@ BEGIN
     CONTROL         "Calcule le contraste et le delta luminance à partir du luxmètre",IDC_CHECK_PREFER_LUXMETER,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,153,189,10
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ | WS_GROUP,7,149,199,1
-    GROUPBOX        "Delta E",IDC_STATIC,7,171,199,38,WS_GROUP
+    GROUPBOX        "Delta E",IDC_STATIC,7,171,199,55,WS_GROUP
     LTEXT           "Color Difference Formula",IDC_STATIC,17,183,88,10
     COMBOBOX        IDC_COMBO_dE,106,180,87,118,CBS_DROPDOWN | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     COMBOBOX        IDC_COMBO_dE_GRAY,106,194,88,118,CBS_DROPDOWN | WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    LTEXT           "Gray Scale dE handling",IDC_STATIC,17,193,88,10
+    LTEXT           "Gray Scale dE handling",IDC_STATIC,17,195,88,10
     CONTROL         "Highlight",IDC_HIGHLIGHT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,41,171,43,10
+    COMBOBOX        IDC_COMBO_dE_WEIGHT,106,208,87,118,CBS_DROPDOWN | WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    LTEXT           "White Reference weighting",IDC_STATIC,13,210,88,10
 END
 
 IDD_SIGNATURE DIALOG 0, 0, 186, 73
@@ -1023,7 +1025,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 205
         TOPMARGIN, 7
-        BOTTOMMARGIN, 210
+        BOTTOMMARGIN, 231
     END
 
     IDD_SIGNATURE, DIALOG
@@ -1466,6 +1468,12 @@ BEGIN
     IDC_COMBO_dE_GRAY, 0x403, 21, 0
 0x6241, 0x6f73, 0x756c, 0x6574, 0x5920, 0x7720, 0x6f2f, 0x6720, 0x6d61, 
 0x616d, "\000" 
+    IDC_COMBO_dE_WEIGHT, 0x403, 8, 0
+0x6544, 0x6166, 0x6c75, 0x0074, 
+    IDC_COMBO_dE_WEIGHT, 0x403, 16, 0
+0x7247, 0x7961, 0x5720, 0x726f, 0x646c, 0x315b, 0x2535, 0x005d, 
+    IDC_COMBO_dE_WEIGHT, 0x403, 9, 0
+0x6144, 0x6b72, 0x355b, 0x5d25, "\000" 
     0
 END
 
@@ -2369,8 +2377,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3, 1, 0, 3
- PRODUCTVERSION 3, 1, 0, 3
+ FILEVERSION 3, 1, 0, 4
+ PRODUCTVERSION 3, 1, 0, 4
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2388,12 +2396,12 @@ BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "CompanyName", "Association Homecinema Francophone"
             VALUE "FileDescription", "Resources Colorimètre HCFR"
-            VALUE "FileVersion", "3, 1, 0, 3"
+            VALUE "FileVersion", "3, 1, 0, 4"
             VALUE "InternalName", "CHCFR21_FRANCAIS"
             VALUE "LegalCopyright", "Copyright (C) 2005-2008"
             VALUE "OriginalFilename", "CHCFR21_FRANCAIS.DLL"
             VALUE "ProductName", "Colorimètre HCFR langage Français"
-            VALUE "ProductVersion", "3, 1, 0, 3"
+            VALUE "ProductVersion", "3, 1, 0, 4"
         END
     END
     BLOCK "VarFileInfo"

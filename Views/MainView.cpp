@@ -1505,8 +1505,8 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				if (m_displayMode == 0 || m_displayMode == 3 || m_displayMode == 4)
 					if ( nCol > 1 || m_displayMode == 4 )
 					{
-                        str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true ) );						
-						dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true );
+                        str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->gw_Weight ) );						
+						dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->gw_Weight );
 						dEavg+=dE;
 						clr = (dE<2.5?RGB(175,255,175):(dE<5?RGB(255,255,175):RGB(255,175,175)));
                         if (GetConfig()->doHighlight)
@@ -1518,8 +1518,8 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						str.Empty ();
 				else
 				{
-					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), 	GetConfig()->m_dE_form, false ) );
-					dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), 	GetConfig()->m_dE_form, false );
+					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), 	GetConfig()->m_dE_form, false, GetConfig()->gw_Weight ) );
+					dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), 	GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 					dEavg+=dE;
 					if (GetConfig()->m_dE_form <= 1)
 						clr = (dE<3.5?RGB(175,255,175):(dE<7?RGB(255,255,175):RGB(255,175,175)));
@@ -1543,7 +1543,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 		else if ( aComponentNum == 5 && (nCol > 1 || ( m_displayMode != 0 && m_displayMode !=3)) )
 		{
 			if ( aRefDocColor.isValid() )
-					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aRefDocColor, YWhiteRefDoc, GetColorReference(), 	GetConfig()->m_dE_form, false ) );
+					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aRefDocColor, YWhiteRefDoc, GetColorReference(), 	GetConfig()->m_dE_form, false, GetConfig()->gw_Weight ) );
 			else
 				str.Empty ();
 		}
@@ -2095,7 +2095,7 @@ void CMainView::UpdateGrid()
 					 else
 					 {
 						// Use actual gray luminance as correct reference (absolute)
-                        YWhite = aColor [ 1 ];
+                            YWhite = aColor [ 1 ];
 						if ( pDataRef )
 							YWhiteRefDoc = refDocColor [ 1 ];
 					 }

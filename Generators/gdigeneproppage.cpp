@@ -59,6 +59,7 @@ void CGDIGenePropPage::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPageWithHelp::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CGDIGenePropPage)
+    DDX_Control(pDX, IDC_MADVR_3D, m_madVREdit);    
 	DDX_Control(pDX, IDC_MONITOR_COMBO, m_monitorComboCtrl);
 	DDX_Text(pDX, IDC_PATTERNSIZE_EDIT, m_rectSizePercent);
 	DDX_Text(pDX, IDC_BGSTIM_EDIT, m_bgStimPercent);
@@ -74,6 +75,10 @@ void CGDIGenePropPage::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CGDIGenePropPage, CPropertyPageWithHelp)
 	//{{AFX_MSG_MAP(CGDIGenePropPage)
 	ON_BN_CLICKED(IDC_OVERLAY, OnTestOverlay)
+	ON_BN_CLICKED(IDC_RADIO1, OnClickmadVR)
+	ON_BN_CLICKED(IDC_RADIO2, OnClickmadVR)
+	ON_BN_CLICKED(IDC_RADIO3, OnClickmadVR)
+	ON_BN_CLICKED(IDC_RADIO4, OnClickmadVR)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -119,6 +124,10 @@ BOOL CGDIGenePropPage::OnSetActive()
 	
 	CheckRadioButton ( IDC_RADIO1,  IDC_RADIO4 , IDC_RADIO1 + m_nDisplayMode );
 	CheckRadioButton ( IDC_RGBLEVEL_RADIO1, IDC_RGBLEVEL_RADIO2, IDC_RGBLEVEL_RADIO1 + m_b16_235 );
+    if (IsDlgButtonChecked ( IDC_RADIO3 ) )
+        m_madVREdit.EnableWindow(TRUE);
+    else
+        m_madVREdit.EnableWindow(FALSE);
 
 	return CPropertyPageWithHelp::OnSetActive();
 }
@@ -169,6 +178,14 @@ void CGDIGenePropPage::OnTestOverlay()
 		MessageBox ( "Overlay window created (small gray rectangle on top-right). You can use advanced display properties to change settings.\r\nClick OK to close overlay window.", "Overlay", MB_OK | MB_ICONINFORMATION );
 	else
 		MessageBox ( "An error occured during Overlay creation.", "Overlay", MB_OK | MB_ICONHAND );
+}
+
+void CGDIGenePropPage::OnClickmadVR() 
+{
+    if (IsDlgButtonChecked ( IDC_RADIO3 ) )
+        m_madVREdit.EnableWindow(TRUE);
+    else
+        m_madVREdit.EnableWindow(FALSE);
 }
 
 UINT CGDIGenePropPage::GetHelpId ( LPSTR lpszTopic )
