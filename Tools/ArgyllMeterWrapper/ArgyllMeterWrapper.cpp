@@ -316,9 +316,13 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
     {
         instCode = m_meter->get_set_opt(m_meter, inst_opt_set_ccss_obs, static_cast<icxObserverType>(m_obType) , 0);
         if (instCode != inst_ok)
+        {
             MessageBox(NULL,m_meter->inst_interp_error(m_meter,instCode),"Error setting observer",MB_OK);
-//        else
-//            MessageBox(NULL,"Set observer to "+SpectralType,"Setting observer",MB_OK);
+            m_meter->del(m_meter);
+            m_meter = 0;
+            errorDescription = "Couldn't set observer mode";
+            return false;
+        }
     }
 
     //custom inttime for d3 meters
@@ -358,8 +362,14 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
             instCode = m_meter->get_set_opt(m_meter, inst_opt_get_min_int_time, &c_it);
             instCode = m_meter->get_set_opt(m_meter, inst_opt_set_min_int_time, i_time);
             if (instCode != inst_ok)
+            {
                 MessageBox(NULL,m_meter->inst_interp_error(m_meter,instCode),"Integration time set error", MB_OK);
-            if (i_time != c_it)
+                m_meter->del(m_meter);
+                m_meter = 0;
+                errorDescription = "Couldn't set trigger mode";
+                return false;
+            }
+            if (i_time != c_it && debugmode)
             {
                 char t [50];
                 if (i_time != 0.0)
