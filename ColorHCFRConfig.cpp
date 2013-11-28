@@ -353,7 +353,7 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_bPreferLuxmeter = GetProfileInt("Advanced","PreferLuxmeter",0);
 	m_dE_form = GetProfileInt("Advanced","dE_form",5);
 	m_dE_gray = GetProfileInt("Advanced","dE_gray",2);
-	m_dE_gray = GetProfileInt("Advanced","gw_Weight",0);
+	gw_Weight = GetProfileInt("Advanced","gw_Weight",0);
 
 	return TRUE;
 }

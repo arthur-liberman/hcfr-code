@@ -146,5 +146,21 @@ UINT CAdvancedPropPage::GetHelpId ( LPSTR lpszTopic )
 BOOL CAdvancedPropPage::OnSetActive() 
 {
 	BOOL	bOk = CPropertyPageWithHelp::OnSetActive();
+    m_gwWeightEdit.EnableWindow(TRUE);
+    m_dEgrayEdit.EnableWindow(TRUE);
+    if (m_dE_form == 5)
+    {
+        m_dE_gray = 2;
+        m_dEgrayEdit.EnableWindow(FALSE);
+        gw_Weight = 0;
+        m_gwWeightEdit.EnableWindow(FALSE);
+    }
+    else if (m_dE_gray == 0)
+    {
+        gw_Weight = 0;
+        m_gwWeightEdit.EnableWindow(FALSE);
+    }
+	GetConfig()->ApplySettings(FALSE);
+	m_isModified=FALSE;
 	return bOk;
 }
