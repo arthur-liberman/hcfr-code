@@ -76,6 +76,7 @@ CGDIGenerator::CGDIGenerator()
 	m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI);
 	m_b16_235 = GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0);
     m_madVR_3d = GetConfig()->GetProfileInt("GDIGenerator","MADVR3D",0);
+    m_madVR_vLUT = GetConfig()->GetProfileInt("GDIGenerator","MADVRvLUT",0);
 	m_displayWindow.SetDisplayMode(m_nDisplayMode);	// Always init in GDI mode during init
 
 	CString str;
@@ -105,6 +106,7 @@ CGDIGenerator::CGDIGenerator(int nDisplayMode, BOOL b16_235)
 	m_b16_235 = b16_235;
 	m_displayWindow.SetDisplayMode();
     m_madVR_3d = m_madVR_3d;
+    m_madVR_vLUT = m_madVR_vLUT;
 
 	CString str;
 	str.LoadString(IDS_GDIGENERATOR_PROPERTIES_TITLE);
@@ -247,6 +249,7 @@ void CGDIGenerator::SetPropertiesSheetValues()
 	m_GDIGenePropertiesPage.m_nDisplayMode=m_nDisplayMode;
 	m_GDIGenePropertiesPage.m_b16_235=m_b16_235;
 	m_GDIGenePropertiesPage.m_madVR_3d=m_madVR_3d;
+	m_GDIGenePropertiesPage.m_madVR_vLUT=m_madVR_vLUT;
 }
 
 void CGDIGenerator::GetPropertiesSheetValues()
@@ -297,7 +300,14 @@ void CGDIGenerator::GetPropertiesSheetValues()
     if ( m_madVR_3d!=m_GDIGenePropertiesPage.m_madVR_3d )
 	{
 		m_madVR_3d=m_GDIGenePropertiesPage.m_madVR_3d;
-		GetConfig()->WriteProfileInt("GDIGenerator","MADVR3D",m_b16_235);
+		GetConfig()->WriteProfileInt("GDIGenerator","MADVR3D",m_madVR_3d);
+		SetModifiedFlag(TRUE);
+	}
+
+    if ( m_madVR_vLUT!=m_GDIGenePropertiesPage.m_madVR_vLUT )
+	{
+		m_madVR_vLUT=m_GDIGenePropertiesPage.m_madVR_vLUT;
+		GetConfig()->WriteProfileInt("GDIGenerator","MADVRvLUT",m_madVR_vLUT);
 		SetModifiedFlag(TRUE);
 	}
 }

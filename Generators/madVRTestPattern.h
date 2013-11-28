@@ -1,11 +1,12 @@
 // ***************************************************************
-//  madVRTestPattern.h        version: 1.0.0  ·  date: 2013-06-15
+//  madVRTestPattern.h        version: 1.1.0  ·  date: 2013-11-27
 //  -------------------------------------------------------------
 //  madVR test pattern / calibration remote controlling
 //  -------------------------------------------------------------
 //  Copyright (C) 2013 - 2013 www.madshi.net, BSD license
 // ***************************************************************
 
+// 2013-11-27 1.1.0 added madVR_GetBlackAndWhiteLevel
 // 2013-06-15 1.0.0 initial version
 
 // ----------------------------------------------------------------------------
@@ -71,6 +72,25 @@
 
 // ----------------------------------------------------------------------------
 // remote controlling the connected madVR instance
+
+// "madVR_GetBlackAndWhiteLevel" reports the madVR output level setup.
+// E.g. if madVR is setup to output TV levels, you'll get "blackLevel = 16" and
+// "whiteLevel = 235" reported.
+// The purpose of asking this information is that it allows you to avoid
+// dithering, if you so prefer. Dithering will be automatically disabled by
+// madVR if the final 8bit output value calculated by madVR ends up being a
+// simple cardinal without any fractional part.
+// E.g. if you use "madVR_ShowRGB(0.5, 0.5, 0.5)" with madVR configured to PC
+// levels, the final 8bit value will be 127.5, which means that madVR has to
+// use dithering to display the color correctly. If you want to avoid dithering,
+// use "x / (whiteLevel - blackLevel)" values.
+// Dithering in itself is not bad. It allows madVR to produce test pattern
+// colors which would otherwise not be possible to display in 8bit. However,
+// calibration quality might be ever so slightly improved if you choose
+// measurement colors which don't need dithering to display correctly. It's
+// your choice, though. Maybe some part of your calibration might even improve
+// if you have the chance to measure colors with a bitdepth higher than 8bit.
+BOOL madVR_GetBlackAndWhiteLevel(int *blackLevel, int *whiteLevel);
 
 // "madVR_Disable3dlut" disables 3dlut processing.
 // The 3dlut stays disabled until the connection is closed.

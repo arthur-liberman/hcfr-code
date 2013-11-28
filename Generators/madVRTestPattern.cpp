@@ -1,11 +1,12 @@
 // ***************************************************************
-//  madVRTestPattern.cpp      version: 1.0.0  ·  date: 2013-06-15
+//  madVRTestPattern.cpp      version: 1.1.0  ·  date: 2013-11-27
 //  -------------------------------------------------------------
 //  madVR test pattern / calibration remote controlling
 //  -------------------------------------------------------------
 //  Copyright (C) 2013 - 2013 www.madshi.net, BSD license
 // ***************************************************************
 
+// 2013-11-27 1.1.0 added madVR_GetBlackAndWhiteLevel
 // 2013-06-15 1.0.0 initial version
 
 // ----------------------------------------------------------------------------
@@ -21,6 +22,7 @@ static BOOL InitSuccess = false;
 static BOOL (WINAPI *ConnectDialog)(BOOL searchLan, HWND parentWindow) = NULL;
 static BOOL (WINAPI *BlindConnect)(BOOL searchLan, DWORD timeOut) = NULL;
 static BOOL (WINAPI *ConnectToIp)(LPCSTR ipAddress, DWORD timeOut) = NULL;
+static BOOL (WINAPI *GetBlackAndWhiteLevel)(int *blackLevel, int *whiteLevel) = NULL;
 static BOOL (WINAPI *Disable3dlut)() = NULL;
 static BOOL (WINAPI *GetDeviceGammaRamp_)(LPVOID ramp) = NULL;
 static BOOL (WINAPI *SetDeviceGammaRamp_)(LPVOID ramp) = NULL;
@@ -45,7 +47,11 @@ BOOL Init()
 
   if (!InitDone)
   {
-    HcNetDll = LoadLibraryW(L"madHcNet32.dll");
+    #ifdef _WIN64
+      HcNetDll = LoadLibraryW(L"madHcNet64.dll");
+    #else
+      HcNetDll = LoadLibraryW(L"madHcNet32.dll");
+    #endif
     if ((!HcNetDll) && (RegOpenKeyExW(HKEY_CLASSES_ROOT, L"CLSID\\{E1A8B82A-32CE-4B0D-BE0D-AA68C772E423}\\InprocServer32", 0, KEY_QUERY_VALUE | KEY_WOW64_32KEY, &hk1) == ERROR_SUCCESS))
     {
       size = MAX_PATH * 2 + 2;
@@ -65,28 +71,33 @@ BOOL Init()
             us1[i1 + 1] = 0;
             break;
           }
-        wcscat_s(us1, size + 10, L"madHcNet32.dll");
+        #ifdef _WIN64
+          wcscat_s(us1, size + 10, L"madHcNet64.dll");
+        #else
+          wcscat_s(us1, size + 10, L"madHcNet32.dll");
+        #endif
         HcNetDll = LoadLibraryW(us1);
       }
       LocalFree(us1);
       RegCloseKey(hk1);
     }
-    *(FARPROC*)&ConnectDialog       = GetProcAddress(HcNetDll, "madVR_ConnectDialog"     );
-    *(FARPROC*)&BlindConnect        = GetProcAddress(HcNetDll, "madVR_BlindConnect"      );
-    *(FARPROC*)&ConnectToIp         = GetProcAddress(HcNetDll, "madVR_ConnectToIp"       );
-    *(FARPROC*)&Disable3dlut        = GetProcAddress(HcNetDll, "madVR_Disable3dlut"      );
-    *(FARPROC*)&GetDeviceGammaRamp_ = GetProcAddress(HcNetDll, "madVR_GetDeviceGammaRamp");
-    *(FARPROC*)&SetDeviceGammaRamp_ = GetProcAddress(HcNetDll, "madVR_SetDeviceGammaRamp");
-    *(FARPROC*)&SetOsdText          = GetProcAddress(HcNetDll, "madVR_SetOsdText"        );
-    *(FARPROC*)&SetBackground       = GetProcAddress(HcNetDll, "madVR_SetBackground"     );
-    *(FARPROC*)&ShowProgressBar     = GetProcAddress(HcNetDll, "madVR_ShowProgressBar"   );
-    *(FARPROC*)&SetProgressBarPos   = GetProcAddress(HcNetDll, "madVR_SetProgressBarPos" );
-    *(FARPROC*)&ShowRGB             = GetProcAddress(HcNetDll, "madVR_ShowRGB"           );
-    *(FARPROC*)&Disconnect          = GetProcAddress(HcNetDll, "madVR_Disconnect"        );
-    *(FARPROC*)&Find_Async          = GetProcAddress(HcNetDll, "madVR_Find_Async"        );
-    *(FARPROC*)&Connect             = GetProcAddress(HcNetDll, "madVR_Connect"           );
-    *(FARPROC*)&LocConnectDialog    = GetProcAddress(HcNetDll, "Localize_ConnectDialog"  );
-    *(FARPROC*)&LocIpAddressDialog  = GetProcAddress(HcNetDll, "Localize_IpAddressDialog");
+    *(FARPROC*)&ConnectDialog         = GetProcAddress(HcNetDll, "madVR_ConnectDialog"        );
+    *(FARPROC*)&BlindConnect          = GetProcAddress(HcNetDll, "madVR_BlindConnect"         );
+    *(FARPROC*)&ConnectToIp           = GetProcAddress(HcNetDll, "madVR_ConnectToIp"          );
+    *(FARPROC*)&GetBlackAndWhiteLevel = GetProcAddress(HcNetDll, "madVR_GetBlackAndWhiteLevel");
+    *(FARPROC*)&Disable3dlut          = GetProcAddress(HcNetDll, "madVR_Disable3dlut"         );
+    *(FARPROC*)&GetDeviceGammaRamp_   = GetProcAddress(HcNetDll, "madVR_GetDeviceGammaRamp"   );
+    *(FARPROC*)&SetDeviceGammaRamp_   = GetProcAddress(HcNetDll, "madVR_SetDeviceGammaRamp"   );
+    *(FARPROC*)&SetOsdText            = GetProcAddress(HcNetDll, "madVR_SetOsdText"           );
+    *(FARPROC*)&SetBackground         = GetProcAddress(HcNetDll, "madVR_SetBackground"        );
+    *(FARPROC*)&ShowProgressBar       = GetProcAddress(HcNetDll, "madVR_ShowProgressBar"      );
+    *(FARPROC*)&SetProgressBarPos     = GetProcAddress(HcNetDll, "madVR_SetProgressBarPos"    );
+    *(FARPROC*)&ShowRGB               = GetProcAddress(HcNetDll, "madVR_ShowRGB"              );
+    *(FARPROC*)&Disconnect            = GetProcAddress(HcNetDll, "madVR_Disconnect"           );
+    *(FARPROC*)&Find_Async            = GetProcAddress(HcNetDll, "madVR_Find_Async"           );
+    *(FARPROC*)&Connect               = GetProcAddress(HcNetDll, "madVR_Connect"              );
+    *(FARPROC*)&LocConnectDialog      = GetProcAddress(HcNetDll, "Localize_ConnectDialog"     );
+    *(FARPROC*)&LocIpAddressDialog    = GetProcAddress(HcNetDll, "Localize_IpAddressDialog"   );
     InitSuccess = (ConnectDialog      ) &&
                   (BlindConnect       ) &&
                   (ConnectToIp        ) &&
@@ -121,6 +132,11 @@ BOOL madVR_BlindConnect(BOOL searchLan, DWORD timeOut)
 BOOL madVR_ConnectToIp(LPCSTR ipAddress, DWORD timeOut)
 {
   return Init() && ConnectToIp(ipAddress, timeOut);
+}
+
+BOOL madVR_GetBlackAndWhiteLevel(int* blackLevel, int* whiteLevel)
+{
+  return Init() && (GetBlackAndWhiteLevel) && GetBlackAndWhiteLevel(blackLevel, whiteLevel);
 }
 
 BOOL madVR_Disable3dlut()

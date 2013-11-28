@@ -49,6 +49,7 @@ CGDIGenePropPage::CGDIGenePropPage() : CPropertyPageWithHelp(CGDIGenePropPage::I
 //	m_nDisplayMode = DISPLAY_GDI;
 	m_b16_235 = FALSE;
     m_madVR_3d = FALSE;
+    m_madVR_vLUT = FALSE;
 }
 
 CGDIGenePropPage::~CGDIGenePropPage()
@@ -61,6 +62,7 @@ void CGDIGenePropPage::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CGDIGenePropPage)
     DDX_Control(pDX, IDC_MADVR_3D, m_madVREdit);    
 	DDX_Control(pDX, IDC_MONITOR_COMBO, m_monitorComboCtrl);
+    DDX_Control(pDX, IDC_MADVR_3D2, m_madVREdit2);    
 	DDX_Text(pDX, IDC_PATTERNSIZE_EDIT, m_rectSizePercent);
 	DDX_Text(pDX, IDC_BGSTIM_EDIT, m_bgStimPercent);
 	DDX_Text(pDX, IDC_INTENSITY_EDIT, m_Intensity);
@@ -68,6 +70,7 @@ void CGDIGenePropPage::DoDataExchange(CDataExchange* pDX)
 	DDV_MinMaxUInt(pDX, m_bgStimPercent, 0, 100);
 	DDV_MinMaxUInt(pDX, m_Intensity, 1, 100);
 	DDX_Check(pDX, IDC_MADVR_3D, m_madVR_3d);
+	DDX_Check(pDX, IDC_MADVR_3D2, m_madVR_vLUT);
 	//}}AFX_DATA_MAP
 }
 
@@ -125,9 +128,15 @@ BOOL CGDIGenePropPage::OnSetActive()
 	CheckRadioButton ( IDC_RADIO1,  IDC_RADIO4 , IDC_RADIO1 + m_nDisplayMode );
 	CheckRadioButton ( IDC_RGBLEVEL_RADIO1, IDC_RGBLEVEL_RADIO2, IDC_RGBLEVEL_RADIO1 + m_b16_235 );
     if (IsDlgButtonChecked ( IDC_RADIO3 ) )
+    {
         m_madVREdit.EnableWindow(TRUE);
+        m_madVREdit2.EnableWindow(TRUE);
+    }
     else
+    {
         m_madVREdit.EnableWindow(FALSE);
+        m_madVREdit2.EnableWindow(FALSE);
+    }
 
 	return CPropertyPageWithHelp::OnSetActive();
 }
@@ -183,9 +192,15 @@ void CGDIGenePropPage::OnTestOverlay()
 void CGDIGenePropPage::OnClickmadVR() 
 {
     if (IsDlgButtonChecked ( IDC_RADIO3 ) )
+    {
         m_madVREdit.EnableWindow(TRUE);
+        m_madVREdit2.EnableWindow(TRUE);
+    }
     else
+    {
         m_madVREdit.EnableWindow(FALSE);
+        m_madVREdit2.EnableWindow(FALSE);
+    }
 }
 
 UINT CGDIGenePropPage::GetHelpId ( LPSTR lpszTopic )

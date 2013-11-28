@@ -400,6 +400,10 @@ interface IMadVRSettings : public IUnknown
 //     contentType,                 source type,                                                        string,  auto|film|video
 //     scanPartialFrame,            only look at pixels in the frame center,                            boolean
 //     deinterlaceThread,           perform deinterlacing in separate thread,                           boolean
+//   artifactRemoval, artifact removal
+//     debandActive,                reduce banding artifacts,                                           boolean
+//     debandLevel,                 default debanding strength,                                         integer, 0..2
+//     debandFadeLevel,             strength during fade in/out,                                        integer, 0..2
 // scalingParent, scaling algorithms
 //   chromaUp, chroma upscaling
 //     chromaUp,                    chroma upsampling,                                                  string,  Nearest Neighbor|Bilinear|Mitchell-Netravali|Catmull-Rom|Bicubic50|Bicubic60|Bicubic75|Bicubic100|SoftCubic50|SoftCubic60|SoftCubic70|SoftCubic80|SoftCubic100|Lanczos3|Lanczos4|Lanczos8|Spline36|Spline64|Jinc3|Jinc4|Jinc8
@@ -450,17 +454,19 @@ interface IMadVRSettings : public IUnknown
 //     smoothMotionEnabled,         enable smooth motion frame rate conversion,                         boolean
 //     smoothMotionMode,            smooth motion mode,                                                 string,  avoidJudder|almostAlways|always
 //   tradeQuality, trade quality for performance
+//     fastSubtitles,               optimize subtitles for performance instead of quality,              boolean
+//     customShaders16f,            store custom pixel shader results in 16bit buffer instead of 32bit, boolean
+//     noGradientAngles,            don't analyze gradient angles for debanding,                        boolean
 //     gammaBlending,               don't use linear light for smooth motion frame blending,            boolean
-//     dontDither,                  don't use dithering,                                                boolean
+//     noDeintCopyback,             don't use "copyback" for DXVA deinterlacing,                        boolean
+//     noDecodeCopyback,            don't use "copyback" for DXVA decoding,                             boolean
 //     halfDxvaDeintFramerate,      use half frame rate for DXVA deinterlacing,                         boolean
 //     10bitChroma,                 use 10bit chroma buffer instead of 16bit,                           boolean
 //     10bitLuma,                   use 10bit image buffer instead of 16bit,                            boolean
-//     customShaders16f,            store custom pixel shader results in 16bit buffer instead of 32bit, boolean
 //     customShadersTv,             run custom pixel shaders in video levels instead of PC levels,      boolean
-//     noDeintCopyback,             don't use "copyback" for DXVA deinterlacing,                        boolean
-//     noDecodeCopyback,            don't use "copyback" for DXVA decoding,                             boolean
 //     3dlutLowerBitdepth,          use lower bitdepth for yCMS 3dlut calibration,                      boolean
 //     3dlutBitdepth,               3dlut bitdepth,                                                     integer, 6..7
+//     dontDither,                  don't use dithering,                                                boolean
 // ui, user interface
 //   keys, keyboard shortcuts
 //     keysOnlyIfFocused,           use only if media player has keyboard focus,                        boolean
@@ -495,6 +501,8 @@ interface IMadVRSettings : public IUnknown
 //     keyDeintContentTypeFilm,     deinterlacing content type - set to "film",                         string
 //     keyDeintContentTypeVideo,    deinterlacing content type - set to "video",                        string
 //     keyDeintContentTypeAuto,     deinterlacing content type - set to "auto detect",                  string
+//     keyDeband,                   debanding - toggle,                                                 string
+//     keyDebandCustom,             debanding custom settings - toggle,                                 string
 //     keyDesiredGammaCurve,        desired display gamma curve - toggle,                               string
 //     keyDesiredGammaValueInc,     desired display gamma value - increase,                             string
 //     keyDesiredGammaValueDec,     desired display gamma value - decrease,                             string
