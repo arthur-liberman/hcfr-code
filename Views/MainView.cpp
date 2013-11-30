@@ -1505,7 +1505,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				if (m_displayMode == 0 || m_displayMode == 3 || m_displayMode == 4)
 					if ( nCol > 1 || m_displayMode == 4 )
 					{
-                        str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->gw_Weight ) );						
+                        str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->gw_Weight ) );
 						dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->gw_Weight );
 						dEavg+=dE;
 						clr = (dE<2.5?RGB(175,255,175):(dE<5?RGB(255,255,175):RGB(255,175,175)));
@@ -1518,7 +1518,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						str.Empty ();
 				else
 				{
-					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), 	GetConfig()->m_dE_form, false, GetConfig()->gw_Weight ) );
+					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight ) );
 					dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), 	GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 					dEavg+=dE;
 					if (GetConfig()->m_dE_form <= 1)
@@ -1543,7 +1543,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 		else if ( aComponentNum == 5 && (nCol > 1 || ( m_displayMode != 0 && m_displayMode !=3)) )
 		{
 			if ( aRefDocColor.isValid() )
-					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aRefDocColor, YWhiteRefDoc, GetColorReference(), 	GetConfig()->m_dE_form, false, GetConfig()->gw_Weight ) );
+					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aRefDocColor, YWhiteRefDoc, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight ) );
 			else
 				str.Empty ();
 		}
@@ -2227,7 +2227,9 @@ void CMainView::UpdateGrid()
 					 aColor = GetDocument()->GetMeasure()->GetRedSat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefSat(0,(double)j/(double)(nCount-1));
 //					 YWhite = GetDocument()->GetMeasure()->GetRedSat(nCount-1).GetY() / refColor.GetY ();
-					 YWhite = YWhiteOnOff;
+    				 YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
+	    			 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
+//					 YWhite = YWhiteOnOff;
 
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetRedSat(j);
@@ -2237,7 +2239,9 @@ void CMainView::UpdateGrid()
 					 aColor = GetDocument()->GetMeasure()->GetGreenSat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefSat(1,(double)j/(double)(nCount-1));
 //					 YWhite = GetDocument()->GetMeasure()->GetGreenSat(nCount-1).GetY() / refColor.GetY ();
-					 YWhite = YWhiteOnOff;
+//					 YWhite = YWhiteOnOff;
+    				 YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
+	    			 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
 
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetGreenSat(j);
@@ -2247,7 +2251,9 @@ void CMainView::UpdateGrid()
 					 aColor = GetDocument()->GetMeasure()->GetBlueSat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefSat(2,(double)j/(double)(nCount-1));
 //					 YWhite = GetDocument()->GetMeasure()->GetBlueSat(nCount-1).GetY() / refColor.GetY ();
-					 YWhite = YWhiteOnOff;
+//					 YWhite = YWhiteOnOff;
+    				 YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
+	    			 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
 
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetBlueSat(j);
@@ -2257,7 +2263,9 @@ void CMainView::UpdateGrid()
 					 aColor = GetDocument()->GetMeasure()->GetYellowSat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefSat(3,(double)j/(double)(nCount-1));
 //					 YWhite = GetDocument()->GetMeasure()->GetYellowSat(nCount-1).GetY() / refColor.GetY ();
-					 YWhite = YWhiteOnOff;
+//					 YWhite = YWhiteOnOff;
+    				 YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
+	    			 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
 
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetYellowSat(j);
@@ -2267,7 +2275,9 @@ void CMainView::UpdateGrid()
 					 aColor = GetDocument()->GetMeasure()->GetCyanSat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefSat(4,(double)j/(double)(nCount-1));
 //					 YWhite = GetDocument()->GetMeasure()->GetCyanSat(nCount-1).GetY() / refColor.GetY ();
-					 YWhite = YWhiteOnOff;
+//					 YWhite = YWhiteOnOff;
+    				 YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
+	    			 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
 					 
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetCyanSat(j);
@@ -2277,7 +2287,9 @@ void CMainView::UpdateGrid()
 					 aColor = GetDocument()->GetMeasure()->GetMagentaSat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefSat(5,(double)j/(double)(nCount-1));
 //					 YWhite = GetDocument()->GetMeasure()->GetMagentaSat(nCount-1).GetY() / refColor.GetY ();
-					 YWhite = YWhiteOnOff;
+//					 YWhite = YWhiteOnOff;
+    				 YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
+	    			 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
 
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetMagentaSat(j);
@@ -2293,6 +2305,7 @@ void CMainView::UpdateGrid()
 						 YWhiteMCD = YWhiteOnOff;
 					 YWhite = (GetConfig()->m_CCMode==GCD?GetDocument()->GetMeasure()->GetCC24Sat(5).GetY():YWhiteMCD);
 
+    				 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetCC24Sat(j);
 					 break;

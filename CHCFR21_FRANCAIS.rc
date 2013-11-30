@@ -3197,7 +3197,7 @@ BEGIN
     IDS_CANNOTMEASUREGRAYANDCOLORS 
                             "Le %s ne peut pas afficher l'échelle de gris, les primaires et les secondaires en un seul passage.\nVeuillez utiliser les commandes simples."
     IDS_CANNOTDISPLAYANIMATION 
-                            "Ce générateur ne peut pas afficher de mires animées.\nSeul le générateur ""Affichage mires"" peut le faire."
+                            "Ce générateur ne peut pas afficher de mires animées.\nSeul le générateur ""GDI Mode"" peut le faire."
     IDS_DISPLAYANIMATEDPATTERN 
                             "Afficher la mire animée ?\nPour faire disparaitre la mire, tapez sur la touche ENTREE ou sur la touche ESCAPE."
     IDS_WITHBLACKCOMPENSATION "avec compensation du noir"
