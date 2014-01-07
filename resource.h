@@ -921,6 +921,9 @@
 #define IDM_MEASURE_SAT_PRIMARIES_SECONDARIES 33041
 #define ID_Menu                         33042
 #define ID_CIE_DISPLAYFREEMEASURES      33043
+#define IDM_LUM_GRAPH_L                 33044
+#define ID_GRAPH_DISPLAYASL             33044
+#define ID_DISPLAYASL_L                 33045
 #define IDS_LUMINANCEHISTOVIEW_NAME     41446
 #define IDS_COLORTEMPHISTOVIEW_NAME     41447
 #define IDS_RGBHISTOVIEW_NAME           41448
@@ -1445,7 +1448,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        382
-#define _APS_NEXT_COMMAND_VALUE         33044
+#define _APS_NEXT_COMMAND_VALUE         33046
 #define _APS_NEXT_CONTROL_VALUE         1283
 #define _APS_NEXT_SYMED_VALUE           143
 #endif

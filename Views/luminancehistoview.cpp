@@ -47,6 +47,20 @@ double voltage_to_intensity_srgb( double val )
     return pow( ( val + 0.055 ) / 1.055, 2.4 );
 }
 
+double Y_to_L ( double val )
+{
+    //option for plotting L* instead of relative Y
+    double fy;
+    if (val * 24389 >= 216)
+    {
+        fy = pow(val, 1.0/3.0);
+    }
+    else
+    {
+        fy = (24389 * val / 27 + 16) / 116;
+    }
+    return 116 * fy - 16;
+}
 
 /**
  * Rec-709 specifies a gamma of 2.2 and the following curve with linear
@@ -101,7 +115,6 @@ CLuminanceGrapher::CLuminanceGrapher()
 	m_blueLumDataRefGraphID = m_graphCtrl.AddGraph(RGB(0,0,255), (LPSTR)(LPCSTR)Msg,1,PS_DOT); //Ki	
 	
 	m_graphCtrl.SetXAxisProps((LPSTR)(LPCSTR)GetConfig()->m_PercentGray, 10, 0, 100);
-	m_graphCtrl.SetYAxisProps("%", 10, 0, 100);
 	m_graphCtrl.SetScale(0,100,0,100);
 	m_graphCtrl.ReadSettings("Luminance Histo");
 
@@ -112,6 +125,8 @@ CLuminanceGrapher::CLuminanceGrapher()
 	m_showGreenLum=GetConfig()->GetProfileInt("Luminance Histo","Show Green",FALSE);
 	m_showBlueLum=GetConfig()->GetProfileInt("Luminance Histo","Show Blue",FALSE);
 	m_showDataRef=GetConfig()->GetProfileInt("Luminance Histo","Show Reference Data",TRUE);	//Ki
+	m_showL=GetConfig()->GetProfileInt("Luminance Histo","Show L",TRUE);	//Ki
+	m_graphCtrl.SetYAxisProps(m_showL?"":"%", 10, 0, 100);
 }
 
 void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
@@ -155,16 +170,27 @@ void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		pDoc->ComputeGammaAndOffset(&RefLuxGammaOpt, &RefLuxGammaOffset, 2,1,size);
 	}
 
-	if (m_showReference && m_refGraphID != -1 && size > 0)
+	if (m_showReference && m_refGraphID != -1 && size > 0 && bDataPresent)
 	{	
 		for (int i=0; i<size; i++)
 		{
 			double x, valx, valy;
 			x = ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown);
-
-			valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+GammaOffset)/(1.0+GammaOffset);
-			valy=pow(valx, GetConfig()->m_GammaRef);
-
+			if (GetConfig()->m_GammaOffsetType == 4)
+			{
+				//BT.1886 L = a(max[(V + b),0])^2.4
+                double maxL = pDoc->GetMeasure()->GetGray(size-1).GetY();
+                double minL = pDoc->GetMeasure()->GetGray(0).GetY();
+				double a = pow ( ( pow (maxL,1.0/2.4 ) - pow ( minL,1.0/2.4 ) ),2.4 );
+				double b = ( pow ( minL,1.0/2.4 ) ) / ( pow (maxL,1.0/2.4 ) - pow ( minL,1.0/2.4 ) );
+				valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
+                valy = ( a * pow ( (valx + b)<0?0:(valx+b), 2.4 ) ) / maxL ;
+			}
+			else
+            {
+                valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+GammaOffset)/(1.0+GammaOffset);
+                valy=pow(valx, GetConfig()->m_GammaRef);
+            }
 /*
 			if ( GetConfig()->m_bUseReferenceGamma )
 			{
@@ -175,7 +201,13 @@ void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			}
 */
 
-			m_graphCtrl.AddPoint(m_refGraphID, x, 100.0*valy);
+            if (!m_showL)
+                m_graphCtrl.AddPoint(m_refGraphID, x, 100.0*valy);
+            else
+            {
+                valy = Y_to_L (valy);
+                m_graphCtrl.AddPoint(m_refGraphID, x, valy);
+            }
 		}
 	}
 	
@@ -194,9 +226,14 @@ void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			x = ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown);
 
 			valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+GammaOffset)/(1.0+GammaOffset);
-			valy=pow(valx, GammaOpt );
-
-			m_graphCtrl.AddPoint(m_avgGraphID, x, valy*100.0);
+            valy=pow(valx, GammaOpt );
+            if (!m_showL)
+                m_graphCtrl.AddPoint(m_avgGraphID, x, valy*100.0);
+            else
+            {
+                valy = Y_to_L (valy);
+                m_graphCtrl.AddPoint(m_avgGraphID, x, valy);
+            }
 		}
 	}
 
@@ -357,8 +394,10 @@ void CLuminanceGrapher::AddPointtoLumGraph(int ColorSpace,int ColorIndex,int Siz
 	// (x + offset) / (1+offset) 
 
 	double x = ArrayIndexToGrayLevel ( PointIndex, Size, GetConfig () -> m_bUseRoundDown );
-
-	m_graphCtrl.AddPoint(GraphID, x, (colorlevel/whitelvl)*100.0, lpMsg);
+    if (!m_showL)
+        m_graphCtrl.AddPoint(GraphID, x, (colorlevel/whitelvl)*100.0, lpMsg);
+    else
+        m_graphCtrl.AddPoint(GraphID, x, Y_to_L(colorlevel/whitelvl), lpMsg);
 }
 
 
@@ -389,6 +428,7 @@ BEGIN_MESSAGE_MAP(CLuminanceHistoView, CSavingView)
 	ON_COMMAND(IDM_LUM_GRAPH_REDLUM, OnLumGraphRedLum)
 	ON_COMMAND(IDM_LUM_GRAPH_SHOWREF, OnLumGraphShowRef)
 	ON_COMMAND(IDM_LUM_GRAPH_SHOW_AVG, OnLumGraphShowAvg)
+	ON_COMMAND(IDM_LUM_GRAPH_L, OnLumGraphL)
 	ON_COMMAND(IDM_LUM_GRAPH_DATAREF, OnLumGraphShowDataRef)	//Ki
 	ON_COMMAND(IDM_LUM_GRAPH_YLUM, OnLumGraphYLum)
 	ON_COMMAND(IDM_GRAPH_SETTINGS, OnGraphSettings)
@@ -461,7 +501,8 @@ DWORD CLuminanceHistoView::GetUserInfo ()
 		  + ( ( m_Grapher.m_showRedLum		& 0x0001 )	<< 3 )
 		  + ( ( m_Grapher.m_showGreenLum	& 0x0001 )	<< 4 )
 		  + ( ( m_Grapher.m_showBlueLum		& 0x0001 )	<< 5 )
-		  + ( ( m_Grapher.m_showDataRef		& 0x0001 )	<< 6 );
+		  + ( ( m_Grapher.m_showDataRef		& 0x0001 )	<< 6 )
+		  + ( ( m_Grapher.m_showL		& 0x0001 )	<< 7 );
 }
 
 void CLuminanceHistoView::SetUserInfo ( DWORD dwUserInfo )
@@ -473,6 +514,7 @@ void CLuminanceHistoView::SetUserInfo ( DWORD dwUserInfo )
 	m_Grapher.m_showGreenLum	= ( dwUserInfo >> 4 ) & 0x0001;
 	m_Grapher.m_showBlueLum		= ( dwUserInfo >> 5 ) & 0x0001;
 	m_Grapher.m_showDataRef		= ( dwUserInfo >> 6 ) & 0x0001;
+	m_Grapher.m_showL		= ( dwUserInfo >> 7 ) & 0x0001;
 }
 
 void CLuminanceHistoView::OnSize(UINT nType, int cx, int cy) 
@@ -511,6 +553,7 @@ void CLuminanceHistoView::OnContextMenu(CWnd* pWnd, CPoint point)
     pPopup->CheckMenuItem(IDM_LUM_GRAPH_REDLUM, m_Grapher.m_showRedLum ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
     pPopup->CheckMenuItem(IDM_LUM_GRAPH_GREENLUM, m_Grapher.m_showGreenLum ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
     pPopup->CheckMenuItem(IDM_LUM_GRAPH_BLUELUM, m_Grapher.m_showBlueLum ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
+    pPopup->CheckMenuItem(IDM_LUM_GRAPH_L, m_Grapher.m_showL ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
 
 	pPopup->TrackPopupMenu( TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_VERTICAL, point.x, point.y, this);
 }
@@ -540,6 +583,14 @@ void CLuminanceHistoView::OnLumGraphYLum()
 {
 	m_Grapher.m_showYLum = !m_Grapher.m_showYLum;
 	GetConfig()->WriteProfileInt("Luminance Histo","Show Y lum",m_Grapher.m_showYLum);
+	OnUpdate(NULL,NULL,NULL);
+}
+
+void CLuminanceHistoView::OnLumGraphL() 
+{
+	m_Grapher.m_showL = !m_Grapher.m_showL;
+	GetConfig()->WriteProfileInt("Luminance Histo","Show L",m_Grapher.m_showL);
+	m_Grapher.m_graphCtrl.SetYAxisProps(m_Grapher.m_showL?"":"%", 10, 0, 100);
 	OnUpdate(NULL,NULL,NULL);
 }
 

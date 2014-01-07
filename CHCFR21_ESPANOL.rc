@@ -1619,6 +1619,8 @@ BEGIN
         MENUITEM "Vert",                        IDM_LUM_GRAPH_GREENLUM
         MENUITEM "Bleu",                        IDM_LUM_GRAPH_BLUELUM
         MENUITEM SEPARATOR
+        MENUITEM "L*",                          IDM_LUM_GRAPH_L
+        MENUITEM SEPARATOR
         MENUITEM "Enregistrer...",              IDM_GRAPH_SAVE
         POPUP "Echelle"
         BEGIN

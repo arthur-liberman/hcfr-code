@@ -1489,6 +1489,8 @@ BEGIN
         MENUITEM "Grün",                        IDM_LUM_GRAPH_GREENLUM
         MENUITEM "Blau",                        IDM_LUM_GRAPH_BLUELUM
         MENUITEM SEPARATOR
+        MENUITEM "L*",                          IDM_LUM_GRAPH_L
+        MENUITEM SEPARATOR
         MENUITEM "Speichern...",                IDM_GRAPH_SAVE
         POPUP "Skalierung"
         BEGIN

@@ -37,7 +37,7 @@ static char THIS_FILE[] = __FILE__;
 
 double voltage_to_intensity_srgb( double val );
 double voltage_to_intensity_rec709( double val );
-
+double Y_to_L( double val );
 /////////////////////////////////////////////////////////////////////////////
 // CGammaGrapher
 

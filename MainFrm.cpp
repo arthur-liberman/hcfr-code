@@ -1221,19 +1221,19 @@ void CMainFrame::OnUpdateIRProfiles()
 
 void CMainFrame::OnPatternDisplay()
 {
-	if ( p_wndPatternDisplay == NULL )
-	{
-		p_wndPatternDisplay = new CPatternDisplay;
-		p_wndPatternDisplay->Create(IDD_PATTERNS,this);
-	}
-	else
-	{
-		BOOL bShow = p_wndPatternDisplay->IsWindowVisible();
-		if (!bShow)
-			p_wndPatternDisplay->ShowWindow(SW_SHOW);
-		else
-			p_wndPatternDisplay->ShowWindow(SW_HIDE);
-	}
+        if ( p_wndPatternDisplay == NULL )
+	    {
+		    p_wndPatternDisplay = new CPatternDisplay;
+		    p_wndPatternDisplay->Create(IDD_PATTERNS,this);
+	    }
+	    else
+	    {
+		    BOOL bShow = p_wndPatternDisplay->IsWindowVisible();
+		    if (!bShow)
+			    p_wndPatternDisplay->ShowWindow(SW_SHOW);
+		    else
+			    p_wndPatternDisplay->ShowWindow(SW_HIDE);
+	    }
 }
 
 void CMainFrame::OnViewLuminance() 

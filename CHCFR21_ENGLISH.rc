@@ -1484,6 +1484,8 @@ BEGIN
         MENUITEM "Green",                       IDM_LUM_GRAPH_GREENLUM
         MENUITEM "Blue",                        IDM_LUM_GRAPH_BLUELUM
         MENUITEM SEPARATOR
+        MENUITEM "L*",                          IDM_LUM_GRAPH_L
+        MENUITEM SEPARATOR
         MENUITEM "Save...",                     IDM_GRAPH_SAVE
         POPUP "Scale"
         BEGIN

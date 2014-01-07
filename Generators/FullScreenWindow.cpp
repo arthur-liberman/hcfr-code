@@ -388,7 +388,7 @@ void CFullScreenWindow::DisplayAnimatedBlack()
 	m_bAnimated = TRUE;
 	m_bWhite = FALSE;
 	m_XCurrent = -1;
-	DisplayRGBColor ( ColorRGBDisplay ( 0.0 ), TRUE );	// request a black background
+	DisplayRGBColor ( ColorRGBDisplay ( 0.5 ), TRUE );	// set background to 1 level above black
 	m_IdTimer = SetTimer
 	 ( 1, 40, NULL );
 	OnTimer ( m_IdTimer );
@@ -400,7 +400,7 @@ void CFullScreenWindow::DisplayAnimatedWhite()
 	m_bAnimated = TRUE;
 	m_bWhite = TRUE;
 	m_XCurrent = -1;
-	DisplayRGBColor ( ColorRGBDisplay ( 100.0 ), TRUE );	// request a white background
+	DisplayRGBColor ( ColorRGBDisplay ( 99.5 ), TRUE );	// set background to 1 level below white
 	m_IdTimer = SetTimer ( 123, 40, NULL );
 	OnTimer ( m_IdTimer );
 }
@@ -867,6 +867,7 @@ void CFullScreenWindow::OnTimer(UINT nIDEvent)
     DDSURFACEDESC	SurfaceDesc;
 	
 	double m_rectAreaPercent;
+    m_rectSizePercent = 100;
 
 	m_rectAreaPercent = sqrt (m_rectSizePercent / 100.) * 100;
 
