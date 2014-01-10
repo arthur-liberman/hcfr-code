@@ -1846,10 +1846,9 @@ Matrix ComputeConversionMatrix(const ColorXYZ measures[3], const ColorXYZ refere
 
 double ArrayIndexToGrayLevel ( int nCol, int nSize, bool m_bUseRoundDown)
 {
-    // Gray percent: return a value between 0 and 100
+    // Gray percent: return a value between 0 and 100 corresponding to whole number level based on
 	// normal rounding (GCD disk), round down (AVSHD disk)
 
-//    return ( (double)nCol*100.0/(double)(nSize-1) );
 	if (m_bUseRoundDown)
 		return ( floor((double)nCol / (double)(nSize-1) * 219.0) / 219.0 * 100.0 );
 	else
@@ -1860,8 +1859,8 @@ double ArrayIndexToGrayLevel ( int nCol, int nSize, bool m_bUseRoundDown)
 
 double GrayLevelToGrayProp ( double Level, bool m_bUseRoundDown)
 {
-    // Gray Level: return a value between 0 and 1
-//    normal rounding (GCD disk), round down (AVSHD disk)
+    // Gray Level: return a value between 0 and 1 based on percentage level input
+    //    normal rounding (GCD disk), round down (AVSHD disk)
 	if (m_bUseRoundDown)
     	return Level = (floor(Level / 100.0 * 219.0 + 16.0) - 16.0) / 219.0;
 	else

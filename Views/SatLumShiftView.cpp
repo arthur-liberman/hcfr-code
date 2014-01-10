@@ -822,7 +822,7 @@ void CSatLumShiftView::OnGraphSettings()
 
 void CSatLumShiftView::OnGraphScaleFit() 
 {
-	m_Grapher.m_graphCtrl.FitXScale();
+	m_Grapher.m_graphCtrl.FitXScale(TRUE);
 	m_Grapher.m_graphCtrl.SetYAxisProps("%", 5, -100, 100);
 	m_Grapher.m_graphCtrl.FitYScale(TRUE,10);
 	OnDeltaEGraphYScaleFit();

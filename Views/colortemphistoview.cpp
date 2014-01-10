@@ -268,8 +268,8 @@ void CColorTempHistoView::OnGraphScaleCustom()
 
 void CColorTempHistoView::OnGraphScaleFit() 
 {
-	m_Grapher.m_graphCtrl.FitXScale();
-	m_Grapher.m_graphCtrl.FitYScale();
+	m_Grapher.m_graphCtrl.FitXScale(TRUE, 50.0);
+	m_Grapher.m_graphCtrl.FitYScale(TRUE, 50.0);
 	Invalidate(TRUE);
 }
 
@@ -287,7 +287,7 @@ void CColorTempHistoView::OnColortempGraphYScale2()
 
 void CColorTempHistoView::OnGraphYScaleFit() 
 {
-	m_Grapher.m_graphCtrl.FitYScale(TRUE,100);
+	m_Grapher.m_graphCtrl.FitYScale(TRUE,50.);
 	Invalidate(TRUE);
 }
 
@@ -329,7 +329,7 @@ void CColorTempHistoView::OnGraphXScale2()
 
 void CColorTempHistoView::OnGraphXScaleFit() 
 {
-	m_Grapher.m_graphCtrl.FitXScale();
+	m_Grapher.m_graphCtrl.FitXScale(TRUE);
 	Invalidate(TRUE);
 }
 

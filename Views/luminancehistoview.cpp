@@ -125,7 +125,7 @@ CLuminanceGrapher::CLuminanceGrapher()
 	m_showGreenLum=GetConfig()->GetProfileInt("Luminance Histo","Show Green",FALSE);
 	m_showBlueLum=GetConfig()->GetProfileInt("Luminance Histo","Show Blue",FALSE);
 	m_showDataRef=GetConfig()->GetProfileInt("Luminance Histo","Show Reference Data",TRUE);	//Ki
-	m_showL=GetConfig()->GetProfileInt("Luminance Histo","Show L",TRUE);	//Ki
+	m_showL=GetConfig()->GetProfileInt("Luminance Histo","Show L",FALSE);	//Ki
 	m_graphCtrl.SetYAxisProps(m_showL?"":"%", 10, 0, 100);
 }
 
@@ -636,8 +636,8 @@ void CLuminanceHistoView::OnGraphScaleCustom()
 
 void CLuminanceHistoView::OnGraphScaleFit() 
 {
-	m_Grapher.m_graphCtrl.FitXScale();
-	m_Grapher.m_graphCtrl.FitYScale(TRUE,10);
+	m_Grapher.m_graphCtrl.FitXScale(TRUE);
+	m_Grapher.m_graphCtrl.FitYScale(TRUE);
 	Invalidate(TRUE);
 }
 
@@ -691,7 +691,7 @@ void CLuminanceHistoView::OnGraphXScale2()
 
 void CLuminanceHistoView::OnGraphXScaleFit() 
 {
-	m_Grapher.m_graphCtrl.FitXScale();
+	m_Grapher.m_graphCtrl.FitXScale(TRUE);
 	Invalidate(TRUE);
 }
 

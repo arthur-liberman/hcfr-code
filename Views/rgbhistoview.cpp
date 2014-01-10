@@ -663,8 +663,8 @@ void CRGBHistoView::OnGraphXScale2()
 
 void CRGBHistoView::OnGraphXScaleFit() 
 {
-	m_Grapher.m_graphCtrl.FitXScale();
-	m_Grapher.m_graphCtrl2.FitXScale();
+	m_Grapher.m_graphCtrl.FitXScale(TRUE);
+	m_Grapher.m_graphCtrl2.FitXScale(TRUE);
 	Invalidate(TRUE);
 }
 

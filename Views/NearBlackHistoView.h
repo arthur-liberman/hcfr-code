@@ -75,6 +75,7 @@ class CNearBlackGrapher
 	BOOL m_showReference;
 	BOOL m_doLogMode;
 	BOOL m_showYLum;
+	BOOL m_showL;
 	BOOL m_showRedLum;
 	BOOL m_showGreenLum;
 	BOOL m_showBlueLum;
@@ -138,6 +139,7 @@ protected:
 	afx_msg void OnLumGraphRedLum();
 	afx_msg void OnLumGraphShowRef();
 	afx_msg void OnLumGraphYLum();
+	afx_msg void OnLumGraphL();
 	afx_msg void OnLumGraphShowDataRef(); //Ki
 	afx_msg void OnGraphSettings();
 	afx_msg void OnGraphYShiftBottom();

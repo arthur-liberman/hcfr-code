@@ -555,7 +555,7 @@ void CGammaHistoView::OnGraphScaleCustom()
 
 void CGammaHistoView::OnGraphScaleFit() 
 {
-	m_Grapher.m_graphCtrl.FitXScale();
+	m_Grapher.m_graphCtrl.FitXScale(TRUE);
 	m_Grapher.m_graphCtrl.FitYScale(TRUE,0.1);
 	Invalidate(TRUE);
 }
@@ -610,7 +610,7 @@ void CGammaHistoView::OnGraphXScale2()
 
 void CGammaHistoView::OnGraphXScaleFit() 
 {
-	m_Grapher.m_graphCtrl.FitXScale();
+	m_Grapher.m_graphCtrl.FitXScale(TRUE);
 	Invalidate(TRUE);
 }
 

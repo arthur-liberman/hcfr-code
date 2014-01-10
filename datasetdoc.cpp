@@ -3087,18 +3087,24 @@ void CDataSetDoc::OnMeasureNearblack()
 	CString	Msg, MsgQueue, TmpStr;
 	int		nNbPoints = GetMeasure () -> GetNearBlackScaleSize () - 1;
 	
-	MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
+    bool m_YWhite = GetMeasure ()->GetGray (0).isValid();
+	if (!m_YWhite)
+		MessageBox(NULL,"Please run the grayscale measures scan first.","No grayscale measures found!",MB_OK);
+	else
+    {
+    	MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
 
-	Msg.LoadString ( IDS_RUNNEARBLACKON );
-	TmpStr.Format ( " %d ", nNbPoints );
-	Msg += TmpStr + MsgQueue;
-	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
-	{
-		MeasureNearBlackScale();
+    	Msg.LoadString ( IDS_RUNNEARBLACKON );
+	    TmpStr.Format ( " %d ", nNbPoints );
+	    Msg += TmpStr + MsgQueue;
+	    if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+	    {
+		    MeasureNearBlackScale();
 
-		SetSelectedColor ( noDataColor );
-		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
-	}
+    		SetSelectedColor ( noDataColor );
+	    	(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+	    }
+    }
 }
 
 void CDataSetDoc::OnUpdateMeasureNearblack(CCmdUI* pCmdUI) 
@@ -3110,19 +3116,24 @@ void CDataSetDoc::OnMeasureNearwhite()
 {
 	CString	Msg, MsgQueue, TmpStr;
 	int		nNbPoints = GetMeasure () -> GetNearWhiteScaleSize () - 1;
-	
-	MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
+    bool m_YWhite = GetMeasure ()->GetGray (0).isValid();
+	if (!m_YWhite)
+		MessageBox(NULL,"Please run the grayscale measures scan first.","No grayscale measures found!",MB_OK);
+	else
+    {
+    	MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
 
-	Msg.LoadString ( IDS_RUNNEARWHITEON );
-	TmpStr.Format ( " %d ", nNbPoints );
-	Msg += TmpStr + MsgQueue;
-	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
-	{
-		MeasureNearWhiteScale();
+    	Msg.LoadString ( IDS_RUNNEARWHITEON );
+	    TmpStr.Format ( " %d ", nNbPoints );
+	    Msg += TmpStr + MsgQueue;
+	    if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+	    {
+		    MeasureNearWhiteScale();
 
-		SetSelectedColor ( noDataColor );
-		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
-	}
+    		SetSelectedColor ( noDataColor );
+	    	(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+	    }
+    }
 }
 
 void CDataSetDoc::OnUpdateMeasureNearwhite(CCmdUI* pCmdUI) 

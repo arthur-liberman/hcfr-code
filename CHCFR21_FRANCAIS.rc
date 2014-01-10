@@ -2013,6 +2013,8 @@ BEGIN
         MENUITEM "Vert",                        IDM_LUM_GRAPH_GREENLUM
         MENUITEM "Bleu",                        IDM_LUM_GRAPH_BLUELUM
         MENUITEM SEPARATOR
+        MENUITEM "L*",                          IDM_LUM_GRAPH_L
+        MENUITEM SEPARATOR
         MENUITEM "Enregistrer...",              IDM_GRAPH_SAVE
         POPUP "Echelle"
         BEGIN
@@ -2055,6 +2057,8 @@ BEGIN
         MENUITEM "Rouge",                       IDM_LUM_GRAPH_REDLUM
         MENUITEM "Vert",                        IDM_LUM_GRAPH_GREENLUM
         MENUITEM "Bleu",                        IDM_LUM_GRAPH_BLUELUM
+        MENUITEM SEPARATOR
+        MENUITEM "L*",                          IDM_LUM_GRAPH_L
         MENUITEM SEPARATOR
         MENUITEM "Enregistrer...",              IDM_GRAPH_SAVE
         POPUP "Echelle"
@@ -2381,8 +2385,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,1,0,4
- PRODUCTVERSION 3,1,0,4
+ FILEVERSION 3, 1, 0, 5
+ PRODUCTVERSION 3, 1, 0, 5
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2400,12 +2404,12 @@ BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "CompanyName", "Association Homecinema Francophone"
             VALUE "FileDescription", "Resources Colorimètre HCFR"
-            VALUE "FileVersion", "3, 1, 0, 4"
+            VALUE "FileVersion", "3, 1, 0, 5"
             VALUE "InternalName", "CHCFR21_FRANCAIS"
             VALUE "LegalCopyright", "Copyright (C) 2005-2008"
             VALUE "OriginalFilename", "CHCFR21_FRANCAIS.DLL"
             VALUE "ProductName", "Colorimètre HCFR langage Français"
-            VALUE "ProductVersion", "3, 1, 0, 4"
+            VALUE "ProductVersion", "3, 1, 0, 5"
         END
     END
     BLOCK "VarFileInfo"

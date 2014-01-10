@@ -99,17 +99,18 @@ void CGeneralPropPage::OnControlClicked(UINT nID)
 	// allow parent dialog to send a WM_SYSCOLORCHANGE message to all DataSetView to change
 	// measurement button look (camera or start icon).
 	if ( nID == IDC_CHECK_CONTINUOUS || IDC_CHECK_USE_ROUNDDOWN )
+    {
 		m_isModified=TRUE;
+    	SetModified(TRUE);
+    }
 	
-//	UpdateAllViews ( NULL, UPD_EVERYTHING );
-	SetModified(TRUE);	
 }
 
 BOOL CGeneralPropPage::OnApply() 
 {
-	GetConfig()->ApplySettings(FALSE);
+    GetConfig()->ApplySettings(FALSE);
 	m_isModified=FALSE;
-	return CPropertyPageWithHelp::OnApply();
+    return CPropertyPageWithHelp::OnApply();
 }
 
 UINT CGeneralPropPage::GetHelpId ( LPSTR lpszTopic )
