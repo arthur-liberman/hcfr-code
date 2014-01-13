@@ -197,7 +197,7 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
     }
 
     instCode = m_meter->get_set_opt(m_meter, inst_opt_set_filter, inst_opt_filter_none);
-    // allow this function to be called repeatedly on a meter
+// allow this function to be called repeatedly on a meter
     if(!m_meter->inited)
     {
 		if (m_meter->get_itype(m_meter) == instSpyder2)
@@ -331,7 +331,6 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
         double ref_rate, i_time;
         int n;
         double minint;
-
         if (int_time == 0.0)
             minint = 0.4;
         else
@@ -498,12 +497,13 @@ bool ArgyllMeterWrapper::setObType(CString SpectralType)
         obType=icxOT_Shaw_Fairchild_2;
     if (SpectralType == "Stockman and Sharpe 2006 10 deg")
         obType=icxOT_Stockman_Sharpe_2006_10;
-    if (obType != m_obType)
+    if (obType != m_obType || !isColorimeter())
     {
         m_obType = obType;
         return true;
     }
-    return false;
+    
+    return true;
 }
 
 ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading(CString SpectralType)
@@ -615,6 +615,8 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::calibrate()
     checkMeterIsInitialized();
     m_calibrationMessage[0] = '\0';
     inst_cal_type calType(inst_calt_available);
+    if (dark_only)
+            calType = inst_calt_em_dark;
     inst_code instCode = m_meter->calibrate(m_meter, &calType, (inst_cal_cond*)&m_nextCalibration, m_calibrationMessage);
     if(isInstCodeReason(instCode, inst_cal_setup))
     {
@@ -666,10 +668,17 @@ std::string ArgyllMeterWrapper::getCalibrationInstructions()
     inst_code instCode(inst_ok);
     if(m_nextCalibration == 0)
     {
-        inst_cal_type calType(inst_calt_available);
+    inst_cal_type calType(inst_calt_available);
+    if (m_meterType == instI1Pro || m_meterType == instI1Pro2)
+    {
+        if ( IDYES == AfxMessageBox ( "Skip white tile calibration?", MB_YESNO | MB_ICONQUESTION ) )
+            calType = inst_calt_em_dark;
+            dark_only = TRUE;
+    }
+
         instCode = m_meter->calibrate(m_meter, &calType, (inst_cal_cond*)&m_nextCalibration, m_calibrationMessage);
 		if(instCode == inst_ok || isInstCodeReason(instCode, inst_unsupported))
-       {
+        {
             // we don't need to do anything
             // and we are now calibrated
   		    if (isInstCodeReason(instCode, inst_unsupported))
@@ -677,7 +686,7 @@ std::string ArgyllMeterWrapper::getCalibrationInstructions()
 			else
 				MessageBox(NULL, "No calibrations needed.", "Calibration message", MB_OK);
             return "";
-       }
+        }
         if(!isInstCodeReason(instCode, inst_cal_setup))
         {
             throw std::logic_error("Automatic calibration failed");

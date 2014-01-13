@@ -152,6 +152,7 @@ private:
     CColor m_lastReading;
     int m_nextCalibration;
     BOOL m_Adapt;
+    BOOL dark_only;
     char m_calibrationMessage[200];    
     
     std::string m_SampleDescription;

@@ -77,6 +77,12 @@ void CArgyllSensorPropPage::DoDataExchange(CDataExchange* pDX)
     m_AdaptCheckBox.EnableWindow(FALSE);
 	m_HiRes = (m_HiResCheckBoxEnabled?m_HiRes:0);
 
+    if ( m_DisplayTypeCombo.GetCount() == 0 && m_ReadingType == 0 && m_MeterName == "Xrite i1 DisplayPro, ColorMunki Display" )
+    {
+        m_ReadingType = 2;
+        MessageBox("Diffuser is deployed, switching to Ambient mode","Wrong mode!",MB_OK);
+    }
+
     DDX_CBIndex(pDX, IDC_ARGYLLSENSOR_DISPLAYTYPE_COMBO, m_DisplayType);
     DDX_CBString(pDX, IDC_ARGYLLSENSOR_SPECTRALTYPE_COMBO, m_SpectralType);
     DDX_CBIndex(pDX, IDC_ARGYLLSENSOR_INTTIME_COMBO, m_intTime);
