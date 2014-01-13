@@ -669,6 +669,7 @@ std::string ArgyllMeterWrapper::getCalibrationInstructions()
     if(m_nextCalibration == 0)
     {
     inst_cal_type calType(inst_calt_available);
+    dark_only = FALSE;
     if (m_meterType == instI1Pro || m_meterType == instI1Pro2)
     {
         if ( IDYES == AfxMessageBox ( "Skip white tile calibration?", MB_YESNO | MB_ICONQUESTION ) )
