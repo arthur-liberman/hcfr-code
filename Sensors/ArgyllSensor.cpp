@@ -407,7 +407,7 @@ void CArgyllSensor::Calibrate()
     ArgyllMeterWrapper::eMeterState state(ArgyllMeterWrapper::NEEDS_MANUAL_CALIBRATION);
     while(state != ArgyllMeterWrapper::READY)
     {
-        std::string meterInstructions(m_meter->getCalibrationInstructions());
+        std::string meterInstructions(m_meter->getCalibrationInstructions(m_HiRes));
         if(meterInstructions.empty())
         {
             break;

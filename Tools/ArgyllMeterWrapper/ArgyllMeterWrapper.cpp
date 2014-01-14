@@ -662,20 +662,29 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::calibrate()
     return READY;
 }
 
-std::string ArgyllMeterWrapper::getCalibrationInstructions()
+std::string ArgyllMeterWrapper::getCalibrationInstructions(bool isHiRes)
 {
     checkMeterIsInitialized();
     inst_code instCode(inst_ok);
     if(m_nextCalibration == 0)
     {
-    inst_cal_type calType(inst_calt_available);
-    dark_only = FALSE;
-    if (m_meterType == instI1Pro || m_meterType == instI1Pro2)
-    {
-        if ( IDYES == AfxMessageBox ( "Skip white tile calibration?", MB_YESNO | MB_ICONQUESTION ) )
-            calType = inst_calt_em_dark;
-            dark_only = TRUE;
-    }
+        inst_cal_type calType(inst_calt_available);
+        dark_only = FALSE;
+        if ( (m_meterType == instI1Pro || m_meterType == instI1Pro2) )
+        {
+            if ( IDYES == AfxMessageBox ( "Skip white tile calibration?", MB_YESNO | MB_ICONQUESTION ) )
+            {
+                if (!isHiRes)
+                {
+                    calType = inst_calt_em_dark;
+                    dark_only = TRUE;
+                }
+                else
+                {
+                    MessageBox(NULL, "White tile calibration is required when high resolution mode is selected", "High resolution mode", MB_OK);
+                }
+            }
+        }
 
         instCode = m_meter->calibrate(m_meter, &calType, (inst_cal_cond*)&m_nextCalibration, m_calibrationMessage);
 		if(instCode == inst_ok || isInstCodeReason(instCode, inst_unsupported))

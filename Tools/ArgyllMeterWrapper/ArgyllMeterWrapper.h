@@ -106,7 +106,7 @@ public:
     /// if either take reading or calibrate returns 
     /// NEEDS_MANUAL_CALIBRATION then call this to find out
     /// what the user needs to do next
-    std::string getCalibrationInstructions();
+    std::string getCalibrationInstructions(bool HiRes);
 
     /// if either take reading or calibrate returns 
     /// INCORRECT_POSITION then call this to find out
