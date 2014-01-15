@@ -1904,14 +1904,16 @@ void CMainView::UpdateGrid()
 		}
 
 		// Retrieve gamma and offset in case user has modified
-		Gamma = 2.22;
-		if ( nCount && GetDocument()->GetMeasure()->GetGray(0).isValid() )
+		Gamma = 2.22; //default targets
+        GetConfig()->m_GammaAvg = 2.22; //targets can be either default patterns at 2.22 or modified for user average gamma
+        if ( nCount && GetDocument()->GetMeasure()->GetGray(0).isValid() )
 		{
-			GetDocument()->ComputeGammaAndOffset(&Gamma, &Offset, 3, 1, nCount);
+			GetDocument()->ComputeGammaAndOffset(&Gamma, &Offset, 1, 1, nCount);
 			Gamma = floor(Gamma * 100) / 100;
 		}
 		if (GetConfig()->m_useMeasuredGamma)
 			GetConfig()->m_GammaAvg = (Gamma<1?2.22:Gamma);
+        GetConfig()->SetPropertiesSheetValues();
 
 		switch ( m_displayMode )
 		{

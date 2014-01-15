@@ -32,7 +32,7 @@ protected:
         ArgyllMeterWrapper::eMeterState state(ArgyllMeterWrapper::NEEDS_MANUAL_CALIBRATION);
         while(state != ArgyllMeterWrapper::READY)
         {
-            std::string meterInstructions(meter.getCalibrationInstructions());
+            std::string meterInstructions(meter.getCalibrationInstructions(FALSE));
             if(meterInstructions.empty())
             {
                 break;

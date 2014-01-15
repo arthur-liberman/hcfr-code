@@ -129,7 +129,7 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			pDataRef = NULL;
 		}
 	}
-	
+
 	ColorRGB ClrRGB;
 	double	xstart, ystart, xend, yend;
 	double	satshift, deltaE;
@@ -152,6 +152,14 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		m_graphCtrl.AddPoint(m_refGraphID, 100, 0.0);
 	}
 	
+    double gamma=GetConfig()->m_GammaAvg;	
+    double Offset;
+    int nCount = pDoc->GetMeasure () -> GetGrayScaleSize ();
+    if (gamma != 2.22)
+    {
+    	pDoc->ComputeGammaAndOffset(&gamma, &Offset, 1, 1, nCount);
+	    gamma = floor(gamma * 100) / 100;
+    }
 	m_graphCtrl.ClearGraph(m_redSatGraphID);
 	m_graphCtrl2.ClearGraph(m_redColorGraphID);
 	if (m_showRed && m_redSatGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetRedSat(0).isValid() )
@@ -164,7 +172,6 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 		// Compute xy coordinates of 100% saturated color
 		GetEndPoint ( xend, yend, pDoc->GetMeasure()->GetRedPrimary(), ClrRGB );
-		double gamma=GetConfig()->m_GammaAvg;
 		for (int i=0; i<size; i++)
 	    {
 			// Compute shift and delta E for current point
@@ -189,7 +196,6 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		// Compute xy coordinates of 100% saturated color
 		GetEndPoint ( xend, yend, pDoc->GetMeasure()->GetGreenPrimary(), ClrRGB );
 		
-		double gamma=GetConfig()->m_GammaAvg;
 		for (int i=0; i<size; i++)
 	    {
 			// Compute shift and delta E for current point
@@ -214,7 +220,6 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		// Compute xy coordinates of 100% saturated color
 		GetEndPoint ( xend, yend, pDoc->GetMeasure()->GetBluePrimary(), ClrRGB );
 		
-		double gamma=GetConfig()->m_GammaAvg;
 		for (int i=0; i<size; i++)
 	    {
 			// Compute shift and delta E for current point
@@ -239,7 +244,6 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		// Compute xy coordinates of 100% saturated color
 		GetEndPoint ( xend, yend, pDoc->GetMeasure()->GetYellowSecondary(), ClrRGB );
 		
-		double gamma=GetConfig()->m_GammaAvg;
 		for (int i=0; i<size; i++)
 	    {
 			// Compute shift and delta E for current point
@@ -264,7 +268,6 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		// Compute xy coordinates of 100% saturated color
 		GetEndPoint ( xend, yend, pDoc->GetMeasure()->GetCyanSecondary(), ClrRGB );
 		
-		double gamma=GetConfig()->m_GammaAvg;
 		for (int i=0; i<size; i++)
 	    {
 			// Compute shift and delta E for current point
@@ -289,7 +292,6 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		// Compute xy coordinates of 100% saturated color
 		GetEndPoint ( xend, yend, pDoc->GetMeasure()->GetMagentaSecondary(), ClrRGB );
 
-		double gamma=GetConfig()->m_GammaAvg;
 		for (int i=0; i<size; i++)
 	    {
 			// Compute shift and delta E for current point
@@ -314,8 +316,20 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	m_graphCtrl.ClearGraph(m_magentaSatDataRefGraphID);
 	m_graphCtrl2.ClearGraph(m_magentaColorDataRefGraphID);
 
-	if ((m_showDataRef)&&(pDataRef !=NULL)&&(pDataRef !=pDoc))
+	if ((m_showDataRef)&&(pDataRef !=NULL)&&(pDataRef != pDoc))
 	{
+		double gamma=GetConfig()->m_GammaAvg;
+        double Offset;
+        int nCount = pDataRef->GetMeasure () -> GetGrayScaleSize ();
+        if (gamma != 2.22)
+        {
+    		pDataRef->ComputeGammaAndOffset(&gamma, &Offset, 1, 1, nCount);
+	    	gamma = floor(gamma * 100) / 100;
+        }
+
+//            if (GetConfig()->m_useMeasuredGamma)
+//			GetConfig()->m_GammaAvg = (Gamma<1?2.22:Gamma);
+//        GetConfig()->SetPropertiesSheetValues();
 		if (m_showRed && m_redSatDataRefGraphID != -1 && size > 0 && pDataRef->GetMeasure()->GetRedSat(0).isValid() )
 		{
 			// Compute vector between neutral gray and saturated color in CIExy space
@@ -327,11 +341,10 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			// Compute xy coordinates of 100% saturated color
 			GetEndPoint ( xend, yend, pDataRef->GetMeasure()->GetRedPrimary(), ClrRGB );
 			
-			double gamma=GetConfig()->m_GammaAvg;
 			for (int i=0; i<size; i++)
 			{
 				// Compute shift and delta E for current point
-				CSatLumShiftGrapher::GetSatShift ( satshift, deltaE, pDataRef->GetMeasure()->GetRedSat(i), i, size, xstart, ystart, xend, yend, gamma, GetColorReference().GetRedReferenceLuma () * pDoc->GetMeasure()->GetOnOffWhite().GetLuminance(), pDoc->GetMeasure()->GetOnOffWhite().GetY() );
+				CSatLumShiftGrapher::GetSatShift ( satshift, deltaE, pDataRef->GetMeasure()->GetRedSat(i), i, size, xstart, ystart, xend, yend, gamma, GetColorReference().GetRedReferenceLuma (), pDoc->GetMeasure()->GetOnOffWhite().GetY() );
 
 				// Create graph points
 				m_graphCtrl.AddPoint(m_redSatDataRefGraphID, i*100/(size-1), satshift);
@@ -350,7 +363,6 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			// Compute xy coordinates of 100% saturated color
 			GetEndPoint ( xend, yend, pDataRef->GetMeasure()->GetGreenPrimary(), ClrRGB );
 			
-			double gamma=GetConfig()->m_GammaAvg;
 			for (int i=0; i<size; i++)
 			{
 				// Compute shift and delta E for current point
@@ -373,7 +385,6 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			// Compute xy coordinates of 100% saturated color
 			GetEndPoint ( xend, yend, pDataRef->GetMeasure()->GetBluePrimary(), ClrRGB );
 			
-			double gamma=GetConfig()->m_GammaAvg;
 			for (int i=0; i<size; i++)
 			{
 				// Compute shift and delta E for current point
@@ -396,7 +407,6 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			// Compute xy coordinates of 100% saturated color
 			GetEndPoint ( xend, yend, pDataRef->GetMeasure()->GetYellowSecondary(), ClrRGB );
 			
-			double gamma=GetConfig()->m_GammaAvg;
 			for (int i=0; i<size; i++)
 			{
 				// Compute shift and delta E for current point
@@ -419,7 +429,6 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			// Compute xy coordinates of 100% saturated color
 			GetEndPoint ( xend, yend, pDataRef->GetMeasure()->GetCyanSecondary(), ClrRGB );
 			
-			double gamma=GetConfig()->m_GammaAvg;
 			for (int i=0; i<size; i++)
 			{
 				// Compute shift and delta E for current point
@@ -442,7 +451,6 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			// Compute xy coordinates of 100% saturated color
 			GetEndPoint ( xend, yend, pDataRef->GetMeasure()->GetMagentaSecondary(), ClrRGB );
 
-			double gamma=GetConfig()->m_GammaAvg;
 			for (int i=0; i<size; i++)
 			{
 				// Compute shift and delta E for current point
