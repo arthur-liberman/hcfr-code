@@ -435,7 +435,8 @@ int ntc,			/* Number of terminating characters needed to terminate */
 double tout)		/* Time out in seconds */
 {
 	int j, rbytes;
-	long toc, i, top;		/* Timout count, counter, timeout period */
+	long ttop, top;			/* Total timeout period, timeout period */
+	unsigned int stime, etime;		/* Start and end times of USB operation */
 	char *rrbuf = rbuf;		/* Start of return buffer */
 	int ep = p->rd_ep;		/* End point */
 	icom_usb_trantype type;	/* bulk or interrupt */
@@ -471,44 +472,44 @@ double tout)		/* Time out in seconds */
 		return ICOM_SYS;
 	}
 
-	for (i = 0; i < bsize; i++) rbuf[i] = 0;
+	for (j = 0; j < bsize; j++) rbuf[j] = 0;
  
 	bsize -= 1;				/* Allow space for null */
 	bsize -= p->ms_bytes;	/* Allow space for modem status bytes */
 
-	tout *= 1000.0;			/* Timout in msec */
+	/* The DTP94 doesn't cope with a timeout on OS X, so we need to avoid */
+	/* them by giving each read the largest timeout period possible. */
+	/* This also reduces the problem of libusb 0.1 not returning the */
+	/* number of characters read on a timeou. */
 
-	/* This may not work with libusb 0.1m since it doesn't return the */
-	/* number of characters on a timeout ? */
-	top = 20;						/* Timeout period in msecs */
-	toc = (int)(tout/top + 0.5);	/* Number of timout periods in timeout */
-	if (toc < 1)
-		toc = 1;
+	ttop = (int)(tout * 1000.0 + 0.5);        /* Total timeout period in msecs */
 
-	a1logd(p->log, 8, "\nicoms_usb_ser_read: end point 0x%x, read quanta %d\n",p->rd_ep,p->rd_qa);
+	a1logd(p->log, 8, "\nicoms_usb_ser_read: ep 0x%x, ttop %d, quant %d\n", p->rd_ep, ttop, p->rd_qa);
+
 	/* Until data is all read, we time out, or the user aborts */
-	for (i = toc, j = 0; i > 0 && bsize > 1 && j < ntc ;) {
+	stime = msec_time();
+	top = ttop;
+	for (j = 0; top > 0 && bsize > 1 && j < ntc ;) {
 		int c, rv;
 		int rsize = p->rd_qa < bsize ? p->rd_qa : bsize; 
 
-		a1logd(p->log, 8, "icoms_usb_ser_read: attempting to read %d bytes from usb, top = %d, i = %d, j = %d\n",bsize > p->rd_qa ? p->rd_qa : bsize,top,i,j);
-		/* We read one read quanta at a time (usually 8 bytes), to avoid */
-		/* problems with libusb loosing characters whenever it times out. */
-		rv = icoms_usb_transaction(p, NULL, &rbytes, type, (unsigned char)ep, (unsigned char *)rbuf, rsize, top);
+		a1logd(p->log, 8, "icoms_usb_ser_read: attempting to read %d bytes from usb, top = %d, j = %d\n",bsize > p->rd_qa ? p->rd_qa : bsize,top,j);
 
-		/* Account for modem status bytes. Modem bytes are per usb read. */
-		if (rbytes > 0 && p->ms_bytes > 0 && rbytes <= p->ms_bytes) {
-			if (top > p->latmsec)
-				msec_sleep(top - p->latmsec);	/* because we returned after latency timeout */
-			rv |= ICOM_TO;
-		} else if (rbytes > 0) {	/* Account for bytes read */
+		rv = icoms_usb_transaction(p, NULL, &rbytes, type, (unsigned char)ep, (unsigned char *)rbuf, rsize, top);
+		etime = msec_time();
+
+		if (rbytes > 0) {	/* Account for bytes read */
+
+			/* Account for modem status bytes. Modem bytes are per usb read. */
 			if (p->ms_bytes) {		/* Throw away modem bytes */
-				rbytes -= p->ms_bytes;
-				memmove(rbuf, rbuf+p->ms_bytes, rbytes);
+				int nb = rbytes < p->ms_bytes ? rbytes : p->ms_bytes;
+				rbytes -= nb;
+				memmove(rbuf, rbuf+nb, rbytes);
+				a1logd(p->log, 8, "icoms_usb_ser_read: discarded %d modem bytes\n",nb);
 			}
+
 			a1logd(p->log, 8, "icoms_usb_ser_read: read %d bytes, rbuf = '%s'\n",rbytes,icoms_fix(rrbuf));
 
-			i = toc;
 			bsize -= rbytes;
 			if (tc != NULL) {
 				while(rbytes--) {	/* Count termination characters */
@@ -524,19 +525,21 @@ double tout)		/* Time out in seconds */
 				rbuf += rbytes;
 			}
 		}
+
 		/* Deal with any errors */
-		if (rv != 0 && rv != ICOM_SHORT) {
+		if (rv != ICOM_OK && rv != ICOM_SHORT) {
 			a1logd(p->log, 8, "icoms_usb_ser_read: read failed with 0x%x, rbuf = '%s'\n",rv,icoms_fix(rrbuf));
-			if (rv != ICOM_TO) {
-				retrv |= rv;
-				break;
-			}
-			i--;	/* Timeout */
+			retrv |= rv;
+			break;
+		}
+
+		top = ttop - (etime - stime);	/* Remaining time */
+		if (top <= 0) {					/* Run out of time */
+			a1logd(p->log, 8, "icoms_usb_ser_read: read ran out of time\n");
+			retrv |= ICOM_TO; 
+			break;
 		}
 	}
-
-	if (i <= 0)		/* Must have timed out */
-		retrv |= ICOM_TO; 
 
 	*rbuf = '\000';
 

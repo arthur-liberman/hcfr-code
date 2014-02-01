@@ -23,6 +23,8 @@
 /*
  * TTBD:
  *
+ * Should add some more modern standard CMFs - see <http://www.cvrl.org/>
+ *
  * [Does this make any sense though ? That is what's happening
  *  for a standard A illuminant instrument emitting D50 XYZ values,
  *  but doesn't represent actually viewing under a (say) M2 illuminant.
@@ -269,7 +271,7 @@ static int daylight_il(xspect *sp, double ct) {
 	double xd, yd;
 	double m1, m2;
 
-	if (ct < 2500.0 || ct > 25000.0) {		/* Only accurate down to 4000 */
+	if (ct < 4000.0 || ct > 25000.0) {		/* Only accurate down to 4000 */
 		return 1;
 	}
 
@@ -358,7 +360,7 @@ static xspect il_F5 = {
 /* Fluorescent, Wide band 5000K, CRI 95 */
 static xspect il_F8 = {
 	107, 300.0, 830.0,	/* 109 bands from 300 to 830 nm in 5nm steps */
-	20.0,		/* Arbitrary scale factor */
+	30.0,		/* Arbitrary scale factor */
 	{
 /* 300 */	0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 /* 340 */	0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 
@@ -382,7 +384,7 @@ static xspect il_F8 = {
 /* Fluorescent, Narrow band 5000K, CRI 81 */
 static xspect il_F10 = {
 	107, 300.0, 830.0,	/* 109 bands from 300 to 830 nm in 5nm steps */
-	20.0,		/* Arbitrary scale factor */
+	30.0,		/* Arbitrary scale factor */
 	{
 		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 
@@ -2129,6 +2131,8 @@ int write_nxspect(char *fname, xspect *sp, int nspec, int type) {
 	sprintf(buf,"%f", sp->norm);
 	ocg->add_kword(ocg, 0, "SPECTRAL_NORM",buf, NULL);
 
+	/* Should we adda A COORD field for "CMF" and an INDEX field for "SPECT" ? */
+
 	/* Generate fields for spectral values */
 	for (i = 0; i < sp->spec_n; i++) {
 		int nm;
@@ -2166,6 +2170,7 @@ int write_nxspect(char *fname, xspect *sp, int nspec, int type) {
 /* Up to nspec will be restored starting at offset off.. */
 /* The number restored from the file will be written to *nret */
 /* type: 0 = any, mask: 1 = SPECT, 2 = CMF, 4 = ccss */
+/* (Note that not all ccss information is read. Use ccss->read_ccss() for this. */
 /* Return NZ on error */
 /* (Would be nice to return an error message!) */
 int read_nxspect(xspect *sp, char *fname, int *nret, int off, int nspec, int type) {
@@ -2619,6 +2624,7 @@ void xspect2xspect(xspect *dst, xspect *targ, xspect *src) {
 /* Given an emission spectrum, set the UV output to the given level. */
 /* The shape of the UV is taken from FWA1_stim, and the level is */
 /* with respect to the Y of the input spectrum. */
+/* The output range is extended to accomodate the UV wavelengths */
 void xsp_setUV(xspect *out, xspect *in, double uvlevel) {
 	int i, xs, xe;
 	double ww, avg;
@@ -2626,7 +2632,7 @@ void xsp_setUV(xspect *out, xspect *in, double uvlevel) {
 
 	cin = *in;
 
-	/* Compute the average of the input spetrum */
+	/* Compute the average of the input spectrum */
 	for (avg = 0.0, i = 0; i < cin.spec_n; i++)
 		avg += cin.spec[i];
 	avg /= cin.spec_n;
@@ -2649,6 +2655,9 @@ void xsp_setUV(xspect *out, xspect *in, double uvlevel) {
 		ww = XSPECT_XWL(out, i);
 		getval_raw_xspec_lin(&cin, &inv, ww);
 		getval_raw_xspec_lin(&FWA1_stim, &uvv, ww);
+
+		/* Input illuminant with no Uv */
+		out->spec[i] = inv;
 
 		/* Taper measured illum out */
 		bl = (ww - FWA1_stim.spec_wl_short)/(FWA1_stim.spec_wl_long - FWA1_stim.spec_wl_short);
@@ -3821,7 +3830,7 @@ icxIllumeType ilType,			/* Illuminant */
 xspect        *custIllum,		/* Optional custom illuminant */
 icxObserverType obType,			/* Observer */
 xspect        custObserver[3],	/* Optional custom observer */
-icColorSpaceSignature  rcs,		/* Return color space, icSigXYZData or icSigLabData */
+icColorSpaceSignature  rcs,		/* Return color space, icSigXYZData or D50 icSigLabData */
 								/* ** Must be icSigXYZData if SALONEINSTLIB ** */
 icxClamping clamp				/* NZ to clamp XYZ/Lab to be +ve */
 ) {
@@ -5051,39 +5060,40 @@ int icx_outside_spec_locus(xslpoly *p, double xyz[3]) {
 
 /* -------------------------------------------------------- */
 
+
 /* Status T log10 weightings */
-/* CMYV */
+/* CMY + ISO V */
 static xspect denT[4] = {
 	{
 		44, 340.0, 770.0,	/* 44 bands from 340 to 770 nm in 10nm steps */
 		1.0,				/* Log10 Scale factor */
 		{
-			0.000,
-			0.000, 0.000, 0.000, 0.000, 0.000,
-			0.000, 0.000, 0.000, 0.000, 0.000,
-			0.000, 0.000, 0.000, 0.000, 0.000,
-			0.000, 0.000, 0.000, 0.000, 0.000,
-			0.000, 0.500, 1.778, 2.653, 4.477,
+			-10.0,
+			-10.0, -10.0, -10.0, -10.0, -10.0,
+			-10.0, -10.0, -10.0, -10.0, -10.0,
+			-10.0, -10.0, -10.0, -10.0, -10.0,
+			-10.0, -10.0, -10.0, -10.0, -10.0,
+			-10.0, 0.500, 1.778, 2.653, 4.477,
 			5.000, 4.929, 4.740, 4.398, 4.000,
 			3.699, 3.176, 2.699, 2.477, 2.176,
-			1.699, 1.000, 0.500, 0.000, 0.000,
-			0.000, 0.000, 0.000
+			1.699, 1.000, 0.500, -10.0, -10.0,
+			-10.0, -10.0, -10.0
 		}
 	},
 	{
 		44, 340.0, 770.0,	/* 44 bands from 340 to 770 nm in 10nm steps */
 		1.0,				/* Log10 Scale factor */
 		{
-			0.000,
-			0.000, 0.000, 0.000, 0.000, 0.000,
-			0.000, 0.000, 0.000, 0.000, 0.000,
-			0.000, 0.000, 0.500, 3.000, 3.699,
+			-10.0,
+			-10.0, -10.0, -10.0, -10.0, -10.0,
+			-10.0, -10.0, -10.0, -10.0, -10.0,
+			-10.0, -10.0, 0.500, 3.000, 3.699,
 			4.447, 4.833, 4.964, 5.000, 4.944,
 			4.820, 4.623, 4.342, 3.954, 3.398,
-			2.845, 1.954, 1.000, 0.500, 0.000,
-			0.000, 0.000, 0.000, 0.000, 0.000,
-			0.000, 0.000, 0.000, 0.000, 0.000,
-			0.000, 0.000, 0.000
+			2.845, 1.954, 1.000, 0.500, -10.0,
+			-10.0, -10.0, -10.0, -10.0, -10.0,
+			-10.0, -10.0, -10.0, -10.0, -10.0,
+			-10.0, -10.0, -10.0
 		}
 	},
 	{
@@ -5095,19 +5105,19 @@ static xspect denT[4] = {
 			3.778, 4.230, 4.602, 4.778, 4.914,
 			4.973, 5.000, 4.987, 4.929, 4.813,
 			4.602, 4.255, 3.699, 2.301, 1.602,
-			0.500, 0.000, 0.000, 0.000, 0.000,
-			0.000, 0.000, 0.000, 0.000, 0.000,
-			0.000, 0.000, 0.000, 0.000, 0.000,
-			0.000, 0.000, 0.000, 0.000, 0.000,
-			0.000, 0.000, 0.000
+			0.500, -10.0, -10.0, -10.0, -10.0,
+			-10.0, -10.0, -10.0, -10.0, -10.0,
+			-10.0, -10.0, -10.0, -10.0, -10.0,
+			-10.0, -10.0, -10.0, -10.0, -10.0,
+			-10.0, -10.0, -10.0
 		}
 	},
 	{
 		44, 340.0, 770.0,	/* 44 bands from 340 to 770 nm in 10nm steps */
 		1.0,				/* Log10 Scale factor */
 		{
-			0.000,
-			0.000, 0.000, 0.000, 0.000, 0.000,
+			-10.0,
+			-10.0, -10.0, -10.0, -10.0, -10.0,
 			0.500, 1.332, 1.914, 2.447, 2.881,
 			3.090, 3.346, 3.582, 3.818, 4.041,
 			4.276, 4.513, 4.702, 4.825, 4.905,
@@ -5119,6 +5129,7 @@ static xspect denT[4] = {
 		}
 	}
 };
+
 
 /* Given a reflectance or transmition spectral product, (Relative */
 /* to the scale factor), return status T CMYV log10 density values */
@@ -5145,10 +5156,10 @@ xspect *in				/* Spectral product to be converted */
 			out[j] += S * W;
 		}
 		out[j] /= sum;		/* Normalise */
-		if (out[j] < 0.00001)
-			out[j] = 0.00001;			/* Just to be sure we don't get silly values */
-		else if (out[j] > 1.0)
-			out[j] = 1.0;
+		if (out[j] < 1e-8)
+			out[j] = 1e-8;			/* Just to be sure we don't get silly values */
+		else if (out[j] > 2.0)
+			out[j] = 2.0;
 
 		out[j] = -log10(out[j]);		/* Convert to density */
 	}
@@ -5213,8 +5224,8 @@ double *in				/* Input XYZ values */
 	}
 }
 
-/* Given an XYZ value, */
-/* return approximate sRGB values */
+/* Given an XYZ value, return sRGB values. */
+/* This is a little slow if wp used */
 void icx_XYZ2sRGB(
 double *out,			/* Return approximate sRGB values */
 double *wp,				/* Input XYZ white point (may be NULL) */
@@ -5223,7 +5234,7 @@ double *in				/* Input XYZ values */
 	int i, j;
 	double XYZ[3];
 	double d65[3] = { 0.950543, 1.0, 1.089303 };	/* D65 */
-	double mat[3][3] = {
+	double mat[3][3] = {				/* sRGB absolute XYZ->RGB ? */
 		{  3.2406, -1.5372, -0.4986 },
 		{ -0.9689,  1.8758,  0.0415 },
 		{  0.0557, -0.2040,  1.0570 }
@@ -5231,8 +5242,13 @@ double *in				/* Input XYZ values */
 
 	/* Do a simple Von Kries between input white point and D65 */
 	if (wp != NULL) {
-		for (j = 0; j < 3; j++)
-			XYZ[j] = d65[j] * in[j]/wp[j];
+		icmXYZNumber dst, src;
+		double vkmat[3][3];
+
+		icmAry2XYZ(src, wp);
+		icmAry2XYZ(dst, d65);
+		icmChromAdaptMatrix(ICM_CAM_BRADFORD | ICM_CAM_BRADFORD, dst, src, vkmat);
+		icmMulBy3x3(XYZ, vkmat, in);
 	} else {
 		for (j = 0; j < 3; j++)
 			XYZ[j] = in[j];
@@ -5778,7 +5794,7 @@ struct {
 };
 
 /* Compute 1nm sampling rse from raw table using linear interpolation */
-static compute_rse(xspect *dst) {
+static void compute_rse(xspect *dst) {
 	int i;
 
 	dst->spec_n = 221;
@@ -5824,17 +5840,18 @@ xspect *sample			/* Illuminant sample to compute UV_exp of */
 	if (sample->spec_wl_short > wl_short)
 		wl_short = sample->spec_wl_short;
 
-	if (wl_short < 350.0)
+	if (wl_short > 350.0)
 		return -1.0;
 
 	effwpsm = 0.0;
 	for (wl = wl_short; wl <= (wl_long + 1e-6); wl++)
 		effwpsm += value_xspect(sample, wl) * value_xspect(&ARPANSA_rse, wl);
+
 	effwpsm /= 1000.0;		/* Convert to W from mW */
 
 	secs = 30.0/effwpsm;
 
-	if (secs > (8 * 60 * 60))
+	if (secs > (8 * 60 * 60))	/* Limit to 8 hours */
 		secs = 8 * 60 * 60;
 
 	return secs;

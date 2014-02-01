@@ -7,7 +7,7 @@
  * Author: Graeme W. Gill
  * Date:   17/9/2007
  *
- * Copyright 2006 - 2013, Graeme W. Gill
+ * Copyright 2006 - 2014, Graeme W. Gill
  * All rights reserved.
  *
  * (Based initially on i1disp.c)
@@ -1890,7 +1890,7 @@ xspect *spyd4_cals = NULL;			/* [nocals] Device spectrum */
 /* calibration data. */
 
 static inst_code
-spyd4_set_cal(
+spyd4_set_cal_ix(
 	spyd2 *p,		/* Object */
 	int ix			/* Selection, 0 .. spyd4_nocals-1 */ 
 ) {
@@ -1908,8 +1908,14 @@ spyd4_set_cal(
 	/* default calibration selections, to be faithful to the Manufacturers */
 	/* intentions. */
 
-	if (standardObserver(oc, icxOT_CIE_1931_2)) {
-		return spyd2_interp_code((inst *)p, SPYD2_DISP_SEL_RANGE) ;
+	if (p->obType == icxOT_custom) {
+		oc[0] = &p->custObserver[0];
+		oc[1] = &p->custObserver[1];
+		oc[2] = &p->custObserver[2];
+	} else {
+		if (standardObserver(oc, p->obType)) {
+			return spyd2_interp_code((inst *)p, SPYD2_DISP_SEL_RANGE) ;
+		}
 	}
 
 	/* We compute X,Y & Z independently. */
@@ -2164,7 +2170,6 @@ spyd4_comp_calmat(
 	/* Copy the matrix into place */
 	for (i = 0; i < 7; i++) {
 		for (j = 0; j < 3; j++) {
-//calm[i][j] = 0.5;
 			p->cal_A[1][j][2+i] = calm[i][j];
 		}
 	}
@@ -2236,6 +2241,104 @@ spyd4_comp_calmat(
 	return inst_ok;
 }
 
+
+/* Preset the calibration to a spectral sample type. */
+/* ccmat[][] is set to unity */
+static inst_code
+spyd2_set_speccal(
+	spyd2 *p,
+	xspect *samples,	/* Array of nsamp spectral samples, or RGBcmfs for MIbLSr */
+	int nsamp			/* Number of samples */
+) {
+	int i;
+
+	/* Save a the spectral samples to the current state */
+	if (p->samples != NULL)
+		free(p->samples);
+	p->nsamp = 0;
+	if ((p->samples = (xspect *)calloc(sizeof(xspect), nsamp)) == NULL) {
+		a1loge(p->log, inst_internal_error, "spyd2_set_speccal: malloc failed\n");
+		return inst_internal_error;
+	}
+	for (i = 0; i < nsamp; i++ )
+		p->samples[i] = samples[i];		/* Struct copy */
+	p->nsamp = nsamp;
+
+	p->icx = (99 << 1) | 1;				/* Out of range index */
+
+	icmSetUnity3x3(p->ccmat);			/* No matrix */
+
+	return inst_ok;
+}
+
+
+/* Preset the calibration to a matrix. The spectral type is set to none */
+static inst_code
+spyd2_set_matcal(spyd2 *p, double mtx[3][3]) {
+	if (mtx == NULL) {
+		icmSetUnity3x3(p->ccmat);
+	} else {
+		if (p->cbid == 0) {
+			a1loge(p->log, 1, "spyd2: can't set col_cor_mat over non-base display type\n");
+			return inst_wrong_setup;
+		}
+		icmCpy3x3(p->ccmat, mtx);
+	}
+
+	return inst_ok;
+}
+
+
+/* Set the calibration to the currently preset type */
+static inst_code
+spyd2_set_cal(spyd2 *p) {
+	inst_code ev = inst_ok;
+
+	if (p->samples != NULL && p->nsamp > 0) {
+
+		/* Create matrix for specified samples */
+		if ((ev = spyd4_comp_calmat(p, p->obType, p->custObserver, p->samples, p->nsamp))
+			                                                                          != inst_ok) {
+			a1logd(p->log, 1, "spyd2_set_cal: comp_calmat ccss failed with rv = 0x%x\n",ev);
+			return ev;
+		}
+
+		p->icx = (99 << 1) | 1;			/* Out of range index */
+		icmSetUnity3x3(p->ccmat);		/* to be sure to be sure... */
+
+	} else {
+
+		if (p->hwver >= 7) {
+			if ((p->icx >> 1) > spyd4_nocals)
+				return inst_unsupported; 
+
+			/* Create the calibration matrix from internal spectral data */
+			if ((ev = spyd4_set_cal_ix(p, p->icx >> 1)) != inst_ok)
+				return ev;
+		}
+
+	}
+
+	if (p->log->debug >= 4) {
+		int i;
+		if (p->hwver >= 7) {
+			a1logd(p->log,4,"Spectral calibration matrix:\n");
+			for (i = 0; i < 7; i++) {
+				a1logd(p->log,4,"        %f %f %f\n",
+			                 p->cal_A[1][0][2+i], p->cal_A[1][1][2+i], p->cal_A[1][2][2+i]);
+			}
+		}
+		a1logd(p->log,4,"ccmat = %f %f %f\n",
+		                 p->ccmat[0][0], p->ccmat[0][1], p->ccmat[0][2]);
+		a1logd(p->log,4,"        %f %f %f\n",
+		                 p->ccmat[1][0], p->ccmat[1][1], p->ccmat[1][2]);
+		a1logd(p->log,4,"        %f %f %f\n\n",
+		                 p->ccmat[2][0], p->ccmat[2][1], p->ccmat[2][2]);
+		a1logd(p->log,4,"\n");
+	}
+
+	return inst_ok;
+}
 
 /* ------------------------------------------------------------ */
 
@@ -2902,6 +3005,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	val->sp.spec_n = 0;
 	val->duration = 0.0;
 
+
 	if (user_trig)
 		return inst_user_trig;
 	return ev;
@@ -2915,23 +3019,17 @@ inst *pp,
 double mtx[3][3]
 ) {
 	spyd2 *p = (spyd2 *)pp;
+	inst_code ev = inst_ok;
 
 	if (!p->gotcoms)
 		return inst_no_coms;
 	if (!p->inited)
 		return inst_no_init;
 
-	if (mtx == NULL) {
-		icmSetUnity3x3(p->ccmat);
-	} else {
-		if (p->cbid == 0) {
-			a1loge(p->log, 1, "spyd2: can't set col_cor_mat over non base display type\n");
-			return inst_wrong_setup;
-		}
-		icmCpy3x3(p->ccmat, mtx);
-	}
-		
-	return inst_ok;
+	if ((ev = spyd2_set_matcal(p, mtx)) != inst_ok)
+		return ev;
+
+	return spyd2_set_cal(p);
 }
 
 /* Use a Colorimeter Calibration Spectral Set to set the */
@@ -2957,11 +3055,12 @@ int no_sets
 		if ((ev = set_default_disp_type(p)) != inst_ok)
 			return ev;
 	} else {
-		/* Use given spectral samples */
-		if ((ev = spyd4_comp_calmat(p, p->obType, p->custObserver, sets, no_sets)) != inst_ok)
-			return ev;
-		p->icx = (99 << 1) | 1;		/* Out of range index */
+		if ((ev = spyd2_set_speccal(p, sets, no_sets)) != inst_ok)
+			return ev; 
+
+		ev = spyd2_set_cal(p);
 	}
+
 	return ev;
 }
 
@@ -3208,6 +3307,8 @@ spyd2_del(inst *pp) {
 	if (p->icom != NULL)
 		p->icom->del(p->icom);
 	inst_del_disptype_list(p->dtlist, p->ndtlist);
+	if (p->samples != NULL)
+		free(p->samples);
 	free(p);
 }
 
@@ -3515,35 +3616,22 @@ static inst_code set_disp_type(spyd2 *p, inst_disptypesel *dentry) {
 	}
 	p->refrmode = refrmode; 
 
-	if (dentry->flags & inst_dtflags_ccss) {
+	if (dentry->flags & inst_dtflags_ccss) {	/* Spectral sample */
 
-		if ((ev = spyd4_comp_calmat(p, p->obType, p->custObserver, dentry->sets, dentry->no_sets))
-			                                                                          != inst_ok) {
-			a1logd(p->log, 1, "spyd4_set_disp_type: comp_calmat ccss failed with rv = 0x%x\n",ev);
+		if ((ev = spyd2_set_speccal(p, dentry->sets, dentry->no_sets)) != inst_ok) 
 			return ev;
-		}
-		p->icx = (99 << 1) | 1;		/* Out of range index */
-		icmSetUnity3x3(p->ccmat);
 
-	} else {
-
-		if (p->hwver >= 7) {
-			if ((p->icx >> 1) > spyd4_nocals)
-				return inst_unsupported; 
-
-			/* Create the calibration matrix */
-			if ((ev = spyd4_set_cal(p, p->icx >> 1)) != inst_ok)
-				return ev;
-		}
+	} else {	/* Matrix */
 
 		if (dentry->flags & inst_dtflags_ccmx) {
-			icmCpy3x3(p->ccmat, dentry->mat);
+			if ((ev = spyd2_set_matcal(p, dentry->mat)) != inst_ok)
+				return ev;
 		} else {
-			icmSetUnity3x3(p->ccmat);
+			if ((ev = spyd2_set_matcal(p, NULL)) != inst_ok)		/* Noop */
+				return ev;
 		}
 	}
-
-	return inst_ok;
+	return spyd2_set_cal(p);
 }
 
 
@@ -3665,7 +3753,7 @@ spyd2_get_set_opt(inst *pp, inst_opt_type m, ...) {
 			p->custObserver[2] = custObserver[2];
 		}
 
-		return inst_ok;
+		return spyd2_set_cal(p);		/* Recompute calibration */
 	}
 
 	/* Operate the LED */

@@ -930,7 +930,6 @@ int main(int argc, char *argv[]) {
 			}
 			/* Set display type */
 			if (dtype != 0) {
-
 				if (cap2 & inst2_disptype) {
 					int ix;
 					if ((ix = inst_get_disptype_index(it, dtype, 0)) < 0) {
@@ -1165,7 +1164,7 @@ int main(int argc, char *argv[]) {
 			printf("Please read an 80%% white patch first to calibrate refresh frequency\n");
 		}
 
-		/* If it batter powered, show the status of the battery */
+		/* If it battery powered, show the status of the battery */
 		if ((cap2 & inst2_has_battery)) {
 			double batstat = 0.0;
 			if ((rv = it->get_set_opt(it, inst_stat_battery, &batstat)) != inst_ok) {

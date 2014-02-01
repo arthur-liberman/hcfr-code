@@ -41,6 +41,8 @@ extern void error(const char *fmt, ...), warning(const char *fmt, ...);
 
 #include "pars.h"
 
+#undef DEBUG			/* Print each token returned */
+
 static void del_parse(parse *p);
 static int read_line(parse *p);
 static void reset_del(parse *p);
@@ -420,6 +422,9 @@ read_line(parse *p) {
 		if ((c = p->fp->getch(p->fp)) == EOF) {
 			if (p->bo == 0) {	/* If there is nothing in the buffer */
 				p->line = 0;
+#ifdef DEBUG
+				printf("pars: read_line() got EOF\n");
+#endif
 				return 0;
 			}
 			c = 0;			/* Finish the line */
@@ -443,16 +448,16 @@ read_line(parse *p) {
 		}
 
 		if (c == '\r') {
-			p->line++;		/* Increment line number */
+			p->line++;			/* Increment line number */
 			p->ltflag = 1;		/* Remember to allow 1 of '\n' before next line */
 			if (p->q == 0)
-				c = 0;		/* Finish the line */
+				c = 0;			/* Finish the line */
 		} else if (p->q == 0 && (p->delf[c] & PARS_COMM) != 0) {	/* Hit a comment */
-			p->line++;		/* Increment line number */
+			p->line++;			/* Increment line number */
 			p->ltflag = 2;		/* Remember to flush all chars up to end of line */
-			c = 0;			/* Finish the line */
+			c = 0;				/* Finish the line */
 		} else if (c == '\n') {
-			p->line++;		/* Increment line number */
+			p->line++;			/* Increment line number */
 			if (p->q == 0)
 				c = 0;			/* Finish the the line */
 		}
@@ -477,6 +482,9 @@ read_line(parse *p) {
 	} while (c != 0);	/* Null means we've done the end of the line */
 	p->to = 0;			/* Reset token pointer to the start of the line buffer */
 	p->q = 0;			/* Reset quoted flag */
+#ifdef DEBUG
+	printf("pars: read_line() got buffer '%s'\n",p->b);
+#endif
 	return 1;
 }
 
@@ -525,8 +533,12 @@ get_token(parse *p) {
 
 	p->errc = 0;		/* Reset error status */
 	p->err[0] = '\000';
-	if (p->b == NULL)
+	if (p->b == NULL) {
+#ifdef DEBUG
+		printf("pars: read_token() NULL buffe\n");
+#endif
 		return NULL;
+	}
 	p->token++;		/* Increment token number */
 	p->q = 0;
 	do {
@@ -566,8 +578,14 @@ get_token(parse *p) {
 	p->q = 0;
 	if (tbo <= 1) {
 		p->token = 0;
+#ifdef DEBUG
+		printf("pars: read_token() got nothing useful\n");
+#endif
 		return NULL;		/* Haven't read anything useful */
 	}
+#ifdef DEBUG
+	printf("pars: read_token() returning '%s'\n",p->tb);
+#endif
 	return p->tb;
 }
 

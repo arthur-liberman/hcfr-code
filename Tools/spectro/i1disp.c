@@ -7,7 +7,7 @@
  * Author: Graeme W. Gill
  * Date:   18/10/2006
  *
- * Copyright 2006 - 2013, Graeme W. Gill
+ * Copyright 2006 - 2014, Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -1898,6 +1898,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	val->XYZ_v = 1;		/* These are absolute XYZ readings ? */
 	val->sp.spec_n = 0;
 	val->duration = 0.0;
+
 
 	if (user_trig)
 		return inst_user_trig;

@@ -147,9 +147,11 @@ struct _spyd2 {
 	double  refrate;			/* Current refresh rate. Set to DEFREFR if not measurable */
 	int     refrvalid;			/* nz if refrate was measured */
 	double  gain;				/* hwver == 5 gain value (default 4) */
-	double ccmat[3][3];			/* Colorimeter correction matrix */
 	icxObserverType obType;		/* ccss observer to use */
 	xspect custObserver[3];		/* Custom ccss observer to use */
+	double ccmat[3][3];			/* Colorimeter correction matrix, unity if none */
+	xspect *samples;			/* Copy of current calibration spectral samples, NULL if none */
+	int nsamp;					/* Number of samples, 0 if none */
 
 	int prevraw[8];				/* Previous raw reading values */
 	int prevrawinv;				/* Previous raw readings invalid flag - after an abort */

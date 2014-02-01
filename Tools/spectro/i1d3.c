@@ -7,7 +7,7 @@
  * Author: Graeme W. Gill
  * Date:   28/7/2011
  *
- * Copyright 2006 - 2013, Graeme W. Gill
+ * Copyright 2006 - 2014, Graeme W. Gill
  * All rights reserved.
  *
  * (Based on huey.c)
@@ -194,8 +194,14 @@ i1d3_command(
 	if (cmd == 0x00)
 		send[1] = (cc & 0xff);	/* Minor command */
 
-	if (!nd) a1logd(p->log, 4, "i1d3_command: Sending cmd '%s' args '%s'\n",
-	                         inst_desc(cc), icoms_tohex(send, 8));
+	if (!nd) {
+		if (cc == i1d3_lockresp)
+			a1logd(p->log, 4, "i1d3_command: Sending cmd '%s' args '%s'\n",
+			                         inst_desc(cc), icoms_tohex(send, 64));
+		else
+			a1logd(p->log, 4, "i1d3_command: Sending cmd '%s' args '%s'\n",
+			                         inst_desc(cc), icoms_tohex(send, 8));
+	}
 
 	if (p->icom->port_type(p->icom) == icomt_hid) {
 		se = p->icom->hid_write(p->icom, send, 64, &wbytes, to); 
@@ -283,7 +289,12 @@ i1d3_command(
 		}
 	}
 
-	if (!nd) a1logd(p->log, 4, "i1d3_command: got '%s' ICOM err 0x%x\n",icoms_tohex(recv, 14),ua);
+	if (!nd) {
+		if (cc == i1d3_lockchal)
+			a1logd(p->log, 4, "i1d3_command: got '%s' ICOM err 0x%x\n",icoms_tohex(recv, 64),ua);
+		else
+			a1logd(p->log, 4, "i1d3_command: got '%s' ICOM err 0x%x\n",icoms_tohex(recv, 14),ua);
+	}
 
 	if (rv != inst_ok) {
 		/* Flush any extra response, in case responses are out of sync */
@@ -558,9 +569,15 @@ i1d3_unlock(
 		{ NULL } 
 	}; 
 	inst_code ev;
-	int ix;
+	int ix, nix;
 
 	a1logd(p->log, 2, "i1d3_unlock: called\n");
+
+	/* Count the keys */
+	for (nix = 0;;nix++) {
+		if (codes[nix].pname == NULL)
+			break;
+	}
 
 	/* Until we give up */
 	for (ix = 0;;ix++) {
@@ -580,6 +597,7 @@ i1d3_unlock(
 
 //		a1logd(p->log, 3, "i1d3_unlock: Trying unlock key 0x%08x 0x%08x\n",
 //			codes[ix].key[0], codes[ix].key[1]);
+		a1logd(p->log, 3, "i1d3_unlock: Trying unlock key %d/%d\n", ix+1, nix);
 
 		p->dtype = codes[ix].dtype;
 		p->stype = codes[ix].stype;
@@ -1954,6 +1972,9 @@ static inst_code i1d3_decode_intEE(
 	strncpy(p->serial_no, (char *)buf + 0x10, 20);
 	p->serial_no[20] = '\000';
 
+	strncpy(p->vers_no, (char *)buf + 0x2C, 10);
+	p->serial_no[10] = '\000';
+
 	/* Read the black level offset */
 	for (i = 0; i < 3; i++) {
 		t1 = buf2uint(buf + 0x0004 + 4 * i);
@@ -1979,23 +2000,20 @@ static inst_code i1d3_decode_extEE(
 
 	rchsum = buf2short(buf + 2);
 
-	/* For the "A-01" revsions the checksum is from 4 to 0x179a, but */
-	/* it seems that the "A-02" revision sums from 4 to 0x178e. */
-	/* We will be flexible and accept anything that hits a match after */
-	/* the data we need. */
-	for (chsum = 0, i = 4; i < 8192; i++) {
+	/* For the "A-01" revsions the checksum is from 4 to 0x179a */
+	/* The "A-02" seems to have abandoned reliable checksums ?? */
+	for (chsum = 0, i = 4; i < 0x179a; i++) {
 		chsum += buf[i];
-		if (i >= 0x1638 && (chsum & 0xffff) == rchsum) {
-			a1logd(p->log, 3, "i1d3_decode_extEE: chsum matches at count 0x%x\n",i+1);
-			break;
-		}
 	}
 
 	chsum &= 0xffff;
 
 	if (rchsum != chsum) {
 		a1logd(p->log, 3, "i1d3_decode_extEE: checksum failed, is 0x%x, should be 0x%x\n",chsum,rchsum);
-		return i1d3_interp_code((inst *)p, I1D3_BAD_EX_CHSUM);
+		if (strcmp(p->vers_no, "A-01") == 0) 
+			return i1d3_interp_code((inst *)p, I1D3_BAD_EX_CHSUM);
+
+		/* Else ignore checksum error */
 	}
 		
 	/* Read 3 x sensor spectral sensitivits */
@@ -2187,6 +2205,108 @@ i1d3_comp_calmat(
 	return inst_ok;
 }
 
+/* Preset the calibration to a spectral sample type. */
+/* ccmat[][] is set to unity */
+static inst_code
+i1d3_set_speccal(
+	i1d3 *p,
+	xspect *samples,	/* Array of nsamp spectral samples, or RGBcmfs for MIbLSr */
+	int nsamp			/* Number of samples */
+) {
+	int i;
+
+	/* Save a the spectral samples to the current state */
+	if (p->samples != NULL)
+		free(p->samples);
+	p->nsamp = 0;
+	if ((p->samples = (xspect *)calloc(sizeof(xspect), nsamp)) == NULL) {
+		a1loge(p->log, inst_internal_error, "i1d3_set_speccal: malloc failed\n");
+		return inst_internal_error;
+	}
+	for (i = 0; i < nsamp; i++ )
+		p->samples[i] = samples[i];		/* Struct copy */
+	p->nsamp = nsamp;
+
+	icmSetUnity3x3(p->ccmat);			/* No matrix */
+
+	return inst_ok;
+}
+
+
+/* Preset the calibration to a matrix. The spectral type is set to none */
+static inst_code
+i1d3_set_matcal(i1d3 *p, double mtx[3][3]) {
+	if (mtx == NULL)
+		icmSetUnity3x3(p->ccmat);
+	else {
+		if (p->cbid == 0) {
+			a1loge(p->log, 1, "i1d3: can't set col_cor_mat over non-base display type\n");
+			return inst_wrong_setup;
+		}
+		icmCpy3x3(p->ccmat, mtx);
+	}
+	return inst_ok;
+}
+
+
+/* Set the calibration to the currently preset type */
+static inst_code
+i1d3_set_cal(i1d3 *p) {
+	inst_code ev = inst_ok;
+
+	if (p->samples != NULL && p->nsamp > 0) {
+
+		/* Create matrix for specified samples */
+		if ((ev = i1d3_comp_calmat(p, p->emis_cal, p->obType, p->custObserver,
+			                       p->sens, p->samples, p->nsamp)) != inst_ok) {
+			a1logd(p->log, 1, "i1d3_set_cal: comp_calmat ccss failed with rv = 0x%x\n",ev);
+			return ev;
+		}
+		/* Use MIbLSr for ambient */
+		if ((ev = i1d3_comp_calmat(p, p->ambi_cal, p->obType, p->custObserver,
+			                       p->ambi, p->ambi, 3)) != inst_ok)
+			return ev;
+
+		icmSetUnity3x3(p->ccmat);		/* to be sure to be sure... */
+
+	} else {	/* Assume matrix */
+
+		/* Create the default MIbLSr calibration matrix */
+		if ((ev = i1d3_comp_calmat(p, p->emis_cal, p->obType, p->custObserver,
+			                              p->sens, p->sens, 3)) != inst_ok) {
+			a1logd(p->log, 1, "i1d3_set_disp_type: comp_calmat dflt failed with rv = 0x%x\n",ev);
+			return ev;
+		}
+		/* Use MIbLSr for ambient */
+		if ((ev = i1d3_comp_calmat(p, p->ambi_cal, p->obType, p->custObserver,
+			                              p->ambi, p->ambi, 3)) != inst_ok)
+			return ev;
+	}
+
+	if (p->log->debug >= 4) {
+		a1logd(p->log,4,"Emissive matrix = %f %f %f\n",
+		                 p->emis_cal[0][0], p->emis_cal[0][1], p->emis_cal[0][2]);
+		a1logd(p->log,4,"                  %f %f %f\n",
+		                 p->emis_cal[1][0], p->emis_cal[1][1], p->emis_cal[1][2]);
+		a1logd(p->log,4,"                  %f %f %f\n\n",
+		                 p->emis_cal[2][0], p->emis_cal[2][1], p->emis_cal[2][2]);
+		a1logd(p->log,4,"Ambient matrix  = %f %f %f\n",
+		                 p->ambi_cal[0][0], p->ambi_cal[0][1], p->ambi_cal[0][2]);
+		a1logd(p->log,4,"                  %f %f %f\n",
+		                 p->ambi_cal[1][0], p->ambi_cal[1][1], p->ambi_cal[1][2]);
+		a1logd(p->log,4,"                  %f %f %f\n\n",
+		                 p->ambi_cal[2][0], p->ambi_cal[2][1], p->ambi_cal[2][2]);
+		a1logd(p->log,4,"ccmat           = %f %f %f\n",
+		                 p->ccmat[0][0], p->ccmat[0][1], p->ccmat[0][2]);
+		a1logd(p->log,4,"                  %f %f %f\n",
+		                 p->ccmat[1][0], p->ccmat[1][1], p->ccmat[1][2]);
+		a1logd(p->log,4,"                  %f %f %f\n\n",
+		                 p->ccmat[2][0], p->ccmat[2][1], p->ccmat[2][2]);
+		a1logd(p->log,4,"\n");
+	}
+
+	return inst_ok;
+}
 
 /* ------------------------------------------------------------------------ */
 
@@ -2319,7 +2439,7 @@ int i1d3_diff_thread(void *pp) {
 		}
 		msec_sleep(100);
 	}
-//	a1logd(p->log,3,"Diffuser thread returning\n"); //hangs program on close when debugging on
+	a1logd(p->log,3,"Diffuser thread returning\n");
 	return rv;
 }
 
@@ -2426,18 +2546,18 @@ i1d3_init_inst(inst *pp) {
 
 	if (p->log->debug >= 4) {
 		a1logd(p->log,4,"Default calibration:\n");
-		a1logd(p->log,4,"Ambient matrix  = %f %f %f\n",
-		                 p->ambi_cal[0][0], p->ambi_cal[0][1], p->ambi_cal[0][2]);
-		a1logd(p->log,4,"                  %f %f %f\n",
-		                 p->ambi_cal[1][0], p->ambi_cal[1][1], p->ambi_cal[1][2]);
-		a1logd(p->log,4,"                  %f %f %f\n\n",
-		                 p->ambi_cal[2][0], p->ambi_cal[2][1], p->ambi_cal[2][2]);
 		a1logd(p->log,4,"Emissive matrix = %f %f %f\n",
 		                 p->emis_cal[0][0], p->emis_cal[0][1], p->emis_cal[0][2]);
 		a1logd(p->log,4,"                  %f %f %f\n",
 		                 p->emis_cal[1][0], p->emis_cal[1][1], p->emis_cal[1][2]);
 		a1logd(p->log,4,"                  %f %f %f\n",
 		                 p->emis_cal[2][0], p->emis_cal[2][1], p->emis_cal[2][2]);
+		a1logd(p->log,4,"Ambient matrix  = %f %f %f\n",
+		                 p->ambi_cal[0][0], p->ambi_cal[0][1], p->ambi_cal[0][2]);
+		a1logd(p->log,4,"                  %f %f %f\n",
+		                 p->ambi_cal[1][0], p->ambi_cal[1][1], p->ambi_cal[1][2]);
+		a1logd(p->log,4,"                  %f %f %f\n\n",
+		                 p->ambi_cal[2][0], p->ambi_cal[2][1], p->ambi_cal[2][2]);
 		a1logd(p->log,4,"\n");
 	}
 
@@ -2553,6 +2673,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	val->sp.spec_n = 0;
 	val->duration = 0.0;
 
+
 	if (user_trig)
 		return inst_user_trig;
 
@@ -2581,6 +2702,7 @@ double *ref_rate) {
 	if (*ref_rate == 0.0)
 		return inst_misread;
 
+
 	return inst_ok;
 }
 
@@ -2592,23 +2714,19 @@ inst *pp,
 double mtx[3][3]
 ) {
 	i1d3 *p = (i1d3 *)pp;
+	inst_code ev = inst_ok;
+
+	a1logd(p->log, 4, "i1d3_col_cor_mat%s\n",mtx == NULL ? " (noop)": "");
 
 	if (!p->gotcoms)
 		return inst_no_coms;
 	if (!p->inited)
 		return inst_no_init;
 
-	if (mtx == NULL)
-		icmSetUnity3x3(p->ccmat);
-	else {
-		if (p->cbid == 0) {
-			a1loge(p->log, 1, "i1d3: can't set col_cor_mat over non base display type\n");
-			return inst_wrong_setup;
-		}
-		icmCpy3x3(p->ccmat, mtx);
-	}
-		
-	return inst_ok;
+	if ((ev = i1d3_set_matcal(p, mtx)) != inst_ok)
+		return ev;
+
+	return i1d3_set_cal(p);
 }
 
 /* Use a Colorimeter Calibration Spectral Set to set the */
@@ -2623,6 +2741,8 @@ int no_sets
 	i1d3 *p = (i1d3 *)pp;
 	inst_code ev = inst_ok;
 
+	a1logd(p->log, 4, "i1d3_col_cal_spec_set%s\n",sets == NULL ? " (default)": "");
+
 	if (!p->gotcoms)
 		return inst_no_coms;
 	if (!p->inited)
@@ -2633,31 +2753,12 @@ int no_sets
 			return ev;
 		}
 	} else {
-		/* Use given spectral samples */
-		if ((ev = i1d3_comp_calmat(p, p->emis_cal, p->obType, p->custObserver, p->sens,
-			                                                            sets, no_sets)) != inst_ok)
-			return ev;
-		/* Use MIbLSr */
-		if ((ev = i1d3_comp_calmat(p, p->ambi_cal, p->obType, p->custObserver, p->ambi,
-			                                                            p->ambi, 3)) != inst_ok)
-			return ev;
+		if ((ev = i1d3_set_speccal(p, sets, no_sets)) != inst_ok)
+			return ev; 
+
+		ev = i1d3_set_cal(p);
 	}
-	if (p->log->debug >= 4) {
-		a1logd(p->log,4,"CCSS update calibration:\n");
-		a1logd(p->log,4,"Ambient matrix  = %f %f %f\n",
-		                 p->ambi_cal[0][0], p->ambi_cal[0][1], p->ambi_cal[0][2]);
-		a1logd(p->log,4,"                  %f %f %f\n",
-		                 p->ambi_cal[1][0], p->ambi_cal[1][1], p->ambi_cal[1][2]);
-		a1logd(p->log,4,"                  %f %f %f\n\n",
-		                 p->ambi_cal[2][0], p->ambi_cal[2][1], p->ambi_cal[2][2]);
-		a1logd(p->log,4,"Emissive matrix = %f %f %f\n",
-		                 p->emis_cal[0][0], p->emis_cal[0][1], p->emis_cal[0][2]);
-		a1logd(p->log,4,"                  %f %f %f\n",
-		                 p->emis_cal[1][0], p->emis_cal[1][1], p->emis_cal[1][2]);
-		a1logd(p->log,4,"                  %f %f %f\n",
-		                 p->emis_cal[2][0], p->emis_cal[2][1], p->emis_cal[2][2]);
-		a1logd(p->log,4,"\n");
-	}
+
 	return ev;
 }
 
@@ -3133,6 +3234,8 @@ i1d3_del(inst *pp) {
 		if (p->icom != NULL)
 			p->icom->del(p->icom);
 		inst_del_disptype_list(p->dtlist, p->ndtlist);
+		if (p->samples != NULL)
+			free(p->samples);
 		amutex_del(p->lock);
 		free(p);
 	}
@@ -3388,53 +3491,22 @@ static inst_code set_disp_type(i1d3 *p, inst_disptypesel *dentry) {
 		p->inttime = p->omininttime;	/* Override */
 	p->mininttime = p->inttime;			/* Current value */
 
-	if (dentry->flags & inst_dtflags_ccss) {
+	if (dentry->flags & inst_dtflags_ccss) {	/* Spectral sample */
 
-		/* Create matrix for specified samples */
-		if ((ev = i1d3_comp_calmat(p, p->emis_cal, p->obType, p->custObserver,
-			                       p->sens, dentry->sets, dentry->no_sets)) != inst_ok) {
-			a1logd(p->log, 1, "i1d3_set_disp_type: comp_calmat ccss failed with rv = 0x%x\n",ev);
-			return ev;
-		}
-		/* Use MIbLSr for ambient */
-		if ((ev = i1d3_comp_calmat(p, p->ambi_cal, p->obType, p->custObserver,
-			                       p->ambi, p->ambi, 3)) != inst_ok)
+		if ((ev = i1d3_set_speccal(p, dentry->sets, dentry->no_sets)) != inst_ok) 
 			return ev;
 
-		icmSetUnity3x3(p->ccmat);
-
-		if (p->log->debug >= 4) {
-			a1logd(p->log,4,"Display type set CCSS:\n");
-			a1logd(p->log,4,"Emissive matrix = %f %f %f\n",
-			                 p->emis_cal[0][0], p->emis_cal[0][1], p->emis_cal[0][2]);
-			a1logd(p->log,4,"                  %f %f %f\n",
-			                 p->emis_cal[1][0], p->emis_cal[1][1], p->emis_cal[1][2]);
-			a1logd(p->log,4,"                  %f %f %f\n",
-			                 p->emis_cal[2][0], p->emis_cal[2][1], p->emis_cal[2][2]);
-			a1logd(p->log,4,"\n");
-		}
-
-	} else {	/* Assume matrix */
-
-		/* Create the default MIbLSr calibration matrix */
-		if ((ev = i1d3_comp_calmat(p, p->emis_cal, p->obType, p->custObserver,
-			                              p->sens, p->sens, 3)) != inst_ok) {
-			a1logd(p->log, 1, "i1d3_set_disp_type: comp_calmat dflt failed with rv = 0x%x\n",ev);
-			return ev;
-		}
-		/* Use MIbLSr for ambient */
-		if ((ev = i1d3_comp_calmat(p, p->ambi_cal, p->obType, p->custObserver,
-			                              p->ambi, p->ambi, 3)) != inst_ok)
-			return ev;
+	} else {	/* Matrix */
 
 		if (dentry->flags & inst_dtflags_ccmx) {
-			icmCpy3x3(p->ccmat, dentry->mat);
+			if ((ev = i1d3_set_matcal(p, dentry->mat)) != inst_ok)
+				return ev;
 		} else {
-			icmSetUnity3x3(p->ccmat);
+			if ((ev = i1d3_set_matcal(p, NULL)) != inst_ok)		/* Noop */
+				return ev;
 		}
 	}
-
-	return inst_ok;
+	return i1d3_set_cal(p);
 }
 
 /* Setup the default display type */
@@ -3615,7 +3687,9 @@ i1d3_get_set_opt(inst *pp, inst_opt_type m, ...)
 			p->custObserver[2] = custObserver[2];
 		}
 
-		return inst_ok;
+		a1logd(p->log, 4, "inst_opt_set_ccss_obs\n");
+
+		return i1d3_set_cal(p);			/* Recompute calibration */
 	}
 
 	/* Operate the LEDS */

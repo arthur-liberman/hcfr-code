@@ -16,6 +16,7 @@
  */
 
 /*
+	!!!! This driver is incomplete and non-functional !!!!
 
 	BSD uses fd per end point, so simplifies things.
 
@@ -24,7 +25,9 @@
 
 	Posix aio would probably work, but it's not loaded by default :-(
 
-	Could use libusb20 API, but not backwards or cross compatible ?
+	Could use libusb20 API, but not backwards or cross compatible,
+	and is very likely to be buggy ?
+
  */
 
 #include <unistd.h>

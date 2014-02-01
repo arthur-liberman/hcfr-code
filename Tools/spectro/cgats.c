@@ -16,6 +16,11 @@
 
 /*
 
+	Should add a function to promote a field type, ie.
+	promote integer to float, to avoid misrecognition
+	problems.
+
+
 	To make this more portable for independent use,
 	should save/set/restore LC_NUMERIC locale before
 	printf/scanf from file. e.g.
@@ -46,8 +51,8 @@
 #undef DEBUG				/* Debug only in slected places */
 
 #ifdef DEBUG
-# define DBGA g_log, 0 		/* First argument to DBGF() */
-# define DBGF(xx)	a1logd xx
+# define DBGA stderr
+# define DBGF(xx)	fprintf xx
 #else
 # define DBGF(xx)
 #endif
@@ -396,6 +401,14 @@ cgats_read(cgats *p, cgatsFile *fp) {
 		}
 		if (tp == NULL)
 			break;		/* EOF */
+
+		/* This seems unlikely and will cause err() to barf */
+		if (strlen(tp) > CGATS_ERRM_LENGTH/2) {
+			tp[CGATS_ERRM_LENGTH/2] = '\000';
+			err(p,-1,"Read line got symbol '%s' that's too long\n",tp);
+			pp->del(pp);
+			return p->errc;
+		}
 
 		switch(rstate) {
 			case R_IDENT: 		/* Expecting file identifier */
@@ -961,16 +974,19 @@ add_field(cgats *p, int table, const char *fsym, data_type ftype) {
 
 	p->errc = 0;
 	p->err[0] = '\000';
-	if (table < 0 || table >= p->ntables)
+	if (table < 0 || table >= p->ntables) {
 		return err(p,-1,"cgats.add_field(), table parameter out of range");
+	}
 	t = &p->t[table];
 
-	if (t->nsets != 0)
+	if (t->nsets != 0) {
 		return err(p,-1,"cgats.add_field(), attempt to add field to non-empty table");
+	}
 
 	/* Check the field name is reasonable */
-	if (cs_has_ws(fsym))
+	if (cs_has_ws(fsym)) {
 		return err(p,-1,"cgats.add_kword(), field name '%s'is illegal",fsym);
+	}
 
 	if (ftype == none_t)
 		ftype = cs_t;					/* Fudge - unknown type yet, used for reads */
@@ -979,22 +995,27 @@ add_field(cgats *p, int table, const char *fsym, data_type ftype) {
 		st = standard_field(fsym);
 		if (st == nqcs_t && ftype == cs_t)	/* Fudge - standard type to non-quoted if normal */
 			ftype = nqcs_t;
-		if (st != none_t && st != ftype)
+		if (st != none_t && st != ftype) {
 			return err(p,-1,"cgats.add_field(): unexpected data type for standard field name");
+		}
 	}
 
 	t->nfields++;
 	if (t->nfields > t->nfieldsa) {
-		/* Allocate fields in groups of 4 */
-		t->nfieldsa += 4;
-		if ((t->fsym = (char **)al->realloc(al, t->fsym, t->nfieldsa * sizeof(char *))) == NULL)
+		/* Allocate fields in groups of 32 */
+		t->nfieldsa += 32;
+		if ((t->fsym = (char **)al->realloc(al, t->fsym, t->nfieldsa * sizeof(char *))) == NULL) {
 			return err(p,-2,"cgats.add_field(), realloc failed!");
+		}
 		if ((t->ftype = (data_type *)al->realloc(al, t->ftype, t->nfieldsa * sizeof(data_type)))
-		                                                                               == NULL)
+		                                                                               == NULL) {
 			return err(p,-2,"cgats.add_field(), realloc failed!");
+		}
 	}
-	if ((t->fsym[t->nfields-1] = (char *)alloc_copy_data_type(al, cs_t, (void *)fsym)) == NULL)
+	if ((t->fsym[t->nfields-1] = (char *)alloc_copy_data_type(al, cs_t, (void *)fsym)) == NULL) {
 		return err(p,-2,"cgats.alloc_copy_data_type() malloc fail");
+	}
+
 	t->ftype[t->nfields-1] = ftype;
 
 	return t->nfields-1;

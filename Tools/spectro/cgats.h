@@ -20,7 +20,7 @@
 #define CGATSLIB_VERSION 0x020005
 #define CGATSLIB_VERSION_STR "2.05"
 
-#define CGATS_ERRM_LENGTH 200
+#define CGATS_ERRM_LENGTH 2000
 
 #ifdef __cplusplus
 	extern "C" {
