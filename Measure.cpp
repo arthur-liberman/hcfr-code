@@ -1218,7 +1218,7 @@ BOOL CMeasure::MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator)
 
 	for(int i=0;i<size;i++)
 	{
-		if( pGenerator->DisplayGray((ArrayIndexToGrayLevel ( i, size * 10., GetConfig () -> m_bUseRoundDown)),CGenerator::MT_NEARBLACK,!bRetry) )
+		if( pGenerator->DisplayGray((ArrayIndexToGrayLevel ( i, 101., GetConfig () -> m_bUseRoundDown)),CGenerator::MT_NEARBLACK,!bRetry) )
 		{
 			bEscape = WaitForDynamicIris ();
 			bRetry = FALSE;
@@ -1402,7 +1402,7 @@ BOOL CMeasure::MeasureNearWhiteScale(CSensor *pSensor, CGenerator *pGenerator)
 	
 	for(int i=0;i<size;i++)
 	{
-		if( pGenerator->DisplayGray((ArrayIndexToGrayLevel ( 101-size+i, size * 10., GetConfig () -> m_bUseRoundDown)),CGenerator::MT_NEARWHITE,!bRetry ) )
+		if( pGenerator->DisplayGray((ArrayIndexToGrayLevel ( 101-size+i, 101., GetConfig () -> m_bUseRoundDown)),CGenerator::MT_NEARWHITE,!bRetry ) )
 		{
 			bEscape = WaitForDynamicIris ();
 			bRetry = FALSE;
