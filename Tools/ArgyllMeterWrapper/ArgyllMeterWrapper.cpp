@@ -64,7 +64,8 @@ namespace
     void error_imp(void *cntx, struct _a1log *p, char *fmt, va_list args)
     {
         ArgyllLogMessage("Error", fmt, args);
-        throw std::logic_error("Argyll Error");
+//			MessageBox(NULL,args,"Argyll Error, check log.",MB_OK);
+//        throw std::logic_error("Argyll Error");
     }
 
     // check an actual inst code is a particular reason
@@ -474,7 +475,9 @@ void ArgyllMeterWrapper::setDisplayType(int displayMode)
         inst_code instCode = m_meter->set_disptype(m_meter, displayMode);
         if(instCode != inst_ok)
         {
-            throw std::logic_error("Set Display Type failed");
+            MessageBox(NULL, m_meter->inst_interp_error(m_meter, instCode),"Set display type error",MB_OK);
+            if (instCode != inst_wrong_setup) //special case for ccmx without base type
+                throw std::logic_error("Set Display Type failed");
         }
     } 
 }
@@ -881,7 +884,7 @@ void ArgyllMeterWrapper::resetSpectralSample()
     m_SampleDescription.clear();
 	inst_code instCode;
 	instCode=inst_ok;
-    //inst_code instCode = m_meter->col_cal_spec_set(m_meter, 0, 0);
+//    inst_code instCode = m_meter->col_cal_spec_set(m_meter, 0, 0);
     //drop through this for now, it breaks refresh cal for d3 when user initiates using calibration button
 	//if user goes from a known ccss to none this will be a problem
 	if (instCode != inst_ok) 

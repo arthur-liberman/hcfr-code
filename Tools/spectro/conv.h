@@ -288,6 +288,10 @@ int sa_lu_psinvert(double **out, double **in, int m, int n);
 #define lu_psinvert sa_lu_psinvert
 
 #endif /* SALONEINSTLIB */
+
+/* - - - - - - - - - - - - - - - - - - -- */
+
+
 /* - - - - - - - - - - - - - - - - - - -- */
 
 

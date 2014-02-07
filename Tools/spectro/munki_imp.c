@@ -5,7 +5,7 @@
  * Author: Graeme W. Gill
  * Date:   12/1/2009
  *
- * Copyright 2006 - 2013, Graeme W. Gill
+ * Copyright 2006 - 2014, Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -81,6 +81,8 @@
 #undef  ENABLE_REFLEDINTER	/* [Und] Enable Reflective LED interference correction */
 
 #define ENABLE_SPOS_CHECK	/* [Def] Check the sensor position is reasonable for measurement */
+#define FILTER_SPOS_EVENTS	/* [Def] Use a thread to filter SPOS event changes */
+#define FILTER_TIME 500		/* [500] Filter time in msec */
 #define DCALTOUT (1 * 60 * 60)		/* [1 Hrs] Dark Calibration timeout in seconds */
 #define WCALTOUT (24 * 60 * 60)		/* [24 Hrs] White Calibration timeout in seconds */
 #define MAXSCANTIME 20.0	/* [20 Sec] Maximum scan time in seconds */
@@ -329,6 +331,11 @@ void del_munkiimp(munki *p) {
 		munkiimp *m = (munkiimp *)p->m;
 		munki_state *s;
 
+#ifdef FILTER_SPOS_EVENTS
+		if (m->spos_th != NULL)
+			m->spos_th_term = 1;
+#endif
+		
 		if (m->th != NULL) {		/* Terminate switch monitor thread by simulating an event */
 			m->th_term = 1;			/* Tell thread to exit on error */
 			munki_simulate_event(p, mk_eve_spos_change, 0);
@@ -340,6 +347,17 @@ void del_munkiimp(munki *p) {
 			m->th->del(m->th);
 			usb_uninit_cancel(&m->sw_cancel);	/* Don't need cancel token now */
 		}
+
+#ifdef FILTER_SPOS_EVENTS
+		if (m->spos_th != NULL) {
+			for (i = 0; m->spos_th_termed == 0 && i < 5; i++)
+				msec_sleep(50);	/* Wait for thread to terminate */
+			if (i >= 5) {
+				a1logd(p->log,3,"Munki spos thread termination failed\n");
+			}
+			m->spos_th->del(m->spos_th);
+		}
+#endif
 
 		/* Free any per mode data */
 		for (i = 0; i < mk_no_modes; i++) {
@@ -577,6 +595,12 @@ munki_code munki_imp_init(munki *p) {
 	/* Setup the switch monitoring thread */
 	usb_init_cancel(&m->sw_cancel);			/* Get cancel token ready */
 	if ((m->th = new_athread(munki_switch_thread, (void *)p)) == NULL)
+		return MUNKI_INT_THREADFAILED;
+#endif
+
+#ifdef FILTER_SPOS_EVENTS
+	/* Setup the sensor position filter thread */
+	if ((m->spos_th = new_athread(munki_spos_thread, (void *)p)) == NULL)
 		return MUNKI_INT_THREADFAILED;
 #endif
 
@@ -8158,7 +8182,7 @@ inst_opt_type munki_get_trig(munki *p) {
 }
 
 /* Switch thread handler */
-int munki_switch_thread(void *pp) {
+static int munki_switch_thread(void *pp) {
 	int nfailed = 0;
 	munki *p = (munki *)pp;
 	munkiimp *m = (munkiimp *)p->m;
@@ -8187,14 +8211,50 @@ int munki_switch_thread(void *pp) {
 				p->eventcallback(p->event_cntx, inst_event_switch);
 			}
 		} else if (ecode == mk_eve_spos_change) {
-			if (p->eventcallback != NULL) {
-				p->eventcallback(p->event_cntx, inst_event_mconf);
+#ifdef FILTER_SPOS_EVENTS
+			/* Signal change to filer thread */
+			m->spos_msec = msec_time();
+			m->spos_change++;
+#else
+			if (m->eventcallback != NULL) {
+				m->eventcallback(p->event_cntx, inst_event_mconf);
 			}
+#endif
 		}
 	}
 	a1logd(p->log,3,"Switch thread returning\n");
 	return rv;
 }
+
+#ifdef FILTER_SPOS_EVENTS
+static int munki_spos_thread(void *pp) {
+	munki *p = (munki *)pp;
+	munkiimp *m = (munkiimp *)p->m;
+	int change = m->spos_change;		/* Current count */
+
+	a1logd(p->log,3,"spos thread started\n");
+
+	for (;;) {
+
+		if (m->spos_th_term) {
+			m->spos_th_termed = 1;
+			break;
+		}
+
+		/* Do callback if change has persisted for 1 second */
+		if (change != m->spos_change
+		 && (msec_time() - m->spos_msec) >= FILTER_TIME) {
+			change = m->spos_change;
+			if (p->eventcallback != NULL) {
+				p->eventcallback(p->event_cntx, inst_event_mconf);
+			}
+		}
+		msec_sleep(100);
+	}
+	return 0;
+}
+#endif
+
 
 /* ============================================================ */
 /* Low level commands */

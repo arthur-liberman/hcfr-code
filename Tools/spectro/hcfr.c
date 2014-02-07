@@ -533,7 +533,7 @@ double mtx[3][3]
 		icmSetUnity3x3(p->ccmat);
 	} else {
 		if (p->cbid == 0) {
-			a1loge(p->log, 1, "hcfr: can't set col_cor_mat over non base display type\n");
+			a1loge(p->log, 1, "hcfr: can't set col_cor_mat over non-base display type\n");
 			return inst_wrong_setup;
 		}
 		icmCpy3x3(p->ccmat, mtx);

@@ -268,7 +268,6 @@ cgats *icg			/* input cgats structure */
 	if ((ti = icg->find_kword(icg, 0, "DISPLAY_TYPE_BASE_ID")) >= 0) {
 		p->cbid = atoi(icg->t[0].kdata[ti]);
 	} else {
-		p->cbid = 0;
 	}
 
 	if ((ti = icg->find_kword(icg, 0, "UI_SELECTORS")) >= 0) {

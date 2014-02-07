@@ -544,33 +544,48 @@ void msec_sleep(unsigned int msec) {
 #endif
 }
 
+/* Provide substitute for clock_gettime() in OS X */
+
+#if defined(__APPLE__) && !defined(CLOCK_MONOTONIC)
+#include <mach/mach_time.h>
+#define CLOCK_REALTIME 0
+#define CLOCK_MONOTONIC 0
+static int clock_gettime(int clk_id, struct timespec *t){
+    mach_timebase_info_data_t timebase;
+    mach_timebase_info(&timebase);
+    uint64_t time;
+    time = mach_absolute_time();
+    double nseconds = ((double)time * (double)timebase.numer)/((double)timebase.denom);
+    double seconds = ((double)time * (double)timebase.numer)/((double)timebase.denom * 1e9);
+    t->tv_sec = seconds;
+    t->tv_nsec = nseconds;
+    return 0;
+}
+#endif
+
 /* Return the current time in msec */
 /* since the first invokation of msec_time() */
 unsigned int msec_time() {
 	unsigned int rv;
-	static struct timeval startup = { 0, 0 };
-	struct timeval cv;
+	static struct timespec startup = { 0, 0 };
+	struct timespec cv;
 
-	/* Is this monotonic ? */
-	/* On Linux, should clock_gettime with CLOCK_MONOTONIC be used instead ? */
-	/* On OS X, should mach_absolute_time() be used ? */
-	/* or host_get_clock_service(mach_host_self(), SYSTEM_CLOCK, &clk) */
-	gettimeofday(&cv, NULL);
+	clock_gettime(CLOCK_MONOTONIC, &cv);
 
 	/* Set time to 0 on first invocation */
-	if (startup.tv_sec == 0 && startup.tv_usec == 0)
+	if (startup.tv_sec == 0 && startup.tv_nsec == 0)
 		startup = cv;
 
 	/* Subtract, taking care of carry */
 	cv.tv_sec -= startup.tv_sec;
-	if (startup.tv_usec > cv.tv_usec) {
+	if (startup.tv_nsec > cv.tv_nsec) {
 		cv.tv_sec--;
-		cv.tv_usec += 1000000;
+		cv.tv_nsec += 100000000;
 	}
-	cv.tv_usec -= startup.tv_usec;
+	cv.tv_nsec -= startup.tv_nsec;
 
-	/* Convert usec to msec */
-	rv = cv.tv_sec * 1000 + cv.tv_usec / 1000;
+	/* Convert nsec to msec */
+	rv = cv.tv_sec * 1000 + cv.tv_nsec / 1000000;
 
 	return rv;
 }
@@ -579,29 +594,25 @@ unsigned int msec_time() {
 /* since the first invokation of usec_time() */
 double usec_time() {
 	double rv;
-	static struct timeval startup = { 0, 0 };
-	struct timeval cv;
+	static struct timespec startup = { 0, 0 };
+	struct timespec cv;
 
-	/* Is this monotonic ? */
-	/* On Linux, should clock_gettime with CLOCK_MONOTONIC/CLOCK_REALTIME/CLOCK_REALTIME_HR ? */
-	/* On OS X, should mach_absolute_time() be used ? */
-	/* or host_get_clock_service(mach_host_self(), SYSTEM_CLOCK, &clk) */
-	gettimeofday(&cv, NULL);
+	clock_gettime(CLOCK_MONOTONIC, &cv);
 
 	/* Set time to 0 on first invocation */
-	if (startup.tv_sec == 0 && startup.tv_usec == 0)
+	if (startup.tv_sec == 0 && startup.tv_nsec == 0)
 		startup = cv;
 
 	/* Subtract, taking care of carry */
 	cv.tv_sec -= startup.tv_sec;
-	if (startup.tv_usec > cv.tv_usec) {
+	if (startup.tv_nsec > cv.tv_nsec) {
 		cv.tv_sec--;
-		cv.tv_usec += 1000000;
+		cv.tv_nsec += 1000000000;
 	}
-	cv.tv_usec -= startup.tv_usec;
+	cv.tv_nsec -= startup.tv_nsec;
 
 	/* Convert to usec */
-	rv = cv.tv_sec * 1000000.0 + cv.tv_usec;
+	rv = cv.tv_sec * 1000000.0 + cv.tv_nsec/1000;
 
 	return rv;
 }

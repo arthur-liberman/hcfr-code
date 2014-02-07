@@ -7,7 +7,7 @@
  * Author: Graeme W. Gill
  * Date:   10/3/2001
  *
- * Copyright 1996 - 2013, Graeme W. Gill
+ * Copyright 1996 - 2014, Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -551,6 +551,7 @@ ipatch *vals) {		/* Pointer to array of values */
 			if ((ev = dtp20_command(p, "0518CF\r", buf, MAX_RD_SIZE, 0.5)) != inst_ok)
 				return ev;
 		}
+
 	}
 
 	a1logv(p->log, 1, "All saved strips read\n");
@@ -779,6 +780,7 @@ ipatch *vals) {		/* Pointer to array of instrument patch values */
 			return ev;
 	}
 
+
 	/* Wait for status to change */
 	for (;;) {
 		if ((ev = dtp20_command(p, "CS\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok) {
@@ -1005,6 +1007,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 		if ((ev = dtp20_command(p, "0518CF\r", buf, MAX_MES_SIZE, 0.5)) != inst_ok)
 			return ev;
 	}
+
 
 	if (!IMODETST(p->mode, inst_mode_s_ref_spot)) {
 

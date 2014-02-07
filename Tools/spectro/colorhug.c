@@ -8,7 +8,7 @@
  * Author: Richard Hughes
  * Date:   30/11/2011
  *
- * Copyright 2006 - 2013, Graeme W. Gill
+ * Copyright 2006 - 2014, Graeme W. Gill
  * Copyright 2011, Richard Hughes
  * All rights reserved.
  *
@@ -703,6 +703,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	val->sp.spec_n = 0;
 	val->duration = 0.0;
 
+
 	if (user_trig)
 		return inst_user_trig;
 	return rv;
@@ -725,7 +726,7 @@ double mtx[3][3]
 		icmSetUnity3x3(p->ccmat);
 	} else {
 		if (p->cbid == 0) {
-			a1loge(p->log, 1, "colorhug: can't set col_cor_mat over non base display type\n");
+			a1loge(p->log, 1, "colorhug: can't set col_cor_mat over non-base display type\n");
 			return inst_wrong_setup;
 		}
 		icmCpy3x3(p->ccmat, mtx);

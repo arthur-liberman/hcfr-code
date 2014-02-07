@@ -724,6 +724,13 @@ icoms_del(icoms *p) {
 	usb_del_usb(p);
 	hid_del_hid(p);
 #endif
+#if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
+	if (p->spath != NULL)
+		free(p->spath);
+#endif
+	p->log = del_a1log(p->log);
+	if (p->name != NULL)
+		free(p->name);
 	p->log = del_a1log(p->log);		/* unref */
 	free (p);
 }
