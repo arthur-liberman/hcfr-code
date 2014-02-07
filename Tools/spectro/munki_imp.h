@@ -285,12 +285,6 @@ struct _munkiimp {
 	int trig_se;			/* Delayed trigger icoms error */
 	munki_code trig_rv;		/* Delayed trigger result */
 
-	athread *spos_th;				/* Position change filter thread */
-	volatile int spos_th_term;		/* nz to terminate thread */
-	volatile int spos_th_termed;	/* nz when terminated */
-	volatile int spos_change;		/* counter that increments on an spos event change */
-	unsigned int spos_msec;			/* Time when spos last changes */
-
 }; typedef struct _munkiimp munkiimp;
 
 /* Add an implementation structure */
@@ -822,14 +816,8 @@ inst_opt_type munki_get_trig(munki *p);
 /* Set the trigger return */
 void munki_set_trigret(munki *p, int val);
 
-#ifdef USE_THREAD
 /* Switch thread handler */
-static int munki_switch_thread(void *pp);
-#endif
-
-#ifdef FILTER_SPOS_EVENTS
-static int munki_spos_thread(void *pp);
-#endif
+int munki_switch_thread(void *pp);
 
 /* ============================================================ */
 /* Low level commands */

@@ -54,6 +54,7 @@
 #include "icoms.h"
 #include "inst.h"
 #include "insttypeinst.h"
+
 #include "sort.h"
 
 #if defined(ENABLE_FAST_SERIAL)

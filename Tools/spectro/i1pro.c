@@ -7,7 +7,7 @@
  * Author: Graeme W. Gill
  * Date:   24/11/2006
  *
- * Copyright 2006 - 2014, Graeme W. Gill
+ * Copyright 2006 - 2013, Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -274,7 +274,6 @@ double *ref_rate) {
 		return inst_no_init;
 
 	rv = i1pro_imp_meas_refrate(p, ref_rate);
-
 
 	return i1pro_interp_code(p, rv);
 }

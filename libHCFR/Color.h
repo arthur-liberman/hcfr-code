@@ -300,7 +300,7 @@ public:
 		switch(m_standard)
 		{
 			case 3:
-				luma = 0.2127;
+				luma = 0.214;
 				break;
 			case 4:
 				luma = 0.3553;
@@ -320,7 +320,7 @@ public:
 		switch(m_standard)
 		{
 			case 3:
-				luma = 0.7152;
+				luma = 0.709;
 				break;
 			case 4:
 				luma = 0.1903;
@@ -340,7 +340,7 @@ public:
 		switch(m_standard)
 		{
 			case 3:
-				luma = 0.0722;
+				luma = 0.075;
 				break;
 			case 4:
 				luma = 0.1312;

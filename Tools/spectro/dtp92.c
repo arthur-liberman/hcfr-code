@@ -6,7 +6,7 @@
  * Author: Graeme W. Gill
  * Date:   5/10/1996
  *
- * Copyright 1996 - 2014, Graeme W. Gill
+ * Copyright 1996 - 2013, Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-

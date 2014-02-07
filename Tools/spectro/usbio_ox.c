@@ -403,7 +403,7 @@ char **pnames		/* List of process names to try and kill before opening */
 		/* mess up the Spyder2, BUT we can't do a get config because this */
 		/* messes up the i1pro-D. */
 
-		/* OS X doesn't do a set_configuration() by default, so force one. */
+		/* OS X doesn't do a set_configuration() by default */
 		p->cconfig = 0;
 
 		if (p->cconfig != config) {
@@ -760,7 +760,7 @@ static int icoms_usb_transaction(
 
 	/* If io was aborted, ClearPipeStall */
 	if (req.result == kIOReturnAborted) {
-#if (InterfaceVersion > 182)
+#if defined(NEVER) && (InterfaceVersion > 182)
 		(*p->usbd->interfaces[iix])->ClearPipeStallBothEnds(p->usbd->interfaces[iix], pno);
 #else
 		(*p->usbd->interfaces[iix])->ClearPipeStall(p->usbd->interfaces[iix], pno);
@@ -917,7 +917,7 @@ int icoms_usb_clearhalt(
 	IOReturn rv;
 	int irv;
 
-#if (InterfaceVersion > 182)
+#if defined(NEVER) && (InterfaceVersion > 182)
 	if ((rv = (*p->usbd->interfaces[iix])->ClearPipeStallBothEnds(
 		         p->usbd->interfaces[iix], pno)) != kIOReturnSuccess) {
 		a1logd(p->log, 1, "icoms_usb_clearhalt failed with 0x%x\n",rv);

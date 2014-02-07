@@ -110,7 +110,7 @@ static icompath *icompaths_get_path(
 static void icompaths_clear(icompaths *p) {
 
 	/* Free any old list */
-	if (p != NULL && p->paths != NULL) {
+	if (p->paths != NULL) {
 		int i;
 		for (i = 0; i < p->npaths; i++) {
 			icompath_del(p->paths[i]);
@@ -183,7 +183,6 @@ int icompaths_set_serial_itype(icompath *p, instType itype) {
 	sprintf(pname,"%s (%s)", p->name, inst_name(itype));
 	cp = p->name;
 	if ((p->name = strdup(pname)) == NULL) {
-		p->name = cp;
 		a1loge(g_log, ICOM_SYS, "icompaths_set_serial_itype: strdup path failed!\n");
 		return ICOM_SYS;
 	}
@@ -255,12 +254,10 @@ static int icompaths_add_hid(icompaths *p, char *name, unsigned int vid, unsigne
 #endif /* ENABLE_USB */
 
 static void icompaths_del(icompaths *p) {
-	if (p != NULL) {
-		icompaths_clear(p);
-	
-		p->log = del_a1log(p->log);		/* Unreference it and set to NULL */
-		free(p);
-	}
+	icompaths_clear(p);
+
+	p->log = del_a1log(p->log);		/* Unreference it */
+	free(p);
 }
 
 int icompaths_refresh_paths(icompaths *p);	/* Defined in platform specific */
@@ -292,7 +289,6 @@ icompaths *new_icompaths(a1log *log) {
 
 	if (icompaths_refresh_paths(p)) {
 		a1loge(log, ICOM_SYS, "new_icompaths: icompaths_refresh_paths failed!\n");
-		free(p);
 		return NULL;
 	}
 
@@ -307,8 +303,6 @@ icompaths *new_icompaths(a1log *log) {
 static int icom_copy_path_to_icom(icoms *p, icompath *pp) {
 	int rv;
 
-	if (p->name != NULL)
-		free(p->name);
 	if ((p->name = strdup(pp->name)) == NULL) {
 		a1loge(p->log, ICOM_SYS, "copy_path_to_icom: malloc name failed\n");
 		return ICOM_SYS;
@@ -435,7 +429,6 @@ icoms *new_icoms(
 
 	/* Copy ipath info to this icoms */
 	if (icom_copy_path_to_icom(p, ipath)) {
-		free(p->name);
 		free(p);
 		return NULL;
 	}

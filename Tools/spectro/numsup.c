@@ -293,7 +293,6 @@ a1log *new_a1log(
 		a1loge(g_log, 1, "new_a1log: malloc of a1log failed, calling exit(1)\n");
 		exit(1);
 	}
-	log->refc = 1;
 	log->verb = verb;
 	log->debug = debug;
 
@@ -328,7 +327,7 @@ a1log *new_a1log_d(a1log *log) {
 /* Returns NULL */
 a1log *del_a1log(a1log *log) {
 	if (log != NULL) {
-		if (--log->refc == 0) {
+		if (--log->refc <= 0) {
 #ifdef NT
 			DeleteCriticalSection(&log->lock);
 #endif
@@ -369,7 +368,7 @@ void a1logd(a1log *log, int level, char *fmt, ...) {
 	
 			A1LOG_LOCK(log);
 			va_start(args, fmt);
-			log->loge(log->cntx, log, fmt, args);
+			log->logd(log->cntx, log, fmt, args);
 			va_end(args);
 			A1LOG_UNLOCK(log);
 		}
@@ -517,55 +516,6 @@ error(char *fmt, ...) {
 	exit(1);
 }
 
-
-/******************************************************************/
-/* Suplimental allcation functions */
-/******************************************************************/
-
-#ifndef SIZE_MAX
-# define SIZE_MAX ((size_t)(-1))
-#endif
-
-/* a * b */
-static size_t ssat_mul(size_t a, size_t b) {
-	size_t c;
-
-	if (a == 0 || b == 0)
-		return 0;
-
-	if (a > (SIZE_MAX/b))
-		return SIZE_MAX;
-	else
-		return a * b;
-}
-
-/* reallocate and clear new allocation */
-void *recalloc(		/* Return new address */
-void *ptr,					/* Current address */
-size_t cnum,				/* Current number and unit size */
-size_t csize,
-size_t nnum,				/* New number and unit size */
-size_t nsize
-) {
-	int ind = 0;
-	size_t ctot, ntot;
-
-	if (ptr == NULL)
-		return calloc(nnum, nsize); 
-
-	if ((ntot = ssat_mul(nnum, nsize)) == SIZE_MAX)
-		return NULL;			/* Overflow */
-
-	if ((ctot = ssat_mul(cnum, csize)) == SIZE_MAX)
-		return NULL;			/* Overflow */
-
-	ptr = realloc(ptr, ntot);
-
-	if (ptr != NULL && ntot > ctot)
-		memset((char *)ptr + ctot, 0, ntot - ctot);			/* Clear the new region */
-
-	return ptr;
-}
 
 /******************************************************************/
 /* Numerical Recipes Vector/Matrix Support functions              */

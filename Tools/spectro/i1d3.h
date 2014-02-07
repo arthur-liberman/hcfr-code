@@ -107,7 +107,6 @@ struct _i1d3 {
 								/* (Only accurate if it needed unlocking). */
 	int status;					/* 0 if status is ok (not sure what this is) */
 	char serial_no[21];			/* "I1-11.A-01.100999.02" or "CM-11.A-01.100999.02" */
-	char vers_no[11];			/* "A-01", "A-02" */
 	char prod_name[32];			/* "i1Display3 " or "ColorMunki Display" */
 	int prod_type;				/* 16 bit product type number. i1d3_disppro = 0x0001, */
 								/* i1d3_munkdisp = 0x0002 */
@@ -128,11 +127,9 @@ struct _i1d3 {
 	int icx;					/* Internal calibration matrix index, 11 = Raw */
 	int cbid;					/* calibration base ID, 0 if not a base */
 	int refrmode;				/* nz if in refresh display mode/double int. time */
+	double ccmat[3][3];			/* Optional colorimeter correction matrix */
 	icxObserverType obType;		/* ccss observer to use */
 	xspect custObserver[3];		/* Custom ccss observer to use */
-	double ccmat[3][3];			/* Optional colorimeter correction matrix, unity if none. */
-	xspect *samples;			/* Copy of current calibration spectral samples, NULL if none */
-	int nsamp;					/* Number of samples, 0 if none */
 
 	/* Computed factors and state */
 	int    rrset;				/* Flag, nz if the refresh rate has been determined */

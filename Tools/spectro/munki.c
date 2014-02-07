@@ -7,7 +7,7 @@
  * Author: Graeme W. Gill
  * Date:   12/1/2009
  *
- * Copyright 2006 - 2014, Graeme W. Gill
+ * Copyright 2006 - 2013, Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -315,7 +315,6 @@ double *ref_rate) {
 		return inst_no_init;
 
 	rv = munki_imp_meas_refrate(p, ref_rate);
-
 
 	return munki_interp_code(p, rv);
 }

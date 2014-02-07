@@ -187,7 +187,7 @@
 
 struct _a1log {
 	int refc;					/* Reference count */
-	char *tag;					/* Optional tag name */
+	char *tag;						/* Optional tag name */
 	int verb;					/* Current verbosity level (public) */
 	int debug;					/* Current debug level (public) */
 
@@ -276,17 +276,6 @@ extern int ret_null_on_malloc_fail;
 extern void check_if_not_interactive();
 extern int not_interactive;
 extern char cr_char;
-
-/* =========================================================== */
-
-/* reallocate and clear new allocation */
-void *recalloc(		/* Return new address */
-void *ptr,					/* Current address */
-size_t cnum,				/* Current number and unit size */
-size_t csize,
-size_t nnum,				/* New number and unit size */
-size_t nsize
-); 
 
 /* =========================================================== */
 

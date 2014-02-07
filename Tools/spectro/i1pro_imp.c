@@ -7,7 +7,7 @@
  * Author: Graeme W. Gill
  * Date:   24/11/2006
  *
- * Copyright 2006 - 2014 Graeme W. Gill
+ * Copyright 2006 - 2013 Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -106,7 +106,7 @@
 #define DCALTOUT  (     60 * 60) /* [60 Minuites] Dark Calibration timeout in seconds */
 #define DCALTOUT2 ( 1 * 60 * 60) /* [1 Hr] i1pro2 Dark Calibration timeout in seconds */
 #define WCALTOUT  ( 1 * 60 * 60) /* [1 Hr] White Calibration timeout in seconds */
-#define MAXSCANTIME 20.0	/* [20] Maximum scan time in seconds */
+#define MAXSCANTIME 15.0	/* [15] Maximum scan time in seconds */
 #define SW_THREAD_TIMEOUT	(10 * 60.0) 	/* [10 Min] Switch read thread timeout */
 
 #define SINGLE_READ		/* [Def] Use a single USB read for scan to eliminate latency issues. */
@@ -3589,7 +3589,6 @@ i1pro_code i1pro_imp_meas_refrate(
 			if (brange > 0.05) {
 				a1logd(p->log, 3, "Readings are too inconsistent (brange %.1f%%) - should retry ?\n",brange * 100.0);
 			} else { 
-
 				if (ref_rate != NULL)
 					*ref_rate = brate;
 		
@@ -9896,7 +9895,6 @@ i1pro_code i1pro_conv2XYZ(
 		if (!m->spec_en) {
 			vals[i].sp.spec_n = 0;
 		}
-
 	}
 
 	conv->del(conv);

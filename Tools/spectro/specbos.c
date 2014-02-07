@@ -7,7 +7,7 @@
  * Author: Graeme W. Gill
  * Date:   13/3/2013
  *
- * Copyright 1996 - 2014, Graeme W. Gill
+ * Copyright 1996 - 2013, Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
@@ -679,6 +679,9 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 		val->loc[0] = '\000';
 		if (p->mode & inst_mode_ambient) {
 			val->mtype = inst_mrt_ambient;
+//			val->XYZ[0] /= 3.1415926;
+//			val->XYZ[1] /= 3.1415926;
+//			val->XYZ[2] /= 3.1415926;
 		} else
 			val->mtype = inst_mrt_emission;
 		val->XYZ_v = 1;		/* These are absolute XYZ readings */
@@ -728,7 +731,6 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 		}
 	}
 	amutex_unlock(p->lock);
-
 
 	if (user_trig)
 		return inst_user_trig;
