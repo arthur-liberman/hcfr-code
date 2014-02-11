@@ -55,7 +55,7 @@ typedef struct {
 	int addr;			/* Address of end point */
 	int packetsize;		/* The max packet size */
 	int type;			/* 2 = bulk, 3 = interrupt */	
-	int interfacenum;	/* interface number */
+	int interfacenum;		/* interface number */
 #if defined(__APPLE__)
 	int pipe;			/* pipe number (1..N, OS X only) */
 #endif
@@ -246,7 +246,6 @@ typedef struct _usb_cancelt usb_cancelt;
 #ifdef ENABLE_USB
 void usb_init_cancel(usb_cancelt *p);
 void usb_uninit_cancel(usb_cancelt *p);
-void usb_reinit_cancel(usb_cancelt *p);
 #endif
 
 struct _icoms {
