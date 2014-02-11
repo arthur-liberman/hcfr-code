@@ -1471,9 +1471,12 @@ i1pro_code i1pro_imp_calibrate(
     inst_cal_type needed, available;
 
 	a1logd(p->log,2,"i1pro_imp_calibrate called with calt 0x%x, calc 0x%x\n",*calt, *calc);
-	i1pro2_indLEDonWhite(p);
-	msec_sleep(1000);
-	i1pro2_indLEDoff(p);
+    if (p->itype == instI1Pro2)
+    {
+        i1pro2_indLEDonWhite(p);
+	    msec_sleep(1000);
+	    i1pro2_indLEDoff(p);
+    }
 	
 	if ((ev = i1pro_imp_get_n_a_cals(p, &needed, &available)) != I1PRO_OK)
 		return ev;
@@ -1521,9 +1524,12 @@ i1pro_code i1pro_imp_calibrate(
 		m->mmode = sx;				/* A lot of functions we call rely on this */
 
 		a1logd(p->log,2,"\nCalibrating mode %d\n", s->mode);
-		i1pro2_indLEDonWhite(p);
-		msec_sleep(1000);
-		i1pro2_indLEDoff(p);
+        if (p->itype == instI1Pro2)
+        {
+            i1pro2_indLEDonWhite(p);
+		    msec_sleep(1000);
+		    i1pro2_indLEDoff(p);
+        }
 
 		/* Sanity check scan mode settings, in case something strange */
 		/* has been restored from the persistence file. */
