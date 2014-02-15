@@ -1477,6 +1477,10 @@ LRESULT CMultiFrame::OnDDERequest(WPARAM wParam, LPARAM lParam)
 			// Array sizes
 			strData.Format("%d,%d,%d,%d", GetDocument()->GetMeasure()->GetGrayScaleSize()-1, GetDocument()->GetMeasure()->GetNearBlackScaleSize()-1, GetDocument()->GetMeasure()->GetNearWhiteScaleSize()-1, GetDocument()->GetMeasure()->GetSaturationSize()-1 );
 		}
+        else if (_stricmp ( (LPCSTR) strCmd, "SensorName" ) == 0 )
+        {
+            strData = GetDocument()->GetSensor()->GetName();
+        }
 		else
 		{
 			// Color values
@@ -1618,7 +1622,7 @@ LRESULT CMultiFrame::OnDDERequest(WPARAM wParam, LPARAM lParam)
 								{
 									if ( i > 0 )
 										strData+=",";
-									strTmp.Format("%.4f",Spectrum[i]);
+									strTmp.Format("%.6f",Spectrum[i]);
 									strData+=strTmp;
 								}
 							}
@@ -1627,29 +1631,29 @@ LRESULT CMultiFrame::OnDDERequest(WPARAM wParam, LPARAM lParam)
 								strData="0,0,0,0|";
 							}
 							break;
-						case HCFR_XYZ_VIEW:
 						case HCFR_SENSORRGB_VIEW:
+						case HCFR_XYZ_VIEW:
                             {
 							    ColorXYZ aColor=ReqColor.GetXYZValue();
-							    strData.Format("%.3f,%.3f,%.3f",aColor[0],aColor[1],aColor[2]);
+							    strData.Format("%.6f,%.6f,%.6f",aColor[0],aColor[1],aColor[2]);
                             }
 							break;
 						case HCFR_RGB_VIEW:
                             {
 							    ColorRGB aColor=ReqColor.GetRGBValue((GetColorReference()));
-							    strData.Format("%.3f,%.3f,%.3f",aColor[0],aColor[1],aColor[2]);
+							    strData.Format("%.6f,%.6f,%.6f",aColor[0],aColor[1],aColor[2]);
                             }
 							break;
 						case HCFR_xyz2_VIEW:
                             {
 							    Colorxyz aColor=ReqColor.GetxyzValue();
-							    strData.Format("%.3f,%.3f,%.3f",aColor[0],aColor[1],aColor[2]);
+							    strData.Format("%.6f,%.6f,%.6f",aColor[0],aColor[1],aColor[2]);
                             }
 							break;
 						case HCFR_xyY_VIEW:
                             {
 							    ColorxyY aColor=ReqColor.GetxyYValue();
-							    strData.Format("%.3f,%.3f,%.3f",aColor[0],aColor[1],aColor[2]);
+							    strData.Format("%.6f,%.6f,%.6f",aColor[0],aColor[1],aColor[2]);
                             }
 							break;
 					}
@@ -1746,7 +1750,9 @@ LRESULT CMultiFrame::OnDDEPoke(WPARAM wParam, LPARAM lParam)
 					nFormat = HCFR_RGB_VIEW;
 				else if ( _stricmp ( (LPCSTR) strTemp, "xyY" ) == 0 )
 					nFormat = HCFR_xyY_VIEW;
-			}
+                else if ( _stricmp ( (LPCSTR) strTemp, "XYZ" ) == 0 )
+                nFormat = HCFR_XYZ_VIEW;			
+            }
 
 			sscanf ( (LPCSTR) lpDDEPoke -> Value, "%lf,%lf,%lf", & a, & b, & c );
 
@@ -2003,6 +2009,19 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 	else if ( _stricmp ( (LPCSTR) strCmd, "Close" ) == 0 )
 	{
 		GetParent () -> PostMessage ( WM_CLOSE );
+	}
+	else if ( _stricmp ( (LPCSTR) strCmd, "CalibrateSensor" ) == 0 ) // modif BP
+	{
+		GetDocument () -> m_pSensor->Configure ( );
+	}
+	else if ( _stricmp ( (LPCSTR) strCmd, "ClearMeasurements" ) == 0 ) // modif BP
+	{
+        if ( GetDocument () -> GetMeasure () ->GetMeasurementsSize() > 0 )
+        {
+            GetDocument()->GetMeasure()->SetMeasurementsSize(0);
+            GetDocument()->UpdateAllViews(NULL, UPD_FREEMEASURES);
+            AfxGetMainWnd()->SendMessageToDescendants( WM_COMMAND, IDM_REFRESH_REFERENCE);
+        }
 	}
 	else if ( _stricmp ( (LPCSTR) strCmd, "SetSensorMatrix" ) == 0 )
 	{
@@ -2295,7 +2314,7 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 			}
 		}
 	}
-	else if ( _stricmp ( (LPCSTR) strCmd, "measure" ) == 0 && bSensorCalibrated )
+	else if ( _stricmp ( (LPCSTR) strCmd, "measure" ) == 0 ) // && bSensorCalibrated ) modif BP
 	{
 		if ( CmdParams.IsEmpty () )
 		{
@@ -2616,6 +2635,12 @@ BOOL CMultiFrame::DdeCmdExec ( CString & strCommand, BOOL bCanSendAckMsg, HWND h
 									break;
 
 								case CLRCAT_FREE:
+                                    // modif BP (Note: cClrIndex = 0 needed for DDERequest)
+                                    GetDocument()->GetMeasure()->InsertMeasurement(0, noDataColor);
+                                    j = GetDocument()->GetMeasure()->m_nbMaxMeasurements;
+                                    if (GetDocument()->GetMeasure()->GetMeasurementsSize() > j)
+                                        GetDocument()->GetMeasure()->SetMeasurementsSize(j);
+                                    // --------------
 									GetDocument()->m_measure.SetMeasurements ( nClrIndex, MeasuredColor);
 									break;
 							}

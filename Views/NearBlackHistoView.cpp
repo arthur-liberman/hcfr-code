@@ -194,6 +194,7 @@ void CNearBlackGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 			if((val > 0) && (i != 0))	// log scale is not valid for first value
 				m_logGraphCtrl.AddPoint(m_refLogGraphID, valx * 100. , log(val)/log(valx));
+            valformax = val;
 
 		}
 	}

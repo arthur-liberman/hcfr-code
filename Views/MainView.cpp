@@ -1482,16 +1482,19 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 			{
 				case HCFR_SENSORRGB_VIEW:
 				case HCFR_XYZ_VIEW:
-					str.Format("%.3f",aMeasure.GetXYZValue()[aComponentNum]);
+    					str.Format("%.3f",aMeasure.GetXYZValue()[aComponentNum]);
 					break;
 				case HCFR_RGB_VIEW:
 					str.Format("%.3f",aMeasure.GetRGBValue((GetColorReference()))[aComponentNum]);
 					break;
 				case HCFR_xyz2_VIEW:
-					str.Format("%.3f",aMeasure.GetxyzValue()[aComponentNum]);
+					str.Format("%.4f",aMeasure.GetxyzValue()[aComponentNum]);
 					break;
 				case HCFR_xyY_VIEW:
-					str.Format("%.3f",aMeasure.GetxyYValue()[aComponentNum]);
+                    if (aComponentNum < 2)
+    					str.Format("%.4f",aMeasure.GetxyYValue()[aComponentNum]);
+                    else
+    					str.Format("%.3f",aMeasure.GetxyYValue()[aComponentNum]);
 					break;
 			}
 			if ( str == "-99999.990" ) // Printed FX_NODATA value, coming from partially updated noDataColor
@@ -1536,7 +1539,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 		else if ( aComponentNum == 4 )
 		{
 			if ( aReference.isValid() && (nCol > 1 || ( m_displayMode != 0 && m_displayMode !=3)) )
-				str.Format("%.3f",aMeasure.GetDeltaxy ( aReference, GetColorReference()) );
+				str.Format("%.4f",aMeasure.GetDeltaxy ( aReference, GetColorReference()) );
 			else
 				str.Empty ();
 		}
@@ -1550,7 +1553,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 		else if ( aComponentNum == 6 )
 		{
 			if ( aRefDocColor.isValid() && (nCol > 1 || ( m_displayMode != 0 && m_displayMode !=3)) )
-				str.Format("%.3f",aMeasure.GetDeltaxy ( aRefDocColor, GetColorReference()) );
+				str.Format("%.4f",aMeasure.GetDeltaxy ( aRefDocColor, GetColorReference()) );
 			else
 				str.Empty ();
 		}

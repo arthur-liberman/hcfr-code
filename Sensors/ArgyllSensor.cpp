@@ -190,7 +190,7 @@ void CArgyllSensor::Serialize(CArchive& archive)
             {
                 if(meters[i]->getMeterName().c_str() == meterName)
                 {
-                    m_meter = meters[0];
+                    m_meter = meters[i];
                     SetName(CString(m_meter->getMeterName().c_str()));
                 }
             }

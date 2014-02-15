@@ -1809,6 +1809,7 @@ BEGIN
             MENUITEM "Create using Existing Reference Measures", IDM_CALIBRATION_EXISTING
             MENUITEM "Aus simultanen Messungen erstellen", IDM_CALIBRATION_SIM
             MENUITEM "Manuell mit einem Referenz Colorimeter erstellen", IDM_CALIBRATION_MANUAL
+            MENUITEM "Build colorimeter calibration spectral sample", IDM_CALIBRATION_SPECTRAL
             MENUITEM SEPARATOR
             MENUITEM "Kalibrierungsdatei speichern...", IDM_SAVE_CALIBRATION_FILE
             MENUITEM "Load meter correction file...", IDM_LOAD_CALIBRATION_FILE
@@ -2261,8 +2262,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3, 1, 0, 6
- PRODUCTVERSION 3, 1, 0, 6
+ FILEVERSION 3, 1, 0, 7
+ PRODUCTVERSION 3, 1, 0, 7
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2280,12 +2281,12 @@ BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "CompanyName", "Association Homecinema Francophone"
             VALUE "FileDescription", "HCFR Colorimeter resources"
-            VALUE "FileVersion", "3, 1, 0, 6"
+            VALUE "FileVersion", "3, 1, 0, 7"
             VALUE "InternalName", "CHCFR21_DEUTSCH"
             VALUE "LegalCopyright", "Copyright (C) 2005-2008"
             VALUE "OriginalFilename", "CHCFR21_DEUTSCH.DLL"
             VALUE "ProductName", "HCFR Colorimeter German language"
-            VALUE "ProductVersion", "3, 1, 0, 6"
+            VALUE "ProductVersion", "3, 1, 0, 7"
         END
     END
     BLOCK "VarFileInfo"

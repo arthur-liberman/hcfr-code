@@ -1831,7 +1831,7 @@ BEGIN
         MENUITEM "Aperçu a&vant impression",    ID_FILE_PRINT_PREVIEW
         MENUITEM "C&onfiguration de l'impression...", ID_FILE_PRINT_SETUP
         MENUITEM SEPARATOR
-        MENUITEM "Fichier récent",              ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM "Fichier récent",              ID_FILE_MRU_FILE1
         MENUITEM SEPARATOR
         MENUITEM "&Quitter",                    ID_APP_EXIT
     END
@@ -1933,6 +1933,7 @@ BEGIN
             MENUITEM "Create using Existing Reference Measures", IDM_CALIBRATION_EXISTING
             MENUITEM "Fabriquer un étalon à partir de mesures simultanées", IDM_CALIBRATION_SIM
             MENUITEM "Fabriquer un étalon manuellement à partir d'un colorimètre de référence", IDM_CALIBRATION_MANUAL
+            MENUITEM "Build colorimeter calibration spectral sample", IDM_CALIBRATION_SPECTRAL
             MENUITEM SEPARATOR
             MENUITEM "Sauver le fichier étalon...", IDM_SAVE_CALIBRATION_FILE
             MENUITEM "Load meter correction file...", IDM_LOAD_CALIBRATION_FILE
@@ -2385,8 +2386,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3, 1, 0, 6
- PRODUCTVERSION 3, 1, 0, 6
+ FILEVERSION 3, 1, 0, 7
+ PRODUCTVERSION 3, 1, 0, 7
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2404,12 +2405,12 @@ BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "CompanyName", "Association Homecinema Francophone"
             VALUE "FileDescription", "Resources Colorimètre HCFR"
-            VALUE "FileVersion", "3, 1, 0, 6"
+            VALUE "FileVersion", "3, 1, 0, 7"
             VALUE "InternalName", "CHCFR21_FRANCAIS"
             VALUE "LegalCopyright", "Copyright (C) 2005-2008"
             VALUE "OriginalFilename", "CHCFR21_FRANCAIS.DLL"
             VALUE "ProductName", "Colorimètre HCFR langage Français"
-            VALUE "ProductVersion", "3, 1, 0, 6"
+            VALUE "ProductVersion", "3, 1, 0, 7"
         END
     END
     BLOCK "VarFileInfo"
