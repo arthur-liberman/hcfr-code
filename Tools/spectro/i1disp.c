@@ -1414,7 +1414,9 @@ i1disp_check_unlock(
 		{ { 0x09,0x0b,0x0c,0x0d }, NULL },		/* */
 		{ { 0x0e,0x0e,0x0e,0x0e }, NULL },		/* */
 		{ { 0x11,0x02,0xde,0xf0 }, NULL },		/* Barco Chroma 5 ? */
-		{ { ' ',' ',' ',' ' }, (int *)-1 }
+        { { 'S','p','C','3' }, NULL },          /* SpectraCal C3 (Based on Smile) */
+        { { 'S','p','C','6' }, NULL },          /* SpectraCal C6 (Based on D3)? */
+        { { ' ',' ',' ',' ' }, (int *)-1 }
 	}; 
 
 	a1logd(p->log, 3, "i1disp: about to check response and unlock instrument if needed\n");
