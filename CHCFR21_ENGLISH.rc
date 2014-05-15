@@ -1098,6 +1098,8 @@ BEGIN
 0x5841, 0x5349, "\000" 
     IDC_CCMODE_COMBO, 0x403, 5, 0
 0x4b53, 0x4e49, "\000" 
+    IDC_CCMODE_COMBO, 0x403, 5, 0
+0x4343, 0x4753, "\000" 
     0
 END
 
@@ -2257,8 +2259,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3, 1, 0, 7
- PRODUCTVERSION 3, 1, 0, 7
+ FILEVERSION 3,1,0,7
+ PRODUCTVERSION 3,1,0,7
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3342,6 +3344,7 @@ STRINGTABLE
 BEGIN
     IDS_FREEMEASURES        "Free measures"
     IDS_RGBLEVELS           "RGB Levels"
+    IDS_LCHLEVELS           "LCH Levels"
     IDS_SATLUMSHIFT         "Saturation - shifts"
     IDS_SATLUM              "Saturation - luminance"
     ID_LUX_VALUE            "00000000 Lux"

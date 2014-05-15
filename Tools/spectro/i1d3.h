@@ -81,7 +81,8 @@ typedef enum {
 	i1d3_oem        = 2,	/* OEM */
 	i1d3_nec_ssp    = 3, 	/* NEC SpectraSensor Pro */
 	i1d3_quato_sh3  = 4, 	/* Quato Silver Haze 3 */
-	i1d3_hp_dreamc  = 5 	/* HP DreameColor */
+	i1d3_hp_dreamc  = 5, 	/* HP DreameColor */
+	i1d3_sc_c6      = 6 	/* SpectraCal C6 */
 } i1d3_dtype;
 
 /* Measurement mode */

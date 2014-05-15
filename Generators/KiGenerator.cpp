@@ -541,6 +541,7 @@ BOOL CKiGenerator::DisplayGray(double aLevel, MeasureType nPatternType, BOOL bCh
 				case MT_SAT_CC24_MCD:
 				case MT_SAT_CC24_AXIS:
 				case MT_SAT_CC24_SKIN:
+				case MT_SAT_CC24_CCSG:
 				case MT_CALIBRATE:
 				case MT_SAT_ALL:
 					 // Cannot occur here
@@ -799,7 +800,13 @@ BOOL CKiGenerator::DisplayRGBColor( const ColorRGBDisplay& clrIn  ,MeasureType n
 					 nFirstSaturationMenuPos = 5;
 					 break;
 
-				case MT_CALIBRATE:
+				case MT_SAT_CC24_CCSG:
+					 str.LoadString ( IDS_SATCC242 );
+					 bFirstSaturationSecondary = TRUE;
+					 nFirstSaturationMenuPos = 5;
+					 break;
+
+                case MT_CALIBRATE:
 					 bCalibration = TRUE;
 					 break;
 
@@ -1110,7 +1117,12 @@ BOOL CKiGenerator::CanDisplayScale ( MeasureType nScaleType, int nbLevels, BOOL 
 				returnvalue = FALSE;
 			break;
 		
-		case MT_SAT_ALL:
+		case MT_SAT_CC24_CCSG:
+			if (nbLevels != 96)
+				returnvalue = FALSE;
+			break;
+
+        case MT_SAT_ALL:
 			if ((nbLevels != SATURATIONLVLNUMBER) || ! ( m_OkCodeLength > 0 && m_DownCodeLength > 0 && m_RightCodeLength > 0 ))
 				returnvalue = FALSE;
 			break;
@@ -1217,6 +1229,7 @@ switch ( nScaleType )
 			case MT_SAT_CC24_MCD:
 			case MT_SAT_CC24_AXIS:
 			case MT_SAT_CC24_SKIN:
+			case MT_SAT_CC24_CCSG:
 				if (!m_patternCheckOnSaturations)
 					return	TRUE;
 
@@ -1280,6 +1293,10 @@ switch ( nScaleType )
 					str.Format(str2,m_lastPatternInfo);
 					break;
 				case MT_SAT_CC24_SKIN:
+					str2.LoadString ( IDS_CC24SATPERCENT );
+					str.Format(str2,m_lastPatternInfo);
+					break;
+				case MT_SAT_CC24_CCSG:
 					str2.LoadString ( IDS_CC24SATPERCENT );
 					str.Format(str2,m_lastPatternInfo);
 					break;

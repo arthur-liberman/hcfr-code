@@ -472,7 +472,8 @@ void CMainView::RefreshSelection()
 	Item.col = 1;
 	
 	m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235, (m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1), GetDocument()->GetMeasure()->GetGrayScaleSize());
-	m_RGBLevels.Refresh();
+	if (m_displayMode <= 2)
+        m_RGBLevels.Refresh();
 
 	if(m_SelectedColor.isValid())
 	{
@@ -654,7 +655,7 @@ void CMainView::InitGrid()
 	}
 	else if ( m_displayMode == 11)
 	{
-		size = 24;		
+		size = (GetConfig()->m_CCMode == CCSG?96:24);		
 		bHasLuxValues = GetDocument()->GetMeasure()->GetCC24Sat(0).HasLuxValue ();
 	}
 	else if ( m_displayMode == 12 )
@@ -807,6 +808,108 @@ void CMainView::InitGrid()
 				 break;
 
 			case 11:
+                 if (GetConfig()->m_CCMode == CCSG)
+                 {
+                    char*  PatName[96]={
+                    "	White	",
+                    "	6J	",
+                    "	5F	",
+                    "	6I	",
+                    "	6K	",
+                    "	5G	",
+                    "	6H	",
+                    "	5H	",
+                    "	7K	",
+                    "	6G	",
+                    "	5I	",
+                    "	6F	",
+                    "	8K	",
+                    "	5J	",
+                    "	Black	",
+                    "	2B	",
+                    "	2C	",
+                    "	2D	",
+                    "	2E	",
+                    "	2F	",
+                    "	2G	",
+                    "	2H	",
+                    "	2I	",
+                    "	2J	",
+                    "	2K	",
+                    "	2L	",
+                    "	2M	",
+                    "	3B	",
+                    "	3C	",
+                    "	3D	",
+                    "	3E	",
+                    "	3F	",
+                    "	3G	",
+                    "	3H	",
+                    "	3I	",
+                    "	3J	",
+                    "	3K	",
+                    "	3L	",
+                    "	3M	",
+                    "	4B	",
+                    "	4C	",
+                    "	4D	",
+                    "	4E	",
+                    "	4F	",
+                    "	4G	",
+                    "	4H	",
+                    "	4I	",
+                    "	4J	",
+                    "	4K	",
+                    "	4L	",
+                    "	4M	",
+                    "	5B	",
+                    "	5C	",
+                    "	5D	",
+                    "	5K	",
+                    "	5L	",
+                    "	5M	",
+                    "	6B	",
+                    "	6C	",
+                    "	6D	",
+                    "	6L	",
+                    "	6M	",
+                    "	7B	",
+                    "	7C	",
+                    "	7D	",
+                    "	7E	",
+                    "	7F	",
+                    "	7G	",
+                    "	7H	",
+                    "	7I	",
+                    "	7J	",
+                    "	7L	",
+                    "	7M	",
+                    "	8B	",
+                    "	8C	",
+                    "	8D	",
+                    "	8E	",
+                    "	8F	",
+                    "	8G	",
+                    "	8H	",
+                    "	8I	",
+                    "	8J	",
+                    "	8L	",
+                    "	8M	",
+                    "	9B	",
+                    "	9C	",
+                    "	9D	",
+                    "	9E	",
+                    "	9F	",
+                    "	9G	",
+                    "	9H	",
+                    "	9I	",
+                    "	9J	",
+                    "	9K	",
+                    "	9L	",
+                    "	9M	" };
+                    Item.strText.SetString(PatName[i]);
+                 } 
+                 else {
 				 switch ( i )
 				 {
 					 case 0:
@@ -904,7 +1007,10 @@ void CMainView::InitGrid()
 					 case 23:
 						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_24a:(GetConfig()->m_CCMode == SKIN?IDS_CC_24b:IDS_CC_24));
 						break;
-				 }
+            		 default:
+				        Item.strText.LoadString(IDS_CC_24a);
+                 }
+                 }
 				 break;
 
 			case 12:
@@ -1468,7 +1574,7 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 		UpdateData(FALSE);
 	}
 }
-		double			dEavg = 0.0;
+		double			dEavg = 0.0, dEmax=0.0;
 		int 			dEcnt = 0;
 
 CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aReference, CColor & aRefDocColor, double YWhiteRefDoc, int aComponentNum, int nCol, double Offset)
@@ -1511,6 +1617,8 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
                         str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->gw_Weight ) );
 						dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->gw_Weight );
 						dEavg+=dE;
+                        if (dE > dEmax)
+                            dEmax = dE;
 						clr = (dE<2.5?RGB(175,255,175):(dE<5?RGB(255,255,175):RGB(255,175,175)));
                         if (GetConfig()->doHighlight)
                             m_pGrayScaleGrid->SetItemBkColour(4, nCol, clr);
@@ -1524,6 +1632,8 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight ) );
 					dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), 	GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 					dEavg+=dE;
+                    if (dE > dEmax)
+                        dEmax = dE;
 					if (GetConfig()->m_dE_form <= 1)
 						clr = (dE<3.5?RGB(175,255,175):(dE<7?RGB(255,255,175):RGB(255,175,175)));
 					else
@@ -1608,7 +1718,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 			else
 			{
 				// Display primary/secondary/saturations colors delta luminance
-				double RefLuma [24];
+				double RefLuma [1000];
 				int		nCol2 = nCol;
 				
 				// Retrieve color luminance coefficients matching actual reference
@@ -1660,9 +1770,9 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 					else
 						WhiteMCD = GetDocument()->GetMeasure()->GetOnOffWhite();
 				
-					CColor white = ( m_displayMode!=11 ?  GetDocument()->GetMeasure()->GetOnOffWhite() : (GetConfig()->m_CCMode==GCD)? GetDocument()->GetMeasure()->GetCC24Sat(5):WhiteMCD );
+					CColor white = ( m_displayMode!=11 ?  GetDocument()->GetMeasure()->GetOnOffWhite() : (GetConfig()->m_CCMode==GCD)? GetDocument()->GetMeasure()->GetCC24Sat(5):(GetConfig()->m_CCMode==CCSG)? GetDocument()->GetMeasure()->GetCC24Sat(0):WhiteMCD );
 				
-				if ( nCol2 < (m_displayMode!=11 ? 7 : 25) && white.isValid() && white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) > 0.0001 )
+                    if ( nCol2 < (m_displayMode!=11 ? 7 : (GetConfig()->m_CCMode==CCSG?97:25)) && white.isValid() && white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) > 0.0001 )
 				{
 					double d = aMeasure.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) / white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter);
 
@@ -1882,7 +1992,7 @@ void CMainView::UpdateGrid()
 		BOOL bHasLuxValues = FALSE;
 		BOOL bHasLuxDelta = FALSE;
 					
-		dEavg = 0.0;
+		dEavg = 0.0, dEmax=0.0;
 		dEcnt = 0;
 
 		if ( pDataRef == GetDocument () )
@@ -2002,7 +2112,7 @@ void CMainView::UpdateGrid()
 				 }
 				 else
 				 {
-					 nCount = 24;
+                     nCount = GetConfig()->m_CCMode==CCSG?96:24;
 				 }
 				 
 				 if ( nCount )
@@ -2308,7 +2418,7 @@ void CMainView::UpdateGrid()
 						 YWhiteMCD = GetDocument() -> GetMeasure () -> GetGray ( i - 1 ) [ 1 ];
 					 else
 						 YWhiteMCD = YWhiteOnOff;
-					 YWhite = (GetConfig()->m_CCMode==GCD?GetDocument()->GetMeasure()->GetCC24Sat(5).GetY():YWhiteMCD);
+					 YWhite = (GetConfig()->m_CCMode==GCD?GetDocument()->GetMeasure()->GetCC24Sat(5).GetY():(GetConfig()->m_CCMode==CCSG)? GetDocument()->GetMeasure()->GetCC24Sat(0).GetY():YWhiteMCD);
 
     				 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
 					 if ( pDataRef )
@@ -2441,7 +2551,7 @@ void CMainView::UpdateGrid()
 					Tmp.LoadString ( IDS_DELTAEAVERAGE );
 					Msg += " ( ";
 					Msg += Tmp;
-					sprintf ( szBuf, ": %.2f )", dEavg / dEcnt );
+					sprintf ( szBuf, ": %.2f, max: %.2f )", dEavg / dEcnt, dEmax );
 					Msg += szBuf;
 					switch (GetConfig()->m_dE_form)
 					{
@@ -2504,7 +2614,7 @@ void CMainView::UpdateGrid()
 				Tmp.LoadString ( IDS_DELTAEAVERAGE );
 				Msg += " ( ";
 				Msg += Tmp;
-				sprintf ( szBuf, ": %.2f )", dEavg / dEcnt );
+				sprintf ( szBuf, ": %.2f, max: %.2f )", dEavg / dEcnt, dEmax );
 				Msg += szBuf;					
 					switch (GetConfig()->m_dE_form)
 					{
@@ -2567,7 +2677,7 @@ void CMainView::UpdateGrid()
 				Tmp.LoadString ( IDS_DELTAEAVERAGE );
 				Msg += " ( ";
 				Msg += Tmp;
-				sprintf ( szBuf, ": %.2f )", dEavg / dEcnt );
+				sprintf ( szBuf, ": %.2f, max: %.2f )", dEavg / dEcnt, dEmax );
 				Msg += szBuf;					
 					switch (GetConfig()->m_dE_form)
 					{
@@ -2628,10 +2738,10 @@ void CMainView::UpdateGrid()
 				CString dEform;
 				float a=2.5, b=5;
 				Tmp.LoadString ( IDS_DELTAEAVERAGE );
-                Msg += (GetConfig()->m_CCMode == GCD?" - GCD ":(GetConfig()->m_CCMode==MCD?" - MCD ":(GetConfig()->m_CCMode==SKIN?" - SKIN ":" - AXIS ")));
+                Msg += (GetConfig()->m_CCMode == GCD?" - GCD ":(GetConfig()->m_CCMode==MCD?" - MCD ":(GetConfig()->m_CCMode==SKIN?" - SKIN ":(GetConfig()->m_CCMode==CCSG?" - ColorChecker SG ":" - AXIS "))));
 				Msg += " ( ";
 				Msg += Tmp;
-				sprintf ( szBuf, ": %.2f )", dEavg / dEcnt );
+				sprintf ( szBuf, ": %.2f, max: %.2f )", dEavg / dEcnt, dEmax );
 				Msg += szBuf;					
 					switch (GetConfig()->m_dE_form)
 					{

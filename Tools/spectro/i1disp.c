@@ -1415,7 +1415,6 @@ i1disp_check_unlock(
 		{ { 0x0e,0x0e,0x0e,0x0e }, NULL },		/* */
 		{ { 0x11,0x02,0xde,0xf0 }, NULL },		/* Barco Chroma 5 ? */
         { { 'S','p','C','3' }, NULL },          /* SpectraCal C3 (Based on Smile) */
-        { { 'S','p','C','6' }, NULL },          /* SpectraCal C6 (Based on D3)? */
         { { ' ',' ',' ',' ' }, (int *)-1 }
 	}; 
 
@@ -2326,7 +2325,7 @@ inst_disptypesel i1disp_disptypesel[3] = {
 };
 
 
-inst_disptypesel smile_disptypesel[3] = {
+inst_disptypesel smile_disptypesel[4] = {
 	{
 		inst_dtflags_default,		/* flags */
 		1,							/* cbix */
@@ -2340,6 +2339,14 @@ inst_disptypesel smile_disptypesel[3] = {
 		0,
 		"e",
 		"LCD with White LED backlight",
+		0,
+		0
+	},
+	{
+		inst_dtflags_none,
+		0,
+		"p",
+		"Plasma",
 		0,
 		0
 	},

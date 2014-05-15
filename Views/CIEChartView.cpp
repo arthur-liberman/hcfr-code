@@ -341,6 +341,103 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	CColorHCFRApp *	pApp = GetColorApp();
 	CString			Msg, Msg2, Msg3;
 	CDataSetDoc *	pDataRef = GetDataRef();
+                    char*  PatName[96]={
+                    "	White	",
+                    "	6J	",
+                    "	5F	",
+                    "	6I	",
+                    "	6K	",
+                    "	5G	",
+                    "	6H	",
+                    "	5H	",
+                    "	7K	",
+                    "	6G	",
+                    "	5I	",
+                    "	6F	",
+                    "	8K	",
+                    "	5J	",
+                    "	Black	",
+                    "	2B	",
+                    "	2C	",
+                    "	2D	",
+                    "	2E	",
+                    "	2F	",
+                    "	2G	",
+                    "	2H	",
+                    "	2I	",
+                    "	2J	",
+                    "	2K	",
+                    "	2L	",
+                    "	2M	",
+                    "	3B	",
+                    "	3C	",
+                    "	3D	",
+                    "	3E	",
+                    "	3F	",
+                    "	3G	",
+                    "	3H	",
+                    "	3I	",
+                    "	3J	",
+                    "	3K	",
+                    "	3L	",
+                    "	3M	",
+                    "	4B	",
+                    "	4C	",
+                    "	4D	",
+                    "	4E	",
+                    "	4F	",
+                    "	4G	",
+                    "	4H	",
+                    "	4I	",
+                    "	4J	",
+                    "	4K	",
+                    "	4L	",
+                    "	4M	",
+                    "	5B	",
+                    "	5C	",
+                    "	5D	",
+                    "	5K	",
+                    "	5L	",
+                    "	5M	",
+                    "	6B	",
+                    "	6C	",
+                    "	6D	",
+                    "	6L	",
+                    "	6M	",
+                    "	7B	",
+                    "	7C	",
+                    "	7D	",
+                    "	7E	",
+                    "	7F	",
+                    "	7G	",
+                    "	7H	",
+                    "	7I	",
+                    "	7J	",
+                    "	7L	",
+                    "	7M	",
+                    "	8B	",
+                    "	8C	",
+                    "	8D	",
+                    "	8E	",
+                    "	8F	",
+                    "	8G	",
+                    "	8H	",
+                    "	8I	",
+                    "	8J	",
+                    "	8L	",
+                    "	8M	",
+                    "	9B	",
+                    "	9C	",
+                    "	9D	",
+                    "	9E	",
+                    "	9F	",
+                    "	9G	",
+                    "	9H	",
+                    "	9I	",
+                    "	9J	",
+                    "	9K	",
+                    "	9L	",
+                    "	9M	" };
 
 	if ( pDataRef == pDoc || ! m_doShowDataRef )
 		pDataRef = NULL;
@@ -852,6 +949,8 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	if(m_doShowCCScaleTarg) 
 	{
 		CString str;
+        if (GetConfig()->m_CCMode != CCSG)
+        {
 			Msg.LoadString ( GetConfig()->m_CCMode == AXIS?IDS_CC_1a:(GetConfig()->m_CCMode == SKIN?IDS_CC_1b:IDS_CC_1) );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc1Point(pDoc->GetMeasure()->GetRefCC24Sat(0).GetXYZValue(),
@@ -1019,6 +1118,20 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 								  YWhite,
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,cc24Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
+            }
+            else
+            {
+                for (int i=0; i < 96; i++)
+                {
+        			Msg.SetString (PatName[i] );
+	        		str.Format(Msg, 10);
+		        	CCIEGraphPoint cc24Point(pDoc->GetMeasure()->GetRefCC24Sat(i).GetXYZValue(),
+			        					  YWhite,
+				        				  str, m_bCIEuv);
+			        DrawAlphaBitmap(pDC,cc24Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
+                }
+
+            }
 	}
 
 	if(m_doShowSaturationScale) 
@@ -1073,6 +1186,8 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	if(m_doShowCCScale)
 	{
 		CString str;
+        if (GetConfig()->m_CCMode != CCSG)
+        {
 			Msg.LoadString ( GetConfig()->m_CCMode == AXIS?IDS_CC_1a:(GetConfig()->m_CCMode == SKIN?IDS_CC_1b:IDS_CC_1) );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc1Point(pDoc->GetMeasure()->GetCC24Sat(0).GetXYZValue(),
@@ -1240,6 +1355,19 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 								  YWhite,
 								  str, m_bCIEuv);
 			DrawAlphaBitmap(pDC,cc24Point,&m_grayPlotBitmap,rect,pTooltip,pWnd);
+         }
+         else
+         {
+            for (int i = 0; i < 96; i++)
+            {
+    			Msg.SetString (PatName[i] );
+	    		str.Format(Msg, 10);
+		    	CCIEGraphPoint cc24Point(pDoc->GetMeasure()->GetCC24Sat(i).GetXYZValue(),
+			    					  YWhite,
+				    				  str, m_bCIEuv);
+			    DrawAlphaBitmap(pDC,cc24Point,&m_grayPlotBitmap,rect,pTooltip,pWnd);
+            }
+         }
 	}
 
 	if(m_doShowMeasurements)

@@ -57,7 +57,7 @@ CMeasure::CMeasure()
 	m_yellowSatMeasureArray.SetSize(5);
 	m_cyanSatMeasureArray.SetSize(5);
 	m_magentaSatMeasureArray.SetSize(5);
-	m_cc24SatMeasureArray.SetSize(24);
+	m_cc24SatMeasureArray.SetSize(1000);
 
 	m_primariesArray[0]=m_primariesArray[1]=m_primariesArray[2]=noDataColor;
 	m_secondariesArray[0]=m_secondariesArray[1]=m_secondariesArray[2]=noDataColor;
@@ -356,7 +356,7 @@ void CMeasure::Serialize(CArchive& ar)
 			m_yellowSatMeasureArray.SetSize(5);
 			m_cyanSatMeasureArray.SetSize(5);
 			m_magentaSatMeasureArray.SetSize(5);
-			m_cc24SatMeasureArray.SetSize(24);
+			m_cc24SatMeasureArray.SetSize(1000);
 			for(int i=0;i<m_cc24SatMeasureArray.GetSize();i++) 
 				m_cc24SatMeasureArray[i]=noDataColor;
 			for(int i=0;i<m_redSatMeasureArray.GetSize();i++)
@@ -2439,7 +2439,7 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
 	BOOL		bEscape;
 	BOOL		bPatternRetry = FALSE;
 	BOOL		bRetry = FALSE;
-	int			size = 24;
+	int			size = GetConfig()->m_CCMode == CCSG?96:24;
 	CString		strMsg, Title;
 	ColorRGBDisplay	GenColors [ 256 ];
 	double		dLuxValue;
@@ -2475,6 +2475,9 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
 		 break;
 	case SKIN:
 		 nPattern=CGenerator::MT_SAT_CC24_MCD;
+		 break;
+	case CCSG:
+		 nPattern=CGenerator::MT_SAT_CC24_CCSG;
 		 break;
 	}
 
@@ -2648,6 +2651,8 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 		 break;
 	case SKIN:
 		 nPattern=CGenerator::MT_SAT_CC24_GCD;		
+	case CCSG:
+		 nPattern=CGenerator::MT_SAT_CC24_CCSG;		
 	}
 	
 	CGenerator::MeasureType	SaturationType [ 7 ] =
@@ -2667,10 +2672,10 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 	BOOL	bUseLuxValues = TRUE;
 	CArray<double,int> measuredLux;
 
-	measuredColor.SetSize(size*6+24);
-	measuredLux.SetSize(size*6+24);
+    measuredColor.SetSize(size*6+(GetConfig()->m_CCMode==CCSG?96:24));
+	measuredLux.SetSize(size*6+(GetConfig()->m_CCMode==CCSG?96:24));
 
-	if(pGenerator->Init(size*(bPrimaryOnly?3:6) + 24) != TRUE)
+	if(pGenerator->Init(size*(bPrimaryOnly?3:6) + (GetConfig()->m_CCMode==CCSG?96:24)) != TRUE)
 	{
 		Title.LoadString ( IDS_ERROR );
 		strMsg.LoadString ( IDS_ERRINITGENERATOR );
@@ -2717,7 +2722,7 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 
 	for ( j = 0 ; j < ( bPrimaryOnly ? 3 : 7 ) ; j ++ )
 	{
-		for ( i = 0 ; i < ( j == 6 ? 24 : size ) ; i ++ )
+		for ( i = 0 ; i < ( j == 6 ? (GetConfig()->m_CCMode==CCSG?96:24) : size ) ; i ++ )
 		{
 			if( pGenerator->DisplayRGBColor(GenColors[(j*size)+i],SaturationType[j],(j == 6 ? i:100*i/(size - 1)),!bRetry,(j>0)) )
 			{
@@ -2870,7 +2875,7 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 			}
 		}
 	}
-	for ( i = 0 ; i < 24 ; i ++ )
+	for ( i = 0 ; i < (GetConfig()->m_CCMode==CCSG?96:24) ; i ++ )
 	{
 		if ( ! bPrimaryOnly )
 		{
@@ -5268,126 +5273,228 @@ CColor CMeasure::GetRefCC24Sat(int i) const
 	int m_cRef=GetColorReference().m_standard;
     CColorReference cRef = GetColorReference();
 	//switch over to user gamma
-	CColor ccRef[24];
+	CColor ccRef;
+    ColorRGB RGB[100];
 	double gamma=GetConfig()->m_GammaAvg;
 	switch (GetConfig()->m_CCMode)
 	{
 //GCD
 	case GCD:
 		{
-			ccRef[0].SetRGBValue( ColorRGB( 0, 0, 0 ), cRef );
-			ccRef[1].SetRGBValue( ColorRGB( pow(.6210,gamma), pow(.6210,gamma), pow(.6210,gamma) ), cRef );
-			ccRef[2].SetRGBValue( ColorRGB( pow(.7306,gamma), pow(.7306,gamma), pow(.7306,gamma) ), cRef );
-			ccRef[3].SetRGBValue( ColorRGB( pow(.8219,gamma), pow(.8219,gamma), pow(.8219,gamma) ), cRef );
-			ccRef[4].SetRGBValue( ColorRGB( pow(.8995,gamma), pow(.8995,gamma), pow(.8995,gamma) ), cRef );
-			ccRef[5].SetRGBValue( ColorRGB( pow(1.0,gamma), pow(1.0,gamma), pow(1.0,gamma) ), cRef );
-			ccRef[6].SetRGBValue( ColorRGB( pow(.452,gamma), pow(.3196,gamma), pow(.2603,gamma) ), cRef );
-			ccRef[7].SetRGBValue( ColorRGB( pow(.758,gamma), pow(.589,gamma), pow(.5114,gamma) ), cRef );
-			ccRef[8].SetRGBValue( ColorRGB( pow(.3699,gamma), pow(.4795,gamma), pow(.6119,gamma) ), cRef );
-			ccRef[9].SetRGBValue( ColorRGB( pow(.3516,gamma), pow(.4201,gamma), pow(.2603,gamma) ), cRef );
-			ccRef[10].SetRGBValue( ColorRGB( pow(.5114,gamma), pow(.5023,gamma), pow(.6895,gamma) ), cRef );
-			ccRef[11].SetRGBValue( ColorRGB( pow(.3881,gamma), pow(.7397,gamma), pow(.6621,gamma) ), cRef );
-			ccRef[12].SetRGBValue( ColorRGB( pow(.8493,gamma), pow(.4703,gamma), pow(.1598,gamma) ), cRef );
-			ccRef[13].SetRGBValue( ColorRGB( pow(.2922,gamma), pow(.3607,gamma), pow(.6393,gamma) ), cRef );
-			ccRef[14].SetRGBValue( ColorRGB( pow(.7580,gamma), pow(.3288,gamma), pow(.3790,gamma) ), cRef );
-			ccRef[15].SetRGBValue( ColorRGB( pow(.3607,gamma), pow(.2420,gamma), pow(.4201,gamma) ), cRef );
-			ccRef[16].SetRGBValue( ColorRGB( pow(.6210,gamma), pow(.7306,gamma), pow(.2511,gamma) ), cRef );
-			ccRef[17].SetRGBValue( ColorRGB( pow(.8995,gamma), pow(.6301,gamma), pow(.1781,gamma) ), cRef );
-			ccRef[18].SetRGBValue( ColorRGB( pow(.2009,gamma), pow(.2420,gamma), pow(.5890,gamma) ), cRef );
-			ccRef[19].SetRGBValue( ColorRGB( pow(.2785,gamma), pow(.5799,gamma), pow(.2785,gamma) ), cRef );
-			ccRef[20].SetRGBValue( ColorRGB( pow(.6895,gamma), pow(.1918,gamma), pow(.2283,gamma) ), cRef );
-			ccRef[21].SetRGBValue( ColorRGB( pow(.9315,gamma), pow(.7808,gamma), pow(.1279,gamma) ), cRef );
-			ccRef[22].SetRGBValue( ColorRGB( pow(.7306,gamma), pow(.3288,gamma), pow(.5708,gamma) ), cRef );
-			ccRef[23].SetRGBValue( ColorRGB( 0.0, pow(.5205,gamma), pow(.6393,gamma) ), cRef );
+            RGB[0] = ColorRGB(0, 0, 0);
+			RGB[1] = ColorRGB(.6210,.6210,.6210) ;
+			RGB[2] = ColorRGB(.7306,.7306,.7306) ;
+			RGB[3] = ColorRGB(.8219,.8219,.8219) ;
+			RGB[4] = ColorRGB(.8995,.8995,.8995) ;
+			RGB[5] = ColorRGB(1.0,1.0,1.0) ;
+			RGB[6] = ColorRGB(.452,.3196,.2603);
+			RGB[7] = ColorRGB(.758,.589,.5114);
+			RGB[8] = ColorRGB(.3699,.4795,.6119);
+			RGB[9] = ColorRGB(.3516,.4201,.2603);
+			RGB[10] = ColorRGB(.5114,.5023,.6895);
+			RGB[11] = ColorRGB(.3881,.7397,.6621);
+			RGB[12] = ColorRGB(.8493,.4703,.1598);
+			RGB[13] = ColorRGB(.2922,.3607,.6393);
+			RGB[14] = ColorRGB(.7580,.3288,.3790);
+			RGB[15] = ColorRGB(.3607,.2420,.4201);
+			RGB[16] = ColorRGB(.6210,.7306,.2511);
+			RGB[17] = ColorRGB(.8995,.6301,.1781);
+			RGB[18] = ColorRGB(.2009,.2420,.5890);
+			RGB[19] = ColorRGB(.2785,.5799,.2785);
+			RGB[20] = ColorRGB(.6895,.1918,.2283);
+			RGB[21] = ColorRGB(.9315,.7808,.1279);
+			RGB[22] = ColorRGB(.7306,.3288,.5708);
+			RGB[23] = ColorRGB(  0.0, .5205,.6393);
 		break;
 		}
 //MCD
 	case MCD:
 		{
-			ccRef[0].SetRGBValue( ColorRGB( pow(.21,gamma), pow(.2055,gamma), pow(.21,gamma) ), cRef );
-			ccRef[1].SetRGBValue( ColorRGB( pow(.3288,gamma), pow(.3288,gamma), pow(.3288,gamma) ), cRef );
-			ccRef[2].SetRGBValue( ColorRGB( pow(.4749,gamma), pow(.4749,gamma), pow(.4703,gamma) ), cRef );
-			ccRef[3].SetRGBValue( ColorRGB( pow(.6256,gamma), pow(.6256,gamma), pow(.6256,gamma) ), cRef );
-			ccRef[4].SetRGBValue( ColorRGB( pow(.7854,gamma), pow(.7854,gamma), pow(.7808,gamma) ), cRef );
-			ccRef[5].SetRGBValue( ColorRGB( pow(.9498,gamma), pow(.9452,gamma), pow(.9269,gamma) ), cRef );
-			ccRef[6].SetRGBValue( ColorRGB( pow(.4474,gamma), pow(.3151,gamma), pow(.2603,gamma) ), cRef );
-			ccRef[7].SetRGBValue( ColorRGB( pow(.7580,gamma), pow(.5845,gamma), pow(.5068,gamma) ), cRef );
-			ccRef[8].SetRGBValue( ColorRGB( pow(.3699,gamma), pow(.4795,gamma), pow(.6073,gamma) ), cRef );
-			ccRef[9].SetRGBValue( ColorRGB( pow(.3470,gamma), pow(.4247,gamma), pow(.2648,gamma) ), cRef );
-			ccRef[10].SetRGBValue( ColorRGB( pow(.5068,gamma), pow(.5022,gamma), pow(.6849,gamma) ), cRef );
-			ccRef[11].SetRGBValue( ColorRGB( pow(.3927,gamma), pow(.7397,gamma), pow(.6621,gamma) ), cRef );
-			ccRef[12].SetRGBValue( ColorRGB( pow(.8447,gamma), pow(.4749,gamma), pow(.1644,gamma) ), cRef );
-			ccRef[13].SetRGBValue( ColorRGB( pow(.2877,gamma), pow(.3562,gamma), pow(.6438,gamma) ), cRef );
-			ccRef[14].SetRGBValue( ColorRGB( pow(.7580,gamma), pow(.3333,gamma), pow(.3836,gamma) ), cRef );
-			ccRef[15].SetRGBValue( ColorRGB( pow(.3607,gamma), pow(.2420,gamma), pow(.4201,gamma) ), cRef );
-			ccRef[16].SetRGBValue( ColorRGB( pow(.6210,gamma), pow(.7306,gamma), pow(.2466,gamma) ), cRef );
-			ccRef[17].SetRGBValue( ColorRGB( pow(.8995,gamma), pow(.6347,gamma), pow(.1826,gamma) ), cRef );
-			ccRef[18].SetRGBValue( ColorRGB( pow(.1963,gamma), pow(.2420,gamma), pow(.5936,gamma) ), cRef );
-			ccRef[19].SetRGBValue( ColorRGB( pow(.2831,gamma), pow(.5799,gamma), pow(.2785,gamma) ), cRef );
-			ccRef[20].SetRGBValue( ColorRGB( pow(.6895,gamma), pow(.1918,gamma), pow(.2283,gamma) ), cRef );
-			ccRef[21].SetRGBValue( ColorRGB( pow(.9315,gamma), pow(.7808,gamma), pow(.1279,gamma) ), cRef );
-			ccRef[22].SetRGBValue( ColorRGB( pow(.7261,gamma), pow(.3242,gamma), pow(.5753,gamma) ), cRef );
-			ccRef[23].SetRGBValue( ColorRGB( pow(.1187,gamma), pow(.5160,gamma), pow(.5982,gamma) ), cRef );
+			RGB[0] = ColorRGB(.21,.2055,.21);
+			RGB[1] = ColorRGB(.3288,.3288,.3288);
+			RGB[2] = ColorRGB(.4749,.4749,.4703);
+			RGB[3] = ColorRGB(.6256,.6256,.6256);
+			RGB[4] = ColorRGB(.7854,.7854,.7808);
+			RGB[5] = ColorRGB(.9498,.9452,.9269);
+			RGB[6] = ColorRGB(.4474,.3151,.2603);
+			RGB[7] = ColorRGB(.7580,.5845,.5068);
+			RGB[8] = ColorRGB(.3699,.4795,.6073);
+			RGB[9] = ColorRGB(.3470,.4247,.2648);
+			RGB[10] = ColorRGB(.5068,.5022,.6849);
+			RGB[11] = ColorRGB(.3927,.7397,.6621);
+			RGB[12] = ColorRGB(.8447,.4749,.1644);
+			RGB[13] = ColorRGB(.2877,.3562,.6438);
+			RGB[14] = ColorRGB(.7580,.3333,.3836);
+			RGB[15] = ColorRGB(.3607,.2420,.4201);
+			RGB[16] = ColorRGB(.6210,.7306,.2466);
+			RGB[17] = ColorRGB(.8995,.6347,.1826);
+			RGB[18] = ColorRGB(.1963,.2420,.5936);
+			RGB[19] = ColorRGB(.2831,.5799,.2785);
+			RGB[20] = ColorRGB(.6895,.1918,.2283);
+			RGB[21] = ColorRGB(.9315,.7808,.1279);
+			RGB[22] = ColorRGB(.7261,.3242,.5753);
+			RGB[23] = ColorRGB(.1187,.5160,.5982);
 		break;
 		}
 		//axis steps
 	case AXIS:
 		{
-			ccRef[0].SetRGBValue( ColorRGB( pow(0.12,gamma), 0, 0 ), cRef );
-			ccRef[1].SetRGBValue( ColorRGB( pow(.24,gamma), 0, 0 ), cRef );
-			ccRef[2].SetRGBValue( ColorRGB( pow(.36,gamma), 0, 0 ), cRef );
-			ccRef[3].SetRGBValue( ColorRGB( pow(.48,gamma), 0, 0 ), cRef );
-			ccRef[4].SetRGBValue( ColorRGB( pow(.60,gamma), 0, 0 ), cRef );
-			ccRef[5].SetRGBValue( ColorRGB( pow(.72,gamma), 0, 0 ), cRef );
-			ccRef[6].SetRGBValue( ColorRGB( pow(.84,gamma), 0, 0 ), cRef );
-			ccRef[7].SetRGBValue( ColorRGB( pow(.96,gamma), 0, 0 ), cRef );
-			ccRef[8].SetRGBValue( ColorRGB( 0, pow(0.12,gamma), 0 ), cRef );
-			ccRef[9].SetRGBValue( ColorRGB( 0, pow(.24,gamma), 0 ), cRef );
-			ccRef[10].SetRGBValue( ColorRGB( 0, pow(.36,gamma), 0 ), cRef );
-			ccRef[11].SetRGBValue( ColorRGB( 0, pow(.48,gamma), 0 ), cRef );
-			ccRef[12].SetRGBValue( ColorRGB( 0, pow(.60,gamma), 0 ), cRef );
-			ccRef[13].SetRGBValue( ColorRGB( 0, pow(.72,gamma), 0 ), cRef );
-			ccRef[14].SetRGBValue( ColorRGB( 0, pow(.84,gamma), 0 ), cRef );
-			ccRef[15].SetRGBValue( ColorRGB( 0, pow(.96,gamma), 0 ), cRef );
-			ccRef[16].SetRGBValue( ColorRGB( 0, 0, pow(0.12,gamma) ), cRef );
-			ccRef[17].SetRGBValue( ColorRGB( 0, 0,  pow(.24,gamma) ), cRef );
-			ccRef[18].SetRGBValue( ColorRGB( 0, 0, pow(.36,gamma) ), cRef );
-			ccRef[19].SetRGBValue( ColorRGB( 0, 0, pow(.48,gamma) ), cRef );
-			ccRef[20].SetRGBValue( ColorRGB( 0, 0, pow(.60,gamma) ), cRef );
-			ccRef[21].SetRGBValue( ColorRGB( 0, 0, pow(.72,gamma) ), cRef );
-			ccRef[22].SetRGBValue( ColorRGB( 0, 0, pow(.84,gamma) ), cRef );
-			ccRef[23].SetRGBValue( ColorRGB( 0, 0, pow(.96,gamma) ), cRef );
-		break;
-		}
+			RGB[0] = ColorRGB(0.12, 0, 0 );
+			RGB[1] = ColorRGB(.24, 0, 0 );
+			RGB[2] = ColorRGB(.36, 0, 0 );
+			RGB[3] = ColorRGB(.48, 0, 0 );
+			RGB[4] = ColorRGB(.60, 0, 0 );
+			RGB[5] = ColorRGB(.72, 0, 0 );
+			RGB[6] = ColorRGB(.84, 0, 0 );
+			RGB[7] = ColorRGB(.96, 0, 0 );
+			RGB[8] = ColorRGB(  0, 0.12, 0 );
+			RGB[9] = ColorRGB(  0, .24, 0 );
+			RGB[10] = ColorRGB(  0, .36, 0 );
+			RGB[11] = ColorRGB(  0, .48, 0 );
+			RGB[12] = ColorRGB(  0, .60, 0 );
+			RGB[13] = ColorRGB(  0, .72, 0 );
+			RGB[14] = ColorRGB(  0, .84, 0 );
+			RGB[15] = ColorRGB(  0, .96, 0 );
+			RGB[16] = ColorRGB(  0, 0, 0.12);
+			RGB[17] = ColorRGB(  0, 0, 0.24 );
+			RGB[18] = ColorRGB(  0, 0, .36 );
+			RGB[19] = ColorRGB(  0, 0, .48 );
+			RGB[20] = ColorRGB(  0, 0, .60 );
+			RGB[21] = ColorRGB(  0, 0, .72 );
+			RGB[22] = ColorRGB(  0, 0, .84 );
+			RGB[23] = ColorRGB(  0, 0, .96 );
+		break;		}
+        //Pantone skin set
 	case SKIN:
 		{
-			ccRef[0].SetRGBValue( ColorRGB( pow(1,gamma), pow(0.8745,gamma), pow(0.7686,gamma) ), cRef );
-			ccRef[1].SetRGBValue( ColorRGB( pow(0.9412,gamma), pow(0.8353,gamma), pow(0.7451,gamma) ), cRef );
-			ccRef[2].SetRGBValue( ColorRGB( pow(0.9333,gamma), pow(0.8078,gamma), pow(0.7020,gamma) ), cRef );
-			ccRef[3].SetRGBValue( ColorRGB( pow(0.8824,gamma), pow(0.7216,gamma), pow(0.6000,gamma) ), cRef );
-			ccRef[4].SetRGBValue( ColorRGB( pow(0.8980,gamma), pow(0.7608,gamma), pow(0.5961,gamma) ), cRef );
-			ccRef[5].SetRGBValue( ColorRGB( pow(1,gamma), pow(0.8627,gamma), pow(0.6980,gamma) ), cRef );
-			ccRef[6].SetRGBValue( ColorRGB( pow(0.8980,gamma), pow(0.7215,gamma), pow(0.5608,gamma) ), cRef );
-			ccRef[7].SetRGBValue( ColorRGB( pow(0.8980,gamma), pow(0.6274,gamma), pow(0.4510,gamma) ), cRef );
-			ccRef[8].SetRGBValue( ColorRGB( pow(0.9059,gamma), pow(0.6196,gamma), pow(0.4275,gamma) ), cRef );
-			ccRef[9].SetRGBValue( ColorRGB( pow(0.8588,gamma), pow(0.5647,gamma), pow(0.3961,gamma) ), cRef );
-			ccRef[10].SetRGBValue( ColorRGB( pow(0.8078,gamma), pow(0.5882,gamma), pow(0.4863,gamma) ), cRef );
-			ccRef[11].SetRGBValue( ColorRGB( pow(0.7765,gamma), pow(0.4706,gamma), pow(0.3373,gamma) ), cRef );
-			ccRef[12].SetRGBValue( ColorRGB( pow(0.7294,gamma), pow(0.4235,gamma), pow(0.2863,gamma) ), cRef );
-			ccRef[13].SetRGBValue( ColorRGB( pow(0.6471,gamma), pow(0.4471,gamma), pow(0.3411,gamma) ), cRef );
-			ccRef[14].SetRGBValue( ColorRGB( pow(0.9412,gamma), pow(0.7843,gamma), pow(0.7882,gamma) ), cRef );
-			ccRef[15].SetRGBValue( ColorRGB( pow(0.8666,gamma), pow(0.6588,gamma), pow(0.6275,gamma) ), cRef );
-			ccRef[16].SetRGBValue( ColorRGB( pow(0.7255,gamma), pow(0.4863,gamma), pow(0.4275,gamma) ), cRef );
-			ccRef[17].SetRGBValue( ColorRGB( pow(0.6588,gamma), pow(0.4588,gamma), pow(0.4235,gamma) ), cRef );
-			ccRef[18].SetRGBValue( ColorRGB( pow(0.6784,gamma), pow(0.3922,gamma), pow(0.3216,gamma) ), cRef );
-			ccRef[19].SetRGBValue( ColorRGB( pow(0.3608,gamma), pow(0.2196,gamma), pow(0.2118,gamma) ), cRef );
-			ccRef[20].SetRGBValue( ColorRGB( pow(0.7961,gamma), pow(0.5176,gamma), pow(0.2588,gamma) ), cRef );
-			ccRef[21].SetRGBValue( ColorRGB( pow(0.7412,gamma), pow(0.4471,gamma), pow(0.2353,gamma) ), cRef );
-			ccRef[22].SetRGBValue( ColorRGB( pow(0.4392,gamma), pow(0.2549,gamma), pow(0.2235,gamma) ), cRef );
-			ccRef[23].SetRGBValue( ColorRGB( pow(0.6392,gamma), pow(0.5255,gamma), pow(0.4157,gamma) ), cRef );
+			RGB[0] = ColorRGB(1,0.8745,0.7686);
+			RGB[1] = ColorRGB(0.9412,0.8353,0.7451);
+			RGB[2] = ColorRGB(0.9333,0.8078,0.7020);
+			RGB[3] = ColorRGB(0.8824,0.7216,0.6000);
+			RGB[4] = ColorRGB(0.8980,0.7608,0.5961);
+			RGB[5] = ColorRGB(1,0.8627,0.6980);
+			RGB[6] = ColorRGB(0.8980,0.7215,0.5608);
+			RGB[7] = ColorRGB(0.8980,0.6274,0.4510);
+			RGB[8] = ColorRGB(0.9059,0.6196,0.4275);
+			RGB[9] = ColorRGB(0.8588,0.5647,0.3961);
+			RGB[10] = ColorRGB(0.8078,0.5882,0.4863);
+			RGB[11] = ColorRGB(0.7765,0.4706,0.3373);
+			RGB[12] = ColorRGB(0.7294,0.4235,0.2863);
+			RGB[13] = ColorRGB(0.6471,0.4471,0.3411);
+			RGB[14] = ColorRGB(0.9412,0.7843,0.7882);
+			RGB[15] = ColorRGB(0.8666,0.6588,0.6275);
+			RGB[16] = ColorRGB(0.7255,0.4863,0.4275);
+			RGB[17] = ColorRGB(0.6588,0.4588,0.4235);
+			RGB[18] = ColorRGB(0.6784,0.3922,0.3216);
+			RGB[19] = ColorRGB(0.3608,0.2196,0.2118);
+			RGB[20] = ColorRGB(0.7961,0.5176,0.2588);
+			RGB[21] = ColorRGB(0.7412,0.4471,0.2353);
+			RGB[22] = ColorRGB(0.4392,0.2549,0.2235);
+			RGB[23] = ColorRGB(0.6392,0.5255,0.4157);
             break;
         }
-		//SKIN
-	}
-	return ccRef[i];
+        //Color checker SG 96 colors
+			case CCSG:
+		{
+RGB[0] = ColorRGB(1,1,1);
+RGB[1] = ColorRGB(0.872146119,0.872146119,0.872146119);
+RGB[2] = ColorRGB(0.771689498,0.771689498,0.771689498);
+RGB[3] = ColorRGB(0.721461187,0.721461187,0.721461187);
+RGB[4] = ColorRGB(0.671232877,0.671232877,0.671232877);
+RGB[5] = ColorRGB(0.611872146,0.611872146,0.611872146);
+RGB[6] = ColorRGB(0.561643836,0.561643836,0.561643836);
+RGB[7] = ColorRGB(0.461187215,0.461187215,0.461187215);
+RGB[8] = ColorRGB(0.420091324,0.420091324,0.420091324);
+RGB[9] = ColorRGB(0.369863014,0.369863014,0.369863014);
+RGB[10] = ColorRGB(0.328767123,0.328767123,0.328767123);
+RGB[11] = ColorRGB(0.292237443,0.292237443,0.292237443);
+RGB[12] = ColorRGB(0.210045662,0.210045662,0.210045662);
+RGB[13] = ColorRGB(0.168949772,0.168949772,0.168949772);
+RGB[14] = ColorRGB(0,0,0);
+RGB[15] = ColorRGB(0.570776256,0.109589041,0.328767123);
+RGB[16] = ColorRGB(0.292237443,0.178082192,0.278538813);
+RGB[17] = ColorRGB(0.849315068,0.821917808,0.757990868);
+RGB[18] = ColorRGB(0.438356164,0.251141553,0.150684932);
+RGB[19] = ColorRGB(0.799086758,0.538812785,0.401826484);
+RGB[20] = ColorRGB(0.351598174,0.438356164,0.511415525);
+RGB[21] = ColorRGB(0.328767123,0.378995434,0.118721461);
+RGB[22] = ColorRGB(0.502283105,0.461187215,0.570776256);
+RGB[23] = ColorRGB(0.420091324,0.707762557,0.561643836);
+RGB[24] = ColorRGB(1,0.780821918,0.598173516);
+RGB[25] = ColorRGB(0.388127854,0.109589041,0.159817352);
+RGB[26] = ColorRGB(0.748858447,0.118721461,0.292237443);
+RGB[27] = ColorRGB(0.739726027,0.502283105,0.611872146);
+RGB[28] = ColorRGB(0.429223744,0.351598174,0.538812785);
+RGB[29] = ColorRGB(0.99086758,0.780821918,0.707762557);
+RGB[30] = ColorRGB(0.908675799,0.438356164,0);
+RGB[31] = ColorRGB(0.242009132,0.310502283,0.561643836);
+RGB[32] = ColorRGB(0.780821918,0.251141553,0.269406393);
+RGB[33] = ColorRGB(0.319634703,0.150684932,0.319634703);
+RGB[34] = ColorRGB(0.662100457,0.707762557,0);
+RGB[35] = ColorRGB(0.917808219,0.589041096,0);
+RGB[36] = ColorRGB(0.840182648,0.908675799,0.707762557);
+RGB[37] = ColorRGB(0.799086758,0,0.082191781);
+RGB[38] = ColorRGB(0.337899543,0.127853881,0.210045662);
+RGB[39] = ColorRGB(0.461187215,0.118721461,0.438356164);
+RGB[40] = ColorRGB(0,0.210045662,0.351598174);
+RGB[41] = ColorRGB(0.739726027,0.858447489,0.721461187);
+RGB[42] = ColorRGB(0.050228311,0.168949772,0.461187215);
+RGB[43] = ColorRGB(0.260273973,0.547945205,0.159817352);
+RGB[44] = ColorRGB(0.698630137,0,0.100456621);
+RGB[45] = ColorRGB(0.96803653,0.748858447,0);
+RGB[46] = ColorRGB(0.757990868,0.260273973,0.479452055);
+RGB[47] = ColorRGB(0,0.502283105,0.547945205);
+RGB[48] = ColorRGB(0.908675799,0.799086758,0.748858447);
+RGB[49] = ColorRGB(0.840182648,0.461187215,0.470319635);
+RGB[50] = ColorRGB(0.748858447,0,0.150684932);
+RGB[51] = ColorRGB(0,0.488584475,0.680365297);
+RGB[52] = ColorRGB(0.328767123,0.598173516,0.680365297);
+RGB[53] = ColorRGB(1,0.780821918,0.671232877);
+RGB[54] = ColorRGB(0.748858447,0.840182648,0.757990868);
+RGB[55] = ColorRGB(0.872146119,0.461187215,0.401826484);
+RGB[56] = ColorRGB(0.940639269,0.200913242,0.150684932);
+RGB[57] = ColorRGB(0.191780822,0.630136986,0.648401826);
+RGB[58] = ColorRGB(0,0.228310502,0.269406393);
+RGB[59] = ColorRGB(0.858447489,0.831050228,0.520547945);
+RGB[60] = ColorRGB(1,0.401826484,0);
+RGB[61] = ColorRGB(1,0.630136986,0);
+RGB[62] = ColorRGB(0,0.228310502,0.200913242);
+RGB[63] = ColorRGB(0.461187215,0.579908676,0.689497717);
+RGB[64] = ColorRGB(0.858447489,0.479452055,0.278538813);
+RGB[65] = ColorRGB(0.96803653,0.671232877,0.488584475);
+RGB[66] = ColorRGB(0.780821918,0.547945205,0.360730594);
+RGB[67] = ColorRGB(0.561643836,0.360730594,0.200913242);
+RGB[68] = ColorRGB(0.808219178,0.589041096,0.452054795);
+RGB[69] = ColorRGB(0.630136986,0.337899543,0.127853881);
+RGB[70] = ColorRGB(0.840182648,0.520547945,0.360730594);
+RGB[71] = ColorRGB(0.780821918,0.698630137,0);
+RGB[72] = ColorRGB(1,0.748858447,0);
+RGB[73] = ColorRGB(0,0.630136986,0.561643836);
+RGB[74] = ColorRGB(0,0.547945205,0.461187215);
+RGB[75] = ColorRGB(0.821917808,0.538812785,0.410958904);
+RGB[76] = ColorRGB(0.98173516,0.598173516,0.452054795);
+RGB[77] = ColorRGB(0.780821918,0.561643836,0.420091324);
+RGB[78] = ColorRGB(0.789954338,0.547945205,0.420091324);
+RGB[79] = ColorRGB(0.799086758,0.561643836,0.410958904);
+RGB[80] = ColorRGB(0.479452055,0.292237443,0.150684932);
+RGB[81] = ColorRGB(0.849315068,0.547945205,0.369863014);
+RGB[82] = ColorRGB(0.721461187,0.561643836,0.091324201);
+RGB[83] = ColorRGB(0.730593607,0.698630137,0);
+RGB[84] = ColorRGB(0.251141553,0.210045662,0.141552511);
+RGB[85] = ColorRGB(0.351598174,0.630136986,0.351598174);
+RGB[86] = ColorRGB(0,0.538812785,0.310502283);
+RGB[87] = ColorRGB(0.118721461,0.251141553,0.159817352);
+RGB[88] = ColorRGB(0.228310502,0.630136986,0.429223744);
+RGB[89] = ColorRGB(0.479452055,0.611872146,0.219178082);
+RGB[90] = ColorRGB(0.200913242,0.538812785,0.100456621);
+RGB[91] = ColorRGB(0.292237443,0.662100457,0.159817352);
+RGB[92] = ColorRGB(0.789954338,0.520547945,0.168949772);
+RGB[93] = ColorRGB(0.621004566,0.589041096,0.100456621);
+RGB[94] = ColorRGB(0.648401826,0.730593607,0);
+RGB[95] = ColorRGB(0.301369863,0.168949772,0.100456621);
+            break;
+        } 
+	} 
+    ccRef.SetRGBValue(ColorRGB(pow(RGB[i][0],gamma),pow(RGB[i][1],gamma),pow(RGB[i][2],gamma)),cRef);
+	return ccRef;
 }

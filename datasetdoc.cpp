@@ -2404,8 +2404,14 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 				 break;
 				case SKIN:
 				nPattern=CGenerator::MT_SAT_CC24_GCD;		
+				 break;
+				case CCSG:
+				nPattern=CGenerator::MT_SAT_CC24_CCSG;		
+                nSteps = 96;
+				 break;
+                default:
+    			 nSteps = 24;
 			}
-			 nSteps = 24;
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = nPattern;
 			 GenerateCC24Colors (GenColors, GetConfig()->m_CCMode );
@@ -3025,7 +3031,7 @@ void CDataSetDoc::OnMeasureDefinescale()
 void CDataSetDoc::OnMeasureGrayscale() 
 {
 	CString	Msg, MsgQueue, TmpStr;
-	int		nNbPoints = GetMeasure () -> GetGrayScaleSize () - 1;
+	int		nNbPoints = GetMeasure () -> GetGrayScaleSize ();
 	
 	MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
 
@@ -3085,7 +3091,7 @@ void CDataSetDoc::OnUpdateMeasureSecondaries(CCmdUI* pCmdUI)
 void CDataSetDoc::OnMeasureNearblack() 
 {
 	CString	Msg, MsgQueue, TmpStr;
-	int		nNbPoints = GetMeasure () -> GetNearBlackScaleSize () - 1;
+	int		nNbPoints = GetMeasure () -> GetNearBlackScaleSize ();
 	
     bool m_YWhite = GetMeasure ()->GetGray (0).isValid();
 	if (!m_YWhite)
@@ -3115,7 +3121,7 @@ void CDataSetDoc::OnUpdateMeasureNearblack(CCmdUI* pCmdUI)
 void CDataSetDoc::OnMeasureNearwhite() 
 {
 	CString	Msg, MsgQueue, TmpStr;
-	int		nNbPoints = GetMeasure () -> GetNearWhiteScaleSize () - 1;
+	int		nNbPoints = GetMeasure () -> GetNearWhiteScaleSize ();
     bool m_YWhite = GetMeasure ()->GetGray (0).isValid();
 	if (!m_YWhite)
 		MessageBox(NULL,"Please run the grayscale measures scan first.","No grayscale measures found!",MB_OK);
@@ -3144,7 +3150,7 @@ void CDataSetDoc::OnUpdateMeasureNearwhite(CCmdUI* pCmdUI)
 void CDataSetDoc::OnMeasureSatRed() 
 {
 	CString	Msg, MsgQueue, TmpStr;
-	int		nNbPoints = GetMeasure () -> GetSaturationSize () - 1;
+	int		nNbPoints = GetMeasure () -> GetSaturationSize ();
 	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
 	if (!m_YWhite)
 		MessageBox(NULL,"Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
@@ -3173,7 +3179,7 @@ void CDataSetDoc::OnUpdateMeasureSatRed(CCmdUI* pCmdUI)
 void CDataSetDoc::OnMeasureSatGreen() 
 {
 	CString	Msg, MsgQueue, TmpStr;
-	int		nNbPoints = GetMeasure () -> GetSaturationSize () - 1;
+	int		nNbPoints = GetMeasure () -> GetSaturationSize ();
 	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
 	if (!m_YWhite)
 		MessageBox(NULL,"Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
@@ -3202,7 +3208,7 @@ void CDataSetDoc::OnUpdateMeasureSatGreen(CCmdUI* pCmdUI)
 void CDataSetDoc::OnMeasureSatBlue() 
 {
 	CString	Msg, MsgQueue, TmpStr;
-	int		nNbPoints = GetMeasure () -> GetSaturationSize () - 1;
+	int		nNbPoints = GetMeasure () -> GetSaturationSize ();
 	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
 	if (!m_YWhite)
 		MessageBox(NULL,"Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
@@ -3231,7 +3237,7 @@ void CDataSetDoc::OnUpdateMeasureSatBlue(CCmdUI* pCmdUI)
 void CDataSetDoc::OnMeasureSatYellow() 
 {
 	CString	Msg, MsgQueue, TmpStr;
-	int		nNbPoints = GetMeasure () -> GetSaturationSize () - 1;
+	int		nNbPoints = GetMeasure () -> GetSaturationSize ();
 	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
 	if (!m_YWhite)
 		MessageBox(NULL,"Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
@@ -3260,7 +3266,7 @@ void CDataSetDoc::OnUpdateMeasureSatYellow(CCmdUI* pCmdUI)
 void CDataSetDoc::OnMeasureSatCyan() 
 {
 	CString	Msg, MsgQueue, TmpStr;
-	int		nNbPoints = GetMeasure () -> GetSaturationSize () - 1;
+	int		nNbPoints = GetMeasure () -> GetSaturationSize ();
 	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
 	if (!m_YWhite)
 		MessageBox(NULL,"Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
@@ -3289,7 +3295,7 @@ void CDataSetDoc::OnUpdateMeasureSatCyan(CCmdUI* pCmdUI)
 void CDataSetDoc::OnMeasureSatMagenta() 
 {
 	CString	Msg, MsgQueue, TmpStr;
-	int		nNbPoints = GetMeasure () -> GetSaturationSize () - 1;
+	int		nNbPoints = GetMeasure () -> GetSaturationSize ();
 	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
 	if (!m_YWhite)
 		MessageBox(NULL,"Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
@@ -3313,8 +3319,7 @@ void CDataSetDoc::OnMeasureSatMagenta()
 void CDataSetDoc::OnMeasureSatCC24() 
 {
 	CString	Msg, MsgQueue, TmpStr;
-//	int		nNbPoints = GetMeasure () -> GetSaturationSize () - 1;
-	int		nNbPoints = 24;
+    int		nNbPoints = (GetConfig()->m_CCMode==CCSG?96:24);
 	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
 	if	(!m_YWhite)
 		MessageBox(NULL,"Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
@@ -3356,6 +3361,8 @@ void CDataSetDoc::OnUpdateMeasureSatCC24(CCmdUI* pCmdUI)
 		 break;
 	case SKIN:
 		 nPattern=CGenerator::MT_SAT_CC24_GCD;		
+	case CCSG:
+		 nPattern=CGenerator::MT_SAT_CC24_CCSG;		
 	}
 
 	pCmdUI -> Enable ( m_pGenerator -> CanDisplayScale ( nPattern, (nPattern<2?24:(nPattern==2?80:256)), TRUE ) );
@@ -3383,7 +3390,7 @@ void CDataSetDoc::OnUpdateMeasureContrast(CCmdUI* pCmdUI)
 void CDataSetDoc::OnMeasureSatAll() 
 {
 	CString	Msg, MsgQueue, TmpStr;
-	int		nNbPoints = GetMeasure () -> GetSaturationSize () - 1;
+	int		nNbPoints = (GetMeasure () -> GetSaturationSize ()) * 6 + (GetConfig()->m_CCMode==CCSG?96:24);
 	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
 	if	(!m_YWhite)
 		MessageBox(NULL,"Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
@@ -3413,7 +3420,7 @@ void CDataSetDoc::OnMeasureGrayscaleColors()
 {
 	// TODO: Add your command handler code here
 	CString	Msg, MsgQueue, TmpStr;
-	int		nNbPoints = GetMeasure () -> GetGrayScaleSize () - 1;
+	int		nNbPoints = GetMeasure () -> GetGrayScaleSize () + 6 ;
 	
 	MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
 
@@ -3438,7 +3445,7 @@ void CDataSetDoc::OnUpdateMeasureGrayscaleColors(CCmdUI* pCmdUI)
 void CDataSetDoc::OnMeasureSatPrimaries() 
 {
 	CString	Msg, MsgQueue, TmpStr;
-	int		nNbPoints = GetMeasure () -> GetSaturationSize () - 1;
+	int		nNbPoints =( GetMeasure () -> GetSaturationSize () ) * 3;
 	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
 	if	(!m_YWhite)
 		MessageBox(NULL,"Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
@@ -3462,7 +3469,7 @@ void CDataSetDoc::OnMeasureSatPrimaries()
 void CDataSetDoc::OnMeasureSatPrimariesSecondaries() 
 {
 	CString	Msg, MsgQueue, TmpStr;
-	int		nNbPoints = GetMeasure () -> GetSaturationSize () - 1;
+	int		nNbPoints =( GetMeasure () -> GetSaturationSize () ) * 6;
 	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
 	if	(!m_YWhite)
 		MessageBox(NULL,"Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);

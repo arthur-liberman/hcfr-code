@@ -560,12 +560,13 @@ i1d3_unlock(
 		i1d3_dtype dtype;						/* Base type enumerator */
 		i1d3_dtype stype;						/* Sub type enumerator */
 	} codes[] = {
-		{ "i1Display3 ",         { 0xe9622e9f, 0x8d63e133 }, i1d3_disppro, i1d3_disppro },
+		{ "i1Display3 ",         { 0xe9622e9f, 0x8d63e133 }, i1d3_disppro,  i1d3_disppro },
 		{ "Colormunki Display ", { 0xe01e6e0a, 0x257462de }, i1d3_munkdisp, i1d3_munkdisp },
-		{ "i1Display3 ",         { 0xcaa62b2c, 0x30815b61 }, i1d3_disppro, i1d3_oem },
-		{ "i1Display3 ",         { 0xa9119479, 0x5b168761 }, i1d3_disppro, i1d3_nec_ssp },
-		{ "i1Display3 ",         { 0x160eb6ae, 0x14440e70 }, i1d3_disppro, i1d3_quato_sh3 },
-		{ "i1Display3 ",         { 0x291e41d7, 0x51937bdd }, i1d3_disppro, i1d3_hp_dreamc },
+		{ "i1Display3 ",         { 0xcaa62b2c, 0x30815b61 }, i1d3_disppro,  i1d3_oem },
+		{ "i1Display3 ",         { 0xa9119479, 0x5b168761 }, i1d3_disppro,  i1d3_nec_ssp },
+		{ "i1Display3 ",         { 0x160eb6ae, 0x14440e70 }, i1d3_disppro,  i1d3_quato_sh3 },
+		{ "i1Display3 ",         { 0x291e41d7, 0x51937bdd }, i1d3_disppro,  i1d3_hp_dreamc },
+		{ "i1Display3 ",         { 0xc9bfafe0, 0x02871166 }, i1d3_disppro,  i1d3_sc_c6 },
 		{ NULL } 
 	}; 
 	inst_code ev;

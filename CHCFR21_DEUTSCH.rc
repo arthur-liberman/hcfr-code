@@ -1171,6 +1171,8 @@ BEGIN
 0x5841, 0x5349, "\000" 
     IDC_CCMODE_COMBO, 0x403, 5, 0
 0x4b53, 0x4e49, "\000" 
+    IDC_CCMODE_COMBO, 0x403, 5, 0
+0x4343, 0x4753, "\000" 
     0
 END
 
@@ -2262,8 +2264,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3, 1, 0, 7
- PRODUCTVERSION 3, 1, 0, 7
+ FILEVERSION 3,1,0,7
+ PRODUCTVERSION 3,1,0,7
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3254,6 +3256,11 @@ BEGIN
     IDS_PERCENTGRAY         "% weiß"
     IDS_OPENNEWTAB          "Einen neuen Reiter öffnen"
     IDS_MEASURESINGLE_SIM   "Eine einmalige freie Messung in allen Dokumenten simultan ausführen ?"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_LCHLEVELS           "LCH Levels"
 END
 
 STRINGTABLE
