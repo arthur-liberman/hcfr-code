@@ -145,7 +145,7 @@ BOOL CGenerator::Init(UINT nbMeasure)
           else
               madVR_SetOsdText(L"HCFR is measuring display, please wait...");
 	      madVR_ShowProgressBar(nMeasureNumber);			
-	      madVR_SetBackground(Cgen.m_rectSizePercent, RGB(bgstim*255,bgstim*255,bgstim*255) );
+// set in TPG	      madVR_SetBackground(Cgen.m_rectSizePercent, RGB(bgstim*255,bgstim*255,bgstim*255) );
 	  }
 	  else
 	  {

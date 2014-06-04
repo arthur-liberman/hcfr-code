@@ -493,7 +493,7 @@ void CFullScreenWindow::Hide ()
 
 void CFullScreenWindow::OnPaint() 
 {
-	int			row, col;
+	int			row, col, dWidth, dHeight;
 	int			DisplayColor = m_Color;
 	BOOL		bDraw = FALSE;
 	CRect		rect;
@@ -501,8 +501,39 @@ void CFullScreenWindow::OnPaint()
 	CPaintDC	dc(this); // device context for painting
 
 	GetClientRect ( &rect );
-	double m_rectAreaPercent;
+	double m_rectAreaPercent, borderArea;
     double bgstim = m_bgStimPercent / 100.;
+
+    int R = GetRValue(m_Color);
+    int G = GetGValue(m_Color);
+    int B = GetBValue(m_Color);
+
+    			if ( m_b16_235 )
+				{
+					ASSERT ( R >= 16 && R <= 235 );
+					ASSERT ( G >= 16 && G <= 235 );
+					ASSERT ( B >= 16 && B <= 235 );
+
+					R = ( R - 16 ) * 255 / 219;
+					G = ( G - 16 ) * 255 / 219;
+					B = ( B - 16 ) * 255 / 219;
+
+					if ( R < 0 )
+						R = 0;
+					else if ( R > 255 )
+						R = 255;
+
+					if ( G < 0 )
+						G = 0;
+					else if ( G > 255 )
+						G = 255;
+
+					if ( B < 0 )
+						B = 0;
+					else if ( B > 255 )
+						B = 255;
+				}
+
 
 	m_rectAreaPercent = sqrt (m_rectSizePercent / 100.) * 100;
 
@@ -548,22 +579,40 @@ void CFullScreenWindow::OnPaint()
 	}
 	else
 	{
-		if(m_rectSizePercent < 100)  // Need to draw background
+		dWidth = (int)(rect.Width()*(100-m_rectAreaPercent)/100.0);
+		dHeight = (int)(rect.Height()*(100-m_rectAreaPercent)/100.0);
+        borderArea = (dWidth + 40.) * (dHeight + 40.) - dWidth * dHeight; 
+		if(m_rectSizePercent < 100)  // Need to draw background and border
 		{
-//			brush.CreateSolidBrush ( RGB(0,0,0) );
 			if (m_nDisplayMode != DISPLAY_GDI_nBG )
 			{
-				brush.CreateSolidBrush ( RGB(bgstim*255,bgstim*255,bgstim*255) );
+                double R1,G1,B1;
+                //subtract window area and border area
+                R1 = max(0,(bgstim*255 - R*m_rectSizePercent/100.))/(1-m_rectSizePercent/100. - borderArea/(rect.Width()*rect.Height()) );
+                G1 = max(0,(bgstim*255 - G*m_rectSizePercent/100.))/(1-m_rectSizePercent/100. - borderArea/(rect.Width()*rect.Height()) );
+                B1 = max(0,(bgstim*255 - B*m_rectSizePercent/100.))/(1-m_rectSizePercent/100. - borderArea/(rect.Width()*rect.Height()) );
+                if (m_b16_235)
+                {
+                    R1 = R1/255*219+16;
+                    G1 = G1/255*219+16;
+                    B1 = B1/255*219+16;
+                }
+
+				brush.CreateSolidBrush ( RGB(R1,G1,B1) );
 				dc.FillRect ( &rect, &brush );
 				brush.DeleteObject ();
+
+		        CRect borderRect=rect;
+		        borderRect.DeflateRect((dWidth-40)/2,(dHeight-40)/2);
+                brush.CreateSolidBrush ( RGB(0,0,0) );
+				dc.FillRect ( &borderRect, &brush );
+				brush.DeleteObject ();
+
 			}
 		}
 
-		int deltaWidth=(int)(rect.Width()*(100-m_rectAreaPercent)/100.0);
-		int deltaHeight=(int)(rect.Height()*(100-m_rectAreaPercent)/100.0);
 		CRect patternRect=rect;
-		patternRect.DeflateRect(deltaWidth/2,deltaHeight/2);
-
+		patternRect.DeflateRect(dWidth/2,dHeight/2);
 		brush.CreateSolidBrush ( DisplayColor );
 		dc.FillRect ( &patternRect, &brush );
 		brush.DeleteObject ();
