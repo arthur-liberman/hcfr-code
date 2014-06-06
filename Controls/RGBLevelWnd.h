@@ -38,9 +38,9 @@ public:
 
 // Attributes
 public:
-	int				m_redValue;
-	int				m_greenValue;
-	int				m_blueValue;
+	float				m_redValue;
+	float				m_greenValue;
+	float				m_blueValue;
 	BOOL			m_bLumaMode;
 
 	CColor *		m_pRefColor;

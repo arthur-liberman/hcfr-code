@@ -104,17 +104,17 @@ void CRGBLevelWnd::Refresh()
 			CColor white = m_pDocument->GetMeasure()->GetOnOffWhite();
             ColorXYZ selectColor=m_pRefColor->GetXYZValue(), refColor=aReference.GetXYZValue() ;
 			
-			m_redValue=0;
-			m_greenValue=0;
-			m_blueValue=0;
+			m_redValue=0.;
+			m_greenValue=0.;
+			m_blueValue=0.;
             if ( white.isValid() )
             {
                 ColorLCH selectColorLCH(selectColor, white.GetY(), GetColorReference());
                 ColorLCH refColorLCH(refColor, 1.0, GetColorReference());
 
-                m_redValue=(int)(100+(selectColorLCH[0] - refColorLCH[0])/refColorLCH[0]*100);
-                m_greenValue=(int)(100+(selectColorLCH[1] - refColorLCH[1])/refColorLCH[1]*100);
-                m_blueValue=(int)(100+(selectColorLCH[2] - refColorLCH[2])/refColorLCH[2]*100);
+                m_redValue=(float)(100+(selectColorLCH[0] - refColorLCH[0])/refColorLCH[0]*100);
+                m_greenValue=(float)(100+(selectColorLCH[1] - refColorLCH[1])/refColorLCH[1]*100);
+                m_blueValue=(float)(100+(selectColorLCH[2] - refColorLCH[2])/refColorLCH[2]*100);
             }
 /*			if ( white.isValid() && white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) > 0.0001 )
 			{
@@ -144,17 +144,17 @@ void CRGBLevelWnd::Refresh()
 
             ColorRGB normColorRGB(normColor, GetColorReference());
                         
-            m_redValue=(int)(normColorRGB[0]*100.0);
-            m_greenValue=(int)(normColorRGB[1]*100.0);
-            m_blueValue=(int)(normColorRGB[2]*100.0);
+            m_redValue=(float)(normColorRGB[0]*100.0);
+            m_greenValue=(float)(normColorRGB[1]*100.0);
+            m_blueValue=(float)(normColorRGB[2]*100.0);
 
         }
     }
 	else
 	{
-		m_redValue=0;
-		m_greenValue=0;
-		m_blueValue=0;
+		m_redValue=0.;
+		m_greenValue=0.;
+		m_blueValue=0.;
 	}
 	Invalidate(FALSE);
 
@@ -181,9 +181,9 @@ END_MESSAGE_MAP()
 
 void CRGBLevelWnd::OnPaint() 
 {
-	int widthMargin=5;
+	int widthMargin=2;
 	int heightMargin=5;
-	int interBarMargin=2;
+	int interBarMargin=4;
 
 	CPaintDC dc(this); // device context for painting
 	
@@ -208,7 +208,7 @@ void CRGBLevelWnd::OnPaint()
 	CRect drawRect=rect;
 	drawRect.DeflateRect(widthMargin,heightMargin);
 
-	int barWidth = (drawRect.Width()-2*interBarMargin)/3;
+	int barWidth = (drawRect.Width()-2*interBarMargin)/3.0;
 	int maxYValue=max(m_redValue,max(m_greenValue,m_blueValue));
 	CSize labelSize=pDC->GetTextExtent("100%");
 
@@ -325,10 +325,10 @@ void CRGBLevelWnd::OnPaint()
 	CFont font;
 	VERIFY(font.CreateFont(
 	   15,						  // nHeight
-	   0,                         // nWidth
+	   5,                         // nWidth
 	   0,                         // nEscapement
 	   0,                         // nOrientation
-	   FW_LIGHT,					  // nWeight
+	   FW_BOLD,					  // nWeight
 	   FALSE,                     // bItalic
 	   FALSE,                     // bUnderline
 	   0,                         // cStrikeOut
@@ -345,12 +345,12 @@ void CRGBLevelWnd::OnPaint()
 	char aBuf[32];
 //	if (! m_bLumaMode)
 //	{
-	sprintf(aBuf,"%3d%%",m_redValue);
+	sprintf(aBuf,"%3.1f%%",m_redValue);
 	pDC->TextOut(redBarX+barWidth/2,redBarY-ellipseHeight/2,aBuf);
-		sprintf(aBuf,"%3d%%",m_blueValue);
+		sprintf(aBuf,"%3.1f%%",m_blueValue);
 		pDC->TextOut(blueBarX+barWidth/2,blueBarY-ellipseHeight/2,aBuf);
 //	}
-	sprintf(aBuf,"%3d%%",m_greenValue);
+	sprintf(aBuf,"%3.1f%%",m_greenValue);
 	pDC->TextOut(greenBarX+barWidth/2,greenBarY-ellipseHeight/2,aBuf);
 
 	pDC->SelectObject(pOldFont);
