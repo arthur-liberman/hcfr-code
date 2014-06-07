@@ -107,12 +107,14 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	}
 	
 	// Retrieve color luminance coefficients matching actual reference
-	const double KR = GetColorReference().GetRedReferenceLuma ();  
-	const double KG = GetColorReference().GetGreenReferenceLuma ();
-	const double KB = GetColorReference().GetBlueReferenceLuma (); 
-	const double KY = GetColorReference().GetYellowReferenceLuma (); 
-	const double KC = GetColorReference().GetCyanReferenceLuma (); 
-	const double KM = GetColorReference().GetMagentaReferenceLuma (); ;
+	double KR = GetColorReference().GetRedReferenceLuma ();  
+	double KG = GetColorReference().GetGreenReferenceLuma ();
+	double KB = GetColorReference().GetBlueReferenceLuma (); 
+	double KY = GetColorReference().GetYellowReferenceLuma (); 
+	double KC = GetColorReference().GetCyanReferenceLuma (); 
+	double KM = GetColorReference().GetMagentaReferenceLuma (); 
+
+    CColor satcolor;
 
 	if(IsWindow(m_graphCtrl.m_hWnd))
 		m_graphCtrl.ShowWindow(SW_SHOW);
@@ -128,6 +130,18 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	{	
 		for (int i=0; i<size; i++)
 		{
+            satcolor = pDoc->GetMeasure()->GetRefSat(0,double (i)/ double(size-1));
+            KR = satcolor.GetLuminance();
+            satcolor = pDoc->GetMeasure()->GetRefSat(1,double (i)/ double(size-1));
+            KG = satcolor.GetLuminance();
+            satcolor = pDoc->GetMeasure()->GetRefSat(2,double (i)/ double(size-1));
+            KB = satcolor.GetLuminance();
+            satcolor = pDoc->GetMeasure()->GetRefSat(3,double (i)/ double(size-1));
+            KY = satcolor.GetLuminance();
+            satcolor = pDoc->GetMeasure()->GetRefSat(4,double (i)/ double(size-1));
+            KC = satcolor.GetLuminance();
+            satcolor = pDoc->GetMeasure()->GetRefSat(5,double (i)/ double(size-1));
+            KM = satcolor.GetLuminance();
 			m_graphCtrl.AddPoint(m_ref_redLumGraphID, i*100/(size-1), KR * 100.0);
 			m_graphCtrl.AddPoint(m_ref_greenLumGraphID, i*100/(size-1), KG * 100.0);
 			m_graphCtrl.AddPoint(m_ref_blueLumGraphID, i*100/(size-1), KB * 100.0);

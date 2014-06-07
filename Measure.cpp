@@ -5122,19 +5122,40 @@ CColor CMeasure::GetRefPrimary(int i) const
 	ColorRGB rgbg=aColorg.GetRGBValue ( GetColorReference() );
 	ColorRGB rgbb=aColorb.GetRGBValue ( GetColorReference() );
 	double r,g,b;
-	r=min(max(rgbr[0],0.00001),.99999);
-	g=min(max(rgbr[1],0.00001),.99999);
-	b=min(max(rgbr[2],0.00001),.99999);
-	aColorr.SetRGBValue (ColorRGB(pow(pow(r,1./2.22),gamma),pow(pow(g,1./2.22),gamma),pow(pow(b,1./2.22),gamma)), GetColorReference());	
-	r=min(max(rgbg[0],0.00001),.99999);
-	g=min(max(rgbg[1],0.00001),.99999);
-	b=min(max(rgbg[2],0.00001),.99999);
-	aColorg.SetRGBValue (ColorRGB(pow(pow(r,1./2.22),gamma),pow(pow(g,1./2.22),gamma),pow(pow(b,1./2.22),gamma)), GetColorReference());	
-	r=min(max(rgbb[0],0.00001),.99999);
-	g=min(max(rgbb[1],0.00001),.99999);
-	b=min(max(rgbb[2],0.00001),.99999);
-	aColorb.SetRGBValue (ColorRGB(pow(pow(r,1./2.22),gamma),pow(pow(g,1./2.22),gamma),pow(pow(b,1./2.22),gamma)), GetColorReference());	
-	switch ( i )
+    r=rgbr[0];
+    g=rgbr[1];
+    b=rgbr[2];
+    if (isSpecial)
+    {
+        r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
+        g=(g<=0.0||g>=1.0)?min(max(g,0),1):pow(pow(g,1./2.22),gamma);
+        b=(b<=0.0||b>=1.0)?min(max(b,0),1):pow(pow(b,1./2.22),gamma);
+    }
+    aColorr.SetRGBValue (ColorRGB(r,g,b), GetColorReference());	
+
+    r=rgbg[0];
+    g=rgbg[1];
+    b=rgbg[2];
+    if (isSpecial)
+    {
+        r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
+        g=(g<=0.0||g>=1.0)?min(max(g,0),1):pow(pow(g,1./2.22),gamma);
+        b=(b<=0.0||b>=1.0)?min(max(b,0),1):pow(pow(b,1./2.22),gamma);
+    }
+    aColorg.SetRGBValue (ColorRGB(r,g,b), GetColorReference());	
+
+    r=rgbb[0];
+    g=rgbb[1];
+    b=rgbb[2];
+    if (isSpecial)
+    {
+        r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
+        g=(g<=0.0||g>=1.0)?min(max(g,0),1):pow(pow(g,1./2.22),gamma);
+        b=(b<=0.0||b>=1.0)?min(max(b,0),1):pow(pow(b,1./2.22),gamma);
+    }
+    aColorb.SetRGBValue (ColorRGB(r,g,b), GetColorReference());	
+
+    switch ( i )
 	{
 		case 0:	// red
 			return  isSpecial?aColorr.GetXYZValue():cRef.GetRed();
@@ -5167,19 +5188,40 @@ CColor CMeasure::GetRefSecondary(int i) const
 	ColorRGB rgby=aColory.GetRGBValue ( GetColorReference() );
 	ColorRGB rgbc=aColorc.GetRGBValue ( GetColorReference() );
 	ColorRGB rgbm=aColorm.GetRGBValue ( GetColorReference() );
-	double r,g,b;
-	r=min(max(rgby[0],0.00001),.99999);
-	g=min(max(rgby[1],0.00001),.99999);
-	b=min(max(rgby[2],0.00001),.99999);
-	aColory.SetRGBValue (ColorRGB(pow(pow(r,1./2.22),gamma),pow(pow(g,1./2.22),gamma),pow(pow(b,1./2.22),gamma)), GetColorReference());	
-	r=min(max(rgbc[0],0.00001),.99999);
-	g=min(max(rgbc[1],0.00001),.99999);
-	b=min(max(rgbc[2],0.00001),.99999);
-	aColorc.SetRGBValue (ColorRGB(pow(pow(r,1./2.22),gamma),pow(pow(g,1./2.22),gamma),pow(pow(b,1./2.22),gamma)), GetColorReference());	
-	r=min(max(rgbm[0],0.00001),.99999);
-	g=min(max(rgbm[1],0.00001),.99999);
-	b=min(max(rgbm[2],0.00001),.99999);
-	aColorm.SetRGBValue (ColorRGB(pow(pow(r,1./2.22),gamma),pow(pow(g,1./2.22),gamma),pow(pow(b,1./2.22),gamma)), GetColorReference());	
+	
+    double r,g,b;
+    r=rgby[0];
+    g=rgby[1];
+    b=rgby[2];
+    if (isSpecial)
+    {
+        r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
+        g=(g<=0.0||g>=1.0)?min(max(g,0),1):pow(pow(g,1./2.22),gamma);
+        b=(b<=0.0||b>=1.0)?min(max(b,0),1):pow(pow(b,1./2.22),gamma);
+    }
+    aColory.SetRGBValue (ColorRGB(r,g,b), GetColorReference());	
+
+    r=rgbc[0];
+    g=rgbc[1];
+    b=rgbc[2];
+    if (isSpecial)
+    {
+        r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
+        g=(g<=0.0||g>=1.0)?min(max(g,0),1):pow(pow(g,1./2.22),gamma);
+        b=(b<=0.0||b>=1.0)?min(max(b,0),1):pow(pow(b,1./2.22),gamma);
+    }
+    aColorc.SetRGBValue (ColorRGB(r,g,b), GetColorReference());	
+
+    r=rgbm[0];
+    g=rgbm[1];
+    b=rgbm[2];
+    if (isSpecial)
+    {
+        r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
+        g=(g<=0.0||g>=1.0)?min(max(g,0),1):pow(pow(g,1./2.22),gamma);
+        b=(b<=0.0||b>=1.0)?min(max(b,0),1):pow(pow(b,1./2.22),gamma);
+    }
+    aColorm.SetRGBValue (ColorRGB(r,g,b), GetColorReference());	
 
 	switch ( i )
 	{
@@ -5248,25 +5290,17 @@ CColor CMeasure::GetRefSat(int i, double sat_percent) const
 	y = ystart + ( (yend - ystart) * sat_percent );
 
 	CColor	aColor;
-	aColor.SetxyYValue (x, y, YLuma);
-	ColorRGB rgb=aColor.GetRGBValue ( GetColorReference() );
-	double r=rgb[0],g=rgb[1],b=rgb[2];
     CColor White = CMeasure::GetGray ( CMeasure::GetGrayScaleSize() - 1 );
 	CColor Black = CMeasure::GetGray ( 0 );
-
     double gamma=GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef);
-    if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() && sat_percent != 0 && sat_percent != 1)
-    {
-        r=(r<=0||r>=1)?min(max(r,0),1):pow(pow(r,1./2.22),log(GetBT1886(r/YLuma,White,Black,GetConfig()->m_GammaRel))/log(r/YLuma));
-        g=(g<=0||g>=1)?min(max(g,0),1):pow(pow(g,1./2.22),log(GetBT1886(g/YLuma,White,Black,GetConfig()->m_GammaRel))/log(g/YLuma));
-        b=(b<=0||b>=1)?min(max(b,0),1):pow(pow(b,1./2.22),log(GetBT1886(b/YLuma,White,Black,GetConfig()->m_GammaRel))/log(b/YLuma));
-    }
-    else
-    {
-        r=(r<=0||r>=1)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
-        g=(g<=0||g>=1)?min(max(g,0),1):pow(pow(g,1./2.22),gamma);
-        b=(b<=0||b>=1)?min(max(b,0),1):pow(pow(b,1./2.22),gamma);
-    }
+    aColor.SetxyYValue (x, y, YLuma);
+	ColorRGB rgb=aColor.GetRGBValue ( GetColorReference() );
+	double r=rgb[0],g=rgb[1],b=rgb[2];
+    if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
+       gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel))/log(pow(aColor.GetY(),1/2.22));
+    r=(r<=0||r>=1)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
+    g=(g<=0||g>=1)?min(max(g,0),1):pow(pow(g,1./2.22),gamma);
+    b=(b<=0||b>=1)?min(max(b,0),1):pow(pow(b,1./2.22),gamma);
     aColor.SetRGBValue (ColorRGB(r,g,b), GetColorReference());	
 	return aColor;
 }

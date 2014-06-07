@@ -1969,4 +1969,4 @@ double GrayLevelToGrayProp ( double Level, bool m_bUseRoundDown)
 
 double GetBT1886 ( double valx, CColor White, CColor Black, double g_rel)
 {
-    double maxL = White.GetY();    double minL = Black.GetY();    double yh =  maxL * pow(0.5, g_rel);    double half = g_rel != 0.0?g_rel:2.4;    double a = pow ( ( pow (maxL,1.0/half ) - pow ( minL,1.0/half ) ),half );    double b = ( pow ( minL,1.0/half ) ) / ( pow (maxL,1.0/half ) - pow ( minL,1.0/half ) );    if (g_rel != 0.)        half = (log(yh)-log(a))/log(0.5+b);    return ( a * pow ( (valx + b)<0?0:(valx+b), half ) ) / maxL;}
+    double maxL = White.GetY();    double minL = Black.GetY();    double yh =  maxL * pow(0.5, g_rel);    double exp0 = 2.4;    double a = pow ( ( pow (maxL,1.0/exp0 ) - pow ( minL,1.0/exp0 ) ),exp0 );    double b = ( pow ( minL,1.0/exp0 ) ) / ( pow (maxL,1.0/exp0 ) - pow ( minL,1.0/exp0 ) );    if (g_rel != 0.)        exp0 = (log(yh)-log(a))/log(0.5+b);    return ( a * pow ( (valx + b)<0?0:(valx+b), exp0 ) ) / maxL;}

@@ -1727,9 +1727,9 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 			else
 			{
 				// Display primary/secondary/saturations colors delta luminance
-				double RefLuma [1000];
-				int		nCol2 = nCol;
-				
+				int	    nCol2 = nCol, satsize=GetDocument()->GetMeasure()->GetSaturationSize();;
+				double  RefLuma [1000], sat=double (nCol)/ double (satsize-1);
+				CColor satcolor;
 				// Retrieve color luminance coefficients matching actual reference
 				switch (m_displayMode)
 				{
@@ -1742,33 +1742,38 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						RefLuma [ 5 ] = GetColorReference().GetMagentaReferenceLuma ();
 						break ;
 					case 5:
-  						RefLuma [ 0 ] = GetColorReference().GetRedReferenceLuma ();
-						nCol2 = 1;
+                        satcolor = GetDocument()->GetMeasure()->GetRefSat(0,sat);
+                        RefLuma [nCol - 1] = satcolor.GetLuminance();
 						break;
 					case 6:
-  						RefLuma [ 0 ] = GetColorReference().GetGreenReferenceLuma ();
-						nCol2 = 1;
+                        satcolor = GetDocument()->GetMeasure()->GetRefSat(1,sat);
+                        RefLuma [nCol - 1] = satcolor.GetLuminance();
 						break;
-					case 7:
-  						RefLuma [ 0 ] = GetColorReference().GetBlueReferenceLuma ();
-						nCol2 = 1;
+					case 7:                                                
+                        satcolor = GetDocument()->GetMeasure()->GetRefSat(2,sat);
+                        RefLuma [nCol - 1] = satcolor.GetLuminance();
 						break;
 					case 8:
-  						RefLuma [ 0 ] = GetColorReference().GetYellowReferenceLuma ();
-						nCol2 = 1;
+                        satcolor = GetDocument()->GetMeasure()->GetRefSat(3,sat);
+                        RefLuma [nCol - 1] = satcolor.GetLuminance();
 						break;
 					case 9:
-  						RefLuma [ 0 ] = GetColorReference().GetCyanReferenceLuma ();
-						nCol2 = 1;
+                        satcolor = GetDocument()->GetMeasure()->GetRefSat(4,sat);
+                        RefLuma [nCol - 1] = satcolor.GetLuminance();
 						break;
 					case 10:
-  						RefLuma [ 0 ] = GetColorReference().GetMagentaReferenceLuma ();
-						nCol2 = 1;
+                        satcolor = GetDocument()->GetMeasure()->GetRefSat(5,sat);
+                        RefLuma [nCol - 1] = satcolor.GetLuminance();
 						break;
 					case 11:
                         double rLuma=GetColorReference().GetCC24ReferenceLuma (nCol-1, GetConfig()->m_CCMode );
+                        CColor White = GetDocument() -> GetMeasure () -> GetGray ( GetDocument()->GetMeasure()->GetGrayScaleSize() - 1 );
+	                    CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
                         //luminance is based on 2.2 gamma so we need to scale here actual reference gamma
-						RefLuma [ nCol-1 ] = pow(pow(rLuma,1. / 2.22),GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
+                        if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
+    						RefLuma [ nCol-1 ] = pow(pow(rLuma,1. / 2.22),log(GetBT1886(rLuma,White,Black,GetConfig()->m_GammaRel))/log(rLuma));
+                        else
+    						RefLuma [ nCol-1 ] = pow(pow(rLuma,1. / 2.22),GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 						break;
 				}
 					CColor WhiteMCD;
@@ -1781,8 +1786,8 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				
 					CColor white = ( m_displayMode!=11 ?  GetDocument()->GetMeasure()->GetOnOffWhite() : (GetConfig()->m_CCMode==GCD)? GetDocument()->GetMeasure()->GetCC24Sat(5):(GetConfig()->m_CCMode==CCSG)? GetDocument()->GetMeasure()->GetCC24Sat(0):WhiteMCD );
 				
-                    if ( nCol2 < (m_displayMode!=11 ? 7 : (GetConfig()->m_CCMode==CCSG?97:25)) && white.isValid() && white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) > 0.0001 )
-				{
+                if ( nCol2 < ( (m_displayMode > 11 || m_displayMode < 5) ? 7 : (GetConfig()->m_CCMode==CCSG?97:25)) && white.isValid() && white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) > 0.0001 )
+    		    {
 					double d = aMeasure.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) / white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter);
 
 					if ( fabs ( ( RefLuma [ nCol2 - 1 ] - d ) / RefLuma [ nCol2 - 1 ] ) < 0.001 )
@@ -2347,10 +2352,8 @@ void CMainView::UpdateGrid()
 				case 5:
 					 aColor = GetDocument()->GetMeasure()->GetRedSat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefSat(0,(double)j/(double)(nCount-1));
-//					 YWhite = GetDocument()->GetMeasure()->GetRedSat(nCount-1).GetY() / refColor.GetY ();
     				 YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
 	    			 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
-//					 YWhite = YWhiteOnOff;
 
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetRedSat(j);
@@ -2359,8 +2362,6 @@ void CMainView::UpdateGrid()
 				case 6:
 					 aColor = GetDocument()->GetMeasure()->GetGreenSat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefSat(1,(double)j/(double)(nCount-1));
-//					 YWhite = GetDocument()->GetMeasure()->GetGreenSat(nCount-1).GetY() / refColor.GetY ();
-//					 YWhite = YWhiteOnOff;
     				 YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
 	    			 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
 
@@ -2371,9 +2372,7 @@ void CMainView::UpdateGrid()
 				case 7:
 					 aColor = GetDocument()->GetMeasure()->GetBlueSat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefSat(2,(double)j/(double)(nCount-1));
-//					 YWhite = GetDocument()->GetMeasure()->GetBlueSat(nCount-1).GetY() / refColor.GetY ();
-//					 YWhite = YWhiteOnOff;
-    				 YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
+                     YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
 	    			 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
 
 					 if ( pDataRef )
@@ -2383,8 +2382,6 @@ void CMainView::UpdateGrid()
 				case 8:
 					 aColor = GetDocument()->GetMeasure()->GetYellowSat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefSat(3,(double)j/(double)(nCount-1));
-//					 YWhite = GetDocument()->GetMeasure()->GetYellowSat(nCount-1).GetY() / refColor.GetY ();
-//					 YWhite = YWhiteOnOff;
     				 YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
 	    			 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
 
@@ -2395,8 +2392,6 @@ void CMainView::UpdateGrid()
 				case 9:
 					 aColor = GetDocument()->GetMeasure()->GetCyanSat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefSat(4,(double)j/(double)(nCount-1));
-//					 YWhite = GetDocument()->GetMeasure()->GetCyanSat(nCount-1).GetY() / refColor.GetY ();
-//					 YWhite = YWhiteOnOff;
     				 YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
 	    			 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
 					 
@@ -2407,8 +2402,6 @@ void CMainView::UpdateGrid()
 				case 10:
 					 aColor = GetDocument()->GetMeasure()->GetMagentaSat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefSat(5,(double)j/(double)(nCount-1));
-//					 YWhite = GetDocument()->GetMeasure()->GetMagentaSat(nCount-1).GetY() / refColor.GetY ();
-//					 YWhite = YWhiteOnOff;
     				 YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
 	    			 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
 

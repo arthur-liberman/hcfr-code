@@ -489,18 +489,11 @@ void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, cons
     aColor.SetxyYValue (xtarget, ytarget, luma);
 	ColorRGB rgb=aColor.GetRGBValue (GetColorReference());
 	double r=rgb[0],g=rgb[1],b=rgb[2];
-    if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() && num > 0 && num < (count-1) )
-    {
-        r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1./2.22),log(GetBT1886(r/luma,White,Black,GetConfig()->m_GammaRel))/log(r/luma));
-        g=(g<=0.0||g>=1.0)?min(max(g,0),1):pow(pow(g,1./2.22),log(GetBT1886(g/luma,White,Black,GetConfig()->m_GammaRel))/log(g/luma));
-        b=(b<=0.0||b>=1.0)?min(max(b,0),1):pow(pow(b,1./2.22),log(GetBT1886(b/luma,White,Black,GetConfig()->m_GammaRel))/log(b/luma));
-    }
-    else
-    {
-        r=(r<=0||r>=1)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
-        g=(g<=0||g>=1)?min(max(g,0),1):pow(pow(g,1./2.22),gamma);
-        b=(b<=0||b>=1)?min(max(b,0),1):pow(pow(b,1./2.22),gamma);
-    }
+    if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
+        gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel))/log(pow(aColor.GetY(),1/2.22));
+    r=(r<=0||r>=1)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
+    g=(g<=0||g>=1)?min(max(g,0),1):pow(pow(g,1./2.22),gamma);
+    b=(b<=0||b>=1)?min(max(b,0),1):pow(pow(b,1./2.22),gamma);
     aColor.SetRGBValue (ColorRGB(r,g,b), GetColorReference());	
 	ColorxyY xyy=aColor.GetxyYValue();
 	xtarget=xyy[0];
