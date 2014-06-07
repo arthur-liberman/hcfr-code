@@ -2299,8 +2299,8 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 	double			dLuxValue;
 	BOOL			bUseLuxValues = TRUE;
 	double			measuredLux [ 256 ];
-	double			gamma=GetConfig()->m_GammaAvg;
-	MSG				message;
+    double          gamma=(GetConfig()->m_useMeasuredGamma)?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef);
+    MSG				message;
 
 	BOOL (CMeasure::*pValidationFunc) ( BOOL, double * ) = NULL;
 	
@@ -2339,7 +2339,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nSteps = GetMeasure () -> GetSaturationSize ();
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_RED;
-			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, true, false, false, gamma);
+			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, true, false, false);
 			 pValidationFunc = &CMeasure::ValidateBackgroundRedSatScale;
 			 lHint = UPD_REDSAT;
 			 break;
@@ -2348,7 +2348,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nSteps = GetMeasure () -> GetSaturationSize ();
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_GREEN;
-			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, false, true, false, gamma );
+			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, false, true, false );
 			 pValidationFunc = &CMeasure::ValidateBackgroundGreenSatScale;
 			 lHint = UPD_GREENSAT;
 			 break;
@@ -2357,7 +2357,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nSteps = GetMeasure () -> GetSaturationSize ();
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_BLUE;
-			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, false, false, true, gamma );
+			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, false, false, true );
 			 pValidationFunc = &CMeasure::ValidateBackgroundBlueSatScale;
 			 lHint = UPD_BLUESAT;
 			 break;
@@ -2366,7 +2366,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nSteps = GetMeasure () -> GetSaturationSize ();
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_YELLOW;
-			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, true, true, false, gamma );
+			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, true, true, false );
 			 pValidationFunc = &CMeasure::ValidateBackgroundYellowSatScale;
 			 lHint = UPD_YELLOWSAT;
 			 break;
@@ -2375,7 +2375,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nSteps = GetMeasure () -> GetSaturationSize ();
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_CYAN;
-			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, false, true, true, gamma );
+			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, false, true, true );
 			 pValidationFunc = &CMeasure::ValidateBackgroundCyanSatScale;
 			 lHint = UPD_CYANSAT;
 			 break;
@@ -2384,7 +2384,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nSteps = GetMeasure () -> GetSaturationSize ();
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_MAGENTA;
-			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, true, false, true, gamma );
+			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, true, false, true );
 			 pValidationFunc = &CMeasure::ValidateBackgroundMagentaSatScale;
 			 lHint = UPD_MAGENTASAT;
 			 break;
@@ -2860,7 +2860,7 @@ void CDataSetDoc::OnUpdateContinuousMeasurement(CCmdUI* pCmdUI)
 	}
 }
 
-void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int ColorSpace,int ColorIndex,int Size)
+void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int ColorSpace,int ColorIndex,int Size, bool m_bBT1886)
 {
 	int		nConfigOffsetType = GetConfig() -> m_GammaOffsetType;
 	int		nLumCurveMode = GetConfig () -> m_nLuminanceCurveMode;
@@ -2964,7 +2964,6 @@ void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int Col
 			{
 				x = ArrayIndexToGrayLevel ( i, Size, GetConfig () -> m_bUseRoundDown);
 				v = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
-
 				valx[i]=(v+Offset_opt)/(1.0+Offset_opt);
 			}
 
@@ -2974,7 +2973,10 @@ void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int Col
 			{
 				if ( lumlvl[i] > 0.0 )
 				{
-					avg += log(lumlvl[i])/log(valx[i]);
+                    if (m_bBT1886 && !GetConfig()->m_useMeasuredGamma)
+                        avg += log(GetBT1886(valx[i], GetMeasure()->GetGray(Size -1), GetMeasure()->GetGray(0), GetConfig()->m_GammaRel))/log(valx[i]);
+                    else
+		    			avg += log(lumlvl[i])/log(valx[i]);
 					nb ++;
 				}
 			}

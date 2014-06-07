@@ -120,36 +120,33 @@ void CGammaGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 	
 	// Compute offset
-	pDoc->ComputeGammaAndOffset(&GammaOpt, &GammaOffset, 1,1,size);
-	pDoc->ComputeGammaAndOffset(&LuxGammaOpt, &LuxGammaOffset, 2,1,size);
+	pDoc->ComputeGammaAndOffset(&GammaOpt, &GammaOffset, 1,1,size, false);
+	pDoc->ComputeGammaAndOffset(&LuxGammaOpt, &LuxGammaOffset, 2,1,size, false);
 	if ((m_showDataRef)&&(pDataRef !=NULL)&&(pDataRef !=pDoc))
 	{
-		pDoc->ComputeGammaAndOffset(&RefGammaOpt, &RefGammaOffset, 1,1,size);
-		pDoc->ComputeGammaAndOffset(&RefLuxGammaOpt, &RefLuxGammaOffset, 2,1,size);
+		pDoc->ComputeGammaAndOffset(&RefGammaOpt, &RefGammaOffset, 1,1,size,false);
+		pDoc->ComputeGammaAndOffset(&RefLuxGammaOpt, &RefLuxGammaOffset, 2,1,size,false);
 	}
 
 	if (m_showReference && m_refLogGraphID != -1 && size > 0)
 	{	
 		// log scale is not valid for first and last value
 
+		CColor White = pDoc -> GetMeasure () -> GetGray ( size - 1 );
+		CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
 		for (int i=1; i<size-1; i++)
 		{
 			double x, valx, valy;
 			x = ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown );
-			if (GetConfig()->m_GammaOffsetType == 4)
+            if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
 			{
-				//BT.1886 L = a(max[(V + b),0])^2.4
-                double maxL = pDoc->GetMeasure()->GetGray(size-1).GetY();
-                double minL = pDoc->GetMeasure()->GetGray(0).GetY();
-				double a = pow ( ( pow (maxL,1.0/2.4 ) - pow ( minL,1.0/2.4 ) ),2.4 );
-				double b = ( pow ( minL,1.0/2.4 ) ) / ( pow (maxL,1.0/2.4 ) - pow ( minL,1.0/2.4 ) );
 				valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
-				valy = ( a * pow ( (valx + b)<0?0:(valx+b), 2.4 ) ) / maxL ;
+                valy = GetBT1886(valx, White, Black, GetConfig()->m_GammaRel);
 			}
 			else
 			{
 				valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+GammaOffset)/(1.0+GammaOffset);
-				valy=pow(valx, GetConfig()->m_GammaRef);
+				valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 			}
 /*
 			if ( GetConfig()->m_bUseReferenceGamma )

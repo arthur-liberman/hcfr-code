@@ -148,7 +148,7 @@ void CNearBlackGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	
 	if ( size > 0 )
 	{
-		valformax=pow((double)(size-1)/100.0, GetConfig() -> m_GammaRef );
+		valformax=pow((double)(size-1)/100.0, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef) );
 /*
 		if ( GetConfig()->m_bUseReferenceGamma )
 		{
@@ -167,17 +167,12 @@ void CNearBlackGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		for (int i=0; i<size; i++)
 		{
         	int g_size=pDoc->GetMeasure()->GetGrayScaleSize();
-            double minL = pDoc->GetMeasure()->GetGray(0).GetY();
-            double maxL = pDoc->GetMeasure()->GetGray(g_size-1).GetY();
+    		CColor White = pDoc -> GetMeasure () -> GetGray ( g_size - 1 );
+	    	CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
 		    double valx = (i == 0?0.0:GrayLevelToGrayProp( (double)i, GetConfig () -> m_bUseRoundDown));
-			double val=pow(valx, GetConfig() -> m_GammaRef );
-			if (GetConfig()->m_GammaOffsetType == 4 && maxL > 0 )
-			{
-				//BT.1886 L = a(max[(V + b),0])^2.4
-				double a = pow ( ( pow (maxL,1.0/2.4 ) - pow ( minL,1.0/2.4 ) ),2.4 );
-				double b = ( pow ( minL,1.0/2.4 ) ) / ( pow (maxL,1.0/2.4 ) - pow ( minL,1.0/2.4 ) );
-                val = ( a * pow ( (valx + b)<0?0:(valx+b), 2.4 ) ) / maxL ;
-			}
+			double val=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef) );
+            if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
+                val = GetBT1886( valx, White, Black, GetConfig()->m_GammaRel);
 /*
 			if ( GetConfig()->m_bUseReferenceGamma )
 			{

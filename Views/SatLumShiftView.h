@@ -85,7 +85,7 @@ class CSatLumShiftGrapher
 // Operations
 public:
 	void GetEndPoint ( double & xend, double & yend, CColor & SaturatedColor, const ColorRGB& ClrRGB );
-	void GetSatShift ( double & satshift, double & deltaE, const CColor& SatColor, int num, int count, double xstart, double ystart, double xend, double yend, double gamma, double luma, double YWhite );
+	void GetSatShift ( double & satshift, double & deltaE, const CColor& SatColor, int num, int count, double xstart, double ystart, double xend, double yend, double gamma, double luma, double YWhite, CDataSetDoc * pDoc );
 	void UpdateGraph ( CDataSetDoc * pDoc );
 };
 

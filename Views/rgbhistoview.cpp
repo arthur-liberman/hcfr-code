@@ -138,7 +138,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		CColor			refColor = GetColorReference().GetWhite();
 
 		if ( size )
-			pDoc->ComputeGammaAndOffset(&Gamma, &Offset, 3, 1, size);
+			pDoc->ComputeGammaAndOffset(&Gamma, &Offset, 3, 1, size,false);
 
 		YWhite = pDoc->GetMeasure()->GetGray(size-1)[1];
 		for (int i=1; i<size; i++)
@@ -158,20 +158,17 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 				// Determine Reference Y luminance for Delta E calculus
 				if ( GetConfig ()->m_dE_gray > 0 || GetConfig ()->m_dE_form == 5 )
 				{
-                    if (GetConfig()->m_GammaOffsetType == 4)
+            		CColor White = pDoc -> GetMeasure () -> GetGray ( size - 1 );
+	            	CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
+                    if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
 			            {
-                            //BT.1886 L = a(max[(V + b),0])^2.4
-                            double maxL = pDoc->GetMeasure()->GetGray(size-1).GetY();
-                            double minL = pDoc->GetMeasure()->GetGray(0).GetY();
-                            double a = pow ( ( pow (maxL,1.0/2.4 ) - pow ( minL,1.0/2.4 ) ),2.4 );
-				            double b = ( pow ( minL,1.0/2.4 ) ) / ( pow (maxL,1.0/2.4 ) - pow ( minL,1.0/2.4 ) );
 				            double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
-				            valy = ( a * pow ( (valx + b)<0?0:(valx+b), 2.4 ) ) / maxL ;
+                            valy = GetBT1886(valx, White, Black, GetConfig()->m_GammaRel);
 			            }
 			            else
 			            {
 				            double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
-				            valy=pow(valx, GetConfig()->m_GammaRef);
+				            valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 			            }
 
                     ColorxyY tmpColor(GetColorReference().GetWhite());
@@ -196,7 +193,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		CColor			refColor = GetColorReference().GetWhite();
 
 		if ( size && pDataRef->GetMeasure()->GetGray(0).isValid() )
-			pDataRef->ComputeGammaAndOffset(&Gamma, &OffsetRef, 3, 1, size);
+			pDataRef->ComputeGammaAndOffset(&Gamma, &OffsetRef, 3, 1, size,false);
 
 		if ( bMainDocHasColors )
 			YWhite = pDoc->GetMeasure()->GetGray(size-1)[1];
@@ -227,9 +224,19 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 				if ( GetConfig ()->m_dE_gray > 0 || GetConfig ()->m_dE_form == 5 )
 				{
 					// Compute reference luminance regarding actual offset and reference gamma
-					double valxref=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+OffsetRef)/(1.0+OffsetRef);
-					double valyref=pow(valxref, GetConfig()->m_GammaRef);
-					
+            		CColor White = pDoc -> GetMeasure () -> GetGray ( size - 1 );
+	            	CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
+                    double valxref,valyref;
+                    if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
+                    {
+    					valxref=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown));
+                        valyref = GetBT1886(valxref, White, Black, GetConfig()->m_GammaRel);
+                    }
+                    else
+                    {
+    					valxref=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+OffsetRef)/(1.0+OffsetRef);
+	    				valyref=pow(valxref, GetConfig()->m_useMeasuredGamma ?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
+                    }			
 					ColorxyY tmpColor(GetColorReference().GetWhite());
 					tmpColor[2] = valyref;
                     if (GetConfig ()->m_dE_gray == 2 || GetConfig ()->m_dE_form == 5)

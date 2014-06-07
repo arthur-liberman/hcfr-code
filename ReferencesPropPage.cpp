@@ -65,16 +65,20 @@ void CReferencesPropPage::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CReferencesPropPage)
 	DDX_Control(pDX, IDC_EDIT_GAMMA_REF, m_GammaRefEdit);
 	DDX_Control(pDX, IDC_EDIT_GAMMA_AVERAGE, m_GammaAvgEdit);
+	DDX_Control(pDX, IDC_EDIT_GAMMA_REL, m_GammaRelEdit);
 	DDX_Control(pDX, IDC_WHITETARGET_COMBO, m_whiteTargetCombo);
 	DDX_CBIndex(pDX, IDC_WHITETARGET_COMBO, m_whiteTarget);
 	DDX_CBIndex(pDX, IDC_COLORREF_COMBO, m_colorStandard);
 	DDX_CBIndex(pDX, IDC_CCMODE_COMBO, m_CCMode);
   	DDX_Text(pDX, IDC_EDIT_GAMMA_REF, m_GammaRef);
+  	DDX_Text(pDX, IDC_EDIT_GAMMA_REL, m_GammaRel);
   	DDX_Text(pDX, IDC_EDIT_GAMMA_AVERAGE, m_GammaAvg);
 	DDV_MinMaxDouble(pDX, m_GammaRef, 1., 5.);
 	DDV_MinMaxDouble(pDX, m_GammaAvg, 1., 5.);
+	DDV_MinMaxDouble(pDX, m_GammaRel, 0., 5.);
 	DDX_Check(pDX, IDC_CHANGEWHITE_CHECK, m_changeWhiteCheck);
 	DDX_Check(pDX, IDC_USE_MEASURED_GAMMA, m_useMeasuredGamma);
+	DDX_Control(pDX, IDC_USE_MEASURED_GAMMA, m_eMeasuredGamma);
 	DDX_Radio(pDX, IDC_GAMMA_OFFSET_RADIO1, m_GammaOffsetType);
 	DDX_Text(pDX, IDC_EDIT_MANUAL_GOFFSET, m_manualGOffset);
 	DDX_Text(pDX, IDC_WHITE_X, m_manualWhitex);
@@ -95,6 +99,7 @@ BEGIN_MESSAGE_MAP(CReferencesPropPage, CPropertyPageWithHelp)
 	ON_BN_CLICKED(IDC_CHECK_COLORS, OnCheckColors)
 	ON_EN_CHANGE(IDC_EDIT_IRIS_TIME, OnChangeEditIrisTime)
 	ON_EN_CHANGE(IDC_EDIT_GAMMA_REF, OnChangeEditGammaRef)
+	ON_EN_CHANGE(IDC_EDIT_GAMMA_REL, OnChangeEditGammaRel)
 	ON_EN_CHANGE(IDC_EDIT_GAMMA_AVERAGE, OnChangeEditGammaAvg)
 	ON_EN_CHANGE(IDC_WHITE_X, OnChangeEditGammaAvg)
 	ON_EN_CHANGE(IDC_WHITE_Y, OnChangeEditGammaAvg)
@@ -113,9 +118,15 @@ void CReferencesPropPage::OnControlClicked(UINT nID)
 {
 	UpdateData(TRUE);
 	if (m_GammaOffsetType == 4)
+    {
   	  m_GammaRefEdit.EnableWindow (FALSE);
+      m_eMeasuredGamma.EnableWindow (FALSE);
+    }
 	else
+    {
   	  m_GammaRefEdit.EnableWindow (TRUE);
+      m_eMeasuredGamma.EnableWindow (TRUE);
+    }
 	m_isModified=TRUE;
 	SetModified(TRUE);	
 	UpdateData(FALSE);
@@ -171,13 +182,22 @@ BOOL CReferencesPropPage::OnInitDialog()
 	if (m_useMeasuredGamma)
 		CheckRadioButton ( IDC_USE_MEASURED_GAMMA, IDC_USE_MEASURED_GAMMA, IDC_USE_MEASURED_GAMMA );
 	if (GetConfig ()->m_GammaOffsetType == 4)
+    {
   	  m_GammaRefEdit.EnableWindow (FALSE);
+  	  m_eMeasuredGamma.EnableWindow (FALSE);
+    }
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
 void CReferencesPropPage::OnChangeEditGammaRef() 
+{
+	m_isModified=TRUE;
+	SetModified(TRUE);
+}
+
+void CReferencesPropPage::OnChangeEditGammaRel() 
 {
 	m_isModified=TRUE;
 	SetModified(TRUE);

@@ -471,9 +471,18 @@ void CMainView::RefreshSelection()
 	Item.row = 0;
 	Item.col = 1;
 	
-	m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235, (m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1), GetDocument()->GetMeasure()->GetGrayScaleSize());
 	if (m_displayMode <= 2)
+    {
+        m_RGBLevels.ShowWindow(SW_SHOW);
+        m_Target.ShowWindow(SW_SHOW);
         m_RGBLevels.Refresh();
+    	m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235, (m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1), GetDocument()->GetMeasure()->GetGrayScaleSize());
+    }
+    else
+    {
+        m_RGBLevels.ShowWindow(SW_HIDE);
+        m_Target.ShowWindow(SW_HIDE);
+    }
 
 	if(m_SelectedColor.isValid())
 	{
@@ -545,7 +554,13 @@ void CMainView::RefreshSelection()
 				 break;
 
 			case 1: // target
-				( ( CTargetWnd * ) m_pInfoWnd ) -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  (m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1), GetDocument()->GetMeasure()->GetGrayScaleSize());
+                if (m_displayMode <= 2)
+                {
+                    ( ( CTargetWnd * ) m_pInfoWnd ) ->ShowWindow(SW_SHOW);
+				    ( ( CTargetWnd * ) m_pInfoWnd ) -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  (m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1), GetDocument()->GetMeasure()->GetGrayScaleSize());
+                }
+                else
+                    ( ( CTargetWnd * ) m_pInfoWnd ) ->ShowWindow(SW_HIDE);
 				 break;
 
 			case 2:	// spectrum
@@ -1676,7 +1691,6 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 			{
 				// Display reference gamma Y
 				str.Empty();
-//				double GammaTarget = GetConfig () -> m_GammaRef;
 
 				int nGrayScaleSize = GetDocument()->GetMeasure()->GetGrayScaleSize ();
 
@@ -1695,22 +1709,17 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 							yblack = GetDocument() -> GetMeasure () -> GetGray ( 0 ).GetY ();
 
 						x = ArrayIndexToGrayLevel ( nCol - 1, nGrayScaleSize, GetConfig () -> m_bUseRoundDown );
-						if (GetConfig()->m_GammaOffsetType == 4)
+                        if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
 						{
-							//BT.1886 L = a(max[(V + b),0])^2.4
-                            double maxL = White.GetY();
-                            double minL = Black.GetY();
-							double a = pow ( ( pow (maxL,1.0/2.4 ) - pow ( minL,1.0/2.4 ) ),2.4 );
-							double b = ( pow ( minL,1.0/2.4 ) ) / ( pow (maxL,1.0/2.4 ) - pow ( minL,1.0/2.4 ) );
 							valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
-							valy = ( a * pow ( (valx + b)<0?0:(valx+b), 2.4 ) );
+                            valy = GetBT1886(valx,White,Black,GetConfig()->m_GammaRel) * White.GetY();
 							str.Format ( "%.3f", valy );
 						}
 						else
 						{
-						valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
-						valy=pow(valx, GetConfig()->m_GammaRef);
-						str.Format ( "%.3f", yblack + ( valy * ( White.GetY () - yblack ) ) );
+    						valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
+	    					valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
+		    				str.Format ( "%.3f", yblack + ( valy * ( White.GetY () - yblack ) ) );
 						}
 					}
 				}
@@ -1759,7 +1768,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 					case 11:
                         double rLuma=GetColorReference().GetCC24ReferenceLuma (nCol-1, GetConfig()->m_CCMode );
                         //luminance is based on 2.2 gamma so we need to scale here actual reference gamma
-						RefLuma [ nCol-1 ] = pow(pow(rLuma,1. / 2.22),GetConfig()->m_GammaAvg);
+						RefLuma [ nCol-1 ] = pow(pow(rLuma,1. / 2.22),GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 						break;
 				}
 					CColor WhiteMCD;
@@ -2017,14 +2026,14 @@ void CMainView::UpdateGrid()
 		}
 
 		// Retrieve gamma and offset in case user has modified
-		Gamma = 2.22; //default targets
-        GetConfig()->m_GammaAvg = 2.22; //targets can be either default patterns at 2.22 or modified for user average gamma
+        Gamma = GetConfig()->m_GammaRef;
+        GetConfig()->m_GammaAvg = Gamma; //targets can be reference power law or modified for user average gamma, BT.1886 handled separately
         if ( nCount && GetDocument()->GetMeasure()->GetGray(0).isValid() )
 		{
-			GetDocument()->ComputeGammaAndOffset(&Gamma, &Offset, 1, 1, nCount);
+            GetDocument()->ComputeGammaAndOffset(&Gamma, &Offset, 1, 1, nCount, false);
 			Gamma = floor(Gamma * 100) / 100;
 		}
-		if (GetConfig()->m_useMeasuredGamma)
+        if (GetConfig()->m_useMeasuredGamma)
 			GetConfig()->m_GammaAvg = (Gamma<1?2.22:Gamma);
         GetConfig()->SetPropertiesSheetValues();
 
@@ -2185,20 +2194,17 @@ void CMainView::UpdateGrid()
                         // fixed to use correct gamma predicts
                         // and added option to assume perfect gamma
 						double x = ArrayIndexToGrayLevel ( j, nCount, GetConfig () -> m_bUseRoundDown );
-                        if (GetConfig()->m_GammaOffsetType == 4)
+            		    CColor White = GetDocument() -> GetMeasure () -> GetGray ( nCount - 1 );
+	                	CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
+                        if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
 			            {
-                            //BT.1886 L = a(max[(V + b),0])^2.4
-                            double maxL = GetDocument()->GetMeasure()->GetGray(nCount-1).GetY();
-                            double minL = GetDocument()->GetMeasure()->GetGray(0).GetY();
-                            double a = pow ( ( pow (maxL,1.0/2.4 ) - pow ( minL,1.0/2.4 ) ),2.4 );
-                            double b = ( pow ( minL,1.0/2.4 ) ) / ( pow (maxL,1.0/2.4 ) - pow ( minL,1.0/2.4 ) );
                             double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
-                            valy = ( a * pow ( (valx + b)<0?0:(valx+b), 2.4 ) ) / maxL ;
+                            valy = GetBT1886(valx, White, Black, GetConfig()->m_GammaRel);
 			            }
 			            else
 			            {
 				            double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
-				            valy=pow(valx, GetConfig()->m_GammaRef);
+				            valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 			            }
 
                         ColorxyY tmpColor(GetColorReference().GetWhite());
@@ -4415,12 +4421,15 @@ void CMainView::OnSelchangeInfoDisplay()
 			 break;
 
 		case 1: // target
-			 pTargetWnd = new CTargetWnd;			
-			 pTargetWnd -> Create (NULL, NULL, WS_VISIBLE | WS_CHILD, Rect, this, IDC_INFO_VIEW, NULL );
-			 pTargetWnd -> m_pRefColor = & m_SelectedColor;
-			 pTargetWnd -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  (m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1), GetDocument()->GetMeasure()->GetGrayScaleSize() );
+            if (m_displayMode <= 2)
+            {
+                pTargetWnd = new CTargetWnd;			
+			    pTargetWnd -> Create (NULL, NULL, WS_VISIBLE | WS_CHILD, Rect, this, IDC_INFO_VIEW, NULL );
+			    pTargetWnd -> m_pRefColor = & m_SelectedColor;
+			    pTargetWnd -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  (m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1), GetDocument()->GetMeasure()->GetGrayScaleSize() );
 
-			 m_pInfoWnd = pTargetWnd;
+			    m_pInfoWnd = pTargetWnd;
+            }
 			 break;
 
 		case 2: // spectrum

@@ -253,6 +253,7 @@ void CColorHCFRConfig::InitDefaults()
 	m_BWColorsToAdd=1;
 	m_GammaRef=2.22;
 	m_GammaAvg=2.22;
+    m_GammaRel=0.0;
 	m_useMeasuredGamma=FALSE;
 	m_GammaOffsetType=1;
 	m_manualGOffset=0.099;
@@ -318,7 +319,8 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_bUseRoundDown=GetProfileInt("References","SatUseMeasuredRef",0);
 	m_GammaRef=GetProfileDouble("References","GammaRefValue",2.22);
 	m_GammaAvg=GetProfileDouble("References","GammaAvgValue",2.22);
-	m_useMeasuredGamma=GetProfileInt("References","UseMeasuredGamma",1);
+	m_GammaRel=GetProfileDouble("References","GammaRelValue",0.0);
+	m_useMeasuredGamma=GetProfileInt("References","UseMeasuredGamma",0);
 	m_GammaOffsetType=GetProfileInt("References","GammaOffsetType",4);
 	m_manualGOffset=GetProfileDouble("References","ManualGamOffset",0.099);
     m_manualWhitex = GetProfileDouble("References","ManualWhitex", 0.312712);
@@ -379,6 +381,7 @@ void CColorHCFRConfig::SaveSettings()
 	WriteProfileInt("References","SatUseMeasuredRef",m_bUseRoundDown);
 	WriteProfileDouble("References","GammaRefValue",m_GammaRef);
 	WriteProfileDouble("References","GammaAvgValue",m_GammaAvg);
+	WriteProfileDouble("References","GammaRelValue",m_GammaRel);
 	WriteProfileInt("References","UseMeasuredGamma",1);
 	WriteProfileInt("Appearance","DrawMode",m_menuDrawMode);
 	WriteProfileInt("Appearance","DrawMemuBorder",m_drawMenuBorder);
@@ -433,6 +436,7 @@ void CColorHCFRConfig::SetPropertiesSheetValues()
 	m_referencesPropertiesPage.m_whiteTarget=m_whiteTarget;
   	m_referencesPropertiesPage.m_GammaRef=m_GammaRef;
   	m_referencesPropertiesPage.m_GammaAvg=m_GammaAvg;
+  	m_referencesPropertiesPage.m_GammaRel=m_GammaRel;
   	m_referencesPropertiesPage.m_useMeasuredGamma=m_useMeasuredGamma;
 	m_referencesPropertiesPage.m_manualGOffset=m_manualGOffset;
 	m_referencesPropertiesPage.m_manualWhitex=m_manualWhitex;
@@ -522,6 +526,7 @@ BOOL CColorHCFRConfig::GetPropertiesSheetValues()
 	m_whiteTarget=(WhiteTarget)m_referencesPropertiesPage.m_whiteTarget;
 	m_GammaRef=m_referencesPropertiesPage.m_GammaRef;
 	m_GammaAvg=m_referencesPropertiesPage.m_GammaAvg;
+	m_GammaRel=m_referencesPropertiesPage.m_GammaRel;
 	m_useMeasuredGamma=m_referencesPropertiesPage.m_useMeasuredGamma;
 	m_manualGOffset=m_referencesPropertiesPage.m_manualGOffset;
 	m_manualWhitex=m_referencesPropertiesPage.m_manualWhitex;

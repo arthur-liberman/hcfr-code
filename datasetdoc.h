@@ -132,7 +132,7 @@ public:
 	void HideView(UINT nMsg);
 	void HideAllViews();
 
-	void ComputeGammaAndOffset(double * Gamma, double * Offset, int ColorSpace,int ColorIndex,int Size);
+	void ComputeGammaAndOffset(double * Gamma, double * Offset, int ColorSpace,int ColorIndex,int Size, bool m_bBT1886);
 	BOOL ComputeAdjustmentMatrix();
 
 	void SetSelectedColor ( const CColor & clr )	{ m_SelectedColor = clr; }

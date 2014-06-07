@@ -522,8 +522,9 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 		g[i]=min(max(rgb[i][1],0.00001),.99999);
 		b[i]=min(max(rgb[i][2],0.00001),.99999);
 	}
-	double gamma=GetConfig()->m_GammaAvg;
-	for(int i=0;i<6;i++)
+    double gamma=(GetConfig()->m_useMeasuredGamma)?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef);
+
+    for(int i=0;i<6;i++)
 		aColor[i].SetRGBValue (ColorRGB(pow(pow(r[i],1./2.22),gamma),pow(pow(g[i],1./2.22),gamma),pow(pow(b[i],1./2.22),gamma)),GetColorReference());	
 
 	CCIEGraphPoint refRedPrimaryPoint(aColor[0].GetXYZValue(), 1.0, Msg, m_bCIEuv);
@@ -847,7 +848,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 		CColor GrayClr;
 		
 		double Gamma, Offset;
-		pDoc->ComputeGammaAndOffset(&Gamma, &Offset, 3, 1, nSize);
+		pDoc->ComputeGammaAndOffset(&Gamma, &Offset, 3, 1, nSize, false);
 
 		for(int i=0;i<nSize;i++)
 		{
@@ -862,20 +863,17 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
             if ( GetConfig ()->m_dE_gray > 0 || GetConfig ()->m_dE_form == 5 )
             {
 				double x = ArrayIndexToGrayLevel ( i, nSize, GetConfig () -> m_bUseRoundDown );
-                if (GetConfig()->m_GammaOffsetType == 4)
+    			CColor White = pDoc -> GetMeasure () -> GetGray ( nSize - 1 );
+	    		CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
+                if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
 			    {
-                    //BT.1886 L = a(max[(V + b),0])^2.4
-                   double maxL = pDoc->GetMeasure()->GetGray(nSize-1).GetY();
-                   double minL = pDoc->GetMeasure()->GetGray(0).GetY();
-			       double a = pow ( ( pow (maxL,1.0/2.4 ) - pow ( minL,1.0/2.4 ) ),2.4 );
-			       double b = ( pow ( minL,1.0/2.4 ) ) / ( pow (maxL,1.0/2.4 ) - pow ( minL,1.0/2.4 ) );
 				   double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
-				   valy = ( a * pow ( (valx + b)<0?0:(valx+b), 2.4 ) ) / maxL ;
+                   valy = GetBT1886(valx, White, Black, GetConfig()->m_GammaRel);
 			    }
 			    else
 			    {
 				   double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
-				   valy=pow(valx, GetConfig()->m_GammaRef);
+				   valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 			    }
 
                 ColorxyY tmpColor(GetColorReference().GetWhite());
@@ -2059,11 +2057,10 @@ void CCIEChartView::UpdateTestColor ( CPoint point )
 	CRect	rect;
 	double	x, y;
 	double	u, v;
-	double	r, g, b;
 	double	cmax;
 	double	base, coef;
-	double	gamma = GetConfig()->m_GammaAvg;
-	ColorRGB	RGBColor;
+    double gamma = (GetConfig()->m_useMeasuredGamma)?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef);
+    ColorRGB	RGBColor;
 
 	GetReferenceRect ( & rect );
 
@@ -2081,11 +2078,23 @@ void CCIEChartView::UpdateTestColor ( CPoint point )
 	if ( x > 0.0 && x < 1.0 && y > 0.0 && y < 1.0 )
 	{
 		CColor	ClickedColor ( x, y );
+        CColor White = GetDocument() -> GetMeasure () -> GetGray ( GetDocument()->GetMeasure()->GetGrayScaleSize() - 1 );
+	    CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
 
 		RGBColor = ClickedColor.GetRGBValue ((GetColorReference()));
-		r = max(0.0,pow(RGBColor[0],gamma));
-		g = max(0.0,pow(RGBColor[1],gamma));
-		b = max(0.0,pow(RGBColor[2],gamma));
+        double r=RGBColor[0],g=RGBColor[1],b=RGBColor[2];
+        if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid()) 
+        {
+    		r = (r<=0||r>=1)?min(max(r,0),1):pow(r,log(GetBT1886(r, White, Black,GetConfig()->m_GammaRel))/log(r));
+	    	g = (g<=0||g>=1)?min(max(g,0),1):pow(g,log(GetBT1886(g, White, Black,GetConfig()->m_GammaRel))/log(g));
+		    b = (b<=0||b>=1)?min(max(b,0),1):pow(b,log(GetBT1886(b, White, Black,GetConfig()->m_GammaRel))/log(b));
+        }
+        else
+        {
+    		r = (r<=0||r>=1)?min(max(r,0),1):pow(r,gamma);
+	    	g = (g<=0||g>=1)?min(max(g,0),1):pow(g,gamma);
+		    b = (b<=0||b>=1)?min(max(b,0),1):pow(b,gamma);
+        }
 
 		cmax = max(r,g);
 		if ( b>cmax)

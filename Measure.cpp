@@ -339,11 +339,11 @@ void CMeasure::Serialize(CArchive& ar)
 			for(int i=0;i<m_magentaSatMeasureArray.GetSize();i++)
 				m_magentaSatMeasureArray[i].Serialize(ar);
 
-			if ( version > 7)
+			if ( version == 8)
 			{
 				ar >> size;
-				m_cc24SatMeasureArray.SetSize(size);
-				for(int i=0;i<m_cc24SatMeasureArray.GetSize();i++)
+				m_cc24SatMeasureArray.SetSize(1000);
+				for(int i=0;i<size;i++)
 					m_cc24SatMeasureArray[i].Serialize(ar);
 			}
 
@@ -356,7 +356,7 @@ void CMeasure::Serialize(CArchive& ar)
 			m_yellowSatMeasureArray.SetSize(5);
 			m_cyanSatMeasureArray.SetSize(5);
 			m_magentaSatMeasureArray.SetSize(5);
-			m_cc24SatMeasureArray.SetSize(1000);
+			m_cc24SatMeasureArray.SetSize(24);
 			for(int i=0;i<m_cc24SatMeasureArray.GetSize();i++) 
 				m_cc24SatMeasureArray[i]=noDataColor;
 			for(int i=0;i<m_redSatMeasureArray.GetSize();i++)
@@ -1551,9 +1551,7 @@ BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	}
 
 	// Generate saturation colors for red
-	double gamma=GetConfig()->m_GammaAvg;
-
-	GenerateSaturationColors (GetColorReference(), GenColors,size, true, false, false, gamma);
+	GenerateSaturationColors (GetColorReference(), GenColors,size, true, false, false);
 	
     for(int i=0;i<size;i++)
 	{
@@ -1704,9 +1702,8 @@ BOOL CMeasure::MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator)
 		pGenerator->Release();
 		return FALSE;
 	}
-	double gamma=GetConfig()->m_GammaAvg;
 	// Generate saturation colors for green
-	GenerateSaturationColors (GetColorReference(), GenColors,size, false, true, false, gamma );
+	GenerateSaturationColors (GetColorReference(), GenColors,size, false, true, false );
 
 	for(int i=0;i<size;i++)
 	{
@@ -1857,10 +1854,9 @@ BOOL CMeasure::MeasureBlueSatScale(CSensor *pSensor, CGenerator *pGenerator)
 		pGenerator->Release();
 		return FALSE;
 	}
- 	double gamma=GetConfig()->m_GammaAvg;
 
 	// Generate saturation colors for blue
-		GenerateSaturationColors (GetColorReference(), GenColors,size, false, false, true, gamma );
+		GenerateSaturationColors (GetColorReference(), GenColors,size, false, false, true );
 
 	for(int i=0;i<size;i++)
 	{
@@ -2011,10 +2007,9 @@ BOOL CMeasure::MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator)
 		pGenerator->Release();
 		return FALSE;
 	}
-	double gamma=GetConfig()->m_GammaAvg;
 
 	// Generate saturation colors for yellow
-	GenerateSaturationColors (GetColorReference(), GenColors,size, true, true, false, gamma );
+	GenerateSaturationColors (GetColorReference(), GenColors,size, true, true, false );
 
 	for(int i=0;i<size;i++)
 	{
@@ -2166,10 +2161,9 @@ BOOL CMeasure::MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator)
 		pGenerator->Release();
 		return FALSE;
 	}
-	double gamma=GetConfig()->m_GammaAvg;
 
 	// Generate saturation colors for cyan
-	GenerateSaturationColors (GetColorReference(), GenColors,size, false, true, true, gamma );
+	GenerateSaturationColors (GetColorReference(), GenColors,size, false, true, true );
 
 	for(int i=0;i<size;i++)
 	{
@@ -2321,10 +2315,9 @@ BOOL CMeasure::MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator)
 		pGenerator->Release();
 		return FALSE;
 	}
-	double gamma=GetConfig()->m_GammaAvg;
 
 	// Generate saturation colors for magenta
-	GenerateSaturationColors (GetColorReference(), GenColors,size, true, false, true, gamma );
+	GenerateSaturationColors (GetColorReference(), GenColors,size, true, false, true );
 
 	for(int i=0;i<size;i++)
 	{
@@ -2709,15 +2702,14 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 		return FALSE;
 	}
 
-	double gamma=GetConfig()->m_GammaAvg;
 
 	// Generate saturations for all colors
-	GenerateSaturationColors (GetColorReference(), GenColors, size, true, false, false, gamma );				// Red
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 1 ], size, false, true, false, gamma );	// Green
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 2 ], size, false, false, true, gamma );	// Blue
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 3 ], size, true, true, false, gamma );	// Yellow
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 4 ], size, false, true, true, gamma );	// Cyan
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 5 ], size, true, false, true, gamma );	// Magenta
+	GenerateSaturationColors (GetColorReference(), GenColors, size, true, false, false );				// Red
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 1 ], size, false, true, false );	// Green
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 2 ], size, false, false, true );	// Blue
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 3 ], size, true, true, false );	// Yellow
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 4 ], size, false, true, true );	// Cyan
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 5 ], size, true, false, true );	// Magenta
 	GenerateCC24Colors (& GenColors [ size * 6 ], GetConfig()->m_CCMode); //color checker
 
 	for ( j = 0 ; j < ( bPrimaryOnly ? 3 : 7 ) ; j ++ )
@@ -2972,15 +2964,14 @@ BOOL CMeasure::MeasurePrimarySecondarySaturationScales(CSensor *pSensor, CGenera
 		return FALSE;
 	}
 
-	double gamma=GetConfig()->m_GammaAvg;
 
 	// Generate saturations for all colors
-	GenerateSaturationColors (GetColorReference(), GenColors, size, true, false, false, gamma );				// Red
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 1 ], size, false, true, false, gamma );	// Green
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 2 ], size, false, false, true, gamma );	// Blue
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 3 ], size, true, true, false, gamma );	// Yellow
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 4 ], size, false, true, true, gamma );	// Cyan
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 5 ], size, true, false, true, gamma );	// Magenta
+	GenerateSaturationColors (GetColorReference(), GenColors, size, true, false, false );				// Red
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 1 ], size, false, true, false );	// Green
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 2 ], size, false, false, true );	// Blue
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 3 ], size, true, true, false );	// Yellow
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 4 ], size, false, true, true );	// Cyan
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 5 ], size, true, false, true );	// Magenta
 
 	for ( j = 0 ; j < ( bPrimaryOnly ? 3 : 6 ) ; j ++ )
 	{
@@ -5120,7 +5111,7 @@ void CMeasure::AppendMeasurements(const CColor & aColor)
 
 CColor CMeasure::GetRefPrimary(int i) const
 {
-	double gamma=GetConfig()->m_GammaAvg;
+    double gamma=(GetConfig()->m_useMeasuredGamma)?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef);
 	bool isSpecial = (GetColorReference().m_standard==HDTVa||GetColorReference().m_standard==CC6||GetColorReference().m_standard==CC6a);
 	CColorReference cRef=GetColorReference();
 	CColor	aColorr,aColorg,aColorb;
@@ -5165,8 +5156,9 @@ CColor CMeasure::GetRefPrimary(int i) const
 
 CColor CMeasure::GetRefSecondary(int i) const
 {
-	double gamma=GetConfig()->m_GammaAvg;
-	bool isSpecial = (GetColorReference().m_standard==HDTVa||GetColorReference().m_standard==CC6||GetColorReference().m_standard==CC6a);
+    double gamma=(GetConfig()->m_useMeasuredGamma)?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef);
+
+    bool isSpecial = (GetColorReference().m_standard==HDTVa||GetColorReference().m_standard==CC6||GetColorReference().m_standard==CC6a);
 	CColorReference cRef=GetColorReference();
 	CColor	aColory,aColorc,aColorm;
 	aColory.SetXYZValue (cRef.GetYellow());
@@ -5258,12 +5250,24 @@ CColor CMeasure::GetRefSat(int i, double sat_percent) const
 	CColor	aColor;
 	aColor.SetxyYValue (x, y, YLuma);
 	ColorRGB rgb=aColor.GetRGBValue ( GetColorReference() );
-	double r,g,b;
-	r=min(max(rgb[0],0.00001),.99999);
-	g=min(max(rgb[1],0.00001),.99999);
-	b=min(max(rgb[2],0.00001),.99999);
-	double gamma=GetConfig()->m_GammaAvg;
-	aColor.SetRGBValue (ColorRGB(pow(pow(r,1./2.22),gamma),pow(pow(g,1./2.22),gamma),pow(pow(b,1./2.22),gamma)), GetColorReference());	
+	double r=rgb[0],g=rgb[1],b=rgb[2];
+    CColor White = CMeasure::GetGray ( CMeasure::GetGrayScaleSize() - 1 );
+	CColor Black = CMeasure::GetGray ( 0 );
+
+    double gamma=GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef);
+    if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() && sat_percent != 0 && sat_percent != 1)
+    {
+        r=(r<=0||r>=1)?min(max(r,0),1):pow(pow(r,1./2.22),log(GetBT1886(r/YLuma,White,Black,GetConfig()->m_GammaRel))/log(r/YLuma));
+        g=(g<=0||g>=1)?min(max(g,0),1):pow(pow(g,1./2.22),log(GetBT1886(g/YLuma,White,Black,GetConfig()->m_GammaRel))/log(g/YLuma));
+        b=(b<=0||b>=1)?min(max(b,0),1):pow(pow(b,1./2.22),log(GetBT1886(b/YLuma,White,Black,GetConfig()->m_GammaRel))/log(b/YLuma));
+    }
+    else
+    {
+        r=(r<=0||r>=1)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
+        g=(g<=0||g>=1)?min(max(g,0),1):pow(pow(g,1./2.22),gamma);
+        b=(b<=0||b>=1)?min(max(b,0),1):pow(pow(b,1./2.22),gamma);
+    }
+    aColor.SetRGBValue (ColorRGB(r,g,b), GetColorReference());	
 	return aColor;
 }
 
@@ -5275,11 +5279,10 @@ CColor CMeasure::GetRefCC24Sat(int i) const
 	//switch over to user gamma
 	CColor ccRef;
     ColorRGB RGB[100];
-	double gamma=GetConfig()->m_GammaAvg;
 	switch (GetConfig()->m_CCMode)
 	{
 //GCD
-	case GCD:
+    	case GCD:
 		{
             RGB[0] = ColorRGB(0, 0, 0);
 			RGB[1] = ColorRGB(.6210,.6210,.6210) ;
@@ -5308,7 +5311,7 @@ CColor CMeasure::GetRefCC24Sat(int i) const
 		break;
 		}
 //MCD
-	case MCD:
+    	case MCD:
 		{
 			RGB[0] = ColorRGB(.21,.2055,.21);
 			RGB[1] = ColorRGB(.3288,.3288,.3288);
@@ -5337,7 +5340,7 @@ CColor CMeasure::GetRefCC24Sat(int i) const
 		break;
 		}
 		//axis steps
-	case AXIS:
+	    case AXIS:
 		{
 			RGB[0] = ColorRGB(0.12, 0, 0 );
 			RGB[1] = ColorRGB(.24, 0, 0 );
@@ -5365,7 +5368,7 @@ CColor CMeasure::GetRefCC24Sat(int i) const
 			RGB[23] = ColorRGB(  0, 0, .96 );
 		break;		}
         //Pantone skin set
-	case SKIN:
+	    case SKIN:
 		{
 			RGB[0] = ColorRGB(1,0.8745,0.7686);
 			RGB[1] = ColorRGB(0.9412,0.8353,0.7451);
@@ -5394,107 +5397,123 @@ CColor CMeasure::GetRefCC24Sat(int i) const
             break;
         }
         //Color checker SG 96 colors
-			case CCSG:
+		case CCSG:
 		{
-RGB[0] = ColorRGB(1,1,1);
-RGB[1] = ColorRGB(0.872146119,0.872146119,0.872146119);
-RGB[2] = ColorRGB(0.771689498,0.771689498,0.771689498);
-RGB[3] = ColorRGB(0.721461187,0.721461187,0.721461187);
-RGB[4] = ColorRGB(0.671232877,0.671232877,0.671232877);
-RGB[5] = ColorRGB(0.611872146,0.611872146,0.611872146);
-RGB[6] = ColorRGB(0.561643836,0.561643836,0.561643836);
-RGB[7] = ColorRGB(0.461187215,0.461187215,0.461187215);
-RGB[8] = ColorRGB(0.420091324,0.420091324,0.420091324);
-RGB[9] = ColorRGB(0.369863014,0.369863014,0.369863014);
-RGB[10] = ColorRGB(0.328767123,0.328767123,0.328767123);
-RGB[11] = ColorRGB(0.292237443,0.292237443,0.292237443);
-RGB[12] = ColorRGB(0.210045662,0.210045662,0.210045662);
-RGB[13] = ColorRGB(0.168949772,0.168949772,0.168949772);
-RGB[14] = ColorRGB(0,0,0);
-RGB[15] = ColorRGB(0.570776256,0.109589041,0.328767123);
-RGB[16] = ColorRGB(0.292237443,0.178082192,0.278538813);
-RGB[17] = ColorRGB(0.849315068,0.821917808,0.757990868);
-RGB[18] = ColorRGB(0.438356164,0.251141553,0.150684932);
-RGB[19] = ColorRGB(0.799086758,0.538812785,0.401826484);
-RGB[20] = ColorRGB(0.351598174,0.438356164,0.511415525);
-RGB[21] = ColorRGB(0.328767123,0.378995434,0.118721461);
-RGB[22] = ColorRGB(0.502283105,0.461187215,0.570776256);
-RGB[23] = ColorRGB(0.420091324,0.707762557,0.561643836);
-RGB[24] = ColorRGB(1,0.780821918,0.598173516);
-RGB[25] = ColorRGB(0.388127854,0.109589041,0.159817352);
-RGB[26] = ColorRGB(0.748858447,0.118721461,0.292237443);
-RGB[27] = ColorRGB(0.739726027,0.502283105,0.611872146);
-RGB[28] = ColorRGB(0.429223744,0.351598174,0.538812785);
-RGB[29] = ColorRGB(0.99086758,0.780821918,0.707762557);
-RGB[30] = ColorRGB(0.908675799,0.438356164,0);
-RGB[31] = ColorRGB(0.242009132,0.310502283,0.561643836);
-RGB[32] = ColorRGB(0.780821918,0.251141553,0.269406393);
-RGB[33] = ColorRGB(0.319634703,0.150684932,0.319634703);
-RGB[34] = ColorRGB(0.662100457,0.707762557,0);
-RGB[35] = ColorRGB(0.917808219,0.589041096,0);
-RGB[36] = ColorRGB(0.840182648,0.908675799,0.707762557);
-RGB[37] = ColorRGB(0.799086758,0,0.082191781);
-RGB[38] = ColorRGB(0.337899543,0.127853881,0.210045662);
-RGB[39] = ColorRGB(0.461187215,0.118721461,0.438356164);
-RGB[40] = ColorRGB(0,0.210045662,0.351598174);
-RGB[41] = ColorRGB(0.739726027,0.858447489,0.721461187);
-RGB[42] = ColorRGB(0.050228311,0.168949772,0.461187215);
-RGB[43] = ColorRGB(0.260273973,0.547945205,0.159817352);
-RGB[44] = ColorRGB(0.698630137,0,0.100456621);
-RGB[45] = ColorRGB(0.96803653,0.748858447,0);
-RGB[46] = ColorRGB(0.757990868,0.260273973,0.479452055);
-RGB[47] = ColorRGB(0,0.502283105,0.547945205);
-RGB[48] = ColorRGB(0.908675799,0.799086758,0.748858447);
-RGB[49] = ColorRGB(0.840182648,0.461187215,0.470319635);
-RGB[50] = ColorRGB(0.748858447,0,0.150684932);
-RGB[51] = ColorRGB(0,0.488584475,0.680365297);
-RGB[52] = ColorRGB(0.328767123,0.598173516,0.680365297);
-RGB[53] = ColorRGB(1,0.780821918,0.671232877);
-RGB[54] = ColorRGB(0.748858447,0.840182648,0.757990868);
-RGB[55] = ColorRGB(0.872146119,0.461187215,0.401826484);
-RGB[56] = ColorRGB(0.940639269,0.200913242,0.150684932);
-RGB[57] = ColorRGB(0.191780822,0.630136986,0.648401826);
-RGB[58] = ColorRGB(0,0.228310502,0.269406393);
-RGB[59] = ColorRGB(0.858447489,0.831050228,0.520547945);
-RGB[60] = ColorRGB(1,0.401826484,0);
-RGB[61] = ColorRGB(1,0.630136986,0);
-RGB[62] = ColorRGB(0,0.228310502,0.200913242);
-RGB[63] = ColorRGB(0.461187215,0.579908676,0.689497717);
-RGB[64] = ColorRGB(0.858447489,0.479452055,0.278538813);
-RGB[65] = ColorRGB(0.96803653,0.671232877,0.488584475);
-RGB[66] = ColorRGB(0.780821918,0.547945205,0.360730594);
-RGB[67] = ColorRGB(0.561643836,0.360730594,0.200913242);
-RGB[68] = ColorRGB(0.808219178,0.589041096,0.452054795);
-RGB[69] = ColorRGB(0.630136986,0.337899543,0.127853881);
-RGB[70] = ColorRGB(0.840182648,0.520547945,0.360730594);
-RGB[71] = ColorRGB(0.780821918,0.698630137,0);
-RGB[72] = ColorRGB(1,0.748858447,0);
-RGB[73] = ColorRGB(0,0.630136986,0.561643836);
-RGB[74] = ColorRGB(0,0.547945205,0.461187215);
-RGB[75] = ColorRGB(0.821917808,0.538812785,0.410958904);
-RGB[76] = ColorRGB(0.98173516,0.598173516,0.452054795);
-RGB[77] = ColorRGB(0.780821918,0.561643836,0.420091324);
-RGB[78] = ColorRGB(0.789954338,0.547945205,0.420091324);
-RGB[79] = ColorRGB(0.799086758,0.561643836,0.410958904);
-RGB[80] = ColorRGB(0.479452055,0.292237443,0.150684932);
-RGB[81] = ColorRGB(0.849315068,0.547945205,0.369863014);
-RGB[82] = ColorRGB(0.721461187,0.561643836,0.091324201);
-RGB[83] = ColorRGB(0.730593607,0.698630137,0);
-RGB[84] = ColorRGB(0.251141553,0.210045662,0.141552511);
-RGB[85] = ColorRGB(0.351598174,0.630136986,0.351598174);
-RGB[86] = ColorRGB(0,0.538812785,0.310502283);
-RGB[87] = ColorRGB(0.118721461,0.251141553,0.159817352);
-RGB[88] = ColorRGB(0.228310502,0.630136986,0.429223744);
-RGB[89] = ColorRGB(0.479452055,0.611872146,0.219178082);
-RGB[90] = ColorRGB(0.200913242,0.538812785,0.100456621);
-RGB[91] = ColorRGB(0.292237443,0.662100457,0.159817352);
-RGB[92] = ColorRGB(0.789954338,0.520547945,0.168949772);
-RGB[93] = ColorRGB(0.621004566,0.589041096,0.100456621);
-RGB[94] = ColorRGB(0.648401826,0.730593607,0);
-RGB[95] = ColorRGB(0.301369863,0.168949772,0.100456621);
+            RGB[0] = ColorRGB(1,1,1);
+            RGB[1] = ColorRGB(0.872146119,0.872146119,0.872146119);
+            RGB[2] = ColorRGB(0.771689498,0.771689498,0.771689498);
+            RGB[3] = ColorRGB(0.721461187,0.721461187,0.721461187);
+            RGB[4] = ColorRGB(0.671232877,0.671232877,0.671232877);
+            RGB[5] = ColorRGB(0.611872146,0.611872146,0.611872146);
+            RGB[6] = ColorRGB(0.561643836,0.561643836,0.561643836);
+            RGB[7] = ColorRGB(0.461187215,0.461187215,0.461187215);
+            RGB[8] = ColorRGB(0.420091324,0.420091324,0.420091324);
+            RGB[9] = ColorRGB(0.369863014,0.369863014,0.369863014);
+            RGB[10] = ColorRGB(0.328767123,0.328767123,0.328767123);
+            RGB[11] = ColorRGB(0.292237443,0.292237443,0.292237443);
+            RGB[12] = ColorRGB(0.210045662,0.210045662,0.210045662);
+            RGB[13] = ColorRGB(0.168949772,0.168949772,0.168949772);
+            RGB[14] = ColorRGB(0,0,0);
+            RGB[15] = ColorRGB(0.570776256,0.109589041,0.328767123);
+            RGB[16] = ColorRGB(0.292237443,0.178082192,0.278538813);
+            RGB[17] = ColorRGB(0.849315068,0.821917808,0.757990868);
+            RGB[18] = ColorRGB(0.438356164,0.251141553,0.150684932);
+            RGB[19] = ColorRGB(0.799086758,0.538812785,0.401826484);
+            RGB[20] = ColorRGB(0.351598174,0.438356164,0.511415525);
+            RGB[21] = ColorRGB(0.328767123,0.378995434,0.118721461);
+            RGB[22] = ColorRGB(0.502283105,0.461187215,0.570776256);
+            RGB[23] = ColorRGB(0.420091324,0.707762557,0.561643836);
+            RGB[24] = ColorRGB(1,0.780821918,0.598173516);
+            RGB[25] = ColorRGB(0.388127854,0.109589041,0.159817352);
+            RGB[26] = ColorRGB(0.748858447,0.118721461,0.292237443);
+            RGB[27] = ColorRGB(0.739726027,0.502283105,0.611872146);
+            RGB[28] = ColorRGB(0.429223744,0.351598174,0.538812785);
+            RGB[29] = ColorRGB(0.99086758,0.780821918,0.707762557);
+            RGB[30] = ColorRGB(0.908675799,0.438356164,0);
+            RGB[31] = ColorRGB(0.242009132,0.310502283,0.561643836);
+            RGB[32] = ColorRGB(0.780821918,0.251141553,0.269406393);
+            RGB[33] = ColorRGB(0.319634703,0.150684932,0.319634703);
+            RGB[34] = ColorRGB(0.662100457,0.707762557,0);
+            RGB[35] = ColorRGB(0.917808219,0.589041096,0);
+            RGB[36] = ColorRGB(0.840182648,0.908675799,0.707762557);
+            RGB[37] = ColorRGB(0.799086758,0,0.082191781);
+            RGB[38] = ColorRGB(0.337899543,0.127853881,0.210045662);
+            RGB[39] = ColorRGB(0.461187215,0.118721461,0.438356164);
+            RGB[40] = ColorRGB(0,0.210045662,0.351598174);
+            RGB[41] = ColorRGB(0.739726027,0.858447489,0.721461187);
+            RGB[42] = ColorRGB(0.050228311,0.168949772,0.461187215);
+            RGB[43] = ColorRGB(0.260273973,0.547945205,0.159817352);
+            RGB[44] = ColorRGB(0.698630137,0,0.100456621);
+            RGB[45] = ColorRGB(0.96803653,0.748858447,0);
+            RGB[46] = ColorRGB(0.757990868,0.260273973,0.479452055);
+            RGB[47] = ColorRGB(0,0.502283105,0.547945205);
+            RGB[48] = ColorRGB(0.908675799,0.799086758,0.748858447);
+            RGB[49] = ColorRGB(0.840182648,0.461187215,0.470319635);
+            RGB[50] = ColorRGB(0.748858447,0,0.150684932);
+            RGB[51] = ColorRGB(0,0.488584475,0.680365297);
+            RGB[52] = ColorRGB(0.328767123,0.598173516,0.680365297);
+            RGB[53] = ColorRGB(1,0.780821918,0.671232877);
+            RGB[54] = ColorRGB(0.748858447,0.840182648,0.757990868);
+            RGB[55] = ColorRGB(0.872146119,0.461187215,0.401826484);
+            RGB[56] = ColorRGB(0.940639269,0.200913242,0.150684932);
+            RGB[57] = ColorRGB(0.191780822,0.630136986,0.648401826);
+            RGB[58] = ColorRGB(0,0.228310502,0.269406393);
+            RGB[59] = ColorRGB(0.858447489,0.831050228,0.520547945);
+            RGB[60] = ColorRGB(1,0.401826484,0);
+            RGB[61] = ColorRGB(1,0.630136986,0);
+            RGB[62] = ColorRGB(0,0.228310502,0.200913242);
+            RGB[63] = ColorRGB(0.461187215,0.579908676,0.689497717);
+            RGB[64] = ColorRGB(0.858447489,0.479452055,0.278538813);
+            RGB[65] = ColorRGB(0.96803653,0.671232877,0.488584475);
+            RGB[66] = ColorRGB(0.780821918,0.547945205,0.360730594);
+            RGB[67] = ColorRGB(0.561643836,0.360730594,0.200913242);
+            RGB[68] = ColorRGB(0.808219178,0.589041096,0.452054795);
+            RGB[69] = ColorRGB(0.630136986,0.337899543,0.127853881);
+            RGB[70] = ColorRGB(0.840182648,0.520547945,0.360730594);
+            RGB[71] = ColorRGB(0.780821918,0.698630137,0);
+            RGB[72] = ColorRGB(1,0.748858447,0);
+            RGB[73] = ColorRGB(0,0.630136986,0.561643836);
+            RGB[74] = ColorRGB(0,0.547945205,0.461187215);
+            RGB[75] = ColorRGB(0.821917808,0.538812785,0.410958904);
+            RGB[76] = ColorRGB(0.98173516,0.598173516,0.452054795);
+            RGB[77] = ColorRGB(0.780821918,0.561643836,0.420091324);
+            RGB[78] = ColorRGB(0.789954338,0.547945205,0.420091324);
+            RGB[79] = ColorRGB(0.799086758,0.561643836,0.410958904);
+            RGB[80] = ColorRGB(0.479452055,0.292237443,0.150684932);
+            RGB[81] = ColorRGB(0.849315068,0.547945205,0.369863014);
+            RGB[82] = ColorRGB(0.721461187,0.561643836,0.091324201);
+            RGB[83] = ColorRGB(0.730593607,0.698630137,0);
+            RGB[84] = ColorRGB(0.251141553,0.210045662,0.141552511);
+            RGB[85] = ColorRGB(0.351598174,0.630136986,0.351598174);
+            RGB[86] = ColorRGB(0,0.538812785,0.310502283);
+            RGB[87] = ColorRGB(0.118721461,0.251141553,0.159817352);
+            RGB[88] = ColorRGB(0.228310502,0.630136986,0.429223744);
+            RGB[89] = ColorRGB(0.479452055,0.611872146,0.219178082);
+            RGB[90] = ColorRGB(0.200913242,0.538812785,0.100456621);
+            RGB[91] = ColorRGB(0.292237443,0.662100457,0.159817352);
+            RGB[92] = ColorRGB(0.789954338,0.520547945,0.168949772);
+            RGB[93] = ColorRGB(0.621004566,0.589041096,0.100456621);
+            RGB[94] = ColorRGB(0.648401826,0.730593607,0);
+            RGB[95] = ColorRGB(0.301369863,0.168949772,0.100456621);
             break;
         } 
 	} 
-    ccRef.SetRGBValue(ColorRGB(pow(RGB[i][0],gamma),pow(RGB[i][1],gamma),pow(RGB[i][2],gamma)),cRef);
+    CColor White = CMeasure::GetGray ( CMeasure::GetGrayScaleSize() - 1 );
+	CColor Black = CMeasure::GetGray ( 0 );
+    double gamma=GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef);
+    double inr=RGB[i][0],ing=RGB[i][1],inb=RGB[i][2];
+    if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
+    {
+        inr=(inr<=0||inr>=1)?min(max(inr,0),1):pow(RGB[i][0],log(GetBT1886(RGB[i][0],White,Black,GetConfig()->m_GammaRel))/log(RGB[i][0]));
+        ing=(ing<=0||ing>=1)?min(max(ing,0),1):pow(RGB[i][1],log(GetBT1886(RGB[i][1],White,Black,GetConfig()->m_GammaRel))/log(RGB[i][1]));
+        inb=(inb<=0||inb>=1)?min(max(inb,0),1):pow(RGB[i][2],log(GetBT1886(RGB[i][2],White,Black,GetConfig()->m_GammaRel))/log(RGB[i][2]));
+    }
+    else
+    {
+        inr=(inr<=0||inr>=1)?min(max(inr,0),1):pow(RGB[i][0],gamma);
+        ing=(ing<=0||ing>=1)?min(max(ing,0),1):pow(RGB[i][1],gamma);
+        inb=(inb<=0||inb>=1)?min(max(inb,0),1):pow(RGB[i][2],gamma);
+    }
+    ccRef.SetRGBValue(ColorRGB(inr,ing,inb),cRef);
 	return ccRef;
 }

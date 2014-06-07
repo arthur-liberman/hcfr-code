@@ -45,7 +45,9 @@ public:
 	//{{AFX_DATA(CReferencesPropPage)
 	enum { IDD = IDD_REFERENCE_PROP_PAGE };
 	CEdit m_GammaRefEdit;
+	CEdit m_eMeasuredGamma;
 	CEdit m_GammaAvgEdit;
+	CEdit m_GammaRelEdit;
 	CEdit m_manualWhitexedit;
 	CEdit m_manualWhiteyedit;
 	CComboBox	m_whiteTargetCombo;
@@ -54,6 +56,7 @@ public:
 	int		m_CCMode;
 	double	m_GammaRef;
 	double	m_GammaAvg;
+    double  m_GammaRel;
 	BOOL	m_changeWhiteCheck;
 	BOOL	m_useMeasuredGamma;
 	int		m_GammaOffsetType;
@@ -81,6 +84,7 @@ protected:
 	afx_msg void OnChangeEditIrisTime();
 	virtual BOOL OnInitDialog();
 	afx_msg void OnChangeEditGammaRef();
+	afx_msg void OnChangeEditGammaRel();
 	afx_msg void OnChangeEditGammaAvg();
 	afx_msg void OnChangeWhiteCheck();
 	afx_msg void OnUseMeasuredGammaCheck();

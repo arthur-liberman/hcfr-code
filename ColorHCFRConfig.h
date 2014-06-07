@@ -69,6 +69,7 @@ public:
 	int m_BWColorsToAdd;
 	double m_GammaRef;
 	double m_GammaAvg;
+	double m_GammaRel;
 	BOOL m_useMeasuredGamma;
 	double m_manualGOffset;
 	double m_manualWhitex;

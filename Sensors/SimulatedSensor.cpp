@@ -203,7 +203,7 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 	double offset=0.0, gain=1.0 ,gamma;
 	double value;
 
-	gamma=GetConfig()->m_GammaAvg;
+    gamma=GetConfig()->m_GammaRef;
 	offset=m_offsetR;
 	if(m_doOffsetError)
 		offset+=(m_offsetErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1.0 : 1.0);
