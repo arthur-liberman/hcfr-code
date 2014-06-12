@@ -34,6 +34,7 @@
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+extern CDataSetDoc *	g_pDataDocRunningThread;
 
 /////////////////////////////////////////////////////////////////////////////
 // CTargetWnd
@@ -66,7 +67,11 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 		ColorXYZ centerXYZ = GetColorReference().GetWhite();
 		// check for grayscale window when selection valid
 		//RGB specified 0-255 will get scaled in fullscreenwindow if needed
-		if (minCol > 0 && m_DisplayMode == 0)
+        if (g_pDataDocRunningThread && m_DisplayMode == 0 && minCol <= 0)
+        {
+            // maintain current target
+        }
+		else if (minCol > 0 && m_DisplayMode == 0)
 		{
             if (nSize > 0)
     			x = floor((double)(minCol-1) / (double)(nSize-1) * 255.0 + 0.5);
@@ -79,10 +84,13 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 		}
 		else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetWhite(), GetColorReference() ) < 0.05 )
 		{
+            if (minCol > 0)
+            {
 						nR = 255;
 						nG = 255;
 						nB = 255;
    					m_clr = RGB(255,255,255);
+            }
         }
         else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetRed(), GetColorReference() ) < 0.05 )
 		{

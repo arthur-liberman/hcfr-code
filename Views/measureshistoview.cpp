@@ -259,7 +259,7 @@ void CMeasuresHistoView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 		m_graphCtrl1.AddPoint(m_redGraphID, j, normColor[0]*100.0);
 		m_graphCtrl1.AddPoint(m_greenGraphID, j, normColor[1]*100.0);
 		m_graphCtrl1.AddPoint(m_blueGraphID, j, normColor[2]*100.0);
-
+        //don't know reference Y so use old dE formula here
 		m_graphCtrl2.AddPoint(m_deltaEGraphID, j, GetDocument()->GetMeasure()->GetMeasurement(i).GetDeltaE(GetColorReference().GetWhite())); //stick with chromiticity only dE
 
 		if(colorTemp > 1500 && colorTemp < 12000)

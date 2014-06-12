@@ -34,6 +34,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+extern CDataSetDoc *	g_pDataDocRunningThread;
+
 /////////////////////////////////////////////////////////////////////////////
 // CRGBLevelWnd
 
@@ -130,7 +132,7 @@ void CRGBLevelWnd::Refresh(int minCol)
 		}
                         		
 		CColor white = m_pDocument->GetMeasure()->GetOnOffWhite();
-        if (!white.isValid() || m_bLumaMode)
+        if (!white.isValid() || !m_bLumaMode)
         {
     		int i = m_pDocument -> GetMeasure () -> GetGrayScaleSize ();
 	    	if ( m_pDocument -> GetMeasure () -> GetGray ( i - 1 ).isValid() )
@@ -207,7 +209,7 @@ void CRGBLevelWnd::Refresh(int minCol)
         }
     	int nCount = m_pDocument -> GetMeasure () -> GetGrayScaleSize ();
         double YWhite = white.GetY();
-        if (!m_bLumaMode && minCol != -1)
+        if (!m_bLumaMode && minCol != -1 && !g_pDataDocRunningThread)
         {
             ColorxyY tmpColor(GetColorReference().GetWhite());
 		    // Determine Reference Y luminance for Delta E calculus
@@ -249,7 +251,11 @@ void CRGBLevelWnd::Refresh(int minCol)
                            YWhite = m_pRefColor->GetY();
 			}
         }
-        m_dEValue = float(m_pRefColor->GetDeltaE(YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, !m_bLumaMode, GetConfig()->gw_Weight )) ;
+        if ((g_pDataDocRunningThread || minCol <=0) && !m_bLumaMode )
+            m_dEValue = float(m_pRefColor->GetDeltaE(GetColorReference().GetWhite()));
+        else
+            m_dEValue = float(m_pRefColor->GetDeltaE(YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, !m_bLumaMode, GetConfig()->gw_Weight )) ;
+
     }
 	else
 	{

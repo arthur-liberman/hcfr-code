@@ -478,15 +478,8 @@ void CMainView::RefreshSelection()
             size = 101;
         else if (m_displayMode == 4)
             size = -1 * GetDocument()->GetMeasure()->GetNearWhiteScaleSize();
-//        m_RGBLevels.ShowWindow(SW_SHOW);
-//        m_Target.ShowWindow(SW_SHOW);
         m_RGBLevels.Refresh(m_pGrayScaleGrid -> GetSelectedCellRange().IsValid() && m_displayMode==0?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1);
     	m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  (m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1), size, m_displayMode);
-    }
-    else
-    {
-//        m_RGBLevels.ShowWindow(SW_HIDE);
-//        m_Target.ShowWindow(SW_HIDE);
     }
 
 	if(m_SelectedColor.isValid())
@@ -4004,11 +3997,6 @@ void CMainView::UpdateMeasurementsAfterBkgndMeasure ()
 			clrSpecial1 = RGB(255,192,255);
 			clrSpecial2 = RGB(255,224,255);
 		}
-//		else
-//		{
-//			bSpecialRef = FALSE;
-//			refColor = GetColorReference().GetWhite();
-//		}
 
 		CColor refDocColor;
 
@@ -4048,7 +4036,6 @@ void CMainView::UpdateMeasurementsAfterBkgndMeasure ()
 	}
 
 	SetSelectedColor ( MeasuredColor );
-	(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
 }
 
 void CMainView::InitButtons()
