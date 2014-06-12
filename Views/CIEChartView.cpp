@@ -516,16 +516,22 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	for(int i=0;i<6;i++)
 		rgb[i]=aColor[i].GetRGBValue ( GetColorReference() );
 	double r[6],g[6],b[6];
-	for(int i=0;i<6;i++)
-	{
-		r[i]=min(max(rgb[i][0],0.00001),.99999);
-		g[i]=min(max(rgb[i][1],0.00001),.99999);
-		b[i]=min(max(rgb[i][2],0.00001),.99999);
-	}
     double gamma=(GetConfig()->m_useMeasuredGamma)?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef);
+    CColor White = pDoc->GetMeasure()-> GetGray ( pDoc->GetMeasure()->GetGrayScaleSize() - 1 );
+	CColor Black = pDoc->GetMeasure()->GetGray ( 0 );
 
     for(int i=0;i<6;i++)
-		aColor[i].SetRGBValue (ColorRGB(pow(pow(r[i],1./2.22),gamma),pow(pow(g[i],1./2.22),gamma),pow(pow(b[i],1./2.22),gamma)),GetColorReference());	
+    {
+        double r1,g1,b1;
+		r[i]=rgb[i][0];
+		g[i]=rgb[i][1];
+		b[i]=rgb[i][2];        if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
+           gamma = log(GetBT1886(pow(aColor[i].GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel))/log(pow(aColor[i].GetY(),1/2.22));
+        r1=(r[i]<=0||r[i]>=1)?min(max(r[i],0),1):pow(pow(r[i],1./2.22),gamma);
+        g1=(g[i]<=0||g[i]>=1)?min(max(g[i],0),1):pow(pow(g[i],1./2.22),gamma);
+        b1=(b[i]<=0||b[i]>=1)?min(max(b[i],0),1):pow(pow(b[i],1./2.22),gamma);
+		aColor[i].SetRGBValue (ColorRGB(r1,g1,b1),GetColorReference());	
+    }
 
 	CCIEGraphPoint refRedPrimaryPoint(aColor[0].GetXYZValue(), 1.0, Msg, m_bCIEuv);
 	CCIEGraphPoint refGreenPrimaryPoint(aColor[1].GetXYZValue(), 1.0, Msg2, m_bCIEuv);

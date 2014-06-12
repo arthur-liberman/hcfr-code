@@ -47,6 +47,7 @@ CGeneralPropPage::CGeneralPropPage() : CPropertyPageWithHelp(CGeneralPropPage::I
 	m_bLatencyBeep = FALSE;
 	m_BWColorsToAdd = -1;
 	m_bDetectPrimaries = FALSE;
+	m_useHSV = FALSE;
 	m_bUseRoundDown = TRUE;
 	//}}AFX_DATA_INIT
 
@@ -70,6 +71,7 @@ void CGeneralPropPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_BEEP, m_bLatencyBeep);
 	DDX_Radio(pDX, IDC_RADIO1, m_BWColorsToAdd);
 	DDX_Check(pDX, IDC_CHECK_DETECT_PRIMARIES, m_bDetectPrimaries);
+	DDX_Check(pDX, IDC_CHECK_USE_HSV, m_useHSV);
 	DDX_Check(pDX, IDC_CHECK_USE_ROUNDDOWN, m_bUseRoundDown);
 	//}}AFX_DATA_MAP
 }
@@ -84,6 +86,7 @@ BEGIN_MESSAGE_MAP(CGeneralPropPage, CPropertyPageWithHelp)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_RADIO1, IDC_RADIO3, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_BEEP, IDC_CHECK_BEEP, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_DETECT_PRIMARIES, IDC_CHECK_DETECT_PRIMARIES, OnControlClicked)
+    ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_USE_HSV, IDC_CHECK_USE_HSV, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_USE_ROUNDDOWN, IDC_CHECK_USE_ROUNDDOWN, OnControlClicked)
 	//{{AFX_MSG_MAP(CGeneralPropPage)
 		// NOTE: the ClassWizard will add message map macros here

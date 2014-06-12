@@ -189,8 +189,8 @@ public:
 
 	double GetLuminance() const;
     double GetDeltaE(double YWhite, const CColor & refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form, bool isGS, int gw_Weight ) const;
-    double GetDeltaE(const CColor & refColor) const;
 	double GetDeltaxy(const CColor & refColor, const CColorReference& colorReference) const;
+    double GetDeltaE(const CColor & refColor) const;
 	ColorXYZ GetXYZValue() const;
 	ColorRGB GetRGBValue(CColorReference colorReference) const;
 	ColorxyY GetxyYValue() const;

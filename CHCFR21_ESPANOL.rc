@@ -273,10 +273,10 @@ BEGIN
     LTEXT           "Relative [0=Absolute]",IDC_STATIC,117,109,77,8
 END
 
-IDD_GENERAL_PROP_PAGE DIALOG 0, 0, 212, 185
+IDD_GENERAL_PROP_PAGE DIALOGEX 0, 0, 212, 185
 STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Général"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     GROUPBOX        "Application",IDC_STATIC,7,7,198,25,WS_GROUP
     CONTROL         "Instances multiples",IDC_CHECK_MULTIPLEINSTANCE,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,18,77,10
@@ -286,7 +286,7 @@ BEGIN
     CONTROL         "Affiche la couleur de test pendant les mesures",IDC_CHECK_COLORS,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,45,183,10
     CONTROL         "Effectue des mesures en continu",IDC_CHECK_CONTINUOUS,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,56,119,10
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,56,115,10
     CONTROL         "Détecte les primaires lors des mesures utilisateur",IDC_CHECK_DETECT_PRIMARIES,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,67,167,10
     GROUPBOX        "Iris dynamique",IDC_STATIC,7,85,198,36,WS_GROUP
@@ -302,6 +302,7 @@ BEGIN
     GROUPBOX        "Gray levels rounding assumption",IDC_STATIC,7,151,198,26,WS_GROUP
     CONTROL         "Use round down levels (AVSHD, DVE)",IDC_CHECK_USE_ROUNDDOWN,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,162,185,10
+    CONTROL         "Use HSV Bars",IDC_CHECK_USE_HSV,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,134,56,61,10
 END
 
 IDD_EXPORTXLS_DIALOG DIALOG 0, 0, 226, 135
@@ -813,16 +814,16 @@ BEGIN
     CONTROL         "xyY",IDC_XYY_RADIO,"Button",BS_AUTORADIOBUTTON,470,94,44,8,WS_EX_TRANSPARENT
     PUSHBUTTON      "Go",IDC_MEASUREGRAYSCALE_BUTTON,467,107,47,21
     PUSHBUTTON      "Efface",IDC_DELETEGRAYSCALE_BUTTON,467,130,47,21,0,WS_EX_TRANSPARENT
-    GROUPBOX        "Couleur sélectionnée",IDC_SELECTION_GROUP,4,153,171,173
+    GROUPBOX        "Couleur sélectionnée",IDC_SELECTION_GROUP,4,153,197,173
     LTEXT           "Niveaux RVB",IDC_STATIC_RGBLEVELS,10,167,44,8
-    LTEXT           "Niveaux RVB",IDC_RGBLEVELS,10,179,72,60
-    LTEXT           "Cible",IDC_STATIC_TARGET,10,249,16,8
-    LTEXT           "Cible",IDC_TARGET,10,261,72,60
-    LTEXT           "Données",IDC_STATIC_DATA,92,167,30,8
-    CONTROL         "",IDC_COLORDATA_STATIC,"Static",SS_ETCHEDFRAME,92,179,78,142
-    GROUPBOX        "Informations",IDC_VIEW_GROUP,176,153,339,173
-    COMBOBOX        IDC_INFO_DISPLAY,182,167,170,123,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    LTEXT           "",IDC_STATIC_VIEW,182,183,327,138,NOT WS_VISIBLE,WS_EX_TRANSPARENT
+    LTEXT           "Niveaux RVB",IDC_RGBLEVELS,10,179,102,60
+    LTEXT           "Cible",IDC_STATIC_TARGET,24,249,16,8
+    LTEXT           "Cible",IDC_TARGET,23,261,72,60
+    LTEXT           "Données",IDC_STATIC_DATA,118,167,30,8
+    CONTROL         "",IDC_COLORDATA_STATIC,"Static",SS_ETCHEDFRAME,115,179,78,142
+    GROUPBOX        "Informations",IDC_VIEW_GROUP,206,153,309,173
+    COMBOBOX        IDC_INFO_DISPLAY,210,167,170,123,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    LTEXT           "",IDC_STATIC_VIEW,212,183,297,138,NOT WS_VISIBLE,WS_EX_TRANSPARENT
     PUSHBUTTON      "",IDC_ANSICONTRAST_PATTERN_TEST_BUTTON,502,170,8,8
 END
 
@@ -973,6 +974,10 @@ BEGIN
     BEGIN
         RIGHTMARGIN, 209
         BOTTOMMARGIN, 161
+    END
+
+    IDD_GENERAL_PROP_PAGE, DIALOG
+    BEGIN
     END
 
     IDD_GENERATOR_GDI_PROP_PAGE, DIALOG
@@ -2398,8 +2403,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3, 1, 2,0
- PRODUCTVERSION 3, 1, 2,0
+ FILEVERSION 3,1,3,0
+ PRODUCTVERSION 3,1,3,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2417,12 +2422,12 @@ BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "CompanyName", "Association Homecinema Francophone"
             VALUE "FileDescription", "Resources Colorimètre HCFR"
-            VALUE "FileVersion", "3, 1, 2"
+            VALUE "FileVersion", "3, 1, 3"
             VALUE "InternalName", "CHCFR21_ESPAÑOL"
             VALUE "LegalCopyright", "Copyright (C) 2005-2008"
             VALUE "OriginalFilename", "CHCFR21_ESPAÑOL.DLL"
             VALUE "ProductName", "Colorimètre HCFR langage Español"
-            VALUE "ProductVersion", "3, 1, 2"
+            VALUE "ProductVersion", "3, 1, 3"
         END
     END
     BLOCK "VarFileInfo"
@@ -3311,7 +3316,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_LCHLEVELS           "LCH Levels"
+    IDS_LCHLEVELS           "HSV Levels"
 END
 
 STRINGTABLE

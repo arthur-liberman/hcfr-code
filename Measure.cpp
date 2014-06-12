@@ -1218,7 +1218,7 @@ BOOL CMeasure::MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator)
 
 	for(int i=0;i<size;i++)
 	{
-		if( pGenerator->DisplayGray((ArrayIndexToGrayLevel ( i, 101., GetConfig () -> m_bUseRoundDown)),CGenerator::MT_NEARBLACK,!bRetry) )
+		if( pGenerator->DisplayGray((ArrayIndexToGrayLevel ( i, 101, GetConfig () -> m_bUseRoundDown)),CGenerator::MT_NEARBLACK,!bRetry) )
 		{
 			bEscape = WaitForDynamicIris ();
 			bRetry = FALSE;
@@ -1402,7 +1402,7 @@ BOOL CMeasure::MeasureNearWhiteScale(CSensor *pSensor, CGenerator *pGenerator)
 	
 	for(int i=0;i<size;i++)
 	{
-		if( pGenerator->DisplayGray((ArrayIndexToGrayLevel ( 101-size+i, 101., GetConfig () -> m_bUseRoundDown)),CGenerator::MT_NEARWHITE,!bRetry ) )
+		if( pGenerator->DisplayGray((ArrayIndexToGrayLevel ( 101-size+i, 101, GetConfig () -> m_bUseRoundDown)),CGenerator::MT_NEARWHITE,!bRetry ) )
 		{
 			bEscape = WaitForDynamicIris ();
 			bRetry = FALSE;
@@ -5114,7 +5114,7 @@ CColor CMeasure::GetRefPrimary(int i) const
     double gamma=(GetConfig()->m_useMeasuredGamma)?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef);
 	bool isSpecial = (GetColorReference().m_standard==HDTVa||GetColorReference().m_standard==CC6||GetColorReference().m_standard==CC6a);
 	CColorReference cRef=GetColorReference();
-	CColor	aColorr,aColorg,aColorb;
+	CColor	aColor,aColorr,aColorg,aColorb;
 	aColorr.SetXYZValue (cRef.GetRed());
 	aColorg.SetXYZValue (cRef.GetGreen());
 	aColorb.SetXYZValue (cRef.GetBlue());
@@ -5125,6 +5125,11 @@ CColor CMeasure::GetRefPrimary(int i) const
     r=rgbr[0];
     g=rgbr[1];
     b=rgbr[2];
+    CColor White = CMeasure::GetGray ( CMeasure::GetGrayScaleSize() - 1 );
+	CColor Black = CMeasure::GetGray ( 0 );
+    aColor.SetRGBValue(ColorRGB(r,g,b), GetColorReference() );
+    if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
+       gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel))/log(pow(aColor.GetY(),1/2.22));
     if (isSpecial)
     {
         r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
@@ -5136,6 +5141,9 @@ CColor CMeasure::GetRefPrimary(int i) const
     r=rgbg[0];
     g=rgbg[1];
     b=rgbg[2];
+    aColor.SetRGBValue(ColorRGB(r,g,b), GetColorReference() );
+    if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
+       gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel))/log(pow(aColor.GetY(),1/2.22));
     if (isSpecial)
     {
         r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
@@ -5147,6 +5155,9 @@ CColor CMeasure::GetRefPrimary(int i) const
     r=rgbb[0];
     g=rgbb[1];
     b=rgbb[2];
+    aColor.SetRGBValue(ColorRGB(r,g,b), GetColorReference() );
+    if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
+       gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel))/log(pow(aColor.GetY(),1/2.22));
     if (isSpecial)
     {
         r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
@@ -5181,18 +5192,23 @@ CColor CMeasure::GetRefSecondary(int i) const
 
     bool isSpecial = (GetColorReference().m_standard==HDTVa||GetColorReference().m_standard==CC6||GetColorReference().m_standard==CC6a);
 	CColorReference cRef=GetColorReference();
-	CColor	aColory,aColorc,aColorm;
+	CColor	aColor,aColory,aColorc,aColorm;
 	aColory.SetXYZValue (cRef.GetYellow());
 	aColorc.SetXYZValue (cRef.GetCyan());
 	aColorm.SetXYZValue (cRef.GetMagenta());
 	ColorRGB rgby=aColory.GetRGBValue ( GetColorReference() );
 	ColorRGB rgbc=aColorc.GetRGBValue ( GetColorReference() );
 	ColorRGB rgbm=aColorm.GetRGBValue ( GetColorReference() );
+    CColor White = CMeasure::GetGray ( CMeasure::GetGrayScaleSize() - 1 );
+	CColor Black = CMeasure::GetGray ( 0 );
 	
     double r,g,b;
     r=rgby[0];
     g=rgby[1];
     b=rgby[2];
+    aColor.SetRGBValue(ColorRGB(r,g,b), GetColorReference() );
+    if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
+       gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel))/log(pow(aColor.GetY(),1/2.22));
     if (isSpecial)
     {
         r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
@@ -5204,6 +5220,9 @@ CColor CMeasure::GetRefSecondary(int i) const
     r=rgbc[0];
     g=rgbc[1];
     b=rgbc[2];
+    aColor.SetRGBValue(ColorRGB(r,g,b), GetColorReference() );
+    if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
+       gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel))/log(pow(aColor.GetY(),1/2.22));
     if (isSpecial)
     {
         r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
@@ -5215,6 +5234,9 @@ CColor CMeasure::GetRefSecondary(int i) const
     r=rgbm[0];
     g=rgbm[1];
     b=rgbm[2];
+    aColor.SetRGBValue(ColorRGB(r,g,b), GetColorReference() );
+    if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
+       gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel))/log(pow(aColor.GetY(),1/2.22));
     if (isSpecial)
     {
         r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);

@@ -41,14 +41,15 @@ public:
 	float				m_redValue;
 	float				m_greenValue;
 	float				m_blueValue;
-	BOOL			m_bLumaMode;
+    float               m_dEValue;
+	BOOL			    m_bLumaMode;
 
 	CColor *		m_pRefColor;
 	CDataSetDoc *	m_pDocument;
 
 // Operations
 public:
-	void Refresh();
+	void Refresh(int mCol);
 
 protected:
 	void DrawGradientBar(CDC *pDc,COLORREF aColor, int aX, int aY, int aWidth, int aHeight);

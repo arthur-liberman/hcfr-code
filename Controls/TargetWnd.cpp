@@ -56,30 +56,35 @@ CTargetWnd::~CTargetWnd()
 {
 }
 
-void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize)
+void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMode)
 {	
 	if ( m_pRefColor )
 	{
 		int		nR = 0, nG = 0, nB = 0;
 		double x;
-
 		// Assume gray scale 1st
 		ColorXYZ centerXYZ = GetColorReference().GetWhite();
 		// check for grayscale window when selection valid
 		//RGB specified 0-255 will get scaled in fullscreenwindow if needed
-		if (minCol != -1)
+		if (minCol > 0 && m_DisplayMode == 0)
 		{
-			minCol = max(1,minCol);
-//			if (m_b16_235)
-//				x = floor((double)(minCol-1) / (double)(nSize-1) * 219.0 + 0.5) + 16;
-//			else	
-				x = floor((double)(minCol-1) / (double)(nSize-1) * 255.0 + 0.5);
+            if (nSize > 0)
+    			x = floor((double)(minCol-1) / (double)(nSize-1) * 255.0 + 0.5);
+            else
+    			x = floor((double)(101+nSize+minCol-1) / (double)(100.) * 255.0 + 0.5);
  			m_clr = RGB(x,x,x);
 			nR=(int)x;
 			nG=(int)x;
 			nB=(int)x;
 		}
-		if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetRed(), GetColorReference() ) < 0.05 )
+		else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetWhite(), GetColorReference() ) < 0.05 )
+		{
+						nR = 255;
+						nG = 255;
+						nB = 255;
+   					m_clr = RGB(255,255,255);
+        }
+        else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetRed(), GetColorReference() ) < 0.05 )
 		{
 			centerXYZ = GetColorReference().GetRed();
 			switch (GetConfig()->m_colorStandard)
@@ -270,7 +275,7 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize)
         ColorxyY centerxyY(centerXYZ);
 		//Update test window for display when selected
 		BOOL		bDisplayColor = GetConfig () -> m_bDisplayTestColors;
-		if (minCol != -1)
+		if (minCol > 0)
 		{
 			if (bDisplayColor)
 			{
@@ -340,7 +345,9 @@ void CTargetWnd::OnPaint()
 	int targetRectWidth=rect.Width()*m_targetRectInPercent/100;
 	int targetRectHeight=rect.Height()*m_targetRectInPercent/100;
 
-    CPen crossPen(PS_SOLID,1,RGB(255,255,255));
+    CPen crossPen(PS_DASH,1,RGB(255,255,255));
+    CPen crossPen2(PS_DOT,1,RGB(0,0,0));
+
     CPen *pOldPen = pDC->SelectObject(&crossPen); 
 
 	// auto-zoom
@@ -349,7 +356,7 @@ void CTargetWnd::OnPaint()
 	int cornerWidth=(int)(zoomFactor*targetRectWidth/2.0);
 	int cornerHeight=(int)(zoomFactor*targetRectHeight/2.0);
 	
-	// draw cross 
+	// draw white cross 
 	pDC->MoveTo(rect.CenterPoint());
 	pDC->LineTo(rect.CenterPoint().x,rect.CenterPoint().y+2*cornerHeight); 
 	pDC->MoveTo(rect.CenterPoint());
@@ -359,7 +366,19 @@ void CTargetWnd::OnPaint()
 	pDC->MoveTo(rect.CenterPoint());
 	pDC->LineTo(rect.CenterPoint().x-2*cornerWidth,rect.CenterPoint().y); 
 
-	// draw circle
+    CPen *pOldPen2 = pDC->SelectObject(&crossPen2); 
+
+	// draw black cross 
+	pDC->MoveTo(rect.CenterPoint());
+	pDC->LineTo(rect.CenterPoint().x,rect.CenterPoint().y+2*cornerHeight); 
+	pDC->MoveTo(rect.CenterPoint());
+	pDC->LineTo(rect.CenterPoint().x+2*cornerWidth,rect.CenterPoint().y); 
+	pDC->MoveTo(rect.CenterPoint());
+	pDC->LineTo(rect.CenterPoint().x,rect.CenterPoint().y-2*cornerHeight); 
+	pDC->MoveTo(rect.CenterPoint());
+	pDC->LineTo(rect.CenterPoint().x-2*cornerWidth,rect.CenterPoint().y); 
+
+    // draw circle
 	pDC->SelectObject ( GetStockObject ( NULL_BRUSH ) );
 	pDC->Ellipse ( rect.CenterPoint().x-cornerWidth, rect.CenterPoint().y-cornerHeight, rect.CenterPoint().x+cornerWidth, rect.CenterPoint().y+cornerHeight );
     pDC->SelectObject(pOldPen);

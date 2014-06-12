@@ -37,6 +37,32 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CRGBLevelWnd
 
+void RGBTOHSV(double R, double G, double B, double& H, double& S, double& V)
+{
+	double var_R = ( R );                     //RGB values = From 0 to 1
+	double var_G = ( G );
+	double var_B = ( B );
+
+	double  var_Min = min(min( var_R, var_G), var_B );    //Min. value of RGB
+	double  var_Max = max(max( var_R, var_G), var_B );    //Max. value of RGB
+	double  del_Max = var_Max - var_Min ;            //Delta RGB value
+
+	V = var_Max;
+
+	if ( del_Max == 0 )                     //This is a gray, no chroma...
+	{
+	   H = 0;                                //HSL results = From 0 to 1
+	   S = 0;
+	}
+	else                                    //Chromatic data...
+	{
+       double alpha = 0.5 * (2 * var_R - var_G - var_B);
+       double beta = pow(3., 0.5) / 2 * (var_G - var_B);
+       S = pow(pow(alpha,2)+pow(beta,2),2);
+       H = atan2(beta,alpha);
+	}
+}
+
 CRGBLevelWnd::CRGBLevelWnd()
 {
 	m_pRefColor = NULL;
@@ -48,10 +74,12 @@ CRGBLevelWnd::~CRGBLevelWnd()
 {
 }
 
-void CRGBLevelWnd::Refresh()
+void CRGBLevelWnd::Refresh(int minCol)
 {
 	BOOL bWasLumaMode = m_bLumaMode;
 	m_bLumaMode = FALSE;
+    double cx,cy,cz,cxref,cyref,czref;
+
 	if ( m_pRefColor && (*m_pRefColor).isValid() )
 	{
 		double RefLuma = 1.0;
@@ -61,6 +89,7 @@ void CRGBLevelWnd::Refresh()
         if ( (m_pRefColor -> GetDeltaxy ( GetColorReference().GetWhite(), GetColorReference() ) < 0.05) )
 		{
 			m_bLumaMode = FALSE;
+            aReference = GetColorReference().GetWhite();
 		}
 		else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetRed(), GetColorReference() ) < 0.05 )
 		{
@@ -99,31 +128,52 @@ void CRGBLevelWnd::Refresh()
             aReference = GetColorReference().GetMagenta();
 		}
                         		
+		CColor white = m_pDocument->GetMeasure()->GetOnOffWhite();
 		if (m_bLumaMode && GetConfig()->m_bDetectPrimaries)
 		{
-			CColor white = m_pDocument->GetMeasure()->GetOnOffWhite();
-            ColorXYZ selectColor=m_pRefColor->GetXYZValue(), refColor=aReference.GetXYZValue() ;
+            ColorXYZ aColor=m_pRefColor->GetXYZValue(), refColor=aReference.GetXYZValue() ;
 			
-			m_redValue=0.;
-			m_greenValue=0.;
-			m_blueValue=0.;
+			m_redValue=100.;
+			m_greenValue=100.;
+			m_blueValue=100.;
             if ( white.isValid() )
             {
-                ColorLCH selectColorLCH(selectColor, white.GetY(), GetColorReference());
-                ColorLCH refColorLCH(refColor, 1.0, GetColorReference());
 
-                m_redValue=(float)(100+(selectColorLCH[0] - refColorLCH[0])/refColorLCH[0]*100);
-                m_greenValue=(float)(100+(selectColorLCH[1] - refColorLCH[1])/refColorLCH[1]*100);
-                m_blueValue=(float)(100+(selectColorLCH[2] - refColorLCH[2])/refColorLCH[2]*100);
+            aColor[0]=aColor[0]/white.GetY();
+            aColor[1]=aColor[1]/white.GetY();
+            aColor[2]=aColor[2]/white.GetY();
+            ColorRGB aColorRGB(aColor, GetColorReference());
+            ColorRGB refColorRGB(refColor, GetColorReference());
+            cx = aColorRGB[0];
+            cy = aColorRGB[1];
+            cz = aColorRGB[2];
+            cxref = refColorRGB[0];
+            cyref = refColorRGB[1];
+            czref = refColorRGB[2];
+            // RGB or HSV vector differences for CMS, V = luminance
+            if (GetConfig() -> m_useHSV)
+            {
+                RGBTOHSV(aColorRGB[0],aColorRGB[1],aColorRGB[2],cx,cy,cz);
+                RGBTOHSV(refColorRGB[0],refColorRGB[1],refColorRGB[2],cxref,cyref,czref);
+                czref = refColor[1];
+                cz = aColor[1];
             }
-/*			if ( white.isValid() && white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) > 0.0001 )
-			{
-				double d = m_pRefColor -> GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) / white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter);
-
-				m_greenValue = (int) ( ( d / RefLuma ) * 100.0 );
-			} */
+            if (cxref > .01)
+                m_redValue=(float)(100.-(cxref-cx)/cxref*100.0);
+            else
+                m_redValue=(float)(100.-(cxref-cx)*100.0);
+            if (cyref > .01)
+                m_greenValue=(float)(100.-(cyref-cy)/cyref*100.0);
+            else
+                m_greenValue=(float)(100.-(cyref-cy)*100.0);
+            if (czref > .01)
+                m_blueValue=(float)(100.-(czref-cz)/czref*100.0);
+            else
+                m_blueValue=(float)(100.-(czref-cz)*100.0);
+            
+            }
 		}
-		else
+		else //Always use RGB vector balance for grays
 		{
             ColorxyY aColor = m_pRefColor -> GetxyYValue();
             ColorXYZ normColor;
@@ -141,7 +191,6 @@ void CRGBLevelWnd::Refresh()
                 normColor[2]=0.0;
             }
 
-
             ColorRGB normColorRGB(normColor, GetColorReference());
                         
             m_redValue=(float)(normColorRGB[0]*100.0);
@@ -149,19 +198,65 @@ void CRGBLevelWnd::Refresh()
             m_blueValue=(float)(normColorRGB[2]*100.0);
 
         }
+    	int nCount = m_pDocument -> GetMeasure () -> GetGrayScaleSize ();
+        double YWhite = white.GetY();
+        if (!m_bLumaMode && minCol != -1)
+        {
+            ColorxyY tmpColor(GetColorReference().GetWhite());
+		    // Determine Reference Y luminance for Delta E calculus
+			if ( GetConfig ()->m_dE_gray > 0 || GetConfig ()->m_dE_form == 5 )
+			{
+						// Compute reference Luminance regarding actual offset and reference gamma 
+                        // fixed to use correct gamma predicts
+                        // and added option to assume perfect gamma
+						double x = ArrayIndexToGrayLevel ( minCol - 1 , nCount, GetConfig () -> m_bUseRoundDown );
+                        double valy, Gamma, Offset;
+                        Gamma = GetConfig()->m_GammaRef;
+                        GetConfig()->m_GammaAvg = Gamma;
+                        m_pDocument->ComputeGammaAndOffset(&Gamma, &Offset, 1, 1, nCount, false);
+            			Gamma = floor(Gamma * 100) / 100;
+                        if (GetConfig()->m_useMeasuredGamma)
+			                GetConfig()->m_GammaAvg = (Gamma<1?2.22:Gamma);
+                        GetConfig()->SetPropertiesSheetValues();
+            		    CColor White = m_pDocument -> GetMeasure () -> GetGray ( nCount - 1 );
+	                	CColor Black = m_pDocument -> GetMeasure () -> GetGray ( 0 );
+                        if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
+			            {
+                            double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
+                            valy = GetBT1886(valx, White, Black, GetConfig()->m_GammaRel);
+			            }
+			            else
+			            {
+				            double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
+				            valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
+			            }
+
+						tmpColor[2] = valy;
+                        if (GetConfig ()->m_dE_gray == 2 || GetConfig ()->m_dE_form == 5 )
+                            tmpColor[2] = m_pRefColor->GetY() / YWhite; //perfect gamma
+						aReference.SetxyYValue(tmpColor);
+			}
+		    else
+		    {
+						// Use actual gray luminance as correct reference (absolute)
+                           YWhite = m_pRefColor->GetY();
+			}
+        }
+        m_dEValue = float(m_pRefColor->GetDeltaE(YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, !m_bLumaMode, GetConfig()->gw_Weight )) ;
     }
 	else
 	{
 		m_redValue=0.;
 		m_greenValue=0.;
 		m_blueValue=0.;
+        m_dEValue = 0.;
 	}
 	Invalidate(FALSE);
 
 	if (m_bLumaMode != bWasLumaMode)
 	{
 		CString title;
-        title.LoadString(m_bLumaMode && GetConfig()->m_bDetectPrimaries ? IDS_LCHLEVELS : IDS_RGBLEVELS);
+        title.LoadString(m_bLumaMode && GetConfig()->m_bDetectPrimaries ? (GetConfig()->m_useHSV?IDS_LCHLEVELS:IDS_RGBLEVELS) : IDS_RGBLEVELS);
 		((CMainView *)GetParent())->m_RGBLevelsLabel.SetWindowText ((LPCSTR)title);
 	}
 }
@@ -188,7 +283,6 @@ void CRGBLevelWnd::OnPaint()
 	CPaintDC dc(this); // device context for painting
 	
     CHMemDC pDC(&dc);
-//	CDC *pDC=&dc;
 
 	CRect rect;
 	GetClientRect(&rect);
@@ -201,15 +295,12 @@ void CRGBLevelWnd::OnPaint()
 	else
 		pDC->FillSolidRect(0,0,rect.Width(),rect.Height(),RGB(0,0,0));
 
-/*
-	if( (*m_pRefColor) == noDataColor)
-		return;		// Draw no bar
-*/
 	CRect drawRect=rect;
 	drawRect.DeflateRect(widthMargin,heightMargin);
 
-	int barWidth = (drawRect.Width()-2*interBarMargin)/3.0;
-	int maxYValue=max(m_redValue,max(m_greenValue,m_blueValue));
+//	int barWidth = (drawRect.Width()-2*interBarMargin)/3.0;
+	int barWidth = int ((drawRect.Width()-2*interBarMargin)/4.0); //includes dE
+	int maxYValue = int  max(m_redValue,max(m_greenValue,m_blueValue));
 	CSize labelSize=pDC->GetTextExtent("100%");
 
 	float yScale;
@@ -242,51 +333,30 @@ void CRGBLevelWnd::OnPaint()
 	int blueBarX=widthMargin+2*barWidth+2*interBarMargin;
 	int blueBarY=rect.Height()-blueBarHeight-heightMargin;
 
-	// draw RGB bars
+	double dEyScale=(float)drawRect.Height()/6.;
+	int dEBarHeight= (int)(m_dEValue*dEyScale);
+	int dEBarX=widthMargin+3*barWidth+3*interBarMargin;
+	int dEBarY=rect.Height()-dEBarHeight-heightMargin;
+
+    // draw RGB bars
 	int ellipseHeight=barWidth/4;
-	if (m_bLumaMode && GetConfig()->m_bDetectPrimaries)
+    if (m_bLumaMode && GetConfig()->m_bDetectPrimaries && GetConfig()->m_useHSV)
 	{
     	DrawGradientBar(pDC,RGB(0,125,125),redBarX,redBarY,barWidth,redBarHeight);
 	    DrawGradientBar(pDC,RGB(125,0,125),greenBarX,greenBarY,barWidth,greenBarHeight);
 	    DrawGradientBar(pDC,RGB(125,125,0),blueBarX,blueBarY,barWidth,blueBarHeight);
+	    DrawGradientBar(pDC,RGB(255,215,0),dEBarX,dEBarY,barWidth,dEBarHeight);
     }
     else
     {
     	DrawGradientBar(pDC,RGB(255,0,0),redBarX,redBarY,barWidth,redBarHeight);
 	    DrawGradientBar(pDC,RGB(0,255,0),greenBarX,greenBarY,barWidth,greenBarHeight);
 	    DrawGradientBar(pDC,RGB(0,0,255),blueBarX,blueBarY,barWidth,blueBarHeight);
+	    DrawGradientBar(pDC,RGB(255,215,0),dEBarX,dEBarY,barWidth,dEBarHeight);
     }
 
-/*    if (m_bLumaMode)
-	{
-		DrawGradientBar(pDC,RGB(255,255,0),greenBarX,greenBarY,barWidth,greenBarHeight);
 
-		// Display elipse on top of bar
-		if(ellipseHeight > 3)
-		{
-			CPen *pOldPen;
-			CPen anEllipsePen(PS_SOLID,1,RGB(0,0,0));
-			pOldPen=pDC->SelectObject(&anEllipsePen);
-			// Red ellipse
-			CBrush *pOldBrush;
-			CBrush anEllipseBrush;
-			anEllipseBrush.CreateSolidBrush(RGB(164,164,0));
-			pOldBrush=pDC->SelectObject(&anEllipseBrush);
-			pDC->Ellipse(greenBarX,greenBarY-ellipseHeight/2,greenBarX+barWidth,greenBarY+ellipseHeight/2);
-
-			pDC->SelectObject(pOldBrush);
-			pDC->SelectObject(pOldPen);
-		}
-	}
-	else
-	{
-    DrawGradientBar(pDC,RGB(255,0,0),redBarX,redBarY,barWidth,redBarHeight);
-	DrawGradientBar(pDC,RGB(0,255,0),greenBarX,greenBarY,barWidth,greenBarHeight);
-	DrawGradientBar(pDC,RGB(0,0,255),blueBarX,blueBarY,barWidth,blueBarHeight);
-    */
-
-	// Display elipses on top of bars
-	if(ellipseHeight > 3)
+    if(ellipseHeight > 3)
 	{
 		CPen *pOldPen;
 		CPen anEllipsePen(PS_SOLID,1,RGB(0,0,0));
@@ -309,10 +379,15 @@ void CRGBLevelWnd::OnPaint()
 		anEllipseBrush.CreateSolidBrush(RGB(0,0,164));
 		pOldBrush=pDC->SelectObject(&anEllipseBrush);
 		pDC->Ellipse(blueBarX,blueBarY-ellipseHeight/2,blueBarX+barWidth,blueBarY+ellipseHeight/2);
+		// dE ellipse
+		pDC->SelectObject(pOldBrush);
+		anEllipseBrush.DeleteObject();
+		anEllipseBrush.CreateSolidBrush(RGB(184,134,11));
+		pOldBrush=pDC->SelectObject(&anEllipseBrush);
+		pDC->Ellipse(dEBarX,dEBarY-ellipseHeight/2,dEBarX+barWidth,dEBarY+ellipseHeight/2);
 
 		pDC->SelectObject(pOldBrush);
 		pDC->SelectObject(pOldPen);
-//	}
 	}
 
 	// Display values on top of bars
@@ -343,15 +418,14 @@ void CRGBLevelWnd::OnPaint()
 	CFont* pOldFont = pDC->SelectObject(&font);
 
 	char aBuf[32];
-//	if (! m_bLumaMode)
-//	{
 	sprintf(aBuf,"%3.1f%%",m_redValue);
 	pDC->TextOut(redBarX+barWidth/2,redBarY-ellipseHeight/2,aBuf);
-		sprintf(aBuf,"%3.1f%%",m_blueValue);
-		pDC->TextOut(blueBarX+barWidth/2,blueBarY-ellipseHeight/2,aBuf);
-//	}
+	sprintf(aBuf,"%3.1f%%",m_blueValue);
+	pDC->TextOut(blueBarX+barWidth/2,blueBarY-ellipseHeight/2,aBuf);
 	sprintf(aBuf,"%3.1f%%",m_greenValue);
 	pDC->TextOut(greenBarX+barWidth/2,greenBarY-ellipseHeight/2,aBuf);
+    sprintf(aBuf,"dE %3.1f",m_dEValue);
+	pDC->TextOut(dEBarX+barWidth/2,dEBarY-ellipseHeight/2,aBuf);
 
 	pDC->SelectObject(pOldFont);
 

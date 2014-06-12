@@ -1445,7 +1445,7 @@ BOOL CDataSetDoc::OnSaveDocument(LPCTSTR lpszPathName)
 
 void CDataSetDoc::OnCalibrationSim() 
 {
-	CString	Msg, Title;
+	CString	Msg, strMsg, Title;
 	CDataSetDoc *pDataRef = GetDataRef();
 
 	if ( pDataRef == NULL )
@@ -1472,6 +1472,11 @@ void CDataSetDoc::OnCalibrationSim()
 		// Use special simultaneous mode
 		PerformSimultaneousMeasures ( -5 );
         ComputeAdjustmentMatrix();
+		// Save file
+		strMsg.LoadString ( IDS_SAVECALDATA );
+		Title.LoadString ( IDS_CALIBRATION );
+		if(GetColorApp()->InMeasureMessageBox(strMsg,Title,MB_ICONQUESTION | MB_YESNO) == IDYES)
+			m_pSensor->SaveCalibrationFile();
 	}
 }
 
@@ -1510,6 +1515,11 @@ void CDataSetDoc::OnCalibrationExisting()
     }
 
     ComputeAdjustmentMatrix();
+	// Save file
+	Msg.LoadString ( IDS_SAVECALDATA );
+	Title.LoadString ( IDS_CALIBRATION );
+	if(GetColorApp()->InMeasureMessageBox(Msg,Title,MB_ICONQUESTION | MB_YESNO) == IDYES)
+		m_pSensor->SaveCalibrationFile();
 
 }
 
@@ -1546,13 +1556,13 @@ void CDataSetDoc::OnCalibrationManual()
 		// Measure red primary 
 		for ( i = 0; i < 1 ; i ++ )
 		{
-			if( m_pGenerator->DisplayRGBColor(ColorRGBDisplay(primaryIRELevel),CGenerator::MT_PRIMARY) )
+			if( m_pGenerator->DisplayRGBColor(ColorRGBDisplay(primaryIRELevel,0,0),CGenerator::MT_PRIMARY) )
 			{
 				bEscape = m_measure.WaitForDynamicIris ();
 				bReturn = FALSE;
 
 				if ( ! bEscape )
-					measure=m_pSensor->MeasureColor(ColorRGBDisplay(primaryIRELevel));
+					measure=m_pSensor->MeasureColor(ColorRGBDisplay(primaryIRELevel,0,0));
 				
 				while ( ! bEscape && ! bReturn )
 				{
@@ -1786,7 +1796,7 @@ void CDataSetDoc::OnCalibrationManual()
 		m_pSensor->Release();
 		m_pGenerator->Release();
 
-		CRefColorDlg dlg;
+        CRefColorDlg dlg;
 		if ( dlg.DoModal () == IDOK )
 		{
 			// Create calibration data
@@ -1804,23 +1814,27 @@ void CDataSetDoc::OnCalibrationManual()
             ColorXYZ whiteRef = dlg.m_WhiteColor.GetXYZValue();
 
             ColorXYZ white(measuredColor[3].GetXYZValue());
-
             Matrix oldMatrix = m_pSensor->GetSensorMatrix();
-            m_pSensor->SetSensorMatrixMod( oldMatrix );
             Matrix ConvMatrix = ComputeConversionMatrix (measures, references, white, whiteRef, GetConfig () -> m_bUseOnlyPrimaries );
-            // Ok: set adjustment matrix
-            Matrix newMatrix = ConvMatrix * oldMatrix;
-            m_measure.ApplySensorAdjustmentMatrix( ConvMatrix );
+
+        	// check that matrix is inversible
+	        if ( ConvMatrix.Determinant() != 0.0 )
+	        {
+		        // Ok: set adjustment matrix
+                Matrix newMatrix = ConvMatrix * oldMatrix;
+		        m_measure.ApplySensorAdjustmentMatrix( ConvMatrix );
+                m_pSensor->SetSensorMatrix(newMatrix);
+		        m_pSensor->SetSensorMatrixMod(Matrix::IdentityMatrix(3));
+		        SetModifiedFlag(TRUE);
+	        }
+	        else
+	        {
+		        AfxMessageBox ( IDS_INVALIDMEASUREMATRIX, MB_OK | MB_ICONERROR );
+	        }
+
+	        AfxGetMainWnd () -> SendMessageToDescendants ( WM_COMMAND, IDM_REFRESH_REFERENCE );
 
             SetModifiedFlag ();
-
-			m_measure.SetRedPrimary (ColorXYZ(ConvMatrix * measuredColor[0].GetXYZValue()));
-
-			m_measure.SetGreenPrimary (ColorXYZ(ConvMatrix * measuredColor[1].GetXYZValue()));
-
-			m_measure.SetBluePrimary (ColorXYZ(ConvMatrix * measuredColor[2].GetXYZValue()));
-
-			m_measure.SetOnOffWhite (ColorXYZ(ConvMatrix * measuredColor[3].GetXYZValue()));
 
 			UpdateAllViews ( NULL, UPD_EVERYTHING );
 
@@ -1829,8 +1843,9 @@ void CDataSetDoc::OnCalibrationManual()
 			Title.LoadString ( IDS_CALIBRATION );
 			if(GetColorApp()->InMeasureMessageBox(strMsg,Title,MB_ICONQUESTION | MB_YESNO) == IDYES)
 				m_pSensor->SaveCalibrationFile();
-		}
+		} 
 	}
+    
 }
 
 void CDataSetDoc::OnCalibrationSpectralSample() 
@@ -1841,8 +1856,6 @@ void CDataSetDoc::OnCalibrationSpectralSample()
 	CColor	measuredColor[4];
 	CString	strMsg, Title;
 
-	// TODO: Put in a check to enable / disable the menu item depending on whether the instrument is a colorimeter or spectrometer
-
 	if (m_pSensor->isColorimeter())
 	{
 		Title.LoadString ( IDS_ERROR );
@@ -1852,15 +1865,6 @@ void CDataSetDoc::OnCalibrationSpectralSample()
 	}
 
 	CString displayName = m_pGenerator->GetActiveDisplayName();
-//build using manually generated DVD patterns works fine	
-/*	if (displayName.IsEmpty()) // If the displayname is empty, we're not using the GDIGenerator, and so cannot display any patches
-	{
-		Title.LoadString ( IDS_ERROR );
-		strMsg.LoadString(IDS_SPECTRAL_SAMPLE_GENERATOR);
-		MessageBox(NULL, strMsg, Title ,MB_ICONERROR | MB_OK);  
-		return;
-	}
-*/
 
 	if ( IDYES == AfxMessageBox ( IDS_SPECTRAL_SAMPLE_CREATE, MB_YESNO | MB_ICONQUESTION ) )
 	{

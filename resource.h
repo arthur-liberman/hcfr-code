@@ -572,6 +572,7 @@
 #define IDC_DATA_y2                     1203
 #define IDC_READTIME_EDIT               1203
 #define IDC_EDIT_PATTERN_CHECK_MAX_RETRY_BY_PATTERN 1203
+#define IDC_CHECK_CONTINUOUS2           1203
 #define IDC_DATA_YY2                    1204
 #define IDC_EDIT_PATTERN_CHECK_MAX_RETRY_BY_SERIES 1204
 #define IDC_DATA_X3                     1205
@@ -643,6 +644,7 @@
 #define IDC_PARAM_GROUP                 1230
 #define IDC_STATIC_VIEW                 1231
 #define IDC_INFO_VIEW                   1232
+#define IDC_PARAM_GROUP2                1232
 #define IDC_BUTTON_MENU                 1233
 #define IDC_EDIT_COMMENT                1234
 #define IDC_CHECK_CONFIRM               1234
@@ -712,6 +714,7 @@
 #define IDC_WHITE_X                     1281
 #define IDC_WHITE_Y                     1282
 #define IDC_RICHEDIT21                  1282
+#define IDC_CHECK_USE_HSV               1283
 #define IDC_COLORTEMPHISTO_GRAPH        11003
 #define IDC_RGBHISTO_GRAPH              11101
 #define IDC_RGBHISTO_GRAPH2             11102

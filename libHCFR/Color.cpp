@@ -1203,14 +1203,14 @@ double CColor::GetLuminance() const
 	return GetY();
 }
 
-double CColor::GetDeltaE(double YWhite, const CColor & refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form, bool isGS, int gw_Weight ) const
-{
-		return m_XYZValues.GetDeltaE(YWhite, refColor.m_XYZValues, YWhiteRef, colorReference, dE_form, isGS, gw_Weight );
-}
-
 double CColor::GetDeltaE(const CColor & refColor) const
 {
     return m_XYZValues.GetOldDeltaE(refColor.m_XYZValues);
+}
+
+double CColor::GetDeltaE(double YWhite, const CColor & refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form, bool isGS, int gw_Weight ) const
+{
+		return m_XYZValues.GetDeltaE(YWhite, refColor.m_XYZValues, YWhiteRef, colorReference, dE_form, isGS, gw_Weight );
 }
 
 
@@ -1969,4 +1969,4 @@ double GrayLevelToGrayProp ( double Level, bool m_bUseRoundDown)
 
 double GetBT1886 ( double valx, CColor White, CColor Black, double g_rel)
 {
-    double maxL = White.GetY();    double minL = Black.GetY();    double yh =  maxL * pow(0.5, g_rel);    double exp0 = 2.4;    double a = pow ( ( pow (maxL,1.0/exp0 ) - pow ( minL,1.0/exp0 ) ),exp0 );    double b = ( pow ( minL,1.0/exp0 ) ) / ( pow (maxL,1.0/exp0 ) - pow ( minL,1.0/exp0 ) );    if (g_rel != 0.)        exp0 = (log(yh)-log(a))/log(0.5+b);    return ( a * pow ( (valx + b)<0?0:(valx+b), exp0 ) ) / maxL;}
+    double maxL = White.GetY();    double minL = Black.GetY();    double yh =  maxL * pow(0.5, g_rel);    double exp0 = g_rel==0.0?2.4:g_rel;    double a = pow ( ( pow (maxL,1.0/exp0 ) - pow ( minL,1.0/exp0 ) ),exp0 );    double b = ( pow ( minL,1.0/exp0 ) ) / ( pow (maxL,1.0/exp0 ) - pow ( minL,1.0/exp0 ) );    if (g_rel != 0.)        exp0 = (log(yh)-log(a))/log(0.5+b);    return ( a * pow ( (valx + b)<0?0:(valx+b), exp0 ) ) / maxL;}

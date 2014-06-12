@@ -247,6 +247,7 @@ void CColorHCFRConfig::InitDefaults()
 	m_bDisplayTestColors=TRUE;
 	m_bContinuousMeasures=TRUE;
 	m_bDetectPrimaries=FALSE;
+	m_useHSV=FALSE;
 	m_latencyTime=0;
 	m_bLatencyBeep=FALSE;
 	m_bUseRoundDown=FALSE;
@@ -309,8 +310,9 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_CCMode=(CCPatterns)GetProfileInt("References","CCMode",GCD);
 	m_whiteTarget=(WhiteTarget)GetProfileInt("References","WhiteTarget",D65);
 	m_bDisplayTestColors=GetProfileInt("References","DisplayTestColors",1);
-	m_bContinuousMeasures=GetProfileInt("References","ContinuousMeasures",1);
+	m_bContinuousMeasures=GetProfileInt("References","ContinuousMeasures",0);
 	m_bDetectPrimaries=GetProfileInt("References","DetectPrimaries",1);
+	m_useHSV=GetProfileInt("References","UseHSV",1);
 	m_latencyTime=GetProfileInt("References","IrisLatencyTime",250);
     // don't allow less than 100ms for latency, give windows and display a chance
     // to show the image 
@@ -374,6 +376,7 @@ void CColorHCFRConfig::SaveSettings()
 	WriteProfileInt("References","CCMode",m_CCMode);
 	WriteProfileInt("References","WhiteTarget",m_whiteTarget);
 	WriteProfileInt("References","DisplayTestColors",m_bDisplayTestColors);
+	WriteProfileInt("References","UseHSV",m_useHSV);
 	WriteProfileInt("References","ContinuousMeasures",m_bContinuousMeasures);
 	WriteProfileInt("References","DetectPrimaries",m_bDetectPrimaries);
 	WriteProfileInt("References","IrisLatencyTime",m_latencyTime);
@@ -424,6 +427,7 @@ void CColorHCFRConfig::SetPropertiesSheetValues()
 	m_generalPropertiesPage.m_BWColorsToAdd=m_BWColorsToAdd;
 	
 	m_generalPropertiesPage.m_bDisplayTestColors=m_bDisplayTestColors;
+	m_generalPropertiesPage.m_useHSV=m_useHSV;
 	m_generalPropertiesPage.m_bContinuousMeasures=m_bContinuousMeasures;
 	m_generalPropertiesPage.m_bDetectPrimaries=m_bDetectPrimaries;
 	m_generalPropertiesPage.m_latencyTime=m_latencyTime;
@@ -515,6 +519,7 @@ BOOL CColorHCFRConfig::GetPropertiesSheetValues()
 	m_BWColorsToAdd=m_generalPropertiesPage.m_BWColorsToAdd;
 
 	m_bDisplayTestColors=m_generalPropertiesPage.m_bDisplayTestColors;
+	m_useHSV=m_generalPropertiesPage.m_useHSV;
 	m_bContinuousMeasures=m_generalPropertiesPage.m_bContinuousMeasures;
 	m_bDetectPrimaries=m_generalPropertiesPage.m_bDetectPrimaries;
 	m_latencyTime=m_generalPropertiesPage.m_latencyTime;
