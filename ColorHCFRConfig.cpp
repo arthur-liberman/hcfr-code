@@ -310,9 +310,9 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_CCMode=(CCPatterns)GetProfileInt("References","CCMode",GCD);
 	m_whiteTarget=(WhiteTarget)GetProfileInt("References","WhiteTarget",D65);
 	m_bDisplayTestColors=GetProfileInt("References","DisplayTestColors",1);
-	m_bContinuousMeasures=GetProfileInt("References","ContinuousMeasures",0);
+	m_bContinuousMeasures=GetProfileInt("References","ContinuousMeasures",1);
 	m_bDetectPrimaries=GetProfileInt("References","DetectPrimaries",1);
-	m_useHSV=GetProfileInt("References","UseHSV",1);
+	m_useHSV=GetProfileInt("References","UseHSV",0);
 	m_latencyTime=GetProfileInt("References","IrisLatencyTime",250);
     // don't allow less than 100ms for latency, give windows and display a chance
     // to show the image 

@@ -76,6 +76,7 @@ CRGBLevelWnd::~CRGBLevelWnd()
 
 void CRGBLevelWnd::Refresh(int minCol)
 {
+    
 	BOOL bWasLumaMode = m_bLumaMode;
 	m_bLumaMode = FALSE;
     double cx,cy,cz,cxref,cyref,czref;
@@ -129,7 +130,7 @@ void CRGBLevelWnd::Refresh(int minCol)
 		}
                         		
 		CColor white = m_pDocument->GetMeasure()->GetOnOffWhite();
-        if (!white.isValid())
+        if (!white.isValid() || m_bLumaMode)
         {
     		int i = m_pDocument -> GetMeasure () -> GetGrayScaleSize ();
 	    	if ( m_pDocument -> GetMeasure () -> GetGray ( i - 1 ).isValid() )

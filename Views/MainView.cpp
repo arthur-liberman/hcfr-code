@@ -566,13 +566,8 @@ void CMainView::RefreshSelection()
                         size = 101;
                     else if (m_displayMode ==4)
                         size = -1 * GetDocument()->GetMeasure()->GetNearWhiteScaleSize();
-//                    ( ( CTargetWnd * ) m_pInfoWnd ) -> ShowWindow(SW_SHOW);
-//                    m_Target.ShowWindow(SW_SHOW);
                     ( ( CTargetWnd * ) m_pInfoWnd ) -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  (m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1), size, m_displayMode);
                 }
-                else
-//                    m_Target.ShowWindow(SW_HIDE);
-//                    ( ( CTargetWnd * ) m_pInfoWnd ) ->ShowWindow(SW_HIDE);
 				break;
 
 			case 2:	// spectrum
@@ -4416,15 +4411,14 @@ void CMainView::OnSelchangeInfoDisplay()
 			 break;
 
 		case 1: // target
-            if (m_displayMode <= 4)
-            {
-                pTargetWnd = new CTargetWnd;			
-			    pTargetWnd -> Create (NULL, NULL, WS_VISIBLE | WS_CHILD, Rect, this, IDC_INFO_VIEW, NULL );
+             pTargetWnd = new CTargetWnd;			
+			 pTargetWnd -> Create (NULL, NULL, WS_VISIBLE | WS_CHILD, Rect, this, IDC_INFO_VIEW, NULL );
+             if (m_displayMode <= 4)
+             {
 			    pTargetWnd -> m_pRefColor = & m_SelectedColor;
 			    pTargetWnd -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  (m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1), GetDocument()->GetMeasure()->GetGrayScaleSize(), m_displayMode );
-
-			    m_pInfoWnd = pTargetWnd;
-            }
+             }
+			 m_pInfoWnd = pTargetWnd;
 			 break;
 
 		case 2: // spectrum
