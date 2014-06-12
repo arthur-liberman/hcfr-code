@@ -129,6 +129,12 @@ void CRGBLevelWnd::Refresh(int minCol)
 		}
                         		
 		CColor white = m_pDocument->GetMeasure()->GetOnOffWhite();
+        if (!white.isValid())
+        {
+    		int i = m_pDocument -> GetMeasure () -> GetGrayScaleSize ();
+	    	if ( m_pDocument -> GetMeasure () -> GetGray ( i - 1 ).isValid() )
+                white.SetY( m_pDocument -> GetMeasure () -> GetGray ( i - 1 ) [ 1 ]);
+        }
 		if (m_bLumaMode && GetConfig()->m_bDetectPrimaries)
 		{
             ColorXYZ aColor=m_pRefColor->GetXYZValue(), refColor=aReference.GetXYZValue() ;
