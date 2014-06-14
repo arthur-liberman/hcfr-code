@@ -63,7 +63,8 @@ CMeasure::CMeasure()
 	m_secondariesArray[0]=m_secondariesArray[1]=m_secondariesArray[2]=noDataColor;
 
 	for(int i=0;i<m_grayMeasureArray.GetSize();i++)	// Init default values: by default m_grayMeasureArray init to D65, Y=1
-		m_grayMeasureArray[i]=noDataColor;	
+		m_grayMeasureArray[i]=GetPrimary(0);	
+//		m_grayMeasureArray[i]=noDataColor;	
 
 	for(int i=0;i<m_nearBlackMeasureArray.GetSize();i++)
 		m_nearBlackMeasureArray[i]=noDataColor;	
@@ -1553,7 +1554,7 @@ BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	// Generate saturation colors for red
 	GenerateSaturationColors (GetColorReference(), GenColors,size, true, false, false);
 	
-    for(int i=0;i<size;i++)
+    for(int i=(GetConfig()->m_CCMode == MCD?1:0);i<size;i++)
 	{
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_RED,100*i/(size - 1),!bRetry))
 		{
@@ -1705,7 +1706,7 @@ BOOL CMeasure::MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	// Generate saturation colors for green
 	GenerateSaturationColors (GetColorReference(), GenColors,size, false, true, false );
 
-	for(int i=0;i<size;i++)
+	for(int i=(GetConfig()->m_CCMode == MCD?1:0);i<size;i++)
 	{
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_GREEN,100*i/(size - 1),!bRetry) )
 		{
@@ -1858,7 +1859,7 @@ BOOL CMeasure::MeasureBlueSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	// Generate saturation colors for blue
 		GenerateSaturationColors (GetColorReference(), GenColors,size, false, false, true );
 
-	for(int i=0;i<size;i++)
+        for(int i=(GetConfig()->m_CCMode == MCD?1:0);i<size;i++)
 	{
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_BLUE,100*i/(size - 1),!bRetry))
 		{
@@ -2011,7 +2012,7 @@ BOOL CMeasure::MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	// Generate saturation colors for yellow
 	GenerateSaturationColors (GetColorReference(), GenColors,size, true, true, false );
 
-	for(int i=0;i<size;i++)
+	for(int i=(GetConfig()->m_CCMode == MCD?1:0);i<size;i++)
 	{
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_YELLOW,100*i/(size - 1),!bRetry))
 		{
@@ -2165,7 +2166,7 @@ BOOL CMeasure::MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	// Generate saturation colors for cyan
 	GenerateSaturationColors (GetColorReference(), GenColors,size, false, true, true );
 
-	for(int i=0;i<size;i++)
+	for(int i=(GetConfig()->m_CCMode == MCD?1:0);i<size;i++)
 	{
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_CYAN,100*i/(size - 1),!bRetry))
 		{
@@ -2319,7 +2320,7 @@ BOOL CMeasure::MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	// Generate saturation colors for magenta
 	GenerateSaturationColors (GetColorReference(), GenColors,size, true, false, true );
 
-	for(int i=0;i<size;i++)
+	for(int i=(GetConfig()->m_CCMode == MCD?1:0);i<size;i++)
 	{
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_MAGENTA,100*i/(size - 1) ,!bRetry))
 		{
@@ -4514,32 +4515,32 @@ void CMeasure::FreeMeasurementAppended()
 		{
 			LastMeasure=GetMeasurement(n-1);
 
-			if ( LastMeasure.GetDeltaxy ( GetColorReference().GetRed (), GetColorReference()) < 0.05 )
+			if ( LastMeasure.GetDeltaxy ( GetRefPrimary(0), GetColorReference()) < 0.05 )
 			{
 				// Copy real color to primary (not LastMeasure which may have been adjusted)
 				SetRedPrimary ( m_measurementsArray[n-1] );
 			}
-			else if ( LastMeasure.GetDeltaxy ( GetColorReference().GetGreen (), GetColorReference() ) < 0.05 )
+			else if ( LastMeasure.GetDeltaxy ( GetRefPrimary(1), GetColorReference() ) < 0.05 )
 			{
 				// Copy real color to primary (not LastMeasure which may have been adjusted)
 				SetGreenPrimary ( m_measurementsArray[n-1] );
 			}
-			else if ( LastMeasure.GetDeltaxy ( GetColorReference().GetBlue (), GetColorReference() ) < 0.05 )
+			else if ( LastMeasure.GetDeltaxy ( GetRefPrimary(2), GetColorReference() ) < 0.05 )
 			{
 				// Copy real color to primary (not LastMeasure which may have been adjusted)
 				SetBluePrimary ( m_measurementsArray[n-1] );
 			}
-			else if ( LastMeasure.GetDeltaxy ( GetColorReference().GetYellow (), GetColorReference() ) < 0.05 )
+			else if ( LastMeasure.GetDeltaxy (GetRefSecondary(0), GetColorReference() ) < 0.05 )
 			{
 				// Copy real color to primary (not LastMeasure which may have been adjusted)
 				SetYellowSecondary ( m_measurementsArray[n-1] );
 			}
-			else if ( LastMeasure.GetDeltaxy ( GetColorReference().GetCyan (), GetColorReference() ) < 0.05 )
+			else if ( LastMeasure.GetDeltaxy ( GetRefSecondary(1), GetColorReference() ) < 0.05 )
 			{
 				// Copy real color to primary (not LastMeasure which may have been adjusted)
 				SetCyanSecondary ( m_measurementsArray[n-1] );
 			}
-			else if ( LastMeasure.GetDeltaxy ( GetColorReference().GetMagenta (), GetColorReference() ) < 0.05 )
+			else if ( LastMeasure.GetDeltaxy ( GetRefSecondary(2), GetColorReference() ) < 0.05 )
 			{
 				// Copy real color to primary (not LastMeasure which may have been adjusted)
 				SetMagentaSecondary ( m_measurementsArray[n-1] );
@@ -5114,7 +5115,7 @@ CColor CMeasure::GetRefPrimary(int i) const
     double gamma=(GetConfig()->m_useMeasuredGamma)?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef);
 	bool isSpecial = (GetColorReference().m_standard==HDTVa||GetColorReference().m_standard==CC6||GetColorReference().m_standard==CC6a);
 	CColorReference cRef=GetColorReference();
-	CColor	aColor,aColorr,aColorg,aColorb;
+	CColor	aColor,aColorr,aColorg,aColorb,White,Black;
 	aColorr.SetXYZValue (cRef.GetRed());
 	aColorg.SetXYZValue (cRef.GetGreen());
 	aColorb.SetXYZValue (cRef.GetBlue());
@@ -5125,8 +5126,11 @@ CColor CMeasure::GetRefPrimary(int i) const
     r=rgbr[0];
     g=rgbr[1];
     b=rgbr[2];
-    CColor White = CMeasure::GetGray ( CMeasure::GetGrayScaleSize() - 1 );
-	CColor Black = CMeasure::GetGray ( 0 );
+    if (CMeasure::GetGray(0).isValid())
+    {
+        White = CMeasure::GetGray ( CMeasure::GetGrayScaleSize() - 1 );
+	    Black = CMeasure::GetGray ( 0 );
+    }
     aColor.SetRGBValue(ColorRGB(r,g,b), GetColorReference() );
     if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
        gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel))/log(pow(aColor.GetY(),1/2.22));
@@ -5192,16 +5196,18 @@ CColor CMeasure::GetRefSecondary(int i) const
 
     bool isSpecial = (GetColorReference().m_standard==HDTVa||GetColorReference().m_standard==CC6||GetColorReference().m_standard==CC6a);
 	CColorReference cRef=GetColorReference();
-	CColor	aColor,aColory,aColorc,aColorm;
+	CColor	aColor,aColory,aColorc,aColorm,White,Black;
 	aColory.SetXYZValue (cRef.GetYellow());
 	aColorc.SetXYZValue (cRef.GetCyan());
 	aColorm.SetXYZValue (cRef.GetMagenta());
 	ColorRGB rgby=aColory.GetRGBValue ( GetColorReference() );
 	ColorRGB rgbc=aColorc.GetRGBValue ( GetColorReference() );
 	ColorRGB rgbm=aColorm.GetRGBValue ( GetColorReference() );
-    CColor White = CMeasure::GetGray ( CMeasure::GetGrayScaleSize() - 1 );
-	CColor Black = CMeasure::GetGray ( 0 );
-	
+    if (CMeasure::GetGray(0).isValid())
+    {
+        White = CMeasure::GetGray ( CMeasure::GetGrayScaleSize() - 1 );
+	    Black = CMeasure::GetGray ( 0 );
+    }	
     double r,g,b;
     r=rgby[0];
     g=rgby[1];

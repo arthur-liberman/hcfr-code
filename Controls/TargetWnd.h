@@ -55,6 +55,7 @@ public:
 	CString *	pTooltipText;
 
 	CColor *	m_pRefColor;
+	CDataSetDoc *	m_pDocument;
 
 // Operations
 public:

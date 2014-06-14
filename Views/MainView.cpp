@@ -2296,39 +2296,39 @@ void CMainView::UpdateGrid()
 						bSpecialRef = FALSE;
 						refColor = GetColorReference().GetWhite();
 					 }
-					 else if ( aColor.GetDeltaxy ( GetColorReference().GetRed (), GetColorReference() ) < 0.05 )
+					 else if ( aColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefPrimary(0), GetColorReference() ) < 0.05 )
 					 {
-						refColor = GetColorReference().GetRed ();
+						refColor = GetDocument()->GetMeasure()->GetRefPrimary(0);
 						clrSpecial1 = RGB(255,192,192);
 						clrSpecial2 = RGB(255,224,224);
 					 }
-					 else if ( aColor.GetDeltaxy ( GetColorReference().GetGreen (), GetColorReference() ) < 0.05 )
+					 else if ( aColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefPrimary(1), GetColorReference() ) < 0.05 )
 					 {
-						refColor = GetColorReference().GetGreen ();
+						refColor = GetDocument()->GetMeasure()->GetRefPrimary(1);
 						clrSpecial1 = RGB(192,255,192);
 						clrSpecial2 = RGB(224,255,224);
 					 }
-					 else if ( aColor.GetDeltaxy ( GetColorReference().GetBlue (), GetColorReference() ) < 0.05 )
+					 else if ( aColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefPrimary(2), GetColorReference() ) < 0.05 )
 					 {
-						refColor = GetColorReference().GetBlue ();
+						refColor = GetDocument()->GetMeasure()->GetRefPrimary(2);
 						clrSpecial1 = RGB(192,192,255);
 						clrSpecial2 = RGB(224,224,255);
 					 }
-					 else if ( aColor.GetDeltaxy ( GetColorReference().GetYellow (), GetColorReference() ) < 0.05 )
+					 else if ( aColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefSecondary(0), GetColorReference() ) < 0.05 )
 					 {
-						refColor = GetColorReference().GetYellow ();
+						refColor = GetDocument()->GetMeasure()->GetRefSecondary(0);
 						clrSpecial1 = RGB(255,255,192);
 						clrSpecial2 = RGB(255,255,224);
 					 }
-					 else if ( aColor.GetDeltaxy ( GetColorReference().GetCyan (), GetColorReference() ) < 0.05 )
+					 else if ( aColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefSecondary(1), GetColorReference() ) < 0.05 )
 					 {
-						refColor = GetColorReference().GetCyan ();
+						refColor = GetDocument()->GetMeasure()->GetRefSecondary(1);
 						clrSpecial1 = RGB(192,255,255);
 						clrSpecial2 = RGB(224,255,255);
 					 }
-					 else if ( aColor.GetDeltaxy ( GetColorReference().GetMagenta (), GetColorReference() ) < 0.05 )
+					 else if ( aColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefSecondary(2), GetColorReference() ) < 0.05 )
 					 {
-						refColor = GetColorReference().GetMagenta ();
+						refColor = GetDocument()->GetMeasure()->GetRefSecondary(2);
 						clrSpecial1 = RGB(255,192,255);
 						clrSpecial2 = RGB(255,224,255);
 					 }
@@ -3961,39 +3961,39 @@ void CMainView::UpdateMeasurementsAfterBkgndMeasure ()
 			bSpecialRef = FALSE;
 			refColor = GetColorReference().GetWhite();
 		}
-		else if ( MeasuredColor.GetDeltaxy ( GetColorReference().GetRed (), GetColorReference() ) < 0.05 )
+		else if ( MeasuredColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefPrimary(0), GetColorReference() ) < 0.05 )
 		{
-			refColor = GetColorReference().GetRed ();
+			refColor = GetDocument()->GetMeasure()->GetRefPrimary(0);
 			clrSpecial1 = RGB(255,192,192);
 			clrSpecial2 = RGB(255,224,224);
 		}
-		else if ( MeasuredColor.GetDeltaxy ( GetColorReference().GetGreen (), GetColorReference() ) < 0.05 )
+		else if ( MeasuredColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefPrimary(1), GetColorReference() ) < 0.05 )
 		{
-			refColor = GetColorReference().GetGreen ();
+			refColor = GetDocument()->GetMeasure()->GetRefPrimary(1);
 			clrSpecial1 = RGB(192,255,192);
 			clrSpecial2 = RGB(224,255,224);
 		}
-		else if ( MeasuredColor.GetDeltaxy ( GetColorReference().GetBlue (), GetColorReference() ) < 0.05 )
+		else if ( MeasuredColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefPrimary(2), GetColorReference() ) < 0.05 )
 		{
-			refColor = GetColorReference().GetBlue ();
+			refColor = GetDocument()->GetMeasure()->GetRefPrimary(0);
 			clrSpecial1 = RGB(192,192,255);
 			clrSpecial2 = RGB(224,224,255);
 		}
-		else if ( MeasuredColor.GetDeltaxy ( GetColorReference().GetYellow (), GetColorReference() ) < 0.05 )
+		else if ( MeasuredColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefSecondary(0), GetColorReference() ) < 0.05 )
 		{
-			refColor = GetColorReference().GetYellow ();
+			refColor = GetDocument()->GetMeasure()->GetRefSecondary(0);
 			clrSpecial1 = RGB(255,255,192);
 			clrSpecial2 = RGB(255,255,224);
 		}
-		else if ( MeasuredColor.GetDeltaxy ( GetColorReference().GetCyan (), GetColorReference() ) < 0.05 )
+		else if ( MeasuredColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefSecondary(1), GetColorReference() ) < 0.05 )
 		{
-			refColor = GetColorReference().GetCyan ();
+			refColor = GetDocument()->GetMeasure()->GetRefSecondary(1);
 			clrSpecial1 = RGB(192,255,255);
 			clrSpecial2 = RGB(224,255,255);
 		}
-		else if ( MeasuredColor.GetDeltaxy ( GetColorReference().GetMagenta (), GetColorReference() ) < 0.05 )
+		else if ( MeasuredColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefSecondary(2), GetColorReference() ) < 0.05 )
 		{
-			refColor = GetColorReference().GetMagenta ();
+			refColor = GetDocument()->GetMeasure()->GetRefSecondary(2);
 			clrSpecial1 = RGB(255,192,255);
 			clrSpecial2 = RGB(255,224,255);
 		}

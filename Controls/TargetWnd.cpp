@@ -27,6 +27,7 @@
 #include "Color.h"
 #include "BitmapTools.h"
 #include "MainFrm.h"
+#include "DataSetDoc.h"
 #include <math.h>
 
 #ifdef _DEBUG
@@ -51,6 +52,7 @@ CTargetWnd::CTargetWnd()
 	m_prev_cy = -1; 
 	m_pRefColor = NULL;
 	pTooltipText = NULL;
+    m_pDocument = NULL;
 }
 
 CTargetWnd::~CTargetWnd()
@@ -92,7 +94,7 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
    					m_clr = RGB(255,255,255);
             }
         }
-        else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetRed(), GetColorReference() ) < 0.05 )
+        else if ( m_pRefColor -> GetDeltaxy (GetColorReference().GetRed(), GetColorReference() ) < 0.05 )
 		{
 			centerXYZ = GetColorReference().GetRed();
 			switch (GetConfig()->m_colorStandard)

@@ -61,7 +61,7 @@ void RGBTOHSV(double R, double G, double B, double& H, double& S, double& V)
        double alpha = 0.5 * (2 * var_R - var_G - var_B);
        double beta = pow(3., 0.5) / 2 * (var_G - var_B);
        S = pow(pow(alpha,2)+pow(beta,2),2);
-       H = atan2(beta,alpha);
+       H = (atan2(beta,alpha) * 180 / PI + 180) / 360.;
 	}
 }
 
@@ -94,41 +94,41 @@ void CRGBLevelWnd::Refresh(int minCol)
 			m_bLumaMode = FALSE;
             aReference = GetColorReference().GetWhite();
 		}
-		else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetRed(), GetColorReference() ) < 0.05 )
+		else if ( m_pRefColor -> GetDeltaxy ( m_pDocument->GetMeasure()->GetRefPrimary(0), GetColorReference() ) < 0.05 )
 		{
 			m_bLumaMode = TRUE;
 			RefLuma = GetColorReference().GetRedReferenceLuma ();
-            aReference = GetColorReference().GetRed();
+            aReference = m_pDocument->GetMeasure()->GetRefPrimary(0);//GetColorReference().GetRed();
 		}
-		else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetGreen(), GetColorReference() ) < 0.05 )
+		else if ( m_pRefColor -> GetDeltaxy ( m_pDocument->GetMeasure()->GetRefPrimary(1), GetColorReference() ) < 0.05 )
 		{
 			m_bLumaMode = TRUE;
 			RefLuma = GetColorReference().GetGreenReferenceLuma ();
-            aReference = GetColorReference().GetGreen();
+            aReference = m_pDocument->GetMeasure()->GetRefPrimary(1);//GetColorReference().GetGreen();
 		}
-		else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetBlue(), GetColorReference() ) < 0.05 )
+		else if ( m_pRefColor -> GetDeltaxy ( m_pDocument->GetMeasure()->GetRefPrimary(2), GetColorReference() ) < 0.05 )
 		{
 			m_bLumaMode = TRUE;
 			RefLuma = GetColorReference().GetBlueReferenceLuma ();
-            aReference = GetColorReference().GetBlue();
+            aReference = m_pDocument->GetMeasure()->GetRefPrimary(2);//GetColorReference().GetBlue();
 		}
-		else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetYellow(), GetColorReference() ) < 0.05 )
+		else if ( m_pRefColor -> GetDeltaxy ( m_pDocument->GetMeasure()->GetRefSecondary(0), GetColorReference() ) < 0.05 )
 		{
 			m_bLumaMode = TRUE;
 			RefLuma = GetColorReference().GetYellowReferenceLuma ();
-            aReference = GetColorReference().GetYellow();
+            aReference = m_pDocument->GetMeasure()->GetRefSecondary(0);//GetColorReference().GetYellow();
 		}
-		else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetCyan(), GetColorReference() ) < 0.05 )
+		else if ( m_pRefColor -> GetDeltaxy ( m_pDocument->GetMeasure()->GetRefSecondary(1), GetColorReference() ) < 0.05 )
 		{
 			m_bLumaMode = TRUE;
 			RefLuma = GetColorReference().GetCyanReferenceLuma ();
-            aReference = GetColorReference().GetCyan();
+            aReference = m_pDocument->GetMeasure()->GetRefSecondary(1);//GetColorReference().GetCyan();
 		}
-		else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetMagenta(), GetColorReference() ) < 0.05 )
+		else if ( m_pRefColor -> GetDeltaxy ( m_pDocument->GetMeasure()->GetRefSecondary(2), GetColorReference() ) < 0.05 )
 		{
 			m_bLumaMode = TRUE;
 			RefLuma = GetColorReference().GetMagentaReferenceLuma ();
-            aReference = GetColorReference().GetMagenta();
+            aReference = m_pDocument->GetMeasure()->GetRefSecondary(2);//GetColorReference().GetMagenta();
 		}
                         		
 		CColor white = m_pDocument->GetMeasure()->GetOnOffWhite();
@@ -164,13 +164,13 @@ void CRGBLevelWnd::Refresh(int minCol)
             {
                 RGBTOHSV(aColorRGB[0],aColorRGB[1],aColorRGB[2],cx,cy,cz);
                 RGBTOHSV(refColorRGB[0],refColorRGB[1],refColorRGB[2],cxref,cyref,czref);
-                czref = refColor[1];
+                czref = refColor[1]; //set V to luminance
                 cz = aColor[1];
             }
             if (cxref > .01)
                 m_redValue=(float)(100.-(cxref-cx)/cxref*100.0);
             else
-                m_redValue=(float)(100.-(cxref-cx)*100.0);
+                m_redValue=(abs(cxref-cx)<0.3)?(float)(100.-(cxref-cx)*100.0):(float)(100.-(cxref+1.0-cx)*100.0);
             if (cyref > .01)
                 m_greenValue=(float)(100.-(cyref-cy)/cyref*100.0);
             else
