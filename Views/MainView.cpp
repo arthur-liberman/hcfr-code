@@ -1637,7 +1637,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
                         else
                         {
                             str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, m_displayMode == 3 ? 1:GetConfig()->gw_Weight ) );
-    						dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, m_displayMode == 3 ? 2:GetConfig()->gw_Weight );
+    						dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, m_displayMode == 3 ? 1:GetConfig()->gw_Weight );
                         }
 						dEavg+=dE;
                         if (dE > dEmax)
@@ -1679,7 +1679,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 		else if ( aComponentNum == 5 && (nCol > 1 || ( m_displayMode != 0 && m_displayMode !=3)) )
 		{
 			if ( aRefDocColor.isValid() )
-					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aRefDocColor, YWhiteRefDoc, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight ) );
+					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aRefDocColor, YWhiteRefDoc, GetColorReference(), GetConfig()->m_dE_form, m_displayMode == 0 || m_displayMode == 3 || m_displayMode == 4, m_displayMode == 3?1:GetConfig()->gw_Weight ) );
 			else
 				str.Empty ();
 		}
@@ -2096,7 +2096,7 @@ void CMainView::UpdateGrid()
 
 			case 3:
 				 YWhite = YWhiteGray;
-				 YWhiteRefDoc = YWhiteGrayRefDoc;
+				 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
 				 nCount = GetDocument()->GetMeasure()->GetNearBlackScaleSize();
 				 if ( pDataRef && pDataRef->GetMeasure()->GetNearBlackScaleSize() != nCount )
 					pDataRef = NULL;
@@ -2107,7 +2107,7 @@ void CMainView::UpdateGrid()
 
 			case 4:
 				 YWhite = YWhiteGray;
-				 YWhiteRefDoc = YWhiteGrayRefDoc;
+				 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
 				 nCount = GetDocument()->GetMeasure()->GetNearWhiteScaleSize();
 				 if ( pDataRef && pDataRef->GetMeasure()->GetNearWhiteScaleSize() != nCount )
 					pDataRef = NULL;
@@ -2200,7 +2200,6 @@ void CMainView::UpdateGrid()
 					 {
 						refDocColor = pDataRef->GetMeasure()->GetGray(j);
 					 }
-
 					 // Determine Reference Y luminance for Delta E calculus
 					 if ( GetConfig ()->m_dE_gray > 0 || GetConfig ()->m_dE_form == 5 )
 					 {
@@ -2345,8 +2344,7 @@ void CMainView::UpdateGrid()
 						refDocColor = pDataRef->GetMeasure()->GetNearBlack(j);
                         tmpColor[2] = aColor [ 1 ] / YWhite; //perfect gamma
 						refColor.SetxyYValue(tmpColor);
-						if ( pDataRef )
-							YWhiteRefDoc = refDocColor [ 1 ];
+        				YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
 					 break;
 
 				case 4:
@@ -2355,8 +2353,7 @@ void CMainView::UpdateGrid()
 						refDocColor = pDataRef->GetMeasure()->GetNearWhite(j);
                         tmpColor[2] = aColor [ 1 ] / YWhite; //perfect gamma
 						refColor.SetxyYValue(tmpColor);
-						if ( pDataRef )
-							YWhiteRefDoc = refDocColor [ 1 ];
+            			YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
 					 break;
 
 				case 5:
