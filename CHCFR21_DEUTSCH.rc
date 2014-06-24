@@ -1706,8 +1706,8 @@ BEGIN
     POPUP "&Hilfe"
     BEGIN
         MENUITEM "&Hilfe\tF1",                  IDM_HELP
-        MENUITEM "Colorimeter &Installation",   IDM_HELP_INSTALL
-        MENUITEM "&Support",                    IDM_HELP_SUPPORT
+        MENUITEM "Colorimeter &Installation",   IDM_HELP_INSTALL, GRAYED
+        MENUITEM "&Support",                    IDM_HELP_SUPPORT, GRAYED
         MENUITEM SEPARATOR
         MENUITEM "Info über H&CFR ...",         ID_APP_ABOUT
     END
@@ -1861,11 +1861,11 @@ BEGIN
             MENUITEM "Messungen in &xls Datei",     IDM_EXPORT_XLS
             MENUITEM "Messungen in &csv Datei",     IDM_EXPORT_CSV
         END
-        POPUP "Updates"
+        POPUP "Updates", GRAYED
         BEGIN
-            MENUITEM "Softwareupdate herunterladen", IDM_UPDATE_SOFT
-            MENUITEM "Kalibrierungsdateien herunterladen", IDM_UPDATE_ETALONS
-            MENUITEM "IR-Profildateien herunterladen", IDM_UPDATE_IRPROFILES
+            MENUITEM "Softwareupdate herunterladen", IDM_UPDATE_SOFT, GRAYED
+            MENUITEM "Kalibrierungsdateien herunterladen", IDM_UPDATE_ETALONS, GRAYED
+            MENUITEM "IR-Profildateien herunterladen", IDM_UPDATE_IRPROFILES, GRAYED
         END
         MENUITEM SEPARATOR
         MENUITEM "&Voreinstellungen...",        IDM_GENERAL_CONFIG
@@ -1881,9 +1881,9 @@ BEGIN
     POPUP "&Hilfe"
     BEGIN
         MENUITEM "&Hilfe\tF1",                  IDM_HELP
-        MENUITEM "Colorimeter &Installation",   IDM_HELP_INSTALL
-        MENUITEM "&Support",                    IDM_HELP_SUPPORT
-        MENUITEM "HCFR &Forum",                 IDM_HELP_FORUM
+        MENUITEM "Colorimeter &Installation",   IDM_HELP_INSTALL, GRAYED
+        MENUITEM "&Support",                    IDM_HELP_SUPPORT, GRAYED
+        MENUITEM "HCFR &Forum",                 IDM_HELP_FORUM, GRAYED
         MENUITEM SEPARATOR
         MENUITEM "Info über HCFR &Colorimeter...", ID_APP_ABOUT
     END
@@ -2282,8 +2282,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3, 1, 4
- PRODUCTVERSION 3, 1, 4
+ FILEVERSION 3,1,4,0
+ PRODUCTVERSION 3,1,4,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
