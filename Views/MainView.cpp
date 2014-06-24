@@ -1851,6 +1851,9 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 						case CC6a:
 							return "RCC6";
 							break;
+						case CUSTOM:
+							return "RCUSTOM";
+							break;
 						default:
 							return "R?";
 							break;
@@ -1894,6 +1897,9 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 							break;
 						case CC6a:
 							return "GCC6";
+							break;
+						case CUSTOM:
+							return "GCUSTOM";
 							break;
 						default:
 							return "G?";
@@ -1939,6 +1945,9 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 							break;
 						case CC6a:
 							return "BCC6";
+							break;
+						case CUSTOM:
+							return "BCUSTOM";
 							break;
 						default:
 							return "B?";

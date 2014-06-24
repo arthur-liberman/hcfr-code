@@ -218,13 +218,24 @@ Matrix ComputeRGBtoXYZMatrix(Matrix primariesChromacities,Matrix whiteChromacity
 	return m;
 }
 
-CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhiteTarget, double aGamma, string	strModified, ColorXYZ c_whiteColor)
+CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhiteTarget, double aGamma, string	strModified, ColorXYZ c_whiteColor, ColorxyY c_redColor, ColorxyY c_greenColor, ColorxyY c_blueColor)
 {
 	m_standard = aColorStandard;
     ColorxyY* primaries = primariesRec601;
 
 	switch(aColorStandard)
 	{
+		case CUSTOM:
+		{
+			standardName="CUSTOM";
+			whiteColor=illuminantD65;
+			whiteName="D65";
+			m_white=D65;
+            primaries[0] = c_redColor;
+            primaries[1] = c_greenColor;
+            primaries[2] = c_blueColor;
+			break;
+		}
 		case PALSECAM:
 		{
 			standardName="PAL/SECAM";

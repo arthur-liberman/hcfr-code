@@ -50,6 +50,12 @@ public:
 	CEdit m_GammaRelEdit;
 	CEdit m_manualWhitexedit;
 	CEdit m_manualWhiteyedit;
+	CEdit m_manualRedxedit;
+	CEdit m_manualRedyedit;
+	CEdit m_manualGreenxedit;
+	CEdit m_manualGreenyedit;
+	CEdit m_manualBluexedit;
+	CEdit m_manualBlueyedit;
 	CComboBox	m_whiteTargetCombo;
 	int		m_whiteTarget;
 	int		m_colorStandard;
@@ -63,6 +69,12 @@ public:
 	double	m_manualGOffset;
 	double	m_manualWhitex;
 	double	m_manualWhitey;
+	double	m_manualRedx;
+	double	m_manualRedy;
+	double	m_manualGreenx;
+	double	m_manualGreeny;
+	double	m_manualBluex;
+	double	m_manualBluey;
 	//}}AFX_DATA
 
 	virtual UINT GetHelpId ( LPSTR lpszTopic );

@@ -715,6 +715,12 @@
 #define IDC_WHITE_Y                     1282
 #define IDC_RICHEDIT21                  1282
 #define IDC_CHECK_USE_HSV               1283
+#define IDC_RED_X                       1283
+#define IDC_RED_Y                       1284
+#define IDC_GREEN_X                     1285
+#define IDC_GREEN_Y                     1286
+#define IDC_BLUE_X                      1287
+#define IDC_BLUE_Y                      1288
 #define IDC_COLORTEMPHISTO_GRAPH        11003
 #define IDC_RGBHISTO_GRAPH              11101
 #define IDC_RGBHISTO_GRAPH2             11102
@@ -1444,6 +1450,9 @@
 #define IDS_CC_24b                      41950
 #define IDS_SIM_CAL_ERROR4              41951
 #define IDS_LCHLEVELS                   41952
+#define IDS_CUSTREDREF                  41953
+#define IDS_CUSTGREENREF                41954
+#define IDS_CUSTBLUEREF                 41955
 #define IDS_ARGYLLSENSOR_PROPERTIES_TITLE 59394
 #define IDS_ARGYLLSENSOR_NAME           59395
 

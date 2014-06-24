@@ -470,7 +470,14 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 		Msg3.LoadString ( IDS_PALBLUEREF );
 	}
 
-	if(GetConfig()->m_colorStandard == HDTV || GetConfig()->m_colorStandard == sRGB)
+	if(GetConfig()->m_colorStandard == CUSTOM)
+	{
+		Msg.LoadString ( IDS_CUSTREDREF );
+		Msg2.LoadString ( IDS_CUSTGREENREF );
+		Msg3.LoadString ( IDS_CUSTBLUEREF );
+	}
+
+    if(GetConfig()->m_colorStandard == HDTV || GetConfig()->m_colorStandard == sRGB)
 	{
 		Msg.LoadString ( IDS_REC709REDREF );
 		Msg2.LoadString ( IDS_REC709GREENREF );

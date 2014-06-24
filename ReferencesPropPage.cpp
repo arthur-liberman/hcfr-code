@@ -83,10 +83,28 @@ void CReferencesPropPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_MANUAL_GOFFSET, m_manualGOffset);
 	DDX_Text(pDX, IDC_WHITE_X, m_manualWhitex);
 	DDX_Text(pDX, IDC_WHITE_Y, m_manualWhitey);
+	DDX_Text(pDX, IDC_RED_X, m_manualRedx);
+	DDX_Text(pDX, IDC_RED_Y, m_manualRedy);
+	DDX_Text(pDX, IDC_GREEN_X, m_manualGreenx);
+	DDX_Text(pDX, IDC_GREEN_Y, m_manualGreeny);
+	DDX_Text(pDX, IDC_BLUE_X, m_manualBluex);
+	DDX_Text(pDX, IDC_BLUE_Y, m_manualBluey);
 	DDV_MinMaxDouble(pDX, m_manualWhitex, .1, .9);
 	DDV_MinMaxDouble(pDX, m_manualWhitey, .1, .9);
+	DDV_MinMaxDouble(pDX, m_manualRedx, .1, .9);
+	DDV_MinMaxDouble(pDX, m_manualRedy, .1, .9);
+	DDV_MinMaxDouble(pDX, m_manualGreenx, .1, .9);
+	DDV_MinMaxDouble(pDX, m_manualGreeny, .1, .9);
+	DDV_MinMaxDouble(pDX, m_manualBluex, .001, .9);
+	DDV_MinMaxDouble(pDX, m_manualBluey, .001, .9);
 	DDX_Control(pDX, IDC_WHITE_X, m_manualWhitexedit);
 	DDX_Control(pDX, IDC_WHITE_Y, m_manualWhiteyedit);
+	DDX_Control(pDX, IDC_RED_X, m_manualRedxedit);
+	DDX_Control(pDX, IDC_RED_Y, m_manualRedyedit);
+	DDX_Control(pDX, IDC_GREEN_X, m_manualGreenxedit);
+	DDX_Control(pDX, IDC_GREEN_Y, m_manualGreenyedit);
+	DDX_Control(pDX, IDC_BLUE_X, m_manualBluexedit);
+	DDX_Control(pDX, IDC_BLUE_Y, m_manualBlueyedit);
 	DDV_MinMaxDouble(pDX, m_manualGOffset, 0., 0.2);
 	//}}AFX_DATA_MAP
 }
@@ -103,6 +121,12 @@ BEGIN_MESSAGE_MAP(CReferencesPropPage, CPropertyPageWithHelp)
 	ON_EN_CHANGE(IDC_EDIT_GAMMA_AVERAGE, OnChangeEditGammaAvg)
 	ON_EN_CHANGE(IDC_WHITE_X, OnChangeEditGammaAvg)
 	ON_EN_CHANGE(IDC_WHITE_Y, OnChangeEditGammaAvg)
+	ON_EN_CHANGE(IDC_RED_X, OnChangeEditGammaAvg)
+	ON_EN_CHANGE(IDC_RED_Y, OnChangeEditGammaAvg)
+	ON_EN_CHANGE(IDC_GREEN_X, OnChangeEditGammaAvg)
+	ON_EN_CHANGE(IDC_GREEN_Y, OnChangeEditGammaAvg)
+	ON_EN_CHANGE(IDC_BLUE_X, OnChangeEditGammaAvg)
+	ON_EN_CHANGE(IDC_BLUE_Y, OnChangeEditGammaAvg)
 	ON_BN_CLICKED(IDC_CHANGEWHITE_CHECK, OnChangeWhiteCheck)
 	ON_BN_CLICKED(IDC_USE_MEASURED_GAMMA, OnUseMeasuredGammaCheck)
 	ON_CBN_SELCHANGE(IDC_COLORREF_COMBO, OnSelchangeColorrefCombo)
@@ -150,6 +174,24 @@ BOOL CReferencesPropPage::OnApply()
         m_manualWhitexedit.EnableWindow (FALSE);
         m_manualWhiteyedit.EnableWindow (FALSE);
     }
+    if (m_colorStandard == CUSTOM)
+    {
+        m_manualRedxedit.EnableWindow (TRUE);
+        m_manualRedyedit.EnableWindow (TRUE);
+        m_manualGreenxedit.EnableWindow (TRUE);
+        m_manualGreenyedit.EnableWindow (TRUE);
+        m_manualBluexedit.EnableWindow (TRUE);
+        m_manualBlueyedit.EnableWindow (TRUE);
+    }
+    else
+    {
+        m_manualRedxedit.EnableWindow (FALSE);
+        m_manualRedyedit.EnableWindow (FALSE);
+        m_manualGreenxedit.EnableWindow (FALSE);
+        m_manualGreenyedit.EnableWindow (FALSE);
+        m_manualBluexedit.EnableWindow (FALSE);
+        m_manualBlueyedit.EnableWindow (FALSE);
+    }
 	GetConfig()->ApplySettings(FALSE);
 	m_isModified=FALSE;
 	return CPropertyPageWithHelp::OnApply();
@@ -178,6 +220,24 @@ BOOL CReferencesPropPage::OnInitDialog()
         m_whiteTargetCombo.EnableWindow (FALSE);
         m_manualWhitexedit.EnableWindow (FALSE);
         m_manualWhiteyedit.EnableWindow (FALSE);        
+    }
+    if (m_colorStandard == CUSTOM)
+    {
+        m_manualRedxedit.EnableWindow (TRUE);
+        m_manualRedyedit.EnableWindow (TRUE);
+        m_manualGreenxedit.EnableWindow (TRUE);
+        m_manualGreenyedit.EnableWindow (TRUE);
+        m_manualBluexedit.EnableWindow (TRUE);
+        m_manualBlueyedit.EnableWindow (TRUE);
+    }
+    else
+    {
+        m_manualRedxedit.EnableWindow (FALSE);
+        m_manualRedyedit.EnableWindow (FALSE);
+        m_manualGreenxedit.EnableWindow (FALSE);
+        m_manualGreenyedit.EnableWindow (FALSE);
+        m_manualBluexedit.EnableWindow (FALSE);
+        m_manualBlueyedit.EnableWindow (FALSE);
     }
 	if (m_useMeasuredGamma)
 		CheckRadioButton ( IDC_USE_MEASURED_GAMMA, IDC_USE_MEASURED_GAMMA, IDC_USE_MEASURED_GAMMA );

@@ -75,6 +75,12 @@ public:
 	double m_manualGOffset;
 	double m_manualWhitex;
     double m_manualWhitey;
+	double m_manualRedx;
+    double m_manualRedy;
+	double m_manualGreenx;
+    double m_manualGreeny;
+	double m_manualBluex;
+    double m_manualBluey;
 	int m_GammaOffsetType;
 
 	// Appearance settings

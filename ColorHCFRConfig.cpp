@@ -260,6 +260,12 @@ void CColorHCFRConfig::InitDefaults()
 	m_manualGOffset=0.099;
     m_manualWhitex = 0.312712;
     m_manualWhitey = 0.329008;
+    m_manualRedx = 0.6400;
+    m_manualRedy = 0.3300;
+    m_manualGreenx = 0.3000;
+    m_manualGreeny = 0.6000;
+    m_manualBluex = 0.1500;
+    m_manualBluey = 0.0600;
 
 		// Set drawing style of all menus to XP-Mode
 	CNewMenu::SetAcceleratorsDraw(TRUE);
@@ -327,6 +333,12 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_manualGOffset=GetProfileDouble("References","ManualGamOffset",0.099);
     m_manualWhitex = GetProfileDouble("References","ManualWhitex", 0.312712);
     m_manualWhitey = GetProfileDouble("References","ManualWhitey",0.329008);
+    m_manualRedx = GetProfileDouble("References","ManualRedx", 0.6400);
+    m_manualRedy = GetProfileDouble("References","ManualRedy",0.3300);
+    m_manualGreenx = GetProfileDouble("References","ManualGreenx", 0.3000);
+    m_manualGreeny = GetProfileDouble("References","ManualGreeny",0.6000);
+    m_manualBluex = GetProfileDouble("References","ManualBluex", 0.1500);
+    m_manualBluey = GetProfileDouble("References","ManualBluey",0.0600);
 
 	if (m_manualGOffset == 0) {
 		m_manualGOffset = 0.099;
@@ -372,6 +384,12 @@ void CColorHCFRConfig::SaveSettings()
 	WriteProfileDouble("References","ManualGamOffset",m_manualGOffset);
 	WriteProfileDouble("References","ManualWhitex",m_manualWhitex);
 	WriteProfileDouble("References","ManualWhitey",m_manualWhitey);
+	WriteProfileDouble("References","ManualRedx",m_manualRedx);
+	WriteProfileDouble("References","ManualRedy",m_manualRedy);
+	WriteProfileDouble("References","ManualGreenx",m_manualGreenx);
+	WriteProfileDouble("References","ManualGreeny",m_manualGreeny);
+	WriteProfileDouble("References","ManualBluex",m_manualBluex);
+	WriteProfileDouble("References","ManualBluey",m_manualBluey);
 	WriteProfileInt("References","ColorStandard",m_colorStandard);
 	WriteProfileInt("References","CCMode",m_CCMode);
 	WriteProfileInt("References","WhiteTarget",m_whiteTarget);
@@ -445,6 +463,12 @@ void CColorHCFRConfig::SetPropertiesSheetValues()
 	m_referencesPropertiesPage.m_manualGOffset=m_manualGOffset;
 	m_referencesPropertiesPage.m_manualWhitex=m_manualWhitex;
 	m_referencesPropertiesPage.m_manualWhitey=m_manualWhitey;
+	m_referencesPropertiesPage.m_manualRedx=m_manualRedx;
+	m_referencesPropertiesPage.m_manualRedy=m_manualRedy;
+	m_referencesPropertiesPage.m_manualGreenx=m_manualGreenx;
+	m_referencesPropertiesPage.m_manualGreeny=m_manualGreeny;
+	m_referencesPropertiesPage.m_manualBluex=m_manualBluex;
+	m_referencesPropertiesPage.m_manualBluey=m_manualBluey;
 	m_referencesPropertiesPage.m_GammaOffsetType=m_GammaOffsetType;
 	m_appearancePropertiesPage.m_isModified=FALSE;
 	switch(m_menuDrawMode)
@@ -536,6 +560,12 @@ BOOL CColorHCFRConfig::GetPropertiesSheetValues()
 	m_manualGOffset=m_referencesPropertiesPage.m_manualGOffset;
 	m_manualWhitex=m_referencesPropertiesPage.m_manualWhitex;
 	m_manualWhitey=m_referencesPropertiesPage.m_manualWhitey;
+	m_manualRedx=m_referencesPropertiesPage.m_manualRedx;
+	m_manualRedy=m_referencesPropertiesPage.m_manualRedy;
+	m_manualGreenx=m_referencesPropertiesPage.m_manualGreenx;
+	m_manualGreeny=m_referencesPropertiesPage.m_manualGreeny;
+	m_manualBluex=m_referencesPropertiesPage.m_manualBluex;
+	m_manualBluey=m_referencesPropertiesPage.m_manualBluey;
 	m_GammaOffsetType=m_referencesPropertiesPage.m_GammaOffsetType;
 	switch(m_appearancePropertiesPage.m_themeComboIndex)
 	{
@@ -616,8 +646,11 @@ void CColorHCFRConfig::ApplySettings(BOOL isStartupApply)
         delete GetColorApp()->m_pColorReference;
     }
     ColorxyY whitecolor=ColorxyY(m_manualWhitex,m_manualWhitey);
+    ColorxyY redcolor=ColorxyY(m_manualRedx,m_manualRedy);
+    ColorxyY greencolor=ColorxyY(m_manualGreenx,m_manualGreeny);
+    ColorxyY bluecolor=ColorxyY(m_manualBluex,m_manualBluey);
 
-    GetColorApp()->m_pColorReference = new CColorReference(m_colorStandard, m_whiteTarget,-1, "modified", ColorXYZ(whitecolor));
+    GetColorApp()->m_pColorReference = new CColorReference(m_colorStandard, m_whiteTarget,-1, "modified", ColorXYZ(whitecolor), redcolor, greencolor, bluecolor);
 	
 	if ( ! isStartupApply )
 	{
