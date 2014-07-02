@@ -1274,7 +1274,7 @@ void sa_Scale3(double out[3], double in[3], double rat) {
 }
 
 /* Clamp a 3 vector to be +ve */
-void sa_Clamp3(double out[3], double in[3]) {
+extern void sa_Clamp3(double out[3], double in[3]) {
 	int i;
 	for (i = 0; i < 3; i++)
 		out[i] = in[i] < 0.0 ? 0.0 : in[i];

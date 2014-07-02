@@ -2758,7 +2758,7 @@ void CMainView::UpdateGrid()
                     double maxv = *max ;
                     int pos = distance(dEvector.begin(), max);
                     std::sort ( dEvector.begin(), dEvector.end() );
-                    for ( int i = dEvector.size() - 10; i < dEvector.size(); i++ ) dE10+=dEvector[i] / 10;
+                    for ( UINT i = dEvector.size() - 10; i < dEvector.size(); i++ ) dE10+=(float)dEvector[i] / 10;
     				sprintf ( szBuf, ": %.2f, max: %.2f[%s], worst 10%%: %.2f )", dEavg / dEcnt, maxv, PatName[pos], dE10 );
                     dEvector.clear();
                 }

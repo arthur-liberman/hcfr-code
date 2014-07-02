@@ -231,9 +231,9 @@ void CFullScreenWindow::DisplayRGBColorInternal(COLORREF clr, BOOL bDisableWaiti
 					ASSERT ( G >= 16 && G <= 235 );
 					ASSERT ( B >= 16 && B <= 235 );
 
-					R = ( R - 16 ) * 255 / 219 + 0.5;
-					G = ( G - 16 ) * 255 / 219 + 0.5;
-					B = ( B - 16 ) * 255 / 219 + 0.5;
+					R = (int)(( R - 16 ) * 255 / 219 + 0.5);
+					G = (int)(( G - 16 ) * 255 / 219 + 0.5);
+					B = (int)(( B - 16 ) * 255 / 219 + 0.5);
 
 					if ( R < 0 )
 						R = 0;
@@ -514,9 +514,9 @@ void CFullScreenWindow::OnPaint()
 					ASSERT ( G >= 16 && G <= 235 );
 					ASSERT ( B >= 16 && B <= 235 );
 
-					R = ( R - 16 ) * 255 / 219 + 0.5;
-					G = ( G - 16 ) * 255 / 219 + 0.5;
-					B = ( B - 16 ) * 255 / 219 + 0.5;
+					R = (int)(( R - 16 ) * 255 / 219 + 0.5);
+					G = (int)(( G - 16 ) * 255 / 219 + 0.5);
+					B = (int)(( B - 16 ) * 255 / 219 + 0.5);
 
 					if ( R < 0 )
 						R = 0;

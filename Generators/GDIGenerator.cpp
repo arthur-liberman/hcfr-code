@@ -357,9 +357,9 @@ BOOL CGDIGenerator::DisplayRGBColormadVR( const ColorRGBDisplay& clr )
       r = (clr[0] / 100. );//* 2.19) / (whiteLevel - blackLevel);
       g = (clr[1] / 100. );//* 2.19) / (whiteLevel - blackLevel);
       b = (clr[2] / 100. );//* 2.19) / (whiteLevel - blackLevel);
-      rT = r * (whiteLevel - blackLevel) + blackLevel + 0.5;
-      gT = g * (whiteLevel - blackLevel) + blackLevel + 0.5;
-      bT = b * (whiteLevel - blackLevel) + blackLevel + 0.5;
+      rT = (int) (r * (whiteLevel - blackLevel) + blackLevel + 0.5);
+      gT = (int) (g * (whiteLevel - blackLevel) + blackLevel + 0.5);
+      bT = (int) (b * (whiteLevel - blackLevel) + blackLevel + 0.5);
       char aBuf[64];
       if (m_madVR_3d)
     	  sprintf(aBuf,"HCFR is measuring display, please wait...%d:%d:%d[3dlut disabled]",rT,gT,bT);

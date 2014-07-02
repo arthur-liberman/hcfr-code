@@ -63,7 +63,7 @@ void usb_uninit_cancel(usb_cancelt *p) {
 
 /* Used by caller of icoms to re-init for wait_io */
 /* Must be called before icoms_usb_wait_io() */
-void usb_reinit_cancel(usb_cancelt *p) {
+extern void usb_reinit_cancel(usb_cancelt *p) {
 	
 	amutex_lock(p->cmtx);
 
