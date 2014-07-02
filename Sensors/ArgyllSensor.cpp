@@ -299,7 +299,8 @@ BOOL CArgyllSensor::Init( BOOL bForSimultaneousMeasures )
         return FALSE;
     }
     m_meter->setHiResMode(!!m_HiRes);
-    m_meter->setAdaptMode(!!m_Adapt);
+//    m_meter->setAdaptMode();
+//    m_meter->setAdaptMode();
 
     if(m_DisplayType != 0xFFFFFFFF)
     {
@@ -488,6 +489,11 @@ void ArgyllLogMessage(const char* messageType, char *fmt, va_list& args)
 bool CArgyllSensor::isColorimeter() const
 {
     return m_meter->isColorimeter();
+}
+
+bool CArgyllSensor::setAvg() const
+{
+    return m_meter->setAdaptMode();
 }
 
 bool CArgyllSensor::isRefresh() const

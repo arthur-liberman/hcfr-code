@@ -180,6 +180,7 @@ friend class CMainView;
 protected:
 	//{{AFX_MSG(CDataSetDoc)
 	afx_msg void OnConfigureSensor();
+	afx_msg void OnConfigureSensor2();
 	afx_msg void OnConfigureGenerator();
 	afx_msg void OnChangeGenerator();
 	afx_msg void OnChangeSensor();

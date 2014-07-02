@@ -1006,12 +1006,12 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 	}
 	else if (GetColorReference().m_standard == HDTVa) //75%
 	{ 
-		GenColors [ 0 ] = ColorRGBDisplay(68.0,20.0,20.0);
-		GenColors [ 1 ] = ColorRGBDisplay(28.0,73.0,28.0);
-		GenColors [ 2 ] = ColorRGBDisplay(19.0,19.0,50.0);
-		GenColors [ 3 ] = ColorRGBDisplay(75.0,75.0,33.0);
-		GenColors [ 4 ] = ColorRGBDisplay(36.0,73.0,73.0);
-		GenColors [ 5 ] = ColorRGBDisplay(64.0,29.0,64.0);
+		GenColors [ 0 ] = ColorRGBDisplay(68.04,20.09,20.09);
+		GenColors [ 1 ] = ColorRGBDisplay(27.85,73.06,27.85);
+		GenColors [ 2 ] = ColorRGBDisplay(19.18,19.18,50.22);
+		GenColors [ 3 ] = ColorRGBDisplay(74.89,74.89,32.88);
+		GenColors [ 4 ] = ColorRGBDisplay(36.07,73.06,73.06);
+		GenColors [ 5 ] = ColorRGBDisplay(63.92,29.22,63.93);
 	}
 
 	ColorRGBDisplay	MeasColors [ 8 ] = 
@@ -3193,9 +3193,9 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
 	}
 	else if ( GetColorReference().m_standard == HDTVa ) //75%
 	{ 
-		GenColors [ 0 ] = ColorRGBDisplay(68.0,20.0,20.0);
-		GenColors [ 1 ] = ColorRGBDisplay(28.0, 73.0,28.0);
-		GenColors [ 2 ] = ColorRGBDisplay(19.0,19.0,50.0);
+		GenColors [ 0 ] = ColorRGBDisplay(68.04,20.09,20.09);
+		GenColors [ 1 ] = ColorRGBDisplay(27.85,73.06,27.85);
+		GenColors [ 2 ] = ColorRGBDisplay(19.18,19.18,50.22);
 		GenColors [ 3 ] = ColorRGBDisplay(75.0,75.0,75.0);
 		GenColors [ 4 ] = ColorRGBDisplay(0,0,0);
 	

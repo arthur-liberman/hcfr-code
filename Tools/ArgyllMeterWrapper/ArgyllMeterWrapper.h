@@ -117,7 +117,7 @@ public:
     void setHiResMode(bool enableHiRes);
 
     /// Enable/Disable adaptive averaging
-    void setAdaptMode(bool enableAdapt);
+    bool setAdaptMode();
 
     /// Does device support high resolution mode on i1Pro
     bool doesSupportHiRes() const;
@@ -142,7 +142,6 @@ public:
     // is the meter in refresh mode
     virtual bool isRefresh();
 
-
 private:
     void checkMeterIsInitialized();
     _inst* m_meter;
@@ -151,9 +150,9 @@ private:
     eReadingType m_readingType;
     CColor m_lastReading;
     int m_nextCalibration;
-    BOOL m_Adapt;
     BOOL dark_only;
     char m_calibrationMessage[200];    
+    bool m_Adapt;
     
     std::string m_SampleDescription;
 };

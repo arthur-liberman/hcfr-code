@@ -211,6 +211,8 @@ COLORREF FxGetMenuColor()
 		  case CNewMenu::STYLE_ICY_NOBORDER:
 		  case CNewMenu::STYLE_ORIGINAL :
 		  case CNewMenu::STYLE_ORIGINAL_NOBORDER :
+		  case CNewMenu::STYLE_COLORFUL :
+		  case CNewMenu::STYLE_COLORFUL_NOBORDER :
 			return GetSysColor(COLOR_3DFACE);
 
 		  default:
@@ -368,6 +370,8 @@ COLORREF FxGetMenuBgColor()
 	  case CNewMenu::STYLE_ICY_NOBORDER:
 	  case CNewMenu::STYLE_XP:
 	  case CNewMenu::STYLE_XP_NOBORDER:
+	  case CNewMenu::STYLE_COLORFUL:
+	  case CNewMenu::STYLE_COLORFUL_NOBORDER:
 		return DarkenColor(20,FxGetSysColor(COLOR_WINDOW));
 
 	  case CNewMenu::STYLE_ORIGINAL:

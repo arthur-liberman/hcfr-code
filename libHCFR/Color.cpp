@@ -1569,9 +1569,11 @@ void CSpectrum::Serialize(CArchive& archive)
 #endif
 void GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 {
-	//four cases, one for GCD sequence, one for Mascior's disk (Chromapure based), and two different generator only cases
+	//six cases, one for GCD sequence, one for Mascior's disk (Chromapure based), and four different generator only cases
 	//GCD
 	//MCD
+    //CCGS 96 CalMAN ColorChecker SG patterns
+    //RANDOM 1000 random
 	switch (aCCMode)
 	{
 	case 0:

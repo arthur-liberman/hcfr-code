@@ -231,9 +231,9 @@ void CFullScreenWindow::DisplayRGBColorInternal(COLORREF clr, BOOL bDisableWaiti
 					ASSERT ( G >= 16 && G <= 235 );
 					ASSERT ( B >= 16 && B <= 235 );
 
-					R = ( R - 16 ) * 255 / 219;
-					G = ( G - 16 ) * 255 / 219;
-					B = ( B - 16 ) * 255 / 219;
+					R = ( R - 16 ) * 255 / 219 + 0.5;
+					G = ( G - 16 ) * 255 / 219 + 0.5;
+					B = ( B - 16 ) * 255 / 219 + 0.5;
 
 					if ( R < 0 )
 						R = 0;
@@ -251,8 +251,8 @@ void CFullScreenWindow::DisplayRGBColorInternal(COLORREF clr, BOOL bDisableWaiti
 						B = 255;
 				}
 
-				Y = ( ( 16829*R + 33039*G +  6416*B + 32768 ) >> 16 ) + 16;
-				U = ( ( -9714*R - 19071*G + 28784*B + 32768 ) >> 16 ) + 128;
+                Y = ( ( 16829*R + 33039*G +  6416*B + 32768 ) >> 16 ) + 16;
+				U = ( ( -9714*R - 19070*G + 28784*B + 32768 ) >> 16 ) + 128;
 				V = ( ( 28784*R - 24103*G -  4681*B + 32768 ) >> 16 ) + 128;
 
 				if ( Y < 16 )
@@ -494,7 +494,7 @@ void CFullScreenWindow::Hide ()
 void CFullScreenWindow::OnPaint() 
 {
 	int			row, col, dWidth, dHeight;
-	int			DisplayColor = m_Color;
+	COLORREF	DisplayColor = m_Color;
 	BOOL		bDraw = FALSE;
 	CRect		rect;
 	CBrush		brush;
@@ -514,9 +514,9 @@ void CFullScreenWindow::OnPaint()
 					ASSERT ( G >= 16 && G <= 235 );
 					ASSERT ( B >= 16 && B <= 235 );
 
-					R = ( R - 16 ) * 255 / 219;
-					G = ( G - 16 ) * 255 / 219;
-					B = ( B - 16 ) * 255 / 219;
+					R = ( R - 16 ) * 255 / 219 + 0.5;
+					G = ( G - 16 ) * 255 / 219 + 0.5;
+					B = ( B - 16 ) * 255 / 219 + 0.5;
 
 					if ( R < 0 )
 						R = 0;
@@ -593,9 +593,9 @@ void CFullScreenWindow::OnPaint()
                 B1 = max(0,(bgstim*255 - B*m_rectSizePercent/100.))/(1-m_rectSizePercent/100. - borderArea/(rect.Width()*rect.Height()) );
                 if (m_b16_235)
                 {
-                    R1 = R1/255*219+16;
-                    G1 = G1/255*219+16;
-                    B1 = B1/255*219+16;
+                    R1 = R1/255*219+16.5;
+                    G1 = G1/255*219+16.5;
+                    B1 = B1/255*219+16.5;
                 }
 
 				brush.CreateSolidBrush ( RGB(R1,G1,B1) );
@@ -616,6 +616,18 @@ void CFullScreenWindow::OnPaint()
 		brush.CreateSolidBrush ( DisplayColor );
 		dc.FillRect ( &patternRect, &brush );
 		brush.DeleteObject ();
+    	char aBuf[32];
+        R = GetRValue(m_Color);
+        G = GetGValue(m_Color);
+        B = GetBValue(m_Color);
+	    sprintf(aBuf,"%d:%d:%d",R,G,B);
+        dc.SetTextColor(DisplayColor);
+
+        if (R < 50 && G < 50 && B < 50)
+            dc.SetBkColor(RGB(128,128,128));
+        else
+            dc.SetBkColor(RGB(0,0,0));
+        dc.DrawText(aBuf,&rect, DT_CENTER|DT_BOTTOM|DT_SINGLELINE);
 	}
 
 	// Pattern Display Common Vars

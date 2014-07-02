@@ -67,6 +67,7 @@ public:
 	CButtonST	m_grayScaleButton;
 	CButtonST	m_grayScaleDeleteButton;
 	CButtonST	m_configSensorButton;
+	CButtonST	m_configSensorButton2;
 	CButtonST	m_configGeneratorButton;
 	CStatic	m_valuesStatic;
 	CStatic	m_colordataStatic;

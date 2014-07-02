@@ -40,10 +40,11 @@
 #include "SpectrumDlg.h"
 #include "../ColorHCFRConfig.h"
 
-
 #include "DocEnumerator.h"	//Ki
 
 #include <math.h>
+#include <algorithm>
+#include <vector>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -96,7 +97,9 @@ static const SCtrlLayout g_CtrlLayout [] = {
 																												
 { IDC_SENSOR_GROUP						, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
 { IDC_SENSORNAME_STATIC					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
+{ IDC_SENSORNAME_STATIC2					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
 { IDM_CONFIGURE_SENSOR					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
+{ IDM_CONFIGURE_SENSOR2					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
 { IDC_GENERATOR_GROUP					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
 { IDC_GENERATORNAME_STATIC				, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
 { IDM_CONFIGURE_GENERATOR				, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
@@ -121,6 +124,103 @@ static const SCtrlLayout g_CtrlLayout [] = {
 
 };
 
+                    char*  PatName[96]={
+                    "	White	",
+                    "	6J	",
+                    "	5F	",
+                    "	6I	",
+                    "	6K	",
+                    "	5G	",
+                    "	6H	",
+                    "	5H	",
+                    "	7K	",
+                    "	6G	",
+                    "	5I	",
+                    "	6F	",
+                    "	8K	",
+                    "	5J	",
+                    "	Black	",
+                    "	2B	",
+                    "	2C	",
+                    "	2D	",
+                    "	2E	",
+                    "	2F	",
+                    "	2G	",
+                    "	2H	",
+                    "	2I	",
+                    "	2J	",
+                    "	2K	",
+                    "	2L	",
+                    "	2M	",
+                    "	3B	",
+                    "	3C	",
+                    "	3D	",
+                    "	3E	",
+                    "	3F	",
+                    "	3G	",
+                    "	3H	",
+                    "	3I	",
+                    "	3J	",
+                    "	3K	",
+                    "	3L	",
+                    "	3M	",
+                    "	4B	",
+                    "	4C	",
+                    "	4D	",
+                    "	4E	",
+                    "	4F	",
+                    "	4G	",
+                    "	4H	",
+                    "	4I	",
+                    "	4J	",
+                    "	4K	",
+                    "	4L	",
+                    "	4M	",
+                    "	5B	",
+                    "	5C	",
+                    "	5D	",
+                    "	5K	",
+                    "	5L	",
+                    "	5M	",
+                    "	6B	",
+                    "	6C	",
+                    "	6D	",
+                    "	6L	",
+                    "	6M	",
+                    "	7B	",
+                    "	7C	",
+                    "	7D	",
+                    "	7E	",
+                    "	7F	",
+                    "	7G	",
+                    "	7H	",
+                    "	7I	",
+                    "	7J	",
+                    "	7L	",
+                    "	7M	",
+                    "	8B	",
+                    "	8C	",
+                    "	8D	",
+                    "	8E	",
+                    "	8F	",
+                    "	8G	",
+                    "	8H	",
+                    "	8I	",
+                    "	8J	",
+                    "	8L	",
+                    "	8M	",
+                    "	9B	",
+                    "	9C	",
+                    "	9D	",
+                    "	9E	",
+                    "	9F	",
+                    "	9G	",
+                    "	9H	",
+                    "	9I	",
+                    "	9J	",
+                    "	9K	",
+                    "	9L	",
+                    "	9M	" };
 
 /////////////////////////////////////////////////////////////////////////////
 // CMainView
@@ -249,6 +349,7 @@ void CMainView::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_MEASUREGRAYSCALE_BUTTON, m_grayScaleButton);
 	DDX_Control(pDX, IDC_DELETEGRAYSCALE_BUTTON, m_grayScaleDeleteButton);
 	DDX_Control(pDX, IDM_CONFIGURE_SENSOR, m_configSensorButton);
+	DDX_Control(pDX, IDM_CONFIGURE_SENSOR2, m_configSensorButton2);
 	DDX_Control(pDX, IDM_CONFIGURE_GENERATOR, m_configGeneratorButton);
 	DDX_Control(pDX, IDC_VALUES_STATIC, m_valuesStatic);
 	DDX_Control(pDX, IDC_COLORDATA_STATIC, m_colordataStatic);
@@ -825,103 +926,6 @@ void CMainView::InitGrid()
 			case 11:
                  if (GetConfig()->m_CCMode == CCSG)
                  {
-                    char*  PatName[96]={
-                    "	White	",
-                    "	6J	",
-                    "	5F	",
-                    "	6I	",
-                    "	6K	",
-                    "	5G	",
-                    "	6H	",
-                    "	5H	",
-                    "	7K	",
-                    "	6G	",
-                    "	5I	",
-                    "	6F	",
-                    "	8K	",
-                    "	5J	",
-                    "	Black	",
-                    "	2B	",
-                    "	2C	",
-                    "	2D	",
-                    "	2E	",
-                    "	2F	",
-                    "	2G	",
-                    "	2H	",
-                    "	2I	",
-                    "	2J	",
-                    "	2K	",
-                    "	2L	",
-                    "	2M	",
-                    "	3B	",
-                    "	3C	",
-                    "	3D	",
-                    "	3E	",
-                    "	3F	",
-                    "	3G	",
-                    "	3H	",
-                    "	3I	",
-                    "	3J	",
-                    "	3K	",
-                    "	3L	",
-                    "	3M	",
-                    "	4B	",
-                    "	4C	",
-                    "	4D	",
-                    "	4E	",
-                    "	4F	",
-                    "	4G	",
-                    "	4H	",
-                    "	4I	",
-                    "	4J	",
-                    "	4K	",
-                    "	4L	",
-                    "	4M	",
-                    "	5B	",
-                    "	5C	",
-                    "	5D	",
-                    "	5K	",
-                    "	5L	",
-                    "	5M	",
-                    "	6B	",
-                    "	6C	",
-                    "	6D	",
-                    "	6L	",
-                    "	6M	",
-                    "	7B	",
-                    "	7C	",
-                    "	7D	",
-                    "	7E	",
-                    "	7F	",
-                    "	7G	",
-                    "	7H	",
-                    "	7I	",
-                    "	7J	",
-                    "	7L	",
-                    "	7M	",
-                    "	8B	",
-                    "	8C	",
-                    "	8D	",
-                    "	8E	",
-                    "	8F	",
-                    "	8G	",
-                    "	8H	",
-                    "	8I	",
-                    "	8J	",
-                    "	8L	",
-                    "	8M	",
-                    "	9B	",
-                    "	9C	",
-                    "	9D	",
-                    "	9E	",
-                    "	9F	",
-                    "	9G	",
-                    "	9H	",
-                    "	9I	",
-                    "	9J	",
-                    "	9K	",
-                    "	9L	",
-                    "	9M	" };
                     Item.strText.SetString(PatName[i]);
                  } 
                  else {
@@ -1589,8 +1593,10 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 		UpdateData(FALSE);
 	}
 }
-		double			dEavg = 0.0, dEmax=0.0;
-		int 			dEcnt = 0;
+
+double			dEavg = 0.0, dEmax=0.0;
+int 			dEcnt = 0;
+std::vector<double> dEvector(0);
 
 CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aReference, CColor & aRefDocColor, double YWhiteRefDoc, int aComponentNum, int nCol, double Offset)
 {
@@ -1654,7 +1660,9 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				{
 					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight ) );
 					dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), 	GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
-					dEavg+=dE;
+                    if (GetConfig()->m_CCMode == CCSG)
+                        dEvector.push_back(dE);
+                    dEavg+=dE;
                     if (dE > dEmax)
                         dEmax = dE;
 					if (GetConfig()->m_dE_form <= 1)
@@ -2738,13 +2746,25 @@ void CMainView::UpdateGrid()
 		    {
 				char	szBuf [ 256 ];
 				CString dEform;
-				float a=2.5, b=5;
+				float a = 2.5, b = 5, dE10 = 0;
 				Tmp.LoadString ( IDS_DELTAEAVERAGE );
                 Msg += (GetConfig()->m_CCMode == GCD?" - GCD ":(GetConfig()->m_CCMode==MCD?" - MCD ":(GetConfig()->m_CCMode==SKIN?" - SKIN ":(GetConfig()->m_CCMode==CCSG?" - ColorChecker SG ":" - AXIS "))));
 				Msg += " ( ";
 				Msg += Tmp;
-				sprintf ( szBuf, ": %.2f, max: %.2f )", dEavg / dEcnt, dEmax );
-				Msg += szBuf;					
+                if (GetConfig()->m_CCMode == CCSG)
+                {
+                    vector<double>::iterator max;
+                    max = max_element( dEvector.begin(), dEvector.end() );
+                    double maxv = *max ;
+                    int pos = distance(dEvector.begin(), max);
+                    std::sort ( dEvector.begin(), dEvector.end() );
+                    for ( int i = dEvector.size() - 10; i < dEvector.size(); i++ ) dE10+=dEvector[i] / 10;
+    				sprintf ( szBuf, ": %.2f, max: %.2f[%s], worst 10%%: %.2f )", dEavg / dEcnt, maxv, PatName[pos], dE10 );
+                    dEvector.clear();
+                }
+                else
+    				sprintf ( szBuf, ": %.2f, max: %.2f )", dEavg / dEcnt, dEmax );
+				    Msg += szBuf;					
 					switch (GetConfig()->m_dE_form)
 					{
 					case 0:
@@ -4049,8 +4069,10 @@ void CMainView::InitButtons()
 	CString	Msg, Msg2;
 
 	Msg.LoadString ( IDS_CONFIGURESENSOR );
-	m_configSensorButton.SetIcon(IDI_SETTINGS_ICON,24,24);
+	m_configSensorButton.SetIcon(IDI_SETTINGS_ICON,22,22);
+	m_configSensorButton2.SetIcon(IDI_START_ICON,18,18);
 	m_configSensorButton.SetFont(GetFont());
+	m_configSensorButton2.SetFont(GetFont());
 	m_configSensorButton.EnableBalloonTooltip();
 	m_configSensorButton.SetTooltipText(Msg);
 	m_configSensorButton.SetColor(CButtonST::BTNST_COLOR_FG_IN,FxGetSysColor(COLOR_MENUTEXT));
@@ -4062,6 +4084,17 @@ void CMainView::InitButtons()
 	m_configSensorButton.OffsetColor(CButtonST::BTNST_COLOR_BK_IN, 30);
 	m_configSensorButton.OffsetColor(CButtonST::BTNST_COLOR_FG_IN, 30);
 	m_configSensorButton.SizeToContent();
+	m_configSensorButton2.EnableBalloonTooltip();
+	m_configSensorButton2.SetTooltipText(Msg);
+	m_configSensorButton2.SetColor(CButtonST::BTNST_COLOR_FG_IN,FxGetSysColor(COLOR_MENUTEXT));
+	m_configSensorButton2.SetColor(CButtonST::BTNST_COLOR_FG_OUT,FxGetSysColor(COLOR_MENUTEXT));
+	m_configSensorButton2.SetColor(CButtonST::BTNST_COLOR_FG_FOCUS,FxGetSysColor(COLOR_MENUTEXT));
+	m_configSensorButton2.SetColor(CButtonST::BTNST_COLOR_BK_IN,FxGetMenuBgColor());
+	m_configSensorButton2.SetColor(CButtonST::BTNST_COLOR_BK_OUT,FxGetMenuBgColor());
+	m_configSensorButton2.SetColor(CButtonST::BTNST_COLOR_BK_FOCUS,FxGetMenuBgColor());
+	m_configSensorButton2.OffsetColor(CButtonST::BTNST_COLOR_BK_IN, 30);
+	m_configSensorButton2.OffsetColor(CButtonST::BTNST_COLOR_FG_IN, 30);
+	m_configSensorButton2.SizeToContent();
 //	m_configSensorButton.DrawTransparent(TRUE);
 
 	Msg.LoadString ( IDS_CONFIGUREGENERATOR );

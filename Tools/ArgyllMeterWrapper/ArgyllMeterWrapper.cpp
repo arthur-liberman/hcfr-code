@@ -190,7 +190,7 @@ ArgyllMeterWrapper::~ArgyllMeterWrapper()
 bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eReadingType readingType, CString SpectralType, bool debugmode, double int_time, bool refresh)
 {
    inst_code instCode;
-   
+   m_Adapt = false;
    if (debugmode)
     {
         m_meter->icom->log->verb = 5;
@@ -570,17 +570,17 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading(CString Spectral
 
     //Simple low-light averager    
     int cnt = 0;
-//    if (m_Adapt)
-    if (FALSE)
+    if (m_Adapt)
+//    if (FALSE)
     {
-        if (Y < 0.5)
-            cnt = 3; // 4 samples
-        else if (Y < 1.0)
-            cnt = 3; // 4 samples
-        else if (Y < 2.0)
+//        if (Y < 0.5)
             cnt = 2; // 3 samples
-        else if (Y < 3.0)
-            cnt = 1; // 2 samples
+//        else if (Y < 1.0)
+//            cnt = 3; // 4 samples
+//        else if (Y < 2.0)
+//            cnt = 2; // 3 samples
+//        else if (Y < 3.0)
+//            cnt = 1; // 2 samples
 
         if (cnt > 0)
         {
@@ -788,9 +788,10 @@ void ArgyllMeterWrapper::setHiResMode(bool enableHiRes)
     }
 }
 
-void ArgyllMeterWrapper::setAdaptMode(bool enableAdapt)
+bool ArgyllMeterWrapper::setAdaptMode()
 {
-        m_Adapt = enableAdapt;
+        m_Adapt = !m_Adapt;
+        return m_Adapt;
 }
 
 bool ArgyllMeterWrapper::doesSupportHiRes() const

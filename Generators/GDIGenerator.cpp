@@ -346,8 +346,28 @@ BOOL CGDIGenerator::Init(UINT nbMeasure)
 
 BOOL CGDIGenerator::DisplayRGBColormadVR( const ColorRGBDisplay& clr )
 {
-	//init done in generator.cpp
-      if (!madVR_ShowRGB(clr[0] / 100., clr[1] / 100., clr[2] / 100.))
+	//init done in generator.cpp 
+      int blackLevel, whiteLevel;
+      double r, g, b;
+      int rT,gT,bT;
+      madVR_GetBlackAndWhiteLevel ( &blackLevel, &whiteLevel);
+      // don't use madvr white/black level because all patterns are expressed as video level percentages and targets assume this
+      // if madvr is sending video levels then no dithering and targets are fine, if madvr is sending full (or custom) range then you should dither
+      // and again targets will be fine.
+      r = (clr[0] / 100. );//* 2.19) / (whiteLevel - blackLevel);
+      g = (clr[1] / 100. );//* 2.19) / (whiteLevel - blackLevel);
+      b = (clr[2] / 100. );//* 2.19) / (whiteLevel - blackLevel);
+      rT = r * (whiteLevel - blackLevel) + blackLevel + 0.5;
+      gT = g * (whiteLevel - blackLevel) + blackLevel + 0.5;
+      bT = b * (whiteLevel - blackLevel) + blackLevel + 0.5;
+      char aBuf[64];
+      if (m_madVR_3d)
+    	  sprintf(aBuf,"HCFR is measuring display, please wait...%d:%d:%d[3dlut disabled]",rT,gT,bT);
+      else
+    	  sprintf(aBuf,"HCFR is measuring display, please wait...%d:%d:%d",rT,gT,bT);
+      const CString s(aBuf);
+      madVR_SetOsdText(CT2CW(s));
+      if (!madVR_ShowRGB(r, g, b))
       {
         MessageBox(0, "Test pattern failure.", "Error", MB_ICONERROR);
 		return false;
@@ -402,16 +422,6 @@ BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nP
 	p_clr[1] = clr[1] * m_displayWindow.m_Intensity / 100;
 	p_clr[2] = clr[2] * m_displayWindow.m_Intensity / 100;
 	
-/*	BOOL	bRet;
-	CString str, Msg, Title;
-
-	Title.LoadString ( IDS_INFORMATION );
-
-	Msg.LoadString ( IDS_DVDMANPOS1 );
-	str.Format(Msg,clr[0]);
-	bRet = ( MessageBox(NULL,str,Title,MB_ICONINFORMATION | MB_OKCANCEL | MB_TOPMOST) == IDOK );
-*/
-
 	if ( m_GDIGenePropertiesPage.m_nDisplayMode == DISPLAY_madVR)
 		DisplayRGBColormadVR (do_Intensity?p_clr:clr);
 	else

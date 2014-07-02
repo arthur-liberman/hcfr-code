@@ -61,7 +61,7 @@ public:
     virtual ~CArgyllSensor();
 
     // Overriden functions from CSensor
-    virtual    void Copy(CSensor * p);    
+    virtual void Copy(CSensor * p);    
     virtual void Serialize(CArchive& archive); 
 
     virtual BOOL Init( BOOL bForSimultaneousMeasures );
@@ -81,6 +81,7 @@ public:
     virtual CString SpectralType() const {return m_SpectralType;}
     void FillDisplayTypeCombo(CComboBox& comboToFill);
     virtual bool isColorimeter() const;
+    virtual bool setAvg() const;
     virtual bool isRefresh() const;
 private:
     virtual CColor MeasureColorInternal(const ColorRGBDisplay& aRGBValue);
