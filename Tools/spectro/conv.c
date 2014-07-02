@@ -1273,12 +1273,6 @@ void sa_Scale3(double out[3], double in[3], double rat) {
 	out[2] = in[2] * rat;
 }
 
-/* Clamp a 3 vector to be +ve */
-extern void sa_Clamp3(double out[3], double in[3]) {
-	int i;
-	for (i = 0; i < 3; i++)
-		out[i] = in[i] < 0.0 ? 0.0 : in[i];
-}
 
 /* Return the normal Delta E given two Lab values */
 double sa_LabDE(double *Lab0, double *Lab1) {

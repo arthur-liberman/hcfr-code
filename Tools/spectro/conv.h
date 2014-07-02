@@ -285,6 +285,14 @@ double sa_LabDE(double *in0, double *in1);
 
 int sa_lu_psinvert(double **out, double **in, int m, int n);
 
+/* Clamp a 3 vector to be +ve */
+extern void sa_Clamp3(double out[3], double in[3]) {
+	int i;
+	for (i = 0; i < 3; i++)
+		out[i] = in[i] < 0.0 ? 0.0 : in[i];
+}
+
+
 #define lu_psinvert sa_lu_psinvert
 
 #endif /* SALONEINSTLIB */
