@@ -54,6 +54,7 @@ typedef enum
 	AXIS = 2,
 	SKIN = 3,
 	CCSG = 4,
+    USER = 5,
 } CCPatterns;
 
 typedef enum 

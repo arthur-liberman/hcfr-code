@@ -1573,10 +1573,10 @@ void GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 	//GCD
 	//MCD
     //CCGS 96 CalMAN ColorChecker SG patterns
-    //RANDOM 1000 random
+    //USER user defined
 	switch (aCCMode)
 	{
-	case 0:
+	case GCD:
 		{
 //GCD
             GenColors [ 0 ] = ColorRGBDisplay( 0, 0, 0 );
@@ -1605,7 +1605,7 @@ void GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
             GenColors [ 23 ] = ColorRGBDisplay( 0, 52.05, 63.93);
 		break;
 		}
-	case 1:
+	case MCD:
 		{
 	 	    GenColors [ 23 ] = ColorRGBDisplay( 21, 20.5, 21 );
             GenColors [ 22 ] = ColorRGBDisplay( 32.88, 32.88, 32.88 );
@@ -1633,7 +1633,7 @@ void GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
             GenColors [ 17 ] = ColorRGBDisplay( 11.87, 51.60, 59.82);
 		break;
 		}
-	case 2:
+	case AXIS:
 		{
             GenColors [ 0 ] = ColorRGBDisplay( 12, 0, 0 );
             GenColors [ 1 ] = ColorRGBDisplay( 24, 0, 0 );
@@ -1662,7 +1662,7 @@ void GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
         break;
 		}
 		//axis steps
-	case 3:
+	case SKIN:
 		{
             GenColors [ 0 ] = ColorRGBDisplay( 100, 87.45, 76.86 );
             GenColors [ 1 ] = ColorRGBDisplay( 94.12, 83.53, 74.51 );
@@ -1691,7 +1691,7 @@ void GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
         break;
 		}
 		//ColorCheckerSG 96 colors
-    case 4:
+    case CCSG:
         {
             GenColors [ 0 ] = ColorRGBDisplay(	100	,	100	,	100	);
             GenColors [ 1 ] = ColorRGBDisplay(	87.2146119	,	87.2146119	,	87.2146119	);
@@ -1789,6 +1789,10 @@ void GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
             GenColors [ 93 ] = ColorRGBDisplay(	62.1004566	,	58.9041096	,	10.0456621	);
             GenColors [ 94 ] = ColorRGBDisplay(	64.8401826	,	73.0593607	,	0	);
             GenColors [ 95 ] = ColorRGBDisplay(	30.1369863	,	16.8949772	,	10.0456621	);
+        }
+    case USER:
+        {
+            break;
         }
 
 	}

@@ -5559,6 +5559,11 @@ CColor CMeasure::GetRefCC24Sat(int i) const
             RGB[95] = ColorRGB(0.301369863,0.168949772,0.100456621);
             break;
         } 
+        //Custom color checker
+		case USER:
+		{
+            break;
+        }
 	} 
     CColor White = CMeasure::GetGray ( CMeasure::GetGrayScaleSize() - 1 );
 	CColor Black = CMeasure::GetGray ( 0 );

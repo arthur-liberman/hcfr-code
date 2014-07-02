@@ -571,16 +571,15 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading(CString Spectral
     //Simple low-light averager    
     int cnt = 0;
     if (m_Adapt)
-//    if (FALSE)
     {
-//        if (Y < 0.5)
+        if (Y < 1.0)
+            cnt = 4; // 5 samples
+        else if (Y < 2.0)
+            cnt = 3; // 4 samples
+        else if (Y < 5.0)
             cnt = 2; // 3 samples
-//        else if (Y < 1.0)
-//            cnt = 3; // 4 samples
-//        else if (Y < 2.0)
-//            cnt = 2; // 3 samples
-//        else if (Y < 3.0)
-//            cnt = 1; // 2 samples
+        else if (Y < 10.0)
+            cnt = 1; // 2 samples
 
         if (cnt > 0)
         {
