@@ -2318,12 +2318,12 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 	CStringList		SensorList;
 	CString			strId, strTmp;
 	CString			Msg, Title;
-	ColorRGBDisplay	GenColors [ 256 ];
-	CGenerator::MeasureType	mType[256];
+	ColorRGBDisplay	GenColors [ 1000 ];
+	CGenerator::MeasureType	mType[1000];
 
 	double			dLuxValue;
 	BOOL			bUseLuxValues = TRUE;
-	double			measuredLux [ 256 ];
+	double			measuredLux [ 1000 ];
     double          gamma=(GetConfig()->m_useMeasuredGamma)?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef);
     MSG				message;
 
@@ -3346,7 +3346,7 @@ void CDataSetDoc::OnMeasureSatMagenta()
 void CDataSetDoc::OnMeasureSatCC24() 
 {
 	CString	Msg, MsgQueue, TmpStr;
-    int		nNbPoints = (GetConfig()->m_CCMode==CCSG?96:24);
+    int		nNbPoints = (GetConfig()->m_CCMode==CCSG?96:GetConfig()->m_CCMode==USER?GetConfig()->GetCColorsSize():24);
 	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
 	if	(!m_YWhite)
 		MessageBox(NULL,"Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
@@ -3374,7 +3374,7 @@ void CDataSetDoc::OnUpdateMeasureSatMagenta(CCmdUI* pCmdUI)
 
 void CDataSetDoc::OnUpdateMeasureSatCC24(CCmdUI* pCmdUI) 
 {
-		CGenerator::MeasureType nPattern;
+	CGenerator::MeasureType nPattern;
 	switch (GetConfig()->m_CCMode)
 	{
 	case MCD:
@@ -3392,7 +3392,7 @@ void CDataSetDoc::OnUpdateMeasureSatCC24(CCmdUI* pCmdUI)
 		 nPattern=CGenerator::MT_SAT_CC24_CCSG;		
 	}
 
-	pCmdUI -> Enable ( m_pGenerator -> CanDisplayScale ( nPattern, (nPattern<2?24:(nPattern==2?80:256)), TRUE ) );
+	pCmdUI -> Enable ( m_pGenerator -> CanDisplayScale ( nPattern, (nPattern<16?24:(nPattern==16?96:1000)), TRUE ) );
 }
 
 void CDataSetDoc::OnMeasureContrast() 
@@ -3417,7 +3417,7 @@ void CDataSetDoc::OnUpdateMeasureContrast(CCmdUI* pCmdUI)
 void CDataSetDoc::OnMeasureSatAll() 
 {
 	CString	Msg, MsgQueue, TmpStr;
-	int		nNbPoints = (GetMeasure () -> GetSaturationSize ()) * 6 + (GetConfig()->m_CCMode==CCSG?96:24);
+    int		nNbPoints = (GetMeasure () -> GetSaturationSize ()) * 6 + (GetConfig()->m_CCMode==CCSG?96:GetConfig()->m_CCMode==USER?GetConfig()->GetCColorsSize():24);
 	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
 	if	(!m_YWhite)
 		MessageBox(NULL,"Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);

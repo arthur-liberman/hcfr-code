@@ -30,6 +30,7 @@
 #include "LuxScaleAdvisor.h"
 
 #include <math.h>
+#include <sstream>
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -57,8 +58,7 @@ CMeasure::CMeasure()
 	m_yellowSatMeasureArray.SetSize(5);
 	m_cyanSatMeasureArray.SetSize(5);
 	m_magentaSatMeasureArray.SetSize(5);
-	m_cc24SatMeasureArray.SetSize(1000);
-
+    m_cc24SatMeasureArray.SetSize(1000);
 	m_primariesArray[0]=m_primariesArray[1]=m_primariesArray[2]=noDataColor;
 	m_secondariesArray[0]=m_secondariesArray[1]=m_secondariesArray[2]=noDataColor;
 
@@ -2435,10 +2435,12 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
 	BOOL		bRetry = FALSE;
 	int			size = GetConfig()->m_CCMode == CCSG?96:24;
 	CString		strMsg, Title;
-	ColorRGBDisplay	GenColors [ 256 ];
+	ColorRGBDisplay	GenColors [ 1010 ];
 	double		dLuxValue;
 
-	CArray<CColor,int> measuredColor;
+    if (GetConfig()->m_CCMode == USER) size = GetConfig()->GetCColorsSize();
+
+    CArray<CColor,int> measuredColor;
 	CColor previousColor, lastColor;
 
 	BOOL	bUseLuxValues = TRUE;
@@ -2473,6 +2475,9 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
 	case CCSG:
 		 nPattern=CGenerator::MT_SAT_CC24_CCSG;
 		 break;
+	case USER:
+		 nPattern=CGenerator::MT_SAT_CC24_USER;
+		 break;
 	}
 
 	if(pGenerator->CanDisplayScale ( nPattern, size ) != TRUE)
@@ -2492,7 +2497,7 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
-    if(pGenerator->GetName() == str&&(GetConfig()->m_CCMode==AXIS || GetConfig()->m_CCMode==SKIN) )
+    if(pGenerator->GetName() == str&&(GetConfig()->m_CCMode==AXIS || GetConfig()->m_CCMode==SKIN || GetConfig()->m_CCMode==USER ) )
 	{		
 		Title.LoadString ( IDS_ERROR );
 		strMsg.LoadString ( IDS_ERRINITGENERATOR );
@@ -2501,8 +2506,7 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
 		return FALSE;
 	}
 
-	GenerateCC24Colors (GenColors, GetConfig()->m_CCMode);
-
+    GenerateCC24Colors (GenColors, GetConfig()->m_CCMode);
 	for(int i=0;i<size;i++)
 	{
 		if( pGenerator->DisplayRGBColor(GenColors[i], nPattern ,i,!bRetry))
@@ -2627,6 +2631,7 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 	BOOL		bPatternRetry = FALSE;
 	BOOL		bRetry = FALSE;
 	int			size = GetSaturationSize ();
+    int         ccSize = (GetConfig()->m_CCMode==CCSG?96:24);
 	CString		strMsg, Title;
 	ColorRGBDisplay	GenColors [ 7 * 256 ];
 
@@ -2644,9 +2649,15 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 		 nPattern=CGenerator::MT_SAT_CC24_GCD;		
 		 break;
 	case SKIN:
-		 nPattern=CGenerator::MT_SAT_CC24_GCD;		
+		 nPattern=CGenerator::MT_SAT_CC24_GCD;
+         break;
 	case CCSG:
 		 nPattern=CGenerator::MT_SAT_CC24_CCSG;		
+         break;
+	case USER:
+		 nPattern=CGenerator::MT_SAT_CC24_CCSG;		
+         ccSize = GetConfig()->GetCColorsSize();
+         break;
 	}
 	
 	CGenerator::MeasureType	SaturationType [ 7 ] =
@@ -2666,10 +2677,10 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 	BOOL	bUseLuxValues = TRUE;
 	CArray<double,int> measuredLux;
 
-    measuredColor.SetSize(size*6+(GetConfig()->m_CCMode==CCSG?96:24));
-	measuredLux.SetSize(size*6+(GetConfig()->m_CCMode==CCSG?96:24));
+    measuredColor.SetSize(size*6+(ccSize));
+	measuredLux.SetSize(size*6+(ccSize));
 
-	if(pGenerator->Init(size*(bPrimaryOnly?3:6) + (GetConfig()->m_CCMode==CCSG?96:24)) != TRUE)
+	if(pGenerator->Init(size*(bPrimaryOnly?3:6) + ccSize) != TRUE)
 	{
 		Title.LoadString ( IDS_ERROR );
 		strMsg.LoadString ( IDS_ERRINITGENERATOR );
@@ -2677,7 +2688,7 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 		return FALSE;
 	}
 
-	if(pGenerator->CanDisplayScale ( CGenerator::MT_SAT_ALL, size ) != TRUE)
+	if(pGenerator->CanDisplayScale ( CGenerator::MT_SAT_ALL, ccSize ) != TRUE)
 	{
 		pGenerator->Release();
 		return FALSE;
@@ -2694,7 +2705,7 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
-	if(pGenerator->GetName() == str&&(GetConfig()->m_CCMode==AXIS || GetConfig()->m_CCMode==SKIN))
+	if(pGenerator->GetName() == str&&(GetConfig()->m_CCMode==AXIS || GetConfig()->m_CCMode==SKIN || GetConfig()->m_CCMode==USER))
 	{		
 		Title.LoadString ( IDS_ERROR );
 		strMsg.LoadString ( IDS_ERRINITGENERATOR );
@@ -2711,11 +2722,11 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 3 ], size, true, true, false );	// Yellow
 	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 4 ], size, false, true, true );	// Cyan
 	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 5 ], size, true, false, true );	// Magenta
-	GenerateCC24Colors (& GenColors [ size * 6 ], GetConfig()->m_CCMode); //color checker
+    GenerateCC24Colors (& GenColors [ size * 6 ], GetConfig()->m_CCMode); //color checker
 
 	for ( j = 0 ; j < ( bPrimaryOnly ? 3 : 7 ) ; j ++ )
 	{
-		for ( i = 0 ; i < ( j == 6 ? (GetConfig()->m_CCMode==CCSG?96:24) : size ) ; i ++ )
+		for ( i = 0 ; i < ( j == 6 ? ccSize : size ) ; i ++ )
 		{
 			if( pGenerator->DisplayRGBColor(GenColors[(j*size)+i],SaturationType[j],(j == 6 ? i:100*i/(size - 1)),!bRetry,(j>0)) )
 			{
@@ -2868,7 +2879,7 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 			}
 		}
 	}
-	for ( i = 0 ; i < (GetConfig()->m_CCMode==CCSG?96:24) ; i ++ )
+	for ( i = 0 ; i < ccSize ; i ++ )
 	{
 		if ( ! bPrimaryOnly )
 		{
@@ -5338,9 +5349,8 @@ CColor CMeasure::GetRefCC24Sat(int i) const
 	CColor aColor;
 	int m_cRef=GetColorReference().m_standard;
     CColorReference cRef = GetColorReference();
-	//switch over to user gamma
 	CColor ccRef;
-    ColorRGB RGB[100];
+    ColorRGB RGB[1000];
 	switch (GetConfig()->m_CCMode)
 	{
 //GCD
@@ -5428,7 +5438,8 @@ CColor CMeasure::GetRefCC24Sat(int i) const
 			RGB[21] = ColorRGB(  0, 0, .72 );
 			RGB[22] = ColorRGB(  0, 0, .84 );
 			RGB[23] = ColorRGB(  0, 0, .96 );
-		break;		}
+		break;		
+        }
         //Pantone skin set
 	    case SKIN:
 		{
@@ -5562,9 +5573,27 @@ CColor CMeasure::GetRefCC24Sat(int i) const
         //Custom color checker
 		case USER:
 		{
+            ifstream colorFile("colors.csv");
+            std::string line;
+            int cnt = 0;
+            int n1,n2,n3;
+            if (!colorFile) 
+            {
+                RGB [ i ] = ColorRGB(noDataColor.GetX(),noDataColor.GetY(),noDataColor.GetZ());
+                break;
+            }
+            while(std::getline(colorFile, line) && cnt < i ) cnt++;
+            std::istringstream s(line);
+            std::string field;
+            s >> n1;
+            getline(s, field,',');
+            s >> n2;
+            getline(s, field, ',');
+            s >> n3;
+            RGB [ i ] = ColorRGB(	(n1 / 255.)	, (	n2 / 255.) , ( n3 /255. ) );
             break;
         }
-	} 
+    } 
     CColor White = CMeasure::GetGray ( CMeasure::GetGrayScaleSize() - 1 );
 	CColor Black = CMeasure::GetGray ( 0 );
     double gamma=GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef);

@@ -225,7 +225,7 @@ public:
 	double GetLuxOrLumaValue (const int luminanceCurveMode) const;
 	double GetPreferedLuxValue (bool preferLuxmeter) const;
     void applyAdjustmentMatrix(const Matrix& adjustment);
-
+    
     void Output(ostream& ostr) const;
 
 #ifdef LIBHCFR_HAS_MFC
@@ -619,7 +619,8 @@ public:
                 0.295157132	,
                 0.437537547	,
                 0.029079704					
-                }; 
+                };
+        
         switch(aCCMode)
         {
         case GCD:
@@ -632,6 +633,7 @@ public:
             return YLumaSKIN[nCol];
         case CCSG:
             return YLumaCCSG[nCol];
+//        case USER:
         }
             return YLumaGCD[nCol];
 	}
@@ -652,7 +654,7 @@ extern CColor noDataColor;
 
 // Tool functions
 extern void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int nSteps, bool bRed, bool bGreen, bool bBlue);
-extern void GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode);
+extern void GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode );
 extern Matrix ComputeConversionMatrix(const ColorXYZ measures[3], const ColorXYZ references[3], const ColorXYZ & WhiteTest, const ColorXYZ & WhiteRef, bool	bUseOnlyPrimaries);
 double ArrayIndexToGrayLevel ( int nCol, int nSize, bool m_bUseRoundDown);
 double GrayLevelToGrayProp ( double Level, bool m_bUseRoundDown );

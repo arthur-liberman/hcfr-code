@@ -82,7 +82,7 @@ public:
 	double m_manualBluex;
     double m_manualBluey;
 	int m_GammaOffsetType;
-
+    int m_nColors;
 	// Appearance settings
 	BOOL m_drawMenuBorder;
 	int m_menuDrawMode;
@@ -126,6 +126,7 @@ public:
 	BOOL LoadSettings();
 	void ApplySettings(BOOL isStartupApply=FALSE);
 	void InitDefaults();
+    int GetCColorsSize();
 
 	BOOL IsProfileEntryDefined(LPCTSTR lpszSection,LPCTSTR lpszEntry);
 

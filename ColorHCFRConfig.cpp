@@ -30,6 +30,7 @@
 #include "LangSelection.h"
 #include "HtmlHelp.h"
 #include <io.h>
+#include <sstream>
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -485,6 +486,9 @@ void CColorHCFRConfig::SetPropertiesSheetValues()
 		case CNewMenu::STYLE_ICY:
 			m_appearancePropertiesPage.m_themeComboIndex=3;
 			break;
+		case CNewMenu::STYLE_COLORFUL:
+			m_appearancePropertiesPage.m_themeComboIndex=4;
+			break;
 		default:
 			m_appearancePropertiesPage.m_themeComboIndex=0;
 	}
@@ -580,6 +584,9 @@ BOOL CColorHCFRConfig::GetPropertiesSheetValues()
 			break;
 		case 3:
 			m_menuDrawMode=CNewMenu::STYLE_ICY;
+			break;
+		case 4:
+			m_menuDrawMode=CNewMenu::STYLE_COLORFUL;
 			break;
 		default:
 			m_menuDrawMode=CNewMenu::STYLE_XP_2003;
@@ -782,6 +789,25 @@ void CColorHCFRConfig::DisplayHelp ( UINT nId, LPCSTR lpszTopic )
 void CColorHCFRConfig::EnsurePathExists ( CString strPath )
 {
 	CreateDirectory ( strPath, NULL );
+}
+
+int CColorHCFRConfig::GetCColorsSize() 
+{
+    int cnt = 24;
+    if (GetConfig()->m_CCMode == USER)
+    {
+            ifstream colorFile("colors.csv");
+            std::string line;
+            int n1=0;
+            if (colorFile) 
+                while(std::getline(colorFile, line) && n1 < 1000 ) n1++;//currently limited to 1000 colors
+            cnt = n1;
+    }
+    else
+    {
+        if (GetConfig()->m_CCMode == CCSG) cnt = 96;
+    }
+            return cnt;
 }
 
 

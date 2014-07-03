@@ -125,102 +125,102 @@ static const SCtrlLayout g_CtrlLayout [] = {
 };
 
                     char*  PatName[96]={
-                    "	White	",
-                    "	6J	",
-                    "	5F	",
-                    "	6I	",
-                    "	6K	",
-                    "	5G	",
-                    "	6H	",
-                    "	5H	",
-                    "	7K	",
-                    "	6G	",
-                    "	5I	",
-                    "	6F	",
-                    "	8K	",
-                    "	5J	",
-                    "	Black	",
-                    "	2B	",
-                    "	2C	",
-                    "	2D	",
-                    "	2E	",
-                    "	2F	",
-                    "	2G	",
-                    "	2H	",
-                    "	2I	",
-                    "	2J	",
-                    "	2K	",
-                    "	2L	",
-                    "	2M	",
-                    "	3B	",
-                    "	3C	",
-                    "	3D	",
-                    "	3E	",
-                    "	3F	",
-                    "	3G	",
-                    "	3H	",
-                    "	3I	",
-                    "	3J	",
-                    "	3K	",
-                    "	3L	",
-                    "	3M	",
-                    "	4B	",
-                    "	4C	",
-                    "	4D	",
-                    "	4E	",
-                    "	4F	",
-                    "	4G	",
-                    "	4H	",
-                    "	4I	",
-                    "	4J	",
-                    "	4K	",
-                    "	4L	",
-                    "	4M	",
-                    "	5B	",
-                    "	5C	",
-                    "	5D	",
-                    "	5K	",
-                    "	5L	",
-                    "	5M	",
-                    "	6B	",
-                    "	6C	",
-                    "	6D	",
-                    "	6L	",
-                    "	6M	",
-                    "	7B	",
-                    "	7C	",
-                    "	7D	",
-                    "	7E	",
-                    "	7F	",
-                    "	7G	",
-                    "	7H	",
-                    "	7I	",
-                    "	7J	",
-                    "	7L	",
-                    "	7M	",
-                    "	8B	",
-                    "	8C	",
-                    "	8D	",
-                    "	8E	",
-                    "	8F	",
-                    "	8G	",
-                    "	8H	",
-                    "	8I	",
-                    "	8J	",
-                    "	8L	",
-                    "	8M	",
-                    "	9B	",
-                    "	9C	",
-                    "	9D	",
-                    "	9E	",
-                    "	9F	",
-                    "	9G	",
-                    "	9H	",
-                    "	9I	",
-                    "	9J	",
-                    "	9K	",
-                    "	9L	",
-                    "	9M	" };
+                    "White",
+                    "6J",
+                    "5F",
+                    "6I",
+                    "6K",
+                    "5G",
+                    "6H",
+                    "5H",
+                    "7K",
+                    "6G",
+                    "5I",
+                    "6F",
+                    "8K",
+                    "5J",
+                    "Black",
+                    "2B",
+                    "2C",
+                    "2D",
+                    "2E",
+                    "2F",
+                    "2G",
+                    "2H",
+                    "2I",
+                    "2J",
+                    "2K",
+                    "2L",
+                    "2M",
+                    "3B",
+                    "3C",
+                    "3D",
+                    "3E",
+                    "3F",
+                    "3G",
+                    "3H",
+                    "3I",
+                    "3J",
+                    "3K",
+                    "3L",
+                    "3M",
+                    "4B",
+                    "4C",
+                    "4D",
+                    "4E",
+                    "4F",
+                    "4G",
+                    "4H",
+                    "4I",
+                    "4J",
+                    "4K",
+                    "4L",
+                    "4M",
+                    "5B",
+                    "5C",
+                    "5D",
+                    "5K",
+                    "5L",
+                    "5M",
+                    "6B",
+                    "6C",
+                    "6D",
+                    "6L",
+                    "6M",
+                    "7B",
+                    "7C",
+                    "7D",
+                    "7E",
+                    "7F",
+                    "7G",
+                    "7H",
+                    "7I",
+                    "7J",
+                    "7L",
+                    "7M",
+                    "8B",
+                    "8C",
+                    "8D",
+                    "8E",
+                    "8F",
+                    "8G",
+                    "8H",
+                    "8I",
+                    "8J",
+                    "8L",
+                    "8M",
+                    "9B",
+                    "9C",
+                    "9D",
+                    "9E",
+                    "9F",
+                    "9G",
+                    "9H",
+                    "9I",
+                    "9J",
+                    "9K",
+                    "9L",
+                    "9M" };
 
 /////////////////////////////////////////////////////////////////////////////
 // CMainView
@@ -771,7 +771,10 @@ void CMainView::InitGrid()
 	}
 	else if ( m_displayMode == 11)
 	{
-		size = (GetConfig()->m_CCMode == CCSG?96:24);		
+        if (GetConfig()->m_CCMode == USER)
+            size = (GetConfig()->GetCColorsSize());		
+        else
+            size = (GetConfig()->m_CCMode == CCSG?96:24);
 		bHasLuxValues = GetDocument()->GetMeasure()->GetCC24Sat(0).HasLuxValue ();
 	}
 	else if ( m_displayMode == 12 )
@@ -928,6 +931,12 @@ void CMainView::InitGrid()
                  {
                     Item.strText.SetString(PatName[i]);
                  } 
+                 else if (GetConfig()->m_CCMode == USER)
+                 {
+                     char aBuf[10];
+                     sprintf(aBuf,"Color %d",i+1);
+                     Item.strText.SetString(aBuf);
+                 }
                  else {
 				 switch ( i )
 				 {
@@ -1132,10 +1141,12 @@ void CMainView::InitGrid()
             case 11:
                 CColor s_clr;
                 ColorRGB r_clr;
+                double inten;
                 s_clr=GetDocument()->GetMeasure()->GetRefCC24Sat(i);     
                 r_clr=s_clr.GetRGBValue(GetColorReference());
+                inten = GetConfig()->m_CCMode==USER?s_clr.GetLuminance():GetColorReference().GetCC24ReferenceLuma(i,GetConfig()->m_CCMode);
     			m_pGrayScaleGrid->SetItemBkColour ( i2, i+1, RGB(r_clr[0]*255.,r_clr[1]*255.,r_clr[2]*255.) );
-                if (GetColorReference().GetCC24ReferenceLuma(i,GetConfig()->m_CCMode) < 0.4)
+                if (inten < 0.4)
                     m_pGrayScaleGrid->SetItemFgColour(i2, i+1, RGB(240,240,240));
                 else
                     m_pGrayScaleGrid->SetItemFgColour(i2, i+1, RGB(10,10,10));
@@ -1660,7 +1671,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				{
 					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight ) );
 					dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), 	GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
-                    if (GetConfig()->m_CCMode == CCSG)
+                    if (GetConfig()->m_CCMode == CCSG || GetConfig()->m_CCMode == USER )
                         dEvector.push_back(dE);
                     dEavg+=dE;
                     if (dE > dEmax)
@@ -1782,7 +1793,11 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
                         RefLuma [nCol - 1] = satcolor.GetLuminance();
 						break;
 					case 11:
-                        double rLuma=GetColorReference().GetCC24ReferenceLuma (nCol-1, GetConfig()->m_CCMode );
+                        double rLuma;
+                        if (GetConfig()->m_CCMode == USER)
+                            rLuma=aReference.GetLuminance();
+                        else
+                            rLuma=GetColorReference().GetCC24ReferenceLuma (nCol-1, GetConfig()->m_CCMode );
                         CColor White = GetDocument() -> GetMeasure () -> GetGray ( GetDocument()->GetMeasure()->GetGrayScaleSize() - 1 );
 	                    CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
                         //luminance is based on 2.2 gamma so we need to scale here actual reference gamma
@@ -1801,8 +1816,8 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						WhiteMCD = GetDocument()->GetMeasure()->GetOnOffWhite();
 				
 					CColor white = ( m_displayMode!=11 ?  GetDocument()->GetMeasure()->GetOnOffWhite() : (GetConfig()->m_CCMode==GCD)? GetDocument()->GetMeasure()->GetCC24Sat(5):(GetConfig()->m_CCMode==CCSG)? GetDocument()->GetMeasure()->GetCC24Sat(0):WhiteMCD );
-				
-                if ( nCol2 < ( (m_displayMode > 11 || m_displayMode < 5) ? 7 : (GetConfig()->m_CCMode==CCSG?97:25)) && white.isValid() && white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) > 0.0001 )
+				//(GetConfig()->m_CCMode==CCSG?97:25))
+                if ( nCol2 < ( (m_displayMode > 11 || m_displayMode < 5) ? 7 : 1001) && white.isValid() && white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) > 0.0001 )
     		    {
 					double d = aMeasure.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) / white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter);
 
@@ -2151,7 +2166,10 @@ void CMainView::UpdateGrid()
 				 }
 				 else
 				 {
-                     nCount = GetConfig()->m_CCMode==CCSG?96:24;
+                     if (GetConfig()->m_CCMode == USER)
+                         nCount = GetConfig()->GetCColorsSize();
+                     else
+                        nCount = GetConfig()->m_CCMode==CCSG?96:24;
 				 }
 				 
 				 if ( nCount )
@@ -2203,6 +2221,7 @@ void CMainView::UpdateGrid()
 			else
 				nRows ++;
 		}
+        dEvector.clear();
 
 		for( int j = 0 ; j < nCount ; j ++ )
 		{
@@ -2440,8 +2459,9 @@ void CMainView::UpdateGrid()
 					 if ( GetDocument() -> GetMeasure () -> GetGray ( i - 1 ).isValid() )
 						 YWhiteMCD = GetDocument() -> GetMeasure () -> GetGray ( i - 1 ) [ 1 ];
 					 else
-						 YWhiteMCD = YWhiteOnOff;
+					 YWhiteMCD = YWhiteOnOff;
 					 YWhite = (GetConfig()->m_CCMode==GCD?GetDocument()->GetMeasure()->GetCC24Sat(5).GetY():(GetConfig()->m_CCMode==CCSG)? GetDocument()->GetMeasure()->GetCC24Sat(0).GetY():YWhiteMCD);
+                     if (GetConfig()->m_CCMode==GCD) YWhiteMCD = YWhiteOnOff;
 
     				 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
 					 if ( pDataRef )
@@ -2748,18 +2768,25 @@ void CMainView::UpdateGrid()
 				CString dEform;
 				float a = 2.5, b = 5, dE10 = 0;
 				Tmp.LoadString ( IDS_DELTAEAVERAGE );
-                Msg += (GetConfig()->m_CCMode == GCD?" - GCD ":(GetConfig()->m_CCMode==MCD?" - MCD ":(GetConfig()->m_CCMode==SKIN?" - SKIN ":(GetConfig()->m_CCMode==CCSG?" - ColorChecker SG ":" - AXIS "))));
+                Msg += (GetConfig()->m_CCMode == GCD?" - GCD ":(GetConfig()->m_CCMode==MCD?" - MCD ":(GetConfig()->m_CCMode==SKIN?" - SKIN ":(GetConfig()->m_CCMode==CCSG?" - ColorChecker SG ":(GetConfig()->m_CCMode==USER?" - ColorChecker Custom ":" - AXIS ")))));
 				Msg += " ( ";
 				Msg += Tmp;
-                if (GetConfig()->m_CCMode == CCSG)
+                if (GetConfig()->m_CCMode == CCSG || GetConfig()->m_CCMode == USER)
                 {
                     vector<double>::iterator max;
                     max = max_element( dEvector.begin(), dEvector.end() );
                     double maxv = *max ;
                     int pos = distance(dEvector.begin(), max);
                     std::sort ( dEvector.begin(), dEvector.end() );
-                    for ( UINT i = dEvector.size() - 10; i < dEvector.size(); i++ ) dE10+=(float)dEvector[i] / 10;
-    				sprintf ( szBuf, ": %.2f, max: %.2f[%s], worst 10%%: %.2f )", dEavg / dEcnt, maxv, PatName[pos], dE10 );
+                    for ( unsigned i = (int) (dEvector.size() - (dEvector.size() / 10 + 1)); i < dEvector.size(); i++ ) dE10+=(float)dEvector[i];
+                    dE10 = dE10 / (int) ( (dEvector.size() / 10 + 1) );
+                    char aBuf[10];
+                    sprintf(aBuf,"Color %d",pos+1);
+
+                    if (GetConfig()->m_CCMode == CCSG)
+        				sprintf ( szBuf, ": %.2f, max: %.2f[%s], worst 10%%: %.2f )", dEavg / dEcnt, maxv, PatName[pos], dE10 );
+                    else
+        				sprintf ( szBuf, ": %.2f, max: %.2f[%s], worst 10%%: %.2f )", dEavg / dEcnt, maxv, aBuf, dE10 );
                     dEvector.clear();
                 }
                 else
@@ -3894,8 +3921,16 @@ void CMainView::OnDeleteGrayscale()
 				 break;
 
 			case 11:
-				for(j=0;j<24 ;j++)
-					GetDocument()->GetMeasure()->SetCC24Sat(j,noDataColor);
+                if (GetConfig()->m_CCMode == USER)
+                {
+    				for(j=0;j<GetConfig()->GetCColorsSize() ;j++)
+	    				GetDocument()->GetMeasure()->SetCC24Sat(j,noDataColor);
+                }
+                else
+                {
+                    for(j=0;j< (GetConfig()->m_CCMode == CCSG?96:24) ;j++)
+	    				GetDocument()->GetMeasure()->SetCC24Sat(j,noDataColor);
+                }
 				 lHint = UPD_CC24SAT;
 				 break;
 

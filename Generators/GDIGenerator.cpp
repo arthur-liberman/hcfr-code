@@ -360,7 +360,7 @@ BOOL CGDIGenerator::DisplayRGBColormadVR( const ColorRGBDisplay& clr )
       rT = (int) (r * (whiteLevel - blackLevel) + blackLevel + 0.5);
       gT = (int) (g * (whiteLevel - blackLevel) + blackLevel + 0.5);
       bT = (int) (b * (whiteLevel - blackLevel) + blackLevel + 0.5);
-      char aBuf[64];
+      char aBuf[128];
       if (m_madVR_3d)
     	  sprintf(aBuf,"HCFR is measuring display, please wait...%d:%d:%d[3dlut disabled]",rT,gT,bT);
       else

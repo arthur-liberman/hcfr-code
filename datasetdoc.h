@@ -136,7 +136,6 @@ public:
 	BOOL ComputeAdjustmentMatrix();
 
 	void SetSelectedColor ( const CColor & clr )	{ m_SelectedColor = clr; }
-
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CDataSetDoc)

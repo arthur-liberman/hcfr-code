@@ -34,6 +34,7 @@
 #include <math.h>
 #include <assert.h>
 #include <stdexcept>
+#include <sstream>
 
 // critical section to be used in this file to
 // ensure config matrices don't get changed mid-calculation
@@ -181,7 +182,6 @@ ColorxyY primariesCC6[3] ={	ColorxyY(0.3787, 0.3564), //some color check referen
 ColorxyY primariesCC6a[3] ={	ColorxyY(0.3804, 0.3565), //some color check references, secondardies will add 3 more, MCD values
 								ColorxyY(0.2493, 0.2667),
 								ColorxyY(0.3379, 0.4327)};
-
 
 /* The 75% saturation 75% amplitude and color checker xy locations are calculated 
 assuming gamma=2.22, starting with the follow triplets from the GCD disk, and then used as pseudo-primaries/secondaries
@@ -1356,12 +1356,8 @@ bool CColor::HasLuxValue () const
 {
 	return ( m_pLuxValue != NULL );
 }
-
-double CColor::GetLuxValue () const
-{
-	return ( m_pLuxValue ? (*m_pLuxValue) : 0.0 );
-}
-
+double CColor::GetLuxValue () const{	return ( m_pLuxValue ? (*m_pLuxValue) : 0.0 );
+}
 double CColor::GetLuxOrLumaValue (const int luminanceCurveMode) const
 {
 	// Return Luxmeter value when option authorize it and luxmeter value exists.
@@ -1603,7 +1599,7 @@ void GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
             GenColors [ 21 ] = ColorRGBDisplay( 93.15, 78.08, 12.79 );
             GenColors [ 22 ] = ColorRGBDisplay( 73.06, 32.88, 57.08);
             GenColors [ 23 ] = ColorRGBDisplay( 0, 52.05, 63.93);
-		break;
+        break;
 		}
 	case MCD:
 		{
@@ -1789,9 +1785,35 @@ void GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
             GenColors [ 93 ] = ColorRGBDisplay(	62.1004566	,	58.9041096	,	10.0456621	);
             GenColors [ 94 ] = ColorRGBDisplay(	64.8401826	,	73.0593607	,	0	);
             GenColors [ 95 ] = ColorRGBDisplay(	30.1369863	,	16.8949772	,	10.0456621	);
+            break;
         }
     case USER:
-        {
+        {//read in user defined colors
+            ifstream colorFile("colors.csv");
+            std::string line;
+            int cnt = 0;
+            int n1,n2,n3;
+            if (!colorFile) 
+            {
+				bool bOk = FALSE;
+                CString Msg, Title;
+				Msg.Format ( "User file colors.csv not found." );
+				Title.LoadString ( 41476 );
+				MessageBox(NULL,Msg,Title,MB_ICONERROR | MB_OK);
+                break;
+            }
+            while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
+            {
+                std::istringstream s(line);
+                std::string field;
+                s >> n1;
+                getline(s, field,',');
+                s >> n2;
+                getline(s, field,',');
+                s >> n3;
+                GenColors [ cnt ] = ColorRGBDisplay(	(n1 / 255.) * 100	, (	n2 / 255.) * 100	,	( n3 /255. ) * 100.	);
+                cnt++;
+            }
             break;
         }
 
