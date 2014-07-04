@@ -1789,7 +1789,10 @@ void GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
         }
     case USER:
         {//read in user defined colors
-            ifstream colorFile("colors.csv");
+            char m_ApplicationPath [MAX_PATH];
+            GetModuleFileName ( NULL, m_ApplicationPath, sizeof ( m_ApplicationPath ) );
+            CString strPath = m_ApplicationPath;
+            ifstream colorFile(strPath+"colors.csv");
             std::string line;
             int cnt = 0;
             int n1,n2,n3;

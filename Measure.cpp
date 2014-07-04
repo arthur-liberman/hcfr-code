@@ -5573,7 +5573,9 @@ CColor CMeasure::GetRefCC24Sat(int i) const
         //Custom color checker
 		case USER:
 		{
-            ifstream colorFile("colors.csv");
+            CString strPath;
+            strPath = GetConfig () -> m_ApplicationPath;
+            ifstream colorFile(strPath+"colors.csv");
             std::string line;
             int cnt = 0;
             int n1,n2,n3;

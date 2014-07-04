@@ -796,7 +796,9 @@ int CColorHCFRConfig::GetCColorsSize()
     int cnt = 24;
     if (GetConfig()->m_CCMode == USER)
     {
-            ifstream colorFile("colors.csv");
+        CString strPath;
+            strPath = GetConfig () -> m_ApplicationPath;
+            ifstream colorFile(strPath+"colors.csv");
             std::string line;
             int n1=0;
             if (colorFile) 
