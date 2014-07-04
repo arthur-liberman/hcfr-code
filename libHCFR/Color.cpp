@@ -1356,8 +1356,13 @@ bool CColor::HasLuxValue () const
 {
 	return ( m_pLuxValue != NULL );
 }
-double CColor::GetLuxValue () const{	return ( m_pLuxValue ? (*m_pLuxValue) : 0.0 );
-}
+
+double CColor::GetLuxValue () const
+{
+	return ( m_pLuxValue ? (*m_pLuxValue) : 0.0 );
+
+}
+
 double CColor::GetLuxOrLumaValue (const int luminanceCurveMode) const
 {
 	// Return Luxmeter value when option authorize it and luxmeter value exists.
@@ -1563,13 +1568,15 @@ void CSpectrum::Serialize(CArchive& archive)
 	}
 }
 #endif
-void GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
+
+bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 {
 	//six cases, one for GCD sequence, one for Mascior's disk (Chromapure based), and four different generator only cases
 	//GCD
 	//MCD
     //CCGS 96 CalMAN ColorChecker SG patterns
     //USER user defined
+	bool bOk = true;
 	switch (aCCMode)
 	{
 	case GCD:
@@ -1790,7 +1797,10 @@ void GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
     case USER:
         {//read in user defined colors
             char m_ApplicationPath [MAX_PATH];
+			LPSTR lpStr;
             GetModuleFileName ( NULL, m_ApplicationPath, sizeof ( m_ApplicationPath ) );
+			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
+			lpStr [ 1 ] = '\0';
             CString strPath = m_ApplicationPath;
             ifstream colorFile(strPath+"colors.csv");
             std::string line;
@@ -1798,13 +1808,10 @@ void GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
             int n1,n2,n3;
             if (!colorFile) 
             {
-				bool bOk = FALSE;
-                CString Msg, Title;
-				Msg.Format ( "User file colors.csv not found." );
-				Title.LoadString ( 41476 );
-				MessageBox(NULL,Msg,Title,MB_ICONERROR | MB_OK);
-                break;
-            }
+				bOk = false;
+	        }
+			else
+			{
             while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
             {
                 std::istringstream s(line);
@@ -1817,13 +1824,13 @@ void GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
                 GenColors [ cnt ] = ColorRGBDisplay(	(n1 / 255.) * 100	, (	n2 / 255.) * 100	,	( n3 /255. ) * 100.	);
                 cnt++;
             }
+			}
             break;
         }
 
 	}
-
+return bOk;
 }
-
 
 void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int nSteps, bool bRed, bool bGreen, bool bBlue )
 {
@@ -2011,4 +2018,15 @@ double GrayLevelToGrayProp ( double Level, bool m_bUseRoundDown)
 
 double GetBT1886 ( double valx, CColor White, CColor Black, double g_rel)
 {
-    double maxL = White.GetY();    double minL = Black.GetY();    double yh =  maxL * pow(0.5, g_rel);    double exp0 = g_rel==0.0?2.4:g_rel;    double a = pow ( ( pow (maxL,1.0/exp0 ) - pow ( minL,1.0/exp0 ) ),exp0 );    double b = ( pow ( minL,1.0/exp0 ) ) / ( pow (maxL,1.0/exp0 ) - pow ( minL,1.0/exp0 ) );    if (g_rel != 0.)        exp0 = (log(yh)-log(a))/log(0.5+b);    return ( a * pow ( (valx + b)<0?0:(valx+b), exp0 ) ) / maxL;}
+    double maxL = White.GetY();
+    double minL = Black.GetY();
+    double yh =  maxL * pow(0.5, g_rel);
+    double exp0 = g_rel==0.0?2.4:g_rel;
+
+    double a = pow ( ( pow (maxL,1.0/exp0 ) - pow ( minL,1.0/exp0 ) ),exp0 );
+    double b = ( pow ( minL,1.0/exp0 ) ) / ( pow (maxL,1.0/exp0 ) - pow ( minL,1.0/exp0 ) );
+    if (g_rel != 0.)
+        exp0 = (log(yh)-log(a))/log(0.5+b);
+
+    return ( a * pow ( (valx + b)<0?0:(valx+b), exp0 ) ) / maxL;
+}

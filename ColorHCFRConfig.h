@@ -127,6 +127,8 @@ public:
 	void ApplySettings(BOOL isStartupApply=FALSE);
 	void InitDefaults();
     int GetCColorsSize();
+    void GetCColorsT(int index, int *r, int *g, int *b);
+    void GetCColors();
 
 	BOOL IsProfileEntryDefined(LPCTSTR lpszSection,LPCTSTR lpszEntry);
 

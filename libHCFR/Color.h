@@ -190,7 +190,7 @@ public:
     bool isValid() const;
 
 	double GetLuminance() const;
-    double GetDeltaE(double YWhite, const CColor & refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form, bool isGS, int gw_Weight ) const;
+	double GetDeltaE(double YWhite, const CColor & refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form, bool isGS, int gw_Weight ) const;
 	double GetDeltaxy(const CColor & refColor, const CColorReference& colorReference) const;
     double GetDeltaE(const CColor & refColor) const;
 	ColorXYZ GetXYZValue() const;
@@ -654,7 +654,7 @@ extern CColor noDataColor;
 
 // Tool functions
 extern void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int nSteps, bool bRed, bool bGreen, bool bBlue);
-extern void GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode );
+extern bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode );
 extern Matrix ComputeConversionMatrix(const ColorXYZ measures[3], const ColorXYZ references[3], const ColorXYZ & WhiteTest, const ColorXYZ & WhiteRef, bool	bUseOnlyPrimaries);
 double ArrayIndexToGrayLevel ( int nCol, int nSize, bool m_bUseRoundDown);
 double GrayLevelToGrayProp ( double Level, bool m_bUseRoundDown );

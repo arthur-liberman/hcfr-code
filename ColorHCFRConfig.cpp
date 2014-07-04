@@ -371,7 +371,7 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_dE_form = GetProfileInt("Advanced","dE_form",5);
 	m_dE_gray = GetProfileInt("Advanced","dE_gray",2);
 	gw_Weight = GetProfileInt("Advanced","gw_Weight",0);
-
+	GetCColors();
 	return TRUE;
 }
 
@@ -679,7 +679,7 @@ void CColorHCFRConfig::ApplySettings(BOOL isStartupApply)
 			CDocument* pDoc;
 			while ((pDoc=docEnumerator.Next())!=NULL) 
 			   pDoc->UpdateAllViews(NULL, UPD_GENERALREFERENCES);
-
+			GetCColors(); //check for new colors 
 			AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
 	    }
 	}
@@ -791,25 +791,56 @@ void CColorHCFRConfig::EnsurePathExists ( CString strPath )
 	CreateDirectory ( strPath, NULL );
 }
 
+std::vector<int> cTargetR(0);
+std::vector<int> cTargetG(0);
+std::vector<int> cTargetB(0);
+int numCC = 0;
+
+void CColorHCFRConfig::GetCColors() 
+{
+            CString strPath = m_ApplicationPath;
+            ifstream colorFile(strPath+"colors.csv");
+            std::string line;
+            int cnt = 0;
+            int n1,n2,n3;
+			cTargetR.clear();
+			cTargetG.clear();
+			cTargetB.clear();
+            if (colorFile) 
+			{
+	            while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
+		        {
+			        std::istringstream s(line);
+				    std::string field;
+					s >> n1;
+					getline(s, field,',');
+					s >> n2;
+					getline(s, field,',');
+					s >> n3;
+	                cnt++;
+					cTargetR.push_back(n1);
+					cTargetG.push_back(n2);
+					cTargetB.push_back(n3);
+		        }
+				numCC = cnt;
+			}
+}
+
+void CColorHCFRConfig::GetCColorsT(int index, int *r, int *g, int *b) 
+{
+		     *r = cTargetR[index];
+		     *g = cTargetG[index];
+		     *b = cTargetB[index];
+}
+
 int CColorHCFRConfig::GetCColorsSize() 
 {
     int cnt = 24;
     if (GetConfig()->m_CCMode == USER)
-    {
-        CString strPath;
-            strPath = GetConfig () -> m_ApplicationPath;
-            ifstream colorFile(strPath+"colors.csv");
-            std::string line;
-            int n1=0;
-            if (colorFile) 
-                while(std::getline(colorFile, line) && n1 < 1000 ) n1++;//currently limited to 1000 colors
-            cnt = n1;
-    }
+		cnt = numCC;
     else
     {
         if (GetConfig()->m_CCMode == CCSG) cnt = 96;
     }
-            return cnt;
+    return cnt;
 }
-
-

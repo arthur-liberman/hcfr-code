@@ -58,7 +58,8 @@ CMeasure::CMeasure()
 	m_yellowSatMeasureArray.SetSize(5);
 	m_cyanSatMeasureArray.SetSize(5);
 	m_magentaSatMeasureArray.SetSize(5);
-    m_cc24SatMeasureArray.SetSize(1000);
+    m_cc24SatMeasureArray.SetSize(1000);
+
 	m_primariesArray[0]=m_primariesArray[1]=m_primariesArray[2]=noDataColor;
 	m_secondariesArray[0]=m_secondariesArray[1]=m_secondariesArray[2]=noDataColor;
 
@@ -2506,7 +2507,15 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
 		return FALSE;
 	}
 
-    GenerateCC24Colors (GenColors, GetConfig()->m_CCMode);
+    if (!GenerateCC24Colors (GenColors, GetConfig()->m_CCMode))
+	{		
+		Title.LoadString ( IDS_ERROR );
+		strMsg.LoadString ( IDS_ERRINITGENERATOR );
+		GetColorApp()->InMeasureMessageBox(strMsg,Title,MB_ICONERROR | MB_OK);
+		pGenerator->Release();
+		return FALSE;
+	}
+
 	for(int i=0;i<size;i++)
 	{
 		if( pGenerator->DisplayRGBColor(GenColors[i], nPattern ,i,!bRetry))
@@ -2722,7 +2731,15 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 3 ], size, true, true, false );	// Yellow
 	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 4 ], size, false, true, true );	// Cyan
 	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 5 ], size, true, false, true );	// Magenta
-    GenerateCC24Colors (& GenColors [ size * 6 ], GetConfig()->m_CCMode); //color checker
+
+	if (!GenerateCC24Colors (& GenColors [ size * 6 ], GetConfig()->m_CCMode)) //color checker
+	{		
+		Title.LoadString ( IDS_ERROR );
+		strMsg.LoadString ( IDS_ERRINITGENERATOR );
+		GetColorApp()->InMeasureMessageBox(strMsg,Title,MB_ICONERROR | MB_OK);
+		pGenerator->Release();
+		return FALSE;
+	}
 
 	for ( j = 0 ; j < ( bPrimaryOnly ? 3 : 7 ) ; j ++ )
 	{
@@ -5573,27 +5590,9 @@ CColor CMeasure::GetRefCC24Sat(int i) const
         //Custom color checker
 		case USER:
 		{
-            CString strPath;
-            strPath = GetConfig () -> m_ApplicationPath;
-            ifstream colorFile(strPath+"colors.csv");
-            std::string line;
-            int cnt = 0;
-            int n1,n2,n3;
-            if (!colorFile) 
-            {
-                RGB [ i ] = ColorRGB(noDataColor.GetX(),noDataColor.GetY(),noDataColor.GetZ());
-                break;
-            }
-            while(std::getline(colorFile, line) && cnt < i ) cnt++;
-            std::istringstream s(line);
-            std::string field;
-            s >> n1;
-            getline(s, field,',');
-            s >> n2;
-            getline(s, field, ',');
-            s >> n3;
-            RGB [ i ] = ColorRGB(	(n1 / 255.)	, (	n2 / 255.) , ( n3 /255. ) );
-            break;
+			int r=0, g=0, b=0;
+			GetConfig()->GetCColorsT(i, &r, &g, &b);
+			RGB [ i ] = ColorRGB(	(r / 255.)	, (	g / 255.) , ( b /255. ) );
         }
     } 
     CColor White = CMeasure::GetGray ( CMeasure::GetGrayScaleSize() - 1 );
