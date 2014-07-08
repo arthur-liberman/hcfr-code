@@ -652,12 +652,29 @@ void CColorHCFRConfig::ApplySettings(BOOL isStartupApply)
     {
         delete GetColorApp()->m_pColorReference;
     }
-    ColorxyY whitecolor=ColorxyY(m_manualWhitex,m_manualWhitey);
-    ColorxyY redcolor=ColorxyY(m_manualRedx,m_manualRedy);
-    ColorxyY greencolor=ColorxyY(m_manualGreenx,m_manualGreeny);
-    ColorxyY bluecolor=ColorxyY(m_manualBluex,m_manualBluey);
 
-    GetColorApp()->m_pColorReference = new CColorReference(m_colorStandard, m_whiteTarget,-1, "modified", ColorXYZ(whitecolor), redcolor, greencolor, bluecolor);
+	//Custom White only
+	if (m_whiteTarget == DCUST && m_colorStandard != CUSTOM)
+	{
+		ColorxyY whitecolor=ColorxyY(m_manualWhitex,m_manualWhitey);
+	    GetColorApp()->m_pColorReference = new CColorReference(m_colorStandard, m_whiteTarget,-1, "modified", ColorXYZ(whitecolor));
+	}
+	else if (m_colorStandard == CUSTOM && m_whiteTarget != DCUST) 	//Custom Color only
+	{
+	    ColorxyY redcolor=ColorxyY(m_manualRedx,m_manualRedy);
+		ColorxyY greencolor=ColorxyY(m_manualGreenx,m_manualGreeny);
+		ColorxyY bluecolor=ColorxyY(m_manualBluex,m_manualBluey);
+	    GetColorApp()->m_pColorReference = new CColorReference(m_colorStandard, m_whiteTarget,-1, "modified", 	GetColorApp()->m_pColorReference->GetWhite(), redcolor, greencolor, bluecolor);
+	} 
+	else if (m_colorStandard == CUSTOM && m_whiteTarget == DCUST)	//Both
+	{
+		ColorxyY whitecolor=ColorxyY(m_manualWhitex,m_manualWhitey);
+	    ColorxyY redcolor=ColorxyY(m_manualRedx,m_manualRedy);
+		ColorxyY greencolor=ColorxyY(m_manualGreenx,m_manualGreeny);
+		ColorxyY bluecolor=ColorxyY(m_manualBluex,m_manualBluey);
+	    GetColorApp()->m_pColorReference = new CColorReference(m_colorStandard, m_whiteTarget,-1, "modified", ColorXYZ(whitecolor), redcolor, greencolor, bluecolor);
+	} else //normal
+	    GetColorApp()->m_pColorReference = new CColorReference(m_colorStandard, m_whiteTarget,-1);
 	
 	if ( ! isStartupApply )
 	{

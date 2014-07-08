@@ -532,7 +532,8 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
         double r1,g1,b1;
 		r[i]=rgb[i][0];
 		g[i]=rgb[i][1];
-		b[i]=rgb[i][2];        if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
+		b[i]=rgb[i][2];
+        if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
            gamma = log(GetBT1886(pow(aColor[i].GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel))/log(pow(aColor[i].GetY(),1/2.22));
         r1=(r[i]<=0||r[i]>=1)?min(max(r[i],0),1):pow(pow(r[i],1./2.22),gamma);
         g1=(g[i]<=0||g[i]>=1)?min(max(g[i],0),1):pow(pow(g[i],1./2.22),gamma);

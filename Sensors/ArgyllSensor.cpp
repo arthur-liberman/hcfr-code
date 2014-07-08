@@ -84,6 +84,7 @@ CArgyllSensor::CArgyllSensor(ArgyllMeterWrapper* meter) :
     m_intTime = GetConfig()->GetProfileInt(meterName.c_str(), "IntTime", 1);
     m_debugMode = GetConfig()->GetProfileInt(meterName.c_str(), "DebugMode", 0);
     m_HiRes = GetConfig()->GetProfileInt(meterName.c_str(), "HiRes", 0);
+
     m_Adapt = GetConfig()->GetProfileInt(meterName.c_str(), "Adapt", 0);
     
     m_ArgyllSensorPropertiesPage.m_pSensor = this;

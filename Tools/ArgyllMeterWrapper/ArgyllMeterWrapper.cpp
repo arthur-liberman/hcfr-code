@@ -190,7 +190,6 @@ ArgyllMeterWrapper::~ArgyllMeterWrapper()
 bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eReadingType readingType, CString SpectralType, bool debugmode, double int_time, bool refresh)
 {
    inst_code instCode;
-   m_Adapt = false;
    if (debugmode)
     {
         m_meter->icom->log->verb = 5;
