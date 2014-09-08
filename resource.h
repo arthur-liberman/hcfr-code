@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by CHCFR21_FRANCAIS.rc
+// Used by CHCFR21_ENGLISH.rc
 //
 #define IDS_STRING_VERSION              1
 #define IDS_STRING_VERSION_WEB          2
@@ -720,6 +720,7 @@
 #define IDC_RED_Y                       1284
 #define IDC_GREEN_X                     1285
 #define IDC_GREEN_Y                     1286
+#define IDC_CUSTOM1                     1286
 #define IDC_BLUE_X                      1287
 #define IDC_BLUE_Y                      1288
 #define IDC_COLORTEMPHISTO_GRAPH        11003
@@ -752,8 +753,8 @@
 #define IDM_CONFIGURE_SENSOR            32818
 #define IDM_CONFIGURE_GENERATOR         32819
 #define IDM_CHANGE_SENSOR               32820
-#define IDM_CONFIGURE_SENSOR2           32820
-#define IDM_CHANGE_GENERATOR            32821
+#define IDM_CONFIGURE_SENSOR2           32821
+#define IDM_CHANGE_GENERATOR            32822
 #define ID_AFFICHAGE_BARREVUES          32838
 #define ID_VIEW_VIEW_BAR                32839
 #define IDM_APPEARANCE_CONFIG           32840
@@ -1465,7 +1466,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        382
 #define _APS_NEXT_COMMAND_VALUE         33046
-#define _APS_NEXT_CONTROL_VALUE         1283
+#define _APS_NEXT_CONTROL_VALUE         1287
 #define _APS_NEXT_SYMED_VALUE           143
 #endif
 #endif
