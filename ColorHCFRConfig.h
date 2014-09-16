@@ -71,6 +71,7 @@ public:
 	double m_GammaRef;
 	double m_GammaAvg;
 	double m_GammaRel;
+	double m_Split;
 	BOOL m_useMeasuredGamma;
 	double m_manualGOffset;
 	double m_manualWhitex;

@@ -157,7 +157,7 @@ void CNearWhiteGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			double val=pow(valx,GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef) );
 
             if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
-                val = GetBT1886(valx, White, Black, GetConfig()->m_GammaRel);
+                val = GetBT1886(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split);
 /*
 			if ( GetConfig()->m_bUseReferenceGamma )
 			{

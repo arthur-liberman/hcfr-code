@@ -76,7 +76,7 @@ CRGBLevelWnd::~CRGBLevelWnd()
 {
 }
 
-void CRGBLevelWnd::Refresh(int minCol)
+void CRGBLevelWnd::Refresh(int minCol, int m_displayMode)
 {
     
 	BOOL bWasLumaMode = m_bLumaMode;
@@ -232,7 +232,7 @@ void CRGBLevelWnd::Refresh(int minCol)
                         if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
 			            {
                             double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
-                            valy = GetBT1886(valx, White, Black, GetConfig()->m_GammaRel);
+							valy = GetBT1886(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split);
 			            }
 			            else
 			            {

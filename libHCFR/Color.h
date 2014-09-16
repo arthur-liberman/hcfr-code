@@ -658,6 +658,6 @@ extern bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode );
 extern Matrix ComputeConversionMatrix(const ColorXYZ measures[3], const ColorXYZ references[3], const ColorXYZ & WhiteTest, const ColorXYZ & WhiteRef, bool	bUseOnlyPrimaries);
 double ArrayIndexToGrayLevel ( int nCol, int nSize, bool m_bUseRoundDown);
 double GrayLevelToGrayProp ( double Level, bool m_bUseRoundDown );
-double GetBT1886 ( double x, CColor White, CColor Black, double g_rel );
+double GetBT1886 ( double x, CColor White, CColor Black, double g_rel, double split );
 
 #endif // !defined(COLOR_H_INCLUDED_)

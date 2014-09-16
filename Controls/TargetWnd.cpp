@@ -69,7 +69,22 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 		ColorXYZ centerXYZ = GetColorReference().GetWhite();
 		// check for grayscale window when selection valid
 		//RGB specified 0-255 will get scaled in fullscreenwindow if needed
-        if (g_pDataDocRunningThread && m_DisplayMode == 0 && minCol <= 0)
+		/*
+		if (m_DisplayMode == 11)
+		{
+			char szMsg[100];
+			ColorRGB  c_RGB = ColorRGB(.5,.5,.5);
+//			centerXYZ = m_pDocument->GetMeasure()->GetRefCC24Sat(minCol).GetXYZValue();
+			c_RGB = m_pDocument->GetMeasure()->GetRefCC24Sat(minCol).GetRGBValue(GetColorReference());
+			c_RGB = m_pRefColor->GetRGBValue(GetColorReference());
+				nR = c_RGB[0] * 255. + 0.5;
+				nG = c_RGB[1] * 255. + 0.5;
+				nB = c_RGB[2] * 255. + 0.5;
+			sprintf ( szMsg, "%d:%d:%d:%d:%d", nR, nG, nB, m_DisplayMode, minCol );
+			MessageBox(NULL,szMsg,IDOK );
+//				m_clr = RGB(nR,nG,nB);
+		} */
+		if (g_pDataDocRunningThread && m_DisplayMode == 0 && minCol <= 0)
         {
             // maintain current target
         }

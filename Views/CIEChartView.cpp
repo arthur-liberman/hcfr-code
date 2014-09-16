@@ -534,7 +534,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 		g[i]=rgb[i][1];
 		b[i]=rgb[i][2];
         if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
-           gamma = log(GetBT1886(pow(aColor[i].GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel))/log(pow(aColor[i].GetY(),1/2.22));
+           gamma = log(GetBT1886(pow(aColor[i].GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(aColor[i].GetY(),1/2.22));
         r1=(r[i]<=0||r[i]>=1)?min(max(r[i],0),1):pow(pow(r[i],1./2.22),gamma);
         g1=(g[i]<=0||g[i]>=1)?min(max(g[i],0),1):pow(pow(g[i],1./2.22),gamma);
         b1=(b[i]<=0||b[i]>=1)?min(max(b[i],0),1):pow(pow(b[i],1./2.22),gamma);
@@ -882,7 +882,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
                 if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
 			    {
 				   double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
-                   valy = GetBT1886(valx, White, Black, GetConfig()->m_GammaRel);
+                   valy = GetBT1886(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split);
 			    }
 			    else
 			    {
@@ -2133,9 +2133,9 @@ void CCIEChartView::UpdateTestColor ( CPoint point )
         double r=RGBColor[0],g=RGBColor[1],b=RGBColor[2];
         if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid()) 
         {
-    		r = (r<=0||r>=1)?min(max(r,0),1):pow(r,log(GetBT1886(r, White, Black,GetConfig()->m_GammaRel))/log(r));
-	    	g = (g<=0||g>=1)?min(max(g,0),1):pow(g,log(GetBT1886(g, White, Black,GetConfig()->m_GammaRel))/log(g));
-		    b = (b<=0||b>=1)?min(max(b,0),1):pow(b,log(GetBT1886(b, White, Black,GetConfig()->m_GammaRel))/log(b));
+    		r = (r<=0||r>=1)?min(max(r,0),1):pow(r,log(GetBT1886(r, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(r));
+	    	g = (g<=0||g>=1)?min(max(g,0),1):pow(g,log(GetBT1886(g, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(g));
+		    b = (b<=0||b>=1)?min(max(b,0),1):pow(b,log(GetBT1886(b, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(b));
         }
         else
         {

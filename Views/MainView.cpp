@@ -572,14 +572,14 @@ void CMainView::RefreshSelection()
 	Item.row = 0;
 	Item.col = 1;
 	
-	if (m_displayMode <= 4)
+	if (m_displayMode <= 11)
     {
         int size=GetDocument()->GetMeasure()->GetGrayScaleSize();
         if (m_displayMode == 3)
             size = 101;
         else if (m_displayMode == 4)
             size = -1 * GetDocument()->GetMeasure()->GetNearWhiteScaleSize();
-        m_RGBLevels.Refresh(m_pGrayScaleGrid -> GetSelectedCellRange().IsValid() && m_displayMode==0?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1);
+        m_RGBLevels.Refresh(m_pGrayScaleGrid -> GetSelectedCellRange().IsValid() && m_displayMode==0?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1, m_displayMode);
     	m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  (m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1), size, m_displayMode);
     }
 
@@ -1659,7 +1659,11 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						dEavg+=dE;
                         if (dE > dEmax)
                             dEmax = dE;
-						clr = (dE<2.5?RGB(175,255,175):(dE<5?RGB(255,255,175):RGB(255,175,175)));
+						if (GetConfig()->m_dE_form == 0)
+							clr = (dE<3.0?RGB(175,255,175):(dE<5?RGB(255,255,175):RGB(255,175,175)));
+						else
+							clr = (dE<2.0?RGB(175,255,175):(dE<3?RGB(255,255,175):RGB(255,175,175)));
+				//		clr = (dE<2.0?RGB(175,255,175):(dE<3.0?RGB(255,255,175):RGB(255,175,175)));
                         if (GetConfig()->doHighlight)
                             m_pGrayScaleGrid->SetItemBkColour(4, nCol, clr);
 						m_pGrayScaleGrid -> SetItemFont ( 4, nCol, m_pGrayScaleGrid->GetItemFont(0,0) ); // Set the font to bold
@@ -1676,10 +1680,10 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
                     dEavg+=dE;
                     if (dE > dEmax)
                         dEmax = dE;
-					if (GetConfig()->m_dE_form <= 1)
-						clr = (dE<3.5?RGB(175,255,175):(dE<7?RGB(255,255,175):RGB(255,175,175)));
+					if (GetConfig()->m_dE_form == 0)
+						clr = (dE<3.0?RGB(175,255,175):(dE<5?RGB(255,255,175):RGB(255,175,175)));
 					else
-						clr = (dE<2.5?RGB(175,255,175):(dE<5?RGB(255,255,175):RGB(255,175,175)));
+						clr = (dE<2.0?RGB(175,255,175):(dE<3?RGB(255,255,175):RGB(255,175,175)));
                     if (GetConfig()->doHighlight)
                         m_pGrayScaleGrid->SetItemBkColour(4, nCol, clr);
 					m_pGrayScaleGrid -> SetItemFont ( 4, nCol, m_pGrayScaleGrid->GetItemFont(0,0) ); // Set the font to bold
@@ -1739,7 +1743,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
                         if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
 						{
 							valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
-                            valy = GetBT1886(valx,White,Black,GetConfig()->m_GammaRel) * White.GetY();
+                            valy = GetBT1886(valx,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split) * White.GetY();
 							str.Format ( "%.3f", valy );
 						}
 						else
@@ -1802,7 +1806,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 	                    CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
                         //luminance is based on 2.2 gamma so we need to scale here actual reference gamma
                         if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
-                            RefLuma [ nCol-1 ] = pow(pow(rLuma,1. / 2.22),log(GetBT1886(pow(rLuma,1. / 2.22),White,Black,GetConfig()->m_GammaRel))/log(pow(rLuma,1. / 2.22)));
+                            RefLuma [ nCol-1 ] = pow(pow(rLuma,1. / 2.22),log(GetBT1886(pow(rLuma,1. / 2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(rLuma,1. / 2.22)));
                         else
     						RefLuma [ nCol-1 ] = pow(pow(rLuma,1. / 2.22),GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 						break;
@@ -2248,7 +2252,7 @@ void CMainView::UpdateGrid()
                         if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
 			            {
                             double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
-                            valy = GetBT1886(valx, White, Black, GetConfig()->m_GammaRel);
+                            valy = GetBT1886(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split);
 			            }
 			            else
 			            {
@@ -2592,7 +2596,7 @@ void CMainView::UpdateGrid()
    			    if ( dEcnt > 0 )
 				{
 					CString dEform;
-                    float a=2.5,b=5.0;
+                    float a=2.0,b=3.0;
 					Tmp.LoadString ( IDS_DELTAEAVERAGE );
 					Msg += " ( ";
 					Msg += Tmp;
@@ -2603,6 +2607,8 @@ void CMainView::UpdateGrid()
 					case 0:
 						{
 						dEform = " [CIE76(uv)]";
+						a=3.0;
+						b=5;
 						break;
 						}
 					case 1:
@@ -2628,6 +2634,8 @@ void CMainView::UpdateGrid()
 					case 5:
 						{
 						dEform = " [CIE76(uv)]";
+						a=3.0;
+						b=5;
 						break;
 						}
 					}
@@ -2652,7 +2660,7 @@ void CMainView::UpdateGrid()
 		    {
 				char	szBuf [ 256 ];
 				CString dEform;
-				float a=2.5, b=5;
+				float a=2.0, b=3;
 				Tmp.LoadString ( IDS_DELTAEAVERAGE );
 				Msg += " ( ";
 				Msg += Tmp;
@@ -2663,15 +2671,13 @@ void CMainView::UpdateGrid()
 					case 0:
 						{
 						dEform = " [CIE76(uv)]";
-						a=3.5;
-						b=7;
+						a=3.0;
+						b=5;
 						break;
 						}
 					case 1:
 						{
 						dEform = " [CIE76(ab)]";
-						a=3.5;
-						b=7;
 						break;
 						}
 					case 2:
@@ -2709,7 +2715,7 @@ void CMainView::UpdateGrid()
 		    {
 				char	szBuf [ 256 ];
 				CString dEform;
-				float a=2.5, b=5;
+				float a=2.0, b=3;
 				Tmp.LoadString ( IDS_DELTAEAVERAGE );
 				Msg += " ( ";
 				Msg += Tmp;
@@ -2720,15 +2726,13 @@ void CMainView::UpdateGrid()
 					case 0:
 						{
 						dEform = " [CIE76(uv)]";
-						a=3.5;
-						b=7;
+						a=3.0;
+						b=5;
 						break;
 						}
 					case 1:
 						{
 						dEform = " [CIE76(ab)]";
-						a=3.5;
-						b=7;
 						break;
 						}
 					case 2:
@@ -2766,7 +2770,7 @@ void CMainView::UpdateGrid()
 		    {
 				char	szBuf [ 256 ];
 				CString dEform;
-				float a = 2.5, b = 5, dE10 = 0;
+				float a = 2.0, b = 3, dE10 = 0;
 				Tmp.LoadString ( IDS_DELTAEAVERAGE );
                 Msg += (GetConfig()->m_CCMode == GCD?" - GCD ":(GetConfig()->m_CCMode==MCD?" - MCD ":(GetConfig()->m_CCMode==SKIN?" - SKIN ":(GetConfig()->m_CCMode==CCSG?" - ColorChecker SG ":(GetConfig()->m_CCMode==USER?" - ColorChecker Custom ":" - AXIS ")))));
 				Msg += " ( ";
@@ -2797,15 +2801,13 @@ void CMainView::UpdateGrid()
 					case 0:
 						{
 						dEform = " [CIE76(uv)]";
-						a=3.5;
-						b=7;
+						a=3.0;
+						b=5;
 						break;
 						}
 					case 1:
 						{
 						dEform = " [CIE76(ab)]";
-						a=3.5;
-						b=7;
 						break;
 						}
 					case 2:
@@ -4474,7 +4476,7 @@ void CMainView::OnSelchangeInfoDisplay()
 		case 1: // target
              pTargetWnd = new CTargetWnd;			
 			 pTargetWnd -> Create (NULL, NULL, WS_VISIBLE | WS_CHILD, Rect, this, IDC_INFO_VIEW, NULL );
-             if (m_displayMode <= 4)
+             if (m_displayMode <= 11)
              {
 			    pTargetWnd -> m_pRefColor = & m_SelectedColor;
 			    pTargetWnd -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  (m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1), GetDocument()->GetMeasure()->GetGrayScaleSize(), m_displayMode );

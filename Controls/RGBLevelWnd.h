@@ -49,7 +49,7 @@ public:
 
 // Operations
 public:
-	void Refresh(int mCol);
+	void Refresh(int mCol, int m_displayMode);
 
 protected:
 	void DrawGradientBar(CDC *pDc,COLORREF aColor, int aX, int aY, int aWidth, int aHeight);

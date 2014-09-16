@@ -141,7 +141,7 @@ void CGammaGrapher::UpdateGraph ( CDataSetDoc * pDoc )
             if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
 			{
 				valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
-                valy = GetBT1886(valx, White, Black, GetConfig()->m_GammaRel);
+                valy = GetBT1886(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split);
 			}
 			else
 			{

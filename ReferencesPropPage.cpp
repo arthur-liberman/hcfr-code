@@ -66,16 +66,19 @@ void CReferencesPropPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT_GAMMA_REF, m_GammaRefEdit);
 	DDX_Control(pDX, IDC_EDIT_GAMMA_AVERAGE, m_GammaAvgEdit);
 	DDX_Control(pDX, IDC_EDIT_GAMMA_REL, m_GammaRelEdit);
+	DDX_Control(pDX, IDC_EDIT_SPLIT, m_SplitEdit);
 	DDX_Control(pDX, IDC_WHITETARGET_COMBO, m_whiteTargetCombo);
 	DDX_CBIndex(pDX, IDC_WHITETARGET_COMBO, m_whiteTarget);
 	DDX_CBIndex(pDX, IDC_COLORREF_COMBO, m_colorStandard);
 	DDX_CBIndex(pDX, IDC_CCMODE_COMBO, m_CCMode);
   	DDX_Text(pDX, IDC_EDIT_GAMMA_REF, m_GammaRef);
   	DDX_Text(pDX, IDC_EDIT_GAMMA_REL, m_GammaRel);
+  	DDX_Text(pDX, IDC_EDIT_SPLIT, m_Split);
   	DDX_Text(pDX, IDC_EDIT_GAMMA_AVERAGE, m_GammaAvg);
 	DDV_MinMaxDouble(pDX, m_GammaRef, 1., 5.);
 	DDV_MinMaxDouble(pDX, m_GammaAvg, 1., 5.);
 	DDV_MinMaxDouble(pDX, m_GammaRel, 0., 5.);
+	DDV_MinMaxDouble(pDX, m_Split, 0., 100.);
 	DDX_Check(pDX, IDC_CHANGEWHITE_CHECK, m_changeWhiteCheck);
 	DDX_Check(pDX, IDC_USE_MEASURED_GAMMA, m_useMeasuredGamma);
 	DDX_Control(pDX, IDC_USE_MEASURED_GAMMA, m_eMeasuredGamma);
@@ -118,6 +121,7 @@ BEGIN_MESSAGE_MAP(CReferencesPropPage, CPropertyPageWithHelp)
 	ON_EN_CHANGE(IDC_EDIT_IRIS_TIME, OnChangeEditIrisTime)
 	ON_EN_CHANGE(IDC_EDIT_GAMMA_REF, OnChangeEditGammaRef)
 	ON_EN_CHANGE(IDC_EDIT_GAMMA_REL, OnChangeEditGammaRel)
+	ON_EN_CHANGE(IDC_EDIT_SPLIT, OnChangeEditGammaRel)
 	ON_EN_CHANGE(IDC_EDIT_GAMMA_AVERAGE, OnChangeEditGammaAvg)
 	ON_EN_CHANGE(IDC_WHITE_X, OnChangeEditGammaAvg)
 	ON_EN_CHANGE(IDC_WHITE_Y, OnChangeEditGammaAvg)

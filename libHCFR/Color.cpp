@@ -1993,17 +1993,26 @@ Matrix ComputeConversionMatrix(const ColorXYZ measures[3], const ColorXYZ refere
     return transform;
 }
 
-double ArrayIndexToGrayLevel ( int nCol, int nSize, bool m_bUseRoundDown)
+double ArrayIndexToGrayLevel ( int nCol, int nSize, bool m_bUseRoundDown)//, bool m_b16_235)
 {
     // Gray percent: return a value between 0 and 100 corresponding to whole number level based on
 	// normal rounding (GCD disk), round down (AVSHD disk)
 
-	if (m_bUseRoundDown)
-		return ( floor((double)nCol / (double)(nSize-1) * 219.0) / 219.0 * 100.0 );
-	else
-		return ( floor((double)nCol / (double)(nSize-1) * 219.0 + 0.5) / 219.0 * 100.0 );
-
-
+	//added handling of 0-255 targets
+//	if (m_b16_235)
+//	{
+		if (m_bUseRoundDown)
+			return ( floor((double)nCol / (double)(nSize-1) * 219.0) / 219.0 * 100.0 );
+		else
+			return ( floor((double)nCol / (double)(nSize-1) * 219.0 + 0.5) / 219.0 * 100.0 );
+//	}
+//	else
+//	{
+//		if (m_bUseRoundDown)
+//			return ( floor((double)nCol / (double)(nSize-1) * 255.0) / 255.0 * 100.0 );
+//		else
+//			return ( floor((double)nCol / (double)(nSize-1) * 255.0 + 0.5) / 255.0 * 100.0 );
+//	}
 }
 
 double GrayLevelToGrayProp ( double Level, bool m_bUseRoundDown)
@@ -2016,17 +2025,21 @@ double GrayLevelToGrayProp ( double Level, bool m_bUseRoundDown)
 		return Level = (floor(Level / 100.0 * 219.0 + 16.5) - 16.0) / 219.0;
 }
 
-double GetBT1886 ( double valx, CColor White, CColor Black, double g_rel)
+double GetBT1886 ( double valx, CColor White, CColor Black, double g_rel, double split)
 {
     double maxL = White.GetY();
     double minL = Black.GetY();
     double yh =  maxL * pow(0.5, g_rel);
     double exp0 = g_rel==0.0?2.4:g_rel;
+	double outL, Lbt, offset;
 
-    double a = pow ( ( pow (maxL,1.0/exp0 ) - pow ( minL,1.0/exp0 ) ),exp0 );
-    double b = ( pow ( minL,1.0/exp0 ) ) / ( pow (maxL,1.0/exp0 ) - pow ( minL,1.0/exp0 ) );
+	offset = split / 100.0 * minL;
+    double a = pow ( ( pow (maxL,1.0/exp0 ) - pow ( offset,1.0/exp0 ) ),exp0 );
+    double b = ( pow ( offset,1.0/exp0 ) ) / ( pow (maxL,1.0/exp0 ) - pow ( offset,1.0/exp0 ) );
     if (g_rel != 0.)
         exp0 = (log(yh)-log(a))/log(0.5+b);
 
-    return ( a * pow ( (valx + b)<0?0:(valx+b), exp0 ) ) / maxL;
+	Lbt = ( a * pow ( (valx + b)<0?0:(valx+b), exp0 ) );
+	outL = (Lbt + minL * (1 - split / 100.))/(maxL + minL * (1 - split / 100.)) * maxL;
+    return outL / maxL;
 }

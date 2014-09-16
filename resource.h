@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by CHCFR21_ENGLISH.rc
+// Used by CHCFR21_FRANCAIS.rc
 //
 #define IDS_STRING_VERSION              1
 #define IDS_STRING_VERSION_WEB          2
@@ -47,6 +47,7 @@
 #define IDD_ONEDEVICESENSOR_PROP_PAGE   143
 #define IDC_EDIT_GAMMA_REL              143
 #define IDD_AUDIO_SENSOR_PROP_PAGE      144
+#define IDC_EDIT_SPLIT                  144
 #define IDD_SENSOR_PROP_PAGE            145
 #define IDD_SIMULATED_SENSOR_PROP_PAGE  146
 #define IDD_KISENSOR_PROP_PAGE          150

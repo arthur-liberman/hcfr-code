@@ -48,6 +48,7 @@ public:
 	CEdit m_eMeasuredGamma;
 	CEdit m_GammaAvgEdit;
 	CEdit m_GammaRelEdit;
+	CEdit m_SplitEdit;
 	CEdit m_manualWhitexedit;
 	CEdit m_manualWhiteyedit;
 	CEdit m_manualRedxedit;
@@ -63,6 +64,7 @@ public:
 	double	m_GammaRef;
 	double	m_GammaAvg;
     double  m_GammaRel;
+	double  m_Split;
 	BOOL	m_changeWhiteCheck;
 	BOOL	m_useMeasuredGamma;
 	int		m_GammaOffsetType;

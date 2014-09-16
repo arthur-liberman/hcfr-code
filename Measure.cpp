@@ -5161,7 +5161,7 @@ CColor CMeasure::GetRefPrimary(int i) const
     }
     aColor.SetRGBValue(ColorRGB(r,g,b), GetColorReference() );
     if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
-       gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel))/log(pow(aColor.GetY(),1/2.22));
+       gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(aColor.GetY(),1/2.22));
     if (isSpecial)
     {
         r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
@@ -5175,7 +5175,7 @@ CColor CMeasure::GetRefPrimary(int i) const
     b=rgbg[2];
     aColor.SetRGBValue(ColorRGB(r,g,b), GetColorReference() );
     if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
-       gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel))/log(pow(aColor.GetY(),1/2.22));
+       gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(aColor.GetY(),1/2.22));
     if (isSpecial)
     {
         r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
@@ -5189,7 +5189,7 @@ CColor CMeasure::GetRefPrimary(int i) const
     b=rgbb[2];
     aColor.SetRGBValue(ColorRGB(r,g,b), GetColorReference() );
     if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
-       gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel))/log(pow(aColor.GetY(),1/2.22));
+       gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(aColor.GetY(),1/2.22));
     if (isSpecial)
     {
         r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
@@ -5242,7 +5242,7 @@ CColor CMeasure::GetRefSecondary(int i) const
     b=rgby[2];
     aColor.SetRGBValue(ColorRGB(r,g,b), GetColorReference() );
     if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
-       gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel))/log(pow(aColor.GetY(),1/2.22));
+       gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(aColor.GetY(),1/2.22));
     if (isSpecial)
     {
         r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
@@ -5256,7 +5256,7 @@ CColor CMeasure::GetRefSecondary(int i) const
     b=rgbc[2];
     aColor.SetRGBValue(ColorRGB(r,g,b), GetColorReference() );
     if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
-       gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel))/log(pow(aColor.GetY(),1/2.22));
+       gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(aColor.GetY(),1/2.22));
     if (isSpecial)
     {
         r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
@@ -5270,7 +5270,7 @@ CColor CMeasure::GetRefSecondary(int i) const
     b=rgbm[2];
     aColor.SetRGBValue(ColorRGB(r,g,b), GetColorReference() );
     if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
-       gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel))/log(pow(aColor.GetY(),1/2.22));
+       gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(aColor.GetY(),1/2.22));
     if (isSpecial)
     {
         r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
@@ -5353,7 +5353,7 @@ CColor CMeasure::GetRefSat(int i, double sat_percent) const
 	ColorRGB rgb=aColor.GetRGBValue ( GetColorReference() );
 	double r=rgb[0],g=rgb[1],b=rgb[2];
     if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
-       gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel))/log(pow(aColor.GetY(),1/2.22));
+       gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(aColor.GetY(),1/2.22));
     r=(r<=0||r>=1)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
     g=(g<=0||g>=1)?min(max(g,0),1):pow(pow(g,1./2.22),gamma);
     b=(b<=0||b>=1)?min(max(b,0),1):pow(pow(b,1./2.22),gamma);
@@ -5601,9 +5601,9 @@ CColor CMeasure::GetRefCC24Sat(int i) const
     double inr=RGB[i][0],ing=RGB[i][1],inb=RGB[i][2];
     if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
     {
-        inr=(inr<=0||inr>=1)?min(max(inr,0),1):pow(RGB[i][0],log(GetBT1886(RGB[i][0],White,Black,GetConfig()->m_GammaRel))/log(RGB[i][0]));
-        ing=(ing<=0||ing>=1)?min(max(ing,0),1):pow(RGB[i][1],log(GetBT1886(RGB[i][1],White,Black,GetConfig()->m_GammaRel))/log(RGB[i][1]));
-        inb=(inb<=0||inb>=1)?min(max(inb,0),1):pow(RGB[i][2],log(GetBT1886(RGB[i][2],White,Black,GetConfig()->m_GammaRel))/log(RGB[i][2]));
+        inr=(inr<=0||inr>=1)?min(max(inr,0),1):pow(RGB[i][0],log(GetBT1886(RGB[i][0],White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(RGB[i][0]));
+        ing=(ing<=0||ing>=1)?min(max(ing,0),1):pow(RGB[i][1],log(GetBT1886(RGB[i][1],White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(RGB[i][1]));
+        inb=(inb<=0||inb>=1)?min(max(inb,0),1):pow(RGB[i][2],log(GetBT1886(RGB[i][2],White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(RGB[i][2]));
     }
     else
     {
