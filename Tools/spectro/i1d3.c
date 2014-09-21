@@ -3492,6 +3492,10 @@ static inst_code set_disp_type(i1d3 *p, inst_disptypesel *dentry) {
 		p->inttime = p->omininttime;	/* Override */
 	p->mininttime = p->inttime;			/* Current value */
 
+	//we don't use ccmx and need to unapply ccss if refresh/non-refresh is chosen after a ccss load
+	if ((ev = i1d3_set_speccal(p, dentry->sets, dentry->no_sets)) != inst_ok) 
+	return ev;
+
 	if (dentry->flags & inst_dtflags_ccss) {	/* Spectral sample */
 
 		if ((ev = i1d3_set_speccal(p, dentry->sets, dentry->no_sets)) != inst_ok) 
@@ -3557,7 +3561,6 @@ static inst_code i1d3_set_disptype(inst *pp, int ix) {
 		return inst_unsupported;
 
 	dentry = &p->dtlist[ix];
-
 	if ((ev = set_disp_type(p, dentry)) != inst_ok) {
 		return ev;
 	}

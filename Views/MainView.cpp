@@ -595,7 +595,7 @@ void CMainView::RefreshSelection()
 				YWhite = GetDocument() -> GetMeasure () -> GetGray ( i - 1 ) [ 1 ];
 		}
 
-		Item.strText.Format("%.2f",m_SelectedColor.GetLuminance());
+		Item.strText.Format("%.3f",m_SelectedColor.GetLuminance());
 		Item.row = 0;
 		m_pSelectedColorGrid->SetItem(&Item);
 

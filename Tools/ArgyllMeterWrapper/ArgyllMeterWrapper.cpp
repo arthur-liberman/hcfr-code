@@ -378,8 +378,7 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
                 MessageBox(NULL,t,"Integration time set",MB_OK);
             }
     }
-
-    // reset the calibration
+	// reset the calibration
     m_nextCalibration = 0;
     return true;
 }
@@ -515,8 +514,8 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading(CString Spectral
 	xsp2cie *sp2cie = NULL;			/* default conversion */
 	xspect cust_illum;				/* Custom illumination spectrum */
     inst_code instCode;
-    
-    if (!isColorimeter()) //needs to be set each time
+
+	if (!isColorimeter()) //needs to be set each time
     {
         if (setObType(SpectralType))		
 //            MessageBox(NULL,"Set observer to "+SpectralType,"Setting observer",MB_OK);
@@ -524,7 +523,18 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading(CString Spectral
 			                           icxNoClamp)) == NULL)
             MessageBox(NULL,"Creation of sp2cie object failed","Error setting observer",MB_OK);
     }
-
+//	else
+//	{
+//		if (doesMeterSupportSpectralSamples())
+//		{
+//			if (getDisplayType() == 0) 
+//			{
+//			MessageBox(NULL,"Reset ccss","Setting ccss",MB_OK);
+//				m_meter->col_cal_spec_set(m_meter,NULL,0);
+//			}
+//		}
+//	}
+//	m_meter->set_disptype(m_meter, getDisplayType());
     instCode = m_meter->read_sample(m_meter, "SPOT", &argyllReading, instNoClamp);
     if(isInstCodeReason(instCode, inst_needs_cal))
     {

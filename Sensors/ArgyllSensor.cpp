@@ -300,13 +300,12 @@ BOOL CArgyllSensor::Init( BOOL bForSimultaneousMeasures )
         return FALSE;
     }
     m_meter->setHiResMode(!!m_HiRes);
-//    m_meter->setAdaptMode();
-//    m_meter->setAdaptMode();
-
-    if(m_DisplayType != 0xFFFFFFFF)
-    {
+	m_Adapt = !m_Adapt;
+	m_meter->setAdaptMode();
+//    if(m_DisplayType != 0xFFFFFFFF)
+//    {
         m_meter->setDisplayType(m_DisplayType);
-    }
+//    }
 
 //    if (bForSimultaneousMeasures)
 //        MessageBox(NULL, m_meter->getDisplayTypeText(m_meter->getDisplayType()), "Display Type Set", MB_OK);
@@ -369,7 +368,6 @@ BOOL CArgyllSensor::Release()
 CColor CArgyllSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 {
     if(!m_meter) if(!Init(FALSE)) return noDataColor;
-
     ArgyllMeterWrapper::eMeterState state(ArgyllMeterWrapper::NEEDS_MANUAL_CALIBRATION);
     while(state != ArgyllMeterWrapper::READY)
     {

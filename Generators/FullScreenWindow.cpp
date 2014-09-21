@@ -591,6 +591,9 @@ void CFullScreenWindow::OnPaint()
                 R1 = max(0,(bgstim*255 - R*m_rectSizePercent/100.))/(1-m_rectSizePercent/100. - borderArea/(rect.Width()*rect.Height()) );
                 G1 = max(0,(bgstim*255 - G*m_rectSizePercent/100.))/(1-m_rectSizePercent/100. - borderArea/(rect.Width()*rect.Height()) );
                 B1 = max(0,(bgstim*255 - B*m_rectSizePercent/100.))/(1-m_rectSizePercent/100. - borderArea/(rect.Width()*rect.Height()) );
+				R1 = min(R1, 255);
+				G1 = min(G1, 255);
+				B1 = min(B1, 255);
                 if (m_b16_235)
                 {
                     R1 = R1/255*219+16.5;
