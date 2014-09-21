@@ -2417,8 +2417,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,1,5,0
- PRODUCTVERSION 3,1,5,0
+ FILEVERSION 3,1,6,0
+ PRODUCTVERSION 3,1,6,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2436,12 +2436,12 @@ BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "CompanyName", "Association Homecinema Francophone"
             VALUE "FileDescription", "Resources Colorimètre HCFR"
-            VALUE "FileVersion", "3, 1, 5"
+            VALUE "FileVersion", "3, 1, 6"
             VALUE "InternalName", "CHCFR21_FRANCAIS"
             VALUE "LegalCopyright", "Copyright (C) 2005-2008"
             VALUE "OriginalFilename", "CHCFR21_FRANCAIS.DLL"
             VALUE "ProductName", "Colorimètre HCFR langage Français"
-            VALUE "ProductVersion", "3, 1, 5"
+            VALUE "ProductVersion", "3, 1, 6"
         END
     END
     BLOCK "VarFileInfo"

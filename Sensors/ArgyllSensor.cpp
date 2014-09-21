@@ -300,12 +300,12 @@ BOOL CArgyllSensor::Init( BOOL bForSimultaneousMeasures )
         return FALSE;
     }
     m_meter->setHiResMode(!!m_HiRes);
-	m_Adapt = !m_Adapt;
-	m_meter->setAdaptMode();
-//    if(m_DisplayType != 0xFFFFFFFF)
-//    {
+//	m_Adapt = !m_Adapt;
+//	m_meter->setAdaptMode();
+    if(m_DisplayType != 0xFFFFFFFF)
+    {
         m_meter->setDisplayType(m_DisplayType);
-//    }
+    }
 
 //    if (bForSimultaneousMeasures)
 //        MessageBox(NULL, m_meter->getDisplayTypeText(m_meter->getDisplayType()), "Display Type Set", MB_OK);

@@ -523,19 +523,8 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading(CString Spectral
 			                           icxNoClamp)) == NULL)
             MessageBox(NULL,"Creation of sp2cie object failed","Error setting observer",MB_OK);
     }
-//	else
-//	{
-//		if (doesMeterSupportSpectralSamples())
-//		{
-//			if (getDisplayType() == 0) 
-//			{
-//			MessageBox(NULL,"Reset ccss","Setting ccss",MB_OK);
-//				m_meter->col_cal_spec_set(m_meter,NULL,0);
-//			}
-//		}
-//	}
-//	m_meter->set_disptype(m_meter, getDisplayType());
-    instCode = m_meter->read_sample(m_meter, "SPOT", &argyllReading, instNoClamp);
+
+	instCode = m_meter->read_sample(m_meter, "SPOT", &argyllReading, instNoClamp);
     if(isInstCodeReason(instCode, inst_needs_cal))
     {
         // try autocalibration - we might get lucky
