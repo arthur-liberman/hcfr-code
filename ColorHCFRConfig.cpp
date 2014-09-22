@@ -407,7 +407,7 @@ void CColorHCFRConfig::SaveSettings()
 	WriteProfileDouble("References","GammaAvgValue",m_GammaAvg);
 	WriteProfileDouble("References","GammaRelValue",m_GammaRel);
 	WriteProfileDouble("References","GammaSplitValue",m_Split);
-	WriteProfileInt("References","UseMeasuredGamma",1);
+	WriteProfileInt("References","UseMeasuredGamma",m_useMeasuredGamma);
 	WriteProfileInt("Appearance","DrawMode",m_menuDrawMode);
 	WriteProfileInt("Appearance","DrawMemuBorder",m_drawMenuBorder);
 	WriteProfileInt("Appearance","SelectDisabledItem",m_doSelectDisabledItem);
