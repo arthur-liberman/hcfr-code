@@ -498,6 +498,10 @@ void CMeasure::SetSaturationSize(int steps)
 	}
 }
 
+
+
+
+
 void CMeasure::StartLuxMeasure ()
 {
 	GetColorApp () -> BeginLuxMeasure ();

@@ -93,6 +93,7 @@ public:
 	BOOL m_doGlooming;
 	BOOL m_bWhiteBkgndOnScreen;
 	BOOL m_bWhiteBkgndOnFile;
+	BOOL m_bmoveMessage;
 
 	COLORREF m_fxColorWindow;
 	COLORREF m_fxColorMenu;
@@ -115,6 +116,7 @@ public:
     int     m_dE_gray;
     int     gw_Weight;
     BOOL    doHighlight;
+
 
 	// Global strings
 	CString	m_PercentGray;
@@ -145,6 +147,7 @@ public:
 
 	void DisplayHelp ( UINT nId, LPCSTR lpszTopic );
 	void EnsurePathExists ( CString strPath );
+
 
 	CColorHCFRConfig();
 	virtual ~CColorHCFRConfig();

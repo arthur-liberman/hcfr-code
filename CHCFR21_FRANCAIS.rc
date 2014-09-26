@@ -411,10 +411,10 @@ BEGIN
     CONTROL         "disable video LUT",IDC_MADVR_3D2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,97,76,69,13
 END
 
-IDD_APPEARANCE_PROP_PAGE DIALOG 0, 0, 212, 158
+IDD_APPEARANCE_PROP_PAGE DIALOGEX 0, 0, 212, 177
 STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Apparence"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     GROUPBOX        "Style visuel",IDC_STATIC,7,7,199,45,WS_GROUP
     LTEXT           "Thème:",IDC_STATIC,13,20,33,9
@@ -435,11 +435,12 @@ BEGIN
     PUSHBUTTON      "Button1",IDC_WINDOWCOLOR_BUTTON,177,76,23,12,WS_GROUP
     LTEXT           "Sélection",IDC_STATIC,136,94,39,8
     PUSHBUTTON      "Button1",IDC_SELECTIONCOLOR_BUTTON,177,91,23,12,WS_GROUP
-    GROUPBOX        "Graphiques",IDC_STATIC,7,111,199,40,WS_GROUP
+    GROUPBOX        "Graphiques",IDC_STATIC,7,111,199,53,WS_GROUP
     CONTROL         "Affichage des graphes sur fond blanc",IDC_BK_WHITE_SCREEN,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,16,123,133,10
     CONTROL         "Sauvegarde des fichiers graphes sur fond blanc",IDC_BK_WHITE_FILE,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,16,135,166,10
+    CONTROL         "Move Pop-ups off center",IDC_MOVE_MESSAGE,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,16,147,94,10
 END
 
 IDD_KISENSOR_PROP_PAGE DIALOGEX 0, 0, 212, 174
@@ -570,7 +571,6 @@ BEGIN
     COMBOBOX        IDC_ARGYLLSENSOR_INTTIME_COMBO,205,88,82,82,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     LTEXT           "Integration Time",IDC_STATIC,167,86,33,20
     CTEXT           "After selecting your display, and reading types click the calibrate meter button to see if any calibrations are required. [Note that display types are not applicable when in ambient reading mode]",IDC_STATIC,131,118,165,45,WS_BORDER,WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE
-    CONTROL         "Adaptive averaging",IDC_ARGYLL_SENSOR_ADAPT,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | NOT WS_VISIBLE | WS_GROUP | WS_TABSTOP,113,84,50,18
 END
 
 IDD_DUPLICATEDOC_DIALOG DIALOG 0, 0, 279, 153
@@ -999,6 +999,11 @@ BEGIN
     IDD_GENERATOR_GDI_PROP_PAGE, DIALOG
     BEGIN
         BOTTOMMARGIN, 125
+    END
+
+    IDD_APPEARANCE_PROP_PAGE, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 158
     END
 
     IDD_I1SENSOR_PROP_PAGE, DIALOG

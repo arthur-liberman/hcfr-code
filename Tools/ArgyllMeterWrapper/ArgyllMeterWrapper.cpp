@@ -28,6 +28,7 @@
 #include "LockWhileInScope.h"
 #include <stdexcept>
 
+
 #define SALONEINSTLIB
 #define ENABLE_USB
 #define ENABLE_FAST_SERIAL
@@ -173,7 +174,8 @@ ArgyllMeterWrapper::ArgyllMeterWrapper(_inst* meter) :
     m_readingType(DISPLAY),
     m_meter(meter),
     m_nextCalibration(0),
-    m_meterType(meter->get_itype(meter))
+    m_meterType(meter->get_itype(meter)),
+	m_Adapt(0)
     
 {
 }
@@ -378,6 +380,12 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
                 MessageBox(NULL,t,"Integration time set",MB_OK);
             }
     }
+	// clear ccss if needed
+//	if (getDisplayType() <= 1 && doesMeterSupportSpectralSamples() )
+//	{		
+//        MessageBox(NULL, m_meter->inst_interp_error(m_meter, m_meter->col_cal_spec_set(m_meter, NULL, NULL)),"Reset ccss",MB_OK);
+//		setDisplayType(getDisplayType());
+//	}
 	// reset the calibration
     m_nextCalibration = 0;
     return true;
@@ -568,7 +576,7 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading(CString Spectral
 
     //Simple low-light averager    
     int cnt = 0;
-    if (m_Adapt)
+	if (m_Adapt)
     {
         if (Y < 1.0)
             cnt = 4; // 5 samples

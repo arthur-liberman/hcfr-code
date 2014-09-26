@@ -103,7 +103,6 @@ BOOL CSensorPropPage::OnInitDialog()
 	m_pGrid->EnableDragAndDrop(TRUE);
 
 	m_pGrid->ExpandToFit(TRUE);
-
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }

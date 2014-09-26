@@ -82,6 +82,7 @@ static char THIS_FILE[] = __FILE__;
 // Version 3 is for ColorHCFR version >= 2.0 beta 144
 
 #define CURRENT_FILE_FORMAT_VERSION	3
+#define _S(id) (CString(LPCTSTR(id))) 
 
 extern CPtrList gOpenedFramesList;	// Implemented in MultiFrm.cpp
 
@@ -246,7 +247,7 @@ BOOL StartBackgroundMeasures ( CDataSetDoc * pDoc )
 		{
 			Msg.LoadString ( IDS_ERRINITSENSOR );
 			Title.LoadString ( IDS_ERROR );
-			MessageBox(NULL,Msg,Title,MB_ICONERROR | MB_OK);
+			GetColorApp()->InMeasureMessageBox(Msg,Title,MB_ICONERROR | MB_OK);
 			return FALSE;
 		}
 		
@@ -639,7 +640,7 @@ void CDataSetDoc::CreateSensor(int aID)
             {
 				Msg.LoadString ( IDS_UNKNOWNSENSOR1 );
 				Title.LoadString ( IDS_ERROR );
-				MessageBox(NULL,Msg,Title,MB_ICONERROR | MB_OK);
+				GetColorApp()->InMeasureMessageBox(Msg,Title,MB_ICONERROR | MB_OK);
 				m_pSensor=new CSimulatedSensor();
             }
 	}
@@ -666,7 +667,7 @@ void CDataSetDoc::CreateGenerator(int aID)
 		default:
 			Msg.LoadString ( IDS_UNKNOWNGENERATOR1 );
 			Title.LoadString ( IDS_ERROR );
-			MessageBox(NULL,Msg,Title,MB_ICONERROR | MB_OK);
+			GetColorApp()->InMeasureMessageBox(Msg,Title,MB_ICONERROR | MB_OK);
 			m_pGenerator=new CGDIGenerator();
 	}
 }
@@ -710,7 +711,7 @@ void CDataSetDoc::DuplicateSensor(CDataSetDoc* pDoc)
 							    {
 								    Msg.LoadString ( IDS_UNKNOWNSENSOR1 );
 								    Title.LoadString ( IDS_ERROR );
-								    MessageBox(NULL,Msg,Title,MB_ICONERROR | MB_OK);
+								    GetColorApp()->InMeasureMessageBox(Msg,Title,MB_ICONERROR | MB_OK);
 								    m_pSensor=new CSimulatedSensor();
 							    }
 
@@ -737,7 +738,7 @@ void CDataSetDoc::DuplicateGenerator(CDataSetDoc* pDoc)
 			{
 				Msg.LoadString ( IDS_UNKNOWNGENERATOR1 );
 				Title.LoadString ( IDS_ERROR );
-				MessageBox(NULL,Msg,Title,MB_ICONERROR | MB_OK);
+				GetColorApp()->InMeasureMessageBox(Msg,Title,MB_ICONERROR | MB_OK);
 				m_pGenerator=new CGDIGenerator();
 			}
 	m_pGenerator->Copy(pDoc->m_pGenerator);
@@ -915,7 +916,7 @@ void CDataSetDoc::Serialize(CArchive& ar)
 		{
 			Msg.LoadString ( IDS_INVALIDFILEFORMAT );
 			Title.LoadString ( IDS_ERROR );
-			MessageBox(NULL,Msg,Title,MB_ICONERROR | MB_OK);
+			GetColorApp()->InMeasureMessageBox(Msg,Title,MB_ICONERROR | MB_OK);
 			return;
 		}
 
@@ -938,7 +939,7 @@ void CDataSetDoc::Serialize(CArchive& ar)
 		{
 			Msg.LoadString ( IDS_UNKNOWNSENSOR2 );
 			Title.LoadString ( IDS_ERROR );
-			MessageBox(NULL,Msg,Title,MB_ICONERROR | MB_OK);
+			GetColorApp()->InMeasureMessageBox(Msg,Title,MB_ICONERROR | MB_OK);
 			return;
 		}
 			
@@ -949,7 +950,7 @@ void CDataSetDoc::Serialize(CArchive& ar)
 		{
 			Msg.LoadString ( IDS_UNKNOWNGENERATOR2 );
 			Title.LoadString ( IDS_ERROR );
-			MessageBox(NULL,Msg,Title,MB_ICONERROR | MB_OK);
+			GetColorApp()->InMeasureMessageBox(Msg,Title,MB_ICONERROR | MB_OK);
 			return;
 		}
 
@@ -1292,12 +1293,12 @@ void CDataSetDoc::OnConfigureSensor2()
     pView = this -> GetNextView ( pos );
     if (m_pSensor->setAvg())
     {
-        MessageBox(NULL,"Averaging on","Average Button",MB_OK);
+       GetColorApp()->InMeasureMessageBox("Averaging on","Average Button",MB_OK);
        ( (CMainView*) pView )->m_configSensorButton2.SetIcon(IDI_STOP_ICON,18,18);
     }
     else
     {
-       MessageBox(NULL,"Averaging off","Average Button",MB_OK);
+       GetColorApp()->InMeasureMessageBox("Averaging off","Average Button",MB_OK);
        ( (CMainView*) pView )->m_configSensorButton2.SetIcon(IDI_START_ICON,18,18);
     }
 
@@ -1380,7 +1381,7 @@ void CDataSetDoc::OnChangeSensor()
 
 	Msg.LoadString ( IDS_CONFIRMSENSORCHANGE );
 	Title.LoadString ( IDS_SENSOR );
-	if(MessageBox(NULL,Msg,Title,MB_ICONQUESTION | MB_YESNO) != IDYES)
+	if(GetColorApp()->InMeasureMessageBox(Msg,Title,MB_ICONQUESTION | MB_YESNO) != IDYES)
 		return;
 
 	CPropertySheetWithHelp propSheet;
@@ -1474,7 +1475,7 @@ void CDataSetDoc::OnCalibrationSim()
 		// No data ref.
 		Msg.LoadString ( IDS_SIM_CAL_ERROR1 );
 		Title.LoadString ( IDS_ERROR );
-		MessageBox(NULL,Msg,Title,MB_ICONERROR | MB_OK);
+		GetColorApp()->InMeasureMessageBox(Msg,Title,MB_ICONERROR | MB_OK);
 		return;
 	}
 
@@ -1483,12 +1484,12 @@ void CDataSetDoc::OnCalibrationSim()
 		// Ref document cannot be current document
 		Msg.LoadString ( IDS_SIM_CAL_ERROR3 );
 		Title.LoadString ( IDS_ERROR );
-		MessageBox(NULL,Msg,Title,MB_ICONERROR | MB_OK);
+		GetColorApp()->InMeasureMessageBox(Msg,Title,MB_ICONERROR | MB_OK);
 		return;
 	}
 
 	Msg.LoadString ( IDS_RUN_SIM_CALIBRATION );
-	if ( IDYES == AfxMessageBox ( Msg, MB_YESNO | MB_ICONQUESTION ) )
+	if ( IDYES == GetColorApp()->InMeasureMessageBox( Msg, "On measure", MB_YESNO | MB_ICONQUESTION ) )
 	{
 		// Use special simultaneous mode
 		PerformSimultaneousMeasures ( -5 );
@@ -1511,7 +1512,7 @@ void CDataSetDoc::OnCalibrationExisting()
 		// No data ref.
 		Msg.LoadString ( IDS_SIM_CAL_ERROR1 );
 		Title.LoadString ( IDS_ERROR );
-		MessageBox(NULL,Msg,Title,MB_ICONERROR | MB_OK);
+		GetColorApp()->InMeasureMessageBox(Msg,Title,MB_ICONERROR | MB_OK);
 		return;
 	}
 
@@ -1520,7 +1521,7 @@ void CDataSetDoc::OnCalibrationExisting()
 		// Ref document cannot be current document
 		Msg.LoadString ( IDS_SIM_CAL_ERROR3 );
 		Title.LoadString ( IDS_ERROR );
-		MessageBox(NULL,Msg,Title,MB_ICONERROR | MB_OK);
+		GetColorApp()->InMeasureMessageBox(Msg,Title,MB_ICONERROR | MB_OK);
 		return;
 	}
 
@@ -1531,7 +1532,7 @@ void CDataSetDoc::OnCalibrationExisting()
         //No measurements
 		Msg.LoadString ( IDS_SIM_CAL_ERROR4 );
 		Title.LoadString ( IDS_ERROR );
-		MessageBox(NULL,Msg,Title,MB_ICONERROR | MB_OK);
+		GetColorApp()->InMeasureMessageBox(Msg,Title,MB_ICONERROR | MB_OK);
 		return;
     }
 
@@ -1552,7 +1553,7 @@ void CDataSetDoc::OnCalibrationManual()
 	CColor	measuredColor[4];
 	CString	strMsg, Title;
 
-	if ( IDYES == AfxMessageBox ( IDS_RUN_MANUAL_CALIBRATION, MB_YESNO | MB_ICONQUESTION ) )
+	if ( IDYES == GetColorApp()->InMeasureMessageBox( _S(IDS_RUN_MANUAL_CALIBRATION), "Manual Calibration", MB_YESNO | MB_ICONQUESTION ) )
 	{
 		if(m_pGenerator->Init(5) != TRUE)
 		{
@@ -1850,7 +1851,7 @@ void CDataSetDoc::OnCalibrationManual()
 	        }
 	        else
 	        {
-		        AfxMessageBox ( IDS_INVALIDMEASUREMATRIX, MB_OK | MB_ICONERROR );
+		        GetColorApp()->InMeasureMessageBox( _S(IDS_INVALIDMEASUREMATRIX), "Invalide Matrix", MB_OK | MB_ICONERROR );
 	        }
 
 	        AfxGetMainWnd () -> SendMessageToDescendants ( WM_COMMAND, IDM_REFRESH_REFERENCE );
@@ -1881,13 +1882,13 @@ void CDataSetDoc::OnCalibrationSpectralSample()
 	{
 		Title.LoadString ( IDS_ERROR );
 		strMsg.LoadString(IDS_SPECTRAL_SAMPLE_USE_SPECTRO);
-		MessageBox(NULL, strMsg, Title ,MB_ICONERROR | MB_OK);  
+		GetColorApp()->InMeasureMessageBox( strMsg, Title ,MB_ICONERROR | MB_OK);  
 		return;
 	}
 
 	CString displayName = m_pGenerator->GetActiveDisplayName();
 
-	if ( IDYES == AfxMessageBox ( IDS_SPECTRAL_SAMPLE_CREATE, MB_YESNO | MB_ICONQUESTION ) )
+	if ( IDYES == GetColorApp()->InMeasureMessageBox( _S(IDS_SPECTRAL_SAMPLE_CREATE), "Create Spectral Sample", MB_YESNO | MB_ICONQUESTION ) )
 	{
 		if(m_pGenerator->Init(5) != TRUE)
 		{
@@ -2151,13 +2152,13 @@ void CDataSetDoc::OnCalibrationSpectralSample()
 			catch (std::logic_error& e)
 			{
 				Title.LoadString(IDS_ERROR);
-				MessageBox(NULL, e.what(), Title, MB_ICONERROR | MB_OK);
+				GetColorApp()->InMeasureMessageBox( e.what(), Title, MB_ICONERROR | MB_OK);
 			}
 			catch (...)
 			{
 				Title.LoadString(IDS_ERROR);
 				strMsg.LoadString(IDS_SPECTRAL_SAMPLE_UNEXPECTED_EXCEPTION);
-				MessageBox(NULL, strMsg, Title, MB_ICONERROR | MB_OK); 
+				GetColorApp()->InMeasureMessageBox( strMsg, Title, MB_ICONERROR | MB_OK); 
 			}
 		}
 		
@@ -2205,7 +2206,7 @@ BOOL CDataSetDoc::ComputeAdjustmentMatrix()
 	}
 	else
 	{
-		AfxMessageBox ( IDS_INVALIDMEASUREMATRIX, MB_OK | MB_ICONERROR );
+		        GetColorApp()->InMeasureMessageBox( _S(IDS_INVALIDMEASUREMATRIX), "Invalide Matrix", MB_OK | MB_ICONERROR );
 	}
 	this->UpdateAllViews ( NULL, UPD_EVERYTHING );
 	AfxGetMainWnd () -> SendMessageToDescendants ( WM_COMMAND, IDM_REFRESH_REFERENCE );
@@ -2215,7 +2216,7 @@ BOOL CDataSetDoc::ComputeAdjustmentMatrix()
 
 void CDataSetDoc::OnSimGrayscale() 
 {
-	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( IDS_MEASUREGRAYSCALE_SIM, MB_YESNO | MB_ICONQUESTION ) )
+	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( (CString) (LPCTSTR)IDS_MEASUREGRAYSCALE_SIM, "Measure", MB_YESNO | MB_ICONQUESTION ) )
 		PerformSimultaneousMeasures ( 0 );
 }
 
@@ -2223,80 +2224,80 @@ void CDataSetDoc::OnSimGrayscaleAndColors()
 {
 	if ( m_pGenerator -> CanDisplayGrayAndColorsSeries () )
 	{
-		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( IDS_MEASUREGRAYANDCOLORS, MB_YESNO | MB_ICONQUESTION ) )
+		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( _S(IDS_MEASUREGRAYANDCOLORS), "Measure",MB_YESNO | MB_ICONQUESTION ) )
 			PerformSimultaneousMeasures ( -3 );
 	}
 	else
 	{
 		CString	Msg;
 		Msg.Format ( IDS_CANNOTMEASUREGRAYANDCOLORS, (LPCSTR) m_pGenerator -> GetName () );
-		AfxMessageBox ( Msg, MB_OK | MB_ICONEXCLAMATION );
+		GetColorApp()->InMeasureMessageBox( Msg, "On measure", MB_OK | MB_ICONEXCLAMATION );
 	}
 }
 
 void CDataSetDoc::OnSimPrimaries() 
 {
-	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( IDS_MEASUREPRIMARIES_SIM, MB_YESNO | MB_ICONQUESTION ) )
+	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( _S(IDS_MEASUREPRIMARIES_SIM), "On measure", MB_YESNO | MB_ICONQUESTION ) )
 		PerformSimultaneousMeasures ( -1 );
 }
 
 void CDataSetDoc::OnSimSecondaries() 
 {
-	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( IDS_MEASURESECONDARIES_SIM, MB_YESNO | MB_ICONQUESTION ) )
+	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( _S(IDS_MEASURESECONDARIES_SIM), "On measure", MB_YESNO | MB_ICONQUESTION ) )
 		PerformSimultaneousMeasures ( -2 );
 }
 
 void CDataSetDoc::OnSimNearblack() 
 {
-	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( IDS_MEASURENEARBLACK_SIM, MB_YESNO | MB_ICONQUESTION ) )
+	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( _S(IDS_MEASURENEARBLACK_SIM), "On measure", MB_YESNO | MB_ICONQUESTION ) )
 		PerformSimultaneousMeasures ( 1 );
 }
 
 void CDataSetDoc::OnSimNearwhite() 
 {
-	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( IDS_MEASURENEARWHITE_SIM, MB_YESNO | MB_ICONQUESTION ) )
+	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( _S(IDS_MEASURENEARWHITE_SIM), "On measure", MB_YESNO | MB_ICONQUESTION ) )
 		PerformSimultaneousMeasures ( 2 );
 }
 
 void CDataSetDoc::OnSimSatRed() 
 {
-	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( IDS_MEASURESATRED_SIM, MB_YESNO | MB_ICONQUESTION ) )
+	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( _S(IDS_MEASURESATRED_SIM), "On measure", MB_YESNO | MB_ICONQUESTION ) )
 		PerformSimultaneousMeasures ( 3 );
 }
 
 void CDataSetDoc::OnSimSatGreen() 
 {
-	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( IDS_MEASURESATGREEN_SIM, MB_YESNO | MB_ICONQUESTION ) )
+	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( _S(IDS_MEASURESATGREEN_SIM), "On measure", MB_YESNO | MB_ICONQUESTION ) )
 		PerformSimultaneousMeasures ( 4 );
 }
 
 void CDataSetDoc::OnSimSatBlue() 
 {
-	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( IDS_MEASURESATBLUE_SIM, MB_YESNO | MB_ICONQUESTION ) )
+	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( _S(IDS_MEASURESATBLUE_SIM), "On measure", MB_YESNO | MB_ICONQUESTION ) )
 		PerformSimultaneousMeasures ( 5 );
 }
 
 void CDataSetDoc::OnSimSatYellow() 
 {
-	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( IDS_MEASURESATYELLOW_SIM, MB_YESNO | MB_ICONQUESTION ) )
+	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( _S(IDS_MEASURESATYELLOW_SIM), "On measure", MB_YESNO | MB_ICONQUESTION ) )
 		PerformSimultaneousMeasures ( 6 );
 }
 
 void CDataSetDoc::OnSimSatCyan() 
 {
-	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( IDS_MEASURESATCYAN_SIM, MB_YESNO | MB_ICONQUESTION ) )
+	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( _S(IDS_MEASURESATCYAN_SIM), "On measure", MB_YESNO | MB_ICONQUESTION ) )
 		PerformSimultaneousMeasures ( 7 );
 }
 
 void CDataSetDoc::OnSimSatMagenta() 
 {
-	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( IDS_MEASURESATMAGENTA_SIM, MB_YESNO | MB_ICONQUESTION ) )
+	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( _S(IDS_MEASURESATMAGENTA_SIM), "On measure",  MB_YESNO | MB_ICONQUESTION ) )
 		PerformSimultaneousMeasures ( 8 );
 }
 
 void CDataSetDoc::OnSimSingleMeasurement() 
 {
-	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( IDS_MEASURESINGLE_SIM, MB_YESNO | MB_ICONQUESTION ) )
+	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( _S(IDS_MEASURESINGLE_SIM), "On measure", MB_YESNO | MB_ICONQUESTION ) )
 		PerformSimultaneousMeasures ( -4 );
 }
 
@@ -2560,7 +2561,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			pDocs [ NbDocs ++ ] = pDoc;
 		else
 		{
-			AfxMessageBox ( "Internal error" );
+			GetColorApp()->InMeasureMessageBox( "Internal error" );
 			return;
 		}
 	}
@@ -2583,7 +2584,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 						bOk = FALSE;
 						Msg.Format ( "Too many opened documents ! Cannot perform simultaneous measures on more than %d sensors.\nClose some documents then retry.", MAX_SIMULTANEOUS_MEASURES );
 						Title.LoadString ( IDS_ERROR );
-						MessageBox(NULL,Msg,Title,MB_ICONERROR | MB_OK);
+						GetColorApp()->InMeasureMessageBox(Msg,Title,MB_ICONERROR | MB_OK);
 					}
 				}
 				else
@@ -2591,7 +2592,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 					bOk = FALSE;
 					Msg.Format ( IDS_MANYDOCSUSESAMESENSOR, (LPCSTR) strId );
 					Title.LoadString ( IDS_ERROR );
-					MessageBox(NULL,Msg,Title,MB_ICONERROR | MB_OK);
+					GetColorApp()->InMeasureMessageBox(Msg,Title,MB_ICONERROR | MB_OK);
 				}
 			}
 		}
@@ -2603,7 +2604,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 		bOk = FALSE;
 		Msg.LoadString ( IDS_ONLYONEDOC );
 		Title.LoadString ( IDS_ERROR );
-		MessageBox(NULL,Msg,Title,MB_ICONERROR | MB_OK);
+		GetColorApp()->InMeasureMessageBox(Msg,Title,MB_ICONERROR | MB_OK);
 	}
 	
 	if ( bOk )
@@ -2619,7 +2620,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 				bOk = FALSE;
 				Msg.Format ( IDS_CANNOTINITDOC, (LPCSTR) pDocs [ i ] -> GetTitle () );
 				Title.LoadString ( IDS_ERROR );
-				MessageBox(NULL,Msg,Title,MB_ICONERROR | MB_OK);
+				GetColorApp()->InMeasureMessageBox(Msg,Title,MB_ICONERROR | MB_OK);
 
 				// Cancel background process on already initialized documents
 				while ( ( --i ) >= 0 )
@@ -2764,7 +2765,7 @@ void CDataSetDoc::OnPatternAnimBlack()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-		if ( IDYES == AfxMessageBox ( IDS_DISPLAYANIMATEDPATTERN, MB_YESNO | MB_ICONQUESTION ) )
+		if ( IDYES == GetColorApp()->InMeasureMessageBox( _S(IDS_DISPLAYANIMATEDPATTERN), "On Measure", MB_YESNO | MB_ICONQUESTION ) )
 		{
 			AfxGetMainWnd () -> EnableWindow ( FALSE );
 
@@ -2799,7 +2800,7 @@ void CDataSetDoc::OnPatternAnimBlack()
 	}
 	else
 	{
-		AfxMessageBox ( IDS_CANNOTDISPLAYANIMATION, MB_OK | MB_ICONEXCLAMATION );
+		GetColorApp()->InMeasureMessageBox( _S(IDS_CANNOTDISPLAYANIMATION), "On measure", MB_OK | MB_ICONEXCLAMATION );
 	}
 }
 
@@ -2810,7 +2811,7 @@ void CDataSetDoc::OnPatternAnimWhite()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-		if ( IDYES == AfxMessageBox ( IDS_DISPLAYANIMATEDPATTERN, MB_YESNO | MB_ICONQUESTION ) )
+		if ( IDYES == GetColorApp()->InMeasureMessageBox( _S(IDS_DISPLAYANIMATEDPATTERN), "On measure", MB_YESNO | MB_ICONQUESTION ) )
 		{
 			AfxGetMainWnd () -> EnableWindow ( FALSE );
 
@@ -2845,7 +2846,7 @@ void CDataSetDoc::OnPatternAnimWhite()
 	}
 	else
 	{
-		AfxMessageBox ( IDS_CANNOTDISPLAYANIMATION, MB_OK | MB_ICONEXCLAMATION );
+		GetColorApp()->InMeasureMessageBox( _S(IDS_CANNOTDISPLAYANIMATION), "On measure", MB_OK | MB_ICONEXCLAMATION );
 	}
 }
 
@@ -3065,7 +3066,7 @@ void CDataSetDoc::OnMeasureGrayscale()
 	Msg.LoadString ( IDS_RUNGRAYSCALEON );
 	TmpStr.Format ( " %d ", nNbPoints );
 	Msg += TmpStr + MsgQueue;
-	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( Msg, "On measure", MB_ICONQUESTION | MB_YESNO ) )
 	{
 		MeasureGrayScale();
 
@@ -3082,7 +3083,7 @@ void CDataSetDoc::OnUpdateMeasureGrayscale(CCmdUI* pCmdUI)
 
 void CDataSetDoc::OnMeasurePrimaries() 
 {
-	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( IDS_RUNPRIMARIES, MB_ICONQUESTION | MB_YESNO ) )
+	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( _S(IDS_RUNPRIMARIES), "On measure", MB_ICONQUESTION | MB_YESNO ) )
 	{
 		MeasurePrimaries();
 		
@@ -3099,7 +3100,7 @@ void CDataSetDoc::OnUpdateMeasurePrimaries(CCmdUI* pCmdUI)
 
 void CDataSetDoc::OnMeasureSecondaries() 
 {
-	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( IDS_RUNSECONDARIES, MB_ICONQUESTION | MB_YESNO ) )
+	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( _S(IDS_RUNSECONDARIES), "On measure", MB_ICONQUESTION | MB_YESNO ) )
 	{
 		MeasureSecondaries();
 		
@@ -3122,7 +3123,7 @@ void CDataSetDoc::OnMeasureNearblack()
 	
     bool m_YWhite = GetMeasure ()->GetGray (0).isValid();
 	if (!m_YWhite)
-		MessageBox(NULL,"Please run the grayscale measures scan first.","No grayscale measures found!",MB_OK);
+		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first.","No grayscale measures found!",MB_OK);
 	else
     {
     	MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -3130,7 +3131,7 @@ void CDataSetDoc::OnMeasureNearblack()
     	Msg.LoadString ( IDS_RUNNEARBLACKON );
 	    TmpStr.Format ( " %d ", nNbPoints );
 	    Msg += TmpStr + MsgQueue;
-	    if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+	    if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( Msg, "On measure", MB_ICONQUESTION | MB_YESNO ) )
 	    {
 		    MeasureNearBlackScale();
 
@@ -3151,7 +3152,7 @@ void CDataSetDoc::OnMeasureNearwhite()
 	int		nNbPoints = GetMeasure () -> GetNearWhiteScaleSize ();
     bool m_YWhite = GetMeasure ()->GetGray (0).isValid();
 	if (!m_YWhite)
-		MessageBox(NULL,"Please run the grayscale measures scan first.","No grayscale measures found!",MB_OK);
+		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first.","No grayscale measures found!",MB_OK);
 	else
     {
     	MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -3159,7 +3160,7 @@ void CDataSetDoc::OnMeasureNearwhite()
     	Msg.LoadString ( IDS_RUNNEARWHITEON );
 	    TmpStr.Format ( " %d ", nNbPoints );
 	    Msg += TmpStr + MsgQueue;
-	    if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+	    if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( Msg, "On measure", MB_ICONQUESTION | MB_YESNO ) )
 	    {
 		    MeasureNearWhiteScale();
 
@@ -3180,7 +3181,7 @@ void CDataSetDoc::OnMeasureSatRed()
 	int		nNbPoints = GetMeasure () -> GetSaturationSize ();
 	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
 	if (!m_YWhite)
-		MessageBox(NULL,"Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
+		GetColorApp()->InMeasureMessageBox("Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -3188,7 +3189,7 @@ void CDataSetDoc::OnMeasureSatRed()
 		Msg.LoadString ( IDS_RUNSATREDON );
 		TmpStr.Format ( " %d ", nNbPoints );
 		Msg += TmpStr + MsgQueue;
-		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( Msg, "On measure", MB_ICONQUESTION | MB_YESNO ) )
 		{
 			MeasureRedSatScale();
 
@@ -3209,7 +3210,7 @@ void CDataSetDoc::OnMeasureSatGreen()
 	int		nNbPoints = GetMeasure () -> GetSaturationSize ();
 	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
 	if (!m_YWhite)
-		MessageBox(NULL,"Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
+		GetColorApp()->InMeasureMessageBox("Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -3217,7 +3218,7 @@ void CDataSetDoc::OnMeasureSatGreen()
 		Msg.LoadString ( IDS_RUNSATGREENON );
 		TmpStr.Format ( " %d ", nNbPoints );
 		Msg += TmpStr + MsgQueue;
-		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( Msg, "On measure", MB_ICONQUESTION | MB_YESNO ) )
 		{
 			MeasureGreenSatScale();
 
@@ -3238,7 +3239,7 @@ void CDataSetDoc::OnMeasureSatBlue()
 	int		nNbPoints = GetMeasure () -> GetSaturationSize ();
 	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
 	if (!m_YWhite)
-		MessageBox(NULL,"Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
+		GetColorApp()->InMeasureMessageBox("Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -3246,7 +3247,7 @@ void CDataSetDoc::OnMeasureSatBlue()
 		Msg.LoadString ( IDS_RUNSATBLUEON );
 		TmpStr.Format ( " %d ", nNbPoints );
 		Msg += TmpStr + MsgQueue;
-		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( Msg, "On measure", MB_ICONQUESTION | MB_YESNO ) )
 		{
 			MeasureBlueSatScale();
 
@@ -3267,7 +3268,7 @@ void CDataSetDoc::OnMeasureSatYellow()
 	int		nNbPoints = GetMeasure () -> GetSaturationSize ();
 	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
 	if (!m_YWhite)
-		MessageBox(NULL,"Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
+		GetColorApp()->InMeasureMessageBox("Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -3275,7 +3276,7 @@ void CDataSetDoc::OnMeasureSatYellow()
 		Msg.LoadString ( IDS_RUNSATYELLOWON );
 		TmpStr.Format ( " %d ", nNbPoints );
 		Msg += TmpStr + MsgQueue;
-		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( Msg, "On measure", MB_ICONQUESTION | MB_YESNO ) )
 		{
 			MeasureYellowSatScale();
 
@@ -3296,7 +3297,7 @@ void CDataSetDoc::OnMeasureSatCyan()
 	int		nNbPoints = GetMeasure () -> GetSaturationSize ();
 	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
 	if (!m_YWhite)
-		MessageBox(NULL,"Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
+		GetColorApp()->InMeasureMessageBox("Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -3304,7 +3305,7 @@ void CDataSetDoc::OnMeasureSatCyan()
 		Msg.LoadString ( IDS_RUNSATCYANON );
 		TmpStr.Format ( " %d ", nNbPoints );
 		Msg += TmpStr + MsgQueue;
-		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( Msg, "On measure", MB_ICONQUESTION | MB_YESNO ) )
 		{
 			MeasureCyanSatScale();
 
@@ -3325,7 +3326,7 @@ void CDataSetDoc::OnMeasureSatMagenta()
 	int		nNbPoints = GetMeasure () -> GetSaturationSize ();
 	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
 	if (!m_YWhite)
-		MessageBox(NULL,"Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
+		GetColorApp()->InMeasureMessageBox("Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -3333,7 +3334,7 @@ void CDataSetDoc::OnMeasureSatMagenta()
 		Msg.LoadString ( IDS_RUNSATMAGENTAON );
 		TmpStr.Format ( " %d ", nNbPoints );
 		Msg += TmpStr + MsgQueue;
-		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( Msg, "On measure", MB_ICONQUESTION | MB_YESNO ) )
 		{
 			MeasureMagentaSatScale();
 
@@ -3349,7 +3350,7 @@ void CDataSetDoc::OnMeasureSatCC24()
     int		nNbPoints = (GetConfig()->m_CCMode==CCSG?96:GetConfig()->m_CCMode==USER?GetConfig()->GetCColorsSize():24);
 	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
 	if	(!m_YWhite)
-		MessageBox(NULL,"Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
+		GetColorApp()->InMeasureMessageBox("Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -3357,7 +3358,7 @@ void CDataSetDoc::OnMeasureSatCC24()
 		Msg.LoadString ( IDS_RUNSATCC24ON );
 		TmpStr.Format ( " %d ", nNbPoints );
 		Msg += TmpStr + MsgQueue;
-		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( Msg, "On measure", MB_ICONQUESTION | MB_YESNO ) )
 		{
 			MeasureCC24SatScale();
 
@@ -3400,7 +3401,7 @@ void CDataSetDoc::OnMeasureContrast()
 	CString	Msg;
 	
 	Msg.LoadString ( IDS_RUNCONTRAST );
-	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( Msg, "On measure", MB_ICONQUESTION | MB_YESNO ) )
 	{
 		MeasureContrast();
 
@@ -3420,7 +3421,7 @@ void CDataSetDoc::OnMeasureSatAll()
     int		nNbPoints = (GetMeasure () -> GetSaturationSize ()) * 6 + (GetConfig()->m_CCMode==CCSG?96:GetConfig()->m_CCMode==USER?GetConfig()->GetCColorsSize():24);
 	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
 	if	(!m_YWhite)
-		MessageBox(NULL,"Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
+		GetColorApp()->InMeasureMessageBox("Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -3428,7 +3429,7 @@ void CDataSetDoc::OnMeasureSatAll()
 		Msg.LoadString ( IDS_RUNALLSATON );
 		TmpStr.Format ( " %d ", nNbPoints );
 		Msg += TmpStr + MsgQueue;
-		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( Msg, "On measure", MB_ICONQUESTION | MB_YESNO ) )
 		{
 			MeasureAllSaturationScales();
 
@@ -3454,7 +3455,7 @@ void CDataSetDoc::OnMeasureGrayscaleColors()
 	Msg.LoadString ( IDS_MEASUREGRAYANDCOLORSON );
 	TmpStr.Format ( " %d ", nNbPoints );
 	Msg += TmpStr + MsgQueue;
-	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( Msg, "On measure", MB_ICONQUESTION | MB_YESNO ) )
 	{
 		MeasureGrayScaleAndColors();
 
@@ -3475,7 +3476,7 @@ void CDataSetDoc::OnMeasureSatPrimaries()
 	int		nNbPoints =( GetMeasure () -> GetSaturationSize () ) * 3;
 	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
 	if	(!m_YWhite)
-		MessageBox(NULL,"Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
+		GetColorApp()->InMeasureMessageBox("Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -3483,7 +3484,7 @@ void CDataSetDoc::OnMeasureSatPrimaries()
 		Msg.LoadString ( IDS_RUNPRIMSATON );
 		TmpStr.Format ( " %d ", nNbPoints );
 		Msg += TmpStr + MsgQueue;
-		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( Msg, "On measure", MB_ICONQUESTION | MB_YESNO ) )
 		{
 			MeasurePrimarySaturationScales();
 
@@ -3499,7 +3500,7 @@ void CDataSetDoc::OnMeasureSatPrimariesSecondaries()
 	int		nNbPoints =( GetMeasure () -> GetSaturationSize () ) * 6;
 	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
 	if	(!m_YWhite)
-		MessageBox(NULL,"Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
+		GetColorApp()->InMeasureMessageBox("Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -3507,7 +3508,7 @@ void CDataSetDoc::OnMeasureSatPrimariesSecondaries()
 		Msg.LoadString ( IDS_RUNPRIMSATON2 );
 		TmpStr.Format ( " %d ", nNbPoints );
 		Msg += TmpStr + MsgQueue;
-		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == AfxMessageBox ( Msg, MB_ICONQUESTION | MB_YESNO ) )
+		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( Msg, "On measure", MB_ICONQUESTION | MB_YESNO ) )
 		{
 			MeasurePrimarySecondarySaturationScales();
 

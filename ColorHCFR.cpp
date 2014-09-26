@@ -858,12 +858,114 @@ void CColorHCFRApp::EndMeasureCursor ()
 		m_hSavedCursor = NULL;
 	}
 }
+LRESULT CALLBACK MsgBoxHookProc(int nCode, WPARAM wParam, LPARAM lParam)
+{// Process WH_CALLWNDPROCRET hook messages for MessageBox
+ //
+ // Local variables
+ //
+ //	szClassName				: Window classname
+ // pMenu					: Pointer to system menu
+ // hWndParent				: Handle to parent window
+
+	char szClassName[100] = { NULL };
+	HWND us = ((LPCWPRETSTRUCT)lParam)->hwnd;
+	HWND hWndParent = NULL;
+
+		if((hWndParent = GetParent(us)) == NULL)
+		{// No parent found
+
+		 // Use the desktop window as the parent			
+			hWndParent = GetDesktopWindow();
+		}
+
+		if(!(nCode < 0))
+		{// Process this message
+
+		 // Get classname of window
+			GetClassName(us, szClassName, 100);
+
+			if(!lstrcmpi(szClassName, "#32770") && GetConfig()->m_bmoveMessage)
+				{// Window is messagebox
+
+					switch(((LPCWPRETSTRUCT)lParam)->message)
+					{// Process message for window
+
+					 // Process WM_INITDIALOG message
+						case WM_INITDIALOG:
+
+						 // Change button text here as follows
+						 // IDCANCEL for OK in MB_OK or Cancel in MB_OKCANCEL, MB_RETRYCANCEL, MB_YESNOCANCEL
+						 // IDOK for OK in MB_OKCANCEL 
+						 // IDABORT for Abort in MB_ABORTRETRYIGNORE
+						 // IDRETRY for Retry in MB_ABORTRETRYIGNORE
+						 // IDIGNORE for Ignore in MB_ABORTRETRYIGNORE
+						 // IDYES for Yes in MB_YESNO or MB_YESNOCANCEL
+						 // IDNO for No in MB_YESNO or MB_YESNOCANCEL
+//							SendMessage(GetDlgItem(((LPCWPRETSTRUCT)lParam)->hwnd, IDOK), WM_SETTEXT, 0, (LPARAM)"What");
+							RECT rc;
+							GetClientRect(us, &rc);
+							int X = GetSystemMetrics( SM_CXSCREEN );
+							int Y = GetSystemMetrics( SM_CYSCREEN );
+							//move 1/2 a screen to right - avoid prompts underneath meter 
+							SetWindowPos(us, HWND_TOP, X / 2 - rc.right / 2 + X / 4, Y / 2 - rc.bottom / 2, 0, 0, SWP_NOSIZE);
+							break;
+					}
+				}
+		}
+
+ // Call next hook
+	return CallNextHookEx((HHOOK)GetProp(hWndParent, "MsgBoxHook"), nCode, wParam, lParam);
+}
+
+int MessageBox_(HWND hWnd, LPCTSTR lpszText, LPCTSTR lpszCaption, UINT uType)
+{// Show message box
+ //
+ //	Local variables
+ //
+ //	mbp						: Message box parameters
+ //	nRet					: MessageBoxIndirect return value
+
+	MSGBOXPARAMS mbp = { NULL };
+	int nRet;
+
+ // Initialise message box parameters
+	mbp.cbSize = sizeof(mbp);
+	mbp.hwndOwner = hWnd;
+	mbp.lpszText = lpszText;
+	mbp.lpszCaption = lpszCaption;
+	mbp.dwStyle = uType;
+
+		if(hWnd == NULL)
+		{// No window handle supplied 
+
+		 // Use desktop window handle
+			hWnd = GetDesktopWindow();
+		}
+
+ // Set a WH_CBT hook
+	SetProp(hWnd, "MsgBoxHook", SetWindowsHookEx(WH_CALLWNDPROCRET, MsgBoxHookProc, NULL, GetCurrentThreadId()));
+
+ // Show message box
+	nRet = MessageBox(hWnd, lpszText, lpszCaption, uType);
+
+		if(GetProp(hWnd, "MsgBoxHook"))
+		{// Remove WH_CALLWNDPROC hook
+
+		 // Remove WH_CALLWNDPROC hook
+			UnhookWindowsHookEx((HHOOK)RemoveProp(hWnd, "MsgBoxHook"));
+		}
+
+ // Return MessageBox result
+	return nRet;
+}
+
 
 int CColorHCFRApp::InMeasureMessageBox(LPCSTR lpText, LPCSTR lpCaption, UINT uType)
 {
 	::SetCursor ( ::LoadCursor ( NULL, IDC_ARROW ) );
 
-	int nRet = m_pMainWnd -> MessageBox ( lpText, lpCaption, uType );
+//	int nRet = m_pMainWnd -> MessageBox ( lpText, lpCaption, uType );
+	int nRet = MessageBox_ (NULL, lpText, lpCaption, uType );
 	
 	BringPatternWindowToTop ();
 	RestoreMeasureCursor ();

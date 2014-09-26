@@ -19,7 +19,6 @@
 
 // MainView.cpp : implementation of the CMainView class
 //
-
 #include "stdafx.h"
 #include "ColorHCFR.h"
 
@@ -41,7 +40,6 @@
 #include "../ColorHCFRConfig.h"
 
 #include "DocEnumerator.h"	//Ki
-
 #include <math.h>
 #include <algorithm>
 #include <vector>
@@ -571,7 +569,7 @@ void CMainView::RefreshSelection()
 	Item.nFormat = DT_RIGHT;
 	Item.row = 0;
 	Item.col = 1;
-	
+
 	if (m_displayMode <= 11)
     {
         int size=GetDocument()->GetMeasure()->GetGrayScaleSize();
@@ -1269,11 +1267,12 @@ void CMainView::InitSelectedColorGrid()
 	Item.mask = GVIF_TEXT|GVIF_FORMAT;
 	Item.nFormat = DT_CENTER|DT_WORDBREAK;
 
-    static char * RowLabels [] = { "cd/m²", "ftL", "T°", "X", "Y", "Z", "R", "G", "B", "x", "y", "Y", "x", "y", "z", "L", "a", "b", "L", "C", "H"};
+    char * RowLabels [] = { "cd/m²", "ftL", "T°", "X", "Y", "Z", "R", "G", "B", "x", "y", "Y", "x", "y", "z", "L", "a", "b", "L", "C", "H"};
+            
     if (GetDocument()->m_pSensor->ReadingType() == 2)
     {
-        RowLabels [0] = "lux";
-        RowLabels [1] = "ft-c";
+			RowLabels [0] = "lux";
+	        RowLabels [1] = "ft-c";
     }
 
     for(int i=0;i<21;i++)
@@ -1350,6 +1349,7 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
 	int		nForceMode = -1;
 	double	dContrast;
+	InitSelectedColorGrid();
 
 	// TODO: add a general option for that ?
 	if ( 1 )
@@ -3479,7 +3479,6 @@ void CMainView::OnSensorrgbRadio()
 	m_displayType=HCFR_SENSORRGB_VIEW;
 	InitGrid();	// to update row labels
 	UpdateGrid();
-    InitSelectedColorGrid();
 }
 
 void CMainView::OnRgbRadio() 
@@ -3838,7 +3837,7 @@ void CMainView::OnDeleteGrayscale()
 		}
 	}
 
-	if(MessageBox(Msg,Title,MB_ICONQUESTION | MB_YESNO) == IDYES)
+	if(GetColorApp()->InMeasureMessageBox(Msg,Title,MB_ICONQUESTION | MB_YESNO) == IDYES)
 	{
 		int	j;
 		switch ( m_displayMode )
@@ -4917,7 +4916,7 @@ void CMainView::OnAnsiContrastPatternTestButton()
 	pGenerator->DisplayAnsiBWRects(FALSE);
 
 	Msg.LoadString ( IDS_CLICKOK );
-	MessageBox(Msg);
+	GetColorApp()->InMeasureMessageBox(Msg);
 	pGenerator->Release();
 }
 

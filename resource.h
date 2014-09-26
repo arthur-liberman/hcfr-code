@@ -671,6 +671,8 @@
 #define IDC_BK_WHITE_SCREEN             1249
 #define IDC_BK_WHITE_FILE               1250
 #define IDC_EDIT_NAME                   1250
+#define IDC_BK_WHITE_FILE2              1251
+#define IDC_MOVE_MESSAGE                1251
 #define IDC_EDIT_INFOS                  1252
 #define IDC_CHECK_CALIBRATION_OLD       1252
 #define IDC_CHECK_IMPERIAL              1253
@@ -705,7 +707,6 @@
 #define IDC_ARGYLLSENSOR_INTTIME_COMBO  1272
 #define IDC_DISPLAY_TECH                1273
 #define IDC_ARGYLL_SENSOR_HIRES2        1273
-#define IDC_ARGYLL_SENSOR_ADAPT         1273
 #define IDC_BGSTIM_EDIT                 1274
 #define IDC_INTENSITY_EDIT              1275
 #define IDC_OVERLAY                     1276

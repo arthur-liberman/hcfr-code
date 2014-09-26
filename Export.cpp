@@ -161,7 +161,7 @@ bool CExport::Save()
 		{
 			Msg.LoadString ( IDS_NOMEASURES );
 			Title.LoadString ( IDS_EXPORT );
-			if(MessageBox(NULL,Msg,Title,MB_YESNO)!=IDYES)
+			if(GetColorApp()->InMeasureMessageBox(Msg,Title,MB_YESNO)!=IDYES)
 				return false;
 		}
 	}
@@ -182,7 +182,7 @@ bool CExport::SaveSheets()
 		CString	Msg, Title;
 		Msg.LoadString ( IDS_ERREXPORT );
 		Title.LoadString ( IDS_EXPORT );
-		MessageBox(NULL,Msg+"\n"+m_errorStr,Title,MB_OK);
+		GetColorApp()->InMeasureMessageBox(Msg+"\n"+m_errorStr,Title,MB_OK);
 	}
 	return result;
 }

@@ -68,7 +68,7 @@ CArgyllSensor::CArgyllSensor() :
     }
     catch (std::logic_error& e)
     {
-        MessageBox(NULL, e.what(), "Argyll Meter", MB_OK+MB_ICONHAND);
+        GetColorApp()->InMeasureMessageBox( e.what(), "Argyll Meter", MB_OK+MB_ICONHAND);
     }
 }
 
@@ -85,7 +85,7 @@ CArgyllSensor::CArgyllSensor(ArgyllMeterWrapper* meter) :
     m_debugMode = GetConfig()->GetProfileInt(meterName.c_str(), "DebugMode", 0);
     m_HiRes = GetConfig()->GetProfileInt(meterName.c_str(), "HiRes", 0);
 
-    m_Adapt = GetConfig()->GetProfileInt(meterName.c_str(), "Adapt", 0);
+//    m_Adapt = GetConfig()->GetProfileInt(meterName.c_str(), "Adapt", 0);
     
     m_ArgyllSensorPropertiesPage.m_pSensor = this;
 
@@ -103,7 +103,7 @@ CArgyllSensor::CArgyllSensor(ArgyllMeterWrapper* meter) :
     }
     catch (std::logic_error& e)
     {
-        MessageBox(NULL, e.what(), "Argyll Meter", MB_OK+MB_ICONHAND);
+        GetColorApp()->InMeasureMessageBox( e.what(), "Argyll Meter", MB_OK+MB_ICONHAND);
     }
 }
 
@@ -125,6 +125,7 @@ void CArgyllSensor::Copy(CSensor * p)
     m_intTime = ((CArgyllSensor*)p)->m_intTime;
     m_HiRes = ((CArgyllSensor*)p)->m_HiRes;
     m_Adapt = ((CArgyllSensor*)p)->m_Adapt;
+	
  
     if(m_meter >= 0)
     {
@@ -152,7 +153,7 @@ void CArgyllSensor::Serialize(CArchive& archive)
         archive << m_debugMode;
         archive << m_HiRes;
         archive << m_intTime;
-        archive << m_Adapt;
+//        archive << m_Adapt;
         if(m_meter)
         {
             archive << CString(m_meter->getMeterName().c_str());
@@ -168,7 +169,7 @@ void CArgyllSensor::Serialize(CArchive& archive)
         archive >> m_ReadingType;
         archive >> m_SpectralType;
         if ( version > 3)
-            archive >> m_Adapt;
+//            archive >> m_Adapt;
         if ( version > 2)
             archive >> m_intTime;
         if(version == 1)
@@ -225,7 +226,7 @@ void CArgyllSensor::SetPropertiesSheetValues()
     m_ArgyllSensorPropertiesPage.m_obTypeEnabled = (m_meter->doesMeterSupportSpectralSamples() || !m_meter->isColorimeter());
     m_ArgyllSensorPropertiesPage.m_intTimeEnabled = (m_meter->getMeterName() == "Xrite i1 DisplayPro, ColorMunki Display");
     m_ArgyllSensorPropertiesPage.m_HiRes=m_HiRes;
-    m_ArgyllSensorPropertiesPage.m_Adapt=m_Adapt;
+//    m_ArgyllSensorPropertiesPage.m_Adapt=m_Adapt;
     m_ArgyllSensorPropertiesPage.m_MeterName = m_meter->getMeterName().c_str();
 }
 
@@ -245,8 +246,7 @@ void CArgyllSensor::GetPropertiesSheetValues()
         m_SpectralType != m_ArgyllSensorPropertiesPage.m_SpectralType ||
         m_DisplayType != m_ArgyllSensorPropertiesPage.m_DisplayType ||
         m_HiRes != m_ArgyllSensorPropertiesPage.m_HiRes ||
-        m_intTime != m_ArgyllSensorPropertiesPage.m_intTime ||
-        m_Adapt != m_ArgyllSensorPropertiesPage.m_Adapt)
+        m_intTime != m_ArgyllSensorPropertiesPage.m_intTime) //||m_Adapt != m_ArgyllSensorPropertiesPage.m_Adapt)
     {
         SetModifiedFlag(TRUE);
         m_ReadingType=m_ArgyllSensorPropertiesPage.m_ReadingType;
@@ -254,14 +254,14 @@ void CArgyllSensor::GetPropertiesSheetValues()
         m_DisplayType=m_ArgyllSensorPropertiesPage.m_DisplayType;
         m_HiRes = m_ArgyllSensorPropertiesPage.m_HiRes;
         m_intTime=m_ArgyllSensorPropertiesPage.m_intTime;
-        m_Adapt=m_ArgyllSensorPropertiesPage.m_Adapt;
+//        m_Adapt=m_ArgyllSensorPropertiesPage.m_Adapt;
 
         GetConfig()->WriteProfileInt(meterName.c_str(), "ReadingType", m_ReadingType );
         GetConfig()->WriteProfileString(meterName.c_str(), "SpectralType", m_SpectralType );
         GetConfig()->WriteProfileInt(meterName.c_str(), "IntTime", m_intTime );
         GetConfig()->WriteProfileInt(meterName.c_str(), "DisplayType", m_DisplayType );
         GetConfig()->WriteProfileInt(meterName.c_str(), "HiRes", m_HiRes );
-        GetConfig()->WriteProfileInt(meterName.c_str(), "Adapt", m_Adapt );
+//        GetConfig()->WriteProfileInt(meterName.c_str(), "Adapt", m_Adapt );
         Init(TRUE);
     }
 }
@@ -295,65 +295,26 @@ BOOL CArgyllSensor::Init( BOOL bForSimultaneousMeasures )
 
     if(!m_meter->connectAndStartMeter(errorDescription, (ArgyllMeterWrapper::eReadingType)m_ReadingType, m_SpectralType, CArgyllSensor::isInDebugMode(), i_time, ((m_DisplayType == 1) || CArgyllSensor::isRefresh()) && !(m_DisplayType == 0)  ) )
     {
-        MessageBox(NULL, errorDescription.c_str(), "Argyll Meter", MB_OK+MB_ICONHAND);
+        GetColorApp()->InMeasureMessageBox( errorDescription.c_str(), "Argyll Meter", MB_OK+MB_ICONHAND);
         m_meter = 0;
         return FALSE;
     }
     m_meter->setHiResMode(!!m_HiRes);
-//	m_Adapt = !m_Adapt;
-//	m_meter->setAdaptMode();
     if(m_DisplayType != 0xFFFFFFFF)
     {
         m_meter->setDisplayType(m_DisplayType);
     }
 
-//    if (bForSimultaneousMeasures)
-//        MessageBox(NULL, m_meter->getDisplayTypeText(m_meter->getDisplayType()), "Display Type Set", MB_OK);
-
- //ccss is now loaded through display type
-    // Cause the meter to load the user-specified spectral calibration .ccss file
-/*    try
-    {
-        if (m_meter->doesMeterSupportSpectralSamples())
-        {
-                        MessageBox(NULL,(LPCSTR)m_SpectralType,"test",MB_OK);
-           // see if the sample exists, otherwise reset
-            // thus the <None> string or translation will cause a reset as required
-            if (m_spectralSamples->doesSampleDescriptionExist((LPCSTR)m_SpectralType))
-            {
-                if (m_meter->currentSpectralSampleDescription() != (LPCSTR)m_SpectralType )
-                {
-                    const SpectralSample& spectralSample(m_spectralSamples->getSample((LPCSTR)m_SpectralType));
-                    m_meter->loadSpectralSample(spectralSample);
-                }
-                else
-                {
-                    ; // do nothing - already in correct state
-                }
-            }
-            else
-            {
-                m_meter->resetSpectralSample();
-            }
-        }
-    }
-
-    catch (std::logic_error& e)
-    {
-        MessageBox(NULL, e.what(), "Argyll Meter", MB_OK+MB_ICONHAND);
-        return FALSE;
-    }
-    */
     //Alert user if in ambient/lux mode
     if (bForSimultaneousMeasures)
     {
         if (m_meter->getReadingType() == 2)
-            MessageBox(NULL, "Ambient mode set, values will be reported in LUX", "Argyll Meter set-up", MB_OK);
+            GetColorApp()->InMeasureMessageBox( "Ambient mode set, values will be reported in LUX", "Argyll Meter set-up", MB_OK);
         if (m_meter->getReadingType() != m_ReadingType)
         {
             char s1 [128];
             sprintf(s1, "Reading mode not available, defaulting to %s",m_meter->getReadingType()==0?"DISPLAY":(m_meter->getReadingType()==1?"PROJECTOR":"AMBIENT"));
-            MessageBox(NULL, s1, "Argyll Meter set-up", MB_OK);
+            GetColorApp()->InMeasureMessageBox( s1, "Argyll Meter set-up", MB_OK);
             m_ReadingType = m_meter->getReadingType();
         }   
     }
@@ -385,7 +346,7 @@ CColor CArgyllSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
         }
         if(state == ArgyllMeterWrapper::INCORRECT_POSITION)
         {
-            MessageBox(NULL, m_meter->getIncorrectPositionInstructions().c_str(), "Incorrect Position", MB_OK+MB_ICONHAND);
+            GetColorApp()->InMeasureMessageBox( m_meter->getIncorrectPositionInstructions().c_str(), "Incorrect Position", MB_OK+MB_ICONHAND);
         }
     }
     return m_meter->getLastReading();
@@ -394,13 +355,13 @@ CColor CArgyllSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 void CArgyllSensor::Calibrate()
 {
     if(!Init(FALSE)) {
-        MessageBox(NULL, "Meter failed init check","Meter initialization error",MB_OK);
+        GetColorApp()->InMeasureMessageBox( "Meter failed init check","Meter initialization error",MB_OK);
         return;
     }
 
     if(!m_meter->doesMeterSupportCalibration()) 
     {
-        MessageBox(NULL, "No calibration capabilities are defined for this probe.","No Cals found",MB_OK);
+        GetColorApp()->InMeasureMessageBox( "No calibration capabilities are defined for this probe.","No Cals found",MB_OK);
         return;
     }
 
@@ -413,14 +374,14 @@ void CArgyllSensor::Calibrate()
             break;
         }
 
-        MessageBox(NULL, meterInstructions.c_str(), "Calibration Instructions", MB_OK);
+        GetColorApp()->InMeasureMessageBox( meterInstructions.c_str(), "Calibration Instructions", MB_OK);
         state = m_meter->calibrate();
         if(state == ArgyllMeterWrapper::INCORRECT_POSITION)
         {
-            MessageBox(NULL, m_meter->getIncorrectPositionInstructions().c_str(), "Incorrect Position", MB_OK+MB_ICONHAND);
+            GetColorApp()->InMeasureMessageBox( m_meter->getIncorrectPositionInstructions().c_str(), "Incorrect Position", MB_OK+MB_ICONHAND);
         }
     }
-    MessageBox(NULL, "Device is now calibrated.  If the device requires it return to the correct measurement position.", "Calibration Complete", MB_OK);
+    GetColorApp()->InMeasureMessageBox( "Device is now calibrated.  If the device requires it return to the correct measurement position.", "Calibration Complete", MB_OK);
 }
 
 void CArgyllSensor::GetUniqueIdentifier( CString & strId )
@@ -490,7 +451,7 @@ bool CArgyllSensor::isColorimeter() const
     return m_meter->isColorimeter();
 }
 
-bool CArgyllSensor::setAvg() const
+bool CArgyllSensor::setAvg()
 {
     return m_meter->setAdaptMode();
 }

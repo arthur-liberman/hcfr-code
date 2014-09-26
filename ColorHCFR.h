@@ -139,7 +139,8 @@ public:
 	void RestoreMeasureCursor ();
 	void EndMeasureCursor ();
 	int InMeasureMessageBox(LPCSTR lpText, LPCSTR lpCaption = NULL, UINT uType = MB_OK);
-
+	LRESULT CALLBACK MsgBoxHookProc(int nCode, WPARAM wParam, LPARAM lParam);
+	
 	// LX-1108 luxmeter handling
 	void StartLuxMeasures ();
 	BOOL IsLuxmeterRunning ();
@@ -206,7 +207,6 @@ private:
 
 inline CColorHCFRApp * GetColorApp () { return (CColorHCFRApp *) AfxGetApp (); }
 inline CColorReference& GetColorReference() {return *(GetColorApp()->m_pColorReference);}
-
 /////////////////////////////////////////////////////////////////////////////
 
 //{{AFX_INSERT_LOCATION}}

@@ -81,7 +81,7 @@ public:
     virtual CString SpectralType() const {return m_SpectralType;}
     void FillDisplayTypeCombo(CComboBox& comboToFill);
     virtual bool isColorimeter() const;
-    virtual bool setAvg() const;
+    virtual bool setAvg();
     virtual bool isRefresh() const;
 private:
     virtual CColor MeasureColorInternal(const ColorRGBDisplay& aRGBValue);

@@ -9165,7 +9165,6 @@ BOOL CMenuTheme::OnUnInitWnd(HWND hWnd)
       ShowLastError(_T("Error from Menu: SetWindowLongPtr II"));
       // Normaly when you change the style you shold call next function
       // but in this case you would lose the focus for the menu!!
-      //SetWindowPos(hWnd,0,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE|SWP_NOZORDER|SWP_FRAMECHANGED|SWP_HIDEWINDOW);
     }
   }
   return TRUE;
@@ -10486,7 +10485,6 @@ BOOL CNewDialog::OnInitDialog()
   {
     UpdateMenuBarColor(m_DefaultNewMenu);
   }
-
   return bRetval;
 }
 
@@ -11243,7 +11241,7 @@ LRESULT CALLBACK ShadeWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
       CRect rect;
       HWND hParent = GetParent(hWnd);
       GetWindowRect(hParent,rect);
-      SetWindowPos(hWnd,0,rect.right,rect.top,6,rect.Height(),SWP_NOZORDER|SWP_SHOWWINDOW);
+	  SetWindowPos(hWnd,0,rect.right,rect.top,6,rect.Height(),SWP_NOZORDER|SWP_SHOWWINDOW);
     }
 
     break;
@@ -11297,7 +11295,7 @@ LRESULT CALLBACK ShadeWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
           pShadeInfo->parentRect.right,pShadeInfo->parentRect.top+5,
           5,pShadeInfo->parentRect.Height()-5,
           SWP_SHOWWINDOW|SWP_NOACTIVATE);
-      }
+      } 
       //GetSafeTimerID(hWnd,200);
     }
     break;

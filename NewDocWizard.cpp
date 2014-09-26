@@ -68,19 +68,6 @@ END_MESSAGE_MAP()
 BOOL CNewDocWizard::OnInitDialog()
 {
 	BOOL bResult = CPropertySheetWithHelp::OnInitDialog();
-
-	// add a preview window to the property sheet.
-/*	CRect rectWnd;
-	GetWindowRect(rectWnd);
-	SetWindowPos(NULL, 0, 0,
-		rectWnd.Width() + 100,
-		rectWnd.Height(),
-		SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
-	CRect rectPreview(rectWnd.Width() + 25, 25,
-		rectWnd.Width()+75, 75);
-
-	m_wndPreview.Create(NULL, NULL, WS_CHILD|WS_VISIBLE, rectPreview, this, 0x1000); */
-
 	CenterWindow();
 	return bResult;
 }

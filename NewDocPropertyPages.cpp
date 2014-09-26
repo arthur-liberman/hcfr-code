@@ -137,7 +137,7 @@ void CSensorSelectionPropPage::DoDataExchange(CDataExchange* pDX)
         ArgyllMeterWrapper::ArgyllMeterWrappers argyllMeters = ArgyllMeterWrapper::getDetectedMeters(errorMessage);
         if(!errorMessage.empty())
         {
-            MessageBox(errorMessage.c_str(), "Argyll Error", MB_OK | MB_ICONEXCLAMATION);
+           GetColorApp()->InMeasureMessageBox(errorMessage.c_str(), "Argyll Error", MB_OK | MB_ICONEXCLAMATION);
         }
         for(size_t i(0); i < argyllMeters.size(); ++i)
         {

@@ -58,6 +58,7 @@ public:
 	BOOL	m_doXpBlending;
 	BOOL	m_bWhiteBkgndOnScreen;
 	BOOL	m_bWhiteBkgndOnFile;
+	BOOL	m_bmoveMessage;
 	//}}AFX_DATA
 
 	virtual UINT GetHelpId ( LPSTR lpszTopic );

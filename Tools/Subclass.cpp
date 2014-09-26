@@ -164,6 +164,9 @@ HookWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 
 	} else {
 		// pass to msg hook
+		if (msg == WM_NOTIFY)
+		{
+		}
 		lr = pSubclassWnd->WindowProc(msg, wp, lp);
 	}
 	curMsg = oldMsg;			// pop state

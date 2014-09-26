@@ -67,7 +67,7 @@ BOOL CManualDVDGenerator::DisplayGray(double aLevel, MeasureType nPatternType,BO
 
 	Msg.LoadString ( IDS_DVDMANPOS1 );
 	str.Format(Msg,floor(aLevel+0.5));
-	bRet = ( MessageBox(NULL,str,Title,MB_ICONINFORMATION | MB_OKCANCEL | MB_TOPMOST) == IDOK );
+	bRet = ( GetColorApp()->InMeasureMessageBox(str,Title,MB_ICONINFORMATION | MB_OKCANCEL | MB_TOPMOST) == IDOK );
 
 	if(m_doScreenBlanking)
 	{
@@ -442,7 +442,8 @@ char*  PatName[96]={
 	if ( nPatternType == MT_ACTUAL )
 		bRet = TRUE;
 	else
-		bRet = ( MessageBox(NULL,Msg,Title,MB_ICONINFORMATION | MB_OKCANCEL | MB_TOPMOST) == IDOK );
+		bRet = ( GetColorApp()->InMeasureMessageBox(Msg,Title,MB_ICONINFORMATION | MB_OKCANCEL | MB_TOPMOST) == IDOK );
+//		bRet = ( MessageBox(NULL,Msg,Title,MB_ICONINFORMATION | MB_OKCANCEL | MB_TOPMOST) == IDOK );
 
 	if(m_doScreenBlanking)
 	{
@@ -465,7 +466,7 @@ BOOL CManualDVDGenerator::DisplayAnsiBWRects(BOOL bInvert)
 	else
 		str.LoadString ( IDS_DVDMANPOS10 );
 
-	bRet = ( MessageBox(NULL,str,Title,MB_ICONINFORMATION | MB_OKCANCEL | MB_TOPMOST) == IDOK );
+	bRet = ( GetColorApp()->InMeasureMessageBox(str,Title,MB_ICONINFORMATION | MB_OKCANCEL | MB_TOPMOST) == IDOK );
 
 	if(m_doScreenBlanking)
 	{

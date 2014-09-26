@@ -174,7 +174,6 @@ BOOL CNewPropertySheet::OnInitDialog()
   {
     UpdateMenuBarColor(m_DefaultNewMenu);
   }
-
   return bRetval;
 }
 // CNewPropertyPage message handlers

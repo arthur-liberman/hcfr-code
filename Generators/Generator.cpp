@@ -143,13 +143,13 @@ BOOL CGenerator::Init(UINT nbMeasure)
 	  }
 	  else
 	  {
-	    MessageBox(0, "madVR dll found but BlindConnect() failed, is madVR running?", "Error", MB_ICONERROR);
+	    GetColorApp()->InMeasureMessageBox( "madVR dll found but BlindConnect() failed, is madVR running?", "Error", MB_ICONERROR);
 	    return false;
 	  }
 	}
 	else
 	{
-	    MessageBox(0, "madVR dll not found, is madVR installed?", "Error", MB_ICONERROR);
+	    GetColorApp()->InMeasureMessageBox( "madVR dll not found, is madVR installed?", "Error", MB_ICONERROR);
 	    return false;
 	}
 	}

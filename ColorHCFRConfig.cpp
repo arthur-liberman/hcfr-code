@@ -280,6 +280,7 @@ void CColorHCFRConfig::InitDefaults()
 	m_doGlooming=FALSE;
 	m_bWhiteBkgndOnScreen = FALSE;
 	m_bWhiteBkgndOnFile = TRUE;
+	m_bmoveMessage = FALSE;
 
 	m_fxColorWindow=CLR_DEFAULT;
 	m_fxColorMenu=CLR_DEFAULT;
@@ -356,6 +357,7 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_doGlooming=GetProfileInt("Appearance","DoGlooming",FALSE);
 	m_bWhiteBkgndOnScreen=GetProfileInt("Appearance","WhiteBkgndOnScreen",FALSE);
 	m_bWhiteBkgndOnFile=GetProfileInt("Appearance","WhiteBkgndOnFile",TRUE);
+	m_bmoveMessage=GetProfileInt("Appearance","MoveMessage",FALSE);
 	m_useCustomColor=GetProfileInt("Appearance","UseCustomColor",FALSE);
 	m_fxColorWindow=GetProfileColor("Appearance","Window Color");
 	m_fxColorMenu=GetProfileColor("Appearance","Menu Color");
@@ -415,6 +417,7 @@ void CColorHCFRConfig::SaveSettings()
 	WriteProfileInt("Appearance","DoGlooming",m_doGlooming);
 	WriteProfileInt("Appearance","WhiteBkgndOnScreen",m_bWhiteBkgndOnScreen);
 	WriteProfileInt("Appearance","WhiteBkgndOnFile",m_bWhiteBkgndOnFile);
+	WriteProfileInt("Appearance","MoveMessage",m_bmoveMessage);
 
 	WriteProfileInt("Appearance","UseCustomColor",m_useCustomColor);
 	WriteProfileColor("Appearance","Window Color",m_fxColorWindow);
@@ -508,6 +511,7 @@ void CColorHCFRConfig::SetPropertiesSheetValues()
 	m_appearancePropertiesPage.m_colorTextButton.SetColor(m_fxColorText);
 	m_appearancePropertiesPage.m_bWhiteBkgndOnScreen=m_bWhiteBkgndOnScreen;
 	m_appearancePropertiesPage.m_bWhiteBkgndOnFile=m_bWhiteBkgndOnFile;
+	m_appearancePropertiesPage.m_bmoveMessage=m_bmoveMessage;
 
 	m_toolbarPropertiesPage.m_TBViewsRightClickMode = m_TBViewsRightClickMode;
 	m_toolbarPropertiesPage.m_TBViewsMiddleClickMode = m_TBViewsMiddleClickMode;
@@ -603,6 +607,7 @@ BOOL CColorHCFRConfig::GetPropertiesSheetValues()
 	m_doGlooming=m_appearancePropertiesPage.m_doGlooming;
 	m_bWhiteBkgndOnScreen=m_appearancePropertiesPage.m_bWhiteBkgndOnScreen;
 	m_bWhiteBkgndOnFile=m_appearancePropertiesPage.m_bWhiteBkgndOnFile;
+	m_bmoveMessage=m_appearancePropertiesPage.m_bmoveMessage;
 	m_useCustomColor=m_appearancePropertiesPage.m_useCustomColor;
 	m_fxColorWindow=m_appearancePropertiesPage.m_colorWindowButton.GetColor();
 	m_fxColorMenu=m_appearancePropertiesPage.m_colorMenuButton.GetColor();

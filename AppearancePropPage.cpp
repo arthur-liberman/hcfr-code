@@ -46,6 +46,7 @@ CAppearancePropPage::CAppearancePropPage() : CPropertyPageWithHelp(CAppearancePr
 	m_doXpBlending = FALSE;
 	m_bWhiteBkgndOnScreen = FALSE;
 	m_bWhiteBkgndOnFile = TRUE;
+	m_bmoveMessage = FALSE;
 	//}}AFX_DATA_INIT
 	
 	m_isModified=FALSE;
@@ -72,13 +73,14 @@ void CAppearancePropPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_XPBLENDING_CHECK, m_doXpBlending);
 	DDX_Check(pDX, IDC_BK_WHITE_SCREEN, m_bWhiteBkgndOnScreen);
 	DDX_Check(pDX, IDC_BK_WHITE_FILE, m_bWhiteBkgndOnFile);
+	DDX_Check(pDX, IDC_MOVE_MESSAGE, m_bmoveMessage);
 	//}}AFX_DATA_MAP
 }
 
 
 BEGIN_MESSAGE_MAP(CAppearancePropPage, CPropertyPageWithHelp)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_THEME_COMBO, IDC_RADIO7, OnControlClicked)
-    ON_CONTROL_RANGE(BN_CLICKED, IDC_BK_WHITE_SCREEN, IDC_BK_WHITE_FILE, OnWhiteCheckClicked)
+    ON_CONTROL_RANGE(BN_CLICKED, IDC_BK_WHITE_SCREEN, IDC_MOVE_MESSAGE, OnWhiteCheckClicked)
     ON_CONTROL_RANGE(CBN_SELCHANGE, IDC_THEME_COMBO, IDC_RADIO7, OnControlClicked)
     ON_MESSAGE(CPN_SELENDOK, OnColorChanged)
 	//{{AFX_MSG_MAP(CAppearancePropPage)

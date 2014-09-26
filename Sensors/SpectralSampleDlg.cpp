@@ -88,7 +88,7 @@ void CSpectralSampleDlg::OnOK()
 		CString	Title, errorMessage;
 		Title.LoadString(IDS_SPECTRAL_SAMPLE);
 		errorMessage.LoadString(IDS_SPECTRAL_SAMPLE_NEED_FIELDS);
-		MessageBox(errorMessage, Title, MB_OK | MB_ICONHAND);
+		GetColorApp()->InMeasureMessageBox(errorMessage, Title, MB_OK | MB_ICONHAND);
 	}
 	else
 	{

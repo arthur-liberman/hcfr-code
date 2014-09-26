@@ -226,6 +226,7 @@ public:
 	BOOL ValidateBackgroundCC24SatScale ( BOOL bUseLuxValues, double * pLuxValues );
 	BOOL ValidateBackgroundGrayScaleAndColors ( BOOL bUseLuxValues, double * pLuxValues );
 	BOOL ValidateBackgroundSingleMeasurement ( BOOL bUseLuxValues, double * pLuxValues );
+
 };
 
 #endif // !defined(AFX_MEASURE_H__4A61BBE7_7779_4FCD_90B5_E9F22517DFBD__INCLUDED_)
