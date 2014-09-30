@@ -110,8 +110,8 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
             }
         }
         else if ( m_pRefColor -> GetDeltaxy (GetColorReference().GetRed(), GetColorReference() ) < 0.05 )
-		{
-			centerXYZ = GetColorReference().GetRed();
+		{			
+			centerXYZ =  m_pDocument->GetMeasure()->GetRefPrimary(0).GetXYZValue();
 			switch (GetConfig()->m_colorStandard)
 			{
 				case HDTVa:
@@ -142,7 +142,7 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 		}
 		else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetGreen(), GetColorReference() ) < 0.05 )
 		{
-			centerXYZ = GetColorReference().GetGreen();
+			centerXYZ =  m_pDocument->GetMeasure()->GetRefPrimary(1).GetXYZValue();
 			switch (GetConfig()->m_colorStandard)
 			{
 				case HDTVa:
@@ -173,7 +173,7 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 		}
 		else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetBlue(), GetColorReference() ) < 0.05 )
 		{
-			centerXYZ = GetColorReference().GetBlue();
+			centerXYZ = m_pDocument->GetMeasure()->GetRefPrimary(2).GetXYZValue();
 			switch (GetConfig()->m_colorStandard)
 			{
 				case HDTVa:
@@ -204,7 +204,7 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 		}
 		else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetYellow(), GetColorReference() ) < 0.05 )
 		{
-			centerXYZ = GetColorReference().GetYellow();
+			centerXYZ = m_pDocument->GetMeasure()->GetRefSecondary(0).GetXYZValue();
 			switch (GetConfig()->m_colorStandard)
 			{
 				case HDTVa:
@@ -235,7 +235,7 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 		}
 		else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetCyan(), GetColorReference() ) < 0.05 )
 		{
-			centerXYZ = GetColorReference().GetCyan();
+			centerXYZ = m_pDocument->GetMeasure()->GetRefSecondary(1).GetXYZValue();;
 			switch (GetConfig()->m_colorStandard)
 			{
 				case HDTVa:
@@ -266,7 +266,7 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 		}
 		else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetMagenta(), GetColorReference() ) < 0.05 )
 		{
-			centerXYZ = GetColorReference().GetMagenta();
+			centerXYZ = m_pDocument->GetMeasure()->GetRefSecondary(2).GetXYZValue();
 			switch (GetConfig()->m_colorStandard)
 			{
 				case HDTVa:

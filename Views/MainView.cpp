@@ -1760,17 +1760,34 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				// Display primary/secondary/saturations colors delta luminance
 				int	    nCol2 = nCol, satsize=GetDocument()->GetMeasure()->GetSaturationSize();;
 				double  RefLuma [1000], sat=double (nCol)/ double (satsize-1);
+                CColor White = GetDocument() -> GetMeasure () -> GetGray ( GetDocument()->GetMeasure()->GetGrayScaleSize() - 1 );
+	            CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
 				CColor satcolor;
 				// Retrieve color luminance coefficients matching actual reference
 				switch (m_displayMode)
 				{
 					case 1:
-  						RefLuma [ 0 ] = GetColorReference().GetRedReferenceLuma ();
-						RefLuma [ 1 ] = GetColorReference().GetGreenReferenceLuma ();
-						RefLuma [ 2 ] = GetColorReference().GetBlueReferenceLuma ();
-						RefLuma [ 3 ] = GetColorReference().GetYellowReferenceLuma ();
-						RefLuma [ 4 ] = GetColorReference().GetCyanReferenceLuma ();
-						RefLuma [ 5 ] = GetColorReference().GetMagentaReferenceLuma ();
+//  						RefLuma [ 0 ] = GetColorReference().GetRedReferenceLuma ();
+//						RefLuma [ 1 ] = GetColorReference().GetGreenReferenceLuma ();
+//						RefLuma [ 2 ] = GetColorReference().GetBlueReferenceLuma ();
+//						RefLuma [ 3 ] = GetColorReference().GetYellowReferenceLuma ();
+//						RefLuma [ 4 ] = GetColorReference().GetCyanReferenceLuma ();
+//						RefLuma [ 5 ] = GetColorReference().GetMagentaReferenceLuma ();
+						RefLuma [ 0 ] = GetDocument()->GetMeasure()->GetRefPrimary(0).GetLuminance();
+						RefLuma [ 1 ] = GetDocument()->GetMeasure()->GetRefPrimary(1).GetLuminance();
+						RefLuma [ 2 ] = GetDocument()->GetMeasure()->GetRefPrimary(2).GetLuminance();
+						RefLuma [ 3 ] = GetDocument()->GetMeasure()->GetRefSecondary(0).GetLuminance();
+						RefLuma [ 4 ] = GetDocument()->GetMeasure()->GetRefSecondary(1).GetLuminance();
+						RefLuma [ 5 ] = GetDocument()->GetMeasure()->GetRefSecondary(2).GetLuminance();
+//						if (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == CC6 || GetConfig()->m_colorStandard == CC6a)
+//						{
+//							for (int k = 0; k < 6; k++) { 
+//		                    if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
+//			                    RefLuma [ k ] = pow(pow(RefLuma[k],1. / 2.2),log(GetBT1886(pow(RefLuma[k],1. / 2.2),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(RefLuma[k],1. / 2.2)));
+//				            else
+ //   							RefLuma [ k ] = pow(pow(RefLuma[k],1. / 2.2),GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
+//							}
+//						}
 						break ;
 					case 5:
                         satcolor = GetDocument()->GetMeasure()->GetRefSat(0,sat);
@@ -1802,8 +1819,6 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
                             rLuma=aReference.GetLuminance();
                         else
                             rLuma=GetColorReference().GetCC24ReferenceLuma (nCol-1, GetConfig()->m_CCMode );
-                        CColor White = GetDocument() -> GetMeasure () -> GetGray ( GetDocument()->GetMeasure()->GetGrayScaleSize() - 1 );
-	                    CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
                         //luminance is based on 2.2 gamma so we need to scale here actual reference gamma
                         if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
                             RefLuma [ nCol-1 ] = pow(pow(rLuma,1. / 2.22),log(GetBT1886(pow(rLuma,1. / 2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(rLuma,1. / 2.22)));

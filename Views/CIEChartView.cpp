@@ -505,14 +505,21 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 		Msg3.LoadString ( IDS_RECCC6BLUEREF );
 	}
 
-	ColorXYZ cR=GetColorReference().GetRed();
-	ColorXYZ cG=GetColorReference().GetGreen();
-	ColorXYZ cB=GetColorReference().GetBlue();
-	ColorXYZ cY=GetColorReference().GetYellow();
-	ColorXYZ cC=GetColorReference().GetCyan();
-	ColorXYZ cM=GetColorReference().GetMagenta();
-	CColor aColor[6];
+//	ColorXYZ cR=GetColorReference().GetRed();
+//	ColorXYZ cG=GetColorReference().GetGreen();
+//	ColorXYZ cB=GetColorReference().GetBlue();
+//	ColorXYZ cY=GetColorReference().GetYellow();
+//	ColorXYZ cC=GetColorReference().GetCyan();
+//	ColorXYZ cM=GetColorReference().GetMagenta();
+	ColorXYZ cR=pDoc->GetMeasure()->GetRefPrimary(0).GetXYZValue();
+	ColorXYZ cG=pDoc->GetMeasure()->GetRefPrimary(1).GetXYZValue();
+	ColorXYZ cB=pDoc->GetMeasure()->GetRefPrimary(2).GetXYZValue();
+	ColorXYZ cY=pDoc->GetMeasure()->GetRefSecondary(0).GetXYZValue();
+	ColorXYZ cC=pDoc->GetMeasure()->GetRefSecondary(1).GetXYZValue();
+	ColorXYZ cM=pDoc->GetMeasure()->GetRefSecondary(2).GetXYZValue();
 
+	CColor aColor[6];
+	
 	aColor[0].SetXYZValue(cR);
 	aColor[1].SetXYZValue(cG);
 	aColor[2].SetXYZValue(cB);

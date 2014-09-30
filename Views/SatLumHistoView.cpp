@@ -107,12 +107,18 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	}
 	
 	// Retrieve color luminance coefficients matching actual reference
-	double KR = GetColorReference().GetRedReferenceLuma ();  
-	double KG = GetColorReference().GetGreenReferenceLuma ();
-	double KB = GetColorReference().GetBlueReferenceLuma (); 
-	double KY = GetColorReference().GetYellowReferenceLuma (); 
-	double KC = GetColorReference().GetCyanReferenceLuma (); 
-	double KM = GetColorReference().GetMagentaReferenceLuma (); 
+//	double KR = GetColorReference().GetRedReferenceLuma ();  
+//	double KG = GetColorReference().GetGreenReferenceLuma ();
+//	double KB = GetColorReference().GetBlueReferenceLuma (); 
+//	double KY = GetColorReference().GetYellowReferenceLuma (); 
+//	double KC = GetColorReference().GetCyanReferenceLuma (); 
+//	double KM = GetColorReference().GetMagentaReferenceLuma (); 
+	double KR=pDoc->GetMeasure()->GetRefPrimary(0).GetLuminance();
+	double KG=pDoc->GetMeasure()->GetRefPrimary(1).GetLuminance();
+	double KB=pDoc->GetMeasure()->GetRefPrimary(2).GetLuminance();
+	double KY=pDoc->GetMeasure()->GetRefSecondary(0).GetLuminance();
+	double KC=pDoc->GetMeasure()->GetRefSecondary(1).GetLuminance();
+	double KM=pDoc->GetMeasure()->GetRefSecondary(2).GetLuminance();
 
     CColor satcolor;
 
