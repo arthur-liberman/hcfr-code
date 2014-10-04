@@ -97,55 +97,55 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode)
 		else if ( m_pRefColor -> GetDeltaxy ( m_pDocument->GetMeasure()->GetRefPrimary(0), GetColorReference() ) < 0.05 )
 		{
 			m_bLumaMode = TRUE;
-			//RefLuma = GetColorReference().GetRedReferenceLuma ();
-			RefLuma = m_pDocument->GetMeasure()->GetRefPrimary(0).GetLuminance();
+			RefLuma = GetColorReference().GetRedReferenceLuma ();
+//			RefLuma = m_pDocument->GetMeasure()->GetRefPrimary(0).GetLuminance();
             aReference = m_pDocument->GetMeasure()->GetRefPrimary(0);//GetColorReference().GetRed();
 		}
 		else if ( m_pRefColor -> GetDeltaxy ( m_pDocument->GetMeasure()->GetRefPrimary(1), GetColorReference() ) < 0.05 )
 		{
 			m_bLumaMode = TRUE;
-//			RefLuma = GetColorReference().GetGreenReferenceLuma ();
-			RefLuma = m_pDocument->GetMeasure()->GetRefPrimary(1).GetLuminance();
+			RefLuma = GetColorReference().GetGreenReferenceLuma ();
+//			RefLuma = m_pDocument->GetMeasure()->GetRefPrimary(1).GetLuminance();
             aReference = m_pDocument->GetMeasure()->GetRefPrimary(1);//GetColorReference().GetGreen();
 		}
 		else if ( m_pRefColor -> GetDeltaxy ( m_pDocument->GetMeasure()->GetRefPrimary(2), GetColorReference() ) < 0.05 )
 		{
 			m_bLumaMode = TRUE;
-//			RefLuma = GetColorReference().GetBlueReferenceLuma ();
-			RefLuma = m_pDocument->GetMeasure()->GetRefPrimary(2).GetLuminance();
+			RefLuma = GetColorReference().GetBlueReferenceLuma ();
+//			RefLuma = m_pDocument->GetMeasure()->GetRefPrimary(2).GetLuminance();
             aReference = m_pDocument->GetMeasure()->GetRefPrimary(2);//GetColorReference().GetBlue();
 		}
 		else if ( m_pRefColor -> GetDeltaxy ( m_pDocument->GetMeasure()->GetRefSecondary(0), GetColorReference() ) < 0.05 )
 		{
 			m_bLumaMode = TRUE;
-//			RefLuma = GetColorReference().GetYellowReferenceLuma ();
-			RefLuma = m_pDocument->GetMeasure()->GetRefSecondary(0).GetLuminance();
-            aReference = m_pDocument->GetMeasure()->GetRefSecondary(0);//GetColorReference().GetYellow();
+			RefLuma = GetColorReference().GetYellowReferenceLuma ();
+//			RefLuma = m_pDocument->GetMeasure()->GetRefSecondary(0).GetLuminance();
+            aReference = m_pDocument->GetMeasure()->GetRefSecondary(0);//			aReference = GetColorReference().GetYellow();
 		}
 		else if ( m_pRefColor -> GetDeltaxy ( m_pDocument->GetMeasure()->GetRefSecondary(1), GetColorReference() ) < 0.05 )
 		{
 			m_bLumaMode = TRUE;
-//			RefLuma = GetColorReference().GetCyanReferenceLuma ();
-			RefLuma = m_pDocument->GetMeasure()->GetRefSecondary(1).GetLuminance();
+			RefLuma = GetColorReference().GetCyanReferenceLuma ();
+//			RefLuma = m_pDocument->GetMeasure()->GetRefSecondary(1).GetLuminance();
             aReference = m_pDocument->GetMeasure()->GetRefSecondary(1);//GetColorReference().GetCyan();
 		}
 		else if ( m_pRefColor -> GetDeltaxy ( m_pDocument->GetMeasure()->GetRefSecondary(2), GetColorReference() ) < 0.05 )
 		{
 			m_bLumaMode = TRUE;
-//			RefLuma = GetColorReference().GetMagentaReferenceLuma ();
-			RefLuma = m_pDocument->GetMeasure()->GetRefSecondary(2).GetLuminance();
+			RefLuma = GetColorReference().GetMagentaReferenceLuma ();
+//			RefLuma = m_pDocument->GetMeasure()->GetRefSecondary(2).GetLuminance();
             aReference = m_pDocument->GetMeasure()->GetRefSecondary(2);//GetColorReference().GetMagenta();
 		}
 		//Handle inside the gamut refluma
 		CColor white = m_pDocument->GetMeasure()->GetOnOffWhite();
-//	    CColor black = m_pDocument -> GetMeasure () -> GetGray ( 0 );
-//		if ( GetConfig()->m_colorStandard == HDTVa ||  GetConfig()->m_colorStandard == CC6 ||  GetConfig()->m_colorStandard == CC6a)
-//		{
-//			if (GetConfig()->m_GammaOffsetType == 4 && white.isValid() && black.isValid() )
-//				RefLuma = pow(pow(RefLuma,1. / 2.2),log(GetBT1886(pow(RefLuma,1. / 2.2),white,black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(RefLuma,1. / 2.2)));
-//			else
- //   			RefLuma = pow(pow(RefLuma,1. / 2.2),GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
-//		}
+	    CColor black = m_pDocument -> GetMeasure () -> GetGray ( 0 );
+		if ( GetConfig()->m_colorStandard == HDTVa ||  GetConfig()->m_colorStandard == HDTVb)
+		{
+			if (GetConfig()->m_GammaOffsetType == 4 && white.isValid() && black.isValid() )
+				RefLuma = pow(pow(RefLuma,1. / 2.2),log(GetBT1886(pow(RefLuma,1. / 2.2),white,black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(RefLuma,1. / 2.2)));
+			else
+    			RefLuma = pow(pow(RefLuma,1. / 2.2),GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
+		}
                         		
         if (!white.isValid() || !m_bLumaMode)
         {

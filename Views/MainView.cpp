@@ -879,27 +879,27 @@ void CMainView::InitGrid()
 				 switch ( i )
 				 {
 					case 0:
-						Item.strText.LoadString((GetColorReference().m_standard==4||GetColorReference().m_standard==5)?IDS_CC6a:IDS_RED);
+						Item.strText.LoadString((GetColorReference().m_standard==CC6)?IDS_CC6a:IDS_RED);
 						 break;
 
 					case 1:
-						 Item.strText.LoadString((GetColorReference().m_standard==4||GetColorReference().m_standard==5)?IDS_CC6b:IDS_GREEN);
+						 Item.strText.LoadString((GetColorReference().m_standard==CC6)?IDS_CC6b:IDS_GREEN);
 						 break;
 
 					case 2:
-						 Item.strText.LoadString((GetColorReference().m_standard==4||GetColorReference().m_standard==5)?IDS_CC6c:IDS_BLUE);
+						 Item.strText.LoadString((GetColorReference().m_standard==CC6)?IDS_CC6c:IDS_BLUE);
 						 break;
 
 					case 3:
-						 Item.strText.LoadString((GetColorReference().m_standard==4||GetColorReference().m_standard==5)?IDS_CC6d:IDS_YELLOW);
+						 Item.strText.LoadString((GetColorReference().m_standard==CC6)?IDS_CC6d:IDS_YELLOW);
 						 break;
 
 					case 4:
-						 Item.strText.LoadString((GetColorReference().m_standard==4||GetColorReference().m_standard==5)?IDS_CC6e:IDS_CYAN);
+						 Item.strText.LoadString((GetColorReference().m_standard==CC6)?IDS_CC6e:IDS_CYAN);
 						 break;
 
 					case 5:
-						 Item.strText.LoadString((GetColorReference().m_standard==4||GetColorReference().m_standard==5)?IDS_CC6f:IDS_MAGENTA);
+						 Item.strText.LoadString((GetColorReference().m_standard==CC6)?IDS_CC6f:IDS_MAGENTA);
 						 break;
 
 					case 6:
@@ -1767,27 +1767,27 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				switch (m_displayMode)
 				{
 					case 1:
-//  						RefLuma [ 0 ] = GetColorReference().GetRedReferenceLuma ();
-//						RefLuma [ 1 ] = GetColorReference().GetGreenReferenceLuma ();
-//						RefLuma [ 2 ] = GetColorReference().GetBlueReferenceLuma ();
-//						RefLuma [ 3 ] = GetColorReference().GetYellowReferenceLuma ();
-//						RefLuma [ 4 ] = GetColorReference().GetCyanReferenceLuma ();
-//						RefLuma [ 5 ] = GetColorReference().GetMagentaReferenceLuma ();
-						RefLuma [ 0 ] = GetDocument()->GetMeasure()->GetRefPrimary(0).GetLuminance();
-						RefLuma [ 1 ] = GetDocument()->GetMeasure()->GetRefPrimary(1).GetLuminance();
-						RefLuma [ 2 ] = GetDocument()->GetMeasure()->GetRefPrimary(2).GetLuminance();
-						RefLuma [ 3 ] = GetDocument()->GetMeasure()->GetRefSecondary(0).GetLuminance();
-						RefLuma [ 4 ] = GetDocument()->GetMeasure()->GetRefSecondary(1).GetLuminance();
-						RefLuma [ 5 ] = GetDocument()->GetMeasure()->GetRefSecondary(2).GetLuminance();
-//						if (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == CC6 || GetConfig()->m_colorStandard == CC6a)
-//						{
-//							for (int k = 0; k < 6; k++) { 
-//		                    if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
-//			                    RefLuma [ k ] = pow(pow(RefLuma[k],1. / 2.2),log(GetBT1886(pow(RefLuma[k],1. / 2.2),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(RefLuma[k],1. / 2.2)));
-//				            else
- //   							RefLuma [ k ] = pow(pow(RefLuma[k],1. / 2.2),GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
-//							}
-//						}
+  						RefLuma [ 0 ] = GetColorReference().GetRedReferenceLuma ();
+						RefLuma [ 1 ] = GetColorReference().GetGreenReferenceLuma ();
+						RefLuma [ 2 ] = GetColorReference().GetBlueReferenceLuma ();
+						RefLuma [ 3 ] = GetColorReference().GetYellowReferenceLuma ();
+						RefLuma [ 4 ] = GetColorReference().GetCyanReferenceLuma ();
+						RefLuma [ 5 ] = GetColorReference().GetMagentaReferenceLuma ();
+//						RefLuma [ 0 ] = GetDocument()->GetMeasure()->GetRefPrimary(0).GetLuminance();
+//						RefLuma [ 1 ] = GetDocument()->GetMeasure()->GetRefPrimary(1).GetLuminance();
+//						RefLuma [ 2 ] = GetDocument()->GetMeasure()->GetRefPrimary(2).GetLuminance();
+//						RefLuma [ 3 ] = GetDocument()->GetMeasure()->GetRefSecondary(0).GetLuminance();
+//						RefLuma [ 4 ] = GetDocument()->GetMeasure()->GetRefSecondary(1).GetLuminance();
+//						RefLuma [ 5 ] = GetDocument()->GetMeasure()->GetRefSecondary(2).GetLuminance();
+						if (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == CC6 || GetConfig()->m_colorStandard == HDTVb)
+						{
+							for (int k = 0; k < 6; k++) { 
+		                    if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
+			                    RefLuma [ k ] = pow(pow(RefLuma[k],1. / 2.2),log(GetBT1886(pow(RefLuma[k],1. / 2.2),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(RefLuma[k],1. / 2.2)));
+				            else
+	  							RefLuma [ k ] = pow(pow(RefLuma[k],1. / 2.2),GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
+							}
+						}
 						break ;
 					case 5:
                         satcolor = GetDocument()->GetMeasure()->GetRefSat(0,sat);
@@ -1835,7 +1835,6 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						WhiteMCD = GetDocument()->GetMeasure()->GetOnOffWhite();
 				
 					CColor white = ( m_displayMode!=11 ?  GetDocument()->GetMeasure()->GetOnOffWhite() : (GetConfig()->m_CCMode==GCD)? GetDocument()->GetMeasure()->GetCC24Sat(5):(GetConfig()->m_CCMode==CCSG)? GetDocument()->GetMeasure()->GetCC24Sat(0):WhiteMCD );
-				//(GetConfig()->m_CCMode==CCSG?97:25))
                 if ( nCol2 < ( (m_displayMode > 11 || m_displayMode < 5) ? 7 : 1001) && white.isValid() && white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) > 0.0001 )
     		    {
 					double d = aMeasure.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) / white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter);
@@ -1890,7 +1889,7 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 						case CC6:
 							return "RCC6";
 							break;
-						case CC6a:
+						case HDTVb:
 							return "RCC6";
 							break;
 						case CUSTOM:
@@ -1937,7 +1936,7 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 						case CC6:
 							return "GCC6";
 							break;
-						case CC6a:
+						case HDTVb:
 							return "GCC6";
 							break;
 						case CUSTOM:
@@ -1985,7 +1984,7 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 						case CC6:
 							return "BCC6";
 							break;
-						case CC6a:
+						case HDTVb:
 							return "BCC6";
 							break;
 						case CUSTOM:

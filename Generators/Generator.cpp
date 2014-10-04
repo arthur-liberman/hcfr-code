@@ -201,7 +201,6 @@ BOOL CGenerator::CanDisplayAnsiBWRects()
 
 BOOL CGenerator::DisplayGray(double aLevel, MeasureType nPatternType , BOOL bChangePattern)
 {
-	// by default use virtual DisplayRGBColor function
 	return DisplayRGBColor(ColorRGBDisplay(aLevel), nPatternType ,bChangePattern); 
 }
 

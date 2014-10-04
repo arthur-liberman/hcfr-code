@@ -315,8 +315,8 @@ void CReferencesPropPage::OnSelchangeColorrefCombo()
 		m_manualGOffset = 0.099;
 	if (m_colorStandard == CC6)
 		m_CCMode = GCD;
-	if (m_colorStandard == CC6a)
-		m_CCMode = MCD;	
+//	if (m_colorStandard == CC6a)
+//		m_CCMode = MCD;	
 	if(!m_changeWhiteCheck) // Restore default white
 		m_whiteTarget=(int)(GetStandardColorReference((ColorStandard)(m_colorStandard)).m_white);
 	UpdateData(FALSE);	
@@ -329,8 +329,8 @@ void CReferencesPropPage::OnSelchangeCCmodeCombo()
 	UpdateData(TRUE);
 	if (m_colorStandard == CC6)
 		m_CCMode = GCD;
-	if (m_colorStandard == CC6a)
-		m_CCMode = MCD;	
+//	if (m_colorStandard == CC6a)
+//		m_CCMode = MCD;	
 	UpdateData(FALSE);
 }
 

@@ -514,6 +514,7 @@ void CFullScreenWindow::OnPaint()
 					ASSERT ( G >= 16 && G <= 235 );
 					ASSERT ( B >= 16 && B <= 235 );
 
+
 					R = (int)(( R - 16 ) * 255 / 219 + 0.5);
 					G = (int)(( G - 16 ) * 255 / 219 + 0.5);
 					B = (int)(( B - 16 ) * 255 / 219 + 0.5);

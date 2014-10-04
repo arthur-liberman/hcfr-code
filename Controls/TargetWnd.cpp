@@ -69,31 +69,25 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 		ColorXYZ centerXYZ = GetColorReference().GetWhite();
 		// check for grayscale window when selection valid
 		//RGB specified 0-255 will get scaled in fullscreenwindow if needed
-		/*
-		if (m_DisplayMode == 11)
-		{
-			char szMsg[100];
-			ColorRGB  c_RGB = ColorRGB(.5,.5,.5);
-//			centerXYZ = m_pDocument->GetMeasure()->GetRefCC24Sat(minCol).GetXYZValue();
-			c_RGB = m_pDocument->GetMeasure()->GetRefCC24Sat(minCol).GetRGBValue(GetColorReference());
-			c_RGB = m_pRefColor->GetRGBValue(GetColorReference());
-				nR = c_RGB[0] * 255. + 0.5;
-				nG = c_RGB[1] * 255. + 0.5;
-				nB = c_RGB[2] * 255. + 0.5;
-			sprintf ( szMsg, "%d:%d:%d:%d:%d", nR, nG, nB, m_DisplayMode, minCol );
-			MessageBox(NULL,szMsg,IDOK );
-//				m_clr = RGB(nR,nG,nB);
-		} */
 		if (g_pDataDocRunningThread && m_DisplayMode == 0 && minCol <= 0)
         {
             // maintain current target
         }
 		else if (minCol > 0 && m_DisplayMode == 0)
 		{
+			int y;
+			double p,z;
+
             if (nSize > 0)
-    			x = floor((double)(minCol-1) / (double)(nSize-1) * 255.0 + 0.5);
+    			p = (double)(minCol-1) / (double)(nSize-1);
             else
-    			x = floor((double)(101+nSize+minCol-1) / (double)(100.) * 255.0 + 0.5);
+    			p =(double)(101+nSize+minCol-1) / (double)(100.);
+			//fix 255->235 rounding errors that the generator will create
+			x =  (int)floor(p * 255.0 + 0.5);
+			y =  (int)floor(p * 219.0 + 0.5);
+			z = y - x / 255. * 219.;
+			x += floor( z + 0.5);
+
  			m_clr = RGB(x,x,x);
 			nR=(int)x;
 			nG=(int)x;
@@ -111,7 +105,8 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
         }
         else if ( m_pRefColor -> GetDeltaxy (GetColorReference().GetRed(), GetColorReference() ) < 0.05 )
 		{			
-			centerXYZ =  m_pDocument->GetMeasure()->GetRefPrimary(0).GetXYZValue();
+//			centerXYZ =  m_pDocument->GetMeasure()->GetRefPrimary(0).GetXYZValue();
+			centerXYZ = GetColorReference().GetRed();
 			switch (GetConfig()->m_colorStandard)
 			{
 				case HDTVa:
@@ -126,11 +121,11 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 						nB = 130;
 					m_clr = RGB(193,150,130);
 				break;
-				case CC6a:
-						nR = 193;
-						nG = 149;
-						nB = 129;
-				  m_clr = RGB(193,149,129);
+				case HDTVb:
+						nR = 178;
+						nG = 36;
+						nB = 36;
+				  m_clr = RGB(178,36,36);
 				break;
 				default:
 						nR = 255;
@@ -142,7 +137,8 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 		}
 		else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetGreen(), GetColorReference() ) < 0.05 )
 		{
-			centerXYZ =  m_pDocument->GetMeasure()->GetRefPrimary(1).GetXYZValue();
+//			centerXYZ =  m_pDocument->GetMeasure()->GetRefPrimary(1).GetXYZValue();
+			centerXYZ = GetColorReference().GetGreen();
 			switch (GetConfig()->m_colorStandard)
 			{
 				case HDTVa:
@@ -157,11 +153,11 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 						nB = 156;
 					m_clr = RGB(94,122,156);
 				break;
-				case CC6a:
-						nR = 94;
-						nG = 122;
-						nB = 155;
-				  m_clr = RGB(94,122,155);
+				case HDTVb:
+						nR = 28;
+						nG = 178;
+						nB = 28;
+				  m_clr = RGB(28,178,28);
 				break;
 				default:
 						nR = 0;
@@ -173,7 +169,8 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 		}
 		else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetBlue(), GetColorReference() ) < 0.05 )
 		{
-			centerXYZ = m_pDocument->GetMeasure()->GetRefPrimary(2).GetXYZValue();
+//			centerXYZ = m_pDocument->GetMeasure()->GetRefPrimary(2).GetXYZValue();
+			centerXYZ = GetColorReference().GetBlue();
 			switch (GetConfig()->m_colorStandard)
 			{
 				case HDTVa:
@@ -188,11 +185,11 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 						nB = 66;
 					m_clr = RGB(90,107,66);
 				break;
-				case CC6a:
-						nR = 88;
-						nG = 108;
-						nB = 68;
-				  m_clr = RGB(88,108,68);
+				case HDTVb:
+						nR = 36;
+						nG = 36;
+						nB = 64;
+				  m_clr = RGB(36,36,64);
 				break;
 				default:
 						nR = 0;
@@ -204,7 +201,8 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 		}
 		else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetYellow(), GetColorReference() ) < 0.05 )
 		{
-			centerXYZ = m_pDocument->GetMeasure()->GetRefSecondary(0).GetXYZValue();
+//			centerXYZ = m_pDocument->GetMeasure()->GetRefSecondary(0).GetXYZValue();
+			centerXYZ = GetColorReference().GetYellow();
 			switch (GetConfig()->m_colorStandard)
 			{
 				case HDTVa:
@@ -219,11 +217,11 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 						nB = 163;
 					m_clr = RGB(75,92,163);
 				break;
-				case CC6a:
-						nR = 73;
-						nG = 91;
-						nB = 164;
-				  m_clr = RGB(73,91,164);
+				case HDTVb:
+						nR = 221;
+						nG = 221;
+						nB = 54;
+				  m_clr = RGB(221,221,54);
 				break;
 				default:
 						nR = 255;
@@ -235,7 +233,8 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 		}
 		else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetCyan(), GetColorReference() ) < 0.05 )
 		{
-			centerXYZ = m_pDocument->GetMeasure()->GetRefSecondary(1).GetXYZValue();;
+//			centerXYZ = m_pDocument->GetMeasure()->GetRefSecondary(1).GetXYZValue();;
+			centerXYZ = GetColorReference().GetCyan();
 			switch (GetConfig()->m_colorStandard)
 			{
 				case HDTVa:
@@ -250,11 +249,11 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 						nB = 64;
 					m_clr = RGB(158,186,64);
 				break;
-				case CC6a:
-						nR = 158;
-						nG = 186;
-						nB = 63;
-				  m_clr = RGB(158,186,63);
+				case HDTVb:
+						nR = 144;
+						nG = 253;
+						nB = 253;
+				  m_clr = RGB(144,253,253);
 				break;
 				default:
 						nR = 0;
@@ -266,7 +265,8 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 		}
 		else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetMagenta(), GetColorReference() ) < 0.05 )
 		{
-			centerXYZ = m_pDocument->GetMeasure()->GetRefSecondary(2).GetXYZValue();
+			centerXYZ = GetColorReference().GetMagenta();
+//			centerXYZ = m_pDocument->GetMeasure()->GetRefSecondary(2).GetXYZValue();
 			switch (GetConfig()->m_colorStandard)
 			{
 				case HDTVa:
@@ -281,11 +281,11 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 						nB = 45;
 					m_clr = RGB(229,161,45);
 				break;
-				case CC6a:
-						nR = 229;
-						nG = 162;
-						nB = 47;
-				  m_clr = RGB(229,162,47);
+				case HDTVb:
+						nR = 253;
+						nG = 147;
+						nB = 254;
+				  m_clr = RGB(233,142,234);
 				break;
 				default:
 						nR = 255;

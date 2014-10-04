@@ -989,7 +989,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 									ColorRGBDisplay(primaryIRELevel,primaryIRELevel,primaryIRELevel),
 									ColorRGBDisplay(0,0,0)
 								};
-	if (GetColorReference().m_standard == CC6 || GetColorReference().m_standard == CC6a) //CC6
+	if (GetColorReference().m_standard == CC6 || GetColorReference().m_standard == HDTVb) //CC6
 	{
 		if (GetConfig()->m_CCMode == GCD)
 		{
@@ -1001,12 +1001,13 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 			GenColors [ 5 ] = ColorRGBDisplay(89.95,63.01,17.81);
 		} else
 		{
-			GenColors [ 0 ] = ColorRGBDisplay(75.8,58.45,50.68); //light skin
-			GenColors [ 1 ] = ColorRGBDisplay(36.99,47.95,60.73); //blue sky
-			GenColors [ 2 ] = ColorRGBDisplay(34.7,42.47,26.48); //foliage
-			GenColors [ 3 ] = ColorRGBDisplay(28.77,36.61,64.39);
-			GenColors [ 4 ] = ColorRGBDisplay(62.1,73.06,24.66);
-			GenColors [ 5 ] = ColorRGBDisplay(89.95,63.47,18.36);
+
+			GenColors [ 0 ] = ColorRGBDisplay(69.87,14.16,14.16); //light skin
+			GenColors [ 1 ] = ColorRGBDisplay(10.96,69.87,10.96); //blue sky
+			GenColors [ 2 ] = ColorRGBDisplay(14.16,14.16,25.11); //foliage
+			GenColors [ 3 ] = ColorRGBDisplay(86.8,86.8,21.0);
+			GenColors [ 4 ] = ColorRGBDisplay(56.6,99.0,99.0);
+			GenColors [ 5 ] = ColorRGBDisplay(99.0,57.5,99.5);
 		}
 	}
 	else if (GetColorReference().m_standard == HDTVa) //75%
@@ -1226,6 +1227,7 @@ BOOL CMeasure::MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator)
 	{
 		if( pGenerator->DisplayGray((ArrayIndexToGrayLevel ( i, 101, GetConfig () -> m_bUseRoundDown)),CGenerator::MT_NEARBLACK,!bRetry) )
 		{
+
 			bEscape = WaitForDynamicIris ();
 			bRetry = FALSE;
 
@@ -3205,7 +3207,7 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
 									ColorRGBDisplay(0,0,0)
 								};
 
-	if ( GetColorReference().m_standard == CC6 || GetColorReference().m_standard == CC6a ) //CC6
+	if ( GetColorReference().m_standard == CC6 || GetColorReference().m_standard == HDTVb ) //CC6
 	{
 		if ( GetConfig()->m_CCMode == GCD )
 		{
@@ -3216,9 +3218,9 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
 			GenColors [ 4 ] = ColorRGBDisplay(0,0,0);
 		} else
 		{
-			GenColors [ 0 ] = ColorRGBDisplay(75.8,58.45,50.68); //light skin
-			GenColors [ 1 ] = ColorRGBDisplay(36.99,47.95,60.73); //blue sky
-			GenColors [ 2 ] = ColorRGBDisplay(34.7,42.47,26.48); //foliage
+			GenColors [ 0 ] = ColorRGBDisplay(69.87,14.16,14.16); //light skin
+			GenColors [ 1 ] = ColorRGBDisplay(10.96,69.87,10.96); //blue sky
+			GenColors [ 2 ] = ColorRGBDisplay(14.16,14.16,25.11); //foliage
 			GenColors [ 3 ] = ColorRGBDisplay(primaryIRELevel,primaryIRELevel,primaryIRELevel);
 			GenColors [ 4 ] = ColorRGBDisplay(0,0,0);
 		}
@@ -3416,7 +3418,7 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator)
 									ColorRGBDisplay(IRELevel,IRELevel,IRELevel),
 									ColorRGBDisplay(0,0,0)
 								};
-	if (GetColorReference().m_standard == CC6 || GetColorReference().m_standard == CC6a) //CC6
+	if (GetColorReference().m_standard == CC6 || GetColorReference().m_standard == HDTVb) //CC6
 	{
 		if ( GetConfig()->m_CCMode == GCD )
 		{
@@ -3430,17 +3432,18 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator)
 			GenColors [ 7 ] = ColorRGBDisplay(0,0,0);
 		} else
 		{
-			GenColors [ 0 ] = ColorRGBDisplay(75.8,58.45,50.68); //light skin
-			GenColors [ 1 ] = ColorRGBDisplay(36.99,47.95,60.73); //blue sky
-			GenColors [ 2 ] = ColorRGBDisplay(34.7,42.47,26.48); //foliage
-			GenColors [ 3 ] = ColorRGBDisplay(28.77,36.61,64.39);
-			GenColors [ 4 ] = ColorRGBDisplay(62.1,73.06,24.66);
-			GenColors [ 5 ] = ColorRGBDisplay(89.95,63.47,18.36);
+
+			GenColors [ 0 ] = ColorRGBDisplay(69.87,14.16,14.16); //light skin
+			GenColors [ 1 ] = ColorRGBDisplay(10.96,69.87,10.96); //blue sky
+			GenColors [ 2 ] = ColorRGBDisplay(14.16,14.16,25.11); //foliage
+			GenColors [ 3 ] = ColorRGBDisplay(86.8,86.8,21.0);
+			GenColors [ 4 ] = ColorRGBDisplay(56.6,99.0,99.0);
+			GenColors [ 5 ] = ColorRGBDisplay(99.0,57.5,99.5);
 			GenColors [ 6 ] = ColorRGBDisplay(IRELevel,IRELevel,IRELevel);
 			GenColors [ 7 ] = ColorRGBDisplay(0,0,0);
 		}
 	}
-	else if (GetColorReference().m_standard == 3) //75%
+	else if (GetColorReference().m_standard == HDTVa) //75%
 	{ 
 		GenColors [ 0 ] = ColorRGBDisplay(68.0,20.0,20.0);
 		GenColors [ 1 ] = ColorRGBDisplay(28.0,73.0,28.0);
@@ -5145,7 +5148,7 @@ void CMeasure::AppendMeasurements(const CColor & aColor)
 CColor CMeasure::GetRefPrimary(int i) const
 {
     double gamma=(GetConfig()->m_useMeasuredGamma)?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef);
-	bool isSpecial = (GetColorReference().m_standard==HDTVa||GetColorReference().m_standard==CC6||GetColorReference().m_standard==CC6a);
+	bool isSpecial = (GetColorReference().m_standard==HDTVa||GetColorReference().m_standard==CC6||GetColorReference().m_standard==HDTVb);
 	CColorReference cRef=GetColorReference();
 	CColor	aColor,aColorr,aColorg,aColorb,White,Black;
 	aColorr.SetXYZValue (cRef.GetRed());
@@ -5226,7 +5229,7 @@ CColor CMeasure::GetRefSecondary(int i) const
 {
     double gamma=(GetConfig()->m_useMeasuredGamma)?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef);
 
-    bool isSpecial = (GetColorReference().m_standard==HDTVa||GetColorReference().m_standard==CC6||GetColorReference().m_standard==CC6a);
+    bool isSpecial = (GetColorReference().m_standard==HDTVa||GetColorReference().m_standard==CC6||GetColorReference().m_standard==HDTVb);
 	CColorReference cRef=GetColorReference();
 	CColor	aColor,aColory,aColorc,aColorm,White,Black;
 	aColory.SetXYZValue (cRef.GetYellow());
@@ -5323,7 +5326,7 @@ CColor CMeasure::GetRefSat(int i, double sat_percent) const
 	int m_cRef=GetColorReference().m_standard;
 
 	//display rec709 sat points in special colorspace modes	
-	if (!(m_cRef == 3 || m_cRef == 4 || m_cRef == 5))
+	if (!(m_cRef == HDTVa || m_cRef == CC6 || m_cRef == HDTVb))
 	{
 		if ( i < 3 )
 			refColor = GetRefPrimary(i);

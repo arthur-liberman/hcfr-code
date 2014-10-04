@@ -179,9 +179,14 @@ ColorxyY primariesCC6[3] ={	ColorxyY(0.3787, 0.3564), //some color check referen
 								ColorxyY(0.2484, 0.2647),
 								ColorxyY(0.3418, 0.4327)};
 
-ColorxyY primariesCC6a[3] ={	ColorxyY(0.3804, 0.3565), //some color check references, secondardies will add 3 more, MCD values
-								ColorxyY(0.2493, 0.2667),
-								ColorxyY(0.3379, 0.4327)};
+//ColorxyY primariesCC6a[3] ={	ColorxyY(0.3804, 0.3565), //some color check references, secondardies will add 3 more, MCD values
+//								ColorxyY(0.2493, 0.2667),
+//								ColorxyY(0.3379, 0.4327)};
+
+//optimized
+ColorxyY primariesCC6a[3] ={	ColorxyY(0.599, 0.330), //some color check references, secondardies will add 3 more, MCD values
+								ColorxyY(0.301, 0.589),
+								ColorxyY(0.231, 0.194)};
 
 /* The 75% saturation 75% amplitude and color checker xy locations are calculated 
 assuming gamma=2.22, starting with the follow triplets from the GCD disk, and then used as pseudo-primaries/secondaries
@@ -281,7 +286,7 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
             primaries = primariesCC6;
 			break;
 		}
-		case CC6a:
+		case HDTVb:
 		{
 			standardName="Color Checker 6 MCD";
 			whiteColor=illuminantD65;
@@ -423,7 +428,7 @@ void CColorReference::UpdateSecondary ( ColorXYZ & secondary, const ColorXYZ& pr
 	double k = ( ( ( x2 - x1 ) / dx1 ) + ( dx2 / ( dx1 * dy2 ) ) * ( y1 - y2 ) ) / ( 1.0 - ( ( dx2 * dy1 ) / ( dx1 * dy2 ) ) );
 
 	ColorxyY aColor;
-	if (CColorReference::m_standard < CC6 || CColorReference::m_standard > CC6a )
+	if (CColorReference::m_standard != CC6 )
 	{
     	aColor = ColorxyY ( x1 + k * dx1, y1 + k * dy1, prim1[2] + prim2[2] );
 	}
@@ -461,6 +466,7 @@ ColorRGBDisplay::ColorRGBDisplay()
 
 ColorRGBDisplay::ColorRGBDisplay(double aGreyPercent)
 {
+	// by default use virtual DisplayRGBColor function
     (*this)[0] = aGreyPercent;
     (*this)[1] = aGreyPercent;
     (*this)[2] = aGreyPercent;
@@ -484,6 +490,7 @@ ColorRGBDisplay::ColorRGBDisplay(COLORREF aColor)
 
 COLORREF ColorRGBDisplay::GetColorRef(bool is16_235) const
 {
+
     BYTE r(ConvertPercentToBYTE((*this)[0], is16_235));
     BYTE g(ConvertPercentToBYTE((*this)[1], is16_235));
     BYTE b(ConvertPercentToBYTE((*this)[2], is16_235));
@@ -648,7 +655,7 @@ double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhit
         YWhite = 0.05 * YWhite;
     }
     }
-	if (!(colorReference.m_standard == CC6a || colorReference.m_standard == CC6 || colorReference.m_standard == HDTVa))
+	if (!(colorReference.m_standard == HDTVb || colorReference.m_standard == CC6 || colorReference.m_standard == HDTVa))
 		cRef=colorReference;
 	switch (dE_form)
 	{
@@ -1241,7 +1248,7 @@ ColorRGB CColor::GetRGBValue(CColorReference colorReference) const
 	{
 		CColorReference aColorRef=CColorReference(HDTV, D65);
         CLockWhileInScope dummy(m_matrixSection);
-		return ColorRGB((colorReference.m_standard==CC6a||colorReference.m_standard==CC6||colorReference.m_standard==HDTVa)?aColorRef.XYZtoRGBMatrix*(m_XYZValues):colorReference.XYZtoRGBMatrix*(m_XYZValues));
+		return ColorRGB((colorReference.m_standard==HDTVb||colorReference.m_standard==CC6||colorReference.m_standard==HDTVa)?aColorRef.XYZtoRGBMatrix*(m_XYZValues):colorReference.XYZtoRGBMatrix*(m_XYZValues));
 	}
 	else
     {
@@ -1283,7 +1290,7 @@ void CColor::SetRGBValue(const ColorRGB& aColor, CColorReference colorReference)
     }
     CLockWhileInScope dummy(m_matrixSection);
 	CColorReference aColorRef=CColorReference(HDTV);
-	m_XYZValues = ColorXYZ( (colorReference.m_standard==CC6a||colorReference.m_standard==CC6||colorReference.m_standard==HDTVa)?aColorRef.RGBtoXYZMatrix*aColor:colorReference.RGBtoXYZMatrix*aColor);
+	m_XYZValues = ColorXYZ( (colorReference.m_standard==HDTVb||colorReference.m_standard==CC6||colorReference.m_standard==HDTVa)?aColorRef.RGBtoXYZMatrix*aColor:colorReference.RGBtoXYZMatrix*aColor);
 }
 
 void CColor::SetxyYValue(double x, double y, double Y) 
@@ -2002,9 +2009,13 @@ double ArrayIndexToGrayLevel ( int nCol, int nSize, bool m_bUseRoundDown)//, boo
 //	if (m_b16_235)
 //	{
 		if (m_bUseRoundDown)
-			return ( floor((double)nCol / (double)(nSize-1) * 219.0) / 219.0 * 100.0 );
+		{
+			return (  floor((double)nCol / (double)(nSize-1) * 219.0) / 219.0 * 100.0 );
+		}
 		else
+		{
 			return ( floor((double)nCol / (double)(nSize-1) * 219.0 + 0.5) / 219.0 * 100.0 );
+		}
 //	}
 //	else
 //	{
@@ -2017,12 +2028,14 @@ double ArrayIndexToGrayLevel ( int nCol, int nSize, bool m_bUseRoundDown)//, boo
 
 double GrayLevelToGrayProp ( double Level, bool m_bUseRoundDown)
 {
+	// round down test not needed because this was done in gray index to level call
     // Gray Level: return a value between 0 and 1 based on percentage level input
     //    normal rounding (GCD disk), round down (AVSHD disk)
-	if (m_bUseRoundDown)
-    	return Level = (floor(Level / 100.0 * 219.0 + 16.0) - 16.0) / 219.0;
-	else
-		return Level = (floor(Level / 100.0 * 219.0 + 16.5) - 16.0) / 219.0;
+//	if (m_bUseRoundDown)
+//    	return Level = (floor(Level / 100.0 * 219.0 + 16.0) - 16.0) / 219.0;
+		return Level = Level / 100.0;
+//	else
+//		return Level = (floor(Level / 100.0 * 219.0 + 16.5) - 16.0) / 219.0;
 }
 
 double GetBT1886 ( double valx, CColor White, CColor Black, double g_rel, double split)

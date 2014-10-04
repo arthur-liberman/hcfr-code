@@ -41,10 +41,10 @@ typedef enum
 	SDTV = 1,
 	HDTV = 2,
 	HDTVa = 3,
-	CC6 = 4,
-	CC6a = 5,
-	sRGB = 6,
-    CUSTOM = 7
+	sRGB = 4,
+    CUSTOM = 5,
+	CC6 = 6,
+	HDTVb = 7
 } ColorStandard;
 
 typedef enum 
@@ -309,7 +309,8 @@ public:
 				luma = 0.3553;
 				break;
 			case 5:
-				luma = 0.3480;
+//				luma = 0.3480;
+				luma = 0.1073;
 				break;
 			default:
 				luma = RGBtoXYZMatrix(1,0); 
@@ -329,7 +330,8 @@ public:
 				luma = 0.1903;
 				break;
 			case 5:
-				luma = 0.1871;
+//				luma = 0.1871;
+				luma = 0.3271;
 				break;
 			default:
 				luma = RGBtoXYZMatrix(1,1); 
@@ -349,7 +351,8 @@ public:
 				luma = 0.1312;
 				break;
 			case 5:
-				luma = 0.1309;
+//				luma = 0.1309;
+				luma = 0.0160;
 				break;
 			default:
 				luma = RGBtoXYZMatrix(1,2); 
@@ -369,7 +372,8 @@ public:
 				luma = 0.1171;
 				break;
 			case 5:
-				luma = 0.1128;
+//				luma = 0.1128;
+				luma = 0.677;
 				break;
 			default:
 				luma = RGBtoXYZMatrix(1,1)+RGBtoXYZMatrix(1,0); 
@@ -389,7 +393,8 @@ public:
 				luma = 0.4365;
 				break;
 			case 5:
-				luma = 0.4333;
+//				luma = 0.4333;
+				luma = 0.832;
 				break;
 			default:
 				luma = RGBtoXYZMatrix(1,1)+RGBtoXYZMatrix(1,2); 
@@ -409,7 +414,8 @@ public:
 				luma = 0.4290;
 				break;
 			case 5:
-				luma = 0.4305;
+//				luma = 0.4305;
+				luma = 0.492;
 				break;
 			default:
 				luma = RGBtoXYZMatrix(1,0)+RGBtoXYZMatrix(1,2); 
