@@ -621,9 +621,9 @@ void CFullScreenWindow::OnPaint()
 		dc.FillRect ( &patternRect, &brush );
 		brush.DeleteObject ();
     	char aBuf[32];
-        R = GetRValue(m_Color);
-        G = GetGValue(m_Color);
-        B = GetBValue(m_Color);
+        R = GetRValue(DisplayColor);
+        G = GetGValue(DisplayColor);
+        B = GetBValue(DisplayColor);
 	    sprintf(aBuf,"%d:%d:%d",R,G,B);
         dc.SetTextColor(DisplayColor);
 

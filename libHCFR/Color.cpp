@@ -184,9 +184,9 @@ ColorxyY primariesCC6[3] ={	ColorxyY(0.3787, 0.3564), //some color check referen
 //								ColorxyY(0.3379, 0.4327)};
 
 //optimized
-ColorxyY primariesCC6a[3] ={	ColorxyY(0.599, 0.330), //some color check references, secondardies will add 3 more, MCD values
-								ColorxyY(0.301, 0.589),
-								ColorxyY(0.231, 0.194)};
+ColorxyY primariesCC6a[3] ={	ColorxyY(0.377, 0.329), //some color check references, secondardies will add 3 more, MCD values
+								ColorxyY(0.310, 0.387),
+								ColorxyY(0.268, 0.256)};
 
 /* The 75% saturation 75% amplitude and color checker xy locations are calculated 
 assuming gamma=2.22, starting with the follow triplets from the GCD disk, and then used as pseudo-primaries/secondaries
@@ -288,7 +288,7 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
 		}
 		case HDTVb:
 		{
-			standardName="Color Checker 6 MCD";
+			standardName="Color Checker HDTV OPT";
 			whiteColor=illuminantD65;
 			whiteName="D65";
 			m_white=D65;
@@ -428,15 +428,15 @@ void CColorReference::UpdateSecondary ( ColorXYZ & secondary, const ColorXYZ& pr
 	double k = ( ( ( x2 - x1 ) / dx1 ) + ( dx2 / ( dx1 * dy2 ) ) * ( y1 - y2 ) ) / ( 1.0 - ( ( dx2 * dy1 ) / ( dx1 * dy2 ) ) );
 
 	ColorxyY aColor;
-	if (CColorReference::m_standard != CC6 )
+	if (CColorReference::m_standard != HDTVb )
 	{
     	aColor = ColorxyY ( x1 + k * dx1, y1 + k * dy1, prim1[2] + prim2[2] );
 	}
-	else
+	else //hdtvb
 	{
-		if (x1 > 0.37) aColor = ( (CColorReference::m_standard == CC6)?ColorxyY(0.2141,	0.1880,	0.1149):ColorxyY(0.2118, 0.1839, 0.1128) );
-		if (x1 > 0.2 && x1 < 0.3) aColor = ( (CColorReference::m_standard == CC6)?ColorxyY(0.3775,	0.4962,	0.4335):ColorxyY(0.3781, 0.4973, 0.4333) ); 
-		if (x1 > 0.3 && x1 < 0.36) aColor = ( (CColorReference::m_standard == CC6)?ColorxyY(0.4758, 0.4425, 0.4262):ColorxyY(0.4740, 0.4431, 0.4305) ); 
+		if (x1 <= 0.38 && x1 >= 0.37) aColor = ColorxyY(.412,.493,.6347);
+		if (x1 <= 0.311 && x1 >= 0.309) aColor = ColorxyY(.243,.329,.4363);
+		if (x1 <= 0.269 && x1 >= 0.267) aColor = ColorxyY(.319,.199,.2165);
 	}
 	secondary = ColorXYZ(aColor);
 }

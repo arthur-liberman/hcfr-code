@@ -993,7 +993,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 	{
 		if (GetConfig()->m_CCMode == GCD)
 		{
-			GenColors [ 0 ] = ColorRGBDisplay(75.80,58.90,51.14);
+		GenColors [ 0 ] = ColorRGBDisplay(75.80,58.90,51.14);
 			GenColors [ 1 ] = ColorRGBDisplay(36.99,47.95,61.19);
 			GenColors [ 2 ] = ColorRGBDisplay(35.16,42.01,26.03);
 			GenColors [ 3 ] = ColorRGBDisplay(29.22,36.07,63.93);
@@ -1002,12 +1002,12 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 		} else
 		{
 
-			GenColors [ 0 ] = ColorRGBDisplay(69.87,14.16,14.16); //light skin
-			GenColors [ 1 ] = ColorRGBDisplay(10.96,69.87,10.96); //blue sky
-			GenColors [ 2 ] = ColorRGBDisplay(14.16,14.16,25.11); //foliage
-			GenColors [ 3 ] = ColorRGBDisplay(86.8,86.8,21.0);
-			GenColors [ 4 ] = ColorRGBDisplay(56.6,99.0,99.0);
-			GenColors [ 5 ] = ColorRGBDisplay(99.0,57.5,99.5);
+			GenColors [ 0 ] = ColorRGBDisplay(60.73,42.92,42.92); 
+			GenColors [ 1 ] = ColorRGBDisplay(33.79,42.92,33.79); 
+			GenColors [ 2 ] = ColorRGBDisplay(45.21,45.21,61.19); 
+			GenColors [ 3 ] = ColorRGBDisplay(84.02,84.02,20.90);
+			GenColors [ 4 ] = ColorRGBDisplay(33.79,74.89,74.89);
+			GenColors [ 5 ] = ColorRGBDisplay(74.89,33.79,74.89);
 		}
 	}
 	else if (GetColorReference().m_standard == HDTVa) //75%
@@ -3218,9 +3218,9 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
 			GenColors [ 4 ] = ColorRGBDisplay(0,0,0);
 		} else
 		{
-			GenColors [ 0 ] = ColorRGBDisplay(69.87,14.16,14.16); //light skin
-			GenColors [ 1 ] = ColorRGBDisplay(10.96,69.87,10.96); //blue sky
-			GenColors [ 2 ] = ColorRGBDisplay(14.16,14.16,25.11); //foliage
+			GenColors [ 0 ] = ColorRGBDisplay(60.73,42.92,42.92); 
+			GenColors [ 1 ] = ColorRGBDisplay(33.79,42.92,33.79); 
+			GenColors [ 2 ] = ColorRGBDisplay(45.21,45.21,61.19); 
 			GenColors [ 3 ] = ColorRGBDisplay(primaryIRELevel,primaryIRELevel,primaryIRELevel);
 			GenColors [ 4 ] = ColorRGBDisplay(0,0,0);
 		}
@@ -3432,13 +3432,12 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator)
 			GenColors [ 7 ] = ColorRGBDisplay(0,0,0);
 		} else
 		{
-
-			GenColors [ 0 ] = ColorRGBDisplay(69.87,14.16,14.16); //light skin
-			GenColors [ 1 ] = ColorRGBDisplay(10.96,69.87,10.96); //blue sky
-			GenColors [ 2 ] = ColorRGBDisplay(14.16,14.16,25.11); //foliage
-			GenColors [ 3 ] = ColorRGBDisplay(86.8,86.8,21.0);
-			GenColors [ 4 ] = ColorRGBDisplay(56.6,99.0,99.0);
-			GenColors [ 5 ] = ColorRGBDisplay(99.0,57.5,99.5);
+			GenColors [ 0 ] = ColorRGBDisplay(60.73,42.92,42.92); 
+			GenColors [ 1 ] = ColorRGBDisplay(33.79,42.92,33.79); 
+			GenColors [ 2 ] = ColorRGBDisplay(45.21,45.21,61.19); 
+			GenColors [ 3 ] = ColorRGBDisplay(84.02,84.02,20.90);
+			GenColors [ 4 ] = ColorRGBDisplay(33.79,74.89,74.89);
+			GenColors [ 5 ] = ColorRGBDisplay(74.89,33.79,74.89);
 			GenColors [ 6 ] = ColorRGBDisplay(IRELevel,IRELevel,IRELevel);
 			GenColors [ 7 ] = ColorRGBDisplay(0,0,0);
 		}

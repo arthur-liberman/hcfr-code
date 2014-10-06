@@ -41,10 +41,10 @@ typedef enum
 	SDTV = 1,
 	HDTV = 2,
 	HDTVa = 3,
-	sRGB = 4,
-    CUSTOM = 5,
-	CC6 = 6,
-	HDTVb = 7
+	HDTVb = 4,
+	sRGB = 5,
+    CUSTOM = 6,
+	CC6 = 7
 } ColorStandard;
 
 typedef enum 
@@ -302,16 +302,16 @@ public:
 		double luma;
 		switch(m_standard)
 		{
-			case 3:
+			case HDTVa:
 				luma = 0.214;
 				break;
-			case 4:
-				luma = 0.3553;
+			case HDTVb:
+				luma = 0.1935;
 				break;
-			case 5:
+//			case CC6:
 //				luma = 0.3480;
-				luma = 0.1073;
-				break;
+//				luma = 0.1073;
+//				break;
 			default:
 				luma = RGBtoXYZMatrix(1,0); 
 				break;
@@ -323,16 +323,16 @@ public:
 		double luma;
 		switch(m_standard)
 		{
-			case 3:
+			case HDTVa:
 				luma = 0.709;
 				break;
-			case 4:
-				luma = 0.1903;
+			case HDTVb:
+				luma = 0.1374;
 				break;
-			case 5:
+//			case 5:
 //				luma = 0.1871;
-				luma = 0.3271;
-				break;
+//				luma = 0.3271;
+//				break;
 			default:
 				luma = RGBtoXYZMatrix(1,1); 
 				break;
@@ -344,16 +344,16 @@ public:
 		double luma;
 		switch(m_standard)
 		{
-			case 3:
+			case HDTVa:
 				luma = 0.075;
 				break;
-			case 4:
-				luma = 0.1312;
+			case HDTVb:
+				luma = 0.1863;
 				break;
-			case 5:
+//			case 5:
 //				luma = 0.1309;
-				luma = 0.0160;
-				break;
+//				luma = 0.0160;
+//				break;
 			default:
 				luma = RGBtoXYZMatrix(1,2); 
 				break;
@@ -365,16 +365,16 @@ public:
 		double luma;
 		switch(m_standard)
 		{
-			case 3:
+			case HDTVa:
 				luma = 0.939;
 				break;
-			case 4:
-				luma = 0.1171;
+			case HDTVb:
+				luma = 0.6347;
 				break;
-			case 5:
+//			case 5:
 //				luma = 0.1128;
-				luma = 0.677;
-				break;
+//				luma = 0.677;
+//				break;
 			default:
 				luma = RGBtoXYZMatrix(1,1)+RGBtoXYZMatrix(1,0); 
 				break;
@@ -386,16 +386,16 @@ public:
 		double luma;
 		switch(m_standard)
 		{
-			case 3:
+			case HDTVa:
 				luma = 0.787;
 				break;
-			case 4:
-				luma = 0.4365;
+			case HDTVb:
+				luma = 0.4363;
 				break;
-			case 5:
+//			case 5:
 //				luma = 0.4333;
-				luma = 0.832;
-				break;
+//				luma = 0.832;
+//				break;
 			default:
 				luma = RGBtoXYZMatrix(1,1)+RGBtoXYZMatrix(1,2); 
 				break;
@@ -407,16 +407,16 @@ public:
 		double luma;
 		switch(m_standard)
 		{
-			case 3:
+			case HDTVa:
 				luma = 0.289;
 				break;
-			case 4:
-				luma = 0.4290;
+			case HDTVb:
+				luma = 0.2165;
 				break;
-			case 5:
+//			case 5:
 //				luma = 0.4305;
-				luma = 0.492;
-				break;
+//				luma = 0.492;
+//				break;
 			default:
 				luma = RGBtoXYZMatrix(1,0)+RGBtoXYZMatrix(1,2); 
 				break;

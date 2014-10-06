@@ -122,10 +122,10 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 					m_clr = RGB(193,150,130);
 				break;
 				case HDTVb:
-						nR = 178;
-						nG = 36;
-						nB = 36;
-				  m_clr = RGB(178,36,36);
+						nR = 155;
+						nG = 109;
+						nB = 109;
+				  m_clr = RGB(155,109,109);
 				break;
 				default:
 						nR = 255;
@@ -154,10 +154,10 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 					m_clr = RGB(94,122,156);
 				break;
 				case HDTVb:
-						nR = 28;
-						nG = 178;
-						nB = 28;
-				  m_clr = RGB(28,178,28);
+						nR = 86;
+						nG = 109;
+						nB = 86;
+				  m_clr = RGB(86,109,86);
 				break;
 				default:
 						nR = 0;
@@ -186,10 +186,10 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 					m_clr = RGB(90,107,66);
 				break;
 				case HDTVb:
-						nR = 36;
-						nG = 36;
-						nB = 64;
-				  m_clr = RGB(36,36,64);
+						nR = 115;
+						nG = 115;
+						nB = 156;
+				  m_clr = RGB(115,115,156);
 				break;
 				default:
 						nR = 0;
@@ -218,10 +218,10 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 					m_clr = RGB(75,92,163);
 				break;
 				case HDTVb:
-						nR = 221;
-						nG = 221;
-						nB = 54;
-				  m_clr = RGB(221,221,54);
+						nR = 214;
+						nG = 214;
+						nB = 51;
+				  m_clr = RGB(214,214,51);
 				break;
 				default:
 						nR = 255;
@@ -250,10 +250,10 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 					m_clr = RGB(158,186,64);
 				break;
 				case HDTVb:
-						nR = 144;
-						nG = 253;
-						nB = 253;
-				  m_clr = RGB(144,253,253);
+						nR = 86;
+						nG = 191;
+						nB = 191;
+				  m_clr = RGB(86,191,191);
 				break;
 				default:
 						nR = 0;
@@ -282,14 +282,14 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 					m_clr = RGB(229,161,45);
 				break;
 				case HDTVb:
-						nR = 253;
-						nG = 147;
-						nB = 254;
-				  m_clr = RGB(233,142,234);
+						nR = 191;
+						nG = 86;
+						nB = 191;
+				  m_clr = RGB(191,86,191);
 				break;
 				default:
 						nR = 255;
-						nG = 16;
+						nG = 0;
 						nB = 255;
 	   			  m_clr = RGB(192,0,192);
 				  break;
