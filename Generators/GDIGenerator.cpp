@@ -25,7 +25,8 @@
 #include "stdafx.h"
 #include "ColorHCFR.h"
 #include "GDIGenerator.h"
-#include "madVRTestPattern.h"
+//#include "madVRTestPattern.h"
+#include "madTPG.h"
 
 
 
@@ -77,6 +78,7 @@ CGDIGenerator::CGDIGenerator()
 	m_b16_235 = GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0);
     m_madVR_3d = GetConfig()->GetProfileInt("GDIGenerator","MADVR3D",0);
     m_madVR_vLUT = GetConfig()->GetProfileInt("GDIGenerator","MADVRvLUT",0);
+    m_madVR_OSD = GetConfig()->GetProfileInt("GDIGenerator","MADVROSD",0);
 	m_displayWindow.SetDisplayMode(m_nDisplayMode);	// Always init in GDI mode during init
 
 	CString str;
@@ -107,6 +109,7 @@ CGDIGenerator::CGDIGenerator(int nDisplayMode, BOOL b16_235)
 	m_displayWindow.SetDisplayMode();
     m_madVR_3d = m_madVR_3d;
     m_madVR_vLUT = m_madVR_vLUT;
+    m_madVR_OSD = m_madVR_OSD;
 
 	CString str;
 	str.LoadString(IDS_GDIGENERATOR_PROPERTIES_TITLE);
@@ -250,6 +253,7 @@ void CGDIGenerator::SetPropertiesSheetValues()
 	m_GDIGenePropertiesPage.m_b16_235=m_b16_235;
 	m_GDIGenePropertiesPage.m_madVR_3d=m_madVR_3d;
 	m_GDIGenePropertiesPage.m_madVR_vLUT=m_madVR_vLUT;
+	m_GDIGenePropertiesPage.m_madVR_OSD=m_madVR_OSD;
 }
 
 void CGDIGenerator::GetPropertiesSheetValues()
@@ -310,6 +314,13 @@ void CGDIGenerator::GetPropertiesSheetValues()
 		GetConfig()->WriteProfileInt("GDIGenerator","MADVRvLUT",m_madVR_vLUT);
 		SetModifiedFlag(TRUE);
 	}
+
+	if ( m_madVR_OSD!=m_GDIGenePropertiesPage.m_madVR_OSD )
+	{
+		m_madVR_OSD=m_GDIGenePropertiesPage.m_madVR_OSD;
+		GetConfig()->WriteProfileInt("GDIGenerator","MADVROSD",m_madVR_OSD);
+		SetModifiedFlag(TRUE);
+	}
 }
 
 BOOL CGDIGenerator::Init(UINT nbMeasure)
@@ -351,22 +362,23 @@ BOOL CGDIGenerator::DisplayRGBColormadVR( const ColorRGBDisplay& clr )
       double r, g, b;
       int rT,gT,bT;
       madVR_GetBlackAndWhiteLevel ( &blackLevel, &whiteLevel);
-      // don't use madvr white/black level because all patterns are expressed as video level percentages and targets assume this
       // if madvr is sending video levels then no dithering and targets are fine, if madvr is sending full (or custom) range then you should dither
       // and again targets will be fine.
-      r = (clr[0] / 100. );//* 2.19) / (whiteLevel - blackLevel);
-      g = (clr[1] / 100. );//* 2.19) / (whiteLevel - blackLevel);
-      b = (clr[2] / 100. );//* 2.19) / (whiteLevel - blackLevel);
+      r = (clr[0] / 100. );
+      g = (clr[1] / 100. );
+      b = (clr[2] / 100. );
+	  //What rounded int level will be sent by madVR if dithering is turned off 
       rT = (int) (r * (whiteLevel - blackLevel) + blackLevel + 0.5);
       gT = (int) (g * (whiteLevel - blackLevel) + blackLevel + 0.5);
       bT = (int) (b * (whiteLevel - blackLevel) + blackLevel + 0.5);
       char aBuf[128];
       if (m_madVR_3d)
-    	  sprintf(aBuf,"HCFR is measuring display, please wait...%d:%d:%d[3dlut disabled]",rT,gT,bT);
+    	  sprintf(aBuf,"HCFR is measuring display, pleaset wait...%d:%d:%d[3dlut disabled]",rT,gT,bT);
       else
     	  sprintf(aBuf,"HCFR is measuring display, please wait...%d:%d:%d",rT,gT,bT);
       const CString s(aBuf);
       madVR_SetOsdText(CT2CW(s));
+	  madVR_SetDisableOsdButton(!m_madVR_OSD);
       if (!madVR_ShowRGB(r, g, b))
       {
         MessageBox(0, "Test pattern failure.", "Error", MB_ICONERROR);

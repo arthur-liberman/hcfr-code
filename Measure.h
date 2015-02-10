@@ -200,7 +200,7 @@ public:
 
 	CColor GetRefPrimary(int i) const;
 	CColor GetRefSecondary(int i) const;
-	CColor GetRefSat(int i, double sat_percent) const;
+	CColor GetRefSat(int i, double sat_percent, bool special) const;
 	CColor GetRefCC24Sat(int i) const;
 
 	BOOL IsModified() { return m_isModified; }

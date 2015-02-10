@@ -51,11 +51,13 @@ public:
 	CArray <CString,CString> m_monitorNameArray;
     CEdit m_madVREdit;
     CEdit m_madVREdit2;
+    CEdit m_madVREdit3;
 	int m_activeMonitorNum;
 	int	m_nDisplayMode;
 	BOOL m_b16_235;
     BOOL m_madVR_3d;
     BOOL m_madVR_vLUT;
+	BOOL m_madVR_OSD;
 
 	HMONITOR	m_monitorHandle [ 16 ];
 

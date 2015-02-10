@@ -614,7 +614,6 @@ void CFullScreenWindow::OnPaint()
 
 			}
 		}
-
 		CRect patternRect=rect;
 		patternRect.DeflateRect(dWidth/2,dHeight/2);
 		brush.CreateSolidBrush ( DisplayColor );

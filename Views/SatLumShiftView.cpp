@@ -164,7 +164,7 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		ClrRGB[2]=0.0;
 
 		// Compute xy coordinates of 100% saturated color
-		GetEndPoint ( xend, yend, pDoc->GetMeasure()->GetRedPrimary(), ClrRGB );
+		GetEndPoint ( xend, yend, pDoc->GetMeasure()->GetRefSat(0, 1, true), ClrRGB );
 		for (int i=0; i<size; i++)
 	    {
 			// Compute shift and delta E for current point
@@ -187,7 +187,7 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		ClrRGB[2]=0.0;
 
 		// Compute xy coordinates of 100% saturated color
-		GetEndPoint ( xend, yend, pDoc->GetMeasure()->GetGreenPrimary(), ClrRGB );
+		GetEndPoint ( xend, yend, pDoc->GetMeasure()->GetRefSat(1, 1, true), ClrRGB );
 		
 		for (int i=0; i<size; i++)
 	    {
@@ -211,7 +211,7 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		ClrRGB[2]=255.0;
 
 		// Compute xy coordinates of 100% saturated color
-		GetEndPoint ( xend, yend, pDoc->GetMeasure()->GetBluePrimary(), ClrRGB );
+		GetEndPoint ( xend, yend, pDoc->GetMeasure()->GetRefSat(2, 1, true), ClrRGB );
 		
 		for (int i=0; i<size; i++)
 	    {
@@ -235,7 +235,7 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		ClrRGB[2]=0.0;
 
 		// Compute xy coordinates of 100% saturated color
-		GetEndPoint ( xend, yend, pDoc->GetMeasure()->GetYellowSecondary(), ClrRGB );
+		GetEndPoint ( xend, yend, pDoc->GetMeasure()->GetRefSat(3, 1, true), ClrRGB );
 		
 		for (int i=0; i<size; i++)
 	    {
@@ -259,7 +259,7 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		ClrRGB[2]=255.0;
 
 		// Compute xy coordinates of 100% saturated color
-		GetEndPoint ( xend, yend, pDoc->GetMeasure()->GetCyanSecondary(), ClrRGB );
+		GetEndPoint ( xend, yend, pDoc->GetMeasure()->GetRefSat(4, 1, true), ClrRGB );
 		
 		for (int i=0; i<size; i++)
 	    {
@@ -283,7 +283,7 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		ClrRGB[2]=255.0;
 
 		// Compute xy coordinates of 100% saturated color
-		GetEndPoint ( xend, yend, pDoc->GetMeasure()->GetMagentaSecondary(), ClrRGB );
+		GetEndPoint ( xend, yend, pDoc->GetMeasure()->GetRefSat(5, 1, true), ClrRGB );
 
 		for (int i=0; i<size; i++)
 	    {
@@ -449,20 +449,12 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 void CSatLumShiftGrapher::GetEndPoint ( double & xend, double & yend, CColor & SaturatedColor, const ColorRGB & ClrRGB )
 {
-//	if ( GetConfig () -> m_bSatUseMeasuredRef && SaturatedColor.isValid() )
-//	{
-//		// Use measured saturated color as target
-//		xend = SaturatedColor.GetxyYValue()[0];
-//		yend = SaturatedColor.GetxyYValue()[0];
-//	}
-//	else
-//	{		
-		ColorXYZ Clr2(ClrRGB, GetColorReference());
+		bool isSpecial = (GetConfig()->m_colorStandard==CC6||GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb);
+		ColorXYZ Clr2(ClrRGB, isSpecial?CColorReference(HDTV, D65):GetColorReference());
 		ColorxyY Clr3(Clr2);
 		
 		xend=Clr3[0];
 		yend=Clr3[1];
-//	}
 }
 
 void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, const CColor& SatColor, int num, int count, double xstart, double ystart, double xend, double yend, double gamma, double luma, double YWhite, CDataSetDoc * pDoc )
@@ -472,7 +464,6 @@ void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, cons
 	double	xmeasure, ymeasure;
 	double	xpoint, ypoint;
 	double	dx, dy;
-
 	// Retrieve measured point coordinates
 	xmeasure = SatColor.GetxyYValue()[0];
 	ymeasure = SatColor.GetxyYValue()[1];
@@ -487,19 +478,21 @@ void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, cons
 	CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
 
     aColor.SetxyYValue (xtarget, ytarget, luma);
-	ColorRGB rgb=aColor.GetRGBValue (GetColorReference());
+	ColorRGB rgb;
+	bool isSpecial = (GetConfig()->m_colorStandard==CC6||GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb);
+	rgb=isSpecial?rgb=aColor.GetRGBValue(CColorReference(HDTV)):aColor.GetRGBValue (GetColorReference());
 	double r=rgb[0],g=rgb[1],b=rgb[2];
     if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
         gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(aColor.GetY(),1/2.22));
     r=(r<=0||r>=1)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
     g=(g<=0||g>=1)?min(max(g,0),1):pow(pow(g,1./2.22),gamma);
     b=(b<=0||b>=1)?min(max(b,0),1):pow(pow(b,1./2.22),gamma);
-    aColor.SetRGBValue (ColorRGB(r,g,b), GetColorReference());	
+	aColor.SetRGBValue (ColorRGB(r,g,b), isSpecial?CColorReference(HDTV):GetColorReference() );	
 	ColorxyY xyy=aColor.GetxyYValue();
 	xtarget=xyy[0];
 	ytarget=xyy[1];
 	
-	deltaE = SatColor.GetDeltaE(YWhite, aColor, 1.0, (GetConfig()->m_colorStandard==CC6||GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb)?CColorReference(HDTV, D65):GetColorReference() , 	GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+	deltaE = SatColor.GetDeltaE(YWhite, aColor, 1.0, isSpecial?CColorReference(HDTV, D65):GetColorReference() , GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 	
 	// Compute projection on line (xstart,ystart) - (xend,yend) from measured point
 	dx = xend - xstart; 

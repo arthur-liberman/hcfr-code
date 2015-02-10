@@ -184,7 +184,7 @@ ColorxyY primariesCC6[3] ={	ColorxyY(0.3787, 0.3564), //some color check referen
 //								ColorxyY(0.3379, 0.4327)};
 
 //optimized
-ColorxyY primariesCC6a[3] ={	ColorxyY(0.377, 0.329), //some color check references, secondardies will add 3 more, MCD values
+ColorxyY primariesCC6a[3] ={	ColorxyY(0.377, 0.329), 
 								ColorxyY(0.310, 0.387),
 								ColorxyY(0.268, 0.256)};
 

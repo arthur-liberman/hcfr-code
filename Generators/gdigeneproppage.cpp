@@ -45,11 +45,12 @@ CGDIGenePropPage::CGDIGenePropPage() : CPropertyPageWithHelp(CGDIGenePropPage::I
 	m_Intensity = 0;
 	//}}AFX_DATA_INIT
 	m_activeMonitorNum = 0;
-//	m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI);
-	m_nDisplayMode = DISPLAY_GDI;
+	m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI);
+//	m_nDisplayMode = DISPLAY_GDI;
 	m_b16_235 = FALSE;
     m_madVR_3d = FALSE;
     m_madVR_vLUT = FALSE;
+	m_madVR_OSD = FALSE;
 }
 
 CGDIGenePropPage::~CGDIGenePropPage()
@@ -63,6 +64,7 @@ void CGDIGenePropPage::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_MADVR_3D, m_madVREdit);    
 	DDX_Control(pDX, IDC_MONITOR_COMBO, m_monitorComboCtrl);
     DDX_Control(pDX, IDC_MADVR_3D2, m_madVREdit2);    
+    DDX_Control(pDX, IDC_MADVR_OSD, m_madVREdit3);    
 	DDX_Text(pDX, IDC_PATTERNSIZE_EDIT, m_rectSizePercent);
 	DDX_Text(pDX, IDC_BGSTIM_EDIT, m_bgStimPercent);
 	DDX_Text(pDX, IDC_INTENSITY_EDIT, m_Intensity);
@@ -71,6 +73,7 @@ void CGDIGenePropPage::DoDataExchange(CDataExchange* pDX)
 	DDV_MinMaxUInt(pDX, m_Intensity, 1, 100);
 	DDX_Check(pDX, IDC_MADVR_3D, m_madVR_3d);
 	DDX_Check(pDX, IDC_MADVR_3D2, m_madVR_vLUT);
+	DDX_Check(pDX, IDC_MADVR_OSD, m_madVR_OSD);
 	//}}AFX_DATA_MAP
 }
 
@@ -131,11 +134,13 @@ BOOL CGDIGenePropPage::OnSetActive()
     {
         m_madVREdit.EnableWindow(TRUE);
         m_madVREdit2.EnableWindow(TRUE);
+        m_madVREdit3.EnableWindow(TRUE);
     }
     else
     {
         m_madVREdit.EnableWindow(FALSE);
         m_madVREdit2.EnableWindow(FALSE);
+        m_madVREdit3.EnableWindow(FALSE);
     }
 
 	return CPropertyPageWithHelp::OnSetActive();
@@ -195,11 +200,13 @@ void CGDIGenePropPage::OnClickmadVR()
     {
         m_madVREdit.EnableWindow(TRUE);
         m_madVREdit2.EnableWindow(TRUE);
+        m_madVREdit3.EnableWindow(TRUE);
     }
     else
     {
         m_madVREdit.EnableWindow(FALSE);
         m_madVREdit2.EnableWindow(FALSE);
+        m_madVREdit3.EnableWindow(FALSE);
     }
 }
 

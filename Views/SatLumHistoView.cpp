@@ -136,17 +136,17 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	{	
 		for (int i=0; i<size; i++)
 		{
-            satcolor = pDoc->GetMeasure()->GetRefSat(0,double (i)/ double(size-1));
+            satcolor = pDoc->GetMeasure()->GetRefSat(0,double (i)/ double(size-1), true);
             KR = satcolor.GetLuminance();
-            satcolor = pDoc->GetMeasure()->GetRefSat(1,double (i)/ double(size-1));
+            satcolor = pDoc->GetMeasure()->GetRefSat(1,double (i)/ double(size-1), true);
             KG = satcolor.GetLuminance();
-            satcolor = pDoc->GetMeasure()->GetRefSat(2,double (i)/ double(size-1));
+            satcolor = pDoc->GetMeasure()->GetRefSat(2,double (i)/ double(size-1), true);
             KB = satcolor.GetLuminance();
-            satcolor = pDoc->GetMeasure()->GetRefSat(3,double (i)/ double(size-1));
+            satcolor = pDoc->GetMeasure()->GetRefSat(3,double (i)/ double(size-1), true);
             KY = satcolor.GetLuminance();
-            satcolor = pDoc->GetMeasure()->GetRefSat(4,double (i)/ double(size-1));
+            satcolor = pDoc->GetMeasure()->GetRefSat(4,double (i)/ double(size-1), true);
             KC = satcolor.GetLuminance();
-            satcolor = pDoc->GetMeasure()->GetRefSat(5,double (i)/ double(size-1));
+            satcolor = pDoc->GetMeasure()->GetRefSat(5,double (i)/ double(size-1), true);
             KM = satcolor.GetLuminance();
 			m_graphCtrl.AddPoint(m_ref_redLumGraphID, i*100/(size-1), KR * 100.0);
 			m_graphCtrl.AddPoint(m_ref_greenLumGraphID, i*100/(size-1), KG * 100.0);

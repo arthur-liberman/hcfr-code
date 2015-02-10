@@ -570,15 +570,15 @@ void CMainView::RefreshSelection()
 	Item.row = 0;
 	Item.col = 1;
 
-	if (m_displayMode <= 11)
+	if (m_displayMode <= 4)
     {
         int size=GetDocument()->GetMeasure()->GetGrayScaleSize();
         if (m_displayMode == 3)
             size = 101;
         else if (m_displayMode == 4)
-            size = -1 * GetDocument()->GetMeasure()->GetNearWhiteScaleSize();
-        m_RGBLevels.Refresh(m_pGrayScaleGrid -> GetSelectedCellRange().IsValid() && m_displayMode==0?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1, m_displayMode);
-    	m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  (m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1), size, m_displayMode);
+        size = -1 * GetDocument()->GetMeasure()->GetNearWhiteScaleSize();
+	    m_RGBLevels.Refresh(m_pGrayScaleGrid -> GetSelectedCellRange().IsValid() && m_displayMode==0?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1, m_displayMode);
+		m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  (m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1), size, m_displayMode);
     }
 
 	if(m_SelectedColor.isValid())
@@ -598,9 +598,9 @@ void CMainView::RefreshSelection()
 		m_pSelectedColorGrid->SetItem(&Item);
 
         if (GetDocument()->m_pSensor->ReadingType() == 2)
-            Item.strText.Format("%.3f",m_SelectedColor.GetLuminance() / 10.764);
+            Item.strText.Format("%.4f",m_SelectedColor.GetLuminance() / 10.764);
         else
-            Item.strText.Format("%.3f",m_SelectedColor.GetLuminance()*.29188558);
+            Item.strText.Format("%.4f",m_SelectedColor.GetLuminance()*.29188558);
 		Item.row = 1;
 		m_pSelectedColorGrid->SetItem(&Item);
 
@@ -656,7 +656,7 @@ void CMainView::RefreshSelection()
                     int size=GetDocument()->GetMeasure()->GetGrayScaleSize();
                     if (m_displayMode == 3)
                         size = 101;
-                    else if (m_displayMode ==4)
+                    else if (m_displayMode == 4)
                         size = -1 * GetDocument()->GetMeasure()->GetNearWhiteScaleSize();
                     ( ( CTargetWnd * ) m_pInfoWnd ) -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  (m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1), size, m_displayMode);
                 }
@@ -1767,51 +1767,60 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				switch (m_displayMode)
 				{
 					case 1:
-  						RefLuma [ 0 ] = GetColorReference().GetRedReferenceLuma ();
-						RefLuma [ 1 ] = GetColorReference().GetGreenReferenceLuma ();
-						RefLuma [ 2 ] = GetColorReference().GetBlueReferenceLuma ();
-						RefLuma [ 3 ] = GetColorReference().GetYellowReferenceLuma ();
-						RefLuma [ 4 ] = GetColorReference().GetCyanReferenceLuma ();
-						RefLuma [ 5 ] = GetColorReference().GetMagentaReferenceLuma ();
-//						RefLuma [ 0 ] = GetDocument()->GetMeasure()->GetRefPrimary(0).GetLuminance();
-//						RefLuma [ 1 ] = GetDocument()->GetMeasure()->GetRefPrimary(1).GetLuminance();
-//						RefLuma [ 2 ] = GetDocument()->GetMeasure()->GetRefPrimary(2).GetLuminance();
-//						RefLuma [ 3 ] = GetDocument()->GetMeasure()->GetRefSecondary(0).GetLuminance();
-//						RefLuma [ 4 ] = GetDocument()->GetMeasure()->GetRefSecondary(1).GetLuminance();
-//						RefLuma [ 5 ] = GetDocument()->GetMeasure()->GetRefSecondary(2).GetLuminance();
-						if (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == CC6 || GetConfig()->m_colorStandard == HDTVb)
-						{
-							for (int k = 0; k < 6; k++) { 
-		                    if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
-			                    RefLuma [ k ] = pow(pow(RefLuma[k],1. / 2.2),log(GetBT1886(pow(RefLuma[k],1. / 2.2),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(RefLuma[k],1. / 2.2)));
-				            else
-	  							RefLuma [ k ] = pow(pow(RefLuma[k],1. / 2.2),GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
-							}
-						}
+						RefLuma [ 0 ] = GetDocument()->GetMeasure()->GetRefPrimary(0).GetLuminance();
+						RefLuma [ 1 ] = GetDocument()->GetMeasure()->GetRefPrimary(1).GetLuminance();
+						RefLuma [ 2 ] = GetDocument()->GetMeasure()->GetRefPrimary(2).GetLuminance();
+						RefLuma [ 3 ] = GetDocument()->GetMeasure()->GetRefSecondary(0).GetLuminance();
+						RefLuma [ 4 ] = GetDocument()->GetMeasure()->GetRefSecondary(1).GetLuminance();
+						RefLuma [ 5 ] = GetDocument()->GetMeasure()->GetRefSecondary(2).GetLuminance();
 						break ;
 					case 5:
-                        satcolor = GetDocument()->GetMeasure()->GetRefSat(0,sat);
+                        satcolor = GetDocument()->GetMeasure()->GetRefSat(0, sat, true);
                         RefLuma [nCol - 1] = satcolor.GetLuminance();
+                        if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
+                            RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),log(GetBT1886(pow(RefLuma [ nCol-1 ],1. / 2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(RefLuma [ nCol-1 ],1. / 2.22)));
+                        else
+    						RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 						break;
 					case 6:
-                        satcolor = GetDocument()->GetMeasure()->GetRefSat(1,sat);
+                        satcolor = GetDocument()->GetMeasure()->GetRefSat(1, sat, true);
                         RefLuma [nCol - 1] = satcolor.GetLuminance();
+                        if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
+                            RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),log(GetBT1886(pow(RefLuma [ nCol-1 ],1. / 2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(RefLuma [ nCol-1 ],1. / 2.22)));
+                        else
+    						RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 						break;
 					case 7:                                                
-                        satcolor = GetDocument()->GetMeasure()->GetRefSat(2,sat);
+                        satcolor = GetDocument()->GetMeasure()->GetRefSat(2, sat, true);
                         RefLuma [nCol - 1] = satcolor.GetLuminance();
+                        if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
+                            RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),log(GetBT1886(pow(RefLuma [ nCol-1 ],1. / 2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(RefLuma [ nCol-1 ],1. / 2.22)));
+                        else
+    						RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 						break;
 					case 8:
-                        satcolor = GetDocument()->GetMeasure()->GetRefSat(3,sat);
+                        satcolor = GetDocument()->GetMeasure()->GetRefSat(3, sat, true);
                         RefLuma [nCol - 1] = satcolor.GetLuminance();
+                        if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
+                            RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),log(GetBT1886(pow(RefLuma [ nCol-1 ],1. / 2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(RefLuma [ nCol-1 ],1. / 2.22)));
+                        else
+    						RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 						break;
 					case 9:
-                        satcolor = GetDocument()->GetMeasure()->GetRefSat(4,sat);
+                        satcolor = GetDocument()->GetMeasure()->GetRefSat(4, sat, true);
                         RefLuma [nCol - 1] = satcolor.GetLuminance();
+                        if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
+                            RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),log(GetBT1886(pow(RefLuma [ nCol-1 ],1. / 2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(RefLuma [ nCol-1 ],1. / 2.22)));
+                        else
+    						RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 						break;
 					case 10:
-                        satcolor = GetDocument()->GetMeasure()->GetRefSat(5,sat);
+                        satcolor = GetDocument()->GetMeasure()->GetRefSat(5, sat, true);
                         RefLuma [nCol - 1] = satcolor.GetLuminance();
+                        if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
+                            RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),log(GetBT1886(pow(RefLuma [ nCol-1 ],1. / 2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(RefLuma [ nCol-1 ],1. / 2.22)));
+                        else
+    						RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 						break;
 					case 11:
                         double rLuma;
@@ -1890,7 +1899,7 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 							return "RCC6";
 							break;
 						case HDTVb:
-							return "RCC6";
+							return "R709(OPT)";
 							break;
 						case CUSTOM:
 							return "RCUSTOM";
@@ -1937,7 +1946,7 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 							return "GCC6";
 							break;
 						case HDTVb:
-							return "GCC6";
+							return "G709(OPT)";
 							break;
 						case CUSTOM:
 							return "GCUSTOM";
@@ -1985,7 +1994,7 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 							return "BCC6";
 							break;
 						case HDTVb:
-							return "BCC6";
+							return "B709(OPT)";
 							break;
 						case CUSTOM:
 							return "BCUSTOM";
@@ -2412,7 +2421,7 @@ void CMainView::UpdateGrid()
 
 				case 5:
 					 aColor = GetDocument()->GetMeasure()->GetRedSat(j);
-					 refColor = GetDocument()->GetMeasure()->GetRefSat(0,(double)j/(double)(nCount-1));
+					 refColor = GetDocument()->GetMeasure()->GetRefSat(0,(double)j/(double)(nCount-1), true);
     				 YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
 	    			 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
 
@@ -2422,7 +2431,7 @@ void CMainView::UpdateGrid()
 
 				case 6:
 					 aColor = GetDocument()->GetMeasure()->GetGreenSat(j);
-					 refColor = GetDocument()->GetMeasure()->GetRefSat(1,(double)j/(double)(nCount-1));
+					 refColor = GetDocument()->GetMeasure()->GetRefSat(1,(double)j/(double)(nCount-1), true);
     				 YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
 	    			 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
 
@@ -2432,7 +2441,7 @@ void CMainView::UpdateGrid()
 
 				case 7:
 					 aColor = GetDocument()->GetMeasure()->GetBlueSat(j);
-					 refColor = GetDocument()->GetMeasure()->GetRefSat(2,(double)j/(double)(nCount-1));
+					 refColor = GetDocument()->GetMeasure()->GetRefSat(2,(double)j/(double)(nCount-1), true);
                      YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
 	    			 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
 
@@ -2442,7 +2451,7 @@ void CMainView::UpdateGrid()
 
 				case 8:
 					 aColor = GetDocument()->GetMeasure()->GetYellowSat(j);
-					 refColor = GetDocument()->GetMeasure()->GetRefSat(3,(double)j/(double)(nCount-1));
+					 refColor = GetDocument()->GetMeasure()->GetRefSat(3,(double)j/(double)(nCount-1), true);
     				 YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
 	    			 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
 
@@ -2452,7 +2461,7 @@ void CMainView::UpdateGrid()
 
 				case 9:
 					 aColor = GetDocument()->GetMeasure()->GetCyanSat(j);
-					 refColor = GetDocument()->GetMeasure()->GetRefSat(4,(double)j/(double)(nCount-1));
+					 refColor = GetDocument()->GetMeasure()->GetRefSat(4,(double)j/(double)(nCount-1), true);
     				 YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
 	    			 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
 					 
@@ -2462,7 +2471,7 @@ void CMainView::UpdateGrid()
 
 				case 10:
 					 aColor = GetDocument()->GetMeasure()->GetMagentaSat(j);
-					 refColor = GetDocument()->GetMeasure()->GetRefSat(5,(double)j/(double)(nCount-1));
+					 refColor = GetDocument()->GetMeasure()->GetRefSat(5,(double)j/(double)(nCount-1), true);
     				 YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
 	    			 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
 
@@ -4407,6 +4416,9 @@ void CMainView::OnSize(UINT nType, int cx, int cy)
 		{
 			m_pGrayScaleGrid -> ExpandColumnsToFit(FALSE);
 		}
+		else
+		{
+		}
 
 		m_pSelectedColorGrid->SetRedraw ( FALSE, FALSE );
 		m_pSelectedColorGrid->ExpandColumnsToFit(TRUE);
@@ -4442,6 +4454,9 @@ void CMainView::OnSize(UINT nType, int cx, int cy)
 			if ( ! m_Target.IsWindowVisible () )
 				m_Target.ShowWindow ( SW_SHOW );
 		}
+		
+		InitGrid();
+		UpdateGrid();
 	}
 }
 
@@ -4489,7 +4504,7 @@ void CMainView::OnSelchangeInfoDisplay()
 		case 1: // target
              pTargetWnd = new CTargetWnd;			
 			 pTargetWnd -> Create (NULL, NULL, WS_VISIBLE | WS_CHILD, Rect, this, IDC_INFO_VIEW, NULL );
-             if (m_displayMode <= 11)
+             if (m_displayMode <= 4)
              {
 			    pTargetWnd -> m_pRefColor = & m_SelectedColor;
 			    pTargetWnd -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  (m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1), GetDocument()->GetMeasure()->GetGrayScaleSize(), m_displayMode );

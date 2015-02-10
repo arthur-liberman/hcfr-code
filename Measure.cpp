@@ -975,6 +975,17 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 			pGenerator->Release();
 			return FALSE;
 		}
+	CString str;
+	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
+
+	if(pGenerator->GetName() == str&&GetConfig()->m_colorStandard == HDTVb)
+	{		
+		Title.LoadString ( IDS_ERROR );
+		strMsg.LoadString ( IDS_ERRINITGENERATOR );
+		GetColorApp()->InMeasureMessageBox(strMsg,Title,MB_ICONERROR | MB_OK);
+		pGenerator->Release();
+		return FALSE;
+	}
 
 	double primaryIRELevel=100.0;	
 	// Measure primary and secondary colors
@@ -989,26 +1000,14 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 									ColorRGBDisplay(primaryIRELevel,primaryIRELevel,primaryIRELevel),
 									ColorRGBDisplay(0,0,0)
 								};
-	if (GetColorReference().m_standard == CC6 || GetColorReference().m_standard == HDTVb) //CC6
+	if (GetColorReference().m_standard == HDTVb)
 	{
-		if (GetConfig()->m_CCMode == GCD)
-		{
-		GenColors [ 0 ] = ColorRGBDisplay(75.80,58.90,51.14);
-			GenColors [ 1 ] = ColorRGBDisplay(36.99,47.95,61.19);
-			GenColors [ 2 ] = ColorRGBDisplay(35.16,42.01,26.03);
-			GenColors [ 3 ] = ColorRGBDisplay(29.22,36.07,63.93);
-			GenColors [ 4 ] = ColorRGBDisplay(62.1,73.06,25.11);
-			GenColors [ 5 ] = ColorRGBDisplay(89.95,63.01,17.81);
-		} else
-		{
-
 			GenColors [ 0 ] = ColorRGBDisplay(60.73,42.92,42.92); 
 			GenColors [ 1 ] = ColorRGBDisplay(33.79,42.92,33.79); 
 			GenColors [ 2 ] = ColorRGBDisplay(45.21,45.21,61.19); 
 			GenColors [ 3 ] = ColorRGBDisplay(84.02,84.02,20.90);
 			GenColors [ 4 ] = ColorRGBDisplay(33.79,74.89,74.89);
 			GenColors [ 5 ] = ColorRGBDisplay(74.89,33.79,74.89);
-		}
 	}
 	else if (GetColorReference().m_standard == HDTVa) //75%
 	{ 
@@ -3196,6 +3195,19 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
 		return FALSE;
 	}
 
+	CString str;
+	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
+
+	if(pGenerator->GetName() == str&&GetConfig()->m_colorStandard == HDTVb)
+	{		
+		Title.LoadString ( IDS_ERROR );
+		strMsg.LoadString ( IDS_ERRINITGENERATOR );
+		GetColorApp()->InMeasureMessageBox(strMsg,Title,MB_ICONERROR | MB_OK);
+		pGenerator->Release();
+		return FALSE;
+	}
+
+
 	// Measure primary and secondary colors
 	double		primaryIRELevel=100.0;
 	ColorRGBDisplay	GenColors [ 5 ] = 
@@ -3207,23 +3219,13 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
 									ColorRGBDisplay(0,0,0)
 								};
 
-	if ( GetColorReference().m_standard == CC6 || GetColorReference().m_standard == HDTVb ) //CC6
+	if ( GetColorReference().m_standard == HDTVb )
 	{
-		if ( GetConfig()->m_CCMode == GCD )
-		{
-			GenColors [ 0 ] = ColorRGBDisplay(75.80,58.90,51.14);
-			GenColors [ 1 ] = ColorRGBDisplay(36.99,47.95,61.19);
-			GenColors [ 2 ] = ColorRGBDisplay(35.16,42.01,26.03);
-			GenColors [ 3 ] = ColorRGBDisplay(primaryIRELevel,primaryIRELevel,primaryIRELevel);
-			GenColors [ 4 ] = ColorRGBDisplay(0,0,0);
-		} else
-		{
 			GenColors [ 0 ] = ColorRGBDisplay(60.73,42.92,42.92); 
 			GenColors [ 1 ] = ColorRGBDisplay(33.79,42.92,33.79); 
 			GenColors [ 2 ] = ColorRGBDisplay(45.21,45.21,61.19); 
 			GenColors [ 3 ] = ColorRGBDisplay(primaryIRELevel,primaryIRELevel,primaryIRELevel);
 			GenColors [ 4 ] = ColorRGBDisplay(0,0,0);
-		}
 	}
 	else if ( GetColorReference().m_standard == HDTVa ) //75%
 	{ 
@@ -3404,6 +3406,17 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator)
 		pGenerator->Release();
 		return FALSE;
 	}
+		CString str;
+	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
+
+	if(pGenerator->GetName() == str&&GetConfig()->m_colorStandard == HDTVb)
+	{		
+		Title.LoadString ( IDS_ERROR );
+		strMsg.LoadString ( IDS_ERRINITGENERATOR );
+		GetColorApp()->InMeasureMessageBox(strMsg,Title,MB_ICONERROR | MB_OK);
+		pGenerator->Release();
+		return FALSE;
+	}
 
 	// Measure primary and secondary colors
 	double		IRELevel=100.0;	
@@ -3418,20 +3431,8 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator)
 									ColorRGBDisplay(IRELevel,IRELevel,IRELevel),
 									ColorRGBDisplay(0,0,0)
 								};
-	if (GetColorReference().m_standard == CC6 || GetColorReference().m_standard == HDTVb) //CC6
+	if (GetColorReference().m_standard == HDTVb)
 	{
-		if ( GetConfig()->m_CCMode == GCD )
-		{
-			GenColors [ 0 ] = ColorRGBDisplay(75.80,58.90,51.14);
-			GenColors [ 1 ] = ColorRGBDisplay(36.99,47.95,61.19);
-			GenColors [ 2 ] = ColorRGBDisplay(35.16,42.01,26.03);
-			GenColors [ 3 ] = ColorRGBDisplay(29.22,36.07,63.93);
-			GenColors [ 4 ] = ColorRGBDisplay(62.1,73.06,25.11);
-			GenColors [ 5 ] = ColorRGBDisplay(89.95,63.01,17.81);
-			GenColors [ 6 ] = ColorRGBDisplay(IRELevel,IRELevel,IRELevel);
-			GenColors [ 7 ] = ColorRGBDisplay(0,0,0);
-		} else
-		{
 			GenColors [ 0 ] = ColorRGBDisplay(60.73,42.92,42.92); 
 			GenColors [ 1 ] = ColorRGBDisplay(33.79,42.92,33.79); 
 			GenColors [ 2 ] = ColorRGBDisplay(45.21,45.21,61.19); 
@@ -3440,7 +3441,6 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator)
 			GenColors [ 5 ] = ColorRGBDisplay(74.89,33.79,74.89);
 			GenColors [ 6 ] = ColorRGBDisplay(IRELevel,IRELevel,IRELevel);
 			GenColors [ 7 ] = ColorRGBDisplay(0,0,0);
-		}
 	}
 	else if (GetColorReference().m_standard == HDTVa) //75%
 	{ 
@@ -5305,7 +5305,7 @@ CColor CMeasure::GetRefSecondary(int i) const
 	return noDataColor;
 }
 
-CColor CMeasure::GetRefSat(int i, double sat_percent) const
+CColor CMeasure::GetRefSat(int i, double sat_percent, bool special) const
 {
 	CColor	refColor;
 	ColorxyY	refWhite(GetColorReference().GetWhite());
@@ -5323,9 +5323,10 @@ CColor CMeasure::GetRefSat(int i, double sat_percent) const
 	sRef[1].SetxyYValue(ColorxyY(0.2246, 0.3287));
 	sRef[2].SetxyYValue(ColorxyY(0.3209, 0.1542));
 	int m_cRef=GetColorReference().m_standard;
+	bool full = !(m_cRef == HDTVa || m_cRef == CC6 || m_cRef == HDTVb);
 
 	//display rec709 sat points in special colorspace modes	
-	if (!(m_cRef == HDTVa || m_cRef == CC6 || m_cRef == HDTVb))
+	if (!special)
 	{
 		if ( i < 3 )
 			refColor = GetRefPrimary(i);
@@ -5338,12 +5339,28 @@ CColor CMeasure::GetRefSat(int i, double sat_percent) const
 			refColor = pRef[i];
 		else
 			refColor = sRef[i-3];
+		switch (i)
+		{
+		case 0:
+			YLuma = CColorReference(HDTV).GetRedReferenceLuma();
+			break;
+		case 1:
+			YLuma = CColorReference(HDTV).GetGreenReferenceLuma();
+			break;
+		case 2:
+			YLuma = CColorReference(HDTV).GetBlueReferenceLuma();
+			break;
+		case 3:
+			YLuma = CColorReference(HDTV).GetYellowReferenceLuma();
+			break;
+		case 4:
+			YLuma = CColorReference(HDTV).GetCyanReferenceLuma();
+			break;
+		case 5:
+			YLuma = CColorReference(HDTV).GetMagentaReferenceLuma();
+			break;
+		}
 	}
-
-	if ( i < 3 )
-		YLuma = GetRefPrimary(i) [ 1 ];
-	else
-		YLuma = GetRefSecondary(i-3) [ 1 ];
 	
 	double	xend = refColor.GetxyYValue()[0];
 	double	yend = refColor.GetxyYValue()[1];
@@ -5356,14 +5373,24 @@ CColor CMeasure::GetRefSat(int i, double sat_percent) const
 	CColor Black = CMeasure::GetGray ( 0 );
     double gamma=GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef);
     aColor.SetxyYValue (x, y, YLuma);
-	ColorRGB rgb=aColor.GetRGBValue ( GetColorReference() );
+	ColorRGB rgb;
+	if (!special)
+		rgb=aColor.GetRGBValue (GetColorReference());
+	else
+		rgb=aColor.GetRGBValue(CColorReference(HDTV));
 	double r=rgb[0],g=rgb[1],b=rgb[2];
-    if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
-       gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(aColor.GetY(),1/2.22));
-    r=(r<=0||r>=1)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
-    g=(g<=0||g>=1)?min(max(g,0),1):pow(pow(g,1./2.22),gamma);
-    b=(b<=0||b>=1)?min(max(b,0),1):pow(pow(b,1./2.22),gamma);
-    aColor.SetRGBValue (ColorRGB(r,g,b), GetColorReference());	
+	if (sat_percent < 1 || !full)
+	{
+	    if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
+		   gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(aColor.GetY(),1/2.22));
+		r=(r<=0||r>=1)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
+		g=(g<=0||g>=1)?min(max(g,0),1):pow(pow(g,1./2.22),gamma);
+		b=(b<=0||b>=1)?min(max(b,0),1):pow(pow(b,1./2.22),gamma);
+		if (!special)
+			aColor.SetRGBValue (ColorRGB(r,g,b), GetColorReference());	
+		else
+			aColor.SetRGBValue (ColorRGB(r,g,b), CColorReference(HDTV));	
+	}
 	return aColor;
 }
 

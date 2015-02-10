@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by CHCFR21_FRANCAIS.rc
+// Used by CHCFR21_ESPANOL.rc
 //
 #define IDS_STRING_VERSION              1
 #define IDS_STRING_VERSION_WEB          2
@@ -501,6 +501,7 @@
 #define IDC_RADIO3                      1149
 #define IDC_RADIO4                      1150
 #define IDC_SECONDARIESMATRIX_GRID      1151
+#define IDC_RADIO5                      1151
 #define IDC_SECONDARIES_GRID            1152
 #define IDC_MEASURESECONDARIES_BUTTON   1153
 #define IDC_DELETESECONDARIES_BUTTON    1154
@@ -715,6 +716,7 @@
 #define IDC_HIGHLIGHT                   1279
 #define IDC_MADVR_3D2                   1280
 #define IDC_WHITE_X                     1281
+#define IDC_MADVR_3D3                   1281
 #define IDC_WHITE_Y                     1282
 #define IDC_RICHEDIT21                  1282
 #define IDC_CHECK_USE_HSV               1283
@@ -725,6 +727,7 @@
 #define IDC_CUSTOM1                     1286
 #define IDC_BLUE_X                      1287
 #define IDC_BLUE_Y                      1288
+#define IDC_MADVR_OSD                   1289
 #define IDC_COLORTEMPHISTO_GRAPH        11003
 #define IDC_RGBHISTO_GRAPH              11101
 #define IDC_RGBHISTO_GRAPH2             11102

@@ -66,7 +66,7 @@ public:
 	BOOL m_b16_235;
     BOOL m_madVR_3d;
     BOOL m_madVR_vLUT;
-
+	BOOL m_madVR_OSD;
 protected:
 	BOOL m_isModified;
 	CFullScreenWindow m_blankingWindow;

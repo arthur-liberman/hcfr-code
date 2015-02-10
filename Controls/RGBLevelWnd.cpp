@@ -85,7 +85,6 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode)
 
 	if ( m_pRefColor && (*m_pRefColor).isValid() )
 	{
-		double RefLuma = 1.0;
         CColor aReference;
         
 		//look for white first and disable if detect for primaries/secondaries is not selected
@@ -97,56 +96,35 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode)
 		else if ( m_pRefColor -> GetDeltaxy ( m_pDocument->GetMeasure()->GetRefPrimary(0), GetColorReference() ) < 0.05 )
 		{
 			m_bLumaMode = TRUE;
-			RefLuma = GetColorReference().GetRedReferenceLuma ();
-//			RefLuma = m_pDocument->GetMeasure()->GetRefPrimary(0).GetLuminance();
-            aReference = m_pDocument->GetMeasure()->GetRefPrimary(0);//GetColorReference().GetRed();
+            aReference = m_pDocument->GetMeasure()->GetRefPrimary(0);
 		}
 		else if ( m_pRefColor -> GetDeltaxy ( m_pDocument->GetMeasure()->GetRefPrimary(1), GetColorReference() ) < 0.05 )
 		{
 			m_bLumaMode = TRUE;
-			RefLuma = GetColorReference().GetGreenReferenceLuma ();
-//			RefLuma = m_pDocument->GetMeasure()->GetRefPrimary(1).GetLuminance();
-            aReference = m_pDocument->GetMeasure()->GetRefPrimary(1);//GetColorReference().GetGreen();
+            aReference = m_pDocument->GetMeasure()->GetRefPrimary(1);
 		}
 		else if ( m_pRefColor -> GetDeltaxy ( m_pDocument->GetMeasure()->GetRefPrimary(2), GetColorReference() ) < 0.05 )
 		{
 			m_bLumaMode = TRUE;
-			RefLuma = GetColorReference().GetBlueReferenceLuma ();
-//			RefLuma = m_pDocument->GetMeasure()->GetRefPrimary(2).GetLuminance();
-            aReference = m_pDocument->GetMeasure()->GetRefPrimary(2);//GetColorReference().GetBlue();
+            aReference = m_pDocument->GetMeasure()->GetRefPrimary(2);
 		}
 		else if ( m_pRefColor -> GetDeltaxy ( m_pDocument->GetMeasure()->GetRefSecondary(0), GetColorReference() ) < 0.05 )
 		{
 			m_bLumaMode = TRUE;
-			RefLuma = GetColorReference().GetYellowReferenceLuma ();
-//			RefLuma = m_pDocument->GetMeasure()->GetRefSecondary(0).GetLuminance();
-            aReference = m_pDocument->GetMeasure()->GetRefSecondary(0);//			aReference = GetColorReference().GetYellow();
+            aReference = m_pDocument->GetMeasure()->GetRefSecondary(0);
 		}
 		else if ( m_pRefColor -> GetDeltaxy ( m_pDocument->GetMeasure()->GetRefSecondary(1), GetColorReference() ) < 0.05 )
 		{
 			m_bLumaMode = TRUE;
-			RefLuma = GetColorReference().GetCyanReferenceLuma ();
-//			RefLuma = m_pDocument->GetMeasure()->GetRefSecondary(1).GetLuminance();
-            aReference = m_pDocument->GetMeasure()->GetRefSecondary(1);//GetColorReference().GetCyan();
+            aReference = m_pDocument->GetMeasure()->GetRefSecondary(1);
 		}
 		else if ( m_pRefColor -> GetDeltaxy ( m_pDocument->GetMeasure()->GetRefSecondary(2), GetColorReference() ) < 0.05 )
 		{
 			m_bLumaMode = TRUE;
-			RefLuma = GetColorReference().GetMagentaReferenceLuma ();
-//			RefLuma = m_pDocument->GetMeasure()->GetRefSecondary(2).GetLuminance();
-            aReference = m_pDocument->GetMeasure()->GetRefSecondary(2);//GetColorReference().GetMagenta();
+            aReference = m_pDocument->GetMeasure()->GetRefSecondary(2);
 		}
-		//Handle inside the gamut refluma
+		
 		CColor white = m_pDocument->GetMeasure()->GetOnOffWhite();
-	    CColor black = m_pDocument -> GetMeasure () -> GetGray ( 0 );
-		if ( GetConfig()->m_colorStandard == HDTVa ||  GetConfig()->m_colorStandard == HDTVb)
-		{
-			if (GetConfig()->m_GammaOffsetType == 4 && white.isValid() && black.isValid() )
-				RefLuma = pow(pow(RefLuma,1. / 2.2),log(GetBT1886(pow(RefLuma,1. / 2.2),white,black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(RefLuma,1. / 2.2)));
-			else
-    			RefLuma = pow(pow(RefLuma,1. / 2.2),GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
-		}
-                        		
         if (!white.isValid() || !m_bLumaMode)
         {
     		int i = m_pDocument -> GetMeasure () -> GetGrayScaleSize ();
@@ -362,7 +340,8 @@ void CRGBLevelWnd::OnPaint()
 	int blueBarY=rect.Height()-blueBarHeight-heightMargin;
 
 	double dEyScale=(float)drawRect.Height()/6.;
-	int dEBarHeight= (int)(m_dEValue*dEyScale);
+	double dEBarHeightmax=dEyScale * 4.8;
+	int dEBarHeight= min((int)dEBarHeightmax,(int)(m_dEValue*dEyScale));
 	int dEBarX=widthMargin+3*barWidth+3*interBarMargin;
 	int dEBarY=rect.Height()-dEBarHeight-heightMargin;
 
