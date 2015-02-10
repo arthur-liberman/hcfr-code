@@ -3178,10 +3178,11 @@ void CDataSetDoc::OnUpdateMeasureNearwhite(CCmdUI* pCmdUI)
 void CDataSetDoc::OnMeasureSatRed() 
 {
 	CString	Msg, MsgQueue, TmpStr;
+	CGDIGenerator Cgen;
 	int		nNbPoints = GetMeasure () -> GetSaturationSize ();
-	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
+	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid() && GetConfig()->m_colorStandard != HDTVa && GetConfig()->m_colorStandard != HDTVb && Cgen.m_Intensity == 100;
 	if (!m_YWhite)
-		GetColorApp()->InMeasureMessageBox("Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
+		GetColorApp()->InMeasureMessageBox("Please run a primaries scan at 100% stimulus in a normal color space prior to running saturation scans.","Bad Configuration",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -3207,10 +3208,11 @@ void CDataSetDoc::OnUpdateMeasureSatRed(CCmdUI* pCmdUI)
 void CDataSetDoc::OnMeasureSatGreen() 
 {
 	CString	Msg, MsgQueue, TmpStr;
+	CGDIGenerator Cgen;
 	int		nNbPoints = GetMeasure () -> GetSaturationSize ();
-	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
+	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid() && GetConfig()->m_colorStandard != HDTVa && GetConfig()->m_colorStandard != HDTVb && Cgen.m_Intensity == 100;
 	if (!m_YWhite)
-		GetColorApp()->InMeasureMessageBox("Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
+		GetColorApp()->InMeasureMessageBox("Please run a primaries scan at 100% stimulus in a normal color space prior to running saturation scans.","Bad Configuration",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -3236,10 +3238,11 @@ void CDataSetDoc::OnUpdateMeasureSatGreen(CCmdUI* pCmdUI)
 void CDataSetDoc::OnMeasureSatBlue() 
 {
 	CString	Msg, MsgQueue, TmpStr;
+	CGDIGenerator Cgen;
 	int		nNbPoints = GetMeasure () -> GetSaturationSize ();
-	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
+	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid() && GetConfig()->m_colorStandard != HDTVa && GetConfig()->m_colorStandard != HDTVb && Cgen.m_Intensity == 100;
 	if (!m_YWhite)
-		GetColorApp()->InMeasureMessageBox("Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
+		GetColorApp()->InMeasureMessageBox("Please run a primaries scan at 100% stimulus in a normal color space prior to running saturation scans.","Bad Configuration",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -3265,10 +3268,11 @@ void CDataSetDoc::OnUpdateMeasureSatBlue(CCmdUI* pCmdUI)
 void CDataSetDoc::OnMeasureSatYellow() 
 {
 	CString	Msg, MsgQueue, TmpStr;
+	CGDIGenerator Cgen;
 	int		nNbPoints = GetMeasure () -> GetSaturationSize ();
-	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
+	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid() && GetConfig()->m_colorStandard != HDTVa && GetConfig()->m_colorStandard != HDTVb && Cgen.m_Intensity == 100;
 	if (!m_YWhite)
-		GetColorApp()->InMeasureMessageBox("Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
+		GetColorApp()->InMeasureMessageBox("Please run a primaries scan at 100% stimulus in a normal color space prior to running saturation scans.","Bad Configuration",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -3294,10 +3298,11 @@ void CDataSetDoc::OnUpdateMeasureSatYellow(CCmdUI* pCmdUI)
 void CDataSetDoc::OnMeasureSatCyan() 
 {
 	CString	Msg, MsgQueue, TmpStr;
+	CGDIGenerator Cgen;
 	int		nNbPoints = GetMeasure () -> GetSaturationSize ();
-	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
+	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid() && GetConfig()->m_colorStandard != HDTVa && GetConfig()->m_colorStandard != HDTVb && Cgen.m_Intensity == 100;
 	if (!m_YWhite)
-		GetColorApp()->InMeasureMessageBox("Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
+		GetColorApp()->InMeasureMessageBox("Please run a primaries scan at 100% stimulus in a normal color space prior to running saturation scans.","Bad Configuration",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -3322,11 +3327,12 @@ void CDataSetDoc::OnUpdateMeasureSatCyan(CCmdUI* pCmdUI)
 
 void CDataSetDoc::OnMeasureSatMagenta() 
 {
-	CString	Msg, MsgQueue, TmpStr;
+	CString	Msg, MsgQueue, TmpStr;\
+	CGDIGenerator Cgen;
 	int		nNbPoints = GetMeasure () -> GetSaturationSize ();
-	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
+	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid() && GetConfig()->m_colorStandard != HDTVa && GetConfig()->m_colorStandard != HDTVb && Cgen.m_Intensity == 100;
 	if (!m_YWhite)
-		GetColorApp()->InMeasureMessageBox("Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
+		GetColorApp()->InMeasureMessageBox("Please run a primaries scan at 100% stimulus in a normal color space prior to running saturation scans.","Bad Configuration",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -3347,10 +3353,11 @@ void CDataSetDoc::OnMeasureSatMagenta()
 void CDataSetDoc::OnMeasureSatCC24() 
 {
 	CString	Msg, MsgQueue, TmpStr;
+	CGDIGenerator Cgen;
     int		nNbPoints = (GetConfig()->m_CCMode==CCSG?96:GetConfig()->m_CCMode==USER?GetConfig()->GetCColorsSize():24);
-	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
-	if	(!m_YWhite)
-		GetColorApp()->InMeasureMessageBox("Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
+	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid() && GetConfig()->m_colorStandard != HDTVa && GetConfig()->m_colorStandard != HDTVb && Cgen.m_Intensity == 100;
+	if (!m_YWhite)
+		GetColorApp()->InMeasureMessageBox("Please run a primaries scan at 100% stimulus in a normal color space prior to running saturation scans.","Bad Configuration",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -3418,10 +3425,11 @@ void CDataSetDoc::OnUpdateMeasureContrast(CCmdUI* pCmdUI)
 void CDataSetDoc::OnMeasureSatAll() 
 {
 	CString	Msg, MsgQueue, TmpStr;
+	CGDIGenerator Cgen;
     int		nNbPoints = (GetMeasure () -> GetSaturationSize ()) * 6 + (GetConfig()->m_CCMode==CCSG?96:GetConfig()->m_CCMode==USER?GetConfig()->GetCColorsSize():24);
-	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
-	if	(!m_YWhite)
-		GetColorApp()->InMeasureMessageBox("Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
+	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid() && GetConfig()->m_colorStandard != HDTVa && GetConfig()->m_colorStandard != HDTVb && Cgen.m_Intensity == 100;
+	if (!m_YWhite)
+		GetColorApp()->InMeasureMessageBox("Please run a primaries scan at 100% stimulus in a normal color space prior to running saturation scans.","Bad Configuration",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -3473,10 +3481,11 @@ void CDataSetDoc::OnUpdateMeasureGrayscaleColors(CCmdUI* pCmdUI)
 void CDataSetDoc::OnMeasureSatPrimaries() 
 {
 	CString	Msg, MsgQueue, TmpStr;
+	CGDIGenerator Cgen;
 	int		nNbPoints =( GetMeasure () -> GetSaturationSize () ) * 3;
-	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
-	if	(!m_YWhite)
-		GetColorApp()->InMeasureMessageBox("Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
+	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid() && GetConfig()->m_colorStandard != HDTVa && GetConfig()->m_colorStandard != HDTVb && Cgen.m_Intensity == 100;
+	if (!m_YWhite)
+		GetColorApp()->InMeasureMessageBox("Please run a primaries scan at 100% stimulus in a normal color space prior to running saturation scans.","Bad Configuration",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -3497,10 +3506,11 @@ void CDataSetDoc::OnMeasureSatPrimaries()
 void CDataSetDoc::OnMeasureSatPrimariesSecondaries() 
 {
 	CString	Msg, MsgQueue, TmpStr;
+	CGDIGenerator Cgen;
 	int		nNbPoints =( GetMeasure () -> GetSaturationSize () ) * 6;
-	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid()	;
-	if	(!m_YWhite)
-		GetColorApp()->InMeasureMessageBox("Please run a primaries scan at 100% input video level to measure peak white","Peak white not found!",MB_OK);
+	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid() && GetConfig()->m_colorStandard != HDTVa && GetConfig()->m_colorStandard != HDTVb && Cgen.m_Intensity == 100;
+	if (!m_YWhite)
+		GetColorApp()->InMeasureMessageBox("Please run a primaries scan at 100% stimulus in a normal color space prior to running saturation scans.","Bad Configuration",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
