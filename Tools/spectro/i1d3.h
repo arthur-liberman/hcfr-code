@@ -36,7 +36,7 @@
  */
 
 #include "inst.h"
-
+#pragma warning(disable : 4024 4047)
 /* Note: update huey_interp_error() and huey_interp_code() in huey.c */
 /* if anything of these #defines are added or subtracted */
 
