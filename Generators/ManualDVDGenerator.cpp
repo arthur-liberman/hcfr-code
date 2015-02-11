@@ -180,6 +180,46 @@ char*  PatName[96]={
                     "9K",
                     "9L",
                     "9M" };
+                    char*  PatNameCMS[19]={
+						"White",
+						"Black",
+						"2E",
+						"2F",
+						"2K",
+						"5D",
+						"7E",
+						"7F",
+						"7G",
+						"7H",
+						"7I",
+						"7J",
+						"8D",
+						"8E",
+						"8F",
+						"8G",
+						"8H",
+						"8I",
+						"8J" };
+                    char*  PatNameCPS[19]={
+						"White",
+						"D7",
+						"D8",
+						"E7",
+						"E8",
+						"F7",
+						"F8",
+						"G7",
+						"G8",
+						"H7",
+						"H8",
+						"I7",
+						"I8",
+						"J7",
+						"J8",
+						"CP-Light",
+						"CP-Dark",
+						"Dark Skin",
+						"Light Skin" };
 
 	Title.LoadString ( IDS_INFORMATION );
 
@@ -289,9 +329,95 @@ char*  PatName[96]={
 				break;
 				}
 				break;
+			case MT_SAT_CC24_CMC:
+				str3.LoadString ( IDS_CC24SATPERCENT );
+				switch ( nPatternInfo )
+				{
+				case 0:
+				str2.Format(str3,"White");
+				break;
+				case 1:
+				str2.Format(str3,"80% Gray");
+				break;
+				case 2:
+				str2.Format(str3,"65% Gray");
+				break;
+				case 3:
+				str2.Format(str3,"50% Gray");
+				break;
+				case 4:
+				str2.Format(str3,"35% Gray");
+				break;
+				case 5:
+				str2.Format(str3,"Black");
+				break;
+				case 6:
+				str2.Format(str3,"Dark skin");
+				break;
+				case 7:
+				str2.Format(str3,"Light skin");
+				break;
+				case 8:
+				str2.Format(str3,"Blue sky");
+				break;
+				case 9:
+				str2.Format(str3,"Foliage");
+				break;
+				case 10:
+				str2.Format(str3,"Blue flower");
+				break;
+				case 11:
+				str2.Format(str3,"Bluish green");
+				break;
+				case 12:
+				str2.Format(str3,"Orange");
+				break;
+				case 13:
+				str2.Format(str3,"Purplish blue");
+				break;
+				case 14:
+				str2.Format(str3,"Moderate red");
+				break;
+				case 15:
+				str2.Format(str3,"Purple");
+				break;
+				case 16:
+				str2.Format(str3,"Yellow green");
+				break;
+				case 17:
+				str2.Format(str3,"Orange yellow");
+				break;
+				case 18:
+				str2.Format(str3,"Blue");
+				break;
+				case 19:
+				str2.Format(str3,"Green");
+				break;
+				case 20:
+				str2.Format(str3,"Red");
+				break;
+				case 21:
+				str2.Format(str3,"Yellow");
+				break;
+				case 22:
+				str2.Format(str3,"Magenta");
+				break;
+				case 23:
+				str2.Format(str3,"Cyan");
+				break;
+				}
+				break;
 			case MT_SAT_CC24_CCSG:
 				str3.LoadString ( IDS_CC24SATPERCENT );
                 str2.Format(str3, PatName[nPatternInfo]);
+                break;
+			case MT_SAT_CC24_CMS:
+				str3.LoadString ( IDS_CC24SATPERCENT );
+                str2.Format(str3, PatNameCMS[nPatternInfo]);
+                break;
+			case MT_SAT_CC24_CPS:
+				str3.LoadString ( IDS_CC24SATPERCENT );
+                str2.Format(str3, PatNameCPS[nPatternInfo]);
                 break;
 			case MT_SAT_CC24_USER:
 				str3.LoadString ( IDS_CC24SATPERCENT );

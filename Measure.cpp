@@ -2439,7 +2439,8 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
 	BOOL		bEscape;
 	BOOL		bPatternRetry = FALSE;
 	BOOL		bRetry = FALSE;
-	int			size = GetConfig()->m_CCMode == CCSG?96:24;
+	CCPatterns	ccPat = GetConfig()->m_CCMode;
+	int			size = ccPat == CCSG?96:(ccPat == CMS || ccPat ==CPS)?19:24;
 	CString		strMsg, Title;
 	ColorRGBDisplay	GenColors [ 1010 ];
 	double		dLuxValue;
@@ -2472,8 +2473,14 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
 	case MCD:
 		 nPattern=CGenerator::MT_SAT_CC24_MCD;		
 		 break;
-	case AXIS:
+	case CMC:
 		 nPattern=CGenerator::MT_SAT_CC24_MCD;		
+		 break;
+	case CMS:
+		 nPattern=CGenerator::MT_SAT_CC24_CMS;		
+		 break;
+	case CPS:
+		 nPattern=CGenerator::MT_SAT_CC24_CPS;		
 		 break;
 	case SKIN:
 		 nPattern=CGenerator::MT_SAT_CC24_MCD;
@@ -2503,7 +2510,7 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
-    if(pGenerator->GetName() == str&&(GetConfig()->m_CCMode==AXIS || GetConfig()->m_CCMode==SKIN || GetConfig()->m_CCMode==USER ) )
+    if(pGenerator->GetName() == str&&( GetConfig()->m_CCMode==SKIN || GetConfig()->m_CCMode==USER ) )
 	{		
 		Title.LoadString ( IDS_ERROR );
 		strMsg.LoadString ( IDS_ERRINITGENERATOR );
@@ -2645,7 +2652,8 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 	BOOL		bPatternRetry = FALSE;
 	BOOL		bRetry = FALSE;
 	int			size = GetSaturationSize ();
-    int         ccSize = (GetConfig()->m_CCMode==CCSG?96:24);
+	CCPatterns	ccPat = GetConfig()->m_CCMode;
+	int			ccSize = ccPat == CCSG?96:(ccPat == CMS || ccPat ==CPS)?19:24;
 	CString		strMsg, Title;
 	ColorRGBDisplay	GenColors [ 7 * 256 ];
 
@@ -2659,8 +2667,14 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 	case GCD:
 		 nPattern=CGenerator::MT_SAT_CC24_GCD;		
 		 break;
-	case AXIS:
+	case CMC:
 		 nPattern=CGenerator::MT_SAT_CC24_GCD;		
+		 break;
+	case CMS:
+		 nPattern=CGenerator::MT_SAT_CC24_CMS;		
+		 break;
+	case CPS:
+		 nPattern=CGenerator::MT_SAT_CC24_CPS;		
 		 break;
 	case SKIN:
 		 nPattern=CGenerator::MT_SAT_CC24_GCD;
@@ -2719,7 +2733,7 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
-	if(pGenerator->GetName() == str&&(GetConfig()->m_CCMode==AXIS || GetConfig()->m_CCMode==SKIN || GetConfig()->m_CCMode==USER))
+	if(pGenerator->GetName() == str&&( GetConfig()->m_CCMode==SKIN || GetConfig()->m_CCMode==USER))
 	{		
 		Title.LoadString ( IDS_ERROR );
 		strMsg.LoadString ( IDS_ERRINITGENERATOR );
@@ -5461,33 +5475,79 @@ CColor CMeasure::GetRefCC24Sat(int i) const
 			RGB[23] = ColorRGB(.1187,.5160,.5982);
 		break;
 		}
-		//axis steps
-	    case AXIS:
+		//CalMAN classic steps
+	    case CMC:
 		{
-			RGB[0] = ColorRGB(0.12, 0, 0 );
-			RGB[1] = ColorRGB(.24, 0, 0 );
-			RGB[2] = ColorRGB(.36, 0, 0 );
-			RGB[3] = ColorRGB(.48, 0, 0 );
-			RGB[4] = ColorRGB(.60, 0, 0 );
-			RGB[5] = ColorRGB(.72, 0, 0 );
-			RGB[6] = ColorRGB(.84, 0, 0 );
-			RGB[7] = ColorRGB(.96, 0, 0 );
-			RGB[8] = ColorRGB(  0, 0.12, 0 );
-			RGB[9] = ColorRGB(  0, .24, 0 );
-			RGB[10] = ColorRGB(  0, .36, 0 );
-			RGB[11] = ColorRGB(  0, .48, 0 );
-			RGB[12] = ColorRGB(  0, .60, 0 );
-			RGB[13] = ColorRGB(  0, .72, 0 );
-			RGB[14] = ColorRGB(  0, .84, 0 );
-			RGB[15] = ColorRGB(  0, .96, 0 );
-			RGB[16] = ColorRGB(  0, 0, 0.12);
-			RGB[17] = ColorRGB(  0, 0, 0.24 );
-			RGB[18] = ColorRGB(  0, 0, .36 );
-			RGB[19] = ColorRGB(  0, 0, .48 );
-			RGB[20] = ColorRGB(  0, 0, .60 );
-			RGB[21] = ColorRGB(  0, 0, .72 );
-			RGB[22] = ColorRGB(  0, 0, .84 );
-			RGB[23] = ColorRGB(  0, 0, .96 );
+			RGB[0] = ColorRGB(1, 1, 1 );
+			RGB[1] = ColorRGB(0.8995, 0.8995, 0.8995 );
+			RGB[2] = ColorRGB(0.8329, 0.8329, 0.8329 );
+			RGB[3] = ColorRGB(0.7306, 0.7306, 0.7306 );
+			RGB[4] = ColorRGB(0.6210, 0.6210, 0.6210 );
+			RGB[5] = ColorRGB(0.0, 0.0, 0.0 );
+			RGB[6] = ColorRGB(0.4521,	0.3196,	0.2603);
+			RGB[7] = ColorRGB(0.7580,	0.5890,	0.5114);
+			RGB[8] = ColorRGB(  0.3699,	0.4795,	0.6119);
+			RGB[9] = ColorRGB(  0.3516,	0.4201,	0.2603);
+			RGB[10] = ColorRGB(  0.5114,	0.5023,	0.6895);
+			RGB[11] = ColorRGB(  0.3881,	0.7397,	0.6621);
+			RGB[12] = ColorRGB(  0.8493,	0.4703,	0.1598);
+			RGB[13] = ColorRGB(  0.2922,	0.3607,	0.6393);
+			RGB[14] = ColorRGB(  0.7580,	0.3288,	0.3790);
+			RGB[15] = ColorRGB(  0.3607,	0.2420,	0.4201);
+			RGB[16] = ColorRGB(  0.6210,	0.7306,	0.2511);
+			RGB[17] = ColorRGB(  0.8995,	0.6301,	0.1781);
+			RGB[18] = ColorRGB(  0.2009,	0.2420,	0.5890);
+			RGB[19] = ColorRGB(  0.2785,	0.5799,	0.2785);
+			RGB[20] = ColorRGB(  0.6895,	0.1918,	0.2283);
+			RGB[21] = ColorRGB(  0.9315,	0.7808,	0.1279);
+			RGB[22] = ColorRGB(  0.7306,	0.3288,	0.5708);
+			RGB[23] = ColorRGB(  0.0000,	0.5205,	0.6393);
+		break;		
+        }
+	    case CMS:
+		{
+			RGB[0] = ColorRGB(1.0000,	1.0000,	1.0000);
+			RGB[1] = ColorRGB(0.0000,	0.0000,	0.0000);
+			RGB[2] = ColorRGB(0.4384,	0.2511,	0.1507);
+			RGB[3] = ColorRGB(0.7991,	0.5388,	0.4018);
+			RGB[4] = ColorRGB(1.0000,	0.7808,	0.5982);
+			RGB[5] = ColorRGB(1.0000,	0.7808,	0.6712);
+			RGB[6] = ColorRGB(0.9680,	0.6712,	0.4886);
+			RGB[7] = ColorRGB(0.7808,	0.5479,	0.3607);
+			RGB[8] = ColorRGB( 0.5616,	0.3607,	0.2009);
+			RGB[9] = ColorRGB(0.8082,	0.5890,	0.4521);
+			RGB[10] = ColorRGB( 0.6301,	0.3379,	0.1279);
+			RGB[11] = ColorRGB( 0.8402,	0.5205,	0.3607);
+			RGB[12] = ColorRGB( 0.8219,	0.5388,	0.4110);
+			RGB[13] = ColorRGB( 0.9817,	0.5982,	0.4521);
+			RGB[14] = ColorRGB( 0.7808,	0.5616,	0.4201);
+			RGB[15] = ColorRGB( 0.7900,	0.5479,	0.4201);
+			RGB[16] = ColorRGB( 0.7991,	0.5616,	0.4110);
+			RGB[17] = ColorRGB( 0.4795,	0.2922,	0.1507);
+			RGB[18] = ColorRGB( 0.8493,	0.5479,	0.3699);
+		break;		
+        }
+	    case CPS:
+		{
+			RGB[0] = ColorRGB(1, 1, 1 );
+			RGB[1] = ColorRGB(0.8447,	0.4932,	0.3425);
+			RGB[2] = ColorRGB(0.7900,	0.5525,	0.4840);
+			RGB[3] = ColorRGB(0.9361,	0.6758,	0.5799);
+			RGB[4] = ColorRGB(0.9452,	0.6119,	0.5297);
+			RGB[5] = ColorRGB(0.7534,	0.5616,	0.4292);
+			RGB[6] = ColorRGB(0.7489,	0.5708,	0.4932);
+			RGB[7] = ColorRGB(0.5525,	0.3653,	0.2466);
+			RGB[8] = ColorRGB(0.7626,	0.5662,	0.4977);
+			RGB[9] = ColorRGB(0.7580,	0.5890,	0.5114);
+			RGB[10] = ColorRGB(0.7717,	0.5662,	0.4886);
+			RGB[11] = ColorRGB(0.6210,	0.3425,	0.1781);
+			RGB[12] = ColorRGB(0.4703,	0.2968,	0.1872);
+			RGB[13] = ColorRGB(0.8174,	0.5297,	0.4247);
+			RGB[14] = ColorRGB(0.8265,	0.5616,	0.4384);
+			RGB[15] = ColorRGB(0.9315,	0.6849,	0.4840);
+			RGB[16] = ColorRGB(0.8174,	0.6027,	0.4247);
+			RGB[17] = ColorRGB(0.4521,	0.3196,	0.2648);
+			RGB[18] = ColorRGB(0.7626,	0.5890,	0.5114);
 		break;		
         }
         //Pantone skin set

@@ -25,7 +25,6 @@
 #include "stdafx.h"
 #include "ColorHCFR.h"
 #include "GDIGenerator.h"
-//#include "madVRTestPattern.h"
 #include "madTPG.h"
 
 

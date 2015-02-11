@@ -1113,18 +1113,25 @@ BEGIN
 0x6c49, 0x756c, 0x696d, 0x616e, 0x746e, 0x4520, "\000" 
     IDC_WHITETARGET_COMBO, 0x403, 7, 0
 0x7543, 0x7473, 0x6d6f, "\000" 
-    IDC_CCMODE_COMBO, 0x403, 4, 0
-0x4347, 0x0044, 
-    IDC_CCMODE_COMBO, 0x403, 4, 0
-0x434d, 0x0044, 
-    IDC_CCMODE_COMBO, 0x403, 5, 0
-0x5841, 0x5349, "\000" 
-    IDC_CCMODE_COMBO, 0x403, 5, 0
-0x4b53, 0x4e49, "\000" 
-    IDC_CCMODE_COMBO, 0x403, 5, 0
-0x4343, 0x4753, "\000" 
-    IDC_CCMODE_COMBO, 0x403, 5, 0
-0x5355, 0x5245, "\000" 
+    IDC_CCMODE_COMBO, 0x403, 12, 0
+0x4347, 0x2044, 0x6c63, 0x7361, 0x6973, 0x0063, 
+    IDC_CCMODE_COMBO, 0x403, 12, 0
+0x434d, 0x2044, 0x6c63, 0x7361, 0x6973, 0x0063, 
+    IDC_CCMODE_COMBO, 0x403, 15, 0
+0x6143, 0x4d6c, 0x4e41, 0x4320, 0x616c, 0x7373, 0x6369, "\000" 
+    IDC_CCMODE_COMBO, 0x403, 21, 0
+0x6143, 0x4d6c, 0x4e41, 0x5320, 0x2047, 0x6b73, 0x6e69, 0x7420, 0x6e6f, 
+0x7365, "\000" 
+    IDC_CCMODE_COMBO, 0x403, 22, 0
+0x6843, 0x6f72, 0x616d, 0x7550, 0x6572, 0x7320, 0x696b, 0x206e, 0x6f74, 
+0x656e, 0x0073, 
+    IDC_CCMODE_COMBO, 0x403, 19, 0
+0x6150, 0x746e, 0x6e6f, 0x2065, 0x6b73, 0x6e69, 0x7420, 0x6e6f, 0x7365, 
+"\000" 
+    IDC_CCMODE_COMBO, 0x403, 10, 0
+0x6143, 0x4d6c, 0x4e41, 0x5320, 0x0047, 
+    IDC_CCMODE_COMBO, 0x403, 13, 0
+0x7355, 0x7265, 0x6420, 0x6665, 0x6e69, 0x6465, "\000" 
     0
 END
 
@@ -2887,38 +2894,38 @@ BEGIN
     IDS_CC_22               "Yellow"
     IDS_CC_23               "Magenta"
     IDS_CC_24               "Cyan"
-    IDS_CC_1a               "Red 12"
+    IDS_CC_1a               "White"
 END
 
 STRINGTABLE
 BEGIN
-    IDS_CC_2a               "Red 24"
-    IDS_CC_3a               "Red 36"
-    IDS_CC_4a               "Red 48"
-    IDS_CC_5a               "Red 60"
-    IDS_CC_6a               "Red 72"
-    IDS_CC_7a               "Red 84"
-    IDS_CC_8a               "Red 96"
-    IDS_CC_9a               "Green 12"
-    IDS_CC_10a              "Green 24"
-    IDS_CC_11a              "Green 36"
-    IDS_CC_12a              "Green 48"
-    IDS_CC_13a              "Green 60"
-    IDS_CC_14a              "Green 72"
-    IDS_CC_15a              "Green 84"
-    IDS_CC_16a              "Green 96"
-    IDS_CC_17a              "Blue 12"
+    IDS_CC_2a               "80% Gray"
+    IDS_CC_3a               "65% Gray"
+    IDS_CC_4a               "50% Gray"
+    IDS_CC_5a               "35% Gray"
+    IDS_CC_6a               "Black"
+    IDS_CC_7a               "Dark Skin"
+    IDS_CC_8a               "Light Skin"
+    IDS_CC_9a               "Blue Sky"
+    IDS_CC_10a              "Foliage"
+    IDS_CC_11a              "Blue Flower"
+    IDS_CC_12a              "Bluish Green"
+    IDS_CC_13a              "Orange"
+    IDS_CC_14a              "Purplish Blue"
+    IDS_CC_15a              "Moderate Red"
+    IDS_CC_16a              "Purple"
+    IDS_CC_17a              "Yellow Green"
 END
 
 STRINGTABLE
 BEGIN
-    IDS_CC_18a              "Blue 24"
-    IDS_CC_19a              "Blue 36"
-    IDS_CC_20a              "Blue 48"
-    IDS_CC_21a              "Blue 60"
-    IDS_CC_22a              "Blue 72"
-    IDS_CC_23a              "Blue 84"
-    IDS_CC_24a              "Blue 96"
+    IDS_CC_18a              "Orange Yellow"
+    IDS_CC_19a              "Blue"
+    IDS_CC_20a              "Green"
+    IDS_CC_21a              "Red"
+    IDS_CC_22a              "Yellow"
+    IDS_CC_23a              "Magenta"
+    IDS_CC_24a              "Cyan"
     IDS_CC_1b               "Skin#FFDFC4"
     IDS_CC_2b               "Skin#F0D5BE"
     IDS_CC_3b               "Skin#EECEB3"

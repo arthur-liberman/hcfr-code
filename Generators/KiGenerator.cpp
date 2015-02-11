@@ -539,7 +539,9 @@ BOOL CKiGenerator::DisplayGray(double aLevel, MeasureType nPatternType, BOOL bCh
 				case MT_SAT_MAGENTA:
 				case MT_SAT_CC24_GCD:
 				case MT_SAT_CC24_MCD:
-				case MT_SAT_CC24_AXIS:
+				case MT_SAT_CC24_CMC:
+				case MT_SAT_CC24_CMS:
+				case MT_SAT_CC24_CPS:
 				case MT_SAT_CC24_SKIN:
 				case MT_SAT_CC24_CCSG:
 				case MT_SAT_CC24_USER:
@@ -789,7 +791,19 @@ BOOL CKiGenerator::DisplayRGBColor( const ColorRGBDisplay& clrIn  ,MeasureType n
 					 nFirstSaturationMenuPos = 5;
 					 break;
 
-				case MT_SAT_CC24_AXIS:
+				case MT_SAT_CC24_CMC:
+					 str.LoadString ( IDS_SATCC242 );
+					 bFirstSaturationSecondary = TRUE;
+					 nFirstSaturationMenuPos = 5;
+					 break;
+
+				case MT_SAT_CC24_CMS:
+					 str.LoadString ( IDS_SATCC242 );
+					 bFirstSaturationSecondary = TRUE;
+					 nFirstSaturationMenuPos = 5;
+					 break;
+
+				case MT_SAT_CC24_CPS:
 					 str.LoadString ( IDS_SATCC242 );
 					 bFirstSaturationSecondary = TRUE;
 					 nFirstSaturationMenuPos = 5;
@@ -1114,8 +1128,18 @@ BOOL CKiGenerator::CanDisplayScale ( MeasureType nScaleType, int nbLevels, BOOL 
 				returnvalue = FALSE;
 			break;
 
-		case MT_SAT_CC24_AXIS:
+		case MT_SAT_CC24_CMC:
 			if (nbLevels != 24)
+				returnvalue = FALSE;
+			break;
+
+		case MT_SAT_CC24_CMS:
+			if (nbLevels != 19)
+				returnvalue = FALSE;
+			break;
+
+		case MT_SAT_CC24_CPS:
+			if (nbLevels != 19)
 				returnvalue = FALSE;
 			break;
 
@@ -1239,7 +1263,9 @@ switch ( nScaleType )
 			case MT_SAT_MAGENTA:
 			case MT_SAT_CC24_GCD:
 			case MT_SAT_CC24_MCD:
-			case MT_SAT_CC24_AXIS:
+			case MT_SAT_CC24_CMC:
+			case MT_SAT_CC24_CMS:
+			case MT_SAT_CC24_CPS:
 			case MT_SAT_CC24_SKIN:
 			case MT_SAT_CC24_CCSG:
 			case MT_SAT_CC24_USER:
@@ -1301,7 +1327,15 @@ switch ( nScaleType )
 					str2.LoadString ( IDS_CC24SATPERCENT );
 					str.Format(str2,m_lastPatternInfo);
 					break;
-				case MT_SAT_CC24_AXIS:
+				case MT_SAT_CC24_CMC:
+					str2.LoadString ( IDS_CC24SATPERCENT );
+					str.Format(str2,m_lastPatternInfo);
+					break;
+				case MT_SAT_CC24_CMS:
+					str2.LoadString ( IDS_CC24SATPERCENT );
+					str.Format(str2,m_lastPatternInfo);
+					break;
+				case MT_SAT_CC24_CPS:
 					str2.LoadString ( IDS_CC24SATPERCENT );
 					str.Format(str2,m_lastPatternInfo);
 					break;

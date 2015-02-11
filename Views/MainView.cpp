@@ -219,6 +219,47 @@ static const SCtrlLayout g_CtrlLayout [] = {
                     "9K",
                     "9L",
                     "9M" };
+                    char*  PatNameCMS[19]={
+						"White",
+						"Black",
+						"2E",
+						"2F",
+						"2K",
+						"5D",
+						"7E",
+						"7F",
+						"7G",
+						"7H",
+						"7I",
+						"7J",
+						"8D",
+						"8E",
+						"8F",
+						"8G",
+						"8H",
+						"8I",
+						"8J" };
+                    char*  PatNameCPS[19]={
+						"White",
+						"D7",
+						"D8",
+						"E7",
+						"E8",
+						"F7",
+						"F8",
+						"G7",
+						"G8",
+						"H7",
+						"H8",
+						"I7",
+						"I8",
+						"J7",
+						"J8",
+						"CP-Light",
+						"CP-Dark",
+						"Dark Skin",
+						"Light Skin" };
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CMainView
@@ -773,6 +814,8 @@ void CMainView::InitGrid()
             size = (GetConfig()->GetCColorsSize());		
         else
             size = (GetConfig()->m_CCMode == CCSG?96:24);
+			if (GetConfig()->m_CCMode==CMS || GetConfig()->m_CCMode==CPS)
+				size = 19;
 		bHasLuxValues = GetDocument()->GetMeasure()->GetCC24Sat(0).HasLuxValue ();
 	}
 	else if ( m_displayMode == 12 )
@@ -929,6 +972,14 @@ void CMainView::InitGrid()
                  {
                     Item.strText.SetString(PatName[i]);
                  } 
+                 else if (GetConfig()->m_CCMode == CMS)
+                 {
+                    Item.strText.SetString(PatNameCMS[i]);
+                 }
+                 else if (GetConfig()->m_CCMode == CPS)
+                 {
+                    Item.strText.SetString(PatNameCPS[i]);
+                 }
                  else if (GetConfig()->m_CCMode == USER)
                  {
                      char aBuf[10];
@@ -939,99 +990,99 @@ void CMainView::InitGrid()
 				 switch ( i )
 				 {
 					 case 0:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_1a:(GetConfig()->m_CCMode == SKIN?IDS_CC_1b:IDS_CC_1));
+						Item.strText.LoadString(GetConfig()->m_CCMode == CMC?IDS_CC_1a:(GetConfig()->m_CCMode == SKIN?IDS_CC_1b:IDS_CC_1));
 						break;
 
 					 case 1:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_2a:(GetConfig()->m_CCMode == SKIN?IDS_CC_2b:IDS_CC_2));
+						Item.strText.LoadString(GetConfig()->m_CCMode == CMC?IDS_CC_2a:(GetConfig()->m_CCMode == SKIN?IDS_CC_2b:IDS_CC_2));
 						break;
 
 					 case 2:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_3a:(GetConfig()->m_CCMode == SKIN?IDS_CC_3b:IDS_CC_3));
+						Item.strText.LoadString(GetConfig()->m_CCMode == CMC?IDS_CC_3a:(GetConfig()->m_CCMode == SKIN?IDS_CC_3b:IDS_CC_3));
 						break;
 
 					 case 3:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_4a:(GetConfig()->m_CCMode == SKIN?IDS_CC_4b:IDS_CC_4));
+						Item.strText.LoadString(GetConfig()->m_CCMode == CMC?IDS_CC_4a:(GetConfig()->m_CCMode == SKIN?IDS_CC_4b:IDS_CC_4));
 						break;
 
 					 case 4:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_5a:(GetConfig()->m_CCMode == SKIN?IDS_CC_5b:IDS_CC_5));
+						Item.strText.LoadString(GetConfig()->m_CCMode == CMC?IDS_CC_5a:(GetConfig()->m_CCMode == SKIN?IDS_CC_5b:IDS_CC_5));
 						break;
 
 					 case 5:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_6a:(GetConfig()->m_CCMode == SKIN?IDS_CC_6b:IDS_CC_6));
+						Item.strText.LoadString(GetConfig()->m_CCMode == CMC?IDS_CC_6a:(GetConfig()->m_CCMode == SKIN?IDS_CC_6b:IDS_CC_6));
 						break;
 
 					 case 6:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_7a:(GetConfig()->m_CCMode == SKIN?IDS_CC_7b:IDS_CC_7));
+						Item.strText.LoadString(GetConfig()->m_CCMode == CMC?IDS_CC_7a:(GetConfig()->m_CCMode == SKIN?IDS_CC_7b:IDS_CC_7));
 						break;
 
 					 case 7:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_8a:(GetConfig()->m_CCMode == SKIN?IDS_CC_8b:IDS_CC_8));
+						Item.strText.LoadString(GetConfig()->m_CCMode == CMC?IDS_CC_8a:(GetConfig()->m_CCMode == SKIN?IDS_CC_8b:IDS_CC_8));
 						break;
 
 					 case 8:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_9a:(GetConfig()->m_CCMode == SKIN?IDS_CC_9b:IDS_CC_9));
+						Item.strText.LoadString(GetConfig()->m_CCMode == CMC?IDS_CC_9a:(GetConfig()->m_CCMode == SKIN?IDS_CC_9b:IDS_CC_9));
 						break;
 
 					 case 9:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_10a:(GetConfig()->m_CCMode == SKIN?IDS_CC_10b:IDS_CC_10));
+						Item.strText.LoadString(GetConfig()->m_CCMode == CMC?IDS_CC_10a:(GetConfig()->m_CCMode == SKIN?IDS_CC_10b:IDS_CC_10));
 						break;
 
 					 case 10:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_11a:(GetConfig()->m_CCMode == SKIN?IDS_CC_11b:IDS_CC_11));
+						Item.strText.LoadString(GetConfig()->m_CCMode == CMC?IDS_CC_11a:(GetConfig()->m_CCMode == SKIN?IDS_CC_11b:IDS_CC_11));
 						break;
 
 					 case 11:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_12a:(GetConfig()->m_CCMode == SKIN?IDS_CC_12b:IDS_CC_12));
+						Item.strText.LoadString(GetConfig()->m_CCMode == CMC?IDS_CC_12a:(GetConfig()->m_CCMode == SKIN?IDS_CC_12b:IDS_CC_12));
 						break;
 
 					 case 12:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_13a:(GetConfig()->m_CCMode == SKIN?IDS_CC_13b:IDS_CC_13));
+						Item.strText.LoadString(GetConfig()->m_CCMode == CMC?IDS_CC_13a:(GetConfig()->m_CCMode == SKIN?IDS_CC_13b:IDS_CC_13));
 						break;
 
 					 case 13:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_14a:(GetConfig()->m_CCMode == SKIN?IDS_CC_14b:IDS_CC_14));
+						Item.strText.LoadString(GetConfig()->m_CCMode == CMC?IDS_CC_14a:(GetConfig()->m_CCMode == SKIN?IDS_CC_14b:IDS_CC_14));
 						break;
 
 					 case 14:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_15a:(GetConfig()->m_CCMode == SKIN?IDS_CC_15b:IDS_CC_15));
+						Item.strText.LoadString(GetConfig()->m_CCMode == CMC?IDS_CC_15a:(GetConfig()->m_CCMode == SKIN?IDS_CC_15b:IDS_CC_15));
 						break;
 
 					 case 15:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_16a:(GetConfig()->m_CCMode == SKIN?IDS_CC_16b:IDS_CC_16));
+						Item.strText.LoadString(GetConfig()->m_CCMode == CMC?IDS_CC_16a:(GetConfig()->m_CCMode == SKIN?IDS_CC_16b:IDS_CC_16));
 						break;
 
 					 case 16:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_17a:(GetConfig()->m_CCMode == SKIN?IDS_CC_17b:IDS_CC_17));
+						Item.strText.LoadString(GetConfig()->m_CCMode == CMC?IDS_CC_17a:(GetConfig()->m_CCMode == SKIN?IDS_CC_17b:IDS_CC_17));
 						break;
 
 					 case 17:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_18a:(GetConfig()->m_CCMode == SKIN?IDS_CC_18b:IDS_CC_18));
+						Item.strText.LoadString(GetConfig()->m_CCMode == CMC?IDS_CC_18a:(GetConfig()->m_CCMode == SKIN?IDS_CC_18b:IDS_CC_18));
 						break;
 
 					 case 18:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_19a:(GetConfig()->m_CCMode == SKIN?IDS_CC_19b:IDS_CC_19));
+						Item.strText.LoadString(GetConfig()->m_CCMode == CMC?IDS_CC_19a:(GetConfig()->m_CCMode == SKIN?IDS_CC_19b:IDS_CC_19));
 						break;
 
 					 case 19:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_20a:(GetConfig()->m_CCMode == SKIN?IDS_CC_20b:IDS_CC_20));
+						Item.strText.LoadString(GetConfig()->m_CCMode == CMC?IDS_CC_20a:(GetConfig()->m_CCMode == SKIN?IDS_CC_20b:IDS_CC_20));
 						break;
 
 					 case 20:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_21a:(GetConfig()->m_CCMode == SKIN?IDS_CC_21b:IDS_CC_21));
+						Item.strText.LoadString(GetConfig()->m_CCMode == CMC?IDS_CC_21a:(GetConfig()->m_CCMode == SKIN?IDS_CC_21b:IDS_CC_21));
 						break;
 
 					 case 21:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_22a:(GetConfig()->m_CCMode == SKIN?IDS_CC_22b:IDS_CC_22));
+						Item.strText.LoadString(GetConfig()->m_CCMode == CMC?IDS_CC_22a:(GetConfig()->m_CCMode == SKIN?IDS_CC_22b:IDS_CC_22));
 						break;
 
 					 case 22:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_23a:(GetConfig()->m_CCMode == SKIN?IDS_CC_23b:IDS_CC_23));
+						Item.strText.LoadString(GetConfig()->m_CCMode == CMC?IDS_CC_23a:(GetConfig()->m_CCMode == SKIN?IDS_CC_23b:IDS_CC_23));
 						break;
 
 					 case 23:
-						Item.strText.LoadString(GetConfig()->m_CCMode == AXIS?IDS_CC_24a:(GetConfig()->m_CCMode == SKIN?IDS_CC_24b:IDS_CC_24));
+						Item.strText.LoadString(GetConfig()->m_CCMode == CMC?IDS_CC_24a:(GetConfig()->m_CCMode == SKIN?IDS_CC_24b:IDS_CC_24));
 						break;
             		 default:
 				        Item.strText.LoadString(IDS_CC_24a);
@@ -1142,7 +1193,7 @@ void CMainView::InitGrid()
                 double inten;
                 s_clr=GetDocument()->GetMeasure()->GetRefCC24Sat(i);     
                 r_clr=s_clr.GetRGBValue(GetColorReference());
-                inten = GetConfig()->m_CCMode==USER?s_clr.GetLuminance():GetColorReference().GetCC24ReferenceLuma(i,GetConfig()->m_CCMode);
+                inten = GetConfig()->m_CCMode==s_clr.GetLuminance();//USER?s_clr.GetLuminance():GetColorReference().GetCC24ReferenceLuma(i,GetConfig()->m_CCMode);
     			m_pGrayScaleGrid->SetItemBkColour ( i2, i+1, RGB(r_clr[0]*255.,r_clr[1]*255.,r_clr[2]*255.) );
                 if (inten < 0.4)
                     m_pGrayScaleGrid->SetItemFgColour(i2, i+1, RGB(240,240,240));
@@ -1824,10 +1875,10 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						break;
 					case 11:
                         double rLuma;
-                        if (GetConfig()->m_CCMode == USER)
+//                        if (GetConfig()->m_CCMode == USER)
                             rLuma=aReference.GetLuminance();
-                        else
-                            rLuma=GetColorReference().GetCC24ReferenceLuma (nCol-1, GetConfig()->m_CCMode );
+//                        else
+//                            rLuma=GetColorReference().GetCC24ReferenceLuma (nCol-1, GetConfig()->m_CCMode );
                         //luminance is based on 2.2 gamma so we need to scale here actual reference gamma
                         if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
                             RefLuma [ nCol-1 ] = pow(pow(rLuma,1. / 2.22),log(GetBT1886(pow(rLuma,1. / 2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(rLuma,1. / 2.22)));
@@ -2795,7 +2846,7 @@ void CMainView::UpdateGrid()
 				CString dEform;
 				float a = 2.0, b = 3, dE10 = 0;
 				Tmp.LoadString ( IDS_DELTAEAVERAGE );
-                Msg += (GetConfig()->m_CCMode == GCD?" - GCD ":(GetConfig()->m_CCMode==MCD?" - MCD ":(GetConfig()->m_CCMode==SKIN?" - SKIN ":(GetConfig()->m_CCMode==CCSG?" - ColorChecker SG ":(GetConfig()->m_CCMode==USER?" - ColorChecker Custom ":" - AXIS ")))));
+                Msg += (GetConfig()->m_CCMode == GCD?" - ColorChecker Classic GCD ":(GetConfig()->m_CCMode==MCD?" - ColorChecker Classic MCD ":(GetConfig()->m_CCMode==SKIN?" - Pantone Skin ":(GetConfig()->m_CCMode==CCSG?" - ColorChecker SG ":(GetConfig()->m_CCMode==USER?" - ColorChecker Custom ":" - ColorChecker Classic CalMAN ")))));
 				Msg += " ( ";
 				Msg += Tmp;
                 if (GetConfig()->m_CCMode == CCSG || GetConfig()->m_CCMode == USER)

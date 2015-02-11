@@ -51,10 +51,12 @@ typedef enum
 {
 	GCD = 0,
 	MCD = 1,
-	AXIS = 2,
-	SKIN = 3,
-	CCSG = 4,
-    USER = 5,
+	CMC = 2,
+	CMS = 3,
+	CPS = 4,
+	SKIN = 5,
+	CCSG = 6,
+    USER = 7,
 } CCPatterns;
 
 typedef enum 
@@ -476,7 +478,7 @@ public:
 					0.1843,
 					0.1895
 				}; 
-			double YLumaAXIS[24]={	
+			double YLumaCMC[24]={	
 					0.0019,
 					0.0089,
 					0.0220,
@@ -502,6 +504,48 @@ public:
 					0.0490,
 					0.0659
 				}; 
+			double YLumaCMS[19]={	
+					0.0019,
+					0.0089,
+					0.0220,
+					0.0417,
+					0.0684,
+					0.1026,
+					0.1444,
+					0.1942,
+					0.0065,
+					0.0301,
+					0.0740,
+					0.1402,
+					0.2301,
+					0.3449,
+					0.4856,
+					0.6532,
+					0.0007,
+					0.0030,
+					0.0075
+				}; 
+			double YLumaCPS[19]={	
+					0.0019,
+					0.0089,
+					0.0220,
+					0.0417,
+					0.0684,
+					0.1026,
+					0.1444,
+					0.1942,
+					0.0065,
+					0.0301,
+					0.0740,
+					0.1402,
+					0.2301,
+					0.3449,
+					0.4856,
+					0.6532,
+					0.0007,
+					0.0030,
+					0.0075
+			}; 
 			double YLumaSKIN[24]={	
 					0.7839,
 					0.7031,
@@ -633,8 +677,12 @@ public:
             return YLumaGCD[nCol];
         case MCD:
             return YLumaMCD[nCol];
-        case AXIS:
-            return YLumaAXIS[nCol];
+        case CMC:
+            return YLumaCMC[nCol];
+        case CMS:
+            return YLumaCMS[nCol];
+        case CPS:
+            return YLumaCPS[nCol];
         case SKIN:
             return YLumaSKIN[nCol];
         case CCSG:

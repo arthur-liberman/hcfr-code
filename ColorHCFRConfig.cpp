@@ -865,9 +865,9 @@ int CColorHCFRConfig::GetCColorsSize()
     int cnt = 24;
     if (GetConfig()->m_CCMode == USER)
 		cnt = numCC;
-    else
-    {
-        if (GetConfig()->m_CCMode == CCSG) cnt = 96;
-    }
+		else if (GetConfig()->m_CCMode == CCSG) 
+			cnt = 96;
+			else if (GetConfig()->m_CCMode == CMS || GetConfig()->m_CCMode == CPS ) 
+				cnt = 19;
     return cnt;
 }

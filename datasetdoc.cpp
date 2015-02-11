@@ -2425,8 +2425,16 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 				case GCD:
 				nPattern=CGenerator::MT_SAT_CC24_GCD;		
 				 break;
-				case AXIS:
+				case CMC:
 				nPattern=CGenerator::MT_SAT_CC24_GCD;		
+				 break;
+				case CMS:
+				nPattern=CGenerator::MT_SAT_CC24_CMS;		
+                nSteps = 19;
+				 break;
+				case CPS:
+				nPattern=CGenerator::MT_SAT_CC24_CPS;		
+                nSteps = 19;
 				 break;
 				case SKIN:
 				nPattern=CGenerator::MT_SAT_CC24_GCD;		
@@ -3355,6 +3363,8 @@ void CDataSetDoc::OnMeasureSatCC24()
 	CString	Msg, MsgQueue, TmpStr;
 	CGDIGenerator Cgen;
     int		nNbPoints = (GetConfig()->m_CCMode==CCSG?96:GetConfig()->m_CCMode==USER?GetConfig()->GetCColorsSize():24);
+	if (GetConfig()->m_CCMode==CMS || GetConfig()->m_CCMode==CPS)
+		nNbPoints = 19;
 	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid() && GetConfig()->m_colorStandard != HDTVa && GetConfig()->m_colorStandard != HDTVb && Cgen.m_Intensity == 100;
 	if (!m_YWhite)
 		GetColorApp()->InMeasureMessageBox("Please run a primaries scan at 100% stimulus in a normal color space prior to running saturation scans.","Bad Configuration",MB_OK);
@@ -3391,8 +3401,14 @@ void CDataSetDoc::OnUpdateMeasureSatCC24(CCmdUI* pCmdUI)
 	case GCD:
 		 nPattern=CGenerator::MT_SAT_CC24_GCD;		
 		 break;
-	case AXIS:
+	case CMC:
 		 nPattern=CGenerator::MT_SAT_CC24_GCD;		
+		 break;
+	case CMS:
+		 nPattern=CGenerator::MT_SAT_CC24_CMS;		
+		 break;
+	case CPS:
+		 nPattern=CGenerator::MT_SAT_CC24_CPS;		
 		 break;
 	case SKIN:
 		 nPattern=CGenerator::MT_SAT_CC24_GCD;		
@@ -3427,6 +3443,8 @@ void CDataSetDoc::OnMeasureSatAll()
 	CString	Msg, MsgQueue, TmpStr;
 	CGDIGenerator Cgen;
     int		nNbPoints = (GetMeasure () -> GetSaturationSize ()) * 6 + (GetConfig()->m_CCMode==CCSG?96:GetConfig()->m_CCMode==USER?GetConfig()->GetCColorsSize():24);
+	if (GetConfig()->m_CCMode==CMS || GetConfig()->m_CCMode==CPS)
+		nNbPoints = GetMeasure () -> GetSaturationSize () * 6 + 19;
 	bool m_YWhite = GetMeasure () -> GetOnOffWhite ().isValid() && GetConfig()->m_colorStandard != HDTVa && GetConfig()->m_colorStandard != HDTVb && Cgen.m_Intensity == 100;
 	if (!m_YWhite)
 		GetColorApp()->InMeasureMessageBox("Please run a primaries scan at 100% stimulus in a normal color space prior to running saturation scans.","Bad Configuration",MB_OK);
