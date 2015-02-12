@@ -65,6 +65,7 @@ void CGeneratorSelectionPropPage::DoDataExchange(CDataExchange* pDX)
 
 	if(pDX->m_bSaveAndValidate != 0)	// 0=init 1=save
 		m_currentID=m_generatorChoiceCtrl.GetCurSel();
+		if (m_currentID == 1) m_currentID++; //KiGen removed, 2nd choice id needs to be incremented
 	else
 	{
 		// In case of language changing, the default name can be incorrect
