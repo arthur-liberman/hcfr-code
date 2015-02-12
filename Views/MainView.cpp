@@ -2247,7 +2247,7 @@ void CMainView::UpdateGrid()
                      if (GetConfig()->m_CCMode == USER)
                          nCount = GetConfig()->GetCColorsSize();
                      else
-                        nCount = GetConfig()->m_CCMode==CCSG?96:24;
+                        nCount = GetConfig()->m_CCMode==CCSG?96:GetConfig()->m_CCMode==CMS||GetConfig()->m_CCMode==CPS?19:24;
 				 }
 				 
 				 if ( nCount )
@@ -2846,7 +2846,7 @@ void CMainView::UpdateGrid()
 				CString dEform;
 				float a = 2.0, b = 3, dE10 = 0;
 				Tmp.LoadString ( IDS_DELTAEAVERAGE );
-                Msg += (GetConfig()->m_CCMode == GCD?" - ColorChecker Classic GCD ":(GetConfig()->m_CCMode==MCD?" - ColorChecker Classic MCD ":(GetConfig()->m_CCMode==SKIN?" - Pantone Skin ":(GetConfig()->m_CCMode==CCSG?" - ColorChecker SG ":(GetConfig()->m_CCMode==USER?" - ColorChecker Custom ":" - ColorChecker Classic CalMAN ")))));
+                Msg += (GetConfig()->m_CCMode == GCD?" - ColorChecker Classic GCD ":(GetConfig()->m_CCMode==MCD?" - ColorChecker Classic MCD ":(GetConfig()->m_CCMode==SKIN?" - Pantone skin tones ":(GetConfig()->m_CCMode==CCSG?" - ColorChecker SG ":(GetConfig()->m_CCMode==USER?" - ColorChecker Custom ":(GetConfig()->m_CCMode==CMS?" - ColorChecker CalMAN SG skin tones ":(GetConfig()->m_CCMode==CPS?" - ColorChecker ChromaPure skin tones ":" - ColorChecker Classic CalMAN ")))))));
 				Msg += " ( ";
 				Msg += Tmp;
                 if (GetConfig()->m_CCMode == CCSG || GetConfig()->m_CCMode == USER)
@@ -4003,7 +4003,7 @@ void CMainView::OnDeleteGrayscale()
                 }
                 else
                 {
-                    for(j=0;j< (GetConfig()->m_CCMode == CCSG?96:24) ;j++)
+                    for(j=0;j< (GetConfig()->m_CCMode == CCSG?96:GetConfig()->m_CCMode == CMS||GetConfig()->m_CCMode == CPS?19:24) ;j++)
 	    				GetDocument()->GetMeasure()->SetCC24Sat(j,noDataColor);
                 }
 				 lHint = UPD_CC24SAT;

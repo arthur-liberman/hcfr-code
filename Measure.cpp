@@ -2474,7 +2474,7 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
 		 nPattern=CGenerator::MT_SAT_CC24_MCD;		
 		 break;
 	case CMC:
-		 nPattern=CGenerator::MT_SAT_CC24_MCD;		
+		 nPattern=CGenerator::MT_SAT_CC24_CMC;		
 		 break;
 	case CMS:
 		 nPattern=CGenerator::MT_SAT_CC24_CMS;		
@@ -2668,7 +2668,7 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 		 nPattern=CGenerator::MT_SAT_CC24_GCD;		
 		 break;
 	case CMC:
-		 nPattern=CGenerator::MT_SAT_CC24_GCD;		
+		 nPattern=CGenerator::MT_SAT_CC24_CMC;		
 		 break;
 	case CMS:
 		 nPattern=CGenerator::MT_SAT_CC24_CMS;		
