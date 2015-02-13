@@ -59,12 +59,13 @@ CTargetWnd::~CTargetWnd()
 {
 }
 
-void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMode)
+void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMode, CDataSetDoc * pDoc)
 {	
 	if ( m_pRefColor )
 	{
-		int		nR = 0, nG = 0, nB = 0;
-		double x;
+		int		nR = 0, nG = 0, nB = 0, y1 = 0, y2 = 0, y3 = 0;
+		double x1, x2, x3, p1, p2, p3, z1, z2, z3;
+		
 		// Assume gray scale 1st
 		ColorXYZ centerXYZ = GetColorReference().GetWhite();
 		// check for grayscale window when selection valid
@@ -73,42 +74,95 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
         {
             // maintain current target
         }
-		else if (minCol > 0 && m_DisplayMode == 0)
+		else if (minCol > 0 && (m_DisplayMode == 0 || m_DisplayMode == 3 || m_DisplayMode == 4))
 		{
-			int y;
-			double p,z;
 
             if (nSize > 0)
-    			p = (double)(minCol-1) / (double)(nSize-1);
+    			p1 = (double)(minCol-1) / (double)(nSize-1);
             else
-    			p =(double)(101+nSize+minCol-1) / (double)(100.);
+    			p1 =(double)(101+nSize+minCol-1) / (double)(100.);
 			//fix 255->235 rounding errors that the generator will create
-			x =  (int)floor(p * 255.0 + 0.5);
-			y =  (int)floor(p * 219.0 + 0.5);
-			z = y - x / 255. * 219.;
-			x += floor( z + 0.5);
+			x1 =  (int)floor(p1 * 255.0 + 0.5);
+			y1 =  (int)floor(p1 * 219.0 + 0.5);
+			z1= y1 - x1 / 255. * 219.;
+			x1 += floor( z1 + 0.5);
 
- 			m_clr = RGB(x,x,x);
-			nR=(int)x;
-			nG=(int)x;
-			nB=(int)x;
+			nR=(int)x1;
+			nG=(int)x1;
+			nB=(int)x1;
+ 			m_clr = RGB(nR,nG,nB);
 		}
-		else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetWhite(), GetColorReference() ) < 0.05 )
+		else if (minCol > 0 && m_DisplayMode > 4 && m_DisplayMode < 12) //saturations
 		{
-            if (minCol > 0)
-            {
-						nR = 255;
-						nG = 255;
-						nB = 255;
-   					m_clr = RGB(255,255,255);
-            }
-        }
-        else if ( m_pRefColor -> GetDeltaxy (GetColorReference().GetRed(), GetColorReference() ) < 0.05 )
-		{			
-			if (m_pDocument->GetMeasure()->GetRedPrimary().isValid())
-				centerXYZ =  m_pDocument->GetMeasure()->GetRefPrimary(0).GetXYZValue();
-			else
-				centerXYZ = GetColorReference().GetRed();
+			switch (m_DisplayMode)
+			{
+			case 5:
+				centerXYZ =  pDoc->GetMeasure()->GetRefSat(0, double(minCol-1) / double(nSize - 1), true).GetXYZValue();
+				p1=(pDoc->GetMeasure()->GetRefSat(0, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[0] );
+				p2=(pDoc->GetMeasure()->GetRefSat(0, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[1] );
+				p3=(pDoc->GetMeasure()->GetRefSat(0, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[2] );
+				break;
+			case 6:
+				centerXYZ =  pDoc->GetMeasure()->GetRefSat(1, double(minCol-1) / double(nSize - 1), true).GetXYZValue();
+				p1=(pDoc->GetMeasure()->GetRefSat(1, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[0] );
+				p2=(pDoc->GetMeasure()->GetRefSat(1, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[1] );
+				p3=(pDoc->GetMeasure()->GetRefSat(1, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[2] );
+				break;
+			case 7:
+				centerXYZ =  pDoc->GetMeasure()->GetRefSat(2, double(minCol-1) / double(nSize - 1), true).GetXYZValue();
+				p1=(pDoc->GetMeasure()->GetRefSat(2, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[0] );
+				p2=(pDoc->GetMeasure()->GetRefSat(2, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[1] );
+				p3=(pDoc->GetMeasure()->GetRefSat(2, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[2] );
+				break;
+			case 8:
+				centerXYZ =  pDoc->GetMeasure()->GetRefSat(3, double(minCol-1) / double(nSize-1), true).GetXYZValue();
+				p1=(pDoc->GetMeasure()->GetRefSat(3, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[0] );
+				p2=(pDoc->GetMeasure()->GetRefSat(3, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[1] );
+				p3=(pDoc->GetMeasure()->GetRefSat(3, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[2] );
+				break;
+			case 9:
+				centerXYZ =  pDoc->GetMeasure()->GetRefSat(4, double(minCol-1) / double(nSize-1), true).GetXYZValue();
+				p1=(pDoc->GetMeasure()->GetRefSat(4, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[0] );
+				p2=(pDoc->GetMeasure()->GetRefSat(4, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[1] );
+				p3=(pDoc->GetMeasure()->GetRefSat(4, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[2] );
+				break;
+			case 10:
+				centerXYZ =  pDoc->GetMeasure()->GetRefSat(5, double(minCol-1) / double(nSize-1), true).GetXYZValue();
+				p1=(pDoc->GetMeasure()->GetRefSat(5, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[0] );
+				p2=(pDoc->GetMeasure()->GetRefSat(5, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[1] );
+				p3=(pDoc->GetMeasure()->GetRefSat(5, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[2] );
+				break;
+			case 11:
+				centerXYZ =  pDoc->GetMeasure()->GetRefCC24Sat(minCol-1).GetXYZValue();
+				p1=(pDoc->GetMeasure()->GetRefCC24Sat(minCol-1).GetRGBValue(GetColorReference())[0] );
+				p2=(pDoc->GetMeasure()->GetRefCC24Sat(minCol-1).GetRGBValue(GetColorReference())[1] );
+				p3=(pDoc->GetMeasure()->GetRefCC24Sat(minCol-1).GetRGBValue(GetColorReference())[2] );
+				break;
+			default:
+				p1=0.1;
+				p2=0.2;
+				p3=0.3;
+			}
+				x1 =  (int)floor(p1 * 255.0 + 0.5);
+				x2 =  (int)floor(p2 * 255.0 + 0.5);
+				x3 =  (int)floor(p3 * 255.0 + 0.5);
+				y1 =  (int)floor(p1 * 219.0 + 0.5);
+				y2 =  (int)floor(p2 * 219.0 + 0.5);
+				y3 =  (int)floor(p3 * 219.0 + 0.5);
+				z1 = y1 - x1 / 255. * 219.;
+				z2 = y2 - x2 / 255. * 219.;
+				z3 = y3 - x3 / 255. * 219.;
+				x1 += floor( z1 + 0.5);
+				x2 += floor( z2 + 0.5);
+				x3 += floor( z3 + 0.5);
+
+				nR=(int)x1;
+				nG=(int)x2;
+				nB=(int)x3;
+				m_clr = RGB(nR,nG,nB);
+		}
+		else if ( m_DisplayMode == 1 && minCol == 1 )
+		{
 			switch (GetConfig()->m_colorStandard)
 			{
 				case HDTVa:
@@ -137,9 +191,8 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 					break;
 			}
 		}
-		else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetGreen(), GetColorReference() ) < 0.05 )
+		else if ( m_DisplayMode == 1 && minCol == 2)
 		{
-//			centerXYZ =  m_pDocument->GetMeasure()->GetRefPrimary(1).GetXYZValue();
 			centerXYZ = GetColorReference().GetGreen();
 			switch (GetConfig()->m_colorStandard)
 			{
@@ -169,9 +222,8 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 				  break;
 			}
 		}
-		else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetBlue(), GetColorReference() ) < 0.05 )
+		else if ( m_DisplayMode == 1 && minCol == 3)
 		{
-//			centerXYZ = m_pDocument->GetMeasure()->GetRefPrimary(2).GetXYZValue();
 			centerXYZ = GetColorReference().GetBlue();
 			switch (GetConfig()->m_colorStandard)
 			{
@@ -201,9 +253,8 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 				  break;
 			}
 		}
-		else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetYellow(), GetColorReference() ) < 0.05 )
+		else if ( m_DisplayMode == 1 && minCol == 4)
 		{
-//			centerXYZ = m_pDocument->GetMeasure()->GetRefSecondary(0).GetXYZValue();
 			centerXYZ = GetColorReference().GetYellow();
 			switch (GetConfig()->m_colorStandard)
 			{
@@ -233,9 +284,8 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 				  break;
 			}
 		}
-		else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetCyan(), GetColorReference() ) < 0.05 )
+		else if ( m_DisplayMode == 1 && minCol == 5)
 		{
-//			centerXYZ = m_pDocument->GetMeasure()->GetRefSecondary(1).GetXYZValue();;
 			centerXYZ = GetColorReference().GetCyan();
 			switch (GetConfig()->m_colorStandard)
 			{
@@ -265,10 +315,9 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 				  break;
 			}
 		}
-		else if ( m_pRefColor -> GetDeltaxy ( GetColorReference().GetMagenta(), GetColorReference() ) < 0.05 )
+		else if ( m_DisplayMode == 1 && minCol == 6)
 		{
 			centerXYZ = GetColorReference().GetMagenta();
-//			centerXYZ = m_pDocument->GetMeasure()->GetRefSecondary(2).GetXYZValue();
 			switch (GetConfig()->m_colorStandard)
 			{
 				case HDTVa:
@@ -297,6 +346,37 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 				  break;
 			}
 		}
+        else if ( m_DisplayMode == 1 && minCol == 7 )
+		{
+			centerXYZ =  GetColorReference().GetWhite();
+			switch (GetConfig()->m_colorStandard)
+			{
+				case HDTVa:
+						nR = 255;
+						nG = 255;
+						nB = 255;
+				    m_clr = RGB(255,255,255);
+				break;
+				case CC6:
+						nR = 255;
+						nG = 255;
+						nB = 255;
+					m_clr = RGB(255,255,255);
+				break;
+				case HDTVb:
+						nR = 191;
+						nG = 191;
+						nB = 191;
+				  m_clr = RGB(191,191,191);
+				break;
+				default:
+						nR = 255;
+						nG = 255;
+						nB = 255;
+	   			  m_clr = RGB(255,255,255);
+				  break;
+			}
+		}    
 
         ColorxyY aColor = m_pRefColor -> GetxyYValue();
         ColorxyY centerxyY(centerXYZ);

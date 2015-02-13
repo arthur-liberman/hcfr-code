@@ -76,52 +76,87 @@ CRGBLevelWnd::~CRGBLevelWnd()
 {
 }
 
-void CRGBLevelWnd::Refresh(int minCol, int m_displayMode)
+void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 {
     
 	BOOL bWasLumaMode = m_bLumaMode;
 	m_bLumaMode = FALSE;
     double cx,cy,cz,cxref,cyref,czref;
 
-	if ( m_pRefColor && (*m_pRefColor).isValid() )
+	if ( m_pRefColor && minCol > 0)
 	{
         CColor aReference;
-        
-		//look for white first and disable if detect for primaries/secondaries is not selected
-        if ( (m_pRefColor -> GetDeltaxy ( GetColorReference().GetWhite(), GetColorReference() ) < 0.05) )
+
+		if (m_displayMode == 11)
 		{
-			m_bLumaMode = FALSE;
-            aReference = GetColorReference().GetWhite();
+			m_bLumaMode = TRUE;
+			aReference = m_pDocument->GetMeasure()->GetRefCC24Sat(minCol-1);
 		}
-		else if ( m_pRefColor -> GetDeltaxy ( m_pDocument->GetMeasure()->GetRefPrimary(0), GetColorReference() ) < 0.05 )
+		else if (m_displayMode == 5)
+		{
+			m_bLumaMode = TRUE;
+			aReference = m_pDocument->GetMeasure()->GetRefSat(0, double(minCol-1) / double(nSize -1), true);
+		}
+		else if (m_displayMode == 6)
+		{
+			m_bLumaMode = TRUE;
+			aReference = m_pDocument->GetMeasure()->GetRefSat(1, double(minCol-1) / double(nSize -1), true);
+		}
+		else if (m_displayMode == 7)
+		{
+			m_bLumaMode = TRUE;
+			aReference = m_pDocument->GetMeasure()->GetRefSat(2, double(minCol-1) / double(nSize -1), true);
+		}
+		else if (m_displayMode == 8)
+		{
+			m_bLumaMode = TRUE;
+			aReference = m_pDocument->GetMeasure()->GetRefSat(3, double(minCol-1) / double(nSize -1), true);
+		}
+		else if (m_displayMode == 9)
+		{
+			m_bLumaMode = TRUE;
+			aReference = m_pDocument->GetMeasure()->GetRefSat(4, double(minCol-1) / double(nSize -1), true);
+		}
+		else if (m_displayMode == 10)
+		{
+			m_bLumaMode = TRUE;
+			aReference = m_pDocument->GetMeasure()->GetRefSat(5, double(minCol-1) / double(nSize -1), true);
+		}
+		else if ( m_displayMode == 1 && minCol == 1 )
 		{
 			m_bLumaMode = TRUE;
             aReference = m_pDocument->GetMeasure()->GetRefPrimary(0);
 		}
-		else if ( m_pRefColor -> GetDeltaxy ( m_pDocument->GetMeasure()->GetRefPrimary(1), GetColorReference() ) < 0.05 )
+		else if ( m_displayMode == 1 && minCol == 2 )
 		{
 			m_bLumaMode = TRUE;
             aReference = m_pDocument->GetMeasure()->GetRefPrimary(1);
 		}
-		else if ( m_pRefColor -> GetDeltaxy ( m_pDocument->GetMeasure()->GetRefPrimary(2), GetColorReference() ) < 0.05 )
+		else if ( m_displayMode == 1 && minCol == 3 )
 		{
 			m_bLumaMode = TRUE;
             aReference = m_pDocument->GetMeasure()->GetRefPrimary(2);
 		}
-		else if ( m_pRefColor -> GetDeltaxy ( m_pDocument->GetMeasure()->GetRefSecondary(0), GetColorReference() ) < 0.05 )
+		else if ( m_displayMode == 1 && minCol == 4 )
 		{
 			m_bLumaMode = TRUE;
             aReference = m_pDocument->GetMeasure()->GetRefSecondary(0);
 		}
-		else if ( m_pRefColor -> GetDeltaxy ( m_pDocument->GetMeasure()->GetRefSecondary(1), GetColorReference() ) < 0.05 )
+		else if ( m_displayMode == 1 && minCol == 5 )
 		{
 			m_bLumaMode = TRUE;
             aReference = m_pDocument->GetMeasure()->GetRefSecondary(1);
 		}
-		else if ( m_pRefColor -> GetDeltaxy ( m_pDocument->GetMeasure()->GetRefSecondary(2), GetColorReference() ) < 0.05 )
+		else if ( m_displayMode == 1 && minCol == 6 )
 		{
 			m_bLumaMode = TRUE;
             aReference = m_pDocument->GetMeasure()->GetRefSecondary(2);
+		}
+		//look for white and disable if detect for primaries/secondaries is not selected
+        else if ( m_displayMode == 0 || (m_displayMode == 1 && minCol == 7) || m_displayMode == 3 || m_displayMode == 4 )
+		{
+			m_bLumaMode = FALSE;
+            aReference = GetColorReference().GetWhite();
 		}
 		
 		CColor white = m_pDocument->GetMeasure()->GetOnOffWhite();

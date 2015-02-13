@@ -611,15 +611,17 @@ void CMainView::RefreshSelection()
 	Item.row = 0;
 	Item.col = 1;
 
-	if (m_displayMode <= 4)
+	if (m_displayMode <= 11 &&  m_displayMode != 2)  
     {
         int size=GetDocument()->GetMeasure()->GetGrayScaleSize();
         if (m_displayMode == 3)
             size = 101;
         else if (m_displayMode == 4)
         size = -1 * GetDocument()->GetMeasure()->GetNearWhiteScaleSize();
-	    m_RGBLevels.Refresh(m_pGrayScaleGrid -> GetSelectedCellRange().IsValid() && m_displayMode==0?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1, m_displayMode);
-		m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  (m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1), size, m_displayMode);
+		if (m_displayMode > 4 && m_displayMode < 12)
+			size=GetDocument()->GetMeasure()->GetSaturationSize();
+	    m_RGBLevels.Refresh(m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1, m_displayMode, size);
+		m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  (m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1), size, m_displayMode, GetDocument());
     }
 
 	if(m_SelectedColor.isValid())
@@ -692,14 +694,16 @@ void CMainView::RefreshSelection()
 				 break;
 
 			case 1: // target
-                if (m_displayMode <= 4)
+                if (m_displayMode <= 11 &&  m_displayMode != 2)
                 {
                     int size=GetDocument()->GetMeasure()->GetGrayScaleSize();
                     if (m_displayMode == 3)
                         size = 101;
                     else if (m_displayMode == 4)
                         size = -1 * GetDocument()->GetMeasure()->GetNearWhiteScaleSize();
-                    ( ( CTargetWnd * ) m_pInfoWnd ) -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  (m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1), size, m_displayMode);
+					if (m_displayMode > 4 && m_displayMode < 12)
+						size=GetDocument()->GetMeasure()->GetSaturationSize();
+                    ( ( CTargetWnd * ) m_pInfoWnd ) -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  (m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1), size, m_displayMode, GetDocument());
                 }
 				break;
 
@@ -4538,6 +4542,7 @@ void CMainView::OnSelchangeInfoDisplay()
 	pWnd = GetDlgItem ( IDC_STATIC_VIEW );
 	pWnd -> GetWindowRect ( & Rect );
 	ScreenToClient ( & Rect );
+    int size=GetDocument()->GetMeasure()->GetGrayScaleSize();
 
 	m_infoDisplay = m_comboDisplay.GetCurSel ();
 	switch ( m_infoDisplay )
@@ -4555,10 +4560,16 @@ void CMainView::OnSelchangeInfoDisplay()
 		case 1: // target
              pTargetWnd = new CTargetWnd;			
 			 pTargetWnd -> Create (NULL, NULL, WS_VISIBLE | WS_CHILD, Rect, this, IDC_INFO_VIEW, NULL );
-             if (m_displayMode <= 4)
+             if ( (m_displayMode <= 11 &&  m_displayMode != 2) ) 
              {
+		        if (m_displayMode == 3)
+				    size = 101;
+				else if (m_displayMode == 4)
+				size = -1 * GetDocument()->GetMeasure()->GetNearWhiteScaleSize();
+				if (m_displayMode > 4 && m_displayMode < 12)
+					size=GetDocument()->GetMeasure()->GetSaturationSize();
 			    pTargetWnd -> m_pRefColor = & m_SelectedColor;
-			    pTargetWnd -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  (m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1), GetDocument()->GetMeasure()->GetGrayScaleSize(), m_displayMode );
+			    pTargetWnd -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  (m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1), size, m_displayMode, GetDocument() );
              }
 			 m_pInfoWnd = pTargetWnd;
 			 break;
