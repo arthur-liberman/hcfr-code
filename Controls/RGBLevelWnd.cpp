@@ -292,9 +292,10 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
     } 
 	else
 	{
+		m_dEValue = 0.;
 		//m_pRef
 	}
-
+	if (m_dEValue > 40) m_dEValue = 0.;
 	Invalidate(FALSE);
 
 	if (m_bLumaMode != bWasLumaMode)
