@@ -70,6 +70,10 @@ CRGBLevelWnd::CRGBLevelWnd()
 	m_pRefColor = NULL;
 	m_pDocument = NULL;
 	m_bLumaMode = FALSE;
+	m_redValue = 0.;
+	m_greenValue = 0.;
+	m_blueValue = 0.;
+	m_dEValue = 0.;
 }
 
 CRGBLevelWnd::~CRGBLevelWnd()
@@ -80,84 +84,85 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 {
     
 	BOOL bWasLumaMode = m_bLumaMode;
-	m_bLumaMode = FALSE;
     double cx,cy,cz,cxref,cyref,czref;
 
-	if ( m_pRefColor && minCol > 0)
+	if ( m_pRefColor)
 	{
-        CColor aReference;
+		if (minCol > 0)
+		{
 
-		if (m_displayMode == 11)
-		{
-			m_bLumaMode = TRUE;
-			aReference = m_pDocument->GetMeasure()->GetRefCC24Sat(minCol-1);
-		}
-		else if (m_displayMode == 5)
-		{
-			m_bLumaMode = TRUE;
-			aReference = m_pDocument->GetMeasure()->GetRefSat(0, double(minCol-1) / double(nSize -1), true);
-		}
-		else if (m_displayMode == 6)
-		{
-			m_bLumaMode = TRUE;
-			aReference = m_pDocument->GetMeasure()->GetRefSat(1, double(minCol-1) / double(nSize -1), true);
-		}
-		else if (m_displayMode == 7)
-		{
-			m_bLumaMode = TRUE;
-			aReference = m_pDocument->GetMeasure()->GetRefSat(2, double(minCol-1) / double(nSize -1), true);
-		}
-		else if (m_displayMode == 8)
-		{
-			m_bLumaMode = TRUE;
-			aReference = m_pDocument->GetMeasure()->GetRefSat(3, double(minCol-1) / double(nSize -1), true);
-		}
-		else if (m_displayMode == 9)
-		{
-			m_bLumaMode = TRUE;
-			aReference = m_pDocument->GetMeasure()->GetRefSat(4, double(minCol-1) / double(nSize -1), true);
-		}
-		else if (m_displayMode == 10)
-		{
-			m_bLumaMode = TRUE;
-			aReference = m_pDocument->GetMeasure()->GetRefSat(5, double(minCol-1) / double(nSize -1), true);
-		}
-		else if ( m_displayMode == 1 && minCol == 1 )
-		{
-			m_bLumaMode = TRUE;
-            aReference = m_pDocument->GetMeasure()->GetRefPrimary(0);
-		}
-		else if ( m_displayMode == 1 && minCol == 2 )
-		{
-			m_bLumaMode = TRUE;
-            aReference = m_pDocument->GetMeasure()->GetRefPrimary(1);
-		}
-		else if ( m_displayMode == 1 && minCol == 3 )
-		{
-			m_bLumaMode = TRUE;
-            aReference = m_pDocument->GetMeasure()->GetRefPrimary(2);
-		}
-		else if ( m_displayMode == 1 && minCol == 4 )
-		{
-			m_bLumaMode = TRUE;
-            aReference = m_pDocument->GetMeasure()->GetRefSecondary(0);
-		}
-		else if ( m_displayMode == 1 && minCol == 5 )
-		{
-			m_bLumaMode = TRUE;
-            aReference = m_pDocument->GetMeasure()->GetRefSecondary(1);
-		}
-		else if ( m_displayMode == 1 && minCol == 6 )
-		{
-			m_bLumaMode = TRUE;
-            aReference = m_pDocument->GetMeasure()->GetRefSecondary(2);
-		}
-		//look for white and disable if detect for primaries/secondaries is not selected
-        else if ( m_displayMode == 0 || (m_displayMode == 1 && minCol == 7) || m_displayMode == 3 || m_displayMode == 4 )
-		{
-			m_bLumaMode = FALSE;
-            aReference = GetColorReference().GetWhite();
-		}
+			if (m_displayMode == 11)
+			{
+				m_bLumaMode = TRUE;
+				aReference = m_pDocument->GetMeasure()->GetRefCC24Sat(minCol-1);
+			}
+			else if (m_displayMode == 5)
+			{
+				m_bLumaMode = TRUE;
+				aReference = m_pDocument->GetMeasure()->GetRefSat(0, double(minCol-1) / double(nSize -1), true);
+			}
+			else if (m_displayMode == 6)
+			{
+				m_bLumaMode = TRUE;
+				aReference = m_pDocument->GetMeasure()->GetRefSat(1, double(minCol-1) / double(nSize -1), true);
+			}
+			else if (m_displayMode == 7)
+			{
+				m_bLumaMode = TRUE;
+				aReference = m_pDocument->GetMeasure()->GetRefSat(2, double(minCol-1) / double(nSize -1), true);
+			}
+			else if (m_displayMode == 8)
+			{
+				m_bLumaMode = TRUE;
+				aReference = m_pDocument->GetMeasure()->GetRefSat(3, double(minCol-1) / double(nSize -1), true);
+			}
+			else if (m_displayMode == 9)
+			{
+				m_bLumaMode = TRUE;
+				aReference = m_pDocument->GetMeasure()->GetRefSat(4, double(minCol-1) / double(nSize -1), true);
+			}
+			else if (m_displayMode == 10)
+			{
+				m_bLumaMode = TRUE;
+				aReference = m_pDocument->GetMeasure()->GetRefSat(5, double(minCol-1) / double(nSize -1), true);
+			}
+			else if ( m_displayMode == 1 && minCol == 1 )
+			{
+				m_bLumaMode = TRUE;
+				aReference = m_pDocument->GetMeasure()->GetRefPrimary(0);
+			}
+			else if ( m_displayMode == 1 && minCol == 2 )
+			{
+				m_bLumaMode = TRUE;
+				aReference = m_pDocument->GetMeasure()->GetRefPrimary(1);
+			}
+			else if ( m_displayMode == 1 && minCol == 3 )
+			{
+				m_bLumaMode = TRUE;
+				aReference = m_pDocument->GetMeasure()->GetRefPrimary(2);
+			}
+			else if ( m_displayMode == 1 && minCol == 4 )
+			{
+				m_bLumaMode = TRUE;
+				aReference = m_pDocument->GetMeasure()->GetRefSecondary(0);
+			}
+			else if ( m_displayMode == 1 && minCol == 5 )
+			{
+				m_bLumaMode = TRUE;
+				aReference = m_pDocument->GetMeasure()->GetRefSecondary(1);
+			}
+			else if ( m_displayMode == 1 && minCol == 6 )
+			{
+				m_bLumaMode = TRUE;
+				aReference = m_pDocument->GetMeasure()->GetRefSecondary(2);
+			}
+			//look for white and disable if detect for primaries/secondaries is not selected
+			else if ( m_displayMode == 0 || (m_displayMode == 1 && minCol == 7) || m_displayMode == 3 || m_displayMode == 4 )
+			{
+				m_bLumaMode = FALSE;
+				aReference = GetColorReference().GetWhite();
+			}
+		} //update reference
 		
 		CColor white = m_pDocument->GetMeasure()->GetOnOffWhite();
         if (!white.isValid() || !m_bLumaMode)
@@ -166,7 +171,7 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 	    	if ( m_pDocument -> GetMeasure () -> GetGray ( i - 1 ).isValid() )
                 white.SetY( m_pDocument -> GetMeasure () -> GetGray ( i - 1 ) [ 1 ]);
         }
-		if (m_bLumaMode && GetConfig()->m_bDetectPrimaries)
+		if (m_bLumaMode && GetConfig()->m_bDetectPrimaries && aReference.isValid())
 		{
             ColorXYZ aColor=m_pRefColor->GetXYZValue(), refColor=aReference.GetXYZValue() ;
 			
@@ -237,7 +242,7 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
         }
     	int nCount = m_pDocument -> GetMeasure () -> GetGrayScaleSize ();
         double YWhite = white.GetY();
-        if (!m_bLumaMode && minCol != -1 && !g_pDataDocRunningThread)
+        if (!m_bLumaMode)// && minCol != -1 && !g_pDataDocRunningThread)
         {
             ColorxyY tmpColor(GetColorReference().GetWhite());
 		    // Determine Reference Y luminance for Delta E calculus
@@ -279,19 +284,17 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
                            YWhite = m_pRefColor->GetY();
 			}
         }
-        if ((g_pDataDocRunningThread || minCol <=0) && !m_bLumaMode )
-            m_dEValue = float(m_pRefColor->GetDeltaE(GetColorReference().GetWhite()));
-        else
-            m_dEValue = float(m_pRefColor->GetDeltaE(YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, !m_bLumaMode, GetConfig()->gw_Weight )) ;
-
-    }
+//        if ((g_pDataDocRunningThread || minCol <=0) && !m_bLumaMode )
+//        if ( !m_bLumaMode )
+//            m_dEValue = float(m_pRefColor->GetDeltaE(GetColorReference().GetWhite()));
+//        else
+			m_dEValue = aReference.isValid()?float(m_pRefColor->GetDeltaE(YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, !m_bLumaMode, GetConfig()->gw_Weight )):0 ;
+    } 
 	else
 	{
-		m_redValue=0.;
-		m_greenValue=0.;
-		m_blueValue=0.;
-        m_dEValue = 0.;
+		//m_pRef
 	}
+
 	Invalidate(FALSE);
 
 	if (m_bLumaMode != bWasLumaMode)

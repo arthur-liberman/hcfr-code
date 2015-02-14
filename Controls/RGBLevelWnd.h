@@ -46,6 +46,8 @@ public:
 
 	CColor *		m_pRefColor;
 	CDataSetDoc *	m_pDocument;
+	CColor			aReference;
+
 
 // Operations
 public:

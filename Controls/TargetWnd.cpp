@@ -53,6 +53,10 @@ CTargetWnd::CTargetWnd()
 	m_pRefColor = NULL;
 	pTooltipText = NULL;
     m_pDocument = NULL;
+	centerXYZ = GetColorReference().GetWhite();
+	nR = 0;
+	nG = 0;
+	nB = 0;
 }
 
 CTargetWnd::~CTargetWnd()
@@ -61,22 +65,15 @@ CTargetWnd::~CTargetWnd()
 
 void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMode, CDataSetDoc * pDoc)
 {	
-	if ( m_pRefColor )
+	if ( m_pRefColor  && minCol > 0)
 	{
-		int		nR = 0, nG = 0, nB = 0, y1 = 0, y2 = 0, y3 = 0;
-		double x1, x2, x3, p1, p2, p3, z1, z2, z3;
+		int		y1 = 0, y2 = 0, y3 = 0;
+		double	x1, x2, x3, p1, p2, p3, z1, z2, z3;
+		ColorRGBDisplay	GenColors [ 1010 ];
 		
-		// Assume gray scale 1st
-		ColorXYZ centerXYZ = GetColorReference().GetWhite();
-		// check for grayscale window when selection valid
-		//RGB specified 0-255 will get scaled in fullscreenwindow if needed
-		if (g_pDataDocRunningThread && m_DisplayMode == 0 && minCol <= 0)
-        {
-            // maintain current target
-        }
-		else if (minCol > 0 && (m_DisplayMode == 0 || m_DisplayMode == 3 || m_DisplayMode == 4))
+		if (minCol > 0 && (m_DisplayMode == 0 || m_DisplayMode == 3 || m_DisplayMode == 4))
 		{
-
+			centerXYZ = GetColorReference().GetWhite();
             if (nSize > 0)
     			p1 = (double)(minCol-1) / (double)(nSize-1);
             else
@@ -98,45 +95,52 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 			{
 			case 5:
 				centerXYZ =  pDoc->GetMeasure()->GetRefSat(0, double(minCol-1) / double(nSize - 1), true).GetXYZValue();
-				p1=(pDoc->GetMeasure()->GetRefSat(0, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[0] );
-				p2=(pDoc->GetMeasure()->GetRefSat(0, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[1] );
-				p3=(pDoc->GetMeasure()->GetRefSat(0, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[2] );
+				GenerateSaturationColors (GetColorReference(), GenColors, nSize, true, false, false );				
+				p1=GenColors[minCol-1][0] / 100.;
+				p2=GenColors[minCol-1][1] / 100.;
+				p3=GenColors[minCol-1][2] / 100.;
 				break;
 			case 6:
 				centerXYZ =  pDoc->GetMeasure()->GetRefSat(1, double(minCol-1) / double(nSize - 1), true).GetXYZValue();
-				p1=(pDoc->GetMeasure()->GetRefSat(1, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[0] );
-				p2=(pDoc->GetMeasure()->GetRefSat(1, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[1] );
-				p3=(pDoc->GetMeasure()->GetRefSat(1, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[2] );
+				GenerateSaturationColors (GetColorReference(), GenColors, nSize, false, true, false );				
+				p1=GenColors[minCol-1][0] / 100.;
+				p2=GenColors[minCol-1][1] / 100.;
+				p3=GenColors[minCol-1][2] / 100.;
 				break;
 			case 7:
 				centerXYZ =  pDoc->GetMeasure()->GetRefSat(2, double(minCol-1) / double(nSize - 1), true).GetXYZValue();
-				p1=(pDoc->GetMeasure()->GetRefSat(2, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[0] );
-				p2=(pDoc->GetMeasure()->GetRefSat(2, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[1] );
-				p3=(pDoc->GetMeasure()->GetRefSat(2, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[2] );
+				GenerateSaturationColors (GetColorReference(), GenColors, nSize, false, false, true );				
+				p1=GenColors[minCol-1][0] / 100.;
+				p2=GenColors[minCol-1][1] / 100.;
+				p3=GenColors[minCol-1][2] / 100.;
 				break;
 			case 8:
 				centerXYZ =  pDoc->GetMeasure()->GetRefSat(3, double(minCol-1) / double(nSize-1), true).GetXYZValue();
-				p1=(pDoc->GetMeasure()->GetRefSat(3, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[0] );
-				p2=(pDoc->GetMeasure()->GetRefSat(3, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[1] );
-				p3=(pDoc->GetMeasure()->GetRefSat(3, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[2] );
+				GenerateSaturationColors (GetColorReference(), GenColors, nSize, true, true, false );				
+				p1=GenColors[minCol-1][0] / 100.;
+				p2=GenColors[minCol-1][1] / 100.;
+				p3=GenColors[minCol-1][2] / 100.;
 				break;
 			case 9:
 				centerXYZ =  pDoc->GetMeasure()->GetRefSat(4, double(minCol-1) / double(nSize-1), true).GetXYZValue();
-				p1=(pDoc->GetMeasure()->GetRefSat(4, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[0] );
-				p2=(pDoc->GetMeasure()->GetRefSat(4, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[1] );
-				p3=(pDoc->GetMeasure()->GetRefSat(4, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[2] );
+				GenerateSaturationColors (GetColorReference(), GenColors, nSize, false, true, true );				
+				p1=GenColors[minCol-1][0] / 100.;
+				p2=GenColors[minCol-1][1] / 100.;
+				p3=GenColors[minCol-1][2] / 100.;
 				break;
 			case 10:
 				centerXYZ =  pDoc->GetMeasure()->GetRefSat(5, double(minCol-1) / double(nSize-1), true).GetXYZValue();
-				p1=(pDoc->GetMeasure()->GetRefSat(5, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[0] );
-				p2=(pDoc->GetMeasure()->GetRefSat(5, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[1] );
-				p3=(pDoc->GetMeasure()->GetRefSat(5, double(minCol -1) / double(nSize - 1), true).GetRGBValue(GetColorReference())[2] );
+				GenerateSaturationColors (GetColorReference(), GenColors, nSize, true, false, true );				
+				p1=GenColors[minCol-1][0] / 100.;
+				p2=GenColors[minCol-1][1] / 100.;
+				p3=GenColors[minCol-1][2] / 100.;
 				break;
 			case 11:
 				centerXYZ =  pDoc->GetMeasure()->GetRefCC24Sat(minCol-1).GetXYZValue();
-				p1=(pDoc->GetMeasure()->GetRefCC24Sat(minCol-1).GetRGBValue(GetColorReference())[0] );
-				p2=(pDoc->GetMeasure()->GetRefCC24Sat(minCol-1).GetRGBValue(GetColorReference())[1] );
-				p3=(pDoc->GetMeasure()->GetRefCC24Sat(minCol-1).GetRGBValue(GetColorReference())[2] );
+				GenerateCC24Colors (GenColors, GetConfig()->m_CCMode);
+				p1=GenColors[minCol-1][0] / 100.;
+				p2=GenColors[minCol-1][1] / 100.;
+				p3=GenColors[minCol-1][2] / 100.;
 				break;
 			default:
 				p1=0.1;
@@ -163,6 +167,7 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 		}
 		else if ( m_DisplayMode == 1 && minCol == 1 )
 		{
+			centerXYZ = GetColorReference().GetRed();
 			switch (GetConfig()->m_colorStandard)
 			{
 				case HDTVa:
@@ -376,19 +381,18 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 	   			  m_clr = RGB(255,255,255);
 				  break;
 			}
-		}    
+		}    //update RGB
+
+	} // pref and mincol > 0
 
         ColorxyY aColor = m_pRefColor -> GetxyYValue();
         ColorxyY centerxyY(centerXYZ);
 		//Update test window for display when selected
 		BOOL		bDisplayColor = GetConfig () -> m_bDisplayTestColors;
-		if (minCol > 0)
+		if (bDisplayColor)
 		{
-			if (bDisplayColor)
-			{
-				( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.SetColor ( RGB(nR,nG,nB) );
-				( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.RedrawWindow ();
-			}
+			( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.SetColor ( RGB(nR,nG,nB) );
+			( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.RedrawWindow ();
 		}
 
 		m_deltax = (aColor[0]-centerxyY[0])/centerxyY[0];
@@ -402,7 +406,6 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 				m_tooltip.Invalidate();
 			}
 		}
-	}
 	UpdateScaledBitmap();
 	Invalidate(TRUE);
 }

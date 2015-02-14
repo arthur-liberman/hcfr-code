@@ -50,7 +50,10 @@ public:
 	int m_marginInPercent;
 	int m_targetRectInPercent;
 	int m_pointSizeInPercent;
-
+	int nR;
+	int nG;
+	int nB;
+	ColorXYZ centerXYZ;
 	CPPToolTip m_tooltip;
 	CString *	pTooltipText;
 

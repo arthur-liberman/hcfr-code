@@ -1017,6 +1017,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 		GenColors [ 3 ] = ColorRGBDisplay(74.89,74.89,32.88);
 		GenColors [ 4 ] = ColorRGBDisplay(36.07,73.06,73.06);
 		GenColors [ 5 ] = ColorRGBDisplay(63.92,29.22,63.93);
+		GenColors [ 6 ] = ColorRGBDisplay(75.0,75.0,75.0);
 	}
 
 	ColorRGBDisplay	MeasColors [ 8 ] = 
