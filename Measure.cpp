@@ -1560,8 +1560,10 @@ BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator)
 
 	// Generate saturation colors for red
 	GenerateSaturationColors (GetColorReference(), GenColors,size, true, false, false);
-	
-    for(int i=(GetConfig()->m_CCMode == MCD?1:0);i<size;i++)
+	CString str;
+	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
+
+    for(int i=((GetConfig()->m_CCMode == MCD && pGenerator->GetName() == str)?1:0);i<size;i++)
 	{
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_RED,100*i/(size - 1),!bRetry))
 		{
@@ -1712,8 +1714,10 @@ BOOL CMeasure::MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	}
 	// Generate saturation colors for green
 	GenerateSaturationColors (GetColorReference(), GenColors,size, false, true, false );
+	CString str;
+	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
-	for(int i=(GetConfig()->m_CCMode == MCD?1:0);i<size;i++)
+    for(int i=((GetConfig()->m_CCMode == MCD && pGenerator->GetName() == str)?1:0);i<size;i++)
 	{
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_GREEN,100*i/(size - 1),!bRetry) )
 		{
@@ -1865,8 +1869,10 @@ BOOL CMeasure::MeasureBlueSatScale(CSensor *pSensor, CGenerator *pGenerator)
 
 	// Generate saturation colors for blue
 		GenerateSaturationColors (GetColorReference(), GenColors,size, false, false, true );
+	CString str;
+	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
-        for(int i=(GetConfig()->m_CCMode == MCD?1:0);i<size;i++)
+    for(int i=((GetConfig()->m_CCMode == MCD && pGenerator->GetName() == str)?1:0);i<size;i++)
 	{
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_BLUE,100*i/(size - 1),!bRetry))
 		{
@@ -2018,8 +2024,10 @@ BOOL CMeasure::MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator)
 
 	// Generate saturation colors for yellow
 	GenerateSaturationColors (GetColorReference(), GenColors,size, true, true, false );
+	CString str;
+	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
-	for(int i=(GetConfig()->m_CCMode == MCD?1:0);i<size;i++)
+    for(int i=((GetConfig()->m_CCMode == MCD && pGenerator->GetName() == str)?1:0);i<size;i++)
 	{
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_YELLOW,100*i/(size - 1),!bRetry))
 		{
@@ -2172,8 +2180,10 @@ BOOL CMeasure::MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator)
 
 	// Generate saturation colors for cyan
 	GenerateSaturationColors (GetColorReference(), GenColors,size, false, true, true );
+	CString str;
+	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
-	for(int i=(GetConfig()->m_CCMode == MCD?1:0);i<size;i++)
+    for(int i=((GetConfig()->m_CCMode == MCD && pGenerator->GetName() == str)?1:0);i<size;i++)
 	{
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_CYAN,100*i/(size - 1),!bRetry))
 		{
@@ -2326,8 +2336,10 @@ BOOL CMeasure::MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator)
 
 	// Generate saturation colors for magenta
 	GenerateSaturationColors (GetColorReference(), GenColors,size, true, false, true );
+	CString str;
+	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
-	for(int i=(GetConfig()->m_CCMode == MCD?1:0);i<size;i++)
+    for(int i=((GetConfig()->m_CCMode == MCD && pGenerator->GetName() == str)?1:0);i<size;i++)
 	{
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_MAGENTA,100*i/(size - 1) ,!bRetry))
 		{
@@ -5338,7 +5350,6 @@ CColor CMeasure::GetRefSat(int i, double sat_percent, bool special) const
 	sRef[1].SetxyYValue(ColorxyY(0.2246, 0.3287));
 	sRef[2].SetxyYValue(ColorxyY(0.3209, 0.1542));
 	int m_cRef=GetColorReference().m_standard;
-	bool full = !(m_cRef == HDTVa || m_cRef == CC6 || m_cRef == HDTVb);
 
 	//display rec709 sat points in special colorspace modes	
 	if (!special)
@@ -5394,7 +5405,7 @@ CColor CMeasure::GetRefSat(int i, double sat_percent, bool special) const
 	else
 		rgb=aColor.GetRGBValue(CColorReference(HDTV));
 	double r=rgb[0],g=rgb[1],b=rgb[2];
-	if (sat_percent < 1 || !full)
+	if (sat_percent < 1 )
 	{
 	    if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
 		   gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(aColor.GetY(),1/2.22));

@@ -85,6 +85,7 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
     
 	BOOL bWasLumaMode = m_bLumaMode;
     double cx,cy,cz,cxref,cyref,czref;
+	int nCount;
 
 	if ( m_pRefColor)
 	{
@@ -163,14 +164,16 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 				aReference = GetColorReference().GetWhite();
 			}
 		} //update reference
-		
-		CColor white = m_pDocument->GetMeasure()->GetOnOffWhite();
-        if (!white.isValid() || !m_bLumaMode)
-        {
-    		int i = m_pDocument -> GetMeasure () -> GetGrayScaleSize ();
-	    	if ( m_pDocument -> GetMeasure () -> GetGray ( i - 1 ).isValid() )
-                white.SetY( m_pDocument -> GetMeasure () -> GetGray ( i - 1 ) [ 1 ]);
-        }
+		nCount = m_pDocument -> GetMeasure () -> GetGrayScaleSize ();
+		CColor white = m_pDocument -> GetMeasure () -> GetGray ( nCount - 1 );
+		if (m_displayMode == 1 && (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb) ) 
+			white = m_pDocument->GetMeasure()->GetOnOffWhite();
+//        if (!white.isValid() || !m_bLumaMode)
+//        {
+//    		int i = m_pDocument -> GetMeasure () -> GetGrayScaleSize ();
+//	    	if ( m_pDocument -> GetMeasure () -> GetGray ( i - 1 ).isValid() )
+ //               white.SetY( m_pDocument -> GetMeasure () -> GetGray ( i - 1 ) [ 1 ]);
+//        }
 		if (m_bLumaMode && GetConfig()->m_bDetectPrimaries && aReference.isValid())
 		{
             ColorXYZ aColor=m_pRefColor->GetXYZValue(), refColor=aReference.GetXYZValue() ;

@@ -1893,16 +1893,17 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 					CColor WhiteMCD;
 					int i;
 					i = GetDocument() -> GetMeasure () -> GetGrayScaleSize ();
-					if ( GetDocument() -> GetMeasure () -> GetGray ( i - 1 ).isValid() )
+//					if ( GetDocument() -> GetMeasure () -> GetGray ( i - 1 ).isValid() )
 						WhiteMCD = GetDocument() -> GetMeasure () -> GetGray ( i - 1 );
-					else
-						WhiteMCD = GetDocument()->GetMeasure()->GetOnOffWhite();
+//					else
+//						WhiteMCD = GetDocument()->GetMeasure()->GetOnOffWhite();
 				
-					CColor white = ( m_displayMode!=11 ?  GetDocument()->GetMeasure()->GetOnOffWhite() : (GetConfig()->m_CCMode==GCD)? GetDocument()->GetMeasure()->GetCC24Sat(5):(GetConfig()->m_CCMode==CCSG)? GetDocument()->GetMeasure()->GetCC24Sat(0):WhiteMCD );
+				CColor white = ( m_displayMode!=11 ?  GetDocument()->GetMeasure()->GetOnOffWhite() : (GetConfig()->m_CCMode==GCD)? GetDocument()->GetMeasure()->GetCC24Sat(5):(GetConfig()->m_CCMode==CCSG)? GetDocument()->GetMeasure()->GetCC24Sat(0):WhiteMCD );
+				if (m_displayMode > 4 && m_displayMode < 11)
+					white = WhiteMCD;
                 if ( nCol2 < ( (m_displayMode > 11 || m_displayMode < 5) ? 7 : 1001) && white.isValid() && white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) > 0.0001 )
     		    {
 					double d = aMeasure.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) / white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter);
-
 					if ( fabs ( ( RefLuma [ nCol2 - 1 ] - d ) / RefLuma [ nCol2 - 1 ] ) < 0.001 )
 						str = "=";
 					else if ( d < RefLuma [ nCol2 - 1 ] )
@@ -1948,13 +1949,13 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 							return "Rpal";
 							break;
 						case HDTVa:
-							return "R709(75%)";
+							return m_displayMode==1?"R709(75%)":"R709";
 							break;
 						case CC6:
-							return "RCC6";
+							return m_displayMode==1?"RCC6":"R709";
 							break;
 						case HDTVb:
-							return "R709(OPT)";
+							return m_displayMode==1?"R709(OPT)":"R709";
 							break;
 						case CUSTOM:
 							return "RCUSTOM";
@@ -1995,13 +1996,13 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 							return "Gpal";
 							break;
 						case HDTVa:
-							return "G709(75%)";
+							return m_displayMode==1?"G709(75%)":"G709";
 							break;
 						case CC6:
-							return "GCC6";
+							return m_displayMode==1?"GCC6":"GCC6";
 							break;
 						case HDTVb:
-							return "G709(OPT)";
+							return m_displayMode==1?"G709(OPT)":"G709";
 							break;
 						case CUSTOM:
 							return "GCUSTOM";
@@ -2043,13 +2044,13 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 							return "Bpal";
 							break;
 						case HDTVa:
-							return "B709(75%)";
+							return m_displayMode==1?"B709(75%)":"B709";
 							break;
 						case CC6:
-							return "BCC6";
+							return m_displayMode==1?"B709(CC6)":"B709";
 							break;
 						case HDTVb:
-							return "B709(OPT)";
+							return m_displayMode==1?"B709(OPT)":"B709";
 							break;
 						case CUSTOM:
 							return "BCUSTOM";
@@ -2115,7 +2116,7 @@ void CMainView::UpdateGrid()
 		double			YWhite = -1.0;
 		double			YWhiteRefDoc = -1.0;
 		double			Gamma,Offset = 0.0;
-		COLORREF		clrSpecial1, clrSpecial2;
+		COLORREF		clrSpecial1=RGB(128,128,128), clrSpecial2=RGB(128,128,128);
 		CDataSetDoc *	pDataRef = GetDataRef();
 
 		GV_ITEM Item;
@@ -2202,7 +2203,8 @@ void CMainView::UpdateGrid()
 				 break;
 
 			case 2:
-				 YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
+				 YWhite = YWhiteGray;
+//				 YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
 				 nCount = GetDocument()->GetMeasure()->GetMeasurementsSize();
 				 if ( pDataRef && pDataRef->GetMeasure()->GetMeasurementsSize() != nCount )
 					 pDataRef = NULL;
@@ -2477,8 +2479,10 @@ void CMainView::UpdateGrid()
 				case 5:
 					 aColor = GetDocument()->GetMeasure()->GetRedSat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefSat(0,(double)j/(double)(nCount-1), true);
-    				 YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
-	    			 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
+//    				 YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
+//	    			 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
+					 YWhite = YWhiteGray;
+					 YWhiteRefDoc = YWhiteGray;
 
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetRedSat(j);
@@ -2487,8 +2491,10 @@ void CMainView::UpdateGrid()
 				case 6:
 					 aColor = GetDocument()->GetMeasure()->GetGreenSat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefSat(1,(double)j/(double)(nCount-1), true);
-    				 YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
-	    			 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
+//    				 YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
+//	    			 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
+					 YWhite = YWhiteGray;
+					 YWhiteRefDoc = YWhiteGray;
 
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetGreenSat(j);
@@ -2497,8 +2503,10 @@ void CMainView::UpdateGrid()
 				case 7:
 					 aColor = GetDocument()->GetMeasure()->GetBlueSat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefSat(2,(double)j/(double)(nCount-1), true);
-                     YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
-	    			 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
+//                     YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
+//	    			 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
+					 YWhite = YWhiteGray;
+					 YWhiteRefDoc = YWhiteGray;
 
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetBlueSat(j);
@@ -2507,8 +2515,10 @@ void CMainView::UpdateGrid()
 				case 8:
 					 aColor = GetDocument()->GetMeasure()->GetYellowSat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefSat(3,(double)j/(double)(nCount-1), true);
-    				 YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
-	    			 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
+//    				 YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
+//	    			 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
+					 YWhite = YWhiteGray;
+					 YWhiteRefDoc = YWhiteGray;
 
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetYellowSat(j);
@@ -2517,8 +2527,10 @@ void CMainView::UpdateGrid()
 				case 9:
 					 aColor = GetDocument()->GetMeasure()->GetCyanSat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefSat(4,(double)j/(double)(nCount-1), true);
-    				 YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
-	    			 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
+//    				 YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
+//	    			 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
+					 YWhite = YWhiteGray;
+					 YWhiteRefDoc = YWhiteGray;
 					 
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetCyanSat(j);
@@ -2527,25 +2539,29 @@ void CMainView::UpdateGrid()
 				case 10:
 					 aColor = GetDocument()->GetMeasure()->GetMagentaSat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefSat(5,(double)j/(double)(nCount-1), true);
-    				 YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
-	    			 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
+//    				 YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
+//	    			 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
+					 YWhite = YWhiteGray;
+					 YWhiteRefDoc = YWhiteGray;
 
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetMagentaSat(j);
 					 break;
 
 				case 11:
-					 double YWhiteMCD;
+//					 double YWhiteMCD;
+					 YWhite = YWhiteGray;
+					 YWhiteRefDoc = YWhiteGray;
 					 aColor = GetDocument()->GetMeasure()->GetCC24Sat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefCC24Sat(j);
-					 if ( GetDocument() -> GetMeasure () -> GetGray ( i - 1 ).isValid() )
-						 YWhiteMCD = GetDocument() -> GetMeasure () -> GetGray ( i - 1 ) [ 1 ];
-					 else
-					 YWhiteMCD = YWhiteOnOff;
-					 YWhite = (GetConfig()->m_CCMode==GCD?GetDocument()->GetMeasure()->GetCC24Sat(5).GetY():(GetConfig()->m_CCMode==CCSG)? GetDocument()->GetMeasure()->GetCC24Sat(0).GetY():YWhiteMCD);
-                     if (GetConfig()->m_CCMode==GCD) YWhiteMCD = YWhiteOnOff;
+//					 if ( GetDocument() -> GetMeasure () -> GetGray ( i - 1 ).isValid() )
+//						 YWhiteMCD = GetDocument() -> GetMeasure () -> GetGray ( i - 1 ) [ 1 ];
+//					 else
+//					 YWhiteMCD = YWhiteOnOff;
+//					 YWhite = (GetConfig()->m_CCMode==GCD?GetDocument()->GetMeasure()->GetCC24Sat(5).GetY():(GetConfig()->m_CCMode==CCSG)? GetDocument()->GetMeasure()->GetCC24Sat(0).GetY():YWhiteMCD);
+//                     if (GetConfig()->m_CCMode==GCD) YWhiteMCD = YWhiteOnOff;
 
-    				 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
+//    				 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetCC24Sat(j);
 					 break;

@@ -138,6 +138,33 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 			case 11:
 				centerXYZ =  pDoc->GetMeasure()->GetRefCC24Sat(minCol-1).GetXYZValue();
 				GenerateCC24Colors (GenColors, GetConfig()->m_CCMode);
+				if (GetConfig()->m_CCMode == MCD)
+				{
+					if (minCol >= 7)
+						minCol -= 6;
+					else
+						switch (minCol)
+					{
+						case 1:
+							minCol = 24;
+						break;
+						case 2:
+							minCol = 23;
+						break;
+						case 3:
+							minCol = 22;
+						break;
+						case 4:
+							minCol = 21;
+						break;
+						case 5:
+							minCol = 20;
+						break;
+						case 6:
+							minCol = 19;
+						break;
+					}
+				}
 				p1=GenColors[minCol-1][0] / 100.;
 				p2=GenColors[minCol-1][1] / 100.;
 				p3=GenColors[minCol-1][2] / 100.;

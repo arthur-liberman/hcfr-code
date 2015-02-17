@@ -621,12 +621,12 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	
 	if ( pDoc -> GetMeasure () -> GetOnOffWhite ().isValid() )
 		YWhite = pDoc -> GetMeasure () -> GetOnOffWhite () [ 1 ];
-	else 
-	{
+//	else 
+//	{
 		int i = pDoc -> GetMeasure () -> GetGrayScaleSize ();
 		if ( pDoc -> GetMeasure () -> GetGray ( i - 1 ).isValid() )
 			YWhite = pDoc -> GetMeasure () -> GetGray ( i - 1 ) [ 1 ];
-	}
+//	}
 
 	Msg.LoadString ( IDS_REDPRIMARY );
 	CCIEGraphPoint redPrimaryPoint(redPrimaryColor, YWhite, Msg, m_bCIEuv);
@@ -675,14 +675,14 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 
 		YWhiteRef = datarefRed[1]+datarefGreen[1]+datarefBlue[1];
 		
-		if ( pDataRef -> GetMeasure () -> GetOnOffWhite ().isValid() )
+//		if ( pDataRef -> GetMeasure () -> GetOnOffWhite ().isValid() )
 			YWhiteRef = pDataRef -> GetMeasure () -> GetOnOffWhite () [ 1 ];
-		else 
-		{
+//		else 
+//		{
 			int i = pDataRef -> GetMeasure () -> GetGrayScaleSize ();
 			if ( pDataRef -> GetMeasure () -> GetGray ( i - 1 ).isValid() )
 				YWhiteRef = pDataRef -> GetMeasure () -> GetGray ( i - 1 ) [ 1 ];
-		}
+//		}
 	}
 	
 	Msg.LoadString ( IDS_DATAREF_RED );
