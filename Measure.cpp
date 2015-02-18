@@ -85,7 +85,7 @@ CMeasure::CMeasure()
 	
 	for ( int i=0;i<m_cc24SatMeasureArray.GetSize();i++ )	m_cc24SatMeasureArray[i]=noDataColor;
 
-	m_OnOffBlack=m_OnOffWhite=noDataColor;
+	m_OnOffBlack=m_OnOffWhite=m_PrimeWhite=noDataColor;
 	m_AnsiBlack=m_AnsiWhite=noDataColor;
 	m_infoStr="";
 	
@@ -204,7 +204,7 @@ void CMeasure::Serialize(CArchive& ar)
 
 	if (ar.IsStoring())
 	{
-	    int version=8;
+	    int version=9;
 		ar << version;
 
 		ar << m_grayMeasureArray.GetSize();
@@ -266,6 +266,7 @@ void CMeasure::Serialize(CArchive& ar)
 		m_OnOffWhite.Serialize(ar);
 		m_AnsiBlack.Serialize(ar);
 		m_AnsiWhite.Serialize(ar);
+		m_PrimeWhite.Serialize(ar);
 
 		ar << m_infoStr;
 
@@ -276,13 +277,13 @@ void CMeasure::Serialize(CArchive& ar)
 	    int version;
 		ar >> version;
 
-		if ( version > 8 )
+		if ( version > 9 )
 			AfxThrowArchiveException ( CArchiveException::badSchema );
 
-		int size;
+		int size, gsize;
 
-		ar >> size;
-		m_grayMeasureArray.SetSize(size);
+		ar >> gsize;
+		m_grayMeasureArray.SetSize(gsize);
 		for(int i=0;i<m_grayMeasureArray.GetSize();i++)
 			m_grayMeasureArray[i].Serialize(ar);
 					
@@ -406,6 +407,13 @@ void CMeasure::Serialize(CArchive& ar)
 			ar >> m_bIREScaleMode;
 		else
 			m_bIREScaleMode = FALSE;
+		if ( version > 8 )
+			m_PrimeWhite.Serialize(ar);
+		else
+		{
+			m_PrimeWhite = m_OnOffWhite;
+			m_OnOffWhite = m_grayMeasureArray[gsize-1];
+		}
 	}
 	m_isModified = FALSE;
 }
@@ -798,6 +806,20 @@ BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator)
 			m_grayMeasureArray[i].ResetLuxValue ();
 	}
 
+	m_OnOffWhite = measuredColor[size-1];
+	m_OnOffBlack = measuredColor[0];
+
+	if ( bUseLuxValues )
+	{
+		m_OnOffWhite.SetLuxValue ( measuredLux[size-1] );
+		m_OnOffBlack.SetLuxValue ( measuredLux[0] );
+	}
+	else
+	{
+		m_OnOffWhite.ResetLuxValue ();
+		m_OnOffBlack.ResetLuxValue ();
+	}
+
 	m_isModified=TRUE;
 	return TRUE;
 }
@@ -1002,12 +1024,12 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 								};
 	if (GetColorReference().m_standard == HDTVb)
 	{
-			GenColors [ 0 ] = ColorRGBDisplay(60.73,42.92,42.92); 
-			GenColors [ 1 ] = ColorRGBDisplay(33.79,42.92,33.79); 
-			GenColors [ 2 ] = ColorRGBDisplay(45.21,45.21,61.19); 
-			GenColors [ 3 ] = ColorRGBDisplay(84.02,84.02,20.90);
-			GenColors [ 4 ] = ColorRGBDisplay(33.79,74.89,74.89);
-			GenColors [ 5 ] = ColorRGBDisplay(74.89,33.79,74.89);
+			GenColors [ 0 ] = ColorRGBDisplay(79.9087,10.0457,10.0457); 
+			GenColors [ 1 ] = ColorRGBDisplay(30.137,79.9087,30.137); 
+			GenColors [ 2 ] = ColorRGBDisplay(50.2283,50.2283,79.9087); 
+			GenColors [ 3 ] = ColorRGBDisplay(79.9087,79.9087,10.0457);
+			GenColors [ 4 ] = ColorRGBDisplay(10.0457,79.9087,79.9087);
+			GenColors [ 5 ] = ColorRGBDisplay(79.9087,10.0457,79.9087);
 	}
 	else if (GetColorReference().m_standard == HDTVa) //75%
 	{ 
@@ -1169,11 +1191,11 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 
 	if ( GetConfig () -> m_BWColorsToAdd > 0 )
 	{
-		m_OnOffWhite = measuredColor[size+6];                
+		m_PrimeWhite = measuredColor[size+6];                
 		if ( bUseLuxValues )
-			m_OnOffWhite.SetLuxValue ( measuredLux[size+6] );
+			m_PrimeWhite.SetLuxValue ( measuredLux[size+6] );
 		else
-			m_OnOffWhite.ResetLuxValue ();
+			m_PrimeWhite.ResetLuxValue ();
 	}
 		
 	m_isModified=TRUE;
@@ -3248,9 +3270,9 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
 
 	if ( GetColorReference().m_standard == HDTVb )
 	{
-			GenColors [ 0 ] = ColorRGBDisplay(60.73,42.92,42.92); 
-			GenColors [ 1 ] = ColorRGBDisplay(33.79,42.92,33.79); 
-			GenColors [ 2 ] = ColorRGBDisplay(45.21,45.21,61.19); 
+			GenColors [ 0 ] = ColorRGBDisplay(79.9087,10.0457,10.0457); 
+			GenColors [ 1 ] = ColorRGBDisplay(30.137,79.9087,30.137); 
+			GenColors [ 2 ] = ColorRGBDisplay(50.2283,50.2283,79.9087); 
 			GenColors [ 3 ] = ColorRGBDisplay(primaryIRELevel,primaryIRELevel,primaryIRELevel);
 			GenColors [ 4 ] = ColorRGBDisplay(0,0,0);
 	}
@@ -3368,15 +3390,15 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
 
 	if ( GetConfig () -> m_BWColorsToAdd > 0 )
 	{
-		m_OnOffWhite = measuredColor[3];                
+		m_PrimeWhite = measuredColor[3];                
 		if ( bUseLuxValues )
-			m_OnOffWhite.SetLuxValue ( measuredLux[3] );
+			m_PrimeWhite.SetLuxValue ( measuredLux[3] );
 		else
-			m_OnOffWhite.ResetLuxValue ();
+			m_PrimeWhite.ResetLuxValue ();
 	}
 	else
 	{
-		m_OnOffWhite=noDataColor;
+		m_PrimeWhite=noDataColor;
 	}
 
 	if ( GetConfig () -> m_BWColorsToAdd > 1 )
@@ -3460,12 +3482,12 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator)
 								};
 	if (GetColorReference().m_standard == HDTVb)
 	{
-			GenColors [ 0 ] = ColorRGBDisplay(60.73,42.92,42.92); 
-			GenColors [ 1 ] = ColorRGBDisplay(33.79,42.92,33.79); 
-			GenColors [ 2 ] = ColorRGBDisplay(45.21,45.21,61.19); 
-			GenColors [ 3 ] = ColorRGBDisplay(84.02,84.02,20.90);
-			GenColors [ 4 ] = ColorRGBDisplay(33.79,74.89,74.89);
-			GenColors [ 5 ] = ColorRGBDisplay(74.89,33.79,74.89);
+			GenColors [ 0 ] = ColorRGBDisplay(79.9087,10.0457,10.0457); 
+			GenColors [ 1 ] = ColorRGBDisplay(30.137,79.9087,30.137); 
+			GenColors [ 2 ] = ColorRGBDisplay(50.2283,50.2283,79.9087); 
+			GenColors [ 3 ] = ColorRGBDisplay(79.9087,79.9087,10.0457);
+			GenColors [ 4 ] = ColorRGBDisplay(10.0457,79.9087,79.9087);
+			GenColors [ 5 ] = ColorRGBDisplay(79.9087,10.0457,79.9087);
 			GenColors [ 6 ] = ColorRGBDisplay(IRELevel,IRELevel,IRELevel);
 			GenColors [ 7 ] = ColorRGBDisplay(0,0,0);
 	}
@@ -3595,15 +3617,15 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator)
 
 	if ( GetConfig () -> m_BWColorsToAdd > 0 )
 	{
-		m_OnOffWhite = measuredColor[6];                
+		m_PrimeWhite = measuredColor[6];                
 		if ( bUseLuxValues )
-			m_OnOffWhite.SetLuxValue ( measuredLux[6] );
+			m_PrimeWhite.SetLuxValue ( measuredLux[6] );
 		else
-			m_OnOffWhite.ResetLuxValue ();
+			m_PrimeWhite.ResetLuxValue ();
 	}
 	else
 	{
-		m_OnOffWhite=noDataColor;
+		m_PrimeWhite=noDataColor;
 	}
 
 	if ( GetConfig () -> m_BWColorsToAdd > 1 )
@@ -4316,6 +4338,8 @@ void CMeasure::ApplySensorAdjustmentMatrix(const Matrix& aMatrix)
 	
 	m_OnOffWhite.applyAdjustmentMatrix(aMatrix);
 
+	m_PrimeWhite.applyAdjustmentMatrix(aMatrix);
+
 	m_AnsiBlack.applyAdjustmentMatrix(aMatrix);
 	
 	m_AnsiWhite.applyAdjustmentMatrix(aMatrix);
@@ -4685,16 +4709,16 @@ BOOL CMeasure::ValidateBackgroundPrimaries ( BOOL bUseLuxValues, double * pLuxVa
 		}
 		if ( m_nBkMeasureStepCount >= 4 )
 		{
-			// Store reference white.
-			m_OnOffWhite = (*m_pBkMeasuredColor)[3];
+			// Store reference white for primaries
+			m_PrimeWhite = (*m_pBkMeasuredColor)[3];
 
 			if ( bUseLuxValues )
-				m_OnOffWhite.SetLuxValue ( pLuxValues[3] );
+				m_PrimeWhite.SetLuxValue ( pLuxValues[3] );
 			else
-				m_OnOffWhite.ResetLuxValue ();
+				m_PrimeWhite.ResetLuxValue ();
 		}
 		else
-			m_OnOffWhite = noDataColor;
+			m_PrimeWhite = noDataColor;
 
 		if ( m_nBkMeasureStepCount >= 5 )
 		{
@@ -4747,16 +4771,16 @@ BOOL CMeasure::ValidateBackgroundSecondaries ( BOOL bUseLuxValues, double * pLux
 
 		if ( m_nBkMeasureStepCount >= 7 )
 		{
-			// Store reference white.
-			m_OnOffWhite = (*m_pBkMeasuredColor)[6];
+			// Store reference white for primaries
+			m_PrimeWhite = (*m_pBkMeasuredColor)[6];
 
 			if ( bUseLuxValues )
-				m_OnOffWhite.SetLuxValue ( pLuxValues[6] );
+				m_PrimeWhite.SetLuxValue ( pLuxValues[6] );
 			else
-				m_OnOffWhite.ResetLuxValue ();
+				m_PrimeWhite.ResetLuxValue ();
 		}
 		else
-			m_OnOffWhite = noDataColor;
+			m_PrimeWhite = noDataColor;
 
 		if ( m_nBkMeasureStepCount >= 8 )
 		{
@@ -4816,17 +4840,17 @@ BOOL CMeasure::ValidateBackgroundGrayScaleAndColors ( BOOL bUseLuxValues, double
 				m_secondariesArray[i].ResetLuxValue ();
 		}
 
-		m_OnOffWhite = (*m_pBkMeasuredColor)[m_nBkMeasureStepCount-7];
+		m_PrimeWhite = (*m_pBkMeasuredColor)[m_nBkMeasureStepCount-7];
 		m_OnOffBlack = (*m_pBkMeasuredColor)[0];
 
 		if ( bUseLuxValues )
 		{
-			m_OnOffWhite.SetLuxValue ( pLuxValues[m_nBkMeasureStepCount-7] );
+			m_PrimeWhite.SetLuxValue ( pLuxValues[m_nBkMeasureStepCount-7] );
 			m_OnOffBlack.SetLuxValue ( pLuxValues[0] );
 		}
 		else
 		{
-			m_OnOffWhite.ResetLuxValue ();
+			m_PrimeWhite.ResetLuxValue ();
 			m_OnOffBlack.ResetLuxValue ();
 		}
 	}
@@ -5148,6 +5172,15 @@ CColor CMeasure::GetOnOffWhite() const
 	CColor clr;
 
 	clr = m_OnOffWhite; 
+
+	return clr;
+} 
+
+CColor CMeasure::GetPrimeWhite() const 
+{ 
+	CColor clr;
+
+	clr = m_PrimeWhite; 
 
 	return clr;
 } 

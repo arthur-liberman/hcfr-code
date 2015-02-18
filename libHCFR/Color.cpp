@@ -183,10 +183,10 @@ ColorxyY primariesCC6[3] ={	ColorxyY(0.3787, 0.3564), //some color check referen
 //								ColorxyY(0.2493, 0.2667),
 //								ColorxyY(0.3379, 0.4327)};
 
-//optimized
-ColorxyY primariesCC6a[3] ={	ColorxyY(0.377, 0.329), 
-								ColorxyY(0.310, 0.387),
-								ColorxyY(0.268, 0.256)};
+//optimized for plasma
+ColorxyY primariesCC6a[3] ={	ColorxyY(0.625, 0.330), 
+								ColorxyY(0.303, 0.533),
+								ColorxyY(0.245, 0.217)};
 
 /* The 75% saturation 75% amplitude and color checker xy locations are calculated 
 assuming gamma=2.22, starting with the follow triplets from the GCD disk, and then used as pseudo-primaries/secondaries
@@ -432,11 +432,11 @@ void CColorReference::UpdateSecondary ( ColorXYZ & secondary, const ColorXYZ& pr
 	{
     	aColor = ColorxyY ( x1 + k * dx1, y1 + k * dy1, prim1[2] + prim2[2] );
 	}
-	else //hdtvb
+	else //optimized
 	{
-		if (x1 <= 0.38 && x1 >= 0.37) aColor = ColorxyY(.412,.493,.6347);
-		if (x1 <= 0.311 && x1 >= 0.309) aColor = ColorxyY(.243,.329,.4363);
-		if (x1 <= 0.269 && x1 >= 0.267) aColor = ColorxyY(.319,.199,.2165);
+		if (x1 <= 0.626 && x1 >= 0.624) aColor = ColorxyY(0.418,0.502,0.5644);
+		if (x1 <= 0.304 && x1 >= 0.302) aColor = ColorxyY(0.226,0.329,0.4798);
+		if (x1 <= 0.246 && x1 >= 0.244) aColor = ColorxyY(0.321,0.157,0.1775);
 	}
 	secondary = ColorXYZ(aColor);
 }

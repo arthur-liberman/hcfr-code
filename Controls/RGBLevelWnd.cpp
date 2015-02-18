@@ -165,15 +165,11 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 			}
 		} //update reference
 		nCount = m_pDocument -> GetMeasure () -> GetGrayScaleSize ();
-		CColor white = m_pDocument -> GetMeasure () -> GetGray ( nCount - 1 );
-		if (m_displayMode == 1 && (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb) ) 
-			white = m_pDocument->GetMeasure()->GetOnOffWhite();
-//        if (!white.isValid() || !m_bLumaMode)
-//        {
-//    		int i = m_pDocument -> GetMeasure () -> GetGrayScaleSize ();
-//	    	if ( m_pDocument -> GetMeasure () -> GetGray ( i - 1 ).isValid() )
- //               white.SetY( m_pDocument -> GetMeasure () -> GetGray ( i - 1 ) [ 1 ]);
-//        }
+		CColor white = m_pDocument->GetMeasure()->GetOnOffWhite();
+		if (!white.isValid())
+			white = m_pDocument -> GetMeasure () -> GetGray ( nCount - 1 );
+		if (m_displayMode == 1) 
+			white = m_pDocument->GetMeasure()->GetPrimeWhite();
 		if (m_bLumaMode && GetConfig()->m_bDetectPrimaries && aReference.isValid())
 		{
             ColorXYZ aColor=m_pRefColor->GetXYZValue(), refColor=aReference.GetXYZValue() ;
@@ -287,10 +283,6 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
                            YWhite = m_pRefColor->GetY();
 			}
         }
-//        if ((g_pDataDocRunningThread || minCol <=0) && !m_bLumaMode )
-//        if ( !m_bLumaMode )
-//            m_dEValue = float(m_pRefColor->GetDeltaE(GetColorReference().GetWhite()));
-//        else
 			m_dEValue = aReference.isValid()?float(m_pRefColor->GetDeltaE(YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, !m_bLumaMode, GetConfig()->gw_Weight )):0 ;
     } 
 	else
@@ -346,7 +338,6 @@ void CRGBLevelWnd::OnPaint()
 	CRect drawRect=rect;
 	drawRect.DeflateRect(widthMargin,heightMargin);
 
-//	int barWidth = (drawRect.Width()-2*interBarMargin)/3.0;
 	int barWidth = int ((drawRect.Width()-2*interBarMargin)/4.0); //includes dE
 	int maxYValue = int  max(m_redValue,max(m_greenValue,m_blueValue));
 	CSize labelSize=pDC->GetTextExtent("100%");

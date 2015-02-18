@@ -201,19 +201,19 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 						nR = 173;
 						nG = 51;
 						nB = 51;
-				    m_clr = RGB(173,51,51);
+				    m_clr = RGB(nR,nG,nB);
 				break;
 				case CC6:
 						nR = 193;
 						nG = 150;
 						nB = 130;
-					m_clr = RGB(193,150,130);
+				    m_clr = RGB(nR,nG,nB);
 				break;
 				case HDTVb:
-						nR = 155;
-						nG = 109;
-						nB = 109;
-				  m_clr = RGB(155,109,109);
+						nR = 204;
+						nG = 27;
+						nB = 27;
+				    m_clr = RGB(nR,nG,nB);
 				break;
 				default:
 						nR = 255;
@@ -232,19 +232,19 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 						nR = 71;
 						nG = 186;
 						nB = 71;
-				    m_clr = RGB(71,186,71);
+				    m_clr = RGB(nR,nG,nB);
 				break;
 				case CC6:
 						nR = 94;
 						nG = 122;
 						nB = 156;
-					m_clr = RGB(94,122,156);
+				    m_clr = RGB(nR,nG,nB);
 				break;
 				case HDTVb:
-						nR = 86;
-						nG = 109;
-						nB = 86;
-				  m_clr = RGB(86,109,86);
+						nR = 77;
+						nG = 204;
+						nB = 77;
+				    m_clr = RGB(nR,nG,nB);
 				break;
 				default:
 						nR = 0;
@@ -263,19 +263,19 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 						nR = 49;
 						nG = 49;
 						nB = 128;
-				    m_clr = RGB(49,49,128);
+				    m_clr = RGB(nR,nG,nB);
 				break;
 				case CC6:
 						nR = 90;
 						nG = 107;
 						nB = 66;
-					m_clr = RGB(90,107,66);
+				    m_clr = RGB(nR,nG,nB);
 				break;
 				case HDTVb:
-						nR = 115;
-						nG = 115;
-						nB = 156;
-				  m_clr = RGB(115,115,156);
+						nR = 128;
+						nG = 128;
+						nB = 204;
+				    m_clr = RGB(nR,nG,nB);
 				break;
 				default:
 						nR = 0;
@@ -294,19 +294,19 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 						nR = 191;
 						nG = 191;
 						nB = 84;
-				    m_clr = RGB(191,191,84);
+				    m_clr = RGB(nR,nG,nB);
 				break;
 				case CC6:
 						nR = 75;
 						nG = 92;
 						nB = 163;
-					m_clr = RGB(75,92,163);
+				    m_clr = RGB(nR,nG,nB);
 				break;
 				case HDTVb:
-						nR = 214;
-						nG = 214;
-						nB = 51;
-				  m_clr = RGB(214,214,51);
+						nR = 204;
+						nG = 204;
+						nB = 26;
+				    m_clr = RGB(nR,nG,nB);
 				break;
 				default:
 						nR = 255;
@@ -325,19 +325,19 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 						nR = 92;
 						nG = 186;
 						nB = 186;
-				    m_clr = RGB(92,186,186);
+				    m_clr = RGB(nR,nG,nB);
 				break;
 				case CC6:
 						nR = 158;
 						nG = 186;
 						nB = 64;
-					m_clr = RGB(158,186,64);
+				    m_clr = RGB(nR,nG,nB);
 				break;
 				case HDTVb:
-						nR = 86;
-						nG = 191;
-						nB = 191;
-				  m_clr = RGB(86,191,191);
+						nR = 26;
+						nG = 204;
+						nB = 204;
+				    m_clr = RGB(nR,nG,nB);
 				break;
 				default:
 						nR = 0;
@@ -356,19 +356,19 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 						nR = 163;
 						nG = 75;
 						nB = 163;
-				    m_clr = RGB(163,75,163);
+				    m_clr = RGB(nR,nG,nB);
 				break;
 				case CC6:
 						nR = 229;
 						nG = 161;
 						nB = 45;
-					m_clr = RGB(229,161,45);
+				    m_clr = RGB(nR,nG,nB);
 				break;
 				case HDTVb:
-						nR = 191;
-						nG = 86;
-						nB = 191;
-				  m_clr = RGB(191,86,191);
+						nR = 204;
+						nG = 26;
+						nB = 204;
+				    m_clr = RGB(nR,nG,nB);
 				break;
 				default:
 						nR = 255;
@@ -387,19 +387,19 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 						nR = 255;
 						nG = 255;
 						nB = 255;
-				    m_clr = RGB(255,255,255);
+				    m_clr = RGB(nR,nG,nB);
 				break;
 				case CC6:
 						nR = 255;
 						nG = 255;
 						nB = 255;
-					m_clr = RGB(255,255,255);
+				    m_clr = RGB(nR,nG,nB);
 				break;
 				case HDTVb:
 						nR = 191;
 						nG = 191;
 						nB = 191;
-				  m_clr = RGB(191,191,191);
+				    m_clr = RGB(nR,nG,nB);
 				break;
 				default:
 						nR = 255;

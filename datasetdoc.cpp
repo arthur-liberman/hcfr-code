@@ -3091,12 +3091,19 @@ void CDataSetDoc::OnUpdateMeasureGrayscale(CCmdUI* pCmdUI)
 
 void CDataSetDoc::OnMeasurePrimaries() 
 {
-	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( _S(IDS_RUNPRIMARIES), "On measure", MB_ICONQUESTION | MB_YESNO ) )
+	int		nCount = GetMeasure () -> GetGrayScaleSize ();
+    bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
+	if (!m_YWhite)
+		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first so that color targets can be calculated.","No grayscale measures found!",MB_OK);
+	else
 	{
-		MeasurePrimaries();
+		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( _S(IDS_RUNPRIMARIES), "On measure", MB_ICONQUESTION | MB_YESNO ) )
+		{
+			MeasurePrimaries();
 		
-		SetSelectedColor ( noDataColor );
-		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+			SetSelectedColor ( noDataColor );
+			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+		}
 	}
 }
 
@@ -3108,12 +3115,19 @@ void CDataSetDoc::OnUpdateMeasurePrimaries(CCmdUI* pCmdUI)
 
 void CDataSetDoc::OnMeasureSecondaries() 
 {
-	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( _S(IDS_RUNSECONDARIES), "On measure", MB_ICONQUESTION | MB_YESNO ) )
+	int		nCount = GetMeasure () -> GetGrayScaleSize ();
+    bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
+	if (!m_YWhite)
+		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first so that color targets can be calculated.","No grayscale measures found!",MB_OK);
+	else
 	{
-		MeasureSecondaries();
+		if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( _S(IDS_RUNSECONDARIES), "On measure", MB_ICONQUESTION | MB_YESNO ) )
+		{
+			MeasureSecondaries();
 		
-		SetSelectedColor ( noDataColor );
-		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+			SetSelectedColor ( noDataColor );
+			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+		}
 	}
 }
 
@@ -3131,7 +3145,7 @@ void CDataSetDoc::OnMeasureNearblack()
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
 	if (!m_YWhite)
-		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first.","No grayscale measures found!",MB_OK);
+		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first so that color targets can be calculated.","No grayscale measures found!",MB_OK);
 	else
     {
     	MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -3161,7 +3175,7 @@ void CDataSetDoc::OnMeasureNearwhite()
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
 	if (!m_YWhite)
-		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first.","No grayscale measures found!",MB_OK);
+		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first so that color targets can be calculated.","No grayscale measures found!",MB_OK);
 	else
     {
     	MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -3192,7 +3206,7 @@ void CDataSetDoc::OnMeasureSatRed()
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
 	if (!m_YWhite)
-		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first.","No grayscale measures found!",MB_OK);
+		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first so that color targets can be calculated.","No grayscale measures found!",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -3223,7 +3237,7 @@ void CDataSetDoc::OnMeasureSatGreen()
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
 	if (!m_YWhite)
-		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first.","No grayscale measures found!",MB_OK);
+		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first so that color targets can be calculated.","No grayscale measures found!",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -3254,7 +3268,7 @@ void CDataSetDoc::OnMeasureSatBlue()
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
 	if (!m_YWhite)
-		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first.","No grayscale measures found!",MB_OK);
+		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first so that color targets can be calculated.","No grayscale measures found!",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -3285,7 +3299,7 @@ void CDataSetDoc::OnMeasureSatYellow()
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
 	if (!m_YWhite)
-		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first.","No grayscale measures found!",MB_OK);
+		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first so that color targets can be calculated.","No grayscale measures found!",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -3316,7 +3330,7 @@ void CDataSetDoc::OnMeasureSatCyan()
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
 	if (!m_YWhite)
-		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first.","No grayscale measures found!",MB_OK);
+		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first so that color targets can be calculated.","No grayscale measures found!",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -3347,7 +3361,7 @@ void CDataSetDoc::OnMeasureSatMagenta()
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
 	if (!m_YWhite)
-		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first.","No grayscale measures found!",MB_OK);
+		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first so that color targets can be calculated.","No grayscale measures found!",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -3375,7 +3389,7 @@ void CDataSetDoc::OnMeasureSatCC24()
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
 	if (!m_YWhite)
-		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first.","No grayscale measures found!",MB_OK);
+		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first so that color targets can be calculated.","No grayscale measures found!",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -3456,7 +3470,7 @@ void CDataSetDoc::OnMeasureSatAll()
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
 	if (!m_YWhite)
-		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first.","No grayscale measures found!",MB_OK);
+		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first so that color targets can be calculated.","No grayscale measures found!",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -3513,7 +3527,7 @@ void CDataSetDoc::OnMeasureSatPrimaries()
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
 	if (!m_YWhite)
-		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first.","No grayscale measures found!",MB_OK);
+		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first so that color targets can be calculated.","No grayscale measures found!",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -3539,7 +3553,7 @@ void CDataSetDoc::OnMeasureSatPrimariesSecondaries()
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
 	if (!m_YWhite)
-		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first.","No grayscale measures found!",MB_OK);
+		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first so that color targets can be calculated.","No grayscale measures found!",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );

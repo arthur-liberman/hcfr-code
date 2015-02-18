@@ -62,6 +62,7 @@ protected:
 	CArray<CColor,CColor> m_measurementsArray;
 	CColor m_OnOffBlack;
 	CColor m_OnOffWhite;
+	CColor m_PrimeWhite;
 	CColor m_AnsiBlack;
 	CColor m_AnsiWhite;
 	CArray<CColor,CColor> m_nearBlackMeasureArray;
@@ -175,8 +176,10 @@ public:
 
 	CColor GetOnOffBlack() const;
 	CColor GetOnOffWhite() const;
+	CColor GetPrimeWhite() const; //white reference for pseudo-color spaces
 	void SetOnOffBlack(const CColor & aColor) { m_OnOffBlack=aColor; m_isModified=TRUE; }
 	void SetOnOffWhite(const CColor & aColor) { m_OnOffWhite=aColor; m_isModified=TRUE; }
+	void SetPrimeWhite(const CColor & aColor) { m_PrimeWhite=aColor; m_isModified=TRUE; }
 
 	BOOL MeasureContrast(CSensor *pSensor, CGenerator *pGenerator);
 	double GetOnOffContrast ();

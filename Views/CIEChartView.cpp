@@ -621,12 +621,12 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	
 	if ( pDoc -> GetMeasure () -> GetOnOffWhite ().isValid() )
 		YWhite = pDoc -> GetMeasure () -> GetOnOffWhite () [ 1 ];
-//	else 
-//	{
+	else 
+	{
 		int i = pDoc -> GetMeasure () -> GetGrayScaleSize ();
 		if ( pDoc -> GetMeasure () -> GetGray ( i - 1 ).isValid() )
 			YWhite = pDoc -> GetMeasure () -> GetGray ( i - 1 ) [ 1 ];
-//	}
+	}
 
 	Msg.LoadString ( IDS_REDPRIMARY );
 	CCIEGraphPoint redPrimaryPoint(redPrimaryColor, YWhite, Msg, m_bCIEuv);
@@ -675,14 +675,14 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 
 		YWhiteRef = datarefRed[1]+datarefGreen[1]+datarefBlue[1];
 		
-//		if ( pDataRef -> GetMeasure () -> GetOnOffWhite ().isValid() )
+		if ( pDataRef -> GetMeasure () -> GetOnOffWhite ().isValid() )
 			YWhiteRef = pDataRef -> GetMeasure () -> GetOnOffWhite () [ 1 ];
-//		else 
-//		{
+		else 
+		{
 			int i = pDataRef -> GetMeasure () -> GetGrayScaleSize ();
 			if ( pDataRef -> GetMeasure () -> GetGray ( i - 1 ).isValid() )
 				YWhiteRef = pDataRef -> GetMeasure () -> GetGray ( i - 1 ) [ 1 ];
-//		}
+		}
 	}
 	
 	Msg.LoadString ( IDS_DATAREF_RED );
@@ -711,13 +711,30 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	if(m_doDisplayBackground && hasPrimaries)
 	{
 		CBrush gamutBrush;
+		CPoint ptVertex[6];
 		gamutBrush.CreatePatternBrush(&m_gamutBitmap);
 		CBrush *pOldBrush=pDC->SelectObject(&gamutBrush);
-		CPoint ptVertex[]={ redPrimaryPoint.GetGraphPoint(rect),
-							greenPrimaryPoint.GetGraphPoint(rect),
-							bluePrimaryPoint.GetGraphPoint(rect) };
+		if (hasSecondaries)
+		{
+			ptVertex[0] = redPrimaryPoint.GetGraphPoint(rect);
+			ptVertex[1] = yellowSecondaryPoint.GetGraphPoint(rect);
+			ptVertex[2] = greenPrimaryPoint.GetGraphPoint(rect);
+			ptVertex[3] = cyanSecondaryPoint.GetGraphPoint(rect);
+			ptVertex[4] = bluePrimaryPoint.GetGraphPoint(rect);
+			ptVertex[5] = magentaSecondaryPoint.GetGraphPoint(rect);
+		}
+		else
+		{
+			ptVertex[0] = redPrimaryPoint.GetGraphPoint(rect);
+			ptVertex[1] = redPrimaryPoint.GetGraphPoint(rect);
+			ptVertex[2] = greenPrimaryPoint.GetGraphPoint(rect);
+			ptVertex[3] = greenPrimaryPoint.GetGraphPoint(rect);
+			ptVertex[4] = bluePrimaryPoint.GetGraphPoint(rect);
+			ptVertex[5] = bluePrimaryPoint.GetGraphPoint(rect);
+		}
+
 		CRgn triangleRgn;
-		triangleRgn.CreatePolygonRgn(ptVertex,3,WINDING);
+		triangleRgn.CreatePolygonRgn(ptVertex,6,WINDING);
 		pDC->PaintRgn(&triangleRgn);
 		pDC->SelectObject(pOldBrush);
 	}
@@ -735,8 +752,11 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 		pDC->SetROP2(R2_COPYPEN);
 
 	pDC->MoveTo(refRedPrimaryPoint.GetGraphPoint(rect));
+	pDC->LineTo(refYellowSecondaryPoint.GetGraphPoint(rect));
 	pDC->LineTo(refGreenPrimaryPoint.GetGraphPoint(rect));
+	pDC->LineTo(refCyanSecondaryPoint.GetGraphPoint(rect));
 	pDC->LineTo(refBluePrimaryPoint.GetGraphPoint(rect));
+	pDC->LineTo(refMagentaSecondaryPoint.GetGraphPoint(rect));
 	pDC->LineTo(refRedPrimaryPoint.GetGraphPoint(rect));
 
 	pDC->SelectObject(pOldPen);
@@ -763,10 +783,23 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	// Draw gamut triangle
 	if(hasPrimaries)
 	{
-		pDC->MoveTo(redPrimaryPoint.GetGraphPoint(rect));
-		pDC->LineTo(greenPrimaryPoint.GetGraphPoint(rect));
-		pDC->LineTo(bluePrimaryPoint.GetGraphPoint(rect));
-		pDC->LineTo(redPrimaryPoint.GetGraphPoint(rect));
+		if (hasSecondaries)
+		{
+			pDC->MoveTo(redPrimaryPoint.GetGraphPoint(rect));
+			pDC->LineTo(yellowSecondaryPoint.GetGraphPoint(rect));
+			pDC->LineTo(greenPrimaryPoint.GetGraphPoint(rect));
+			pDC->LineTo(cyanSecondaryPoint.GetGraphPoint(rect));
+			pDC->LineTo(bluePrimaryPoint.GetGraphPoint(rect));
+			pDC->LineTo(magentaSecondaryPoint.GetGraphPoint(rect));
+			pDC->LineTo(redPrimaryPoint.GetGraphPoint(rect));
+		}
+		else
+		{
+			pDC->MoveTo(redPrimaryPoint.GetGraphPoint(rect));
+			pDC->LineTo(greenPrimaryPoint.GetGraphPoint(rect));
+			pDC->LineTo(bluePrimaryPoint.GetGraphPoint(rect));
+			pDC->LineTo(redPrimaryPoint.GetGraphPoint(rect));
+		}
 	}
 	pDC->SelectObject(pOldPen);
 

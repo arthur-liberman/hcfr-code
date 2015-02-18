@@ -308,7 +308,7 @@ public:
 				luma = 0.214;
 				break;
 			case HDTVb:
-				luma = 0.1935;
+				luma = 0.1341;
 				break;
 			default:
 				luma = RGBtoXYZMatrix(1,0); 
@@ -325,7 +325,7 @@ public:
 				luma = 0.709;
 				break;
 			case HDTVb:
-				luma = 0.1374;
+				luma = 0.4545;
 				break;
 			default:
 				luma = RGBtoXYZMatrix(1,1); 
@@ -342,7 +342,7 @@ public:
 				luma = 0.075;
 				break;
 			case HDTVb:
-				luma = 0.1863;
+				luma = 0.2450;
 				break;
 			default:
 				luma = RGBtoXYZMatrix(1,2); 
@@ -359,7 +359,7 @@ public:
 				luma = 0.939;
 				break;
 			case HDTVb:
-				luma = 0.6347;
+				luma = 0.5644;
 				break;
 			default:
 				luma = RGBtoXYZMatrix(1,1)+RGBtoXYZMatrix(1,0); 
@@ -376,7 +376,7 @@ public:
 				luma = 0.787;
 				break;
 			case HDTVb:
-				luma = 0.4363;
+				luma = 0.4798;
 				break;
 			default:
 				luma = RGBtoXYZMatrix(1,1)+RGBtoXYZMatrix(1,2); 
@@ -393,7 +393,7 @@ public:
 				luma = 0.289;
 				break;
 			case HDTVb:
-				luma = 0.2165;
+				luma = 0.1775;
 				break;
 			default:
 				luma = RGBtoXYZMatrix(1,0)+RGBtoXYZMatrix(1,2); 
