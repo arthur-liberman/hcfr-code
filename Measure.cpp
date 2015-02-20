@@ -266,8 +266,9 @@ void CMeasure::Serialize(CArchive& ar)
 		m_OnOffWhite.Serialize(ar);
 		m_AnsiBlack.Serialize(ar);
 		m_AnsiWhite.Serialize(ar);
+//version 9
 		m_PrimeWhite.Serialize(ar);
-
+//
 		ar << m_infoStr;
 
 		ar << m_bIREScaleMode;
@@ -277,7 +278,7 @@ void CMeasure::Serialize(CArchive& ar)
 	    int version;
 		ar >> version;
 
-		if ( version > 9 )
+		if ( version > 9)
 			AfxThrowArchiveException ( CArchiveException::badSchema );
 
 		int size, gsize;
@@ -342,7 +343,7 @@ void CMeasure::Serialize(CArchive& ar)
 			for(int i=0;i<m_magentaSatMeasureArray.GetSize();i++)
 				m_magentaSatMeasureArray[i].Serialize(ar);
 
-			if ( version == 8)
+			if ( version >= 8)
 			{
 				ar >> size;
 				m_cc24SatMeasureArray.SetSize(1000);
@@ -390,6 +391,13 @@ void CMeasure::Serialize(CArchive& ar)
 		m_OnOffWhite.Serialize(ar);
 		m_AnsiBlack.Serialize(ar);
 		m_AnsiWhite.Serialize(ar);
+		if ( version > 8 )
+			m_PrimeWhite.Serialize(ar);
+		else
+		{
+			m_PrimeWhite = m_OnOffWhite;
+			m_OnOffWhite = m_grayMeasureArray[gsize-1];
+		}
 
 		ar >> m_infoStr;
 
@@ -407,13 +415,8 @@ void CMeasure::Serialize(CArchive& ar)
 			ar >> m_bIREScaleMode;
 		else
 			m_bIREScaleMode = FALSE;
-		if ( version > 8 )
-			m_PrimeWhite.Serialize(ar);
-		else
-		{
-			m_PrimeWhite = m_OnOffWhite;
-			m_OnOffWhite = m_grayMeasureArray[gsize-1];
-		}
+
+
 	}
 	m_isModified = FALSE;
 }
