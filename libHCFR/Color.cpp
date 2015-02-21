@@ -382,15 +382,15 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
 
 	// Adjust reference primary colors Y values relatively to white Y
 	ColorxyY aColor(redPrimary);
-	aColor[2] = GetRedReferenceLuma ();
+	aColor[2] = GetRedReferenceLuma (false);
 	redPrimary = ColorXYZ(aColor);
 
 	aColor = ColorxyY(greenPrimary);
-	aColor[2] = GetGreenReferenceLuma ();
+	aColor[2] = GetGreenReferenceLuma (false);
     greenPrimary = ColorXYZ(aColor);
 
 	aColor = ColorxyY(bluePrimary);
-	aColor[2] = GetBlueReferenceLuma ();
+	aColor[2] = GetBlueReferenceLuma (false);
 	bluePrimary = ColorXYZ(aColor);
 
     UpdateSecondary ( yellowSecondary, redPrimary, greenPrimary, bluePrimary );
@@ -1893,9 +1893,9 @@ void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDi
 	int m_cRef=colorReference.m_standard;
 	CColorReference cRef=((m_cRef==HDTVa  || m_cRef==HDTVb )?CColorReference(HDTV,D65,2.2):colorReference);
     // Retrieve color luminance coefficients matching actual reference
-    const double KR = cRef.GetRedReferenceLuma ();  
-    const double KG = cRef.GetGreenReferenceLuma ();
-    const double KB = cRef.GetBlueReferenceLuma (); 
+    const double KR = cRef.GetRedReferenceLuma (true);  
+    const double KG = cRef.GetGreenReferenceLuma (true);
+    const double KB = cRef.GetBlueReferenceLuma (true); 
     double K = ( bRed ? KR : 0.0 ) + ( bGreen ? KG : 0.0 ) + ( bBlue ? KB : 0.0 );
 
     // Compute vector between neutral gray and saturated color in CIExy space

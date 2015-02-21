@@ -5372,7 +5372,6 @@ CColor CMeasure::GetRefSat(int i, double sat_percent, bool special) const
 {
 	CColor	refColor;
 	ColorxyY	refWhite(GetColorReference().GetWhite());
-	
 	double	x, y;
 	double	xstart = refWhite[0];
 	double	ystart = refWhite[1];
@@ -5401,28 +5400,28 @@ CColor CMeasure::GetRefSat(int i, double sat_percent, bool special) const
 			refColor = pRef[i];
 		else
 			refColor = sRef[i-3];
+	}
 		switch (i)
 		{
 		case 0:
-			YLuma = CColorReference(HDTV).GetRedReferenceLuma();
+			YLuma = CColorReference(special?HDTV:GetColorReference()).GetRedReferenceLuma(true);
 			break;
 		case 1:
-			YLuma = CColorReference(HDTV).GetGreenReferenceLuma();
+			YLuma = CColorReference(special?HDTV:GetColorReference()).GetGreenReferenceLuma(true);
 			break;
 		case 2:
-			YLuma = CColorReference(HDTV).GetBlueReferenceLuma();
+			YLuma = CColorReference(special?HDTV:GetColorReference()).GetBlueReferenceLuma(true);
 			break;
 		case 3:
-			YLuma = CColorReference(HDTV).GetYellowReferenceLuma();
+			YLuma = CColorReference(special?HDTV:GetColorReference()).GetYellowReferenceLuma();
 			break;
 		case 4:
-			YLuma = CColorReference(HDTV).GetCyanReferenceLuma();
+			YLuma = CColorReference(special?HDTV:GetColorReference()).GetCyanReferenceLuma();
 			break;
 		case 5:
-			YLuma = CColorReference(HDTV).GetMagentaReferenceLuma();
+			YLuma = CColorReference(special?HDTV:GetColorReference()).GetMagentaReferenceLuma();
 			break;
 		}
-	}
 	
 	double	xend = refColor.GetxyYValue()[0];
 	double	yend = refColor.GetxyYValue()[1];

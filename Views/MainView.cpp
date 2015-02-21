@@ -1830,7 +1830,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						RefLuma [ 5 ] = GetDocument()->GetMeasure()->GetRefSecondary(2).GetLuminance();
 						break ;
 					case 5:
-                        satcolor = GetDocument()->GetMeasure()->GetRefSat(0, sat, true);
+						satcolor = GetDocument()->GetMeasure()->GetRefSat(0, sat, (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
                         RefLuma [nCol - 1] = satcolor.GetLuminance();
                         if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
                             RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),log(GetBT1886(pow(RefLuma [ nCol-1 ],1. / 2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(RefLuma [ nCol-1 ],1. / 2.22)));
@@ -1838,7 +1838,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
     						RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 						break;
 					case 6:
-                        satcolor = GetDocument()->GetMeasure()->GetRefSat(1, sat, true);
+                        satcolor = GetDocument()->GetMeasure()->GetRefSat(1, sat, (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
                         RefLuma [nCol - 1] = satcolor.GetLuminance();
                         if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
                             RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),log(GetBT1886(pow(RefLuma [ nCol-1 ],1. / 2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(RefLuma [ nCol-1 ],1. / 2.22)));
@@ -1846,7 +1846,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
     						RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 						break;
 					case 7:                                                
-                        satcolor = GetDocument()->GetMeasure()->GetRefSat(2, sat, true);
+                        satcolor = GetDocument()->GetMeasure()->GetRefSat(2, sat, (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
                         RefLuma [nCol - 1] = satcolor.GetLuminance();
                         if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
                             RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),log(GetBT1886(pow(RefLuma [ nCol-1 ],1. / 2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(RefLuma [ nCol-1 ],1. / 2.22)));
@@ -1854,7 +1854,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
     						RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 						break;
 					case 8:
-                        satcolor = GetDocument()->GetMeasure()->GetRefSat(3, sat, true);
+                        satcolor = GetDocument()->GetMeasure()->GetRefSat(3, sat, (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
                         RefLuma [nCol - 1] = satcolor.GetLuminance();
                         if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
                             RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),log(GetBT1886(pow(RefLuma [ nCol-1 ],1. / 2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(RefLuma [ nCol-1 ],1. / 2.22)));
@@ -1862,7 +1862,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
     						RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 						break;
 					case 9:
-                        satcolor = GetDocument()->GetMeasure()->GetRefSat(4, sat, true);
+                        satcolor = GetDocument()->GetMeasure()->GetRefSat(4, sat, (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
                         RefLuma [nCol - 1] = satcolor.GetLuminance();
                         if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
                             RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),log(GetBT1886(pow(RefLuma [ nCol-1 ],1. / 2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(RefLuma [ nCol-1 ],1. / 2.22)));
@@ -1870,7 +1870,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
     						RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 						break;
 					case 10:
-                        satcolor = GetDocument()->GetMeasure()->GetRefSat(5, sat, true);
+                        satcolor = GetDocument()->GetMeasure()->GetRefSat(5, sat, (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
                         RefLuma [nCol - 1] = satcolor.GetLuminance();
                         if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
                             RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),log(GetBT1886(pow(RefLuma [ nCol-1 ],1. / 2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(RefLuma [ nCol-1 ],1. / 2.22)));
@@ -2478,7 +2478,7 @@ void CMainView::UpdateGrid()
 
 				case 5:
 					 aColor = GetDocument()->GetMeasure()->GetRedSat(j);
-					 refColor = GetDocument()->GetMeasure()->GetRefSat(0,(double)j/(double)(nCount-1), true);
+					 refColor = GetDocument()->GetMeasure()->GetRefSat(0,(double)j/(double)(nCount-1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
 
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetRedSat(j);
@@ -2486,7 +2486,7 @@ void CMainView::UpdateGrid()
 
 				case 6:
 					 aColor = GetDocument()->GetMeasure()->GetGreenSat(j);
-					 refColor = GetDocument()->GetMeasure()->GetRefSat(1,(double)j/(double)(nCount-1), true);
+					 refColor = GetDocument()->GetMeasure()->GetRefSat(1,(double)j/(double)(nCount-1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
 
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetGreenSat(j);
@@ -2494,7 +2494,7 @@ void CMainView::UpdateGrid()
 
 				case 7:
 					 aColor = GetDocument()->GetMeasure()->GetBlueSat(j);
-					 refColor = GetDocument()->GetMeasure()->GetRefSat(2,(double)j/(double)(nCount-1), true);
+					 refColor = GetDocument()->GetMeasure()->GetRefSat(2,(double)j/(double)(nCount-1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
 
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetBlueSat(j);
@@ -2502,7 +2502,7 @@ void CMainView::UpdateGrid()
 
 				case 8:
 					 aColor = GetDocument()->GetMeasure()->GetYellowSat(j);
-					 refColor = GetDocument()->GetMeasure()->GetRefSat(3,(double)j/(double)(nCount-1), true);
+					 refColor = GetDocument()->GetMeasure()->GetRefSat(3,(double)j/(double)(nCount-1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
 
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetYellowSat(j);
@@ -2510,7 +2510,7 @@ void CMainView::UpdateGrid()
 
 				case 9:
 					 aColor = GetDocument()->GetMeasure()->GetCyanSat(j);
-					 refColor = GetDocument()->GetMeasure()->GetRefSat(4,(double)j/(double)(nCount-1), true);
+					 refColor = GetDocument()->GetMeasure()->GetRefSat(4,(double)j/(double)(nCount-1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
 					 
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetCyanSat(j);
@@ -2518,7 +2518,7 @@ void CMainView::UpdateGrid()
 
 				case 10:
 					 aColor = GetDocument()->GetMeasure()->GetMagentaSat(j);
-					 refColor = GetDocument()->GetMeasure()->GetRefSat(5,(double)j/(double)(nCount-1), true);
+					 refColor = GetDocument()->GetMeasure()->GetRefSat(5,(double)j/(double)(nCount-1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
 
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetMagentaSat(j);

@@ -100,32 +100,32 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 			else if (m_displayMode == 5)
 			{
 				m_bLumaMode = TRUE;
-				aReference = m_pDocument->GetMeasure()->GetRefSat(0, double(minCol-1) / double(nSize -1), true);
+				aReference = m_pDocument->GetMeasure()->GetRefSat(0, double(minCol-1) / double(nSize -1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
 			}
 			else if (m_displayMode == 6)
 			{
 				m_bLumaMode = TRUE;
-				aReference = m_pDocument->GetMeasure()->GetRefSat(1, double(minCol-1) / double(nSize -1), true);
+				aReference = m_pDocument->GetMeasure()->GetRefSat(1, double(minCol-1) / double(nSize -1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
 			}
 			else if (m_displayMode == 7)
 			{
 				m_bLumaMode = TRUE;
-				aReference = m_pDocument->GetMeasure()->GetRefSat(2, double(minCol-1) / double(nSize -1), true);
+				aReference = m_pDocument->GetMeasure()->GetRefSat(2, double(minCol-1) / double(nSize -1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
 			}
 			else if (m_displayMode == 8)
 			{
 				m_bLumaMode = TRUE;
-				aReference = m_pDocument->GetMeasure()->GetRefSat(3, double(minCol-1) / double(nSize -1), true);
+				aReference = m_pDocument->GetMeasure()->GetRefSat(3, double(minCol-1) / double(nSize -1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
 			}
 			else if (m_displayMode == 9)
 			{
 				m_bLumaMode = TRUE;
-				aReference = m_pDocument->GetMeasure()->GetRefSat(4, double(minCol-1) / double(nSize -1), true);
+				aReference = m_pDocument->GetMeasure()->GetRefSat(4, double(minCol-1) / double(nSize -1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
 			}
 			else if (m_displayMode == 10)
 			{
 				m_bLumaMode = TRUE;
-				aReference = m_pDocument->GetMeasure()->GetRefSat(5, double(minCol-1) / double(nSize -1), true);
+				aReference = m_pDocument->GetMeasure()->GetRefSat(5, double(minCol-1) / double(nSize -1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
 			}
 			else if ( m_displayMode == 1 && minCol == 1 )
 			{

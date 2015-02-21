@@ -299,7 +299,7 @@ public:
 	//standard 3 added 75% of rec709 colorspace to be used with 75% saturation patterns so ref luminance is the same as full colorspace
 	//standard 5 added a set of 6 color checker patterns
 
-	double GetRedReferenceLuma () const
+	double GetRedReferenceLuma (bool sats) const
 	{ 
 		double luma;
 		switch(m_standard)
@@ -308,7 +308,7 @@ public:
 				luma = 0.214;
 				break;
 			case HDTVb:
-				luma = 0.1341;
+				luma = sats?0.214:0.1341;
 				break;
 			default:
 				luma = RGBtoXYZMatrix(1,0); 
@@ -316,7 +316,7 @@ public:
 		}
 		return luma;
 	}
-	double GetGreenReferenceLuma () const
+	double GetGreenReferenceLuma (bool sats) const
 	{ 
 		double luma;
 		switch(m_standard)
@@ -325,7 +325,7 @@ public:
 				luma = 0.709;
 				break;
 			case HDTVb:
-				luma = 0.4545;
+				luma = sats?0.709:0.4545;
 				break;
 			default:
 				luma = RGBtoXYZMatrix(1,1); 
@@ -333,7 +333,7 @@ public:
 		}
 		return luma;
 	}
-	double GetBlueReferenceLuma () const
+	double GetBlueReferenceLuma (bool sats) const
 	{ 
 		double luma;
 		switch(m_standard)
@@ -342,7 +342,7 @@ public:
 				luma = 0.075;
 				break;
 			case HDTVb:
-				luma = 0.2450;
+				luma = sats?0.075:0.2450;
 				break;
 			default:
 				luma = RGBtoXYZMatrix(1,2); 
@@ -359,7 +359,7 @@ public:
 				luma = 0.939;
 				break;
 			case HDTVb:
-				luma = 0.5644;
+				luma = 0.939;
 				break;
 			default:
 				luma = RGBtoXYZMatrix(1,1)+RGBtoXYZMatrix(1,0); 
@@ -376,7 +376,7 @@ public:
 				luma = 0.787;
 				break;
 			case HDTVb:
-				luma = 0.4798;
+				luma = 0.787;
 				break;
 			default:
 				luma = RGBtoXYZMatrix(1,1)+RGBtoXYZMatrix(1,2); 
@@ -393,7 +393,7 @@ public:
 				luma = 0.289;
 				break;
 			case HDTVb:
-				luma = 0.1775;
+				luma = 0.289;
 				break;
 			default:
 				luma = RGBtoXYZMatrix(1,0)+RGBtoXYZMatrix(1,2); 
