@@ -44,7 +44,7 @@ typedef struct {
 #define RSPL_NOFLAGS 0
 
 struct _rspl {
-
+	
   /* Private: */
 	int nig;		/* number in interpolation grid */
 	double gl,gh,gw;/* Interpolation grid scale low, high, grid cell width */

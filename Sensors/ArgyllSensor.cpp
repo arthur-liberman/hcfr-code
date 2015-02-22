@@ -224,7 +224,7 @@ void CArgyllSensor::SetPropertiesSheetValues()
     m_ArgyllSensorPropertiesPage.m_DebugMode=m_debugMode;
     m_ArgyllSensorPropertiesPage.m_HiResCheckBoxEnabled = m_meter->doesSupportHiRes();
     m_ArgyllSensorPropertiesPage.m_obTypeEnabled = (m_meter->doesMeterSupportSpectralSamples() || !m_meter->isColorimeter());
-    m_ArgyllSensorPropertiesPage.m_intTimeEnabled = (m_meter->getMeterName() == "Xrite i1 DisplayPro, ColorMunki Display");
+    m_ArgyllSensorPropertiesPage.m_intTimeEnabled = (m_meter->getMeterName() == "X-Rite i1 DisplayPro, ColorMunki Display");
     m_ArgyllSensorPropertiesPage.m_HiRes=m_HiRes;
     m_ArgyllSensorPropertiesPage.m_Adapt=m_Adapt;
     m_ArgyllSensorPropertiesPage.m_MeterName = m_meter->getMeterName().c_str();
@@ -314,7 +314,7 @@ BOOL CArgyllSensor::Init( BOOL bForSimultaneousMeasures )
         if (m_meter->getReadingType() != m_ReadingType)
         {
             char s1 [128];
-            sprintf(s1, "Reading mode not available, defaulting to %s",m_meter->getReadingType()==0?"DISPLAY":(m_meter->getReadingType()==1?"PROJECTOR":"AMBIENT"));
+            sprintf(s1, "Reading mode not available, defaulting to %s",m_meter->getReadingType()==0?"DISPLAY":(m_meter->getReadingType()==1?"TELEPHOTO":"AMBIENT"));
             GetColorApp()->InMeasureMessageBox( s1, "Argyll Meter set-up", MB_OK);
             m_ReadingType = m_meter->getReadingType();
         }   

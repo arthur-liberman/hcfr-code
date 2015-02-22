@@ -49,7 +49,7 @@
 		$XDG_DATA_HOME
 		$HOME/.local/share
 
-		$XDG_CONF_HOME
+		$XDG_CONFIG_HOME
 		$HOME/.config
 
 		$XDG_CACHE_HOME
@@ -58,14 +58,14 @@
 		$XDG_DATA_DIRS
 		/usr/local/share:/usr/share
 
-		$XDG_CONF_DIRS
+		$XDG_CONFIG_DIRS
 		/etc/xdg
 
 	OS X:
 		$XDG_DATA_HOME
 		$HOME/Library/Application Support
 
-		$XDG_CONF_HOME
+		$XDG_CONFIG_HOME
 		$HOME/Library/Preferences
 
 		$XDG_CACHE_HOME
@@ -74,7 +74,7 @@
 		$XDG_DATA_DIRS
 		/Library/Application Support
 
-		$XDG_CONF_DIRS
+		$XDG_CONFIG_DIRS
 		/Library/Preferences
 
 	MSWin:
@@ -82,7 +82,7 @@
 		$APPDATA
 		$HOME/.local/share
 
-		$XDG_CONF_HOME
+		$XDG_CONFIG_HOME
 		$APPDATA
 		$HOME/.config
 
@@ -93,7 +93,7 @@
 		$XDG_DATA_DIRS
 		$ALLUSERSPROFILE
 
-		$XDG_CONF_DIRS
+		$XDG_CONFIG_DIRS
 		$ALLUSERSPROFILE
  */
 
@@ -118,6 +118,7 @@
 #include "conv.h"
 #include "aglob.h"
 #include "xdg_bds.h"
+
 
 #undef DEBUG
 
@@ -345,7 +346,7 @@ int xdg_bds(
 			}
 		} else if (st == xdg_conf) {
 			char *xdg, *home;
-			if ((xdg = getenv("XDG_CONF_HOME")) != NULL) {
+			if ((xdg = getenv("XDG_CONFIG_HOME")) != NULL) {
 				if ((path = cappend(path, xdg)) == NULL) {
 					if (er != NULL) *er = xdg_alloc;
 					a1loge(g_log, 1, "xdg_bds: malloc failed\n"); 
@@ -489,7 +490,7 @@ int xdg_bds(
 				}
 			}
 		} else if (st == xdg_conf) {
-			if ((xdg = getenv("XDG_CONF_DIRS")) != NULL) {
+			if ((xdg = getenv("XDG_CONFIG_DIRS")) != NULL) {
 				if ((path = cappend(path, xdg)) == NULL) {
 					if (er != NULL) *er = xdg_alloc;
 					a1loge(g_log, 1, "xdg_bds: malloc failed\n"); 
@@ -744,9 +745,11 @@ int xdg_bds(
 						if (getenv("SUDO_UID") != NULL
 						 && getenv("SUDO_GID") != NULL) {
 							DBG((DBGA,"We're setting a local system dir/file with uid = 0 && euid != 0\n"))
-							setegid(getgid());
-							seteuid(getuid());
-							DBG((DBGA,"Set euid %d, egid %d\n",geteuid(),getegid()))
+							if (setegid(getgid()) || seteuid(getuid())) {
+								DBG((DBGA,"seteuid or setegid failed\n"))
+							} else {
+								DBG((DBGA,"Set euid %d, egid %d\n",geteuid(),getegid()))
+							}
 						}
 					}
 #endif	/* !NT */
@@ -864,7 +867,7 @@ char *xdg_errstr(xdg_error er) {
 		case xdg_nopath:
 			return "There is no resulting path";
 		case xdg_mallformed:
-			return "Malfomed path fount";
+			return "Malformed path fount";
 		default:
 			return "unknown";
 	}
@@ -1031,26 +1034,26 @@ main() {
 		{ xdg_data, xdg_user, {"ALLUSERSPROFILE", NULL},
 							{ "XDG_DATA_HOME", "APPDATA", "HOME", "APPDATA", NULL } },
 		{ xdg_conf, xdg_user, {"ALLUSERSPROFILE", NULL},
-							{ "XDG_CONF_HOME", "APPDATA", "HOME", "APPDATA", NULL } },
+							{ "XDG_CONFIG_HOME", "APPDATA", "HOME", "APPDATA", NULL } },
 		{ xdg_cache, xdg_user, {NULL, NULL},
 							{ "XDG_CACHE_HOME", "APPDATA", "HOME", "APPDATA", NULL } },
 		{ xdg_data, xdg_local, {NULL, "HOME"},
 							{ "XDG_DATA_DIRS", "ALLUSERSPROFILE", NULL } },
 		{ xdg_conf, xdg_local, {NULL, "HOME"},
-							{ "XDG_CONF_DIRS", "ALLUSERSPROFILE", NULL } }
+							{ "XDG_CONFIG_DIRS", "ALLUSERSPROFILE", NULL } }
 	};
 #else	/* Apple, Unix, Default */
 	testcase cases[5] = {
 		{ xdg_data, xdg_user, {NULL, NULL},
 							{ "XDG_DATA_HOME", "HOME", NULL } },
 		{ xdg_conf, xdg_user, {NULL, NULL},
-							{ "XDG_CONF_HOME", "HOME", NULL } },
+							{ "XDG_CONFIG_HOME", "HOME", NULL } },
 		{ xdg_cache, xdg_user, {NULL, NULL},
 							{ "XDG_CACHE_HOME", "HOME", NULL } },
 		{ xdg_data, xdg_local, {NULL, "HOME"},
 							{ "XDG_DATA_DIRS", "", NULL } },
 		{ xdg_conf, xdg_local, {NULL, "HOME"},
-							{ "XDG_CONF_DIRS", "", NULL } }
+							{ "XDG_CONFIG_DIRS", "", NULL } }
 	};
 #endif
 

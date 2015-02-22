@@ -128,6 +128,8 @@ struct _specbos {
 								/* 1201 */
 								/* 1211 */
 
+	int noXYZ;					/* nz if firmware doesn't support fetch*XYZ */
+
 	inst_mode mode;				/* Currently instrument mode */
 
 	int refrmode;				/* nz if in refresh display mode */

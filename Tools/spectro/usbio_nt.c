@@ -409,6 +409,7 @@ void usb_close_port(icoms *p) {
 			                     &req, sizeof(libusb_request), NULL, 0, NULL)) != ICOM_OK) {
 				a1logd(p->log, 1, "usb_close_port: reset returned %d\n",rv);
 			}
+			msec_sleep(500);	/* Things foul up unless we wait for the reset... */
 		}
 		CloseHandle(p->usbd->handle);
 
@@ -466,9 +467,12 @@ char **pnames		/* List of process names to try and kill before opening */
 				             FILE_FLAG_OVERLAPPED, NULL)) == INVALID_HANDLE_VALUE) {
 				a1logd(p->log, 8, "usb_open_port: open '%s' config %d failed (%d) (Device being used ?)\n",p->usbd->dpath,config,GetLastError());
 				if (retries <= 0) {
-					if (kpc != NULL)
+					if (kpc != NULL) {
+						if (kpc->th->result < 0)
+							a1logw(p->log, "usb_open_port: killing competing processes failed\n");
 						kpc->del(kpc); 
-					a1loge(p->log, ICOM_SYS, "usb_open_port: open '%s' config %d failed (%d) (Device being used ?)\n",p->usbd->dpath,config,GetLastError());
+					}
+					a1logw(p->log, "usb_open_port: open '%s' config %d failed (%d) (Device being used ?)\n",p->usbd->dpath,config,GetLastError());
 					return ICOM_SYS;
 				}
 				continue;
@@ -614,7 +618,7 @@ static int icoms_usb_transaction(
 			amutex_lock(cancelt->cmtx);
 			cancelt->hcancel = (void *)&endpoint;
 			cancelt->state = 1;
-			amutex_unlock(cancelt->cond);		/* Signal any thread waiting for IO start */
+			amutex_unlock(cancelt->condx);		/* Signal any thread waiting for IO start */
 			amutex_unlock(cancelt->cmtx);
 		}
 
@@ -643,7 +647,7 @@ done:;
 		amutex_lock(cancelt->cmtx);
 		cancelt->hcancel = (void *)NULL;
 		if (cancelt->state == 0)
-			amutex_unlock(cancelt->cond);		/* Make sure this gets unlocked */
+			amutex_unlock(cancelt->condx);		/* Make sure this gets unlocked */
 		cancelt->state = 2;
 		amutex_unlock(cancelt->cmtx);
 	}

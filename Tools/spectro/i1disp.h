@@ -140,7 +140,9 @@ struct _i1disp {
 	inst_disptypesel *dtlist;	/* Display Type list */
 	int     ndtlist;			/* Number of valid dtlist entries */
 	int     icx;				/* 0 = LCD, 1 = CRT/CCFL matrix */
-	int     cbid;				/* calibration base ID, 0 if not a base */
+	disptech dtech;				/* Display technology enum */
+	int     cbid;				/* current calibration base ID, 0 if not a base */
+	int     ucbid;				/* Underlying base ID if being used for matrix, 0 othewise */
 	double  ccmat[3][3];		/* Colorimeter correction matrix */
 
 	/* For dtype == 1 (Eye-One Display2) */

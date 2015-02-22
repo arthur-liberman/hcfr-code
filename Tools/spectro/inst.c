@@ -46,14 +46,14 @@
 #endif /* !SALONEINSTLIB */
 #include "numsup.h"
 #include "xspect.h"
-#include "ccmx.h"
-#include "ccss.h"
 #include "conv.h"
 
 #include "insttypes.h"
 #include "icoms.h"
 #include "inst.h"
 #include "insttypeinst.h"
+#include "ccmx.h"
+#include "ccss.h"
 #include "sort.h"
 
 #if defined(ENABLE_FAST_SERIAL)
@@ -165,6 +165,24 @@ inst *pp,
 int ix						/* index into the inst_disptypesel[] */
 ) {
 	return inst_unsupported;
+}
+
+/* Get the disptech and other corresponding info for the current */
+/* selected display type. Returns disptype_unknown by default. */
+/* Because refrmode can be overridden, it may not match the refrmode */
+/* of the dtech. (Pointers may be NULL if not needed) */
+static inst_code get_disptechi(
+inst *pp,
+disptech *dtech,
+int *refrmode,
+int *cbid) {
+	if (dtech != NULL)
+		*dtech = disptech_unknown;
+	if (refrmode != NULL)
+		*refrmode = disptech_get_id(disptech_unknown)->refr;
+	if (cbid != NULL)
+		*cbid = 0;
+	return inst_ok;
 }
 
 /* Get a status or set or get an option (default implementation) */
@@ -359,16 +377,25 @@ char id[CALIDLEN]) {	/* Condition identifier (ie. white reference ID, filter ID)
 }
 
 /* Measure a display update delay. It is assumed that a */
-/* White to black change has been made to the displayed color, */
+/* black to white change has been made to the displayed color, */
 /* and this will measure the time it took for the update to */
+/* (It is assumed that white_change() will be called at the time the patch */
+/* changes color.) */
 /* be noticed by the instrument, up to 1.0 seconds. */
 /* inst_misread will be returned on failure to find a transition. */
 static inst_code meas_delay(
 inst *p,
-int *msecdelay) {		/* Return the number of msec */
+int *pdispmsec,
+int *pinstmsec) {
 	return inst_unsupported;
 }
 
+/* Call used by other thread to timestamp the transition. */
+static inst_code white_change(
+struct _inst *p, int init) {
+	return inst_unsupported;
+}
+																				\
 /* Return the last calibrated refresh rate in Hz. Returns: */
 /* inst_unsupported - if this instrument doesn't suport a refresh mode */
 /*                    or is unable to retrieve the refresh rate */
@@ -407,6 +434,8 @@ char *filtername) {		/* File containing compensating filter */
 /* To remove the matrix, pass NULL for the matrix */
 static inst_code col_cor_mat(
 struct _inst *p,
+disptech dtech,		/* Use disptech_unknown if not known */	
+int cbid,       	/* Calibration display type base ID needed, 1 if unknown */
 double mtx[3][3]) {	/* XYZ matrix */
 	return inst_unsupported;
 }
@@ -417,6 +446,7 @@ double mtx[3][3]) {	/* XYZ matrix */
 /* To set calibration back to default, pass NULL for ccss. */
 static inst_code col_cal_spec_set(
 inst *pp,
+disptech dtech,		/* Use disptech_unknown if not known */
 xspect *sets,
 int no_sets) {
 	return inst_unsupported;
@@ -487,6 +517,8 @@ static char *inst_interp_error(inst *p, inst_code ec) {
 			return "Bad Parameter Value";
 		case inst_hardware_fail:
 			return "Hardware Failure";
+		case inst_system_error:
+			return "Operating System Error";
 		case inst_other_error:
 			return "Non-specific error";
 	}
@@ -524,6 +556,11 @@ void *cntx			/* Context for callback */
 	icoms *icom;
 	inst *p = NULL;
 
+	if (path == NULL) {
+		a1logd(log, 2, "new_inst: got NULL path\n");
+		return NULL;
+	}
+
 	a1logd(log, 2, "new_inst: called with path '%s'\n",path->name);
 
 	if ((icom = new_icoms(path, log)) == NULL) {
@@ -536,8 +573,9 @@ void *cntx			/* Context for callback */
 	itype = icom->itype;		/* Instrument type if its known from usb/hid */
 
 #if defined(ENABLE_FAST_SERIAL)
-	if (itype == instUnknown && !nocoms && icom->fast)
+	if (itype == instUnknown && !nocoms && icom->fast) {
 		itype = fast_ser_inst_type(icom, 1, uicallback, cntx);		/* Else type from serial */
+	}
 #endif /* ENABLE_FAST_SERIAL */
 
 #if defined(ENABLE_SERIAL)
@@ -569,6 +607,8 @@ void *cntx			/* Context for callback */
 	if (itype == instSpecbos1201
 	 || itype == instSpecbos)
 		p = (inst *)new_specbos(icom, itype);
+	if (itype == instKleinK10)
+		p = (inst *)new_kleink10(icom, itype);
 #endif /* ENABLE_SERIAL */
 
 #ifdef ENABLE_USB
@@ -588,8 +628,8 @@ void *cntx			/* Context for callback */
 		p = (inst *)new_i1pro(icom, itype);
 	else if (itype == instColorMunki)
 		p = (inst *)new_munki(icom, itype);
-	else if (itype == instHCFR)
-		p = (inst *)new_hcfr(icom, itype);
+	else if (itype == instSpyder1)
+		p = (inst *)new_spyd2(icom, itype);
 	else if (itype == instSpyder2)
 		p = (inst *)new_spyd2(icom, itype);
 	else if (itype == instSpyder3)
@@ -600,7 +640,10 @@ void *cntx			/* Context for callback */
 		p = (inst *)new_huey(icom, itype);
 	else if (itype == instSmile)
 		p = (inst *)new_i1disp(icom, itype);
-	else if (itype == instColorHug)
+	else if (itype == instHCFR)
+		p = (inst *)new_hcfr(icom, itype);
+	else if (itype == instColorHug
+	      || itype == instColorHug2)
 		p = (inst *)new_colorhug(icom, itype);
 #endif /* ENABLE_USB */
 
@@ -632,6 +675,8 @@ void *cntx			/* Context for callback */
 		p->get_disptypesel = get_disptypesel;
 	if (p->set_disptype == NULL)
 		p->set_disptype = set_disptype;
+	if (p->get_disptechi == NULL)
+		p->get_disptechi = get_disptechi;
 	if (p->get_set_opt == NULL)
 		p->get_set_opt = get_set_opt;
 	if (p->read_chart == NULL)
@@ -666,6 +711,8 @@ void *cntx			/* Context for callback */
 		p->calibrate = calibrate;
 	if (p->meas_delay == NULL)
 		p->meas_delay = meas_delay;
+	if (p->white_change == NULL)
+		p->white_change = white_change;
 	if (p->get_refr_rate == NULL)
 		p->get_refr_rate = get_refr_rate;
 	if (p->set_refr_rate == NULL)
@@ -696,59 +743,6 @@ void *cntx			/* Context for callback */
 }
 
 /* --------------------------------------------------- */
-/* Display type list support */
-
-/* Default display type UI selector characters:
-
-	g		Generic
-	n		Non-refresh (Generic)
-	r		Refresh (Generic)
-
-	c		CRT
-	l		LCD (Generic or CCFL Backlight)
-	f		LCD, CCFL Backlight
-	b		LCD, RGB LED Backlight
-	L		LCD, Wide Gamut, CCFL Backlight
-	B		LCD, Wide Gamut, RGB LED Backlight
-	e		LCD, White LED Backlight
-	o		OLED
-	a		AMOLED
-	p		Projector (Generic)
-	m		Plasma
-
-	F		Factory base calibration
-	R		Raw sensor values
- */
-
-/* Default display technology strings:
-
-	"Color Matching Function"
-	"Custom"
-	"CRT"
-	"LCD CCFL IPS"
-	"LCD CCFL VPA"
-	"LCD CCFL TFT"
-	"LCD CCFL Wide Gamut IPS"
-	"LCD CCFL Wide Gamut VPA"
-	"LCD CCFL Wide Gamut TFT"
-	"LCD White LED IPS"
-	"LCD White LED VPA"
-	"LCD White LED TFT"
-	"LCD RGB LED IPS"
-	"LCD RGB LED VPA"
-	"LCD RGB LED TFT"
-	"LED OLED"
-	"LED AMOLED"
-	"Plasma"
-	"LCD RG Phosphor"
-	"Projector RGB Filter Wheel"
-	"Projector RGBW Filter Wheel"
-	"Projector RGBCMY Filter Wheel"
-	"Projector"
-	"Unknown"
-
- */
-
 
 /* Free a display type list */
 void inst_del_disptype_list(inst_disptypesel *list, int no) {
@@ -789,6 +783,7 @@ static inst_disptypesel *expand_dlist(inst_disptypesel *list, int nlist, int *na
 	list[nlist].desc[0] = '\000';
 	list[nlist].refr = 0;
 	list[nlist].ix = 0;
+	list[nlist].cc_cbid = 0;
 	list[nlist].path = NULL;
 	list[nlist].sets = NULL;
 	list[nlist].no_sets = 0;
@@ -808,49 +803,9 @@ static inst_disptypesel *expand_dlist(inst_disptypesel *list, int nlist, int *na
 	We treat the first selector as more important
 	than any aliases that come after it, so we need
 	to do two passes to resolve what gets used.
+
+	Use disptechs_set_sel() utility function to some of the work.
 */
-
-/* Set the selection characters */
-/* return NZ if we have run out */
-/* If flag == 0, deal with all selectors */
-/* If flag == 1, deal with just primary selectors */
-/* If flag == 2, deal with just secondary selectors */
-static int set_sel(int flag, char *sel, char *usels, int *k, char *asels) {
-	char *d, *s, i;
-
-	/* First remove any used chars from selector */
-	for (i = 0, d = s = sel; *s != '\000'; s++, i++) {
-		if ((flag == 2 && i == 0)		/* Ignore and keep primary selector */
-		 || (flag == 1 && i == 1)) {	/* Ignore and keep secondary selectors */
-			*d++ = *s;
-			continue;
-		}
-		if (usels[*s] == 0) {			/* If selector is not currently used */
-			*d++ = *s;
-			usels[*s] = 1;
-		}
-	}
-	*d = '\000';
-
-	/* Add a selector if we need one */
-	if (sel[0] == '\000') {
-
-		/* Locate the next unused selector */
-		for (;;) {
-			if (asels[*k] == '\000')	/* Run out of selectors */
-				return 1;
-			if (usels[*k] == 0)
-				break;
-			(*k)++;
-		}
-		sel[0] = asels[*k]; 
-		sel[1] = '\000';
-		usels[sel[0]] = 1;
-		(*k)++;
-	}
-
-	return 0;
-}
 
 /* Create the display type list */
 inst_code inst_creat_disptype_list(inst *p,
@@ -883,7 +838,7 @@ int doccmx						/* Add matching installed ccmx files */
 
 		list[nlist-1] = sdtlist[i];		/* Struct copy */
 
-		if (set_sel(1, list[nlist-1].sel, usels, &k, asels)) {
+		if (disptechs_set_sel(2, list[nlist-1].sel, usels, &k, asels)) {
 			a1loge(p->log, 1, "inst_creat_disptype_list run out of selectors\n");
 			break;
 		}
@@ -902,22 +857,24 @@ int doccmx						/* Add matching installed ccmx files */
 			if ((list = expand_dlist(list, ++nlist, &nalist)) == NULL)
 				return inst_internal_error;
 	
-			list[nlist-1].flags = inst_dtflags_ccss;
+			list[nlist-1].flags = (inst_dtflags)(inst_dtflags_ccss | inst_dtflags_ld | inst_dtflags_wr);
 
 			if (ss_list[i].sel != NULL) {
 				strncpy(list[nlist-1].sel, ss_list[i].sel, INST_DTYPE_SEL_LEN);
 				list[nlist-1].sel[INST_DTYPE_SEL_LEN-1] = '\000';
 			}
-			if (set_sel(1, list[nlist-1].sel, usels, &k, asels)) {
+			if (disptechs_set_sel(2, list[nlist-1].sel, usels, &k, asels)) {
 				a1loge(p->log, 1, "inst_creat_disptype_list run out of selectors\n");
 				break;
 			}
 
 			strncpy(list[nlist-1].desc, ss_list[i].desc, INST_DTYPE_DESC_LEN);
 			list[nlist-1].desc[INST_DTYPE_DESC_LEN-1] = '\000';
+			list[nlist-1].dtech = ss_list[i].dtech;
 			list[nlist-1].refr = ss_list[i].refr;
 			list[nlist-1].ix = 0;
 			list[nlist-1].path = ss_list[i].path; ss_list[i].path = NULL;
+			list[nlist-1].cbid = 0;
 			list[nlist-1].sets = ss_list[i].sets; ss_list[i].sets = NULL;
 			list[nlist-1].no_sets = ss_list[i].no_sets; ss_list[i].no_sets = 0;
 		}
@@ -928,49 +885,56 @@ int doccmx						/* Add matching installed ccmx files */
 		iccmx *ss_list;
 
 		/* Just ccmx's for this instrument */
-		if ((ss_list = list_iccmx(inst_name(p->itype), NULL)) == NULL) {
+		if ((ss_list = list_iccmx(p->itype, NULL)) == NULL) {
 			free(list);
 			return inst_internal_error;
 		}
 
 		for (i = 0; ss_list[i].path != NULL; i++) {
 	
-			/* Check that we can find the matching base calibation */
+			/* Check that there is a matching base calibation */
 			for (j = 0; j < nlist; j++) {
-				if (list[j].cbid == ss_list[i].cbid)
+				if (ss_list[i].cc_cbid != 0
+				 && list[j].cbid == ss_list[i].cc_cbid)
 					break;
 			}
 			if (j >= nlist) {
-				a1loge(p->log, 1, "inst_creat_disptype_list can't find cbid %d for '%s'\n",list[j].cbid, list[j].path);
+				a1loge(p->log, 1, "inst_creat_disptype_list can't find cbid %d for '%s'\n",ss_list[i].cc_cbid, ss_list[i].path);
 				continue;
 			}
 
 			if ((list = expand_dlist(list, ++nlist, &nalist)) == NULL)
 				return inst_internal_error;
 	
-			list[nlist-1].flags = inst_dtflags_ccmx;
+			list[nlist-1].flags = (inst_dtflags)(inst_dtflags_ccmx | inst_dtflags_ld | inst_dtflags_wr);
 
 			if (ss_list[i].sel != NULL) {
 				strncpy(list[nlist-1].sel, ss_list[i].sel, INST_DTYPE_SEL_LEN);
 				list[nlist-1].sel[INST_DTYPE_SEL_LEN-1] = '\000';
 			}
-			if (set_sel(1, list[nlist-1].sel, usels, &k, asels)) {
+			if (disptechs_set_sel(2, list[nlist-1].sel, usels, &k, asels)) {
 				a1loge(p->log, 1, "inst_creat_disptype_list run out of selectors\n");
 				break;
 			}
 			strncpy(list[nlist-1].desc, ss_list[i].desc, INST_DTYPE_DESC_LEN);
 			list[nlist-1].desc[INST_DTYPE_DESC_LEN-1] = '\000';
+			list[nlist-1].dtech = ss_list[i].dtech;
 			list[nlist-1].refr = ss_list[i].refr;
 			list[nlist-1].ix = list[j].ix; /* Copy underlying cal selection from base */
 			list[nlist-1].path = ss_list[i].path; ss_list[i].path = NULL;
+			list[nlist-1].cbid = 0;
+			list[nlist-1].cc_cbid = ss_list[i].cc_cbid;
 			icmCpy3x3(list[nlist-1].mat, ss_list[i].mat);
 		}
 	}
 
-	/* Verify or delete any secondary selectors from the list */
-	for (i = 0; i < nlist; i++) {
-		set_sel(2, list[i].sel, usels, &k, asels);
-	}
+	/* Create needed selectors */
+	for (i = 0; i < nlist; i++)
+		disptechs_set_sel(4, list[i].sel, usels, &k, asels);
+
+	/* Verify or delete any secondary selectors */
+	for (i = 0; i < nlist; i++)
+		disptechs_set_sel(3, list[i].sel, usels, &k, asels);
 
 	if (pndtlist != NULL)
 		*pndtlist = nlist;
@@ -984,11 +948,11 @@ int doccmx						/* Add matching installed ccmx files */
 /* CCMX location support */
 
 /* return a list of installed ccmx files. */
-/* if inst != NULL, return those that match the given instrument. */
+/* if itype != instUnknown, return those that match the given instrument. */
 /* The list is sorted by description and terminated by a NULL entry. */
 /* If no is != NULL, return the number in the list */
 /* Return NULL and -1 if there is a malloc error */
-iccmx *list_iccmx(char *inst, int *no) {
+iccmx *list_iccmx(instType itype, int *no) {
 	int i, j;
 	iccmx *rv;
 
@@ -1000,7 +964,7 @@ iccmx *list_iccmx(char *inst, int *no) {
 						"ArgyllCMS/\052.ccmx" XDG_FUDGE "color/\052.ccmx"
 	);
 
-	if ((rv = malloc(sizeof(iccmx) * (npaths + 1))) == NULL) {
+	if ((rv = (iccmx*)malloc(sizeof(iccmx) * (npaths + 1))) == NULL) {
 		a1loge(g_log, 1, "list_iccmx: malloc of paths failed\n");
 		xdg_free(paths, npaths);
 		if (no != NULL) *no = -1;
@@ -1011,8 +975,9 @@ iccmx *list_iccmx(char *inst, int *no) {
 		ccmx *cs;
 		int len;
 		char *pp;
+		disptech dtech;
 		char *tech, *disp;
-		int cbid, refr;
+		int cc_cbid, refr;
 
 		if ((cs = new_ccmx()) == NULL) {
 			a1loge(g_log, 1, "list_iccmx: new_ccmx failed\n");
@@ -1030,7 +995,7 @@ iccmx *list_iccmx(char *inst, int *no) {
 		}
 
 		/* Skip any that don't match */
-		if (inst != NULL && cs->inst != NULL && strcmp(inst, cs->inst) != 0)
+		if (itype != instUnknown && cs->inst != NULL && inst_enum(cs->inst) != itype)
 			continue;
 
 		a1logd(g_log, 5, "Reading '%s'\n",paths[i]);
@@ -1038,10 +1003,11 @@ iccmx *list_iccmx(char *inst, int *no) {
 			tech = "";
 		if ((disp = cs->disp) == NULL)
 			disp = "";
-		cbid = cs->cbid;
+		cc_cbid = cs->cc_cbid;
+		dtech = cs->dtech;
 		refr = cs->refrmode;
 		len = strlen(tech) + strlen(disp) + 4;
-		if ((pp = malloc(len)) == NULL) {
+		if ((pp = (char *)malloc(len)) == NULL) {
 			a1loge(g_log, 1, "list_iccmx: malloc failed\n");
 			for (--j; j >= 0; j--) {
 				free(rv[j].path);
@@ -1071,7 +1037,8 @@ iccmx *list_iccmx(char *inst, int *no) {
 		strcat(pp, disp);
 		strcat(pp, ")");
 		rv[j].desc = pp;
-		rv[j].cbid = cbid;
+		rv[j].cc_cbid = cc_cbid;
+		rv[j].dtech = dtech;
 		rv[j].refr = refr;
 		rv[j].sel = cs->sel;  cs->sel = NULL;
 		icmCpy3x3(rv[j].mat, cs->matrix);
@@ -1081,7 +1048,8 @@ iccmx *list_iccmx(char *inst, int *no) {
 	xdg_free(paths, npaths);
 	rv[j].path = NULL;
 	rv[j].desc = NULL;
-	rv[j].cbid = 0;
+	rv[j].cc_cbid = 0;
+	rv[j].dtech = disptech_unknown;
 	rv[j].refr = -1;
 	rv[j].sel = NULL;
 	if (no != NULL)
@@ -1131,7 +1099,7 @@ iccss *list_iccss(int *no) {
 						"ArgyllCMS/\052.ccss" XDG_FUDGE "color/\052.ccss"
 	);
 
-	if ((rv = malloc(sizeof(iccss) * (npaths + 1))) == NULL) {
+	if ((rv = (iccss*)malloc(sizeof(iccss) * (npaths + 1))) == NULL) {
 		a1loge(g_log, 1, "list_iccss: malloc of paths failed\n");
 		xdg_free(paths, npaths);
 		if (no != NULL) *no = -1;
@@ -1142,6 +1110,7 @@ iccss *list_iccss(int *no) {
 		ccss *cs;
 		int len;
 		char *pp;
+		disptech dtech;
 		char *tech, *disp;
 		int refr;
 
@@ -1165,9 +1134,10 @@ iccss *list_iccss(int *no) {
 			tech = "";
 		if ((disp = cs->disp) == NULL)
 			disp = "";
+		dtech = cs->dtech;
 		refr = cs->refrmode;
 		len = strlen(tech) + strlen(disp) + 4;
-		if ((pp = malloc(len)) == NULL) {
+		if ((pp = (char*) malloc(len)) == NULL) {
 			a1loge(g_log, 1, "list_iccss: malloc failed\n");
 			for (--j; j >= 0; j--) {
 				free(rv[j].path);
@@ -1197,6 +1167,7 @@ iccss *list_iccss(int *no) {
 		strcat(pp, disp);
 		strcat(pp, ")");
 		rv[j].desc = pp;
+		rv[j].dtech = dtech;
 		rv[j].refr = refr;
 		rv[j].sel = cs->sel;  cs->sel = NULL;
 		rv[j].sets = cs->samples;  cs->samples = NULL;
@@ -1207,6 +1178,7 @@ iccss *list_iccss(int *no) {
 	xdg_free(paths, npaths);
 	rv[j].path = NULL;
 	rv[j].desc = NULL;
+	rv[j].dtech = disptech_unknown;
 	rv[j].refr = -1;
 	rv[j].sel = NULL;
 	rv[j].sets = NULL;
@@ -1258,7 +1230,7 @@ instType fast_ser_inst_type(
 ) {
 	instType rv = instUnknown;
 	char buf[100];
-	baud_rate brt[] = { baud_921600, baud_115200, baud_38400, baud_nc };
+	baud_rate brt[] = { baud_921600, baud_115200, baud_38400, baud_9600, baud_nc };
 	unsigned int etime;
 	unsigned int i;
 	int se, len;
@@ -1287,36 +1259,64 @@ instType fast_ser_inst_type(
 
 //		a1logd(p->log, 5, "brt = %d\n",brt[i]);
 
-		/* See if it's a JETI specbos */
-		if ((se = p->write_read(p, "*idn?\r", buf, 100, "\r", 1, 0.050)) != inst_ok) {
-			/* Check for user abort */
-			if (uicallback != NULL) {
-				inst_code ev;
-				if ((ev = uicallback(cntx, inst_negcoms)) == inst_user_abort) {
-					a1logd(p->log, 5, "fser_inst_type: User aborted\n");
-					return instUnknown;
+		if (brt[i] == baud_9600) {
+			/* See if it's a Klein K10 */
+
+			if ((se = p->write_read(p, "P0\r", 0, buf, 100, NULL, ">", 1, 0.070)) != inst_ok) {
+				/* Check for user abort */
+				if (uicallback != NULL) {
+					inst_code ev;
+					if ((ev = uicallback(cntx, inst_negcoms)) == inst_user_abort) {
+						a1logd(p->log, 5, "fser_inst_type: User aborted\n");
+						return instUnknown;
+					}
 				}
+				continue;
 			}
-			continue;
-		}
-		len = strlen(buf);
-
-		a1logd(p->log, 5, "len = %d\n",len);
-
-		/* JETI specbos returns "JETI_SBXXXX", where XXXX is the instrument type, */
-		/* except for the 1201 which returns "SB05" */
-
-		/* Is this a JETI specbos 1201 response ? */
-		if (strncmp(buf, "SB05", 4) == 0) {
-//			a1logd(p->log, 5, "specbos1201\n");
-			rv = instSpecbos1201;
-			break;
-		}
-		/* Is this a JETI specbos XXXX response ? */
-		if (len >= 11 && strncmp(buf, "JETI_SB", 7) == 0) {
-//			a1logd(p->log, 5, "specbos\n");
-			rv = instSpecbos;
-			break;
+			len = strlen(buf);
+	
+			a1logd(p->log, 5, "len = %d\n",len);
+	
+			/* Is this a Klein K1/K8/K10 response ? */
+			if (strncmp(buf, "P0K-1 ", 6) == 0
+			 || strncmp(buf, "P0K-8 ", 6) == 0
+			 || strncmp(buf, "P0K-10", 6) == 0
+			 || strncmp(buf, "P0KV-10", 7) == 0) {
+				rv = instKleinK10;
+				break;
+			}
+		} else {
+			/* See if it's a JETI specbos */
+			if ((se = p->write_read(p, "*idn?\r", 0, buf, 100, NULL, "\r", 1, 0.040)) != inst_ok) {
+				/* Check for user abort */
+				if (uicallback != NULL) {
+					inst_code ev;
+					if ((ev = uicallback(cntx, inst_negcoms)) == inst_user_abort) {
+						a1logd(p->log, 5, "fser_inst_type: User aborted\n");
+						return instUnknown;
+					}
+				}
+				continue;
+			}
+			len = strlen(buf);
+	
+			a1logd(p->log, 5, "len = %d\n",len);
+	
+			/* JETI specbos returns "JETI_SBXXXX", where XXXX is the instrument type, */
+			/* except for the 1201 which returns "SB05" */
+	
+			/* Is this a JETI specbos 1201 response ? */
+			if (strncmp(buf, "SB05", 4) == 0) {
+//				a1logd(p->log, 5, "specbos1201\n");
+				rv = instSpecbos1201;
+				break;
+			}
+			/* Is this a JETI specbos XXXX response ? */
+			if (len >= 11 && strncmp(buf, "JETI_SB", 7) == 0) {
+//				a1logd(p->log, 5, "specbos\n");
+				rv = instSpecbos;
+				break;
+			}
 		}
 	}
 
@@ -1357,7 +1357,7 @@ static instType ser_inst_type(
 	                     baud_600, baud_300, baud_110, baud_nc };
 	unsigned int etime;
 	unsigned int bi, i;
-	int se, len;
+	int se, len, bread;
 	int xrite = 0;
 	int ss = 0;
 	int so = 0;
@@ -1385,7 +1385,8 @@ static instType ser_inst_type(
 		}
 
 //		a1logd(p->log, 5, "brt = %d\n",brt[i]);
-		if ((se = p->write_read(p, ";D024\r\n", buf, 100, "\r", 1, 0.5)) != inst_ok) {
+		bread = 0;
+		if ((se = p->write_read(p, ";D024\r\n", 0, buf, 100, &bread, "\r", 1, 0.5)) != inst_ok) {
 			/* Check for user abort */
 			if (uicallback != NULL) {
 				inst_code ev;
@@ -1394,7 +1395,8 @@ static instType ser_inst_type(
 					return instUnknown;
 				}
 			}
-			continue;
+			if (bread == 0)
+				continue;
 		}
 		len = strlen(buf);
 
@@ -1439,7 +1441,7 @@ static instType ser_inst_type(
 	/* SpectroScan */
 	if (ss) {
 		rv = instSpectroScan;
-		if ((se = p->write_read(p, ";D030\r\n", buf, 100, "\n", 1, 1.5)) == 0)  {
+		if ((se = p->write_read(p, ";D030\r\n", 0, buf, 100, NULL, "\n", 1, 1.5)) == 0)  {
 			if (strlen(buf) >= 41) {
 				hex2bin(&buf[5], 12);
 //				a1logd(p->log, 5, "spectroscan type = '%s'\n",buf);
@@ -1451,7 +1453,7 @@ static instType ser_inst_type(
 	if (xrite) {
 
 		/* Get the X-Rite model and version number */
-		if ((se = p->write_read(p, "SV\r\n", buf, 100, ">", 1, 2.5)) != 0)
+		if ((se = p->write_read(p, "SV\r\n", 0, buf, 100, NULL, ">", 1, 2.5)) != 0)
 			return instUnknown;
 	
 		if (strlen(buf) >= 12) {
@@ -1508,6 +1510,87 @@ static void hex2bin(char *buf, int len) {
 }
 
 #endif /* ENABLE_SERIAL */
+
+/* ============================================================= */
+/* inst_mode persistent storage support */
+
+/* Table listing and relating masks to symbols. */
+/* Need to keep this in sync with inst.h */ 
+struct {
+	int mode;		/* Mode bits */
+	char *sym;		/* 4 character symbol */
+} inst_mode_sym[] = {
+	{ inst_mode_reflection, inst_mode_reflection_sym },
+	{ inst_mode_s_reflection, inst_mode_s_reflection_sym },
+	{ inst_mode_transmission, inst_mode_transmission_sym },
+	{ inst_mode_emission, inst_mode_emission_sym },
+
+	{ inst_mode_spot, inst_mode_spot_sym },
+	{ inst_mode_strip, inst_mode_strip_sym },
+	{ inst_mode_xy, inst_mode_xy_sym },
+	{ inst_mode_chart, inst_mode_chart_sym },
+	{ inst_mode_ambient, inst_mode_ambient_sym },
+	{ inst_mode_ambient_flash, inst_mode_ambient_flash_sym },
+	{ inst_mode_tele, inst_mode_tele_sym },
+
+	{ inst_mode_emis_nonadaptive, inst_mode_emis_nonadaptive_sys },
+	{ inst_mode_ref_uv, inst_mode_ref_uv_sym },
+	{ inst_mode_emis_refresh_ovd, inst_mode_emis_refresh_ovd_sym },
+	{ inst_mode_emis_norefresh_ovd, inst_mode_emis_norefresh_ovd_sym },
+
+	{ inst_mode_colorimeter, inst_mode_colorimeter_sym },
+	{ inst_mode_spectral, inst_mode_spectral_sym },
+	{ inst_mode_highres, inst_mode_highres_sym },
+
+	{ inst_mode_calibration, inst_mode_calibration_sym },
+
+	{ 0, NULL }
+};
+
+/* Return a string with a symbolic encoding of the mode flags */
+void inst_mode_to_sym(char sym[MAX_INST_MODE_SYM_SZ], inst_mode mode) {
+	int i;
+	char *cp = sym;
+
+	for (i = 0; inst_mode_sym[i].mode != 0; i++) {
+		if (mode & inst_mode_sym[i].mode) {
+			if (cp != sym)
+				*cp++ = '_';
+			strncpy(cp, inst_mode_sym[i].sym, 4);
+			cp += 4;
+		}
+	}
+	*cp++ = '\000';
+}
+
+/* Return a set of mode flags that correspondf to the symbolic encoding */
+/* Return nz if a symbol wasn't recognized */
+int sym_to_inst_mode(inst_mode *mode, const char *sym) {
+	int i;
+	const char *cp = sym;
+	int rv = 0;
+
+	for (*mode = 0;;) {
+		if (cp[0] == '\000' || cp[1] == '\000' || cp[2] == '\000' || cp[3] == '\000')
+			break;
+
+		for (i = 0; inst_mode_sym[i].mode != 0; i++) {
+			if (strncmp(inst_mode_sym[i].sym, cp, 4) == 0) {
+				*mode |= inst_mode_sym[i].mode;
+				break;
+			}
+		}
+		if (inst_mode_sym[i].mode == 0)
+			rv = 1;
+
+		cp += 4;
+
+		if (*cp == '_')
+			cp++;
+	}
+
+	return rv;
+}
 
 
 

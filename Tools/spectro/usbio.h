@@ -185,7 +185,7 @@ typedef enum {
 struct _usb_cancelt {
 	amutex cmtx;
 	int state;			/* 0 = init, 1 = pending, 2 = complete */
-	amutex cond;		/* Wait for state 0->1 sync. mutex */
+	amutex condx;		/* Wait for state 0->1 sync. mutex */
 	void *hcancel;		/* Pointer to implementation cancel handle */
 };
 

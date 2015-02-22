@@ -4,7 +4,7 @@
  * Colorimeter Correction Matrix
  *
  * Author: Graeme W. Gill
- * Date:   1r9/8/2010
+ * Date:   9/8/2010
  *
  * Copyright 2010 Graeme W. Gill
  * All rights reserved.
@@ -35,6 +35,7 @@
 #endif
 #include "cgats.h"
 #include "xspect.h"
+#include "disptechs.h"
 #include "ccss.h"
 
 #ifdef NT       /* You'd think there might be some standards.... */
@@ -88,8 +89,9 @@ cgats **pocg		/* return CGATS structure */
 
 	if (p->disp)
 		ocg->add_kword(ocg, 0, "DISPLAY",p->disp, NULL);
-	if (p->tech)
-		ocg->add_kword(ocg, 0, "TECHNOLOGY", p->tech,NULL);
+
+	ocg->add_kword(ocg, 0, "TECHNOLOGY", disptech_get_id(p->dtech)->strid,NULL);
+
 	if (p->disp == NULL && p->tech == NULL) {
 		sprintf(p->err, "write_ccss: ccss doesn't contain display or techology strings");
 		ocg->del(ocg);
@@ -112,7 +114,11 @@ cgats **pocg		/* return CGATS structure */
 	ocg->add_kword(ocg, 0, "SPECTRAL_NORM",buf, NULL);
 
 	/* Fields we want */
-	ocg->add_field(ocg, 0, "SAMPLE_ID", nqcs_t);
+	if (ocg->add_field(ocg, 0, "SAMPLE_ID", nqcs_t) < 0) {
+		sprintf(p->err, "cgats add_field SAMPLE_ID failed with '%s'!",ocg->err);
+		ocg->del(ocg);		/* Clean up */
+		return 2;
+	}
 	nsetel += 1;		/* For id */
 
 	/* Generate fields for spectral values */
@@ -124,7 +130,11 @@ cgats **pocg		/* return CGATS structure */
 		            * (p->samples[0].spec_wl_long - p->samples[0].spec_wl_short) + 0.5);
 		
 		sprintf(buf,"SPEC_%03d",nm);
-		ocg->add_field(ocg, 0, buf, r_t);
+		if (ocg->add_field(ocg, 0, buf, r_t) < 0) {
+			sprintf(p->err, "cgats add_field %s failed with '%s'",buf,ocg->err);
+			ocg->del(ocg);		/* Clean up */
+			return 2;
+		}
 	}
 	nsetel += p->samples[0].spec_n;		/* Spectral values */
 
@@ -243,12 +253,10 @@ cgats *icg		/* input cgats structure */
 
 	if (icg->ntables == 0 || icg->t[0].tt != tt_other || icg->t[0].oi != 0) {
 		sprintf(p->err, "read_ccss: Input file isn't a CCSS format file");
-		icg->del(icg);
 		return 1;
 	}
 	if (icg->ntables != 1) {
 		sprintf(p->err, "Input file doesn't contain exactly one table");
-		icg->del(icg);
 		return 1;
 	}
 
@@ -257,21 +265,18 @@ cgats *icg		/* input cgats structure */
 	if ((ti = icg->find_kword(icg, 0, "DESCRIPTOR")) >= 0) {
 		if ((p->desc = strdup(icg->t[0].kdata[ti])) == NULL) {
 			sprintf(p->err, "read_ccss: malloc failed");
-			icg->del(icg);
 			return 2;
 		}
 	}
 	if ((ti = icg->find_kword(icg, 0, "ORIGINATOR")) >= 0) {
 		if ((p->orig = strdup(icg->t[0].kdata[ti])) == NULL) {
 			sprintf(p->err, "read_ccss: malloc failed");
-			icg->del(icg);
 			return 2;
 		}
 	}
 	if ((ti = icg->find_kword(icg, 0, "CREATED")) >= 0) {
 		if ((p->crdate = strdup(icg->t[0].kdata[ti])) == NULL) {
 			sprintf(p->err, "read_ccss: malloc failed");
-			icg->del(icg);
 			return 2;
 		}
 	}
@@ -279,20 +284,19 @@ cgats *icg		/* input cgats structure */
 	if ((ti = icg->find_kword(icg, 0, "DISPLAY")) >= 0) {
 		if ((p->disp = strdup(icg->t[0].kdata[ti])) == NULL) {
 			sprintf(p->err, "read_ccss: malloc failed");
-			icg->del(icg);
 			return 2;
 		}
 	}
 	if ((ti = icg->find_kword(icg, 0, "TECHNOLOGY")) >= 0) {
 		if ((p->tech = strdup(icg->t[0].kdata[ti])) == NULL) {
 			sprintf(p->err, "read_ccss: malloc failed");
-			icg->del(icg);
 			return 2;
 		}
+		/* Get disptech enum from standard TECHNOLOGY string */
+		p->dtech = disptech_get_strid(p->tech)->dtech;
 	}
 	if (p->disp == NULL && p->tech == NULL) {
 		sprintf(p->err, "read_ccss: Input file doesn't contain keyword DISPLAY or TECHNOLOGY");
-		icg->del(icg);
 		return 1;
 	}
 	if ((ti = icg->find_kword(icg, 0, "DISPLAY_TYPE_REFRESH")) >= 0) {
@@ -305,7 +309,6 @@ cgats *icg		/* input cgats structure */
 	if ((ti = icg->find_kword(icg, 0, "UI_SELECTORS")) >= 0) {
 		if ((p->sel = strdup(icg->t[0].kdata[ti])) == NULL) {
 			sprintf(p->err, "read_ccss: malloc failed");
-			icg->del(icg);
 			return 2;
 		}
 	}
@@ -313,26 +316,22 @@ cgats *icg		/* input cgats structure */
 	if ((ti = icg->find_kword(icg, 0, "REFERENCE")) >= 0) {
 		if ((p->ref = strdup(icg->t[0].kdata[ti])) == NULL) {
 			sprintf(p->err, "read_ccss: malloc failed");
-			icg->del(icg);
 			return 2;
 		}
 	}
 
 	if ((ii = icg->find_kword(icg, 0, "SPECTRAL_BANDS")) < 0) {
 		sprintf(p->err,"Input file doesn't contain keyword SPECTRAL_BANDS");
-		icg->del(icg);
 		return 1;
 	}
 	sp.spec_n = atoi(icg->t[0].kdata[ii]);
 	if ((ii = icg->find_kword(icg, 0, "SPECTRAL_START_NM")) < 0) {
 		sprintf(p->err,"Input file doesn't contain keyword SPECTRAL_START_NM");
-		icg->del(icg);
 		return 1;
 	}
 	sp.spec_wl_short = atof(icg->t[0].kdata[ii]);
 	if ((ii = icg->find_kword(icg, 0, "SPECTRAL_END_NM")) < 0) {
 		sprintf(p->err,"Input file doesn't contain keyword SPECTRAL_END_NM");
-		icg->del(icg);
 		return 1;
 	}
 	sp.spec_wl_long = atof(icg->t[0].kdata[ii]);
@@ -356,7 +355,6 @@ cgats *icg		/* input cgats structure */
 
 		if ((spi[j] = icg->find_field(icg, 0, buf)) < 0) {
 			sprintf(p->err,"Input file doesn't contain field %s",buf);
-			icg->del(icg);
 			return 1;
 		}
 	}
@@ -364,7 +362,6 @@ cgats *icg		/* input cgats structure */
 	if ((p->no_samp = icg->t[0].nsets) < 3) {
 		sprintf(p->err, "Input file doesn't contain at least three spectral samples");
 		p->no_samp = 0;
-		icg->del(icg);		/* Clean up */
 		return 1;
 	}
 
@@ -372,7 +369,6 @@ cgats *icg		/* input cgats structure */
 	if ((p->samples = (xspect *)malloc(sizeof(xspect) * p->no_samp)) == NULL) {
 		strcpy(p->err, "Malloc failed!");
 		p->no_samp = 0;
-		icg->del(icg);		/* Clean up */
 		return 2;
 	}
 
@@ -470,8 +466,8 @@ static int set_ccss(ccss *p,
 char *orig,			/* Originator (May be NULL) */
 char *crdate,		/* Creation date in ctime() format (May be NULL) */
 char *desc,			/* General description (optional) */
-char *disp,			/* Display make and model (optional if tech) */
-char *tech,			/* Display technology description (optional if disp) */
+char *disp,			/* Display make and model (optional) */
+disptech dtech,		/* Display technology enum */
 int refrmode,		/* Display refresh mode, -1 = unknown, 0 = n, 1 = yes */
 char *sel,			/* UI selector characters - NULL for none */
 char *refd,			/* Reference spectrometer description (optional) */
@@ -505,12 +501,7 @@ int no_samp			/* Number of spectral samples */
 			return 2;
 		}
 	}
-	if (tech != NULL) {
-		if ((p->tech = strdup(tech)) == NULL) {
-			sprintf(p->err, "set_ccss: malloc tech failed");
-			return 2;
-		}
-	}
+	p->dtech = dtech;
 	p->refrmode = refrmode;
 	if (sel != NULL) {
 		if ((p->sel = strdup(sel)) == NULL) {

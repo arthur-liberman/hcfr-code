@@ -152,7 +152,8 @@ typedef enum {
 	fc_nc = 0,			/* not configured/default */
 	fc_none,
 	fc_XonXOff,
-	fc_Hardware
+	fc_Hardware,		/* RTS CTS flow control */
+	fc_HardwareDTR		/* DTR DSR flow control */			
 } flow_control;
 
 /* baud rate available on all systems */
@@ -246,6 +247,7 @@ typedef struct _usb_cancelt usb_cancelt;
 #ifdef ENABLE_USB
 void usb_init_cancel(usb_cancelt *p);
 void usb_uninit_cancel(usb_cancelt *p);
+void usb_reinit_cancel(usb_cancelt *p);
 #endif
 
 struct _icoms {
@@ -363,7 +365,8 @@ struct _icoms {
 	/* return icom error */
 	int (*write)(
 		struct _icoms *p,
-		char *buf,
+		char *buf,			/* null terminated unless nch > 0 */
+		int nch,			/* if > 0, number of characters to write */
 		double tout);		/* Timeout in seconds */
 
 	/* "Serial" read characters into the buffer */
@@ -373,8 +376,10 @@ struct _icoms {
 		struct _icoms *p,
 		char *buf,			/* Buffer to store characters read */
 		int bsize,			/* Buffer size */
-		char *tc,			/* Terminating characters */
-		int ntc,			/* Number of terminating characters seen */
+		int *bread,			/* Bytes read (not including forced '\000') */
+		char *tc,			/* Terminating characters, NULL for none or char count mode */
+		int ntc,			/* Number of terminating characters or char count needed, */
+							/* if 0 use bsize. */
 		double tout);		/* Timeout in seconds */
 
 	/* "Serial" write and read */
@@ -382,10 +387,12 @@ struct _icoms {
 	int (*write_read)(
 		struct _icoms *p,
 		char *wbuf,			/* Write puffer */
+		int nwch,			/* if > 0, number of characters to write */
 		char *rbuf,			/* Read buffer */
 		int bsize,			/* Buffer size */
-		char *tc,			/* Terminating characers */
-		int ntc,			/* Number of terminating characters seen */
+		int *bread,			/* Bytes read (not including forced '\000') */
+		char *tc,			/* Terminating characers, NULL for none or char count mode */
+		int ntc,			/* Number of any terminating characters needed, or char count needed */
 		double tout);		/* Timeout in seconds */
 
 	/* For a USB device, do a control message */
@@ -466,7 +473,8 @@ extern icoms *new_icoms(icompath *ipath, a1log *log);
 /* - - - - - - - - - - - - - - - - - - -- */
 /* Utilities */
 
-/* Convert control chars to ^[A-Z] notation in a string */
+/* Convert control chars to ^[A-Z] notation in a string. */
+/* Returns a maximum of 1000 characters in static buffer. */
 char *icoms_fix(char *s);
 
 /* Convert a limited binary buffer to a list of hex */

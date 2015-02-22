@@ -1777,7 +1777,6 @@ ss_interp_error(inst *pp, int ec) {
 		/* Our own communication errors here too. */
 		case ss_et_SerialFail:
 			return "Serial communications failure";
-
 		case ss_et_SendBufferFull:
 			return "Message send buffer is full";
 		case ss_et_RecBufferEmpty:

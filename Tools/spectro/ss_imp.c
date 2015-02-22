@@ -438,7 +438,6 @@ inst_code ss_inst_err(ss *p) {
 		case ss_et_FilterOutOfPos:
 		case ss_et_ProgrammingError:
 			return inst_hardware_fail | ec;
-
 	}
 	return inst_other_error | ec;
 }
@@ -512,7 +511,7 @@ void ss_command(ss *p, double tmo) {
 	p->sbuf[2] = '\00';					/* write_read terminates on nul */
 
 	p->rbuf = p->_rbuf;				/* Reset read pointer */
-	if ((se = p->icom->write_read(p->icom, p->_sbuf, p->_rbuf, SS_MAX_RD_SIZE, "\n", 1, tmo)) != 0) {
+	if ((se = p->icom->write_read(p->icom, p->_sbuf, 0, p->_rbuf, SS_MAX_RD_SIZE, NULL, "\n", 1, tmo)) != 0) {
 		p->snerr = icoms2ss_err(se);
 		return;
 	}

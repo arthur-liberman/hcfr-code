@@ -30,6 +30,9 @@
     New 10.5 and later code is not completely developed/debugged
      - the read and write routines simply error out.
 
+	~~ It turns out that doing CFRetain() on the CFRunLoopRef and CFRunLoopSourceRef
+	   is important (see usbio_ox.c). Make sure that is correct.
+	
     Perhaps we should try using
 
         IOHIDDeviceRegisterInputReportCallback()
@@ -85,7 +88,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__OpenBSD__)
 #include <sys/types.h> 
 #include <usbhid.h> 
 #else	/* assume Linux */ 
@@ -239,10 +242,16 @@ int hid_get_paths(icompaths *p) {
 		        	a1loge(p->log, ICOM_SYS, "hid_get_paths() calloc failed!\n");
 					return ICOM_SYS;
 				}
-				if ((hidd->dpath = strdup(pdidd->DevicePath)) == NULL) {
+				if ((hidd->dpath = calloc(1, strlen(pdidd->DevicePath)+2)) == NULL) {
 		        	a1loge(p->log, ICOM_SYS, "hid_get_paths() calloc failed!\n");
 					return ICOM_SYS;
 				}
+				/* Windows 10 seems to return paths without the leading '\\' */
+				/* (Or are the structure layouts not matching ?) */
+				if (pdidd->DevicePath[0] == '\\' &&
+				    pdidd->DevicePath[1] != '\\')
+					strcpy(hidd->dpath, "\\");
+				strcat(hidd->dpath, pdidd->DevicePath);
 
 				/* Add the path to the list */
 				p->add_hid(p, pname, VendorID, ProductID, 0, hidd, itype);
@@ -523,7 +532,7 @@ char **pnames			/* List of process names to try and kill before opening */
 ) {
 	/* Make sure the port is open */
 	if (!p->is_open) {
-		a1logd(p->log, 8, "hid_open_port: about to open HID port '%s'\n",p->name);
+		a1logd(p->log, 8, "hid_open_port: about to open HID port '%s' path '%s'\n",p->name,p->hidd->dpath);
 
 		p->uflags = hidflags;
 
@@ -538,21 +547,21 @@ char **pnames			/* List of process names to try and kill before opening */
 				                                              != INVALID_HANDLE_VALUE) {
 					memset(&p->hidd->ols,0,sizeof(OVERLAPPED));
   					if ((p->hidd->ols.hEvent = CreateEvent(NULL, 0, 0, NULL)) == NULL) {
-						a1loge(p->log, ICOM_SYS, "hid_open_port: Failed to create HID "
-						                              "Event with %d'\n",GetLastError());
+						a1loge(p->log, ICOM_SYS, "hid_open_port: Failed to create HID Event "
+						                              "with %d'\n",GetLastError());
 						return ICOM_SYS;
 					}
 					break;
 				}
 				if (tries > 0 && pnames != NULL) {
 					/* Open failed. This could be the i1ProfileTray.exe */
-					kill_nprocess(pnames, p->log);
+					kill_nprocess(pnames, p->log);		/* Try and kill it once */
 					msec_sleep(100);
 				}
 			}
 			if (p->hidd->fh == INVALID_HANDLE_VALUE) {
 				a1loge(p->log, ICOM_SYS, "hid_open_port: Failed to open "
-				                     "HID '%s' with %d\n",GetLastError());
+				                     "path '%s' with err %d\n",p->hidd->dpath, GetLastError());
 				return ICOM_SYS;
 			}
 		}

@@ -30,7 +30,6 @@
 # define WIN32_LEAN_AND_MEAN
 # include <windows.h>
 # include <io.h>
-#pragma warning(disable:4013)
 #endif
 
 #if defined (UNIX) || defined(__APPLE__)
@@ -152,15 +151,26 @@ int set_normal_priority();
 
 #ifdef NT
 # define amutex CRITICAL_SECTION 
-# define amutex_static(lock) CRITICAL_SECTION lock = { NULL, -1 } 
+# define amutex_static(lock) CRITICAL_SECTION lock = {(void*)-1,-1 }
 # define amutex_init(lock) InitializeCriticalSection(&(lock))
 # define amutex_del(lock) DeleteCriticalSection(&(lock))
 # define amutex_lock(lock) EnterCriticalSection(&(lock))
 # define amutex_trylock(lock) (!TryEnterCriticalSection(&(lock)))
 # define amutex_unlock(lock) LeaveCriticalSection(&(lock))
+
+# define acond HANDLE
+# define acond_static(cond) pthread_cond_t (cond) = PTHREAD_COND_INITIALIZER
+# define acond_init(cond) (cond = CreateEvent(NULL, 0, 0, NULL))
+# define acond_del(cond) CloseHandle(cond)
+# define acond_wait(cond, lock) (LeaveCriticalSection(&(lock)),	\
+                          WaitForSingleObject(cond, INFINITE),	\
+                          EnterCriticalSection(&(lock)))
+# define acond_signal(cond) SetEvent(cond)
+/* + timeout version */
 #endif
 
 #ifdef UNIX
+
 # define amutex pthread_mutex_t
 # define amutex_static(lock) pthread_mutex_t (lock) = PTHREAD_MUTEX_INITIALIZER
 # define amutex_init(lock) pthread_mutex_init(&(lock), NULL)
@@ -168,6 +178,14 @@ int set_normal_priority();
 # define amutex_lock(lock) pthread_mutex_lock(&(lock))
 # define amutex_trylock(lock) pthread_mutex_trylock(&(lock))
 # define amutex_unlock(lock) pthread_mutex_unlock(&(lock))
+
+# define acond pthread_cond_t
+# define acond_static(cond) pthread_cond_t (cond) = PTHREAD_COND_INITIALIZER
+# define acond_init(cond) pthread_cond_init(&(cond), NULL)
+# define acond_del(cond) pthread_cond_destroy(&(cond))
+# define acond_wait(cond, lock) pthread_cond_wait(&(cond), &(lock))
+# define acond_signal(cond) pthread_cond_signal(&(cond))
+/* + timeout version */
 #endif
 
 /* - - - - - - - - - - - - - - - - - - -- */
@@ -199,7 +217,7 @@ struct _athread {
 
 }; typedef struct _athread athread;
 
-/* Create and start a thread */
+/* Create and start a thread. Return NULL on error. */
 /* Thread function should only return on completion or error. */
 /* It should return 0 on completion or exit, nz on error. */
 athread *new_athread(int (*function)(void *context), void *context);
@@ -257,6 +275,7 @@ typedef enum {
 } sa_ColorSpaceSignature;
 
 extern sa_XYZNumber sa_D50;
+extern sa_XYZNumber sa_D65;
 void sa_SetUnity3x3(double mat[3][3]);
 void sa_Cpy3x3(double out[3][3], double mat[3][3]);
 void sa_MulBy3x3(double out[3], double mat[3][3], double in[3]);
@@ -265,13 +284,17 @@ int sa_Inverse3x3(double out[3][3], double in[3][3]);
 void sa_Transpose3x3(double out[3][3], double in[3][3]);
 void sa_Scale3(double out[3], double in[3], double rat);
 double sa_LabDE(double *in0, double *in1);
-
+void sa_Clamp3(double out[3], double in[3]);
+void sa_XYZ2Lab(sa_XYZNumber *w, double *out0, double *in0);
+/* Yxy to XYZ */
+void sa_Yxy2XYZ(double *out, double *in);
 
 #define icmXYZNumber sa_XYZNumber
 #define icColorSpaceSignature sa_ColorSpaceSignature
 #define icSigXYZData sa_SigXYZData
 #define icSigLabData sa_SigLabData
 #define icmD50 sa_D50
+#define icmD65 sa_D65
 #define icmSetUnity3x3 sa_SetUnity3x3
 #define icmCpy3x3 sa_Cpy3x3
 #define icmMulBy3x3 sa_MulBy3x3
@@ -281,6 +304,8 @@ double sa_LabDE(double *in0, double *in1);
 #define icmScale3 sa_Scale3
 #define icmClamp3 sa_Clamp3
 #define icmLabDE sa_LabDE
+#define icmXYZ2Lab sa_XYZ2Lab
+#define icmYxy2XYZ sa_Yxy2XYZ
 
 /* A subset of numlib */
 
@@ -289,9 +314,6 @@ int sa_lu_psinvert(double **out, double **in, int m, int n);
 #define lu_psinvert sa_lu_psinvert
 
 #endif /* SALONEINSTLIB */
-
-/* - - - - - - - - - - - - - - - - - - -- */
-
 
 /* - - - - - - - - - - - - - - - - - - -- */
 

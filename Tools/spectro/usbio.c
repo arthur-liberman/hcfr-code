@@ -51,25 +51,25 @@ int in_usb_rw = 0;
 void usb_init_cancel(usb_cancelt *p) {
 	
 	amutex_init(p->cmtx);
-	amutex_init(p->cond);
+	amutex_init(p->condx);
 
 	p->hcancel = NULL;
 }
 
 void usb_uninit_cancel(usb_cancelt *p) {
 	amutex_del(p->cmtx);
-	amutex_del(p->cond);
+	amutex_del(p->condx);
 }
 
 /* Used by caller of icoms to re-init for wait_io */
 /* Must be called before icoms_usb_wait_io() */
-extern void usb_reinit_cancel(usb_cancelt *p) {
+void usb_reinit_cancel(usb_cancelt *p) {
 	
 	amutex_lock(p->cmtx);
 
 	p->hcancel = NULL;
 	p->state = 0;
-	amutex_lock(p->cond);		/* Block until IO is started */
+	amutex_lock(p->condx);		/* Block until IO is started */
 
 	amutex_unlock(p->cmtx);
 }
@@ -79,8 +79,8 @@ static int icoms_usb_wait_io(
 	icoms *p,
 	usb_cancelt *cancelt
 ) {
-	amutex_lock(cancelt->cond);		/* Wait for unlock */
-	amutex_unlock(cancelt->cond);	/* Free it up for next time */
+	amutex_lock(cancelt->condx);	/* Wait for unlock */
+	amutex_unlock(cancelt->condx);	/* Free it up for next time */
 	return ICOM_OK;
 }
 
@@ -94,7 +94,7 @@ static int icoms_usb_wait_io(
 #  include "usbio_ox.c"
 # endif
 # if defined(UNIX_X11)
-#  if defined(__FreeBSD__)
+#  if defined(__FreeBSD__) || defined(__OpenBSD__)
 #   include "usbio_bsd.c"
 #  else
 #   include "usbio_lx.c"
@@ -353,7 +353,8 @@ void usb_delete_from_cleanup_list(icoms *p) {
 static int
 icoms_usb_ser_write(
 icoms *p,
-char *wbuf,
+char *wbuf,			/* null terminated unless nch > 0 */
+int nwch,			/* if > 0, number of characters to write */
 double tout)
 {
 	int len, wbytes;
@@ -385,7 +386,10 @@ double tout)
 	else
 		type = icom_usb_trantype_interrutpt;
 
-	len = strlen(wbuf);
+	if (nwch != 0)
+		len = nwch;
+	else
+		len = strlen(wbuf);
 	tout *= 1000.0;		/* Timout in msec */
 
 	top = (int)(tout + 0.5);		/* Timeout period in msecs */
@@ -430,8 +434,9 @@ static int
 icoms_usb_ser_read(icoms *p,
 char *rbuf,			/* Buffer to store characters read */
 int bsize,			/* Buffer size */
-char *tc,			/* Terminating characers, NULL if none */
-int ntc,			/* Number of terminating characters needed to terminate */
+int *pbread,		/* Bytes read (not including forced '\000') */
+char *tc,			/* Terminating characers, NULL for none or char count mode */
+int ntc,			/* Number of terminating characters or char count needed, if 0 use bsize */
 double tout)		/* Time out in seconds */
 {
 	int j, rbytes;
@@ -441,10 +446,6 @@ double tout)		/* Time out in seconds */
 	int ep = p->rd_ep;		/* End point */
 	icom_usb_trantype type;	/* bulk or interrupt */
 	int retrv = ICOM_OK;
-
-#ifdef QUIET_MEMCHECKERS
-	memset(rbuf, 0, bsize);
-#endif
 
 	if (!p->is_open) {
 		a1loge(p->log, ICOM_SYS, "icoms_usb_ser_read: device is not open\n");
@@ -472,7 +473,8 @@ double tout)		/* Time out in seconds */
 		return ICOM_SYS;
 	}
 
-	for (j = 0; j < bsize; j++) rbuf[j] = 0;
+	for (j = 0; j < bsize; j++)
+		rbuf[j] = 0;
  
 	bsize -= 1;				/* Allow space for null */
 	bsize -= p->ms_bytes;	/* Allow space for modem status bytes */
@@ -487,9 +489,11 @@ double tout)		/* Time out in seconds */
 	a1logd(p->log, 8, "\nicoms_usb_ser_read: ep 0x%x, ttop %d, quant %d\n", p->rd_ep, ttop, p->rd_qa);
 
 	/* Until data is all read, we time out, or the user aborts */
-	stime = msec_time();
+	etime = stime = msec_time();
 	top = ttop;
-	for (j = 0; top > 0 && bsize > 1 && j < ntc ;) {
+	j = (tc == NULL && ntc <= 0) ? -1 : 0;
+
+	for (; top > 0 && bsize > 0 && j < ntc ;) {
 		int c, rv;
 		int rsize = p->rd_qa < bsize ? p->rd_qa : bsize; 
 
@@ -503,9 +507,10 @@ double tout)		/* Time out in seconds */
 			/* Account for modem status bytes. Modem bytes are per usb read. */
 			if (p->ms_bytes) {		/* Throw away modem bytes */
 				int nb = rbytes < p->ms_bytes ? rbytes : p->ms_bytes;
+				a1logd(p->log, 8, "icoms_usb_ser_read: discarded %d modem bytes 0x%02x 0x%02x\n",nb,nb >= 1 ? (rbuf[0] & 0xff) : 0, nb >= 2 ? (rbuf[1] & 0xff) : 0);
 				rbytes -= nb;
 				memmove(rbuf, rbuf+nb, rbytes);
-				a1logd(p->log, 8, "icoms_usb_ser_read: discarded %d modem bytes\n",nb);
+				rbuf[rbytes] = 0;
 			}
 
 			a1logd(p->log, 8, "icoms_usb_ser_read: read %d bytes, rbuf = '%s'\n",rbytes,icoms_fix(rrbuf));
@@ -521,7 +526,10 @@ double tout)		/* Time out in seconds */
 						tcp++;
 					}
 				}
+				a1logd(p->log, 8, "icoms_usb_ser_read: tc count %d\n",j);
 			} else {
+				if (ntc > 0)
+					j += rbytes;
 				rbuf += rbytes;
 			}
 		}
@@ -534,14 +542,20 @@ double tout)		/* Time out in seconds */
 		}
 
 		top = ttop - (etime - stime);	/* Remaining time */
-		if (top <= 0) {					/* Run out of time */
-			a1logd(p->log, 8, "icoms_usb_ser_read: read ran out of time\n");
-			retrv |= ICOM_TO; 
-			break;
-		}
 	}
 
 	*rbuf = '\000';
+	a1logd(p->log, 8, "icoms_usb_ser_read: read %d total bytes\n",rbuf - rrbuf);
+	if (pbread != NULL)
+		*pbread = (rbuf - rrbuf);
+
+	/* If ran out of time and not completed */
+	a1logd(p->log, 8, "icoms_usb_ser_read: took %d msec\n",etime - stime);
+	if (top <= 0 && bsize > 0 && j < ntc) {
+		a1logd(p->log, 8, "icoms_usb_ser_read: read ran out of time\n");
+		a1logd(p->log, 8, "ttop %d, etime - stime %d\n",ttop,etime - stime);
+		retrv |= ICOM_TO; 
+	}
 
 	a1logd(p->log, 8, "icoms_usb_ser_read: returning '%s' ICOM err 0x%x\n",icoms_fix(rrbuf),retrv);
 

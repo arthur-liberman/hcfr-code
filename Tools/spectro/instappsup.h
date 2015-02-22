@@ -77,7 +77,8 @@ inst_code inst_handle_calibrate(
 	inst_cal_cond calc,		/* Current calibration condition */
 	inst_code (*disp_setup) (inst *p, inst_cal_cond calc, disp_win_info *dwi),
 							/* Callback for handling a display calibration - May be NULL */
-	disp_win_info *dwi		/* Information to be able to open a display test patch - May be NULL */
+	disp_win_info *dwi,		/* Information to be able to open a display test patch - May be NULL */
+	int doimmediately		/* If nz, don't wait for user, calibrate immediatley */
 );
 
 /* ============================================================================= */

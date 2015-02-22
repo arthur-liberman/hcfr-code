@@ -35,8 +35,6 @@
 #endif
 
 /* =========================================================== */
-/* Should this go in spectro/conv.h ??                         */
-/* =========================================================== */
 /* Platform specific primitive defines. */
 /* This really needs checking for each different platform. */
 /* Using C99 and MSC covers a lot of cases, */
@@ -45,7 +43,16 @@
 /* so long shouldn't really be used in any code.... */
 /* (duplicated in icc.h) */ 
 
-#if (__STDC_VERSION__ >= 199901L)	/* C99 */
+/* Use __LP64__ as cross platform 64 bit pointer #define */
+#if !defined(__LP64__) && defined(_WIN64)
+# define __LP64__ 1
+#endif
+
+#ifndef ORD32
+
+#if (__STDC_VERSION__ >= 199901L)	/* C99 */		\
+ || defined(_STDINT_H_) || defined(_STDINT_H)		\
+ || defined(_SYS_TYPES_H)
 
 #include <stdint.h> 
 
@@ -60,17 +67,11 @@
 
 #define PNTR intptr_t
 
-/* printf format precision specifier */
-#define PF64PREC "ll"
-
-/* Constant precision specifier */
-#define CF64PREC "LL"
-
-#ifndef ATTRIBUTE_NORETURN
-# define ATTRIBUTE_NORETURN __declspec(noreturn)
-#endif
+#define PF64PREC "ll"		/* printf format precision specifier */
+#define CF64PREC "LL"		/* Constant precision specifier */
 
 #else  /* !__STDC_VERSION__ */
+
 #ifdef _MSC_VER
 
 #define INR8   __int8				/* 8 bit signed */
@@ -86,15 +87,8 @@
 
 #define vsnprintf _vsnprintf
 
-/* printf format precision specifier */
-#define PF64PREC "I64"
-
-/* Constant precision specifier */
-#define CF64PREC "LL"
-
-#ifndef ATTRIBUTE_NORETURN
-# define ATTRIBUTE_NORETURN __declspec(noreturn)
-#endif
+#define PF64PREC "I64"				/* printf format precision specifier */
+#define CF64PREC "LL"				/* Constant precision specifier */
 
 #else  /* !_MSC_VER */
 
@@ -109,26 +103,31 @@
 #define ORD32  unsigned int		/* 32 bit unsigned */
 
 #ifdef __GNUC__
-#define INR64  long long			/* 64 bit signed - not used in icclib */
-#define ORD64  unsigned long long	/* 64 bit unsigned - not used in icclib */
-
-/* printf format precision specifier */
-#define PF64PREC "ll"
-
-/* Constant precision specifier */
-#define CF64PREC "LL"
-
-#ifndef ATTRIBUTE_NORETURN
-#define ATTRIBUTE_NORETURN __attribute__((noreturn))
-#endif
-
-#endif	/* __GNUC__ */
-/* =========================================================== */
+# define INR64  long long			/* 64 bit signed - not used in icclib */
+# define ORD64  unsigned long long	/* 64 bit unsigned - not used in icclib */
+# define PF64PREC "ll"			/* printf format precision specifier */
+# define CF64PREC "LL"			/* Constant precision specifier */
+#endif /* __GNUC__ */
 
 #define PNTR unsigned long 
 
 #endif /* !_MSC_VER */
 #endif /* !__STDC_VERSION__ */
+#endif /* !ORD32 */
+
+#ifdef _MSC_VER
+#ifndef ATTRIBUTE_NORETURN
+# define ATTRIBUTE_NORETURN __declspec(noreturn)
+#endif
+#endif
+
+#ifdef __GNUC__
+#ifndef ATTRIBUTE_NORETURN
+# define ATTRIBUTE_NORETURN __attribute__((noreturn))
+#endif
+#endif
+
+/* =========================================================== */
 /* Some default math limits and constants */
 #ifndef DBL_EPSILON
 #define DBL_EPSILON     2.2204460492503131e-016		/* 1.0+DBL_EPSILON != 1.0 */
@@ -187,7 +186,7 @@
 
 struct _a1log {
 	int refc;					/* Reference count */
-	char *tag;						/* Optional tag name */
+	char *tag;					/* Optional tag name */
 	int verb;					/* Current verbosity level (public) */
 	int debug;					/* Current debug level (public) */
 
@@ -276,6 +275,20 @@ extern int ret_null_on_malloc_fail;
 extern void check_if_not_interactive();
 extern int not_interactive;
 extern char cr_char;
+
+/* =========================================================== */
+
+
+/* =========================================================== */
+
+/* reallocate and clear new allocation */
+void *recalloc(		/* Return new address */
+void *ptr,			/* Current address */
+size_t cnum,		/* Current number and unit size */
+size_t csize,
+size_t nnum,		/* New number and unit size */
+size_t nsize
+); 
 
 /* =========================================================== */
 

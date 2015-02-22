@@ -85,7 +85,9 @@ struct _dtp92 {
 	inst_disptypesel *dtlist;	/* Display Type list */
 	int ndtlist;				/* Number of valid dtlist entries */
 	int icx;					/* Internal calibration index, 0 = CRT, 1 = LCD */
-	int cbid;					/* calibration base ID, 0 if not a base */
+	disptech dtech;				/* Display technology enum */
+	int cbid;					/* current calibration base ID, 0 if not a base */
+	int ucbid;					/* Underlying base ID if being used for matrix, 0 othewise */
 	int refrmode;				/* 0 for constant, 1 for refresh display */
 	double ccmat[3][3];			/* Colorimeter correction matrix */
 

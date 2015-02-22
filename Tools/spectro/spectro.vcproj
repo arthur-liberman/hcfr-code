@@ -188,6 +188,18 @@
 				>
 			</File>
 			<File
+				RelativePath=".\dtp22.c"
+				>
+			<File
+				RelativePath=".\dtp41.c"
+				>
+			</File>
+			<File
+				RelativePath=".\dtp51.c"
+				>
+			</File>
+			</File>
+			<File
 				RelativePath=".\dtp92.c"
 				>
 			</File>
@@ -252,6 +264,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\klein10.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mongoose.c"
+				>
+			</File>
+			<File
 				RelativePath=".\munki.c"
 				>
 			</File>
@@ -276,7 +296,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ss.c"
+				>
+			</File>
+			<File
+				RelativePath=".\ss_imp.c"
+				>
+			</File>
+			<File
 				RelativePath=".\specbos.c"
+				>
+			</File>
+			<File
+				RelativePath=".\disptechs.c"
 				>
 			</File>
 			<File
@@ -346,6 +378,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\disptechs.h"
+				>
+			</File>
+			<File
 				RelativePath=".\dtp20.h"
 				>
 			</File>
@@ -408,6 +444,14 @@
 			<File
 				RelativePath=".\insttypes.h"
 				>
+			<File
+				RelativePath=".\klein10.h"
+				>
+			</File>
+			<File
+				RelativePath=".\munki.h"
+				>
+			</File>
 			</File>
 			<File
 				RelativePath=".\munki.h"

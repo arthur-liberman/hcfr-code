@@ -16,6 +16,13 @@
  *
  */
 
+/*
+	Notes :-
+		Although we have made an allowance for a Spyder 1 PLD pattern,
+		we know nothing about it, or even if it exists...
+
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -45,7 +52,9 @@
 #include "xspect.h"
 #include "conv.h"
 #include "aglob.h"
+#include "disptechs.h"
 #include "ccss.h"
+#include "disptechs.h"
 #include "LzmaDec.h"
 #include "oemarch.h"
 
@@ -56,9 +65,9 @@
 oem_target oemtargs = {
 #ifdef NT
 	{	/* Installed files */
-		{ "/ColorVision/Spyder2express/CVSpyder.dll",    targ_spyd_pld, file_dllcab },
-		{ "/ColorVision/Spyder2pro/CVSpyder.dll",        targ_spyd_pld, file_dllcab },
-		{ "/PANTONE COLORVISION/ColorPlus/CVSpyder.dll", targ_spyd_pld, file_dllcab },
+		{ "/ColorVision/Spyder2express/CVSpyder.dll",    targ_spyd2_pld, file_dllcab },
+		{ "/ColorVision/Spyder2pro/CVSpyder.dll",        targ_spyd2_pld, file_dllcab },
+		{ "/PANTONE COLORVISION/ColorPlus/CVSpyder.dll", targ_spyd2_pld, file_dllcab },
 		{ "/Datacolor/Spyder4Express/dccmtr.dll",        targ_spyd_cal, file_dllcab },
 		{ "/Datacolor/Spyder4Pro/dccmtr.dll",            targ_spyd_cal, file_dllcab },
 		{ "/Datacolor/Spyder4Elite/dccmtr.dll",          targ_spyd_cal, file_dllcab },
@@ -67,14 +76,16 @@ oem_target oemtargs = {
 		{ NULL }
 	},
 	{	/* Volume names */
-		{ "ColorVision",      targ_spyd_pld | targ_spyd_cal },
-		{ "Datacolor",        targ_spyd_pld | targ_spyd_cal },
+		{ "ColorVision",      targ_spyd2_pld | targ_spyd_cal },
+		{ "Datacolor",        targ_spyd2_pld | targ_spyd_cal },
 		{ "i1Profiler",       targ_i1d3_edr },
 		{ "ColorMunki Displ", targ_i1d3_edr },
 		{ NULL }
 	},
 	{	/* Archive names */
-		{ "/setup/setup.exe",                      targ_spyd_pld },
+		{ "/PhotoCAL/PhotoCAL Setup.exe",          targ_spyd2_pld },
+		{ "/OptiCAL/OptiCAL Setup.exe",            targ_spyd2_pld },
+		{ "/setup/setup.exe",                      targ_spyd2_pld },
 		{ "/Data/setup.exe",                       targ_spyd_cal },
 		{ "/Installer/Setup.exe",                  targ_i1d3_edr },
 		{ "/Installer/ColorMunkiDisplaySetup.exe", targ_i1d3_edr },
@@ -83,8 +94,8 @@ oem_target oemtargs = {
 #endif /* NT */
 #ifdef __APPLE__
 	{	/* Installed files */
-		{ "/Applications/Spyder2express 2.2/Spyder2express.app/Contents/MacOSClassic/Spyder.lib", targ_spyd_pld },
-		{ "/Applications/Spyder2pro 2.2/Spyder2pro.app/Contents/MacOSClassic/Spyder.lib", targ_spyd_pld },
+		{ "/Applications/Spyder2express 2.2/Spyder2express.app/Contents/MacOSClassic/Spyder.lib", targ_spyd2_pld },
+		{ "/Applications/Spyder2pro 2.2/Spyder2pro.app/Contents/MacOSClassic/Spyder.lib", targ_spyd2_pld },
 
 		{ "/Library/Application Support/X-Rite/Devices/i1d3xrdevice/Contents/Resources/Calibrations/*.edr", targ_i1d3_edr },
 		{ "/Library/Application Support/X-Rite/Frameworks/XRiteDevice.framework/PlugIns/i1d3.xrdevice/Contents/Resources/Calibrations/*.edr",targ_i1d3_edr },
@@ -92,14 +103,16 @@ oem_target oemtargs = {
 		{ NULL }
 	},
 	{	/* Volume names */
-		{ "/Volumes/ColorVision",        targ_spyd_pld | targ_spyd_cal },
-		{ "/Volumes/Datacolor",          targ_spyd_pld | targ_spyd_cal },
+		{ "/Volumes/ColorVision",        targ_spyd2_pld | targ_spyd_cal },
+		{ "/Volumes/Datacolor",          targ_spyd2_pld | targ_spyd_cal },
 		{ "/Volumes/i1Profiler",         targ_i1d3_edr },
 		{ "/Volumes/ColorMunki Display", targ_i1d3_edr },
 		{ NULL }
 	},
 	{	/* Archive names */
-		{ "/setup/setup.exe",                      targ_spyd_pld },
+		{ "/PhotoCAL/PhotoCAL Setup.exe",          targ_spyd2_pld },
+		{ "/OptiCAL/OptiCAL Setup.exe",            targ_spyd2_pld },
+		{ "/setup/setup.exe",                      targ_spyd2_pld },
 		{ "/Data/setup.exe",                       targ_spyd_cal },
 		{ "/Installer/Setup.exe",                  targ_i1d3_edr },
 		{ "/Installer/ColorMunkiDisplaySetup.exe", targ_i1d3_edr },
@@ -111,20 +124,22 @@ oem_target oemtargs = {
 		{ NULL }
 	},
 	{	/* Volume names the CDROM may have */
-		{ "/media/ColorVision", targ_spyd_pld | targ_spyd_cal },
-		{ "/media/Datacolor",   targ_spyd_pld | targ_spyd_cal },
+		{ "/media/ColorVision", targ_spyd2_pld | targ_spyd_cal },
+		{ "/media/Datacolor",   targ_spyd2_pld | targ_spyd_cal },
 		{ "/media/i1Profiler",	                                targ_i1d3_edr },
 		{ "/media/ColorMunki Displ",	                        targ_i1d3_edr },
-		{ "/mnt/cdrom",         targ_spyd_pld | targ_spyd_cal | targ_i1d3_edr },
-		{ "/mnt/cdrecorder",    targ_spyd_pld | targ_spyd_cal | targ_i1d3_edr },
-		{ "/media/cdrom",       targ_spyd_pld | targ_spyd_cal | targ_i1d3_edr },
-		{ "/media/cdrecorder",  targ_spyd_pld | targ_spyd_cal | targ_i1d3_edr },
-		{ "/cdrom",             targ_spyd_pld | targ_spyd_cal | targ_i1d3_edr },
-		{ "/cdrecorder",        targ_spyd_pld | targ_spyd_cal | targ_i1d3_edr },
+		{ "/mnt/cdrom",         targ_spyd2_pld | targ_spyd_cal | targ_i1d3_edr },
+		{ "/mnt/cdrecorder",    targ_spyd2_pld | targ_spyd_cal | targ_i1d3_edr },
+		{ "/media/cdrom",       targ_spyd2_pld | targ_spyd_cal | targ_i1d3_edr },
+		{ "/media/cdrecorder",  targ_spyd2_pld | targ_spyd_cal | targ_i1d3_edr },
+		{ "/cdrom",             targ_spyd2_pld | targ_spyd_cal | targ_i1d3_edr },
+		{ "/cdrecorder",        targ_spyd2_pld | targ_spyd_cal | targ_i1d3_edr },
 		{ NULL }
 	},
 	{	/* Archive names */
-		{ "/setup/setup.exe",                      targ_spyd_pld },
+		{ "/PhotoCAL/PhotoCAL Setup.exe",          targ_spyd2_pld },
+		{ "/OptiCAL/OptiCAL Setup.exe",            targ_spyd2_pld },
+		{ "/setup/setup.exe",                      targ_spyd2_pld },
 		{ "/Data/setup.exe",                       targ_spyd_cal },
 		{ "/Installer/Setup.exe",                  targ_i1d3_edr },
 		{ "/Installer/ColorMunkiDisplaySetup.exe", targ_i1d3_edr },
@@ -163,6 +178,7 @@ int is_dll(xfile *xf);
 static xfile *vise_extract(xfile **pxf, xfile *xi, char *tfilename, int verb);
 static xfile *spyd2pld_extract(xfile **pxf, xfile *dll, int verb);
 static xfile *spyd4cal_extract(xfile **pxf, xfile *dll, int verb);
+int is_s1pld(xfile *xf);
 int is_s2pld(xfile *xf);
 int is_s4cal(xfile *xf);
 
@@ -270,8 +286,8 @@ xfile *oemarch_get_ifiles(xfile *files, int verb) {
 			continue;
 		}
 
-		/* If this could be spyder 2 PLD pattern: */
-		if (arch->ttype & targ_spyd_pld) {
+		/* If this could be spyder 1/2 PLD pattern: */
+		if (arch->ttype & (targ_spyd1_pld | targ_spyd2_pld)) {
 			xfile *dll = NULL;		/* dccmtr.dll */
 	
 			if (vise_extract(&nfiles, arch, "CVSpyder.dll", verb) != NULL)
@@ -356,8 +372,8 @@ xfile *oemarch_get_ifiles(xfile *files, int verb) {
 			continue;
 		}
 
-		/* If this could be spyder 2 PLD pattern: */
-		if (dllcab->ttype & targ_spyd_pld) {
+		/* If this could be spyder 1/2 PLD pattern: */
+		if (dllcab->ttype & (targ_spyd1_pld | targ_spyd2_pld)) {
 	
 			if (spyd2pld_extract(&nfiles, dllcab, verb) != NULL)
 				continue;
@@ -415,6 +431,12 @@ xfile *oemarch_get_ifiles(xfile *files, int verb) {
 	del_xf(ofiles);
 	nfiles = NULL;
 
+	/* Mark any files that wern't recognized as unknown */
+	for (i = 0; files[i].name != NULL; i++) {
+		if (files[i].ttype & targ_unknown)
+			files[i].ttype = targ_unknown;
+	}
+
 #ifdef DEBUG
 	list_files("Returning", files);
 	printf("\n");
@@ -429,13 +451,13 @@ xfile *oemarch_get_ifiles(xfile *files, int verb) {
 void classify_file(xfile *xf, int verb) {
 	if (is_dll(xf)) {
 		xf->ftype = file_dllcab;
-		xf->ttype &= (targ_spyd_pld | targ_spyd_cal);
+		xf->ttype &= (targ_spyd1_pld | targ_spyd2_pld | targ_spyd_cal);
 		if (verb) printf("'%s' seems to be a .dll file\n",xf->name);
 		return;
 	}
 	if (is_vise(xf)) {
 		xf->ftype = file_arch;
-		xf->ttype &= (targ_spyd_pld | targ_spyd_cal);
+		xf->ttype &= (targ_spyd1_pld | targ_spyd2_pld | targ_spyd_cal);
 		if (verb) printf("'%s' seems to be a VISE archive\n",xf->name);
 		return;
 	}
@@ -463,9 +485,15 @@ void classify_file(xfile *xf, int verb) {
 		if (verb) printf("'%s' seems to be a .ccmx\n",xf->name);
 		return;
 	}
+	if (is_s1pld(xf)) {
+		xf->ftype = file_data;
+		xf->ttype &= targ_spyd1_pld;
+		if (verb) printf("'%s' seems to be a Spyder 1 PLD file\n",xf->name);
+		return;
+	}
 	if (is_s2pld(xf)) {
 		xf->ftype = file_data;
-		xf->ttype &= targ_spyd_pld;
+		xf->ttype &= targ_spyd2_pld;
 		if (verb) printf("'%s' seems to be a Spyder 2 PLD file\n",xf->name);
 		return;
 	}
@@ -476,8 +504,9 @@ void classify_file(xfile *xf, int verb) {
 		return;
 	}
 	/* Hmm. */
-	if (verb) printf("'%s' is unknown\n",xf->name);
+	if (verb) printf("'%s' is unknown - assume it's an archive\n",xf->name);
 	xf->ftype = file_arch | file_dllcab | file_data;
+	xf->ttype |= targ_unknown;
 }
 
 /* ============================================================================= */
@@ -638,6 +667,7 @@ static xfile *locate_read_archive(xfile *vol, int verb) {
 		}
 
 		strcpy(ap, oemtargs.archnames[j].path);
+		if (verb > 1) printf("Looking for archive '%s'\n",buf);
 		if (sys_access(buf, 0) == 0) {
 			if (verb) printf("found\n");
 			new_add_xf(&xf, buf, NULL, 0, file_arch, ttype);
@@ -726,7 +756,7 @@ xfile *add_xf(xfile **l) {
 		;
 
 	if ((*l = (xfile *)realloc(*l, (n+2) * sizeof(xfile))) == NULL)
-		error("new_xf: Failed to realloc xfile structure");
+		error("new_xf: Failed to realloc xfile structure of %d x %d bytes",(n+2), sizeof(xfile));
 	(*l)[n+1].name = NULL;		/* End marker */
 	(*l)[n+1].buf = NULL;
 	(*l)[n+1].len = 0;
@@ -1098,7 +1128,7 @@ static xfile *vise_extract(xfile **pxf, xfile *arch, char *tfilename, int verb) 
 		printf("Input file '%s' is a VISE archive file base 0x%x\n",arch->name,vi->vbase);
 
 	if (vi->locate_file(vi, tfilename)) {
-		if (verb) printf("Failed to locate file '%s' in VISE archive",tfilename);
+		if (verb) printf("Failed to locate file '%s' in VISE archive\n",tfilename);
 		return NULL;
 	}
 
@@ -1141,7 +1171,22 @@ static xfile *vise_extract(xfile **pxf, xfile *arch, char *tfilename, int verb) 
 }
 
 /* ============================================================================= */
-/* Spyder 2 PLD pattern extraction */
+/* Spyder 1/2 PLD pattern extraction */
+
+int is_s1pld(xfile *xf) {
+
+	if (xf->len != 6817)
+		return 0;
+
+	/* Deobscured signature */
+	if (xf->buf[0] == 0xff
+	 && xf->buf[1] == 0x04
+	 && xf->buf[2] == 0xb0
+	 && xf->buf[3] == 0x0a
+	 && xf->buf[7] == 0x57)
+		return 1;
+	return 0;
+}
 
 int is_s2pld(xfile *xf) {
 
@@ -1151,7 +1196,8 @@ int is_s2pld(xfile *xf) {
 	if (xf->buf[0] == 0xff
 	 && xf->buf[1] == 0x04
 	 && xf->buf[2] == 0xb0
-	 && xf->buf[3] == 0x0a)
+	 && xf->buf[3] == 0x0a
+	 && xf->buf[7] == 0xd7)
 		return 1;
 	return 0;
 }
@@ -1164,7 +1210,9 @@ static xfile *spyd2pld_extract(xfile **pxf, xfile *dll, int verb) {
 	unsigned char *firmware;
 	unsigned int firmwaresize;
 	/* First few bytes of the standard Xilinx XCS05XL PLD pattern */
-	unsigned char magic[4] = { 0xff, 0x04, 0xb0, 0x0a };
+	unsigned char magic1[4] = { 0xff, 0x94, 0xCB, 0x02 };
+	unsigned char magic2[4] = { 0xff, 0x04, 0xb0, 0x0a };
+	int isOld = 0;				/* Old pattern - SpyderPro Optical etc. */
 	xfile *xf = NULL;
 
 	buf = dll->buf;
@@ -1173,22 +1221,38 @@ static xfile *spyd2pld_extract(xfile **pxf, xfile *dll, int verb) {
 	firmwaresize = 6817;
 	rfsize = (firmwaresize + 7) & ~7;
 
-	/* Search for start of PLD pattern */
-	for(i = 0; (i + rfsize) < size ;i++) {
-		if (buf[i] == magic[0]) {
+	/* Search for start of Spyder 1 PLD pattern */
+	for (i = 0; (i + rfsize) < size ;i++) {
+		if (buf[i] == magic1[0]) {
 			for (j = 0; j < 4; j++) {
-				if (buf[i + j] != magic[j])
+				if (buf[i + j] != magic1[j])
 					break;
 			}
 			if (j >= 4)
 				break;		/* found it */
 		}
 	}
-	if ((i + rfsize) >= size) {
-		if (verb) printf("Failed to locate Spyder 2 firmware in '%s'\n",dll->name);
-		return NULL;
-	}
 
+	if ((i + rfsize) < size) {		/* Found Spyder 1 PLD pattern */
+		isOld = 1;
+	} else {
+
+		/* Search for start of Spyder 2 PLD pattern */
+		for (i = 0; (i + rfsize) < size ;i++) {
+			if (buf[i] == magic2[0]) {
+				for (j = 0; j < 4; j++) {
+					if (buf[i + j] != magic2[j])
+						break;
+				}
+				if (j >= 4)
+					break;		/* found it */
+			}
+		}
+		if ((i + rfsize) >= size) {
+			if (verb) printf("Failed to locate Spyder 2 firmware in '%s'\n",dll->name);
+			return NULL;
+		}
+	}
 	firmware = buf + i;
 
 	xf = add_xf(pxf);
@@ -1201,10 +1265,17 @@ static xfile *spyd2pld_extract(xfile **pxf, xfile *dll, int verb) {
 		fprintf(stderr,"malloc failed for Spyder 2 PLD pattern (%d bytes)\n",firmwaresize);
 		exit(-1);
 	}
-	memcpy(xf->buf, firmware, firmwaresize);
+	if (isOld) {	/* Old Spyder w PLD pattern is obscured */
+		for (i = 0; i < firmwaresize; i++) {
+			int j = (3347 * i) % 0x1AA2;
+			xf->buf[i] = i ^ firmware[j];
+		}
+	} else {
+		memcpy(xf->buf, firmware, firmwaresize);
+	}
 	xf->len = firmwaresize;
 	xf->ftype = file_data;
-	xf->ttype = targ_spyd_pld;
+	xf->ttype = targ_spyd2_pld;
 
 	if (verb) printf("Returning '%s' length %ld from '%s'\n",xf->name, xf->len, dll->name);
 
@@ -1468,9 +1539,7 @@ static ccss *parse_EDR(
 	char creatdate[30];
 	char dispdesc[256];
 	int ttmin, ttmax;	/* Min & max technology strings (inclusive) */
-	int *trefmodes;		/* Corresponding refresh mode for tecnology */
-	char **tsels;		/* Corresponding UI selection chars */
-	char **ttstrings;	/* Corresponding technology strings */
+	disptech *tdtypes;	/* Corresponding ArgyllCMS display techology enumeration */
 	int ttype;			/* Technology type idex */
 	int nsets, set;
 	xspect *samples = NULL, sp;
@@ -1479,55 +1548,46 @@ static ccss *parse_EDR(
 	int nsamples;
 	ccss *rv;
 
-	/* We hard code the Technology strings for now. In theory we could */
-	/* read them from the TechnologyStrings.txt file that comes with the .edr's */
+	/* We hard code the mapping between the .edr display technology and the */
+	/* ArgyllCMS equivalent. We could in theory figure it out by reading the */
+	/* TechnologyStrings.txt file that comes with the .edr's */
 	{
 		ttmin = 0;
 		ttmax = 22;
-		if ((ttstrings = (char **)malloc(sizeof(char *) * (ttmax - ttmin + 2))) == NULL) {
-			if (verb) printf("Malloc failed\n");
-			return NULL;
-		}
-		if ((trefmodes = (int *)malloc(sizeof(int) * (ttmax - ttmin + 2))) == NULL) {
-			free(ttstrings);
-			if (verb) printf("Malloc failed\n");
-			return NULL;
-		}
-		if ((tsels = (char **)malloc(sizeof(char *) * (ttmax - ttmin + 2))) == NULL) {
-			free(trefmodes);
-			free(ttstrings);
+		if ((tdtypes = (disptech *)malloc(sizeof(disptech) * (ttmax - ttmin + 2))) == NULL) {
 			if (verb) printf("Malloc failed\n");
 			return NULL;
 		}
 
-		trefmodes[0]  = 0; tsels[0]  = NULL; ttstrings[0]  = "Color Matching Function";
-		trefmodes[1]  = 0; tsels[1]  = NULL; ttstrings[1]  = "Custom";
-		trefmodes[2]  = 1; tsels[2]  = "c";  ttstrings[2]  = "CRT";
-		trefmodes[3]  = 0; tsels[3]  = "l";  ttstrings[3]  = "LCD CCFL IPS";
-		trefmodes[4]  = 0; tsels[4]  = NULL; ttstrings[4]  = "LCD CCFL VPA";
-		trefmodes[5]  = 0; tsels[5]  = NULL; ttstrings[5]  = "LCD CCFL TFT";
-		trefmodes[6]  = 0; tsels[6]  = "L";  ttstrings[6]  = "LCD CCFL Wide Gamut IPS";
-		trefmodes[7]  = 0; tsels[7]  = NULL; ttstrings[7]  = "LCD CCFL Wide Gamut VPA";
-		trefmodes[8]  = 0; tsels[8]  = NULL; ttstrings[8]  = "LCD CCFL Wide Gamut TFT";
-		trefmodes[9]  = 0; tsels[9]  = "e";  ttstrings[9]  = "LCD White LED IPS";
-		trefmodes[10] = 0; tsels[10] = NULL; ttstrings[10] = "LCD White LED VPA";
-		trefmodes[11] = 0; tsels[11] = NULL; ttstrings[11] = "LCD White LED TFT";
-		trefmodes[12] = 0; tsels[12] = "b";  ttstrings[12] = "LCD RGB LED IPS";
-		trefmodes[13] = 0; tsels[13] = NULL; ttstrings[13] = "LCD RGB LED VPA";
-		trefmodes[14] = 0; tsels[14] = NULL; ttstrings[14] = "LCD RGB LED TFT";
-		trefmodes[15] = 0; tsels[15] = "o";  ttstrings[15] = "LED OLED";
-		trefmodes[16] = 0; tsels[16] = "a";  ttstrings[16] = "LED AMOLED";
-		trefmodes[17] = 1; tsels[17] = "m";  ttstrings[17] = "Plasma";
-		trefmodes[18] = 0; tsels[18] = NULL; ttstrings[18] = "LCD RG Phosphor";
-		trefmodes[19] = 1; tsels[19] = NULL; ttstrings[19] = "Projector RGB Filter Wheel";
-		trefmodes[20] = 1; tsels[10] = NULL; ttstrings[20] = "Projector RGBW Filter Wheel";
-		trefmodes[21] = 1; tsels[21] = NULL; ttstrings[21] = "Projector RGBCMY Filter Wheel";
-		trefmodes[22] = 0; tsels[22] = "p";  ttstrings[22] = "Projector";
-		trefmodes[23] = 0; tsels[23] = NULL; ttstrings[23] = "Unknown";
+		tdtypes[0]  = disptech_unknown; /* CMF */
+		tdtypes[1]  = disptech_unknown; /* Custom */
+		tdtypes[2]  = disptech_crt;
+		tdtypes[3]  = disptech_lcd_ccfl_ips;
+		tdtypes[4]  = disptech_lcd_ccfl_vpa;
+		tdtypes[5]  = disptech_lcd_ccfl_tft;
+		tdtypes[6]  = disptech_lcd_ccfl_wg_ips;
+		tdtypes[7]  = disptech_lcd_ccfl_wg_vpa;
+		tdtypes[8]  = disptech_lcd_ccfl_wg_tft;
+		tdtypes[9]  = disptech_lcd_wled_ips;
+		tdtypes[10] = disptech_lcd_wled_vpa;
+		tdtypes[11] = disptech_lcd_wled_tft;
+		tdtypes[12] = disptech_lcd_rgbled_ips;
+		tdtypes[13] = disptech_lcd_rgbled_vpa;
+		tdtypes[14] = disptech_lcd_rgbled_tft;
+		tdtypes[15] = disptech_oled;
+		tdtypes[16] = disptech_amoled;
+		tdtypes[17] = disptech_plasma;
+		tdtypes[18] = disptech_lcd_rgledp;
+		tdtypes[19] = disptech_dlp_rgb;
+		tdtypes[10] = disptech_dlp_rgbw;
+		tdtypes[21] = disptech_dlp_rgbcmy;
+		tdtypes[22] = disptech_dlp;
+		tdtypes[23] = disptech_unknown;
 	}
 
 	if (len < 600) {
 		if (verb) printf("Unable to read '%s' header\n",name);
+		if (tdtypes != NULL) free(tdtypes);
 		return NULL;
 	}
 	nbuf = buf + 600;		/* Next time we "read" the file */
@@ -1536,6 +1596,7 @@ static ccss *parse_EDR(
 	/* See if it has the right file ID */
 	if (strncmp("EDR DATA1", (char *)buf, 16) != 0) {
 		if (verb) printf("File '%s' isn't an EDR\n",name);
+		if (tdtypes != NULL) free(tdtypes);
 		return NULL;
 	}
 
@@ -1556,6 +1617,7 @@ static ccss *parse_EDR(
 
 	if (nsets < 3 || nsets > 100) {
 		if (verb) printf("File '%s' number of data sets %d out of range\n",name,nsets);
+		if (tdtypes != NULL) free(tdtypes);
 		return NULL;
 	}
 
@@ -1569,6 +1631,7 @@ static ccss *parse_EDR(
 	hasspec = buf2short(buf + 0x022E);
 	if (hasspec != 1) {
 		if (verb) printf("Has Data flag != 1 in EDR file '%s'\n",name);
+		if (tdtypes != NULL) free(tdtypes);
 		return NULL;
 	}
 	
@@ -1590,6 +1653,7 @@ static ccss *parse_EDR(
 		/* Allocate space for the sets */
 		if ((samples = (xspect *)malloc(sizeof(xspect) * nsets)) == NULL) {
 			if (verb) printf("Malloc of spectral samples failed\n");
+			if (tdtypes != NULL) free(tdtypes);
 			return NULL;
 		}
 	}
@@ -1603,6 +1667,7 @@ static ccss *parse_EDR(
 		if (len < 128) {
 			if (verb) printf("Unable to read file '%s' set %d data header\n",name,set);
 			if (samples != NULL) free(samples);
+			if (tdtypes != NULL) free(tdtypes);
 			return NULL;
 		}
 		nbuf = buf + 128;		/* Next time we "read" the file */
@@ -1612,6 +1677,7 @@ static ccss *parse_EDR(
 		if (strncmp("DISPLAY DATA", (char *)buf, 16) != 0) {
 			if (verb) printf("File '%s' set %d data header has unknown identifier\n",name,set);
 			if (samples != NULL) free(samples);
+			if (tdtypes != NULL) free(tdtypes);
 			return NULL;
 		}
 
@@ -1626,6 +1692,7 @@ static ccss *parse_EDR(
 		if (len < 28) {
 			if (verb) printf("Unable to read file '%s' set %d spectral data  header\n",name,set);
 			if (samples != NULL) free(samples);
+			if (tdtypes != NULL) free(tdtypes);
 			return NULL;
 		}
 		nbuf = buf + 28;		/* Next time we "read" the file */
@@ -1635,6 +1702,7 @@ static ccss *parse_EDR(
 		if (strncmp("SPECTRAL DATA", (char *)buf, 16) != 0) {
 			if (verb) printf("File '%s' set %d data header has unknown identifier\n",name,set);
 			if (samples != NULL) free(samples);
+			if (tdtypes != NULL) free(tdtypes);
 			return NULL;
 		}
 
@@ -1644,6 +1712,7 @@ static ccss *parse_EDR(
 		if (nsamples != sp.spec_n) {
 			if (verb) printf("File '%s' set %d number of samles %d doesn't match wavelengths %d\n",name,set,nsamples,sp.spec_n);
 			if (samples != NULL) free(samples);
+			if (tdtypes != NULL) free(tdtypes);
 			return NULL;
 		}
 
@@ -1653,6 +1722,7 @@ static ccss *parse_EDR(
 		if (len < 8 * sp.spec_n) {
 			if (verb) printf("Unable to read file '%s' set %d spectral data\n",name,set);
 			if (samples != NULL) free(samples);
+			if (tdtypes != NULL) free(tdtypes);
 			return NULL;
 		}
 		nbuf = buf + 8 * sp.spec_n;		/* Next time we "read" the file */
@@ -1700,6 +1770,7 @@ static ccss *parse_EDR(
 		if (strncmp("CORRECTION DATA", (char *)buf, 16) != 0) {
 			if (verb) printf("File '%s' correction data header has unknown identifier\n",name);
 			if (samples != NULL) free(samples);
+			if (tdtypes != NULL) free(tdtypes);
 			return NULL;
 		}
 
@@ -1719,6 +1790,7 @@ static ccss *parse_EDR(
 		} else {
 			if (verb) printf("File '%s' correction data has unknown range %d\n\n",name,nsamples);
 			if (samples != NULL) free(samples);
+			if (tdtypes != NULL) free(tdtypes);
 			return NULL;
 		}
 
@@ -1728,6 +1800,7 @@ static ccss *parse_EDR(
 		if (len < 8 * sp.spec_n) {
 			if (verb) printf("Unable to read file '%s' correction spectral data\n",name);
 			if (samples != NULL) free(samples);
+			if (tdtypes != NULL) free(tdtypes);
 			return NULL;
 		}
 		nbuf = buf + 8 * sp.spec_n;		/* Next time we "read" the file */
@@ -1763,6 +1836,7 @@ static ccss *parse_EDR(
 	if ((rv = new_ccss()) == NULL) {
 		if (verb) printf("Unable to read file '%s' correction spectral data\n",name);
 		if (samples != NULL) free(samples);
+		if (tdtypes != NULL) free(tdtypes);
 		return NULL;
 	}
 
@@ -1770,12 +1844,31 @@ static ccss *parse_EDR(
 		ttype = ttmax + 1;			/* Set to Unknown */
 	}
 
-	/* Set it's values */
-	rv->set_ccss(rv, "X-Rite", creatdate, NULL, dispdesc, ttstrings[ttype], trefmodes[ttype], tsels[ttype], "CS1000", samples, nsets);	
+	{
+		disptech_info *dinfo;
+		char *tsel = NULL;			/* character selector string */
+		disptech  dtech;
+		int trefmode;
 
-	free(tsels);
-	free(trefmodes);
-	free(ttstrings);
+		dinfo = disptech_get_id(tdtypes[ttype]);
+		if (ttype == 0) {
+//			ttstring = "Color Matching Function";
+			tsel = "C";
+		} else if (ttype == 1) {
+//			ttstring = "Custom";
+			tsel = "U";
+		} else {
+			tsel = dinfo->sel;
+		}
+		dtech = dinfo->dtech;
+		trefmode = dinfo->refr; 
+
+		/* Set it's values */
+		rv->set_ccss(rv, "X-Rite", creatdate, NULL, dispdesc, dtech, trefmode, tsel,
+		                 "CS1000", samples, nsets);	
+	}
+
+	free(tdtypes);
 	free(samples);
 
 	return rv;

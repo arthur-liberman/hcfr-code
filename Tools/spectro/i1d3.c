@@ -56,7 +56,10 @@
 #include "i1d3.h"
 
 #undef PLOT_SPECTRA		/* Plot the sensor senitivity spectra */
+#undef PLOT_XYZSPECTRA	/* Plot the calibrated sensor senitivity spectra */
 #undef SAVE_SPECTRA		/* Save the sensor senitivity spectra to "sensors.cmf" */
+#undef SAVE_XYZSPECTRA	/* Save the XYZ senitivity spectra to "sensorsxyz.cmf" (scale 1.4) */
+#undef SAVE_STDXYZ		/* save 1931 2 degree to stdobsxyz.cmf */
 #undef PLOT_REFRESH		/* Plot data used to determine refresh rate */
 #undef PLOT_UPDELAY		/* Plot data used to determine display update delay */
 
@@ -1919,6 +1922,12 @@ i1d3_take_XYZ_measurement(
 	int pos;
 	inst_code ev;
 
+	i1d3_mmode mmode = i1d3_adaptive;
+
+	if (IMODETST(p->mode, inst_mode_emis_nonadaptive)) {
+		mmode = i1d3_frequency;
+	}
+
 	if (IMODETST(p->mode, inst_mode_emis_ambient)) {
 
 		/* Check that the ambient filter is in place */
@@ -1929,7 +1938,7 @@ i1d3_take_XYZ_measurement(
 			return i1d3_interp_code((inst *)p, I1D3_SPOS_EMIS);
 
 		/* Best type of reading, including refresh support */
-		if ((ev = i1d3_take_emis_measurement(p, i1d3_adaptive, XYZ)) != inst_ok)
+		if ((ev = i1d3_take_emis_measurement(p, mmode, XYZ)) != inst_ok)
 			return ev;
 
 		/* Multiply by ambient calibration matrix */
@@ -1945,7 +1954,7 @@ i1d3_take_XYZ_measurement(
 			return i1d3_interp_code((inst *)p, I1D3_SPOS_EMIS);
 
 		/* Best type of reading, including refresh support */
-		if ((ev = i1d3_take_emis_measurement(p, i1d3_adaptive, XYZ)) != inst_ok)
+		if ((ev = i1d3_take_emis_measurement(p, mmode, XYZ)) != inst_ok)
 			return ev;
 
 		/* Multiply by current emissive calibration matrix */
@@ -2174,6 +2183,7 @@ i1d3_comp_calmat(
 		icmTranspose3x3(mat, mat);
 
 	/* Otherwise we compute the least squares calibration matrix. */
+	/* (Another possibility is to use a minimization algorithm) */
 	} else {
 		/* Multiply the [3 x nsamp] XYZ matrix by the [nsamp x 3] RGB */
 		/* matrix to produce the [3 x 3] design matrix. */
@@ -2202,6 +2212,73 @@ i1d3_comp_calmat(
 	}
 	free_dmatrix(sampXYZ, 0, nsamp-1, 0, 3-1);
 	free_dmatrix(sampRGB, 0, nsamp-1, 0, 3-1);
+
+#if defined(PLOT_XYZSPECTRA) || defined(SAVE_XYZSPECTRA)
+
+	/* Compute the calibrated sensor spectra */
+	{
+		int i, j, k;
+		xspect calcmfs[3];
+		double scale;
+		xspect *xyz[3];
+		standardObserver(xyz, icxOT_CIE_1931_2);
+
+		for (j = 0; j < 3; j++) {
+			XSPECT_COPY_INFO(&calcmfs[j], &RGBcmfs[j]); 
+		}
+
+		/* For each wavelength */
+		for (i = 0; i < RGBcmfs[0].spec_n; i++) {
+			/* Do matrix multiply */
+			for (j = 0; j < 3; j++) {
+				calcmfs[j].spec[i] = 0.0;
+				for (k = 0; k < 3; k++) {
+					calcmfs[j].spec[i] += mat[j][k] * RGBcmfs[k].spec[i];
+				}
+			}
+		}
+
+		/* Scale the X to be 1.0 */
+		scale = value_xspect(xyz[1], 555.0)/value_xspect(&calcmfs[1], 555.0);
+		for (i = 0; i < RGBcmfs[0].spec_n; i++) {
+			for (j = 0; j < 3; j++) {
+				calcmfs[j].spec[i] *= scale;
+			}
+		}
+
+
+#ifdef PLOT_XYZSPECTRA
+		{
+			double xx[XSPECT_MAX_BANDS];
+			double y1[XSPECT_MAX_BANDS];
+			double y2[XSPECT_MAX_BANDS];
+			double y3[XSPECT_MAX_BANDS];
+	
+			for (i = 0; i < calcmfs[0].spec_n; i++) {
+				xx[i] = XSPECT_XWL(&calcmfs[0], i);
+				y1[i] = calcmfs[0].spec[i];
+				y2[i] = calcmfs[1].spec[i];
+				y3[i] = calcmfs[2].spec[i];
+			}
+			printf("The calibrated sensor sensitivities\n");
+			do_plot(xx, y1, y2, y3, calcmfs[0].spec_n);
+		}
+#endif /* PLOT_XYZSPECTRA */
+#ifdef SAVE_XYZSPECTRA		/* Save the default XYZ senitivity spectra to "sensorsxyz.cmf" */
+		write_nxspect("sensorsxyz.cmf", calcmfs, 3, 0);
+#endif
+	}
+#endif /* PLOT_XYZSPECTRA || SAVE_XYZSPECTRA */
+#ifdef SAVE_STDXYZ
+	{
+		xspect *xyz[3], xyzl[3];
+		standardObserver(xyz, icxOT_CIE_1931_2);
+		xyzl[0] = *xyz[0];
+		xyzl[1] = *xyz[1];
+		xyzl[2] = *xyz[2];
+		write_nxspect("stdobsxyz.cmf", xyzl, 3, 0);
+	}
+#endif /* SAVE_STDXYZ */
 
 	return inst_ok;
 }
@@ -2233,22 +2310,22 @@ i1d3_set_speccal(
 	return inst_ok;
 }
 
-
 /* Preset the calibration to a matrix. The spectral type is set to none */
 static inst_code
 i1d3_set_matcal(i1d3 *p, double mtx[3][3]) {
+
+	if (p->samples != NULL)
+		free(p->samples);
+	p->samples = NULL;
+	p->nsamp = 0;
+
 	if (mtx == NULL)
 		icmSetUnity3x3(p->ccmat);
-	else {
-		if (p->cbid == 0) {
-			a1loge(p->log, 1, "i1d3: can't set col_cor_mat over non-base display type\n");
-			return inst_wrong_setup;
-		}
+	else
 		icmCpy3x3(p->ccmat, mtx);
-	}
+
 	return inst_ok;
 }
-
 
 /* Set the calibration to the currently preset type */
 static inst_code
@@ -2270,39 +2347,45 @@ i1d3_set_cal(i1d3 *p) {
 
 		icmSetUnity3x3(p->ccmat);		/* to be sure to be sure... */
 
-	} else {	/* Assume matrix */
+	} else {	/* Assume default spectral samples, + possible matrix */
 
 		/* Create the default MIbLSr calibration matrix */
 		if ((ev = i1d3_comp_calmat(p, p->emis_cal, p->obType, p->custObserver,
 			                              p->sens, p->sens, 3)) != inst_ok) {
-			a1logd(p->log, 1, "i1d3_set_disp_type: comp_calmat dflt failed with rv = 0x%x\n",ev);
+			a1logd(p->log, 1, "i1d3_set_cal: comp_calmat dflt failed with rv = 0x%x\n",ev);
 			return ev;
 		}
 		/* Use MIbLSr for ambient */
 		if ((ev = i1d3_comp_calmat(p, p->ambi_cal, p->obType, p->custObserver,
 			                              p->ambi, p->ambi, 3)) != inst_ok)
 			return ev;
+
+		/* We assume any ccmat has/will be set by caller */
 	}
 
 	if (p->log->debug >= 4) {
-		a1logd(p->log,4,"Emissive matrix = %f %f %f\n",
-		                 p->emis_cal[0][0], p->emis_cal[0][1], p->emis_cal[0][2]);
-		a1logd(p->log,4,"                  %f %f %f\n",
-		                 p->emis_cal[1][0], p->emis_cal[1][1], p->emis_cal[1][2]);
-		a1logd(p->log,4,"                  %f %f %f\n\n",
-		                 p->emis_cal[2][0], p->emis_cal[2][1], p->emis_cal[2][2]);
-		a1logd(p->log,4,"Ambient matrix  = %f %f %f\n",
-		                 p->ambi_cal[0][0], p->ambi_cal[0][1], p->ambi_cal[0][2]);
-		a1logd(p->log,4,"                  %f %f %f\n",
-		                 p->ambi_cal[1][0], p->ambi_cal[1][1], p->ambi_cal[1][2]);
-		a1logd(p->log,4,"                  %f %f %f\n\n",
-		                 p->ambi_cal[2][0], p->ambi_cal[2][1], p->ambi_cal[2][2]);
+		if (IMODETST(p->mode, inst_mode_emis_ambient)) {
+			a1logd(p->log,4,"Ambient matrix  = %f %f %f\n",
+			                 p->ambi_cal[0][0], p->ambi_cal[0][1], p->ambi_cal[0][2]);
+			a1logd(p->log,4,"                  %f %f %f\n",
+			                 p->ambi_cal[1][0], p->ambi_cal[1][1], p->ambi_cal[1][2]);
+			a1logd(p->log,4,"                  %f %f %f\n\n",
+			                 p->ambi_cal[2][0], p->ambi_cal[2][1], p->ambi_cal[2][2]);
+		} else {
+			a1logd(p->log,4,"Emissive matrix = %f %f %f\n",
+			                 p->emis_cal[0][0], p->emis_cal[0][1], p->emis_cal[0][2]);
+			a1logd(p->log,4,"                  %f %f %f\n",
+			                 p->emis_cal[1][0], p->emis_cal[1][1], p->emis_cal[1][2]);
+			a1logd(p->log,4,"                  %f %f %f\n\n",
+			                 p->emis_cal[2][0], p->emis_cal[2][1], p->emis_cal[2][2]);
+		}
 		a1logd(p->log,4,"ccmat           = %f %f %f\n",
 		                 p->ccmat[0][0], p->ccmat[0][1], p->ccmat[0][2]);
 		a1logd(p->log,4,"                  %f %f %f\n",
 		                 p->ccmat[1][0], p->ccmat[1][1], p->ccmat[1][2]);
 		a1logd(p->log,4,"                  %f %f %f\n\n",
 		                 p->ccmat[2][0], p->ccmat[2][1], p->ccmat[2][2]);
+		a1logd(p->log,4,"ucbid = %d, cbid = %d\n",p->ucbid, p->cbid);
 		a1logd(p->log,4,"\n");
 	}
 
@@ -2409,7 +2492,7 @@ static void dump_bytes(a1log *log, char *pfx, unsigned char *buf, int len) {
 
 /* Diffuser position thread. */
 /* Poll the instrument at 100msec intervals */
-int i1d3_diff_thread(void *pp) {
+static int i1d3_diff_thread(void *pp) {
 	int nfailed = 0;
 	i1d3 *p = (i1d3 *)pp;
 	inst_code rv = inst_ok; 
@@ -2657,9 +2740,13 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 		}
 	}
 
+
 	/* Read the XYZ value */
-	if ((rv = i1d3_take_XYZ_measurement(p, val->XYZ)) != inst_ok)
+	rv = i1d3_take_XYZ_measurement(p, val->XYZ);
+
+	if (rv != inst_ok)
 		return rv;
+
 
 	/* This may not change anything since instrument may clamp */
 	if (clamp)
@@ -2697,21 +2784,55 @@ double *ref_rate) {
 	if (p->dtype == i1d3_munkdisp)
 		return inst_unsupported;
 
+	if (ref_rate != NULL)
+		*ref_rate = 0.0;
+
 	if ((rv = i1d3_imp_measure_refresh(p, ref_rate, NULL)) != inst_ok)
 		return rv;
 
-	if (*ref_rate == 0.0)
+
+	if (ref_rate != NULL && *ref_rate == 0.0)
 		return inst_misread;
 
 
 	return inst_ok;
 }
 
+/* Make a possible change of the refresh mode */
+static void update_refmode(i1d3 *p, int refrmode) {
+
+	if (     IMODETST(p->mode, inst_mode_emis_norefresh_ovd)) {	/* Must test this first! */
+		refrmode = 0;
+	} else if (IMODETST(p->mode, inst_mode_emis_refresh_ovd)) {
+		refrmode = 1;
+	}
+
+	if (p->refrmode != refrmode) {
+		p->rrset = 0;					/* This is a hint we may have swapped displays */
+		p->refrvalid = 0;
+	}
+	p->refrmode = refrmode; 
+
+	/* default before any refresh rate calibration */
+	if (p->refrmode) {
+		p->inttime = 2.0 * p->dinttime;	/* Double integration time */
+	} else {
+		p->inttime = p->dinttime;		/* Normal integration time */
+	}
+	if (p->omininttime != 0.0)
+		p->inttime = p->omininttime;	/* Override */
+	p->mininttime = p->inttime;			/* Current value */
+}
+
+static inst_code set_base_disp_type(i1d3 *p, int cbid);
+
 /* Insert a colorimetric correction matrix in the instrument XYZ readings */
 /* This is only valid for colorimetric instruments. */
 /* To remove the matrix, pass NULL for the matrix. */
-inst_code i1d3_col_cor_mat(
+static inst_code i1d3_col_cor_mat(
 inst *pp,
+disptech dtech,		/* Use disptech_unknown if not known */				\
+int cbid,       	/* Calibration display type base ID, 1 if unknown */\
 double mtx[3][3]
 ) {
 	i1d3 *p = (i1d3 *)pp;
@@ -2724,8 +2845,17 @@ double mtx[3][3]
 	if (!p->inited)
 		return inst_no_init;
 
+	if ((ev = set_base_disp_type(p, cbid)) != inst_ok)
+		return ev;
+
 	if ((ev = i1d3_set_matcal(p, mtx)) != inst_ok)
 		return ev;
+
+	p->dtech = dtech;
+	p->cbid = 0;
+
+	/* Effective refresh mode may change */
+	update_refmode(p, disptech_get_id(dtech)->refr);
 
 	return i1d3_set_cal(p);
 }
@@ -2734,8 +2864,9 @@ double mtx[3][3]
 /* instrumen calibration. */
 /* This is only valid for colorimetric instruments. */
 /* To set calibration back to default, pass NULL for sets. */
-inst_code i1d3_col_cal_spec_set(
+static inst_code i1d3_col_cal_spec_set(
 inst *pp,
+disptech dtech,
 xspect *sets,
 int no_sets
 ) {
@@ -2749,6 +2880,9 @@ int no_sets
 	if (!p->inited)
 		return inst_no_init;
 
+	p->dtech = dtech;
+	p->cbid = 0;
+
 	if (sets == NULL || no_sets <= 0) {
 		if ((ev = set_default_disp_type(p)) != inst_ok) {
 			return ev;
@@ -2757,8 +2891,10 @@ int no_sets
 		if ((ev = i1d3_set_speccal(p, sets, no_sets)) != inst_ok)
 			return ev; 
 
+		p->ucbid = 0;			/* We're using external samples */
 		ev = i1d3_set_cal(p);
 	}
+	update_refmode(p, disptech_get_id(dtech)->refr);
 
 	return ev;
 }
@@ -2785,7 +2921,7 @@ static inst_code i1d3_get_n_a_cals(inst *pp, inst_cal_type *pn_cals, inst_cal_ty
 }
 
 /* Request an instrument calibration. */
-inst_code i1d3_calibrate(
+static inst_code i1d3_calibrate(
 inst *pp,
 inst_cal_type *calt,	/* Calibration type to do/remaining */
 inst_cal_cond *calc,	/* Current condition/desired condition */
@@ -2867,22 +3003,27 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 	return inst_ok;
 }
 
-/* Measure a display update delay. It is assumed that a */
-/* white to black change has been made to the displayed color, */
+/* Measure a display update delay. It is assumed that */
+/* white_stamp(init) has been called, and then a */
+/* black to white change has been made to the displayed color, */
 /* and this will measure the time it took for the update to */
-/* be noticed by the instrument, up to 0.6 seconds. */
+/* be noticed by the instrument, up to 2.0 seconds. */
+/* (It is assumed that white_change() will be called at the time the patch */
+/* changes color.) */
 /* inst_misread will be returned on failure to find a transition to black. */
-#define NDSAMPS 200 
+#define NDSAMPS 400 
 #define DINTT 0.005			/* Too short hits blanking */
-#define NDMXTIME 1.0		/* Maximum time to take */
+#define NDMXTIME 2.0		/* Maximum time to take */
 
-inst_code i1d3_meas_delay(
+static inst_code i1d3_meas_delay(
 inst *pp,
-int *msecdelay)	{	/* Return the number of msec */
+int *pdispmsec,      /* Return display update delay in msec */
+int *pinstmsec) {    /* Return instrument reaction time in msec */
 	i1d3 *p = (i1d3 *)pp;
 	inst_code ev;
 	int i, j, k;
-	double sutime, putime, cutime, eutime;
+	double putime, cutime;
+	int mtachdel;
 	struct {
 		double sec;
 		double rgb[3];
@@ -2891,9 +3032,19 @@ int *msecdelay)	{	/* Return the number of msec */
 	int ndsamps;
 	double inttime = DINTT;
 	double stot, etot, del, thr;
-	double etime;
+	double stime, etime;
 	int isdeb;
 	int isth;
+	int dispmsec, instmsec;
+
+	if (pinstmsec != NULL)
+		*pinstmsec = 0; 
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+
+	if (!p->inited)
+		return inst_no_init;
 
 	if (usec_time() < 0.0) {
 		a1loge(p->log, inst_internal_error, "i1d3_meas_delay: No high resolution timers\n");
@@ -2907,8 +3058,7 @@ int *msecdelay)	{	/* Return the number of msec */
 	p->th_en = 0;
 
 	/* Read the samples */
-	sutime = usec_time();
-	putime = (usec_time() - sutime) / 1000000.0;
+	putime = usec_time() / 1000000.0;
 	for (i = 0; i < NDSAMPS; i++) {
 		if ((ev = i1d3_freq_measure(p, &inttime, samp[i].rgb)) != inst_ok) {
 			a1logd(p->log, 1, "i1d3_meas_delay: measurement failed\n");
@@ -2916,7 +3066,7 @@ int *msecdelay)	{	/* Return the number of msec */
 			p->th_en = isth;
  			return ev;
 		}
-		cutime = (usec_time() - sutime) / 1000000.0;
+		cutime = usec_time() / 1000000.0;
 		samp[i].sec = 0.5 * (putime + cutime);	/* Mean of before and after stamp */
 		putime = cutime;
 		samp[i].tot = samp[i].rgb[0] + samp[i].rgb[1] + samp[i].rgb[2];
@@ -2933,7 +3083,43 @@ int *msecdelay)	{	/* Return the number of msec */
 		a1logd(p->log, 1, "i1d3_meas_delay: No measurement samples returned in time\n");
 		return inst_internal_error; 
 	}
-		
+
+	if (p->whitestamp < 0.0) {
+		a1logd(p->log, 1, "i1d3_meas_delay: White transition wasn't timestamped\n");
+		return inst_internal_error; 
+	}
+
+	/* Set the times to be white transition relative */
+	for (i = 0; i < ndsamps; i++)
+		samp[i].sec -= p->whitestamp / 1000000.0;
+
+	/* Over the first 100msec, locate the maximum value */
+	stime = samp[0].sec;
+	stot = -1e9;
+	for (i = 0; i < ndsamps; i++) {
+		if (samp[i].tot > stot)
+			stot = samp[i].tot;
+		if ((samp[i].sec - stime) > 0.1)
+			break;
+	}
+
+	/* Over the last 100msec, locate the maximum value */
+	etime = samp[ndsamps-1].sec;
+	etot = -1e9;
+	for (i = ndsamps-1; i >= 0; i--) {
+		if (samp[i].tot > etot)
+			etot = samp[i].tot;
+		if ((etime - samp[i].sec) > 0.1)
+			break;
+	}
+
+	del = etot - stot;
+	thr = stot + 0.2 * del;		/* 20% of transition threshold */
+
+#ifdef PLOT_UPDELAY
+	a1logd(p->log, 0, "i1d3_meas_delay: start tot %f end tot %f del %f, thr %f\n", stot, etot, del, thr);
+#endif
+
 #ifdef PLOT_UPDELAY
 	/* Plot the raw sensor values */
 	{
@@ -2956,53 +3142,43 @@ int *msecdelay)	{	/* Return the number of msec */
 	}
 #endif
 
-	/* Over the first 100msec, locate the maximum value */
-	etime = samp[ndsamps-1].sec;
-	stot = -1e9;
-	for (i = 0; i < ndsamps; i++) {
-		if (samp[i].tot > stot)
-			stot = samp[i].tot;
-		if (samp[i].sec > 0.1)
-			break;
-	}
-
-	/* Over the last 100msec, locate the maximum value */
-	etime = samp[ndsamps-1].sec;
-	etot = -1e9;
-	for (i = ndsamps-1; i >= 0; i--) {
-		if (samp[i].tot > etot)
-			etot = samp[i].tot;
-		if ((etime - samp[i].sec) > 0.1)
-			break;
-	}
-
-	del = stot - etot;
-	thr = etot + 0.2 * del;		/* 20% of transition threshold */
-
-#ifdef PLOT_UPDELAY
-	a1logd(p->log, 0, "i1d3_meas_delay: start tot %f end tot %f del %f, thr %f\n", stot, etot, del, thr);
-#endif
-
 	/* Check that there has been a transition */
 	if (del < 10.0) {
-		a1logd(p->log, 1, "i1d3_meas_delay: can't detect change from white to black\n");
+		a1logd(p->log, 1, "i1d3_meas_delay: can't detect change from black to white\n");
 		return inst_misread; 
 	}
 
-	/* Working from the end, locate the time at which the level was above the threshold */
-	for (i = ndsamps-1; i >= 0; i--) {
+	/* Working from the start, locate the time at which the level was above the threshold */
+	for (i = 0; i < (ndsamps-1); i++) {
 		if (samp[i].tot > thr)
 			break;
 	}
-	if (i < 0)		/* Assume the update was so fast that we missed it */
-		i = 0;
 
 	a1logd(p->log, 2, "i1d3_meas_delay: stoped at sample %d time %f\n",i,samp[i].sec);
 
-	*msecdelay = (int)(samp[i].sec * 1000.0 + 0.5);
+	/* Compute overall delay */
+	dispmsec = (int)(samp[i].sec * 1000.0 + 0.5);
+	instmsec = 0;
 
 #ifdef PLOT_UPDELAY
-	a1logd(p->log, 0, "i1d3_meas_delay: returning %d msec\n",*msecdelay);
+	a1logd(p->log, 0, "i1d3_meas_delay: disp %d, inst %d msec\n",dispmsec,instmsec);
+#else
+	a1logd(p->log, 2, "i1d3_meas_delay: disp %d, inst %d msec\n",dispmsec,instmsec);
+#endif
+
+	if (dispmsec < 0) 		/* This can happen if the patch generator delays it's return */
+		dispmsec = 0;
+
+	if (pdispmsec != NULL)
+		*pdispmsec = dispmsec;
+
+	if (pinstmsec != NULL)
+		*pinstmsec = instmsec; 
+
+#ifdef PLOT_UPDELAY
+	a1logd(p->log, 0, "i1d3_meas_delay: returning %d & %d msec\n",dispmsec,instmsec);
+#else
+	a1logd(p->log, 2, "i1d3_meas_delay: returning %d & %d msec\n",dispmsec,instmsec);
 #endif
 
 	return inst_ok;
@@ -3010,6 +3186,23 @@ int *msecdelay)	{	/* Return the number of msec */
 #undef NDSAMPS
 #undef DINTT
 #undef NDMXTIME
+
+/* Timestamp the white patch change during meas_delay() */
+/* Initialise the whitestap to invalid if init nz */
+static inst_code i1d3_white_change(
+inst *pp, int init) {
+	i1d3 *p = (i1d3 *)pp;
+
+	if (init)
+		p->whitestamp = -1.0;
+	else {
+		if ((p->whitestamp = usec_time()) < 0.0) {
+			a1loge(p->log, inst_internal_error, "i1d3_wite_change: No high resolution timers\n");
+			return inst_internal_error; 
+		}
+	}
+	return inst_ok;
+}
 
 /* Return the last calibrated refresh rate in Hz. Returns: */
 static inst_code i1d3_get_refr_rate(inst *pp,
@@ -3150,6 +3343,9 @@ i1d3_interp_code(inst *pp, int ec) {
 
 		case I1D3_OK:
 			return inst_ok;
+			
+		case I1D3_INTERNAL_ERROR:
+			return inst_internal_error | ec;
 
 		case I1D3_BAD_MEM_ADDRESS:
 		case I1D3_BAD_MEM_LENGTH:
@@ -3243,7 +3439,7 @@ i1d3_del(inst *pp) {
 }
 
 /* Return the instrument capabilities */
-void i1d3_capabilities(inst *pp,
+static void i1d3_capabilities(inst *pp,
 inst_mode *pcap1,
 inst2_capability *pcap2,
 inst3_capability *pcap3) {
@@ -3256,6 +3452,7 @@ inst3_capability *pcap3) {
 	     |  inst_mode_emis_ambient
 	     |  inst_mode_emis_refresh_ovd			/* (allow override ccmx & ccss mode) */
 	     |  inst_mode_emis_norefresh_ovd
+	     |  inst_mode_emis_nonadaptive
 	     |  inst_mode_colorimeter
 	        ;
 
@@ -3285,6 +3482,7 @@ inst3_capability *pcap3) {
 }
 
 /* Return current or given configuration available measurement modes. */
+/* NOTE that conf_ix values shoudn't be changed, as it is used as a persistent key */
 static inst_code i1d3_meas_config(
 inst *pp,
 inst_mode *mmodes,
@@ -3335,7 +3533,7 @@ int *conf_ix
 }
 
 /* Check device measurement mode */
-inst_code i1d3_check_mode(inst *pp, inst_mode m) {
+static inst_code i1d3_check_mode(inst *pp, inst_mode m) {
 	i1d3 *p = (i1d3 *)pp;
 	inst_mode cap;
 
@@ -3361,7 +3559,7 @@ inst_code i1d3_check_mode(inst *pp, inst_mode m) {
 }
 
 /* Set device measurement mode */
-inst_code i1d3_set_mode(inst *pp, inst_mode m) {
+static inst_code i1d3_set_mode(inst *pp, inst_mode m) {
 	i1d3 *p = (i1d3 *)pp;
 	int refrmode;
 	inst_code ev;
@@ -3372,39 +3570,19 @@ inst_code i1d3_set_mode(inst *pp, inst_mode m) {
 	p->mode = m;
 
 	/* Effective refresh mode may change */
-	refrmode = p->refrmode;
-	if (     IMODETST(p->mode, inst_mode_emis_norefresh_ovd)) {	/* Must test this first! */
-		refrmode = 0;
-	} else if (IMODETST(p->mode, inst_mode_emis_refresh_ovd)) {
-		refrmode = 1;
-	}
-	
-	if (p->refrmode != refrmode) {
-		p->rrset = 0;					/* This is a hint we may have swapped displays */
-		p->refrvalid = 0;
-	}
-	p->refrmode = refrmode; 
-
-	/* default before any refresh rate calibration */
-	if (p->refrmode) {
-		p->inttime = 2.0 * p->dinttime;	/* Double default integration time */
-	} else {
-		p->inttime = p->dinttime;		/* Normal integration time */
-	}
-	if (p->omininttime != 0.0)
-		p->inttime = p->omininttime;	/* Override */
-	p->mininttime = p->inttime;			/* Current value */
+	update_refmode(p, p->refrmode);
 
 	return inst_ok;
 }
 
-inst_disptypesel i1d3_disptypesel[3] = {
+static inst_disptypesel i1d3_disptypesel[3] = {
 	{
 		inst_dtflags_default,
 		1,
 		"nl",
 		"Non-Refresh display",
 		0,
+		disptech_lcd,
 		0
 	},
 	{
@@ -3413,6 +3591,7 @@ inst_disptypesel i1d3_disptypesel[3] = {
 		"rc",						/* sel */
 		"Refresh display",			/* desc */
 		1,							/* refr */
+		disptech_crt,				/* disptype */
 		1							/* ix */
 	},
 	{
@@ -3421,6 +3600,7 @@ inst_disptypesel i1d3_disptypesel[3] = {
 		"",
 		"",
 		0,
+		disptech_none,
 		0
 	}
 };
@@ -3470,46 +3650,65 @@ static inst_code set_disp_type(i1d3 *p, inst_disptypesel *dentry) {
 	int refrmode;
 
 	p->icx = dentry->ix;
+	p->dtech = dentry->dtech;
 	p->cbid = dentry->cbid;
-	refrmode = dentry->refr;
 
-	if (     IMODETST(p->mode, inst_mode_emis_norefresh_ovd)) {	/* Must test this first! */
-		refrmode = 0;
-	} else if (IMODETST(p->mode, inst_mode_emis_refresh_ovd)) {
-		refrmode = 1;
-	}
-
-	if (p->refrmode != refrmode)
-		p->rrset = 0;					/* This is a hint we may have swapped displays */
-	p->refrmode = refrmode; 
-
-	if (p->refrmode) {
-		p->inttime = 2.0 * p->dinttime;	/* Double integration time */
-	} else {
-		p->inttime = p->dinttime;		/* Normal integration time */
-	}
-	if (p->omininttime != 0.0)
-		p->inttime = p->omininttime;	/* Override */
-	p->mininttime = p->inttime;			/* Current value */
+	update_refmode(p, dentry->refr);
 
 	if (dentry->flags & inst_dtflags_ccss) {	/* Spectral sample */
 
 		if ((ev = i1d3_set_speccal(p, dentry->sets, dentry->no_sets)) != inst_ok) 
 			return ev;
+		p->ucbid = dentry->cbid;	/* This is underying base if dentry is base selection */
 
-	} else {	/* Matrix */
+	} else {
 
-		if (dentry->flags & inst_dtflags_ccmx) {
+		if (dentry->flags & inst_dtflags_ccmx) {	/* Matrix */
+			if ((ev = set_base_disp_type(p, dentry->cc_cbid)) != inst_ok)
+				return ev;
 			if ((ev = i1d3_set_matcal(p, dentry->mat)) != inst_ok)
 				return ev;
-		} else {
+			p->cbid = 0;	/* Matrix will be an override of cbid set in i1d3_set_cal() */
+
+		} else {	/* Native */
+		//we don't use ccmx and need to unapply ccss if refresh/non-refresh is chosen after a ccss load
 			if ((ev = i1d3_set_speccal(p, NULL, NULL)) != inst_ok) 
 				return ev;
 			if ((ev = i1d3_set_matcal(p, NULL)) != inst_ok)		/* Noop */
 				return ev;
+			p->ucbid = dentry->cbid;	/* This is underying base if dentry is base selection */
 		}
 	}
-	return i1d3_set_cal(p);
+	return i1d3_set_cal(p);		/* Make it happen */
+}
+
+/* Set the display type */
+static inst_code i1d3_set_disptype(inst *pp, int ix) {
+	i1d3 *p = (i1d3 *)pp;
+	inst_code ev;
+	inst_disptypesel *dentry;
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
+	if (p->dtlist == NULL) {
+		if ((ev = inst_creat_disptype_list(pp, &p->ndtlist, &p->dtlist,
+		    i1d3_disptypesel, 1 /* doccss*/, 1 /* doccmx */)) != inst_ok)
+			return ev;
+	}
+
+	if (ix < 0 || ix >= p->ndtlist)
+		return inst_unsupported;
+
+	dentry = &p->dtlist[ix];
+
+	if ((ev = set_disp_type(p, dentry)) != inst_ok) {
+		return ev;
+	}
+
+	return inst_ok;
 }
 
 /* Setup the default display type */
@@ -3538,34 +3737,55 @@ static inst_code set_default_disp_type(i1d3 *p) {
 	return inst_ok;
 }
 
-/* Set the display type */
-static inst_code i1d3_set_disptype(inst *pp, int ix) {
-	i1d3 *p = (i1d3 *)pp;
+/* Setup the display type to the given base type */
+static inst_code set_base_disp_type(i1d3 *p, int cbid) {
 	inst_code ev;
-	inst_disptypesel *dentry;
+	int i;
 
-	if (!p->gotcoms)
-		return inst_no_coms;
-	if (!p->inited)
-		return inst_no_init;
-
+	if (cbid == 0) {
+		a1loge(p->log, 1, "i1d3 set_base_disp_type: can't set base display type of 0\n");
+		return inst_wrong_setup;
+	}
 	if (p->dtlist == NULL) {
-		if ((ev = inst_creat_disptype_list(pp, &p->ndtlist, &p->dtlist,
-		    i1d3_disptypesel, 1 /* doccss*/, 1 /* doccmx */)) != inst_ok)
+		if ((ev = inst_creat_disptype_list((inst *)p, &p->ndtlist, &p->dtlist,
+		    i1d3_disptypesel, 0 /* doccss*/, 1 /* doccmx */)) != inst_ok)
 			return ev;
 	}
 
-	if (ix < 0 || ix >= p->ndtlist)
-		return inst_unsupported;
-
-	dentry = &p->dtlist[ix];
-	if ((ev = set_disp_type(p, dentry)) != inst_ok) {
+	for (i = 0; !(p->dtlist[i].flags & inst_dtflags_end); i++) {
+		if (!(p->dtlist[i].flags & inst_dtflags_ccmx)		/* Prevent infinite recursion */
+		 && p->dtlist[i].cbid == cbid)
+			break;
+	}
+	if (p->dtlist[i].flags & inst_dtflags_end) {
+		a1loge(p->log, 1, "set_base_disp_type: failed to find cbid %d!\n",cbid);
+		return inst_wrong_setup; 
+	}
+	if ((ev = set_disp_type(p, &p->dtlist[i])) != inst_ok) {
 		return ev;
 	}
 
 	return inst_ok;
 }
 
+/* Get the disptech and other corresponding info for the current */
+/* selected display type. Returns disptype_unknown by default. */
+/* Because refrmode can be overridden, it may not match the refrmode */
+/* of the dtech. (Pointers may be NULL if not needed) */
+static inst_code i1d3_get_disptechi(
+inst *pp,
+disptech *dtech,
+int *refrmode,
+int *cbid) {
+	i1d3 *p = (i1d3 *)pp;
+	if (dtech != NULL)
+		*dtech = p->dtech;
+	if (refrmode != NULL)
+		*refrmode = p->refrmode;
+	if (cbid != NULL)
+		*cbid = p->cbid;
+	return inst_ok;
+}
 
 /* 
  * set or reset an optional mode
@@ -3590,24 +3810,6 @@ i1d3_get_set_opt(inst *pp, inst_opt_type m, ...)
 		return inst_no_coms;
 	if (!p->inited)
 		return inst_no_init;
-
-	/* Get the display type information */
-	if (m == inst_opt_get_dtinfo) {
-		va_list args;
-		int *refrmode, *cbid;
-
-		va_start(args, m);
-		refrmode = va_arg(args, int *);
-		cbid = va_arg(args, int *);
-		va_end(args);
-
-		if (refrmode != NULL)
-			*refrmode = p->refrmode;
-		if (cbid != NULL)
-			*cbid = p->cbid;
-
-		return inst_ok;
-	}
 
 	/* Get the current minimum integration time */
 	if (m == inst_opt_get_min_int_time) {
@@ -3691,7 +3893,7 @@ i1d3_get_set_opt(inst *pp, inst_opt_type m, ...)
 
 		a1logd(p->log, 4, "inst_opt_set_ccss_obs\n");
 
-		return i1d3_set_cal(p);			/* Recompute calibration */
+		return i1d3_set_cal(p);			/* Recompute calibration if spectral sample */
 	}
 
 	/* Operate the LEDS */
@@ -3816,6 +4018,7 @@ extern i1d3 *new_i1d3(icoms *icom, instType itype) {
 	p->set_mode          = i1d3_set_mode;
 	p->get_disptypesel   = i1d3_get_disptypesel;
 	p->set_disptype      = i1d3_set_disptype;
+	p->get_disptechi     = i1d3_get_disptechi;
 	p->get_set_opt       = i1d3_get_set_opt;
 	p->read_sample       = i1d3_read_sample;
 	p->read_refrate      = i1d3_read_refrate;
@@ -3824,6 +4027,7 @@ extern i1d3 *new_i1d3(icoms *icom, instType itype) {
 	p->get_n_a_cals      = i1d3_get_n_a_cals;
 	p->calibrate         = i1d3_calibrate;
 	p->meas_delay        = i1d3_meas_delay;
+	p->white_change      = i1d3_white_change;
 	p->get_refr_rate     = i1d3_get_refr_rate;
 	p->set_refr_rate     = i1d3_set_refr_rate;
 	p->interp_error      = i1d3_interp_error;
@@ -3835,6 +4039,7 @@ extern i1d3 *new_i1d3(icoms *icom, instType itype) {
 
 	amutex_init(p->lock);
 	icmSetUnity3x3(p->ccmat);
+	p->dtech = disptech_unknown;
 
 	return p;
 }

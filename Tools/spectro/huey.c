@@ -1188,6 +1188,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	if ((rv = huey_take_XYZ_measurement(p, val->XYZ)) != inst_ok) {
 		return rv;
 	}
+
 	/* This may not change anything since instrument may clamp */
 	if (clamp)
 		icmClamp3(val->XYZ, val->XYZ);
@@ -1206,30 +1207,47 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	return rv;
 }
 
+static inst_code set_base_disp_type(huey *p, int cbid);
+
 /* Insert a colorimetric correction matrix in the instrument XYZ readings */
 /* This is only valid for colorimetric instruments. */
 /* To remove the matrix, pass NULL for the filter filename */
 inst_code huey_col_cor_mat(
 inst *pp,
+disptech dtech,		/* Use disptech_unknown if not known */				\
+int cbid,       	/* Calibration display type base ID, 1 if unknown */\
 double mtx[3][3]
 ) {
 	huey *p = (huey *)pp;
+	inst_code ev;
 
 	if (!p->gotcoms)
 		return inst_no_coms;
 	if (!p->inited)
 		return inst_no_init;
 
-	if (mtx == NULL) {
+	if ((ev = set_base_disp_type(p, cbid)) != inst_ok)
+		return ev;
+	if (mtx == NULL)
 		icmSetUnity3x3(p->ccmat);
-	} else {
-		if (p->cbid == 0) {
-			a1loge(p->log, 1, "huey: can't set col_cor_mat over non-base display type\n");
-			return inst_wrong_setup;
-		}
+	else
 		icmCpy3x3(p->ccmat, mtx);
-	}
+
+	p->dtech = dtech;
+	p->refrmode = disptech_get_id(dtech)->refr;
+	p->cbid = 0;	/* Can't be base type now */
 		
+	if (p->log->debug >= 4) {
+		a1logd(p->log,4,"ccmat           = %f %f %f\n",
+		                 p->ccmat[0][0], p->ccmat[0][1], p->ccmat[0][2]);
+		a1logd(p->log,4,"                  %f %f %f\n",
+		                 p->ccmat[1][0], p->ccmat[1][1], p->ccmat[1][2]);
+		a1logd(p->log,4,"                  %f %f %f\n\n",
+		                 p->ccmat[2][0], p->ccmat[2][1], p->ccmat[2][2]);
+		a1logd(p->log,4,"ucbid = %d, cbid = %d\n",p->ucbid, p->cbid);
+		a1logd(p->log,4,"\n");
+	}
+
 	return inst_ok;
 }
 
@@ -1367,7 +1385,7 @@ huey_del(inst *pp) {
 }
 
 /* Return the instrument mode capabilities */
-void huey_capabilities(inst *pp,
+static void huey_capabilities(inst *pp,
 inst_mode *pcap1,
 inst2_capability *pcap2,
 inst3_capability *pcap3) {
@@ -1397,7 +1415,7 @@ inst3_capability *pcap3) {
 }
 
 /* Check device measurement mode */
-inst_code huey_check_mode(inst *pp, inst_mode m) {
+static inst_code huey_check_mode(inst *pp, inst_mode m) {
 	huey *p = (huey *)pp;
 	inst_mode cap;
 
@@ -1422,7 +1440,7 @@ inst_code huey_check_mode(inst *pp, inst_mode m) {
 }
 
 /* Set device measurement mode */
-inst_code huey_set_mode(inst *pp, inst_mode m) {
+static inst_code huey_set_mode(inst *pp, inst_mode m) {
 	huey *p = (huey *)pp;
 	inst_code ev;
 
@@ -1434,21 +1452,23 @@ inst_code huey_set_mode(inst *pp, inst_mode m) {
 	return inst_ok;
 }
 
-inst_disptypesel huey_disptypesel[3] = {
+static inst_disptypesel huey_disptypesel[3] = {
 	{
 		inst_dtflags_default,
 		1,
 		"l",
 		"LCD display",
 		0,
+		disptech_lcd,
 		0
 	},
 	{
 		inst_dtflags_none,		/* flags */
-		2,						/* cbix */
+		2,						/* cbid */
 		"c",					/* sel */
 		"CRT display",			/* desc */
 		1,						/* refr */
+		disptech_crt,			/* disptype */
 		1						/* ix */
 	},
 	{
@@ -1457,6 +1477,7 @@ inst_disptypesel huey_disptypesel[3] = {
 		"",
 		"",
 		0,
+		disptech_none,
 		0
 	}
 };
@@ -1491,14 +1512,57 @@ int recreate				/* nz to re-check for new ccmx & ccss files */
 /* Given a display type entry, setup for that type */
 static inst_code set_disp_type(huey *p, inst_disptypesel *dentry) {
 
-	p->icx = dentry->ix; 
-	p->refrmode = dentry->refr; 
-	p->cbid = dentry->cbid; 
-
 	if (dentry->flags & inst_dtflags_ccmx) {
+		inst_code ev;
+		if ((ev = set_base_disp_type(p, dentry->cc_cbid)) != inst_ok)
+			return ev;
 		icmCpy3x3(p->ccmat, dentry->mat);
+		p->dtech = dentry->dtech;
+		p->cbid = 0; 	/* Can't be a base type */
+
 	} else {
+		p->icx = dentry->ix; 
+		p->dtech = dentry->dtech;
+		p->cbid = dentry->cbid; 
+		p->ucbid = dentry->cbid;	/* This is underying base if dentry is base selection */
 		icmSetUnity3x3(p->ccmat);
+	}
+
+	p->refrmode = dentry->refr; 
+
+	if (p->log->debug >= 4) {
+		a1logd(p->log,4,"ccmat           = %f %f %f\n",
+		                 p->ccmat[0][0], p->ccmat[0][1], p->ccmat[0][2]);
+		a1logd(p->log,4,"                  %f %f %f\n",
+		                 p->ccmat[1][0], p->ccmat[1][1], p->ccmat[1][2]);
+		a1logd(p->log,4,"                  %f %f %f\n\n",
+		                 p->ccmat[2][0], p->ccmat[2][1], p->ccmat[2][2]);
+		a1logd(p->log,4,"ucbid = %d, cbid = %d\n",p->ucbid, p->cbid);
+		a1logd(p->log,4,"\n");
+	}
+
+	return inst_ok;
+}
+
+/* Set the display type */
+static inst_code huey_set_disptype(inst *pp, int ix) {
+	huey *p = (huey *)pp;
+	inst_code ev;
+	inst_disptypesel *dentry;
+
+	if (p->dtlist == NULL) {
+		if ((ev = inst_creat_disptype_list(pp, &p->ndtlist, &p->dtlist,
+		    huey_disptypesel, 0 /* doccss*/, 1 /* doccmx */)) != inst_ok)
+			return ev;
+	}
+
+	if (ix < 0 || ix >= p->ndtlist)
+		return inst_unsupported;
+
+	dentry = &p->dtlist[ix];
+
+	if ((ev = set_disp_type(p, dentry)) != inst_ok) {
+		return ev;
 	}
 
 	return inst_ok;
@@ -1530,27 +1594,53 @@ static inst_code set_default_disp_type(huey *p) {
 	return inst_ok;
 }
 
-/* Set the display type */
-static inst_code huey_set_disptype(inst *pp, int ix) {
-	huey *p = (huey *)pp;
+/* Setup the display type to the given base type */
+static inst_code set_base_disp_type(huey *p, int cbid) {
 	inst_code ev;
-	inst_disptypesel *dentry;
+	int i;
 
+	if (cbid == 0) {
+		a1loge(p->log, 1, "huey set_base_disp_type: can't set base display type of 0\n");
+		return inst_wrong_setup;
+	}
 	if (p->dtlist == NULL) {
-		if ((ev = inst_creat_disptype_list(pp, &p->ndtlist, &p->dtlist,
+		if ((ev = inst_creat_disptype_list((inst *)p, &p->ndtlist, &p->dtlist,
 		    huey_disptypesel, 0 /* doccss*/, 1 /* doccmx */)) != inst_ok)
 			return ev;
 	}
 
-	if (ix < 0 || ix >= p->ndtlist)
-		return inst_unsupported;
-
-	dentry = &p->dtlist[ix];
-
-	if ((ev = set_disp_type(p, dentry)) != inst_ok) {
+	for (i = 0; !(p->dtlist[i].flags & inst_dtflags_end); i++) {
+		if (!(p->dtlist[i].flags & inst_dtflags_ccmx)		/* Prevent infinite recursion */
+		 && p->dtlist[i].cbid == cbid)
+			break;
+	}
+	if (p->dtlist[i].flags & inst_dtflags_end) {
+		a1loge(p->log, 1, "set_base_disp_type: failed to find cbid %d!\n",cbid);
+		return inst_wrong_setup; 
+	}
+	if ((ev = set_disp_type(p, &p->dtlist[i])) != inst_ok) {
 		return ev;
 	}
 
+	return inst_ok;
+}
+
+/* Get the disptech and other corresponding info for the current */
+/* selected display type. Returns disptype_unknown by default. */
+/* Because refrmode can be overridden, it may not match the refrmode */
+/* of the dtech. (Pointers may be NULL if not needed) */
+static inst_code huey_get_disptechi(
+inst *pp,
+disptech *dtech,
+int *refrmode,
+int *cbid) {
+	huey *p = (huey *)pp;
+	if (dtech != NULL)
+		*dtech = p->dtech;
+	if (refrmode != NULL)
+		*refrmode = p->refrmode;
+	if (cbid != NULL)
+		*cbid = p->cbid;
 	return inst_ok;
 }
 
@@ -1570,24 +1660,6 @@ huey_get_set_opt(inst *pp, inst_opt_type m, ...)
 	if (m == inst_opt_trig_prog
 	 || m == inst_opt_trig_user) {
 		p->trig = m;
-		return inst_ok;
-	}
-
-	/* Get the display type information */
-	if (m == inst_opt_get_dtinfo) {
-		va_list args;
-		int *refrmode, *cbid;
-
-		va_start(args, m);
-		refrmode = va_arg(args, int *);
-		cbid = va_arg(args, int *);
-		va_end(args);
-
-		if (refrmode != NULL)
-			*refrmode = p->refrmode;
-		if (cbid != NULL)
-			*cbid = p->cbid;
-
 		return inst_ok;
 	}
 
@@ -1645,6 +1717,7 @@ extern huey *new_huey(icoms *icom, instType itype) {
 	p->set_mode          = huey_set_mode;
 	p->get_disptypesel   = huey_get_disptypesel;
 	p->set_disptype      = huey_set_disptype;
+	p->get_disptechi     = huey_get_disptechi;
 	p->get_set_opt       = huey_get_set_opt;
 	p->read_sample       = huey_read_sample;
 	p->col_cor_mat       = huey_col_cor_mat;
@@ -1655,6 +1728,7 @@ extern huey *new_huey(icoms *icom, instType itype) {
 	p->itype = icom->itype;
 
 	icmSetUnity3x3(p->ccmat);	/* Set the colorimeter correction matrix to do nothing */
+	p->dtech = disptech_unknown;
 
 	return p;
 }

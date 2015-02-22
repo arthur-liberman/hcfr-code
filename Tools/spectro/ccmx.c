@@ -37,6 +37,7 @@
 #include "conv.h"
 #endif
 #include "cgats.h"
+#include "disptechs.h"
 #include "ccmx.h"
 
 #ifdef NT       /* You'd think there might be some standards.... */
@@ -78,18 +79,11 @@ cgats **pocg        /* return CGATS structure */
 	ocg->add_kword(ocg, 0, "INSTRUMENT",p->inst, NULL);
 	if (p->disp != NULL)
 		ocg->add_kword(ocg, 0, "DISPLAY",p->disp, NULL);
-	if (p->tech != NULL)
-		ocg->add_kword(ocg, 0, "TECHNOLOGY",p->tech, NULL);
-	if (p->disp == NULL && p->tech == NULL) {
-#ifdef DEBUG
-		fprintf(stdout, "write_ccmx: ccmx doesn't contain display or techology strings");
-#endif
-		sprintf(p->err, "write_ccmx: ccmx doesn't contain display or techology strings");
-		ocg->del(ocg);
-		return 1;
-	}
-	if (p->cbid != 0) {
-		sprintf(buf, "%d", p->cbid);
+
+	ocg->add_kword(ocg, 0, "TECHNOLOGY", disptech_get_id(p->dtech)->strid,NULL);
+
+	if (p->cc_cbid != 0) {
+		sprintf(buf, "%d", p->cc_cbid);
 		ocg->add_kword(ocg, 0, "DISPLAY_TYPE_BASE_ID", buf, NULL);
 	}
 	if (p->refrmode >= 0)
@@ -199,62 +193,54 @@ cgats *icg			/* input cgats structure */
 
 	if (icg->ntables == 0 || icg->t[0].tt != tt_other || icg->t[0].oi != 0) {
 		sprintf(p->err, "read_ccmx: Input file isn't a CCMX format file");
-		icg->del(icg);
 		return 1;
 	}
 	if (icg->ntables != 1) {
 		sprintf(p->err, "Input file doesn't contain exactly one table");
-		icg->del(icg);
 		return 1;
 	}
 	if ((ti = icg->find_kword(icg, 0, "COLOR_REP")) < 0) {
 		sprintf(p->err, "read_ccmx: Input file doesn't contain keyword COLOR_REP");
-		icg->del(icg);
 		return 1;
 	}
 
 	if (strcmp(icg->t[0].kdata[ti],"XYZ") != 0) { 
 		sprintf(p->err, "read_ccmx: Input file doesn't have COLOR_REP of XYZ");
-		icg->del(icg);
 		return 1;
 	}
 
 	if ((ti = icg->find_kword(icg, 0, "DESCRIPTOR")) >= 0) {
 		if ((p->desc = strdup(icg->t[0].kdata[ti])) == NULL) {
 			sprintf(p->err, "read_ccmx: malloc failed");
-			icg->del(icg);
 			return 2;
 		}
 	}
 
 	if ((ti = icg->find_kword(icg, 0, "INSTRUMENT")) < 0) {
 		sprintf(p->err, "read_ccmx: Input file doesn't contain keyword INSTRUMENT");
-		icg->del(icg);
 		return 1;
 	}
 	if ((p->inst = strdup(icg->t[0].kdata[ti])) == NULL) {
 		sprintf(p->err, "read_ccmx: malloc failed");
-		icg->del(icg);
 		return 2;
 	}
 
 	if ((ti = icg->find_kword(icg, 0, "DISPLAY")) >= 0) {
 		if ((p->disp = strdup(icg->t[0].kdata[ti])) == NULL) {
 			sprintf(p->err, "read_ccmx: malloc failed");
-			icg->del(icg);
 			return 2;
 		}
 	}
 	if ((ti = icg->find_kword(icg, 0, "TECHNOLOGY")) >= 0) {
 		if ((p->tech = strdup(icg->t[0].kdata[ti])) == NULL) {
 			sprintf(p->err, "read_ccmx: malloc failed");
-			icg->del(icg);
 			return 2;
 		}
+		/* Get disptech enum from standard TECHNOLOGY string */
+		p->dtech = disptech_get_strid(p->tech)->dtech;
 	}
 	if (p->disp == NULL && p->tech == NULL) {
 		sprintf(p->err, "read_ccmx: Input file doesn't contain keyword DISPLAY or TECHNOLOGY");
-		icg->del(icg);
 		return 1;
 	}
 	if ((ti = icg->find_kword(icg, 0, "DISPLAY_TYPE_REFRESH")) >= 0) {
@@ -266,14 +252,14 @@ cgats *icg			/* input cgats structure */
 		p->refrmode = -1;
 	}
 	if ((ti = icg->find_kword(icg, 0, "DISPLAY_TYPE_BASE_ID")) >= 0) {
-		p->cbid = atoi(icg->t[0].kdata[ti]);
+		p->cc_cbid = atoi(icg->t[0].kdata[ti]);
 	} else {
+		p->cc_cbid = 0;
 	}
 
 	if ((ti = icg->find_kword(icg, 0, "UI_SELECTORS")) >= 0) {
 		if ((p->sel = strdup(icg->t[0].kdata[ti])) == NULL) {
 			sprintf(p->err, "read_ccmx: malloc failed");
-			icg->del(icg);
 			return 2;
 		}
 	}
@@ -281,7 +267,6 @@ cgats *icg			/* input cgats structure */
 	if ((ti = icg->find_kword(icg, 0, "REFERENCE")) >= 0) {
 		if ((p->ref = strdup(icg->t[0].kdata[ti])) == NULL) {
 			sprintf(p->err, "read_ccmx: malloc failed");
-			icg->del(icg);
 			return 2;
 		}
 	}
@@ -290,19 +275,16 @@ cgats *icg			/* input cgats structure */
 	for (i = 0; i < 3; i++) {	/* XYZ fields */
 		if ((spi[i] = icg->find_field(icg, 0, xyzfname[i])) < 0) {
 			sprintf(p->err, "read_ccmx: Input file doesn't contain field %s", xyzfname[i]);
-			icg->del(icg);
 			return 1;
 		}
 		if (icg->t[0].ftype[spi[i]] != r_t) {
 			sprintf(p->err, "read_ccmx: Input file field %s is wrong type", xyzfname[i]);
-			icg->del(icg);
 			return 1;
 		}
 	}
 
 	if (icg->t[0].nsets != 3) {
 		sprintf(p->err, "read_ccmx: Input file doesn't have exactly 3 sets");
-		icg->del(icg);
 		return 1;
 	}
 
@@ -404,8 +386,8 @@ double *in					/* Input XYZ */
 static int set_ccmx(ccmx *p,
 char *desc,			/* General description (optional) */
 char *inst,			/* Instrument description to copy from */
-char *disp,			/* Display make and model (optional if tech) */
-char *tech,			/* Display technology description (optional if disp) */
+char *disp,			/* Display make and model (optional) */
+disptech dtech,		/* Display technology enum */
 int refrmode,		/* Display refresh mode, -1 = unknown, 0 = n, 1 = yes */
 int cbid,			/* Display type calibration base ID, 0 = unknown */
 char *sel,			/* UI selector characters - NULL for none */
@@ -424,13 +406,9 @@ double mtx[3][3]	/* Transform matrix to copy from */
 		sprintf(p->err, "set_ccmx: malloc failed");
 		return 2;
 	}
-	if ((p->tech = tech) != NULL && (p->tech = strdup(tech)) == NULL) {
-		sprintf(p->err, "set_ccmx: malloc failed");
-		return 2;
-	}
-
+	p->dtech = dtech;
 	p->refrmode = refrmode;
-	p->cbid = cbid;
+	p->cc_cbid = cbid;
 
 	if (sel != NULL) {
 		if ((p->sel = strdup(sel)) == NULL) {
@@ -556,8 +534,8 @@ double optf(void *fdata, double *tp) {
 static int create_ccmx(ccmx *p,
 char *desc,			/* General description (optional) */
 char *inst,			/* Instrument description to copy from */
-char *disp,			/* Display make and model (optional if tech) */
-char *tech,			/* Display technology description (optional if disp) */
+char *disp,			/* Display make and model (optional) */
+disptech dtech,		/* Display technology enum */
 int refrmode,		/* Display refresh mode, -1 = unknown, 0 = n, 1 = yes */
 int cbid,			/* Display type calibration base index, 0 = unknown */
 char *sel,			/* UI selector characters - NULL for none */
@@ -583,12 +561,9 @@ double (*cols)[3]		/* Array of XYZ values from colorimeter */
 		sprintf(p->err, "create_ccmx: malloc failed");
 		return 2;
 	}
-	if ((p->tech = tech) != NULL && (p->tech = strdup(tech)) == NULL) {
-		sprintf(p->err, "create_ccmx: malloc failed");
-		return 2;
-	}
+	p->dtech = dtech;
 	p->refrmode = refrmode;
-	p->cbid = cbid;
+	p->cc_cbid = cbid;
 
 	if (sel != NULL) {
 		if ((p->sel = strdup(sel)) == NULL) {
@@ -679,10 +654,10 @@ double (*cols)[3]		/* Array of XYZ values from colorimeter */
 static int create_ccmx(ccmx *p,
 char *desc,			/* General description (optional) */
 char *inst,			/* Instrument description to copy from */
-char *disp,			/* Display make and model (optional if tech) */
-char *tech,			/* Display technology description (optional if disp) */
+char *disp,			/* Display make and model (optional) */
+disptech dtech,		/* Display technology enum */
 int refrmode,		/* Display refresh mode, -1 = unknown, 0 = n, 1 = yes */
-int cbid,			/* Display type calibration base ID, 0 = unknown */
+int cbid,			/* Display type calibration base index, 0 = unknown */
 char *sel,			/* UI selector characters - NULL for none */
 char *refd,			/* Reference spectrometer description (optional) */
 int npat,			/* Number of samples in following arrays */
@@ -723,7 +698,7 @@ ccmx *new_ccmx(void) {
 		return NULL;
 
 	p->refrmode = -1;
-	p->cbid = 0;
+	p->cc_cbid = 0;
 
 	/* Init method pointers */
 	p->del            = del_ccmx;

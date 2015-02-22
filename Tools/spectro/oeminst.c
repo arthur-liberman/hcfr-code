@@ -30,6 +30,7 @@
 #include "aglob.h"
 #include "oemarch.h"
 #include "xspect.h"
+#include "disptechs.h"
 #include "ccmx.h"
 #include "ccss.h"
 
@@ -127,7 +128,7 @@ main(int argc, char *argv[]) {
 	for (; fa < argc; fa++) {
 		xfile *xf;
 		xf = new_add_xf(&files, argv[fa], NULL, 0, file_arch | file_dllcab | file_data,
-		                                     targ_spyd_pld | targ_spyd_cal
+		                                     targ_spyd1_pld | targ_spyd2_pld | targ_spyd_cal
 		                                   | targ_i1d3_edr | targ_ccmx);
 		if (load_xfile(xf, verb))
 			error("Unable to load file '%s'",xf->name);
@@ -201,7 +202,9 @@ main(int argc, char *argv[]) {
 			if (cx->buf_read_ccmx(cx, xf->buf, xf->len)) {
 				error("Reading '%s' failed with '%s'\n",xf->name,cx->err);
 			}
-			if (cx->cbid <= 0)
+			if (cx->dtech == disptech_unknown)
+				warning("'%s' has an unknown display technology set",xf->name);
+			if (cx->cc_cbid <= 0)
 				error("'%s' doesn't contain DISPLAY_TYPE_BASE_ID field :- it can't be installed without this!",xf->name);
 			if (cx->refrmode < 0)
 				warning("'%s' doesn't contain DISPLAY_TYPE_REFRESH field :- non-refresh will be assumed!",xf->name);

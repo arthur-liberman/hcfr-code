@@ -1,4 +1,4 @@
-#ifndef DTP41_H
+#ifndef DTP20_H
 
 /* 
  * Argyll Color Correction System

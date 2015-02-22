@@ -157,6 +157,7 @@ munki_determine_capabilities(munki *p) {
 }
 
 /* Return current or given configuration available measurement modes. */
+/* NOTE that conf_ix values shoudn't be changed, as it is used as a persistent key */
 static inst_code munki_meas_config(
 inst *pp,
 inst_mode *mmodes,
@@ -277,6 +278,7 @@ ipatch *vals) {		/* Pointer to array of instrument patch values */
 
 	rv = munki_imp_measure(p, vals, npatch, 1);
 
+
 	return munki_interp_code(p, rv);
 }
 
@@ -298,6 +300,7 @@ instClamping clamp) {		/* Clamp XYZ/Lab to be +ve */
 
 	rv = munki_imp_measure(p, val, 1, clamp);
 
+
 	return munki_interp_code(p, rv);
 }
 
@@ -314,6 +317,9 @@ double *ref_rate) {
 	if (!p->inited)
 		return inst_no_init;
 
+	if (ref_rate != NULL)
+		*ref_rate = 0.0;
+
 	rv = munki_imp_meas_refrate(p, ref_rate);
 
 
@@ -324,7 +330,8 @@ double *ref_rate) {
 static inst_code
 munki_meas_delay(
 inst *pp,
-int *msecdelay) {
+int *pdispmsec,		/* Return display update delay in msec */
+int *pinstmsec) {	/* Return instrument reaction time in msec */
 	munki *p = (munki *)pp;
 	munki_code rv;
 
@@ -333,9 +340,18 @@ int *msecdelay) {
 	if (!p->inited)
 		return inst_no_init;
 
-	rv = munki_imp_meas_delay(p, msecdelay);
+	rv = munki_imp_meas_delay(p, pdispmsec, pinstmsec);
 
 	return munki_interp_code(p, rv);
+}
+
+/* Timestamp the white patch change during meas_delay() */
+static inst_code munki_white_change(
+inst *pp,
+int init) {
+	munki *p = (munki *)pp;
+
+	return munki_imp_white_change(p, init);
 }
 
 /* Return needed and available inst_cal_type's */
@@ -348,7 +364,7 @@ static inst_code munki_get_n_a_cals(inst *pp, inst_cal_type *pn_cals, inst_cal_t
 }
 
 /* Request an instrument calibration. */
-inst_code munki_calibrate(
+static inst_code munki_calibrate(
 inst *pp,
 inst_cal_type *calt,	/* Calibration type to do/remaining */
 inst_cal_cond *calc,	/* Current condition/desired condition */
@@ -522,7 +538,6 @@ munki_interp_code(munki *p, munki_code ec) {
 	switch (ec) {
 
 		case MUNKI_OK:
-
 			return inst_ok;
 
 		case MUNKI_COMS_FAIL:
@@ -637,7 +652,7 @@ static inst_config munki_config_enum(inst *pp, int ec) {
 }
 
 /* Return the instrument capabilities */
-void munki_capabilities(inst *pp,
+static void munki_capabilities(inst *pp,
 inst_mode *pcap1,
 inst2_capability *pcap2,
 inst3_capability *pcap3) {
@@ -694,7 +709,7 @@ static mk_mode munki_convert_mode(munki *p, inst_mode m) {
 }
 
 /* Check device measurement mode */
-inst_code munki_check_mode(inst *pp, inst_mode m) {
+static inst_code munki_check_mode(inst *pp, inst_mode m) {
 	munki *p = (munki *)pp;
 	mk_mode mmode = 0;
 
@@ -710,7 +725,7 @@ inst_code munki_check_mode(inst *pp, inst_mode m) {
 }
 
 /* Set device measurement mode */
-inst_code munki_set_mode(inst *pp, inst_mode m) {
+static inst_code munki_set_mode(inst *pp, inst_mode m) {
 	munki *p = (munki *)pp;
 	mk_mode mmode = 0;
 	inst_mode cap = p->cap;
@@ -944,6 +959,7 @@ extern munki *new_munki(icoms *icom, instType itype) {
 	p->get_n_a_cals      = munki_get_n_a_cals;
 	p->calibrate         = munki_calibrate;
 	p->meas_delay        = munki_meas_delay;
+	p->white_change      = munki_white_change;
 	p->interp_error      = munki_interp_error;
 	p->config_enum       = munki_config_enum;
 	p->del               = munki_del;

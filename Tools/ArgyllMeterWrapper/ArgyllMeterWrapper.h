@@ -42,7 +42,7 @@ public:
     typedef enum
     {
         DISPLAY,
-        PROJECTOR,
+        TELEPHOTO,
         AMBIENT
     } eReadingType;
 

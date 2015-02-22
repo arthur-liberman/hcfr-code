@@ -77,7 +77,7 @@ void CArgyllSensorPropPage::DoDataExchange(CDataExchange* pDX)
     m_AdaptCheckBox.EnableWindow(FALSE);
 	m_HiRes = (m_HiResCheckBoxEnabled?m_HiRes:0);
 
-    if ( m_DisplayTypeCombo.GetCount() == 0 && m_ReadingType == 0 && m_MeterName == "Xrite i1 DisplayPro, ColorMunki Display" )
+    if ( m_DisplayTypeCombo.GetCount() == 0 && m_ReadingType == 0 && m_MeterName == "X-Rite i1 DisplayPro, ColorMunki Display" )
     {
         m_ReadingType = 2;
         GetColorApp()->InMeasureMessageBox("Diffuser is deployed, switching to Ambient mode","Wrong mode!",MB_OK);

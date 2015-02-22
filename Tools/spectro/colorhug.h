@@ -57,7 +57,13 @@
 #define COLORHUG_BAD_RD_LENGTH			0x26
 #define COLORHUG_BAD_RET_CMD			0x27
 #define COLORHUG_BAD_RET_STAT			0x28
+#define COLORHUG_WRONG_MODEL			0x29
 
+/* Sub-type of instrument */
+typedef enum {
+	ch_one        = 0,	/* Original ColorHug */
+	ch_two        = 1	/* ColorHug2 */
+} colorhug_model;
 
 /* COLORHUG communication object */
 struct _colorhug {
@@ -67,13 +73,16 @@ struct _colorhug {
 
 	inst_opt_type trig;			/* Reading trigger mode */
 
+	colorhug_model stype;		/* Instrument sub-model */
 	int maj, min, uro;			/* Version number */
 	int ser_no;					/* Serial number */
 
 	inst_disptypesel *dtlist;	/* Display Type list */
 	int ndtlist;				/* Number of valid dtlist entries */
 	int icx;					/* Internal calibration matrix index, 11 = Raw */
-	int cbid;					/* calibration base ID, 0 if not a base */
+	disptech dtech;				/* Display technology enum */
+	int cbid;					/* current calibration base ID, 0 if not a base */
+	int ucbid;					/* Underlying base ID if being used for matrix, 0 othewise */
 	int refrmode;				/* Refresh mode (always 0) */
 	double postscale;			/* Post scale factor (for Raw) */
 	double ccmat[3][3];			/* Colorimeter correction matrix */

@@ -319,6 +319,9 @@ struct _i1proimp {
 	int trig_se;			/* Delayed trigger icoms error */
 	i1pro_code trig_rv;		/* Delayed trigger result */
 
+	volatile double whitestamp;	/* meas_delay() white timestamp */
+	volatile double trigstamp;	/* meas_delay() trigger timestamp */
+
 }; typedef struct _i1proimp i1proimp;
 
 /* Add an implementation structure */
@@ -344,6 +347,7 @@ void del_i1proimp(i1pro *p);
 
 #define I1PRO_UNSUPPORTED		   		0x79		/* Unsupported function */
 #define I1PRO_CAL_SETUP                 0x7A		/* Cal. retry with correct setup is needed */
+#define I1PRO_RD_TRANSWHITEWARN         0x7B		/* Transmission white ref wl are low */
 
 /* Real error code */
 #define I1PRO_OK   						0x00
@@ -394,10 +398,6 @@ void del_i1proimp(i1pro *p);
 #define I1PRO_RD_NOAMBB4FLASHES         0x3F		/* No ambient before flashes found */
 #define I1PRO_RD_NOREFR_FOUND           0x40		/* Unable to measure refresh rate */
 #define I1PRO_RD_NOTRANS_FOUND          0x41		/* Unable to measure delay transition */
-
-#define I1PRO_CAL_SETUP                 0x7A		/* Cal. retry with correct setup is needed */
-#define I1PRO_RD_TRANSWHITEWARN         0x7B		/* Transmission white ref wl are low */
-
 
 /* Internal errors */
 #define I1PRO_INT_NO_COMS 		        0x50
@@ -480,8 +480,11 @@ i1pro_code i1pro_imp_meas_refrate(
 /* Measure the display update delay */
 i1pro_code i1pro_imp_meas_delay(
 	i1pro *p,
-	int *msecdelay
-);
+	int *pdispmsec,
+	int *pinstmsec);
+
+/* Timestamp the white patch change during meas_delay() */
+inst_code i1pro_imp_white_change(i1pro *p, int init);
 
 /* Given a raw measurement of the wavelength LED, */
 /* Compute the base offset that best fits it to the reference */
@@ -979,7 +982,7 @@ i1pro_triggermeasure(i1pro *p, int delay);
 
 
 /* Read a measurements results */
-i1pro_code
+static i1pro_code
 i1pro_readmeasurement(
 	i1pro *p,
 	int inummeas,			/* Initial number of measurements to expect */
@@ -1085,8 +1088,6 @@ i1pro2_indLEDseq(void *pp, unsigned char *buf, int size);
 /* Turn indicator LEDs off */
 static int
 i1pro2_indLEDoff(void *pp);
-static int
-i1pro2_indLEDonWhite(void *pp);
 
 // ~~~~9999
 

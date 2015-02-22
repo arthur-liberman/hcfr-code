@@ -24,6 +24,7 @@
  */
 
 /* ------------------------------------------------------------------------------ */
+#include "disptechs.h"
 
 #ifdef __cplusplus
 	extern "C" {
@@ -37,7 +38,7 @@ struct _ccss {
 	/* Set the contents of the ccss. return nz on error. */
 	/* (Makes copies of all parameters) */
 	int (*set_ccss)(struct _ccss *p, char *orig, char *cdate,
-	                char *desc, char *disp, char *tech, int refrmode, char *sel,
+	                char *desc, char *disp, disptech dtech, int refrmode, char *sel,
 	                char *ref, xspect *samples, int no_samp);	
 
 	/* write to a CGATS .ccss file */
@@ -62,7 +63,8 @@ struct _ccss {
 	char *crdate;		/* Creation date (in ctime() format). May be NULL */
 	char *desc;			/* General Description (optional) */
 	char *disp;			/* Description of the display (Manfrr and Model No) (optional if tech) */
-	char *tech;			/* Technology (CRT, LCD + backlight type etc.) (optional if disp) */
+	disptech dtech;		/* Display Technology enumeration (optional if disp) */
+	char *tech;			/* Technology string (Looked up from dtech enum) */
 	int refrmode;		/* Refresh mode, -1 if unknown, 0 of no, 1 if yes */
 	char *sel;			/* Optional UI selector characters. May be NULL */
 	char *ref;			/* Name of reference spectrometer instrument (optional) */

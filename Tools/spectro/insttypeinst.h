@@ -9,18 +9,30 @@
  * see the License2.txt file for licencing details.
  */
 
-#include "dtp20.h"
-#include "dtp22.h"
-#include "dtp41.h"
-#include "dtp51.h"
-#include "dtp92.h"
-#include "ss.h"
-#include "i1disp.h"
-#include "i1d3.h"
-#include "i1pro.h"
-#include "munki.h"
-#include "hcfr.h"
-#include "spyd2.h"
-#include "huey.h"
-#include "specbos.h"
-#include "colorhug.h"
+
+#ifdef ENABLE_SERIAL
+# include "dtp22.h"
+# include "dtp41.h"
+# include "dtp51.h"
+# include "ss.h"
+#endif
+
+#ifdef ENABLE_FAST_SERIAL
+# include "specbos.h"
+# include "kleink10.h"
+#endif
+
+#ifdef ENABLE_USB
+# include "dtp20.h"
+# include "dtp92.h"
+# include "i1disp.h"
+# include "i1d3.h"
+# include "i1pro.h"
+# include "munki.h"
+# include "spyd2.h"
+# include "huey.h"
+# include "hcfr.h"
+# include "colorhug.h"
+#endif
+
+

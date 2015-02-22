@@ -118,18 +118,18 @@ dtp51_fcommand(
 	double to) {		/* Timout in seconts */
 	int rv, se;
 
-	if ((se = p->icom->write_read(p->icom, in, out, bsize, tc, ntc, to)) != 0) {
+	if ((se = p->icom->write_read(p->icom, in, 0, out, bsize, NULL, tc, ntc, to)) != 0) {
 		a1logd(p->log, 1, "dtp51_fcommand: serial i/o failure on write_read '%s'\n",icoms_fix(in));
 		return icoms2dtp51_err(se);
 	}
 	rv = DTP51_OK;
-	if (tc == ">" && ntc == 1) {
+	if (tc[0] == '>' && ntc == 1) {
 		rv = extract_ec(out);
 		if (rv > 0) {
 			rv &= inst_imask;
 			if (rv != DTP51_OK) {	/* Clear the error */
 				char buf[MAX_MES_SIZE];
-				p->icom->write_read(p->icom, "CE\r", buf, MAX_MES_SIZE, ">", 1, 0.5);
+				p->icom->write_read(p->icom, "CE\r", 0, buf, MAX_MES_SIZE, NULL, ">", 1, 0.5);
 			}
 		}
 	}
@@ -158,7 +158,7 @@ double to) {		/* Timout in seconts */
 	int ntc = 1;		/* Number of terminating characters */
 	int rv, se;
 
-	if ((se = p->icom->read(p->icom, out, bsize, tc, ntc, to)) != 0) {
+	if ((se = p->icom->read(p->icom, out, bsize, NULL, tc, ntc, to)) != 0) {
 		a1logd(p->log, 1, "dtp51_fcommand: serial i/o failure on read\n");
 		return icoms2dtp51_err(se);
 	}
@@ -169,7 +169,7 @@ double to) {		/* Timout in seconts */
 			rv &= inst_imask;
 			if (rv != DTP51_OK) {	/* Clear the error */
 				char buf[MAX_MES_SIZE];
-				p->icom->write_read(p->icom, "CE\r", buf, MAX_MES_SIZE, ">", 1, 0.5);
+				p->icom->write_read(p->icom, "CE\r", 0, buf, MAX_MES_SIZE, NULL, ">", 1, 0.5);
 			}
 		}
 	}
@@ -262,7 +262,7 @@ dtp51_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 		return ev;
 
 	/* Change the baud rate to the rate we've been told */
-	if ((se = p->icom->write_read(p->icom, brc[bi], buf, MAX_MES_SIZE, ">", 1, 1.5)) != 0) {
+	if ((se = p->icom->write_read(p->icom, brc[bi], 0, buf, MAX_MES_SIZE, NULL, ">", 1, 1.5)) != 0) {
 		if (extract_ec(buf) != DTP51_OK)
 			return inst_coms_fail;
 	}
@@ -275,7 +275,7 @@ dtp51_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	}
 
 	/* Loose a character (not sure why) */
-	p->icom->write_read(p->icom, "\r", buf, MAX_MES_SIZE, ">", 1, 0.5);
+	p->icom->write_read(p->icom, "\r", 0, buf, MAX_MES_SIZE, NULL, ">", 1, 0.5);
 
 	/* Check instrument is responding */
 	if ((ev = dtp51_command(p, "\r", buf, MAX_MES_SIZE, 1.5)) != inst_ok)
@@ -367,7 +367,7 @@ dtp51_init_inst(inst *pp) {
 	/* Reset it */
 	if ((ev = dtp51_command(p, "0PR\r", buf, MAX_MES_SIZE, 1.5)) != inst_ok)
 		return ev;
-	msec_sleep(2000);	/* Let it recover from reset */
+	msec_sleep(2 * 1000);	/* Let it recover from reset */
 
 	/* Turn echoing of characters off */
 	if ((ev = dtp51_command(p, "EC\r", buf, MAX_MES_SIZE, 1.5)) != inst_ok)
@@ -858,6 +858,7 @@ static inst_code
 dtp51_get_set_opt(inst *pp, inst_opt_type m, ...)
 {
 	dtp51 *p = (dtp51 *)pp;
+	static char buf[MAX_MES_SIZE];
 
 	/* Record the trigger mode */
 	if (m == inst_opt_trig_switch) {	/* Can only be triggered this way */

@@ -42,6 +42,7 @@
  */
 
 #include "insttypes.h"		/* libinst Includes this functionality */
+#include "disptechs.h"		/* libinst Includes this functionality */
 #include "icoms.h"			/* libinst Includes this functionality */
 #include "conv.h"
 
@@ -123,38 +124,13 @@ typedef enum {
 	inst_unexpected_reply  = 0x140000,	/* Unexpected Reply */
 	inst_wrong_setup       = 0x150000,	/* Setup is wrong or conflicting */
 	inst_hardware_fail     = 0x160000,	/* Hardware failure */
-	inst_bad_parameter     = 0x170000,	/* Bad parameter value */
-	inst_other_error       = 0x180000,	/* Some other error */
+	inst_system_error      = 0x170000,	/* System call (ie malloc) fail */
+	inst_bad_parameter     = 0x180000,	/* Bad parameter value */
+	inst_other_error       = 0x190000,	/* Some other error */
 	inst_mask              = 0xff0000,	/* inst_code mask value */
 	inst_imask             = 0x00ffff	/* instrument specific mask value */
 } inst_code;
 
-/* Instrument capabilities & modes */
-/* Note that due to the binary combinations, capabilities is not definititive */
-/* as to valid modes. check_mode() is definitive. */
-typedef enum {
-	inst_mode_none               = 0x00000000, /* No capability or mode */
-
-	/* Mode of light measurement */
-	inst_mode_reflection         = 0x00000001,	/* General reflection mode */
-	inst_mode_s_reflection       = 0x00000002,	/* General saved reflection mode */
-	inst_mode_transmission       = 0x00000004,	/* General transmission mode */
-	inst_mode_emission           = 0x00000008,	/* General emission mode */
-	inst_mode_illum_mask         = 0x0000000f,	/* Mask of sample illumination sub mode */
-
-	/* Access mode of measurement */
-	inst_mode_spot               = 0x00000010,	/* General spot measurement mode */
-	inst_mode_strip              = 0x00000020,	/* General strip measurement mode */
-	inst_mode_xy                 = 0x00000040,	/* General X-Y measurement mode */
-	inst_mode_chart              = 0x00000080,	/* General chart measurement mode */
-	inst_mode_ambient            = 0x00000100,	/* General ambient measurement mode */
-	inst_mode_ambient_flash      = 0x00000200,	/* General ambient flash measurement mode */
-	inst_mode_tele               = 0x00000400,	/* General telephoto measurement mode */
-	// Hmm. Should there be a tele_flash mode ????
-	inst_mode_sub_mask           = 0x000007f0,	/* Mask of sub-mode */
-
-	/* Basic mode */
-	inst_mode_basic_mask         = inst_mode_illum_mask | inst_mode_sub_mask,
 
 /*
 	possible UV modes:
@@ -179,21 +155,68 @@ typedef enum {
 	                                get_meas_illum_spectrum(mode);
  */
 
+/* Instrument capabilities & modes */
+/* Note that due to the binary combinations, capabilities is not definititive */
+/* as to valid modes. check_mode() is definitive. */
+/* Note :- update inst_mode_sym[] table in inst.c if anything here is changed. */
+typedef enum {
+	inst_mode_none               = 0x00000000, /* No capability or mode */
+
+	/* Mode of light measurement */
+	inst_mode_reflection         = 0x00000001,	/* General reflection mode */
+#   define inst_mode_reflection_sym             "REFL"
+	inst_mode_s_reflection       = 0x00000002,	/* General saved reflection mode */
+#   define inst_mode_s_reflection_sym           "SRFL"
+	inst_mode_transmission       = 0x00000004,	/* General transmission mode */
+#   define inst_mode_transmission_sym           "TRAN"
+	inst_mode_emission           = 0x00000008,	/* General emission mode */
+#   define inst_mode_emission_sym               "EMIS"
+	inst_mode_illum_mask         = 0x0000000f,	/* Mask of sample illumination sub mode */
+
+	/* Access mode of measurement */
+	inst_mode_spot               = 0x00000010,	/* General spot measurement mode */
+#   define inst_mode_spot_sym                   "SPOT"
+	inst_mode_strip              = 0x00000020,	/* General strip measurement mode */
+#   define inst_mode_strip_sym                  "STRP"
+	inst_mode_xy                 = 0x00000040,	/* General X-Y measurement mode */
+#   define inst_mode_xy_sym                     "CHXY"
+	inst_mode_chart              = 0x00000080,	/* General chart measurement mode */
+#   define inst_mode_chart_sym                  "CHRT"
+	inst_mode_ambient            = 0x00000100,	/* General ambient measurement mode */
+#   define inst_mode_ambient_sym                "AMBI"
+	inst_mode_ambient_flash      = 0x00000200,	/* General ambient flash measurement mode */
+#   define inst_mode_ambient_flash_sym          "ABFL"
+	inst_mode_tele               = 0x00000400,	/* General telephoto measurement mode */
+#   define inst_mode_tele_sym                   "TELE"
+	// Hmm. Should there be a tele_flash mode ????
+	inst_mode_sub_mask           = 0x000007f0,	/* Mask of sub-mode */
+
+	/* Basic mode */
+	inst_mode_basic_mask         = inst_mode_illum_mask | inst_mode_sub_mask,
+
 	/* Extra dependent modes */
 	inst_mode_emis_nonadaptive   = 0x00000800,	/* Emissom Non-adaptive mode */
+#   define inst_mode_emis_nonadaptive_sys       "EMNA"
 	inst_mode_ref_uv             = 0x00001000,	/* Ultra Violet measurement mode */
+#   define inst_mode_ref_uv_sym                 "REUV"
 	inst_mode_emis_refresh_ovd   = 0x00002000,	/* Emissom Refresh mode override */
+#   define inst_mode_emis_refresh_ovd_sym       "EMRO"
 	inst_mode_emis_norefresh_ovd = 0x00006000,	/* Emissom Non-refresh mode override */
+#   define inst_mode_emis_norefresh_ovd_sym     "ENRO"
 	inst_mode_dep_extra_mask     = 0x00007800,	/* Mask of measurement modifiers */
 
 	/* Extra independent modes */
 	inst_mode_colorimeter        = 0x00004000,	/* Colorimetric mode */
+#   define inst_mode_colorimeter_sym            "COLI"
 	inst_mode_spectral           = 0x00008000,	/* Spectral mode */
+#   define inst_mode_spectral_sym               "SPEC"
 	inst_mode_highres            = 0x00010000,	/* High Resolution Spectral mode */
+#   define inst_mode_highres_sym                "HIRZ"
 	inst_mode_extra_mask         = 0x0001c000,	/* Mask of extra modes */
 
 	/* Configured for calibration & capable of returning it from inst_mode_calibration */
 	inst_mode_calibration        = 0x80000000,	/* Configured for calibration */
+#   define inst_mode_calibration_sym            "CALB"
 
 	/* Combined operating modes (from above): */
 	/* These mode capabilities are also use to set the mode */
@@ -248,6 +271,16 @@ typedef enum {
 /* Test for a specific mode in capability and mode */
 #define IMODETST2(mcap, mbits, mode) (IMODETST(mcap, mode) && IMODETST(mbits, mode))
 
+#define MAX_INST_MODE_SYM_SZ (32 * (4 + 1))		/* Each bit sym is 4 chars */
+
+/* Return a string with a symbolic encoding of the mode flags */
+void inst_mode_to_sym(char sym[MAX_INST_MODE_SYM_SZ], inst_mode mode);
+
+/* Return a set of mode flags that correspondf to the symbolic encoding */
+/* Return nz if a symbol wasn't recognized */
+int sym_to_inst_mode(inst_mode *mode, const char *sym);
+
+
 /* Instrument capabilities 2 */
 /* (Available capabilities may be mode dependent) */
 typedef enum {
@@ -281,6 +314,8 @@ typedef enum {
 	inst2_has_battery       = 0x01000000, /* Instrument is battery powered */
 
 	inst2_disptype          = 0x02000000, /* Has a display type selector */
+										  /* (ie. get_disptypesel(), set_disptype */
+
 	inst2_ccmx              = 0x04000000, /* Colorimeter Correction Matrix capability */
 	inst2_ccss              = 0x08000000, /* Colorimeter Cal. Spectral Set capability */
 
@@ -300,19 +335,43 @@ typedef enum {
 
 } inst3_capability;
 
-typedef enum {
-	inst_dtflags_none    = 0x0000,			/* no flags */
-	inst_dtflags_default = 0x0001,			/* default display type */
-	inst_dtflags_ccss    = 0x0002,			/* ccss */
-	inst_dtflags_ccmx    = 0x0004,			/* ccmx */
-	inst_dtflags_end     = 0x8000			/* end marker */
+/* - - - - - - - - - - - - - - - - - - - */
 
+/* API ideas for supporting calibration management:
+
+	functions to:
+
+	 return number of used and free buitlin slots, + password required flag.
+	
+	 write builtin calibration or ccss/ccmx file
+
+	 write builtin calibration or ccss/ccmx file
+
+	 delete builtin calibration or ccss/ccmx file
+
+	Things to be allowed for:
+
+		optional password
+		configuration specific calibrations. How are they marked ?
+*/
+
+typedef enum {
+	inst_dtflags_none    = 0x0000,			/* no flags - assume builtin calibration */
+	inst_dtflags_mtx     = 0x0001,			/* matrix read from instrument */
+	inst_dtflags_ccss    = 0x0002,			/* ccss file */
+	inst_dtflags_ccmx    = 0x0004,			/* ccmx file */
+	inst_dtflags_wr      = 0x0010,			/* Writable slot */
+	inst_dtflags_ld      = 0x0020,			/* mtx/ccss/ccmx is loaded */
+	inst_dtflags_default = 0x1000,			/* Dafault calibration to use */
+	inst_dtflags_end     = 0x8000			/* end marker */
 } inst_dtflags;
 
 #define INST_DTYPE_SEL_LEN 10
 #define INST_DTYPE_DESC_LEN 100
 
-/* Structure used to return display type selection information */
+/* Structure used to return display type selection information. */
+/* Calibrations may be implicit (based on ix and driver code), or */
+/* explicit mtx/ccss/ccmx information contained in structure. */
 typedef struct _inst_disptypesel {
 
   /* Public: */
@@ -323,16 +382,21 @@ typedef struct _inst_disptypesel {
 	char desc[INST_DTYPE_DESC_LEN];	/* Textural description */
 	int  refr;				/* Refresh mode flag */
 
+	disptech dtech;			/* display techology */
+
   /* Private: */
 	int ix;					/* Internal index,  */
 
 	// Stuff for ccss & ccmx
-	char *path;				/* Path to ccss or ccmx */
+	char *path;				/* Path to ccss or ccmx. NULL if not valid */
+	int cc_cbid;			/* cbid that matrix requires */
 	double mat[3][3];		/* ccmx matrix */
-	xspect *sets;   		/* ccss set of sample spectra */
-	int no_sets;    		/* ccs number of sets */
+	xspect *sets;   		/* ccss set of sample spectra. NULL if not valid */
+	int no_sets;    		/* ccs number of sets. 0 if not valid */
 
 } inst_disptypesel;
+
+/* - - - - - - - - - - - - - - - - - - - */
 
 /* Instrument options for get_set_opt() */
 typedef enum {
@@ -364,14 +428,8 @@ typedef enum {
 
 	inst_opt_set_ccss_obs       = 0x000A,	/* Set the observer used with ccss device types - */
 											/* Not applicable to any other type of instrument. */
-											/* Only takes effect after inst_opt_set_disp_type */ 
-											/* or col_cal_spec_set() */
 											/* [args: icxObserverType obType,*/
 	                                        /*        xspect custObserver[3] */
-
-	inst_opt_get_dtinfo         = 0x000C,	/* Get current display type information */
-											/* [args: int *refrmode,*/
-	                                        /*        int *cbid] */
 
 	inst_opt_set_filter         = 0x000D,	/* Set a filter configuration */
 											/* [1 argument type inst_opt_filter] */
@@ -447,11 +505,12 @@ typedef enum {
 	inst_calt_trans_vwhite   = 0x00000800,	/* Transmissive variable white reference calibration */
 	inst_calt_trans_dark     = 0x00001000,	/* Transmissive dark reference calibration */
 	inst_calt_ref_freq       = 0x00001800, 	/* Display refresh frequency calibration - non-deferable in HCFR */
-
+	
 	inst_calt_n_dfrble_mask  = 0x0000fff0,	/* Mask of non-deferrable calibrations */
 
 	/* Calibrations that might be deferred until measurement */
 	inst_calt_emis_int_time  = 0x00100000, 	/* Emissive measurement range (integration time) */
+//	inst_calt_ref_freq       = 0x00200000, 	/* Display refresh frequency calibration */
 
 	inst_calt_dfrble_mask    = 0x00f00000, 	/* Mask of deferrable calibrations */
 
@@ -627,10 +686,21 @@ typedef enum {
 		int recreate);			/* nz to re-check for new ccmx & ccss files */	\
 																				\
 	/* Set the display type. index is into the inst_disptypesel[] returned */   \
-	/* returned by get_disptypesel(). clears col_cor_mat() */					\
+	/* returned by get_disptypesel(). clears col_cor_mat() and */				\
+	/* col_cal_spec_set(). */													\
 	inst_code (*set_disptype)(													\
         struct _inst *p,														\
 		int index);                                                             \
+	                                                                            \
+	/* Get the disptech and other corresponding info for the current */		    \
+	/* selected display type. Returns disptype_unknown by default. */			\
+	/* Because refrmode can be overridden, it may not match the refrmode */		\
+	/* of the dtech. (Pointers may be NULL if not needed) */					\
+	inst_code (*get_disptechi)(													\
+		struct _inst *p,														\
+		disptech *dtech,														\
+		int *refrmode,															\
+		int *cbid);																\
 	                                                                            \
     /* Get a status or get or set an option */                                  \
 	/* option state. */															\
@@ -809,14 +879,27 @@ typedef enum {
 		char id[CALIDLEN]);		/* Condition identifier (ie. white */			\
 								/* reference ID, filter ID) */					\
 																				\
-	/* Measure a display update delay. It is assumed that a */  				\
-	/* White to black change has been made to the displayed color, */     		\
-	/* and this will measure the time it took for the update to */              \
-	/* be noticed by the instrument, up to 1.0 seconds. */               		\
-	/* inst_misread will be returned on failure to find a transition to black. */ \
+	/* Measure a display update, and instrument reaction time. It is */			\
+	/* assumed that a white to black change will be made to the */				\
+	/* displayed color during this call, and this is used to measure */			\
+	/* the time it took for the update to be noticed by the instrument, */		\
+	/* up to 1.0 second. */												   		\
+	/* The instrument reaction time accounts for the time between */			\
+	/* when the measure function is called and the samples actually being */	\
+	/* taken. This value may be negative if there is a filter delay. */			\
+	/* The method white_change() should be called with init=1 before */			\
+	/* calling meas_delay, and then with init=0 during the meas_delay() */	\
+	/* call to timestamp the transition. */										\
+	/* Note that a default instmsec will be returned even on error. */			\
 	inst_code (*meas_delay)(											        \
 		struct _inst *p,														\
-		int *msecdelay);		/* Return the number of msec */					\
+		int *dispmsec,		/* Return display update delay in msec */			\
+		int *instmsec);		/* Return instrument reaction time in msec */		\
+																				\
+	/* Call used by other thread to timestamp the patch transition. */			\
+	inst_code (*white_change)(											        \
+		struct _inst *p,														\
+		int init);			/* nz to init time stamp, z to mark transition */	\
 																				\
 	/* Return the last calibrated refresh rate in Hz. Returns: */				\
 	/* (Available if cap2 & inst2_get_refresh_rate) */ 							\
@@ -855,7 +938,9 @@ typedef enum {
 	/* To clear the matrix, pass NULL for the matrix */							\
 	inst_code (*col_cor_mat)(											        \
 		struct _inst *p,														\
-		double mtx[3][3]);		/* XYZ matrix */								\
+		disptech dtech,		/* Use disptech_unknown if not known */				\
+		int cbid,       	/* Calibration display type base ID, needed 1 if unknown */\
+		double mtx[3][3]);	/* XYZ matrix */								    \
 																				\
 	/* Use a Colorimeter Calibration Spectral Set (ccss) to set the */			\
 	/* instrumen calibration. This will affect emissive readings. */			\
@@ -866,8 +951,9 @@ typedef enum {
 	/* icxOT_default for the observer. */										\
 	inst_code (*col_cal_spec_set)(												\
 		struct _inst *p,														\
-		xspect *sets,			/* Set of sample spectra */						\
-		int no_sets);	 		/* Number on set */								\
+		disptech dtech,		/* Use disptech_unknown if not known */				\
+		xspect *sets,		/* Set of sample spectra */							\
+		int no_sets); 		/* Number on set */									\
 																				\
 	/* Supply a user interaction callback function.								\
 	 * This is called for one of three different purposes:						\
@@ -966,33 +1052,35 @@ void inst_del_disptype_list(inst_disptypesel *list, int no);
 
 
 /* - - - - - - - - - - - - - - - - - - -- */
-/* CCMX support */
+/* CCMX support - ccmx instrument proxy */
 
 typedef struct {
 	char *path;			/* Path to the file */
 	char *desc;			/* Technology + display description */
-	int cbid;       	/* Calibration display type base ID */
+	disptech dtech;		/* Display Technology enumeration (optional if disp) */
+	int cc_cbid;       	/* Calibration display type base ID required */
 	int  refr;			/* Refresh mode flag */
 	char *sel;			/* UI selector characters (may be NULL) */
 	double mat[3][3];	/* The matrix values */
 } iccmx;
 
 /* return a list of installed ccmx files. */
-/* if inst != NULL, return those that match the given instrument. */
+/* if itype != instUnknown, return those that match the given instrument. */
 /* The list is sorted by description and terminated by a NULL entry. */
 /* If no is != NULL, return the number in the list */
 /* Return NULL and -1 if there is a malloc error */
-iccmx *list_iccmx(char *inst, int *no);
+iccmx *list_iccmx(instType itype, int *no);
 
 /* Free up a iccmx list */
 void free_iccmx(iccmx *list);
 
 /* - - - - - - - - - - - - - - - - - - -- */
-/* CCSS support */
+/* CCSS support - ccss instrument proxy */
 
 typedef struct {
 	char *path;			/* Path to the file */
 	char *desc;			/* Technology + display description */
+	disptech dtech;		/* Display Technology enumeration (optional if disp) */
 	int  refr;			/* Refresh mode flag */
 	char *sel;			/* UI selector characters (may be NULL) */
 	xspect *sets;		/* Set of sample spectra */
@@ -1013,6 +1101,7 @@ void free_iccss(iccss *list);
 #ifdef __cplusplus
 	}
 #endif
+
 
 #define INST_H
 #endif /* INST_H */

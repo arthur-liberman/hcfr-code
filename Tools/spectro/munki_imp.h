@@ -291,6 +291,9 @@ struct _munkiimp {
 	volatile int spos_change;		/* counter that increments on an spos event change */
 	unsigned int spos_msec;			/* Time when spos last changes */
 
+	volatile double whitestamp;		/* meas_delay() white timestamp */
+	volatile double trigstamp;		/* meas_delay() trigger timestamp */
+
 }; typedef struct _munkiimp munkiimp;
 
 /* Add an implementation structure */
@@ -432,9 +435,12 @@ munki_code munki_imp_meas_refrate(
 
 /* Measure the display update delay */
 munki_code munki_imp_meas_delay(
-	munki *p,
-	int *msecdelay
-);
+munki *p,
+int *pdispmsec,
+int *pinstmsec);
+
+/* Timestamp the white patch change during meas_delay() */
+inst_code munki_imp_white_change(munki *p, int init);
 
 /* return nz if high res is supported */
 int munki_imp_highres(munki *p);
@@ -622,7 +628,7 @@ munki_code munki_trialmeasure(
 /* level "calibrate" and "take reading" functions. */
 /* The setup for the operation is in the current mode state. */
 /* The called then needs to call munki_readmeasurement() */
-munki_code
+static munki_code
 munki_trigger_one_measure(
 	munki *p,
 	int nummeas,			/* Number of measurements to make */
@@ -933,7 +939,7 @@ munki_triggermeasure(
 );
 
 /* Read a measurements results */
-munki_code
+static munki_code
 munki_readmeasurement(
 	munki *p,
 	int inummeas,			/* Initial number of measurements to expect */

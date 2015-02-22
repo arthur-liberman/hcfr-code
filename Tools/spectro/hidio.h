@@ -80,7 +80,7 @@ struct hid_idevice {
 #endif	/* __MAC_OS_X_VERSION_MAX_ALLOWED < 1060 */
 #endif
 #if defined (UNIX) && !defined(__APPLE__)
-	int temp;					/* Shut the compiler up */
+	char *dpath;					/* Shut the compiler up */
 #endif
 };
 

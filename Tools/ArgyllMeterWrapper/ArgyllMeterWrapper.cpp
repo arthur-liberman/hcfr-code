@@ -43,7 +43,8 @@
 #include "conv.h"
 #include "ccss.h"
 #include <fcntl.h>
-#include "spyd2setup.h"
+//#include "spyd2setup.h"
+#include "spyd2.h"
 #undef SALONEINSTLIB
 
 namespace
@@ -64,7 +65,7 @@ namespace
     // convert to c++ exception
     void error_imp(void *cntx, struct _a1log *p, char *fmt, va_list args)
     {
-        ArgyllLogMessage("Error", fmt, args);
+        ArgyllLogMessage("Debug", fmt, args);
 //			MessageBox(NULL,args,"Argyll Error, check log.",MB_OK);
 //        throw std::logic_error("Argyll Error");
     }
@@ -194,16 +195,17 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
    inst_code instCode;
    if (debugmode)
     {
-        m_meter->icom->log->verb = 5;
-        m_meter->icom->log->debug = 5;
+        m_meter->icom->log->verb = 9;
+        m_meter->icom->log->debug = 9;
     }
 
     instCode = m_meter->get_set_opt(m_meter, inst_opt_set_filter, inst_opt_filter_none);
 // allow this function to be called repeatedly on a meter
     if(!m_meter->inited)
     {
-		if (m_meter->get_itype(m_meter) == instSpyder2)
-		if (setup_spyd2() == 2)
+		instType Spyder = m_meter->get_itype(m_meter);
+		if ( Spyder == instSpyder1 || Spyder == instSpyder1)
+		if (setup_spyd2(Spyder == instSpyder1?0:1) == 2)
 			MessageBox(NULL,"WARNING: This file contains a proprietary firmware image, and may not be freely distributed !","Loaded PLD",MB_OK);
 
         instCode = m_meter->init_inst(m_meter);
@@ -227,7 +229,7 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
     inst_mode mode = inst_mode_none;
     if (capabilities & inst_mode_emission)
     {
-        if(readingType == PROJECTOR)
+        if(readingType == TELEPHOTO)
         {
             // prefer tele but fall back to spot for PROJECTOR
             //TODO add other projector modes
@@ -251,7 +253,7 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
             else if(capabilities & inst_mode_tele)
             {
                 mode = inst_mode_emis_tele;
-                readingType = PROJECTOR;
+                readingType = TELEPHOTO;
             }
         }
         else //(AMBIENT)
@@ -862,8 +864,9 @@ bool ArgyllMeterWrapper::loadSpectralSample(const SpectralSample &sample)
         // We're already loaded
         return true;
     }
-    
-    inst_code instCode = m_meter->col_cal_spec_set(m_meter, sample.getCCSS()->samples, sample.getCCSS()->no_samp);
+disptech x = disptech_unknown;    
+//    inst_code instCode = m_meter->col_cal_spec_set(m_meter, sample.getCCSS()->samples, sample.getCCSS()->no_samp);
+    inst_code instCode = m_meter->col_cal_spec_set(m_meter, x, sample.getCCSS()->samples, sample.getCCSS()->no_samp);
     if (instCode != inst_ok) 
     {
         std::string errorMessage("Setting Colorimeter Calibration Spectral Samples failed with error :'");

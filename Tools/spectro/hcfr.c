@@ -32,6 +32,13 @@
    and agreed to support.
  */
 
+/*
+	TTBD:
+		Should really switch this to be high speed serial type of coms,
+		now that this is supported by inst API.
+
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -78,7 +85,7 @@ hcfr_command(
 ) {
 	int rv, se;
 
-	if ((se = p->icom->write_read(p->icom, in, out, bsize, "\n", 1, to)) != 0) {
+	if ((se = p->icom->write_read(p->icom, in, 0, out, bsize, NULL, "\n", 1, to)) != 0) {
 		int ec;
 		a1logd(p->log, 1, "hcfr_command: serial i/o failure on write_read '%s'\n",icoms_fix(in));
 		return hcfr_interp_code((inst *)p, icoms2hcfr_err(se));
@@ -89,7 +96,7 @@ hcfr_command(
 }
 
 /* Do a break to check coms is working */
-inst_code
+static inst_code
 hcfr_break(
 	hcfr *p
 ) {
@@ -108,7 +115,7 @@ hcfr_break(
 }
 
 /* Flush an pending messages from the device */
-inst_code
+static inst_code
 hcfr_flush(
 	hcfr *p
 ) {
@@ -118,7 +125,7 @@ hcfr_flush(
 	int rv;
 
 	for (rv = ICOM_OK;;) {
-		rv = c->read(c, buf, MAX_MES_SIZE, '\000', 100000, 0.05);
+		rv = c->read(c, buf, MAX_MES_SIZE, NULL, '\000', 100000, 0.05);
 		if (rv != ICOM_OK)
 			break;				/* Expect timeout with nothing to read */
 	}
@@ -128,7 +135,7 @@ hcfr_flush(
 }
 
 /* Get and check the firmware version */
-inst_code
+static inst_code
 hcfr_get_check_version(
 	hcfr *p,
 	int *pmaj,
@@ -175,7 +182,7 @@ hcfr_get_check_version(
 }
 
 /* Get a raw measurement value */
-inst_code
+static inst_code
 hcfr_get_rgb(
 	hcfr *p,
 	double rgb[3]	/* return value */
@@ -263,7 +270,7 @@ hcfr_get_rgb(
 /* The basic calibration data is from my particular HCFR, measured */
 /* against one of my CRT and LCD displays, with the reference XYZ */
 /* derived from my i1pro. */
-inst_code
+static inst_code
 hcfr_comp_matrix(
 	hcfr *p
 ) {
@@ -370,9 +377,6 @@ hcfr_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	if (p->icom->port_type(p->icom) != icomt_usb) {
 		a1logd(p->log, 1, "hcfr_init_coms: expect hcfr to be USB\n");
 		return hcfr_interp_code((inst *)p, HCFR_UNKNOWN_MODEL);
-	} else {
-		a1logd(p->log, 1, "hcfr_init_coms: wrong communications type for device!\n");
-		return inst_coms_fail;
 	}
 
 	/* Set config, interface, "Serial" write & read end points */
@@ -515,30 +519,46 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	return inst_ok;
 }
 
+static inst_code set_base_disp_type(hcfr *p, int cbid);
+
 /* Insert a colorimetric correction matrix in the instrument XYZ readings */
 /* This is only valid for colorimetric instruments. */
 /* To remove the matrix, pass NULL for the filter filename */
-inst_code hcfr_col_cor_mat(
+static inst_code hcfr_col_cor_mat(
 inst *pp,
+disptech dtech,		/* Use disptech_unknown if not known */				\
+int cbid,       	/* Calibration display type base ID, 1 if unknown */\
 double mtx[3][3]
 ) {
 	hcfr *p = (hcfr *)pp;
+	inst_code ev;
 
 	if (!p->gotcoms)
 		return inst_no_coms;
 	if (!p->inited)
 		return inst_no_init;
 
-	if (mtx == NULL) {
+	if ((ev = set_base_disp_type(p, cbid)) != inst_ok)
+			return ev;
+	if (mtx == NULL)
 		icmSetUnity3x3(p->ccmat);
-	} else {
-		if (p->cbid == 0) {
-			a1loge(p->log, 1, "hcfr: can't set col_cor_mat over non-base display type\n");
-			return inst_wrong_setup;
-		}
+	else
 		icmCpy3x3(p->ccmat, mtx);
+	p->dtech = dtech;
+	p->refrmode = disptech_get_id(dtech)->refr;
+	p->cbid = 0;	/* Can't be base type now */
+
+	if (p->log->debug >= 4) {
+		a1logd(p->log,4,"ccmat           = %f %f %f\n",
+		                 p->ccmat[0][0], p->ccmat[0][1], p->ccmat[0][2]);
+		a1logd(p->log,4,"                  %f %f %f\n",
+		                 p->ccmat[1][0], p->ccmat[1][1], p->ccmat[1][2]);
+		a1logd(p->log,4,"                  %f %f %f\n\n",
+		                 p->ccmat[2][0], p->ccmat[2][1], p->ccmat[2][2]);
+		a1logd(p->log,4,"ucbid = %d, cbid = %d\n",p->ucbid, p->cbid);
+		a1logd(p->log,4,"\n");
 	}
-		
+
 	return inst_ok;
 }
 
@@ -621,7 +641,7 @@ hcfr_del(inst *pp) {
 }
 
 /* Return the instrument mode capabilities */
-void hcfr_capabilities(inst *pp,
+static void hcfr_capabilities(inst *pp,
 inst_mode *pcap1,
 inst2_capability *pcap2,
 inst3_capability *pcap3) {
@@ -648,7 +668,7 @@ inst3_capability *pcap3) {
 }
 
 /* Check device measurement mode */
-inst_code hcfr_check_mode(inst *pp, inst_mode m) {
+static inst_code hcfr_check_mode(inst *pp, inst_mode m) {
 	inst_mode cap;
 
 	if (!pp->gotcoms)
@@ -671,7 +691,7 @@ inst_code hcfr_check_mode(inst *pp, inst_mode m) {
 }
 
 /* Set device measurement mode */
-inst_code hcfr_set_mode(inst *pp, inst_mode m) {
+static inst_code hcfr_set_mode(inst *pp, inst_mode m) {
 	inst_code ev;
 
 	if ((ev = hcfr_check_mode(pp, m)) != inst_ok)
@@ -680,21 +700,23 @@ inst_code hcfr_set_mode(inst *pp, inst_mode m) {
 	return inst_ok;
 }
 
-inst_disptypesel hcfr_disptypesel[4] = {
+static inst_disptypesel hcfr_disptypesel[4] = {
 	{
 		inst_dtflags_default,
 		0,
 		"l",
 		"LCD display",
 		0,
+		disptech_lcd,
 		0
 	},
 	{
 		inst_dtflags_none,		/* flags */
-		0,						/* cbix */
+		0,						/* cbid */
 		"c",					/* sel */
 		"CRT display",			/* desc */
 		0,						/* refr */
+		disptech_crt,			/* disptype */
 		1						/* ix */
 	},
 	{
@@ -703,6 +725,7 @@ inst_disptypesel hcfr_disptypesel[4] = {
 		"R",
 		"Raw Reading",
 		0,
+		disptech_unknown,
 		2
 	},
 	{
@@ -711,6 +734,7 @@ inst_disptypesel hcfr_disptypesel[4] = {
 		"",
 		"",
 		0,
+		disptech_none,
 		0
 	}
 };
@@ -745,14 +769,57 @@ int recreate				/* nz to re-check for new ccmx & ccss files */
 /* Given a display type entry, setup for that type */
 static inst_code set_disp_type(hcfr *p, inst_disptypesel *dentry) {
 
-	p->ix = dentry->ix; 
-	p->refrmode = dentry->refr; 
-	p->cbid = dentry->cbid; 
-
 	if (dentry->flags & inst_dtflags_ccmx) {
+		inst_code ev;
+		if ((ev = set_base_disp_type(p, dentry->cc_cbid)) != inst_ok)
+			return ev;
 		icmCpy3x3(p->ccmat, dentry->mat);
+		p->dtech = dentry->dtech;
+		p->cbid = 0; 	/* Can't be a base type */
+
 	} else {
+
+		p->ix = dentry->ix; 
+		p->dtech = dentry->dtech;
+		p->cbid = dentry->cbid; 
+		p->ucbid = dentry->cbid;    /* This is underying base if dentry is base selection */
 		icmSetUnity3x3(p->ccmat);
+	}
+	p->refrmode = dentry->refr; 
+
+	if (p->log->debug >= 4) {
+		a1logd(p->log,4,"ccmat           = %f %f %f\n",
+		                 p->ccmat[0][0], p->ccmat[0][1], p->ccmat[0][2]);
+		a1logd(p->log,4,"                  %f %f %f\n",
+		                 p->ccmat[1][0], p->ccmat[1][1], p->ccmat[1][2]);
+		a1logd(p->log,4,"                  %f %f %f\n\n",
+		                 p->ccmat[2][0], p->ccmat[2][1], p->ccmat[2][2]);
+		a1logd(p->log,4,"ucbid = %d, cbid = %d\n",p->ucbid, p->cbid);
+		a1logd(p->log,4,"\n");
+	}
+
+	return inst_ok;
+}
+
+/* Set the display type */
+static inst_code hcfr_set_disptype(inst *pp, int ix) {
+	hcfr *p = (hcfr *)pp;
+	inst_code ev;
+	inst_disptypesel *dentry;
+
+	if (p->dtlist == NULL) {
+		if ((ev = inst_creat_disptype_list(pp, &p->ndtlist, &p->dtlist,
+		    hcfr_disptypesel, 0 /* doccss*/, 1 /* doccmx */)) != inst_ok)
+			return ev;
+	}
+
+	if (ix < 0 || ix >= p->ndtlist)
+		return inst_unsupported;
+
+	dentry = &p->dtlist[ix];
+
+	if ((ev = set_disp_type(p, dentry)) != inst_ok) {
+		return ev;
 	}
 
 	return inst_ok;
@@ -784,27 +851,52 @@ static inst_code set_default_disp_type(hcfr *p) {
 	return inst_ok;
 }
 
-/* Set the display type */
-static inst_code hcfr_set_disptype(inst *pp, int ix) {
-	hcfr *p = (hcfr *)pp;
+/* Setup the display type to the given base type */
+static inst_code set_base_disp_type(hcfr *p, int cbid) {
 	inst_code ev;
-	inst_disptypesel *dentry;
+	int i;
 
+	if (cbid == 0) {
+		a1loge(p->log, 1, "hcfr set_base_disp_type: can't set base display type of 0\n");
+		return inst_wrong_setup;
+	}
 	if (p->dtlist == NULL) {
-		if ((ev = inst_creat_disptype_list(pp, &p->ndtlist, &p->dtlist,
+		if ((ev = inst_creat_disptype_list((inst *)p, &p->ndtlist, &p->dtlist,
 		    hcfr_disptypesel, 0 /* doccss*/, 1 /* doccmx */)) != inst_ok)
 			return ev;
 	}
 
-	if (ix < 0 || ix >= p->ndtlist)
-		return inst_unsupported;
-
-	dentry = &p->dtlist[ix];
-
-	if ((ev = set_disp_type(p, dentry)) != inst_ok) {
+	for (i = 0; !(p->dtlist[i].flags & inst_dtflags_end); i++) {
+		if (p->dtlist[i].cbid == cbid)
+			break;
+	}
+	if (p->dtlist[i].flags & inst_dtflags_end) {
+		a1loge(p->log, 1, "set_base_disp_type: failed to find cbid %d!\n",cbid);
+		return inst_wrong_setup; 
+	}
+	if ((ev = set_disp_type(p, &p->dtlist[i])) != inst_ok) {
 		return ev;
 	}
 
+	return inst_ok;
+}
+
+/* Get the disptech and other corresponding info for the current */
+/* selected display type. Returns disptype_unknown by default. */
+/* Because refrmode can be overridden, it may not match the refrmode */
+/* of the dtech. (Pointers may be NULL if not needed) */
+static inst_code hcfr_get_disptechi(
+inst *pp,
+disptech *dtech,
+int *refrmode,
+int *cbid) {
+	hcfr *p = (hcfr *)pp;
+	if (dtech != NULL)
+		*dtech = p->dtech;
+	if (refrmode != NULL)
+		*refrmode = p->refrmode;
+	if (cbid != NULL)
+		*cbid = p->cbid;
 	return inst_ok;
 }
 
@@ -823,24 +915,6 @@ hcfr_get_set_opt(inst *pp, inst_opt_type m, ...) {
 	if (m == inst_opt_trig_prog
 	 || m == inst_opt_trig_user) {
 		p->trig = m;
-		return inst_ok;
-	}
-
-	/* Get the display type information */
-	if (m == inst_opt_get_dtinfo) {
-		va_list args;
-		int *refrmode, *cbid;
-
-		va_start(args, m);
-		refrmode = va_arg(args, int *);
-		cbid = va_arg(args, int *);
-		va_end(args);
-
-		if (refrmode != NULL)
-			*refrmode = p->refrmode;
-		if (cbid != NULL)
-			*cbid = p->cbid;
-
 		return inst_ok;
 	}
 
@@ -864,6 +938,7 @@ extern hcfr *new_hcfr(icoms *icom, instType itype) {
 	p->set_mode         = hcfr_set_mode;
 	p->get_disptypesel  = hcfr_get_disptypesel;
 	p->set_disptype     = hcfr_set_disptype;
+	p->get_disptechi    = hcfr_get_disptechi;
 	p->get_set_opt      = hcfr_get_set_opt;
 	p->read_sample      = hcfr_read_sample;
 	p->col_cor_mat      = hcfr_col_cor_mat;
@@ -874,6 +949,7 @@ extern hcfr *new_hcfr(icoms *icom, instType itype) {
 	p->itype = icom->itype;
 
 	icmSetUnity3x3(p->ccmat);	/* Set the colorimeter correction matrix to do nothing */
+	p->dtech = disptech_unknown;
 
 	return p;
 }

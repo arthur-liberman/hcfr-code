@@ -229,9 +229,15 @@ int icompaths_refresh_paths(icompaths *p) {
 				fast = 1;
 		}
 
+#ifndef ENABLE_SERIAL
+		if (fast) {			/* Only add fast ports if !ENABLE_SERIAL */
+#endif
 		/* Add the port to the list */
 		p->add_serial(p, value, value, fast);
 		a1logd(p->log, 8, "icoms_get_paths: Added path '%s' fast %d\n",value,fast);
+#ifndef ENABLE_SERIAL
+		}
+#endif
 
 		/* If fast, try and identify it */
 		if (fast) {
@@ -249,7 +255,7 @@ int icompaths_refresh_paths(icompaths *p) {
 	if ((stat = RegCloseKey(sch)) != ERROR_SUCCESS) {
 		a1logw(p->log, "icoms_get_paths: RegCloseKey failed with %d\n",stat);
 	}
-#endif /* ENABLE_SERIAL */
+#endif /* ENABLE_SERIAL || ENABLE_FAST_SERIAL */
 
 	/* Sort the COM keys so people don't get confused... */
 	/* Sort identified instruments ahead of unknown serial ports */
@@ -300,8 +306,9 @@ static void icoms_close_port(icoms *p) {
 
 #if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
 
-static int icoms_ser_write(icoms *p, char *wbuf, double tout);
-static int icoms_ser_read(icoms *p, char *rbuf, int bsize, char *tc, int ntc, double tout);
+static int icoms_ser_write(icoms *p, char *wbuf, int nwch, double tout);
+static int icoms_ser_read(icoms *p, char *rbuf, int bsize, int *bread,
+                                    char *tc, int ntc, double tout);
 
 #ifndef CBR_921600
 # define CBR_921600 921600
@@ -383,7 +390,7 @@ word_length	 word)
 		dcb.fOutxCtsFlow = FALSE;					/* Not using Cts flow control */
 		dcb.fOutxDsrFlow = FALSE;					/* Not using Dsr Flow control */
 		dcb.fDtrControl = DTR_CONTROL_ENABLE;		/* Enable DTR during connection */
-		dcb.fDsrSensitivity = FALSE;				/* Not using Dsr Flow control */
+		dcb.fDsrSensitivity = FALSE;				/* Not using Dsr to ignore characters */
 		dcb.fTXContinueOnXoff = TRUE;				/* */
 		dcb.fOutX = FALSE;							/* No default Xon/Xoff flow control */
 		dcb.fInX = FALSE;							/* No default Xon/Xoff flow control */
@@ -410,6 +417,11 @@ word_length	 word)
 				/* Use RTS/CTS bi-directional flow control */
 				dcb.fOutxCtsFlow = TRUE;
 				dcb.fRtsControl = RTS_CONTROL_HANDSHAKE; 
+				break;
+			case fc_HardwareDTR:
+				/* Use DTR/DSR bi-directional flow control */
+				dcb.fOutxDsrFlow = TRUE;
+				dcb.fDtrControl = DTR_CONTROL_HANDSHAKE; 
 				break;
 			default:
 				break;
@@ -544,7 +556,8 @@ word_length	 word)
 static int
 icoms_ser_write(
 icoms *p,
-char *wbuf,
+char *wbuf,			/* null terminated unless nwch > 0 */
+int nwch,			/* if > 0, number of characters to write */
 double tout)
 {
 	COMMTIMEOUTS tmo;
@@ -560,7 +573,10 @@ double tout)
 		return rv;
 	}
 
-	len = strlen(wbuf);
+	if (nwch != 0)
+		len = nwch;
+	else
+		len = strlen(wbuf);
 	tout *= 1000.0;		/* Timout in msec */
 
 	top = 20;						/* Timeout period in msecs */
@@ -620,8 +636,9 @@ icoms_ser_read(
 icoms *p,
 char *rbuf,			/* Buffer to store characters read */
 int bsize,			/* Buffer size */
-char *tc,			/* Terminating characers, NULL for none */
-int ntc,			/* Number of terminating characters seen */
+int *pbread,		/* Bytes read (not including forced '\000') */
+char *tc,			/* Terminating characers, NULL for none or char count mode */
+int ntc,			/* Number of terminating characters or char count needed, if 0 use bsize */
 double tout			/* Time out in seconds */
 ) {
 	COMMTIMEOUTS tmo;
@@ -630,6 +647,7 @@ double tout			/* Time out in seconds */
 	long toc, i, top;		/* Timout count, counter, timeout period */
 	char *rrbuf = rbuf;		/* Start of return buffer */
 	DCB dcb;
+	int bread = 0;
 	int rv = ICOM_OK;
 
 	if (p->phandle == NULL) {
@@ -639,13 +657,13 @@ double tout			/* Time out in seconds */
 	}
 
 	if (bsize < 3) {
-		a1loge(p->log, ICOM_SYS, "icoms_read: given too small a bufferi (%d)\n",bsize);
+		a1loge(p->log, ICOM_SYS, "icoms_read: given too small a buffer (%d)\n",bsize);
 		p->lserr = rv = ICOM_SYS;
 		return rv;
 	}
 
 	tout *= 1000.0;		/* Timout in msec */
-	bsize--;	/* Allow space for null */
+	bsize--;			/* Allow space for forced final null */
 
 	top = 20;						/* Timeout period in msecs */
 	toc = (int)(tout/top + 0.5);	/* Number of timout periods in timeout */
@@ -664,8 +682,17 @@ double tout			/* Time out in seconds */
 		return rv;
 	}
 
+	if (tc == NULL) {			/* no tc or char count mode */
+		j = -1;
+		if (ntc > 0 && ntc < bsize)
+			bsize = ntc;		/* Don't read more than ntc */
+	} else {
+		j = 0;
+	}
+	j = (tc == NULL && ntc <= 0) ? -1 : 0;
+
 	/* Until data is all read or we time out */
-	for (i = toc, j = 0; i > 0 && bsize > 1 && j < ntc ;) {
+	for (i = toc; i > 0 && bsize > 0 && j < ntc ;) {
 		if (!ReadFile(p->phandle, rbuf, bsize, &rbytes, NULL)) {
 			DWORD errs;
 			if (!ClearCommError(p->phandle,&errs,NULL))
@@ -684,6 +711,7 @@ double tout			/* Time out in seconds */
 		} else if (rbytes > 0) { /* Account for bytes done */
 			i = toc;
 			bsize -= rbytes;
+			bread += rbytes;
 			if (tc != NULL) {
 				while(rbytes--) {	/* Count termination characters */
 					char ch = *rbuf++, *tcp = tc;
@@ -694,14 +722,20 @@ double tout			/* Time out in seconds */
 						tcp++;
 					}
 				}
-			} else
+			} else {
+				if (ntc > 0)
+					j += rbytes;
 				rbuf += rbytes;
+			}
 		}
 	}
 	if (i <= 0) {			/* timed out */
 		rv |= ICOM_TO;
 	}
 	*rbuf = '\000';
+	if (pbread != NULL)
+		*pbread = bread;
+
 	a1logd(p->log, 8, "icoms_ser_read: returning '%s' ICOM err 0x%x\n",icoms_fix(rrbuf),rv);
 
 	p->lserr = rv;

@@ -36,6 +36,24 @@
    and agreed to support.
  */
 
+/*
+	CS comand values:
+
+	00 - Instrument Not Ready
+	01 - Instrument Ready, Empty
+	02 - Instrument Ready, TID has been scanned
+	03 - Instrument Ready, Complete target has been measured
+	04 - Instrument is Busy ?
+	05 - 
+	06 - Error ?
+	07 - Hardware Error
+	08 - Clear Database Mode
+	09 - Calibration Mode
+    10 -
+    11 -
+    12 -
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -61,6 +79,8 @@ static inst_code activate_mode(dtp20 *p);
 #define MIN_MES_SIZE 10			/* Minimum normal message reply size */
 #define MAX_MES_SIZE 500		/* Maximum normal message reply size */
 #define MAX_RD_SIZE 100000		/* Maximum reading messagle reply size */
+
+#define STRIP_READ_TIMEOUT 10.0
 
 /* Extract an error code from a reply string */
 /* Return -1 if no error code can be found */
@@ -112,7 +132,7 @@ double to) {			/* Timout in seconts */
 	int ntc = 1;			/* Number of terminating characters */
 	int rv, se, insize;
 
-	a1logd(p->log, 4, "dtp20: Sending '%s'",icoms_fix(in));
+	a1logd(p->log, 4, "dtp20: Sending '%s' bsize %d, to %f\n",icoms_fix(in),bsize,to);
 
 	insize = strlen(in);
 	if (insize > 0) {
@@ -122,7 +142,7 @@ double to) {			/* Timout in seconts */
 		}
 	}
 
-	if ((se = p->icom->read(p->icom, out, bsize, tc, ntc, to)) != 0) {
+	if ((se = p->icom->read(p->icom, out, bsize, NULL, tc, ntc, to)) != 0) {
 		a1logd(p->log, 1, "dtp20: read response failed ICOM err 0x%x\n",se);
 		return dtp20_interp_code((inst *)p, icoms2dtp20_err(se));
 	}
@@ -135,7 +155,7 @@ double to) {			/* Timout in seconts */
 			if (rv != DTP20_OK) {	/* Clear the error */
 				char buf[MAX_MES_SIZE];
 				p->icom->usb_control(p->icom, 0x41, 0x00, 0x00, 0x00, (unsigned char *)"CE\r", 3, 0.5);
-				p->icom->read(p->icom, buf, MAX_MES_SIZE, tc, ntc, 0.5);
+				p->icom->read(p->icom, buf, MAX_MES_SIZE, NULL, tc, ntc, 0.5);
 			}
 		}
 	}
@@ -234,7 +254,7 @@ dtp20_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	/* Print the general information returned by instrument */
 	if (p->log->verb) {
 		int i, j;
-		if ((ev = dtp20_command(p, "GI\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok) {
+		if ((ev = dtp20_command(p, "GI\r", buf, MAX_MES_SIZE, 2.0)) != inst_ok) {
 			a1logd(p->log, 1, "dtp20: GI command failed with ICOM err 0x%x\n",ev);
 			return ev;
 		}
@@ -433,7 +453,7 @@ ipatch *vals) {		/* Pointer to array of values */
 		return inst_protocol_error;
 	if (cs != 3) {
 		/* Seems to be no chart saved, but double check, in case of old firmware ( < 1.03) */
-		if ((ev = dtp20_command(p, "00TS\r", buf, MAX_RD_SIZE, 0.5)) != inst_ok)
+		if ((ev = dtp20_command(p, "00TS\r", buf, MAX_RD_SIZE, 2.0)) != inst_ok)
 			return inst_nonesaved;
 		if (sscanf(buf," %d ", &cs) != 1)
 			return inst_nonesaved;
@@ -442,7 +462,7 @@ ipatch *vals) {		/* Pointer to array of values */
 	}
 
 	/* Get the TID */
-	if ((ev = dtp20_command(p, "ST\r", buf, MAX_RD_SIZE, 0.5)) != inst_ok)
+	if ((ev = dtp20_command(p, "ST\r", buf, MAX_RD_SIZE, 2.0)) != inst_ok)
 		return ev;
 	if (sscanf(buf,"Strip Length: %d Total Patches: %d Patch Width: %lf mm Gap Width: %lf mm"
 	               " User 1: %d User 2: %d User 3: %d User 4: %d User 5: %d User 6: %d"
@@ -487,7 +507,7 @@ ipatch *vals) {		/* Pointer to array of values */
 			return ev;
 		if ((ev = dtp20_command(p, "0518CF\r", buf, MAX_RD_SIZE, 0.5)) != inst_ok)
 			return ev;
-		if ((ev = dtp20_command(p, cmd, buf, MAX_RD_SIZE, 0.5)) != inst_ok)
+		if ((ev = dtp20_command(p, cmd, buf, MAX_RD_SIZE, STRIP_READ_TIMEOUT)) != inst_ok)
 			return ev;
 
 		/* Parse the buffer */
@@ -639,7 +659,7 @@ ipatch *vals) {		/* Pointer to array of instrument patch values */
 				if (sscanf(buf, " %d ", &stat) != 1)
 					stat = 6;
 
-				/* Ignore benign status */
+				/* Ignore benign status - wait for busy or error */
 				if (stat != 4 && stat != 6 && stat != 7) {
 					/* Not ready - Check for user trigger or command */
 					if (p->uicallback != NULL) {
@@ -714,7 +734,7 @@ ipatch *vals) {		/* Pointer to array of instrument patch values */
 		return ev;
 	if ((ev = dtp20_command(p, "0518CF\r", buf, MAX_RD_SIZE, 0.5)) != inst_ok)
 		return ev;
-	if ((ev = dtp20_command(p, "01TS\r", buf, MAX_RD_SIZE, 0.5)) != inst_ok)
+	if ((ev = dtp20_command(p, "01TS\r", buf, MAX_RD_SIZE, STRIP_READ_TIMEOUT)) != inst_ok)
 		return ev;
 
 	/* Parse the buffer */
@@ -739,6 +759,7 @@ ipatch *vals) {		/* Pointer to array of instrument patch values */
 		vals[i].sp.spec_n = 0;
 		vals[i].duration = 0.0;
 		tp += strlen(tp) + 1;
+
 	}
 
 	if (p->mode & inst_mode_spectral) {
@@ -751,7 +772,7 @@ ipatch *vals) {		/* Pointer to array of instrument patch values */
 			return ev;
 	
 		/* Read the strip */
-		if ((ev = dtp20_bin_command(p, "01TS\r", buf, 62 * npatch, 5.0)) != inst_ok)
+		if ((ev = dtp20_bin_command(p, "01TS\r", buf, 62 * npatch, STRIP_READ_TIMEOUT)) != inst_ok)
 			return ev;
 
 		/* Get each patches spectra */
@@ -772,7 +793,7 @@ ipatch *vals) {		/* Pointer to array of instrument patch values */
 			vals[i].sp.norm = 100.0;
 		}
 
-		/* Set to ASCII */
+		/* Set back to ASCII */
 		if ((ev = dtp20_command(p, "001BCF\r", buf, MAX_MES_SIZE, 0.5)) != inst_ok)
 			return ev;
 		/* Set back to D50 2 degree */
@@ -780,8 +801,7 @@ ipatch *vals) {		/* Pointer to array of instrument patch values */
 			return ev;
 	}
 
-
-	/* Wait for status to change */
+	/* Wait for instrument to become not busy */
 	for (;;) {
 		if ((ev = dtp20_command(p, "CS\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok) {
 			return ev;
@@ -860,7 +880,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 				int stat;
 				if (sscanf(buf, " %d ", &stat) != 1)
 					stat = 6;
-				/* Ingnore benign status */
+				/* Ignore benign status - wait for busy or error */
 				if (stat != 4 && stat != 6 && stat != 7) {
 					msec_sleep(200);
 					continue;
@@ -918,6 +938,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 
 		p->savix++;
 		sprintf(cmd, "%03d01GM\r",p->savix);
+
 		/* Disable multiple data output */
 		if ((ev = dtp20_command(p, "001ACF\r", buf, MAX_MES_SIZE, 0.5)) != inst_ok)
 			return ev;
@@ -971,6 +992,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	val->sp.spec_n = 0;
 	val->duration = 0.0;
 
+
 	if (p->mode & inst_mode_spectral) {
 		int j;
 
@@ -1016,7 +1038,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 			return ev;
 		p->savix = 0;
 
-		/* Wait for status to change */
+		/* Wait for instrument to become not busy */
 		for (;;) {
 			if ((ev = dtp20_command(p, "CS\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok) {
 				return ev;
@@ -1060,7 +1082,7 @@ static inst_code dtp20_get_n_a_cals(inst *pp, inst_cal_type *pn_cals, inst_cal_t
 /* returning inst_needs_cal. Initially us an inst_cal_cond of inst_calc_none, */
 /* and then be prepared to setup the right conditions, or ask the */
 /* user to do so, each time the error inst_cal_setup is returned. */
-inst_code dtp20_calibrate(
+static inst_code dtp20_calibrate(
 inst *pp,
 inst_cal_type *calt,	/* Calibration type to do/remaining */
 inst_cal_cond *calc,	/* Current condition/desired condition */
@@ -1104,6 +1126,7 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 	}
 
 	if (*calt & inst_calt_ref_white) {
+		int i;
 
 		if (*calc != inst_calc_man_ref_white) {
 			char *cp;
@@ -1120,6 +1143,18 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 		if ((ev = dtp20_command(p, "CR\r", buf, MAX_MES_SIZE, 4.5)) != inst_ok)
 			return ev;
 		
+		/* Wait for instrument to become not busy */
+		for (;;) {
+			if ((ev = dtp20_command(p, "CS\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok) {
+				return ev;
+			} else {
+				int stat = 4;
+				if (sscanf(buf, " %d ", &stat) != 1 || stat != 4)
+					break;
+				msec_sleep(200);
+			}
+		}
+
 		p->need_cal = 0;
 		*calt &= ~inst_calt_ref_white;
 	}
@@ -1392,7 +1427,7 @@ static void	set_capabilities(dtp20 *p) {
 
 
 /* Return the instrument capabilities */
-void dtp20_capabilities(inst *pp,
+static void dtp20_capabilities(inst *pp,
 inst_mode *cap1,
 inst2_capability *cap2,
 inst3_capability *cap3) {
@@ -1506,7 +1541,7 @@ inst_opt_type m,	/* Requested status type */
 			*fe |= inst_stat_savdrd_chart;
 		} else {
 			/* Seems to be no chart saved, but double check, in case of old firmware */
-			if ((ev = dtp20_command(p, "00TS\r", buf, MAX_MES_SIZE, 0.5)) == inst_ok) {
+			if ((ev = dtp20_command(p, "00TS\r", buf, MAX_MES_SIZE, 2.0)) == inst_ok) {
 				if (sscanf(buf," %d ", &cs) == 1) {
 					if (cs != 0) {
 						*fe |= inst_stat_savdrd_chart;
@@ -1562,7 +1597,7 @@ inst_opt_type m,	/* Requested status type */
 		*no_patches = *no_rows = *pat_per_row = *chart_id = *missing_row = -1;
 	
 		/* Get the TID */
-		if ((ev = dtp20_command(p, "ST\r", buf, MAX_RD_SIZE, 0.5)) != inst_ok)
+		if ((ev = dtp20_command(p, "ST\r", buf, MAX_RD_SIZE, 2.0)) != inst_ok)
 			return ev;
 		if (sscanf(buf,"Strip Length: %d Total Patches: %d Patch Width: %lf mm Gap Width: %lf mm"
 		               " User 1: %d User 2: %d User 3: %d User 4: %d User 5: %d User 6: %d"

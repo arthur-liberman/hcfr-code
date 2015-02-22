@@ -63,8 +63,6 @@
 #include "icoms.h"
 #include "specbos.h"
 
-/* Default flow control */
-#define DEFFC fc_none
 
 static inst_code specbos_interp_code(inst *pp, int ec);
 
@@ -96,6 +94,7 @@ int ctype,			/* 0 = normal, 1 = *init, 2 = refr reading */
 int nd				/* nz to disable debug messages */
 ) {
 	int se;
+	int bread = 0;
 	char *cp, *tc = "", *dp;
 
 	if (ctype == 0)
@@ -105,23 +104,34 @@ int nd				/* nz to disable debug messages */
 	else if (ctype == 2)
 		tc = "\r\025";			/* Return or Nak */
 
-	if ((se = p->icom->write_read(p->icom, in, out, bsize, tc, ntc, to)) != 0) {
+	se = p->icom->write_read(p->icom, in, 0, out, bsize, &bread, tc, ntc, to);
+
+	/* Because we are sometimes waiting for 3 x \r characters to terminate the read, */
+	/* we will instead time out on getting a single NAK (\025), so convert timout */
+	/* with bytes to non-timeout, so that we can process the error. */
+	if (se == ICOM_TO && bread > 0)
+		se = ICOM_OK;
+
+	if (se != 0) {
 		if (!nd) a1logd(p->log, 1, "specbos_fcommand: serial i/o failure on write_read '%s' 0x%x\n",icoms_fix(in),se);
 		return icoms2specbos_err(se);
 	}
 
 	/* See if there was an error, and remove any enquire codes */
-	for (dp = cp = out; *cp != '\000' && (out - dp) < bsize; cp++) {
-		if (*cp == '\025') {	/* Got a Nak */
+	for (dp = cp = out; *cp != '\000' && (dp - out) < bsize; cp++) {
+		if (*cp == '\025') {	/* Got a NAK */
 			char buf[100];
 
-			if ((se = p->icom->write_read(p->icom, "*stat:err?\r", buf, 100, "\r", 1, 1.0)) != 0) {
+			if ((se = p->icom->write_read(p->icom, "*stat:err?\r", 0, buf, 100, NULL, "\r", 1, 1.0)) != 0) {
 				if (!nd) a1logd(p->log, 1, "specbos_fcommand: serial i/o failure on write_read '%s'\n",icoms_fix(in));
-				if (sscanf(buf, "Error Code: %d ",&se) != 1) {
-					if (!nd) a1logd(p->log, 1, "specbos_fcommand: failed to parse error code '%s'\n",icoms_fix(buf));
-					return icoms2specbos_err(se);
-				}
+				return icoms2specbos_err(se);;
 			}
+			if (sscanf(buf, "Error Code: %d ",&se) != 1) {
+				if (!nd) a1logd(p->log, 1, "specbos_fcommand: failed to parse error code '%s'\n",icoms_fix(buf));
+				return SPECBOS_DATA_PARSE_ERROR;
+			}
+					
+			if (!nd) a1logd(p->log, 1, "Got specbos error code %d\n",se);
 			break;
 		}
 		if (*cp == '\005')	/* Got an Enquire */
@@ -131,10 +141,10 @@ int nd				/* nz to disable debug messages */
 	}
 	out[bsize-1] = '\000';
 
-	if (!nd) a1logd(p->log, 4, "specbos_fcommand: command '%s' returned '%s'\n",
-	                                          icoms_fix(in), icoms_fix(out));
+	if (!nd) a1logd(p->log, 4, "specbos_fcommand: command '%s' returned '%s' err 0x%x\n",
+	                                          icoms_fix(in), icoms_fix(out),se);
 
-	return SPECBOS_OK;
+	return se;
 }
 
 /* Do a normal command/response echange with the specbos. */
@@ -164,7 +174,7 @@ double to			/* Timeout in seconds */
 	int rv, se;
 	char *cp, *tc = "\r\006\025";		/* Return, Ack or Nak */
 
-	if ((se = p->icom->read(p->icom, out, bsize, tc, 1, to)) != 0) {
+	if ((se = p->icom->read(p->icom, out, bsize, NULL, tc, 1, to)) != 0) {
 		a1logd(p->log, 1, "specbos_readresp: serial i/o failure\n");
 		return icoms2specbos_err(se);
 	}
@@ -172,7 +182,6 @@ double to			/* Timeout in seconds */
 }
 
 /* Establish communications with a specbos */
-/* Ignore the serial parameters - leave serial in default state. */
 /* Return SPECBOS_COMS_FAIL on failure to establish communications */
 static inst_code
 specbos_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
@@ -281,8 +290,6 @@ specbos_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 
 	return inst_ok;
 }
-
-static inst_code set_default_disp_type(specbos *p);
 
 /*
 	Notes on commands
@@ -659,37 +666,77 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	}
 		
 	/* Trigger a measurement */
-	if ((ec = specbos_fcommand(p, "*init\r", buf, MAX_MES_SIZE, 5.0 * p->measto + 2.0 , 1, 1, 0)) != SPECBOS_OK) {
+	if ((ec = specbos_fcommand(p, "*init\r", buf, MAX_MES_SIZE, 5.0 * p->measto + 10.0 , 1, 1, 0)) != SPECBOS_OK) {
 		amutex_unlock(p->lock);
 		return specbos_interp_code((inst *)p, ec);
 	}
 
-	/* Read the XYZ */
-	if ((ec = specbos_fcommand(p, "*fetch:XYZ\r", buf, MAX_RD_SIZE, 0.5, 3, 0, 0)) != SPECBOS_OK) {
+
+	if (p->noXYZ) {	/* Will fail, so assume it failed */			
+		ec = SPECBOS_COMMAND;
+
+	} else {		 /* Read the XYZ */
+		ec = specbos_fcommand(p, "*fetch:XYZ\r", buf, MAX_RD_SIZE, 0.5, 3, 0, 0);
+	}
+
+
+	if (ec == SPECBOS_OK) {
+
+		if (sscanf(buf, " X: %lf Y: %lf Z: %lf ",
+	           &val->XYZ[0], &val->XYZ[1], &val->XYZ[2]) != 3) {
+			amutex_unlock(p->lock);
+			a1logd(p->log, 1, "specbos_read_sample: failed to parse '%s'\n",buf);
+			return inst_protocol_error;
+		}
+	
+	/* Hmm. Some older firmware versions are reported to not support the */
+	/* "fetch:XYZ" command. Use an alternative if it fails. */
+	} else if (ec == SPECBOS_COMMAND) {
+		double Yxy[3];
+
+		p->noXYZ = 1;
+
+		if ((ec = specbos_fcommand(p, "*fetch:PHOTOmetric\r", buf, MAX_RD_SIZE, 0.5, 3, 0, 0))
+		                                                                        != SPECBOS_OK) {
+			amutex_unlock(p->lock);
+			return specbos_interp_code((inst *)p, ec);
+		}
+		if (sscanf(buf, "Luminance[cd/m^2]: %lf ", &Yxy[0]) != 1) {
+			amutex_unlock(p->lock);
+			a1logd(p->log, 1, "specbos_read_sample: failed to parse '%s'\n",buf);
+			return inst_protocol_error;
+		}
+	
+		if ((ec = specbos_fcommand(p, "*fetch:CHROMXY\r", buf, MAX_RD_SIZE, 0.5, 3, 0, 0))
+		                                                                    != SPECBOS_OK) {
+			amutex_unlock(p->lock);
+			return specbos_interp_code((inst *)p, ec);
+		}
+		if (sscanf(buf, "Chrom_x: %lf Chrom_y: %lf ", &Yxy[1], &Yxy[2]) != 2) {
+			amutex_unlock(p->lock);
+			a1logd(p->log, 1, "specbos_read_sample: failed to parse '%s'\n",buf);
+			return inst_protocol_error;
+		}
+		icmYxy2XYZ(val->XYZ, Yxy);
+
+	} else if (ec != SPECBOS_OK) {
 		amutex_unlock(p->lock);
 		return specbos_interp_code((inst *)p, ec);
 	}
 
-	if (sscanf(buf, " X: %lf Y: %lf Z: %lf ",
-           &val->XYZ[0], &val->XYZ[1], &val->XYZ[2]) == 3) {
+	/* This may not change anything since instrument may clamp */
+	if (clamp)
+	icmClamp3(val->XYZ, val->XYZ);
+	val->loc[0] = '\000';
+	if (p->mode & inst_mode_ambient) {
+		val->mtype = inst_mrt_ambient;
+	} else
+		val->mtype = inst_mrt_emission;
+	val->XYZ_v = 1;		/* These are absolute XYZ readings */
+	val->sp.spec_n = 0;
+	val->duration = 0.0;
+	rv = inst_ok;
 
-		/* This may not change anything since instrument may clamp */
-		if (clamp)
-			icmClamp3(val->XYZ, val->XYZ);
-		val->loc[0] = '\000';
-		if (p->mode & inst_mode_ambient) {
-			val->mtype = inst_mrt_ambient;
-		} else
-			val->mtype = inst_mrt_emission;
-		val->XYZ_v = 1;		/* These are absolute XYZ readings */
-		val->sp.spec_n = 0;
-		val->duration = 0.0;
-		rv = inst_ok;
-	} else {
-		amutex_unlock(p->lock);
-		a1logd(p->log, 1, "specbos_read_sample: failed to parse '%s'\n",buf);
-		return inst_protocol_error;
-	}
 
 	/* spectrum data is returned only if requested */
 	if (p->mode & inst_mode_spectral) {
@@ -701,7 +748,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 		/* The folling works on the 1211 and is reported to work on the 1201 */
 
 		/* Fetch the spectral readings */
-		if ((ec = specbos_fcommand(p, "*fetch:sprad\r", buf, MAX_RD_SIZE, 1.0, 2+p->nbands+1, 0, 0)) != SPECBOS_OK) {
+		if ((ec = specbos_fcommand(p, "*fetch:sprad\r", buf, MAX_RD_SIZE, 2.0, 2+p->nbands+1, 0, 0)) != SPECBOS_OK) {
 			return specbos_interp_code((inst *)p, ec);
 		}
 
@@ -778,6 +825,9 @@ double *ref_rate
 	int ec;
 	inst_code rv;
 
+	if (ref_rate != NULL)
+		*ref_rate = 0.0;
+
 	if (p->model == 1201)
 		return inst_unsupported; 
 
@@ -822,6 +872,9 @@ double *ref_rate
 	if (!p->inited)
 		return inst_no_init;
 
+	if (ref_rate != NULL)
+		*ref_rate = 0.0;
+
 	amutex_lock(p->lock);
 	if ((rv = specbos_imp_measure_refresh(p, &refrate)) != inst_ok) {
 		amutex_unlock(p->lock);
@@ -832,7 +885,8 @@ double *ref_rate
 	if (refrate == 0.0)
 		return inst_misread;
 
-	*ref_rate = refrate;
+	if (ref_rate != NULL)
+		*ref_rate = refrate;
 
 	return inst_ok;
 }
@@ -1291,7 +1345,7 @@ specbos_del(inst *pp) {
 }
 
 /* Return the instrument mode capabilities */
-void specbos_capabilities(inst *pp,
+static void specbos_capabilities(inst *pp,
 inst_mode *pcap1,
 inst2_capability *pcap2,
 inst3_capability *pcap3) {
@@ -1329,6 +1383,7 @@ inst3_capability *pcap3) {
 }
 
 /* Return current or given configuration available measurement modes. */
+/* NOTE that conf_ix values shoudn't be changed, as it is used as a persistent key */
 static inst_code specbos_meas_config(
 inst *pp,
 inst_mode *mmodes,
@@ -1383,7 +1438,7 @@ int *conf_ix
 }
 
 /* Check device measurement mode */
-inst_code specbos_check_mode(inst *pp, inst_mode m) {
+static inst_code specbos_check_mode(inst *pp, inst_mode m) {
 	inst_mode cap;
 
 	if (!pp->gotcoms)
@@ -1407,7 +1462,7 @@ inst_code specbos_check_mode(inst *pp, inst_mode m) {
 }
 
 /* Set device measurement mode */
-inst_code specbos_set_mode(inst *pp, inst_mode m) {
+static inst_code specbos_set_mode(inst *pp, inst_mode m) {
 	specbos *p = (specbos *)pp;
 	int refrmode;
 	inst_code ev;
@@ -1438,13 +1493,14 @@ inst_code specbos_set_mode(inst *pp, inst_mode m) {
 	return inst_ok;
 }
 
-inst_disptypesel specbos_disptypesel[3] = {
+static inst_disptypesel specbos_disptypesel[3] = {
 	{
 		inst_dtflags_default,
 		1,
 		"nl",
 		"Non-Refresh display",
 		0,
+		disptech_lcd,
 		0
 	},
 	{
@@ -1453,6 +1509,7 @@ inst_disptypesel specbos_disptypesel[3] = {
 		"rc",						/* sel */
 		"Refresh display",			/* desc */
 		1,							/* refr */
+		disptech_crt,				/* disptype */
 		1							/* ix */
 	},
 	{
@@ -1461,6 +1518,7 @@ inst_disptypesel specbos_disptypesel[3] = {
 		"",
 		"",
 		0,
+		disptech_none,
 		0
 	}
 };
@@ -1527,7 +1585,7 @@ static inst_code set_disp_type(specbos *p, inst_disptypesel *dentry) {
 	return inst_ok;
 }
 
-/* Set the display type */
+/* Set the display type - refresh or not */
 static inst_code specbos_set_disptype(inst *pp, int ix) {
 	specbos *p = (specbos *)pp;
 	inst_code ev;

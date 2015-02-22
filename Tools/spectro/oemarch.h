@@ -36,10 +36,12 @@ typedef enum {
 /* Possible type of target */
 typedef enum {
 	targ_none              = 0x0000,	/* None */
-	targ_spyd_pld          = 0x0001,	/* Spyder PLD pattern */
-	targ_spyd_cal          = 0x0002,	/* Spyder spectral calibration */
-	targ_i1d3_edr          = 0x0004,	/* i1d3 .edr or .ccss */
-	targ_ccmx              = 0x0008		/* .ccmx */
+	targ_spyd1_pld         = 0x0001,	/* Spyder1 PLD pattern (???) */
+	targ_spyd2_pld         = 0x0002,	/* Spyder2 PLD pattern */
+	targ_spyd_cal          = 0x0004,	/* Spyder spectral calibration */
+	targ_i1d3_edr          = 0x0008,	/* i1d3 .edr or .ccss */
+	targ_ccmx              = 0x0010,	/* .ccmx */
+	targ_unknown           = 0x8000		/* Unrecognized file format */
 } targ_type;
 
 /* An install path, volume name or archive name */

@@ -140,7 +140,9 @@ colorhug_interp_error(inst *pp, int ec) {
 		case COLORHUG_NO_COMS:
 			return "Communications hasn't been established";
 		case COLORHUG_NOT_INITED:
-			return "Insrument hasn't been initialised";
+			return "Instrument hasn't been initialised";
+		case COLORHUG_WRONG_MODEL:
+			return "Attempt to use wrong command for model";
 		default:
 			return "Unknown error code";
 	}
@@ -390,8 +392,10 @@ colorhug_take_measurement(colorhug *p, double XYZ[3])
 			return ev;
 	
 		/* Convert to doubles */
-		for (i = 0; i < 3; i++)
+		for (i = 0; i < 3; i++) {
+//printf("%d raw = 0x%x\n",i,buf2int_le(obuf + i * 4));
 			XYZ[i] = p->postscale * buf2pfdouble(obuf + i * 4);
+		}
 	} else {
 		int icx = 64 + p->icx;
 		unsigned char obuf[3 * 4];
@@ -411,8 +415,10 @@ colorhug_take_measurement(colorhug *p, double XYZ[3])
 			return ev;
 	
 		/* Convert to doubles */
-		for (i = 0; i < 3; i++)
+		for (i = 0; i < 3; i++) {
+//printf("%d raw = 0x%x\n",i,buf2int_le(obuf + i * 4));
 			XYZ[i] = buf2pfdouble(obuf + i * 4);
+		}
 	}
 
 	/* Apply the colorimeter correction matrix */
@@ -447,6 +453,7 @@ colorhug_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 		a1logd(p->log, 3, "colorhug_init_coms: About to init USB\n");
 
 		/* Set config, interface, write end point, read end point */
+		// ~~ does Linux need icomuf_reset_before_close ? Why ?
 		if ((se = p->icom->set_usb_port(p->icom, 1, 0x00, 0x00, icomuf_detach, 0, NULL))
 			                                                                 != ICOM_OK) { 
 			a1logd(p->log, 1, "colorhug_init_coms: set_usb_port failed ICOM err 0x%x\n",se);
@@ -515,6 +522,9 @@ colorhug_set_multiplier (colorhug *p, int multiplier)
 	inst_code ev;
 	unsigned char ibuf[1];
 
+	if (p->stype != ch_one)
+		return colorhug_interp_code((inst *)p, COLORHUG_WRONG_MODEL);
+
 	/* Set the desired multiplier */
 	ibuf[0] = multiplier;
 	ev = colorhug_command(p, ch_set_mult,
@@ -530,6 +540,9 @@ colorhug_set_integral (colorhug *p, int integral)
 {
 	inst_code ev;
 	unsigned char ibuf[2];
+
+	if (p->stype != ch_one)
+		return colorhug_interp_code((inst *)p, COLORHUG_WRONG_MODEL);
 
 	/* Set the desired integral time */
 	short2buf_le(ibuf + 0, integral);
@@ -587,15 +600,18 @@ colorhug_init_inst(inst *pp)
 	if (ev != inst_ok)
 		return ev;
 
-	/* Turn the sensor on */
-	ev = colorhug_set_multiplier(p, 0x03);
-	if (ev != inst_ok)
-		return ev;
+	if (p->stype == ch_one) {
 
-	/* Set the integral time to maximum precision */
-	ev = colorhug_set_integral(p, 0xffff);
-	if (ev != inst_ok)
-		return ev;
+		/* Turn the sensor on */
+		ev = colorhug_set_multiplier(p, 0x03);
+		if (ev != inst_ok)
+			return ev;
+
+		/* Set the integral time to maximum precision */
+		ev = colorhug_set_integral(p, 0xffff);
+		if (ev != inst_ok)
+			return ev;
+	}
 
 	if (p->maj <= 1 && p->min <= 1 && p->uro <= 4) {
 
@@ -691,9 +707,11 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	}
 
 	/* Read the XYZ value */
-	if ((rv = colorhug_take_measurement(p, val->XYZ)) != inst_ok) {
+	rv = colorhug_take_measurement(p, val->XYZ);
+
+	if (rv != inst_ok)
 		return rv;
-	}
+
 	/* This may not change anything since instrument may clamp */
 	if (clamp)
 		icmClamp3(val->XYZ, val->XYZ);
@@ -709,27 +727,43 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	return rv;
 }
 
+static inst_code set_base_disp_type(colorhug *p, int cbid);
+
 /* Insert a colorimetric correction matrix */
 inst_code colorhug_col_cor_mat(
 inst *pp,
+disptech dtech,		/* Use disptech_unknown if not known */
+int cbid,       	/* Calibration display type base ID required, 1 if unknown */
 double mtx[3][3]
 ) {
 	colorhug *p = (colorhug *)pp;
+	inst_code ev;
 
 	if (!p->gotcoms)
 		return inst_no_coms;
 	if (!p->inited)
 		return inst_no_init;
 
-
-	if (mtx == NULL) {
+	if ((ev = set_base_disp_type(p, cbid)) != inst_ok)
+		return ev;
+	if (mtx == NULL)
 		icmSetUnity3x3(p->ccmat);
-	} else {
-		if (p->cbid == 0) {
-			a1loge(p->log, 1, "colorhug: can't set col_cor_mat over non-base display type\n");
-			return inst_wrong_setup;
-		}
+	else
 		icmCpy3x3(p->ccmat, mtx);
+
+	p->dtech = dtech;
+	p->refrmode = disptech_get_id(dtech)->refr;
+	p->cbid = 0;	/* Base has been overwitten */
+
+	if (p->log->debug >= 4) {
+		a1logd(p->log,4,"ccmat           = %f %f %f\n",
+		                 p->ccmat[0][0], p->ccmat[0][1], p->ccmat[0][2]);
+		a1logd(p->log,4,"                  %f %f %f\n",
+		                 p->ccmat[1][0], p->ccmat[1][1], p->ccmat[1][2]);
+		a1logd(p->log,4,"                  %f %f %f\n\n",
+		                 p->ccmat[2][0], p->ccmat[2][1], p->ccmat[2][2]);
+		a1logd(p->log,4,"ucbid = %d, cbid = %d\n",p->ucbid, p->cbid);
+		a1logd(p->log,4,"\n");
 	}
 
 	return inst_ok;
@@ -747,6 +781,7 @@ colorhug_interp_code(inst *pp, int ec) {
 		case COLORHUG_INTERNAL_ERROR:
 		case COLORHUG_NO_COMS:
 		case COLORHUG_NOT_INITED:
+		case COLORHUG_WRONG_MODEL:
 			return inst_internal_error | ec;
 
 		case COLORHUG_COMS_FAIL:
@@ -868,6 +903,7 @@ static inst_disptypesel colorhug_disptypesel[7] = {
 		"l",								/* sel */
 		"LCD, CCFL Backlight",				/* desc */
 		0,									/* refr */
+		disptech_lcd_ccfl,					/* disptype */
 		0									/* ix */
 	},
 	{
@@ -876,6 +912,7 @@ static inst_disptypesel colorhug_disptypesel[7] = {
 		"c",
 		"CRT display",
 		0,
+		disptech_crt,
 		1
 	},
 	{
@@ -884,6 +921,7 @@ static inst_disptypesel colorhug_disptypesel[7] = {
 		"p",
 		"Projector",
 		0,
+		disptech_dlp,
 		2
 	},
 	{
@@ -892,6 +930,7 @@ static inst_disptypesel colorhug_disptypesel[7] = {
 		"e",
 		"LCD, White LED Backlight",
 		0,
+		disptech_lcd_wled,
 		3
 	},
 	{
@@ -900,6 +939,7 @@ static inst_disptypesel colorhug_disptypesel[7] = {
 		"F",
 		"Factory matrix (For Calibration)",
 		0,
+		disptech_unknown,
 		10
 	},
 	{
@@ -908,6 +948,7 @@ static inst_disptypesel colorhug_disptypesel[7] = {
 		"R",
 		"Raw Reading (For Factory matrix Calibration)",
 		0,
+		disptech_unknown,
 		11
 	},
 	{
@@ -916,6 +957,7 @@ static inst_disptypesel colorhug_disptypesel[7] = {
 		"",
 		"",
 		0,
+		disptech_none,
 		0
 	}
 };
@@ -947,22 +989,66 @@ int recreate				/* nz to re-check for new ccmx & ccss files */
 	return inst_ok;
 }
 
-/* Given a display type entry, setup for that type */
+/* Given a display type implementation from inst_disptypesel */
 static inst_code set_disp_type(colorhug *p, inst_disptypesel *dentry) {
 	int ix;
 
-	/* The HW handles up to 6 calibrations */
-	ix = dentry->ix; 
-	if (ix != 10 && ix != 11 && (ix < 0 || ix > 3))
+	if (dentry->flags & inst_dtflags_ccmx) {
+		inst_code ev;
+		if ((ev = set_base_disp_type(p, dentry->cc_cbid)) != inst_ok)
+			return ev;
+		icmCpy3x3(p->ccmat, dentry->mat);
+		p->dtech = dentry->dtech;
+		p->cbid = 0; 	/* Can't be a base type */
+
+	} else {
+
+		/* The HW handles up to 6 calibrations */
+		ix = dentry->ix; 
+		if (ix != 10 && ix != 11 && (ix < 0 || ix > 3))
+			return inst_unsupported;
+	
+		p->icx = ix;
+		p->dtech = dentry->dtech;
+		p->cbid = dentry->cbid; 
+		p->ucbid = dentry->cbid;	/* This is underying base if dentry is base selection */
+		icmSetUnity3x3(p->ccmat);
+	}
+	p->refrmode = dentry->refr; 
+
+	if (p->log->debug >= 4) {
+		a1logd(p->log,4,"ccmat           = %f %f %f\n",
+		                 p->ccmat[0][0], p->ccmat[0][1], p->ccmat[0][2]);
+		a1logd(p->log,4,"                  %f %f %f\n",
+		                 p->ccmat[1][0], p->ccmat[1][1], p->ccmat[1][2]);
+		a1logd(p->log,4,"                  %f %f %f\n\n",
+		                 p->ccmat[2][0], p->ccmat[2][1], p->ccmat[2][2]);
+		a1logd(p->log,4,"ucbid = %d, cbid = %d\n",p->ucbid, p->cbid);
+		a1logd(p->log,4,"\n");
+	}
+
+	return inst_ok;
+}
+
+/* Set the display type */
+static inst_code colorhug_set_disptype(inst *pp, int ix) {
+	colorhug *p = (colorhug *)pp;
+	inst_code ev;
+	inst_disptypesel *dentry;
+
+	if (p->dtlist == NULL) {
+		if ((ev = inst_creat_disptype_list(pp, &p->ndtlist, &p->dtlist,
+		    colorhug_disptypesel, 0 /* doccss*/, 1 /* doccmx */)) != inst_ok)
+			return ev;
+	}
+
+	if (ix < 0 || ix >= p->ndtlist)
 		return inst_unsupported;
 
-	p->icx = ix;
-	p->refrmode = dentry->refr; 
-	p->cbid = dentry->cbid; 
-	if (dentry->flags & inst_dtflags_ccmx) {
-		icmCpy3x3(p->ccmat, dentry->mat);
-	} else {
-		icmSetUnity3x3(p->ccmat);
+	dentry = &p->dtlist[ix];
+
+	if ((ev = set_disp_type(p, dentry)) != inst_ok) {
+		return ev;
 	}
 
 	return inst_ok;
@@ -994,27 +1080,53 @@ static inst_code set_default_disp_type(colorhug *p) {
 	return inst_ok;
 }
 
-/* Set the display type */
-static inst_code colorhug_set_disptype(inst *pp, int ix) {
-	colorhug *p = (colorhug *)pp;
+/* Setup the display type to the given base type */
+static inst_code set_base_disp_type(colorhug *p, int cbid) {
 	inst_code ev;
-	inst_disptypesel *dentry;
+	int i;
 
+	if (cbid == 0) {
+		a1loge(p->log, 1, "colorhug set_base_disp_type: can't set base display type of 0\n");
+		return inst_wrong_setup;
+	}
 	if (p->dtlist == NULL) {
-		if ((ev = inst_creat_disptype_list(pp, &p->ndtlist, &p->dtlist,
+		if ((ev = inst_creat_disptype_list((inst *)p, &p->ndtlist, &p->dtlist,
 		    colorhug_disptypesel, 0 /* doccss*/, 1 /* doccmx */)) != inst_ok)
 			return ev;
 	}
 
-	if (ix < 0 || ix >= p->ndtlist)
-		return inst_unsupported;
-
-	dentry = &p->dtlist[ix];
-
-	if ((ev = set_disp_type(p, dentry)) != inst_ok) {
+	for (i = 0; !(p->dtlist[i].flags & inst_dtflags_end); i++) {
+		if (!(p->dtlist[i].flags & inst_dtflags_ccmx)		/* Prevent infinite recursion */
+		 && p->dtlist[i].cbid == cbid)
+			break;
+	}
+	if (p->dtlist[i].flags & inst_dtflags_end) {
+		a1loge(p->log, 1, "set_base_disp_type: failed to find cbid %d!\n",cbid);
+		return inst_wrong_setup; 
+	}
+	if ((ev = set_disp_type(p, &p->dtlist[i])) != inst_ok) {
 		return ev;
 	}
 
+	return inst_ok;
+}
+
+/* Get the disptech and other corresponding info for the current */
+/* selected display type. Returns disptype_unknown by default. */
+/* Because refrmode can be overridden, it may not match the refrmode */
+/* of the dtech. (Pointers may be NULL if not needed) */
+static inst_code colorhug_get_disptechi(
+inst *pp,
+disptech *dtech,
+int *refrmode,
+int *cbid) {
+	colorhug *p = (colorhug *)pp;
+	if (dtech != NULL)
+		*dtech = p->dtech;
+	if (refrmode != NULL)
+		*refrmode = p->refrmode;
+	if (cbid != NULL)
+		*cbid = p->cbid;
 	return inst_ok;
 }
 
@@ -1041,24 +1153,6 @@ colorhug_get_set_opt(inst *pp, inst_opt_type m, ...)
 		return inst_no_coms;
 	if (!p->inited)
 		return inst_no_init;
-
-	/* Get the display type information */
-	if (m == inst_opt_get_dtinfo) {
-		va_list args;
-		int *refrmode, *cbid;
-
-		va_start(args, m);
-		refrmode = va_arg(args, int *);
-		cbid = va_arg(args, int *);
-		va_end(args);
-
-		if (refrmode != NULL)
-			*refrmode = p->refrmode;
-		if (cbid != NULL)
-			*cbid = p->cbid;
-
-		return inst_ok;
-	}
 
 	/* Operate the LEDs */
 	if (m == inst_opt_get_gen_ledmask) {
@@ -1111,6 +1205,7 @@ extern colorhug *new_colorhug(icoms *icom, instType itype) {
 	p->set_mode          = colorhug_set_mode;
 	p->get_disptypesel   = colorhug_get_disptypesel;
 	p->set_disptype      = colorhug_set_disptype;
+	p->get_disptechi     = colorhug_get_disptechi;
 	p->get_set_opt       = colorhug_get_set_opt;
 	p->read_sample       = colorhug_read_sample;
 	p->col_cor_mat       = colorhug_col_cor_mat;
@@ -1120,7 +1215,11 @@ extern colorhug *new_colorhug(icoms *icom, instType itype) {
 	p->icom = icom;
 	p->itype = icom->itype;
 
+	if (itype == instColorHug2)
+		p->stype = ch_two;
+
 	icmSetUnity3x3(p->ccmat);
+	p->dtech = disptech_unknown;
 
 	return p;
 }

@@ -76,6 +76,8 @@ char *inst_sname(instType itype) {
 			return "ColorMunki";
 		case instHCFR:
 			return "HCFR";
+		case instSpyder1:
+			return "Spyder1";
 		case instSpyder2:
 			return "Spyder2";
 		case instSpyder3:
@@ -90,8 +92,12 @@ char *inst_sname(instType itype) {
 			return "specbos 1201";
 		case instSpecbos:
 			return "specbos";
+		case instKleinK10:
+			return "K-10";
 		case instColorHug:
 			return "ColorHug";
+		case instColorHug2:
+			return "ColorHug2";
 		default:
 			break;
 	}
@@ -102,17 +108,17 @@ char *inst_sname(instType itype) {
 char *inst_name(instType itype) {
 	switch (itype) {
 		case instDTP20:
-			return "Xrite DTP20";
+			return "X-Rite DTP20";
 		case instDTP22:
-			return "Xrite DTP22";
+			return "X-Rite DTP22";
 		case instDTP41:
-			return "Xrite DTP41";
+			return "X-Rite DTP41";
 		case instDTP51:
-			return "Xrite DTP51";
+			return "X-Rite DTP51";
 		case instDTP92:
-			return "Xrite DTP92";
+			return "X-Rite DTP92";
 		case instDTP94:
-			return "Xrite DTP94";
+			return "X-Rite DTP94";
 		case instSpectrolino:
 			return "GretagMacbeth Spectrolino";
 		case instSpectroScan:
@@ -126,7 +132,7 @@ char *inst_name(instType itype) {
 		case instI1Disp2:
 			return "GretagMacbeth i1 Display 2";
 		case instI1Disp3:
-			return "Xrite i1 DisplayPro, ColorMunki Display";
+			return "X-Rite i1 DisplayPro, ColorMunki Display";
 		case instI1Monitor:
 			return "GretagMacbeth i1 Monitor";
 		case instI1Pro:
@@ -137,6 +143,8 @@ char *inst_name(instType itype) {
 			return "X-Rite ColorMunki";
 		case instHCFR:
 			return "Colorimtre HCFR";
+		case instSpyder1:
+			return "ColorVision Spyder1";
 		case instSpyder2:
 			return "ColorVision Spyder2";
 		case instSpyder3:
@@ -151,8 +159,12 @@ char *inst_name(instType itype) {
 			return "JETI specbos 1201";
 		case instSpecbos:
 			return "JETI specbos";
+		case instKleinK10:
+			return "Klein K-10";
 		case instColorHug:
 			return "Hughski ColorHug";
+		case instColorHug2:
+			return "Hughski ColorHug2";
 		default:
 			break;
 	}
@@ -163,17 +175,23 @@ char *inst_name(instType itype) {
 /* instType, or instUnknown if not matched */
 instType inst_enum(char *name) {
 
-	if (strcmp(name, "Xrite DTP20") == 0)
+	if (strcmp(name, "Xrite DTP20") == 0
+	 || strcmp(name, "X-Rite DTP20") == 0)
 		return instDTP20;
-	else if (strcmp(name, "Xrite DTP22") == 0)
+	else if (strcmp(name, "Xrite DTP22") == 0
+	      || strcmp(name, "X-Rite DTP22") == 0)
 		return instDTP22;
-	else if (strcmp(name, "Xrite DTP41") == 0)
+	else if (strcmp(name, "Xrite DTP41") == 0
+	     ||  strcmp(name, "X-Rite DTP41") == 0)
 		return instDTP41;
-	else if (strcmp(name, "Xrite DTP51") == 0)
+	else if (strcmp(name, "Xrite DTP51") == 0
+	     ||  strcmp(name, "X-Rite DTP51") == 0)
 		return instDTP51;
-	else if (strcmp(name, "Xrite DTP92") == 0)
+	else if (strcmp(name, "Xrite DTP92") == 0
+	     ||  strcmp(name, "X-Rite DTP92") == 0)
 		return instDTP92;
-	else if (strcmp(name, "Xrite DTP94") == 0)
+	else if (strcmp(name, "Xrite DTP94") == 0
+	     ||  strcmp(name, "X-Rite DTP94") == 0)
 		return instDTP94;
 	else if (strcmp(name, "GretagMacbeth Spectrolino") == 0)
 		return instSpectrolino;
@@ -187,22 +205,31 @@ instType inst_enum(char *name) {
 		return instI1Disp1;
 	else if (strcmp(name, "GretagMacbeth i1 Display 2") == 0
 		  || strcmp(name, "GretagMacbeth i1 Display") == 0
-	      || strcmp(name, "Xrite i1 Display") == 0)
+	      || strcmp(name, "Xrite i1 Display") == 0
+	      || strcmp(name, "X-Rite i1 Display") == 0)
 		return instI1Disp2;
 	else if (strcmp(name, "Xrite i1 DisplayPro") == 0
-	      || strcmp(name, "ColorMunki Display") == 0)
+	      || strcmp(name, "X-Rite i1 DisplayPro") == 0
+	      || strcmp(name, "ColorMunki Display") == 0
+	      || strcmp(name, "X-Rite i1 DisplayPro, ColorMunki Display") == 0
+	      || strcmp(name, "Xrite i1 DisplayPro, ColorMunki Display") == 0)
 		return instI1Disp3;
 	else if (strcmp(name, "GretagMacbeth i1 Monitor") == 0)
 		return instI1Monitor;
 	else if (strcmp(name, "GretagMacbeth i1 Pro") == 0
-	      || strcmp(name, "Xrite i1 Pro") == 0)
+	      || strcmp(name, "Xrite i1 Pro") == 0
+	      || strcmp(name, "X-Rite i1 Pro") == 0)
 		return instI1Pro;
-	else if (strcmp(name, "Xrite i1 Pro 2") == 0)
+	else if (strcmp(name, "Xrite i1 Pro 2") == 0
+		  || strcmp(name, "X-Rite i1 Pro 2") == 0)
 		return instI1Pro2;
-	else if (strcmp(name, "X-Rite ColorMunki") == 0)
+	else if (strcmp(name, "XRite ColorMunki") == 0
+		  || strcmp(name, "X-Rite ColorMunki") == 0)
 		return instColorMunki;
 	else if (strcmp(name, "Colorimtre HCFR") == 0)
 		return instHCFR;
+	else if (strcmp(name, "ColorVision Spyder1") == 0)
+		return instSpyder1;
 	else if (strcmp(name, "ColorVision Spyder2") == 0)
 		return instSpyder2;
 	else if (strcmp(name, "Datacolor Spyder3") == 0)
@@ -217,8 +244,12 @@ instType inst_enum(char *name) {
 		return instSpecbos1201;
 	else if (strcmp(name, "JETI specbos") == 0)
 		return instSpecbos;
+	else if (strcmp(name, "Klein K-10") == 0)
+		return instKleinK10;
 	else if (strcmp(name, "Hughski ColorHug") == 0)
 		return instColorHug;
+	else if (strcmp(name, "Hughski ColorHug2") == 0)
+		return instColorHug2;
 
 
 	return instUnknown;
@@ -265,7 +296,7 @@ int nep) {					/* Number of end points */
 
 	if (idVendor == 0x085C) {		/* ColorVision */
 		if (idProduct == 0x0100)	/* ColorVision Spyder1 */
-			return instSpyder2;		/* Alias to Spyder 2 */
+			return instSpyder1;
 		if (idProduct == 0x0200)	/* ColorVision Spyder2 */
 			return instSpyder2;
 		if (idProduct == 0x0300)	/* ColorVision Spyder3 */
@@ -296,6 +327,9 @@ int nep) {					/* Number of end points */
 	if ((idVendor == 0x04d8 && idProduct == 0xf8da)			/* Microchip & Hughski ColorHug (old) */
 	 || (idVendor == 0x273f && idProduct == 0x1001)) {		/* Hughski & ColorHug Fmw. >= 0.1.20 */
 		return instColorHug;
+	}
+	if (idVendor == 0x273f && idProduct == 0x1004) {		/* Hughski & ColorHug2 */
+		return instColorHug2;
 	}
 	/* Add other instruments here */
 
@@ -371,6 +405,9 @@ int inst_illuminant(xspect *sp, instType itype) {
 		case instHCFR:
 			return 1;										/* Not applicable */
 
+		case instSpyder1:
+			return 1;										/* Not applicable */
+
 		case instSpyder2:
 			return 1;										/* Not applicable */
 
@@ -390,7 +427,11 @@ int inst_illuminant(xspect *sp, instType itype) {
 		case instSpecbos:
 			return 1;										/* Not applicable */
 
+		case instKleinK10:
+			return 1;										/* Not applicable */
+
 		case instColorHug:
+		case instColorHug2:
 			return 1;										/* Not applicable */
 
 

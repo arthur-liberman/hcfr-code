@@ -369,10 +369,12 @@ static int
 icoms_write_read(
 icoms *p,
 char *wbuf,			/* Write puffer */
+int nwch,			/* if > 0, number of characters to write */
 char *rbuf,			/* Read buffer */
 int bsize,			/* Buffer size */
-char *tc,			/* Terminating characers, NULL for none */
-int ntc,			/* Number of terminating characters needed to terminate */
+int *bread,			/* Bytes read (not including forced '\000') */
+char *tc,			/* Terminating characers, NULL for none or char count mode */
+int ntc,			/* Number of terminating characters needed, or char count needed */
 double tout
 ) {
 	int rv = ICOM_OK;
@@ -392,14 +394,14 @@ double tout
 		if (debug < 8)
 			p->log->debug =  0;
 		for (; rv == ICOM_OK;) 	/* Until we get a timeout */
-			rv = p->read(p, rbuf, bsize, '\000', 100000, 0.01);
+			rv = p->read(p, rbuf, bsize, NULL, NULL, bsize, 0.01);
 		p->log->debug = debug;
 		rv = ICOM_OK;
 	}
 #endif
 
 	/* Write the write data */
-	rv = p->write(p, wbuf, tout);
+	rv = p->write(p, wbuf, nwch, tout);
 
 	/* Return error if coms */
 	if (rv != ICOM_OK) {
@@ -408,7 +410,7 @@ double tout
 	}
 
 	/* Read response */
-	rv = p->read(p, rbuf, bsize, tc, ntc, tout);
+	rv = p->read(p, rbuf, bsize, bread, tc, ntc, tout);
 	
 	a1logd(p->log, 8, "icoms_write_read: returning 0x%x\n",rv);
 
@@ -506,6 +508,7 @@ void bad_beep() {
 
 /* Convert control chars to ^[A-Z] notation in a string */
 /* Can be called 5 times without reusing the static buffer */
+/* Returns a maximum of 1000 characters */
 char *
 icoms_fix(char *ss) {
 	static unsigned char buf[5][1005];

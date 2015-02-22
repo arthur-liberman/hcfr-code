@@ -27,6 +27,7 @@
 #include <pthread.h>
 #endif
 
+#define NUMSUP_C
 #include "numsup.h"
 
 /* 
@@ -293,6 +294,7 @@ a1log *new_a1log(
 		a1loge(g_log, 1, "new_a1log: malloc of a1log failed, calling exit(1)\n");
 		exit(1);
 	}
+	log->refc = 1;
 	log->verb = verb;
 	log->debug = debug;
 
@@ -368,7 +370,7 @@ void a1logd(a1log *log, int level, char *fmt, ...) {
 	
 			A1LOG_LOCK(log);
 			va_start(args, fmt);
-			log->logd(log->cntx, log, fmt, args);
+			log->loge(log->cntx, log, fmt, args);
 			va_end(args);
 			A1LOG_UNLOCK(log);
 		}
@@ -475,7 +477,7 @@ static void g_loge(char *fmt, ...) {
 
 void
 verbose(int level, char *fmt, ...) {
-	if (level >= g_log->verb) {
+	if (g_log->verb >= level) {
 		va_list args;
 
 		A1LOG_LOCK(g_log);
@@ -516,6 +518,55 @@ error(char *fmt, ...) {
 	exit(1);
 }
 
+
+/******************************************************************/
+/* Suplimental allcation functions */
+/******************************************************************/
+
+#ifndef SIZE_MAX
+# define SIZE_MAX ((size_t)(-1))
+#endif
+
+/* a * b */
+static size_t ssat_mul(size_t a, size_t b) {
+	size_t c;
+
+	if (a == 0 || b == 0)
+		return 0;
+
+	if (a > (SIZE_MAX/b))
+		return SIZE_MAX;
+	else
+		return a * b;
+}
+
+/* reallocate and clear new allocation */
+void *recalloc(		/* Return new address */
+void *ptr,					/* Current address */
+size_t cnum,				/* Current number and unit size */
+size_t csize,
+size_t nnum,				/* New number and unit size */
+size_t nsize
+) {
+	int ind = 0;
+	size_t ctot, ntot;
+
+	if (ptr == NULL)
+		return calloc(nnum, nsize); 
+
+	if ((ntot = ssat_mul(nnum, nsize)) == SIZE_MAX)
+		return NULL;			/* Overflow */
+
+	if ((ctot = ssat_mul(cnum, csize)) == SIZE_MAX)
+		return NULL;			/* Overflow */
+
+	ptr = realloc(ptr, ntot);
+
+	if (ptr != NULL && ntot > ctot)
+		memset((char *)ptr + ctot, 0, ntot - ctot);			/* Clear the new region */
+
+	return ptr;
+}
 
 /******************************************************************/
 /* Numerical Recipes Vector/Matrix Support functions              */
@@ -1373,7 +1424,7 @@ void matrix_print(char *c, double **a, int nr,  int nc) {
 /* Platform independent IEE754 conversions */
 /*******************************************/
 
-/* Cast a native double to an IEEE754 encoded single precision value, */
+/* Convert a native double to an IEEE754 encoded single precision value, */
 /* in a platform independent fashion. (ie. This works even */
 /* on the rare platforms that don't use IEEE 754 floating */
 /* point for their C implementation) */
@@ -1412,7 +1463,7 @@ ORD32 doubletoIEEE754(double d) {
 	return id;
 }
 
-/* Cast a an IEEE754 encoded single precision value to a native double, */
+/* Convert a an IEEE754 encoded single precision value to a native double, */
 /* in a platform independent fashion. (ie. This works even */
 /* on the rare platforms that don't use IEEE 754 floating */
 /* point for their C implementation) */
@@ -1436,7 +1487,7 @@ double IEEE754todouble(ORD32 ip) {
 	return op;
 }
 
-/* Cast a native double to an IEEE754 encoded double precision value, */
+/* Convert a native double to an IEEE754 encoded double precision value, */
 /* in a platform independent fashion. (ie. This works even */
 /* on the rare platforms that don't use IEEE 754 floating */
 /* point for their C implementation) */
@@ -1475,7 +1526,7 @@ ORD64 doubletoIEEE754_64(double d) {
 	return id;
 }
 
-/* Cast a an IEEE754 encode double precision value to a native double, */
+/* Convert a an IEEE754 encode double precision value to a native double, */
 /* in a platform independent fashion. (ie. This works even */
 /* on the rare platforms that don't use IEEE 754 floating */
 /* point for their C implementation) */

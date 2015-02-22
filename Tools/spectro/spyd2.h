@@ -73,6 +73,9 @@
 
 /* Configuration */
 #define SPYD2_DISP_SEL_RANGE  	    0x40		/* Calibration selection is out of range */
+#ifdef __cplusplus
+	extern "C" {
+#endif
 
 /* SPYD2/3 communication object */
 struct _spyd2 {
@@ -140,16 +143,20 @@ struct _spyd2 {
 	int ndtlist;				/* Number of valid dtlist entries */
 
 	int refrmode;				/* 0 for constant, 1 for refresh display */ 
-	int cbid;					/* calibration base ID, 0 if not a base */
+	int cbid;					/* current calibration base ID, 0 if not a base */
+	int ucbid;					/* Underlying base ID if being used for matrix, 0 othewise */
 	int	icx;					/* Bit 0: Cal table index, 0 = CRT, 1 = LCD/normal */
 								/* Bits 31-1: Spyder 4 spectral cal index, 0..spyd4_nocals-1 */
+	disptech dtech;				/* Display technology enum */
 	int     rrset;				/* Flag, nz if the refresh rate has been determined */
 	double  refrate;			/* Current refresh rate. Set to DEFREFR if not measurable */
 	int     refrvalid;			/* nz if refrate was measured */
 	double  gain;				/* hwver == 5 gain value (default 4) */
-	double ccmat[3][3];			/* Colorimeter correction matrix */
 	icxObserverType obType;		/* ccss observer to use */
 	xspect custObserver[3];		/* Custom ccss observer to use */
+	double ccmat[3][3];			/* Colorimeter correction matrix, unity if none */
+	xspect *samples;			/* Copy of current calibration spectral samples, NULL if none */
+	int nsamp;					/* Number of samples, 0 if none */
 
 	int prevraw[8];				/* Previous raw reading values */
 	int prevrawinv;				/* Previous raw readings invalid flag - after an abort */
@@ -163,6 +170,14 @@ struct _spyd2 {
 /* Constructor */
 extern spyd2 *new_spyd2(icoms *icom, instType itype);
 
+/* PLD pattern loader */
+/* id = 0 for Spyder 1, 1 for Spyder 2 */
+/* Return 0 if Spyder firmware is not available */
+/* Return 1 if Spyder firmware is available */
+extern int setup_spyd2(int id);
+#ifdef __cplusplus
+	}
+#endif
 
 #define SPYD2_H
 #endif /* SPYD2_H */

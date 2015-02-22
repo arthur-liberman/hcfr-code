@@ -53,6 +53,31 @@
 #include "numsup.h"
 #include "aglob.h"
 
+/*
+	For MSWin should convert spath to UTF16 and call
+	wide version of FindFirstFileW with  "\\?\" pre-pended to
+	the path. Convert results back to UTF8. (No Nt2K support ?)
+
+ 	Will setting codepage 65001 work OK for this ? (Aparently not).
+	_setmbcp(65001)
+
+	_wfindfirst()
+	_wfindnext()
+	_wfopen()
+	WideCharToMultiByte
+	MultiByteToWideCharTo
+	GetShortPathNameW to convert for libraries, but not 100% reliable
+
+	See <http://utf8everywhere.org/>
+	<http://www.nubaria.com/en/blog/?p=289>
+	<http://stackoverflow.com/questions/166503/utf-8-in-windows>
+	<http://alfps.wordpress.com/2011/11/22/unicode-part-1-windows-console-io-approaches/>
+
+	_setmode + _O_U8TEXT on files to output UTF8 ?
+	 fopen(&fp, "newfile.txt", "rt+, ccs=UTF-8"); 
+
+ */
+
 /* Create the aglob */
 /* Return nz on malloc error */
 int aglob_create(aglob *g, char *spath) {
@@ -66,7 +91,7 @@ int aglob_create(aglob *g, char *spath) {
 	else
 		rlen = pp - spath + 1;
 
-	if ((g->base = malloc(rlen + 1)) == NULL) {
+	if ((g->base = (char *) malloc(rlen + 1)) == NULL) {
 		a1loge(g_log, 1, "aglob_create: malloc failed\n");
 		return 1;
 	}

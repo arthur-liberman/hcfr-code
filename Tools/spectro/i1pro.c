@@ -35,6 +35,9 @@
 /*
 	TTBD
 
+	There may be a bug in HiRes emissive calibration - if you do an initial
+	cal. in normal, then switch to HiRes, no white plate cal is performed.
+	Is it using a previous cal result for this ?
 
 	Should add extra filter compensation support.
 
@@ -273,7 +276,11 @@ double *ref_rate) {
 	if (!p->inited)
 		return inst_no_init;
 
+	if (ref_rate != NULL)
+		*ref_rate = 0.0;
+
 	rv = i1pro_imp_meas_refrate(p, ref_rate);
+
 
 
 	return i1pro_interp_code(p, rv);
@@ -283,7 +290,8 @@ double *ref_rate) {
 static inst_code
 i1pro_meas_delay(
 inst *pp,
-int *msecdelay) {
+int *pdispmsec,		/* Return display update delay in msec */
+int *pinstmsec) {	/* Return instrument reaction time in msec */
 	i1pro *p = (i1pro *)pp;
 	i1pro_code rv;
 
@@ -292,9 +300,18 @@ int *msecdelay) {
 	if (!p->inited)
 		return inst_no_init;
 
-	rv = i1pro_imp_meas_delay(p, msecdelay);
+	rv = i1pro_imp_meas_delay(p, pdispmsec, pinstmsec);
 
 	return i1pro_interp_code(p, rv);
+}
+
+/* Timestamp the white patch change during meas_delay() */
+static inst_code i1pro_white_change(
+inst *pp,
+int init) {
+	i1pro *p = (i1pro *)pp;
+
+	return i1pro_imp_white_change(p, init);
 }
 
 /* Return needed and available inst_cal_type's */
@@ -307,7 +324,7 @@ static inst_code i1pro_get_n_a_cals(inst *pp, inst_cal_type *pn_cals, inst_cal_t
 }
 
 /* Request an instrument calibration. */
-inst_code i1pro_calibrate(
+static inst_code i1pro_calibrate(
 inst *pp,
 inst_cal_type *calt,	/* Calibration type to do/remaining */
 inst_cal_cond *calc,	/* Current condition/desired condition */
@@ -514,8 +531,10 @@ i1pro_interp_code(i1pro *p, i1pro_code ec) {
 	switch (ec) {
 
 		case I1PRO_OK:
-
 			return inst_ok;
+
+		case I1PRO_INTERNAL_ERROR:
+			return inst_internal_error | ec;
 
 		case I1PRO_COMS_FAIL:
 			return inst_coms_fail | ec;
@@ -601,7 +620,7 @@ i1pro_interp_code(i1pro *p, i1pro_code ec) {
 }
 
 /* Return the instrument capabilities */
-void i1pro_capabilities(inst *pp,
+static void i1pro_capabilities(inst *pp,
 inst_mode *pcap1,
 inst2_capability *pcap2,
 inst3_capability *pcap3) {
@@ -655,7 +674,7 @@ static i1p_mode i1pro_convert_mode(i1pro *p, inst_mode m) {
 }
 
 /* Check device measurement mode */
-inst_code i1pro_check_mode(inst *pp, inst_mode m) {
+static inst_code i1pro_check_mode(inst *pp, inst_mode m) {
 	i1pro *p = (i1pro *)pp;
 	i1p_mode mmode = 0;	/* Instrument measurement mode */
 
@@ -671,7 +690,7 @@ inst_code i1pro_check_mode(inst *pp, inst_mode m) {
 }
 
 /* Set device measurement mode */
-inst_code i1pro_set_mode(inst *pp, inst_mode m) {
+static inst_code i1pro_set_mode(inst *pp, inst_mode m) {
 	i1pro *p = (i1pro *)pp;
 	i1p_mode mmode;		/* Instrument measurement mode */
 	inst_code rv;
@@ -815,6 +834,7 @@ extern i1pro *new_i1pro(icoms *icom, instType itype) {
 	p->get_n_a_cals      = i1pro_get_n_a_cals;
 	p->calibrate         = i1pro_calibrate;
 	p->meas_delay        = i1pro_meas_delay;
+	p->white_change      = i1pro_white_change;
 	p->interp_error      = i1pro_interp_error;
 	p->del               = i1pro_del;
 

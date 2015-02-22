@@ -131,7 +131,7 @@ dtp22_fcommand(
 	double to) {		/* Timout in seconds */
 	int se, rv = DTP22_OK;
 
-	if ((se = p->icom->write_read(p->icom, in, out, bsize, tc, ntc, to)) != 0) {
+	if ((se = p->icom->write_read(p->icom, in, 0, out, bsize, NULL, tc, ntc, to)) != 0) {
 		a1logd(p->log, 1, "dtp22_fcommand: serial i/o failure on write_read '%s'\n",icoms_fix(in));
 		return icoms2dtp22_err(se);
 	}
@@ -145,7 +145,7 @@ dtp22_fcommand(
 			rv &= inst_imask;
 			if (rv != DTP22_OK) {	/* Clear the error */
 				char buf[MAX_MES_SIZE];
-				p->icom->write_read(p->icom, "CE\r", buf, MAX_MES_SIZE, ">", 1, 0.5);
+				p->icom->write_read(p->icom, "CE\r", 0, buf, MAX_MES_SIZE, NULL, ">", 1, 0.5);
 			}
 		}
 	}
@@ -249,7 +249,7 @@ dtp22_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 		return ev;
 
 	/* Change the baud rate to the rate we've been told */
-	if ((se = p->icom->write_read(p->icom, brc[bi], buf, MAX_MES_SIZE, ">", 1, .2)) != 0) {
+	if ((se = p->icom->write_read(p->icom, brc[bi], 0, buf, MAX_MES_SIZE, NULL, ">", 1, .2)) != 0) {
 		if (extract_ec(buf) != DTP22_OK)
 			return inst_coms_fail;
 	}
@@ -261,7 +261,7 @@ dtp22_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	}
 
 	/* Loose a character (not sure why) */
-	p->icom->write_read(p->icom, "\r", buf, MAX_MES_SIZE, ">", 1, 0.1);
+	p->icom->write_read(p->icom, "\r", 0, buf, MAX_MES_SIZE, NULL, ">", 1, 0.1);
 
 	/* Check instrument is responding, and reset it again. */
 	if ((ev = dtp22_command(p, "\r", buf, MAX_MES_SIZE, 0.2)) != inst_ok
@@ -481,7 +481,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 
 		/* Wait for the microswitch to be triggered, or the user to trigger */
 		for (;;) {
-			if ((se = p->icom->read(p->icom, buf, MAX_MES_SIZE, ">", 1, 1.0)) != 0) {
+			if ((se = p->icom->read(p->icom, buf, MAX_MES_SIZE, NULL, ">", 1, 1.0)) != 0) {
 				if ((se & ICOM_TO) == 0) {		/* Some sort of read error */
 					/* Disable the read microswitch */
 					dtp22_command(p, "2PB\r", buf, MAX_MES_SIZE, 0.2);
@@ -701,14 +701,14 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 			goto do_exit;
 
 		/* Issue white calibration */
-		if ((se = p->icom->write(p->icom, "1CA\r", 0.5)) != ICOM_OK) {
+		if ((se = p->icom->write(p->icom, "1CA\r", 0, 0.5)) != ICOM_OK) {
 			ev = dtp22_interp_code((inst *)p, icoms2dtp22_err(se));
 			goto do_exit;
 		}
 
 		/* Wait for the microswitch to be triggered, or a user trigger via uicallback */
 		for (;;) {
-			if ((se = p->icom->read(p->icom, buf, MAX_MES_SIZE, ">", 1, 1.0)) != 0) {
+			if ((se = p->icom->read(p->icom, buf, MAX_MES_SIZE, NULL, ">", 1, 1.0)) != 0) {
 				if ((se & ICOM_TO) == 0) {		/* Some sort of read error */
 					ev = dtp22_interp_code((inst *)p, icoms2dtp22_err(se));
 					goto do_exit;

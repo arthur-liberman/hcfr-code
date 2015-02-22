@@ -108,6 +108,7 @@ typedef enum {
 
     i1d_m_rgb_edge_2 = 0x16,		/* -:W    Measure RGB Edge (16 bit) */
 
+	/* Different meanings for different devices ? */
     i1d_set_pll_p    = 0x11,		/* SS:-   Set PLL period */
     i1d_get_pll_p    = 0x12,		/* -:W    Get PLL period */
 
@@ -118,9 +119,11 @@ typedef enum {
 
     i1d_wrxreg       = 0x13,		/* SB:-   Write an extra register value */
     i1d_rdxreg       = 0x14, 		/* S:B    Read an extra register value */
-
-    i1d_rdexreg      = 0x19 		/* BS:B   Smile: Read an extended register value */
 									/*        The address range overlapps i1d_rdreg */
+	/* Smile */
+//  i1d_xxxxxxx      = 0x18, 		/* XXX:X  Unknown */
+    i1d_rdexreg      = 0x19 		/* BS:BBBB Read an extended register value */
+
 } i1DispCC;
 
 /* Do a command/response exchange with the i1disp. */
@@ -1324,6 +1327,9 @@ i1disp_read_refrate(
 	if (p->dtype != 1)
 		return inst_unsupported;
 
+	if (ref_rate != NULL)
+		*ref_rate = 0.0;
+
 	/* Average a few refresh period readings */
 	for (i = 0; i < p->nmeasprds; i++) {
 		int mp;
@@ -1406,6 +1412,7 @@ i1disp_check_unlock(
 		{ { 'O','b','i','w' }, &p->hpdream },	/* "Obiw" HP DreamColor */
 		{ { 'C','M','X','2' }, &p->calmanx2 },	/* "CMX2" Calman X2 */
 		{ { 0x24,0xb6,0xb5,0x13 }, NULL },		/* ColorMunki Smile */
+		{ { 'S','p','C','3' }, NULL },			/* SpectraCal C3 (Based on Smile) */
 		{ { 'R','G','B','c' }, NULL },			/* */
 		{ { 'C','E','C','5' }, NULL },			/* */
 		{ { 'C','M','C','5' }, NULL },			/* */
@@ -1414,8 +1421,7 @@ i1disp_check_unlock(
 		{ { 0x09,0x0b,0x0c,0x0d }, NULL },		/* */
 		{ { 0x0e,0x0e,0x0e,0x0e }, NULL },		/* */
 		{ { 0x11,0x02,0xde,0xf0 }, NULL },		/* Barco Chroma 5 ? */
-        { { 'S','p','C','3' }, NULL },          /* SpectraCal C3 (Based on Smile) */
-        { { ' ',' ',' ',' ' }, (int *)-1 }
+		{ { ' ',' ',' ',' ' }, (int *)-1 }
 	}; 
 
 	a1logd(p->log, 3, "i1disp: about to check response and unlock instrument if needed\n");
@@ -1492,11 +1498,13 @@ i1disp_check_unlock(
 	} else if (ver >= 6.0 && ver <= 6.29 && vv == 'L') {
 		p->dtype = 1;			/* Eye-One Display 2 */
 
-	} else if (ver >= 6.0 && ver <= 6.29 && vv == 'M') {
+	} else if (ver >= 6.0 && ver <= 6.29
+		&& (vv = 0xff || vv == 'M')) {		// Faulty Smile's have vv = 0xff
 		/* ColorMunki Create ? */
 		/* ColorMunki Smile */
 		if (p->dtype == 0)		/* Not sure if this is set by Create */
 			p->dtype = 1;
+		
 	} else {
 		/* Reject any version or model we don't know about */
 		a1logv(p->log, 1, "Version string = %3.1f\nID character = 0x%02x = '%c'\n",ver,vv,vv);
@@ -1786,41 +1794,42 @@ i1disp_init_inst(inst *pp) {
 	if ((ev = i1disp_check_unlock(p)) != inst_ok)
 		return ev;
 
+	if (p->log->debug >= 3) {
+
+		/* Dump all the register space */
+		if (p->dtype < 2) {
+			unsigned char buf[0x200];
+			int i, len;
+	
+			len = 128;
+			if (p->dtype != 0)
+				len = 160;
+	
+			for (i = 0; i < len; i++) {
+				int v;
+				if ((ev = i1disp_rdreg_byte(p, &v, i)) != inst_ok) {
+					return ev;
+				}
+				buf[i] = v;
+			}
+			dump_bytes(p->log, "dump:", buf, 0, len);
+	
+		/* Dump ColorMunki Smile extended range */
+		/* Main difference is Ascii serial number + other minor unknown */
+		} else {
+			unsigned char buf[0x200];
+	
+		
+			if ((ev = i1disp_rdexreg_bytes(p, buf, 0, 0x200)) != inst_ok) {
+				return ev;
+			}
+			dump_bytes(p->log, "dump:", buf, 0, 0x200);
+		}
+	}
+
 	/* Read all the registers and store their contents */
 	if ((ev = i1disp_read_all_regs(p)) != inst_ok)
 		return ev;
-
-#ifdef NEVER
-	/* Dump all the register space */
-	if (p->dtype < 2) {
-		unsigned char buf[0x200];
-		int i, len;
-
-		len = 128;
-		if (p->dtype != 0)
-			len = 160;
-
-		for (i = 0; i < len; i++) {
-			int v;
-			if ((ev = i1disp_rdreg_byte(p, &v, i)) != inst_ok) {
-				return ev;
-			}
-			buf[i] = v;
-		}
-		dump_bytes(p->log, "dump:", buf, 0, len);
-
-	/* Dump ColorMunki Smile extended range */
-	/* Main difference is Ascii serial number + other minor unknown */
-	} else {
-		unsigned char buf[0x200];
-
-	
-		if ((ev = i1disp_rdexreg_bytes(p, buf, 0, 0x200)) != inst_ok) {
-			return ev;
-		}
-		dump_bytes(p->log, "dump:", buf, 0, 0x200);
-	}
-#endif /* NEVER */
 
 	if ((ev = i1disp_compute_factors(p)) != inst_ok)
 		return ev;
@@ -1885,9 +1894,14 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 			return rv;				/* Abort */
 	}
 
+
 	/* Read the XYZ value */
-	if ((rv = i1disp_take_XYZ_measurement(p, val->XYZ)) != inst_ok)
+	rv = i1disp_take_XYZ_measurement(p, val->XYZ);
+
+	if (rv != inst_ok)
 		return rv;
+
+
 	/* This may not change anything since instrument may clamp */
 	if (clamp)
 		icmClamp3(val->XYZ, val->XYZ);
@@ -1906,28 +1920,44 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	return rv;
 }
 
+static inst_code set_base_disp_type(i1disp *p, int cbid);
+
 /* Insert a colorimetric correction matrix in the instrument XYZ readings */
 /* This is only valid for colorimetric instruments. */
 /* To remove the matrix, pass NULL for the filter filename */
 inst_code i1disp_col_cor_mat(
 inst *pp,
+disptech dtech,		/* Use disptech_unknown if not known */				\
+int cbid,       	/* Calibration display type base ID, 1 if unknown */\
 double mtx[3][3]
 ) {
 	i1disp *p = (i1disp *)pp;
+	inst_code ev;
 
 	if (!p->gotcoms)
 		return inst_no_coms;
 	if (!p->inited)
 		return inst_no_init;
 
-	if (mtx == NULL) {
+	if ((ev = set_base_disp_type(p, cbid)) != inst_ok)
+		return ev;
+	if (mtx == NULL)
 		icmSetUnity3x3(p->ccmat);
-	} else {
-		if (p->cbid == 0) {
-			a1loge(p->log, 1, "spyd2: can't set col_cor_mat over non-base display type\n");
-			return inst_wrong_setup;
-		}
+	else
 		icmCpy3x3(p->ccmat, mtx);
+	p->dtech = dtech;
+	p->refrmode = disptech_get_id(dtech)->refr;
+	p->cbid = 0;	/* Can't be base type now */
+
+	if (p->log->debug >= 4) {
+		a1logd(p->log,4,"ccmat           = %f %f %f\n",
+		                 p->ccmat[0][0], p->ccmat[0][1], p->ccmat[0][2]);
+		a1logd(p->log,4,"                  %f %f %f\n",
+		                 p->ccmat[1][0], p->ccmat[1][1], p->ccmat[1][2]);
+		a1logd(p->log,4,"                  %f %f %f\n\n",
+		                 p->ccmat[2][0], p->ccmat[2][1], p->ccmat[2][2]);
+		a1logd(p->log,4,"ucbid = %d, cbid = %d\n",p->ucbid, p->cbid);
+		a1logd(p->log,4,"\n");
 	}
 
 	return inst_ok;
@@ -2060,6 +2090,7 @@ double *ref_rate
 	i1disp *p = (i1disp *)pp;
 	if (p->refrvalid) {
 		*ref_rate = p->refrate;
+
 		return inst_ok;
 	} else if (p->rrset) {
 		*ref_rate = 0.0;
@@ -2214,7 +2245,7 @@ i1disp_del(inst *pp) {
 }
 
 /* Return the instrument capabilities */
-void i1disp_capabilities(inst *pp,
+static void i1disp_capabilities(inst *pp,
 inst_mode *pcap1,
 inst2_capability *pcap2,
 inst3_capability *pcap3) {
@@ -2255,7 +2286,7 @@ inst3_capability *pcap3) {
 }
 
 /* Check device measurement mode */
-inst_code i1disp_check_mode(inst *pp, inst_mode m) {
+static inst_code i1disp_check_mode(inst *pp, inst_mode m) {
 	i1disp *p = (i1disp *)pp;
 	inst_mode cap;
 
@@ -2280,7 +2311,7 @@ inst_code i1disp_check_mode(inst *pp, inst_mode m) {
 }
 
 /* Set device measurement mode */
-inst_code i1disp_set_mode(inst *pp, inst_mode m) {
+static inst_code i1disp_set_mode(inst *pp, inst_mode m) {
 	i1disp *p = (i1disp *)pp;
 	inst_code ev;
 
@@ -2297,21 +2328,23 @@ inst_code i1disp_set_mode(inst *pp, inst_mode m) {
 	return inst_ok;
 }
 
-inst_disptypesel i1disp_disptypesel[3] = {
+static inst_disptypesel i1disp_disptypesel[3] = {
 	{
 		inst_dtflags_default,
 		1,
 		"l",
 		"LCD display",
 		0,
+		disptech_lcd,
 		0
 	},
 	{
 		inst_dtflags_none,		/* flags */
-		2,						/* cbix */
+		2,						/* cbid */
 		"c",					/* sel */
 		"CRT display",			/* desc */
 		1,						/* refr */
+		disptech_crt,			/* disptype */
 		1						/* ix */
 	},
 	{
@@ -2320,18 +2353,20 @@ inst_disptypesel i1disp_disptypesel[3] = {
 		"",
 		"",
 		0,
+		disptech_none,
 		0
 	}
 };
 
 
-inst_disptypesel smile_disptypesel[4] = {
+static inst_disptypesel smile_disptypesel[3] = {
 	{
 		inst_dtflags_default,		/* flags */
-		1,							/* cbix */
+		1,							/* cbid */
 		"fl",						/* sel */
 		"LCD with CCFL backlight",	/* desc */
 		0,							/* refr */
+		disptech_lcd_ccfl,			/* disptype */
 		1							/* ix */
 	},
 	{
@@ -2340,14 +2375,7 @@ inst_disptypesel smile_disptypesel[4] = {
 		"e",
 		"LCD with White LED backlight",
 		0,
-		0
-	},
-	{
-		inst_dtflags_none,
-		0,
-		"p",
-		"Plasma",
-		0,
+		disptech_lcd_wled,
 		0
 	},
 	{
@@ -2356,6 +2384,7 @@ inst_disptypesel smile_disptypesel[4] = {
 		"",
 		"",
 		0,
+		disptech_none,
 		0
 	}
 };
@@ -2380,7 +2409,7 @@ int recreate				/* nz to re-check for new ccmx & ccss files */
 	i1disp *p = (i1disp *)pp;
 	inst_code rv = inst_ok;
 
-	/* Create/Re-create a current list of abailable display types */
+	/* Create/Re-create a current list of available display types */
 	if (p->dtlist == NULL || recreate) {
 		if ((rv = inst_creat_disptype_list(pp, &p->ndtlist, &p->dtlist,
 		    p->_dtlist, 0 /* doccss*/, 1 /* doccmx */)) != inst_ok)
@@ -2400,8 +2429,24 @@ int recreate				/* nz to re-check for new ccmx & ccss files */
 static inst_code set_disp_type(i1disp *p, inst_disptypesel *dentry) {
 	int refrmode;
 
-	p->icx = dentry->ix;
-	p->cbid = dentry->cbid;
+	if (dentry->flags & inst_dtflags_ccmx) {
+		inst_code ev;
+		if ((ev = set_base_disp_type(p, dentry->cc_cbid)) != inst_ok)
+			return ev;
+		icmCpy3x3(p->ccmat, dentry->mat);
+		p->dtech = dentry->dtech;
+		p->cbid = 0; 				/* Can't be a base type now */
+
+	} else {	/* Native */
+
+		p->icx = dentry->ix;
+		p->dtech = dentry->dtech;
+		p->cbid = dentry->cbid;
+		p->ucbid = dentry->cbid;	/* This is underying base if dentry is base selection */
+		icmSetUnity3x3(p->ccmat);
+	}
+
+	/* Implement any refresh mode change */
 	refrmode = dentry->refr;
 
 	if (     IMODETST(p->mode, inst_mode_emis_norefresh_ovd)) {	/* Must test this first! */
@@ -2416,15 +2461,50 @@ static inst_code set_disp_type(i1disp *p, inst_disptypesel *dentry) {
 	}
 	p->refrmode = refrmode; 
 
-	if (dentry->flags & inst_dtflags_ccmx) {
-		icmCpy3x3(p->ccmat, dentry->mat);
-	} else {
-		icmSetUnity3x3(p->ccmat);
+	if (p->log->debug >= 4) {
+		a1logd(p->log,4,"ccmat           = %f %f %f\n",
+		                 p->ccmat[0][0], p->ccmat[0][1], p->ccmat[0][2]);
+		a1logd(p->log,4,"                  %f %f %f\n",
+		                 p->ccmat[1][0], p->ccmat[1][1], p->ccmat[1][2]);
+		a1logd(p->log,4,"                  %f %f %f\n\n",
+		                 p->ccmat[2][0], p->ccmat[2][1], p->ccmat[2][2]);
+		a1logd(p->log,4,"ucbid = %d, cbid = %d\n",p->ucbid, p->cbid);
+		a1logd(p->log,4,"\n");
+	}
+	
+	return inst_ok;
+}
+
+/* Set the display type */
+static inst_code i1disp_set_disptype(inst *pp, int ix) {
+	i1disp *p = (i1disp *)pp;
+	inst_code ev;
+	inst_disptypesel *dentry;
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
+
+	if (p->dtlist == NULL) {
+		if ((ev = inst_creat_disptype_list(pp, &p->ndtlist, &p->dtlist,
+		    p->_dtlist, 0 /* doccss*/, 1 /* doccmx */)) != inst_ok)
+			return ev;
+	}
+
+	if (ix < 0 || ix >= p->ndtlist)
+		return inst_unsupported;
+
+	dentry = &p->dtlist[ix];
+
+	if ((ev = set_disp_type(p, dentry)) != inst_ok) {
+		return ev;
 	}
 
 	return inst_ok;
 }
 
+/* Get the disptech corresponding to the current */
 /* Setup the default display type */
 static inst_code set_default_disp_type(i1disp *p) {
 	inst_code ev;
@@ -2451,35 +2531,55 @@ static inst_code set_default_disp_type(i1disp *p) {
 	return inst_ok;
 }
 
-/* Set the display type */
-static inst_code i1disp_set_disptype(inst *pp, int ix) {
-	i1disp *p = (i1disp *)pp;
+/* Setup the display type to the given base type */
+static inst_code set_base_disp_type(i1disp *p, int cbid) {
 	inst_code ev;
-	inst_disptypesel *dentry;
+	int i;
 
-	if (!p->gotcoms)
-		return inst_no_coms;
-	if (!p->inited)
-		return inst_no_init;
-
+	if (cbid == 0) {
+		a1loge(p->log, 1, "i1disp set_base_disp_type: can't set base display type of 0\n");
+		return inst_wrong_setup;
+	}
 	if (p->dtlist == NULL) {
-		if ((ev = inst_creat_disptype_list(pp, &p->ndtlist, &p->dtlist,
-		    p->_dtlist, 1 /* doccss*/, 1 /* doccmx */)) != inst_ok)
+		if ((ev = inst_creat_disptype_list((inst *)p, &p->ndtlist, &p->dtlist,
+		    i1disp_disptypesel, 0 /* doccss*/, 1 /* doccmx */)) != inst_ok)
 			return ev;
 	}
 
-	if (ix < 0 || ix >= p->ndtlist)
-		return inst_unsupported;
-
-	dentry = &p->dtlist[ix];
-
-	if ((ev = set_disp_type(p, dentry)) != inst_ok) {
+	for (i = 0; !(p->dtlist[i].flags & inst_dtflags_end); i++) {
+		if (!(p->dtlist[i].flags & inst_dtflags_ccmx)		/* Prevent infinite recursion */
+		 && p->dtlist[i].cbid == cbid)
+			break;
+	}
+	if (p->dtlist[i].flags & inst_dtflags_end) {
+		a1loge(p->log, 1, "set_base_disp_type: failed to find cbid %d!\n",cbid);
+		return inst_wrong_setup; 
+	}
+	if ((ev = set_disp_type(p, &p->dtlist[i])) != inst_ok) {
 		return ev;
 	}
 
 	return inst_ok;
 }
 
+/* Get the disptech and other corresponding info for the current */
+/* selected display type. Returns disptype_unknown by default. */
+/* Because refrmode can be overridden, it may not match the refrmode */
+/* of the dtech. (Pointers may be NULL if not needed) */
+static inst_code i1disp_get_disptechi(
+inst *pp,
+disptech *dtech,
+int *refrmode,
+int *cbid) {
+	i1disp *p = (i1disp *)pp;
+	if (dtech != NULL)
+		*dtech = p->dtech;
+	if (refrmode != NULL)
+		*refrmode = p->refrmode;
+	if (cbid != NULL)
+		*cbid = p->cbid;
+	return inst_ok;
+}
 
 /* 
  * set or reset an optional mode
@@ -2492,24 +2592,6 @@ i1disp_get_set_opt(inst *pp, inst_opt_type m, ...)
 {
 	i1disp *p = (i1disp *)pp;
 	inst_code ev;
-
-	/* Get the display type information */
-	if (m == inst_opt_get_dtinfo) {
-		va_list args;
-		int *refrmode, *cbid;
-
-		va_start(args, m);
-		refrmode = va_arg(args, int *);
-		cbid = va_arg(args, int *);
-		va_end(args);
-
-		if (refrmode != NULL)
-			*refrmode = p->refrmode;
-		if (cbid != NULL)
-			*cbid = p->cbid;
-
-		return inst_ok;
-	}
 
 	/* Record the trigger mode */
 	if (m == inst_opt_trig_prog
@@ -2536,6 +2618,7 @@ extern i1disp *new_i1disp(icoms *icom, instType itype) {
 	p->capabilities      = i1disp_capabilities;
 	p->check_mode        = i1disp_check_mode;
 	p->set_mode          = i1disp_set_mode;
+	p->get_disptechi     = i1disp_get_disptechi;
 	p->get_disptypesel   = i1disp_get_disptypesel;
 	p->set_disptype      = i1disp_set_disptype;
 	p->get_set_opt       = i1disp_get_set_opt;
@@ -2561,6 +2644,7 @@ extern i1disp *new_i1disp(icoms *icom, instType itype) {
 
 	icmSetUnity3x3(p->ccmat);	/* Set the colorimeter correction matrix to do nothing */
 	set_base_disptype_list(p);
+	p->dtech = disptech_unknown;
 
 	return p;
 }

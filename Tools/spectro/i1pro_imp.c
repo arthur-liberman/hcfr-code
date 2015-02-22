@@ -102,10 +102,12 @@
 #define ENABLE_NONLINCOR	/* [Def] Enable non-linear correction */
 #define ENABLE_BKDRIFTC	/* [Def] Enable Emis. Black drift compensation using sheilded cell values */
 #define HEURISTIC_BKDRIFTC	/* [Def] Enable heusristic black drift correction */
+
 #define WLCALTOUT (24 * 60 * 60) /* [24 Hrs] Wavelength calibration timeout in seconds */
 #define DCALTOUT  (     60 * 60) /* [60 Minuites] Dark Calibration timeout in seconds */
 #define DCALTOUT2 ( 1 * 60 * 60) /* [1 Hr] i1pro2 Dark Calibration timeout in seconds */
 #define WCALTOUT  ( 1 * 60 * 60) /* [1 Hr] White Calibration timeout in seconds */
+
 #define MAXSCANTIME 20.0	/* [20] Maximum scan time in seconds */
 #define SW_THREAD_TIMEOUT	(10 * 60.0) 	/* [10 Min] Switch read thread timeout */
 
@@ -118,7 +120,7 @@
 #undef DEBUG			/* Turn on debug printfs */
 #undef PLOT_DEBUG		/* Use plot to show readings & processing */
 #undef PLOT_REFRESH 	/* Plot refresh rate measurement info */
-#undef PLOT_UPDELAY	/* Plot data used to determine display update delay */
+#undef PLOT_UPDELAY		/* Plot data used to determine display update delay */
 #undef DUMP_SCANV		/* Dump scan readings to a file "i1pdump.txt" */
 #undef DUMP_DARKM		/* Append raw dark readings to file "i1pddump.txt" */
 #undef APPEND_MEAN_EMMIS_VAL /* Append averaged uncalibrated reading to file "i1pdump.txt" */
@@ -377,8 +379,13 @@ void del_i1proimp(i1pro *p) {
 			m->th->del(m->th);
 			usb_uninit_cancel(&m->sw_cancel);		/* Don't need cancel token now */
 			usb_uninit_cancel(&m->rd_sync);			/* Don't need sync token now */
+			a1logd(p->log,5,"i1pro switch thread terminated\n");
 		}
-		a1logd(p->log,5,"i1pro switch thread terminated\n");
+
+		if (m->trig_thread != NULL) {
+			m->trig_thread->del(m->trig_thread);
+			a1logd(p->log,5,"i1pro trigger thread terminated\n");
+		}
 
 		/* Free any per mode data */
 		for (i = 0; i < i1p_no_modes; i++) {
@@ -1312,20 +1319,24 @@ i1pro_code i1pro_imp_set_mode(
 		case i1p_refl_spot:
 		case i1p_refl_scan:
 			if (p->itype == instI1Monitor)
-				return I1PRO_INT_ILLEGALMODE;		/* i1Monitor */
-			/* Fall through */
+				return I1PRO_INT_ILLEGALMODE;		/* i1Monitor can't do reflection */
+			break;
 		case i1p_emiss_spot_na:
 		case i1p_emiss_spot:
 		case i1p_emiss_scan:
+			break;
 		case i1p_amb_spot:
 		case i1p_amb_flash:
+			if (!i1pro_imp_ambient(p))
+				return I1PRO_INT_ILLEGALMODE;
+			break;
 		case i1p_trans_spot:
 		case i1p_trans_scan:
-			m->mmode = mmode;
 			break;
 		default:
 			return I1PRO_INT_ILLEGALMODE;
 	}
+	m->mmode = mmode;
 	m->spec_en = (mode & inst_mode_spectral) != 0;
 
 	if ((mode & inst_mode_highres) != 0) {
@@ -1352,6 +1363,10 @@ i1pro_code i1pro_imp_get_n_a_cals(i1pro *p, inst_cal_type *pn_cals, inst_cal_typ
 	time_t curtime = time(NULL);
 	inst_cal_type n_cals = inst_calt_none;
 	inst_cal_type a_cals = inst_calt_none;
+	int wl_valid = cs->wl_valid;			/* Locally timed out versions of valid state */
+	int idark_valid = cs->idark_valid;
+	int dark_valid = cs->dark_valid;
+	int cal_valid = cs->cal_valid;
 
 	a1logd(p->log,2,"i1pro_imp_get_n_a_cals: checking mode %d\n",m->mmode);
 
@@ -1359,63 +1374,63 @@ i1pro_code i1pro_imp_get_n_a_cals(i1pro *p, inst_cal_type *pn_cals, inst_cal_typ
 	if (m->capabilities2 & I1PRO_CAP2_WL_LED) {
 		if ((curtime - cs->wldate) > WLCALTOUT) {
 			a1logd(p->log,2,"Invalidating wavelength cal as %d secs from last cal\n",curtime - cs->wldate);
-			cs->wl_valid = 0;
+			wl_valid = 0;
 		}
 	}
 	if ((curtime - cs->iddate) > ((p->itype == instI1Pro) ? DCALTOUT2 : DCALTOUT)) {
 		a1logd(p->log,2,"Invalidating adaptive dark cal as %d secs from last cal\n",curtime - cs->iddate);
-		cs->idark_valid = 0;
+		idark_valid = 0;
 	}
 	if ((curtime - cs->ddate) > ((p->itype == instI1Pro) ? DCALTOUT2 : DCALTOUT)) {
 		a1logd(p->log,2,"Invalidating dark cal as %d secs from last cal\n",curtime - cs->ddate);
-		cs->dark_valid = 0;
+		dark_valid = 0;
 	}
 	if (!cs->emiss && (curtime - cs->cfdate) > WCALTOUT) {
 		a1logd(p->log,2,"Invalidating white cal as %d secs from last cal\n",curtime - cs->cfdate);
-		cs->cal_valid = 0;
+		cal_valid = 0;
 	}
 
 #ifdef NEVER
 	printf("~1 reflective = %d, adaptive = %d, emiss = %d, trans = %d, scan = %d\n",
 	cs->reflective, cs->adaptive, cs->emiss, cs->trans, cs->scan);
 	printf("~1 idark_valid = %d, dark_valid = %d, cal_valid = %d\n",
-	cs->idark_valid,cs->dark_valid,cs->cal_valid); 
+	idark_valid,dark_valid,cal_valid); 
 	printf("~1 want_calib = %d, want_dcalib = %d, noinitcalib = %d\n",
 	cs->want_calib,cs->want_dcalib, m->noinitcalib); 
 #endif /* NEVER */
 
 	if (m->capabilities2 & I1PRO_CAP2_WL_LED) {
-		if (!cs->wl_valid
+		if (!wl_valid
 		 || (cs->want_dcalib && !m->noinitcalib))	// ?? want_dcalib ??
 			n_cals |= inst_calt_wavelength;
 		a_cals |= inst_calt_wavelength;
 	}
 	if (cs->reflective) {
-		if (!cs->dark_valid
+		if (!dark_valid
 		 || (cs->want_dcalib && !m->noinitcalib))
 			n_cals |= inst_calt_ref_dark;
 		a_cals |= inst_calt_ref_dark;
 
-		if (!cs->cal_valid
+		if (!cal_valid
 		 || (cs->want_calib && !m->noinitcalib))
 			n_cals |= inst_calt_ref_white;
 		a_cals |= inst_calt_ref_white;
 	}
 	if (cs->emiss) {
-		if ((!cs->adaptive && !cs->dark_valid)
-		 || (cs->adaptive && !cs->idark_valid)
+		if ((!cs->adaptive && !dark_valid)
+		 || (cs->adaptive && !idark_valid)
 		 || (cs->want_dcalib && !m->noinitcalib))
 			n_cals |= inst_calt_em_dark;
 		a_cals |= inst_calt_em_dark;
 	}
 	if (cs->trans) {
-		if ((!cs->adaptive && !cs->dark_valid)
-		 || (cs->adaptive && !cs->idark_valid)
+		if ((!cs->adaptive && !dark_valid)
+		 || (cs->adaptive && !idark_valid)
 	     || (cs->want_dcalib && !m->noinitcalib))
 			n_cals |= inst_calt_trans_dark;
 		a_cals |= inst_calt_trans_dark;
 
-		if (!cs->cal_valid
+		if (!cal_valid
 	     || (cs->want_calib && !m->noinitcalib))
 			n_cals |= inst_calt_trans_vwhite;
 		a_cals |= inst_calt_trans_vwhite;
@@ -1471,13 +1486,7 @@ i1pro_code i1pro_imp_calibrate(
     inst_cal_type needed, available;
 
 	a1logd(p->log,2,"i1pro_imp_calibrate called with calt 0x%x, calc 0x%x\n",*calt, *calc);
-    if (p->itype == instI1Pro2)
-    {
-        i1pro2_indLEDonWhite(p);
-	    msec_sleep(1000);
-	    i1pro2_indLEDoff(p);
-    }
-	
+
 	if ((ev = i1pro_imp_get_n_a_cals(p, &needed, &available)) != I1PRO_OK)
 		return ev;
 
@@ -1524,12 +1533,6 @@ i1pro_code i1pro_imp_calibrate(
 		m->mmode = sx;				/* A lot of functions we call rely on this */
 
 		a1logd(p->log,2,"\nCalibrating mode %d\n", s->mode);
-        if (p->itype == instI1Pro2)
-        {
-            i1pro2_indLEDonWhite(p);
-		    msec_sleep(1000);
-		    i1pro2_indLEDoff(p);
-        }
 
 		/* Sanity check scan mode settings, in case something strange */
 		/* has been restored from the persistence file. */
@@ -2407,12 +2410,15 @@ int icoms2i1pro_err(int se) {
 }
 
 /* - - - - - - - - - - - - - - - - */
-/* Measure a display update delay. It is assumed that a */
+/* Measure a display update delay. It is assumed that */
+/* white_stamp(init) has been called, and then a */
 /* white to black change has been made to the displayed color, */
 /* and this will measure the time it took for the update to */
-/* be noticed by the instrument, up to 0.6 seconds. */
+/* be noticed by the instrument, up to 2.0 seconds. */
+/* (It is assumed that white_change() will be called at the time the patch */
+/* changes color.) */
 /* inst_misread will be returned on failure to find a transition to black. */
-#define NDMXTIME 0.7		/* Maximum time to take */
+#define NDMXTIME 2.0		/* Maximum time to take */
 #define NDSAMPS 500			/* Debug samples */
 
 typedef struct {
@@ -2423,7 +2429,8 @@ typedef struct {
 
 i1pro_code i1pro_imp_meas_delay(
 i1pro *p,
-int *msecdelay)	{	/* Return the number of msec */
+int *pdispmsec,		/* Return display update delay in msec */
+int *pinstmsec) {	/* Return instrument latency in msec */
 	i1pro_code ev = I1PRO_OK;
 	i1proimp *m = (i1proimp *)p->m;
 	i1pro_state *s = &m->ms[m->mmode];
@@ -2431,12 +2438,20 @@ int *msecdelay)	{	/* Return the number of msec */
 	double **multimeas;			/* Spectral measurements */
 	int nummeas;
 	double rgbw[3] = { 610.0, 520.0, 460.0 };
-	double ucalf = 1.0;				/* usec_time calibration factor */
 	double inttime;
+	double rstart;
 	i1rgbdsamp *samp;
 	double stot, etot, del, thr;
-	double etime;
-	int isdeb;
+	double stime, etime;
+	int dispmsec, instmsec;
+
+	if (pinstmsec != NULL)
+		*pinstmsec = 0; 
+
+	if ((rstart = usec_time()) < 0.0) {
+		a1loge(p->log, inst_internal_error, "i1pro_imp_meas_delay: No high resolution timers\n");
+		return inst_internal_error; 
+	}
 
 	/* Read the samples */
 	inttime = m->min_int_time;
@@ -2447,16 +2462,23 @@ int *msecdelay)	{	/* Return the number of msec */
 		return I1PRO_INT_MALLOC;
 	}
 
-//printf("~1 %d samples at %f int\n",nummeas,inttime);
+	/* We rely on the measurement code setting m->trigstamp when the */
+	/* trigger packet is sent to the instrument */
 	if ((ev = i1pro_read_patches_all(p, multimeas, nummeas, &inttime, 0)) != inst_ok) {
 		free_dmatrix(multimeas, 0, nummeas-1, 0, m->nwav[m->highres]-1);
 		free(samp);
 		return ev;
-	} 
+	}
+
+	if (m->whitestamp < 0.0) {
+		a1logd(p->log, 1, "i1d3_meas_delay: White transition wasn't timestamped\n");
+		return inst_internal_error; 
+	}
 
 	/* Convert the samples to RGB */
+	/* Add 10 msec fudge factor */
 	for (i = 0; i < nummeas; i++) {
-		samp[i].sec = i * inttime;
+		samp[i].sec = i * inttime + (m->trigstamp - m->whitestamp)/1000000.0 + 0.01;
 		samp[i].rgb[0] = samp[i].rgb[1] = samp[i].rgb[2] = 0.0;
 		for (j = 0; j < m->nwav[m->highres]; j++) {
 			double wl = XSPECT_WL(m->wl_short[m->highres], m->wl_long[m->highres], m->nwav[m->highres], j);
@@ -2474,7 +2496,34 @@ int *msecdelay)	{	/* Return the number of msec */
 	}
 	free_dmatrix(multimeas, 0, nummeas-1, 0, m->nwav[m->highres]-1);
 
-	a1logd(p->log, 3, "i1pro_measure_refresh: Read %d samples for refresh calibration\n",nummeas);
+	a1logd(p->log, 3, "i1pro_meas_delay: Read %d samples for refresh calibration\n",nummeas);
+
+	/* Over the first 100msec, locate the maximum value */
+	stime = samp[0].sec;
+	stot = -1e9;
+	for (i = 0; i < nummeas; i++) {
+		if (samp[i].tot > stot)
+			stot = samp[i].tot;
+		if ((samp[i].sec - stime) > 0.1)
+			break;
+	}
+
+	/* Over the last 100msec, locate the maximum value */
+	etime = samp[nummeas-1].sec;
+	etot = -1e9;
+	for (i = nummeas-1; i >= 0; i--) {
+		if (samp[i].tot > etot)
+			etot = samp[i].tot;
+		if ((etime - samp[i].sec) > 0.1)
+			break;
+	}
+
+	del = etot - stot;
+	thr = stot + 0.30 * del;		/* 30% of transition threshold */
+
+#ifdef PLOT_UPDELAY
+	a1logd(p->log, 0, "i1pro_meas_delay: start tot %f end tot %f del %f, thr %f\n", stot, etot, del, thr);
+#endif
 
 #ifdef PLOT_UPDELAY
 	/* Plot the raw sensor values */
@@ -2498,54 +2547,44 @@ int *msecdelay)	{	/* Return the number of msec */
 	}
 #endif
 
-	/* Over the first 100msec, locate the maximum value */
-	etime = samp[nummeas-1].sec;
-	stot = -1e9;
-	for (i = 0; i < nummeas; i++) {
-		if (samp[i].tot > stot)
-			stot = samp[i].tot;
-		if (samp[i].sec > 0.1)
-			break;
-	}
-
-	/* Over the last 100msec, locate the maximum value */
-	etime = samp[nummeas-1].sec;
-	etot = -1e9;
-	for (i = nummeas-1; i >= 0; i--) {
-		if (samp[i].tot > etot)
-			etot = samp[i].tot;
-		if ((etime - samp[i].sec) > 0.1)
-			break;
-	}
-
-	del = stot - etot;
-	thr = etot + 0.30 * del;		/* 30% of transition threshold */
-
-#ifdef PLOT_UPDELAY
-	a1logd(p->log, 0, "i1pro_meas_delay: start tot %f end tot %f del %f, thr %f\n", stot, etot, del, thr);
-#endif
-
 	/* Check that there has been a transition */
 	if (del < 5.0) {
 		free(samp);
-		a1logd(p->log, 1, "i1pro_meas_delay: can't detect change from white to black\n");
+		a1logd(p->log, 1, "i1pro_meas_delay: can't detect change from black to white\n");
 		return I1PRO_RD_NOTRANS_FOUND; 
 	}
 
-	/* Locate the time at which the values are above the end values */
-	for (i = nummeas-1; i >= 0; i--) {
+	/* Working from the start, locate the time at which the level was above the threshold */
+	for (i = 0; i < (nummeas-1); i++) {
 		if (samp[i].tot > thr)
 			break;
 	}
-	if (i < 0)		/* Assume the update was so fast that we missed it */
-		i = 0;
 
 	a1logd(p->log, 2, "i1pro_meas_delay: stoped at sample %d time %f\n",i,samp[i].sec);
 
-	*msecdelay = (int)(samp[i].sec * 1000.0 + 0.5);
+	/* Compute overall delay */
+	dispmsec = (int)(samp[i].sec * 1000.0 + 0.5);				/* Display update time */
+	instmsec = (int)((m->trigstamp - rstart)/1000.0 + 0.5);		/* Reaction time */
 
 #ifdef PLOT_UPDELAY
-	a1logd(p->log, 0, "i1pro_meas_delay: returning %d msec\n",*msecdelay);
+	a1logd(p->log, 0, "i1pro_meas_delay: disp %d, trig %d msec\n",dispmsec,instmsec);
+#else
+	a1logd(p->log, 2, "i1pro_meas_delay: disp %d, trig %d msec\n",dispmsec,instmsec);
+#endif
+
+	if (dispmsec < 0) 		/* This can happen if the patch generator delays it's return */
+		dispmsec = 0;
+
+	if (pdispmsec != NULL)
+		*pdispmsec = dispmsec;
+
+	if (pinstmsec != NULL)
+		*pinstmsec = instmsec;
+
+#ifdef PLOT_UPDELAY
+	a1logd(p->log, 0, "i1pro_meas_delay: returning %d & %d msec\n",dispmsec,instmsec);
+#else
+	a1logd(p->log, 2, "i1pro_meas_delay: returning %d & %d msec\n",dispmsec,instmsec);
 #endif
 	free(samp);
 
@@ -2553,6 +2592,22 @@ int *msecdelay)	{	/* Return the number of msec */
 }
 #undef NDSAMPS
 #undef NDMXTIME
+
+/* Timestamp the white patch change during meas_delay() */
+inst_code i1pro_imp_white_change(i1pro *p, int init) {
+	i1proimp *m = (i1proimp *)p->m;
+
+	if (init)
+		m->whitestamp = -1.0;
+	else {
+		if ((m->whitestamp = usec_time()) < 0.0) {
+			a1loge(p->log, inst_internal_error, "i1pro_imp_wite_change: No high resolution timers\n");
+			return inst_internal_error; 
+		}
+	}
+
+	return inst_ok;
+}
 
 /* - - - - - - - - - - - - - - - - */
 /* Measure a patch or strip in the current mode. */
@@ -2604,7 +2659,7 @@ i1pro_code i1pro_imp_measure(
 		return I1PRO_INT_WRONGPATCHES;
 	}
 
-	/* Notional number of measurements, befor adaptive and not counting scan */
+	/* Notional number of measurements, before adaptive and not counting scan */
 	nummeas = i1pro_comp_nummeas(p, s->wreadtime, s->inttime);
 
 	/* Allocate buf for pre-measurement dark calibration */
@@ -2996,7 +3051,6 @@ i1pro_code i1pro_imp_meas_refrate(
 	double **multimeas;			/* Spectral measurements */
 	int nummeas;
 	double rgbw[3] = { 610.0, 520.0, 460.0 };
-	double ucalf = 1.0;				/* usec_time calibration factor */
 	double inttime;
 	static unsigned int randn = 0x12345678;
 	struct {
@@ -3026,6 +3080,9 @@ i1pro_code i1pro_imp_meas_refrate(
 	int tix = 0;			/* try index */
 
 	a1logd(p->log,2,"i1pro_imp_meas_refrate called\n");
+
+	if (ref_rate != NULL)
+		*ref_rate = 0.0;
 
 	if (!s->emiss) {
 		a1logd(p->log,2,"i1pro_imp_meas_refrate not in emissive mode\n");
@@ -3075,7 +3132,7 @@ i1pro_code i1pro_imp_meas_refrate(
 		free_dmatrix(multimeas, 0, nummeas-1, 0, m->nwav[m->highres]-1);
 		nfsamps = i;
 
-		a1logd(p->log, 3, "i1pro_measure_refresh: Read %d samples for refresh calibration\n",nfsamps);
+		a1logd(p->log, 3, "i1pro_meas_refrate: Read %d samples for refresh calibration\n",nfsamps);
 
 #ifdef NEVER
 		/* Plot the raw sensor values */
@@ -3114,7 +3171,6 @@ i1pro_code i1pro_imp_meas_refrate(
 		/* Re-zero the sample times, and normalise the readings */
 		for (i = nfsamps-1; i >= 0; i--) {
 			samp[i].sec -= samp[0].sec; 
-			samp[i].sec *= ucalf;
 			if (samp[i].sec > maxt)
 				maxt = samp[i].sec;
 			for (j = 0; j < 3; j++) {
@@ -3128,7 +3184,7 @@ i1pro_code i1pro_imp_meas_refrate(
 		nbins = 1 + (int)(maxt * 1000.0 * PBPMS + 0.5);
 		for (j = 0; j < 3; j++) {
 			if ((bins[j] = (double *)calloc(sizeof(double), nbins)) == NULL) {
-				a1loge(p->log, inst_internal_error, "i1pro_measure_refresh: malloc failed\n");
+				a1loge(p->log, inst_internal_error, "i1pro_meas_refrate: malloc failed\n");
 				return I1PRO_INT_MALLOC;
 			}
 		}
@@ -3165,7 +3221,7 @@ i1pro_code i1pro_imp_meas_refrate(
 			y3 = malloc(sizeof(double) * nbins);
 
 			if (xx == NULL || y1 == NULL || y2 == NULL || y3 == NULL) {
-				a1loge(p->log, inst_internal_error, "i1pro_measure_refresh: malloc failed\n");
+				a1loge(p->log, inst_internal_error, "i1pro_meas_refrate: malloc failed\n");
 				for (j = 0; j < 3; j++)
 					free(bins[j]);
 				return I1PRO_INT_MALLOC;
@@ -3607,9 +3663,6 @@ i1pro_code i1pro_imp_meas_refrate(
 	} else {
 		a1logd(p->log, 3, "Not enough tries suceeded to determine refresh rate\n");
 	}
-
-	if (ref_rate != NULL)
-		*ref_rate = 0.0;
 
 	return I1PRO_RD_NOREFR_FOUND; 
 }
@@ -4731,6 +4784,8 @@ i1pro_code i1pro_whitemeasure(
 	/* absolute linearised sensor values. */
 	if ((ev = i1pro_sens_to_absraw(p, multimes, buf, nummeas, *inttime, gainmode, &darkthresh))
 		                                                                          != I1PRO_OK) {
+		free_dmatrix(multimes, 0, nummeas-1, -1, m->nraw-1);
+		free(buf);
 		return ev;
 	}
 
@@ -4746,8 +4801,8 @@ i1pro_code i1pro_whitemeasure(
 	ev = i1pro_whitemeasure_3(p, abswav0, abswav1, absraw, optscale, nummeas,
 	                                      *inttime, gainmode, targoscale, multimes, darkthresh);
 
-	free(buf);
 	free_dmatrix(multimes, 0, nummeas-1, -1, m->nraw-1);
+	free(buf);
 
 	return ev;
 }
@@ -4966,6 +5021,9 @@ i1pro_code i1pro2_wl_measure(
 	/* absolute linearised sensor values. */
 	if ((ev = i1pro_sens_to_absraw(p, multimes, buf, nummeas, *inttime, gainmode, &darkthresh))
 		                                                                           != I1PRO_OK) {
+		free_dmatrix(multimes, 0, nummeas-1, -1, m->nraw-1);
+		free_dvector(dark, -1, m->nraw-1);
+		free(buf);
 		return ev;
 	}
 
@@ -5005,11 +5063,17 @@ i1pro_code i1pro2_wl_measure(
 
 #ifndef IGNORE_WHITE_INCONS
 	if (rv & 1) {
+		free_dmatrix(multimes, 0, nummeas-1, -1, m->nraw-1);
+		free_dvector(dark, -1, m->nraw-1);
+		free(buf);
 		return I1PRO_RD_WHITEREADINCONS;
 	}
 #endif /* IGNORE_WHITE_INCONS */
 
 	if (rv & 2) {
+		free_dmatrix(multimes, 0, nummeas-1, -1, m->nraw-1);
+		free_dvector(dark, -1, m->nraw-1);
+		free(buf);
 		return I1PRO_RD_SENSORSATURATED;
 	}
 
@@ -5029,9 +5093,9 @@ i1pro_code i1pro2_wl_measure(
 		*optscale = opttarget/lhighest; 
 	}
 
-	free(buf);
 	free_dmatrix(multimes, 0, nummeas-1, -1, m->nraw-1);
 	free_dvector(dark, -1, m->nraw-1);
+	free(buf);
 
 	return ev;
 }
@@ -5114,7 +5178,9 @@ i1pro_code i1pro_read_patches_2(
 	/* Take a buffer full of raw readings, and convert them to */
 	/* absolute linearised sensor values. */
 	if ((ev = i1pro_sens_to_absraw(p, multimes, buf, nmeasuered, inttime, gainmode, &darkthresh))
-		                                                                           != I1PRO_OK) {
+		                                                                             != I1PRO_OK) {
+		free_dmatrix(absraw, 0, numpatches-1, -1, m->nraw-1);
+		free_dmatrix(multimes, 0, nmeasuered-1, -1, m->nraw-1);
 		return ev;
 	}
 
@@ -5196,6 +5262,7 @@ i1pro_code i1pro_read_patches_2(
 			}
 		}
 	}
+	free_dmatrix(multimes, 0, nmeasuered-1, -1, m->nraw-1);
 
 	if (rv & 1) {
 		free_dmatrix(absraw, 0, numpatches-1, -1, m->nraw-1);
@@ -5482,6 +5549,9 @@ i1pro_code i1pro_trialmeasure(
 	/* absolute linearised sensor values. */
 	if ((ev = i1pro_sens_to_absraw(p, multimes, buf, nmeasuered, *inttime, gainmode, &darkthresh))
 		                                                                            != I1PRO_OK) {
+		free_dvector(absraw, -1, m->nraw-1);
+		free_dmatrix(multimes, 0, nummeas-1, -1, m->nraw-1);
+		free(buf);
 		return ev;
 	}
 
@@ -6516,6 +6586,9 @@ i1pro_code i1pro_extract_patches_multimeas(
 	/* Now threshold the measurements into possible patches */
 	apat = 2 * nummeas;
 	if ((pat = (i1pro_patch *)malloc(sizeof(i1pro_patch) * apat)) == NULL) {
+		free_ivector(sizepop, 0, nummeas-1);
+		free_dvector(slope, 0, nummeas-1);  
+		free_dvector(maxval, -1, m->nraw-1);  
 		a1logd(p->log, 1, "i1pro: malloc of patch structures failed!\n");
 		return I1PRO_INT_MALLOC;
 	}
@@ -6529,6 +6602,9 @@ i1pro_code i1pro_extract_patches_multimeas(
 		if (npat >= apat) {
 			apat *= 2;
 			if ((pat = (i1pro_patch *)realloc(pat, sizeof(i1pro_patch) * apat)) == NULL) {
+				free_ivector(sizepop, 0, nummeas-1);
+				free_dvector(slope, 0, nummeas-1);  
+				free_dvector(maxval, -1, m->nraw-1);  
 				a1logd(p->log, 1, "i1pro: reallloc of patch structures failed!\n");
 				return I1PRO_INT_MALLOC;
 			}
@@ -6981,7 +7057,7 @@ i1pro_code i1pro_extract_patches_flash(
 		nsampl++;
 	}
 
-	/* Average all the values over the threshold, */
+	/* Integrate all the values over the threshold, */
 	/* and also one either side of flash */
 	for (j = 0; j < m->nraw-1; j++)
 		pavg[j] = 0.0;
@@ -7382,7 +7458,7 @@ static double wlcal_opt1(void *vcx, double tp[]) {
 		ix = ((int)xv) - 1;			/* Reference index of Lagrange for this xv */
 		if (ix < 0)
 			continue;
-		if ((ix + 3) > cx->wl_ref_n)
+		if ((ix + 4) > cx->wl_ref_n)
 			break;
 
 		/* Compute interpolated value of reference using Lagrange: */
@@ -8987,7 +9063,8 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 
 			/* Our upsampling is OK for reflective and ambient cal's, */
 			/* but isn't so good for the emissive cal., especially */
-			/* on the i1pro2. We'll get an opportunity to fix it */
+			/* on the i1pro2 which has a rather bumpy diffraction */
+			/* grating/sensor. We'll get an opportunity to fix it */
 			/* when we do a reflective calibration, by using the */
 			/* smoothness of the lamp as a reference. */
 
@@ -9959,20 +10036,23 @@ i1pro_code i1pro_check_white_reference1(
 
 	free_dvector(emiswav, -1, m->nraw-1);
 
+
 	/* And check them against tolerance for the illuminant. */
 	if (m->physfilt == 0x82) {		/* UV filter */
+		a1logd(p->log,2,"Checking white reference (UV): 0.0 < avg01 %f < 0.05, 1.2 < avg2227 %f < 1.76\n",avg01,avg2227);
 		if (0.0 < avg01 && avg01 < 0.05
 		 && 1.2 < avg2227 && avg2227 < 1.76) {
 			return I1PRO_OK;
 		}
 
 	} else {						/* No filter */
+		a1logd(p->log,2,"Checking white reference: 0.11 < avg01 %f < 0.22, 1.35 < avg2227 %f < 1.6\n",avg01,avg2227);
 		if (0.11 < avg01 && avg01 < 0.22
 		 && 1.35 < avg2227 && avg2227 < 1.6) {
 			return I1PRO_OK;
 		}
 	}
-	a1logd(p->log,2,"Checking white reference failed, 0.11 < avg01 %f < 0.22, 1.35 < avg2227 %f < 1.6\n",avg01,avg2227);
+	a1logd(p->log,2,"Checking white reference failed - out of tollerance");
 	return I1PRO_RD_WHITEREFERROR;
 }
 
@@ -10940,7 +11020,7 @@ i1pro_delayed_trigger(void *pp) {
 	se = p->icom->usb_control(p->icom,
 		               IUSB_ENDPOINT_OUT | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
 	                   0xC0, 0, 0, NULL, 0, 2.0);
-
+	m->trigstamp = usec_time();
 	m->tr_t2 = msec_time();		/* Diagnostic */
 
 	m->trig_se = se;
@@ -10966,8 +11046,10 @@ i1pro_triggermeasure(i1pro *p, int delay) {
 
 	/* NOTE := would be better here to create thread once, and then trigger it */
 	/* using a condition variable. */
-	if (m->trig_thread != NULL)
+	if (m->trig_thread != NULL) {
 		m->trig_thread->del(m->trig_thread);
+		m->trig_thread = NULL;
+	}
 
     m->tr_t1 = m->tr_t2 = m->tr_t3 = m->tr_t4 = m->tr_t5 = m->tr_t6 = m->tr_t7 = 0;
 	m->trig_delay = delay;
@@ -10993,7 +11075,7 @@ i1pro_triggermeasure(i1pro *p, int delay) {
 /* between triggering the measurement and starting this read. */
 /* It appears that the read can be pending before triggering though. */
 /* Scan reads will also terminate if there is too great a delay beteween each read.) */
-i1pro_code
+static i1pro_code
 i1pro_readmeasurement(
 	i1pro *p,
 	int inummeas,			/* Initial number of measurements to expect */
@@ -11537,6 +11619,7 @@ i1pro2_delayed_trigger(void *pp) {
 	a1logd(p->log,2,"i1pro2_delayed_trigger: trigger Rev E @ %d msec\n",
 	                                     (stime = msec_time()) - m->msec);
 
+	m->trigstamp = usec_time();
 	se = p->icom->usb_control(p->icom,
 		               IUSB_ENDPOINT_OUT | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
 	                   0xD4, 0, 0, pbuf, 14, 2.0);
@@ -11735,31 +11818,6 @@ i1pro2_indLEDoff(void *pp) {
 	a1logd(p->log,2,"i1pro2_indLEDoff: called\n");
 	rv = i1pro2_indLEDseq(p, seq, sizeof(seq));
 	a1logd(p->log,2,"i1pro2_indLEDoff: returning ICOM err 0x%x\n",rv);
-
-	return rv;
-}
-
-/* Turn indicator LEDs on white */
-static int
-i1pro2_indLEDonWhite(void *pp) {
-	i1pro *p = (i1pro *)pp;
-	int rv = I1PRO_OK;
-		unsigned char seq[] = {
-			0x00, 0x00, 0x00, 0x02,
-
-			0x00, 0x00, 0x00, 0x0a,
-			0x00, 0x00, 0x00, 0x01,
-			0x00, 0x36, 0x00,
-			0x00, 0x00, 0x01,
-
-			0x00, 0x00, 0x00, 0x0a,
-			0xff, 0xff, 0xff, 0xff,
-			0x3f, 0x36, 0x40,
-			0x00, 0x00, 0x01
-		};
-	a1logd(p->log,2,"i1pro2_indLEDonWhite: called\n");
-	rv = i1pro2_indLEDseq(p, seq, sizeof(seq));
-	a1logd(p->log,2,"i1pro2_indLEDonWhite: returning ICOM err 0x%x\n",rv);
 
 	return rv;
 }
