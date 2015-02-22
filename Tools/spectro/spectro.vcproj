@@ -264,7 +264,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\klein10.c"
+				RelativePath=".\kleink10.c"
 				>
 			</File>
 			<File
@@ -445,7 +445,7 @@
 				RelativePath=".\insttypes.h"
 				>
 			<File
-				RelativePath=".\klein10.h"
+				RelativePath=".\kleink10.h"
 				>
 			</File>
 			<File
