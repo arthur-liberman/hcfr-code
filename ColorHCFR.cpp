@@ -276,7 +276,7 @@ BOOL CColorHCFRApp::InitInstance()
 	SplashWnd.ReleaseDC ( pDC );
 
 	// Beginning of initializations
-	m_pColorReference = new CColorReference (SDTV,D65,2.22);
+	m_pColorReference = new CColorReference (SDTV,D65,2.2);
 	m_pConfig = new CColorHCFRConfig();
 
 	m_pReferenceData = NULL; //Ki

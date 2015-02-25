@@ -248,13 +248,14 @@ void CColorHCFRConfig::InitDefaults()
 	m_bDisplayTestColors=TRUE;
 	m_bContinuousMeasures=TRUE;
 	m_bDetectPrimaries=FALSE;
+	m_isSettling=FALSE;
 	m_useHSV=FALSE;
 	m_latencyTime=0;
 	m_bLatencyBeep=FALSE;
 	m_bUseRoundDown=FALSE;
 	m_BWColorsToAdd=1;
-	m_GammaRef=2.22;
-	m_GammaAvg=2.22;
+	m_GammaRef=2.2;
+	m_GammaAvg=2.2;
     m_GammaRel=0.0;
 	m_Split=100.0; //all input offset
 	m_useMeasuredGamma=FALSE;
@@ -320,6 +321,7 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_whiteTarget=(WhiteTarget)GetProfileInt("References","WhiteTarget",D65);
 	m_bDisplayTestColors=GetProfileInt("References","DisplayTestColors",1);
 	m_bContinuousMeasures=GetProfileInt("References","ContinuousMeasures",1);
+	m_isSettling=GetProfileInt("References","isSettling",0);
 	m_bDetectPrimaries=GetProfileInt("References","DetectPrimaries",1);
 	m_useHSV=GetProfileInt("References","UseHSV",0);
 	m_latencyTime=GetProfileInt("References","IrisLatencyTime",300);
@@ -328,8 +330,8 @@ BOOL CColorHCFRConfig::LoadSettings()
     m_latencyTime = max(m_latencyTime, 250);
 	m_bLatencyBeep=GetProfileInt("References","IrisLatencyBeep",0);
 	m_bUseRoundDown=GetProfileInt("References","SatUseMeasuredRef",0);
-	m_GammaRef=GetProfileDouble("References","GammaRefValue",2.22);
-	m_GammaAvg=GetProfileDouble("References","GammaAvgValue",2.22);
+	m_GammaRef=GetProfileDouble("References","GammaRefValue",2.2);
+	m_GammaAvg=GetProfileDouble("References","GammaAvgValue",2.2);
 	m_GammaRel=GetProfileDouble("References","GammaRelValue",0.0);
 	m_Split=GetProfileDouble("References","GammaSplitValue",100.0);
 	m_useMeasuredGamma=GetProfileInt("References","UseMeasuredGamma",0);
@@ -402,6 +404,7 @@ void CColorHCFRConfig::SaveSettings()
 	WriteProfileInt("References","UseHSV",m_useHSV);
 	WriteProfileInt("References","ContinuousMeasures",m_bContinuousMeasures);
 	WriteProfileInt("References","DetectPrimaries",m_bDetectPrimaries);
+	WriteProfileInt("References","isSettling",m_isSettling);
 	WriteProfileInt("References","IrisLatencyTime",m_latencyTime);
 	WriteProfileInt("References","IrisLatencyBeep",m_bLatencyBeep);
 	WriteProfileInt("References","SatUseMeasuredRef",m_bUseRoundDown);
@@ -452,6 +455,7 @@ void CColorHCFRConfig::SetPropertiesSheetValues()
 	m_generalPropertiesPage.m_BWColorsToAdd=m_BWColorsToAdd;
 	
 	m_generalPropertiesPage.m_bDisplayTestColors=m_bDisplayTestColors;
+	m_generalPropertiesPage.m_isSettling=m_isSettling;
 	m_generalPropertiesPage.m_useHSV=m_useHSV;
 	m_generalPropertiesPage.m_bContinuousMeasures=m_bContinuousMeasures;
 	m_generalPropertiesPage.m_bDetectPrimaries=m_bDetectPrimaries;
@@ -553,9 +557,9 @@ BOOL CColorHCFRConfig::GetPropertiesSheetValues()
 	}
 	m_doSavePosition=m_generalPropertiesPage.m_doSavePosition;
 	m_BWColorsToAdd=m_generalPropertiesPage.m_BWColorsToAdd;
-
 	m_bDisplayTestColors=m_generalPropertiesPage.m_bDisplayTestColors;
 	m_useHSV=m_generalPropertiesPage.m_useHSV;
+	m_isSettling=m_generalPropertiesPage.m_isSettling;
 	m_bContinuousMeasures=m_generalPropertiesPage.m_bContinuousMeasures;
 	m_bDetectPrimaries=m_generalPropertiesPage.m_bDetectPrimaries;
 	m_latencyTime=m_generalPropertiesPage.m_latencyTime;

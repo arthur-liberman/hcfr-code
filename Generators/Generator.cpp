@@ -124,27 +124,23 @@ BOOL CGenerator::Configure()
 
 BOOL CGenerator::Init(UINT nbMeasure)
 {
-
-	nMeasureNumber = nbMeasure;
+	nMeasureNumber = nbMeasure; 
 	CGDIGenerator Cgen;
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 	BOOL madVR_Found;
-	double bgstim = Cgen.m_bgStimPercent / 100.;
 	if (Cgen.m_nDisplayMode == DISPLAY_madVR && m_name != str)
 	{
 		if (madVR_IsAvailable())
 		{
+			int nSettling=GetConfig()->m_isSettling?10:0;
 			madVR_Found = madVR_Connect(CM_ConnectToLocalInstance, CM_ConnectToLanInstance, CM_StartLocalInstance  );
 			if (m_madVR_vLUT)
 				madVR_SetDeviceGammaRamp(NULL);
 			if (m_madVR_3d)
 				madVR_Disable3dlut();
 			if (m_madVR_OSD)
-				madVR_ShowProgressBar(nMeasureNumber);
-			madVR_SetPatternConfig(Cgen.m_rectSizePercent, int (bgstim * 100), -1, -1);
-
-//          madVR_SetBackground(Cgen.m_rectSizePercent);//, RGB(bgstim*255,bgstim*255,bgstim*255) );
+				madVR_ShowProgressBar(nMeasureNumber + nSettling);
 		}
 		else
 		{

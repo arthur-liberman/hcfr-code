@@ -1819,9 +1819,10 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 	            CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
 				CColor satcolor;
 				// Retrieve color luminance coefficients matching actual reference
+
 				switch (m_displayMode)
 				{
-					case 1:
+					case 1: 
 						RefLuma [ 0 ] = GetDocument()->GetMeasure()->GetRefPrimary(0).GetLuminance();
 						RefLuma [ 1 ] = GetDocument()->GetMeasure()->GetRefPrimary(1).GetLuminance();
 						RefLuma [ 2 ] = GetDocument()->GetMeasure()->GetRefPrimary(2).GetLuminance();
@@ -1832,76 +1833,45 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 					case 5:
 						satcolor = GetDocument()->GetMeasure()->GetRefSat(0, sat, (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
                         RefLuma [nCol - 1] = satcolor.GetLuminance();
-                        if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
-                            RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),log(GetBT1886(pow(RefLuma [ nCol-1 ],1. / 2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(RefLuma [ nCol-1 ],1. / 2.22)));
-                        else
-    						RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 						break;
 					case 6:
                         satcolor = GetDocument()->GetMeasure()->GetRefSat(1, sat, (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
                         RefLuma [nCol - 1] = satcolor.GetLuminance();
-                        if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
-                            RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),log(GetBT1886(pow(RefLuma [ nCol-1 ],1. / 2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(RefLuma [ nCol-1 ],1. / 2.22)));
-                        else
-    						RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 						break;
 					case 7:                                                
                         satcolor = GetDocument()->GetMeasure()->GetRefSat(2, sat, (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
                         RefLuma [nCol - 1] = satcolor.GetLuminance();
-                        if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
-                            RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),log(GetBT1886(pow(RefLuma [ nCol-1 ],1. / 2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(RefLuma [ nCol-1 ],1. / 2.22)));
-                        else
-    						RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 						break;
 					case 8:
                         satcolor = GetDocument()->GetMeasure()->GetRefSat(3, sat, (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
                         RefLuma [nCol - 1] = satcolor.GetLuminance();
-                        if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
-                            RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),log(GetBT1886(pow(RefLuma [ nCol-1 ],1. / 2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(RefLuma [ nCol-1 ],1. / 2.22)));
-                        else
-    						RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 						break;
 					case 9:
                         satcolor = GetDocument()->GetMeasure()->GetRefSat(4, sat, (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
                         RefLuma [nCol - 1] = satcolor.GetLuminance();
-                        if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
-                            RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),log(GetBT1886(pow(RefLuma [ nCol-1 ],1. / 2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(RefLuma [ nCol-1 ],1. / 2.22)));
-                        else
-    						RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 						break;
 					case 10:
                         satcolor = GetDocument()->GetMeasure()->GetRefSat(5, sat, (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
                         RefLuma [nCol - 1] = satcolor.GetLuminance();
-                        if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
-                            RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),log(GetBT1886(pow(RefLuma [ nCol-1 ],1. / 2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(RefLuma [ nCol-1 ],1. / 2.22)));
-                        else
-    						RefLuma [ nCol-1 ] = pow(pow(RefLuma [ nCol-1 ],1. / 2.22),GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 						break;
 					case 11:
-                        double rLuma;
-//                        if (GetConfig()->m_CCMode == USER)
-                            rLuma=aReference.GetLuminance();
-//                        else
-//                            rLuma=GetColorReference().GetCC24ReferenceLuma (nCol-1, GetConfig()->m_CCMode );
-                        //luminance is based on 2.2 gamma so we need to scale here actual reference gamma
-                        if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
-                            RefLuma [ nCol-1 ] = pow(pow(rLuma,1. / 2.22),log(GetBT1886(pow(rLuma,1. / 2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(rLuma,1. / 2.22)));
-                        else
-    						RefLuma [ nCol-1 ] = pow(pow(rLuma,1. / 2.22),GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
+                        RefLuma [nCol -1] = aReference.GetLuminance();
 						break;
 				}
-					CColor WhiteMCD;
-					int i;
-					i = GetDocument() -> GetMeasure () -> GetGrayScaleSize ();
-					if ( GetDocument() -> GetMeasure () -> GetGray ( i - 1 ).isValid() )
-						WhiteMCD = GetDocument() -> GetMeasure () -> GetGray ( i - 1 );
-					else
-						WhiteMCD = GetDocument()->GetMeasure()->GetOnOffWhite();
-				
-				CColor white = ( m_displayMode!=11 ?  GetDocument()->GetMeasure()->GetOnOffWhite() : (GetConfig()->m_CCMode==GCD)? GetDocument()->GetMeasure()->GetCC24Sat(5):(GetConfig()->m_CCMode==CCSG)? GetDocument()->GetMeasure()->GetCC24Sat(0):WhiteMCD );
-				if (m_displayMode > 4 && m_displayMode < 11)
-					white = WhiteMCD;
-                if ( nCol2 < ( (m_displayMode > 11 || m_displayMode < 5) ? 7 : 1001) && white.isValid() && white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) > 0.0001 )
+
+				CColor white = GetDocument()->GetMeasure()->GetPrimeWhite();
+
+				if (!white.isValid() || m_displayMode == 0 || m_displayMode == 2 || m_displayMode == 3)
+					white = GetDocument() -> GetMeasure () ->GetOnOffWhite();
+				if ( m_displayMode > 4 && (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb))
+					white = GetDocument() -> GetMeasure () ->GetOnOffWhite();
+
+				//special case check if user has done a 75% primaries run and use grayscale white instead for colorchecker
+				if (GetDocument()->GetMeasure()->GetOnOffWhite().isValid())
+					if ((GetDocument()->GetMeasure()->GetPrimeWhite()[1] / GetDocument()->GetMeasure()->GetOnOffWhite()[1] < 0.8) && m_displayMode == 11)
+						white = GetDocument() -> GetMeasure () ->GetOnOffWhite();
+
+				if ( nCol2 < ( (m_displayMode > 11 || m_displayMode < 5) ? 7 : 1001) && white.isValid() && white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) > 0.0001 )
     		    {
 					double d = aMeasure.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) / white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter);
 					if ( fabs ( ( RefLuma [ nCol2 - 1 ] - d ) / RefLuma [ nCol2 - 1 ] ) < 0.001 )
@@ -2142,6 +2112,8 @@ void CMainView::UpdateGrid()
 			YWhiteOnOff = GetDocument() -> GetMeasure () -> GetOnOffWhite () [ 1 ];
 		if ( GetDocument() -> GetMeasure () -> GetPrimeWhite ().isValid() )
 			YWhitePrime = GetDocument() -> GetMeasure () -> GetPrimeWhite () [ 1 ];
+		else
+			YWhitePrime = YWhiteOnOff;
 
 		nCount = GetDocument() -> GetMeasure () -> GetGrayScaleSize ();
 		if ( GetDocument() -> GetMeasure () -> GetGray ( nCount - 1 ).isValid() )
@@ -2168,7 +2140,7 @@ void CMainView::UpdateGrid()
 			Gamma = floor(Gamma * 100) / 100;
 		}
         if (GetConfig()->m_useMeasuredGamma)
-			GetConfig()->m_GammaAvg = (Gamma<1?2.22:Gamma);
+			GetConfig()->m_GammaAvg = (Gamma<1?2.2:Gamma);
         GetConfig()->SetPropertiesSheetValues();
 
 		switch ( m_displayMode )
@@ -2244,8 +2216,17 @@ void CMainView::UpdateGrid()
 				 break;
 
 			default:
-				 YWhite = YWhiteOnOff ? YWhiteOnOff : YWhiteGray;
-				 YWhiteRefDoc = YWhiteOnOffRefDoc ? YWhiteOnOffRefDoc : YWhiteGrayRefDoc;
+				 bool isSpecial = (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb);
+				 YWhite = isSpecial?YWhiteOnOff:YWhitePrime;
+				 YWhiteRefDoc = isSpecial?YWhiteOnOffRefDoc:YWhitePrimeRefDoc;
+				//special case check if user has done a 75% primaries run and use grayscale white instead for colorchecker
+				if (GetDocument()->GetMeasure()->GetOnOffWhite().isValid())
+					if ((YWhitePrime / YWhiteOnOff < 0.8) && m_displayMode == 11)
+					{
+						YWhite = YWhiteOnOff;
+						YWhiteRefDoc = YWhiteOnOffRefDoc;
+					}
+
 				 if (m_displayMode != 11) 
 				 {
 					 nCount = GetDocument()->GetMeasure()->GetSaturationSize();
@@ -4126,7 +4107,7 @@ void CMainView::UpdateMeasurementsAfterBkgndMeasure ()
 		else
 			refDocColor = noDataColor;
 
-		double YWhite = GetDocument() -> GetMeasure () -> GetOnOffWhite () [ 1 ];
+		double YWhite = GetDocument() -> GetMeasure () -> GetPrimeWhite () [ 1 ];
 		for( int i = 0 ; i < ( pDataRef ? 7 : 5 ) ; i ++ )
 		{
 			Item.row = i+1;

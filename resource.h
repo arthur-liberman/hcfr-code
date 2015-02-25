@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by CHCFR21_FRANCAIS.rc
+// Used by CHCFR21_ENGLISH.rc
 //
 #define IDS_STRING_VERSION              1
 #define IDS_STRING_VERSION_WEB          2
@@ -260,6 +260,7 @@
 #define IDB_REFYELLOWSAT_BITMAP         383
 #define IDB_SATCC24                     384
 #define IDB_REFCC24SAT_BITMAP           385
+#define IDC_IS_SETTLING                 386
 #define IDC_GRAYSCALE_GRID              1001
 #define IDC_GRAPH_TITLE                 1002
 #define IDC_SENSORMATRIX_GRID           1002
@@ -576,6 +577,7 @@
 #define IDC_READTIME_EDIT               1203
 #define IDC_EDIT_PATTERN_CHECK_MAX_RETRY_BY_PATTERN 1203
 #define IDC_CHECK_CONTINUOUS2           1203
+#define IDC_CHECK_BEEP2                 1203
 #define IDC_DATA_YY2                    1204
 #define IDC_EDIT_PATTERN_CHECK_MAX_RETRY_BY_SERIES 1204
 #define IDC_DATA_X3                     1205
@@ -1471,7 +1473,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        382
 #define _APS_NEXT_COMMAND_VALUE         33046
-#define _APS_NEXT_CONTROL_VALUE         1287
+#define _APS_NEXT_CONTROL_VALUE         1288
 #define _APS_NEXT_SYMED_VALUE           143
 #endif
 #endif

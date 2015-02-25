@@ -171,7 +171,7 @@ ColorxyY primariesRec709[3] ={	ColorxyY(0.6400, 0.3300),
 								ColorxyY(0.3000, 0.6000),
 								ColorxyY(0.1500, 0.0600) };
 
-ColorxyY primariesRec709a[3] ={	ColorxyY(0.5575, 0.3298), //75% sat/lum Rec709 w/2.22 gamma
+ColorxyY primariesRec709a[3] ={	ColorxyY(0.5575, 0.3298), //75% sat/lum Rec709 w/2.2 gamma
 								ColorxyY(0.3032, 0.5313),
 								ColorxyY(0.1911, 0.1279) };
 
@@ -189,7 +189,7 @@ ColorxyY primariesCC6a[3] ={	ColorxyY(0.625, 0.330),
 								ColorxyY(0.245, 0.217)};
 
 /* The 75% saturation 75% amplitude and color checker xy locations are calculated 
-assuming gamma=2.22, starting with the follow triplets from the GCD disk, and then used as pseudo-primaries/secondaries
+assuming gamma=2.2, starting with the follow triplets from the GCD disk, and then used as pseudo-primaries/secondaries
 
 75% (16-235)
 	R	G	B	Y	C	M
@@ -638,7 +638,7 @@ int ColorXYZ::GetColorTemp(const CColorReference& colorReference) const
 
 double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form, bool isGS, int gw_Weight ) const
 {
-	CColorReference cRef=CColorReference(HDTV, D65, 2.22); //special modes assume rec.709
+	CColorReference cRef=CColorReference(HDTV, D65, 2.2); //special modes assume rec.709
 	double dE;
     //gray world weighted white reference
     switch (gw_Weight)
@@ -1967,7 +1967,7 @@ void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDi
             }
         }
         // adjust "color gamma"
-		// here we use 2.22 and targets get adjusted for user gamma: Targets assume all generated RGB triplets @2.22 gamma
+		// here we use 2.2 and targets get adjusted for user gamma: Targets assume all generated RGB triplets @2.22 gamma
         double clr2 = ( 100.0 * pow ( clr , 1.0/2.22 ) );
         double comp2 = ( 100.0 * pow ( comp , 1.0/2.22 ) );
 		GenColors [ i ] = ColorRGBDisplay( ( bRed ? clr2 : comp2 ), ( bGreen ? clr2 : comp2 ), ( bBlue ? clr2 : comp2 ) );

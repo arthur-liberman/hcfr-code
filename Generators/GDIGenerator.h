@@ -67,7 +67,7 @@ public:
 
 	virtual BOOL Init(UINT nbMeasure = 0);
 	virtual BOOL DisplayRGBColor(const ColorRGBDisplay& aRGBColor, MeasureType nPatternType = MT_UNKNOWN, UINT nPatternInfo = 0, BOOL bChangePattern = TRUE,BOOL bSilentMode = FALSE);
-	virtual BOOL DisplayRGBColormadVR(const ColorRGBDisplay& aRGBColor);
+	virtual BOOL DisplayRGBColormadVR(const ColorRGBDisplay& aRGBColor, bool first);
 	virtual BOOL CanDisplayAnsiBWRects(); 
 	virtual BOOL CanDisplayAnimatedPatterns(); 
 	virtual BOOL DisplayAnsiBWRects(BOOL bInvert);

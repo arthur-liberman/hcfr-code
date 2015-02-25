@@ -121,6 +121,7 @@ void CMeasure::Copy(CMeasure * p,UINT nId)
 		case DUPLGRAYLEVEL:		// Gray scale measure
 			m_grayMeasureArray.SetSize(p->m_grayMeasureArray.GetSize());
 			m_bIREScaleMode=p->m_bIREScaleMode;
+			m_OnOffWhite=p->m_OnOffWhite;
 			for(int i=0;i<m_grayMeasureArray.GetSize();i++)
     			m_grayMeasureArray[i]=p->m_grayMeasureArray[i];	
 			break;
@@ -174,12 +175,13 @@ void CMeasure::Copy(CMeasure * p,UINT nId)
 		case DUPLPRIMARIESCOL:		// Primaries measure
 			for(int i=0;i<m_primariesArray.GetSize();i++)
 				m_primariesArray[i]=p->m_primariesArray[i];	
-
+				m_PrimeWhite = p->m_PrimeWhite;
 			break;
 
 		case DUPLSECONDARIESCOL:		// Secondaries measure
 			for(int i=0;i<m_secondariesArray.GetSize();i++)
 				m_secondariesArray[i]=p->m_secondariesArray[i];
+				m_PrimeWhite = p->m_PrimeWhite;
 			break;
 
 		case DUPLCONTRAST:		// Contrast measure
@@ -510,9 +512,6 @@ void CMeasure::SetSaturationSize(int steps)
 }
 
 
-
-
-
 void CMeasure::StartLuxMeasure ()
 {
 	GetColorApp () -> BeginLuxMeasure ();
@@ -628,6 +627,7 @@ UINT CMeasure::GetLuxMeasure ( double * pValue )
 
 	return nRet;
 }
+bool doSettling = FALSE;
 
 BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator)
 {
@@ -670,12 +670,16 @@ BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator)
 		pGenerator->Release();
 		return FALSE;
 	}
-
+	
 	for(int i=0;i<size;i++)
 	{
+		if (i>0)
+			GetConfig()->m_isSettling=FALSE;
+		else
+			doSettling = GetConfig()->m_isSettling;
 		if( pGenerator->DisplayGray(ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown),CGenerator::MT_IRE ,!bRetry))
 		{
-			bEscape = WaitForDynamicIris ();
+			bEscape = WaitForDynamicIris ( );
 			bRetry = FALSE;
 
 			if ( ! bEscape )
@@ -792,6 +796,7 @@ BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator)
 			return FALSE;
 		}
 	}
+	GetConfig()->m_isSettling = doSettling;
 
 	pSensor->Release();
 	pGenerator->Release();
@@ -873,6 +878,10 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 
 	for(int i=0;i<size;i++)
 	{
+		if (i>0)
+			GetConfig()->m_isSettling=FALSE;
+		else
+			doSettling = GetConfig()->m_isSettling;
 		if( pGenerator->DisplayGray(ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown),CGenerator::MT_IRE ,!bRetry))
 		{
 			bEscape = WaitForDynamicIris ();
@@ -1200,6 +1209,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 		else
 			m_PrimeWhite.ResetLuxValue ();
 	}
+	GetConfig()->m_isSettling = doSettling;
 		
 	m_isModified=TRUE;
 	return TRUE;
@@ -1250,6 +1260,10 @@ BOOL CMeasure::MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator)
 
 	for(int i=0;i<size;i++)
 	{
+		if (i>0)
+			GetConfig()->m_isSettling=FALSE;
+		else
+			doSettling = GetConfig()->m_isSettling;
 		if( pGenerator->DisplayGray((ArrayIndexToGrayLevel ( i, 101, GetConfig () -> m_bUseRoundDown)),CGenerator::MT_NEARBLACK,!bRetry) )
 		{
 
@@ -1385,6 +1399,7 @@ BOOL CMeasure::MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator)
 		else
 			m_nearBlackMeasureArray[i].ResetLuxValue ();
 	}
+	GetConfig()->m_isSettling = doSettling;
 
 	m_isModified=TRUE;
 	return TRUE;
@@ -1435,6 +1450,10 @@ BOOL CMeasure::MeasureNearWhiteScale(CSensor *pSensor, CGenerator *pGenerator)
 	
 	for(int i=0;i<size;i++)
 	{
+		if (i>0)
+			GetConfig()->m_isSettling=FALSE;
+		else
+			doSettling = GetConfig()->m_isSettling;
 		if( pGenerator->DisplayGray((ArrayIndexToGrayLevel ( 101-size+i, 101, GetConfig () -> m_bUseRoundDown)),CGenerator::MT_NEARWHITE,!bRetry ) )
 		{
 			bEscape = WaitForDynamicIris ();
@@ -1535,6 +1554,7 @@ BOOL CMeasure::MeasureNearWhiteScale(CSensor *pSensor, CGenerator *pGenerator)
 		else
 			m_nearWhiteMeasureArray[i].ResetLuxValue ();
 	}
+	GetConfig()->m_isSettling = doSettling;
 
 	m_isModified=TRUE;
 	return TRUE;
@@ -1590,6 +1610,10 @@ BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator)
 
     for(int i=((GetConfig()->m_CCMode == MCD && pGenerator->GetName() == str)?1:0);i<size;i++)
 	{
+		if (i>0)
+			GetConfig()->m_isSettling=FALSE;
+		else
+			doSettling = GetConfig()->m_isSettling;
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_RED,100*i/(size - 1),!bRetry))
 		{
 			bEscape = WaitForDynamicIris ();
@@ -1690,6 +1714,7 @@ BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator)
 		else
 			m_redSatMeasureArray[i].ResetLuxValue ();
 	}
+	GetConfig()->m_isSettling = doSettling;
 
 	m_isModified=TRUE;
 	return TRUE;
@@ -1742,8 +1767,12 @@ BOOL CMeasure::MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
-    for(int i=((GetConfig()->m_CCMode == MCD && pGenerator->GetName() == str)?1:0);i<size;i++)
+	for(int i=((GetConfig()->m_CCMode == MCD && pGenerator->GetName() == str)?1:0);i<size;i++)
 	{
+		if (i>0)
+			GetConfig()->m_isSettling=FALSE;
+		else
+			doSettling = GetConfig()->m_isSettling;
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_GREEN,100*i/(size - 1),!bRetry) )
 		{
 			bEscape = WaitForDynamicIris ();
@@ -1844,6 +1873,7 @@ BOOL CMeasure::MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator)
 		else
 			m_greenSatMeasureArray[i].ResetLuxValue ();
 	}
+	GetConfig()->m_isSettling = doSettling;
 
 	m_isModified=TRUE;
 	return TRUE;
@@ -1899,6 +1929,10 @@ BOOL CMeasure::MeasureBlueSatScale(CSensor *pSensor, CGenerator *pGenerator)
 
     for(int i=((GetConfig()->m_CCMode == MCD && pGenerator->GetName() == str)?1:0);i<size;i++)
 	{
+		if (i>0)
+			GetConfig()->m_isSettling=FALSE;
+		else
+			doSettling = GetConfig()->m_isSettling;
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_BLUE,100*i/(size - 1),!bRetry))
 		{
 			bEscape = WaitForDynamicIris ();
@@ -1999,6 +2033,7 @@ BOOL CMeasure::MeasureBlueSatScale(CSensor *pSensor, CGenerator *pGenerator)
 		else
 			m_blueSatMeasureArray[i].ResetLuxValue ();
 	}
+	GetConfig()->m_isSettling = doSettling;
 
 	m_isModified=TRUE;
 	return TRUE;
@@ -2054,6 +2089,10 @@ BOOL CMeasure::MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator)
 
     for(int i=((GetConfig()->m_CCMode == MCD && pGenerator->GetName() == str)?1:0);i<size;i++)
 	{
+		if (i>0)
+			GetConfig()->m_isSettling=FALSE;
+		else
+			doSettling = GetConfig()->m_isSettling;
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_YELLOW,100*i/(size - 1),!bRetry))
 		{
 			bEscape = WaitForDynamicIris ();
@@ -2155,6 +2194,7 @@ BOOL CMeasure::MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator)
 		else
 			m_yellowSatMeasureArray[i].ResetLuxValue ();
 	}
+	GetConfig()->m_isSettling = doSettling;
 
 	m_isModified=TRUE;
 	return TRUE;
@@ -2210,6 +2250,10 @@ BOOL CMeasure::MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator)
 
     for(int i=((GetConfig()->m_CCMode == MCD && pGenerator->GetName() == str)?1:0);i<size;i++)
 	{
+		if (i>0)
+			GetConfig()->m_isSettling=FALSE;
+		else
+			doSettling = GetConfig()->m_isSettling;
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_CYAN,100*i/(size - 1),!bRetry))
 		{
 			bEscape = WaitForDynamicIris ();
@@ -2311,6 +2355,7 @@ BOOL CMeasure::MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator)
 		else
 			m_cyanSatMeasureArray[i].ResetLuxValue ();
 	}
+	GetConfig()->m_isSettling = doSettling;
 
 	m_isModified=TRUE;
 	return TRUE;
@@ -2366,6 +2411,10 @@ BOOL CMeasure::MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator)
 
     for(int i=((GetConfig()->m_CCMode == MCD && pGenerator->GetName() == str)?1:0);i<size;i++)
 	{
+		if (i>0)
+			GetConfig()->m_isSettling=FALSE;
+		else
+			doSettling = GetConfig()->m_isSettling;
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_MAGENTA,100*i/(size - 1) ,!bRetry))
 		{
 			bEscape = WaitForDynamicIris ();
@@ -2466,6 +2515,7 @@ BOOL CMeasure::MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator)
 		else
 			m_magentaSatMeasureArray[i].ResetLuxValue ();
 	}
+	GetConfig()->m_isSettling = doSettling;
 
 	m_isModified=TRUE;
 	return TRUE;
@@ -2568,6 +2618,10 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
 
 	for(int i=0;i<size;i++)
 	{
+		if (i>0)
+			GetConfig()->m_isSettling=FALSE;
+		else
+			doSettling = GetConfig()->m_isSettling;
 		if( pGenerator->DisplayRGBColor(GenColors[i], nPattern ,i,!bRetry))
 		{
 			bEscape = WaitForDynamicIris ();
@@ -2677,6 +2731,7 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
 		else
 			m_cc24SatMeasureArray[i].ResetLuxValue ();
 	}
+	GetConfig()->m_isSettling = doSettling;
 
 	m_isModified=TRUE;
 	return TRUE;
@@ -2802,6 +2857,10 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 	{
 		for ( i = 0 ; i < ( j == 6 ? ccSize : size ) ; i ++ )
 		{
+		if (i>0)
+			GetConfig()->m_isSettling=FALSE;
+		else
+			doSettling = GetConfig()->m_isSettling;
 			if( pGenerator->DisplayRGBColor(GenColors[(j*size)+i],SaturationType[j],(j == 6 ? i:100*i/(size - 1)),!bRetry,(j>0)) )
 			{
 				bEscape = WaitForDynamicIris ();
@@ -2959,7 +3018,6 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 		{
 				if (GetConfig()->m_CCMode != MCD)
 				{
-//					measuredColor[i]=pSensor->MeasureColor(GenColors[i]);
 					m_cc24SatMeasureArray[i] = measuredColor[(6*size)+i];
 				}
 				else
@@ -2990,6 +3048,7 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 			}
 		}
 	}
+	GetConfig()->m_isSettling = doSettling;
 
 	m_isModified=TRUE;
 	return TRUE;
@@ -3063,6 +3122,10 @@ BOOL CMeasure::MeasurePrimarySecondarySaturationScales(CSensor *pSensor, CGenera
 	{
 		for ( i = 0 ; i < size  ; i ++ )
 		{
+		if (i>0)
+			GetConfig()->m_isSettling=FALSE;
+		else
+			doSettling = GetConfig()->m_isSettling;
 			if( pGenerator->DisplayRGBColor(GenColors[(j*size)+i],SaturationType[j],100*i/(size - 1),!bRetry,(j>0)) )
 			{
 				bEscape = WaitForDynamicIris ();
@@ -3210,6 +3273,7 @@ BOOL CMeasure::MeasurePrimarySecondarySaturationScales(CSensor *pSensor, CGenera
 			}
 		}
 	}
+	GetConfig()->m_isSettling = doSettling;
 
 	m_isModified=TRUE;
 	return TRUE;
@@ -3300,6 +3364,10 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
 
 	for ( i = 0; i < ( 3 + GetConfig () -> m_BWColorsToAdd ) ; i ++ )
 	{
+		if (i>0)
+			GetConfig()->m_isSettling=FALSE;
+		else
+			doSettling = GetConfig()->m_isSettling;
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_PRIMARY) )
 		{
 			bEscape = WaitForDynamicIris ();
@@ -3416,6 +3484,7 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
 	{
 		m_OnOffBlack=noDataColor;
 	}
+	GetConfig()->m_isSettling = doSettling;
 
 	pSensor->Release();
 	pGenerator->Release();
@@ -3518,6 +3587,10 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator)
 								};
 	for ( i = 0; i < ( 6 + GetConfig () -> m_BWColorsToAdd ); i ++ )
 	{
+		if (i>0)
+			GetConfig()->m_isSettling=FALSE;
+		else
+			doSettling = GetConfig()->m_isSettling;
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SECONDARY) )
 		{
 			bEscape = WaitForDynamicIris ();
@@ -3643,6 +3716,7 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator)
 	{
 		m_OnOffBlack=noDataColor;
 	}
+	GetConfig()->m_isSettling = doSettling;
 
 	pSensor->Release();
 	pGenerator->Release();
@@ -5230,12 +5304,12 @@ CColor CMeasure::GetRefPrimary(int i) const
     }
     aColor.SetRGBValue(ColorRGB(r,g,b), GetColorReference() );
     if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
-       gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(aColor.GetY(),1/2.22));
+       gamma = log(GetBT1886(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(aColor.GetY(),1.0/2.22));
     if (isSpecial)
     {
-        r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
-        g=(g<=0.0||g>=1.0)?min(max(g,0),1):pow(pow(g,1./2.22),gamma);
-        b=(b<=0.0||b>=1.0)?min(max(b,0),1):pow(pow(b,1./2.22),gamma);
+        r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1.0/2.22),gamma);
+        g=(g<=0.0||g>=1.0)?min(max(g,0),1):pow(pow(g,1.0/2.22),gamma);
+        b=(b<=0.0||b>=1.0)?min(max(b,0),1):pow(pow(b,1.0/2.22),gamma);
     }
     aColorr.SetRGBValue (ColorRGB(r,g,b), GetColorReference());	
 
@@ -5244,12 +5318,12 @@ CColor CMeasure::GetRefPrimary(int i) const
     b=rgbg[2];
     aColor.SetRGBValue(ColorRGB(r,g,b), GetColorReference() );
     if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
-       gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(aColor.GetY(),1/2.22));
+       gamma = log(GetBT1886(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(aColor.GetY(),1.0/2.22));
     if (isSpecial)
     {
-        r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
-        g=(g<=0.0||g>=1.0)?min(max(g,0),1):pow(pow(g,1./2.22),gamma);
-        b=(b<=0.0||b>=1.0)?min(max(b,0),1):pow(pow(b,1./2.22),gamma);
+        r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1.0/2.22),gamma);
+        g=(g<=0.0||g>=1.0)?min(max(g,0),1):pow(pow(g,1.0/2.22),gamma);
+        b=(b<=0.0||b>=1.0)?min(max(b,0),1):pow(pow(b,1.0/2.22),gamma);
     }
     aColorg.SetRGBValue (ColorRGB(r,g,b), GetColorReference());	
 
@@ -5258,12 +5332,12 @@ CColor CMeasure::GetRefPrimary(int i) const
     b=rgbb[2];
     aColor.SetRGBValue(ColorRGB(r,g,b), GetColorReference() );
     if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
-       gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(aColor.GetY(),1/2.22));
+       gamma = log(GetBT1886(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(aColor.GetY(),1.0/2.22));
     if (isSpecial)
     {
-        r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
-        g=(g<=0.0||g>=1.0)?min(max(g,0),1):pow(pow(g,1./2.22),gamma);
-        b=(b<=0.0||b>=1.0)?min(max(b,0),1):pow(pow(b,1./2.22),gamma);
+        r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1.0/2.22),gamma);
+        g=(g<=0.0||g>=1.0)?min(max(g,0),1):pow(pow(g,1.0/2.22),gamma);
+        b=(b<=0.0||b>=1.0)?min(max(b,0),1):pow(pow(b,1.0/2.22),gamma);
     }
     aColorb.SetRGBValue (ColorRGB(r,g,b), GetColorReference());	
 
@@ -5311,12 +5385,12 @@ CColor CMeasure::GetRefSecondary(int i) const
     b=rgby[2];
     aColor.SetRGBValue(ColorRGB(r,g,b), GetColorReference() );
     if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
-       gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(aColor.GetY(),1/2.22));
+       gamma = log(GetBT1886(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(aColor.GetY(),1.0/2.22));
     if (isSpecial)
     {
-        r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
-        g=(g<=0.0||g>=1.0)?min(max(g,0),1):pow(pow(g,1./2.22),gamma);
-        b=(b<=0.0||b>=1.0)?min(max(b,0),1):pow(pow(b,1./2.22),gamma);
+        r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1.0/2.22),gamma);
+        g=(g<=0.0||g>=1.0)?min(max(g,0),1):pow(pow(g,1.0/2.22),gamma);
+        b=(b<=0.0||b>=1.0)?min(max(b,0),1):pow(pow(b,1.0/2.22),gamma);
     }
     aColory.SetRGBValue (ColorRGB(r,g,b), GetColorReference());	
 
@@ -5325,12 +5399,12 @@ CColor CMeasure::GetRefSecondary(int i) const
     b=rgbc[2];
     aColor.SetRGBValue(ColorRGB(r,g,b), GetColorReference() );
     if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
-       gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(aColor.GetY(),1/2.22));
+       gamma = log(GetBT1886(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(aColor.GetY(),1.0/2.22));
     if (isSpecial)
     {
-        r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
-        g=(g<=0.0||g>=1.0)?min(max(g,0),1):pow(pow(g,1./2.22),gamma);
-        b=(b<=0.0||b>=1.0)?min(max(b,0),1):pow(pow(b,1./2.22),gamma);
+        r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1.0/2.22),gamma);
+        g=(g<=0.0||g>=1.0)?min(max(g,0),1):pow(pow(g,1.0/2.22),gamma);
+        b=(b<=0.0||b>=1.0)?min(max(b,0),1):pow(pow(b,1.0/2.22),gamma);
     }
     aColorc.SetRGBValue (ColorRGB(r,g,b), GetColorReference());	
 
@@ -5339,12 +5413,12 @@ CColor CMeasure::GetRefSecondary(int i) const
     b=rgbm[2];
     aColor.SetRGBValue(ColorRGB(r,g,b), GetColorReference() );
     if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
-       gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(aColor.GetY(),1/2.22));
+       gamma = log(GetBT1886(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(aColor.GetY(),1.0/2.22));
     if (isSpecial)
     {
-        r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
-        g=(g<=0.0||g>=1.0)?min(max(g,0),1):pow(pow(g,1./2.22),gamma);
-        b=(b<=0.0||b>=1.0)?min(max(b,0),1):pow(pow(b,1./2.22),gamma);
+        r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1.0/2.22),gamma);
+        g=(g<=0.0||g>=1.0)?min(max(g,0),1):pow(pow(g,1.0/2.22),gamma);
+        b=(b<=0.0||b>=1.0)?min(max(b,0),1):pow(pow(b,1.0/2.22),gamma);
     }
     aColorm.SetRGBValue (ColorRGB(r,g,b), GetColorReference());	
 
@@ -5443,10 +5517,10 @@ CColor CMeasure::GetRefSat(int i, double sat_percent, bool special) const
 	if (sat_percent < 1 )
 	{
 	    if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
-		   gamma = log(GetBT1886(pow(aColor.GetY(),1/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(aColor.GetY(),1/2.22));
-		r=(r<=0||r>=1)?min(max(r,0),1):pow(pow(r,1./2.22),gamma);
-		g=(g<=0||g>=1)?min(max(g,0),1):pow(pow(g,1./2.22),gamma);
-		b=(b<=0||b>=1)?min(max(b,0),1):pow(pow(b,1./2.22),gamma);
+		   gamma = log(GetBT1886(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(aColor.GetY(),1.0/2.22));
+		r=(r<=0||r>=1)?min(max(r,0),1):pow(pow(r,1.0/2.22),gamma);
+		g=(g<=0||g>=1)?min(max(g,0),1):pow(pow(g,1.0/2.22),gamma);
+		b=(b<=0||b>=1)?min(max(b,0),1):pow(pow(b,1.0/2.22),gamma);
 		if (!special)
 			aColor.SetRGBValue (ColorRGB(r,g,b), GetColorReference());	
 		else

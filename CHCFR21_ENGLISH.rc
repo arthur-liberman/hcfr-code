@@ -301,20 +301,22 @@ BEGIN
     CONTROL         "Continuous measuring",IDC_CHECK_CONTINUOUS,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,56,85,10
     CONTROL         "Detect primary colors during user measures",IDC_CHECK_DETECT_PRIMARIES,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,67,151,10
-    GROUPBOX        "Dynamic iris",IDC_STATIC,7,85,198,36,WS_GROUP
+    GROUPBOX        "Dynamic iris",IDC_STATIC,7,85,198,53,WS_GROUP
     LTEXT           "Latency time",IDC_STATIC,14,96,103,8
     EDITTEXT        IDC_EDIT_IRIS_TIME,123,93,40,14,ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "ms",IDC_STATIC,168,96,15,8
     CONTROL         "Bip at the beginning of measure (latency definition help)",IDC_CHECK_BEEP,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,107,189,10
-    GROUPBOX        "Colors to add when measuring primaries and secondaries",IDC_STATIC,7,123,198,25,WS_GROUP
-    CONTROL         "None",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,134,33,10
-    CONTROL         "White",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,60,134,35,10
-    CONTROL         "White and black",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,114,134,68,10
-    GROUPBOX        "Gray levels rounding assumption",IDC_STATIC,7,151,198,26,WS_GROUP
+    GROUPBOX        "Colors to add when measuring primaries and secondaries",IDC_STATIC,7,144,198,25,WS_GROUP
+    CONTROL         "None",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,155,33,10
+    CONTROL         "White",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,60,155,35,10
+    CONTROL         "White and black",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,114,155,68,10
+    GROUPBOX        "Gray levels rounding assumption",IDC_STATIC,7,173,198,26,WS_GROUP
     CONTROL         "Use round down levels (AVSHD, DVE)",IDC_CHECK_USE_ROUNDDOWN,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,162,135,10
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,185,135,10
     CONTROL         "Use HSV Level Bars",IDC_CHECK_USE_HSV,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,105,56,81,10
+    CONTROL         "Add settling pattern to automatic measures",IDC_IS_SETTLING,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,123,149,10
 END
 
 IDD_EXPORTXLS_DIALOG DIALOG 0, 0, 226, 135
@@ -961,12 +963,12 @@ CAPTION "Colorimeter Calibration Spectral Sample"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     EDITTEXT        IDC_DISPLAY_NAME,89,17,115,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_DISPLAY_TECH,89,36,115,14,ES_AUTOHSCROLL
     DEFPUSHBUTTON   "OK",IDOK,107,65,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,161,65,50,14
     GROUPBOX        "Reference Display",IDC_DISPLAY_GROUP,7,7,204,50
     RTEXT           "Display name",IDC_STATIC,28,20,55,15
     RTEXT           "Display technology",IDC_STATIC,17,38,66,15
+    EDITTEXT        IDC_DISPLAY_TECH,89,36,115,14,ES_AUTOHSCROLL
 END
 
 
@@ -2374,7 +2376,7 @@ BEGIN
     IDD_GENERAL_PROP_PAGE, DIALOG
     BEGIN
         RIGHTMARGIN, 208
-        BOTTOMMARGIN, 183
+        BOTTOMMARGIN, 204
     END
 
     IDD_EXPORTXLS_DIALOG, DIALOG

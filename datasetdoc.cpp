@@ -285,6 +285,7 @@ BOOL StartBackgroundMeasures ( CDataSetDoc * pDoc )
 				}
 
 				ColorRGBDisplay clr((( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.GetColor ()) & 0x00ffffff);
+				Sleep(500);
 				g_CurrentColor = clr;
 
 				pDoc->GetGenerator()->DisplayRGBColor(clr,CGenerator::MT_UNKNOWN);
@@ -2113,7 +2114,7 @@ void CDataSetDoc::OnCalibrationSpectralSample()
 				return;
 			}
 		}
-
+		
 		std::string savePath = GetConfig()->m_ApplicationPath;
 		CFileDialog fileSaveDialog( FALSE, "ccss", NULL, OFN_HIDEREADONLY, "Colorimeter Calibration Spectral Sample (*.ccss)|*.ccss||" );
 		fileSaveDialog.m_ofn.lpstrInitialDir = savePath.c_str();
@@ -2121,6 +2122,7 @@ void CDataSetDoc::OnCalibrationSpectralSample()
 
 		if(spectralSampleDialog.DoModal() == IDOK && fileSaveDialog.DoModal() == IDOK)
 		{
+			savePath = fileSaveDialog.GetPathName();
 			std::string saveFilename = savePath + (LPCSTR)fileSaveDialog.GetFileName();
 			try
 			{	

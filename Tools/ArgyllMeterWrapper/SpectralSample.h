@@ -77,6 +77,7 @@ private:
     std::string m_Display;
     std::string m_Tech;
 	std::string m_RefInstrument;
+	int	m_refrmode;
 };
 
 

@@ -864,8 +864,8 @@ bool ArgyllMeterWrapper::loadSpectralSample(const SpectralSample &sample)
         // We're already loaded
         return true;
     }
-disptech x = disptech_unknown;    
-//    inst_code instCode = m_meter->col_cal_spec_set(m_meter, sample.getCCSS()->samples, sample.getCCSS()->no_samp);
+	disptech x = disptech_unknown;    
+	m_meter->get_disptechi(m_meter, &x, NULL, NULL );
     inst_code instCode = m_meter->col_cal_spec_set(m_meter, x, sample.getCCSS()->samples, sample.getCCSS()->no_samp);
     if (instCode != inst_ok) 
     {

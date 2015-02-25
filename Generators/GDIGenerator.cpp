@@ -78,7 +78,8 @@ CGDIGenerator::CGDIGenerator()
     m_madVR_3d = GetConfig()->GetProfileInt("GDIGenerator","MADVR3D",0);
     m_madVR_vLUT = GetConfig()->GetProfileInt("GDIGenerator","MADVRvLUT",0);
     m_madVR_OSD = GetConfig()->GetProfileInt("GDIGenerator","MADVROSD",0);
-	m_displayWindow.SetDisplayMode(m_nDisplayMode);	// Always init in GDI mode during init
+//	m_displayWindow.SetDisplayMode(m_nDisplayMode);	// Always init in GDI mode during init
+	m_displayWindow.SetDisplayMode();	
 
 	CString str;
 	str.LoadString(IDS_GDIGENERATOR_PROPERTIES_TITLE);
@@ -105,10 +106,7 @@ CGDIGenerator::CGDIGenerator(int nDisplayMode, BOOL b16_235)
 
 	m_nDisplayMode = nDisplayMode;
 	m_b16_235 = b16_235;
-	m_displayWindow.SetDisplayMode();
-    m_madVR_3d = m_madVR_3d;
-    m_madVR_vLUT = m_madVR_vLUT;
-    m_madVR_OSD = m_madVR_OSD;
+	m_displayWindow.SetDisplayMode(nDisplayMode);
 
 	CString str;
 	str.LoadString(IDS_GDIGENERATOR_PROPERTIES_TITLE);
@@ -354,7 +352,7 @@ BOOL CGDIGenerator::Init(UINT nbMeasure)
 	return bOk;
 }
 
-BOOL CGDIGenerator::DisplayRGBColormadVR( const ColorRGBDisplay& clr )
+BOOL CGDIGenerator::DisplayRGBColormadVR( const ColorRGBDisplay& clr, bool first )
 {
 	//init done in generator.cpp 
       int blackLevel, whiteLevel;
@@ -371,13 +369,37 @@ BOOL CGDIGenerator::DisplayRGBColormadVR( const ColorRGBDisplay& clr )
       gT = (int) (g * (whiteLevel - blackLevel) + blackLevel + 0.5);
       bT = (int) (b * (whiteLevel - blackLevel) + blackLevel + 0.5);
       char aBuf[128];
+	  madVR_SetDisableOsdButton(!m_madVR_OSD);
+	  CGDIGenerator Cgen;
+	  double bgstim = Cgen.m_bgStimPercent / 100.;
+	  madVR_SetPatternConfig(Cgen.m_rectSizePercent, int (bgstim * 100), -1, -1);
+	  if (first)
+	  {
+		  int i;
+    	  sprintf(aBuf,"%s","Display settling, please wait...");
+	      const CString s(aBuf);
+	      madVR_SetOsdText(CT2CW(s));
+	      if (!madVR_ShowRGB(.98, .98, .98))
+		  {
+			MessageBox(0, "Test pattern failure.", "Error", MB_ICONERROR);
+			return false;
+		  }
+		  Sleep(600);
+		  for (i=0;i<8;i++)
+		  {
+			  madVR_ShowRGB(.98-i*.06,.98-i*.06,.98-i*.06);
+			  Sleep(600);
+		  }			  
+		  madVR_ShowRGB(.67,.67,.67);
+		  Sleep(1000);
+	  }
+
       if (m_madVR_3d)
     	  sprintf(aBuf,"HCFR is measuring display, pleaset wait...%d:%d:%d[3dlut disabled]",rT,gT,bT);
       else
     	  sprintf(aBuf,"HCFR is measuring display, please wait...%d:%d:%d",rT,gT,bT);
-      const CString s(aBuf);
-      madVR_SetOsdText(CT2CW(s));
-	  madVR_SetDisableOsdButton(!m_madVR_OSD);
+      const CString s2(aBuf);
+	  madVR_SetOsdText(CT2CW(s2));
       if (!madVR_ShowRGB(r, g, b))
       {
         MessageBox(0, "Test pattern failure.", "Error", MB_ICONERROR);
@@ -434,7 +456,7 @@ BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nP
 	p_clr[2] = clr[2] * m_displayWindow.m_Intensity / 100;
 	
 	if ( m_GDIGenePropertiesPage.m_nDisplayMode == DISPLAY_madVR)
-		DisplayRGBColormadVR (do_Intensity?p_clr:clr);
+		DisplayRGBColormadVR (do_Intensity?p_clr:clr, GetConfig()->m_isSettling);
 	else
 		m_displayWindow.DisplayRGBColor(do_Intensity?p_clr:clr);
 	return TRUE;

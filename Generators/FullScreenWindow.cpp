@@ -614,8 +614,28 @@ void CFullScreenWindow::OnPaint()
 
 			}
 		}
+
 		CRect patternRect=rect;
 		patternRect.DeflateRect(dWidth/2,dHeight/2);
+		//Settling pattern
+		if (GetConfig()->m_isSettling)
+		{
+			int i;
+			CRect settlingRect=patternRect;
+			for (i=0; i < 10; i++)
+			{
+				brush.CreateSolidBrush ( RGB(250-i*15,250-i*15,250-i*15) );
+				dc.FillRect ( &settlingRect, &brush );
+				brush.DeleteObject ();
+				Sleep(600);
+			}
+			brush.CreateSolidBrush ( RGB(175,175,175) );
+			dc.FillRect ( &settlingRect, &brush );
+			brush.DeleteObject ();
+			Sleep(1000);
+		}
+
+
 		brush.CreateSolidBrush ( DisplayColor );
 		dc.FillRect ( &patternRect, &brush );
 		brush.DeleteObject ();
@@ -631,6 +651,7 @@ void CFullScreenWindow::OnPaint()
         else
             dc.SetBkColor(RGB(0,0,0));
         dc.DrawText(aBuf,&rect, DT_CENTER|DT_BOTTOM|DT_SINGLELINE);
+		dc.DeleteDC();
 	}
 
 	// Pattern Display Common Vars

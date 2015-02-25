@@ -42,8 +42,8 @@ CReferencesPropPage::CReferencesPropPage() : CPropertyPageWithHelp(CReferencesPr
 	m_whiteTarget = 0;
 	m_colorStandard = 1;
 	m_CCMode = GCD;
-	m_GammaRef = 2.22;
-	m_GammaAvg = 2.22;
+	m_GammaRef = 2.2;
+	m_GammaAvg = 2.2;
 	m_changeWhiteCheck = FALSE;
 	m_useMeasuredGamma = FALSE;
 	m_GammaOffsetType = 1;

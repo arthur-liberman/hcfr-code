@@ -85,7 +85,6 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
     
 	BOOL bWasLumaMode = m_bLumaMode;
     double cx,cy,cz,cxref,cyref,czref;
-	int nCount;
 
 	if ( m_pRefColor)
 	{
@@ -164,12 +163,19 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 				aReference = GetColorReference().GetWhite();
 			}
 		} //update reference
-		nCount = m_pDocument -> GetMeasure () -> GetGrayScaleSize ();
-		CColor white = m_pDocument->GetMeasure()->GetOnOffWhite();
-		if (!white.isValid())
-			white = m_pDocument -> GetMeasure () -> GetGray ( nCount - 1 );
-		if (m_displayMode == 1) 
-			white = m_pDocument->GetMeasure()->GetPrimeWhite();
+
+		CColor white = m_pDocument->GetMeasure()->GetPrimeWhite();
+
+		if (!white.isValid() || m_displayMode == 0 || m_displayMode == 2 || m_displayMode == 3)
+			white = m_pDocument -> GetMeasure () ->GetOnOffWhite();
+		if ( m_displayMode > 4 && (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb))
+			white = m_pDocument -> GetMeasure () ->GetOnOffWhite();
+
+		//special case check if user has done a 75% primaries run and use grayscale white instead for colorchecker
+		if (m_pDocument->GetMeasure()->GetOnOffWhite().isValid())
+			if ((m_pDocument->GetMeasure()->GetPrimeWhite()[1] / m_pDocument->GetMeasure()->GetOnOffWhite()[1] < 0.8) && m_displayMode == 11)
+				white = m_pDocument -> GetMeasure () ->GetOnOffWhite();
+		
 		if (m_bLumaMode && GetConfig()->m_bDetectPrimaries && aReference.isValid())
 		{
             ColorXYZ aColor=m_pRefColor->GetXYZValue(), refColor=aReference.GetXYZValue() ;
@@ -241,6 +247,7 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
         }
     	int nCount = m_pDocument -> GetMeasure () -> GetGrayScaleSize ();
         double YWhite = white.GetY();
+
         if (!m_bLumaMode)// && minCol != -1 && !g_pDataDocRunningThread)
         {
             ColorxyY tmpColor(GetColorReference().GetWhite());
@@ -257,7 +264,7 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
                         m_pDocument->ComputeGammaAndOffset(&Gamma, &Offset, 1, 1, nCount, false);
             			Gamma = floor(Gamma * 100) / 100;
                         if (GetConfig()->m_useMeasuredGamma)
-			                GetConfig()->m_GammaAvg = (Gamma<1?2.22:Gamma);
+			                GetConfig()->m_GammaAvg = (Gamma<1?2.2:Gamma);
                         GetConfig()->SetPropertiesSheetValues();
             		    CColor White = m_pDocument -> GetMeasure () -> GetGray ( nCount - 1 );
 	                	CColor Black = m_pDocument -> GetMeasure () -> GetGray ( 0 );

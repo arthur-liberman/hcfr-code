@@ -52,6 +52,7 @@ public:
 	int		m_BWColorsToAdd;
 	BOOL	m_bDetectPrimaries;
 	BOOL	m_useHSV;
+	BOOL	m_isSettling;
 	BOOL	m_bUseRoundDown;
 	//}}AFX_DATA
 

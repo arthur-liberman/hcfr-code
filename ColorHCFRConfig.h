@@ -63,6 +63,7 @@ public:
 	BOOL m_bDisplayTestColors;
 	BOOL m_bContinuousMeasures;
 	BOOL m_bDetectPrimaries;
+	BOOL m_isSettling;
 	BOOL m_useHSV;
 	int m_latencyTime;
 	BOOL m_bLatencyBeep;

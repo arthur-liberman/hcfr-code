@@ -152,9 +152,9 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	}
 	
 	m_graphCtrl.ClearGraph(m_redLumGraphID);
-//	double YWhite = (pDoc -> GetMeasure () -> GetGray ( pDoc->GetMeasure()->GetGrayScaleSize() - 1 )).GetLuminance();
 	double luma_coeff = ( 100.0 ) / pDoc->GetMeasure()->GetOnOffWhite().GetLuminance();
-//	double luma_coeff = ( 100.0 ) / YWhite;
+	if (pDoc->GetMeasure()->GetPrimeWhite().isValid() &&  !(GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb))
+		luma_coeff = ( 100.0 ) / pDoc->GetMeasure()->GetPrimeWhite().GetLuminance();
 
 	if (m_showPrimaries && m_redLumGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetRedSat(0).isValid() )
 	{
