@@ -1866,9 +1866,9 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				if ( m_displayMode > 4 && (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb))
 					white = GetDocument() -> GetMeasure () ->GetOnOffWhite();
 
-				//special case check if user has done a 75% primaries run and use grayscale white instead for colorchecker
+				//special case check if user has done a primaries run at less than 100%, use grayscale white instead for colorchecker
 				if (GetDocument()->GetMeasure()->GetOnOffWhite().isValid())
-					if ((GetDocument()->GetMeasure()->GetPrimeWhite()[1] / GetDocument()->GetMeasure()->GetOnOffWhite()[1] < 0.8) && m_displayMode == 11)
+					if ((GetDocument()->GetMeasure()->GetPrimeWhite()[1] / GetDocument()->GetMeasure()->GetOnOffWhite()[1] < 0.9) && m_displayMode == 11)
 						white = GetDocument() -> GetMeasure () ->GetOnOffWhite();
 
 				if ( nCol2 < ( (m_displayMode > 11 || m_displayMode < 5) ? 7 : 1001) && white.isValid() && white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) > 0.0001 )
@@ -2219,9 +2219,9 @@ void CMainView::UpdateGrid()
 				 bool isSpecial = (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb);
 				 YWhite = isSpecial?YWhiteOnOff:YWhitePrime;
 				 YWhiteRefDoc = isSpecial?YWhiteOnOffRefDoc:YWhitePrimeRefDoc;
-				//special case check if user has done a 75% primaries run and use grayscale white instead for colorchecker
+				//special case check if user has done a less than 100% primaries run and use grayscale white instead for colorchecker
 				if (GetDocument()->GetMeasure()->GetOnOffWhite().isValid())
-					if ((YWhitePrime / YWhiteOnOff < 0.8) && m_displayMode == 11)
+					if ((YWhitePrime / YWhiteOnOff < 0.9) && m_displayMode == 11)
 					{
 						YWhite = YWhiteOnOff;
 						YWhiteRefDoc = YWhiteOnOffRefDoc;

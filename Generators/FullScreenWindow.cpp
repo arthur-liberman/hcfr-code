@@ -620,16 +620,24 @@ void CFullScreenWindow::OnPaint()
 		//Settling pattern
 		if (GetConfig()->m_isSettling)
 		{
-			int i;
 			CRect settlingRect=patternRect;
-			for (i=0; i < 10; i++)
-			{
-				brush.CreateSolidBrush ( RGB(250-i*15,250-i*15,250-i*15) );
-				dc.FillRect ( &settlingRect, &brush );
-				brush.DeleteObject ();
-				Sleep(600);
-			}
-			brush.CreateSolidBrush ( RGB(175,175,175) );
+			brush.CreateSolidBrush ( RGB(191,191,191) );
+			dc.FillRect ( &settlingRect, &brush );
+			brush.DeleteObject ();
+			Sleep(1000);
+			brush.CreateSolidBrush ( RGB(191,0,0) );
+			dc.FillRect ( &settlingRect, &brush );
+			brush.DeleteObject ();
+			Sleep(1000);
+			brush.CreateSolidBrush ( RGB(0,191,0) );
+			dc.FillRect ( &settlingRect, &brush );
+			brush.DeleteObject ();
+			Sleep(1000);
+			brush.CreateSolidBrush ( RGB(0,0,191) );
+			dc.FillRect ( &settlingRect, &brush );
+			brush.DeleteObject ();
+			Sleep(1000);
+			brush.CreateSolidBrush ( RGB(191,191,191) );
 			dc.FillRect ( &settlingRect, &brush );
 			brush.DeleteObject ();
 			Sleep(1000);

@@ -96,7 +96,6 @@ public:
 	CSensor *		m_pSensor;
 
 	CColor			m_SelectedColor;
-
 // Operations
 public:
 	void ShowAllViews();
@@ -172,7 +171,7 @@ protected:
 	void PerformSimultaneousMeasures ( int nMode );
 	
 	virtual void UpdateFrameCounts();
-
+	bool Settling;
 friend class CMainView;
 
 // Generated message map functions

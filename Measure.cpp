@@ -1614,6 +1614,7 @@ BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator)
 			GetConfig()->m_isSettling=FALSE;
 		else
 			doSettling = GetConfig()->m_isSettling;
+
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_RED,100*i/(size - 1),!bRetry))
 		{
 			bEscape = WaitForDynamicIris ();
@@ -4276,7 +4277,7 @@ void CMeasure::DeleteContrast ()
 	m_isModified=TRUE; 
 }
 
-BOOL CMeasure::AddMeasurement(CSensor *pSensor, CGenerator *pGenerator)
+BOOL CMeasure::AddMeasurement(CSensor *pSensor, CGenerator *pGenerator,  CGenerator::MeasureType MT)
 {
 	BOOL		bDisplayColor = GetConfig () -> m_bDisplayTestColors;
 	BOOL		bOk;
@@ -4310,7 +4311,7 @@ BOOL CMeasure::AddMeasurement(CSensor *pSensor, CGenerator *pGenerator)
 		// Display test color
 		clr = ( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.GetColor ();
 		clr &= 0x00FFFFFF;
-		bOk = pGenerator->DisplayRGBColor(ColorRGBDisplay(clr),CGenerator::MT_ACTUAL);
+		bOk = pGenerator->DisplayRGBColor(ColorRGBDisplay(clr), MT);
 		if ( bOk )
 			WaitForDynamicIris ( TRUE );
 	}
@@ -5446,6 +5447,7 @@ CColor CMeasure::GetRefSat(int i, double sat_percent, bool special) const
 {
 	CColor	refColor;
 	ColorxyY	refWhite(GetColorReference().GetWhite());
+//	refWhite[2]=0.75 * refWhite[2];
 	double	x, y;
 	double	xstart = refWhite[0];
 	double	ystart = refWhite[1];

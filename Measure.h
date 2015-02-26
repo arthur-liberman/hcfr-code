@@ -188,7 +188,7 @@ public:
 	double GetContrastMaxLum ();
 	void DeleteContrast ();
 	
-	BOOL AddMeasurement(CSensor *pSensor, CGenerator *pGenerator);
+	BOOL AddMeasurement(CSensor *pSensor, CGenerator *pGenerator, CGenerator::MeasureType MT);
 	CColor GetMeasurement(int i) const;
 	void SetMeasurements(int i,const CColor & aColor) {m_measurementsArray[i]=aColor; m_isModified=TRUE; } 
 	void AppendMeasurements(const CColor & aColor);

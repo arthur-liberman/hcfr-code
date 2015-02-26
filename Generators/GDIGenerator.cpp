@@ -375,25 +375,24 @@ BOOL CGDIGenerator::DisplayRGBColormadVR( const ColorRGBDisplay& clr, bool first
 	  madVR_SetPatternConfig(Cgen.m_rectSizePercent, int (bgstim * 100), -1, -1);
 	  if (first)
 	  {
-		  int i;
     	  sprintf(aBuf,"%s","Display settling, please wait...");
 	      const CString s(aBuf);
 	      madVR_SetOsdText(CT2CW(s));
-	      if (!madVR_ShowRGB(.98, .98, .98))
+	      if (!madVR_ShowRGB(.75, .75, .75))
 		  {
 			MessageBox(0, "Test pattern failure.", "Error", MB_ICONERROR);
 			return false;
 		  }
-		  Sleep(600);
-		  for (i=0;i<8;i++)
-		  {
-			  madVR_ShowRGB(.98-i*.06,.98-i*.06,.98-i*.06);
-			  Sleep(600);
-		  }			  
-		  madVR_ShowRGB(.67,.67,.67);
+		  Sleep(1000);
+		  madVR_ShowRGB(.75,0,0);
+		  Sleep(1000);
+		  madVR_ShowRGB(0,.75,0);
+		  Sleep(1000);
+		  madVR_ShowRGB(0,0,.75);
+		  Sleep(1000);
+		  madVR_ShowRGB(.75,.75,.75);
 		  Sleep(1000);
 	  }
-
       if (m_madVR_3d)
     	  sprintf(aBuf,"HCFR is measuring display, pleaset wait...%d:%d:%d[3dlut disabled]",rT,gT,bT);
       else
@@ -446,7 +445,7 @@ BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nP
 
 	ColorRGBDisplay p_clr;
 	BOOL do_Intensity=false;
-	if ( nPatternType == MT_PRIMARY || nPatternType == MT_SECONDARY)
+	if ( nPatternType == MT_PRIMARY || nPatternType == MT_SECONDARY || nPatternType == MT_SAT_RED || nPatternType == MT_SAT_GREEN || nPatternType == MT_SAT_BLUE || nPatternType == MT_SAT_YELLOW || nPatternType == MT_SAT_CYAN || nPatternType == MT_SAT_MAGENTA || nPatternType == MT_ACTUAL)
 	{
 		do_Intensity = true;
 	}

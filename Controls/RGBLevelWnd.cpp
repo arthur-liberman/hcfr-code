@@ -171,9 +171,9 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 		if ( m_displayMode > 4 && (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb))
 			white = m_pDocument -> GetMeasure () ->GetOnOffWhite();
 
-		//special case check if user has done a 75% primaries run and use grayscale white instead for colorchecker
+		//special case check if user has done a less than 100% primaries run and use grayscale white instead for colorchecker
 		if (m_pDocument->GetMeasure()->GetOnOffWhite().isValid())
-			if ((m_pDocument->GetMeasure()->GetPrimeWhite()[1] / m_pDocument->GetMeasure()->GetOnOffWhite()[1] < 0.8) && m_displayMode == 11)
+			if ((m_pDocument->GetMeasure()->GetPrimeWhite()[1] / m_pDocument->GetMeasure()->GetOnOffWhite()[1] < 0.9) && m_displayMode == 11)
 				white = m_pDocument -> GetMeasure () ->GetOnOffWhite();
 		
 		if (m_bLumaMode && GetConfig()->m_bDetectPrimaries && aReference.isValid())

@@ -133,7 +133,7 @@ BOOL CGenerator::Init(UINT nbMeasure)
 	{
 		if (madVR_IsAvailable())
 		{
-			int nSettling=GetConfig()->m_isSettling?10:0;
+			int nSettling=GetConfig()->m_isSettling?5:0;
 			madVR_Found = madVR_Connect(CM_ConnectToLocalInstance, CM_ConnectToLanInstance, CM_StartLocalInstance  );
 			if (m_madVR_vLUT)
 				madVR_SetDeviceGammaRamp(NULL);

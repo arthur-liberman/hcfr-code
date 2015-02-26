@@ -127,6 +127,10 @@ static UINT __cdecl BkgndThreadFunc ( LPVOID lpParameter )
 
 	    CView *			pView;
 	    POSITION		pos;
+			    
+		pos = g_pDataDocRunningThread -> GetFirstViewPosition ();
+		pView = g_pDataDocRunningThread -> GetNextView ( pos );
+		int m_d = ((CMainView*)pView)->m_displayMode;
 
 	    do
 	    {
@@ -143,7 +147,10 @@ static UINT __cdecl BkgndThreadFunc ( LPVOID lpParameter )
 			    if ( g_CurrentColor != clr )
 			    {
 				    g_CurrentColor = clr;
-				    pGenerator->DisplayRGBColor(clr,CGenerator::MT_UNKNOWN);
+					CGenerator::MeasureType MT = CGenerator::MT_UNKNOWN;							
+					if ( m_d == 1 || (m_d < 11 && m_d > 4) )
+						MT = CGenerator::MT_ACTUAL;
+					pGenerator->DisplayRGBColor(clr, MT);
 			    }
 		    }
 
@@ -188,7 +195,7 @@ static UINT __cdecl BkgndThreadFunc ( LPVOID lpParameter )
 					    if ( IsWindow ( pView -> m_hWnd ) && pView -> IsKindOf ( RUNTIME_CLASS ( CMainView ) ) )
 					    {
 						    // Reset button image to the green arrow only when in free measures mode
-						    if ( ( (CMainView*) pView ) -> m_displayMode == DISPLAY_madVR )
+						    if ( ( (CMainView*) pView ) -> m_displayMode == 2 )
 						    {
 							    //( (CMainView*) pView ) -> m_grayScaleButton.SetIcon(IDI_START_ICON,24,24);
 		 					    ( (CMainView*) pView ) -> m_grayScaleButton.SetBitmaps(IDB_MEAS_CONT,RGB(0,0,0));
@@ -258,6 +265,9 @@ BOOL StartBackgroundMeasures ( CDataSetDoc * pDoc )
 		CString str, str2;
 		str.LoadString(IDS_GDIGENERATOR_NAME);
 		str2 = pDoc->GetGenerator()->GetName();
+		pos = pDoc -> GetFirstViewPosition ();
+		pView = pDoc -> GetNextView ( pos );
+		int m_d = ((CMainView*)pView)->m_displayMode;
 		
 		if ( str == str2 )
 		{
@@ -285,10 +295,12 @@ BOOL StartBackgroundMeasures ( CDataSetDoc * pDoc )
 				}
 
 				ColorRGBDisplay clr((( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.GetColor ()) & 0x00ffffff);
-				Sleep(500);
 				g_CurrentColor = clr;
-
-				pDoc->GetGenerator()->DisplayRGBColor(clr,CGenerator::MT_UNKNOWN);
+				CGenerator::MeasureType MT = CGenerator::MT_UNKNOWN;							
+				if ( m_d == 1 || (m_d < 11 && m_d > 4) )
+					MT = CGenerator::MT_ACTUAL;
+				pDoc->GetGenerator()->DisplayRGBColor(clr,MT);
+				Sleep(500);
 				
 				g_bGDIGeneratorRunning = TRUE;
 			}
@@ -311,7 +323,7 @@ BOOL StartBackgroundMeasures ( CDataSetDoc * pDoc )
 					pView = g_pDataDocRunningThread -> GetNextView ( pos );
 					if ( IsWindow ( pView -> m_hWnd ) && pView -> IsKindOf ( RUNTIME_CLASS ( CMainView ) ) )
 					{
-						if ( ( (CMainView*) pView ) -> m_displayMode == DISPLAY_madVR )
+						if ( ( (CMainView*) pView ) -> m_displayMode == 2 )
 						{
 							//( (CMainView*) pView ) -> m_grayScaleButton.SetIcon(IDI_STOP_ICON,24,24);
 							( (CMainView*) pView ) -> m_grayScaleButton.SetBitmaps(IDB_MEAS_STOP,RGB(0,0,0));
@@ -393,7 +405,7 @@ void StopBackgroundMeasures ()
 				if ( IsWindow ( pView -> m_hWnd ) && pView -> IsKindOf ( RUNTIME_CLASS ( CMainView ) ) )
 				{
 					// Reset button image to the green arrow only when in free measures mode
-					if ( ( (CMainView*) pView ) -> m_displayMode == DISPLAY_madVR )
+					if ( ( (CMainView*) pView ) -> m_displayMode == 2 )
 					{
 						//( (CMainView*) pView ) -> m_grayScaleButton.SetIcon(IDI_START_ICON,24,24);
 						( (CMainView*) pView ) -> m_grayScaleButton.SetBitmaps(IDB_MEAS_CONT,RGB(0,0,0));
@@ -1259,12 +1271,24 @@ void CDataSetDoc::MeasureContrast()
 void CDataSetDoc::AddMeasurement() 
 {
 	StopBackgroundMeasures ();
+    POSITION pos;
+    CView* pView;
+    pos = this -> GetFirstViewPosition ();
+    pView = this -> GetNextView ( pos );
+	int m_d;
+	Settling=GetConfig()->m_isSettling;
+	GetConfig()->m_isSettling = FALSE;
+	m_d=((CMainView *)pView)->m_displayMode;
+	CGenerator::MeasureType MT = CGenerator::MT_UNKNOWN;							
+	if ( m_d == 1 || (m_d < 11 &&  m_d > 4) )
+		MT = CGenerator::MT_ACTUAL;
 
-	if(m_measure.AddMeasurement(m_pSensor,m_pGenerator))
+	if(m_measure.AddMeasurement(m_pSensor,m_pGenerator, MT))
 	{
 		SetModifiedFlag(m_measure.IsModified());
 		UpdateAllViews(NULL, UPD_FREEMEASUREAPPENDED);
 	}
+	GetConfig()->m_isSettling = Settling;
 }
 
 
@@ -2874,9 +2898,16 @@ void CDataSetDoc::OnContinuousMeasurement()
 	}
 	
 	if ( g_pDataDocRunningThread )
+	{
 		StopBackgroundMeasures ();
+		GetConfig()->m_isSettling = Settling;
+	}
 	else
+	{
+		Settling=GetConfig()->m_isSettling;
+		GetConfig()->m_isSettling = FALSE;
 		StartBackgroundMeasures ( this );
+	}
 }
 
 void CDataSetDoc::OnUpdateContinuousMeasurement(CCmdUI* pCmdUI) 
