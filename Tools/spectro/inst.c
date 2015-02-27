@@ -614,8 +614,8 @@ void *cntx			/* Context for callback */
 #ifdef ENABLE_USB
 	if (itype == instDTP94)
 		p = (inst *)new_dtp92(icom, itype);
-	else if (itype == instDTP20)
-		p = (inst *)new_dtp20(icom, itype);
+//	else if (itype == instDTP20)
+//		p = (inst *)new_dtp20(icom, itype);
 	else if (itype == instI1Disp1 ||
 		    itype == instI1Disp2)
 		p = (inst *)new_i1disp(icom, itype);

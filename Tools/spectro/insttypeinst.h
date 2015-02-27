@@ -23,7 +23,7 @@
 #endif
 
 #ifdef ENABLE_USB
-# include "dtp20.h"
+//# include "dtp20.h"
 # include "dtp92.h"
 # include "i1disp.h"
 # include "i1d3.h"

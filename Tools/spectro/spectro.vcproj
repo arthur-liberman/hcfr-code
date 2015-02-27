@@ -184,22 +184,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\dtp20.c"
-				>
-			</File>
-			<File
-				RelativePath=".\dtp22.c"
-				>
-			<File
-				RelativePath=".\dtp41.c"
-				>
-			</File>
-			<File
-				RelativePath=".\dtp51.c"
-				>
-			</File>
-			</File>
-			<File
 				RelativePath=".\dtp92.c"
 				>
 			</File>
@@ -265,10 +249,6 @@
 			</File>
 			<File
 				RelativePath=".\kleink10.c"
-				>
-			</File>
-			<File
-				RelativePath=".\mongoose.c"
 				>
 			</File>
 			<File
@@ -379,22 +359,6 @@
 			</File>
 			<File
 				RelativePath=".\disptechs.h"
-				>
-			</File>
-			<File
-				RelativePath=".\dtp20.h"
-				>
-			</File>
-			<File
-				RelativePath=".\dtp22.h"
-				>
-			</File>
-			<File
-				RelativePath=".\dtp41.h"
-				>
-			</File>
-			<File
-				RelativePath=".\dtp51.h"
 				>
 			</File>
 			<File
