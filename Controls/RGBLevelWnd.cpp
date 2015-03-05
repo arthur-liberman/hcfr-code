@@ -163,7 +163,7 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 				aReference = GetColorReference().GetWhite();
 			}
 		} //mincol > 0
-		else //autodetect if mincol <= 0 (measuring) and this is primaries page
+		else //autodetect if mincol <= 0 (measuring) and this is primaries or grayscale page
 		{
 			if ( m_displayMode == 1 && (m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefPrimary(0), GetColorReference() ) < 0.05 && GetConfig()->m_bDetectPrimaries))
 			{
@@ -195,7 +195,7 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 				m_bLumaMode = TRUE;
 				aReference = m_pDocument->GetMeasure()->GetRefSecondary(2);
 			}
-			else if ( m_displayMode == 1 && m_pRefColor->GetDeltaxy ( GetColorReference().GetWhite(), GetColorReference() ) < 0.05 && GetConfig()->m_bDetectPrimaries)
+			else if ( (m_displayMode == 1 || m_displayMode == 0) && m_pRefColor->GetDeltaxy ( GetColorReference().GetWhite(), GetColorReference() ) < 0.05 && GetConfig()->m_bDetectPrimaries)
 			{
 				m_bLumaMode = FALSE;
 				aReference = GetColorReference().GetWhite();

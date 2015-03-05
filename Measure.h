@@ -188,15 +188,15 @@ public:
 	double GetContrastMaxLum ();
 	void DeleteContrast ();
 	
-	BOOL AddMeasurement(CSensor *pSensor, CGenerator *pGenerator, CGenerator::MeasureType MT);
+	BOOL AddMeasurement(CSensor *pSensor, CGenerator *pGenerator, CGenerator::MeasureType MT, bool isPrimary);
 	CColor GetMeasurement(int i) const;
 	void SetMeasurements(int i,const CColor & aColor) {m_measurementsArray[i]=aColor; m_isModified=TRUE; } 
-	void AppendMeasurements(const CColor & aColor);
+	void AppendMeasurements(const CColor & aColor, bool isPrimary);
 	int GetMeasurementsSize() const { return m_measurementsArray.GetSize(); }
 	void SetMeasurementsSize(int size) { m_measurementsArray.SetSize(size); m_isModified=TRUE; }
 	void DeleteMeasurements(int i,int count) { m_measurementsArray.RemoveAt(i,count); m_isModified=TRUE; }
 	void InsertMeasurement(int i, CColor & aColor) { m_measurementsArray.InsertAt(i,aColor); m_isModified=TRUE; }
-	void FreeMeasurementAppended();
+	void FreeMeasurementAppended(bool isPrimary);
 
 	CString GetInfoString() const { return m_infoStr; }
 	void SetInfoString(CString & aStr) { m_infoStr = aStr; } 

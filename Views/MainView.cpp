@@ -259,6 +259,31 @@ static const SCtrlLayout g_CtrlLayout [] = {
 						"CP-Dark",
 						"Dark Skin",
 						"Light Skin" };
+                    char*  PatNameAXIS[24]={
+						"Red 10%",
+						"Red 20%",
+						"Red 30%",
+						"Red 40%",
+						"Red 50%",
+						"Red 60%",
+						"Red 70%",
+						"Red 80%",
+						"Green 10%",
+						"Green 20%",
+						"Green 30%",
+						"Green 40%",
+						"Green 50%",
+						"Green 60%",
+						"Green 70%",
+						"Green 80%",
+						"Blue 10%",
+						"Blue 20%",
+						"Blue 30%",
+						"Blue 40%",
+						"Blue 50%",
+						"Blue 60%",
+						"Blue 70%",
+						"Blue 80%" };
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -989,6 +1014,10 @@ void CMainView::InitGrid()
                  else if (GetConfig()->m_CCMode == CPS)
                  {
                     Item.strText.SetString(PatNameCPS[i]);
+                 }
+                 else if (GetConfig()->m_CCMode == AXIS)
+                 {
+                    Item.strText.SetString(PatNameAXIS[i]);
                  }
                  else if (GetConfig()->m_CCMode == USER)
                  {
@@ -2818,7 +2847,7 @@ void CMainView::UpdateGrid()
 				CString dEform;
 				float a = 2.0, b = 3, dE10 = 0;
 				Tmp.LoadString ( IDS_DELTAEAVERAGE );
-                Msg += (GetConfig()->m_CCMode == GCD?" - ColorChecker Classic GCD ":(GetConfig()->m_CCMode==MCD?" - ColorChecker Classic MCD ":(GetConfig()->m_CCMode==SKIN?" - Pantone skin tones ":(GetConfig()->m_CCMode==CCSG?" - ColorChecker SG ":(GetConfig()->m_CCMode==USER?" - ColorChecker Custom ":(GetConfig()->m_CCMode==CMS?" - ColorChecker CalMAN SG skin tones ":(GetConfig()->m_CCMode==CPS?" - ColorChecker ChromaPure skin tones ":" - ColorChecker Classic CalMAN ")))))));
+				Msg += (GetConfig()->m_CCMode == GCD?" - ColorChecker Classic GCD ":(GetConfig()->m_CCMode==MCD?" - ColorChecker Classic MCD ":(GetConfig()->m_CCMode==SKIN?" - Pantone skin tones ":(GetConfig()->m_CCMode==CCSG?" - ColorChecker SG ":(GetConfig()->m_CCMode==USER?" - ColorChecker Custom ":(GetConfig()->m_CCMode==CMS?" - ColorChecker CalMAN SG skin tones ":(GetConfig()->m_CCMode==CPS?" - ColorChecker ChromaPure skin tones ":(GetConfig()->m_CCMode==CMC?" - ColorChecker Classic CalMAN ":" - RGB Luminance Ramps"))))))));
 				Msg += " ( ";
 				Msg += Tmp;
                 if (GetConfig()->m_CCMode == CCSG || GetConfig()->m_CCMode == USER)

@@ -84,8 +84,12 @@ CMeasure::CMeasure()
 	}
 	
 	for ( int i=0;i<m_cc24SatMeasureArray.GetSize();i++ )	m_cc24SatMeasureArray[i]=noDataColor;
-
-	m_OnOffBlack=m_OnOffWhite=m_PrimeWhite=noDataColor;
+	m_OnOffWhite.SetXYZValue(GetColorReference().GetWhite());
+	m_PrimeWhite.SetXYZValue(GetColorReference().GetWhite());
+	m_PrimeWhite.SetY(100.);
+	m_OnOffWhite.SetY(100.);
+	m_OnOffBlack.SetXYZValue(GetColorReference().GetWhite());
+	m_OnOffBlack.SetY(0.01);
 	m_AnsiBlack=m_AnsiWhite=noDataColor;
 	m_infoStr="";
 	
@@ -2574,6 +2578,9 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
 	case SKIN:
 		 nPattern=CGenerator::MT_SAT_CC24_MCD;
 		 break;
+	case AXIS:
+		 nPattern=CGenerator::MT_SAT_CC24_MCD;
+		 break;
 	case CCSG:
 		 nPattern=CGenerator::MT_SAT_CC24_CCSG;
 		 break;
@@ -2599,7 +2606,7 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
-    if(pGenerator->GetName() == str&&( GetConfig()->m_CCMode==SKIN || GetConfig()->m_CCMode==USER ) )
+    if(pGenerator->GetName() == str&&( GetConfig()->m_CCMode==SKIN || GetConfig()->m_CCMode==USER || GetConfig()->m_CCMode==AXIS ) )
 	{		
 		Title.LoadString ( IDS_ERROR );
 		strMsg.LoadString ( IDS_ERRINITGENERATOR );
@@ -2773,6 +2780,9 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 	case SKIN:
 		 nPattern=CGenerator::MT_SAT_CC24_GCD;
          break;
+	case AXIS:
+		 nPattern=CGenerator::MT_SAT_CC24_GCD;
+         break;
 	case CCSG:
 		 nPattern=CGenerator::MT_SAT_CC24_CCSG;		
          break;
@@ -2827,7 +2837,7 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
-	if(pGenerator->GetName() == str&&( GetConfig()->m_CCMode==SKIN || GetConfig()->m_CCMode==USER))
+	if(pGenerator->GetName() == str&&( GetConfig()->m_CCMode==SKIN || GetConfig()->m_CCMode==USER || GetConfig()->m_CCMode==AXIS))
 	{		
 		Title.LoadString ( IDS_ERROR );
 		strMsg.LoadString ( IDS_ERRINITGENERATOR );
@@ -4277,7 +4287,7 @@ void CMeasure::DeleteContrast ()
 	m_isModified=TRUE; 
 }
 
-BOOL CMeasure::AddMeasurement(CSensor *pSensor, CGenerator *pGenerator,  CGenerator::MeasureType MT)
+BOOL CMeasure::AddMeasurement(CSensor *pSensor, CGenerator *pGenerator,  CGenerator::MeasureType MT, bool isPrimary)
 {
 	BOOL		bDisplayColor = GetConfig () -> m_bDisplayTestColors;
 	BOOL		bOk;
@@ -4351,7 +4361,7 @@ BOOL CMeasure::AddMeasurement(CSensor *pSensor, CGenerator *pGenerator,  CGenera
 	measurement = measuredColor;
 	m_measurementsArray.InsertAt(m_measurementsArray.GetSize(),measurement);
 	
-	FreeMeasurementAppended();
+	FreeMeasurementAppended(isPrimary);
 
 	pSensor->Release();
 	if ( bDisplayColor )
@@ -4658,7 +4668,7 @@ BOOL CMeasure::ValidateBackgroundSingleMeasurement ( BOOL bUseLuxValues, double 
 
 		m_measurementsArray.InsertAt(m_measurementsArray.GetSize(),measurement);
 		
-		FreeMeasurementAppended ();
+		FreeMeasurementAppended (false);
 	}
 
 	// Close background thread and event objects
@@ -4667,9 +4677,9 @@ BOOL CMeasure::ValidateBackgroundSingleMeasurement ( BOOL bUseLuxValues, double 
 	return bOk;
 }
 
-void CMeasure::FreeMeasurementAppended()
+void CMeasure::FreeMeasurementAppended(bool isPrimary)
 {
-	if ( GetConfig ()->m_bDetectPrimaries )
+	if ( GetConfig () -> m_bDetectPrimaries && isPrimary )
 	{
 		CColor LastMeasure;
 
@@ -5273,7 +5283,7 @@ CColor CMeasure::GetMeasurement(int i) const
 	return m_measurementsArray[i]; 
 } 
 
-void CMeasure::AppendMeasurements(const CColor & aColor) 
+void CMeasure::AppendMeasurements(const CColor & aColor, bool isPrimary) 
 {
 	if (m_measurementsArray.GetSize() >= m_nbMaxMeasurements )
 		m_measurementsArray.RemoveAt(0,1); 
@@ -5284,7 +5294,7 @@ void CMeasure::AppendMeasurements(const CColor & aColor)
 
 	m_isModified=TRUE; 
 
-	FreeMeasurementAppended(); 
+	FreeMeasurementAppended(isPrimary); 
 }
 
 CColor CMeasure::GetRefPrimary(int i) const
@@ -5705,6 +5715,14 @@ CColor CMeasure::GetRefCC24Sat(int i) const
 			RGB[21] = ColorRGB(0.7412,0.4471,0.2353);
 			RGB[22] = ColorRGB(0.4392,0.2549,0.2235);
 			RGB[23] = ColorRGB(0.6392,0.5255,0.4157);
+            break;
+        }
+	    case AXIS:
+		{
+			int j;
+			for (j=0;j<8;j++) {RGB[j] = ColorRGB((j+1) * 0.1,0.0,0.0);}
+			for (j=0;j<8;j++) {RGB[j+8] = ColorRGB(0.0, (j+1) * 0.1,0.0);}
+			for (j=0;j<8;j++) {RGB[j+16] = ColorRGB(0.0, 0.0, (j+1) * 0.1);}
             break;
         }
         //Color checker SG 96 colors

@@ -1283,7 +1283,7 @@ void CDataSetDoc::AddMeasurement()
 	if ( m_d == 1 || (m_d < 11 &&  m_d > 4) )
 		MT = CGenerator::MT_ACTUAL;
 
-	if(m_measure.AddMeasurement(m_pSensor,m_pGenerator, MT))
+	if(m_measure.AddMeasurement(m_pSensor,m_pGenerator, MT, m_d == 1))
 	{
 		SetModifiedFlag(m_measure.IsModified());
 		UpdateAllViews(NULL, UPD_FREEMEASUREAPPENDED);
@@ -2465,6 +2465,9 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 				case SKIN:
 				nPattern=CGenerator::MT_SAT_CC24_GCD;		
 				 break;
+				case AXIS:
+				nPattern=CGenerator::MT_SAT_CC24_GCD;		
+				 break;
 				case CCSG:
 				nPattern=CGenerator::MT_SAT_CC24_CCSG;		
                 nSteps = 96;
@@ -3069,11 +3072,14 @@ void CDataSetDoc::OnBkgndMeasureReady()
 	{
 		EnterCriticalSection ( & g_CritSec );
 		pos = g_MeasuredColorList.GetHeadPosition ();
+		POSITION pos2 = g_pDataDocRunningThread -> GetFirstViewPosition ();
+		CView *pView = g_pDataDocRunningThread -> GetNextView ( pos2 );
+		int m_d = ((CMainView*)pView)->m_displayMode;
 		while ( pos )
 		{
 			pMeasurement = ( CColor * ) g_MeasuredColorList.GetNext ( pos );
 
-			m_measure.AppendMeasurements(*pMeasurement);
+			m_measure.AppendMeasurements(*pMeasurement, m_d == 1);
 			SetModifiedFlag();
 
 			SetSelectedColor ( *pMeasurement );
@@ -3467,8 +3473,13 @@ void CDataSetDoc::OnUpdateMeasureSatCC24(CCmdUI* pCmdUI)
 		 break;
 	case SKIN:
 		 nPattern=CGenerator::MT_SAT_CC24_GCD;		
+		 break;
+	case AXIS:
+		 nPattern=CGenerator::MT_SAT_CC24_GCD;		
+		 break;
 	case CCSG:
 		 nPattern=CGenerator::MT_SAT_CC24_CCSG;		
+		 break;
 	}
 
 	pCmdUI -> Enable ( m_pGenerator -> CanDisplayScale ( nPattern, (nPattern<16?24:(nPattern==16?96:1000)), TRUE ) );

@@ -1131,6 +1131,9 @@ BEGIN
 "\000" 
     IDC_CCMODE_COMBO, 0x403, 10, 0
 0x6143, 0x4d6c, 0x4e41, 0x5320, 0x0047, 
+    IDC_CCMODE_COMBO, 0x403, 19, 0
+0x4752, 0x2042, 0x754c, 0x696d, 0x616e, 0x636e, 0x2065, 0x7841, 0x7369, 
+"\000" 
     IDC_CCMODE_COMBO, 0x403, 13, 0
 0x7355, 0x7265, 0x6420, 0x6665, 0x6e69, 0x6465, "\000" 
     0
@@ -2292,8 +2295,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,1,9,0
- PRODUCTVERSION 3,1,9,0
+ FILEVERSION 3,1,9b,0
+ PRODUCTVERSION 3,1,9b,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2311,12 +2314,12 @@ BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "CompanyName", "Association Homecinema Francophone"
             VALUE "FileDescription", "HCFR Colorimeter resources"
-            VALUE "FileVersion", "3,1,9"
+            VALUE "FileVersion", "3,1,9b"
             VALUE "InternalName", "CHCFR21_ENGLISH"
             VALUE "LegalCopyright", "Copyright (C) 2005-2008"
             VALUE "OriginalFilename", "CHCFR21_ENGLISH.DLL"
             VALUE "ProductName", "HCFR Colorimeter English langage"
-            VALUE "ProductVersion", "3,1,9"
+            VALUE "ProductVersion", "3,1,9b"
         END
     END
     BLOCK "VarFileInfo"

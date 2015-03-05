@@ -1748,6 +1748,13 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
             GenColors [ 23 ] = ColorRGBDisplay( 63.92, 52.55, 41.57 );
         break;
 		}
+	case AXIS:
+		{
+			for (int i=0;i<8;i++) {GenColors [ i ] = ColorRGBDisplay( (i+1) * 10,	0,	0);}
+			for (int i=0;i<8;i++) {GenColors [ i + 8 ] = ColorRGBDisplay( 0, (i+1) * 10,	0);}
+			for (int i=0;i<8;i++) {GenColors [ i + 16] = ColorRGBDisplay( 0, 0, (i+1) * 10);}
+        break;
+		}
 		//ColorCheckerSG 96 colors
     case CCSG:
         {
