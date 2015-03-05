@@ -481,6 +481,7 @@ void CMainView::OnInitialUpdate()
 		ScreenToClient ( & Rect );
 		m_Target.Create ( NULL, NULL, WS_CHILD | WS_VISIBLE, Rect, this, IDC_TARGET2, NULL );
 		m_Target.m_pRefColor = & m_SelectedColor;
+		m_Target.m_pDocument = GetDocument();
 
 		m_RGBLevelsStatic.GetWindowRect ( & Rect );
 		m_RGBLevelsStatic.ShowWindow ( SW_HIDE );
@@ -611,6 +612,11 @@ void CMainView::RefreshSelection()
 	Item.row = 0;
 	Item.col = 1;
 
+//	m_RGBLevels.m_pRefColor = & m_SelectedColor;
+//	m_Target.m_pRefColor = & m_SelectedColor;
+//	m_RGBLevels.m_pDocument = GetDocument();
+//	m_Target.m_pDocument = GetDocument();
+
 	if (m_displayMode <= 11 &&  m_displayMode != 2)  
     {
         int size=GetDocument()->GetMeasure()->GetGrayScaleSize();
@@ -628,13 +634,13 @@ void CMainView::RefreshSelection()
 	{
 		// Retrieve measured white luminance to compute exact delta E, Lab and LCH values
 		if ( GetDocument() -> GetMeasure () -> GetOnOffWhite ().isValid() )
-			YWhite = GetDocument() -> GetMeasure () -> GetOnOffWhite () [ 1 ];
-		else 
-		{
-			i = GetDocument() -> GetMeasure () -> GetGrayScaleSize ();
-			if ( GetDocument() -> GetMeasure () -> GetGray ( i - 1 ).isValid() )
-				YWhite = GetDocument() -> GetMeasure () -> GetGray ( i - 1 ) [ 1 ];
-		}
+			YWhite = GetDocument() -> GetMeasure () -> GetOnOffWhite () [ 1 ]; //onoff white is always grayscale white
+//		else 
+//		{
+//			i = GetDocument() -> GetMeasure () -> GetGrayScaleSize ();
+//			if ( GetDocument() -> GetMeasure () -> GetGray ( i - 1 ).isValid() )
+//				YWhite = GetDocument() -> GetMeasure () -> GetGray ( i - 1 ) [ 1 ];
+//		}
 
 		Item.strText.Format("%.3f",m_SelectedColor.GetLuminance());
 		Item.row = 0;
@@ -4004,7 +4010,7 @@ void CMainView::UpdateMeasurementsAfterBkgndMeasure ()
 	if ( n > 0 )
 		MeasuredColor=GetDocument()->GetMeasure()->GetMeasurement(n-1);
 
-	if ( m_displayMode == 2 && n > 0 )
+	if ( m_displayMode == 2 && n > 0 ) //this updates freemeasures grid
 	{
 		// Update grid only when in measurement mode
 		CColor			refColor = GetColorReference().GetWhite();

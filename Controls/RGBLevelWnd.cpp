@@ -126,43 +126,81 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 				m_bLumaMode = TRUE;
 				aReference = m_pDocument->GetMeasure()->GetRefSat(5, double(minCol-1) / double(nSize -1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
 			}
-			else if ( m_displayMode == 1 && minCol == 1 )
+			else if ( m_displayMode == 1 && (minCol == 1 || m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefPrimary(0), GetColorReference() ) < 0.05))
 			{
 				m_bLumaMode = TRUE;
 				aReference = m_pDocument->GetMeasure()->GetRefPrimary(0);
 			}
-			else if ( m_displayMode == 1 && minCol == 2 )
+			else if ( m_displayMode == 1 && (minCol == 2 || m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefPrimary(1), GetColorReference() ) < 0.05))
 			{
 				m_bLumaMode = TRUE;
 				aReference = m_pDocument->GetMeasure()->GetRefPrimary(1);
 			}
-			else if ( m_displayMode == 1 && minCol == 3 )
+			else if ( m_displayMode == 1 && (minCol == 3 || m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefPrimary(2), GetColorReference() ) < 0.05))
 			{
 				m_bLumaMode = TRUE;
 				aReference = m_pDocument->GetMeasure()->GetRefPrimary(2);
 			}
-			else if ( m_displayMode == 1 && minCol == 4 )
+			else if ( m_displayMode == 1 && (minCol == 4 || m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefSecondary(0), GetColorReference() ) < 0.05))
 			{
 				m_bLumaMode = TRUE;
 				aReference = m_pDocument->GetMeasure()->GetRefSecondary(0);
 			}
-			else if ( m_displayMode == 1 && minCol == 5 )
+			else if ( m_displayMode == 1 && (minCol == 5 || m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefSecondary(1), GetColorReference() ) < 0.05))
 			{
 				m_bLumaMode = TRUE;
 				aReference = m_pDocument->GetMeasure()->GetRefSecondary(1);
 			}
-			else if ( m_displayMode == 1 && minCol == 6 )
+			else if ( m_displayMode == 1 && (minCol == 6 || m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefSecondary(2), GetColorReference() ) < 0.05))
 			{
 				m_bLumaMode = TRUE;
 				aReference = m_pDocument->GetMeasure()->GetRefSecondary(2);
 			}
 			//look for white and disable if detect for primaries/secondaries is not selected
-			else if ( m_displayMode == 0 || (m_displayMode == 1 && minCol == 7) || m_displayMode == 3 || m_displayMode == 4 )
+			else if ( m_displayMode == 0 || (m_displayMode == 1 && minCol == 7) || m_displayMode == 3 || m_displayMode == 4 || m_pRefColor->GetDeltaxy ( GetColorReference().GetWhite(), GetColorReference() ) < 0.05)
 			{
 				m_bLumaMode = FALSE;
 				aReference = GetColorReference().GetWhite();
 			}
-		} //update reference
+		} //mincol > 0
+		else //autodetect if mincol <= 0 (measuring) and this is primaries page
+		{
+			if ( m_displayMode == 1 && (m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefPrimary(0), GetColorReference() ) < 0.05 && GetConfig()->m_bDetectPrimaries))
+			{
+				m_bLumaMode = TRUE;
+				aReference = m_pDocument->GetMeasure()->GetRefPrimary(0);
+			}
+			else if ( m_displayMode == 1 && (m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefPrimary(1), GetColorReference() ) < 0.05) && GetConfig()->m_bDetectPrimaries)
+			{
+				m_bLumaMode = TRUE;
+				aReference = m_pDocument->GetMeasure()->GetRefPrimary(1);
+			}
+			else if ( m_displayMode == 1 && (m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefPrimary(2), GetColorReference() ) < 0.05) && GetConfig()->m_bDetectPrimaries)
+			{
+				m_bLumaMode = TRUE;
+				aReference = m_pDocument->GetMeasure()->GetRefPrimary(2);
+			}
+			else if ( m_displayMode == 1 && (m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefSecondary(0), GetColorReference() ) < 0.05) && GetConfig()->m_bDetectPrimaries)
+			{
+				m_bLumaMode = TRUE;
+				aReference = m_pDocument->GetMeasure()->GetRefSecondary(0);
+			}
+			else if ( m_displayMode == 1 && (m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefSecondary(1), GetColorReference() ) < 0.05) && GetConfig()->m_bDetectPrimaries)
+			{
+				m_bLumaMode = TRUE;
+				aReference = m_pDocument->GetMeasure()->GetRefSecondary(1);
+			}
+			else if ( m_displayMode == 1 && (m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefSecondary(2), GetColorReference() ) < 0.05) && GetConfig()->m_bDetectPrimaries)
+			{
+				m_bLumaMode = TRUE;
+				aReference = m_pDocument->GetMeasure()->GetRefSecondary(2);
+			}
+			else if ( m_displayMode == 1 && m_pRefColor->GetDeltaxy ( GetColorReference().GetWhite(), GetColorReference() ) < 0.05 && GetConfig()->m_bDetectPrimaries)
+			{
+				m_bLumaMode = FALSE;
+				aReference = GetColorReference().GetWhite();
+			}
+		} 
 
 		CColor white = m_pDocument->GetMeasure()->GetPrimeWhite();
 
@@ -176,7 +214,7 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 			if ((m_pDocument->GetMeasure()->GetPrimeWhite()[1] / m_pDocument->GetMeasure()->GetOnOffWhite()[1] < 0.9) && m_displayMode == 11)
 				white = m_pDocument -> GetMeasure () ->GetOnOffWhite();
 		
-		if (m_bLumaMode && GetConfig()->m_bDetectPrimaries && aReference.isValid())
+		if (m_bLumaMode && aReference.isValid())
 		{
             ColorXYZ aColor=m_pRefColor->GetXYZValue(), refColor=aReference.GetXYZValue() ;
 			
@@ -291,22 +329,23 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 			}
         }
 			m_dEValue = aReference.isValid()?float(m_pRefColor->GetDeltaE(YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, !m_bLumaMode, GetConfig()->gw_Weight )):0 ;
-    } 
+    } //have valid m_prefcolor
 	else
 	{
 		m_dEValue = 0.;
 		//m_pRef
 	}
+
 	if (m_dEValue > 40) m_dEValue = 0.;
 	Invalidate(FALSE);
 
-	if (m_bLumaMode != bWasLumaMode)
-	{
+//	if (m_bLumaMode != bWasLumaMode)
+//	{
 		CString title;
-        title.LoadString(m_bLumaMode && GetConfig()->m_bDetectPrimaries ? (GetConfig()->m_useHSV?IDS_LCHLEVELS:IDS_RGBLEVELS) : IDS_RGBLEVELS);
+        title.LoadString(m_bLumaMode ? (GetConfig()->m_useHSV?IDS_LCHLEVELS:IDS_RGBLEVELS) : IDS_RGBLEVELS);
 		((CMainView *)GetParent())->m_RGBLevelsLabel.SetWindowText ((LPCSTR)title);
-	}
-}
+//	}
+} 
 
 
 BEGIN_MESSAGE_MAP(CRGBLevelWnd, CWnd)
@@ -387,7 +426,7 @@ void CRGBLevelWnd::OnPaint()
 
     // draw RGB bars
 	int ellipseHeight=barWidth/4;
-    if (m_bLumaMode && GetConfig()->m_bDetectPrimaries && GetConfig()->m_useHSV)
+    if (m_bLumaMode && GetConfig()->m_useHSV)
 	{
     	DrawGradientBar(pDC,RGB(0,125,125),redBarX,redBarY,barWidth,redBarHeight);
 	    DrawGradientBar(pDC,RGB(125,0,125),greenBarX,greenBarY,barWidth,greenBarHeight);

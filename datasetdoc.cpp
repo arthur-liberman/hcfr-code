@@ -2211,9 +2211,9 @@ BOOL CDataSetDoc::ComputeAdjustmentMatrix()
                                     pDataRef->m_measure.GetBluePrimary().GetXYZValue()
                                 };
 
-    ColorXYZ whiteRef = pDataRef -> m_measure.GetOnOffWhite().GetXYZValue();
+    ColorXYZ whiteRef = pDataRef -> m_measure.GetPrimeWhite().GetXYZValue();
 
-    ColorXYZ white = m_measure.GetOnOffWhite().GetXYZValue();
+    ColorXYZ white = m_measure.GetPrimeWhite().GetXYZValue();
 
     // check that measure matrix is inversible
     Matrix oldMatrix = m_pSensor->GetSensorMatrix();

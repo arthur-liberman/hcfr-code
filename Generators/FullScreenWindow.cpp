@@ -44,12 +44,12 @@ CFullScreenWindow::CFullScreenWindow(BOOL bTestOverlay)
 
 	m_Color = 0;
 	m_bTestOverlay = bTestOverlay;
-	m_rectSizePercent = 100;
+	m_rectSizePercent = GetConfig()->GetProfileInt("GDIGenerator","SizePercent",10);
 	m_bgStimPercent = 0;
 	
 	m_nDisplayMode = DISPLAY_GDI;
 	m_bDisableCursorHiding = FALSE;
-	m_b16_235 = FALSE;
+	m_b16_235 = GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0);
 
 	// Overlay data
 	m_lpDD = NULL;
@@ -77,7 +77,7 @@ CFullScreenWindow::CFullScreenWindow(BOOL bTestOverlay)
 	m_bGeom = FALSE;
 	m_bConv = FALSE;
 	m_bColorPattern = FALSE;
-	m_iOffset = 40;
+	m_iOffset = 0;
 	m_bPatternPict = FALSE;
 	m_uiPictRess = 0;
 	m_bResizePict = FALSE;
@@ -499,7 +499,7 @@ void CFullScreenWindow::OnPaint()
 	CRect		rect;
 	CBrush		brush;
 	CPaintDC	dc(this); // device context for painting
-
+	BOOL	isSpecial = (m_bPatternMode || m_bHLines || m_bVLines || m_bGeom || m_bConv || m_bColorPattern || m_bColorLevel || m_bPatternPict || m_bAnimated);
 	GetClientRect ( &rect );
 	double m_rectAreaPercent, borderArea;
     double bgstim = m_bgStimPercent / 100.;
@@ -583,7 +583,8 @@ void CFullScreenWindow::OnPaint()
 		dWidth = (int)(rect.Width()*(100-m_rectAreaPercent)/100.0);
 		dHeight = (int)(rect.Height()*(100-m_rectAreaPercent)/100.0);
         borderArea = (dWidth + 40.) * (dHeight + 40.) - dWidth * dHeight; 
-		if(m_rectSizePercent < 100)  // Need to draw background and border
+
+		if(m_rectSizePercent < 100 && !isSpecial)  // Need to draw background and border
 		{
 			if (m_nDisplayMode != DISPLAY_GDI_nBG )
 			{
@@ -617,49 +618,50 @@ void CFullScreenWindow::OnPaint()
 
 		CRect patternRect=rect;
 		patternRect.DeflateRect(dWidth/2,dHeight/2);
-		//Settling pattern
-		if (GetConfig()->m_isSettling)
+		if (!isSpecial)
 		{
-			CRect settlingRect=patternRect;
-			brush.CreateSolidBrush ( RGB(191,191,191) );
-			dc.FillRect ( &settlingRect, &brush );
-			brush.DeleteObject ();
-			Sleep(1000);
-			brush.CreateSolidBrush ( RGB(191,0,0) );
-			dc.FillRect ( &settlingRect, &brush );
-			brush.DeleteObject ();
-			Sleep(1000);
-			brush.CreateSolidBrush ( RGB(0,191,0) );
-			dc.FillRect ( &settlingRect, &brush );
-			brush.DeleteObject ();
-			Sleep(1000);
-			brush.CreateSolidBrush ( RGB(0,0,191) );
-			dc.FillRect ( &settlingRect, &brush );
-			brush.DeleteObject ();
-			Sleep(1000);
-			brush.CreateSolidBrush ( RGB(191,191,191) );
-			dc.FillRect ( &settlingRect, &brush );
-			brush.DeleteObject ();
-			Sleep(1000);
+			//Settling pattern
+			if (GetConfig()->m_isSettling)
+			{
+				CRect settlingRect=patternRect;
+				brush.CreateSolidBrush ( RGB(191,191,191) );
+				dc.FillRect ( &settlingRect, &brush );
+				brush.DeleteObject ();
+				Sleep(1000);
+				brush.CreateSolidBrush ( RGB(191,0,0) );
+				dc.FillRect ( &settlingRect, &brush );
+				brush.DeleteObject ();
+				Sleep(1000);
+				brush.CreateSolidBrush ( RGB(0,191,0) );
+				dc.FillRect ( &settlingRect, &brush );
+				brush.DeleteObject ();
+				Sleep(1000);
+				brush.CreateSolidBrush ( RGB(0,0,191) );
+				dc.FillRect ( &settlingRect, &brush );
+				brush.DeleteObject ();
+				Sleep(1000);
+				brush.CreateSolidBrush ( RGB(191,191,191) );
+				dc.FillRect ( &settlingRect, &brush );
+				brush.DeleteObject ();
+				Sleep(1000);
+			}
 		}
+		
+			brush.CreateSolidBrush ( DisplayColor );
+			dc.FillRect ( &patternRect, &brush );
+			brush.DeleteObject (); 
 
-
-		brush.CreateSolidBrush ( DisplayColor );
-		dc.FillRect ( &patternRect, &brush );
-		brush.DeleteObject ();
-    	char aBuf[32];
-        R = GetRValue(DisplayColor);
-        G = GetGValue(DisplayColor);
-        B = GetBValue(DisplayColor);
-	    sprintf(aBuf,"%d:%d:%d",R,G,B);
-        dc.SetTextColor(DisplayColor);
-
-        if (R < 50 && G < 50 && B < 50)
-            dc.SetBkColor(RGB(128,128,128));
-        else
-            dc.SetBkColor(RGB(0,0,0));
-        dc.DrawText(aBuf,&rect, DT_CENTER|DT_BOTTOM|DT_SINGLELINE);
-		dc.DeleteDC();
+		if (!isSpecial || m_bAnimated)
+		{
+	    	char aBuf[32];
+		    R = GetRValue(DisplayColor);
+			G = GetGValue(DisplayColor);
+			B = GetBValue(DisplayColor);
+			sprintf(aBuf,"%d:%d:%d",R,G,B);
+			dc.SetTextColor(RGB(128,128,128));
+			dc.SetBkColor(RGB(40,40,40));
+			dc.DrawText(aBuf,&patternRect, DT_CENTER|DT_BOTTOM|DT_SINGLELINE);
+		}
 	}
 
 	// Pattern Display Common Vars
@@ -959,10 +961,9 @@ void CFullScreenWindow::OnTimer(UINT nIDEvent)
     HRESULT			ddrval;
     DDSURFACEDESC	SurfaceDesc;
 	
-	double m_rectAreaPercent;
-    m_rectSizePercent = 100;
+	double m_rectAreaPercent = 100;
 
-	m_rectAreaPercent = sqrt (m_rectSizePercent / 100.) * 100;
+//	m_rectAreaPercent = sqrt (m_rectSizePercent / 100.) * 100;
 
 	if ( m_IdTimer == nIDEvent )
 	{

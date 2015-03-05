@@ -4708,6 +4708,11 @@ void CMeasure::FreeMeasurementAppended()
 				// Copy real color to primary (not LastMeasure which may have been adjusted)
 				SetMagentaSecondary ( m_measurementsArray[n-1] );
 			}
+			else if ( LastMeasure.GetDeltaxy ( GetColorReference().GetWhite(), GetColorReference() ) < 0.05 )
+			{
+				// Copy real color to primary (not LastMeasure which may have been adjusted)
+				SetPrimeWhite ( m_measurementsArray[n-1] );
+			}
 		}
 	}
 }
