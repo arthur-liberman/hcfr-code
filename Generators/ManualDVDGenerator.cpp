@@ -220,10 +220,84 @@ char*  PatName[96]={
 						"CP-Dark",
 						"Dark Skin",
 						"Light Skin" };
+						char*  PatNameAXIS[71]={
+						"Black",
+						"White 10",
+						"White 20",
+						"White 30",
+						"White 40",
+						"White 50",
+						"White 60",
+						"White 70",
+						"White 80",
+						"White 90",
+						"White 100",
+						"Red 10",
+						"Red 20",
+						"Red 30",
+						"Red 40",
+						"Red 50",
+						"Red 60",
+						"Red 70",
+						"Red 80",
+						"Red 90",
+						"Red 100",
+						"Green 10",
+						"Green 20",
+						"Green 30",
+						"Green 40",
+						"Green 50",
+						"Green 60",
+						"Green 70",
+						"Green 80",
+						"Green 90",
+						"Green 100",
+						"Blue 10",
+						"Blue 20",
+						"Blue 30",
+						"Blue 40",
+						"Blue 50",
+						"Blue 60",
+						"Blue 70",
+						"Blue 80",
+						"Blue 90",
+						"Blue 100", 
+						"Cyan 10",
+						"Cyan 20",
+						"Cyan 30",
+						"Cyan 40",
+						"Cyan 50",
+						"Cyan 60",
+						"Cyan 70",
+						"Cyan 80",
+						"Cyan 90",
+						"Cyan 100", 
+						"Magenta 10",
+						"Magenta 20",
+						"Magenta 30",
+						"Magenta 40",
+						"Magenta 50",
+						"Magenta 60",
+						"Magenta 70",
+						"Magenta 80",
+						"Magenta 90",
+						"Magenta 100", 
+						"Yellow 10",
+						"Yellow 20",
+						"Yellow 30",
+						"Yellow 40",
+						"Yellow 50",
+						"Yellow 60",
+						"Yellow 70",
+						"Yellow 80",
+						"Yellow 90",
+						"Yellow 100"
+						};
 
 	Title.LoadString ( IDS_INFORMATION );
 
 	str1.LoadString( IDS_DVDMANCHAPSEL );
+	std::string name;
 
 	switch ( nPatternType )
 		{
@@ -419,9 +493,14 @@ char*  PatName[96]={
 				str3.LoadString ( IDS_CC24SATPERCENT );
                 str2.Format(str3, PatNameCPS[nPatternInfo]);
                 break;
+			case MT_SAT_CC24_AXIS:
+				str3.LoadString ( IDS_CC24SATPERCENT );
+                str2.Format(str3, PatNameAXIS[nPatternInfo]);
+                break;
 			case MT_SAT_CC24_USER:
 				str3.LoadString ( IDS_CC24SATPERCENT );
-                str2.Format(str3, PatName[nPatternInfo]);
+				GetConfig()->GetCColorsN(nPatternInfo, &name);
+                str2.Format(str3, name.c_str());
                 break;
 			case MT_SAT_CC24_MCD:
 				str3.LoadString ( IDS_CC24SATPERCENT );

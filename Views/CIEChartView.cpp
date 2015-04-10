@@ -483,7 +483,18 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 						"Dark Skin",
 						"Light Skin" };
 
-						char*  PatNameAXIS[24]={
+						char*  PatNameAXIS[71]={
+						"Black",
+						"White 10",
+						"White 20",
+						"White 30",
+						"White 40",
+						"White 50",
+						"White 60",
+						"White 70",
+						"White 80",
+						"White 90",
+						"White 100",
 						"Red 10",
 						"Red 20",
 						"Red 30",
@@ -492,6 +503,8 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 						"Red 60",
 						"Red 70",
 						"Red 80",
+						"Red 90",
+						"Red 100",
 						"Green 10",
 						"Green 20",
 						"Green 30",
@@ -500,6 +513,8 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 						"Green 60",
 						"Green 70",
 						"Green 80",
+						"Green 90",
+						"Green 100",
 						"Blue 10",
 						"Blue 20",
 						"Blue 30",
@@ -507,7 +522,40 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 						"Blue 50",
 						"Blue 60",
 						"Blue 70",
-						"Blue 80" };
+						"Blue 80",
+						"Blue 90",
+						"Blue 100", 
+						"Cyan 10",
+						"Cyan 20",
+						"Cyan 30",
+						"Cyan 40",
+						"Cyan 50",
+						"Cyan 60",
+						"Cyan 70",
+						"Cyan 80",
+						"Cyan 90",
+						"Cyan 100", 
+						"Magenta 10",
+						"Magenta 20",
+						"Magenta 30",
+						"Magenta 40",
+						"Magenta 50",
+						"Magenta 60",
+						"Magenta 70",
+						"Magenta 80",
+						"Magenta 90",
+						"Magenta 100", 
+						"Yellow 10",
+						"Yellow 20",
+						"Yellow 30",
+						"Yellow 40",
+						"Yellow 50",
+						"Yellow 60",
+						"Yellow 70",
+						"Yellow 80",
+						"Yellow 90",
+						"Yellow 100"
+						};
 
 	if ( pDataRef == pDoc || ! m_doShowDataRef )
 		pDataRef = NULL;
@@ -1221,7 +1269,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 				CCPatterns ccPat = GetConfig()->m_CCMode;
                 if (ccPat == CCSG || ccPat == CMS || ccPat == CPS || ccPat == AXIS )
                 {
-                    for (int i=0; i < (ccPat==CCSG?96:(ccPat==AXIS?24:19)); i++)
+                    for (int i=0; i < (ccPat==CCSG?96:(ccPat==AXIS?71:19)); i++)
                     {
             			Msg.SetString ( ccPat==CCSG?PatName[i]:(ccPat==CMS?PatNameCMS[i]:(ccPat==CPS?PatNameCPS[i]:PatNameAXIS[i])) );
 	            		str.Format(Msg, 10);
@@ -1235,8 +1283,10 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
                 {
                     for (int i=0; i < GetConfig()->GetCColorsSize(); i++)
                     {
-                        char aBuf[32];
-                        sprintf(aBuf,"Color %d Reference",i+1);
+                        char aBuf[50];
+						std::string name;
+						GetConfig()->GetCColorsN(i, &name);
+						sprintf(aBuf,"Color %s Reference", name.c_str());
                         Msg.SetString(aBuf);
 	        		    str.Format(Msg, 10);
 		        	    CCIEGraphPoint cc24Point(pDoc->GetMeasure()->GetRefCC24Sat(i).GetXYZValue(),
@@ -1476,7 +1526,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			 CCPatterns ccPat = GetConfig()->m_CCMode;
              if (ccPat == CCSG || ccPat == CMS || ccPat == CPS || ccPat == AXIS)
              {
-	            for (int i = 0; i < (ccPat == CCSG?96:(ccPat==AXIS?24:19)); i++)
+	            for (int i = 0; i < (ccPat == CCSG?96:(ccPat==AXIS?71:19)); i++)
                 {
           			Msg.SetString ( ccPat==CCSG?PatName[i]:(ccPat==CMS?PatNameCMS[i]:(ccPat==CPS?PatNameCPS[i]:PatNameAXIS[i])) );
 	    	    	str.Format(Msg, 10);
@@ -1490,8 +1540,10 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
              {
                     for (int i=0; i < GetConfig()->GetCColorsSize(); i++)
                     {
-                        char aBuf[10];
-                        sprintf(aBuf,"Color %d",i+1);
+						char aBuf[50];
+						std::string name;
+						GetConfig()->GetCColorsN(i, &name);
+                        sprintf(aBuf,"Color %s", name.c_str());
                         Msg.SetString(aBuf);
 	        		    str.Format(Msg, 10);
     		    	    CCIEGraphPoint cc24Point(pDoc->GetMeasure()->GetCC24Sat(i).GetXYZValue(),

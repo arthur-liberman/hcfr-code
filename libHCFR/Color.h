@@ -351,7 +351,7 @@ public:
 		}
 		return luma;
 	}
-	double GetYellowReferenceLuma () const
+	double GetYellowReferenceLuma (bool sats) const
 	{ 
 		double luma;
 		switch(m_standard)
@@ -360,7 +360,7 @@ public:
 				luma = 0.939;
 				break;
 			case HDTVb:
-				luma = 0.939;
+				luma = sats?0.939:0.564;
 				break;
 			default:
 				luma = RGBtoXYZMatrix(1,1)+RGBtoXYZMatrix(1,0); 
@@ -368,7 +368,7 @@ public:
 		}
 		return luma;
 	}
-	double GetCyanReferenceLuma () const
+	double GetCyanReferenceLuma (bool sats) const
 	{ 
 		double luma;
 		switch(m_standard)
@@ -377,7 +377,7 @@ public:
 				luma = 0.787;
 				break;
 			case HDTVb:
-				luma = 0.787;
+				luma = sats?0.787:0.4798;
 				break;
 			default:
 				luma = RGBtoXYZMatrix(1,1)+RGBtoXYZMatrix(1,2); 
@@ -385,7 +385,7 @@ public:
 		}
 		return luma;
 	}
-	double GetMagentaReferenceLuma () const
+	double GetMagentaReferenceLuma (bool sats) const
 	{ 
 		double luma;
 		switch(m_standard)
@@ -394,7 +394,7 @@ public:
 				luma = 0.289;
 				break;
 			case HDTVb:
-				luma = 0.289;
+				luma = sats?0.289:0.1775;
 				break;
 			default:
 				luma = RGBtoXYZMatrix(1,0)+RGBtoXYZMatrix(1,2); 
@@ -664,7 +664,6 @@ public:
             return YLumaSKIN[nCol];
         case CCSG:
             return YLumaCCSG[nCol];
-//        case USER:
         }
             return YLumaGCD[nCol];
 	}

@@ -24,6 +24,7 @@
 #include "stdafx.h"
 #include "ColorHCFR.h"
 #include "GDIGenerator.h"
+#include "DataSetDoc.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -94,7 +95,8 @@ END_MESSAGE_MAP()
 void CGDIGenePropPage::OnOK() 
 {
 	m_activeMonitorNum=m_monitorComboCtrl.GetCurSel();	
-	
+//	CDataSetDoc * pDoc;
+//	pDoc = ( CDataSetDoc * ) pActiveMDI -> GetActiveDocument ();
 	if ( IsDlgButtonChecked ( IDC_RADIO2 ) )
 		m_nDisplayMode = DISPLAY_OVERLAY;
 
@@ -113,6 +115,7 @@ void CGDIGenePropPage::OnOK()
 		m_b16_235 = FALSE;
 
 	CPropertyPageWithHelp::OnOK();
+//	pDoc->UpdateAllViews(NULL);
 }
 
 BOOL CGDIGenePropPage::OnSetActive() 

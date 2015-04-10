@@ -392,9 +392,9 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 				switch (GetConfig()->m_colorStandard)
 				{
 					case HDTVa:
-							nR = 255;
-							nG = 255;
-							nB = 255;
+							nR = 191;
+							nG = 191;
+							nB = 191;
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case CC6:
@@ -404,9 +404,9 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case HDTVb:
-							nR = 191;
-							nG = 191;
-							nB = 191;
+							nR = 255;
+							nG = 255;
+							nB = 255;
 						m_clr = RGB(nR,nG,nB);
 					break;
 					default:

@@ -86,7 +86,7 @@ CColorHCFRConfig::CColorHCFRConfig()
 	
 	// Build log file name
 	lpStr = strrchr ( m_logFileName, (int) '\\' );
-	strcpy ( lpStr + 1, "HCFR.log" );
+	strcpy ( lpStr + 1, "ColorHCFR.log" );
 
 	// Initialize language DLL, which is definitively loaded
 	strLang = GetProfileString ( "Options", "Language", "" );
@@ -825,18 +825,21 @@ void CColorHCFRConfig::EnsurePathExists ( CString strPath )
 std::vector<int> cTargetR(0);
 std::vector<int> cTargetG(0);
 std::vector<int> cTargetB(0);
+std::vector<std::string> cTargetN(0);
 int numCC = 0;
 
 void CColorHCFRConfig::GetCColors() 
 {
             CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"colors.csv");
+            ifstream colorFile(strPath+"usercolors.csv");
             std::string line;
             int cnt = 0;
             int n1,n2,n3;
+			std::string n4;
 			cTargetR.clear();
 			cTargetG.clear();
 			cTargetB.clear();
+			cTargetN.clear();
             if (colorFile) 
 			{
 	            while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
@@ -848,10 +851,13 @@ void CColorHCFRConfig::GetCColors()
 					s >> n2;
 					getline(s, field,',');
 					s >> n3;
+					getline(s, field,',');
+					s >> n4;
 	                cnt++;
 					cTargetR.push_back(n1);
 					cTargetG.push_back(n2);
 					cTargetB.push_back(n3);
+					cTargetN.push_back(n4);
 		        }
 				numCC = cnt;
 			}
@@ -862,6 +868,11 @@ void CColorHCFRConfig::GetCColorsT(int index, int *r, int *g, int *b)
 		     *r = cTargetR[index];
 		     *g = cTargetG[index];
 		     *b = cTargetB[index];
+}
+
+void CColorHCFRConfig::GetCColorsN(int index, std::string *name) 
+{
+		     *name = cTargetN[index];
 }
 
 int CColorHCFRConfig::GetCColorsSize() 

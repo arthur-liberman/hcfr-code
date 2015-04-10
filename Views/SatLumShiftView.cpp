@@ -159,6 +159,7 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
     double gamma=GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef);
 	m_graphCtrl.ClearGraph(m_redSatGraphID);
 	m_graphCtrl2.ClearGraph(m_redColorGraphID);
+
 	if (m_showRed && m_redSatGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetRedSat(0).isValid() )
 	{
 		// Compute vector between neutral gray and saturated color in CIExy space
@@ -243,7 +244,7 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		for (int i=0; i<size; i++)
 	    {
 			// Compute shift and delta E for current point
-			CSatLumShiftGrapher::GetSatShift ( satshift, deltaE, pDoc->GetMeasure()->GetYellowSat(i), i, size, xstart, ystart, xend, yend, gamma, GetColorReference().GetYellowReferenceLuma (), YWhite, pDoc );
+			CSatLumShiftGrapher::GetSatShift ( satshift, deltaE, pDoc->GetMeasure()->GetYellowSat(i), i, size, xstart, ystart, xend, yend, gamma, GetColorReference().GetYellowReferenceLuma (true), YWhite, pDoc );
 
 			// Create graph points
 			m_graphCtrl.AddPoint(m_yellowSatGraphID, i*100/(size-1), satshift);
@@ -267,7 +268,7 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		for (int i=0; i<size; i++)
 	    {
 			// Compute shift and delta E for current point
-			CSatLumShiftGrapher::GetSatShift ( satshift, deltaE, pDoc->GetMeasure()->GetCyanSat(i), i, size, xstart, ystart, xend, yend, gamma, GetColorReference().GetCyanReferenceLuma (), YWhite, pDoc );
+			CSatLumShiftGrapher::GetSatShift ( satshift, deltaE, pDoc->GetMeasure()->GetCyanSat(i), i, size, xstart, ystart, xend, yend, gamma, GetColorReference().GetCyanReferenceLuma (true), YWhite, pDoc );
 
 			// Create graph points
 			m_graphCtrl.AddPoint(m_cyanSatGraphID, i*100/(size-1), satshift);
@@ -291,7 +292,7 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		for (int i=0; i<size; i++)
 	    {
 			// Compute shift and delta E for current point
-			CSatLumShiftGrapher::GetSatShift ( satshift, deltaE, pDoc->GetMeasure()->GetMagentaSat(i), i, size, xstart, ystart, xend, yend, gamma, GetColorReference().GetMagentaReferenceLuma (), YWhite, pDoc );
+			CSatLumShiftGrapher::GetSatShift ( satshift, deltaE, pDoc->GetMeasure()->GetMagentaSat(i), i, size, xstart, ystart, xend, yend, gamma, GetColorReference().GetMagentaReferenceLuma (true), YWhite, pDoc );
 
 			// Create graph points
 			m_graphCtrl.AddPoint(m_magentaSatGraphID, i*100/(size-1), satshift);
@@ -396,7 +397,7 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			for (int i=0; i<size; i++)
 			{
 				// Compute shift and delta E for current point
-				CSatLumShiftGrapher::GetSatShift ( satshift, deltaE, pDataRef->GetMeasure()->GetYellowSat(i), i, size, xstart, ystart, xend, yend, gamma, GetColorReference().GetYellowReferenceLuma (), YWhite, pDoc );
+				CSatLumShiftGrapher::GetSatShift ( satshift, deltaE, pDataRef->GetMeasure()->GetYellowSat(i), i, size, xstart, ystart, xend, yend, gamma, GetColorReference().GetYellowReferenceLuma (true), YWhite, pDoc );
 
 				// Create graph points
 				m_graphCtrl.AddPoint(m_yellowSatDataRefGraphID, i*100/(size-1), satshift);
@@ -418,7 +419,7 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			for (int i=0; i<size; i++)
 			{
 				// Compute shift and delta E for current point
-				CSatLumShiftGrapher::GetSatShift ( satshift, deltaE, pDataRef->GetMeasure()->GetCyanSat(i), i, size, xstart, ystart, xend, yend, gamma, GetColorReference().GetCyanReferenceLuma (), YWhite, pDoc );
+				CSatLumShiftGrapher::GetSatShift ( satshift, deltaE, pDataRef->GetMeasure()->GetCyanSat(i), i, size, xstart, ystart, xend, yend, gamma, GetColorReference().GetCyanReferenceLuma (true), YWhite, pDoc );
 
 				// Create graph points
 				m_graphCtrl.AddPoint(m_cyanSatDataRefGraphID, i*100/(size-1), satshift);
@@ -440,7 +441,7 @@ void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			for (int i=0; i<size; i++)
 			{
 				// Compute shift and delta E for current point
-				CSatLumShiftGrapher::GetSatShift ( satshift, deltaE, pDataRef->GetMeasure()->GetMagentaSat(i), i, size, xstart, ystart, xend, yend, gamma, GetColorReference().GetMagentaReferenceLuma (), YWhite, pDoc );
+				CSatLumShiftGrapher::GetSatShift ( satshift, deltaE, pDataRef->GetMeasure()->GetMagentaSat(i), i, size, xstart, ystart, xend, yend, gamma, GetColorReference().GetMagentaReferenceLuma (true), YWhite, pDoc );
 
 				// Create graph points
 				m_graphCtrl.AddPoint(m_magentaSatDataRefGraphID, i*100/(size-1), satshift);
@@ -484,18 +485,24 @@ void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, cons
 	if (pDoc -> GetMeasure () -> GetPrimeWhite().isValid() && !isSpecial)
 		White = pDoc->GetMeasure()->GetPrimeWhite();
 	CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
+	double Intensity=GetConfig()->GetProfileInt("GDIGenerator","Intensity",100) / 100.;
 
-    aColor.SetxyYValue (xtarget, ytarget, luma);
+//    aColor.SetxyYValue (xtarget, ytarget, luma * pow(Intensity,2.22));
+    aColor.SetxyYValue (xtarget, ytarget, luma );
 	ColorRGB rgb;
-	rgb=isSpecial?rgb=aColor.GetRGBValue(CColorReference(HDTV)):aColor.GetRGBValue (GetColorReference());
+	rgb=isSpecial?aColor.GetRGBValue(CColorReference(HDTV)):aColor.GetRGBValue (GetColorReference());
 	double r=rgb[0],g=rgb[1],b=rgb[2];
-    if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
-        gamma = log(GetBT1886(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(aColor.GetY(),1.0/2.22));
-    r=(r<=0||r>=1)?min(max(r,0),1):pow(pow(r,1.0/2.22),gamma);
+
+	if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
+        gamma = log(GetBT1886(pow(aColor.GetY() * pow(Intensity,2.22),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(aColor.GetY()*pow(Intensity,2.22),1.0/2.22));
+
+	r=(r<=0||r>=1)?min(max(r,0),1):pow(pow(r,1.0/2.22),gamma);
     g=(g<=0||g>=1)?min(max(g,0),1):pow(pow(g,1.0/2.22),gamma);
     b=(b<=0||b>=1)?min(max(b,0),1):pow(pow(b,1.0/2.22),gamma);
+	
 	aColor.SetRGBValue (ColorRGB(r,g,b), isSpecial?CColorReference(HDTV):GetColorReference() );	
 	ColorxyY xyy=aColor.GetxyYValue();
+
 	xtarget=xyy[0];
 	ytarget=xyy[1];
 	

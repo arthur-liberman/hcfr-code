@@ -288,7 +288,7 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
 		}
 		case HDTVb:
 		{
-			standardName="Color Checker HDTV OPT";
+			standardName="Color Checker HDTV OPT-Plasma";
 			whiteColor=illuminantD65;
 			whiteName="D65";
 			m_white=D65;
@@ -1750,9 +1750,14 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 		}
 	case AXIS:
 		{
-			for (int i=0;i<8;i++) {GenColors [ i ] = ColorRGBDisplay( (i+1) * 10,	0,	0);}
-			for (int i=0;i<8;i++) {GenColors [ i + 8 ] = ColorRGBDisplay( 0, (i+1) * 10,	0);}
-			for (int i=0;i<8;i++) {GenColors [ i + 16] = ColorRGBDisplay( 0, 0, (i+1) * 10);}
+			GenColors [ 0 ] = ColorRGBDisplay(0,0,0);
+			for (int i=0;i<10;i++) {GenColors [ i + 1 ] = ColorRGBDisplay( (i+1) * 10,	(i+1) * 10,	(i+1) * 10);}
+			for (int i=0;i<10;i++) {GenColors [ i + 11 ] = ColorRGBDisplay( (i+1) * 10,	0,	0);}
+			for (int i=0;i<10;i++) {GenColors [ i + 21 ] = ColorRGBDisplay( 0, (i+1) * 10,	0);}
+			for (int i=0;i<10;i++) {GenColors [ i + 31] = ColorRGBDisplay( 0, 0, (i+1) * 10);}
+			for (int i=0;i<10;i++) {GenColors [ i + 61 ] = ColorRGBDisplay( (i+1) * 10,	(i+1) * 10,	0);}
+			for (int i=0;i<10;i++) {GenColors [ i + 41 ] = ColorRGBDisplay( 0, (i+1) * 10,	(i+1) * 10);}
+			for (int i=0;i<10;i++) {GenColors [ i + 51] = ColorRGBDisplay( (i+1) * 10, 0, (i+1) * 10);}
         break;
 		}
 		//ColorCheckerSG 96 colors
@@ -1864,7 +1869,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
 			lpStr [ 1 ] = '\0';
             CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"colors.csv");
+            ifstream colorFile(strPath+"usercolors.csv");
             std::string line;
             int cnt = 0;
             int n1,n2,n3;
@@ -1883,7 +1888,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
                 s >> n2;
                 getline(s, field,',');
                 s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	(n1 / 255.) * 100	, (	n2 / 255.) * 100	,	( n3 /255. ) * 100.	);
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 -16) / 219.) * 100	, (	(n2-16) / 219.) * 100	,	( (n3-16) /219. ) * 100.	);
                 cnt++;
             }
 			}
@@ -1898,7 +1903,7 @@ void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDi
 {
 	//use fully saturated space if user has special color space modes set
 	int m_cRef=colorReference.m_standard;
-	CColorReference cRef=((m_cRef==HDTVa  || m_cRef==HDTVb )?CColorReference(HDTV,D65,2.2):colorReference);
+	CColorReference cRef=((m_cRef==HDTVa  || m_cRef==HDTVb )?CColorReference(HDTV):colorReference);
     // Retrieve color luminance coefficients matching actual reference
     const double KR = cRef.GetRedReferenceLuma (true);  
     const double KG = cRef.GetGreenReferenceLuma (true);

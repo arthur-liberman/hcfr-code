@@ -259,31 +259,79 @@ static const SCtrlLayout g_CtrlLayout [] = {
 						"CP-Dark",
 						"Dark Skin",
 						"Light Skin" };
-                    char*  PatNameAXIS[24]={
-						"Red 10%",
-						"Red 20%",
-						"Red 30%",
-						"Red 40%",
-						"Red 50%",
-						"Red 60%",
-						"Red 70%",
-						"Red 80%",
-						"Green 10%",
-						"Green 20%",
-						"Green 30%",
-						"Green 40%",
-						"Green 50%",
-						"Green 60%",
-						"Green 70%",
-						"Green 80%",
-						"Blue 10%",
-						"Blue 20%",
-						"Blue 30%",
-						"Blue 40%",
-						"Blue 50%",
-						"Blue 60%",
-						"Blue 70%",
-						"Blue 80%" };
+                    char*  PatNameAXIS[71]={
+						"Black",
+						"White 10",
+						"White 20",
+						"White 30",
+						"White 40",
+						"White 50",
+						"White 60",
+						"White 70",
+						"White 80",
+						"White 90",
+						"White 100",
+						"Red 10",
+						"Red 20",
+						"Red 30",
+						"Red 40",
+						"Red 50",
+						"Red 60",
+						"Red 70",
+						"Red 80",
+						"Red 90",
+						"Red 100",
+						"Green 10",
+						"Green 20",
+						"Green 30",
+						"Green 40",
+						"Green 50",
+						"Green 60",
+						"Green 70",
+						"Green 80",
+						"Green 90",
+						"Green 100",
+						"Blue 10",
+						"Blue 20",
+						"Blue 30",
+						"Blue 40",
+						"Blue 50",
+						"Blue 60",
+						"Blue 70",
+						"Blue 80",
+						"Blue 90",
+						"Blue 100", 
+						"Yellow 10",
+						"Yellow 20",
+						"Yellow 30",
+						"Yellow 40",
+						"Yellow 50",
+						"Yellow 60",
+						"Yellow 70",
+						"Yellow 80",
+						"Yellow 90",
+						"Yellow 100", 
+						"Cyan 10",
+						"Cyan 20",
+						"Cyan 30",
+						"Cyan 40",
+						"Cyan 50",
+						"Cyan 60",
+						"Cyan 70",
+						"Cyan 80",
+						"Cyan 90",
+						"Cyan 100", 
+						"Magenta 10",
+						"Magenta 20",
+						"Magenta 30",
+						"Magenta 40",
+						"Magenta 50",
+						"Magenta 60",
+						"Magenta 70",
+						"Magenta 80",
+						"Magenta 90",
+						"Magenta 100" 
+					};
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -356,6 +404,7 @@ CMainView::CMainView()
 	m_nSizeOffset = 0;
 	m_bPositionsInit = FALSE;
 	m_dwInitialUserInfo = 0;
+	last_minCol = 0;
 	
 	m_SelectedColor = noDataColor;
 
@@ -636,11 +685,7 @@ void CMainView::RefreshSelection()
 	Item.nFormat = DT_RIGHT;
 	Item.row = 0;
 	Item.col = 1;
-
-//	m_RGBLevels.m_pRefColor = & m_SelectedColor;
-//	m_Target.m_pRefColor = & m_SelectedColor;
-//	m_RGBLevels.m_pDocument = GetDocument();
-//	m_Target.m_pDocument = GetDocument();
+	int minCol = m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1;
 
 	if (m_displayMode <= 11 &&  m_displayMode != 2)  
     {
@@ -651,8 +696,10 @@ void CMainView::RefreshSelection()
         size = -1 * GetDocument()->GetMeasure()->GetNearWhiteScaleSize();
 		if (m_displayMode > 4 && m_displayMode < 12)
 			size=GetDocument()->GetMeasure()->GetSaturationSize();
-	    m_RGBLevels.Refresh(m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1, m_displayMode, size);
-		m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  (m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1), size, m_displayMode, GetDocument());
+		if (last_minCol != minCol && minCol > 0)
+			last_minCol = minCol;
+	    m_RGBLevels.Refresh(minCol, m_displayMode, size);
+		m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  minCol, size, m_displayMode, GetDocument());
     }
 
 	if(m_SelectedColor.isValid())
@@ -660,12 +707,6 @@ void CMainView::RefreshSelection()
 		// Retrieve measured white luminance to compute exact delta E, Lab and LCH values
 		if ( GetDocument() -> GetMeasure () -> GetOnOffWhite ().isValid() )
 			YWhite = GetDocument() -> GetMeasure () -> GetOnOffWhite () [ 1 ]; //onoff white is always grayscale white
-//		else 
-//		{
-//			i = GetDocument() -> GetMeasure () -> GetGrayScaleSize ();
-//			if ( GetDocument() -> GetMeasure () -> GetGray ( i - 1 ).isValid() )
-//				YWhite = GetDocument() -> GetMeasure () -> GetGray ( i - 1 ) [ 1 ];
-//		}
 
 		Item.strText.Format("%.3f",m_SelectedColor.GetLuminance());
 		Item.row = 0;
@@ -734,7 +775,7 @@ void CMainView::RefreshSelection()
                         size = -1 * GetDocument()->GetMeasure()->GetNearWhiteScaleSize();
 					if (m_displayMode > 4 && m_displayMode < 12)
 						size=GetDocument()->GetMeasure()->GetSaturationSize();
-                    ( ( CTargetWnd * ) m_pInfoWnd ) -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  (m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1), size, m_displayMode, GetDocument());
+                    ( ( CTargetWnd * ) m_pInfoWnd ) -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  minCol, size, m_displayMode, GetDocument());
                 }
 				break;
 
@@ -848,7 +889,7 @@ void CMainView::InitGrid()
         if (GetConfig()->m_CCMode == USER)
             size = (GetConfig()->GetCColorsSize());		
         else
-            size = (GetConfig()->m_CCMode == CCSG?96:24);
+            size = (GetConfig()->m_CCMode == CCSG?96:(GetConfig()->m_CCMode == AXIS?71:24));
 			if (GetConfig()->m_CCMode==CMS || GetConfig()->m_CCMode==CPS)
 				size = 19;
 		bHasLuxValues = GetDocument()->GetMeasure()->GetCC24Sat(0).HasLuxValue ();
@@ -1021,8 +1062,11 @@ void CMainView::InitGrid()
                  }
                  else if (GetConfig()->m_CCMode == USER)
                  {
-                     char aBuf[10];
-                     sprintf(aBuf,"Color %d",i+1);
+                     char aBuf[50];
+					 std::string name;
+					 GetConfig()->GetCColorsN(i, &name);
+                     sprintf(aBuf,"Color %s", name.c_str());
+//                     sprintf(aBuf,"Color %d",i+1);
                      Item.strText.SetString(aBuf);
                  }
                  else {
@@ -1260,8 +1304,8 @@ void CMainView::InitGrid()
 			}
 			else if ( i < 3 )
 			{
-//				m_pGrayScaleGrid->SetItemBkColour ( Item.row,Item.col, RGB(255,255,255) );
-				m_pGrayScaleGrid->SetItemState ( Item.row,Item.col, m_pGrayScaleGrid->GetItemState(Item.row,Item.col) & (~GVIS_READONLY) );
+				m_pGrayScaleGrid->SetItemBkColour ( Item.row,Item.col, RGB(255,255,255) );
+//				m_pGrayScaleGrid->SetItemState ( Item.row,Item.col, m_pGrayScaleGrid->GetItemState(Item.row,Item.col) & (~GVIS_READONLY) );
 			}
 		}
 
@@ -1279,7 +1323,8 @@ void CMainView::InitGrid()
 				}
 				else if ( i < 3 )
 				{
-					m_pGrayScaleGrid->SetItemState ( Item.row,Item.col, m_pGrayScaleGrid->GetItemState(Item.row,Item.col) & (~GVIS_READONLY) );
+				m_pGrayScaleGrid->SetItemBkColour ( Item.row,Item.col, RGB(255,255,255) );
+//					m_pGrayScaleGrid->SetItemState ( Item.row,Item.col, m_pGrayScaleGrid->GetItemState(Item.row,Item.col) & (~GVIS_READONLY) );
 				}
 			}
 		}
@@ -1528,13 +1573,28 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 			OnSelchangeComboMode();
 		}
 	}
+	CColor	MeasuredColor=noDataColor;
+
+	int	n = GetDocument()->GetMeasure()->GetMeasurementsSize();
+
+	if ( n > 0 )
+		MeasuredColor=GetDocument()->GetMeasure()->GetMeasurement(n-1);
+
 
 	if ( lHint == UPD_FREEMEASUREAPPENDED && pHint == g_pDataDocRunningThread && g_hThread && ! g_bTerminateThread )
 	{
 		// Optimized version for continuous measures: update only measurement grid
-		if ( GetConfig ()->m_bDetectPrimaries && m_displayMode == 1 )
+		if ( GetConfig ()->m_bDetectPrimaries && (m_displayMode == 1 || m_displayMode == 0) )
 		{
-			// Primary colors may have been updated during free measures
+			// Gray/Primary colors may have been updated during free measures
+			if ( m_displayMode == 0 && ( MeasuredColor.GetDeltaxy(GetColorReference().GetWhite(), GetColorReference()) < 0.03 || last_minCol == 1 ) )
+			{
+				GetDocument()->GetMeasure()->SetGray(last_minCol - 1, MeasuredColor);
+				if (last_minCol == 1)
+					GetDocument()->GetMeasure()->SetOnOffBlack(MeasuredColor);
+				if (last_minCol == GetDocument()->GetMeasure()->GetGrayScaleSize ()    )
+					GetDocument()->GetMeasure()->SetOnOffWhite(MeasuredColor);
+			}
  			 UpdateGrid();
 		}
 		UpdateMeasurementsAfterBkgndMeasure ();
@@ -1561,9 +1621,17 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 		
 		if ( lHint == UPD_FREEMEASUREAPPENDED )
 		{
-			if ( GetConfig ()->m_bDetectPrimaries && m_displayMode == 1 )
+			if ( GetConfig ()->m_bDetectPrimaries && (m_displayMode == 1 || m_displayMode == 0) )
 			{
-				// Primary colors may have been updated during free measures
+				// Gray/Primary colors may have been updated during free measures
+				if (m_displayMode == 0 && ( (MeasuredColor.GetDeltaxy( GetColorReference().GetWhite(), GetColorReference()) < 0.03) || last_minCol == 1 ) )
+				{
+					GetDocument()->GetMeasure()->SetGray(last_minCol - 1, MeasuredColor);
+					if (last_minCol == 1)
+						GetDocument()->GetMeasure()->SetOnOffBlack(MeasuredColor);
+					if (last_minCol == GetDocument()->GetMeasure()->GetGrayScaleSize ()    )
+						GetDocument()->GetMeasure()->SetOnOffWhite(MeasuredColor);
+				}
 				UpdateGrid();
 			}
 			UpdateMeasurementsAfterBkgndMeasure ();
@@ -1702,7 +1770,7 @@ std::vector<double> dEvector(0);
 CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aReference, CColor & aRefDocColor, double YWhiteRefDoc, int aComponentNum, int nCol, double Offset)
 {
 	CString str;
-	if(aMeasure.isValid())
+	if(aMeasure.isValid() || ( aComponentNum == 7 || ( aComponentNum == 5 && ( GetDataRef() == NULL || GetDataRef() == GetDocument () ) ) ))
 	{
 		if ( aComponentNum < 3 )
 		{
@@ -1736,6 +1804,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				if (m_displayMode == 0 || m_displayMode == 3 || m_displayMode == 4)
 					if ( nCol > 1 || m_displayMode == 4 )
 					{
+						double Intensity=GetConfig()->GetProfileInt("GDIGenerator","Intensity",100) / 100.;
                         if (m_displayMode == 0)
                         {
                             str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->gw_Weight ) );
@@ -1744,7 +1813,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
                         else
                         {
                             str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, m_displayMode == 3 ? 1:GetConfig()->gw_Weight ) );
-    						dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, m_displayMode == 3 ? 1:GetConfig()->gw_Weight );
+    						dE=aMeasure.GetDeltaE ( YWhite, aReference,  1.0, GetColorReference(), GetConfig()->m_dE_form, true, m_displayMode == 3 ? 1:GetConfig()->gw_Weight );
                         }
 						dEavg+=dE;
                         if (dE > dEmax)
@@ -1753,7 +1822,6 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 							clr = (dE<3.0?RGB(175,255,175):(dE<5?RGB(255,255,175):RGB(255,175,175)));
 						else
 							clr = (dE<2.0?RGB(175,255,175):(dE<3?RGB(255,255,175):RGB(255,175,175)));
-				//		clr = (dE<2.0?RGB(175,255,175):(dE<3.0?RGB(255,255,175):RGB(255,175,175)));
                         if (GetConfig()->doHighlight)
                             m_pGrayScaleGrid->SetItemBkColour(4, nCol, clr);
 						m_pGrayScaleGrid -> SetItemFont ( 4, nCol, m_pGrayScaleGrid->GetItemFont(0,0) ); // Set the font to bold
@@ -1764,7 +1832,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				else
 				{
 					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight ) );
-					dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), 	GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+					dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
                     if (GetConfig()->m_CCMode == CCSG || GetConfig()->m_CCMode == USER )
                         dEvector.push_back(dE);
                     dEavg+=dE;
@@ -1817,17 +1885,18 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 
 				if ( nCol > 1 && nCol < nGrayScaleSize )
 				{
-					CColor White = GetDocument() -> GetMeasure () -> GetGray ( nGrayScaleSize - 1 );
-					CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
+					CColor White = GetDocument()->GetMeasure()->GetOnOffWhite();
+					CColor Black = GetDocument()->GetMeasure()->GetOnOffBlack();
 
-					if ( White.isValid() )
+					if ( White.isValid() && Black.isValid())
 					{
 						double x, valx, valy;
 						double yblack = 0.0;
 						BOOL bIRE = GetDocument()->GetMeasure()->m_bIREScaleMode;
 						
 						if ( GetConfig ()->m_GammaOffsetType == 1 )
-							yblack = GetDocument() -> GetMeasure () -> GetGray ( 0 ).GetY ();
+							yblack = Black.GetY();
+//							yblack = GetDocument() -> GetMeasure () -> GetGray ( 0 ).GetY ();
 
 						x = ArrayIndexToGrayLevel ( nCol - 1, nGrayScaleSize, GetConfig () -> m_bUseRoundDown );
                         if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
@@ -1908,6 +1977,8 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 
 				if ( nCol2 < ( (m_displayMode > 11 || m_displayMode < 5) ? 7 : 1001) && white.isValid() && white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) > 0.0001 )
     		    {
+					if (aMeasure.isValid())
+					{
 					double d = aMeasure.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) / white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter);
 					if ( fabs ( ( RefLuma [ nCol2 - 1 ] - d ) / RefLuma [ nCol2 - 1 ] ) < 0.001 )
 						str = "=";
@@ -1915,6 +1986,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						str.Format("-%.1f %%", 100.0 * ( RefLuma [ nCol2 - 1 ] - d ) / RefLuma [ nCol2 - 1 ] );
 					else
 						str.Format("+%.1f %%", 100.0 * ( d - RefLuma [ nCol2 - 1 ] ) / RefLuma [ nCol2 - 1 ] );
+					}
 				}
 				else
 					str.Empty();
@@ -1960,7 +2032,7 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 							return m_displayMode==1?"RCC6":"R709";
 							break;
 						case HDTVb:
-							return m_displayMode==1?"R709(OPT)":"R709";
+							return m_displayMode==1?"R709(OPT-Plasma)":"R709";
 							break;
 						case CUSTOM:
 							return "RCUSTOM";
@@ -2007,7 +2079,7 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 							return m_displayMode==1?"GCC6":"GCC6";
 							break;
 						case HDTVb:
-							return m_displayMode==1?"G709(OPT)":"G709";
+							return m_displayMode==1?"G709(OPT-Plasma)":"G709";
 							break;
 						case CUSTOM:
 							return "GCUSTOM";
@@ -2055,7 +2127,7 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 							return m_displayMode==1?"B709(CC6)":"B709";
 							break;
 						case HDTVb:
-							return m_displayMode==1?"B709(OPT)":"B709";
+							return m_displayMode==1?"B709(OPT-Plasma)":"B709";
 							break;
 						case CUSTOM:
 							return "BCUSTOM";
@@ -2254,7 +2326,8 @@ void CMainView::UpdateGrid()
 				 bool isSpecial = (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb);
 				 YWhite = isSpecial?YWhiteOnOff:YWhitePrime;
 				 YWhiteRefDoc = isSpecial?YWhiteOnOffRefDoc:YWhitePrimeRefDoc;
-				//special case check if user has done a less than 100% primaries run and use grayscale white instead for colorchecker
+
+				 //special case check if user has done a less than 100% primaries run and use grayscale white instead for colorchecker
 				if (GetDocument()->GetMeasure()->GetOnOffWhite().isValid())
 					if ((YWhitePrime / YWhiteOnOff < 0.9) && m_displayMode == 11)
 					{
@@ -2273,7 +2346,7 @@ void CMainView::UpdateGrid()
                      if (GetConfig()->m_CCMode == USER)
                          nCount = GetConfig()->GetCColorsSize();
                      else
-                        nCount = GetConfig()->m_CCMode==CCSG?96:GetConfig()->m_CCMode==CMS||GetConfig()->m_CCMode==CPS?19:24;
+                        nCount = GetConfig()->m_CCMode==CCSG?96:GetConfig()->m_CCMode==CMS||GetConfig()->m_CCMode==CPS?19:(GetConfig()->m_CCMode==AXIS?71:24);
 				 }
 				 
 				 if ( nCount )
@@ -2850,7 +2923,7 @@ void CMainView::UpdateGrid()
 				Msg += (GetConfig()->m_CCMode == GCD?" - ColorChecker Classic GCD ":(GetConfig()->m_CCMode==MCD?" - ColorChecker Classic MCD ":(GetConfig()->m_CCMode==SKIN?" - Pantone skin tones ":(GetConfig()->m_CCMode==CCSG?" - ColorChecker SG ":(GetConfig()->m_CCMode==USER?" - ColorChecker Custom ":(GetConfig()->m_CCMode==CMS?" - ColorChecker CalMAN SG skin tones ":(GetConfig()->m_CCMode==CPS?" - ColorChecker ChromaPure skin tones ":(GetConfig()->m_CCMode==CMC?" - ColorChecker Classic CalMAN ":" - RGB Luminance Ramps"))))))));
 				Msg += " ( ";
 				Msg += Tmp;
-                if (GetConfig()->m_CCMode == CCSG || GetConfig()->m_CCMode == USER)
+				if (GetConfig()->m_CCMode == CCSG || (GetConfig()->m_CCMode == USER && nCount > 100) )
                 {
                     vector<double>::iterator max;
                     max = max_element( dEvector.begin(), dEvector.end() );
@@ -3219,12 +3292,17 @@ void CMainView::OnGrayScaleGridEndEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 				aColorMeasure.SetxyYValue(ColorxyY(aColor));
 				break;
 		}
+				 int nsize=GetDocument()->GetMeasure()->GetGrayScaleSize();
 
 		// Update document XYZ value
 		switch ( m_displayMode )
 		{
 			case 0:
 				 GetDocument()->GetMeasure()->SetGray(pItem->iColumn-1,aColorMeasure);
+				 if (pItem->iColumn == 1)
+					 GetDocument()->GetMeasure()->SetOnOffBlack(aColorMeasure);
+				 if (pItem->iColumn == nsize)
+					 GetDocument()->GetMeasure()->SetOnOffWhite(aColorMeasure);
 				 lHint = UPD_GRAYSCALE;
 				 break;
 
@@ -3931,7 +4009,7 @@ void CMainView::OnDeleteGrayscale()
 				 GetDocument()->GetMeasure()->SetCyanSecondary(noDataColor);
 				 GetDocument()->GetMeasure()->SetMagentaSecondary(noDataColor);
 				 GetDocument()->GetMeasure()->SetPrimeWhite(noDataColor);
-				 GetDocument()->GetMeasure()->SetOnOffBlack(noDataColor);
+				 GetDocument()->GetMeasure()->SetOnOffBlack(GetDocument()->GetMeasure()->GetOnOffBlack());
 				 lHint = UPD_PRIMARIESANDSECONDARIES;
 				 break;
 
@@ -4004,7 +4082,7 @@ void CMainView::OnDeleteGrayscale()
                 }
                 else
                 {
-                    for(j=0;j< (GetConfig()->m_CCMode == CCSG?96:GetConfig()->m_CCMode == CMS||GetConfig()->m_CCMode == CPS?19:24) ;j++)
+                    for(j=0;j< (GetConfig()->m_CCMode == CCSG?96:(GetConfig()->m_CCMode == AXIS?71:(GetConfig()->m_CCMode == CMS||GetConfig()->m_CCMode == CPS?19:24))) ;j++)
 	    				GetDocument()->GetMeasure()->SetCC24Sat(j,noDataColor);
                 }
 				 lHint = UPD_CC24SAT;
@@ -5004,7 +5082,7 @@ void CMainView::OnAnsiContrastPatternTestButton()
 	pGenerator->DisplayAnsiBWRects(FALSE);
 
 	Msg.LoadString ( IDS_CLICKOK );
-	GetColorApp()->InMeasureMessageBox(Msg);
+	GetColorApp()->InMeasureMessageBox(Msg, "ANSI Pattern");
 	pGenerator->Release();
 }
 

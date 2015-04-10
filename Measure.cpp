@@ -89,7 +89,7 @@ CMeasure::CMeasure()
 	m_PrimeWhite.SetY(100.);
 	m_OnOffWhite.SetY(100.);
 	m_OnOffBlack.SetXYZValue(GetColorReference().GetWhite());
-	m_OnOffBlack.SetY(0.01);
+	m_OnOffBlack.SetY(0.012345);
 	m_AnsiBlack=m_AnsiWhite=noDataColor;
 	m_infoStr="";
 	
@@ -1020,6 +1020,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 	{		
 		Title.LoadString ( IDS_ERROR );
 		strMsg.LoadString ( IDS_ERRINITGENERATOR );
+		strMsg.Append(" not a supported DVD sequence.");
 		GetColorApp()->InMeasureMessageBox(strMsg,Title,MB_ICONERROR | MB_OK);
 		pGenerator->Release();
 		return FALSE;
@@ -2533,7 +2534,7 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
 	BOOL		bPatternRetry = FALSE;
 	BOOL		bRetry = FALSE;
 	CCPatterns	ccPat = GetConfig()->m_CCMode;
-	int			size = ccPat == CCSG?96:(ccPat == CMS || ccPat ==CPS)?19:24;
+	int			size = ccPat == CCSG?96:(ccPat == CMS || ccPat ==CPS)?19:(ccPat==AXIS?71:24);
 	CString		strMsg, Title;
 	ColorRGBDisplay	GenColors [ 1010 ];
 	double		dLuxValue;
@@ -2579,7 +2580,7 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
 		 nPattern=CGenerator::MT_SAT_CC24_MCD;
 		 break;
 	case AXIS:
-		 nPattern=CGenerator::MT_SAT_CC24_MCD;
+		 nPattern=CGenerator::MT_SAT_CC24_AXIS;
 		 break;
 	case CCSG:
 		 nPattern=CGenerator::MT_SAT_CC24_CCSG;
@@ -2606,10 +2607,11 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
-    if(pGenerator->GetName() == str&&( GetConfig()->m_CCMode==SKIN || GetConfig()->m_CCMode==USER || GetConfig()->m_CCMode==AXIS ) )
+    if(pGenerator->GetName() == str&&( GetConfig()->m_CCMode==SKIN || (GetConfig()->m_CCMode==USER && size > 100) ) )
 	{		
 		Title.LoadString ( IDS_ERROR );
 		strMsg.LoadString ( IDS_ERRINITGENERATOR );
+		strMsg.Append(" not a supported DVD sequence.");
 		GetColorApp()->InMeasureMessageBox(strMsg,Title,MB_ICONERROR | MB_OK);
 		pGenerator->Release();
 		return FALSE;
@@ -2754,7 +2756,7 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 	BOOL		bRetry = FALSE;
 	int			size = GetSaturationSize ();
 	CCPatterns	ccPat = GetConfig()->m_CCMode;
-	int			ccSize = ccPat == CCSG?96:(ccPat == CMS || ccPat ==CPS)?19:24;
+	int			ccSize = ccPat == CCSG?96:(ccPat == CMS || ccPat == CPS)?19:(ccPat==AXIS?71:24);
 	CString		strMsg, Title;
 	ColorRGBDisplay	GenColors [ 7 * 256 ];
 
@@ -2781,7 +2783,7 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 		 nPattern=CGenerator::MT_SAT_CC24_GCD;
          break;
 	case AXIS:
-		 nPattern=CGenerator::MT_SAT_CC24_GCD;
+		 nPattern=CGenerator::MT_SAT_CC24_AXIS;
          break;
 	case CCSG:
 		 nPattern=CGenerator::MT_SAT_CC24_CCSG;		
@@ -2837,10 +2839,11 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
-	if(pGenerator->GetName() == str&&( GetConfig()->m_CCMode==SKIN || GetConfig()->m_CCMode==USER || GetConfig()->m_CCMode==AXIS))
+	if(pGenerator->GetName() == str&&( GetConfig()->m_CCMode==SKIN || (GetConfig()->m_CCMode==USER && ccSize > 100) ))
 	{		
 		Title.LoadString ( IDS_ERROR );
 		strMsg.LoadString ( IDS_ERRINITGENERATOR );
+		strMsg.Append(" not a supported DVD sequence.");
 		GetColorApp()->InMeasureMessageBox(strMsg,Title,MB_ICONERROR | MB_OK);
 		pGenerator->Release();
 		return FALSE;
@@ -3329,6 +3332,7 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
 	{		
 		Title.LoadString ( IDS_ERROR );
 		strMsg.LoadString ( IDS_ERRINITGENERATOR );
+		strMsg.Append(" not a supported DVD sequence.");
 		GetColorApp()->InMeasureMessageBox(strMsg,Title,MB_ICONERROR | MB_OK);
 		pGenerator->Release();
 		return FALSE;
@@ -3545,6 +3549,7 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator)
 	{		
 		Title.LoadString ( IDS_ERROR );
 		strMsg.LoadString ( IDS_ERRINITGENERATOR );
+		strMsg.Append(" not a supported DVD sequence.");
 		GetColorApp()->InMeasureMessageBox(strMsg,Title,MB_ICONERROR | MB_OK);
 		pGenerator->Release();
 		return FALSE;
@@ -4688,37 +4693,37 @@ void CMeasure::FreeMeasurementAppended(bool isPrimary)
 		{
 			LastMeasure=GetMeasurement(n-1);
 
-			if ( LastMeasure.GetDeltaxy ( GetRefPrimary(0), GetColorReference()) < 0.05 )
+			if ( LastMeasure.GetDeltaxy ( GetRefPrimary(0), GetColorReference()) < 0.03 )
 			{
 				// Copy real color to primary (not LastMeasure which may have been adjusted)
 				SetRedPrimary ( m_measurementsArray[n-1] );
 			}
-			else if ( LastMeasure.GetDeltaxy ( GetRefPrimary(1), GetColorReference() ) < 0.05 )
+			else if ( LastMeasure.GetDeltaxy ( GetRefPrimary(1), GetColorReference() ) < 0.03 )
 			{
 				// Copy real color to primary (not LastMeasure which may have been adjusted)
 				SetGreenPrimary ( m_measurementsArray[n-1] );
 			}
-			else if ( LastMeasure.GetDeltaxy ( GetRefPrimary(2), GetColorReference() ) < 0.05 )
+			else if ( LastMeasure.GetDeltaxy ( GetRefPrimary(2), GetColorReference() ) < 0.03 )
 			{
 				// Copy real color to primary (not LastMeasure which may have been adjusted)
 				SetBluePrimary ( m_measurementsArray[n-1] );
 			}
-			else if ( LastMeasure.GetDeltaxy (GetRefSecondary(0), GetColorReference() ) < 0.05 )
+			else if ( LastMeasure.GetDeltaxy (GetRefSecondary(0), GetColorReference() ) < 0.03)
 			{
 				// Copy real color to primary (not LastMeasure which may have been adjusted)
 				SetYellowSecondary ( m_measurementsArray[n-1] );
 			}
-			else if ( LastMeasure.GetDeltaxy ( GetRefSecondary(1), GetColorReference() ) < 0.05 )
+			else if ( LastMeasure.GetDeltaxy ( GetRefSecondary(1), GetColorReference() ) < 0.03)
 			{
 				// Copy real color to primary (not LastMeasure which may have been adjusted)
 				SetCyanSecondary ( m_measurementsArray[n-1] );
 			}
-			else if ( LastMeasure.GetDeltaxy ( GetRefSecondary(2), GetColorReference() ) < 0.05 )
+			else if ( LastMeasure.GetDeltaxy ( GetRefSecondary(2), GetColorReference() ) < 0.03)
 			{
 				// Copy real color to primary (not LastMeasure which may have been adjusted)
 				SetMagentaSecondary ( m_measurementsArray[n-1] );
 			}
-			else if ( LastMeasure.GetDeltaxy ( GetColorReference().GetWhite(), GetColorReference() ) < 0.05 )
+			else if ( LastMeasure.GetDeltaxy ( GetColorReference().GetWhite(), GetColorReference() ) < 0.03 )
 			{
 				// Copy real color to primary (not LastMeasure which may have been adjusted)
 				SetPrimeWhite ( m_measurementsArray[n-1] );
@@ -5462,11 +5467,11 @@ CColor CMeasure::GetRefSat(int i, double sat_percent, bool special) const
 {
 	CColor	refColor;
 	ColorxyY	refWhite(GetColorReference().GetWhite());
-//	refWhite[2]=0.75 * refWhite[2];
 	double	x, y;
 	double	xstart = refWhite[0];
 	double	ystart = refWhite[1];
 	double	YLuma;
+	double Intensity=GetConfig()->GetProfileInt("GDIGenerator","Intensity",100) / 100.;
 	CColor pRef[3];
 	pRef[0].SetxyYValue(ColorxyY(0.6400, 0.3300));
 	pRef[1].SetxyYValue(ColorxyY(0.3000, 0.6000));
@@ -5504,13 +5509,13 @@ CColor CMeasure::GetRefSat(int i, double sat_percent, bool special) const
 			YLuma = CColorReference(special?HDTV:GetColorReference()).GetBlueReferenceLuma(true);
 			break;
 		case 3:
-			YLuma = CColorReference(special?HDTV:GetColorReference()).GetYellowReferenceLuma();
+			YLuma = CColorReference(special?HDTV:GetColorReference()).GetYellowReferenceLuma(true);
 			break;
 		case 4:
-			YLuma = CColorReference(special?HDTV:GetColorReference()).GetCyanReferenceLuma();
+			YLuma = CColorReference(special?HDTV:GetColorReference()).GetCyanReferenceLuma(true);
 			break;
 		case 5:
-			YLuma = CColorReference(special?HDTV:GetColorReference()).GetMagentaReferenceLuma();
+			YLuma = CColorReference(special?HDTV:GetColorReference()).GetMagentaReferenceLuma(true);
 			break;
 		}
 	
@@ -5524,25 +5529,31 @@ CColor CMeasure::GetRefSat(int i, double sat_percent, bool special) const
     CColor White = CMeasure::GetGray ( CMeasure::GetGrayScaleSize() - 1 );
 	CColor Black = CMeasure::GetGray ( 0 );
     double gamma=GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef);
-    aColor.SetxyYValue (x, y, YLuma);
-	ColorRGB rgb;
-	if (!special)
-		rgb=aColor.GetRGBValue (GetColorReference());
-	else
-		rgb=aColor.GetRGBValue(CColorReference(HDTV));
-	double r=rgb[0],g=rgb[1],b=rgb[2];
+
+	aColor.SetxyYValue (x, y, YLuma );
+
 	if (sat_percent < 1 )
 	{
 	    if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
-		   gamma = log(GetBT1886(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(aColor.GetY(),1.0/2.22));
+		   gamma = log(GetBT1886(pow(aColor.GetY() * pow(Intensity,2.22),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(aColor.GetY() * pow(Intensity,2.22),1.0/2.22));
+
+		ColorRGB rgb;
+		if (!special)
+			rgb=aColor.GetRGBValue (GetColorReference());
+		else
+			rgb=aColor.GetRGBValue(CColorReference(HDTV));
+		double r=rgb[0],g=rgb[1],b=rgb[2];
+
 		r=(r<=0||r>=1)?min(max(r,0),1):pow(pow(r,1.0/2.22),gamma);
 		g=(g<=0||g>=1)?min(max(g,0),1):pow(pow(g,1.0/2.22),gamma);
 		b=(b<=0||b>=1)?min(max(b,0),1):pow(pow(b,1.0/2.22),gamma);
+
 		if (!special)
 			aColor.SetRGBValue (ColorRGB(r,g,b), GetColorReference());	
 		else
 			aColor.SetRGBValue (ColorRGB(r,g,b), CColorReference(HDTV));	
 	}
+
 	return aColor;
 }
 
@@ -5720,9 +5731,14 @@ CColor CMeasure::GetRefCC24Sat(int i) const
 	    case AXIS:
 		{
 			int j;
-			for (j=0;j<8;j++) {RGB[j] = ColorRGB((j+1) * 0.1,0.0,0.0);}
-			for (j=0;j<8;j++) {RGB[j+8] = ColorRGB(0.0, (j+1) * 0.1,0.0);}
-			for (j=0;j<8;j++) {RGB[j+16] = ColorRGB(0.0, 0.0, (j+1) * 0.1);}
+			RGB[0] = ColorRGB(0,0,0);
+			for (j=0;j<10;j++) {RGB[j+1] = ColorRGB((j+1) * 0.1,(j+1) * 0.1,(j+1) * 0.1);}
+			for (j=0;j<10;j++) {RGB[j+11] = ColorRGB((j+1) * 0.1,0.0,0.0);}
+			for (j=0;j<10;j++) {RGB[j+21] = ColorRGB(0.0, (j+1) * 0.1,0.0);}
+			for (j=0;j<10;j++) {RGB[j+31] = ColorRGB(0.0, 0.0, (j+1) * 0.1);}
+			for (j=0;j<10;j++) {RGB[j+61] = ColorRGB((j+1) * 0.1, (j+1) * 0.1, 0.0);}
+			for (j=0;j<10;j++) {RGB[j+41] = ColorRGB(0.0, (j+1) * 0.1, (j+1) * 0.1);}
+			for (j=0;j<10;j++) {RGB[j+51] = ColorRGB((j+1) * 0.1, 0.0, (j+1) * 0.1);}
             break;
         }
         //Color checker SG 96 colors
@@ -5831,7 +5847,7 @@ CColor CMeasure::GetRefCC24Sat(int i) const
 		{
 			int r=0, g=0, b=0;
 			GetConfig()->GetCColorsT(i, &r, &g, &b);
-			RGB [ i ] = ColorRGB(	(r / 255.)	, (	g / 255.) , ( b /255. ) );
+			RGB [ i ] = ColorRGB(	( (r -16) / 219.)	, (	(g - 16) / 219.) , ( (b - 16) /219. ) );
         }
     } 
     CColor White = CMeasure::GetGray ( CMeasure::GetGrayScaleSize() - 1 );
