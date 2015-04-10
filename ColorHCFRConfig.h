@@ -133,6 +133,7 @@ public:
     int GetCColorsSize();
     void GetCColorsT(int index, int *r, int *g, int *b);
 	void GetCColorsN(int index, std::string *name);
+	std::string GetCColorsnFile();
     void GetCColors();
 
 	BOOL IsProfileEntryDefined(LPCTSTR lpszSection,LPCTSTR lpszEntry);

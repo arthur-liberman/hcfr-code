@@ -1065,7 +1065,7 @@ void CMainView::InitGrid()
                      char aBuf[50];
 					 std::string name;
 					 GetConfig()->GetCColorsN(i, &name);
-                     sprintf(aBuf,"Color %s", name.c_str());
+                     sprintf(aBuf,"%s", name.c_str());
 //                     sprintf(aBuf,"Color %d",i+1);
                      Item.strText.SetString(aBuf);
                  }
@@ -2913,6 +2913,8 @@ void CMainView::UpdateGrid()
 		{
 			CString	Msg, Tmp;;
 			Msg.LoadString ( IDS_CC24COLORS );
+			Msg += " - ";
+			Msg += (GetConfig()->m_CCMode == GCD?"ColorChecker Classic GCD":(GetConfig()->m_CCMode==MCD?"ColorChecker Classic MCD":(GetConfig()->m_CCMode==SKIN?"Pantone skin tones":(GetConfig()->m_CCMode==CCSG?"ColorChecker SG":(GetConfig()->m_CCMode==USER?GetConfig()->GetCColorsnFile().c_str():(GetConfig()->m_CCMode==CMS?"ColorChecker CalMAN SG skin tones":(GetConfig()->m_CCMode==CPS?"ColorChecker ChromaPure skin tones":(GetConfig()->m_CCMode==CMC?"ColorChecker Classic CalMAN":"RGB Luminance Ramps"))))))));
 			m_grayScaleGroup.SetText ( Msg );
 			if (GetDocument()->GetMeasure()->GetCC24Sat(0).isValid() && dEcnt > 0 )
 		    {
@@ -2920,7 +2922,6 @@ void CMainView::UpdateGrid()
 				CString dEform;
 				float a = 2.0, b = 3, dE10 = 0;
 				Tmp.LoadString ( IDS_DELTAEAVERAGE );
-				Msg += (GetConfig()->m_CCMode == GCD?" - ColorChecker Classic GCD ":(GetConfig()->m_CCMode==MCD?" - ColorChecker Classic MCD ":(GetConfig()->m_CCMode==SKIN?" - Pantone skin tones ":(GetConfig()->m_CCMode==CCSG?" - ColorChecker SG ":(GetConfig()->m_CCMode==USER?" - ColorChecker Custom ":(GetConfig()->m_CCMode==CMS?" - ColorChecker CalMAN SG skin tones ":(GetConfig()->m_CCMode==CPS?" - ColorChecker ChromaPure skin tones ":(GetConfig()->m_CCMode==CMC?" - ColorChecker Classic CalMAN ":" - RGB Luminance Ramps"))))))));
 				Msg += " ( ";
 				Msg += Tmp;
 				if (GetConfig()->m_CCMode == CCSG || (GetConfig()->m_CCMode == USER && nCount > 100) )
@@ -4079,7 +4080,9 @@ void CMainView::OnDeleteGrayscale()
                 {
     				for(j=0;j<GetConfig()->GetCColorsSize() ;j++)
 	    				GetDocument()->GetMeasure()->SetCC24Sat(j,noDataColor);
-                }
+	 				GetConfig()->GetCColors();
+					UpdateGrid();
+               }
                 else
                 {
                     for(j=0;j< (GetConfig()->m_CCMode == CCSG?96:(GetConfig()->m_CCMode == AXIS?71:(GetConfig()->m_CCMode == CMS||GetConfig()->m_CCMode == CPS?19:24))) ;j++)

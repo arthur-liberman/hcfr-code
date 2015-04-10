@@ -827,6 +827,7 @@ std::vector<int> cTargetG(0);
 std::vector<int> cTargetB(0);
 std::vector<std::string> cTargetN(0);
 int numCC = 0;
+std::string nFile;
 
 void CColorHCFRConfig::GetCColors() 
 {
@@ -842,6 +843,9 @@ void CColorHCFRConfig::GetCColors()
 			cTargetN.clear();
             if (colorFile) 
 			{
+				std::getline(colorFile, line);
+			    std::istringstream s(line);
+				getline(s, nFile,',');
 	            while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
 		        {
 			        std::istringstream s(line);
@@ -852,7 +856,7 @@ void CColorHCFRConfig::GetCColors()
 					getline(s, field,',');
 					s >> n3;
 					getline(s, field,',');
-					s >> n4;
+					getline(s, n4,',');
 	                cnt++;
 					cTargetR.push_back(n1);
 					cTargetG.push_back(n2);
@@ -873,6 +877,11 @@ void CColorHCFRConfig::GetCColorsT(int index, int *r, int *g, int *b)
 void CColorHCFRConfig::GetCColorsN(int index, std::string *name) 
 {
 		     *name = cTargetN[index];
+}
+
+std::string CColorHCFRConfig::GetCColorsnFile() 
+{
+		     return nFile;
 }
 
 int CColorHCFRConfig::GetCColorsSize() 
