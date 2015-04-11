@@ -131,9 +131,8 @@ public:
 	void ApplySettings(BOOL isStartupApply=FALSE);
 	void InitDefaults();
     int GetCColorsSize();
-    void GetCColorsT(int index, int *r, int *g, int *b);
-	void GetCColorsN(int index, std::string *name);
-	std::string GetCColorsnFile();
+    ColorRGB GetCColorsT(int index);
+	std::string GetCColorsN(int index);
     void GetCColors();
 
 	BOOL IsProfileEntryDefined(LPCTSTR lpszSection,LPCTSTR lpszEntry);

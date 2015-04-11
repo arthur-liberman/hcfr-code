@@ -1284,8 +1284,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
                     for (int i=0; i < GetConfig()->GetCColorsSize(); i++)
                     {
                         char aBuf[50];
-						std::string name;
-						GetConfig()->GetCColorsN(i, &name);
+						std::string name = GetConfig()->GetCColorsN(i);
 						sprintf(aBuf,"Color %s Reference", name.c_str());
                         Msg.SetString(aBuf);
 	        		    str.Format(Msg, 10);
@@ -1541,8 +1540,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
                     for (int i=0; i < GetConfig()->GetCColorsSize(); i++)
                     {
 						char aBuf[50];
-						std::string name;
-						GetConfig()->GetCColorsN(i, &name);
+						std::string name = GetConfig()->GetCColorsN(i);
                         sprintf(aBuf,"Color %s", name.c_str());
                         Msg.SetString(aBuf);
 	        		    str.Format(Msg, 10);

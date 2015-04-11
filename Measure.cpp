@@ -5845,9 +5845,8 @@ CColor CMeasure::GetRefCC24Sat(int i) const
         //Custom color checker
 		case USER:
 		{
-			int r=0, g=0, b=0;
-			GetConfig()->GetCColorsT(i, &r, &g, &b);
-			RGB [ i ] = ColorRGB(	( (r -16) / 219.)	, (	(g - 16) / 219.) , ( (b - 16) /219. ) );
+			int r=0, g=0, b=0;			
+			RGB [ i ] = GetConfig()->GetCColorsT(i);
         }
     } 
     CColor White = CMeasure::GetGray ( CMeasure::GetGrayScaleSize() - 1 );

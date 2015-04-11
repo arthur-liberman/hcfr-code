@@ -822,12 +822,12 @@ void CColorHCFRConfig::EnsurePathExists ( CString strPath )
 	CreateDirectory ( strPath, NULL );
 }
 
-std::vector<int> cTargetR(0);
-std::vector<int> cTargetG(0);
-std::vector<int> cTargetB(0);
-std::vector<std::string> cTargetN(0);
-int numCC = 0;
+std::vector<int> cTargetR;
+std::vector<int> cTargetG;
+std::vector<int> cTargetB;
+std::vector<std::string> cTargetN;
 std::string nFile;
+int numCC = 0;
 
 void CColorHCFRConfig::GetCColors() 
 {
@@ -841,47 +841,44 @@ void CColorHCFRConfig::GetCColors()
 			cTargetG.clear();
 			cTargetB.clear();
 			cTargetN.clear();
-            if (colorFile) 
+
+			if (colorFile.good()) 
 			{
-				std::getline(colorFile, line);
-			    std::istringstream s(line);
-				getline(s, nFile,',');
-	            while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
+				while( getline(colorFile, line) && cnt < 1000) //currently limited to 1000 colors
 		        {
-			        std::istringstream s(line);
-				    std::string field;
+					std::istringstream s(line);
+					std::string field;
 					s >> n1;
 					getline(s, field,',');
 					s >> n2;
 					getline(s, field,',');
 					s >> n3;
 					getline(s, field,',');
-					getline(s, n4,',');
-	                cnt++;
+					getline(s, n4, ',');
+					if (cnt == 0)
+						getline(s, nFile, ',');
 					cTargetR.push_back(n1);
 					cTargetG.push_back(n2);
 					cTargetB.push_back(n3);
 					cTargetN.push_back(n4);
+	                ++cnt;
 		        }
 				numCC = cnt;
+				colorFile.close();
 			}
 }
 
-void CColorHCFRConfig::GetCColorsT(int index, int *r, int *g, int *b) 
+ColorRGB CColorHCFRConfig::GetCColorsT(int index) 
 {
-		     *r = cTargetR[index];
-		     *g = cTargetG[index];
-		     *b = cTargetB[index];
+			return ColorRGB(	( (cTargetR[index] -16) / 219.)	, (	(cTargetG[index] - 16) / 219.) , ( (cTargetB[index] - 16) /219. ) );
 }
 
-void CColorHCFRConfig::GetCColorsN(int index, std::string *name) 
+std::string CColorHCFRConfig::GetCColorsN(int index) 
 {
-		     *name = cTargetN[index];
-}
-
-std::string CColorHCFRConfig::GetCColorsnFile() 
-{
-		     return nFile;
+			if (index == -1)
+			 return nFile;
+			else
+		     return cTargetN[index];
 }
 
 int CColorHCFRConfig::GetCColorsSize() 
