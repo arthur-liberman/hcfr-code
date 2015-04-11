@@ -499,8 +499,7 @@ char*  PatName[96]={
                 break;
 			case MT_SAT_CC24_USER:
 				str3.LoadString ( IDS_CC24SATPERCENT );
-				GetConfig()->GetCColorsN(nPatternInfo, &name);
-                str2.Format(str3, name.c_str());
+				str2.Format(str3, GetConfig()->GetCColorsN(nPatternInfo).c_str());
                 break;
 			case MT_SAT_CC24_MCD:
 				str3.LoadString ( IDS_CC24SATPERCENT );
