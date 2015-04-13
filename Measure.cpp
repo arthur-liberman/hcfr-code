@@ -1203,7 +1203,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 	else
 	{
 		m_OnOffWhite.ResetLuxValue ();
-		m_OnOffBlack.ResetLuxValue ();
+//		m_OnOffBlack.ResetLuxValue ();
 	}
 
 	if ( GetConfig () -> m_BWColorsToAdd > 0 )
@@ -3497,7 +3497,7 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
 	}
 	else
 	{
-		m_OnOffBlack=noDataColor;
+//		m_OnOffBlack=noDataColor;
 	}
 	GetConfig()->m_isSettling = doSettling;
 
@@ -3722,7 +3722,7 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator)
 
 	if ( GetConfig () -> m_BWColorsToAdd > 1 )
 	{
-		m_OnOffBlack = measuredColor[7];                
+		m_OnOffBlack = measuredColor[7];
 		if ( bUseLuxValues )
 			m_OnOffBlack.SetLuxValue ( measuredLux[7] );
 		else
@@ -3730,7 +3730,7 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator)
 	}
 	else
 	{
-		m_OnOffBlack=noDataColor;
+//		m_OnOffBlack=noDataColor;
 	}
 	GetConfig()->m_isSettling = doSettling;
 
@@ -4284,8 +4284,8 @@ double CMeasure::GetContrastMaxLum ()
 
 void CMeasure::DeleteContrast ()
 {
-	m_OnOffBlack = noDataColor;
-	m_OnOffWhite = noDataColor;
+//	m_OnOffBlack = noDataColor;
+//	m_OnOffWhite = noDataColor;
 	m_AnsiBlack = noDataColor;
 	m_AnsiWhite = noDataColor;
 
@@ -4820,7 +4820,6 @@ BOOL CMeasure::ValidateBackgroundPrimaries ( BOOL bUseLuxValues, double * pLuxVa
 
 		if ( m_nBkMeasureStepCount >= 5 )
 		{
-			// Store reference white.
 			m_OnOffBlack = (*m_pBkMeasuredColor)[4];
 
 			if ( bUseLuxValues )
@@ -4828,8 +4827,8 @@ BOOL CMeasure::ValidateBackgroundPrimaries ( BOOL bUseLuxValues, double * pLuxVa
 			else
 				m_OnOffBlack.ResetLuxValue ();
 		}
-		else
-			m_OnOffBlack = noDataColor;
+//		else
+//			m_OnOffBlack = noDataColor;
 	}
 
 	// Close background thread and event objects
@@ -4882,7 +4881,6 @@ BOOL CMeasure::ValidateBackgroundSecondaries ( BOOL bUseLuxValues, double * pLux
 
 		if ( m_nBkMeasureStepCount >= 8 )
 		{
-			// Store reference white.
 			m_OnOffBlack = (*m_pBkMeasuredColor)[7];
 
 			if ( bUseLuxValues )
@@ -4890,8 +4888,8 @@ BOOL CMeasure::ValidateBackgroundSecondaries ( BOOL bUseLuxValues, double * pLux
 			else
 				m_OnOffBlack.ResetLuxValue ();
 		}
-		else
-			m_OnOffBlack = noDataColor;
+//		else
+//			m_OnOffBlack = noDataColor;
 	}
 
 	// Close background thread and event objects
@@ -4949,7 +4947,7 @@ BOOL CMeasure::ValidateBackgroundGrayScaleAndColors ( BOOL bUseLuxValues, double
 		else
 		{
 			m_PrimeWhite.ResetLuxValue ();
-			m_OnOffBlack.ResetLuxValue ();
+//			m_OnOffBlack.ResetLuxValue ();
 		}
 	}
 
