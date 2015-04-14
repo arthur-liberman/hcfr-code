@@ -176,8 +176,10 @@ void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		{
 			double x, valx, valy;
 			x = ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown);
-    		CColor White = pDoc -> GetMeasure () -> GetGray ( size - 1 );
-	    	CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
+//    		CColor White = pDoc -> GetMeasure () -> GetGray ( size - 1 );
+//	    	CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
+    		CColor White = pDoc -> GetMeasure () -> GetOnOffWhite();
+	    	CColor Black = pDoc -> GetMeasure () -> GetOnOffBlack();
             if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
 			{
 				valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
@@ -348,53 +350,57 @@ void CLuminanceGrapher::AddPointtoLumGraph(int ColorSpace,int ColorIndex,int Siz
 	double blacklvl, whitelvl;
 	char	szBuf [ 64 ];
 	LPCSTR	lpMsg = NULL;
+	if (pDataSet->GetMeasure()->GetGray(PointIndex).isValid())
+	{
+		pDataSet->GetMeasure()->SetGray(Size-1, pDataSet->GetMeasure()->GetOnOffWhite());
 
-	if (ColorSpace == 0) 
-	{
-		blacklvl=pDataSet->GetMeasure()->GetGray(0).GetRGBValue((GetColorReference()))[ColorIndex];
-		whitelvl=pDataSet->GetMeasure()->GetGray(Size-1).GetRGBValue((GetColorReference()))[ColorIndex];
-		colorlevel=pDataSet->GetMeasure()->GetGray(PointIndex).GetRGBValue((GetColorReference()))[ColorIndex];
-	}
-	else if (ColorSpace == 1) 
-	{
-		blacklvl=pDataSet->GetMeasure()->GetGray(0).GetLuxOrLumaValue(GetConfig () -> m_nLuminanceCurveMode);
-		whitelvl=pDataSet->GetMeasure()->GetGray(Size-1).GetLuxOrLumaValue(GetConfig () -> m_nLuminanceCurveMode);
-		colorlevel=pDataSet->GetMeasure()->GetGray(PointIndex).GetLuxOrLumaValue(GetConfig () -> m_nLuminanceCurveMode);
-	}
-	else
-	{
-		blacklvl=pDataSet->GetMeasure()->GetGray(0).GetLuxValue();
-		whitelvl=pDataSet->GetMeasure()->GetGray(Size-1).GetLuxValue();
-		colorlevel=pDataSet->GetMeasure()->GetGray(PointIndex).GetLuxValue();
-	}
-
-	if(GetConfig() -> m_GammaOffsetType == 1 )
-	{
-		colorlevel-=blacklvl;
-		whitelvl-=blacklvl;
-		blacklvl = 0;
-	}
-
-	if ( pDataSet->GetMeasure()->GetGray(PointIndex).HasLuxValue () )
-	{
-		if ( GetConfig () ->m_bUseImperialUnits )
-			sprintf ( szBuf, "%.5g Ft-cd", pDataSet->GetMeasure()->GetGray(PointIndex).GetLuxValue() * 0.0929 );
+		if (ColorSpace == 0) 
+		{
+			blacklvl=pDataSet->GetMeasure()->GetGray(0).GetRGBValue((GetColorReference()))[ColorIndex];
+			whitelvl=pDataSet->GetMeasure()->GetGray(Size-1).GetRGBValue((GetColorReference()))[ColorIndex];
+			colorlevel=pDataSet->GetMeasure()->GetGray(PointIndex).GetRGBValue((GetColorReference()))[ColorIndex];
+		}
+		else if (ColorSpace == 1) 
+		{
+			blacklvl=pDataSet->GetMeasure()->GetGray(0).GetLuxOrLumaValue(GetConfig () -> m_nLuminanceCurveMode);
+			whitelvl=pDataSet->GetMeasure()->GetGray(Size-1).GetLuxOrLumaValue(GetConfig () -> m_nLuminanceCurveMode);
+			colorlevel=pDataSet->GetMeasure()->GetGray(PointIndex).GetLuxOrLumaValue(GetConfig () -> m_nLuminanceCurveMode);
+		}
 		else
-			sprintf ( szBuf, "%.5g Lux", pDataSet->GetMeasure()->GetGray(PointIndex).GetLuxValue() );
+		{
+			blacklvl=pDataSet->GetMeasure()->GetGray(0).GetLuxValue();
+			whitelvl=pDataSet->GetMeasure()->GetGray(Size-1).GetLuxValue();
+			colorlevel=pDataSet->GetMeasure()->GetGray(PointIndex).GetLuxValue();
+		}
+
+		if(GetConfig() -> m_GammaOffsetType == 1 )
+		{
+			colorlevel-=blacklvl;
+			whitelvl-=blacklvl;
+			blacklvl = 0;
+		}
+
+		if ( pDataSet->GetMeasure()->GetGray(PointIndex).HasLuxValue () )
+		{
+			if ( GetConfig () ->m_bUseImperialUnits )
+				sprintf ( szBuf, "%.5g Ft-cd", pDataSet->GetMeasure()->GetGray(PointIndex).GetLuxValue() * 0.0929 );
+			else
+				sprintf ( szBuf, "%.5g Lux", pDataSet->GetMeasure()->GetGray(PointIndex).GetLuxValue() );
 		
-		lpMsg = szBuf;
-	}
+			lpMsg = szBuf;
+		}
 	
 	
 	// Le calcul de la moyenne des gamma et la représentation en échelle log 
 	// ne se fait plus avec l'échelle des x = % de blanc mais avec la formule : 
 	// (x + offset) / (1+offset) 
 
-	double x = ArrayIndexToGrayLevel ( PointIndex, Size, GetConfig () -> m_bUseRoundDown );
-    if (!m_showL)
-        m_graphCtrl.AddPoint(GraphID, x, (colorlevel/whitelvl)*100.0, lpMsg);
-    else
-        m_graphCtrl.AddPoint(GraphID, x, Y_to_L(colorlevel/whitelvl), lpMsg);
+		double x = ArrayIndexToGrayLevel ( PointIndex, Size, GetConfig () -> m_bUseRoundDown );
+		if (!m_showL)
+		    m_graphCtrl.AddPoint(GraphID, x, (colorlevel/whitelvl)*100.0, lpMsg);
+		else
+			m_graphCtrl.AddPoint(GraphID, x, Y_to_L(colorlevel/whitelvl), lpMsg);
+	}
 }
 
 

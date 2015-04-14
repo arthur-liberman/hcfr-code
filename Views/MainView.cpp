@@ -1917,7 +1917,8 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				// Display primary/secondary/saturations colors delta luminance
 				int	    nCol2 = nCol, satsize=GetDocument()->GetMeasure()->GetSaturationSize();;
 				double  RefLuma [1000], sat=double (nCol)/ double (satsize-1);
-                CColor White = GetDocument() -> GetMeasure () -> GetGray ( GetDocument()->GetMeasure()->GetGrayScaleSize() - 1 );
+//                CColor White = GetDocument() -> GetMeasure () -> GetGray ( GetDocument()->GetMeasure()->GetGrayScaleSize() - 1 );
+                CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
 	            CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
 				CColor satcolor;
 				// Retrieve color luminance coefficients matching actual reference
@@ -2418,7 +2419,8 @@ void CMainView::UpdateGrid()
                         // fixed to use correct gamma predicts
                         // and added option to assume perfect gamma
 						double x = ArrayIndexToGrayLevel ( j, nCount, GetConfig () -> m_bUseRoundDown );
-            		    CColor White = GetDocument() -> GetMeasure () -> GetGray ( nCount - 1 );
+//            		    CColor White = GetDocument() -> GetMeasure () -> GetGray ( nCount - 1 );
+            		    CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
 	                	CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
                         if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
 			            {
@@ -2730,7 +2732,8 @@ void CMainView::UpdateGrid()
 				    Msg += Tmp;
 				    if ( GetDocument()->GetMeasure()->GetGray(0).GetXYZValue()[1] > 0.0001 )
 				    {
-					    sprintf ( szBuf, ": %.0f:1 )", GetDocument()->GetMeasure()->GetGray(nCount-1).GetXYZValue()[1] / GetDocument()->GetMeasure()->GetGray(0).GetXYZValue()[1] );
+//					    sprintf ( szBuf, ": %.0f:1 )", GetDocument()->GetMeasure()->GetGray(nCount-1).GetXYZValue()[1] / GetDocument()->GetMeasure()->GetGray(0).GetXYZValue()[1] );
+					    sprintf ( szBuf, ": %.0f:1 )", GetDocument()->GetMeasure()->GetOnOffWhite()[1] / GetDocument()->GetMeasure()->GetGray(0).GetXYZValue()[1] );
 					    Msg += szBuf;
 				    }
 				    else

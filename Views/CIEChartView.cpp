@@ -636,8 +636,10 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 		rgb[i]=aColor[i].GetRGBValue ( GetColorReference() );
 	double r[6],g[6],b[6];
     double gamma=(GetConfig()->m_useMeasuredGamma)?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef);
-    CColor White = pDoc->GetMeasure()-> GetGray ( pDoc->GetMeasure()->GetGrayScaleSize() - 1 );
-	CColor Black = pDoc->GetMeasure()->GetGray ( 0 );
+//    CColor White = pDoc->GetMeasure()-> GetGray ( pDoc->GetMeasure()->GetGrayScaleSize() - 1 );
+//	CColor Black = pDoc->GetMeasure()->GetGray ( 0 );
+	CColor White = pDoc->GetMeasure()->GetOnOffWhite();
+	CColor Black = pDoc->GetMeasure()->GetOnOffBlack();
 
     for(int i=0;i<6;i++)
     {
@@ -2263,8 +2265,10 @@ void CCIEChartView::UpdateTestColor ( CPoint point )
 	if ( x > 0.0 && x < 1.0 && y > 0.0 && y < 1.0 )
 	{
 		CColor	ClickedColor ( x, y );
-        CColor White = GetDocument() -> GetMeasure () -> GetGray ( GetDocument()->GetMeasure()->GetGrayScaleSize() - 1 );
-	    CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
+//        CColor White = GetDocument() -> GetMeasure () -> GetGray ( GetDocument()->GetMeasure()->GetGrayScaleSize() - 1 );
+//	    CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
+		CColor White = GetDocument()->GetMeasure()->GetOnOffWhite();
+		CColor Black = GetDocument()->GetMeasure()->GetOnOffBlack();
 
 		RGBColor = ClickedColor.GetRGBValue ((GetColorReference()));
         double r=RGBColor[0],g=RGBColor[1],b=RGBColor[2];

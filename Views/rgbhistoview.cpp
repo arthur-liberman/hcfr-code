@@ -140,7 +140,8 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		if ( size )
 			pDoc->ComputeGammaAndOffset(&Gamma, &Offset, 3, 1, size,false);
 
-		YWhite = pDoc->GetMeasure()->GetGray(size-1)[1];
+//		YWhite = pDoc->GetMeasure()->GetGray(size-1)[1];
+		YWhite = pDoc->GetMeasure()->GetOnOffWhite()[1];
 		for (int i=1; i<size; i++)
 		{
 			ColorxyY aColor=pDoc->GetMeasure()->GetGray(i).GetxyYValue();
@@ -149,17 +150,22 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 			double x = ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown );
             double valy;
-			m_graphCtrl.AddPoint(m_redGraphID, x, normColor[0]*100.0);
-			m_graphCtrl.AddPoint(m_greenGraphID, x, normColor[1]*100.0);
-			m_graphCtrl.AddPoint(m_blueGraphID, x, normColor[2]*100.0);
+			if (aColor.isValid())
+			{
+				m_graphCtrl.AddPoint(m_redGraphID, x, normColor[0]*100.0);
+				m_graphCtrl.AddPoint(m_greenGraphID, x, normColor[1]*100.0);
+				m_graphCtrl.AddPoint(m_blueGraphID, x, normColor[2]*100.0);
+			}
 
 			if(m_showDeltaE) 
 			{
 				// Determine Reference Y luminance for Delta E calculus
 				if ( GetConfig ()->m_dE_gray > 0 || GetConfig ()->m_dE_form == 5 )
 				{
-            		CColor White = pDoc -> GetMeasure () -> GetGray ( size - 1 );
-	            	CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
+//            		CColor White = pDoc -> GetMeasure () -> GetGray ( size - 1 );
+//	            	CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
+            		CColor White = pDoc -> GetMeasure () -> GetOnOffWhite();
+	            	CColor Black = pDoc -> GetMeasure () -> GetOnOffBlack();
                     if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
 			            {
 				            double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
@@ -182,6 +188,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 					// Use actual gray luminance as correct reference (absolute)
 	    				YWhite = aColor [ 2 ];
 				}
+				if (aColor.isValid())
 					m_graphCtrl2.AddPoint(m_deltaEGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(YWhite, refColor, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->gw_Weight ));
 			}
 		}
@@ -196,9 +203,11 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			pDataRef->ComputeGammaAndOffset(&Gamma, &OffsetRef, 3, 1, size,false);
 
 		if ( bMainDocHasColors )
-			YWhite = pDoc->GetMeasure()->GetGray(size-1)[1];
+			YWhite = pDoc->GetMeasure()->GetOnOffWhite()[1];
+//			YWhite = pDoc->GetMeasure()->GetGray(size-1)[1];
 
-		YWhiteRefDoc = pDataRef->GetMeasure()->GetGray(size-1)[1];
+//		YWhiteRefDoc = pDataRef->GetMeasure()->GetGray(size-1)[1];
+		YWhiteRefDoc = pDataRef->GetMeasure()->GetOnOffWhite()[1];
 
 		for (int i=1; i<size; i++)
 		{
@@ -213,19 +222,22 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			ColorRGB normColor(aMeasure, GetColorReference());
 
 			double x = ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown );
-
-			m_graphCtrl.AddPoint(m_redDataRefGraphID, x, normColor[0]*100.0);
-			m_graphCtrl.AddPoint(m_greenDataRefGraphID, x, normColor[1]*100.0);
-			m_graphCtrl.AddPoint(m_blueDataRefGraphID, x, normColor[2]*100.0);
-
+			if (aColor.isValid())
+			{
+				m_graphCtrl.AddPoint(m_redDataRefGraphID, x, normColor[0]*100.0);
+				m_graphCtrl.AddPoint(m_greenDataRefGraphID, x, normColor[1]*100.0);
+				m_graphCtrl.AddPoint(m_blueDataRefGraphID, x, normColor[2]*100.0);
+			}
 			if(m_showDeltaE) 
 			{
 				// Determine Reference Y luminance for Delta E calculus
 				if ( GetConfig ()->m_dE_gray > 0 || GetConfig ()->m_dE_form == 5 )
 				{
 					// Compute reference luminance regarding actual offset and reference gamma
-            		CColor White = pDoc -> GetMeasure () -> GetGray ( size - 1 );
-	            	CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
+//            		CColor White = pDoc -> GetMeasure () -> GetGray ( size - 1 );
+//	            	CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
+            		CColor White = pDoc -> GetMeasure () -> GetOnOffWhite();
+	            	CColor Black = pDoc -> GetMeasure () -> GetOnOffBlack();
                     double valxref,valyref;
                     if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
                     {
@@ -251,9 +263,11 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 					if ( bMainDocHasColors )
 						YWhite = aColor [ 2 ];
 				}
+				
+				if (aColor.isValid())
 					m_graphCtrl2.AddPoint(m_deltaEDataRefGraphID, x, pDataRef->GetMeasure()->GetGray(i).GetDeltaE(YWhiteRefDoc, refColor, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->gw_Weight ));
 				
-				if (bMainDocHasColors)
+				if (bMainDocHasColors && aColor.isValid())
 						m_graphCtrl2.AddPoint(m_deltaEBetweenGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(YWhite,pDataRef->GetMeasure()->GetGray(i),YWhiteRefDoc, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->gw_Weight )); //Ki
 			}
 		}

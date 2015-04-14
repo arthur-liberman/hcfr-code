@@ -132,8 +132,10 @@ void CGammaGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	{	
 		// log scale is not valid for first and last value
 
-		CColor White = pDoc -> GetMeasure () -> GetGray ( size - 1 );
-		CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
+//		CColor White = pDoc -> GetMeasure () -> GetGray ( size - 1 );
+//		CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
+		CColor White = pDoc -> GetMeasure () -> GetOnOffWhite();
+		CColor Black = pDoc -> GetMeasure () -> GetOnOffBlack();
 		for (int i=1; i<size-1; i++)
 		{
 			double x, valx, valy;
@@ -278,6 +280,9 @@ void CGammaGrapher::AddPointtoLumGraph(int ColorSpace,int ColorIndex,int Size,in
 	char	szBuf [ 64 ];
 	LPCSTR	lpMsg = NULL;
 
+	if (pDataSet->GetMeasure()->GetGray(PointIndex).isValid())
+	{
+		pDataSet->GetMeasure()->SetGray(Size-1, pDataSet->GetMeasure()->GetOnOffWhite());
 	if (ColorSpace == 0) 
 	{
 		blacklvl=pDataSet->GetMeasure()->GetGray(0).GetRGBValue((GetColorReference()))[ColorIndex];
@@ -325,6 +330,7 @@ void CGammaGrapher::AddPointtoLumGraph(int ColorSpace,int ColorIndex,int Size,in
 		double valxprime=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+GammaOffset)/(1.0+GammaOffset);
 
 		m_graphCtrl.AddPoint(GraphID, x, log((colorlevel)/whitelvl)/log(valxprime), lpMsg);
+	}
 	}
 }
 
