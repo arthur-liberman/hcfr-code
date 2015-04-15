@@ -394,6 +394,8 @@ void CMeasure::Serialize(CArchive& ar)
 		m_secondariesArray[2].Serialize(ar);
 
 		m_OnOffBlack.Serialize(ar);
+		if (!m_OnOffBlack.isValid() && gsize > 0)
+			m_OnOffBlack = 	m_grayMeasureArray[0];
 		m_OnOffWhite.Serialize(ar);
 		m_AnsiBlack.Serialize(ar);
 		m_AnsiWhite.Serialize(ar);
@@ -402,7 +404,8 @@ void CMeasure::Serialize(CArchive& ar)
 		else
 		{
 			m_PrimeWhite = m_OnOffWhite;
-			m_OnOffWhite = m_grayMeasureArray[gsize-1];
+			if (gsize > 0)
+				m_OnOffWhite = m_grayMeasureArray[gsize-1];
 		}
 
 		ar >> m_infoStr;
