@@ -301,16 +301,6 @@ static const SCtrlLayout g_CtrlLayout [] = {
 						"Blue 80",
 						"Blue 90",
 						"Blue 100", 
-						"Yellow 10",
-						"Yellow 20",
-						"Yellow 30",
-						"Yellow 40",
-						"Yellow 50",
-						"Yellow 60",
-						"Yellow 70",
-						"Yellow 80",
-						"Yellow 90",
-						"Yellow 100", 
 						"Cyan 10",
 						"Cyan 20",
 						"Cyan 30",
@@ -330,7 +320,17 @@ static const SCtrlLayout g_CtrlLayout [] = {
 						"Magenta 70",
 						"Magenta 80",
 						"Magenta 90",
-						"Magenta 100" 
+						"Magenta 100", 
+						"Yellow 10",
+						"Yellow 20",
+						"Yellow 30",
+						"Yellow 40",
+						"Yellow 50",
+						"Yellow 60",
+						"Yellow 70",
+						"Yellow 80",
+						"Yellow 90",
+						"Yellow 100"
 					};
 
 
