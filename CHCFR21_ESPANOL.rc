@@ -1200,13 +1200,13 @@ END
 
 IDD_GRAPH_PROP_PAGE DLGINIT
 BEGIN
-    IDC_GRAPH_LINEWIDTH_COMBO, 0x403, 2, 0
+    IDC_GRAPH_LINEWIDTH_COMBO, 0x403,2,1
 0x0034, 
-    IDC_GRAPH_LINEWIDTH_COMBO, 0x403, 2, 0
+    IDC_GRAPH_LINEWIDTH_COMBO, 0x403,2,1
 0x0033, 
-    IDC_GRAPH_LINEWIDTH_COMBO, 0x403, 2, 0
+    IDC_GRAPH_LINEWIDTH_COMBO, 0x403,2,1
 0x0032, 
-    IDC_GRAPH_LINEWIDTH_COMBO, 0x403, 2, 0
+    IDC_GRAPH_LINEWIDTH_COMBO, 0x403,2,1
 0x0031, 
     IDC_GRAPH_LINETYPE_COMBO, 0x403, 8, 0
 0x6f43, 0x746e, 0x6e69, 0x0075, 
@@ -1475,13 +1475,13 @@ END
 
 IDD_SCALESIZES DLGINIT
 BEGIN
-    IDC_COMBO_GRAYS, 0x403, 2, 0
+    IDC_COMBO_GRAYS, 0x403,2,1
 0x0034, 
     IDC_COMBO_GRAYS, 0x403, 3, 0
 0x3031, "\000" 
     IDC_COMBO_GRAYS, 0x403, 3, 0
 0x3032, "\000" 
-    IDC_COMBO_EDIT_GRAYS, 0x403, 2, 0
+    IDC_COMBO_EDIT_GRAYS, 0x403,2,1
 0x0034, 
     IDC_COMBO_EDIT_GRAYS, 0x403, 3, 0
 0x3031, "\000" 
@@ -2473,12 +2473,12 @@ BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "CompanyName", "Association Homecinema Francophone"
             VALUE "FileDescription", "Resources Colorimètre HCFR"
-            VALUE "FileVersion", "3,2,0"
+            VALUE "FileVersion", "3,2,1"
             VALUE "InternalName", "CHCFR21_ESPAÑOL"
             VALUE "LegalCopyright", "Copyright (C) 2005-2008"
             VALUE "OriginalFilename", "CHCFR21_ESPAÑOL.DLL"
             VALUE "ProductName", "Colorimètre HCFR langage Español"
-            VALUE "ProductVersion", "3,2,0"
+            VALUE "ProductVersion", "3,2,1"
         END
     END
     BLOCK "VarFileInfo"
