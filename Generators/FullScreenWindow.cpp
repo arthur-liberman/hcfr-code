@@ -664,9 +664,10 @@ void CFullScreenWindow::OnPaint()
 		}
 
 		CRect patternRect=rect;
-		patternRect.DeflateRect(dWidth/2,dHeight/2);
+	
 		if (!isSpecial)
 		{
+			patternRect.DeflateRect(dWidth/2,dHeight/2);
 			//Settling pattern
 			if (GetConfig()->m_isSettling)
 			{
@@ -693,10 +694,10 @@ void CFullScreenWindow::OnPaint()
 				Sleep(1000);
 			}
 		}
-		
-			brush.CreateSolidBrush ( DisplayColor );
-			dc.FillRect ( &patternRect, &brush );
-			brush.DeleteObject (); 
+
+		brush.CreateSolidBrush ( DisplayColor );
+		dc.FillRect ( &patternRect, &brush );
+		brush.DeleteObject (); 
 
 		if (!isSpecial || m_bAnimated)
 		{
