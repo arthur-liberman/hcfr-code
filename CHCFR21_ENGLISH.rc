@@ -1726,179 +1726,184 @@ BEGIN
     END
 END
 
-IDR_MESURETYPE MENUEX
+IDR_MESURETYPE MENU
 BEGIN
-    POPUP "&File",                          65535,MFT_STRING,MFS_ENABLED
+    POPUP "&File"
     BEGIN
-        MENUITEM "&New\tCtrl+N",                ID_FILE_NEW,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Duplicate",                  IDM_DUPLICATEDOC,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Close",                      ID_FILE_CLOSE,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE,MFT_STRING,MFS_ENABLED
-        MENUITEM "Save &As...",                 ID_FILE_SAVE_AS,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&Print...\tCtrl+P",           ID_FILE_PRINT,MFT_STRING,MFS_ENABLED
-        MENUITEM "Print Pre&view",              ID_FILE_PRINT_PREVIEW,MFT_STRING,MFS_ENABLED
-        MENUITEM "P&rint Setup...",             ID_FILE_PRINT_SETUP,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&Exit",                       ID_APP_EXIT,MFT_STRING,MFS_ENABLED
+        MENUITEM "&New\tCtrl+N",                ID_FILE_NEW
+        MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
+        MENUITEM "&Duplicate",                  IDM_DUPLICATEDOC
+        MENUITEM "&Close",                      ID_FILE_CLOSE
+        MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
+        MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
+        MENUITEM SEPARATOR
+        MENUITEM "&Print...\tCtrl+P",           ID_FILE_PRINT
+        MENUITEM "Print Pre&view",              ID_FILE_PRINT_PREVIEW
+        MENUITEM "P&rint Setup...",             ID_FILE_PRINT_SETUP
+        MENUITEM SEPARATOR
+        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1
+        MENUITEM SEPARATOR
+        MENUITEM "&Exit",                       ID_APP_EXIT
     END
-    POPUP "&Edit",                          65535,MFT_STRING,MFS_ENABLED
+    POPUP "&Edit"
     BEGIN
-        MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&Cut\tCtrl+X",                ID_EDIT_CUT,MFT_STRING,MFS_ENABLED
-        MENUITEM "C&opy\tCtrl+C",               ID_EDIT_COPY,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE,MFT_STRING,MFS_ENABLED
+        MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO
+        MENUITEM SEPARATOR
+        MENUITEM "&Cut\tCtrl+X",                ID_EDIT_CUT
+        MENUITEM "C&opy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
     END
-    POPUP "&View",                          65535,MFT_STRING,MFS_ENABLED
+    POPUP "&View"
     BEGIN
-        MENUITEM "&Test colors",                IDM_VIEW_TESTCOLOR,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Luminance",                  IDM_VIEW_LUMINANCE,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "St&andard Toolbar",           ID_VIEW_TOOLBAR,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Views toolbar",              ID_VIEW_VIEW_BAR,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Measures toolbar",           ID_VIEW_MEASURE_BAR,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Extended measures toolbar",  ID_VIEW_MEASURE_EXT_BAR,MFT_STRING,MFS_ENABLED
-        MENUITEM "Saturation measures toolbar", ID_VIEW_MEASURE_SAT_BAR,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Status bar",                 ID_VIEW_STATUS_BAR,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "Ta&b control on top",         IDM_TOGGLE_TAB,MFT_STRING,MFS_ENABLED
+        MENUITEM "&Test colors",                IDM_VIEW_TESTCOLOR
+        MENUITEM "&Luminance",                  IDM_VIEW_LUMINANCE
+        MENUITEM SEPARATOR
+        MENUITEM "St&andard Toolbar",           ID_VIEW_TOOLBAR
+        MENUITEM "&Views toolbar",              ID_VIEW_VIEW_BAR
+        MENUITEM "&Measures toolbar",           ID_VIEW_MEASURE_BAR
+        MENUITEM "&Extended measures toolbar",  ID_VIEW_MEASURE_EXT_BAR
+        MENUITEM "Saturation measures toolbar", ID_VIEW_MEASURE_SAT_BAR
+        MENUITEM "&Status bar",                 ID_VIEW_STATUS_BAR
+        MENUITEM SEPARATOR
+        MENUITEM "Ta&b control on top",         IDM_TOGGLE_TAB
     END
-    POPUP "&Measures",                      65535,MFT_STRING,MFS_ENABLED
+    POPUP "&Measures"
     BEGIN
-        MENUITEM "&Gray scale",                 IDM_MEASURE_GRAYSCALE,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Primary colors",             IDM_MEASURE_PRIMARIES,MFT_STRING,MFS_ENABLED
-        MENUITEM "Primary and &Secondary colors \tF4", IDM_MEASURE_SECONDARIES,MFT_STRING,MFS_ENABLED
-        MENUITEM "Gray scale and colors\tF5",   IDM_MEASURE_GRAYSCALE_COLORS,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "Near &black gray scale",      IDM_MEASURE_NEARBLACK,MFT_STRING,MFS_ENABLED
-        MENUITEM "Near &white gray scale",      IDM_MEASURE_NEARWHITE,MFT_STRING,MFS_ENABLED
-        POPUP "S&aturations",                   65535,MFT_STRING,MFS_ENABLED
+        MENUITEM "&Gray scale",                 IDM_MEASURE_GRAYSCALE
+        MENUITEM "&Primary colors",             IDM_MEASURE_PRIMARIES
+        MENUITEM "Primary and &Secondary colors \tF4", IDM_MEASURE_SECONDARIES
+        MENUITEM "Gray scale and colors\tF5",   IDM_MEASURE_GRAYSCALE_COLORS
+        MENUITEM SEPARATOR
+        MENUITEM "Near &black gray scale",      IDM_MEASURE_NEARBLACK
+        MENUITEM "Near &white gray scale",      IDM_MEASURE_NEARWHITE
+        POPUP "S&aturations"
         BEGIN
-            MENUITEM "&Red",                        IDM_MEASURE_SAT_RED,MFT_STRING,MFS_ENABLED
-            MENUITEM "&Green",                      IDM_MEASURE_SAT_GREEN,MFT_STRING,MFS_ENABLED
-            MENUITEM "&Blue",                       IDM_MEASURE_SAT_BLUE,MFT_STRING,MFS_ENABLED
-            MENUITEM "&Yellow",                     IDM_MEASURE_SAT_YELLOW,MFT_STRING,MFS_ENABLED
-            MENUITEM "&Cyan",                       IDM_MEASURE_SAT_CYAN,MFT_STRING,MFS_ENABLED
-            MENUITEM "&Magenta",                    IDM_MEASURE_SAT_MAGENTA,MFT_STRING,MFS_ENABLED
-            MENUITEM "&ColorChecker",               IDM_MEASURE_SAT_CC24,MFT_STRING,MFS_ENABLED
-            MENUITEM MFT_SEPARATOR
-            MENUITEM "&Primary colors",             IDM_MEASURE_SAT_PRIMARIES,MFT_STRING,MFS_ENABLED
-            MENUITEM "&Primary and Secondary colors", IDM_MEASURE_SAT_PRIMARIES_SECONDARIES,MFT_STRING,MFS_ENABLED
-            MENUITEM "&All colors",                 IDM_MEASURE_SAT_ALL,MFT_STRING,MFS_ENABLED
+            MENUITEM "&Red",                        IDM_MEASURE_SAT_RED
+            MENUITEM "&Green",                      IDM_MEASURE_SAT_GREEN
+            MENUITEM "&Blue",                       IDM_MEASURE_SAT_BLUE
+            MENUITEM "&Yellow",                     IDM_MEASURE_SAT_YELLOW
+            MENUITEM "&Cyan",                       IDM_MEASURE_SAT_CYAN
+            MENUITEM "&Magenta",                    IDM_MEASURE_SAT_MAGENTA
+            MENUITEM "&ColorChecker",               IDM_MEASURE_SAT_CC24
+            MENUITEM SEPARATOR
+            MENUITEM "&Primary colors",             IDM_MEASURE_SAT_PRIMARIES
+            MENUITEM "&Primary and Secondary colors", IDM_MEASURE_SAT_PRIMARIES_SECONDARIES
+            MENUITEM "&All colors",                 IDM_MEASURE_SAT_ALL
         END
-        MENUITEM "&Contrast",                   IDM_MEASURE_CONTRAST,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&Unique free measure\tF7",    IDM_SINGLE_MEASUREMENT,MFT_STRING,MFS_ENABLED
-        MENUITEM "C&ontinuous measures\tF8",    IDM_CONTINUOUS_MEASUREMENT,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        POPUP "&Sensor",                        65535,MFT_STRING,MFS_ENABLED
+        MENUITEM "&Contrast",                   IDM_MEASURE_CONTRAST
+        MENUITEM SEPARATOR
+        MENUITEM "&Unique free measure\tF7",    IDM_SINGLE_MEASUREMENT
+        MENUITEM "C&ontinuous measures\tF8",    IDM_CONTINUOUS_MEASUREMENT
+        MENUITEM SEPARATOR
+        POPUP "&Sensor"
         BEGIN
-            MENUITEM "&Configure...",               IDM_CONFIGURE_SENSOR,MFT_STRING,MFS_ENABLED
-            MENUITEM "&Select...",                  IDM_CHANGE_SENSOR,MFT_STRING,MFS_ENABLED
+            MENUITEM "&Configure...",               IDM_CONFIGURE_SENSOR
+            MENUITEM "&Select...",                  IDM_CHANGE_SENSOR
         END
-        POPUP "G&enerator",                     65535,MFT_STRING,MFS_ENABLED
+        POPUP "G&enerator"
         BEGIN
-            MENUITEM "&Configure...",               IDM_CONFIGURE_GENERATOR,MFT_STRING,MFS_ENABLED
-            MENUITEM "&Select...",                  IDM_CHANGE_GENERATOR,MFT_STRING,MFS_ENABLED
+            MENUITEM "&Configure...",               IDM_CONFIGURE_GENERATOR
+            MENUITEM "&Select...",                  IDM_CHANGE_GENERATOR
         END
-        MENUITEM "Para&meters...",              IDM_MEASURE_DEFINESCALE,MFT_STRING,MFS_ENABLED
+        MENUITEM "Para&meters...",              IDM_MEASURE_DEFINESCALE
     END
-    POPUP "&Graphs",                        65535,MFT_STRING,MFS_ENABLED
+    POPUP "&Graphs"
     BEGIN
-        MENUITEM "&Measures",                   IDM_VIEW_DATASET,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&Luminance graph",            IDM_VIEW_LUMINANCEHISTO,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Gamma graph",                IDM_VIEW_GAMMAHISTO,MFT_STRING,MFS_ENABLED
-        MENUITEM "&RGB levels graph",           IDM_VIEW_RGBHISTO,MFT_STRING,MFS_ENABLED
-        MENUITEM "Color &temperature graph",    IDM_VIEW_COLORTEMPHISTO,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&CIE Diagram",                IDM_VIEW_CIECHART,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "Near &black luminance graph", IDM_VIEW_NEARBLACKHISTO,MFT_STRING,MFS_ENABLED
-        MENUITEM "Near &white luminance graph", IDM_VIEW_NEARWHITEHISTO,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&Saturation - luminance graph", IDM_VIEW_SATLUMHISTO,MFT_STRING,MFS_ENABLED
-        MENUITEM "S&aturation - shifts graph",  IDM_VIEW_SATLUMSHIFT,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "Combined graph for &free measures", IDM_VIEW_MEASURESCOMBO,MFT_STRING,MFS_ENABLED
+        MENUITEM "&Measures",                   IDM_VIEW_DATASET
+        MENUITEM SEPARATOR
+        MENUITEM "&Luminance graph",            IDM_VIEW_LUMINANCEHISTO
+        MENUITEM "&Gamma graph",                IDM_VIEW_GAMMAHISTO
+        MENUITEM "&RGB levels graph",           IDM_VIEW_RGBHISTO
+        MENUITEM "Color &temperature graph",    IDM_VIEW_COLORTEMPHISTO
+        MENUITEM SEPARATOR
+        MENUITEM "&CIE Diagram",                IDM_VIEW_CIECHART
+        MENUITEM SEPARATOR
+        MENUITEM "Near &black luminance graph", IDM_VIEW_NEARBLACKHISTO
+        MENUITEM "Near &white luminance graph", IDM_VIEW_NEARWHITEHISTO
+        MENUITEM SEPARATOR
+        MENUITEM "&Saturation - luminance graph", IDM_VIEW_SATLUMHISTO
+        MENUITEM "S&aturation - shifts graph",  IDM_VIEW_SATLUMSHIFT
+        MENUITEM SEPARATOR
+        MENUITEM "Combined graph for &free measures", IDM_VIEW_MEASURESCOMBO
     END
-    POPUP "&Advanced",                      65535,MFT_STRING,MFS_ENABLED
+    POPUP "&Advanced"
     BEGIN
-        POPUP "Test patterns",                  65535,MFT_STRING,MFS_ENABLED
+        POPUP "Test patterns"
         BEGIN
-            MENUITEM "Animated black level test pattern", IDM_PATTERN_ANIM_BLACK,MFT_STRING,MFS_ENABLED
-            MENUITEM "Animated white level test pattern", IDM_PATTERN_ANIM_WHITE,MFT_STRING,MFS_ENABLED
-            MENUITEM "Display Patterns",            IDM_PATTERN_DISPLAY,MFT_STRING,MFS_ENABLED
+            MENUITEM "Animated black level test pattern", IDM_PATTERN_ANIM_BLACK
+            MENUITEM "Animated white level test pattern", IDM_PATTERN_ANIM_WHITE
+            MENUITEM "Neutral Gradient",            IDM_PATTERN_GRADIENT
+            MENUITEM "RBGYCMW Luma Ramps",            IDM_PATTERN_LRAMP
+            MENUITEM "RBGYCM Saturation Ramps",            IDM_PATTERN_SRAMP
+            MENUITEM "Granger Rainbow",            IDM_PATTERN_GRANGER
+            MENUITEM "Test Image",            IDM_PATTERN_TESTIMG
+            MENUITEM "Display Patterns",            IDM_PATTERN_DISPLAY
         END
-        MENUITEM MFT_SEPARATOR
-        POPUP "Meter Correction file",          65535,MFT_STRING,MFS_ENABLED
+        MENUITEM SEPARATOR
+        POPUP "Meter Correction file"
         BEGIN
-            MENUITEM "Manually edit XYZ matrix",    IDM_MANUALLY_EDIT_SENSOR,MFT_STRING,MFS_ENABLED
-            MENUITEM MFT_SEPARATOR
-            MENUITEM "Create using Existing Reference Measures", IDM_CALIBRATION_EXISTING,MFT_STRING,MFS_ENABLED
-            MENUITEM "Build using simultaneous measures", IDM_CALIBRATION_SIM,MFT_STRING,MFS_ENABLED
-            MENUITEM "Build manually using reference colorimeter", IDM_CALIBRATION_MANUAL,MFT_STRING,MFS_ENABLED
-            MENUITEM "Build colorimeter calibration spectral sample", IDM_CALIBRATION_SPECTRAL,MFT_STRING,MFS_ENABLED
-            MENUITEM MFT_SEPARATOR
-            MENUITEM "Save meter correction file...", IDM_SAVE_CALIBRATION_FILE,MFT_STRING,MFS_ENABLED
-            MENUITEM "Load meter correction file...", IDM_LOAD_CALIBRATION_FILE,MFT_STRING,MFS_ENABLED
+            MENUITEM "Manually edit XYZ matrix",    IDM_MANUALLY_EDIT_SENSOR
+            MENUITEM SEPARATOR
+            MENUITEM "Create using Existing Reference Measures", IDM_CALIBRATION_EXISTING
+            MENUITEM "Build using simultaneous measures", IDM_CALIBRATION_SIM
+            MENUITEM "Build manually using reference colorimeter", IDM_CALIBRATION_MANUAL
+            MENUITEM "Build colorimeter calibration spectral sample", IDM_CALIBRATION_SPECTRAL
+            MENUITEM SEPARATOR
+            MENUITEM "Save meter correction file...", IDM_SAVE_CALIBRATION_FILE
+            MENUITEM "Load meter correction file...", IDM_LOAD_CALIBRATION_FILE
         END
-        POPUP "Simultaneous measures",          65535,MFT_STRING,MFS_ENABLED
+        POPUP "Simultaneous measures"
         BEGIN
-            MENUITEM "&Gray scale",                 IDM_SIM_GRAYSCALE,MFT_STRING,MFS_ENABLED
-            MENUITEM "&Primary colors",             IDM_SIM_PRIMARIES,MFT_STRING,MFS_ENABLED
-            MENUITEM "&Secondary colors",           IDM_SIM_SECONDARIES,MFT_STRING,MFS_ENABLED
-            MENUITEM "Gray scale and colors",       IDM_SIM_GRAYSCALE_AND_COLORS,MFT_STRING,MFS_ENABLED
-            MENUITEM MFT_SEPARATOR
-            MENUITEM "Near &black gray scale",      IDM_SIM_NEARBLACK,MFT_STRING,MFS_ENABLED
-            MENUITEM "Near &white gray scale",      IDM_SIM_NEARWHITE,MFT_STRING,MFS_ENABLED
-            POPUP "S&aturations",                   65535,MFT_STRING,MFS_ENABLED
+            MENUITEM "&Gray scale",                 IDM_SIM_GRAYSCALE
+            MENUITEM "&Primary colors",             IDM_SIM_PRIMARIES
+            MENUITEM "&Secondary colors",           IDM_SIM_SECONDARIES
+            MENUITEM "Gray scale and colors",       IDM_SIM_GRAYSCALE_AND_COLORS
+            MENUITEM SEPARATOR
+            MENUITEM "Near &black gray scale",      IDM_SIM_NEARBLACK
+            MENUITEM "Near &white gray scale",      IDM_SIM_NEARWHITE
+            POPUP "S&aturations"
             BEGIN
-                MENUITEM "&Red",                        IDM_SIM_SAT_RED,MFT_STRING,MFS_ENABLED
-                MENUITEM "&Green",                      IDM_SIM_SAT_GREEN,MFT_STRING,MFS_ENABLED
-                MENUITEM "&Blue",                       IDM_SIM_SAT_BLUE,MFT_STRING,MFS_ENABLED
-                MENUITEM "&Yellow",                     IDM_SIM_SAT_YELLOW,MFT_STRING,MFS_ENABLED
-                MENUITEM "&Cyan",                       IDM_SIM_SAT_CYAN,MFT_STRING,MFS_ENABLED
-                MENUITEM "&Magenta",                    IDM_SIM_SAT_MAGENTA,MFT_STRING,MFS_ENABLED
+                MENUITEM "&Red",                        IDM_SIM_SAT_RED
+                MENUITEM "&Green",                      IDM_SIM_SAT_GREEN
+                MENUITEM "&Blue",                       IDM_SIM_SAT_BLUE
+                MENUITEM "&Yellow",                     IDM_SIM_SAT_YELLOW
+                MENUITEM "&Cyan",                       IDM_SIM_SAT_CYAN
+                MENUITEM "&Magenta",                    IDM_SIM_SAT_MAGENTA
             END
-            MENUITEM MFT_SEPARATOR
-            MENUITEM "&Free measure\tF9",           IDM_SIM_SINGLEMEASURE,MFT_STRING,MFS_ENABLED
+            MENUITEM SEPARATOR
+            MENUITEM "&Free measure\tF9",           IDM_SIM_SINGLEMEASURE
         END
-        MENUITEM MFT_SEPARATOR
-        POPUP "E&xport",                        65535,MFT_STRING,MFS_ENABLED
+        MENUITEM SEPARATOR
+        POPUP "E&xport"
         BEGIN
-            MENUITEM "Measures to &xls file",       IDM_EXPORT_XLS,MFT_STRING,MFS_ENABLED
-            MENUITEM "Measures to &csv file",       IDM_EXPORT_CSV,MFT_STRING,MFS_ENABLED
+            MENUITEM "Measures to &xls file",       IDM_EXPORT_XLS
+            MENUITEM "Measures to &csv file",       IDM_EXPORT_CSV
         END
-        POPUP "Updates",                        65535,MFT_STRING | MFT_RIGHTJUSTIFY,MFS_GRAYED
+        POPUP "Updates", INACTIVE
         BEGIN
-            MENUITEM "Download updated software",   IDM_UPDATE_SOFT,MFT_STRING,MFS_GRAYED
-            MENUITEM "Download correction files",   IDM_UPDATE_ETALONS,MFT_STRING,MFS_GRAYED
-            MENUITEM "Download IR profiles files",  IDM_UPDATE_IRPROFILES,MFT_STRING,MFS_GRAYED
+            MENUITEM "Download updated software",   IDM_UPDATE_SOFT, INACTIVE
+            MENUITEM "Download correction files",   IDM_UPDATE_ETALONS, INACTIVE
+            MENUITEM "Download IR profiles files",  IDM_UPDATE_IRPROFILES, INACTIVE
         END
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&Preferences...",             IDM_GENERAL_CONFIG,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Language...",                IDM_LANGUAGE,MFT_STRING,MFS_ENABLED
+        MENUITEM SEPARATOR
+        MENUITEM "&Preferences...",             IDM_GENERAL_CONFIG
+        MENUITEM "&Language...",                IDM_LANGUAGE
     END
-    POPUP "&Window",                        65535,MFT_STRING,MFS_ENABLED
+    POPUP "&Window"
     BEGIN
-        MENUITEM "&New window",                 ID_WINDOW_NEW,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Cascade",                    ID_WINDOW_CASCADE,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Tile",                       ID_WINDOW_TILE_HORZ,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Arrange icons",              ID_WINDOW_ARRANGE,MFT_STRING,MFS_ENABLED
+        MENUITEM "&New window",                 ID_WINDOW_NEW
+        MENUITEM "&Cascade",                    ID_WINDOW_CASCADE
+        MENUITEM "&Tile",                       ID_WINDOW_TILE_HORZ
+        MENUITEM "&Arrange icons",              ID_WINDOW_ARRANGE
     END
-    POPUP "&Help",                          65535,MFT_STRING,MFS_ENABLED
+    POPUP "&Help"
     BEGIN
-        MENUITEM "&Help\tF1",                   IDM_HELP,MFT_STRING,MFS_ENABLED
-        MENUITEM "Colorimeter &Installation",   IDM_HELP_INSTALL,MFT_STRING,MFS_GRAYED
-        MENUITEM "&Support",                    IDM_HELP_SUPPORT,MFT_STRING,MFS_GRAYED
-        MENUITEM "HCFR &Forum",                 IDM_HELP_FORUM,MFT_STRING,MFS_GRAYED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "About HCFR &Colorimeter...",  ID_APP_ABOUT,MFT_STRING,MFS_ENABLED
+        MENUITEM "&Help\tF1",                   IDM_HELP
+        MENUITEM "Colorimeter &Installation",   IDM_HELP_INSTALL, INACTIVE
+        MENUITEM "&Support",                    IDM_HELP_SUPPORT, INACTIVE
+        MENUITEM "HCFR &Forum",                 IDM_HELP_FORUM, INACTIVE
+        MENUITEM SEPARATOR
+        MENUITEM "About HCFR &Colorimeter...",  ID_APP_ABOUT
     END
 END
 

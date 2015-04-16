@@ -511,10 +511,11 @@ void CPatternDisplay::OnPatternBlackP()
 	BOOL	bKeyTyped = FALSE;
 	BOOL	doDisplay = FALSE;
 	MSG		Msg;
-	int iPercent=0;
+	double iPercent=0;
+	double step = 1. / 219. * 100.;
 
 	m_patternDGenerator->Init();
-	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(double(iPercent)),CGenerator::MT_PRIMARY);
+	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(iPercent),CGenerator::MT_PRIMARY);
 	while ( ! bKeyTyped )
 	{
 		while ( PeekMessage ( & Msg, NULL, WM_KEYDOWN, WM_MOUSELAST, TRUE ) )
@@ -524,13 +525,13 @@ void CPatternDisplay::OnPatternBlackP()
 				doDisplay = TRUE;
 				if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
 					bKeyTyped = TRUE;
-				else if ( ( Msg.wParam == VK_ADD || Msg.wParam == VK_PRIOR ) && iPercent < 100) iPercent++;
-				else if ( ( Msg.wParam == VK_SUBTRACT || Msg.wParam == VK_NEXT ) && iPercent > 0) iPercent--;         
+				else if ( ( Msg.wParam == VK_ADD || Msg.wParam == VK_PRIOR ) && iPercent < 100) iPercent+=step;
+				else if ( ( Msg.wParam == VK_SUBTRACT || Msg.wParam == VK_NEXT ) && iPercent > 0) iPercent-=step;         
 				else if ( Msg.wParam == VK_MULTIPLY || Msg.wParam == VK_HOME ) iPercent = 50;
 				else doDisplay = FALSE;
 				
 				if (doDisplay && !bKeyTyped)
-					m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(double(iPercent)),CGenerator::MT_PRIMARY);
+					m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(iPercent),CGenerator::MT_PRIMARY);
 			}
 			else if ( Msg.message == WM_TIMER )
 			{
@@ -567,7 +568,10 @@ void CPatternDisplay::OnPatternPicture()
 	HMODULE hPatterns;
 	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
 	m_patternDGenerator->Init();
-	m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_TESTIMG,TRUE);
+	if (GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0) == 0)
+		m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_TESTIMG,TRUE);
+	else
+		m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_TESTIMGv,TRUE);
 	WaitKey();
 	m_patternDGenerator->Release();
 	FreeLibrary(hPatterns);
@@ -578,7 +582,10 @@ void CPatternDisplay::OnPatternPictSMPTE()
 	HMODULE hPatterns;
 	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
 	m_patternDGenerator->Init();
-	m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_SMPTE75,TRUE);
+	if (GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0) == 0)
+		m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_SMPTE75,TRUE);
+	else
+		m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_SMPTE75v,TRUE);
 	WaitKey();
 	m_patternDGenerator->Release();
 	FreeLibrary(hPatterns);
@@ -589,7 +596,71 @@ void CPatternDisplay::OnPatternPict1956()
 	HMODULE hPatterns;
 	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
 	m_patternDGenerator->Init();
-	m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_1956,FALSE);
+	if (GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0) == 0)
+		m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_1956,FALSE);
+	else
+		m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_1956v,FALSE);
+	WaitKey();
+	m_patternDGenerator->Release();
+	FreeLibrary(hPatterns);
+}
+
+void CPatternDisplay::OnPatternGradient() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+	m_patternDGenerator->Init();
+	m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_GRADIENT,TRUE);
+	WaitKey();
+	m_patternDGenerator->Release();
+	FreeLibrary(hPatterns);
+}
+
+void CPatternDisplay::OnPatternLramp() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+	m_patternDGenerator->Init();
+	m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_LRAMP,TRUE);
+	WaitKey();
+	m_patternDGenerator->Release();
+	FreeLibrary(hPatterns);
+}
+
+void CPatternDisplay::OnPatternGranger() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+	m_patternDGenerator->Init();
+	m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_GRANGER,TRUE);
+	WaitKey();
+	m_patternDGenerator->Release();
+	FreeLibrary(hPatterns);
+}
+
+void CPatternDisplay::OnPatternSramp() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+	m_patternDGenerator->Init();
+	if (GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0) == 0)
+		m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_SRAMP,TRUE);
+	else
+		m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_SRAMPv,TRUE);
+	WaitKey();
+	m_patternDGenerator->Release();
+	FreeLibrary(hPatterns);
+}
+
+void CPatternDisplay::OnPatternTestimg() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+	m_patternDGenerator->Init();
+	if (GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0) == 0)
+		m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_TESTIMG,TRUE);
+	else
+		m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_TESTIMGv,TRUE);
 	WaitKey();
 	m_patternDGenerator->Release();
 	FreeLibrary(hPatterns);

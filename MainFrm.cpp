@@ -1226,18 +1226,19 @@ void CMainFrame::OnPatternDisplay()
 		if (m_nDisplayMode == DISPLAY_GDI || m_nDisplayMode == DISPLAY_GDI_nBG )
 		{
 	        if ( p_wndPatternDisplay == NULL )
-		    {
+				delete p_wndPatternDisplay;
+//		    {
 			    p_wndPatternDisplay = new CPatternDisplay;
 				p_wndPatternDisplay->Create(IDD_PATTERNS,this);
-			}
-			else
-			{
-				BOOL bShow = p_wndPatternDisplay->IsWindowVisible();
-				if (!bShow)
-					p_wndPatternDisplay->ShowWindow(SW_SHOW);
-				else
-					p_wndPatternDisplay->ShowWindow(SW_HIDE);
-			}
+//			}
+//			else
+//			{
+//				BOOL bShow = p_wndPatternDisplay->IsWindowVisible();
+//				if (!bShow)
+//					p_wndPatternDisplay->ShowWindow(SW_SHOW);
+//				else
+//					p_wndPatternDisplay->ShowWindow(SW_HIDE);
+//			}
 		}
 		else
 			GetColorApp()->InMeasureMessageBox( "You must change to the GDI generator to display advanced patterns.", "On PatternDisplay", MB_OK | MB_ICONEXCLAMATION );

@@ -1837,6 +1837,11 @@ BEGIN
         BEGIN
             MENUITEM "Animiertes Schwarzwert Testbild", IDM_PATTERN_ANIM_BLACK
             MENUITEM "Animiertes Weiﬂwert Testbild", IDM_PATTERN_ANIM_WHITE
+            MENUITEM "Neutral Gradient",            IDM_PATTERN_GRADIENT
+            MENUITEM "RBGYCMW Luma Ramps",            IDM_PATTERN_LRAMP
+            MENUITEM "RBGYCM Saturation Ramps",            IDM_PATTERN_SRAMP
+            MENUITEM "Granger Rainbow",            IDM_PATTERN_GRANGER
+            MENUITEM "Test Image",            IDM_PATTERN_TESTIMG
             MENUITEM "Testbilder...",               IDM_PATTERN_DISPLAY
         END
         MENUITEM SEPARATOR

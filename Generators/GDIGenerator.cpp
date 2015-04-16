@@ -26,6 +26,7 @@
 #include "ColorHCFR.h"
 #include "GDIGenerator.h"
 #include "madTPG.h"
+#include "..\PatternDisplay.h"
 
 
 
@@ -69,6 +70,7 @@ CGDIGenerator::CGDIGenerator()
 	m_rectSizePercent = m_displayWindow.m_rectSizePercent;
 	m_bgStimPercent = m_displayWindow.m_bgStimPercent;
 	m_Intensity = m_displayWindow.m_Intensity;
+	m_patternDGenerator=NULL;
 
 	GetMonitorList();
 	m_activeMonitorNum = m_monitorNb-1;
@@ -488,6 +490,36 @@ BOOL CGDIGenerator::DisplayAnimatedBlack()
 BOOL CGDIGenerator::DisplayAnimatedWhite()
 {
 	m_displayWindow.DisplayAnimatedWhite();
+	return TRUE;
+}
+
+BOOL CGDIGenerator::DisplayGradient()
+{
+	m_displayWindow.DisplayGradient();
+	return TRUE;
+}
+
+BOOL CGDIGenerator::DisplayLramp()
+{
+	m_displayWindow.DisplayLramp();
+	return TRUE;
+}
+
+BOOL CGDIGenerator::DisplayGranger()
+{
+	m_displayWindow.DisplayGranger();
+	return TRUE;
+}
+
+BOOL CGDIGenerator::DisplaySramp()
+{
+	m_displayWindow.DisplaySramp();
+	return TRUE;
+}
+
+BOOL CGDIGenerator::DisplayTestimg()
+{
+	m_displayWindow.DisplayTestimg();
 	return TRUE;
 }
 

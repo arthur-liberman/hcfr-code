@@ -730,6 +730,14 @@
 #define IDC_BLUE_X                      1287
 #define IDC_BLUE_Y                      1288
 #define IDC_MADVR_OSD                   1289
+#define IDR_PATTERN_SMPTE75v            1290
+#define IDR_PATTERN_1956v               1291
+#define IDR_PATTERN_TESTIMGv            1292
+#define IDR_PATTERN_GRADIENT            1293
+#define IDR_PATTERN_LRAMP	            1294
+#define IDR_PATTERN_GRANGER	            1295
+#define IDR_PATTERN_SRAMP	            1296
+#define IDR_PATTERN_SRAMPv	            1297
 #define IDC_COLORTEMPHISTO_GRAPH        11003
 #define IDC_RGBHISTO_GRAPH              11101
 #define IDC_RGBHISTO_GRAPH2             11102
@@ -944,6 +952,12 @@
 #define IDM_LUM_GRAPH_L                 33044
 #define ID_GRAPH_DISPLAYASL             33044
 #define ID_DISPLAYASL_L                 33045
+#define ID_Menu33046                    33046
+#define IDM_PATTERN_GRADIENT            33047
+#define IDM_PATTERN_LRAMP		        33048
+#define IDM_PATTERN_GRANGER				33049
+#define IDM_PATTERN_SRAMP				33050
+#define IDM_PATTERN_TESTIMG				33051
 #define IDS_LUMINANCEHISTOVIEW_NAME     41446
 #define IDS_COLORTEMPHISTOVIEW_NAME     41447
 #define IDS_RGBHISTOVIEW_NAME           41448
@@ -1472,7 +1486,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        382
-#define _APS_NEXT_COMMAND_VALUE         33046
+#define _APS_NEXT_COMMAND_VALUE         33048
 #define _APS_NEXT_CONTROL_VALUE         1288
 #define _APS_NEXT_SYMED_VALUE           143
 #endif

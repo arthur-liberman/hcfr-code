@@ -405,6 +405,51 @@ void CFullScreenWindow::DisplayAnimatedWhite()
 	OnTimer ( m_IdTimer );
 }
 
+void CFullScreenWindow::DisplayGradient() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+	CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_GRADIENT,TRUE);
+	FreeLibrary(hPatterns);
+}
+
+void CFullScreenWindow::DisplayLramp() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+	CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_LRAMP,TRUE);
+	FreeLibrary(hPatterns);
+}
+
+void CFullScreenWindow::DisplayGranger() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+	CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_GRANGER,TRUE);
+	FreeLibrary(hPatterns);
+}
+
+void CFullScreenWindow::DisplaySramp() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+	if (m_b16_235)
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_SRAMPv,TRUE);
+	else
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_SRAMP,TRUE);
+	FreeLibrary(hPatterns);
+}
+
+void CFullScreenWindow::DisplayTestimg() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+	if (m_b16_235)
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_TESTIMGv,TRUE);
+	else
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_TESTIMG,TRUE);
+	FreeLibrary(hPatterns);
+}
 
 void CFullScreenWindow::DisplayDotPattern( const ColorRGBDisplay& clr , BOOL dot2, UINT nPads)
 {
@@ -537,6 +582,8 @@ void CFullScreenWindow::OnPaint()
 
 
 	m_rectAreaPercent = sqrt (m_rectSizePercent / 100.) * 100;
+	if (m_bAnimated)
+		m_rectAreaPercent = 100.;
 
 	if ( m_nDisplayMode != DISPLAY_GDI && m_nDisplayMode != DISPLAY_GDI_nBG )
 	{
@@ -719,10 +766,10 @@ void CFullScreenWindow::OnPaint()
 
 		CxImage* newImage = new CxImage();
 		HRSRC hRsrc = ::FindResource(m_hPatternInst,MAKEINTRESOURCE(m_uiPictRess),"PATTERN");
-		if (m_uiPictRess == IDR_PATTERN_TESTIMG)
+		if (m_uiPictRess == IDR_PATTERN_TESTIMG || m_uiPictRess == IDR_PATTERN_TESTIMGv)
 			newImage->LoadResource(hRsrc,CXIMAGE_FORMAT_JPG,m_hPatternInst);   
 		else
-			newImage->LoadResource(hRsrc,CXIMAGE_FORMAT_PNG,m_hPatternInst);   
+			newImage->LoadResource(hRsrc,CXIMAGE_FORMAT_PNG,m_hPatternInst);  
 		
 		if (m_bResizePict) {
 			SetRect ( &aRect, 0, 0, rect.Width(), rect.Height());
@@ -961,7 +1008,7 @@ void CFullScreenWindow::OnTimer(UINT nIDEvent)
     HRESULT			ddrval;
     DDSURFACEDESC	SurfaceDesc;
 	
-	double m_rectAreaPercent = 100;
+	double m_rectAreaPercent = 100; //always do 100% for animated brightness/contrast patterns
 
 //	m_rectAreaPercent = sqrt (m_rectSizePercent / 100.) * 100;
 

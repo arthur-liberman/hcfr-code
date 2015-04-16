@@ -1978,6 +1978,11 @@ BEGIN
         BEGIN
             MENUITEM "Mire animée de niveau de noir", IDM_PATTERN_ANIM_BLACK
             MENUITEM "Mire animée de niveau de blanc", IDM_PATTERN_ANIM_WHITE
+            MENUITEM "Neutral Gradient",            IDM_PATTERN_GRADIENT
+            MENUITEM "RBGYCMW Luma Ramps",            IDM_PATTERN_LRAMP
+            MENUITEM "RBGYCM Saturation Ramps",            IDM_PATTERN_SRAMP
+            MENUITEM "Granger Rainbow",            IDM_PATTERN_GRANGER
+            MENUITEM "Test Image",            IDM_PATTERN_TESTIMG
             MENUITEM "Affichage &Mires",            IDM_PATTERN_DISPLAY
         END
         MENUITEM SEPARATOR

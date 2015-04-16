@@ -514,6 +514,7 @@ BYTE ColorRGBDisplay::ConvertPercentToBYTE(double percent, bool is16_235)
     }
 
     int result((int)floor(offset + percent * coef + 0.5));
+
     if(result < 0)
     {
         return 0;

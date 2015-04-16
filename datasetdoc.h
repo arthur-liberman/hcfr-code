@@ -88,6 +88,7 @@ public:
 	// Attributes used during document opening for window position serialization
 	CDataSetWindowPositions *	m_pWndPos;
 	CDataSetFrameInfo *			m_pFramePosInfo;
+	void DisplayPatternPicture(HMODULE hInst, UINT nIDResource, BOOL bResizePict);
 
 // Attributes
 public:
@@ -195,6 +196,11 @@ protected:
 	afx_msg void OnSimGrayscaleAndColors();
 	afx_msg void OnPatternAnimBlack();
 	afx_msg void OnPatternAnimWhite();
+	afx_msg void OnPatternGradient();
+	afx_msg void OnPatternLramp();
+	afx_msg void OnPatternGranger();
+	afx_msg void OnPatternSramp();
+	afx_msg void OnPatternTestimg();
 	afx_msg void OnSingleMeasurement();
 	afx_msg void OnContinuousMeasurement();
 	afx_msg void OnMeasureGrayscale();

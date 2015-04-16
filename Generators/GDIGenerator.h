@@ -64,6 +64,7 @@ public:
 
 	virtual	void Copy(CGenerator * p);
 	virtual void Serialize(CArchive& archive); 
+	CGenerator * m_patternDGenerator;
 
 	virtual BOOL Init(UINT nbMeasure = 0);
 	virtual BOOL DisplayRGBColor(const ColorRGBDisplay& aRGBColor, MeasureType nPatternType = MT_UNKNOWN, UINT nPatternInfo = 0, BOOL bChangePattern = TRUE,BOOL bSilentMode = FALSE);
@@ -73,6 +74,11 @@ public:
 	virtual BOOL DisplayAnsiBWRects(BOOL bInvert);
 	virtual BOOL DisplayAnimatedBlack();
 	virtual BOOL DisplayAnimatedWhite();
+	virtual BOOL DisplayGradient();
+	virtual BOOL DisplayLramp();
+	virtual BOOL DisplayGranger();
+	virtual BOOL DisplaySramp();
+	virtual BOOL DisplayTestimg();
 	virtual BOOL DisplayDotPattern( const ColorRGBDisplay&  clr , BOOL dot2, UINT nPads);
 	virtual	BOOL DisplayHVLinesPattern( const ColorRGBDisplay&  clr , BOOL dot2, BOOL vLines);
 	virtual BOOL DisplayColorLevelPattern( INT clrLevel , BOOL dot2, UINT nPads);

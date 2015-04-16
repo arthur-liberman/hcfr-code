@@ -111,6 +111,12 @@ public:
 	void DisplayAnsiBWRects(BOOL bInvert);
 	void DisplayAnimatedBlack();
 	void DisplayAnimatedWhite();
+	void DisplayGradient();
+	void DisplayLramp();
+	void DisplayGranger();
+	void DisplayTestimg();
+	void DisplaySramp();
+
 	//Patterns
 	void DisplayDotPattern( const ColorRGBDisplay&  clr , BOOL dot2, UINT nPads);
 	void DisplayHVLinesPattern( const ColorRGBDisplay&  clr , BOOL dot2, BOOL vLines);

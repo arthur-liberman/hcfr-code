@@ -46,7 +46,6 @@ CGenerator::CGenerator()
 {
 	m_isModified=FALSE;
 	m_doScreenBlanking=GetConfig()->GetProfileInt("Generator","Blanking",0);
-	m_b16_235=FALSE;
 	AddPropertyPage(&m_GeneratorPropertiePage);
 
 	CString str;
@@ -185,6 +184,31 @@ BOOL CGenerator::DisplayAnimatedBlack()
 }
 
 BOOL CGenerator::DisplayAnimatedWhite()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplayGradient()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplayLramp()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplayGranger()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplaySramp()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplayTestimg()
 {
 	return TRUE;	  // need to be overriden
 }
