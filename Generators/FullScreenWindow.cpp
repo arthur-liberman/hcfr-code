@@ -440,6 +440,33 @@ void CFullScreenWindow::DisplaySramp()
 	FreeLibrary(hPatterns);
 }
 
+void CFullScreenWindow::DisplayVSMPTE() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+	if (m_b16_235)
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_VSMPTEv,TRUE);
+	else
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_VSMPTE,TRUE);
+	FreeLibrary(hPatterns);
+}
+
+void CFullScreenWindow::DisplayEramp() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_ERAMP,TRUE);
+	FreeLibrary(hPatterns);
+}
+
+void CFullScreenWindow::DisplayAlign() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_ALIGN,TRUE);
+	FreeLibrary(hPatterns);
+}
+
 void CFullScreenWindow::DisplayTestimg() 
 {
 	HMODULE hPatterns;

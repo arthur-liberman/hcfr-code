@@ -116,6 +116,9 @@ public:
 	void DisplayGranger();
 	void DisplayTestimg();
 	void DisplaySramp();
+	void DisplayVSMPTE();
+	void DisplayEramp();
+	void DisplayAlign();
 
 	//Patterns
 	void DisplayDotPattern( const ColorRGBDisplay&  clr , BOOL dot2, UINT nPads);

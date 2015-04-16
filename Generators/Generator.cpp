@@ -208,6 +208,21 @@ BOOL CGenerator::DisplaySramp()
 	return TRUE;	  // need to be overriden
 }
 
+BOOL CGenerator::DisplayVSMPTE()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplayEramp()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplayAlign()
+{
+	return TRUE;	  // need to be overriden
+}
+
 BOOL CGenerator::DisplayTestimg()
 {
 	return TRUE;	  // need to be overriden

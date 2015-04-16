@@ -175,6 +175,10 @@ IDR_PATTERN_LRAMP        PATTERN                 "res\\patterns\\lramp.png"
 IDR_PATTERN_GRANGER        PATTERN                 "res\\patterns\\GrangerRainbow1920.png"
 IDR_PATTERN_SRAMP        PATTERN                 "res\\patterns\\sramp.png"
 IDR_PATTERN_SRAMPv        PATTERN                 "res\\patterns\\srampv.png"
+IDR_PATTERN_VSMPTE        PATTERN                 "res\\patterns\\VSMPTE133b.png"
+IDR_PATTERN_VSMPTEv        PATTERN                 "res\\patterns\\VSMPTE133bv.png"
+IDR_PATTERN_ERAMP        PATTERN                 "res\\patterns\\EllipticalRamp.png"
+IDR_PATTERN_ALIGN        PATTERN                 "res\\patterns\\align.png"
 #endif    // French (France) resources
 /////////////////////////////////////////////////////////////////////////////
 

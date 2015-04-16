@@ -652,6 +652,20 @@ void CPatternDisplay::OnPatternSramp()
 	FreeLibrary(hPatterns);
 }
 
+void CPatternDisplay::OnPatternVSMPTE() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+	m_patternDGenerator->Init();
+	if (GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0) == 0)
+		m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_VSMPTE,TRUE);
+	else
+		m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_VSMPTEv,TRUE);
+	WaitKey();
+	m_patternDGenerator->Release();
+	FreeLibrary(hPatterns);
+}
+
 void CPatternDisplay::OnPatternTestimg() 
 {
 	HMODULE hPatterns;
@@ -664,6 +678,22 @@ void CPatternDisplay::OnPatternTestimg()
 	WaitKey();
 	m_patternDGenerator->Release();
 	FreeLibrary(hPatterns);
+}
+
+void CPatternDisplay::OnPatternEramp() 
+{
+	m_patternDGenerator->Init();
+	m_patternDGenerator->DisplayEramp();
+	WaitKey();
+	m_patternDGenerator->Release();
+}
+
+void CPatternDisplay::OnPatternAlign() 
+{
+	m_patternDGenerator->Init();
+	m_patternDGenerator->DisplayAlign();
+	WaitKey();
+	m_patternDGenerator->Release();
 }
 
 void CPatternDisplay::OnPatternAnimB() 

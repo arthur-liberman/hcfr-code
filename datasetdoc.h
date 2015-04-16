@@ -201,6 +201,9 @@ protected:
 	afx_msg void OnPatternGranger();
 	afx_msg void OnPatternSramp();
 	afx_msg void OnPatternTestimg();
+	afx_msg void OnPatternVSMPTE();
+	afx_msg void OnPatternEramp();
+	afx_msg void OnPatternAlign();
 	afx_msg void OnSingleMeasurement();
 	afx_msg void OnContinuousMeasurement();
 	afx_msg void OnMeasureGrayscale();

@@ -97,6 +97,9 @@ public:
 	virtual BOOL DisplayGranger();				// need to be overriden
 	virtual BOOL DisplaySramp();				// need to be overriden
 	virtual BOOL DisplayTestimg();				// need to be overriden
+	virtual BOOL DisplayVSMPTE();				// need to be overriden
+	virtual BOOL DisplayEramp();				// need to be overriden
+	virtual BOOL DisplayAlign();				// need to be overriden
 	virtual BOOL DisplayDotPattern(const ColorRGBDisplay& clr , BOOL dot2, UINT nPads)  { return TRUE; };
 	virtual BOOL DisplayHVLinesPattern(const ColorRGBDisplay& clr , BOOL dot2, BOOL vLines)  { return TRUE; };
 	virtual BOOL DisplayColorLevelPattern( INT clrLevel , BOOL dot2, UINT nPads) { return TRUE; };

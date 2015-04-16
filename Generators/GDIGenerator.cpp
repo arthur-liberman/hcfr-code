@@ -517,6 +517,24 @@ BOOL CGDIGenerator::DisplaySramp()
 	return TRUE;
 }
 
+BOOL CGDIGenerator::DisplayVSMPTE()
+{
+	m_displayWindow.DisplayVSMPTE();
+	return TRUE;
+}
+
+BOOL CGDIGenerator::DisplayEramp()
+{
+	m_displayWindow.DisplayEramp();
+	return TRUE;
+}
+
+BOOL CGDIGenerator::DisplayAlign()
+{
+	m_displayWindow.DisplayAlign();
+	return TRUE;
+}
+
 BOOL CGDIGenerator::DisplayTestimg()
 {
 	m_displayWindow.DisplayTestimg();

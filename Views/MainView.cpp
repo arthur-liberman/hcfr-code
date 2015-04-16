@@ -3160,7 +3160,7 @@ void CMainView::OnGrayScaleGridEndEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 	aNewStr.Replace(",",".");	// replace decimal separator if necessary
  	float aVal;
 	BOOL bAcceptChange = !aNewStr.IsEmpty() && sscanf(aNewStr,"%f",&aVal) && (m_displayType != HCFR_xyz2_VIEW);
-
+	bAcceptChange = (aVal > 0);
 	if(bAcceptChange)	// update value in document
 	{
 		// Get document XYZ value
