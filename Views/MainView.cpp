@@ -3160,10 +3160,10 @@ void CMainView::OnGrayScaleGridEndEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 	CString aNewStr=m_pGrayScaleGrid->GetItemText(pItem->iRow,pItem->iColumn);
 	aNewStr.Replace(",",".");	// replace decimal separator if necessary
  	double aVal;
-	BOOL bAcceptChange = !aNewStr.IsEmpty() && sscanf(aNewStr,"%f",&aVal) && (m_displayType != HCFR_xyz2_VIEW);
+	BOOL bAcceptChange = !aNewStr.IsEmpty() && sscanf(aNewStr,"%lf",&aVal) && (m_displayType != HCFR_xyz2_VIEW);
 	if(bAcceptChange)	// update value in document
 	{
-		aVal = max(aVal,0.00000001);
+		aVal = max(aVal, 0.000000001);
 		// Get document XYZ value
 		CColor aColorMeasure;
 		
