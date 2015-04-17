@@ -223,6 +223,36 @@ BOOL CGenerator::DisplayEramp()
 	return TRUE;	  // need to be overriden
 }
 
+BOOL CGenerator::DisplayTC0()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplayTC1()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplayTC2()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplayTC3()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplayTC4()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplayTC5()
+{
+	return TRUE;	  // need to be overriden
+}
+
 BOOL CGenerator::DisplayAlign()
 {
 	return TRUE;	  // need to be overriden

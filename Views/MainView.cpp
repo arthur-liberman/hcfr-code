@@ -404,7 +404,8 @@ CMainView::CMainView()
 	m_nSizeOffset = 0;
 	m_bPositionsInit = FALSE;
 	m_dwInitialUserInfo = 0;
-	last_minCol = 0;
+	last_minCol = 1;
+	minCol = 1;
 	
 	m_SelectedColor = noDataColor;
 
@@ -685,7 +686,7 @@ void CMainView::RefreshSelection()
 	Item.nFormat = DT_RIGHT;
 	Item.row = 0;
 	Item.col = 1;
-	int minCol = m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1;
+	minCol = m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1;
 
 	if (m_displayMode <= 11 &&  m_displayMode != 2)  
     {
@@ -3158,11 +3159,11 @@ void CMainView::OnGrayScaleGridEndEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 
 	CString aNewStr=m_pGrayScaleGrid->GetItemText(pItem->iRow,pItem->iColumn);
 	aNewStr.Replace(",",".");	// replace decimal separator if necessary
- 	float aVal;
+ 	double aVal;
 	BOOL bAcceptChange = !aNewStr.IsEmpty() && sscanf(aNewStr,"%f",&aVal) && (m_displayType != HCFR_xyz2_VIEW);
 	if(bAcceptChange)	// update value in document
 	{
-		aVal=max(aVal,0.00000001);
+		aVal = max(aVal,0.00000001);
 		// Get document XYZ value
 		CColor aColorMeasure;
 		

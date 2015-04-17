@@ -101,6 +101,12 @@ public:
 	virtual BOOL DisplayVSMPTE();				// need to be overriden
 	virtual BOOL DisplayEramp();				// need to be overriden
 	virtual BOOL DisplayAlign();				// need to be overriden
+	virtual BOOL DisplayTC0();				// need to be overriden
+	virtual BOOL DisplayTC1();				// need to be overriden
+	virtual BOOL DisplayTC2();				// need to be overriden
+	virtual BOOL DisplayTC3();				// need to be overriden
+	virtual BOOL DisplayTC4();				// need to be overriden
+	virtual BOOL DisplayTC5();				// need to be overriden
 	virtual BOOL DisplayDotPattern(const ColorRGBDisplay& clr , BOOL dot2, UINT nPads)  { return TRUE; };
 	virtual BOOL DisplayHVLinesPattern(const ColorRGBDisplay& clr , BOOL dot2, BOOL vLines)  { return TRUE; };
 	virtual BOOL DisplayColorLevelPattern( INT clrLevel , BOOL dot2, UINT nPads) { return TRUE; };

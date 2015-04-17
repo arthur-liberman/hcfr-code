@@ -120,6 +120,12 @@ public:
 	void DisplayVSMPTE();
 	void DisplayEramp();
 	void DisplayAlign();
+	void DisplayTC0();
+	void DisplayTC1();
+	void DisplayTC2();
+	void DisplayTC3();
+	void DisplayTC4();
+	void DisplayTC5();
 
 	//Patterns
 	void DisplayDotPattern( const ColorRGBDisplay&  clr , BOOL dot2, UINT nPads);

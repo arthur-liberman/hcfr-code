@@ -100,6 +100,7 @@ public:
 	int m_displayType;
 	int	m_nSizeOffset;
 	int last_minCol;
+	int minCol;
 	CBrush *m_pBgBrush;
 
 	CDataSetDoc* GetDocument();

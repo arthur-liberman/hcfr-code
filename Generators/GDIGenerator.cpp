@@ -535,6 +535,42 @@ BOOL CGDIGenerator::DisplayEramp()
 	return TRUE;
 }
 
+BOOL CGDIGenerator::DisplayTC0()
+{
+	m_displayWindow.DisplayTC0();
+	return TRUE;
+}
+
+BOOL CGDIGenerator::DisplayTC1()
+{
+	m_displayWindow.DisplayTC1();
+	return TRUE;
+}
+
+BOOL CGDIGenerator::DisplayTC2()
+{
+	m_displayWindow.DisplayTC2();
+	return TRUE;
+}
+
+BOOL CGDIGenerator::DisplayTC3()
+{
+	m_displayWindow.DisplayTC3();
+	return TRUE;
+}
+
+BOOL CGDIGenerator::DisplayTC4()
+{
+	m_displayWindow.DisplayTC4();
+	return TRUE;
+}
+
+BOOL CGDIGenerator::DisplayTC5()
+{
+	m_displayWindow.DisplayTC5();
+	return TRUE;
+}
+
 BOOL CGDIGenerator::DisplayAlign()
 {
 	m_displayWindow.DisplayAlign();

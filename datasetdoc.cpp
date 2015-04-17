@@ -295,6 +295,8 @@ BOOL StartBackgroundMeasures ( CDataSetDoc * pDoc )
 				}
 
 				ColorRGBDisplay clr((( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.GetColor ()) & 0x00ffffff);
+				if (!clr.isValid())
+					clr = ColorRGBDisplay(0.25);
 				g_CurrentColor = clr;
 				CGenerator::MeasureType MT = CGenerator::MT_UNKNOWN;							
 				if ( m_d == 1 || (m_d < 11 && m_d > 4) )
@@ -464,6 +466,12 @@ BEGIN_MESSAGE_MAP(CDataSetDoc, CDocument)
 	ON_COMMAND(IDM_PATTERN_SRAMP, OnPatternSramp)
 	ON_COMMAND(IDM_PATTERN_VSMPTE, OnPatternVSMPTE)
 	ON_COMMAND(IDM_PATTERN_ERAMP, OnPatternEramp)
+	ON_COMMAND(IDM_PATTERN_TC0, OnPatternTC0)
+	ON_COMMAND(IDM_PATTERN_TC1, OnPatternTC1)
+	ON_COMMAND(IDM_PATTERN_TC2, OnPatternTC2)
+	ON_COMMAND(IDM_PATTERN_TC3, OnPatternTC3)
+	ON_COMMAND(IDM_PATTERN_TC4, OnPatternTC4)
+	ON_COMMAND(IDM_PATTERN_TC5, OnPatternTC5)
 	ON_COMMAND(IDM_PATTERN_ALIGN, OnPatternAlign)
 	ON_COMMAND(IDM_PATTERN_TESTIMG, OnPatternTestimg)
 	ON_COMMAND(IDM_SINGLE_MEASUREMENT, OnSingleMeasurement)
@@ -3197,6 +3205,264 @@ void CDataSetDoc::OnPatternEramp()
 	}
 }
 
+void CDataSetDoc::OnPatternTC0() 
+{
+	BOOL	bKeyTyped = FALSE;
+	MSG		Msg;
+
+	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
+	{
+			AfxGetMainWnd () -> EnableWindow ( FALSE );
+
+			m_pGenerator->Init();
+			m_pGenerator->DisplayTC0();
+
+			while ( ! bKeyTyped )
+			{
+				while ( PeekMessage ( & Msg, NULL, WM_KEYFIRST, WM_MOUSELAST, TRUE ) )
+				{
+					if ( Msg.message == WM_KEYDOWN )
+					{
+						if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
+							bKeyTyped = TRUE;
+					}
+					else if ( Msg.message == WM_LBUTTONDOWN || Msg.message == WM_RBUTTONDOWN )
+					{
+						bKeyTyped = TRUE;
+					}
+					else if ( Msg.message == WM_TIMER )
+					{
+						// Dispatch timer message to allow animation run
+						DispatchMessage ( &Msg );
+					}
+				}
+				Sleep(10);
+			}
+			
+			AfxGetMainWnd () -> EnableWindow ( TRUE );
+			m_pGenerator->Release();
+	}
+	else
+	{
+		GetColorApp()->InMeasureMessageBox( _S(IDS_CANNOTDISPLAYANIMATION), "On measure", MB_OK | MB_ICONEXCLAMATION );
+	}
+}
+
+void CDataSetDoc::OnPatternTC1() 
+{
+	BOOL	bKeyTyped = FALSE;
+	MSG		Msg;
+
+	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
+	{
+			AfxGetMainWnd () -> EnableWindow ( FALSE );
+
+			m_pGenerator->Init();
+			m_pGenerator->DisplayTC1();
+
+			while ( ! bKeyTyped )
+			{
+				while ( PeekMessage ( & Msg, NULL, WM_KEYFIRST, WM_MOUSELAST, TRUE ) )
+				{
+					if ( Msg.message == WM_KEYDOWN )
+					{
+						if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
+							bKeyTyped = TRUE;
+					}
+					else if ( Msg.message == WM_LBUTTONDOWN || Msg.message == WM_RBUTTONDOWN )
+					{
+						bKeyTyped = TRUE;
+					}
+					else if ( Msg.message == WM_TIMER )
+					{
+						// Dispatch timer message to allow animation run
+						DispatchMessage ( &Msg );
+					}
+				}
+				Sleep(10);
+			}
+			
+			AfxGetMainWnd () -> EnableWindow ( TRUE );
+			m_pGenerator->Release();
+	}
+	else
+	{
+		GetColorApp()->InMeasureMessageBox( _S(IDS_CANNOTDISPLAYANIMATION), "On measure", MB_OK | MB_ICONEXCLAMATION );
+	}
+}
+
+void CDataSetDoc::OnPatternTC2() 
+{
+	BOOL	bKeyTyped = FALSE;
+	MSG		Msg;
+
+	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
+	{
+			AfxGetMainWnd () -> EnableWindow ( FALSE );
+
+			m_pGenerator->Init();
+			m_pGenerator->DisplayTC2();
+
+			while ( ! bKeyTyped )
+			{
+				while ( PeekMessage ( & Msg, NULL, WM_KEYFIRST, WM_MOUSELAST, TRUE ) )
+				{
+					if ( Msg.message == WM_KEYDOWN )
+					{
+						if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
+							bKeyTyped = TRUE;
+					}
+					else if ( Msg.message == WM_LBUTTONDOWN || Msg.message == WM_RBUTTONDOWN )
+					{
+						bKeyTyped = TRUE;
+					}
+					else if ( Msg.message == WM_TIMER )
+					{
+						// Dispatch timer message to allow animation run
+						DispatchMessage ( &Msg );
+					}
+				}
+				Sleep(10);
+			}
+			
+			AfxGetMainWnd () -> EnableWindow ( TRUE );
+			m_pGenerator->Release();
+	}
+	else
+	{
+		GetColorApp()->InMeasureMessageBox( _S(IDS_CANNOTDISPLAYANIMATION), "On measure", MB_OK | MB_ICONEXCLAMATION );
+	}
+}
+
+void CDataSetDoc::OnPatternTC3() 
+{
+	BOOL	bKeyTyped = FALSE;
+	MSG		Msg;
+
+	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
+	{
+			AfxGetMainWnd () -> EnableWindow ( FALSE );
+
+			m_pGenerator->Init();
+			m_pGenerator->DisplayTC3();
+
+			while ( ! bKeyTyped )
+			{
+				while ( PeekMessage ( & Msg, NULL, WM_KEYFIRST, WM_MOUSELAST, TRUE ) )
+				{
+					if ( Msg.message == WM_KEYDOWN )
+					{
+						if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
+							bKeyTyped = TRUE;
+					}
+					else if ( Msg.message == WM_LBUTTONDOWN || Msg.message == WM_RBUTTONDOWN )
+					{
+						bKeyTyped = TRUE;
+					}
+					else if ( Msg.message == WM_TIMER )
+					{
+						// Dispatch timer message to allow animation run
+						DispatchMessage ( &Msg );
+					}
+				}
+				Sleep(10);
+			}
+			
+			AfxGetMainWnd () -> EnableWindow ( TRUE );
+			m_pGenerator->Release();
+	}
+	else
+	{
+		GetColorApp()->InMeasureMessageBox( _S(IDS_CANNOTDISPLAYANIMATION), "On measure", MB_OK | MB_ICONEXCLAMATION );
+	}
+}
+
+void CDataSetDoc::OnPatternTC4() 
+{
+	BOOL	bKeyTyped = FALSE;
+	MSG		Msg;
+
+	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
+	{
+			AfxGetMainWnd () -> EnableWindow ( FALSE );
+
+			m_pGenerator->Init();
+			m_pGenerator->DisplayTC4();
+
+			while ( ! bKeyTyped )
+			{
+				while ( PeekMessage ( & Msg, NULL, WM_KEYFIRST, WM_MOUSELAST, TRUE ) )
+				{
+					if ( Msg.message == WM_KEYDOWN )
+					{
+						if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
+							bKeyTyped = TRUE;
+					}
+					else if ( Msg.message == WM_LBUTTONDOWN || Msg.message == WM_RBUTTONDOWN )
+					{
+						bKeyTyped = TRUE;
+					}
+					else if ( Msg.message == WM_TIMER )
+					{
+						// Dispatch timer message to allow animation run
+						DispatchMessage ( &Msg );
+					}
+				}
+				Sleep(10);
+			}
+			
+			AfxGetMainWnd () -> EnableWindow ( TRUE );
+			m_pGenerator->Release();
+	}
+	else
+	{
+		GetColorApp()->InMeasureMessageBox( _S(IDS_CANNOTDISPLAYANIMATION), "On measure", MB_OK | MB_ICONEXCLAMATION );
+	}
+}
+
+void CDataSetDoc::OnPatternTC5() 
+{
+	BOOL	bKeyTyped = FALSE;
+	MSG		Msg;
+
+	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
+	{
+			AfxGetMainWnd () -> EnableWindow ( FALSE );
+
+			m_pGenerator->Init();
+			m_pGenerator->DisplayTC5();
+
+			while ( ! bKeyTyped )
+			{
+				while ( PeekMessage ( & Msg, NULL, WM_KEYFIRST, WM_MOUSELAST, TRUE ) )
+				{
+					if ( Msg.message == WM_KEYDOWN )
+					{
+						if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
+							bKeyTyped = TRUE;
+					}
+					else if ( Msg.message == WM_LBUTTONDOWN || Msg.message == WM_RBUTTONDOWN )
+					{
+						bKeyTyped = TRUE;
+					}
+					else if ( Msg.message == WM_TIMER )
+					{
+						// Dispatch timer message to allow animation run
+						DispatchMessage ( &Msg );
+					}
+				}
+				Sleep(10);
+			}
+			
+			AfxGetMainWnd () -> EnableWindow ( TRUE );
+			m_pGenerator->Release();
+	}
+	else
+	{
+		GetColorApp()->InMeasureMessageBox( _S(IDS_CANNOTDISPLAYANIMATION), "On measure", MB_OK | MB_ICONEXCLAMATION );
+	}
+}
+
 void CDataSetDoc::OnPatternAlign() 
 {
 	BOOL	bKeyTyped = FALSE;
@@ -3469,10 +3735,11 @@ void CDataSetDoc::OnBkgndMeasureReady()
 		EnterCriticalSection ( & g_CritSec );
 		pos = g_MeasuredColorList.GetHeadPosition ();
 		POSITION pos2 = g_pDataDocRunningThread -> GetFirstViewPosition ();
-		CView *pView = g_pDataDocRunningThread -> GetNextView ( pos2 );
-		int m_d = ((CMainView*)pView)->m_displayMode;
+		
 		while ( pos )
 		{
+			CView *pView = g_pDataDocRunningThread -> GetNextView ( pos2 );
+			int m_d = ((CMainView*)pView)->m_displayMode;
 			pMeasurement = ( CColor * ) g_MeasuredColorList.GetNext ( pos );
 
 			m_measure.AppendMeasurements(*pMeasurement, m_d == 1);

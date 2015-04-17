@@ -180,6 +180,18 @@ IDR_PATTERN_VSMPTEv        PATTERN                 "res\\patterns\\VSMPTE133bv.p
 IDR_PATTERN_ERAMP        PATTERN                 "res\\patterns\\EllipticalRamp.png"
 IDR_PATTERN_ALIGN        PATTERN                 "res\\patterns\\align.png"
 IDR_PATTERN_SPECTRUM        PATTERN                 "res\\patterns\\spectrum.png"
+IDR_PATTERN_TC0        PATTERN                 "res\\patterns\\timecode0.png"
+IDR_PATTERN_TC0v        PATTERN                 "res\\patterns\\timecode0v.png"
+IDR_PATTERN_TC1        PATTERN                 "res\\patterns\\timecode1.png"
+IDR_PATTERN_TC1v        PATTERN                 "res\\patterns\\timecode1v.png"
+IDR_PATTERN_TC2        PATTERN                 "res\\patterns\\timecode2.png"
+IDR_PATTERN_TC2v        PATTERN                 "res\\patterns\\timecode2v.png"
+IDR_PATTERN_TC3        PATTERN                 "res\\patterns\\timecode3.png"
+IDR_PATTERN_TC3v        PATTERN                 "res\\patterns\\timecode3v.png"
+IDR_PATTERN_TC4        PATTERN                 "res\\patterns\\timecode4.png"
+IDR_PATTERN_TC4v        PATTERN                 "res\\patterns\\timecode4v.png"
+IDR_PATTERN_TC5        PATTERN                 "res\\patterns\\timecode5.png"
+IDR_PATTERN_TC5v        PATTERN                 "res\\patterns\\timecode5v.png"
 #endif    // French (France) resources
 /////////////////////////////////////////////////////////////////////////////
 

@@ -1986,7 +1986,18 @@ BEGIN
             MENUITEM "VSMPTE133",            IDM_PATTERN_VSMPTE
             MENUITEM "Alignment",            IDM_PATTERN_ALIGN
             MENUITEM "Elliptical Ramp",            IDM_PATTERN_ERAMP
-            MENUITEM "Test Image",            IDM_PATTERN_TESTIMG
+            MENUITEM SEPARATOR
+            POPUP "Evalution Sequence(Casino Royale)"
+            BEGIN
+                MENUITEM "00:01:17",                    IDM_PATTERN_TC0
+                MENUITEM "00:25:41",                   IDM_PATTERN_TC1
+                MENUITEM "00:25:48",                   IDM_PATTERN_TC2
+                MENUITEM "00:35:37",                   IDM_PATTERN_TC3
+                MENUITEM "00:57:48",                   IDM_PATTERN_TC4
+                MENUITEM "01:30:18",                   IDM_PATTERN_TC5
+            END
+            MENUITEM "Evaluation Image",                  IDM_PATTERN_TESTIMG
+            MENUITEM SEPARATOR
             MENUITEM "Affichage &Mires",            IDM_PATTERN_DISPLAY
         END
         MENUITEM SEPARATOR

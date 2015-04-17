@@ -459,6 +459,72 @@ void CFullScreenWindow::DisplayVSMPTE()
 	FreeLibrary(hPatterns);
 }
 
+void CFullScreenWindow::DisplayTC0() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+	if (m_b16_235)
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_TC0v,TRUE);
+	else
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_TC0,TRUE);
+	FreeLibrary(hPatterns);
+}
+
+void CFullScreenWindow::DisplayTC1() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+	if (m_b16_235)
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_TC1v,TRUE);
+	else
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_TC1,TRUE);
+	FreeLibrary(hPatterns);
+}
+
+void CFullScreenWindow::DisplayTC2() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+	if (m_b16_235)
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_TC2v,TRUE);
+	else
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_TC2,TRUE);
+	FreeLibrary(hPatterns);
+}
+
+void CFullScreenWindow::DisplayTC3() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+	if (m_b16_235)
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_TC3v,TRUE);
+	else
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_TC3,TRUE);
+	FreeLibrary(hPatterns);
+}
+
+void CFullScreenWindow::DisplayTC4() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+	if (m_b16_235)
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_TC4v,TRUE);
+	else
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_TC4,TRUE);
+	FreeLibrary(hPatterns);
+}
+
+void CFullScreenWindow::DisplayTC5() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+	if (m_b16_235)
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_TC5v,TRUE);
+	else
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_TC5,TRUE);
+	FreeLibrary(hPatterns);
+}
+
 void CFullScreenWindow::DisplayEramp() 
 {
 	HMODULE hPatterns;
