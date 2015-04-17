@@ -114,6 +114,7 @@ public:
 	void DisplayGradient();
 	void DisplayLramp();
 	void DisplayGranger();
+	void DisplaySpectrum();
 	void DisplayTestimg();
 	void DisplaySramp();
 	void DisplayVSMPTE();

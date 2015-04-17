@@ -429,6 +429,14 @@ void CFullScreenWindow::DisplayGranger()
 	FreeLibrary(hPatterns);
 }
 
+void CFullScreenWindow::DisplaySpectrum() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+	CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_SPECTRUM,TRUE);
+	FreeLibrary(hPatterns);
+}
+
 void CFullScreenWindow::DisplaySramp() 
 {
 	HMODULE hPatterns;

@@ -638,6 +638,17 @@ void CPatternDisplay::OnPatternGranger()
 	FreeLibrary(hPatterns);
 }
 
+void CPatternDisplay::OnPatternSpectrum() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+	m_patternDGenerator->Init();
+	m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_SPECTRUM,TRUE);
+	WaitKey();
+	m_patternDGenerator->Release();
+	FreeLibrary(hPatterns);
+}
+
 void CPatternDisplay::OnPatternSramp() 
 {
 	HMODULE hPatterns;

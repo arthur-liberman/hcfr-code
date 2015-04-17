@@ -117,6 +117,9 @@ BOOL CSensor::Release()
 CColor CSensor::MeasureColor(const ColorRGBDisplay& aRGBValue)
 {
     CColor result(MeasureColorInternal(aRGBValue));
+	result.SetX(max(result.GetX(),0.00000001));
+	result.SetY(max(result.GetY(),0.00000001));
+	result.SetZ(max(result.GetZ(),0.00000001));
     result.applyAdjustmentMatrix(m_sensorToXYZMatrix);
     return result;
 }

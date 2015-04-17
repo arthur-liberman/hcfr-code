@@ -511,6 +511,12 @@ BOOL CGDIGenerator::DisplayGranger()
 	return TRUE;
 }
 
+BOOL CGDIGenerator::DisplaySpectrum()
+{
+	m_displayWindow.DisplaySpectrum();
+	return TRUE;
+}
+
 BOOL CGDIGenerator::DisplaySramp()
 {
 	m_displayWindow.DisplaySramp();
