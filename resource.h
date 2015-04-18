@@ -755,6 +755,12 @@
 #define IDR_PATTERN_TC3v            1312
 #define IDR_PATTERN_TC4v            1313
 #define IDR_PATTERN_TC5v            1314
+#define IDR_PATTERN_DR0            1315
+#define IDR_PATTERN_DR0v            1316
+#define IDR_PATTERN_DR1            1317
+#define IDR_PATTERN_DR1v            1318
+#define IDR_PATTERN_DR2            1319
+#define IDR_PATTERN_DR2v            1320
 #define IDC_COLORTEMPHISTO_GRAPH        11003
 #define IDC_RGBHISTO_GRAPH              11101
 #define IDC_RGBHISTO_GRAPH2             11102
@@ -985,6 +991,9 @@
 #define IDM_PATTERN_TC3       33059
 #define IDM_PATTERN_TC4       33060
 #define IDM_PATTERN_TC5       33061
+#define IDM_PATTERN_DR0       33062
+#define IDM_PATTERN_DR1       33063
+#define IDM_PATTERN_DR2       33064
 #define IDS_LUMINANCEHISTOVIEW_NAME     41446
 #define IDS_COLORTEMPHISTOVIEW_NAME     41447
 #define IDS_RGBHISTOVIEW_NAME           41448
