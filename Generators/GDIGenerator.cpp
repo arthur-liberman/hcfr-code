@@ -571,6 +571,25 @@ BOOL CGDIGenerator::DisplayTC5()
 	return TRUE;
 }
 
+BOOL CGDIGenerator::DisplayDR0()
+{
+	m_displayWindow.DisplayDR0();
+	return TRUE;
+}
+
+BOOL CGDIGenerator::DisplayDR1()
+{
+	m_displayWindow.DisplayDR1();
+	return TRUE;
+}
+
+BOOL CGDIGenerator::DisplayDR2()
+{
+	m_displayWindow.DisplayDR2();
+	return TRUE;
+}
+
+
 BOOL CGDIGenerator::DisplayAlign()
 {
 	m_displayWindow.DisplayAlign();

@@ -253,6 +253,21 @@ BOOL CGenerator::DisplayTC5()
 	return TRUE;	  // need to be overriden
 }
 
+BOOL CGenerator::DisplayDR0()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplayDR1()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplayDR2()
+{
+	return TRUE;	  // need to be overriden
+}
+
 BOOL CGenerator::DisplayAlign()
 {
 	return TRUE;	  // need to be overriden

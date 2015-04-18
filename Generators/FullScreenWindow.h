@@ -126,6 +126,9 @@ public:
 	void DisplayTC3();
 	void DisplayTC4();
 	void DisplayTC5();
+	void DisplayDR0();
+	void DisplayDR1();
+	void DisplayDR2();
 
 	//Patterns
 	void DisplayDotPattern( const ColorRGBDisplay&  clr , BOOL dot2, UINT nPads);

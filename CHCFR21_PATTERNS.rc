@@ -164,8 +164,8 @@ IDR_PATTERN_CONT_20     PATTERN                 "res\\patterns\\contrast_720\\co
 IDR_PATTERN_CONT_30     PATTERN                 "res\\patterns\\contrast_720\\contraste(0-100)1280-720-30-50.png"
 IDR_PATTERN_CONT_40     PATTERN                 "res\\patterns\\contrast_720\\contraste(0-100)1280-720-40-50.png"
 IDR_PATTERN_CONT_50     PATTERN                 "res\\patterns\\contrast_720\\contraste(0-100)1280-720-50-50.png"
-IDR_PATTERN_TESTIMG     PATTERN                 "res\\patterns\\timage.jpg"
-IDR_PATTERN_TESTIMGv     PATTERN                 "res\\patterns\\timagev.jpg"
+IDR_PATTERN_TESTIMG     PATTERN                 "res\\patterns\\skintonep.png"
+IDR_PATTERN_TESTIMGv     PATTERN                 "res\\patterns\\skintonev.png"
 IDR_PATTERN_SMPTE75     PATTERN                 "res\\patterns\\smpte-75-bars1024.png"
 IDR_PATTERN_SMPTE75v	PATTERN					"res\\patterns\\smpte-75-bars1024v.png"
 IDR_PATTERN_1956        PATTERN                 "res\\patterns\\1956.png"
@@ -192,6 +192,12 @@ IDR_PATTERN_TC4        PATTERN                 "res\\patterns\\timecode4.png"
 IDR_PATTERN_TC4v        PATTERN                 "res\\patterns\\timecode4v.png"
 IDR_PATTERN_TC5        PATTERN                 "res\\patterns\\timecode5.png"
 IDR_PATTERN_TC5v        PATTERN                 "res\\patterns\\timecode5v.png"
+IDR_PATTERN_DR0        PATTERN                 "res\\patterns\\dynamicp.png"
+IDR_PATTERN_DR0v        PATTERN                 "res\\patterns\\dynamicv.png"
+IDR_PATTERN_DR1        PATTERN                 "res\\patterns\\dynamic1p.png"
+IDR_PATTERN_DR1v        PATTERN                 "res\\patterns\\dynamic1v.png"
+IDR_PATTERN_DR2        PATTERN                 "res\\patterns\\bkp.png"
+IDR_PATTERN_DR2v        PATTERN                 "res\\patterns\\bkv.png"
 #endif    // French (France) resources
 /////////////////////////////////////////////////////////////////////////////
 

@@ -89,6 +89,9 @@ public:
 	virtual BOOL DisplayTC3();
 	virtual BOOL DisplayTC4();
 	virtual BOOL DisplayTC5();
+	virtual BOOL DisplayDR0();
+	virtual BOOL DisplayDR1();
+	virtual BOOL DisplayDR2();
 	virtual BOOL DisplayDotPattern( const ColorRGBDisplay&  clr , BOOL dot2, UINT nPads);
 	virtual	BOOL DisplayHVLinesPattern( const ColorRGBDisplay&  clr , BOOL dot2, BOOL vLines);
 	virtual BOOL DisplayColorLevelPattern( INT clrLevel , BOOL dot2, UINT nPads);

@@ -1828,11 +1828,11 @@ BEGIN
     END
     POPUP "&Advanced"
     BEGIN
-        POPUP "Test patterns"
+        POPUP "&Test patterns"
         BEGIN
             MENUITEM "Animated black level test pattern", IDM_PATTERN_ANIM_BLACK
             MENUITEM "Animated white level test pattern", IDM_PATTERN_ANIM_WHITE
-            MENUITEM "Neutral Gradient",            IDM_PATTERN_GRADIENT
+            MENUITEM "&Neutral Gradient",            IDM_PATTERN_GRADIENT
             MENUITEM "RGBYCMW Luma Ramps",          IDM_PATTERN_LRAMP
             MENUITEM "RGBYCM Saturation Ramps",     IDM_PATTERN_SRAMP
             MENUITEM "Granger Rainbow",             IDM_PATTERN_GRANGER
@@ -1850,7 +1850,13 @@ BEGIN
                 MENUITEM "00:57:48",                   IDM_PATTERN_TC4
                 MENUITEM "01:30:18",                   IDM_PATTERN_TC5
             END
-            MENUITEM "Evaluation Image",                  IDM_PATTERN_TESTIMG
+            MENUITEM "&Evaluation Image[light skin]",                  IDM_PATTERN_TESTIMG
+            POPUP "Evaluation Images[dynamic range]"
+            BEGIN
+                MENUITEM "DR 1[Dark]",                    IDM_PATTERN_DR0
+                MENUITEM "DR 2[Light]",                   IDM_PATTERN_DR1
+                MENUITEM "Dark Detail",                   IDM_PATTERN_DR2
+            END
             MENUITEM SEPARATOR
             MENUITEM "Additional Patterns",         IDM_PATTERN_DISPLAY
         END
