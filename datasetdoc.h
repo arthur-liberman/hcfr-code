@@ -168,6 +168,7 @@ protected:
 	void CreateGenerator(int aID);
 	void DuplicateSensor(CDataSetDoc * pDoc);
 	void DuplicateGenerator(CDataSetDoc * pDoc);
+	void WaitKey();
 
 	void PerformSimultaneousMeasures ( int nMode );
 	

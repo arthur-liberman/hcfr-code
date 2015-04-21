@@ -2820,10 +2820,31 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 	}
 }
 
-void CDataSetDoc::OnPatternAnimBlack() 
+void CDataSetDoc::WaitKey()
 {
 	BOOL	bKeyTyped = FALSE;
 	MSG		Msg;
+	while ( ! bKeyTyped )
+	{
+		while ( PeekMessage ( & Msg, NULL, WM_KEYDOWN, WM_MOUSELAST, TRUE ) )
+		{
+			if ( Msg.message == WM_KEYDOWN || Msg.message == WM_SYSKEYDOWN)
+			{
+				if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN || Msg.wParam == VK_CONTROL || Msg.wParam == VK_MENU )
+					bKeyTyped = TRUE;
+			}
+			else if ( Msg.message == WM_TIMER )
+			{
+				// Dispatch timer message to allow animation run
+				DispatchMessage ( &Msg );
+			}
+		}
+		Sleep(10);
+	}
+}
+
+void CDataSetDoc::OnPatternAnimBlack() 
+{
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
@@ -2833,28 +2854,7 @@ void CDataSetDoc::OnPatternAnimBlack()
 
 			m_pGenerator->Init();
 			m_pGenerator->DisplayAnimatedBlack();
-
-			while ( ! bKeyTyped )
-			{
-				while ( PeekMessage ( & Msg, NULL, WM_KEYFIRST, WM_MOUSELAST, TRUE ) )
-				{
-					if ( Msg.message == WM_KEYDOWN )
-					{
-						if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
-							bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_LBUTTONDOWN || Msg.message == WM_RBUTTONDOWN )
-					{
-						bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_TIMER )
-					{
-						// Dispatch timer message to allow animation run
-						DispatchMessage ( &Msg );
-					}
-				}
-				Sleep(10);
-			}
+			WaitKey();
 			
 			AfxGetMainWnd () -> EnableWindow ( TRUE );
 			m_pGenerator->Release();
@@ -2868,8 +2868,6 @@ void CDataSetDoc::OnPatternAnimBlack()
 
 void CDataSetDoc::OnPatternAnimWhite() 
 {
-	BOOL	bKeyTyped = FALSE;
-	MSG		Msg;
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
@@ -2880,27 +2878,7 @@ void CDataSetDoc::OnPatternAnimWhite()
 			m_pGenerator->Init();
 			m_pGenerator->DisplayAnimatedWhite();
 
-			while ( ! bKeyTyped )
-			{
-				while ( PeekMessage ( & Msg, NULL, WM_KEYFIRST, WM_MOUSELAST, TRUE ) )
-				{
-					if ( Msg.message == WM_KEYDOWN )
-					{
-						if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
-							bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_LBUTTONDOWN || Msg.message == WM_RBUTTONDOWN )
-					{
-						bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_TIMER )
-					{
-						// Dispatch timer message to allow animation run
-						DispatchMessage ( &Msg );
-					}
-				}
-				Sleep(10);
-			}
+			WaitKey();
 			
 			AfxGetMainWnd () -> EnableWindow ( TRUE );
 			m_pGenerator->Release();
@@ -2914,8 +2892,6 @@ void CDataSetDoc::OnPatternAnimWhite()
 
 void CDataSetDoc::OnPatternGradient() 
 {
-	BOOL	bKeyTyped = FALSE;
-	MSG		Msg;
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
@@ -2924,27 +2900,7 @@ void CDataSetDoc::OnPatternGradient()
 			m_pGenerator->Init();
 			m_pGenerator->DisplayGradient();
 
-			while ( ! bKeyTyped )
-			{
-				while ( PeekMessage ( & Msg, NULL, WM_KEYFIRST, WM_MOUSELAST, TRUE ) )
-				{
-					if ( Msg.message == WM_KEYDOWN )
-					{
-						if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
-							bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_LBUTTONDOWN || Msg.message == WM_RBUTTONDOWN )
-					{
-						bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_TIMER )
-					{
-						// Dispatch timer message to allow animation run
-						DispatchMessage ( &Msg );
-					}
-				}
-				Sleep(10);
-			}
+			WaitKey();
 			
 			AfxGetMainWnd () -> EnableWindow ( TRUE );
 			m_pGenerator->Release();
@@ -2957,8 +2913,6 @@ void CDataSetDoc::OnPatternGradient()
 
 void CDataSetDoc::OnPatternLramp() 
 {
-	BOOL	bKeyTyped = FALSE;
-	MSG		Msg;
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
@@ -2967,27 +2921,7 @@ void CDataSetDoc::OnPatternLramp()
 			m_pGenerator->Init();
 			m_pGenerator->DisplayLramp();
 
-			while ( ! bKeyTyped )
-			{
-				while ( PeekMessage ( & Msg, NULL, WM_KEYFIRST, WM_MOUSELAST, TRUE ) )
-				{
-					if ( Msg.message == WM_KEYDOWN )
-					{
-						if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
-							bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_LBUTTONDOWN || Msg.message == WM_RBUTTONDOWN )
-					{
-						bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_TIMER )
-					{
-						// Dispatch timer message to allow animation run
-						DispatchMessage ( &Msg );
-					}
-				}
-				Sleep(10);
-			}
+			WaitKey();
 			
 			AfxGetMainWnd () -> EnableWindow ( TRUE );
 			m_pGenerator->Release();
@@ -3000,8 +2934,6 @@ void CDataSetDoc::OnPatternLramp()
 
 void CDataSetDoc::OnPatternGranger() 
 {
-	BOOL	bKeyTyped = FALSE;
-	MSG		Msg;
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
@@ -3010,27 +2942,7 @@ void CDataSetDoc::OnPatternGranger()
 			m_pGenerator->Init();
 			m_pGenerator->DisplayGranger();
 
-			while ( ! bKeyTyped )
-			{
-				while ( PeekMessage ( & Msg, NULL, WM_KEYFIRST, WM_MOUSELAST, TRUE ) )
-				{
-					if ( Msg.message == WM_KEYDOWN )
-					{
-						if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
-							bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_LBUTTONDOWN || Msg.message == WM_RBUTTONDOWN )
-					{
-						bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_TIMER )
-					{
-						// Dispatch timer message to allow animation run
-						DispatchMessage ( &Msg );
-					}
-				}
-				Sleep(10);
-			}
+			WaitKey();
 			
 			AfxGetMainWnd () -> EnableWindow ( TRUE );
 			m_pGenerator->Release();
@@ -3043,8 +2955,6 @@ void CDataSetDoc::OnPatternGranger()
 
 void CDataSetDoc::OnPatternTV() 
 {
-	BOOL	bKeyTyped = FALSE;
-	MSG		Msg;
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
@@ -3053,27 +2963,7 @@ void CDataSetDoc::OnPatternTV()
 			m_pGenerator->Init();
 			m_pGenerator->DisplayTV();
 
-			while ( ! bKeyTyped )
-			{
-				while ( PeekMessage ( & Msg, NULL, WM_KEYFIRST, WM_MOUSELAST, TRUE ) )
-				{
-					if ( Msg.message == WM_KEYDOWN )
-					{
-						if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
-							bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_LBUTTONDOWN || Msg.message == WM_RBUTTONDOWN )
-					{
-						bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_TIMER )
-					{
-						// Dispatch timer message to allow animation run
-						DispatchMessage ( &Msg );
-					}
-				}
-				Sleep(10);
-			}
+			WaitKey();
 			
 			AfxGetMainWnd () -> EnableWindow ( TRUE );
 			m_pGenerator->Release();
@@ -3086,8 +2976,6 @@ void CDataSetDoc::OnPatternTV()
 
 void CDataSetDoc::OnPatternSharp() 
 {
-	BOOL	bKeyTyped = FALSE;
-	MSG		Msg;
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
@@ -3096,27 +2984,7 @@ void CDataSetDoc::OnPatternSharp()
 			m_pGenerator->Init();
 			m_pGenerator->DisplaySharp();
 
-			while ( ! bKeyTyped )
-			{
-				while ( PeekMessage ( & Msg, NULL, WM_KEYFIRST, WM_MOUSELAST, TRUE ) )
-				{
-					if ( Msg.message == WM_KEYDOWN )
-					{
-						if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
-							bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_LBUTTONDOWN || Msg.message == WM_RBUTTONDOWN )
-					{
-						bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_TIMER )
-					{
-						// Dispatch tidmer message to allow animation run
-						DispatchMessage ( &Msg );
-					}
-				}
-				Sleep(10);
-			}
+			WaitKey();
 			
 			AfxGetMainWnd () -> EnableWindow ( TRUE );
 			m_pGenerator->Release();
@@ -3129,8 +2997,6 @@ void CDataSetDoc::OnPatternSharp()
 
 void CDataSetDoc::OnPatternClipH() 
 {
-	BOOL	bKeyTyped = FALSE;
-	MSG		Msg;
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
@@ -3139,27 +3005,7 @@ void CDataSetDoc::OnPatternClipH()
 			m_pGenerator->Init();
 			m_pGenerator->DisplayClipH();
 
-			while ( ! bKeyTyped )
-			{
-				while ( PeekMessage ( & Msg, NULL, WM_KEYFIRST, WM_MOUSELAST, TRUE ) )
-				{
-					if ( Msg.message == WM_KEYDOWN )
-					{
-						if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
-							bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_LBUTTONDOWN || Msg.message == WM_RBUTTONDOWN )
-					{
-						bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_TIMER )
-					{
-						// Dispatch timer message to allow animation run
-						DispatchMessage ( &Msg );
-					}
-				}
-				Sleep(10);
-			}
+			WaitKey();
 			
 			AfxGetMainWnd () -> EnableWindow ( TRUE );
 			m_pGenerator->Release();
@@ -3172,8 +3018,6 @@ void CDataSetDoc::OnPatternClipH()
 
 void CDataSetDoc::OnPatternClipL() 
 {
-	BOOL	bKeyTyped = FALSE;
-	MSG		Msg;
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
@@ -3182,27 +3026,7 @@ void CDataSetDoc::OnPatternClipL()
 			m_pGenerator->Init();
 			m_pGenerator->DisplayClipL();
 
-			while ( ! bKeyTyped )
-			{
-				while ( PeekMessage ( & Msg, NULL, WM_KEYFIRST, WM_MOUSELAST, TRUE ) )
-				{
-					if ( Msg.message == WM_KEYDOWN )
-					{
-						if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
-							bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_LBUTTONDOWN || Msg.message == WM_RBUTTONDOWN )
-					{
-						bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_TIMER )
-					{
-						// Dispatch timer message to allow animation run
-						DispatchMessage ( &Msg );
-					}
-				}
-				Sleep(10);
-			}
+			WaitKey();
 			
 			AfxGetMainWnd () -> EnableWindow ( TRUE );
 			m_pGenerator->Release();
@@ -3215,8 +3039,6 @@ void CDataSetDoc::OnPatternClipL()
 
 void CDataSetDoc::OnPatternSpectrum() 
 {
-	BOOL	bKeyTyped = FALSE;
-	MSG		Msg;
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
@@ -3225,27 +3047,7 @@ void CDataSetDoc::OnPatternSpectrum()
 			m_pGenerator->Init();
 			m_pGenerator->DisplaySpectrum();
 
-			while ( ! bKeyTyped )
-			{
-				while ( PeekMessage ( & Msg, NULL, WM_KEYFIRST, WM_MOUSELAST, TRUE ) )
-				{
-					if ( Msg.message == WM_KEYDOWN )
-					{
-						if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
-							bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_LBUTTONDOWN || Msg.message == WM_RBUTTONDOWN )
-					{
-						bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_TIMER )
-					{
-						// Dispatch timer message to allow animation run
-						DispatchMessage ( &Msg );
-					}
-				}
-				Sleep(10);
-			}
+			WaitKey();
 			
 			AfxGetMainWnd () -> EnableWindow ( TRUE );
 			m_pGenerator->Release();
@@ -3258,8 +3060,6 @@ void CDataSetDoc::OnPatternSpectrum()
 
 void CDataSetDoc::OnPatternSramp() 
 {
-	BOOL	bKeyTyped = FALSE;
-	MSG		Msg;
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
@@ -3268,27 +3068,7 @@ void CDataSetDoc::OnPatternSramp()
 			m_pGenerator->Init();
 			m_pGenerator->DisplaySramp();
 
-			while ( ! bKeyTyped )
-			{
-				while ( PeekMessage ( & Msg, NULL, WM_KEYFIRST, WM_MOUSELAST, TRUE ) )
-				{
-					if ( Msg.message == WM_KEYDOWN )
-					{
-						if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
-							bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_LBUTTONDOWN || Msg.message == WM_RBUTTONDOWN )
-					{
-						bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_TIMER )
-					{
-						// Dispatch timer message to allow animation run
-						DispatchMessage ( &Msg );
-					}
-				}
-				Sleep(10);
-			}
+			WaitKey();
 			
 			AfxGetMainWnd () -> EnableWindow ( TRUE );
 			m_pGenerator->Release();
@@ -3301,8 +3081,6 @@ void CDataSetDoc::OnPatternSramp()
 
 void CDataSetDoc::OnPatternVSMPTE() 
 {
-	BOOL	bKeyTyped = FALSE;
-	MSG		Msg;
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
@@ -3311,27 +3089,7 @@ void CDataSetDoc::OnPatternVSMPTE()
 			m_pGenerator->Init();
 			m_pGenerator->DisplayVSMPTE();
 
-			while ( ! bKeyTyped )
-			{
-				while ( PeekMessage ( & Msg, NULL, WM_KEYFIRST, WM_MOUSELAST, TRUE ) )
-				{
-					if ( Msg.message == WM_KEYDOWN )
-					{
-						if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
-							bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_LBUTTONDOWN || Msg.message == WM_RBUTTONDOWN )
-					{
-						bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_TIMER )
-					{
-						// Dispatch timer message to allow animation run
-						DispatchMessage ( &Msg );
-					}
-				}
-				Sleep(10);
-			}
+			WaitKey();
 			
 			AfxGetMainWnd () -> EnableWindow ( TRUE );
 			m_pGenerator->Release();
@@ -3344,8 +3102,6 @@ void CDataSetDoc::OnPatternVSMPTE()
 
 void CDataSetDoc::OnPatternEramp() 
 {
-	BOOL	bKeyTyped = FALSE;
-	MSG		Msg;
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
@@ -3354,27 +3110,7 @@ void CDataSetDoc::OnPatternEramp()
 			m_pGenerator->Init();
 			m_pGenerator->DisplayEramp();
 
-			while ( ! bKeyTyped )
-			{
-				while ( PeekMessage ( & Msg, NULL, WM_KEYFIRST, WM_MOUSELAST, TRUE ) )
-				{
-					if ( Msg.message == WM_KEYDOWN )
-					{
-						if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
-							bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_LBUTTONDOWN || Msg.message == WM_RBUTTONDOWN )
-					{
-						bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_TIMER )
-					{
-						// Dispatch timer message to allow animation run
-						DispatchMessage ( &Msg );
-					}
-				}
-				Sleep(10);
-			}
+			WaitKey();
 			
 			AfxGetMainWnd () -> EnableWindow ( TRUE );
 			m_pGenerator->Release();
@@ -3387,8 +3123,6 @@ void CDataSetDoc::OnPatternEramp()
 
 void CDataSetDoc::OnPatternTC0() 
 {
-	BOOL	bKeyTyped = FALSE;
-	MSG		Msg;
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
@@ -3397,27 +3131,7 @@ void CDataSetDoc::OnPatternTC0()
 			m_pGenerator->Init();
 			m_pGenerator->DisplayTC0();
 
-			while ( ! bKeyTyped )
-			{
-				while ( PeekMessage ( & Msg, NULL, WM_KEYFIRST, WM_MOUSELAST, TRUE ) )
-				{
-					if ( Msg.message == WM_KEYDOWN )
-					{
-						if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
-							bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_LBUTTONDOWN || Msg.message == WM_RBUTTONDOWN )
-					{
-						bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_TIMER )
-					{
-						// Dispatch timer message to allow animation run
-						DispatchMessage ( &Msg );
-					}
-				}
-				Sleep(10);
-			}
+			WaitKey();
 			
 			AfxGetMainWnd () -> EnableWindow ( TRUE );
 			m_pGenerator->Release();
@@ -3430,8 +3144,6 @@ void CDataSetDoc::OnPatternTC0()
 
 void CDataSetDoc::OnPatternTC1() 
 {
-	BOOL	bKeyTyped = FALSE;
-	MSG		Msg;
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
@@ -3440,27 +3152,7 @@ void CDataSetDoc::OnPatternTC1()
 			m_pGenerator->Init();
 			m_pGenerator->DisplayTC1();
 
-			while ( ! bKeyTyped )
-			{
-				while ( PeekMessage ( & Msg, NULL, WM_KEYFIRST, WM_MOUSELAST, TRUE ) )
-				{
-					if ( Msg.message == WM_KEYDOWN )
-					{
-						if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
-							bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_LBUTTONDOWN || Msg.message == WM_RBUTTONDOWN )
-					{
-						bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_TIMER )
-					{
-						// Dispatch timer message to allow animation run
-						DispatchMessage ( &Msg );
-					}
-				}
-				Sleep(10);
-			}
+			WaitKey();
 			
 			AfxGetMainWnd () -> EnableWindow ( TRUE );
 			m_pGenerator->Release();
@@ -3473,8 +3165,6 @@ void CDataSetDoc::OnPatternTC1()
 
 void CDataSetDoc::OnPatternTC2() 
 {
-	BOOL	bKeyTyped = FALSE;
-	MSG		Msg;
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
@@ -3483,27 +3173,7 @@ void CDataSetDoc::OnPatternTC2()
 			m_pGenerator->Init();
 			m_pGenerator->DisplayTC2();
 
-			while ( ! bKeyTyped )
-			{
-				while ( PeekMessage ( & Msg, NULL, WM_KEYFIRST, WM_MOUSELAST, TRUE ) )
-				{
-					if ( Msg.message == WM_KEYDOWN )
-					{
-						if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
-							bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_LBUTTONDOWN || Msg.message == WM_RBUTTONDOWN )
-					{
-						bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_TIMER )
-					{
-						// Dispatch timer message to allow animation run
-						DispatchMessage ( &Msg );
-					}
-				}
-				Sleep(10);
-			}
+			WaitKey();
 			
 			AfxGetMainWnd () -> EnableWindow ( TRUE );
 			m_pGenerator->Release();
@@ -3516,8 +3186,6 @@ void CDataSetDoc::OnPatternTC2()
 
 void CDataSetDoc::OnPatternTC3() 
 {
-	BOOL	bKeyTyped = FALSE;
-	MSG		Msg;
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
@@ -3526,27 +3194,7 @@ void CDataSetDoc::OnPatternTC3()
 			m_pGenerator->Init();
 			m_pGenerator->DisplayTC3();
 
-			while ( ! bKeyTyped )
-			{
-				while ( PeekMessage ( & Msg, NULL, WM_KEYFIRST, WM_MOUSELAST, TRUE ) )
-				{
-					if ( Msg.message == WM_KEYDOWN )
-					{
-						if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
-							bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_LBUTTONDOWN || Msg.message == WM_RBUTTONDOWN )
-					{
-						bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_TIMER )
-					{
-						// Dispatch timer message to allow animation run
-						DispatchMessage ( &Msg );
-					}
-				}
-				Sleep(10);
-			}
+			WaitKey();
 			
 			AfxGetMainWnd () -> EnableWindow ( TRUE );
 			m_pGenerator->Release();
@@ -3559,8 +3207,6 @@ void CDataSetDoc::OnPatternTC3()
 
 void CDataSetDoc::OnPatternTC4() 
 {
-	BOOL	bKeyTyped = FALSE;
-	MSG		Msg;
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
@@ -3569,27 +3215,7 @@ void CDataSetDoc::OnPatternTC4()
 			m_pGenerator->Init();
 			m_pGenerator->DisplayTC4();
 
-			while ( ! bKeyTyped )
-			{
-				while ( PeekMessage ( & Msg, NULL, WM_KEYFIRST, WM_MOUSELAST, TRUE ) )
-				{
-					if ( Msg.message == WM_KEYDOWN )
-					{
-						if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
-							bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_LBUTTONDOWN || Msg.message == WM_RBUTTONDOWN )
-					{
-						bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_TIMER )
-					{
-						// Dispatch timer message to allow animation run
-						DispatchMessage ( &Msg );
-					}
-				}
-				Sleep(10);
-			}
+			WaitKey();
 			
 			AfxGetMainWnd () -> EnableWindow ( TRUE );
 			m_pGenerator->Release();
@@ -3602,8 +3228,6 @@ void CDataSetDoc::OnPatternTC4()
 
 void CDataSetDoc::OnPatternTC5() 
 {
-	BOOL	bKeyTyped = FALSE;
-	MSG		Msg;
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
@@ -3612,27 +3236,7 @@ void CDataSetDoc::OnPatternTC5()
 			m_pGenerator->Init();
 			m_pGenerator->DisplayTC5();
 
-			while ( ! bKeyTyped )
-			{
-				while ( PeekMessage ( & Msg, NULL, WM_KEYFIRST, WM_MOUSELAST, TRUE ) )
-				{
-					if ( Msg.message == WM_KEYDOWN )
-					{
-						if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
-							bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_LBUTTONDOWN || Msg.message == WM_RBUTTONDOWN )
-					{
-						bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_TIMER )
-					{
-						// Dispatch timer message to allow animation run
-						DispatchMessage ( &Msg );
-					}
-				}
-				Sleep(10);
-			}
+			WaitKey();
 			
 			AfxGetMainWnd () -> EnableWindow ( TRUE );
 			m_pGenerator->Release();
@@ -3645,8 +3249,6 @@ void CDataSetDoc::OnPatternTC5()
 
 void CDataSetDoc::OnPatternDR0() 
 {
-	BOOL	bKeyTyped = FALSE;
-	MSG		Msg;
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
@@ -3655,27 +3257,7 @@ void CDataSetDoc::OnPatternDR0()
 			m_pGenerator->Init();
 			m_pGenerator->DisplayDR0();
 
-			while ( ! bKeyTyped )
-			{
-				while ( PeekMessage ( & Msg, NULL, WM_KEYFIRST, WM_MOUSELAST, TRUE ) )
-				{
-					if ( Msg.message == WM_KEYDOWN )
-					{
-						if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
-							bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_LBUTTONDOWN || Msg.message == WM_RBUTTONDOWN )
-					{
-						bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_TIMER )
-					{
-						// Dispatch timer message to allow animation run
-						DispatchMessage ( &Msg );
-					}
-				}
-				Sleep(10);
-			}
+			WaitKey();
 			
 			AfxGetMainWnd () -> EnableWindow ( TRUE );
 			m_pGenerator->Release();
@@ -3688,8 +3270,6 @@ void CDataSetDoc::OnPatternDR0()
 
 void CDataSetDoc::OnPatternDR1() 
 {
-	BOOL	bKeyTyped = FALSE;
-	MSG		Msg;
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
@@ -3698,27 +3278,7 @@ void CDataSetDoc::OnPatternDR1()
 			m_pGenerator->Init();
 			m_pGenerator->DisplayDR1();
 
-			while ( ! bKeyTyped )
-			{
-				while ( PeekMessage ( & Msg, NULL, WM_KEYFIRST, WM_MOUSELAST, TRUE ) )
-				{
-					if ( Msg.message == WM_KEYDOWN )
-					{
-						if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
-							bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_LBUTTONDOWN || Msg.message == WM_RBUTTONDOWN )
-					{
-						bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_TIMER )
-					{
-						// Dispatch timer message to allow animation run
-						DispatchMessage ( &Msg );
-					}
-				}
-				Sleep(10);
-			}
+			WaitKey();
 			
 			AfxGetMainWnd () -> EnableWindow ( TRUE );
 			m_pGenerator->Release();
@@ -3731,8 +3291,6 @@ void CDataSetDoc::OnPatternDR1()
 
 void CDataSetDoc::OnPatternDR2() 
 {
-	BOOL	bKeyTyped = FALSE;
-	MSG		Msg;
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
@@ -3741,27 +3299,7 @@ void CDataSetDoc::OnPatternDR2()
 			m_pGenerator->Init();
 			m_pGenerator->DisplayDR2();
 
-			while ( ! bKeyTyped )
-			{
-				while ( PeekMessage ( & Msg, NULL, WM_KEYFIRST, WM_MOUSELAST, TRUE ) )
-				{
-					if ( Msg.message == WM_KEYDOWN )
-					{
-						if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
-							bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_LBUTTONDOWN || Msg.message == WM_RBUTTONDOWN )
-					{
-						bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_TIMER )
-					{
-						// Dispatch timer message to allow animation run
-						DispatchMessage ( &Msg );
-					}
-				}
-				Sleep(10);
-			}
+			WaitKey();
 			
 			AfxGetMainWnd () -> EnableWindow ( TRUE );
 			m_pGenerator->Release();
@@ -3774,8 +3312,6 @@ void CDataSetDoc::OnPatternDR2()
 
 void CDataSetDoc::OnPatternAlign() 
 {
-	BOOL	bKeyTyped = FALSE;
-	MSG		Msg;
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
@@ -3784,27 +3320,7 @@ void CDataSetDoc::OnPatternAlign()
 			m_pGenerator->Init();
 			m_pGenerator->DisplayAlign();
 
-			while ( ! bKeyTyped )
-			{
-				while ( PeekMessage ( & Msg, NULL, WM_KEYFIRST, WM_MOUSELAST, TRUE ) )
-				{
-					if ( Msg.message == WM_KEYDOWN )
-					{
-						if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
-							bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_LBUTTONDOWN || Msg.message == WM_RBUTTONDOWN )
-					{
-						bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_TIMER )
-					{
-						// Dispatch timer message to allow animation run
-						DispatchMessage ( &Msg );
-					}
-				}
-				Sleep(10);
-			}
+			WaitKey();
 			
 			AfxGetMainWnd () -> EnableWindow ( TRUE );
 			m_pGenerator->Release();
@@ -3817,8 +3333,6 @@ void CDataSetDoc::OnPatternAlign()
 
 void CDataSetDoc::OnPatternTestimg() 
 {
-	BOOL	bKeyTyped = FALSE;
-	MSG		Msg;
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
@@ -3827,27 +3341,7 @@ void CDataSetDoc::OnPatternTestimg()
 			m_pGenerator->Init();
 			m_pGenerator->DisplayTestimg();
 
-			while ( ! bKeyTyped )
-			{
-				while ( PeekMessage ( & Msg, NULL, WM_KEYFIRST, WM_MOUSELAST, TRUE ) )
-				{
-					if ( Msg.message == WM_KEYDOWN )
-					{
-						if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
-							bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_LBUTTONDOWN || Msg.message == WM_RBUTTONDOWN )
-					{
-						bKeyTyped = TRUE;
-					}
-					else if ( Msg.message == WM_TIMER )
-					{
-						// Dispatch timer message to allow animation run
-						DispatchMessage ( &Msg );
-					}
-				}
-				Sleep(10);
-			}
+			WaitKey();
 			
 			AfxGetMainWnd () -> EnableWindow ( TRUE );
 			m_pGenerator->Release();
