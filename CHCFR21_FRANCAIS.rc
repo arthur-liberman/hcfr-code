@@ -1598,6 +1598,7 @@ BEGIN
     "1",            IDM_PATTERN_SHARP,      VIRTKEY, CONTROL, NOINVERT
     "2",            IDM_PATTERN_CLIPL,      VIRTKEY, CONTROL, NOINVERT
     "3",            IDM_PATTERN_CLIPH,      VIRTKEY, CONTROL, NOINVERT
+    "0",            IDM_PATTERN_TV,      VIRTKEY, ALT, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
     "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT

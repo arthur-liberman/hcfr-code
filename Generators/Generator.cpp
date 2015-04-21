@@ -207,6 +207,11 @@ BOOL CGenerator::DisplayGranger()
 	return TRUE;	  // need to be overriden
 }
 
+BOOL CGenerator::DisplayTV()
+{
+	return TRUE;	  // need to be overriden
+}
+
 BOOL CGenerator::DisplaySpectrum()
 {
 	return TRUE;	  // need to be overriden

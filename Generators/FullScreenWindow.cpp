@@ -570,6 +570,17 @@ void CFullScreenWindow::DisplaySharp()
 	FreeLibrary(hPatterns);
 }
 
+void CFullScreenWindow::DisplayTV() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+	if (m_b16_235)
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_TVv,TRUE);
+	else
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_TV,TRUE);
+	FreeLibrary(hPatterns);
+}
+
 void CFullScreenWindow::DisplayClipL() 
 {
 	HMODULE hPatterns;
@@ -951,9 +962,9 @@ void CFullScreenWindow::OnPaint()
 
 		CxImage* newImage = new CxImage();
 		HRSRC hRsrc = ::FindResource(m_hPatternInst,MAKEINTRESOURCE(m_uiPictRess),"PATTERN");
-//		if (m_uiPictRess == IDR_PATTERN_TESTIMG || m_uiPictRess == IDR_PATTERN_TESTIMGv)
-//			newImage->LoadResource(hRsrc,CXIMAGE_FORMAT_JPG,m_hPatternInst);   
-//		else
+		if (m_uiPictRess == IDR_PATTERN_TV || m_uiPictRess == IDR_PATTERN_TVv)
+			newImage->LoadResource(hRsrc,CXIMAGE_FORMAT_JPG,m_hPatternInst);   
+		else
 			newImage->LoadResource(hRsrc,CXIMAGE_FORMAT_PNG,m_hPatternInst);  
 		
 		if (m_bResizePict) {

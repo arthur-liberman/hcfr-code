@@ -114,6 +114,7 @@ public:
 	virtual BOOL DisplaySharp();				// need to be overriden
 	virtual BOOL DisplayClipL();				// need to be overriden
 	virtual BOOL DisplayClipH();				// need to be overriden
+	virtual BOOL DisplayTV();				// need to be overriden
 	virtual BOOL DisplayDotPattern(const ColorRGBDisplay& clr , BOOL dot2, UINT nPads)  { return TRUE; };
 	virtual BOOL DisplayHVLinesPattern(const ColorRGBDisplay& clr , BOOL dot2, BOOL vLines)  { return TRUE; };
 	virtual BOOL DisplayColorLevelPattern( INT clrLevel , BOOL dot2, UINT nPads) { return TRUE; };

@@ -202,6 +202,8 @@ IDR_PATTERN_SHARP        PATTERN                 "res\\patterns\\sharp.png"
 IDR_PATTERN_SHARPv        PATTERN                 "res\\patterns\\sharpv.png"
 IDR_PATTERN_CLIPH        PATTERN                 "res\\patterns\\cliph.png"
 IDR_PATTERN_CLIPL        PATTERN                 "res\\patterns\\clipl.png"
+IDR_PATTERN_TV        PATTERN                 "res\\patterns\\tvtest.jpg"
+IDR_PATTERN_TVv        PATTERN                 "res\\patterns\\tvtestv.jpg"
 #endif    // French (France) resourcesdi
 /////////////////////////////////////////////////////////////////////////////
 

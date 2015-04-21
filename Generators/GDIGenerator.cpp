@@ -522,6 +522,12 @@ BOOL CGDIGenerator::DisplayGranger()
 	return TRUE;
 }
 
+BOOL CGDIGenerator::DisplayTV()
+{
+	m_displayWindow.DisplayTV();
+	return TRUE;
+}
+
 BOOL CGDIGenerator::DisplaySpectrum()
 {
 	m_displayWindow.DisplaySpectrum();
