@@ -213,6 +213,7 @@ BOOL CReferencesPropPage::OnInitDialog()
 	CPropertyPageWithHelp::OnInitDialog();
 
 	// TODO: Add extra initialization here
+	m_GammaAvgEdit.EnableWindow(FALSE);
 	m_changeWhiteCheck = (m_whiteTarget!=(int)(GetStandardColorReference((ColorStandard)(m_colorStandard)).m_white));
 	if(m_changeWhiteCheck)
 	{
