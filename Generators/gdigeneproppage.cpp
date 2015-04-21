@@ -48,6 +48,7 @@ CGDIGenePropPage::CGDIGenePropPage() : CPropertyPageWithHelp(CGDIGenePropPage::I
 	m_activeMonitorNum = 0;
 	m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI);
 	m_b16_235 = FALSE;
+	m_busePic = FALSE;
     m_madVR_3d = FALSE;
     m_madVR_vLUT = FALSE;
 	m_madVR_OSD = FALSE;
@@ -65,6 +66,7 @@ void CGDIGenePropPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_MONITOR_COMBO, m_monitorComboCtrl);
     DDX_Control(pDX, IDC_MADVR_3D2, m_madVREdit2);    
     DDX_Control(pDX, IDC_MADVR_OSD, m_madVREdit3);    
+    DDX_Control(pDX, IDC_USEPIC, m_usePicEdit);    
 	DDX_Text(pDX, IDC_PATTERNSIZE_EDIT, m_rectSizePercent);
 	DDX_Text(pDX, IDC_BGSTIM_EDIT, m_bgStimPercent);
 	DDX_Text(pDX, IDC_INTENSITY_EDIT, m_Intensity);
@@ -74,6 +76,7 @@ void CGDIGenePropPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_MADVR_3D, m_madVR_3d);
 	DDX_Check(pDX, IDC_MADVR_3D2, m_madVR_vLUT);
 	DDX_Check(pDX, IDC_MADVR_OSD, m_madVR_OSD);
+	DDX_Check(pDX, IDC_USEPIC, m_busePic);
 	//}}AFX_DATA_MAP
 }
 
@@ -94,8 +97,6 @@ END_MESSAGE_MAP()
 void CGDIGenePropPage::OnOK() 
 {
 	m_activeMonitorNum=m_monitorComboCtrl.GetCurSel();	
-//	CDataSetDoc * pDoc;
-//	pDoc = ( CDataSetDoc * ) pActiveMDI -> GetActiveDocument ();
 	if ( IsDlgButtonChecked ( IDC_RADIO2 ) )
 		m_nDisplayMode = DISPLAY_OVERLAY;
 
@@ -114,7 +115,6 @@ void CGDIGenePropPage::OnOK()
 		m_b16_235 = FALSE;
 
 	CPropertyPageWithHelp::OnOK();
-//	pDoc->UpdateAllViews(NULL);
 }
 
 BOOL CGDIGenePropPage::OnSetActive() 
@@ -176,6 +176,7 @@ BOOL CGDIGenePropPage::OnKillActive()
 	{
 		m_b16_235 = FALSE;
 	}
+
 	return CPropertyPageWithHelp::OnKillActive();
 }
 

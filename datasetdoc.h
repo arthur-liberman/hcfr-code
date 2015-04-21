@@ -214,6 +214,9 @@ protected:
 	afx_msg void OnPatternDR0();
 	afx_msg void OnPatternDR1();
 	afx_msg void OnPatternDR2();
+	afx_msg void OnPatternSharp();
+	afx_msg void OnPatternClipL();
+	afx_msg void OnPatternClipH();
 	afx_msg void OnSingleMeasurement();
 	afx_msg void OnContinuousMeasurement();
 	afx_msg void OnMeasureGrayscale();

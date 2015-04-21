@@ -67,6 +67,7 @@ public:
 	UINT nMeasureNumber;
 	BOOL m_doScreenBlanking;
 	BOOL m_b16_235;
+	BOOL m_busePic;
     BOOL m_madVR_3d;
     BOOL m_madVR_vLUT;
 	BOOL m_madVR_OSD;
@@ -110,6 +111,9 @@ public:
 	virtual BOOL DisplayDR0();				// need to be overriden
 	virtual BOOL DisplayDR1();				// need to be overriden
 	virtual BOOL DisplayDR2();				// need to be overriden
+	virtual BOOL DisplaySharp();				// need to be overriden
+	virtual BOOL DisplayClipL();				// need to be overriden
+	virtual BOOL DisplayClipH();				// need to be overriden
 	virtual BOOL DisplayDotPattern(const ColorRGBDisplay& clr , BOOL dot2, UINT nPads)  { return TRUE; };
 	virtual BOOL DisplayHVLinesPattern(const ColorRGBDisplay& clr , BOOL dot2, BOOL vLines)  { return TRUE; };
 	virtual BOOL DisplayColorLevelPattern( INT clrLevel , BOOL dot2, UINT nPads) { return TRUE; };

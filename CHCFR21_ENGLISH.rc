@@ -384,26 +384,27 @@ STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Display"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    LTEXT           "Target screen:",IDC_STATIC,9,11,59,9
-    COMBOBOX        IDC_MONITOR_COMBO,87,8,89,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    LTEXT           "Image area [%]",IDC_STATIC,10,30,53,8
-    EDITTEXT        IDC_PATTERNSIZE_EDIT,60,28,20,12,ES_AUTOHSCROLL | WS_GROUP
-    LTEXT           "APL (video) level [%]",IDC_STATIC,86,30,75,8
-    EDITTEXT        IDC_BGSTIM_EDIT,156,28,20,12,ES_AUTOHSCROLL | WS_GROUP
-    LTEXT           "Pattern Intensity [%]",IDC_STATIC,86,40,75,8
-    EDITTEXT        IDC_INTENSITY_EDIT,156,38,20,12,ES_AUTOHSCROLL | WS_GROUP
+    LTEXT           "Target screen:",IDC_STATIC,9,7,59,9
+    COMBOBOX        IDC_MONITOR_COMBO,61,5,89,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    LTEXT           "Image area [%]",IDC_STATIC,11,24,53,8
+    EDITTEXT        IDC_PATTERNSIZE_EDIT,60,22,20,12,ES_AUTOHSCROLL | WS_GROUP
+    LTEXT           "APL (video) level [%]",IDC_STATIC,86,24,75,8
+    EDITTEXT        IDC_BGSTIM_EDIT,156,22,20,12,ES_AUTOHSCROLL | WS_GROUP
+    LTEXT           "Pattern Intensity [%]",IDC_STATIC,86,37,75,8
+    EDITTEXT        IDC_INTENSITY_EDIT,156,35,20,12,ES_AUTOHSCROLL | WS_GROUP
     GROUPBOX        "Display mode",IDC_STATIC,9,48,177,43,WS_GROUP
     CONTROL         "GDI",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,59,29,10
-    CONTROL         "Overlay",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,44,59,40,10
+    CONTROL         "Overlay",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON | NOT WS_VISIBLE | WS_DISABLED,13,80,40,10
     CONTROL         "madTPG",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,100,54,43,10
-    CONTROL         "GDI(no background)",IDC_RADIO4,"Button",BS_AUTORADIOBUTTON,13,71,80,10
-    PUSHBUTTON      "Test Overlay",IDC_OVERLAY,118,105,51,12,WS_GROUP
+    CONTROL         "GDI(no background)",IDC_RADIO4,"Button",BS_AUTORADIOBUTTON,13,69,80,10
+    PUSHBUTTON      "Test Overlay",IDC_OVERLAY,118,105,51,12,NOT WS_VISIBLE | WS_DISABLED | WS_GROUP
     GROUPBOX        "Gray Scale (GDI)",IDC_STATIC_GROUP,9,96,167,43,WS_GROUP
     CONTROL         "0 - 255",IDC_RGBLEVEL_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,107,38,10
     CONTROL         "16 - 235",IDC_RGBLEVEL_RADIO2,"Button",BS_AUTORADIOBUTTON,69,107,42,10
     CONTROL         "disable 3dLUT",IDC_MADVR_3D,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,100,64,70,13
     CONTROL         "disable video LUT",IDC_MADVR_3D2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,100,76,69,13
     CONTROL         "OSD",IDC_MADVR_OSD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,53,31,13
+    CONTROL         "Image background",IDC_USEPIC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,35,73,13
 END
 
 IDD_APPEARANCE_PROP_PAGE DIALOGEX 0, 0, 214, 166
@@ -1443,14 +1444,17 @@ END
 
 IDR_MAINFRAME ACCELERATORS
 BEGIN
-    "2",            IDM_PATTERN_GRADIENT,           VIRTKEY, ALT, NOINVERT
-    "5",            IDM_PATTERN_TESTIMG,           VIRTKEY, ALT,NOINVERT
-    "6",            IDM_PATTERN_TC3,           VIRTKEY, ALT,NOINVERT
-    "1",            IDM_PATTERN_ALIGN,           VIRTKEY, ALT,NOINVERT
-    "3",            IDM_PATTERN_LRAMP,           VIRTKEY, ALT,NOINVERT
-    "4",            IDM_PATTERN_SPECTRUM,           VIRTKEY, ALT,NOINVERT
-    "8",            IDM_PATTERN_GRANGER,           VIRTKEY, ALT,NOINVERT
-    "7",            IDM_PATTERN_DR2,           VIRTKEY, ALT,NOINVERT
+    "2",            IDM_PATTERN_GRADIENT,   VIRTKEY, ALT, NOINVERT
+    "5",            IDM_PATTERN_TESTIMG,    VIRTKEY, ALT, NOINVERT
+    "6",            IDM_PATTERN_TC3,        VIRTKEY, ALT, NOINVERT
+    "1",            IDM_PATTERN_ALIGN,      VIRTKEY, ALT, NOINVERT
+    "3",            IDM_PATTERN_LRAMP,      VIRTKEY, ALT, NOINVERT
+    "4",            IDM_PATTERN_SPECTRUM,   VIRTKEY, ALT, NOINVERT
+    "8",            IDM_PATTERN_GRANGER,    VIRTKEY, ALT, NOINVERT
+    "7",            IDM_PATTERN_DR2,        VIRTKEY, ALT, NOINVERT
+    "1",            IDM_PATTERN_SHARP,      VIRTKEY, CONTROL, NOINVERT
+    "2",            IDM_PATTERN_CLIPL,      VIRTKEY, CONTROL, NOINVERT
+    "3",            IDM_PATTERN_CLIPH,      VIRTKEY, CONTROL, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
     "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
@@ -1840,30 +1844,33 @@ BEGIN
         BEGIN
             MENUITEM "Animated black level test pattern", IDM_PATTERN_ANIM_BLACK
             MENUITEM "Animated white level test pattern", IDM_PATTERN_ANIM_WHITE
-            MENUITEM "&Neutral Gradient",            IDM_PATTERN_GRADIENT
+            MENUITEM "&Neutral Gradient",           IDM_PATTERN_GRADIENT
+            MENUITEM "&Clipping low",               IDM_PATTERN_CLIPL
+            MENUITEM "C&lipping high",              IDM_PATTERN_CLIPH
             MENUITEM "RGBYCMW Luma Ramps",          IDM_PATTERN_LRAMP
             MENUITEM "RGBYCM Saturation Ramps",     IDM_PATTERN_SRAMP
             MENUITEM "Granger Rainbow",             IDM_PATTERN_GRANGER
             MENUITEM "Light/Dark Spectrum",         IDM_PATTERN_SPECTRUM
             MENUITEM "VSMPTE133",                   IDM_PATTERN_VSMPTE
+            MENUITEM "&Sharpness/Overscan",         IDM_PATTERN_SHARP
             MENUITEM "Alignment",                   IDM_PATTERN_ALIGN
             MENUITEM "Elliptical Ramp",             IDM_PATTERN_ERAMP
             MENUITEM SEPARATOR
             POPUP "Evaluation Sequence(Casino Royale)"
             BEGIN
                 MENUITEM "00:01:17",                    IDM_PATTERN_TC0
-                MENUITEM "00:25:41",                   IDM_PATTERN_TC1
-                MENUITEM "00:25:48",                   IDM_PATTERN_TC2
-                MENUITEM "00:35:37",                   IDM_PATTERN_TC3
-                MENUITEM "00:57:48",                   IDM_PATTERN_TC4
-                MENUITEM "01:30:18",                   IDM_PATTERN_TC5
+                MENUITEM "00:25:41",                    IDM_PATTERN_TC1
+                MENUITEM "00:25:48",                    IDM_PATTERN_TC2
+                MENUITEM "00:35:37",                    IDM_PATTERN_TC3
+                MENUITEM "00:57:48",                    IDM_PATTERN_TC4
+                MENUITEM "01:30:18",                    IDM_PATTERN_TC5
             END
-            MENUITEM "&Evaluation Image[light skin]",                  IDM_PATTERN_TESTIMG
+            MENUITEM "&Evaluation Image[light skin]", IDM_PATTERN_TESTIMG
             POPUP "Evaluation Images[dynamic range]"
             BEGIN
-                MENUITEM "DR 1[Dark]",                    IDM_PATTERN_DR0
-                MENUITEM "DR 2[Light]",                   IDM_PATTERN_DR1
-                MENUITEM "Dark Detail",                   IDM_PATTERN_DR2
+                MENUITEM "DR 1[Dark]",                  IDM_PATTERN_DR0
+                MENUITEM "DR 2[Light]",                 IDM_PATTERN_DR1
+                MENUITEM "Dark Detail",                 IDM_PATTERN_DR2
             END
             MENUITEM SEPARATOR
             MENUITEM "Additional Patterns",         IDM_PATTERN_DISPLAY

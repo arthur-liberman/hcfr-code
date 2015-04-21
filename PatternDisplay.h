@@ -103,15 +103,7 @@ protected:
     afx_msg void OnPatternPictAnsi1();
     afx_msg void OnPatternPictAnsi2();
     afx_msg void OnPatternPictCBox();
-    afx_msg void OnPatternGradient();
-    afx_msg void OnPatternLramp();
-    afx_msg void OnPatternGranger();
-    afx_msg void OnPatternSpectrum();
-    afx_msg void OnPatternSramp();
     afx_msg void OnPatternTestimg();
-    afx_msg void OnPatternVSMPTE();
-    afx_msg void OnPatternEramp();
-    afx_msg void OnPatternAlign();
 	afx_msg void OnHelp();
 	afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
 	//}}AFX_MSG

@@ -66,6 +66,7 @@ void CGenerator::Copy(CGenerator * p)
 	m_doScreenBlanking = p->m_doScreenBlanking;
 	m_name = p->m_name;
 	m_b16_235 = p->m_b16_235;
+	m_busePic = p->m_busePic;
 }
 
 void CGenerator::Serialize(CArchive& archive)
@@ -73,20 +74,23 @@ void CGenerator::Serialize(CArchive& archive)
 	CObject::Serialize(archive) ;
 	if (archive.IsStoring())
 	{
-		int version=2;
+		int version=3;
 		archive << version;
 		archive << m_doScreenBlanking;
 		archive << m_b16_235;
+		archive << m_busePic;
 	}
 	else
 	{
 		int version;
 		archive >> version;
-		if ( version > 2 )
+		if ( version > 3 )
 			AfxThrowArchiveException ( CArchiveException::badSchema );
 		archive >> m_doScreenBlanking;
 		if ( version > 1 )
 			archive >> m_b16_235;
+		if ( version > 2 )
+			archive >> m_busePic;
 	}
 }
 
@@ -269,6 +273,21 @@ BOOL CGenerator::DisplayDR2()
 }
 
 BOOL CGenerator::DisplayAlign()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplaySharp()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplayClipH()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplayClipL()
 {
 	return TRUE;	  // need to be overriden
 }

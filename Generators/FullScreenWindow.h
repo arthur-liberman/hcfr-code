@@ -54,6 +54,7 @@ public:
 	BOOL					m_bDisableCursorHiding;
 	BOOL					m_bIRE;
 	BOOL					m_b16_235;
+	BOOL					m_busePic;
 
 	BOOL					m_bTestOverlay;
 	LPDIRECTDRAW			m_lpDD;
@@ -129,6 +130,9 @@ public:
 	void DisplayDR0();
 	void DisplayDR1();
 	void DisplayDR2();
+	void DisplaySharp();
+	void DisplayClipL();
+	void DisplayClipH();
 
 	//Patterns
 	void DisplayDotPattern( const ColorRGBDisplay&  clr , BOOL dot2, UINT nPads);

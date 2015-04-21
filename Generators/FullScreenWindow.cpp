@@ -50,6 +50,7 @@ CFullScreenWindow::CFullScreenWindow(BOOL bTestOverlay)
 	m_nDisplayMode = DISPLAY_GDI;
 	m_bDisableCursorHiding = FALSE;
 	m_b16_235 = GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0);
+	m_busePic = GetConfig()->GetProfileInt("GDIGenerator","USEPIC",0);
 
 	// Overlay data
 	m_lpDD = NULL;
@@ -558,6 +559,33 @@ void CFullScreenWindow::DisplayDR2()
 	FreeLibrary(hPatterns);
 }
 
+void CFullScreenWindow::DisplaySharp() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+	if (m_b16_235)
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_SHARPv,TRUE);
+	else
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_SHARP,TRUE);
+	FreeLibrary(hPatterns);
+}
+
+void CFullScreenWindow::DisplayClipL() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_CLIPL,TRUE);
+	FreeLibrary(hPatterns);
+}
+
+void CFullScreenWindow::DisplayClipH() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_CLIPH,TRUE);
+	FreeLibrary(hPatterns);
+}
+
 void CFullScreenWindow::DisplayEramp() 
 {
 	HMODULE hPatterns;
@@ -679,6 +707,8 @@ void CFullScreenWindow::OnPaint()
 	CBrush		brush;
 	CPaintDC	dc(this); // device context for painting
 	BOOL	isSpecial = (m_bPatternMode || m_bHLines || m_bVLines || m_bGeom || m_bConv || m_bColorPattern || m_bColorLevel || m_bPatternPict || m_bAnimated);
+	m_busePic = GetConfig()->GetProfileInt("GDIGenerator","USEPIC",0);
+
 	GetClientRect ( &rect );
 	double m_rectAreaPercent, borderArea;
     double bgstim = m_bgStimPercent / 100.;
@@ -767,7 +797,7 @@ void CFullScreenWindow::OnPaint()
 
 		if(m_rectSizePercent < 100 && !isSpecial)  // Need to draw background and border
 		{
-			if (m_nDisplayMode != DISPLAY_GDI_nBG )
+			if (m_nDisplayMode != DISPLAY_GDI_nBG && !m_busePic)
 			{
                 double R1,G1,B1;
                 //subtract window area and border area
@@ -827,6 +857,26 @@ void CFullScreenWindow::OnPaint()
 				brush.DeleteObject ();
 				Sleep(1000);
 			}
+		}
+
+		if (m_busePic)
+		{
+			CRect		aRect;
+			HMODULE hPatterns;
+			hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+			HRSRC hRsrc;
+
+			CxImage* newImage = new CxImage();
+			if (m_b16_235)
+				hRsrc = ::FindResource(hPatterns,MAKEINTRESOURCE(IDR_PATTERN_TESTIMGv),"PATTERN");
+			else
+				hRsrc = ::FindResource(hPatterns,MAKEINTRESOURCE(IDR_PATTERN_TESTIMG),"PATTERN");
+
+			newImage->LoadResource(hRsrc, CXIMAGE_FORMAT_PNG, hPatterns);  
+		
+			SetRect ( &aRect, 0, 0, rect.Width(), rect.Height());
+			newImage->Draw(dc,aRect);
+			delete newImage;
 		}
 
 		brush.CreateSolidBrush ( DisplayColor );

@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by CHCFR21_ENGLISH.rc
+// Used by CHCFR21_FRANCAIS.rc
 //
 #define IDS_STRING_VERSION              1
 #define IDS_STRING_VERSION_WEB          2
@@ -731,6 +731,7 @@
 #define IDC_BLUE_Y                      1288
 #define IDC_MADVR_OSD                   1289
 #define IDR_PATTERN_SMPTE75v            1290
+#define IDC_MADVR_OSD2                  1290
 #define IDR_PATTERN_1956v               1291
 #define IDR_PATTERN_TESTIMGv            1292
 #define IDR_PATTERN_GRADIENT            1293
@@ -743,24 +744,29 @@
 #define IDR_PATTERN_ERAMP               1300
 #define IDR_PATTERN_ALIGN               1301
 #define IDR_PATTERN_SPECTRUM            1302
-#define IDR_PATTERN_TC0            1303
-#define IDR_PATTERN_TC1            1304
-#define IDR_PATTERN_TC2            1305
-#define IDR_PATTERN_TC3            1306
-#define IDR_PATTERN_TC4            1307
-#define IDR_PATTERN_TC5            1308
-#define IDR_PATTERN_TC0v            1309
-#define IDR_PATTERN_TC1v           1310
-#define IDR_PATTERN_TC2v            1311
-#define IDR_PATTERN_TC3v            1312
-#define IDR_PATTERN_TC4v            1313
-#define IDR_PATTERN_TC5v            1314
-#define IDR_PATTERN_DR0            1315
-#define IDR_PATTERN_DR0v            1316
-#define IDR_PATTERN_DR1            1317
-#define IDR_PATTERN_DR1v            1318
-#define IDR_PATTERN_DR2            1319
-#define IDR_PATTERN_DR2v            1320
+#define IDR_PATTERN_TC0                 1303
+#define IDR_PATTERN_TC1                 1304
+#define IDR_PATTERN_TC2                 1305
+#define IDR_PATTERN_TC3                 1306
+#define IDR_PATTERN_TC4                 1307
+#define IDR_PATTERN_TC5                 1308
+#define IDR_PATTERN_TC0v                1309
+#define IDR_PATTERN_TC1v                1310
+#define IDR_PATTERN_TC2v                1311
+#define IDR_PATTERN_TC3v                1312
+#define IDR_PATTERN_TC4v                1313
+#define IDR_PATTERN_TC5v                1314
+#define IDR_PATTERN_DR0                 1315
+#define IDR_PATTERN_DR0v                1316
+#define IDR_PATTERN_DR1                 1317
+#define IDR_PATTERN_DR1v                1318
+#define IDR_PATTERN_DR2                 1319
+#define IDR_PATTERN_DR2v                1320
+#define IDR_PATTERN_SHARP               1321
+#define IDR_PATTERN_SHARPv              1322
+#define IDR_PATTERN_CLIPL               1323
+#define IDR_PATTERN_CLIPH               1324
+#define IDC_USEPIC                      1325
 #define IDC_COLORTEMPHISTO_GRAPH        11003
 #define IDC_RGBHISTO_GRAPH              11101
 #define IDC_RGBHISTO_GRAPH2             11102
@@ -985,15 +991,18 @@
 #define IDM_PATTERN_ERAMP               33053
 #define IDM_PATTERN_ALIGN               33054
 #define IDM_PATTERN_SPECTRUM            33055
-#define IDM_PATTERN_TC0       33056
-#define IDM_PATTERN_TC1       33057
-#define IDM_PATTERN_TC2       33058
-#define IDM_PATTERN_TC3       33059
-#define IDM_PATTERN_TC4       33060
-#define IDM_PATTERN_TC5       33061
-#define IDM_PATTERN_DR0       33062
-#define IDM_PATTERN_DR1       33063
-#define IDM_PATTERN_DR2       33064
+#define IDM_PATTERN_TC0                 33056
+#define IDM_PATTERN_TC1                 33057
+#define IDM_PATTERN_TC2                 33058
+#define IDM_PATTERN_TC3                 33059
+#define IDM_PATTERN_TC4                 33060
+#define IDM_PATTERN_TC5                 33061
+#define IDM_PATTERN_DR0                 33062
+#define IDM_PATTERN_DR1                 33063
+#define IDM_PATTERN_DR2                 33064
+#define IDM_PATTERN_SHARP               33065
+#define IDM_PATTERN_CLIPL               33066
+#define IDM_PATTERN_CLIPH               33067
 #define IDS_LUMINANCEHISTOVIEW_NAME     41446
 #define IDS_COLORTEMPHISTOVIEW_NAME     41447
 #define IDS_RGBHISTOVIEW_NAME           41448

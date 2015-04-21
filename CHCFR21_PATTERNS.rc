@@ -198,7 +198,11 @@ IDR_PATTERN_DR1        PATTERN                 "res\\patterns\\dynamic1p.png"
 IDR_PATTERN_DR1v        PATTERN                 "res\\patterns\\dynamic1v.png"
 IDR_PATTERN_DR2        PATTERN                 "res\\patterns\\bkp.png"
 IDR_PATTERN_DR2v        PATTERN                 "res\\patterns\\bkv.png"
-#endif    // French (France) resources
+IDR_PATTERN_SHARP        PATTERN                 "res\\patterns\\sharp.png"
+IDR_PATTERN_SHARPv        PATTERN                 "res\\patterns\\sharpv.png"
+IDR_PATTERN_CLIPH        PATTERN                 "res\\patterns\\cliph.png"
+IDR_PATTERN_CLIPL        PATTERN                 "res\\patterns\\clipl.png"
+#endif    // French (France) resourcesdi
 /////////////////////////////////////////////////////////////////////////////
 
 
