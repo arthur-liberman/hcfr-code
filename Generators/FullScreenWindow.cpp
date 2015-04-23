@@ -959,22 +959,49 @@ void CFullScreenWindow::OnPaint()
 		int			iW, iH;
 		int			destW = rect.Width();
 		int			destH = rect.Height();
-
+		bool		scaled;
 		CxImage* newImage = new CxImage();
+		CxImage* resampImage = new CxImage();
+
 		HRSRC hRsrc = ::FindResource(m_hPatternInst,MAKEINTRESOURCE(m_uiPictRess),"PATTERN");
 		if (m_uiPictRess == IDR_PATTERN_TV || m_uiPictRess == IDR_PATTERN_TVv)
 			newImage->LoadResource(hRsrc,CXIMAGE_FORMAT_JPG,m_hPatternInst);   
 		else
 			newImage->LoadResource(hRsrc,CXIMAGE_FORMAT_PNG,m_hPatternInst);  
+
+		iW = newImage->GetWidth();
+		iH = newImage->GetHeight();
 		
-		if (m_bResizePict) {
+		resampImage = newImage;
+
+		float destA = (float)destW/(float)destH;
+		float iA = (float)iW/(float)iH;
+
+		//resize but maintain aspect ratio
+		if (m_bResizePict && !(destW == iW && destH == iH))
+		{
+			if (iW == 1920)
+				scaled = TRUE;
+			if (destA < iA) //scale width
+			{
+				newImage->Resample2(destW,(long)((float)destW/(float)iW * (float)iH), CxImage::IM_BICUBIC2, CxImage::OM_REPEAT, resampImage);
+			}
+			else if (destA > iA) //scale height
+			{
+				newImage->Resample2((long)((float)destH/(float)iH * (float)iW), destH,CxImage::IM_BICUBIC2, CxImage::OM_REPEAT, resampImage);
+			}
+			else if (iW != destW || iH != destH)
+				newImage->Resample2(destW, destH, CxImage::IM_BICUBIC2, CxImage::OM_REPEAT, resampImage);
+		}
+
+		if (m_bResizePict && !scaled) {
 			SetRect ( &aRect, 0, 0, rect.Width(), rect.Height());
 		} else {
 			int startX, startY, sizeW, sizeH;
 			int dispX, dispY, dispW, dispH;
 
-			iW = newImage->GetWidth();
-			iH = newImage->GetHeight();
+			iW = resampImage->GetWidth();
+			iH = resampImage->GetHeight();
 
 			if (iW <= destW && iH <= destH) 
 			{ // image is smaller than dest rect we center it
@@ -995,13 +1022,16 @@ void CFullScreenWindow::OnPaint()
 						dispY = (destH-iH)/2; dispH = dispY+iH;
 				}
 				SetRect ( &aRect, startX, startY, sizeW, sizeH);
-				newImage->Crop(aRect);
+				if (iH > destH || iW > destW)
+					resampImage->Crop(aRect);
 				SetRect ( &aRect, dispX, dispY, dispW, dispH);
 			}
 		}
-		newImage->Draw(dc,aRect);
+
+		resampImage->Draw(dc,aRect);
 
 		delete newImage;
+		delete resampImage;
 	}
 
 	// All or One Color Shading
