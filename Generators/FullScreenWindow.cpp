@@ -838,8 +838,27 @@ void CFullScreenWindow::OnPaint()
 			}
 		}
 
-		CRect patternRect=rect;
-	
+		if (m_busePic && !isSpecial) //adds real image to background for measurements
+		{
+			CRect		aRect;
+			HMODULE hPatterns;
+			hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+			HRSRC hRsrc;
+
+			CxImage* newImage = new CxImage();
+			if (m_b16_235)
+				hRsrc = ::FindResource(hPatterns,MAKEINTRESOURCE(IDR_PATTERN_TESTIMGv),"PATTERN");
+			else
+				hRsrc = ::FindResource(hPatterns,MAKEINTRESOURCE(IDR_PATTERN_TESTIMG),"PATTERN");
+
+			newImage->LoadResource(hRsrc, CXIMAGE_FORMAT_PNG, hPatterns);  
+		
+			SetRect ( &aRect, 0, 0, rect.Width(), rect.Height());
+			newImage->Draw(dc,aRect);
+			delete newImage;
+		}
+
+		CRect patternRect=rect;	
 		if (!isSpecial)
 		{
 			patternRect.DeflateRect(dWidth/2,dHeight/2);
@@ -868,26 +887,6 @@ void CFullScreenWindow::OnPaint()
 				brush.DeleteObject ();
 				Sleep(1000);
 			}
-		}
-
-		if (m_busePic)
-		{
-			CRect		aRect;
-			HMODULE hPatterns;
-			hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
-			HRSRC hRsrc;
-
-			CxImage* newImage = new CxImage();
-			if (m_b16_235)
-				hRsrc = ::FindResource(hPatterns,MAKEINTRESOURCE(IDR_PATTERN_TESTIMGv),"PATTERN");
-			else
-				hRsrc = ::FindResource(hPatterns,MAKEINTRESOURCE(IDR_PATTERN_TESTIMG),"PATTERN");
-
-			newImage->LoadResource(hRsrc, CXIMAGE_FORMAT_PNG, hPatterns);  
-		
-			SetRect ( &aRect, 0, 0, rect.Width(), rect.Height());
-			newImage->Draw(dc,aRect);
-			delete newImage;
 		}
 
 		brush.CreateSolidBrush ( DisplayColor );
