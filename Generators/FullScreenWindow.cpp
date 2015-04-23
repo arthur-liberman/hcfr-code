@@ -958,9 +958,8 @@ void CFullScreenWindow::OnPaint()
 		int			iW, iH;
 		int			destW = rect.Width();
 		int			destH = rect.Height();
-		bool		scaled;
+		bool		isScaled;
 		CxImage* newImage = new CxImage();
-		CxImage* resampImage = new CxImage();
 
 		HRSRC hRsrc = ::FindResource(m_hPatternInst,MAKEINTRESOURCE(m_uiPictRess),"PATTERN");
 		if (m_uiPictRess == IDR_PATTERN_TV || m_uiPictRess == IDR_PATTERN_TVv)
@@ -971,8 +970,6 @@ void CFullScreenWindow::OnPaint()
 		iW = newImage->GetWidth();
 		iH = newImage->GetHeight();
 		
-		resampImage = newImage;
-
 		float destA = (float)destW/(float)destH;
 		float iA = (float)iW/(float)iH;
 
@@ -980,27 +977,27 @@ void CFullScreenWindow::OnPaint()
 		if (m_bResizePict && !(destW == iW && destH == iH))
 		{
 			if (iW == 1920)
-				scaled = TRUE;
+				isScaled = TRUE;
 			if (destA < iA) //scale width
 			{
-				newImage->Resample2(destW,(long)((float)destW/(float)iW * (float)iH), CxImage::IM_BICUBIC2, CxImage::OM_REPEAT, resampImage);
+				newImage->Resample2(destW,(long)((float)destW/(float)iW * (float)iH), CxImage::IM_BICUBIC2, CxImage::OM_REPEAT, newImage);
 			}
 			else if (destA > iA) //scale height
 			{
-				newImage->Resample2((long)((float)destH/(float)iH * (float)iW), destH,CxImage::IM_BICUBIC2, CxImage::OM_REPEAT, resampImage);
+				newImage->Resample2((long)((float)destH/(float)iH * (float)iW), destH,CxImage::IM_BICUBIC2, CxImage::OM_REPEAT, newImage);
 			}
 			else if (iW != destW || iH != destH)
-				newImage->Resample2(destW, destH, CxImage::IM_BICUBIC2, CxImage::OM_REPEAT, resampImage);
+				newImage->Resample2(destW, destH, CxImage::IM_BICUBIC2, CxImage::OM_REPEAT, newImage);
 		}
 
-		if (m_bResizePict && !scaled) {
+		if (m_bResizePict && !isScaled) {
 			SetRect ( &aRect, 0, 0, rect.Width(), rect.Height());
 		} else {
 			int startX, startY, sizeW, sizeH;
 			int dispX, dispY, dispW, dispH;
 
-			iW = resampImage->GetWidth();
-			iH = resampImage->GetHeight();
+			iW = newImage->GetWidth();
+			iH = newImage->GetHeight();
 
 			if (iW <= destW && iH <= destH) 
 			{ // image is smaller than dest rect we center it
@@ -1022,15 +1019,13 @@ void CFullScreenWindow::OnPaint()
 				}
 				SetRect ( &aRect, startX, startY, sizeW, sizeH);
 				if (iH > destH || iW > destW)
-					resampImage->Crop(aRect);
+					newImage->Crop(aRect);
 				SetRect ( &aRect, dispX, dispY, dispW, dispH);
 			}
 		}
 
-		resampImage->Draw(dc,aRect);
-
+		newImage->Draw(dc,aRect);
 		delete newImage;
-		delete resampImage;
 	}
 
 	// All or One Color Shading
