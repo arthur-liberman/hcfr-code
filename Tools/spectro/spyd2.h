@@ -73,6 +73,9 @@
 
 /* Configuration */
 #define SPYD2_DISP_SEL_RANGE  	    0x40		/* Calibration selection is out of range */
+
+/* User errors */
+#define SPYD2_NO_REFRESH_DET  	    0x50		/* Calibration selection is out of range */
 #ifdef __cplusplus
 	extern "C" {
 #endif
@@ -97,6 +100,7 @@ struct _spyd2 {
 								/* Spyder2 = 3 */
 								/* Spyder3 = 4 */
 								/* Spyder4 = 7 */
+								/* Spyder5 = 10 */
 
 	unsigned int fbits;			/* 6:B Feature bits 0,1,2,3 correspond to calibration types */
 								/* CRT/UNK, LCD/NORM, TOK, CRT/UNK  */
@@ -134,7 +138,7 @@ struct _spyd2 {
 								/* This might be Y only weightings for the 7 sensor values, */
 								/* with no offset value (TOK type ?). */
 
-	/* hwver 7 (Spyder 4) uses computed calibrations */
+	/* hwver 7 & 10 (Spyder 4/5) uses computed calibrations */
 	xspect sens[7];				/* Sensor sensitivity curves in Hz per mW/nm/m^2 */
 
 	/* Computed factors and state */

@@ -316,6 +316,12 @@ int sa_lu_psinvert(double **out, double **in, int m, int n);
 #endif /* SALONEINSTLIB */
 
 /* - - - - - - - - - - - - - - - - - - -- */
+/* Diagnostic aids */
+
+// Print bytes as hex to debug log */
+void adump_bytes(a1log *log, char *pfx, unsigned char *buf, int base, int len);
+
+/* - - - - - - - - - - - - - - - - - - -- */
 
 
 #ifdef __cplusplus

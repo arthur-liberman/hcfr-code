@@ -71,8 +71,8 @@ typedef enum {						/* XYZ units,      Spectral units */
 	inst_mrt_none           = 0,	/* Not set */
 	inst_mrt_emission       = 1,	/* cd/m^2,         mW/(m^2.sr.nm) */
 	inst_mrt_ambient        = 2,	/* Lux             mW/(m^2.nm) */
-	inst_mrt_emission_flash = 3,	/* cd/(m^2.s),     mW/(m^2.sr.nm.s) */
-	inst_mrt_ambient_flash  = 4,	/* Lux/s           mW/(m^2.nm.s) */
+	inst_mrt_emission_flash = 3,	/* cd.s/m^2,       mW.s/(m^2.sr.nm) */
+	inst_mrt_ambient_flash  = 4,	/* Lux.s           mW.s/(m^2.nm) */
 	inst_mrt_reflective     = 5,	/* %,              %/nm */
 	inst_mrt_transmissive   = 6,	/* %,              %/nm */
 	inst_mrt_frequency      = 7		/* Hz */
@@ -158,6 +158,7 @@ typedef enum {
 /* Instrument capabilities & modes */
 /* Note that due to the binary combinations, capabilities is not definititive */
 /* as to valid modes. check_mode() is definitive. */
+/* #defines are for saving modes in a version independent way. */
 /* Note :- update inst_mode_sym[] table in inst.c if anything here is changed. */
 typedef enum {
 	inst_mode_none               = 0x00000000, /* No capability or mode */
@@ -341,7 +342,7 @@ typedef enum {
 
 	functions to:
 
-	 return number of used and free buitlin slots, + password required flag.
+	 return number of used and free builtin slots, + password required flag.
 	
 	 write builtin calibration or ccss/ccmx file
 
@@ -426,7 +427,12 @@ typedef enum {
 	inst_opt_initcalib          = 0x0008,	/* Enable initial calibration (default) [No args] */
 	inst_opt_noinitcalib        = 0x0009,	/* Disable initial calibration if < losecs since last */											/* opened, or losecs == 0 [int losecs] */
 
-	inst_opt_set_ccss_obs       = 0x000A,	/* Set the observer used with ccss device types - */
+	inst_opt_askcalib           = 0x000A,	/* Ask before proceeding with calibration (default) */
+											/* [ No args] */
+	inst_opt_noaskcalib         = 0x000B,	/* Proceed with calibration immediately if possible */
+											/* [ No args] */
+
+	inst_opt_set_ccss_obs       = 0x000C,	/* Set the observer used with ccss device types - */
 											/* Not applicable to any other type of instrument. */
 											/* [args: icxObserverType obType,*/
 	                                        /*        xspect custObserver[3] */
@@ -452,10 +458,11 @@ typedef enum {
 	inst_opt_set_led_pulse_state= 0x0019,	/* Set the current LED state. [double period_in_secs, */
 	                                        /* double on_time_prop, double trans_time_prop] */
 	inst_opt_get_led_pulse_state= 0x001A,	/* Get the current pulse LED state. [*double period] */
-	inst_opt_set_target_state   = 0x001B,	/* Set the aiming target state 0 = off, 1 == on, 2 = toggle [int] */
+	inst_opt_get_target_state   = 0x001B,	/* Get the aiming target state 0 = off, 1 == on [*int] */
+	inst_opt_set_target_state   = 0x001C,	/* Set the aiming target state 0 = off, 1 == on, 2 = toggle [int] */
 
-	inst_opt_get_min_int_time   = 0x001C,	/* Get the minimum integration time [*double time] */
-	inst_opt_set_min_int_time   = 0x001D	/* Set the minimum integration time [double time] */
+	inst_opt_get_min_int_time   = 0x001D,	/* Get the minimum integration time [*double time] */
+	inst_opt_set_min_int_time   = 0x001E	/* Set the minimum integration time [double time] */
 
 } inst_opt_type;
 
@@ -958,13 +965,13 @@ typedef enum {
 	/* Supply a user interaction callback function.								\
 	 * This is called for one of three different purposes:						\
 	 *	To signal that the instrument measurement has been triggered.			\
-	 *	To poll for a abort while waiting to trigger.							\
+	 *	To poll for an abort while waiting to trigger.							\
 	 *	To poll for a user abort during measurement.							\
 	 *																			\
 	 * The callback function will have the purpose paramater appropriately.		\
 	 *																			\
      * For inst_negcoms, the return value of inst_user_abort					\
-	 * will abort the communication negotiation									\
+	 * will abort the communication negotiation.								\
 	 *																			\
 	 * For inst_triggered, the return value of the callback is ignored.			\
 	 *																			\

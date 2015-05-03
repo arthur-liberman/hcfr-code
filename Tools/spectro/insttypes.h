@@ -48,11 +48,13 @@ typedef enum {
 	instSpyder2,				/* Datacolor/ColorVision Spyder2 */
 	instSpyder3,				/* Datacolor Spyder3 */
 	instSpyder4,				/* Datacolor Spyder4 */
+	instSpyder5,				/* Datacolor Spyder5 */
 	instHuey,					/* GretagMacbeth Huey */
 	instSmile,					/* X-rite Colormunki Smile */
 	instSpecbos1201,			/* JETI specbos 1201 */
 	instSpecbos,				/* JETI specbos XXXX */
 	instKleinK10,				/* Klein K10-A */
+	instEX1,					/* Image Engineering EX1 */
 	instColorHug,				/* Hughski ColorHug */
 	instColorHug2,				/* Hughski ColorHug2 */
 

@@ -636,10 +636,14 @@ void *cntx			/* Context for callback */
 		p = (inst *)new_spyd2(icom, itype);
 	else if (itype == instSpyder4)
 		p = (inst *)new_spyd2(icom, itype);
+	else if (itype == instSpyder5)
+		p = (inst *)new_spyd2(icom, itype);
 	else if (itype == instHuey)
 		p = (inst *)new_huey(icom, itype);
 	else if (itype == instSmile)
 		p = (inst *)new_i1disp(icom, itype);
+	else if (itype == instEX1)
+		p = (inst *)new_ex1(icom, itype);
 	else if (itype == instHCFR)
 		p = (inst *)new_hcfr(icom, itype);
 	else if (itype == instColorHug
@@ -857,7 +861,7 @@ int doccmx						/* Add matching installed ccmx files */
 			if ((list = expand_dlist(list, ++nlist, &nalist)) == NULL)
 				return inst_internal_error;
 	
-			list[nlist-1].flags = (inst_dtflags)(inst_dtflags_ccss | inst_dtflags_ld | inst_dtflags_wr);
+			list[nlist-1].flags = inst_dtflags_ccss | inst_dtflags_ld | inst_dtflags_wr;
 
 			if (ss_list[i].sel != NULL) {
 				strncpy(list[nlist-1].sel, ss_list[i].sel, INST_DTYPE_SEL_LEN);
@@ -906,7 +910,7 @@ int doccmx						/* Add matching installed ccmx files */
 			if ((list = expand_dlist(list, ++nlist, &nalist)) == NULL)
 				return inst_internal_error;
 	
-			list[nlist-1].flags = (inst_dtflags)(inst_dtflags_ccmx | inst_dtflags_ld | inst_dtflags_wr);
+			list[nlist-1].flags = inst_dtflags_ccmx | inst_dtflags_ld | inst_dtflags_wr;
 
 			if (ss_list[i].sel != NULL) {
 				strncpy(list[nlist-1].sel, ss_list[i].sel, INST_DTYPE_SEL_LEN);
@@ -964,7 +968,7 @@ iccmx *list_iccmx(instType itype, int *no) {
 						"ArgyllCMS/\052.ccmx" XDG_FUDGE "color/\052.ccmx"
 	);
 
-	if ((rv = (iccmx*)malloc(sizeof(iccmx) * (npaths + 1))) == NULL) {
+	if ((rv = malloc(sizeof(iccmx) * (npaths + 1))) == NULL) {
 		a1loge(g_log, 1, "list_iccmx: malloc of paths failed\n");
 		xdg_free(paths, npaths);
 		if (no != NULL) *no = -1;
@@ -1007,7 +1011,7 @@ iccmx *list_iccmx(instType itype, int *no) {
 		dtech = cs->dtech;
 		refr = cs->refrmode;
 		len = strlen(tech) + strlen(disp) + 4;
-		if ((pp = (char *)malloc(len)) == NULL) {
+		if ((pp = malloc(len)) == NULL) {
 			a1loge(g_log, 1, "list_iccmx: malloc failed\n");
 			for (--j; j >= 0; j--) {
 				free(rv[j].path);
@@ -1099,7 +1103,7 @@ iccss *list_iccss(int *no) {
 						"ArgyllCMS/\052.ccss" XDG_FUDGE "color/\052.ccss"
 	);
 
-	if ((rv = (iccss*)malloc(sizeof(iccss) * (npaths + 1))) == NULL) {
+	if ((rv = malloc(sizeof(iccss) * (npaths + 1))) == NULL) {
 		a1loge(g_log, 1, "list_iccss: malloc of paths failed\n");
 		xdg_free(paths, npaths);
 		if (no != NULL) *no = -1;
@@ -1137,7 +1141,7 @@ iccss *list_iccss(int *no) {
 		dtech = cs->dtech;
 		refr = cs->refrmode;
 		len = strlen(tech) + strlen(disp) + 4;
-		if ((pp = (char*) malloc(len)) == NULL) {
+		if ((pp = malloc(len)) == NULL) {
 			a1loge(g_log, 1, "list_iccss: malloc failed\n");
 			for (--j; j >= 0; j--) {
 				free(rv[j].path);
@@ -1262,7 +1266,7 @@ instType fast_ser_inst_type(
 		if (brt[i] == baud_9600) {
 			/* See if it's a Klein K10 */
 
-			if ((se = p->write_read(p, "P0\r", 0, buf, 100, NULL, ">", 1, 0.070)) != inst_ok) {
+			if ((se = p->write_read(p, "P0\r", 0, buf, 100, NULL, ">", 1, 0.100)) != inst_ok) {
 				/* Check for user abort */
 				if (uicallback != NULL) {
 					inst_code ev;
@@ -1287,7 +1291,7 @@ instType fast_ser_inst_type(
 			}
 		} else {
 			/* See if it's a JETI specbos */
-			if ((se = p->write_read(p, "*idn?\r", 0, buf, 100, NULL, "\r", 1, 0.040)) != inst_ok) {
+			if ((se = p->write_read(p, "*idn?\r", 0, buf, 100, NULL, "\r", 1, 0.100)) != inst_ok) {
 				/* Check for user abort */
 				if (uicallback != NULL) {
 					inst_code ev;

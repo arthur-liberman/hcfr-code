@@ -84,6 +84,8 @@ char *inst_sname(instType itype) {
 			return "Spyder3";
 		case instSpyder4:
 			return "Spyder4";
+		case instSpyder5:
+			return "Spyder5";
 		case instHuey:
 			return "Huey";
 		case instSmile:
@@ -94,6 +96,8 @@ char *inst_sname(instType itype) {
 			return "specbos";
 		case instKleinK10:
 			return "K-10";
+		case instEX1:
+			return "EX1";
 		case instColorHug:
 			return "ColorHug";
 		case instColorHug2:
@@ -151,6 +155,8 @@ char *inst_name(instType itype) {
 			return "Datacolor Spyder3";
 		case instSpyder4:
 			return "Datacolor Spyder4";
+		case instSpyder5:
+			return "Datacolor Spyder5";
 		case instHuey:
 			return "GretagMacbeth Huey";
 		case instSmile:
@@ -161,6 +167,8 @@ char *inst_name(instType itype) {
 			return "JETI specbos";
 		case instKleinK10:
 			return "Klein K-10";
+		case instEX1:
+			return "Image Engineering EX1";
 		case instColorHug:
 			return "Hughski ColorHug";
 		case instColorHug2:
@@ -236,6 +244,8 @@ instType inst_enum(char *name) {
 		return instSpyder3;
 	else if (strcmp(name, "Datacolor Spyder4") == 0)
 		return instSpyder4;
+	else if (strcmp(name, "Datacolor Spyder5") == 0)
+		return instSpyder5;
 	else if (strcmp(name, "GretagMacbeth Huey") == 0)
 		return instHuey;
 	else if (strcmp(name, "ColorMunki Smile") == 0)
@@ -246,6 +256,8 @@ instType inst_enum(char *name) {
 		return instSpecbos;
 	else if (strcmp(name, "Klein K-10") == 0)
 		return instKleinK10;
+	else if (strcmp(name, "Image Engineering EX1") == 0)
+		return instEX1;
 	else if (strcmp(name, "Hughski ColorHug") == 0)
 		return instColorHug;
 	else if (strcmp(name, "Hughski ColorHug2") == 0)
@@ -299,10 +311,12 @@ int nep) {					/* Number of end points */
 			return instSpyder1;
 		if (idProduct == 0x0200)	/* ColorVision Spyder2 */
 			return instSpyder2;
-		if (idProduct == 0x0300)	/* ColorVision Spyder3 */
+		if (idProduct == 0x0300)	/* DataColor Spyder3 */
 			return instSpyder3;
-		if (idProduct == 0x0400)	/* ColorVision Spyder4 */
+		if (idProduct == 0x0400)	/* DataColor Spyder4 */
 			return instSpyder4;
+		if (idProduct == 0x0500)	/* DataColor Spyder5 */
+			return instSpyder5;
 	}
 
 	if (idVendor == 0x0971) {		/* Gretag Macbeth */
@@ -322,6 +336,11 @@ int nep) {					/* Number of end points */
 			return instHuey;
 		if (idProduct == 0x2007)	/* ColorMunki */
 			return instColorMunki;
+	}
+
+	if (idVendor == 0x2457) {		/* Image Engineering */
+		if (idProduct == 0x4000) 	/* EX1 */
+			return instEX1;
 	}
 
 	if ((idVendor == 0x04d8 && idProduct == 0xf8da)			/* Microchip & Hughski ColorHug (old) */
@@ -406,15 +425,10 @@ int inst_illuminant(xspect *sp, instType itype) {
 			return 1;										/* Not applicable */
 
 		case instSpyder1:
-			return 1;										/* Not applicable */
-
 		case instSpyder2:
-			return 1;										/* Not applicable */
-
 		case instSpyder3:
-			return 1;										/* Not applicable */
-
 		case instSpyder4:
+		case instSpyder5:
 			return 1;										/* Not applicable */
 
 		case instHuey:
@@ -428,6 +442,9 @@ int inst_illuminant(xspect *sp, instType itype) {
 			return 1;										/* Not applicable */
 
 		case instKleinK10:
+			return 1;										/* Not applicable */
+
+		case instEX1:
 			return 1;										/* Not applicable */
 
 		case instColorHug:

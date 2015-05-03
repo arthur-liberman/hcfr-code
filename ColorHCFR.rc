@@ -72,8 +72,8 @@ IDR_APPICON             ICON                    "res\\icon1.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,2,1
- PRODUCTVERSION 3,2,1
+ FILEVERSION 3,2,2
+ PRODUCTVERSION 3,2,2
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -90,12 +90,12 @@ BEGIN
         BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "FileDescription", "HCFR"
-            VALUE "FileVersion", "3,2,1"
+            VALUE "FileVersion", "3,2,2"
             VALUE "InternalName", "ColorHCFR"
             VALUE "LegalCopyright", "Copyright (c) 2005-2012"
             VALUE "OriginalFilename", "ColorHCFR.EXE"
             VALUE "ProductName", "HCFR"
-            VALUE "ProductVersion", "3,2,1"
+            VALUE "ProductVersion", "3,2,2"
         END
     END
     BLOCK "VarFileInfo"
