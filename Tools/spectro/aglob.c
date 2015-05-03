@@ -91,7 +91,7 @@ int aglob_create(aglob *g, char *spath) {
 	else
 		rlen = pp - spath + 1;
 
-	if ((g->base = (char *) malloc(rlen + 1)) == NULL) {
+	if ((g->base = malloc(rlen + 1)) == NULL) {
 		a1loge(g_log, 1, "aglob_create: malloc failed\n");
 		return 1;
 	}

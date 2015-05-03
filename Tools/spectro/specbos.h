@@ -151,6 +151,7 @@ struct _specbos {
 	volatile int th_term;		/* nz to terminate thread */
 	volatile int th_termed;		/* nz when thread terminated */
 	int dpos;					/* Diffuser position, 0 = emissive, 1 = ambient */
+	int laser;					/* Target laser state, nz = on */
 
 	}; typedef struct _specbos specbos;
 

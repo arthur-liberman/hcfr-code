@@ -104,7 +104,7 @@
 #define HEURISTIC_BKDRIFTC	/* [Def] Enable heusristic black drift correction */
 
 #define WLCALTOUT (24 * 60 * 60) /* [24 Hrs] Wavelength calibration timeout in seconds */
-#define DCALTOUT  (     60 * 60) /* [60 Minuites] Dark Calibration timeout in seconds */
+#define DCALTOUT  (     30 * 60) /* [30 Minutes] Dark Calibration timeout in seconds */
 #define DCALTOUT2 ( 1 * 60 * 60) /* [1 Hr] i1pro2 Dark Calibration timeout in seconds */
 #define WCALTOUT  ( 1 * 60 * 60) /* [1 Hr] White Calibration timeout in seconds */
 
@@ -1377,11 +1377,11 @@ i1pro_code i1pro_imp_get_n_a_cals(i1pro *p, inst_cal_type *pn_cals, inst_cal_typ
 			wl_valid = 0;
 		}
 	}
-	if ((curtime - cs->iddate) > ((p->itype == instI1Pro) ? DCALTOUT2 : DCALTOUT)) {
+	if ((curtime - cs->iddate) > ((p->itype == instI1Pro2) ? DCALTOUT2 : DCALTOUT)) {
 		a1logd(p->log,2,"Invalidating adaptive dark cal as %d secs from last cal\n",curtime - cs->iddate);
 		idark_valid = 0;
 	}
-	if ((curtime - cs->ddate) > ((p->itype == instI1Pro) ? DCALTOUT2 : DCALTOUT)) {
+	if ((curtime - cs->ddate) > ((p->itype == instI1Pro2) ? DCALTOUT2 : DCALTOUT)) {
 		a1logd(p->log,2,"Invalidating dark cal as %d secs from last cal\n",curtime - cs->ddate);
 		dark_valid = 0;
 	}
@@ -2223,8 +2223,9 @@ i1pro_code i1pro_imp_calibrate(
 				                s->cal_factor[0], m->white_ref[0], s->cal_factor[0],
 				                s->cal_factor[1], m->white_ref[1], s->cal_factor[1],
 								!s->scan);		/* Use this for emis hires fine tune if not scan */
-
-				if (ev != I1PRO_RD_TRANSWHITEWARN && ev != I1PRO_OK) {
+				if (ev == I1PRO_RD_TRANSWHITEWARN)		/* Shouldn't happen ? */
+					ev = I1PRO_OK;
+				if (ev != I1PRO_OK) {
 					m->mmode = mmode;			/* Restore actual mode */
 					return ev;
 				}
@@ -8473,7 +8474,9 @@ i1pro_code i1pro_create_hr_calfactors(i1pro *p, int eonly) {
 						                   s->cal_factor[0], m->white_ref[0], s->cal_factor[0],
 						                   s->cal_factor[1], m->white_ref[1], s->cal_factor[1],
 						                   i == i1p_refl_spot);
-						if (ev != I1PRO_RD_TRANSWHITEWARN && ev != I1PRO_OK) {
+						if (ev == I1PRO_RD_TRANSWHITEWARN)		/* Shouldn't happen ? */
+							ev = I1PRO_OK;
+						if (ev != I1PRO_OK) {
 							return ev;
 						}
 #ifdef NEVER
@@ -8517,7 +8520,9 @@ i1pro_code i1pro_create_hr_calfactors(i1pro *p, int eonly) {
 						i1pro_absraw_to_abswav(p, 1, s->reflective, 1, &s->cal_factor[1], &s->white_data);
 						ev = i1pro_compute_white_cal(p, s->cal_factor[0], NULL, s->cal_factor[0],
 			                                            s->cal_factor[1], NULL, s->cal_factor[1], 0);
-						if (ev != I1PRO_RD_TRANSWHITEWARN && ev != I1PRO_OK) {
+						if (ev == I1PRO_RD_TRANSWHITEWARN)		/* Ignore this ? */
+							ev = I1PRO_OK;
+						if (ev != I1PRO_OK) {
 							return ev;
 						}
 					}
@@ -10596,7 +10601,9 @@ int i1pro_switch_thread(void *pp) {
 	i1proimp *m = (i1proimp *)p->m;
 	i1pro_code rv = I1PRO_OK; 
 	a1logd(p->log,3,"Switch thread started\n");
-	for (nfailed = 0;nfailed < 5;) {
+//	for (nfailed = 0;nfailed < 5;)
+	/* Try indefinitely, in case instrument is put to sleep */
+	for (;;) {
 		rv = i1pro_waitfor_switch_th(p, SW_THREAD_TIMEOUT);
 		a1logd(p->log,8,"Switch handler triggered with rv %d, th_term %d\n",rv,m->th_term);
 		if (m->th_term) {

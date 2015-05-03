@@ -281,10 +281,19 @@ void (*usbio_term)(int sig) = SIG_DFL;
 
 /* On something killing our process, deal with USB cleanup */
 static void icoms_sighandler(int arg) {
+	static amutex_static(lock);
+
 	a1logd(g_log, 6, "icoms_sighandler: invoked with arg = %d\n",arg);
+
+	/* Make sure we don't re-enter */
+	if (amutex_trylock(lock)) {
+		return;
+	}
+
 	if (in_usb_rw != 0)
 		in_usb_rw = -1;
 	icoms_cleanup();
+
 	/* Call the existing handlers */
 #ifdef UNIX
 	if (arg == SIGHUP && usbio_hup != SIG_DFL && usbio_hup != SIG_IGN)
@@ -296,6 +305,8 @@ static void icoms_sighandler(int arg) {
 		usbio_term(arg);
 
 	a1logd(g_log, 6, "icoms_sighandler: calling exit()\n");
+
+	amutex_unlock(lock);
 	exit(0);
 }
 
@@ -428,7 +439,7 @@ double tout)
 /* Read characters into the buffer */
 /* Return string will be terminated with a nul */
 /* Read only in packet sized chunks, and retry if */
-/* the bytes requested aren'r read, untill we get a */
+/* the bytes requested aren't read, untill we get a */
 /* timeout or a terminating char is read */
 static int
 icoms_usb_ser_read(icoms *p,
@@ -446,6 +457,8 @@ double tout)		/* Time out in seconds */
 	int ep = p->rd_ep;		/* End point */
 	icom_usb_trantype type;	/* bulk or interrupt */
 	int retrv = ICOM_OK;
+	int nreads;			/* Number of reads performed */
+	int fastserial = 0;		/* If fast serial type */
 
 	if (!p->is_open) {
 		a1loge(p->log, ICOM_SYS, "icoms_usb_ser_read: device is not open\n");
@@ -473,43 +486,61 @@ double tout)		/* Time out in seconds */
 		return ICOM_SYS;
 	}
 
+	if (p->port_type(p) == icomt_usbserial)
+		fastserial  = 1;
+
 	for (j = 0; j < bsize; j++)
 		rbuf[j] = 0;
  
-	bsize -= 1;				/* Allow space for null */
-	bsize -= p->ms_bytes;	/* Allow space for modem status bytes */
-
 	/* The DTP94 doesn't cope with a timeout on OS X, so we need to avoid */
 	/* them by giving each read the largest timeout period possible. */
 	/* This also reduces the problem of libusb 0.1 not returning the */
-	/* number of characters read on a timeou. */
+	/* number of characters read on a timeout. */
 
 	ttop = (int)(tout * 1000.0 + 0.5);        /* Total timeout period in msecs */
 
-	a1logd(p->log, 8, "\nicoms_usb_ser_read: ep 0x%x, ttop %d, quant %d\n", p->rd_ep, ttop, p->rd_qa);
+	a1logd(p->log, 8, "\nicoms_usb_ser_read: ep 0x%x, bytes %d, ttop %d, ntc %d, quant %d\n", p->rd_ep, bsize, ttop, ntc, p->rd_qa);
+
+	bsize -= 1;				/* Allow space for null */
+	bsize -= p->ms_bytes;	/* Allow space for modem status bytes */
 
 	/* Until data is all read, we time out, or the user aborts */
 	etime = stime = msec_time();
 	top = ttop;
 	j = (tc == NULL && ntc <= 0) ? -1 : 0;
 
-	for (; top > 0 && bsize > 0 && j < ntc ;) {
+	for (nreads = 0; top > 0 && bsize > 0 && j < ntc ;) {
 		int c, rv;
-		int rsize = p->rd_qa < bsize ? p->rd_qa : bsize; 
+		int rsize = bsize; 
 
-		a1logd(p->log, 8, "icoms_usb_ser_read: attempting to read %d bytes from usb, top = %d, j = %d\n",bsize > p->rd_qa ? p->rd_qa : bsize,top,j);
+		/* If not a fast USB serial port, read in quanta size chunks */ 
+		if (!fastserial && rsize > p->rd_qa)
+			rsize = p->rd_qa;
+
+		a1logd(p->log, 8, "icoms_usb_ser_read: attempting to read %d bytes from usb, top = %d, j = %d\n",rsize,top,j);
 
 		rv = icoms_usb_transaction(p, NULL, &rbytes, type, (unsigned char)ep, (unsigned char *)rbuf, rsize, top);
 		etime = msec_time();
+		nreads++;
 
 		if (rbytes > 0) {	/* Account for bytes read */
 
-			/* Account for modem status bytes. Modem bytes are per usb read. */
+			/* Account for modem status bytes. Modem bytes are per usb read, */
+			/* or every p->rd_qa bytes. */
 			if (p->ms_bytes) {		/* Throw away modem bytes */
-				int nb = rbytes < p->ms_bytes ? rbytes : p->ms_bytes;
-				a1logd(p->log, 8, "icoms_usb_ser_read: discarded %d modem bytes 0x%02x 0x%02x\n",nb,nb >= 1 ? (rbuf[0] & 0xff) : 0, nb >= 2 ? (rbuf[1] & 0xff) : 0);
-				rbytes -= nb;
-				memmove(rbuf, rbuf+nb, rbytes);
+				char *bp = rbuf;
+				int rb = rbytes;
+				for (; rb > 0; ) {
+					int nb = rb < p->ms_bytes ? rb : p->ms_bytes;	/* Bytes to shift */
+					if (p->interp_ms != NULL && nb >= p->ms_bytes)
+						retrv |= p->interp_ms(p, (unsigned char *)bp);	/* Deal with error flags in ms bytes */
+					a1logd(p->log, 8, "icoms_usb_ser_read: discarded %d modem bytes 0x%02x 0x%02x\n",nb,nb >= 1 ? (bp[0] & 0xff) : 0, nb >= 2 ? (bp[1] & 0xff) : 0);
+					rb -= nb;
+					rbytes -= nb;
+					memmove(bp, bp+nb, rb);
+					bp += p->rd_qa - p->ms_bytes;
+					rb -= p->rd_qa - p->ms_bytes;
+				}
 				rbuf[rbytes] = 0;
 			}
 
@@ -545,7 +576,7 @@ double tout)		/* Time out in seconds */
 	}
 
 	*rbuf = '\000';
-	a1logd(p->log, 8, "icoms_usb_ser_read: read %d total bytes\n",rbuf - rrbuf);
+	a1logd(p->log, 8, "icoms_usb_ser_read: read %d total bytes with %d reads\n",rbuf - rrbuf, nreads);
 	if (pbread != NULL)
 		*pbread = (rbuf - rrbuf);
 

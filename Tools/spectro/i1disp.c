@@ -53,7 +53,6 @@
 #include "icoms.h"
 #include "i1disp.h"
 
-static void dump_bytes(a1log *log, char *pfx, unsigned char *buf, int base, int len);
 static inst_code i1disp_interp_code(inst *pp, int ec);
 static inst_code i1disp_do_fcal_setit(i1disp *p);
 static inst_code i1disp_check_unlock(i1disp *p);
@@ -1812,7 +1811,7 @@ i1disp_init_inst(inst *pp) {
 				}
 				buf[i] = v;
 			}
-			dump_bytes(p->log, "dump:", buf, 0, len);
+			adump_bytes(p->log, "dump:", buf, 0, len);
 	
 		/* Dump ColorMunki Smile extended range */
 		/* Main difference is Ascii serial number + other minor unknown */
@@ -1823,7 +1822,7 @@ i1disp_init_inst(inst *pp) {
 			if ((ev = i1disp_rdexreg_bytes(p, buf, 0, 0x200)) != inst_ok) {
 				return ev;
 			}
-			dump_bytes(p->log, "dump:", buf, 0, 0x200);
+			adump_bytes(p->log, "dump:", buf, 0, 0x200);
 		}
 	}
 
@@ -2650,31 +2649,6 @@ extern i1disp *new_i1disp(icoms *icom, instType itype) {
 }
 
 /* ---------------------------------------------------------------- */
-
-// Print bytes as hex to debug log */
-static void dump_bytes(a1log *log, char *pfx, unsigned char *buf, int base, int len) {
-	int i, j, ii;
-	char oline[200] = { '\000' }, *bp = oline;
-	for (i = j = 0; i < len; i++) {
-		if ((i % 16) == 0)
-			bp += sprintf(bp,"%s%04x:",pfx,base+i);
-		bp += sprintf(bp," %02x",buf[i]);
-		if ((i+1) >= len || ((i+1) % 16) == 0) {
-			for (ii = i; ((ii+1) % 16) != 0; ii++)
-				bp += sprintf(bp,"   ");
-			bp += sprintf(bp,"  ");
-			for (; j <= i; j++) {
-				if (!(buf[j] & 0x80) && isprint(buf[j]))
-					bp += sprintf(bp,"%c",buf[j]);
-				else
-					bp += sprintf(bp,".");
-			}
-			bp += sprintf(bp,"\n");
-			a1logd(log,0,"%s",oline);
-			bp = oline;
-		}
-	}
-}
 
 
 

@@ -66,7 +66,7 @@ struct hid_idevice {
 	/* Stuff setup when device is open: */
 	CFRunLoopRef rlr;
 #else
-	int lid;					/* Location ID */
+	int lid;							/* Location ID */
 	io_object_t ioob;					/* Object to open */
 	/* Stuff setup when device is open: */
 	IOHIDDeviceInterface122 **device;	/* OS X HID device we've opened */
@@ -75,12 +75,9 @@ struct hid_idevice {
 	CFRunLoopRef rlr;
 	IOReturn result;
 #   define HID_RBUF_SIZE 1024
-	unsigned char rbuf[HID_RBUF_SIZE];			/* Buffer for read callback */
+	unsigned char rbuf[HID_RBUF_SIZE];	/* Buffer for read callback */
     int bread;            				/* Bytes read by callback */
 #endif	/* __MAC_OS_X_VERSION_MAX_ALLOWED < 1060 */
-#endif
-#if defined (UNIX) && !defined(__APPLE__)
-	char *dpath;					/* Shut the compiler up */
 #endif
 };
 

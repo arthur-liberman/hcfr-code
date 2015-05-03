@@ -532,7 +532,11 @@ char **pnames			/* List of process names to try and kill before opening */
 ) {
 	/* Make sure the port is open */
 	if (!p->is_open) {
+#if defined(NT) 
 		a1logd(p->log, 8, "hid_open_port: about to open HID port '%s' path '%s'\n",p->name,p->hidd->dpath);
+#else
+		a1logd(p->log, 8, "hid_open_port: about to open HID port '%s'\n",p->name);
+#endif
 
 		p->uflags = hidflags;
 

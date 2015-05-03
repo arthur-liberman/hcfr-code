@@ -174,6 +174,8 @@ typedef enum {
 	baud_921600  = 13
 } baud_rate;
 
+char *baud_rate_to_str(baud_rate br);
+
 /* Possible parity */
 typedef enum {
 	parity_nc,
@@ -210,7 +212,7 @@ typedef enum {
 /* Type of port */
 typedef enum {
 	icomt_serial,		/* Serial port */
-	icomt_usbserial,	/* USB Serial port */
+	icomt_usbserial,	/* USB (fast) Serial port, i.e. FTDI */
 	icomt_usb,			/* USB port */
 	icomt_hid			/* HID (USB) port */
 } icom_type;
@@ -296,8 +298,10 @@ struct _icoms {
 	int nep;				/* Number of end points */
 	int wr_ep, rd_ep;		/* Default end points to use for "serial" read/write */
 	int rd_qa;				/* Read quanta size */
-	int ms_bytes;			/* No. Modem status bytes to strip from each read */
+	int ms_bytes;			/* No. of Modem status bytes to strip from each read */
 	int latmsec;			/* Latency timeout in msec for modem status bytes */
+	int (*interp_ms)(struct _icoms *p, unsigned char *msbytes);
+							/* return icom error from ms bytes, NULL if none */
 
 	usb_ep ep[32];			/* Information about each end point for general usb i/o */
 

@@ -2465,31 +2465,6 @@ i1d3_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	return inst_ok;
 }
 
-// Print bytes as hex to debug log */
-static void dump_bytes(a1log *log, char *pfx, unsigned char *buf, int len) {
-	int i, j, ii;
-	char oline[200] = { '\000' }, *bp = oline;
-	for (i = j = 0; i < len; i++) {
-		if ((i % 16) == 0)
-			bp += sprintf(bp,"%s%04x:",pfx,i);
-		bp += sprintf(bp," %02x",buf[i]);
-		if ((i+1) >= len || ((i+1) % 16) == 0) {
-			for (ii = i; ((ii+1) % 16) != 0; ii++)
-				bp += sprintf(bp,"   ");
-			bp += sprintf(bp,"  ");
-			for (; j <= i; j++) {
-				if (!(buf[j] & 0x80) && isprint(buf[j]))
-					bp += sprintf(bp,"%c",buf[j]);
-				else
-					bp += sprintf(bp,".");
-			}
-			bp += sprintf(bp,"\n");
-			a1logd(log,0, "%s", oline);
-			bp = oline;
-		}
-	}
-}
-
 /* Diffuser position thread. */
 /* Poll the instrument at 100msec intervals */
 static int i1d3_diff_thread(void *pp) {
@@ -2497,7 +2472,9 @@ static int i1d3_diff_thread(void *pp) {
 	i1d3 *p = (i1d3 *)pp;
 	inst_code rv = inst_ok; 
 	a1logd(p->log,3,"Diffuser thread started\n");
-	for (nfailed = 0; nfailed < 5;) {
+//	for (nfailed = 0; nfailed < 5;)
+	/* Try indefinitely, in case instrument is put to sleep */
+	for (;;) {
 		int pos;
 
 		/* Don't get diffpos if we're doing something else that */
@@ -2587,7 +2564,7 @@ i1d3_init_inst(inst *pp) {
 		return ev;
 	if (p->log->debug >= 8) {
 		a1logd(p->log, 8, "Internal EEPROM:\n"); 
-		dump_bytes(p->log, "  ", buf, 256);
+		adump_bytes(p->log, "  ", buf, 0, 256);
 	}
 	/* Decode the Internal EEPRom */
 	if ((ev = i1d3_decode_intEE(p, buf)) != inst_ok)
@@ -2597,7 +2574,7 @@ i1d3_init_inst(inst *pp) {
 		return ev;
 	if (p->log->debug >= 8) {
 		a1logd(p->log, 8, "External EEPROM:\n"); 
-		dump_bytes(p->log, "  ", buf, 8192);
+		adump_bytes(p->log, "  ", buf, 0, 8192);
 	}
 	/* Decode the External EEPRom */
 	if ((ev = i1d3_decode_extEE(p, buf)) != inst_ok)

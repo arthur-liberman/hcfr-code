@@ -240,6 +240,7 @@ void check_if_not_interactive() {
 #endif
 
 
+
 /* Default verbose logging function - print to stdtout */
 static void a1_default_v_log(void *cntx, a1log *p, char *fmt, va_list args) {
 	vfprintf(stdout, fmt, args);

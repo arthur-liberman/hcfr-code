@@ -757,7 +757,11 @@ static inst_code
 munki_get_set_opt(inst *pp, inst_opt_type m, ...) {
 	munki *p = (munki *)pp;
 
-	if (m == inst_opt_noinitcalib) {
+	if (m == inst_opt_initcalib) {		/* default */
+		munki_set_noinitcalib(p, 0, 0);
+		return inst_ok;
+
+	} else if (m == inst_opt_noinitcalib) {
 		va_list args;
 		int losecs = 0;
 
@@ -768,9 +772,12 @@ munki_get_set_opt(inst *pp, inst_opt_type m, ...) {
 		munki_set_noinitcalib(p, 1, losecs);
 		return inst_ok;
 
-	} else if (m == inst_opt_initcalib) {
-		munki_set_noinitcalib(p, 0, 0);
-		return inst_ok;
+
+	} else if (m == inst_opt_askcalib) {		/* default */
+		munki_set_nocalibask(p, 0);
+
+	} else if (m == inst_opt_noaskcalib) {
+		munki_set_nocalibask(p, 1);
 
 	/* Record the trigger mode */
 	} else if (m == inst_opt_trig_prog

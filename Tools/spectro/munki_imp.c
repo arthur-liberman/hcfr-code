@@ -166,33 +166,6 @@
 */
 
 /* ============================================================ */
-
-// Print bytes as hex to debug log */
-static void dump_bytes(a1log *log, char *pfx, unsigned char *buf, int base, int len) {
-	int i, j, ii;
-	char oline[200] = { '\000' }, *bp = oline;
-	for (i = j = 0; i < len; i++) {
-		if ((i % 16) == 0)
-			bp += sprintf(bp,"%s%04x:",pfx,base+i);
-		bp += sprintf(bp," %02x",buf[i]);
-		if ((i+1) >= len || ((i+1) % 16) == 0) {
-			for (ii = i; ((ii+1) % 16) != 0; ii++)
-				bp += sprintf(bp,"   ");
-			bp += sprintf(bp,"  ");
-			for (; j <= i; j++) {
-				if (!(buf[j] & 0x80) && isprint(buf[j]))
-					bp += sprintf(bp,"%c",buf[j]);
-				else
-					bp += sprintf(bp,".");
-			}
-			bp += sprintf(bp,"\n");
-			a1logd(log,0,"%s",oline);
-			bp = oline;
-		}
-	}
-}
-
-/* ============================================================ */
 /* Debugging plot support */
 
 #if defined(DEBUG) || defined(PLOT_DEBUG) || defined(PLOT_PATREC) || defined(HIGH_RES_PLOT) ||  defined(HIGH_RES_PLOT_STRAYL)
@@ -562,7 +535,7 @@ munki_code munki_imp_init(munki *p) {
 			if ((ev = munki_readEEProm(p, eeprom, base, size)) != MUNKI_OK)
 				return ev;
 		
-			dump_bytes(p->log, "  ", eeprom, base, size);
+			adump_bytes(p->log, "  ", eeprom, base, size);
 		}
 	}
 
@@ -1033,15 +1006,12 @@ munki_code munki_imp_calibrate(
 	}
 	a1logd(p->log,4,"munki sensor position = 0x%x\n",spos);
 
-#ifdef NEVER
 	/* We can set the *calc to the actual conditions, in which case */
 	/* the calibration will commence immediately. */
-	if (!m->nosposcheck && spos == mk_spos_calib) {
+	if (m->nocalibask && !m->nosposcheck && spos == mk_spos_calib) {
 		*calc = inst_calc_man_cal_smode;
 		a1logd(p->log,4,"munki set calc to cal conditions\n",spos);
-
 	}
-#endif
 
 	/* Make sure that the instrument configuration matches the */
 	/* conditions */
@@ -8232,6 +8202,15 @@ a1logd(p->log,3,"set_noinitcalib v = %d, ->lo_secs %d, losecs %d secs\n",v, m->l
 	m->noinitcalib = v;
 }
 
+/* Set the nocalibask mode */
+/* Don't ask user for confirmation of calibration */
+/* if the instrument is in the correct configuration for it. */
+void munki_set_nocalibask(munki *p, int v) {
+	munkiimp *m = (munkiimp *)p->m;
+
+	m->nocalibask = v;
+}
+
 /* Set the trigger config */
 void munki_set_trig(munki *p, inst_opt_type trig) {
 	munkiimp *m = (munkiimp *)p->m;
@@ -8251,7 +8230,9 @@ static int munki_switch_thread(void *pp) {
 	munkiimp *m = (munkiimp *)p->m;
 	munki_code rv = MUNKI_OK; 
 	a1logd(p->log,3,"Switch thread started\n");
-	for (nfailed = 0;nfailed < 5;) {
+//	for (nfailed = 0;nfailed < 5;)
+	/* Try indefinitely, in case instrument is put to sleep */
+	for (;;) {
 		mk_eve ecode;
 
 		rv = munki_waitfor_switch_th(p, &ecode, NULL, SW_THREAD_TIMEOUT);

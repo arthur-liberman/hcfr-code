@@ -63,7 +63,6 @@
 #include "icoms.h"
 #include "specbos.h"
 
-
 static inst_code specbos_interp_code(inst *pp, int ec);
 
 #define MAX_MES_SIZE 500		/* Maximum normal message reply size */
@@ -141,9 +140,8 @@ int nd				/* nz to disable debug messages */
 	}
 	out[bsize-1] = '\000';
 
-	if (!nd) a1logd(p->log, 4, "specbos_fcommand: command '%s' returned '%s' err 0x%x\n",
-	                                          icoms_fix(in), icoms_fix(out),se);
-
+	if (!nd) a1logd(p->log, 4, "specbos_fcommand: command '%s' returned '%s' bytes %d, err 0x%x\n",
+	                                          icoms_fix(in), icoms_fix(out),strlen(out), se);
 	return se;
 }
 
@@ -226,7 +224,7 @@ specbos_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 
 
 		/* Check instrument is responding */
-		if (((ev = specbos_command(p, "*idn?\r", buf, MAX_MES_SIZE, 0.2)) & inst_mask)
+		if (((ev = specbos_command(p, "*idn?\r", buf, MAX_MES_SIZE, 0.5)) & inst_mask)
 			                                                       != inst_coms_fail) {
 			break;		/* We've got coms or user abort */
 		}
@@ -364,28 +362,33 @@ specbos_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 */
 
 static inst_code specbos_get_diffpos(specbos *p, int *pos, int nd);
+static inst_code specbos_get_target_laser(specbos *p, int *laser, int nd);
 
-/* Diffuser position thread. */
+/* Diffuser position and laser state thread. */
 /* Poll the instrument at 500msec intervals */
 int specbos_diff_thread(void *pp) {
 	int nfailed = 0;
 	specbos *p = (specbos *)pp;
-	inst_code rv = inst_ok; 
+	inst_code rv1 = inst_ok; 
+	inst_code rv2 = inst_ok; 
 	a1logd(p->log,3,"Diffuser thread started\n");
-	for (nfailed = 0; nfailed < 5;) {
+//	for (nfailed = 0; nfailed < 5;)
+	/* Try indefinitely, in case instrument is put to sleep */
+	for (;;) {
 		int pos;
 
 		amutex_lock(p->lock);
-		rv = specbos_get_diffpos(p, &pos, 1); 
+		rv1 = specbos_get_diffpos(p, &pos, 1); 
+		rv2 = specbos_get_target_laser(p, &p->laser, 1); 
 		amutex_unlock(p->lock);
 
 		if (p->th_term) {
 			p->th_termed = 1;
 			break;
 		}
-		if (rv != inst_ok) {
+		if (rv1 != inst_ok || rv2 != inst_ok) {
 			nfailed++;
-			a1logd(p->log,3,"Diffuser thread failed with 0x%x\n",rv);
+			a1logd(p->log,3,"Diffuser thread failed with 0x%x 0x%x\n",rv1,rv2);
 			continue;
 		}
 		if (pos != p->dpos) {
@@ -397,7 +400,7 @@ int specbos_diff_thread(void *pp) {
 		msec_sleep(500);
 	}
 	a1logd(p->log,3,"Diffuser thread returning\n");
-	return rv;
+	return rv1 != inst_ok ? rv1 : rv2;
 }
 
 /* Initialise the SPECBOS */
@@ -551,7 +554,7 @@ specbos_init_inst(inst *pp) {
 	return inst_ok;
 }
 
-static inst_code specbos_measure_set_refresh(specbos *p);
+static inst_code specbos_imp_measure_set_refresh(specbos *p);
 static inst_code specbos_imp_set_refresh(specbos *p);
 
 /* Get the ambient diffuser position */
@@ -573,6 +576,29 @@ specbos_get_diffpos(
 		a1logd(p->log, 2, "specbos_init_coms: unrecognised measuring head string '%s'\n",icoms_fix(buf));
 		return inst_protocol_error;
 	}
+	return inst_ok;
+}
+
+/* Get the target laser state */
+/* (This is not multithread safe) */
+static inst_code
+specbos_get_target_laser(
+	specbos *p,				/* Object */
+	int *laser,				/* 0 = off, 1 = on */
+	int nd					/* nz = no debug message */
+) {
+	char buf[MAX_RD_SIZE];
+	int ec;
+	int lstate;
+
+	if ((ec = specbos_fcommand(p, "*contr:laser?\r", buf, MAX_MES_SIZE, 1.0, 1, 0, nd)) != inst_ok) {
+		return specbos_interp_code((inst *)p, ec);
+	}
+	if (sscanf(buf, "laser: %d ",&lstate) != 1) {
+		a1loge(p->log, 2, "specbos_get_target_laser: failed to parse laser state\n");
+		return inst_protocol_error;
+	}
+	*laser = lstate;
 	return inst_ok;
 }
 
@@ -656,16 +682,19 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 		amutex_unlock(p->lock);
 		return rv;
 	}
+	p->laser = 0;
 
 	/* Attempt a refresh display frame rate calibration if needed */
 	if (p->refrmode != 0 && p->rrset == 0) {
-		if ((rv = specbos_measure_set_refresh(p)) != inst_ok) {
+		a1logd(p->log, 1, "specbos: need refresh rate calibration before measure\n");
+		if ((rv = specbos_imp_measure_set_refresh(p)) != inst_ok) {
 			amutex_unlock(p->lock);
 			return rv; 
 		}
 	}
 		
 	/* Trigger a measurement */
+	/* (Note that ESC will abort it) */
 	if ((ec = specbos_fcommand(p, "*init\r", buf, MAX_MES_SIZE, 5.0 * p->measto + 10.0 , 1, 1, 0)) != SPECBOS_OK) {
 		amutex_unlock(p->lock);
 		return specbos_interp_code((inst *)p, ec);
@@ -726,7 +755,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 
 	/* This may not change anything since instrument may clamp */
 	if (clamp)
-	icmClamp3(val->XYZ, val->XYZ);
+		icmClamp3(val->XYZ, val->XYZ);
 	val->loc[0] = '\000';
 	if (p->mode & inst_mode_ambient) {
 		val->mtype = inst_mrt_ambient;
@@ -740,6 +769,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 
 	/* spectrum data is returned only if requested */
 	if (p->mode & inst_mode_spectral) {
+		int tries, maxtries = 5;
 		int i, xsize;
 		char *cp, *ncp;
  
@@ -747,32 +777,53 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 		/* (Format 9 reportedly doesn't work on the 1201) */
 		/* The folling works on the 1211 and is reported to work on the 1201 */
 
-		/* Fetch the spectral readings */
-		if ((ec = specbos_fcommand(p, "*fetch:sprad\r", buf, MAX_RD_SIZE, 2.0, 2+p->nbands+1, 0, 0)) != SPECBOS_OK) {
-			return specbos_interp_code((inst *)p, ec);
-		}
+		/* Because the specbos doesn't use flow control in its */
+		/* internal serial communications, it may overrun */
+		/* the FT232R buffer, so retry fetching the spectra if */
+		/* we get a comm error or parsing error. */
+		for (tries = 0;;) {
 
-		val->sp.spec_n = p->nbands;
-		val->sp.spec_wl_short = p->wl_short;
-		val->sp.spec_wl_long = p->wl_long;
-
-		/* Spectral data is in W/nm/m^2 */
-		val->sp.norm = 1.0;
-		cp = buf;
-		for (i = -2; i < val->sp.spec_n; i++) {
-			if ((ncp = strchr(cp, '\r')) == NULL) {
-				amutex_unlock(p->lock);
-				a1logd(p->log, 1, "specbos_read_sample: failed to parse spectral\n");
-				return inst_protocol_error;
+			/* Fetch the spectral readings */
+			ec = specbos_fcommand(p, "*fetch:sprad\r", buf, MAX_RD_SIZE, 4.0, 2+p->nbands+1, 0, 0);
+			tries++;
+			if (ec != SPECBOS_OK) {
+				if (tries > maxtries) {
+					amutex_unlock(p->lock);
+					a1logd(p->log, 1, "specbos_fcommand: failed with 0x%x\n",ec);
+					return specbos_interp_code((inst *)p, ec);
+				}
+				continue;	/* Retry the fetch */
 			}
-			*ncp = '\000';
-			if (i >= 0) {
-				val->sp.spec[i] = 1000.0 * atof(cp);	/* Convert to mW/m^2/nm */
-				if (p->mode & inst_mode_ambient)
-					val->mtype = inst_mrt_ambient;
+	
+			val->sp.spec_n = p->nbands;
+			val->sp.spec_wl_short = p->wl_short;
+			val->sp.spec_wl_long = p->wl_long;
+	
+			/* Spectral data is in W/nm/m^2 */
+			val->sp.norm = 1.0;
+			cp = buf;
+			for (i = -2; i < val->sp.spec_n; i++) {
+				if ((ncp = strchr(cp, '\r')) == NULL) {
+					a1logd(p->log, 1, "specbos_read_sample: failed to parse spectra at %d/%d\n",i+1,val->sp.spec_n);
+					if (tries > maxtries) {
+						amutex_unlock(p->lock);
+						return inst_protocol_error;
+					}
+					continue;		/* Retry the fetch and parse */
+				}
+				*ncp = '\000';
+				if (i >= 0) {
+					a1logd(p->log, 6, "sample %d/%d got %f from '%s'\n",i+1,val->sp.spec_n,atof(cp),cp);
+					val->sp.spec[i] = 1000.0 * atof(cp);	/* Convert to mW/m^2/nm */
+					if (p->mode & inst_mode_ambient)
+						val->mtype = inst_mrt_ambient;
+				}
+				cp = ncp+1;
 			}
-			cp = ncp+1;
+			/* We've parsed correctly, so don't retry */
+			break;
 		}
+		a1logd(p->log, 1, "specbos_read_sample: got total %d samples/%d expected in %d tries\n",i,val->sp.spec_n, tries);
 	}
 	amutex_unlock(p->lock);
 
@@ -892,8 +943,9 @@ double *ref_rate
 }
 
 /* Measure and then set refperiod, refrate if possible */
+/* (Not thread safe) */
 static inst_code
-specbos_measure_set_refresh(
+specbos_imp_measure_set_refresh(
 	specbos *p			/* Object */
 ) {
 	inst_code rv;
@@ -901,9 +953,7 @@ specbos_measure_set_refresh(
 	int mul;
 	double pval;
 
-	amutex_lock(p->lock);
 	if ((rv = specbos_imp_measure_refresh(p, &refrate)) != inst_ok) {
-		amutex_unlock(p->lock);
 		return rv;
 	}
 
@@ -919,12 +969,23 @@ specbos_measure_set_refresh(
 	p->rrset = 1;
 
 	if ((rv = specbos_imp_set_refresh(p)) != inst_ok) {
-		amutex_unlock(p->lock);
 		return rv;
 	}
-	amutex_unlock(p->lock);
 
 	return inst_ok;
+}
+
+/* Measure and then set refperiod, refrate if possible */
+static inst_code
+specbos_measure_set_refresh(
+	specbos *p			/* Object */
+) {
+	int rv;
+
+	amutex_lock(p->lock);
+	rv = specbos_imp_measure_set_refresh(p);
+	amutex_unlock(p->lock);
+	return rv;
 }
 
 /* Return needed and available inst_cal_type's */
@@ -1634,8 +1695,24 @@ specbos_get_set_opt(inst *pp, inst_opt_type m, ...)
 		return inst_ok;
 	}
 
+	/* Get laser target state. */
+	/* For speed we don't return the real time state, */
+	/* but the state from the last poll */ 
+	if (m == inst_opt_get_target_state) {
+		va_list args;
+		int *pstate;
+
+		va_start(args, m);
+		pstate = va_arg(args, int *);
+		va_end(args);
+
+		if (pstate != NULL)
+			*pstate = p->laser;
+
+		return inst_ok;
+
 	/* Set laser target state */
-	if (m == inst_opt_set_target_state) {
+	} else if (m == inst_opt_set_target_state) {
 		va_list args;
 		int state = 0;
 
@@ -1644,41 +1721,31 @@ specbos_get_set_opt(inst *pp, inst_opt_type m, ...)
 		va_end(args);
 
 		amutex_lock(p->lock);
-		if (state == 2) { 
-			int lstate = -1;
-			if ((ev = specbos_command(p, "*contr:laser?\r", buf, MAX_MES_SIZE, 1.0)) != inst_ok) {
+		if (state == 2) {			/* Toggle */ 
+
+			/* Get the current state */
+			if ((ev = specbos_get_target_laser(p, &p->laser, 0)) != inst_ok) { 
 				amutex_unlock(p->lock);
-				a1loge(p->log, 1, "specbos_get_set_opt: failed to send laser? command\n");
 				return ev;
 			}
-			if (sscanf(buf, "laser: %d ",&lstate) != 1) {
-				amutex_unlock(p->lock);
-				a1loge(p->log, 1, "specbos_get_set_opt: failed to parse laser state\n");
-				return ev;
-			}
-			a1logd(p->log, 5, " Laser state = %d\n",lstate);
-			if (lstate == 0)
-				lstate = 1;
-			else if (lstate == 1)
-				lstate = 0;
-			if (lstate == 0 || lstate == 1) {
-				char mes[100];
-				sprintf(mes,"*contr:laser %d\r",lstate);
-				if ((ev = specbos_command(p, mes, buf, MAX_MES_SIZE, 1.0)) != inst_ok) {
-					amutex_unlock(p->lock);
-					return ev;
-				}
-			}
-		} else if (state == 1) { 
+			a1logd(p->log, 5, " Laser state = %d\n",p->laser);
+			if (p->laser == 0)
+				state = 1;
+			else if (p->laser == 1)
+				state = 0;
+		}
+		if (state == 1) { 
 			if ((ev = specbos_command(p, "*contr:laser 1\r", buf, MAX_MES_SIZE, 1.0)) != inst_ok) {
 				amutex_unlock(p->lock);
 				return ev;
 			}
+			p->laser = 1;
 		} else if (state == 0) {
 			if ((ev = specbos_command(p, "*contr:laser 0\r", buf, MAX_MES_SIZE, 1.0)) != inst_ok) {
 				amutex_unlock(p->lock);
 				return ev;
 			}
+			p->laser = 0;
 		}
 		amutex_unlock(p->lock);
 		return inst_ok;

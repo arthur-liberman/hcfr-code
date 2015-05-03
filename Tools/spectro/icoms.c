@@ -506,22 +506,56 @@ void bad_beep() {
 	msec_beep(350, 800, 200);
 }
 
+char *baud_rate_to_str(baud_rate br) {
+	switch (br) {
+		case baud_nc:
+			return "Not Configured";
+		case baud_110:
+			return "110";
+		case baud_300:
+			return "300";
+		case baud_600:
+			return "600";
+		case baud_1200:
+			return "1400";
+		case baud_2400:
+			return "2400";
+		case baud_4800:
+			return "4800";
+		case baud_9600:
+			return "9600";
+		case baud_14400:
+			return "14400";
+		case baud_19200:
+			return "19200";
+		case baud_38400:
+			return "38400";
+		case baud_57600:
+			return "57600";
+		case baud_115200:
+			return "115200";
+		case baud_921600:
+			return "921600";
+	}
+	return "Unknown";
+}
+
 /* Convert control chars to ^[A-Z] notation in a string */
-/* Can be called 5 times without reusing the static buffer */
-/* Returns a maximum of 1000 characters */
+/* Can be called 3 times without reusing the static buffer */
+/* Returns a maximum of 5000 characters */
 char *
 icoms_fix(char *ss) {
-	static unsigned char buf[5][1005];
+	static unsigned char buf[3][10005];
 	static int ix = 0;
 	unsigned char *d;
 	unsigned char *s = (unsigned char *)ss;
-	if (++ix >= 5)
+	if (++ix >= 3)
 		ix = 0;
 	if (ss == NULL) {
 		strcpy((char *)buf[ix],"(null)");
 		return (char *)buf[ix];
 	}
-	for(d = buf[ix]; (d - buf[ix]) < 1000;) {
+	for(d = buf[ix]; (d - buf[ix]) < 10000;) {
 		if (*s < ' ' && *s > '\000') {
 			*d++ = '^';
 			*d++ = *s++ + '@';

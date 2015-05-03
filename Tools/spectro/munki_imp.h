@@ -164,6 +164,8 @@ struct _munkiimp {
 	volatile int th_termed;		/* Thread has terminated */
 	inst_opt_type trig;			/* Reading trigger mode */
 	int noinitcalib;			/* Disable initial calibration if not essential */
+	int nocalibask;				/* Disable asking user to proceed with calibration */
+								/* even when the instrument is in correct configuration */
 	int nosposcheck;			/* Disable checking the sensor position */
 	int highres;				/* High resolution mode */
 	int hr_inited;				/* High resolution has been initialized */
@@ -818,6 +820,9 @@ munki_code munki_create_hr(munki *p, int ref);
 
 /* Set the noinitcalib mode */
 void munki_set_noinitcalib(munki *p, int v, int losecs);
+
+/* Set the nocalibask mode */
+void munki_set_nocalibask(munki *p, int v);
 
 /* Set the trigger config */
 void munki_set_trig(munki *p, inst_opt_type trig);

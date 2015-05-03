@@ -722,7 +722,11 @@ i1pro_get_set_opt(inst *pp, inst_opt_type m, ...)
 {
 	i1pro *p = (i1pro *)pp;
 
-	if (m == inst_opt_noinitcalib) {
+	if (m == inst_opt_initcalib) {		/* default */
+		i1pro_set_noinitcalib(p, 0, 0);
+		return inst_ok;
+
+	} if (m == inst_opt_noinitcalib) {
 		va_list args;
 		int losecs = 0;
 
@@ -731,10 +735,6 @@ i1pro_get_set_opt(inst *pp, inst_opt_type m, ...)
 		va_end(args);
 
 		i1pro_set_noinitcalib(p, 1, losecs);
-		return inst_ok;
-
-	} else if (m == inst_opt_initcalib) {
-		i1pro_set_noinitcalib(p, 0, 0);
 		return inst_ok;
 
 	/* Record the trigger mode */

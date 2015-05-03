@@ -60,8 +60,9 @@
 #include "icoms.h"
 #include "kleink10.h"
 
-#undef HIGH_SPEED		/* [und] Use high speed flicker measure for refresh rate etc. */
-#define AUTO_AVERAGE	/* [def] Automatically average more readings for low light */
+#undef HIGH_SPEED			/* [und] Use high speed flicker measure for refresh rate etc. */
+#define AUTO_AVERAGE		/* [def] Automatically average more readings for low light */
+#define RETRY_RANGE_ERROR 3	/* [3]   Retry range error readings 3 times */
 
 #undef PLOT_REFRESH     /* [und] Plot refresh rate measurement info */
 #undef PLOT_UPDELAY     /* [und] Plot update delay measurement info */
@@ -77,32 +78,6 @@ static inst_code k10_read_flicker_samples(kleink10 *p, double duration, double *
 
 #define MAX_MES_SIZE 500		/* Maximum normal message reply size */
 #define MAX_RD_SIZE 8000		/* Maximum reading message reply size */
-
-// Print bytes as hex to debug log */
-static void dump_bytes(a1log *log, char *pfx, char *ibuf, int len) {
-	unsigned char *buf = (unsigned char *)ibuf;
-	int i, j, ii;
-	char oline[200] = { '\000' }, *bp = oline;
-	for (i = j = 0; i < len; i++) {
-		if ((i % 16) == 0)
-			bp += sprintf(bp,"%s%04x:",pfx,i);
-		bp += sprintf(bp," %02x",buf[i]);
-		if ((i+1) >= len || ((i+1) % 16) == 0) {
-			for (ii = i; ((ii+1) % 16) != 0; ii++)
-				bp += sprintf(bp,"   ");
-			bp += sprintf(bp,"  ");
-			for (; j <= i; j++) {
-				if (!(buf[j] & 0x80) && isprint(buf[j]))
-					bp += sprintf(bp,"%c",buf[j]);
-				else
-					bp += sprintf(bp,".");
-			}
-			bp += sprintf(bp,"\n");
-			a1logd(log,0, "%s", oline);
-			bp = oline;
-		}
-	}
-}
 
 /* Decode a K10 error letter */
 static int decodeK10err(char c) {
@@ -241,9 +216,9 @@ int nd					/* nz to disable debug messages */
 
 		if (!nd && p->log->debug >= 6) {
 			a1logd(p->log, 6, "k10_fcommand: command sent\n");
-			dump_bytes(p->log, "  ", in, bwrite);
+			adump_bytes(p->log, "  ", (unsigned char *)in, 0, bwrite);
 			a1logd(p->log, 6, "  returned %d bytes:\n",bread);
-			dump_bytes(p->log, "  ", out, bread);
+			adump_bytes(p->log, "  ", (unsigned char *)out, 0, bread);
 		}
 
 		if (xec & ec_e) {
@@ -298,7 +273,7 @@ double to				/* Timeout in seconds */
 
 		if (p->log->debug >= 6) {
 			a1logd(p->log, 6, "k10_write: command sent\n");
-			dump_bytes(p->log, "  ", in, strlen((char *)in));
+			adump_bytes(p->log, "  ", (unsigned char *)in, 0, strlen((char *)in));
 		}
 	}
 	a1logd(p->log, 6, "  error code 0x%x\n",rv);
@@ -327,8 +302,8 @@ double to				/* Timeout in seconds */
 	} else {
 
 		if (p->log->debug >= 6) {
-			a1logd(p->log, 6, "k10_fcommand: read %d bytes\n",bread);
-			dump_bytes(p->log, "  ", out, bread);
+			a1logd(p->log, 6, "k10_read: read %d bytes\n",bread);
+			adump_bytes(p->log, "  ", (unsigned char *)out, 0, bread);
 		}
 	}
 	a1logd(p->log, 6, "  error code 0x%x\n",rv);
@@ -1133,9 +1108,9 @@ int usefast				/* If nz use fast rate is possible */
 				for (i = 0; i < 32; i++)
 					xtra[i] = buf[i * 3 + 0];
 			
-				dump_bytes(p->log, " ", buf, 96);
+				adump_bytes(p->log, " ", (unsigned char *)buf, 0, 96);
 				printf("Extra bytes:\n");
-				dump_bytes(p->log, " ", xtra, 32);
+				adump_bytes(p->log, " ", (unsigned char *)xtra, 0, 32);
 
 				XYZ[0] = KleinMeas2double(xtra+2);
 				XYZ[1] = KleinMeas2double(xtra+5);
@@ -1208,7 +1183,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	int bsize;
 	inst_code rv = inst_protocol_error;
 	int range[3];		/* Range for RGB sensor values */
-	int i, ntav = 1;	/* Number of readings to average */
+	int i, tries,ntav = 1;	/* Number of readings to average */
 	double v, vv, XYZ[3];
 
 	if (!p->gotcoms)
@@ -1273,8 +1248,16 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	}
 
 
-	/* Take a measurement */
-	rv = k10_command(p, "N5\r", buf, MAX_MES_SIZE, &bsize, 15, ec_ec, 2.0);
+	for (tries = 0; tries < RETRY_RANGE_ERROR; tries++) { 
+
+		/* Take a measurement */
+		rv = k10_command(p, "N5\r", buf, MAX_MES_SIZE, &bsize, 15, ec_ec, 2.0);
+
+		if (rv == inst_ok
+		 || (   (rv & inst_imask) != K10_TOP_OVER_RANGE  
+		     && (rv & inst_imask) != K10_BOT_UNDER_RANGE))
+			break;  
+	}
 
 	if (rv == inst_ok)
 		rv = decodeN5(p, val->XYZ, range, buf, bsize);
@@ -2724,8 +2707,22 @@ k10_get_set_opt(inst *pp, inst_opt_type m, ...)
 		return inst_ok;
 	}
 
+	/* Get target light state */
+	if (m == inst_opt_get_target_state) {
+		va_list args;
+		int *pstate, lstate = 0;
+
+		va_start(args, m);
+		pstate = va_arg(args, int *);
+		va_end(args);
+
+		if (pstate != NULL)
+			*pstate = p->lights;
+
+		return inst_ok;
+
 	/* Set target light state */
-	if (m == inst_opt_set_target_state) {
+	} else if (m == inst_opt_set_target_state) {
 		inst_code ev;
 		va_list args;
 		int state = 0;

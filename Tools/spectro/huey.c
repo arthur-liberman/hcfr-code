@@ -414,6 +414,7 @@ huey_wrreg_byte(
 	int rsize;
 	inst_code ev;
 
+	memset(ibuf, 0, 7);
 	ibuf[0] = addr;  
 	ibuf[1] = inv;  
 
@@ -480,6 +481,7 @@ huey_rd_int_time(
 	int rsize;
 	inst_code ev;
 
+	memset(buf, 0, 7);
 	if ((ev = huey_command(p, i1d_getintgt, buf, buf, 1.0, 1.0)) != inst_ok)
 		return ev;
 	
@@ -499,6 +501,7 @@ huey_wr_int_time(
 	int rsize;
 	inst_code ev;
 
+	memset(buf, 0, 7);
 	int2buf(buf, inv);
 	if ((ev = huey_command(p, i1d_setintgt, buf, buf, 1.0, 1.0)) != inst_ok)
 		return ev;
@@ -522,17 +525,20 @@ huey_freq_measure(
 	inst_code ev;
 
 	/* Do the measurement, and return the Red value */
+	memset(ibuf, 0, 7);
 	ibuf[0] = 2;		/* Sync mode 2 for CRT */
 	if ((ev = huey_command(p, i1d_m_red_2, ibuf, obuf, 1.0, 10.0)) != inst_ok)
 		return ev;
 	rgb[0] = (double)buf2int(obuf);
 
 	/* Get the green value */
+	memset(ibuf, 0, 7);
 	if ((ev = huey_command(p, i1d_rd_green, ibuf, obuf, 1.0, 1.0)) != inst_ok)
 		return ev;
 	rgb[1] = (double)buf2int(obuf);
 
 	/* Get the blue value */
+	memset(ibuf, 0, 7);
 	if ((ev = huey_command(p, i1d_rd_blue, ibuf, obuf, 1.0, 1.0)) != inst_ok)
 		return ev;
 	rgb[2] = (double)buf2int(obuf);
@@ -556,6 +562,7 @@ huey_period_measure(
 	inst_code ev;
 
 	/* Set the edge count */
+	memset(ibuf, 0, 7);
 	short2buf(ibuf + 0, edgec[0]);
 	short2buf(ibuf + 2, edgec[1]);
 	short2buf(ibuf + 4, edgec[2]);
@@ -566,11 +573,13 @@ huey_period_measure(
 	rgb[0] = (double)buf2int(obuf);
 
 	/* Get the green value */
+	memset(ibuf, 0, 7);
 	if ((ev = huey_command(p, i1d_rd_green, ibuf, obuf, 1.0, 1.0)) != inst_ok)
 		return ev;
 	rgb[1] = (double)buf2int(obuf);
 
 	/* Get the blue value */
+	memset(ibuf, 0, 7);
 	if ((ev = huey_command(p, i1d_rd_blue, ibuf, obuf, 1.0, 1.0)) != inst_ok)
 		return ev;
 	rgb[2] = (double)buf2int(obuf);
@@ -593,6 +602,7 @@ huey_take_raw_measurement_3(
 	inst_code ev;
 
 	/* Do the measurement, and return the Red value */
+	memset(ibuf, 0, 7);
 	short2buf(ibuf + 0, edgec[0]);
 	ibuf[2] = 0;	/* Channel */
 	if ((ev = huey_command(p, i1d_m_rgb_edge_2, ibuf, obuf, 1.0, 10.0)) != inst_ok)
@@ -600,6 +610,7 @@ huey_take_raw_measurement_3(
 	rgb[0] = (double)buf2int(obuf);
 
 	/* Do the measurement, and return the Green value */
+	memset(ibuf, 0, 7);
 	short2buf(ibuf + 0, edgec[1]);
 	ibuf[2] = 1;	/* Channel */
 	if ((ev = huey_command(p, i1d_m_rgb_edge_2, ibuf, obuf, 1.0, 10.0)) != inst_ok)
@@ -607,6 +618,7 @@ huey_take_raw_measurement_3(
 	rgb[1] = (double)buf2int(obuf);
 
 	/* Do the measurement, and return the Blue value */
+	memset(ibuf, 0, 7);
 	short2buf(ibuf + 0, edgec[2]);
 	ibuf[2] = 2;	/* Channel */
 	if ((ev = huey_command(p, i1d_m_rgb_edge_2, ibuf, obuf, 1.0, 10.0)) != inst_ok)
@@ -742,6 +754,7 @@ huey_take_amb_measurement_1(
 	int rsize;
 	inst_code ev;
 
+	memset(ibuf, 0, 7);
 	a1 &= 0xff;
 	ibuf[0] = a1;
 	ibuf[1] = syncmode;
@@ -795,6 +808,7 @@ huey_set_LEDs(
 	unsigned char obuf[8];
 	inst_code ev;
 
+	memset(ibuf, 0, 7);
 	mask &= 0xf;
 	p->led_state = mask;
 
@@ -867,10 +881,12 @@ huey_check_unlock(
 	a1logd(p->log,2,"huey_check_unlock: called\n");
 
 	/* Check the instrument status */
+	memset(buf, 0, 7);
 	if ((ev = huey_command(p, i1d_status, buf, buf, 1.0,1.0)) != inst_ok)
 		return ev;
 
 	if (strncmp((char *)buf, "Locked", 6) == 0) {
+		memset(buf, 0, 7);
 		if (p->lenovo)
 			strcpy((char *)buf,"huyL");
 		else
@@ -879,11 +895,13 @@ huey_check_unlock(
 		if ((ev = huey_command(p, i1d_unlock, buf, buf, 1.0,1.0)) != inst_ok)
 			return ev;
 
+		memset(buf, 0, 7);
 		if ((ev = huey_command(p, i1d_status, buf, buf, 1.0,1.0)) != inst_ok)
 			return ev;
 	}
 
 	if (strncmp((char *)buf, "huL002", 6) != 0		/* Lenovo Huey ? */
+	 && strncmp((char *)buf, "ECCM2 ", 6) != 0		/* Lenovo Thinkpad W530 Huey ? */
 	 && strncmp((char *)buf, "Cir001", 6) != 0) {	/* Huey */
 		a1logd(p->log,1,"huey_check_unlock: unknown model '%s'\n",buf);
 		return huey_interp_code((inst *)p, HUEY_UNKNOWN_MODEL);
@@ -1059,6 +1077,7 @@ huey_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	}
 
 	/* Check instrument is responding */
+	memset(buf, 0, 7);
 	if ((ev = huey_command(p, i1d_status, buf, buf, 1.0, 1.0)) != inst_ok) {
 		a1logd(p->log, 1, "huey_init_coms: instrument didn't respond 0x%x\n",ev);
 		return ev;
