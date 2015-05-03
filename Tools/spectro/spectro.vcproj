@@ -188,6 +188,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ex1.c"
+				>
+			</File>
+			<File
 				RelativePath=".\hcfr.c"
 				>
 			</File>
@@ -363,6 +367,10 @@
 			</File>
 			<File
 				RelativePath=".\dtp92.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ex1.h"
 				>
 			</File>
 			<File
