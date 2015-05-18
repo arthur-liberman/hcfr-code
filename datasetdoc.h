@@ -198,6 +198,7 @@ protected:
 	afx_msg void OnPatternAnimBlack();
 	afx_msg void OnPatternAnimWhite();
 	afx_msg void OnPatternGradient();
+	afx_msg void OnPatternGradient2();
 	afx_msg void OnPatternLramp();
 	afx_msg void OnPatternGranger();
 	afx_msg void OnPatternTV();

@@ -510,6 +510,12 @@ BOOL CGDIGenerator::DisplayGradient()
 	return TRUE;
 }
 
+BOOL CGDIGenerator::DisplayGradient2()
+{
+	m_displayWindow.DisplayGradient2();
+	return TRUE;
+}
+
 BOOL CGDIGenerator::DisplayLramp()
 {
 	m_displayWindow.DisplayLramp();

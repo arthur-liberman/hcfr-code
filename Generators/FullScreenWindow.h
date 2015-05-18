@@ -113,6 +113,7 @@ public:
 	void DisplayAnimatedBlack();
 	void DisplayAnimatedWhite();
 	void DisplayGradient();
+	void DisplayGradient2();
 	void DisplayLramp();
 	void DisplayGranger();
 	void DisplayTV();

@@ -1457,6 +1457,7 @@ BEGIN
     "1",            IDM_PATTERN_SHARP,      VIRTKEY, CONTROL, NOINVERT
     "2",            IDM_PATTERN_CLIPL,      VIRTKEY, CONTROL, NOINVERT
     "3",            IDM_PATTERN_CLIPH,      VIRTKEY, CONTROL, NOINVERT
+    "4",            IDM_PATTERN_GRADIENT2,      VIRTKEY, CONTROL, NOINVERT
     "0",            IDM_PATTERN_TV,         VIRTKEY, ALT, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
@@ -1848,6 +1849,7 @@ BEGIN
             MENUITEM "Animated black level test pattern", IDM_PATTERN_ANIM_BLACK
             MENUITEM "Animated white level test pattern", IDM_PATTERN_ANIM_WHITE
             MENUITEM "&Neutral Gradient",           IDM_PATTERN_GRADIENT
+            MENUITEM "N&eutral Gradient(2)",           IDM_PATTERN_GRADIENT2
             MENUITEM "&Clipping low",               IDM_PATTERN_CLIPL
             MENUITEM "C&lipping high",              IDM_PATTERN_CLIPH
             MENUITEM "RGBYCMW Luma Ramps",          IDM_PATTERN_LRAMP

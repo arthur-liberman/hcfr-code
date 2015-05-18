@@ -29,6 +29,8 @@
 //#include "madVRTestPattern.h"
 #include "madTPG.h"
 #include "GDIGenerator.h"
+//#include "../Tools/spectro/ccwin.h"
+//#include "../Tools/spectro/ccast/ccast.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -132,6 +134,9 @@ BOOL CGenerator::Init(UINT nbMeasure)
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 	BOOL madVR_Found;
+//	ccast_id **ids;
+//	ids = get_ccids();	
+	
 	if (Cgen.m_nDisplayMode == DISPLAY_madVR && m_name != str)
 	{
 		if (madVR_IsAvailable())
@@ -193,6 +198,11 @@ BOOL CGenerator::DisplayAnimatedWhite()
 }
 
 BOOL CGenerator::DisplayGradient()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplayGradient2()
 {
 	return TRUE;	  // need to be overriden
 }

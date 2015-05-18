@@ -460,6 +460,7 @@ BEGIN_MESSAGE_MAP(CDataSetDoc, CDocument)
 	ON_COMMAND(IDM_PATTERN_ANIM_BLACK, OnPatternAnimBlack)
 	ON_COMMAND(IDM_PATTERN_ANIM_WHITE, OnPatternAnimWhite)
 	ON_COMMAND(IDM_PATTERN_GRADIENT, OnPatternGradient)
+	ON_COMMAND(IDM_PATTERN_GRADIENT2, OnPatternGradient2)
 	ON_COMMAND(IDM_PATTERN_LRAMP, OnPatternLramp)
 	ON_COMMAND(IDM_PATTERN_GRANGER, OnPatternGranger)
 	ON_COMMAND(IDM_PATTERN_TV, OnPatternTV)
@@ -2920,6 +2921,27 @@ void CDataSetDoc::OnPatternLramp()
 
 			m_pGenerator->Init();
 			m_pGenerator->DisplayLramp();
+
+			WaitKey();
+			
+			AfxGetMainWnd () -> EnableWindow ( TRUE );
+			m_pGenerator->Release();
+	}
+	else
+	{
+		GetColorApp()->InMeasureMessageBox( _S(IDS_CANNOTDISPLAYANIMATION), "On measure", MB_OK | MB_ICONEXCLAMATION );
+	}
+}
+
+void CDataSetDoc::OnPatternGradient2() 
+{
+
+	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
+	{
+			AfxGetMainWnd () -> EnableWindow ( FALSE );
+
+			m_pGenerator->Init();
+			m_pGenerator->DisplayGradient2();
 
 			WaitKey();
 			

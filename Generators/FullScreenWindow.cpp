@@ -422,6 +422,14 @@ void CFullScreenWindow::DisplayLramp()
 	FreeLibrary(hPatterns);
 }
 
+void CFullScreenWindow::DisplayGradient2() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+	CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_GRADIENT2,TRUE);
+	FreeLibrary(hPatterns);
+}
+
 void CFullScreenWindow::DisplayGranger() 
 {
 	HMODULE hPatterns;

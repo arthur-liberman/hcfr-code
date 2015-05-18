@@ -769,6 +769,7 @@
 #define IDC_USEPIC                      1325
 #define IDR_PATTERN_TV                  1326
 #define IDR_PATTERN_TVv                 1327
+#define IDR_PATTERN_GRADIENT2            1328
 #define IDC_COLORTEMPHISTO_GRAPH        11003
 #define IDC_RGBHISTO_GRAPH              11101
 #define IDC_RGBHISTO_GRAPH2             11102
@@ -1006,6 +1007,7 @@
 #define IDM_PATTERN_CLIPL               33066
 #define IDM_PATTERN_CLIPH               33067
 #define IDM_PATTERN_TV                  33068
+#define IDM_PATTERN_GRADIENT2            33069
 #define IDS_LUMINANCEHISTOVIEW_NAME     41446
 #define IDS_COLORTEMPHISTOVIEW_NAME     41447
 #define IDS_RGBHISTOVIEW_NAME           41448

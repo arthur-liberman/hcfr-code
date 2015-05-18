@@ -75,6 +75,7 @@ public:
 	virtual BOOL DisplayAnimatedBlack();
 	virtual BOOL DisplayAnimatedWhite();
 	virtual BOOL DisplayGradient();
+	virtual BOOL DisplayGradient2();
 	virtual BOOL DisplayLramp();
 	virtual BOOL DisplayGranger();
 	virtual BOOL DisplayTV();
