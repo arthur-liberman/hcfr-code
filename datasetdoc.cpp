@@ -461,6 +461,12 @@ BEGIN_MESSAGE_MAP(CDataSetDoc, CDocument)
 	ON_COMMAND(IDM_PATTERN_ANIM_WHITE, OnPatternAnimWhite)
 	ON_COMMAND(IDM_PATTERN_GRADIENT, OnPatternGradient)
 	ON_COMMAND(IDM_PATTERN_GRADIENT2, OnPatternGradient2)
+	ON_COMMAND(IDM_PATTERN_RG, OnPatternRG)
+	ON_COMMAND(IDM_PATTERN_RB, OnPatternRB)
+	ON_COMMAND(IDM_PATTERN_GB, OnPatternGB)
+	ON_COMMAND(IDM_PATTERN_RGd, OnPatternRGd)
+	ON_COMMAND(IDM_PATTERN_RBd, OnPatternRBd)
+	ON_COMMAND(IDM_PATTERN_GBd, OnPatternGBd)
 	ON_COMMAND(IDM_PATTERN_LRAMP, OnPatternLramp)
 	ON_COMMAND(IDM_PATTERN_GRANGER, OnPatternGranger)
 	ON_COMMAND(IDM_PATTERN_TV, OnPatternTV)
@@ -2900,6 +2906,127 @@ void CDataSetDoc::OnPatternGradient()
 
 			m_pGenerator->Init();
 			m_pGenerator->DisplayGradient();
+
+			WaitKey();
+			
+			AfxGetMainWnd () -> EnableWindow ( TRUE );
+			m_pGenerator->Release();
+	}
+	else
+	{
+		GetColorApp()->InMeasureMessageBox( _S(IDS_CANNOTDISPLAYANIMATION), "On measure", MB_OK | MB_ICONEXCLAMATION );
+	}
+}
+
+void CDataSetDoc::OnPatternRB() 
+{
+
+	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
+	{
+			AfxGetMainWnd () -> EnableWindow ( FALSE );
+
+			m_pGenerator->Init();
+			m_pGenerator->DisplayRB();
+
+			WaitKey();
+			
+			AfxGetMainWnd () -> EnableWindow ( TRUE );
+			m_pGenerator->Release();
+	}
+	else
+	{
+		GetColorApp()->InMeasureMessageBox( _S(IDS_CANNOTDISPLAYANIMATION), "On measure", MB_OK | MB_ICONEXCLAMATION );
+	}
+}
+void CDataSetDoc::OnPatternRG() 
+{
+
+	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
+	{
+			AfxGetMainWnd () -> EnableWindow ( FALSE );
+
+			m_pGenerator->Init();
+			m_pGenerator->DisplayRG();
+
+			WaitKey();
+			
+			AfxGetMainWnd () -> EnableWindow ( TRUE );
+			m_pGenerator->Release();
+	}
+	else
+	{
+		GetColorApp()->InMeasureMessageBox( _S(IDS_CANNOTDISPLAYANIMATION), "On measure", MB_OK | MB_ICONEXCLAMATION );
+	}
+}
+void CDataSetDoc::OnPatternGB() 
+{
+
+	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
+	{
+			AfxGetMainWnd () -> EnableWindow ( FALSE );
+
+			m_pGenerator->Init();
+			m_pGenerator->DisplayGB();
+
+			WaitKey();
+			
+			AfxGetMainWnd () -> EnableWindow ( TRUE );
+			m_pGenerator->Release();
+	}
+	else
+	{
+		GetColorApp()->InMeasureMessageBox( _S(IDS_CANNOTDISPLAYANIMATION), "On measure", MB_OK | MB_ICONEXCLAMATION );
+	}
+}
+void CDataSetDoc::OnPatternRBd() 
+{
+
+	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
+	{
+			AfxGetMainWnd () -> EnableWindow ( FALSE );
+
+			m_pGenerator->Init();
+			m_pGenerator->DisplayRBd();
+
+			WaitKey();
+			
+			AfxGetMainWnd () -> EnableWindow ( TRUE );
+			m_pGenerator->Release();
+	}
+	else
+	{
+		GetColorApp()->InMeasureMessageBox( _S(IDS_CANNOTDISPLAYANIMATION), "On measure", MB_OK | MB_ICONEXCLAMATION );
+	}
+}
+void CDataSetDoc::OnPatternRGd() 
+{
+
+	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
+	{
+			AfxGetMainWnd () -> EnableWindow ( FALSE );
+
+			m_pGenerator->Init();
+			m_pGenerator->DisplayRGd();
+
+			WaitKey();
+			
+			AfxGetMainWnd () -> EnableWindow ( TRUE );
+			m_pGenerator->Release();
+	}
+	else
+	{
+		GetColorApp()->InMeasureMessageBox( _S(IDS_CANNOTDISPLAYANIMATION), "On measure", MB_OK | MB_ICONEXCLAMATION );
+	}
+}
+void CDataSetDoc::OnPatternGBd() 
+{
+
+	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
+	{
+			AfxGetMainWnd () -> EnableWindow ( FALSE );
+
+			m_pGenerator->Init();
+			m_pGenerator->DisplayGBd();
 
 			WaitKey();
 			

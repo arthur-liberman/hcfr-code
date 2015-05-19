@@ -510,6 +510,37 @@ BOOL CGDIGenerator::DisplayGradient()
 	return TRUE;
 }
 
+BOOL CGDIGenerator::DisplayRG()
+{
+	m_displayWindow.DisplayRG();
+	return TRUE;
+}
+BOOL CGDIGenerator::DisplayRB()
+{
+	m_displayWindow.DisplayRB();
+	return TRUE;
+}
+BOOL CGDIGenerator::DisplayGB()
+{
+	m_displayWindow.DisplayGB();
+	return TRUE;
+}
+BOOL CGDIGenerator::DisplayRGd()
+{
+	m_displayWindow.DisplayRGd();
+	return TRUE;
+}
+BOOL CGDIGenerator::DisplayRBd()
+{
+	m_displayWindow.DisplayRBd();
+	return TRUE;
+}
+BOOL CGDIGenerator::DisplayGBd()
+{
+	m_displayWindow.DisplayGBd();
+	return TRUE;
+}
+
 BOOL CGDIGenerator::DisplayGradient2()
 {
 	m_displayWindow.DisplayGradient2();

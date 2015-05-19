@@ -770,6 +770,12 @@
 #define IDR_PATTERN_TV                  1326
 #define IDR_PATTERN_TVv                 1327
 #define IDR_PATTERN_GRADIENT2            1328
+#define IDR_PATTERN_RG            1329
+#define IDR_PATTERN_RB            1330
+#define IDR_PATTERN_GB            1331
+#define IDR_PATTERN_RGd            1332
+#define IDR_PATTERN_RBd            1333
+#define IDR_PATTERN_GBd            1334
 #define IDC_COLORTEMPHISTO_GRAPH        11003
 #define IDC_RGBHISTO_GRAPH              11101
 #define IDC_RGBHISTO_GRAPH2             11102
@@ -1008,6 +1014,12 @@
 #define IDM_PATTERN_CLIPH               33067
 #define IDM_PATTERN_TV                  33068
 #define IDM_PATTERN_GRADIENT2            33069
+#define IDM_PATTERN_RG            33070
+#define IDM_PATTERN_RB            33071
+#define IDM_PATTERN_GB            33072
+#define IDM_PATTERN_RGd            33073
+#define IDM_PATTERN_RBd           33074
+#define IDM_PATTERN_GBd            33075
 #define IDS_LUMINANCEHISTOVIEW_NAME     41446
 #define IDS_COLORTEMPHISTOVIEW_NAME     41447
 #define IDS_RGBHISTOVIEW_NAME           41448

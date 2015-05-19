@@ -202,6 +202,32 @@ BOOL CGenerator::DisplayGradient()
 	return TRUE;	  // need to be overriden
 }
 
+BOOL CGenerator::DisplayRG()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplayRB()
+{
+	return TRUE;	  // need to be overriden
+}
+BOOL CGenerator::DisplayGB()
+{
+	return TRUE;	  // need to be overriden
+}
+BOOL CGenerator::DisplayRGd()
+{
+	return TRUE;	  // need to be overriden
+}
+BOOL CGenerator::DisplayRBd()
+{
+	return TRUE;	  // need to be overriden
+}
+BOOL CGenerator::DisplayGBd()
+{
+	return TRUE;	  // need to be overriden
+}
+
 BOOL CGenerator::DisplayGradient2()
 {
 	return TRUE;	  // need to be overriden

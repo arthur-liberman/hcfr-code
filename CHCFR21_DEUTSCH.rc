@@ -1851,8 +1851,17 @@ BEGIN
         BEGIN
             MENUITEM "Animiertes Schwarzwert Testbild", IDM_PATTERN_ANIM_BLACK
             MENUITEM "Animiertes Weiﬂwert Testbild", IDM_PATTERN_ANIM_WHITE
-            MENUITEM "&Neutral Gradient",           IDM_PATTERN_GRADIENT
-            MENUITEM "N&eutral Gradient(2)",           IDM_PATTERN_GRADIENT2
+            POPUP "&Gradient Patterns"
+			BEGIN
+				MENUITEM "&Neutral Gradient",           IDM_PATTERN_GRADIENT
+				MENUITEM "Reversed N&eutral Gradients",           IDM_PATTERN_GRADIENT2
+				MENUITEM "Red/Green Cross Gradient",           IDM_PATTERN_RG
+				MENUITEM "Red/Blue Cross Gradient",           IDM_PATTERN_RB
+				MENUITEM "Green/Blue Cross Gradient",           IDM_PATTERN_GB
+				MENUITEM "Red/Green [dark] Cross Gradient",           IDM_PATTERN_RGd
+				MENUITEM "Red/Blue [dark] Cross Gradient",           IDM_PATTERN_RBd
+				MENUITEM "Green/Blue [dark] Cross Gradient",           IDM_PATTERN_GBd
+			END
             MENUITEM "&Clipping low",               IDM_PATTERN_CLIPL
             MENUITEM "C&lipping high",              IDM_PATTERN_CLIPH
             MENUITEM "RGBYCMW Luma Ramps",          IDM_PATTERN_LRAMP

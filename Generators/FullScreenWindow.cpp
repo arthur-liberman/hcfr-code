@@ -414,6 +414,49 @@ void CFullScreenWindow::DisplayGradient()
 	FreeLibrary(hPatterns);
 }
 
+void CFullScreenWindow::DisplayRG() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+	CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_RG,TRUE);
+	FreeLibrary(hPatterns);
+}
+void CFullScreenWindow::DisplayRB() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+	CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_RB,TRUE);
+	FreeLibrary(hPatterns);
+}
+void CFullScreenWindow::DisplayGB() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+	CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_GB,TRUE);
+	FreeLibrary(hPatterns);
+}
+void CFullScreenWindow::DisplayRGd() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+	CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_RGd,TRUE);
+	FreeLibrary(hPatterns);
+}
+void CFullScreenWindow::DisplayRBd() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+	CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_RBd,TRUE);
+	FreeLibrary(hPatterns);
+}
+void CFullScreenWindow::DisplayGBd() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+	CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_GBd,TRUE);
+	FreeLibrary(hPatterns);
+}
+
 void CFullScreenWindow::DisplayLramp() 
 {
 	HMODULE hPatterns;
