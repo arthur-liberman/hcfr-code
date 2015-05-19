@@ -2,20 +2,20 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{0713058b-a411-4d86-b4df-96b20711a95d}</UniqueIdentifier>
+      <UniqueIdentifier>{4b9eed14-4684-4fb9-83c7-ca18af13aacf}</UniqueIdentifier>
       <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
     </Filter>
     <Filter Include="Resource Files">
-      <UniqueIdentifier>{3d211ac9-db73-4fac-9249-3e51c3b0f052}</UniqueIdentifier>
+      <UniqueIdentifier>{303affaa-ea4d-4de4-82c1-3d4261923be5}</UniqueIdentifier>
       <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
     </Filter>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{d340feba-6be4-4bc9-887e-50c736f49f54}</UniqueIdentifier>
+      <UniqueIdentifier>{48d85f93-840d-408f-a820-4e55cac7ca8f}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="CHCFR21_ENGLISH.rc">
+    <ResourceCompile Include="CHCFR21_FRANCAIS.rc">
       <Filter>Source Files</Filter>
     </ResourceCompile>
   </ItemGroup>
@@ -224,6 +224,9 @@
     <None Include="res\redprimary.bmp">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="res\redprimary2.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
     <None Include="res\refblueprimary.bmp">
       <Filter>Resource Files</Filter>
     </None>
@@ -278,6 +281,9 @@
     <None Include="res\satred.bmp">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="res\satred_i.ico">
+      <Filter>Resource Files</Filter>
+    </None>
     <None Include="res\satyellow.bmp">
       <Filter>Resource Files</Filter>
     </None>
@@ -310,9 +316,6 @@
     </None>
     <None Include="res\yellowsecondary.bmp">
       <Filter>Resource Files</Filter>
-    </None>
-    <None Include="resource.hm">
-      <Filter>Header Files</Filter>
     </None>
     <None Include="res\refbluesat.bmp">
       <Filter>Resource Files</Filter>

@@ -2,20 +2,20 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{0713058b-a411-4d86-b4df-96b20711a95d}</UniqueIdentifier>
+      <UniqueIdentifier>{c5b6c996-b34c-4fec-ae37-8a5872ec5081}</UniqueIdentifier>
       <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
     </Filter>
     <Filter Include="Resource Files">
-      <UniqueIdentifier>{3d211ac9-db73-4fac-9249-3e51c3b0f052}</UniqueIdentifier>
+      <UniqueIdentifier>{51665065-c0a4-4294-94be-bab9014f67a0}</UniqueIdentifier>
       <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
     </Filter>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{d340feba-6be4-4bc9-887e-50c736f49f54}</UniqueIdentifier>
+      <UniqueIdentifier>{1068c01f-8d69-4bbe-8b89-94b7ff552cca}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="CHCFR21_ENGLISH.rc">
+    <ResourceCompile Include="CHCFR21_DEUTSCH.rc">
       <Filter>Source Files</Filter>
     </ResourceCompile>
   </ItemGroup>
@@ -310,9 +310,6 @@
     </None>
     <None Include="res\yellowsecondary.bmp">
       <Filter>Resource Files</Filter>
-    </None>
-    <None Include="resource.hm">
-      <Filter>Header Files</Filter>
     </None>
     <None Include="res\refbluesat.bmp">
       <Filter>Resource Files</Filter>
