@@ -1,18 +1,9 @@
 [OPTIONS]
-Compatibility=1.1 or later
 Compiled file=..\..\Release\ColorHCFR_en.chm
-Contents file=..\Help\en\ColorHCFR_en.hhc
-Default Window=default
 Default topic=Bienvenue.htm
-Display compile progress=No
-Full-text search=Yes
-Index file=Index.hhk
-Language=0x409 English (United States)
 Title=HCFR Calibration
-
-[WINDOWS]
-default=,"ColorHCFR_en.hhc",,,,,,,,0x420,,0x200e,,0x0,0x0,,0,0,0,0
-
+Default Window=default
+Full-text search=Yes
 
 [FILES]
 Application Help.css
@@ -508,6 +499,9 @@ Support_et_aides\Glossaire\z.htm
 Support_et_aides\online_support.htm
 Support_et_aides\support_technique.htm
 
+[WINDOWS]
+default=,"ColorHCFR_en.hhc",,,,,,,,0x420,,0x200e,,0x0,0x0,,0,0,0,
+
 [ALIAS]
 HID_WELCOME = ColorHCFR_en.chm::/Bienvenue.htm
 HID_INSTALL = ColorHCFR_en.chm::/Installation\installation_colorimetre.htm
@@ -559,9 +553,5 @@ HID_SCALESIZES = ColorHCFR_en.chm::/Menu\Mesures\Parametres.htm
 HID_CONVERSION_MATRIX = ColorHCFR_en.chm::/Menu\Avance\Ajustement\Editer.htm
 HID_SIGNATURE = ColorHCFR_en.chm::/Menu\Avance\Etalons\Etalon_sim.htm#Signature
 HID_TESTPATTERNS = ColorHCFR_en.chm::/Menu\Avance\Mires\Mires.htm
-
 [MAP]
 #include ..\..\helpid.h
-
-[INFOTYPES]
-
