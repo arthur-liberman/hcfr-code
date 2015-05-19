@@ -87,6 +87,8 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <DisableSpecificWarnings>4101;4018;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <WholeProgramOptimization>true</WholeProgramOptimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
       <AdditionalDependencies>setupapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -112,6 +114,7 @@
     <ClCompile Include="vinflate.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="disptechs.h" />
     <ClInclude Include="LzmaDec.h" />
     <ClInclude Include="LzmaTypes.h" />
     <ClInclude Include="oemarch.h" />

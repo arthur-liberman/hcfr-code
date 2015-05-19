@@ -78,8 +78,10 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <DisableSpecificWarnings>4101;4018;4146;4244;%(DisableSpecificWarnings)</DisableSpecificWarnings>
-      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <DisableSpecificWarnings>4244;4101;4018;4146;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -90,8 +92,9 @@
     <ClCompile Include="cgatsstd.c" />
     <ClCompile Include="colorhug.c" />
     <ClCompile Include="conv.c" />
-    <ClCompile Include="dtp20.c" />
+    <ClCompile Include="disptechs.c" />
     <ClCompile Include="dtp92.c" />
+    <ClCompile Include="ex1.c" />
     <ClCompile Include="hcfr.c" />
     <ClCompile Include="hidio.c" />
     <ClCompile Include="huey.c" />
@@ -106,6 +109,7 @@
     </ClCompile>
     <ClCompile Include="inst.c" />
     <ClCompile Include="insttypes.c" />
+    <ClCompile Include="kleink10.c" />
     <ClCompile Include="munki.c" />
     <ClCompile Include="munki_imp.c" />
     <ClCompile Include="numsup.c" />
@@ -114,6 +118,8 @@
     <ClCompile Include="rspl1.c" />
     <ClCompile Include="specbos.c" />
     <ClCompile Include="spyd2.c" />
+    <ClCompile Include="ss.c" />
+    <ClCompile Include="ss_imp.c" />
     <ClCompile Include="usbio.c" />
     <ClCompile Include="usbio_nt.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -124,16 +130,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="aglob.h" />
+    <ClInclude Include="ccmx.h" />
     <ClInclude Include="ccss.h" />
     <ClInclude Include="cgats.h" />
     <ClInclude Include="colorhug.h" />
     <ClInclude Include="conv.h" />
     <ClInclude Include="copyright.h" />
-    <ClInclude Include="dtp20.h" />
-    <ClInclude Include="dtp22.h" />
-    <ClInclude Include="dtp41.h" />
-    <ClInclude Include="dtp51.h" />
+    <ClInclude Include="disptechs.h" />
+    <ClInclude Include="dispwin.h" />
     <ClInclude Include="dtp92.h" />
+    <ClInclude Include="ex1.h" />
     <ClInclude Include="hcfr.h" />
     <ClInclude Include="hidio.h" />
     <ClInclude Include="huey.h" />
@@ -145,15 +151,16 @@
     <ClInclude Include="inst.h" />
     <ClInclude Include="insttypeinst.h" />
     <ClInclude Include="insttypes.h" />
+    <ClInclude Include="kleink10.h" />
     <ClInclude Include="munki.h" />
     <ClInclude Include="munki_imp.h" />
     <ClInclude Include="numsup.h" />
     <ClInclude Include="pars.h" />
     <ClInclude Include="pollem.h" />
+    <ClInclude Include="render.h" />
     <ClInclude Include="rspl1.h" />
     <ClInclude Include="specbos.h" />
     <ClInclude Include="spyd2.h" />
-    <ClInclude Include="spyd2PLD.h" />
     <ClInclude Include="spyd2setup.h" />
     <ClInclude Include="ss.h" />
     <ClInclude Include="ss_imp.h" />

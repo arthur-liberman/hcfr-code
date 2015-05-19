@@ -1,6 +1,5 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ItemGroup Label="ProjectConfigurations">
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003"><ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
@@ -11,8 +10,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>CHCFR21_ITALIAN</ProjectName>
-    <ProjectGuid>{72353A26-984A-4BCB-B5B3-BF632F02947F}</ProjectGuid>
+    <ProjectName>CHCFR21_ENGLISH</ProjectName>
+    <ProjectGuid>{98D00AE8-A819-45AE-AF34-9DA79F1A71EF}</ProjectGuid>
     <RootNamespace>CHCFR21_ENGLISH</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -123,11 +122,11 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <Culture>0x0410</Culture>
+      <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>.\Release/CHCFR21_ITALIAN.dll</OutputFile>
+      <OutputFile>.\Release/CHCFR21_ENGLISH.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <NoEntryPoint>true</NoEntryPoint>
@@ -143,11 +142,10 @@
     </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ResourceCompile Include="CHCFR21_ITALIAN.rc">
+    <ResourceCompile Include="CHCFR21_ENGLISH.rc">
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">0x040c</Culture>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <Culture Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">0x0410</Culture>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
