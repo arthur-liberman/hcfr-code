@@ -107,5 +107,6 @@ ServiceBinary  = %12%\libusb0.sys
 "ColorVision"=ColorVision_Devices,NTx86,NTamd64
 "Gretag Macbeth/X-Rite"=GM_X_Rite_Devices,NTx86,NTamd64
 "Hughski Ltd"=Hughski_Devices,NTx86,NTamd64
+"Image Engineering"=ImageEngineering_Devices,NTx86,NTamd64
 
 ; ==== Devices ====

@@ -20,6 +20,7 @@
 "Spyder2 (Argyll)"              = LIBUSB0_DEV, USB\VID_085C&PID_0200
 "Spyder3 (Argyll)"              = LIBUSB0_DEV, USB\VID_085C&PID_0300
 "Spyder4 (Argyll)"              = LIBUSB0_DEV, USB\VID_085C&PID_0400
+"Spyder5 (Argyll)"              = LIBUSB0_DEV, USB\VID_085C&PID_0500
 
 [GM_X_Rite_Devices#PLAT#]
 "Eye-One Pro (Argyll)"          = LIBUSB0_DEV, USB\VID_0971&PID_2000
@@ -29,6 +30,10 @@
 "ColorMunki (Argyll)"           = LIBUSB0_DEV, USB\VID_0971&PID_2007
 
 [Hughski_Devices#PLAT#]
+"ColorHug 2 (Argyll)"           = LIBUSB0_DEV, USB\VID_273F&PID_1004
 "ColorHug (Argyll)"             = LIBUSB0_DEV, USB\VID_273F&PID_1001
 "ColorHug (Argyll)"             = LIBUSB0_DEV, USB\VID_04D8&PID_F8DA
+
+[ImageEngineering_Devices#PLAT#]
+"EX1 (Argyll)"                  = LIBUSB0_DEV, USB\VID_2457&PID_4000
 

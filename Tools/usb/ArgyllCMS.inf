@@ -107,6 +107,7 @@ ServiceBinary  = %12%\libusb0.sys
 "ColorVision"=ColorVision_Devices,NTx86,NTamd64
 "Gretag Macbeth/X-Rite"=GM_X_Rite_Devices,NTx86,NTamd64
 "Hughski Ltd"=Hughski_Devices,NTx86,NTamd64
+"Image Engineering"=ImageEngineering_Devices,NTx86,NTamd64
 
 ; ==== Devices ====
 
@@ -131,6 +132,7 @@ ServiceBinary  = %12%\libusb0.sys
 "Spyder2 (Argyll)"              = LIBUSB0_DEV, USB\VID_085C&PID_0200
 "Spyder3 (Argyll)"              = LIBUSB0_DEV, USB\VID_085C&PID_0300
 "Spyder4 (Argyll)"              = LIBUSB0_DEV, USB\VID_085C&PID_0400
+"Spyder5 (Argyll)"              = LIBUSB0_DEV, USB\VID_085C&PID_0500
 
 [GM_X_Rite_Devices]
 "Eye-One Pro (Argyll)"          = LIBUSB0_DEV, USB\VID_0971&PID_2000
@@ -140,8 +142,12 @@ ServiceBinary  = %12%\libusb0.sys
 "ColorMunki (Argyll)"           = LIBUSB0_DEV, USB\VID_0971&PID_2007
 
 [Hughski_Devices]
+"ColorHug 2 (Argyll)"           = LIBUSB0_DEV, USB\VID_273F&PID_1004
 "ColorHug (Argyll)"             = LIBUSB0_DEV, USB\VID_273F&PID_1001
 "ColorHug (Argyll)"             = LIBUSB0_DEV, USB\VID_04D8&PID_F8DA
+
+[ImageEngineering_Devices]
+"EX1 (Argyll)"                  = LIBUSB0_DEV, USB\VID_2457&PID_4000
 
 
 [HCFR_Devices.NTx86]
@@ -165,6 +171,7 @@ ServiceBinary  = %12%\libusb0.sys
 "Spyder2 (Argyll)"              = LIBUSB0_DEV, USB\VID_085C&PID_0200
 "Spyder3 (Argyll)"              = LIBUSB0_DEV, USB\VID_085C&PID_0300
 "Spyder4 (Argyll)"              = LIBUSB0_DEV, USB\VID_085C&PID_0400
+"Spyder5 (Argyll)"              = LIBUSB0_DEV, USB\VID_085C&PID_0500
 
 [GM_X_Rite_Devices.NTx86]
 "Eye-One Pro (Argyll)"          = LIBUSB0_DEV, USB\VID_0971&PID_2000
@@ -174,8 +181,12 @@ ServiceBinary  = %12%\libusb0.sys
 "ColorMunki (Argyll)"           = LIBUSB0_DEV, USB\VID_0971&PID_2007
 
 [Hughski_Devices.NTx86]
+"ColorHug 2 (Argyll)"           = LIBUSB0_DEV, USB\VID_273F&PID_1004
 "ColorHug (Argyll)"             = LIBUSB0_DEV, USB\VID_273F&PID_1001
 "ColorHug (Argyll)"             = LIBUSB0_DEV, USB\VID_04D8&PID_F8DA
+
+[ImageEngineering_Devices.NTx86]
+"EX1 (Argyll)"                  = LIBUSB0_DEV, USB\VID_2457&PID_4000
 
 
 [HCFR_Devices.NTamd64]
@@ -199,6 +210,7 @@ ServiceBinary  = %12%\libusb0.sys
 "Spyder2 (Argyll)"              = LIBUSB0_DEV, USB\VID_085C&PID_0200
 "Spyder3 (Argyll)"              = LIBUSB0_DEV, USB\VID_085C&PID_0300
 "Spyder4 (Argyll)"              = LIBUSB0_DEV, USB\VID_085C&PID_0400
+"Spyder5 (Argyll)"              = LIBUSB0_DEV, USB\VID_085C&PID_0500
 
 [GM_X_Rite_Devices.NTamd64]
 "Eye-One Pro (Argyll)"          = LIBUSB0_DEV, USB\VID_0971&PID_2000
@@ -208,6 +220,10 @@ ServiceBinary  = %12%\libusb0.sys
 "ColorMunki (Argyll)"           = LIBUSB0_DEV, USB\VID_0971&PID_2007
 
 [Hughski_Devices.NTamd64]
+"ColorHug 2 (Argyll)"           = LIBUSB0_DEV, USB\VID_273F&PID_1004
 "ColorHug (Argyll)"             = LIBUSB0_DEV, USB\VID_273F&PID_1001
 "ColorHug (Argyll)"             = LIBUSB0_DEV, USB\VID_04D8&PID_F8DA
+
+[ImageEngineering_Devices.NTamd64]
+"EX1 (Argyll)"                  = LIBUSB0_DEV, USB\VID_2457&PID_4000
 
