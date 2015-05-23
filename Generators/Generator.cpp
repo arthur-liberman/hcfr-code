@@ -138,7 +138,7 @@ BOOL CGenerator::Init(UINT nbMeasure)
 	BOOL madVR_Found;
 	dispwin *ccwin = NULL;
 
-	if (TRUE)
+	if (Cgen.m_nDisplayMode == DISPLAY_ccast && m_name != str)
 	{
 		ccast_id **ids;
 		ids = get_ccids();	
@@ -155,30 +155,21 @@ BOOL CGenerator::Init(UINT nbMeasure)
 			}
 			else 
 			{
-				ccwin = new_ccwin(ids[0], 250.0 , 100.0, 0.0, 0.0, 0, 1);
-				GetColorApp()->InMeasureMessageBox( ids[0]->name, "ChromeCast Found", MB_ICONINFORMATION);
+				ccwin = new_ccwin(ids[0], 100.0 , 100.0, 0.0, 0.0, 0, 0);
+				if (ccwin == NULL) 
+				{
+					GetColorApp()->InMeasureMessageBox( ids[0]->name, "new_ccwin failed!", MB_ICONERROR);
+					free_ccids(ids);
+					return -1;
+				} 
+				else
+					GetColorApp()->InMeasureMessageBox( ccwin->description, "ChromeCast Found", MB_ICONINFORMATION);
 			}
-		}
-		if (ccwin == NULL) 
-		{
-			GetColorApp()->InMeasureMessageBox( ids[0]->name, "new_ccwin failed!", MB_ICONERROR);
-			free_ccids(ids);
-			return -1;
-		} 
-		if (TRUE)
-		{
-			double r = 0.0, g = 0.2, b = 0.2;
-			
-			if (ccwin->set_color(ccwin, r, g, b) != 0) 
-				GetColorApp()->InMeasureMessageBox( ccwin->name, "CCAST INFO", MB_ICONERROR);
 		}
 		ccwin->del(ccwin);
 		free_ccids(ids);
-		return -1;
-	}
-
-	if (Cgen.m_nDisplayMode == DISPLAY_madVR && m_name != str)
-	{
+	} else if (Cgen.m_nDisplayMode == DISPLAY_madVR && m_name != str)
+		{
 		if (madVR_IsAvailable())
 		{
 			int nSettling=GetConfig()->m_isSettling?5:0;
