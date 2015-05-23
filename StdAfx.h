@@ -19,7 +19,7 @@
 #if _MSC_VER >= 1600
 // visual studio 2010 ships with mfc that doesn't like 
 // low values of WINVER
-#define WINVER 0x0501
+#define WINVER 0x0510
 #else
 #define WINVER 0x0410
 #endif

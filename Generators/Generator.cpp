@@ -26,11 +26,13 @@
 #include "ColorHCFR.h"
 #include "Generator.h"
 #include "Color.h"
-//#include "madVRTestPattern.h"
 #include "madTPG.h"
 #include "GDIGenerator.h"
-//#include "../Tools/spectro/ccwin.h"
-//#include "../Tools/spectro/ccast/ccast.h"
+#include "../libnum/numsup.h"
+#include "../libconv/conv.h"
+#include "../libccast/ccmdns.h"
+#include "../libdisp/ccwin.h"
+#include "../libccast/ccast.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -131,12 +133,50 @@ BOOL CGenerator::Init(UINT nbMeasure)
 {
 	nMeasureNumber = nbMeasure; 
 	CGDIGenerator Cgen;
-	CString str;
+	CString str, msg;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 	BOOL madVR_Found;
-//	ccast_id **ids;
-//	ids = get_ccids();	
-	
+	dispwin *ccwin = NULL;
+
+	if (TRUE)
+	{
+		ccast_id **ids;
+		ids = get_ccids();	
+		if ((ids = get_ccids()) == NULL) 
+		{
+			GetColorApp()->InMeasureMessageBox( "    ** Error discovering ChromeCasts **", "Error", MB_ICONERROR);
+			return false;
+		} else 
+		{
+			if (ids[0] == NULL)
+			{
+				GetColorApp()->InMeasureMessageBox( "    ** No ChromeCasts found **", "Error", MB_ICONERROR);
+				return false;
+			}
+			else 
+			{
+				ccwin = new_ccwin(ids[0], 250.0 , 100.0, 0.0, 0.0, 0, 1);
+				GetColorApp()->InMeasureMessageBox( ids[0]->name, "ChromeCast Found", MB_ICONINFORMATION);
+			}
+		}
+		if (ccwin == NULL) 
+		{
+			GetColorApp()->InMeasureMessageBox( ids[0]->name, "new_ccwin failed!", MB_ICONERROR);
+			free_ccids(ids);
+			return -1;
+		} 
+		if (TRUE)
+		{
+			double r = 0.0, g = 0.2, b = 0.2;
+			
+			if (ccwin->set_color(ccwin, r, g, b) != 0) 
+				GetColorApp()->InMeasureMessageBox( ccwin->name, "CCAST INFO", MB_ICONERROR);
+		}
+		ccwin->del(ccwin);
+		free_ccids(ids);
+		return -1;
+	}
+
 	if (Cgen.m_nDisplayMode == DISPLAY_madVR && m_name != str)
 	{
 		if (madVR_IsAvailable())
@@ -156,7 +196,6 @@ BOOL CGenerator::Init(UINT nbMeasure)
 			return false;
 		}
 	}
-
 
 	if(m_doScreenBlanking)
 	{

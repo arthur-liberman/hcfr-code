@@ -20,6 +20,7 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+    <UseOfMfc>Static</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
@@ -67,9 +68,9 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Full</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\usb\driver;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\testing\hcfr-code\librspl;..\usb\driver;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;NT;_CRT_SECURE_NO_WARNINGS;SALONEINSTLIB;ENABLE_USB;ENABLE_FAST_SERIAL;_USE_32BIT_TIME_T;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -85,6 +86,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\libconv\pollem.c" />
     <ClCompile Include="aglob.c" />
     <ClCompile Include="ccmx.c" />
     <ClCompile Include="ccss.c" />
@@ -102,6 +104,7 @@
     <ClCompile Include="i1disp.c" />
     <ClCompile Include="i1pro.c" />
     <ClCompile Include="i1pro_imp.c" />
+    <ClCompile Include="icc.c" />
     <ClCompile Include="icoms.c" />
     <ClCompile Include="icoms_nt.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -112,7 +115,6 @@
     <ClCompile Include="kleink10.c" />
     <ClCompile Include="munki.c" />
     <ClCompile Include="munki_imp.c" />
-    <ClCompile Include="numsup.c" />
     <ClCompile Include="pars.c" />
     <ClCompile Include="parsstd.c" />
     <ClCompile Include="rspl1.c" />
@@ -170,6 +172,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\libnum\libnum.vcxproj">
+      <Project>{fdaba3aa-ba68-4bee-adda-fd10d9928534}</Project>
+      <Private>true</Private>
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

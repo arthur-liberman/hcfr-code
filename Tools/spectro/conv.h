@@ -19,6 +19,9 @@
  * 
  * Derived from icoms.h
  */
+#ifdef __cplusplus
+	extern "C" {
+#endif
 
 #if defined (NT)
 # if !defined(_WIN32_WINNT) || _WIN32_WINNT < 0x0501
@@ -38,65 +41,6 @@
 # include <pthread.h>
 #endif
 
-#ifdef __cplusplus
-	extern "C" {
-#endif
-
-/* - - - - - - - - - - - - - - - - - - -- */
-/* System compatibility #defines */
-#if defined (NT)
-
-#ifndef sys_stat
-# define sys_stat _stat
-#endif
-#ifndef sys_mkdir
-# define sys_mkdir _mkdir
-#endif
-#ifndef sys_read
-# define sys_read _read
-#endif
-#ifndef sys_utime
-# define sys_utime _utime
-# define sys_utimbuf _utimbuf
-#endif
-#ifndef sys_access
-# define sys_access _access
-#endif
-
-#ifndef snprintf
-# define snprintf _snprintf
-# define vsnprintf _vsnprintf
-#endif
-#ifndef stricmp
-# define stricmp _stricmp
-#endif
-
-#endif	/* NT */
-
-#if defined (UNIX)
-
-#ifndef sys_stat
-# define sys_stat stat
-#endif
-#ifndef sys_mkdir
-# define sys_mkdir mkdir
-#endif
-#ifndef sys_read
-# define sys_read read
-#endif
-#ifndef sys_utime
-# define sys_utime utime
-# define sys_utimbuf utimbuf
-#endif
-#ifndef sys_access
-# define sys_access access
-#endif
-
-#ifndef stricmp
-# define stricmp strcasecmp
-#endif
-
-#endif	/* UNIX */
 
 /* - - - - - - - - - - - - - - - - - - -- */
 /* System dependent convenience functions */
@@ -145,9 +89,10 @@ int set_normal_priority();
 #endif /* NEVER */
 
 /* - - - - - - - - - - - - - - - - - - -- */
-/* An Argyll mutex */
+/* An Argyll mutex and condition */
 
 /* amutex_trylock() returns nz if it can't lock the mutex */
+/* acond_timedwait() returns nz if it times out */
 
 #ifdef NT
 # define amutex CRITICAL_SECTION 
@@ -166,7 +111,11 @@ int set_normal_priority();
                           WaitForSingleObject(cond, INFINITE),	\
                           EnterCriticalSection(&(lock)))
 # define acond_signal(cond) SetEvent(cond)
-/* + timeout version */
+# define acond_timedwait(cond, lock, msec) \
+         acond_timedwait_imp(cond, &(lock), msec)
+
+int acond_timedwait_imp(HANDLE cond, CRITICAL_SECTION *lock, int msec);
+
 #endif
 
 #ifdef UNIX
@@ -185,8 +134,13 @@ int set_normal_priority();
 # define acond_del(cond) pthread_cond_destroy(&(cond))
 # define acond_wait(cond, lock) pthread_cond_wait(&(cond), &(lock))
 # define acond_signal(cond) pthread_cond_signal(&(cond))
-/* + timeout version */
+# define acond_timedwait(cond, lock, msec) \
+         acond_timedwait_imp(&(cond), &(lock), msec)
+
+int acond_timedwait_imp(pthread_cond_t *cond, pthread_mutex_t *lock, int msec);
+
 #endif
+
 
 /* - - - - - - - - - - - - - - - - - - -- */
 
@@ -287,7 +241,7 @@ double sa_LabDE(double *in0, double *in1);
 void sa_Clamp3(double out[3], double in[3]);
 void sa_XYZ2Lab(sa_XYZNumber *w, double *out0, double *in0);
 /* Yxy to XYZ */
-void sa_Yxy2XYZ(double *out, double *in);
+//extern void sa_Yxy2XYZ(double *out, double *in);
 
 #define icmXYZNumber sa_XYZNumber
 #define icColorSpaceSignature sa_ColorSpaceSignature
@@ -305,7 +259,7 @@ void sa_Yxy2XYZ(double *out, double *in);
 #define icmClamp3 sa_Clamp3
 #define icmLabDE sa_LabDE
 #define icmXYZ2Lab sa_XYZ2Lab
-#define icmYxy2XYZ sa_Yxy2XYZ
+//#define icmYxy2XYZ sa_Yxy2XYZ
 
 /* A subset of numlib */
 

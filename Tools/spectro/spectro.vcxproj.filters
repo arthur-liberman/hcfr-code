@@ -15,16 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="aglob.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="cgats.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="cgatsstd.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="conv.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="hidio.c">
@@ -45,25 +39,16 @@
     <ClCompile Include="insttypes.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="numsup.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="pars.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="parsstd.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="rspl1.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="usbio.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="usbio_nt.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="xdg_bds.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="xspect.c">
@@ -121,6 +106,24 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ex1.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libconv\pollem.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="aglob.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="xdg_bds.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="rspl1.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="icc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="conv.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

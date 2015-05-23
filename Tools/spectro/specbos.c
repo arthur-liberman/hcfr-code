@@ -62,8 +62,8 @@
 #include "conv.h"
 #include "icoms.h"
 #include "specbos.h"
-
 static inst_code specbos_interp_code(inst *pp, int ec);
+void icmYxy2XYZ(double *out, double *in);
 
 #define MAX_MES_SIZE 500		/* Maximum normal message reply size */
 #define MAX_RD_SIZE 8000		/* Maximum reading message reply size */
