@@ -60,9 +60,9 @@
 #endif
 #include "numsup.h"
 #include "xspect.h"
-#include "../Tools/spectro/insttypes.h"
+#include "insttypes.h"
 #include "conv.h"
-#include "../Tools/spectro/icoms.h"
+#include "icoms.h"
 
 #ifdef __APPLE__
 //#include <stdbool.h>
