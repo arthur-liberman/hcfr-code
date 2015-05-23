@@ -106,6 +106,9 @@ void CGDIGenePropPage::OnOK()
 	else if ( IsDlgButtonChecked ( IDC_RADIO4 ) )
 		m_nDisplayMode = DISPLAY_GDI_nBG;
 
+	else if ( IsDlgButtonChecked ( IDC_RADIO6 ) )
+		m_nDisplayMode = DISPLAY_ccast;
+
 	else
 		m_nDisplayMode = DISPLAY_GDI;
 
@@ -151,8 +154,11 @@ BOOL CGDIGenePropPage::OnSetActive()
 BOOL CGDIGenePropPage::OnKillActive() 
 {
 	m_activeMonitorNum=m_monitorComboCtrl.GetCurSel();	
-	
-	if ( IsDlgButtonChecked ( IDC_RADIO4 ) )
+	if ( IsDlgButtonChecked ( IDC_RADIO6 ) )
+	{
+		m_nDisplayMode = DISPLAY_ccast;
+	}	
+	else if ( IsDlgButtonChecked ( IDC_RADIO4 ) )
 	{
 		m_nDisplayMode = DISPLAY_GDI_nBG;
 	}

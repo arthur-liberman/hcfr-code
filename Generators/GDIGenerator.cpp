@@ -477,12 +477,12 @@ BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nP
 
 BOOL CGDIGenerator::CanDisplayAnsiBWRects()
 {
-	return (m_GDIGenePropertiesPage.m_nDisplayMode != DISPLAY_madVR?TRUE:FALSE);
+	return (m_GDIGenePropertiesPage.m_nDisplayMode != (DISPLAY_madVR || DISPLAY_ccast)?TRUE:FALSE);
 }
 
 BOOL CGDIGenerator::CanDisplayAnimatedPatterns()
 {
-	return (m_GDIGenePropertiesPage.m_nDisplayMode != DISPLAY_madVR?TRUE:FALSE);
+	return (m_GDIGenePropertiesPage.m_nDisplayMode !=(DISPLAY_madVR || DISPLAY_ccast)?TRUE:FALSE);
 }
 
 BOOL CGDIGenerator::DisplayAnsiBWRects(BOOL bInvert)
