@@ -90,9 +90,11 @@
     <ClCompile Include="ccmdns.c" />
     <ClCompile Include="ccmes.c" />
     <ClCompile Include="ccpacket.c" />
+    <ClCompile Include="ccwin.c" />
     <ClCompile Include="chan\cast_channel.pb-c.c" />
     <ClCompile Include="chan\protobuf-c.c" />
     <ClCompile Include="dpat.c" />
+    <ClCompile Include="mongoose.c" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\libaxTLS\libaxTLS.vcxproj">

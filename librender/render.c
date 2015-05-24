@@ -38,7 +38,7 @@
 #include "../h/sort.h"
 #include "../libnum/numlib.h"
 #include "../tiff/libtiff/tiffio.h"
-#include "../png/png.h"
+#include "../Tools/png/png.h"
 #include "render.h"
 #include "thscreen.h"
 

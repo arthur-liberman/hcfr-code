@@ -29,11 +29,9 @@
 #include "../h/aconfig.h"
 #include "icc.h"
 #include "numsup.h"
-#include "cgats.h"
-#include "conv.h"
 #include "conv.h"
 #include "mongoose.h"
-#include "../libccast/ccast.h"
+#include "ccast.h"
 #include "ccwin.h"
 #include "../librender/render.h"
 

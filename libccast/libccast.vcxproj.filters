@@ -42,5 +42,11 @@
     <ClCompile Include="base64.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ccwin.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mongoose.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

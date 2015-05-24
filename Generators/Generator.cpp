@@ -31,7 +31,7 @@
 #include "../libnum/numsup.h"
 #include "../libconv/conv.h"
 #include "../libccast/ccmdns.h"
-#include "../libdisp/ccwin.h"
+#include "../libccast/ccwin.h"
 #include "../libccast/ccast.h"
 
 #ifdef _DEBUG

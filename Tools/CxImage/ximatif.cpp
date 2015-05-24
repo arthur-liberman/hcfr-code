@@ -9,7 +9,7 @@
 
 #if CXIMAGE_SUPPORT_TIF
 
-#include "../tiff/tiffio.h"
+#include "../../tiff/libtiff/tiffio.h"
 
 #define CVT(x)			(((x) * 255L) / ((1L<<16)-1))
 #define	SCALE(x)		(((x)*((1L<<16)-1))/255)

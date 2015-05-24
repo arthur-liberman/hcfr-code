@@ -1477,11 +1477,16 @@ BOOL CAboutDlg::OnInitDialog()
 	
     s += "<font size='11' color='0,0,0' align='center'>This program uses the following Libraries:</font><br>";
     s+=CString(classesStyle)+ "Instlib (c) Graeme Gill</font>";
+    s+=CString(classesStyle)+ "libccast (c) Graeme Gill</font>";
+    s+=CString(classesStyle)+ "librender (c) Graeme Gill</font>";
     s+=CString(classesStyle)+ "libusb (c) Daniel Drake, Johannes Erdfelt</font>";
     s+=CString(classesStyle)+ "libjpeg (c) Thomas G. Lane</font>";
     s+=CString(classesStyle)+ "libpng (c) Glenn Randers-Pehrson, Andreas Dilger,</font>";
     s+=CString(classesStyle)+ "Guy Eric Schalnat, Group 42, Inc.</font>";
     s+=CString(classesStyle)+ "zlib (c) Jean-loup Gailly and Mark Adler</font>";
+    s+=CString(classesStyle)+ "libyajl (c) Lloyd Hilaiel</font>";
+    s+=CString(classesStyle)+ "libaxTLS (c) Cameron Rich</font>";
+    s+=CString(classesStyle)+ "ximatif (c) Davide Pizzolato</font>";
 
     s += "<vspace size='80'>"; 
     s += "<font align='center'><p>-----------------------------<p></font>";

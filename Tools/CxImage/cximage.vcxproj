@@ -320,7 +320,6 @@
     </ProjectReference>
     <ProjectReference Include="..\png\projects\visualc71\libpng.vcxproj">
       <Project>{b2c1ec0f-1e2d-43d3-8693-8c8a76188907}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

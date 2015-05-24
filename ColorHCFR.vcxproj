@@ -994,14 +994,6 @@
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
     </ProjectReference>
-    <ProjectReference Include="libdisp\libdisp.vcxproj">
-      <Project>{c6ddf4bc-27bc-4a87-881e-5bc297f9455e}</Project>
-      <Private>true</Private>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-      <LinkLibraryDependencies>true</LinkLibraryDependencies>
-      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
-    </ProjectReference>
     <ProjectReference Include="libHCFR\winFiles\libHCFR.vcxproj">
       <Project>{8835a92a-a566-4f75-8bed-21a5dabd6342}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>

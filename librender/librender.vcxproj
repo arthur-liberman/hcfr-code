@@ -86,16 +86,11 @@
     <ClCompile Include="thscreen.c" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\png\png.vcxproj">
-      <Project>{7c6184dc-522c-4cf5-bd9e-3b5dfad048dd}</Project>
-      <Private>true</Private>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-      <LinkLibraryDependencies>false</LinkLibraryDependencies>
-      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
-    </ProjectReference>
     <ProjectReference Include="..\tiff\tiff.vcxproj">
       <Project>{01ded230-6f48-43df-acd2-cd8b5e8e815c}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Tools\png\projects\visualc71\libpng.vcxproj">
+      <Project>{b2c1ec0f-1e2d-43d3-8693-8c8a76188907}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
