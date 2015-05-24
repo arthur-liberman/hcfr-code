@@ -88,6 +88,7 @@ BEGIN_MESSAGE_MAP(CGDIGenePropPage, CPropertyPageWithHelp)
 	ON_BN_CLICKED(IDC_RADIO2, OnClickmadVR)
 	ON_BN_CLICKED(IDC_RADIO3, OnClickmadVR)
 	ON_BN_CLICKED(IDC_RADIO4, OnClickmadVR)
+	ON_BN_CLICKED(IDC_RADIO5, OnClickmadVR)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -106,7 +107,7 @@ void CGDIGenePropPage::OnOK()
 	else if ( IsDlgButtonChecked ( IDC_RADIO4 ) )
 		m_nDisplayMode = DISPLAY_GDI_nBG;
 
-	else if ( IsDlgButtonChecked ( IDC_RADIO6 ) )
+	else if ( IsDlgButtonChecked ( IDC_RADIO5 ) )
 		m_nDisplayMode = DISPLAY_ccast;
 
 	else
@@ -133,9 +134,10 @@ BOOL CGDIGenePropPage::OnSetActive()
 	else
 		m_monitorComboCtrl.SetCurSel(0);
 	
-	CheckRadioButton ( IDC_RADIO1,  IDC_RADIO4 , IDC_RADIO1 + m_nDisplayMode );
+	CheckRadioButton ( IDC_RADIO1 + m_nDisplayMode,  IDC_RADIO1 + m_nDisplayMode , IDC_RADIO1 + m_nDisplayMode );
 	CheckRadioButton ( IDC_RGBLEVEL_RADIO1, IDC_RGBLEVEL_RADIO2, IDC_RGBLEVEL_RADIO1 + m_b16_235 );
-    if (IsDlgButtonChecked ( IDC_RADIO3 ) )
+
+	if (IsDlgButtonChecked ( IDC_RADIO3 ) )
     {
         m_madVREdit.EnableWindow(TRUE);
         m_madVREdit2.EnableWindow(TRUE);
@@ -154,7 +156,7 @@ BOOL CGDIGenePropPage::OnSetActive()
 BOOL CGDIGenePropPage::OnKillActive() 
 {
 	m_activeMonitorNum=m_monitorComboCtrl.GetCurSel();	
-	if ( IsDlgButtonChecked ( IDC_RADIO6 ) )
+	if ( IsDlgButtonChecked ( IDC_RADIO5 ) )
 	{
 		m_nDisplayMode = DISPLAY_ccast;
 	}	

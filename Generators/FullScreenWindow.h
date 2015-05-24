@@ -27,10 +27,10 @@
 // Display modes
 #define DISPLAY_GDI		0
 #define DISPLAY_OVERLAY	1
-#define DISPLAY_VMR9	4
+#define DISPLAY_VMR9	5
 #define DISPLAY_madVR   2
 #define DISPLAY_GDI_nBG		3
-#define DISPLAY_ccast   5
+#define DISPLAY_ccast   4
 
 // Overlay surface resolution (can be anything)
 #define OVERLAY_SURFACE_WIDTH	720
