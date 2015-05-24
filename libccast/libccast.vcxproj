@@ -68,7 +68,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;NT;_CRT_SECURE_NO_WARNINGS;_USE_32BIT_TIME_T;_CRT_NONSTDC_NO_DEPRECATE;WINVER=0x510;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\testing\hcfr-code\libconv;C:\testing\hcfr-code\libaxTLS;C:\testing\hcfr-code\libyajl;C:\testing\hcfr-code\libnum;C:\testing\hcfr-code\h;C:\testing\hcfr-code\libccast\chan;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\libconv;..\libaxTLS;..\libyajl;..\libnum;..\h;..\libccast\chan;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <DisableSpecificWarnings>4101;4244;4018;4146;4999</DisableSpecificWarnings>
