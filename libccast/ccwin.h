@@ -22,6 +22,7 @@
 #ifdef __cplusplus
 	extern "C" {
 #endif
+
 struct _dispwin {
 
 /* private: */
@@ -34,7 +35,7 @@ struct _dispwin {
 	double r_rgb[3];	/* Current color (raster value) */
 	double width, height;	/* Orginial size in mm or % */
 	int out_tvenc;		/* 1 to use RGB Video Level encoding */
-	int blackbg;		/* NZ if black full screen background */
+	double blackbg;		/* NZ if black full screen background */
 	void *pcntx;				/* Private context (ie., webwin, ccwin) */
 
 	/* public: */
@@ -46,7 +47,7 @@ struct _dispwin {
 	/* Set/unset the blackground color flag. */
 	/* Will only change on next set_col() */
 	/* Return nz on error */
-	int (*set_bg)(struct _dispwin *p, int blackbg);
+	int (*set_bg)(struct _dispwin *p, double blackbg);
 
 	void (*del)(struct _dispwin *p);
 
@@ -58,7 +59,7 @@ ccast_id *cc_id,                /* ChromeCast to open */
 double width, double height,	/* Width and height as multiplier of 10% width default. */
 double hoff, double voff,		/* Offset from center in fraction of screen, range -1.0 .. 1.0 */
 int out_tvenc,					/* 1 = use RGB Video Level encoding */
-int blackbg					/* NZ if whole screen should be filled with black */
+double blackbg					/* background ratio */
 );
 
 #ifdef __cplusplus

@@ -385,15 +385,11 @@ double r, double g, double b	/* Color values 0.0 - 1.0 */
 			ih = IHEIGHT;	/* Size of page in mm */
 		}
 
-		if (p->blackbg) {
-			bg[0] = 0.0;
-			bg[1] = 0.0;
-			bg[2] = 0.0;
-		} else {
-			bg[0] = 0.25;
-			bg[1] = 0.25;
-			bg[2] = 0.25;
-		}
+// Scale to maintain constant APL
+	
+			bg[0] = p->blackbg;
+			bg[1] = p->blackbg;
+			bg[2] = p->blackbg;
 
 		if ((r = new_render2d(iw, ih, NULL, hres, vres, rgb_2d,
 		     0, depth, dither,
@@ -495,7 +491,7 @@ double r, double g, double b	/* Color values 0.0 - 1.0 */
 /* Set/unset the blackground color flag */
 /* Return nz on error */
 
-static int ccwin_set_bg(dispwin *p, int blackbg) {
+static int ccwin_set_bg(dispwin *p, double blackbg) {
 	p->blackbg = blackbg;
 
 	return 0;
@@ -535,7 +531,7 @@ ccast_id *cc_id,				/* ChromeCast to open */
 double width, double height,	/* Width and height in mm. (TV width assumed to b 1000mm) */
 double hoff, double voff,		/* Offset from center in fraction of screen, range -1.0 .. 1.0 */
 int out_tvenc,					/* 1 = use RGB Video Level encoding */
-int blackbg					/* NZ if whole screen should be filled with black */
+double blackbg					/*background ratio */
 ) {
 	dispwin *p = NULL;
 	chws *ws = NULL;

@@ -30,6 +30,11 @@
 
 #include "FullScreenWindow.h"
 #include "GeneratorPropPage.h"
+#include "../libnum/numsup.h"
+#include "../libconv/conv.h"
+#include "../libccast/ccmdns.h"
+#include "../libccast/ccwin.h"
+#include "../libccast/ccast.h"
 
 class CGenerator: public CObject    
 {
@@ -71,6 +76,7 @@ public:
     BOOL m_madVR_3d;
     BOOL m_madVR_vLUT;
 	BOOL m_madVR_OSD;
+	dispwin *ccwin;
 protected:
 	BOOL m_isModified;
 	CFullScreenWindow m_blankingWindow;
@@ -90,6 +96,7 @@ public:
 	virtual BOOL DisplayGray(double aLevel,MeasureType nPatternType, BOOL bChangePattern = TRUE);
 	virtual BOOL DisplayRGBColor(const ColorRGBDisplay& aRGBColor, MeasureType nPatternType, UINT nPatternInfo = 0,BOOL bChangePattern = TRUE,BOOL bSilentMode = FALSE);	// need to be overriden
 	virtual BOOL DisplayRGBColormadVR(const ColorRGBDisplay& aRGBColor);	// need to be overriden
+	virtual BOOL DisplayRGBCCast(const ColorRGBDisplay& aRGBColor);	// need to be overriden
 	virtual BOOL DisplayAnsiBWRects(BOOL bInvert);		// need to be overriden
 	virtual BOOL DisplayAnimatedBlack();				// need to be overriden
 	virtual BOOL DisplayAnimatedWhite();				// need to be overriden
@@ -141,7 +148,6 @@ public:
 	virtual void SetPropertiesSheetValues();
 	virtual void GetPropertiesSheetValues();
 	virtual BOOL Configure();
-
 	virtual BOOL IsModified() { return m_isModified; }
 	virtual void SetModifiedFlag( BOOL bModified ) { m_isModified = bModified; }
 

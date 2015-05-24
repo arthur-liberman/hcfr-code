@@ -24,15 +24,10 @@
 
 #include "stdafx.h"
 #include "ColorHCFR.h"
-#include "Generator.h"
+#include "GDIGenerator.h"
 #include "Color.h"
 #include "madTPG.h"
-#include "GDIGenerator.h"
-#include "../libnum/numsup.h"
-#include "../libconv/conv.h"
-#include "../libccast/ccmdns.h"
-#include "../libccast/ccwin.h"
-#include "../libccast/ccast.h"
+#include "Generator.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -45,6 +40,7 @@ static char THIS_FILE[]=__FILE__;
 //////////////////////////////////////////////////////////////////////
 
 IMPLEMENT_SERIAL(CGenerator, CObject, 1) ;
+dispwin *dw;
 
 CGenerator::CGenerator()
 {
@@ -57,8 +53,8 @@ CGenerator::CGenerator()
 	m_propertySheet.SetTitle(str);
 
 	SetName("Not defined");  // Needs to be set for real generators
-
 	m_blankingWindow.m_bDisableCursorHiding = TRUE;
+	ccwin = dw;
 }
 
 CGenerator::~CGenerator()
@@ -118,6 +114,7 @@ void CGenerator::AddPropertyPage(CPropertyPageWithHelp *apPage)
 	m_propertySheet.AddPage(apPage);
 }
 
+
 BOOL CGenerator::Configure()
 {
 	SetPropertiesSheetValues();
@@ -136,7 +133,6 @@ BOOL CGenerator::Init(UINT nbMeasure)
 	CString str, msg;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 	BOOL madVR_Found;
-	dispwin *ccwin = NULL;
 
 	if (Cgen.m_nDisplayMode == DISPLAY_ccast && m_name != str)
 	{
@@ -155,18 +151,18 @@ BOOL CGenerator::Init(UINT nbMeasure)
 			}
 			else 
 			{
-				ccwin = new_ccwin(ids[0], 100.0 , 100.0, 0.0, 0.0, 0, 0);
-				if (ccwin == NULL) 
+				double rx = sqrt( double( (double)Cgen.m_rectSizePercent / 100.));
+				dw = new_ccwin(ids[0], 1000.0 * rx  , 565.0 * rx, 0.0, 0.0, 0, 0.1);
+				if (dw == NULL) 
 				{
 					GetColorApp()->InMeasureMessageBox( ids[0]->name, "new_ccwin failed!", MB_ICONERROR);
 					free_ccids(ids);
 					return -1;
 				} 
 				else
-					GetColorApp()->InMeasureMessageBox( ccwin->description, "ChromeCast Found", MB_ICONINFORMATION);
+					GetColorApp()->InMeasureMessageBox( dw->description, "ChromeCast Found", MB_ICONINFORMATION);
 			}
 		}
-		ccwin->del(ccwin);
 		free_ccids(ids);
 	} else if (Cgen.m_nDisplayMode == DISPLAY_madVR && m_name != str)
 		{
@@ -205,6 +201,10 @@ BOOL CGenerator::DisplayRGBColormadVR(const ColorRGBDisplay& aRGBColor )
 	return TRUE;	  // need to be overriden
 }
 
+BOOL CGenerator::DisplayRGBCCast(const ColorRGBDisplay& aRGBColor )
+{
+	return TRUE;	  // need to be overriden
+}
 
 BOOL CGenerator::DisplayRGBColor(const ColorRGBDisplay& aRGBColor, MeasureType nPatternType, UINT nPatternInfo,  BOOL bChangePattern,BOOL bSilentMode)
 {
@@ -386,9 +386,12 @@ BOOL CGenerator::Release(INT nbNext)
 	{
 	  if (madVR_IsAvailable())
 	    madVR_Disconnect();
-	}
+	} else if (Cgen.m_nDisplayMode == DISPLAY_ccast)
+		dw->del(dw);
+
 	if(m_doScreenBlanking)
 		m_blankingWindow.Hide();
+
 	return TRUE;
 }
 

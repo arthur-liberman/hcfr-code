@@ -27,6 +27,11 @@
 #include "GDIGenerator.h"
 #include "madTPG.h"
 #include "..\PatternDisplay.h"
+#include "../libnum/numsup.h"
+#include "../libconv/conv.h"
+#include "../libccast/ccmdns.h"
+#include "../libccast/ccwin.h"
+#include "../libccast/ccast.h"
 
 
 
@@ -453,6 +458,90 @@ BOOL CGDIGenerator::DisplayRGBColormadVR( const ColorRGBDisplay& clr, bool first
 return TRUE;
 }
 
+BOOL CGDIGenerator::DisplayRGBCCast( const ColorRGBDisplay& clr, bool first )
+{
+	//init done in generator.cpp 
+      double r, g, b;
+	  CGDIGenerator Cgen;
+	  dispwin *ccwin=Cgen.ccwin;
+	  double bgstim = Cgen.m_bgStimPercent / 100.;
+	  //Chromecast needs full range RGB
+      r = ((clr[0]) / 100. );
+      g = ((clr[1]) / 100. );
+      b = ((clr[2]) / 100. );
+
+		if (ccwin->height == 0) 
+		{
+	        MessageBox(0, "Test pattern failure.", "Error", MB_ICONERROR);
+			return false;
+		} 
+
+	  if (ccwin->set_bg(ccwin,bgstim) != 0)
+		{
+	        MessageBox(0, "CCast Test pattern failure.", "set_bg", MB_ICONERROR);
+			return false;
+		} 
+
+	  if (first)
+	  {
+		  if (ccwin->set_color(ccwin,0.75,0.75,0.75) != 0)
+		  {
+	        MessageBox(0, "CCast Test pattern failure.", "set_bg", MB_ICONERROR);
+			return false;
+		  }
+		  Sleep(1000);
+		  ccwin->set_color(ccwin,.75,0,0);
+		  Sleep(1000);
+		  ccwin->set_color(ccwin,0,.75,0);
+		  Sleep(1000);
+		  ccwin->set_color(ccwin,0,0,.75);
+		  Sleep(1000);
+		  ccwin->set_color(ccwin,.75,.75,.75);
+		  Sleep(1000);
+	  }
+
+	  if (ccwin->set_color(ccwin,r,g,b) != 0 )
+		{
+	        MessageBox(0, "CCast Test pattern failure.", "set_color", MB_ICONERROR);
+			return false;
+		} 
+	  
+	// Sleep 80 ms while dispatching messages to ensure window is really displayed
+		MSG		Msg;
+		HWND	hEscapeWnd = NULL;
+		DWORD	dwWait = GetConfig () -> GetProfileInt ( "Debug", "WaitAfterDisplayPattern", 80 );
+		DWORD	dwStart = GetTickCount();
+		DWORD	dwNow = dwStart;
+		
+		// Wait until dwWait time is expired, but ensures all posted messages are treated even if wait time is zero
+		while((dwNow - dwStart) < dwWait)
+		{
+			while(PeekMessage(&Msg, NULL, NULL, NULL, PM_REMOVE))
+			{
+				if ( ( Msg.message == WM_KEYDOWN || Msg.message == WM_KEYUP ) && Msg.wParam == VK_ESCAPE )
+				{
+					// Do not treat this message, store it for later use
+					hEscapeWnd = Msg.hwnd;
+				}
+				else
+				{
+					TranslateMessage ( & Msg );
+					DispatchMessage ( & Msg );
+				}
+				Sleep(0);
+			}
+			dwNow = GetTickCount();
+		}
+		if ( hEscapeWnd )
+		{
+			// Escape key detected and stored during above loop: put it again in message loop to allow detection
+			::PostMessage ( hEscapeWnd, WM_KEYDOWN, VK_ESCAPE, NULL );
+			::PostMessage ( hEscapeWnd, WM_KEYUP, VK_ESCAPE, NULL );
+		}
+
+return TRUE;
+}
+
 BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nPatternType , UINT nPatternInfo , BOOL bChangePattern, BOOL bSilentMode)
 {
 
@@ -469,6 +558,8 @@ BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nP
 	
 	if ( m_GDIGenePropertiesPage.m_nDisplayMode == DISPLAY_madVR)
 		DisplayRGBColormadVR (do_Intensity?p_clr:clr, GetConfig()->m_isSettling);
+	else if ( m_GDIGenePropertiesPage.m_nDisplayMode == DISPLAY_ccast)
+		DisplayRGBCCast (do_Intensity?p_clr:clr, GetConfig()->m_isSettling );
 	else
 		m_displayWindow.DisplayRGBColor(do_Intensity?p_clr:clr);
 	return TRUE;
