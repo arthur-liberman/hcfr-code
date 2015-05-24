@@ -320,7 +320,6 @@ double r, double g, double b	/* Color values 0.0 - 1.0 */
 	chws *ws = (chws *)p->pcntx;
 	int j;
 	double orgb[3];		/* Previous RGB value */
-//	double kr, kf;
 	int update_delay = 0;
 
 	orgb[0] = p->rgb[0]; p->rgb[0] = r;
@@ -370,6 +369,7 @@ double r, double g, double b	/* Color values 0.0 - 1.0 */
 		double vres = 1.0;					/* Resoltion in pix/mm */
 		double iw, ih;						/* Size of page in mm (pixels) */
 		double bg[3];						/* Background color */
+		double area,r1l,r2l,r3l;
 		color2d c;
 		unsigned char *ibuf;		/* Memory image of .png file */
 		size_t ilen;
@@ -385,11 +385,16 @@ double r, double g, double b	/* Color values 0.0 - 1.0 */
 			ih = IHEIGHT;	/* Size of page in mm */
 		}
 
-// Scale to maintain constant APL
-	
-			bg[0] = p->blackbg;
-			bg[1] = p->blackbg;
-			bg[2] = p->blackbg;
+		area = (iw / 1000. * ih / 1000.);
+		r1l = (p->blackbg - area * p->rgb[0]) / (1 - area);
+		r2l = (p->blackbg - area * p->rgb[1]) / (1 - area);
+		r3l = (p->blackbg - area * p->rgb[2]) / (1 - area);
+		if (r1l < 0) r1l = 0;
+		if (r2l < 0) r2l = 0;
+		if (r3l < 0) r3l = 0;
+			bg[0] = r1l;
+			bg[1] = r2l;
+			bg[2] = r3l;
 
 		if ((r = new_render2d(iw, ih, NULL, hres, vres, rgb_2d,
 		     0, depth, dither,
@@ -571,12 +576,6 @@ double blackbg					/*background ratio */
 		char buf[100];
 		sprintf(buf,"ChromeCast '%s'",cc_id->name);
 		p->description = strdup(buf);
-	}
-
-    // Set a default first color
-	if (ccwin_set_color(p, 128.0, 128.0, 128.0)) {
-		p->del(p);
-		return NULL;
 	}
 
 	return p;

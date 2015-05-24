@@ -46,6 +46,7 @@ CGenerator::CGenerator()
 {
 	m_isModified=FALSE;
 	m_doScreenBlanking=GetConfig()->GetProfileInt("Generator","Blanking",0);
+	m_rectSizePercent=GetConfig()->GetProfileInt("GDIGenerator","SizePercent",10);
 	AddPropertyPage(&m_GeneratorPropertiePage);
 
 	CString str;
@@ -152,15 +153,15 @@ BOOL CGenerator::Init(UINT nbMeasure)
 			else 
 			{
 				double rx = sqrt( double( (double)Cgen.m_rectSizePercent / 100.));
-				dw = new_ccwin(ids[0], 1000.0 * rx  , 565.0 * rx, 0.0, 0.0, 0, 0.1);
+				dw = new_ccwin(ids[0], 1000.0 * rx  , 565.0 * rx, 0.0, 0.0, 0, 0.1234);
 				if (dw == NULL) 
 				{
 					GetColorApp()->InMeasureMessageBox( ids[0]->name, "new_ccwin failed!", MB_ICONERROR);
 					free_ccids(ids);
 					return -1;
 				} 
-				else
-					GetColorApp()->InMeasureMessageBox( dw->description, "ChromeCast Found", MB_ICONINFORMATION);
+//				else
+//					GetColorApp()->InMeasureMessageBox( dw->description, "ChromeCast Found", MB_ICONINFORMATION);
 			}
 		}
 		free_ccids(ids);

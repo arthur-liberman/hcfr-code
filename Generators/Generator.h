@@ -71,6 +71,7 @@ public:
 
 	UINT nMeasureNumber;
 	BOOL m_doScreenBlanking;
+	int m_rectSizePercent;
 	BOOL m_b16_235;
 	BOOL m_busePic;
     BOOL m_madVR_3d;
