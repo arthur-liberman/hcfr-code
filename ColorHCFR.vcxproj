@@ -100,7 +100,7 @@
     <Link>
       <AdditionalDependencies>setupapi.lib;psapi.lib;msimg32.lib;htmlhelp.lib;Mscms.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>C:\testing\hcfr-code\libnum;C:\testing\hcfr-code\Release;C:\testing\hcfr-code\Tools\spectro;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\testing\hcfr-code\Release;C:\testing\hcfr-code\Tools\spectro;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -1005,6 +1005,9 @@
     <ProjectReference Include="libHCFR\winFiles\libHCFR.vcxproj">
       <Project>{8835a92a-a566-4f75-8bed-21a5dabd6342}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="libnum\libnum.vcxproj">
+      <Project>{fdaba3aa-ba68-4bee-adda-fd10d9928534}</Project>
     </ProjectReference>
     <ProjectReference Include="librender\librender.vcxproj">
       <Project>{fcb702fa-b0f2-494d-8ede-2f79873924d2}</Project>
