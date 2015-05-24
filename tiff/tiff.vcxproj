@@ -69,7 +69,7 @@
       <AdditionalIncludeDirectories>..\Tools\Jpeg;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <DisableSpecificWarnings>4018</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4005</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
