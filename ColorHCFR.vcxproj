@@ -989,7 +989,7 @@
     <ProjectReference Include="libccast\libccast.vcxproj">
       <Project>{157843c3-1412-43dd-8832-19eac7df2b3f}</Project>
       <Private>true</Private>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
@@ -997,7 +997,7 @@
     <ProjectReference Include="libdisp\libdisp.vcxproj">
       <Project>{c6ddf4bc-27bc-4a87-881e-5bc297f9455e}</Project>
       <Private>true</Private>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
@@ -1006,13 +1006,10 @@
       <Project>{8835a92a-a566-4f75-8bed-21a5dabd6342}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="libnum\libnum.vcxproj">
-      <Project>{fdaba3aa-ba68-4bee-adda-fd10d9928534}</Project>
-    </ProjectReference>
     <ProjectReference Include="librender\librender.vcxproj">
       <Project>{fcb702fa-b0f2-494d-8ede-2f79873924d2}</Project>
       <Private>true</Private>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
       <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
@@ -1029,14 +1026,10 @@
       <Project>{e4929e39-ef57-470e-a748-0a5c28d74c5e}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="Tools\png\projects\visualc71\libpng.vcxproj">
-      <Project>{b2c1ec0f-1e2d-43d3-8693-8c8a76188907}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
     <ProjectReference Include="Tools\spectro\spectro.vcxproj">
       <Project>{5aa3f412-d3ab-437e-a8cf-c1b9acbca25e}</Project>
       <Private>true</Private>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
