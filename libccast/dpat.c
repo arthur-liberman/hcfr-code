@@ -37,9 +37,8 @@
 #include <math.h>
 #include <sys/types.h>
 #include <time.h>
-#include "copyright.h"
-#include "aconfig.h"
-#include "counters.h"
+#include "../h/aconfig.h"
+#include "../h/counters.h"
 #ifndef SALONEINSTLIB
 #include "numlib.h"
 #else

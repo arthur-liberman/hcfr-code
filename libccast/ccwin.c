@@ -27,7 +27,6 @@
 # endif /* __FreeBSD__ */
 #endif
 #include "../h/aconfig.h"
-#include "icc.h"
 #include "numsup.h"
 #include "conv.h"
 #include "mongoose.h"

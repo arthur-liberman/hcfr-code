@@ -183,6 +183,7 @@ size_t foo__bar__baz_bah__pack_to_buffer
 #include <assert.h>
 #include <limits.h>
 #include <stddef.h>
+
 #include "os_int.h"
 
 #ifdef __cplusplus

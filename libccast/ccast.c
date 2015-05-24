@@ -20,8 +20,7 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <time.h>
-#include "copyright.h"
-#include "aconfig.h"
+#include "../h/aconfig.h"
 #ifndef SALONEINSTLIB
 #include "numlib.h"
 #else

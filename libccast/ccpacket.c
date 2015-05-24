@@ -25,8 +25,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <limits.h>
-#include "copyright.h"
-#include "aconfig.h"
+#include "../h/aconfig.h"
 #include <sys/types.h>
 #ifndef SALONEINSTLIB
 #include "numlib.h"
