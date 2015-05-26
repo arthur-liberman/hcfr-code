@@ -4,7 +4,7 @@
 *.user
 Debug/
 Release/
-
+libHCFR/mac project files/build/
 
 *.ncb
 *.suo
@@ -13,7 +13,7 @@ Release/
 *.mode1
 *.xcuserdatad/
 .DS_Store
-*.model1v3
+*.mode1v3
 
 Tools/libusb1/examples/lsusb_ddkbuild/
 Tools/libusb1/examples/xusb_ddkbuild/
