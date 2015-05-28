@@ -383,6 +383,11 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
 			whiteColor=illuminantE;
 			whiteName="E";
 			break;
+		case D93:
+			standardName+=strModified;
+			whiteColor=illuminantD93;
+			whiteName="D93";
+			break;
 		case Default:
 		default:
 			break;

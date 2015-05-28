@@ -197,7 +197,6 @@ static UINT __cdecl BkgndThreadFunc ( LPVOID lpParameter )
 						    // Reset button image to the green arrow only when in free measures mode
 						    if ( ( (CMainView*) pView ) -> m_displayMode == 2 )
 						    {
-							    //( (CMainView*) pView ) -> m_grayScaleButton.SetIcon(IDI_START_ICON,24,24);
 		 					    ( (CMainView*) pView ) -> m_grayScaleButton.SetBitmaps(IDB_MEAS_CONT,RGB(0,0,0));
 							    Msg.LoadString ( IDS_RUNCONTINUOUS );
 							    ( (CMainView*) pView ) -> m_grayScaleButton.SetTooltipText(Msg);
@@ -409,7 +408,6 @@ void StopBackgroundMeasures ()
 					// Reset button image to the green arrow only when in free measures mode
 					if ( ( (CMainView*) pView ) -> m_displayMode == 2 )
 					{
-						//( (CMainView*) pView ) -> m_grayScaleButton.SetIcon(IDI_START_ICON,24,24);
 						( (CMainView*) pView ) -> m_grayScaleButton.SetBitmaps(IDB_MEAS_CONT,RGB(0,0,0));
 						( (CMainView*) pView ) -> m_grayScaleButton.SetTooltipText(Msg);
 					}
