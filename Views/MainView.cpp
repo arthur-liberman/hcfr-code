@@ -2016,6 +2016,9 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 						case SDTV:
 							return "R601";
 							break;
+						case UHDTV:
+							return "RDCI-P3";
+							break;
 						case HDTV:
 							return "R709";
 							break;
@@ -2066,6 +2069,9 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 						case HDTV:
 							return "G709";
 							break;
+						case UHDTV:
+							return "GDCI-P3";
+							break;
 						case sRGB:
 							return "G709";
 							break;
@@ -2113,6 +2119,9 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 							break;
 						case HDTV:
 							return "B709";
+							break;
+						case UHDTV:
+							return "BDCI-P3";
 							break;
 						case sRGB:
 							return "B709";

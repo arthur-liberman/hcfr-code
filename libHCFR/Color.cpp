@@ -158,7 +158,11 @@ ColorXYZ illuminantD50(ColorxyY(0.345669,0.358496));
 ColorXYZ illuminantD55(ColorxyY(0.332406,0.347551));
 ColorXYZ illuminantD65(ColorxyY(0.312712,0.329008));
 ColorXYZ illuminantD75(ColorxyY(0.299023,0.314963));
+ColorXYZ illuminantD93(ColorxyY(0.284863,0.293221));
+//ColorXYZ illuminantDCI(ColorxyY(0.333,0.334));//check this
+ColorXYZ illuminantDCI(ColorxyY(0.314,0.351));
 
+//initialize manual colors
 ColorxyY primariesPAL[3] =	{	ColorxyY(0.6400, 0.3300),
 								ColorxyY(0.2900, 0.6000),
 								ColorxyY(0.1500, 0.0600) };
@@ -169,6 +173,10 @@ ColorxyY primariesRec601[3] ={	ColorxyY(0.6300, 0.3400),
 
 ColorxyY primariesRec709[3] ={	ColorxyY(0.6400, 0.3300),
 								ColorxyY(0.3000, 0.6000),
+								ColorxyY(0.1500, 0.0600) };
+
+ColorxyY primariesDCI[3] ={	ColorxyY(0.6800, 0.3200),
+								ColorxyY(0.265, 0.6900),
 								ColorxyY(0.1500, 0.0600) };
 
 ColorxyY primariesRec709a[3] ={	ColorxyY(0.5575, 0.3298), //75% sat/lum Rec709 w/2.2 gamma
@@ -236,9 +244,9 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
 			whiteColor=illuminantD65;
 			whiteName="D65";
 			m_white=D65;
-            primaries[0] = c_redColor;
-            primaries[1] = c_greenColor;
-            primaries[2] = c_blueColor;
+			primaries[0] = c_redColor.isValid()?c_redColor:primariesRec709[0];
+			primaries[1] = c_greenColor.isValid()?c_greenColor:primariesRec709[1];
+			primaries[2] = c_blueColor.isValid()?c_blueColor:primariesRec709[2];
 			break;
 		}
 		case PALSECAM:
@@ -257,6 +265,15 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
 			m_white=D65;
 			whiteName="D65";
             primaries = primariesRec601;
+			break;
+		}
+		case UHDTV:
+		{
+			standardName="UHDTV DCI-P3";
+			whiteColor=illuminantDCI;
+			whiteName="DCI-P3";
+			m_white=DCI;
+            primaries = primariesDCI;
 			break;
 		}
 		case HDTV:

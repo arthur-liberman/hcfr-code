@@ -43,8 +43,9 @@ typedef enum
 	HDTVa = 3,
 	HDTVb = 4,
 	sRGB = 5,
-    CUSTOM = 6,
-	CC6 = 7
+	UHDTV = 6,
+    CUSTOM = 7,
+	CC6 = 8
 } ColorStandard;
 
 typedef enum 
@@ -67,10 +68,12 @@ typedef enum
 	D55 = 1,
 	D50 = 2,
 	D75 = 3,
-	A=4,
-	B=5,
-	C=6,
-	E=7,
+	D83 = 4,
+	A=5,
+	B=6,
+	C=7,
+	E=8,
+	DCI=9,
     DCUST,
 } WhiteTarget;
 
