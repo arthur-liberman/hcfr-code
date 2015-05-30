@@ -1018,7 +1018,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 		}
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
-
+/*
 	if(pGenerator->GetName() == str&&GetConfig()->m_colorStandard == HDTVb)
 	{		
 		Title.LoadString ( IDS_ERROR );
@@ -1028,7 +1028,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 		pGenerator->Release();
 		return FALSE;
 	}
-
+*/
 	double primaryIRELevel=100.0;	
 	// Measure primary and secondary colors
 	ColorRGBDisplay	GenColors [ 8 ] = 
@@ -2541,8 +2541,9 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
 	CString		strMsg, Title;
 	ColorRGBDisplay	GenColors [ 1010 ];
 	double		dLuxValue;
+	BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR);
 
-    if (GetConfig()->m_CCMode == USER) size = GetConfig()->GetCColorsSize();
+    if (isExtPat) size = GetConfig()->GetCColorsSize();
 
     CArray<CColor,int> measuredColor;
 	CColor previousColor, lastColor;
@@ -2588,7 +2589,7 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
 	case CCSG:
 		 nPattern=CGenerator::MT_SAT_CC24_CCSG;
 		 break;
-	case USER:
+	default:
 		 nPattern=CGenerator::MT_SAT_CC24_USER;
 		 break;
 	}
@@ -2791,10 +2792,10 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 	case CCSG:
 		 nPattern=CGenerator::MT_SAT_CC24_CCSG;		
          break;
-	case USER:
+	default:
 		 nPattern=CGenerator::MT_SAT_CC24_CCSG;		
          ccSize = GetConfig()->GetCColorsSize();
-         break;
+		 break;
 	}
 	
 	CGenerator::MeasureType	SaturationType [ 7 ] =
@@ -3547,7 +3548,7 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator)
 	}
 		CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
-
+/*
 	if(pGenerator->GetName() == str&&GetConfig()->m_colorStandard == HDTVb)
 	{		
 		Title.LoadString ( IDS_ERROR );
@@ -3557,7 +3558,7 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator)
 		pGenerator->Release();
 		return FALSE;
 	}
-
+*/
 	// Measure primary and secondary colors
 	double		IRELevel=100.0;	
 	ColorRGBDisplay	GenColors [ 8 ] = 
@@ -5843,12 +5844,11 @@ CColor CMeasure::GetRefCC24Sat(int i) const
             RGB[95] = ColorRGB(0.301369863,0.168949772,0.100456621);
             break;
         } 
-        //Custom color checker
-		case USER:
-		{
+        //Custom color checker as default
+		default:
 			int r=0, g=0, b=0;			
 			RGB [ i ] = GetConfig()->GetCColorsT(i);
-        }
+			break;
     } 
     CColor White = CMeasure::GetGray ( CMeasure::GetGrayScaleSize() - 1 );
 	CColor Black = CMeasure::GetGray ( 0 );

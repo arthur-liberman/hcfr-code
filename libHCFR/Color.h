@@ -58,7 +58,20 @@ typedef enum
 	SKIN = 5,
 	CCSG = 6,
 	AXIS = 7,
-    USER = 8
+	CM4LUM = 8,
+	CM5LUM = 9,
+	CM10LUM = 10,
+	CM4SAT = 11,
+	CM4SAT75 = 12,
+	CM5SAT = 13,
+	CM5SAT75 = 14,
+	CM10SAT = 15,
+	CM10SAT75 = 16,
+	CM6NB = 17,
+	CMDNR = 18,
+	RANDOM250 = 19,
+	RANDOM500 = 20,
+    USER = 21
 } CCPatterns;
 
 typedef enum 

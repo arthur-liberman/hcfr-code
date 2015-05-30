@@ -51,8 +51,8 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;NT;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\testing\hcfr-code\libaxTLS;C:\testing\hcfr-code\libyajl;C:\testing\hcfr-code\libconv;C:\testing\hcfr-code\libccast\chan;C:\testing\hcfr-code\libnum;C:\testing\hcfr-code\h;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;NT;_CRT_SECURE_NO_WARNINGS;_USE_32BIT_TIME_T;_CRT_NONSTDC_NO_DEPRECATE;WINVER=0x510;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\libconv;..\libaxTLS;..\libyajl;..\libnum;..\h;..\libccast\chan;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

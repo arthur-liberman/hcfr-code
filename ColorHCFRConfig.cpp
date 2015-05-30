@@ -831,8 +831,59 @@ int numCC = 0;
 
 void CColorHCFRConfig::GetCColors() 
 {
+            char m_ApplicationPath [MAX_PATH];
+			LPSTR lpStr;
+            GetModuleFileName ( NULL, m_ApplicationPath, sizeof ( m_ApplicationPath ) );
+			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
+			lpStr [ 1 ] = '\0';
             CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"usercolors.csv");
+			CString fName;
+			switch (m_CCMode)
+			{
+				case USER:
+		        fName="Colorchecker_Data\\usercolors.csv";
+				break;
+				case CM10SAT:
+		        fName="Colorchecker_Data\\CM 10-Point Saturation (100AMP).csv";
+				break;
+				case CM10SAT75:
+		        fName="Colorchecker_Data\\CM 10-Point Saturation (75AMP).csv";
+				break;
+				case CM4LUM:
+		        fName="Colorchecker_Data\\CM 4-Point Luminance.csv";
+				break;
+				case CM5LUM:
+		        fName="Colorchecker_Data\\CM 5-Point Luminance.csv";
+				break;
+				case CM10LUM:
+		        fName="Colorchecker_Data\\CM 10-Point Luminance.csv";
+				break;
+				case CM4SAT:
+		        fName="Colorchecker_Data\\CM 4-Point Saturation (100AMP).csv";
+				break;
+				case CM4SAT75:
+		        fName="Colorchecker_Data\\CM 4-Point Saturation (75AMP).csv";
+				break;
+				case CM5SAT:
+		        fName="Colorchecker_Data\\CM 5-Point Saturation (100AMP).csv";
+				break;
+				case CM5SAT75:
+		        fName="Colorchecker_Data\\CM 5-Point Saturation (75AMP).csv";
+				break;
+				case CM6NB:
+		        fName="Colorchecker_Data\\CM 6-Point Near Black.csv";
+				break;
+				case CMDNR:
+		        fName="Colorchecker_Data\\CM Dynamic Range (Clipping).csv";
+				break;
+				case RANDOM250:
+		        fName="Colorchecker_Data\\Random_250.csv";
+				break;
+				case RANDOM500:
+		        fName="Colorchecker_Data\\Random_500.csv";
+				break;
+			}
+			ifstream colorFile(strPath+fName);
             std::string line;
             int cnt = 0;
             int n1,n2,n3;
@@ -884,7 +935,8 @@ std::string CColorHCFRConfig::GetCColorsN(int index)
 int CColorHCFRConfig::GetCColorsSize() 
 {
     int cnt = 24;
-    if (GetConfig()->m_CCMode == USER)
+	BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR);
+    if (isExtPat)
 		cnt = numCC;
 		else if (GetConfig()->m_CCMode == CCSG) 
 			cnt = 96;

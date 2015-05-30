@@ -895,7 +895,7 @@ void CFullScreenWindow::OnPaint()
 			HMODULE hPatterns;
 			hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
 			HRSRC hRsrc;
-
+			
 			CxImage* newImage = new CxImage();
 			if (m_b16_235)
 				hRsrc = ::FindResource(hPatterns,MAKEINTRESOURCE(IDR_PATTERN_TESTIMGv),"PATTERN");
@@ -1074,7 +1074,6 @@ void CFullScreenWindow::OnPaint()
 				SetRect ( &aRect, dispX, dispY, dispW, dispH);
 			}
 		}
-
 		newImage->Draw(dc,aRect);
 		delete newImage;
 	}

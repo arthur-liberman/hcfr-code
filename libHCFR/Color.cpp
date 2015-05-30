@@ -1892,7 +1892,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
 			lpStr [ 1 ] = '\0';
             CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"usercolors.csv");
+            ifstream colorFile(strPath+"Colorchecker_Data\\usercolors.csv");
             std::string line;
             int cnt = 0;
             int n1,n2,n3;
@@ -1918,6 +1918,447 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
             break;
         }
 
+	case CM10SAT:
+        {//read in user defined colors
+            char m_ApplicationPath [MAX_PATH];
+			LPSTR lpStr;
+            GetModuleFileName ( NULL, m_ApplicationPath, sizeof ( m_ApplicationPath ) );
+			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
+			lpStr [ 1 ] = '\0';
+            CString strPath = m_ApplicationPath;
+            ifstream colorFile(strPath+"Colorchecker_Data\\CM 10-Point Saturation (100AMP).csv");
+            std::string line;
+            int cnt = 0;
+            int n1,n2,n3;
+            if (!colorFile) 
+            {
+				bOk = false;
+	        }
+			else
+			{
+            while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
+            {
+                std::istringstream s(line);
+                std::string field;
+                s >> n1;
+                getline(s, field,',');
+                s >> n2;
+                getline(s, field,',');
+                s >> n3;
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 -16) / 219.) * 100	, (	(n2-16) / 219.) * 100	,	( (n3-16) /219. ) * 100.	);
+                cnt++;
+            }
+			}
+            break;
+        }
+
+	case CM10SAT75:
+        {//read in user defined colors
+            char m_ApplicationPath [MAX_PATH];
+			LPSTR lpStr;
+            GetModuleFileName ( NULL, m_ApplicationPath, sizeof ( m_ApplicationPath ) );
+			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
+			lpStr [ 1 ] = '\0';
+            CString strPath = m_ApplicationPath;
+            ifstream colorFile(strPath+"Colorchecker_Data\\CM 10-Point Saturation (75AMP).csv");
+            std::string line;
+            int cnt = 0;
+            int n1,n2,n3;
+            if (!colorFile) 
+            {
+				bOk = false;
+	        }
+			else
+			{
+            while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
+            {
+                std::istringstream s(line);
+                std::string field;
+                s >> n1;
+                getline(s, field,',');
+                s >> n2;
+                getline(s, field,',');
+                s >> n3;
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 -16) / 219.) * 100	, (	(n2-16) / 219.) * 100	,	( (n3-16) /219. ) * 100.	);
+                cnt++;
+            }
+			}
+            break;
+        }
+	
+	case CM4LUM:
+        {//read in user defined colors
+            char m_ApplicationPath [MAX_PATH];
+			LPSTR lpStr;
+            GetModuleFileName ( NULL, m_ApplicationPath, sizeof ( m_ApplicationPath ) );
+			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
+			lpStr [ 1 ] = '\0';
+            CString strPath = m_ApplicationPath;
+            ifstream colorFile(strPath+"Colorchecker_Data\\CM 4-Point Luminance.csv");
+            std::string line;
+            int cnt = 0;
+            int n1,n2,n3;
+            if (!colorFile) 
+            {
+				bOk = false;
+	        }
+			else
+			{
+            while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
+            {
+                std::istringstream s(line);
+                std::string field;
+                s >> n1;
+                getline(s, field,',');
+                s >> n2;
+                getline(s, field,',');
+                s >> n3;
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 -16) / 219.) * 100	, (	(n2-16) / 219.) * 100	,	( (n3-16) /219. ) * 100.	);
+                cnt++;
+            }
+			}
+            break;
+        }
+
+	case CM5LUM:
+        {//read in user defined colors
+            char m_ApplicationPath [MAX_PATH];
+			LPSTR lpStr;
+            GetModuleFileName ( NULL, m_ApplicationPath, sizeof ( m_ApplicationPath ) );
+			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
+			lpStr [ 1 ] = '\0';
+            CString strPath = m_ApplicationPath;
+            ifstream colorFile(strPath+"Colorchecker_Data\\CM 5-Point Luminance.csv");
+            std::string line;
+            int cnt = 0;
+            int n1,n2,n3;
+            if (!colorFile) 
+            {
+				bOk = false;
+	        }
+			else
+			{
+            while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
+            {
+                std::istringstream s(line);
+                std::string field;
+                s >> n1;
+                getline(s, field,',');
+                s >> n2;
+                getline(s, field,',');
+                s >> n3;
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 -16) / 219.) * 100	, (	(n2-16) / 219.) * 100	,	( (n3-16) /219. ) * 100.	);
+                cnt++;
+            }
+			}
+            break;
+        }
+	
+	case CM10LUM:
+        {//read in user defined colors
+            char m_ApplicationPath [MAX_PATH];
+			LPSTR lpStr;
+            GetModuleFileName ( NULL, m_ApplicationPath, sizeof ( m_ApplicationPath ) );
+			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
+			lpStr [ 1 ] = '\0';
+            CString strPath = m_ApplicationPath;
+            ifstream colorFile(strPath+"Colorchecker_Data\\CM 10-Point Luminance.csv");
+            std::string line;
+            int cnt = 0;
+            int n1,n2,n3;
+            if (!colorFile) 
+            {
+				bOk = false;
+	        }
+			else
+			{
+            while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
+            {
+                std::istringstream s(line);
+                std::string field;
+                s >> n1;
+                getline(s, field,',');
+                s >> n2;
+                getline(s, field,',');
+                s >> n3;
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 -16) / 219.) * 100	, (	(n2-16) / 219.) * 100	,	( (n3-16) /219. ) * 100.	);
+                cnt++;
+            }
+			}
+            break;
+        }
+	
+	case CM4SAT:
+        {//read in user defined colors
+            char m_ApplicationPath [MAX_PATH];
+			LPSTR lpStr;
+            GetModuleFileName ( NULL, m_ApplicationPath, sizeof ( m_ApplicationPath ) );
+			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
+			lpStr [ 1 ] = '\0';
+            CString strPath = m_ApplicationPath;
+            ifstream colorFile(strPath+"Colorchecker_Data\\CM 4-Point Saturation (100AMP).csv");
+            std::string line;
+            int cnt = 0;
+            int n1,n2,n3;
+            if (!colorFile) 
+            {
+				bOk = false;
+	        }
+			else
+			{
+            while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
+            {
+                std::istringstream s(line);
+                std::string field;
+                s >> n1;
+                getline(s, field,',');
+                s >> n2;
+                getline(s, field,',');
+                s >> n3;
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 -16) / 219.) * 100	, (	(n2-16) / 219.) * 100	,	( (n3-16) /219. ) * 100.	);
+                cnt++;
+            }
+			}
+            break;
+        }
+	
+	case CM4SAT75:
+        {//read in user defined colors
+            char m_ApplicationPath [MAX_PATH];
+			LPSTR lpStr;
+            GetModuleFileName ( NULL, m_ApplicationPath, sizeof ( m_ApplicationPath ) );
+			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
+			lpStr [ 1 ] = '\0';
+            CString strPath = m_ApplicationPath;
+            ifstream colorFile(strPath+"Colorchecker_Data\\CM 4-Point Saturation (75AMP).csv");
+            std::string line;
+            int cnt = 0;
+            int n1,n2,n3;
+            if (!colorFile) 
+            {
+				bOk = false;
+	        }
+			else
+			{
+            while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
+            {
+                std::istringstream s(line);
+                std::string field;
+                s >> n1;
+                getline(s, field,',');
+                s >> n2;
+                getline(s, field,',');
+                s >> n3;
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 -16) / 219.) * 100	, (	(n2-16) / 219.) * 100	,	( (n3-16) /219. ) * 100.	);
+                cnt++;
+            }
+			}
+            break;
+        }
+	
+	case CM5SAT:
+        {//read in user defined colors
+            char m_ApplicationPath [MAX_PATH];
+			LPSTR lpStr;
+            GetModuleFileName ( NULL, m_ApplicationPath, sizeof ( m_ApplicationPath ) );
+			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
+			lpStr [ 1 ] = '\0';
+            CString strPath = m_ApplicationPath;
+            ifstream colorFile(strPath+"Colorchecker_Data\\CM 5-Point Saturation (100AMP).csv");
+            std::string line;
+            int cnt = 0;
+            int n1,n2,n3;
+            if (!colorFile) 
+            {
+				bOk = false;
+	        }
+			else
+			{
+            while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
+            {
+                std::istringstream s(line);
+                std::string field;
+                s >> n1;
+                getline(s, field,',');
+                s >> n2;
+                getline(s, field,',');
+                s >> n3;
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 -16) / 219.) * 100	, (	(n2-16) / 219.) * 100	,	( (n3-16) /219. ) * 100.	);
+                cnt++;
+            }
+			}
+            break;
+        }
+	
+	case CM5SAT75:
+        {//read in user defined colors
+            char m_ApplicationPath [MAX_PATH];
+			LPSTR lpStr;
+            GetModuleFileName ( NULL, m_ApplicationPath, sizeof ( m_ApplicationPath ) );
+			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
+			lpStr [ 1 ] = '\0';
+            CString strPath = m_ApplicationPath;
+            ifstream colorFile(strPath+"Colorchecker_Data\\CM 5-Point Saturation (75AMP).csv");
+            std::string line;
+            int cnt = 0;
+            int n1,n2,n3;
+            if (!colorFile) 
+            {
+				bOk = false;
+	        }
+			else
+			{
+            while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
+            {
+                std::istringstream s(line);
+                std::string field;
+                s >> n1;
+                getline(s, field,',');
+                s >> n2;
+                getline(s, field,',');
+                s >> n3;
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 -16) / 219.) * 100	, (	(n2-16) / 219.) * 100	,	( (n3-16) /219. ) * 100.	);
+                cnt++;
+            }
+			}
+            break;
+        }
+	
+	case CM6NB:
+        {//read in user defined colors
+            char m_ApplicationPath [MAX_PATH];
+			LPSTR lpStr;
+            GetModuleFileName ( NULL, m_ApplicationPath, sizeof ( m_ApplicationPath ) );
+			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
+			lpStr [ 1 ] = '\0';
+            CString strPath = m_ApplicationPath;
+            ifstream colorFile(strPath+"Colorchecker_Data\\CM 6-Point Near Black.csv");
+            std::string line;
+            int cnt = 0;
+            int n1,n2,n3;
+            if (!colorFile) 
+            {
+				bOk = false;
+	        }
+			else
+			{
+            while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
+            {
+                std::istringstream s(line);
+                std::string field;
+                s >> n1;
+                getline(s, field,',');
+                s >> n2;
+                getline(s, field,',');
+                s >> n3;
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 -16) / 219.) * 100	, (	(n2-16) / 219.) * 100	,	( (n3-16) /219. ) * 100.	);
+                cnt++;
+            }
+			}
+            break;
+        }
+
+	case CMDNR:
+        {//read in user defined colors
+            char m_ApplicationPath [MAX_PATH];
+			LPSTR lpStr;
+            GetModuleFileName ( NULL, m_ApplicationPath, sizeof ( m_ApplicationPath ) );
+			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
+			lpStr [ 1 ] = '\0';
+            CString strPath = m_ApplicationPath;
+            ifstream colorFile(strPath+"Colorchecker_Data\\CM Dynamic Range (Clipping).csv");
+            std::string line;
+            int cnt = 0;
+            int n1,n2,n3;
+            if (!colorFile) 
+            {
+				bOk = false;
+	        }
+			else
+			{
+            while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
+            {
+                std::istringstream s(line);
+                std::string field;
+                s >> n1;
+                getline(s, field,',');
+                s >> n2;
+                getline(s, field,',');
+                s >> n3;
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 -16) / 219.) * 100	, (	(n2-16) / 219.) * 100	,	( (n3-16) /219. ) * 100.	);
+                cnt++;
+            }
+			}
+            break;
+        }
+
+	case RANDOM250:
+        {//read in user defined colors
+            char m_ApplicationPath [MAX_PATH];
+			LPSTR lpStr;
+            GetModuleFileName ( NULL, m_ApplicationPath, sizeof ( m_ApplicationPath ) );
+			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
+			lpStr [ 1 ] = '\0';
+            CString strPath = m_ApplicationPath;
+            ifstream colorFile(strPath+"Colorchecker_Data\\Random_250.csv");
+            std::string line;
+            int cnt = 0;
+            int n1,n2,n3;
+            if (!colorFile) 
+            {
+				bOk = false;
+	        }
+			else
+			{
+            while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
+            {
+                std::istringstream s(line);
+                std::string field;
+                s >> n1;
+                getline(s, field,',');
+                s >> n2;
+                getline(s, field,',');
+                s >> n3;
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 -16) / 219.) * 100	, (	(n2-16) / 219.) * 100	,	( (n3-16) /219. ) * 100.	);
+                cnt++;
+            }
+			}
+            break;
+        }
+	
+	case RANDOM500:
+        {//read in user defined colors
+            char m_ApplicationPath [MAX_PATH];
+			LPSTR lpStr;
+            GetModuleFileName ( NULL, m_ApplicationPath, sizeof ( m_ApplicationPath ) );
+			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
+			lpStr [ 1 ] = '\0';
+            CString strPath = m_ApplicationPath;
+            ifstream colorFile(strPath+"Colorchecker_Data\\Random_250.csv");
+            std::string line;
+            int cnt = 0;
+            int n1,n2,n3;
+            if (!colorFile) 
+            {
+				bOk = false;
+	        }
+			else
+			{
+            while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
+            {
+                std::istringstream s(line);
+                std::string field;
+                s >> n1;
+                getline(s, field,',');
+                s >> n2;
+                getline(s, field,',');
+                s >> n3;
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 -16) / 219.) * 100	, (	(n2-16) / 219.) * 100	,	( (n3-16) /219. ) * 100.	);
+                cnt++;
+            }
+			}
+            break;
+        }
 	}
 return bOk;
 }

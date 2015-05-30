@@ -135,53 +135,60 @@ BOOL CGenerator::Init(UINT nbMeasure)
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 	BOOL madVR_Found;
 
-	if (Cgen.m_nDisplayMode == DISPLAY_ccast && m_name != str)
+	if (m_name != str)
 	{
-		ccast_id **ids;
-		ids = get_ccids();	
-		if ((ids = get_ccids()) == NULL) 
+		if (Cgen.m_nDisplayMode == DISPLAY_ccast)
 		{
-			GetColorApp()->InMeasureMessageBox( "    ** Error discovering ChromeCasts **", "Error", MB_ICONERROR);
-			return false;
-		} else 
-		{
-			if (ids[0] == NULL)
+			ccast_id **ids;
+			ids = get_ccids();	
+			if ((ids = get_ccids()) == NULL) 
 			{
-				GetColorApp()->InMeasureMessageBox( "    ** No ChromeCasts found **", "Error", MB_ICONERROR);
+				GetColorApp()->InMeasureMessageBox( "    ** Error discovering ChromeCasts **", "Error", MB_ICONERROR);
+				return false;
+			} else 
+			{
+				if (ids[0] == NULL)
+				{
+					GetColorApp()->InMeasureMessageBox( "    ** No ChromeCasts found **", "Error", MB_ICONERROR);
+					return false;
+				}
+				else 
+				{
+					double rx = sqrt( double( (double)Cgen.m_rectSizePercent / 100.));
+					dw = new_ccwin(ids[0], 1000.0 * rx  , 565.0 * rx, 0.0, 0.0, 0, 0.1234);
+					if (dw == NULL) 
+					{
+						GetColorApp()->InMeasureMessageBox( ids[0]->name, "new_ccwin failed!", MB_ICONERROR);
+						free_ccids(ids);
+						return -1;
+					} 
+	//				else
+	//					GetColorApp()->InMeasureMessageBox( dw->description, "ChromeCast Found", MB_ICONINFORMATION);
+				}
+			}
+			free_ccids(ids);
+		} else if (Cgen.m_nDisplayMode == DISPLAY_madVR)
+			{
+			if (madVR_IsAvailable())
+			{
+				int nSettling=GetConfig()->m_isSettling?5:0;
+				madVR_Found = madVR_Connect(CM_ConnectToLocalInstance, CM_ConnectToLanInstance, CM_StartLocalInstance  );
+				if (m_madVR_vLUT)
+					madVR_SetDeviceGammaRamp(NULL);
+				if (m_madVR_3d)
+					madVR_Disable3dlut();
+				if (m_madVR_OSD)
+					madVR_ShowProgressBar(nMeasureNumber + nSettling);
+			}
+			else
+			{
+				GetColorApp()->InMeasureMessageBox( "madVR dll not found, is madVR installed?", "Error", MB_ICONERROR);
 				return false;
 			}
-			else 
-			{
-				double rx = sqrt( double( (double)Cgen.m_rectSizePercent / 100.));
-				dw = new_ccwin(ids[0], 1000.0 * rx  , 565.0 * rx, 0.0, 0.0, 0, 0.1234);
-				if (dw == NULL) 
-				{
-					GetColorApp()->InMeasureMessageBox( ids[0]->name, "new_ccwin failed!", MB_ICONERROR);
-					free_ccids(ids);
-					return -1;
-				} 
-//				else
-//					GetColorApp()->InMeasureMessageBox( dw->description, "ChromeCast Found", MB_ICONINFORMATION);
-			}
-		}
-		free_ccids(ids);
-	} else if (Cgen.m_nDisplayMode == DISPLAY_madVR && m_name != str)
+		} else
 		{
-		if (madVR_IsAvailable())
-		{
-			int nSettling=GetConfig()->m_isSettling?5:0;
-			madVR_Found = madVR_Connect(CM_ConnectToLocalInstance, CM_ConnectToLanInstance, CM_StartLocalInstance  );
-			if (m_madVR_vLUT)
-				madVR_SetDeviceGammaRamp(NULL);
-			if (m_madVR_3d)
-				madVR_Disable3dlut();
-			if (m_madVR_OSD)
-				madVR_ShowProgressBar(nMeasureNumber + nSettling);
-		}
-		else
-		{
-			GetColorApp()->InMeasureMessageBox( "madVR dll not found, is madVR installed?", "Error", MB_ICONERROR);
-			return false;
+			CGenerator *	m_pGenerator;			
+			m_pGenerator=new CGDIGenerator();
 		}
 	}
 

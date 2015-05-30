@@ -586,30 +586,27 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 		Msg.LoadString ( IDS_PALREDREF );
 		Msg2.LoadString ( IDS_PALGREENREF );
 		Msg3.LoadString ( IDS_PALBLUEREF );
-	}
-
-	if(GetConfig()->m_colorStandard == CUSTOM)
+	}else if(GetConfig()->m_colorStandard == CUSTOM)
 	{
 		Msg.LoadString ( IDS_CUSTREDREF );
 		Msg2.LoadString ( IDS_CUSTGREENREF );
 		Msg3.LoadString ( IDS_CUSTBLUEREF );
-	}
-
-    if(GetConfig()->m_colorStandard == HDTV || GetConfig()->m_colorStandard == sRGB)
+	} else if(GetConfig()->m_colorStandard == UHDTV)
+	{
+		Msg.LoadString ( IDS_UHDTVREDREF );
+		Msg2.LoadString ( IDS_UHDTVGREENREF );
+		Msg3.LoadString ( IDS_UHDTVBLUEREF );
+	} else if(GetConfig()->m_colorStandard == HDTV || GetConfig()->m_colorStandard == sRGB)
 	{
 		Msg.LoadString ( IDS_REC709REDREF );
 		Msg2.LoadString ( IDS_REC709GREENREF );
 		Msg3.LoadString ( IDS_REC709BLUEREF );
-	}
-
-	if(GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb )
+	}else if(GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb )
 	{
 		Msg.LoadString ( IDS_REC709aREDREF );
 		Msg2.LoadString ( IDS_REC709aGREENREF );
 		Msg3.LoadString ( IDS_REC709aBLUEREF );
-	}
-
-	if(GetConfig()->m_colorStandard == CC6)
+	} else if(GetConfig()->m_colorStandard == CC6)
 	{
 		Msg.LoadString ( IDS_RECCC6REDREF );
 		Msg2.LoadString ( IDS_RECCC6GREENREF );
@@ -1096,7 +1093,8 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	if(m_doShowCCScaleTarg) 
 	{
 		CString str;
-        if (GetConfig()->m_CCMode != CCSG && GetConfig()->m_CCMode != USER && GetConfig()->m_CCMode != CMS && GetConfig()->m_CCMode != CPS && GetConfig()->m_CCMode != AXIS)
+		BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR);
+        if (GetConfig()->m_CCMode != CCSG && !isExtPat && GetConfig()->m_CCMode != CMS && GetConfig()->m_CCMode != CPS && GetConfig()->m_CCMode != AXIS)
         {
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_1a:(GetConfig()->m_CCMode == SKIN?IDS_CC_1b:IDS_CC_1) );
 			str.Format(Msg, 10);
@@ -1352,7 +1350,8 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	if(m_doShowCCScale)
 	{
 		CString str;
-        if (GetConfig()->m_CCMode != CCSG && GetConfig()->m_CCMode != USER && GetConfig()->m_CCMode != CMS && GetConfig()->m_CCMode != CPS && GetConfig()->m_CCMode != AXIS)
+		BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR);
+        if (GetConfig()->m_CCMode != CCSG && !isExtPat && GetConfig()->m_CCMode != CMS && GetConfig()->m_CCMode != CPS && GetConfig()->m_CCMode != AXIS)
         {
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_1a:(GetConfig()->m_CCMode == SKIN?IDS_CC_1b:IDS_CC_1) );
 			str.Format(Msg, 10);

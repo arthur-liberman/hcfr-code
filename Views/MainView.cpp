@@ -887,7 +887,8 @@ void CMainView::InitGrid()
 	}
 	else if ( m_displayMode == 11)
 	{
-        if (GetConfig()->m_CCMode == USER)
+		BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR);
+        if (isExtPat)
             size = (GetConfig()->GetCColorsSize());		
         else
             size = (GetConfig()->m_CCMode == CCSG?96:(GetConfig()->m_CCMode == AXIS?71:24));
@@ -985,6 +986,7 @@ void CMainView::InitGrid()
 		Item.row = 0;
 		Item.col = i+1;
 		Item.nFormat = DT_CENTER|DT_WORDBREAK;
+		BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR);
 
 		switch ( m_displayMode )
 		{
@@ -1061,7 +1063,7 @@ void CMainView::InitGrid()
                  {
                     Item.strText.SetString(PatNameAXIS[i]);
                  }
-                 else if (GetConfig()->m_CCMode == USER)
+                 else if (isExtPat)
                  {
                      char aBuf[50];
 					 std::string name = GetConfig()->GetCColorsN(i);
@@ -2259,6 +2261,7 @@ void CMainView::UpdateGrid()
 			GetConfig()->m_GammaAvg = (Gamma<1?2.2:Gamma);
         GetConfig()->SetPropertiesSheetValues();
 
+		BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR);
 		switch ( m_displayMode )
 		{
 			case 0:
@@ -2352,7 +2355,7 @@ void CMainView::UpdateGrid()
 				 }
 				 else
 				 {
-                     if (GetConfig()->m_CCMode == USER)
+                     if (isExtPat)
                          nCount = GetConfig()->GetCColorsSize();
                      else
                         nCount = GetConfig()->m_CCMode==CCSG?96:GetConfig()->m_CCMode==CMS||GetConfig()->m_CCMode==CPS?19:(GetConfig()->m_CCMode==AXIS?71:24);
@@ -2922,10 +2925,11 @@ void CMainView::UpdateGrid()
 			m_grayScaleGroup.SetText ( Msg );
 		} else if (m_displayMode == 11)
 		{
-			CString	Msg, Tmp;;
+			CString	Msg, Tmp;
+			BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR);
 			Msg.LoadString ( IDS_CC24COLORS );
 			Msg += " - ";
-			Msg += (GetConfig()->m_CCMode == GCD?"ColorChecker Classic GCD":(GetConfig()->m_CCMode==MCD?"ColorChecker Classic MCD":(GetConfig()->m_CCMode==SKIN?"Pantone skin tones":(GetConfig()->m_CCMode==CCSG?"ColorChecker SG":(GetConfig()->m_CCMode==USER?GetConfig()->GetCColorsN(-1).c_str():(GetConfig()->m_CCMode==CMS?"ColorChecker CalMAN SG skin tones":(GetConfig()->m_CCMode==CPS?"ColorChecker ChromaPure skin tones":(GetConfig()->m_CCMode==CMC?"ColorChecker Classic CalMAN":"RGB Luminance Ramps"))))))));
+			Msg += (GetConfig()->m_CCMode == GCD?"Classic GCD":(GetConfig()->m_CCMode==MCD?"Classic MCD":(GetConfig()->m_CCMode==SKIN?"Pantone skin tones":(GetConfig()->m_CCMode==CCSG?"CalMan SG":isExtPat?GetConfig()->GetCColorsN(-1).c_str():(GetConfig()->m_CCMode==CMS?"CalMAN SG skin tones":(GetConfig()->m_CCMode==CPS?"ChromaPure skin tones":(GetConfig()->m_CCMode==CMC?"Classic CalMAN":"RGB Luminance Ramps")))))));
 			m_grayScaleGroup.SetText ( Msg );
 			if (GetDocument()->GetMeasure()->GetCC24Sat(0).isValid() && dEcnt > 0 )
 		    {
@@ -4005,6 +4009,8 @@ void CMainView::OnDeleteGrayscale()
 	if(GetColorApp()->InMeasureMessageBox(Msg,Title,MB_ICONQUESTION | MB_YESNO) == IDYES)
 	{
 		int	j;
+		CCPatterns cPat = GetConfig()->m_CCMode;
+		BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR);
 		switch ( m_displayMode )
 		{
 			case 0:
@@ -4087,7 +4093,7 @@ void CMainView::OnDeleteGrayscale()
 				 break;
 
 			case 11:
-                if (GetConfig()->m_CCMode == USER)
+                if ( isExtPat )
                 {
     				for(j=0;j<GetConfig()->GetCColorsSize() ;j++)
 	    				GetDocument()->GetMeasure()->SetCC24Sat(j,noDataColor);
@@ -4096,7 +4102,7 @@ void CMainView::OnDeleteGrayscale()
                }
                 else
                 {
-                    for(j=0;j< (GetConfig()->m_CCMode == CCSG?96:(GetConfig()->m_CCMode == AXIS?71:(GetConfig()->m_CCMode == CMS||GetConfig()->m_CCMode == CPS?19:24))) ;j++)
+                    for(j=0;j< (cPat == CCSG?96:(cPat == AXIS?71:(cPat == CMS||cPat == CPS?19:24))) ;j++)
 	    				GetDocument()->GetMeasure()->SetCC24Sat(j,noDataColor);
                 }
 				 lHint = UPD_CC24SAT;

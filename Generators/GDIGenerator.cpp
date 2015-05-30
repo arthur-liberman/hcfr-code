@@ -551,7 +551,7 @@ BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nP
 	{
 		do_Intensity = true;
 	}
-	
+
 	p_clr[0] = clr[0] * m_displayWindow.m_Intensity / 100;
 	p_clr[1] = clr[1] * m_displayWindow.m_Intensity / 100;
 	p_clr[2] = clr[2] * m_displayWindow.m_Intensity / 100;

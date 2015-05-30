@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by CHCFR21_ENGLISH.rc
+// Used by CHCFR21_FRANCAIS.rc
 //
 #define IDS_STRING_VERSION              1
 #define IDS_STRING_VERSION_WEB          2
@@ -1540,6 +1540,9 @@
 #define IDS_CUSTREDREF                  41953
 #define IDS_CUSTGREENREF                41954
 #define IDS_CUSTBLUEREF                 41955
+#define IDS_UHDTVREDREF                 41956
+#define IDS_UHDTVGREENREF               41957
+#define IDS_UHDTVBLUEREF                41958
 #define IDS_ARGYLLSENSOR_PROPERTIES_TITLE 59394
 #define IDS_ARGYLLSENSOR_NAME           59395
 
