@@ -75,8 +75,8 @@
     <ClCompile>
       <Optimization>Full</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>Tools\spectro;Tools/CxImage;./;Tools;Tools/NewMenu;Tools/Graph;Tools/ButtonST;Tools/GridCtrl;Tools/CppTooltip;Generators;Sensors;Controls;Views;libHCFR;Tools/ArgyllMeterWrapper;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NT;DEBUG;_WINDOWS;_USE_32BIT_TIME_T;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>libharu\include;Tools\spectro;Tools/CxImage;./;Tools;Tools/NewMenu;Tools/Graph;Tools/ButtonST;Tools/GridCtrl;Tools/CppTooltip;Generators;Sensors;Controls;Views;libHCFR;Tools/ArgyllMeterWrapper;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NT;DEBUG;_WINDOWS;_USE_32BIT_TIME_T;HPDF_USE_PNGLIB;WIN32_LEAN_AND_MEAN;__WIN32__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Async</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -100,7 +100,7 @@
     <Link>
       <AdditionalDependencies>setupapi.lib;psapi.lib;msimg32.lib;htmlhelp.lib;Mscms.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>C:\testing\hcfr-code\Release;C:\testing\hcfr-code\Tools\spectro;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>Release;Tools\spectro;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -993,6 +993,9 @@
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
+    <ProjectReference Include="libharu\libharu.vcxproj">
+      <Project>{416e77ff-acfa-478d-9e8b-fa1e1296e007}</Project>
     </ProjectReference>
     <ProjectReference Include="libHCFR\winFiles\libHCFR.vcxproj">
       <Project>{8835a92a-a566-4f75-8bed-21a5dabd6342}</Project>
