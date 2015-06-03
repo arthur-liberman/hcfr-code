@@ -101,6 +101,11 @@ public:
 	int	m_nSizeOffset;
 	int last_minCol;
 	int minCol;
+	double dEavg_gs;
+	double dEmax_gs;
+	double dEavg_cc;
+	double dEmax_cc;
+
 	CBrush *m_pBgBrush;
 
 	CDataSetDoc* GetDocument();

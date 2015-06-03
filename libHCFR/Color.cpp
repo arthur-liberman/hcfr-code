@@ -1892,7 +1892,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
 			lpStr [ 1 ] = '\0';
             CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"Colorchecker_Data\\usercolors.csv");
+            ifstream colorFile(strPath+"data\\usercolors.csv");
             std::string line;
             int cnt = 0;
             int n1,n2,n3;
@@ -1926,7 +1926,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
 			lpStr [ 1 ] = '\0';
             CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"Colorchecker_Data\\CM 10-Point Saturation (100AMP).csv");
+            ifstream colorFile(strPath+"data\\CM 10-Point Saturation (100AMP).csv");
             std::string line;
             int cnt = 0;
             int n1,n2,n3;
@@ -1960,7 +1960,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
 			lpStr [ 1 ] = '\0';
             CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"Colorchecker_Data\\CM 10-Point Saturation (75AMP).csv");
+            ifstream colorFile(strPath+"data\\CM 10-Point Saturation (75AMP).csv");
             std::string line;
             int cnt = 0;
             int n1,n2,n3;
@@ -1994,7 +1994,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
 			lpStr [ 1 ] = '\0';
             CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"Colorchecker_Data\\CM 4-Point Luminance.csv");
+            ifstream colorFile(strPath+"data\\CM 4-Point Luminance.csv");
             std::string line;
             int cnt = 0;
             int n1,n2,n3;
@@ -2028,7 +2028,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
 			lpStr [ 1 ] = '\0';
             CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"Colorchecker_Data\\CM 5-Point Luminance.csv");
+            ifstream colorFile(strPath+"data\\CM 5-Point Luminance.csv");
             std::string line;
             int cnt = 0;
             int n1,n2,n3;
@@ -2062,7 +2062,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
 			lpStr [ 1 ] = '\0';
             CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"Colorchecker_Data\\CM 10-Point Luminance.csv");
+            ifstream colorFile(strPath+"data\\CM 10-Point Luminance.csv");
             std::string line;
             int cnt = 0;
             int n1,n2,n3;
@@ -2096,7 +2096,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
 			lpStr [ 1 ] = '\0';
             CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"Colorchecker_Data\\CM 4-Point Saturation (100AMP).csv");
+            ifstream colorFile(strPath+"data\\CM 4-Point Saturation (100AMP).csv");
             std::string line;
             int cnt = 0;
             int n1,n2,n3;
@@ -2130,7 +2130,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
 			lpStr [ 1 ] = '\0';
             CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"Colorchecker_Data\\CM 4-Point Saturation (75AMP).csv");
+            ifstream colorFile(strPath+"data\\CM 4-Point Saturation (75AMP).csv");
             std::string line;
             int cnt = 0;
             int n1,n2,n3;
@@ -2164,7 +2164,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
 			lpStr [ 1 ] = '\0';
             CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"Colorchecker_Data\\CM 5-Point Saturation (100AMP).csv");
+            ifstream colorFile(strPath+"data\\CM 5-Point Saturation (100AMP).csv");
             std::string line;
             int cnt = 0;
             int n1,n2,n3;
@@ -2198,7 +2198,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
 			lpStr [ 1 ] = '\0';
             CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"Colorchecker_Data\\CM 5-Point Saturation (75AMP).csv");
+            ifstream colorFile(strPath+"data\\CM 5-Point Saturation (75AMP).csv");
             std::string line;
             int cnt = 0;
             int n1,n2,n3;
@@ -2232,7 +2232,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
 			lpStr [ 1 ] = '\0';
             CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"Colorchecker_Data\\CM 6-Point Near Black.csv");
+            ifstream colorFile(strPath+"data\\CM 6-Point Near Black.csv");
             std::string line;
             int cnt = 0;
             int n1,n2,n3;
@@ -2266,7 +2266,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
 			lpStr [ 1 ] = '\0';
             CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"Colorchecker_Data\\CM Dynamic Range (Clipping).csv");
+            ifstream colorFile(strPath+"data\\CM Dynamic Range (Clipping).csv");
             std::string line;
             int cnt = 0;
             int n1,n2,n3;
@@ -2300,7 +2300,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
 			lpStr [ 1 ] = '\0';
             CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"Colorchecker_Data\\Random_250.csv");
+            ifstream colorFile(strPath+"data\\Random_250.csv");
             std::string line;
             int cnt = 0;
             int n1,n2,n3;
@@ -2334,7 +2334,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
 			lpStr [ 1 ] = '\0';
             CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"Colorchecker_Data\\Random_250.csv");
+            ifstream colorFile(strPath+"data\\Random_250.csv");
             std::string line;
             int cnt = 0;
             int n1,n2,n3;

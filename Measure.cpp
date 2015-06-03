@@ -91,7 +91,7 @@ CMeasure::CMeasure()
 	m_OnOffBlack.SetXYZValue(GetColorReference().GetWhite());
 	m_OnOffBlack.SetY(0.012345);
 	m_AnsiBlack=m_AnsiWhite=noDataColor;
-	m_infoStr="";
+	SetInfoString((CString)"Calibration by: \r\nDisplay: \r\nNote: \r\n");
 	
 	m_bIREScaleMode = GetConfig()->GetProfileInt("References","IRELevels",FALSE);
 
@@ -409,7 +409,8 @@ void CMeasure::Serialize(CArchive& ar)
 		}
 
 		ar >> m_infoStr;
-
+		if (m_infoStr.Find("\n") < 1)
+			SetInfoString((CString)"Calibration by: \r\nDisplay: \r\nNote: \r\n");
 		if ( version > 4 && version < 7 )
 		{
             BOOL bUseAdjustmentMatrix;

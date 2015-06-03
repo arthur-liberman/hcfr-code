@@ -34,7 +34,20 @@
 #include <stdio.h>
 #include <string.h>
 #include <setjmp.h>
+#include <atlimage.h>
 #include "libharu\include\hpdf.h"
+
+#include "DocTempl.h"
+#include "RGBHistoView.h"
+#include "GraphControl.h"
+#include "CxImage\ximage.h"
+#include "GammaHistoView.h"
+#include "colortemphistoview.h"
+#include "ciechartview.h"
+#include "SatLumHistoView.h"
+#include "SatLumShiftView.h"
+#include "MultiFrm.h"
+#include "Views\MainView.h"
 
 jmp_buf env;
 
@@ -82,12 +95,60 @@ draw_image (HPDF_Doc     pdf,
     HPDF_Page_BeginText (page);
     HPDF_Page_SetTextLeading (page, 16);
     HPDF_Page_MoveTextPos (page, x, y);
-    HPDF_Page_ShowTextNextLine (page, filename);
+//    HPDF_Page_ShowTextNextLine (page, filename);
     HPDF_Page_ShowTextNextLine (page, text);
     HPDF_Page_EndText (page);
 }
+void
+draw_image2 (HPDF_Doc     pdf,
+            const char  *filename,
+            float        x,
+            float        y,
+            const char  *text)
+{
+#ifdef __WIN32__
+    const char* FILE_SEPARATOR = "\\";
+#else
+    const char* FILE_SEPARATOR = "/";
+#endif
+    char filename1[255];
 
+	int wX = 300 , wY = 200;
+	HPDF_Page page = HPDF_GetCurrentPage (pdf);
+    HPDF_Image image;
 
+    strcpy(filename1, "data");
+    strcat(filename1, FILE_SEPARATOR);
+    strcat(filename1, filename);
+
+    image = HPDF_LoadPngImageFromFile (pdf, filename1);
+
+    /* Draw image to the canvas. */
+    HPDF_Page_DrawImage (page, image, x, y, wX, wY);
+
+    /* Print the text. */
+    HPDF_Page_BeginText (page);
+    HPDF_Page_SetTextLeading (page, 16);
+    HPDF_Page_MoveTextPos (page, x, y);
+//    HPDF_Page_ShowTextNextLine (page, filename);
+    HPDF_Page_ShowTextNextLine (page, text);
+    HPDF_Page_EndText (page);
+}
+void
+draw_line  (HPDF_Page    page,
+            float        x,
+            float        y,
+            const char  *label)
+{
+    HPDF_Page_BeginText (page);
+    HPDF_Page_MoveTextPos (page, x, y - 10);
+    HPDF_Page_ShowText (page, label);
+    HPDF_Page_EndText (page);
+
+    HPDF_Page_MoveTo (page, x, y - 15);
+    HPDF_Page_LineTo (page, x + 600, y - 15);
+    HPDF_Page_Stroke (page);
+}
 // check the Excel-ODBC driver is installed
 bool IsExcelDriverInsalled()
 {
@@ -121,7 +182,21 @@ bool IsExcelDriverInsalled()
 	return false;
 #endif
 }
+void
+draw_rect (HPDF_Page     page,
+           double        x,
+           double        y,
+		   double		 w,
+		   double		 h,
+           const char   *label)
+{
+    HPDF_Page_BeginText (page);
+    HPDF_Page_MoveTextPos (page, x, y - 10);
+    HPDF_Page_ShowText (page, label);
+    HPDF_Page_EndText (page);
 
+    HPDF_Page_Rectangle(page, x, y, w, h);
+}
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -149,8 +224,8 @@ CExport::~CExport()
 
 bool CExport::Save()
 {
-	char *ext[3]={"xls","csv","icc"};
-	char *filter[3]={"Excel files (*.xls)|*.xls||","CSV files (*.cvs)|*.csv||","ICC files (*.icc)|*.icc||"};
+	char *ext[4]={"xls","csv","icc","pdf"};
+	char *filter[4]={"Excel files (*.xls)|*.xls||","CSV files (*.cvs)|*.csv||","ICC files (*.icc)|*.icc||","PDF files (*.pdf)|*.pdf||"};
 	CString	Msg, Title;
 
 	CFileDialog fileSaveDialog( FALSE, ext[(int)m_type], NULL, OFN_HIDEREADONLY, filter[(int)m_type]);
@@ -160,6 +235,7 @@ bool CExport::Save()
 	CString SheetOrSeparator="GeneralSheet";
 
 	m_fileName=fileSaveDialog.GetPathName();
+	
 	if(m_type == CSV)	// Format filename to append sheet name easily
 	{
 		m_fileName.Replace(".csv","");
@@ -168,64 +244,92 @@ bool CExport::Save()
 			m_fileName=m_fileName.Left(n-1);
 	}
 
-	CFile testFile;
-	BOOL testFileRes=testFile.Open(fileSaveDialog.GetPathName(),CFile::shareDenyNone|CFile::modeRead);
-
-	if(testFileRes)
+	if(m_type != PDF)
 	{
-		testFile.Close();
+		CFile testFile;
+		BOOL testFileRes=testFile.Open(fileSaveDialog.GetPathName(),CFile::shareDenyNone|CFile::modeRead);
+		if (testFileRes)
+		{
+			testFile.Close();
 	
-		CString aFileName;
-		if(m_type == CSV)
-		{
-			aFileName=m_fileName+"."+SheetOrSeparator+".csv";
-			SheetOrSeparator=m_separator;
-		}
-		else
-			aFileName=m_fileName;
-
-		CSpreadSheet generalSS(aFileName,SheetOrSeparator,false);
-
-		CExportReplaceDialog replaceDialog;
-		bool measureFound=false;
-		for(int i=2;i<=generalSS.GetTotalRows();i++)
-		{
-			CRowArray rows;
-			if(generalSS.ReadRow(rows,i))
+			CString aFileName;
+			if(m_type == CSV)
 			{
-				replaceDialog.AddMeasure(rows.GetAt(0)+": "+rows.GetAt(1)+" du "+rows.GetAt(2));
-				measureFound=true;
+				aFileName=m_fileName+"."+SheetOrSeparator+".csv";
+				SheetOrSeparator=m_separator;
+			}
+			else
+				aFileName=m_fileName;
+
+			CSpreadSheet generalSS(aFileName,SheetOrSeparator,false);
+
+			CExportReplaceDialog replaceDialog;
+			bool measureFound=false;
+			for(int i=2;i<=generalSS.GetTotalRows();i++)
+			{
+				CRowArray rows;
+				if(generalSS.ReadRow(rows,i))
+				{
+					replaceDialog.AddMeasure(rows.GetAt(0)+": "+rows.GetAt(1)+" du "+rows.GetAt(2));
+					measureFound=true;
+				}
+			}
+
+			if(measureFound)
+			{
+				int res=replaceDialog.DoModal();
+
+				if(res==IDCANCEL)
+					return false;
+
+				m_numToReplace=replaceDialog.GetSelectedMeasure()+1;
+				m_doReplace=replaceDialog.IsReplaceRadioChecked();
+			}
+			else
+			{
+				Msg.LoadString ( IDS_NOMEASURES );
+				Title.LoadString ( IDS_EXPORT );
+				if(GetColorApp()->InMeasureMessageBox(Msg,Title,MB_YESNO)!=IDYES)
+					return false;
 			}
 		}
-
-		if(measureFound)
-		{
-			int res=replaceDialog.DoModal();
-
-			if(res==IDCANCEL)
-				return false;
-
-			m_numToReplace=replaceDialog.GetSelectedMeasure()+1;
-			m_doReplace=replaceDialog.IsReplaceRadioChecked();
-		}
-		else
-		{
-			Msg.LoadString ( IDS_NOMEASURES );
-			Title.LoadString ( IDS_EXPORT );
-			if(GetColorApp()->InMeasureMessageBox(Msg,Title,MB_YESNO)!=IDYES)
-				return false;
-		}
 	}
+	
+	if (m_type == PDF)
+		return SavePDF();
+	else
+		return SaveSheets();
+}
 
-	if(true){
+bool CExport::SavePDF()
+{
     HPDF_Doc  pdf;
-    HPDF_Font font;
-    HPDF_Page page;
-    char fname[256];
+    HPDF_Font font,font2;
+    HPDF_Page page,page2;
     HPDF_Destination dst;
+	CString afileName = m_fileName;
+	int dX = 900, dY = 600;
+	CDataSetDoc *pDataRef = GetDataRef();
+	CView *pView;
+	POSITION		pos;
+	double CR = NULL;
 
-    strcpy (fname, "test");
-    strcat (fname, ".pdf");
+	pos = m_pDoc -> GetFirstViewPosition ();
+	pView = m_pDoc -> GetNextView ( pos );
+	int current_mode = ((CMainView*)pView)->m_displayMode;
+	((CMainView*)pView)->m_displayMode = 11;
+	((CMainView*)pView)->UpdateAllGrids();
+	((CMainView*)pView)->m_displayMode=current_mode;
+	((CMainView*)pView)->UpdateAllGrids();
+
+	double dEavg_cc = ((CMainView*)pView)->dEavg_cc;
+	double dEavg_gs = ((CMainView*)pView)->dEavg_gs;
+	double dEmax_cc = ((CMainView*)pView)->dEmax_cc;
+	double dEmax_gs = ((CMainView*)pView)->dEmax_gs;
+	double White = m_pDoc->GetMeasure()->GetOnOffWhite().GetY();
+	double Black = m_pDoc->GetMeasure()->GetOnOffBlack().GetY();
+	if (Black > 0)
+		CR = White /Black;
 
     pdf = HPDF_New (error_handler, NULL);
 
@@ -233,80 +337,598 @@ bool CExport::Save()
 		CString	Msg, Title;
 		Msg.LoadString ( IDS_ERREXPORT );
 		Title.LoadString ( IDS_EXPORT );
-		GetColorApp()->InMeasureMessageBox(Msg+fname+"error: cannot create PdfDoc object\n"+m_errorStr,Title,MB_OK);
-        return 1;
+		GetColorApp()->InMeasureMessageBox(Msg+afileName+"error: cannot create PdfDoc object\n"+m_errorStr,Title,MB_OK);
+        return false;
     }
 
     /* error-handler */
     if (setjmp(env)) {
         HPDF_Free (pdf);
-        return 1;
+        return false;
     }
-
-    HPDF_SetCompressionMode (pdf, HPDF_COMP_ALL);
-
-    /* create default-font */
-    font = HPDF_GetFont (pdf, "Helvetica", NULL);
+    
+	/* create default-font */
+    font = HPDF_GetFont (pdf, "Helvetica-Oblique", NULL);
+    font2 = HPDF_GetFont (pdf, "Helvetica", NULL);
+//	HPDF_SetCompressionMode(pdf, HPDF_COMP_NONE);
+	HPDF_SetCompressionMode(pdf, HPDF_COMP_ALL);
 
     /* add a new page object. */
     page = HPDF_AddPage (pdf);
-
-    HPDF_Page_SetWidth (page, 550);
-    HPDF_Page_SetHeight (page, 650);
-
+	HPDF_Page_SetSize (page, HPDF_PAGE_SIZE_LETTER, HPDF_PAGE_PORTRAIT);
     dst = HPDF_Page_CreateDestination (page);
     HPDF_Destination_SetXYZ (dst, 0, HPDF_Page_GetHeight (page), 1);
     HPDF_SetOpenAction(pdf, dst);
 
     HPDF_Page_BeginText (page);
-    HPDF_Page_SetFontAndSize (page, font, 20);
-    HPDF_Page_MoveTextPos (page, 220, HPDF_Page_GetHeight (page) - 70);
-    HPDF_Page_ShowText (page, "PngDemo");
-    HPDF_Page_EndText (page);
-
+    HPDF_Page_SetFontAndSize (page, font, 14);
+    HPDF_Page_MoveTextPos (page, HPDF_Page_GetWidth (page) - 300, HPDF_Page_GetHeight (page) - 20);
+    HPDF_Page_ShowText (page, "System data for file: "+m_pDoc->GetTitle());
     HPDF_Page_SetFontAndSize (page, font, 12);
+    HPDF_Page_SetTextLeading (page, 14);
+    HPDF_Page_ShowTextNextLine (page, "Sensor: "+m_pDoc->GetSensor()->GetName());
+	if (m_pDoc->GetGenerator()->GetName() == "View images")
+	{
+		CString dName;
+		int d = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI);
+		switch (d)
+		{
+		case 0:
+			dName = " [GDI]";
+			break;
+		case 3:
+			dName = " [GDI - no background]";
+			break;
+		case 2:
+			dName = " [madTPG]";
+			break;
+		case 4:
+			dName = " [Chromecast]";
+			break;
+		}
+	    HPDF_Page_ShowTextNextLine (page, "Generator: "+m_pDoc->GetGenerator()->GetName()+dName);
+	}
+	else
+	    HPDF_Page_ShowTextNextLine (page, "Generator: "+m_pDoc->GetGenerator()->GetName());
 
-    draw_image (pdf, "basn0g01.png", 100, HPDF_Page_GetHeight (page) - 150,
-                "1bit grayscale.");
-    draw_image (pdf, "basn0g02.png", 200, HPDF_Page_GetHeight (page) - 150,
-                "2bit grayscale.");
-    draw_image (pdf, "basn0g04.png", 300, HPDF_Page_GetHeight (page) - 150,
-                "4bit grayscale.");
-    draw_image (pdf, "basn0g08.png", 400, HPDF_Page_GetHeight (page) - 150,
-                "8bit grayscale.");
+	CString info=m_pDoc->GetMeasure()->GetInfoString();
+	int b1 = info.Find('\n', 0);
+	CString line1 = info.Left(b1);
+    HPDF_Page_ShowTextNextLine (page, line1);
+	info = info.Mid(b1+1);
+	b1 = info.Find('\n', 0);
+	line1 = info.Left(b1);
+	HPDF_Page_ShowTextNextLine (page, line1);
+	info = info.Mid(b1+1);
+	b1 = info.Find('\n', 0);
+	line1 = info.Left(b1);
+	HPDF_Page_ShowTextNextLine (page, line1);
+    HPDF_Page_SetFontAndSize (page, font2, 10);
+    HPDF_Page_SetTextLeading (page, 10);
+	HPDF_Page_EndText (page);
 
-    draw_image (pdf, "basn2c08.png", 100, HPDF_Page_GetHeight (page) - 250,
-                "8bit color.");
-    draw_image (pdf, "basn2c16.png", 200, HPDF_Page_GetHeight (page) - 250,
-                "16bit color.");
+	HPDF_Page_SetLineWidth (page, 2);
+	HPDF_Page_SetRGBStroke (page, (HPDF_REAL)0.5, (HPDF_REAL)0.5, (HPDF_REAL)0.7);
+	HPDF_Page_SetLineCap (page, HPDF_ROUND_END);
+	draw_line (page, 6, HPDF_Page_GetHeight (page) - 95, "");
 
-    draw_image (pdf, "basn3p01.png", 100, HPDF_Page_GetHeight (page) - 350,
-                "1bit pallet.");
-    draw_image (pdf, "basn3p02.png", 200, HPDF_Page_GetHeight (page) - 350,
-                "2bit pallet.");
-    draw_image (pdf, "basn3p04.png", 300, HPDF_Page_GetHeight (page) - 350,
-                "4bit pallet.");
-    draw_image (pdf, "basn3p08.png", 400, HPDF_Page_GetHeight (page) - 350,
-                "8bit pallet.");
+    HPDF_Page_SetLineWidth (page, 5);
+	HPDF_Page_SetRGBStroke (page, (HPDF_REAL)0.8, (HPDF_REAL)0.8, (HPDF_REAL)0.8);
+	draw_rect (page, 3, 3, HPDF_Page_GetWidth (page) - 6, HPDF_Page_GetHeight (page) - 5, "");
+    HPDF_Page_Stroke (page);
 
-    draw_image (pdf, "basn4a08.png", 100, HPDF_Page_GetHeight (page) - 450,
-                "8bit alpha.");
-    draw_image (pdf, "basn4a16.png", 200, HPDF_Page_GetHeight (page) - 450,
-                "16bit alpha.");
+    HPDF_Page_SetLineWidth (page, 2);
+	HPDF_Page_SetRGBStroke (page, (HPDF_REAL)0.4, (HPDF_REAL)0.0, (HPDF_REAL)0.0);
+	draw_rect (page, 6 + 300, 18, 298, 200, "Summary");
+    HPDF_Page_Stroke (page);
 
-    draw_image (pdf, "basn6a08.png", 100, HPDF_Page_GetHeight (page) - 550,
-                "8bit alpha.");
-    draw_image (pdf, "basn6a16.png", 200, HPDF_Page_GetHeight (page) - 550,
-                "16bit alpha.");
+	CString dEform;
+	char str[100];
+	if (White > 0 && Black < 0.000001)
+		sprintf(str,"White: %.2f cd/m^2    Black: %.4f cd/m^2    CR: Infinite", White, Black);
+	else
+		sprintf(str,"White: %.2f cd/m^2    Black: %.4f cd/m^2    CR: %.0f:1", White, Black, CR);
 
-    /* save the document to a file */
-    HPDF_SaveToFile (pdf, fname);
+	HPDF_Page_BeginText (page);
+	HPDF_Page_SetFontAndSize (page, font2, 9);
+	HPDF_Page_MoveTextPos (page, 6 + 300 + 5, 200);
+	HPDF_Page_ShowText (page, str );
+	HPDF_Page_SetTextLeading (page, 14);
+
+
+	if (dEavg_gs > 0)
+		sprintf(str,"Grayscale dE (Avg/Max): %.2f/%.2f", dEavg_gs, dEmax_gs);
+	else
+		sprintf(str,"Grayscale dE (Avg/Max): No data");
+
+	switch (GetConfig()->m_dE_form)
+	{
+		case 0:
+		dEform = " [CIE76(uv)]";
+		break;
+		case 1:
+		dEform = " [CIE76(ab)]";
+		break;
+		case 2:
+		dEform = " [CIE94]";
+		break;
+		case 3:
+		dEform = " [CIE2000]";
+		break;
+		case 4:
+		dEform = " [CMC(1:1)]";
+		break;
+		case 5:
+		dEform = " [CIE76(uv)]";
+		break;
+	}
+    dEform += GetConfig()->m_dE_gray==0?" [Relative Y]":(GetConfig ()->m_dE_gray == 1?" [Absolute Y w/gamma]":" [Absolute Y w/o gamma]");
+	HPDF_Page_ShowTextNextLine (page, str + dEform);
+
+	dEform = "Color checker sequence";
+	switch (GetConfig()->m_CCMode)
+	{
+	case 0:
+		dEform += " [GCD Classic]";
+		break;
+	case 1:
+		dEform += " [MCD Classic]";
+		break;
+	case 2:
+		dEform += " [Pantone Skin]";
+		break;
+	case 3:
+		dEform += " [CalMAN Classic]";
+		break;
+	case 4:
+		dEform += " [CalMAN Skin]";
+		break;
+	case 5:
+		dEform += " [Chromapure Skin]";
+		break;
+	case 6:
+		dEform += " [CalMAN SG]";
+		break;
+	case 7:
+		dEform += " [CalMAN 10 pt Lum.]";
+		break;
+	case 8:
+		dEform += " [CalMAN 4 pt Lum.]";
+		break;
+	case 9:
+		dEform += " [CalMAN 5 pt Lum.]";
+		break;
+	case 10:
+		dEform += " [CalMAN 10 pt Lum.]";
+		break;
+	case 11:
+		dEform += " [CalMAN 4 pt Sat.(100AMP)]";
+		break;
+	case 12:
+		dEform += " [CalMAN 4 pt Sat.(75AMP)]";
+		break;
+	case 13:
+		dEform += " [CalMAN 5 pt Sat.(100AMP)]";
+		break;
+	case 14:
+		dEform += " [CalMAN 5 pt Sat.(75AMP)]";
+		break;
+	case 15:
+		dEform += " [CalMAN 10 pt Sat.(100AMP)]";
+		break;
+	case 16:
+		dEform += " [CalMAN 10 pt Sat.(75AMP)]";
+		break;
+	case 17:
+		dEform += " [CalMAN near black]";
+		break;
+	case 18:
+		dEform += " [CalMan dynamic range]";
+		break;
+	case 19:
+		dEform += " [Random 250]";
+		break;
+	case 20:
+		dEform += " [Random 500]";
+		break;
+	case 21:
+		dEform += " [User]";
+		break;
+	}
+
+	HPDF_Page_SetRGBFill(page, (HPDF_REAL).1, 0, (HPDF_REAL).8);
+	HPDF_Page_ShowTextNextLine (page, dEform);
+	HPDF_Page_SetGrayFill(page, 0);
+
+	switch (GetConfig()->m_dE_form)
+	{
+		case 0:
+		dEform = " [CIE76(uv)]";
+		break;
+		case 1:
+		dEform = " [CIE76(ab)]";
+		break;
+		case 2:
+		dEform = " [CIE94]";
+		break;
+		case 3:
+		dEform = " [CIE2000]";
+		break;
+		case 4:
+		dEform = " [CMC(1:1)]";
+		break;
+		case 5:
+		dEform = " [CIE2000]";
+		break;
+	}
+
+	if (dEavg_cc > 0)
+		sprintf(str,"Colorchecker dE (Avg/Max): %.2f/%.2f"+dEform, dEavg_cc, dEmax_cc);
+	else
+		sprintf(str,"Colorchecker dE (Avg/Max): No data"+dEform);
+	HPDF_Page_ShowTextNextLine (page, str);
+	HPDF_Page_EndText (page);
+
+	CString datetime = CTime::GetCurrentTime().Format("%#c");
+	draw_image (pdf, "logo.png", 6, HPDF_Page_GetHeight (page) - 89,
+                "Calibration report for "+ datetime + (pDataRef&&pDataRef!=m_pDoc?" [page 1]":""));
+
+	
+	//RGB graph
+	CRGBGrapher pRGB;
+	CRect Rect(0,0,dX,dY);
+	pRGB.UpdateGraph(m_pDoc);	
+	CDC ScreenDC;
+	ScreenDC.CreateDC ( "DISPLAY", NULL, NULL, NULL );
+	CDC MemDC, MemDC2;
+	MemDC.CreateCompatibleDC(&ScreenDC);
+	MemDC2.CreateCompatibleDC(&ScreenDC);
+	CBitmap Bmp;
+	Bmp.CreateCompatibleBitmap(&ScreenDC, Rect.Width(),Rect.Height());
+	ScreenDC.DeleteDC();
+	MemDC.SelectObject(&Bmp);
+	MemDC2.SelectObject(&Bmp);
+	pRGB.m_graphCtrl.DrawGraphs(&MemDC, Rect);
+	pRGB.m_graphCtrl.SaveGraphs(&pRGB.m_graphCtrl2, NULL, NULL, FALSE, 1);	
+	draw_image2(pdf, "temp.png", 6, HPDF_Page_GetHeight (page) - 320, "Grayscale/Grayscale dE");
+
+	//Gamma-CT graph
+	
+	CGammaGrapher pGAMMA;
+	CColorTempGrapher pCT;
+	pGAMMA.UpdateGraph(m_pDoc);	
+	pCT.UpdateGraph(m_pDoc);	
+	pGAMMA.m_graphCtrl.DrawGraphs(&MemDC, Rect);
+	pCT.m_graphCtrl.DrawGraphs(&MemDC2, Rect);
+	pCT.m_graphCtrl.SaveGraphs(&pGAMMA.m_graphCtrl, NULL, NULL, FALSE, 2);	
+
+	draw_image2(pdf, "temp.png", 6 + 300, HPDF_Page_GetHeight (page) - 320, "Correlated Color Temperature/Gamma");
+
+//CIE Chart
+	CCIEChartGrapher pCIE;
+	pCIE.SaveGraphFile(m_pDoc,CSize(dX,dY),"data/temp.png",2,95,TRUE);
+	Sleep(100);
+
+	draw_image2(pdf, "temp.png", 6, HPDF_Page_GetHeight (page) - 320 - 230, "CIE Diagram");
+	
+//SATS/LUM Chart
+
+	CSatLumGrapher pSat;
+	CSatLumShiftGrapher pShift;
+	pSat.UpdateGraph(m_pDoc);	
+	pShift.UpdateGraph(m_pDoc);	
+	pSat.m_graphCtrl.DrawGraphs(&MemDC, Rect);
+	pShift.m_graphCtrl.DrawGraphs(&MemDC2, Rect);
+	pSat.m_graphCtrl.SaveGraphs(&pShift.m_graphCtrl, &pShift.m_graphCtrl2, NULL, FALSE, 3);	
+
+	draw_image2(pdf, "temp.png", 6 + 300, HPDF_Page_GetHeight (page) - 320 - 230, "Saturation Sweep Luminance/Shifts");
+/*
+	CView *pCView;
+	CDC *pDC = pCView->GetActiveWindow()->GetDC();
+	MemDC.CreateCompatibleDC(pDC);
+	Bmp.CreateCompatibleBitmap(pDC, Rect.Width(),Rect.Height());
+	MemDC.SelectObject(&Bmp);
+	MemDC.BitBlt(0,0,Rect.Width(),Rect.Height(),pDC,0,0,SRCCOPY);
+	CImage Temp;
+	Temp.Attach((HBITMAP)Bmp.Detach());
+	Temp.Save("data/temp.png");
+	pDC->DeleteDC();
+
+	draw_image2(pdf, "temp.png", 6, HPDF_Page_GetHeight (page) - 320 - 230 -230, "Page View");
+*/
+
+	//page 2 if ref document open
+	if (pDataRef && (pDataRef != m_pDoc))
+	{
+		pos = pDataRef -> GetFirstViewPosition ();
+		pView = pDataRef -> GetNextView ( pos );
+		current_mode = ((CMainView*)pView)->m_displayMode;
+		((CMainView*)pView)->m_displayMode = 11;
+		((CMainView*)pView)->UpdateAllGrids();
+		((CMainView*)pView)->m_displayMode=current_mode;
+		((CMainView*)pView)->UpdateAllGrids();
+
+		dEavg_cc = ((CMainView*)pView)->dEavg_cc;
+		dEavg_gs = ((CMainView*)pView)->dEavg_gs;
+		dEmax_cc = ((CMainView*)pView)->dEmax_cc;
+		dEmax_gs = ((CMainView*)pView)->dEmax_gs;
+		White = pDataRef->GetMeasure()->GetOnOffWhite().GetY();
+		Black = pDataRef->GetMeasure()->GetOnOffBlack().GetY();
+		if (Black > 0)
+			CR = White /Black;
+		
+		/* add a new page object. */
+		page2 = HPDF_AddPage (pdf);
+		HPDF_Page_SetSize (page2, HPDF_PAGE_SIZE_LETTER, HPDF_PAGE_PORTRAIT);
+		HPDF_Page_SetTextLeading (page2, 14);
+
+		HPDF_Page_BeginText (page2);
+		HPDF_Page_SetFontAndSize (page2, font, 14);
+		HPDF_Page_MoveTextPos (page2, HPDF_Page_GetWidth (page2) - 300, HPDF_Page_GetHeight (page2) - 20);
+		HPDF_Page_ShowText (page2, "System data for file: "+pDataRef->GetTitle()+"[REF]");
+		HPDF_Page_SetFontAndSize (page2, font, 12);
+		HPDF_Page_ShowTextNextLine (page2, "Sensor: "+pDataRef->GetSensor()->GetName());
+		if (pDataRef->GetGenerator()->GetName() == "View images")
+		{
+			CString dName;
+			int d = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI);
+			switch (d)
+			{
+			case 0:
+				dName = " [GDI]";
+				break;
+			case 3:
+				dName = " [GDI - no background]";
+				break;
+			case 2:
+				dName = " [madTPG]";
+				break;
+			case 4:
+				dName = " [Chromecast]";
+				break;
+			}
+			HPDF_Page_ShowTextNextLine (page2, "Generator: "+pDataRef->GetGenerator()->GetName()+dName);
+		}
+		else
+			HPDF_Page_ShowTextNextLine (page2, "Generator: "+pDataRef->GetGenerator()->GetName());
+
+		CString info=pDataRef->GetMeasure()->GetInfoString();
+		int b1 = info.Find('\n', 0);
+		CString line1 = info.Left(b1);
+		HPDF_Page_ShowTextNextLine (page2, line1);
+		info = info.Mid(b1+1);
+		b1 = info.Find('\n', 0);
+		line1 = info.Left(b1);
+		HPDF_Page_ShowTextNextLine (page2, line1);
+		info = info.Mid(b1+1);
+		b1 = info.Find('\n', 0);
+		line1 = info.Left(b1);
+		HPDF_Page_ShowTextNextLine (page2, line1);
+	    HPDF_Page_SetFontAndSize (page2, font2, 10);
+		HPDF_Page_SetTextLeading (page2, 10);
+		HPDF_Page_EndText (page2);
+
+		HPDF_Page_SetLineWidth (page2, 2);
+		HPDF_Page_SetRGBStroke (page2, (HPDF_REAL)0.5, (HPDF_REAL)0.5, (HPDF_REAL)0.7);
+		HPDF_Page_SetLineCap (page2, HPDF_ROUND_END);
+		draw_line (page2, 6, HPDF_Page_GetHeight (page2) - 95, "");
+
+		HPDF_Page_SetLineWidth (page2, 5);
+		HPDF_Page_SetRGBStroke (page2, (HPDF_REAL)0.8, (HPDF_REAL)0.8, (HPDF_REAL)0.8);
+		draw_rect (page2, 3, 3, HPDF_Page_GetWidth (page2) - 6, HPDF_Page_GetHeight (page2) - 5, "");
+		HPDF_Page_Stroke (page2);
+
+		HPDF_Page_SetLineWidth (page2, 2);
+		HPDF_Page_SetRGBStroke (page2, (HPDF_REAL)0.4, (HPDF_REAL)0.0, (HPDF_REAL)0.0);
+		draw_rect (page2, 6 + 300, 18, 298, 200, "Summary");
+		HPDF_Page_Stroke (page2);
+		
+		if (White > 0 && Black < 0.000001)
+			sprintf(str,"White: %.2f cd/m^2    Black: %.4f cd/m^2    CR: Infinite", White, Black);
+		else
+			sprintf(str,"White: %.2f cd/m^2    Black: %.4f cd/m^2    CR: %.0f:1", White, Black, CR);
+
+		HPDF_Page_BeginText (page2);
+		HPDF_Page_SetFontAndSize (page2, font2, 9);
+		HPDF_Page_MoveTextPos (page2, 6 + 300 + 5, 200);
+		HPDF_Page_ShowText (page2, str );
+		HPDF_Page_SetTextLeading (page2, 14);
+
+
+		if (dEavg_gs > 0)
+			sprintf(str,"Grayscale dE (Avg/Max): %.2f/%.2f", dEavg_gs, dEmax_gs);
+		else
+			sprintf(str,"Grayscale dE (Avg/Max): No data");
+
+		switch (GetConfig()->m_dE_form)
+		{
+			case 0:
+			dEform = " [CIE76(uv)]";
+			break;
+			case 1:
+			dEform = " [CIE76(ab)]";
+			break;
+			case 2:
+			dEform = " [CIE94]";
+			break;
+			case 3:
+			dEform = " [CIE2000]";
+			break;
+			case 4:
+			dEform = " [CMC(1:1)]";
+			break;
+			case 5:
+			dEform = " [CIE76(uv)]";
+			break;
+		}
+		dEform += GetConfig()->m_dE_gray==0?" [Relative Y]":(GetConfig ()->m_dE_gray == 1?" [Absolute Y w/gamma]":" [Absolute Y w/o gamma]");
+		HPDF_Page_ShowTextNextLine (page2, str + dEform);
+
+		dEform = "Color checker sequence";
+		switch (GetConfig()->m_CCMode)
+		{
+		case 0:
+			dEform += " [GCD Classic]";
+			break;
+		case 1:
+			dEform += " [MCD Classic]";
+			break;
+		case 2:
+			dEform += " [Pantone Skin]";
+			break;
+		case 3:
+			dEform += " [CalMAN Classic]";
+			break;
+		case 4:
+			dEform += " [CalMAN Skin]";
+			break;
+		case 5:
+			dEform += " [Chromapure Skin]";
+			break;
+		case 6:
+			dEform += " [CalMAN SG]";
+			break;
+		case 7:
+			dEform += " [CalMAN 10 pt Lum.]";
+			break;
+		case 8:
+			dEform += " [CalMAN 4 pt Lum.]";
+			break;
+		case 9:
+			dEform += " [CalMAN 5 pt Lum.]";
+			break;
+		case 10:
+			dEform += " [CalMAN 10 pt Lum.]";
+			break;
+		case 11:
+			dEform += " [CalMAN 4 pt Sat.(100AMP)]";
+			break;
+		case 12:
+			dEform += " [CalMAN 4 pt Sat.(75AMP)]";
+			break;
+		case 13:
+			dEform += " [CalMAN 5 pt Sat.(100AMP)]";
+			break;
+		case 14:
+			dEform += " [CalMAN 5 pt Sat.(75AMP)]";
+			break;
+		case 15:
+			dEform += " [CalMAN 10 pt Sat.(100AMP)]";
+			break;
+		case 16:
+			dEform += " [CalMAN 10 pt Sat.(75AMP)]";
+			break;
+		case 17:
+			dEform += " [CalMAN near black]";
+			break;
+		case 18:
+			dEform += " [CalMan dynamic range]";
+			break;
+		case 19:
+			dEform += " [Random 250]";
+			break;
+		case 20:
+			dEform += " [Random 500]";
+			break;
+		case 21:
+			dEform += " [User]";
+			break;
+		}
+
+		HPDF_Page_SetRGBFill(page2, (HPDF_REAL).1, 0, (HPDF_REAL).8);
+		HPDF_Page_ShowTextNextLine (page2, dEform);
+		HPDF_Page_SetGrayFill(page2, 0);
+
+		switch (GetConfig()->m_dE_form)
+		{
+			case 0:
+			dEform = " [CIE76(uv)]";
+			break;
+			case 1:
+			dEform = " [CIE76(ab)]";
+			break;
+			case 2:
+			dEform = " [CIE94]";
+			break;
+			case 3:
+			dEform = " [CIE2000]";
+			break;
+			case 4:
+			dEform = " [CMC(1:1)]";
+			break;
+			case 5:
+			dEform = " [CIE2000]";
+			break;
+		}
+
+		if (dEavg_cc > 0)
+			sprintf(str,"Colorchecker dE (Avg/Max): %.2f/%.2f"+dEform, dEavg_cc, dEmax_cc);
+		else
+			sprintf(str,"Colorchecker dE (Avg/Max): No data"+dEform);
+		HPDF_Page_ShowTextNextLine (page2, str);
+		HPDF_Page_EndText (page2);
+
+		draw_image (pdf, "logo.png", 6, HPDF_Page_GetHeight (page2) - 89,
+					"Calibration report for "+datetime+" [page 2]");
+	//RGB graph
+		CRGBGrapher pRGB;
+		CRect Rect(0,0,dX,dY);
+		pRGB.UpdateGraph(pDataRef);	
+		CDC ScreenDC;
+		ScreenDC.CreateDC ( "DISPLAY", NULL, NULL, NULL );
+		CDC MemDC, MemDC2;
+		MemDC.CreateCompatibleDC(&ScreenDC);
+		MemDC2.CreateCompatibleDC(&ScreenDC);
+		CBitmap Bmp;
+		Bmp.CreateCompatibleBitmap(&ScreenDC, Rect.Width(),Rect.Height());
+		ScreenDC.DeleteDC();
+		MemDC.SelectObject(&Bmp);
+		MemDC2.SelectObject(&Bmp);
+		pRGB.m_graphCtrl.DrawGraphs(&MemDC, Rect);
+		pRGB.m_graphCtrl.SaveGraphs(&pRGB.m_graphCtrl2, NULL, NULL, FALSE, 1);	
+		draw_image2(pdf, "temp.png", 6, HPDF_Page_GetHeight (page2) - 320, "Grayscale/Grayscale dE");
+
+		//Gamma-CT graph
+	
+		CGammaGrapher pGAMMA;
+		CColorTempGrapher pCT;
+		pGAMMA.UpdateGraph(pDataRef);	
+		pCT.UpdateGraph(pDataRef);	
+		pGAMMA.m_graphCtrl.DrawGraphs(&MemDC, Rect);
+		pCT.m_graphCtrl.DrawGraphs(&MemDC2, Rect);
+		pCT.m_graphCtrl.SaveGraphs(&pGAMMA.m_graphCtrl, NULL, NULL, FALSE, 2);	
+
+		draw_image2(pdf, "temp.png", 6 + 300, HPDF_Page_GetHeight (page2) - 320, "Correlated Color Temperature/Gamma");
+
+	//CIE Chart
+		CCIEChartGrapher pCIE;
+		pCIE.SaveGraphFile(pDataRef,CSize(dX,dY),"data/temp.png",2,95,TRUE);
+
+		draw_image2(pdf, "temp.png", 6, HPDF_Page_GetHeight (page2) - 320 - 230, "CIE Diagram");
+	
+	//SATS/LUM Chart
+
+		CSatLumGrapher pSat;
+		CSatLumShiftGrapher pShift;
+		pSat.UpdateGraph(pDataRef);	
+		pShift.UpdateGraph(pDataRef);	
+		pSat.m_graphCtrl.DrawGraphs(&MemDC, Rect);
+		pShift.m_graphCtrl.DrawGraphs(&MemDC2, Rect);
+		pSat.m_graphCtrl.SaveGraphs(&pShift.m_graphCtrl, &pShift.m_graphCtrl2, NULL, FALSE, 3);	
+
+		draw_image2(pdf, "temp.png", 6 + 300, HPDF_Page_GetHeight (page2) - 320 - 230, "Saturation Sweep Luminance/Shifts");
+
+	}
+	MemDC.DeleteDC();
+	MemDC2.DeleteDC();
+
+	/* save the document to a file */
+    HPDF_SaveToFile (pdf, afileName);
 
     /* clean up */
     HPDF_Free (pdf);
-	}	
 
-	return SaveSheets();
+	return true;
 }
 
 bool CExport::SaveSheets()
@@ -316,6 +938,7 @@ bool CExport::SaveSheets()
 	result=SaveGeneralSheet();
 	result&=SaveGrayScaleSheet();
 	result&=SavePrimariesSheet();
+	result&=SaveCCSheet();
 
 	if(!result)
 	{
@@ -577,5 +1200,434 @@ bool CExport::SavePrimariesSheet()
 	result&=primariesSS.Commit();
 	if(!result)
 		m_errorStr=primariesSS.GetLastError();
+	return result;
+}
+
+bool CExport::SaveCCSheet()
+{
+	CRowArray Rows;
+	CString tempString;
+	bool result=true;
+	int rowNb=1;
+	int i,j;
+                    char*  PatName[96]={
+                    "White",
+                    "6J",
+                    "5F",
+                    "6I",
+                    "6K",
+                    "5G",
+                    "6H",
+                    "5H",
+                    "7K",
+                    "6G",
+                    "5I",
+                    "6F",
+                    "8K",
+                    "5J",
+                    "Black",
+                    "2B",
+                    "2C",
+                    "2D",
+                    "2E",
+                    "2F",
+                    "2G",
+                    "2H",
+                    "2I",
+                    "2J",
+                    "2K",
+                    "2L",
+                    "2M",
+                    "3B",
+                    "3C",
+                    "3D",
+                    "3E",
+                    "3F",
+                    "3G",
+                    "3H",
+                    "3I",
+                    "3J",
+                    "3K",
+                    "3L",
+                    "3M",
+                    "4B",
+                    "4C",
+                    "4D",
+                    "4E",
+                    "4F",
+                    "4G",
+                    "4H",
+                    "4I",
+                    "4J",
+                    "4K",
+                    "4L",
+                    "4M",
+                    "5B",
+                    "5C",
+                    "5D",
+                    "5K",
+                    "5L",
+                    "5M",
+                    "6B",
+                    "6C",
+                    "6D",
+                    "6L",
+                    "6M",
+                    "7B",
+                    "7C",
+                    "7D",
+                    "7E",
+                    "7F",
+                    "7G",
+                    "7H",
+                    "7I",
+                    "7J",
+                    "7L",
+                    "7M",
+                    "8B",
+                    "8C",
+                    "8D",
+                    "8E",
+                    "8F",
+                    "8G",
+                    "8H",
+                    "8I",
+                    "8J",
+                    "8L",
+                    "8M",
+                    "9B",
+                    "9C",
+                    "9D",
+                    "9E",
+                    "9F",
+                    "9G",
+                    "9H",
+                    "9I",
+                    "9J",
+                    "9K",
+                    "9L",
+                    "9M" };
+                    char*  PatNameCMS[19]={
+						"White",
+						"Black",
+						"2E",
+						"2F",
+						"2K",
+						"5D",
+						"7E",
+						"7F",
+						"7G",
+						"7H",
+						"7I",
+						"7J",
+						"8D",
+						"8E",
+						"8F",
+						"8G",
+						"8H",
+						"8I",
+						"8J" };
+                    char*  PatNameCPS[19]={
+						"White",
+						"D7",
+						"D8",
+						"E7",
+						"E8",
+						"F7",
+						"F8",
+						"G7",
+						"G8",
+						"H7",
+						"H8",
+						"I7",
+						"I8",
+						"J7",
+						"J8",
+						"CP-Light",
+						"CP-Dark",
+						"Dark Skin",
+						"Light Skin" };
+                    char*  PatNameAXIS[71]={
+						"Black",
+						"White 10",
+						"White 20",
+						"White 30",
+						"White 40",
+						"White 50",
+						"White 60",
+						"White 70",
+						"White 80",
+						"White 90",
+						"White 100",
+						"Red 10",
+						"Red 20",
+						"Red 30",
+						"Red 40",
+						"Red 50",
+						"Red 60",
+						"Red 70",
+						"Red 80",
+						"Red 90",
+						"Red 100",
+						"Green 10",
+						"Green 20",
+						"Green 30",
+						"Green 40",
+						"Green 50",
+						"Green 60",
+						"Green 70",
+						"Green 80",
+						"Green 90",
+						"Green 100",
+						"Blue 10",
+						"Blue 20",
+						"Blue 30",
+						"Blue 40",
+						"Blue 50",
+						"Blue 60",
+						"Blue 70",
+						"Blue 80",
+						"Blue 90",
+						"Blue 100", 
+						"Cyan 10",
+						"Cyan 20",
+						"Cyan 30",
+						"Cyan 40",
+						"Cyan 50",
+						"Cyan 60",
+						"Cyan 70",
+						"Cyan 80",
+						"Cyan 90",
+						"Cyan 100", 
+						"Magenta 10",
+						"Magenta 20",
+						"Magenta 30",
+						"Magenta 40",
+						"Magenta 50",
+						"Magenta 60",
+						"Magenta 70",
+						"Magenta 80",
+						"Magenta 90",
+						"Magenta 100", 
+						"Yellow 10",
+						"Yellow 20",
+						"Yellow 30",
+						"Yellow 40",
+						"Yellow 50",
+						"Yellow 60",
+						"Yellow 70",
+						"Yellow 80",
+						"Yellow 90",
+						"Yellow 100"
+					};
+
+	CString SheetOrSeparator="ColorCheckerSheet";
+	CString aFileName;
+	if(m_type == CSV)
+	{
+		aFileName=m_fileName+"."+SheetOrSeparator+".csv";
+		SheetOrSeparator=m_separator;
+	}
+	else
+		aFileName=m_fileName;
+
+	// Fill colorchecker sheet
+	CSpreadSheet colorcheckerSS(aFileName, SheetOrSeparator,m_doBackup);
+	colorcheckerSS.BeginTransaction();
+
+	Rows.RemoveAll();
+	Rows.Add("Measure");
+	int size;
+	BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR);
+    if (isExtPat)
+		size = GetConfig()->GetCColorsSize();
+    else
+        size = GetConfig()->m_CCMode==CCSG?96:GetConfig()->m_CCMode==CMS||GetConfig()->m_CCMode==CPS?19:(GetConfig()->m_CCMode==AXIS?71:24);
+
+	size=min(size,254); //maximum of 256 columns
+	for(i=0;i<size;i++)
+	{
+				if (GetConfig()->m_CCMode == CCSG)
+                 {
+					Rows.Add(PatName[i],CRowArray::floatType);
+                 } 
+                 else if (GetConfig()->m_CCMode == CMS)
+                 {
+                    Rows.Add(PatNameCMS[i], CRowArray::floatType);
+                 }
+                 else if (GetConfig()->m_CCMode == CPS)
+                 {
+                    Rows.Add(PatNameCPS[i], CRowArray::floatType);
+                 }
+                 else if (GetConfig()->m_CCMode == AXIS)
+                 {
+                    Rows.Add(PatNameAXIS[i], CRowArray::floatType);
+                 }
+                 else if (isExtPat)
+                 {
+                     char aBuf[50];
+					 std::string name = GetConfig()->GetCColorsN(i);
+                     sprintf(aBuf,"%s", name.c_str());
+                     Rows.Add(aBuf, CRowArray::floatType);
+                 }
+                 else {
+                     char aBuf[50];
+				 switch ( i )
+				 {
+					 case 0:
+	                    sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_1a:(GetConfig()->m_CCMode == SKIN?IDS_CC_1b:IDS_CC_1));
+						Rows.Add(aBuf, CRowArray::floatType);
+						break;
+
+					 case 1:
+						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_2a:(GetConfig()->m_CCMode == SKIN?IDS_CC_2b:IDS_CC_2));
+						Rows.Add(aBuf, CRowArray::floatType);
+						break;
+
+					 case 2:
+						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_3a:(GetConfig()->m_CCMode == SKIN?IDS_CC_3b:IDS_CC_3));
+						Rows.Add(aBuf, CRowArray::floatType);
+						break;
+
+					 case 3:
+						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_4a:(GetConfig()->m_CCMode == SKIN?IDS_CC_4b:IDS_CC_4));
+						Rows.Add(aBuf, CRowArray::floatType);
+						break;
+
+					 case 4:
+						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_5a:(GetConfig()->m_CCMode == SKIN?IDS_CC_5b:IDS_CC_5));
+						Rows.Add(aBuf, CRowArray::floatType);
+						break;
+
+					 case 5:
+						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_6a:(GetConfig()->m_CCMode == SKIN?IDS_CC_6b:IDS_CC_6));
+						Rows.Add(aBuf, CRowArray::floatType);
+						break;
+
+					 case 6:
+						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_7a:(GetConfig()->m_CCMode == SKIN?IDS_CC_7b:IDS_CC_7));
+						Rows.Add(aBuf, CRowArray::floatType);
+						break;
+
+					 case 7:
+						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_8a:(GetConfig()->m_CCMode == SKIN?IDS_CC_8b:IDS_CC_8));
+						Rows.Add(aBuf, CRowArray::floatType);
+						break;
+
+					 case 8:
+						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_9a:(GetConfig()->m_CCMode == SKIN?IDS_CC_9b:IDS_CC_9));
+						Rows.Add(aBuf, CRowArray::floatType);
+						break;
+
+					 case 9:
+						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_10a:(GetConfig()->m_CCMode == SKIN?IDS_CC_10b:IDS_CC_10));
+						Rows.Add(aBuf, CRowArray::floatType);
+						break;
+
+					 case 10:
+						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_11a:(GetConfig()->m_CCMode == SKIN?IDS_CC_11b:IDS_CC_11));
+						Rows.Add(aBuf, CRowArray::floatType);
+						break;
+
+					 case 11:
+						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_12a:(GetConfig()->m_CCMode == SKIN?IDS_CC_12b:IDS_CC_12));
+						Rows.Add(aBuf, CRowArray::floatType);
+						break;
+
+					 case 12:
+						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_13a:(GetConfig()->m_CCMode == SKIN?IDS_CC_13b:IDS_CC_13));
+						Rows.Add(aBuf, CRowArray::floatType);
+						break;
+
+					 case 13:
+						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_14a:(GetConfig()->m_CCMode == SKIN?IDS_CC_14b:IDS_CC_14));
+						Rows.Add(aBuf, CRowArray::floatType);
+						break;
+
+					 case 14:
+						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_15a:(GetConfig()->m_CCMode == SKIN?IDS_CC_15b:IDS_CC_15));
+						Rows.Add(aBuf, CRowArray::floatType);
+						break;
+
+					 case 15:
+						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_16a:(GetConfig()->m_CCMode == SKIN?IDS_CC_16b:IDS_CC_16));
+						Rows.Add(aBuf, CRowArray::floatType);
+						break;
+
+					 case 16:
+						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_17a:(GetConfig()->m_CCMode == SKIN?IDS_CC_17b:IDS_CC_17));
+						Rows.Add(aBuf, CRowArray::floatType);
+						break;
+
+					 case 17:
+						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_18a:(GetConfig()->m_CCMode == SKIN?IDS_CC_18b:IDS_CC_18));
+						Rows.Add(aBuf, CRowArray::floatType);
+						break;
+
+					 case 18:
+						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_19a:(GetConfig()->m_CCMode == SKIN?IDS_CC_19b:IDS_CC_19));
+						Rows.Add(aBuf, CRowArray::floatType);
+						break;
+
+					 case 19:
+						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_20a:(GetConfig()->m_CCMode == SKIN?IDS_CC_20b:IDS_CC_20));
+						Rows.Add(aBuf, CRowArray::floatType);
+						break;
+
+					 case 20:
+						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_21a:(GetConfig()->m_CCMode == SKIN?IDS_CC_21b:IDS_CC_21));
+						Rows.Add(aBuf, CRowArray::floatType);
+						break;
+
+					 case 21:
+						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_22a:(GetConfig()->m_CCMode == SKIN?IDS_CC_22b:IDS_CC_22));
+						Rows.Add(aBuf, CRowArray::floatType);
+						break;
+
+					 case 22:
+						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_23a:(GetConfig()->m_CCMode == SKIN?IDS_CC_23b:IDS_CC_23));
+						Rows.Add(aBuf, CRowArray::floatType);
+						break;
+
+					 case 23:
+						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_24a:(GetConfig()->m_CCMode == SKIN?IDS_CC_24b:IDS_CC_24));
+						Rows.Add(aBuf, CRowArray::floatType);
+						break;
+            		 default:
+				        sprintf(aBuf,"%s", IDS_CC_24a);
+						Rows.Add(aBuf, CRowArray::floatType);
+                 }
+			}
+		}
+	result&=colorcheckerSS.AddHeaders(Rows,true);
+
+	if(m_doReplace)
+		rowNb=(m_numToReplace-1)*9+2;
+	else
+		rowNb=colorcheckerSS.GetTotalRows()+1;
+
+	for (i=0; i<3; i++)
+	{
+		Rows.RemoveAll();
+		Rows.Add(legendXYZ[i]);
+		for(j=0;j<size;j++)
+			Rows.Add((float)m_pDoc->GetMeasure()->GetCC24Sat(j)[i]);
+		result&=colorcheckerSS.AddRow(Rows,rowNb,m_doReplace);
+		rowNb++;
+	}
+
+	for (i=0; i<3; i++)
+	{
+		Rows.RemoveAll();
+		Rows.Add(legendRGB[i]);
+		for(j=0;j<size;j++)
+			Rows.Add((float)m_pDoc->GetMeasure()->GetCC24Sat(j)[i]);
+		result&=colorcheckerSS.AddRow(Rows,rowNb,m_doReplace);
+		rowNb++;
+	}
+
+	result&=colorcheckerSS.Commit();
+	if(!result)
+		m_errorStr=colorcheckerSS.GetLastError();
 	return result;
 }

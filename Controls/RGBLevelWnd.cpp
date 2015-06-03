@@ -34,8 +34,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-extern CDataSetDoc *	g_pDataDocRunningThread;
-
 /////////////////////////////////////////////////////////////////////////////
 // CRGBLevelWnd
 
@@ -286,7 +284,7 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
     	int nCount = m_pDocument -> GetMeasure () -> GetGrayScaleSize ();
         double YWhite = white.GetY();
 
-        if (!m_bLumaMode)// && minCol != -1 && !g_pDataDocRunningThread)
+        if (!m_bLumaMode)
         {
             ColorxyY tmpColor(GetColorReference().GetWhite());
 		    // Determine Reference Y luminance for Delta E calculus

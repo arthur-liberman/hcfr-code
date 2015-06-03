@@ -162,8 +162,6 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 				// Determine Reference Y luminance for Delta E calculus
 				if ( GetConfig ()->m_dE_gray > 0 || GetConfig ()->m_dE_form == 5 )
 				{
-//            		CColor White = pDoc -> GetMeasure () -> GetGray ( size - 1 );
-//	            	CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
             		CColor White = pDoc -> GetMeasure () -> GetOnOffWhite();
 	            	CColor Black = pDoc -> GetMeasure () -> GetOnOffBlack();
                     if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
@@ -204,9 +202,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 		if ( bMainDocHasColors )
 			YWhite = pDoc->GetMeasure()->GetOnOffWhite()[1];
-//			YWhite = pDoc->GetMeasure()->GetGray(size-1)[1];
 
-//		YWhiteRefDoc = pDataRef->GetMeasure()->GetGray(size-1)[1];
 		YWhiteRefDoc = pDataRef->GetMeasure()->GetOnOffWhite()[1];
 
 		for (int i=1; i<size; i++)
@@ -234,8 +230,6 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 				if ( GetConfig ()->m_dE_gray > 0 || GetConfig ()->m_dE_form == 5 )
 				{
 					// Compute reference luminance regarding actual offset and reference gamma
-//            		CColor White = pDoc -> GetMeasure () -> GetGray ( size - 1 );
-//	            	CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
             		CColor White = pDoc -> GetMeasure () -> GetOnOffWhite();
 	            	CColor Black = pDoc -> GetMeasure () -> GetOnOffBlack();
                     double valxref,valyref;

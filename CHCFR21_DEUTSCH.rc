@@ -1977,6 +1977,7 @@ BEGIN
         BEGIN
             MENUITEM "Messungen in &xls Datei",     IDM_EXPORT_XLS
             MENUITEM "Messungen in &csv Datei",     IDM_EXPORT_CSV
+            MENUITEM "Create &PDF Report",          IDM_EXPORT_PDF
         END
         POPUP "Updates", GRAYED
         BEGIN

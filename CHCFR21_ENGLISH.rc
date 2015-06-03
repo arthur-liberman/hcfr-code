@@ -1974,6 +1974,7 @@ BEGIN
         BEGIN
             MENUITEM "Measures to &xls file",       IDM_EXPORT_XLS
             MENUITEM "Measures to &csv file",       IDM_EXPORT_CSV
+            MENUITEM "Create &PDF Report",          IDM_EXPORT_PDF
         END
         POPUP "Updates", INACTIVE
         BEGIN
@@ -3612,6 +3613,11 @@ STRINGTABLE
 BEGIN
     IDM_MEASURE_SAT_PRIMARIES_SECONDARIES 
                             "Measure primary colors saturation scales\nMeasure primary and secondary colors saturation scales"
+END
+
+STRINGTABLE
+BEGIN
+    ID_EXPORT_PDF           "Create a 1 or 2 page PDF report"
 END
 
 #endif    // English (United States) resources

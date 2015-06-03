@@ -1576,7 +1576,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	}
 }
 
-void CCIEChartGrapher::SaveGraphFile ( CDataSetDoc * pDoc, CSize ImageSize, LPCSTR lpszPathName, int ImageFormat, int ImageQuality )
+void CCIEChartGrapher::SaveGraphFile ( CDataSetDoc * pDoc, CSize ImageSize, LPCSTR lpszPathName, int ImageFormat, int ImageQuality, bool PDF )
 {
 	int				format;
 
@@ -1603,7 +1603,7 @@ void CCIEChartGrapher::SaveGraphFile ( CDataSetDoc * pDoc, CSize ImageSize, LPCS
 
     CBitmap *pOldBitmap=dc2.SelectObject(&bitmap);
 
-	MakeBgBitmap(rect,GetConfig()->m_bWhiteBkgndOnFile);
+	MakeBgBitmap(rect,GetConfig()->m_bWhiteBkgndOnFile && !PDF);
 	DrawChart ( pDoc, & dc2, rect, NULL, NULL );
 	dc2.SelectObject(pOldBitmap);
 

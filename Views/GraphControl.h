@@ -146,8 +146,8 @@ public:
 	void DrawGraphs(CDC *pDC, CRect rect);
 
 	static void DrawFiligree(CDC *pDC, CRect rect, COLORREF clr);
-	void SaveGraphs(CGraphControl *pGraphToAppend=NULL, CGraphControl *pGraphToAppend2=NULL, CGraphControl *pGraphToAppend3=NULL);
-	void SaveGraphFile ( CSize ImageSize, LPCSTR lpszPathName, int ImageFormat = 0, int ImageQuality = 95, CGraphControl * * pOtherGraphs = NULL, int NbOtherGraphs = 0 );
+	void SaveGraphs(CGraphControl *pGraphToAppend=NULL, CGraphControl *pGraphToAppend2=NULL, CGraphControl *pGraphToAppend3=NULL, bool do_Dialog = TRUE, int nSequence = 0);
+	void SaveGraphFile ( CSize ImageSize, LPCSTR lpszPathName, int ImageFormat = 0, int ImageQuality = 95, CGraphControl * * pOtherGraphs = NULL, int NbOtherGraphs = 0, bool do_Gradient = FALSE );
 
 protected:
 	int GetGraphX(double x,CRect rect);

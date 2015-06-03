@@ -446,6 +446,7 @@ BEGIN_MESSAGE_MAP(CDataSetDoc, CDocument)
 	ON_COMMAND(IDM_CHANGE_SENSOR, OnChangeSensor)
 	ON_COMMAND(IDM_EXPORT_XLS, OnExportXls)
 	ON_COMMAND(IDM_EXPORT_CSV, OnExportCsv)
+	ON_COMMAND(IDM_EXPORT_PDF, OnExportPdf)
 	ON_UPDATE_COMMAND_UI(IDM_EXPORT_XLS, OnUpdateExportXls)
 	ON_COMMAND(IDM_CALIBRATION_SIM, OnCalibrationSim)
 	ON_COMMAND(IDM_CALIBRATION_MANUAL, OnCalibrationManual)
@@ -1473,6 +1474,14 @@ void CDataSetDoc::OnExportXls()
 	StopBackgroundMeasures ();
 
 	CExport exportVar(this,CExport::XLS);
+	exportVar.Save();
+}
+
+void CDataSetDoc::OnExportPdf() 
+{
+	StopBackgroundMeasures ();
+
+	CExport exportVar(this,CExport::PDF);
 	exportVar.Save();
 }
 

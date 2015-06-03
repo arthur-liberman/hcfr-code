@@ -841,46 +841,46 @@ void CColorHCFRConfig::GetCColors()
 			switch (m_CCMode)
 			{
 				case USER:
-		        fName="Colorchecker_Data\\usercolors.csv";
+		        fName="data\\usercolors.csv";
 				break;
 				case CM10SAT:
-		        fName="Colorchecker_Data\\CM 10-Point Saturation (100AMP).csv";
+		        fName="data\\CM 10-Point Saturation (100AMP).csv";
 				break;
 				case CM10SAT75:
-		        fName="Colorchecker_Data\\CM 10-Point Saturation (75AMP).csv";
+		        fName="data\\CM 10-Point Saturation (75AMP).csv";
 				break;
 				case CM4LUM:
-		        fName="Colorchecker_Data\\CM 4-Point Luminance.csv";
+		        fName="data\\CM 4-Point Luminance.csv";
 				break;
 				case CM5LUM:
-		        fName="Colorchecker_Data\\CM 5-Point Luminance.csv";
+		        fName="data\\CM 5-Point Luminance.csv";
 				break;
 				case CM10LUM:
-		        fName="Colorchecker_Data\\CM 10-Point Luminance.csv";
+		        fName="data\\CM 10-Point Luminance.csv";
 				break;
 				case CM4SAT:
-		        fName="Colorchecker_Data\\CM 4-Point Saturation (100AMP).csv";
+		        fName="data\\CM 4-Point Saturation (100AMP).csv";
 				break;
 				case CM4SAT75:
-		        fName="Colorchecker_Data\\CM 4-Point Saturation (75AMP).csv";
+		        fName="data\\CM 4-Point Saturation (75AMP).csv";
 				break;
 				case CM5SAT:
-		        fName="Colorchecker_Data\\CM 5-Point Saturation (100AMP).csv";
+		        fName="data\\CM 5-Point Saturation (100AMP).csv";
 				break;
 				case CM5SAT75:
-		        fName="Colorchecker_Data\\CM 5-Point Saturation (75AMP).csv";
+		        fName="data\\CM 5-Point Saturation (75AMP).csv";
 				break;
 				case CM6NB:
-		        fName="Colorchecker_Data\\CM 6-Point Near Black.csv";
+		        fName="data\\CM 6-Point Near Black.csv";
 				break;
 				case CMDNR:
-		        fName="Colorchecker_Data\\CM Dynamic Range (Clipping).csv";
+		        fName="data\\CM Dynamic Range (Clipping).csv";
 				break;
 				case RANDOM250:
-		        fName="Colorchecker_Data\\Random_250.csv";
+		        fName="data\\Random_250.csv";
 				break;
 				case RANDOM500:
-		        fName="Colorchecker_Data\\Random_500.csv";
+		        fName="data\\Random_500.csv";
 				break;
 			}
 			ifstream colorFile(strPath+fName);

@@ -35,7 +35,6 @@
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
-extern CDataSetDoc *	g_pDataDocRunningThread;
 
 /////////////////////////////////////////////////////////////////////////////
 // CTargetWnd

@@ -40,6 +40,7 @@ public:
 		XLS=0,
 		CSV=1,
 		ICC=2,
+		PDF=3
 	};
 
 private:
@@ -56,6 +57,8 @@ private:
 	bool SaveGeneralSheet();
 	bool SaveGrayScaleSheet();
 	bool SavePrimariesSheet();
+	bool SavePDF();
+	bool SaveCCSheet();
 
 public:
 	CExport(CDataSetDoc *pDoc, ExportType type);

@@ -2725,7 +2725,7 @@ void CMainView::UpdateGrid()
 		if ( m_displayMode == 0 || m_displayMode == 3 || m_displayMode == 4)
 		{
 			// Gray scale mode: update group box title
-			CString	Msg, Tmp;;
+			CString	Msg, Tmp;
 
 			Msg.LoadString ( IDS_GRAYSCALE );
 			m_grayScaleGroup.SetText ( Msg );
@@ -2745,7 +2745,6 @@ void CMainView::UpdateGrid()
 				    Msg += Tmp;
 				    if ( GetDocument()->GetMeasure()->GetGray(0).GetXYZValue()[1] > 0.0001 )
 				    {
-//					    sprintf ( szBuf, ": %.0f:1 )", GetDocument()->GetMeasure()->GetGray(nCount-1).GetXYZValue()[1] / GetDocument()->GetMeasure()->GetGray(0).GetXYZValue()[1] );
 					    sprintf ( szBuf, ": %.0f:1 )", GetDocument()->GetMeasure()->GetOnOffWhite()[1] / GetDocument()->GetMeasure()->GetGray(0).GetXYZValue()[1] );
 					    Msg += szBuf;
 				    }
@@ -2757,6 +2756,8 @@ void CMainView::UpdateGrid()
 
    			    if ( dEcnt > 0 )
 				{
+					dEavg_gs = dEavg / dEcnt;
+					dEmax_gs = dEmax;
 					CString dEform;
                     float a=2.0,b=3.0;
 					Tmp.LoadString ( IDS_DELTAEAVERAGE );
@@ -2935,6 +2936,8 @@ void CMainView::UpdateGrid()
 		    {
 				char	szBuf [ 256 ];
 				CString dEform;
+				dEavg_cc = dEavg / dEcnt;
+				dEmax_cc = dEmax;
 				float a = 2.0, b = 3, dE10 = 0;
 				Tmp.LoadString ( IDS_DELTAEAVERAGE );
 				Msg += " ( ";
@@ -2950,6 +2953,7 @@ void CMainView::UpdateGrid()
                     dE10 = dE10 / (int) ( (dEvector.size() / 10 + 1) );
                     char aBuf[10];
                     sprintf(aBuf,"Color %d",pos+1);
+					dEmax_cc = maxv;
 
                     if (GetConfig()->m_CCMode == CCSG)
         				sprintf ( szBuf, ": %.2f, max: %.2f[%s], worst 10%%: %.2f )", dEavg / dEcnt, maxv, PatName[pos], dE10 );

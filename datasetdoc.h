@@ -186,6 +186,7 @@ protected:
 	afx_msg void OnChangeSensor();
 	afx_msg void OnExportXls();
 	afx_msg void OnExportCsv();
+	afx_msg void OnExportPdf();
 	afx_msg void OnUpdateExportXls(CCmdUI* pCmdUI);
 	afx_msg void OnCalibrationSim();
 	afx_msg void OnCalibrationManual();

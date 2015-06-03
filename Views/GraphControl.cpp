@@ -915,10 +915,36 @@ void CGraphControl::DrawFiligree(CDC *pDC, CRect rect, COLORREF clr)
 	pDC -> SelectObject ( pOldFont );
 }
 
-void CGraphControl::SaveGraphs(CGraphControl *pGraphToAppend, CGraphControl *pGraphToAppend2, CGraphControl *pGraphToAppend3)
+void CGraphControl::SaveGraphs(CGraphControl *pGraphToAppend, CGraphControl *pGraphToAppend2, CGraphControl *pGraphToAppend3, bool do_Dialog, int nSequence)
 {
 	int				i, NbOtherGraphs = 0;
 	CGraphControl *	pOtherGraphs [ 3 ];
+	
+	if (!do_Dialog)
+	{
+		switch (nSequence)
+		{
+		case 1:
+			this->FitYScale(TRUE,5.0);
+			this->m_minY = 80;
+			pGraphToAppend->FitYScale(TRUE,0.5);
+			pGraphToAppend->m_minY = 0;
+			pGraphToAppend->SetYAxisProps(NULL, pGraphToAppend->m_maxY > 3?1.0:0.5, 0, 0);
+			break;
+		case 2:
+			this->FitYScale(TRUE,500.0);
+			this->m_minY = 5000;
+			pGraphToAppend->FitYScale(TRUE,0.1);
+			pGraphToAppend->m_minY = 1.8;
+			break;
+		case 3:
+			pGraphToAppend->FitYScale(TRUE,5.0);
+			pGraphToAppend->m_minY = -5.0;
+			pGraphToAppend2->FitYScale(TRUE,0.5);
+			pGraphToAppend2->m_minY = 0;
+			pGraphToAppend2->SetYAxisProps(NULL, pGraphToAppend2->m_maxY > 3?1.0:0.5, 0, 0);
+		}
+	}
 
 	if ( pGraphToAppend )
 		pOtherGraphs [ NbOtherGraphs ++ ] = pGraphToAppend;
@@ -929,66 +955,73 @@ void CGraphControl::SaveGraphs(CGraphControl *pGraphToAppend, CGraphControl *pGr
 	if ( pGraphToAppend3 )
 		pOtherGraphs [ NbOtherGraphs ++ ] = pGraphToAppend3;
 
-	CSaveGraphDialog dialog;
-
-	if(dialog.DoModal()!=IDOK)
-		return;
-
 	CRect rect;
 	CSize size;
 
-	switch(dialog.m_sizeType)
+	if (do_Dialog)
 	{
-		case 0:
-		    GetClientRect(&rect);
-			size = CSize(rect.Width(),rect.Height());
-			for ( i = 0; i < NbOtherGraphs ; i ++ )
-			{
-				CRect rect2;
-				pOtherGraphs [ i ] -> GetClientRect(&rect2);
-				size = CSize(size.cx,size.cy+rect2.Height());
-			}
-			break;
-		case 1:
-			size = CSize(300,200);
-			break;
-		case 2:
-			size = CSize(600,400);
-			break;
-		case 3:
-			size = CSize(dialog.m_saveWidth,dialog.m_saveHeight);
-			break;
+		CSaveGraphDialog dialog;
+		char *defExt;
+		char *filter;
 
-	}
+		if(dialog.DoModal()!=IDOK)
+			return;
+
+		switch(dialog.m_sizeType)
+		{
+			case 0:
+				GetClientRect(&rect);
+				size = CSize(rect.Width(),rect.Height());
+				for ( i = 0; i < NbOtherGraphs ; i ++ )
+				{
+					CRect rect2;
+					pOtherGraphs [ i ] -> GetClientRect(&rect2);
+					size = CSize(size.cx,size.cy+rect2.Height());
+				}
+				break;
+			case 1:
+				size = CSize(300,200);
+				break;
+			case 2:
+				size = CSize(600,400);
+				break;
+			case 3:
+				size = CSize(dialog.m_saveWidth,dialog.m_saveHeight);
+				break;
+
+		}
  
-	char *defExt;
-	char *filter;
+		switch(dialog.m_fileType)
+		{
+			case 0:
+				defExt="jpg";
+				filter="Jpeg File (*.jpg)|*.jpg||";
+				break;
+			case 1:
+				defExt="bmp";
+				filter="Bitmap File (*.bmp)|*.bmp||";
+				break;
+			case 2:
+				defExt="png";
+				filter="Portable Network Graphic File (*.png)|*.png||";
+				break;
+		}
 
-	switch(dialog.m_fileType)
-	{
-		case 0:
-			defExt="jpg";
-			filter="Jpeg File (*.jpg)|*.jpg||";
-			break;
-		case 1:
-			defExt="bmp";
-			filter="Bitmap File (*.bmp)|*.bmp||";
-			break;
-		case 2:
-			defExt="png";
-			filter="Portable Network Graphic File (*.png)|*.png||";
-			break;
-	}
+		CFileDialog fileSaveDialog ( FALSE, defExt, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, filter );
 
-	CFileDialog fileSaveDialog ( FALSE, defExt, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, filter );
-	if ( fileSaveDialog.DoModal () == IDOK )
+		if ( fileSaveDialog.DoModal () == IDOK )
+		{
+			// Save the file
+			SaveGraphFile ( size, fileSaveDialog.GetPathName(), dialog.m_fileType, dialog.m_jpegQuality, pOtherGraphs, NbOtherGraphs );
+		}
+	} else
 	{
-		// Save the file
-		SaveGraphFile ( size, fileSaveDialog.GetPathName(), dialog.m_fileType, dialog.m_jpegQuality, pOtherGraphs, NbOtherGraphs );
+		size = CSize(900,600);
+		SaveGraphFile ( size, "data/temp.png", 2, 95, pOtherGraphs, NbOtherGraphs, do_Dialog );
 	}
 }
 
-void CGraphControl::SaveGraphFile ( CSize ImageSize, LPCSTR lpszPathName, int ImageFormat, int ImageQuality, CGraphControl * * pOtherGraphs, int NbOtherGraphs )
+void CGraphControl::SaveGraphFile ( CSize ImageSize, LPCSTR lpszPathName, int ImageFormat, int ImageQuality, CGraphControl * * pOtherGraphs, int NbOtherGraphs, bool do_Gradient )
 {
 	int				i, j;
 	COLORREF		clr;
@@ -1057,7 +1090,7 @@ void CGraphControl::SaveGraphFile ( CSize ImageSize, LPCSTR lpszPathName, int Im
 	{
 		DrawBackground(&MemDC,rect,TRUE);
 		
-		if ( GetConfig()->m_bWhiteBkgndOnFile )
+		if ( GetConfig()->m_bWhiteBkgndOnFile && !do_Gradient )
 			clr = RGB ( 192, 192, 192 );
 		else if(m_doGradientBg)
 		{
@@ -1072,7 +1105,7 @@ void CGraphControl::SaveGraphFile ( CSize ImageSize, LPCSTR lpszPathName, int Im
 		
 		DrawFiligree ( &MemDC, rect, clr );
 
-		DrawAxis(&MemDC,rect,GetConfig()->m_bWhiteBkgndOnFile);
+		DrawAxis(&MemDC,rect,GetConfig()->m_bWhiteBkgndOnFile && !do_Gradient);
 		DrawGraphs(&MemDC,rect);
 	}
 	MemDC.SelectObject(pOldBitmap);
