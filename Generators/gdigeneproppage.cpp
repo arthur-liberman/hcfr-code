@@ -52,6 +52,7 @@ CGDIGenePropPage::CGDIGenePropPage() : CPropertyPageWithHelp(CGDIGenePropPage::I
     m_madVR_3d = FALSE;
     m_madVR_vLUT = FALSE;
 	m_madVR_OSD = FALSE;
+	m_bdispTrip = FALSE;
 }
 
 CGDIGenePropPage::~CGDIGenePropPage()
@@ -77,6 +78,7 @@ void CGDIGenePropPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_MADVR_3D2, m_madVR_vLUT);
 	DDX_Check(pDX, IDC_MADVR_OSD, m_madVR_OSD);
 	DDX_Check(pDX, IDC_USEPIC, m_busePic);
+	DDX_Check(pDX, IDC_DISP_TRIP, m_bdispTrip);
 	//}}AFX_DATA_MAP
 }
 

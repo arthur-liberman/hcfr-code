@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by CHCFR21_ENGLISH.rc
+// Used by CHCFR21_FRANCAIS.rc
 //
 #define IDS_STRING_VERSION              1
 #define IDS_STRING_VERSION_WEB          2
@@ -733,6 +733,7 @@
 #define IDC_MADVR_OSD                   1289
 #define IDR_PATTERN_SMPTE75v            1290
 #define IDC_MADVR_OSD2                  1290
+#define IDC_DISP_TRIP                   1290
 #define IDR_PATTERN_1956v               1291
 #define IDR_PATTERN_TESTIMGv            1292
 #define IDR_PATTERN_GRADIENT            1293

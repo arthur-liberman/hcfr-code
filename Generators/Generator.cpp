@@ -68,6 +68,7 @@ void CGenerator::Copy(CGenerator * p)
 	m_name = p->m_name;
 	m_b16_235 = p->m_b16_235;
 	m_busePic = p->m_busePic;
+	m_bdispTrip = p->m_bdispTrip;
 }
 
 void CGenerator::Serialize(CArchive& archive)
@@ -75,23 +76,26 @@ void CGenerator::Serialize(CArchive& archive)
 	CObject::Serialize(archive) ;
 	if (archive.IsStoring())
 	{
-		int version=3;
+		int version=4;
 		archive << version;
 		archive << m_doScreenBlanking;
 		archive << m_b16_235;
 		archive << m_busePic;
+		archive << m_bdispTrip;
 	}
 	else
 	{
 		int version;
 		archive >> version;
-		if ( version > 3 )
+		if ( version > 4 )
 			AfxThrowArchiveException ( CArchiveException::badSchema );
 		archive >> m_doScreenBlanking;
 		if ( version > 1 )
 			archive >> m_b16_235;
 		if ( version > 2 )
 			archive >> m_busePic;
+		if ( version > 3 )
+			archive >> m_bdispTrip;
 	}
 }
 

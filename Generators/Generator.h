@@ -74,6 +74,7 @@ public:
 	int m_rectSizePercent;
 	BOOL m_b16_235;
 	BOOL m_busePic;
+	BOOL m_bdispTrip;
     BOOL m_madVR_3d;
     BOOL m_madVR_vLUT;
 	BOOL m_madVR_OSD;

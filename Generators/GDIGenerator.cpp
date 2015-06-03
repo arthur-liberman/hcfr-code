@@ -73,6 +73,7 @@ CGDIGenerator::CGDIGenerator()
 	m_displayWindow.m_bgStimPercent=GetConfig()->GetProfileInt("GDIGenerator","bgStimPercent",0);
 	m_displayWindow.m_Intensity=GetConfig()->GetProfileInt("GDIGenerator","Intensity",100);
 	m_displayWindow.m_busePic=GetConfig()->GetProfileInt("GDIGenerator","USEPIC",0);
+	m_displayWindow.m_bdispTrip=GetConfig()->GetProfileInt("GDIGenerator","DISPLAYTRIPLETS",0);
 	m_rectSizePercent = m_displayWindow.m_rectSizePercent;
 	m_bgStimPercent = m_displayWindow.m_bgStimPercent;
 	m_Intensity = m_displayWindow.m_Intensity;
@@ -84,6 +85,7 @@ CGDIGenerator::CGDIGenerator()
 	m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI);
 	m_b16_235 = GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0);
 	m_busePic = GetConfig()->GetProfileInt("GDIGenerator","USEPIC",0);
+	m_bdispTrip = GetConfig()->GetProfileInt("GDIGenerator","DISPLAYTRIPLETS",0);
     m_madVR_3d = GetConfig()->GetProfileInt("GDIGenerator","MADVR3D",0);
     m_madVR_vLUT = GetConfig()->GetProfileInt("GDIGenerator","MADVRvLUT",0);
     m_madVR_OSD = GetConfig()->GetProfileInt("GDIGenerator","MADVROSD",0);
@@ -110,6 +112,7 @@ CGDIGenerator::CGDIGenerator(int nDisplayMode, BOOL b16_235)
 	m_displayWindow.m_bgStimPercent=0;
 	m_displayWindow.m_Intensity=100;
 	m_displayWindow.m_busePic=FALSE;
+	m_displayWindow.m_bdispTrip=FALSE;
 
 	GetMonitorList();
 	m_activeMonitorNum = m_monitorNb-1;
@@ -259,6 +262,7 @@ void CGDIGenerator::SetPropertiesSheetValues()
 	m_GDIGenePropertiesPage.m_nDisplayMode=m_nDisplayMode;
 	m_GDIGenePropertiesPage.m_b16_235=m_b16_235;
 	m_GDIGenePropertiesPage.m_busePic=m_busePic;
+	m_GDIGenePropertiesPage.m_bdispTrip=m_bdispTrip;
 	m_GDIGenePropertiesPage.m_madVR_3d=m_madVR_3d;
 	m_GDIGenePropertiesPage.m_madVR_vLUT=m_madVR_vLUT;
 	m_GDIGenePropertiesPage.m_madVR_OSD=m_madVR_OSD;
@@ -313,6 +317,13 @@ void CGDIGenerator::GetPropertiesSheetValues()
 	{
 		m_busePic=m_GDIGenePropertiesPage.m_busePic;
 		GetConfig()->WriteProfileInt("GDIGenerator","USEPIC",m_busePic);
+		SetModifiedFlag(TRUE);
+	}
+
+	if ( m_bdispTrip!=m_GDIGenePropertiesPage.m_bdispTrip )
+	{
+		m_bdispTrip=m_GDIGenePropertiesPage.m_bdispTrip;
+		GetConfig()->WriteProfileInt("GDIGenerator","DISPLAYTRIPLETS",m_bdispTrip);
 		SetModifiedFlag(TRUE);
 	}
 
