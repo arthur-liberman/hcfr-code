@@ -1565,6 +1565,27 @@ bool CExport::SavePrimariesSheet()
 	int rowNb=1;
 	int i,j;
 
+	double YWhite = m_pDoc->GetMeasure()->GetOnOffWhite().GetY();
+	CColor rColor = m_pDoc->GetMeasure()->GetRedPrimary();
+	CColor gColor = m_pDoc->GetMeasure()->GetGreenPrimary();
+	CColor bColor = m_pDoc->GetMeasure()->GetBluePrimary();
+	CColor yColor = m_pDoc->GetMeasure()->GetYellowSecondary();
+	CColor cColor = m_pDoc->GetMeasure()->GetCyanSecondary();
+	CColor mColor = m_pDoc->GetMeasure()->GetMagentaSecondary();
+	double dEr=0,dEg=0,dEb=0,dEy=0,dEc=0,dEm=0;
+	if (rColor.isValid())
+	 dEr = rColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefPrimary(0), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+	if (gColor.isValid())
+	 dEg = gColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefPrimary(1), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+	if (bColor.isValid())
+	 dEb = bColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefPrimary(2), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+	if (yColor.isValid())
+	 dEy = yColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(0), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+	if (cColor.isValid())
+	 dEc = cColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(1), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+	if (mColor.isValid())
+	 dEm = mColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(2), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+
 	CString SheetOrSeparator="PrimariesSheet";
 	CString aFileName;
 	if(m_type == CSV)
@@ -1615,6 +1636,16 @@ bool CExport::SavePrimariesSheet()
 		result&=primariesSS.AddRow(Rows,rowNb,m_doReplace);
 		rowNb++;
 	}
+
+	Rows.RemoveAll();
+	Rows.Add("DeltaE");
+	Rows.Add(dEr);
+	Rows.Add(dEg);
+	Rows.Add(dEb);
+	Rows.Add(dEy);
+	Rows.Add(dEc);
+	Rows.Add(dEm);
+	result&=primariesSS.AddRow(Rows,rowNb,m_doReplace);
 
 	result&=primariesSS.Commit();
 	if(!result)
@@ -2044,6 +2075,23 @@ bool CExport::SaveCCSheet()
 		result&=colorcheckerSS.AddRow(Rows,rowNb,m_doReplace);
 		rowNb++;
 	}
+
+	Rows.RemoveAll();
+	Rows.Add("deltaE");
+	CColor aColor,aReference;
+	double YWhite = m_pDoc->GetMeasure()->GetOnOffWhite().GetY();
+	for(j=0;j<size;j++)
+	{
+
+		aColor = m_pDoc->GetMeasure()->GetCC24Sat(j);
+		aReference = m_pDoc->GetMeasure()->GetRefCC24Sat(j);
+
+		if (aColor.isValid())
+			Rows.Add(aColor.GetDeltaE(YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight ));
+		else
+			Rows.Add("invalid");
+	}
+	result&=colorcheckerSS.AddRow(Rows,rowNb,m_doReplace);
 
 	result&=colorcheckerSS.Commit();
 	if(!result)
