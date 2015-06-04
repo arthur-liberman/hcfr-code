@@ -1606,6 +1606,11 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 	//MCD
     //CCGS 96 CalMAN ColorChecker SG patterns
     //USER user defined
+	char * path;
+	char appPath[255];
+	path = getenv("APPDATA");
+	strcpy(appPath, path);
+	strcat(appPath, "\\color");
 	bool bOk = true;
 	switch (aCCMode)
 	{
@@ -1892,7 +1897,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
 			lpStr [ 1 ] = '\0';
             CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"data\\usercolors.csv");
+            ifstream colorFile(strPath+"usercolors.csv");
             std::string line;
             int cnt = 0;
             int n1,n2,n3;
@@ -1920,13 +1925,8 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 
 	case CM10SAT:
         {//read in user defined colors
-            char m_ApplicationPath [MAX_PATH];
-			LPSTR lpStr;
-            GetModuleFileName ( NULL, m_ApplicationPath, sizeof ( m_ApplicationPath ) );
-			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
-			lpStr [ 1 ] = '\0';
-            CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"data\\CM 10-Point Saturation (100AMP).csv");
+			strcat(appPath, "\\CM 10-Point Saturation (100AMP).csv");
+			ifstream colorFile(appPath);
             std::string line;
             int cnt = 0;
             int n1,n2,n3;
@@ -1954,13 +1954,8 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 
 	case CM10SAT75:
         {//read in user defined colors
-            char m_ApplicationPath [MAX_PATH];
-			LPSTR lpStr;
-            GetModuleFileName ( NULL, m_ApplicationPath, sizeof ( m_ApplicationPath ) );
-			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
-			lpStr [ 1 ] = '\0';
-            CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"data\\CM 10-Point Saturation (75AMP).csv");
+			strcat(appPath, "\\CM 10-Point Saturation (75AMP).csv");
+            ifstream colorFile(appPath);
             std::string line;
             int cnt = 0;
             int n1,n2,n3;
@@ -1988,13 +1983,8 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 	
 	case CM4LUM:
         {//read in user defined colors
-            char m_ApplicationPath [MAX_PATH];
-			LPSTR lpStr;
-            GetModuleFileName ( NULL, m_ApplicationPath, sizeof ( m_ApplicationPath ) );
-			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
-			lpStr [ 1 ] = '\0';
-            CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"data\\CM 4-Point Luminance.csv");
+			strcat(appPath, "\\CM 4-Point Luminance.csv");
+            ifstream colorFile(appPath);
             std::string line;
             int cnt = 0;
             int n1,n2,n3;
@@ -2022,13 +2012,8 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 
 	case CM5LUM:
         {//read in user defined colors
-            char m_ApplicationPath [MAX_PATH];
-			LPSTR lpStr;
-            GetModuleFileName ( NULL, m_ApplicationPath, sizeof ( m_ApplicationPath ) );
-			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
-			lpStr [ 1 ] = '\0';
-            CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"data\\CM 5-Point Luminance.csv");
+			strcat(appPath, "\\CM 5-Point Luminance.csv");
+            ifstream colorFile(appPath);
             std::string line;
             int cnt = 0;
             int n1,n2,n3;
@@ -2056,13 +2041,8 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 	
 	case CM10LUM:
         {//read in user defined colors
-            char m_ApplicationPath [MAX_PATH];
-			LPSTR lpStr;
-            GetModuleFileName ( NULL, m_ApplicationPath, sizeof ( m_ApplicationPath ) );
-			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
-			lpStr [ 1 ] = '\0';
-            CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"data\\CM 10-Point Luminance.csv");
+			strcat(appPath, "\\CM 10-Point Luminance.csv");
+            ifstream colorFile(appPath);
             std::string line;
             int cnt = 0;
             int n1,n2,n3;
@@ -2090,13 +2070,8 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 	
 	case CM4SAT:
         {//read in user defined colors
-            char m_ApplicationPath [MAX_PATH];
-			LPSTR lpStr;
-            GetModuleFileName ( NULL, m_ApplicationPath, sizeof ( m_ApplicationPath ) );
-			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
-			lpStr [ 1 ] = '\0';
-            CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"data\\CM 4-Point Saturation (100AMP).csv");
+			strcat(appPath, "\\CM 4-Point Saturation (100AMP).csv");
+            ifstream colorFile(appPath);
             std::string line;
             int cnt = 0;
             int n1,n2,n3;
@@ -2124,13 +2099,8 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 	
 	case CM4SAT75:
         {//read in user defined colors
-            char m_ApplicationPath [MAX_PATH];
-			LPSTR lpStr;
-            GetModuleFileName ( NULL, m_ApplicationPath, sizeof ( m_ApplicationPath ) );
-			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
-			lpStr [ 1 ] = '\0';
-            CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"data\\CM 4-Point Saturation (75AMP).csv");
+			strcat(appPath, "\\CM 4-Point Saturation (75AMP).csv");
+            ifstream colorFile(appPath);
             std::string line;
             int cnt = 0;
             int n1,n2,n3;
@@ -2158,13 +2128,8 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 	
 	case CM5SAT:
         {//read in user defined colors
-            char m_ApplicationPath [MAX_PATH];
-			LPSTR lpStr;
-            GetModuleFileName ( NULL, m_ApplicationPath, sizeof ( m_ApplicationPath ) );
-			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
-			lpStr [ 1 ] = '\0';
-            CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"data\\CM 5-Point Saturation (100AMP).csv");
+			strcat(appPath, "\\CM 5-Point Saturation (100AMP).csv");
+            ifstream colorFile(appPath);
             std::string line;
             int cnt = 0;
             int n1,n2,n3;
@@ -2192,13 +2157,8 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 	
 	case CM5SAT75:
         {//read in user defined colors
-            char m_ApplicationPath [MAX_PATH];
-			LPSTR lpStr;
-            GetModuleFileName ( NULL, m_ApplicationPath, sizeof ( m_ApplicationPath ) );
-			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
-			lpStr [ 1 ] = '\0';
-            CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"data\\CM 5-Point Saturation (75AMP).csv");
+			strcat(appPath, "\\CM 5-Point Saturation (75AMP).csv");
+            ifstream colorFile(appPath);
             std::string line;
             int cnt = 0;
             int n1,n2,n3;
@@ -2226,13 +2186,8 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 	
 	case CM6NB:
         {//read in user defined colors
-            char m_ApplicationPath [MAX_PATH];
-			LPSTR lpStr;
-            GetModuleFileName ( NULL, m_ApplicationPath, sizeof ( m_ApplicationPath ) );
-			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
-			lpStr [ 1 ] = '\0';
-            CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"data\\CM 6-Point Near Black.csv");
+			strcat(appPath, "\\CM 6-Point Near Black.csv");
+            ifstream colorFile(appPath);
             std::string line;
             int cnt = 0;
             int n1,n2,n3;
@@ -2260,13 +2215,8 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 
 	case CMDNR:
         {//read in user defined colors
-            char m_ApplicationPath [MAX_PATH];
-			LPSTR lpStr;
-            GetModuleFileName ( NULL, m_ApplicationPath, sizeof ( m_ApplicationPath ) );
-			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
-			lpStr [ 1 ] = '\0';
-            CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"data\\CM Dynamic Range (Clipping).csv");
+			strcat(appPath, "\\CM Dynamic Range (Clipping).csv");
+            ifstream colorFile(appPath);
             std::string line;
             int cnt = 0;
             int n1,n2,n3;
@@ -2294,13 +2244,8 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 
 	case RANDOM250:
         {//read in user defined colors
-            char m_ApplicationPath [MAX_PATH];
-			LPSTR lpStr;
-            GetModuleFileName ( NULL, m_ApplicationPath, sizeof ( m_ApplicationPath ) );
-			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
-			lpStr [ 1 ] = '\0';
-            CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"data\\Random_250.csv");
+			strcat(appPath, "\\Random_250.csv");
+            ifstream colorFile(appPath);
             std::string line;
             int cnt = 0;
             int n1,n2,n3;
@@ -2328,13 +2273,8 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 	
 	case RANDOM500:
         {//read in user defined colors
-            char m_ApplicationPath [MAX_PATH];
-			LPSTR lpStr;
-            GetModuleFileName ( NULL, m_ApplicationPath, sizeof ( m_ApplicationPath ) );
-			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
-			lpStr [ 1 ] = '\0';
-            CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"data\\Random_250.csv");
+			strcat(appPath, "\\Random_500.csv");
+            ifstream colorFile(appPath);
             std::string line;
             int cnt = 0;
             int n1,n2,n3;

@@ -1016,8 +1016,14 @@ void CGraphControl::SaveGraphs(CGraphControl *pGraphToAppend, CGraphControl *pGr
 		}
 	} else
 	{
+		char * path;
+		char filename1[255];
+		path = getenv("APPDATA");
+		strcpy(filename1, path);
+		strcat(filename1, "\\");
+		strcat(filename1, "color\\temp.png");
 		size = CSize(900,600);
-		SaveGraphFile ( size, "data/temp.png", 2, 95, pOtherGraphs, NbOtherGraphs, do_Dialog );
+		SaveGraphFile ( size, filename1, 2, 95, pOtherGraphs, NbOtherGraphs, do_Dialog );
 	}
 }
 

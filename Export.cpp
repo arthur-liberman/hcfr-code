@@ -80,8 +80,10 @@ draw_image (HPDF_Doc     pdf,
 
     HPDF_Page page = HPDF_GetCurrentPage (pdf);
     HPDF_Image image;
-
-    strcpy(filename1, "data");
+	char * path;
+	path = getenv("APPDATA");
+//    strcpy(filename1, "data");
+    strcpy(filename1, path);
     strcat(filename1, FILE_SEPARATOR);
     strcat(filename1, filename);
 
@@ -115,8 +117,11 @@ draw_image2 (HPDF_Doc     pdf,
 	int wX = 300 , wY = 200;
 	HPDF_Page page = HPDF_GetCurrentPage (pdf);
     HPDF_Image image;
+	char * path;
+	path = getenv("APPDATA");
 
-    strcpy(filename1, "data");
+//    strcpy(filename1, "data");
+	strcpy(filename1, path);
     strcat(filename1, FILE_SEPARATOR);
     strcat(filename1, filename);
 
@@ -674,7 +679,7 @@ bool CExport::SavePDF()
 	HPDF_Page_EndText (page);
 
 	CString datetime = CTime::GetCurrentTime().Format("%#c");
-	draw_image (pdf, "logo.png", 6, HPDF_Page_GetHeight (page) - 89,
+	draw_image (pdf, "color\\logo.png", 6, HPDF_Page_GetHeight (page) - 89,
                 "Calibration report for "+ datetime + (pDataRef&&pDataRef!=m_pDoc?" [page 1]":""));
 
 	
@@ -694,7 +699,7 @@ bool CExport::SavePDF()
 	MemDC2.SelectObject(&Bmp);
 	pRGB.m_graphCtrl.DrawGraphs(&MemDC, Rect);
 	pRGB.m_graphCtrl.SaveGraphs(&pRGB.m_graphCtrl2, NULL, NULL, FALSE, 1);	
-	draw_image2(pdf, "temp.png", 6, HPDF_Page_GetHeight (page) - 320, "Grayscale/Grayscale dE");
+	draw_image2(pdf, "color\\temp.png", 6, HPDF_Page_GetHeight (page) - 320, "Grayscale/Grayscale dE");
 
 	//Gamma-CT graph
 	
@@ -706,14 +711,19 @@ bool CExport::SavePDF()
 	pCT.m_graphCtrl.DrawGraphs(&MemDC2, Rect);
 	pCT.m_graphCtrl.SaveGraphs(&pGAMMA.m_graphCtrl, NULL, NULL, FALSE, 2);	
 
-	draw_image2(pdf, "temp.png", 6 + 300, HPDF_Page_GetHeight (page) - 320, "Correlated Color Temperature/Gamma");
+	draw_image2(pdf, "color\\temp.png", 6 + 300, HPDF_Page_GetHeight (page) - 320, "Correlated Color Temperature/Gamma");
+	char * path;
+	char filename1[255];
+	path = getenv("APPDATA");
+    strcpy(filename1, path);
+    strcat(filename1, "\\");
+    strcat(filename1, "color\\temp.png");
 
 //CIE Chart
 	CCIEChartGrapher pCIE;
-	pCIE.SaveGraphFile(m_pDoc,CSize(dX,dY),"data/temp.png",2,95,TRUE);
-	Sleep(100);
+	pCIE.SaveGraphFile(m_pDoc,CSize(dX,dY),filename1,2,95,TRUE);
 
-	draw_image2(pdf, "temp.png", 6, HPDF_Page_GetHeight (page) - 320 - 230, "CIE Diagram");
+	draw_image2(pdf, "color\\temp.png", 6, HPDF_Page_GetHeight (page) - 320 - 230, "CIE Diagram");
 	
 //SATS/LUM Chart
 
@@ -725,7 +735,7 @@ bool CExport::SavePDF()
 	pShift.m_graphCtrl.DrawGraphs(&MemDC2, Rect);
 	pSat.m_graphCtrl.SaveGraphs(&pShift.m_graphCtrl, &pShift.m_graphCtrl2, NULL, FALSE, 3);	
 
-	draw_image2(pdf, "temp.png", 6 + 300, HPDF_Page_GetHeight (page) - 320 - 230, "Saturation Sweep Luminance/Shifts");
+	draw_image2(pdf, "color\\temp.png", 6 + 300, HPDF_Page_GetHeight (page) - 320 - 230, "Saturation Sweep Luminance/Shifts");
 
 //Color comparator
 	CColor aColor, aReference;
@@ -1176,7 +1186,7 @@ bool CExport::SavePDF()
 
 		HPDF_Page_EndText (page2);
 
-		draw_image (pdf, "logo.png", 6, HPDF_Page_GetHeight (page2) - 89,
+		draw_image (pdf, "color\\logo.png", 6, HPDF_Page_GetHeight (page2) - 89,
 					"Calibration report for "+datetime+" [page 2]");
 	//RGB graph
 		CRGBGrapher pRGB;
@@ -1194,7 +1204,7 @@ bool CExport::SavePDF()
 		MemDC2.SelectObject(&Bmp);
 		pRGB.m_graphCtrl.DrawGraphs(&MemDC, Rect);
 		pRGB.m_graphCtrl.SaveGraphs(&pRGB.m_graphCtrl2, NULL, NULL, FALSE, 1);	
-		draw_image2(pdf, "temp.png", 6, HPDF_Page_GetHeight (page2) - 320, "Grayscale/Grayscale dE");
+		draw_image2(pdf, "color\\temp.png", 6, HPDF_Page_GetHeight (page2) - 320, "Grayscale/Grayscale dE");
 
 		//Gamma-CT graph
 	
@@ -1206,13 +1216,19 @@ bool CExport::SavePDF()
 		pCT.m_graphCtrl.DrawGraphs(&MemDC2, Rect);
 		pCT.m_graphCtrl.SaveGraphs(&pGAMMA.m_graphCtrl, NULL, NULL, FALSE, 2);	
 
-		draw_image2(pdf, "temp.png", 6 + 300, HPDF_Page_GetHeight (page2) - 320, "Correlated Color Temperature/Gamma");
+		draw_image2(pdf, "color\\temp.png", 6 + 300, HPDF_Page_GetHeight (page2) - 320, "Correlated Color Temperature/Gamma");
 
 	//CIE Chart
+		char * path;
+		char filename1[255];
+		path = getenv("APPDATA");
+		strcpy(filename1, path);
+		strcat(filename1, "\\");
+		strcat(filename1, "color\\temp.png");
 		CCIEChartGrapher pCIE;
-		pCIE.SaveGraphFile(pDataRef,CSize(dX,dY),"data/temp.png",2,95,TRUE);
+		pCIE.SaveGraphFile(pDataRef,CSize(dX,dY),filename1,2,95,TRUE);
 
-		draw_image2(pdf, "temp.png", 6, HPDF_Page_GetHeight (page2) - 320 - 230, "CIE Diagram");
+		draw_image2(pdf, "color\\temp.png", 6, HPDF_Page_GetHeight (page2) - 320 - 230, "CIE Diagram");
 	
 	//SATS/LUM Chart
 
@@ -1224,7 +1240,7 @@ bool CExport::SavePDF()
 		pShift.m_graphCtrl.DrawGraphs(&MemDC2, Rect);
 		pSat.m_graphCtrl.SaveGraphs(&pShift.m_graphCtrl, &pShift.m_graphCtrl2, NULL, FALSE, 3);	
 
-		draw_image2(pdf, "temp.png", 6 + 300, HPDF_Page_GetHeight (page2) - 320 - 230, "Saturation Sweep Luminance/Shifts");
+		draw_image2(pdf, "color\\temp.png", 6 + 300, HPDF_Page_GetHeight (page2) - 320 - 230, "Saturation Sweep Luminance/Shifts");
 	//Color comparator
 		CColor aColor, aReference;
 		ColorRGB aMeasure, aRef, WhiteRGB;

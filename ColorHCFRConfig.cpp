@@ -838,52 +838,56 @@ void CColorHCFRConfig::GetCColors()
 			lpStr [ 1 ] = '\0';
             CString strPath = m_ApplicationPath;
 			CString fName;
+			char * path;
+			char appPath[255];
+			path = getenv("APPDATA");
+			strcpy(appPath, path);
 			switch (m_CCMode)
 			{
 				case USER:
-		        fName="data\\usercolors.csv";
+		        fName=strPath+"usercolors.csv";
 				break;
 				case CM10SAT:
-		        fName="data\\CM 10-Point Saturation (100AMP).csv";
+		        fName=strcat(appPath, "\\color\\CM 10-Point Saturation (100AMP).csv");
 				break;
 				case CM10SAT75:
-		        fName="data\\CM 10-Point Saturation (75AMP).csv";
+		        fName=strcat(appPath, "\\color\\CM 10-Point Saturation (75AMP).csv");
 				break;
 				case CM4LUM:
-		        fName="data\\CM 4-Point Luminance.csv";
+		        fName=strcat(appPath,"\\color\\CM 4-Point Luminance.csv");
 				break;
 				case CM5LUM:
-		        fName="data\\CM 5-Point Luminance.csv";
+		        fName=strcat(appPath, "\\color\\CM 5-Point Luminance.csv");
 				break;
 				case CM10LUM:
-		        fName="data\\CM 10-Point Luminance.csv";
+		        fName=strcat(appPath, "\\color\\CM 10-Point Luminance.csv");
 				break;
 				case CM4SAT:
-		        fName="data\\CM 4-Point Saturation (100AMP).csv";
+		        fName=strcat(appPath, "\\color\\CM 4-Point Saturation (100AMP).csv");
 				break;
 				case CM4SAT75:
-		        fName="data\\CM 4-Point Saturation (75AMP).csv";
+		        fName=strcat(appPath, "\\color\\CM 4-Point Saturation (75AMP).csv");
 				break;
 				case CM5SAT:
-		        fName="data\\CM 5-Point Saturation (100AMP).csv";
+		        fName=strcat(appPath, "\\color\\CM 5-Point Saturation (100AMP).csv");
 				break;
 				case CM5SAT75:
-		        fName="data\\CM 5-Point Saturation (75AMP).csv";
+		        fName=strcat(appPath, "\\color\\CM 5-Point Saturation (75AMP).csv");
 				break;
 				case CM6NB:
-		        fName="data\\CM 6-Point Near Black.csv";
+		        fName=strcat(appPath, "\\color\\CM 6-Point Near Black.csv");
 				break;
 				case CMDNR:
-		        fName="data\\CM Dynamic Range (Clipping).csv";
+		        fName=strcat(appPath, "\\color\\CM Dynamic Range (Clipping).csv");
 				break;
 				case RANDOM250:
-		        fName="data\\Random_250.csv";
+		        fName=strcat(appPath, "\\color\\Random_250.csv");
 				break;
 				case RANDOM500:
-		        fName="data\\Random_500.csv";
+		        fName=strcat(appPath, "\\color\\Random_500.csv");
 				break;
 			}
-			ifstream colorFile(strPath+fName);
+			ifstream colorFile(fName);
             std::string line;
             int cnt = 0;
             int n1,n2,n3;
