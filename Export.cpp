@@ -81,7 +81,7 @@ draw_image (HPDF_Doc     pdf,
     HPDF_Page page = HPDF_GetCurrentPage (pdf);
     HPDF_Image image;
 
-    strcpy(filename1, "pngsuite");
+    strcpy(filename1, "data");
     strcat(filename1, FILE_SEPARATOR);
     strcat(filename1, filename);
 
@@ -95,7 +95,6 @@ draw_image (HPDF_Doc     pdf,
     HPDF_Page_BeginText (page);
     HPDF_Page_SetTextLeading (page, 16);
     HPDF_Page_MoveTextPos (page, x, y);
-//    HPDF_Page_ShowTextNextLine (page, filename);
     HPDF_Page_ShowTextNextLine (page, text);
     HPDF_Page_EndText (page);
 }
@@ -128,9 +127,8 @@ draw_image2 (HPDF_Doc     pdf,
 
     /* Print the text. */
     HPDF_Page_BeginText (page);
-    HPDF_Page_SetTextLeading (page, 16);
+    HPDF_Page_SetTextLeading (page, 12);
     HPDF_Page_MoveTextPos (page, x, y);
-//    HPDF_Page_ShowTextNextLine (page, filename);
     HPDF_Page_ShowTextNextLine (page, text);
     HPDF_Page_EndText (page);
 }
@@ -445,7 +443,7 @@ bool CExport::SavePDF()
 
     HPDF_Page_SetLineWidth (page, 2);
 	HPDF_Page_SetRGBStroke (page, (HPDF_REAL)0.4, (HPDF_REAL)0.0, (HPDF_REAL)0.0);
-	draw_rect (page, 6 + 300, 18, 298, 200, 10, "Summary");
+	draw_rect (page, 6 + 300, 20, 298, 200, 10, "Summary");
     HPDF_Page_Stroke (page);
 
 	CString dEform;
@@ -731,13 +729,12 @@ bool CExport::SavePDF()
 
 //Color comparator
 	CColor aColor, aReference;
-	ColorRGB aMeasure, aRef, WhiteRGB;
+	ColorRGB aMeasure, aRef;
 	int i=0,j=0,k=0,mx=24,my=50;
 	int nColors=GetConfig()->GetCColorsSize();
 	int mi = nColors;
 	double dE=0.0;
 	char str2[10];
-	WhiteRGB = m_pDoc->GetMeasure()->GetOnOffWhite().GetRGBValue(GetColorReference());
 	YWhite = m_pDoc->GetMeasure()->GetPrimeWhite().GetY();
 	int ri = 6;
 
@@ -771,19 +768,23 @@ bool CExport::SavePDF()
 
 	if (nColors > 96)
 		mi = 96;
-	
+	CColor tmp;
 	for ( i=0; i<mi; i++)
 	{
 		aColor = m_pDoc->GetMeasure()->GetCC24Sat(i);
 		aReference = m_pDoc->GetMeasure()->GetRefCC24Sat(i);
-		aRef = m_pDoc->GetMeasure()->GetRefCC24Sat(i).GetRGBValue(GetColorReference());
+		aRef = m_pDoc->GetMeasure()->GetRefCC24Sat(i).GetRGBValue(GetColorReference());		
 
 		if (aColor.isValid())
 		{
 			aMeasure = m_pDoc->GetMeasure()->GetCC24Sat(i).GetRGBValue(GetColorReference());
-			aMeasure[0]=pow((aMeasure[0]/WhiteRGB[0]), 1.0/2.2);
-			aMeasure[1]=pow((aMeasure[1]/WhiteRGB[1]), 1.0/2.2);
-			aMeasure[2]=pow((aMeasure[2]/WhiteRGB[2]), 1.0/2.2);
+			tmp = aColor;
+			tmp.SetX(tmp.GetX() / YWhite);
+			tmp.SetY(tmp.GetY() / YWhite);
+			tmp.SetZ(tmp.GetZ() / YWhite);
+			aMeasure[0]=pow((tmp.GetRGBValue(GetColorReference())[0]), 1.0/2.2);
+			aMeasure[1]=pow((tmp.GetRGBValue(GetColorReference())[1]), 1.0/2.2);
+			aMeasure[2]=pow((tmp.GetRGBValue(GetColorReference())[2]), 1.0/2.2);
 			dE = aColor.GetDeltaE(YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 		}
 		else
@@ -950,7 +951,7 @@ bool CExport::SavePDF()
 
 		HPDF_Page_SetLineWidth (page2, 2);
 		HPDF_Page_SetRGBStroke (page2, (HPDF_REAL)0.4, (HPDF_REAL)0.0, (HPDF_REAL)0.0);
-		draw_rect (page2, 6 + 300, 18, 298, 200, 10, "Summary");
+		draw_rect (page2, 6 + 300, 20, 298, 200, 10, "Summary");
 		HPDF_Page_Stroke (page2);
 		
 		if (White > 0 && Black < 0.000001)
@@ -1275,9 +1276,13 @@ bool CExport::SavePDF()
 			if (aColor.isValid())
 			{
 				aMeasure = pDataRef->GetMeasure()->GetCC24Sat(i).GetRGBValue(GetColorReference());
-				aMeasure[0]=pow((aMeasure[0]/WhiteRGB[0]), 1.0/2.2);
-				aMeasure[1]=pow((aMeasure[1]/WhiteRGB[1]), 1.0/2.2);
-				aMeasure[2]=pow((aMeasure[2]/WhiteRGB[2]), 1.0/2.2);
+				tmp = aColor;
+				tmp.SetX(tmp.GetX() / YWhite);
+				tmp.SetY(tmp.GetY() / YWhite);
+				tmp.SetZ(tmp.GetZ() / YWhite);
+				aMeasure[0]=pow((tmp.GetRGBValue(GetColorReference())[0]), 1.0/2.2);
+				aMeasure[1]=pow((tmp.GetRGBValue(GetColorReference())[1]), 1.0/2.2);
+				aMeasure[2]=pow((tmp.GetRGBValue(GetColorReference())[2]), 1.0/2.2);
 				dE = aColor.GetDeltaE(YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 			}
 			else

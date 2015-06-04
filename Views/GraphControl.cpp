@@ -925,7 +925,7 @@ void CGraphControl::SaveGraphs(CGraphControl *pGraphToAppend, CGraphControl *pGr
 		switch (nSequence)
 		{
 		case 1:
-			this->FitYScale(TRUE,5.0);
+			this->FitYScale(TRUE,10.0);
 			this->m_minY = 80;
 			pGraphToAppend->FitYScale(TRUE,0.5);
 			pGraphToAppend->m_minY = 0;
