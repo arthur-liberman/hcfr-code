@@ -105,6 +105,18 @@ public:
 	double dEmax_gs;
 	double dEavg_cc;
 	double dEmax_cc;
+	double dEavg_sr;
+	double dEmax_sr;
+	double dEavg_sg;
+	double dEmax_sg;
+	double dEavg_sb;
+	double dEmax_sb;
+	double dEavg_sy;
+	double dEmax_sy;
+	double dEavg_sc;
+	double dEmax_sc;
+	double dEavg_sm;
+	double dEmax_sm;
 
 	CBrush *m_pBgBrush;
 

@@ -416,6 +416,23 @@ CMainView::CMainView()
 	m_pInfoWnd = NULL;
 
 	m_displayType=GetConfig()->GetProfileInt("MainView","Display type",HCFR_xyY_VIEW);
+	dEavg_gs=0;
+	dEmax_gs=0;
+	dEavg_cc=0;
+	dEmax_cc=0;
+	dEavg_sr=0;
+	dEmax_sr=0;
+	dEavg_sg=0;
+	dEmax_sg=0;
+	dEavg_sb=0;
+	dEmax_sb=0;
+	dEavg_sy=0;
+	dEmax_sy=0;
+	dEavg_sc=0;
+	dEmax_sc=0;
+	dEavg_sm=0;
+	dEmax_sm=0;
+
 }
 
 CMainView::~CMainView()
@@ -2876,6 +2893,33 @@ void CMainView::UpdateGrid()
 			m_grayScaleGroup.SetText ( Msg );
 			if (GetDocument()->GetMeasure()->GetRedSat(0).isValid() && dEcnt > 0 )
 		    {
+				switch(m_displayMode)
+				{
+				case 5:
+					dEavg_sr = dEavg / dEcnt;
+					dEmax_sr = dEmax;
+					break;
+				case 6:
+					dEavg_sg = dEavg / dEcnt;
+					dEmax_sg = dEmax;
+					break;
+				case 7:
+					dEavg_sb = dEavg / dEcnt;
+					dEmax_sb = dEmax;
+					break;
+				case 8:
+					dEavg_sy = dEavg / dEcnt;
+					dEmax_sy = dEmax;
+					break;
+				case 9:
+					dEavg_sc = dEavg / dEcnt;
+					dEmax_sc = dEmax;
+					break;
+				case 10:
+					dEavg_sm = dEavg / dEcnt;
+					dEmax_sm = dEmax;
+					break;
+				}
 				char	szBuf [ 256 ];
 				CString dEform;
 				float a=2.0, b=3;

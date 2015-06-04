@@ -933,8 +933,8 @@ void CGraphControl::SaveGraphs(CGraphControl *pGraphToAppend, CGraphControl *pGr
 			break;
 		case 2:
 			this->FitYScale(TRUE,500.0);
-			this->m_minY = 5000;
-			pGraphToAppend->FitYScale(TRUE,0.1);
+			this->m_minY = 5500;
+			pGraphToAppend->FitYScale(TRUE,0.2);
 			pGraphToAppend->m_minY = 1.8;
 			break;
 		case 3:
@@ -1053,7 +1053,7 @@ void CGraphControl::SaveGraphFile ( CSize ImageSize, LPCSTR lpszPathName, int Im
 	if(NbOtherGraphs)
 	{
 		CRect halfRect1(CPoint(0,0),CSize(rect.Width(),(rect.Height()/(NbOtherGraphs+1))+1));
-		DrawBackground(&MemDC,halfRect1,TRUE);
+		DrawBackground(&MemDC,halfRect1, do_Gradient?FALSE:TRUE);
 		DrawAxis(&MemDC,halfRect1,GetConfig()->m_bWhiteBkgndOnFile);
 		DrawGraphs(&MemDC,halfRect1);
 
@@ -1063,7 +1063,7 @@ void CGraphControl::SaveGraphFile ( CSize ImageSize, LPCSTR lpszPathName, int Im
 			CRgn clipRgn;
 			clipRgn.CreateRectRgnIndirect(halfRect2);
 			MemDC.SelectClipRgn(&clipRgn);
-			pOtherGraphs [ i ]->DrawBackground(&MemDC,halfRect2,TRUE);
+			pOtherGraphs [ i ]->DrawBackground(&MemDC,halfRect2,do_Gradient?FALSE:TRUE);
 
 			if ( i == NbOtherGraphs - 1 )
 			{
@@ -1088,7 +1088,7 @@ void CGraphControl::SaveGraphFile ( CSize ImageSize, LPCSTR lpszPathName, int Im
 	}
 	else
 	{
-		DrawBackground(&MemDC,rect,TRUE);
+		DrawBackground(&MemDC,rect,do_Gradient?FALSE:TRUE);
 		
 		if ( GetConfig()->m_bWhiteBkgndOnFile && !do_Gradient )
 			clr = RGB ( 192, 192, 192 );

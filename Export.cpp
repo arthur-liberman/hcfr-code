@@ -48,7 +48,7 @@
 #include "SatLumShiftView.h"
 #include "MultiFrm.h"
 #include "Views\MainView.h"
-
+#include "libHCFR\Color.h"
 jmp_buf env;
 
 void error_handler  (HPDF_STATUS   error_no,
@@ -188,14 +188,15 @@ draw_rect (HPDF_Page     page,
            double        y,
 		   double		 w,
 		   double		 h,
+		   double		off,
            const char   *label)
 {
     HPDF_Page_BeginText (page);
-    HPDF_Page_MoveTextPos (page, x, y - 10);
+    HPDF_Page_MoveTextPos (page, x, y - off);
     HPDF_Page_ShowText (page, label);
     HPDF_Page_EndText (page);
 
-    HPDF_Page_Rectangle(page, x, y, w, h);
+	HPDF_Page_Rectangle(page, x, y, w, h);
 }
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -319,6 +320,18 @@ bool CExport::SavePDF()
 	int current_mode = ((CMainView*)pView)->m_displayMode;
 	((CMainView*)pView)->m_displayMode = 11;
 	((CMainView*)pView)->UpdateAllGrids();
+	((CMainView*)pView)->m_displayMode = 10;
+	((CMainView*)pView)->UpdateAllGrids();
+	((CMainView*)pView)->m_displayMode = 9;
+	((CMainView*)pView)->UpdateAllGrids();
+	((CMainView*)pView)->m_displayMode = 8;
+	((CMainView*)pView)->UpdateAllGrids();
+	((CMainView*)pView)->m_displayMode = 7;
+	((CMainView*)pView)->UpdateAllGrids();
+	((CMainView*)pView)->m_displayMode = 6;
+	((CMainView*)pView)->UpdateAllGrids();
+	((CMainView*)pView)->m_displayMode = 5;
+	((CMainView*)pView)->UpdateAllGrids();
 	((CMainView*)pView)->m_displayMode=current_mode;
 	((CMainView*)pView)->UpdateAllGrids();
 
@@ -326,6 +339,19 @@ bool CExport::SavePDF()
 	double dEavg_gs = ((CMainView*)pView)->dEavg_gs;
 	double dEmax_cc = ((CMainView*)pView)->dEmax_cc;
 	double dEmax_gs = ((CMainView*)pView)->dEmax_gs;
+	double dEavg_sr = ((CMainView*)pView)->dEavg_sr;
+	double dEmax_sr = ((CMainView*)pView)->dEmax_sr;
+	double dEavg_sg = ((CMainView*)pView)->dEavg_sg;
+	double dEmax_sg = ((CMainView*)pView)->dEmax_sg;
+	double dEavg_sb = ((CMainView*)pView)->dEavg_sb;
+	double dEmax_sb = ((CMainView*)pView)->dEmax_sb;
+	double dEavg_sy = ((CMainView*)pView)->dEavg_sy;
+	double dEmax_sy = ((CMainView*)pView)->dEmax_sy;
+	double dEavg_sc = ((CMainView*)pView)->dEavg_sc;
+	double dEmax_sc = ((CMainView*)pView)->dEmax_sc;
+	double dEavg_sm = ((CMainView*)pView)->dEavg_sm;
+	double dEmax_sm = ((CMainView*)pView)->dEmax_sm;
+
 	double White = m_pDoc->GetMeasure()->GetOnOffWhite().GetY();
 	double Black = m_pDoc->GetMeasure()->GetOnOffBlack().GetY();
 	if (Black > 0)
@@ -414,12 +440,12 @@ bool CExport::SavePDF()
 
     HPDF_Page_SetLineWidth (page, 5);
 	HPDF_Page_SetRGBStroke (page, (HPDF_REAL)0.8, (HPDF_REAL)0.8, (HPDF_REAL)0.8);
-	draw_rect (page, 3, 3, HPDF_Page_GetWidth (page) - 6, HPDF_Page_GetHeight (page) - 5, "");
+	draw_rect (page, 3, 3, HPDF_Page_GetWidth (page) - 6, HPDF_Page_GetHeight (page) - 5, 10, "");
     HPDF_Page_Stroke (page);
 
     HPDF_Page_SetLineWidth (page, 2);
 	HPDF_Page_SetRGBStroke (page, (HPDF_REAL)0.4, (HPDF_REAL)0.0, (HPDF_REAL)0.0);
-	draw_rect (page, 6 + 300, 18, 298, 200, "Summary");
+	draw_rect (page, 6 + 300, 18, 298, 200, 10, "Summary");
     HPDF_Page_Stroke (page);
 
 	CString dEform;
@@ -462,8 +488,51 @@ bool CExport::SavePDF()
 		dEform = " [CIE76(uv)]";
 		break;
 	}
-    dEform += GetConfig()->m_dE_gray==0?" [Relative Y]":(GetConfig ()->m_dE_gray == 1?" [Absolute Y w/gamma]":" [Absolute Y w/o gamma]");
+
+	CString dEform2 = GetConfig()->m_dE_form==5?" [CIE2000]":dEform;
+	dEform += GetConfig()->m_dE_gray==0?" [Relative Y]":(GetConfig ()->m_dE_gray == 1?" [Absolute Y w/gamma]":" [Absolute Y w/o gamma]");
 	HPDF_Page_ShowTextNextLine (page, str + dEform);
+
+	double nCount = m_pDoc -> GetMeasure () -> GetGrayScaleSize ();
+	double Gamma = GetConfig()->m_GammaAvg;
+	double Offset;
+	if (nCount > 0)
+	{
+		m_pDoc->ComputeGammaAndOffset(&Gamma, &Offset, 1, 1, nCount, false);
+		sprintf(str,"Average measured gamma: %.2f",Gamma);
+	}
+	else
+	{
+		sprintf(str,"Average measured gamma: No data");
+	}
+	HPDF_Page_ShowTextNextLine (page, str);
+
+	double YWhite = m_pDoc->GetMeasure()->GetOnOffWhite().GetY();
+	CColor rColor = m_pDoc->GetMeasure()->GetRedPrimary();
+	CColor gColor = m_pDoc->GetMeasure()->GetGreenPrimary();
+	CColor bColor = m_pDoc->GetMeasure()->GetBluePrimary();
+	CColor yColor = m_pDoc->GetMeasure()->GetYellowSecondary();
+	CColor cColor = m_pDoc->GetMeasure()->GetCyanSecondary();
+	CColor mColor = m_pDoc->GetMeasure()->GetMagentaSecondary();
+	double dEr=0,dEg=0,dEb=0,dEy=0,dEc=0,dEm=0;
+	if (rColor.isValid())
+	 dEr = rColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefPrimary(0), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+	if (gColor.isValid())
+	 dEg = gColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefPrimary(1), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+	if (bColor.isValid())
+	 dEb = bColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefPrimary(2), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+	if (yColor.isValid())
+	 dEy = yColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(0), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+	if (cColor.isValid())
+	 dEc = cColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(1), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+	if (mColor.isValid())
+	 dEm = mColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(2), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+	
+	sprintf(str,"Primary dE: Red %.2f, Green %.2f, Blue %.2f",dEr,dEg,dEb);
+	HPDF_Page_ShowTextNextLine (page, str + dEform2);
+	sprintf(str,"Secondary dE: Yellow %.2f, Cyan %.2f, Magenta %.2f",dEy,dEc,dEm);
+	HPDF_Page_ShowTextNextLine (page, str);
+	
 
 	dEform = "Color checker sequence";
 	switch (GetConfig()->m_CCMode)
@@ -567,6 +636,43 @@ bool CExport::SavePDF()
 	else
 		sprintf(str,"Colorchecker dE (Avg/Max): No data"+dEform);
 	HPDF_Page_ShowTextNextLine (page, str);
+
+	if (dEavg_sr > 0)
+		sprintf(str,"Red Saturation dE (Avg/Max): %.2f/%.2f", dEavg_sr, dEmax_sr);
+	else
+		sprintf(str,"Red Saturation dE (Avg/Max): No data");
+	HPDF_Page_ShowTextNextLine (page, str);
+
+	if (dEavg_sg > 0)
+		sprintf(str,"Green Saturation dE (Avg/Max): %.2f/%.2f", dEavg_sg, dEmax_sg);
+	else
+		sprintf(str,"Green Saturation dE (Avg/Max): No data");
+	HPDF_Page_ShowTextNextLine (page, str);
+
+	if (dEavg_sb > 0)
+		sprintf(str,"Blue Saturation dE (Avg/Max): %.2f/%.2f", dEavg_sb, dEmax_sb);
+	else
+		sprintf(str,"Blue Saturation dE (Avg/Max): No data");
+	HPDF_Page_ShowTextNextLine (page, str);
+
+	if (dEavg_sy > 0)
+		sprintf(str,"Yellow Saturation dE (Avg/Max): %.2f/%.2f", dEavg_sy, dEmax_sy);
+	else
+		sprintf(str,"Yellow Saturation dE (Avg/Max): No data");
+	HPDF_Page_ShowTextNextLine (page, str);
+
+	if (dEavg_sc > 0)
+		sprintf(str,"Cyan Saturation dE (Avg/Max): %.2f/%.2f", dEavg_sc, dEmax_sc);
+	else
+		sprintf(str,"Cyan Saturation dE (Avg/Max): No data");
+	HPDF_Page_ShowTextNextLine (page, str);
+
+	if (dEavg_sm > 0)
+		sprintf(str,"Magenta Saturation dE (Avg/Max): %.2f/%.2f", dEavg_sm, dEmax_sm);
+	else
+		sprintf(str,"Magenta Saturation dE (Avg/Max): No data");
+	HPDF_Page_ShowTextNextLine (page, str);
+
 	HPDF_Page_EndText (page);
 
 	CString datetime = CTime::GetCurrentTime().Format("%#c");
@@ -622,20 +728,120 @@ bool CExport::SavePDF()
 	pSat.m_graphCtrl.SaveGraphs(&pShift.m_graphCtrl, &pShift.m_graphCtrl2, NULL, FALSE, 3);	
 
 	draw_image2(pdf, "temp.png", 6 + 300, HPDF_Page_GetHeight (page) - 320 - 230, "Saturation Sweep Luminance/Shifts");
-/*
-	CView *pCView;
-	CDC *pDC = pCView->GetActiveWindow()->GetDC();
-	MemDC.CreateCompatibleDC(pDC);
-	Bmp.CreateCompatibleBitmap(pDC, Rect.Width(),Rect.Height());
-	MemDC.SelectObject(&Bmp);
-	MemDC.BitBlt(0,0,Rect.Width(),Rect.Height(),pDC,0,0,SRCCOPY);
-	CImage Temp;
-	Temp.Attach((HBITMAP)Bmp.Detach());
-	Temp.Save("data/temp.png");
-	pDC->DeleteDC();
 
-	draw_image2(pdf, "temp.png", 6, HPDF_Page_GetHeight (page) - 320 - 230 -230, "Page View");
-*/
+//Color comparator
+	CColor aColor, aReference;
+	ColorRGB aMeasure, aRef, WhiteRGB;
+	int i=0,j=0,k=0,mx=24,my=50;
+	int nColors=GetConfig()->GetCColorsSize();
+	int mi = nColors;
+	double dE=0.0;
+	char str2[10];
+	WhiteRGB = m_pDoc->GetMeasure()->GetOnOffWhite().GetRGBValue(GetColorReference());
+	YWhite = m_pDoc->GetMeasure()->GetPrimeWhite().GetY();
+	int ri = 6;
+
+	if (nColors > 24)
+	{
+		mx = 24;
+		my = 33;
+		ri = 6; //6x6
+	}
+
+	if (nColors > 36)
+	{
+		mx = 18;
+		my = 33;
+		ri = 8; //8x6
+	}
+
+	if (nColors > 48)
+	{
+		mx = 18;
+		my = 25;
+		ri = 8; //8x8
+	}
+
+	if (nColors > 64)
+	{
+		mx = 12;
+		my = 25;
+		ri = 12;
+	}
+
+	if (nColors > 96)
+		mi = 96;
+	
+	for ( i=0; i<mi; i++)
+	{
+		aColor = m_pDoc->GetMeasure()->GetCC24Sat(i);
+		aReference = m_pDoc->GetMeasure()->GetRefCC24Sat(i);
+		aRef = m_pDoc->GetMeasure()->GetRefCC24Sat(i).GetRGBValue(GetColorReference());
+
+		if (aColor.isValid())
+		{
+			aMeasure = m_pDoc->GetMeasure()->GetCC24Sat(i).GetRGBValue(GetColorReference());
+			aMeasure[0]=pow((aMeasure[0]/WhiteRGB[0]), 1.0/2.2);
+			aMeasure[1]=pow((aMeasure[1]/WhiteRGB[1]), 1.0/2.2);
+			aMeasure[2]=pow((aMeasure[2]/WhiteRGB[2]), 1.0/2.2);
+			dE = aColor.GetDeltaE(YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+		}
+		else
+		{
+			aMeasure[0] = 0.5;
+			aMeasure[1] = 0.5;
+			aMeasure[2] = 0.5;
+		}
+		sprintf(str2,"%.2f",dE);
+
+		aRef[0]=pow(aRef[0],1.0/2.2);
+		aRef[1]=pow(aRef[1],1.0/2.2);
+		aRef[2]=pow(aRef[2],1.0/2.2);
+		aMeasure[0] = min(max(aMeasure[0],0),1);
+		aMeasure[1] = min(max(aMeasure[1],0),1);
+		aMeasure[2] = min(max(aMeasure[2],0),1);
+		aRef[0] = min(max(aRef[0],0),1);
+		aRef[1] = min(max(aRef[1],0),1);
+		aRef[2] = min(max(aRef[2],0),1);
+
+		if (i !=0)
+		{
+			if ((i % ri) == 0)
+			{
+				k = 0;
+				j++;
+			}
+			else
+			{
+				k++;
+			}
+		}
+
+		HPDF_Page_SetRGBFill (page, (HPDF_REAL)aMeasure[0], (HPDF_REAL)aMeasure[1], (HPDF_REAL)aMeasure[2]);
+		draw_rect (page, 10 + (mx * 2) * k, 20 + my * j, mx, my, 0, "");
+		HPDF_Page_Fill(page);
+
+		if (aColor.GetY() / YWhite > .5)
+			HPDF_Page_SetRGBFill (page, 0, 0, 0);
+		else
+			HPDF_Page_SetRGBFill (page, (HPDF_REAL).9, (HPDF_REAL).9, (HPDF_REAL).9);
+		HPDF_Page_BeginText (page);
+	    HPDF_Page_MoveTextPos (page, 11 + (mx * 2) * k, 22 + my * j);
+		HPDF_Page_SetFontAndSize (page, font2, 5);
+		HPDF_Page_ShowText (page, str2);
+		HPDF_Page_EndText (page);
+
+		HPDF_Page_SetRGBFill (page, (HPDF_REAL)aRef[0], (HPDF_REAL)aRef[1], (HPDF_REAL)aRef[2]);
+		draw_rect (page, 10 + (mx * 2) * k + mx, 20 + my * j, mx, my, 0, "");
+		HPDF_Page_Fill(page);
+	}
+	
+	HPDF_Page_SetRGBFill (page, 0, 0, 0);
+	HPDF_Page_BeginText (page);
+	HPDF_Page_MoveTextPos (page, 10, 10);
+	HPDF_Page_SetFontAndSize (page, font2, 9);
+	HPDF_Page_ShowText (page, "Color Checker Comparator");
+	HPDF_Page_EndText (page);
 
 	//page 2 if ref document open
 	if (pDataRef && (pDataRef != m_pDoc))
@@ -645,6 +851,18 @@ bool CExport::SavePDF()
 		current_mode = ((CMainView*)pView)->m_displayMode;
 		((CMainView*)pView)->m_displayMode = 11;
 		((CMainView*)pView)->UpdateAllGrids();
+		((CMainView*)pView)->m_displayMode = 10;
+		((CMainView*)pView)->UpdateAllGrids();
+		((CMainView*)pView)->m_displayMode = 9;
+		((CMainView*)pView)->UpdateAllGrids();
+		((CMainView*)pView)->m_displayMode = 8;
+		((CMainView*)pView)->UpdateAllGrids();
+		((CMainView*)pView)->m_displayMode = 7;
+		((CMainView*)pView)->UpdateAllGrids();
+		((CMainView*)pView)->m_displayMode = 6;
+		((CMainView*)pView)->UpdateAllGrids();
+		((CMainView*)pView)->m_displayMode = 5;
+		((CMainView*)pView)->UpdateAllGrids();
 		((CMainView*)pView)->m_displayMode=current_mode;
 		((CMainView*)pView)->UpdateAllGrids();
 
@@ -652,6 +870,18 @@ bool CExport::SavePDF()
 		dEavg_gs = ((CMainView*)pView)->dEavg_gs;
 		dEmax_cc = ((CMainView*)pView)->dEmax_cc;
 		dEmax_gs = ((CMainView*)pView)->dEmax_gs;
+		dEavg_sr = ((CMainView*)pView)->dEavg_sr;
+		dEmax_sr = ((CMainView*)pView)->dEmax_sr;
+		dEavg_sg = ((CMainView*)pView)->dEavg_sg;
+		dEmax_sg = ((CMainView*)pView)->dEmax_sg;
+		dEavg_sb = ((CMainView*)pView)->dEavg_sb;
+		dEmax_sb = ((CMainView*)pView)->dEmax_sb;
+		dEavg_sy = ((CMainView*)pView)->dEavg_sy;
+		dEmax_sy = ((CMainView*)pView)->dEmax_sy;
+		dEavg_sc = ((CMainView*)pView)->dEavg_sc;
+		dEmax_sc = ((CMainView*)pView)->dEmax_sc;
+		dEavg_sm = ((CMainView*)pView)->dEavg_sm;
+		dEmax_sm = ((CMainView*)pView)->dEmax_sm;
 		White = pDataRef->GetMeasure()->GetOnOffWhite().GetY();
 		Black = pDataRef->GetMeasure()->GetOnOffBlack().GetY();
 		if (Black > 0)
@@ -715,12 +945,12 @@ bool CExport::SavePDF()
 
 		HPDF_Page_SetLineWidth (page2, 5);
 		HPDF_Page_SetRGBStroke (page2, (HPDF_REAL)0.8, (HPDF_REAL)0.8, (HPDF_REAL)0.8);
-		draw_rect (page2, 3, 3, HPDF_Page_GetWidth (page2) - 6, HPDF_Page_GetHeight (page2) - 5, "");
+		draw_rect (page2, 3, 3, HPDF_Page_GetWidth (page2) - 6, HPDF_Page_GetHeight (page2) - 5, 10, "");
 		HPDF_Page_Stroke (page2);
 
 		HPDF_Page_SetLineWidth (page2, 2);
 		HPDF_Page_SetRGBStroke (page2, (HPDF_REAL)0.4, (HPDF_REAL)0.0, (HPDF_REAL)0.0);
-		draw_rect (page2, 6 + 300, 18, 298, 200, "Summary");
+		draw_rect (page2, 6 + 300, 18, 298, 200, 10, "Summary");
 		HPDF_Page_Stroke (page2);
 		
 		if (White > 0 && Black < 0.000001)
@@ -761,8 +991,49 @@ bool CExport::SavePDF()
 			dEform = " [CIE76(uv)]";
 			break;
 		}
+		dEform2 = GetConfig()->m_dE_form==5?" [CIE2000]":dEform;
 		dEform += GetConfig()->m_dE_gray==0?" [Relative Y]":(GetConfig ()->m_dE_gray == 1?" [Absolute Y w/gamma]":" [Absolute Y w/o gamma]");
 		HPDF_Page_ShowTextNextLine (page2, str + dEform);
+
+		nCount = pDataRef -> GetMeasure () -> GetGrayScaleSize ();
+		Gamma = GetConfig()->m_GammaAvg;
+		double Offset;
+		if (nCount > 0)
+		{
+			pDataRef->ComputeGammaAndOffset(&Gamma, &Offset, 1, 1, nCount, false);
+			sprintf(str,"Average measured gamma: %.2f",Gamma);
+		}
+		else
+		{
+			sprintf(str,"Average measured gamma: No data");
+		}
+		HPDF_Page_ShowTextNextLine (page2, str);
+
+		YWhite = pDataRef->GetMeasure()->GetOnOffWhite().GetY();
+		rColor = pDataRef->GetMeasure()->GetRedPrimary();
+		gColor = pDataRef->GetMeasure()->GetGreenPrimary();
+		bColor = pDataRef->GetMeasure()->GetBluePrimary();
+		yColor = pDataRef->GetMeasure()->GetYellowSecondary();
+		cColor = pDataRef->GetMeasure()->GetCyanSecondary();
+		mColor = pDataRef->GetMeasure()->GetMagentaSecondary();
+		dEr=0,dEg=0,dEb=0,dEy=0,dEc=0,dEm=0;
+		if (rColor.isValid())
+		 dEr = rColor.GetDeltaE(YWhite, pDataRef->GetMeasure()->GetRefPrimary(0), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+		if (gColor.isValid())
+		 dEg = gColor.GetDeltaE(YWhite, pDataRef->GetMeasure()->GetRefPrimary(1), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+		if (bColor.isValid())
+		 dEb = bColor.GetDeltaE(YWhite, pDataRef->GetMeasure()->GetRefPrimary(2), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+		if (yColor.isValid())
+		 dEy = yColor.GetDeltaE(YWhite, pDataRef->GetMeasure()->GetRefSecondary(0), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+		if (cColor.isValid())
+		 dEc = cColor.GetDeltaE(YWhite, pDataRef->GetMeasure()->GetRefSecondary(1), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+		if (mColor.isValid())
+		 dEm = mColor.GetDeltaE(YWhite, pDataRef->GetMeasure()->GetRefSecondary(2), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+	
+		sprintf(str,"Primary dE: Red %.2f, Green %.2f, Blue %.2f",dEr,dEg,dEb);
+		HPDF_Page_ShowTextNextLine (page2, str + dEform2);
+		sprintf(str,"Secondary dE: Yellow %.2f, Cyan %.2f, Magenta %.2f",dEy,dEc,dEm);
+		HPDF_Page_ShowTextNextLine (page2, str);
 
 		dEform = "Color checker sequence";
 		switch (GetConfig()->m_CCMode)
@@ -866,6 +1137,42 @@ bool CExport::SavePDF()
 		else
 			sprintf(str,"Colorchecker dE (Avg/Max): No data"+dEform);
 		HPDF_Page_ShowTextNextLine (page2, str);
+		if (dEavg_sr > 0)
+			sprintf(str,"Red Saturation dE (Avg/Max): %.2f/%.2f", dEavg_sr, dEmax_sr);
+		else
+			sprintf(str,"Red Saturation dE (Avg/Max): No data");
+		HPDF_Page_ShowTextNextLine (page2, str);
+
+		if (dEavg_sg > 0)
+			sprintf(str,"Green Saturation dE (Avg/Max): %.2f/%.2f", dEavg_sg, dEmax_sg);
+		else
+			sprintf(str,"Green Saturation dE (Avg/Max): No data");
+		HPDF_Page_ShowTextNextLine (page2, str);
+
+		if (dEavg_sb > 0)
+			sprintf(str,"Blue Saturation dE (Avg/Max): %.2f/%.2f", dEavg_sb, dEmax_sb);
+		else
+			sprintf(str,"Blue Saturation dE (Avg/Max): No data");
+		HPDF_Page_ShowTextNextLine (page2, str);
+
+		if (dEavg_sy > 0)
+			sprintf(str,"Yellow Saturation dE (Avg/Max): %.2f/%.2f", dEavg_sy, dEmax_sy);
+		else
+			sprintf(str,"Yellow Saturation dE (Avg/Max): No data");
+		HPDF_Page_ShowTextNextLine (page2, str);
+
+		if (dEavg_sc > 0)
+			sprintf(str,"Cyan Saturation dE (Avg/Max): %.2f/%.2f", dEavg_sc, dEmax_sc);
+		else
+			sprintf(str,"Cyan Saturation dE (Avg/Max): No data");
+		HPDF_Page_ShowTextNextLine (page2, str);
+
+		if (dEavg_sm > 0)
+			sprintf(str,"Magenta Saturation dE (Avg/Max): %.2f/%.2f", dEavg_sm, dEmax_sm);
+		else
+			sprintf(str,"Magenta Saturation dE (Avg/Max): No data");
+		HPDF_Page_ShowTextNextLine (page2, str);
+
 		HPDF_Page_EndText (page2);
 
 		draw_image (pdf, "logo.png", 6, HPDF_Page_GetHeight (page2) - 89,
@@ -917,8 +1224,120 @@ bool CExport::SavePDF()
 		pSat.m_graphCtrl.SaveGraphs(&pShift.m_graphCtrl, &pShift.m_graphCtrl2, NULL, FALSE, 3);	
 
 		draw_image2(pdf, "temp.png", 6 + 300, HPDF_Page_GetHeight (page2) - 320 - 230, "Saturation Sweep Luminance/Shifts");
+	//Color comparator
+		CColor aColor, aReference;
+		ColorRGB aMeasure, aRef, WhiteRGB;
+		i=0,j=0,k=0,mx=24,my=50;
+		nColors=GetConfig()->GetCColorsSize();
+		mi = nColors;
+		dE=0.0;
+		WhiteRGB = pDataRef->GetMeasure()->GetOnOffWhite().GetRGBValue(GetColorReference());
+		YWhite = pDataRef->GetMeasure()->GetPrimeWhite().GetY();
+		ri = 6;
 
-	}
+		if (nColors > 24)
+		{
+			mx = 24;
+			my = 33;
+			ri = 6; //6x6
+		}
+
+		if (nColors > 36)
+		{
+			mx = 18;
+			my = 33;
+			ri = 8; //8x6
+		}
+
+		if (nColors > 48)
+		{
+			mx = 18;
+			my = 25;
+			ri = 8; //8x8
+		}
+
+		if (nColors > 64)
+		{
+			mx = 12;
+			my = 25;
+			ri = 12;
+		}
+
+		if (nColors > 96)
+			mi = 96;
+	
+		for ( i=0; i<mi; i++)
+		{
+			aColor = pDataRef->GetMeasure()->GetCC24Sat(i);
+			aReference = pDataRef->GetMeasure()->GetRefCC24Sat(i);
+			aRef = pDataRef->GetMeasure()->GetRefCC24Sat(i).GetRGBValue(GetColorReference());
+
+			if (aColor.isValid())
+			{
+				aMeasure = pDataRef->GetMeasure()->GetCC24Sat(i).GetRGBValue(GetColorReference());
+				aMeasure[0]=pow((aMeasure[0]/WhiteRGB[0]), 1.0/2.2);
+				aMeasure[1]=pow((aMeasure[1]/WhiteRGB[1]), 1.0/2.2);
+				aMeasure[2]=pow((aMeasure[2]/WhiteRGB[2]), 1.0/2.2);
+				dE = aColor.GetDeltaE(YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+			}
+			else
+			{
+				aMeasure[0] = 0.5;
+				aMeasure[1] = 0.5;
+				aMeasure[2] = 0.5;
+			}
+			sprintf(str2,"%.2f",dE);
+
+			aRef[0]=pow(aRef[0],1.0/2.2);
+			aRef[1]=pow(aRef[1],1.0/2.2);
+			aRef[2]=pow(aRef[2],1.0/2.2);
+			aMeasure[0] = min(max(aMeasure[0],0),1);
+			aMeasure[1] = min(max(aMeasure[1],0),1);
+			aMeasure[2] = min(max(aMeasure[2],0),1);
+			aRef[0] = min(max(aRef[0],0),1);
+			aRef[1] = min(max(aRef[1],0),1);
+			aRef[2] = min(max(aRef[2],0),1);
+
+			if (i !=0)
+			{
+				if ((i % ri) == 0)
+				{
+					k = 0;
+					j++;
+				}
+				else
+				{
+					k++;
+				}
+			}
+
+			HPDF_Page_SetRGBFill (page2, (HPDF_REAL)aMeasure[0], (HPDF_REAL)aMeasure[1], (HPDF_REAL)aMeasure[2]);
+			draw_rect (page2, 10 + (mx * 2) * k, 20 + my * j, mx, my, 0, "");
+			HPDF_Page_Fill(page2);
+
+			if (aColor.GetY() / YWhite > .5)
+				HPDF_Page_SetRGBFill (page2, 0, 0, 0);
+			else
+				HPDF_Page_SetRGBFill (page2, (HPDF_REAL).9, (HPDF_REAL).9, (HPDF_REAL).9);
+			HPDF_Page_BeginText (page2);
+			HPDF_Page_MoveTextPos (page2, 11 + (mx * 2) * k, 22 + my * j);
+			HPDF_Page_SetFontAndSize (page2, font2, 5);
+			HPDF_Page_ShowText (page2, str2);
+			HPDF_Page_EndText (page2);
+
+			HPDF_Page_SetRGBFill (page2, (HPDF_REAL)aRef[0], (HPDF_REAL)aRef[1], (HPDF_REAL)aRef[2]);
+			draw_rect (page2, 10 + (mx * 2) * k + mx, 20 + my * j, mx, my, 0, "");
+			HPDF_Page_Fill(page2);
+		}
+	
+		HPDF_Page_SetRGBFill (page2, 0, 0, 0);
+		HPDF_Page_BeginText (page2);
+		HPDF_Page_MoveTextPos (page2, 10, 10);
+		HPDF_Page_SetFontAndSize (page2, font2, 9);
+		HPDF_Page_ShowText (page2, "Color Checker Comparator");
+		HPDF_Page_EndText (page2);
+
+		}
 	MemDC.DeleteDC();
 	MemDC2.DeleteDC();
 
