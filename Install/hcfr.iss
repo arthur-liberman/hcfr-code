@@ -76,8 +76,8 @@ Source: "..\Release\*.chm"; DestDir: "{app}"; Flags: ignoreversion; Components: 
 Source: "..\Install\Etalon_HCFR\*.thc"; DestDir: "{app}\Etalon_HCFR"; Flags: ignoreversion; Components: main
 Source: "..\Install\Profils_IR\*.ihc"; DestDir: "{app}\Profils_IR"; Flags: ignoreversion; Components: main
 Source: "..\Install\data\*.png"; DestDir: "{userappdata}\color"; Flags: ignoreversion; Components: main
-Source: "..\Install\data\usercolors.xls"; DestDir: "{app}"; Flags: ignoreversion; Components: main
-Source: "..\Install\data\*.xls"; DestDir: "{userappdata}\color"; Flags: ignoreversion; Components: main
+Source: "..\Install\data\usercolors.csv"; DestDir: "{app}"; Flags: ignoreversion; Components: main
+Source: "..\Install\data\*.csv"; DestDir: "{userappdata}\color"; Flags: ignoreversion; Components: main
 Source: "..\Install\color\*.*"; DestDir: "{userappdata}\color"; Flags: ignoreversion; Components: main
 Source: "..\Tools\usb\*.cat"; DestDir: "{app}\Drivers"; Flags: ignoreversion; Components: main
 Source: "..\Tools\usb\*.inf"; DestDir: "{app}\Drivers"; Flags: ignoreversion; Components: main
