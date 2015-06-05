@@ -272,7 +272,9 @@ void DrawBlackBodyCurve ( CDC* pDC, int cxMax, int cyMax, BOOL doFullChart, BOOL
 
 			xCie = uCie;
 			yCie = vCie;
-		}
+		} //else if (bCIELab)
+//		{
+//		}
 
 		pt [ i ].x = (int) ( ( xCie / (bCIEuv ? 0.7 : 0.8) ) * (double) cxMax );
 		pt [ i ].y = (int) ( ( 1.0 - ( yCie / (bCIEuv ? 0.7 : 0.9) ) ) * (double) cyMax );

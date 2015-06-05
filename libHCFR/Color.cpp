@@ -2502,21 +2502,46 @@ double GrayLevelToGrayProp ( double Level, bool m_bUseRoundDown)
 //		return Level = (floor(Level / 100.0 * 219.0 + 16.5) - 16.0) / 219.0;
 }
 
-double GetBT1886 ( double valx, CColor White, CColor Black, double g_rel, double split)
+double getEOTF ( double valx, CColor White, CColor Black, double g_rel, double split, int mode)
 {
-    double maxL = White.GetY();
-    double minL = Black.GetY();
+//BT1886
+	double maxL = White.isValid()?White.GetY():100.0;
+	double minL = Black.isValid()?Black.GetY():0.0;
     double yh =  maxL * pow(0.5, g_rel);
     double exp0 = g_rel==0.0?2.4:g_rel;
 	double outL, Lbt, offset;
+//SMPTE2084
+	double m1=0.1593017578125;
+    double m2=78.84375;
+    double c1=0.8359375;
+    double c2=18.8515625;
+	double c3=18.6875;
+//sRGB
+	double outL_sRGB;
+    if( valx <= 0.04045 ) {
+        outL_sRGB = valx / 12.92;
+    }
+    else
+		outL_sRGB = pow( ( valx + 0.055 ) / 1.055, 2.4 );
 
 	offset = split / 100.0 * minL;
     double a = pow ( ( pow (maxL,1.0/exp0 ) - pow ( offset,1.0/exp0 ) ),exp0 );
     double b = ( pow ( offset,1.0/exp0 ) ) / ( pow (maxL,1.0/exp0 ) - pow ( offset,1.0/exp0 ) );
     if (g_rel != 0.)
         exp0 = (log(yh)-log(a))/log(0.5+b);
-
 	Lbt = ( a * pow ( (valx + b)<0?0:(valx+b), exp0 ) );
-	outL = (Lbt + minL * (1 - split / 100.))/(maxL + minL * (1 - split / 100.)) * maxL;
-    return outL / maxL;
+
+	switch (mode)
+	{
+		case 4:
+		outL = (Lbt + minL * (1 - split / 100.))/(maxL + minL * (1 - split / 100.));
+		break;
+		case 5:
+		outL = pow(max(pow(valx,1.0 / m2) - c1,0) / (c2 - c3 * pow(valx, 1.0 / m2)), 1.0 / m1);
+		break;
+		case 6:
+		outL = outL_sRGB;
+	}
+    
+	return outL;
 }

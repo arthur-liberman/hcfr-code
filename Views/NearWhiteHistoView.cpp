@@ -156,8 +156,10 @@ void CNearWhiteGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 			double val=pow(valx,GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef) );
 
-            if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
-                val = GetBT1886(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split);
+			int mode = GetConfig()->m_GammaOffsetType;
+			if (GetConfig()->m_colorStandard == sRGB) mode = 6;
+			if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
+                val = getEOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 /*
 			if ( GetConfig()->m_bUseReferenceGamma )
 			{

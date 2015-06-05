@@ -55,6 +55,7 @@ public:
 	double	L;
 	CString name;
 	BOOL	bCIEuv;
+	BOOL	bCIELab;
     ColorXYZ m_color;
 };
 

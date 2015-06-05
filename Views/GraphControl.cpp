@@ -1060,7 +1060,7 @@ void CGraphControl::SaveGraphFile ( CSize ImageSize, LPCSTR lpszPathName, int Im
 	{
 		CRect halfRect1(CPoint(0,0),CSize(rect.Width(),(rect.Height()/(NbOtherGraphs+1))+1));
 		DrawBackground(&MemDC,halfRect1, do_Gradient?FALSE:TRUE);
-		DrawAxis(&MemDC,halfRect1,GetConfig()->m_bWhiteBkgndOnFile);
+		DrawAxis(&MemDC,halfRect1,GetConfig()->m_bWhiteBkgndOnFile && !do_Gradient);
 		DrawGraphs(&MemDC,halfRect1);
 
 		for (i = 0; i < NbOtherGraphs ; i ++ )
@@ -1088,7 +1088,7 @@ void CGraphControl::SaveGraphFile ( CSize ImageSize, LPCSTR lpszPathName, int Im
 				
 				DrawFiligree ( &MemDC, halfRect2, clr );
 			}
-			pOtherGraphs [ i ]->DrawAxis(&MemDC,halfRect2,GetConfig()->m_bWhiteBkgndOnFile);
+			pOtherGraphs [ i ]->DrawAxis(&MemDC,halfRect2,GetConfig()->m_bWhiteBkgndOnFile& !do_Gradient);
 			pOtherGraphs [ i ]->DrawGraphs(&MemDC,halfRect2);
 		}
 	}

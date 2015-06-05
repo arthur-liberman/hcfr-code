@@ -1487,6 +1487,7 @@ BOOL CAboutDlg::OnInitDialog()
     s+=CString(classesStyle)+ "libyajl (c) Lloyd Hilaiel</font>";
     s+=CString(classesStyle)+ "libaxTLS (c) Cameron Rich</font>";
     s+=CString(classesStyle)+ "ximatif (c) Davide Pizzolato</font>";
+    s+=CString(classesStyle)+ "libhpdf (Haru) (c) 1999-2006 Takeshi Kanno</font>";
 
     s += "<vspace size='80'>"; 
     s += "<font align='center'><p>-----------------------------<p></font>";

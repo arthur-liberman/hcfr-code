@@ -115,7 +115,7 @@ void CReferencesPropPage::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CReferencesPropPage, CPropertyPageWithHelp)
 	//{{AFX_MSG_MAP(CReferencesPropPage)
-    ON_CONTROL_RANGE(BN_CLICKED, IDC_GAMMA_OFFSET_RADIO1, IDC_GAMMA_OFFSET_RADIO5, OnControlClicked)
+    ON_CONTROL_RANGE(BN_CLICKED, IDC_GAMMA_OFFSET_RADIO1, IDC_GAMMA_OFFSET_RADIO6, OnControlClicked)
     ON_CONTROL_RANGE(CBN_SELCHANGE, IDC_WHITETARGET_COMBO, IDC_WHITETARGET_COMBO, OnControlClicked)
 	ON_BN_CLICKED(IDC_CHECK_COLORS, OnCheckColors)
 	ON_EN_CHANGE(IDC_EDIT_IRIS_TIME, OnChangeEditIrisTime)
@@ -145,7 +145,7 @@ END_MESSAGE_MAP()
 void CReferencesPropPage::OnControlClicked(UINT nID) 
 {
 	UpdateData(TRUE);
-	if (m_GammaOffsetType == 4)
+	if (m_GammaOffsetType >= 4 || GetConfig()->m_colorStandard == sRGB)
     {
   	  m_GammaRefEdit.EnableWindow (FALSE);
       m_eMeasuredGamma.EnableWindow (FALSE);
@@ -213,6 +213,18 @@ BOOL CReferencesPropPage::OnInitDialog()
 	CPropertyPageWithHelp::OnInitDialog();
 
 	// TODO: Add extra initialization here
+	if (m_colorStandard == sRGB)
+	{
+		GetDlgItem(IDC_GAMMA_OFFSET_RADIO1)->EnableWindow(FALSE);
+		GetDlgItem(IDC_GAMMA_OFFSET_RADIO2)->EnableWindow(FALSE);
+		GetDlgItem(IDC_GAMMA_OFFSET_RADIO3)->EnableWindow(FALSE);
+		GetDlgItem(IDC_GAMMA_OFFSET_RADIO4)->EnableWindow(FALSE);
+		GetDlgItem(IDC_GAMMA_OFFSET_RADIO5)->EnableWindow(FALSE);
+		GetDlgItem(IDC_GAMMA_OFFSET_RADIO6)->EnableWindow(FALSE);
+		m_GammaRefEdit.EnableWindow (FALSE);
+		m_eMeasuredGamma.EnableWindow (FALSE);
+ 		m_manualGOffset = 0.055;
+	}
 	m_GammaAvgEdit.EnableWindow(FALSE);
 	m_changeWhiteCheck = (m_whiteTarget!=(int)(GetStandardColorReference((ColorStandard)(m_colorStandard)).m_white));
 	if(m_changeWhiteCheck)
@@ -246,7 +258,7 @@ BOOL CReferencesPropPage::OnInitDialog()
     }
 	if (m_useMeasuredGamma)
 		CheckRadioButton ( IDC_USE_MEASURED_GAMMA, IDC_USE_MEASURED_GAMMA, IDC_USE_MEASURED_GAMMA );
-	if (GetConfig ()->m_GammaOffsetType == 4)
+	if (GetConfig ()->m_GammaOffsetType >= 4)
     {
   	  m_GammaRefEdit.EnableWindow (FALSE);
   	  m_eMeasuredGamma.EnableWindow (FALSE);
@@ -311,9 +323,29 @@ void CReferencesPropPage::OnSelchangeColorrefCombo()
 	SetModified(TRUE);
 	UpdateData(TRUE);	
 	if (m_colorStandard == sRGB)
-		m_manualGOffset = 0.055;
+	{
+		GetDlgItem(IDC_GAMMA_OFFSET_RADIO1)->EnableWindow(FALSE);
+		GetDlgItem(IDC_GAMMA_OFFSET_RADIO2)->EnableWindow(FALSE);
+		GetDlgItem(IDC_GAMMA_OFFSET_RADIO3)->EnableWindow(FALSE);
+		GetDlgItem(IDC_GAMMA_OFFSET_RADIO4)->EnableWindow(FALSE);
+		GetDlgItem(IDC_GAMMA_OFFSET_RADIO5)->EnableWindow(FALSE);
+		GetDlgItem(IDC_GAMMA_OFFSET_RADIO6)->EnableWindow(FALSE);
+		m_GammaRefEdit.EnableWindow (FALSE);
+		m_eMeasuredGamma.EnableWindow (FALSE);
+ 		m_manualGOffset = 0.055;
+	}
 	else
+	{
+		GetDlgItem(IDC_GAMMA_OFFSET_RADIO1)->EnableWindow(TRUE);
+		GetDlgItem(IDC_GAMMA_OFFSET_RADIO2)->EnableWindow(TRUE);
+		GetDlgItem(IDC_GAMMA_OFFSET_RADIO3)->EnableWindow(TRUE);
+		GetDlgItem(IDC_GAMMA_OFFSET_RADIO4)->EnableWindow(TRUE);
+		GetDlgItem(IDC_GAMMA_OFFSET_RADIO5)->EnableWindow(TRUE);
+		GetDlgItem(IDC_GAMMA_OFFSET_RADIO6)->EnableWindow(TRUE);
+		m_GammaRefEdit.EnableWindow (TRUE);
+		m_eMeasuredGamma.EnableWindow (TRUE);
 		m_manualGOffset = 0.099;
+	}
 	if (m_colorStandard == CC6)
 		m_CCMode = GCD;
 //	if (m_colorStandard == CC6a)

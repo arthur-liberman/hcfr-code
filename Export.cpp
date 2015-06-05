@@ -1544,10 +1544,12 @@ bool CExport::SaveGrayScaleSheet()
             double valy;
     		CColor White = m_pDoc -> GetMeasure () -> GetGray ( size - 1 );
 	    	CColor Black = m_pDoc -> GetMeasure () -> GetGray ( 0 );
-            if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
+			int mode = GetConfig()->m_GammaOffsetType;
+			if (GetConfig()->m_colorStandard == sRGB) mode = 6;
+			if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
 			{
 				double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
-                valy = GetBT1886(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split);
+                valy = getEOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 			 }
 			 else
 			 {

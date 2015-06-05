@@ -51,7 +51,7 @@ CFullScreenWindow::CFullScreenWindow(BOOL bTestOverlay)
 	m_bDisableCursorHiding = FALSE;
 	m_b16_235 = GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0);
 	m_busePic = GetConfig()->GetProfileInt("GDIGenerator","USEPIC",0);
-	m_bdispTrip = GetConfig()->GetProfileInt("GDIGenerator","DISPLAYTRIPLETS",0);
+	m_bdispTrip = GetConfig()->GetProfileInt("GDIGenerator","DISPLAYTRIPLETS",1);
 
 	// Overlay data
 	m_lpDD = NULL;
@@ -771,7 +771,7 @@ void CFullScreenWindow::OnPaint()
 	CPaintDC	dc(this); // device context for painting
 	BOOL	isSpecial = (m_bPatternMode || m_bHLines || m_bVLines || m_bGeom || m_bConv || m_bColorPattern || m_bColorLevel || m_bPatternPict || m_bAnimated);
 	m_busePic = GetConfig()->GetProfileInt("GDIGenerator","USEPIC",0);
-	m_bdispTrip = GetConfig()->GetProfileInt("GDIGenerator","DISPLAYTRIPLETS",0);
+	m_bdispTrip = GetConfig()->GetProfileInt("GDIGenerator","DISPLAYTRIPLETS",1);
 
 	GetClientRect ( &rect );
 	double m_rectAreaPercent, borderArea;

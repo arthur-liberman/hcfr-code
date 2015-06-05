@@ -58,11 +58,18 @@ CCIEGraphPoint::CCIEGraphPoint(const ColorXYZ& color, double WhiteYRef, CString 
     ColorLab colorLab(color, 1.0, GetColorReference());
     double aX = colorxyY[0]; 
     double aY = colorxyY[1];
-    double aL = colorLab[0]; 
+    double aLaba = colorLab[1]; 
+    double aLabb = colorLab[2]; 
+	bCIELab = FALSE;
 	if ( bCIEuv )
 	{
 		x = ( 4.0 * aX ) / ( (-2.0 * aX ) + ( 12.0 * aY ) + 3.0 );
 		y = ( 9.0 * aY ) / ( (-2.0 * aX ) + ( 12.0 * aY ) + 3.0 );
+	}
+	else if (bCIELab)
+	{
+		x = aLaba; 
+		y = aLabb; 
 	}
 	else
 	{
@@ -642,8 +649,10 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 		r[i]=rgb[i][0];
 		g[i]=rgb[i][1];
 		b[i]=rgb[i][2];
-        if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
-           gamma = log(GetBT1886(pow(aColor[i].GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(aColor[i].GetY(),1.0/2.22));
+		int mode = GetConfig()->m_GammaOffsetType;
+		if (GetConfig()->m_colorStandard == sRGB) mode = 6;
+        if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
+           gamma = log(getEOTF(pow(aColor[i].GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(aColor[i].GetY(),1.0/2.22));
         r1=(r[i]<=0||r[i]>=1)?min(max(r[i],0),1):pow(pow(r[i],1.0/2.22),gamma);
         g1=(g[i]<=0||g[i]>=1)?min(max(g[i],0),1):pow(pow(g[i],1.0/2.22),gamma);
         b1=(b[i]<=0||b[i]>=1)?min(max(b[i],0),1):pow(pow(b[i],1.0/2.22),gamma);
@@ -1009,10 +1018,12 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 				double x = ArrayIndexToGrayLevel ( i, nSize, GetConfig () -> m_bUseRoundDown );
     			CColor White = pDoc -> GetMeasure () -> GetGray ( nSize - 1 );
 	    		CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
-                if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
+				int mode = GetConfig()->m_GammaOffsetType;
+				if (GetConfig()->m_colorStandard == sRGB) mode = 6;
+				if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
 			    {
 				   double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
-                   valy = GetBT1886(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split);
+                   valy = getEOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 			    }
 			    else
 			    {
@@ -2269,11 +2280,13 @@ void CCIEChartView::UpdateTestColor ( CPoint point )
 
 		RGBColor = ClickedColor.GetRGBValue ((GetColorReference()));
         double r=RGBColor[0],g=RGBColor[1],b=RGBColor[2];
-        if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid()) 
+		int mode = GetConfig()->m_GammaOffsetType;
+		if (GetConfig()->m_colorStandard == sRGB) mode = 6;
+        if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
         {
-    		r = (r<=0||r>=1)?min(max(r,0),1):pow(r,log(GetBT1886(r, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(r));
-	    	g = (g<=0||g>=1)?min(max(g,0),1):pow(g,log(GetBT1886(g, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(g));
-		    b = (b<=0||b>=1)?min(max(b,0),1):pow(b,log(GetBT1886(b, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(b));
+    		r = (r<=0||r>=1)?min(max(r,0),1):pow(r,log(getEOTF(r, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(r));
+	    	g = (g<=0||g>=1)?min(max(g,0),1):pow(g,log(getEOTF(g, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(g));
+		    b = (b<=0||b>=1)?min(max(b,0),1):pow(b,log(getEOTF(b, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(b));
         }
         else
         {

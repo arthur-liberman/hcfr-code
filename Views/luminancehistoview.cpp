@@ -176,14 +176,14 @@ void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		{
 			double x, valx, valy;
 			x = ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown);
-//    		CColor White = pDoc -> GetMeasure () -> GetGray ( size - 1 );
-//	    	CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
     		CColor White = pDoc -> GetMeasure () -> GetOnOffWhite();
 	    	CColor Black = pDoc -> GetMeasure () -> GetOnOffBlack();
-            if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
+			int mode = GetConfig()->m_GammaOffsetType;
+			if (GetConfig()->m_colorStandard == sRGB) mode = 6;
+			if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
 			{
 				valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
-                valy = GetBT1886(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split);
+                valy = getEOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 			}
 			else
             {

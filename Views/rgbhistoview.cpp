@@ -164,16 +164,18 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 				{
             		CColor White = pDoc -> GetMeasure () -> GetOnOffWhite();
 	            	CColor Black = pDoc -> GetMeasure () -> GetOnOffBlack();
-                    if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
-			            {
-				            double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
-                            valy = GetBT1886(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split);
-			            }
-			            else
-			            {
-				            double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
-				            valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
-			            }
+					int mode = GetConfig()->m_GammaOffsetType;
+					if (GetConfig()->m_colorStandard == sRGB) mode = 6;
+					if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
+			        {
+				        double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
+                        valy = getEOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+			        }
+			        else
+			        {
+				        double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
+				        valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
+			        }
 
                     ColorxyY tmpColor(GetColorReference().GetWhite());
 					tmpColor[2] = valy;
@@ -233,10 +235,12 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
             		CColor White = pDoc -> GetMeasure () -> GetOnOffWhite();
 	            	CColor Black = pDoc -> GetMeasure () -> GetOnOffBlack();
                     double valxref,valyref;
-                    if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
+					int mode = GetConfig()->m_GammaOffsetType;
+					if (GetConfig()->m_colorStandard == sRGB) mode = 6;
+					if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
                     {
     					valxref=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown));
-                        valyref = GetBT1886(valxref, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split);
+                        valyref = getEOTF(valxref, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
                     }
                     else
                     {

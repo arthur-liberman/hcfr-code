@@ -1917,10 +1917,12 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 //							yblack = GetDocument() -> GetMeasure () -> GetGray ( 0 ).GetY ();
 
 						x = ArrayIndexToGrayLevel ( nCol - 1, nGrayScaleSize, GetConfig () -> m_bUseRoundDown );
-                        if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
+						int mode = GetConfig()->m_GammaOffsetType;
+						if (GetConfig()->m_colorStandard == sRGB) mode = 6;
+						if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
 						{
 							valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
-                            valy = GetBT1886(valx,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split) * White.GetY();
+                            valy = getEOTF(valx,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) * White.GetY();
 							str.Format ( "%.3f", valy );
 						}
 						else
@@ -2452,10 +2454,12 @@ void CMainView::UpdateGrid()
 //            		    CColor White = GetDocument() -> GetMeasure () -> GetGray ( nCount - 1 );
             		    CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
 	                	CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
-                        if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid() )
+						int mode = GetConfig()->m_GammaOffsetType;
+						if (GetConfig()->m_colorStandard == sRGB) mode = 6;
+						if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
 			            {
                             double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
-                            valy = GetBT1886(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split);
+                            valy = getEOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 			            }
 			            else
 			            {

@@ -493,8 +493,10 @@ void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, cons
 	rgb=isSpecial?aColor.GetRGBValue(CColorReference(HDTV)):aColor.GetRGBValue (GetColorReference());
 	double r=rgb[0],g=rgb[1],b=rgb[2];
 
-	if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
-        gamma = log(GetBT1886(pow(aColor.GetY() * pow(Intensity,2.22),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split))/log(pow(aColor.GetY()*pow(Intensity,2.22),1.0/2.22));
+	int mode = GetConfig()->m_GammaOffsetType;
+	if (GetConfig()->m_colorStandard == sRGB) mode = 6;
+	if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
+        gamma = log(getEOTF(pow(aColor.GetY() * pow(Intensity,2.22),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(aColor.GetY()*pow(Intensity,2.22),1.0/2.22));
 
 	r=(r<=0||r>=1)?min(max(r,0),1):pow(pow(r,1.0/2.22),gamma);
     g=(g<=0||g>=1)?min(max(g,0),1):pow(pow(g,1.0/2.22),gamma);

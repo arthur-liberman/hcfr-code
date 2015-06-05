@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by CHCFR21_ENGLISH.rc
+// Used by CHCFR21_FRANCAIS.rc
 //
 #define IDS_STRING_VERSION              1
 #define IDS_STRING_VERSION_WEB          2
@@ -628,14 +628,15 @@
 #define IDC_LUXMETER_COM_COMBO          1218
 #define IDC_BLUE_1                      1219
 #define IDC_NEWIRPROFILE                1219
-#define IDC_dE_COMBO                    1219
 #define IDC_COMBO_dE                    1219
+#define IDC_GAMMA_OFFSET_RADIO6         1219
 #define IDC_BLUE_2                      1220
 #define IDC_COMBO_dE_GRAY               1220
 #define IDC_BLUE_3                      1221
 #define IDC_MODIFYIRPROFILE             1221
 #define IDC_COMBO_dE_GRAY2              1221
 #define IDC_COMBO_dE_WEIGHT             1221
+#define IDC_GAMMA_OFFSET_RADIO7         1221
 #define IDC_WHITE_1                     1222
 #define IDC_IRPROFILE_LIST              1222
 #define IDC_WHITE_2                     1223

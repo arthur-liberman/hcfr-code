@@ -358,7 +358,7 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_doXpBlending=GetProfileInt("Appearance","DoXpBlending",FALSE);
 	m_doGlooming=GetProfileInt("Appearance","DoGlooming",FALSE);
 	m_bWhiteBkgndOnScreen=GetProfileInt("Appearance","WhiteBkgndOnScreen",FALSE);
-	m_bWhiteBkgndOnFile=GetProfileInt("Appearance","WhiteBkgndOnFile",TRUE);
+	m_bWhiteBkgndOnFile=GetProfileInt("Appearance","WhiteBkgndOnFile",FALSE);
 	m_bmoveMessage=GetProfileInt("Appearance","MoveMessage",FALSE);
 	m_useCustomColor=GetProfileInt("Appearance","UseCustomColor",FALSE);
 	m_fxColorWindow=GetProfileColor("Appearance","Window Color");
@@ -370,7 +370,7 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_TBViewsMiddleClickMode = GetProfileInt("Advanced","TBViewsMiddleClickMode",1);
 	m_bConfirmMeasures = GetProfileInt("Advanced","ConfirmMeasures",1);
 	m_bUseOnlyPrimaries = GetProfileInt("Advanced","UseOnlyPrimaries",0);
-	doHighlight = GetProfileInt("Advanced","Highlight",0);
+	doHighlight = GetProfileInt("Advanced","Highlight",1);
 	m_bUseImperialUnits = GetProfileInt("Advanced","UseImperialUnits",0);
 	m_nLuminanceCurveMode = GetProfileInt("Advanced","LuminanceCurveMode",0);
 	m_bPreferLuxmeter = GetProfileInt("Advanced","PreferLuxmeter",0);
