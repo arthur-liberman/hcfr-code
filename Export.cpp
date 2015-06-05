@@ -1630,7 +1630,7 @@ bool CExport::SavePrimariesSheet()
 	result&=primariesSS.AddHeaders(Rows,true);
 
 	if(m_doReplace)
-		rowNb=(m_numToReplace-1)*6+2;
+		rowNb=(m_numToReplace-1)*7+2;
 	else
 		rowNb=primariesSS.GetTotalRows()+1;
 
@@ -1667,6 +1667,7 @@ bool CExport::SavePrimariesSheet()
 	Rows.Add(dEc);
 	Rows.Add(dEm);
 	result&=primariesSS.AddRow(Rows,rowNb,m_doReplace);
+	rowNb++;
 
 	result&=primariesSS.Commit();
 	if(!result)
@@ -1910,7 +1911,8 @@ bool CExport::SaveCCSheet()
 	Rows.Add("Measure");
 	int size;
 	BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR);
-    if (isExtPat)
+
+	if (isExtPat)
 		size = GetConfig()->GetCColorsSize();
     else
         size = GetConfig()->m_CCMode==CCSG?96:GetConfig()->m_CCMode==CMS||GetConfig()->m_CCMode==CPS?19:(GetConfig()->m_CCMode==AXIS?71:24);
@@ -1918,162 +1920,140 @@ bool CExport::SaveCCSheet()
 	size=min(size,254); //maximum of 256 columns
 	for(i=0;i<size;i++)
 	{
-				if (GetConfig()->m_CCMode == CCSG)
-                 {
-					Rows.Add(PatName[i],CRowArray::floatType);
-                 } 
-                 else if (GetConfig()->m_CCMode == CMS)
-                 {
-                    Rows.Add(PatNameCMS[i], CRowArray::floatType);
-                 }
-                 else if (GetConfig()->m_CCMode == CPS)
-                 {
-                    Rows.Add(PatNameCPS[i], CRowArray::floatType);
-                 }
-                 else if (GetConfig()->m_CCMode == AXIS)
-                 {
-                    Rows.Add(PatNameAXIS[i], CRowArray::floatType);
-                 }
-                 else if (isExtPat)
-                 {
-                     char aBuf[50];
-					 std::string name = GetConfig()->GetCColorsN(i);
-                     sprintf(aBuf,"%s", name.c_str());
-                     Rows.Add(aBuf, CRowArray::floatType);
-                 }
-                 else {
-                     char aBuf[50];
-				 switch ( i )
-				 {
-					 case 0:
-	                    sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_1a:(GetConfig()->m_CCMode == SKIN?IDS_CC_1b:IDS_CC_1));
-						Rows.Add(aBuf, CRowArray::floatType);
+		if (GetConfig()->m_CCMode == CCSG)
+        {
+			Rows.Add(PatName[i],CRowArray::floatType);
+        } 
+        else if (GetConfig()->m_CCMode == CMS)
+        {
+            Rows.Add(PatNameCMS[i], CRowArray::floatType);
+        }
+        else if (GetConfig()->m_CCMode == CPS)
+        {
+            Rows.Add(PatNameCPS[i], CRowArray::floatType);
+        }
+        else if (GetConfig()->m_CCMode == AXIS)
+        {
+            Rows.Add(PatNameAXIS[i], CRowArray::floatType);
+        }
+        else if (isExtPat)
+        {
+            char aBuf[50];
+			std::string name = GetConfig()->GetCColorsN(i);
+            sprintf(aBuf,"%s", name.c_str());
+            Rows.Add(aBuf, CRowArray::floatType);
+        }
+        else 
+		{
+			CString msg;
+			switch ( i )
+			{
+				case 0:
+						msg.LoadStringA(GetConfig()->m_CCMode == CMC?IDS_CC_1a:(GetConfig()->m_CCMode == SKIN?IDS_CC_1b:IDS_CC_1));
+						Rows.Add(msg, CRowArray::floatType);
 						break;
-
-					 case 1:
-						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_2a:(GetConfig()->m_CCMode == SKIN?IDS_CC_2b:IDS_CC_2));
-						Rows.Add(aBuf, CRowArray::floatType);
+				case 1:
+						msg.LoadStringA(GetConfig()->m_CCMode == CMC?IDS_CC_2a:(GetConfig()->m_CCMode == SKIN?IDS_CC_2b:IDS_CC_2));
+						Rows.Add(msg, CRowArray::floatType);
 						break;
-
-					 case 2:
-						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_3a:(GetConfig()->m_CCMode == SKIN?IDS_CC_3b:IDS_CC_3));
-						Rows.Add(aBuf, CRowArray::floatType);
+				case 2:
+						msg.LoadStringA(GetConfig()->m_CCMode == CMC?IDS_CC_3a:(GetConfig()->m_CCMode == SKIN?IDS_CC_3b:IDS_CC_3));
+						Rows.Add(msg, CRowArray::floatType);
 						break;
-
-					 case 3:
-						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_4a:(GetConfig()->m_CCMode == SKIN?IDS_CC_4b:IDS_CC_4));
-						Rows.Add(aBuf, CRowArray::floatType);
+				case 3:
+						msg.LoadStringA(GetConfig()->m_CCMode == CMC?IDS_CC_4a:(GetConfig()->m_CCMode == SKIN?IDS_CC_4b:IDS_CC_4));
+						Rows.Add(msg, CRowArray::floatType);
 						break;
-
-					 case 4:
-						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_5a:(GetConfig()->m_CCMode == SKIN?IDS_CC_5b:IDS_CC_5));
-						Rows.Add(aBuf, CRowArray::floatType);
+				case 4:
+						msg.LoadStringA(GetConfig()->m_CCMode == CMC?IDS_CC_5a:(GetConfig()->m_CCMode == SKIN?IDS_CC_5b:IDS_CC_5));
+						Rows.Add(msg, CRowArray::floatType);
 						break;
-
-					 case 5:
-						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_6a:(GetConfig()->m_CCMode == SKIN?IDS_CC_6b:IDS_CC_6));
-						Rows.Add(aBuf, CRowArray::floatType);
+				case 5:
+						msg.LoadStringA(GetConfig()->m_CCMode == CMC?IDS_CC_6a:(GetConfig()->m_CCMode == SKIN?IDS_CC_6b:IDS_CC_6));
+						Rows.Add(msg, CRowArray::floatType);
 						break;
-
-					 case 6:
-						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_7a:(GetConfig()->m_CCMode == SKIN?IDS_CC_7b:IDS_CC_7));
-						Rows.Add(aBuf, CRowArray::floatType);
+				case 6:
+						msg.LoadStringA(GetConfig()->m_CCMode == CMC?IDS_CC_7a:(GetConfig()->m_CCMode == SKIN?IDS_CC_7b:IDS_CC_7));
+						Rows.Add(msg, CRowArray::floatType);
 						break;
-
-					 case 7:
-						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_8a:(GetConfig()->m_CCMode == SKIN?IDS_CC_8b:IDS_CC_8));
-						Rows.Add(aBuf, CRowArray::floatType);
+				case 7:
+						msg.LoadStringA(GetConfig()->m_CCMode == CMC?IDS_CC_8a:(GetConfig()->m_CCMode == SKIN?IDS_CC_8b:IDS_CC_8));
+						Rows.Add(msg, CRowArray::floatType);
 						break;
-
-					 case 8:
-						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_9a:(GetConfig()->m_CCMode == SKIN?IDS_CC_9b:IDS_CC_9));
-						Rows.Add(aBuf, CRowArray::floatType);
+				case 8:
+						msg.LoadStringA(GetConfig()->m_CCMode == CMC?IDS_CC_9a:(GetConfig()->m_CCMode == SKIN?IDS_CC_9b:IDS_CC_9));
+						Rows.Add(msg, CRowArray::floatType);
 						break;
-
-					 case 9:
-						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_10a:(GetConfig()->m_CCMode == SKIN?IDS_CC_10b:IDS_CC_10));
-						Rows.Add(aBuf, CRowArray::floatType);
+				case 9:
+						msg.LoadStringA(GetConfig()->m_CCMode == CMC?IDS_CC_10a:(GetConfig()->m_CCMode == SKIN?IDS_CC_10b:IDS_CC_10));
+						Rows.Add(msg, CRowArray::floatType);
 						break;
-
-					 case 10:
-						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_11a:(GetConfig()->m_CCMode == SKIN?IDS_CC_11b:IDS_CC_11));
-						Rows.Add(aBuf, CRowArray::floatType);
+				case 10:
+						msg.LoadStringA(GetConfig()->m_CCMode == CMC?IDS_CC_11a:(GetConfig()->m_CCMode == SKIN?IDS_CC_11b:IDS_CC_11));
+						Rows.Add(msg, CRowArray::floatType);
 						break;
-
-					 case 11:
-						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_12a:(GetConfig()->m_CCMode == SKIN?IDS_CC_12b:IDS_CC_12));
-						Rows.Add(aBuf, CRowArray::floatType);
+				case 11:
+						msg.LoadStringA(GetConfig()->m_CCMode == CMC?IDS_CC_12a:(GetConfig()->m_CCMode == SKIN?IDS_CC_12b:IDS_CC_12));
+						Rows.Add(msg, CRowArray::floatType);
 						break;
-
-					 case 12:
-						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_13a:(GetConfig()->m_CCMode == SKIN?IDS_CC_13b:IDS_CC_13));
-						Rows.Add(aBuf, CRowArray::floatType);
+				case 12:
+						msg.LoadStringA(GetConfig()->m_CCMode == CMC?IDS_CC_13a:(GetConfig()->m_CCMode == SKIN?IDS_CC_13b:IDS_CC_13));
+						Rows.Add(msg, CRowArray::floatType);
 						break;
-
-					 case 13:
-						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_14a:(GetConfig()->m_CCMode == SKIN?IDS_CC_14b:IDS_CC_14));
-						Rows.Add(aBuf, CRowArray::floatType);
+				case 13:
+						msg.LoadStringA(GetConfig()->m_CCMode == CMC?IDS_CC_14a:(GetConfig()->m_CCMode == SKIN?IDS_CC_14b:IDS_CC_14));
+						Rows.Add(msg, CRowArray::floatType);
 						break;
-
-					 case 14:
-						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_15a:(GetConfig()->m_CCMode == SKIN?IDS_CC_15b:IDS_CC_15));
-						Rows.Add(aBuf, CRowArray::floatType);
+				case 14:
+						msg.LoadStringA(GetConfig()->m_CCMode == CMC?IDS_CC_15a:(GetConfig()->m_CCMode == SKIN?IDS_CC_15b:IDS_CC_15));
+						Rows.Add(msg, CRowArray::floatType);
 						break;
-
-					 case 15:
-						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_16a:(GetConfig()->m_CCMode == SKIN?IDS_CC_16b:IDS_CC_16));
-						Rows.Add(aBuf, CRowArray::floatType);
+				case 15:
+						msg.LoadStringA(GetConfig()->m_CCMode == CMC?IDS_CC_16a:(GetConfig()->m_CCMode == SKIN?IDS_CC_16b:IDS_CC_16));
+						Rows.Add(msg, CRowArray::floatType);
 						break;
-
-					 case 16:
-						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_17a:(GetConfig()->m_CCMode == SKIN?IDS_CC_17b:IDS_CC_17));
-						Rows.Add(aBuf, CRowArray::floatType);
+				case 16:
+						msg.LoadStringA(GetConfig()->m_CCMode == CMC?IDS_CC_17a:(GetConfig()->m_CCMode == SKIN?IDS_CC_17b:IDS_CC_17));
+						Rows.Add(msg, CRowArray::floatType);
 						break;
-
-					 case 17:
-						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_18a:(GetConfig()->m_CCMode == SKIN?IDS_CC_18b:IDS_CC_18));
-						Rows.Add(aBuf, CRowArray::floatType);
+				case 17:
+						msg.LoadStringA(GetConfig()->m_CCMode == CMC?IDS_CC_18a:(GetConfig()->m_CCMode == SKIN?IDS_CC_18b:IDS_CC_18));
+						Rows.Add(msg, CRowArray::floatType);
 						break;
-
-					 case 18:
-						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_19a:(GetConfig()->m_CCMode == SKIN?IDS_CC_19b:IDS_CC_19));
-						Rows.Add(aBuf, CRowArray::floatType);
+				case 18:
+						msg.LoadStringA(GetConfig()->m_CCMode == CMC?IDS_CC_19a:(GetConfig()->m_CCMode == SKIN?IDS_CC_19b:IDS_CC_19));
+						Rows.Add(msg, CRowArray::floatType);
 						break;
-
-					 case 19:
-						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_20a:(GetConfig()->m_CCMode == SKIN?IDS_CC_20b:IDS_CC_20));
-						Rows.Add(aBuf, CRowArray::floatType);
+				case 19:
+						msg.LoadStringA(GetConfig()->m_CCMode == CMC?IDS_CC_20a:(GetConfig()->m_CCMode == SKIN?IDS_CC_20b:IDS_CC_20));
+						Rows.Add(msg, CRowArray::floatType);
 						break;
-
-					 case 20:
-						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_21a:(GetConfig()->m_CCMode == SKIN?IDS_CC_21b:IDS_CC_21));
-						Rows.Add(aBuf, CRowArray::floatType);
+				case 20:
+						msg.LoadStringA(GetConfig()->m_CCMode == CMC?IDS_CC_21a:(GetConfig()->m_CCMode == SKIN?IDS_CC_21b:IDS_CC_21));
+						Rows.Add(msg, CRowArray::floatType);
 						break;
-
-					 case 21:
-						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_22a:(GetConfig()->m_CCMode == SKIN?IDS_CC_22b:IDS_CC_22));
-						Rows.Add(aBuf, CRowArray::floatType);
+				case 21:
+						msg.LoadStringA(GetConfig()->m_CCMode == CMC?IDS_CC_22a:(GetConfig()->m_CCMode == SKIN?IDS_CC_22b:IDS_CC_22));
+						Rows.Add(msg, CRowArray::floatType);
 						break;
-
-					 case 22:
-						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_23a:(GetConfig()->m_CCMode == SKIN?IDS_CC_23b:IDS_CC_23));
-						Rows.Add(aBuf, CRowArray::floatType);
+				case 22:
+						msg.LoadStringA(GetConfig()->m_CCMode == CMC?IDS_CC_23a:(GetConfig()->m_CCMode == SKIN?IDS_CC_23b:IDS_CC_23));
+						Rows.Add(msg, CRowArray::floatType);
 						break;
-
-					 case 23:
-						sprintf(aBuf,"%s", GetConfig()->m_CCMode == CMC?IDS_CC_24a:(GetConfig()->m_CCMode == SKIN?IDS_CC_24b:IDS_CC_24));
-						Rows.Add(aBuf, CRowArray::floatType);
+				case 23:
+						msg.LoadStringA(GetConfig()->m_CCMode == CMC?IDS_CC_24a:(GetConfig()->m_CCMode == SKIN?IDS_CC_24b:IDS_CC_24));
+						Rows.Add(msg, CRowArray::floatType);
 						break;
             		 default:
-				        sprintf(aBuf,"%s", IDS_CC_24a);
-						Rows.Add(aBuf, CRowArray::floatType);
-                 }
-			}
+				        msg.LoadStringA(IDS_CC_24a);
+						Rows.Add(msg, CRowArray::floatType);
+            }
 		}
+	}
 	result&=colorcheckerSS.AddHeaders(Rows,true);
 
 	if(m_doReplace)
-		rowNb=(m_numToReplace-1)*9+2;
+		rowNb=(m_numToReplace-1)*7+2;
 	else
 		rowNb=colorcheckerSS.GetTotalRows()+1;
 
@@ -2082,7 +2062,12 @@ bool CExport::SaveCCSheet()
 		Rows.RemoveAll();
 		Rows.Add(legendXYZ[i]);
 		for(j=0;j<size;j++)
-			Rows.Add((float)m_pDoc->GetMeasure()->GetCC24Sat(j)[i]);
+		{
+			if (m_pDoc->GetMeasure()->GetCC24Sat(j).isValid())
+				Rows.Add((float)m_pDoc->GetMeasure()->GetCC24Sat(j).GetXYZValue()[i]);
+			else
+				Rows.Add(-1.0);
+		}
 		result&=colorcheckerSS.AddRow(Rows,rowNb,m_doReplace);
 		rowNb++;
 	}
@@ -2092,7 +2077,12 @@ bool CExport::SaveCCSheet()
 		Rows.RemoveAll();
 		Rows.Add(legendRGB[i]);
 		for(j=0;j<size;j++)
-			Rows.Add((float)m_pDoc->GetMeasure()->GetCC24Sat(j)[i]);
+		{
+			if (m_pDoc->GetMeasure()->GetCC24Sat(j).isValid())
+				Rows.Add((float)m_pDoc->GetMeasure()->GetCC24Sat(j).GetRGBValue(GetColorReference())[i]);
+			else
+				Rows.Add(-1.0);
+		}
 		result&=colorcheckerSS.AddRow(Rows,rowNb,m_doReplace);
 		rowNb++;
 	}
@@ -2110,9 +2100,10 @@ bool CExport::SaveCCSheet()
 		if (aColor.isValid())
 			Rows.Add(aColor.GetDeltaE(YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight ));
 		else
-			Rows.Add("invalid");
+			Rows.Add(-1);
 	}
 	result&=colorcheckerSS.AddRow(Rows,rowNb,m_doReplace);
+	rowNb++;
 
 	result&=colorcheckerSS.Commit();
 	if(!result)
