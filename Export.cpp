@@ -56,11 +56,9 @@ void error_handler  (HPDF_STATUS   error_no,
                 void         *user_data)
 {
 	char msg[50];
-//    printf ("ERROR: error_no=%04X, detail_no=%u\n", (HPDF_UINT)error_no,
-//                (HPDF_UINT)detail_no);
-    sprintf (msg,"ERROR: error_no=%04X, detail_no=%u\n", (HPDF_UINT)error_no,
+    sprintf (msg,"ERROR: error_no=%04X, File already open?\n", (HPDF_UINT)error_no,
                 (HPDF_UINT)detail_no);
-			if(GetColorApp()->InMeasureMessageBox(msg,"PDF ERROR",MB_YESNO)!=IDYES)
+			if(GetColorApp()->InMeasureMessageBox(msg,"PDF ERROR, Yes to continue",MB_YESNO)!=IDYES)
     longjmp(env, 1);
 }
 
@@ -463,22 +461,16 @@ bool CExport::SavePDF()
 	CString dEform;
 	char str[100];
 	if (White > 0 && Black < 0.000001)
-		sprintf(str,"White: %.2f cd/m^2    Black: %.4f cd/m^2    CR: Infinite", White, Black);
+		sprintf(str,"White: %.2f cd/m^2 Black: %.4f cd/m^2 CR: Infinite", White, Black);
 	else
-		sprintf(str,"White: %.2f cd/m^2    Black: %.4f cd/m^2    CR: %.0f:1", White, Black, CR);
+		sprintf(str,"White: %.2f cd/m^2 Black: %.4f cd/m^2 CR: %.0f:1", White, Black, CR);
 
 	HPDF_Page_BeginText (page);
 	HPDF_Page_SetFontAndSize (page, font2, 9);
-	HPDF_Page_MoveTextPos (page, 6 + 300 + 5, 200);
-	HPDF_Page_ShowText (page, str );
-//	HPDF_Page_TextRect(page,305,190,500,140,str,HPDF_TALIGN_JUSTIFY,NULL);
+//	HPDF_Page_MoveTextPos (page, 6 + 300 + 5, 200);
+//	HPDF_Page_ShowText (page, str );
+	HPDF_Page_TextRect(page,311,215,601,160,str,HPDF_TALIGN_CENTER,NULL);
 	HPDF_Page_SetTextLeading (page, 14);
-
-	if (dEavg_gs > 0)
-		sprintf(str,"Grayscale dE (Avg/Max): %.2f/%.2f", dEavg_gs, dEmax_gs);
-	else
-		sprintf(str,"Grayscale dE (Avg/Max): No data");
-
 	switch (GetConfig()->m_dE_form)
 	{
 		case 0:
@@ -503,7 +495,6 @@ bool CExport::SavePDF()
 
 	CString dEform2 = GetConfig()->m_dE_form==5?" [CIE2000]":dEform;
 	dEform += GetConfig()->m_dE_gray==0?" [Relative Y]":(GetConfig ()->m_dE_gray == 1?" [Absolute Y w/gamma]":" [Absolute Y w/o gamma]");
-	HPDF_Page_ShowTextNextLine (page, str + dEform);
 
 	double nCount = m_pDoc -> GetMeasure () -> GetGrayScaleSize ();
 	double Gamma = GetConfig()->m_GammaAvg;
@@ -511,13 +502,20 @@ bool CExport::SavePDF()
 	if (nCount > 0)
 	{
 		m_pDoc->ComputeGammaAndOffset(&Gamma, &Offset, 1, 1, nCount, false);
-		sprintf(str,"Average measured gamma: %.2f",Gamma);
+		sprintf(str,"Average measured gamma: %.2f, Color dE formula: "+dEform2,Gamma);
 	}
 	else
 	{
 		sprintf(str,"Average measured gamma: No data");
 	}
 	HPDF_Page_ShowTextNextLine (page, str);
+
+	if (dEavg_gs > 0)
+		sprintf(str,"Grayscale dE: %.2f/%.2f", dEavg_gs, dEmax_gs);
+	else
+		sprintf(str,"Grayscale dE: No data");
+
+	HPDF_Page_ShowTextNextLine (page, str + dEform);
 
 	double YWhite = m_pDoc->GetMeasure()->GetOnOffWhite().GetY();
 	CColor rColor = m_pDoc->GetMeasure()->GetRedPrimary();
@@ -540,8 +538,8 @@ bool CExport::SavePDF()
 	if (mColor.isValid())
 	 dEm = mColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(2), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 	
-	sprintf(str,"Primary dE: Red %.2f, Green %.2f, Blue %.2f",dEr,dEg,dEb);
-	HPDF_Page_ShowTextNextLine (page, str + dEform2);
+	sprintf(str,"Primary dE:     Red %.2f, Green %.2f, Blue %.2f",dEr,dEg,dEb);
+	HPDF_Page_ShowTextNextLine (page, str);
 	sprintf(str,"Secondary dE: Yellow %.2f, Cyan %.2f, Magenta %.2f",dEy,dEc,dEm);
 	HPDF_Page_ShowTextNextLine (page, str);
 	
@@ -621,69 +619,52 @@ bool CExport::SavePDF()
 	HPDF_Page_ShowTextNextLine (page, dEform);
 	HPDF_Page_SetGrayFill(page, 0);
 
-	switch (GetConfig()->m_dE_form)
-	{
-		case 0:
-		dEform = " [CIE76(uv)]";
-		break;
-		case 1:
-		dEform = " [CIE76(ab)]";
-		break;
-		case 2:
-		dEform = " [CIE94]";
-		break;
-		case 3:
-		dEform = " [CIE2000]";
-		break;
-		case 4:
-		dEform = " [CMC(1:1)]";
-		break;
-		case 5:
-		dEform = " [CIE2000]";
-		break;
-	}
-
 	if (dEavg_cc > 0)
-		sprintf(str,"Colorchecker dE (Avg/Max): %.2f/%.2f"+dEform, dEavg_cc, dEmax_cc);
+		sprintf(str,"Colorchecker dE:          %.2f/%.2f", dEavg_cc, dEmax_cc);
 	else
-		sprintf(str,"Colorchecker dE (Avg/Max): No data"+dEform);
+		sprintf(str,"Colorchecker dE:          No data");
 	HPDF_Page_ShowTextNextLine (page, str);
 
 	if (dEavg_sr > 0)
-		sprintf(str,"Red Saturation dE (Avg/Max): %.2f/%.2f", dEavg_sr, dEmax_sr);
+		sprintf(str,"Red Saturation dE:        %.2f/%.2f", dEavg_sr, dEmax_sr);
 	else
-		sprintf(str,"Red Saturation dE (Avg/Max): No data");
+		sprintf(str,"Red Saturation dE:        No data");
 	HPDF_Page_ShowTextNextLine (page, str);
 
 	if (dEavg_sg > 0)
-		sprintf(str,"Green Saturation dE (Avg/Max): %.2f/%.2f", dEavg_sg, dEmax_sg);
+		sprintf(str,"Green Saturation dE:     %.2f/%.2f", dEavg_sg, dEmax_sg);
 	else
-		sprintf(str,"Green Saturation dE (Avg/Max): No data");
+		sprintf(str,"Green Saturation dE:     No data");
 	HPDF_Page_ShowTextNextLine (page, str);
 
 	if (dEavg_sb > 0)
-		sprintf(str,"Blue Saturation dE (Avg/Max): %.2f/%.2f", dEavg_sb, dEmax_sb);
+		sprintf(str,"Blue Saturation dE:       %.2f/%.2f", dEavg_sb, dEmax_sb);
 	else
-		sprintf(str,"Blue Saturation dE (Avg/Max): No data");
+		sprintf(str,"Blue Saturation dE:       No data");
 	HPDF_Page_ShowTextNextLine (page, str);
 
 	if (dEavg_sy > 0)
-		sprintf(str,"Yellow Saturation dE (Avg/Max): %.2f/%.2f", dEavg_sy, dEmax_sy);
+		sprintf(str,"Yellow Saturation dE:    %.2f/%.2f", dEavg_sy, dEmax_sy);
 	else
-		sprintf(str,"Yellow Saturation dE (Avg/Max): No data");
+		sprintf(str,"Yellow Saturation dE:    No data");
 	HPDF_Page_ShowTextNextLine (page, str);
 
 	if (dEavg_sc > 0)
-		sprintf(str,"Cyan Saturation dE (Avg/Max): %.2f/%.2f", dEavg_sc, dEmax_sc);
+		sprintf(str,"Cyan Saturation dE:      %.2f/%.2f", dEavg_sc, dEmax_sc);
 	else
-		sprintf(str,"Cyan Saturation dE (Avg/Max): No data");
+		sprintf(str,"Cyan Saturation dE:      No data");
 	HPDF_Page_ShowTextNextLine (page, str);
 
 	if (dEavg_sm > 0)
-		sprintf(str,"Magenta Saturation dE (Avg/Max): %.2f/%.2f", dEavg_sm, dEmax_sm);
+		sprintf(str,"Magenta Saturation dE: %.2f/%.2f", dEavg_sm, dEmax_sm);
 	else
-		sprintf(str,"Magenta Saturation dE (Avg/Max): No data");
+		sprintf(str,"Magenta Saturation dE: No data");
 	HPDF_Page_ShowTextNextLine (page, str);
+	
+	sprintf(str,"dE values are avg/max");
+    HPDF_Page_SetFontAndSize (page, font, 6);
+	HPDF_Page_ShowTextNextLine (page, str);
+	HPDF_Page_SetFontAndSize (page, font2, 9);
 
 	HPDF_Page_EndText (page);
 
@@ -980,16 +961,10 @@ bool CExport::SavePDF()
 
 		HPDF_Page_BeginText (page2);
 		HPDF_Page_SetFontAndSize (page2, font2, 9);
-		HPDF_Page_MoveTextPos (page2, 6 + 300 + 5, 200);
-		HPDF_Page_ShowText (page2, str );
+	//	HPDF_Page_MoveTextPos (page, 6 + 300 + 5, 200);
+	//	HPDF_Page_ShowText (page, str );
+		HPDF_Page_TextRect(page2,311,215,601,160,str,HPDF_TALIGN_CENTER,NULL);
 		HPDF_Page_SetTextLeading (page2, 14);
-
-
-		if (dEavg_gs > 0)
-			sprintf(str,"Grayscale dE (Avg/Max): %.2f/%.2f", dEavg_gs, dEmax_gs);
-		else
-			sprintf(str,"Grayscale dE (Avg/Max): No data");
-
 		switch (GetConfig()->m_dE_form)
 		{
 			case 0:
@@ -1011,17 +986,17 @@ bool CExport::SavePDF()
 			dEform = " [CIE76(uv)]";
 			break;
 		}
-		dEform2 = GetConfig()->m_dE_form==5?" [CIE2000]":dEform;
-		dEform += GetConfig()->m_dE_gray==0?" [Relative Y]":(GetConfig ()->m_dE_gray == 1?" [Absolute Y w/gamma]":" [Absolute Y w/o gamma]");
-		HPDF_Page_ShowTextNextLine (page2, str + dEform);
 
-		nCount = pDataRef -> GetMeasure () -> GetGrayScaleSize ();
-		Gamma = GetConfig()->m_GammaAvg;
+		CString dEform2 = GetConfig()->m_dE_form==5?" [CIE2000]":dEform;
+		dEform += GetConfig()->m_dE_gray==0?" [Relative Y]":(GetConfig ()->m_dE_gray == 1?" [Absolute Y w/gamma]":" [Absolute Y w/o gamma]");
+
+		double nCount = m_pDoc -> GetMeasure () -> GetGrayScaleSize ();
+		double Gamma = GetConfig()->m_GammaAvg;
 		double Offset;
 		if (nCount > 0)
 		{
-			pDataRef->ComputeGammaAndOffset(&Gamma, &Offset, 1, 1, nCount, false);
-			sprintf(str,"Average measured gamma: %.2f",Gamma);
+			m_pDoc->ComputeGammaAndOffset(&Gamma, &Offset, 1, 1, nCount, false);
+			sprintf(str,"Average measured gamma: %.2f, Color dE formula: "+dEform2,Gamma);
 		}
 		else
 		{
@@ -1029,31 +1004,39 @@ bool CExport::SavePDF()
 		}
 		HPDF_Page_ShowTextNextLine (page2, str);
 
-		YWhite = pDataRef->GetMeasure()->GetOnOffWhite().GetY();
-		rColor = pDataRef->GetMeasure()->GetRedPrimary();
-		gColor = pDataRef->GetMeasure()->GetGreenPrimary();
-		bColor = pDataRef->GetMeasure()->GetBluePrimary();
-		yColor = pDataRef->GetMeasure()->GetYellowSecondary();
-		cColor = pDataRef->GetMeasure()->GetCyanSecondary();
-		mColor = pDataRef->GetMeasure()->GetMagentaSecondary();
-		dEr=0,dEg=0,dEb=0,dEy=0,dEc=0,dEm=0;
+		if (dEavg_gs > 0)
+			sprintf(str,"Grayscale dE: %.2f/%.2f", dEavg_gs, dEmax_gs);
+		else
+			sprintf(str,"Grayscale dE: No data");
+
+		HPDF_Page_ShowTextNextLine (page2, str + dEform);
+
+		double YWhite = m_pDoc->GetMeasure()->GetOnOffWhite().GetY();
+		CColor rColor = m_pDoc->GetMeasure()->GetRedPrimary();
+		CColor gColor = m_pDoc->GetMeasure()->GetGreenPrimary();
+		CColor bColor = m_pDoc->GetMeasure()->GetBluePrimary();
+		CColor yColor = m_pDoc->GetMeasure()->GetYellowSecondary();
+		CColor cColor = m_pDoc->GetMeasure()->GetCyanSecondary();
+		CColor mColor = m_pDoc->GetMeasure()->GetMagentaSecondary();
+		double dEr=0,dEg=0,dEb=0,dEy=0,dEc=0,dEm=0;
 		if (rColor.isValid())
-		 dEr = rColor.GetDeltaE(YWhite, pDataRef->GetMeasure()->GetRefPrimary(0), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+		 dEr = rColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefPrimary(0), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 		if (gColor.isValid())
-		 dEg = gColor.GetDeltaE(YWhite, pDataRef->GetMeasure()->GetRefPrimary(1), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+		 dEg = gColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefPrimary(1), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 		if (bColor.isValid())
-		 dEb = bColor.GetDeltaE(YWhite, pDataRef->GetMeasure()->GetRefPrimary(2), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+		 dEb = bColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefPrimary(2), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 		if (yColor.isValid())
-		 dEy = yColor.GetDeltaE(YWhite, pDataRef->GetMeasure()->GetRefSecondary(0), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+		 dEy = yColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(0), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 		if (cColor.isValid())
-		 dEc = cColor.GetDeltaE(YWhite, pDataRef->GetMeasure()->GetRefSecondary(1), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+		 dEc = cColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(1), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 		if (mColor.isValid())
-		 dEm = mColor.GetDeltaE(YWhite, pDataRef->GetMeasure()->GetRefSecondary(2), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+		 dEm = mColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(2), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 	
-		sprintf(str,"Primary dE: Red %.2f, Green %.2f, Blue %.2f",dEr,dEg,dEb);
-		HPDF_Page_ShowTextNextLine (page2, str + dEform2);
+		sprintf(str,"Primary dE:     Red %.2f, Green %.2f, Blue %.2f",dEr,dEg,dEb);
+		HPDF_Page_ShowTextNextLine (page2, str);
 		sprintf(str,"Secondary dE: Yellow %.2f, Cyan %.2f, Magenta %.2f",dEy,dEc,dEm);
 		HPDF_Page_ShowTextNextLine (page2, str);
+	
 
 		dEform = "Color checker sequence";
 		switch (GetConfig()->m_CCMode)
@@ -1130,68 +1113,52 @@ bool CExport::SavePDF()
 		HPDF_Page_ShowTextNextLine (page2, dEform);
 		HPDF_Page_SetGrayFill(page2, 0);
 
-		switch (GetConfig()->m_dE_form)
-		{
-			case 0:
-			dEform = " [CIE76(uv)]";
-			break;
-			case 1:
-			dEform = " [CIE76(ab)]";
-			break;
-			case 2:
-			dEform = " [CIE94]";
-			break;
-			case 3:
-			dEform = " [CIE2000]";
-			break;
-			case 4:
-			dEform = " [CMC(1:1)]";
-			break;
-			case 5:
-			dEform = " [CIE2000]";
-			break;
-		}
-
 		if (dEavg_cc > 0)
-			sprintf(str,"Colorchecker dE (Avg/Max): %.2f/%.2f"+dEform, dEavg_cc, dEmax_cc);
+			sprintf(str,"Colorchecker dE:          %.2f/%.2f", dEavg_cc, dEmax_cc);
 		else
-			sprintf(str,"Colorchecker dE (Avg/Max): No data"+dEform);
+			sprintf(str,"Colorchecker dE:          No data");
 		HPDF_Page_ShowTextNextLine (page2, str);
+
 		if (dEavg_sr > 0)
-			sprintf(str,"Red Saturation dE (Avg/Max): %.2f/%.2f", dEavg_sr, dEmax_sr);
+			sprintf(str,"Red Saturation dE:        %.2f/%.2f", dEavg_sr, dEmax_sr);
 		else
-			sprintf(str,"Red Saturation dE (Avg/Max): No data");
+			sprintf(str,"Red Saturation dE:        No data");
 		HPDF_Page_ShowTextNextLine (page2, str);
 
 		if (dEavg_sg > 0)
-			sprintf(str,"Green Saturation dE (Avg/Max): %.2f/%.2f", dEavg_sg, dEmax_sg);
+			sprintf(str,"Green Saturation dE:     %.2f/%.2f", dEavg_sg, dEmax_sg);
 		else
-			sprintf(str,"Green Saturation dE (Avg/Max): No data");
+			sprintf(str,"Green Saturation dE:     No data");
 		HPDF_Page_ShowTextNextLine (page2, str);
 
 		if (dEavg_sb > 0)
-			sprintf(str,"Blue Saturation dE (Avg/Max): %.2f/%.2f", dEavg_sb, dEmax_sb);
+			sprintf(str,"Blue Saturation dE:       %.2f/%.2f", dEavg_sb, dEmax_sb);
 		else
-			sprintf(str,"Blue Saturation dE (Avg/Max): No data");
+			sprintf(str,"Blue Saturation dE:       No data");
 		HPDF_Page_ShowTextNextLine (page2, str);
 
 		if (dEavg_sy > 0)
-			sprintf(str,"Yellow Saturation dE (Avg/Max): %.2f/%.2f", dEavg_sy, dEmax_sy);
+			sprintf(str,"Yellow Saturation dE:    %.2f/%.2f", dEavg_sy, dEmax_sy);
 		else
-			sprintf(str,"Yellow Saturation dE (Avg/Max): No data");
+			sprintf(str,"Yellow Saturation dE:    No data");
 		HPDF_Page_ShowTextNextLine (page2, str);
 
 		if (dEavg_sc > 0)
-			sprintf(str,"Cyan Saturation dE (Avg/Max): %.2f/%.2f", dEavg_sc, dEmax_sc);
+			sprintf(str,"Cyan Saturation dE:      %.2f/%.2f", dEavg_sc, dEmax_sc);
 		else
-			sprintf(str,"Cyan Saturation dE (Avg/Max): No data");
+			sprintf(str,"Cyan Saturation dE:      No data");
 		HPDF_Page_ShowTextNextLine (page2, str);
 
 		if (dEavg_sm > 0)
-			sprintf(str,"Magenta Saturation dE (Avg/Max): %.2f/%.2f", dEavg_sm, dEmax_sm);
+			sprintf(str,"Magenta Saturation dE: %.2f/%.2f", dEavg_sm, dEmax_sm);
 		else
-			sprintf(str,"Magenta Saturation dE (Avg/Max): No data");
+			sprintf(str,"Magenta Saturation dE: No data");
 		HPDF_Page_ShowTextNextLine (page2, str);
+	
+		sprintf(str,"dE values are avg/max");
+		HPDF_Page_SetFontAndSize (page2, font, 6);
+		HPDF_Page_ShowTextNextLine (page2, str);
+		HPDF_Page_SetFontAndSize (page2, font2, 9);
 
 		HPDF_Page_EndText (page2);
 
