@@ -59,6 +59,7 @@ private:
 	bool SavePrimariesSheet();
 	bool SavePDF();
 	bool SaveCCSheet();
+	bool SaveSpectralSheet();
 
 public:
 	CExport(CDataSetDoc *pDoc, ExportType type);
