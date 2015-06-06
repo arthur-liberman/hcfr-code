@@ -47,6 +47,7 @@ IMPLEMENT_SERIAL(CMeasure, CObject, 1)
 CMeasure::CMeasure()
 {
 	m_isModified = FALSE;
+	m_bpreV10 = TRUE;
 	m_primariesArray.SetSize(3);
 	m_secondariesArray.SetSize(3);
 	m_grayMeasureArray.SetSize(11);
@@ -59,13 +60,13 @@ CMeasure::CMeasure()
 	m_cyanSatMeasureArray.SetSize(5);
 	m_magentaSatMeasureArray.SetSize(5);
     m_cc24SatMeasureArray.SetSize(1000);
+	m_cc24SatMeasureArray_master.SetSize(5000);
 
 	m_primariesArray[0]=m_primariesArray[1]=m_primariesArray[2]=noDataColor;
 	m_secondariesArray[0]=m_secondariesArray[1]=m_secondariesArray[2]=noDataColor;
 
 	for(int i=0;i<m_grayMeasureArray.GetSize();i++)	// Init default values: by default m_grayMeasureArray init to D65, Y=1
 		m_grayMeasureArray[i]=GetPrimary(0);	
-//		m_grayMeasureArray[i]=noDataColor;	
 
 	for(int i=0;i<m_nearBlackMeasureArray.GetSize();i++)
 		m_nearBlackMeasureArray[i]=noDataColor;	
@@ -81,9 +82,9 @@ CMeasure::CMeasure()
 		m_yellowSatMeasureArray[i]=noDataColor;
 		m_cyanSatMeasureArray[i]=noDataColor;
 		m_magentaSatMeasureArray[i]=noDataColor;
-	}
-	
+	}	
 	for ( int i=0;i<m_cc24SatMeasureArray.GetSize();i++ )	m_cc24SatMeasureArray[i]=noDataColor;
+	for ( int i=0;i<m_cc24SatMeasureArray_master.GetSize();i++ )	m_cc24SatMeasureArray_master[i]=noDataColor;
 	m_OnOffWhite.SetXYZValue(GetColorReference().GetWhite());
 	m_PrimeWhite.SetXYZValue(GetColorReference().GetWhite());
 	m_PrimeWhite.SetY(100.);
@@ -150,12 +151,17 @@ void CMeasure::Copy(CMeasure * p,UINT nId)
 			m_cyanSatMeasureArray.SetSize(p->m_cyanSatMeasureArray.GetSize());
 			m_magentaSatMeasureArray.SetSize(p->m_magentaSatMeasureArray.GetSize());
 			m_cc24SatMeasureArray.SetSize(p->m_cc24SatMeasureArray.GetSize());
+			m_cc24SatMeasureArray_master.SetSize(p->m_cc24SatMeasureArray_master.GetSize());
 			for(int i=0;i<m_redSatMeasureArray.GetSize();i++)
 			{
 				m_redSatMeasureArray[i]=p->m_redSatMeasureArray[i];
 				m_greenSatMeasureArray[i]=p->m_greenSatMeasureArray[i];
 				m_blueSatMeasureArray[i]=p->m_blueSatMeasureArray[i];
 			}
+			for(int i=0;i<m_cc24SatMeasureArray.GetSize();i++)
+				m_cc24SatMeasureArray[i]=p->m_cc24SatMeasureArray[i];
+			for(int i=0;i<m_cc24SatMeasureArray_master.GetSize();i++)
+				m_cc24SatMeasureArray_master[i]=p->m_cc24SatMeasureArray_master[i];
 			break;
 
 		case DUPLSECONDARIESSAT:		// Secondaries saturation measure
@@ -165,7 +171,8 @@ void CMeasure::Copy(CMeasure * p,UINT nId)
 			m_yellowSatMeasureArray.SetSize(p->m_yellowSatMeasureArray.GetSize());
 			m_cyanSatMeasureArray.SetSize(p->m_cyanSatMeasureArray.GetSize());
 			m_magentaSatMeasureArray.SetSize(p->m_magentaSatMeasureArray.GetSize());
-			m_cc24SatMeasureArray.SetSize(p->m_magentaSatMeasureArray.GetSize());
+			m_cc24SatMeasureArray.SetSize(p->m_cc24SatMeasureArray.GetSize());
+			m_cc24SatMeasureArray_master.SetSize(p->m_cc24SatMeasureArray_master.GetSize());
 			for(int i=0;i<m_yellowSatMeasureArray.GetSize();i++)
 			{
 				m_yellowSatMeasureArray[i]=p->m_yellowSatMeasureArray[i];
@@ -174,6 +181,8 @@ void CMeasure::Copy(CMeasure * p,UINT nId)
 			}
 			for(int i=0;i<m_cc24SatMeasureArray.GetSize();i++)
 				m_cc24SatMeasureArray[i]=p->m_cc24SatMeasureArray[i];
+			for(int i=0;i<m_cc24SatMeasureArray_master.GetSize();i++)
+				m_cc24SatMeasureArray_master[i]=p->m_cc24SatMeasureArray_master[i];
 			break;
 
 		case DUPLPRIMARIESCOL:		// Primaries measure
@@ -210,7 +219,7 @@ void CMeasure::Serialize(CArchive& ar)
 
 	if (ar.IsStoring())
 	{
-	    int version=9;
+	    int version=10;
 		ar << version;
 
 		ar << m_grayMeasureArray.GetSize();
@@ -255,6 +264,10 @@ void CMeasure::Serialize(CArchive& ar)
 		for(int i=0;i<m_cc24SatMeasureArray.GetSize();i++)
 			m_cc24SatMeasureArray[i].Serialize(ar);
 
+		ar << m_cc24SatMeasureArray_master.GetSize();
+		for(int i=0;i<m_cc24SatMeasureArray_master.GetSize();i++)
+			m_cc24SatMeasureArray_master[i].Serialize(ar);
+
 		// Version 1 again
 		ar << m_measurementsArray.GetSize();
 		for(int i=0;i<m_measurementsArray.GetSize();i++)
@@ -284,7 +297,7 @@ void CMeasure::Serialize(CArchive& ar)
 	    int version;
 		ar >> version;
 
-		if ( version > 9)
+		if ( version > 10)
 			AfxThrowArchiveException ( CArchiveException::badSchema );
 
 		int size, gsize;
@@ -351,12 +364,28 @@ void CMeasure::Serialize(CArchive& ar)
 
 			if ( version >= 8)
 			{
+
 				ar >> size;
 				m_cc24SatMeasureArray.SetSize(1000);
 				for(int i=0;i<size;i++)
 					m_cc24SatMeasureArray[i].Serialize(ar);
-			}
+				if ( version >= 10)
+				{
+					ar >> size;
+					m_cc24SatMeasureArray_master.SetSize(5000);
+					for(int i=0;i<size;i++)
+						m_cc24SatMeasureArray_master[i].Serialize(ar);
+					m_bpreV10 = FALSE;
+				}
 
+				if (m_bpreV10)
+				{
+					CString msg;
+					msg.SetString("Loading old color checker data, rerun series before saving new file.");
+					 GetColorApp()->InMeasureMessageBox(msg,"Warning",MB_OK | MB_ICONWARNING);
+				}
+			}
+			
 		}
 		else
 		{
@@ -2746,7 +2775,21 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
 		else
 			m_cc24SatMeasureArray[i].ResetLuxValue ();
 	}
+
 	GetConfig()->m_isSettling = doSettling;
+	int iCC=GetConfig()->m_CCMode;
+	if (iCC < 19)
+		for (int i=0+100*iCC;i<100*(iCC+1);i++)
+				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-iCC*100];
+	else if (iCC == 19) 
+		for (int i=1900;i<1900+250;i++)
+				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-1900];
+	else if (iCC == 20) 
+		for (int i=1900+250;i<1900+250+500;i++)
+				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(1900+250)];
+	else if (iCC == 21) 
+		for (int i=1900+250+500;i<1900+250+500+1000;i++)
+				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(1900+250+500)];
 
 	m_isModified=TRUE;
 	return TRUE;
@@ -3068,6 +3111,19 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 		}
 	}
 	GetConfig()->m_isSettling = doSettling;
+	int iCC=GetConfig()->m_CCMode;
+	if (iCC < 19)
+		for (int i=0+100*iCC;i<100*(iCC+1);i++)
+				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-iCC*100];
+	else if (iCC == 19) 
+		for (int i=1900;i<1900+250;i++)
+				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-1900];
+	else if (iCC == 20) 
+		for (int i=1900+250;i<1900+250+500;i++)
+				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(1900+250)];
+	else if (iCC == 21) 
+		for (int i=1900+250+500;i<1900+250+500+1000;i++)
+				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(1900+250+500)];
 
 	m_isModified=TRUE;
 	return TRUE;
@@ -4423,6 +4479,10 @@ void CMeasure::ApplySensorAdjustmentMatrix(const Matrix& aMatrix)
 	{
 		m_cc24SatMeasureArray[i].applyAdjustmentMatrix(aMatrix);
 	}
+	for(int i=0;i<m_cc24SatMeasureArray_master.GetSize();i++)  // Preserve sensor values 
+	{
+		m_cc24SatMeasureArray_master[i].applyAdjustmentMatrix(aMatrix);
+	}
 	for(int i=0;i<3;i++)
 	{
 		m_primariesArray[i].applyAdjustmentMatrix(aMatrix);
@@ -5143,6 +5203,19 @@ BOOL CMeasure::ValidateBackgroundCC24SatScale ( BOOL bUseLuxValues, double * pLu
 			else
 				m_cc24SatMeasureArray[i].ResetLuxValue ();
 		}
+		int iCC=GetConfig()->m_CCMode;
+		if (iCC < 19)
+			for (int i=0+100*iCC;i<100*(iCC+1);i++)
+					m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-iCC*100];
+		else if (iCC == 19) 
+			for (int i=1900;i<1900+250;i++)
+					m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-1900];
+		else if (iCC == 20) 
+			for (int i=1900+250;i<1900+250+500;i++)
+					m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(1900+250)];
+		else if (iCC == 21) 
+			for (int i=1900+250+500;i<1900+250+500+1000;i++)
+					m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(1900+250+500)];
 	}
 
 	// Close background thread and event objects
@@ -5198,7 +5271,11 @@ CColor CMeasure::GetMagentaSat(int i) const
 
 CColor CMeasure::GetCC24Sat(int i) const 
 { 
-	return m_cc24SatMeasureArray[i]; 
+	int iCC=GetConfig()->m_CCMode;
+	if (m_bpreV10)
+		return m_cc24SatMeasureArray[i]; 
+	else
+	return m_cc24SatMeasureArray_master[i + (iCC * 100)]; 
 } 
 
 CColor CMeasure::GetPrimary(int i) const 

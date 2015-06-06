@@ -56,6 +56,7 @@ public:
 
 protected:
 	BOOL m_isModified;
+	BOOL m_bpreV10;
 	CArray<CColor,CColor> m_primariesArray;
 	CArray<CColor,CColor> m_secondariesArray;
 	CArray<CColor,CColor> m_grayMeasureArray;
@@ -74,6 +75,7 @@ protected:
 	CArray<CColor,CColor> m_cyanSatMeasureArray;
 	CArray<CColor,CColor> m_magentaSatMeasureArray;
 	CArray<CColor,CColor> m_cc24SatMeasureArray;
+	CArray<CColor,CColor> m_cc24SatMeasureArray_master;
 	CString m_infoStr;
 public:
 	BOOL	m_bIREScaleMode;
