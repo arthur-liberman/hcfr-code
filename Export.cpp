@@ -451,7 +451,7 @@ bool CExport::SavePDF()
 	draw_line (page, 6, HPDF_Page_GetHeight (page) - 95, "");
 
     HPDF_Page_SetLineWidth (page, 5);
-	HPDF_Page_SetRGBStroke (page, (HPDF_REAL)0.8, (HPDF_REAL)0.8, (HPDF_REAL)0.8);
+	HPDF_Page_SetRGBStroke (page, (HPDF_REAL)0.8314, (HPDF_REAL)0.6863, (HPDF_REAL)0.2157);
 	draw_rect (page, 3, 3, HPDF_Page_GetWidth (page) - 6, HPDF_Page_GetHeight (page) - 5, 10, "");
     HPDF_Page_Stroke (page);
 
@@ -471,8 +471,8 @@ bool CExport::SavePDF()
 	HPDF_Page_SetFontAndSize (page, font2, 9);
 	HPDF_Page_MoveTextPos (page, 6 + 300 + 5, 200);
 	HPDF_Page_ShowText (page, str );
+//	HPDF_Page_TextRect(page,305,190,500,140,str,HPDF_TALIGN_JUSTIFY,NULL);
 	HPDF_Page_SetTextLeading (page, 14);
-
 
 	if (dEavg_gs > 0)
 		sprintf(str,"Grayscale dE (Avg/Max): %.2f/%.2f", dEavg_gs, dEmax_gs);
@@ -964,7 +964,7 @@ bool CExport::SavePDF()
 		draw_line (page2, 6, HPDF_Page_GetHeight (page2) - 95, "");
 
 		HPDF_Page_SetLineWidth (page2, 5);
-		HPDF_Page_SetRGBStroke (page2, (HPDF_REAL)0.8, (HPDF_REAL)0.8, (HPDF_REAL)0.8);
+		HPDF_Page_SetRGBStroke (page2, (HPDF_REAL)0.8314, (HPDF_REAL)0.6863, (HPDF_REAL)0.2157);
 		draw_rect (page2, 3, 3, HPDF_Page_GetWidth (page2) - 6, HPDF_Page_GetHeight (page2) - 5, 10, "");
 		HPDF_Page_Stroke (page2);
 
