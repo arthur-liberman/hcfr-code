@@ -463,18 +463,6 @@ void CGraphControl::FitYScale(BOOL doRound, double roundStep)
 		maxY=(floor(maxY/roundStep)+1) * roundStep;
 	}
 
-/*	if(minY >= m_minYGrow)
-		m_minY=minY;
-	else
-		m_minY=m_minYGrow;
-
-	if(maxY <= m_maxYGrow)
-		m_maxY=maxY;
-	else
-		m_maxY=m_maxYGrow; 
-
-	SetScale(m_minX,m_maxX,m_minY,m_maxY); */
-
 	m_minYGrow=min(minY,m_minYGrow);
 	m_maxYGrow=max(maxY,m_maxYGrow);
 	SetScale(m_minX,m_maxX,minY,maxY);
@@ -925,24 +913,27 @@ void CGraphControl::SaveGraphs(CGraphControl *pGraphToAppend, CGraphControl *pGr
 		switch (nSequence)
 		{
 		case 1:
-			this->FitYScale(TRUE,10.0);
-			this->m_minY = 80;
-			pGraphToAppend->FitYScale(TRUE,0.5);
+			this->FitYScale(TRUE,5.0); //RGB
+//			this->m_minY = 80;
+			pGraphToAppend->FitYScale(TRUE,0.5); //dE
 			pGraphToAppend->m_minY = 0;
-			pGraphToAppend->SetYAxisProps(NULL, pGraphToAppend->m_maxY > 3?1.0:0.5, 0, 0);
+			pGraphToAppend->m_maxY = pGraphToAppend->m_maxY > 3 ? pGraphToAppend->m_maxY:3;
 			break;
 		case 2:
-			this->FitYScale(TRUE,500.0);
+			this->FitYScale(TRUE,500.0); //CCT
 			this->m_minY = 5500;
-			pGraphToAppend->FitYScale(TRUE,0.2);
+			pGraphToAppend->FitYScale(TRUE,0.2); //Gamma
 			pGraphToAppend->m_minY = 1.8;
+			pGraphToAppend->m_maxY += 0.2;
 			break;
 		case 3:
-			pGraphToAppend->FitYScale(TRUE,5.0);
-			pGraphToAppend->m_minY = -5.0;
-			pGraphToAppend2->FitYScale(TRUE,0.5);
+			pGraphToAppend->FitYScale(TRUE,5.0); //Sat shift 
+			pGraphToAppend->m_minY = -10.0;
+			pGraphToAppend->m_maxY = 10.0;
+//			pGraphToAppend->SetScale(0,100,-10,10);
+			pGraphToAppend2->FitYScale(TRUE,0.5); //dE
 			pGraphToAppend2->m_minY = 0;
-			pGraphToAppend2->SetYAxisProps(NULL, pGraphToAppend2->m_maxY > 3?1.0:0.5, 0, 0);
+			pGraphToAppend2->m_maxY = pGraphToAppend2->m_maxY > 3 ? pGraphToAppend2->m_maxY:3;
 		}
 	}
 
