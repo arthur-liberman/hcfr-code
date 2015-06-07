@@ -47,7 +47,7 @@ IMPLEMENT_SERIAL(CMeasure, CObject, 1)
 CMeasure::CMeasure()
 {
 	m_isModified = FALSE;
-	m_bpreV10 = TRUE;
+	m_bpreV10 = FALSE;
 	m_primariesArray.SetSize(3);
 	m_secondariesArray.SetSize(3);
 	m_grayMeasureArray.SetSize(11);
@@ -375,17 +375,13 @@ void CMeasure::Serialize(CArchive& ar)
 					m_cc24SatMeasureArray_master.SetSize(5000);
 					for(int i=0;i<size;i++)
 						m_cc24SatMeasureArray_master[i].Serialize(ar);
-					m_bpreV10 = FALSE;
 				}
+				else
+					m_bpreV10 = TRUE;
 
-				if (m_bpreV10)
-				{
-					CString msg;
-					msg.SetString("Loading old color checker data, rerun series before saving new file.");
-					 GetColorApp()->InMeasureMessageBox(msg,"Warning",MB_OK | MB_ICONWARNING);
-				}
 			}
-			
+			else
+				m_bpreV10 = TRUE;			
 		}
 		else
 		{
@@ -409,6 +405,13 @@ void CMeasure::Serialize(CArchive& ar)
 			}
 		}
 
+		if (m_bpreV10)
+		{
+			CString msg;
+			msg.SetString("Loading old color checker data, rerun series before saving new file.");
+			GetColorApp()->InMeasureMessageBox(msg,"Warning",MB_OK | MB_ICONWARNING);
+		}
+		
 		ar >> size;
 		m_measurementsArray.SetSize(size);
 		for(int i=0;i<m_measurementsArray.GetSize();i++)
