@@ -913,27 +913,40 @@ void CGraphControl::SaveGraphs(CGraphControl *pGraphToAppend, CGraphControl *pGr
 		switch (nSequence)
 		{
 		case 1:
-			this->FitYScale(TRUE,5.0); //RGB
-//			this->m_minY = 80;
-			pGraphToAppend->FitYScale(TRUE,0.5); //dE
-			pGraphToAppend->m_minY = 0;
-			pGraphToAppend->m_maxY = pGraphToAppend->m_maxY > 3 ? pGraphToAppend->m_maxY:3;
+			this->FitYScale(FALSE);
+			this->m_minY = 80; //RGB
+			this->m_maxY = 120;
+			this->m_yAxisStep = 5;
+			this->m_yScale = 1.0 / (40.0);
+			pGraphToAppend->FitYScale(FALSE); //dE
+			pGraphToAppend->m_minY = 0; 
+			pGraphToAppend->m_maxY = (pGraphToAppend->m_maxY > 3 ? (pGraphToAppend->m_maxY >5?10:5):3);
+			pGraphToAppend->m_yAxisStep = (pGraphToAppend->m_maxY > 3 ? (pGraphToAppend->m_maxY >5?2:1):0.5);
+			pGraphToAppend->m_yScale = (pGraphToAppend->m_maxY > 3 ? (pGraphToAppend->m_maxY >5?1.0/10.0:1.0/5.0):1.0/3.0);
 			break;
 		case 2:
-			this->FitYScale(TRUE,500.0); //CCT
-			this->m_minY = 5500;
-			pGraphToAppend->FitYScale(TRUE,0.2); //Gamma
-			pGraphToAppend->m_minY = 1.8;
-			pGraphToAppend->m_maxY += 0.2;
+			this->FitYScale(FALSE);
+			this->m_minY = 5000; //CCT
+			this->m_maxY = this->m_maxY > 7500?8500:7500;
+			this->m_yAxisStep = 500;
+			this->m_yScale = this->m_maxY > 7500?1.0/3500.0:1.0/2500.0;
+			pGraphToAppend->FitYScale(FALSE);
+			pGraphToAppend->m_minY = 1.8; //Gamma
+			pGraphToAppend->m_maxY = 2.6;
+			pGraphToAppend->m_yAxisStep = 0.1;
+			pGraphToAppend->m_yScale = 1.0/0.8;
 			break;
 		case 3:
-			pGraphToAppend->FitYScale(TRUE,5.0); //Sat shift 
+			pGraphToAppend->FitYScale(FALSE);
+			pGraphToAppend->m_yAxisStep = 1; //Sat shift 
 			pGraphToAppend->m_minY = -10.0;
 			pGraphToAppend->m_maxY = 10.0;
-//			pGraphToAppend->SetScale(0,100,-10,10);
-			pGraphToAppend2->FitYScale(TRUE,0.5); //dE
-			pGraphToAppend2->m_minY = 0;
-			pGraphToAppend2->m_maxY = pGraphToAppend2->m_maxY > 3 ? pGraphToAppend2->m_maxY:3;
+			pGraphToAppend->m_yScale = 1.0/20.0;
+			pGraphToAppend2->FitYScale(FALSE);
+			pGraphToAppend2->m_minY = 0; //dE
+			pGraphToAppend2->m_maxY = (pGraphToAppend2->m_maxY > 3 ? (pGraphToAppend2->m_maxY >5?10:5):3);
+			pGraphToAppend2->m_yAxisStep = (pGraphToAppend2->m_maxY > 3 ? (pGraphToAppend2->m_maxY >5?2:1):0.5);
+			pGraphToAppend2->m_yScale = (pGraphToAppend2->m_maxY > 3 ? (pGraphToAppend2->m_maxY >5?1.0/10.0:1.0/5.0):1.0/3.0);
 		}
 	}
 
