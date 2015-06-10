@@ -144,7 +144,7 @@ BOOL CGenerator::Init(UINT nbMeasure)
 		if (Cgen.m_nDisplayMode == DISPLAY_ccast)
 		{
 			ccast_id **ids;
-			ids = get_ccids();	
+			ids = get_ccids();
 			if ((ids = get_ccids()) == NULL) 
 			{
 				GetColorApp()->InMeasureMessageBox( "    ** Error discovering ChromeCasts **", "Error", MB_ICONERROR);

@@ -91,6 +91,7 @@ CGDIGenerator::CGDIGenerator()
     m_madVR_OSD = GetConfig()->GetProfileInt("GDIGenerator","MADVROSD",0);
 //	m_displayWindow.SetDisplayMode(m_nDisplayMode);	// Always init in GDI mode during init
 	m_displayWindow.SetDisplayMode();	
+	m_bisInited = FALSE;
 
 	CString str;
 	str.LoadString(IDS_GDIGENERATOR_PROPERTIES_TITLE);
@@ -377,6 +378,7 @@ BOOL CGDIGenerator::Init(UINT nbMeasure)
 	{
 		GetColorApp() -> RestoreMeasureCursor ();
 	}
+	m_bisInited = TRUE;
 
 	return bOk;
 }
@@ -401,7 +403,7 @@ BOOL CGDIGenerator::DisplayRGBColormadVR( const ColorRGBDisplay& clr, bool first
 	  madVR_SetDisableOsdButton(!m_madVR_OSD);
 	  CGDIGenerator Cgen;
 	  double bgstim = Cgen.m_bgStimPercent / 100.;
-	  madVR_SetPatternConfig(Cgen.m_rectSizePercent, int (bgstim * 100), -1, -1);
+	  madVR_SetPatternConfig(Cgen.m_rectSizePercent, int (bgstim * 100), -1, 0);
 	  if (first)
 	  {
     	  sprintf(aBuf,"%s","Display settling, please wait...");
@@ -566,7 +568,11 @@ BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nP
 	p_clr[0] = clr[0] * m_displayWindow.m_Intensity / 100;
 	p_clr[1] = clr[1] * m_displayWindow.m_Intensity / 100;
 	p_clr[2] = clr[2] * m_displayWindow.m_Intensity / 100;
-	
+
+	//see if we need to reconnect generator
+	if (!this->m_bisInited)
+		Init();
+
 	if ( m_GDIGenePropertiesPage.m_nDisplayMode == DISPLAY_madVR)
 		DisplayRGBColormadVR (do_Intensity?p_clr:clr, GetConfig()->m_isSettling);
 	else if ( m_GDIGenePropertiesPage.m_nDisplayMode == DISPLAY_ccast)

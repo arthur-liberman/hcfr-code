@@ -55,6 +55,7 @@ public:										// public because of callback
 	int     m_bgStimPercent;
 	UINT    m_Intensity;
 	BOOL	IsOnOtherMonitor ();
+	BOOL	m_bisInited;
 // Implementation
 public:
 	CGDIGenerator();

@@ -857,8 +857,8 @@ void CFullScreenWindow::OnPaint()
 	{
 		dWidth = (int)(rect.Width()*(100-m_rectAreaPercent)/100.0);
 		dHeight = (int)(rect.Height()*(100-m_rectAreaPercent)/100.0);
-        borderArea = (dWidth + 40.) * (dHeight + 40.) - dWidth * dHeight; 
-
+//        borderArea = (dWidth + 40.) * (dHeight + 40.) - dWidth * dHeight; 
+		borderArea = 0;
 		if(m_rectSizePercent < 100 && !isSpecial)  // Need to draw background and border
 		{
 			if (m_nDisplayMode != DISPLAY_GDI_nBG && !m_busePic)
@@ -882,11 +882,11 @@ void CFullScreenWindow::OnPaint()
 				dc.FillRect ( &rect, &brush );
 				brush.DeleteObject ();
 
-		        CRect borderRect=rect;
-		        borderRect.DeflateRect((dWidth-40)/2,(dHeight-40)/2);
-                brush.CreateSolidBrush ( RGB(0,0,0) );
-				dc.FillRect ( &borderRect, &brush );
-				brush.DeleteObject ();
+//		        CRect borderRect=rect;
+//		        borderRect.DeflateRect((dWidth-40)/2,(dHeight-40)/2);
+//                brush.CreateSolidBrush ( RGB(0,0,0) );
+//				dc.FillRect ( &borderRect, &brush );
+//				brush.DeleteObject ();
 
 			}
 		}
