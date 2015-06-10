@@ -1116,7 +1116,7 @@ void CDataSetDoc::MeasureGrayScale()
 {
 	StopBackgroundMeasures ();
 
-	if(m_measure.MeasureGrayScale(m_pSensor,m_pGenerator))
+	if(m_measure.MeasureGrayScale(m_pSensor,m_pGenerator, this))
 	{
 		SetModifiedFlag(m_measure.IsModified());
 		UpdateAllViews(NULL, UPD_GRAYSCALE);
@@ -1127,7 +1127,7 @@ void CDataSetDoc::MeasureGrayScaleAndColors()
 {
 	StopBackgroundMeasures ();
 
-	if(m_measure.MeasureGrayScaleAndColors(m_pSensor,m_pGenerator))
+	if(m_measure.MeasureGrayScaleAndColors(m_pSensor,m_pGenerator,this))
 	{
 		SetModifiedFlag(m_measure.IsModified());
 		UpdateAllViews(NULL, UPD_GRAYSCALEANDCOLORS);
@@ -1138,7 +1138,7 @@ void CDataSetDoc::MeasureNearBlackScale()
 {
 	StopBackgroundMeasures ();
 
-	if(m_measure.MeasureNearBlackScale(m_pSensor,m_pGenerator))
+	if(m_measure.MeasureNearBlackScale(m_pSensor,m_pGenerator,this))
 	{
 		SetModifiedFlag(m_measure.IsModified());
 		UpdateAllViews(NULL, UPD_NEARBLACK);
@@ -1149,7 +1149,7 @@ void CDataSetDoc::MeasureNearWhiteScale()
 {
 	StopBackgroundMeasures ();
 
-	if(m_measure.MeasureNearWhiteScale(m_pSensor,m_pGenerator))
+	if(m_measure.MeasureNearWhiteScale(m_pSensor,m_pGenerator,this))
 	{
 		SetModifiedFlag(m_measure.IsModified());
 		UpdateAllViews(NULL, UPD_NEARWHITE);
@@ -1160,7 +1160,7 @@ void CDataSetDoc::MeasureRedSatScale()
 {
 	StopBackgroundMeasures ();
 
-	if(m_measure.MeasureRedSatScale(m_pSensor,m_pGenerator))
+	if(m_measure.MeasureRedSatScale(m_pSensor,m_pGenerator,this))
 	{
 		SetModifiedFlag(m_measure.IsModified());
 		UpdateAllViews(NULL, UPD_REDSAT);
@@ -1171,7 +1171,7 @@ void CDataSetDoc::MeasureGreenSatScale()
 {
 	StopBackgroundMeasures ();
 
-	if(m_measure.MeasureGreenSatScale(m_pSensor,m_pGenerator))
+	if(m_measure.MeasureGreenSatScale(m_pSensor,m_pGenerator,this))
 	{
 		SetModifiedFlag(m_measure.IsModified());
 		UpdateAllViews(NULL, UPD_GREENSAT);
@@ -1182,7 +1182,7 @@ void CDataSetDoc::MeasureBlueSatScale()
 {
 	StopBackgroundMeasures ();
 
-	if(m_measure.MeasureBlueSatScale(m_pSensor,m_pGenerator))
+	if(m_measure.MeasureBlueSatScale(m_pSensor,m_pGenerator,this))
 	{
 		SetModifiedFlag(m_measure.IsModified());
 		UpdateAllViews(NULL, UPD_BLUESAT);
@@ -1193,7 +1193,7 @@ void CDataSetDoc::MeasureYellowSatScale()
 {
 	StopBackgroundMeasures ();
 
-	if(m_measure.MeasureYellowSatScale(m_pSensor,m_pGenerator))
+	if(m_measure.MeasureYellowSatScale(m_pSensor,m_pGenerator,this))
 	{
 		SetModifiedFlag(m_measure.IsModified());
 		UpdateAllViews(NULL, UPD_YELLOWSAT);
@@ -1204,7 +1204,7 @@ void CDataSetDoc::MeasureCyanSatScale()
 {
 	StopBackgroundMeasures ();
 
-	if(m_measure.MeasureCyanSatScale(m_pSensor,m_pGenerator))
+	if(m_measure.MeasureCyanSatScale(m_pSensor,m_pGenerator,this))
 	{
 		SetModifiedFlag(m_measure.IsModified());
 		UpdateAllViews(NULL, UPD_CYANSAT);
@@ -1215,7 +1215,7 @@ void CDataSetDoc::MeasureMagentaSatScale()
 {
 	StopBackgroundMeasures ();
 
-	if(m_measure.MeasureMagentaSatScale(m_pSensor,m_pGenerator))
+	if(m_measure.MeasureMagentaSatScale(m_pSensor,m_pGenerator,this))
 	{
 		SetModifiedFlag(m_measure.IsModified());
 		UpdateAllViews(NULL, UPD_MAGENTASAT);
@@ -1225,8 +1225,7 @@ void CDataSetDoc::MeasureMagentaSatScale()
 void CDataSetDoc::MeasureCC24SatScale() 
 {
 	StopBackgroundMeasures ();
-
-	if(m_measure.MeasureCC24SatScale(m_pSensor,m_pGenerator))
+	if(m_measure.MeasureCC24SatScale(m_pSensor,m_pGenerator,this))
 	{
 		SetModifiedFlag(m_measure.IsModified());
 		UpdateAllViews(NULL, UPD_CC24SAT);
@@ -1237,7 +1236,7 @@ void CDataSetDoc::MeasureAllSaturationScales()
 {
 	StopBackgroundMeasures ();
 
-	if(m_measure.MeasureAllSaturationScales(m_pSensor,m_pGenerator,FALSE))
+	if(m_measure.MeasureAllSaturationScales(m_pSensor,m_pGenerator,FALSE,this))
 	{
 		SetModifiedFlag(m_measure.IsModified());
 		UpdateAllViews(NULL, UPD_ALLSATURATIONS);
@@ -1248,7 +1247,7 @@ void CDataSetDoc::MeasurePrimarySaturationScales()
 {
 	StopBackgroundMeasures ();
 
-	if(m_measure.MeasureAllSaturationScales(m_pSensor,m_pGenerator,TRUE))
+	if(m_measure.MeasureAllSaturationScales(m_pSensor,m_pGenerator,TRUE,this))
 	{
 		SetModifiedFlag(m_measure.IsModified());
 		UpdateAllViews(NULL, UPD_ALLSATURATIONS);
@@ -1259,7 +1258,7 @@ void CDataSetDoc::MeasurePrimarySecondarySaturationScales()
 {
 	StopBackgroundMeasures ();
 
-	if(m_measure.MeasurePrimarySecondarySaturationScales(m_pSensor,m_pGenerator,FALSE))
+	if(m_measure.MeasurePrimarySecondarySaturationScales(m_pSensor,m_pGenerator,FALSE,this))
 	{
 		SetModifiedFlag(m_measure.IsModified());
 		UpdateAllViews(NULL, UPD_ALLSATURATIONS);
@@ -1270,7 +1269,7 @@ void CDataSetDoc::MeasurePrimaries()
 {
 	StopBackgroundMeasures ();
 
-	if(m_measure.MeasurePrimaries(m_pSensor,m_pGenerator))
+	if(m_measure.MeasurePrimaries(m_pSensor,m_pGenerator,this))
 	{
 		SetModifiedFlag(m_measure.IsModified());
 		UpdateAllViews(NULL, UPD_PRIMARIES);
@@ -1281,7 +1280,7 @@ void CDataSetDoc::MeasureSecondaries()
 {
 	StopBackgroundMeasures ();
 
-	if(m_measure.MeasureSecondaries(m_pSensor,m_pGenerator))
+	if(m_measure.MeasureSecondaries(m_pSensor,m_pGenerator,this))
 	{
 		SetModifiedFlag(m_measure.IsModified());
 		UpdateAllViews(NULL, UPD_SECONDARIES);

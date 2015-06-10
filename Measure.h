@@ -57,6 +57,7 @@ public:
 protected:
 	BOOL m_isModified;
 	BOOL m_bpreV10;
+	BOOL m_binMeasure;
 	CArray<CColor,CColor> m_primariesArray;
 	CArray<CColor,CColor> m_secondariesArray;
 	CArray<CColor,CColor> m_grayMeasureArray;
@@ -77,6 +78,7 @@ protected:
 	CArray<CColor,CColor> m_cc24SatMeasureArray;
 	CArray<CColor,CColor> m_cc24SatMeasureArray_master;
 	CString m_infoStr;
+	CString m_CCStr;
 public:
 	BOOL	m_bIREScaleMode;
 
@@ -104,36 +106,36 @@ public:
 	UINT GetLuxMeasure ( double * pValue ); 
 
 	void Copy(CMeasure * p,UINT nId);
-	BOOL MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator);
+	BOOL MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator, CDataSetDoc *pDoc);
 	BOOL MeasureCC24(CSensor *pSensor, CGenerator *pGenerator);
-	BOOL MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerator);
+	BOOL MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerator, CDataSetDoc *pDoc);
 	CColor GetGray(int i) const;
 	void SetGray(int i,const CColor & aColor) {m_grayMeasureArray[i]=aColor; m_isModified=TRUE;} 
 	int GetGrayScaleSize() const { return m_grayMeasureArray.GetSize(); }
 	void SetGrayScaleSize(int steps);
 	void SetIREScaleMode(BOOL bIRE);
 
-	BOOL MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator);
+	BOOL MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator, CDataSetDoc *pDoc);
 	CColor GetNearBlack(int i) const;
 	void SetNearBlack(int i,const CColor & aColor) {m_nearBlackMeasureArray[i]=aColor; m_isModified=TRUE;} 
 	int GetNearBlackScaleSize() const { return m_nearBlackMeasureArray.GetSize(); }
 	void SetNearBlackScaleSize(int steps);
 
-	BOOL MeasureNearWhiteScale(CSensor *pSensor, CGenerator *pGenerator);
+	BOOL MeasureNearWhiteScale(CSensor *pSensor, CGenerator *pGenerator, CDataSetDoc *pDoc);
 	CColor GetNearWhite(int i) const;
 	void SetNearWhite(int i,const CColor & aColor) {m_nearWhiteMeasureArray[i]=aColor; m_isModified=TRUE;} 
 	int GetNearWhiteScaleSize() const { return m_nearWhiteMeasureArray.GetSize(); }
 	void SetNearWhiteScaleSize(int steps);
 
-	BOOL MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator);
-	BOOL MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator);
-	BOOL MeasureBlueSatScale(CSensor *pSensor, CGenerator *pGenerator);
-	BOOL MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator);
-	BOOL MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator);
-	BOOL MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator);
-	BOOL MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator);
-	BOOL MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerator,BOOL bPrimaryOnly);
-	BOOL MeasurePrimarySecondarySaturationScales(CSensor *pSensor, CGenerator *pGenerator,BOOL bPrimaryOnly);
+	BOOL MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator, CDataSetDoc *pDoc);
+	BOOL MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator, CDataSetDoc *pDoc);
+	BOOL MeasureBlueSatScale(CSensor *pSensor, CGenerator *pGenerator, CDataSetDoc *pDoc);
+	BOOL MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator, CDataSetDoc *pDoc);
+	BOOL MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator, CDataSetDoc *pDoc);
+	BOOL MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator, CDataSetDoc *pDoc);
+	BOOL MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator, CDataSetDoc *pDoc);
+	BOOL MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerator,BOOL bPrimaryOnly, CDataSetDoc *pDoc);
+	BOOL MeasurePrimarySecondarySaturationScales(CSensor *pSensor, CGenerator *pGenerator,BOOL bPrimaryOnly, CDataSetDoc *pDoc);
 	int GetSaturationSize() const { return m_redSatMeasureArray.GetSize(); }
 	void SetSaturationSize(int steps);
 	CColor GetRedSat(int i) const;
@@ -150,8 +152,9 @@ public:
 	void SetMagentaSat(int i,const CColor & aColor) {m_magentaSatMeasureArray[i]=aColor; m_isModified=TRUE; } 
 	CColor GetCC24Sat(int i) const;
 	void SetCC24Sat(int i,const CColor & aColor) {m_cc24SatMeasureArray[i]=aColor; m_isModified=TRUE; } 
-	
-	BOOL MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator);
+	CString GetCCStr() const;
+
+	BOOL MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator, CDataSetDoc *pDoc);
 	CColor GetPrimary(int i) const;
 	CColor GetRedPrimary() const;
 	CColor GetGreenPrimary() const;
@@ -161,7 +164,7 @@ public:
 	void SetBluePrimary(const CColor & aColor) { m_primariesArray[2]=aColor; m_isModified=TRUE; }
 	void SetPrimary(int i, const CColor & aColor) { m_primariesArray[i] = aColor; m_isModified=TRUE; }
  
-	BOOL MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator);
+	BOOL MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator, CDataSetDoc *pDoc);
 	CColor GetSecondary(int i) const;
 	CColor GetYellowSecondary() const;
 	CColor GetCyanSecondary() const;
@@ -200,7 +203,7 @@ public:
 	void InsertMeasurement(int i, CColor & aColor) { m_measurementsArray.InsertAt(i,aColor); m_isModified=TRUE; }
 	void FreeMeasurementAppended(bool isPrimary);
 
-	CString GetInfoString() const { return m_infoStr; }
+	CString GetInfoString() const { return m_infoStr+m_CCStr; }
 	void SetInfoString(CString & aStr) { m_infoStr = aStr; } 
 
 	CColor GetRefPrimary(int i) const;
@@ -212,7 +215,7 @@ public:
 
     void ApplySensorAdjustmentMatrix(const Matrix & matrixAdjustment);
 
-	BOOL WaitForDynamicIris ( BOOL bIgnoreEscape = FALSE );
+	BOOL WaitForDynamicIris ( BOOL bIgnoreEscape = FALSE, CDataSetDoc *pDoc = NULL );
 
 	HANDLE InitBackgroundMeasures ( CSensor *pSensor, int nSteps );
 	BOOL BackgroundMeasureColor ( int nCurStep, const ColorRGBDisplay& aRGBValue );

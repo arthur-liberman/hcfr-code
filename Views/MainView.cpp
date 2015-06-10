@@ -378,9 +378,9 @@ BEGIN_MESSAGE_MAP(CMainView, CFormView)
 	ON_NOTIFY(GVN_BEGINLABELEDIT, IDC_GRAYSCALE_GRID, OnGrayScaleGridBeginEdit)
 	ON_NOTIFY(GVN_ENDLABELEDIT, IDC_GRAYSCALE_GRID, OnGrayScaleGridEndEdit)
 	ON_NOTIFY(GVN_SELCHANGED, IDC_GRAYSCALE_GRID, OnGrayScaleGridEndSelChange)
-
 	ON_MESSAGE(WM_SET_USER_INFO_POST_INIT, OnSetUserInfoPostInitialUpdate)
 END_MESSAGE_MAP()
+
 
 // Tool functions and variables implemented in DataSetDoc.cpp
 BOOL StartBackgroundMeasures ( CDataSetDoc * pDoc );
@@ -716,8 +716,8 @@ void CMainView::RefreshSelection()
 			size=GetDocument()->GetMeasure()->GetSaturationSize();
 		if (last_minCol != minCol && minCol > 0)
 			last_minCol = minCol;
-	    m_RGBLevels.Refresh(minCol, m_displayMode, size);
-		m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  minCol, size, m_displayMode, GetDocument());
+	    m_RGBLevels.Refresh(last_minCol, m_displayMode, size);
+		m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  last_minCol, size, m_displayMode, GetDocument());
     }
 
 	if(m_SelectedColor.isValid())
@@ -1635,6 +1635,11 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 		{
 			InitGrid(); // to update row labels (if colorReference setting has changed, or if lux values appeared)
 			UpdateGrid();
+			if ( m_pInfoWnd )
+			{
+				m_pInfoWnd ->SetWindowTextA(GetDocument()->GetMeasure()->GetInfoString());
+				m_pInfoWnd -> Invalidate ();
+				m_pInfoWnd -> UpdateWindow();			}
 		}
 		
 		if ( lHint == UPD_FREEMEASUREAPPENDED )
@@ -2451,7 +2456,6 @@ void CMainView::UpdateGrid()
                         // fixed to use correct gamma predicts
                         // and added option to assume perfect gamma
 						double x = ArrayIndexToGrayLevel ( j, nCount, GetConfig () -> m_bUseRoundDown );
-//            		    CColor White = GetDocument() -> GetMeasure () -> GetGray ( nCount - 1 );
             		    CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
 	                	CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
 						int mode = GetConfig()->m_GammaOffsetType;
@@ -5024,7 +5028,7 @@ void CMainView::UpdateAllGrids()
 	UpdateGrid();
 	if(m_pGrayScaleGrid->GetColumnCount() > 12)	// Needed after data is set to get correctly sized cells when scrollbar is present
 	{
-		m_pGrayScaleGrid->ExpandRowsToFit(FALSE);
+		m_pGrayScaleGrid->ExpandRowsToFit(TRUE);
 		m_pGrayScaleGrid->AutoSizeColumns();
 	}
 	

@@ -28,6 +28,8 @@
 #include "Measure.h"
 #include "Generator.h"
 #include "LuxScaleAdvisor.h"
+#include "DataSetDoc.h"
+#include "Views\MainView.h"
 
 #include <math.h>
 #include <sstream>
@@ -48,6 +50,7 @@ CMeasure::CMeasure()
 {
 	m_isModified = FALSE;
 	m_bpreV10 = FALSE;
+	m_binMeasure = FALSE;
 	m_primariesArray.SetSize(3);
 	m_secondariesArray.SetSize(3);
 	m_grayMeasureArray.SetSize(11);
@@ -92,6 +95,7 @@ CMeasure::CMeasure()
 	m_OnOffBlack.SetXYZValue(GetColorReference().GetWhite());
 	m_OnOffBlack.SetY(0.012345);
 	m_AnsiBlack=m_AnsiWhite=noDataColor;
+	m_CCStr = (CString)"";
 	SetInfoString((CString)"Calibration by: \r\nDisplay: \r\nNote: \r\n");
 	
 	m_bIREScaleMode = GetConfig()->GetProfileInt("References","IRELevels",FALSE);
@@ -375,6 +379,7 @@ void CMeasure::Serialize(CArchive& ar)
 					m_cc24SatMeasureArray_master.SetSize(5000);
 					for(int i=0;i<size;i++)
 						m_cc24SatMeasureArray_master[i].Serialize(ar);
+					m_CCStr=GetCCStr();
 				}
 				else
 					m_bpreV10 = TRUE;
@@ -669,7 +674,7 @@ UINT CMeasure::GetLuxMeasure ( double * pValue )
 }
 bool doSettling = FALSE;
 
-BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator)
+BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator, CDataSetDoc *pDoc)
 {
 	MSG		Msg;
 	BOOL	bEscape;
@@ -719,7 +724,7 @@ BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator)
 			doSettling = GetConfig()->m_isSettling;
 		if( pGenerator->DisplayGray(ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown),CGenerator::MT_IRE ,!bRetry))
 		{
-			bEscape = WaitForDynamicIris ( );
+			bEscape = WaitForDynamicIris (FALSE, pDoc );
 			bRetry = FALSE;
 
 			if ( ! bEscape )
@@ -728,6 +733,7 @@ BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator)
 					StartLuxMeasure ();
 
 				measuredColor[i]=pSensor->MeasureGray(ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown));
+				m_grayMeasureArray[i] = measuredColor[i];
 				
 				if ( bUseLuxValues )
 				{
@@ -874,7 +880,7 @@ BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator)
 
 
 
-BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerator)
+BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerator, CDataSetDoc *pDoc)
 {
 	MSG		Msg;
 	BOOL	bEscape;
@@ -924,7 +930,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 			doSettling = GetConfig()->m_isSettling;
 		if( pGenerator->DisplayGray(ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown),CGenerator::MT_IRE ,!bRetry))
 		{
-			bEscape = WaitForDynamicIris ();
+			bEscape = WaitForDynamicIris (FALSE, pDoc);
 			bRetry = FALSE;
 
 			if ( ! bEscape )
@@ -1051,17 +1057,6 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 		}
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
-/*
-	if(pGenerator->GetName() == str&&GetConfig()->m_colorStandard == HDTVb)
-	{		
-		Title.LoadString ( IDS_ERROR );
-		strMsg.LoadString ( IDS_ERRINITGENERATOR );
-		strMsg.Append(" not a supported DVD sequence.");
-		GetColorApp()->InMeasureMessageBox(strMsg,Title,MB_ICONERROR | MB_OK);
-		pGenerator->Release();
-		return FALSE;
-	}
-*/
 	double primaryIRELevel=100.0;	
 	// Measure primary and secondary colors
 	ColorRGBDisplay	GenColors [ 8 ] = 
@@ -1111,7 +1106,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SECONDARY,0,TRUE,TRUE) )
 
 		{
-			bEscape = WaitForDynamicIris ();
+			bEscape = WaitForDynamicIris (FALSE, pDoc);
 			bRetry = FALSE;
 
 			if ( ! bEscape )
@@ -1120,6 +1115,12 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 					StartLuxMeasure ();
 
 				measuredColor[size+i]=pSensor->MeasureColor(MeasColors[i]);
+				if (i<size)
+					m_grayMeasureArray[i] = measuredColor[i];
+				if (i<size+3&&i>=size)
+					m_primariesArray[i-size] = measuredColor[i];
+				if (i<size+6&&i>=size+3)
+					m_secondariesArray[i-size-3] = measuredColor[i];
 				
 				if ( bUseLuxValues )
 				{
@@ -1256,7 +1257,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 	return TRUE;
 }
 
-BOOL CMeasure::MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator)
+BOOL CMeasure::MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator, CDataSetDoc *pDoc)
 {
 	MSG		Msg;
 	BOOL	bEscape;
@@ -1308,7 +1309,7 @@ BOOL CMeasure::MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator)
 		if( pGenerator->DisplayGray((ArrayIndexToGrayLevel ( i, 101, GetConfig () -> m_bUseRoundDown)),CGenerator::MT_NEARBLACK,!bRetry) )
 		{
 
-			bEscape = WaitForDynamicIris ();
+			bEscape = WaitForDynamicIris (FALSE, pDoc);
 			bRetry = FALSE;
 
 			if ( ! bEscape )
@@ -1317,6 +1318,7 @@ BOOL CMeasure::MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator)
 					StartLuxMeasure ();
 
 				measuredColor[i]=pSensor->MeasureGray(i);
+				m_nearBlackMeasureArray[i] = measuredColor[i];
 				
 				if ( bUseLuxValues )
 				{
@@ -1446,7 +1448,7 @@ BOOL CMeasure::MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator)
 	return TRUE;
 }
 
-BOOL CMeasure::MeasureNearWhiteScale(CSensor *pSensor, CGenerator *pGenerator)
+BOOL CMeasure::MeasureNearWhiteScale(CSensor *pSensor, CGenerator *pGenerator, CDataSetDoc *pDoc)
 {
 	MSG		Msg;
 	BOOL	bEscape;
@@ -1497,7 +1499,7 @@ BOOL CMeasure::MeasureNearWhiteScale(CSensor *pSensor, CGenerator *pGenerator)
 			doSettling = GetConfig()->m_isSettling;
 		if( pGenerator->DisplayGray((ArrayIndexToGrayLevel ( 101-size+i, 101, GetConfig () -> m_bUseRoundDown)),CGenerator::MT_NEARWHITE,!bRetry ) )
 		{
-			bEscape = WaitForDynamicIris ();
+			bEscape = WaitForDynamicIris (FALSE, pDoc);
 			bRetry = FALSE;
 
 			if ( ! bEscape )
@@ -1506,6 +1508,7 @@ BOOL CMeasure::MeasureNearWhiteScale(CSensor *pSensor, CGenerator *pGenerator)
 					StartLuxMeasure ();
 
 				measuredColor[i]=pSensor->MeasureGray(101-size+i);
+				m_nearWhiteMeasureArray[i] = measuredColor[i];
 				
 				if ( bUseLuxValues )
 				{
@@ -1601,7 +1604,7 @@ BOOL CMeasure::MeasureNearWhiteScale(CSensor *pSensor, CGenerator *pGenerator)
 	return TRUE;
 }
 
-BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator)
+BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator, CDataSetDoc *pDoc)
 {
 	MSG			Msg;
 	BOOL		bEscape;
@@ -1658,7 +1661,7 @@ BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator)
 
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_RED,100*i/(size - 1),!bRetry))
 		{
-			bEscape = WaitForDynamicIris ();
+			bEscape = WaitForDynamicIris (FALSE, pDoc);
 			bRetry = FALSE;
 
 			if ( ! bEscape )
@@ -1667,6 +1670,7 @@ BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator)
 					StartLuxMeasure ();
 
 				measuredColor[i]=pSensor->MeasureColor(GenColors[i]);
+				m_redSatMeasureArray[i] = measuredColor[i];
 				
 				if ( bUseLuxValues )
 				{
@@ -1762,7 +1766,7 @@ BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	return TRUE;
 }
 
-BOOL CMeasure::MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator)
+BOOL CMeasure::MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator, CDataSetDoc *pDoc)
 {
 	MSG			Msg;
 	BOOL		bEscape;
@@ -1817,7 +1821,7 @@ BOOL CMeasure::MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator)
 			doSettling = GetConfig()->m_isSettling;
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_GREEN,100*i/(size - 1),!bRetry) )
 		{
-			bEscape = WaitForDynamicIris ();
+			bEscape = WaitForDynamicIris (FALSE, pDoc);
 			bRetry = FALSE;
 
 			if ( ! bEscape )
@@ -1826,6 +1830,7 @@ BOOL CMeasure::MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator)
 					StartLuxMeasure ();
 
 				measuredColor[i]=pSensor->MeasureColor(GenColors[i]);
+				m_greenSatMeasureArray[i] = measuredColor[i];
 				
 				if ( bUseLuxValues )
 				{
@@ -1921,7 +1926,7 @@ BOOL CMeasure::MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	return TRUE;
 }
 
-BOOL CMeasure::MeasureBlueSatScale(CSensor *pSensor, CGenerator *pGenerator)
+BOOL CMeasure::MeasureBlueSatScale(CSensor *pSensor, CGenerator *pGenerator, CDataSetDoc *pDoc)
 {
 	MSG			Msg;
 	BOOL		bEscape;
@@ -1977,7 +1982,7 @@ BOOL CMeasure::MeasureBlueSatScale(CSensor *pSensor, CGenerator *pGenerator)
 			doSettling = GetConfig()->m_isSettling;
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_BLUE,100*i/(size - 1),!bRetry))
 		{
-			bEscape = WaitForDynamicIris ();
+			bEscape = WaitForDynamicIris (FALSE, pDoc);
 			bRetry = FALSE;
 
 			if ( ! bEscape )
@@ -1986,6 +1991,7 @@ BOOL CMeasure::MeasureBlueSatScale(CSensor *pSensor, CGenerator *pGenerator)
 					StartLuxMeasure ();
 
 				measuredColor[i]=pSensor->MeasureColor(GenColors[i]);
+				m_blueSatMeasureArray[i] = measuredColor[i];
 				
 				if ( bUseLuxValues )
 				{
@@ -2081,7 +2087,7 @@ BOOL CMeasure::MeasureBlueSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	return TRUE;
 }
 
-BOOL CMeasure::MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator)
+BOOL CMeasure::MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator, CDataSetDoc *pDoc)
 {
 	MSG			Msg;
 	BOOL		bEscape;
@@ -2137,7 +2143,7 @@ BOOL CMeasure::MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator)
 			doSettling = GetConfig()->m_isSettling;
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_YELLOW,100*i/(size - 1),!bRetry))
 		{
-			bEscape = WaitForDynamicIris ();
+			bEscape = WaitForDynamicIris (FALSE, pDoc);
 			bRetry = FALSE;
 
 			if ( ! bEscape )
@@ -2146,6 +2152,7 @@ BOOL CMeasure::MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator)
 					StartLuxMeasure ();
 
 				measuredColor[i]=pSensor->MeasureColor(GenColors[i]);
+				m_yellowSatMeasureArray[i] = measuredColor[i];
 				
 				if ( bUseLuxValues )
 				{
@@ -2242,7 +2249,7 @@ BOOL CMeasure::MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	return TRUE;
 }
 
-BOOL CMeasure::MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator)
+BOOL CMeasure::MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator, CDataSetDoc *pDoc)
 {
 	MSG			Msg;
 	BOOL		bEscape;
@@ -2298,7 +2305,7 @@ BOOL CMeasure::MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator)
 			doSettling = GetConfig()->m_isSettling;
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_CYAN,100*i/(size - 1),!bRetry))
 		{
-			bEscape = WaitForDynamicIris ();
+			bEscape = WaitForDynamicIris (FALSE, pDoc);
 			bRetry = FALSE;
 
 			if ( ! bEscape )
@@ -2307,6 +2314,7 @@ BOOL CMeasure::MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator)
 					StartLuxMeasure ();
 
 				measuredColor[i]=pSensor->MeasureColor(GenColors[i]);
+				m_cyanSatMeasureArray[i] = measuredColor[i];
 				
 				if ( bUseLuxValues )
 				{
@@ -2403,7 +2411,7 @@ BOOL CMeasure::MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator)
 	return TRUE;
 }
 
-BOOL CMeasure::MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator)
+BOOL CMeasure::MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator, CDataSetDoc *pDoc)
 {
 	MSG			Msg;
 	BOOL		bEscape;
@@ -2459,7 +2467,7 @@ BOOL CMeasure::MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator)
 			doSettling = GetConfig()->m_isSettling;
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_MAGENTA,100*i/(size - 1) ,!bRetry))
 		{
-			bEscape = WaitForDynamicIris ();
+			bEscape = WaitForDynamicIris (FALSE, pDoc);
 			bRetry = FALSE;
 
 			if ( ! bEscape )
@@ -2468,6 +2476,7 @@ BOOL CMeasure::MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator)
 					StartLuxMeasure ();
 
 				measuredColor[i]=pSensor->MeasureColor(GenColors[i]);
+				m_magentaSatMeasureArray[i] = measuredColor[i];
 				
 				if ( bUseLuxValues )
 				{
@@ -2558,12 +2567,11 @@ BOOL CMeasure::MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator)
 			m_magentaSatMeasureArray[i].ResetLuxValue ();
 	}
 	GetConfig()->m_isSettling = doSettling;
-
 	m_isModified=TRUE;
 	return TRUE;
 }
 
-BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
+BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator, CDataSetDoc *pDoc)
 {
 	MSG			Msg;
 	BOOL		bEscape;
@@ -2662,7 +2670,9 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
 		pGenerator->Release();
 		return FALSE;
 	}
-
+	for (int i=0;i<1000;i++) 
+		m_cc24SatMeasureArray[i] = noDataColor;
+	m_binMeasure = TRUE;
 	for(int i=0;i<size;i++)
 	{
 		if (i>0)
@@ -2671,7 +2681,7 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
 			doSettling = GetConfig()->m_isSettling;
 		if( pGenerator->DisplayRGBColor(GenColors[i], nPattern ,i,!bRetry))
 		{
-			bEscape = WaitForDynamicIris ();
+			bEscape = WaitForDynamicIris (FALSE, pDoc);
 			bRetry = FALSE;
 
 			if ( ! bEscape )
@@ -2689,6 +2699,8 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
 					else
 						measuredColor[23-i]=pSensor->MeasureColor(GenColors[i]);	
 				}
+
+				m_cc24SatMeasureArray[i] = measuredColor[i];
 
 				if ( bUseLuxValues )
 				{
@@ -2795,10 +2807,13 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator)
 				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(1900+250+500)];
 
 	m_isModified=TRUE;
+	m_binMeasure = FALSE;
+	m_CCStr=GetCCStr();
+	WaitForDynamicIris(FALSE, pDoc);
 	return TRUE;
 }
 
-BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerator, BOOL bPrimaryOnly)
+BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerator, BOOL bPrimaryOnly, CDataSetDoc *pDoc)
 {
 	int			i, j;
 	MSG			Msg;
@@ -2917,7 +2932,10 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 		pGenerator->Release();
 		return FALSE;
 	}
+	for (i=0;i<1000;i++) 
+	m_cc24SatMeasureArray[i] = noDataColor;
 
+	m_binMeasure = TRUE;
 	for ( j = 0 ; j < ( bPrimaryOnly ? 3 : 7 ) ; j ++ )
 	{
 		for ( i = 0 ; i < ( j == 6 ? ccSize : size ) ; i ++ )
@@ -2928,7 +2946,7 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 			doSettling = GetConfig()->m_isSettling;
 			if( pGenerator->DisplayRGBColor(GenColors[(j*size)+i],SaturationType[j],(j == 6 ? i:100*i/(size - 1)),!bRetry,(j>0)) )
 			{
-				bEscape = WaitForDynamicIris ();
+				bEscape = WaitForDynamicIris (FALSE, pDoc);
 				bRetry = FALSE;
 
 				if ( ! bEscape )
@@ -2937,7 +2955,27 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 						StartLuxMeasure ();
 
 					measuredColor[(j*size)+i]=pSensor->MeasureColor(GenColors[(j*size)+i]);
-					
+					if ((i+j*size)<size)
+						m_redSatMeasureArray[i] = measuredColor[j*size+i];
+					if ((i+j*size)<2*size&&(i+j*size)>=size)
+						m_greenSatMeasureArray[i] = measuredColor[j*size+i];
+					if ((i+j*size)<3*size&&(i+j*size)>=2*size)
+						m_blueSatMeasureArray[i] = measuredColor[j*size+i];
+					if (!bPrimaryOnly)
+					{
+						if ((i+j*size)<4*size&&(i+j*size)>=3*size)
+							m_yellowSatMeasureArray[i] = measuredColor[j*size+i];
+						if ((i+j*size)<5*size&&(i+j*size)>=4*size)
+							m_cyanSatMeasureArray[i] = measuredColor[j*size+i];
+						if ((i+j*size)<6*size&&(i+j*size)>=5*size)
+							m_magentaSatMeasureArray[i] = measuredColor[j*size+i];
+						if ((i+j*size)>=6*size)
+							m_cc24SatMeasureArray[i] = measuredColor[j*size+i];
+					} else
+					{
+						if ((i+j*size)>=3*size)
+							m_cc24SatMeasureArray[i] = measuredColor[j*size+i];
+					}
 					if ( bUseLuxValues )
 					{
 						switch ( GetLuxMeasure ( & dLuxValue ) )
@@ -3129,10 +3167,13 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(1900+250+500)];
 
 	m_isModified=TRUE;
+	m_binMeasure = FALSE;
+	m_CCStr=GetCCStr();
+	WaitForDynamicIris(FALSE, pDoc);
 	return TRUE;
 }
 
-BOOL CMeasure::MeasurePrimarySecondarySaturationScales(CSensor *pSensor, CGenerator *pGenerator, BOOL bPrimaryOnly)
+BOOL CMeasure::MeasurePrimarySecondarySaturationScales(CSensor *pSensor, CGenerator *pGenerator, BOOL bPrimaryOnly, CDataSetDoc *pDoc)
 {
 	int			i, j;
 	MSG			Msg;
@@ -3196,6 +3237,7 @@ BOOL CMeasure::MeasurePrimarySecondarySaturationScales(CSensor *pSensor, CGenera
 	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 4 ], size, false, true, true );	// Cyan
 	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 5 ], size, true, false, true );	// Magenta
 
+	m_binMeasure = TRUE;
 	for ( j = 0 ; j < ( bPrimaryOnly ? 3 : 6 ) ; j ++ )
 	{
 		for ( i = 0 ; i < size  ; i ++ )
@@ -3206,7 +3248,7 @@ BOOL CMeasure::MeasurePrimarySecondarySaturationScales(CSensor *pSensor, CGenera
 			doSettling = GetConfig()->m_isSettling;
 			if( pGenerator->DisplayRGBColor(GenColors[(j*size)+i],SaturationType[j],100*i/(size - 1),!bRetry,(j>0)) )
 			{
-				bEscape = WaitForDynamicIris ();
+				bEscape = WaitForDynamicIris (FALSE, pDoc);
 				bRetry = FALSE;
 
 				if ( ! bEscape )
@@ -3215,6 +3257,21 @@ BOOL CMeasure::MeasurePrimarySecondarySaturationScales(CSensor *pSensor, CGenera
 						StartLuxMeasure ();
 
 					measuredColor[(j*size)+i]=pSensor->MeasureColor(GenColors[(j*size)+i]);
+					if ((i+j*size)<size)
+						m_redSatMeasureArray[i] = measuredColor[i];
+					if ((i+j*size)<size*2&&(i+j*size)>=size)
+						m_greenSatMeasureArray[i] = measuredColor[size+i];
+					if ((i+j*size)<size*3&&(i+j*size)>=2*size)
+						m_blueSatMeasureArray[i] = measuredColor[2*size+i];
+					if (!bPrimaryOnly)
+					{
+						if ((i+j*size)<size*4&&(i+j*size)>=3*size)
+							m_yellowSatMeasureArray[i] = measuredColor[3*size+i];
+						if ((i+j*size)<size*5&&(i+j*size)>=4*size)
+							m_cyanSatMeasureArray[i] = measuredColor[4*size+i];
+						if ((i+j*size)<size*6&&(i+j*size)>=5*size)
+							m_magentaSatMeasureArray[i] = measuredColor[5*size+i];
+					}
 					
 					if ( bUseLuxValues )
 					{
@@ -3353,11 +3410,12 @@ BOOL CMeasure::MeasurePrimarySecondarySaturationScales(CSensor *pSensor, CGenera
 	}
 	GetConfig()->m_isSettling = doSettling;
 
+	m_binMeasure = FALSE;
 	m_isModified=TRUE;
 	return TRUE;
 }
 
-BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
+BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator, CDataSetDoc *pDoc)
 {
 	int		i;
 	MSG		Msg;
@@ -3449,7 +3507,7 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
 			doSettling = GetConfig()->m_isSettling;
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_PRIMARY) )
 		{
-			bEscape = WaitForDynamicIris ();
+			bEscape = WaitForDynamicIris (FALSE, pDoc);
 			bRetry = FALSE;
 
 			if ( ! bEscape )
@@ -3458,6 +3516,8 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
 					StartLuxMeasure ();
 
 				measuredColor[i]=pSensor->MeasureColor(MeasColors[i]);
+				if (i < 3)
+					m_primariesArray[i] = measuredColor[i];
 				if ( bUseLuxValues )
 				{
 					switch ( GetLuxMeasure ( & dLuxValue ) )
@@ -3575,7 +3635,7 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator)
 	return TRUE;
 }
 
-BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator)
+BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator, CDataSetDoc *pDoc)
 {
 	int		i;
 	MSG		Msg;
@@ -3608,17 +3668,6 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator)
 	}
 		CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
-/*
-	if(pGenerator->GetName() == str&&GetConfig()->m_colorStandard == HDTVb)
-	{		
-		Title.LoadString ( IDS_ERROR );
-		strMsg.LoadString ( IDS_ERRINITGENERATOR );
-		strMsg.Append(" not a supported DVD sequence.");
-		GetColorApp()->InMeasureMessageBox(strMsg,Title,MB_ICONERROR | MB_OK);
-		pGenerator->Release();
-		return FALSE;
-	}
-*/
 	// Measure primary and secondary colors
 	double		IRELevel=100.0;	
 	ColorRGBDisplay	GenColors [ 8 ] = 
@@ -3673,7 +3722,7 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator)
 			doSettling = GetConfig()->m_isSettling;
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SECONDARY) )
 		{
-			bEscape = WaitForDynamicIris ();
+			bEscape = WaitForDynamicIris (FALSE, pDoc);
 			bRetry = FALSE;
 
 			if ( ! bEscape )
@@ -3683,6 +3732,10 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator)
 
 				measuredColor[i]=pSensor->MeasureColor(MeasColors[i]);
 				
+				if (i<3)
+					m_primariesArray[i] = measuredColor[i];
+				if (i>=3&&i<6)
+					m_secondariesArray[i-3] = measuredColor[i];
 				if ( bUseLuxValues )
 				{
 					switch ( GetLuxMeasure ( & dLuxValue ) )
@@ -4506,11 +4559,19 @@ void CMeasure::ApplySensorAdjustmentMatrix(const Matrix& aMatrix)
 	m_AnsiWhite.applyAdjustmentMatrix(aMatrix);
 }
 
-BOOL CMeasure::WaitForDynamicIris ( BOOL bIgnoreEscape )
+BOOL CMeasure::WaitForDynamicIris ( BOOL bIgnoreEscape, CDataSetDoc *pDoc )
 {
 	BOOL bEscape = FALSE;
 	DWORD nLatencyTime = (DWORD)GetConfig()->m_latencyTime;
 
+	POSITION pos;
+	CView *pView = NULL;
+	if (pDoc)
+	{
+		pos = pDoc -> GetFirstViewPosition ();
+		pView = pDoc -> GetNextView ( pos );
+		((CMainView*)pView)->GetDocument()->UpdateAllViews(NULL, UPD_EVERYTHING);
+	}
 	if ( nLatencyTime > 0 )
 	{
 		// Sleep nLatencyTime ms while dispatching messages
@@ -4794,7 +4855,7 @@ void CMeasure::FreeMeasurementAppended(bool isPrimary)
 			else if ( LastMeasure.GetDeltaxy ( GetColorReference().GetWhite(), GetColorReference() ) < 0.03 )
 			{
 				// Copy real color to primary (not LastMeasure which may have been adjusted)
-				SetPrimeWhite ( m_measurementsArray[n-1] );
+//				SetPrimeWhite ( m_measurementsArray[n-1] ); //do not futz with white reference during measures
 			}
 		}
 	}
@@ -5275,11 +5336,51 @@ CColor CMeasure::GetMagentaSat(int i) const
 CColor CMeasure::GetCC24Sat(int i) const 
 { 
 	int iCC=GetConfig()->m_CCMode;
-	if (m_bpreV10)
+
+	if (m_bpreV10 || m_binMeasure)
 		return m_cc24SatMeasureArray[i]; 
 	else
-	return m_cc24SatMeasureArray_master[i + (iCC * 100)]; 
+	return m_cc24SatMeasureArray_master[i + (iCC<=19?(iCC * 100):(iCC==20?1900+250:1900+250+500))];  //index increments by 100 until slot 19 (then 250 & 500)
 } 
+
+CString CMeasure::GetCCStr() const
+{
+	CString mStr("Color Checker sweeps active:\r\n");
+	char *sweeps[22]={"GCD Classic \r\n","MCD Classic \r\n","Pantone Skin \r\n",
+		"CalMAN Classic \r\n",
+		"CalMAN Skin \r\n",
+		"Chromapure Skin \r\n",
+		"CalMAN SG \r\n",
+		"CalMAN 10 pt Lum. \r\n",
+		"CalMAN 4 pt Lum. \r\n",
+		"CalMAN 5 pt Lum. \r\n",
+		"CalMAN 10 pt Lum. \r\n",
+		"CalMAN 4 pt Sat.(100AMP) \r\n",
+		"CalMAN 4 pt Sat.(75AMP) \r\n",
+		"CalMAN 5 pt Sat.(100AMP) \r\n",
+		"CalMAN 5 pt Sat.(75AMP) \r\n",
+		"CalMAN 10 pt Sat.(100AMP) \r\n",
+		"CalMAN 10 pt Sat.(75AMP) \r\n",
+		"CalMAN near black \r\n",
+		"CalMan dynamic range \r\n",
+		"Random 250 \r\n",
+		"Random 500 \r\n",
+		"User\r\n"
+	};
+	for (int i=0;i<=22;i++)
+	{
+		if (i<=19)
+			if (m_cc24SatMeasureArray_master[i*100].isValid())
+				mStr+=sweeps[i];
+		if (i==20)
+			if (m_cc24SatMeasureArray_master[1900+250].isValid())
+				mStr+=sweeps[i];
+		if (i==21)
+			if (m_cc24SatMeasureArray_master[1900+250+500].isValid())
+				mStr+=sweeps[i];
+	}
+	return mStr+="\r\n";
+}
 
 CColor CMeasure::GetPrimary(int i) const 
 { 
