@@ -79,6 +79,9 @@ public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	protected:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+	LRESULT OnSetMessageString(WPARAM wParam, LPARAM lParam);
+	CString	m_strPane0StatusMsg;
+	UINT m_nIDLastMessage,m_nIDTracking;
 	//}}AFX_VIRTUAL
 
 // Implementation

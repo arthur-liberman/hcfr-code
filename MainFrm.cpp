@@ -36,6 +36,7 @@
 #include "WebUpdate.h"
 
 #include <dde.h>
+#include <afxpriv.h> 
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -105,6 +106,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CNewMDIFrameWnd)
 	ON_MESSAGE(WM_BKGND_MEASURE_READY, OnBkgndMeasureReady)
 	ON_MESSAGE(WM_TOOLBAR_RBUTTONDOWN, OnRightButton)
 	ON_MESSAGE(WM_TOOLBAR_MBUTTONDOWN, OnMiddleButton)
+	ON_MESSAGE(WM_SETMESSAGESTRING, OnSetMessageString)
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -128,6 +130,7 @@ CMainFrame::CMainFrame()
 	m_measureToolbarID = IDR_MEDIUMTOOLBAR_MEASURES;
 	m_measureexToolbarID = IDR_MEDIUMTOOLBAR_MEASURES_EX;
 	m_measuresatToolbarID = IDR_MEDIUMTOOLBAR_MEASURES_SAT;
+//	m_strPane0StatusMsg.SetString("this is a test");
 }
 
 CMainFrame::~CMainFrame()
@@ -408,6 +411,23 @@ void CMainFrame::DockControlBarNextTo(CControlBar* pBar,CControlBar* pTargetBar)
     pBar->MoveWindow(rBar);
 }
 
+LRESULT CMainFrame::OnSetMessageString(WPARAM wParam, LPARAM lParam)
+{
+        if (!lParam && (wParam == AFX_IDS_IDLEMESSAGE) &&
+                m_strPane0StatusMsg.GetLength ())
+        {       // override the idle message
+                // save off last message ID, so can return
+                UINT nIDLast = m_nIDLastMessage;
+                m_nFlags &= ~WF_NOPOPMSG;
+                m_wndStatusBar.SetWindowText (m_strPane0StatusMsg);
+                // new ID -and- so F1 on toolbar buttons work
+                m_nIDTracking = m_nIDLastMessage = (UINT) wParam;
+                // return last message ID to simulate success
+                return (nIDLast);
+        }
+        // no override requested, do normal things from WinFrm.cpp
+        return (CFrameWnd::OnSetMessageString (wParam, lParam));
+}
 
 void CMainFrame::OnViewTestColor() 
 {
