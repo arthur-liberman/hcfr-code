@@ -663,6 +663,8 @@ double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhit
 {
 	CColorReference cRef=CColorReference(HDTV, D65, 2.2); //special modes assume rec.709
 	double dE;
+	if (YWhite <= 0) YWhite = 120.;
+	if (YWhiteRef <= 0) YWhiteRef = 1.0;
     //gray world weighted white reference
     switch (gw_Weight)
     {
