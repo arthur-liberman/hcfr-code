@@ -744,7 +744,7 @@ std::string ArgyllMeterWrapper::getCalibrationInstructions(bool isHiRes)
         case inst_calc_emis_white:
             return "Provide a white display test patch";
 		case 	inst_calc_emis_80pc: 
-			return "Provide an 80% white test patch";
+			return "Provide an 80% or greater white test patch";
         case inst_calc_emis_grey:
             return "Provide a grey display test patch";
         case inst_calc_emis_grey_darker:

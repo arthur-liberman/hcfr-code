@@ -2176,16 +2176,19 @@ void CDataSetDoc::OnCalibrationSpectralSample()
 				return;
 			}
 		}
-		
-		std::string savePath = GetConfig()->m_ApplicationPath;
+
+		const char* FILE_SEPARATOR = "\\";			
+		const char* FILE_PREPEND = "\\color\\";			
+		std::string savePath = getenv("APPDATA");
+		savePath += FILE_PREPEND;
 		CFileDialog fileSaveDialog( FALSE, "ccss", NULL, OFN_HIDEREADONLY, "Colorimeter Calibration Spectral Sample (*.ccss)|*.ccss||" );
 		fileSaveDialog.m_ofn.lpstrInitialDir = savePath.c_str();
 		CSpectralSampleDlg spectralSampleDialog(displayName);
 
 		if(spectralSampleDialog.DoModal() == IDOK && fileSaveDialog.DoModal() == IDOK)
 		{
-			savePath = fileSaveDialog.GetPathName();
-			std::string saveFilename = savePath + (LPCSTR)fileSaveDialog.GetFileName();
+			savePath = fileSaveDialog.GetFolderPath();
+			std::string saveFilename = savePath + FILE_SEPARATOR + (LPCSTR)fileSaveDialog.GetFileName();
 			try
 			{	
 				SpectralSample ss;
