@@ -57,6 +57,7 @@ public:
 	BOOL	m_doShowToolTips;
 	BOOL	m_doShowAllPoints;
 	BOOL	m_doShowAllToolTips;
+	BOOL	m_doShowDataLabel;
 	//}}AFX_DATA
 
 

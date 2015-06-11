@@ -516,8 +516,7 @@ bool CExport::SavePDF()
 		sprintf(str,"Grayscale dE: No data");
 
 	HPDF_Page_ShowTextNextLine (page, str + dEform);
-
-	double YWhite = m_pDoc->GetMeasure()->GetOnOffWhite().GetY();
+	double YWhite = m_pDoc->GetMeasure()->GetPrimeWhite().GetY();
 	CColor rColor = m_pDoc->GetMeasure()->GetRedPrimary();
 	CColor gColor = m_pDoc->GetMeasure()->GetGreenPrimary();
 	CColor bColor = m_pDoc->GetMeasure()->GetBluePrimary();
@@ -735,7 +734,11 @@ bool CExport::SavePDF()
 	int mi = nColors;
 	double dE=0.0;
 	char str2[10];
-	YWhite = m_pDoc->GetMeasure()->GetPrimeWhite().GetY();
+	if (GetConfig()->m_colorStandard != HDTVa && GetConfig()->m_colorStandard != HDTVb )
+		YWhite = m_pDoc->GetMeasure()->GetPrimeWhite().GetY();
+	else
+		YWhite = m_pDoc->GetMeasure()->GetOnOffWhite().GetY();
+
 	int ri = 6;
 
 	if (nColors > 24)
@@ -782,9 +785,9 @@ bool CExport::SavePDF()
 			tmp.SetX(tmp.GetX() / YWhite);
 			tmp.SetY(tmp.GetY() / YWhite);
 			tmp.SetZ(tmp.GetZ() / YWhite);
-			aMeasure[0]=pow((tmp.GetRGBValue(GetColorReference())[0]), 1.0/2.2);
-			aMeasure[1]=pow((tmp.GetRGBValue(GetColorReference())[1]), 1.0/2.2);
-			aMeasure[2]=pow((tmp.GetRGBValue(GetColorReference())[2]), 1.0/2.2);
+			aMeasure[0]=pow((tmp.GetRGBValue(GetColorReference())[0]), 1.0/2.22);
+			aMeasure[1]=pow((tmp.GetRGBValue(GetColorReference())[1]), 1.0/2.22);
+			aMeasure[2]=pow((tmp.GetRGBValue(GetColorReference())[2]), 1.0/2.22);
 			dE = aColor.GetDeltaE(YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 		}
 		else
@@ -795,9 +798,9 @@ bool CExport::SavePDF()
 		}
 		sprintf(str2,"%.2f",dE);
 
-		aRef[0]=pow(aRef[0],1.0/2.2);
-		aRef[1]=pow(aRef[1],1.0/2.2);
-		aRef[2]=pow(aRef[2],1.0/2.2);
+		aRef[0]=pow(aRef[0],1.0/2.22);
+		aRef[1]=pow(aRef[1],1.0/2.22);
+		aRef[2]=pow(aRef[2],1.0/2.22);
 		aMeasure[0] = min(max(aMeasure[0],0),1);
 		aMeasure[1] = min(max(aMeasure[1],0),1);
 		aMeasure[2] = min(max(aMeasure[2],0),1);
@@ -961,8 +964,6 @@ bool CExport::SavePDF()
 
 		HPDF_Page_BeginText (page2);
 		HPDF_Page_SetFontAndSize (page2, font2, 9);
-	//	HPDF_Page_MoveTextPos (page, 6 + 300 + 5, 200);
-	//	HPDF_Page_ShowText (page, str );
 		HPDF_Page_TextRect(page2,311,215,601,160,str,HPDF_TALIGN_CENTER,NULL);
 		HPDF_Page_SetTextLeading (page2, 14);
 		switch (GetConfig()->m_dE_form)
@@ -990,7 +991,7 @@ bool CExport::SavePDF()
 		CString dEform2 = GetConfig()->m_dE_form==5?" [CIE2000]":dEform;
 		dEform += GetConfig()->m_dE_gray==0?" [Relative Y]":(GetConfig ()->m_dE_gray == 1?" [Absolute Y w/gamma]":" [Absolute Y w/o gamma]");
 
-		double nCount = m_pDoc -> GetMeasure () -> GetGrayScaleSize ();
+		double nCount = pDataRef -> GetMeasure () -> GetGrayScaleSize ();
 		double Gamma = GetConfig()->m_GammaAvg;
 		double Offset;
 		if (nCount > 0)
@@ -1011,26 +1012,26 @@ bool CExport::SavePDF()
 
 		HPDF_Page_ShowTextNextLine (page2, str + dEform);
 
-		double YWhite = m_pDoc->GetMeasure()->GetOnOffWhite().GetY();
-		CColor rColor = m_pDoc->GetMeasure()->GetRedPrimary();
-		CColor gColor = m_pDoc->GetMeasure()->GetGreenPrimary();
-		CColor bColor = m_pDoc->GetMeasure()->GetBluePrimary();
-		CColor yColor = m_pDoc->GetMeasure()->GetYellowSecondary();
-		CColor cColor = m_pDoc->GetMeasure()->GetCyanSecondary();
-		CColor mColor = m_pDoc->GetMeasure()->GetMagentaSecondary();
+		double YWhite = pDataRef->GetMeasure()->GetPrimeWhite().GetY();
+		CColor rColor = pDataRef->GetMeasure()->GetRedPrimary();
+		CColor gColor = pDataRef->GetMeasure()->GetGreenPrimary();
+		CColor bColor = pDataRef->GetMeasure()->GetBluePrimary();
+		CColor yColor = pDataRef->GetMeasure()->GetYellowSecondary();
+		CColor cColor = pDataRef->GetMeasure()->GetCyanSecondary();
+		CColor mColor = pDataRef->GetMeasure()->GetMagentaSecondary();
 		double dEr=0,dEg=0,dEb=0,dEy=0,dEc=0,dEm=0;
 		if (rColor.isValid())
-		 dEr = rColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefPrimary(0), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+		 dEr = rColor.GetDeltaE(YWhite, pDataRef->GetMeasure()->GetRefPrimary(0), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 		if (gColor.isValid())
-		 dEg = gColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefPrimary(1), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+		 dEg = gColor.GetDeltaE(YWhite, pDataRef->GetMeasure()->GetRefPrimary(1), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 		if (bColor.isValid())
-		 dEb = bColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefPrimary(2), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+		 dEb = bColor.GetDeltaE(YWhite, pDataRef->GetMeasure()->GetRefPrimary(2), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 		if (yColor.isValid())
-		 dEy = yColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(0), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+		 dEy = yColor.GetDeltaE(YWhite, pDataRef->GetMeasure()->GetRefSecondary(0), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 		if (cColor.isValid())
-		 dEc = cColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(1), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+		 dEc = cColor.GetDeltaE(YWhite, pDataRef->GetMeasure()->GetRefSecondary(1), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 		if (mColor.isValid())
-		 dEm = mColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(2), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+		 dEm = mColor.GetDeltaE(YWhite, pDataRef->GetMeasure()->GetRefSecondary(2), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 	
 		sprintf(str,"Primary dE:     Red %.2f, Green %.2f, Blue %.2f",dEr,dEg,dEb);
 		HPDF_Page_ShowTextNextLine (page2, str);
@@ -1224,8 +1225,16 @@ bool CExport::SavePDF()
 		nColors=GetConfig()->GetCColorsSize();
 		mi = nColors;
 		dE=0.0;
-		WhiteRGB = pDataRef->GetMeasure()->GetOnOffWhite().GetRGBValue(GetColorReference());
-		YWhite = pDataRef->GetMeasure()->GetPrimeWhite().GetY();
+		if (GetConfig()->m_colorStandard != HDTVa && GetConfig()->m_colorStandard != HDTVb )
+		{
+			WhiteRGB = pDataRef->GetMeasure()->GetPrimeWhite().GetRGBValue(GetColorReference());
+			YWhite = pDataRef->GetMeasure()->GetPrimeWhite().GetY();
+		}
+		else
+		{
+			WhiteRGB = pDataRef->GetMeasure()->GetOnOffWhite().GetRGBValue(GetColorReference());
+			YWhite = pDataRef->GetMeasure()->GetOnOffWhite().GetY();
+		}
 		ri = 6;
 
 		if (nColors > 24)
@@ -1272,9 +1281,9 @@ bool CExport::SavePDF()
 				tmp.SetX(tmp.GetX() / YWhite);
 				tmp.SetY(tmp.GetY() / YWhite);
 				tmp.SetZ(tmp.GetZ() / YWhite);
-				aMeasure[0]=pow((tmp.GetRGBValue(GetColorReference())[0]), 1.0/2.2);
-				aMeasure[1]=pow((tmp.GetRGBValue(GetColorReference())[1]), 1.0/2.2);
-				aMeasure[2]=pow((tmp.GetRGBValue(GetColorReference())[2]), 1.0/2.2);
+				aMeasure[0]=pow((tmp.GetRGBValue(GetColorReference())[0]), 1.0/2.22);
+				aMeasure[1]=pow((tmp.GetRGBValue(GetColorReference())[1]), 1.0/2.22);
+				aMeasure[2]=pow((tmp.GetRGBValue(GetColorReference())[2]), 1.0/2.22);
 				dE = aColor.GetDeltaE(YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 			}
 			else
@@ -1285,9 +1294,9 @@ bool CExport::SavePDF()
 			}
 			sprintf(str2,"%.2f",dE);
 
-			aRef[0]=pow(aRef[0],1.0/2.2);
-			aRef[1]=pow(aRef[1],1.0/2.2);
-			aRef[2]=pow(aRef[2],1.0/2.2);
+			aRef[0]=pow(aRef[0],1.0/2.22);
+			aRef[1]=pow(aRef[1],1.0/2.22);
+			aRef[2]=pow(aRef[2],1.0/2.22);
 			aMeasure[0] = min(max(aMeasure[0],0),1);
 			aMeasure[1] = min(max(aMeasure[1],0),1);
 			aMeasure[2] = min(max(aMeasure[2],0),1);

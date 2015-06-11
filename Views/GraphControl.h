@@ -82,6 +82,7 @@ public:
 
 	BOOL m_doShowXLabel;
 	BOOL m_doShowYLabel;
+	BOOL m_doShowDataLabel;
 
 	CArray<CGraph,CGraph> m_graphArray;
 	double m_xScale;

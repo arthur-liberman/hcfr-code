@@ -60,6 +60,7 @@ CMeasuresHistoView::CMeasuresHistoView()
 	m_graphCtrl.SetYAxisProps("", 0.1, 0, 2.0);
 	m_graphCtrl.ReadSettings("Combo Luminance Histo");
 	m_graphCtrl.SetYScale(0,m_LumaMaxY);
+	m_graphCtrl.m_doShowDataLabel = FALSE;
 	m_graphCtrl.m_doShowXLabel = FALSE;
 	m_graphCtrl.m_doGradientBg = FALSE;
 
@@ -75,6 +76,7 @@ CMeasuresHistoView::CMeasuresHistoView()
 	m_graphCtrl1.SetXAxisProps("", 1, 0, 50);
 	m_graphCtrl1.SetYAxisProps("%", 20, 0, 400);
 	m_graphCtrl1.ReadSettings("Combo RGB Histo");
+	m_graphCtrl1.m_doShowDataLabel = FALSE;
 	m_graphCtrl1.m_doShowXLabel = FALSE;
 	m_graphCtrl1.m_doGradientBg = FALSE;
 
@@ -84,6 +86,7 @@ CMeasuresHistoView::CMeasuresHistoView()
 	m_graphCtrl2.SetXAxisProps("", 1, 0, 50);
 	m_graphCtrl2.SetYAxisProps("", 2, 0, 40);
 	m_graphCtrl2.ReadSettings("Combo RGB Histo2");
+	m_graphCtrl2.m_doShowDataLabel = FALSE;
 	m_graphCtrl2.m_doShowXLabel = FALSE;
 	m_graphCtrl2.m_doGradientBg = FALSE;
 
@@ -95,6 +98,7 @@ CMeasuresHistoView::CMeasuresHistoView()
 	m_graphCtrl3.SetXAxisProps("", 1, 0, 50);
 	m_graphCtrl3.SetYAxisProps("K", 500, 1500, 15000);
 	m_graphCtrl3.ReadSettings("Combo ColorTemp Histo");
+	m_graphCtrl3.m_doShowDataLabel = FALSE;
 	m_graphCtrl3.m_doShowXLabel = FALSE;
 	m_graphCtrl3.m_doGradientBg = FALSE;
 

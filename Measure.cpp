@@ -939,6 +939,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 					StartLuxMeasure ();
 
 				measuredColor[i]=pSensor->MeasureGray(ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown ));
+				m_grayMeasureArray[i] = measuredColor[i];
 				
 				if ( bUseLuxValues )
 				{
@@ -1115,12 +1116,10 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 					StartLuxMeasure ();
 
 				measuredColor[size+i]=pSensor->MeasureColor(MeasColors[i]);
-				if (i<size)
-					m_grayMeasureArray[i] = measuredColor[i];
-				if (i<size+3&&i>=size)
-					m_primariesArray[i-size] = measuredColor[i];
-				if (i<size+6&&i>=size+3)
-					m_secondariesArray[i-size-3] = measuredColor[i];
+				if (i<3)
+					m_primariesArray[i] = measuredColor[size+i];
+				if (i>=3&&i<6)
+					m_secondariesArray[i-3] = measuredColor[size+i];
 				
 				if ( bUseLuxValues )
 				{

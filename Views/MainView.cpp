@@ -1856,7 +1856,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				{
 					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight ) );
 					dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
-                    if (GetConfig()->m_CCMode == CCSG || GetConfig()->m_CCMode == USER )
+                    if (GetConfig()->m_CCMode == CCSG || GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == RANDOM250 )
                         dEvector.push_back(dE);
                     dEavg+=dE;
                     if (dE > dEmax)

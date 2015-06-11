@@ -94,6 +94,7 @@ CGraphControl::CGraphControl()
 	m_doShowYLabel=TRUE;
 	m_doShowAllPoints=FALSE;
 	m_doShowAllToolTips=TRUE;
+	m_doShowDataLabel = FALSE;
 	
 	m_pSpectrumColors = NULL;
 
@@ -166,6 +167,7 @@ void CGraphControl::ReadSettings(LPSTR aConfigStr, BOOL bReadGraphSettings)
 {
 	m_doGradientBg=GetConfig()->GetProfileInt(aConfigStr,"Show Gradient",TRUE);
 	m_doShowAxis=GetConfig()->GetProfileInt(aConfigStr,"Show Axis",TRUE);
+	m_doShowDataLabel=GetConfig()->GetProfileInt(aConfigStr,"Show Data Labels",FALSE);
 	m_doShowXLabel=GetConfig()->GetProfileInt(aConfigStr,"Show X Labels",TRUE);
 	m_doShowYLabel=GetConfig()->GetProfileInt(aConfigStr,"Show Y Labels",TRUE);
 	m_doShowAllPoints=GetConfig()->GetProfileInt(aConfigStr,"Show All Points",TRUE);
@@ -211,6 +213,7 @@ void CGraphControl::WriteSettings(LPSTR aConfigStr)
 {
 	GetConfig()->WriteProfileInt(aConfigStr,"Show Gradient",m_doGradientBg);
 	GetConfig()->WriteProfileInt(aConfigStr,"Show Axis",m_doShowAxis);
+	GetConfig()->WriteProfileInt(aConfigStr,"Show Data Labels",m_doShowDataLabel);
 	GetConfig()->WriteProfileInt(aConfigStr,"Show X Labels",m_doShowXLabel);
 	GetConfig()->WriteProfileInt(aConfigStr,"Show Y Labels",m_doShowYLabel);
 	GetConfig()->WriteProfileInt(aConfigStr,"Show All Points",m_doShowAllPoints);
@@ -245,6 +248,7 @@ void CGraphControl::ChangeSettings()
 
 	dialog.m_doGradientBg=m_doGradientBg;
 	dialog.m_doShowAxis=m_doShowAxis;
+	dialog.m_doShowDataLabel=m_doShowDataLabel;
 	dialog.m_doShowXLabel=m_doShowXLabel;
 	dialog.m_doShowYLabel=m_doShowYLabel;
 	dialog.m_doShowAllPoints=m_doShowAllPoints;
@@ -256,6 +260,7 @@ void CGraphControl::ChangeSettings()
 		m_graphArray.Copy(dialog.m_graphArray);
 		m_doGradientBg=dialog.m_doGradientBg;
 		m_doShowAxis=dialog.m_doShowAxis;
+		m_doShowDataLabel=dialog.m_doShowDataLabel;
 		m_doShowXLabel=dialog.m_doShowXLabel;
 		m_doShowYLabel=dialog.m_doShowYLabel;
 		m_doShowAllPoints=dialog.m_doShowAllPoints;
@@ -268,6 +273,7 @@ void CGraphControl::CopySettings(const CGraphControl & aGraphControl, int aGraph
 {
 	m_doGradientBg=aGraphControl.m_doGradientBg;
 	m_doShowAxis=aGraphControl.m_doShowAxis;
+	m_doShowDataLabel=aGraphControl.m_doShowDataLabel;
 	m_doShowXLabel=aGraphControl.m_doShowXLabel;
 	m_doShowYLabel=aGraphControl.m_doShowYLabel;
 	m_doShowAllPoints=aGraphControl.m_doShowAllPoints;
@@ -731,6 +737,20 @@ void CGraphControl::DrawGraphs(CDC *pDC, CRect rect)
 				CPoint pointPos(GetGraphPoint(m_graphArray[j].m_pointArray[i],rect)-CPoint(pointSize.cx/2,pointSize.cy/2));
 				CRect pointRect(pointPos,pointSize);
 				m_tooltip.AddTool(this, "<b>"+m_graphArray[j].m_Title +"</b> \n" +str,&pointRect);
+				if (this->m_doShowDataLabel && (j==0 || this->m_graphArray[0].m_Title == "Red") && j<6) //only label 1st graph of series unless Luminance from sat sweep
+				{
+					char outStr[10];
+					double y = m_graphArray[j].m_pointArray[i].y;
+					if (y < 100)
+						sprintf(outStr,"%0.2f",y);
+					else
+						sprintf(outStr,"%0.0f",y);
+					if (y < 1)
+						sprintf(outStr,"%0.3f",y);
+
+					pDC->SetTextColor(RGB(220,240,0));
+					pDC->TextOutA(pointPos.x,pointPos.y,outStr);
+				}
 			}
 
 		}
@@ -923,6 +943,7 @@ void CGraphControl::SaveGraphs(CGraphControl *pGraphToAppend, CGraphControl *pGr
 			pGraphToAppend->m_maxY = (pGraphToAppend->m_maxY > 3 ? (pGraphToAppend->m_maxY >5?10:5):3);
 			pGraphToAppend->m_yAxisStep = (pGraphToAppend->m_maxY > 3 ? (pGraphToAppend->m_maxY >5?2:1):0.5);
 			pGraphToAppend->m_yScale = (pGraphToAppend->m_maxY > 3 ? (pGraphToAppend->m_maxY >5?1.0/10.0:1.0/5.0):1.0/3.0);
+			pGraphToAppend->m_doShowDataLabel = TRUE;
 			break;
 		case 2:
 			this->FitYScale(FALSE);
@@ -930,11 +951,13 @@ void CGraphControl::SaveGraphs(CGraphControl *pGraphToAppend, CGraphControl *pGr
 			this->m_maxY = this->m_maxY > 7500?8500:7500;
 			this->m_yAxisStep = 500;
 			this->m_yScale = this->m_maxY > 7500?1.0/3500.0:1.0/2500.0;
+			this->m_doShowDataLabel = TRUE;
 			pGraphToAppend->FitYScale(FALSE);
 			pGraphToAppend->m_minY = 1.8; //Gamma
 			pGraphToAppend->m_maxY = 2.6;
 			pGraphToAppend->m_yAxisStep = 0.1;
 			pGraphToAppend->m_yScale = 1.0/0.8;
+			pGraphToAppend->m_doShowDataLabel = TRUE;
 			break;
 		case 3:
 			pGraphToAppend->FitYScale(FALSE);

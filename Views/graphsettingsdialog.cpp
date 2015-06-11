@@ -42,6 +42,7 @@ CGraphSettingsDialog::CGraphSettingsDialog(CWnd* pParent /*=NULL*/)
 	m_lineWidthStr = _T("");
 	m_doShowAxis = FALSE;
 	m_doGradientBg = FALSE;
+	m_doShowDataLabel = FALSE;
 	m_doShowXLabel = FALSE;
 	m_doShowYLabel = FALSE;
 	m_doShowPoints = FALSE;
@@ -74,6 +75,7 @@ void CGraphSettingsDialog::DoDataExchange(CDataExchange* pDX)
 	DDX_CBString(pDX, IDC_GRAPH_LINEWIDTH_COMBO, m_lineWidthStr);
 	DDX_Check(pDX, IDC_GRAPH_SHOWAXIS_CHECK, m_doShowAxis);
 	DDX_Check(pDX, IDC_GRAPH_SHOWGRADIENT_CHECK, m_doGradientBg);
+	DDX_Check(pDX, IDC_GRAPH_SHOWDATALABELS_CHECK, m_doShowDataLabel);
 	DDX_Check(pDX, IDC_GRAPH_SHOWXLABELS_CHECK, m_doShowXLabel);
 	DDX_Check(pDX, IDC_GRAPH_SHOWYLABELS_CHECK, m_doShowYLabel);
 	DDX_Check(pDX, IDC_GRAPH_SHOWPOINTS_CHECK, m_doShowPoints);

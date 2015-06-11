@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by CHCFR21_ENGLISH.rc
+// Used by CHCFR21_FRANCAIS.rc
 //
 #define IDS_STRING_VERSION              1
 #define IDS_STRING_VERSION_WEB          2
@@ -489,6 +489,8 @@
 #define IDC_MAXXGROW_EDIT               1141
 #define IDC_MAXYGROW_EDIT3              1141
 #define IDC_SAVE_JPEGQUALITY_EDIT       1141
+#define IDC_GRAPH_SHOWXLABELS_CHECK2    1141
+#define IDC_GRAPH_SHOWDATALABELS_CHECK  1141
 #define IDC_XAXISSTEP_EDIT              1142
 #define IDC_FILE_TYPE_RADIO2            1142
 #define IDC_FILE_TYPE_RADIO3            1143
