@@ -86,10 +86,10 @@ static BOOL CALLBACK MyEnumProc(HWND hwnd, LPARAM lParam)
 CPPToolTip::CPPToolTip()
 {
 	// Default values
-	m_dwTimeAutoPop = 5000;
+	m_dwTimeAutoPop = 50000;
 	m_dwTimeInitial = 500;
-	m_dwTimeFadeIn = 500;
-	m_dwTimeFadeOut = 500;
+	m_dwTimeFadeIn = 100;
+	m_dwTimeFadeOut = 200;
 	m_dwBehaviour = PPTOOLTIP_CLOSE_LEAVEWND | PPTOOLTIP_NOCLOSE_OVER;	 //The tooltip's behaviour
 	m_dwEffectBk = 0;
 	m_dwDirection = 0;
@@ -125,9 +125,9 @@ CPPToolTip::CPPToolTip()
 	SetBehaviour();
 	SetDebugMode(FALSE);
 	SetDelayTime(PPTOOLTIP_TIME_INITIAL, 500);
-	SetDelayTime(PPTOOLTIP_TIME_AUTOPOP, 5000);
-	SetDelayTime(PPTOOLTIP_TIME_FADEIN, 0);
-	SetDelayTime(PPTOOLTIP_TIME_FADEOUT, 0);
+	SetDelayTime(PPTOOLTIP_TIME_AUTOPOP, 50000);
+	SetDelayTime(PPTOOLTIP_TIME_FADEIN, 100);
+	SetDelayTime(PPTOOLTIP_TIME_FADEOUT, 200);
 	SetTooltipShadow(6, 6);
 
 #ifdef PPTOOLTIP_USE_MENU

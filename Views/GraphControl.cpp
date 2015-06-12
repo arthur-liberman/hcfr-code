@@ -696,7 +696,6 @@ static double spectral_chromaticities[][2] = {
 void CGraphControl::DrawGraphs(CDC *pDC, CRect rect)
 {
 	int lineWidth=2;
-
 	m_tooltip.RemoveAllTools();
 
 	for(int j=0;j<m_graphArray.GetSize();j++)
