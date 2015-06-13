@@ -629,11 +629,14 @@ void CPPDrawManager::FillEffect(HDC hDC, DWORD dwEffect, LPCRECT lpRect, COLORRE
 {
 	CRect rect = *lpRect;
 	HBRUSH hBrush = NULL;
+	HBRUSH hBrush2 = NULL;
 	switch (dwEffect)
 	{
 	default:
 		hBrush = ::CreateSolidBrush(clrBegin);
-		::FillRect(hDC, lpRect, hBrush);
+		hBrush2 = ::CreateSolidBrush(clrEnd);
+		::FillRect(hDC, CRect(rect.left,rect.top, rect.left+ (rect.right - rect.left) / 2,rect.bottom), hBrush);
+		::FillRect(hDC, CRect(rect.left + (rect.right - rect.left) / 2,rect.top, rect.right,rect.bottom), hBrush2);
 		break;
 /*
 	case HS_HORIZONTAL:

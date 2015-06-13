@@ -1294,8 +1294,11 @@ void CMainView::InitGrid()
                 double inten;
                 s_clr=GetDocument()->GetMeasure()->GetRefCC24Sat(i);     
                 r_clr=s_clr.GetRGBValue(GetColorReference());
+				r_clr[0]=(min(max(r_clr[0],0),1));
+				r_clr[1]=(min(max(r_clr[1],0),1));
+				r_clr[2]=(min(max(r_clr[2],0),1));
                 inten = s_clr.GetLuminance();//GetConfig()->m_CCMode==USER?s_clr.GetLuminance():GetColorReference().GetCC24ReferenceLuma(i,GetConfig()->m_CCMode);
-    			m_pGrayScaleGrid->SetItemBkColour ( i2, i+1, RGB(r_clr[0]*255.,r_clr[1]*255.,r_clr[2]*255.) );
+    			m_pGrayScaleGrid->SetItemBkColour ( i2, i+1, RGB(pow(r_clr[0],1.0/2.2)*255,pow(r_clr[1],1.0/2.2)*255,pow(r_clr[2],1.0/2.2)*255) );
                 if (inten < 0.4)
                     m_pGrayScaleGrid->SetItemFgColour(i2, i+1, RGB(240,240,240));
                 else

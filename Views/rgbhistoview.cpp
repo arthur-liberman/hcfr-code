@@ -189,7 +189,12 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	    				YWhite = aColor [ 2 ];
 				}
 				if (aColor.isValid())
-					m_graphCtrl2.AddPoint(m_deltaEGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(YWhite, refColor, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->gw_Weight ));
+				{
+					CString str;
+					ColorLab aColorLab = pDoc->GetMeasure()->GetGray(i).GetLabValue(YWhite, GetColorReference());
+					str.Format("L*a*b*:%.2f %.2f %.2f",aColorLab[0],aColorLab[1],aColorLab[2]);
+					m_graphCtrl2.AddPoint(m_deltaEGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(YWhite, refColor, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->gw_Weight), str);
+				}
 			}
 		}
 	}
@@ -263,10 +268,15 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 				}
 				
 				if (aColor.isValid())
-					m_graphCtrl2.AddPoint(m_deltaEDataRefGraphID, x, pDataRef->GetMeasure()->GetGray(i).GetDeltaE(YWhiteRefDoc, refColor, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->gw_Weight ));
+				{
+					CString str;
+					ColorLab aColorLab = pDataRef->GetMeasure()->GetGray(i).GetLabValue(YWhiteRefDoc, GetColorReference());
+					str.Format("L*a*b*:%.2f %.2f %.2f",aColorLab[0],aColorLab[1],aColorLab[2]);
+					m_graphCtrl2.AddPoint(m_deltaEDataRefGraphID, x, pDataRef->GetMeasure()->GetGray(i).GetDeltaE(YWhiteRefDoc, refColor, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->gw_Weight ), str);
+				}
 				
 				if (bMainDocHasColors && aColor.isValid())
-						m_graphCtrl2.AddPoint(m_deltaEBetweenGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(YWhite,pDataRef->GetMeasure()->GetGray(i),YWhiteRefDoc, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->gw_Weight )); //Ki
+						m_graphCtrl2.AddPoint(m_deltaEBetweenGraphID, x, pDoc->GetMeasure()->GetGray(i).GetDeltaE(YWhite,pDataRef->GetMeasure()->GetGray(i),YWhiteRefDoc, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->gw_Weight)); //Ki
 			}
 		}
 	}

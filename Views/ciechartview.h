@@ -115,7 +115,7 @@ class CCIEChartGrapher
 	UINT	m_ZoomFactor;	// Zoom factor = 1000 for 1:1 scale, 2000 for 2x zoom, and so on
 	int		m_DeltaX;		// When zoom active, delta values for picture scrolling in pixels
 	int		m_DeltaY;
-
+	int		m_ttID;
 // Operations
 	void MakeBgBitmap(CRect rect,BOOL bWhiteBkgnd);
 	void DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoint, CBitmap *pBitmap, CRect rect, CPPToolTip * pTooltip, CWnd * pWnd, CCIEGraphPoint * pRefPoint = NULL);
@@ -216,6 +216,7 @@ protected:
 	afx_msg void OnUpdateCieUv(CCmdUI* pCmdUI);
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
+	afx_msg void NotifyDisplayTooltip(NMHDR * pNMHDR, LRESULT * result);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

@@ -244,6 +244,9 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_tooltip.AddToolBar(&m_wndToolBarMeasuresEx);
 	m_tooltip.AddToolBar(&m_wndToolBarMeasuresSat);
 	m_tooltip.AddToolBar(&m_wndToolBarViews);
+	m_tooltip.SetColorBk(RGB(255,165,0),RGB(0,128,128));
+	m_tooltip.SetEffectBk(CPPDrawManager::EFFECT_HGRADIENT);
+	m_tooltip.SetBorder(::CreateSolidBrush(RGB(212,175,55)),1,1);
 
 	m_wndMenuBar.EnableDocking(CBRS_ALIGN_ANY); 
 	m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);

@@ -92,7 +92,7 @@ typedef struct tagPPTOOLTIP_INFO
 	BYTE        nTransparency;	// The factor of the window's transparency (0-100)
 	COLORREF	crBegin;		// Begin Color
 	COLORREF    crMid;			// Mid Color
-	COLORREF	crEnd;			// End Color
+	COLORREF	crEnd;			// End Color	
 } PPTOOLTIP_INFO;
 
 // This structure sent to PPTooltip parent in a WM_NOTIFY message

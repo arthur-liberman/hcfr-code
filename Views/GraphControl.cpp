@@ -736,6 +736,7 @@ void CGraphControl::DrawGraphs(CDC *pDC, CRect rect)
 				CPoint pointPos(GetGraphPoint(m_graphArray[j].m_pointArray[i],rect)-CPoint(pointSize.cx/2,pointSize.cy/2));
 				CRect pointRect(pointPos,pointSize);
 				m_tooltip.AddTool(this, "<b>"+m_graphArray[j].m_Title +"</b> \n" +str,&pointRect);
+
 				if (this->m_doShowDataLabel && (j==0 || this->m_graphArray[0].m_Title == "Red") && j<6) //only label 1st graph of series unless Luminance from sat sweep
 				{
 					char outStr[10];
@@ -1169,6 +1170,9 @@ int CGraphControl::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_tooltip.Create(this);	
 	m_tooltip.SetBehaviour(PPTOOLTIP_MULTIPLE_SHOW);
 	m_tooltip.SetNotify(TRUE);
+	m_tooltip.SetColorBk(RGB(255,165,0),RGB(0,128,128));
+	m_tooltip.SetEffectBk(CPPDrawManager::EFFECT_HGRADIENT);
+	m_tooltip.SetBorder(::CreateSolidBrush(RGB(212,175,55)),1,1);
 	
 	return 0;
 }

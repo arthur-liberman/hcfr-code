@@ -146,6 +146,7 @@ CCIEChartGrapher::CCIEChartGrapher()
 	m_ZoomFactor = 1000;
 	m_DeltaX = 0;
 	m_DeltaY = 0;
+	m_ttID = 0;
 }
 
 void CCIEChartGrapher::MakeBgBitmap(CRect rect, BOOL bWhiteBkgnd)	// Create background bitmap
@@ -292,6 +293,9 @@ void CCIEChartGrapher::MakeBgBitmap(CRect rect, BOOL bWhiteBkgnd)	// Create back
 	bgDC.SelectObject(pOldBitmap);
 }
 
+COLORREF stRGB[2000];
+COLORREF eRGB[2000];
+
 void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoint, CBitmap *pBitmap, CRect rect, CPPToolTip * pTooltip, CWnd * pWnd, CCIEGraphPoint * pRefPoint)
 {
 	ASSERT(pBitmap);
@@ -305,22 +309,26 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 	{
 		CString str, str1, str2, str3;
 		int x=aGraphPoint.GetGraphX(rect)+m_DeltaX;
-		int y=aGraphPoint.GetGraphY(rect)+m_DeltaY;
-		CColor aColor = aGraphPoint.GetNormalizedColor();
-		
-
+		int y=aGraphPoint.GetGraphY(rect)+m_DeltaY;		
+	
 		// Note: remove 5 pixels for transparency area of bitmap
 		CRect rect_tip(x-bm.bmWidth/2+5,y-bm.bmHeight/2+5,x+bm.bmWidth/2-5,y+bm.bmHeight/2-5);
+		bool dark = (aGraphPoint.GetNormalizedColor()[1] < 0.25);
 		if ( m_bCIEuv )
-			str.Format("u': %.3f, v': %.3f\n",aGraphPoint.x,aGraphPoint.y,aGraphPoint);
+			if (dark)
+				str.Format("<font color=\"#A0EE80\">u': %.3f, v': %.3f\n",aGraphPoint.x,aGraphPoint.y,aGraphPoint);
+			else
+				str.Format("<font color=\"#004080\">u': %.3f, v': %.3f\n",aGraphPoint.x,aGraphPoint.y,aGraphPoint);
 		else
-			str.Format("x: %.3f, y: %.3f, Y: %.2f%%\n",aGraphPoint.x,aGraphPoint.y,aGraphPoint.GetNormalizedColor()[1]*100);
-
+			if (dark)
+				str.Format("<font color=\"#A0EE80\">x: %.3f, y: %.3f, Y: %.2f%%\n",aGraphPoint.x,aGraphPoint.y,aGraphPoint.GetNormalizedColor()[1]*100);
+			else
+				str.Format("<font color=\"#004080\">x: %.3f, y: %.3f, Y: %.2f%%\n",aGraphPoint.x,aGraphPoint.y,aGraphPoint.GetNormalizedColor()[1]*100);
 
 		double L  = ColorLab(aGraphPoint.GetNormalizedColor(), 1.0, GetColorReference())[0];
 		double a  = ColorLab(aGraphPoint.GetNormalizedColor(), 1.0, GetColorReference())[1];
 		double b  = ColorLab(aGraphPoint.GetNormalizedColor(), 1.0, GetColorReference())[2];
-		str1.Format("L*: %.3f, a*: %.3f, b*:%.3f",L,a,b);
+		str1.Format("L*a*b*: %.2f %.3f %.3f",L,a,b);
 		str += str1;
 
 		if ( pRefPoint )
@@ -331,12 +339,39 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 			str2 += str3;
 
 			double dXY = aGraphPoint.GetNormalizedColor().GetDeltaxy(pRefPoint->GetNormalizedColor(), GetColorReference());
-			str3.Format ( ": %.3f xy", dXY );
+			str3.Format ( ": %.3f xy</font>", dXY );
 			str2 += str3;
+			ColorRGB measCol = ColorRGB(aGraphPoint.GetNormalizedColor(),GetColorReference());
+			ColorRGB refCol = ColorRGB(pRefPoint->GetNormalizedColor(),GetColorReference());
+			double r1=min(max(measCol[0],0),1);
+			double g1=min(max(measCol[1],0),1);
+			double b1=min(max(measCol[2],0),1);
+			double r2=min(max(refCol[0],0),1);
+			double g2=min(max(refCol[1],0),1);
+			double b2=min(max(refCol[2],0),1);
+			stRGB[m_ttID]=RGB(floor(pow(r1,1.0/2.2)*255.+0.5),floor(pow(g1,1.0/2.2)*255.+0.5),floor(pow(b1,1.0/2.2)*255.+0.5));
+			eRGB[m_ttID]=RGB(floor(pow(r2,1.0/2.2)*255.+0.5),floor(pow(g2,1.0/2.2)*255.+0.5),floor(pow(b2,1.0/2.2)*255.+0.5));
+			if (dark)
+				pTooltip -> AddTool(pWnd, "<b><font color=\"#EFEFEF\">"+CString(aGraphPoint.name) +"</font></b> \n" +str+str2,&rect_tip, m_ttID);
+			else
+				pTooltip -> AddTool(pWnd, "<b><font color=\"#101010\">"+CString(aGraphPoint.name) +"</font></b> \n" +str+str2,&rect_tip, m_ttID);
+			m_ttID++;
+		}
+		else
+		{
+			ColorRGB measCol = ColorRGB(aGraphPoint.GetNormalizedColor(),GetColorReference());
+			double r1=min(max(measCol[0],0),1);
+			double g1=min(max(measCol[1],0),1);
+			double b1=min(max(measCol[2],0),1);
+			stRGB[m_ttID]=RGB(floor(pow(r1,1.0/2.2)*255.+0.5),floor(pow(g1,1.0/2.2)*255.+0.5),floor(pow(b1,1.0/2.2)*255.+0.5));
+			eRGB[m_ttID]=stRGB[m_ttID];
+			if (dark)
+				pTooltip -> AddTool(pWnd, "<b><font color=\"#EFEFEF\">"+CString(aGraphPoint.name) +"</font></b> \n" +str+str2,&rect_tip, m_ttID);
+			else
+				pTooltip -> AddTool(pWnd, "<b><font color=\"#101010\">"+CString(aGraphPoint.name) +"</font></b> \n" +str+str2,&rect_tip, m_ttID);
+			m_ttID++;
 		}
 		
-		if ( pTooltip )
-			pTooltip -> AddTool(pWnd, "<b>"+CString(aGraphPoint.name) +"</b> \n" +str+str2,&rect_tip);
 	}
 
 	CDC memDC;
@@ -351,6 +386,7 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 	AlphaBlend(*pDC,aGraphPoint.GetGraphX(rect)-bm.bmWidth/2,aGraphPoint.GetGraphY(rect)-bm.bmHeight/2,bm.bmWidth,bm.bmHeight,memDC,0,0,bm.bmWidth,bm.bmHeight,bf);
 
 	memDC.SelectObject(pOld);
+
 }
 
 void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPToolTip * pTooltip, CWnd * pWnd) 
@@ -1786,6 +1822,7 @@ BEGIN_MESSAGE_MAP(CCIEChartView, CSavingView)
 	ON_WM_MOUSEWHEEL()
 	ON_WM_PAINT()
 	ON_WM_KEYDOWN()
+	ON_NOTIFY (UDM_TOOLTIP_DISPLAY, NULL, NotifyDisplayTooltip)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -1812,6 +1849,7 @@ void CCIEChartView::OnInitialUpdate()
 	m_tooltip.Create(this);	
 	m_tooltip.SetBehaviour(PPTOOLTIP_MULTIPLE_SHOW);
 	m_tooltip.SetNotify(TRUE);
+	m_tooltip.SetBorder(::CreateSolidBrush(RGB(212,175,55)),1,1);
 }
 
 void CCIEChartView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
@@ -2477,4 +2515,16 @@ void CCIEChartView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	ScrollWindow ( m_Grapher.m_DeltaX - OldDeltaX, m_Grapher.m_DeltaY - OldDeltaY );
 
 	CSavingView::OnKeyDown(nChar, nRepCnt, nFlags);
+}
+
+void CCIEChartView::NotifyDisplayTooltip(NMHDR * pNMHDR, LRESULT * result)
+{
+    *result = 0;
+    NM_PPTOOLTIP_DISPLAY * pNotify = (NM_PPTOOLTIP_DISPLAY*)pNMHDR;
+	int nID=pNotify->ti->nIDTool;
+	pNotify->ti->nEffect = CPPDrawManager::EFFECT_SOLID;
+	pNotify->ti->nGranularity = 0;
+	pNotify->ti->nTransparency = 0;
+	pNotify->ti->crBegin=stRGB[nID];
+	pNotify->ti->crEnd=eRGB[nID];
 }
