@@ -57,7 +57,7 @@
 #define UPD_ARRAYSIZES					22
 #define UPD_GENERALREFERENCES			23
 #define UPD_FREEMEASUREAPPENDED			24
-#define UPD_CC24SAT					25
+#define UPD_CC24SAT						25
 
 class CColorTempHistoView;
 class CRGBHistoView;

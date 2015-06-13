@@ -111,12 +111,14 @@ class CCIEChartGrapher
 	BOOL m_doShowMeasurements;
 	BOOL m_bCIEuv;
 
+	int		m_ttID; //tooltip index
+
 	// Zoom handling, for window mode
 	UINT	m_ZoomFactor;	// Zoom factor = 1000 for 1:1 scale, 2000 for 2x zoom, and so on
 	int		m_DeltaX;		// When zoom active, delta values for picture scrolling in pixels
 	int		m_DeltaY;
-	int		m_ttID;
-// Operations
+
+	// Operations
 	void MakeBgBitmap(CRect rect,BOOL bWhiteBkgnd);
 	void DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoint, CBitmap *pBitmap, CRect rect, CPPToolTip * pTooltip, CWnd * pWnd, CCIEGraphPoint * pRefPoint = NULL);
 	void DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPToolTip * pTooltip, CWnd * pWnd);

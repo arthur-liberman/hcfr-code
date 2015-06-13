@@ -153,6 +153,7 @@ void CCIEChartGrapher::MakeBgBitmap(CRect rect, BOOL bWhiteBkgnd)	// Create back
 {
     int		i;
 	CDC		ScreenDC;
+	m_ttID = 0;
 	
 	ScreenDC.CreateDC ( "DISPLAY", NULL, NULL, NULL );
 
@@ -293,8 +294,8 @@ void CCIEChartGrapher::MakeBgBitmap(CRect rect, BOOL bWhiteBkgnd)	// Create back
 	bgDC.SelectObject(pOldBitmap);
 }
 
-COLORREF stRGB[2000];
-COLORREF eRGB[2000];
+COLORREF stRGB[10000];
+COLORREF eRGB[10000];
 
 void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoint, CBitmap *pBitmap, CRect rect, CPPToolTip * pTooltip, CWnd * pWnd, CCIEGraphPoint * pRefPoint)
 {
@@ -355,7 +356,8 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 				pTooltip -> AddTool(pWnd, "<b><font color=\"#EFEFEF\">"+CString(aGraphPoint.name) +"</font></b> \n" +str+str2,&rect_tip, m_ttID);
 			else
 				pTooltip -> AddTool(pWnd, "<b><font color=\"#101010\">"+CString(aGraphPoint.name) +"</font></b> \n" +str+str2,&rect_tip, m_ttID);
-			m_ttID++;
+			if (m_ttID < 10000)
+				m_ttID++;
 		}
 		else
 		{
@@ -369,7 +371,8 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 				pTooltip -> AddTool(pWnd, "<b><font color=\"#EFEFEF\">"+CString(aGraphPoint.name) +"</font></b> \n" +str+str2,&rect_tip, m_ttID);
 			else
 				pTooltip -> AddTool(pWnd, "<b><font color=\"#101010\">"+CString(aGraphPoint.name) +"</font></b> \n" +str+str2,&rect_tip, m_ttID);
-			m_ttID++;
+			if (m_ttID < 2000)
+				m_ttID++;
 		}
 		
 	}

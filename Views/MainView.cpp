@@ -1640,9 +1640,13 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 			UpdateGrid();
 			if ( m_pInfoWnd )
 			{
-				m_pInfoWnd ->SetWindowTextA(GetDocument()->GetMeasure()->GetInfoString());
-				m_pInfoWnd -> Invalidate ();
-				m_pInfoWnd -> UpdateWindow();			}
+				if (m_pInfoWnd == 0)
+				{
+					m_pInfoWnd ->SetWindowTextA(GetDocument()->GetMeasure()->GetInfoString());
+					m_pInfoWnd -> Invalidate ();
+					m_pInfoWnd -> UpdateWindow();			
+				}
+			}
 		}
 		
 		if ( lHint == UPD_FREEMEASUREAPPENDED )
@@ -1859,7 +1863,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				{
 					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight ) );
 					dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
-                    if (GetConfig()->m_CCMode == CCSG || GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == RANDOM250 )
+                    if (GetConfig()->GetCColorsSize() >= 96 )
                         dEvector.push_back(dE);
                     dEavg+=dE;
                     if (dE > dEmax)
@@ -2997,7 +3001,7 @@ void CMainView::UpdateGrid()
 				Tmp.LoadString ( IDS_DELTAEAVERAGE );
 				Msg += " ( ";
 				Msg += Tmp;
-				if (GetConfig()->m_CCMode == CCSG || (GetConfig()->m_CCMode == USER && nCount > 100) )
+				if (GetConfig()->GetCColorsSize() >= 96 )
                 {
                     vector<double>::iterator max;
                     max = max_element( dEvector.begin(), dEvector.end() );
@@ -3010,7 +3014,7 @@ void CMainView::UpdateGrid()
                     sprintf(aBuf,"Color %d",pos+1);
 					dEmax_cc = maxv;
 
-                    if (GetConfig()->m_CCMode == CCSG)
+					if (GetConfig()->m_CCMode == CCSG )
         				sprintf ( szBuf, ": %.2f, max: %.2f[%s], worst 10%%: %.2f )", dEavg / dEcnt, maxv, PatName[pos], dE10 );
                     else
         				sprintf ( szBuf, ": %.2f, max: %.2f[%s], worst 10%%: %.2f )", dEavg / dEcnt, maxv, aBuf, dE10 );
