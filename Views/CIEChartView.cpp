@@ -294,8 +294,8 @@ void CCIEChartGrapher::MakeBgBitmap(CRect rect, BOOL bWhiteBkgnd)	// Create back
 	bgDC.SelectObject(pOldBitmap);
 }
 
-COLORREF stRGB[10000];
-COLORREF eRGB[10000];
+COLORREF stRGB[5000];
+COLORREF eRGB[5000];
 
 void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoint, CBitmap *pBitmap, CRect rect, CPPToolTip * pTooltip, CWnd * pWnd, CCIEGraphPoint * pRefPoint)
 {
@@ -306,7 +306,7 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 	pBitmap->GetBitmap(&bm);
 
 	// Add tootip if name is defined
-	if(!aGraphPoint.name.IsEmpty())
+	if(!aGraphPoint.name.IsEmpty() && pWnd)
 	{
 		CString str, str1, str2, str3;
 		int x=aGraphPoint.GetGraphX(rect)+m_DeltaX;
@@ -356,7 +356,7 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 				pTooltip -> AddTool(pWnd, "<b><font color=\"#EFEFEF\">"+CString(aGraphPoint.name) +"</font></b> \n" +str+str2,&rect_tip, m_ttID);
 			else
 				pTooltip -> AddTool(pWnd, "<b><font color=\"#101010\">"+CString(aGraphPoint.name) +"</font></b> \n" +str+str2,&rect_tip, m_ttID);
-			if (m_ttID < 10000)
+			if (m_ttID < 4999)
 				m_ttID++;
 		}
 		else
@@ -367,11 +367,12 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 			double b1=min(max(measCol[2],0),1);
 			stRGB[m_ttID]=RGB(floor(pow(r1,1.0/2.2)*255.+0.5),floor(pow(g1,1.0/2.2)*255.+0.5),floor(pow(b1,1.0/2.2)*255.+0.5));
 			eRGB[m_ttID]=stRGB[m_ttID];
+
 			if (dark)
 				pTooltip -> AddTool(pWnd, "<b><font color=\"#EFEFEF\">"+CString(aGraphPoint.name) +"</font></b> \n" +str+str2,&rect_tip, m_ttID);
 			else
 				pTooltip -> AddTool(pWnd, "<b><font color=\"#101010\">"+CString(aGraphPoint.name) +"</font></b> \n" +str+str2,&rect_tip, m_ttID);
-			if (m_ttID < 2000)
+			if (m_ttID < 4999)
 				m_ttID++;
 		}
 		
