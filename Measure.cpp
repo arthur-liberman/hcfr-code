@@ -4565,12 +4565,6 @@ BOOL CMeasure::WaitForDynamicIris ( BOOL bIgnoreEscape, CDataSetDoc *pDoc )
 
 	POSITION pos;
 	CView *pView = NULL;
-	if (pDoc)
-	{
-		pos = pDoc -> GetFirstViewPosition ();
-		pView = pDoc -> GetNextView ( pos );
-		((CMainView*)pView)->GetDocument()->UpdateAllViews(NULL, UPD_EVERYTHING);
-	}
 	if ( nLatencyTime > 0 )
 	{
 		// Sleep nLatencyTime ms while dispatching messages
@@ -4601,6 +4595,13 @@ BOOL CMeasure::WaitForDynamicIris ( BOOL bIgnoreEscape, CDataSetDoc *pDoc )
 
 	if ( GetConfig () -> m_bLatencyBeep && ! bEscape )
 		MessageBeep (-1);
+
+	if (pDoc)
+	{
+		pos = pDoc -> GetFirstViewPosition ();
+		pView = pDoc -> GetNextView ( pos );
+		((CMainView*)pView)->GetDocument()->UpdateAllViews(NULL, UPD_EVERYTHING);
+	}
 
 	return bEscape;
 }
