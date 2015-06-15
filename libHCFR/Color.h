@@ -87,7 +87,7 @@ typedef enum
 	C=7,
 	E=8,
 	DCI=9,
-    DCUST,
+    DCUST=10
 } WhiteTarget;
 
 class CSpectrum;
