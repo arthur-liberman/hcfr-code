@@ -38,6 +38,7 @@
 #include "MeasuresHistoView.h"
 #include "SpectrumDlg.h"
 #include "../ColorHCFRConfig.h"
+#include "../Measure.h"
 
 #include "DocEnumerator.h"	//Ki
 #include <math.h>
@@ -691,7 +692,7 @@ void CMainView::AddColorToGrid(const ColorTriplet& color, GV_ITEM& Item, const c
     m_pSelectedColorGrid->SetItem(&Item);
 }
 
-void CMainView::RefreshSelection()
+void CMainView::RefreshSelection(bool b_minCol)
 {
 	int		i, aColorTemp;
 	double	YWhite = 1.0;
@@ -703,7 +704,8 @@ void CMainView::RefreshSelection()
 	Item.nFormat = DT_RIGHT;
 	Item.row = 0;
 	Item.col = 1;
-	minCol = m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1;
+	if (b_minCol)
+		minCol = m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1;
 
 	if (m_displayMode <= 11 &&  m_displayMode != 2)  
     {
@@ -1601,7 +1603,6 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	if ( n > 0 )
 		MeasuredColor=GetDocument()->GetMeasure()->GetMeasurement(n-1);
 
-
 	if ( lHint == UPD_FREEMEASUREAPPENDED && pHint == g_pDataDocRunningThread && g_hThread && ! g_bTerminateThread )
 	{
 		// Optimized version for continuous measures: update only measurement grid
@@ -1620,10 +1621,99 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 		}
 		UpdateMeasurementsAfterBkgndMeasure ();
 	}
+	else if ( lHint >= UPD_REALTIME ) //optimized for realtime
+	{
+		if (m_displayMode != (lHint - UPD_REALTIME))
+		{
+			m_displayMode = (lHint - UPD_REALTIME);
+			m_comboMode.SetCurSel (m_displayMode);
+			OnSelchangeComboMode();
+		}
+		last_minCol = GetDocument()->GetMeasure()->m_currentIndex + 1;
+		minCol = last_minCol;
+		UpdateGrid();
+		RefreshSelection(FALSE);
+		
+		if ( m_pInfoWnd ) //in case colorchecker slot is updated
+		{
+				m_pInfoWnd ->SetWindowTextA(GetDocument()->GetMeasure()->GetInfoString());
+				m_pInfoWnd -> Invalidate ();
+				m_pInfoWnd -> UpdateWindow();			
+		}
+/*
+		int		aColorTemp;
+		double	YWhite = 1.0;
+		CColor	aColor;
+		GV_ITEM Item;
+		CString	str;
+	
+		Item.mask = GVIF_TEXT|GVIF_FORMAT;
+		Item.nFormat = DT_RIGHT;
+		Item.row = 0;
+		Item.col = 1;
+
+		if(m_SelectedColor.isValid())
+		{
+			// Retrieve measured white luminance to compute exact delta E, Lab and LCH values
+			if ( GetDocument() -> GetMeasure () -> GetOnOffWhite ().isValid() )
+				YWhite = GetDocument() -> GetMeasure () -> GetOnOffWhite () [ 1 ]; //onoff white is always grayscale white
+
+			Item.strText.Format("%.3f",m_SelectedColor.GetLuminance());
+			Item.row = 0;
+			m_pSelectedColorGrid->SetItem(&Item);
+
+			if (GetDocument()->m_pSensor->ReadingType() == 2)
+				Item.strText.Format("%.4f",m_SelectedColor.GetLuminance() / 10.764);
+			else
+				Item.strText.Format("%.4f",m_SelectedColor.GetLuminance()*.29188558);
+			Item.row = 1;
+			m_pSelectedColorGrid->SetItem(&Item);
+
+			aColorTemp = m_SelectedColor.GetXYZValue().GetColorTemp(GetColorReference());
+		
+			if ( aColorTemp < 1500 )
+			{
+				Item.strText = _T("< 1500");
+				Item.row = 2;
+				m_pSelectedColorGrid->SetItem(&Item);
+			}
+			else if ( aColorTemp > 12000 )
+			{
+				Item.strText= _T("> 12000");
+				Item.row = 2;
+				m_pSelectedColorGrid->SetItem(&Item);
+			}
+			else
+			{
+				Item.strText.Format ( "%d", aColorTemp );
+				Item.row = 2;
+				m_pSelectedColorGrid->SetItem(&Item);
+			}
+
+			AddColorToGrid(m_SelectedColor.GetXYZValue(), Item, "%.3f");
+			AddColorToGrid(m_SelectedColor.GetRGBValue((GetColorReference())), Item, "%.3f");
+			AddColorToGrid(m_SelectedColor.GetxyYValue(), Item, "%.3f");
+			AddColorToGrid(m_SelectedColor.GetxyzValue(), Item, "%.3f");
+			AddColorToGrid(m_SelectedColor.GetLabValue(YWhite, GetColorReference()), Item, "%.1f");
+			AddColorToGrid(m_SelectedColor.GetLCHValue(YWhite, GetColorReference()), Item, "%.1f");
+		}
+        
+		int size=GetDocument()->GetMeasure()->GetGrayScaleSize();
+        if (m_displayMode == 3)
+            size = 101;
+        else if (m_displayMode == 4)
+        size = -1 * GetDocument()->GetMeasure()->GetNearWhiteScaleSize();
+		if (m_displayMode > 4 && m_displayMode < 12)
+			size=GetDocument()->GetMeasure()->GetSaturationSize();
+	    m_RGBLevels.Refresh(last_minCol, m_displayMode, size);
+		m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  last_minCol, size, m_displayMode, GetDocument());
+//		UpdateData(FALSE);
+*/
+	}
 	else
 	{
 		// Normal OnUpdate
-		CFormView::OnUpdate(pSender,lHint,pHint);
+		CFormView::OnUpdate(pSender, lHint, pHint);
 
 		if ( m_displayType == HCFR_SENSORRGB_VIEW )
 		{
@@ -1634,19 +1724,11 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
 		GetDlgItem ( IDC_SENSORRGB_RADIO ) -> EnableWindow ( FALSE );
 
+
 		if ( ( lHint >= UPD_EVERYTHING && lHint <= UPD_FREEMEASURES ) || lHint == UPD_ARRAYSIZES || lHint == UPD_GENERALREFERENCES || lHint == UPD_DATAREFDOC || lHint == UPD_REFERENCEDATA )
 		{
 			InitGrid(); // to update row labels (if colorReference setting has changed, or if lux values appeared)
 			UpdateGrid();
-			if ( m_pInfoWnd )
-			{
-				if (m_pInfoWnd == 0)
-				{
-					m_pInfoWnd ->SetWindowTextA(GetDocument()->GetMeasure()->GetInfoString());
-					m_pInfoWnd -> Invalidate ();
-					m_pInfoWnd -> UpdateWindow();			
-				}
-			}
 		}
 		
 		if ( lHint == UPD_FREEMEASUREAPPENDED )

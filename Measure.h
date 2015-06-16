@@ -114,6 +114,7 @@ public:
 	int GetGrayScaleSize() const { return m_grayMeasureArray.GetSize(); }
 	void SetGrayScaleSize(int steps);
 	void SetIREScaleMode(BOOL bIRE);
+	CColor lastColor;
 
 	BOOL MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator, CDataSetDoc *pDoc);
 	CColor GetNearBlack(int i) const;
@@ -215,7 +216,9 @@ public:
 
     void ApplySensorAdjustmentMatrix(const Matrix & matrixAdjustment);
 
-	BOOL WaitForDynamicIris ( BOOL bIgnoreEscape = FALSE, CDataSetDoc *pDoc = NULL );
+	BOOL WaitForDynamicIris ( BOOL bIgnoreEscape = FALSE );
+	void UpdateViews ( CDataSetDoc *pDoc = NULL, int Sequence = 0 );
+	int m_currentIndex;
 
 	HANDLE InitBackgroundMeasures ( CSensor *pSensor, int nSteps );
 	BOOL BackgroundMeasureColor ( int nCurStep, const ColorRGBDisplay& aRGBValue );

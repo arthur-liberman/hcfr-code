@@ -58,6 +58,7 @@
 #define UPD_GENERALREFERENCES			23
 #define UPD_FREEMEASUREAPPENDED			24
 #define UPD_CC24SAT						25
+#define UPD_REALTIME					26
 
 class CColorTempHistoView;
 class CRGBHistoView;

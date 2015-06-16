@@ -129,7 +129,7 @@ public:
 
 	void SetSelectedColor ( CColor & clr )	{ m_SelectedColor = clr; GetDocument () -> SetSelectedColor ( clr ); RefreshSelection (); }
 
-	void RefreshSelection ();
+	void RefreshSelection (bool b_minCol=TRUE);
 
 // Operations
 public:
