@@ -121,6 +121,7 @@ public:
 	void DisplayRGd();
 	void DisplayRBd();
 	void DisplayGBd();
+	void DisplayBN();
 	void DisplayGradient2();
 	void DisplayLramp();
 	void DisplayGranger();

@@ -1664,6 +1664,7 @@ BEGIN
     "8",            IDM_PATTERN_RGd,        VIRTKEY, CONTROL, NOINVERT
     "9",            IDM_PATTERN_RBd,        VIRTKEY, CONTROL, NOINVERT
     "0",            IDM_PATTERN_GBd,        VIRTKEY, CONTROL, NOINVERT
+    "9",            IDM_PATTERN_BN,         VIRTKEY, ALT, NOINVERT
     "0",            IDM_PATTERN_TV,         VIRTKEY, ALT, NOINVERT
     "A",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
@@ -2076,6 +2077,7 @@ BEGIN
             MENUITEM "&Sharpness/Overscan",         IDM_PATTERN_SHARP
             MENUITEM "Alignment",                   IDM_PATTERN_ALIGN
             MENUITEM "Elliptical Ramp",             IDM_PATTERN_ERAMP
+            MENUITEM "Bellenuit",					IDM_PATTERN_BN
             MENUITEM SEPARATOR
             POPUP "Evaluation Sequence(Casino Royale)"
             BEGIN

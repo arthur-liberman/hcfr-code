@@ -781,6 +781,7 @@
 #define IDR_PATTERN_RGd                 1332
 #define IDR_PATTERN_RBd                 1333
 #define IDR_PATTERN_GBd                 1334
+#define IDR_PATTERN_BN                 1335
 #define IDC_COLORTEMPHISTO_GRAPH        11003
 #define IDC_RGBHISTO_GRAPH              11101
 #define IDC_RGBHISTO_GRAPH2             11102
@@ -1028,6 +1029,7 @@
 #define IDM_PATTERN_RBd                 33074
 #define IDM_PATTERN_GBd                 33075
 #define IDM_EXPORT_PDF                  33076
+#define IDM_PATTERN_BN                  33077
 #define IDS_LUMINANCEHISTOVIEW_NAME     41446
 #define IDS_COLORTEMPHISTOVIEW_NAME     41447
 #define IDS_RGBHISTOVIEW_NAME           41448

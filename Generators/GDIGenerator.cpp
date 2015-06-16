@@ -733,6 +733,12 @@ BOOL CGDIGenerator::DisplayTC5()
 	return TRUE;
 }
 
+BOOL CGDIGenerator::DisplayBN()
+{
+	m_displayWindow.DisplayBN();
+	return TRUE;
+}
+
 BOOL CGDIGenerator::DisplayDR0()
 {
 	m_displayWindow.DisplayDR0();

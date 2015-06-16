@@ -221,6 +221,7 @@ protected:
 	afx_msg void OnPatternTC3();
 	afx_msg void OnPatternTC4();
 	afx_msg void OnPatternTC5();
+	afx_msg void OnPatternBN();
 	afx_msg void OnPatternDR0();
 	afx_msg void OnPatternDR1();
 	afx_msg void OnPatternDR2();

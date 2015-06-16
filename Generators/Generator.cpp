@@ -340,6 +340,11 @@ BOOL CGenerator::DisplayTC5()
 	return TRUE;	  // need to be overriden
 }
 
+BOOL CGenerator::DisplayBN()
+{
+	return TRUE;	  // need to be overriden
+}
+
 BOOL CGenerator::DisplayDR0()
 {
 	return TRUE;	  // need to be overriden

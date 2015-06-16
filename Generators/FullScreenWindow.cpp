@@ -457,6 +457,13 @@ void CFullScreenWindow::DisplayGBd()
 	CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_GBd,TRUE);
 	FreeLibrary(hPatterns);
 }
+void CFullScreenWindow::DisplayBN() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+	CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_BN,TRUE);
+	FreeLibrary(hPatterns);
+}
 
 void CFullScreenWindow::DisplayLramp() 
 {

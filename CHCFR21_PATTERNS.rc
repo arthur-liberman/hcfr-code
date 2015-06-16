@@ -211,6 +211,7 @@ IDR_PATTERN_GB        PATTERN                 "res\\patterns\\gbramp.png"
 IDR_PATTERN_RBd        PATTERN                 "res\\patterns\\rbramp_d2.png"
 IDR_PATTERN_RGd        PATTERN                 "res\\patterns\\rgramp_d2.png"
 IDR_PATTERN_GBd        PATTERN                 "res\\patterns\\gbramp_d2.png"
+IDR_PATTERN_BN        PATTERN                 "res\\patterns\\bellenuit.png"
 #endif    // French (France) resourcesdi
 /////////////////////////////////////////////////////////////////////////////
 
