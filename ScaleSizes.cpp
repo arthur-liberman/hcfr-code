@@ -92,7 +92,6 @@ BOOL CScaleSizes::OnInitDialog()
 	CDialog::OnInitDialog();
 	
 	str.Format ( "%d", m_NbGrays );
-
 	if ( m_bIRE )
 	{
 		m_ComboGrays.ShowWindow ( SW_SHOW );
@@ -110,7 +109,6 @@ BOOL CScaleSizes::OnInitDialog()
 		m_ComboGrays.SetCurSel ( 1 );
 	}
 
-	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -137,6 +135,10 @@ void CScaleSizes::OnOK()
 		m_pDoc -> GetMeasure () -> SetSaturationSize ( m_NbSat + 1 );
 		
 		GetConfig()->WriteProfileInt("References","IRELevels",m_bIRE);
+		GetConfig()->WriteProfileInt("Scale Sizes","Gray",m_NbGrays);
+		GetConfig()->WriteProfileInt("Scale Sizes","Near Black",m_NbNearBlack);
+		GetConfig()->WriteProfileInt("Scale Sizes","Near White",m_NbNearWhite);
+		GetConfig()->WriteProfileInt("Scale Sizes","Saturations",m_NbSat);
 
 		m_pDoc -> UpdateAllViews ( NULL );
 	}

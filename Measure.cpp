@@ -53,15 +53,15 @@ CMeasure::CMeasure()
 	m_binMeasure = FALSE;
 	m_primariesArray.SetSize(3);
 	m_secondariesArray.SetSize(3);
-	m_grayMeasureArray.SetSize(11);
-	m_nearBlackMeasureArray.SetSize(5);
-	m_nearWhiteMeasureArray.SetSize(5);
-	m_redSatMeasureArray.SetSize(5);
-	m_greenSatMeasureArray.SetSize(5);
-	m_blueSatMeasureArray.SetSize(5);
-	m_yellowSatMeasureArray.SetSize(5);
-	m_cyanSatMeasureArray.SetSize(5);
-	m_magentaSatMeasureArray.SetSize(5);
+	m_grayMeasureArray.SetSize(	GetConfig()->GetProfileInt("Scale Sizes","Gray",10)+1);
+	m_nearBlackMeasureArray.SetSize( GetConfig()->GetProfileInt("Scale Sizes","Near Black",4)+1);
+	m_nearWhiteMeasureArray.SetSize(GetConfig()->GetProfileInt("Scale Sizes","Near White",4)+1);
+	m_redSatMeasureArray.SetSize(GetConfig()->GetProfileInt("Scale Sizes","Saturations",4)+1);
+	m_greenSatMeasureArray.SetSize(GetConfig()->GetProfileInt("Scale Sizes","Saturations",4)+1);
+	m_blueSatMeasureArray.SetSize(GetConfig()->GetProfileInt("Scale Sizes","Saturations",4)+1);
+	m_yellowSatMeasureArray.SetSize(GetConfig()->GetProfileInt("Scale Sizes","Saturations",4)+1);
+	m_cyanSatMeasureArray.SetSize(GetConfig()->GetProfileInt("Scale Sizes","Saturations",4)+1);
+	m_magentaSatMeasureArray.SetSize(GetConfig()->GetProfileInt("Scale Sizes","Saturations",4)+1);
     m_cc24SatMeasureArray.SetSize(1000);
 	m_cc24SatMeasureArray_master.SetSize(5000);
 

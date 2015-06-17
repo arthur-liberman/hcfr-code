@@ -414,6 +414,8 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	int current_mode = ((CMainView*)pView)->m_displayMode;
 	double dE10=0.0;
 
+	dE10 = ((CMainView*)pView)->dE10min;
+	
 	if (current_mode != 11)
 	{
 		((CMainView*)pView)->m_displayMode = 11;
@@ -422,8 +424,6 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 		((CMainView*)pView)->m_displayMode = current_mode;
 		((CMainView*)pView)->UpdateAllGrids();
 	}
-	else
-		dE10 = ((CMainView*)pView)->dE10min;
                    
 				char*  PatName[96]={
                     "White",
