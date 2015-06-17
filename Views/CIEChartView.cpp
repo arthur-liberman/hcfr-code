@@ -149,6 +149,7 @@ CCIEChartGrapher::CCIEChartGrapher()
 	m_DeltaX = 0;
 	m_DeltaY = 0;
 	m_ttID = 0;
+	dE10 = 0.;
 }
 
 void CCIEChartGrapher::MakeBgBitmap(CRect rect, BOOL bWhiteBkgnd)	// Create background bitmap
@@ -412,7 +413,6 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	POSITION pos = pDoc -> GetFirstViewPosition ();
 	CView *pView = pDoc->GetNextView(pos);
 	int current_mode = ((CMainView*)pView)->m_displayMode;
-	double dE10=0.0;
 
 	dE10 = ((CMainView*)pView)->dE10min;
 	
@@ -1887,7 +1887,7 @@ void CCIEChartView::OnInitialUpdate()
 void CCIEChartView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
 {
 	CRect	Rect;
-	
+
 	// Do nothing when not concerned
 	switch ( lHint )
 	{
@@ -2126,8 +2126,13 @@ void CCIEChartView::OnUpdateCieShowCCScale(CCmdUI* pCmdUI)
 
 void CCIEChartView::OnUpdateCieShowdE10(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable();
-	pCmdUI->SetCheck(m_Grapher.m_bdE10);
+	if (m_Grapher.dE10 > 0)
+	{
+		pCmdUI->Enable();
+		pCmdUI->SetCheck(m_Grapher.m_bdE10);
+	}
+	else
+		pCmdUI->Enable(FALSE);
 }
 
 void CCIEChartView::OnUpdateCieShowCCScaleTarg(CCmdUI* pCmdUI) 

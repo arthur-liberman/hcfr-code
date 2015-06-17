@@ -111,6 +111,7 @@ class CCIEChartGrapher
 	BOOL m_doShowMeasurements;
 	BOOL m_bCIEuv;
 	BOOL m_bdE10;
+	double dE10;
 
 	int		m_ttID; //tooltip index
 
