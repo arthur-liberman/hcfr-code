@@ -433,7 +433,11 @@ CMainView::CMainView()
 	dEmax_sc=0;
 	dEavg_sm=0;
 	dEmax_sm=0;
-
+	dEavg=0.;
+	dEmax=0.;
+	dEcnt=0;
+	dE10=0.;
+	dE10min=0.;
 }
 
 CMainView::~CMainView()
@@ -1875,9 +1879,6 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	}
 }
 
-double			dEavg = 0.0, dEmax=0.0;
-int 			dEcnt = 0;
-std::vector<double> dEvector(0);
 
 CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aReference, CColor & aRefDocColor, double YWhiteRefDoc, int aComponentNum, int nCol, double Offset)
 {
@@ -2333,7 +2334,7 @@ void CMainView::UpdateGrid()
 		BOOL bHasLuxDelta = FALSE;
 					
 		dEavg = 0.0, dEmax=0.0;
-		dEcnt = 0;
+		dEcnt = 0; dE10=0.0;
 
 		if ( pDataRef == GetDocument () )
 			pDataRef = NULL;
@@ -3079,7 +3080,7 @@ void CMainView::UpdateGrid()
 				CString dEform;
 				dEavg_cc = dEavg / dEcnt;
 				dEmax_cc = dEmax;
-				float a = 2.0, b = 3, dE10 = 0;
+				float a = 2.0, b = 3;
 				Tmp.LoadString ( IDS_DELTAEAVERAGE );
 				Msg += " ( ";
 				Msg += Tmp;
@@ -3091,6 +3092,7 @@ void CMainView::UpdateGrid()
                     int pos = distance(dEvector.begin(), max);
                     std::sort ( dEvector.begin(), dEvector.end() );
                     for ( unsigned i = (int) (dEvector.size() - (dEvector.size() / 10 + 1)); i < dEvector.size(); i++ ) dE10+=(float)dEvector[i];
+					dE10min = dEvector[(int) (dEvector.size() - (dEvector.size() / 10 + 1))];
                     dE10 = dE10 / (int) ( (dEvector.size() / 10 + 1) );
                     char aBuf[10];
                     sprintf(aBuf,"Color %d",pos+1);
@@ -3103,7 +3105,10 @@ void CMainView::UpdateGrid()
                     dEvector.clear();
                 }
                 else
+				{
+					dE10min=0.;
     				sprintf ( szBuf, ": %.2f, max: %.2f )", dEavg / dEcnt, dEmax );
+				}
 				    Msg += szBuf;					
 					switch (GetConfig()->m_dE_form)
 					{

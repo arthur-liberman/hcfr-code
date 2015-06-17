@@ -966,7 +966,6 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ClassDiagram1.cd" />
     <None Include="res\icon1.ico" />
     <None Include="res\splash_screen.png" />
   </ItemGroup>

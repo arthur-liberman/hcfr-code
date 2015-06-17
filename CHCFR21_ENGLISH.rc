@@ -1568,6 +1568,7 @@ BEGIN
         MENUITEM "Display background",          IDM_CIE_SHOWBACKGROUND
         MENUITEM "Display Delta E = 3 and 10",  IDM_CIE_SHOWDELTAE
         MENUITEM "CIE u'v' mode",               IDM_CIE_UV
+        MENUITEM "Worst 10%",                   IDM_CIE_WORST10
         MENUITEM "Display references",          IDM_CIE_SHOWREFERENCES
         MENUITEM "Save...",                     IDM_CIE_SAVECHART
         MENUITEM SEPARATOR
@@ -1922,7 +1923,7 @@ BEGIN
             MENUITEM "&Sharpness/Overscan",         IDM_PATTERN_SHARP
             MENUITEM "Alignment",                   IDM_PATTERN_ALIGN
             MENUITEM "Elliptical Ramp",             IDM_PATTERN_ERAMP
-            MENUITEM "Belle Nuit",                   IDM_PATTERN_BN
+            MENUITEM "Belle Nuit",                  IDM_PATTERN_BN
             MENUITEM SEPARATOR
             POPUP "Evaluation Sequence(Casino Royale)"
             BEGIN
@@ -2424,12 +2425,12 @@ BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "CompanyName", "Association Homecinema Francophone"
             VALUE "FileDescription", "HCFR Colorimeter resources"
-            VALUE "FileVersion", "3,3,1"
+            VALUE "FileVersion", "3,3,2"
             VALUE "InternalName", "CHCFR21_ENGLISH"
             VALUE "LegalCopyright", "Copyright (C) 2005-2008"
             VALUE "OriginalFilename", "CHCFR21_ENGLISH.DLL"
             VALUE "ProductName", "HCFR Colorimeter English langage"
-            VALUE "ProductVersion", "3,3,1"
+            VALUE "ProductVersion", "3,3,2"
         END
     END
     BLOCK "VarFileInfo"
@@ -2639,7 +2640,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDR_MAINFRAME           "HCFR Colorimeter - 3.3.1"
+    IDR_MAINFRAME           "HCFR Colorimeter - 3.3.2"
     IDR_MESURETYPE          "\nColor Measures\nColor_Measures\nColorHCFR File (*.chc)\n.chc\nCOLORHCFR\nHCFR Color Measures"
 END
 

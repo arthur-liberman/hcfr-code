@@ -110,6 +110,7 @@ class CCIEChartGrapher
 	BOOL m_doShowCCScaleTarg;
 	BOOL m_doShowMeasurements;
 	BOOL m_bCIEuv;
+	BOOL m_bdE10;
 
 	int		m_ttID; //tooltip index
 
@@ -120,7 +121,7 @@ class CCIEChartGrapher
 
 	// Operations
 	void MakeBgBitmap(CRect rect,BOOL bWhiteBkgnd);
-	void DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoint, CBitmap *pBitmap, CRect rect, CPPToolTip * pTooltip, CWnd * pWnd, CCIEGraphPoint * pRefPoint = NULL);
+	void DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoint, CBitmap *pBitmap, CRect rect, CPPToolTip * pTooltip, CWnd * pWnd, CCIEGraphPoint * pRefPoint = NULL, bool isSelected = FALSE, double dE10=100.0);
 	void DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPToolTip * pTooltip, CWnd * pWnd);
 	
 	void SaveGraphFile ( CDataSetDoc * pDoc, CSize ImageSize, LPCSTR lpszPathName, int ImageFormat = 0, int ImageQuality = 95, bool PDF=FALSE );
@@ -199,6 +200,7 @@ protected:
 	afx_msg void OnCieShowSaturationScale();
 	afx_msg void OnCieShowSaturationScaleTarg();
 	afx_msg void OnCieShowCCScale();
+	afx_msg void OnCieShowdE10();
 	afx_msg void OnCieShowCCScaleTarg();
 	afx_msg void OnCieShowMeasurements();
 	afx_msg void OnGraphZoomIn();
@@ -208,6 +210,7 @@ protected:
 	afx_msg void OnUpdateCieShowSaturationScale(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateCieShowSaturationScaleTarg(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateCieShowCCScale(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateCieShowdE10(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateCieShowCCScaleTarg(CCmdUI* pCmdUI);
 	afx_msg void OnCieSavechart();
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);

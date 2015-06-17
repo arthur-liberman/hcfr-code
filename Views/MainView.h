@@ -117,6 +117,13 @@ public:
 	double dEmax_sc;
 	double dEavg_sm;
 	double dEmax_sm;
+	double dEavg;
+	double dEmax;
+	int	dEcnt;
+	double dE10;
+	double dE10min;
+
+	std::vector<double> dEvector;
 
 	CBrush *m_pBgBrush;
 

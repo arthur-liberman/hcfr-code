@@ -31,6 +31,7 @@
 #include "ximage.h"
 #include "savegraphdialog.h"
 #include "graphcontrol.h"
+#include "Views\MainView.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -142,6 +143,7 @@ CCIEChartGrapher::CCIEChartGrapher()
 	m_doShowCCScaleTarg=GetConfig()->GetProfileInt("CIE Chart","Display Color Checker Targets",TRUE);
 	m_doShowMeasurements=GetConfig()->GetProfileInt("CIE Chart","Show Measurements",TRUE);
 	m_bCIEuv=GetConfig()->GetProfileInt("CIE Chart","CIE uv mode",FALSE);
+	m_bdE10=GetConfig()->GetProfileInt("CIE Chart","Worst dE",FALSE);
 
 	m_ZoomFactor = 1000;
 	m_DeltaX = 0;
@@ -297,16 +299,19 @@ void CCIEChartGrapher::MakeBgBitmap(CRect rect, BOOL bWhiteBkgnd)	// Create back
 COLORREF stRGB[5000];
 COLORREF eRGB[5000];
 
-void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoint, CBitmap *pBitmap, CRect rect, CPPToolTip * pTooltip, CWnd * pWnd, CCIEGraphPoint * pRefPoint)
+void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoint, CBitmap *pBitmap, CRect rect, CPPToolTip * pTooltip, CWnd * pWnd, CCIEGraphPoint * pRefPoint, bool isSelected, double dE10)
 {
 	ASSERT(pBitmap);
 	ASSERT(pDC);
 
 	BITMAP bm;
 	pBitmap->GetBitmap(&bm);
+	bool bDrawBMP = !m_bdE10;
+	if (isSelected)
+		bDrawBMP = TRUE;
 
 	// Add tootip if name is defined
-	if(!aGraphPoint.name.IsEmpty() && pWnd)
+	if(!aGraphPoint.name.IsEmpty() && pWnd && !isSelected)
 	{
 		CString str, str1, str2, str3;
 		int x=aGraphPoint.GetGraphX(rect)+m_DeltaX;
@@ -335,29 +340,31 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 		if ( pRefPoint )
 		{
             double dE  = aGraphPoint.GetNormalizedColor().GetDeltaE(1.0, pRefPoint->GetNormalizedColor(), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
-			str2.Format ( ", Delta E: %.1f\n",dE );
-			str3.LoadString (IDS_DISTANCEINCIEXY);
-			str2 += str3;
+			if (dE > dE10)
+				bDrawBMP = TRUE;
+				str2.Format ( ", Delta E: %.1f\n",dE );
+				str3.LoadString (IDS_DISTANCEINCIEXY);
+				str2 += str3;
 
-			double dXY = aGraphPoint.GetNormalizedColor().GetDeltaxy(pRefPoint->GetNormalizedColor(), GetColorReference());
-			str3.Format ( ": %.3f xy</font>", dXY );
-			str2 += str3;
-			ColorRGB measCol = ColorRGB(aGraphPoint.GetNormalizedColor(),GetColorReference());
-			ColorRGB refCol = ColorRGB(pRefPoint->GetNormalizedColor(),GetColorReference());
-			double r1=min(max(measCol[0],0),1);
-			double g1=min(max(measCol[1],0),1);
-			double b1=min(max(measCol[2],0),1);
-			double r2=min(max(refCol[0],0),1);
-			double g2=min(max(refCol[1],0),1);
-			double b2=min(max(refCol[2],0),1);
-			stRGB[m_ttID]=RGB(floor(pow(r1,1.0/2.2)*255.+0.5),floor(pow(g1,1.0/2.2)*255.+0.5),floor(pow(b1,1.0/2.2)*255.+0.5));
-			eRGB[m_ttID]=RGB(floor(pow(r2,1.0/2.2)*255.+0.5),floor(pow(g2,1.0/2.2)*255.+0.5),floor(pow(b2,1.0/2.2)*255.+0.5));
-			if (dark)
-				pTooltip -> AddTool(pWnd, "<b><font color=\"#EFEFEF\">"+CString(aGraphPoint.name) +"</font></b> \n" +str+str2,&rect_tip, m_ttID);
-			else
-				pTooltip -> AddTool(pWnd, "<b><font color=\"#101010\">"+CString(aGraphPoint.name) +"</font></b> \n" +str+str2,&rect_tip, m_ttID);
-			if (m_ttID < 4999)
-				m_ttID++;
+				double dXY = aGraphPoint.GetNormalizedColor().GetDeltaxy(pRefPoint->GetNormalizedColor(), GetColorReference());
+				str3.Format ( ": %.3f xy</font>", dXY );
+				str2 += str3;
+				ColorRGB measCol = ColorRGB(aGraphPoint.GetNormalizedColor(),GetColorReference());
+				ColorRGB refCol = ColorRGB(pRefPoint->GetNormalizedColor(),GetColorReference());
+				double r1=min(max(measCol[0],0),1);
+				double g1=min(max(measCol[1],0),1);
+				double b1=min(max(measCol[2],0),1);
+				double r2=min(max(refCol[0],0),1);
+				double g2=min(max(refCol[1],0),1);
+				double b2=min(max(refCol[2],0),1);
+				stRGB[m_ttID]=RGB(floor(pow(r1,1.0/2.2)*255.+0.5),floor(pow(g1,1.0/2.2)*255.+0.5),floor(pow(b1,1.0/2.2)*255.+0.5));
+				eRGB[m_ttID]=RGB(floor(pow(r2,1.0/2.2)*255.+0.5),floor(pow(g2,1.0/2.2)*255.+0.5),floor(pow(b2,1.0/2.2)*255.+0.5));
+				if (dark)
+					pTooltip -> AddTool(pWnd, "<b><font color=\"#EFEFEF\">"+CString(aGraphPoint.name) +"</font></b> \n" +str+str2,&rect_tip, m_ttID);
+				else
+					pTooltip -> AddTool(pWnd, "<b><font color=\"#101010\">"+CString(aGraphPoint.name) +"</font></b> \n" +str+str2,&rect_tip, m_ttID);
+				if (m_ttID < 4999)
+					m_ttID++;
 		}
 		else
 		{
@@ -374,22 +381,26 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 				pTooltip -> AddTool(pWnd, "<b><font color=\"#101010\">"+CString(aGraphPoint.name) +"</font></b> \n" +str+str2,&rect_tip, m_ttID);
 			if (m_ttID < 4999)
 				m_ttID++;
+			bDrawBMP = TRUE;
 		}
 		
 	}
 
-	CDC memDC;
-	memDC.CreateCompatibleDC( pDC );
+	if (bDrawBMP)
+	{
+		CDC memDC;
+		memDC.CreateCompatibleDC( pDC );
 
-	CBitmap* pOld = memDC.SelectObject(pBitmap);
-	BLENDFUNCTION bf;
-	bf.BlendOp=AC_SRC_OVER;
-	bf.BlendFlags=0;
-	bf.AlphaFormat=0x01;  // AC_SRC_ALPHA=0x01
-	bf.SourceConstantAlpha=255;
-	AlphaBlend(*pDC,aGraphPoint.GetGraphX(rect)-bm.bmWidth/2,aGraphPoint.GetGraphY(rect)-bm.bmHeight/2,bm.bmWidth,bm.bmHeight,memDC,0,0,bm.bmWidth,bm.bmHeight,bf);
+		CBitmap* pOld = memDC.SelectObject(pBitmap);
+		BLENDFUNCTION bf;
+		bf.BlendOp=AC_SRC_OVER;
+		bf.BlendFlags=0;
+		bf.AlphaFormat=0x01;  // AC_SRC_ALPHA=0x01
+		bf.SourceConstantAlpha=255;
+		AlphaBlend(*pDC,aGraphPoint.GetGraphX(rect)-bm.bmWidth/2,aGraphPoint.GetGraphY(rect)-bm.bmHeight/2,bm.bmWidth,bm.bmHeight,memDC,0,0,bm.bmWidth,bm.bmHeight,bf);
 
-	memDC.SelectObject(pOld);
+		memDC.SelectObject(pOld);
+	}
 
 }
 
@@ -398,7 +409,22 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	CColorHCFRApp *	pApp = GetColorApp();
 	CString			Msg, Msg2, Msg3;
 	CDataSetDoc *	pDataRef = GetDataRef();
-                    
+	POSITION pos = pDoc -> GetFirstViewPosition ();
+	CView *pView = pDoc->GetNextView(pos);
+	int current_mode = ((CMainView*)pView)->m_displayMode;
+	double dE10=0.0;
+
+	if (current_mode != 11)
+	{
+		((CMainView*)pView)->m_displayMode = 11;
+		((CMainView*)pView)->UpdateAllGrids();
+		dE10 = ((CMainView*)pView)->dE10min;
+		((CMainView*)pView)->m_displayMode = current_mode;
+		((CMainView*)pView)->UpdateAllGrids();
+	}
+	else
+		dE10 = ((CMainView*)pView)->dE10min;
+                   
 				char*  PatName[96]={
                     "White",
                     "6J",
@@ -1011,30 +1037,30 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 		
 		if ( hasPrimaries )
 		{
-			DrawAlphaBitmap(pDC,redPrimaryPoint,&m_redPrimaryBitmap,rect,pTooltip,pWnd,&refRedPrimaryPoint);
-			DrawAlphaBitmap(pDC,greenPrimaryPoint,&m_greenPrimaryBitmap,rect,pTooltip,pWnd,&refGreenPrimaryPoint);
-			DrawAlphaBitmap(pDC,bluePrimaryPoint,&m_bluePrimaryBitmap,rect,pTooltip,pWnd,&refBluePrimaryPoint);
+			DrawAlphaBitmap(pDC,redPrimaryPoint,&m_redPrimaryBitmap,rect,pTooltip,pWnd,&refRedPrimaryPoint, FALSE, dE10);
+			DrawAlphaBitmap(pDC,greenPrimaryPoint,&m_greenPrimaryBitmap,rect,pTooltip,pWnd,&refGreenPrimaryPoint, FALSE, dE10);
+			DrawAlphaBitmap(pDC,bluePrimaryPoint,&m_bluePrimaryBitmap,rect,pTooltip,pWnd,&refBluePrimaryPoint, FALSE, dE10);
 		}
 		
 		if ( hasSecondaries )
 		{
-			DrawAlphaBitmap(pDC,yellowSecondaryPoint,&m_yellowSecondaryBitmap,rect,pTooltip,pWnd,&refYellowSecondaryPoint);
-			DrawAlphaBitmap(pDC,cyanSecondaryPoint,&m_cyanSecondaryBitmap,rect,pTooltip,pWnd,&refCyanSecondaryPoint);
-			DrawAlphaBitmap(pDC,magentaSecondaryPoint,&m_magentaSecondaryBitmap,rect,pTooltip,pWnd,&refMagentaSecondaryPoint);
+			DrawAlphaBitmap(pDC,yellowSecondaryPoint,&m_yellowSecondaryBitmap,rect,pTooltip,pWnd,&refYellowSecondaryPoint, FALSE, dE10);
+			DrawAlphaBitmap(pDC,cyanSecondaryPoint,&m_cyanSecondaryBitmap,rect,pTooltip,pWnd,&refCyanSecondaryPoint, FALSE, dE10);
+			DrawAlphaBitmap(pDC,magentaSecondaryPoint,&m_magentaSecondaryBitmap,rect,pTooltip,pWnd,&refMagentaSecondaryPoint, FALSE, dE10);
 		}
 
 		if ( hasdatarefPrimaries )
 		{
-			DrawAlphaBitmap(pDC,datarefRedPoint,&m_datarefRedBitmap,rect,pTooltip,pWnd,&refRedPrimaryPoint);
-			DrawAlphaBitmap(pDC,datarefGreenPoint,&m_datarefGreenBitmap,rect,pTooltip,pWnd,&refGreenPrimaryPoint);
-			DrawAlphaBitmap(pDC,datarefBluePoint,&m_datarefBlueBitmap,rect,pTooltip,pWnd,&refBluePrimaryPoint);
+			DrawAlphaBitmap(pDC,datarefRedPoint,&m_datarefRedBitmap,rect,pTooltip,pWnd,&refRedPrimaryPoint, FALSE, dE10);
+			DrawAlphaBitmap(pDC,datarefGreenPoint,&m_datarefGreenBitmap,rect,pTooltip,pWnd,&refGreenPrimaryPoint, FALSE, dE10);
+			DrawAlphaBitmap(pDC,datarefBluePoint,&m_datarefBlueBitmap,rect,pTooltip,pWnd,&refBluePrimaryPoint, FALSE, dE10);
 		}
 
 		if ( hasdatarefSecondaries )
 		{
-			DrawAlphaBitmap(pDC,datarefYellowPoint,&m_datarefYellowBitmap,rect,pTooltip,pWnd,&refYellowSecondaryPoint);
-			DrawAlphaBitmap(pDC,datarefCyanPoint,&m_datarefCyanBitmap,rect,pTooltip,pWnd,&refCyanSecondaryPoint);
-			DrawAlphaBitmap(pDC,datarefMagentaPoint,&m_datarefMagentaBitmap,rect,pTooltip,pWnd,&refMagentaSecondaryPoint);
+			DrawAlphaBitmap(pDC,datarefYellowPoint,&m_datarefYellowBitmap,rect,pTooltip,pWnd,&refYellowSecondaryPoint, FALSE, dE10);
+			DrawAlphaBitmap(pDC,datarefCyanPoint,&m_datarefCyanBitmap,rect,pTooltip,pWnd,&refCyanSecondaryPoint, FALSE, dE10);
+			DrawAlphaBitmap(pDC,datarefMagentaPoint,&m_datarefMagentaBitmap,rect,pTooltip,pWnd,&refMagentaSecondaryPoint, FALSE, dE10);
 		}
 	}
 
@@ -1097,7 +1123,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 
             CCIEGraphPoint grayPoint(pDoc->GetMeasure()->GetGray(i).GetXYZValue(), YWhiteGray, str, m_bCIEuv);
 
-            DrawAlphaBitmap(pDC,grayPoint,&m_grayPlotBitmap,rect,pTooltip,pWnd,&grayRef);
+            DrawAlphaBitmap(pDC,grayPoint,&m_grayPlotBitmap,rect,pTooltip,pWnd,&grayRef, FALSE, dE10);
 		}
 	}
 
@@ -1371,7 +1397,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			CCIEGraphPoint RedPointRef(pDoc->GetMeasure()->GetRefSat(0, (double)i / (double)(pDoc->GetMeasure()->GetSaturationSize()-1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb)).GetXYZValue(),
 								  1.0,
 								  str, m_bCIEuv);
-			DrawAlphaBitmap(pDC,RedPoint,&m_redPrimaryBitmap,rect,pTooltip,pWnd,&RedPointRef);
+			DrawAlphaBitmap(pDC,RedPoint,&m_redPrimaryBitmap,rect,pTooltip,pWnd,&RedPointRef, FALSE, dE10);
 
 			Msg.LoadString ( IDS_GREENSATPERCENT );
 			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
@@ -1381,7 +1407,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			CCIEGraphPoint GreenPointRef(pDoc->GetMeasure()->GetRefSat(1, (double)i / (double)(pDoc->GetMeasure()->GetSaturationSize()-1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb)).GetXYZValue(),
 								  1.0,
 								  str, m_bCIEuv);
-			DrawAlphaBitmap(pDC,GreenPoint,&m_greenPrimaryBitmap,rect,pTooltip,pWnd,&GreenPointRef);
+			DrawAlphaBitmap(pDC,GreenPoint,&m_greenPrimaryBitmap,rect,pTooltip,pWnd,&GreenPointRef, FALSE, dE10);
 
 			Msg.LoadString ( IDS_BLUESATPERCENT );
 			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
@@ -1391,7 +1417,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			CCIEGraphPoint BluePointRef(pDoc->GetMeasure()->GetRefSat(2, (double)i / (double)(pDoc->GetMeasure()->GetSaturationSize()-1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb)).GetXYZValue(),
 								  1.0,
 								  str, m_bCIEuv);
-			DrawAlphaBitmap(pDC,BluePoint,&m_bluePrimaryBitmap,rect,pTooltip,pWnd,&BluePointRef);
+			DrawAlphaBitmap(pDC,BluePoint,&m_bluePrimaryBitmap,rect,pTooltip,pWnd,&BluePointRef, FALSE, dE10);
 
 			Msg.LoadString ( IDS_YELLOWSATPERCENT );
 			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
@@ -1401,7 +1427,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			CCIEGraphPoint YellowPointRef(pDoc->GetMeasure()->GetRefSat(3, (double)i / (double)(pDoc->GetMeasure()->GetSaturationSize()-1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb)).GetXYZValue(),
 								  1.0,
 								  str, m_bCIEuv);
-			DrawAlphaBitmap(pDC,YellowPoint,&m_yellowSecondaryBitmap,rect,pTooltip,pWnd,&YellowPointRef);
+			DrawAlphaBitmap(pDC,YellowPoint,&m_yellowSecondaryBitmap,rect,pTooltip,pWnd,&YellowPointRef, FALSE, dE10);
 
 			Msg.LoadString ( IDS_CYANSATPERCENT );
 			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
@@ -1411,7 +1437,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			CCIEGraphPoint CyanPointRef(pDoc->GetMeasure()->GetRefSat(4, (double)i / (double)(pDoc->GetMeasure()->GetSaturationSize()-1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb)).GetXYZValue(),
 								  1.0,
 								  str, m_bCIEuv);
-			DrawAlphaBitmap(pDC,CyanPoint,&m_cyanSecondaryBitmap,rect,pTooltip,pWnd,&CyanPointRef);
+			DrawAlphaBitmap(pDC,CyanPoint,&m_cyanSecondaryBitmap,rect,pTooltip,pWnd,&CyanPointRef, FALSE, dE10);
 
 			Msg.LoadString ( IDS_MAGENTASATPERCENT );
 			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
@@ -1421,7 +1447,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			CCIEGraphPoint MagPointRef(pDoc->GetMeasure()->GetRefSat(5, (double)i / (double)(pDoc->GetMeasure()->GetSaturationSize()-1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb)).GetXYZValue(),
 								  1.0,
 								  str, m_bCIEuv);
-			DrawAlphaBitmap(pDC,MagentaPoint,&m_magentaSecondaryBitmap,rect,pTooltip,pWnd,&MagPointRef);
+			DrawAlphaBitmap(pDC,MagentaPoint,&m_magentaSecondaryBitmap,rect,pTooltip,pWnd,&MagPointRef, FALSE, dE10);
 		}
 	}
 	if(m_doShowCCScale)
@@ -1438,7 +1464,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			CCIEGraphPoint ccRefPoint(pDoc->GetMeasure()->GetRefCC24Sat(0).GetXYZValue(),
 								  1.0,
 								  str, m_bCIEuv);
-			DrawAlphaBitmap(pDC,cc1Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint);
+			DrawAlphaBitmap(pDC,cc1Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint, FALSE, dE10);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_2a:(GetConfig()->m_CCMode == SKIN?IDS_CC_2b:IDS_CC_2) );
 			str.Format(Msg, 10);
@@ -1448,7 +1474,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			ccRefPoint = CCIEGraphPoint(pDoc->GetMeasure()->GetRefCC24Sat(1).GetXYZValue(),
 								  1.0,
 								  str, m_bCIEuv);
-			DrawAlphaBitmap(pDC,cc2Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint);
+			DrawAlphaBitmap(pDC,cc2Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint, FALSE, dE10);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_3a:(GetConfig()->m_CCMode == SKIN?IDS_CC_3b:IDS_CC_3) );
 			str.Format(Msg, 10);
@@ -1458,7 +1484,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			ccRefPoint = CCIEGraphPoint(pDoc->GetMeasure()->GetRefCC24Sat(2).GetXYZValue(),
 								  1.0,
 								  str, m_bCIEuv);
-			DrawAlphaBitmap(pDC,cc3Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint);
+			DrawAlphaBitmap(pDC,cc3Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint, FALSE, dE10);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_4a:(GetConfig()->m_CCMode == SKIN?IDS_CC_4b:IDS_CC_4) );
 			str.Format(Msg, 10);
@@ -1468,7 +1494,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			ccRefPoint = CCIEGraphPoint(pDoc->GetMeasure()->GetRefCC24Sat(3).GetXYZValue(),
 								  1.0,
 								  str, m_bCIEuv);
-			DrawAlphaBitmap(pDC,cc4Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint);
+			DrawAlphaBitmap(pDC,cc4Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint, FALSE, dE10);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_5a:(GetConfig()->m_CCMode == SKIN?IDS_CC_5b:IDS_CC_5) );
 			str.Format(Msg, 10);
@@ -1478,7 +1504,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			ccRefPoint = CCIEGraphPoint(pDoc->GetMeasure()->GetRefCC24Sat(4).GetXYZValue(),
 								  1.0,
 								  str, m_bCIEuv);
-			DrawAlphaBitmap(pDC,cc5Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint);
+			DrawAlphaBitmap(pDC,cc5Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint, FALSE, dE10);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_6a:(GetConfig()->m_CCMode == SKIN?IDS_CC_6b:IDS_CC_6) );
 			str.Format(Msg, 10);
@@ -1488,7 +1514,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			ccRefPoint = CCIEGraphPoint(pDoc->GetMeasure()->GetRefCC24Sat(5).GetXYZValue(),
 								  1.0,
 								  str, m_bCIEuv);
-			DrawAlphaBitmap(pDC,cc6Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint);
+			DrawAlphaBitmap(pDC,cc6Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint, FALSE, dE10);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_7a:(GetConfig()->m_CCMode == SKIN?IDS_CC_7b:IDS_CC_7) );
 			str.Format(Msg, 10);
@@ -1498,7 +1524,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			ccRefPoint = CCIEGraphPoint(pDoc->GetMeasure()->GetRefCC24Sat(6).GetXYZValue(),
 								  1.0,
 								  str, m_bCIEuv);
-			DrawAlphaBitmap(pDC,cc7Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint);
+			DrawAlphaBitmap(pDC,cc7Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint, FALSE, dE10);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_8a:(GetConfig()->m_CCMode == SKIN?IDS_CC_8b:IDS_CC_8) );
 			str.Format(Msg, 10);
@@ -1508,7 +1534,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			ccRefPoint = CCIEGraphPoint(pDoc->GetMeasure()->GetRefCC24Sat(7).GetXYZValue(),
 								  1.0,
 								  str, m_bCIEuv);
-			DrawAlphaBitmap(pDC,cc8Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint);
+			DrawAlphaBitmap(pDC,cc8Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint, FALSE, dE10);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_9a:(GetConfig()->m_CCMode == SKIN?IDS_CC_9b:IDS_CC_9) );
 			str.Format(Msg, 10);
@@ -1518,7 +1544,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			ccRefPoint = CCIEGraphPoint(pDoc->GetMeasure()->GetRefCC24Sat(8).GetXYZValue(),
 								  1.0,
 								  str, m_bCIEuv);
-			DrawAlphaBitmap(pDC,cc9Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint);
+			DrawAlphaBitmap(pDC,cc9Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint, FALSE, dE10);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_10a:(GetConfig()->m_CCMode == SKIN?IDS_CC_10b:IDS_CC_10) );
 			str.Format(Msg, 10);
@@ -1528,7 +1554,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			ccRefPoint = CCIEGraphPoint(pDoc->GetMeasure()->GetRefCC24Sat(9).GetXYZValue(),
 								  1.0,
 								  str, m_bCIEuv);
-			DrawAlphaBitmap(pDC,cc10Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint);
+			DrawAlphaBitmap(pDC,cc10Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint, FALSE, dE10);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_11a:(GetConfig()->m_CCMode == SKIN?IDS_CC_11b:IDS_CC_11) );
 			str.Format(Msg, 10);
@@ -1538,7 +1564,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			ccRefPoint = CCIEGraphPoint(pDoc->GetMeasure()->GetRefCC24Sat(10).GetXYZValue(),
 								  1.0,
 								  str, m_bCIEuv);
-			DrawAlphaBitmap(pDC,cc11Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint);
+			DrawAlphaBitmap(pDC,cc11Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint, FALSE, dE10);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_12a:(GetConfig()->m_CCMode == SKIN?IDS_CC_12b:IDS_CC_12) );
 			str.Format(Msg, 10);
@@ -1548,7 +1574,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			ccRefPoint = CCIEGraphPoint(pDoc->GetMeasure()->GetRefCC24Sat(11).GetXYZValue(),
 								  1.0,
 								  str, m_bCIEuv);
-			DrawAlphaBitmap(pDC,cc12Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint);
+			DrawAlphaBitmap(pDC,cc12Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint, FALSE, dE10);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_13a:(GetConfig()->m_CCMode == SKIN?IDS_CC_13b:IDS_CC_13) );
 			str.Format(Msg, 10);
@@ -1558,7 +1584,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			ccRefPoint = CCIEGraphPoint(pDoc->GetMeasure()->GetRefCC24Sat(12).GetXYZValue(),
 								  1.0,
 								  str, m_bCIEuv);
-			DrawAlphaBitmap(pDC,cc13Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint);
+			DrawAlphaBitmap(pDC,cc13Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint, FALSE, dE10);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_14a:(GetConfig()->m_CCMode == SKIN?IDS_CC_14b:IDS_CC_14) );
 			str.Format(Msg, 10);
@@ -1568,7 +1594,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			ccRefPoint = CCIEGraphPoint(pDoc->GetMeasure()->GetRefCC24Sat(13).GetXYZValue(),
 								  1.0,
 								  str, m_bCIEuv);
-			DrawAlphaBitmap(pDC,cc14Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint);
+			DrawAlphaBitmap(pDC,cc14Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint, FALSE, dE10);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_15a:(GetConfig()->m_CCMode == SKIN?IDS_CC_15b:IDS_CC_15) );
 			str.Format(Msg, 10);
@@ -1578,7 +1604,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			ccRefPoint = CCIEGraphPoint(pDoc->GetMeasure()->GetRefCC24Sat(14).GetXYZValue(),
 								  1.0,
 								  str, m_bCIEuv);
-			DrawAlphaBitmap(pDC,cc15Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint);
+			DrawAlphaBitmap(pDC,cc15Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint, FALSE, dE10);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_16a:(GetConfig()->m_CCMode == SKIN?IDS_CC_16b:IDS_CC_16) );
 			str.Format(Msg, 10);
@@ -1588,7 +1614,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			ccRefPoint = CCIEGraphPoint(pDoc->GetMeasure()->GetRefCC24Sat(15).GetXYZValue(),
 								  1.0,
 								  str, m_bCIEuv);
-			DrawAlphaBitmap(pDC,cc16Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint);
+			DrawAlphaBitmap(pDC,cc16Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint, FALSE, dE10);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_17a:(GetConfig()->m_CCMode == SKIN?IDS_CC_17b:IDS_CC_17) );
 			str.Format(Msg, 10);
@@ -1598,7 +1624,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			ccRefPoint = CCIEGraphPoint(pDoc->GetMeasure()->GetRefCC24Sat(16).GetXYZValue(),
 								  1.0,
 								  str, m_bCIEuv);
-			DrawAlphaBitmap(pDC,cc17Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint);
+			DrawAlphaBitmap(pDC,cc17Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint, FALSE, dE10);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_18a:(GetConfig()->m_CCMode == SKIN?IDS_CC_18b:IDS_CC_18) );
 			str.Format(Msg, 10);
@@ -1608,7 +1634,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			ccRefPoint = CCIEGraphPoint(pDoc->GetMeasure()->GetRefCC24Sat(17).GetXYZValue(),
 								  1.0,
 								  str, m_bCIEuv);
-			DrawAlphaBitmap(pDC,cc18Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint);
+			DrawAlphaBitmap(pDC,cc18Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint, FALSE, dE10);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_19a:(GetConfig()->m_CCMode == SKIN?IDS_CC_19b:IDS_CC_19) );
 			str.Format(Msg, 10);
@@ -1618,7 +1644,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			ccRefPoint = CCIEGraphPoint(pDoc->GetMeasure()->GetRefCC24Sat(18).GetXYZValue(),
 								  1.0,
 								  str, m_bCIEuv);
-			DrawAlphaBitmap(pDC,cc19Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint);
+			DrawAlphaBitmap(pDC,cc19Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint, FALSE, dE10);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_20a:(GetConfig()->m_CCMode == SKIN?IDS_CC_20b:IDS_CC_20) );
 			str.Format(Msg, 10);
@@ -1628,7 +1654,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			ccRefPoint = CCIEGraphPoint(pDoc->GetMeasure()->GetRefCC24Sat(19).GetXYZValue(),
 								  1.0,
 								  str, m_bCIEuv);
-			DrawAlphaBitmap(pDC,cc20Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint);
+			DrawAlphaBitmap(pDC,cc20Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint, FALSE, dE10);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_21a:(GetConfig()->m_CCMode == SKIN?IDS_CC_21b:IDS_CC_21) );
 			str.Format(Msg, 10);
@@ -1638,7 +1664,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			ccRefPoint = CCIEGraphPoint(pDoc->GetMeasure()->GetRefCC24Sat(20).GetXYZValue(),
 								  1.0,
 								  str, m_bCIEuv);
-			DrawAlphaBitmap(pDC,cc21Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint);
+			DrawAlphaBitmap(pDC,cc21Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint, FALSE, dE10);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_22a:(GetConfig()->m_CCMode == SKIN?IDS_CC_22b:IDS_CC_22) );
 			str.Format(Msg, 10);
@@ -1648,7 +1674,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			ccRefPoint = CCIEGraphPoint(pDoc->GetMeasure()->GetRefCC24Sat(21).GetXYZValue(),
 								  1.0,
 								  str, m_bCIEuv);
-			DrawAlphaBitmap(pDC,cc22Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint);
+			DrawAlphaBitmap(pDC,cc22Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint, FALSE, dE10);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_23a:(GetConfig()->m_CCMode == SKIN?IDS_CC_23b:IDS_CC_23) );
 			str.Format(Msg, 10);
@@ -1658,7 +1684,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			ccRefPoint = CCIEGraphPoint(pDoc->GetMeasure()->GetRefCC24Sat(22).GetXYZValue(),
 								  1.0,
 								  str, m_bCIEuv);
-			DrawAlphaBitmap(pDC,cc23Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint);
+			DrawAlphaBitmap(pDC,cc23Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint, FALSE, dE10);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_24a:(GetConfig()->m_CCMode == SKIN?IDS_CC_24b:IDS_CC_24) );
 			str.Format(Msg, 10);
@@ -1668,7 +1694,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			ccRefPoint = CCIEGraphPoint(pDoc->GetMeasure()->GetRefCC24Sat(23).GetXYZValue(),
 								  1.0,
 								  str, m_bCIEuv);
-			DrawAlphaBitmap(pDC,cc24Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint);
+			DrawAlphaBitmap(pDC,cc24Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&ccRefPoint, FALSE, dE10);
          }
          else
          {
@@ -1685,7 +1711,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 		    	    CCIEGraphPoint cc24Point(pDoc->GetMeasure()->GetCC24Sat(i).GetXYZValue(),
 			    					  YWhite,
 				    				  str, m_bCIEuv);
-			        DrawAlphaBitmap(pDC,cc24Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&cc24PointRef);
+			        DrawAlphaBitmap(pDC,cc24Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&cc24PointRef, FALSE, dE10);
                 }
              }
              else
@@ -1703,7 +1729,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
     		    	    CCIEGraphPoint cc24Point(pDoc->GetMeasure()->GetCC24Sat(i).GetXYZValue(),
 			    					  YWhite,
 				    				  str, m_bCIEuv);
-	    		        DrawAlphaBitmap(pDC,cc24Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&cc24PointRef);
+	    		        DrawAlphaBitmap(pDC,cc24Point,&m_grayPlotBitmap,rect,pTooltip,pWnd,&cc24PointRef, FALSE, dE10);
                     }
              }
          }
@@ -1727,7 +1753,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 		CCIEGraphPoint measurePoint(pDoc->m_SelectedColor.GetXYZValue(),
 								 YWhite,
 								 Msg, m_bCIEuv);
-		DrawAlphaBitmap(pDC,measurePoint,&m_selectedPlotBitmap,rect,pTooltip,pWnd);
+		DrawAlphaBitmap(pDC,measurePoint,&m_selectedPlotBitmap,rect,pTooltip,pWnd, NULL, TRUE, dE10);
 	}
 }
 
@@ -1823,6 +1849,8 @@ BEGIN_MESSAGE_MAP(CCIEChartView, CSavingView)
 	ON_COMMAND(IDM_HELP, OnHelp)
 	ON_COMMAND(IDM_CIE_UV, OnCieUv)
 	ON_UPDATE_COMMAND_UI(IDM_CIE_UV, OnUpdateCieUv)
+	ON_COMMAND(IDM_CIE_WORST10, OnCieShowdE10)
+	ON_UPDATE_COMMAND_UI(IDM_CIE_WORST10, OnUpdateCieShowdE10)
 	ON_WM_MOUSEWHEEL()
 	ON_WM_PAINT()
 	ON_WM_KEYDOWN()
@@ -1896,7 +1924,8 @@ DWORD CCIEChartView::GetUserInfo ()
 		  + ( ( m_Grapher.m_doShowCCScale	& 0x0001 )	<< 7 )
 		  + ( ( m_Grapher.m_doShowCCScaleTarg	& 0x0001 )	<< 8 )
 		  + ( ( m_Grapher.m_doShowMeasurements		& 0x0001 )	<< 9 )
-		  + ( ( m_Grapher.m_bCIEuv					& 0x0001 )	<< 10 );
+		  + ( ( m_Grapher.m_bCIEuv					& 0x0001 )	<< 10 )
+		  + ( ( m_Grapher.m_bdE10				& 0x0001 )	<< 11 );
 }
 
 void CCIEChartView::SetUserInfo ( DWORD dwUserInfo )
@@ -1912,6 +1941,7 @@ void CCIEChartView::SetUserInfo ( DWORD dwUserInfo )
 	m_Grapher.m_doShowCCScaleTarg	= ( dwUserInfo >> 8 ) & 0x0001;
 	m_Grapher.m_doShowMeasurements		= ( dwUserInfo >> 9 ) & 0x0001;
 	m_Grapher.m_bCIEuv					= ( dwUserInfo >> 10 ) & 0x0001;
+	m_Grapher.m_bdE10					= ( dwUserInfo >> 11 ) & 0x0001;
 	
 	m_bDelayedUpdate = TRUE;
 }
@@ -2094,6 +2124,12 @@ void CCIEChartView::OnUpdateCieShowCCScale(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(m_Grapher.m_doShowCCScale);
 }
 
+void CCIEChartView::OnUpdateCieShowdE10(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable();
+	pCmdUI->SetCheck(m_Grapher.m_bdE10);
+}
+
 void CCIEChartView::OnUpdateCieShowCCScaleTarg(CCmdUI* pCmdUI) 
 {
 	pCmdUI->Enable();
@@ -2166,6 +2202,13 @@ void CCIEChartView::OnCieShowCCScale()
 {
 	m_Grapher.m_doShowCCScale = !m_Grapher.m_doShowCCScale;
 	GetConfig()->WriteProfileInt("CIE Chart","Display Color Checker measures",m_Grapher.m_doShowCCScale);
+	Invalidate(TRUE);
+}
+
+void CCIEChartView::OnCieShowdE10() 
+{
+	m_Grapher.m_bdE10 = !m_Grapher.m_bdE10;
+	GetConfig()->WriteProfileInt("CIE Chart","Worst dE",m_Grapher.m_bdE10);
 	Invalidate(TRUE);
 }
 
