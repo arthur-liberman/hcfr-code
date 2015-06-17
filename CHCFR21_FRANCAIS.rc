@@ -2070,7 +2070,7 @@ BEGIN
             MENUITEM "&Sharpness/Overscan",         IDM_PATTERN_SHARP
             MENUITEM "Alignment",                   IDM_PATTERN_ALIGN
             MENUITEM "Elliptical Ramp",             IDM_PATTERN_ERAMP
-            MENUITEM "Bellenuit",					IDM_PATTERN_BN
+            MENUITEM "Belle Nuit",					IDM_PATTERN_BN
             MENUITEM SEPARATOR
             POPUP "Evaluation Sequence(Casino Royale)"
             BEGIN

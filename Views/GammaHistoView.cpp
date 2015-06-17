@@ -460,9 +460,7 @@ void CGammaHistoView::OnSize(UINT nType, int cx, int cy)
 
 void CGammaHistoView::OnDraw(CDC* pDC) 
 {
-	// TODO: Add your specialized code here and/or call the base class
-	
-	
+	// TODO: Add your specialized code here and/or call the base class	
 }
 
 BOOL CGammaHistoView::OnEraseBkgnd(CDC* pDC) 
@@ -548,7 +546,6 @@ void CGammaHistoView::OnGraphSettings()
 {
 	// Add log graphs to first graph control to allow setting change 
 	m_Grapher.m_graphCtrl.ChangeSettings();
-	m_Grapher.m_graphCtrl.WriteSettings("Gamma Histo");
 
 	OnUpdate(NULL,NULL,NULL);
 }
@@ -556,24 +553,28 @@ void CGammaHistoView::OnGraphSettings()
 void CGammaHistoView::OnGraphScaleCustom() 
 {
 	m_Grapher.m_graphCtrl.ChangeScale();
+	m_Grapher.m_graphCtrl.WriteSettings("Gamma Histo");
 }
 
 void CGammaHistoView::OnGraphScaleFit() 
 {
 	m_Grapher.m_graphCtrl.FitXScale(TRUE);
 	m_Grapher.m_graphCtrl.FitYScale(TRUE,0.1);
+	m_Grapher.m_graphCtrl.WriteSettings("Gamma Histo");
 	Invalidate(TRUE);
 }
 
 void CGammaHistoView::OnGammaGraphYScale1() 
 {
 	m_Grapher.m_graphCtrl.SetYScale(1,3);
+	m_Grapher.m_graphCtrl.WriteSettings("Gamma Histo");
 	Invalidate(TRUE);
 }
 
 void CGammaHistoView::OnGraphYScaleFit() 
 {
 	m_Grapher.m_graphCtrl.FitYScale(TRUE,0.1);
+	m_Grapher.m_graphCtrl.WriteSettings("Gamma Histo");
 	Invalidate(TRUE);
 }
 
@@ -604,18 +605,21 @@ void CGammaHistoView::OnGraphYZoomOut()
 void CGammaHistoView::OnGraphXScale1() 
 {
 	m_Grapher.m_graphCtrl.SetXScale(0,100);
+	m_Grapher.m_graphCtrl.WriteSettings("Gamma Histo");
 	Invalidate(TRUE);
 }
 
 void CGammaHistoView::OnGraphXScale2() 
 {
 	m_Grapher.m_graphCtrl.SetXScale(20,100);
+	m_Grapher.m_graphCtrl.WriteSettings("Gamma Histo");
 	Invalidate(TRUE);
 }
 
 void CGammaHistoView::OnGraphXScaleFit() 
 {
 	m_Grapher.m_graphCtrl.FitXScale(TRUE);
+	m_Grapher.m_graphCtrl.WriteSettings("Gamma Histo");
 	Invalidate(TRUE);
 }
 

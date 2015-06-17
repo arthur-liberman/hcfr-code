@@ -75,7 +75,6 @@ CNearWhiteGrapher::CNearWhiteGrapher()
 	m_graphCtrl.SetXAxisProps((LPSTR)(LPCSTR)GetConfig()->m_PercentGray, 1, 80, 100);
 	m_graphCtrl.SetYAxisProps(m_showL?"":"%", 1, 80, 100);
     m_graphCtrl.SetScale(90,100,80,100);
-	m_graphCtrl.ReadSettings("Near White Histo");
 
 	Msg.LoadString ( IDS_GAMMA );
 	m_luminanceLogGraphID = m_logGraphCtrl.AddGraph(RGB(255,255,0),(LPSTR)(LPCSTR)Msg);
@@ -113,6 +112,7 @@ CNearWhiteGrapher::CNearWhiteGrapher()
 	m_showGreenLum=GetConfig()->GetProfileInt("Near White Histo","Show Green",FALSE);
 	m_showBlueLum=GetConfig()->GetProfileInt("Near White Histo","Show Blue",FALSE);
 	m_showDataRef=GetConfig()->GetProfileInt("Near White Histo","Show Reference Data",TRUE);	//Ki
+	m_graphCtrl.ReadSettings("Near White Histo");
 }
 
 void CNearWhiteGrapher::UpdateGraph ( CDataSetDoc * pDoc )
@@ -443,8 +443,6 @@ void CNearWhiteHistoView::OnSize(UINT nType, int cx, int cy)
 void CNearWhiteHistoView::OnDraw(CDC* pDC) 
 {
 	// TODO: Add your specialized code here and/or call the base class
-	
-	
 }
 
 BOOL CNearWhiteHistoView::OnEraseBkgnd(CDC* pDC) 
@@ -604,9 +602,6 @@ void CNearWhiteHistoView::OnGraphSettings()
 	m_Grapher.m_graphCtrl.RemoveGraph(tmpGraphID2);
 	m_Grapher.m_graphCtrl.RemoveGraph(tmpGraphID1);
 
-	m_Grapher.m_graphCtrl.WriteSettings("Near White Histo");
-	m_Grapher.m_logGraphCtrl.WriteSettings("Near White Histo Log");
-
 	OnUpdate(NULL,NULL,NULL);
 }
 
@@ -616,6 +611,8 @@ void CNearWhiteHistoView::OnGraphScaleCustom()
 		m_Grapher.m_logGraphCtrl.ChangeScale();
 	else
 		m_Grapher.m_graphCtrl.ChangeScale();
+	m_Grapher.m_graphCtrl.WriteSettings("Near White Histo");
+	m_Grapher.m_logGraphCtrl.WriteSettings("Near White Histo Log");
 }
 
 void CNearWhiteHistoView::OnGraphScaleFit() 
@@ -630,18 +627,24 @@ void CNearWhiteHistoView::OnGraphScaleFit()
 		m_Grapher.m_graphCtrl.FitXScale(TRUE,1);
 		m_Grapher.m_graphCtrl.FitYScale(TRUE,1);
 	}
+	m_Grapher.m_graphCtrl.WriteSettings("Near White Histo");
+	m_Grapher.m_logGraphCtrl.WriteSettings("Near White Histo Log");
 	Invalidate(TRUE);
 }
 
 void CNearWhiteHistoView::OnLuminanceGraphYScale1() 
 {
 	m_Grapher.m_graphCtrl.SetYScale(80,100);
+	m_Grapher.m_graphCtrl.WriteSettings("Near White Histo");
+	m_Grapher.m_logGraphCtrl.WriteSettings("Near White Histo Log");
 	Invalidate(TRUE);
 }
 
 void CNearWhiteHistoView::OnGammaGraphYScale1() 
 {
 	m_Grapher.m_logGraphCtrl.SetYScale(1,3);
+	m_Grapher.m_graphCtrl.WriteSettings("Near White Histo");
+	m_Grapher.m_logGraphCtrl.WriteSettings("Near White Histo Log");
 	Invalidate(TRUE);
 }
 
@@ -651,6 +654,8 @@ void CNearWhiteHistoView::OnGraphYScaleFit()
 		m_Grapher.m_logGraphCtrl.FitYScale(TRUE,0.1);
 	else
 		m_Grapher.m_graphCtrl.FitYScale(TRUE,1);
+	m_Grapher.m_graphCtrl.WriteSettings("Near White Histo");
+	m_Grapher.m_logGraphCtrl.WriteSettings("Near White Histo Log");
 	Invalidate(TRUE);
 }
 

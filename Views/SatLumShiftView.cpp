@@ -667,8 +667,6 @@ void CSatLumShiftView::OnSize(UINT nType, int cx, int cy)
 void CSatLumShiftView::OnDraw(CDC* pDC) 
 {
 	// TODO: Add your specialized code here and/or call the base class
-	
-	
 }
 
 BOOL CSatLumShiftView::OnEraseBkgnd(CDC* pDC) 
@@ -816,9 +814,6 @@ void CSatLumShiftView::OnGraphSettings()
 	m_Grapher.m_graphCtrl.RemoveGraph(tmpGraphID2);
 	m_Grapher.m_graphCtrl.RemoveGraph(tmpGraphID1);
 
-	m_Grapher.m_graphCtrl.WriteSettings("Saturation Shift Sat");
-	m_Grapher.m_graphCtrl2.WriteSettings("Saturation Shift Color");
-
 	OnUpdate(NULL,NULL,NULL);
 }
 
@@ -828,12 +823,16 @@ void CSatLumShiftView::OnGraphScaleFit()
 	m_Grapher.m_graphCtrl.SetYAxisProps("%", 5, -100, 100);
 	m_Grapher.m_graphCtrl.FitYScale(TRUE,10);
 	OnDeltaEGraphYScaleFit();
+	m_Grapher.m_graphCtrl.WriteSettings("Saturation Shift Sat");
+	m_Grapher.m_graphCtrl2.WriteSettings("Saturation Shift Color");
 }
 
 void CSatLumShiftView::OnLuminanceGraphYScale1() 
 {
 	m_Grapher.m_graphCtrl.SetYScale(-100,100);
 	m_Grapher.m_graphCtrl.SetYAxisProps("%", 20, -100, 100);
+	m_Grapher.m_graphCtrl.WriteSettings("Saturation Shift Sat");
+	m_Grapher.m_graphCtrl2.WriteSettings("Saturation Shift Color");
 	Invalidate(TRUE);
 }
 
@@ -841,12 +840,16 @@ void CSatLumShiftView::OnLuminanceGraphYScale2()
 {
 	m_Grapher.m_graphCtrl.SetYScale(-20,20);
 	m_Grapher.m_graphCtrl.SetYAxisProps("%", 5, -100, 100);
+	m_Grapher.m_graphCtrl.WriteSettings("Saturation Shift Sat");
+	m_Grapher.m_graphCtrl2.WriteSettings("Saturation Shift Color");
 	Invalidate(TRUE);
 }
 
 void CSatLumShiftView::OnGraphYScaleFit() 
 {
 	m_Grapher.m_graphCtrl.FitYScale(TRUE);
+	m_Grapher.m_graphCtrl.WriteSettings("Saturation Shift Sat");
+	m_Grapher.m_graphCtrl2.WriteSettings("Saturation Shift Color");
 	Invalidate(TRUE);
 }
 
@@ -877,12 +880,16 @@ void CSatLumShiftView::OnGraphYZoomOut()
 void CSatLumShiftView::OnGraphScaleCustom() 
 {
 	m_Grapher.m_graphCtrl.ChangeScale();
+	m_Grapher.m_graphCtrl.WriteSettings("Saturation Shift Sat");
+	m_Grapher.m_graphCtrl2.WriteSettings("Saturation Shift Color");
 }
 
 void CSatLumShiftView::OnDeltaEGraphYScale1() 
 {
 	m_Grapher.m_graphCtrl2.SetYScale(0,20);
 	m_Grapher.m_graphCtrl2.SetYAxisProps("", 2, 0, 40);
+	m_Grapher.m_graphCtrl.WriteSettings("Saturation Shift Sat");
+	m_Grapher.m_graphCtrl2.WriteSettings("Saturation Shift Color");
 	Invalidate(TRUE);
 }
 
@@ -890,6 +897,8 @@ void CSatLumShiftView::OnDeltaEGraphYScale2()
 {
 	m_Grapher.m_graphCtrl2.SetYScale(0,5);
 	m_Grapher.m_graphCtrl2.SetYAxisProps("", 1, 0, 40);
+	m_Grapher.m_graphCtrl.WriteSettings("Saturation Shift Sat");
+	m_Grapher.m_graphCtrl2.WriteSettings("Saturation Shift Color");
 	Invalidate(TRUE);
 }
 
@@ -897,6 +906,8 @@ void CSatLumShiftView::OnDeltaEGraphYScaleFit()
 {
 	m_Grapher.m_graphCtrl2.FitYScale(TRUE,1);
 	m_Grapher.m_graphCtrl2.m_yAxisStep=(m_Grapher.m_graphCtrl2.m_maxY-m_Grapher.m_graphCtrl2.m_minY)/10;
+	m_Grapher.m_graphCtrl.WriteSettings("Saturation Shift Sat");
+	m_Grapher.m_graphCtrl2.WriteSettings("Saturation Shift Color");
 	Invalidate(TRUE);
 }
 
@@ -927,6 +938,8 @@ void CSatLumShiftView::OnDeltaEGraphYZoomOut()
 void CSatLumShiftView::OnDeltaEGraphScaleCustom() 
 {
 	m_Grapher.m_graphCtrl2.ChangeScale();
+	m_Grapher.m_graphCtrl.WriteSettings("Saturation Shift Sat");
+	m_Grapher.m_graphCtrl2.WriteSettings("Saturation Shift Color");
 }
 
 void CSatLumShiftView::OnHelp() 

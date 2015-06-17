@@ -453,7 +453,6 @@ void CRGBHistoView::OnSize(UINT nType, int cx, int cy)
 
 void CRGBHistoView::OnDraw(CDC* pDC) 
 {
-	
 }
 
 BOOL CRGBHistoView::OnEraseBkgnd(CDC* pDC) 
@@ -524,9 +523,6 @@ void CRGBHistoView::OnGraphSettings()
 	m_Grapher.m_graphCtrl.RemoveGraph(tmpGraphID2);
 	m_Grapher.m_graphCtrl.RemoveGraph(tmpGraphID);
 
-	m_Grapher.m_graphCtrl.WriteSettings("RGB Histo");
-	m_Grapher.m_graphCtrl2.WriteSettings("RGB Histo2");
-
 	OnUpdate(NULL,NULL,NULL);
 }
 
@@ -542,6 +538,8 @@ void CRGBHistoView::OnGraphScaleCustom()
 {
 	m_Grapher.m_graphCtrl.ChangeScale();
 	m_Grapher.m_scaleYrgb = 0;
+	m_Grapher.m_graphCtrl.WriteSettings("RGB Histo");
+	m_Grapher.m_graphCtrl2.WriteSettings("RGB Histo2");
 }
 
 void CRGBHistoView::OnGraphScaleFit() 
@@ -549,6 +547,8 @@ void CRGBHistoView::OnGraphScaleFit()
 	OnGraphXScaleFit();
 	OnGraphYScaleFit();
 	OnDeltaEGraphYScaleFit();
+	m_Grapher.m_graphCtrl.WriteSettings("RGB Histo");
+	m_Grapher.m_graphCtrl2.WriteSettings("RGB Histo2");
 }
 
 void CRGBHistoView::OnRGBGraphYScale1() 
@@ -556,6 +556,8 @@ void CRGBHistoView::OnRGBGraphYScale1()
 	m_Grapher.m_graphCtrl.SetYScale(0,200);
 	m_Grapher.m_scaleYrgb = 1;
 	m_Grapher.m_graphCtrl.SetYAxisProps("%", 20, 0, 400);
+	m_Grapher.m_graphCtrl.WriteSettings("RGB Histo");
+	m_Grapher.m_graphCtrl2.WriteSettings("RGB Histo2");
 	Invalidate(TRUE);
 }
 
@@ -564,6 +566,8 @@ void CRGBHistoView::OnRGBGraphYScale2()
 	m_Grapher.m_graphCtrl.SetYScale(50,150);
 	m_Grapher.m_scaleYrgb = 0;
 	m_Grapher.m_graphCtrl.SetYAxisProps("%", 10, 0, 400);
+	m_Grapher.m_graphCtrl.WriteSettings("RGB Histo");
+	m_Grapher.m_graphCtrl2.WriteSettings("RGB Histo2");
 	Invalidate(TRUE);
 }
 
@@ -572,6 +576,8 @@ void CRGBHistoView::OnRGBGraphYScale3()
 	m_Grapher.m_graphCtrl.SetYScale(80,120);
 	m_Grapher.m_scaleYrgb = 2;
 	m_Grapher.m_graphCtrl.SetYAxisProps("%", 5, 0, 400);
+	m_Grapher.m_graphCtrl.WriteSettings("RGB Histo");
+	m_Grapher.m_graphCtrl2.WriteSettings("RGB Histo2");
 	Invalidate(TRUE);
 }
 
@@ -580,6 +586,8 @@ void CRGBHistoView::OnDeltaEGraphYScale1()
 	m_Grapher.m_graphCtrl2.SetYScale(0,20);
 	m_Grapher.m_scaleYdeltaE = 1;
 	m_Grapher.m_graphCtrl2.SetYAxisProps("", 2, 0, 40);
+	m_Grapher.m_graphCtrl.WriteSettings("RGB Histo");
+	m_Grapher.m_graphCtrl2.WriteSettings("RGB Histo2");
 	Invalidate(TRUE);
 }
 
@@ -588,6 +596,8 @@ void CRGBHistoView::OnDeltaEGraphYScale2()
 	m_Grapher.m_graphCtrl2.SetYScale(0,5);
 	m_Grapher.m_scaleYdeltaE = 2;
 	m_Grapher.m_graphCtrl2.SetYAxisProps("", 1, 0, 40);
+	m_Grapher.m_graphCtrl.WriteSettings("RGB Histo");
+	m_Grapher.m_graphCtrl2.WriteSettings("RGB Histo2");
 	Invalidate(TRUE);
 }
 
@@ -596,6 +606,8 @@ void CRGBHistoView::OnDeltaEGraphYScale3()
 	m_Grapher.m_graphCtrl2.SetYScale(0,10);
 	m_Grapher.m_scaleYdeltaE = 0;
 	m_Grapher.m_graphCtrl2.SetYAxisProps("", 1, 0, 40);
+	m_Grapher.m_graphCtrl.WriteSettings("RGB Histo");
+	m_Grapher.m_graphCtrl2.WriteSettings("RGB Histo2");
 	Invalidate(TRUE);
 }
 
@@ -604,6 +616,8 @@ void CRGBHistoView::OnDeltaEGraphYScaleFit()
 	m_Grapher.m_graphCtrl2.FitYScale(TRUE,1);
 	m_Grapher.m_scaleYdeltaE = 0;
 	m_Grapher.m_graphCtrl2.m_yAxisStep=(m_Grapher.m_graphCtrl2.m_maxY-m_Grapher.m_graphCtrl2.m_minY)/10;
+	m_Grapher.m_graphCtrl.WriteSettings("RGB Histo");
+	m_Grapher.m_graphCtrl2.WriteSettings("RGB Histo2");
 	Invalidate(TRUE);
 }
 
@@ -639,6 +653,8 @@ void CRGBHistoView::OnDeltaEGraphScaleCustom()
 {
 	m_Grapher.m_graphCtrl2.ChangeScale();
 	m_Grapher.m_scaleYdeltaE = 0;
+	m_Grapher.m_graphCtrl.WriteSettings("RGB Histo");
+	m_Grapher.m_graphCtrl2.WriteSettings("RGB Histo2");
 }
 
 void CRGBHistoView::OnGraphYScaleFit() 

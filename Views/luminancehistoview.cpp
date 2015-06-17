@@ -531,8 +531,6 @@ void CLuminanceHistoView::OnSize(UINT nType, int cx, int cy)
 void CLuminanceHistoView::OnDraw(CDC* pDC) 
 {
 	// TODO: Add your specialized code here and/or call the base class
-	
-	
 }
 
 BOOL CLuminanceHistoView::OnEraseBkgnd(CDC* pDC) 
@@ -627,7 +625,6 @@ void CLuminanceHistoView::OnGraphSettings()
 {
 	// Add log graphs to first graph control to allow setting change 
 	m_Grapher.m_graphCtrl.ChangeSettings();
-	m_Grapher.m_graphCtrl.WriteSettings("Luminance Histo");
 
 	OnUpdate(NULL,NULL,NULL);
 }
@@ -635,24 +632,28 @@ void CLuminanceHistoView::OnGraphSettings()
 void CLuminanceHistoView::OnGraphScaleCustom() 
 {
 	m_Grapher.m_graphCtrl.ChangeScale();
+	m_Grapher.m_graphCtrl.WriteSettings("Luminance Histo");
 }
 
 void CLuminanceHistoView::OnGraphScaleFit() 
 {
 	m_Grapher.m_graphCtrl.FitXScale(TRUE);
 	m_Grapher.m_graphCtrl.FitYScale(TRUE);
+	m_Grapher.m_graphCtrl.WriteSettings("Luminance Histo");
 	Invalidate(TRUE);
 }
 
 void CLuminanceHistoView::OnLuminanceGraphYScale1() 
 {
 	m_Grapher.m_graphCtrl.SetYScale(0,100);
+	m_Grapher.m_graphCtrl.WriteSettings("Luminance Histo");
 	Invalidate(TRUE);
 }
 
 void CLuminanceHistoView::OnGraphYScaleFit() 
 {
 	m_Grapher.m_graphCtrl.FitYScale(TRUE);
+	m_Grapher.m_graphCtrl.WriteSettings("Luminance Histo");
 	Invalidate(TRUE);
 }
 
@@ -683,18 +684,21 @@ void CLuminanceHistoView::OnGraphYZoomOut()
 void CLuminanceHistoView::OnGraphXScale1() 
 {
 	m_Grapher.m_graphCtrl.SetXScale(0,100);
+	m_Grapher.m_graphCtrl.WriteSettings("Luminance Histo");
 	Invalidate(TRUE);
 }
 
 void CLuminanceHistoView::OnGraphXScale2() 
 {
 	m_Grapher.m_graphCtrl.SetXScale(20,100);
+	m_Grapher.m_graphCtrl.WriteSettings("Luminance Histo");
 	Invalidate(TRUE);
 }
 
 void CLuminanceHistoView::OnGraphXScaleFit() 
 {
 	m_Grapher.m_graphCtrl.FitXScale(TRUE);
+	m_Grapher.m_graphCtrl.WriteSettings("Luminance Histo");
 	Invalidate(TRUE);
 }
 

@@ -173,7 +173,7 @@ void CGraphControl::ReadSettings(LPSTR aConfigStr, BOOL bReadGraphSettings)
 	m_doShowAllPoints=GetConfig()->GetProfileInt(aConfigStr,"Show All Points",TRUE);
 	m_doShowAllToolTips=GetConfig()->GetProfileInt(aConfigStr,"Show All ToolTips",TRUE);
 
-/* GGA: Do not use saved scale data
+/* GGA: Do not use saved scale data */
 	// do not read settings if not in config => avoid to overwrite defaults set by parent
 	if(GetConfig()->IsProfileEntryDefined(aConfigStr,"Min X") )
 	{
@@ -190,7 +190,7 @@ void CGraphControl::ReadSettings(LPSTR aConfigStr, BOOL bReadGraphSettings)
 		
 		SetScale(m_minX,m_maxX,m_minY,m_maxY);
 	}
-*/
+//*/
 
 	if(bReadGraphSettings)
 		for(int i=0;i<m_graphArray.GetSize();i++)
@@ -219,7 +219,7 @@ void CGraphControl::WriteSettings(LPSTR aConfigStr)
 	GetConfig()->WriteProfileInt(aConfigStr,"Show All Points",m_doShowAllPoints);
 	GetConfig()->WriteProfileInt(aConfigStr,"Show All ToolTips",m_doShowAllToolTips);
 
-/* GGA: Do not save scale data
+/* GGA: Do not save scale data */
 	GetConfig()->WriteProfileDouble(aConfigStr,"Min X",m_minX);
 	GetConfig()->WriteProfileDouble(aConfigStr,"Max X",m_maxX);
 	GetConfig()->WriteProfileDouble(aConfigStr,"Min Grow X",m_minXGrow);
@@ -230,7 +230,7 @@ void CGraphControl::WriteSettings(LPSTR aConfigStr)
 	GetConfig()->WriteProfileDouble(aConfigStr,"Min Grow Y",m_minYGrow);
 	GetConfig()->WriteProfileDouble(aConfigStr,"Max Grow Y",m_maxYGrow);
 	GetConfig()->WriteProfileDouble(aConfigStr,"Axis Step Y",m_yAxisStep);
-*/
+//*/
 	for(int i=0;i<m_graphArray.GetSize();i++)
 	{
 		CString aStr = CString(aConfigStr) + ": Graph " + m_graphArray[i].m_Title;
@@ -417,8 +417,8 @@ void CGraphControl::ShiftYScale(double deltaY)
 
 void CGraphControl::FitXScale(BOOL doRound, double roundStep)
 {
-	double minX=9999999.99;
-	double maxX=-9999999.99;
+	double	minX=9999999.99;
+	double	maxX=-9999999.99;
 
 	for(int j=0;j<m_graphArray.GetSize();j++)
 		for(int i=0; i<m_graphArray[j].m_pointArray.GetSize(); i++)
@@ -449,8 +449,8 @@ void CGraphControl::FitXScale(BOOL doRound, double roundStep)
 
 void CGraphControl::FitYScale(BOOL doRound, double roundStep)
 {
-	double minY=9999999.99;
-	double maxY=-9999999.99;
+	double	minY=9999999.99;
+	double	maxY=-9999999.99;
 
 	for(int j=0;j<m_graphArray.GetSize();j++)
 		for(int i=0; i<m_graphArray[j].m_pointArray.GetSize(); i++)
