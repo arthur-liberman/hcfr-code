@@ -36,8 +36,6 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 // Implemented in luminancehistoview.cpp
-double voltage_to_intensity_srgb( double val );
-double voltage_to_intensity_rec709( double val );
 double Y_to_L( double val);
 
 /////////////////////////////////////////////////////////////////////////////
@@ -149,15 +147,6 @@ void CNearBlackGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	if ( size > 0 )
 	{
 		valformax=pow((double)(size-1)/100.0, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef) );
-/*
-		if ( GetConfig()->m_bUseReferenceGamma )
-		{
-			if( GetConfig()->m_colorStandard == sRGB )
-				valformax=voltage_to_intensity_srgb((double)(size-1)/100.0);
-			else
-				valformax=voltage_to_intensity_rec709((double)(size-1)/100.0);
-		}
-*/
 	}
 
 	m_graphCtrl.ClearGraph(m_refGraphID);
@@ -175,15 +164,6 @@ void CNearBlackGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			if (GetConfig()->m_colorStandard == sRGB) mode = 6;
 			if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
                 val = getEOTF( valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
-/*
-			if ( GetConfig()->m_bUseReferenceGamma )
-			{
-				if( GetConfig()->m_colorStandard == sRGB )
-					val=voltage_to_intensity_srgb((double)i/100.0);
-				else
-					val=voltage_to_intensity_rec709((double)i/100.0);
-			}
-*/
             if (!m_showL)
     			m_graphCtrl.AddPoint(m_refGraphID, valx * 100., 100.0*val);
             else

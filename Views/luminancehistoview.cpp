@@ -35,18 +35,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-double voltage_to_intensity_srgb( double val )
-{
-    /* Handle invalid values before doing a gamma transform. */
-    if( val < 0.0 ) return 0.0;
-    if( val > 1.0 ) return 1.0;
-
-    if( val <= 0.04045 ) {
-        return val / 12.92;
-    }
-    return pow( ( val + 0.055 ) / 1.055, 2.4 );
-}
-
 double Y_to_L ( double val )
 {
     //option for plotting L* instead of relative Y
@@ -62,22 +50,6 @@ double Y_to_L ( double val )
     return 116 * fy - 16;
 }
 
-/**
- * Rec-709 specifies a gamma of 2.2 and the following curve with linear
- * segment.
- */
-
-double voltage_to_intensity_rec709( double val )
-{
-    /* Handle invalid values before doing a gamma transform. */
-    if( val < 0.0 ) return 0.0;
-    if( val > 1.0 ) return 1.0;
-
-    if( val <= 0.081 ) {
-        return val / 4.5;
-    }
-    return pow( ( val + 0.099 ) / 1.099, 2.2 );
-}
 
 /////////////////////////////////////////////////////////////////////////////
 // CLuminanceGrapher
@@ -190,15 +162,6 @@ void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
                 valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+GammaOffset)/(1.0+GammaOffset);
                 valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
             }
-/*
-			if ( GetConfig()->m_bUseReferenceGamma )
-			{
-				if( GetConfig()->m_colorStandard == sRGB )
-					valy=voltage_to_intensity_srgb(GrayLevelToGrayProp(x,bIRE));
-				else
-					valy=voltage_to_intensity_rec709(GrayLevelToGrayProp(x,bIRE));
-			}
-*/
 
             if (!m_showL)
                 m_graphCtrl.AddPoint(m_refGraphID, x, 100.0*valy);

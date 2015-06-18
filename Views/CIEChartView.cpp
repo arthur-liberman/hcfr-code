@@ -340,12 +340,36 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 
 		if ( pRefPoint )
 		{
+			double dC, dH;
             double dE  = aGraphPoint.GetNormalizedColor().GetDeltaE(1.0, pRefPoint->GetNormalizedColor(), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+            double dL  = aGraphPoint.GetNormalizedColor().GetDeltaLCH(1.0, pRefPoint->GetNormalizedColor(), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight, dC, dH );
+
 			if (dE > dE10)
 				bDrawBMP = TRUE;
-				str2.Format ( ", Delta E: %.1f\n",dE );
+
+			L  = ColorLab(pRefPoint->GetNormalizedColor(), 1.0, GetColorReference())[0];
+			a  = ColorLab(pRefPoint->GetNormalizedColor(), 1.0, GetColorReference())[1];
+			b  = ColorLab(pRefPoint->GetNormalizedColor(), 1.0, GetColorReference())[2];
+			str1.Format("\nL*a*b*: %.2f %.3f %.3f <b>[Ref]</b>",L,a,b);
+			str += str1;
+
+			switch (GetConfig()->m_dE_form)
+			{
+				case 0:
+					str2.Format ( "\n<font face=\"Symbol\">D</font>E [<font face=\"Symbol\">D</font>L*,<font face=\"Symbol\">u*</font>C,<font face=\"Symbol\">D</font>v*]: %.1f [%.1f,%.1f,%.1f]\n",dE,dL,dC,dH );
+					break;
+				case 1:
+					str2.Format ( "\n<font face=\"Symbol\">D</font>E [<font face=\"Symbol\">D</font>L*,<font face=\"Symbol\">D</font>a*,<font face=\"Symbol\">D</font>b*]: %.1f [%.1f,%.1f,%.1f]\n",dE,dL,dC,dH );
+					break;
+				case 2:
+				case 3:
+				case 4:
+				case 5:
+					str2.Format ( "\n<font face=\"Symbol\">D</font>E [<font face=\"Symbol\">D</font>L*,<font face=\"Symbol\">D</font>C*,<font face=\"Symbol\">D</font>H*]: %.1f [%.1f,%.1f,%.1f]\n",dE,dL,dC,dH );
+					break;
+			}
 				str3.LoadString (IDS_DISTANCEINCIEXY);
-				str2 += str3;
+				str2 += str3; 
 
 				double dXY = aGraphPoint.GetNormalizedColor().GetDeltaxy(pRefPoint->GetNormalizedColor(), GetColorReference());
 				str3.Format ( ": %.3f xy</font>", dXY );
@@ -361,9 +385,9 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 				stRGB[m_ttID]=RGB(floor(pow(r1,1.0/2.2)*255.+0.5),floor(pow(g1,1.0/2.2)*255.+0.5),floor(pow(b1,1.0/2.2)*255.+0.5));
 				eRGB[m_ttID]=RGB(floor(pow(r2,1.0/2.2)*255.+0.5),floor(pow(g2,1.0/2.2)*255.+0.5),floor(pow(b2,1.0/2.2)*255.+0.5));
 				if (dark)
-					pTooltip -> AddTool(pWnd, "<b><font color=\"#EFEFEF\">"+CString(aGraphPoint.name) +"</font></b> \n" +str+str2,&rect_tip, m_ttID);
+					pTooltip -> AddTool(pWnd, "<b><font color=\"#EFEFEF\">"+CString(aGraphPoint.name) +"</font></b> \n\n\n" +str+str2,&rect_tip, m_ttID);
 				else
-					pTooltip -> AddTool(pWnd, "<b><font color=\"#101010\">"+CString(aGraphPoint.name) +"</font></b> \n" +str+str2,&rect_tip, m_ttID);
+					pTooltip -> AddTool(pWnd, "<b><font color=\"#101010\">"+CString(aGraphPoint.name) +"</font></b> \n\n\n" +str+str2,&rect_tip, m_ttID);
 				if (m_ttID < 4999)
 					m_ttID++;
 		}

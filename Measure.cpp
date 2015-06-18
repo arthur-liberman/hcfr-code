@@ -414,7 +414,7 @@ void CMeasure::Serialize(CArchive& ar)
 		{
 			CString msg;
 			msg.SetString("Loading old color checker data, rerun series before saving new file.");
-			GetColorApp()->InMeasureMessageBox(msg,"Warning",MB_OK | MB_ICONWARNING);
+//			GetColorApp()->InMeasureMessageBox(msg,"Warning",MB_OK | MB_ICONWARNING);
 		}
 		
 		ar >> size;

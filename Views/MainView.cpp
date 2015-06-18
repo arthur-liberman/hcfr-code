@@ -434,6 +434,9 @@ CMainView::CMainView()
 	dEavg_sm=0;
 	dEmax_sm=0;
 	dEavg=0.;
+	dLavg=0.;
+	dCavg=0.;
+	dHavg=0.;
 	dEmax=0.;
 	dEcnt=0;
 	dE10=0.;
@@ -1644,75 +1647,6 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 				m_pInfoWnd -> Invalidate ();
 				m_pInfoWnd -> UpdateWindow();			
 		}
-/*
-		int		aColorTemp;
-		double	YWhite = 1.0;
-		CColor	aColor;
-		GV_ITEM Item;
-		CString	str;
-	
-		Item.mask = GVIF_TEXT|GVIF_FORMAT;
-		Item.nFormat = DT_RIGHT;
-		Item.row = 0;
-		Item.col = 1;
-
-		if(m_SelectedColor.isValid())
-		{
-			// Retrieve measured white luminance to compute exact delta E, Lab and LCH values
-			if ( GetDocument() -> GetMeasure () -> GetOnOffWhite ().isValid() )
-				YWhite = GetDocument() -> GetMeasure () -> GetOnOffWhite () [ 1 ]; //onoff white is always grayscale white
-
-			Item.strText.Format("%.3f",m_SelectedColor.GetLuminance());
-			Item.row = 0;
-			m_pSelectedColorGrid->SetItem(&Item);
-
-			if (GetDocument()->m_pSensor->ReadingType() == 2)
-				Item.strText.Format("%.4f",m_SelectedColor.GetLuminance() / 10.764);
-			else
-				Item.strText.Format("%.4f",m_SelectedColor.GetLuminance()*.29188558);
-			Item.row = 1;
-			m_pSelectedColorGrid->SetItem(&Item);
-
-			aColorTemp = m_SelectedColor.GetXYZValue().GetColorTemp(GetColorReference());
-		
-			if ( aColorTemp < 1500 )
-			{
-				Item.strText = _T("< 1500");
-				Item.row = 2;
-				m_pSelectedColorGrid->SetItem(&Item);
-			}
-			else if ( aColorTemp > 12000 )
-			{
-				Item.strText= _T("> 12000");
-				Item.row = 2;
-				m_pSelectedColorGrid->SetItem(&Item);
-			}
-			else
-			{
-				Item.strText.Format ( "%d", aColorTemp );
-				Item.row = 2;
-				m_pSelectedColorGrid->SetItem(&Item);
-			}
-
-			AddColorToGrid(m_SelectedColor.GetXYZValue(), Item, "%.3f");
-			AddColorToGrid(m_SelectedColor.GetRGBValue((GetColorReference())), Item, "%.3f");
-			AddColorToGrid(m_SelectedColor.GetxyYValue(), Item, "%.3f");
-			AddColorToGrid(m_SelectedColor.GetxyzValue(), Item, "%.3f");
-			AddColorToGrid(m_SelectedColor.GetLabValue(YWhite, GetColorReference()), Item, "%.1f");
-			AddColorToGrid(m_SelectedColor.GetLCHValue(YWhite, GetColorReference()), Item, "%.1f");
-		}
-        
-		int size=GetDocument()->GetMeasure()->GetGrayScaleSize();
-        if (m_displayMode == 3)
-            size = 101;
-        else if (m_displayMode == 4)
-        size = -1 * GetDocument()->GetMeasure()->GetNearWhiteScaleSize();
-		if (m_displayMode > 4 && m_displayMode < 12)
-			size=GetDocument()->GetMeasure()->GetSaturationSize();
-	    m_RGBLevels.Refresh(last_minCol, m_displayMode, size);
-		m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  last_minCol, size, m_displayMode, GetDocument());
-//		UpdateData(FALSE);
-*/
 	}
 	else
 	{
@@ -1912,7 +1846,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 		else if ( aComponentNum == 3 )
 		{
 			COLORREF clr;
-			double dE;
+			double dE, dL, dC, dH;
 			if ( aReference.isValid() )
 				if (m_displayMode == 0 || m_displayMode == 3 || m_displayMode == 4)
 					if ( nCol > 1 || m_displayMode == 4 )
@@ -1922,13 +1856,20 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
                         {
                             str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->gw_Weight ) );
        						dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->gw_Weight );
+       						dL=aMeasure.GetDeltaLCH ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->gw_Weight, dC, dH );
                         }
                         else
                         {
                             str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, m_displayMode == 3 ? 1:GetConfig()->gw_Weight ) );
     						dE=aMeasure.GetDeltaE ( YWhite, aReference,  1.0, GetColorReference(), GetConfig()->m_dE_form, true, m_displayMode == 3 ? 1:GetConfig()->gw_Weight );
+    						dL=aMeasure.GetDeltaLCH ( YWhite, aReference,  1.0, GetColorReference(), GetConfig()->m_dE_form, true, m_displayMode == 3 ? 1:GetConfig()->gw_Weight, dC, dH );
                         }
-						dEavg+=dE;
+
+						dEavg+=(isNan(dE)?dEavg:dE);
+						dLavg+=(isNan(dL)?dLavg:dL);
+						dCavg+=(isNan(dC)?dCavg:dC);
+						dHavg+=(isNan(dH)?dHavg:dH);
+
                         if (dE > dEmax)
                             dEmax = dE;
 						if (GetConfig()->m_dE_form == 0)
@@ -1944,11 +1885,19 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						str.Empty ();
 				else
 				{
+					double dL, dH, dC;
 					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight ) );
 					dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
-                    if (GetConfig()->GetCColorsSize() >= 96 )
-                        dEvector.push_back(dE);
-                    dEavg+=dE;
+					dL=aMeasure.GetDeltaLCH ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight, dH, dC );
+//                    if (GetConfig()->GetCColorsSize() >= 96 )
+                    dEvector.push_back(isNan(dE)?dEavg:dE);
+                    dLvector.push_back(isNan(dL)?dLavg:dL);
+                    dCvector.push_back(isNan(dC)?dCavg:dC);
+                    dHvector.push_back(isNan(dH)?dHavg:dH);
+                    dEavg+=(isNan(dE)?dEavg:dE);
+					dLavg+=(isNan(dL)?dLavg:dL);
+					dCavg+=(isNan(dC)?dCavg:dC);
+					dHavg+=(isNan(dH)?dHavg:dH);
                     if (dE > dEmax)
                         dEmax = dE;
 					if (GetConfig()->m_dE_form == 0)
@@ -2274,7 +2223,8 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 			break;
 
 		case 3:
-			return "delta E";
+
+			return "Delta E";
 			break;
 
 		case 4:
@@ -2335,6 +2285,7 @@ void CMainView::UpdateGrid()
 					
 		dEavg = 0.0, dEmax=0.0;
 		dEcnt = 0; dE10=0.0;
+		dLavg = 0.0, dCavg = 0.0; dHavg = 0.0;
 
 		if ( pDataRef == GetDocument () )
 			pDataRef = NULL;
@@ -2525,6 +2476,9 @@ void CMainView::UpdateGrid()
 				nRows ++;
 		}
         dEvector.clear();
+        dLvector.clear();
+        dCvector.clear();
+        dHvector.clear();
 
 		for( int j = 0 ; j < nCount ; j ++ )
 		{
@@ -2878,40 +2832,40 @@ void CMainView::UpdateGrid()
 					Tmp.LoadString ( IDS_DELTAEAVERAGE );
 					Msg += " ( ";
 					Msg += Tmp;
-					sprintf ( szBuf, ": %.2f, max: %.2f )", dEavg / dEcnt, dEmax );
+					sprintf ( szBuf, ": %.2f [%.2f,%.2f,%.2f] max: %.2f", dEavg / dEcnt, dLavg / dEcnt, dCavg / dEcnt, dHavg / dEcnt, dEmax  );
 					Msg += szBuf;
 					switch (GetConfig()->m_dE_form)
 					{
 					case 0:
 						{
-						dEform = " [CIE76(uv)]";
+						dEform = " [CIE76(uv)] )";
 						a=3.0;
 						b=5;
 						break;
 						}
 					case 1:
 						{
-						dEform = " [CIE76(ab)]";
+						dEform = " [CIE76(ab)] )";
 						break;
 						}
 					case 2:
 						{
-						dEform = " [CIE94]";
+						dEform = " [CIE94] )";
 						break;
 						}
 					case 3:
 						{
-						dEform = " [CIE2000]";
+						dEform = " [CIE2000] )";
 						break;
 						}
 					case 4:
 						{
-						dEform = " [CMC(1:1)]";
+						dEform = " [CMC(1:1)] )";
 						break;
 						}
 					case 5:
 						{
-						dEform = " [CIE76(uv)]";
+						dEform = " [CIE76(uv)] )";
 						a=3.0;
 						b=5;
 						break;
@@ -2942,40 +2896,40 @@ void CMainView::UpdateGrid()
 				Tmp.LoadString ( IDS_DELTAEAVERAGE );
 				Msg += " ( ";
 				Msg += Tmp;
-				sprintf ( szBuf, ": %.2f, max: %.2f )", dEavg / dEcnt, dEmax );
+				sprintf ( szBuf, ": %.2f [%.2f,%.2f,%.2f] max: %.2f", dEavg / dEcnt, dLavg / dEcnt, dCavg / dEcnt, dHavg / dEcnt, dEmax  );
 				Msg += szBuf;					
 					switch (GetConfig()->m_dE_form)
 					{
 					case 0:
 						{
-						dEform = " [CIE76(uv)]";
+						dEform = " [CIE76(uv)] )";
 						a=3.0;
 						b=5;
 						break;
 						}
 					case 1:
 						{
-						dEform = " [CIE76(ab)]";
+						dEform = " [CIE76(ab)] )";
 						break;
 						}
 					case 2:
 						{
-						dEform = " [CIE94]";
+						dEform = " [CIE94] )";
 						break;
 						}
 					case 3:
 						{
-						dEform = " [CIE2000]";
+						dEform = " [CIE2000] )";
 						break;
 						}
 					case 4:
 						{
-						dEform = " [CMC(1:1)]";
+						dEform = " [CMC(1:1)] )";
 						break;
 						}
 					case 5:
 						{
-						dEform = " [CIE2000]";
+						dEform = " [CIE2000] )";
 						break;
 						}
 					}
@@ -3024,40 +2978,40 @@ void CMainView::UpdateGrid()
 				Tmp.LoadString ( IDS_DELTAEAVERAGE );
 				Msg += " ( ";
 				Msg += Tmp;
-				sprintf ( szBuf, ": %.2f, max: %.2f )", dEavg / dEcnt, dEmax );
+				sprintf ( szBuf, ": %.2f [%.2f,%.2f,%.2f] max: %.2f", dEavg / dEcnt, dLavg / dEcnt, dCavg / dEcnt, dHavg / dEcnt, dEmax  );
 				Msg += szBuf;					
 					switch (GetConfig()->m_dE_form)
 					{
 					case 0:
 						{
-						dEform = " [CIE76(uv)]";
+						dEform = " [CIE76(uv)] )";
 						a=3.0;
 						b=5;
 						break;
 						}
 					case 1:
 						{
-						dEform = " [CIE76(ab)]";
+						dEform = " [CIE76(ab)] )";
 						break;
 						}
 					case 2:
 						{
-						dEform = " [CIE94]";
+						dEform = " [CIE94] )";
 						break;
 						}
 					case 3:
 						{
-						dEform = " [CIE2000]";
+						dEform = " [CIE2000] )";
 						break;
 						}
 					case 4:
 						{
-						dEform = " [CMC(1:1)]";
+						dEform = " [CMC(1:1)] )";
 						break;
 						}
 					case 5:
 						{
-						dEform = " [CIE2000]";
+						dEform = " [CIE2000] )";
 						break;
 						}
 					}
@@ -3099,49 +3053,52 @@ void CMainView::UpdateGrid()
 					dEmax_cc = maxv;
 
 					if (GetConfig()->m_CCMode == CCSG )
-        				sprintf ( szBuf, ": %.2f, max: %.2f[%s], worst 10%%: %.2f )", dEavg / dEcnt, maxv, PatName[pos], dE10 );
+        				sprintf ( szBuf, ": %.2f [%.2f,%.2f,%.2f] max: %.2f[%s], worst 10%%: %.2f", dEavg / dEcnt, dLavg / dEcnt, dCavg / dEcnt, dHavg / dEcnt, maxv, PatName[pos], dE10 );
                     else
-        				sprintf ( szBuf, ": %.2f, max: %.2f[%s], worst 10%%: %.2f )", dEavg / dEcnt, maxv, aBuf, dE10 );
-                    dEvector.clear();
+        				sprintf ( szBuf, ": %.2f [%.2f,%.2f,%.2f] max: %.2f[%s], worst 10%%: %.2f", dEavg / dEcnt, dLavg / dEcnt, dCavg / dEcnt, dHavg / dEcnt, maxv, aBuf, dE10 );
                 }
                 else
 				{
 					dE10min=0.;
-    				sprintf ( szBuf, ": %.2f, max: %.2f )", dEavg / dEcnt, dEmax );
+    				sprintf ( szBuf, ": %.2f [%.2f,%.2f,%.2f] max: %.2f", dEavg / dEcnt, dLavg / dEcnt, dCavg / dEcnt, dHavg / dEcnt, dEmax);
 				}
+                    dEvector.clear();
+                    dLvector.clear();
+                    dCvector.clear();
+                    dHvector.clear();
 				    Msg += szBuf;					
 					switch (GetConfig()->m_dE_form)
 					{
 					case 0:
 						{
-						dEform = " [CIE76(uv)]";
+						dEform = " [CIE76(uv)] )";
 						a=3.0;
 						b=5;
 						break;
 						}
 					case 1:
 						{
-						dEform = " [CIE76(ab)]";
+						dEform = " [CIE76(ab)] )";
 						break;
 						}
 					case 2:
 						{
-						dEform = " [CIE94]";
+						dEform = " [CIE94] )";
 						break;
 						}
 					case 3:
 						{
-						dEform = " [CIE2000]";
+						dEform = " [CIE2000] )";
 						break;
 						}
 					case 4:
 						{
-						dEform = " [CMC(1:1)]";
+						dEform = " [CMC(1:1)] )";
 						break;
 						}
 					case 5:
 						{
-						dEform = " [CIE2000]";
+						dEform = " [CIE2000] )";
 						break;
 						}
 					}

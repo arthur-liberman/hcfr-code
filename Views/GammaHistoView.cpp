@@ -35,8 +35,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-double voltage_to_intensity_srgb( double val );
-double voltage_to_intensity_rec709( double val );
 double Y_to_L( double val );
 /////////////////////////////////////////////////////////////////////////////
 // CGammaGrapher
@@ -132,8 +130,6 @@ void CGammaGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	{	
 		// log scale is not valid for first and last value
 
-//		CColor White = pDoc -> GetMeasure () -> GetGray ( size - 1 );
-//		CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
 		CColor White = pDoc -> GetMeasure () -> GetOnOffWhite();
 		CColor Black = pDoc -> GetMeasure () -> GetOnOffBlack();
 		for (int i=1; i<size-1; i++)
@@ -152,15 +148,6 @@ void CGammaGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 				valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+GammaOffset)/(1.0+GammaOffset);
 				valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 			}
-/*
-			if ( GetConfig()->m_bUseReferenceGamma )
-			{
-				if( GetConfig()->m_colorStandard == sRGB )
-					valy=voltage_to_intensity_srgb(GrayLevelToGrayProp(x,bIRE));
-				else
-					valy=voltage_to_intensity_rec709(GrayLevelToGrayProp(x,bIRE));
-			}
-*/
 
 			if( valy > 0 && valx > 0)
 				m_graphCtrl.AddPoint(m_refLogGraphID, x, log(valy)/ log(valx));

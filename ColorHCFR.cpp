@@ -210,6 +210,7 @@ void	UpdateDataRef(BOOL ActiveDataRef, CDataSetDoc * pDoc)
 
 BOOL CColorHCFRApp::InitInstance()
 {
+
 	// Create splash screen
 	int		cx, cy;
 	RECT	Rect;
