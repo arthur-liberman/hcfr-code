@@ -276,6 +276,8 @@ protected:
 	afx_msg void OnUpdateMeasureSatPrimaries(CCmdUI* pCmdUI);
 	afx_msg void OnSaveCalibrationFile();
 	afx_msg void OnMeasureSatPrimariesSecondaries();
+	afx_msg void OnMeasureFullTiltBoogie();
+	afx_msg void OnUpdateMeasureFullTiltBoogie(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateMeasureSatPrimariesSecondaries(CCmdUI* pCmdUI);
 	afx_msg void OnLoadCalibrationFile();
 	afx_msg void OnUpdateSaveCalibrationFile(CCmdUI* pCmdUI);

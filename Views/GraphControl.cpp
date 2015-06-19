@@ -88,6 +88,7 @@ CGraph& CGraph::operator =(const CGraph& obj)
 CGraphControl::CGraphControl()
 {
 	m_doGradientBg=TRUE;
+	m_doUserScales=FALSE;
 	m_doSpectrumBg=FALSE;
 	m_doShowAxis=TRUE;
 	m_doShowXLabel=TRUE;
@@ -166,6 +167,7 @@ void CGraphControl::ClearGraph(int graphnum)
 void CGraphControl::ReadSettings(LPSTR aConfigStr, BOOL bReadGraphSettings)
 {
 	m_doGradientBg=GetConfig()->GetProfileInt(aConfigStr,"Show Gradient",TRUE);
+	m_doUserScales=GetConfig()->GetProfileInt(aConfigStr,"User Scales",FALSE);
 	m_doShowAxis=GetConfig()->GetProfileInt(aConfigStr,"Show Axis",TRUE);
 	m_doShowDataLabel=GetConfig()->GetProfileInt(aConfigStr,"Show Data Labels",FALSE);
 	m_doShowXLabel=GetConfig()->GetProfileInt(aConfigStr,"Show X Labels",TRUE);
@@ -212,6 +214,7 @@ void CGraphControl::ReadSettings(LPSTR aConfigStr, BOOL bReadGraphSettings)
 void CGraphControl::WriteSettings(LPSTR aConfigStr)
 {
 	GetConfig()->WriteProfileInt(aConfigStr,"Show Gradient",m_doGradientBg);
+	GetConfig()->WriteProfileInt(aConfigStr,"User Scales",m_doUserScales);
 	GetConfig()->WriteProfileInt(aConfigStr,"Show Axis",m_doShowAxis);
 	GetConfig()->WriteProfileInt(aConfigStr,"Show Data Labels",m_doShowDataLabel);
 	GetConfig()->WriteProfileInt(aConfigStr,"Show X Labels",m_doShowXLabel);
@@ -247,6 +250,7 @@ void CGraphControl::ChangeSettings()
 	CGraphSettingsDialog dialog;
 
 	dialog.m_doGradientBg=m_doGradientBg;
+	dialog.m_doUserScales=m_doUserScales;
 	dialog.m_doShowAxis=m_doShowAxis;
 	dialog.m_doShowDataLabel=m_doShowDataLabel;
 	dialog.m_doShowXLabel=m_doShowXLabel;
@@ -259,6 +263,7 @@ void CGraphControl::ChangeSettings()
 	{
 		m_graphArray.Copy(dialog.m_graphArray);
 		m_doGradientBg=dialog.m_doGradientBg;
+		m_doUserScales=dialog.m_doUserScales;
 		m_doShowAxis=dialog.m_doShowAxis;
 		m_doShowDataLabel=dialog.m_doShowDataLabel;
 		m_doShowXLabel=dialog.m_doShowXLabel;
@@ -272,6 +277,7 @@ void CGraphControl::ChangeSettings()
 void CGraphControl::CopySettings(const CGraphControl & aGraphControl, int aGraphSrcIndex, int aGraphDestIndex)
 {
 	m_doGradientBg=aGraphControl.m_doGradientBg;
+	m_doUserScales=aGraphControl.m_doUserScales;
 	m_doShowAxis=aGraphControl.m_doShowAxis;
 	m_doShowDataLabel=aGraphControl.m_doShowDataLabel;
 	m_doShowXLabel=aGraphControl.m_doShowXLabel;
@@ -491,22 +497,6 @@ CPoint CGraphControl::GetGraphPoint(CDecimalPoint aPoint,CRect rect)
 
 void CGraphControl::DrawBackground(CDC *pDC, CRect rect, BOOL bForFile)
 {
-/*	// Not optimized way: better to use CMenu DrawGradient function which calls API functions if they are available
-	if(m_doGradientBg)	
-	{	
-		int r1=32,g1=32,b1=32;    //very dark gray
-		int r2=240,g2=240,b2=240; //very light gray
-
-		for(int i=0;i<rect.Width();i++)
-		{ 
-			int r,g,b;
-			r = r1 + (i * (r2-r1) / rect.Width());
-			g = g1 + (i * (g2-g1) / rect.Width());
-			b = b1 + (i * (b2-b1) / rect.Width());
-			pDC->FillSolidRect(i,0,1,rect.Height(),RGB(r,g,b));
-		}
-	}
-*/
 	if ( bForFile ? GetConfig()->m_bWhiteBkgndOnFile : GetConfig()->m_bWhiteBkgndOnScreen )
 		pDC->FillSolidRect(rect,RGB(255,255,255));
 	else if(m_doGradientBg)
@@ -933,43 +923,75 @@ void CGraphControl::SaveGraphs(CGraphControl *pGraphToAppend, CGraphControl *pGr
 		switch (nSequence)
 		{
 		case 1:
-			this->FitYScale(FALSE);
-			this->m_minY = 80; //RGB
-			this->m_maxY = 120;
-			this->m_yAxisStep = 5;
-			this->m_yScale = 1.0 / (40.0);
-			pGraphToAppend->FitYScale(FALSE); //dE
-			pGraphToAppend->m_minY = 0; 
-			pGraphToAppend->m_maxY = (pGraphToAppend->m_maxY > 3 ? (pGraphToAppend->m_maxY >5?10:5):3);
-			pGraphToAppend->m_yAxisStep = (pGraphToAppend->m_maxY > 3 ? (pGraphToAppend->m_maxY >5?2:1):0.5);
-			pGraphToAppend->m_yScale = (pGraphToAppend->m_maxY > 3 ? (pGraphToAppend->m_maxY >5?1.0/10.0:1.0/5.0):1.0/3.0);
-			pGraphToAppend->m_doShowDataLabel = TRUE;
+			if (this->m_doUserScales)
+				this->ReadSettings("RGB Histo");
+			else
+			{
+				this->FitYScale(FALSE);
+				this->m_minY = 80; //RGB
+				this->m_maxY = 120;
+				this->m_yAxisStep = 5;
+				this->m_yScale = 1.0 / (40.0);
+			}
+			if (pGraphToAppend->m_doUserScales)
+				pGraphToAppend->ReadSettings("RGB Histo2");
+			else
+			{
+				pGraphToAppend->FitYScale(FALSE); //dE
+				pGraphToAppend->m_minY = 0; 
+				pGraphToAppend->m_maxY = (pGraphToAppend->m_maxY > 3 ? (pGraphToAppend->m_maxY >5?10:5):3);
+				pGraphToAppend->m_yAxisStep = (pGraphToAppend->m_maxY > 3 ? (pGraphToAppend->m_maxY >5?2:1):0.5);
+				pGraphToAppend->m_yScale = (pGraphToAppend->m_maxY > 3 ? (pGraphToAppend->m_maxY >5?1.0/10.0:1.0/5.0):1.0/3.0);
+				pGraphToAppend->m_doShowDataLabel = TRUE;
+			}
 			break;
 		case 2:
-			this->FitYScale(FALSE);
-			this->m_minY = 5000; //CCT
-			this->m_maxY = this->m_maxY > 7500?8500:7500;
-			this->m_yAxisStep = 500;
-			this->m_yScale = this->m_maxY > 7500?1.0/3500.0:1.0/2500.0;
-			this->m_doShowDataLabel = TRUE;
-			pGraphToAppend->FitYScale(FALSE);
-			pGraphToAppend->m_minY = 1.8; //Gamma
-			pGraphToAppend->m_maxY = 2.6;
-			pGraphToAppend->m_yAxisStep = 0.1;
-			pGraphToAppend->m_yScale = 1.0/0.8;
-			pGraphToAppend->m_doShowDataLabel = TRUE;
+			if (this->m_doUserScales)
+				this->ReadSettings("ColorTemp Histo");
+			else
+			{
+				this->FitYScale(FALSE);
+				this->m_minY = 5000; //CCT
+				this->m_maxY = this->m_maxY > 7500?8500:7500;
+				this->m_yAxisStep = 500;
+				this->m_yScale = this->m_maxY > 7500?1.0/3500.0:1.0/2500.0;
+				this->m_doShowDataLabel = TRUE; 
+			}
+			if (pGraphToAppend->m_doUserScales)
+				pGraphToAppend->ReadSettings("Gamma Histo");
+			else
+			{
+				pGraphToAppend->FitYScale(FALSE);
+				pGraphToAppend->m_minY = 1.8; //Gamma
+				pGraphToAppend->m_maxY = 2.6;
+				pGraphToAppend->m_yAxisStep = 0.1;
+				pGraphToAppend->m_yScale = 1.0/0.8;
+				pGraphToAppend->m_doShowDataLabel = TRUE;
+			}
 			break;
 		case 3:
-			pGraphToAppend->FitYScale(FALSE);
-			pGraphToAppend->m_yAxisStep = 1; //Sat shift 
-			pGraphToAppend->m_minY = -10.0;
-			pGraphToAppend->m_maxY = 10.0;
-			pGraphToAppend->m_yScale = 1.0/20.0;
-			pGraphToAppend2->FitYScale(FALSE);
-			pGraphToAppend2->m_minY = 0; //dE
-			pGraphToAppend2->m_maxY = (pGraphToAppend2->m_maxY > 3 ? (pGraphToAppend2->m_maxY >5?10:5):3);
-			pGraphToAppend2->m_yAxisStep = (pGraphToAppend2->m_maxY > 3 ? (pGraphToAppend2->m_maxY >5?2:1):0.5);
-			pGraphToAppend2->m_yScale = (pGraphToAppend2->m_maxY > 3 ? (pGraphToAppend2->m_maxY >5?1.0/10.0:1.0/5.0):1.0/3.0);
+			if (this->m_doUserScales)
+				this->ReadSettings("Saturation Luminance Histo");
+			if (pGraphToAppend->m_doUserScales)
+				pGraphToAppend->ReadSettings("Saturation Shift Sat");
+			else
+			{
+				pGraphToAppend->FitYScale(FALSE);
+				pGraphToAppend->m_yAxisStep = 1; //Sat shift 
+				pGraphToAppend->m_minY = -10.0;
+				pGraphToAppend->m_maxY = 10.0;
+				pGraphToAppend->m_yScale = 1.0/20.0;
+			}
+			if (pGraphToAppend2->m_doUserScales)
+				pGraphToAppend2->ReadSettings("Saturation Shift Color");
+			else
+			{
+				pGraphToAppend2->FitYScale(FALSE);
+				pGraphToAppend2->m_minY = 0; //dE
+				pGraphToAppend2->m_maxY = (pGraphToAppend2->m_maxY > 3 ? (pGraphToAppend2->m_maxY >5?10:5):3);
+				pGraphToAppend2->m_yAxisStep = (pGraphToAppend2->m_maxY > 3 ? (pGraphToAppend2->m_maxY >5?2:1):0.5);
+				pGraphToAppend2->m_yScale = (pGraphToAppend2->m_maxY > 3 ? (pGraphToAppend2->m_maxY >5?1.0/10.0:1.0/5.0):1.0/3.0);
+			}
 		}
 	}
 

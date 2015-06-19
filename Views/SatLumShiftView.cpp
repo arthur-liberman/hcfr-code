@@ -667,6 +667,8 @@ void CSatLumShiftView::OnSize(UINT nType, int cx, int cy)
 void CSatLumShiftView::OnDraw(CDC* pDC) 
 {
 	// TODO: Add your specialized code here and/or call the base class
+	m_Grapher.m_graphCtrl.WriteSettings("Saturation Shift Sat");
+	m_Grapher.m_graphCtrl2.WriteSettings("Saturation Shift Color");
 }
 
 BOOL CSatLumShiftView::OnEraseBkgnd(CDC* pDC) 

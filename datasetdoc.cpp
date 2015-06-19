@@ -523,6 +523,8 @@ BEGIN_MESSAGE_MAP(CDataSetDoc, CDocument)
 	ON_UPDATE_COMMAND_UI(IDM_MEASURE_SAT_ALL, OnUpdateMeasureSatAll)
 	ON_COMMAND(IDM_MEASURE_GRAYSCALE_COLORS, OnMeasureGrayscaleColors)
 	ON_UPDATE_COMMAND_UI(IDM_MEASURE_GRAYSCALE_COLORS, OnUpdateMeasureGrayscaleColors)
+	ON_COMMAND(ID_MEASURES_FULLTILTBOOGIE, OnMeasureFullTiltBoogie)
+	ON_UPDATE_COMMAND_UI(ID_MEASURES_FULLTILTBOOGIE, OnUpdateMeasureFullTiltBoogie)
 	ON_COMMAND(IDM_SIM_NEARBLACK, OnSimNearblack)
 	ON_COMMAND(IDM_SIM_NEARWHITE, OnSimNearwhite)
 	ON_COMMAND(IDM_SIM_SAT_RED, OnSimSatRed)
@@ -4279,6 +4281,40 @@ void CDataSetDoc::OnUpdateMeasureSatPrimaries(CCmdUI* pCmdUI)
 void CDataSetDoc::OnUpdateMeasureSatPrimariesSecondaries(CCmdUI* pCmdUI) 
 {
 	pCmdUI -> Enable ( m_pGenerator -> CanDisplayScale ( CGenerator::MT_SAT_ALL, GetMeasure () -> GetSaturationSize(), TRUE ) );
+}
+
+void CDataSetDoc::OnMeasureFullTiltBoogie()
+{
+	CString	Msg, MsgQueue, TmpStr;
+	BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR);
+    int		nNbPoints2 = (GetMeasure () -> GetSaturationSize ()) * 6 + (GetConfig()->m_CCMode==CCSG?96:isExtPat?GetConfig()->GetCColorsSize():(GetConfig()->m_CCMode==AXIS?71:24));
+	if (GetConfig()->m_CCMode==CMS || GetConfig()->m_CCMode==CPS)
+		nNbPoints2 = GetMeasure () -> GetSaturationSize () * 6 + 19;
+
+	int		nNbPoints = GetMeasure () -> GetGrayScaleSize () + 6 +  GetMeasure () -> GetNearBlackScaleSize () +  GetMeasure () -> GetNearWhiteScaleSize () + nNbPoints2;
+	
+	MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
+
+//	Msg.LoadString ( IDS_MEASUREGRAYANDCOLORSON );
+	TmpStr.Format ( "Run Gray scale, Near Black/White, Primaries/Secondaries, and Color Checker patterns on  %d ", nNbPoints );
+	Msg += TmpStr + MsgQueue;
+	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( Msg, "On measure", MB_ICONQUESTION | MB_YESNO ) )
+	{
+		MeasureGrayScaleAndColors();
+		MeasureNearBlackScale();
+		MeasureNearWhiteScale();
+		MeasureAllSaturationScales();
+		SetSelectedColor ( noDataColor );
+		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+		}
+}
+
+void CDataSetDoc::OnUpdateMeasureFullTiltBoogie(CCmdUI* pCmdUI)
+{
+	OnUpdateMeasureGrayscaleColors(pCmdUI);
+	OnUpdateMeasureNearblack(pCmdUI);
+	OnUpdateMeasureNearwhite(pCmdUI);
+	OnUpdateMeasureSatAll(pCmdUI);
 }
 
 void CDataSetDoc::OnSaveCalibrationFile() 

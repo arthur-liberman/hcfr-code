@@ -63,6 +63,7 @@ CMeasuresHistoView::CMeasuresHistoView()
 	m_graphCtrl.m_doShowDataLabel = FALSE;
 	m_graphCtrl.m_doShowXLabel = FALSE;
 	m_graphCtrl.m_doGradientBg = FALSE;
+	m_graphCtrl.m_doUserScales = FALSE;
 
 	Msg.LoadString ( IDS_RGBREFERENCE );
 	m_refGraphID = m_graphCtrl1.AddGraph(RGB(230,230,230), (LPSTR)(LPCSTR)Msg,1,PS_DOT);
@@ -79,6 +80,7 @@ CMeasuresHistoView::CMeasuresHistoView()
 	m_graphCtrl1.m_doShowDataLabel = FALSE;
 	m_graphCtrl1.m_doShowXLabel = FALSE;
 	m_graphCtrl1.m_doGradientBg = FALSE;
+	m_graphCtrl1.m_doUserScales = FALSE;
 
 	Msg.LoadString ( IDS_DELTAE );
 	m_deltaEGraphID = m_graphCtrl2.AddGraph(RGB(255,0,255), (LPSTR)(LPCSTR)Msg);
@@ -89,6 +91,7 @@ CMeasuresHistoView::CMeasuresHistoView()
 	m_graphCtrl2.m_doShowDataLabel = FALSE;
 	m_graphCtrl2.m_doShowXLabel = FALSE;
 	m_graphCtrl2.m_doGradientBg = FALSE;
+	m_graphCtrl2.m_doUserScales = FALSE;
 
 	Msg.LoadString ( IDS_COLORTEMP );
 	m_ColorTempGraphID = m_graphCtrl3.AddGraph(RGB(0,255,255), (LPSTR)(LPCSTR)Msg);
@@ -101,6 +104,7 @@ CMeasuresHistoView::CMeasuresHistoView()
 	m_graphCtrl3.m_doShowDataLabel = FALSE;
 	m_graphCtrl3.m_doShowXLabel = FALSE;
 	m_graphCtrl3.m_doGradientBg = FALSE;
+	m_graphCtrl3.m_doUserScales = FALSE;
 
 	m_showReference=GetConfig()->GetProfileInt("Combo Histo","Show Reference",TRUE);
 	m_showLuminance=GetConfig()->GetProfileInt("Combo Histo","Show Luminance",TRUE);

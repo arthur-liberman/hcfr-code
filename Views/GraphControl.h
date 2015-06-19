@@ -76,6 +76,7 @@ public:
 public:
 	BOOL m_doShowAxis;
 	BOOL m_doGradientBg;
+	BOOL m_doUserScales;
 	BOOL m_doSpectrumBg;
 	BOOL m_doShowAllPoints;
 	BOOL m_doShowAllToolTips;

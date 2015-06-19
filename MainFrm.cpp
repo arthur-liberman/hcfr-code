@@ -297,9 +297,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	m_DefaultNewMenu.LoadToolBar(IDR_MENUBARGRAPH);
 
-//	m_SystemNewMenu.SetMenuTitle(_T("Menu principal"),MFT_SUNKEN|MFT_LINE|MFT_CENTER|MFT_SIDE_TITLE);
-//	m_SystemNewMenu.SetMenuTitleColor(RGB(255,0,0),CLR_DEFAULT,RGB(0,0,255));
-
 	RecalcLayout(FALSE);
 
 	// Clear initial lux value

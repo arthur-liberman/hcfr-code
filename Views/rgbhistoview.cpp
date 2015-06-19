@@ -453,6 +453,8 @@ void CRGBHistoView::OnSize(UINT nType, int cx, int cy)
 
 void CRGBHistoView::OnDraw(CDC* pDC) 
 {
+	m_Grapher.m_graphCtrl.WriteSettings("RGB Histo");
+	m_Grapher.m_graphCtrl2.WriteSettings("RGB Histo2");
 }
 
 BOOL CRGBHistoView::OnEraseBkgnd(CDC* pDC) 

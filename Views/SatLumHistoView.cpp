@@ -422,8 +422,7 @@ void CSatLumHistoView::OnSize(UINT nType, int cx, int cy)
 void CSatLumHistoView::OnDraw(CDC* pDC) 
 {
 	// TODO: Add your specialized code here and/or call the base class
-	
-	
+	m_Grapher.m_graphCtrl.WriteSettings("Saturation Luminance Histo");	
 }
 
 BOOL CSatLumHistoView::OnEraseBkgnd(CDC* pDC) 

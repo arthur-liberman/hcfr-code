@@ -448,6 +448,7 @@ void CGammaHistoView::OnSize(UINT nType, int cx, int cy)
 void CGammaHistoView::OnDraw(CDC* pDC) 
 {
 	// TODO: Add your specialized code here and/or call the base class	
+	m_Grapher.m_graphCtrl.WriteSettings("Gamma Histo");
 }
 
 BOOL CGammaHistoView::OnEraseBkgnd(CDC* pDC) 

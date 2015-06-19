@@ -81,6 +81,7 @@ int CSpectrumWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_graphCtrl.m_doSpectrumBg = TRUE;
 	m_graphCtrl.m_doShowAllPoints = TRUE;
 	m_graphCtrl.m_doShowAllToolTips = TRUE;
+	m_graphCtrl.m_doUserScales = FALSE;
 
 	ShowWindow ( SW_SHOW );
 

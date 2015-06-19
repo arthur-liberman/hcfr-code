@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by CHCFR21_ENGLISH.rc
+// Used by CHCFR21_FRANCAIS.rc
 //
 #define IDS_STRING_VERSION              1
 #define IDS_STRING_VERSION_WEB          2
@@ -493,6 +493,7 @@
 #define IDC_GRAPH_SHOWDATALABELS_CHECK  1141
 #define IDC_XAXISSTEP_EDIT              1142
 #define IDC_FILE_TYPE_RADIO2            1142
+#define IDC_GRAPH_SHOWALLPOINTS_CHECK2  1142
 #define IDC_FILE_TYPE_RADIO3            1143
 #define IDC_SAVE_WIDTH_EDIT             1144
 #define IDC_DISPLAYREF_COMBO            1145
@@ -782,6 +783,7 @@
 #define IDR_PATTERN_RBd                 1333
 #define IDR_PATTERN_GBd                 1334
 #define IDR_PATTERN_BN                  1335
+#define IDC_GRAPH_USERSCALES_CHECK      1336
 #define IDC_COLORTEMPHISTO_GRAPH        11003
 #define IDC_RGBHISTO_GRAPH              11101
 #define IDC_RGBHISTO_GRAPH2             11102
@@ -1016,7 +1018,9 @@
 #define IDM_PATTERN_TC4                 33060
 #define IDM_CIE_WORST10                 33060
 #define IDM_PATTERN_TC5                 33061
+#define ID_BUTTON33061                  33061
 #define IDM_PATTERN_DR0                 33062
+#define ID_BUTTON33062                  33062
 #define IDM_PATTERN_DR1                 33063
 #define IDM_PATTERN_DR2                 33064
 #define IDM_PATTERN_SHARP               33065
@@ -1032,6 +1036,7 @@
 #define IDM_PATTERN_GBd                 33075
 #define IDM_EXPORT_PDF                  33076
 #define IDM_PATTERN_BN                  33077
+#define ID_MEASURES_FULLTILTBOOGIE      33078
 #define IDS_LUMINANCEHISTOVIEW_NAME     41446
 #define IDS_COLORTEMPHISTOVIEW_NAME     41447
 #define IDS_RGBHISTOVIEW_NAME           41448
@@ -1563,7 +1568,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        382
-#define _APS_NEXT_COMMAND_VALUE         33061
+#define _APS_NEXT_COMMAND_VALUE         33063
 #define _APS_NEXT_CONTROL_VALUE         1288
 #define _APS_NEXT_SYMED_VALUE           143
 #endif

@@ -51,6 +51,7 @@ public:
 	CString	m_lineWidthStr;
 	BOOL	m_doShowAxis;
 	BOOL	m_doGradientBg;
+	BOOL	m_doUserScales;
 	BOOL	m_doShowXLabel;
 	BOOL	m_doShowYLabel;
 	BOOL	m_doShowPoints;
