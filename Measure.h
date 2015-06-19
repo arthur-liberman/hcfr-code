@@ -57,7 +57,6 @@ public:
 protected:
 	BOOL m_isModified;
 	BOOL m_bpreV10;
-	BOOL m_binMeasure;
 	CArray<CColor,CColor> m_primariesArray;
 	CArray<CColor,CColor> m_secondariesArray;
 	CArray<CColor,CColor> m_grayMeasureArray;
@@ -81,6 +80,7 @@ protected:
 	CString m_CCStr;
 public:
 	BOOL	m_bIREScaleMode;
+	BOOL	m_binMeasure;
 
 	// Internal data used by background measures threads (not serialized)
 public:

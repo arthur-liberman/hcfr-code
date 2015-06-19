@@ -716,6 +716,7 @@ BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator, CDataS
 		return FALSE;
 	}
 	
+	m_binMeasure = TRUE;
 	for(int i=0;i<size;i++)
 	{
 		if (i>0)
@@ -876,11 +877,10 @@ BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator, CDataS
 		m_OnOffBlack.ResetLuxValue ();
 	}
 
+	m_binMeasure = FALSE;
 	m_isModified=TRUE;
 	return TRUE;
 }
-
-
 
 BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerator, CDataSetDoc *pDoc)
 {
@@ -924,6 +924,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 		return FALSE;
 	}
 
+	m_binMeasure = TRUE;
 	for(int i=0;i<size;i++)
 	{
 		if (i>0)
@@ -1257,6 +1258,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 	}
 	GetConfig()->m_isSettling = doSettling;
 		
+	m_binMeasure = FALSE;
 	m_isModified=TRUE;
 	return TRUE;
 }
@@ -1304,6 +1306,7 @@ BOOL CMeasure::MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator, C
 	}
 
 
+	m_binMeasure = TRUE;
 	for(int i=0;i<size;i++)
 	{
 		if (i>0)
@@ -1449,6 +1452,7 @@ BOOL CMeasure::MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator, C
 	}
 	GetConfig()->m_isSettling = doSettling;
 
+	m_binMeasure = FALSE;
 	m_isModified=TRUE;
 	return TRUE;
 }
@@ -1496,6 +1500,7 @@ BOOL CMeasure::MeasureNearWhiteScale(CSensor *pSensor, CGenerator *pGenerator, C
 	}
 
 	
+	m_binMeasure = TRUE;
 	for(int i=0;i<size;i++)
 	{
 		if (i>0)
@@ -1606,6 +1611,7 @@ BOOL CMeasure::MeasureNearWhiteScale(CSensor *pSensor, CGenerator *pGenerator, C
 	}
 	GetConfig()->m_isSettling = doSettling;
 
+	m_binMeasure = FALSE;
 	m_isModified=TRUE;
 	return TRUE;
 }
@@ -1658,6 +1664,7 @@ BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator, CDat
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
+	m_binMeasure = TRUE;
     for(int i=((GetConfig()->m_CCMode == MCD && pGenerator->GetName() == str)?1:0);i<size;i++)
 	{
 		if (i>0)
@@ -1770,6 +1777,7 @@ BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator, CDat
 	}
 	GetConfig()->m_isSettling = doSettling;
 
+	m_binMeasure = FALSE;
 	m_isModified=TRUE;
 	return TRUE;
 }
@@ -1821,6 +1829,7 @@ BOOL CMeasure::MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator, CD
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
+	m_binMeasure = TRUE;
 	for(int i=((GetConfig()->m_CCMode == MCD && pGenerator->GetName() == str)?1:0);i<size;i++)
 	{
 		if (i>0)
@@ -1932,6 +1941,7 @@ BOOL CMeasure::MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator, CD
 	}
 	GetConfig()->m_isSettling = doSettling;
 
+	m_binMeasure = FALSE;
 	m_isModified=TRUE;
 	return TRUE;
 }
@@ -1984,6 +1994,7 @@ BOOL CMeasure::MeasureBlueSatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
+	m_binMeasure = TRUE;
     for(int i=((GetConfig()->m_CCMode == MCD && pGenerator->GetName() == str)?1:0);i<size;i++)
 	{
 		if (i>0)
@@ -2095,6 +2106,7 @@ BOOL CMeasure::MeasureBlueSatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 	}
 	GetConfig()->m_isSettling = doSettling;
 
+	m_binMeasure = FALSE;
 	m_isModified=TRUE;
 	return TRUE;
 }
@@ -2147,6 +2159,7 @@ BOOL CMeasure::MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator, C
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
+	m_binMeasure = TRUE;
     for(int i=((GetConfig()->m_CCMode == MCD && pGenerator->GetName() == str)?1:0);i<size;i++)
 	{
 		if (i>0)
@@ -2259,6 +2272,7 @@ BOOL CMeasure::MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator, C
 	}
 	GetConfig()->m_isSettling = doSettling;
 
+	m_binMeasure = FALSE;
 	m_isModified=TRUE;
 	return TRUE;
 }
@@ -2311,6 +2325,7 @@ BOOL CMeasure::MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
+	m_binMeasure = TRUE;
     for(int i=((GetConfig()->m_CCMode == MCD && pGenerator->GetName() == str)?1:0);i<size;i++)
 	{
 		if (i>0)
@@ -2423,6 +2438,7 @@ BOOL CMeasure::MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 	}
 	GetConfig()->m_isSettling = doSettling;
 
+	m_binMeasure = FALSE;
 	m_isModified=TRUE;
 	return TRUE;
 }
@@ -2475,6 +2491,7 @@ BOOL CMeasure::MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator, 
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
+	m_binMeasure = TRUE;
     for(int i=((GetConfig()->m_CCMode == MCD && pGenerator->GetName() == str)?1:0);i<size;i++)
 	{
 		if (i>0)
@@ -2585,6 +2602,7 @@ BOOL CMeasure::MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator, 
 			m_magentaSatMeasureArray[i].ResetLuxValue ();
 	}
 	GetConfig()->m_isSettling = doSettling;
+	m_binMeasure = FALSE;
 	m_isModified=TRUE;
 	return TRUE;
 }
@@ -3536,6 +3554,7 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator, CDataS
 									ColorRGBDisplay(0,0,0)
 								};
 
+	m_binMeasure = TRUE;
 	for ( i = 0; i < ( 3 + GetConfig () -> m_BWColorsToAdd ) ; i ++ )
 	{
 		if (i>0)
@@ -3674,6 +3693,7 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator, CDataS
 	if (bPatternRetry)
 		AfxMessageBox(pGenerator->GetRetryMessage(), MB_OK | MB_ICONWARNING);
 
+	m_binMeasure = FALSE;
 	m_isModified=TRUE;
 	return TRUE;
 }
@@ -3757,6 +3777,8 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator, CDat
 									ColorRGBDisplay(IRELevel,IRELevel,IRELevel),
 									ColorRGBDisplay(0,0,0)
 								};
+
+	m_binMeasure = TRUE;
 	for ( i = 0; i < ( 6 + GetConfig () -> m_BWColorsToAdd ); i ++ )
 	{
 		if (i>0)
@@ -3902,6 +3924,7 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator, CDat
 	if (bPatternRetry)
 		AfxMessageBox(pGenerator->GetRetryMessage(), MB_OK | MB_ICONWARNING);
 
+	m_binMeasure = FALSE;
 	m_isModified=TRUE;
 	return TRUE;
 }
@@ -3943,6 +3966,7 @@ BOOL CMeasure::MeasureContrast(CSensor *pSensor, CGenerator *pGenerator)
 	
 	CColor measure;
 	// Measure black for on/off contrast
+	m_binMeasure = TRUE;
 	for ( i = 0; i < 1 ; i ++ )
 	{
 		if( pGenerator->DisplayGray(BlackIRELevel,CGenerator::MT_CONTRAST,!bRetry ) )
@@ -4398,6 +4422,7 @@ BOOL CMeasure::MeasureContrast(CSensor *pSensor, CGenerator *pGenerator)
 	if (bPatternRetry)
 		AfxMessageBox(pGenerator->GetRetryMessage(), MB_OK | MB_ICONWARNING);
 
+	m_binMeasure = FALSE;
 	m_isModified=TRUE;
 	return TRUE;
 }

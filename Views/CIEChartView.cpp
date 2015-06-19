@@ -207,6 +207,7 @@ void CCIEChartGrapher::MakeBgBitmap(CRect rect, BOOL bWhiteBkgnd)	// Create back
 		{
 			if ( m_bCIEuv )
 				pOld = memDC.SelectObject( & GetColorApp() -> m_chartBitmap_uv );
+//				pOld = memDC.SelectObject( & GetColorApp() -> m_chartBitmap_ab );
 			else
 				pOld = memDC.SelectObject( & GetColorApp() -> m_chartBitmap );
 		}
@@ -440,7 +441,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 
 	dE10 = ((CMainView*)pView)->dE10min;
 	
-	if (current_mode != 11)
+	if (current_mode != 11 && !pDoc->GetMeasure()->m_binMeasure)
 	{
 		((CMainView*)pView)->m_displayMode = 11;
 		((CMainView*)pView)->UpdateAllGrids();
