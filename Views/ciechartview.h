@@ -110,6 +110,7 @@ class CCIEChartGrapher
 	BOOL m_doShowCCScaleTarg;
 	BOOL m_doShowMeasurements;
 	BOOL m_bCIEuv;
+	BOOL m_bCIEab;
 	BOOL m_bdE10;
 	double dE10;
 

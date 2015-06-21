@@ -116,6 +116,162 @@ END
 LANGUAGE LANG_SPANISH, SUBLANG_SPANISH_MODERN
 #pragma code_page(1252)
 
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_CAMERA_BITMAP       BITMAP                  "res\\camera_b.bmp"
+IDB_DELETE_BITMAP       BITMAP                  "res\\delete_b.bmp"
+IDB_MEDIUMTOOLBAR_MAIN_HICOL BITMAP                  "res\\medium_tb_main_hicol.bmp"
+IDB_MEDIUMTOOLBAR_VIEW_HICOL BITMAP                  "res\\medium_tb_views_hicol.bmp"
+IDB_MEDIUMTOOLBAR_MEASURE_HICOL BITMAP                  "res\\medium_tb_measures_hicol.bmp"
+IDB_MEDIUMTOOLBAR_MEAS_EX_HICOL BITMAP                  "res\\medium_tb_measures_ex_hicol.bmp"
+IDB_POINT_BITMAP        BITMAP                  "res\\target.bmp"
+IDB_REFBLUEPRIMARY_BITMAP BITMAP                  "res\\refblueprimary.bmp"
+IDB_REFGREENPRIMARY_BITMAP BITMAP                  "res\\refgreenprimary.bmp"
+IDB_REFREDPRIMARY_BITMAP BITMAP                  "res\\refredprimary.bmp"
+IDB_REFBLUESAT_BITMAP   BITMAP                  "res\\refbluesat.bmp"
+IDB_REFGREENSAT_BITMAP  BITMAP                  "res\\refgreensat.bmp"
+IDB_REFREDSAT_BITMAP    BITMAP                  "res\\refredsat.bmp"
+IDB_REFYELLOWSAT_BITMAP BITMAP                  "res\\refyellowsat.bmp"
+IDB_REFCYANSAT_BITMAP   BITMAP                  "res\\refcyansat.bmp"
+IDB_REFMAGENTASAT_BITMAP BITMAP                  "res\\refmagentasat.bmp"
+IDB_REFCC24SAT_BITMAP   BITMAP                  "res\\refcc24sat.bmp"
+IDB_ILLUMINANTPOINT_BITMAP BITMAP                  "res\\illuminantplot.bmp"
+IDB_COLORTEMPPOINT_BITMAP BITMAP                  "res\\colortempplot.bmp"
+IDB_BLUEPRIMARY_BITMAP  BITMAP                  "res\\blueprimary.bmp"
+IDB_GREENPRIMARY_BITMAP BITMAP                  "res\\greenprimary.bmp"
+IDB_YELLOWSECONDARY_BITMAP BITMAP                  "res\\yellowsecondary.bmp"
+IDB_MAGENTASECONDARY_BITMAP BITMAP                  "res\\magentasecondary.bmp"
+IDB_CYANSECONDARY_BITMAP BITMAP                  "res\\cyansecondary.bmp"
+IDB_REDPRIMARY_BITMAP   BITMAP                  "res\\redprimary.bmp"
+IDB_GRAYPLOT_BITMAP     BITMAP                  "res\\grayplot.bmp"
+IDB_MEASUREPLOT_BITMAP  BITMAP                  "res\\measureplot.bmp"
+IDB_SELECTEDPLOT_BITMAP BITMAP                  "res\\selectedplot.bmp"
+IDB_ANSICONTRAST_BITMAP BITMAP                  "res\\bitmap1.bmp"
+IDB_LOGO                BITMAP                  "res\\logo.bmp"
+IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
+IDR_MEDIUMTOOLBAR_VIEWS BITMAP                  "res\\medtoot.bmp"
+IDR_MEDIUMTOOLBAR_MAIN  BITMAP                  "res\\mediumto.bmp"
+IDB_REFYELLOWSECONDARY_BITMAP BITMAP                  "res\\refyellowsecondary.bmp"
+IDB_REFCYANSECONDARY_BITMAP BITMAP                  "res\\refcyansecondary.bmp"
+IDB_REFMAGENTASECONDARY_BITMAP BITMAP                  "res\\refmagentasecondary.bmp"
+IDB_SATRED              BITMAP                  "res\\satred.bmp"
+IDB_SATGREEN            BITMAP                  "res\\satgreen.bmp"
+IDB_SATBLUE             BITMAP                  "res\\satblue.bmp"
+IDB_SATYELLOW           BITMAP                  "res\\satyellow.bmp"
+IDB_SATCYAN             BITMAP                  "res\\satcyan.bmp"
+IDB_SATMAGENTA          BITMAP                  "res\\satmagenta.bmp"
+IDB_SATCC24             BITMAP                  "res\\sat_all.bmp"
+IDB_SATALL              BITMAP                  "res\\sat_all.bmp"
+IDR_MEDIUMTOOLBAR_MEASURES BITMAP                  "res\\tbmeasures.bmp"
+IDR_MEDIUMTOOLBAR_MEASURES_EX BITMAP                  "res\\tbmeasures_ex.bmp"
+IDB_NEARBLACK           BITMAP                  "res\\nearblack.bmp"
+IDB_NEARWHITE           BITMAP                  "res\\nearwhite.bmp"
+IDB_MEAS_PRIMARIES      BITMAP                  "res\\meas_p.bmp"
+IDB_MEAS_PRIM_SEC       BITMAP                  "res\\meas_ps.bmp"
+IDB_MEAS_PRIM_SEC_GRAYS BITMAP                  "res\\meas_psg.bmp"
+IDB_MEAS_GRAYS          BITMAP                  "res\\meas_g.bmp"
+IDB_MEAS_CONT           BITMAP                  "res\\meas_cont.bmp"
+IDB_MEAS_STOP           BITMAP                  "res\\meas_stop.bmp"
+IDB_REFCROSS_RED        BITMAP                  "res\\refcrossred.bmp"
+IDB_REFCROSS_GREEN      BITMAP                  "res\\refcrossgreen.bmp"
+IDB_REFCROSS_BLUE       BITMAP                  "res\\refcrossblue.bmp"
+IDB_REFCROSS_YELLOW     BITMAP                  "res\\refcrossyellow.bmp"
+IDB_REFCROSS_CYAN       BITMAP                  "res\\refcrosscyan.bmp"
+IDB_REFCROSS_MAGENTA    BITMAP                  "res\\refcrossmagenta.bmp"
+IDB_CONTRAST            BITMAP                  "res\\contrast.bmp"
+IDR_MEDIUMTOOLBAR_MEASURES_SAT BITMAP                  "res\\tbmeasures_sat.bmp"
+IDB_MEDIUMTOOLBAR_MEAS_SAT_HICOL BITMAP                  "res\\medium_tb_measures_sat_hicol.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Toolbar
+//
+
+IDR_MAINFRAME TOOLBAR 16, 15
+BEGIN
+    BUTTON      ID_FILE_NEW
+    BUTTON      ID_FILE_OPEN
+    BUTTON      ID_FILE_SAVE
+    SEPARATOR
+    BUTTON      ID_EDIT_CUT
+    BUTTON      ID_EDIT_COPY
+    BUTTON      ID_EDIT_PASTE
+    SEPARATOR
+    BUTTON      ID_FILE_PRINT
+    SEPARATOR
+    BUTTON      ID_APP_ABOUT
+END
+
+IDR_MEDIUMTOOLBAR_VIEWS TOOLBAR 32, 32
+BEGIN
+    BUTTON      IDM_VIEW_DATASET
+    SEPARATOR
+    BUTTON      IDM_VIEW_LUMINANCEHISTO
+    BUTTON      IDM_VIEW_GAMMAHISTO
+    BUTTON      IDM_VIEW_RGBHISTO
+    BUTTON      IDM_VIEW_COLORTEMPHISTO
+    SEPARATOR
+    BUTTON      IDM_VIEW_CIECHART
+    SEPARATOR
+    BUTTON      IDM_VIEW_NEARBLACKHISTO
+    BUTTON      IDM_VIEW_NEARWHITEHISTO
+    SEPARATOR
+    BUTTON      IDM_VIEW_SATLUMHISTO
+    BUTTON      IDM_VIEW_SATLUMSHIFT
+    SEPARATOR
+    BUTTON      IDM_VIEW_MEASURESCOMBO
+END
+
+IDR_MEDIUMTOOLBAR_MAIN TOOLBAR 32, 32
+BEGIN
+    BUTTON      ID_FILE_NEW
+    BUTTON      ID_FILE_OPEN
+    BUTTON      ID_FILE_SAVE
+    SEPARATOR
+    BUTTON      ID_EDIT_CUT
+    BUTTON      ID_EDIT_COPY
+    BUTTON      ID_EDIT_PASTE
+    SEPARATOR
+    BUTTON      ID_FILE_PRINT
+    SEPARATOR
+    BUTTON      ID_APP_ABOUT
+END
+
+IDR_MEDIUMTOOLBAR_MEASURES TOOLBAR 32, 32
+BEGIN
+    BUTTON      IDM_MEASURE_GRAYSCALE
+    BUTTON      IDM_MEASURE_PRIMARIES
+    BUTTON      IDM_MEASURE_SECONDARIES
+    BUTTON      IDM_MEASURE_GRAYSCALE_COLORS
+    SEPARATOR
+    BUTTON      IDM_SINGLE_MEASUREMENT
+    BUTTON      IDM_CONTINUOUS_MEASUREMENT
+END
+
+IDR_MEDIUMTOOLBAR_MEASURES_EX TOOLBAR 32, 32
+BEGIN
+    BUTTON      IDM_MEASURE_NEARBLACK
+    BUTTON      IDM_MEASURE_NEARWHITE
+    SEPARATOR
+    BUTTON      IDM_MEASURE_SAT_PRIMARIES_SECONDARIES
+    BUTTON      IDM_MEASURE_SAT_ALL
+END
+
+IDR_MEDIUMTOOLBAR_MEASURES_SAT TOOLBAR 32, 32
+BEGIN
+    BUTTON      IDM_MEASURE_SAT_RED
+    BUTTON      IDM_MEASURE_SAT_GREEN
+    BUTTON      IDM_MEASURE_SAT_BLUE
+    BUTTON      IDM_MEASURE_SAT_YELLOW
+    BUTTON      IDM_MEASURE_SAT_CYAN
+    BUTTON      IDM_MEASURE_SAT_MAGENTA
+    BUTTON      IDM_MEASURE_SAT_CC24
+END
+
+
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -345,7 +501,8 @@ BEGIN
     CONTROL         "Standard d'encodage, Offset manuel :",IDC_GAMMA_OFFSET_RADIO4,
                     "Button",BS_AUTORADIOBUTTON,12,127,134,10,WS_EX_TRANSPARENT
     CONTROL         "ITU-R BT.1886",IDC_GAMMA_OFFSET_RADIO5,"Button",BS_AUTORADIOBUTTON,12,139,63,10,WS_EX_TRANSPARENT
-    CONTROL         "SMPTE 2084 HDR",IDC_GAMMA_OFFSET_RADIO6,"Button",BS_AUTORADIOBUTTON,12,152,72,10,WS_EX_TRANSPARENT
+    CONTROL         "SMPTE 2084 HDR",IDC_GAMMA_OFFSET_RADIO6,"Button",BS_AUTORADIOBUTTON,12,164,72,10,WS_EX_TRANSPARENT
+    CONTROL         "L*",IDC_GAMMA_OFFSET_RADIO7,"Button",BS_AUTORADIOBUTTON,174,163,23,10,WS_EX_TRANSPARENT
     GROUPBOX        "Calcul du Gamma",IDC_STATIC,7,81,198,97,WS_GROUP
     GROUPBOX        "Couleurs",IDC_STATIC,7,7,198,73,WS_GROUP
     LTEXT           "Standard:",IDC_STATIC,10,18,32,8
@@ -1214,75 +1371,6 @@ BEGIN
 END
 #endif    // APSTUDIO_INVOKED
 
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Bitmap
-//
-
-IDB_CAMERA_BITMAP       BITMAP                  "res\\camera_b.bmp"
-IDB_DELETE_BITMAP       BITMAP                  "res\\delete_b.bmp"
-IDB_MEDIUMTOOLBAR_MAIN_HICOL BITMAP                  "res\\medium_tb_main_hicol.bmp"
-IDB_MEDIUMTOOLBAR_VIEW_HICOL BITMAP                  "res\\medium_tb_views_hicol.bmp"
-IDB_MEDIUMTOOLBAR_MEASURE_HICOL BITMAP                  "res\\medium_tb_measures_hicol.bmp"
-IDB_MEDIUMTOOLBAR_MEAS_EX_HICOL BITMAP                  "res\\medium_tb_measures_ex_hicol.bmp"
-IDB_POINT_BITMAP        BITMAP                  "res\\target.bmp"
-IDB_REFBLUEPRIMARY_BITMAP BITMAP                  "res\\refblueprimary.bmp"
-IDB_REFGREENPRIMARY_BITMAP BITMAP                  "res\\refgreenprimary.bmp"
-IDB_REFREDPRIMARY_BITMAP BITMAP                  "res\\refredprimary.bmp"
-IDB_REFBLUESAT_BITMAP   BITMAP                  "res\\refbluesat.bmp"
-IDB_REFGREENSAT_BITMAP  BITMAP                  "res\\refgreensat.bmp"
-IDB_REFREDSAT_BITMAP    BITMAP                  "res\\refredsat.bmp"
-IDB_REFYELLOWSAT_BITMAP BITMAP                  "res\\refyellowsat.bmp"
-IDB_REFCYANSAT_BITMAP   BITMAP                  "res\\refcyansat.bmp"
-IDB_REFMAGENTASAT_BITMAP BITMAP                  "res\\refmagentasat.bmp"
-IDB_REFCC24SAT_BITMAP   BITMAP                  "res\\refcc24sat.bmp"
-IDB_ILLUMINANTPOINT_BITMAP BITMAP                  "res\\illuminantplot.bmp"
-IDB_COLORTEMPPOINT_BITMAP BITMAP                  "res\\colortempplot.bmp"
-IDB_BLUEPRIMARY_BITMAP  BITMAP                  "res\\blueprimary.bmp"
-IDB_GREENPRIMARY_BITMAP BITMAP                  "res\\greenprimary.bmp"
-IDB_YELLOWSECONDARY_BITMAP BITMAP                  "res\\yellowsecondary.bmp"
-IDB_MAGENTASECONDARY_BITMAP BITMAP                  "res\\magentasecondary.bmp"
-IDB_CYANSECONDARY_BITMAP BITMAP                  "res\\cyansecondary.bmp"
-IDB_REDPRIMARY_BITMAP   BITMAP                  "res\\redprimary.bmp"
-IDB_GRAYPLOT_BITMAP     BITMAP                  "res\\grayplot.bmp"
-IDB_MEASUREPLOT_BITMAP  BITMAP                  "res\\measureplot.bmp"
-IDB_SELECTEDPLOT_BITMAP BITMAP                  "res\\selectedplot.bmp"
-IDB_ANSICONTRAST_BITMAP BITMAP                  "res\\bitmap1.bmp"
-IDB_LOGO                BITMAP                  "res\\logo.bmp"
-IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
-IDR_MEDIUMTOOLBAR_VIEWS BITMAP                  "res\\medtoot.bmp"
-IDR_MEDIUMTOOLBAR_MAIN  BITMAP                  "res\\mediumto.bmp"
-IDB_REFYELLOWSECONDARY_BITMAP BITMAP                  "res\\refyellowsecondary.bmp"
-IDB_REFCYANSECONDARY_BITMAP BITMAP                  "res\\refcyansecondary.bmp"
-IDB_REFMAGENTASECONDARY_BITMAP BITMAP                  "res\\refmagentasecondary.bmp"
-IDB_SATRED              BITMAP                  "res\\satred.bmp"
-IDB_SATGREEN            BITMAP                  "res\\satgreen.bmp"
-IDB_SATBLUE             BITMAP                  "res\\satblue.bmp"
-IDB_SATYELLOW           BITMAP                  "res\\satyellow.bmp"
-IDB_SATCYAN             BITMAP                  "res\\satcyan.bmp"
-IDB_SATMAGENTA          BITMAP                  "res\\satmagenta.bmp"
-IDB_SATCC24             BITMAP                  "res\\sat_all.bmp"
-IDB_SATALL              BITMAP                  "res\\sat_all.bmp"
-IDR_MEDIUMTOOLBAR_MEASURES BITMAP                  "res\\tbmeasures.bmp"
-IDR_MEDIUMTOOLBAR_MEASURES_EX BITMAP                  "res\\tbmeasures_ex.bmp"
-IDB_NEARBLACK           BITMAP                  "res\\nearblack.bmp"
-IDB_NEARWHITE           BITMAP                  "res\\nearwhite.bmp"
-IDB_MEAS_PRIMARIES      BITMAP                  "res\\meas_p.bmp"
-IDB_MEAS_PRIM_SEC       BITMAP                  "res\\meas_ps.bmp"
-IDB_MEAS_PRIM_SEC_GRAYS BITMAP                  "res\\meas_psg.bmp"
-IDB_MEAS_GRAYS          BITMAP                  "res\\meas_g.bmp"
-IDB_MEAS_CONT           BITMAP                  "res\\meas_cont.bmp"
-IDB_MEAS_STOP           BITMAP                  "res\\meas_stop.bmp"
-IDB_REFCROSS_RED        BITMAP                  "res\\refcrossred.bmp"
-IDB_REFCROSS_GREEN      BITMAP                  "res\\refcrossgreen.bmp"
-IDB_REFCROSS_BLUE       BITMAP                  "res\\refcrossblue.bmp"
-IDB_REFCROSS_YELLOW     BITMAP                  "res\\refcrossyellow.bmp"
-IDB_REFCROSS_CYAN       BITMAP                  "res\\refcrosscyan.bmp"
-IDB_REFCROSS_MAGENTA    BITMAP                  "res\\refcrossmagenta.bmp"
-IDB_CONTRAST            BITMAP                  "res\\contrast.bmp"
-IDR_MEDIUMTOOLBAR_MEASURES_SAT BITMAP                  "res\\tbmeasures_sat.bmp"
-IDB_MEDIUMTOOLBAR_MEAS_SAT_HICOL BITMAP                  "res\\medium_tb_measures_sat_hicol.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2491,93 +2579,6 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Aide",                       IDM_HELP
     END
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Toolbar
-//
-
-IDR_MAINFRAME TOOLBAR 16, 15
-BEGIN
-    BUTTON      ID_FILE_NEW
-    BUTTON      ID_FILE_OPEN
-    BUTTON      ID_FILE_SAVE
-    SEPARATOR
-    BUTTON      ID_EDIT_CUT
-    BUTTON      ID_EDIT_COPY
-    BUTTON      ID_EDIT_PASTE
-    SEPARATOR
-    BUTTON      ID_FILE_PRINT
-    SEPARATOR
-    BUTTON      ID_APP_ABOUT
-END
-
-IDR_MEDIUMTOOLBAR_VIEWS TOOLBAR 32, 32
-BEGIN
-    BUTTON      IDM_VIEW_DATASET
-    SEPARATOR
-    BUTTON      IDM_VIEW_LUMINANCEHISTO
-    BUTTON      IDM_VIEW_GAMMAHISTO
-    BUTTON      IDM_VIEW_RGBHISTO
-    BUTTON      IDM_VIEW_COLORTEMPHISTO
-    SEPARATOR
-    BUTTON      IDM_VIEW_CIECHART
-    SEPARATOR
-    BUTTON      IDM_VIEW_NEARBLACKHISTO
-    BUTTON      IDM_VIEW_NEARWHITEHISTO
-    SEPARATOR
-    BUTTON      IDM_VIEW_SATLUMHISTO
-    BUTTON      IDM_VIEW_SATLUMSHIFT
-    SEPARATOR
-    BUTTON      IDM_VIEW_MEASURESCOMBO
-END
-
-IDR_MEDIUMTOOLBAR_MAIN TOOLBAR 32, 32
-BEGIN
-    BUTTON      ID_FILE_NEW
-    BUTTON      ID_FILE_OPEN
-    BUTTON      ID_FILE_SAVE
-    SEPARATOR
-    BUTTON      ID_EDIT_CUT
-    BUTTON      ID_EDIT_COPY
-    BUTTON      ID_EDIT_PASTE
-    SEPARATOR
-    BUTTON      ID_FILE_PRINT
-    SEPARATOR
-    BUTTON      ID_APP_ABOUT
-END
-
-IDR_MEDIUMTOOLBAR_MEASURES TOOLBAR 32, 32
-BEGIN
-    BUTTON      IDM_MEASURE_GRAYSCALE
-    BUTTON      IDM_MEASURE_PRIMARIES
-    BUTTON      IDM_MEASURE_SECONDARIES
-    BUTTON      IDM_MEASURE_GRAYSCALE_COLORS
-    SEPARATOR
-    BUTTON      IDM_SINGLE_MEASUREMENT
-    BUTTON      IDM_CONTINUOUS_MEASUREMENT
-END
-
-IDR_MEDIUMTOOLBAR_MEASURES_EX TOOLBAR 32, 32
-BEGIN
-    BUTTON      IDM_MEASURE_NEARBLACK
-    BUTTON      IDM_MEASURE_NEARWHITE
-    SEPARATOR
-    BUTTON      IDM_MEASURE_SAT_PRIMARIES_SECONDARIES
-    BUTTON      IDM_MEASURE_SAT_ALL
-END
-
-IDR_MEDIUMTOOLBAR_MEASURES_SAT TOOLBAR 32, 32
-BEGIN
-    BUTTON      IDM_MEASURE_SAT_RED
-    BUTTON      IDM_MEASURE_SAT_GREEN
-    BUTTON      IDM_MEASURE_SAT_BLUE
-    BUTTON      IDM_MEASURE_SAT_YELLOW
-    BUTTON      IDM_MEASURE_SAT_CYAN
-    BUTTON      IDM_MEASURE_SAT_MAGENTA
-    BUTTON      IDM_MEASURE_SAT_CC24
 END
 
 

@@ -137,7 +137,7 @@ void CGammaGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			double x, valx, valy;
 			x = ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown );
 			int mode = GetConfig()->m_GammaOffsetType;
-			if (GetConfig()->m_colorStandard == sRGB) mode = 6;
+			if (GetConfig()->m_colorStandard == sRGB) mode = 7;
 			if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
 			{
 				valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);

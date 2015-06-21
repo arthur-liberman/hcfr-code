@@ -313,7 +313,7 @@ bool CExport::Save()
 bool CExport::SavePDF()
 {
     HPDF_Doc  pdf;
-    HPDF_Font font,font2;
+    HPDF_Font font,font2,fontg;
     HPDF_Page page,page2;
     HPDF_Destination dst;
 	CString afileName = m_fileName;
@@ -386,6 +386,7 @@ bool CExport::SavePDF()
 	/* create default-font */
     font = HPDF_GetFont (pdf, "Helvetica-Oblique", NULL);
     font2 = HPDF_GetFont (pdf, "Helvetica", NULL);
+    fontg = HPDF_GetFont (pdf, "Symbol", NULL);
 //	HPDF_SetCompressionMode(pdf, HPDF_COMP_NONE);
 	HPDF_SetCompressionMode(pdf, HPDF_COMP_ALL);
 
@@ -536,7 +537,7 @@ bool CExport::SavePDF()
 	 dEc = cColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(1), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 	if (mColor.isValid())
 	 dEm = mColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(2), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
-	
+//	HPDF_Page_SetFontAndSize (page, fontg, 9);
 	sprintf(str,"Primary dE:     Red %.2f, Green %.2f, Blue %.2f",dEr,dEg,dEb);
 	HPDF_Page_ShowTextNextLine (page, str);
 	sprintf(str,"Secondary dE: Yellow %.2f, Cyan %.2f, Magenta %.2f",dEy,dEc,dEm);
@@ -1531,7 +1532,7 @@ bool CExport::SaveGrayScaleSheet()
     		CColor White = m_pDoc -> GetMeasure () -> GetGray ( size - 1 );
 	    	CColor Black = m_pDoc -> GetMeasure () -> GetGray ( 0 );
 			int mode = GetConfig()->m_GammaOffsetType;
-			if (GetConfig()->m_colorStandard == sRGB) mode = 6;
+			if (GetConfig()->m_colorStandard == sRGB) mode = 7;
 			if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
 			{
 				double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);

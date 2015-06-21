@@ -115,7 +115,7 @@ void CReferencesPropPage::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CReferencesPropPage, CPropertyPageWithHelp)
 	//{{AFX_MSG_MAP(CReferencesPropPage)
-    ON_CONTROL_RANGE(BN_CLICKED, IDC_GAMMA_OFFSET_RADIO1, IDC_GAMMA_OFFSET_RADIO6, OnControlClicked)
+    ON_CONTROL_RANGE(BN_CLICKED, IDC_GAMMA_OFFSET_RADIO1, IDC_GAMMA_OFFSET_RADIO7, OnControlClicked)
     ON_CONTROL_RANGE(CBN_SELCHANGE, IDC_WHITETARGET_COMBO, IDC_WHITETARGET_COMBO, OnControlClicked)
 	ON_BN_CLICKED(IDC_CHECK_COLORS, OnCheckColors)
 	ON_EN_CHANGE(IDC_EDIT_IRIS_TIME, OnChangeEditIrisTime)
@@ -196,6 +196,11 @@ BOOL CReferencesPropPage::OnApply()
         m_manualBluexedit.EnableWindow (FALSE);
         m_manualBlueyedit.EnableWindow (FALSE);
     }
+	if (GetConfig ()->m_GammaOffsetType >= 4)
+    {
+  	  m_GammaRefEdit.EnableWindow (FALSE);
+  	  m_eMeasuredGamma.EnableWindow (FALSE);
+    }
 	GetConfig()->ApplySettings(FALSE);
 	m_isModified=FALSE;
 	return CPropertyPageWithHelp::OnApply();
@@ -221,6 +226,7 @@ BOOL CReferencesPropPage::OnInitDialog()
 		GetDlgItem(IDC_GAMMA_OFFSET_RADIO4)->EnableWindow(FALSE);
 		GetDlgItem(IDC_GAMMA_OFFSET_RADIO5)->EnableWindow(FALSE);
 		GetDlgItem(IDC_GAMMA_OFFSET_RADIO6)->EnableWindow(FALSE);
+		GetDlgItem(IDC_GAMMA_OFFSET_RADIO7)->EnableWindow(FALSE);
 		m_GammaRefEdit.EnableWindow (FALSE);
 		m_eMeasuredGamma.EnableWindow (FALSE);
  		m_manualGOffset = 0.055;
@@ -330,6 +336,7 @@ void CReferencesPropPage::OnSelchangeColorrefCombo()
 		GetDlgItem(IDC_GAMMA_OFFSET_RADIO4)->EnableWindow(FALSE);
 		GetDlgItem(IDC_GAMMA_OFFSET_RADIO5)->EnableWindow(FALSE);
 		GetDlgItem(IDC_GAMMA_OFFSET_RADIO6)->EnableWindow(FALSE);
+		GetDlgItem(IDC_GAMMA_OFFSET_RADIO7)->EnableWindow(FALSE);
 		m_GammaRefEdit.EnableWindow (FALSE);
 		m_eMeasuredGamma.EnableWindow (FALSE);
  		m_manualGOffset = 0.055;
@@ -342,6 +349,7 @@ void CReferencesPropPage::OnSelchangeColorrefCombo()
 		GetDlgItem(IDC_GAMMA_OFFSET_RADIO4)->EnableWindow(TRUE);
 		GetDlgItem(IDC_GAMMA_OFFSET_RADIO5)->EnableWindow(TRUE);
 		GetDlgItem(IDC_GAMMA_OFFSET_RADIO6)->EnableWindow(TRUE);
+		GetDlgItem(IDC_GAMMA_OFFSET_RADIO7)->EnableWindow(TRUE);
 		m_GammaRefEdit.EnableWindow (TRUE);
 		m_eMeasuredGamma.EnableWindow (TRUE);
 		m_manualGOffset = 0.099;

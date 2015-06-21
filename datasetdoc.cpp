@@ -3697,7 +3697,7 @@ void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int Col
 				if ( lumlvl[i] > 0.0 )
 				{
 					int mode = GetConfig()->m_GammaOffsetType;
-					if (GetConfig()->m_colorStandard == sRGB) mode = 6;
+					if (GetConfig()->m_colorStandard == sRGB) mode = 7;
                     if (m_bBT1886 && !GetConfig()->m_useMeasuredGamma)
                         avg += log(getEOTF(valx[i], GetMeasure()->GetGray(Size -1), GetMeasure()->GetGray(0), GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(valx[i]);
                     else

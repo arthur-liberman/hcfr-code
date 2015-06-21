@@ -2723,6 +2723,13 @@ double getEOTF ( double valx, CColor White, CColor Black, double g_rel, double s
     }
     else
 		outL_sRGB = pow( ( valx + 0.055 ) / 1.055, 2.4 );
+//L*
+	double outL_lab,t;
+	t = 1.0 / 116. * (valx * 100. + 16);
+	if ( 29 * t > 6)
+		outL_lab = pow(t,3.0);
+	else
+		outL_lab = 3 * pow((6. / 29.),2) * (t - 4. / 29.);
 
 	offset = split / 100.0 * minL;
     double a = pow ( ( pow (maxL,1.0/exp0 ) - pow ( offset,1.0/exp0 ) ),exp0 );
@@ -2739,8 +2746,12 @@ double getEOTF ( double valx, CColor White, CColor Black, double g_rel, double s
 		case 5:
 		outL = pow(max(pow(valx,1.0 / m2) - c1,0) / (c2 - c3 * pow(valx, 1.0 / m2)), 1.0 / m1);
 		break;
-		case 6:
+		case 7:
 		outL = outL_sRGB;
+		break;
+		case 6:
+		outL = outL_lab;
+		break;
 	}
     
 	return outL;

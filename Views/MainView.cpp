@@ -1958,11 +1958,10 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						
 						if ( GetConfig ()->m_GammaOffsetType == 1 )
 							yblack = Black.GetY();
-//							yblack = GetDocument() -> GetMeasure () -> GetGray ( 0 ).GetY ();
 
 						x = ArrayIndexToGrayLevel ( nCol - 1, nGrayScaleSize, GetConfig () -> m_bUseRoundDown );
 						int mode = GetConfig()->m_GammaOffsetType;
-						if (GetConfig()->m_colorStandard == sRGB) mode = 6;
+						if (GetConfig()->m_colorStandard == sRGB) mode = 8;
 						if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
 						{
 							valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
@@ -2503,7 +2502,7 @@ void CMainView::UpdateGrid()
             		    CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
 	                	CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
 						int mode = GetConfig()->m_GammaOffsetType;
-						if (GetConfig()->m_colorStandard == sRGB) mode = 6;
+						if (GetConfig()->m_colorStandard == sRGB) mode = 7;
 						if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
 			            {
                             double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);

@@ -155,7 +155,7 @@ void CNearWhiteGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			double val=pow(valx,GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef) );
 
 			int mode = GetConfig()->m_GammaOffsetType;
-			if (GetConfig()->m_colorStandard == sRGB) mode = 6;
+			if (GetConfig()->m_colorStandard == sRGB) mode = 7;
 			if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
                 val = getEOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 			if(val > 0 && i != (size-1))	// log scale is not valid for last value

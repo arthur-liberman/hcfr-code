@@ -27,8 +27,8 @@
 
 
 /* The following tables gives the  spectral  chromaticity  co-ordinates
-   x(\lambda) and y(\lambda) for wavelengths in 5 nanometre increments
-   from 380 nm through  780  nm.   These  co-ordinates  represent  the
+   x(\lambda) and y(\lambda) for wavelengths in 2 nanometre increments
+   from 390 nm through  730  nm.   These  co-ordinates  represent  the
    position in the CIE x-y space of pure spectral colours of the given
    wavelength, and  thus  define  the  outline  of  the  CIE  "tongue"
    diagram. 
@@ -37,90 +37,433 @@
 // The following table gives coordinates for the left side of the "tongue",
 // in top to bottom order (wavelengths in reverse order)
 
-static double spectral_chromaticity_left[][2] = {
-    { 0.0743, 0.8338 },
-    { 0.0566, 0.8280 },	// Added for smoothing
-    { 0.0389, 0.8120 },
-    { 0.0250, 0.7830 },	// Added for smoothing
-    { 0.0139, 0.7502 },
-    { 0.0039, 0.6548 },
-    { 0.0082, 0.5384 },
-    { 0.0235, 0.4127 },
-    { 0.0454, 0.2950 },
-    { 0.0687, 0.2007 },
-    { 0.0913, 0.1327 },
-    { 0.1096, 0.0868 },
-    { 0.1241, 0.0578 },
-    { 0.1355, 0.0399 },
-    { 0.1440, 0.0297 },
-    { 0.1510, 0.0227 },
-    { 0.1566, 0.0177 },
-    { 0.1611, 0.0138 },
-    { 0.1644, 0.0109 },
-    { 0.1669, 0.0086 },
-    { 0.1689, 0.0069 },
-    { 0.1703, 0.0058 },
-    { 0.1714, 0.0051 },
-    { 0.1721, 0.0048 },
-    { 0.1726, 0.0048 },
-    { 0.1730, 0.0048 },
-    { 0.1733, 0.0048 },
-    { 0.1736, 0.0049 },
-    { 0.1738, 0.0049 },
-    { 0.1740, 0.0050 },
-    { 0.1741, 0.0050 }			/* 380 nm */
+	static double spectral_chromaticity_left[][2] = {
+{0.093218329	,0.840634868},
+{0.078823221	,0.839593793},
+{0.064847649	,0.834844596},
+{0.050622056	,0.826919712},
+{0.036449887	,0.814976286},
+{0.023816396	,0.796175656},
+{0.014239761	,0.767706546},
+{0.008018852	,0.730183784},
+{0.004712871	,0.686564943},
+{0.003636384	,0.639843022},
+{0.004182885	,0.591944317},
+{0.005959173	,0.544243383},
+{0.009334011	,0.496734903},
+{0.014769904	,0.449089257},
+{0.022216179	,0.401746848},
+{0.031165264	,0.355795702},
+{0.041078948	,0.312238568},
+{0.051378322	,0.272120993},
+{0.061549512	,0.236151406},
+{0.071302106	,0.204289027},
+{0.080550481	,0.176011212},
+{0.089227357	,0.1509709},
+{0.097151483	,0.129303861},
+{0.104183936	,0.11102652},
+{0.110341629	,0.095819734},
+{0.113128382	,0.089215517},
+{0.115738496	,0.083202675},
+{0.118182545	,0.077730205},
+{0.120464544	,0.072751119},
+{0.122587967	,0.068221918},
+{0.124557872	,0.064102932},
+{0.126380084	,0.060357853},
+{0.12806521		,0.056950567},
+{0.129638308	,0.053837252},
+{0.131124358	,0.050977268},
+{0.132544347	,0.048335457},
+{0.133915997	,0.04588143},
+{0.135248912	,0.04359107},
+{0.136532209	,0.041451621},
+{0.137752788	,0.039453189},
+{0.138900812	,0.037586433},
+{0.139968517	,0.035842464},
+{0.140952976	,0.03421536},
+{0.141862327	,0.03270865},
+{0.14270621		,0.031326817},
+{0.143493342	,0.030073028},
+{0.144231808	,0.028949585},
+{0.144929517	,0.027953136},
+{0.145596337	,0.027061169},
+{0.146871401	,0.025495361},
+{0.148109762	,0.02409121},
+{0.149294066	,0.022816033},
+{0.150364736	,0.021733604},
+{0.151312575	,0.020862901},
+{0.152252746	,0.020081999},
+{0.153291995	,0.019260827},
+{0.154387884	,0.018414805},
+{0.15540432		,0.017674755},
+{0.156278749	,0.017122691},
+{0.15709108		,0.016709427},
+{0.157928892	,0.016366787},
+{0.158785171	,0.0160827},
+{0.159581463	,0.015892612},
+{0.160275124	,0.015823429},
+{0.160927679	,0.015872262},
+{0.161617352	,0.016031261},
+{0.162331252	,0.016268958},
+{0.162957957	,0.016525218},
+{0.163409927	,0.016757637},
+{0.163758875	,0.017018069},
+{0.164122434	,0.017383199},
+{0.16454698		,0.017839402},
+{0.164994968	,0.018272109},
+{0.165419824	,0.018574175},
+{0.165792139	,0.018723341},
+{0.166089132	,0.018722584},
+{0.1662905		,0.018578286},
+{0.166379917	,0.018299802}
 };
 
 // The following table gives coordinates for the right side of the "tongue",
 // in top to bottom order (wavelengths in ascending order) 
 // The ending chromaticity is 380 nm to add the closing segment
 
-static double spectral_chromaticity_right[][2] = {
-    { 0.0743, 0.8338 },
-    { 0.0943, 0.8310 },
-    { 0.1142, 0.8262 },
-    { 0.1547, 0.8059 },
-    { 0.1929, 0.7816 },
-    { 0.2296, 0.7543 },
-    { 0.2658, 0.7243 },
-    { 0.3016, 0.6923 },
-    { 0.3373, 0.6589 },
-    { 0.3731, 0.6245 },
-    { 0.4087, 0.5896 },
-    { 0.4441, 0.5547 },
-    { 0.4788, 0.5202 },
-    { 0.5125, 0.4866 },
-    { 0.5448, 0.4544 },
-    { 0.5752, 0.4242 },
-    { 0.6029, 0.3965 },
-    { 0.6270, 0.3725 },
-    { 0.6482, 0.3514 },
-    { 0.6658, 0.3340 },
-    { 0.6801, 0.3197 },
-    { 0.6915, 0.3083 },
-    { 0.7006, 0.2993 },
-    { 0.7079, 0.2920 },
-    { 0.7140, 0.2859 },
-    { 0.7190, 0.2809 },
-    { 0.7230, 0.2770 },
-    { 0.7260, 0.2740 },
-    { 0.7283, 0.2717 },
-    { 0.7300, 0.2700 },
-    { 0.7311, 0.2689 },
-    { 0.7320, 0.2680 },
-    { 0.7327, 0.2673 },
-    { 0.7334, 0.2666 },
-    { 0.7340, 0.2660 },
-    { 0.7344, 0.2656 },
-    { 0.7346, 0.2654 },
-    { 0.7347, 0.2653 },         /* 730 nm */
-    { 0.1741, 0.0050 }			/* 380 nm */
+	static double spectral_chromaticity_right[][2] = {
+		{0.093218329	,0.840634868},
+{0.108493722	,0.837860868},
+{0.124307396	,0.832205673},
+{0.140198493	,0.824632547},
+{0.155817794	,0.815798889},
+{0.17090499		,0.806174854},
+{0.185364306	,0.796087208},
+{0.19958013		,0.785422478},
+{0.213991019	,0.773942797},
+{0.228623268	,0.761716575},
+{0.243156313	,0.749115666},
+{0.257358021	,0.736442234},
+{0.27124628		,0.723763549},
+{0.284889639	,0.711081861},
+{0.298335897	,0.69840766},
+{0.311614271	,0.685757659},
+{0.324812475	,0.673074222},
+{0.338247883	,0.660055239},
+{0.352216419	,0.646418801},
+{0.366525565	,0.632373878},
+{0.380605859	,0.618505495},
+{0.394158043	,0.605124316},
+{0.407630299	,0.591789991},
+{0.421521831	,0.57800948},
+{0.435794845	,0.563825653},
+{0.442933937	,0.556724311},
+{0.450007566	,0.549684489},
+{0.456983652	,0.542738676},
+{0.463877351	,0.535872074},
+{0.470712399	,0.529061271},
+{0.477509187	,0.522286168},
+{0.484285069	,0.515529674},
+{0.491052797	,0.508779294},
+{0.497815994	,0.502031686},
+{0.504575199	,0.495286559},
+{0.511329862	,0.488544668},
+{0.51807818		,0.481807986},
+{0.524805256	,0.475091535},
+{0.531450328	,0.468456123},
+{0.537949995	,0.461965192},
+{0.544250552	,0.455672498},
+{0.550306492	,0.449623606},
+{0.55609666		,0.443839738},
+{0.561666785	,0.438275255},
+{0.567071761	,0.432875346},
+{0.572359445	,0.427592226},
+{0.577570845	,0.422384946},
+{0.582731307	,0.417228213},
+{0.587825003	,0.412137892},
+{0.597722921	,0.402245801},
+{0.607123765	,0.392849743},
+{0.616036566	,0.383940891},
+{0.624568961	,0.375411778},
+{0.632758187	,0.367225292},
+{0.640464948	,0.35952081},
+{0.647561918	,0.35242573},
+{0.654046555	,0.345942663},
+{0.659998796	,0.339991737},
+{0.665484535	,0.334507109},
+{0.670547164	,0.329445418},
+{0.675227828	,0.324772172},
+{0.679581652	,0.320418348},
+{0.683693376	,0.316306624},
+{0.687582753	,0.312417247},
+{0.691109932	,0.308890068},
+{0.694148589	,0.305851411},
+{0.696746634	,0.303253366},
+{0.6990722		,0.3009278},
+{0.701244482	,0.298755518},
+{0.703285547	,0.296714453},
+{0.705198924	,0.294801076},
+{0.707032743	,0.292967257},
+{0.708866844	,0.291133156},
+{0.710708309	,0.289291691},
+{0.712355107	,0.287644893},
+{0.713613015	,0.286386985},
+{0.714517247	,0.285482753},
+{0.715279392	,0.284720608},
+{0.716054852	,0.283945148},
+{0.716849228	,0.283150772},
+{0.71763598		,0.28236402},
+{0.718395912	,0.281604088},
+{0.719116083	,0.280883917},
+{0.719781999	,0.280218001},
+{0.720366876	,0.279633124},
+{0.720844947	,0.279155053},
+{0.721224073	,0.278775927},
+{0.721540928	,0.278459072},
+{0.721824346	,0.278175654},
+{0.722077302	,0.277922698},
+{0.722296914	,0.277703086},
+{0.722484777	,0.277515223},
+{0.722646848	,0.277353152},
+{0.722787641	,0.277212359},
+{0.722906468	,0.277093532},
+{0.723001878	,0.276998122},
+{0.723077863	,0.276922137},
+{0.72314318		,0.27685682},
+{0.723204058	,0.276795942},
+{0.723253465	,0.276746535},
+{0.723281713	,0.276718287},
+{0.723290142	,0.276709858},
+{0.723290807	,0.276709193},
+{0.723293119	,0.276706881},
+{0.723293926	,0.276706074},
+{0.723286857	,0.276713143},
+{0.723266781	,0.276733219},
+{0.723230051	,0.276769949},
+{0.723175196	,0.276824804},
+{0.72311015		,0.27688985},
+{0.72304532		,0.27695468},
+{0.722982798	,0.277017202},
+{0.722917252	,0.277082748},
+{0.722843771	,0.277156229},
+{0.722763819	,0.277236181},
+{0.722679947	,0.277320053},
+{0.72259418		,0.27740582},
+{0.722507438	,0.277492562}, 
+{0.166379917	,0.018299802} //close polygon
 };
+
 
 // The following table gives coordinates for the left side of the CIE u'v' diagram,
 // in top to bottom order (wavelengths in reverse order)
 
 static double spectral_chromaticity_uv_left[][2] = {
+	{0.028902261	,0.58643572},
+{0.024408236	,0.584970496},
+{0.020125834	,0.58297214},
+{0.015792505	,0.580439704},
+{0.011474122	,0.577232469},
+{0.007617301	,0.572949681},
+{0.004674906	,0.567084657},
+{0.002730713	,0.55947218},
+{0.001678768	,0.550261816},
+{0.00136311		,0.539656232},
+{0.001657414	,0.527738165},
+{0.002504117	,0.514569733},
+{0.004175287	,0.499948415},
+{0.007067336	,0.483496404},
+{0.011427297	,0.464953098},
+{0.017296696	,0.444299224},
+{0.024654624	,0.421646141},
+{0.033347956	,0.397405491},
+{0.043111576	,0.372170839},
+{0.05372306		,0.346326673},
+{0.065077709	,0.319953577},
+{0.077033094	,0.293261515},
+{0.089184143	,0.267074374},
+{0.101052561	,0.242301336},
+{0.112331195	,0.219481777},
+{0.117709352	,0.208863383},
+{0.122898726	,0.198787629},
+{0.127889438	,0.189257748},
+{0.132667122	,0.180271164},
+{0.137219432	,0.171820199},
+{0.141538234	,0.163893981},
+{0.145618717	,0.156478566},
+{0.149465868	,0.149551727},
+{0.153111422	,0.143067055},
+{0.156590775	,0.136975179},
+{0.159935897	,0.131229988},
+{0.163175623	,0.12578889},
+{0.166327393	,0.120617423},
+{0.169376148	,0.115702083},
+{0.172302298	,0.111033825},
+{0.175090452	,0.106603461},
+{0.177728065	,0.102401432},
+{0.18020769		,0.098424384},
+{0.182531238	,0.094692428},
+{0.18470251		,0.091228117},
+{0.18672543		,0.088050413},
+{0.188604174	,0.085175583},
+{0.190347433	,0.082604409},
+{0.191982004	,0.080285874},
+{0.195035292	,0.076176259},
+{0.197949814	,0.072445689},
+{0.200717736	,0.069018555},
+{0.203190525	,0.066080258},
+{0.205327614	,0.063698552},
+{0.207395009	,0.06154923},
+{0.209662626	,0.059273284},
+{0.212056567	,0.056909943},
+{0.214255595	,0.05482833},
+{0.216084829	,0.053269532},
+{0.217703488	,0.052102425},
+{0.219304285	,0.051136556},
+{0.220886072	,0.050338453},
+{0.222293257	,0.049810585},
+{0.223432054	,0.04963208},
+{0.224397989	,0.049797731},
+{0.225318148	,0.050287307},
+{0.226201117	,0.051007597},
+{0.226930388	,0.051778181},
+{0.227410543	,0.052471979},
+{0.227703865	,0.05324249},
+{0.227919849	,0.054315828},
+{0.228143065	,0.05565192},
+{0.228424012	,0.056917032},
+{0.228792445	,0.057802441},
+{0.229224539	,0.058245589},
+{0.22968304		,0.058255379},
+{0.230131319	,0.057849079},
+{0.230535872	,0.057051427}
+};
+
+// The following table gives coordinates for the right side of the CIE u'v' diagram,
+// in top to bottom order (wavelengths in ascending order) 
+// The ending chromaticity is 380 nm to add the closing segment
+
+static double spectral_chromaticity_uv_right[][2] = {
+{0.028902261	,0.58643572},
+{0.033805663	,0.587407209},
+{0.039035587	,0.587999476},
+{0.044453854	,0.588313836},
+{0.049949801	,0.58841311},
+{0.055433343	,0.588339611},
+{0.060863395	,0.588129857},
+{0.06638338		,0.587797731},
+{0.072176418	,0.587342141},
+{0.078273174	,0.586770728},
+{0.084553497	,0.586107696},
+{0.090918422	,0.585376637},
+{0.097372095	,0.584588068},
+{0.103943943	,0.583746987},
+{0.110656457	,0.582857997},
+{0.117525282	,0.581925178},
+{0.124601208	,0.580945011},
+{0.132074333	,0.579890692},
+{0.140149483	,0.578733202},
+{0.14876078		,0.577484877},
+{0.157586835	,0.576196403},
+{0.166431218	,0.574898958},
+{0.175585041	,0.573549876},
+{0.185425528	,0.572093392},
+{0.195987973	,0.570525002},
+{0.201452101	,0.56971224},
+{0.20699047		,0.568887689},
+{0.212577805	,0.568055204},
+{0.218225644	,0.567213108},
+{0.223953856	,0.566358465},
+{0.229781189	,0.565488507},
+{0.235725326	,0.564600623},
+{0.24180127		,0.563692603},
+{0.248016741	,0.562763339},
+{0.254377042	,0.561812081},
+{0.260886699	,0.560838188},
+{0.267549178	,0.559841169},
+{0.274354615	,0.558822528},
+{0.281243743	,0.557791161},
+{0.288148302	,0.556757311},
+{0.295003983	,0.555730633},
+{0.301749843	,0.554720275},
+{0.308348011	,0.553731928},
+{0.314836987	,0.552759832},
+{0.321270706	,0.551795909},
+{0.327699784	,0.550832581},
+{0.334170948	,0.549862848},
+{0.340714985	,0.548882102},
+{0.34731143		,0.54789342},
+{0.360535373	,0.545911204},
+{0.373617534	,0.543950033},
+{0.386519557	,0.542015702},
+{0.399353316	,0.540091461},
+{0.412140633	,0.538174063},
+{0.424618596	,0.536302962},
+{0.436510659	,0.534519654},
+{0.447730316	,0.532837131},
+{0.458340196	,0.531246012},
+{0.468394104	,0.529738238},
+{0.477916758	,0.528310107},
+{0.486930526	,0.526960421},
+{0.495515409	,0.525672689},
+{0.50379993		,0.52443001},
+{0.511799805	,0.523230029},
+{0.51919617		,0.522120575},
+{0.525679012	,0.521148148},
+{0.531305213	,0.520304218},
+{0.53640794		,0.519538809},
+{0.541232246	,0.518815163},
+{0.545817019	,0.518127447},
+{0.550161377	,0.517475793},
+{0.554367914	,0.516844813},
+{0.55861766		,0.516207351},
+{0.562927947	,0.515560808},
+{0.566820025	,0.514976996},
+{0.569817129	,0.514527431},
+{0.57198461		,0.514202309},
+{0.573820051	,0.513926992},
+{0.57569564		,0.513645654},
+{0.577625484	,0.513356177},
+{0.579545351	,0.513068197},
+{0.581407892	,0.512788816},
+{0.583180399	,0.51252294},
+{0.584825832	,0.512276125},
+{0.586276173	,0.512058574},
+{0.587465258	,0.511880211},
+{0.588410548	,0.511738418},
+{0.589202148	,0.511619678},
+{0.589911427	,0.511513286},
+{0.590545444	,0.511418183},
+{0.591096632	,0.511335505},
+{0.591568687	,0.511264697},
+{0.591976341	,0.511203549},
+{0.592330782	,0.511150383},
+{0.592630147	,0.511105478},
+{0.592870663	,0.5110694},
+{0.593062307	,0.511040654},
+{0.593227112	,0.511015933},
+{0.593380773	,0.510992884},
+{0.593505519	,0.510974172},
+{0.593576857	,0.510963471},
+{0.593598145	,0.510960278},
+{0.593599826	,0.510960026},
+{0.593605665	,0.51095915},
+{0.593607704	,0.510958844},
+{0.593589849	,0.510961523},
+{0.593539145	,0.510969128},
+{0.593446397	,0.51098304},
+{0.593307916	,0.511003813},
+{0.593143765	,0.511028435},
+{0.59298022		,0.511052967},
+{0.592822555	,0.511076617},
+{0.592657326	,0.511101401},
+{0.592472165	,0.511129175},
+{0.592270789	,0.511159382},
+{0.59205964		,0.511191054},
+{0.591843822	,0.511223427},
+{0.591625663	,0.511256151},
+{0.230535872	,0.057051427},
+{0.230131319	,0.057849079},
+{0.22968304		,0.058255379}
+//{0.229224539	,0.058245589},
+//{0.228792445	,0.057802441},
+//{0.228424012	,0.056917032}
+};
+
+// The following table gives coordinates for the left side of the CIE a*b* diagram,
+// in top to bottom order (wavelengths in reverse order)
+
+static double spectral_chromaticity_ab_left[][2] = {
 	{ 0.0501, 0.5868 },
 	{ 0.0360, 0.5861 },
 	{ 0.0231, 0.5837 },
@@ -158,7 +501,7 @@ static double spectral_chromaticity_uv_left[][2] = {
 // in top to bottom order (wavelengths in ascending order) 
 // The ending chromaticity is 380 nm to add the closing segment
 
-static double spectral_chromaticity_uv_right[][2] = {
+static double spectral_chromaticity_ab_right[][2] = {
 	{ 0.0501, 0.5868 },
 	{ 0.0643, 0.5865 },
 	{ 0.0792, 0.5856 },
@@ -310,7 +653,7 @@ struct Elem_Bres
 // This algorythm is efficient with this simple shape, even when number of vertex is
 // very high. Pixel color is computed to match CIE diagram.
 
-void DrawCIEChart(CDC* pDC, int cxMax, int cyMax, BOOL doFullChart, BOOL doShowBlack, BOOL bCIEuv ) 
+void DrawCIEChart(CDC* pDC, int cxMax, int cyMax, BOOL doFullChart, BOOL doShowBlack, BOOL bCIEuv, BOOL bCIEab ) 
 {
 	int			i, j, k, l;
 	int			MinY, MaxY;
@@ -337,18 +680,19 @@ void DrawCIEChart(CDC* pDC, int cxMax, int cyMax, BOOL doFullChart, BOOL doShowB
 	double		squared_white_ray = 0.02;	// defines a diffusion zone around white point, to make it esthetically visible
 	double		xCie, yCie, zCie, yCieLine;
 	double		uCie, vCie;
+//	double		aCie, bCie;
 	double		val_r, val_g, val_b;
 	double		val_min, val_max;
 	int			nCurrentPoint [ 2 ];	// Index 0 is left side of the tongue, Index 1 is right side
 	int			nbptShape [ 2 ];		// Index 0 is left side of the tongue, Index 1 is right side
-	POINT		ptShape [ 2 ] [ 128 ];	// Index 0 is left side of the tongue, Index 1 is right side
+	POINT		ptShape [ 2 ] [ 256 ];	// Index 0 is left side of the tongue, Index 1 is right side
 	Elem_Bres	TB [ 2 ];				// Index 0 is left side of the tongue, Index 1 is right side
 	double		(*pLeft) [2];
 	double		(*pRight) [2];
 
 	// Beautifying: something between 1 and 1/2.2 is fine. 
 	// Value 1 make primary colors larger than secondary, 1/2.2 makes large secondaries and reduces primaries 
-	const double gamma = 1.0 / 1.5;
+	const double gamma = 1.0 / 2.2;
 
 	// Variables for CIExy to rgb conversion
     CColor	WhiteReference = GetColorReference().GetWhite();
@@ -356,18 +700,6 @@ void DrawCIEChart(CDC* pDC, int cxMax, int cyMax, BOOL doFullChart, BOOL doShowB
 	CColor	GreenReference = GetColorReference().GetGreen();
 	CColor	BlueReference = GetColorReference().GetBlue();
 
-/*	const double xr = RedReference.GetxyYValue()[0];
-	const double yr = RedReference.GetxyYValue()[1];
-	const double zr = 1 - (xr + yr);
-
-    const double xg = GreenReference.GetxyYValue()[0];
-	const double yg = GreenReference.GetxyYValue()[1];
-	const double zg = 1 - (xg + yg);
-
-    const double xb = BlueReference.GetxyYValue()[0];
-	const double yb = BlueReference.GetxyYValue()[1];
-	const double zb = 1 - (xb + yb);
-*/
 	const double xr = 0.6400;
 	const double yr = 0.3300;
 	const double zr = 1 - (xr + yr);
@@ -412,7 +744,15 @@ void DrawCIEChart(CDC* pDC, int cxMax, int cyMax, BOOL doFullChart, BOOL doShowB
 	by = by / bw;
 	bz = bz / bw;
 
-	if ( bCIEuv )
+	if ( bCIEab )
+	{
+		NbLeftPoints = sizeof ( spectral_chromaticity_ab_left ) / sizeof ( spectral_chromaticity_ab_left [ 0 ] );
+		pLeft = spectral_chromaticity_ab_left;
+
+		NbRightPoints = sizeof ( spectral_chromaticity_ab_right ) / sizeof ( spectral_chromaticity_ab_right [ 0 ] );
+		pRight = spectral_chromaticity_ab_right;
+	}
+	else if ( bCIEuv )
 	{
 		NbLeftPoints = sizeof ( spectral_chromaticity_uv_left ) / sizeof ( spectral_chromaticity_uv_left [ 0 ] );
 		pLeft = spectral_chromaticity_uv_left;
@@ -444,6 +784,30 @@ void DrawCIEChart(CDC* pDC, int cxMax, int cyMax, BOOL doFullChart, BOOL doShowB
 		if ( nbptShape [ 0 ] == 0 || ptShape [ 0 ] [ nbptShape [ 0 ] ].y > ptShape [ 0 ] [ nbptShape [ 0 ] - 1 ].y )
 		{
 			// Accept this point
+			if ((i*2 % 20) == 0)
+			{
+				CRect rect;
+				pDC->SetTextAlign(TA_BOTTOM);
+				pDC->SetBkMode(TRANSPARENT);
+
+				// Initializes a CFont object with the specified characteristics. 
+				CFont font;
+				font.CreatePointFont(130,_T("Arial"),NULL);
+				CFont* pOldFont = pDC->SelectObject(&font);
+
+				if (520 - i*2 >= 520)
+					rect = CRect(ptShape[0][nbptShape[0]].x,ptShape[0][nbptShape[0]].y-50,ptShape[0][nbptShape[0]].x+40,ptShape[0][nbptShape[0]].y-10);
+				else
+					rect = CRect(ptShape[0][nbptShape[0]].x-50,ptShape[0][nbptShape[0]].y,ptShape[0][nbptShape[0]].x,ptShape[0][nbptShape[0]].y+50);
+
+				CString szText;
+				szText.Format("%d nm",520 - i*2);
+				pDC->SetTextColor(RGB(255,167,0));
+				pDC->SetBkColor(RGB(0,0,0));
+				if (520 - i*2 != 500)
+					pDC->TextOutA(rect.left,rect.bottom,szText);
+				pDC->SelectObject(pOldFont);
+			}
 			nbptShape [ 0 ] ++;
 		}
 	}
@@ -461,6 +825,24 @@ void DrawCIEChart(CDC* pDC, int cxMax, int cyMax, BOOL doFullChart, BOOL doShowB
 		
 		if ( nbptShape [ 1 ] == 0 || ptShape [ 1 ] [ nbptShape [ 1 ] ].y > ptShape [ 1 ] [ nbptShape [ 1 ] - 1 ].y )
 		{
+			// 2nm increments label every 10nm mod(i*2 /10) = 0
+			if ((i*2 % 20) == 0)
+			{
+				CRect rect(ptShape[1][nbptShape[1]].x,ptShape[1][nbptShape[1]].y-50,ptShape[1][nbptShape[1]].x+40,ptShape[1][nbptShape[1]].y-10);
+				pDC->SetTextAlign(TA_BOTTOM);
+				pDC->SetBkMode(TRANSPARENT);
+
+				// Initializes a CFont object with the specified characteristics. 
+				CFont font;
+				font.CreatePointFont(120,_T("Arial"),NULL);
+				CFont* pOldFont = pDC->SelectObject(&font);
+				CString szText;
+				szText.Format("%d nm",i*2 + 520);
+				pDC->SetTextColor(RGB(255,167,0));
+				pDC->SetBkColor(RGB(0,0,0));
+				pDC->TextOutA(rect.left,rect.bottom,szText);
+				pDC->SelectObject(pOldFont);
+			}
 			// Accept this point
 			nbptShape [ 1 ] ++;
 		}
@@ -918,6 +1300,19 @@ void DrawCIEChart(CDC* pDC, int cxMax, int cyMax, BOOL doFullChart, BOOL doShowB
 		// Draw black body curve on CIE diagram
 		DrawBlackBodyCurve ( pDC, cxMax, cyMax, doFullChart, bCIEuv );
 	}
+
+	CPen bbcPen ( PS_SOLID, 4, ( doFullChart ? RGB(0,0,0) : RGB(255,167,0) ) );
+	CPen * pOldPen = pDC -> SelectObject ( & bbcPen );
+	pDC -> MoveTo(ptShape[0][0].x,ptShape[0][0].y);
+	for (i = 1; i < nbptShape[0]; i++)
+			pDC -> LineTo ( ptShape[0][i].x,ptShape[0][i].y );
+
+	pDC -> MoveTo(ptShape[1][0].x,ptShape[1][0].y);
+	for (i = 1; i < nbptShape[1]; i++)
+			pDC -> LineTo ( ptShape[1][i].x,ptShape[1][i].y );
+
+	pDC -> LineTo ( ptShape[0][nbptShape[0]-1].x,ptShape[0][nbptShape[0]-1].y );
+	pDC -> SelectObject ( pOldPen );
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -925,7 +1320,7 @@ void DrawCIEChart(CDC* pDC, int cxMax, int cyMax, BOOL doFullChart, BOOL doShowB
 // It draws a white surrounding around CIE tongue.
 // The algorythm is very similar to DrawCIEChart, to draw the outside of the same figure
 
-void DrawCIEChartWhiteSurrounding(CDC* pDC, int cxMax, int cyMax, BOOL bCIEuv ) 
+void DrawCIEChartWhiteSurrounding(CDC* pDC, int cxMax, int cyMax, BOOL bCIEuv, BOOL bCIEab ) 
 {
 	int			i, j;
 	int			MinY, MaxY;
@@ -1406,6 +1801,86 @@ void DrawCIEChartWhiteSurrounding(CDC* pDC, int cxMax, int cyMax, BOOL bCIEuv )
 	}
 
 	pDC -> SelectObject ( pOldPen );
+
+	nbptShape [ 0 ] = 0;
+	for ( i = 0; i < NbLeftPoints ; i ++ )
+	{
+		// Get CIExy or CIE u'v' coordinates and convert it in pixel coordinates in (0,0) (cxMax,cyMax)
+		// Note: max CIExy coordinates are (0.8, 0.9), max CIEuv are (0.7, 0.7)
+		xCie = pLeft [ i ] [ 0 ];
+		yCie = pLeft [ i ] [ 1 ];
+
+		ptShape [ 0 ] [ nbptShape [ 0 ] ].x = (int) ( ( xCie / (bCIEuv ? 0.7 : 0.8) ) * (double) cxMax );
+		ptShape [ 0 ] [ nbptShape [ 0 ] ].y = (int) ( ( 1.0 - ( yCie / (bCIEuv ? 0.7 : 0.9) ) ) * (double) cyMax );
+
+		if ( nbptShape [ 0 ] == 0 || ptShape [ 0 ] [ nbptShape [ 0 ] ].y > ptShape [ 0 ] [ nbptShape [ 0 ] - 1 ].y )
+		{
+			// Accept this point
+			if ((i*2 % 20) == 0)
+			{
+				CRect rect;
+				pDC->SetTextAlign(TA_BOTTOM);
+				pDC->SetBkMode(TRANSPARENT);
+
+				// Initializes a CFont object with the specified characteristics. 
+				CFont font;
+				font.CreatePointFont(130,_T("Arial"),NULL);
+				CFont* pOldFont = pDC->SelectObject(&font);
+
+				if (520 - i*2 >= 520)
+					rect = CRect(ptShape[0][nbptShape[0]].x,ptShape[0][nbptShape[0]].y-50,ptShape[0][nbptShape[0]].x+40,ptShape[0][nbptShape[0]].y-10);
+				else
+					rect = CRect(ptShape[0][nbptShape[0]].x-50,ptShape[0][nbptShape[0]].y,ptShape[0][nbptShape[0]].x,ptShape[0][nbptShape[0]].y+50);
+
+				CString szText;
+				if (520 - i*2 != 520)
+					szText.Format("%d nm",520 - i*2);
+				pDC->SetTextColor(RGB(10,10,200));
+				pDC->SetBkColor(RGB(0,0,0));
+				if (520 - i*2 != 500)
+					pDC->TextOutA(rect.left,rect.bottom,szText);
+				pDC->SelectObject(pOldFont);
+			}
+			nbptShape [ 0 ] ++;
+		}
+	}
+
+	nbptShape [ 1 ] = 0;
+	for ( i = 0; i < NbRightPoints ; i ++ )
+	{
+		// Get CIExy or CIE u'v' coordinates and convert it in pixel coordinates in (0,0) (cxMax,cyMax)
+		// Note: max CIExy coordinates are (0.8, 0.9)
+		xCie = pRight [ i ] [ 0 ];
+		yCie = pRight [ i ] [ 1 ];
+
+		ptShape [ 1 ] [ nbptShape [ 1 ] ].x = (int) ( ( xCie / (bCIEuv ? 0.7 : 0.8) ) * (double) cxMax );
+		ptShape [ 1 ] [ nbptShape [ 1 ] ].y = (int) ( ( 1.0 - ( yCie / (bCIEuv ? 0.7 : 0.9) ) ) * (double) cyMax );
+		
+		if ( nbptShape [ 1 ] == 0 || ptShape [ 1 ] [ nbptShape [ 1 ] ].y > ptShape [ 1 ] [ nbptShape [ 1 ] - 1 ].y )
+		{
+			// 2nm increments label every 10nm mod(i*2 /10) = 0
+			if ((i*2 % 20) == 0)
+			{
+				CRect rect(ptShape[1][nbptShape[1]].x,ptShape[1][nbptShape[1]].y-50,ptShape[1][nbptShape[1]].x+40,ptShape[1][nbptShape[1]].y-10);
+				pDC->SetTextAlign(TA_BOTTOM);
+				pDC->SetBkMode(TRANSPARENT);
+
+				// Initializes a CFont object with the specified characteristics. 
+				CFont font;
+				font.CreatePointFont(120,_T("Arial"),NULL);
+				CFont* pOldFont = pDC->SelectObject(&font);
+				CString szText;
+				szText.Format("%d nm",i*2 + 520);
+				pDC->SetTextColor(RGB(10,10,200));
+				pDC->SetBkColor(RGB(0,0,0));
+				pDC->TextOutA(rect.left,rect.bottom,szText);
+				pDC->SelectObject(pOldFont);
+			}
+			// Accept this point
+			nbptShape [ 1 ] ++;
+		}
+	}
+
 }
 
 // Draw a polygon matching DeltaE value around white reference point

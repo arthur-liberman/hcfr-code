@@ -5583,7 +5583,7 @@ CColor CMeasure::GetRefPrimary(int i) const
     }
     aColor.SetRGBValue(ColorRGB(r,g,b), GetColorReference() );
 	int mode = GetConfig()->m_GammaOffsetType;
-	if (GetConfig()->m_colorStandard == sRGB) mode = 6;
+	if (GetConfig()->m_colorStandard == sRGB) mode = 7;
 	if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
        gamma = log(getEOTF(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(aColor.GetY(),1.0/2.22));
     if (isSpecial)
@@ -5666,7 +5666,7 @@ CColor CMeasure::GetRefSecondary(int i) const
     b=rgby[2];
     aColor.SetRGBValue(ColorRGB(r,g,b), GetColorReference() );
 	int mode = GetConfig()->m_GammaOffsetType;
-	if (GetConfig()->m_colorStandard == sRGB) mode = 6;
+	if (GetConfig()->m_colorStandard == sRGB) mode = 7;
 	if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
        gamma = log(getEOTF(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(aColor.GetY(),1.0/2.22));
     if (isSpecial)
@@ -5797,7 +5797,7 @@ CColor CMeasure::GetRefSat(int i, double sat_percent, bool special) const
 	if (sat_percent < 1 )
 	{
 		int mode = GetConfig()->m_GammaOffsetType;
-		if (GetConfig()->m_colorStandard == sRGB) mode = 6;
+		if (GetConfig()->m_colorStandard == sRGB) mode = 7;
 		if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
 		   gamma = log(getEOTF(pow(aColor.GetY() * pow(Intensity,2.22),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(aColor.GetY() * pow(Intensity,2.22),1.0/2.22));
 
@@ -6117,7 +6117,7 @@ CColor CMeasure::GetRefCC24Sat(int i) const
     double gamma=GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef);
     double inr=RGB[i][0],ing=RGB[i][1],inb=RGB[i][2];
 	int mode = GetConfig()->m_GammaOffsetType;
-	if (GetConfig()->m_colorStandard == sRGB) mode = 6;
+	if (GetConfig()->m_colorStandard == sRGB) mode = 7;
 	if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
     {
         inr=(inr<=0||inr>=1)?min(max(inr,0),1):pow(RGB[i][0],log(getEOTF(RGB[i][0],White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(RGB[i][0]));

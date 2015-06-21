@@ -39,7 +39,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-extern void DrawCIEChart(CDC* pDC,int aWidth, int aHeight, BOOL doFullChart, BOOL doShowBlack, BOOL bCIEuv);
+extern void DrawCIEChart(CDC* pDC,int aWidth, int aHeight, BOOL doFullChart, BOOL doShowBlack, BOOL bCIEuv, BOOL bCIEab);
 extern void DrawDeltaECurve(CDC* pDC, int cxMax, int cyMax, double DeltaE, BOOL bCIEuv );
 
 #define FX_MINSIZETOSHOW_SCALEDETAILS 300
@@ -143,6 +143,7 @@ CCIEChartGrapher::CCIEChartGrapher()
 	m_doShowCCScaleTarg=GetConfig()->GetProfileInt("CIE Chart","Display Color Checker Targets",TRUE);
 	m_doShowMeasurements=GetConfig()->GetProfileInt("CIE Chart","Show Measurements",TRUE);
 	m_bCIEuv=GetConfig()->GetProfileInt("CIE Chart","CIE uv mode",FALSE);
+	m_bCIEab=GetConfig()->GetProfileInt("CIE Chart","CIE ab mode",FALSE);
 	m_bdE10=GetConfig()->GetProfileInt("CIE Chart","Worst dE",FALSE);
 
 	m_ZoomFactor = 1000;
@@ -207,7 +208,6 @@ void CCIEChartGrapher::MakeBgBitmap(CRect rect, BOOL bWhiteBkgnd)	// Create back
 		{
 			if ( m_bCIEuv )
 				pOld = memDC.SelectObject( & GetColorApp() -> m_chartBitmap_uv );
-//				pOld = memDC.SelectObject( & GetColorApp() -> m_chartBitmap_ab );
 			else
 				pOld = memDC.SelectObject( & GetColorApp() -> m_chartBitmap );
 		}
@@ -239,30 +239,38 @@ void CCIEChartGrapher::MakeBgBitmap(CRect rect, BOOL bWhiteBkgnd)	// Create back
 	font.CreatePointFont(min(120,(100*rect.Width()/bm.bmWidth)),"Default",NULL);
 
 	CFont* pOldFont = bgDC.SelectObject(&font);
+//	m_bCIEab = TRUE;
 
-	for(i=0;i<(m_bCIEuv?7:8);i++)	// Draw X axis
+	for(i=0;i<(m_bCIEab?21.0:m_bCIEuv?7:8);i++)	// Draw X axis
 	{
-		int x=(int)(rect.Width()*i/(m_bCIEuv?7.0:8.0));
+		int x=(int)(rect.Width()*i/(m_bCIEab?21.0:m_bCIEuv?7.0:8.0));
 		CString str;
 
-		str.Format("%.1f",i/10.0);
+		if (m_bCIEab)
+			str.Format("%.1f",i*10.0-100.0);
+		else
+			str.Format("%.1f",i/10.0);
 		bgDC.MoveTo(x,0);
 		bgDC.LineTo(x,rect.bottom);
 		if(i && min(rect.Width(),rect.Height()) > FX_MINSIZETOSHOW_REFDETAILS )
 			bgDC.TextOut(x+2,rect.bottom,str); // Draw axis label
 	}
 
-	for(i=0;i<(m_bCIEuv?7:9);i++) 	// Draw Y axis
+	for(i=0;i<(m_bCIEab?21.0:m_bCIEuv?7:9);i++) 	// Draw Y axis
 	{
-		int y=(int)(rect.Height()*i/(m_bCIEuv?7.0:9.0));
+		int y=(int)(rect.Height()*i/(m_bCIEab?21.0:m_bCIEuv?7.0:9.0));
 		CString str;
 
-		str.Format("%.1f",(m_bCIEuv?0.7:0.9)-i/10.0);
+		if (m_bCIEab)
+			str.Format("%.1f",100.0-i*10.0);
+		else
+			str.Format("%.1f",(m_bCIEuv?0.7:0.9)-i/10.0);
 		bgDC.MoveTo(0,y);
 		bgDC.LineTo(rect.right,y);
 		if(i && min(rect.Width(),rect.Height()) > FX_MINSIZETOSHOW_REFDETAILS)
 			bgDC.TextOut(2,y,str);
 	}
+//	m_bCIEab = FALSE;
 
 	bgDC.SelectObject(pOldPen);
 	bgDC.SelectObject(pOldFont);
@@ -751,7 +759,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 		g[i]=rgb[i][1];
 		b[i]=rgb[i][2];
 		int mode = GetConfig()->m_GammaOffsetType;
-		if (GetConfig()->m_colorStandard == sRGB) mode = 6;
+		if (GetConfig()->m_colorStandard == sRGB) mode = 7;
         if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
            gamma = log(getEOTF(pow(aColor[i].GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(aColor[i].GetY(),1.0/2.22));
         r1=(r[i]<=0||r[i]>=1)?min(max(r[i],0),1):pow(pow(r[i],1.0/2.22),gamma);
@@ -1120,7 +1128,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
     			CColor White = pDoc -> GetMeasure () -> GetGray ( nSize - 1 );
 	    		CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
 				int mode = GetConfig()->m_GammaOffsetType;
-				if (GetConfig()->m_colorStandard == sRGB) mode = 6;
+				if (GetConfig()->m_colorStandard == sRGB) mode = 7;
 				if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
 			    {
 				   double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
@@ -2501,7 +2509,7 @@ void CCIEChartView::UpdateTestColor ( CPoint point )
 		RGBColor = ClickedColor.GetRGBValue ((GetColorReference()));
         double r=RGBColor[0],g=RGBColor[1],b=RGBColor[2];
 		int mode = GetConfig()->m_GammaOffsetType;
-		if (GetConfig()->m_colorStandard == sRGB) mode = 6;
+		if (GetConfig()->m_colorStandard == sRGB) mode = 7;
         if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
         {
     		r = (r<=0||r>=1)?min(max(r,0),1):pow(r,log(getEOTF(r, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(r));

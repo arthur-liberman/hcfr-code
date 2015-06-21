@@ -128,6 +128,11 @@ public:
 	CBitmap m_chartBitmap_uv_white;
 	CBitmap m_lightenChartBitmap_uv;
 
+	// CIE Bitmaps (a*b*)
+	CBitmap m_chartBitmap_ab;
+	CBitmap m_chartBitmap_ab_white;
+	CBitmap m_lightenChartBitmap_ab;
+
 	// Measuring cursor
 	HCURSOR	m_hCursorMeasure;
 	HCURSOR	m_hSavedCursor;
