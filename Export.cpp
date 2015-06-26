@@ -317,7 +317,7 @@ bool CExport::SavePDF()
     HPDF_Page page,page2;
     HPDF_Destination dst;
 	CString afileName = m_fileName;
-	int dX = 900, dY = 600;
+	int dX = 1200, dY = 900;
 	CDataSetDoc *pDataRef = GetDataRef();
 	CView *pView;
 	POSITION		pos;

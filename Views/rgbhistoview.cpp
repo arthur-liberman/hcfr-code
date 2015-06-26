@@ -140,7 +140,6 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		if ( size )
 			pDoc->ComputeGammaAndOffset(&Gamma, &Offset, 3, 1, size,false);
 
-//		YWhite = pDoc->GetMeasure()->GetGray(size-1)[1];
 		YWhite = pDoc->GetMeasure()->GetOnOffWhite()[1];
 		for (int i=1; i<size; i++)
 		{

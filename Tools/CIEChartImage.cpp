@@ -464,37 +464,25 @@ static double spectral_chromaticity_uv_right[][2] = {
 // in top to bottom order (wavelengths in reverse order)
 
 static double spectral_chromaticity_ab_left[][2] = {
-	{ 0.0501, 0.5868 },
-	{ 0.0360, 0.5861 },
-	{ 0.0231, 0.5837 },
-	{ 0.0123, 0.5770 },
-	{ 0.0046, 0.5638 },
-	{ 0.0014, 0.5432 },
-	{ 0.0035, 0.5131 },
-	{ 0.0119, 0.4698 },
-	{ 0.0282, 0.4117 },
-	{ 0.0521, 0.3427 },
-	{ 0.0828, 0.2708 },
-	{ 0.1147, 0.2044 },
-	{ 0.1441, 0.1510 },
-	{ 0.1690, 0.1119 },
-	{ 0.1877, 0.0871 },
-	{ 0.2033, 0.0688 },
-	{ 0.2161, 0.0549 },
-	{ 0.2266, 0.0437 },
-	{ 0.2347, 0.0350 },
-	{ 0.2411, 0.0279 },
-	{ 0.2461, 0.0226 },
-	{ 0.2496, 0.0191 },
-	{ 0.2522, 0.0169 },
-	{ 0.2537, 0.0159 },
-	{ 0.2545, 0.0159 },
-	{ 0.2552, 0.0159 },
-	{ 0.2557, 0.0159 },
-	{ 0.2561, 0.0163 },
-	{ 0.2564, 0.0163 },
-	{ 0.2566, 0.0166 },
-	{ 0.2568, 0.0166 }
+{-21.08267575,	129.212372},
+{-51.99946835,	124.9723232},
+{-81.17164525,	121.1297287},
+{-109.2313165,	117.5502015},
+{-136.8723075,	114.14244},
+{-165.0140351,	110.8401993},
+{-195.1815732,	107.5922864},
+{-187.8398305,	80.09591085},
+{-179.132837,	59.71999371},
+{-168.6552844,	41.15295981},
+{-155.8005056,	22.49880761},
+{-139.6072581,	2.39927527},
+{-118.4318269,	-20.71759918},
+{-95.38391349,	-35.86662301},
+{-69.6816743,	-51.57481355},
+{-40.43744929,	-68.12648678},
+{-6.215001599,	-85.84779009},
+{35.39884257,	-104.8038209},
+{85.67372899,	-119.6751496}
 };
 
 // The following table gives coordinates for the right side of the CIE u'v' diagram,
@@ -502,61 +490,44 @@ static double spectral_chromaticity_ab_left[][2] = {
 // The ending chromaticity is 380 nm to add the closing segment
 
 static double spectral_chromaticity_ab_right[][2] = {
-	{ 0.0501, 0.5868 },
-	{ 0.0643, 0.5865 },
-	{ 0.0792, 0.5856 },
-	{ 0.0953, 0.5841 },
-	{ 0.1127, 0.5821 },
-	{ 0.1319, 0.5796 },
-	{ 0.1531, 0.5766 },
-	{ 0.1766, 0.5732 },
-	{ 0.2026, 0.5694 },
-	{ 0.2312, 0.5651 },
-	{ 0.2623, 0.5604 },
-	{ 0.2960, 0.5554 },
-	{ 0.3315, 0.5501 },
-	{ 0.3681, 0.5446 },
-	{ 0.4035, 0.5393 },
-	{ 0.4379, 0.5342 },
-	{ 0.4692, 0.5296 },
-	{ 0.4968, 0.5254 },
-	{ 0.5203, 0.5219 },
-	{ 0.5399, 0.5190 },
-	{ 0.5565, 0.5165 },
-	{ 0.5709, 0.5143 },
-	{ 0.5830, 0.5125 },
-	{ 0.5929, 0.5111 },
-	{ 0.6005, 0.5099 },
-	{ 0.6064, 0.5090 },
-	{ 0.6109, 0.5084 },
-	{ 0.6138, 0.5079 },
-	{ 0.6162, 0.5076 },
-	{ 0.6180, 0.5073 },
-	{ 0.6199, 0.5070 },
-	{ 0.6215, 0.5068 },
-	{ 0.6226, 0.5066 },
-	{ 0.6231, 0.5065 },
-	{ 0.6234, 0.5065 },
-	{ 0.2568, 0.0166 }
+{-21.07969122,	129.1940803},
+{6.46010528,	126.1200054},
+{32.87394378,	122.929737},
+{58.02989578,	119.6612324},
+{81.57084081,	116.4636326},
+{102.7194064,	112.0827554},
+{119.7730924,	103.1785166},
+{121.6458519,	46.99679808},
+{123.5937942,	21.7413108},
+{125.6512568,	1.163817277},
+{127.8677151,	-18.12904548},
+{130.3178732,	-37.62041234},
+{133.1209479,	-58.40598939},
+{127.8759988,	-71.33733147},
+{122.0979932,	-83.75535396},
+{115.6017904,	-95.61235885},
+{108.0571507,	-106.6193279},
+{98.76118455,	-115.8195724},
+{85.67372899,	-119.6751496}
 };
 
 static double fBlackBody_xy[][2] = {
-	{ 0.6499, 0.3474 }, //  1000 K 
-	{ 0.6361, 0.3594 }, //  1100 K 
-	{ 0.6226, 0.3703 }, //  1200 K 
-	{ 0.6095, 0.3801 }, //  1300 K 
-	{ 0.5966, 0.3887 }, //  1400 K 
-	{ 0.5841, 0.3962 }, //  1500 K 
-	{ 0.5720, 0.4025 }, //  1600 K 
-	{ 0.5601, 0.4076 }, //  1700 K 
-	{ 0.5486, 0.4118 }, //  1800 K 
-	{ 0.5375, 0.4150 }, //  1900 K 
-	{ 0.5267, 0.4173 }, //  2000 K 
-	{ 0.5162, 0.4188 }, //  2100 K 
-	{ 0.5062, 0.4196 }, //  2200 K 
-	{ 0.4965, 0.4198 }, //  2300 K 
-	{ 0.4872, 0.4194 }, //  2400 K 
-	{ 0.4782, 0.4186 }, //  2500 K 
+//	{ 0.6499, 0.3474 }, //  1000 K 
+//	{ 0.6361, 0.3594 }, //  1100 K 
+//	{ 0.6226, 0.3703 }, //  1200 K 
+//	{ 0.6095, 0.3801 }, //  1300 K 
+//	{ 0.5966, 0.3887 }, //  1400 K 
+//	{ 0.5841, 0.3962 }, //  1500 K 
+//	{ 0.5720, 0.4025 }, //  1600 K 
+//	{ 0.5601, 0.4076 }, //  1700 K 
+//	{ 0.5486, 0.4118 }, //  1800 K 
+//	{ 0.5375, 0.4150 }, //  1900 K 
+//	{ 0.5267, 0.4173 }, //  2000 K 
+//	{ 0.5162, 0.4188 }, //  2100 K 
+//	{ 0.5062, 0.4196 }, //  2200 K 
+//	{ 0.4965, 0.4198 }, //  2300 K 
+//	{ 0.4872, 0.4194 }, //  2400 K 
+//	{ 0.4782, 0.4186 }, //  2500 K 
 	{ 0.4696, 0.4173 }, //  2600 K 
 	{ 0.4614, 0.4158 }, //  2700 K 
 	{ 0.4535, 0.4139 }, //  2800 K 
@@ -593,9 +564,10 @@ static double fBlackBody_xy[][2] = {
 	{ 0.2487, 0.2438 }  // 40000 K 
 };
 
+
 // Draw Black Body curve on CIE 1931(xy) or 1976(u'v') charts, depending on flag bCIEuv
 
-void DrawBlackBodyCurve ( CDC* pDC, int cxMax, int cyMax, BOOL doFullChart, BOOL bCIEuv )
+void DrawBlackBodyCurve ( CDC* pDC, int cxMax, int cyMax, BOOL doFullChart, BOOL bCIEuv, BOOL bCIEab )
 {
 	int		i;
 	int		nbPoints = sizeof ( fBlackBody_xy ) / sizeof ( fBlackBody_xy[0] );
@@ -615,15 +587,30 @@ void DrawBlackBodyCurve ( CDC* pDC, int cxMax, int cyMax, BOOL doFullChart, BOOL
 
 			xCie = uCie;
 			yCie = vCie;
-		} //else if (bCIELab)
-//		{
-//		}
+		} else if (bCIEab)
+		{
+			ColorxyY tmp;
+			tmp=ColorxyY(xCie,yCie,1);
 
-		pt [ i ].x = (int) ( ( xCie / (bCIEuv ? 0.7 : 0.8) ) * (double) cxMax );
-		pt [ i ].y = (int) ( ( 1.0 - ( yCie / (bCIEuv ? 0.7 : 0.9) ) ) * (double) cyMax );
+			ColorXYZ tmpXYZ=ColorXYZ(tmp);
+			ColorLab cLab=ColorLab(tmpXYZ,1,GetColorReference());
+			xCie = cLab[1];
+			yCie = cLab[2];
+		}
+
+		if (bCIEab)
+		{
+			pt [ i ].x = (int) ( ( (xCie + 220) / (400) ) * (double) cxMax );
+			pt [ i ].y = (int) ( ( 1.0 - ( (yCie + 200) / (400) ) ) * (double) cyMax );
+		}
+		else
+		{
+			pt [ i ].x = (int) ( ( (xCie+.075) / (bCIEuv ? 0.8 : 0.9) ) * (double) cxMax );
+			pt [ i ].y = (int) ( ( 1.0 - ( (yCie+0.05) / (bCIEuv ? 0.8 : 1.0) ) ) * (double) cyMax );
+		}
 	}
 
-	CPen bbcPen ( PS_SOLID, 2, ( doFullChart ? RGB(0,0,0) : RGB(80,80,80) ) );
+	CPen bbcPen ( PS_SOLID, 2, ( doFullChart ? RGB(0,0,0) : RGB(180,180,180) ) );
 	CPen * pOldPen = pDC -> SelectObject ( & bbcPen );
 	pDC -> Polyline ( pt, nbPoints );
 	pDC -> SelectObject ( pOldPen );
@@ -675,7 +662,7 @@ void DrawCIEChart(CDC* pDC, int cxMax, int cyMax, BOOL doFullChart, BOOL doShowB
 	int			DeltaX;
 	int			AbsDeltaY;
 	int			delta;
-	int			nMaxRgbVal = ( doFullChart ? 255 : 192 );
+	int			nMaxRgbVal = ( bCIEab ? 240 : (doFullChart ? 255 : 200) );
 	double		d;
 	double		squared_white_ray = 0.02;	// defines a diffusion zone around white point, to make it esthetically visible
 	double		xCie, yCie, zCie, yCieLine;
@@ -743,22 +730,28 @@ void DrawCIEChart(CDC* pDC, int cxMax, int cyMax, BOOL doFullChart, BOOL doShowB
     bx = bx / bw;
 	by = by / bw;
 	bz = bz / bw;
+	ColorLab tmp;
 
-	if ( bCIEab )
-	{
-		NbLeftPoints = sizeof ( spectral_chromaticity_ab_left ) / sizeof ( spectral_chromaticity_ab_left [ 0 ] );
-		pLeft = spectral_chromaticity_ab_left;
+	double lxr,lyr,lzr,fx,fy,fz;
+	double ep = 216. / 24389.;
+	double kap = 24389. / 27.;
+	ColorXYZ White = WhiteReference.GetXYZValue();
 
-		NbRightPoints = sizeof ( spectral_chromaticity_ab_right ) / sizeof ( spectral_chromaticity_ab_right [ 0 ] );
-		pRight = spectral_chromaticity_ab_right;
-	}
-	else if ( bCIEuv )
+	if ( bCIEuv )
 	{
 		NbLeftPoints = sizeof ( spectral_chromaticity_uv_left ) / sizeof ( spectral_chromaticity_uv_left [ 0 ] );
 		pLeft = spectral_chromaticity_uv_left;
 
 		NbRightPoints = sizeof ( spectral_chromaticity_uv_right ) / sizeof ( spectral_chromaticity_uv_right [ 0 ] );
 		pRight = spectral_chromaticity_uv_right;
+	}
+	else if (bCIEab)
+	{
+		NbLeftPoints = sizeof ( spectral_chromaticity_ab_left ) / sizeof ( spectral_chromaticity_ab_left [ 0 ] );
+		pLeft = spectral_chromaticity_ab_left;
+
+		NbRightPoints = sizeof ( spectral_chromaticity_ab_right ) / sizeof ( spectral_chromaticity_ab_right [ 0 ] );
+		pRight = spectral_chromaticity_ab_right;
 	}
 	else
 	{
@@ -769,6 +762,7 @@ void DrawCIEChart(CDC* pDC, int cxMax, int cyMax, BOOL doFullChart, BOOL doShowB
 		pRight = spectral_chromaticity_right;
 	}
 
+
 	// compute parameter points 
 	nbptShape [ 0 ] = 0;
 	for ( i = 0; i < NbLeftPoints ; i ++ )
@@ -777,36 +771,87 @@ void DrawCIEChart(CDC* pDC, int cxMax, int cyMax, BOOL doFullChart, BOOL doShowB
 		// Note: max CIExy coordinates are (0.8, 0.9), max CIEuv are (0.7, 0.7)
 		xCie = pLeft [ i ] [ 0 ];
 		yCie = pLeft [ i ] [ 1 ];
+		ptShape [ 0 ] [ nbptShape [ 0 ] ].x = (int) ( ( (xCie+.075) / (bCIEuv ? 0.8 : 0.9) ) * (double) cxMax );
+		ptShape [ 0 ] [ nbptShape [ 0 ] ].y = (int) ( ( 1.0 - ( (yCie+0.05) / (bCIEuv ? 0.8 : 1.0) ) ) * (double) cyMax );
 
-		ptShape [ 0 ] [ nbptShape [ 0 ] ].x = (int) ( ( xCie / (bCIEuv ? 0.7 : 0.8) ) * (double) cxMax );
-		ptShape [ 0 ] [ nbptShape [ 0 ] ].y = (int) ( ( 1.0 - ( yCie / (bCIEuv ? 0.7 : 0.9) ) ) * (double) cyMax );
+		if (bCIEab)
+		{
+			ptShape [ 0 ] [ nbptShape [ 0 ] ].x = (int) ( ( (xCie + 220.) / (400.) ) * (double) cxMax );
+			ptShape [ 0 ] [ nbptShape [ 0 ] ].y = (int) ( ( 1.0 - ( (yCie + 200) / (400.) ) ) * (double) cyMax );
+		}
+
 
 		if ( nbptShape [ 0 ] == 0 || ptShape [ 0 ] [ nbptShape [ 0 ] ].y > ptShape [ 0 ] [ nbptShape [ 0 ] - 1 ].y )
 		{
 			// Accept this point
-			if ((i*2 % 20) == 0)
+			if ((i*2 % 20) == 0 && !bCIEab)
 			{
-				CRect rect;
-				pDC->SetTextAlign(TA_BOTTOM);
-				pDC->SetBkMode(TRANSPARENT);
-
 				// Initializes a CFont object with the specified characteristics. 
 				CFont font;
-				font.CreatePointFont(130,_T("Arial"),NULL);
+				font.CreateFont(24,0,0,0,FW_THIN,FALSE,FALSE,FALSE,0,OUT_TT_ONLY_PRECIS,CLIP_DEFAULT_PRECIS,PROOF_QUALITY,VARIABLE_PITCH | FF_MODERN,_T("Garamond"));
 				CFont* pOldFont = pDC->SelectObject(&font);
 
-				if (520 - i*2 >= 520)
-					rect = CRect(ptShape[0][nbptShape[0]].x,ptShape[0][nbptShape[0]].y-50,ptShape[0][nbptShape[0]].x+40,ptShape[0][nbptShape[0]].y-10);
-				else
-					rect = CRect(ptShape[0][nbptShape[0]].x-50,ptShape[0][nbptShape[0]].y,ptShape[0][nbptShape[0]].x,ptShape[0][nbptShape[0]].y+50);
+				CString szText;
+				if (520 - i*2 != 520)
+				{
+					szText.Format("%d nm",520 - i*2);
+					pDC->SetTextColor(RGB(220,220,255));
+					pDC->SetTextAlign(TA_CENTER);
+					pDC->SetBkMode(TRANSPARENT);
+					CPen bbcPen ( PS_SOLID, 1, RGB(220,220,255)  );
+					CPen * pOldPen = pDC -> SelectObject ( & bbcPen );
+					pDC -> MoveTo (ptShape[0][nbptShape[0]].x,ptShape[0][nbptShape[0]].y );
+					pDC -> LineTo ( ptShape[0][nbptShape[0]].x-30,ptShape[0][nbptShape[0]].y+10 );
+					pDC->TextOutA( ptShape[0][nbptShape[0]].x-50,ptShape[0][nbptShape[0]].y+10,szText);
+					pDC->SelectObject(pOldFont);
+					pDC -> SelectObject (pOldPen);
+				}
+			}
+			
+			if (bCIEab)
+			{
+				// Initializes a CFont object with the specified characteristics. 
+				CFont font,font1;
+				font.CreateFont(24,0,0,0,FW_THIN,FALSE,FALSE,FALSE,0,OUT_TT_ONLY_PRECIS,CLIP_DEFAULT_PRECIS,PROOF_QUALITY,VARIABLE_PITCH | FF_MODERN,_T("Garamond"));
+				font1.CreateFont(24,0,-180,-180,FW_THIN,FALSE,FALSE,FALSE,0,OUT_TT_ONLY_PRECIS,CLIP_DEFAULT_PRECIS,PROOF_QUALITY,VARIABLE_PITCH | FF_MODERN,_T("Garamond"));
+				CFont* pOldFont = pDC->SelectObject(&font);
+				BOOL doPrint = FALSE;
 
 				CString szText;
-				szText.Format("%d nm",520 - i*2);
-				pDC->SetTextColor(RGB(255,167,0));
-				pDC->SetBkColor(RGB(0,0,0));
-				if (520 - i*2 != 500)
-					pDC->TextOutA(rect.left,rect.bottom,szText);
-				pDC->SelectObject(pOldFont);
+				switch ( i ) 
+				{
+				case 0:
+					szText.Format("%d%% Pointer's Gamut Coverage with Real Primaries",100);
+					doPrint = TRUE;
+					break;
+				case 6:
+					szText.Format("%d nm",527);
+					doPrint = TRUE;
+					break;
+				case 18:
+					szText.Format("%d nm",467);
+					doPrint = TRUE;
+					break;
+				}
+
+				if (doPrint)
+				{
+					pDC->SetTextColor(RGB(220,220,255));
+					pDC->SetTextAlign(TA_CENTER);
+					pDC->SetBkMode(TRANSPARENT);
+					if (i == 0)
+					{
+						pDC->SelectObject(pOldFont);
+						CFont* pOldFont = pDC->SelectObject(&font1);
+						pDC->TextOutA( 600, 710, szText);
+					}
+					else if (i == 6)
+						pDC->TextOutA( ptShape[0][nbptShape[0]].x+30,ptShape[0][nbptShape[0]].y - 30,szText);
+					else
+						pDC->TextOutA( ptShape[0][nbptShape[0]].x,ptShape[0][nbptShape[0]].y + 20,szText);
+
+					pDC->SelectObject(pOldFont);
+				}
 			}
 			nbptShape [ 0 ] ++;
 		}
@@ -820,28 +865,62 @@ void DrawCIEChart(CDC* pDC, int cxMax, int cyMax, BOOL doFullChart, BOOL doShowB
 		xCie = pRight [ i ] [ 0 ];
 		yCie = pRight [ i ] [ 1 ];
 
-		ptShape [ 1 ] [ nbptShape [ 1 ] ].x = (int) ( ( xCie / (bCIEuv ? 0.7 : 0.8) ) * (double) cxMax );
-		ptShape [ 1 ] [ nbptShape [ 1 ] ].y = (int) ( ( 1.0 - ( yCie / (bCIEuv ? 0.7 : 0.9) ) ) * (double) cyMax );
+		ptShape [ 1 ] [ nbptShape [ 1 ] ].x = (int) ( ( (xCie+.075) / (bCIEuv ? 0.8 : 0.9) ) * (double) cxMax );
+		ptShape [ 1 ] [ nbptShape [ 1 ] ].y = (int) ( ( 1.0 - ( (yCie+.05) / (bCIEuv ? 0.8 : 1.0) ) ) * (double) cyMax );
+
+		if (bCIEab)
+		{
+			ptShape [ 1 ] [ nbptShape [ 1 ] ].x = (int) ( ( (xCie + 220.) / (400.) ) * (double) cxMax );
+			ptShape [ 1 ] [ nbptShape [ 1 ] ].y = (int) ( ( 1.0 - ( (yCie + 200.) / (400.) ) ) * (double) cyMax );
+		}
 		
 		if ( nbptShape [ 1 ] == 0 || ptShape [ 1 ] [ nbptShape [ 1 ] ].y > ptShape [ 1 ] [ nbptShape [ 1 ] - 1 ].y )
 		{
 			// 2nm increments label every 10nm mod(i*2 /10) = 0
-			if ((i*2 % 20) == 0)
+			if ((i*2 % 20) == 0 && !bCIEab)
 			{
-				CRect rect(ptShape[1][nbptShape[1]].x,ptShape[1][nbptShape[1]].y-50,ptShape[1][nbptShape[1]].x+40,ptShape[1][nbptShape[1]].y-10);
-				pDC->SetTextAlign(TA_BOTTOM);
-				pDC->SetBkMode(TRANSPARENT);
-
 				// Initializes a CFont object with the specified characteristics. 
 				CFont font;
-				font.CreatePointFont(120,_T("Arial"),NULL);
+				font.CreateFont(24,0,(bCIEuv?300:0),(bCIEuv?300:0),FW_THIN,FALSE,FALSE,FALSE,0,OUT_TT_ONLY_PRECIS,CLIP_DEFAULT_PRECIS,PROOF_QUALITY,VARIABLE_PITCH | FF_MODERN,_T("Garamond"));
 				CFont* pOldFont = pDC->SelectObject(&font);
 				CString szText;
 				szText.Format("%d nm",i*2 + 520);
-				pDC->SetTextColor(RGB(255,167,0));
-				pDC->SetBkColor(RGB(0,0,0));
-				pDC->TextOutA(rect.left,rect.bottom,szText);
+				pDC->SetTextColor(RGB(220,220,255));
+				pDC->SetTextAlign(TA_LEFT | TA_TOP);
+				pDC->SetBkMode(TRANSPARENT);
+				CPen bbcPen ( PS_SOLID, 1, RGB(220,220,255) );
+				CPen * pOldPen = pDC -> SelectObject ( & bbcPen );
+				pDC->TextOutA( ptShape[1][nbptShape[1]].x+30,ptShape[1][nbptShape[1]].y-50,szText);
+				pDC -> MoveTo (ptShape[1][nbptShape[1]].x+30,ptShape[1][nbptShape[1]].y-40 );
+				pDC -> LineTo ( ptShape[1][nbptShape[1]].x,ptShape[1][nbptShape[1]].y );
 				pDC->SelectObject(pOldFont);
+				pDC -> SelectObject (pOldPen);
+			}
+			if (bCIEab)
+			{
+				// Initializes a CFont object with the specified characteristics. 
+				CFont font;
+				font.CreateFont(24,0,0,0,FW_THIN,FALSE,FALSE,FALSE,0,OUT_TT_ONLY_PRECIS,CLIP_DEFAULT_PRECIS,PROOF_QUALITY,VARIABLE_PITCH | FF_MODERN,_T("Garamond"));
+				CFont* pOldFont = pDC->SelectObject(&font);
+				BOOL doPrint = FALSE;
+
+				CString szText;
+				switch ( i ) 
+				{
+				case 6:
+					szText.Format("%d nm",630);
+					doPrint = TRUE;
+					break;
+				}
+
+				if (doPrint)
+				{
+					pDC->SetTextColor(RGB(220,220,255));
+					pDC->SetTextAlign(TA_CENTER);
+					pDC->SetBkMode(TRANSPARENT);
+					pDC->TextOutA( ptShape[1][nbptShape[1]].x,ptShape[1][nbptShape[1]].y - 35,szText);
+					pDC->SelectObject(pOldFont);
+				}
 			}
 			// Accept this point
 			nbptShape [ 1 ] ++;
@@ -1226,28 +1305,59 @@ void DrawCIEChart(CDC* pDC, int cxMax, int cyMax, BOOL doFullChart, BOOL doShowB
 			{
 				// Compute color of each pixel
 				// Transform pixel coordinates (k, Y_Cour) in CIExy coordinates to determine its color
-				yCieLine = (double) ( cyMax - Y_Cour ) * (bCIEuv ? 0.7 : 0.9) / (double) cyMax;
+				if (bCIEab)
+					yCieLine = (double) (( cyMax - Y_Cour ) * (400.)) / (double) cyMax - 200;
+				else
+					yCieLine = (double) (( cyMax - Y_Cour ) * (bCIEuv ? 0.8 : 1.0)) / (double) cyMax - 0.05;
 
 				for ( j = 0 ; j <= l ; j ++ )
 				{
 					if ( bCIEuv )
 					{
 						// Use CIE u'v' coordinates: convert them into CIE xy coordinates to define pixel color
-						uCie = (double) k * 0.7 / (double) cxMax;
+						uCie = (double) (k * 0.8) / (double) cxMax - 0.075;
 						vCie = yCieLine;
 
 						xCie = ( 9.0 * uCie ) / ( ( 6.0 * uCie ) - ( 16.0 * vCie ) + 12.0 );
 						yCie = ( 4.0 * vCie ) / ( ( 6.0 * uCie ) - ( 16.0 * vCie ) + 12.0 );
 					}
+					else if (bCIEab)
+					{
+						xCie = (double) (k * 400.) / (double) cxMax - 220.;
+						tmp[0]=xCie;
+						tmp[1]=yCieLine;
+						fx = tmp[0] / 500. + 1;
+						fy = 1.0;
+						fz = fy - tmp[1] / 200.;
+
+						if (pow(fx,3.0) > ep)
+							lxr = pow(fx,3.0);
+						else
+							lxr = (116. * fx - 16.) / kap;
+
+						lyr = pow(fy,3);
+
+						if (pow(fz,3.0) > ep)
+							lzr = pow(fz,3.0);
+						else
+							lzr = (116 * fz -16) / kap;
+
+						double X = (lxr * White[0]);
+						double Y = (lyr * White[1]);
+						double Z = (lzr * White[2]);
+
+						xCie = X / (X + Y + Z);
+						yCie = Y / (X + Y + Z);
+					}
 					else
 					{
-						xCie = (double) k * 0.8 / (double) cxMax;
+						xCie = (double) (k * 0.9) / (double) cxMax - 0.075;
 						yCie = yCieLine;
 					}
 
 					// Test if we are inside white circle to enlight
 					d = (xCie-xw)*(xCie-xw) + (yCie-yw)*(yCie-yw);
-					if ( d < squared_white_ray )
+					if ( d < squared_white_ray && !bCIEab)
 					{
 						// Enlarge smoothly white zone
 						d = pow ( d / squared_white_ray, 0.5 );
@@ -1298,10 +1408,10 @@ void DrawCIEChart(CDC* pDC, int cxMax, int cyMax, BOOL doFullChart, BOOL doShowB
 	if ( doShowBlack )
 	{
 		// Draw black body curve on CIE diagram
-		DrawBlackBodyCurve ( pDC, cxMax, cyMax, doFullChart, bCIEuv );
+		DrawBlackBodyCurve ( pDC, cxMax, cyMax, doFullChart, bCIEuv, bCIEab );
 	}
 
-	CPen bbcPen ( PS_SOLID, 4, ( doFullChart ? RGB(0,0,0) : RGB(255,167,0) ) );
+	CPen bbcPen ( PS_SOLID, 2, ( doFullChart ? RGB(0,0,0) : RGB(255,167,0) ) );
 	CPen * pOldPen = pDC -> SelectObject ( & bbcPen );
 	pDC -> MoveTo(ptShape[0][0].x,ptShape[0][0].y);
 	for (i = 1; i < nbptShape[0]; i++)
@@ -1359,6 +1469,14 @@ void DrawCIEChartWhiteSurrounding(CDC* pDC, int cxMax, int cyMax, BOOL bCIEuv, B
 		NbRightPoints = sizeof ( spectral_chromaticity_uv_right ) / sizeof ( spectral_chromaticity_uv_right [ 0 ] );
 		pRight = spectral_chromaticity_uv_right;
 	}
+	else if (bCIEab)
+	{
+		NbLeftPoints = sizeof ( spectral_chromaticity_ab_left ) / sizeof ( spectral_chromaticity_ab_left [ 0 ] );
+		pLeft = spectral_chromaticity_ab_left;
+
+		NbRightPoints = sizeof ( spectral_chromaticity_ab_right ) / sizeof ( spectral_chromaticity_ab_right [ 0 ] );
+		pRight = spectral_chromaticity_ab_right;
+	}
 	else
 	{
 		NbLeftPoints = sizeof ( spectral_chromaticity_left ) / sizeof ( spectral_chromaticity_left [ 0 ] );
@@ -1377,8 +1495,14 @@ void DrawCIEChartWhiteSurrounding(CDC* pDC, int cxMax, int cyMax, BOOL bCIEuv, B
 		xCie = pLeft [ i ] [ 0 ];
 		yCie = pLeft [ i ] [ 1 ];
 
-		ptShape [ 0 ] [ nbptShape [ 0 ] ].x = (int) ( ( xCie / (bCIEuv ? 0.7 : 0.8) ) * (double) cxMax );
-		ptShape [ 0 ] [ nbptShape [ 0 ] ].y = (int) ( ( 1.0 - ( yCie / (bCIEuv ? 0.7 : 0.9) ) ) * (double) cyMax );
+		ptShape [ 0 ] [ nbptShape [ 0 ] ].x = (int) ( ( (xCie+.075) / (bCIEuv ? 0.8 : 0.9) ) * (double) cxMax );
+		ptShape [ 0 ] [ nbptShape [ 0 ] ].y = (int) ( ( 1.0 - ( (yCie+.05) / (bCIEuv ? 0.8 : 1.0) ) ) * (double) cyMax );
+
+		if (bCIEab)
+		{
+			ptShape [ 0 ] [ nbptShape [ 0 ] ].x = (int) ( ( (xCie + 220.) / (400.) ) * (double) cxMax );
+			ptShape [ 0 ] [ nbptShape [ 0 ] ].y = (int) ( ( 1.0 - ( (yCie + 200.) / (400.) ) ) * (double) cyMax );
+		}
 
 		if ( nbptShape [ 0 ] == 0 || ptShape [ 0 ] [ nbptShape [ 0 ] ].y > ptShape [ 0 ] [ nbptShape [ 0 ] - 1 ].y )
 		{
@@ -1395,9 +1519,15 @@ void DrawCIEChartWhiteSurrounding(CDC* pDC, int cxMax, int cyMax, BOOL bCIEuv, B
 		xCie = pRight [ i ] [ 0 ];
 		yCie = pRight [ i ] [ 1 ];
 
-		ptShape [ 1 ] [ nbptShape [ 1 ] ].x = (int) ( ( xCie / (bCIEuv ? 0.7 : 0.8) ) * (double) cxMax );
-		ptShape [ 1 ] [ nbptShape [ 1 ] ].y = (int) ( ( 1.0 - ( yCie / (bCIEuv ? 0.7 : 0.9) ) ) * (double) cyMax );
+		ptShape [ 1 ] [ nbptShape [ 1 ] ].x = (int) ( ( (xCie+.075) / (bCIEuv ? 0.8 : 0.9) ) * (double) cxMax );
+		ptShape [ 1 ] [ nbptShape [ 1 ] ].y = (int) ( ( 1.0 - ( (yCie+.05) / (bCIEuv ? 0.8 : 1.0) ) ) * (double) cyMax );
 		
+		if (bCIEab)
+		{
+			ptShape [ 1 ] [ nbptShape [ 1 ] ].x = (int) ( ( (xCie + 220.) / (400.) ) * (double) cxMax );
+			ptShape [ 1 ] [ nbptShape [ 1 ] ].y = (int) ( ( 1.0 - ( (yCie + 200.) / (400.) ) ) * (double) cyMax );
+		}
+
 		if ( nbptShape [ 1 ] == 0 || ptShape [ 1 ] [ nbptShape [ 1 ] ].y > ptShape [ 1 ] [ nbptShape [ 1 ] - 1 ].y )
 		{
 			// Accept this point
@@ -1810,36 +1940,87 @@ void DrawCIEChartWhiteSurrounding(CDC* pDC, int cxMax, int cyMax, BOOL bCIEuv, B
 		xCie = pLeft [ i ] [ 0 ];
 		yCie = pLeft [ i ] [ 1 ];
 
-		ptShape [ 0 ] [ nbptShape [ 0 ] ].x = (int) ( ( xCie / (bCIEuv ? 0.7 : 0.8) ) * (double) cxMax );
-		ptShape [ 0 ] [ nbptShape [ 0 ] ].y = (int) ( ( 1.0 - ( yCie / (bCIEuv ? 0.7 : 0.9) ) ) * (double) cyMax );
+		ptShape [ 0 ] [ nbptShape [ 0 ] ].x = (int) ( ( (xCie+.075) / (bCIEuv ? 0.8 : 0.9) ) * (double) cxMax );
+		ptShape [ 0 ] [ nbptShape [ 0 ] ].y = (int) ( ( 1.0 - ( (yCie+.05) / (bCIEuv ? 0.8 : 1.0) ) ) * (double) cyMax );
+
+		if (bCIEab)
+		{
+			ptShape [ 0 ] [ nbptShape [ 0 ] ].x = (int) ( ( (xCie + 220.) / (400.) ) * (double) cxMax );
+			ptShape [ 0 ] [ nbptShape [ 0 ] ].y = (int) ( ( 1.0 - ( (yCie + 200.) / (400.) ) ) * (double) cyMax );
+		}
 
 		if ( nbptShape [ 0 ] == 0 || ptShape [ 0 ] [ nbptShape [ 0 ] ].y > ptShape [ 0 ] [ nbptShape [ 0 ] - 1 ].y )
 		{
 			// Accept this point
-			if ((i*2 % 20) == 0)
+			if ((i*2 % 20) == 0 && !bCIEab)
 			{
-				CRect rect;
-				pDC->SetTextAlign(TA_BOTTOM);
-				pDC->SetBkMode(TRANSPARENT);
 
 				// Initializes a CFont object with the specified characteristics. 
-				CFont font;
-				font.CreatePointFont(130,_T("Arial"),NULL);
+				CFont font,font1;
+				font.CreateFont(24,0,0,0,FW_THIN,FALSE,FALSE,FALSE,0,OUT_TT_ONLY_PRECIS,CLIP_DEFAULT_PRECIS,PROOF_QUALITY,VARIABLE_PITCH | FF_MODERN,_T("Garamond"));
+				font1.CreateFont(24,0,-180,-180,FW_THIN,FALSE,FALSE,FALSE,0,OUT_TT_ONLY_PRECIS,CLIP_DEFAULT_PRECIS,PROOF_QUALITY,VARIABLE_PITCH | FF_MODERN,_T("Garamond"));
 				CFont* pOldFont = pDC->SelectObject(&font);
-
-				if (520 - i*2 >= 520)
-					rect = CRect(ptShape[0][nbptShape[0]].x,ptShape[0][nbptShape[0]].y-50,ptShape[0][nbptShape[0]].x+40,ptShape[0][nbptShape[0]].y-10);
-				else
-					rect = CRect(ptShape[0][nbptShape[0]].x-50,ptShape[0][nbptShape[0]].y,ptShape[0][nbptShape[0]].x,ptShape[0][nbptShape[0]].y+50);
 
 				CString szText;
 				if (520 - i*2 != 520)
+				{
 					szText.Format("%d nm",520 - i*2);
-				pDC->SetTextColor(RGB(10,10,200));
-				pDC->SetBkColor(RGB(0,0,0));
-				if (520 - i*2 != 500)
-					pDC->TextOutA(rect.left,rect.bottom,szText);
-				pDC->SelectObject(pOldFont);
+					pDC->SetTextColor(RGB(10,10,200));
+					pDC->SetTextAlign(TA_CENTER);
+					pDC->SetBkMode(TRANSPARENT);
+					CPen bbcPen ( PS_SOLID, 1, RGB(10,10,200)  );
+					CPen * pOldPen = pDC -> SelectObject ( & bbcPen );
+					pDC -> MoveTo (ptShape[0][nbptShape[0]].x,ptShape[0][nbptShape[0]].y );
+					pDC -> LineTo ( ptShape[0][nbptShape[0]].x-30,ptShape[0][nbptShape[0]].y+10 );
+					pDC->TextOutA( ptShape[0][nbptShape[0]].x-50,ptShape[0][nbptShape[0]].y+10,szText);
+					pDC->SelectObject(pOldFont);
+					pDC -> SelectObject (pOldPen);
+				}
+			}
+			if (bCIEab)
+			{
+				// Initializes a CFont object with the specified characteristics. 
+				CFont font,font1;
+				font.CreateFont(24,0,0,0,FW_THIN,FALSE,FALSE,FALSE,0,OUT_TT_ONLY_PRECIS,CLIP_DEFAULT_PRECIS,PROOF_QUALITY,VARIABLE_PITCH | FF_MODERN,_T("Garamond"));
+				font1.CreateFont(24,0,-220,-220,FW_THIN,FALSE,FALSE,FALSE,0,OUT_TT_ONLY_PRECIS,CLIP_DEFAULT_PRECIS,PROOF_QUALITY,VARIABLE_PITCH | FF_MODERN,_T("Garamond"));
+				CFont* pOldFont = pDC->SelectObject(&font);
+				BOOL doPrint = FALSE;
+
+				CString szText;
+				switch ( i ) 
+				{
+				case 0:
+					szText.Format("%d%% Pointer's Gamut Coverage with Real Primaries",100);
+					doPrint = TRUE;
+					break;
+				case 6:
+					szText.Format("%d nm",527);
+					doPrint = TRUE;
+					break;
+				case 18:
+					szText.Format("%d nm",467);
+					doPrint = TRUE;
+					break;
+				}
+
+				if (doPrint)
+				{
+					pDC->SetTextColor(RGB(10,10,200));
+					pDC->SetTextAlign(TA_CENTER);
+					pDC->SetBkMode(TRANSPARENT);
+					if (i == 0)
+					{
+						pDC->SelectObject(pOldFont);
+						CFont* pOldFont = pDC->SelectObject(&font1);
+						pDC->TextOutA( 600, 710, szText);
+					}
+					else if (i == 6)
+						pDC->TextOutA( ptShape[0][nbptShape[0]].x+30,ptShape[0][nbptShape[0]].y-25,szText);
+					else
+						pDC->TextOutA( ptShape[0][nbptShape[0]].x,ptShape[0][nbptShape[0]].y+25,szText);
+
+					pDC->SelectObject(pOldFont);
+				}
 			}
 			nbptShape [ 0 ] ++;
 		}
@@ -1853,28 +2034,62 @@ void DrawCIEChartWhiteSurrounding(CDC* pDC, int cxMax, int cyMax, BOOL bCIEuv, B
 		xCie = pRight [ i ] [ 0 ];
 		yCie = pRight [ i ] [ 1 ];
 
-		ptShape [ 1 ] [ nbptShape [ 1 ] ].x = (int) ( ( xCie / (bCIEuv ? 0.7 : 0.8) ) * (double) cxMax );
-		ptShape [ 1 ] [ nbptShape [ 1 ] ].y = (int) ( ( 1.0 - ( yCie / (bCIEuv ? 0.7 : 0.9) ) ) * (double) cyMax );
+		ptShape [ 1 ] [ nbptShape [ 1 ] ].x = (int) ( ( (xCie+.075) / (bCIEuv ? 0.8 : 0.9) ) * (double) cxMax);
+		ptShape [ 1 ] [ nbptShape [ 1 ] ].y = (int) ( ( 1.0 - ( (yCie+.05) / (bCIEuv ? 0.8 : 1.0) ) ) * (double) cyMax );
 		
+		if (bCIEab)
+		{
+			ptShape [ 1 ] [ nbptShape [ 1 ] ].x = (int) ( ( (xCie + 220.) / (400.) ) * (double) cxMax );
+			ptShape [ 1 ] [ nbptShape [ 1 ] ].y = (int) ( ( 1.0 - ( (yCie + 200.) / (400.) ) ) * (double) cyMax );
+		}
+
 		if ( nbptShape [ 1 ] == 0 || ptShape [ 1 ] [ nbptShape [ 1 ] ].y > ptShape [ 1 ] [ nbptShape [ 1 ] - 1 ].y )
 		{
 			// 2nm increments label every 10nm mod(i*2 /10) = 0
-			if ((i*2 % 20) == 0)
+			if ((i*2 % 20) == 0 && !bCIEab)
 			{
-				CRect rect(ptShape[1][nbptShape[1]].x,ptShape[1][nbptShape[1]].y-50,ptShape[1][nbptShape[1]].x+40,ptShape[1][nbptShape[1]].y-10);
-				pDC->SetTextAlign(TA_BOTTOM);
-				pDC->SetBkMode(TRANSPARENT);
-
 				// Initializes a CFont object with the specified characteristics. 
 				CFont font;
-				font.CreatePointFont(120,_T("Arial"),NULL);
+				font.CreateFont(24,0,(bCIEuv?300:0),(bCIEuv?300:0),FW_THIN,FALSE,FALSE,FALSE,0,OUT_TT_ONLY_PRECIS,CLIP_DEFAULT_PRECIS,PROOF_QUALITY,VARIABLE_PITCH | FF_MODERN,_T("Garamond"));
 				CFont* pOldFont = pDC->SelectObject(&font);
 				CString szText;
 				szText.Format("%d nm",i*2 + 520);
 				pDC->SetTextColor(RGB(10,10,200));
-				pDC->SetBkColor(RGB(0,0,0));
-				pDC->TextOutA(rect.left,rect.bottom,szText);
+				pDC->SetTextAlign(TA_LEFT | TA_TOP);
+				pDC->SetBkMode(TRANSPARENT);
+				CPen bbcPen ( PS_SOLID, 1, RGB(10,10,200) );
+				CPen * pOldPen = pDC -> SelectObject ( & bbcPen );
+				pDC->TextOutA( ptShape[1][nbptShape[1]].x+30,ptShape[1][nbptShape[1]].y-50,szText);
+				pDC -> MoveTo (ptShape[1][nbptShape[1]].x+30,ptShape[1][nbptShape[1]].y-40 );
+				pDC -> LineTo ( ptShape[1][nbptShape[1]].x,ptShape[1][nbptShape[1]].y );
 				pDC->SelectObject(pOldFont);
+				pDC -> SelectObject (pOldPen);
+			}
+			if (bCIEab)
+			{
+				// Initializes a CFont object with the specified characteristics. 
+				CFont font;
+				font.CreateFont(24,0,0,0,FW_THIN,FALSE,FALSE,FALSE,0,OUT_TT_ONLY_PRECIS,CLIP_DEFAULT_PRECIS,PROOF_QUALITY,VARIABLE_PITCH | FF_MODERN,_T("Garamond"));
+				CFont* pOldFont = pDC->SelectObject(&font);
+				BOOL doPrint = FALSE;
+
+				CString szText;
+				switch ( i ) 
+				{
+				case 1:
+					szText.Format("%d nm",630);
+					doPrint = TRUE;
+					break;
+				}
+
+				if (doPrint)
+				{
+					pDC->SetTextColor(RGB(10,10,200));
+					pDC->SetTextAlign(TA_CENTER);
+					pDC->SetBkMode(TRANSPARENT);
+					pDC->TextOutA( ptShape[1][nbptShape[1]].x,ptShape[1][nbptShape[1]].y-25,szText);
+					pDC->SelectObject(pOldFont);
+				}
 			}
 			// Accept this point
 			nbptShape [ 1 ] ++;
@@ -1886,7 +2101,7 @@ void DrawCIEChartWhiteSurrounding(CDC* pDC, int cxMax, int cyMax, BOOL bCIEuv, B
 // Draw a polygon matching DeltaE value around white reference point
 // Delta E is computed in CIE u'v' space, and need conversion for CIE xy
 
-void DrawDeltaECurve(CDC* pDC, int cxMax, int cyMax, double DeltaE, BOOL bCIEuv ) 
+void DrawDeltaECurve(CDC* pDC, int cxMax, int cyMax, double DeltaE, BOOL bCIEuv, BOOL bCIEab ) 
 {
 	int			i;
 	const int	nbPoints = 24;
@@ -1903,6 +2118,12 @@ void DrawDeltaECurve(CDC* pDC, int cxMax, int cyMax, double DeltaE, BOOL bCIEuv 
 
 	const double twopi = acos (-1.0) * 2.0;
 
+	if (bCIEab)
+	{
+		ur = 0;
+		vr = 0;
+	}
+
 	for ( i = 0; i < nbPoints ; i ++ )
 	{
 		ang = twopi * ( (double) i ) / ( (double) nbPoints );
@@ -1910,7 +2131,7 @@ void DrawDeltaECurve(CDC* pDC, int cxMax, int cyMax, double DeltaE, BOOL bCIEuv 
 		uCie = ur + ( uvRay * cos ( ang ) );
 		vCie = vr + ( uvRay * sin ( ang ) );
 
-		if ( bCIEuv )
+		if ( bCIEuv || bCIEab)
 		{
 			xCie = uCie;
 			yCie = vCie;
@@ -1921,8 +2142,13 @@ void DrawDeltaECurve(CDC* pDC, int cxMax, int cyMax, double DeltaE, BOOL bCIEuv 
 			yCie = ( 4.0 * vCie ) / ( ( 6.0 * uCie ) - ( 16.0 * vCie ) + 12.0 );
 		}
 
-		pt [ i ].x = (int) ( ( xCie / (bCIEuv ? 0.7 : 0.8) ) * (double) cxMax );
-		pt [ i ].y = (int) ( ( 1.0 - ( yCie / (bCIEuv ? 0.7 : 0.9) ) ) * (double) cyMax );
+		pt [ i ].x = (int) ( ( (xCie+.075) / (bCIEuv ? 0.8 : 0.9) ) * (double) cxMax );
+		pt [ i ].y = (int) ( ( 1.0 - ( (yCie+.05) / (bCIEuv ? 0.8 : 1.0) ) ) * (double) cyMax );
+		if (bCIEab)
+		{
+			pt [ i ].x = (int) ( ( (xCie + 220) / (400) ) * (double) cxMax );
+			pt [ i ].y = (int) ( ( 1.0 - ( (yCie + 200) / (400) ) ) * (double) cyMax );
+		}
 	}
 	
 	// Close figure

@@ -549,8 +549,8 @@ void CColorHCFRApp::OnUpdateViewMeasuresCombo(CCmdUI* pCmdUI)
 extern void DrawCIEChart(CDC* pDC,int aWidth, int aHeight, BOOL doFullChart, BOOL doShowBlack, BOOL bCIEuv, BOOL bCIEab);
 extern void DrawCIEChartWhiteSurrounding(CDC* pDC, int cxMax, int cyMax, BOOL bCIEuv, BOOL bCIEab );
 
-#define CX_CIE_BITMAP	1200
-#define CY_CIE_BITMAP	1200
+#define CX_CIE_BITMAP	1400
+#define CY_CIE_BITMAP	1000
 
 DWORD WINAPI CreateCIEBitmapsThreadFunc ( LPVOID )
 {	
@@ -584,7 +584,7 @@ DWORD WINAPI CreateCIEBitmapsThreadFunc ( LPVOID )
 		ScreenDC.DeleteDC ();
 
         CBitmap * pOldBitmap = BmpDC.SelectObject ( & pApp -> m_chartBitmap );
-	    BmpDC.FillSolidRect ( 0, 0, CX_CIE_BITMAP, CY_CIE_BITMAP, RGB(0,0,0) );
+	    BmpDC.FillSolidRect ( 0, 0, CX_CIE_BITMAP, CY_CIE_BITMAP, RGB(0,10,10) );
 	    DrawCIEChart ( & BmpDC, CX_CIE_BITMAP, CY_CIE_BITMAP, FALSE, TRUE, FALSE, FALSE );
 
         CBitmap * pOldBitmap2 = WhiteBmpDC.SelectObject ( & pApp -> m_chartBitmap_white );
@@ -592,23 +592,23 @@ DWORD WINAPI CreateCIEBitmapsThreadFunc ( LPVOID )
 	    DrawCIEChartWhiteSurrounding( & WhiteBmpDC, CX_CIE_BITMAP, CY_CIE_BITMAP, FALSE, FALSE );
 
         BmpDC.SelectObject ( & pApp -> m_lightenChartBitmap );
-	    BmpDC.FillSolidRect ( 0, 0, CX_CIE_BITMAP, CY_CIE_BITMAP, RGB(0,0,0) );
+	    BmpDC.FillSolidRect ( 0, 0, CX_CIE_BITMAP, CY_CIE_BITMAP, RGB(0,10,10) );
 	    DrawCIEChart ( & BmpDC, CX_CIE_BITMAP, CY_CIE_BITMAP, TRUE, TRUE, FALSE, FALSE );
 
         BmpDC.SelectObject ( & pApp -> m_chartBitmap_uv );
-	    BmpDC.FillSolidRect ( 0, 0, CX_CIE_BITMAP, CY_CIE_BITMAP, RGB(0,0,0) );
+	    BmpDC.FillSolidRect ( 0, 0, CX_CIE_BITMAP, CY_CIE_BITMAP, RGB(0,10,10) );
 	    DrawCIEChart ( & BmpDC, CX_CIE_BITMAP, CY_CIE_BITMAP, FALSE, TRUE, TRUE, FALSE );
 
         WhiteBmpDC.SelectObject ( & pApp -> m_chartBitmap_uv_white );
-	    WhiteBmpDC.BitBlt ( 0, 0, CX_CIE_BITMAP, CY_CIE_BITMAP, & BmpDC, 0, 0, SRCCOPY );
+	    WhiteBmpDC.BitBlt ( 0, 0, CX_CIE_BITMAP, CY_CIE_BITMAP, & BmpDC, 10, 10, SRCCOPY );
 	    DrawCIEChartWhiteSurrounding( & WhiteBmpDC, CX_CIE_BITMAP, CY_CIE_BITMAP, TRUE, FALSE );
 
         BmpDC.SelectObject ( & pApp -> m_lightenChartBitmap_uv );
-	    BmpDC.FillSolidRect ( 0, 0, CX_CIE_BITMAP, CY_CIE_BITMAP, RGB(0,0,0) );
+	    BmpDC.FillSolidRect ( 0, 0, CX_CIE_BITMAP, CY_CIE_BITMAP, RGB(0,10,10) );
 	    DrawCIEChart ( & BmpDC, CX_CIE_BITMAP, CY_CIE_BITMAP, TRUE, TRUE, TRUE, FALSE );
 
         BmpDC.SelectObject ( & pApp -> m_chartBitmap_ab );
-	    BmpDC.FillSolidRect ( 0, 0, CX_CIE_BITMAP, CY_CIE_BITMAP, RGB(0,0,0) );
+	    BmpDC.FillSolidRect ( 0, 0, CX_CIE_BITMAP, CY_CIE_BITMAP, RGB(0,10,10) );
 	    DrawCIEChart ( & BmpDC, CX_CIE_BITMAP, CY_CIE_BITMAP, FALSE, TRUE, FALSE, TRUE );
 
         WhiteBmpDC.SelectObject ( & pApp -> m_chartBitmap_ab_white );
@@ -616,7 +616,7 @@ DWORD WINAPI CreateCIEBitmapsThreadFunc ( LPVOID )
 	    DrawCIEChartWhiteSurrounding( & WhiteBmpDC, CX_CIE_BITMAP, CY_CIE_BITMAP, FALSE, TRUE );
 
         BmpDC.SelectObject ( & pApp -> m_lightenChartBitmap_ab );
-	    BmpDC.FillSolidRect ( 0, 0, CX_CIE_BITMAP, CY_CIE_BITMAP, RGB(0,0,0) );
+	    BmpDC.FillSolidRect ( 0, 0, CX_CIE_BITMAP, CY_CIE_BITMAP, RGB(0,10,10) );
 	    DrawCIEChart ( & BmpDC, CX_CIE_BITMAP, CY_CIE_BITMAP, TRUE, TRUE, FALSE, TRUE );
 
 		BmpDC.SelectObject ( pOldBitmap );

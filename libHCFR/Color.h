@@ -44,8 +44,9 @@ typedef enum
 	HDTVb = 4,
 	sRGB = 5,
 	UHDTV = 6,
-    CUSTOM = 7,
-	CC6 = 8
+	UHDTV2 = 7,
+    CUSTOM = 8,
+	CC6 = 9
 } ColorStandard;
 
 typedef enum 

@@ -1037,6 +1037,7 @@
 #define IDM_EXPORT_PDF                  33076
 #define IDM_PATTERN_BN                  33077
 #define ID_MEASURES_FULLTILTBOOGIE      33078
+#define IDM_CIE_AB                      33079
 #define IDS_LUMINANCEHISTOVIEW_NAME     41446
 #define IDS_COLORTEMPHISTOVIEW_NAME     41447
 #define IDS_RGBHISTOVIEW_NAME           41448
@@ -1559,6 +1560,9 @@
 #define IDS_UHDTVREDREF                 41956
 #define IDS_UHDTVGREENREF               41957
 #define IDS_UHDTVBLUEREF                41958
+#define IDS_UHDTV2REDREF                41959
+#define IDS_UHDTV2GREENREF              41960
+#define IDS_UHDTV2BLUEREF               41961
 #define IDS_ARGYLLSENSOR_PROPERTIES_TITLE 59394
 #define IDS_ARGYLLSENSOR_NAME           59395
 

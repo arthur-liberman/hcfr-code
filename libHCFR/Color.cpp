@@ -179,6 +179,10 @@ ColorxyY primariesDCI[3] ={	ColorxyY(0.6800, 0.3200),
 								ColorxyY(0.265, 0.6900),
 								ColorxyY(0.1500, 0.0600) };
 
+ColorxyY primaries2020[3] ={	ColorxyY(0.70792, 0.29203),
+								ColorxyY(0.17024, 0.79652),
+								ColorxyY(0.13137, 0.04588) };
+
 ColorxyY primariesRec709a[3] ={	ColorxyY(0.5575, 0.3298), //75% sat/lum Rec709 w/2.2 gamma
 								ColorxyY(0.3032, 0.5313),
 								ColorxyY(0.1911, 0.1279) };
@@ -274,6 +278,15 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
 			whiteName="DCI-P3";
 			m_white=DCI;
             primaries = primariesDCI;
+			break;
+		}
+		case UHDTV2:
+		{
+			standardName="UHDTV REC2020";
+			whiteColor=illuminantD65;
+			whiteName="D65";
+			m_white=D65;
+            primaries = primaries2020;
 			break;
 		}
 		case HDTV:
@@ -659,7 +672,7 @@ int ColorXYZ::GetColorTemp(const CColorReference& colorReference) const
     }
 }
 
-double ColorXYZ::GetDeltaLCH(double YWhite, const ColorXYZ& refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form, bool isGS, int gw_Weight, double &dHue, double &dChrom ) const
+double ColorXYZ::GetDeltaLCH(double YWhite, const ColorXYZ& refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form, bool isGS, int gw_Weight, double &dChrom, double &dHue ) const
 {
 	CColorReference cRef=CColorReference(HDTV, D65, 2.2); //special modes assume rec.709
 	double dLight;
@@ -1167,7 +1180,6 @@ ColorLab::ColorLab(const ColorXYZ& XYZ, double YWhiteRef, CColorReference colorR
     if(XYZ.isValid())
     {
         double scaling = YWhiteRef/colorReference.GetWhite()[1];
-
         double var_X = XYZ[0]/(colorReference.GetWhite()[0]*scaling);
         double var_Y = XYZ[1]/(colorReference.GetWhite()[1]*scaling);
         double var_Z = XYZ[2]/(colorReference.GetWhite()[2]*scaling);

@@ -695,7 +695,7 @@ void CColorHCFRConfig::ApplySettings(BOOL isStartupApply)
 		if ( OriginalColorStandard != m_colorStandard || OriginalWhiteTarget != m_whiteTarget )
 		{
 			CWaitCursor	wait;
-			GetColorApp() -> CreateCIEBitmaps ();
+			GetColorApp() -> CreateCIEBitmaps ( FALSE );
 		}
 	}
 

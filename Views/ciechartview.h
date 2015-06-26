@@ -42,7 +42,7 @@ class CCIEGraphPoint
 {
 // Operations
 public:
-	CCIEGraphPoint(const ColorXYZ& color, double WhiteYRef, CString aName, BOOL bConvertCIEuv);
+	CCIEGraphPoint(const ColorXYZ& color, double WhiteYRef, CString aName, BOOL bConvertCIEuv, BOOL bConvertCIEab);
 	int GetGraphX(CRect rect) const;
 	int GetGraphY(CRect rect) const;
 	CPoint GetGraphPoint(CRect rect) const;
@@ -50,12 +50,12 @@ public:
 
 // Attributes
 public:
-	double	x;
-	double	y;
+	double	x,a;
+	double	y,b;
 	double	L;
 	CString name;
 	BOOL	bCIEuv;
-	BOOL	bCIELab;
+	BOOL	bCIEab;
     ColorXYZ m_color;
 };
 
@@ -220,7 +220,9 @@ protected:
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnHelp();
 	afx_msg void OnCieUv();
+	afx_msg void OnCieab();
 	afx_msg void OnUpdateCieUv(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateCieab(CCmdUI* pCmdUI);
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 	afx_msg void NotifyDisplayTooltip(NMHDR * pNMHDR, LRESULT * result);
