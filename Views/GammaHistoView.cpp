@@ -120,11 +120,14 @@ void CGammaGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	// Compute offset
 	pDoc->ComputeGammaAndOffset(&GammaOpt, &GammaOffset, 1,1,size, false);
 	pDoc->ComputeGammaAndOffset(&LuxGammaOpt, &LuxGammaOffset, 2,1,size, false);
+	GammaOpt = floor(GammaOpt * 100) / 100;
+	
 	if ((m_showDataRef)&&(pDataRef !=NULL)&&(pDataRef !=pDoc))
 	{
 		pDoc->ComputeGammaAndOffset(&RefGammaOpt, &RefGammaOffset, 1,1,size,false);
 		pDoc->ComputeGammaAndOffset(&RefLuxGammaOpt, &RefLuxGammaOffset, 2,1,size,false);
 	}
+	RefGammaOpt = floor(RefGammaOpt * 100) / 100;
 
 	if (m_showReference && m_refLogGraphID != -1 && size > 0)
 	{	

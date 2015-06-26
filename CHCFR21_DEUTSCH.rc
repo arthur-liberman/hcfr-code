@@ -1527,8 +1527,8 @@ BEGIN
     VK_ADD,         IDM_GRAPH_Y_ZOOM_IN,    VIRTKEY, NOINVERT
     VK_ADD,         IDM_DELTAE_GRAPH_Y_ZOOM_IN, VIRTKEY, CONTROL, NOINVERT
     VK_ADD,         IDM_GRAPH_X_ZOOM_IN,    VIRTKEY, SHIFT, NOINVERT
-    VK_UP,          IDM_GRAPH_Y_ZOOM_IN,    VIRTKEY, SHIFT, NOINVERT
-    VK_DOWN,        IDM_GRAPH_Y_ZOOM_OUT,   VIRTKEY, SHIFT, NOINVERT
+    VK_UP,          IDM_GRAPH_Y_ZOOM_IN,    VIRTKEY, ALT, NOINVERT
+    VK_DOWN,        IDM_GRAPH_Y_ZOOM_OUT,   VIRTKEY, ALT, NOINVERT
     VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT, NOINVERT
     VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
     VK_DOWN,        IDM_DELTAE_GRAPH_Y_SHIFT_BOTTOM, VIRTKEY, CONTROL, NOINVERT
@@ -2368,12 +2368,12 @@ BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "CompanyName", "Association Homecinema Francophone"
             VALUE "FileDescription", "HCFR Colorimeter resources"
-            VALUE "FileVersion", "3,3,2"
+            VALUE "FileVersion", "3,3,3"
             VALUE "InternalName", "CHCFR21_DEUTSCH"
             VALUE "LegalCopyright", "Copyright (C) 2005-2008"
             VALUE "OriginalFilename", "CHCFR21_DEUTSCH.DLL"
             VALUE "ProductName", "HCFR Colorimeter German language"
-            VALUE "ProductVersion", "3,3,2"
+            VALUE "ProductVersion", "3,3,3"
         END
     END
     BLOCK "VarFileInfo"
@@ -2507,7 +2507,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDR_MAINFRAME           "HCFR Colorimeter - 3.3.2"
+    IDR_MAINFRAME           "HCFR Colorimeter - 3.3.3"
     IDR_MESURETYPE          "\nFarbmessungen\nFarbmessungen\nColorHCFR Datei (*.chc)\n.chc\nCOLORHCFR\nHCFR Farbmessungen"
 END
 

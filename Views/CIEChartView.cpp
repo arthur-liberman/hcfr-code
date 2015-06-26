@@ -260,7 +260,7 @@ void CCIEChartGrapher::MakeBgBitmap(CRect rect, BOOL bWhiteBkgnd)	// Create back
 			bgDC.TextOut(x+2,rect.bottom,str); // Draw axis label
 	}
 
-	for(i=0;i<(m_bCIEab?21.0:m_bCIEuv?7:9);i++) 	// Draw Y axis
+	for(i=0;i<(m_bCIEab?20.0:m_bCIEuv?7:9);i++) 	// Draw Y axis
 	{
 		int y=(int)(rect.Height()*((i + 0.5)/(m_bCIEuv?8.0:10.0)));
 		if (m_bCIEab)
@@ -2677,7 +2677,31 @@ void CCIEChartView::OnUpdateCieab(CCmdUI* pCmdUI)
 
 BOOL CCIEChartView::PreTranslateMessage(MSG* pMsg) 
 {
-	m_tooltip.RelayEvent(pMsg);
+
+	if(pMsg->message == WM_SYSKEYDOWN)
+	{
+		if (pMsg->wParam == VK_UP)
+		{
+			OnGraphZoomIn();
+			return TRUE;
+		}
+		if (pMsg->wParam == VK_DOWN)
+		{
+			OnGraphZoomOut();
+			return TRUE;
+		}
+	}
+
+	if(pMsg->message == WM_KEYDOWN)
+	{
+		if (pMsg->wParam == VK_UP || pMsg->wParam == VK_DOWN || pMsg->wParam == VK_RIGHT || pMsg->wParam == VK_LEFT)
+		{
+			OnKeyDown(pMsg->wParam, 2, 0);
+			return TRUE;
+		}
+	}
+
+	m_tooltip.RelayEvent(pMsg);	
 	
 	return CSavingView::PreTranslateMessage(pMsg);
 }

@@ -176,7 +176,6 @@ public:
 
 // Implementation
 protected:
-
 	void SaveChart();
 
 	virtual ~CCIEChartView();

@@ -484,7 +484,7 @@ void CRGBLevelWnd::OnPaint()
 
 	// Initializes a CFont object with the specified characteristics. 
 	CFont font;
-/*
+
 	VERIFY(font.CreateFont(
 	   15,						  // nHeight
 	   5,                         // nWidth
@@ -495,13 +495,13 @@ void CRGBLevelWnd::OnPaint()
 	   FALSE,                     // bUnderline
 	   0,                         // cStrikeOut
 	   ANSI_CHARSET,              // nCharSet
-	   OUT_DEFAULT_PRECIS,        // nOutPrecision
+	   OUT_TT_ONLY_PRECIS,//OUT_DEFAULT_PRECIS,        // nOutPrecision
 	   CLIP_DEFAULT_PRECIS,       // nClipPrecision
-	   DEFAULT_QUALITY,           // nQuality
-	   FIXED_PITCH,				  // nPitchAndFamily
+	   PROOF_QUALITY,//DEFAULT_QUALITY,           // nQuality
+	   VARIABLE_PITCH | FF_MODERN,//FIXED_PITCH,				  // nPitchAndFamily
 	   "Arial"));                 // lpszFacename
-*/
-	font.CreateFont(14,0,0,0,FW_BOLD,FALSE,FALSE,FALSE,0,OUT_TT_ONLY_PRECIS,CLIP_DEFAULT_PRECIS,PROOF_QUALITY,VARIABLE_PITCH | FF_MODERN,_T("Garamond"));
+
+//	font.CreateFont(14,0,0,0,FW_BOLD,FALSE,FALSE,FALSE,0,OUT_TT_ONLY_PRECIS,CLIP_DEFAULT_PRECIS,PROOF_QUALITY,VARIABLE_PITCH | FF_MODERN,_T("Garamond"));
 
 	// Do something with the font just created...
 	CFont* pOldFont = pDC->SelectObject(&font);
