@@ -159,7 +159,6 @@ void CCIEChartGrapher::MakeBgBitmap(CRect rect, BOOL bWhiteBkgnd)	// Create back
 {
     int		i;
 	CDC		ScreenDC;
-	m_ttID = 0;
 	
 	ScreenDC.CreateDC ( "DISPLAY", NULL, NULL, NULL );
 
@@ -343,9 +342,6 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 			else
 				str.Format("<font color=\"#004080\">x: %.3f, y: %.3f, Y: %.2f%%\n",aGraphPoint.x,aGraphPoint.y,aGraphPoint.GetNormalizedColor()[1]*100);
 
-//		double L  = ColorLab(aGraphPoint.GetNormalizedColor(), 1.0, GetColorReference())[0];
-//		double a  = ColorLab(aGraphPoint.GetNormalizedColor(), 1.0, GetColorReference())[1];
-//		double b  = ColorLab(aGraphPoint.GetNormalizedColor(), 1.0, GetColorReference())[2];
 		str1.Format("L*a*b*: %.2f %.3f %.3f",aGraphPoint.L,aGraphPoint.a,aGraphPoint.b);
 		str += str1;
 
@@ -399,8 +395,11 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 					pTooltip -> AddTool(pWnd, "<b><font color=\"#EFEFEF\">"+CString(aGraphPoint.name) +"</font></b> \n\n\n" +str+str2,&rect_tip, m_ttID);
 				else
 					pTooltip -> AddTool(pWnd, "<b><font color=\"#101010\">"+CString(aGraphPoint.name) +"</font></b> \n\n\n" +str+str2,&rect_tip, m_ttID);
+
 				if (m_ttID < 4999)
 					m_ttID++;
+				else
+					m_ttID = 0;
 		}
 		else
 		{
@@ -415,8 +414,11 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 				pTooltip -> AddTool(pWnd, "<b><font color=\"#EFEFEF\">"+CString(aGraphPoint.name) +"</font></b> \n" +str+str2,&rect_tip, m_ttID);
 			else
 				pTooltip -> AddTool(pWnd, "<b><font color=\"#101010\">"+CString(aGraphPoint.name) +"</font></b> \n" +str+str2,&rect_tip, m_ttID);
+
 			if (m_ttID < 4999)
 				m_ttID++;
+			else
+				m_ttID = 0;
 			bDrawBMP = TRUE;
 		}
 		

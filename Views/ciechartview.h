@@ -114,7 +114,7 @@ class CCIEChartGrapher
 	BOOL m_bdE10;
 	double dE10;
 
-	int		m_ttID; //tooltip index
+	int		m_ttID; //tooltip index, max of 5000 entries per chart
 
 	// Zoom handling, for window mode
 	UINT	m_ZoomFactor;	// Zoom factor = 1000 for 1:1 scale, 2000 for 2x zoom, and so on
