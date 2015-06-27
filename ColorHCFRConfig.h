@@ -73,6 +73,8 @@ public:
 	double m_GammaAvg;
 	double m_GammaRel;
 	double m_Split;
+	double m_ManualBlack;
+	BOOL m_userBlack;
 	BOOL m_useMeasuredGamma;
 	double m_manualGOffset;
 	double m_manualWhitex;

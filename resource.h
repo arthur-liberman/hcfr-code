@@ -50,6 +50,8 @@
 #define IDC_EDIT_SPLIT                  144
 #define IDD_SENSOR_PROP_PAGE            145
 #define IDD_SIMULATED_SENSOR_PROP_PAGE  146
+#define IDC_USE_MEASURED_GAMMA2         147
+#define IDC_USER_BLACK                  147
 #define IDD_KISENSOR_PROP_PAGE          150
 #define IDD_GENERATOR_PROP_PAGE         151
 #define IDR_MEDIUMTOOLBAR_VIEWS         152
@@ -539,6 +541,7 @@
 #define IDC_EDIT_MANUAL_GOFFSET         1178
 #define IDC_ANSICONTRAST_PATTERN_TEST_BUTTON 1179
 #define IDC_CHECK_SAVEPOSITION          1179
+#define IDC_EDIT_MANUAL_BLACK           1179
 #define IDC_REPLACEMEASURE_LIST         1180
 #define IDC_APPEND_RADIO                1181
 #define IDC_REPLACE_RADIO               1182

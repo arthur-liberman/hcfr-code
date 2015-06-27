@@ -116,6 +116,11 @@ CMeasure::CMeasure()
 		m_nbMaxMeasurements = 100;
 	else if ( m_nbMaxMeasurements > 30000 )
 		m_nbMaxMeasurements = 30000;
+
+	m_bOverRideBlack = GetConfig()->GetProfileDouble("References","Use Black Level",0);
+	double YBlack = GetConfig()->GetProfileDouble("References","Manual Black Level",0);
+	m_userBlack = CColor(ColorXYZ(YBlack*.95047,YBlack,YBlack*1.0883));
+
 }
 
 CMeasure::~CMeasure()
@@ -223,8 +228,11 @@ void CMeasure::Serialize(CArchive& ar)
 
 	if (ar.IsStoring())
 	{
-	    int version=10;
+	    int version = 11;
 		ar << version;
+
+		ar << m_bOverRideBlack; //new in 11
+		m_userBlack.Serialize(ar);
 
 		ar << m_grayMeasureArray.GetSize();
 		for(int i=0;i<m_grayMeasureArray.GetSize();i++)
@@ -301,8 +309,15 @@ void CMeasure::Serialize(CArchive& ar)
 	    int version;
 		ar >> version;
 
-		if ( version > 10)
+		if ( version > 11)
 			AfxThrowArchiveException ( CArchiveException::badSchema );
+
+		if (version > 10)
+		{
+
+			ar >> m_bOverRideBlack;
+			m_userBlack.Serialize(ar);
+		}
 
 		int size, gsize;
 
@@ -448,6 +463,7 @@ void CMeasure::Serialize(CArchive& ar)
 		ar >> m_infoStr;
 		if (m_infoStr.Find("\n") < 1)
 			SetInfoString((CString)"Calibration by: \r\nDisplay: \r\nNote: \r\n");
+
 		if ( version > 4 && version < 7 )
 		{
             BOOL bUseAdjustmentMatrix;
@@ -462,7 +478,6 @@ void CMeasure::Serialize(CArchive& ar)
 			ar >> m_bIREScaleMode;
 		else
 			m_bIREScaleMode = FALSE;
-
 
 	}
 	m_isModified = FALSE;
@@ -717,7 +732,7 @@ BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator, CDataS
 	}
 	
 	m_binMeasure = TRUE;
-	for(int i=0;i<size;i++)
+	for(int i=(CheckBlackOverride()?1:0);i<size;i++)
 	{
 		if (i>0)
 			GetConfig()->m_isSettling=FALSE;
@@ -734,7 +749,8 @@ BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator, CDataS
 					StartLuxMeasure ();
 
 				measuredColor[i]=pSensor->MeasureGray(ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown));
-				m_grayMeasureArray[i] = measuredColor[i];
+
+					m_grayMeasureArray[i] = measuredColor[i];
 				
 				if ( bUseLuxValues )
 				{
@@ -855,7 +871,10 @@ BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator, CDataS
 
 	for(int i=0;i<size;i++)
 	{
-		m_grayMeasureArray[i] = measuredColor[i];
+		if (!i && m_bOverRideBlack)
+			m_grayMeasureArray[i] = m_userBlack;
+		else
+			m_grayMeasureArray[i] = measuredColor[i];
 
 		if ( bUseLuxValues )
 			m_grayMeasureArray[i].SetLuxValue ( measuredLux[i] );
@@ -864,7 +883,10 @@ BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator, CDataS
 	}
 
 	m_OnOffWhite = measuredColor[size-1];
-	m_OnOffBlack = measuredColor[0];
+	if (m_bOverRideBlack)
+		m_OnOffBlack = m_userBlack;
+	else		
+		m_OnOffBlack = measuredColor[0];
 
 	if ( bUseLuxValues )
 	{
@@ -925,7 +947,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 	}
 
 	m_binMeasure = TRUE;
-	for(int i=0;i<size;i++)
+	for(int i=(CheckBlackOverride()?1:0);i<size;i++)
 	{
 		if (i>0)
 			GetConfig()->m_isSettling=FALSE;
@@ -1206,7 +1228,10 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 
 	for(int i=0;i<size;i++)
 	{
-		m_grayMeasureArray[i] = measuredColor[i];
+		if (!i && m_bOverRideBlack)
+			m_grayMeasureArray[i] = m_userBlack;
+		else
+			m_grayMeasureArray[i] = measuredColor[i];
 
 		if ( bUseLuxValues )
 			m_grayMeasureArray[i].SetLuxValue ( measuredLux[i] );
@@ -1235,7 +1260,10 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 	}
 
 	m_OnOffWhite = measuredColor[size-1];
-	m_OnOffBlack = measuredColor[0];
+	if (m_bOverRideBlack)
+		m_OnOffBlack = m_userBlack;
+	else
+		m_OnOffBlack = measuredColor[0];
 
 	if ( bUseLuxValues )
 	{
@@ -1307,7 +1335,7 @@ BOOL CMeasure::MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator, C
 
 
 	m_binMeasure = TRUE;
-	for(int i=0;i<size;i++)
+	for(int i=(CheckBlackOverride()?1:0);i<size;i++)
 	{
 		if (i>0)
 			GetConfig()->m_isSettling=FALSE;
@@ -1444,7 +1472,10 @@ BOOL CMeasure::MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator, C
 
 	for(int i=0;i<size;i++)
 	{
-		m_nearBlackMeasureArray[i] = measuredColor[i];
+		if (m_bOverRideBlack)
+			m_nearBlackMeasureArray[i] = m_userBlack;
+		else
+			m_nearBlackMeasureArray[i] = measuredColor[i];
 		if ( bUseLuxValues )
 			m_nearBlackMeasureArray[i].SetLuxValue ( measuredLux[i] );
 		else
@@ -3675,7 +3706,10 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator, CDataS
 
 	if ( GetConfig () -> m_BWColorsToAdd > 1 )
 	{
-		m_OnOffBlack = measuredColor[4];                
+		if (m_bOverRideBlack)
+			m_OnOffBlack = m_userBlack;
+		else
+			m_OnOffBlack = measuredColor[4];                
 		if ( bUseLuxValues )
 			m_OnOffBlack.SetLuxValue ( measuredLux[4] );
 		else
@@ -3906,7 +3940,10 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator, CDat
 
 	if ( GetConfig () -> m_BWColorsToAdd > 1 )
 	{
-		m_OnOffBlack = measuredColor[7];
+		if (m_bOverRideBlack)
+			m_OnOffBlack = m_userBlack;
+		else
+			m_OnOffBlack = measuredColor[7];
 		if ( bUseLuxValues )
 			m_OnOffBlack.SetLuxValue ( measuredLux[7] );
 		else
@@ -3979,7 +4016,8 @@ BOOL CMeasure::MeasureContrast(CSensor *pSensor, CGenerator *pGenerator)
 				if ( bUseLuxValues )
 					StartLuxMeasure ();
 
-				measure=pSensor->MeasureColor(ColorRGBDisplay(BlackIRELevel));
+				if (!m_bOverRideBlack)
+					measure=pSensor->MeasureColor(ColorRGBDisplay(BlackIRELevel));
 				
 				if ( bUseLuxValues )
 				{
@@ -4068,7 +4106,10 @@ BOOL CMeasure::MeasureContrast(CSensor *pSensor, CGenerator *pGenerator)
 			}
 			else
 			{
-				m_OnOffBlack = measure;
+				if (m_bOverRideBlack)
+					m_OnOffBlack = m_userBlack;
+				else
+					m_OnOffBlack = measure;
 			}
 		}
 		else
@@ -4192,7 +4233,6 @@ BOOL CMeasure::MeasureContrast(CSensor *pSensor, CGenerator *pGenerator)
 				{
 					if ( bUseLuxValues )
 						StartLuxMeasure ();
-
 					measure=pSensor->MeasureColor(ColorRGBDisplay(NearBlackIRELevel));	// Assume Black
 					
 					if ( bUseLuxValues )
@@ -4265,17 +4305,17 @@ BOOL CMeasure::MeasureContrast(CSensor *pSensor, CGenerator *pGenerator)
 
 				if(!pSensor->IsMeasureValid())
 				{
-				Title.LoadString ( IDS_ERROR );
-				strMsg.LoadString ( IDS_ANERROROCCURED );
-				int result=GetColorApp()->InMeasureMessageBox(strMsg+pSensor->GetErrorString(),Title,MB_ABORTRETRYIGNORE | MB_ICONERROR);
-					if(result == IDABORT)
-					{
-						pSensor->Release();
-						pGenerator->Release();
-						return FALSE;
-					}
-					if(result == IDRETRY)
-						i--;
+					Title.LoadString ( IDS_ERROR );
+					strMsg.LoadString ( IDS_ANERROROCCURED );
+					int result=GetColorApp()->InMeasureMessageBox(strMsg+pSensor->GetErrorString(),Title,MB_ABORTRETRYIGNORE | MB_ICONERROR);
+						if(result == IDABORT)
+						{
+							pSensor->Release();
+							pGenerator->Release();
+							return FALSE;
+						}
+						if(result == IDRETRY)
+							i--;
 				}
 				else
 				{
@@ -4432,10 +4472,13 @@ double CMeasure::GetOnOffContrast ()
 	double	black = m_OnOffBlack.GetPreferedLuxValue (GetConfig () -> m_bPreferLuxmeter);
 	double	white = m_OnOffWhite.GetPreferedLuxValue (GetConfig () -> m_bPreferLuxmeter);
 	
-	if ( black > 0.000001 && white > black )
+	if ( black > 0.0 && white > black )
 		return ( white / black );
 	else
-		return -1.0;
+		if (black == 0)
+			return -1.0;
+		else
+			return -2.0;
 }
 
 double CMeasure::GetAnsiContrast ()
@@ -4446,7 +4489,10 @@ double CMeasure::GetAnsiContrast ()
 	if ( black > 0.000001 && white > black )
 		return ( white / black );
 	else
-		return -1.0;
+		if (black == 0)
+			return -1.0;
+		else
+			return -2.0;
 }
 
 double CMeasure::GetContrastMinLum ()
@@ -4470,8 +4516,6 @@ double CMeasure::GetContrastMaxLum ()
 
 void CMeasure::DeleteContrast ()
 {
-//	m_OnOffBlack = noDataColor;
-//	m_OnOffWhite = noDataColor;
 	m_AnsiBlack = noDataColor;
 	m_AnsiWhite = noDataColor;
 
@@ -4566,8 +4610,12 @@ void CMeasure::ApplySensorAdjustmentMatrix(const Matrix& aMatrix)
 {
 	for(int i=0;i<m_grayMeasureArray.GetSize();i++)  // Preserve sensor values 
 	{
-		m_grayMeasureArray[i].applyAdjustmentMatrix(aMatrix);
+				if (!i && m_bOverRideBlack)
+					m_grayMeasureArray[i] = m_userBlack;
+				else
+					m_grayMeasureArray[i].applyAdjustmentMatrix(aMatrix);
 	}
+
 	for(int i=0;i<m_nearBlackMeasureArray.GetSize();i++)  // Preserve sensor values 
 	{
 		m_nearBlackMeasureArray[i].applyAdjustmentMatrix(aMatrix);
@@ -4617,7 +4665,8 @@ void CMeasure::ApplySensorAdjustmentMatrix(const Matrix& aMatrix)
 		m_secondariesArray[i].applyAdjustmentMatrix(aMatrix);
 	}
 	
-	m_OnOffBlack.applyAdjustmentMatrix(aMatrix);
+	if (!m_bOverRideBlack)
+		m_OnOffBlack.applyAdjustmentMatrix(aMatrix);
 	
 	m_OnOffWhite.applyAdjustmentMatrix(aMatrix);
 
@@ -4665,6 +4714,13 @@ BOOL CMeasure::WaitForDynamicIris ( BOOL bIgnoreEscape )
 		MessageBeep (-1);
 
 	return bEscape;
+}
+BOOL CMeasure::CheckBlackOverride ( )
+{
+	m_bOverRideBlack = GetConfig()->GetProfileDouble("References","Use Black Level",0);
+	double YBlack = GetConfig()->GetProfileDouble("References","Manual Black Level",0);
+	m_userBlack = CColor(ColorXYZ(YBlack*.95047,YBlack,YBlack*1.0883));
+	return m_bOverRideBlack;
 }
 
 void CMeasure::UpdateViews ( CDataSetDoc *pDoc, int Sequence )
@@ -4841,7 +4897,10 @@ BOOL CMeasure::ValidateBackgroundGrayScale ( BOOL bUseLuxValues, double * pLuxVa
 		SetGrayScaleSize(m_nBkMeasureStepCount);
 		for ( int i = 0; i < m_nBkMeasureStepCount ; i++ )
 		{
-			m_grayMeasureArray[i] = (*m_pBkMeasuredColor)[i];
+			if (!i && m_bOverRideBlack)
+				m_grayMeasureArray[i] = m_userBlack;
+			else
+				m_grayMeasureArray[i] = (*m_pBkMeasuredColor)[i];
 
 			if ( bUseLuxValues )
 				m_grayMeasureArray[i].SetLuxValue ( pLuxValues[i] );
@@ -5023,15 +5082,16 @@ BOOL CMeasure::ValidateBackgroundPrimaries ( BOOL bUseLuxValues, double * pLuxVa
 
 		if ( m_nBkMeasureStepCount >= 5 )
 		{
-			m_OnOffBlack = (*m_pBkMeasuredColor)[4];
+			if (m_bOverRideBlack)
+				m_OnOffBlack = m_userBlack;
+			else
+				m_OnOffBlack = (*m_pBkMeasuredColor)[4];
 
 			if ( bUseLuxValues )
 				m_OnOffBlack.SetLuxValue ( pLuxValues[4] );
 			else
 				m_OnOffBlack.ResetLuxValue ();
 		}
-//		else
-//			m_OnOffBlack = noDataColor;
 	}
 
 	// Close background thread and event objects
@@ -5084,15 +5144,16 @@ BOOL CMeasure::ValidateBackgroundSecondaries ( BOOL bUseLuxValues, double * pLux
 
 		if ( m_nBkMeasureStepCount >= 8 )
 		{
-			m_OnOffBlack = (*m_pBkMeasuredColor)[7];
+			if (m_bOverRideBlack)
+				m_OnOffBlack = m_userBlack;				
+			else
+				m_OnOffBlack = (*m_pBkMeasuredColor)[7];
 
 			if ( bUseLuxValues )
 				m_OnOffBlack.SetLuxValue ( pLuxValues[7] );
 			else
 				m_OnOffBlack.ResetLuxValue ();
 		}
-//		else
-//			m_OnOffBlack = noDataColor;
 	}
 
 	// Close background thread and event objects
@@ -5113,7 +5174,10 @@ BOOL CMeasure::ValidateBackgroundGrayScaleAndColors ( BOOL bUseLuxValues, double
 		SetGrayScaleSize(m_nBkMeasureStepCount-6);
 		for ( int i = 0; i < m_nBkMeasureStepCount-6 ; i++ )
 		{
-			m_grayMeasureArray[i] = (*m_pBkMeasuredColor)[i];
+			if (!i && m_bOverRideBlack)
+				m_grayMeasureArray[i] = m_userBlack;
+			else
+				m_grayMeasureArray[i] = (*m_pBkMeasuredColor)[i];
 
 			if ( bUseLuxValues )
 				m_grayMeasureArray[i].SetLuxValue ( pLuxValues[i] );
@@ -5140,7 +5204,10 @@ BOOL CMeasure::ValidateBackgroundGrayScaleAndColors ( BOOL bUseLuxValues, double
 		}
 
 		m_PrimeWhite = (*m_pBkMeasuredColor)[m_nBkMeasureStepCount-7];
-		m_OnOffBlack = (*m_pBkMeasuredColor)[0];
+		if (m_bOverRideBlack)
+			m_OnOffBlack = m_userBlack;
+		else
+			m_OnOffBlack = (*m_pBkMeasuredColor)[0];
 
 		if ( bUseLuxValues )
 		{

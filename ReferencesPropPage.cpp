@@ -45,6 +45,8 @@ CReferencesPropPage::CReferencesPropPage() : CPropertyPageWithHelp(CReferencesPr
 	m_GammaRef = 2.2;
 	m_GammaAvg = 2.2;
 	m_changeWhiteCheck = FALSE;
+	m_userBlack = FALSE;
+	m_ManualBlack = 0.0;
 	m_useMeasuredGamma = FALSE;
 	m_GammaOffsetType = 1;
 	m_manualGOffset = 0.099;
@@ -66,6 +68,7 @@ void CReferencesPropPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT_GAMMA_REF, m_GammaRefEdit);
 	DDX_Control(pDX, IDC_EDIT_GAMMA_AVERAGE, m_GammaAvgEdit);
 	DDX_Control(pDX, IDC_EDIT_GAMMA_REL, m_GammaRelEdit);
+	DDX_Control(pDX, IDC_EDIT_MANUAL_BLACK, m_ManualBlackEdit);
 	DDX_Control(pDX, IDC_EDIT_SPLIT, m_SplitEdit);
 	DDX_Control(pDX, IDC_WHITETARGET_COMBO, m_whiteTargetCombo);
 	DDX_CBIndex(pDX, IDC_WHITETARGET_COMBO, m_whiteTarget);
@@ -73,14 +76,17 @@ void CReferencesPropPage::DoDataExchange(CDataExchange* pDX)
 	DDX_CBIndex(pDX, IDC_CCMODE_COMBO, m_CCMode);
   	DDX_Text(pDX, IDC_EDIT_GAMMA_REF, m_GammaRef);
   	DDX_Text(pDX, IDC_EDIT_GAMMA_REL, m_GammaRel);
+  	DDX_Text(pDX, IDC_EDIT_MANUAL_BLACK, m_ManualBlack);
   	DDX_Text(pDX, IDC_EDIT_SPLIT, m_Split);
   	DDX_Text(pDX, IDC_EDIT_GAMMA_AVERAGE, m_GammaAvg);
 	DDV_MinMaxDouble(pDX, m_GammaRef, 1., 5.);
 	DDV_MinMaxDouble(pDX, m_GammaAvg, 1., 5.);
 	DDV_MinMaxDouble(pDX, m_GammaRel, 0., 5.);
 	DDV_MinMaxDouble(pDX, m_Split, 0., 100.);
+	DDV_MinMaxDouble(pDX, m_ManualBlack, 0., 1.);
 	DDX_Check(pDX, IDC_CHANGEWHITE_CHECK, m_changeWhiteCheck);
 	DDX_Check(pDX, IDC_USE_MEASURED_GAMMA, m_useMeasuredGamma);
+	DDX_Check(pDX, IDC_USER_BLACK, m_userBlack);
 	DDX_Control(pDX, IDC_USE_MEASURED_GAMMA, m_eMeasuredGamma);
 	DDX_Radio(pDX, IDC_GAMMA_OFFSET_RADIO1, m_GammaOffsetType);
 	DDX_Text(pDX, IDC_EDIT_MANUAL_GOFFSET, m_manualGOffset);
@@ -121,6 +127,7 @@ BEGIN_MESSAGE_MAP(CReferencesPropPage, CPropertyPageWithHelp)
 	ON_EN_CHANGE(IDC_EDIT_IRIS_TIME, OnChangeEditIrisTime)
 	ON_EN_CHANGE(IDC_EDIT_GAMMA_REF, OnChangeEditGammaRef)
 	ON_EN_CHANGE(IDC_EDIT_GAMMA_REL, OnChangeEditGammaRel)
+	ON_EN_CHANGE(IDC_EDIT_MANUAL_BLACK, OnChangeEditManualBlack)
 	ON_EN_CHANGE(IDC_EDIT_SPLIT, OnChangeEditGammaRel)
 	ON_EN_CHANGE(IDC_EDIT_GAMMA_AVERAGE, OnChangeEditGammaAvg)
 	ON_EN_CHANGE(IDC_WHITE_X, OnChangeEditGammaAvg)
@@ -133,6 +140,7 @@ BEGIN_MESSAGE_MAP(CReferencesPropPage, CPropertyPageWithHelp)
 	ON_EN_CHANGE(IDC_BLUE_Y, OnChangeEditGammaAvg)
 	ON_BN_CLICKED(IDC_CHANGEWHITE_CHECK, OnChangeWhiteCheck)
 	ON_BN_CLICKED(IDC_USE_MEASURED_GAMMA, OnUseMeasuredGammaCheck)
+	ON_BN_CLICKED(IDC_USER_BLACK, OnUserBlackCheck)
 	ON_CBN_SELCHANGE(IDC_COLORREF_COMBO, OnSelchangeColorrefCombo)
 	ON_CBN_SELCHANGE(IDC_CCMODE_COMBO, OnSelchangeCCmodeCombo)
 	ON_EN_CHANGE(IDC_EDIT_MANUAL_GOFFSET, OnChangeEditManualGOffset)
@@ -145,6 +153,7 @@ END_MESSAGE_MAP()
 void CReferencesPropPage::OnControlClicked(UINT nID) 
 {
 	UpdateData(TRUE);
+
 	if (m_GammaOffsetType >= 4 || GetConfig()->m_colorStandard == sRGB)
     {
   	  m_GammaRefEdit.EnableWindow (FALSE);
@@ -158,6 +167,8 @@ void CReferencesPropPage::OnControlClicked(UINT nID)
 	m_isModified=TRUE;
 	SetModified(TRUE);	
 	UpdateData(FALSE);
+	GetConfig()->WriteProfileInt("References","Use Black Level",m_userBlack);
+	GetConfig()->WriteProfileDouble("References","Manual Black Level", m_ManualBlack);
 }
 
 void CReferencesPropPage::OnCheckColors() 
@@ -201,6 +212,10 @@ BOOL CReferencesPropPage::OnApply()
   	  m_GammaRefEdit.EnableWindow (FALSE);
   	  m_eMeasuredGamma.EnableWindow (FALSE);
     }
+	if (m_userBlack)
+		m_ManualBlackEdit.EnableWindow(TRUE);
+	else
+		m_ManualBlackEdit.EnableWindow(FALSE);
 	GetConfig()->ApplySettings(FALSE);
 	m_isModified=FALSE;
 	return CPropertyPageWithHelp::OnApply();
@@ -233,6 +248,7 @@ BOOL CReferencesPropPage::OnInitDialog()
 	}
 	m_GammaAvgEdit.EnableWindow(FALSE);
 	m_changeWhiteCheck = (m_whiteTarget!=(int)(GetStandardColorReference((ColorStandard)(m_colorStandard)).m_white));
+
 	if(m_changeWhiteCheck)
 	{
 		CheckRadioButton ( IDC_CHANGEWHITE_CHECK, IDC_CHANGEWHITE_CHECK, IDC_CHANGEWHITE_CHECK );
@@ -270,6 +286,10 @@ BOOL CReferencesPropPage::OnInitDialog()
   	  m_eMeasuredGamma.EnableWindow (FALSE);
     }
 
+	m_ManualBlack = GetConfig()->GetProfileDouble("References","Manual Black Level",0.0);
+	m_userBlack = GetConfig()->GetProfileInt("References","Use Black Level",0);
+
+	m_ManualBlackEdit.EnableWindow(m_userBlack);
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -284,6 +304,15 @@ void CReferencesPropPage::OnChangeEditGammaRel()
 {
 	m_isModified=TRUE;
 	SetModified(TRUE);
+}
+
+void CReferencesPropPage::OnChangeEditManualBlack() 
+{
+	m_isModified=TRUE;
+	SetModified(TRUE);	
+	UpdateData(TRUE);
+	GetConfig()->WriteProfileInt("References","Use Black Level",m_userBlack);
+	GetConfig()->WriteProfileDouble("References","Manual Black Level", m_ManualBlack);
 }
 
 void CReferencesPropPage::OnChangeEditGammaAvg() 
@@ -320,7 +349,18 @@ void CReferencesPropPage::OnUseMeasuredGammaCheck()
 {
 	m_isModified=TRUE;
 	SetModified(TRUE);	
+
 	UpdateData(TRUE);
+}
+
+void CReferencesPropPage::OnUserBlackCheck() 
+{
+	m_isModified=TRUE;
+	SetModified(TRUE);	
+	UpdateData(TRUE);
+	m_ManualBlackEdit.EnableWindow(m_userBlack);
+	GetConfig()->WriteProfileInt("References","Use Black Level",m_userBlack);
+	GetConfig()->WriteProfileDouble("References","Manual Black Level", m_ManualBlack);
 }
 
 void CReferencesPropPage::OnSelchangeColorrefCombo() 

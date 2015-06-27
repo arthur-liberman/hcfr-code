@@ -55,6 +55,7 @@ public:
 	DECLARE_SERIAL(CMeasure) ;
 
 protected:
+	CReferencesPropPage m_referencesPropertiesPage;
 	BOOL m_isModified;
 	BOOL m_bpreV10;
 	CArray<CColor,CColor> m_primariesArray;
@@ -115,6 +116,8 @@ public:
 	void SetGrayScaleSize(int steps);
 	void SetIREScaleMode(BOOL bIRE);
 	CColor lastColor;
+	CColor m_userBlack;
+	BOOL m_bOverRideBlack;
 
 	BOOL MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator, CDataSetDoc *pDoc);
 	CColor GetNearBlack(int i) const;
@@ -217,6 +220,7 @@ public:
     void ApplySensorAdjustmentMatrix(const Matrix & matrixAdjustment);
 
 	BOOL WaitForDynamicIris ( BOOL bIgnoreEscape = FALSE );
+	BOOL CheckBlackOverride (  );
 	void UpdateViews ( CDataSetDoc *pDoc = NULL, int Sequence = 0 );
 	int m_currentIndex;
 

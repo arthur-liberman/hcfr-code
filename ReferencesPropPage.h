@@ -48,6 +48,7 @@ public:
 	CEdit m_eMeasuredGamma;
 	CEdit m_GammaAvgEdit;
 	CEdit m_GammaRelEdit;
+	CEdit m_ManualBlackEdit;
 	CEdit m_SplitEdit;
 	CEdit m_manualWhitexedit;
 	CEdit m_manualWhiteyedit;
@@ -64,9 +65,11 @@ public:
 	double	m_GammaRef;
 	double	m_GammaAvg;
     double  m_GammaRel;
+	double	m_ManualBlack;
 	double  m_Split;
 	BOOL	m_changeWhiteCheck;
 	BOOL	m_useMeasuredGamma;
+	BOOL	m_userBlack;
 	int		m_GammaOffsetType;
 	double	m_manualGOffset;
 	double	m_manualWhitex;
@@ -99,9 +102,11 @@ protected:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnChangeEditGammaRef();
 	afx_msg void OnChangeEditGammaRel();
+	afx_msg void OnChangeEditManualBlack();
 	afx_msg void OnChangeEditGammaAvg();
 	afx_msg void OnChangeWhiteCheck();
 	afx_msg void OnUseMeasuredGammaCheck();
+	afx_msg void OnUserBlackCheck();
 	afx_msg void OnSelchangeColorrefCombo();
 	afx_msg void OnSelchangeCCmodeCombo();
 	afx_msg void OnChangeEditGammaOffset();

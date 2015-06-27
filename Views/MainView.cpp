@@ -1831,13 +1831,22 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 					str.Format("%.3f",aMeasure.GetRGBValue((GetColorReference()))[aComponentNum]);
 					break;
 				case HCFR_xyz2_VIEW:
-					str.Format("%.4f",aMeasure.GetxyzValue()[aComponentNum]);
+					if (aMeasure.GetY() == 0)
+						str.Format("%s","nan");
+					else
+						str.Format("%.4f",aMeasure.GetxyzValue()[aComponentNum]);
 					break;
 				case HCFR_xyY_VIEW:
                     if (aComponentNum < 2)
-    					str.Format("%.4f",aMeasure.GetxyYValue()[aComponentNum]);
+						if (aMeasure.GetY() == 0)
+							str.Format("%s","nan");
+						else
+    						str.Format("%.4f",aMeasure.GetxyYValue()[aComponentNum]);
                     else
-    					str.Format("%.3f",aMeasure.GetxyYValue()[aComponentNum]);
+						if (aMeasure.GetY() == 0)
+							str.Format("%s","0");
+						else
+	    					str.Format("%.3f",aMeasure.GetxyYValue()[aComponentNum]);
 					break;
 			}
 			if ( str == "-99999.990" ) // Printed FX_NODATA value, coming from partially updated noDataColor
@@ -2825,6 +2834,11 @@ void CMainView::UpdateGrid()
 					    sprintf ( szBuf, ": %.0f:1 )", GetDocument()->GetMeasure()->GetOnOffWhite()[1] / GetDocument()->GetMeasure()->GetGray(0).GetXYZValue()[1] );
 					    Msg += szBuf;
 				    }
+					else if ( GetDocument()->GetMeasure()->GetGray(0).GetXYZValue()[1] == 0 )
+					{
+					    sprintf ( szBuf, ": %s:1 )", "Infinity" );
+					    Msg += szBuf;
+					}
 				    else
 				    {
 					    Msg += ": ???:1 )";
@@ -3132,7 +3146,10 @@ void CMainView::UpdateContrastValuesInGrid ()
 	if ( GetDocument()->GetMeasure()->GetOnOffContrast () > 0.0 )
 		Item.strText.Format ( "%.0f:1", GetDocument()->GetMeasure()->GetOnOffContrast () );
 	else
-		Item.strText.Empty ();
+		if ( GetDocument()->GetMeasure()->GetOnOffContrast () == -1 )
+			Item.strText.Format ("%s","Infinite");
+		else
+			Item.strText.Format ("%s","undefined");
 
 	m_pGrayScaleGrid->SetItem(&Item);
 
@@ -3142,7 +3159,10 @@ void CMainView::UpdateContrastValuesInGrid ()
 	if ( GetDocument()->GetMeasure()->GetAnsiContrast () > 0.0 )
 		Item.strText.Format ( "%.0f:1", GetDocument()->GetMeasure()->GetAnsiContrast () );
 	else
-		Item.strText.Empty ();
+		if ( GetDocument()->GetMeasure()->GetOnOffContrast () == -1 )
+			Item.strText.Format ("%s","Infinite");
+		else
+			Item.strText.Format ("%s","undefined");
 
 	m_pGrayScaleGrid->SetItem(&Item);
 }
@@ -3291,7 +3311,7 @@ void CMainView::OnGrayScaleGridEndEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 	BOOL bAcceptChange = !aNewStr.IsEmpty() && sscanf(aNewStr,"%lf",&aVal) && (m_displayType != HCFR_xyz2_VIEW);
 	if(bAcceptChange)	// update value in document
 	{
-		aVal = max(aVal, 0.000000001);
+//		aVal = max(aVal, 0.000000001);
 		// Get document XYZ value
 		CColor aColorMeasure;
 		
