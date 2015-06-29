@@ -4689,7 +4689,7 @@ BOOL CMeasure::WaitForDynamicIris ( BOOL bIgnoreEscape )
 		DWORD dwStart = GetTickCount();
 		DWORD dwNow = dwStart;
 
-		while((!bEscape) && ((dwNow - dwStart) < nLatencyTime))
+		while((!bEscape) && ((dwNow - dwStart) < nLatencyTime + 100))
 		{
 			Sleep(0);
 			while(PeekMessage(&Msg, NULL, NULL, NULL, TRUE ))

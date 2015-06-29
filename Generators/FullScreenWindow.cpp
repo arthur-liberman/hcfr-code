@@ -866,6 +866,15 @@ void CFullScreenWindow::OnPaint()
 		dHeight = (int)(rect.Height()*(100-m_rectAreaPercent)/100.0);
 //        borderArea = (dWidth + 40.) * (dHeight + 40.) - dWidth * dHeight; 
 		borderArea = 0;
+//static pattern detection avoidance
+		brush.CreateSolidBrush ( RGB(128,128,128) );
+		dc.FillRect ( &rect, &brush );
+		brush.DeleteObject ();
+		Sleep(50);
+		brush.CreateSolidBrush ( RGB(0,0,0) );
+		dc.FillRect ( &rect, &brush );
+		brush.DeleteObject ();
+		Sleep(50);
 		if(m_rectSizePercent < 100 && !isSpecial)  // Need to draw background and border
 		{
 			if (m_nDisplayMode != DISPLAY_GDI_nBG && !m_busePic)
@@ -889,7 +898,7 @@ void CFullScreenWindow::OnPaint()
 				dc.FillRect ( &rect, &brush );
 				brush.DeleteObject ();
 
-//		        CRect borderRect=rect;
+//		        CRect borderRect=rect; //remove black border as it seems to cause fixed pattern detection
 //		        borderRect.DeflateRect((dWidth-40)/2,(dHeight-40)/2);
 //                brush.CreateSolidBrush ( RGB(0,0,0) );
 //				dc.FillRect ( &borderRect, &brush );
