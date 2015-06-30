@@ -742,6 +742,7 @@
 #define IDC_MADVR_OSD2                  1290
 #define IDC_DISP_TRIP                   1290
 #define IDR_PATTERN_1956v               1291
+#define IDC_DISP_TRIP2                  1291
 #define IDR_PATTERN_TESTIMGv            1292
 #define IDR_PATTERN_GRADIENT            1293
 #define IDR_PATTERN_LRAMP               1294

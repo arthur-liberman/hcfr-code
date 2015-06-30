@@ -40,7 +40,7 @@
 CFullScreenWindow::CFullScreenWindow(BOOL bTestOverlay)
 {
 	RECT			rect;
-	HWND			hWnd, hDesktop;
+	HWND			hDesktop;
 
 	m_Color = 0;
 	m_bTestOverlay = bTestOverlay;
@@ -51,6 +51,7 @@ CFullScreenWindow::CFullScreenWindow(BOOL bTestOverlay)
 	m_bDisableCursorHiding = FALSE;
 	m_b16_235 = GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0);
 	m_busePic = GetConfig()->GetProfileInt("GDIGenerator","USEPIC",0);
+	m_bLinear = GetConfig()->GetProfileInt("GDIGenerator","LOADLINEAR",1);
 	m_bdispTrip = GetConfig()->GetProfileInt("GDIGenerator","DISPLAYTRIPLETS",1);
 
 	// Overlay data
@@ -93,9 +94,9 @@ CFullScreenWindow::CFullScreenWindow(BOOL bTestOverlay)
 		rect.left = rect.right - OVERLAY_SMALL_WIDTH;
 		rect.bottom = rect.top + OVERLAY_SMALL_HEIGHT;
 	}
-
 	hWnd = ::CreateWindowEx ( WS_EX_TOOLWINDOW, AfxRegisterWndClass ( 0, ::LoadCursor(NULL,IDC_ARROW) ), "", WS_POPUP, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, NULL, (HMENU) NULL, GetModuleHandle ( NULL ), NULL );
 	SubclassWindow ( hWnd );
+
 }
 
 
@@ -779,6 +780,8 @@ void CFullScreenWindow::OnPaint()
 	BOOL	isSpecial = (m_bPatternMode || m_bHLines || m_bVLines || m_bGeom || m_bConv || m_bColorPattern || m_bColorLevel || m_bPatternPict || m_bAnimated);
 	m_busePic = GetConfig()->GetProfileInt("GDIGenerator","USEPIC",0);
 	m_bdispTrip = GetConfig()->GetProfileInt("GDIGenerator","DISPLAYTRIPLETS",1);
+	m_bLinear = GetConfig()->GetProfileInt("GDIGenerator","LOADLINEAR",1);
+	
 
 	GetClientRect ( &rect );
 	double m_rectAreaPercent, borderArea;
@@ -866,6 +869,8 @@ void CFullScreenWindow::OnPaint()
 		dHeight = (int)(rect.Height()*(100-m_rectAreaPercent)/100.0);
 //        borderArea = (dWidth + 40.) * (dHeight + 40.) - dWidth * dHeight; 
 		borderArea = 0;
+
+/*
 //static pattern detection avoidance
 		brush.CreateSolidBrush ( RGB(128,128,128) );
 		dc.FillRect ( &rect, &brush );
@@ -875,6 +880,7 @@ void CFullScreenWindow::OnPaint()
 		dc.FillRect ( &rect, &brush );
 		brush.DeleteObject ();
 		Sleep(50);
+*/
 		if(m_rectSizePercent < 100 && !isSpecial)  // Need to draw background and border
 		{
 			if (m_nDisplayMode != DISPLAY_GDI_nBG && !m_busePic)

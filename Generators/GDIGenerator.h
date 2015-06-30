@@ -43,6 +43,7 @@ public:
 protected:
 	BOOL	m_bBlankingCanceled;
 	int		m_activeMonitorNum;
+	BOOL	m_bConnect;
 
 // Attributes
 	CFullScreenWindow m_displayWindow;

@@ -61,6 +61,7 @@ public:
     BOOL m_madVR_3d;
     BOOL m_madVR_vLUT;
 	BOOL m_madVR_OSD;
+	BOOL m_bLinear;
 
 	HMONITOR	m_monitorHandle [ 16 ];
 

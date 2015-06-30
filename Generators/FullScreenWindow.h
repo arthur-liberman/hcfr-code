@@ -57,6 +57,7 @@ public:
 	BOOL					m_b16_235;
 	BOOL					m_busePic;
 	BOOL					m_bdispTrip;
+	BOOL					m_bLinear;
 
 	BOOL					m_bTestOverlay;
 	LPDIRECTDRAW			m_lpDD;
@@ -81,6 +82,7 @@ public:
 	UINT					m_uiPictRess;
 	HMODULE					m_hPatternInst;
 	BOOL					m_bResizePict;
+	HWND					hWnd;
 
 protected:
 	void DisplayRGBColorInternal(COLORREF clr, BOOL bDisableWaiting);

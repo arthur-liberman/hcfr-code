@@ -74,6 +74,7 @@ public:
 	int m_rectSizePercent;
 	BOOL m_b16_235;
 	BOOL m_busePic;
+	BOOL m_bLinear;
 	BOOL m_bdispTrip;
     BOOL m_madVR_3d;
     BOOL m_madVR_vLUT;
@@ -153,6 +154,7 @@ public:
 	virtual BOOL Configure();
 	virtual BOOL IsModified() { return m_isModified; }
 	virtual void SetModifiedFlag( BOOL bModified ) { m_isModified = bModified; }
+	LPVOID ramp; //currently loaded gamma tables
 
 	CString GetName() { return m_name; }
 	void SetName(CString aStr) { m_name=aStr; } 
