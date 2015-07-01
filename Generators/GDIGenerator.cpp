@@ -461,10 +461,10 @@ BOOL CGDIGenerator::DisplayRGBColormadVR( const ColorRGBDisplay& clr, bool first
       } else
 	  {
 		  //sleep prevention
-		  madVR_SetPatternConfig(100, 0, -1, 0);
-		  madVR_ShowRGB(128,128,128);
-		  madVR_ShowRGB(0,0,0);
-		  madVR_SetPatternConfig(Cgen.m_rectSizePercent, int (bgstim * 100), -1, 0);
+//		  madVR_SetPatternConfig(100, 0, -1, 0);
+//		  madVR_ShowRGB(128,128,128);
+//		  madVR_ShowRGB(0,0,0);
+//		  madVR_SetPatternConfig(Cgen.m_rectSizePercent, int (bgstim * 100), -1, 0);
 	  }
 
 	// Sleep 80 ms while dispatching messages to ensure window is really displayed

@@ -98,7 +98,7 @@ void CGenerator::Serialize(CArchive& archive)
 			archive >> m_busePic;
 		if ( version > 3 )
 			archive >> m_bdispTrip;
-		if ( version > 3 )
+		if ( version > 4 )
 			archive >> m_bLinear;
 	}
 }
