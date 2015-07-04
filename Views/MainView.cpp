@@ -936,7 +936,7 @@ void CMainView::InitGrid()
 	else
 		nRows = 7;
 
-	if ( m_displayMode <= 1 || (m_displayMode >= 5 && m_displayMode <=11) )
+	if ( m_displayMode <= 1 || (m_displayMode >= 3 && m_displayMode <=11) )
 		nRows ++;
 
 	if ( bHasLuxValues )
@@ -1240,7 +1240,7 @@ void CMainView::InitGrid()
 			m_pGrayScaleGrid->SetItemState ( i2, i+1, m_pGrayScaleGrid->GetItemState(i2,i+1) | GVIS_READONLY );
         }
 
-        if (m_displayMode < 13)
+		if (m_displayMode < 13)
         {
             int i2=0;
             double step = 120.0 / size;
@@ -1398,6 +1398,25 @@ void CMainView::InitGrid()
 		// No scrollbars needed : use all the place for cells
 		m_pGrayScaleGrid->ExpandColumnsToFit(FALSE);
 	}
+
+	if ( (m_displayMode == 0 || m_displayMode == 3) && GetConfig()->m_userBlack)
+	{
+    		m_pGrayScaleGrid->SetItemBkColour ( 1, 1, RGB(255,218,185) );
+    		m_pGrayScaleGrid->SetItemBkColour ( 2, 1, RGB(255,218,185) );
+    		m_pGrayScaleGrid->SetItemBkColour ( 3, 1, RGB(255,218,185) );
+    		m_pGrayScaleGrid->SetItemFgColour ( 1, 1, RGB(0,10,185) );
+    		m_pGrayScaleGrid->SetItemFgColour ( 2, 1, RGB(0,10,185) );
+    		m_pGrayScaleGrid->SetItemFgColour ( 3, 1, RGB(0,10,185) );
+	} else
+	{
+   			m_pGrayScaleGrid->SetItemBkColour ( 1, 1, RGB(255,255,255) );
+   			m_pGrayScaleGrid->SetItemBkColour ( 2, 1, RGB(255,255,255) );
+   			m_pGrayScaleGrid->SetItemBkColour ( 3, 1, RGB(255,255,255) );
+   			m_pGrayScaleGrid->SetItemFgColour ( 1, 1, RGB(0,0,0) );
+   			m_pGrayScaleGrid->SetItemFgColour ( 2, 1, RGB(0,0,0) );
+   			m_pGrayScaleGrid->SetItemFgColour ( 3, 1, RGB(0,0,0) );
+	}
+
 	
 	OnEditgridCheck();
 }
@@ -1928,7 +1947,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 			else
 				str.Empty ();
 		}
-		else if ( aComponentNum == 5 && (nCol > 1 || ( m_displayMode != 0 && m_displayMode !=3)) )
+		else if ( aComponentNum == 5 && (nCol > 1 || ( m_displayMode != 0 && m_displayMode != 3)) )
 		{
 			if ( aRefDocColor.isValid() )
 					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aRefDocColor, YWhiteRefDoc, GetColorReference(), GetConfig()->m_dE_form, m_displayMode == 0 || m_displayMode == 3 || m_displayMode == 4, m_displayMode == 3?1:GetConfig()->gw_Weight ) );
@@ -1947,14 +1966,18 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 
 		if ( aComponentNum == 7 || ( aComponentNum == 5 && ( GetDataRef() == NULL || GetDataRef() == GetDocument () ) ) )
 		{
-			if ( m_displayMode == 0 )
+			if ( m_displayMode == 0 || m_displayMode == 4 || m_displayMode == 3 )
 			{
 				// Display reference gamma Y
 				str.Empty();
 
 				int nGrayScaleSize = GetDocument()->GetMeasure()->GetGrayScaleSize ();
+				int size=GetDocument()->GetMeasure()->GetNearBlackScaleSize();
+				if (m_displayMode == 4)
+					size=GetDocument()->GetMeasure()->GetNearWhiteScaleSize();
 
-				if ( nCol > 1 && nCol < nGrayScaleSize )
+
+				if ( nCol > 1 && nCol < m_displayMode == 0?nGrayScaleSize:size )
 				{
 					CColor White = GetDocument()->GetMeasure()->GetOnOffWhite();
 					CColor Black = GetDocument()->GetMeasure()->GetOnOffBlack();
@@ -1965,21 +1988,30 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						double yblack = 0.0;
 						BOOL bIRE = GetDocument()->GetMeasure()->m_bIREScaleMode;
 						
+//		    double valx = (i == 0?0.0:GrayLevelToGrayProp( (double)i, GetConfig () -> m_bUseRoundDown));
+//		    double valx = (GrayLevelToGrayProp( (double)(i+101-size), GetConfig () -> m_bUseRoundDown));
 						if ( GetConfig ()->m_GammaOffsetType == 1 )
 							yblack = Black.GetY();
+						if (m_displayMode == 0)
+							x = ArrayIndexToGrayLevel ( nCol - 1, nGrayScaleSize, GetConfig () -> m_bUseRoundDown );
+						else if (m_displayMode == 3)
+							valx = GrayLevelToGrayProp ( (double)(nCol - 1), GetConfig () -> m_bUseRoundDown );
+						else if (m_displayMode == 4)
+							valx = GrayLevelToGrayProp ( (double)(nCol - 1 + 101 - size) , GetConfig () -> m_bUseRoundDown );
 
-						x = ArrayIndexToGrayLevel ( nCol - 1, nGrayScaleSize, GetConfig () -> m_bUseRoundDown );
 						int mode = GetConfig()->m_GammaOffsetType;
 						if (GetConfig()->m_colorStandard == sRGB) mode = 8;
 						if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
 						{
-							valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
+							if (m_displayMode == 0)
+								valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
                             valy = getEOTF(valx,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) * White.GetY();
 							str.Format ( "%.3f", valy );
 						}
 						else
 						{
-    						valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
+							if (m_displayMode == 0)
+	    						valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
 	    					valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 		    				str.Format ( "%.3f", yblack + ( valy * ( White.GetY () - yblack ) ) );
 						}
@@ -2252,7 +2284,7 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 		 	if ( GetDataRef() && GetDataRef() != GetDocument () )
 				return "dE / ref";
 			else
-				return ( m_displayMode == 0 ? "Y target" : "delta luminance" );
+				return ( m_displayMode == 0 || m_displayMode == 3 || m_displayMode == 4 ? "Y target" : "delta luminance" );
 			break;
 
 		case 6:
@@ -2260,7 +2292,7 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 			break;
 
 		case 7:
-			return ( m_displayMode == 0 ? "Y target" : "delta luminance" );
+			return ( m_displayMode == 0 || m_displayMode == 3 || m_displayMode == 4 ? "Y target" : "delta luminance" );
 			break;
 	}
 
@@ -2482,7 +2514,7 @@ void CMainView::UpdateGrid()
 		if ( pDataRef )
 			nRows = 7;
 
-		if ( m_displayMode <= 1 || (m_displayMode >= 5 && m_displayMode <=11) )
+		if ( m_displayMode <= 1 || (m_displayMode >= 3 && m_displayMode <=11) )
 			nRows ++;
 
 		if ( bHasLuxValues )

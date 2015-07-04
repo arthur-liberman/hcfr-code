@@ -30,7 +30,6 @@
 #include "numsup.h"
 #include "conv.h"
 #include "mongoose.h"
-#include "ccast.h"
 #include "ccwin.h"
 #include "../librender/render.h"
 
@@ -72,34 +71,6 @@
 # define debugrr2l(lev, xx) if (callback_ddebug >= lev) fprintf xx
 #endif
 
-/* ================================================================== */
-
-/* Chromwin context and (possible) web server  */
-typedef struct _chws {
-	int verb;
-	int ddebug;
-	
-	int direct;					/* End PNG directly, rather than using web server */
-
-	struct mg_context *mg;		/* Mongoose context (if needed) */
-	char *ws_url;				/* Web server URL for accessing server */
-
-//	double hoff, voff;			/* Input position of test square */
-	double x, y;				/* position of test square in pixels */
-	double w, h;				/* size of test square in pixels */
-	int pno;					/* Index to generate a sequence of URLs */
-	unsigned char *ibuf;		/* Memory image of .png file */
-	size_t ilen;
-
-	ccast *cc;					/* ChromeCast */
-
-	/* Update the png image */
-	int (*update)(struct _chws *p, unsigned char *ibuf, size_t ilen, double *bg);
-
-	/* Destroy ourselves */
-	void (*del)(struct _chws *p);
-
-} chws;
 
 static void chws_del(chws *p) {
 
@@ -165,6 +136,7 @@ static int chws_update(chws *p, unsigned char *ibuf, size_t ilen, double *bg) {
 #else
 		sprintf(url, "%stpatch_%d.png",p->ws_url, ++p->pno); 
 #endif
+
 		if (p->cc->load(p->cc, url, NULL, 0, NULL,  0.0, 0.0, 0.0, 0.0)) {
 			debugr2((errout,"ccwin_update server load failed\n"));
 			return 1;
@@ -188,7 +160,8 @@ static void *ccwin_ehandler(enum mg_event event,
 	}
 
 	debugr2((errout,"Event: uri = '%s'\n",request_info->uri));
-
+	if (p->cc->forcedef == 1 && !p->cc->patgenrcv)
+		return NULL;
 #ifdef SEND_TEST_FILE
 #pragma message("############################# ccwin.c SEND_TEST_FILE defined ! ##")
 	return NULL;
@@ -227,13 +200,14 @@ static void *ccwin_ehandler(enum mg_event event,
 chws *new_chws(
 ccast_id *cc_id,				/* ChromeCast to open */
 double width, double height,	/* Width and height as % */
-double hoff, double voff		/* Offset from center in fraction of screen, range -1.0 .. 1.0 */
+double hoff, double voff,		/* Offset from center in fraction of screen, range -1.0 .. 1.0 */
+BOOL ws							/* Force webserver */
 ) {
 	chws *p;
 	const char *options[3];
 	char port[50];
 	int portno = 0;		/* Port number allocated */
-	int forcedef = 0;	/* Force default reciever app. */
+	int forcedef = ws?1:0;	/* Force default reciever app. */
 
 	if ((p = (chws *)calloc(sizeof(chws), 1)) == NULL) {
 		error("new_chws: calloc failed");
@@ -279,10 +253,9 @@ double hoff, double voff		/* Offset from center in fraction of screen, range -1.
 
 	p->direct = p->cc->get_direct_send(p->cc);
 
-	if (!p->direct) {
+	if (!p->direct || ws) {
 		/* Create a web server */
 		options[0] = "listening_ports";
-//		sprintf(port,"%d", 0);			/* Use any available */
 		sprintf(port,"%d", 8081);		/* Use fixed port for Linux firewall rule */
 		options[1] = port;
 		options[2] = NULL;
@@ -539,6 +512,7 @@ double blackbg					/*background ratio */
 ) {
 	dispwin *p = NULL;
 	chws *ws = NULL;
+	char *ws_url = NULL;
 
 	if ((p = (dispwin *)calloc(sizeof(dispwin), 1)) == NULL) {
 		return NULL;
@@ -561,9 +535,11 @@ double blackbg					/*background ratio */
 	p->pdepth = 8;		/* Assume this by API */
 	
 	/* Basic object is initialised, so create connection to ChromeCast */
-	if ((ws = new_chws(cc_id, width, height, hoff, voff)) == NULL) {
+	if ((ws = new_chws(cc_id, width, height, hoff, voff, FALSE)) == NULL) {
 		return NULL;
 	}
+
+	p->ws_url = ws->ws_url;
 
 	/* Extra delay ccast adds after confirming load */
 //	p->extra_update_delay = ws->cc->get_load_delay(ws->cc) / 1000.0;

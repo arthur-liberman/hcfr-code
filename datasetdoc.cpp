@@ -2843,7 +2843,8 @@ void CDataSetDoc::WaitKey()
 {
 	BOOL	bKeyTyped = FALSE;
 	MSG		Msg;
-	while ( ! bKeyTyped )
+	
+	while ( !bKeyTyped && !m_pGenerator->ccwin)
 	{
 		while ( PeekMessage ( & Msg, NULL, WM_KEYDOWN, WM_MOUSELAST, TRUE ) )
 		{
@@ -2865,7 +2866,7 @@ void CDataSetDoc::WaitKey()
 void CDataSetDoc::OnPatternAnimBlack() 
 {
 
-	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
+	if ( m_pGenerator -> CanDisplayAnimatedPatterns(FALSE) )
 	{
 		if ( IDYES == GetColorApp()->InMeasureMessageBox( _S(IDS_DISPLAYANIMATEDPATTERN), "On Measure", MB_YESNO | MB_ICONQUESTION ) )
 		{
@@ -2888,7 +2889,7 @@ void CDataSetDoc::OnPatternAnimBlack()
 void CDataSetDoc::OnPatternAnimWhite() 
 {
 
-	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
+	if ( m_pGenerator -> CanDisplayAnimatedPatterns(FALSE) )
 	{
 		if ( IDYES == GetColorApp()->InMeasureMessageBox( _S(IDS_DISPLAYANIMATEDPATTERN), "On measure", MB_YESNO | MB_ICONQUESTION ) )
 		{
@@ -3412,7 +3413,7 @@ void CDataSetDoc::OnPatternTC5()
 void CDataSetDoc::OnPatternBN() 
 {
 
-	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
+	if ( m_pGenerator -> CanDisplayAnimatedPatterns(TRUE) )
 	{
 			AfxGetMainWnd () -> EnableWindow ( FALSE );
 
@@ -3896,7 +3897,6 @@ void CDataSetDoc::OnUpdateMeasureNearwhite(CCmdUI* pCmdUI)
 void CDataSetDoc::OnMeasureSatRed() 
 {
 	CString	Msg, MsgQueue, TmpStr;
-	CGDIGenerator Cgen;
 	int		nNbPoints = GetMeasure () -> GetSaturationSize ();
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
@@ -3927,7 +3927,7 @@ void CDataSetDoc::OnUpdateMeasureSatRed(CCmdUI* pCmdUI)
 void CDataSetDoc::OnMeasureSatGreen() 
 {
 	CString	Msg, MsgQueue, TmpStr;
-	CGDIGenerator Cgen;
+
 	int		nNbPoints = GetMeasure () -> GetSaturationSize ();
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
@@ -3958,7 +3958,7 @@ void CDataSetDoc::OnUpdateMeasureSatGreen(CCmdUI* pCmdUI)
 void CDataSetDoc::OnMeasureSatBlue() 
 {
 	CString	Msg, MsgQueue, TmpStr;
-	CGDIGenerator Cgen;
+
 	int		nNbPoints = GetMeasure () -> GetSaturationSize ();
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
@@ -3989,7 +3989,7 @@ void CDataSetDoc::OnUpdateMeasureSatBlue(CCmdUI* pCmdUI)
 void CDataSetDoc::OnMeasureSatYellow() 
 {
 	CString	Msg, MsgQueue, TmpStr;
-	CGDIGenerator Cgen;
+
 	int		nNbPoints = GetMeasure () -> GetSaturationSize ();
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
@@ -4020,7 +4020,7 @@ void CDataSetDoc::OnUpdateMeasureSatYellow(CCmdUI* pCmdUI)
 void CDataSetDoc::OnMeasureSatCyan() 
 {
 	CString	Msg, MsgQueue, TmpStr;
-	CGDIGenerator Cgen;
+
 	int		nNbPoints = GetMeasure () -> GetSaturationSize ();
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
@@ -4050,8 +4050,8 @@ void CDataSetDoc::OnUpdateMeasureSatCyan(CCmdUI* pCmdUI)
 
 void CDataSetDoc::OnMeasureSatMagenta() 
 {
-	CString	Msg, MsgQueue, TmpStr;\
-	CGDIGenerator Cgen;
+	CString	Msg, MsgQueue, TmpStr;
+
 	int		nNbPoints = GetMeasure () -> GetSaturationSize ();
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
@@ -4077,7 +4077,7 @@ void CDataSetDoc::OnMeasureSatMagenta()
 void CDataSetDoc::OnMeasureSatCC24() 
 {
 	CString	Msg, MsgQueue, TmpStr;
-	CGDIGenerator Cgen;
+
 	BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR);
     int		nNbPoints = (GetConfig()->m_CCMode==CCSG?96:isExtPat?GetConfig()->GetCColorsSize():(GetConfig()->m_CCMode==AXIS?71:24));
 	if (GetConfig()->m_CCMode==CMS || GetConfig()->m_CCMode==CPS)
@@ -4164,7 +4164,7 @@ void CDataSetDoc::OnUpdateMeasureContrast(CCmdUI* pCmdUI)
 void CDataSetDoc::OnMeasureSatAll() 
 {
 	CString	Msg, MsgQueue, TmpStr;
-	CGDIGenerator Cgen;
+
 	BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR);
     int		nNbPoints = (GetMeasure () -> GetSaturationSize ()) * 6 + (GetConfig()->m_CCMode==CCSG?96:isExtPat?GetConfig()->GetCColorsSize():(GetConfig()->m_CCMode==AXIS?71:24));
 	if (GetConfig()->m_CCMode==CMS || GetConfig()->m_CCMode==CPS)
@@ -4224,7 +4224,6 @@ void CDataSetDoc::OnUpdateMeasureGrayscaleColors(CCmdUI* pCmdUI)
 void CDataSetDoc::OnMeasureSatPrimaries() 
 {
 	CString	Msg, MsgQueue, TmpStr;
-	CGDIGenerator Cgen;
 	int		nNbPoints =( GetMeasure () -> GetSaturationSize () ) * 3;
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
@@ -4250,7 +4249,6 @@ void CDataSetDoc::OnMeasureSatPrimaries()
 void CDataSetDoc::OnMeasureSatPrimariesSecondaries() 
 {
 	CString	Msg, MsgQueue, TmpStr;
-	CGDIGenerator Cgen;
 	int		nNbPoints =( GetMeasure () -> GetSaturationSize () ) * 6;
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();

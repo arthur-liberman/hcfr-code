@@ -93,7 +93,7 @@ CGDIGenerator::CGDIGenerator()
     m_madVR_OSD = GetConfig()->GetProfileInt("GDIGenerator","MADVROSD",0);
 //	m_displayWindow.SetDisplayMode(m_nDisplayMode);	// Always init in GDI mode during init
 	m_displayWindow.SetDisplayMode();	
-	m_bisInited = FALSE;
+//	m_bisInited = FALSE;
 
 	CString str;
 	str.LoadString(IDS_GDIGENERATOR_PROPERTIES_TITLE);
@@ -402,12 +402,12 @@ BOOL CGDIGenerator::Init(UINT nbMeasure)
 	{
 		GetColorApp() -> RestoreMeasureCursor ();
 	}
-	m_bisInited = TRUE;
+//	m_bisInited = TRUE;
 
 	return bOk;
 }
 
-BOOL CGDIGenerator::DisplayRGBColormadVR( const ColorRGBDisplay& clr, bool first )
+BOOL CGDIGenerator::DisplayRGBColormadVR( const ColorRGBDisplay& clr, bool first, UINT nPattern )
 {
 	//init done in generator.cpp 
       int blackLevel, whiteLevel;
@@ -427,7 +427,7 @@ BOOL CGDIGenerator::DisplayRGBColormadVR( const ColorRGBDisplay& clr, bool first
 	  madVR_SetDisableOsdButton(!m_madVR_OSD);
 	  CGDIGenerator Cgen;
 	  double bgstim = Cgen.m_bgStimPercent / 100.;
-	  madVR_SetPatternConfig(Cgen.m_rectSizePercent, int (bgstim * 100), -1, 0);
+	  madVR_SetPatternConfig(Cgen.m_rectSizePercent, int (bgstim * 100), -1, 20);
 	  if (first)
 	  {
     	  sprintf(aBuf,"%s","Display settling, please wait...");
@@ -454,18 +454,24 @@ BOOL CGDIGenerator::DisplayRGBColormadVR( const ColorRGBDisplay& clr, bool first
     	  sprintf(aBuf,"HCFR is measuring display, please wait...%d:%d:%d",rT,gT,bT);
       const CString s2(aBuf);
 	  madVR_SetOsdText(CT2CW(s2));
-      if (!madVR_ShowRGB(r, g, b))
+
+	if ( (nPattern > 1) && (nPattern % 50) == 0)
+	{
+		  //sleep prevention every 50 patterns
+		madVR_SetPatternConfig(100, 0, -1, 0);
+		if (!madVR_ShowRGB(0, 0, 0))
+		{
+			MessageBox(0, "Test pattern failure.", "Error", MB_ICONERROR);
+			return false;
+		}	 
+		madVR_SetPatternConfig(Cgen.m_rectSizePercent, int (bgstim * 100), -1, 20);
+	}
+
+	if (!madVR_ShowRGB(r, g, b))
       {
         MessageBox(0, "Test pattern failure.", "Error", MB_ICONERROR);
 		return false;
-      } else
-	  {
-		  //sleep prevention
-//		  madVR_SetPatternConfig(100, 0, -1, 0);
-//		  madVR_ShowRGB(128,128,128);
-//		  madVR_ShowRGB(0,0,0);
-//		  madVR_SetPatternConfig(Cgen.m_rectSizePercent, int (bgstim * 100), -1, 0);
-	  }
+      } 
 
 	// Sleep 80 ms while dispatching messages to ensure window is really displayed
 		MSG		Msg;
@@ -503,32 +509,32 @@ BOOL CGDIGenerator::DisplayRGBColormadVR( const ColorRGBDisplay& clr, bool first
 return TRUE;
 }
 
-BOOL CGDIGenerator::DisplayRGBCCast( const ColorRGBDisplay& clr, bool first )
+BOOL CGDIGenerator::DisplayRGBCCast( const ColorRGBDisplay& clr, bool first, UINT nPattern )
 {
 	//init done in generator.cpp 
-      double r, g, b;
-	  CGDIGenerator Cgen;
-	  dispwin *ccwin=Cgen.ccwin;
-	  double bgstim = Cgen.m_bgStimPercent / 100.;
-	  //Chromecast needs full range RGB
-      r = ((clr[0]) / 100. );
-      g = ((clr[1]) / 100. );
-      b = ((clr[2]) / 100. );
+    double r, g, b;
+	CGDIGenerator Cgen;
+	dispwin *ccwin=Cgen.ccwin;
+	double bgstim = Cgen.m_bgStimPercent / 100.;
+	//Chromecast needs full range RGB
+    r = ((clr[0]) / 100. );
+	g = ((clr[1]) / 100. );
+    b = ((clr[2]) / 100. );
 
-		if (ccwin->height == 0) 
-		{
-	        MessageBox(0, "Test pattern failure.", "Error", MB_ICONERROR);
-			return false;
-		} 
+	if (ccwin->height == 0) 
+	{
+		MessageBox(0, "Test pattern failure.", "Error", MB_ICONERROR);
+		return false;
+	} 
 
-	  if (ccwin->set_bg(ccwin,bgstim) != 0)
-		{
-	        MessageBox(0, "CCast Test pattern failure.", "set_bg", MB_ICONERROR);
-			return false;
-		} 
+	if (ccwin->set_bg(ccwin,bgstim) != 0)
+	{
+		MessageBox(0, "CCast Test pattern failure.", "set_bg", MB_ICONERROR);
+		return false;
+	} 
 
-	  if (first)
-	  {
+	if (first)
+	{
 		  if (ccwin->set_color(ccwin,0.75,0.75,0.75) != 0)
 		  {
 	        MessageBox(0, "CCast Test pattern failure.", "set_bg", MB_ICONERROR);
@@ -544,16 +550,25 @@ BOOL CGDIGenerator::DisplayRGBCCast( const ColorRGBDisplay& clr, bool first )
 		  ccwin->set_color(ccwin,.75,.75,.75);
 		  Sleep(1000);
 	  }
-
-	  if (ccwin->set_color(ccwin,r,g,b) != 0 )
+	
+	if ((nPattern > 1) && (nPattern % 50) == 0)
+	{
+		//sleep prevention
+		ccwin->set_bg(ccwin,0);
+		if (ccwin->set_color(ccwin,0,0,0) != 0 )
 		{
 	        MessageBox(0, "CCast Test pattern failure.", "set_color", MB_ICONERROR);
 			return false;
 		} 
-		else
+		ccwin->set_bg(ccwin,bgstim);
+		Sleep(50);
+	}
+
+		if (ccwin->set_color(ccwin,r,g,b) != 0 )
 		{
-			//sleep prevention
-		}
+	        MessageBox(0, "CCast Test pattern failure.", "set_color", MB_ICONERROR);
+			return false;
+		} 
 	  
 	// Sleep 80 ms while dispatching messages to ensure window is really displayed
 		MSG		Msg;
@@ -593,7 +608,6 @@ return TRUE;
 
 BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nPatternType , UINT nPatternInfo , BOOL bChangePattern, BOOL bSilentMode)
 {
-
 	ColorRGBDisplay p_clr;
 	BOOL do_Intensity=false;
 	if ( nPatternType == MT_PRIMARY || nPatternType == MT_SECONDARY || nPatternType == MT_SAT_RED || nPatternType == MT_SAT_GREEN || nPatternType == MT_SAT_BLUE || nPatternType == MT_SAT_YELLOW || nPatternType == MT_SAT_CYAN || nPatternType == MT_SAT_MAGENTA || nPatternType == MT_ACTUAL)
@@ -610,11 +624,11 @@ BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nP
 //		Init();
 
 	if ( m_GDIGenePropertiesPage.m_nDisplayMode == DISPLAY_madVR)
-		DisplayRGBColormadVR (do_Intensity?p_clr:clr, GetConfig()->m_isSettling);
+		DisplayRGBColormadVR (do_Intensity?p_clr:clr, GetConfig()->m_isSettling, nPatternInfo);
 	else if ( m_GDIGenePropertiesPage.m_nDisplayMode == DISPLAY_ccast)
-		DisplayRGBCCast (do_Intensity?p_clr:clr, GetConfig()->m_isSettling );
+		DisplayRGBCCast (do_Intensity?p_clr:clr, GetConfig()->m_isSettling, nPatternInfo );
 	else
-		m_displayWindow.DisplayRGBColor(do_Intensity?p_clr:clr);
+		m_displayWindow.DisplayRGBColor(do_Intensity?p_clr:clr, nPatternInfo);
 	return TRUE;
 }
 
@@ -624,8 +638,11 @@ BOOL CGDIGenerator::CanDisplayAnsiBWRects()
 	return ((m_GDIGenePropertiesPage.m_nDisplayMode != DISPLAY_madVR) && (m_GDIGenePropertiesPage.m_nDisplayMode != DISPLAY_ccast)?TRUE:FALSE);
 }
 
-BOOL CGDIGenerator::CanDisplayAnimatedPatterns()
+BOOL CGDIGenerator::CanDisplayAnimatedPatterns(BOOL isSpecialty)
 {
+	if (isSpecialty && m_GDIGenePropertiesPage.m_nDisplayMode != DISPLAY_madVR )
+		return TRUE;
+
 	return ((m_GDIGenePropertiesPage.m_nDisplayMode != DISPLAY_madVR) && (m_GDIGenePropertiesPage.m_nDisplayMode != DISPLAY_ccast)?TRUE:FALSE);
 }
 
@@ -872,7 +889,8 @@ BOOL CGDIGenerator::Release(INT nbNext)
 	GetColorApp() -> SetPatternWindow ( NULL );
 	m_displayWindow.Hide();
 	m_displayWindow.SetDisplayMode();
-	
+	m_displayWindow.m_nPat = 0;
+
 	BOOL bOk = CGenerator::Release();
 
 	if ( m_bBlankingCanceled )

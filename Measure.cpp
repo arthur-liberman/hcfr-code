@@ -1130,8 +1130,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 								};
 	for (int i = 0; i < 6 + GetConfig()->m_BWColorsToAdd ; i ++ )
 	{
-		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SECONDARY,0,TRUE,TRUE) )
-
+		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SECONDARY,i,TRUE,TRUE) )
 		{
 			bEscape = WaitForDynamicIris (FALSE);
 			bRetry = FALSE;
@@ -1472,7 +1471,7 @@ BOOL CMeasure::MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator, C
 
 	for(int i=0;i<size;i++)
 	{
-		if (m_bOverRideBlack)
+		if (!i && m_bOverRideBlack)
 			m_nearBlackMeasureArray[i] = m_userBlack;
 		else
 			m_nearBlackMeasureArray[i] = measuredColor[i];
@@ -2746,7 +2745,7 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 			GetConfig()->m_isSettling=FALSE;
 		else
 			doSettling = GetConfig()->m_isSettling;
-		if( pGenerator->DisplayRGBColor(GenColors[i], nPattern ,i,!bRetry))
+		if( pGenerator->DisplayRGBColor(GenColors[i], nPattern , i, !bRetry))
 		{
 			bEscape = WaitForDynamicIris (FALSE);
 			bRetry = FALSE;
@@ -3592,7 +3591,7 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator, CDataS
 			GetConfig()->m_isSettling=FALSE;
 		else
 			doSettling = GetConfig()->m_isSettling;
-		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_PRIMARY) )
+		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_PRIMARY, i) )
 		{
 			bEscape = WaitForDynamicIris (FALSE);
 			bRetry = FALSE;
@@ -3819,7 +3818,7 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator, CDat
 			GetConfig()->m_isSettling=FALSE;
 		else
 			doSettling = GetConfig()->m_isSettling;
-		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SECONDARY) )
+		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SECONDARY, i) )
 		{
 			bEscape = WaitForDynamicIris (FALSE);
 			bRetry = FALSE;
@@ -5006,7 +5005,10 @@ BOOL CMeasure::ValidateBackgroundNearBlack ( BOOL bUseLuxValues, double * pLuxVa
 		SetNearBlackScaleSize(m_nBkMeasureStepCount);
 		for ( int i = 0; i < m_nBkMeasureStepCount ; i++ )
 		{
-			m_nearBlackMeasureArray[i] = (*m_pBkMeasuredColor)[i];
+			if (!i && m_bOverRideBlack)
+				m_nearBlackMeasureArray[i] = m_userBlack;
+			else
+				m_nearBlackMeasureArray[i] = (*m_pBkMeasuredColor)[i];
 
 			if ( bUseLuxValues )
 				m_nearBlackMeasureArray[i].SetLuxValue ( pLuxValues[i] );

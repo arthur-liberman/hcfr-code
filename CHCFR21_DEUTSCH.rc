@@ -3280,7 +3280,7 @@ BEGIN
     IDS_CANNOTMEASUREGRAYANDCOLORS 
                             "%s kann Grautreppe, Primärfarben und Sekundärfarben nicht in einer einzigen Serie anzeigen.\nBitte benutzen Sie einzelne Kommandos anstelle von diesem."
     IDS_CANNOTDISPLAYANIMATION 
-                            "Diese Bildquelle kann keine animierten Testbilder anzeigen.\nNur die ""GDI mode"" kann dies."
+                            "Diese Bildquelle kann keine animierten Testbilder anzeigen."
     IDS_DISPLAYANIMATEDPATTERN 
                             "Animiertes Testbild anzeigen ?\nDrücken Sie ENTER oder ESCAPE, um die Anzeige zu beenden."
     IDS_WITHBLACKCOMPENSATION "mit Schwarzkompensation"

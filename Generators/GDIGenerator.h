@@ -56,7 +56,7 @@ public:										// public because of callback
 	int     m_bgStimPercent;
 	UINT    m_Intensity;
 	BOOL	IsOnOtherMonitor ();
-	BOOL	m_bisInited;
+//	BOOL	m_bisInited;
 // Implementation
 public:
 	CGDIGenerator();
@@ -68,11 +68,11 @@ public:
 	CGenerator * m_patternDGenerator;
 
 	virtual BOOL Init(UINT nbMeasure = 0);
-	virtual BOOL DisplayRGBColor(const ColorRGBDisplay& aRGBColor, MeasureType nPatternType = MT_UNKNOWN, UINT nPatternInfo = 0, BOOL bChangePattern = TRUE,BOOL bSilentMode = FALSE);
-	virtual BOOL DisplayRGBColormadVR(const ColorRGBDisplay& aRGBColor, bool first);
-	virtual BOOL DisplayRGBCCast(const ColorRGBDisplay& aRGBColor, bool first);
+	virtual BOOL DisplayRGBColor(const ColorRGBDisplay& aRGBColor, MeasureType nPatternType = MT_UNKNOWN, UINT nPatternInfo = 0, BOOL bChangePattern = TRUE, BOOL bSilentMode = FALSE);
+	virtual BOOL DisplayRGBColormadVR(const ColorRGBDisplay& aRGBColor, bool first, UINT nPattern);
+	virtual BOOL DisplayRGBCCast(const ColorRGBDisplay& aRGBColor, bool first, UINT nPattern);
 	virtual BOOL CanDisplayAnsiBWRects(); 
-	virtual BOOL CanDisplayAnimatedPatterns(); 
+	virtual BOOL CanDisplayAnimatedPatterns(BOOL isSpecialty = TRUE); 
 	virtual BOOL DisplayAnsiBWRects(BOOL bInvert);
 	virtual BOOL DisplayAnimatedBlack();
 	virtual BOOL DisplayAnimatedWhite();

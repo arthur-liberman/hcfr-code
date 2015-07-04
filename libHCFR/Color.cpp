@@ -2681,9 +2681,6 @@ double ArrayIndexToGrayLevel ( int nCol, int nSize, bool m_bUseRoundDown)//, boo
     // Gray percent: return a value between 0 and 100 corresponding to whole number level based on
 	// normal rounding (GCD disk), round down (AVSHD disk)
 
-	//added handling of 0-255 targets
-//	if (m_b16_235)
-//	{
 		if (m_bUseRoundDown)
 		{
 			return (  floor((double)nCol / (double)(nSize-1) * 219.0) / 219.0 * 100.0 );
@@ -2692,26 +2689,16 @@ double ArrayIndexToGrayLevel ( int nCol, int nSize, bool m_bUseRoundDown)//, boo
 		{
 			return ( floor((double)nCol / (double)(nSize-1) * 219.0 + 0.5) / 219.0 * 100.0 );
 		}
-//	}
-//	else
-//	{
-//		if (m_bUseRoundDown)
-//			return ( floor((double)nCol / (double)(nSize-1) * 255.0) / 255.0 * 100.0 );
-//		else
-//			return ( floor((double)nCol / (double)(nSize-1) * 255.0 + 0.5) / 255.0 * 100.0 );
-//	}
 }
 
 double GrayLevelToGrayProp ( double Level, bool m_bUseRoundDown)
 {
-	// round down test not needed because this was done in gray index to level call
     // Gray Level: return a value between 0 and 1 based on percentage level input
     //    normal rounding (GCD disk), round down (AVSHD disk)
-//	if (m_bUseRoundDown)
-//    	return Level = (floor(Level / 100.0 * 219.0 + 16.0) - 16.0) / 219.0;
-		return Level = Level / 100.0;
-//	else
-//		return Level = (floor(Level / 100.0 * 219.0 + 16.5) - 16.0) / 219.0;
+	if (m_bUseRoundDown)
+    	return Level = (floor(Level / 100.0 * 219.0 + 16.0) - 16.0) / 219.0;
+	else
+		return Level = (floor(Level / 100.0 * 219.0 + 16.5) - 16.0) / 219.0;
 }
 
 double getEOTF ( double valx, CColor White, CColor Black, double g_rel, double split, int mode)

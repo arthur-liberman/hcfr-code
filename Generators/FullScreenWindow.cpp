@@ -30,6 +30,11 @@
 #include "FullScreenWindow.h"
 #include <math.h>
 #include "ximage.h"
+#include "../libnum/numsup.h"
+#include "../libconv/conv.h"
+#include "../libccast/ccmdns.h"
+#include "../libccast/ccwin.h"
+#include "../libccast/ccast.h"
 
 #ifndef MAKEFOURCC
 	#include <mmsystem.h>
@@ -43,6 +48,7 @@ CFullScreenWindow::CFullScreenWindow(BOOL bTestOverlay)
 	HWND			hDesktop;
 
 	m_Color = 0;
+	m_nPat = 0;
 	m_bTestOverlay = bTestOverlay;
 	m_rectSizePercent = GetConfig()->GetProfileInt("GDIGenerator","SizePercent",10);
 	m_bgStimPercent = 0;
@@ -164,7 +170,10 @@ void CFullScreenWindow::MoveToMonitor ( HMONITOR hMon )
 
 void CFullScreenWindow::DisplayRGBColor(const ColorRGBDisplay& clr, BOOL bDisableWaiting )
 {
-    DisplayRGBColorInternal(clr.GetColorRef(m_b16_235), bDisableWaiting);
+	if ( m_nDisplayMode == DISPLAY_ccast )
+	    DisplayRGBColorInternal(clr.GetColorRef(m_b16_235), TRUE);
+	else
+	    DisplayRGBColorInternal(clr.GetColorRef(m_b16_235), bDisableWaiting);
 }
 
 void CFullScreenWindow::DisplayRGBColorInternal(COLORREF clr, BOOL bDisableWaiting)
@@ -771,269 +780,43 @@ void CFullScreenWindow::Hide ()
 
 void CFullScreenWindow::OnPaint() 
 {
+	CPaintDC	dc(this); // device context for painting
+	CRect		rect;
 	int			row, col, dWidth, dHeight;
 	COLORREF	DisplayColor = m_Color;
 	BOOL		bDraw = FALSE;
-	CRect		rect;
 	CBrush		brush;
-	CPaintDC	dc(this); // device context for painting
 	BOOL	isSpecial = (m_bPatternMode || m_bHLines || m_bVLines || m_bGeom || m_bConv || m_bColorPattern || m_bColorLevel || m_bPatternPict || m_bAnimated);
 	m_busePic = GetConfig()->GetProfileInt("GDIGenerator","USEPIC",0);
 	m_bdispTrip = GetConfig()->GetProfileInt("GDIGenerator","DISPLAYTRIPLETS",1);
 	m_bLinear = GetConfig()->GetProfileInt("GDIGenerator","LOADLINEAR",1);
-	
-
 	GetClientRect ( &rect );
 	double m_rectAreaPercent, borderArea;
-    double bgstim = m_bgStimPercent / 100.;
+	double bgstim = m_bgStimPercent / 100.;
 
-    int R = GetRValue(m_Color);
-    int G = GetGValue(m_Color);
-    int B = GetBValue(m_Color);
+			// Pattern Display Common Vars
+		CBrush		br0;
+		CRect		aRect;
+		int			i, j;
+		int			minX = m_iOffset;
+		int			minY = m_iOffset;
+		int			maxX = rect.Width() - m_iOffset;
+		int			maxY = rect.Height() - m_iOffset;
+		int			stepX = (maxX-m_iOffset) / m_nPadsPattern;
+		int			stepY = (maxY-m_iOffset) / m_nPadsPattern;
+		int			pSize = m_dot2Pattern ? 2 : 1;
+		int			limitY = m_dot2Pattern ? maxY : rect.Height()/2;
+		int			offsetY = (limitY-minY)/3;
 
-    			if ( m_b16_235 )
-				{
-					ASSERT ( R >= 16 && R <= 235 );
-					ASSERT ( G >= 16 && G <= 235 );
-					ASSERT ( B >= 16 && B <= 235 );
-
-
-					R = (int)(( R - 16 ) * 255 / 219 + 0.5);
-					G = (int)(( G - 16 ) * 255 / 219 + 0.5);
-					B = (int)(( B - 16 ) * 255 / 219 + 0.5);
-
-					if ( R < 0 )
-						R = 0;
-					else if ( R > 255 )
-						R = 255;
-
-					if ( G < 0 )
-						G = 0;
-					else if ( G > 255 )
-						G = 255;
-
-					if ( B < 0 )
-						B = 0;
-					else if ( B > 255 )
-						B = 255;
-				}
-
-
-	m_rectAreaPercent = sqrt (m_rectSizePercent / 100.) * 100;
-	if (m_bAnimated)
-		m_rectAreaPercent = 100.;
-
-	if ( m_nDisplayMode != DISPLAY_GDI && m_nDisplayMode != DISPLAY_GDI_nBG )
-	{
-		// Black is the color key
-		DisplayColor = 0x00000000;
-	}
-
-	if ( ( DisplayColor & 0xFE000000 ) == 0xFE000000 )
-	{
-		// Ansi mode
-		int	nPadWidth = rect.Width () / ANSI_CONTRAST_BLOCKS;
-		int nPadHeight = rect.Height () / ANSI_CONTRAST_BLOCKS;
-		CRect WhitePad;
-
-		brush.CreateSolidBrush ( RGB(0,0,0) );
-		dc.FillRect ( &rect, &brush );
-		brush.DeleteObject ();
-
-		if ( m_Color == 0xFF000000 )
-			bDraw = TRUE;
-
-		brush.CreateSolidBrush ( RGB(255,255,255) );
-		for ( row = 0; row < ANSI_CONTRAST_BLOCKS ; row ++ )
-		{
-			bDraw = ! bDraw;
-			for ( col = 0; col < ANSI_CONTRAST_BLOCKS ; col ++ )
-			{
-				bDraw = ! bDraw;
-
-				if ( bDraw )
-				{
-					WhitePad.left = nPadWidth * col;
-					WhitePad.right = WhitePad.left + nPadWidth;
-					WhitePad.top = nPadHeight * row;
-					WhitePad.bottom = WhitePad.top + nPadHeight;
-					dc.FillRect ( &WhitePad, &brush );
-				}
-			}
-		}
-		brush.DeleteObject ();
-	}
-	else
-	{
-		dWidth = (int)(rect.Width()*(100-m_rectAreaPercent)/100.0);
-		dHeight = (int)(rect.Height()*(100-m_rectAreaPercent)/100.0);
-//        borderArea = (dWidth + 40.) * (dHeight + 40.) - dWidth * dHeight; 
-		borderArea = 0;
-
-/*
-//static pattern detection avoidance
-		brush.CreateSolidBrush ( RGB(128,128,128) );
-		dc.FillRect ( &rect, &brush );
-		brush.DeleteObject ();
-		Sleep(50);
-		brush.CreateSolidBrush ( RGB(0,0,0) );
-		dc.FillRect ( &rect, &brush );
-		brush.DeleteObject ();
-		Sleep(50);
-*/
-		if(m_rectSizePercent < 100 && !isSpecial)  // Need to draw background and border
-		{
-			if (m_nDisplayMode != DISPLAY_GDI_nBG && !m_busePic)
-			{
-                double R1,G1,B1;
-                //subtract window area and border area
-                R1 = max(0,(bgstim*255 - R*m_rectSizePercent/100.))/(1-m_rectSizePercent/100. - borderArea/(rect.Width()*rect.Height()) );
-                G1 = max(0,(bgstim*255 - G*m_rectSizePercent/100.))/(1-m_rectSizePercent/100. - borderArea/(rect.Width()*rect.Height()) );
-                B1 = max(0,(bgstim*255 - B*m_rectSizePercent/100.))/(1-m_rectSizePercent/100. - borderArea/(rect.Width()*rect.Height()) );
-				R1 = min(R1, 255);
-				G1 = min(G1, 255);
-				B1 = min(B1, 255);
-                if (m_b16_235)
-                {
-                    R1 = R1/255*219+16.5;
-                    G1 = G1/255*219+16.5;
-                    B1 = B1/255*219+16.5;
-                }
-
-				brush.CreateSolidBrush ( RGB(R1,G1,B1) );
-				dc.FillRect ( &rect, &brush );
-				brush.DeleteObject ();
-
-//		        CRect borderRect=rect; //remove black border as it seems to cause fixed pattern detection
-//		        borderRect.DeflateRect((dWidth-40)/2,(dHeight-40)/2);
-//                brush.CreateSolidBrush ( RGB(0,0,0) );
-//				dc.FillRect ( &borderRect, &brush );
-//				brush.DeleteObject ();
-
-			}
-		}
-
-		if (m_busePic && !isSpecial) //adds real image to background for measurements
-		{
-			CRect		aRect;
-			HMODULE hPatterns;
-			hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
-			HRSRC hRsrc;
-			
-			CxImage* newImage = new CxImage();
-			if (m_b16_235)
-				hRsrc = ::FindResource(hPatterns,MAKEINTRESOURCE(IDR_PATTERN_TESTIMGv),"PATTERN");
-			else
-				hRsrc = ::FindResource(hPatterns,MAKEINTRESOURCE(IDR_PATTERN_TESTIMG),"PATTERN");
-
-			newImage->LoadResource(hRsrc, CXIMAGE_FORMAT_PNG, hPatterns);  
-		
-			SetRect ( &aRect, 0, 0, rect.Width(), rect.Height());
-			newImage->Draw(dc,aRect);
-			delete newImage;
-		}
-
-		CRect patternRect=rect;	
-		if (!isSpecial)
-		{
-			patternRect.DeflateRect(dWidth/2,dHeight/2);
-			//Settling pattern
-			if (GetConfig()->m_isSettling)
-			{
-				CRect settlingRect=patternRect;
-				brush.CreateSolidBrush ( RGB(191,191,191) );
-				dc.FillRect ( &settlingRect, &brush );
-				brush.DeleteObject ();
-				Sleep(1000);
-				brush.CreateSolidBrush ( RGB(191,0,0) );
-				dc.FillRect ( &settlingRect, &brush );
-				brush.DeleteObject ();
-				Sleep(1000);
-				brush.CreateSolidBrush ( RGB(0,191,0) );
-				dc.FillRect ( &settlingRect, &brush );
-				brush.DeleteObject ();
-				Sleep(1000);
-				brush.CreateSolidBrush ( RGB(0,0,191) );
-				dc.FillRect ( &settlingRect, &brush );
-				brush.DeleteObject ();
-				Sleep(1000);
-				brush.CreateSolidBrush ( RGB(191,191,191) );
-				dc.FillRect ( &settlingRect, &brush );
-				brush.DeleteObject ();
-				Sleep(1000);
-			}
-		}
-
-		brush.CreateSolidBrush ( DisplayColor );
-		dc.FillRect ( &patternRect, &brush );
-		brush.DeleteObject (); 
-
-		if ((!isSpecial || m_bAnimated) && m_bdispTrip)
-		{
-	    	char aBuf[32];
-		    R = GetRValue(DisplayColor);
-			G = GetGValue(DisplayColor);
-			B = GetBValue(DisplayColor);
-			sprintf(aBuf,"%d:%d:%d",R,G,B);
-			dc.SetTextColor(RGB(128,128,128));
-			dc.SetBkColor(RGB(40,40,40));
-			dc.DrawText(aBuf,&patternRect, DT_CENTER|DT_BOTTOM|DT_SINGLELINE);
-		}
-	}
-
-	// Pattern Display Common Vars
-	CBrush		br0;
-	CRect		aRect;
-	int			i, j;
-	int			minX = m_iOffset;
-	int			minY = m_iOffset;
-	int			maxX = rect.Width() - m_iOffset;
-	int			maxY = rect.Height() - m_iOffset;
-	int			stepX = (maxX-m_iOffset) / m_nPadsPattern;
-	int			stepY = (maxY-m_iOffset) / m_nPadsPattern;
-	int			pSize = m_dot2Pattern ? 2 : 1;
-	int			limitY = m_dot2Pattern ? maxY : rect.Height()/2;
-	int			offsetY = (limitY-minY)/3;
-
-	
-	// Dot Pattern Display
-	if (m_bPatternMode)
-	{
-		br0.CreateSolidBrush ( m_clrPattern );
-		for ( i = minX; i < maxX; i+=stepX ) {
-			for ( j = minY; j < maxY; j+=stepY ) {
-				SetRect ( &aRect, i, j, i + pSize, j + pSize );
-				dc.FillRect ( &aRect, &br0 );
-			}
-		}
-		br0.DeleteObject ();
-	}
-
-	// H or V Lines Pattern Display
-	if (m_bHLines || m_bVLines)
-	{
-		br0.CreateSolidBrush ( m_clrPattern );
-		if (m_bVLines)
-			for ( i = minX; i < maxX; i+=(pSize*2) ) {
-				SetRect ( &aRect, i, minY, i + pSize, maxY + pSize );
-				dc.FillRect ( &aRect, &br0 );
-			}
-		else // HLines
-			for ( j = minY; j < maxY; j+=(pSize*2) ) {
-				SetRect ( &aRect, minX, j, maxX + pSize, j + pSize );
-				dc.FillRect ( &aRect, &br0 );
-			}
-		br0.DeleteObject ();
-	}
 
 	// Display a Pattern Picture Ressource
 	if (m_bPatternPict)
 	{
-		CRect		aRect;
 		int			iW, iH;
 		int			destW = rect.Width();
 		int			destH = rect.Height();
 		bool		isScaled;
+		
 		CxImage* newImage = new CxImage();
 
 		HRSRC hRsrc = ::FindResource(m_hPatternInst,MAKEINTRESOURCE(m_uiPictRess),"PATTERN");
@@ -1047,247 +830,506 @@ void CFullScreenWindow::OnPaint()
 		
 		float destA = (float)destW/(float)destH;
 		float iA = (float)iW/(float)iH;
-
-		//resize but maintain aspect ratio
-		if (m_bResizePict && !(destW == iW && destH == iH))
+							
+		if (m_nDisplayMode == DISPLAY_ccast)
 		{
-			if (iW == 1920)
-				isScaled = TRUE;
-			if (destA < iA) //scale width
+			ccast_id **ids;
+			if ((ids = get_ccids()) == NULL) 
 			{
-				newImage->Resample2(destW,(long)((float)destW/(float)iW * (float)iH), CxImage::IM_BICUBIC2, CxImage::OM_REPEAT, newImage);
-			}
-			else if (destA > iA) //scale height
+				GetColorApp()->InMeasureMessageBox( "    ** Error discovering ChromeCasts **", "Error", MB_ICONERROR);
+			} else 
 			{
-				newImage->Resample2((long)((float)destH/(float)iH * (float)iW), destH,CxImage::IM_BICUBIC2, CxImage::OM_REPEAT, newImage);
+				if (ids[0] == NULL)
+				{
+					GetColorApp()->InMeasureMessageBox( "    ** No ChromeCasts found **", "Error", MB_ICONERROR);
+				}
+				else 
+				{
+					char url[200];
+					chws *ws = NULL;
+					newImage->Save("ccsend.png", CXIMAGE_FORMAT_PNG);
+					ws = new_chws(ids[0], 0, 0, 0, 0, TRUE);
+					sprintf(url, "%s%s", ws->ws_url, "ccsend.png"); 
+					if (ws->cc->load(ws->cc, url, NULL, 0.0, NULL,  0.0, 0.0, 0.0, 0.0)) 
+					{
+						MessageBox(0, "Chromecast Special Test pattern failure.", MB_ICONERROR);
+						ws->del(ws);
+					}
+				}
 			}
-			else if (iW != destW || iH != destH)
-				newImage->Resample2(destW, destH, CxImage::IM_BICUBIC2, CxImage::OM_REPEAT, newImage);
-		}
+			free_ccids(ids);
+		} else
+		{
 
-		if (m_bResizePict && !isScaled) {
-			SetRect ( &aRect, 0, 0, rect.Width(), rect.Height());
-		} else {
-			int startX, startY, sizeW, sizeH;
-			int dispX, dispY, dispW, dispH;
-
-			iW = newImage->GetWidth();
-			iH = newImage->GetHeight();
-
-			if (iW <= destW && iH <= destH) 
-			{ // image is smaller than dest rect we center it
-				SetRect ( &aRect, (destW-iW)/2, (destH-iH)/2, (destW-iW)/2+iW, (destH-iH)/2+iH);
-			} else { // image is larger, will be cropped
-				if (iW > destW) {
-					startX = (iW-destW)/2; sizeW = (iW-destW)/2+destW;
-					dispX = 0; dispW = destW;
-				} else {
-						startX = 0; sizeW = iW;
-						dispX = (destW-iW)/2; dispW = dispX+iW;
+			//resize but maintain aspect ratio
+			if (m_bResizePict && !(destW == iW && destH == iH))
+			{
+				//switch for dealing with sending to CC
+				if (iW == 1920)
+					isScaled = TRUE;
+				if (destA < iA) //scale width
+				{
+					newImage->Resample2(destW,(long)((float)destW/(float)iW * (float)iH), CxImage::IM_BICUBIC2, CxImage::OM_REPEAT, newImage);
 				}
-				if (iH > destH) {
-					startY = (iH-destH)/2; sizeH = (iH-destH)/2+destH;
-					dispY = 0; dispH = destH;
-				} else {
-						startY = 0; sizeH = iH;
-						dispY = (destH-iH)/2; dispH = dispY+iH;
+				else if (destA > iA) //scale height
+				{
+					newImage->Resample2((long)((float)destH/(float)iH * (float)iW), destH,CxImage::IM_BICUBIC2, CxImage::OM_REPEAT, newImage);
 				}
-				SetRect ( &aRect, startX, startY, sizeW, sizeH);
-				if (iH > destH || iW > destW)
-					newImage->Crop(aRect);
-				SetRect ( &aRect, dispX, dispY, dispW, dispH);
+				else if (iW != destW || iH != destH)
+					newImage->Resample2(destW, destH, CxImage::IM_BICUBIC2, CxImage::OM_REPEAT, newImage);
+			}
+
+			if (m_bResizePict && !isScaled) {
+				SetRect ( &aRect, 0, 0, rect.Width(), rect.Height());
+			} else {
+				int startX, startY, sizeW, sizeH;
+				int dispX, dispY, dispW, dispH;
+
+				iW = newImage->GetWidth();
+				iH = newImage->GetHeight();
+
+				if (iW <= destW && iH <= destH) 
+				{ // image is smaller than dest rect we center it
+					SetRect ( &aRect, (destW-iW)/2, (destH-iH)/2, (destW-iW)/2+iW, (destH-iH)/2+iH);
+				} else { // image is larger, will be cropped
+					if (iW > destW) {
+						startX = (iW-destW)/2; sizeW = (iW-destW)/2+destW;
+						dispX = 0; dispW = destW;
+					} else {
+							startX = 0; sizeW = iW;
+							dispX = (destW-iW)/2; dispW = dispX+iW;
+					}
+					if (iH > destH) {
+						startY = (iH-destH)/2; sizeH = (iH-destH)/2+destH;
+						dispY = 0; dispH = destH;
+					} else {
+							startY = 0; sizeH = iH;
+							dispY = (destH-iH)/2; dispH = dispY+iH;
+					}
+					SetRect ( &aRect, startX, startY, sizeW, sizeH);
+					if (iH > destH || iW > destW)
+						newImage->Crop(aRect);
+					SetRect ( &aRect, dispX, dispY, dispW, dispH);
+				}
 			}
 		}
 		newImage->Draw(dc,aRect);
 		delete newImage;
-	}
-
-	// All or One Color Shading
-	if (m_bColorLevel)
+	} else
 	{
-		int			cClr = 0;
-		int			clrMaxLevel = 255;
-		int			clrStartLevel = 0;
 
-		if (m_iClrLevel == 8) {
-			clrMaxLevel = 30;
-			clrStartLevel = 0;
-		} else if (m_iClrLevel == 9) {
-			clrMaxLevel = 30;
-			clrStartLevel = 255 - clrMaxLevel;
+		int R = GetRValue(m_Color);
+		int G = GetGValue(m_Color);
+		int B = GetBValue(m_Color);
+
+    				if ( m_b16_235 )
+					{
+						ASSERT ( R >= 16 && R <= 235 );
+						ASSERT ( G >= 16 && G <= 235 );
+						ASSERT ( B >= 16 && B <= 235 );
+
+
+						R = (int)(( R - 16 ) * 255 / 219 + 0.5);
+						G = (int)(( G - 16 ) * 255 / 219 + 0.5);
+						B = (int)(( B - 16 ) * 255 / 219 + 0.5);
+
+						if ( R < 0 )
+							R = 0;
+						else if ( R > 255 )
+							R = 255;
+
+						if ( G < 0 )
+							G = 0;
+						else if ( G > 255 )
+							G = 255;
+
+						if ( B < 0 )
+							B = 0;
+						else if ( B > 255 )
+							B = 255;
+					}
+
+
+		m_rectAreaPercent = sqrt (m_rectSizePercent / 100.) * 100;
+		if (m_bAnimated)
+			m_rectAreaPercent = 100.;
+
+		if ( m_nDisplayMode != DISPLAY_GDI && m_nDisplayMode != DISPLAY_GDI_nBG )
+		{
+			// Black is the color key
+			DisplayColor = 0x00000000;
 		}
 
-		for (DWORD i = 0; i < m_nPadsPattern; i++)
+		if ( ( DisplayColor & 0xFE000000 ) == 0xFE000000 )
 		{
-			cClr = clrStartLevel + (i * clrMaxLevel)/(m_nPadsPattern-1);
-			if (m_iClrLevel == 0 || m_iClrLevel >7)
-				br0.CreateSolidBrush ( RGB(cClr,cClr,cClr) );
-			if (m_iClrLevel == 1)
-				br0.CreateSolidBrush ( RGB(cClr,0,0) );
-			if (m_iClrLevel == 2)
-				br0.CreateSolidBrush ( RGB(0,cClr,0) );
-			if (m_iClrLevel == 3)
-				br0.CreateSolidBrush ( RGB(0,0,cClr) );
-			if (m_iClrLevel == 4) // All Color Shading
-			{ 
-				br0.CreateSolidBrush ( RGB(cClr,0,0) );
-				SetRect ( &aRect, i*stepX+minX, minY, (i+1)*stepX+minX, minY+offsetY);
-				dc.FillRect ( &aRect, &br0 ); br0.DeleteObject ();
-				br0.CreateSolidBrush ( RGB(0,cClr,0) );
-				SetRect ( &aRect, i*stepX+minX, minY+offsetY, (i+1)*stepX+minX, minY+2*offsetY);
-				dc.FillRect ( &aRect, &br0 ); br0.DeleteObject ();
-				br0.CreateSolidBrush ( RGB(0,0,cClr) );
-				SetRect ( &aRect, i*stepX+minX, minY+2*offsetY, (i+1)*stepX+minX, limitY);
-				dc.FillRect ( &aRect, &br0 ); br0.DeleteObject ();
-			} 
-			else // One Color Shading
-			{ 
-				SetRect ( &aRect, i*stepX+minX, minY, (i+1)*stepX+minX, limitY );
-				dc.FillRect ( &aRect, &br0 );
-				br0.DeleteObject ();
-			}
+			// Ansi mode
+			int	nPadWidth = rect.Width () / ANSI_CONTRAST_BLOCKS;
+			int nPadHeight = rect.Height () / ANSI_CONTRAST_BLOCKS;
+			CRect WhitePad;
 
-			if (!m_dot2Pattern) {
-			cClr = clrStartLevel + ((m_nPadsPattern-i-1)*clrMaxLevel)/(m_nPadsPattern-1);
-			if (m_iClrLevel == 0 || m_iClrLevel >7)
-				br0.CreateSolidBrush ( RGB(cClr,cClr,cClr) );
-			if (m_iClrLevel == 1)
-				br0.CreateSolidBrush ( RGB(cClr,0,0) );
-			if (m_iClrLevel == 2)
-				br0.CreateSolidBrush ( RGB(0,cClr,0) );
-			if (m_iClrLevel == 3)
-				br0.CreateSolidBrush ( RGB(0,0,cClr) );
-			if (m_iClrLevel == 4) // All Color Shading
-			{ 
-				br0.CreateSolidBrush ( RGB(cClr,0,0) );
-					SetRect ( &aRect, i*stepX+minX, limitY, (i+1)*stepX+minX, limitY+offsetY);
-          			dc.FillRect ( &aRect, &br0 ); br0.DeleteObject ();
-				br0.CreateSolidBrush ( RGB(0,cClr,0) );
-					SetRect ( &aRect, i*stepX+minX, limitY+offsetY, (i+1)*stepX+minX, limitY+2*offsetY);
-					dc.FillRect ( &aRect, &br0 ); br0.DeleteObject ();
-				br0.CreateSolidBrush ( RGB(0,0,cClr) );
-					SetRect ( &aRect, i*stepX+minX, limitY+2*offsetY, (i+1)*stepX+minX, maxY);
-					dc.FillRect ( &aRect, &br0 ); br0.DeleteObject ();
-			} 
-			else // One Color Shading
-			{ 
-					SetRect ( &aRect, i*stepX+minX, limitY, (i+1)*stepX+minX, maxY );
-				dc.FillRect ( &aRect, &br0 );
-				br0.DeleteObject ();
-			}
-		}
-	}
-	}
+			brush.CreateSolidBrush ( RGB(0,0,0) );
+			dc.FillRect ( &rect, &brush );
+			brush.DeleteObject ();
 
-	if (m_bColorPattern)
-	{
-		stepX = (maxX-minX) / 8;
+			if ( m_Color == 0xFF000000 )
+				bDraw = TRUE;
 
-		i=0; br0.CreateSolidBrush ( RGB(0,0,0) ); SetRect ( &aRect, i*stepX+minX, minY, (i+1)*stepX+minX, maxY ); dc.FillRect ( &aRect, &br0 ); br0.DeleteObject ();
-		i=1; br0.CreateSolidBrush ( RGB(255,0,0) ); SetRect ( &aRect, i*stepX+minX, minY, (i+1)*stepX+minX, maxY ); dc.FillRect ( &aRect, &br0 ); br0.DeleteObject ();
-		i=2; br0.CreateSolidBrush ( RGB(0,255,0) ); SetRect ( &aRect, i*stepX+minX, minY, (i+1)*stepX+minX, maxY ); dc.FillRect ( &aRect, &br0 ); br0.DeleteObject ();
-		i=3; br0.CreateSolidBrush ( RGB(255,255,0) ); SetRect ( &aRect, i*stepX+minX, minY, (i+1)*stepX+minX, maxY ); dc.FillRect ( &aRect, &br0 ); br0.DeleteObject ();
-		i=4; br0.CreateSolidBrush ( RGB(0,0,255) ); SetRect ( &aRect, i*stepX+minX, minY, (i+1)*stepX+minX, maxY ); dc.FillRect ( &aRect, &br0 ); br0.DeleteObject ();
-		i=5; br0.CreateSolidBrush ( RGB(255,0,255) ); SetRect ( &aRect, i*stepX+minX, minY, (i+1)*stepX+minX, maxY ); dc.FillRect ( &aRect, &br0 ); br0.DeleteObject ();
-		i=6; br0.CreateSolidBrush ( RGB(0,255,255) ); SetRect ( &aRect, i*stepX+minX, minY, (i+1)*stepX+minX, maxY ); dc.FillRect ( &aRect, &br0 ); br0.DeleteObject ();
-		i=7; br0.CreateSolidBrush ( RGB(255,255,255) ); SetRect ( &aRect, i*stepX+minX, minY, (i+1)*stepX+minX, maxY ); dc.FillRect ( &aRect, &br0 ); br0.DeleteObject ();
-	}
-
-	if (m_bConv)
-	{
-		CBrush		br1, br2;
-		int			l;
-		int			OrbY = 0;
-
-		maxX = rect.Width();
-		maxY = rect.Height();
-		stepX = maxX / m_nPadsPattern;
-		stepY = maxY / m_nPadsPattern;
-
-		for ( l = 0; l < 3; l++)
-		{
-            if (l == 0) {
-				br0.CreateSolidBrush ( RGB(255,0,0) ); br1.CreateSolidBrush ( RGB(0,255,0) ); br2.CreateSolidBrush ( RGB(0,0,255) );
-			} else if (l == 1) {
- 				br0.CreateSolidBrush ( RGB(0,255,0) ); br1.CreateSolidBrush ( RGB(0,0,255) ); br2.CreateSolidBrush ( RGB(255,0,0) );
-			} else if (l == 2) {
-				br0.CreateSolidBrush ( RGB(0,0,255) ); br1.CreateSolidBrush ( RGB(255,0,0) ); br2.CreateSolidBrush ( RGB(0,255,0) );
-			}
-
-			for ( i = 0; i < maxX; i+=(stepX*6) )
+			brush.CreateSolidBrush ( RGB(255,255,255) );
+			for ( row = 0; row < ANSI_CONTRAST_BLOCKS ; row ++ )
 			{
-				for ( j = 0; j < maxY; j+=(stepY*6) )
+				bDraw = ! bDraw;
+				for ( col = 0; col < ANSI_CONTRAST_BLOCKS ; col ++ )
 				{
-					SetRect ( &aRect, 0 * stepX * stepX + i - stepX, OrbY +j, 0 * stepX + i + stepX+1, OrbY +j+1 );
-					dc.FillRect ( &aRect, &br0 );
-					SetRect ( &aRect, 0 * stepX + i, OrbY +j - stepY, 0 * stepX + i+1, OrbY +j + stepY+1 );
-					dc.FillRect ( &aRect, &br0 );
+					bDraw = ! bDraw;
+
+					if ( bDraw )
+					{
+						WhitePad.left = nPadWidth * col;
+						WhitePad.right = WhitePad.left + nPadWidth;
+						WhitePad.top = nPadHeight * row;
+						WhitePad.bottom = WhitePad.top + nPadHeight;
+						dc.FillRect ( &WhitePad, &brush );
+					}
 				}
-				for ( j = 0; j < maxY; j+=(stepY*6) )
+			}
+			brush.DeleteObject ();
+		}
+		else
+		{
+			dWidth = (int)(rect.Width()*(100-m_rectAreaPercent)/100.0);
+			dHeight = (int)(rect.Height()*(100-m_rectAreaPercent)/100.0);
+			borderArea = (dWidth + 40.) * (dHeight + 40.) - dWidth * dHeight; 
+	//		borderArea = 0;
+
+
+			//static pattern detection avoidance
+			//stagger every 50 patterns
+			if ((m_nPat > 1) && (m_nPat % 50) == 0)
+			{
+				brush.CreateSolidBrush ( RGB(0,0,0) );
+				dc.FillRect ( &rect, &brush );
+				brush.DeleteObject ();
+				Sleep(50);
+			}
+
+			m_nPat++;
+			if(m_rectSizePercent < 100 && !isSpecial)  // Need to draw background and border
+			{
+				if (m_nDisplayMode != DISPLAY_GDI_nBG && !m_busePic)
 				{
-					SetRect ( &aRect, 2 * stepX + i - stepX, OrbY +j, 2 * stepX + i + stepX+1, OrbY +j+1 );
-					dc.FillRect ( &aRect, &br1 );
-					SetRect ( &aRect, 2 * stepX + i, OrbY +j - stepY, 2 * stepX + i+1, OrbY +j + stepY+1 );
-					dc.FillRect ( &aRect, &br1 );
+					double R1,G1,B1;
+					//subtract window area and border area
+					R1 = max(0,(bgstim*255 - R*m_rectSizePercent/100.))/(1-m_rectSizePercent/100. - borderArea/(rect.Width()*rect.Height()) );
+					G1 = max(0,(bgstim*255 - G*m_rectSizePercent/100.))/(1-m_rectSizePercent/100. - borderArea/(rect.Width()*rect.Height()) );
+					B1 = max(0,(bgstim*255 - B*m_rectSizePercent/100.))/(1-m_rectSizePercent/100. - borderArea/(rect.Width()*rect.Height()) );
+					R1 = min(R1, 255);
+					G1 = min(G1, 255);
+					B1 = min(B1, 255);
+					if (m_b16_235)
+					{
+						R1 = R1/255*219+16.5;
+						G1 = G1/255*219+16.5;
+						B1 = B1/255*219+16.5;
+					}
+
+					brush.CreateSolidBrush ( RGB(R1,G1,B1) );
+					dc.FillRect ( &rect, &brush );
+					brush.DeleteObject ();
+
+					CRect borderRect=rect; //remove? black border as it seems to cause fixed pattern detection
+					borderRect.DeflateRect((dWidth-40)/2,(dHeight-40)/2);
+					brush.CreateSolidBrush ( RGB(0,0,0) );
+					dc.FillRect ( &borderRect, &brush );
+					brush.DeleteObject ();
+
 				}
-				for ( j = 0; j < maxY; j+=(stepY*6) )
+			}
+
+			if (m_busePic && !isSpecial) //adds real image to background for measurements
+			{
+				CRect		aRect;
+				HMODULE hPatterns;
+				hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+				HRSRC hRsrc;
+			
+				CxImage* newImage = new CxImage();
+				if (m_b16_235)
+					hRsrc = ::FindResource(hPatterns,MAKEINTRESOURCE(IDR_PATTERN_TESTIMGv),"PATTERN");
+				else
+					hRsrc = ::FindResource(hPatterns,MAKEINTRESOURCE(IDR_PATTERN_TESTIMG),"PATTERN");
+
+				newImage->LoadResource(hRsrc, CXIMAGE_FORMAT_PNG, hPatterns);  
+		
+				SetRect ( &aRect, 0, 0, rect.Width(), rect.Height());
+				newImage->Draw(dc,aRect);
+				delete newImage;
+			}
+
+			CRect patternRect=rect;	
+			if (!isSpecial)
+			{
+				patternRect.DeflateRect(dWidth/2,dHeight/2);
+				//Settling pattern
+				if (GetConfig()->m_isSettling)
 				{
-					SetRect ( &aRect, 4 * stepX + i - stepX, OrbY +j, 4 * stepX + i + stepX+1, OrbY +j+1 );
-					dc.FillRect ( &aRect, &br2 );
-					SetRect ( &aRect, 4 * stepX + i, OrbY +j - stepY, 4 * stepX + i+1, OrbY +j + stepY+1 );
-					dc.FillRect ( &aRect, &br2 );	
+					CRect settlingRect=patternRect;
+					brush.CreateSolidBrush ( RGB(191,191,191) );
+					dc.FillRect ( &settlingRect, &brush );
+					brush.DeleteObject ();
+					Sleep(1000);
+					brush.CreateSolidBrush ( RGB(191,0,0) );
+					dc.FillRect ( &settlingRect, &brush );
+					brush.DeleteObject ();
+					Sleep(1000);
+					brush.CreateSolidBrush ( RGB(0,191,0) );
+					dc.FillRect ( &settlingRect, &brush );
+					brush.DeleteObject ();
+					Sleep(1000);
+					brush.CreateSolidBrush ( RGB(0,0,191) );
+					dc.FillRect ( &settlingRect, &brush );
+					brush.DeleteObject ();
+					Sleep(1000);
+					brush.CreateSolidBrush ( RGB(191,191,191) );
+					dc.FillRect ( &settlingRect, &brush );
+					brush.DeleteObject ();
+					Sleep(1000);
+				}
+			}
+
+			brush.CreateSolidBrush ( DisplayColor );
+			dc.FillRect ( &patternRect, &brush );
+			brush.DeleteObject (); 
+
+			if ((!isSpecial || m_bAnimated) && m_bdispTrip)
+			{
+	    		char aBuf[32];
+				R = GetRValue(DisplayColor);
+				G = GetGValue(DisplayColor);
+				B = GetBValue(DisplayColor);
+				sprintf(aBuf,"%d:%d:%d",R,G,B);
+				dc.SetTextColor(RGB(128,128,128));
+				dc.SetBkColor(RGB(40,40,40));
+				dc.DrawText(aBuf,&patternRect, DT_CENTER|DT_BOTTOM|DT_SINGLELINE);
+			}
+		}
+	
+		// Dot Pattern Display
+		if (m_bPatternMode)
+		{
+			br0.CreateSolidBrush ( m_clrPattern );
+			for ( i = minX; i < maxX; i+=stepX ) {
+				for ( j = minY; j < maxY; j+=stepY ) {
+					SetRect ( &aRect, i, j, i + pSize, j + pSize );
+					dc.FillRect ( &aRect, &br0 );
 				}
 			}
 			br0.DeleteObject ();
+		}
+
+		// H or V Lines Pattern Display
+		if (m_bHLines || m_bVLines)
+		{
+			br0.CreateSolidBrush ( m_clrPattern );
+			if (m_bVLines)
+				for ( i = minX; i < maxX; i+=(pSize*2) ) {
+					SetRect ( &aRect, i, minY, i + pSize, maxY + pSize );
+					dc.FillRect ( &aRect, &br0 );
+				}
+			else // HLines
+				for ( j = minY; j < maxY; j+=(pSize*2) ) {
+					SetRect ( &aRect, minX, j, maxX + pSize, j + pSize );
+					dc.FillRect ( &aRect, &br0 );
+				}
+			br0.DeleteObject ();
+		}
+
+		// All or One Color Shading
+		if (m_bColorLevel)
+		{
+			int			cClr = 0;
+			int			clrMaxLevel = 255;
+			int			clrStartLevel = 0;
+
+			if (m_iClrLevel == 8) {
+				clrMaxLevel = 30;
+				clrStartLevel = 0;
+			} else if (m_iClrLevel == 9) {
+				clrMaxLevel = 30;
+				clrStartLevel = 255 - clrMaxLevel;
+			}
+
+			for (DWORD i = 0; i < m_nPadsPattern; i++)
+			{
+				cClr = clrStartLevel + (i * clrMaxLevel)/(m_nPadsPattern-1);
+				if (m_iClrLevel == 0 || m_iClrLevel >7)
+					br0.CreateSolidBrush ( RGB(cClr,cClr,cClr) );
+				if (m_iClrLevel == 1)
+					br0.CreateSolidBrush ( RGB(cClr,0,0) );
+				if (m_iClrLevel == 2)
+					br0.CreateSolidBrush ( RGB(0,cClr,0) );
+				if (m_iClrLevel == 3)
+					br0.CreateSolidBrush ( RGB(0,0,cClr) );
+				if (m_iClrLevel == 4) // All Color Shading
+				{ 
+					br0.CreateSolidBrush ( RGB(cClr,0,0) );
+					SetRect ( &aRect, i*stepX+minX, minY, (i+1)*stepX+minX, minY+offsetY);
+					dc.FillRect ( &aRect, &br0 ); br0.DeleteObject ();
+					br0.CreateSolidBrush ( RGB(0,cClr,0) );
+					SetRect ( &aRect, i*stepX+minX, minY+offsetY, (i+1)*stepX+minX, minY+2*offsetY);
+					dc.FillRect ( &aRect, &br0 ); br0.DeleteObject ();
+					br0.CreateSolidBrush ( RGB(0,0,cClr) );
+					SetRect ( &aRect, i*stepX+minX, minY+2*offsetY, (i+1)*stepX+minX, limitY);
+					dc.FillRect ( &aRect, &br0 ); br0.DeleteObject ();
+				} 
+				else // One Color Shading
+				{ 
+					SetRect ( &aRect, i*stepX+minX, minY, (i+1)*stepX+minX, limitY );
+					dc.FillRect ( &aRect, &br0 );
+					br0.DeleteObject ();
+				}
+
+				if (!m_dot2Pattern) {
+				cClr = clrStartLevel + ((m_nPadsPattern-i-1)*clrMaxLevel)/(m_nPadsPattern-1);
+				if (m_iClrLevel == 0 || m_iClrLevel >7)
+					br0.CreateSolidBrush ( RGB(cClr,cClr,cClr) );
+				if (m_iClrLevel == 1)
+					br0.CreateSolidBrush ( RGB(cClr,0,0) );
+				if (m_iClrLevel == 2)
+					br0.CreateSolidBrush ( RGB(0,cClr,0) );
+				if (m_iClrLevel == 3)
+					br0.CreateSolidBrush ( RGB(0,0,cClr) );
+				if (m_iClrLevel == 4) // All Color Shading
+				{ 
+					br0.CreateSolidBrush ( RGB(cClr,0,0) );
+						SetRect ( &aRect, i*stepX+minX, limitY, (i+1)*stepX+minX, limitY+offsetY);
+          				dc.FillRect ( &aRect, &br0 ); br0.DeleteObject ();
+					br0.CreateSolidBrush ( RGB(0,cClr,0) );
+						SetRect ( &aRect, i*stepX+minX, limitY+offsetY, (i+1)*stepX+minX, limitY+2*offsetY);
+						dc.FillRect ( &aRect, &br0 ); br0.DeleteObject ();
+					br0.CreateSolidBrush ( RGB(0,0,cClr) );
+						SetRect ( &aRect, i*stepX+minX, limitY+2*offsetY, (i+1)*stepX+minX, maxY);
+						dc.FillRect ( &aRect, &br0 ); br0.DeleteObject ();
+				} 
+				else // One Color Shading
+				{ 
+						SetRect ( &aRect, i*stepX+minX, limitY, (i+1)*stepX+minX, maxY );
+					dc.FillRect ( &aRect, &br0 );
+					br0.DeleteObject ();
+				}
+			}
+		}
+		}
+
+		if (m_bColorPattern)
+		{
+			stepX = (maxX-minX) / 8;
+
+			i=0; br0.CreateSolidBrush ( RGB(0,0,0) ); SetRect ( &aRect, i*stepX+minX, minY, (i+1)*stepX+minX, maxY ); dc.FillRect ( &aRect, &br0 ); br0.DeleteObject ();
+			i=1; br0.CreateSolidBrush ( RGB(255,0,0) ); SetRect ( &aRect, i*stepX+minX, minY, (i+1)*stepX+minX, maxY ); dc.FillRect ( &aRect, &br0 ); br0.DeleteObject ();
+			i=2; br0.CreateSolidBrush ( RGB(0,255,0) ); SetRect ( &aRect, i*stepX+minX, minY, (i+1)*stepX+minX, maxY ); dc.FillRect ( &aRect, &br0 ); br0.DeleteObject ();
+			i=3; br0.CreateSolidBrush ( RGB(255,255,0) ); SetRect ( &aRect, i*stepX+minX, minY, (i+1)*stepX+minX, maxY ); dc.FillRect ( &aRect, &br0 ); br0.DeleteObject ();
+			i=4; br0.CreateSolidBrush ( RGB(0,0,255) ); SetRect ( &aRect, i*stepX+minX, minY, (i+1)*stepX+minX, maxY ); dc.FillRect ( &aRect, &br0 ); br0.DeleteObject ();
+			i=5; br0.CreateSolidBrush ( RGB(255,0,255) ); SetRect ( &aRect, i*stepX+minX, minY, (i+1)*stepX+minX, maxY ); dc.FillRect ( &aRect, &br0 ); br0.DeleteObject ();
+			i=6; br0.CreateSolidBrush ( RGB(0,255,255) ); SetRect ( &aRect, i*stepX+minX, minY, (i+1)*stepX+minX, maxY ); dc.FillRect ( &aRect, &br0 ); br0.DeleteObject ();
+			i=7; br0.CreateSolidBrush ( RGB(255,255,255) ); SetRect ( &aRect, i*stepX+minX, minY, (i+1)*stepX+minX, maxY ); dc.FillRect ( &aRect, &br0 ); br0.DeleteObject ();
+		}
+
+		if (m_bConv)
+		{
+			CBrush		br1, br2;
+			int			l;
+			int			OrbY = 0;
+
+			maxX = rect.Width();
+			maxY = rect.Height();
+			stepX = maxX / m_nPadsPattern;
+			stepY = maxY / m_nPadsPattern;
+
+			for ( l = 0; l < 3; l++)
+			{
+				if (l == 0) {
+					br0.CreateSolidBrush ( RGB(255,0,0) ); br1.CreateSolidBrush ( RGB(0,255,0) ); br2.CreateSolidBrush ( RGB(0,0,255) );
+				} else if (l == 1) {
+ 					br0.CreateSolidBrush ( RGB(0,255,0) ); br1.CreateSolidBrush ( RGB(0,0,255) ); br2.CreateSolidBrush ( RGB(255,0,0) );
+				} else if (l == 2) {
+					br0.CreateSolidBrush ( RGB(0,0,255) ); br1.CreateSolidBrush ( RGB(255,0,0) ); br2.CreateSolidBrush ( RGB(0,255,0) );
+				}
+
+				for ( i = 0; i < maxX; i+=(stepX*6) )
+				{
+					for ( j = 0; j < maxY; j+=(stepY*6) )
+					{
+						SetRect ( &aRect, 0 * stepX * stepX + i - stepX, OrbY +j, 0 * stepX + i + stepX+1, OrbY +j+1 );
+						dc.FillRect ( &aRect, &br0 );
+						SetRect ( &aRect, 0 * stepX + i, OrbY +j - stepY, 0 * stepX + i+1, OrbY +j + stepY+1 );
+						dc.FillRect ( &aRect, &br0 );
+					}
+					for ( j = 0; j < maxY; j+=(stepY*6) )
+					{
+						SetRect ( &aRect, 2 * stepX + i - stepX, OrbY +j, 2 * stepX + i + stepX+1, OrbY +j+1 );
+						dc.FillRect ( &aRect, &br1 );
+						SetRect ( &aRect, 2 * stepX + i, OrbY +j - stepY, 2 * stepX + i+1, OrbY +j + stepY+1 );
+						dc.FillRect ( &aRect, &br1 );
+					}
+					for ( j = 0; j < maxY; j+=(stepY*6) )
+					{
+						SetRect ( &aRect, 4 * stepX + i - stepX, OrbY +j, 4 * stepX + i + stepX+1, OrbY +j+1 );
+						dc.FillRect ( &aRect, &br2 );
+						SetRect ( &aRect, 4 * stepX + i, OrbY +j - stepY, 4 * stepX + i+1, OrbY +j + stepY+1 );
+						dc.FillRect ( &aRect, &br2 );	
+					}
+				}
+				br0.DeleteObject ();
+				br1.DeleteObject ();
+				br2.DeleteObject ();
+				OrbY+=2*stepY;
+			}
+		}
+
+		if (m_bGeom)
+		{
+			CBrush		br1;
+			CPen		ePen;
+			double		ratio = rect.Width()/rect.Height();
+			int			offset;
+			int			halfCircle;
+
+			maxX = rect.Width();
+			maxY = rect.Height();
+			stepY = maxY / m_nPadsPattern;
+			stepX = stepY;
+			offset = (maxX % stepX) / 2;
+			halfCircle = (int)((sqrt(double(maxX * maxX + maxY * maxY)) / 2.0 - (maxY / 2.0) - 1.0) / 2.37 - 1);
+
+			if (halfCircle > (maxY / 4)) 
+				halfCircle = (maxY / 4) - 1;
+
+			ePen.CreatePen(PS_SOLID, 1, ColorRGBDisplay(100.0).GetColorRef(m_b16_235));
+			br1.CreateSolidBrush (ColorRGBDisplay(0.0).GetColorRef(m_b16_235));
+			dc.SelectObject(&ePen);
+			dc.SelectObject(&br1);
+			dc.Ellipse(halfCircle, 0,maxX-halfCircle,maxY);
+			dc.Ellipse(0, 0,halfCircle*2,halfCircle*2);
+			dc.Ellipse(0, maxY-halfCircle*2,halfCircle*2,maxY);
+			dc.Ellipse(maxX-halfCircle*2, 0,maxX,halfCircle*2);
+			dc.Ellipse(maxX-halfCircle*2, maxY-halfCircle*2,maxX,maxY);
 			br1.DeleteObject ();
-			br2.DeleteObject ();
-			OrbY+=2*stepY;
+			ePen.DeleteObject ();
+
+			br0.CreateSolidBrush (ColorRGBDisplay(100.0).GetColorRef(m_b16_235));
+			for ( i = offset; i < maxX-1; i+=(int)(stepX*ratio) )
+			{
+				SetRect ( &aRect, i, 0, i+1, maxY );
+				dc.FillRect ( &aRect, &br0 );
+			}
+			for ( j = 0; j < maxY-1; j+=stepY )
+			{
+				SetRect ( &aRect, 0, j, maxX, j+1 );
+				dc.FillRect ( &aRect, &br0 );
+			}
+			br0.DeleteObject ();
 		}
-	}
-
-	if (m_bGeom)
-	{
-		CBrush		br1;
-		CPen		ePen;
-		double		ratio = rect.Width()/rect.Height();
-		int			offset;
-		int			halfCircle;
-
-		maxX = rect.Width();
-		maxY = rect.Height();
-		stepY = maxY / m_nPadsPattern;
-		stepX = stepY;
-		offset = (maxX % stepX) / 2;
-		halfCircle = (int)((sqrt(double(maxX * maxX + maxY * maxY)) / 2.0 - (maxY / 2.0) - 1.0) / 2.37 - 1);
-
-		if (halfCircle > (maxY / 4)) 
-			halfCircle = (maxY / 4) - 1;
-
-		ePen.CreatePen(PS_SOLID, 1, ColorRGBDisplay(100.0).GetColorRef(m_b16_235));
-		br1.CreateSolidBrush (ColorRGBDisplay(0.0).GetColorRef(m_b16_235));
-		dc.SelectObject(&ePen);
-		dc.SelectObject(&br1);
-		dc.Ellipse(halfCircle, 0,maxX-halfCircle,maxY);
-		dc.Ellipse(0, 0,halfCircle*2,halfCircle*2);
-		dc.Ellipse(0, maxY-halfCircle*2,halfCircle*2,maxY);
-		dc.Ellipse(maxX-halfCircle*2, 0,maxX,halfCircle*2);
-		dc.Ellipse(maxX-halfCircle*2, maxY-halfCircle*2,maxX,maxY);
-		br1.DeleteObject ();
-		ePen.DeleteObject ();
-
-		br0.CreateSolidBrush (ColorRGBDisplay(100.0).GetColorRef(m_b16_235));
-		for ( i = offset; i < maxX-1; i+=(int)(stepX*ratio) )
-		{
-			SetRect ( &aRect, i, 0, i+1, maxY );
-			dc.FillRect ( &aRect, &br0 );
-		}
-		for ( j = 0; j < maxY-1; j+=stepY )
-		{
-			SetRect ( &aRect, 0, j, maxX, j+1 );
-			dc.FillRect ( &aRect, &br0 );
-		}
-		br0.DeleteObject ();
-	}
+	} //if pattern
 }
 
 void CFullScreenWindow::OnTimer(UINT nIDEvent) 

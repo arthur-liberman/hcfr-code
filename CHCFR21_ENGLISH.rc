@@ -3446,7 +3446,7 @@ BEGIN
     IDS_CANNOTMEASUREGRAYANDCOLORS 
                             "%s cannot display gray scale, primaries and secondaries in one single series.\nPlease use single commands instead of this one."
     IDS_CANNOTDISPLAYANIMATION 
-                            "This generator cannot display animated patterns.\nOnly ""GDI mode"" generator can."
+                            "This generator cannot display animated patterns.\n"
     IDS_DISPLAYANIMATEDPATTERN 
                             "Display animated pattern ?\nTo close animation pattern, type either ENTER or ESCAPE key."
     IDS_WITHBLACKCOMPENSATION "with black compensation"

@@ -148,7 +148,6 @@ BOOL CGenerator::Init(UINT nbMeasure)
 		if (Cgen.m_nDisplayMode == DISPLAY_ccast)
 		{
 			ccast_id **ids;
-			ids = get_ccids();
 			if ((ids = get_ccids()) == NULL) 
 			{
 				GetColorApp()->InMeasureMessageBox( "    ** Error discovering ChromeCasts **", "Error", MB_ICONERROR);
@@ -170,13 +169,15 @@ BOOL CGenerator::Init(UINT nbMeasure)
 						free_ccids(ids);
 						return -1;
 					} 
+					ccwin = dw;
 	//				else
 	//					GetColorApp()->InMeasureMessageBox( dw->description, "ChromeCast Found", MB_ICONINFORMATION);
+				
 				}
 			}
 			free_ccids(ids);
 		} else if (Cgen.m_nDisplayMode == DISPLAY_madVR)
-			{
+		{
 			if (madVR_IsAvailable())
 			{
 				int nSettling=GetConfig()->m_isSettling?5:0;

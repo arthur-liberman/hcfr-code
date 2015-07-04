@@ -24,6 +24,12 @@
 #endif // _MSC_VER
 #include <ddraw.h>
 
+#include "../libnum/numsup.h"
+#include "../libconv/conv.h"
+#include "../libccast/ccmdns.h"
+#include "../libccast/ccwin.h"
+#include "../libccast/ccast.h"
+
 // Display modes
 #define DISPLAY_GDI		0
 #define DISPLAY_OVERLAY	1
@@ -50,6 +56,7 @@ public:
 	UINT					m_rectSizePercent;
 	UINT					m_bgStimPercent;
 	UINT 					m_Intensity;
+	UINT					m_nPat;
 							
 	UINT					m_nDisplayMode;
 	BOOL					m_bDisableCursorHiding;

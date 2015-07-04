@@ -143,7 +143,7 @@ public:
 
 	virtual BOOL CanDisplayAnsiBWRects(); 
 	virtual BOOL CanDisplayGrayAndColorsSeries()	{ return TRUE; }
-	virtual BOOL CanDisplayAnimatedPatterns()		{ return FALSE; }
+	virtual BOOL CanDisplayAnimatedPatterns(BOOL isSpecialty = TRUE)		{ return TRUE; }
 	virtual BOOL CanDisplayScale ( MeasureType nScaleType, int nbLevels, BOOL bMute = FALSE )		{ return TRUE; }
 	virtual	BOOL HasPatternChanged( MeasureType nScaleType, CColor previousColor,CColor measuredColor)		{ return TRUE; }
 	virtual CString GetRetryMessage () { return ""; }
