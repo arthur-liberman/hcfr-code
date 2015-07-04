@@ -91,9 +91,9 @@ CGDIGenerator::CGDIGenerator()
     m_madVR_3d = GetConfig()->GetProfileInt("GDIGenerator","MADVR3D",0);
     m_madVR_vLUT = GetConfig()->GetProfileInt("GDIGenerator","MADVRvLUT",0);
     m_madVR_OSD = GetConfig()->GetProfileInt("GDIGenerator","MADVROSD",0);
-//	m_displayWindow.SetDisplayMode(m_nDisplayMode);	// Always init in GDI mode during init
-	m_displayWindow.SetDisplayMode();	
-//	m_bisInited = FALSE;
+	m_displayWindow.SetDisplayMode(m_nDisplayMode);	// Always init in GDI mode during init
+//	m_displayWindow.SetDisplayMode();	
+	m_bisInited = FALSE;
 
 	CString str;
 	str.LoadString(IDS_GDIGENERATOR_PROPERTIES_TITLE);
@@ -366,10 +366,13 @@ void CGDIGenerator::GetPropertiesSheetValues()
 BOOL CGDIGenerator::Init(UINT nbMeasure)
 {
 	BOOL	bOk, bOnOtherMonitor;
+	GetMonitorList();
 
 	m_displayWindow.SetDisplayMode(m_nDisplayMode);
 	m_displayWindow.SetRGBScale(m_b16_235);
 	m_displayWindow.MoveToMonitor(m_hMonitor[m_activeMonitorNum]);
+	if (m_nDisplayMode == DISPLAY_GDI || m_nDisplayMode == DISPLAY_GDI_nBG )
+		m_displayWindow.ShowWindow(SW_SHOWMAXIMIZED);
 
 	if (!m_bConnect && m_bLinear) //linear gamma tables
 	{
@@ -402,7 +405,7 @@ BOOL CGDIGenerator::Init(UINT nbMeasure)
 	{
 		GetColorApp() -> RestoreMeasureCursor ();
 	}
-//	m_bisInited = TRUE;
+	m_bisInited = TRUE;
 
 	return bOk;
 }
@@ -620,8 +623,8 @@ BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nP
 	p_clr[2] = clr[2] * m_displayWindow.m_Intensity / 100;
 
 	//see if we need to reconnect generator
-//	if (!this->m_bisInited)
-//		Init();
+	if (!this->m_bisInited)
+		Init();
 
 	if ( m_GDIGenePropertiesPage.m_nDisplayMode == DISPLAY_madVR)
 		DisplayRGBColormadVR (do_Intensity?p_clr:clr, GetConfig()->m_isSettling, nPatternInfo);
@@ -635,7 +638,7 @@ BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nP
 
 BOOL CGDIGenerator::CanDisplayAnsiBWRects()
 {
-	return ((m_GDIGenePropertiesPage.m_nDisplayMode != DISPLAY_madVR) && (m_GDIGenePropertiesPage.m_nDisplayMode != DISPLAY_ccast)?TRUE:FALSE);
+	return ((m_GDIGenePropertiesPage.m_nDisplayMode != DISPLAY_madVR));
 }
 
 BOOL CGDIGenerator::CanDisplayAnimatedPatterns(BOOL isSpecialty)

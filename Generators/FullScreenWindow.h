@@ -59,6 +59,7 @@ public:
 	UINT					m_nPat;
 							
 	UINT					m_nDisplayMode;
+	INT						m_ansiCcast;
 	BOOL					m_bDisableCursorHiding;
 	BOOL					m_bIRE;
 	BOOL					m_b16_235;

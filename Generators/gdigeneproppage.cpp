@@ -122,6 +122,9 @@ void CGDIGenePropPage::OnOK()
 	else
 		m_b16_235 = FALSE;
 
+	CGDIGenerator m_pGenerator;
+	m_pGenerator.m_nDisplayMode = m_nDisplayMode;
+
 	CPropertyPageWithHelp::OnOK();
 }
 
@@ -129,6 +132,7 @@ BOOL CGDIGenePropPage::OnSetActive()
 {
 	// Init combo box with monitor list stored in array
 	m_monitorComboCtrl.ResetContent();
+
 	for(int i=0;i<m_monitorNameArray.GetSize();i++)
 		m_monitorComboCtrl.AddString(m_monitorNameArray[i]);
 

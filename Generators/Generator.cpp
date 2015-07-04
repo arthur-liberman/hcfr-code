@@ -142,7 +142,7 @@ BOOL CGenerator::Init(UINT nbMeasure)
 	CString str, msg;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 	BOOL madVR_Found;
-
+	
 	if (m_name != str)
 	{
 		if (Cgen.m_nDisplayMode == DISPLAY_ccast)
@@ -169,10 +169,7 @@ BOOL CGenerator::Init(UINT nbMeasure)
 						free_ccids(ids);
 						return -1;
 					} 
-					ccwin = dw;
-	//				else
-	//					GetColorApp()->InMeasureMessageBox( dw->description, "ChromeCast Found", MB_ICONINFORMATION);
-				
+					ccwin = dw;				
 				}
 			}
 			free_ccids(ids);
@@ -196,8 +193,10 @@ BOOL CGenerator::Init(UINT nbMeasure)
 			}
 		} else
 		{
-			CGenerator *	m_pGenerator;			
+			CGenerator *	m_pGenerator;
+			CGenerator *	 t1;			
 			m_pGenerator=new CGDIGenerator();
+			t1 = m_pGenerator;
 		}
 	}
 

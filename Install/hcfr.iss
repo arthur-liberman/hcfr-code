@@ -72,6 +72,8 @@ Source: "..\Release\ColorHCFR.exe"; DestDir: "{app}"; Flags: ignoreversion; Comp
 Source: "..\Release\oeminst.exe"; DestDir: "{app}\Tools"; Flags: ignoreversion; Components: main
 Source: "..\Release\spotread.exe"; DestDir: "{app}\Tools"; Flags: ignoreversion; Components: main
 Source: "..\Install\dispwin.exe"; DestDir: "{app}\Tools"; Flags: ignoreversion; Components: main
+Source: "..\Install\ansi1.png"; DestDir: "{app}\Tools"; Flags: ignoreversion; Components: main
+Source: "..\Install\ansi2.png"; DestDir: "{app}\Tools"; Flags: ignoreversion; Components: main
 Source: "..\Install\msvcr100.dll"; DestDir: "{app}\Tools"; Flags: ignoreversion; Components: main
 Source: "..\Release\*.dll"; DestDir: "{app}"; Flags: ignoreversion; Components: main
 Source: "..\Release\*.chm"; DestDir: "{app}"; Flags: ignoreversion; Components: main

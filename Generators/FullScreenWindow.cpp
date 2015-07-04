@@ -40,7 +40,7 @@
 	#include <mmsystem.h>
 #endif
 
-#define ANSI_CONTRAST_BLOCKS	4
+#define ANSI_CONTRAST_BLOCKS	5
 
 CFullScreenWindow::CFullScreenWindow(BOOL bTestOverlay)
 {
@@ -49,6 +49,7 @@ CFullScreenWindow::CFullScreenWindow(BOOL bTestOverlay)
 
 	m_Color = 0;
 	m_nPat = 0;
+	m_ansiCcast = -1;
 	m_bTestOverlay = bTestOverlay;
 	m_rectSizePercent = GetConfig()->GetProfileInt("GDIGenerator","SizePercent",10);
 	m_bgStimPercent = 0;
@@ -330,7 +331,7 @@ void CFullScreenWindow::DisplayRGBColorInternal(COLORREF clr, BOOL bDisableWaiti
 
 	if ( ! IsWindowVisible () )
 	{
-		ShowWindow ( SW_SHOW );
+		ShowWindow ( SW_SHOWMAXIMIZED );
 		if ( ! m_bTestOverlay )
 		{
 			ModifyStyleEx ( 0, WS_EX_TOPMOST );
@@ -348,6 +349,7 @@ void CFullScreenWindow::DisplayRGBColorInternal(COLORREF clr, BOOL bDisableWaiti
 		SetCursor ( NULL );
 	
 	Sleep ( 0 );
+	this->Invalidate(TRUE);
 	RedrawWindow ();
 
 	if ( ! bDisableWaiting )
@@ -391,7 +393,13 @@ void CFullScreenWindow::DisplayRGBColorInternal(COLORREF clr, BOOL bDisableWaiti
 void CFullScreenWindow::DisplayAnsiBWRects(BOOL bInvert)
 {
     // Use simulated colors
-    DisplayRGBColorInternal ( (bInvert ? 0xFF000000 : 0xFE000000), FALSE);
+	if (m_nDisplayMode == DISPLAY_ccast)
+	{
+		m_ansiCcast = (bInvert?1:0);
+		m_bPatternPict = TRUE;
+		DisplayRGBColor ( ColorRGBDisplay(0.0), FALSE );
+	} else
+	    DisplayRGBColorInternal ( (bInvert ? 0xFF000000 : 0xFE000000), FALSE);
 }
 
 void CFullScreenWindow::DisplayAnimatedBlack()
@@ -749,6 +757,7 @@ void CFullScreenWindow::DisplayPatternPicture(HMODULE hInst, UINT nIDResource, B
 	m_hPatternInst = hInst;
 	m_bResizePict = bResizePict;
 	m_uiPictRess = nIDResource;
+	m_ansiCcast = -1;
 	DisplayRGBColor ( ColorRGBDisplay(0.0), TRUE );
 }
 
@@ -819,14 +828,17 @@ void CFullScreenWindow::OnPaint()
 		
 		CxImage* newImage = new CxImage();
 
-		HRSRC hRsrc = ::FindResource(m_hPatternInst,MAKEINTRESOURCE(m_uiPictRess),"PATTERN");
-		if (m_uiPictRess == IDR_PATTERN_TV || m_uiPictRess == IDR_PATTERN_TVv)
-			newImage->LoadResource(hRsrc,CXIMAGE_FORMAT_JPG,m_hPatternInst);   
-		else
-			newImage->LoadResource(hRsrc,CXIMAGE_FORMAT_PNG,m_hPatternInst);  
+		if (m_ansiCcast == -1)
+		{
+			HRSRC hRsrc = ::FindResource(m_hPatternInst,MAKEINTRESOURCE(m_uiPictRess),"PATTERN");
+			if (m_uiPictRess == IDR_PATTERN_TV || m_uiPictRess == IDR_PATTERN_TVv)
+				newImage->LoadResource(hRsrc,CXIMAGE_FORMAT_JPG,m_hPatternInst);   
+			else
+				newImage->LoadResource(hRsrc,CXIMAGE_FORMAT_PNG,m_hPatternInst);  
 
-		iW = newImage->GetWidth();
-		iH = newImage->GetHeight();
+			iW = newImage->GetWidth();
+			iH = newImage->GetHeight();
+		}
 		
 		float destA = (float)destW/(float)destH;
 		float iA = (float)iW/(float)iH;
@@ -847,9 +859,18 @@ void CFullScreenWindow::OnPaint()
 				{
 					char url[200];
 					chws *ws = NULL;
-					newImage->Save("tools/ccsend.png", CXIMAGE_FORMAT_PNG);
 					ws = new_chws(ids[0], 0, 0, 0, 0, TRUE);
-					sprintf(url, "%s%s", ws->ws_url, "tools/ccsend.png"); 
+
+					if (m_ansiCcast == 0)
+						sprintf(url, "%s%s", ws->ws_url, "tools/ansi1.png"); 
+					else if (m_ansiCcast == 1)
+						sprintf(url, "%s%s", ws->ws_url, "tools/ansi2.png"); 
+					else if (m_ansiCcast == -1)
+					{
+						newImage->Save("tools/ccsend.png", CXIMAGE_FORMAT_PNG);
+						sprintf(url, "%s%s", ws->ws_url, "tools/ccsend.png"); 
+					}
+
 					int rv = ws->cc->load(ws->cc, url, NULL, 0.0, NULL,  0.0, 0.0, 0.0, 0.0);
 					if (rv) 
 					{
@@ -985,13 +1006,26 @@ void CFullScreenWindow::OnPaint()
 				{
 					bDraw = ! bDraw;
 
-					if ( bDraw )
+					if ( (row % 2 == 0) )
 					{
-						WhitePad.left = nPadWidth * col;
-						WhitePad.right = WhitePad.left + nPadWidth;
-						WhitePad.top = nPadHeight * row;
-						WhitePad.bottom = WhitePad.top + nPadHeight;
-						dc.FillRect ( &WhitePad, &brush );
+						if (bDraw)
+						{
+							WhitePad.left = nPadWidth * col;
+							WhitePad.right = WhitePad.left + nPadWidth;
+							WhitePad.top = nPadHeight * row;
+							WhitePad.bottom = WhitePad.top + nPadHeight;
+							dc.FillRect ( &WhitePad, &brush );
+						}
+					} else
+					{
+						if (!bDraw)
+						{
+							WhitePad.left = nPadWidth * col;
+							WhitePad.right = WhitePad.left + nPadWidth;
+							WhitePad.top = nPadHeight * row;
+							WhitePad.bottom = WhitePad.top + nPadHeight;
+							dc.FillRect ( &WhitePad, &brush );
+						}
 					}
 				}
 			}

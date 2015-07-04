@@ -4003,121 +4003,123 @@ BOOL CMeasure::MeasureContrast(CSensor *pSensor, CGenerator *pGenerator)
 	CColor measure;
 	// Measure black for on/off contrast
 	m_binMeasure = TRUE;
-	for ( i = 0; i < 1 ; i ++ )
+
+	if (!CheckBlackOverride())
 	{
-		if( pGenerator->DisplayGray(BlackIRELevel,CGenerator::MT_CONTRAST,!bRetry ) )
+		for ( i = 0; i < 1 ; i ++ )
 		{
-			bEscape = WaitForDynamicIris ();
-			bRetry = FALSE;
-
-			if ( ! bEscape )
+			if( pGenerator->DisplayGray(BlackIRELevel,CGenerator::MT_CONTRAST,!bRetry ) )
 			{
-				if ( bUseLuxValues )
-					StartLuxMeasure ();
+				bEscape = WaitForDynamicIris ();
+				bRetry = FALSE;
 
-				if (!m_bOverRideBlack)
-					measure=pSensor->MeasureColor(ColorRGBDisplay(BlackIRELevel));
-				
-				if ( bUseLuxValues )
+				if ( ! bEscape )
 				{
-					switch ( GetLuxMeasure ( & dLuxValue ) )
+					if ( bUseLuxValues )
+						StartLuxMeasure ();
+
+	//				if (!m_bOverRideBlack)
+						measure=pSensor->MeasureColor(ColorRGBDisplay(BlackIRELevel));
+				
+					if ( bUseLuxValues )
 					{
-						case LUX_NOMEASURE:
-							 bUseLuxValues = FALSE;
-							 break;
+						switch ( GetLuxMeasure ( & dLuxValue ) )
+						{
+							case LUX_NOMEASURE:
+								 bUseLuxValues = FALSE;
+								 break;
 
-						case LUX_OK:
-							 measuredLux[0] = dLuxValue;
-							 break;
+							case LUX_OK:
+								 measuredLux[0] = dLuxValue;
+								 break;
 
-						case LUX_CANCELED:
-							 bEscape = TRUE;
-							 break;
+							case LUX_CANCELED:
+								 bEscape = TRUE;
+								 break;
+						}
 					}
 				}
-			}
 
-			if ( bUseLuxValues && ! bEscape )
-			{
-				int		nNbLoops = 0;
-				BOOL	bContinue;
-				
-				// Measuring black: ask and reask luxmeter value until it stabilizes
-				do
+				if ( bUseLuxValues && ! bEscape )
 				{
-					bContinue = FALSE;
-					nNbLoops ++;
-					
-					StartLuxMeasure ();
-					
-					switch ( GetLuxMeasure ( & dLuxValue ) )
+					int		nNbLoops = 0;
+					BOOL	bContinue;
+				
+					// Measuring black: ask and reask luxmeter value until it stabilizes
+					do
 					{
-						case LUX_NOMEASURE:
-							 bUseLuxValues = FALSE;
-							 break;
+						bContinue = FALSE;
+						nNbLoops ++;
+					
+						StartLuxMeasure ();
+					
+						switch ( GetLuxMeasure ( & dLuxValue ) )
+						{
+							case LUX_NOMEASURE:
+								 bUseLuxValues = FALSE;
+								 break;
 
-						case LUX_OK:
-							 if ( dLuxValue < measuredLux[0] )
-							 {
-								measuredLux[0] = dLuxValue;
-								bContinue = TRUE;
-							 }
-							 break;
+							case LUX_OK:
+								 if ( dLuxValue < measuredLux[0] )
+								 {
+									measuredLux[0] = dLuxValue;
+									bContinue = TRUE;
+								 }
+								 break;
 
-						case LUX_CANCELED:
-							 bEscape = TRUE;
-							 break;
-					}
-				} while ( bContinue && nNbLoops < 10 );
-			}
+							case LUX_CANCELED:
+								 bEscape = TRUE;
+								 break;
+						}
+					} while ( bContinue && nNbLoops < 10 );
+				}
 
-			while ( PeekMessage ( & Msg, NULL, WM_KEYDOWN, WM_KEYUP, TRUE ) )
-			{
-				if ( Msg.message == WM_KEYDOWN && Msg.wParam == VK_ESCAPE )
-					bEscape = TRUE;
-			}
+				while ( PeekMessage ( & Msg, NULL, WM_KEYDOWN, WM_KEYUP, TRUE ) )
+				{
+					if ( Msg.message == WM_KEYDOWN && Msg.wParam == VK_ESCAPE )
+						bEscape = TRUE;
+				}
 
-			if ( bEscape )
-			{
-				pSensor->Release();
-				pGenerator->Release();
-				strMsg.LoadString ( IDS_MEASURESCANCELED );
-				GetColorApp()->InMeasureMessageBox ( strMsg, NULL, MB_OK | MB_ICONINFORMATION );
-				return FALSE;
-			}
-
-			if(!pSensor->IsMeasureValid())
-			{
-				Title.LoadString ( IDS_ERROR );
-				strMsg.LoadString ( IDS_ANERROROCCURED );
-				int result=GetColorApp()->InMeasureMessageBox(strMsg+pSensor->GetErrorString(),Title,MB_ABORTRETRYIGNORE | MB_ICONERROR);
-				if(result == IDABORT)
+				if ( bEscape )
 				{
 					pSensor->Release();
 					pGenerator->Release();
+					strMsg.LoadString ( IDS_MEASURESCANCELED );
+					GetColorApp()->InMeasureMessageBox ( strMsg, NULL, MB_OK | MB_ICONINFORMATION );
 					return FALSE;
 				}
-				if(result == IDRETRY)
+
+				if(!pSensor->IsMeasureValid())
 				{
-					i--;
-					bRetry = TRUE;
+					Title.LoadString ( IDS_ERROR );
+					strMsg.LoadString ( IDS_ANERROROCCURED );
+					int result=GetColorApp()->InMeasureMessageBox(strMsg+pSensor->GetErrorString(),Title,MB_ABORTRETRYIGNORE | MB_ICONERROR);
+					if(result == IDABORT)
+					{
+						pSensor->Release();
+						pGenerator->Release();
+						return FALSE;
+					}
+					if(result == IDRETRY)
+					{
+						i--;
+						bRetry = TRUE;
+					}
+				}
+				else
+				{
+						m_OnOffBlack = measure;
 				}
 			}
 			else
 			{
-				if (m_bOverRideBlack)
-					m_OnOffBlack = m_userBlack;
-				else
-					m_OnOffBlack = measure;
+				pSensor->Release();
+				pGenerator->Release();
+				return FALSE;
 			}
 		}
-		else
-		{
-			pSensor->Release();
-			pGenerator->Release();
-			return FALSE;
-		}
-	}
+	} else
+		m_OnOffBlack = m_userBlack;
 
 	// Measure white for on/off contrast
 	for ( i = 0; i < 1 ; i ++ )
@@ -4232,7 +4234,7 @@ BOOL CMeasure::MeasureContrast(CSensor *pSensor, CGenerator *pGenerator)
 				{
 					if ( bUseLuxValues )
 						StartLuxMeasure ();
-					measure=pSensor->MeasureColor(ColorRGBDisplay(NearBlackIRELevel));	// Assume Black
+						measure=pSensor->MeasureColor(ColorRGBDisplay(NearBlackIRELevel));	// Assume Black
 					
 					if ( bUseLuxValues )
 					{
@@ -4325,6 +4327,7 @@ BOOL CMeasure::MeasureContrast(CSensor *pSensor, CGenerator *pGenerator)
 			{
 				pSensor->Release();
 				pGenerator->Release();
+
 				return FALSE;
 			}
 		}
@@ -4334,11 +4337,15 @@ BOOL CMeasure::MeasureContrast(CSensor *pSensor, CGenerator *pGenerator)
 		{
 			if( pGenerator->DisplayAnsiBWRects(TRUE) )
 			{
+				bEscape = WaitForDynamicIris ();
+
 				if ( bUseLuxValues )
 					StartLuxMeasure ();
 
 				measure=pSensor->MeasureColor(ColorRGBDisplay(NearWhiteIRELevel));	// Assume White
 				
+				pGenerator->DisplayGray(0, CGenerator::MT_NEARBLACK, FALSE); //flush ccast
+
 				bEscape = FALSE;
 			
 				if ( bUseLuxValues )
