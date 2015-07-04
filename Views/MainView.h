@@ -122,6 +122,9 @@ public:
 	int	dEcnt;
 	double dE10;
 	double dE10min;
+	BOOL m_userBlack;
+	CColor m_oldBlackGS;
+	CColor m_oldBlackNB;
 
 	std::vector<double> dEvector, dLvector, dCvector, dHvector;
 

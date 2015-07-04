@@ -441,6 +441,9 @@ CMainView::CMainView()
 	dEcnt=0;
 	dE10=0.;
 	dE10min=0.;
+	m_userBlack = FALSE;
+	m_oldBlackGS = noDataColor;
+	m_oldBlackNB = noDataColor;
 }
 
 CMainView::~CMainView()
@@ -1399,7 +1402,31 @@ void CMainView::InitGrid()
 		m_pGrayScaleGrid->ExpandColumnsToFit(FALSE);
 	}
 
-	if ( (m_displayMode == 0 || m_displayMode == 3) && GetConfig()->m_userBlack)
+	if  (GetConfig()->m_userBlack) //store/retrieve real black measurements
+	{
+		if (!m_userBlack)
+		{
+			m_oldBlackGS = GetDocument()->GetMeasure()->GetGray(0);
+			m_oldBlackNB = GetDocument()->GetMeasure()->GetNearBlack(0);
+			double Yblack = GetConfig()->m_ManualBlack;
+			GetDocument()->GetMeasure()->SetGray(0, ColorXYZ(Yblack*.95047,Yblack,Yblack*1.0883));
+			GetDocument()->GetMeasure()->SetNearBlack(0, ColorXYZ(Yblack*.95047,Yblack,Yblack*1.0883)) ;
+			GetDocument()->GetMeasure()->SetOnOffBlack(ColorXYZ(Yblack*.95047,Yblack,Yblack*1.0883)) ;
+			m_userBlack = TRUE;
+		}
+	}
+	else
+	{
+		if (m_userBlack)
+		{
+			GetDocument()->GetMeasure()->SetGray(0, m_oldBlackGS);
+			GetDocument()->GetMeasure()->SetNearBlack(0, m_oldBlackNB) ;
+			GetDocument()->GetMeasure()->SetOnOffBlack(m_oldBlackGS) ;
+			m_userBlack = FALSE;
+		}
+	}
+
+	if ( (m_displayMode == 0 || m_displayMode == 3 || m_displayMode == 12) && GetConfig()->m_userBlack)
 	{
     		m_pGrayScaleGrid->SetItemBkColour ( 1, 1, RGB(255,218,185) );
     		m_pGrayScaleGrid->SetItemBkColour ( 2, 1, RGB(255,218,185) );

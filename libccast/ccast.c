@@ -44,8 +44,8 @@ void cc_dump_bytes(FILE *fp, char *pfx, unsigned char *buf, int len);
 # define DBG(xxx) ;
 #endif  /* DEBUG */
 
-#define START_TRIES 6
-#define LOAD_TRIES 4
+#define START_TRIES 2
+#define LOAD_TRIES 2
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - */
 

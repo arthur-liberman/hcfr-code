@@ -847,12 +847,15 @@ void CFullScreenWindow::OnPaint()
 				{
 					char url[200];
 					chws *ws = NULL;
-					newImage->Save("ccsend.png", CXIMAGE_FORMAT_PNG);
+					newImage->Save("tools/ccsend.png", CXIMAGE_FORMAT_PNG);
 					ws = new_chws(ids[0], 0, 0, 0, 0, TRUE);
-					sprintf(url, "%s%s", ws->ws_url, "ccsend.png"); 
-					if (ws->cc->load(ws->cc, url, NULL, 0.0, NULL,  0.0, 0.0, 0.0, 0.0)) 
+					sprintf(url, "%s%s", ws->ws_url, "tools/ccsend.png"); 
+					int rv = ws->cc->load(ws->cc, url, NULL, 0.0, NULL,  0.0, 0.0, 0.0, 0.0);
+					if (rv) 
 					{
-						MessageBox(0, "Chromecast Special Test pattern failure.", MB_ICONERROR);
+						char msg[255];
+						sprintf(msg,"Chromecast special test pattern failure. return: %d", rv);
+						GetColorApp()->InMeasureMessageBox(msg,"CCast Error", MB_OK + MB_ICONERROR);
 						ws->del(ws);
 					}
 				}
