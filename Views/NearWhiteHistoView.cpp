@@ -118,7 +118,6 @@ void CNearWhiteGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	BOOL	bDataPresent = FALSE;
 	CDataSetDoc *pDataRef = GetDataRef();
 	int size=pDoc->GetMeasure()->GetNearWhiteScaleSize();
-    m_graphCtrl.SetScale(100-size,100,100-size,100);
 	
 	if ( pDataRef )
 	{
@@ -162,7 +161,7 @@ void CNearWhiteGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 				 m_logGraphCtrl.AddPoint(m_refLogGraphID, valx * 100, log(val)/log(valx));
 
             if (!m_showL)
-    			m_graphCtrl.AddPoint(m_refGraphID, valx * 100., 100.0*val);
+    			m_graphCtrl.AddPoint(m_refGraphID, valx * 100., 100.0*val, NULL, White.GetY());
             else
                 m_graphCtrl.AddPoint(m_refGraphID, valx * 100., Y_to_L(val));
 
@@ -246,6 +245,10 @@ void CNearWhiteGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			}
 		}
 	}
+	m_graphCtrl.FitXScale(1,1);
+	m_graphCtrl.FitYScale(1,1);
+	m_graphCtrl.ReadSettings("Near White Histo");
+	m_logGraphCtrl.ReadSettings("Near White Histo Log"); //in case user has scaled graphs
 }
 
 /*
@@ -261,7 +264,7 @@ LogGraphID : graph ID for log drawing, -1 if no Log drawing
 void CNearWhiteGrapher::AddPointtoLumGraph(int ColorSpace,int ColorIndex,int Size,int PointIndex,CDataSetDoc *pDataSet,long GraphID,long LogGraphID = -1)
 {
 	double max;
-	double colorlevel;
+	double colorlevel, whitelvl;
 	char	szBuf [ 64 ];
 	LPCSTR	lpMsg = NULL;
 	
@@ -274,6 +277,15 @@ void CNearWhiteGrapher::AddPointtoLumGraph(int ColorSpace,int ColorIndex,int Siz
 	{
 		max=pDataSet->GetMeasure()->GetNearWhite(Size-1).GetLuxOrLumaValue(GetConfig () -> m_nLuminanceCurveMode);
 		colorlevel=pDataSet->GetMeasure()->GetNearWhite(PointIndex).GetLuxOrLumaValue(GetConfig () -> m_nLuminanceCurveMode);
+		int grayscalesize=pDataSet->GetMeasure()->GetGrayScaleSize();
+		int nearwhitescalesize=pDataSet->GetMeasure()->GetNearWhiteScaleSize();
+
+		if (pDataSet->GetMeasure()->GetGray(grayscalesize-1).isValid())
+			whitelvl=pDataSet->GetMeasure()->GetGray(grayscalesize-1).GetLuxOrLumaValue(GetConfig () -> m_nLuminanceCurveMode);
+		else if (pDataSet->GetMeasure()->GetNearWhite(nearwhitescalesize-1).isValid())
+			whitelvl=pDataSet->GetMeasure()->GetNearWhite(nearwhitescalesize-1).GetLuxOrLumaValue(GetConfig () -> m_nLuminanceCurveMode);
+		else
+			whitelvl=0;
 	}
 	else 
 	{
@@ -293,13 +305,16 @@ void CNearWhiteGrapher::AddPointtoLumGraph(int ColorSpace,int ColorIndex,int Siz
 	
     if(PointIndex != (Size-1))	// log scale is not valid for last value
 	{
-//		double v = (double)(PointIndex + 101 - Size)/100.0;
-
 		m_logGraphCtrl.AddPoint(LogGraphID, GrayLevelToGrayProp( (double)(PointIndex+101-Size), GetConfig () -> m_bUseRoundDown) * 100., log(colorlevel/max)/log(GrayLevelToGrayProp( (double)(PointIndex+101-Size), GetConfig () -> m_bUseRoundDown)), lpMsg);
 	}
 
     if (!m_showL)
-    	m_graphCtrl.AddPoint(GraphID, GrayLevelToGrayProp( (double)(PointIndex+101-Size), GetConfig () -> m_bUseRoundDown) * 100., (colorlevel/max)*100.0, lpMsg);
+	{
+		if (ColorSpace == 1 && ColorIndex == 1)
+	    	m_graphCtrl.AddPoint(GraphID, GrayLevelToGrayProp( (double)(PointIndex+101-Size), GetConfig () -> m_bUseRoundDown) * 100., (colorlevel/max)*100.0, lpMsg, whitelvl);
+		else
+	    	m_graphCtrl.AddPoint(GraphID, GrayLevelToGrayProp( (double)(PointIndex+101-Size), GetConfig () -> m_bUseRoundDown) * 100., (colorlevel/max)*100.0, lpMsg);
+	}
     else
     	m_graphCtrl.AddPoint(GraphID, GrayLevelToGrayProp( (double)(PointIndex+101-Size), GetConfig () -> m_bUseRoundDown) * 100., Y_to_L(colorlevel/max), lpMsg);
 

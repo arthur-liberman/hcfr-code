@@ -119,7 +119,7 @@ void CNearBlackGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	CDataSetDoc *pDataRef = GetDataRef();
 	int size=pDoc->GetMeasure()->GetNearBlackScaleSize();
 
-    m_graphCtrl.SetScale(0,size,0,m_showL?4:0.5);
+//    m_graphCtrl.SetScale(0,size,0,m_showL?4:0.5);
 
     if ( pDataRef )
 	{
@@ -158,21 +158,23 @@ void CNearBlackGrapher::UpdateGraph ( CDataSetDoc * pDoc )
         	int g_size=pDoc->GetMeasure()->GetGrayScaleSize();
     		CColor White = pDoc -> GetMeasure () -> GetGray ( g_size - 1 );
 	    	CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
-		    double valx = (i == 0?0.0:GrayLevelToGrayProp( (double)i, GetConfig () -> m_bUseRoundDown));
+		    double valx = (GrayLevelToGrayProp( (double)i, GetConfig () -> m_bUseRoundDown));
 			double val=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef) );
 			int mode = GetConfig()->m_GammaOffsetType;
 			if (GetConfig()->m_colorStandard == sRGB) mode = 7;
-			if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
+			if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4) 
                 val = getEOTF( valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
-            if (!m_showL)
-    			m_graphCtrl.AddPoint(m_refGraphID, valx * 100., 100.0*val);
+
+			//Reference plots
+			if (!m_showL)
+				m_graphCtrl.AddPoint(m_refGraphID, valx * 100., 100.0*val, NULL, White.GetY());
             else
                 m_graphCtrl.AddPoint(m_refGraphID, valx * 100., Y_to_L(val));
 
 			if((val > 0) && (i != 0))	// log scale is not valid for first value
-				m_logGraphCtrl.AddPoint(m_refLogGraphID, valx * 100. , log(val)/log(valx));
-            valformax = val;
+				m_logGraphCtrl.AddPoint(m_refLogGraphID, valx * 100. , log(val)/log(valx), NULL, NULL);
 
+			valformax = val;
 		}
 	}
 	
@@ -255,6 +257,10 @@ void CNearBlackGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			}
 		}
 	}
+	m_graphCtrl.FitXScale(1,1);
+	m_graphCtrl.FitYScale(1,m_showL?1.0:0.1);
+	m_logGraphCtrl.ReadSettings("Near Black Histo Log"); //if user has custom scales
+	m_graphCtrl.ReadSettings("Near Black Histo");
 }
 
 /*
@@ -351,13 +357,21 @@ void CNearBlackGrapher::AddPointtoLumGraph(int ColorSpace,int ColorIndex,int Siz
 	
 	if((whitelvl > 0)&&(PointIndex != 0))	// log scale is not valid for first value
 	{
-		m_logGraphCtrl.AddPoint(LogGraphID, GrayLevelToGrayProp( (double)PointIndex, GetConfig () -> m_bUseRoundDown) * 100., log(colorlevel/whitelvl)/log(GrayLevelToGrayProp( (double)PointIndex, GetConfig () -> m_bUseRoundDown)), lpMsg);
+		m_logGraphCtrl.AddPoint(LogGraphID, GrayLevelToGrayProp( (double)PointIndex, GetConfig () -> m_bUseRoundDown) * 100., log(colorlevel/whitelvl)/log(GrayLevelToGrayProp( (double)PointIndex, GetConfig () -> m_bUseRoundDown)), lpMsg, NULL);
 	}
 
     if (!m_showL)
-        m_graphCtrl.AddPoint(GraphID, PointIndex==0?0:GrayLevelToGrayProp( (double)PointIndex, GetConfig () -> m_bUseRoundDown) * 100., (colorlevel/max)*100.0, lpMsg);
+	{
+		max = whitelvl;
+		if (ColorSpace == 1 && ColorIndex == 1)
+	        m_graphCtrl.AddPoint(GraphID, GrayLevelToGrayProp( (double)PointIndex, GetConfig () -> m_bUseRoundDown) * 100., (colorlevel/max)*100.0, lpMsg, whitelvl);
+		else
+	        m_graphCtrl.AddPoint(GraphID, GrayLevelToGrayProp( (double)PointIndex, GetConfig () -> m_bUseRoundDown) * 100., (colorlevel/max)*100.0, lpMsg, NULL);
+	}
 	else 
-        m_graphCtrl.AddPoint(GraphID, PointIndex==0?0:GrayLevelToGrayProp( (double)PointIndex, GetConfig () -> m_bUseRoundDown) * 100., Y_to_L(whitelvl?colorlevel/whitelvl:colorlevel/max), lpMsg);
+	{
+        m_graphCtrl.AddPoint(GraphID, GrayLevelToGrayProp( (double)PointIndex, GetConfig () -> m_bUseRoundDown) * 100., Y_to_L(whitelvl?colorlevel/whitelvl:colorlevel/max), lpMsg, NULL);
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////

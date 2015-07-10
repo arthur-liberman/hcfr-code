@@ -164,7 +164,7 @@ void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
             }
 
             if (!m_showL)
-                m_graphCtrl.AddPoint(m_refGraphID, x, 100.0*valy);
+				m_graphCtrl.AddPoint(m_refGraphID, x, 100.0*valy, NULL, White.GetY());
             else
             {
                 valy = Y_to_L (valy);
@@ -178,6 +178,7 @@ void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	{	
 		int		nb = 0;
 		double	avg = 0.0;
+    	CColor White = pDoc -> GetMeasure () -> GetOnOffWhite();
 
 		// Le calcul de la moyenne des gamma et la représentation en échelle log 
 		// ne se fait plus avec l'échelle des x = % de blanc mais avec la formule : 
@@ -190,7 +191,7 @@ void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+GammaOffset)/(1.0+GammaOffset);
             valy=pow(valx, GammaOpt );
             if (!m_showL)
-                m_graphCtrl.AddPoint(m_avgGraphID, x, valy*100.0);
+				m_graphCtrl.AddPoint(m_avgGraphID, x, valy*100.0, NULL, White.GetY());
             else
             {
                 valy = Y_to_L (valy);
@@ -360,7 +361,10 @@ void CLuminanceGrapher::AddPointtoLumGraph(int ColorSpace,int ColorIndex,int Siz
 
 		double x = ArrayIndexToGrayLevel ( PointIndex, Size, GetConfig () -> m_bUseRoundDown );
 		if (!m_showL)
-		    m_graphCtrl.AddPoint(GraphID, x, (colorlevel/whitelvl)*100.0, lpMsg);
+			if (ColorSpace == 1 && ColorIndex == 1)
+				m_graphCtrl.AddPoint(GraphID, x, (colorlevel/whitelvl)*100.0, lpMsg, whitelvl);
+			else
+				m_graphCtrl.AddPoint(GraphID, x, (colorlevel/whitelvl)*100.0, lpMsg);
 		else
 			m_graphCtrl.AddPoint(GraphID, x, Y_to_L(colorlevel/whitelvl), lpMsg);
 	}

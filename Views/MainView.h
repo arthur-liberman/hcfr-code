@@ -202,6 +202,7 @@ protected:
 	afx_msg void OnEditgridCheck();
 	afx_msg void OnDatarefCheck();
 	afx_msg void OnAdjustXYZCheck();
+	afx_msg void OnInitDefaults();
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnSysColorChange();
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);

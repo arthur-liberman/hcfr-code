@@ -35,12 +35,13 @@ class CDecimalPoint
 {
 // Construction
 public:
-	CDecimalPoint::CDecimalPoint(double aX=0, double aY=0, LPCSTR lpszTextInfo=NULL) { x=aX; y=aY; if ( lpszTextInfo ) m_text=lpszTextInfo; }
+	CDecimalPoint::CDecimalPoint(double aX=0, double aY=0, LPCSTR lpszTextInfo=NULL, double absY=0) { x=aX; y=aY; if ( lpszTextInfo ) m_text=lpszTextInfo; if (absY > 0) Y=absY;  else Y = 0.0; }
 
 	// Attributes
 public:
 	double x,y;
 	CString m_text;
+	double Y;
 };
 
 class CGraph
@@ -120,7 +121,7 @@ public:
 	int AddGraph(COLORREF newColor = 0, char* title = "", int aPenWidth=2, int aPenStyle=PS_SOLID);
 	int AddGraph(CGraph & aGraph);
 	int RemoveGraph(int index);
-	int AddPoint(int graphnum, double x, double y, LPCSTR lpszTextInfo = NULL );
+	int AddPoint(int graphnum, double x, double y, LPCSTR lpszTextInfo = NULL, double Y = 0 );
 	int RemovePoint(int graphnum, int index);
 	void ClearGraph(int graphnum);
 

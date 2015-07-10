@@ -110,8 +110,7 @@ void CSubclassWnd::AssertValid() const
 	CObject::AssertValid();
 	ASSERT(m_hWnd==NULL || ::IsWindow(m_hWnd));
 	if (m_hWnd) {
-        CSubclassWnd* p = 0;
-		for (p = theHookMap.Lookup(m_hWnd); p; p=p->m_pNext) {
+		for (CSubclassWnd* p = theHookMap.Lookup(m_hWnd); p; p=p->m_pNext) {
 			if (p==this)
 				break;
 		}
@@ -164,9 +163,6 @@ HookWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 
 	} else {
 		// pass to msg hook
-		if (msg == WM_NOTIFY)
-		{
-		}
 		lr = pSubclassWnd->WindowProc(msg, wp, lp);
 	}
 	curMsg = oldMsg;			// pop state

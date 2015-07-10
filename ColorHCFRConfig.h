@@ -136,6 +136,7 @@ public:
     ColorRGB GetCColorsT(int index);
 	std::string GetCColorsN(int index);
     void GetCColors();
+	CString strLang;
 
 	BOOL IsProfileEntryDefined(LPCTSTR lpszSection,LPCTSTR lpszEntry);
 

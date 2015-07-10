@@ -2009,6 +2009,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Voreinstellungen...",        IDM_GENERAL_CONFIG
         MENUITEM "&Sprache...",                 IDM_LANGUAGE
+        MENUITEM "Reset to default prefs ",     IDC_INIT_BUTTON
     END
     POPUP "&Fenster"
     BEGIN

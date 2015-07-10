@@ -2333,6 +2333,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Préférences...",              IDM_GENERAL_CONFIG
         MENUITEM "Langue...",                   IDM_LANGUAGE
+        MENUITEM "Reset to default prefs ",     IDC_INIT_BUTTON
     END
     POPUP "Fe&nêtre"
     BEGIN

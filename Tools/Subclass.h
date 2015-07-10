@@ -42,7 +42,6 @@ public:
     }
 	BOOL	IsHooked()              { return m_hWnd!=NULL; }
 
-
 	friend LRESULT CALLBACK HookWndProc(HWND, UINT, WPARAM, LPARAM);
 	friend class CSubclassWndMap;
 

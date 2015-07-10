@@ -351,6 +351,7 @@ BEGIN_MESSAGE_MAP(CMainView, CFormView)
 	ON_BN_CLICKED(IDC_EDITGRID_CHECK, OnEditgridCheck)
 	ON_BN_CLICKED(IDC_DATAREF_CHECK, OnDatarefCheck)
 	ON_BN_CLICKED(IDC_ADJUSTXYZ_CHECK, OnAdjustXYZCheck)
+	ON_BN_CLICKED(IDC_INIT_BUTTON, OnInitDefaults)
 	ON_WM_ERASEBKGND()
 	ON_WM_SYSCOLORCHANGE()
 	ON_WM_CTLCOLOR()
@@ -5027,6 +5028,24 @@ void CMainView::OnDatarefCheck()
 	AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
 	
 	UpdateData(FALSE);
+}
+
+void CMainView::OnInitDefaults()
+{
+
+	int rv = GetColorApp()->InMeasureMessageBox("This will reset your preferences to their default values.\nAre you sure?", "Reset prefs", MB_YESNO);
+	if (rv == 6)
+	{
+		CString strlang = GetConfig()->strLang;
+		DeleteFile("ColorHCFR.ini");
+		GetConfig()->InitDefaults();
+		GetConfig()->LoadSettings();
+		GetConfig()->ApplySettings(TRUE);
+		GetConfig()->WriteProfileString ( "Options", "Language", strlang );
+		GetConfig()->SaveSettings();
+		UpdateData(TRUE);
+		UpdateAllGrids();
+	}
 }
 
 void CMainView::OnAdjustXYZCheck()

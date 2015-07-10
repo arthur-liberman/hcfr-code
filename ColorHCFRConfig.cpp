@@ -61,7 +61,7 @@ static struct
 CColorHCFRConfig::CColorHCFRConfig()
 {
 	char			szBuf [ 256 ];
-	CString			str, strDLL, strLang, strPath, strSearch, strHelp;
+	CString			str, strDLL, strPath, strSearch, strHelp;
 	LPSTR			lpStr;
 	HANDLE			hFind;
 	WIN32_FIND_DATA	wfd;

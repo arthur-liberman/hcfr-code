@@ -143,10 +143,10 @@ int CGraphControl::RemoveGraph(int index)
 	return index;
 }
 
-int CGraphControl::AddPoint(int graphnum, double x, double y, LPCSTR lpszTextInfo)
+int CGraphControl::AddPoint(int graphnum, double x, double y, LPCSTR lpszTextInfo, double Y)
 {
 	if(graphnum != -1 && graphnum < m_graphArray.GetSize())
-		return m_graphArray[graphnum].m_pointArray.Add(CDecimalPoint(x,y,lpszTextInfo));
+		return m_graphArray[graphnum].m_pointArray.Add(CDecimalPoint(x,y,lpszTextInfo,Y));
 	else
 		return -1;
 }
@@ -711,10 +711,19 @@ void CGraphControl::DrawGraphs(CDC *pDC, CRect rect)
 
 			if(m_doShowAllToolTips && m_graphArray[j].m_doShowToolTips)
 			{
-				CString str;
-				str.Format("%g %s: %.2f ", m_graphArray[j].m_pointArray[i].x, ( m_pXUnitStr ? m_pXUnitStr : (GetConfig()->m_PercentGray) ), m_graphArray[j].m_pointArray[i].y);
+				CString str,str2;
+				str.Format("%.2f %s: %.3f ", m_graphArray[j].m_pointArray[i].x, ( m_pXUnitStr ? m_pXUnitStr : (GetConfig()->m_PercentGray) ), m_graphArray[j].m_pointArray[i].y);
+				//add absolute luminance for luminance plots
 				if(m_pYUnitStr)
 					str+=m_pYUnitStr;
+
+				if (m_graphArray[j].m_pointArray[i].Y > 0.0)
+				{
+					str2.Format("\n%.3f cd/m^2 ", m_graphArray[j].m_pointArray[i].y / 100. * m_graphArray[j].m_pointArray[i].Y);
+				} else
+					str2.Format("%s","\n");
+				
+				str+=str2;
 
 				if ( ! m_graphArray[j].m_pointArray[i].m_text.IsEmpty () )
 				{

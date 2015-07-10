@@ -16,7 +16,7 @@ class CMainWndPlacement : public CSubclassWnd
 public:
     static void InitialShow     (UINT nCmdShow=0xFFFF)
     {
-        CMainWndPlacement theValue(nCmdShow);
+        CMainWndPlacement* pMainWndPlacement= new CMainWndPlacement(nCmdShow);
     }
 private:
     CMainWndPlacement(  UINT nCmdShow=          0xFFFF,

@@ -543,6 +543,7 @@
 #define IDC_CHECK_SAVEPOSITION          1179
 #define IDC_EDIT_MANUAL_BLACK           1179
 #define IDC_REPLACEMEASURE_LIST         1180
+#define IDC_INIT_BUTTON                 1180
 #define IDC_APPEND_RADIO                1181
 #define IDC_REPLACE_RADIO               1182
 #define IDC_MEASUREEXTOOLBAR            1183
