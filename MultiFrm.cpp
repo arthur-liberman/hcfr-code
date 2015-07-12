@@ -265,7 +265,7 @@ void CMultiFrame::OnDestroy()
 
 BOOL CMultiFrame::PreCreateWindow(CREATESTRUCT& cs) 
 {
-	int width=GetConfig()->GetProfileInt("Views Size","MultiFrame W", 800);
+	int width=GetConfig()->GetProfileInt("Views Size","MultiFrame W", 850);
 	int height=GetConfig()->GetProfileInt("Views Size","MultiFrame H", 400);
 
 	cs.cx=width;
@@ -326,7 +326,7 @@ BOOL CMultiFrame::OnCreateClient( LPCREATESTRUCT lpcs, CCreateContext* pContext 
 {
 	int					nViewIndex = VIEW_IDX_DATASET;
 	BOOL				bDisableInitialUpdate = FALSE;
-	BOOL				bMaximize = TRUE;
+	BOOL				bMaximize = FALSE;
 	BOOL				bMinimize = FALSE;
 	DWORD				dwUserInfo = 0;
 	RECT				Rect, Rect2, Rect3;
