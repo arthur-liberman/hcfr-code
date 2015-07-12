@@ -270,7 +270,8 @@ void CNearWhiteGrapher::AddPointtoLumGraph(int ColorSpace,int ColorIndex,int Siz
 	
 	if (ColorSpace == 0) 
 	{
-		max=pDataSet->GetMeasure()->GetNearWhite(Size-1).GetRGBValue(GetColorReference())[ColorIndex];
+//		max=pDataSet->GetMeasure()->GetNearWhite(Size-1).GetRGBValue(GetColorReference())[ColorIndex];
+		max=pDataSet->GetMeasure()->GetNearWhite(Size-1).GetLuxOrLumaValue(GetConfig () -> m_nLuminanceCurveMode);
 		colorlevel=pDataSet->GetMeasure()->GetNearWhite(PointIndex).GetRGBValue(GetColorReference())[ColorIndex];
 	}
 	else if (ColorSpace == 1)
