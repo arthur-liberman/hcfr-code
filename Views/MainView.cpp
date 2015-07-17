@@ -5043,7 +5043,7 @@ void CMainView::OnInitDefaults()
 		GetConfig()->ApplySettings(TRUE);
 		GetConfig()->WriteProfileString ( "Options", "Language", strlang );
 		GetConfig()->SaveSettings();
-		UpdateData(TRUE);
+		GetConfig()->m_bSave = TRUE;
 		UpdateAllGrids();
 	}
 }
@@ -5186,7 +5186,7 @@ void CMainView::UpdateAllGrids()
 	if(m_pGrayScaleGrid->GetColumnCount() > 12)	// Needed after data is set to get correctly sized cells when scrollbar is present
 	{
 		m_pGrayScaleGrid->ExpandRowsToFit(TRUE);
-		m_pGrayScaleGrid->AutoSizeColumns();
+//		m_pGrayScaleGrid->AutoSizeColumns();
 	}
 	
 	if ( m_pGrayScaleGrid->GetSelectedCellRange().IsValid () )

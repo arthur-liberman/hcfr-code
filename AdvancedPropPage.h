@@ -40,6 +40,7 @@ public:
 
 // Dialog Data
 	BOOL	m_isModified;
+	BOOL	m_bSave;
 
 	//{{AFX_DATA(CAdvancedPropPage)
 	enum { IDD = IDD_ADVANCED_PROP_PAGE };

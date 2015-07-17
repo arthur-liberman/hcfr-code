@@ -125,7 +125,7 @@ public:
 	int RemovePoint(int graphnum, int index);
 	void ClearGraph(int graphnum);
 
-	void ReadSettings(LPSTR aConfigStr, BOOL bReadGraphSettings=TRUE);
+	bool ReadSettings(LPSTR aConfigStr, BOOL bReadGraphSettings=TRUE);
 	void WriteSettings(LPSTR aConfigStr);
 	void ChangeSettings();
 	void CopySettings(const CGraphControl & aGraphControl, int aGraphSrcIndex, int aGraphDestIndex);

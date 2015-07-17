@@ -70,9 +70,9 @@ CNearBlackGrapher::CNearBlackGrapher()
 	m_blueLumDataRefGraphID = m_graphCtrl.AddGraph(RGB(0,0,255), (LPSTR)(LPCSTR)Msg,1,PS_DOT); //Ki
 
 	m_showL=GetConfig()->GetProfileInt("Near Black Histo","Show L",FALSE);
-	m_graphCtrl.SetXAxisProps((LPSTR)(LPCSTR)GetConfig()->m_PercentGray, 1, 0, 20);
+	m_graphCtrl.SetXAxisProps((LPSTR)(LPCSTR)GetConfig()->m_PercentGray, 1, 0, 10);
 	m_graphCtrl.SetYAxisProps(m_showL?"":"%", m_showL?1:0.1, 0, 20);
-    m_graphCtrl.SetScale(0,4,0,m_showL?4:0.5);
+    m_graphCtrl.SetScale(0,10,0,m_showL?10:0.5);
 
 	Msg.LoadString ( IDS_GAMMA );
 	m_luminanceLogGraphID = m_logGraphCtrl.AddGraph(RGB(255,255,0),(LPSTR)(LPCSTR)Msg);
@@ -98,12 +98,15 @@ CNearBlackGrapher::CNearBlackGrapher()
 	Msg.LoadString ( IDS_GAMMABLUEDATAREF );
 	m_blueLumDataRefLogGraphID = m_logGraphCtrl.AddGraph(RGB(0,0,255), (LPSTR)(LPCSTR)Msg,1,PS_DOT); //Ki
 
-	m_logGraphCtrl.SetXAxisProps((LPSTR)(LPCSTR)GetConfig()->m_PercentGray, 1, 0, 20);
-	m_logGraphCtrl.SetYAxisProps("", 0.1, 1, 4);
-	m_logGraphCtrl.SetScale(0,4,1,3);
+	m_logGraphCtrl.SetXAxisProps((LPSTR)(LPCSTR)GetConfig()->m_PercentGray, 1, 0, 10);
+	m_logGraphCtrl.SetYAxisProps("", 0.1, 0, 1);
+	m_logGraphCtrl.SetScale(0,10,1,3);
+
+
+	//Load user scales if any
 	m_logGraphCtrl.ReadSettings("Near Black Histo Log");
 	m_graphCtrl.ReadSettings("Near Black Histo");
-
+	
 	m_doLogMode=GetConfig()->GetProfileInt("Near Black Histo","Log Mode",FALSE);
 	m_showReference=GetConfig()->GetProfileInt("Near Black Histo","Show Reference",TRUE);
 	m_showYLum=GetConfig()->GetProfileInt("Near Black Histo","Show Y lum",TRUE);
@@ -118,8 +121,6 @@ void CNearBlackGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	BOOL	bDataPresent = FALSE;
 	CDataSetDoc *pDataRef = GetDataRef();
 	int size=pDoc->GetMeasure()->GetNearBlackScaleSize();
-
-//    m_graphCtrl.SetScale(0,size,0,m_showL?4:0.5);
 
     if ( pDataRef )
 	{
@@ -258,10 +259,13 @@ void CNearBlackGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		}
 	}
 	m_graphCtrl.FitXScale(1,1);
-	m_graphCtrl.FitYScale(1,m_showL?1.0:0.1);
-	m_logGraphCtrl.ReadSettings("Near Black Histo Log"); //if user has custom scales
+	m_graphCtrl.FitYScale(1,m_showL?1.0:0.1);	m_logGraphCtrl.ReadSettings("Near Black Histo Log");
 	m_graphCtrl.ReadSettings("Near Black Histo");
 }
+
+
+	
+	
 
 /*
 ColorSpace : 0 : RGB, 1 : Luma or Lux, 2 : Lux
@@ -287,13 +291,6 @@ void CNearBlackGrapher::AddPointtoLumGraph(int ColorSpace,int ColorIndex,int Siz
 
 		int grayscalesize=pDataSet->GetMeasure()->GetGrayScaleSize();
 		int nearwhitescalesize=pDataSet->GetMeasure()->GetNearWhiteScaleSize();
-
-//		if (pDataSet->GetMeasure()->GetGray(grayscalesize-1).isValid())
-//			whitelvl=pDataSet->GetMeasure()->GetGray(grayscalesize-1).GetRGBValue(GetColorReference())[ColorIndex];
-//		else if (pDataSet->GetMeasure()->GetNearWhite(nearwhitescalesize-1).isValid())
-//			whitelvl=pDataSet->GetMeasure()->GetNearWhite(nearwhitescalesize-1).GetRGBValue(GetColorReference())[ColorIndex];
-//		else
-//			whitelvl=0;
 
 		if (pDataSet->GetMeasure()->GetGray(grayscalesize-1).isValid())
 			whitelvl=pDataSet->GetMeasure()->GetGray(grayscalesize-1).GetLuxOrLumaValue(GetConfig () -> m_nLuminanceCurveMode);
@@ -464,7 +461,6 @@ void CNearBlackHistoView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	if ( lHint == UPD_EVERYTHING || lHint == UPD_GRAYSCALEANDCOLORS || lHint == UPD_GRAYSCALE || lHint == UPD_NEARBLACK || lHint == UPD_NEARWHITE || lHint == UPD_DATAREFDOC || lHint == UPD_REFERENCEDATA || lHint == UPD_ARRAYSIZES || lHint == UPD_GENERALREFERENCES || lHint == UPD_SENSORCONFIG || lHint >= UPD_REALTIME)
 	{
 		m_Grapher.UpdateGraph ( GetDocument () );
-
 		Invalidate(TRUE);
 	}
 }
@@ -506,8 +502,6 @@ void CNearBlackHistoView::OnSize(UINT nType, int cx, int cy)
 void CNearBlackHistoView::OnDraw(CDC* pDC) 
 {
 	// TODO: Add your specialized code here and/or call the base class
-	
-	
 }
 
 BOOL CNearBlackHistoView::OnEraseBkgnd(CDC* pDC) 
@@ -579,9 +573,9 @@ void CNearBlackHistoView::OnLumGraphYLum()
 void CNearBlackHistoView::OnLumGraphL() 
 {
 	m_Grapher.m_showL = !m_Grapher.m_showL;
-	m_Grapher.m_graphCtrl.SetYAxisProps(m_Grapher.m_showL?"":"%", m_Grapher.m_showL?1:0.1, 0, 20);
+	m_Grapher.m_graphCtrl.SetYAxisProps(m_Grapher.m_showL?"":"%", m_Grapher.m_showL?1:0.1, 0, m_Grapher.m_showL?10:1);
+	m_Grapher.m_graphCtrl.FitYScale(1, m_Grapher.m_showL?1:0.1);
 	GetConfig()->WriteProfileInt("Near Black Histo","Show L",m_Grapher.m_showL);
-    OnGraphScaleFit();
 	OnUpdate(NULL,NULL,NULL);
 }
 
@@ -667,9 +661,6 @@ void CNearBlackHistoView::OnGraphSettings()
 	m_Grapher.m_graphCtrl.RemoveGraph(tmpGraphID2);
 	m_Grapher.m_graphCtrl.RemoveGraph(tmpGraphID1);
 
-	m_Grapher.m_graphCtrl.WriteSettings("Near Black Histo");
-	m_Grapher.m_logGraphCtrl.WriteSettings("Near Black Histo Log");
-
 	OnUpdate(NULL,NULL,NULL);
 }
 
@@ -679,8 +670,10 @@ void CNearBlackHistoView::OnGraphScaleCustom()
 		m_Grapher.m_logGraphCtrl.ChangeScale();
 	else
 		m_Grapher.m_graphCtrl.ChangeScale();
+
 	m_Grapher.m_graphCtrl.WriteSettings("Near Black Histo");
 	m_Grapher.m_logGraphCtrl.WriteSettings("Near Black Histo Log");
+	OnUpdate(NULL,NULL,NULL);
 }
 
 void CNearBlackHistoView::OnGraphScaleFit() 
@@ -695,7 +688,7 @@ void CNearBlackHistoView::OnGraphScaleFit()
 		m_Grapher.m_graphCtrl.FitXScale(TRUE, 1);
 		m_Grapher.m_graphCtrl.FitYScale(TRUE,m_Grapher.m_showL?1:0.1);
 	}
-	Invalidate(TRUE);
+
 	m_Grapher.m_graphCtrl.WriteSettings("Near Black Histo");
 	m_Grapher.m_logGraphCtrl.WriteSettings("Near Black Histo Log");
 	OnUpdate(NULL,NULL,NULL);
@@ -703,18 +696,20 @@ void CNearBlackHistoView::OnGraphScaleFit()
 
 void CNearBlackHistoView::OnLuminanceGraphYScale1() 
 {
-	m_Grapher.m_graphCtrl.SetYScale(0,m_Grapher.m_showL?5:0.5);
-	Invalidate(TRUE);
+	m_Grapher.m_graphCtrl.SetYScale(0,m_Grapher.m_showL?10:1.0);
+
 	m_Grapher.m_graphCtrl.WriteSettings("Near Black Histo");
 	m_Grapher.m_logGraphCtrl.WriteSettings("Near Black Histo Log");
+	OnUpdate(NULL,NULL,NULL);
 }
 
 void CNearBlackHistoView::OnGammaGraphYScale1() 
 {
 	m_Grapher.m_logGraphCtrl.SetYScale(1,3);
-	Invalidate(TRUE);
+
 	m_Grapher.m_graphCtrl.WriteSettings("Near Black Histo");
 	m_Grapher.m_logGraphCtrl.WriteSettings("Near Black Histo Log");
+	OnUpdate(NULL,NULL,NULL);
 }
 
 void CNearBlackHistoView::OnGraphYScaleFit() 
@@ -723,9 +718,8 @@ void CNearBlackHistoView::OnGraphYScaleFit()
 		m_Grapher.m_logGraphCtrl.FitYScale(TRUE,0.1);
 	else
 		m_Grapher.m_graphCtrl.FitYScale(TRUE,m_Grapher.m_showL?1:0.1);
-	Invalidate(TRUE);
-	m_Grapher.m_graphCtrl.WriteSettings("Near Black Histo");
-	m_Grapher.m_logGraphCtrl.WriteSettings("Near Black Histo Log");
+
+	OnUpdate(NULL,NULL,NULL);
 }
 
 void CNearBlackHistoView::OnGraphYShiftBottom() 
@@ -734,7 +728,8 @@ void CNearBlackHistoView::OnGraphYShiftBottom()
 		m_Grapher.m_logGraphCtrl.ShiftYScale(0.1);
 	else
 		m_Grapher.m_graphCtrl.ShiftYScale(2);
-	Invalidate(TRUE);
+
+	OnUpdate(NULL,NULL,NULL);
 }
 
 void CNearBlackHistoView::OnGraphYShiftTop() 
@@ -743,7 +738,8 @@ void CNearBlackHistoView::OnGraphYShiftTop()
 		m_Grapher.m_logGraphCtrl.ShiftYScale(-0.1);
 	else
 		m_Grapher.m_graphCtrl.ShiftYScale(-2);
-	Invalidate(TRUE);
+
+	OnUpdate(NULL,NULL,NULL);
 }
 
 void CNearBlackHistoView::OnGraphYZoomIn() 
@@ -752,7 +748,8 @@ void CNearBlackHistoView::OnGraphYZoomIn()
 		m_Grapher.m_logGraphCtrl.GrowYScale(0.1,-0.1);
 	else
 		m_Grapher.m_graphCtrl.GrowYScale(0,-2);
-	Invalidate(TRUE);
+
+	OnUpdate(NULL,NULL,NULL);
 }
 
 void CNearBlackHistoView::OnGraphYZoomOut() 
@@ -761,7 +758,8 @@ void CNearBlackHistoView::OnGraphYZoomOut()
 		m_Grapher.m_logGraphCtrl.GrowYScale(-0.1,0.1);
 	else
 		m_Grapher.m_graphCtrl.GrowYScale(0,2);
-	Invalidate(TRUE);
+
+	OnUpdate(NULL,NULL,NULL);
 }
 
 void CNearBlackHistoView::OnHelp() 

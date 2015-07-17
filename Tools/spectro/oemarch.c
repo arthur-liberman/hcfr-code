@@ -72,6 +72,10 @@ oem_target oemtargs = {
 		{ "/Datacolor/Spyder4Pro/dccmtr.dll",            targ_spyd_cal, file_dllcab },
 		{ "/Datacolor/Spyder4Elite/dccmtr.dll",          targ_spyd_cal, file_dllcab },
 		{ "/Datacolor/Spyder4TV HD/dccmtr.dll",          targ_spyd_cal, file_dllcab },
+		{ "/Datacolor/Spyder5Express/dccmtr.dll",        targ_spyd_cal, file_dllcab },
+		{ "/Datacolor/Spyder5Pro/dccmtr.dll",            targ_spyd_cal, file_dllcab },
+		{ "/Datacolor/Spyder5Elite/dccmtr.dll",          targ_spyd_cal, file_dllcab },
+		{ "/Datacolor/Spyder5TV HD/dccmtr.dll",          targ_spyd_cal, file_dllcab },
 		{ "/X-Rite/Devices/i1d3/Calibrations/*.edr",     targ_i1d3_edr, file_data },
 		{ NULL }
 	},
@@ -294,7 +298,7 @@ xfile *oemarch_get_ifiles(xfile *files, int verb) {
 				continue;
 		}
 	
-		/* If this could be spyder 4 calibration file: */
+		/* If this could be spyder 4/5 calibration file: */
 		if (arch->ttype & targ_spyd_cal) {
 			xfile *dll = NULL;		/* dccmtr.dll */
 	
@@ -379,7 +383,7 @@ xfile *oemarch_get_ifiles(xfile *files, int verb) {
 				continue;
 		}
 	
-		/* If this could be spyder 4 calibration file: */
+		/* If this could be spyder 4/5 calibration file: */
 		if (dllcab->ttype & targ_spyd_cal) {
 	
 			if (spyd4cal_extract(&nfiles, dllcab, verb) != NULL)
@@ -1357,7 +1361,8 @@ static xfile *spyd4cal_extract(xfile **pxf, xfile *dll, int verb) {
 		return NULL;
 	}
 
-	if (nocals != 6) {
+	if (nocals != 6			/* Spyder 4 */
+	 && nocals != 7) {		/* Spyder 5 */
 		if (verb) printf("Spyder 4 calibration data has an unexpected number of entries (%d)\n",nocals);
 		return NULL;
 	}
@@ -1369,7 +1374,7 @@ static xfile *spyd4cal_extract(xfile **pxf, xfile *dll, int verb) {
 		exit(-1);
 	}
 	if ((xf->buf = malloc(rfsize)) == NULL) {
-		fprintf(stderr,"malloc failed for Spyder 4 calibration data (%d bytes)\n",rfsize);
+		fprintf(stderr,"malloc failed for Spyder 4/5 calibration data (%d bytes)\n",rfsize);
 		exit(-1);
 	}
 	memcpy(xf->buf, caldata, rfsize);
@@ -1433,29 +1438,6 @@ static xfile *edr_convert(xfile **pxf, xfile *xi, int verb) {
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 /* Lower level */
-
-// Print bytes as hex to fp
-static void dump_bytes(FILE *fp, char *pfx, unsigned char *buf, int len) {
-	int i, j, ii;
-	for (i = j = 0; i < len; i++) {
-		if ((i % 16) == 0)
-			fprintf(fp,"%s%04x:",pfx,i);
-		fprintf(fp," %02x",buf[i]);
-		if ((i+1) >= len || ((i+1) % 16) == 0) {
-			for (ii = i; ((ii+1) % 16) != 0; ii++)
-				fprintf(fp,"   ");
-			fprintf(fp,"  ");
-			for (; j <= i; j++) {
-				if (isprint(buf[j]))
-					fprintf(fp,"%c",buf[j]);
-				else
-					fprintf(fp,".");
-			}
-			fprintf(fp,"\n");
-		}
-	}
-	fflush(fp);
-}
 
 /* Take a 64 sized return buffer, and convert it to an ORD64, little endian */
 static ORD64 buf2ord64(unsigned char *buf) {
@@ -1863,7 +1845,7 @@ static ccss *parse_EDR(
 		dtech = dinfo->dtech;
 		trefmode = dinfo->refr; 
 
-		/* Set it's values */
+		/* Set it's values (OEM set) */
 		rv->set_ccss(rv, "X-Rite", creatdate, NULL, dispdesc, dtech, trefmode, tsel,
 		                 "CS1000", samples, nsets);	
 	}
@@ -2198,7 +2180,7 @@ static xfile *inno_extract(xfile *xi, char *tfilename, int verb) {
 	if (verb > 1) printf("Decoded %ld bytes to created %ld bytes of Header output (ratio %.1f)\n",srclen,d1sz,(double)d1sz/srclen);
 
 //	printf("d1buf, file names:\n");
-//	dump_bytes(stdout, "  ", d1buf, d1sz);
+//	adump_bytes(g_log, "  ", d1buf, 0, d1sz);
 
 	/* - - - - - - - - - - - - - - - - -*/
 
@@ -2256,7 +2238,7 @@ static xfile *inno_extract(xfile *xi, char *tfilename, int verb) {
 	if (verb > 1) printf("Decoded %ld bytes to created %ld bytes of File Location output (ratio %.1f)\n",srclen,d1sz,(double)d1sz/srclen);
 
 //	printf("d2buf, file location data:\n");
-//	dump_bytes(stdout, "  ", d2buf, d2sz);
+//	adump_bytes(g_log, "  ", d2buf, 0, d2sz);
 
 	if (verb > 1) printf("Searching for file '%s' in Header\n",tfilename);
 	if (unicode) {
@@ -2569,7 +2551,7 @@ static xfile *msi_extract_cab(xfile **pxf, xfile *xi, char *tname, int verb) {
 	xf->ftype = file_dllcab;
 	xf->ttype = xi->ttype;
 
-	if (verb) printf("Extacted '%s' length %ld\n",xf->name,xf->len);
+	if (verb) printf("Extracted '%s' length %ld\n",xf->name,xf->len);
 
 	return xf;
 }
@@ -2638,7 +2620,7 @@ static xfile *ai_extract_cab(xfile **pxf, xfile *xi, char *tname, int verb) {
 	xf->ftype = file_dllcab;
 	xf->ttype = xi->ttype;
 
-	if (verb) printf("Extacted '%s' length %ld\n",xf->name,xf->len);
+	if (verb) printf("Extracted '%s' length %ld\n",xf->name,xf->len);
 
 save_xfile(xf, "temp.cab", NULL, verb);
 
@@ -2862,7 +2844,7 @@ static xfile *aifile_extract(xfile **pxf, xfile *xi, char *tname, int verb) {
 	xf->ftype = file_dllcab;
 	xf->ttype = xi->ttype;
 
-	if (verb) printf("Extacted '%s' length %ld\n",xf->name,xf->len);
+	if (verb) printf("Extracted '%s' length %ld\n",xf->name,xf->len);
 
 	return xf;
 #endif

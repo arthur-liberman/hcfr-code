@@ -261,6 +261,8 @@ void CColorHCFRConfig::InitDefaults()
 	m_userBlack = FALSE;
 	m_ManualBlack = 0.0;
 	m_useMeasuredGamma=FALSE;
+	m_bSave=FALSE;
+	m_bSave2=FALSE;
 	m_GammaOffsetType=1;
 	m_manualGOffset=0.099;
     m_manualWhitex = 0.312712;
@@ -584,6 +586,8 @@ BOOL CColorHCFRConfig::GetPropertiesSheetValues()
 	m_userBlack=m_referencesPropertiesPage.m_userBlack;
 	m_ManualBlack=m_referencesPropertiesPage.m_ManualBlack;
 	m_useMeasuredGamma=m_referencesPropertiesPage.m_useMeasuredGamma;
+	m_bSave=m_referencesPropertiesPage.m_bSave;
+	m_bSave2=m_advancedPropertiesPage.m_bSave;
 	m_manualGOffset=m_referencesPropertiesPage.m_manualGOffset;
 	m_manualWhitex=m_referencesPropertiesPage.m_manualWhitex;
 	m_manualWhitey=m_referencesPropertiesPage.m_manualWhitey;

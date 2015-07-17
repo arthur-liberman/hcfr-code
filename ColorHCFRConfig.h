@@ -76,6 +76,8 @@ public:
 	double m_ManualBlack;
 	BOOL m_userBlack;
 	BOOL m_useMeasuredGamma;
+	BOOL m_bSave;
+	BOOL m_bSave2;
 	double m_manualGOffset;
 	double m_manualWhitex;
     double m_manualWhitey;

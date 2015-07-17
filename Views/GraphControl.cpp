@@ -164,7 +164,7 @@ void CGraphControl::ClearGraph(int graphnum)
 		m_graphArray[graphnum].m_pointArray.RemoveAll();
 }
 
-void CGraphControl::ReadSettings(LPSTR aConfigStr, BOOL bReadGraphSettings)
+bool CGraphControl::ReadSettings(LPSTR aConfigStr, BOOL bReadGraphSettings)
 {
 	m_doGradientBg=GetConfig()->GetProfileInt(aConfigStr,"Show Gradient",TRUE);
 	m_doUserScales=GetConfig()->GetProfileInt(aConfigStr,"User Scales",FALSE);
@@ -174,11 +174,13 @@ void CGraphControl::ReadSettings(LPSTR aConfigStr, BOOL bReadGraphSettings)
 	m_doShowYLabel=GetConfig()->GetProfileInt(aConfigStr,"Show Y Labels",TRUE);
 	m_doShowAllPoints=GetConfig()->GetProfileInt(aConfigStr,"Show All Points",TRUE);
 	m_doShowAllToolTips=GetConfig()->GetProfileInt(aConfigStr,"Show All ToolTips",TRUE);
+	bool userScale = FALSE;
 
 /* GGA: Do not use saved scale data */
 	// do not read settings if not in config => avoid to overwrite defaults set by parent
-	if(GetConfig()->IsProfileEntryDefined(aConfigStr,"Min X") )
+	if(GetConfig()->IsProfileEntryDefined(aConfigStr,"Max Y") )
 	{
+		userScale = TRUE;
 		m_minX=GetConfig()->GetProfileDouble(aConfigStr,"Min X",0);
 		m_maxX=GetConfig()->GetProfileDouble(aConfigStr,"Max X",100);
 		m_minXGrow=GetConfig()->GetProfileDouble(aConfigStr,"Min Grow X",0);
@@ -209,6 +211,7 @@ void CGraphControl::ReadSettings(LPSTR aConfigStr, BOOL bReadGraphSettings)
 			m_graphArray[i].m_doShowPoints=GetConfig()->GetProfileInt(aStr,"Show Points",TRUE);	
 			m_graphArray[i].m_doShowToolTips=GetConfig()->GetProfileInt(aStr,"Show ToolTips",TRUE);	
 		}
+	return userScale;
 }
 
 void CGraphControl::WriteSettings(LPSTR aConfigStr)

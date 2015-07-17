@@ -33,6 +33,7 @@
 #include "disptechs.h"
 #include "ccmx.h"
 #include "ccss.h"
+#include "ui.h"
 
 void usage(void) {
 	fprintf(stderr,"Install OEM data files, Version %s\n",ARGYLL_VERSION_STR);

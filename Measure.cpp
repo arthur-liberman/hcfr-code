@@ -228,8 +228,28 @@ void CMeasure::Serialize(CArchive& ar)
 
 	if (ar.IsStoring())
 	{
-	    int version = 11;
+	    int version = 12;
 		ar << version;
+
+		ar << (int)GetConfig()->m_whiteTarget; //new in 12
+		ar << (int)GetConfig()->m_CCMode;
+		ar << (int)GetConfig()->m_colorStandard;
+		ar << GetConfig()->m_dE_form;
+		ar << GetConfig()->m_dE_gray;
+		ar << GetConfig()->gw_Weight;
+		ar << GetConfig()->m_GammaOffsetType;
+		ar << GetConfig()->m_GammaRef;
+		ar << GetConfig()->m_GammaRel;
+		ar << GetConfig()->m_Split;
+		ar << GetConfig()->m_manualWhitex;
+		ar << GetConfig()->m_manualWhitey;
+		ar << GetConfig()->m_useMeasuredGamma;
+		ar << GetConfig()->m_manualBluex;
+		ar << GetConfig()->m_manualRedx;
+		ar << GetConfig()->m_manualGreenx;
+		ar << GetConfig()->m_manualBluey;
+		ar << GetConfig()->m_manualRedy;
+		ar << GetConfig()->m_manualGreeny;
 
 		ar << m_bOverRideBlack; //new in 11
 		m_userBlack.Serialize(ar);
@@ -299,7 +319,7 @@ void CMeasure::Serialize(CArchive& ar)
 		m_AnsiWhite.Serialize(ar);
 //version 9
 		m_PrimeWhite.Serialize(ar);
-//
+
 		ar << m_infoStr;
 
 		ar << m_bIREScaleMode;
@@ -309,12 +329,55 @@ void CMeasure::Serialize(CArchive& ar)
 	    int version;
 		ar >> version;
 
-		if ( version > 11)
+		if ( version > 12)
 			AfxThrowArchiveException ( CArchiveException::badSchema );
+
+		if ( version > 11)
+		{
+			int in;
+			double in2;
+			ar >> in;
+			GetConfig()->m_whiteTarget = WhiteTarget(in);
+			ar >> in;
+			GetConfig()->m_CCMode = CCPatterns(in);
+			ar >> in;
+			GetConfig()->m_colorStandard = ColorStandard(in);
+			ar >> in;
+			GetConfig()->m_dE_form = in;
+			ar >> in;
+			GetConfig()->m_dE_gray = in;
+			ar >> in;
+			GetConfig()->gw_Weight = in;
+			ar >> in;
+			GetConfig()->m_GammaOffsetType = in;
+			ar >> in2;
+			GetConfig()->m_GammaRef = in2;
+			ar >> in2;
+			GetConfig()->m_GammaRel = in2;
+			ar >> in2;
+			GetConfig()->m_Split = in2;
+			ar >> in2;
+			GetConfig()->m_manualWhitex = in2;
+			ar >> in2;
+			GetConfig()->m_manualWhitey = in2;
+			ar >> in;
+			GetConfig()->m_useMeasuredGamma = in;
+			ar >> in2;
+			GetConfig()->m_manualBluex = in2;
+			ar >> in2;
+			GetConfig()->m_manualRedx = in2;
+			ar >> in2;
+			GetConfig()->m_manualGreenx = in2;
+			ar >> in2;
+			GetConfig()->m_manualBluey = in2;
+			ar >> in2;
+			GetConfig()->m_manualRedy = in2;
+			ar >> in2;
+			GetConfig()->m_manualGreeny = in2;
+		}
 
 		if (version > 10)
 		{
-
 			ar >> m_bOverRideBlack;
 			m_userBlack.Serialize(ar);
 		}

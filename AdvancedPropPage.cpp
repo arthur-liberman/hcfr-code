@@ -51,6 +51,7 @@ CAdvancedPropPage::CAdvancedPropPage() : CPropertyPageWithHelp(CAdvancedPropPage
 	//}}AFX_DATA_INIT
 
 	m_isModified = FALSE;
+	m_bSave = FALSE;
 }
 
 CAdvancedPropPage::~CAdvancedPropPage()
@@ -113,7 +114,7 @@ void CAdvancedPropPage::OnSelchangeLuxmeterComCombo()
 void CAdvancedPropPage::OnSelchangedECombo() 
 {
 	m_isModified=TRUE;
-	SetModified(TRUE);	
+	SetModified(TRUE);
 }
 
 BOOL CAdvancedPropPage::OnApply() 
@@ -133,7 +134,8 @@ BOOL CAdvancedPropPage::OnApply()
         m_gwWeightEdit.EnableWindow(FALSE);
     }
 	GetConfig()->ApplySettings(FALSE);
-	m_isModified=FALSE;
+	m_isModified = FALSE;
+	m_bSave = TRUE;
 	return CPropertyPageWithHelp::OnApply();
 }
 

@@ -1057,7 +1057,7 @@ BOOL CDataSetDoc::IsModified( )
 	if(m_pSensor)
 		docIsModified = docIsModified || m_pSensor->IsModified();
 
-	return docIsModified;
+	return docIsModified || GetConfig()->m_bSave || GetConfig()->m_bSave2;
 }
 
 void CDataSetDoc::OnCloseDocument() 

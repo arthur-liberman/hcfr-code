@@ -69,6 +69,7 @@ public:
 	double  m_Split;
 	BOOL	m_changeWhiteCheck;
 	BOOL	m_useMeasuredGamma;
+	BOOL	m_bSave;
 	BOOL	m_userBlack;
 	int		m_GammaOffsetType;
 	double	m_manualGOffset;
@@ -80,6 +81,14 @@ public:
 	double	m_manualGreeny;
 	double	m_manualBluex;
 	double	m_manualBluey;
+	double	m_manualWhitexold;
+	double	m_manualWhiteyold;
+	double	m_manualRedxold;
+	double	m_manualRedyold;
+	double	m_manualGreenxold;
+	double	m_manualGreenyold;
+	double	m_manualBluexold;
+	double	m_manualBlueyold;
 	//}}AFX_DATA
 
 	virtual UINT GetHelpId ( LPSTR lpszTopic );
@@ -89,6 +98,7 @@ public:
 	//{{AFX_VIRTUAL(CReferencesPropPage)
 	public:
 	virtual BOOL OnApply();
+	virtual void OnOK();
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL

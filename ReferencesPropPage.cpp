@@ -48,6 +48,7 @@ CReferencesPropPage::CReferencesPropPage() : CPropertyPageWithHelp(CReferencesPr
 	m_userBlack = FALSE;
 	m_ManualBlack = 0.0;
 	m_useMeasuredGamma = FALSE;
+	m_bSave = FALSE;
 	m_GammaOffsetType = 1;
 	m_manualGOffset = 0.099;
     m_manualWhitex = 0.3127;
@@ -153,6 +154,7 @@ END_MESSAGE_MAP()
 void CReferencesPropPage::OnControlClicked(UINT nID) 
 {
 	UpdateData(TRUE);
+	m_bSave = TRUE;
 
 	if (m_GammaOffsetType >= 4 || GetConfig()->m_colorStandard == sRGB)
     {
@@ -218,7 +220,23 @@ BOOL CReferencesPropPage::OnApply()
 		m_ManualBlackEdit.EnableWindow(FALSE);
 	GetConfig()->ApplySettings(FALSE);
 	m_isModified=FALSE;
+	if  ( (m_manualRedx != m_manualRedxold) || (m_manualRedy != m_manualRedyold) || (m_manualBluex != m_manualBluexold)
+		|| (m_manualGreenx != m_manualGreenxold) || (m_manualGreeny != m_manualGreenyold) || (m_manualBluey != m_manualBlueyold)
+		|| (m_manualWhitex != m_manualWhitexold) || (m_manualWhitey != m_manualWhiteyold) )
+		m_bSave = TRUE;
+
 	return CPropertyPageWithHelp::OnApply();
+}
+
+void CReferencesPropPage::OnOK() 
+{
+	GetConfig()->ApplySettings(FALSE);
+	if  ( (m_manualRedx != m_manualRedxold) || (m_manualRedy != m_manualRedyold) || (m_manualBluex != m_manualBluexold)
+		|| (m_manualGreenx != m_manualGreenxold) || (m_manualGreeny != m_manualGreenyold) || (m_manualBluey != m_manualBlueyold)
+		|| (m_manualWhitex != m_manualWhitexold) || (m_manualWhitey != m_manualWhiteyold) )
+		m_bSave = TRUE;
+
+	CPropertyPageWithHelp::OnOK();
 }
 
 
@@ -290,6 +308,15 @@ BOOL CReferencesPropPage::OnInitDialog()
 	m_userBlack = GetConfig()->GetProfileInt("References","Use Black Level",0);
 
 	m_ManualBlackEdit.EnableWindow(m_userBlack);
+	m_bSave = FALSE;
+	m_manualRedxold = m_manualRedx;
+	m_manualRedyold = m_manualRedy;
+	m_manualBluexold = m_manualBluex;
+	m_manualBlueyold = m_manualBluey;
+	m_manualGreenxold = m_manualGreenx;
+	m_manualGreenyold = m_manualGreeny;
+	m_manualWhitexold = m_manualWhitex;
+	m_manualWhiteyold = m_manualWhitey;
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -297,12 +324,14 @@ BOOL CReferencesPropPage::OnInitDialog()
 void CReferencesPropPage::OnChangeEditGammaRef() 
 {
 	m_isModified=TRUE;
+	m_bSave = TRUE;
 	SetModified(TRUE);
 }
 
 void CReferencesPropPage::OnChangeEditGammaRel() 
 {
 	m_isModified=TRUE;
+	m_bSave = TRUE;
 	SetModified(TRUE);
 }
 
@@ -310,6 +339,7 @@ void CReferencesPropPage::OnChangeEditManualBlack()
 {
 	m_isModified=TRUE;
 	SetModified(TRUE);	
+	m_bSave = TRUE;
 	UpdateData(TRUE);
 	GetConfig()->WriteProfileInt("References","Use Black Level",m_userBlack);
 	GetConfig()->WriteProfileDouble("References","Manual Black Level", m_ManualBlack);
@@ -324,6 +354,7 @@ void CReferencesPropPage::OnChangeEditGammaAvg()
 void CReferencesPropPage::OnChangeEditManualGOffset() 
 {
 	m_isModified=TRUE;
+	m_bSave = TRUE;
 	SetModified(TRUE);
 }
 
@@ -335,6 +366,7 @@ UINT CReferencesPropPage::GetHelpId ( LPSTR lpszTopic )
 void CReferencesPropPage::OnChangeWhiteCheck() 
 {
 	UpdateData(TRUE);
+	m_bSave = TRUE;
 	if(!m_changeWhiteCheck)	// Restore default white
 	{
 		m_whiteTarget=(int)(GetStandardColorReference((ColorStandard)(m_colorStandard)).m_white);
@@ -349,7 +381,7 @@ void CReferencesPropPage::OnUseMeasuredGammaCheck()
 {
 	m_isModified=TRUE;
 	SetModified(TRUE);	
-
+	m_bSave = TRUE;
 	UpdateData(TRUE);
 }
 
@@ -358,6 +390,7 @@ void CReferencesPropPage::OnUserBlackCheck()
 	m_isModified=TRUE;
 	SetModified(TRUE);	
 	UpdateData(TRUE);
+	m_bSave = TRUE;
 	m_ManualBlackEdit.EnableWindow(m_userBlack);
 	GetConfig()->WriteProfileInt("References","Use Black Level",m_userBlack);
 	GetConfig()->WriteProfileDouble("References","Manual Black Level", m_ManualBlack);
@@ -367,6 +400,7 @@ void CReferencesPropPage::OnSelchangeColorrefCombo()
 {
 	m_isModified=TRUE;
 	SetModified(TRUE);
+	m_bSave = TRUE;
 	UpdateData(TRUE);	
 	if (m_colorStandard == sRGB)
 	{
@@ -398,12 +432,31 @@ void CReferencesPropPage::OnSelchangeColorrefCombo()
 		m_CCMode = GCD;
 	if(!m_changeWhiteCheck) // Restore default white
 		m_whiteTarget=(int)(GetStandardColorReference((ColorStandard)(m_colorStandard)).m_white);
+    if (m_colorStandard == CUSTOM)
+    {
+        m_manualRedxedit.EnableWindow (TRUE);
+        m_manualRedyedit.EnableWindow (TRUE);
+        m_manualGreenxedit.EnableWindow (TRUE);
+        m_manualGreenyedit.EnableWindow (TRUE);
+        m_manualBluexedit.EnableWindow (TRUE);
+        m_manualBlueyedit.EnableWindow (TRUE);
+    }
+	else
+	{
+        m_manualRedxedit.EnableWindow (FALSE);
+        m_manualRedyedit.EnableWindow (FALSE);
+        m_manualGreenxedit.EnableWindow (FALSE);
+        m_manualGreenyedit.EnableWindow (FALSE);
+        m_manualBluexedit.EnableWindow (FALSE);
+        m_manualBlueyedit.EnableWindow (FALSE);
+	}
 	UpdateData(FALSE);	
 }
 
 void CReferencesPropPage::OnSelchangeCCmodeCombo() 
 {
 	m_isModified=TRUE;
+	m_bSave = TRUE;
 	SetModified(TRUE);
 	UpdateData(TRUE);
 	if (m_colorStandard == CC6)
@@ -414,5 +467,6 @@ void CReferencesPropPage::OnSelchangeCCmodeCombo()
 void CReferencesPropPage::OnChangeEditGammaOffset() 
 {
 	m_isModified=TRUE;
+	m_bSave = TRUE;
 	SetModified(TRUE);
 }

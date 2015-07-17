@@ -519,7 +519,7 @@ void CNearWhiteHistoView::OnLumGraphYLum()
 void CNearWhiteHistoView::OnLumGraphL() 
 {
 	m_Grapher.m_showL = !m_Grapher.m_showL;
-//	m_Grapher.m_graphCtrl.SetYAxisProps(m_Grapher.m_showL?"":"%", m_Grapher.m_showL?1:0.1, 0, 20);
+	m_Grapher.m_graphCtrl.SetYAxisProps(m_Grapher.m_showL?"":"%", m_Grapher.m_showL?1:0.1, 0, 20);
 	GetConfig()->WriteProfileInt("Near White Histo","Show L",m_Grapher.m_showL);
 	OnUpdate(NULL,NULL,NULL);
     OnGraphScaleFit();

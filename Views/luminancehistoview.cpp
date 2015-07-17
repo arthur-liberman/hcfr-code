@@ -297,6 +297,7 @@ void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			}
 		}
 	}
+	m_graphCtrl.FitYScale(1,10);	m_graphCtrl.ReadSettings("Luminance Histo");
 }
 
 /*
@@ -499,7 +500,6 @@ void CLuminanceHistoView::OnSize(UINT nType, int cx, int cy)
 void CLuminanceHistoView::OnDraw(CDC* pDC) 
 {
 	// TODO: Add your specialized code here and/or call the base class
-	m_Grapher.m_graphCtrl.WriteSettings("Luminance Histo");
 }
 
 BOOL CLuminanceHistoView::OnEraseBkgnd(CDC* pDC) 

@@ -95,7 +95,6 @@
     <ClCompile Include="colorhug.c" />
     <ClCompile Include="conv.c" />
     <ClCompile Include="disptechs.c" />
-    <ClCompile Include="dtp20.c" />
     <ClCompile Include="dtp92.c" />
     <ClCompile Include="ex1.c" />
     <ClCompile Include="hcfr.c" />
