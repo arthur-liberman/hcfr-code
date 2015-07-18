@@ -35,6 +35,7 @@
 #include "../libccast/ccmdns.h"
 #include "../libccast/ccwin.h"
 #include "../libccast/ccast.h"
+#include "../Tools/png/png.h"
 
 #ifndef MAKEFOURCC
 	#include <mmsystem.h>
@@ -786,6 +787,33 @@ void CFullScreenWindow::Hide ()
 
 /////////////////////////////////////////////////////////////////////////////
 // CFullScreenWindow message handlers
+typedef struct {
+	unsigned char *buf;
+	png_size_t len;			/* Current length of the buffer */
+	png_size_t off;			/* Current offset of the buffer */
+} png_mem_info;
+
+static void mem_write_data(png_structp png_ptr, png_bytep data, png_size_t length) {
+	png_mem_info *s = (png_mem_info *)png_get_io_ptr(png_ptr);
+
+	if ((s->off + length) > s->len) {			/* Need more space */
+		png_size_t more = (s->off + length) - s->len;
+
+		if (more < (1024 * 80))
+			more = 1024 * 50 - 32;		/* Increase 50K at a time */
+		s->len += more;
+
+		if ((s->buf = (unsigned char*)realloc(s->buf, s->len)) == NULL) {
+			png_error(png_ptr, "malloc failed in mem_write_data");
+		}
+	}
+	memcpy(s->buf + s->off, data, length);
+	s->off += length;
+}
+
+static void mem_flush_data(png_structp png_ptr) {
+	return;
+}
 
 void CFullScreenWindow::OnPaint() 
 {
@@ -859,19 +887,36 @@ void CFullScreenWindow::OnPaint()
 				{
 					char url[200];
 					chws *ws = NULL;
-					ws = new_chws(ids[0], 0, 0, 0, 0, TRUE);
+//					ws = new_chws(ids[0], 0, 0, 0, 0, TRUE);
+					ws = new_chws(ids[0], 0, 0, 0, 0, FALSE);
 
 					if (m_ansiCcast == 0)
-						sprintf(url, "%s%s", ws->ws_url, "tools/ansi1.png"); 
-					else if (m_ansiCcast == 1)
-						sprintf(url, "%s%s", ws->ws_url, "tools/ansi2.png"); 
-					else if (m_ansiCcast == -1)
 					{
-						newImage->Save("tools/ccsend.png", CXIMAGE_FORMAT_PNG);
-						sprintf(url, "%s%s", ws->ws_url, "tools/ccsend.png"); 
+						HMODULE hPatterns;
+						hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+						m_uiPictRess = IDR_PATTERN_ANSI1;
+						HRSRC hRsrc = ::FindResource(hPatterns,MAKEINTRESOURCE(m_uiPictRess),"PATTERN");
+						newImage->LoadResource(hRsrc,CXIMAGE_FORMAT_PNG,hPatterns);  
+						FreeLibrary(hPatterns);
+					} else if (m_ansiCcast == 1)
+					{
+						HMODULE hPatterns;
+						hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+						m_uiPictRess = IDR_PATTERN_ANSI2;
+						HRSRC hRsrc = ::FindResource(hPatterns,MAKEINTRESOURCE(m_uiPictRess),"PATTERN");
+						newImage->LoadResource(hRsrc,CXIMAGE_FORMAT_PNG,hPatterns);  
+						FreeLibrary(hPatterns);
 					}
 
-					int rv = ws->cc->load(ws->cc, url, NULL, 0.0, NULL,  0.0, 0.0, 0.0, 0.0);
+					CxMemFile memfile;
+					memfile.Open();
+					newImage->Encode(&memfile, CXIMAGE_FORMAT_PNG);
+					BYTE *obuf = memfile.GetBuffer();
+					long olen = memfile.Size();
+
+//					int rv = ws->cc->load(ws->cc, url, NULL, 0.0, NULL,  0.0, 0.0, 0.0, 0.0);
+					double bg[3]={ {0},{0},{0} };
+					int rv = ws->cc->load(ws->cc, NULL, obuf, (size_t)olen, bg,  0.0, 0.0, 10.0, 5.625);
 					if (rv) 
 					{
 						char msg[255];
@@ -879,6 +924,7 @@ void CFullScreenWindow::OnPaint()
 						GetColorApp()->InMeasureMessageBox(msg,"CCast Error", MB_OK + MB_ICONERROR);
 						ws->del(ws);
 					}
+					newImage->FreeMemory(obuf);
 				}
 			}
 			free_ccids(ids);
