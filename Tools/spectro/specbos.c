@@ -62,6 +62,7 @@
 #include "conv.h"
 #include "icoms.h"
 #include "specbos.h"
+
 static inst_code specbos_interp_code(inst *pp, int ec);
 void icmYxy2XYZ(double *out, double *in);
 
@@ -484,7 +485,7 @@ specbos_init_inst(inst *pp) {
 		return ev;
 	}
 	if (p->wl_long > 830.0)			/* Could go to 1000 with 1211 */
-		p->wl_long = 830.0;
+		p->wl_long = 830.0;			/* Limit it to useful visual range */
 
 	a1logd(p->log, 1, " Long wl range %f\n",p->wl_long);
 
@@ -695,13 +696,44 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 		
 	/* Trigger a measurement */
 	/* (Note that ESC will abort it) */
-	if ((ec = specbos_fcommand(p, "*init\r", buf, MAX_MES_SIZE, 5.0 * p->measto + 10.0 , 1, 1, 0)) != SPECBOS_OK) {
+	ec = specbos_fcommand(p, "*init\r", buf, MAX_MES_SIZE, 5.0 * p->measto + 10.0 , 1, 1, 0);
+
+	// Test out bug workaround
+	// if (!p->badCal) ec = SPECBOS_EXCEED_CAL_WL;
+
+	/* If the specbos has been calibrated by a 3rd party, its calibrated range */
+	/* may be out of sync with its claimed range. Reduce the range and retry. */
+	if (ec == SPECBOS_EXCEED_CAL_WL && !p->badCal) {
+		char mes[100];
+		inst_code ev = inst_ok;
+
+		a1logd(p->log, 1, " Got SPECBOS_EXCEED_CAL_WL error (Faulty 3rd party Calibration ?)\n");
+		a1logd(p->log, 1, " Trying workaround by restricting range to 780nm\n");
+
+		if (p->wl_long > 780.0)
+			p->wl_long = 780.0;
+
+		p->nbands = (int)((p->wl_long - p->wl_short + 1.0)/1.0 + 0.5);
+
+		/* Re-set the wavelength range and resolution */
+		sprintf(mes, "*conf:wran %d %d 1\r", (int)(p->wl_short+0.5), (int)(p->wl_long+0.5));
+		if ((ev = specbos_command(p, mes, buf, MAX_MES_SIZE, 1.0)) != inst_ok) {
+			amutex_unlock(p->lock);
+			return ev;
+		}
+		p->badCal = 1;
+
+		/* Try command again */
+		ec = specbos_fcommand(p, "*init\r", buf, MAX_MES_SIZE, 5.0 * p->measto + 10.0 , 1, 1, 0);
+	}
+
+	if (ec != SPECBOS_OK) {
 		amutex_unlock(p->lock);
 		return specbos_interp_code((inst *)p, ec);
 	}
 
 
-	if (p->noXYZ) {	/* Will fail, so assume it failed */			
+	if (p->noXYZ) {	/* "*fetch:XYZ" will fail, so assume it failed rather than trying it */			
 		ec = SPECBOS_COMMAND;
 
 	} else {		 /* Read the XYZ */
@@ -894,7 +926,7 @@ double *ref_rate
 	if ((cp = strchr(buf, 'c')) == NULL)
 		cp = buf;
 	if (sscanf(cp, "cyctim[ms]: %lf ", &refperiod) != 1) {
-		a1logd(p->log, 1, "specbos_read_refrate rate: failed to parse string '%s'\n",icoms_fix(buf));
+		a1logd(p->log, 1, "specbos_imp_measure_refresh rate: failed to parse string '%s'\n",icoms_fix(buf));
 		*ref_rate = 0.0;
 		return inst_misread;
 	}
@@ -1788,7 +1820,7 @@ extern specbos *new_specbos(icoms *icom, instType itype) {
 	p->del               = specbos_del;
 
 	p->icom = icom;
-	p->itype = icom->itype;
+	p->itype = itype;
 	if (p->itype == instSpecbos1201)
 		p->model = 1201;
 

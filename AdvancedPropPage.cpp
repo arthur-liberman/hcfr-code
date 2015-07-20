@@ -114,6 +114,7 @@ void CAdvancedPropPage::OnSelchangeLuxmeterComCombo()
 void CAdvancedPropPage::OnSelchangedECombo() 
 {
 	m_isModified=TRUE;
+	m_bSave = TRUE;
 	SetModified(TRUE);
 }
 

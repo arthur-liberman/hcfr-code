@@ -154,6 +154,8 @@ public:
 
 	void DisplayHelp ( UINT nId, LPCSTR lpszTopic );
 	void EnsurePathExists ( CString strPath );
+	CReferencesPropPage m_referencesPropertiesPage;
+	CAdvancedPropPage m_advancedPropertiesPage;
 
 
 	CColorHCFRConfig();
@@ -162,8 +164,6 @@ public:
 private:
 	CPropertySheetWithHelp m_propertySheet;
 	CGeneralPropPage m_generalPropertiesPage;
-	CReferencesPropPage m_referencesPropertiesPage;
-	CAdvancedPropPage m_advancedPropertiesPage;
 	CAppearancePropPage m_appearancePropertiesPage;
 	CToolbarPropPage m_toolbarPropertiesPage;
 };

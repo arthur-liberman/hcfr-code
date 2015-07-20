@@ -2007,7 +2007,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Preferences...",             IDM_GENERAL_CONFIG
         MENUITEM "&Language...",                IDM_LANGUAGE
-        MENUITEM "Reset to default prefs ",     IDC_INIT_BUTTON
+        MENUITEM "&Reset to default prefs ",    IDC_INIT_BUTTON
     END
     POPUP "&Window"
     BEGIN
@@ -3650,6 +3650,11 @@ STRINGTABLE
 BEGIN
     ID_EXPORT_PDF           "Create a 1 or 2 page PDF report"
     IDM_CIE_WORST10         "Show worst 10% dE points\nShow worst 10% dE points"
+END
+
+STRINGTABLE
+BEGIN
+    IDC_INIT_BUTTON         "Reset your preferences to default values"
 END
 
 #endif    // English (United States) resources

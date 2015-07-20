@@ -445,6 +445,8 @@ CMainView::CMainView()
 	m_userBlack = FALSE;
 	m_oldBlackGS = noDataColor;
 	m_oldBlackNB = noDataColor;
+	GetConfig()->m_bSave = FALSE;
+	GetConfig()->m_bSave2 = FALSE;
 }
 
 CMainView::~CMainView()

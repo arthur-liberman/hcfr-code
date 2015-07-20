@@ -61,7 +61,6 @@ class CMainFrame : public CNewMDIFrameWnd
 public:
 	CMainFrame();
 
-
 // Attributes
 public:
 	CPPToolTip	m_tooltip;
@@ -133,6 +132,7 @@ protected:
 	afx_msg void OnHelpInstall();
 	afx_msg void OnHelpSupport();
 	afx_msg void OnLanguage();
+	afx_msg void OnInitDefaults();
 	afx_msg void OnUpdateSoft();
 	afx_msg void OnUpdateEtalons();
 	afx_msg void OnPatternDisplay();

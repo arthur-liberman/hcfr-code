@@ -885,9 +885,7 @@ void CFullScreenWindow::OnPaint()
 				}
 				else 
 				{
-					char url[200];
 					chws *ws = NULL;
-//					ws = new_chws(ids[0], 0, 0, 0, 0, TRUE);
 					ws = new_chws(ids[0], 0, 0, 0, 0, FALSE);
 
 					if (m_ansiCcast == 0)
@@ -910,11 +908,11 @@ void CFullScreenWindow::OnPaint()
 
 					CxMemFile memfile;
 					memfile.Open();
+//					newImage->Resample2(1280, 720, CxImage::IM_BICUBIC2, CxImage::OM_REPEAT, newImage, TRUE);
 					newImage->Encode(&memfile, CXIMAGE_FORMAT_PNG);
 					BYTE *obuf = memfile.GetBuffer();
 					long olen = memfile.Size();
 
-//					int rv = ws->cc->load(ws->cc, url, NULL, 0.0, NULL,  0.0, 0.0, 0.0, 0.0);
 					double bg[3]={ {0},{0},{0} };
 					int rv = ws->cc->load(ws->cc, NULL, obuf, (size_t)olen, bg,  0.0, 0.0, 10.0, 5.625);
 					if (rv) 

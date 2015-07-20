@@ -82,6 +82,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CNewMDIFrameWnd)
 	ON_COMMAND(IDM_HELP_INSTALL, OnHelpInstall)
 	ON_COMMAND(IDM_HELP_SUPPORT, OnHelpSupport)
 	ON_COMMAND(IDM_LANGUAGE, OnLanguage)
+	ON_COMMAND(IDC_INIT_BUTTON, OnInitDefaults)
 	ON_COMMAND(IDM_UPDATE_SOFT, OnUpdateSoft)
 	ON_COMMAND(IDM_UPDATE_ETALONS, OnUpdateEtalons)
 	ON_COMMAND(IDM_PATTERN_DISP_ROOT, OnPatternDisplay)
@@ -124,7 +125,6 @@ static UINT indicators[] =
 CMainFrame::CMainFrame()
 {
 	p_wndPatternDisplay = NULL;
-
 	m_mainToolbarID = IDR_MEDIUMTOOLBAR_MAIN;
 	m_viewToolbarID = IDR_MEDIUMTOOLBAR_VIEWS;
 	m_measureToolbarID = IDR_MEDIUMTOOLBAR_MEASURES;
@@ -1042,6 +1042,32 @@ void CMainFrame::OnHelpInstall()
 void CMainFrame::OnHelpSupport() 
 {
 	GetConfig () -> DisplayHelp ( HID_SUPPORT, NULL );
+}
+
+void CMainFrame::OnInitDefaults()
+{
+
+	int rv = GetColorApp()->InMeasureMessageBox("This will reset your preferences to their default values.\nAre you sure?", "Reset prefs", MB_YESNO);
+	if (rv == 6)
+	{
+		CString strlang = GetConfig()->strLang;
+		DeleteFile("ColorHCFR.ini");
+		GetConfig()->InitDefaults();
+		GetConfig()->LoadSettings();
+		GetConfig()->ApplySettings(TRUE);
+		GetConfig()->WriteProfileString ( "Options", "Language", strlang );
+		GetConfig()->SaveSettings();
+		GetConfig()->m_bSave = TRUE;
+		CDataSetDoc *	pCurrentDocument = NULL;
+		CMDIChildWnd *  pMDIFrameWnd = MDIGetActive();
+	
+		if (pMDIFrameWnd != NULL)
+		{
+			pCurrentDocument = (CDataSetDoc *) pMDIFrameWnd->GetActiveDocument();
+			pCurrentDocument->UpdateAllViews(NULL, UPD_EVERYTHING);
+		}
+
+	}
 }
 
 void CMainFrame::OnLanguage() 

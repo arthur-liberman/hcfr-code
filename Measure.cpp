@@ -334,46 +334,76 @@ void CMeasure::Serialize(CArchive& ar)
 
 		if ( version > 11)
 		{
-			int in;
-			double in2;
-			ar >> in;
-			GetConfig()->m_whiteTarget = WhiteTarget(in);
-			ar >> in;
-			GetConfig()->m_CCMode = CCPatterns(in);
-			ar >> in;
-			GetConfig()->m_colorStandard = ColorStandard(in);
-			ar >> in;
-			GetConfig()->m_dE_form = in;
-			ar >> in;
-			GetConfig()->m_dE_gray = in;
-			ar >> in;
-			GetConfig()->gw_Weight = in;
-			ar >> in;
-			GetConfig()->m_GammaOffsetType = in;
-			ar >> in2;
-			GetConfig()->m_GammaRef = in2;
-			ar >> in2;
-			GetConfig()->m_GammaRel = in2;
-			ar >> in2;
-			GetConfig()->m_Split = in2;
-			ar >> in2;
-			GetConfig()->m_manualWhitex = in2;
-			ar >> in2;
-			GetConfig()->m_manualWhitey = in2;
-			ar >> in;
-			GetConfig()->m_useMeasuredGamma = in;
-			ar >> in2;
-			GetConfig()->m_manualBluex = in2;
-			ar >> in2;
-			GetConfig()->m_manualRedx = in2;
-			ar >> in2;
-			GetConfig()->m_manualGreenx = in2;
-			ar >> in2;
-			GetConfig()->m_manualBluey = in2;
-			ar >> in2;
-			GetConfig()->m_manualRedy = in2;
-			ar >> in2;
-			GetConfig()->m_manualGreeny = in2;
+			BOOL over = FALSE;
+			int in[8];
+			double in2[11];
+
+			for (int i=0;i<7;i++)
+				ar >> in[i];
+
+			for (int i=0;i<5;i++)
+				ar >> in2[i];
+
+			ar >> in[7];
+
+			for (int i=5;i<11;i++)
+				ar >> in2[i];
+
+			if ( in[0] != (int)GetConfig()->m_whiteTarget ||
+					 in[1] != (int)GetConfig()->m_CCMode ||
+					 in[2] != (int)GetConfig()->m_colorStandard ||
+					 in[3] != GetConfig()->m_dE_form ||
+					 in[4] != GetConfig()->m_dE_gray ||
+					 in[5] != GetConfig()->gw_Weight ||
+					 in[6] != GetConfig()->m_GammaOffsetType || 
+					 in2[0] != GetConfig()->m_GammaRef ||
+					 in2[1] != GetConfig()->m_GammaRel ||
+					 in2[2] != GetConfig()->m_Split ||
+					 in2[3] != GetConfig()->m_manualWhitex || 
+					 in2[4] != GetConfig()->m_manualWhitey || 
+					 in[7] != GetConfig()->m_useMeasuredGamma ||
+					 in2[5] != GetConfig()->m_manualBluex ||
+					 in2[6] != GetConfig()->m_manualRedx ||
+					 in2[7] != GetConfig()->m_manualGreenx ||
+					 in2[8] != GetConfig()->m_manualBluey ||
+					 in2[9] != GetConfig()->m_manualRedy ||
+					 in2[10] != GetConfig()->m_manualGreeny )
+				over = TRUE;
+
+			if (over)
+			{
+				CString msg;
+				msg.SetString("Preferences in saved file differ from active preferences, overwrite?");
+				if (GetColorApp()->InMeasureMessageBox(msg,"Warning", MB_YESNO | MB_ICONWARNING) != 6 )
+					over = FALSE;
+			}
+
+			if (over)
+			{
+				GetConfig()->m_whiteTarget = WhiteTarget(in[0]);
+				GetConfig()->m_CCMode = CCPatterns(in[1]);
+				GetConfig()->m_colorStandard = ColorStandard(in[2]);
+				GetConfig()->m_dE_form = in[3];
+				GetConfig()->m_dE_gray = in[4];
+				GetConfig()->gw_Weight = in[5];
+				GetConfig()->m_GammaOffsetType = in[6];
+
+				GetConfig()->m_GammaRef = in2[0];
+				GetConfig()->m_GammaRel = in2[1];
+				GetConfig()->m_Split = in2[2];
+				GetConfig()->m_manualWhitex = in2[3];
+				GetConfig()->m_manualWhitey = in2[4];
+
+				GetConfig()->m_useMeasuredGamma = in[7];
+
+				GetConfig()->m_manualBluex = in2[5];
+				GetConfig()->m_manualRedx = in2[6];
+				GetConfig()->m_manualGreenx = in2[7];
+				GetConfig()->m_manualBluey = in2[8];
+				GetConfig()->m_manualRedy = in2[9];
+				GetConfig()->m_manualGreeny = in2[10];
+			}
+
 		}
 
 		if (version > 10)
