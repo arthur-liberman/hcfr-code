@@ -708,10 +708,13 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 		inst_code ev = inst_ok;
 
 		a1logd(p->log, 1, " Got SPECBOS_EXCEED_CAL_WL error (Faulty 3rd party Calibration ?)\n");
-		a1logd(p->log, 1, " Trying workaround by restricting range to 780nm\n");
+		a1logd(p->log, 1, " Trying workaround by restricting range to 380-780nm\n");
 
 		if (p->wl_long > 780.0)
 			p->wl_long = 780.0;
+
+		if (p->wl_short < 380.0)
+			p->wl_short = 380.0;
 
 		p->nbands = (int)((p->wl_long - p->wl_short + 1.0)/1.0 + 0.5);
 
