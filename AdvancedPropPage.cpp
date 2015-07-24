@@ -51,7 +51,6 @@ CAdvancedPropPage::CAdvancedPropPage() : CPropertyPageWithHelp(CAdvancedPropPage
 	//}}AFX_DATA_INIT
 
 	m_isModified = FALSE;
-	m_bSave = FALSE;
 }
 
 CAdvancedPropPage::~CAdvancedPropPage()
@@ -163,6 +162,7 @@ BOOL CAdvancedPropPage::OnSetActive()
         gw_Weight = 0;
         m_gwWeightEdit.EnableWindow(FALSE);
     }
+	m_bSave = GetConfig()->m_bSave2;
 	GetConfig()->ApplySettings(FALSE);
 	m_isModified=FALSE;
 	return bOk;
