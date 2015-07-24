@@ -383,6 +383,9 @@ void CMeasure::Serialize(CArchive& ar)
 				GetConfig()->m_whiteTarget = WhiteTarget(in[0]);
 				GetConfig()->m_CCMode = CCPatterns(in[1]);
 				GetConfig()->m_colorStandard = ColorStandard(in[2]);
+				if (GetColorApp()->m_pColorReference)
+					delete GetColorApp()->m_pColorReference; 
+				GetColorApp()->m_pColorReference = new CColorReference(ColorStandard(in[2]), WhiteTarget(in[0]), in[6]);
 				GetConfig()->m_dE_form = in[3];
 				GetConfig()->m_dE_gray = in[4];
 				GetConfig()->gw_Weight = in[5];

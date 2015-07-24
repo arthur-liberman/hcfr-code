@@ -707,32 +707,32 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 		Msg.LoadString ( IDS_PALREDREF );
 		Msg2.LoadString ( IDS_PALGREENREF );
 		Msg3.LoadString ( IDS_PALBLUEREF );
-	}else if(GetConfig()->m_colorStandard == CUSTOM)
+	} else if (GetConfig()->m_colorStandard == CUSTOM)
 	{
 		Msg.LoadString ( IDS_CUSTREDREF );
 		Msg2.LoadString ( IDS_CUSTGREENREF );
 		Msg3.LoadString ( IDS_CUSTBLUEREF );
-	} else if(GetConfig()->m_colorStandard == UHDTV)
+	} else if (GetConfig()->m_colorStandard == UHDTV)
 	{
 		Msg.LoadString ( IDS_UHDTVREDREF );
 		Msg2.LoadString ( IDS_UHDTVGREENREF );
 		Msg3.LoadString ( IDS_UHDTVBLUEREF );
-	} else if(GetConfig()->m_colorStandard == UHDTV2)
+	} else if (GetConfig()->m_colorStandard == UHDTV2)
 	{
 		Msg.LoadString ( IDS_UHDTV2REDREF );
 		Msg2.LoadString ( IDS_UHDTV2GREENREF );
 		Msg3.LoadString ( IDS_UHDTV2BLUEREF );
-	} else if(GetConfig()->m_colorStandard == HDTV || GetConfig()->m_colorStandard == sRGB)
+	} else if (GetConfig()->m_colorStandard == HDTV || GetConfig()->m_colorStandard == sRGB)
 	{
 		Msg.LoadString ( IDS_REC709REDREF );
 		Msg2.LoadString ( IDS_REC709GREENREF );
 		Msg3.LoadString ( IDS_REC709BLUEREF );
-	}else if(GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb )
+	} else if (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb )
 	{
 		Msg.LoadString ( IDS_REC709aREDREF );
 		Msg2.LoadString ( IDS_REC709aGREENREF );
 		Msg3.LoadString ( IDS_REC709aBLUEREF );
-	} else if(GetConfig()->m_colorStandard == CC6)
+	} else if (GetConfig()->m_colorStandard == CC6)
 	{
 		Msg.LoadString ( IDS_RECCC6REDREF );
 		Msg2.LoadString ( IDS_RECCC6GREENREF );

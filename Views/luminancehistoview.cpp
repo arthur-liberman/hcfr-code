@@ -297,7 +297,8 @@ void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			}
 		}
 	}
-	m_graphCtrl.FitYScale(1,10);	m_graphCtrl.ReadSettings("Luminance Histo");
+	m_graphCtrl.FitYScale(1,10);
+	m_graphCtrl.ReadSettings("Luminance Histo");
 }
 
 /*

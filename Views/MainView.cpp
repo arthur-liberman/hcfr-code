@@ -5034,7 +5034,6 @@ void CMainView::OnDatarefCheck()
 
 void CMainView::OnInitDefaults()
 {
-
 	int rv = GetColorApp()->InMeasureMessageBox("This will reset your preferences to their default values.\nAre you sure?", "Reset prefs", MB_YESNO);
 	if (rv == 6)
 	{

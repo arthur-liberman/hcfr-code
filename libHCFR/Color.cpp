@@ -175,7 +175,7 @@ ColorxyY primariesRec709[3] ={	ColorxyY(0.6400, 0.3300),
 								ColorxyY(0.3000, 0.6000),
 								ColorxyY(0.1500, 0.0600) };
 
-ColorxyY primariesDCI[3] ={	ColorxyY(0.6800, 0.3200),
+ColorxyY primariesP3[3] = {		ColorxyY(0.6800, 0.3200),
 								ColorxyY(0.265, 0.6900),
 								ColorxyY(0.1500, 0.0600) };
 
@@ -277,7 +277,7 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
 			whiteColor=illuminantDCI;
 			whiteName="DCI-P3";
 			m_white=DCI;
-            primaries = primariesDCI;
+            primaries = primariesP3;
 			break;
 		}
 		case UHDTV2:
@@ -353,6 +353,9 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
 	switch(aWhiteTarget)
 	{
 		case D65:
+			standardName+=strModified;
+			whiteColor=illuminantD65;
+			whiteName="D65";
 			break;
 		case DCUST:
 			standardName+=strModified;
@@ -400,6 +403,11 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
 			standardName+=strModified;
 			whiteColor=illuminantD93;
 			whiteName="D93";
+			break;
+		case DCI:
+			standardName+=strModified;
+			whiteColor=illuminantDCI;
+			whiteName="DCI";
 			break;
 		case Default:
 		default:
