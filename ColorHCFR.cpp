@@ -199,7 +199,7 @@ void	UpdateDataRef(BOOL ActiveDataRef, CDataSetDoc * pDoc)
 		SetDataRef(NULL);		
 	}
 
-	while ((pOtherDoc=docEnumerator.Next())!=NULL) 
+	while ( (pOtherDoc=docEnumerator.Next()) != NULL ) 
 	   pOtherDoc->UpdateAllViews(NULL, UPD_DATAREFDOC);
 
 	AfxGetMainWnd () -> SendMessageToDescendants ( WM_COMMAND, IDM_REFRESH_REFERENCE );
