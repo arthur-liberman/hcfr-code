@@ -1591,9 +1591,9 @@ void CDataSetDoc::OnCalibrationExisting()
 		return;
 	}
 
-    CColor YWhite = this->GetMeasure()->GetPrimeWhite();
+	bool Red = (this->GetMeasure()->GetRedPrimary().isValid() && pDataRef->GetMeasure()->GetRedPrimary().isValid()) ;
 
-    if (!YWhite.isValid())
+	if (!Red)
     {
         //No measurements
 		Msg.LoadString ( IDS_SIM_CAL_ERROR4 );

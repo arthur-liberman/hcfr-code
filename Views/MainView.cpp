@@ -2383,14 +2383,22 @@ void CMainView::UpdateGrid()
 
 		if ( pDataRef )
 		{
+			int refCount;
 			if ( pDataRef -> GetMeasure () -> GetOnOffWhite ().isValid() )
 				YWhiteOnOffRefDoc = pDataRef -> GetMeasure () -> GetOnOffWhite () [ 1 ];
 			if ( pDataRef -> GetMeasure () -> GetPrimeWhite ().isValid() )
 				YWhitePrimeRefDoc = pDataRef -> GetMeasure () -> GetPrimeWhite () [ 1 ];
 
-			nCount = pDataRef -> GetMeasure () -> GetGrayScaleSize ();
-			if ( pDataRef -> GetMeasure () -> GetGray ( nCount - 1 ).isValid() )
-				YWhiteGrayRefDoc = pDataRef -> GetMeasure () -> GetGray ( nCount - 1 ) [ 1 ];
+			refCount = pDataRef -> GetMeasure () -> GetGrayScaleSize ();
+			if (refCount == nCount)
+			{
+				nCount = pDataRef -> GetMeasure () -> GetGrayScaleSize ();
+				if ( pDataRef -> GetMeasure () -> GetGray ( nCount - 1 ).isValid() )
+					YWhiteGrayRefDoc = pDataRef -> GetMeasure () -> GetGray ( nCount - 1 ) [ 1 ];
+			}
+			else
+				pDataRef = NULL;
+
 		}
 
 		// Retrieve gamma and offset in case user has modified
