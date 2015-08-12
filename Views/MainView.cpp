@@ -2397,7 +2397,7 @@ void CMainView::UpdateGrid()
 					YWhiteGrayRefDoc = pDataRef -> GetMeasure () -> GetGray ( nCount - 1 ) [ 1 ];
 			}
 			else
-				pDataRef = NULL;
+				pDataRef == NULL;
 
 		}
 
