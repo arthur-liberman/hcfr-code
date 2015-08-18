@@ -44,6 +44,7 @@ public:
 	//{{AFX_DATA(CGeneralPropPage)
 	enum { IDD = IDD_GENERAL_PROP_PAGE };
 	BOOL	m_doMultipleInstance;
+	BOOL	m_doUpdateCheck;
 	BOOL	m_bDisplayTestColors;
 	int		m_latencyTime;
 	BOOL	m_doSavePosition;

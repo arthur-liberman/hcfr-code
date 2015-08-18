@@ -134,7 +134,6 @@ protected:
 	afx_msg void OnLanguage();
 	afx_msg void OnInitDefaults();
 	afx_msg void OnUpdateSoft();
-	afx_msg void OnUpdateEtalons();
 	afx_msg void OnPatternDisplay();
 	afx_msg void OnRefreshLux();
 	afx_msg void OnViewLuminance();
@@ -143,7 +142,6 @@ protected:
 	afx_msg void OnUpdateViewMeasureBar(CCmdUI* pCmdUI);
 	afx_msg void OnViewMeasureExBar();
 	afx_msg void OnUpdateViewMeasureExBar(CCmdUI* pCmdUI);
-	afx_msg void OnUpdateIRProfiles();
 	afx_msg void OnViewMeasureSatBar();
 	afx_msg void OnUpdateViewMeasureSatBar(CCmdUI* pCmdUI);
 	//}}AFX_MSG

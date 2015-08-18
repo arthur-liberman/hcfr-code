@@ -107,6 +107,7 @@ public:
 
 	// Other settings
 	BOOL m_doMultipleInstance;
+	BOOL m_doUpdateCheck;
 	BOOL m_doSavePosition;
 
 	// Advanced settings

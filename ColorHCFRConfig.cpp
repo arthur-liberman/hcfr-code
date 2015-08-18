@@ -293,6 +293,7 @@ void CColorHCFRConfig::InitDefaults()
 	m_fxColorText=CLR_DEFAULT;
 
 	m_doMultipleInstance=FALSE;
+	m_doUpdateCheck=TRUE;
 	m_doSavePosition=TRUE;
 
 	m_PercentGray.LoadString ( IDS_PERCENTGRAY );
@@ -314,6 +315,7 @@ BOOL CColorHCFRConfig::LoadSettings()
 {
 	m_doMultipleInstance=GetProfileInt("General","DoMultipleInstance",FALSE);
 	m_doSavePosition=GetProfileInt("General","DoSavePosition",TRUE);
+	m_doUpdateCheck=GetProfileInt("General","DoUpdateCheck",TRUE);
 	m_BWColorsToAdd=GetProfileInt("General","BWColorsToAdd",1);
 	if ( m_BWColorsToAdd < 0 ) 
 		m_BWColorsToAdd = 0;
@@ -390,6 +392,7 @@ BOOL CColorHCFRConfig::LoadSettings()
 void CColorHCFRConfig::SaveSettings()
 {
 	WriteProfileInt("General","DoMultipleInstance",m_doMultipleInstance);
+	WriteProfileInt("General","DoUpdateCheck",m_doUpdateCheck);
 	WriteProfileInt("General","DoSavePosition",m_doSavePosition);
 	WriteProfileInt("General","BWColorsToAdd",m_BWColorsToAdd);
 
@@ -459,6 +462,7 @@ void CColorHCFRConfig::ChangeSettings(int aPage)
 void CColorHCFRConfig::SetPropertiesSheetValues()
 {
 	m_generalPropertiesPage.m_doMultipleInstance=m_doMultipleInstance;
+	m_generalPropertiesPage.m_doUpdateCheck=m_doUpdateCheck;
 	m_generalPropertiesPage.m_doSavePosition=m_doSavePosition;
 	m_generalPropertiesPage.m_BWColorsToAdd=m_BWColorsToAdd;
 	
@@ -565,6 +569,7 @@ BOOL CColorHCFRConfig::GetPropertiesSheetValues()
 		m_doMultipleInstance=m_generalPropertiesPage.m_doMultipleInstance;
 		needRestart=TRUE;
 	}
+	m_doUpdateCheck=m_generalPropertiesPage.m_doUpdateCheck;
 	m_doSavePosition=m_generalPropertiesPage.m_doSavePosition;
 	m_BWColorsToAdd=m_generalPropertiesPage.m_BWColorsToAdd;
 	m_bDisplayTestColors=m_generalPropertiesPage.m_bDisplayTestColors;

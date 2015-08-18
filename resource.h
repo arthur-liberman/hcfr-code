@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by CHCFR21_ENGLISH.rc
+// Used by CHCFR21_FRANCAIS.rc
 //
 #define IDS_STRING_VERSION              1
 #define IDS_STRING_VERSION_WEB          2
@@ -544,6 +544,7 @@
 #define IDC_EDIT_MANUAL_BLACK           1179
 #define IDC_REPLACEMEASURE_LIST         1180
 #define IDC_INIT_BUTTON                 1180
+#define IDC_CHECK_UPDATE                1180
 #define IDC_APPEND_RADIO                1181
 #define IDC_REPLACE_RADIO               1182
 #define IDC_MEASUREEXTOOLBAR            1183
@@ -789,8 +790,8 @@
 #define IDR_PATTERN_GBd                 1334
 #define IDR_PATTERN_BN                  1335
 #define IDC_GRAPH_USERSCALES_CHECK      1336
-#define IDR_PATTERN_ANSI1				1337
-#define IDR_PATTERN_ANSI2				1338
+#define IDR_PATTERN_ANSI1               1337
+#define IDR_PATTERN_ANSI2               1338
 #define IDC_COLORTEMPHISTO_GRAPH        11003
 #define IDC_RGBHISTO_GRAPH              11101
 #define IDC_RGBHISTO_GRAPH2             11102

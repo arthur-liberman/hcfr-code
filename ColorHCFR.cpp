@@ -47,6 +47,8 @@
 
 #include "ximage.h"
 
+#include "CWebUpdate.h"
+
 #ifdef USE_NON_FREE_CODE
 // Include for device interface (this device interface is outside GNU GPL license)
 #include "devlib\CHCFRDI3.h"
@@ -358,6 +360,61 @@ BOOL CColorHCFRApp::InitInstance()
 	m_LuxPort = GetConfig () -> GetProfileString ( "Defaults", "Luxmeter", "" );
 	if ( ! m_LuxPort.IsEmpty () )
 		StartLuxMeasures ();
+
+	//check for updates
+	if (m_pConfig->m_doUpdateCheck)
+	{
+		CWebUpdate WebUpdate;
+		HWND	hDlg, hCtrl;
+
+		hDlg = ::CreateDialog ( AfxGetResourceHandle (), MAKEINTRESOURCE(IDD_WEB_UPDATE), NULL, NULL );
+		hCtrl = ::GetDlgItem ( hDlg, IDC_STATIC1 );
+		::ShowWindow ( hDlg, SW_SHOW );
+		::UpdateWindow ( hDlg );
+
+		WebUpdate.SetLocalDirectory("", true);
+		WebUpdate.SetUpdateFileURL("http://dl.dropboxusercontent.com/u/2621383/update.txt");
+		WebUpdate.SetRemoteURL("http://dl.dropboxusercontent.com/u/2621383/");
+
+		if (!WebUpdate.DoUpdateCheck())
+		{
+			//update check failed
+			::DestroyWindow ( hDlg );
+			AfxMessageBox(IDS_UPD_IMPOSSIBLE, MB_OK | MB_ICONWARNING);
+			return TRUE;
+		}
+
+		if (WebUpdate.GetNumberDifferent() == 1)
+		{
+			::ShowWindow ( hDlg, SW_HIDE );
+			if (AfxMessageBox(IDS_UPD_ASK_DOWNLOAD, MB_YESNO | MB_ICONQUESTION) == IDYES)
+			{
+				::SetWindowText ( hCtrl, "Downloading install file... please wait..." );
+				::ShowWindow ( hDlg, SW_SHOW );
+				::UpdateWindow ( hDlg );
+			
+				if (!WebUpdate.DownloadDifferent(0))
+					::SetWindowText ( hCtrl, "Update failed." );
+				else
+					::SetWindowText ( hCtrl, "New install package saved to local HCFR directory." );
+			}
+			else
+			{
+				::ShowWindow ( hDlg, SW_SHOW );
+				::UpdateWindow ( hDlg );
+				::SetWindowText ( hCtrl, "Update cancelled." );
+			}
+		
+			Sleep(2000);
+		}
+		else
+		{
+			::SetWindowText ( hCtrl, "No updates found." );
+			Sleep(2000);
+		}
+
+		::DestroyWindow ( hDlg );
+	}
 
 	return TRUE;
 }

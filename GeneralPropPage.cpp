@@ -40,6 +40,7 @@ CGeneralPropPage::CGeneralPropPage() : CPropertyPageWithHelp(CGeneralPropPage::I
 {
 	//{{AFX_DATA_INIT(CGeneralPropPage)
 	m_doMultipleInstance = FALSE;
+	m_doUpdateCheck = TRUE;
 	m_bDisplayTestColors = TRUE;
 	m_latencyTime = 0;
 	m_doSavePosition = FALSE;
@@ -64,6 +65,7 @@ void CGeneralPropPage::DoDataExchange(CDataExchange* pDX)
 	CPropertyPageWithHelp::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CGeneralPropPage)
 	DDX_Check(pDX, IDC_CHECK_MULTIPLEINSTANCE, m_doMultipleInstance);
+	DDX_Check(pDX, IDC_CHECK_UPDATE, m_doUpdateCheck);
 	DDX_Check(pDX, IDC_CHECK_COLORS, m_bDisplayTestColors);
 	DDX_Text(pDX, IDC_EDIT_IRIS_TIME, m_latencyTime);
 	DDV_MinMaxInt(pDX, m_latencyTime, 250, 30000);
@@ -81,6 +83,7 @@ void CGeneralPropPage::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CGeneralPropPage, CPropertyPageWithHelp)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_MULTIPLEINSTANCE, IDC_CHECK_MULTIPLEINSTANCE, OnControlClicked)
+    ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_MULTIPLEINSTANCE, IDC_CHECK_UPDATE, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_SAVEPOSITION, IDC_CHECK_SAVEPOSITION, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_COLORS, IDC_CHECK_COLORS, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_CONTINUOUS, IDC_CHECK_CONTINUOUS, OnControlClicked)

@@ -301,9 +301,9 @@ STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "General"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "Application",IDC_STATIC,7,7,198,25,WS_GROUP
-    CONTROL         "Multiple instances",IDC_CHECK_MULTIPLEINSTANCE,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,18,77,10
-    CONTROL         "Save sizes and positions",IDC_CHECK_SAVEPOSITION,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,95,18,99,10
+    GROUPBOX        "Application",IDC_STATIC,7,2,198,30,WS_GROUP
+    CONTROL         "Multiple instances",IDC_CHECK_MULTIPLEINSTANCE,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,12,77,10
+    CONTROL         "Save sizes and positions",IDC_CHECK_SAVEPOSITION,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,97,12,99,10
     GROUPBOX        "User measures",IDC_STATIC,7,34,198,48,WS_GROUP
     CONTROL         "Display test color during measures",IDC_CHECK_COLORS,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,45,183,10
@@ -326,6 +326,7 @@ BEGIN
     CONTROL         "Use HSV Level Bars",IDC_CHECK_USE_HSV,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,105,56,81,10
     CONTROL         "Add settling pattern to automatic measures",IDC_IS_SETTLING,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,123,149,10
+    CONTROL         "Check for updates",IDC_CHECK_UPDATE,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,23,77,10
 END
 
 IDD_EXPORTXLS_DIALOG DIALOG 0, 0, 226, 135
@@ -351,7 +352,7 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         223,IDC_STATIC,"Static",SS_BITMAP,7,7,172,62
     LTEXT           "Version 3.0",IDC_STATIC_VERSION,7,76,119,8,SS_NOPREFIX
-    LTEXT           "Copyright (C) 2012 Hcfr Project\nCopyright (C) 2005-2008 Association Homecinema Francophone",IDC_STATIC2,7,88,168,24
+    LTEXT           "Copyright (C) 2012-2015 Hcfr Project\nCopyright (C) 2005-2008 Association Homecinema Francophone",IDC_STATIC2,7,88,168,24
     LTEXT           "hcfr.sourceforge.net",IDC_HOMECINEMA_HYPERLINK,7,119,80,8
     LTEXT           "IDC_PLACEHOLDER",IDC_PLACEHOLDER,4,136,177,117
     DEFPUSHBUTTON   "OK",IDOK,68,257,50,14,WS_GROUP
@@ -2000,9 +2001,7 @@ BEGIN
         END
         POPUP "Updates"
         BEGIN
-            MENUITEM "Download updated software",   IDM_UPDATE_SOFT
-            MENUITEM "Download correction files",   IDM_UPDATE_ETALONS, INACTIVE
-            MENUITEM "Download IR profiles files",  IDM_UPDATE_IRPROFILES, INACTIVE
+            MENUITEM "Check for new software",      IDM_UPDATE_SOFT
         END
         MENUITEM SEPARATOR
         MENUITEM "&Preferences...",             IDM_GENERAL_CONFIG

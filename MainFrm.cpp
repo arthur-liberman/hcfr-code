@@ -33,7 +33,8 @@
 
 #include "PatternDisplay.h"
 
-#include "WebUpdate.h"
+//#include "WebUpdate.h"
+#include "CWebUpdate.h"
 
 #include <dde.h>
 #include <afxpriv.h> 
@@ -84,7 +85,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CNewMDIFrameWnd)
 	ON_COMMAND(IDM_LANGUAGE, OnLanguage)
 	ON_COMMAND(IDC_INIT_BUTTON, OnInitDefaults)
 	ON_COMMAND(IDM_UPDATE_SOFT, OnUpdateSoft)
-	ON_COMMAND(IDM_UPDATE_ETALONS, OnUpdateEtalons)
 	ON_COMMAND(IDM_PATTERN_DISP_ROOT, OnPatternDisplay)
 	ON_COMMAND(IDM_REFRESH_LUX, OnRefreshLux)
 	ON_COMMAND(IDM_VIEW_LUMINANCE, OnViewLuminance)
@@ -93,7 +93,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CNewMDIFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_MEASURE_BAR, OnUpdateViewMeasureBar)
 	ON_COMMAND(ID_VIEW_MEASURE_EXT_BAR, OnViewMeasureExBar)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_MEASURE_EXT_BAR, OnUpdateViewMeasureExBar)
-	ON_COMMAND(IDM_UPDATE_IRPROFILES, OnUpdateIRProfiles)
 	ON_COMMAND(IDM_HELP, OnHelp)
 	ON_COMMAND(IDM_PATTERN_DISPLAY, OnPatternDisplay)
 	ON_COMMAND(ID_VIEW_MEASURE_SAT_BAR, OnViewMeasureSatBar)
@@ -1148,8 +1147,6 @@ int __stdcall MyDialogProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 void CMainFrame::OnUpdateSoft()
 {
-	CString strNewFtpFile;
-	CString strDefaultFileName;
 	CWebUpdate WebUpdate;
 	HWND	hDlg, hCtrl;
 
@@ -1158,112 +1155,49 @@ void CMainFrame::OnUpdateSoft()
 	::ShowWindow ( hDlg, SW_SHOW );
 	::UpdateWindow ( hDlg );
 
-	if (WebUpdate.Connect() == FALSE)
-	{
-		::DestroyWindow ( hDlg );
-		AfxMessageBox(IDS_UPD_IMPOSSIBLE, MB_OK | MB_ICONWARNING);
-		return;
-	}
+		WebUpdate.SetLocalDirectory("", true);
+		WebUpdate.SetUpdateFileURL("http://dl.dropboxusercontent.com/u/2621383/update.txt");
+		WebUpdate.SetRemoteURL("http://dl.dropboxusercontent.com/u/2621383/");
 
-
-	::SetWindowText ( hCtrl, "Looking for new version... please wait..." );
-	strNewFtpFile = WebUpdate.CheckNewSoft();
-	if (strNewFtpFile.IsEmpty())
-	{
-		::DestroyWindow ( hDlg );
-		AfxMessageBox(IDS_NO_UPD, MB_OK | MB_ICONINFORMATION);
-	}
-	else
-	{
-		::ShowWindow ( hDlg, SW_HIDE );
-		if (AfxMessageBox(IDS_UPD_ASK_DOWNLOAD, MB_YESNO | MB_ICONQUESTION) == IDYES)
+		if (!WebUpdate.DoUpdateCheck())
 		{
-			strDefaultFileName = strNewFtpFile.Mid(strNewFtpFile.ReverseFind('/')+1);
-			CFileDialog FileDlg(FALSE,
-								"exe",
-								strDefaultFileName,
-								OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST,
-								"Executables (*.exe)|*.exe||");
-			if (FileDlg.DoModal() == IDOK)
+			//update check failed
+			::DestroyWindow ( hDlg );
+			AfxMessageBox(IDS_UPD_IMPOSSIBLE, MB_OK | MB_ICONWARNING);
+			return;
+		}
+
+		if (WebUpdate.GetNumberDifferent() == 1)
+		{
+			::ShowWindow ( hDlg, SW_HIDE );
+			if (AfxMessageBox(IDS_UPD_ASK_DOWNLOAD, MB_YESNO | MB_ICONQUESTION) == IDYES)
 			{
-				::SetWindowText ( hCtrl, "Loading file... please wait..." );
+				::SetWindowText ( hCtrl, "Downloading install file... please wait..." );
 				::ShowWindow ( hDlg, SW_SHOW );
 				::UpdateWindow ( hDlg );
-				if (WebUpdate.TransferFile(strNewFtpFile, FileDlg.GetPathName()) == TRUE)
-				{
-					::ShowWindow ( hDlg, SW_HIDE );
-					AfxMessageBox(IDS_UPD_DOWNLOAD_SUCCEED, MB_OK | MB_ICONINFORMATION);
-				}
+			
+				if (!WebUpdate.DownloadDifferent(0))
+					::SetWindowText ( hCtrl, "Update failed." );
 				else
-				{
-					::ShowWindow ( hDlg, SW_HIDE );
-					AfxMessageBox(IDS_UPD_DOWNLOAD_FAILED, MB_OK | MB_ICONWARNING);
-				}
+					::SetWindowText ( hCtrl, "New install package saved to local HCFR directory." );
 			}
+			else
+			{
+				::ShowWindow ( hDlg, SW_SHOW );
+				::UpdateWindow ( hDlg );
+				::SetWindowText ( hCtrl, "Update cancelled." );
+			}
+		
+			Sleep(2000);
 		}
+		else
+		{
+			::SetWindowText ( hCtrl, "No updates found." );
+			Sleep(2000);
+		}
+
 		::DestroyWindow ( hDlg );
-	}
 }
-
-void CMainFrame::OnUpdateEtalons()
-{
-	CWebUpdate WebUpdate;
-	HWND	hDlg, hCtrl;
-
-	hDlg = ::CreateDialog ( AfxGetResourceHandle (), MAKEINTRESOURCE(IDD_WEB_UPDATE), m_hWnd, MyDialogProc );
-	hCtrl = ::GetDlgItem ( hDlg, IDC_STATIC1 );
-	::ShowWindow ( hDlg, SW_SHOW );
-	::UpdateWindow ( hDlg );
-
-	if (WebUpdate.Connect() == FALSE)
-	{
-		::DestroyWindow ( hDlg );
-		AfxMessageBox(IDS_UPD_IMPOSSIBLE, MB_OK | MB_ICONWARNING);
-		return;
-	}
-
-	::SetWindowText ( hCtrl, "Loading files... please wait..." );
-	if (WebUpdate.TransferCalibrationFiles(hCtrl) == TRUE)
-	{
-		AfxMessageBox(IDS_UPD_DOWNLOAD_SUCCEED, MB_OK | MB_ICONINFORMATION);
-	}
-	else
-	{
-		AfxMessageBox(IDS_UPD_DOWNLOAD_FAILED, MB_OK | MB_ICONWARNING);
-	}
-	::DestroyWindow ( hDlg );
-}
-
-
-void CMainFrame::OnUpdateIRProfiles() 
-{
-	CWebUpdate WebUpdate;
-	HWND	hDlg, hCtrl;
-
-	hDlg = ::CreateDialog ( AfxGetResourceHandle (), MAKEINTRESOURCE(IDD_WEB_UPDATE), m_hWnd, MyDialogProc );
-	hCtrl = ::GetDlgItem ( hDlg, IDC_STATIC1 );
-	::ShowWindow ( hDlg, SW_SHOW );
-	::UpdateWindow ( hDlg );
-
-	if (WebUpdate.Connect() == FALSE)
-	{
-		::DestroyWindow ( hDlg );
-		AfxMessageBox(IDS_UPD_IMPOSSIBLE, MB_OK | MB_ICONWARNING);
-		return;
-	}
-
-	::SetWindowText ( hCtrl, "Loading files... please wait..." );
-	if (WebUpdate.TransferIRProfiles(hCtrl) == TRUE)
-	{
-		AfxMessageBox(IDS_UPD_DOWNLOAD_SUCCEED, MB_OK | MB_ICONINFORMATION);
-	}
-	else
-	{
-		AfxMessageBox(IDS_UPD_DOWNLOAD_FAILED, MB_OK | MB_ICONWARNING);
-	}
-	::DestroyWindow ( hDlg );
-}
-
 
 void CMainFrame::OnPatternDisplay()
 {

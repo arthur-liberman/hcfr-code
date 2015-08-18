@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // Copyright (c) 2005-2008 Association Homecinema Francophone.  All rights reserved.
-// Copyright (c) 2012 Hcfr project.  All rights reserved.
+// Copyright (c) 201-20152 Hcfr project.  All rights reserved.
 /////////////////////////////////////////////////////////////////////////////
 //
 //  This file is subject to the terms of the GNU General Public License as
