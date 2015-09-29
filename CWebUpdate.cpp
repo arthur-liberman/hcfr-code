@@ -134,7 +134,14 @@ bool CWebUpdate::DoUpdateCheck()
 
 	// First of all, try and retrieve the update file
 	remoteFile = updateURL;
-	localFile = "TempUpdate.txt";
+	char blankStr[MAX_PATH] = "";
+	CString path;
+
+	GetModuleFileName(0, blankStr, sizeof(blankStr) - 1);
+
+	path = blankStr;
+	path = path.Left(path.ReverseFind('\\'));
+	localFile = path + "\\TempUpdate.txt";
 
 	// Download
 	HANDLE dloadHandle = (HANDLE)_beginthread(downloadFile, 0, (void*)"");
@@ -148,7 +155,7 @@ bool CWebUpdate::DoUpdateCheck()
 
 	// It downloaded, now we parse it
 	// Read it line by line and work out what's what
-	CStdioFile loadFile("TempUpdate.txt", CFile::modeRead | CFile::typeText);
+	CStdioFile loadFile(localFile, CFile::modeRead | CFile::typeText);
 	CString curLine;
 	
 	while(loadFile.ReadString(curLine))
