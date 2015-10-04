@@ -141,7 +141,7 @@ bool CWebUpdate::DoUpdateCheck()
 
 	path = blankStr;
 	path = path.Left(path.ReverseFind('\\'));
-	localFile = path + "\\TempUpdate.txt";
+	localFile = path + "\\Tools\\TempUpdate.txt";
 
 	// Download
 	HANDLE dloadHandle = (HANDLE)_beginthread(downloadFile, 0, (void*)"");
@@ -235,7 +235,7 @@ bool CWebUpdate::DownloadMissing(int i)
 bool CWebUpdate::DownloadDifferent(int i)
 {
 	// Attempt to download the file
-//	remoteFile = remoteURL + "/" + differentFiles.GetAt(i);
+	//	remoteFile = remoteURL + "/" + differentFiles.GetAt(i);
 	remoteFile = remoteURL + "/HCFRSetup.exe";
 //	localFile = localDir + "\\" + differentFiles.GetAt(i);
 	localFile = localDir + "\\HCFRSetup.exe";
