@@ -23,8 +23,6 @@
 [Setup]
 AppName=HCFR Calibration
 AppVerName=HCFR {#MyAppVersion}
-AppPublisherURL=http://hcfr.sourceforge.net/
-AppSupportURL=http://hcfr.sourceforge.net/
 AppUpdatesURL=http://hcfr.sourceforge.net/
 AppVersion={#MyAppVersion}
 DefaultDirName={pf}\HCFR Calibration
