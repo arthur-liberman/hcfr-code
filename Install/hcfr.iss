@@ -33,6 +33,10 @@ OutputBaseFilename=HCFRSetup
 AllowNoIcons=yes
 LicenseFile=gpl.rtf
 AppMutex=HCFR
+ExtraDiskSpaceRequired=73400320
+AppPublisher=sourceforge
+AppPublisherURL=http://hcfr.sourceforge.net/
+AppSupportURL=http://www.avsforum.com/forum/139-display-calibration/1393853-hcfr-open-source-projector-display-calibration-software.html
 ;required for installing the driver on NT platforms
 PrivilegesRequired=Admin
 DisableStartupPrompt=yes
