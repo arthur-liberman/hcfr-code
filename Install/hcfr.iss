@@ -60,6 +60,7 @@ InfoBeforeClickLabel=When you are ready and happy to continue with Setup, click 
 [Dirs]
 Name: "{app}"; Permissions: everyone-modify
 Name: "{app}\Etalon_Argyll"; Permissions: everyone-modify
+Name: "{app}\Update"; Permissions: everyone-modify
 
 [Components]
 Name: "main"; Description: "Main Files"; Types: full; Flags: fixed
@@ -108,6 +109,8 @@ Type: files; Name: "{app}\HCFR.url"
 Type: files; Name: "{app}\Support.url"
 Type: files; Name: "{app}\ColorHCFR.ini";
 Type: files; Name: "{app}\ColorHCFR.log";
+Type: files; Name: "{app}\Tools\*.*";
+Type: files; Name: "{app}\Update\*.*";
 
 
 

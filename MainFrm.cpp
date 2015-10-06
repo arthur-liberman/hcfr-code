@@ -1172,14 +1172,14 @@ void CMainFrame::OnUpdateSoft()
 			::ShowWindow ( hDlg, SW_HIDE );
 			if (AfxMessageBox(IDS_UPD_ASK_DOWNLOAD, MB_YESNO | MB_ICONQUESTION) == IDYES)
 			{
-				::SetWindowText ( hCtrl, "Downloading install file to main directory... please wait..." );
+				::SetWindowText ( hCtrl, "Downloading install file to Update directory... please wait..." );
 				::ShowWindow ( hDlg, SW_SHOW ); 
 				::UpdateWindow ( hDlg );
 			
 				if (!WebUpdate.DownloadDifferent(0))
 					::SetWindowText ( hCtrl, "Update failed." );
 				else
-					::SetWindowText ( hCtrl, "New install package saved to local HCFR directory." );
+					::SetWindowText ( hCtrl, "New install package saved to local HCFR directory Update." );
 			}
 			else
 			{
@@ -1193,7 +1193,7 @@ void CMainFrame::OnUpdateSoft()
 		else
 		{
 			::SetWindowText ( hCtrl, "No updates found." );
-			Sleep(2000);
+			Sleep(1200);
 		}
 
 		::DestroyWindow ( hDlg );

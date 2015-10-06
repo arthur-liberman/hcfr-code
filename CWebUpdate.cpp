@@ -141,7 +141,7 @@ bool CWebUpdate::DoUpdateCheck()
 
 	path = blankStr;
 	path = path.Left(path.ReverseFind('\\'));
-	localFile = path + "\\Tools\\TempUpdate.txt";
+	localFile = path + "\\Update\\CheckUpdate.txt";
 
 	// Download
 	HANDLE dloadHandle = (HANDLE)_beginthread(downloadFile, 0, (void*)"");
@@ -175,7 +175,7 @@ bool CWebUpdate::DoUpdateCheck()
 			// It exists, but is it the same file?
 			CString verifyFile = DoSHA1Hash(pathTo);
 
-			// Now compare the hases
+			// Now compare the hashes
 			if (verifyFile == fileHash)
 			{
 				// The files are the same, no worries
@@ -201,7 +201,8 @@ bool CWebUpdate::DoUpdateCheck()
 			missingFiles.Add(fileTo);
 		}
 	}
-
+	loadFile.Close();
+	DeleteFile(localFile);
 	return true;
 }
 
@@ -238,7 +239,7 @@ bool CWebUpdate::DownloadDifferent(int i)
 	//	remoteFile = remoteURL + "/" + differentFiles.GetAt(i);
 	remoteFile = remoteURL + "/HCFRSetup.exe";
 //	localFile = localDir + "\\" + differentFiles.GetAt(i);
-	localFile = localDir + "\\HCFRSetup.exe";
+	localFile = localDir + "\\Update\\HCFRSetup.exe";
 
 	HANDLE dloadHandle = (HANDLE)_beginthread(downloadFile, 0, (void*)"");
 
