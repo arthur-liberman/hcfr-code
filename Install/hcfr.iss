@@ -18,7 +18,7 @@
 ;  This is an InnoSetup script.
 ;  For more information about InnoSetup see http://www.innosetup.com
 
-#define MyAppVersion GetFileVersion("..\Release\ColorHCFR.exe")
+#define MyAppVersion GetStringFileInfo("..\Release\ColorHCFR.exe","FileVersion")
 
 [Setup]
 AppName=HCFR Calibration
@@ -32,8 +32,8 @@ AllowNoIcons=yes
 LicenseFile=gpl.rtf
 AppMutex=HCFR
 ExtraDiskSpaceRequired=73400320
-AppPublisher=sourceforge
-AppPublisherURL=http://hcfr.sourceforge.net/
+AppPublisher=Open Source Publishing
+AppPublisherURL=http://www.avsforum.com/forum/139-display-calibration/1393853-hcfr-open-source-projector-display-calibration-software.html
 AppSupportURL=http://www.avsforum.com/forum/139-display-calibration/1393853-hcfr-open-source-projector-display-calibration-software.html
 ;required for installing the driver on NT platforms
 PrivilegesRequired=Admin
