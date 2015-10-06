@@ -1172,8 +1172,8 @@ void CMainFrame::OnUpdateSoft()
 			::ShowWindow ( hDlg, SW_HIDE );
 			if (AfxMessageBox(IDS_UPD_ASK_DOWNLOAD, MB_YESNO | MB_ICONQUESTION) == IDYES)
 			{
-				::SetWindowText ( hCtrl, "Downloading install file... please wait..." );
-				::ShowWindow ( hDlg, SW_SHOW );
+				::SetWindowText ( hCtrl, "Downloading install file to main directory... please wait..." );
+				::ShowWindow ( hDlg, SW_SHOW ); 
 				::UpdateWindow ( hDlg );
 			
 				if (!WebUpdate.DownloadDifferent(0))
@@ -1188,7 +1188,7 @@ void CMainFrame::OnUpdateSoft()
 				::SetWindowText ( hCtrl, "Update cancelled." );
 			}
 		
-			Sleep(2000);
+			Sleep(1200);
 		}
 		else
 		{
