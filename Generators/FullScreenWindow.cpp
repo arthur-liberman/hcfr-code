@@ -438,21 +438,30 @@ void CFullScreenWindow::DisplayRG()
 {
 	HMODULE hPatterns;
 	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
-	CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_RG,TRUE);
+	if (m_b16_235)
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_RGv,TRUE);
+	else
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_RG,TRUE);
 	FreeLibrary(hPatterns);
 }
 void CFullScreenWindow::DisplayRB() 
 {
 	HMODULE hPatterns;
 	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
-	CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_RB,TRUE);
+	if (m_b16_235)
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_RBv,TRUE);
+	else
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_RB,TRUE);
 	FreeLibrary(hPatterns);
 }
 void CFullScreenWindow::DisplayGB() 
 {
 	HMODULE hPatterns;
 	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
-	CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_GB,TRUE);
+	if (m_b16_235)
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_GBv,TRUE);
+	else
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_GBv,TRUE);
 	FreeLibrary(hPatterns);
 }
 void CFullScreenWindow::DisplayRGd() 
@@ -504,7 +513,10 @@ void CFullScreenWindow::DisplayGranger()
 {
 	HMODULE hPatterns;
 	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
-	CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_GRANGER,TRUE);
+	if (m_b16_235)
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_GRANGERv,TRUE);
+	else
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_GRANGER,TRUE);
 	FreeLibrary(hPatterns);
 }
 
@@ -512,7 +524,10 @@ void CFullScreenWindow::DisplaySpectrum()
 {
 	HMODULE hPatterns;
 	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
-	CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_SPECTRUM,TRUE);
+	if (m_b16_235)
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_SPECTRUMv,TRUE);
+	else
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_SPECTRUM,TRUE);
 	FreeLibrary(hPatterns);
 }
 

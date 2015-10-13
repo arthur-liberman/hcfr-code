@@ -792,6 +792,11 @@
 #define IDC_GRAPH_USERSCALES_CHECK      1336
 #define IDR_PATTERN_ANSI1               1337
 #define IDR_PATTERN_ANSI2               1338
+#define IDR_PATTERN_RGv                  1339
+#define IDR_PATTERN_RBv                  1340
+#define IDR_PATTERN_GBv                  1341
+#define IDR_PATTERN_GRANGERv             1342
+#define IDR_PATTERN_SPECTRUMv             1343
 #define IDC_COLORTEMPHISTO_GRAPH        11003
 #define IDC_RGBHISTO_GRAPH              11101
 #define IDC_RGBHISTO_GRAPH2             11102
