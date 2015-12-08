@@ -1847,7 +1847,7 @@ static ccss *parse_EDR(
 
 		/* Set it's values (OEM set) */
 		rv->set_ccss(rv, "X-Rite", creatdate, NULL, dispdesc, dtech, trefmode, tsel,
-		                 "CS1000", samples, nsets);	
+		                 "CS1000", 1, samples, nsets);	
 	}
 
 	free(tdtypes);
