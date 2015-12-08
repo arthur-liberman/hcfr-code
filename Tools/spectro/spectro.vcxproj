@@ -116,7 +116,8 @@
     <ClCompile Include="munki.c" />
     <ClCompile Include="munki_imp.c" />
     <ClCompile Include="pars.c" />
-    <ClCompile Include="parsstd.c" />
+    <ClCompile Include="plot.c" />
+    <ClCompile Include="rspec.c" />
     <ClCompile Include="rspl1.c" />
     <ClCompile Include="specbos.c" />
     <ClCompile Include="spyd2.c" />
@@ -149,6 +150,7 @@
     <ClInclude Include="i1disp.h" />
     <ClInclude Include="i1pro.h" />
     <ClInclude Include="i1pro_imp.h" />
+    <ClInclude Include="icc.h" />
     <ClInclude Include="icoms.h" />
     <ClInclude Include="inst.h" />
     <ClInclude Include="insttypeinst.h" />
