@@ -16,12 +16,6 @@
 
 #include <conio.h>
 
-/* Link list element to hold fast_serial port names */
-typedef struct fast_com_name {
-	char name[100];
-	struct fast_com_name *next;
-} fast_com_name;
-
 #if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
 instType fast_ser_inst_type(icoms *p, int tryhard, void *, void *); 
 #endif /* ENABLE_SERIAL */
@@ -36,7 +30,6 @@ int icompaths_refresh_paths(icompaths *p) {
 	int i, j;
 	LONG stat;
 	HKEY sch;		/* Serial coms handle */
-	fast_com_name *fastlist = NULL, *fn, *fn2;
 
 	a1logd(p->log, 8, "icoms_get_paths: called\n");
 
@@ -56,128 +49,9 @@ int icompaths_refresh_paths(icompaths *p) {
 #if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
 	// (Beware KEY_WOW64_64KEY ?)
 
-	/* See if there are and FTDI fast_serial ports, and make a list of them */
-	if ((stat = RegOpenKeyEx(HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\Enum\\FTDIBUS",
-	                         0, KEY_READ, &sch)) != ERROR_SUCCESS) {
-		a1logd(p->log, 1, "icoms_get_paths: There don't appear to be any FTDI serial ports\n");
-	} else {
-
 #define MXKSIZE 500
 #define MXVSIZE 300
 
-		a1logd(p->log, 6, "icoms_get_paths: looking through FTDI ports\n");
-		for (i = 0; ; i++) {
-			char ftdiname[MXKSIZE];
-			DWORD ftdisize = MXKSIZE;
-			HKEY devkey;
-
-			stat = RegEnumKeyEx(
-				sch,		/* handle to key to enumerate */
-				i,			/* index of subkey to enumerate */
-				ftdiname,    /* address of buffer for value name */
-				&ftdisize,	/* address for size of value name buffer */
-				NULL,		/* reserved */
-				NULL,		/* Address of value type */
-				NULL,		/* Address of value buffer */
-				NULL		/* Address of value buffer size */
-			);
-			if (stat == ERROR_NO_MORE_ITEMS) {
-				a1logd(p->log, 9, "icoms_get_paths: got ERROR_NO_MORE_ITEMS\n");
-				break;
-			}
-			if (stat == ERROR_MORE_DATA		/* Hmm. Should expand buffer size */
-			 || stat != ERROR_SUCCESS) {
-				a1logw(p->log, "icoms_get_paths: RegEnumValue failed with %d\n",stat);
-				break;
-			}
-			ftdiname[MXKSIZE-1] = '\000';
-
-			/* Enumerate subkeys, looking for Device Parameters/PortName */
-			if ((stat = RegOpenKeyEx(sch, ftdiname, 0, KEY_READ, &devkey)) != ERROR_SUCCESS) {
-				a1logw(p->log, "icoms_get_paths: OpenKey '%s' failed with %d\n",ftdiname,stat);
-				continue;
-			}
-			
-			a1logd(p->log, 6, "icoms_get_paths: looking through '%s'\n",ftdiname);
-
-			for (j = 0; ; j++) {
-				char skname[MXKSIZE + 50];		/* Allow for cat of "\Device Parameters" */
-				DWORD sksize = MXKSIZE;
-				HKEY skkey;
-				DWORD vtype;
-				char value[MXVSIZE];
-				DWORD vsize = MXVSIZE;
-	
-				stat = RegEnumKeyEx(
-					devkey,		/* handle to key to enumerate */
-					j,			/* index of subkey to enumerate */
-					skname,		/* address of buffer for value name */
-					&sksize,	/* address for size of value name buffer */
-					NULL,		/* reserved */
-					NULL,		/* Address of value type */
-					NULL,		/* Address of value buffer */
-					NULL		/* Address of value buffer size */
-				);
-				if (stat == ERROR_NO_MORE_ITEMS) {
-					a1logd(p->log, 9, "icoms_get_paths: got ERROR_NO_MORE_ITEMS\n");
-					break;
-				}
-				if (stat == ERROR_MORE_DATA		/* Hmm. Should expand buffer size */
-				 || stat != ERROR_SUCCESS) {
-					a1logw(p->log, "icoms_get_paths: RegEnumValue failed with %d\n",stat);
-					break;
-				}
-				skname[MXKSIZE-1] = '\000';
-	
-				/* See if there is a Device Parameters\PortName */
-				strcat(skname, "\\Device Parameters"); 
-
-				if ((stat = RegOpenKeyEx(devkey, skname, 0, KEY_READ, &skkey)) != ERROR_SUCCESS) {
-					a1logw(p->log, "icoms_get_paths: OpenKey '%s' failed with %d\n",skname,stat);
-					continue;
-				}
-				stat = RegQueryValueEx(
-					skkey,		/* handle to key to enumerate */
-					"PortName",		/* address of buffer for value name */
-					NULL,		/* reserved */
-					&vtype,		/* Address of value type */
-					value,		/* Address of value buffer */
-					&vsize		/* Address of value buffer size */
-				);
-				RegCloseKey(skkey);
-
-				if (stat == ERROR_MORE_DATA		/* Hmm. Should expand buffer size */
-				 || stat != ERROR_SUCCESS) {
-					a1logw(p->log, "icoms_get_paths: RegQueryValueEx '%s' failed with %d\n",skname,stat);
-					break;
-				}
-				if (vtype != REG_SZ) {
-					a1logw(p->log, "icoms_get_paths: RegEnumValue '%s' didn't return stringz type\n",skname);
-					continue;
-				}
-				value[MXVSIZE-1] = '\000';
-
-				if ((fn = malloc(sizeof(fast_com_name))) == NULL) {
-					a1loge(p->log, 1, "icoms_get_paths: malloc failed\n");
-					continue;
-				}
-				strcpy(fn->name, value);
-				fn->next = fastlist;
-				fastlist = fn;
-				a1logd(p->log, 2, "icoms_get_paths: got FTDI port '%s'\n",value);
-		
-			}
-			if ((stat = RegCloseKey(devkey)) != ERROR_SUCCESS) {
-				a1logw(p->log, "icoms_get_paths: RegCloseKey failed with %d\n",stat);
-			}
-
-		}
-		if ((stat = RegCloseKey(sch)) != ERROR_SUCCESS) {
-			a1logw(p->log, "icoms_get_paths: RegCloseKey failed with %d\n",stat);
-		}
-	}
-
-	
 	/* Look in the registry for serial ports */
 	if ((stat = RegOpenKeyEx(HKEY_LOCAL_MACHINE, "HARDWARE\\DEVICEMAP\\SERIALCOMM",
 	                         0, KEY_READ, &sch)) != ERROR_SUCCESS) {
@@ -189,12 +63,12 @@ int icompaths_refresh_paths(icompaths *p) {
 	a1logd(p->log, 8, "icoms_get_paths: looking through all the values in the SERIALCOMM key\n");
 
 	for (i = 0; ; i++) {
-		char valname[MXKSIZE];
+		char valname[MXKSIZE], *vp;
 		DWORD vnsize = MXKSIZE;
 		DWORD vtype;
 		char value[MXVSIZE];
 		DWORD vsize = MXVSIZE;
-		int fast = 0;
+		icom_ser_attr sattr = icom_normal;
 
 		stat = RegEnumValue(
 			sch,		/* handle to key to enumerate */
@@ -223,24 +97,33 @@ int icompaths_refresh_paths(icompaths *p) {
 			continue;
 		}
 
-		/* Check if it's a fast serial port */
-		for (fn = fastlist; fn != NULL; fn = fn->next) {
-			if (strcmp(fn->name, value) == 0)
-				fast = 1;
+		if ((vp = strrchr(valname, '\\')) == NULL)
+			vp = valname;
+		else
+			vp++;
+
+		/* See if it looks like a fast port */
+		if (strncmp(vp, "VCP", 3) == 0) {				/* Virtual */
+			sattr |= icom_fast;
+		}
+
+		if (strncmp(vp, "BtPort", 6) == 0) {		/* Blue tooth */
+			sattr |= icom_fast;
+			sattr |= icom_bt;
 		}
 
 #ifndef ENABLE_SERIAL
-		if (fast) {			/* Only add fast ports if !ENABLE_SERIAL */
+		if (sattr & icom_fast) {		/* Only add fast ports if !ENABLE_SERIAL */
 #endif
 		/* Add the port to the list */
-		p->add_serial(p, value, value, fast);
-		a1logd(p->log, 8, "icoms_get_paths: Added path '%s' fast %d\n",value,fast);
+		p->add_serial(p, value, value, sattr);
+		a1logd(p->log, 8, "icoms_get_paths: Added path '%s' sattr 0x%x\n",value,sattr);
 #ifndef ENABLE_SERIAL
 		}
 #endif
 
 		/* If fast, try and identify it */
-		if (fast) {
+		if (sattr & icom_fast) {
 			icompath *path;
 			icoms *icom;
 			if ((path = p->get_last_path(p)) != NULL
@@ -274,12 +157,6 @@ int icompaths_refresh_paths(icompaths *p) {
 	}
 
 	a1logd(p->log, 8, "icoms_get_paths: returning %d paths and ICOM_OK\n",p->npaths);
-
-	/* Free fast list */
-	for (fn = fastlist; fn != NULL; fn = fn2) {
-		fn2 = fn->next;
-		free(fn);
-	}
 
 	return ICOM_OK;
 }
@@ -330,11 +207,11 @@ word_length	 word)
 	a1logd(p->log, 8, "icoms_set_ser_port: About to set port characteristics:\n"
 		              "       Port name = %s\n"
 		              "       Flow control = %d\n"
-		              "       Baud Rate = %d\n"
+		              "       Baud Rate = %s\n"
 		              "       Parity = %d\n"
 		              "       Stop bits = %d\n"
 		              "       Word length = %d\n"
-		              ,p->name ,fc ,baud ,parity ,stop ,word);
+		              ,p->name ,fc ,baud_rate_to_str(baud) ,parity ,stop ,word);
 
 	if (p->is_open)
 		p->close_port(p);
@@ -547,7 +424,7 @@ word_length	 word)
 }
 
 /* ---------------------------------------------------------------------------------*/
-/* Serial write/read */
+/* Serial write, read */
 
 /* Write the characters in the buffer out */
 /* Data will be written up to the terminating nul */
@@ -563,69 +440,80 @@ double tout)
 	COMMTIMEOUTS tmo;
 	DWORD wbytes;
 	int len;
-	long toc, i, top;		/* Timout count, counter, timeout period */
-	int rv = ICOM_OK;
+	long ttop, top;				/* Total timeout period, timeout period */
+	unsigned int stime, etime;	/* Start and end times of USB operation */
+	int retrv = ICOM_OK;
 
-	a1logd(p->log, 8, "icoms_ser_write: About to write '%s' ",icoms_fix(wbuf));
+	a1logd(p->log, 8, "\nicoms_ser_write: writing '%s'\n",
+	       nwch > 0 ? icoms_tohex(wbuf, nwch) : icoms_fix(wbuf));
+
 	if (!p->is_open) {
 		a1loge(p->log, ICOM_SYS, "icoms_ser_write: device not initialised\n");
-		p->lserr = rv = ICOM_SYS;
-		return rv;
+		p->lserr = ICOM_SYS;
+		return p->lserr;
 	}
 
 	if (nwch != 0)
 		len = nwch;
 	else
 		len = strlen(wbuf);
-	tout *= 1000.0;		/* Timout in msec */
 
-	top = 20;						/* Timeout period in msecs */
-	toc = (int)(tout/top + 0.5);	/* Number of timout periods in timeout */
-	if (toc < 1)
-		toc = 1;
+	ttop = (int)(tout * 1000.0 + 0.5);        /* Total timeout period in msecs */
+
+	a1logd(p->log, 8, "\nicoms_ser_write: ep 0x%x, bytes %d, ttop %d, quant %d\n", p->rd_ep, len, ttop, p->rd_qa);
 
 	/* Set the timout value */
-	tmo.ReadIntervalTimeout = top;
+	tmo.ReadIntervalTimeout = 0;
 	tmo.ReadTotalTimeoutMultiplier = 0;
-	tmo.ReadTotalTimeoutConstant = top;
+	tmo.ReadTotalTimeoutConstant = ttop;
 	tmo.WriteTotalTimeoutMultiplier = 0;
-	tmo.WriteTotalTimeoutConstant = top;
+	tmo.WriteTotalTimeoutConstant = ttop;
 	if (!SetCommTimeouts(p->phandle, &tmo)) {
 		a1loge(p->log, ICOM_SYS, "icoms_ser_write: SetCommTimeouts failed with %d\n",GetLastError());
-		p->lserr = rv = ICOM_SYS;
-		return rv;
+		p->lserr = ICOM_SYS;
+		return p->lserr;
 	}
+
+	etime = stime = msec_time();
 
 	/* Until data is all written or we time out */
-	for (i = toc; i > 0 && len > 0;) {
-		if (!WriteFile(p->phandle, wbuf, len, &wbytes, NULL)) {
+	for (top = ttop; top > 0 && len > 0;) {
+		int rv;
+		rv = WriteFile(p->phandle, wbuf, len, &wbytes, NULL);
+		etime = msec_time();
+
+		if (wbytes > 0) { /* Account for bytes done */
+			a1logd(p->log, 8, "icoms_ser_write: wrote %d bytes\n",wbytes);
+			wbuf += wbytes;
+			len -= wbytes;
+		}
+		if (rv == 0) {
 			DWORD errs;
 			if (!ClearCommError(p->phandle,&errs,NULL))
-				error("Write to COM port failed, and Clear error failed");
+				error("icoms_ser_write: failed, and Clear error failed");
 			if (errs & CE_BREAK)
-				rv |= ICOM_BRK; 
+				retrv |= ICOM_BRK; 
 			if (errs & CE_FRAME)
-				rv |= ICOM_FER; 
+				retrv |= ICOM_FER; 
 			if (errs & CE_RXPARITY)
-				rv |= ICOM_PER; 
+				retrv |= ICOM_PER; 
 			if (errs & CE_RXOVER)
-				rv |= ICOM_OER; 
+				retrv |= ICOM_OER; 
+			a1logd(p->log, 8, "icoms_ser_write: read failed with 0x%x\n",rv);
 			break;
-		} else if (wbytes == 0) { 
-			i--;			/* Timeout */
-		} else if (wbytes > 0) { /* Account for bytes done */
-			i = toc;
-			len -= wbytes;
-			wbuf += len;
 		}
-	}
-	if (i <= 0) {		/* Timed out */
-		rv |= ICOM_TO;
-	}
-	a1logd(p->log, 8, "icoms_ser_write: returning ICOM err 0x%x\n",rv);
 
-	p->lserr = rv;
-	return rv;
+		top = ttop - (etime - stime);	/* Remaining time */
+	}
+	if (top <= 0) {			/* Must have timed out */
+		a1logd(p->log, 8, "icoms_ser_write: timeout, took %d msec out of %d\n",etime - stime,ttop);
+		retrv |= ICOM_TO; 
+	}
+
+	a1logd(p->log, 8, "icoms_ser_write: took %d msec, returning ICOM err 0x%x\n",etime - stime,retrv);
+
+	p->lserr = retrv;
+	return p->lserr;
 }
 
 
@@ -644,74 +532,62 @@ double tout			/* Time out in seconds */
 	COMMTIMEOUTS tmo;
 	DWORD rbytes;
 	int j;
-	long toc, i, top;		/* Timout count, counter, timeout period */
+	long ttop, top;			/* Total timeout period, timeout period */
+	unsigned int stime, etime;		/* Start and end times of USB operation */
 	char *rrbuf = rbuf;		/* Start of return buffer */
-	DCB dcb;
-	int bread = 0;
-	int rv = ICOM_OK;
+	int retrv = ICOM_OK;
+	int nreads;				/* Number of reads performed */
 
 	if (p->phandle == NULL) {
-		a1loge(p->log, ICOM_SYS, "icoms_read: device not initialised\n");
-		p->lserr = rv = ICOM_SYS;
-		return rv;
+		a1loge(p->log, ICOM_SYS, "icoms_ser_read: device not initialised\n");
+		p->lserr = ICOM_SYS;
+		return p->lserr;
 	}
 
 	if (bsize < 3) {
-		a1loge(p->log, ICOM_SYS, "icoms_read: given too small a buffer (%d)\n",bsize);
-		p->lserr = rv = ICOM_SYS;
-		return rv;
+		a1loge(p->log, ICOM_SYS, "icoms_ser_read: given too small a buffer (%d)\n",bsize);
+		p->lserr = ICOM_SYS;
+		return p->lserr;
 	}
 
-	tout *= 1000.0;		/* Timout in msec */
-	bsize--;			/* Allow space for forced final null */
+	for (j = 0; j < bsize; j++)
+		rbuf[j] = 0;
+ 
+	ttop = (int)(tout * 1000.0 + 0.5);        /* Total timeout period in msecs */
 
-	top = 20;						/* Timeout period in msecs */
-	toc = (int)(tout/top + 0.5);	/* Number of timout periods in timeout */
-	if (toc < 1)
-		toc = 1;
+	a1logd(p->log, 8, "\nicoms_ser_read: bytes %d, ttop %d, ntc %d\n", bsize, ttop, ntc);
 
 	/* Set the timout value */
-	tmo.ReadIntervalTimeout = top;
-	tmo.ReadTotalTimeoutMultiplier = 0;
-	tmo.ReadTotalTimeoutConstant = top;
+	tmo.ReadIntervalTimeout = 20;			/* small inter character to detect tc */
+	tmo.ReadTotalTimeoutMultiplier = 0;		/* No per byte */
+	tmo.ReadTotalTimeoutConstant = ttop;	/* Just overall total */
 	tmo.WriteTotalTimeoutMultiplier = 0;
-	tmo.WriteTotalTimeoutConstant = top;
+	tmo.WriteTotalTimeoutConstant = ttop;
 	if (!SetCommTimeouts(p->phandle, &tmo)) {
 		a1loge(p->log, ICOM_SYS, "icoms_ser_read: SetCommTimeouts failed with %d\n",GetLastError());
-		p->lserr = rv = ICOM_SYS;
-		return rv;
+		p->lserr = ICOM_SYS;
+		return p->lserr;
 	}
 
-	if (tc == NULL) {			/* no tc or char count mode */
-		j = -1;
-		if (ntc > 0 && ntc < bsize)
-			bsize = ntc;		/* Don't read more than ntc */
-	} else {
-		j = 0;
-	}
+	bsize -= 1;				/* Allow space for null */
+
+	/* Until data is all read, we time out, or the user aborts */
+	etime = stime = msec_time();
+	top = ttop;
 	j = (tc == NULL && ntc <= 0) ? -1 : 0;
 
 	/* Until data is all read or we time out */
-	for (i = toc; i > 0 && bsize > 0 && j < ntc ;) {
-		if (!ReadFile(p->phandle, rbuf, bsize, &rbytes, NULL)) {
-			DWORD errs;
-			if (!ClearCommError(p->phandle,&errs,NULL))
-				error("Read from COM port failed, and Clear error failed");
-			if (errs & CE_BREAK)
-				rv |= ICOM_BRK; 
-			if (errs & CE_FRAME)
-				rv |= ICOM_FER; 
-			if (errs & CE_RXPARITY)
-				rv |= ICOM_PER; 
-			if (errs & CE_RXOVER)
-				rv |= ICOM_OER; 
-			break;
-		} else if (rbytes == 0) { 
-			i--;			/* Timeout */
-		} else if (rbytes > 0) { /* Account for bytes done */
-			i = toc;
+	for (nreads = 0; top > 0 && bsize > 0 && j < ntc ;) {
+		int rv;
+		rv = ReadFile(p->phandle, rbuf, bsize, &rbytes, NULL);
+		etime = msec_time();
+		nreads++;
+
+		if (rbytes > 0) {	/* Account for bytes read */
+
+			a1logd(p->log, 8, "icoms_ser_read: read %d bytes, rbuf = '%s'\n",rbytes,icoms_fix(rrbuf));
+
 			bsize -= rbytes;
-			bread += rbytes;
 			if (tc != NULL) {
 				while(rbytes--) {	/* Count termination characters */
 					char ch = *rbuf++, *tcp = tc;
@@ -722,24 +598,51 @@ double tout			/* Time out in seconds */
 						tcp++;
 					}
 				}
+				a1logd(p->log, 8, "icoms_ser_read: tc count %d\n",j);
 			} else {
 				if (ntc > 0)
 					j += rbytes;
 				rbuf += rbytes;
 			}
 		}
+
+		/* Deal with any errors */
+		if (rv == 0) {
+			DWORD errs;
+			if (!ClearCommError(p->phandle,&errs,NULL))
+				error("icoms_ser_read: failed, and Clear error failed");
+			if (errs & CE_BREAK)
+				retrv |= ICOM_BRK; 
+			if (errs & CE_FRAME)
+				retrv |= ICOM_FER; 
+			if (errs & CE_RXPARITY)
+				retrv |= ICOM_PER; 
+			if (errs & CE_RXOVER)
+				retrv |= ICOM_OER; 
+			a1logd(p->log, 8, "icoms_ser_read: read failed with 0x%x, rbuf = '%s'\n",rv,icoms_fix(rrbuf));
+			break;
+		}
+		top = ttop - (etime - stime);	/* Remaining time */
 	}
-	if (i <= 0) {			/* timed out */
-		rv |= ICOM_TO;
-	}
+
 	*rbuf = '\000';
+	a1logd(p->log, 8, "icoms_ser_read: read %d total bytes with %d reads\n",rbuf - rrbuf, nreads);
 	if (pbread != NULL)
-		*pbread = bread;
+		*pbread = (rbuf - rrbuf);
 
-	a1logd(p->log, 8, "icoms_ser_read: returning '%s' ICOM err 0x%x\n",icoms_fix(rrbuf),rv);
+	/* If ran out of time and not completed */
+	a1logd(p->log, 8, "icoms_ser_read: took %d msec\n",etime - stime);
+	if (top <= 0 && bsize > 0 && j < ntc) {
+		a1logd(p->log, 8, "icoms_ser_read: timeout, took %d msec out of %d\n",etime - stime,ttop);
+		retrv |= ICOM_TO; 
+	}
 
-	p->lserr = rv;
-	return rv;
+	a1logd(p->log, 8, "icoms_ser_read: took %d msec, returning '%s' ICOM err 0x%x\n",
+	       etime - stime, tc == NULL && ntc > 0 ? icoms_tohex(rrbuf, rbuf - rrbuf)
+	                                                    : icoms_fix(rrbuf), retrv);
+
+	p->lserr = retrv;
+	return p->lserr;
 }
 
 #endif /* ENABLE_SERIAL */

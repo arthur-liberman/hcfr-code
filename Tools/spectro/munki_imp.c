@@ -1015,11 +1015,11 @@ munki_code munki_imp_calibrate(
 
 	/* Make sure that the instrument configuration matches the */
 	/* conditions */
-	if (*calc == inst_calc_man_cal_smode) {
+	if ((*calc & inst_calc_cond_mask) == inst_calc_man_cal_smode) {
 		if (!m->nosposcheck && spos != mk_spos_calib) {
 			return MUNKI_SPOS_CALIB;
 		}
-	} else if (*calc == inst_calc_man_trans_white) {
+	} else if ((*calc & inst_calc_cond_mask) == inst_calc_man_trans_white) {
 		if (!m->nosposcheck && spos != mk_spos_surf) {
 			return MUNKI_SPOS_SURF;
 		}
@@ -1058,7 +1058,7 @@ munki_code munki_imp_calibrate(
 		if ((*calt & (inst_calt_ref_dark
 		            | inst_calt_em_dark
 		            | inst_calt_trans_dark | inst_calt_ap_flag))
-		 && *calc == inst_calc_man_cal_smode
+		 && (*calc & inst_calc_cond_mask) == inst_calc_man_cal_smode
 		 && ( s->reflective
 		  || (s->emiss && !s->adaptive && !s->scan)
 		  || (s->trans && !s->adaptive))) {
@@ -1151,7 +1151,7 @@ if (ss->dark_int_time2 != s->dark_int_time2
 		/* Emissive scan black calibration: */
 		/* Emsissive scan (flash) uses the fastest possible scan rate (??) */
 		if ((*calt & (inst_calt_em_dark | inst_calt_ap_flag))
-		 && *calc == inst_calc_man_cal_smode
+		 && (*calc & inst_calc_cond_mask) == inst_calc_man_cal_smode
 		 && (s->emiss && !s->adaptive && s->scan)) {
 			int stm;
 	
@@ -1199,7 +1199,7 @@ if (ss->dark_int_time2 != s->dark_int_time2
 		if ((*calt & (inst_calt_ref_dark
 		            | inst_calt_em_dark
 		            | inst_calt_trans_dark | inst_calt_ap_flag))
-		 && *calc == inst_calc_man_cal_smode
+		 && (*calc & inst_calc_cond_mask) == inst_calc_man_cal_smode
 		 && ((s->emiss && s->adaptive && !s->scan)
 		  || (s->trans && s->adaptive && !s->scan))) {
 			/* Adaptive where we can't measure the black reference on the fly, */
@@ -1364,7 +1364,7 @@ if (ss->idark_int_time[j] != s->idark_int_time[j])
 		if ((*calt & (inst_calt_ref_dark
 		            | inst_calt_em_dark
 		            | inst_calt_trans_dark | inst_calt_ap_flag))
-		 && *calc == inst_calc_man_cal_smode
+		 && (*calc & inst_calc_cond_mask) == inst_calc_man_cal_smode
 		 && ((s->emiss && s->adaptive && s->scan)
 		  || (s->trans && s->adaptive && s->scan))) {
 			int j;
@@ -1443,8 +1443,8 @@ if (ss->idark_int_time[j] != s->idark_int_time[j])
 		/* or a we are doing a tranmisive white reference calibrate */
 		if ((*calt & (inst_calt_ref_white
 		            | inst_calt_trans_vwhite | inst_calt_ap_flag))
-		 && ((*calc == inst_calc_man_cal_smode && s->reflective) 
-		  || (*calc == inst_calc_man_trans_white && s->trans))) {
+		 && (((*calc & inst_calc_cond_mask) == inst_calc_man_cal_smode && s->reflective) 
+		  || ((*calc & inst_calc_cond_mask) == inst_calc_man_trans_white && s->trans))) {
 //		 && s->cfdate < cdate)
 			double dead_time = 0.0;		/* Dead integration time */
 			double scale;
@@ -1596,7 +1596,7 @@ if (ss->idark_int_time[j] != s->idark_int_time[j])
 	
 		/* Deal with a display integration time selection */
 		if ((*calt & (inst_calt_emis_int_time | inst_calt_ap_flag))
-		 && *calc == inst_calc_emis_white
+		 && (*calc & inst_calc_cond_mask) == inst_calc_emis_white
 //		 && s->cfdate < cdate
 		 && (s->emiss && !s->adaptive && !s->scan)) {
 			double scale;
@@ -1665,31 +1665,31 @@ if (ss->idark_int_time[j] != s->idark_int_time[j])
 
 	/* Make sure there's the right condition for the calibration */
 	if (*calt & (inst_calt_ref_dark | inst_calt_ref_white)) {	/* Reflective calib */
-		if (*calc != inst_calc_man_cal_smode) {
+		if ((*calc & inst_calc_cond_mask) != inst_calc_man_cal_smode) {
 			*calc = inst_calc_man_cal_smode;
 			return MUNKI_CAL_SETUP;
 		}
 	} else if (*calt & inst_calt_em_dark) {		/* Emissive Dark calib */
 		id[0] = '\000';
-		if (*calc != inst_calc_man_cal_smode) {
+		if ((*calc & inst_calc_cond_mask) != inst_calc_man_cal_smode) {
 			*calc = inst_calc_man_cal_smode;
 			return MUNKI_CAL_SETUP;
 		}
 	} else if (*calt & inst_calt_trans_dark) {	/* Transmissive dark */
 		id[0] = '\000';
-		if (*calc != inst_calc_man_cal_smode) {
+		if ((*calc & inst_calc_cond_mask) != inst_calc_man_cal_smode) {
 			*calc = inst_calc_man_cal_smode;
 			return MUNKI_CAL_SETUP;
 		}
 	} else if (*calt & inst_calt_trans_vwhite) {	/* Transmissive white for emulated trans. */
 		id[0] = '\000';
-		if (*calc != inst_calc_man_trans_white) {
+		if ((*calc & inst_calc_cond_mask) != inst_calc_man_trans_white) {
 			*calc = inst_calc_man_trans_white;
 			return MUNKI_CAL_SETUP;
 		}
 	} else if (*calt & inst_calt_emis_int_time) {
 		id[0] = '\000';
-		if (*calc != inst_calc_emis_white) {
+		if ((*calc & inst_calc_cond_mask) != inst_calc_emis_white) {
 			*calc = inst_calc_emis_white;
 			return MUNKI_CAL_SETUP;
 		}
@@ -6256,7 +6256,7 @@ void munki_scale_specrd(
 #define USE_GAUSSIAN		/* [def] Use gaussian filter shape, else lanczos2 */
 
 #define DO_CCDNORM			/* [def] Normalise CCD values to original */
-#define DO_CCDNORMAVG		/* [unde] Normalise averages rather than per CCD bin */
+#define DO_CCDNORMAVG		/* [und???] Normalise averages rather than per CCD bin */
 
 #ifdef NEVER
 /* Plot the matrix coefficients */
@@ -6352,13 +6352,15 @@ static double lanczos2(double wi, double x) {
 
 #ifdef USE_GAUSSIAN
 	/* gausian */
-	wi = wi/(2.0 * sqrt(2.0 * log(2.0)));	/* Convert width at half max to std. dev. */
-    x = x/(sqrt(2.0) * wi);
+	wi = wi/(sqrt(2.0 * log(2.0)));	/* Convert width at half max to std. dev. */
+    x = x/wi;
 //	y = 1.0/(wi * sqrt(2.0 * DBL_PI)) * exp(-(x * x));		/* Unity area */
 	y = exp(-(x * x));										/* Center at 1.0 */
 #else
 
+
 	/* lanczos2 */
+	wi *= 1.05;			// Improves smoothness. Why ?
 	x = fabs(1.0 * x/wi);
 	if (x >= 2.0)
 		return 0.0; 
@@ -6821,8 +6823,8 @@ munki_code munki_create_hr(munki *p, int ref) {
 
 	{
 		double fshmax;				/* filter shape max wavelength from center */
-#define MXNOWL 500      /* Max hires bands */
-#define MXNOFC 64
+#define MXNOWL 200      /* Max hires bands */
+#define MXNOFC 32
 		munki_fc coeff2[MXNOWL][MXNOFC];	/* New filter cooefficients */
 		double twidth;
 

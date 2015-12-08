@@ -66,7 +66,7 @@ static inst_code munki_interp_code(munki *p, munki_code ec);
 
 /* Establish communications with a Munki */
 /* If it's a serial port, use the baud rate given, and timeout in to secs */
-/* Return DTP_COMS_FAIL on failure to establish communications */
+/* Return MUNKI_COMS_FAIL on failure to establish communications */
 static inst_code
 munki_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	munki *p = (munki *) pp;
@@ -937,6 +937,7 @@ munki_del(inst *pp) {
 	del_munkiimp(p);
 	if (p->icom != NULL)
 		p->icom->del(p->icom);
+	p->vdel(pp);
 	free(p);
 }
 
@@ -972,7 +973,7 @@ extern munki *new_munki(icoms *icom, instType itype) {
 	p->del               = munki_del;
 
 	p->icom = icom;
-	p->itype = icom->itype;
+	p->itype = itype;
 
 	/* Preliminary capabilities */
 	munki_determine_capabilities(p);

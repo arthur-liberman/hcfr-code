@@ -825,6 +825,7 @@ colorhug_del(inst *pp) {
 		if (p->icom != NULL)
 			p->icom->del(p->icom);
 		inst_del_disptype_list(p->dtlist, p->ndtlist);
+		p->vdel(pp);
 		free(p);
 	}
 }
@@ -1213,7 +1214,7 @@ extern colorhug *new_colorhug(icoms *icom, instType itype) {
 	p->del               = colorhug_del;
 
 	p->icom = icom;
-	p->itype = icom->itype;
+	p->itype = itype;
 
 	if (itype == instColorHug2)
 		p->stype = ch_two;

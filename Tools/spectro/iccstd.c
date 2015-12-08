@@ -440,5 +440,24 @@ icc *new_icc(void) {
 	return p;
 }
 
+/* ------------------------------------------------- */
+
+/* Create an icmMD5 with the std allocator */
+icmMD5 *new_icmMD5(void) {
+	icmMD5 *p;
+	icmAlloc *al;			/* memory allocator */
+
+	if ((al = new_icmAllocStd()) == NULL)
+		return NULL;
+
+	if ((p = new_icmMD5_a(al)) == NULL) {
+		al->del(al);
+		return NULL;
+	}
+
+	p->del_al = 1;		/* Get md5->del to cleanup allocator */
+	return p;
+}
+
 
 #endif /* defined(SEPARATE_STD) || defined(COMBINED_STD) */

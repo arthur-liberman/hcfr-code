@@ -642,12 +642,13 @@ spyd2_GetReading_ll(
 	int value;
 	int index;
 	int flag;
-	int nords, retr;
+	int retr;
 	unsigned char buf1[8];		/* send bytes */
 	unsigned char buf2[9 * 8];	/* return bytes read */
 	int rvals[3][8];			/* Raw values */
 	int _maxtcnt = 0;			/* Maximum transition count */
 	int _mintcnt = 0x7fffffff;	/* Minumum transition count */
+	double maxfreq = 0.0;		/* Maximum sensor frequency found */
 	int i, j, k;
 
 	a1logd(p->log, 3, "spyd2_GetReading_ll: clocks = %d, minfc = %d, maxfc = %d\n",*clocks,*minfclks,*maxfclks);
@@ -691,7 +692,7 @@ spyd2_GetReading_ll(
 	}
 
 	/* The Spyder comms seems especially flakey... */
-	for (retr = 0, nords = 1; ; retr++, nords++) {
+	for (retr = 0; ; retr++) {
 
 //int start = msec_time();
 
@@ -888,13 +889,14 @@ spyd2_GetReading_ll(
 			} else {			/* We discard 0'th L2F transion to give transitions */
 								/* over the time period. */
 				if (sensv != NULL)
-					sensv[k] = ((double)transcnt - 1.0) * (double)CLKRATE
-					         / ((double)nords * (double)intclks);
+					sensv[k] = ((double)transcnt - 1.0) * (double)CLKRATE / (double)intclks;
 				if (transcnt > _maxtcnt)
 					_maxtcnt = transcnt;
 				if (transcnt < _mintcnt)
 					_mintcnt = transcnt;
 			}
+			if (sensv != NULL && sensv[k] > maxfreq)
+				maxfreq = sensv[k];
 			if (p->log->debug >= 4 && sensv != NULL)
 				a1logd(p->log, 4, "%d: initial senv %f from transcnt %d and intclls %d\n",
 				                                              k,sensv[k],transcnt,intclks);
@@ -925,7 +927,7 @@ spyd2_GetReading_ll(
 		/* hence the transitions-1 counted. */
 
 		int *map;
-		int nat[8]  = { 0,1,2,3,4,5,6,7 };	/* Natural order */
+//		int nat[8]  = { 0,1,2,3,4,5,6,7 };	/* Natural order */
 		int map3[8] = { 0,0,1,2,5,6,7,4 };	/* Map Sp3 sensors into Spyder 2 order */
 		int map4[8] = { 0,0,1,2,5,6,7,4 };	/* Map Sp4 sensors into Spyder 2 order */
 		int map5[8] = { 1,1,0,5,2,7,6,4 };	/* Map Sp5 sensors into Spyder 2 order */
@@ -967,6 +969,8 @@ spyd2_GetReading_ll(
 				if (transcnt < _mintcnt)
 					_mintcnt = transcnt;
 			}
+			if (sensv != NULL && (8.125 * sensv[k]) > maxfreq)
+				maxfreq = 8.125 * sensv[k];
 			if (p->log->debug >= 4 && sensv != NULL)
 				a1logd(p->log, 4, "%d: initial senv %f from transcnt %d and intclls %d\n",
 				                                             k,sensv[k],transcnt,intclks);
@@ -977,6 +981,16 @@ spyd2_GetReading_ll(
 		*maxtcnt = _maxtcnt;
 	if (mintcnt != NULL)
 		*mintcnt = _mintcnt;
+
+	if (p->log->debug >= 4 && sensv != NULL)
+		a1logd(p->log, 4, "Maximum sensor frequency = %f\n",maxfreq);
+
+	/* Problem is that the HW starts loosing count above a certain */
+	/* frequency, so we depend on one less bright sensor acting as a canary, */
+	/* so we can't make the threshold too low. */
+	if (maxfreq > 500000.0) {
+		return spyd2_interp_code((inst *)p, SPYD2_TOOBRIGHT);
+	}
 
 	return rv;
 }
@@ -1729,8 +1743,15 @@ spyd2_GetReading(
 		/* Accumulate it for weighted average */
 		for (k = 0; k < 8; k++) {
 			if (sensv[k] != 0.0) {		/* Skip value where we didn't get any transitions */
+#ifndef NEVER
+				/* Accumulate it for weighted average */
 				a_sensv[k] += sensv[k] * itime;
 				a_w[k] += itime;
+#else
+				/* Just use the last measurement */
+				a_sensv[k] = sensv[k] * itime;
+				a_w[k] = itime;
+#endif
 			}
 		}
 		
@@ -1767,6 +1788,7 @@ spyd2_GetReading(
 		}
 	}
 
+	/* hwver == 5 hasn't been tested... */
 	if (p->hwver == 5) {
 		double gainscale = 1.0;
 		unsigned int v381;
@@ -1781,7 +1803,7 @@ spyd2_GetReading(
 		for (j = 0; j < 3; j++) {
 			XYZ[j] = p->cal_A[p->icx & 1][j][0];		/* First entry is a constant */
 			for (k = 1; k < 8; k++)
-				XYZ[j] += a_sensv[k] * p->cal_A[p->icx & 1][j][k+2] * gainscale;
+				XYZ[j] += a_sensv[k] * p->cal_A[p->icx & 1][j][k+1] * gainscale;
 		}
 
 	} else {
@@ -2418,7 +2440,7 @@ spyd2_read_all_regs(
 		if ((ev = spyd2_readEEProm(p, buf, 0, len)) != inst_ok)
 			return ev;
 		a1logd(p->log, 8, "EEPROM:\n"); 
-		adump_bytes(p->log, "  ", buf, 0, len);
+//		adump_bytes(p->log, "  ", buf, 0, len);
 	}
 
 	/* HW version */
@@ -2835,7 +2857,7 @@ spyd4_load_cal(spyd2 *p) {
 
 /* Establish communications with a SPYD2 */
 /* If it's a serial port, use the baud rate given, and timeout in to secs */
-/* Return DTP_COMS_FAIL on failure to establish communications */
+/* Return SPYD2_COMS_FAIL on failure to establish communications */
 static inst_code
 spyd2_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	spyd2 *p = (spyd2 *) pp;
@@ -2858,7 +2880,7 @@ spyd2_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	/* (and Spyder 2 hangs if a reset ep is done on MSWin.) */
 	/* The spyder 2 doesn't work well with the winusb driver either, */
 	/* it needs icomuf_resetep_before_read to work at all, and */
-	/* gets retries anyway. So we use the libusb0 driver for it. */
+	/* gets retries anyway. So we use the libusb-win32 driver for it. */
 #if defined(NT)
 	if (p->itype == instSpyder3) {
 		usbflags |= icomuf_resetep_before_read;		/* The spyder USB is buggy ? */
@@ -3268,7 +3290,7 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 
 	if ((*calt & inst_calt_ref_freq) && p->refrmode != 0) {
 
-		if (*calc != inst_calc_emis_80pc) {
+		if ((*calc & inst_calc_cond_mask) != inst_calc_emis_80pc) {
 			*calc = inst_calc_emis_80pc;
 			return inst_cal_setup;
 		}
@@ -3383,6 +3405,8 @@ spyd2_interp_error(inst *pp, int ec) {
 			return "Display device selection out of range";
 
 		/* User error */
+		case SPYD2_TOOBRIGHT:
+			return "Too bright to read accuractly";
 		case SPYD2_NO_REFRESH_DET:
 			return "Unable to detect & measure refresh rate";
 
@@ -3437,6 +3461,7 @@ spyd2_interp_code(inst *pp, int ec) {
 		case SPYD2_DISP_SEL_RANGE:
 			return inst_wrong_setup | ec;
 
+		case SPYD2_TOOBRIGHT:
 		case SPYD2_NO_REFRESH_DET:
 			return inst_misread | ec;
 
@@ -3453,6 +3478,7 @@ spyd2_del(inst *pp) {
 	inst_del_disptype_list(p->dtlist, p->ndtlist);
 	if (p->samples != NULL)
 		free(p->samples);
+	p->vdel(pp);
 	free(p);
 }
 
@@ -3664,8 +3690,8 @@ static inst_disptypesel spyd4_disptypesel[8] = {
 		0,
 		"f",
 		"LCD, CCFL Backlight",
-		disptech_lcd_ccfl,
 		0,
+		disptech_lcd_ccfl,
 		(1 << 1) | 1
 	},
 	{
@@ -3682,83 +3708,8 @@ static inst_disptypesel spyd4_disptypesel[8] = {
 		0,
 		"e",
 		"LCD, White LED Backlight",
+		0,
 		disptech_lcd_wled,
-		0,
-		(3 << 1) | 1
-	},
-	{
-		inst_dtflags_none,			/* flags */
-		0,
-		"B",
-		"Wide Gamut LCD, RGB LED Backlight",
-		0,
-		disptech_lcd_rgbled,
-		(4 << 1) | 1
-	},
-	{
-		inst_dtflags_none,			/* flags */
-		0,
-		"x",
-		"LCD, CCFL Backlight (Laptop ?)",
-		0,
-		disptech_lcd_ccfl,
-		(5 << 1) | 1
-	},
-	{
-		inst_dtflags_end,
-		0,
-		"",
-		"",
-		0,
-		disptech_none,
-		0
-	}
-};
-
-static inst_disptypesel spyd5_disptypesel[8] = {
-	{
-		inst_dtflags_default,
-		1,
-		"nl",
-		"Generic Non-Refresh Display",
-		0,
-		disptech_lcd,
-		1
-	},
-	{
-		inst_dtflags_none,			/* flags */
-		2,							/* cbid */
-		"rc",						/* sel */
-		"Generic Refresh Display",	/* desc */
-		1,							/* refr */
-		disptech_crt,				/* disptype */
-		1							/* ix = hw bit + spec table << 1 */
-	},
-	{
-		inst_dtflags_none,			/* flags */
-		0,
-		"f",
-		"LCD, CCFL Backlight",
-		disptech_lcd_ccfl,
-		0,
-		(1 << 1) | 1
-	},
-	{
-		inst_dtflags_none,			/* flags */
-		0,
-		"L",
-		"Wide Gamut LCD, CCFL Backlight",
-		0,
-		disptech_lcd_ccfl_wg,
-		(2 << 1) | 1
-	},
-	{
-		inst_dtflags_none,			/* flags */
-		0,
-		"e",
-		"LCD, White LED Backlight",
-		disptech_lcd_wled,
-		0,
 		(3 << 1) | 1
 	},
 	{
@@ -3799,6 +3750,7 @@ static void set_base_disptype_list(spyd2 *p) {
 		} else {							/* spyd4_nocals == 6 or 7, Spyder 4 or 5. */
 			/* Spyder 5 has exactly the same list as the Spyder 4, with an extra */
 			/* entry at the end that is the same as the first (flat spectrum). */
+			/* So use the spyder 4 list */
 			p->_dtlist = spyd4_disptypesel;
 		}
 	} else if (p->itype == instSpyder3) {
@@ -3819,7 +3771,7 @@ int recreate				/* nz to re-check for new ccmx & ccss files */
 	spyd2 *p = (spyd2 *)pp;
 	inst_code rv = inst_ok;
 
-	/* Create/Re-create a current list of abailable display types */
+	/* Create/Re-create a current list of available display types */
 	if (p->dtlist == NULL || recreate) {
 		if ((rv = inst_creat_disptype_list(pp, &p->ndtlist, &p->dtlist,
 		    p->_dtlist, p->hwver >= 7 ? 1 : 0 /* doccss*/, 1 /* doccmx */)) != inst_ok)
@@ -3838,7 +3790,6 @@ int recreate				/* nz to re-check for new ccmx & ccss files */
 /* Given a display type entry, setup for that type */
 static inst_code set_disp_type(spyd2 *p, inst_disptypesel *dentry) {
 	inst_code ev;
-	int refrmode;
 
 	p->icx = dentry->ix;
 	p->dtech = dentry->dtech;
@@ -3969,8 +3920,9 @@ int *cbid) {
 	spyd2 *p = (spyd2 *)pp;
 	if (dtech != NULL)
 		*dtech = p->dtech;
-	if (refrmode != NULL)
+	if (refrmode != NULL) {
 		*refrmode = p->refrmode;
+	}
 	if (cbid != NULL)
 		*cbid = p->cbid;
 	return inst_ok;
@@ -4142,7 +4094,7 @@ extern spyd2 *new_spyd2(icoms *icom, instType itype) {
 	p->del               = spyd2_del;
 
 	p->icom = icom;
-	p->itype = icom->itype;
+	p->itype = itype;
 
 	/* Load manufacturers Spyder4 calibrations */
 	if (itype == instSpyder4

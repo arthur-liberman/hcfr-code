@@ -51,6 +51,7 @@
 #include "insttypes.h"
 #include "icoms.h"
 #include "inst.h"
+#include "rspec.h"
 #include "insttypeinst.h"
 #include "ccmx.h"
 #include "ccss.h"
@@ -376,6 +377,44 @@ char id[CALIDLEN]) {	/* Condition identifier (ie. white reference ID, filter ID)
 	return inst_unsupported;
 }
 
+/* Return a description of the calibration type */ 
+char *calt2str(inst_cal_type calt) {
+	calt &= inst_calt_all_mask;
+
+	if (calt & inst_calt_all)
+		return "All";
+	if (calt & inst_calt_needed)
+		return "Needed";
+	if (calt & inst_calt_available)
+		return "Needed";
+	if (calt & inst_calt_wavelength)
+		return "Wavelength";
+	if (calt & inst_calt_ref_white)
+		return "Reflective White or Emissive Dark";
+	if (calt & inst_calt_ref_dark)
+		return "Reflective Light Trap (Black)";
+	if (calt & inst_calt_ref_dark_gl)
+		return "Reflective Gloss";
+	if (calt & inst_calt_emis_offset)
+		return "Emissive Offset";
+	if (calt & inst_calt_emis_ratio)
+		return "Emissive Ratio";
+	if (calt & inst_calt_em_dark)
+		return "Emissive Dark";
+	if (calt & inst_calt_trans_white)
+		return "Transmissive White";
+	if (calt & inst_calt_trans_vwhite)
+		return "Transmissive Variable White";
+	if (calt & inst_calt_trans_dark)
+		return "Transmissive Dark";
+	if (calt & inst_calt_emis_int_time)
+		return "Emissive Integration Time";
+	if (calt & inst_calt_ref_freq)
+		return "Display Refresh Rate";
+
+	return "None or Unknown";
+}
+
 /* Measure a display update delay. It is assumed that a */
 /* black to white change has been made to the displayed color, */
 /* and this will measure the time it took for the update to */
@@ -542,6 +581,18 @@ static inst_config config_enum(inst *p, int ec) {
 }
 
 /* ---------------------------------------------- */
+
+/* Delete things set/done by new_inst() */
+static inst_code virtual_del(inst *p) {
+
+#if defined(__APPLE__)
+	osx_latencycritical_end();
+#endif
+
+	return inst_ok;
+}
+
+
 /* Virtual constructor. */
 /* Return NULL for unknown instrument, */
 /* or serial instrument if nocoms == 0. */
@@ -569,11 +620,12 @@ void *cntx			/* Context for callback */
 	}
 
 
+
 	/* Set instrument type from USB port, if not specified */
 	itype = icom->itype;		/* Instrument type if its known from usb/hid */
 
 #if defined(ENABLE_FAST_SERIAL)
-	if (itype == instUnknown && !nocoms && icom->fast) {
+	if (itype == instUnknown && !nocoms && (icom->sattr & icom_fast)) {
 		itype = fast_ser_inst_type(icom, 1, uicallback, cntx);		/* Else type from serial */
 	}
 #endif /* ENABLE_FAST_SERIAL */
@@ -638,12 +690,14 @@ void *cntx			/* Context for callback */
 		p = (inst *)new_spyd2(icom, itype);
 	else if (itype == instSpyder5)
 		p = (inst *)new_spyd2(icom, itype);
-	else if (itype == instHuey)
+	else if (itype == instEX1)
+		p = (inst *)new_ex1(icom, itype);
+	if (itype == instHuey)
 		p = (inst *)new_huey(icom, itype);
 	else if (itype == instSmile)
 		p = (inst *)new_i1disp(icom, itype);
-	else if (itype == instEX1)
-		p = (inst *)new_ex1(icom, itype);
+//	else if (itype == instSMCube)
+//		p = (inst *)new_smcube(icom, itype);
 	else if (itype == instHCFR)
 		p = (inst *)new_hcfr(icom, itype);
 	else if (itype == instColorHug
@@ -659,6 +713,8 @@ void *cntx			/* Context for callback */
 		icom->del(icom);
 		return NULL;
 	}
+
+	p->vdel = virtual_del;
 
 	/* Add default methods if constructor did not supply them */
 	if (p->init_coms == NULL)
@@ -743,6 +799,10 @@ void *cntx			/* Context for callback */
 	/* Set the provided user interaction callback */
 	p->set_uicallback(p, uicallback, cntx);
 
+#if defined(__APPLE__)
+	osx_latencycritical_start();
+#endif
+
 	return p;
 }
 
@@ -801,14 +861,13 @@ static inst_disptypesel *expand_dlist(inst_disptypesel *list, int nlist, int *na
 	if already used,
 		remove it.
 	if no selector remain,
-		allocate a free one.
+		allocate a free one from the fallback list.
 	mark all used selectors
 
 	We treat the first selector as more important
-	than any aliases that come after it, so we need
-	to do two passes to resolve what gets used.
-
-	Use disptechs_set_sel() utility function to some of the work.
+	than any aliases that come after it, and the
+	aliases as more important than the fallback list,
+	so we need to do three passes through all the selections.
 */
 
 /* Create the display type list */
@@ -823,6 +882,7 @@ int doccmx						/* Add matching installed ccmx files */
 	int i, j, k, nlist = 0, nalist = 0;
 	char usels[256];			/* Used selectors */
 	static char *asels = "123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	int fail = 0;
 
 	/* free the old list */
 	inst_del_disptype_list(*pdtlist, *pndtlist);
@@ -830,25 +890,24 @@ int doccmx						/* Add matching installed ccmx files */
 	*pndtlist = 0;
 
 	for (i = 0; i < 256; i++)
-		usels[i] = 0;
+		usels[i] = ((char)-1);
 	k = 0;		/* Next selector index */
 
+	/* First create a list of calibrations and their desired selectors: */
+
 	/* Add entries from the static list and their primary selectors */
-	/* Count the number in the static list */
+	/* (We're currently assuming that calibrations that the instrument */
+	/*  returns are not custom.) */
+	/* Count the number in the static list. */
 	for (i = 0; !(sdtlist[i].flags & inst_dtflags_end); i++) {
 
 		if ((list = expand_dlist(list, ++nlist, &nalist)) == NULL)
 			return inst_internal_error;
 
 		list[nlist-1] = sdtlist[i];		/* Struct copy */
-
-		if (disptechs_set_sel(2, list[nlist-1].sel, usels, &k, asels)) {
-			a1loge(p->log, 1, "inst_creat_disptype_list run out of selectors\n");
-			break;
-		}
 	}
 
-	/* Add any ccss's */
+	/* Add any OEM and custom ccss's */
 	if (doccss) {
 		iccss *ss_list;
 		if ((ss_list = list_iccss(NULL)) == NULL) {
@@ -862,16 +921,13 @@ int doccmx						/* Add matching installed ccmx files */
 				return inst_internal_error;
 	
 			list[nlist-1].flags = inst_dtflags_ccss | inst_dtflags_ld | inst_dtflags_wr;
+			if (!ss_list[i].oem)
+				list[nlist-1].flags |= inst_dtflags_custom;
 
 			if (ss_list[i].sel != NULL) {
 				strncpy(list[nlist-1].sel, ss_list[i].sel, INST_DTYPE_SEL_LEN);
 				list[nlist-1].sel[INST_DTYPE_SEL_LEN-1] = '\000';
 			}
-			if (disptechs_set_sel(2, list[nlist-1].sel, usels, &k, asels)) {
-				a1loge(p->log, 1, "inst_creat_disptype_list run out of selectors\n");
-				break;
-			}
-
 			strncpy(list[nlist-1].desc, ss_list[i].desc, INST_DTYPE_DESC_LEN);
 			list[nlist-1].desc[INST_DTYPE_DESC_LEN-1] = '\000';
 			list[nlist-1].dtech = ss_list[i].dtech;
@@ -884,7 +940,7 @@ int doccmx						/* Add matching installed ccmx files */
 		}
 	}
 
-	/* Add any ccmx's */
+	/* Add any OEM and custom ccmx's */
 	if (doccmx) {
 		iccmx *ss_list;
 
@@ -899,7 +955,7 @@ int doccmx						/* Add matching installed ccmx files */
 			/* Check that there is a matching base calibation */
 			for (j = 0; j < nlist; j++) {
 				if (ss_list[i].cc_cbid != 0
-				 && list[j].cbid == ss_list[i].cc_cbid)
+					 && list[j].cbid == ss_list[i].cc_cbid)
 					break;
 			}
 			if (j >= nlist) {
@@ -911,14 +967,12 @@ int doccmx						/* Add matching installed ccmx files */
 				return inst_internal_error;
 	
 			list[nlist-1].flags = inst_dtflags_ccmx | inst_dtflags_ld | inst_dtflags_wr;
+			if (!ss_list[i].oem)
+				list[nlist-1].flags |= inst_dtflags_custom;
 
 			if (ss_list[i].sel != NULL) {
 				strncpy(list[nlist-1].sel, ss_list[i].sel, INST_DTYPE_SEL_LEN);
 				list[nlist-1].sel[INST_DTYPE_SEL_LEN-1] = '\000';
-			}
-			if (disptechs_set_sel(2, list[nlist-1].sel, usels, &k, asels)) {
-				a1loge(p->log, 1, "inst_creat_disptype_list run out of selectors\n");
-				break;
 			}
 			strncpy(list[nlist-1].desc, ss_list[i].desc, INST_DTYPE_DESC_LEN);
 			list[nlist-1].desc[INST_DTYPE_DESC_LEN-1] = '\000';
@@ -932,18 +986,63 @@ int doccmx						/* Add matching installed ccmx files */
 		}
 	}
 
-	/* Create needed selectors */
-	for (i = 0; i < nlist; i++)
-		disptechs_set_sel(4, list[i].sel, usels, &k, asels);
+	/* Copy candidate selectors to private isel[] list */
+	for (i = 0; i < nlist; i++) {
+		strcpy(list[i].isel, list[i].sel);
+		list[i].sel[0] = '\000';
+	}
 
-	/* Verify or delete any secondary selectors */
+	/* Then allocate a slector for each calibration: */
+
+	/* Set selectors from primary for cbid or custom first */
+	for (i = 0; i < nlist; i++) {
+		if (list[i].cbid > 0
+		 || (list[i].flags & inst_dtflags_custom) != 0) {
+			disptechs_set_sel(0, i, list[i].sel, list[i].isel, usels, &k, asels);
+		}
+	}
+
+	/* Set selectors from primary for rest */
 	for (i = 0; i < nlist; i++)
-		disptechs_set_sel(3, list[i].sel, usels, &k, asels);
+		disptechs_set_sel(0, i, list[i].sel, list[i].isel, usels, &k, asels);
+
+	/* Set remaining selectors from primaries or secondaries */
+	for (i = 0; i < nlist; i++)
+		disptechs_set_sel(1, i, list[i].sel, list[i].isel, usels, &k, asels);
+
+	/* Set remaining from fallback */
+	for (i = 0; i < nlist; i++) {
+		disptechs_set_sel(2, i, list[i].sel, list[i].isel, usels, &k, asels);
+		if (list[i].sel[0] == '\000')
+			fail = 1;
+	}
+
+	/* Any calibrations that failed to find a character will be left as a nul string */
+
+	/* Add alternate selectors if they are free. */
+	for (;;) {
+		int more = 0;
+		for (i = 0; i < nlist; i++) {
+			/* Add unused secondaries */
+			disptechs_set_sel(3, i, list[i].sel, list[i].isel, usels, &k, asels);
+
+			if (list[i].isel[0] != '\000') {		/* Still more secondaries available */
+				more = 1;
+			}
+		}
+		if (!more)
+			break;
+	}
 
 	if (pndtlist != NULL)
 		*pndtlist = nlist;
 	if (pdtlist != NULL)
 		*pdtlist = list;
+
+	if (fail) {
+		a1loge(p->log, 1, "inst_creat_disptype_list run out of selectors\n");
+		return inst_internal_error;
+	}
 
 	return inst_ok;
 }
@@ -1045,6 +1144,7 @@ iccmx *list_iccmx(instType itype, int *no) {
 		rv[j].dtech = dtech;
 		rv[j].refr = refr;
 		rv[j].sel = cs->sel;  cs->sel = NULL;
+		rv[j].oem = cs->oem;
 		icmCpy3x3(rv[j].mat, cs->matrix);
 		cs->del(cs);
 		j++;
@@ -1056,6 +1156,7 @@ iccmx *list_iccmx(instType itype, int *no) {
 	rv[j].dtech = disptech_unknown;
 	rv[j].refr = -1;
 	rv[j].sel = NULL;
+	rv[j].oem = 0;
 	if (no != NULL)
 		*no = j;
 
@@ -1174,6 +1275,7 @@ iccss *list_iccss(int *no) {
 		rv[j].dtech = dtech;
 		rv[j].refr = refr;
 		rv[j].sel = cs->sel;  cs->sel = NULL;
+		rv[j].oem = cs->oem;
 		rv[j].sets = cs->samples;  cs->samples = NULL;
 		rv[j].no_sets = cs->no_samp; cs->no_samp = 0;
 		cs->del(cs);
@@ -1185,6 +1287,7 @@ iccss *list_iccss(int *no) {
 	rv[j].dtech = disptech_unknown;
 	rv[j].refr = -1;
 	rv[j].sel = NULL;
+	rv[j].oem = 0;
 	rv[j].sets = NULL;
 	rv[j].no_sets = 0;
 	if (no != NULL)
@@ -1233,7 +1336,8 @@ instType fast_ser_inst_type(
 	void *cntx			/* Context for callback */
 ) {
 	instType rv = instUnknown;
-	char buf[100];
+#define BUFSZ (128 + 10)
+	char buf[BUFSZ];
 	baud_rate brt[] = { baud_921600, baud_115200, baud_38400, baud_9600, baud_nc };
 	unsigned int etime;
 	unsigned int i;
@@ -1255,18 +1359,18 @@ instType fast_ser_inst_type(
 			if (!tryhard)
 				break;		/* try only once */
 		}
+		a1logd(p->log, 5, "Trying %s baud\n",baud_rate_to_str(brt[i]));
+
 		if ((se = p->set_ser_port(p, fc_none, brt[i], parity_none,
 			                         stop_1, length_8)) != ICOM_OK) { 
 			a1logd(p->log, 5, "fser_inst_type: set_ser_port failed with 0x%x\n",se);
 			return instUnknown;		/* Give up */
 		}
 
-//		a1logd(p->log, 5, "brt = %d\n",brt[i]);
-
 		if (brt[i] == baud_9600) {
 			/* See if it's a Klein K10 */
 
-			if ((se = p->write_read(p, "P0\r", 0, buf, 100, NULL, ">", 1, 0.100)) != inst_ok) {
+			if ((se = p->write_read(p, "P0\r", 0, buf, BUFSZ, NULL, ">", 1, 0.100)) != inst_ok) {
 				/* Check for user abort */
 				if (uicallback != NULL) {
 					inst_code ev;
@@ -1278,20 +1382,51 @@ instType fast_ser_inst_type(
 				continue;
 			}
 			len = strlen(buf);
-	
-			a1logd(p->log, 5, "len = %d\n",len);
 	
 			/* Is this a Klein K1/K8/K10 response ? */
 			if (strncmp(buf, "P0K-1 ", 6) == 0
 			 || strncmp(buf, "P0K-8 ", 6) == 0
 			 || strncmp(buf, "P0K-10", 6) == 0
 			 || strncmp(buf, "P0KV-10", 7) == 0) {
+				a1logd(p->log, 5, "fser_inst_type: found Klein K1/K8/K10\n");
 				rv = instKleinK10;
 				break;
 			}
-		} else {
+		}
+		if (brt[i] == baud_38400)
+		{
+			int bread;
+
+			/* See if it's a SwatchMate Cube. */
+			/* The Cube uses RTS/CTS handshaking, but ignore this for identification. */
+			buf[0] = 0x7e;
+			buf[1] = 0x00;
+			buf[2] = 0x02;		/* Ping command */
+			buf[3] = 0x00;
+			if ((se = p->write_read(p, buf, 4, buf, BUFSZ, &bread, NULL, 4, 0.100)) != inst_ok) {
+				/* Check for user abort */
+				if (uicallback != NULL) {
+					inst_code ev;
+					if ((ev = uicallback(cntx, inst_negcoms)) == inst_user_abort) {
+						a1logd(p->log, 5, "fser_inst_type: User aborted\n");
+						return instUnknown;
+					}
+				}
+				continue;
+			}
+			if (bread == 4) {
+				if (buf[0] == 0x7e && buf[1] == 0x20 && buf[2] == 0x02 && buf[3] == 0x00) {
+					a1logd(p->log, 5, "fser_inst_type: found SwatchMate Cube\n");
+					rv = instSMCube;
+					break;
+				}
+			}
+		}
+		/* Bluetooth only uses baud_115200 */ 
+		if ((p->sattr & icom_bt) == 0 || brt[i] == baud_115200) {
+
 			/* See if it's a JETI specbos */
-			if ((se = p->write_read(p, "*idn?\r", 0, buf, 100, NULL, "\r", 1, 0.100)) != inst_ok) {
+			if ((se = p->write_read(p, "*idn?\r", 0, buf, BUFSZ, NULL, "\r", 1, 0.100)) != inst_ok) {
 				/* Check for user abort */
 				if (uicallback != NULL) {
 					inst_code ev;
@@ -1304,20 +1439,18 @@ instType fast_ser_inst_type(
 			}
 			len = strlen(buf);
 	
-			a1logd(p->log, 5, "len = %d\n",len);
-	
 			/* JETI specbos returns "JETI_SBXXXX", where XXXX is the instrument type, */
 			/* except for the 1201 which returns "SB05" */
 	
 			/* Is this a JETI specbos 1201 response ? */
 			if (strncmp(buf, "SB05", 4) == 0) {
-//				a1logd(p->log, 5, "specbos1201\n");
+				a1logd(p->log, 5, "fser_inst_type: found JETI specbos 1201\n");
 				rv = instSpecbos1201;
 				break;
 			}
 			/* Is this a JETI specbos XXXX response ? */
 			if (len >= 11 && strncmp(buf, "JETI_SB", 7) == 0) {
-//				a1logd(p->log, 5, "specbos\n");
+				a1logd(p->log, 5, "fser_inst_type: found JETI specbos\n");
 				rv = instSpecbos;
 				break;
 			}
@@ -1337,6 +1470,7 @@ instType fast_ser_inst_type(
 
 	return rv;
 }
+#undef BUFSZ
 
 #endif /* ENABLE_FAST_SERIAL */
 
@@ -1355,7 +1489,8 @@ static instType ser_inst_type(
 	void *cntx			/* Context for callback */
 ) {
 	instType rv = instUnknown;
-	char buf[100];
+#define BUFSZ (128 + 10)
+	char buf[BUFSZ];
 	baud_rate brt[] = { baud_9600, baud_19200, baud_4800, baud_2400,
 	                     baud_1200, baud_38400, baud_57600, baud_115200,
 	                     baud_600, baud_300, baud_110, baud_nc };
@@ -1374,7 +1509,7 @@ static instType ser_inst_type(
 	bi = 0;
 
 	/* The tick to give up on */
-	etime = msec_time() + (long)(1000.0 * 20.0 + 0.5);
+	etime = msec_time() + (long)(20.0 * 1000.0 + 0.5);
 
 	a1logd(p->log, 1, "ser_inst_type: Trying different baud rates (%u msec to go)\n",etime - msec_time());
 
@@ -1388,9 +1523,9 @@ static instType ser_inst_type(
 			return instUnknown;		/* Give up */
 		}
 
-//		a1logd(p->log, 5, "brt = %d\n",brt[i]);
+		a1logd(p->log, 5, "Trying %s baud\n",baud_rate_to_str(brt[i]));
 		bread = 0;
-		if ((se = p->write_read(p, ";D024\r\n", 0, buf, 100, &bread, "\r", 1, 0.5)) != inst_ok) {
+		if ((se = p->write_read(p, ";D024\r\n", 0, buf, BUFSZ, &bread, "\r", 1, 0.5)) != inst_ok) {
 			/* Check for user abort */
 			if (uicallback != NULL) {
 				inst_code ev;
@@ -1445,7 +1580,7 @@ static instType ser_inst_type(
 	/* SpectroScan */
 	if (ss) {
 		rv = instSpectroScan;
-		if ((se = p->write_read(p, ";D030\r\n", 0, buf, 100, NULL, "\n", 1, 1.5)) == 0)  {
+		if ((se = p->write_read(p, ";D030\r\n", 0, buf, BUFSZ, NULL, "\n", 1, 1.5)) == 0)  {
 			if (strlen(buf) >= 41) {
 				hex2bin(&buf[5], 12);
 //				a1logd(p->log, 5, "spectroscan type = '%s'\n",buf);
@@ -1457,7 +1592,7 @@ static instType ser_inst_type(
 	if (xrite) {
 
 		/* Get the X-Rite model and version number */
-		if ((se = p->write_read(p, "SV\r\n", 0, buf, 100, NULL, ">", 1, 2.5)) != 0)
+		if ((se = p->write_read(p, "SV\r\n", 0, buf, BUFSZ, NULL, ">", 1, 2.5)) != 0)
 			return instUnknown;
 	
 		if (strlen(buf) >= 12) {
@@ -1486,6 +1621,7 @@ static instType ser_inst_type(
 
 	return rv;
 }
+#undef BUFSZ
 
 #endif /* ENABLE_SERIAL */
 
@@ -1567,7 +1703,7 @@ void inst_mode_to_sym(char sym[MAX_INST_MODE_SYM_SZ], inst_mode mode) {
 	*cp++ = '\000';
 }
 
-/* Return a set of mode flags that correspondf to the symbolic encoding */
+/* Return a set of mode flags that correspond to the symbolic encoding */
 /* Return nz if a symbol wasn't recognized */
 int sym_to_inst_mode(inst_mode *mode, const char *sym) {
 	int i;

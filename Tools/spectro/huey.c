@@ -159,7 +159,7 @@ static char *inst_desc(int cc) {
 /* The Huey is set up as an HID device, which can ease the need */
 /* for providing a kernel driver on MSWindows systems, */
 /* but it doesn't seem to actually be used as an HID device. */
-/* We allow for communicating via libusb, or an HID driver. */
+/* We allow for communicating via usbio, or an HID driver. */
 static inst_code
 huey_command(
 	huey *p,					/* huey object */
@@ -1026,7 +1026,7 @@ static inst_code set_default_disp_type(huey *p);
 
 /* Establish communications with a HUEY */
 /* If it's a serial port, use the baud rate given, and timeout in to secs */
-/* Return DTP_COMS_FAIL on failure to establish communications */
+/* Return HUEY_COMS_FAIL on failure to establish communications */
 static inst_code
 huey_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	huey *p = (huey *) pp;
@@ -1400,6 +1400,7 @@ huey_del(inst *pp) {
 	if (p->icom != NULL)
 		p->icom->del(p->icom);
 	inst_del_disptype_list(p->dtlist, p->ndtlist);
+	p->vdel(pp);
 	free(p);
 }
 
@@ -1744,7 +1745,7 @@ extern huey *new_huey(icoms *icom, instType itype) {
 	p->del               = huey_del;
 
 	p->icom = icom;
-	p->itype = icom->itype;
+	p->itype = itype;
 
 	icmSetUnity3x3(p->ccmat);	/* Set the colorimeter correction matrix to do nothing */
 	p->dtech = disptech_unknown;

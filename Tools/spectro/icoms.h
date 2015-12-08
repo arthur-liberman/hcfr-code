@@ -72,6 +72,17 @@ typedef struct {
 
 #endif /* ENABLE_USB */
 
+#if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
+
+/* Attributes of the serial port */
+typedef enum {
+	icom_normal =     0x0000,		/* Normal serial port */
+	icom_fast =       0x0001,		/* Fast port */
+	icom_bt =         0x0002		/* Bluetooth serial port */
+} icom_ser_attr;
+
+#endif
+
 /* - - - - - - - - - - - - - - - - - - - -  */
 
 /* Store information about a possible instrument communication path */
@@ -81,7 +92,7 @@ struct _icompath{
 	char *name;					/* instance description */
 #if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
 	char *spath;				/* Serial device path */
-	int   fast;					/* Virtual serial port that can be identified quickly */
+	icom_ser_attr sattr;		/* Virtual serial port that can be identified quickly */
 #endif
 #ifdef ENABLE_USB
 	int nep;					/* Number of end points */
@@ -105,7 +116,7 @@ struct _icompaths {
 
 #if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
 	/* Add a serial path. path is copied. Return icom error */
-	int (*add_serial)(struct _icompaths *p, char *name, char *spath, int fast);
+	int (*add_serial)(struct _icompaths *p, char *name, char *spath, icom_ser_attr sattr);
 #endif /* ENABLE_SERIAL */
 
 #ifdef ENABLE_USB
@@ -209,10 +220,10 @@ typedef enum {
 	icomuf_resetep_before_read = 0x0008		/* Do a usb_resetep before each ep read */
 } icomuflags;
 
-/* Type of port */
+/* Type of port driver */
 typedef enum {
 	icomt_serial,		/* Serial port */
-	icomt_usbserial,	/* USB (fast) Serial port, i.e. FTDI */
+	icomt_usbserial,	/* Serial port using fastserio.c driver */
 	icomt_usb,			/* USB port */
 	icomt_hid			/* HID (USB) port */
 } icom_type;
@@ -241,7 +252,10 @@ typedef enum {
 #define ICOM_OER	0x000002		/* Overun error */
 #define ICOM_DRY	0x000001		/* Recv data ready */
 
-
+/* Interrupt callback type */
+typedef enum {
+	icomi_data_available		/* Data is available to be read */
+} icom_int;
 
 /* Cancelation token. */
 typedef struct _usb_cancelt usb_cancelt;
@@ -261,6 +275,8 @@ struct _icoms {
 	
 	int is_open;				/* Flag, NZ if this port is open */
 
+	void *icntx;				/* Optional instrument context */
+
 #if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
 
 	/* Serial port parameters */
@@ -274,7 +290,7 @@ struct _icoms {
 #if defined (UNIX) || defined(__APPLE__)
 	int fd;						/* Unix file descriptor */
 #endif
-	int fast;					/* Virtual serial port that can be identified quickly */
+	icom_ser_attr sattr;		/* Serial port attributes, such as being fast */
 
 	flow_control fc;
 	baud_rate	br;
@@ -369,8 +385,8 @@ struct _icoms {
 	/* return icom error */
 	int (*write)(
 		struct _icoms *p,
-		char *buf,			/* null terminated unless nch > 0 */
-		int nch,			/* if > 0, number of characters to write */
+		char *buf,			/* nul terminated unless nch > 0 */
+		int nch,			/* if > 0, number of characters to write, else nul terminated */
 		double tout);		/* Timeout in seconds */
 
 	/* "Serial" read characters into the buffer */
@@ -379,11 +395,10 @@ struct _icoms {
 	int (*read)(
 		struct _icoms *p,
 		char *buf,			/* Buffer to store characters read */
-		int bsize,			/* Buffer size */
+		int bsize,			/* Buffer size. Make this larger than chars required! */
 		int *bread,			/* Bytes read (not including forced '\000') */
 		char *tc,			/* Terminating characters, NULL for none or char count mode */
-		int ntc,			/* Number of terminating characters or char count needed, */
-							/* if 0 use bsize. */
+		int ntc,			/* Number of terminating characters or char count needed. */
 		double tout);		/* Timeout in seconds */
 
 	/* "Serial" write and read */
@@ -391,9 +406,9 @@ struct _icoms {
 	int (*write_read)(
 		struct _icoms *p,
 		char *wbuf,			/* Write puffer */
-		int nwch,			/* if > 0, number of characters to write */
+		int nwch,			/* if > 0, number of characters to write, else nul terminated */
 		char *rbuf,			/* Read buffer */
-		int bsize,			/* Buffer size */
+		int bsize,			/* Buffer size. Make this larger than chars required! */
 		int *bread,			/* Bytes read (not including forced '\000') */
 		char *tc,			/* Terminating characers, NULL for none or char count mode */
 		int ntc,			/* Number of any terminating characters needed, or char count needed */
@@ -465,6 +480,11 @@ struct _icoms {
 		int wsize,				/* Bytes to or write */
 		int *bwritten,			/* Bytes written */
 		double tout);			/* Timeout in seconds */
+
+	/* Optional callback to client from device */ 
+	/* Default implementation is a NOOP */
+	int (*interrupt)(struct _icoms *p,
+		int icom_int);			/* Interrupt cause */
 
 	/* Destroy ourselves */
 	void (*del)(struct _icoms *p);

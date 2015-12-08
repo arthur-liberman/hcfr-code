@@ -26,16 +26,20 @@
 /* Possible types of instruments */
 typedef enum {
     instUnknown      = 0,		/* Undefined Instrument */
-    instDTP20,					/* Xrite DTP20 (Pulse)  */
     instDTP22,					/* Xrite DTP22 (Digital Swatchbook)  */
     instDTP41,       			/* Xrite DTP41 */
     instDTP51, 					/* Xrite DTP51 */
-    instDTP92, 					/* Xrite DTP92 */
-    instDTP94, 					/* Xrite DTP94 (Optix) */
     instSpectrolino, 			/* GretagMacbeth Spectrolino */
     instSpectroScan, 			/* GretagMacbeth SpectroScan */
     instSpectroScanT, 			/* GretagMacbeth SpectroScanT */
 	instSpectrocam,				/* Avantes Spectrocam */
+	instSpecbos1201,			/* JETI specbos 1201 */
+	instSpecbos,				/* JETI specbos XXXX */
+	instKleinK10,				/* Klein K10-A */
+	instSMCube,					/* SwatchMate Cube */
+    instDTP20,					/* Xrite DTP20 (Pulse)  */
+    instDTP92, 					/* Xrite DTP92 */
+    instDTP94, 					/* Xrite DTP94 (Optix) */
 	instI1Disp1,				/* GretagMacbeth i1 Display 1 */
 	instI1Disp2,				/* GretagMacbeth i1 Display 2 */
 	instI1Disp3,				/* Xrite i1 DisplayPro, ColorMunki Display */
@@ -51,9 +55,6 @@ typedef enum {
 	instSpyder5,				/* Datacolor Spyder5 */
 	instHuey,					/* GretagMacbeth Huey */
 	instSmile,					/* X-rite Colormunki Smile */
-	instSpecbos1201,			/* JETI specbos 1201 */
-	instSpecbos,				/* JETI specbos XXXX */
-	instKleinK10,				/* Klein K10-A */
 	instEX1,					/* Image Engineering EX1 */
 	instColorHug,				/* Hughski ColorHug */
 	instColorHug2,				/* Hughski ColorHug2 */

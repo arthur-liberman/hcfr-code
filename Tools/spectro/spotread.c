@@ -65,7 +65,7 @@
 #include "ccmx.h"
 #include "instappsup.h"
 #ifdef ENABLE_USB
-#include "spyd2.h"
+# include "spyd2.h"
 #endif
 
 #if defined (NT)
@@ -308,7 +308,7 @@ usage(char *diag, ...) {
 	fprintf(stderr," -I illum             Set simulated instrument illumination using FWA (def -i illum):\n");
 	fprintf(stderr,"                       M0, M1, M2, A, C, D50, D50M2, D65, F5, F8, F10 or file.sp]\n");
 #endif
-	fprintf(stderr," -i illum             Choose illuminant for computation of CIE XYZ from spectral data & FWA:\n");
+	fprintf(stderr," -i illum             Choose illuminant for computation of CIE XYZ from spectral reflectance & FWA:\n");
 #ifndef SALONEINSTLIB
 	fprintf(stderr,"                       A, C, D50 (def.), D50M2, D65, F5, F8, F10 or file.sp\n");
 #else
@@ -333,7 +333,7 @@ usage(char *diag, ...) {
 	fprintf(stderr," -h                   Display LCh instead of Lab\n");
 	fprintf(stderr," -V                   Show running average and std. devation from ref.\n");
 #ifndef SALONEINSTLIB
-	fprintf(stderr," -T                   Display correlated color temperatures and CRI\n");
+	fprintf(stderr," -T                   Display correlated color temperatures, CRI and TLCI\n");
 #endif /* !SALONEINSTLIB */
 //	fprintf(stderr," -K type              Run instrument calibration first\n");
 	fprintf(stderr," -N                   Disable auto calibration of instrument\n");
@@ -402,8 +402,10 @@ int main(int argc, char *argv[]) {
 	inst_code rv;
 	int uswitch = 0;				/* Instrument switch is enabled */
 	int spec = 0;					/* Need spectral data for observer/illuminant flag */
+	int tillum_set = 0;				/* User asked for custom target illuminant spectrum */
 	icxIllumeType tillum = icxIT_none;	/* Target/simulated instrument illuminant */ 
 	xspect cust_tillum, *tillump = NULL; /* Custom target/simulated illumination spectrum */
+	int illum_set = 0;				/* User asked for custom illuminant spectrum */
 	icxIllumeType illum = icxIT_D50;	/* Spectral defaults */
 	xspect cust_illum;				/* Custom illumination spectrum */
 	icxObserverType obType = icxOT_default;
@@ -412,7 +414,7 @@ int main(int argc, char *argv[]) {
 	xsp2cie *sp2cie = NULL;			/* default conversion */
 	xsp2cie *sp2cief[26];			/* FWA corrected conversions */
 	double wXYZ[3] = { -10.0, 0, 0 };/* White XYZ for display white relative */
-	double chmat[3][3];				/* Chromatic adapation matrix */
+	double chmat[3][3];				/* Chromatic adapation matrix for white point relative */
 	double XYZ[3] = { 0.0, 0.0, 0.0 };		/* Last XYZ scaled 0..100 or absolute */
 	double Lab[3] = { -10.0, 0, 0};	/* Last Lab */
 	double rXYZ[3] = { 0.0, -10.0, 0};	/* Reference XYZ */
@@ -501,33 +503,33 @@ int main(int argc, char *argv[]) {
 				if (na == NULL) usage("Paramater expected following -I");
 				if (strcmp(na, "A") == 0
 				 || strcmp(na, "M0") == 0) {
-					spec = 1;
+					tillum_set = spec = 1;
 					tillum = icxIT_A;
 				} else if (strcmp(na, "C") == 0) {
-					spec = 1;
+					tillum_set = spec = 1;
 					tillum = icxIT_C;
 				} else if (strcmp(na, "D50") == 0
 				        || strcmp(na, "M1") == 0) {
-					spec = 1;
+					tillum_set = spec = 1;
 					tillum = icxIT_D50;
 				} else if (strcmp(na, "D50M2") == 0
 				        || strcmp(na, "M2") == 0) {
-					spec = 1;
+					tillum_set = spec = 1;
 					tillum = icxIT_D50M2;
 				} else if (strcmp(na, "D65") == 0) {
-					spec = 1;
+					tillum_set = spec = 1;
 					tillum = icxIT_D65;
 				} else if (strcmp(na, "F5") == 0) {
-					spec = 1;
+					tillum_set = spec = 1;
 					tillum = icxIT_F5;
 				} else if (strcmp(na, "F8") == 0) {
-					spec = 1;
+					tillum_set = spec = 1;
 					tillum = icxIT_F8;
 				} else if (strcmp(na, "F10") == 0) {
-					spec = 1;
+					tillum_set = spec = 1;
 					tillum = icxIT_F10;
 				} else {	/* Assume it's a filename */
-					spec = 1;
+					tillum_set = spec = 1;
 					tillum = icxIT_custom;
 					if (read_xspect(&cust_tillum, na) != 0)
 						usage("Failed to read custom target illuminant spectrum in file '%s'",na);
@@ -539,32 +541,32 @@ int main(int argc, char *argv[]) {
 				fa = nfa;
 				if (na == NULL) usage("Paramater expected following -i");
 				if (strcmp(na, "A") == 0) {
-					spec = 1;
+					illum_set = spec = 1;
 					illum = icxIT_A;
 				} else if (strcmp(na, "C") == 0) {
-					spec = 1;
+					illum_set = spec = 1;
 					illum = icxIT_C;
 				} else if (strcmp(na, "D50") == 0) {
-					spec = 1;
+					illum_set = spec = 1;
 					illum = icxIT_D50;
 				} else if (strcmp(na, "D50M2") == 0) {
-					spec = 1;
+					illum_set = spec = 1;
 					illum = icxIT_D50M2;
 				} else if (strcmp(na, "D65") == 0) {
-					spec = 1;
+					illum_set = spec = 1;
 					illum = icxIT_D65;
 #ifndef SALONEINSTLIB
 				} else if (strcmp(na, "F5") == 0) {
-					spec = 1;
+					illum_set = spec = 1;
 					illum = icxIT_F5;
 				} else if (strcmp(na, "F8") == 0) {
-					spec = 1;
+					illum_set = spec = 1;
 					illum = icxIT_F8;
 				} else if (strcmp(na, "F10") == 0) {
-					spec = 1;
+					illum_set = spec = 1;
 					illum = icxIT_F10;
 				} else {	/* Assume it's a filename */
-					spec = 1;
+					illum_set = spec = 1;
 					illum = icxIT_custom;
 					if (read_xspect(&cust_illum, na) != 0)
 						usage("Unable to read custom illuminant file '%s'",na);
@@ -631,9 +633,9 @@ int main(int argc, char *argv[]) {
 				if (argv[fa][2] != '\000') {
 					fa = nfa;
 					if (argv[fa][2] == 'b' || argv[fa][2] == 'B')
-						emiss = 2;
+						emiss = 2;		/* Display brightness relative */
 					else if (argv[fa][2] == 'w' || argv[fa][2] == 'W')
-						emiss = 3;
+						emiss = 3;		/* Display white point relative */
 					else
 						usage("-p modifier '%c' not recognised",argv[fa][2]);
 				}
@@ -786,6 +788,11 @@ int main(int argc, char *argv[]) {
 			strncpy(ccxxname,na,MAXNAMEL-1); ccxxname[MAXNAMEL-1] = '\000';
 		}
 	}
+
+	/* Check for some user mistakes */
+
+	if ((tillum_set || illum_set) && emiss)
+		warning("-I or -i parameter makes no sense with emissive or ambient measurement!");
 
 	/* - - - - - - - - - - - - - - - - - - -  */
 	if ((icmps = new_icompaths(g_log)) == NULL)
@@ -941,24 +948,6 @@ int main(int argc, char *argv[]) {
 					refrmode = -1;
 				}
 			}
-			/* Set display type */
-			if (dtype != 0) {
-				if (cap2 & inst2_disptype) {
-					int ix;
-					if ((ix = inst_get_disptype_index(it, dtype, 0)) < 0) {
-						it->del(it);
-						usage("Failed to locate display type matching '%c'",dtype);
-					}
-		
-					if ((rv = it->set_disptype(it, ix)) != inst_ok) {
-						printf("Setting display type ix %d not supported by instrument\n",ix);
-						it->del(it);
-						return -1;
-					}
-				} else
-					printf("Display type ignored - instrument doesn't support display type selection\n");
-			}
-
 		} else {
 			if (!IMODETST(cap, inst_mode_ref_spot)
 			 || it->check_mode(it, inst_mode_ref_spot) != inst_ok) {
@@ -967,6 +956,24 @@ int main(int argc, char *argv[]) {
 				it->del(it);
 				return -1;
 			}
+		}
+
+		/* Set displaytype or calibration mode */
+		if (dtype != 0) {
+			if (cap2 & inst2_disptype) {
+				int ix;
+				if ((ix = inst_get_disptype_index(it, dtype, 0)) < 0) {
+					it->del(it);
+					usage("Failed to locate display type matching '%c'",dtype);
+				}
+	
+				if ((rv = it->set_disptype(it, ix)) != inst_ok) {
+					printf("Setting display type ix %d not supported by instrument\n",ix);
+					it->del(it);
+					return -1;
+				}
+			} else
+				printf("Display/calibration type ignored - instrument doesn't support it\n");
 		}
 
 		/* If we have non-standard observer we need spectral or CCSS */
@@ -1597,7 +1604,7 @@ int main(int argc, char *argv[]) {
 		}
 
 #ifdef DEBUG
-		printf("read_sample returned '%s' (%s)\n",
+		printf("\nread_sample returned '%s' (%s)\n",
 	       it->inst_interp_error(it, rv), it->interp_error(it, rv));
 #endif /* DEBUG */
 
@@ -1771,9 +1778,21 @@ int main(int argc, char *argv[]) {
 		if (ch == 'S' || ch == 's') {	/* Save last spectral into file */
 			if (sp.spec_n > 0) {
 				char buf[500];
+				xspect tsp;
+
+				if (val.sp.spec_n <= 0)
+					error("Instrument didn't return spectral data");
+
+				tsp = val.sp;		/* Temp. save spectral reading */
+
+				/* Compute FWA corrected spectrum */
+				if (dofwa != 0) {
+					sp2cief[fidx]->sconvert(sp2cief[fidx], &tsp, NULL, &tsp);
+				}
+
 				printf("\nEnter filename (ie. xxxx.sp): "); fflush(stdout);
 				if (getns(buf, 500) != NULL && strlen(buf) > 0) {
-					if(write_xspect(buf, &sp))
+					if(write_xspect(buf, &tsp))
 						printf("\nWriting file '%s' failed\n",buf);
 					else
 						printf("\nWriting file '%s' succeeded\n",buf);
@@ -2013,22 +2032,27 @@ int main(int argc, char *argv[]) {
 				double yy[XSPECT_MAX_BANDS];
 				double yr[XSPECT_MAX_BANDS];
 				double xmin, xmax, ymin, ymax;
+				xspect trsp = rsp;
 				xspect *ss;		/* Spectrum range to use */
 				int nn;
 
-				if (rsp.spec_n > 0) {
+				if (dofwa != 0) {
+					sp2cief[fidx]->sconvert(sp2cief[fidx], &trsp, NULL, &tsp);
+				}
+
+				if (trsp.spec_n > 0) {
 					if ((tsp.spec_wl_long - tsp.spec_wl_short) > 
-					    (rsp.spec_wl_long - rsp.spec_wl_short))
+					    (trsp.spec_wl_long - trsp.spec_wl_short))
 						ss = &tsp;
 					else
-						ss = &rsp;
+						ss = &trsp;
 				} else 
 					ss = &tsp;
 
-				if (tsp.spec_n > rsp.spec_n)
+				if (tsp.spec_n > trsp.spec_n)
 					nn = tsp.spec_n;
 				else
-					nn = rsp.spec_n;
+					nn = trsp.spec_n;
 
 				if (nn > XSPECT_MAX_BANDS)
 					error("Got > %d spectral values (%d)",XSPECT_MAX_BANDS,nn);
@@ -2043,7 +2067,7 @@ int main(int argc, char *argv[]) {
 					yy[j] = value_xspect(&tsp, xx[j]);
 
 					if (rLab[0] >= -1.0) {	/* If there is a reference */
-						yr[j] = value_xspect(&rsp, xx[j]);
+						yr[j] = value_xspect(&trsp, xx[j]);
 					}
 				}
 				
@@ -2189,9 +2213,6 @@ int main(int argc, char *argv[]) {
 				  else {	/* emiss == 3, white point relative */
 
 					/* Normalize to white and scale to 0..100 */
-//					XYZ[0] = XYZ[0] * icmD50_100.X / wXYZ[0];
-//					XYZ[1] = XYZ[1] * icmD50_100.Y / wXYZ[1];
-//					XYZ[2] = XYZ[2] * icmD50_100.Z / wXYZ[2];
 					icmMulBy3x3(XYZ, chmat, XYZ);
 					icmScale3(XYZ, XYZ, 100.0);
 				}
@@ -2313,9 +2334,17 @@ int main(int argc, char *argv[]) {
 #ifndef SALONEINSTLIB
 			if (val.sp.spec_n > 0 && (ambient || doCCT)) {
 				int invalid = 0;
+				double RR[14];
 				double cri;
-				cri = icx_CIE1995_CRI(&invalid, &sp);
-				printf(" Color Rendering Index (Ra) = %.1f%s\n",cri,invalid ? " (Invalid)" : "");
+				cri = icx_CIE1995_CRI(&invalid, RR, &sp);
+				printf(" Color Rendering Index (Ra) = %.1f [ R9 = %.1f ]%s\n",
+				                       cri, RR[9-1], invalid ? " (Invalid)" : "");
+			}
+			if (val.sp.spec_n > 0 && (ambient || doCCT)) {
+				int invalid = 0;
+				double tlci;
+				tlci = icx_EBU2012_TLCI(&invalid, &sp);
+				printf(" Television Lighting Consistency Index 2012 (Qa) = %.1f%s\n",tlci,invalid ? " (Invalid)" : "");
 			}
 #endif
 

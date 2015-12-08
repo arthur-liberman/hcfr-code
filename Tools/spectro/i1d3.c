@@ -34,6 +34,10 @@
    and agreed to support.
  */
 
+/* TTBD:
+
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -70,6 +74,8 @@
 #define I1D3_MEAS_TIMEOUT 40.0      /* Longest reading timeout in seconds */ 
 									/* Typically 20.0 is the maximum needed. */
 
+#define I1D3_SAT_FREQ 100000.0		/* L2F sensor frequency limit */
+
 static inst_code i1d3_interp_code(inst *pp, int ec);
 static inst_code i1d3_check_unlock(i1d3 *p);
 
@@ -105,6 +111,12 @@ static int icoms2i1d3_err(int se, int torc) {
 /* and byte 1 is the sub code for command 0x00 . The response is byte 0 */
 /* error code, byte 1 echoing the major command number. */
 /* Major code 00 works when locked ? */
+/* Response codes:
+
+	00	OK
+	83	After pulse count measure in low light. Means ???
+
+ */
 typedef enum {
     i1d3_getinfo      = 0x0000,		/* Product name + Firmware version + Firmware Date string */
     i1d3_status       = 0x0001,		/* status number ?? */
@@ -174,7 +186,7 @@ static char *inst_desc(i1Disp3CC cc) {
 /* The i1d3 is set up as an HID device, which can ease the need */
 /* for providing a kernel driver on MSWindows systems, */
 /* but it doesn't seem to actually be used as an HID device. */
-/* We allow for communicating via libusb, or an HID driver. */
+/* We allow for communicating via usbio, or an HID driver. */
 static inst_code
 i1d3_command(
 	i1d3 *p,					/* i1d3 object */
@@ -263,6 +275,21 @@ i1d3_command(
 	if (rv == inst_ok && rbytes != 64) {
 		if (!nd) a1logd(p->log, 1, "i1d3_command: rbytes = %d != 64\n",rbytes);
 		rv = i1d3_interp_code((inst *)p, I1D3_BAD_RD_LENGTH);
+	}
+
+	/* Hmm. Not sure about this bug workaround. Is this a rev B thing ? */
+	/* May get status 0x83 on i1d3_measure2 when there are no transitions ? */ 
+	/* If so, ignore the error. */
+	if (rv == inst_ok && cc == i1d3_measure2 && recv[1] == 0x02 && recv[0] == 0x83) {
+		int i;
+		for (i = 2; i < 14; i++) {
+			if (recv[i] != 0)
+				break;
+		}
+		if (i >= 14) {		/* returned all zero's */
+			if (!nd) a1logd(p->log, 1, "i1d3_command: ignoring status byte = 0x%x\n",recv[0]);
+			recv[0] = 0x00;	/* Fudge OK status */
+		}
 	}
 
 	/* The first byte returned seems to be a command result error code. */
@@ -750,13 +777,13 @@ i1d3_read_external_eeprom(
 
 
 /* Take a raw measurement using a given integration time. */
-/* The measureent is the count of (both) edges from the L2V */
+/* The measurent is the count of (both) edges from the L2V */
 /* over the integration time */
 static inst_code
 i1d3_freq_measure(
 	i1d3 *p,				/* Object */
 	double *inttime,		/* Integration time in seconds. (Return clock rounded) */
-	double rgb[3]			/* Return the RGB values */
+	double rgb[3]			/* Return the RGB count values */
 ) {
 	int intclks;
 	unsigned char todev[64];
@@ -790,7 +817,7 @@ i1d3_freq_measure(
 /* Take a raw measurement that returns the number of clocks */
 /* between and initial edge and edgec[] subsequent edges of the L2F. */
 /* The edge count must be between 1 and 65535 inclusive. */ 
-/* Both edges are counted. It's advisable to use and even edgec[], */
+/* Both edges are counted. It's advisable to use an even edgec[], */
 /* because the L2F output may not be symetric. */
 /* If there are no edges within 10 seconds, return a count of 0 */
 static inst_code
@@ -894,7 +921,7 @@ i1d3_set_LEDs(
 	timestamp them.
 	Interpolate values up to .05 msec regular samples.
 	Do an auto-correlation on the samples.
-	Pick the longest peak between 10 andf 40Hz as the best sample period,
+	Pick the longest peak between 10 and 40Hz as the best sample period,
 	and halve this to use as the quantization value (ie. make
 	it lie between 20 and 80 Hz).
 
@@ -1568,6 +1595,11 @@ i1d3_take_emis_measurement(
 		}
 
 		a1logd(p->log,3,"Got %f %f %f raw, %f %f %f Hz\n",rmeas[0],rmeas[1],rmeas[2],rgb[0],rgb[1],rgb[2]);
+
+		for (i = 0; i < 3; i++) {
+			if (rgb[i] > I1D3_SAT_FREQ)
+				return i1d3_interp_code((inst *)p, I1D3_TOOBRIGHT);
+		}
 	}
 
 	/* If some period measurement will be done */
@@ -1740,7 +1772,7 @@ i1d3_take_emis_measurement(
 					double mint;
 
 					/* Blend down from target of 200 to minimum target of 1 edge over 8 sec. */
-					/* (Allow margine away from max integration time of 10 secs) */
+					/* (Allow margine away from max integration time of 6 secs) */
 					mint = p->inttime/6.0;
 					bl = (nedgec - mint)/(200.0 - mint);
 					if (bl < 0.0)
@@ -1753,8 +1785,8 @@ i1d3_take_emis_measurement(
 
 					tintt[i] = tedges/(edgec[i] * p->clk_freq/rmeas[i]);
 
-					if (tintt[i] > 6.0)		/* Maximum possible is 10 seconds */
-						tintt[i] = 6.0;
+					if (tintt[i] > 6.0)		/* Maximum possible is 6 seconds */
+						tintt[i] = 6.0;		/* to ensure it completes within the 20 timeout */
 
 					if (p->refperiod > 0.0) {		/* If we have a refresh period */
 						int n;
@@ -1863,6 +1895,11 @@ i1d3_take_emis_measurement(
 
 					a1logd(p->log,3,"Got %f %f %f raw, %f %f %f Hz after re-measure\n",rmeas[0],rmeas[1],rmeas[2],rgb[0],rgb[1],rgb[2]);
 
+					for (i = 0; i < 3; i++) {
+						if (rgb[i] > I1D3_SAT_FREQ)
+							return i1d3_interp_code((inst *)p, I1D3_TOOBRIGHT);
+					}
+
 				} else {
 					/* Use period measurement of the target number of edges */
 					/* (Note that if the patch isn't constant and drops compared to */
@@ -1907,6 +1944,11 @@ i1d3_take_emis_measurement(
 	}
 
 	a1logd(p->log,3,"Cooked RGB = %f %f %f\n",rgb[0],rgb[1],rgb[2]);
+
+	for (i = 0; i < 3; i++) {
+		if (rgb[i] > I1D3_SAT_FREQ)
+			return i1d3_interp_code((inst *)p, I1D3_TOOBRIGHT);
+	}
 	
 	return inst_ok;
 }
@@ -1983,7 +2025,7 @@ static inst_code i1d3_decode_intEE(
 	p->serial_no[20] = '\000';
 
 	strncpy(p->vers_no, (char *)buf + 0x2C, 10);
-	p->serial_no[10] = '\000';
+	p->vers_no[10] = '\000';
 
 	/* Read the black level offset */
 	for (i = 0; i < 3; i++) {
@@ -2395,7 +2437,7 @@ i1d3_set_cal(i1d3 *p) {
 /* ------------------------------------------------------------------------ */
 
 /* Establish communications with a I1D3 */
-/* Return DTP_COMS_FAIL on failure to establish communications */
+/* Return I1D3_COMS_FAIL on failure to establish communications */
 static inst_code
 i1d3_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	i1d3 *p = (i1d3 *) pp;
@@ -2945,7 +2987,7 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 
 		p->mininttime = 2.0 * p->dinttime;
 
-		if (*calc != inst_calc_emis_80pc) {
+		if ((*calc & inst_calc_cond_mask) != inst_calc_emis_80pc) {
 			*calc = inst_calc_emis_80pc;
 			return inst_cal_setup;
 		}
@@ -3287,6 +3329,9 @@ i1d3_interp_error(inst *pp, int ec) {
 		case I1D3_INT_THREADFAILED:
 			return "Starting diffuser position thread failed";
 
+		case I1D3_TOOBRIGHT:
+			return "Too bright to read accuractly";
+
 		case I1D3_NO_COMS:
 			return "Communications hasn't been established";;
 		case I1D3_NOT_INITED:
@@ -3355,11 +3400,13 @@ i1d3_interp_code(inst *pp, int ec) {
 		case I1D3_BAD_EX_CHSUM:
 			return inst_hardware_fail | ec;
 
+		case I1D3_TOOBRIGHT:
+			return inst_misread | ec;
+
 /* Unused:
 	inst_notify
 	inst_warning
 	inst_unknown_model
-	inst_misread 
 	inst_nonesaved
 	inst_nochmatch
 	inst_needs_cal
@@ -3411,6 +3458,7 @@ i1d3_del(inst *pp) {
 		if (p->samples != NULL)
 			free(p->samples);
 		amutex_del(p->lock);
+		p->vdel(pp);
 		free(p);
 	}
 }
@@ -4012,7 +4060,7 @@ extern i1d3 *new_i1d3(icoms *icom, instType itype) {
 	p->del               = i1d3_del;
 
 	p->icom = icom;
-	p->itype = icom->itype;
+	p->itype = itype;
 
 	amutex_init(p->lock);
 	icmSetUnity3x3(p->ccmat);

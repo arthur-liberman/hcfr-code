@@ -92,6 +92,8 @@ cgats **pocg        /* return CGATS structure */
 		ocg->add_kword(ocg, 0, "UI_SELECTORS", p->sel, NULL);
 	if (p->ref != NULL)
 		ocg->add_kword(ocg, 0, "REFERENCE",p->ref, NULL);
+	if (p->oem != 0)
+		ocg->add_kword(ocg, 0, "OEM","YES", NULL);
 
 	ocg->add_kword(ocg, 0, "ORIGINATOR", "Argyll ccmx", NULL);
 	ocg->add_kword(ocg, 0, "CREATED",atm, NULL);
@@ -271,6 +273,22 @@ cgats *icg			/* input cgats structure */
 		}
 	}
 
+	if ((ti = icg->find_kword(icg, 0, "OEM")) >= 0) {
+		if ((p->ref = strdup(icg->t[0].kdata[ti])) == NULL) {
+			sprintf(p->err, "read_ccmx: malloc failed");
+			return 2;
+		}
+	}
+
+	if ((ti = icg->find_kword(icg, 0, "OEM")) >= 0) {
+		if (stricmp(icg->t[0].kdata[ti], "YES") == 0)
+			p->oem = 1;
+		else if (stricmp(icg->t[0].kdata[ti], "NO") == 0)
+			p->oem = 0;
+	} else {
+		p->oem = 0;
+	}
+
 	/* Locate the fields */
 	for (i = 0; i < 3; i++) {	/* XYZ fields */
 		if ((spi[i] = icg->find_field(icg, 0, xyzfname[i])) < 0) {
@@ -392,6 +410,7 @@ int refrmode,		/* Display refresh mode, -1 = unknown, 0 = n, 1 = yes */
 int cbid,			/* Display type calibration base ID, 0 = unknown */
 char *sel,			/* UI selector characters - NULL for none */
 char *refd,			/* Reference spectrometer description (optional) */
+int oem,			/* NZ if OEM source */
 double mtx[3][3]	/* Transform matrix to copy from */
 ) {
 	if ((p->desc = desc) != NULL && (p->desc = strdup(desc)) == NULL) {
@@ -420,6 +439,8 @@ double mtx[3][3]	/* Transform matrix to copy from */
 		sprintf(p->err, "set_ccmx: malloc failed");
 		return 2;
 	}
+
+	p->oem = oem;
 
 	icmCpy3x3(p->matrix, mtx);
 
@@ -540,6 +561,7 @@ int refrmode,		/* Display refresh mode, -1 = unknown, 0 = n, 1 = yes */
 int cbid,			/* Display type calibration base index, 0 = unknown */
 char *sel,			/* UI selector characters - NULL for none */
 char *refd,			/* Reference spectrometer description (optional) */
+int oem,			/* NZ if OEM source */
 int npat,			/* Number of samples in following arrays */
 double (*refs)[3],	/* Array of XYZ values from spectrometer */
 double (*cols)[3]		/* Array of XYZ values from colorimeter */
@@ -571,10 +593,13 @@ double (*cols)[3]		/* Array of XYZ values from colorimeter */
 			return 2;
 		}
 	}
+
 	if ((p->ref = refd) != NULL && (p->ref = strdup(refd)) == NULL) {
 		sprintf(p->err, "create_ccmx: malloc failed");
 		return 2;
 	}
+
+	p->oem = oem;
 
 	/* Find the white patch */
 
@@ -660,6 +685,7 @@ int refrmode,		/* Display refresh mode, -1 = unknown, 0 = n, 1 = yes */
 int cbid,			/* Display type calibration base index, 0 = unknown */
 char *sel,			/* UI selector characters - NULL for none */
 char *refd,			/* Reference spectrometer description (optional) */
+int oem,
 int npat,			/* Number of samples in following arrays */
 double (*refs)[3],	/* Array of XYZ values from spectrometer */
 double (*cols)[3]		/* Array of XYZ values from colorimeter */

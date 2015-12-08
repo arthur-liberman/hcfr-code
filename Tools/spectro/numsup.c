@@ -79,7 +79,7 @@ void set_exe_path(char *argv0) {
 		if (i < 4 || _stricmp(exe_path +i -4, ".exe") != 0)
 			strcat(exe_path, ".exe");
 
-		if ((mh = GetModuleHandle(exe_path)) == NULL) {
+		if ((mh = GetModuleHandle((LPCSTR)exe_path)) == NULL) {
 			a1loge(g_log, 1, "set_exe_path: GetModuleHandle '%s' failed with%d",
 			                                            exe_path,GetLastError());
 			exe_path[0] = '\000';
@@ -95,7 +95,7 @@ void set_exe_path(char *argv0) {
 				exe_path[0] = '\000';
 			return;
 			}
-			if ((i = GetModuleFileName(mh, tpath, pl)) == 0) {
+			if ((i = GetModuleFileName(mh, (LPSTR)(tpath), pl)) == 0) {
 				a1loge(g_log, 1, "set_exe_path: GetModuleFileName '%s' failed with%d",
 				                                                tpath,GetLastError());
 				exe_path[0] = '\000';
@@ -530,7 +530,7 @@ error(char *fmt, ...) {
 
 /* a * b */
 static size_t ssat_mul(size_t a, size_t b) {
-	size_t c;
+//	size_t c;
 
 	if (a == 0 || b == 0)
 		return 0;

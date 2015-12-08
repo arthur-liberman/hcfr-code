@@ -223,7 +223,7 @@ typedef enum {
 	icSigNamedColorTag                     = 0x6E636f6CL,  /* 'ncol' V2.0 */
 	icSigNamedColor2Tag                    = 0x6E636C32L,  /* 'ncl2' V2.1+ */
 	icSigOutputResponseTag                 = 0x72657370L,  /* 'resp' V2.2+ */
-	icSigPerceptualRenderingIntentGamutTag = 0x72696730L,  /* 'rig0' ??? */
+	icSigPerceptualRenderingIntentGamutTag = 0x72696730L,  /* 'rig0' V4.3+ */
 	icSigPreview0Tag                       = 0x70726530L,  /* 'pre0' */
 	icSigPreview1Tag                       = 0x70726531L,  /* 'pre1' */
 	icSigPreview2Tag                       = 0x70726532L,  /* 'pre2' */
@@ -324,6 +324,7 @@ typedef enum {
  * Note that only icSigXYZData and icSigLabData are valid
  * Profile Connection Spaces (PCSs)
  */ 
+#ifdef SALONEINSTLIB
 typedef enum {
     icSigXYZData                        = 0x58595A20L,  /* 'XYZ ' */
     icSigLabData                        = 0x4C616220L,  /* 'Lab ' */
@@ -360,7 +361,7 @@ typedef enum {
 
     icMaxEnumData                       = icMaxTagVal   
 } icColorSpaceSignature;
-
+#endif
 /* profileClass enumerations */
 typedef enum {
     icSigInputClass                     = 0x73636E72L,  /* 'scnr' */
@@ -385,7 +386,7 @@ typedef enum {
 
 /* Rendering Intent Gamut Signatures */
 typedef enum {
-    icSigPerceptualReferenceMediumGamut = 0x70726d67L,  /* 'prmg' */
+    icSigPerceptualReferenceMediumGamut = 0x70726d67L,  /* 'prmg' V4.3+ */
     icMaxEnumReferenceMediumGamut       = icMaxTagVal  
 } icReferenceMediumGamutSignature;
 

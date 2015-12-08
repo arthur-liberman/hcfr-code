@@ -47,6 +47,7 @@
 icompath icomFakeDevice = { instFakeDisp, "Fake Display Device" };
 
 
+
 /* Free an icompath */
 static
 void icompath_del_contents(icompath *p) {
@@ -101,6 +102,7 @@ static icompath *icompaths_get_path(
 		return &icomFakeDevice;
 
 
+
 	if (port <= 0 || port > p->npaths)
 		return NULL;
 
@@ -152,7 +154,7 @@ static int icompaths_add_path(icompaths *p) {
 
 /* Add a serial path */
 /* return icom error */
-static int icompaths_add_serial(icompaths *p, char *name, char *spath, int fast) {
+static int icompaths_add_serial(icompaths *p, char *name, char *spath, icom_ser_attr sattr)  {
 	int rv;
 
 	if ((rv = icompaths_add_path(p)) != ICOM_OK)
@@ -166,7 +168,7 @@ static int icompaths_add_serial(icompaths *p, char *name, char *spath, int fast)
 		a1loge(p->log, ICOM_SYS, "icompaths: strdup failed!\n");
 		return ICOM_SYS;
 	}
-	p->paths[p->npaths-1]->fast = fast;
+	p->paths[p->npaths-1]->sattr = sattr;
 
 	return ICOM_OK;
 }
@@ -319,7 +321,7 @@ static int icom_copy_path_to_icom(icoms *p, icompath *pp) {
 			a1loge(p->log, ICOM_SYS, "copy_path_to_icom: malloc spath failed\n");
 			return ICOM_SYS;
 		}
-		p->fast = pp->fast;
+		p->sattr = pp->sattr;
 	} else {
 		p->spath = NULL;
 	}
@@ -369,17 +371,17 @@ static int
 icoms_write_read(
 icoms *p,
 char *wbuf,			/* Write puffer */
-int nwch,			/* if > 0, number of characters to write */
+int nwch,			/* if > 0, number of characters to write, else nul terminated */
 char *rbuf,			/* Read buffer */
 int bsize,			/* Buffer size */
 int *bread,			/* Bytes read (not including forced '\000') */
 char *tc,			/* Terminating characers, NULL for none or char count mode */
 int ntc,			/* Number of terminating characters needed, or char count needed */
-double tout
+double tout			/* Timeout for write and then read (i.e. max = 2 x tout) */
 ) {
 	int rv = ICOM_OK;
 
-	a1logd(p->log, 8, "icoms_write_read: called with '%s'\n",icoms_fix(wbuf));
+	a1logd(p->log, 8, "icoms_write_read: called\n");
 
 	if (p->write == NULL || p->read == NULL) {	/* Neither serial nor USB ? */
 		a1loge(p->log, ICOM_NOTS, "icoms_write_read: Neither serial nor USB device!\n");
@@ -387,14 +389,15 @@ double tout
 	}
 
 #if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
-	/* Flush any stray chars if serial */
-	if (p->usbd == NULL && p->hidd == NULL) {
+	/* Flush any stray chars if serial ?? */
+	if (0 && p->usbd == NULL && p->hidd == NULL) {
+		char tbuf[100];
 		int debug = p->log->debug;
 
 		if (debug < 8)
 			p->log->debug =  0;
 		for (; rv == ICOM_OK;) 	/* Until we get a timeout */
-			rv = p->read(p, rbuf, bsize, NULL, NULL, bsize, 0.01);
+			rv = p->read(p, tbuf, 100, NULL, NULL, 100, 0.01);
 		p->log->debug = debug;
 		rv = ICOM_OK;
 	}
@@ -415,6 +418,14 @@ double tout
 	a1logd(p->log, 8, "icoms_write_read: returning 0x%x\n",rv);
 
 	return rv;
+}
+
+/* Optional callback to client from device */ 
+/* Default implementation is a NOOP */
+static int icoms_interrupt(icoms *p,
+	int icom_int		/* Interrupt cause */
+) {
+	return ICOM_OK;
 }
 
 /* icoms Constructor */
@@ -472,6 +483,7 @@ icoms *new_icoms(
 	p->write = NULL;	/* Serial open or set_methods will set */
 	p->read = NULL;
 	p->write_read = icoms_write_read;
+	p->interrupt = icoms_interrupt;
 
 	p->del = icoms_del;
 

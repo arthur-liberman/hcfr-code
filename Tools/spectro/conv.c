@@ -68,6 +68,7 @@
 //#include <stdbool.h>
 #include <sys/sysctl.h>
 #include <sys/param.h>
+#include <Carbon/Carbon.h>
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/IOKitLib.h>
 #include <IOKit/serial/IOSerialKeys.h>
@@ -130,7 +131,11 @@ int next_con_char(void) {
 	return c;
 }
 
-/* Horrible hack to poll stdin when we're not interactive */
+/* Horrible hack to poll stdin when we're not interactive. */
+/* This has the drawback that the char and returm must be */
+/* written in one operation for the character to be recognised - */
+/* trying to do this manually typically doesn't work unless you are */
+/* very fast and lucky. */
 static int th_read_char(void *pp) {
 	char *rp = (char *)pp;
 	HANDLE stdinh;
@@ -162,6 +167,7 @@ int poll_con_char(void) {
 		/* any of MSWin's async file read functions, because we */
 		/* have no way of ensuring that the STD_INPUT_HANDLE has been */
 		/* opened with FILE_FLAG_OVERLAPPED. Used a thread instead... */
+		/* ReOpenFile() would fix this, but it's not available in WinXP, only Visa+ :-( */
 		if ((getch_thread = new_athread(th_read_char, &c)) != NULL) {
 			HANDLE stdinh;
 
@@ -258,12 +264,14 @@ static int beep_msec;
 /* Delayed beep handler */
 static int delayed_beep(void *pp) {
 	msec_sleep(beep_delay);
+	a1logd(g_log,8, "msec_beep activate\n");
 	Beep(beep_freq, beep_msec);
 	return 0;
 }
 
 /* Activate the system beeper */
 void msec_beep(int delay, int freq, int msec) {
+	a1logd(g_log,8, "msec_beep %d msec\n",msec);
 	if (delay > 0) {
 		if (beep_thread != NULL)
 			beep_thread->del(beep_thread);
@@ -273,13 +281,14 @@ void msec_beep(int delay, int freq, int msec) {
 		if ((beep_thread = new_athread(delayed_beep, NULL)) == NULL)
 			a1logw(g_log, "msec_beep: Delayed beep failed to create thread\n");
 	} else {
+		a1logd(g_log,8, "msec_beep activate\n");
 		Beep(freq, msec);
 	}
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-extern int acond_timedwait_imp(HANDLE cond, CRITICAL_SECTION *lock, int msec) {
+int acond_timedwait_imp(HANDLE cond, CRITICAL_SECTION *lock, int msec) {
 	int rv;
 	LeaveCriticalSection(lock);
 	rv = WaitForSingleObject(cond, msec);
@@ -544,6 +553,8 @@ void empty_con_chars(void) {
 }
 
 /* Sleep for the given number of msec */
+/* (Note that OS X 10.9+ App Nap can wreck this, unless */
+/*  it is turned off.) */
 void msec_sleep(unsigned int msec) {
 #ifdef NEVER
 	if (msec > 1000) {
@@ -774,6 +785,7 @@ static int beep_msec;
 /* Delayed beep handler */
 static int delayed_beep(void *pp) {
 	msec_sleep(beep_delay);
+	a1logd(g_log,8, "msec_beep activate\n");
 #ifdef __APPLE__
 # if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1050
 	AudioServicesPlayAlertSound(kUserPreferredAlert);
@@ -1584,29 +1596,29 @@ int sa_lu_psinvert(double **out, double **in, int m, int n) {
 /* Diagnostic aids */
 
 // Print bytes as hex to debug log */
-void adump_bytes(a1log *log, char *pfx, unsigned char *buf, int base, int len) {
-	int i, j, ii;
-	char oline[200] = { '\000' }, *bp = oline;
-	for (i = j = 0; i < len; i++) {
-		if ((i % 16) == 0)
-			bp += sprintf(bp,"%s%04x:",pfx,base+i);
-		bp += sprintf(bp," %02x",buf[i]);
-		if ((i+1) >= len || ((i+1) % 16) == 0) {
-			for (ii = i; ((ii+1) % 16) != 0; ii++)
-				bp += sprintf(bp,"   ");
-			bp += sprintf(bp,"  ");
-			for (; j <= i; j++) {
-				if (!(buf[j] & 0x80) && isprint(buf[j]))
-					bp += sprintf(bp,"%c",buf[j]);
-				else
-					bp += sprintf(bp,".");
-			}
-			bp += sprintf(bp,"\n");
-			a1logd(log,0,"%s",oline);
-			bp = oline;
-		}
-	}
-}
+//void adump_bytes(a1log *log, char *pfx, unsigned char *buf, int base, int len) {
+//	int i, j, ii;
+//	char oline[200] = { '\000' }, *bp = oline;
+//	for (i = j = 0; i < len; i++) {
+//		if ((i % 16) == 0)
+//			bp += sprintf(bp,"%s%04x:",pfx,base+i);
+//		bp += sprintf(bp," %02x",buf[i]);
+//		if ((i+1) >= len || ((i+1) % 16) == 0) {
+//			for (ii = i; ((ii+1) % 16) != 0; ii++)
+//				bp += sprintf(bp,"   ");
+//			bp += sprintf(bp,"  ");
+//			for (; j <= i; j++) {
+//				if (!(buf[j] & 0x80) && isprint(buf[j]))
+//					bp += sprintf(bp,"%c",buf[j]);
+//				else
+//					bp += sprintf(bp,".");
+//			}
+//			bp += sprintf(bp,"\n");
+//			a1logd(log,0,"%s",oline);
+//			bp = oline;
+//		}
+//	}
+//}
 
 
 

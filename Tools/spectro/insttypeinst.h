@@ -20,6 +20,7 @@
 #ifdef ENABLE_FAST_SERIAL
 # include "specbos.h"
 # include "kleink10.h"
+# include "smcube.h"
 #endif
 
 #ifdef ENABLE_USB

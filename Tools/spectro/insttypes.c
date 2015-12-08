@@ -98,6 +98,8 @@ char *inst_sname(instType itype) {
 			return "K-10";
 		case instEX1:
 			return "EX1";
+		case instSMCube:
+			return "Cube";
 		case instColorHug:
 			return "ColorHug";
 		case instColorHug2:
@@ -169,6 +171,8 @@ char *inst_name(instType itype) {
 			return "Klein K-10";
 		case instEX1:
 			return "Image Engineering EX1";
+		case instSMCube:
+			return "SwatchMate Cube";
 		case instColorHug:
 			return "Hughski ColorHug";
 		case instColorHug2:
@@ -258,6 +262,8 @@ instType inst_enum(char *name) {
 		return instKleinK10;
 	else if (strcmp(name, "Image Engineering EX1") == 0)
 		return instEX1;
+	else if (strcmp(name, "SwatchMate Cube") == 0)
+		return instSMCube;
 	else if (strcmp(name, "Hughski ColorHug") == 0)
 		return instColorHug;
 	else if (strcmp(name, "Hughski ColorHug2") == 0)
@@ -445,6 +451,9 @@ int inst_illuminant(xspect *sp, instType itype) {
 			return 1;										/* Not applicable */
 
 		case instEX1:
+			return 1;										/* Not applicable */
+
+		case instSMCube:
 			return 1;										/* Not applicable */
 
 		case instColorHug:

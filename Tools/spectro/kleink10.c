@@ -62,7 +62,7 @@
 
 #undef HIGH_SPEED			/* [und] Use high speed flicker measure for refresh rate etc. */
 #define AUTO_AVERAGE		/* [def] Automatically average more readings for low light */
-#define RETRY_RANGE_ERROR 3	/* [3]   Retry range error readings 3 times */
+#define RETRY_RANGE_ERROR 4	/* [4]   Retry range error readings 4 times */
 
 #undef PLOT_REFRESH     /* [und] Plot refresh rate measurement info */
 #undef PLOT_UPDELAY     /* [und] Plot update delay measurement info */
@@ -81,6 +81,7 @@ static inst_code k10_read_flicker_samples(kleink10 *p, double duration, double *
 
 /* Decode a K10 error letter */
 static int decodeK10err(char c) {
+//printf("~1 decoding error code 0x%x\n",c);
 	if (c == '0') {
 		return K10_OK;
 	} else if (c == 'B') {
@@ -125,28 +126,34 @@ extract_ec(char *s, int *nlength, int bread) {
 		if (*p == '>')
 			break;
 	}
-	if (p < s)
+	if (p < s) {
+//printf("p %d < s %d ? %d\n", p, s, p < s);
 		return K10_BAD_RETVAL;
+	}
 //printf("trailing is at %d '%s'\n",p - s, p);
 
 	/* Find the leading '<' */
 	for (f = p-1; f >= (p-MAXECHARS-1) && f >= s; f--) {
 		if (*f == '<')
 			break;
+		/* Turns out the error code may be non-text */
+#ifdef NEVER
 		if ((*f < '0' || *f > '9')
 		 && (*f < 'a' || *f > 'z')
 		 && (*f < 'A' || *f > 'Z'))
 			return K10_BAD_RETVAL;
+#endif /* NEVER */
 	}
 	if (f < s || f < (p-MAXECHARS-1) || (p-f) <= 1) {
-//printf("f < s ? %d, f < (p-MAXECHARS-1) ? %d, (p-f) <= 1 ? %d\n",
-//f < s, f < (p-10), (p-f) <= 1);
+//printf("f < s ? %d, f < (p-MAXECHARS-1) ? %d, (p-f) <= 1 ? %d\n", f < s, f < (p-10), (p-f) <= 1);
 		return K10_BAD_RETVAL;
 	}
 //printf("leading is at %d '%s'\n",f - s, f);
 
-	if (p-f-1 <= 0)
+	if (p-f-1 <= 0) {
+//printf("p-f-1 %d <= 0 ? %d\n", p-f-1, p-f-1 <= 0);
 		return K10_BAD_RETVAL;
+	}
 
 	strncpy(tt, f+1, p-f-1);
 	tt[p-f-1] = '\000';
@@ -155,7 +162,7 @@ extract_ec(char *s, int *nlength, int bread) {
 	/* Interpret the error character(s) */
 	/* It's not clear if more than one error can be returned. */
 	/* We are only looking at the first character - we should */
-	/* really prioritize them id more than one can occur. */
+	/* really prioritize them if more than one can occur. */
 	for (p = tt; *p != '\000'; p++) {
 		rv = decodeK10err(*p);
 		break;
@@ -467,7 +474,15 @@ k10_init_inst(inst *pp) {
 	amutex_lock(p->lock);
 	
 	/* Make sure the target lights are off */
-	if ((ev = k10_command(p, "L0\r", buf, MAX_MES_SIZE, NULL, 2+3, ec_ec, 1.0)) != inst_ok) {
+	if ((ev = k10_command(p, "L0\r", buf, MAX_MES_SIZE, NULL, 2+3, ec_ec, 1.0)) != inst_ok
+		/* Strangely the L0/1 command mat return irrelevant error codes... */
+	 	&& (ev & inst_imask) != K10_UNKNOWN
+	 	&& (ev & inst_imask) != K10_BLACK_EXCESS
+		&& (ev & inst_imask) != K10_BLACK_OVERDRIVE
+		&& (ev & inst_imask) != K10_BLACK_ZERO
+		&& (ev & inst_imask) != K10_OVER_HIGH_RANGE
+		&& (ev & inst_imask) != K10_TOP_OVER_RANGE
+		&& (ev & inst_imask) != K10_BOT_UNDER_RANGE) {
 		amutex_unlock(p->lock);
 		return ev;
 	}
@@ -510,14 +525,20 @@ k10_init_inst(inst *pp) {
 	if (p->log->verb) {
 		char *model = "Unknown";
 		switch (p->model) {
+			case k10_k1:
+				model = "K-1";
+				break;
+			case k10_k8:
+				model = "K-8";
+				break;
 			case k10_k10:
-				model = "K10";
+				model = "K-10";
 				break;
 			case k10_k10a:
-				model = "K10-A";
+				model = "K-10A";
 				break;
 			case k10_kv10a:
-				model = "KV10-A";
+				model = "KV-10A";
 				break;
 		}
 		a1logv(p->log, 1, " Model:               '%s'\n",model);
@@ -886,7 +907,7 @@ kleink10 *p) {
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-static abort_flicker(kleink10 *p, int isnew, double *retbuf) {
+static void abort_flicker(kleink10 *p, int isnew, double *retbuf) {
 	char buf[MAX_MES_SIZE];
 	int bread;
 
@@ -976,7 +997,15 @@ int usefast				/* If nz use fast rate is possible */
 	/* Make sure the target lights are off */
 	if (p->lights) {
 		int se;
-		if ((ev = k10_command(p, "L0\r", buf, MAX_MES_SIZE, NULL, 2+3, ec_ec, 0.5)) != inst_ok) {
+		if ((ev = k10_command(p, "L0\r", buf, MAX_MES_SIZE, NULL, 2+3, ec_ec, 0.5)) != inst_ok
+			/* Strangely the L0/1 command mat return irrelevant error codes... */
+	 		&& (ev & inst_imask) != K10_UNKNOWN
+		 	&& (ev & inst_imask) != K10_BLACK_EXCESS
+			&& (ev & inst_imask) != K10_BLACK_OVERDRIVE
+			&& (ev & inst_imask) != K10_BLACK_ZERO
+			&& (ev & inst_imask) != K10_OVER_HIGH_RANGE
+			&& (ev & inst_imask) != K10_TOP_OVER_RANGE
+			&& (ev & inst_imask) != K10_BOT_UNDER_RANGE) {
 			amutex_unlock(p->lock);
 			free(retbuf);
 			a1logd(p->log, 1, "k10_read_flicker: L0 failed\n");
@@ -1182,9 +1211,9 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	int user_trig = 0;
 	int bsize;
 	inst_code rv = inst_protocol_error;
-	int range[3];		/* Range for RGB sensor values */
-	int i, tries,ntav = 1;	/* Number of readings to average */
-	double v, vv, XYZ[3];
+	int range[3];			/* Range for RGB sensor values */
+	int i, tries, ntav = 1;	/* Number of readings to average */
+	double v, vv;
 
 	if (!p->gotcoms)
 		return inst_no_coms;
@@ -1230,7 +1259,15 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 
 	/* Make sure the target lights are off */
 	if (p->lights) {
-		if ((rv = k10_command(p, "L0\r", buf, MAX_MES_SIZE, NULL, 2+3, ec_ec, 1.0)) != inst_ok) {
+		if ((rv = k10_command(p, "L0\r", buf, MAX_MES_SIZE, NULL, 2+3, ec_ec, 1.0)) != inst_ok
+			/* Strangely the L0/1 command mat return irrelevant error codes... */
+	 		&& (rv & inst_imask) != K10_UNKNOWN
+		 	&& (rv & inst_imask) != K10_BLACK_EXCESS
+			&& (rv & inst_imask) != K10_BLACK_OVERDRIVE
+			&& (rv & inst_imask) != K10_BLACK_ZERO
+			&& (rv & inst_imask) != K10_OVER_HIGH_RANGE
+			&& (rv & inst_imask) != K10_TOP_OVER_RANGE
+			&& (rv & inst_imask) != K10_BOT_UNDER_RANGE) {
 			amutex_unlock(p->lock);
 			a1logd(p->log, 1, "k10_read_sample: L0 failed\n");
 			return rv;
@@ -1256,7 +1293,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 		if (rv == inst_ok
 		 || (   (rv & inst_imask) != K10_TOP_OVER_RANGE  
 		     && (rv & inst_imask) != K10_BOT_UNDER_RANGE))
-			break;  
+			break;
 	}
 
 	if (rv == inst_ok)
@@ -1273,7 +1310,6 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 		if (val->XYZ[2] > v)
 			v = val->XYZ[2];
 	
-		ntav = 1;
 #ifdef AUTO_AVERAGE
 		if (!IMODETST(p->mode, inst_mode_emis_nonadaptive)) {
 			/* Decide how many extra readings to average into result. */
@@ -1292,13 +1328,26 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 				vv = 1.0 - (v - thr[2]) / (thr[3] - thr[2]);
 				vv = vv * vv * vv;
 				ntav = (int)(vv * (nav[2] - nav[3]) + nav[3] + 0.5);
-			}
+			}	/* else default 1 */
 		}
 #endif
 
+		/* Measure extras up to ntav */
 		for (i = 1; i < ntav; i++) {
-			if ((rv = k10_command(p, "N5\r", buf, MAX_MES_SIZE, &bsize, 15, ec_ec, 2.0)) != inst_ok)
+			double XYZ[3];
+
+			for (tries = 0; tries < RETRY_RANGE_ERROR; tries++) { 
+				rv = k10_command(p, "N5\r", buf, MAX_MES_SIZE, &bsize, 15, ec_ec, 2.0);
+				if (rv == inst_ok
+				 || (   (rv & inst_imask) != K10_TOP_OVER_RANGE  
+				     && (rv & inst_imask) != K10_BOT_UNDER_RANGE))
+					break;
+			}
+
+			if (rv != inst_ok) {	// An error, or retry failed
 				break;
+			}
+
 			if ((rv = decodeN5(p, XYZ, range, buf, bsize)) != inst_ok)
 				break;
 
@@ -1320,10 +1369,6 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 
 
 	amutex_unlock(p->lock);
-
-	if ((rv = decodeN5(p, val->XYZ, range, buf, bsize)) != inst_ok) {
-		return rv;
-	}
 
 	/* Apply the calibration correction matrix */
 	icmMulBy3x3(val->XYZ, p->ccmat, val->XYZ);
@@ -2252,7 +2297,7 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 	/* Do the appropriate calibration */
 	if (*calt & inst_calt_emis_offset) {
 
-		if (*calc != inst_calc_man_em_dark) {
+		if ((*calc & inst_calc_cond_mask) != inst_calc_man_em_dark) {
 			*calc = inst_calc_man_em_dark;
 			return inst_cal_setup;
 		}
@@ -2396,6 +2441,7 @@ k10_del(inst *pp) {
 		if (p->icom != NULL)
 			p->icom->del(p->icom);
 		amutex_del(p->lock);
+		p->vdel(pp);
 		free(p);
 	}
 }
@@ -2741,14 +2787,30 @@ k10_get_set_opt(inst *pp, inst_opt_type m, ...)
 		}
 
 		if (state == 1) {		/* Turn on */ 
-			if ((ev = k10_command(p, "L1\r", buf, MAX_MES_SIZE, NULL, 2+3, ec_ec, 0.5)) != inst_ok) {
+			if ((ev = k10_command(p, "L1\r", buf, MAX_MES_SIZE, NULL, 2+3, ec_ec, 0.5)) != inst_ok
+				/* Strangely the L0/1 command mat return irrelevant error codes... */
+		 		&& (ev & inst_imask) != K10_UNKNOWN
+			 	&& (ev & inst_imask) != K10_BLACK_EXCESS
+				&& (ev & inst_imask) != K10_BLACK_OVERDRIVE
+				&& (ev & inst_imask) != K10_BLACK_ZERO
+				&& (ev & inst_imask) != K10_OVER_HIGH_RANGE
+				&& (ev & inst_imask) != K10_TOP_OVER_RANGE
+				&& (ev & inst_imask) != K10_BOT_UNDER_RANGE) {
 				amutex_unlock(p->lock);
 				a1logd(p->log, 1, "k10_get_set_opt: L1 failed\n");
 				return ev;
 			}
 			p->lights = 1;
 		} else if (state == 0) {	/* Turn off */
-			if ((ev = k10_command(p, "L0\r", buf, MAX_MES_SIZE, NULL, 2+3, ec_ec, 0.5)) != inst_ok) {
+			if ((ev = k10_command(p, "L0\r", buf, MAX_MES_SIZE, NULL, 2+3, ec_ec, 0.5)) != inst_ok
+				/* Strangely the L0/1 command mat return irrelevant error codes... */
+		 		&& (ev & inst_imask) != K10_UNKNOWN
+			 	&& (ev & inst_imask) != K10_BLACK_EXCESS
+				&& (ev & inst_imask) != K10_BLACK_OVERDRIVE
+				&& (ev & inst_imask) != K10_BLACK_ZERO
+				&& (ev & inst_imask) != K10_OVER_HIGH_RANGE
+				&& (ev & inst_imask) != K10_TOP_OVER_RANGE
+				&& (ev & inst_imask) != K10_BOT_UNDER_RANGE) {
 				amutex_unlock(p->lock);
 				a1logd(p->log, 1, "k10_get_set_opt: L0 failed\n");
 				return ev;
@@ -2797,7 +2859,7 @@ extern kleink10 *new_kleink10(icoms *icom, instType itype) {
 	p->del               = k10_del;
 
 	p->icom = icom;
-	p->itype = icom->itype;
+	p->itype = itype;
 	p->dtech = disptech_unknown;
 
 	amutex_init(p->lock);

@@ -710,11 +710,10 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 		a1logd(p->log, 1, " Got SPECBOS_EXCEED_CAL_WL error (Faulty 3rd party Calibration ?)\n");
 		a1logd(p->log, 1, " Trying workaround by restricting range to 380-780nm\n");
 
-		if (p->wl_long > 780.0)
-			p->wl_long = 780.0;
-
 		if (p->wl_short < 380.0)
 			p->wl_short = 380.0;
+		if (p->wl_long > 780.0)
+			p->wl_long = 780.0;
 
 		p->nbands = (int)((p->wl_long - p->wl_short + 1.0)/1.0 + 0.5);
 
@@ -1091,7 +1090,7 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 		inst_code ev = inst_ok;
 
 
-		if (*calc != inst_calc_emis_80pc) {
+		if ((*calc & inst_calc_cond_mask) != inst_calc_emis_80pc) {
 			*calc = inst_calc_emis_80pc;
 			return inst_cal_setup;
 		}
@@ -1436,6 +1435,7 @@ specbos_del(inst *pp) {
 		if (p->icom != NULL)
 			p->icom->del(p->icom);
 		amutex_del(p->lock);
+		p->vdel(pp);
 		free(p);
 	}
 }

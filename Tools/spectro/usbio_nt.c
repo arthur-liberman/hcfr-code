@@ -316,7 +316,7 @@ icompaths *p
 			sprintf(pname,"%s (%s)", dpath + 4, inst_name(itype));
 
 			if ((usbd->dpath = strdup(dpath)) == NULL) {
-				a1loge(p->log, ICOM_SYS, "usb_check_and_add: strdup path failed!\n");
+				a1loge(p->log, ICOM_SYS, "usb_get_paths: strdup path failed!\n");
 				free(usbd);
 				return ICOM_SYS;
 			}
@@ -567,7 +567,7 @@ char **pnames		/* List of process names to try and kill before opening */
 
 /*  -------------------------------------------------------------- */
 
-/* Our universal USB transfer function */
+/* Our universal USB transfer function, used for rd/wr. */
 /* It appears that we may return a timeout with valid characters. */
 static int icoms_usb_transaction(
 	icoms *p,

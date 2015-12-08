@@ -68,7 +68,8 @@ extern void error(const char *fmt, ...), warning(const char *fmt, ...);
 #include "pars.h"
 #include "cgats.h"
 
-#define REAL_SIGDIG 6		/* Number of significant digits in real representation */
+#undef  EMIT_KEYWORDS		/* [und] Emit unknown keywords by default */
+#define REAL_SIGDIG 6		/* [6] Number of significant digits in real representation */
 
 static int cgats_read(cgats *p, cgatsFile *fp);
 static int find_kword(cgats *p, int table, const char *ksym);
@@ -145,6 +146,10 @@ cgatsAlloc *al			/* memory allocator */
 #else
 	p->read_name  = NULL;
 	p->write_name = NULL;
+#endif
+
+#ifdef EMIT_KEYWORDS
+	p->emit_keywords = 1;
 #endif
 
 	return p;
@@ -668,6 +673,7 @@ cgats_read(cgats *p, cgatsFile *fp) {
 						for (j = 0; j < ct->nsets; j++) {
 							data_type ty;
 							ty = guess_type(((char *)ct->rfdata[j][i]));
+
 							if (ty == cs_t) {
 								bt = cs_t;
 								break;		/* Early out */
@@ -678,7 +684,7 @@ cgats_read(cgats *p, cgatsFile *fp) {
 								if (bt == i_t)
 									bt = ty;
 							} else { /* ty == i_t */
-								bt = ty;
+								/* This is the default */
 							}
 						}
 						/* Got guessed type bt. Sanity check against known field types */
@@ -769,6 +775,10 @@ cgats_read(cgats *p, cgatsFile *fp) {
 	}
 
 	pp->del(pp);		/* Clean up the parse file */
+
+	if (p->ntables == 0)
+		return -1;		/* Failed to load any table */
+
 	return 0;
 }
 
@@ -1442,7 +1452,7 @@ cgats_write(cgats *p, cgatsFile *fp) {
 
 			/* Keyword and data if it is present */
 			if (t->ksym[i] != NULL && t->kdata[i] != NULL) {
-				if (!standard_kword(t->ksym[i])) {	/* Do the right thing */
+				if (p->emit_keywords && !standard_kword(t->ksym[i])) {	/* Do the right thing */
 					if ((qs = quote_cs(al, t->ksym[i])) == NULL) {
 						al->free(al, sfield);
 						return err(p,-2,"quote_cs() malloc failed!");
@@ -1481,7 +1491,7 @@ cgats_write(cgats *p, cgatsFile *fp) {
 	
 			/* Declare any non-standard fields */
 			for (field = 0; field < t->nfields; field++) {
-				if (!sfield[field])	/* Non-standard */ {
+				if (p->emit_keywords && !sfield[field])	/* Non-standard */ {
 					char *qs;
 					if ((qs = quote_cs(al, t->fsym[field])) == NULL) {
 						al->free(al, sfield);
@@ -1927,21 +1937,22 @@ real_format(double value, int nsd, char *fmt) {
 		xtot++;
 	}
 	if (value < 1.0) {
+		int thr = -5;
 		ndigs = (int)(log10(value));
-		if (ndigs <= -2) {
+		if (ndigs <= thr) {
 			sprintf(fmt,"%%%d.%de",xtot,tot-2);
 			return;
 		}
 		sprintf(fmt,"%%%d.%df",xtot-ndigs,nsd-ndigs);
 		return;
 	} else {
+		int thr = -0;
 		ndigs = (int)(log10(value));
-		if (ndigs >= (nsd -1))
-			{
+		if (ndigs >= (nsd + thr)) {
 			sprintf(fmt,"%%%d.%de",xtot,tot-2);
 			return;
-			}
-		sprintf(fmt,"%%%d.%df",xtot,(nsd-1)-ndigs);
+		}
+		sprintf(fmt,"%%%d.%df",xtot,(nsd + thr)-ndigs);
 		return;
 	}
 }
@@ -2086,24 +2097,29 @@ main(int argc, char *argv[]) {
 		 || pp->add_field(pp, 0, "XYZ_X", r_t) < 0)
 			error("Initial error: '%s'",pp->err);
 	
-		if (pp->add_set(pp, 0, "1", "A1",  0.000012345678) < 0
-		 || pp->add_set(pp, 0, "2", "A2",  0.00012345678) < 0
-		 || pp->add_set(pp, 0, "3 ", "A#5",0.0012345678) < 0
-		 || pp->add_set(pp, 0, "4", "A5",  0.012345678) < 0
-		 || pp->add_set(pp, 0, "5", "A5",  0.12345678) < 0
-		 || pp->add_set(pp, 0, "5", "A5",  0.00000000) < 0
-		 || pp->add_set(pp, 0, "6", "A5",  1.2345678) < 0
-		 || pp->add_set(pp, 0, "7", "A5",  12.345678) < 0
-		 || pp->add_set(pp, 0, "8", "A5",  123.45678) < 0
-		 || pp->add_set(pp, 0, "9", "A5",  1234.5678) < 0
-		 || pp->add_set(pp, 0, "10", "A5", 12345.678) < 0
-		 || pp->add_set(pp, 0, "12", "A5", 123456.78) < 0
-		 || pp->add_set(pp, 0, "13", "A5", 1234567.8) < 0
-		 || pp->add_set(pp, 0, "14", "A5", 12345678.0) < 0
-		 || pp->add_set(pp, 0, "15", "A5", 123456780.0) < 0
-		 || pp->add_set(pp, 0, "16", "A5", 1234567800.0) < 0
-		 || pp->add_set(pp, 0, "17", "A5", 12345678000.0) < 0
-		 || pp->add_set(pp, 0, "18", "A5", 123456780000.0) < 0)
+		if (pp->add_set(pp, 0, "1", "A1",  0.000000012345678) < 0
+		 || pp->add_set(pp, 0, "2", "A1",  0.00000012345678) < 0
+		 || pp->add_set(pp, 0, "3", "A1",  0.0000012345678) < 0
+		 || pp->add_set(pp, 0, "4", "A1",  0.000012345678) < 0
+		 || pp->add_set(pp, 0, "5", "A1",  0.000012345678) < 0
+		 || pp->add_set(pp, 0, "6", "A2",  0.00012345678) < 0
+		 || pp->add_set(pp, 0, "7", "A5",0.0012345678) < 0
+		 || pp->add_set(pp, 0, "8", "A5",  0.012345678) < 0
+		 || pp->add_set(pp, 0, "9", "A5",  0.12345678) < 0
+		 || pp->add_set(pp, 0, "10", "A5",  0.00000000) < 0
+		 || pp->add_set(pp, 0, "11", "A5",  1.2345678) < 0
+		 || pp->add_set(pp, 0, "12", "A5",  12.345678) < 0
+		 || pp->add_set(pp, 0, "13", "A5",  123.45678) < 0
+		 || pp->add_set(pp, 0, "14", "A5",  1234.5678) < 0
+		 || pp->add_set(pp, 0, "15", "A5", 12345.678) < 0
+		 || pp->add_set(pp, 0, "16", "A5", 123456.78) < 0
+		 || pp->add_set(pp, 0, "17", "A5", 1234567.8) < 0
+		 || pp->add_set(pp, 0, "18", "A5", 12345678.0) < 0
+		 || pp->add_set(pp, 0, "19", "A5", 123456780.0) < 0
+		 || pp->add_set(pp, 0, "20", "A5", 1234567800.0) < 0
+		 || pp->add_set(pp, 0, "21", "A5", 12345678000.0) < 0
+		 || pp->add_set(pp, 0, "22", "A5", 123456780000.0) < 0
+		 || pp->add_set(pp, 0, "23", "A5", 1234567800000.0) < 0)
 			error("Adding set error '%s'",pp->err);
 		
 		if (pp->add_table(pp, cgats_5, 0) < 0			/* Start the second table */

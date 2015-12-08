@@ -29,7 +29,7 @@
 #include <stdexcept>
 
 
-#define SALONEINSTLIB
+//#define SALONEINSTLIB
 #define ENABLE_USB
 #define ENABLE_FAST_SERIAL
 #if defined(_MSC_VER)
@@ -45,7 +45,7 @@
 #include <fcntl.h>
 //#include "spyd2setup.h"
 #include "spyd2.h"
-#undef SALONEINSTLIB
+//#undef SALONEINSTLIB
 
 namespace
 {
@@ -195,8 +195,8 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
    inst_code instCode;
    if (debugmode)
     {
-        m_meter->icom->log->verb = 9;
-        m_meter->icom->log->debug = 9;
+        m_meter->icom->log->verb = 5;
+        m_meter->icom->log->debug = 5;
     }
 
     instCode = m_meter->get_set_opt(m_meter, inst_opt_set_filter, inst_opt_filter_none);
@@ -680,6 +680,7 @@ std::string ArgyllMeterWrapper::getCalibrationInstructions(bool isHiRes)
     {
         inst_cal_type calType(inst_calt_available);
         dark_only = FALSE;
+		if (m_meterType == instEX1) dark_only = TRUE;
         if ( (m_meterType == instI1Pro || m_meterType == instI1Pro2) )
         {
             if ( IDYES == AfxMessageBox ( "Skip white tile calibration?", MB_YESNO | MB_ICONQUESTION ) )

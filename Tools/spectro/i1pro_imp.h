@@ -127,6 +127,7 @@ struct _i1pro_state {
 
 	/* Display mode calibration state (emmis && !scan && !adaptive) */
 	int    dispswap;		/* 0 = default time, 1 = dark_int_time2, 2 = dark_int_time3 */
+	                        /* 3 = dark_int_time4 */
 	double done_dintsel;	/* A display integration time selection has been done */
 	time_t diseldate;		/* Date/time of last display integration time selection */
 	double dcaltime2;		/* Target dark calibration time - sets number of readings */
@@ -135,6 +136,9 @@ struct _i1pro_state {
 	double dcaltime3;		/* Target dark calibration time - sets number of readings */
 	double dark_int_time3;	/* Integration time used for dark data 3 */
 	double *dark_data3;		/* [-1 nraw] of dark level to subtract for dark_int_time3. */
+	double dcaltime4;		/* Target dark calibration time - sets number of readings */
+	double dark_int_time4;	/* Integration time used for dark data 4 */
+	double *dark_data4;		/* [-1 nraw] of dark level to subtract for dark_int_time4. */
 
 }; typedef struct _i1pro_state i1pro_state;
  
@@ -200,8 +204,8 @@ struct _i1proimp {
 	/* Values read from GetMisc() */
 	int fwrev;					/* int - Firmware revision number, from getmisc() */
 								/* Used for internal switching ?? */
-								/* 101 = Rev A, 202 = Rev A update, 302 = Rev B, 502 = Rev D */
-								/* 629 = Rev E (i1pro2) */
+								/* 101 = Rev A, 202 = Rev A update, 302 = Rev B, */
+								/* 502, 505, 631 = Rev D, 629 = Rev E (i1pro2) */
 
 	int cpldrev;				/* int - CPLD revision number in EEProm */
 								/* Not used internaly ???? */

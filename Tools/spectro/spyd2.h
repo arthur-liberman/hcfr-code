@@ -34,6 +34,9 @@
    will not support developers that they have not qualified
    and agreed to support.
  */
+#ifdef __cplusplus
+	extern "C" {
+#endif
 
 #include "inst.h"
 
@@ -56,6 +59,7 @@
 #define SPYD2_TRIGTIMEOUT           0x04
 #define SPYD2_OVERALLTIMEOUT        0x05
 #define SPYD2_BAD_EE_CRC	        0x06
+#define SPYD2_TOOBRIGHT  	        0x07
 
 /* Internal software errors */
 #define SPYD2_BAD_EE_ADDRESS	    0x21
@@ -76,9 +80,6 @@
 
 /* User errors */
 #define SPYD2_NO_REFRESH_DET  	    0x50		/* Calibration selection is out of range */
-#ifdef __cplusplus
-	extern "C" {
-#endif
 
 /* SPYD2/3 communication object */
 struct _spyd2 {
@@ -179,6 +180,7 @@ extern spyd2 *new_spyd2(icoms *icom, instType itype);
 /* Return 0 if Spyder firmware is not available */
 /* Return 1 if Spyder firmware is available */
 extern int setup_spyd2(int id);
+
 #ifdef __cplusplus
 	}
 #endif

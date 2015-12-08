@@ -116,6 +116,10 @@ void xspect2xspect(xspect *dst, xspect *targ, xspect *src);
 
 /* Plot up to 3 spectra */
 void xspect_plot(xspect *sp1, xspect *sp2, xspect *sp3);
+
+/* Plot up to 10 spectra */
+void xspect_plot10(xspect *sp, int n);
+
 #endif /* !SALONEINSTLIB*/
 
 /* ------------------------------------------------------------------------------ */
@@ -135,15 +139,17 @@ typedef enum {
     icxIT_D55		 = 7,	/* Daylight 5500K (use specified temperature) */
     icxIT_D65		 = 8,	/* Daylight 6500K */
     icxIT_D75		 = 9,	/* Daylight 7500K (uses specified temperature) */
-    icxIT_E		     = 10,	/* Equal Energy = flat */
+    icxIT_E		     = 10,	/* Equal Energy = flat = 1.0 */
 #ifndef SALONEINSTLIB
     icxIT_F5		 = 11,	/* Fluorescent, Standard, 6350K, CRI 72 */
     icxIT_F8		 = 12,	/* Fluorescent, Broad Band 5000K, CRI 95 */
     icxIT_F10		 = 13,	/* Fluorescent Narrow Band 5000K, CRI 81 */
 	icxIT_Spectrocam = 14,	/* Spectrocam Xenon Lamp */
-    icxIT_Dtemp		 = 15,	/* Daylight at specified temperature */
+    icxIT_ODtemp	 = 15,	/* Daylight at specified temperature */
+    icxIT_Dtemp		 = 16,	/* 15:2004 Daylight at specified temperature */
 #endif /* !SALONEINSTLIB*/
-    icxIT_Ptemp		 = 16	/* Planckian at specified temperature */
+    icxIT_OPtemp     = 17,	/* Planckian at specified temperature */
+    icxIT_Ptemp		 = 18	/* 15:2004 Planckian at specified temperature */
 } icxIllumeType;
 
 /* Fill in an xpsect with a standard illuminant spectrum */
@@ -198,14 +204,20 @@ struct _xsp2cie {
 	int doLab;					/* Return D50 Lab result */
 	icxClamping clamp;			/* Clamp XYZ and Lab to be +ve */
 
+	/* Integration range and steps - set to observer range and 1nm by default.  */
+	int    spec_bw;				/* Integration bandwidth (nm) */
+	double spec_wl_short;		/* Start wavelength (nm) */
+	double spec_wl_long;		/* End wavelength (nm) */
+
 #ifndef SALONEINSTLIB
 	/* FWA compensation */
-	double bw;		/* Integration bandwidth */
+	double fwa_bw;	/* Integration bandwidth */
 	xspect iillum;	/* Y = 1 Normalised instrument illuminant spectrum */
 	xspect imedia;	/* Instrument measured media */
 	xspect emits;	/* Estimated FWA emmission spectrum */
 	xspect media;	/* Estimated base media (ie. minus FWA) */
 	xspect tillum;	/* Y = 1 Normalised target/simulated instrument illuminant spectrum */
+					/* Use oillum if tillum spec_n = 0 */
 	xspect oillum;	/* Y = 1 Normalised observer illuminant spectrum */
 	double Sm;		/* FWA Stimulation level for emits contribution */
 	double FWAc;	/* FWA content (informational) */
@@ -214,6 +226,13 @@ struct _xsp2cie {
 
 	/* Public: */
 	void (*del)(struct _xsp2cie *p);
+
+	/* Override the integration wavelength range and step size */
+	void (*set_int_steps)(struct _xsp2cie *p,	/* this */
+	                      double bw,		/* Integration step size (nm) */
+	                      double shortwl,	/* Starting nm */
+	                      double longwl		/* Ending nm */
+	                     );
 
 	/* Convert (and possibly fwa correct) reflectance spectrum */
 	/* Note that the input spectrum normalisation value is used. */
@@ -236,14 +255,13 @@ struct _xsp2cie {
 	                 xspect *in				/* Spectrum to be converted, normalised by norm */
 	                );
 
-#ifndef SALONEINSTLIB
-	/* Set Media White. This enables extracting and applying the */
-	/* colorant reflectance value from/to the meadia. */
-	/* return NZ if error */
-	int (*set_mw) (struct _xsp2cie *p,	/* this */
-	                xspect *white		/* Spectrum of plain media */
-	                );
+	/* Get the XYZ of the illuminant being used to compute the CIE XYZ */
+	/* value. */
+	void (*get_cie_il)(struct _xsp2cie *p,	/* this */
+	                   double *xyz			/* Return the XYZ */
+	                   );
 
+#ifndef SALONEINSTLIB
 	/* Set Fluorescent Whitening Agent compensation */
 	/* return NZ if error */
 	int (*set_fwa) (struct _xsp2cie *p,	/* this */
@@ -267,6 +285,14 @@ struct _xsp2cie {
 	/* return NZ if error */
 	void (*get_fwa_info) (struct _xsp2cie *p,	/* this */
 					double *FWAc		/* FWA content as a ratio. */
+	                );
+
+
+	/* Set Media White. This enables extracting and applying the */
+	/* colorant reflectance value from/to the meadia. */
+	/* return NZ if error */
+	int (*set_mw) (struct _xsp2cie *p,	/* this */
+	                xspect *white		/* Spectrum of plain media */
 	                );
 
 	/* Extract the colorant reflectance value from the media. Takes FWA */
@@ -303,17 +329,31 @@ xsp2cie *new_xsp2cie(
 #ifndef SALONEINSTLIB
 
 /* --------------------------- */
-/* Given a choice of temperature dependent illuminant (icxIT_Dtemp or icxIT_Ptemp), */
+/* Given a choice of temperature dependent illuminant (icxIT_[O]Dtemp or icxIT_[O]Ptemp), */
 /* return the closest correlated color temperature to the XYZ. */
 /* An observer type can be chosen for interpretting the spectrum of the input and */
 /* the illuminant. */
 /* Return -1.0 on erorr */
 double icx_XYZ2ill_ct2(
 double txyz[3],			/* If not NULL, return the XYZ of the locus temperature */
-icxIllumeType ilType,	/* Type of illuminant, icxIT_Dtemp or icxIT_Ptemp */
+icxIllumeType ilType,	/* Type of illuminant, icxIT_[O]Dtemp or icxIT_[O]Ptemp */
 icxObserverType obType,	/* Observer, CIE_1931_2 or CIE_1964_10 */
 double xyz[3],			/* Input XYZ value */
 int viscct				/* nz to use visual CIEDE2000, 0 to use CCT CIE 1960 UCS. */
+);
+
+/* Given a choice of temperature dependent illuminant (icxIT_[O]Dtemp or icxIT_[O]Ptemp), */
+/* a color temperature and a Y value, return the corresponding XYZ */
+/* An observer type can be chosen for interpretting the spectrum of the input and */
+/* the illuminant. */
+/* Return xyz[0] = -1.0 on erorr */
+void icx_ill_ct2XYZ(
+double xyz[3],			/* Return the XYZ value */
+icxIllumeType ilType,	/* Type of illuminant, icxIT_[O]Dtemp or icx[O]IT_Ptemp */
+icxObserverType obType,	/* Observer, CIE_1931_2 or CIE_1964_10 */
+int viscct,				/* nz to use visual CIEDE2000, 0 to use CCT CIE 1960 UCS. */
+double tin,				/* Input temperature */
+double Yin				/* Input Y value */
 );
 
 /* --------------------------- */
@@ -341,7 +381,7 @@ typedef enum {
     icxLT_plankian	 = 3
 } icxLocusType;
 
-/* Return a pointer to the chromaticity locus object */
+/* Return a pointer to the (static) chromaticity locus object */
 /* return NULL on failure. */
 xslpoly *chrom_locus_poligon(icxLocusType locus_type, icxObserverType obType, int cspace);
 
@@ -378,7 +418,7 @@ double *in				/* Input XYZ values */
 /* return sRGB values */
 void icx_XYZ2sRGB(
 double *out,			/* Return sRGB value */
-double *wp,				/* Input XYZ white point (may be NULL) */
+double *wp,				/* Input XYZ white point (D65 used if NULL) */
 double *in				/* Input XYZ values */
 );
 
@@ -419,14 +459,14 @@ double temp,			/* Input temperature in degrees K */
 xspect *custIllum);		/* Optional custom illuminant */
 
 
-/* Given a choice of temperature dependent illuminant (icxIT_Dtemp or icxIT_Ptemp), */
+/* Given a choice of temperature dependent illuminant (icxIT_[O]Dtemp or icxIT_[O]Ptemp), */
 /* return the closest correlated color temperature to the given spectrum or XYZ. */
 /* An observer type can be chosen for interpretting the spectrum of the input and */
 /* the illuminant. */
 /* Return -1 on erorr */
 double icx_XYZ2ill_ct(
 double txyz[3],			/* If not NULL, return the XYZ of the black body temperature */
-icxIllumeType ilType,	/* Type of illuminant, icxIT_Dtemp or icxIT_Ptemp */
+icxIllumeType ilType,	/* Type of illuminant, icxIT_[O]Dtemp or icxIT_[O]Ptemp */
 icxObserverType obType,	/* Observer */
 xspect custObserver[3],	/* Optional custom observer */
 double xyz[3],			/* Input XYZ value, NULL if spectrum intead */
@@ -439,6 +479,7 @@ int viscct);			/* nz to use visual CIEDE2000, 0 to use CCT CIE 1960 UCS. */
 /* is invalid because the sample is not white enough. */
 double icx_CIE1995_CRI(
 int *invalid,			/* if not NULL, set to nz if invalid */
+double cris[14],		/* If not NULL, return the TCS01-14 CRI's */
 xspect *sample			/* Illuminant sample to compute CRI of */
 );
 

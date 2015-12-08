@@ -114,6 +114,7 @@ struct _disptech_info {
   /* Private: */
 
 	char lsel[10];			/* Unique list selector for ui */
+	char isel[10];			/* Candidate selectors */
 
 }; typedef struct _disptech_info disptech_info;
 
@@ -136,7 +137,8 @@ disptech_info *disptech_select(disptech_info *list, char c);
 /* - - - - - - - - - - - */
 
 /* utility function, used by disptech_get_list & inst_creat_disptype_list()  */
-int disptechs_set_sel(int flag, char *sel, char *usels, int *k, char *asels);
+/* See disptechs.c for parameter description. */
+void disptechs_set_sel(int flag, int ix, char *osel, char *isel, char *usels, int *k, char *asels);
 
 /* - - - - - - - - - - */
 /* Display settling time model */

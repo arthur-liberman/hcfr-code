@@ -85,8 +85,6 @@
 
 #define PNTR UINT_PTR
 
-#define vsnprintf _vsnprintf
-
 #define PF64PREC "I64"				/* printf format precision specifier */
 #define CF64PREC "LL"				/* Constant precision specifier */
 
@@ -310,6 +308,10 @@ void a1loge(a1log *log, int ecode, char *fmt, ...);
 /* This resets errc and errm */
 void a1logue(a1log *log);
 
+/* Print bytes as hex to debug log */
+/* base is the base of the displayed offset */
+void adump_bytes(a1log *log, char *pfx, unsigned char *buf, int base, int len);
+
 /* =========================================================== */
 /* Globals used to hold certain information */
 extern char *exe_path;		/* Path leading to executable, not including exe name itself. */
@@ -345,6 +347,24 @@ size_t csize,
 size_t nnum,		/* New number and unit size */
 size_t nsize
 ); 
+
+/* =========================================================== */
+
+#if defined(__APPLE__)
+
+/* Tell App Nap that this is user initiated */
+void osx_userinitiated_start();
+
+/* Done with user initiated */
+void osx_userinitiated_end();
+
+/* Tell App Nap that this is latency critical */
+void osx_latencycritical_start();
+
+/* Done with latency critical */
+void osx_latencycritical_end();
+
+#endif	/* __APPLE__ */
 
 /* =========================================================== */
 
@@ -454,47 +474,47 @@ char *ctime_64(const INR64 *timer);
 
 /* Unsigned 8 bit */
 unsigned int read_ORD8(ORD8 *p);
-void write_ORD8(unsigned int d, ORD8 *p);
+void write_ORD8(ORD8 *p, unsigned int d);
 
 /* Signed 8 bit */
 int read_INR8(ORD8 *p);
-void write_INR8(int d, ORD8 *p);
+void write_INR8(ORD8 *p, int d);
 
 /* Unsigned 16 bit */
 unsigned int read_ORD16_be(ORD8 *p);
 unsigned int read_ORD16_le(ORD8 *p);
-void write_ORD16_be(unsigned int d, ORD8 *p);
-void write_ORD16_le(unsigned int d, ORD8 *p);
+void write_ORD16_be(ORD8 *p, unsigned int d);
+void write_ORD16_le(ORD8 *p, unsigned int d);
 
 /* Signed 16 bit */
 int read_INR16_be(ORD8 *p);
 int read_INR16_le(ORD8 *p);
-void write_INR16_be(int d, ORD8 *p);
-void write_INR16_le(int d, ORD8 *p);
+void write_INR16_be(ORD8 *p, int d);
+void write_INR16_le(ORD8 *p, int d);
 
 /* Unsigned 32 bit */
 unsigned int read_ORD32_be(ORD8 *p);
 unsigned int read_ORD32_le(ORD8 *p);
-void write_ORD32_be(unsigned int d, ORD8 *p);
-void write_ORD32_le(unsigned int d, ORD8 *p);
+void write_ORD32_be(ORD8 *p, unsigned int d);
+void write_ORD32_le(ORD8 *p, unsigned int d);
 
 /* Signed 32 bit */
 int read_INR32_be(ORD8 *p);
 int read_INR32_le(ORD8 *p);
-void write_INR32_be(int d, ORD8 *p);
-void write_INR32_le(int d, ORD8 *p);
+void write_INR32_be(ORD8 *p, int d);
+void write_INR32_le(ORD8 *p, int d);
 
 /* Unsigned 64 bit */
 ORD64 read_ORD64_be(ORD8 *p);
 ORD64 read_ORD64_le(ORD8 *p);
-void write_ORD64_be(ORD64 d, ORD8 *p);
-void write_ORD64_le(ORD64 d, ORD8 *p);
+void write_ORD64_be(ORD8 *p, ORD64 d);
+void write_ORD64_le(ORD8 *p, ORD64 d);
 
 /* Signed 64 bit */
 INR64 read_INR64_be(ORD8 *p);
 INR64 read_INR64_le(ORD8 *p);
-void write_INR64_be(INR64 d, ORD8 *p);
-void write_INR64_le(INR64 d, ORD8 *p);
+void write_INR64_be(ORD8 *p, INR64 d);
+void write_INR64_le(ORD8 *p, INR64 d);
 
 /*******************************************/
 /* Numerical diagnostics */
@@ -502,6 +522,7 @@ void write_INR64_le(INR64 d, ORD8 *p);
 #ifndef isNan
 #define isNan(x) ((x) != (x))
 #define isFinite(x) ((x) == 0.0 || (x) * 1.0000001 != (x))
+#define isNFinite(x) ((x) != 0.0 && (x) * 1.0000001 == (x))
 #endif
 
 

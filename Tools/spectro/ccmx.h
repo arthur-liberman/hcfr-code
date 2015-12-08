@@ -34,11 +34,11 @@ struct _ccmx {
 
 	/* Set the contents of the ccmx. return nz on error. */
 	int (*set_ccmx)(struct _ccmx *p, char *desc, char *inst, char *disp, disptech dtech,
-	                int refrmode, int cbid, char *sel, char *refd, double mtx[3][3]);	
+	                int refrmode, int cbid, char *sel, char *refd, int oem, double mtx[3][3]);	
 
 	/* Create a ccmx from measurements. return nz on error. */
 	int (*create_ccmx)(struct _ccmx *p, char *desc, char *inst, char *disp, disptech dtech,
-	               int refrmode, int cbid, char *sel, char *refd,
+	               int refrmode, int cbid, char *sel, char *refd, int oem,
 	               int nsamples, double (*refs)[3], double (*cols)[3]);
 
 	/* write to a CGATS .ccmx file */
@@ -70,6 +70,7 @@ struct _ccmx {
 	int refrmode;	/* Refresh mode, -1 if unknown, 0 of no, 1 if yes */
 	char *sel;		/* Optional UI selector characters. May be NULL */
 	char *ref;		/* Name of spectrometer instrument (optional) */
+	int oem;			/* nz if oem origin */
 	double matrix[3][3];	/* Transform matrix */
 	double av_err;			/* Average error of fit */
 	double mx_err;			/* Maximum error of fit */

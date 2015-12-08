@@ -87,6 +87,9 @@ struct _cgats {
 	int nothers;		/* Number of other identifiers */
 	char **others;		/* Other file type identifiers */
 
+	/* Options */
+	int emit_keywords;	/* NZ to emit "KEYWORD" for non-standard keywords (default no) */
+
 	/* Public Methods */
 	int (*set_cgats_type)(struct _cgats *p, const char *osym);
 											/* Define the (one) variable CGATS type */

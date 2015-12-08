@@ -103,6 +103,8 @@ cgats **pocg		/* return CGATS structure */
 		ocg->add_kword(ocg, 0, "UI_SELECTORS", p->sel, NULL);
 	if (p->ref != NULL)
 		ocg->add_kword(ocg, 0, "REFERENCE",p->ref, NULL);
+	if (p->oem != 0)
+		ocg->add_kword(ocg, 0, "OEM","YES", NULL);
 
 	sprintf(buf,"%d", p->samples[0].spec_n);
 	ocg->add_kword(ocg, 0, "SPECTRAL_BANDS",buf, NULL);
@@ -320,6 +322,15 @@ cgats *icg		/* input cgats structure */
 		}
 	}
 
+	if ((ti = icg->find_kword(icg, 0, "OEM")) >= 0) {
+		if (stricmp(icg->t[0].kdata[ti], "YES") == 0)
+			p->oem = 1;
+		else if (stricmp(icg->t[0].kdata[ti], "NO") == 0)
+			p->oem = 0;
+	} else {
+		p->oem = 0;
+	}
+
 	if ((ii = icg->find_kword(icg, 0, "SPECTRAL_BANDS")) < 0) {
 		sprintf(p->err,"Input file doesn't contain keyword SPECTRAL_BANDS");
 		return 1;
@@ -471,6 +482,7 @@ disptech dtech,		/* Display technology enum */
 int refrmode,		/* Display refresh mode, -1 = unknown, 0 = n, 1 = yes */
 char *sel,			/* UI selector characters - NULL for none */
 char *refd,			/* Reference spectrometer description (optional) */
+int  oem,			/* NZ if OEM source */
 xspect *samples,	/* Arry of spectral samples. All assumed to be same dim as first */
 int no_samp			/* Number of spectral samples */
 ) {
@@ -515,6 +527,8 @@ int no_samp			/* Number of spectral samples */
 			return 2;
 		}
 	}
+
+	p->oem = oem;
 
 	if (p->samples != NULL) {
 		free(p->samples);

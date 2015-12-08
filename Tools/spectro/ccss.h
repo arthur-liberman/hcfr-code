@@ -39,7 +39,7 @@ struct _ccss {
 	/* (Makes copies of all parameters) */
 	int (*set_ccss)(struct _ccss *p, char *orig, char *cdate,
 	                char *desc, char *disp, disptech dtech, int refrmode, char *sel,
-	                char *ref, xspect *samples, int no_samp);	
+	                char *ref, int oem, xspect *samples, int no_samp);	
 
 	/* write to a CGATS .ccss file */
 	/* return nz on error, with message in err[] */
@@ -68,6 +68,7 @@ struct _ccss {
 	int refrmode;		/* Refresh mode, -1 if unknown, 0 of no, 1 if yes */
 	char *sel;			/* Optional UI selector characters. May be NULL */
 	char *ref;			/* Name of reference spectrometer instrument (optional) */
+	int oem;			/* nz if oem origin */
 	xspect *samples;	/* Set of spectral samples */
 	int no_samp;		/* Number of samples */
 	

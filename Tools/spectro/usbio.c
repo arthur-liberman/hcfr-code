@@ -118,7 +118,7 @@ int rwsize, 			/* Bytes to read or write */
 double tout				/* Timeout in seconds */
 ) {
 	int rv = 0;			/* Return value */
-	int c, rwbytes;		/* Data bytes read or written */
+	int rwbytes;		/* Data bytes read or written */
 	long top;			/* timeout in msec */
 
 	if (p->log->debug >= 8) {
@@ -369,12 +369,14 @@ int nwch,			/* if > 0, number of characters to write */
 double tout)
 {
 	int len, wbytes;
-	long toc, i, top;		/* Timout count, counter, timeout period */
+	long ttop, top;			/* Total timeout period, timeout period */
+	unsigned int stime, etime;		/* Start and end times of USB operation */
 	int ep = p->wr_ep;		/* End point */
 	icom_usb_trantype type;	/* bulk or interrupt */
 	int retrv = ICOM_OK;
 
-	a1logd(p->log, 8, "\nicoms_usb_ser_write: writing '%s'\n",icoms_fix(wbuf));
+	a1logd(p->log, 8, "\nicoms_usb_ser_write: writing '%s'\n",
+	       nwch > 0 ? icoms_tohex((unsigned char *)wbuf, nwch) : icoms_fix(wbuf));
 
 	if (!p->is_open) {
 		a1loge(p->log, ICOM_SYS, "icoms_usb_ser_write: device is not open\n");
@@ -401,36 +403,39 @@ double tout)
 		len = nwch;
 	else
 		len = strlen(wbuf);
-	tout *= 1000.0;		/* Timout in msec */
 
-	top = (int)(tout + 0.5);		/* Timeout period in msecs */
-	toc = (int)(tout/top + 0.5);	/* Number of timout periods in timeout */
-	if (toc < 1)
-		toc = 1;
+	ttop = (int)(tout * 1000.0 + 0.5);        /* Total timeout period in msecs */
+
+	a1logd(p->log, 8, "\nicoms_usb_ser_write: ep 0x%x, bytes %d, ttop %d, quant %d\n", p->rd_ep, len, ttop, p->rd_qa);
+
+	etime = stime = msec_time();
 
 	/* Until data is all written, we time out, or the user aborts */
-	for (i = toc; i > 0 && len > 0;) {
-		int c, rv;
-		a1logd(p->log, 8, "icoms_usb_ser_write: attempting to write %d bytes to usb top = %d, i = %d\n",len,top,i);
+	for (top = ttop; top > 0 && len > 0;) {
+		int rv;
+		a1logd(p->log, 8, "icoms_usb_ser_write: attempting to write %d bytes to usb top = %d\n",len,top);
 
 		rv = icoms_usb_transaction(p, NULL, &wbytes, type, (unsigned char)ep, (unsigned char *)wbuf, len, top);
+		etime = msec_time();
 		if (rv != ICOM_OK) {
 			if (rv != ICOM_TO) {
 				retrv |= rv;
 				break;
 			}
-			i--;		/* timeout */
 		} else {	/* Account for bytes written */
 			a1logd(p->log, 8, "icoms_usb_ser_write: wrote %d bytes\n",wbytes);
-			i = toc;
 			wbuf += wbytes;
 			len -= wbytes;
 		}
+		top = ttop - (etime - stime);	/* Remaining time */
 	}
-	if (i <= 0)		/* Must have timed out */
-		retrv |= ICOM_TO; 
 
-	a1logd(p->log, 8, "icoms_usb_ser_write: returning ICOM err 0x%x\n",retrv);
+	if (top <= 0) {			/* Must have timed out */
+		a1logd(p->log, 8, "icoms_usb_ser_write: timeout, took %d msec out of %d\n",etime - stime,ttop);
+		retrv |= ICOM_TO; 
+	}
+
+	a1logd(p->log, 8, "icoms_usb_ser_write: took %d msec, returning ICOM err 0x%x\n",etime - stime,retrv);
 
 	return retrv;
 }
@@ -447,7 +452,7 @@ char *rbuf,			/* Buffer to store characters read */
 int bsize,			/* Buffer size */
 int *pbread,		/* Bytes read (not including forced '\000') */
 char *tc,			/* Terminating characers, NULL for none or char count mode */
-int ntc,			/* Number of terminating characters or char count needed, if 0 use bsize */
+int ntc,			/* Number of terminating characters or char count needed */
 double tout)		/* Time out in seconds */
 {
 	int j, rbytes;
@@ -504,12 +509,11 @@ double tout)		/* Time out in seconds */
 	bsize -= 1;				/* Allow space for null */
 	bsize -= p->ms_bytes;	/* Allow space for modem status bytes */
 
-	/* Until data is all read, we time out, or the user aborts */
-	etime = stime = msec_time();
-	top = ttop;
 	j = (tc == NULL && ntc <= 0) ? -1 : 0;
+	etime = stime = msec_time();
 
-	for (nreads = 0; top > 0 && bsize > 0 && j < ntc ;) {
+	/* Until data is all read, we time out, or the user aborts */
+	for (top = ttop, nreads = 0; top > 0 && bsize > 0 && j < ntc ;) {
 		int c, rv;
 		int rsize = bsize; 
 
@@ -571,7 +575,6 @@ double tout)		/* Time out in seconds */
 			retrv |= rv;
 			break;
 		}
-
 		top = ttop - (etime - stime);	/* Remaining time */
 	}
 
@@ -583,12 +586,12 @@ double tout)		/* Time out in seconds */
 	/* If ran out of time and not completed */
 	a1logd(p->log, 8, "icoms_usb_ser_read: took %d msec\n",etime - stime);
 	if (top <= 0 && bsize > 0 && j < ntc) {
-		a1logd(p->log, 8, "icoms_usb_ser_read: read ran out of time\n");
-		a1logd(p->log, 8, "ttop %d, etime - stime %d\n",ttop,etime - stime);
+		a1logd(p->log, 8, "icoms_usb_ser_read: timeout, took %d msec out of %d\n",etime - stime,ttop);
 		retrv |= ICOM_TO; 
 	}
 
-	a1logd(p->log, 8, "icoms_usb_ser_read: returning '%s' ICOM err 0x%x\n",icoms_fix(rrbuf),retrv);
+	a1logd(p->log, 8, "icoms_usb_ser_read: took %d msec, returning '%s' ICOM err 0x%x\n",
+	       etime - stime, tc == NULL && ntc > 0 ? icoms_tohex((unsigned char*)rrbuf, rbuf - rrbuf) : icoms_fix(rrbuf), retrv);
 
 	return retrv;
 }

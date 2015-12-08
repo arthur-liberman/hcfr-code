@@ -27,7 +27,7 @@
 #include <stdexcept>
 #include <algorithm>
 
-#define SALONEINSTLIB
+//#define SALONEINSTLIB
 #define ENABLE_USB
 #define ENABLE_FAST_SERIAL
 #if defined(_MSC_VER)
@@ -38,7 +38,7 @@
 #include "xspect.h"
 #include "ccss.h"
 #include "inst.h"
-#undef SALONEINSTLIB
+//#undef SALONEINSTLIB
 
 SpectralSampleFiles::SpectralSampleFiles(void)
 {

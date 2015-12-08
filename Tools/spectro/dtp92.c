@@ -169,7 +169,7 @@ dtp92_command(dtp92 *p, char *in, char *out, int bsize, double to) {
 
 /* Establish communications with a DTP92 */
 /* If it's a serial port, use the baud rate given, and timeout in to secs */
-/* Return DTP_COMS_FAIL on failure to establish communications */
+/* Return DTP92_COMS_FAIL on failure to establish communications */
 static inst_code
 dtp92_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	dtp92 *p = (dtp92 *) pp;
@@ -819,7 +819,7 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 
 	if (*calt & inst_calt_emis_offset) {		/* Dark offset calibration */
 
-		if (*calc != inst_calc_man_em_dark) {
+		if ((*calc & inst_calc_cond_mask) != inst_calc_man_em_dark) {
 			*calc = inst_calc_man_em_dark;
 			return inst_cal_setup;
 		}
@@ -833,9 +833,9 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 
 	if (*calt & inst_calt_emis_ratio) {	/* Cell ratio calibration */
 
-		if (*calc != inst_calc_emis_grey
-		 && *calc != inst_calc_emis_grey_darker
-		 && *calc != inst_calc_emis_grey_ligher) {
+		if ((*calc & inst_calc_cond_mask) != inst_calc_emis_grey
+		 && (*calc & inst_calc_cond_mask) != inst_calc_emis_grey_darker
+		 && (*calc & inst_calc_cond_mask) != inst_calc_emis_grey_ligher) {
 			*calc = inst_calc_emis_grey;
 			return inst_cal_setup;
 		}
@@ -1023,6 +1023,7 @@ dtp92_del(inst *pp) {
 	if (p->icom != NULL)
 		p->icom->del(p->icom);
 	inst_del_disptype_list(p->dtlist, p->ndtlist);
+	p->vdel(pp);
 	free(p);
 }
 
@@ -1405,7 +1406,7 @@ extern dtp92 *new_dtp92(icoms *icom, instType itype) {
 	p->del               = dtp92_del;
 
 	p->icom = icom;
-	p->itype = icom->itype;
+	p->itype = itype;
 
 	icmSetUnity3x3(p->ccmat);	/* Set the colorimeter correction matrix to do nothing */
 	set_base_disptype_list(p);

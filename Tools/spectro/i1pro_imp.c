@@ -45,6 +45,10 @@
 	routine based on an emissive scan + the auto-correlation
 	(see i1d3.c). Whether this will noticably improve repeatibility
 	remains to be seen.
+
+	Would be nice to have option to save raw scan data to .ti3 file,
+	and then have a utility/option to replay it through scan
+	recognition, to be able to help remote diagnose scan problems.
 */
 
 /*
@@ -145,6 +149,8 @@
 								/* Should be good up to 275 cd/m^2 */
 #define DISP_INTT3 0.3			/* High brightness display spot mode seconds per reading, */
 								/* Should be good up to 700 cd/m^2 */
+#define DISP_INTT4 0.1			/* Very high brightness display spot mode seconds per reading, */
+								/* Should be good up to 2000 cd/m^2 ? */
 
 #define ADARKINT_MAX 2.0		/* Max cal time for adaptive dark cal */
 #define ADARKINT_MAX2 4.0		/* Max cal time for adaptive dark cal Rev E or no high gain */
@@ -394,6 +400,7 @@ void del_i1proimp(i1pro *p) {
 			free_dvector(s->dark_data, -1, m->nraw-1);  
 			free_dvector(s->dark_data2, -1, m->nraw-1);  
 			free_dvector(s->dark_data3, -1, m->nraw-1);  
+			free_dvector(s->dark_data4, -1, m->nraw-1);  
 			free_dvector(s->white_data, -1, m->nraw-1);
 			free_dmatrix(s->idark_data, 0, 3, -1, m->nraw-1);  
 
@@ -954,6 +961,7 @@ i1pro_code i1pro_imp_init(i1pro *p) {
 			s->dark_data = dvectorz(-1, m->nraw-1);  
 			s->dark_data2 = dvectorz(-1, m->nraw-1);  
 			s->dark_data3 = dvectorz(-1, m->nraw-1);  
+			s->dark_data4 = dvectorz(-1, m->nraw-1);  
 
 			s->cal_valid = 0;		/* Scale cal invalid */
 			s->cal_factor[0] = dvectorz(0, m->nwav[0]-1);
@@ -968,6 +976,7 @@ i1pro_code i1pro_imp_init(i1pro *p) {
 			s->dark_int_time  = DISP_INTT;	/* 2.0 */
 			s->dark_int_time2 = DISP_INTT2;	/* 0.8 */
 			s->dark_int_time3 = DISP_INTT3;	/* 0.3 */
+			s->dark_int_time4 = DISP_INTT4;	/* 0.1 */
 
 			s->idark_int_time[0] = s->idark_int_time[2] = m->min_int_time;
 			if (p->itype == instI1Pro2) {
@@ -1053,12 +1062,14 @@ i1pro_code i1pro_imp_init(i1pro *p) {
 					s->dark_int_time = s->inttime;
 					s->dark_int_time2 = DISP_INTT2;	/* Alternate disp integration time (ie. 0.8) */
 					s->dark_int_time3 = DISP_INTT3;	/* Alternate disp integration time (ie. 0.3) */
+					s->dark_int_time4 = DISP_INTT4;	/* Alternate disp integration time (ie. 0.1) */
 
 					s->dadaptime = 0.0;
 					s->wadaptime = 0.10;
 					s->dcaltime = DISP_INTT;		/* ie. determines number of measurements */
 					s->dcaltime2 = DISP_INTT2 * 2;	/* Make it 1.6 seconds (ie, 2 x 0.8 seconds) */
 					s->dcaltime3 = DISP_INTT3 * 3;	/* Make it 0.9 seconds (ie, 3 x 0.3 seconds) */
+					s->dcaltime4 = DISP_INTT4 * 3;	/* Make it 0.3 seconds (ie, 3 x 0.1 seconds) */
 					s->wcaltime = 0.0;
 					s->dreadtime = 0.0;
 					s->wreadtime = DISP_INTT;
@@ -1543,8 +1554,8 @@ i1pro_code i1pro_imp_calibrate(
 		/* Wavelength calibration: */
 		if ((m->capabilities2 & I1PRO_CAP2_WL_LED)
 		 && (*calt & (inst_calt_wavelength | inst_calt_ap_flag))
-		 && (*calc == inst_calc_man_ref_white
-		  || *calc == inst_calc_man_am_dark)) {
+		 && ((*calc & inst_calc_cond_mask) == inst_calc_man_ref_white
+		  || (*calc & inst_calc_cond_mask) == inst_calc_man_am_dark)) {
 			double *wlraw;
 			double optscale;
 			double *abswav;
@@ -1608,18 +1619,18 @@ i1pro_code i1pro_imp_calibrate(
 		if ((*calt & (inst_calt_ref_dark
 		            | inst_calt_em_dark
 		            | inst_calt_trans_dark | inst_calt_ap_flag))
-		 && (*calc == inst_calc_man_ref_white		/* Any condition conducive to dark calib */
-		  || *calc == inst_calc_man_em_dark
-		  || *calc == inst_calc_man_am_dark
-		  || *calc == inst_calc_man_trans_dark)
+		 && ((*calc & inst_calc_cond_mask) == inst_calc_man_ref_white		/* Any condition conducive to dark calib */
+		  || (*calc & inst_calc_cond_mask) == inst_calc_man_em_dark
+		  || (*calc & inst_calc_cond_mask) == inst_calc_man_am_dark
+		  || (*calc & inst_calc_cond_mask) == inst_calc_man_trans_dark)
 		 && ( s->reflective
 		  || (s->emiss && !s->adaptive && !s->scan)
 		  || (s->trans && !s->adaptive))) {
 			int stm;
-			int usesdct23 = 0;			/* Is a mode that uses dcaltime2 & 3 */
+			int usesdct234 = 0;			/* Is a mode that uses dcaltime2, 3 & 4 */
 
 			if (s->emiss && !s->adaptive && !s->scan)
-				usesdct23 = 1;
+				usesdct234 = 1;
 	
 			nummeas = i1pro_comp_nummeas(p, s->dcaltime, s->inttime);
 	
@@ -1633,7 +1644,7 @@ i1pro_code i1pro_imp_calibrate(
 			a1logd(p->log,2,"Execution time of dark calib time %f sec = %d msec\n",s->inttime,msec_time() - stm);
 	
 			/* Special display mode alternate integration time black measurement */
-			if (usesdct23) {
+			if (usesdct234) {
 				nummeas = i1pro_comp_nummeas(p, s->dcaltime2, s->dark_int_time2);
 				a1logd(p->log,2,"Doing 2nd initial black calibration with dcaltime2 %f, dark_int_time2 %f, nummeas %d, gainmode %d\n", s->dcaltime2, s->dark_int_time2, nummeas, s->gainmode);
 				stm = msec_time();
@@ -1654,6 +1665,17 @@ i1pro_code i1pro_imp_calibrate(
 					return ev;
 				}
 				a1logd(p->log,2,"Execution time of 3rd dark calib time %f sec = %d msec\n",s->inttime,msec_time() - stm);
+
+				nummeas = i1pro_comp_nummeas(p, s->dcaltime4, s->dark_int_time4);
+				a1logd(p->log,2,"Doing 4th initial black calibration with dcaltime4 %f, dark_int_time4 %f, nummeas %d, gainmode %d\n", s->dcaltime4, s->dark_int_time4, nummeas, s->gainmode);
+				nummeas = i1pro_comp_nummeas(p, s->dcaltime4, s->dark_int_time4);
+				stm = msec_time();
+				if ((ev = i1pro_dark_measure(p, s->dark_data4,
+					                       nummeas, &s->dark_int_time4, s->gainmode)) != I1PRO_OK) {
+					m->mmode = mmode;			/* Restore actual mode */
+					return ev;
+				}
+				a1logd(p->log,2,"Execution time of 4rd dark calib time %f sec = %d msec\n",s->inttime,msec_time() - stm);
 			}
 			s->dark_valid = 1;
 			s->want_dcalib = 0;
@@ -1682,13 +1704,15 @@ i1pro_code i1pro_imp_calibrate(
 					ss->dark_gain_mode = s->dark_gain_mode;
 					for (k = -1; k < m->nraw; k++)
 						ss->dark_data[k] = s->dark_data[k];
-					/* If this is a mode with dark_data2/3, tranfer it too */
-					if (usesdct23 && ss->emiss && !ss->adaptive && !ss->scan) {
+					/* If this is a mode with dark_data2/3/4, tranfer it too */
+					if (usesdct234 && ss->emiss && !ss->adaptive && !ss->scan) {
 						ss->dark_int_time2 = s->dark_int_time2;
-						ss->dark_int_time3 = s->dark_int_time2;
+						ss->dark_int_time3 = s->dark_int_time3;
+						ss->dark_int_time4 = s->dark_int_time4;
 						for (k = -1; k < m->nraw; k++) {
 							ss->dark_data2[k] = s->dark_data2[k];
 							ss->dark_data3[k] = s->dark_data3[k];
+							ss->dark_data4[k] = s->dark_data4[k];
 						}
 					}
 				}
@@ -1698,10 +1722,10 @@ i1pro_code i1pro_imp_calibrate(
 		/* Emissive scan black calibration: */
 		/* Emsissive scan (flash) uses the fastest possible scan rate (??) */
 		if ((*calt & (inst_calt_em_dark | inst_calt_ap_flag))
-		 && (*calc == inst_calc_man_ref_white		/* Any condition conducive to dark calib */
-		  || *calc == inst_calc_man_em_dark
-		  || *calc == inst_calc_man_am_dark
-		  || *calc == inst_calc_man_trans_dark)
+		 && ((*calc & inst_calc_cond_mask) == inst_calc_man_ref_white		/* Any condition conducive to dark calib */
+		  || (*calc & inst_calc_cond_mask) == inst_calc_man_em_dark
+		  || (*calc & inst_calc_cond_mask) == inst_calc_man_am_dark
+		  || (*calc & inst_calc_cond_mask) == inst_calc_man_trans_dark)
 		 && (s->emiss && !s->adaptive && s->scan)) {
 			int stm;
 	
@@ -1749,10 +1773,11 @@ i1pro_code i1pro_imp_calibrate(
 		if ((*calt & (inst_calt_ref_dark
 		            | inst_calt_em_dark
 		            | inst_calt_trans_dark | inst_calt_ap_flag))
-		 && (*calc == inst_calc_man_ref_white		/* Any condition conducive to dark calib */
-		  || *calc == inst_calc_man_em_dark
-		  || *calc == inst_calc_man_am_dark
-		  || *calc == inst_calc_man_trans_dark)
+		 /* Any condition conducive to dark calib */
+		 && ((*calc & inst_calc_cond_mask) == inst_calc_man_ref_white
+		  || (*calc & inst_calc_cond_mask) == inst_calc_man_em_dark
+		  || (*calc & inst_calc_cond_mask) == inst_calc_man_am_dark
+		  || (*calc & inst_calc_cond_mask) == inst_calc_man_trans_dark)
 		 && ((s->emiss && s->adaptive && !s->scan)
 		  || (s->trans && s->adaptive && !s->scan))) {
 			int i, j, k;
@@ -1915,10 +1940,11 @@ i1pro_code i1pro_imp_calibrate(
 		if ((*calt & (inst_calt_ref_dark
 		            | inst_calt_em_dark
 		            | inst_calt_trans_dark | inst_calt_ap_flag))
-		 && (*calc == inst_calc_man_ref_white		/* Any condition conducive to dark calib */
-		  || *calc == inst_calc_man_em_dark
-		  || *calc == inst_calc_man_am_dark
-		  || *calc == inst_calc_man_trans_dark)
+		 /* Any condition conducive to dark calib */
+		 && ((*calc & inst_calc_cond_mask) == inst_calc_man_ref_white
+		  || (*calc & inst_calc_cond_mask) == inst_calc_man_em_dark
+		  || (*calc & inst_calc_cond_mask) == inst_calc_man_am_dark
+		  || (*calc & inst_calc_cond_mask) == inst_calc_man_trans_dark)
 		 && ((s->emiss && s->adaptive && s->scan)
 		  || (s->trans && s->adaptive && s->scan))) {
 			int j;
@@ -2006,8 +2032,8 @@ i1pro_code i1pro_imp_calibrate(
 		/* If we are doing a white reference calibrate */
 		if ((*calt & (inst_calt_ref_white
 		            | inst_calt_trans_vwhite | inst_calt_ap_flag))
-		 && ((*calc == inst_calc_man_ref_white && s->reflective)
-		  || (*calc == inst_calc_man_trans_white && s->trans))) {
+		 && (((*calc & inst_calc_cond_mask) == inst_calc_man_ref_white && s->reflective)
+		  || ((*calc & inst_calc_cond_mask) == inst_calc_man_trans_white && s->trans))) {
 			double scale;
 	
 			a1logd(p->log,2,"\nDoing initial white calibration with current inttime %f, gainmode %d\n",
@@ -2034,7 +2060,8 @@ i1pro_code i1pro_imp_calibrate(
 				 || (scale < 0.3 || scale > 2.0)) {
 			
 					/* Need to have done adaptive black measure to change inttime/gain params */
-					if (*calc != inst_calc_man_ref_white && !s->idark_valid) {
+					if ((*calc & inst_calc_cond_mask) != inst_calc_man_ref_white
+					  && !s->idark_valid) {
 						m->mmode = mmode;			/* Restore actual mode */
 						return I1PRO_RD_TRANSWHITERANGE;
 					}
@@ -2046,7 +2073,7 @@ i1pro_code i1pro_imp_calibrate(
 						if (!s->emiss)
 							s->cal_valid = 0;
 	
-						if (*calc == inst_calc_man_ref_white) {
+						if ((*calc & inst_calc_cond_mask) == inst_calc_man_ref_white) {
 							nummeas = i1pro_comp_nummeas(p, s->dadaptime, s->inttime);
 							a1logd(p->log,2,"Doing another black calibration with dadaptime %f, min inttime %f, nummeas %d, gainmode %d\n", s->dadaptime, s->inttime, nummeas, s->gainmode);
 							if ((ev = i1pro_dark_measure(p, s->dark_data,
@@ -2093,7 +2120,7 @@ i1pro_code i1pro_imp_calibrate(
 					a1logd(p->log,2,"Computed optimal white inttime %f and gainmode %d\n",
 					                                                      s->inttime,s->gainmode);
 				
-					if (*calc == inst_calc_man_ref_white) {
+					if ((*calc & inst_calc_cond_mask) == inst_calc_man_ref_white) {
 						nummeas = i1pro_comp_nummeas(p, s->dcaltime, s->inttime);
 						a1logd(p->log,2,"Doing final black calibration with dcaltime %f, opt inttime %f, nummeas %d, gainmode %d\n", s->dcaltime, s->inttime, nummeas, s->gainmode);
 						if ((ev = i1pro_dark_measure(p, s->dark_data,
@@ -2173,7 +2200,7 @@ i1pro_code i1pro_imp_calibrate(
 					a1logd(p->log,2, "scan white reference is not bright enough by %f\n",scale);
 				}
 	
-				if (*calc == inst_calc_man_ref_white) {
+				if ((*calc & inst_calc_cond_mask) == inst_calc_man_ref_white) {
 					nummeas = i1pro_comp_nummeas(p, s->dcaltime, s->inttime);
 					a1logd(p->log,2,"Doing final black calibration with dcaltime %f, opt inttime %f, nummeas %d, gainmode %d\n", s->dcaltime, s->inttime, nummeas, s->gainmode);
 					if ((ev = i1pro_dark_measure(p, s->dark_data,
@@ -2252,7 +2279,7 @@ i1pro_code i1pro_imp_calibrate(
 	
 		/* Deal with a display integration time selection */
 		if ((*calt & (inst_calt_emis_int_time | inst_calt_ap_flag))
-		 && *calc == inst_calc_emis_white
+		 && (*calc & inst_calc_cond_mask) == inst_calc_emis_white
 		 && (s->emiss && !s->adaptive && !s->scan)) {
 			double scale;
 			double *data;
@@ -2269,6 +2296,9 @@ i1pro_code i1pro_imp_calibrate(
 			} else if (s->dispswap == 2) {
 				tv = s->inttime; s->inttime = s->dark_int_time3; s->dark_int_time3 = tv;
 				tt = s->dark_data; s->dark_data = s->dark_data3; s->dark_data3 = tt;
+			} else if (s->dispswap == 3) {
+				tv = s->inttime; s->inttime = s->dark_int_time4; s->dark_int_time4 = tv;
+				tt = s->dark_data; s->dark_data = s->dark_data4; s->dark_data4 = tt;
 			}
 			s->dispswap = 0;
 
@@ -2277,30 +2307,43 @@ i1pro_code i1pro_imp_calibrate(
 			nummeas = i1pro_comp_nummeas(p, s->wreadtime, s->inttime);
 			ev = i1pro_whitemeasure(p, NULL, NULL, data , &scale, nummeas,
 			           &s->inttime, s->gainmode, s->targoscale, 0);
-			/* Switch to the alternate if things are too bright */
-			/* We do this simply by swapping the alternate values in. */
 			if (ev == I1PRO_RD_SENSORSATURATED || scale < 1.0) {
-				a1logd(p->log,2,"Switching to alternate display integration time %f seconds\n",s->dark_int_time2);
+				a1logd(p->log,2,"Switching to 2nd display integration time %f seconds\n",s->dark_int_time2);
+				/* swap in 2nd display integration time */
 				tv = s->inttime; s->inttime = s->dark_int_time2; s->dark_int_time2 = tv;
 				tt = s->dark_data; s->dark_data = s->dark_data2; s->dark_data2 = tt;
 				s->dispswap = 1;
 	
 				/* Do another measurement of the full display white, and if it's close to */
-				/* saturation, switch to the 3rd alternate display integration time */
+				/* saturation, switch to the 3rd display integration time */
 				nummeas = i1pro_comp_nummeas(p, s->wreadtime, s->inttime);
 				ev = i1pro_whitemeasure(p, NULL, NULL, data , &scale, nummeas,
 				           &s->inttime, s->gainmode, s->targoscale, 0);
-				/* Switch to the 3rd alternate if things are too bright */
-				/* We do this simply by swapping the alternate values in. */
 				if (ev == I1PRO_RD_SENSORSATURATED || scale < 1.0) {
-					a1logd(p->log,2,"Switching to 3rd alternate display integration time %f seconds\n",s->dark_int_time3);
+					a1logd(p->log,2,"Switching to 3rd display integration time %f seconds\n",s->dark_int_time3);
 					/* Undo previous swap */
 					tv = s->inttime; s->inttime = s->dark_int_time2; s->dark_int_time2 = tv;
 					tt = s->dark_data; s->dark_data = s->dark_data2; s->dark_data2 = tt;
-					/* swap in 2nd alternate */
+					/* swap in 3rd time */
 					tv = s->inttime; s->inttime = s->dark_int_time3; s->dark_int_time3 = tv;
 					tt = s->dark_data; s->dark_data = s->dark_data3; s->dark_data3 = tt;
 					s->dispswap = 2;
+
+					/* Do another measurement of the full display white, and if it's close to */
+					/* saturation, switch to the 4th display integration time */
+					nummeas = i1pro_comp_nummeas(p, s->wreadtime, s->inttime);
+					ev = i1pro_whitemeasure(p, NULL, NULL, data , &scale, nummeas,
+					           &s->inttime, s->gainmode, s->targoscale, 0);
+					if (ev == I1PRO_RD_SENSORSATURATED || scale < 1.0) {
+						a1logd(p->log,2,"Switching to 4th display integration time %f seconds\n",s->dark_int_time3);
+						/* Undo previous swap */
+						tv = s->inttime; s->inttime = s->dark_int_time3; s->dark_int_time3 = tv;
+						tt = s->dark_data; s->dark_data = s->dark_data3; s->dark_data3 = tt;
+						/* swap in 4th time */
+						tv = s->inttime; s->inttime = s->dark_int_time4; s->dark_int_time4 = tv;
+						tt = s->dark_data; s->dark_data = s->dark_data4; s->dark_data4 = tt;
+						s->dispswap = 3;
+					}
 				}
 			}
 			free_dvector(data, -1, m->nraw-1);
@@ -2323,45 +2366,49 @@ i1pro_code i1pro_imp_calibrate(
 
 	if (*calt & (inst_calt_ref_dark | inst_calt_ref_white)) {
 		sprintf(id, "Serial no. %d",m->serno);
-		if (*calc != inst_calc_man_ref_white) {
-			*calc = inst_calc_man_ref_white;	/* Calibrate using white tile */
+		if ((*calc & inst_calc_cond_mask) != inst_calc_man_ref_white) {
+			/* Calibrate using white tile */
+			*calc = inst_calc_man_ref_white;
 			return I1PRO_CAL_SETUP;
 		}
 	} else if (*calt & inst_calt_wavelength) {		/* Wavelength calibration */
 		if (cs->emiss && cs->ambient) {
 			id[0] = '\000';
-			if (*calc != inst_calc_man_am_dark) {
-				*calc = inst_calc_man_am_dark;	/* Calibrate using ambient adapter */
+			if ((*calc & inst_calc_cond_mask) != inst_calc_man_am_dark) {
+				/* Calibrate using ambient adapter */
+				*calc = inst_calc_man_am_dark;
 				return I1PRO_CAL_SETUP;
 			}
 		} else {
 			sprintf(id, "Serial no. %d",m->serno);
-			if (*calc != inst_calc_man_ref_white) {
-				*calc = inst_calc_man_ref_white;	/* Calibrate using white tile */
+			if ((*calc & inst_calc_cond_mask) != inst_calc_man_ref_white) {
+				/* Calibrate using white tile */
+				*calc = inst_calc_man_ref_white;
 				return I1PRO_CAL_SETUP;
 			}
 		}
 	} else if (*calt & inst_calt_em_dark) {		/* Emissive Dark calib */
 		id[0] = '\000';
-		if (*calc != inst_calc_man_em_dark) {
-			*calc = inst_calc_man_em_dark;		/* Any sort of dark reference */
+		if ((*calc & inst_calc_cond_mask) != inst_calc_man_em_dark) {
+			/* Any sort of dark reference */
+			*calc = inst_calc_man_em_dark;
 			return I1PRO_CAL_SETUP;
 		}
 	} else if (*calt & inst_calt_trans_dark) {	/* Transmissvice dark */
 		id[0] = '\000';
-		if (*calc != inst_calc_man_trans_dark) {
+		if ((*calc & inst_calc_cond_mask) != inst_calc_man_trans_dark) {
 			*calc = inst_calc_man_trans_dark;
 			return I1PRO_CAL_SETUP;
 		}
 	} else if (*calt & inst_calt_trans_vwhite) {/* Transmissvice white for emulated transmission */
 		id[0] = '\000';
-		if (*calc != inst_calc_man_trans_white) {
+		if ((*calc & inst_calc_cond_mask) != inst_calc_man_trans_white) {
 			*calc = inst_calc_man_trans_white;
 			return I1PRO_CAL_SETUP;
 		}
 	} else if (*calt & inst_calt_emis_int_time) {
 		id[0] = '\000';
-		if (*calc != inst_calc_emis_white) {
+		if ((*calc & inst_calc_cond_mask) != inst_calc_emis_white) {
 			*calc = inst_calc_emis_white;
 			return I1PRO_CAL_SETUP;
 		}
@@ -2936,16 +2983,16 @@ i1pro_code i1pro_imp_measure(
 		/* and try again. */
 		if (s->emiss && !s->scan && !s->adaptive
 		 && ev == I1PRO_RD_SENSORSATURATED
-		 && s->dispswap < 2) {
+		 && s->dispswap < 3) {
 			double *tt, tv;
 
 			if (s->dispswap == 0) {
-				a1logd(p->log,2,"Switching to alternate display integration time %f seconds\n",s->dark_int_time2);
+				a1logd(p->log,2,"Switching to 2nd display integration time %f seconds\n",s->dark_int_time2);
 				tv = s->inttime; s->inttime = s->dark_int_time2; s->dark_int_time2 = tv;
 				tt = s->dark_data; s->dark_data = s->dark_data2; s->dark_data2 = tt;
 				s->dispswap = 1;
 			} else if (s->dispswap == 1) {
-				a1logd(p->log,2,"Switching to 2nd alternate display integration time %f seconds\n",s->dark_int_time3);
+				a1logd(p->log,2,"Switching to 3rd display integration time %f seconds\n",s->dark_int_time3);
 				/* Undo first swap */
 				tv = s->inttime; s->inttime = s->dark_int_time2; s->dark_int_time2 = tv;
 				tt = s->dark_data; s->dark_data = s->dark_data2; s->dark_data2 = tt;
@@ -2953,6 +3000,15 @@ i1pro_code i1pro_imp_measure(
 				tv = s->inttime; s->inttime = s->dark_int_time3; s->dark_int_time3 = tv;
 				tt = s->dark_data; s->dark_data = s->dark_data3; s->dark_data3 = tt;
 				s->dispswap = 2;
+			} else if (s->dispswap == 2) {
+				a1logd(p->log,2,"Switching to 4th display integration time %f seconds\n",s->dark_int_time4);
+				/* Undo 2nd swap */
+				tv = s->inttime; s->inttime = s->dark_int_time3; s->dark_int_time3 = tv;
+				tt = s->dark_data; s->dark_data = s->dark_data3; s->dark_data3 = tt;
+				/* Do 3rd swap */
+				tv = s->inttime; s->inttime = s->dark_int_time4; s->dark_int_time4 = tv;
+				tt = s->dark_data; s->dark_data = s->dark_data4; s->dark_data4 = tt;
+				s->dispswap = 3;
 			}
 			/* Recompute number of measurements and realloc measurement buffer */
 			free(mbuf);
@@ -4134,6 +4190,8 @@ i1pro_code i1pro_save_calibration(i1pro *p) {
 		write_doubles(&x, fp, s->dark_data2-1, m->nraw+1);
 		write_doubles(&x, fp, &s->dark_int_time3, 1);
 		write_doubles(&x, fp, s->dark_data3-1, m->nraw+1);
+		write_doubles(&x, fp, &s->dark_int_time4, 1);
+		write_doubles(&x, fp, s->dark_data4-1, m->nraw+1);
 		write_ints(&x, fp, &s->dark_gain_mode, 1);
 
 		if (!s->emiss) {
@@ -4277,7 +4335,10 @@ i1pro_code i1pro_restore_calibration(i1pro *p) {
 		read_doubles(&x, fp, &dd, 1);
 		for (j = -1; j < m->nraw; j++)
 			read_doubles(&x, fp, &dd, 1);
-		read_doubles(&x, fp, &dd, 1);
+		read_doubles(&x, fp, &dd, 1);			/* dark_data3 */
+		for (j = -1; j < m->nraw; j++)
+			read_doubles(&x, fp, &dd, 1);
+		read_doubles(&x, fp, &dd, 1);			/* dark_data4 */
 		for (j = -1; j < m->nraw; j++)
 			read_doubles(&x, fp, &dd, 1);
 		read_ints(&x, fp, &di, 1);
@@ -4327,6 +4388,7 @@ i1pro_code i1pro_restore_calibration(i1pro *p) {
 	ts.dark_data = dvectorz(-1, m->nraw-1);  
 	ts.dark_data2 = dvectorz(-1, m->nraw-1);  
 	ts.dark_data3 = dvectorz(-1, m->nraw-1);  
+	ts.dark_data4 = dvectorz(-1, m->nraw-1);  
 	ts.cal_factor[0] = dvectorz(0, m->nwav[0]-1);
 	ts.cal_factor[1] = dvectorz(0, m->nwav[1]-1);
 	ts.white_data = dvectorz(-1, m->nraw-1);
@@ -4373,6 +4435,8 @@ i1pro_code i1pro_restore_calibration(i1pro *p) {
 		read_doubles(&x, fp, ts.dark_data2-1, m->nraw+1);
 		read_doubles(&x, fp, &ts.dark_int_time3, 1);
 		read_doubles(&x, fp, ts.dark_data3-1, m->nraw+1);
+		read_doubles(&x, fp, &ts.dark_int_time4, 1);
+		read_doubles(&x, fp, ts.dark_data4-1, m->nraw+1);
 		read_ints(&x, fp, &ts.dark_gain_mode, 1);
 
 		if (!ts.emiss) {
@@ -4408,6 +4472,7 @@ i1pro_code i1pro_restore_calibration(i1pro *p) {
 		 && (s->adaptive || fabs(s->dark_int_time - ts.dark_int_time) < 0.01)
 		 && (s->adaptive || fabs(s->dark_int_time2 - ts.dark_int_time2) < 0.01)
 		 && (s->adaptive || fabs(s->dark_int_time3 - ts.dark_int_time3) < 0.01)
+		 && (s->adaptive || fabs(s->dark_int_time4 - ts.dark_int_time4) < 0.01)
 		 && (!s->adaptive || fabs(s->idark_int_time[0] - ts.idark_int_time[0]) < 0.01)
 		 && (!s->adaptive || fabs(s->idark_int_time[1] - ts.idark_int_time[1]) < 0.01)
 		 && (!s->adaptive || fabs(s->idark_int_time[2] - ts.idark_int_time[2]) < 0.01)
@@ -4440,6 +4505,9 @@ i1pro_code i1pro_restore_calibration(i1pro *p) {
 			s->dark_int_time3 = ts.dark_int_time3;
 			for (j = -1; j < m->nraw; j++)
 				s->dark_data3[j] = ts.dark_data3[j];
+			s->dark_int_time4 = ts.dark_int_time4;
+			for (j = -1; j < m->nraw; j++)
+				s->dark_data4[j] = ts.dark_data4[j];
 			s->dark_gain_mode = ts.dark_gain_mode;
 			if (!ts.emiss) {
 				s->cal_valid = ts.cal_valid;
@@ -4469,7 +4537,7 @@ i1pro_code i1pro_restore_calibration(i1pro *p) {
 			a1logd(p->log,2,"emis = %d : %d, trans = %d : %d, ref = %d : %d\n",s->emiss,ts.emiss,s->trans,ts.trans,s->reflective,ts.reflective);
 			a1logd(p->log,2,"scan = %d : %d, flash = %d : %d, ambi = %d : %d, adapt = %d : %d\n",s->scan,ts.scan,s->flash,ts.flash,s->ambient,ts.ambient,s->adaptive,ts.adaptive);
 			a1logd(p->log,2,"inttime = %f : %f\n",s->inttime,ts.inttime);
-			a1logd(p->log,2,"darkit1 = %f : %f, 2 = %f : %f, 3 = %f : %f\n",s->dark_int_time,ts.dark_int_time,s->dark_int_time2,ts.dark_int_time2,s->dark_int_time3,ts.dark_int_time3);
+			a1logd(p->log,2,"darkit1 = %f : %f, 2 = %f : %f, 3 = %f : %f, 4 = %f : %f\n",s->dark_int_time,ts.dark_int_time,s->dark_int_time2,ts.dark_int_time2,s->dark_int_time3,ts.dark_int_time3,s->dark_int_time4,ts.dark_int_time4);
 			a1logd(p->log,2,"idarkit0 = %f : %f, 1 = %f : %f, 2 = %f : %f, 3 = %f : %f\n",s->idark_int_time[0],ts.idark_int_time[0],s->idark_int_time[1],ts.idark_int_time[1],s->idark_int_time[2],ts.idark_int_time[2],s->idark_int_time[3],ts.idark_int_time[3]);
 		}
 	}
@@ -4478,6 +4546,7 @@ i1pro_code i1pro_restore_calibration(i1pro *p) {
 	free_dvector(ts.dark_data, -1, m->nraw-1);  
 	free_dvector(ts.dark_data2, -1, m->nraw-1);  
 	free_dvector(ts.dark_data3, -1, m->nraw-1);  
+	free_dvector(ts.dark_data4, -1, m->nraw-1);  
 	free_dvector(ts.white_data, -1, m->nraw-1);
 	free_dmatrix(ts.idark_data, 0, 3, -1, m->nraw-1);  
 
@@ -4538,6 +4607,8 @@ i1pro_establish_high_power(i1pro *p) {
 	if ((ev = i1pro_getmisc(p, &m->fwrev, NULL, &m->maxpve, NULL, &m->powmode)) != I1PRO_OK)
 		return ev; 
 	
+	a1logd(p->log,2,"CPLD rev = %d\n",m->cpldrev);
+
 	if (m->powmode != 8) {		/* In high power mode */
 		if ((ev = i1pro_reset(p, 0x1f)) != I1PRO_OK)
 			return ev;
@@ -7812,7 +7883,7 @@ i1pro_code i1pro2_match_wl_meas(i1pro *p, double *pled_off, double *wlraw) {
 /* Compute standard/high res. downsampling filters for the given mode */
 /* given the current wl_led_off, and set them as current, */
 /* using triangular filters of the lagrange interpolation of the */
-/* CCD values. */
+/* CCD values (i.e. the same type of filter used by the OEM driver) */
 i1pro_code i1pro_compute_wav_filters(i1pro *p, int hr, int refl) {
 	i1proimp *m = (i1proimp *)p->m;
 	i1pro_state *s = &m->ms[m->mmode];
@@ -8033,7 +8104,7 @@ i1pro_code i1pro_compute_wav_filters(i1pro *p, int hr, int refl) {
 		int ix1, ix1c;
 		double aerr = 0.0;
 
-		a1logd(p->log,2,"Checking gemertated tables against EEProm table\n"); 
+		a1logd(p->log,2,"Checking genertated tables against EEProm table\n"); 
 		ix1 = ix1c = 0;
 		for (i = 0; i < m->nwav[0]; i++) {
 			double err;
@@ -8103,7 +8174,7 @@ i1pro_code i1pro_compute_wav_filters(i1pro *p, int hr, int refl) {
 
 /* High res congiguration */
 /* Pick one of these: */
-#undef USE_TRI_LAGRANGE		/* [und] Use normal res filter shape */
+#undef USE_TRI_LAGRANGE		/* [und] Use OEM/normal res. filter shape for HiRes */
 #undef USE_LANCZOS2			/* [und] Use lanczos2 filter shape */
 #undef USE_LANCZOS3			/* [und] Use lanczos3 filter shape */
 #undef USE_DECONV			/* [und] Use deconvolution curve */
@@ -8112,7 +8183,7 @@ i1pro_code i1pro_compute_wav_filters(i1pro *p, int hr, int refl) {
 #undef USE_CUBIC			/* [und] Use cubic spline filter */
 
 #define DO_CCDNORM			/* [def] Normalise CCD values to original */
-#define DO_CCDNORMAVG		/* [und] Normalise averages rather than per CCD bin */
+#define DO_CCDNORMAVG		/* [und ???] Normalise averages rather than per CCD bin */
 							/* (We relly on fine cal & white cal to fix it) */
 
 #undef COMPUTE_DISPERSION	/* Compute slit & optics dispersion from red laser data */
@@ -8321,14 +8392,15 @@ static double lanczos2(double wi, double x) {
 
 #ifdef USE_GAUSSIAN
 	/* gausian */
-	wi = wi/(2.0 * sqrt(2.0 * log(2.0)));	/* Convert width at half max to std. dev. */
-    x = x/(sqrt(2.0) * wi);
+	wi = wi/(sqrt(2.0 * log(2.0)));	/* Convert width at half max to std. dev. */
+    x = x/wi;
 //    y = 1.0/(wi * sqrt(2.0 * DBL_PI)) * exp(-(x * x));		/* Unity area */
     y = exp(-(x * x));											/* Center at 1.0 */
 #endif
 
 #ifdef USE_LANCZOS2
 	/* lanczos2 */
+	wi *= 1.05;			// Improves smoothness. Why ?
 	x = fabs(1.0 * x/wi);
 	if (x >= 2.0)
 		return 0.0; 
@@ -8398,7 +8470,6 @@ static double lanczos2(double wi, double x) {
 //	bb = cc = 1.0/3.0;		/* Mitchell */
 	bb = 0.5;
 	cc = 0.5;
-	xx *= 1.2;
 
 	if (xx < 1.0) {
 		y = ( 12.0 -  9.0 * bb - 6.0 * cc) * xx * xx * xx
@@ -8760,6 +8831,9 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 
 		/* From our crossover data, create a rspl that maps raw CCD index */
 		/* value into wavelegth. */
+		/* (Generating a 4th order polynomial would probably be better, */
+		/*  since this is almost certainly what was used to create the original */
+		/*  filters.) */
 		{
 			co sd[101];				/* Scattered data points */
 			datai glow, ghigh;
@@ -9355,8 +9429,8 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 
 	/* Create or re-create the high resolution filters */
 	for (refl = 0; refl < 2; refl++) {	/* for emis/trans and reflective */
-#define MXNOWL 500		/* Max hires bands */
-#define MXNOFC 64		/* Max hires coeffs */
+#define MXNOWL 200		/* Max hires bands */
+#define MXNOFC 32		/* Max hires coeffs */
 
 #ifndef USE_TRI_LAGRANGE				/* Use decimation filter */
 		int super = 0;					/* nz if we're super sampling */
@@ -9490,7 +9564,7 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 #else
 # define FINC 0.05
 #endif
-						nn = (int)(fabs(w2 - w1)/0.2 + 0.5);		/* Number to integrate over */
+						nn = (int)(fabs(w2 - w1)/FINC + 0.5);		/* Number to integrate over */
 				
 						lw = w1;				/* start at lower boundary of CCD cell */
 						ll = lanczos2(twidth, w1- cwl);
@@ -9585,7 +9659,7 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 			m->mtx[1][refl] = m->mtx_c[1][refl];
 		}
 
-#else	/* USE_TRI_LAGRANGE, use triangle over lagrange interp */
+#else	/* USE_TRI_LAGRANGE, OEM/normal res. triangle over lagrange interp */
 
 		/* Compute high res. reflective wavelength corrected filters */
 		if ((ev = i1pro_compute_wav_filters(p, 1, refl)) != I1PRO_OK) {
@@ -10710,14 +10784,14 @@ i1pro_readEEProm(
 	                   0xC4, 0, 0, pbuf, len, 2.0);
 
 	if ((rv = icoms2i1pro_err(se)) != I1PRO_OK) {
-		a1logd(p->log,1,"i1pro_readEEProm: read failed with ICOM err 0x%x\n",se);
+		a1logd(p->log,1,"i1pro_readEEProm: read failed with ICOM err 0x%x (%d msec)\n",se, msec_time()-stime);
 		return rv;
 	}
 
 	/* Now read the bytes */
 	se = p->icom->usb_read(p->icom, NULL, 0x82, buf, size, &rwbytes, 5.0);
 	if ((rv = icoms2i1pro_err(se)) != I1PRO_OK) {
-		a1logd(p->log,1,"i1pro_readEEProm: read failed with ICOM err 0x%x\n",se);
+		a1logd(p->log,1,"i1pro_readEEProm: read failed with ICOM err 0x%x (%d msec)\n",se, msec_time()-stime);
 		return rv;
 	}
 
@@ -10798,7 +10872,7 @@ i1pro_writeEEProm(
 	                   0xC3, 0, 0, pbuf, len, 2.0);
 
 	if ((rv = icoms2i1pro_err(se)) != I1PRO_OK) {
-		a1logd(p->log,2,"i1pro_writeEEProm: write failed with ICOM err 0x%x\n",se);
+		a1logd(p->log,2,"i1pro_writeEEProm: write failed with ICOM err 0x%x (%d msec)\n",se, msec_time()-stime);
 		return rv;
 	}
 
@@ -10806,7 +10880,7 @@ i1pro_writeEEProm(
 	se = p->icom->usb_write(p->icom, NULL, 0x03, buf, size, &rwbytes, 5.0);
 
 	if ((rv = icoms2i1pro_err(se)) != I1PRO_OK) {
-		a1logd(p->log,1,"i1pro_writeEEProm: failed with ICOM err 0x%x\n",se);
+		a1logd(p->log,1,"i1pro_writeEEProm: failed with ICOM err 0x%x (%d msec)\n",se, msec_time()-stime);
 		return rv;
 	}
 
@@ -10823,7 +10897,7 @@ i1pro_writeEEProm(
 		se = p->icom->usb_write(p->icom, NULL, 0x03, pbuf, 1, &rwbytes, 5.0);
 
 		if ((rv = icoms2i1pro_err(se)) != I1PRO_OK) {
-			a1logd(p->log,1,"i1pro_writeEEProm: write failed with ICOM err 0x%x\n",se);
+			a1logd(p->log,1,"i1pro_writeEEProm: write failed with ICOM err 0x%x (%d msec)\n",se, msec_time()-stime);
 			return rv;
 		}
 
@@ -10875,7 +10949,7 @@ i1pro_getmisc(
 	                   0xC9, 0, 0, pbuf, 8, 2.0);
 
 	if ((rv = icoms2i1pro_err(se)) != I1PRO_OK) {
-		a1logd(p->log,1,"i1pro_getmisc: failed with ICOM err 0x%x\n",se);
+		a1logd(p->log,1,"i1pro_getmisc: failed with ICOM err 0x%x (%d msec)\n",se, msec_time()-stime);
 		return rv;
 	}
 
@@ -10923,7 +10997,7 @@ i1pro_getmeasparams(
 	                   0xC2, 0, 0, pbuf, 8, 2.0);
 
 	if ((rv = icoms2i1pro_err(se)) != I1PRO_OK) {
-		a1logd(p->log,1,"i1pro_getmeasparams: failed with ICOM err 0x%x\n",se);
+		a1logd(p->log,1,"i1pro_getmeasparams: failed with ICOM err 0x%x (%d msec)\n",se, msec_time()-stime);
 		return rv;
 	}
 
@@ -10988,7 +11062,7 @@ i1pro_setmeasparams(
 	                   0xC1, 0, 0, pbuf, 8, 2.0);
 
 	if ((rv = icoms2i1pro_err(se)) != I1PRO_OK) {
-		a1logd(p->log,1,"i1pro_setmeasparams: failed with ICOM err 0x%x\n",se);
+		a1logd(p->log,1,"i1pro_setmeasparams: failed with ICOM err 0x%x (%d msec)\n",se, msec_time()-stime);
 		return rv;
 	}
 
@@ -11304,9 +11378,12 @@ i1pro_setmcmode(
 	                   0xCF, 0, 0, pbuf, 1, 2.0);
 
 	if ((rv = icoms2i1pro_err(se)) != I1PRO_OK) {
-		a1logd(p->log,1,"i1pro_setmcmode: failed with ICOM err 0x%x\n",se);
+		a1logd(p->log,1,"i1pro_setmcmode: failed with ICOM err 0x%x (%d msec)\n",se, msec_time()-stime);
 		return rv;
 	}
+
+	/* Hmm. Give the instrument a little time to reconfigure itself. */
+	msec_sleep(10);
 
 	a1logd(p->log,2,"i1pro_setmcmode: done, ICOM err 0x%x (%d msec)\n",
 	                                             se, msec_time()-stime);
@@ -11344,7 +11421,7 @@ i1pro_getmcmode(
 	                   0xD1, 0, 0, pbuf, 6, 2.0);
 
 	if ((rv = icoms2i1pro_err(se)) != I1PRO_OK) {
-		a1logd(p->log,1,"i1pro_getmcmode: failed with ICOM err 0x%x\n",se);
+		a1logd(p->log,1,"i1pro_getmcmode: failed with ICOM err 0x%x (%d msec)\n",se, msec_time()-stime);
 		return rv;
 	}
 
@@ -11389,7 +11466,7 @@ i1pro_code i1pro_waitfor_switch(i1pro *p, double top) {
 	}
 
 	if ((rv = icoms2i1pro_err(se)) != I1PRO_OK) {
-		a1logd(p->log,1,"i1pro_waitfor_switch: failed with ICOM err 0x%x\n",se);
+		a1logd(p->log,1,"i1pro_waitfor_switch: failed with ICOM err 0x%x (%d msec)\n",se, msec_time()-stime);
 		return rv;
 	}
 

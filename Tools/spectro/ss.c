@@ -131,7 +131,7 @@ static void check_calcount(ss *p, int atstart) {
 
 /* Establish communications with a Spectrolino/Spectroscan */
 /* Use the baud rate given, and timeout in to secs */
-/* Return DTP_COMS_FAIL on failure to establish communications */
+/* Return SS_COMS_FAIL on failure to establish communications */
 static inst_code
 ss_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	ss *p = (ss *)pp;
@@ -1411,7 +1411,8 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 		if (p->noinitcalib == 0) {
 
 			/* Make sure we're in a condition to do the calibration */
-			if (p->itype == instSpectrolino && *calc != inst_calc_man_ref_white) {
+			if (p->itype == instSpectrolino
+			 && (*calc & inst_calc_cond_mask) != inst_calc_man_ref_white) {
 				*calc = inst_calc_man_ref_white;
 				a1logd(p->log, 3, "ss cal need cond. inst_calc_man_ref_white and haven't got it\n");
 				return inst_cal_setup;
@@ -1519,7 +1520,7 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 
 			a1logd(p->log, 3, "ss cal need trans, spectrolino\n");
 			/* Make sure we're in a condition to do the calibration */
-			if (*calc != inst_calc_man_trans_white) {
+			if ((*calc & inst_calc_cond_mask) != inst_calc_man_trans_white) {
 				*calc = inst_calc_man_trans_white;
 				a1logd(p->log, 3, "ss cal need cond. inst_calc_man_trans_white and haven't got it\n");
 				return inst_cal_setup;
@@ -2036,6 +2037,7 @@ ss_del(inst *pp) {
 
 	if (p->icom != NULL)
 		p->icom->del(p->icom);
+	p->vdel(pp);
 	free (p);
 }
 
@@ -2074,7 +2076,7 @@ extern ss *new_ss(icoms *icom, instType itype) {
 
 	/* Init state */
 	p->icom = icom;
-	p->itype = icom->itype;
+	p->itype = itype;
 	p->cap = inst_mode_none;				/* Unknown until initialised */
 	p->mode = inst_mode_none;				/* Not in a known mode yet */
 	p->nextmode = inst_mode_none;			/* Not in a known mode yet */

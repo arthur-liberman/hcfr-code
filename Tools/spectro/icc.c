@@ -74,7 +74,7 @@
 #endif
 #include "icc.h"
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && !defined(vsnprintf)
 #define vsnprintf _vsnprintf
 #define snprintf _snprintf
 #endif
@@ -11801,7 +11801,7 @@ static int icc_check_id(
 		return 1; 
 	}
 
-	if ((md5 = new_icmMD5(p->al)) == NULL) {
+	if ((md5 = new_icmMD5_a(p->al)) == NULL) {
 		sprintf(p->err,"icc_check_id: new_icmMD5 failed");
 		return p->errc = 3;
 	}
@@ -11855,84 +11855,11 @@ static int icc_check_id(
 	return 2;			/* Didn't match */
 }
 
-/* Return the total size needed for the profile */
-/* Return 0 on error. */
-static unsigned int icc_get_size(
-	icc *p
-) {
-	unsigned int i, size = 0;
-
-#ifdef ICM_STRICT
-	/* Check that the right tags etc. are present for a legal ICC profile */
-	if (check_icc_legal(p) != 0) {
-		return 0;
-	}
-#endif /* ICM_STRICT */
-
-	/* Compute the total size and tag element data offsets */
-	if (p->header == NULL) {
-		sprintf(p->err,"icc_get_size: No header defined");
-		p->errc = 1;
-		return 0;
-	}
-
-	size = sat_add(size, p->header->get_size(p->header));
-	/* Assume header is aligned */
-	size = sat_addaddmul(size, 4, p->count, 12);	/* Tag table length */
-	size = sat_align(ALIGN_SIZE, size);
-
-	if (size == UINT_MAX) {
-		sprintf(p->err,"icc_get_size: size overflow");
-		return p->errc = 1;
-	}
-
-	/* Reset touched flag for each tag type */
-	for (i = 0; i < p->count; i++) {
-		if (p->data[i].objp == NULL) {
-			sprintf(p->err,"icc_get_size: Internal error - NULL tag element");
-			p->errc = 1;
-			return 0;
-		}
-		p->data[i].objp->touched = 0;
-	}
-	/* Get size for each tag type, skipping links */
-	for (i = 0; i < p->count; i++) {
-		if (p->data[i].objp->touched == 0) { /* Not alllowed for previously */
-			size = sat_add(size, p->data[i].objp->get_size(p->data[i].objp));
-			size = sat_align(ALIGN_SIZE, size);
-			p->data[i].objp->touched = 1;	/* Don't account for this again */
-		}
-	}
-
-	return size;	/* Total size needed, or UINT_MAX if overflow */
-}
-
 void quantize3x3S15Fixed16(double targ[3], double mat[3][3], double in[3]);
 
-/* Write the contents of the object. Return 0 on sucess, error code on failure */
-/* NOTE: fp ownership is taken even if the function fails. */
-static int icc_write_x(
-	icc *p,
-	icmFile *fp,		/* File to write to */
-	unsigned int of,	/* File offset to write to */
-	int take_fp			/* NZ if icc is to take ownership of fp */
-) {
-	char *bp, *buf;		/* tag table buffer */
-	unsigned int len;
-	int rv = 0;
-	unsigned int i, size = 0;
-	unsigned char pbuf[ALIGN_SIZE];
-
-	p->fp = fp;			/* Open file pointer */
-	if (take_fp)
-		p->del_fp = 1;
-	p->of = of;			/* Offset of ICC profile */
-
-	/* Compute the total size and tag element data offsets */
-	if (p->header == NULL) {
-		sprintf(p->err,"icc_write: No header defined");
-		return p->errc = 1;
-	}
+/* Add any automatically created tags. */
+/* (Hmm. Should we remove them if they shouldn't be there ?) */
+static int icc_add_auto_tags(icc *p) {
 
 	/* If we're using the ArgyllCMS 'arts' tag to record the chromatic */
 	/* adapation cone matrix used for the Media Relative WP Transformation, */ 
@@ -11940,6 +11867,7 @@ static int icc_write_x(
 	/* Don't write it if there is to 'wtpt' tag (i.e. it's a device link) */
 	if (p->useArts
 	 && p->find_tag(p, icSigMediaWhitePointTag) == 0)  {
+		int rv;
 		icmS15Fixed16Array *artsTag;
 
 		/* Make sure no 'arts' tag currently exists */
@@ -11981,6 +11909,7 @@ static int icc_write_x(
 	/* ICCV4 style, then set the media white point tag to D50 and save */
 	/* the chromatic adapation matrix to the 'chad' tag. */
 	{
+		int rv;
 		icmXYZArray *whitePointTag;
 		icmS15Fixed16Array *chadTag;
 		
@@ -12034,6 +11963,94 @@ static int icc_write_x(
 			/* Set the media white point to D50 */
 			whitePointTag->data[0] = icmD50;
 		}
+	}
+	return 0;
+}
+
+/* Return the total size needed for the profile. */
+/* This will add any automatic tags such as 'arts' tag, */
+/* so the current information needs to be final enough */
+/* for the automatic tag creation to be correct. */
+/* Return 0 on error. */
+static unsigned int icc_get_size(
+	icc *p
+) {
+	unsigned int i, size = 0;
+
+	/* Ignore any errors this time */
+	icc_add_auto_tags(p);
+
+#ifdef ICM_STRICT
+	/* Check that the right tags etc. are present for a legal ICC profile */
+	if (check_icc_legal(p) != 0) {
+		return 0;
+	}
+#endif /* ICM_STRICT */
+
+	/* Compute the total size and tag element data offsets */
+	if (p->header == NULL) {
+		sprintf(p->err,"icc_get_size: No header defined");
+		p->errc = 1;
+		return 0;
+	}
+
+	size = sat_add(size, p->header->get_size(p->header));
+	/* Assume header is aligned */
+	size = sat_addaddmul(size, 4, p->count, 12);	/* Tag table length */
+	size = sat_align(ALIGN_SIZE, size);
+
+	if (size == UINT_MAX) {
+		sprintf(p->err,"icc_get_size: size overflow");
+		return p->errc = 1;
+	}
+
+	/* Reset touched flag for each tag type */
+	for (i = 0; i < p->count; i++) {
+		if (p->data[i].objp == NULL) {
+			sprintf(p->err,"icc_get_size: Internal error - NULL tag element");
+			p->errc = 1;
+			return 0;
+		}
+		p->data[i].objp->touched = 0;
+	}
+	/* Get size for each tag type, skipping links */
+	for (i = 0; i < p->count; i++) {
+		if (p->data[i].objp->touched == 0) { /* Not alllowed for previously */
+			size = sat_add(size, p->data[i].objp->get_size(p->data[i].objp));
+			size = sat_align(ALIGN_SIZE, size);
+			p->data[i].objp->touched = 1;	/* Don't account for this again */
+		}
+	}
+
+	return size;	/* Total size needed, or UINT_MAX if overflow */
+}
+
+/* Write the contents of the object. Return 0 on sucess, error code on failure */
+/* NOTE: fp ownership is taken even if the function fails. */
+static int icc_write_x(
+	icc *p,
+	icmFile *fp,		/* File to write to */
+	unsigned int of,	/* File offset to write to */
+	int take_fp			/* NZ if icc is to take ownership of fp */
+) {
+	char *bp, *buf;		/* tag table buffer */
+	unsigned int len;
+	int rv = 0;
+	unsigned int i, size = 0;
+	unsigned char pbuf[ALIGN_SIZE];
+
+	if ((rv = icc_add_auto_tags(p)) != 0)
+		return rv;
+
+	p->fp = fp;			/* Open file pointer */
+	if (take_fp)
+		p->del_fp = 1;
+	p->of = of;			/* Offset of ICC profile */
+
+	/* Compute the total size and tag element data offsets */
+	if (p->header == NULL) {
+		sprintf(p->err,"icc_write: No header defined");
+		return p->errc = 1;
 	}
 
 	/* Check that the right tags etc. are present for a legal ICC profile */
@@ -12132,7 +12149,7 @@ static int icc_write_x(
 		icmMD5 *md5 = NULL;
 		icmFile *ofp, *dfp = NULL;
 
-		if ((md5 = new_icmMD5(p->al)) == NULL) {
+		if ((md5 = new_icmMD5_a(p->al)) == NULL) {
 			sprintf(p->err,"icc_write: new_icmMD5 failed");
 			p->al->free(p->al, buf);
 			return p->errc = 2;
@@ -13384,6 +13401,13 @@ void icmMul3(double out[3], double in1[3], double in2[3]) {
 	out[2] = in1[2] * in2[2];
 }
 
+/* Take absolute of a 3 vector */
+void icmAbs3(double out[3], double in[3]) {
+	out[0] = fabs(in[0]);
+	out[1] = fabs(in[1]);
+	out[2] = fabs(in[2]);
+}
+
 /* - - - - - - - - - - - - - - - - - - - - - - - - */
 
 /* Set a 3x3 matrix to unity */
@@ -13747,7 +13771,7 @@ void icmScale33(double out[3], double in1[3], double in0[3], double rat) {
 	out[2] = in0[2] + (in1[2] - in0[2]) * rat;
 }
 
-/* Normalise a two point vector to the given length. */
+/* Normalise a vector from 0->1 to the given length. */
 /* The new location of in1[] is returned in out[]. */
 /* Return nz if not normalisable */
 int icmNormalize33(double out[3], double in1[3], double in0[3], double len) {
@@ -13820,6 +13844,11 @@ void icmRotMat(double m[3][3], double s[3], double t[3]) {
 	/* If the two input vectors are close to being parallel, */
 	/* then h will be close to zero. */
 	if (fabs(h) < 1e-12) {
+
+		/* Make sure scale is the correct sign */
+		if (s[0] * t[0] + s[1] * t[1] + s[2] * t[2] < 0.0)
+			tl = -tl;
+
 		m[0][0] = tl/sl;
 		m[0][1] = 0.0;
 		m[0][2] = 0.0;
@@ -13843,6 +13872,19 @@ void icmRotMat(double m[3][3], double s[3], double t[3]) {
 		m[2][1] = tl/sl * (h * v[1] * v[2] + v[0]);
 		m[2][2] = tl/sl * (e + h * v[2] * v[2]);
 	}
+
+#ifdef NEVER		/* Check result */
+	{
+		double tt[3];
+
+		icmMulBy3x3(tt, m, s);
+
+		if (icmLabDEsq(t, tt) > 1e-4) {
+			printf("icmRotMat error t, is %f %f %f\n",tt[0],tt[1],tt[2]);
+			printf("            should be %f %f %f\n",t[0],t[1],t[2]);
+		}
+	}
+#endif /* NEVER */
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -13891,9 +13933,9 @@ void icmMul3By3x4(double out[3], double mat[3][4], double in[3]) {
 /* "Real-Time Rendering". */
 /* s0 -> s1 is source vector, t0 -> t1 is target vector. */
 /* Usage of icmRotMat: */
-/*	t[0] == mat[0][0] * s[0] + mat[0][1] * s[1] + mat[0][2] * s[2] + mat[0][3]; */
-/*	t[1] == mat[1][0] * s[0] + mat[1][1] * s[1] + mat[1][2] * s[2] + mat[1][3]; */
-/*	t[2] == mat[2][0] * s[0] + mat[2][1] * s[1] + mat[2][2] * s[2] + mat[2][3]; */
+/*	t[0] = mat[0][0] * s[0] + mat[0][1] * s[1] + mat[0][2] * s[2] + mat[0][3]; */
+/*	t[1] = mat[1][0] * s[0] + mat[1][1] * s[1] + mat[1][2] * s[2] + mat[1][3]; */
+/*	t[2] = mat[2][0] * s[0] + mat[2][1] * s[1] + mat[2][2] * s[2] + mat[2][3]; */
 /* i.e. use icmMul3By3x4 */
 void icmVecRotMat(double m[3][4], double s1[3], double s0[3], double t1[3], double t0[3]) {
 	int i, j;
@@ -13922,6 +13964,26 @@ void icmVecRotMat(double m[3][4], double s1[3], double s0[3], double t1[3], doub
 				m[j][i] = 0.0;
 		}
 	}
+
+#ifdef NEVER		/* Check result */
+	{
+		double tt0[3], tt1[3];
+
+		icmMul3By3x4(tt0, m, s0);
+
+		if (icmLabDEsq(t0, tt0) > 1e-4) {
+			printf("icmVecRotMat error t0, is %f %f %f\n",tt0[0],tt0[1],tt0[2]);
+			printf("                should be %f %f %f\n",t0[0],t0[1],t0[2]);
+		}
+
+		icmMul3By3x4(tt1, m, s1);
+
+		if (icmLabDEsq(t1, tt1) > 1e-4) {
+			printf("icmVecRotMat error t1, is %f %f %f\n",tt1[0],tt1[1],tt1[2]);
+			printf("                should be %f %f %f\n",t1[0],t1[1],t1[2]);
+		}
+	}
+#endif /* NEVER */
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -13959,6 +14021,35 @@ double ve_0[3]			/* Second point on line */
 	isect[0] = ve_0[0] + rv * vvec[0];
 	isect[1] = ve_0[1] + rv * vvec[1];
 	isect[2] = ve_0[2] + rv * vvec[2];
+
+	return 0;
+}
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - */
+/* Compute the closest point on a line to a point. */
+/* Return closest point and parameter value if not NULL. */
+/* Return nz if the line length is zero */
+int icmLinePointClosest(double cp[3], double *pa,
+                       double la0[3], double la1[3], double pp[3]) {
+	double va[3], vp[3];
+	double val;				/* Vector length */
+	double a;				/* Parameter value */
+
+	icmSub3(va, la1, la0);	/* Line vector */
+	val = icmNorm3(va);		/* Vector length */
+
+	if (val < 1e-12)
+		return 1;
+
+	icmSub3(vp, pp, la0);	/* Point vector to line base */
+
+	a = icmDot3(vp, va) / val;		/* Normalised dist of point projected onto line */
+
+	if (cp != NULL)
+		icmBlend3(cp, la0, la1, a);
+
+	if (pa != NULL)
+		*pa = a;
 
 	return 0;
 }
@@ -15268,6 +15359,8 @@ int icmClipXYZ(double out[3], double in[3]) {
 /* --------------------------------------------------------------- */
 /* Some video specific functions */
 
+/* Should add ST.2048 log functions */
+
 /* Convert Lut table index/value to YPbPr */
 /* (Same as Lut_Lut2YPbPr() ) */ 
 void icmLut2YPbPr(double *out, double *in) {
@@ -15909,12 +16002,19 @@ static void icmMD5_get(icmMD5 *p, ORD8 chsum[16]) {
 
 /* Delete the instance */
 static void icmMD5_del(icmMD5 *p) {
-	p->al->free(p->al, p);
+	icmAlloc *al = p->al;
+	int del_al   = p->del_al;
+
+	/* This object */
+	al->free(al, p);
+
+	if (del_al)			/* We are responsible for deleting allocator */
+		al->del(al);
 }
 
 /* Create a new MD5 checksumming object, with a reset checksum value */
 /* Return it or NULL if there is an error */
-icmMD5 *new_icmMD5(icmAlloc *al) {
+extern icmMD5 *new_icmMD5_a(icmAlloc *al) {
 	icmMD5 *p;
 
 	if ((p = (icmMD5 *)al->calloc(al,1,sizeof(icmMD5))) == NULL)

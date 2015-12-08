@@ -366,7 +366,7 @@ hcfr_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	inst_code ev = inst_ok;
 	icomuflags usbflags = icomuf_no_open_clear | icomuf_detach;
 
-#if defined(__APPLE__) && defined(__i386__)
+#if defined(__APPLE__) && !defined(__ppc__)
 	/* Except on Intel OS X 10.4/5 for some reasone. */
 	/* It would be good if the HCFR had a better USB implementation... */
 	usbflags &= ~icomuf_no_open_clear;
@@ -637,6 +637,7 @@ hcfr_del(inst *pp) {
 	if (p->icom != NULL)
 		p->icom->del(p->icom);
 	inst_del_disptype_list(p->dtlist, p->ndtlist);
+	p->vdel(pp);
 	free(p);
 }
 
@@ -946,7 +947,7 @@ extern hcfr *new_hcfr(icoms *icom, instType itype) {
 	p->del              = hcfr_del;
 
 	p->icom = icom;
-	p->itype = icom->itype;
+	p->itype = itype;
 
 	icmSetUnity3x3(p->ccmat);	/* Set the colorimeter correction matrix to do nothing */
 	p->dtech = disptech_unknown;

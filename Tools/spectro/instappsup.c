@@ -33,6 +33,7 @@
 
 #include "icoms.h"
 #include "inst.h"
+#include "rspec.h"
 #include "insttypeinst.h"
 #include "instappsup.h"
 
@@ -187,7 +188,7 @@ inst_code inst_handle_calibrate(
 
 		/* We're done */
 		if ((ev & inst_mask) == inst_ok) {
-			if (calc == inst_calc_message)
+			if ((calc & inst_calc_cond_mask) == inst_calc_message)
 				printf("%s\n",id);
 			if (usermes)
 				printf("Calibration complete\n");
@@ -211,6 +212,10 @@ inst_code inst_handle_calibrate(
 
 			printf("Calibration failed with '%s' (%s)\n",
 				       p->inst_interp_error(p, ev), p->interp_error(p, ev));
+
+			if (doimmediately)
+				return inst_user_abort;
+
 			printf("Hit any key to retry, or Esc or Q to abort:\n");
 
 			empty_con_chars();
@@ -222,94 +227,88 @@ inst_code inst_handle_calibrate(
 				return inst_user_abort;
 			}
 
-		/* Get user to do/setup calibration */
 		} else {
 
-			switch (calc) {
+			printf("\n");
+
+			/* Get user to do/setup calibration */
+			switch (calc & inst_calc_cond_mask) {
 				case inst_calc_uop_ref_white:
 					printf("Do a reflective white calibration,\n");
 					printf(" and then hit any key to continue,\n"); 
-					printf(" or hit Esc or Q to abort: "); 
 					break;
 
 				case inst_calc_uop_trans_white:
 					printf("Do a transmissive white calibration,\n");
 					printf(" and then hit any key to continue,\n"); 
-					printf(" or hit Esc or Q to abort: "); 
 					break;
 			
 				case inst_calc_uop_trans_dark:
 					printf("Do a transmissive dark calibration,\n");
 					printf(" and then hit any key to continue,\n"); 
-					printf(" or hit Esc or Q to abort: "); 
 					break;
 			
 				case inst_calc_man_ref_white:
 					printf("Place the instrument on its reflective white reference %s,\n",id);
 					printf(" and then hit any key to continue,\n"); 
-					printf(" or hit Esc or Q to abort: "); 
 					break;
 
 				case inst_calc_man_ref_whitek:
 					printf("Click the instrument on its reflective white reference %s,\n",id);
-					printf(" or hit Esc or Q to abort: "); 
 					break;
 
 				case inst_calc_man_ref_dark:
-					printf("Place the instrument in the dark, not in contact with any surface,\n");
+					printf("Place the instrument on light trap, or in the dark,\n");
+					printf("and distant from any surface,\n");
 					printf(" and then hit any key to continue,\n"); 
-					printf(" or hit Esc or Q to abort: "); 
+					break;
+
+				case inst_calc_man_dark_gloss:
+					printf("Place the instrument on black gloss reference\n");
+					printf(" and then hit any key to continue,\n"); 
 					break;
 
 				case inst_calc_man_em_dark:
 					printf("Place cap on the instrument, or place on a dark surface,\n");
-					printf("or place on the white calibration reference,\n");
+					printf("or place on the calibration reference,\n");
 					printf(" and then hit any key to continue,\n"); 
-					printf(" or hit Esc or Q to abort: "); 
 					break;
 
 				case inst_calc_man_am_dark:
 					printf("Place ambient adapter and cap on the instrument,\n");
-					printf("or place on the white calibration reference,\n");
+					printf("or place on the calibration reference,\n");
 					printf(" and then hit any key to continue,\n"); 
-					printf(" or hit Esc or Q to abort: "); 
 					break;
 
 				case inst_calc_man_cal_smode:
 					printf("Set instrument sensor to calibration position,\n");
 					printf(" and then hit any key to continue,\n"); 
-					printf(" or hit Esc or Q to abort: "); 
 					break;
 
 				case inst_calc_man_trans_white:
 					printf("Place the instrument on its transmissive white source,\n");
 					printf(" and then hit any key to continue,\n"); 
-					printf(" or hit Esc or Q to abort: "); 
 					break;
 
 				case inst_calc_man_trans_dark:
 					printf("Use the appropriate tramissive blocking to block the transmission path,\n");
 					printf(" and then hit any key to continue,\n"); 
-					printf(" or hit Esc or Q to abort: "); 
 					break;
 
 				case inst_calc_change_filter:
 					printf("Change filter on instrument to %s,\n",id);
 					printf(" and then hit any key to continue,\n"); 
-					printf(" or hit Esc or Q to abort: "); 
 					break;
 
 				case inst_calc_message:
 					printf("%s\n",id);
 					printf(" Hit any key to continue,\n"); 
-					printf(" or hit Esc or Q to abort: "); 
 					break;
 
 				case inst_calc_emis_white:
 					if (disp_setup == NULL || dwi == NULL) { /* No way of creating a test window */
 						printf("Place the instrument on a 100%% white test patch,\n");
 						printf(" and then hit any key to continue,\n"); 
-						printf(" or hit Esc or Q to abort: "); 
 					} else {
 						/* We need to display a 100% white patch to proceed with this */
 						/* type of calibration */
@@ -322,7 +321,6 @@ inst_code inst_handle_calibrate(
 					if (disp_setup == NULL || dwi == NULL) { /* No way of creating a test window */
 						printf("Place the instrument on a 80%% white test patch,\n");
 						printf(" and then hit any key to continue,\n"); 
-						printf(" or hit Esc or Q to abort: "); 
 					} else {
 						/* We need to display a 80% white patch to proceed with this */
 						/* type of calibration */
@@ -335,13 +333,13 @@ inst_code inst_handle_calibrate(
 				case inst_calc_emis_grey_darker: 
 				case inst_calc_emis_grey_ligher:
 					if (dwi == NULL) {	/* No way of creating a test window */
-						if (calc == inst_calc_emis_grey) {
+						if ((calc & inst_calc_cond_mask) == inst_calc_emis_grey) {
 							p->cal_gy_level = 0.6;
 							p->cal_gy_count = 0;
-						} else if (calc == inst_calc_emis_grey_darker) {
+						} else if ((calc & inst_calc_cond_mask) == inst_calc_emis_grey_darker) {
 							p->cal_gy_level *= 0.7;
 							p->cal_gy_count++;
-						} else if (calc == inst_calc_emis_grey_ligher) {
+						} else if ((calc & inst_calc_cond_mask) == inst_calc_emis_grey_ligher) {
 							p->cal_gy_level *= 1.4;
 							if (p->cal_gy_level > 1.0)
 								p->cal_gy_level = 1.0;
@@ -354,7 +352,6 @@ inst_code inst_handle_calibrate(
 						} else {
 							printf("Place the instrument on a %d%% white test patch,\n", (int)(p->cal_gy_level * 100.0 + 0.5));
 							printf(" and then hit any key to continue,\n"); 
-							printf(" or hit Esc or Q to abort: "); 
 						}
 					} else {
 
@@ -386,20 +383,37 @@ inst_code inst_handle_calibrate(
 					a1logd(p->log,1,"inst_handle_calibrate unhandled calc case 0x%x, err 0x%x\n",calc,inst_internal_error);
 					return inst_internal_error;
 			}
+			if (calc & inst_calc_optional_flag)
+				printf(" or hit Esc or Q to abort, or S to skip: "); 
+			else
+				printf(" or hit Esc or Q to abort: "); 
 			fflush(stdout);
 
 			usermes = 1;
 
-			if (calc != inst_calc_man_ref_whitek) {
+			/* If we should wait for user to say we're in the right condition, */
+			/* and this isn't a calibration that requires clicking the instrument */
+			/* on the calibration tile, then wait for the an OK or abort or skip. */
+			if (!doimmediately
+			 && (calc & inst_calc_cond_mask) != inst_calc_man_ref_whitek) {
 				empty_con_chars();
 				ch = next_con_char();
 				printf("\n");
+				/* If optional calib. and user wants to skip it */
+				/* Loop back to calibrate() with inst_calc_optional_flag still set */
+				if ((calc & inst_calc_optional_flag) != 0 && (ch == 's' || ch == 'S')) {
+					printf("Skipped\n");
+					goto oloop;
+				}
 				if (ch == 0x1b || ch == 0x3 || ch == 'q' || ch == 'Q') {
 					a1logd(p->log,1,"inst_handle_calibrate user aborted 0x%x\n",inst_user_abort);
 					return inst_user_abort;
 				}
 			}
+			/* Remove any skip flag and continue with the calibration */
+			calc &= inst_calc_cond_mask;
 		}
+ oloop:;
 	}
 }
 

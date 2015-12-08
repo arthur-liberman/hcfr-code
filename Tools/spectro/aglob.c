@@ -42,6 +42,7 @@
 # include <pthread.h>
 #endif
 
+#include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdio.h>
@@ -102,8 +103,34 @@ int aglob_create(aglob *g, char *spath) {
 	g->first = 1;
     g->ff = _findfirst(spath, &g->ffs);
 #else /* UNIX */
+	char *tpath, *d, *s;
+
+	/* Make a copy of the pattern with extra space */
+	if ((tpath = malloc(4 * strlen(spath)+1)) == NULL) {
+		a1loge(g_log, 1, "aglob_create: malloc failed\n");
+		return 1;
+	}
+	strcpy(tpath, spath);
+
+	/* If there is a file extension, make it case insensitive */
+	if ((s = strrchr(spath, '.')) != NULL) {
+		d = tpath + (s - spath);
+		while (*s != '\000') {
+			if (isalpha(*s)) {
+				*d++ = '[';
+				*d++ = tolower(*s);
+				*d++ = toupper(*s++);
+				*d++ = ']';
+			} else {
+				*d++ = *s++;
+			}
+		}
+		*d++ = '\000';
+//printf("~` converted '%s' to '%s'\n",spath,tpath);
+	}
 	memset(&g->g, 0, sizeof(g->g));
-	g->rv = glob(spath, GLOB_NOSORT, NULL, &g->g);
+	g->rv = glob(tpath, GLOB_NOSORT, NULL, &g->g);
+	free(tpath);
 //a1loge(g_log, 0, "~1 glob '%s' returns %d and gl_pathc = %d\n",spath,g->rv,g->g.gl_pathc);
 	if (g->rv == GLOB_NOSPACE) {
 		a1loge(g_log, 1, "aglob_create: glob returned GLOB_NOSPACE\n");

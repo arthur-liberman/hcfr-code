@@ -125,9 +125,7 @@ typedef int SOCKET;
 #endif
 
 #ifdef DEBUG
-# define dbgo stdout
-# define DBG(xxx) fprintf xxx ;
-void cc_dump_bytes(FILE *fp, char *pfx, unsigned char *buf, int len);
+# define DBG(xxx) a1logd xxx ;
 #else
 # define DBG(xxx) ;
 #endif  /* DEBUG */
@@ -189,7 +187,7 @@ static int init_mDNS() {
 #ifdef NT
 	WSADATA data;
 	if (WSAStartup(MAKEWORD(2,2), &data)) {
-		DBG((dbgo,"WSAStartup failed\n"))
+		DBG((g_log,0,"WSAStartup failed\n"))
 		return 1;
 	}
 #endif
@@ -201,16 +199,16 @@ static int init_mDNS() {
 /* Return nz on error */
 static int init_send_mDNS(SOCKET *psock) {
 	int nRet, nOptVal; 
-//	int off;
+	int off;
 	SOCKET sock; 
 	struct sockaddr_in stSourceAddr; 
 
-	DBG((dbgo,"init_send_mDNS() called\n")) 
+	DBG((g_log,0,"init_send_mDNS() called\n")) 
 
 	/* get a datagram (UDP) socket */ 
 	sock = socket(PF_INET, SOCK_DGRAM, 0); 
 	if (sock == INVALID_SOCKET) { 
-		DBG((dbgo,"opening UDP socked failed with %d\n",ERRNO)) 
+		DBG((g_log,0,"opening send UDP socked failed with %d\n",ERRNO)) 
 		return 1;
 	} 
 
@@ -224,13 +222,13 @@ static int init_send_mDNS(SOCKET *psock) {
 	// If we're doing a one-shot, we shouldn't transmit from port 5353, */
 	// but ChromCast won't see the packet if we don't. */
 
-	/* We cant send from port 5353 if someone else is using it, */
+	/* We can't send from port 5353 if someone else is using it, */
 	/* so set the SO_REUSEADDR option (which is enough for MSWin), */
 	/* and SO_REUSEPORT for OS X and Linux */
 	{
 		int on = 1;
 		if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char *)&on, sizeof(on))) {
-			DBG((dbgo,"setsockopt(SO_REUSEADDR)  failed with %d\n",ERRNO))
+			DBG((g_log,0,"setsockopt(SO_REUSEADDR)  failed with %d\n",ERRNO))
 			closesocket(sock);
 			return 1;
 		}
@@ -245,7 +243,7 @@ static int init_send_mDNS(SOCKET *psock) {
 #  endif
 # endif
 		if (setsockopt(sock, SOL_SOCKET, SO_REUSEPORT, (const char *)&on, sizeof(on))) {
-			DBG((dbgo,"setsockopt(SO_REUSEPORT)  failed with %d\n",ERRNO))
+			DBG((g_log,0,"setsockopt(SO_REUSEPORT)  failed with %d\n",ERRNO))
 		}
 #endif
 	}
@@ -263,7 +261,7 @@ static int init_send_mDNS(SOCKET *psock) {
 	nRet = bind(sock, (struct sockaddr *)&stSourceAddr, 
 				 sizeof(struct sockaddr)); 
 	if (nRet == SOCKET_ERROR) { 
-		DBG((dbgo,"bind failed with %d\n",ERRNO))
+		DBG((g_log,0,"bind failed with %d\n",ERRNO))
 		closesocket(sock);
 		return 1;
 	} 
@@ -282,7 +280,7 @@ static int init_send_mDNS(SOCKET *psock) {
 		 * with loopback disabled), so this failure is of no consequence.
 		 * However, if we *do* get loop-backed data, we'll know why
 		 */ 
-		DBG((dbgo,"[disabling loopback failed with %d]\n",ERRNO)) 
+		DBG((g_log,0,"[disabling loopback failed with %d]\n",ERRNO)) 
 	} 
 
 #ifdef NEVER		// We only want this to be local
@@ -293,7 +291,7 @@ static int init_send_mDNS(SOCKET *psock) {
 	nRet = setsockopt(sock, IPPROTO_IP, IP_MULTICAST_TTL,
 				 (char *)&nOptVal, sizeof(int)); 
 	if (nRet == SOCKET_ERROR) { 
-		DBG((dbgo,"increasing TTL failed with %d\n",ERRNO))
+		DBG((g_log,0,"increasing TTL failed with %d\n",ERRNO))
 		closesocket(sock);
 		return 1;
 	} 
@@ -302,7 +300,7 @@ static int init_send_mDNS(SOCKET *psock) {
 	if (psock != NULL)
 		*psock = sock;
 
-	DBG((dbgo,"init sending mDNS succeed\n",ERRNO))
+	DBG((g_log,0,"init sending mDNS succeed\n",ERRNO))
 
 	return 0;
 }
@@ -316,7 +314,7 @@ static int send_mDNS(SOCKET sock) {
 	ORD8 achOutBuf[BUFSIZE]; 
 	struct sockaddr_in stDestAddr; 
 
-	DBG((dbgo,"send_mDNS() called\n")) 
+	DBG((g_log,0,"send_mDNS() called\n")) 
 
 	/* Initialize the Destination Address structure and send */ 
 	stDestAddr.sin_family = PF_INET; 
@@ -324,22 +322,22 @@ static int send_mDNS(SOCKET sock) {
 	stDestAddr.sin_port = htons(DESTINATION_PORT); 
 
 	/* Setup the FQDN data packet to send */
-	write_ORD16_be(0, achOutBuf + 0);	/* ID */
-	write_ORD16_be(0, achOutBuf + 2);	/* Flags */
-	write_ORD16_be(1, achOutBuf + 4);	/* QDCOUNT - one question */
-	write_ORD16_be(0, achOutBuf + 6);	/* ANCOUNT */
-	write_ORD16_be(0, achOutBuf + 8);	/* NSCOUNT */
-	write_ORD16_be(0, achOutBuf + 10);	/* ARCOUNT */
+	write_ORD16_be(achOutBuf + 0, 0);	/* ID */
+	write_ORD16_be(achOutBuf + 2, 0);	/* Flags */
+	write_ORD16_be(achOutBuf + 4, 1);	/* QDCOUNT - one question */
+	write_ORD16_be(achOutBuf + 6, 0);	/* ANCOUNT */
+	write_ORD16_be(achOutBuf + 8, 0);	/* NSCOUNT */
+	write_ORD16_be(achOutBuf + 10, 0);	/* ARCOUNT */
 	off = 12;
 	off = write_string(achOutBuf, off, "_googlecast");
 	off = write_string(achOutBuf, off, "_tcp");
 	off = write_string(achOutBuf, off, "local");
-	write_ORD8(0, achOutBuf + off);			/* null string */
+	write_ORD8(achOutBuf + off, 0);			/* null string */
 	off += 1;
-	write_ORD16_be(0x000c, achOutBuf + off);	/* QCOUNT */
+	write_ORD16_be(achOutBuf + off, 0x000c);	/* QCOUNT */
 	off += 2;
 	/* Set top bit to get a unicast response (not for ChromeCast though) */
-	write_ORD16_be(0x0001, achOutBuf + off);	/* QCLASS */
+	write_ORD16_be(achOutBuf + off, 0x0001);	/* QCLASS */
 	off += 2;
 
 	nRet = sendto(sock, (char *)achOutBuf, off,
@@ -347,11 +345,11 @@ static int send_mDNS(SOCKET sock) {
 					(struct sockaddr *) &stDestAddr, 
 					sizeof(struct sockaddr)); 
 	if (nRet == SOCKET_ERROR) { 
-		DBG((dbgo,"sending mDNS query failed with %d\n",ERRNO))
+		DBG((g_log,0,"sending mDNS query failed with %d\n",ERRNO))
 		return 1;
 	} 
 
-	DBG((dbgo,"sending mDNS query succeed\n",ERRNO))
+	DBG((g_log,0,"sending mDNS query succeed\n",ERRNO))
 
 	return 0;
 }
@@ -378,17 +376,17 @@ void free_ccids(ccast_id **ids) {
 /* return nz on error */
 static int init_receive_mDNS(SOCKET *psock) {
 	int nRet; 
-//	int off;
+	int off, size;
 	struct sockaddr_in stSourceAddr; 
 	struct ip_mreq stIpMreq; 
 	SOCKET sock;
 
-	DBG((dbgo,"init_receive_mDNS() called\n"))
+	DBG((g_log,0,"init_receive_mDNS() called\n"))
 
 	/* get a datagram (UDP) socket */ 
 	sock = socket(PF_INET, SOCK_DGRAM, 0); 
 	if (sock == INVALID_SOCKET) { 
-		DBG((dbgo,"opening UDP socked failed with %d\n",ERRNO)) 
+		DBG((g_log,0,"opening receive UDP socked failed with %d\n",ERRNO)) 
 		return 1;
 	} 
 
@@ -398,7 +396,7 @@ static int init_receive_mDNS(SOCKET *psock) {
 	{
 		int on = 1, off = 0;
 		if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char *) &on, sizeof(on))) {
-			DBG((dbgo,"setsockopt(SO_REUSEADDR)  failed with %d\n",ERRNO))
+			DBG((g_log,0,"setsockopt(SO_REUSEADDR)  failed with %d\n",ERRNO))
 			closesocket(sock);
 			return 1;
 		}
@@ -413,7 +411,7 @@ static int init_receive_mDNS(SOCKET *psock) {
 #  endif
 # endif
 		if (setsockopt(sock, SOL_SOCKET, SO_REUSEPORT, (const char *)&on, sizeof(on))) {
-			DBG((dbgo,"setsockopt(SO_REUSEPORT)  failed with %d\n",ERRNO))
+			DBG((g_log,0,"setsockopt(SO_REUSEPORT)  failed with %d\n",ERRNO))
 		}
 #endif
 	}
@@ -431,7 +429,7 @@ static int init_receive_mDNS(SOCKET *psock) {
 	nRet = bind(sock, (struct sockaddr *)&stSourceAddr, 
 				sizeof(struct sockaddr)); 
 	if (nRet == SOCKET_ERROR) { 
-		DBG((dbgo,"bind failed with %d\n",ERRNO))
+		DBG((g_log,0,"bind failed with %d\n",ERRNO))
 		closesocket(sock);
 		return 1;
 	} 
@@ -443,7 +441,7 @@ static int init_receive_mDNS(SOCKET *psock) {
 					(char *)&stIpMreq, sizeof (struct ip_mreq));
 
 	if (nRet == SOCKET_ERROR) { 
-		DBG((dbgo,"registering for read events failed with %d\n",ERRNO))
+		DBG((g_log,0,"registering for read events failed with %d\n",ERRNO))
 		closesocket(sock);
 		return 1;
 	} 
@@ -454,7 +452,7 @@ static int init_receive_mDNS(SOCKET *psock) {
 		DWORD tv;
 		tv = 100;
 		if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv)) < 0) {
-			DBG((dbgo,"setsockopt timout failed with %d\n",ERRNO))
+			DBG((g_log,0,"setsockopt timout failed with %d\n",ERRNO))
 			closesocket(sock);
 			return 1;
 		}
@@ -465,7 +463,7 @@ static int init_receive_mDNS(SOCKET *psock) {
 		tv.tv_sec = 0;
 		tv.tv_usec = 100 * 1000;
 		if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv)) < 0) {
-			DBG((dbgo,"setsockopt timout failed with %d\n",ERRNO))
+			DBG((g_log,0,"setsockopt timout failed with %d\n",ERRNO))
 			closesocket(sock);
 			return 1;
 		}
@@ -485,10 +483,10 @@ static int init_receive_mDNS(SOCKET *psock) {
 static int receive_mDNS(SOCKET sock, ccast_id ***ids, int emsec) {
 	int nids = 0;
 	unsigned int smsec;
-	int nSize;
-	int size;
+	unsigned int nSize;
+	int off, size;
 	ORD8 achInBuf[BUFSIZE]; 
-//	struct sockaddr_in stSourceAddr; 
+	struct sockaddr_in stSourceAddr; 
 
 	/* Count the number of current id's */
 	if (*ids != NULL) {
@@ -496,7 +494,7 @@ static int receive_mDNS(SOCKET sock, ccast_id ***ids, int emsec) {
 			;
 	}
 
-	DBG((dbgo,"receive_mDNS() called with %d ids\n",nids))
+	DBG((g_log,0,"receive_mDNS() called with %d ids\n",nids))
 
 	for (smsec = msec_time(), emsec += smsec;msec_time() <= emsec;) {
 		int i;
@@ -510,20 +508,20 @@ static int receive_mDNS(SOCKET sock, ccast_id ***ids, int emsec) {
 		if (size == SOCKET_ERROR) { 
 			if (ERRNO == UDP_SOCKET_TIMEOUT)
 				continue;			/* Timeout */
-			DBG((dbgo,"recvfrom failed with %d\n",ERRNO))
+			DBG((g_log,0,"recvfrom failed with %d\n",ERRNO))
 			free_ccids(*ids);
 			*ids = NULL;
 			return 1;
 		}
-		DBG((dbgo,"Got mDNS message length %d bytes\n",size))
+		DBG((g_log,0,"Got mDNS message length %d bytes\n",size))
 #ifdef DEBUG
-		cc_dump_bytes(dbgo, "    ", achInBuf, size);
+		adump_bytes(g_log, "    ", achInBuf, 0, size);
 #endif
 
 		if (parse_dns(&name, &ip, achInBuf, size) != 0) {
-			DBG((dbgo,"Failed to parse the reply\n"))
+			DBG((g_log,0,"Failed to parse the reply\n"))
 		} else {
-			DBG((dbgo,"Parsed reply OK\n"))
+			DBG((g_log,0,"Parsed reply OK\n"))
 
 //if (*pnids > 0) {
 //	name = strdup("Argyll1234");
@@ -531,7 +529,7 @@ static int receive_mDNS(SOCKET sock, ccast_id ***ids, int emsec) {
 //}
 			/* If we found an entry */
 			if (name != NULL && ip != NULL) {
-				DBG((dbgo,"Got a name '%s' & IP '%s'\n",name,ip))
+				DBG((g_log,0,"Got a name '%s' & IP '%s'\n",name,ip))
 				/* Check if it is a duplcate */
 				for (i = 0; i < nids; i++) {
 					if (strcmp((*ids)[i]->name, name) == 0
@@ -539,21 +537,21 @@ static int receive_mDNS(SOCKET sock, ccast_id ***ids, int emsec) {
 						break;	/* yes */
 				} 
 				if (i < nids) {
-					DBG((dbgo,"Duplicate\n"))
+					DBG((g_log,0,"Duplicate\n"))
 					free(name);
 					free(ip);
 				} else {
 					ccast_id **tids;
 					if ((tids = realloc(*ids, (nids + 2) * sizeof(ccast_id *))) == NULL
 					 || (*ids = tids, (*ids)[nids] = malloc(sizeof(ccast_id)), (*ids)[nids]) == NULL) {
-						DBG((dbgo,"realloc/malloc fail\n"))
+						DBG((g_log,0,"realloc/malloc fail\n"))
 						free(name);
 						free(ip);
 						free_ccids(*ids);
 						*ids = NULL;
 						return 1;
 					} else {
-						DBG((dbgo,"Adding entry\n"))
+						DBG((g_log,0,"Adding entry\n"))
 						(*ids)[nids]->name = name;
 						(*ids)[nids]->ip = ip;
 						(*ids)[++nids] = NULL;		/* End marker */
@@ -563,7 +561,7 @@ static int receive_mDNS(SOCKET sock, ccast_id ***ids, int emsec) {
 		}
 	}
 
-	DBG((dbgo,"receive_mDNS() returning %d in list\n",nids))
+	DBG((g_log,0,"receive_mDNS() returning %d in list\n",nids))
 
 	return 0;
 }
@@ -580,33 +578,33 @@ ccast_id **get_ccids() {
 	SOCKET ssock, rsock;
 
 	if (init_mDNS()) {
-		DBG((dbgo,"init_mDNS() failed\n"))
+		DBG((g_log,0,"init_mDNS() failed\n"))
 		return NULL;
 	}
 
 	if (init_send_mDNS(&ssock)) {
-		DBG((dbgo,"init_send_mDNS() failed\n"))
+		DBG((g_log,0,"init_send_mDNS() failed\n"))
 		return NULL;
 	}
 
 	if (init_receive_mDNS(&rsock)) {
-		DBG((dbgo,"init_receive_mDNS() failed\n"))
+		DBG((g_log,0,"init_receive_mDNS() failed\n"))
 		closesocket(ssock);
 		return NULL;
 	}
 
 	smsec = msec_time();
 
-	DBG((dbgo,"Sending mDNS query:\n"))
+	DBG((g_log,0,"Sending mDNS query:\n"))
 	if (send_mDNS(ssock)) {
-		DBG((dbgo,"send_mDNS() #1 failed\n"))
+		DBG((g_log,0,"send_mDNS() #1 failed\n"))
 		closesocket(ssock);
 		closesocket(rsock);
 		return NULL;
 	}
 
 	if (receive_mDNS(rsock, &ids, 100)) {
-		DBG((dbgo,"receive_mDNS() #1 failed\n"))
+		DBG((g_log,0,"receive_mDNS() #1 failed\n"))
 		closesocket(ssock);
 		closesocket(rsock);
 		return NULL;
@@ -614,16 +612,16 @@ ccast_id **get_ccids() {
 
 	if (ids == NULL && (msec_time() - smsec) < 200) {
 
-		DBG((dbgo,"Sending another mDNS query:\n"))
+		DBG((g_log,0,"Sending another mDNS query:\n"))
 		if (send_mDNS(ssock)) {
-			DBG((dbgo,"send_mDNS() #2 failed\n"))
+			DBG((g_log,0,"send_mDNS() #2 failed\n"))
 			closesocket(ssock);
 			closesocket(rsock);
 			return NULL;
 		}
 
 		if (receive_mDNS(rsock, &ids, 500)) {
-			DBG((dbgo,"receive_mDNS() #2 failed\n"))
+			DBG((g_log,0,"receive_mDNS() #2 failed\n"))
 			closesocket(ssock);
 			closesocket(rsock);
 			return NULL;
@@ -632,16 +630,16 @@ ccast_id **get_ccids() {
 
 	if (ids == NULL) {
 
-		DBG((dbgo,"Sending a final mDNS query:\n"))
+		DBG((g_log,0,"Sending a final mDNS query:\n"))
 		if (send_mDNS(ssock)) {
-			DBG((dbgo,"send_mDNS() #3 failed\n"))
+			DBG((g_log,0,"send_mDNS() #3 failed\n"))
 			closesocket(ssock);
 			closesocket(rsock);
 			return NULL;
 		}
 
 		if (receive_mDNS(rsock, &ids, 500)) {
-			DBG((dbgo,"receive_mDNS() #3 failed\n"))
+			DBG((g_log,0,"receive_mDNS() #3 failed\n"))
 			closesocket(ssock);
 			closesocket(rsock);
 			return NULL;
@@ -654,7 +652,7 @@ ccast_id **get_ccids() {
 	/* If no ChromCasts found, return an empty list */
 	if (ids == NULL) {
 		if ((ids = calloc(sizeof(ccast_id *), 1)) == NULL) {
-			DBG((dbgo,"calloc fail\n"))
+			DBG((g_log,0,"calloc fail\n"))
 			return NULL;
 		}
 	}
@@ -813,21 +811,21 @@ int parse_query(ORD8 *buf, int off, int size) {
 	char *sv;
 	int qtype, qclass;
 
-	DBG((dbgo,"Parsing query at 0x%x:\n",off))
+	DBG((g_log,0,"Parsing query at 0x%x:\n",off))
 	if ((off = read_string(&sv, buf, off, size)) < 0)
 		return -1;
-	DBG((dbgo," Got string '%s'\n",sv))
+	DBG((g_log,0," Got string '%s'\n",sv))
 	free(sv);
 
 	if ((size - off) < 2)
 		return -1;
 	qtype = read_ORD16_be(buf + off); off += 2;
-	DBG((dbgo," QTYPE = 0x%04x\n",qtype))
+	DBG((g_log,0," QTYPE = 0x%04x\n",qtype))
 
 	if ((size - off) < 2)
 		return -1;
 	qclass = read_ORD16_be(buf + off); off += 2;
-	DBG((dbgo," QCLASS = 0x%04x\n",qtype))
+	DBG((g_log,0," QCLASS = 0x%04x\n",qtype))
 
 	return off;
 }
@@ -839,29 +837,29 @@ int parse_reply(char **pname, char **pip, ORD8 *buf, int off, int size) {
 	int rtype, rclass, rdlength;
 	unsigned int ttl;
 
-	DBG((dbgo,"Parsing reply at 0x%x:\n",off))
+	DBG((g_log,0,"Parsing reply at 0x%x:\n",off))
 	if ((off = read_string(&sv, buf, off, size)) < 0)
 		return -1;
 
-	DBG((dbgo," Got string '%s'\n",sv))
+	DBG((g_log,0," Got string '%s'\n",sv))
 
 	if ((size - off) < 2) {
 		free(sv);
 		return -1;
 	}
 	rtype = read_ORD16_be(buf + off); off += 2;
-	DBG((dbgo," RTYPE = %d\n",rtype))
+	DBG((g_log,0," RTYPE = %d\n",rtype))
 
 	if ((size - off) < 2) {
 		free(sv);
 		return -1;
 	}
 	rclass = read_ORD16_be(buf + off); off += 2;
-	DBG((dbgo," RCLASS = 0x%04x\n",rclass))
+	DBG((g_log,0," RCLASS = 0x%04x\n",rclass))
 	/* rclass top bit is cache flush bit */
 
 	if ((rclass & 0x7fff) != DNS_CLASS_IN) {
-		DBG((dbgo," response has RCLASS != 0x%04x\n",DNS_CLASS_IN))
+		DBG((g_log,0," response has RCLASS != 0x%04x\n",DNS_CLASS_IN))
 		free(sv);
 		return -1;
 	}
@@ -869,15 +867,15 @@ int parse_reply(char **pname, char **pip, ORD8 *buf, int off, int size) {
 	if ((size - off) < 4)
 		return -1;
 	ttl = read_ORD32_be(buf + off); off += 4;
-	DBG((dbgo," TTL = %u\n",ttl))
+	DBG((g_log,0," TTL = %u\n",ttl))
 
 	if ((size - off) < 2)
 		return -1;
 	rdlength = read_ORD16_be(buf + off); off += 2;
-	DBG((dbgo," RDLENGTH = %d\n",rdlength))
+	DBG((g_log,0," RDLENGTH = %d\n",rdlength))
 
 	if ((off + rdlength) > size) {
-		DBG((dbgo," response RDLENGTH is longer than remaining buffer (%d)\n",size - off))
+		DBG((g_log,0," response RDLENGTH is longer than remaining buffer (%d)\n",size - off))
 		free(sv);
 		return -1;
 	}
@@ -891,31 +889,31 @@ int parse_reply(char **pname, char **pip, ORD8 *buf, int off, int size) {
 		}
 		*cp = '\000';
 		if (strcmp(cp+1, "_googlecast._tcp.local") != 0) {
-			DBG((dbgo,"Not a chromecast (got '%s')\n",cp+1))
+			DBG((g_log,0,"Not a chromecast (got '%s')\n",cp+1))
 			free(sv);
 			return -1;
 		}
 
-		DBG((dbgo," Chromacast '%s'\n", sv))
+		DBG((g_log,0," Chromacast '%s'\n", sv))
 		if ((*pname = strdup(sv)) == NULL) {
-			DBG((dbgo,"strdup failed\n"))
+			DBG((g_log,0,"strdup failed\n"))
 			free(sv);
 			return -1;
 		}
 	} else if (rtype == DNS_TYPE_A) {
 		/* Should we check name matches ? */
 		if ((*pip = malloc(3 * 4 + 3 + 1)) == NULL) {
-			DBG((dbgo,"malloc failed\n"))
+			DBG((g_log,0,"malloc failed\n"))
 			free(*pname);
 			free(sv);
 		}
 		sprintf(*pip, "%d.%d.%d.%d", buf[off], buf[off+1], buf[off+2], buf[off+3]);
-		DBG((dbgo," V4 address = %s\n",*pip))
+		DBG((g_log,0," V4 address = %s\n",*pip))
 	
 	} else if (rtype == DNS_TYPE_AAAA) {		/* The IPV6 address */
 		/* Should we check name matches ? */
 		if ((*pip = malloc(8 * 4 + 7 + 1)) == NULL) {
-			DBG((dbgo,"malloc failed\n"))
+			DBG((g_log,0,"malloc failed\n"))
 			free(*pname);
 			free(sv);
 		}
@@ -928,10 +926,10 @@ int parse_reply(char **pname, char **pip, ORD8 *buf, int off, int size) {
 		buf[off+10] * 245 + buf[off+11],
 		buf[off+12] * 245 + buf[off+13],
 		buf[off+14] * 245 + buf[off+15]);
-		DBG((dbgo," V6 address = %s\n",*pip))
+		DBG((g_log,0," V6 address = %s\n",*pip))
 
 	} else {
-		DBG((dbgo," Skipping reply at 0x%x\n",off))
+		DBG((g_log,0," Skipping reply at 0x%x\n",off))
 	}
 	off += rdlength;
 	free(sv);
@@ -946,7 +944,7 @@ static int parse_dns(char **pname, char **pip, ORD8 *buf, int size) {
 	int i, off = 0;
 	int id, flags, qdcount, ancount, nscount, arcount;
 
-	DBG((dbgo,"Parsing mDNS reply:\n"))
+	DBG((g_log,0,"Parsing mDNS reply:\n"))
 
 	*pname = NULL;
 	*pip = NULL;
@@ -954,34 +952,34 @@ static int parse_dns(char **pname, char **pip, ORD8 *buf, int size) {
 	// Parse reply header
 	if ((size - off) < 2) return 1;
 	id = read_ORD16_be(buf + off); off += 2;
-	DBG((dbgo," ID = %d\n",id))
+	DBG((g_log,0," ID = %d\n",id))
 
 	if ((size - off) < 2) return 1;
 	flags = read_ORD16_be(buf + off); off += 2;
-	DBG((dbgo," FLAGS = 0x%04x\n",flags))
+	DBG((g_log,0," FLAGS = 0x%04x\n",flags))
 
 	if ((size - off) < 2) return 1;
 	qdcount = read_ORD16_be(buf + off); off += 2;
-	DBG((dbgo," QDCOUNT = %d\n",qdcount))
+	DBG((g_log,0," QDCOUNT = %d\n",qdcount))
 
 	if ((size - off) < 2) return 1;
 	ancount = read_ORD16_be(buf + off); off += 2;
-	DBG((dbgo," ANCOUNT = %d\n",ancount))
+	DBG((g_log,0," ANCOUNT = %d\n",ancount))
 
 	if ((size - off) < 2) return 1;
 	nscount = read_ORD16_be(buf + off); off += 2;
-	DBG((dbgo," NSCOUNT = %d\n",nscount))
+	DBG((g_log,0," NSCOUNT = %d\n",nscount))
 
 	if ((size - off) < 2) return 1;
 	arcount = read_ORD16_be(buf + off); off += 2;
-	DBG((dbgo," ARCOUNT = %d\n",arcount))
+	DBG((g_log,0," ARCOUNT = %d\n",arcount))
 
 //printf("~1 after strings, off = 0x%x\n",off);
 
 	// Parse all the queries (QDCOUNT)
 	for (i = 0; i < qdcount; i++) {
 		if ((off = parse_query(buf, off, size)) < 0) {
-			DBG((dbgo," ### Parsing query failed ###\n"))
+			DBG((g_log,0," ### Parsing query failed ###\n"))
 			return 1;
 		}
 	}
@@ -989,7 +987,7 @@ static int parse_dns(char **pname, char **pip, ORD8 *buf, int size) {
 	// Parse all the answers (ANCOUNT)
 	for (i = 0; i < ancount; i++) {
 		if ((off = parse_reply(pname, pip, buf, off, size)) < 0) {
-			DBG((dbgo," ### Parsing answer failed ###\n"))
+			DBG((g_log,0," ### Parsing answer failed ###\n"))
 			return 1;
 		}
 	}
@@ -997,7 +995,7 @@ static int parse_dns(char **pname, char **pip, ORD8 *buf, int size) {
 	// Parse all the NS records (NSCOUNT)
 	for (i = 0; i < nscount; i++) {
 		if ((off = parse_reply(pname, pip, buf, off, size)) < 0) {
-			DBG((dbgo," ### Parsing NS record failed ###\n"))
+			DBG((g_log,0," ### Parsing NS record failed ###\n"))
 			return 1;
 		}
 	}
@@ -1005,7 +1003,7 @@ static int parse_dns(char **pname, char **pip, ORD8 *buf, int size) {
 	// Parse all the addition RR answers (ARCOUNT)
 	for (i = 0; i < arcount; i++) {
 		if ((off = parse_reply(pname, pip, buf, off, size)) < 0) {
-			DBG((dbgo," ### Parsing additional records failed ###\n"))
+			DBG((g_log,0," ### Parsing additional records failed ###\n"))
 			return 1;
 		}
 	}
@@ -1064,32 +1062,4 @@ static int parse_dns(char **pname, char **pip, ORD8 *buf, int size) {
 
 
 */
-
-/* ================================================================== */
-/* Debug */
-
-// Print bytes as hex to stdout
-void cc_dump_bytes(FILE *fp, char *pfx, unsigned char *buf, int len) {
-	int i, j, ii;
-	char oline[200] = { '\000' }, *bp = oline;
-	for (i = j = 0; i < len; i++) {
-		if ((i % 16) == 0)
-			bp += sprintf(bp,"%s%04x:",pfx,i);
-		bp += sprintf(bp," %02x",buf[i]);
-		if ((i+1) >= len || ((i+1) % 16) == 0) {
-			for (ii = i; ((ii+1) % 16) != 0; ii++)
-				bp += sprintf(bp,"   ");
-			bp += sprintf(bp,"  ");
-			for (; j <= i; j++) {
-				if (!(buf[j] & 0x80) && isprint(buf[j]))
-					bp += sprintf(bp,"%c",buf[j]);
-				else
-					bp += sprintf(bp,".");
-			}
-			bp += sprintf(bp,"\n");
-			fprintf(fp, "%s", oline);
-			bp = oline;
-		}
-	}
-}
 

@@ -27,7 +27,7 @@
 #include "CGATSFile.h"
 #include <stdexcept>
 
-#define SALONEINSTLIB
+//#define SALONEINSTLIB
 #define ENABLE_USB
 #define ENABLE_FAST_SERIAL
 #if defined(_MSC_VER)
@@ -37,7 +37,7 @@
 #include "numsup.h"
 #include "xspect.h"
 #include "cgats.h"
-#undef SALONEINSTLIB
+//#undef SALONEINSTLIB
 
 
 

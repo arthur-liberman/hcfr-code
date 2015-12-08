@@ -308,13 +308,15 @@ typedef enum {
 	inst2_has_scan_toll     = 0x00004000, /* Instrument will honour modified scan tollerance */
 	inst2_no_feedback       = 0x00008000, /* Instrument doesn't give any user feedback */
 
+	inst2_opt_calibs        = 0x00010000, /* Instrument has optional calibrations */
+
 	inst2_has_leds          = 0x00200000, /* Instrument has some user viewable indicator LEDs */
 	inst2_has_target        = 0x00400000, /* Instrument has aiming target */
 	inst2_has_sensmode      = 0x00800000, /* Instrument can report it's sensors mode */
 
 	inst2_has_battery       = 0x01000000, /* Instrument is battery powered */
 
-	inst2_disptype          = 0x02000000, /* Has a display type selector */
+	inst2_disptype          = 0x02000000, /* Has a display/calibration type selector */
 										  /* (ie. get_disptypesel(), set_disptype */
 
 	inst2_ccmx              = 0x04000000, /* Colorimeter Correction Matrix capability */
@@ -361,9 +363,10 @@ typedef enum {
 	inst_dtflags_mtx     = 0x0001,			/* matrix read from instrument */
 	inst_dtflags_ccss    = 0x0002,			/* ccss file */
 	inst_dtflags_ccmx    = 0x0004,			/* ccmx file */
-	inst_dtflags_wr      = 0x0010,			/* Writable slot */
-	inst_dtflags_ld      = 0x0020,			/* mtx/ccss/ccmx is loaded */
-	inst_dtflags_default = 0x1000,			/* Dafault calibration to use */
+	inst_dtflags_custom  = 0x0010,			/* custom (i.e. not built in or OEM) */
+	inst_dtflags_wr      = 0x0020,			/* Writable slot */
+	inst_dtflags_ld      = 0x0040,			/* mtx/ccss/ccmx is loaded */
+	inst_dtflags_default = 0x1000,			/* Default calibration to use */
 	inst_dtflags_end     = 0x8000			/* end marker */
 } inst_dtflags;
 
@@ -387,6 +390,7 @@ typedef struct _inst_disptypesel {
 
   /* Private: */
 	int ix;					/* Internal index,  */
+	char isel[INST_DTYPE_SEL_LEN];	/* String of potential selector characters */
 
 	// Stuff for ccss & ccmx
 	char *path;				/* Path to ccss or ccmx. NULL if not valid */
@@ -462,7 +466,10 @@ typedef enum {
 	inst_opt_set_target_state   = 0x001C,	/* Set the aiming target state 0 = off, 1 == on, 2 = toggle [int] */
 
 	inst_opt_get_min_int_time   = 0x001D,	/* Get the minimum integration time [*double time] */
-	inst_opt_set_min_int_time   = 0x001E	/* Set the minimum integration time [double time] */
+	inst_opt_set_min_int_time   = 0x001E,	/* Set the minimum integration time [double time] */
+
+	inst_opt_opt_calibs_valid   = 0x001F,	/* Are optional calibrations valid  [*int valid] */
+	inst_opt_clear_opt_calibs   = 0x0020	/* Clear all optional calibrations. */
 
 } inst_opt_type;
 
@@ -488,6 +495,7 @@ typedef enum {
 /* Type of calibration needed/available/requested - corresponds to capabilities */
 /* [ inst_calt_trans_vwhite is "variable" white transmission calibration, needed */
 /*   where transmission mode is being emulated. ] */
+/* Remember to update calt2str() */ 
 typedef enum {
 	/* Response to needs_calibration() */
 	inst_calt_none           = 0x00000000, 	/* No calibration or unknown */
@@ -504,15 +512,16 @@ typedef enum {
 	/* Specific type of calibration - corresponds to capabilities  */
 	inst_calt_wavelength     = 0x00000010, 	/* Wavelength calibration using refl. cal. surface */ 
 	inst_calt_ref_white      = 0x00000020, 	/* Reflective white/emissive dark calibration */
-	inst_calt_ref_dark       = 0x00000040, 	/* Reflective dark calibration (in dark) */
-	inst_calt_emis_offset    = 0x00000080, 	/* Emissive offset/black calibration (dark surface) */
-	inst_calt_emis_ratio     = 0x00000100, 	/* Emissive ratio calibration */
-	inst_calt_em_dark        = 0x00000200, 	/* Emissive dark calibration (in dark) */
-	inst_calt_trans_white    = 0x00000400,	/* Transmissive white reference calibration */
-	inst_calt_trans_vwhite   = 0x00000800,	/* Transmissive variable white reference calibration */
-	inst_calt_trans_dark     = 0x00001000,	/* Transmissive dark reference calibration */
-	inst_calt_ref_freq       = 0x00001800, 	/* Display refresh frequency calibration - non-deferable in HCFR */
-	
+	inst_calt_ref_dark       = 0x00000040, 	/* Reflective dark calibration (light trap) */
+	inst_calt_ref_dark_gl    = 0x00000080, 	/* Reflective gloss calibration (black gloss surface) */
+	inst_calt_emis_offset    = 0x00000100, 	/* Emissive offset/black calibration (dark surface) */
+	inst_calt_emis_ratio     = 0x00000200, 	/* Emissive ratio calibration */
+	inst_calt_em_dark        = 0x00000400, 	/* Emissive dark calibration (in dark) */
+	inst_calt_trans_white    = 0x00000800,	/* Transmissive white reference calibration */
+	inst_calt_trans_vwhite   = 0x00001000,	/* Transmissive variable white reference calibration */
+    inst_calt_ref_freq       = 0x00001800, 	/* Display refresh frequency calibration - non-deferable in HCFR */
+	inst_calt_trans_dark     = 0x00002000,	/* Transmissive dark reference calibration */
+
 	inst_calt_n_dfrble_mask  = 0x0000fff0,	/* Mask of non-deferrable calibrations */
 
 	/* Calibrations that might be deferred until measurement */
@@ -526,6 +535,9 @@ typedef enum {
 	inst_calt_ap_flag        = 0x80000000	/* Implementation flag indicating do all possible */
 
 } inst_cal_type;
+
+/* Return a description of the first calibration type */ 
+char *calt2str(inst_cal_type calt);
 
 /* Calibration conditions. */
 /* This is how the instrument communicates to the calling program */
@@ -550,13 +562,14 @@ typedef enum {
 							/* to be on the correct reference for the software triggered cal. */
 	inst_calc_man_ref_white    = 0x00000010, /* place instrument on reflective white reference */
 	inst_calc_man_ref_whitek   = 0x00000020, /* click instrument on reflective white reference */
-	inst_calc_man_ref_dark     = 0x00000030, /* place instrument in dark, not close to anything */
-	inst_calc_man_em_dark      = 0x00000040, /* place cap on instrument, put on dark surface or white ref. */
-	inst_calc_man_am_dark      = 0x00000050, /* Place cap over ambient sensor (wl calib capable) */
-	inst_calc_man_cal_smode    = 0x00000060, /* Put instrument sensor in calibration position */
+	inst_calc_man_ref_dark     = 0x00000030, /* place instrument on light trap */
+	inst_calc_man_dark_gloss   = 0x00000040, /* place instrument on gloss black reference */
+	inst_calc_man_em_dark      = 0x00000050, /* place cap on instrument, put on dark surface or white ref. */
+	inst_calc_man_am_dark      = 0x00000060, /* Place cap over ambient sensor (wl calib capable) */
+	inst_calc_man_cal_smode    = 0x00000070, /* Put instrument sensor in calibration position */
 
-	inst_calc_man_trans_white  = 0x00000070, /* place instrument on transmissive white reference */
-	inst_calc_man_trans_dark   = 0x00000080, /* place instrument on transmissive dark reference */
+	inst_calc_man_trans_white  = 0x00000080, /* place instrument on transmissive white reference */
+	inst_calc_man_trans_dark   = 0x00000090, /* place instrument on transmissive dark reference */
 	inst_calc_man_man_mask     = 0x000000F0, /* user configured calibration mask */ 
 
 	inst_calc_emis_white       = 0x00000100, /* Provide a white test patch */
@@ -568,7 +581,12 @@ typedef enum {
 	inst_calc_emis_mask        = 0x00000F00, /* Emmissive/display provided reference patch */
 
 	inst_calc_change_filter    = 0x00010000, /* Filter needs changing on device - see id[] */
-	inst_calc_message          = 0x00020000  /* Issue a message. - see id[] */
+	inst_calc_message          = 0x00020000, /* Issue a message. - see id[] */
+
+	inst_calc_cond_mask        = 0x0fffffff, /* Mask for conditions (i.e. remove flags) */
+
+	inst_calc_optional_flag    = 0x80000000  /* Flag indicating calibration can be skipped */
+
 } inst_cal_cond;
 
 /* Clamping state */
@@ -601,6 +619,8 @@ typedef enum {
 	inst_conf_ambient
 } inst_config;
 
+# define EXRA_INST_OBJ
+
 /* Off-line pending readings available (status) */
 #define CALIDLEN 200	/* Maxumum length of calibration tile ID string */
 
@@ -611,6 +631,7 @@ typedef enum {
 /* after initialisation. */
 #define INST_OBJ_BASE															\
 																				\
+	EXRA_INST_OBJ																\
 	a1log *log;			/* Pointer to debug & error logging class */			\
 	instType  itype;	/* Instrument type determined by driver */				\
 	icoms *icom;		/* Instrument coms object */							\
@@ -622,6 +643,10 @@ typedef enum {
 	void *uic_cntx;		/* User interaction callback function */				\
 	void (*eventcallback)(void *cntx, inst_event_type event);					\
 	void *event_cntx;	/* Event callback function */							\
+																				\
+	/* Virtual delete. Cleans up things done by new_inst(). */					\
+	inst_code (*vdel)(															\
+        struct _inst *p);														\
 																				\
 	/* Establish communications at the indicated baud rate. */					\
 	/* (Serial parameters are ignored for USB instrument) */					\
@@ -692,7 +717,8 @@ typedef enum {
 		int allconfig,			/* nz to return list for all configs, not just current. */	\
 		int recreate);			/* nz to re-check for new ccmx & ccss files */	\
 																				\
-	/* Set the display type. index is into the inst_disptypesel[] returned */   \
+	/* Set the display type or calibration mode. */								\
+	/* index is into the inst_disptypesel[] returned */   						\
 	/* returned by get_disptypesel(). clears col_cor_mat() and */				\
 	/* col_cal_spec_set(). */													\
 	inst_code (*set_disptype)(													\
@@ -700,9 +726,10 @@ typedef enum {
 		int index);                                                             \
 	                                                                            \
 	/* Get the disptech and other corresponding info for the current */		    \
-	/* selected display type. Returns disptype_unknown by default. */			\
-	/* Because refrmode can be overridden, it may not match the refrmode */		\
-	/* of the dtech. (Pointers may be NULL if not needed) */					\
+	/* selected display type or calibration mode. Returns disptype_unknown */	\
+	/* by default. Because refrmode can be overridden, it may not */			\
+	/* match the refrmode of the dtech. */										\
+	/* (Pointers may be NULL if not needed) */									\
 	inst_code (*get_disptechi)(													\
 		struct _inst *p,														\
 		disptech *dtech,														\
@@ -864,7 +891,7 @@ typedef enum {
 	/* to determine the required calibration types and conditions. */			\
 	/* (The corresponding calibration types will be used & returned. */			\
 																				\
-	/* If no error is returned to the first call to calibrate() with */			\
+	/* If no error is returned to the first call to calibrate() */				\
 	/* then the instrument was capable of calibrating without user or */		\
 	/* application intervention. If on the other hand calibrate() returns */	\
 	/* inst_cal_setup, then the appropriate action indicated by the value */	\
@@ -875,6 +902,13 @@ typedef enum {
  	/* Each call to calibrate() will update *calt to reflect the remaining */	\
 	/* calibration to be performed.  calibrate() returns inst_ok when no */		\
 	/* more calibrations remain. */												\
+																				\
+	/* If the calc has the inst_calc_optional_flag flag set, */					\
+	/* then the user should be offered the option of skipping the */			\
+	/* calibration. If they decide to skip it, return a calc with */			\
+	/* inst_calc_optional_flag set, and if they want to proceed, */				\
+	/* make sure the inst_calc_optional_flag is cleared in the returned */		\
+	/* calc. */																	\
 																				\
 	/* DOESN'T use the trigger mode */											\
 	/* Return inst_unsupported if *calt is not appropriate, */					\
@@ -1068,6 +1102,7 @@ typedef struct {
 	int cc_cbid;       	/* Calibration display type base ID required */
 	int  refr;			/* Refresh mode flag */
 	char *sel;			/* UI selector characters (may be NULL) */
+	int oem;			/* nz if oem origin */
 	double mat[3][3];	/* The matrix values */
 } iccmx;
 
@@ -1090,6 +1125,7 @@ typedef struct {
 	disptech dtech;		/* Display Technology enumeration (optional if disp) */
 	int  refr;			/* Refresh mode flag */
 	char *sel;			/* UI selector characters (may be NULL) */
+	int oem;			/* nz if oem origin */
 	xspect *sets;		/* Set of sample spectra */
 	int no_sets;		/* Number on set */
 } iccss;

@@ -34,7 +34,7 @@
 #endif
 #include "conv.h"
 #include "ssl.h"		/* axTLS header */
-
+#define USING_AXTLS
 #undef DEBUG
 #undef DUMPSDATA		/* Send data */
 #undef DUMPRDATA		/* Receive data */
@@ -94,12 +94,14 @@ typedef int SOCKET;
 /* ------------------------------------------------------------------- */
 
 #ifdef DEBUG
-# define dbgo stdout
-# define DBG(xxx) fprintf xxx ;
-void cc_dump_bytes(FILE *fp, char *pfx, unsigned char *buf, int len);
+# define DBG(xxx) a1logd xxx ;
 #else
 # define DBG(xxx) ;
 #endif  /* DEBUG */
+
+/* Some OpenSSL's support
+ ERR_print_errors_fp(stderr);
+*/
 
 /* Error message from error number */
 char *ccpacket_emes(ccpacket_err rv) {
@@ -149,20 +151,31 @@ static ccpacket_err connect_ccpacket_imp(
 	server.sin_addr.s_addr = inet_addr(p->dip);
 	server.sin_port = htons((short)p->dport);
 
-	if ((p->ctx = ssl_ctx_new(SSL_SERVER_VERIFY_LATER, 1)) == NULL) {
-		DBG((dbgo, "connect ssl_ctx_new failed\n"))
+#ifdef USING_AXTLS
+	if ((p->ctx = ssl_ctx_new(SSL_SERVER_VERIFY_LATER, 1)) == NULL)
+#else
+	// Want to use TLS_client_method(), but older OpenSSL doesn't have it...
+	if ((p->ctx = SSL_CTX_new(TLSv1_client_method())) == NULL)
+#endif
+	{
+		DBG((g_log,0, "connect ssl_ctx_new failed\n"))
 		return ccpacket_context;
 	}
 
+#ifndef USING_AXTLS
+	// SSL_CTX_set_mode();
+	SSL_CTX_set_verify(p->ctx, SSL_VERIFY_NONE, NULL);
+#endif
+
 	/* Open socket */
 	if ((p->sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == INVALID_SOCKET) {
-		DBG((dbgo, "socket() failed with errno %d\n",ERRNO))
+		DBG((g_log,0, "socket() failed with errno %d\n",ERRNO))
 		return ccpacket_connect;
 	}
 
 	/* Make recieve timeout after 100 msec, and send timeout after 2 seconds */
 	{
-		struct linger;
+		struct linger ling;
 #ifdef NT
 		DWORD tv;
 #ifdef SYNC_SSL
@@ -172,13 +185,13 @@ static ccpacket_err connect_ccpacket_imp(
 #endif
 		if ((rv = setsockopt(p->sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv,
 			                                                   sizeof(tv))) < 0) {
-			DBG((dbgo,"setsockopt timout failed with %d, errno %d",rv,ERRNO))
+			DBG((g_log,0,"setsockopt timout failed with %d, errno %d",rv,ERRNO))
 			return ccpacket_connect;
 		}
 		tv = 2000;
 		if ((rv = setsockopt(p->sock, SOL_SOCKET, SO_SNDTIMEO, (const char*)&tv,
 			                                                    sizeof(tv))) < 0) {
-			DBG((dbgo,"setsockopt timout failed with %d, errno %d",rv,ERRNO))
+			DBG((g_log,0,"setsockopt timout failed with %d, errno %d",rv,ERRNO))
 			return ccpacket_connect;
 		}
 #else
@@ -192,14 +205,14 @@ static ccpacket_err connect_ccpacket_imp(
 #endif
 		if ((rv = setsockopt(p->sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv,
 			                                                    sizeof(tv))) < 0) {
-			DBG((dbgo,"setsockopt timout failed with %d, errno %d",rv,ERRNO))
+			DBG((g_log,0,"setsockopt timout failed with %d, errno %d",rv,ERRNO))
 			return ccpacket_connect;
 		}
 		tv.tv_sec = 2;
 		tv.tv_usec = 0;
 		if ((rv = setsockopt(p->sock, SOL_SOCKET, SO_SNDTIMEO, (const char*)&tv,
 			                                                    sizeof(tv))) < 0) {
-			DBG((dbgo,"setsockopt timout failed with %d, errno %d",rv,ERRNO))
+			DBG((g_log,0,"setsockopt timout failed with %d, errno %d",rv,ERRNO))
 			return ccpacket_connect;
 		}
 #endif
@@ -209,27 +222,34 @@ static ccpacket_err connect_ccpacket_imp(
 		ling.l_linger = 2;	/* Two seconds */
 		if ((rv = setsockopt(p->sock, SOL_SOCKET, SO_LINGER, (const char*)&ling,
 			                                                    sizeof(ling))) < 0) {
-			DBG((dbgo,"setsockopt timout failed with %d, errno %d",rv,ERRNO))
+			DBG((g_log,0,"setsockopt timout failed with %d, errno %d",rv,ERRNO))
 			return ccpacket_connect;
 		}
 #endif /* NEVER */
 	}
 
 	/* Connect */
-	if (rv = (connect(p->sock, (struct sockaddr *)&server, sizeof(server))) != 0) {
-		DBG((dbgo, "TCP connect IP '%s' port %d failed with %d, errno %d\n",p->dip, p->dport,rv,ERRNO))
+	if ((rv = (connect(p->sock, (struct sockaddr *)&server, sizeof(server)))) != 0) {
+		DBG((g_log,0, "TCP connect IP '%s' port %d failed with %d, errno %d\n",p->dip, p->dport,rv,ERRNO))
 		return ccpacket_connect;
 	}
-	DBG((dbgo, "socket connect IP '%s' port %d success\n",p->dip, p->dport))
+	DBG((g_log,0, "socket connect IP '%s' port %d success\n",p->dip, p->dport))
 	
 	/* Establish TLS */
 	/* Return nz if we can send PNG directly as base64 + bg RGB, */
 	/* else have to setup webserver and send URL */
-	if ((p->ssl = ssl_client_new(p->ctx, p->sock, sesid, 32)) == NULL) {
-		DBG((dbgo, "connect IP '%s' port %d ssl_ctx_new failed\n",p->dip, p->dport))
+#ifdef USING_AXTLS
+	if ((p->ssl = ssl_client_new(p->ctx, p->sock, sesid, 32)) == NULL)
+#else
+	if ((p->ssl = SSL_new(p->ctx)) == NULL
+	 || SSL_set_fd(p->ssl, p->sock) != 1
+	 || SSL_connect(p->ssl) != 1)
+#endif
+	{
+		DBG((g_log,0, "connect IP '%s' port %d ssl_ctx_new failed\n",p->dip, p->dport))
 		return ccpacket_ssl;
 	} 	
-	DBG((dbgo, "TLS connect IP '%s' port %d success\n",p->dip, p->dport))
+	DBG((g_log,0, "TLS connect IP '%s' port %d success\n",p->dip, p->dport))
 	return ccpacket_OK;
 }
 
@@ -269,7 +289,7 @@ static ccpacket_err re_connect_ccpacket(
 static ccpacket_err send_ccpacket(ccpacket *p,
 	ORD8 *buf, ORD32 len		/* Message body to send */
 ) {
-	int lens, rv;
+	int lens, ilen;
 	ORD8 *sbuf;
 	ORD32 slen;
 
@@ -280,17 +300,17 @@ static ccpacket_err send_ccpacket(ccpacket *p,
 		return ccpacket_malloc; 
 	}
 
-	write_ORD32_be(len, sbuf);
+	write_ORD32_be(sbuf, len);
 	memcpy(sbuf+4, buf, len);
 	slen = len + 4;
 
 #if defined(DEBUG) && defined(DUMPSDATA)
 	printf("send_ccpacket sending packet:\n");
-	cc_dump_bytes(dbgo,"  ", sbuf, slen);
+	adump_bytes(g_log,"  ", sbuf, 0, slen);
 #endif
 
-	for (lens = 0; lens < slen; lens += rv) {
-		DBG((dbgo, "Sending packet %d bytes\n",slen - lens))
+	for (lens = 0; lens < slen; lens += ilen) {
+		DBG((g_log,0, "Sending packet %d bytes\n",slen - lens))
 		if (p->ssl == NULL) {
 			return ccpacket_ssl; 
 		}
@@ -298,14 +318,29 @@ static ccpacket_err send_ccpacket(ccpacket *p,
 		amutex_lock(p->lock);
 printf("~1 send locked\n");
 #endif
-		if ((rv = ssl_write(p->ssl, sbuf + lens, slen - lens)) < 0) {
-			DBG((dbgo, "TLS send body failed with '%s'\n",ssl_error_string(rv)))
+#ifdef USING_AXTLS
+		if ((ilen = ssl_write(p->ssl, sbuf + lens, slen - lens)) < 0)
+#else
+		if ((ilen = SSL_write(p->ssl, sbuf + lens, slen - lens)) < 0)
+#endif
+		{
+#ifdef USING_AXTLS
+			DBG((g_log,0, "send failed with '%s'\n",ssl_error_string(ilen)))
+#else
+			DBG((g_log,0, "send failed with %d\n",SSL_get_error(p->ssl, ilen)))
+#endif
 #ifdef SYNC_SSL
 printf("~1 send unlocked\n");
 			amutex_unlock(p->lock);
 #endif
 			free(sbuf);
-			if (rv == SSL_TIMEDOUT)
+
+#ifdef USING_AXTLS
+			if (ilen == SSL_TIMEDOUT)
+#else
+			if (SSL_get_error(p->ssl, ilen) == SSL_ERROR_WANT_READ
+			 || SSL_get_error(p->ssl, ilen) == SSL_ERROR_WANT_WRITE)
+#endif 
 				return ccpacket_timeout;
 			return ccpacket_send;
 		}
@@ -337,24 +372,53 @@ static ccpacket_err receive_ccpacket(ccpacket *p,
 printf("~1 receive locked\n");
 #endif
 
+	tlen = 4;
+
+#ifndef USING_AXTLS
+	if ((ibuf = malloc(tlen)) == NULL) {
+		return ccpacket_malloc; 
+	}
+	ibuf[0] = ibuf[1] = ibuf[2] = ibuf[2] = 0;
+#endif
+
 	/* Until we have 4 bytes for the header */
-	for (tlen = 4, rlen = 0; rlen < tlen;) {
+	for (rlen = 0; rlen < tlen;) {
 		ioff = 0;
-		if ((ilen = ssl_read(p->ssl, &ibuf)) < 0) {
-			DBG((dbgo, "header recv failed with '%s'\n",ssl_error_string(ilen)))
-			if (ilen == SSL_OK)		/* Hmm. */
-				continue;
+#ifdef USING_AXTLS
+		if ((ilen = ssl_read(p->ssl, &ibuf)) < 0)
+#else
+		if ((ilen = SSL_read(p->ssl, ibuf, tlen)) < 0)
+#endif
+		{
+#ifdef USING_AXTLS
+			DBG((g_log,0, "header recv failed with '%s'\n",ssl_error_string(ilen)))
+#else
+			DBG((g_log,0, "header recv failed with %d\n",SSL_get_error(p->ssl, ilen)))
+#endif
 #ifdef SYNC_SSL
 printf("~1 receive unlocked\n");
 			amutex_unlock(p->lock);
 #endif
+#ifdef USING_AXTLS
 			if (ilen == SSL_TIMEDOUT)
+#else
+			free(ibuf);
+			if (SSL_get_error(p->ssl, ilen) == SSL_ERROR_WANT_READ
+			 || SSL_get_error(p->ssl, ilen) == SSL_ERROR_WANT_WRITE)
+#endif 
 				return ccpacket_timeout;
 			return ccpacket_recv;
 		}
-		DBG((dbgo, "receive_ccpacket read %d bytes\n",ilen))
-		if (ilen == 0)
+		DBG((g_log,0, "receive_ccpacket read %d bytes\n",ilen))
+		if (ilen == 0) {
+#ifdef USING_AXTLS
 			continue;
+#else
+			DBG((g_log,0, "SSL_read failed\n"))
+			free(ibuf);
+			return ccpacket_recv;
+#endif
+		}
 		if ((clen = ilen) > (tlen - rlen))		/* More than we need */
 			clen = tlen - rlen;
 		memcpy(rbuf + rlen, ibuf + ioff, clen);
@@ -363,17 +427,17 @@ printf("~1 receive unlocked\n");
 		ilen -= clen;
 	}
 	/* We have ilen left in ibuf at offset ioff */
-	DBG((dbgo, "receive_ccpacket %d bytes left over\n",ilen))
+	DBG((g_log,0, "receive_ccpacket %d bytes left over\n",ilen))
 
-	tlen = read_ORD32_be(ibuf);
-	DBG((dbgo, "receive_ccpacket expecting %d more bytes\n",tlen))
+	tlen = read_ORD32_be(rbuf);
+	DBG((g_log,0, "receive_ccpacket expecting %d more bytes\n",tlen))
 
 	if (tlen < 0 || tlen > 64 * 2014) {
 #ifdef SYNC_SSL
 printf("~1 receive unlocked\n");
 		amutex_unlock(p->lock);
 #endif
-		DBG((dbgo, "receive_ccpacket got bad data length - returning error\n"))
+		DBG((g_log,0, "receive_ccpacket got bad data length - returning error\n"))
 		return ccpacket_recv;
 	}
 
@@ -382,7 +446,7 @@ printf("~1 receive unlocked\n");
 printf("~1 receive unlocked\n");
 		amutex_unlock(p->lock);
 #endif
-		DBG((dbgo, "receive_ccpacket malloc failed\n"))
+		DBG((g_log,0, "receive_ccpacket malloc failed\n"))
 		return ccpacket_malloc; 
 	}
 	rlen = 0;
@@ -391,31 +455,58 @@ printf("~1 receive unlocked\n");
 	if (ilen > 0) {
 		if ((clen = ilen) > (tlen - rlen))
 			clen = tlen - rlen;
-		DBG((dbgo, "receive_ccpacket using %d spair bytesr\n",clen))
+		DBG((g_log,0, "receive_ccpacket using %d spair bytesr\n",clen))
 		memcpy(rbuf + rlen, ibuf + ioff, clen);
 		rlen += clen;
 		ioff += clen;
 		ilen -= clen;
 	}
 
+#ifndef USING_AXTLS
+	free(ibuf);
+	if ((ibuf = malloc(tlen)) == NULL) {
+		return ccpacket_malloc; 
+	}
+#endif
+
 	/* Get the remainder of the body if we need to */
 	for (; rlen < tlen;) {
 		ioff = 0;
-		if ((ilen = ssl_read(p->ssl, &ibuf)) < 0) {
-			DBG((dbgo, "body recv failed with '%s'\n",ssl_error_string(ilen)))
-			if (ilen == SSL_OK)
-				continue;
+#ifdef USING_AXTLS
+		if ((ilen = ssl_read(p->ssl, &ibuf)) < 0)
+#else
+		if ((ilen = SSL_read(p->ssl, ibuf, tlen)) < 0)
+#endif
+		{
+#ifdef USING_AXTLS
+			DBG((g_log,0, "body recv failed with '%s'\n",ssl_error_string(ilen)))
+#else
+			DBG((g_log,0, "body recv failed with %d\n",SSL_get_error(p->ssl, ilen)))
+#endif
 #ifdef SYNC_SSL
 printf("~1 receive unlocked\n");
 			amutex_unlock(p->lock);
 #endif
+#ifdef USING_AXTLS
 			if (ilen == SSL_TIMEDOUT)
+#else
+			free(ibuf);
+			if (SSL_get_error(p->ssl, ilen) == SSL_ERROR_WANT_READ
+			 || SSL_get_error(p->ssl, ilen) == SSL_ERROR_WANT_WRITE)
+#endif 
 				return ccpacket_timeout;
 			return ccpacket_recv;
 		}
-		DBG((dbgo, "receive_ccpacket read %d bytes\n",ilen))
-		if (ilen == 0)
+		DBG((g_log,0, "receive_ccpacket read %d bytes\n",ilen))
+		if (ilen == 0) {
+#ifdef USING_AXTLS
 			continue;
+#else
+			DBG((g_log,0, "SSL_read failed\n"))
+			free(ibuf);
+			return ccpacket_recv;
+#endif
+		}
 		if ((clen = ilen) > (tlen - rlen))
 			clen = tlen - rlen;
 		memcpy(rbuf + rlen, ibuf + ioff, clen);
@@ -428,11 +519,14 @@ printf("~1 receive unlocked\n");
 	amutex_unlock(p->lock);
 #endif
 	if (ilen > 0) {		/* Hmm. We should keep this for the next read ?*/
-		DBG((dbgo, " ################## got %d byts left over ###########\n", ilen))
+		DBG((g_log,0, " ################## got %d byts left over ###########\n", ilen))
 	}
+#ifndef USING_AXTLS
+	free(ibuf);
+#endif
 #if defined(DEBUG) && defined(DUMPRDATA)
 	printf("receive_ccpacket got:\n");
-	cc_dump_bytes(dbgo,"  ", rbuf, rlen);
+	adump_bytes(g_log,"  ", rbuf, 0, rlen);
 #endif
 	*pbuf = rbuf;
 	*plen = rlen;
@@ -445,11 +539,19 @@ static void clear_ccpacket(ccpacket *p) {
 	if (p != NULL) {
 
 		if (p->ssl != NULL) {
+#ifdef USING_AXTLS
 			ssl_free(p->ssl);
+#else
+			SSL_free(p->ssl);
+#endif
 			p->ssl = NULL;
 		}
 		if (p->ctx != NULL) {
+#ifdef USING_AXTLS
 			ssl_ctx_free(p->ctx);
+#else
+			SSL_CTX_free(p->ctx);
+#endif
 			p->ctx = NULL;
 		}
 		if (p->sock != INVALID_SOCKET) {
@@ -479,8 +581,13 @@ static void del_ccpacket(ccpacket *p) {
 ccpacket *new_ccpacket() {
 	ccpacket *p = NULL;
 
+#ifndef USING_AXTLS
+	SSL_load_error_strings();
+	SSL_library_init();
+#endif
+
 	if ((p = (ccpacket *)calloc(1, sizeof(ccpacket))) == NULL) {
-		DBG((dbgo, "calloc failed\n"))
+		DBG((g_log,0, "calloc failed\n"))
 		return NULL;
 	}
 

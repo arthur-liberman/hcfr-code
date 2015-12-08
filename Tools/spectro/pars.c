@@ -606,7 +606,7 @@ main() {
 		error("Failed to create parse object with file 'test.txt'");
 
 	/* Setup our token parsing charaters */
-	pp->add_del(pp, " ,\to"," ,\t", "#", "\"");
+	pp->add_del(pp, " ,\t"," ,\t", "#", "\"");
 
 	for (;;) {
 		char *tp;

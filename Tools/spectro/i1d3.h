@@ -64,6 +64,7 @@
 #define I1D3_BAD_RET_STAT			0x13
 #define I1D3_BAD_RET_CMD			0x14
 #define I1D3_NOT_INITED				0x15
+#define I1D3_TOOBRIGHT  	        0x16
 
 /* Internal errors */
 #define I1D3_BAD_MEM_ADDRESS	    0x20
