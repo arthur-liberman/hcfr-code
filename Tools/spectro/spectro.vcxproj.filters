@@ -36,15 +36,6 @@
     <ClCompile Include="inst.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="insttypes.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="pars.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="parsstd.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="usbio.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -105,25 +96,37 @@
     <ClCompile Include="spyd2.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ex1.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\libconv\pollem.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="aglob.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="xdg_bds.c">
+    <ClCompile Include="rspec.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="plot.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="rspl1.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="icc.c">
+    <ClCompile Include="xdg_bds.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pars.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ex1.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="conv.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="icc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="insttypes.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -240,6 +243,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ex1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="icc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
