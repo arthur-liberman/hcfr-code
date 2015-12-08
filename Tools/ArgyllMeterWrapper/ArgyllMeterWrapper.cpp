@@ -66,8 +66,6 @@ namespace
     void error_imp(void *cntx, struct _a1log *p, char *fmt, va_list args)
     {
         ArgyllLogMessage("Debug", fmt, args);
-//			MessageBox(NULL,args,"Argyll Error, check log.",MB_OK);
-//        throw std::logic_error("Argyll Error");
     }
 
     // check an actual inst code is a particular reason
@@ -195,8 +193,10 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
    inst_code instCode;
    if (debugmode)
     {
-        m_meter->icom->log->verb = 5;
-        m_meter->icom->log->debug = 5;
+        m_meter->icom->log->verb = 9;
+        m_meter->icom->log->debug = 9;
+		m_meter->icom->log->logd = m_meter->icom->log->loge;
+		m_meter->icom->log->logv = m_meter->icom->log->loge;
     }
 
     instCode = m_meter->get_set_opt(m_meter, inst_opt_set_filter, inst_opt_filter_none);

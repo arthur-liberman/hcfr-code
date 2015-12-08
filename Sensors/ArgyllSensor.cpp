@@ -37,6 +37,8 @@ static char THIS_FILE[]=__FILE__;
 #endif
 
 bool CArgyllSensor::m_debugMode = false;
+char *m_logFile; 
+
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -59,7 +61,7 @@ CArgyllSensor::CArgyllSensor() :
     m_PropertySheetTitle = IDS_ARGYLLSENSOR_PROPERTIES_TITLE;
 
     SetName("Argyll Meter");
-
+	m_logFile = GetConfig () -> m_logFileName;
     // Retrieve the list of installed ccss files to display
 	
     try
@@ -94,6 +96,7 @@ CArgyllSensor::CArgyllSensor(ArgyllMeterWrapper* meter) :
     m_PropertySheetTitle = IDS_ARGYLLSENSOR_PROPERTIES_TITLE;
 
     SetName(CString(meterName.c_str()));
+	m_logFile = GetConfig () -> m_logFileName;
 
     // Retrieve the list of installed ccss files to display
 
@@ -438,7 +441,7 @@ void ArgyllLogMessage(const char* messageType, char *fmt, va_list& args)
 {
     if(CArgyllSensor::isInDebugMode())
     {
-        FILE *logFile = fopen( GetConfig () -> m_logFileName, "a" );
+        FILE *logFile = fopen( m_logFile, "a" );
         fprintf(logFile,"Argyll %s - ", messageType);
         vfprintf(logFile, fmt, args);
         va_end(args);

@@ -73,7 +73,7 @@
       </HeaderFileName>
     </Midl>
     <ClCompile>
-      <Optimization>Full</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>libharu\include;Tools\spectro;Tools/CxImage;./;Tools;Tools/NewMenu;Tools/Graph;Tools/ButtonST;Tools/GridCtrl;Tools/CppTooltip;Generators;Sensors;Controls;Views;libHCFR;Tools/ArgyllMeterWrapper;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NT;NDEBUG;_WINDOWS;_USE_32BIT_TIME_T;HPDF_USE_PNGLIB;WIN32_LEAN_AND_MEAN;__WIN32__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
