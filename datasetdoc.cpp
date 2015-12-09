@@ -2844,7 +2844,7 @@ void CDataSetDoc::WaitKey()
 	BOOL	bKeyTyped = FALSE;
 	MSG		Msg;
 	
-	while ( !bKeyTyped && !m_pGenerator->ccwin)
+	while ( !bKeyTyped )
 	{
 		while ( PeekMessage ( & Msg, NULL, WM_KEYDOWN, WM_MOUSELAST, TRUE ) )
 		{
@@ -3104,7 +3104,6 @@ void CDataSetDoc::OnPatternGranger()
 
 			m_pGenerator->Init();
 			m_pGenerator->DisplayGranger();
-
 			WaitKey();
 			
 			AfxGetMainWnd () -> EnableWindow ( TRUE );
