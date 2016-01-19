@@ -40,7 +40,7 @@ CGeneralPropPage::CGeneralPropPage() : CPropertyPageWithHelp(CGeneralPropPage::I
 {
 	//{{AFX_DATA_INIT(CGeneralPropPage)
 	m_doMultipleInstance = FALSE;
-	m_doUpdateCheck = TRUE;
+	m_doUpdateCheck = FALSE;
 	m_bDisplayTestColors = TRUE;
 	m_latencyTime = 0;
 	m_doSavePosition = FALSE;

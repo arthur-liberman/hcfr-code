@@ -293,7 +293,7 @@ void CColorHCFRConfig::InitDefaults()
 	m_fxColorText=CLR_DEFAULT;
 
 	m_doMultipleInstance=FALSE;
-	m_doUpdateCheck=TRUE;
+	m_doUpdateCheck=FALSE;
 	m_doSavePosition=TRUE;
 
 	m_PercentGray.LoadString ( IDS_PERCENTGRAY );
@@ -315,7 +315,7 @@ BOOL CColorHCFRConfig::LoadSettings()
 {
 	m_doMultipleInstance=GetProfileInt("General","DoMultipleInstance",FALSE);
 	m_doSavePosition=GetProfileInt("General","DoSavePosition",TRUE);
-	m_doUpdateCheck=GetProfileInt("General","DoUpdateCheck",TRUE);
+	m_doUpdateCheck=GetProfileInt("General","DoUpdateCheck",FALSE);
 	m_BWColorsToAdd=GetProfileInt("General","BWColorsToAdd",1);
 	if ( m_BWColorsToAdd < 0 ) 
 		m_BWColorsToAdd = 0;
