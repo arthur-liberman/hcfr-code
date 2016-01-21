@@ -113,6 +113,7 @@ public:
 	virtual BOOL DisplayGBd();				// need to be overriden
 	virtual BOOL DisplayLramp();				// need to be overriden
 	virtual BOOL DisplayGranger();				// need to be overriden
+	virtual BOOL Display80();				// need to be overriden
 	virtual BOOL DisplaySpectrum();				// need to be overriden
 	virtual BOOL DisplaySramp();				// need to be overriden
 	virtual BOOL DisplayTestimg();				// need to be overriden

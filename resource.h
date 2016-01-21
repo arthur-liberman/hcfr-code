@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by CHCFR21_FRANCAIS.rc
+// Used by CHCFR21_ESPANOL.rc
 //
 #define IDS_STRING_VERSION              1
 #define IDS_STRING_VERSION_WEB          2
@@ -51,7 +51,7 @@
 #define IDD_SENSOR_PROP_PAGE            145
 #define IDD_SIMULATED_SENSOR_PROP_PAGE  146
 #define IDC_USE_MEASURED_GAMMA2         147
-#define IDC_USER_BLACK                  147
+#define IDC_USER_BLACK                  148
 #define IDD_KISENSOR_PROP_PAGE          150
 #define IDD_GENERATOR_PROP_PAGE         151
 #define IDR_MEDIUMTOOLBAR_VIEWS         152
@@ -541,7 +541,6 @@
 #define IDC_EDIT_MANUAL_GOFFSET         1178
 #define IDC_ANSICONTRAST_PATTERN_TEST_BUTTON 1179
 #define IDC_CHECK_SAVEPOSITION          1179
-#define IDC_EDIT_MANUAL_BLACK           1179
 #define IDC_REPLACEMEASURE_LIST         1180
 #define IDC_INIT_BUTTON                 1180
 #define IDC_CHECK_UPDATE                1180
@@ -792,11 +791,13 @@
 #define IDC_GRAPH_USERSCALES_CHECK      1336
 #define IDR_PATTERN_ANSI1               1337
 #define IDR_PATTERN_ANSI2               1338
-#define IDR_PATTERN_RGv                  1339
-#define IDR_PATTERN_RBv                  1340
-#define IDR_PATTERN_GBv                  1341
-#define IDR_PATTERN_GRANGERv             1342
-#define IDR_PATTERN_SPECTRUMv             1343
+#define IDR_PATTERN_RGv                 1339
+#define IDR_PATTERN_RBv                 1340
+#define IDR_PATTERN_GBv                 1341
+#define IDR_PATTERN_GRANGERv            1342
+#define IDR_PATTERN_SPECTRUMv           1343
+#define IDR_PATTERN_80                  1344
+#define IDC_EDIT_MANUAL_BLACK           1345
 #define IDC_COLORTEMPHISTO_GRAPH        11003
 #define IDC_RGBHISTO_GRAPH              11101
 #define IDC_RGBHISTO_GRAPH2             11102
@@ -1051,6 +1052,7 @@
 #define IDM_PATTERN_BN                  33077
 #define ID_MEASURES_FULLTILTBOOGIE      33078
 #define IDM_CIE_AB                      33079
+#define IDM_PATTERN_80                  33080
 #define IDS_LUMINANCEHISTOVIEW_NAME     41446
 #define IDS_COLORTEMPHISTOVIEW_NAME     41447
 #define IDS_RGBHISTOVIEW_NAME           41448

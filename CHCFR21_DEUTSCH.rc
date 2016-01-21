@@ -597,8 +597,8 @@ FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     CONTROL         "Anzeige Gamma (power law)",IDC_GAMMA_OFFSET_RADIO1,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,12,89,107,10
-    CONTROL         "Anzeige Gamma mit Schwarzkompensation",IDC_GAMMA_OFFSET_RADIO2,
-                    "Button",BS_AUTORADIOBUTTON,12,101,154,10
+    CONTROL         "Anzeige Gamma (Schwarzkompensation)",IDC_GAMMA_OFFSET_RADIO2,
+                    "Button",BS_AUTORADIOBUTTON,12,101,139,10
     CONTROL         "Kamera Gamma (Standard Offset)",IDC_GAMMA_OFFSET_RADIO3,
                     "Button",BS_AUTORADIOBUTTON,12,113,153,10
     CONTROL         "Kamera Gamma, manuelles Offset",IDC_GAMMA_OFFSET_RADIO4,
@@ -644,9 +644,8 @@ BEGIN
     LTEXT           "y",IDC_STATIC,53,52,8,8
     EDITTEXT        IDC_EDIT_SPLIT,85,153,33,14,ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "% input offset",IDC_STATIC,123,153,77,8
-    EDITTEXT        IDC_EDIT_MANUAL_BLACK,144,90,28,13,ES_AUTOHSCROLL
-    LTEXT           "Y",IDC_STATIC,135,92,8,11,NOT WS_GROUP
-    LTEXT           "cd/m^2",IDC_STATIC,174,92,29,12,NOT WS_GROUP
+    EDITTEXT        IDC_EDIT_MANUAL_BLACK,154,92,22,13,ES_AUTOHSCROLL
+    LTEXT           "cd/m^2",IDC_STATIC,178,94,25,8,NOT WS_GROUP
     CONTROL         "Override black",IDC_USER_BLACK,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,137,80,60,12
 END
 
@@ -2001,11 +2000,9 @@ BEGIN
             MENUITEM "Messungen in &csv Datei",     IDM_EXPORT_CSV
             MENUITEM "Create &PDF Report",          IDM_EXPORT_PDF
         END
-        POPUP "Updates", GRAYED
+        POPUP "Updates"
         BEGIN
-            MENUITEM "Softwareupdate herunterladen", IDM_UPDATE_SOFT, GRAYED
-            MENUITEM "Kalibrierungsdateien herunterladen", IDM_UPDATE_ETALONS, GRAYED
-            MENUITEM "IR-Profildateien herunterladen", IDM_UPDATE_IRPROFILES, GRAYED
+            MENUITEM "Softwareupdate herunterladen", IDM_UPDATE_SOFT
         END
         MENUITEM SEPARATOR
         MENUITEM "&Voreinstellungen...",        IDM_GENERAL_CONFIG
@@ -3296,6 +3293,7 @@ BEGIN
     IDM_PATTERN_ANIM_BLACK  "Animiertes Schwarzwert Testbild mit zwei Streifen bei 1%% video level und 2%% video level auf einem schwarzen Hintergrund anzeigen\nAnimiertes Schwarzwert Testbild"
     IDM_PATTERN_ANIM_WHITE  "Animiertes Weißwert Testbild mit zwei Streifen bei 98%% video level und 99%% video level auf einem weißen Hintergrund anzeigen\nAnimiertes Weißwert Testbild"
     ID_VIEW_SPECTRUM        "Blendet das Spektrum Fenster ein oder aus\nSpektrum"
+    IDM_UPDATE_SOFT         "Check for software updates."
     IDM_SINGLE_MEASUREMENT  "Eine einmalige Messung ausführen\nEine einmalige Messung ausführen"
     IDM_CONTINUOUS_MEASUREMENT 
                             "Kontinuierliche Messungen starten oder stoppen\nKontinuierliche Messungen starten oder stoppen"

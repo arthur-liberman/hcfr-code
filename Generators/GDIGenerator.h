@@ -86,6 +86,7 @@ public:
 	virtual BOOL DisplayGBd();
 	virtual BOOL DisplayLramp();
 	virtual BOOL DisplayGranger();
+	virtual BOOL Display80();
 	virtual BOOL DisplayTV();
 	virtual BOOL DisplaySpectrum();
 	virtual BOOL DisplaySramp();

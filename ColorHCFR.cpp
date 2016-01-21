@@ -389,7 +389,7 @@ BOOL CColorHCFRApp::InitInstance()
 			::ShowWindow ( hDlg, SW_HIDE );
 			if (AfxMessageBox(IDS_UPD_ASK_DOWNLOAD, MB_YESNO | MB_ICONQUESTION) == IDYES)
 			{
-				::SetWindowText ( hCtrl, "Downloading install file... please wait..." );
+				::SetWindowText ( hCtrl, "Downloading install file to HCFR directory..." );
 				::ShowWindow ( hDlg, SW_SHOW );
 				::UpdateWindow ( hDlg );
 			

@@ -1405,13 +1405,13 @@ void CMainView::InitGrid()
 		m_pGrayScaleGrid->ExpandColumnsToFit(FALSE);
 	}
 
-	if  (GetConfig()->m_userBlack) //store/retrieve real black measurements
+	if  (GetConfig()->GetProfileDouble("References","Use Black Level",0)) //store/retrieve real black measurements
 	{
 		if (!m_userBlack)
 		{
 			m_oldBlackGS = GetDocument()->GetMeasure()->GetGray(0);
 			m_oldBlackNB = GetDocument()->GetMeasure()->GetNearBlack(0);
-			double Yblack = GetConfig()->m_ManualBlack;
+			double Yblack = GetConfig()->GetProfileDouble("References","Manual Black Level",0);
 			GetDocument()->GetMeasure()->SetGray(0, ColorXYZ(Yblack*.95047,Yblack,Yblack*1.0883));
 			GetDocument()->GetMeasure()->SetNearBlack(0, ColorXYZ(Yblack*.95047,Yblack,Yblack*1.0883)) ;
 			GetDocument()->GetMeasure()->SetOnOffBlack(ColorXYZ(Yblack*.95047,Yblack,Yblack*1.0883)) ;
@@ -2331,6 +2331,7 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 
 void CMainView::UpdateGrid()
 {
+
 	if (m_pGrayScaleGrid)
 	{
 		CColor			aColor;
@@ -2355,6 +2356,13 @@ void CMainView::UpdateGrid()
 		GV_ITEM Item;
 		Item.mask = GVIF_TEXT|GVIF_FORMAT;
 		Item.nFormat = DT_RIGHT|DT_VCENTER|DT_SINGLELINE|DT_END_ELLIPSIS|DT_NOPREFIX;
+		if  (m_userBlack)
+		{
+			double Yblack = GetConfig()->GetProfileDouble("References","Manual Black Level",0);
+			GetDocument()->GetMeasure()->SetGray(0, ColorXYZ(Yblack*.95047,Yblack,Yblack*1.0883));
+			GetDocument()->GetMeasure()->SetNearBlack(0, ColorXYZ(Yblack*.95047,Yblack,Yblack*1.0883)) ;
+			GetDocument()->GetMeasure()->SetOnOffBlack(ColorXYZ(Yblack*.95047,Yblack,Yblack*1.0883)) ;
+		}
 
 		// update values
 		int nRows = 5;

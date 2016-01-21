@@ -135,6 +135,7 @@ public:
 	void DisplayGradient2();
 	void DisplayLramp();
 	void DisplayGranger();
+	void Display80();
 	void DisplayTV();
 	void DisplaySpectrum();
 	void DisplayTestimg();

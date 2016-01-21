@@ -494,9 +494,9 @@ CAPTION "Références"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     CONTROL         "Standard de visualisation (power law)",IDC_GAMMA_OFFSET_RADIO1,
-                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,12,96,115,10
-    CONTROL         "Standard avec compensation du noir",IDC_GAMMA_OFFSET_RADIO2,
-                    "Button",BS_AUTORADIOBUTTON,12,108,138,10
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,12,96,127,10
+    CONTROL         "Standard (compensation du noir)",IDC_GAMMA_OFFSET_RADIO2,
+                    "Button",BS_AUTORADIOBUTTON | BS_ICON,12,108,113,10
     CONTROL         "Standard d'encodage",IDC_GAMMA_OFFSET_RADIO3,"Button",BS_AUTORADIOBUTTON,12,120,97,10
     CONTROL         "Standard d'encodage, Offset manuel :",IDC_GAMMA_OFFSET_RADIO4,
                     "Button",BS_AUTORADIOBUTTON,12,132,134,10,WS_EX_TRANSPARENT
@@ -541,10 +541,9 @@ BEGIN
     LTEXT           "y",IDC_STATIC,53,55,8,8
     EDITTEXT        IDC_EDIT_SPLIT,85,161,33,14,ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "% input offset",IDC_STATIC,122,162,77,8
-    EDITTEXT        IDC_EDIT_MANUAL_BLACK,143,99,28,13,ES_AUTOHSCROLL
-    LTEXT           "Y",IDC_STATIC,136,100,8,11,NOT WS_GROUP
-    LTEXT           "cd/m^2",IDC_STATIC,172,100,29,12,NOT WS_GROUP
-    CONTROL         "Override black",IDC_USER_BLACK,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,136,88,60,12
+    EDITTEXT        IDC_EDIT_MANUAL_BLACK,145,100,28,13,ES_AUTOHSCROLL
+    LTEXT           "cd/m^2",IDC_STATIC,175,101,27,8,NOT WS_GROUP
+    CONTROL         "Override black",IDC_USER_BLACK,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,141,88,60,10
 END
 
 IDD_GENERAL_PROP_PAGE DIALOGEX 0, 0, 212, 211
@@ -2325,11 +2324,9 @@ BEGIN
             MENUITEM "Mesures vers fichier csv",    IDM_EXPORT_CSV
             MENUITEM "Create &PDF Report",          IDM_EXPORT_PDF
         END
-        POPUP "Mises à jour", GRAYED
+        POPUP "Mises à jour"
         BEGIN
-            MENUITEM "Télécharger mise à jour du logiciel", IDM_UPDATE_SOFT, GRAYED
-            MENUITEM "Télécharger les fichiers étalons", IDM_UPDATE_ETALONS, GRAYED
-            MENUITEM "Télécharger les fichiers profils IR", IDM_UPDATE_IRPROFILES, GRAYED
+            MENUITEM "Télécharger mise à jour du logiciel", IDM_UPDATE_SOFT
         END
         MENUITEM SEPARATOR
         MENUITEM "Préférences...",              IDM_GENERAL_CONFIG

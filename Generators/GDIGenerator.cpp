@@ -723,6 +723,12 @@ BOOL CGDIGenerator::DisplayGranger()
 	return TRUE;
 }
 
+BOOL CGDIGenerator::Display80()
+{
+	m_displayWindow.Display80();
+	return TRUE;
+}
+
 BOOL CGDIGenerator::DisplayTV()
 {
 	m_displayWindow.DisplayTV();

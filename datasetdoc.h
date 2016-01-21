@@ -209,6 +209,7 @@ protected:
 	afx_msg void OnPatternGBd();
 	afx_msg void OnPatternLramp();
 	afx_msg void OnPatternGranger();
+	afx_msg void OnPattern80();
 	afx_msg void OnPatternTV();
 	afx_msg void OnPatternSpectrum();
 	afx_msg void OnPatternSramp();

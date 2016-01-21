@@ -289,6 +289,11 @@ BOOL CGenerator::DisplayGranger()
 	return TRUE;	  // need to be overriden
 }
 
+BOOL CGenerator::Display80()
+{
+	return TRUE;	  // need to be overriden
+}
+
 BOOL CGenerator::DisplayTV()
 {
 	return TRUE;	  // need to be overriden

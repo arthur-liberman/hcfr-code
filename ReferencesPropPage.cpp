@@ -167,9 +167,7 @@ void CReferencesPropPage::OnControlClicked(UINT nID)
     }
 	m_isModified=TRUE;
 	SetModified(TRUE);	
-	UpdateData(FALSE);
-	GetConfig()->WriteProfileInt("References","Use Black Level",m_userBlack);
-	GetConfig()->WriteProfileDouble("References","Manual Black Level", m_ManualBlack);
+	UpdateData(TRUE);
 }
 
 void CReferencesPropPage::OnCheckColors() 
@@ -180,6 +178,8 @@ void CReferencesPropPage::OnCheckColors()
 
 BOOL CReferencesPropPage::OnApply() 
 {
+	GetConfig()->	WriteProfileDouble("References","Manual Black Level",m_ManualBlack);
+	GetConfig()->	WriteProfileDouble("References","Use Black Level",m_userBlack);
     if (m_whiteTarget == DCUST)
     {
         m_manualWhitexedit.EnableWindow (TRUE);
@@ -217,8 +217,10 @@ BOOL CReferencesPropPage::OnApply()
 		m_ManualBlackEdit.EnableWindow(TRUE);
 	else
 		m_ManualBlackEdit.EnableWindow(FALSE);
+
 	GetConfig()->ApplySettings(FALSE);
 	m_isModified=FALSE;
+
 	if  ( (m_manualRedx != m_manualRedxold) || (m_manualRedy != m_manualRedyold) || (m_manualBluex != m_manualBluexold)
 		|| (m_manualGreenx != m_manualGreenxold) || (m_manualGreeny != m_manualGreenyold) || (m_manualBluey != m_manualBlueyold)
 		|| (m_manualWhitex != m_manualWhitexold) || (m_manualWhitey != m_manualWhiteyold) )
@@ -303,9 +305,6 @@ BOOL CReferencesPropPage::OnInitDialog()
   	  m_eMeasuredGamma.EnableWindow (FALSE);
     }
 
-	m_ManualBlack = GetConfig()->GetProfileDouble("References","Manual Black Level",0.0);
-	m_userBlack = GetConfig()->GetProfileInt("References","Use Black Level",0);
-
 	m_ManualBlackEdit.EnableWindow(m_userBlack);
 	m_bSave = GetConfig()->m_bSave;
 	m_manualRedxold = m_manualRedx;
@@ -338,10 +337,8 @@ void CReferencesPropPage::OnChangeEditManualBlack()
 {
 	m_isModified=TRUE;
 	SetModified(TRUE);	
-	m_bSave = TRUE;
 	UpdateData(TRUE);
-	GetConfig()->WriteProfileInt("References","Use Black Level",m_userBlack);
-	GetConfig()->WriteProfileDouble("References","Manual Black Level", m_ManualBlack);
+	m_bSave = TRUE;
 }
 
 void CReferencesPropPage::OnChangeEditGammaAvg() 
@@ -391,8 +388,6 @@ void CReferencesPropPage::OnUserBlackCheck()
 	UpdateData(TRUE);
 	m_bSave = TRUE;
 	m_ManualBlackEdit.EnableWindow(m_userBlack);
-	GetConfig()->WriteProfileInt("References","Use Black Level",m_userBlack);
-	GetConfig()->WriteProfileDouble("References","Manual Black Level", m_ManualBlack);
 }
 
 void CReferencesPropPage::OnSelchangeColorrefCombo() 
