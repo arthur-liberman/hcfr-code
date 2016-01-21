@@ -1804,6 +1804,10 @@ BEGIN
     BEGIN
         MENUITEM "&Hilfe\tF1",                  IDM_HELP
         MENUITEM "Colorimeter &Installation",   IDM_HELP_INSTALL, INACTIVE
+        POPUP "Updates"
+        BEGIN
+            MENUITEM "Softwareupdate herunterladen", IDM_UPDATE_SOFT
+        END
         MENUITEM "&Support",                    IDM_HELP_SUPPORT, INACTIVE
         MENUITEM SEPARATOR
         MENUITEM "Info über H&CFR ...",         ID_APP_ABOUT
@@ -2000,10 +2004,6 @@ BEGIN
             MENUITEM "Messungen in &csv Datei",     IDM_EXPORT_CSV
             MENUITEM "Create &PDF Report",          IDM_EXPORT_PDF
         END
-        POPUP "Updates"
-        BEGIN
-            MENUITEM "Softwareupdate herunterladen", IDM_UPDATE_SOFT
-        END
         MENUITEM SEPARATOR
         MENUITEM "&Voreinstellungen...",        IDM_GENERAL_CONFIG
         MENUITEM "&Sprache...",                 IDM_LANGUAGE
@@ -2020,6 +2020,10 @@ BEGIN
     BEGIN
         MENUITEM "&Hilfe\tF1",                  IDM_HELP
         MENUITEM "Colorimeter &Installation",   IDM_HELP_INSTALL, INACTIVE
+        POPUP "Updates"
+        BEGIN
+            MENUITEM "Softwareupdate herunterladen", IDM_UPDATE_SOFT
+        END
         MENUITEM "&Support",                    IDM_HELP_SUPPORT, INACTIVE
         MENUITEM "HCFR &Forum",                 IDM_HELP_FORUM, INACTIVE
         MENUITEM SEPARATOR

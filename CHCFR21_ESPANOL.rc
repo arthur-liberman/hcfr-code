@@ -2135,6 +2135,10 @@ BEGIN
     BEGIN
         MENUITEM "&Aide\tF1",                   IDM_HELP
         MENUITEM "&Installation Colorimètre",   IDM_HELP_INSTALL, INACTIVE
+        POPUP "Mises à jour"
+        BEGIN
+            MENUITEM "Télécharger mise à jour du logiciel", IDM_UPDATE_SOFT
+        END
         MENUITEM "&Support",                    IDM_HELP_SUPPORT, INACTIVE
         MENUITEM SEPARATOR
         MENUITEM "&Acerca de HCFR...",          ID_APP_ABOUT
@@ -2331,10 +2335,6 @@ BEGIN
             MENUITEM "Mesures vers fichier csv",    IDM_EXPORT_CSV
             MENUITEM "Create &PDF Report",          IDM_EXPORT_PDF
         END
-        POPUP "Mises à jour"
-        BEGIN
-            MENUITEM "Télécharger mise à jour du logiciel", IDM_UPDATE_SOFT
-        END
         MENUITEM SEPARATOR
         MENUITEM "Préférences...",              IDM_GENERAL_CONFIG
         MENUITEM "Langue...",                   IDM_LANGUAGE
@@ -2351,6 +2351,10 @@ BEGIN
     BEGIN
         MENUITEM "&Aide\tF1",                   IDM_HELP
         MENUITEM "&Installation Colorimètre",   IDM_HELP_INSTALL, INACTIVE
+        POPUP "Mises à jour"
+        BEGIN
+            MENUITEM "Télécharger mise à jour du logiciel", IDM_UPDATE_SOFT
+        END
         MENUITEM "&Support",                    IDM_HELP_SUPPORT, INACTIVE
         MENUITEM "Forum HCFR",                  IDM_HELP_FORUM, INACTIVE
         MENUITEM SEPARATOR

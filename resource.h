@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by CHCFR21_ESPANOL.rc
+// Used by CHCFR21_FRANCAIS.rc
 //
 #define IDS_STRING_VERSION              1
 #define IDS_STRING_VERSION_WEB          2

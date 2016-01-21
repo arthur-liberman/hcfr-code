@@ -62,6 +62,8 @@ CMeasure::CMeasure()
 	m_yellowSatMeasureArray.SetSize(GetConfig()->GetProfileInt("Scale Sizes","Saturations",4)+1);
 	m_cyanSatMeasureArray.SetSize(GetConfig()->GetProfileInt("Scale Sizes","Saturations",4)+1);
 	m_magentaSatMeasureArray.SetSize(GetConfig()->GetProfileInt("Scale Sizes","Saturations",4)+1);
+
+	//need to limit size to current cc size needs or compress saved file
     m_cc24SatMeasureArray.SetSize(1000);
 	m_cc24SatMeasureArray_master.SetSize(5000);
 
@@ -225,10 +227,11 @@ void CMeasure::Copy(CMeasure * p,UINT nId)
 void CMeasure::Serialize(CArchive& ar)
 {
 	CObject::Serialize(ar) ;
+	CColor MarkerColor(0.123,0.456,0.789);
 
 	if (ar.IsStoring())
 	{
-	    int version = 12;
+	    int version = 13;
 		ar << version;
 
 		ar << (int)GetConfig()->m_whiteTarget; //new in 12
@@ -292,13 +295,28 @@ void CMeasure::Serialize(CArchive& ar)
 		for(int i=0;i<m_magentaSatMeasureArray.GetSize();i++)
 			m_magentaSatMeasureArray[i].Serialize(ar);
 
+		//write end marker to limit storage size to real data limits version 13
 		ar << m_cc24SatMeasureArray.GetSize();
 		for(int i=0;i<m_cc24SatMeasureArray.GetSize();i++)
-			m_cc24SatMeasureArray[i].Serialize(ar);
+		{
+			if (m_cc24SatMeasureArray[i].isValid())
+			{
+				m_cc24SatMeasureArray[i].Serialize(ar);
+				ar << i;
+			}
+		}
+		MarkerColor.Serialize(ar);
 
 		ar << m_cc24SatMeasureArray_master.GetSize();
 		for(int i=0;i<m_cc24SatMeasureArray_master.GetSize();i++)
-			m_cc24SatMeasureArray_master[i].Serialize(ar);
+		{
+			if (m_cc24SatMeasureArray_master[i].isValid())
+			{
+				m_cc24SatMeasureArray_master[i].Serialize(ar);
+				ar << i;
+			}
+		}
+		MarkerColor.Serialize(ar);
 
 		// Version 1 again
 		ar << m_measurementsArray.GetSize();
@@ -329,7 +347,7 @@ void CMeasure::Serialize(CArchive& ar)
 	    int version;
 		ar >> version;
 
-		if ( version > 12)
+		if ( version > 13)
 			AfxThrowArchiveException ( CArchiveException::badSchema );
 
 		if ( version > 11)
@@ -477,24 +495,60 @@ void CMeasure::Serialize(CArchive& ar)
 			for(int i=0;i<m_magentaSatMeasureArray.GetSize();i++)
 				m_magentaSatMeasureArray[i].Serialize(ar);
 
-			if ( version >= 8)
+			if ( version >= 8 )
 			{
-
 				ar >> size;
-				m_cc24SatMeasureArray.SetSize(1000);
-				for(int i=0;i<size;i++)
-					m_cc24SatMeasureArray[i].Serialize(ar);
+				m_cc24SatMeasureArray.SetSize(size);
+				if ( version <= 12)
+				{
+					for(int i=0;i<size;i++)
+						m_cc24SatMeasureArray[i].Serialize(ar);
+				} else
+				{
+					for(int i=0;i<size;i++)
+					{
+						CColor inColor;
+						int j = 0;
+						inColor.Serialize(ar);
+						if (inColor.GetX() == 0.123 && inColor.GetY() == 0.456 && inColor.GetZ() == 0.789)
+							break;
+						else
+						{
+							ar >> j;
+							m_cc24SatMeasureArray[j] = inColor;
+						}
+					}
+				}
 				if ( version >= 10)
 				{
 					ar >> size;
-					m_cc24SatMeasureArray_master.SetSize(5000);
-					for(int i=0;i<size;i++)
-						m_cc24SatMeasureArray_master[i].Serialize(ar);
-					m_CCStr=GetCCStr();
+					m_cc24SatMeasureArray_master.SetSize(size);
+					if (version <= 12)
+					{
+						for(int i=0;i<size;i++)
+							m_cc24SatMeasureArray_master[i].Serialize(ar);
+						m_CCStr=GetCCStr();
+					}
+					else
+					{
+						for(int i=0;i<size;i++)
+						{
+							CColor inColor;
+							int j = 0;
+							inColor.Serialize(ar);
+							if (inColor.GetX() == 0.123 && inColor.GetY() == 0.456 && inColor.GetZ() == 0.789)
+								break;
+							else
+							{
+								ar >> j;
+								m_cc24SatMeasureArray_master[j] = inColor;
+							}
+							m_CCStr=GetCCStr();
+						}
+					}
 				}
 				else
 					m_bpreV10 = TRUE;
-
 			}
 			else
 				m_bpreV10 = TRUE;			

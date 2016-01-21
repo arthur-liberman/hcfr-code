@@ -80,7 +80,6 @@ draw_image (HPDF_Doc     pdf,
     HPDF_Image image;
 	char * path;
 	path = getenv("APPDATA");
-//    strcpy(filename1, "data");
     strcpy(filename1, path);
     strcat(filename1, FILE_SEPARATOR);
     strcat(filename1, filename);

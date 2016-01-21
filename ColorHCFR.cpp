@@ -389,14 +389,25 @@ BOOL CColorHCFRApp::InitInstance()
 			::ShowWindow ( hDlg, SW_HIDE );
 			if (AfxMessageBox(IDS_UPD_ASK_DOWNLOAD, MB_YESNO | MB_ICONQUESTION) == IDYES)
 			{
-				::SetWindowText ( hCtrl, "Downloading install file to HCFR directory..." );
+				::SetWindowText ( hCtrl, "Downloading install file to APPDATA..." );
 				::ShowWindow ( hDlg, SW_SHOW );
 				::UpdateWindow ( hDlg );
 			
 				if (!WebUpdate.DownloadDifferent(0))
 					::SetWindowText ( hCtrl, "Update failed." );
 				else
-					::SetWindowText ( hCtrl, "New install package saved to local HCFR directory." );
+				{
+					CString path;
+					path = getenv("APPDATA");
+					path += "\\color\\HCFRSetup.EXE";
+					::SetWindowText ( hCtrl, "New install package saved to APPDATA." );
+					if (AfxMessageBox("Install new version(application will close)?", MB_YESNO) == IDYES)
+					{
+						ShellExecute(NULL,"open",path,NULL,NULL,1);
+						ASSERT(AfxGetMainWnd() != NULL);
+						AfxGetMainWnd()->SendMessage(WM_CLOSE);
+					}
+				}
 			}
 			else
 			{

@@ -107,7 +107,6 @@ void CWebUpdate::SetLocalDirectory(LPCSTR pathTo, bool generate)
 
 		path = blankStr;
 		path = path.Left(path.ReverseFind('\\'));
-
 		localDir = path;
 	}
 
@@ -134,25 +133,10 @@ bool CWebUpdate::DoUpdateCheck()
 
 	// First of all, try and retrieve the update file
 	remoteFile = updateURL;
-	char blankStr[MAX_PATH] = "";
 	CString path;
+	path = getenv("APPDATA");
 
-	GetModuleFileName(0, blankStr, sizeof(blankStr) - 1);
-
-	path = blankStr;
-	path = path.Left(path.ReverseFind('\\'));// + "\\Update";
 	localFile = path + "\\CheckUpdate.txt";
-/*
-	if (GetFileAttributes(localFile) == INVALID_FILE_ATTRIBUTES)
-	{
-		CFile UpdateFile;
-		if (!UpdateFile.Open(localFile,CFile::modeCreate|CFile::modeReadWrite));
-		{
-			AfxMessageBox("Error creating update file (permissions?)", MB_OK | MB_ICONWARNING);
-			return false;
-		}
-	}
-*/
 	// Download
 	HANDLE	dloadHandle = (HANDLE)_beginthread(downloadFile, 0, (void*)"");
 	// Wait for it to finish
@@ -248,7 +232,11 @@ bool CWebUpdate::DownloadDifferent(int i)
 	//	remoteFile = remoteURL + "/" + differentFiles.GetAt(i);
 	remoteFile = remoteURL + "/HCFRSetup.exe";
 //	localFile = localDir + "\\" + differentFiles.GetAt(i);
-	localFile = localDir + "\\HCFRSetup.exe";
+
+	CString path;
+	path = getenv("APPDATA");
+
+	localFile = path + "\\color\\HCFRSetup.exe";
 
 	HANDLE dloadHandle = (HANDLE)_beginthread(downloadFile, 0, (void*)"");
 

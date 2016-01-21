@@ -1251,7 +1251,7 @@ void CDataSetDoc::MeasurePrimarySaturationScales()
 {
 	StopBackgroundMeasures ();
 
-	if(m_measure.MeasureAllSaturationScales(m_pSensor,m_pGenerator,TRUE,this))
+	if(m_measure.MeasurePrimarySecondarySaturationScales(m_pSensor,m_pGenerator,TRUE,this))
 	{
 		SetModifiedFlag(m_measure.IsModified());
 		UpdateAllViews(NULL, UPD_ALLSATURATIONS);
