@@ -1662,10 +1662,10 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	if ( lHint == UPD_FREEMEASUREAPPENDED && pHint == g_pDataDocRunningThread && g_hThread && ! g_bTerminateThread )
 	{
 		// Optimized version for continuous measures: update only measurement grid
-		if ( GetConfig ()->m_bDetectPrimaries && (m_displayMode == 1 || m_displayMode == 0) )
+		if (m_displayMode == 0 )
 		{
 			// Gray/Primary colors may have been updated during free measures
-			if ( m_displayMode == 0 && ( MeasuredColor.GetDeltaxy(GetColorReference().GetWhite(), GetColorReference()) < 0.03 || last_minCol == 1 ) )
+			if ( last_minCol >= 1 )// && ( MeasuredColor.GetDeltaxy(GetColorReference().GetWhite(), GetColorReference()) < 0.03 || last_minCol == 1 ) )
 			{
 				GetDocument()->GetMeasure()->SetGray(last_minCol - 1, MeasuredColor);
 				if (last_minCol == 1)
@@ -1720,10 +1720,10 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 		
 		if ( lHint == UPD_FREEMEASUREAPPENDED )
 		{
-			if ( GetConfig ()->m_bDetectPrimaries && (m_displayMode == 1 || m_displayMode == 0) )
+			if ( m_displayMode == 0 )
 			{
 				// Gray/Primary colors may have been updated during free measures
-				if (m_displayMode == 0 && ( (MeasuredColor.GetDeltaxy( GetColorReference().GetWhite(), GetColorReference()) < 0.03) || last_minCol == 1 ) )
+				if (last_minCol >= 1 ) // ( (MeasuredColor.GetDeltaxy( GetColorReference().GetWhite(), GetColorReference()) < 0.03) || last_minCol == 1 ) )
 				{
 					GetDocument()->GetMeasure()->SetGray(last_minCol - 1, MeasuredColor);
 					if (last_minCol == 1)

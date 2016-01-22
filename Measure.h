@@ -30,8 +30,8 @@
 #endif // _MSC_VER > 1000
 
 #include "Color.h"
-#include "Sensor.h"
-#include "Generator.h"
+#include "Sensors\Sensor.h"
+#include "Generators\Generator.h"
 
 #define	DUPLGRAYLEVEL		0
 #define	DUPLNEARBLACK		1
@@ -197,15 +197,15 @@ public:
 	double GetContrastMaxLum ();
 	void DeleteContrast ();
 	
-	BOOL AddMeasurement(CSensor *pSensor, CGenerator *pGenerator, CGenerator::MeasureType MT, bool isPrimary);
+	BOOL AddMeasurement(CSensor *pSensor, CGenerator *pGenerator, CGenerator::MeasureType MT, int isPrimary, int last_minCol);
 	CColor GetMeasurement(int i) const;
 	void SetMeasurements(int i,const CColor & aColor) {m_measurementsArray[i]=aColor; m_isModified=TRUE; } 
-	void AppendMeasurements(const CColor & aColor, bool isPrimary);
+	void AppendMeasurements(const CColor & aColor, int isPrimary, int last_minCol);
 	int GetMeasurementsSize() const { return m_measurementsArray.GetSize(); }
 	void SetMeasurementsSize(int size) { m_measurementsArray.SetSize(size); m_isModified=TRUE; }
 	void DeleteMeasurements(int i,int count) { m_measurementsArray.RemoveAt(i,count); m_isModified=TRUE; }
 	void InsertMeasurement(int i, CColor & aColor) { m_measurementsArray.InsertAt(i,aColor); m_isModified=TRUE; }
-	void FreeMeasurementAppended(bool isPrimary);
+	void FreeMeasurementAppended(int isPrimary, int last_minCol);
 
 	CString GetInfoString() const { return m_infoStr+m_CCStr; }
 	void SetInfoString(CString & aStr) { m_infoStr = aStr; } 

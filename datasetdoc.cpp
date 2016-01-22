@@ -1309,18 +1309,20 @@ void CDataSetDoc::AddMeasurement()
     CView* pView;
     pos = this -> GetFirstViewPosition ();
     pView = this -> GetNextView ( pos );
-	int m_d;
+	int m_d, last_minCol;
 	Settling=GetConfig()->m_isSettling;
 	GetConfig()->m_isSettling = FALSE;
 	m_d=((CMainView *)pView)->m_displayMode;
+	last_minCol=((CMainView *)pView)->last_minCol;
 	CGenerator::MeasureType MT = CGenerator::MT_UNKNOWN;							
 	if ( m_d == 1 || (m_d < 11 &&  m_d > 4) )
 		MT = CGenerator::MT_ACTUAL;
 
-	if(m_measure.AddMeasurement(m_pSensor,m_pGenerator, MT, m_d == 1))
+	if(m_measure.AddMeasurement(m_pSensor,m_pGenerator, MT, m_d, last_minCol))
 	{
 		SetModifiedFlag(m_measure.IsModified());
 		UpdateAllViews(NULL, UPD_FREEMEASUREAPPENDED);
+		UpdateAllViews(NULL, UPD_EVERYTHING);
 	}
 	GetConfig()->m_isSettling = Settling;
 }
@@ -3754,14 +3756,16 @@ void CDataSetDoc::OnBkgndMeasureReady()
 		{
 			CView *pView = g_pDataDocRunningThread -> GetNextView ( pos2 );
 			int m_d = ((CMainView*)pView)->m_displayMode;
+			int last_minCol = ((CMainView*)pView)->last_minCol;
 			pMeasurement = ( CColor * ) g_MeasuredColorList.GetNext ( pos );
 
-			m_measure.AppendMeasurements(*pMeasurement, m_d == 1);
+			m_measure.AppendMeasurements(*pMeasurement, m_d, last_minCol );
 			SetModifiedFlag();
 
 			SetSelectedColor ( *pMeasurement );
 
 			UpdateAllViews(NULL,UPD_FREEMEASUREAPPENDED,this);
+			UpdateAllViews(NULL,UPD_EVERYTHING,this);
 
 			delete pMeasurement;
 		}

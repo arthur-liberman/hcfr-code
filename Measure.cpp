@@ -4678,7 +4678,7 @@ void CMeasure::DeleteContrast ()
 	m_isModified=TRUE; 
 }
 
-BOOL CMeasure::AddMeasurement(CSensor *pSensor, CGenerator *pGenerator,  CGenerator::MeasureType MT, bool isPrimary)
+BOOL CMeasure::AddMeasurement(CSensor *pSensor, CGenerator *pGenerator,  CGenerator::MeasureType MT, int isPrimary, int last_minCol)
 {
 	BOOL		bDisplayColor = GetConfig () -> m_bDisplayTestColors;
 	BOOL		bOk;
@@ -4752,7 +4752,7 @@ BOOL CMeasure::AddMeasurement(CSensor *pSensor, CGenerator *pGenerator,  CGenera
 	measurement = measuredColor;
 	m_measurementsArray.InsertAt(m_measurementsArray.GetSize(),measurement);
 	
-	FreeMeasurementAppended(isPrimary);
+	FreeMeasurementAppended(isPrimary, last_minCol);
 
 	pSensor->Release();
 	if ( bDisplayColor )
@@ -5091,7 +5091,7 @@ BOOL CMeasure::ValidateBackgroundSingleMeasurement ( BOOL bUseLuxValues, double 
 
 		m_measurementsArray.InsertAt(m_measurementsArray.GetSize(),measurement);
 		
-		FreeMeasurementAppended (false);
+		FreeMeasurementAppended (0, 0);
 	}
 
 	// Close background thread and event objects
@@ -5100,13 +5100,13 @@ BOOL CMeasure::ValidateBackgroundSingleMeasurement ( BOOL bUseLuxValues, double 
 	return bOk;
 }
 
-void CMeasure::FreeMeasurementAppended(bool isPrimary)
+void CMeasure::FreeMeasurementAppended(int isPrimary, int last_minCol)
 {
-	if ( GetConfig () -> m_bDetectPrimaries && isPrimary )
+	//update grid
+	int	n = GetMeasurementsSize();
+	CColor LastMeasure;
+	if ( GetConfig () -> m_bDetectPrimaries  && last_minCol < 1 )
 	{
-		CColor LastMeasure;
-
-		int	n = GetMeasurementsSize();
 		if ( n > 0 )
 		{
 			LastMeasure=GetMeasurement(n-1);
@@ -5146,6 +5146,90 @@ void CMeasure::FreeMeasurementAppended(bool isPrimary)
 				// Copy real color to primary (not LastMeasure which may have been adjusted)
 //				SetPrimeWhite ( m_measurementsArray[n-1] ); //do not futz with white reference during measures
 			}
+		}
+	} 
+	else if (n > 0) 
+	{
+		LastMeasure = GetMeasurement(n-1);
+		switch (isPrimary)
+		{
+		case 1:
+			switch (last_minCol)
+			{
+				case 1:
+				SetRedPrimary ( m_measurementsArray[n-1] );
+				break;
+				case 2:
+				SetGreenPrimary ( m_measurementsArray[n-1] );
+				break;
+				case 3:
+				SetBluePrimary ( m_measurementsArray[n-1] );
+				break;
+				case 4:
+				SetYellowSecondary ( m_measurementsArray[n-1] );
+				break;
+				case 5:
+				SetCyanSecondary ( m_measurementsArray[n-1] );
+				break;
+				case 6:
+				SetMagentaSecondary ( m_measurementsArray[n-1] );
+				break;
+				case 7:
+				SetPrimeWhite ( m_measurementsArray[n-1] );
+				break;
+				case 8:
+				m_OnOffBlack = m_measurementsArray[n-1];
+				break;
+			}
+			break;
+		case 3:
+			SetNearBlack(last_minCol - 1, m_measurementsArray[n-1]);
+			break;
+		case 4:
+			SetNearWhite(last_minCol - 1, m_measurementsArray[n-1]);
+			break;
+		case 5:
+			SetRedSat(last_minCol - 1, m_measurementsArray[n-1]);
+			break;
+		case 6:
+			SetGreenSat(last_minCol - 1, m_measurementsArray[n-1]);
+			break;
+		case 7:
+			SetBlueSat(last_minCol - 1, m_measurementsArray[n-1]);
+			break;
+		case 8:
+			SetYellowSat(last_minCol - 1, m_measurementsArray[n-1]);
+			break;
+		case 9:
+			SetCyanSat(last_minCol - 1, m_measurementsArray[n-1]);
+			break;
+		case 10:
+			SetMagentaSat(last_minCol - 1, m_measurementsArray[n-1]);
+			break;
+		case 11: //color checker
+			SetCC24Sat(last_minCol - 1, m_measurementsArray[n-1]);
+			int iCC=GetConfig()->m_CCMode, i;
+			if (iCC < 19)
+			{
+				i = 0 + 100*iCC + last_minCol - 1;
+						m_cc24SatMeasureArray_master[i] = m_measurementsArray[n-1];
+			}
+			else if (iCC == 19)
+			{
+				i = 1900 + last_minCol -1;
+						m_cc24SatMeasureArray_master[i] = m_measurementsArray[n-1];
+			}
+			else if (iCC == 20)
+			{
+				i = 1900 + 250 + last_minCol -1;
+						m_cc24SatMeasureArray_master[i] = m_measurementsArray[n-1];
+			}
+			else if (iCC == 21) 
+			{
+				i = 1900 + 250 + 500 + last_minCol - 1;
+						m_cc24SatMeasureArray_master[i] = m_measurementsArray[n-1];
+			}
+			break;
 		}
 	}
 }
@@ -5772,7 +5856,7 @@ CColor CMeasure::GetMeasurement(int i) const
 	return m_measurementsArray[i]; 
 } 
 
-void CMeasure::AppendMeasurements(const CColor & aColor, bool isPrimary) 
+void CMeasure::AppendMeasurements(const CColor & aColor, int isPrimary, int last_minCol) 
 {
 	if (m_measurementsArray.GetSize() >= m_nbMaxMeasurements )
 		m_measurementsArray.RemoveAt(0,1); 
@@ -5783,7 +5867,7 @@ void CMeasure::AppendMeasurements(const CColor & aColor, bool isPrimary)
 
 	m_isModified=TRUE; 
 
-	FreeMeasurementAppended(isPrimary); 
+	FreeMeasurementAppended(isPrimary, last_minCol); 
 }
 
 CColor CMeasure::GetRefPrimary(int i) const

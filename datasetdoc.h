@@ -74,8 +74,8 @@ class CDataSetWindowPositions;
 class CDataSetFrameInfo;
 
 #include "Measure.h"
-#include "Sensor.h"
-#include "Generator.h"
+#include "Sensors\Sensor.h"
+#include "Generators\Generator.h"
 
 #define WM_BKGND_MEASURE_READY	WM_USER + 1279
 
