@@ -1321,8 +1321,7 @@ void CDataSetDoc::AddMeasurement()
 	if(m_measure.AddMeasurement(m_pSensor,m_pGenerator, MT, m_d, last_minCol))
 	{
 		SetModifiedFlag(m_measure.IsModified());
-		UpdateAllViews(NULL, UPD_FREEMEASUREAPPENDED);
-		UpdateAllViews(NULL, UPD_EVERYTHING);
+		UpdateAllViews(NULL,UPD_EVERYTHING);
 	}
 	GetConfig()->m_isSettling = Settling;
 }
@@ -3760,12 +3759,10 @@ void CDataSetDoc::OnBkgndMeasureReady()
 			pMeasurement = ( CColor * ) g_MeasuredColorList.GetNext ( pos );
 
 			m_measure.AppendMeasurements(*pMeasurement, m_d, last_minCol );
-			SetModifiedFlag();
+			SetModifiedFlag(m_measure.IsModified());
 
 			SetSelectedColor ( *pMeasurement );
-
 			UpdateAllViews(NULL,UPD_FREEMEASUREAPPENDED,this);
-			UpdateAllViews(NULL,UPD_EVERYTHING,this);
 
 			delete pMeasurement;
 		}

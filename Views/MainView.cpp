@@ -44,6 +44,7 @@
 #include <math.h>
 #include <algorithm>
 #include <vector>
+#include <afxpriv.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -376,6 +377,7 @@ BEGIN_MESSAGE_MAP(CMainView, CFormView)
 	ON_COMMAND(ID_FILE_PRINT, CFormView::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_DIRECT, CFormView::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_PREVIEW, CFormView::OnFilePrintPreview)
+
 
 	ON_NOTIFY(GVN_BEGINLABELEDIT, IDC_GRAYSCALE_GRID, OnGrayScaleGridBeginEdit)
 	ON_NOTIFY(GVN_ENDLABELEDIT, IDC_GRAYSCALE_GRID, OnGrayScaleGridEndEdit)
@@ -1673,8 +1675,9 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 				if (last_minCol == GetDocument()->GetMeasure()->GetGrayScaleSize ()    )
 					GetDocument()->GetMeasure()->SetOnOffWhite(MeasuredColor);
 			}
- 			 UpdateGrid();
+ 			
 		}
+		UpdateGrid();		
 		UpdateMeasurementsAfterBkgndMeasure ();
 	}
 	else if ( lHint >= UPD_REALTIME ) //optimized for realtime

@@ -5231,6 +5231,8 @@ void CMeasure::FreeMeasurementAppended(int isPrimary, int last_minCol)
 			}
 			break;
 		}
+		m_isModified=TRUE;
+//		UpdateViews(pDoc, isPrimary);
 	}
 }
 
