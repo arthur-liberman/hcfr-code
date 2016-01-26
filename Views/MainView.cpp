@@ -1734,8 +1734,8 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 					if (last_minCol == GetDocument()->GetMeasure()->GetGrayScaleSize ()    )
 						GetDocument()->GetMeasure()->SetOnOffWhite(MeasuredColor);
 				}
-				UpdateGrid();
 			}
+			UpdateGrid();
 			UpdateMeasurementsAfterBkgndMeasure ();
 		}
 

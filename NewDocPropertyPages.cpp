@@ -72,6 +72,7 @@ void CGeneratorSelectionPropPage::DoDataExchange(CDataExchange* pDX)
 		if ( m_generatorChoiceCtrl.GetCurSel() < 0 )
 			m_generatorChoiceCtrl.SetCurSel(0);
 	}
+	GetConfig()->WriteProfileString("Defaults","Generator",m_generatorChoice);
 }
 
 

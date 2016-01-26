@@ -1315,13 +1315,13 @@ void CDataSetDoc::AddMeasurement()
 	m_d=((CMainView *)pView)->m_displayMode;
 	last_minCol=((CMainView *)pView)->last_minCol;
 	CGenerator::MeasureType MT = CGenerator::MT_UNKNOWN;							
-	if ( m_d == 1 || (m_d < 11 &&  m_d > 4) )
+//	if ( m_d == 1 || (m_d < 11 &&  m_d > 4) )
 		MT = CGenerator::MT_ACTUAL;
 
 	if(m_measure.AddMeasurement(m_pSensor,m_pGenerator, MT, m_d, last_minCol))
 	{
 		SetModifiedFlag(m_measure.IsModified());
-		UpdateAllViews(NULL,UPD_EVERYTHING);
+		UpdateAllViews(NULL, UPD_FREEMEASUREAPPENDED);
 	}
 	GetConfig()->m_isSettling = Settling;
 }

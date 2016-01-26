@@ -4751,14 +4751,13 @@ BOOL CMeasure::AddMeasurement(CSensor *pSensor, CGenerator *pGenerator,  CGenera
 	CColor measurement;
 	measurement = measuredColor;
 	m_measurementsArray.InsertAt(m_measurementsArray.GetSize(),measurement);
-	
+	m_isModified=TRUE;	
 	FreeMeasurementAppended(isPrimary, last_minCol);
 
 	pSensor->Release();
 	if ( bDisplayColor )
 		pGenerator->Release();
 
-	m_isModified=TRUE;
 	return TRUE;
 }
 
