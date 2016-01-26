@@ -108,7 +108,7 @@ void CArgyllSensorPropPage::OnCalibrate()
 {
     UpdateData(TRUE);
     m_pSensor->GetPropertiesSheetValues();
-    m_pSensor->Calibrate();
+	m_pSensor->Calibrate();
 }
 
 

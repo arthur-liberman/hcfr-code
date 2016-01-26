@@ -83,6 +83,7 @@ public:
     virtual bool isColorimeter() const;
     virtual bool setAvg();
     virtual bool isRefresh() const;
+
 private:
     virtual CColor MeasureColorInternal(const ColorRGBDisplay& aRGBValue);
 };

@@ -3122,13 +3122,13 @@ void CDataSetDoc::OnPattern80()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+//			AfxGetMainWnd () -> EnableWindow ( FALSE );
 
 			m_pGenerator->Init();
 			m_pGenerator->Display80();
 			WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
+//			AfxGetMainWnd () -> EnableWindow ( TRUE );
 			m_pGenerator->Release();
 	}
 	else

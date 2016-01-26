@@ -27,7 +27,8 @@
 #include "ColorHCFR.h"
 #include "ArgyllSensor.h"
 #include "SpectralSampleFiles.h"
-
+#include "../Generators/GDIGenerator.h"
+#include "../MainFrm.h"
 #include <math.h>
 
 #ifdef _DEBUG
@@ -372,14 +373,39 @@ void CArgyllSensor::Calibrate()
     ArgyllMeterWrapper::eMeterState state(ArgyllMeterWrapper::NEEDS_MANUAL_CALIBRATION);
     while(state != ArgyllMeterWrapper::READY)
     {
+		bool b_TestWindow = false;
         std::string meterInstructions(m_meter->getCalibrationInstructions(m_HiRes));
         if(meterInstructions.empty())
         {
             break;
         }
+		if (meterInstructions == "Provide an 80% or greater white test patch" && GetConfig()->GetProfileString("Defaults","Generator","Automatic") == "Automatic" )
+		{
+			CGDIGenerator *m_pGenerator;
+			int display_mode  = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI);
+			m_pGenerator = new CGDIGenerator(display_mode, false);
+			if (display_mode == DISPLAY_ccast)
+			{
+				GetColorApp()->InMeasureMessageBox( "Place test window and meter on Chromecast connected monitor to be calibrated.", "Calibration Instructions", MB_OK);
+				m_pGenerator->Display80();
+				delete m_pGenerator;
+			}
+			else
+			{
+				( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.ShowWindow(SW_SHOW);
+				( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.m_colorPicker.SetColor(RGB(204,204,204));
+				( (CMainFrame *) (AfxGetApp () -> m_pMainWnd)) -> EnableWindow ( TRUE );
+				( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.SetForegroundWindow();
+				b_TestWindow = true;
+				GetColorApp()->InMeasureMessageBox( "Place test window and meter on monitor to be calibrated.", "Calibration Instructions", MB_OK);
+			}
+		} else
+	        GetColorApp()->InMeasureMessageBox( meterInstructions.c_str(), "Calibration Instructions", MB_OK);
 
-        GetColorApp()->InMeasureMessageBox( meterInstructions.c_str(), "Calibration Instructions", MB_OK);
-        state = m_meter->calibrate();
+		state = m_meter->calibrate();
+		if (b_TestWindow)
+			( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.ShowWindow(SW_HIDE);
+
         if(state == ArgyllMeterWrapper::INCORRECT_POSITION)
         {
             GetColorApp()->InMeasureMessageBox( m_meter->getIncorrectPositionInstructions().c_str(), "Incorrect Position", MB_OK+MB_ICONHAND);

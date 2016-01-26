@@ -1778,7 +1778,7 @@ BEGIN
         MENUITEM "&New\tCtrl+N",                ID_FILE_NEW
         MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
         MENUITEM SEPARATOR
-        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1
         MENUITEM SEPARATOR
         MENUITEM "&Exit",                       ID_APP_EXIT
     END
@@ -1798,6 +1798,7 @@ BEGIN
     BEGIN
         MENUITEM "&Patterns...",                IDM_PATTERN_DISP_ROOT
         MENUITEM SEPARATOR
+        MENUITEM "Alignment",                   IDM_PATTERN_ALIGN
         MENUITEM "&Preferences...",             IDM_GENERAL_CONFIG
         MENUITEM "&Language...",                IDM_LANGUAGE
     END

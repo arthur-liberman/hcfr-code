@@ -193,8 +193,10 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
    inst_code instCode;
    if (debugmode)
     {
-        m_meter->icom->log->verb = 9;
-        m_meter->icom->log->debug = 9;
+        m_meter->icom->log->verb = 3;
+        m_meter->icom->log->debug = 6;
+		m_meter->log->verb=3;
+        m_meter->log->debug = 6;
 		m_meter->icom->log->logd = m_meter->icom->log->loge;
 		m_meter->icom->log->logv = m_meter->icom->log->loge;
     }
@@ -622,7 +624,7 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading(CString Spectral
 
 ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::calibrate()
 {
-    checkMeterIsInitialized();
+   checkMeterIsInitialized();
     m_calibrationMessage[0] = '\0';
     inst_cal_type calType(inst_calt_available);
     if (dark_only)
@@ -656,9 +658,10 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::calibrate()
         char s_int [ 256 ];
 	    double refr;
 	    inst_code ev;
+		//auto-generate 80% pattern
         if (m_meterType != instI1Disp3)
             takeReading("Default"); //need a pre-read for d1, d2, dtp refresh mode but not needed for display pro
-        ev = m_meter->get_refr_rate(m_meter, &refr);
+		ev = m_meter->get_refr_rate(m_meter, &refr);
         if (ev == inst_ok)
         {
             sprintf(s_int,"Refresh rate found: %f Hz",refr);

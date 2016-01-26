@@ -35,7 +35,6 @@
 
 struct _inst;
 
-
 class ArgyllMeterWrapper
 {
 public:
