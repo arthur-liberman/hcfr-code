@@ -298,7 +298,7 @@ BOOL StartBackgroundMeasures ( CDataSetDoc * pDoc )
 					clr = ColorRGBDisplay(0.25);
 				g_CurrentColor = clr;
 				CGenerator::MeasureType MT = CGenerator::MT_UNKNOWN;							
-				if ( m_d == 1 || (m_d < 11 && m_d > 4) )
+				if ( m_d <= 1 || (m_d < 11 && m_d > 4) )
 					MT = CGenerator::MT_ACTUAL;
 				pDoc->GetGenerator()->DisplayRGBColor(clr,MT);
 				Sleep(500);
@@ -1315,7 +1315,7 @@ void CDataSetDoc::AddMeasurement()
 	m_d=((CMainView *)pView)->m_displayMode;
 	last_minCol=((CMainView *)pView)->last_minCol;
 	CGenerator::MeasureType MT = CGenerator::MT_UNKNOWN;							
-//	if ( m_d == 1 || (m_d < 11 &&  m_d > 4) )
+	if ( m_d <= 1 || (m_d < 11 &&  m_d > 4) )
 		MT = CGenerator::MT_ACTUAL;
 
 	if(m_measure.AddMeasurement(m_pSensor,m_pGenerator, MT, m_d, last_minCol))
@@ -1351,18 +1351,23 @@ void CDataSetDoc::OnConfigureSensor2()
     CView* pView;
     pos = this -> GetFirstViewPosition ();
     pView = this -> GetNextView ( pos );
-    if (m_pSensor->setAvg())
-    {
-       GetColorApp()->InMeasureMessageBox("Averaging on","Average Button",MB_OK);
-       ( (CMainView*) pView )->m_configSensorButton2.SetIcon(IDI_STOP_ICON,18,18);
-    }
-    else
-    {
-       GetColorApp()->InMeasureMessageBox("Averaging off","Average Button",MB_OK);
-       ( (CMainView*) pView )->m_configSensorButton2.SetIcon(IDI_START_ICON,18,18);
-    }
-
-
+	bool can_Avg = m_pSensor->setAvg();
+	if (can_Avg == m_pSensor->setAvg())
+	{
+		GetColorApp()->InMeasureMessageBox("Averaging not available for this probe.","Average Button",MB_OK);	
+	} 	else
+	{
+		if (m_pSensor->setAvg())
+		{
+		   GetColorApp()->InMeasureMessageBox("Averaging on","Average Button",MB_OK);
+		   ( (CMainView*) pView )->m_configSensorButton2.SetIcon(IDI_STOP_ICON,36,36);
+		}
+		else
+		{
+		   GetColorApp()->InMeasureMessageBox("Averaging off","Average Button",MB_OK);
+		   ( (CMainView*) pView )->m_configSensorButton2.SetIcon(IDI_START_ICON,36,36);
+		}
+	}
 }
 
 void CDataSetDoc::OnConfigureGenerator() 

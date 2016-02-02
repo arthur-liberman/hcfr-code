@@ -37,7 +37,7 @@ static char THIS_FILE[] = __FILE__;
 
 CTestColorWnd::CTestColorWnd(CWnd* pParent) : CDialog (CTestColorWnd::IDD, pParent)
 {
-//	m_colorPicker.SetDefaultText("");
+//	m_colorPicker.SetDefaultText("")
 
 }
 
@@ -97,16 +97,19 @@ void CTestColorWnd::OnPaint()
 	if ( pDoc && pDoc -> GetGenerator () -> m_b16_235 )
 	{
 		// Use 16 -> 235 scale
+		r = floor(double(r)/255. * 219. + 16 + 0.5);
 		if ( r < 16 )
 			r = 16;
 		else if ( r > 235 )
 			r = 235;
 
+		g = floor(double(g)/255. * 219. + 16 + 0.5);
 		if ( g < 16 )
 			g = 16;
 		else if ( g > 235 )
 			g = 235;
 
+		b = floor(double(b)/255. * 219. + 16 + 0.5);
 		if ( b < 16 )
 			b = 16;
 		else if ( b > 235 )
@@ -126,7 +129,7 @@ void CTestColorWnd::OnPaint()
 	sprintf ( szBuf, (LPCSTR)Msg, (int) r, (int) g, (int) b );
 	
 	memset ( &logFont, 0, sizeof (logFont) );
-	logFont.lfHeight =			14;
+	logFont.lfHeight =			24;
 	logFont.lfWeight =			FW_BOLD;
 	logFont.lfCharSet =			ANSI_CHARSET;
 	logFont.lfOutPrecision =	OUT_DEFAULT_PRECIS;
@@ -154,7 +157,7 @@ int CTestColorWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	
 	CString Msg;
 	Msg.LoadString ( IDS_COLOR );
-	m_colorPickerRect.SetRect(0,0,40,20);
+	m_colorPickerRect.SetRect(0,0,70,40);
 	m_colorPicker.Create(Msg,WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,m_colorPickerRect,this,IDC_TESTCOLOR_BUTTON);
 	
 	return 0;

@@ -98,11 +98,11 @@ static const SCtrlLayout g_CtrlLayout [] = {
 { IDC_SENSOR_GROUP						, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
 { IDC_SENSORNAME_STATIC					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
 { IDC_SENSORNAME_STATIC2					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
-{ IDM_CONFIGURE_SENSOR					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
-{ IDM_CONFIGURE_SENSOR2					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
+{ IDM_CONFIGURE_SENSOR					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP_OFFSET,			LAYOUT_TOP_OFFSET			},
+{ IDM_CONFIGURE_SENSOR2					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP_OFFSET,			LAYOUT_TOP_OFFSET			},
 { IDC_GENERATOR_GROUP					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
 { IDC_GENERATORNAME_STATIC				, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
-{ IDM_CONFIGURE_GENERATOR				, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
+{ IDM_CONFIGURE_GENERATOR				, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP_OFFSET,			LAYOUT_TOP_OFFSET			},
 { IDC_DATAREF_GROUP						, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
 { IDC_DATAREF_CHECK						, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
 { IDC_ADJUSTXYZ_CHECK					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
@@ -2888,7 +2888,7 @@ void CMainView::UpdateGrid()
 			UpdateContrastValuesInGrid ();
 
 		m_pGrayScaleGrid->Refresh();
-
+		
 		if ( m_displayMode == 0 || m_displayMode == 3 || m_displayMode == 4)
 		{
 			// Gray scale mode: update group box title
@@ -4494,8 +4494,9 @@ void CMainView::InitButtons()
 	CString	Msg, Msg2;
 
 	Msg.LoadString ( IDS_CONFIGURESENSOR );
-	m_configSensorButton.SetIcon(IDI_SETTINGS_ICON,22,22);
-	m_configSensorButton2.SetIcon(IDI_START_ICON,18,18);
+	m_configSensorButton.SetIcon(IDI_SETTINGS_ICON,36,36);
+	Msg2.LoadString ( IDS_CONFIGURESENSOR2 );
+	m_configSensorButton2.SetIcon(IDI_START_ICON,36,36);
 	m_configSensorButton.SetFont(GetFont());
 	m_configSensorButton2.SetFont(GetFont());
 	m_configSensorButton.EnableBalloonTooltip();
@@ -4510,7 +4511,7 @@ void CMainView::InitButtons()
 	m_configSensorButton.OffsetColor(CButtonST::BTNST_COLOR_FG_IN, 30);
 	m_configSensorButton.SizeToContent();
 	m_configSensorButton2.EnableBalloonTooltip();
-	m_configSensorButton2.SetTooltipText(Msg);
+	m_configSensorButton2.SetTooltipText(Msg2);
 	m_configSensorButton2.SetColor(CButtonST::BTNST_COLOR_FG_IN,FxGetSysColor(COLOR_MENUTEXT));
 	m_configSensorButton2.SetColor(CButtonST::BTNST_COLOR_FG_OUT,FxGetSysColor(COLOR_MENUTEXT));
 	m_configSensorButton2.SetColor(CButtonST::BTNST_COLOR_FG_FOCUS,FxGetSysColor(COLOR_MENUTEXT));
@@ -4523,7 +4524,7 @@ void CMainView::InitButtons()
 //	m_configSensorButton.DrawTransparent(TRUE);
 
 	Msg.LoadString ( IDS_CONFIGUREGENERATOR );
-	m_configGeneratorButton.SetIcon(IDI_SETTINGS_ICON,24,24);
+	m_configGeneratorButton.SetIcon(IDI_SETTINGS_ICON,36,36);
 	m_configGeneratorButton.SetFont(GetFont());
 	m_configGeneratorButton.EnableBalloonTooltip();
 	m_configGeneratorButton.SetTooltipText(Msg);
@@ -4599,8 +4600,9 @@ void CMainView::InitGroups()
 
 	m_grayScaleGroup.SetXPGroupStyle(CXPGroupBox::XPGB_WINDOW);
 	m_grayScaleGroup.SetFontName(groupFontName);
-	m_grayScaleGroup.SetFontSize(groupFontSize);
+	m_grayScaleGroup.SetFontSize(groupFontSize - 1);
 	m_grayScaleGroup.SetFontBold(TRUE);
+	m_grayScaleGroup.SetAlignment(SS_LEFT);
 //	m_grayScaleGroup.SetFontItalic(TRUE);
 	m_grayScaleGroup.SetCaptionTextColor(LightenColor(70,FxGetSysColor(COLOR_MENUTEXT)));
 	

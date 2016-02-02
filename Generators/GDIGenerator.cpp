@@ -32,6 +32,7 @@
 #include "../libccast/ccmdns.h"
 #include "../libccast/ccwin.h"
 #include "../libccast/ccast.h"
+#include "../MainFrm.h"
 
 
 
@@ -373,6 +374,8 @@ BOOL CGDIGenerator::Init(UINT nbMeasure)
 	m_displayWindow.MoveToMonitor(m_hMonitor[m_activeMonitorNum]);
 	if (m_nDisplayMode == DISPLAY_GDI || m_nDisplayMode == DISPLAY_GDI_nBG )
 		m_displayWindow.ShowWindow(SW_SHOWMAXIMIZED);
+	if (m_nDisplayMode == DISPLAY_GDI_Hide) //to use test colour window instead
+		m_displayWindow.ShowWindow(SW_HIDE);
 
 	if (!m_bConnect && m_bLinear) //linear gamma tables
 	{
@@ -625,13 +628,22 @@ BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nP
 	//see if we need to reconnect generator
 	if (!this->m_bisInited)
 		Init();
+	if (m_GDIGenePropertiesPage.m_nDisplayMode == DISPLAY_GDI_Hide)
+	{
+		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.ShowWindow(SW_SHOW);
+		( (CMainFrame *) (AfxGetApp () -> m_pMainWnd)) -> EnableWindow ( TRUE );
+		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.SetForegroundWindow();
+	} else
+	{
+		if ( m_GDIGenePropertiesPage.m_nDisplayMode == DISPLAY_madVR)
+			DisplayRGBColormadVR (do_Intensity?p_clr:clr, GetConfig()->m_isSettling, nPatternInfo);
+		else if ( m_GDIGenePropertiesPage.m_nDisplayMode == DISPLAY_ccast)
+			DisplayRGBCCast (do_Intensity?p_clr:clr, GetConfig()->m_isSettling, nPatternInfo );
+		else
+			m_displayWindow.DisplayRGBColor(do_Intensity?p_clr:clr, nPatternInfo);
+		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.ShowWindow(SW_HIDE);
+	}
 
-	if ( m_GDIGenePropertiesPage.m_nDisplayMode == DISPLAY_madVR)
-		DisplayRGBColormadVR (do_Intensity?p_clr:clr, GetConfig()->m_isSettling, nPatternInfo);
-	else if ( m_GDIGenePropertiesPage.m_nDisplayMode == DISPLAY_ccast)
-		DisplayRGBCCast (do_Intensity?p_clr:clr, GetConfig()->m_isSettling, nPatternInfo );
-	else
-		m_displayWindow.DisplayRGBColor(do_Intensity?p_clr:clr, nPatternInfo);
 	return TRUE;
 }
 

@@ -854,7 +854,10 @@ void CFullScreenWindow::OnPaint()
 	double m_rectAreaPercent, borderArea;
 	double bgstim = m_bgStimPercent / 100.;
 
-			// Pattern Display Common Vars
+	//make sure we are foreground
+	::SetForegroundWindow(this->hWnd);
+	this->SetFocus();
+	// Pattern Display Common Vars
 		CBrush		br0;
 		CRect		aRect;
 		int			i, j;

@@ -329,7 +329,8 @@ IMPLEMENT_DYNCREATE(CColourPickerXP, CButton)
 //***********************************************************************
 CColourPickerXP::CColourPickerXP(void):
 	_Inherited(),
-	m_Color(CLR_DEFAULT),
+//	m_Color(CLR_DEFAULT),
+	m_Color(RGB(128,128,128)),
 	m_DefaultColor(::GetSysColor(COLOR_APPWORKSPACE)),
 	m_strDefaultText(_T("Automatic")),
 	m_strCustomText(_T("More Colors...")),
@@ -347,7 +348,6 @@ CColourPickerXP::CColourPickerXP(void):
 	bool bIsXP = osvi.dwPlatformId == VER_PLATFORM_WIN32_NT &&
 		(osvi.dwMajorVersion > 5 || (osvi.dwMajorVersion == 5 &&
 		osvi.dwMinorVersion >= 1));
-
 	m_bFlatMenus = FALSE;
  	if (bIsXP)
 		::SystemParametersInfo (SPI_GETFLATMENU, 0, &m_bFlatMenus, FALSE);

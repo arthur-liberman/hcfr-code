@@ -416,12 +416,12 @@ BOOL CColorHCFRApp::InitInstance()
 				::SetWindowText ( hCtrl, "Update cancelled." );
 			}
 		
-			Sleep(2000);
+			Sleep(1000);
 		}
 		else
 		{
 			::SetWindowText ( hCtrl, "No updates found." );
-			Sleep(2000);
+			Sleep(1000);
 		}
 
 		::DestroyWindow ( hDlg );
