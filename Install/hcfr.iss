@@ -73,7 +73,7 @@ Name: "quicklaunchicon"; Description: "Create a &Quick Launch icon"; GroupDescri
 Source: "..\Release\ColorHCFR.exe"; DestDir: "{app}"; Flags: ignoreversion; Components: main
 Source: "..\Release\oeminst.exe"; DestDir: "{app}\Tools"; Flags: ignoreversion; Components: main
 Source: "..\Release\spotread.exe"; DestDir: "{app}\Tools"; Flags: ignoreversion; Components: main
-Source: "..\Install\dispwin.exe"; DestDir: "{app}\Tools"; Flags: ignoreversion; Components: main; Permissions: users-full
+Source: "..\Install\dispwin.exe"; DestDir: "{app}\Tools"; Flags: ignoreversion; Components: main; 
 Source: "..\Install\msvcr100.dll"; DestDir: "{app}\Tools"; Flags: ignoreversion; Components: main
 Source: "..\Release\*.dll"; DestDir: "{app}"; Flags: ignoreversion; Components: main
 Source: "..\Release\*.chm"; DestDir: "{app}"; Flags: ignoreversion; Components: main
@@ -99,6 +99,9 @@ Name: "{group}\HCFR"; Filename: "{app}\ColorHCFR.exe"
 Name: "{group}\HCFR on the Web"; Filename: "{app}\HCFR.url"
 Name: "{userdesktop}\HCFR"; Filename: "{app}\ColorHCFR.exe"; MinVersion: 4,4; Tasks: desktopicon
 Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\HCFR"; Filename: "{app}\ColorHCFR.exe"; MinVersion: 4,4; Tasks: quicklaunchicon
+
+[Registry]
+Root: "HKLM"; Subkey: "SOFTWARE\Microsoft\Windows\NT\CurrentVersion\AppCompatFlags\Layers\"; ValueType: String; ValueName: "{app}\Tools\dispwin.exe"; ValueData: "RUNASADMIN"; Flags: uninsdeletekeyifempty uninsdeletevalue; MinVersion: 0,6.1
 
 [Run]
 Filename: "{app}\ColorHCFR.exe"; Description: "Launch HCFR"; Flags: nowait postinstall skipifsilent
