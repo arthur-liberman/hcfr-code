@@ -73,7 +73,7 @@ Name: "quicklaunchicon"; Description: "Create a &Quick Launch icon"; GroupDescri
 Source: "..\Release\ColorHCFR.exe"; DestDir: "{app}"; Flags: ignoreversion; Components: main
 Source: "..\Release\oeminst.exe"; DestDir: "{app}\Tools"; Flags: ignoreversion; Components: main
 Source: "..\Release\spotread.exe"; DestDir: "{app}\Tools"; Flags: ignoreversion; Components: main
-Source: "..\Install\dispwin.exe"; DestDir: "{app}\Tools"; Flags: ignoreversion; Components: main
+Source: "..\Install\dispwin.exe"; DestDir: "{app}\Tools"; Flags: ignoreversion; Components: main; Permissions: users-full
 Source: "..\Install\msvcr100.dll"; DestDir: "{app}\Tools"; Flags: ignoreversion; Components: main
 Source: "..\Release\*.dll"; DestDir: "{app}"; Flags: ignoreversion; Components: main
 Source: "..\Release\*.chm"; DestDir: "{app}"; Flags: ignoreversion; Components: main
