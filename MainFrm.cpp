@@ -139,6 +139,7 @@ CMainFrame::~CMainFrame()
 BOOL CMainFrame::LoadToolbars()
 {
 	// GGA TODO: very slow, need to be optimized: maybe create a LoadToolBar with no useless internal call to LoadHiColor.
+	// TODO: dpi aware set of toolbars?
 	if(!m_wndToolBar.LoadToolBar(m_mainToolbarID))
 		return FALSE;
 	if(!m_wndToolBar.LoadHiColor(MAKEINTRESOURCE(IDB_MEDIUMTOOLBAR_MAIN_HICOL),RGB(0,0,0)))
@@ -226,9 +227,11 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_wndMenuBar.SetWindowText(_T("Menu standard"));
 	m_wndToolBar.SetWindowText(_T("Toolbar standard"));
 	m_wndToolBarViews.SetWindowText(_T("Toolbar views"));
+	m_wndToolBarViews.SetSizes(CSize(64,64), CSize(64,64));
 	m_wndToolBarMeasures.SetWindowText(_T("Toolbar measures"));
 	m_wndToolBarMeasuresEx.SetWindowText(_T("Toolbar measures ext"));
 	m_wndToolBarMeasuresSat.SetWindowText(_T("Toolbar measures sat"));
+	m_wndToolBarMeasures.SetSizes(CSize(64,64), CSize(64,64));
 
 	if(!LoadToolbars())
 	{
@@ -1030,17 +1033,20 @@ void CMainFrame::OnHelp()
 
 void CMainFrame::OnHelpForum() 
 {
-	GetConfig () -> DisplayHelp ( HID_FORUM, NULL );
+//	GetConfig () -> DisplayHelp ( HID_FORUM, NULL );
+	ShellExecute(NULL,"open","http://www.avsforum.com/forum/139-display-calibration/1393853-hcfr-open-source-projector-display-calibration-software.html",NULL,NULL,SW_SHOWNORMAL);
 }
 
 void CMainFrame::OnHelpInstall() 
 {
-	GetConfig () -> DisplayHelp ( HID_INSTALL, NULL );
+//	GetConfig () -> DisplayHelp ( HID_INSTALL, NULL );
+	ShellExecute(NULL,"open","http://www.argyllcms.com/doc/Installing_MSWindows.html",NULL,NULL,SW_SHOWNORMAL);
 }
 
 void CMainFrame::OnHelpSupport() 
 {
-	GetConfig () -> DisplayHelp ( HID_SUPPORT, NULL );
+//	GetConfig () -> DisplayHelp ( HID_SUPPORT, NULL );
+	ShellExecute(NULL,"open","http://www.avsforum.com/forum/139-display-calibration/1393853-hcfr-open-source-projector-display-calibration-software.html",NULL,NULL,SW_SHOWNORMAL);
 }
 
 void CMainFrame::OnInitDefaults()

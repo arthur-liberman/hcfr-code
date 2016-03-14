@@ -742,7 +742,7 @@ void CGraphControl::DrawGraphs(CDC *pDC, CRect rect)
 				if (this->m_doShowDataLabel && (j==0 || this->m_graphArray[0].m_Title == "Red") && j<6 && this->m_graphArray[0].m_Title != "RGB Reference") //only label 1st graph of series unless Luminance from sat sweep
 				{
 					CFont font;
-					font.CreateFont(13,0,300,300,FW_SEMIBOLD,FALSE,FALSE,FALSE,0,OUT_STRING_PRECIS,CLIP_DEFAULT_PRECIS,PROOF_QUALITY,VARIABLE_PITCH | FF_MODERN,_T("Garamond"));
+					font.CreateFont(24,0,300,300,FW_SEMIBOLD,FALSE,FALSE,FALSE,0,OUT_STRING_PRECIS,CLIP_DEFAULT_PRECIS,PROOF_QUALITY,VARIABLE_PITCH | FF_MODERN,_T("Garamond"));
 					CFont* pOldFont = pDC->SelectObject(&font);
 					char outStr[10];
 					double y = m_graphArray[j].m_pointArray[i].y;
@@ -777,7 +777,7 @@ void CGraphControl::DrawAxis(CDC *pDC, CRect rect, BOOL bWhiteBkgnd)
 	int pointSize=80;
 	CFont font;
 //	font.CreatePointFont(pointSize,"Default",NULL);
-	font.CreateFont(14,0,0,0,FW_THIN,FALSE,FALSE,FALSE,0,OUT_TT_ONLY_PRECIS,CLIP_DEFAULT_PRECIS,PROOF_QUALITY,VARIABLE_PITCH | FF_MODERN,_T("Garamond"));
+	font.CreateFont(24,0,0,0,FW_THIN,FALSE,FALSE,FALSE,0,OUT_TT_ONLY_PRECIS,CLIP_DEFAULT_PRECIS,PROOF_QUALITY,VARIABLE_PITCH | FF_MODERN,_T("Garamond"));
 
 	CFont* pOldFont = pDC->SelectObject(&font);
 

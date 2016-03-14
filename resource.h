@@ -1036,6 +1036,7 @@
 #define IDM_PATTERN_DR0                 33062
 #define ID_BUTTON33062                  33062
 #define IDM_PATTERN_DR1                 33063
+#define ID_BUTTON33063                  33063
 #define IDM_PATTERN_DR2                 33064
 #define IDM_PATTERN_SHARP               33065
 #define IDM_PATTERN_CLIPL               33066
@@ -1588,7 +1589,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        382
-#define _APS_NEXT_COMMAND_VALUE         33063
+#define _APS_NEXT_COMMAND_VALUE         33064
 #define _APS_NEXT_CONTROL_VALUE         1288
 #define _APS_NEXT_SYMED_VALUE           143
 #endif

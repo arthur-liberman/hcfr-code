@@ -57,7 +57,6 @@ extern a1log *g_log;
 /* Should Vector/Matrix Support functions return NULL on error, */
 /* or call error() ? */
 int ret_null_on_malloc_fail = 0;	/* Call error() */
-
 /******************************************************************/
 /* Executable path routine. Sets default error_program too. */
 /******************************************************************/
@@ -392,7 +391,7 @@ static void va_loge(a1log *p, char *fmt, ...) {
 a1log default_log = {
 	1,			/* Refcount of 1 because this is not allocated or free'd */
 	"argyll",	/* Default tag */
-	0,			/* Vebose off */
+	3,			/* Vebose off */
 	0,			/* Debug off */
 	NULL,		/* Context */
 	&a1_default_v_log,	/* Default verbose to stdout */

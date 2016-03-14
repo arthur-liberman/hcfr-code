@@ -57,7 +57,7 @@ static char THIS_FILE[] = __FILE__;
 #define IDC_TABCTRL		1
 
 // Tab control height
-#define TABCTRL_HEIGHT	20
+#define TABCTRL_HEIGHT	30
 
 CPtrList gOpenedFramesList;
 
@@ -385,7 +385,7 @@ BOOL CMultiFrame::OnCreateClient( LPCREATESTRUCT lpcs, CCreateContext* pContext 
 		else
 			Rect.top = Rect.bottom - TABCTRL_HEIGHT;
 		
-		m_RefCheckDlg.Create (IDD_REF_CHECKBOX, this);
+//		m_RefCheckDlg.Create (IDD_REF_CHECKBOX, this);
 
 		m_RefCheckDlg.GetWindowRect ( & Rect2 );
 		Rect3.top = Rect.top;
@@ -398,8 +398,10 @@ BOOL CMultiFrame::OnCreateClient( LPCREATESTRUCT lpcs, CCreateContext* pContext 
 		m_RefCheckDlg.SetWindowPos ( NULL, Rect3.left, Rect3.top, Rect3.right - Rect3.left, Rect3.bottom - Rect3.top, SWP_NOACTIVATE | SWP_NOOWNERZORDER );
 		m_RefCheckDlg.ShowWindow ( SW_SHOW );
 
-		if ( GetDataRef () == GetDocument () )
-			m_RefCheckDlg.m_RefCheck.SetCheck ( TRUE );
+//		if ( GetDataRef () == GetDocument () )
+//			m_RefCheckDlg.m_RefCheck.SetCheck ( TRUE );
+
+//		m_RefCheckDlg.m_RefCheck.ShowWindow(SW_HIDE);
 
 		m_TabCtrl.Create ( WS_CHILD | WS_VISIBLE | CTCS_TOOLTIPS | CTCS_CLOSEBUTTON | CTCS_DRAGMOVE | (m_bTabUp?CTCS_TOP:0), Rect, this, IDC_TABCTRL );
 
@@ -2803,7 +2805,7 @@ void CRefCheckDlg::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CRefCheckDlg)
 	DDX_Control(pDX, IDC_BUTTON_MENU, m_ButtonMenu);
-	DDX_Control(pDX, IDC_CHECK_REF, m_RefCheck);
+//	DDX_Control(pDX, IDC_CHECK_REF, m_RefCheck);
 //	DDX_Control(pDX, IDC_CHECK_XYZ, m_XYZCheck);
 	//}}AFX_DATA_MAP
 }

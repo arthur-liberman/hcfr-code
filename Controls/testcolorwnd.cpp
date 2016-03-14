@@ -37,8 +37,7 @@ static char THIS_FILE[] = __FILE__;
 
 CTestColorWnd::CTestColorWnd(CWnd* pParent) : CDialog (CTestColorWnd::IDD, pParent)
 {
-//	m_colorPicker.SetDefaultText("")
-
+//	m_colorPicker.SetDefaultText("");
 }
 
 CTestColorWnd::~CTestColorWnd()

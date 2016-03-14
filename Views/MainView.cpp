@@ -1483,12 +1483,12 @@ void CMainView::InitSelectedColorGrid()
 	Item.mask = GVIF_TEXT|GVIF_FORMAT;
 	Item.nFormat = DT_CENTER|DT_WORDBREAK;
 
-    char * RowLabels [] = { "cd/m²", "ftL", "T°", "X", "Y", "Z", "R", "G", "B", "x", "y", "Y", "x", "y", "z", "L", "a", "b", "L", "C", "H"};
+    char * RowLabels [] = { "Y cd/m²", "Y ftL", "T°", "X", "Y", "Z", "R", "G", "B", "x", "y", "Y", "x", "y", "z", "L", "a", "b", "L", "C", "H"};
             
     if (GetDocument()->m_pSensor->ReadingType() == 2)
     {
-			RowLabels [0] = "lux";
-	        RowLabels [1] = "ft-c";
+			RowLabels [0] = "T lux";
+	        RowLabels [1] = "Y ft-c";
     }
 
     for(int i=0;i<21;i++)
@@ -4494,9 +4494,9 @@ void CMainView::InitButtons()
 	CString	Msg, Msg2;
 
 	Msg.LoadString ( IDS_CONFIGURESENSOR );
-	m_configSensorButton.SetIcon(IDI_SETTINGS_ICON,36,36);
+	m_configSensorButton.SetIcon(IDI_SETTINGS_ICON,32,32);
 	Msg2.LoadString ( IDS_CONFIGURESENSOR2 );
-	m_configSensorButton2.SetIcon(IDI_START_ICON,36,36);
+	m_configSensorButton2.SetIcon(IDI_START_ICON,28,28);
 	m_configSensorButton.SetFont(GetFont());
 	m_configSensorButton2.SetFont(GetFont());
 	m_configSensorButton.EnableBalloonTooltip();
@@ -4524,7 +4524,7 @@ void CMainView::InitButtons()
 //	m_configSensorButton.DrawTransparent(TRUE);
 
 	Msg.LoadString ( IDS_CONFIGUREGENERATOR );
-	m_configGeneratorButton.SetIcon(IDI_SETTINGS_ICON,36,36);
+	m_configGeneratorButton.SetIcon(IDI_SETTINGS_ICON,32,32);
 	m_configGeneratorButton.SetFont(GetFont());
 	m_configGeneratorButton.EnableBalloonTooltip();
 	m_configGeneratorButton.SetTooltipText(Msg);

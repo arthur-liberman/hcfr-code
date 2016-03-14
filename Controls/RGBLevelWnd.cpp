@@ -486,8 +486,8 @@ void CRGBLevelWnd::OnPaint()
 	CFont font;
 
 	VERIFY(font.CreateFont(
-	   15,						  // nHeight
-	   5,                         // nWidth
+	   24,						  // nHeight
+	   9,                         // nWidth
 	   0,                         // nEscapement
 	   0,                         // nOrientation
 	   FW_BOLD,					  // nWeight
@@ -499,9 +499,7 @@ void CRGBLevelWnd::OnPaint()
 	   CLIP_DEFAULT_PRECIS,       // nClipPrecision
 	   PROOF_QUALITY,//DEFAULT_QUALITY,           // nQuality
 	   VARIABLE_PITCH | FF_MODERN,//FIXED_PITCH,				  // nPitchAndFamily
-	   "Arial"));                 // lpszFacename
-
-//	font.CreateFont(14,0,0,0,FW_BOLD,FALSE,FALSE,FALSE,0,OUT_TT_ONLY_PRECIS,CLIP_DEFAULT_PRECIS,PROOF_QUALITY,VARIABLE_PITCH | FF_MODERN,_T("Garamond"));
+	   "Garamond"));                 // lpszFacename
 
 	// Do something with the font just created...
 	CFont* pOldFont = pDC->SelectObject(&font);

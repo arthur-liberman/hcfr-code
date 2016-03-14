@@ -784,6 +784,9 @@ BOOL CNewToolBar::LoadHiColor(LPCTSTR lpszResourceName,COLORREF transparentColor
 {
   int nColors = 0;
   HBITMAP hBitmap = LoadColorBitmap(lpszResourceName,0, &nColors);
+
+  //  m_sizeImage = CSize(48,48);
+
   if(hBitmap!=NULL)
   {
     //if(nColors>16)

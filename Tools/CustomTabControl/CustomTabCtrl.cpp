@@ -260,9 +260,11 @@ void CCustomTabCtrlItem::Draw(CDC& dc, CFont& font, BOOL fOnTop, BOOL fRTL)
 
 // CCustomTabCtrl
 
-LOGFONT CCustomTabCtrl::lf_default = {12, 0, 0, 0, FW_NORMAL, 0, 0, 0,
-			DEFAULT_CHARSET, OUT_CHARACTER_PRECIS, CLIP_CHARACTER_PRECIS,
-			DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Microsoft Sans Serif"};
+//LOGFONT CCustomTabCtrl::lf_default = {12, 0, 0, 0, FW_NORMAL, 0, 0, 0,
+//			DEFAULT_CHARSET, OUT_CHARACTER_PRECIS, CLIP_CHARACTER_PRECIS,
+//			DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Microsoft Sans Serif"};
+
+LOGFONT CCustomTabCtrl::lf_default = {32,0,0,0,FW_THIN,FALSE,FALSE,FALSE,0,OUT_TT_ONLY_PRECIS,CLIP_DEFAULT_PRECIS,PROOF_QUALITY,VARIABLE_PITCH | FF_MODERN,_T("Garamond")};
 
 BYTE CCustomTabCtrl::m_bBitsGlyphs[] = {
 										0xBD,0xFB,0xDF,0xBD,0x3C,0x00,
@@ -1485,7 +1487,6 @@ void CCustomTabCtrl::SetControlFont(const LOGFONT& lf, BOOL fRedraw)
 	m_Font.GetLogFont(&lfSel);
 	lfSel.lfWeight = FW_BOLD;
 	m_FontSelected.CreateFontIndirect(&lfSel);
-
 	if(fRedraw)
 	{
 		RecalcLayout(RECALC_RESIZED,m_nItemSelected);
