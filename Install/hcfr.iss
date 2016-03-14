@@ -100,9 +100,6 @@ Name: "{group}\HCFR on the Web"; Filename: "{app}\HCFR.url"
 Name: "{userdesktop}\HCFR"; Filename: "{app}\ColorHCFR.exe"; MinVersion: 4,4; Tasks: desktopicon
 Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\HCFR"; Filename: "{app}\ColorHCFR.exe"; MinVersion: 4,4; Tasks: quicklaunchicon
 
-[Registry]
-Root: "HKLM"; Subkey: "SOFTWARE\Microsoft\Windows\NT\CurrentVersion\AppCompatFlags\Layers\"; ValueType: String; ValueName: "{app}\Tools\dispwin.exe"; ValueData: "RUNASADMIN"; Flags: uninsdeletekeyifempty uninsdeletevalue; MinVersion: 0,6.1
-
 [Run]
 Filename: "{app}\ColorHCFR.exe"; Description: "Launch HCFR"; Flags: nowait postinstall skipifsilent
 
