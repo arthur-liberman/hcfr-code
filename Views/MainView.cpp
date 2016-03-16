@@ -4494,9 +4494,9 @@ void CMainView::InitButtons()
 	CString	Msg, Msg2;
 
 	Msg.LoadString ( IDS_CONFIGURESENSOR );
-	m_configSensorButton.SetIcon(IDI_SETTINGS_ICON,32,32);
+	m_configSensorButton.SetIcon(IDI_SETTINGS_ICON,18,18);
 	Msg2.LoadString ( IDS_CONFIGURESENSOR2 );
-	m_configSensorButton2.SetIcon(IDI_START_ICON,28,28);
+	m_configSensorButton2.SetIcon(IDI_START_ICON,16,16);
 	m_configSensorButton.SetFont(GetFont());
 	m_configSensorButton2.SetFont(GetFont());
 	m_configSensorButton.EnableBalloonTooltip();
@@ -4524,7 +4524,7 @@ void CMainView::InitButtons()
 //	m_configSensorButton.DrawTransparent(TRUE);
 
 	Msg.LoadString ( IDS_CONFIGUREGENERATOR );
-	m_configGeneratorButton.SetIcon(IDI_SETTINGS_ICON,32,32);
+	m_configGeneratorButton.SetIcon(IDI_SETTINGS_ICON,18,18);
 	m_configGeneratorButton.SetFont(GetFont());
 	m_configGeneratorButton.EnableBalloonTooltip();
 	m_configGeneratorButton.SetTooltipText(Msg);

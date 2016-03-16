@@ -486,8 +486,8 @@ void CRGBLevelWnd::OnPaint()
 	CFont font;
 
 	VERIFY(font.CreateFont(
-	   24,						  // nHeight
-	   9,                         // nWidth
+	   14,						  // nHeight
+	   4,                         // nWidth
 	   0,                         // nEscapement
 	   0,                         // nOrientation
 	   FW_BOLD,					  // nWeight

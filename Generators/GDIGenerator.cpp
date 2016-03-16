@@ -369,24 +369,29 @@ BOOL CGDIGenerator::Init(UINT nbMeasure)
 	BOOL	bOk, bOnOtherMonitor;
 	GetMonitorList();
 
+	if (!m_bConnect && m_bLinear) //linear gamma tables
+	{
+		char arg[255];
+		CString str = GetConfig () -> m_ApplicationPath;
+		CString str1 = GetConfig () -> m_ApplicationPath;
+		str += "\\tools\\dispwin.exe";
+		str1 += "\\tools\\current.cal";
+		sprintf(arg," -d%d -s " + str1, m_activeMonitorNum+1);
+		ShellExecute(NULL, "open", str, arg, NULL, SW_HIDE);
+		Sleep(100);
+		sprintf(arg," -d%d -c", m_activeMonitorNum+1);
+		ShellExecute(NULL, "open", str, arg, NULL, SW_HIDE);
+		m_bConnect = TRUE;
+	}
+
 	m_displayWindow.SetDisplayMode(m_nDisplayMode);
 	m_displayWindow.SetRGBScale(m_b16_235);
 	m_displayWindow.MoveToMonitor(m_hMonitor[m_activeMonitorNum]);
+
 	if (m_nDisplayMode == DISPLAY_GDI || m_nDisplayMode == DISPLAY_GDI_nBG )
 		m_displayWindow.ShowWindow(SW_SHOWMAXIMIZED);
 	if (m_nDisplayMode == DISPLAY_GDI_Hide) //to use test colour window instead
 		m_displayWindow.ShowWindow(SW_HIDE);
-
-	if (!m_bConnect && m_bLinear) //linear gamma tables
-	{
-		char arg[255];
-		sprintf(arg," -d%d -s tools\\current.cal", m_activeMonitorNum+1);
-		ShellExecute(NULL, "open", "tools\\dispwin.exe", arg, NULL, SW_HIDE);
-		Sleep(100);
-		sprintf(arg," -d%d -c", m_activeMonitorNum+1);
-		ShellExecute(NULL, "open", "tools\\dispwin.exe", arg, NULL, SW_HIDE);
-		m_bConnect = TRUE;
-	}
 
 	bOnOtherMonitor = IsOnOtherMonitor ();
 
@@ -923,8 +928,12 @@ BOOL CGDIGenerator::Release(INT nbNext)
 	if (m_bConnect && m_bLinear)
 	{
 		char arg[255];
-		sprintf(arg," -d%d tools\\current.cal", m_activeMonitorNum+1);
-		ShellExecute(NULL, "open", "tools\\dispwin.exe", arg, NULL, SW_HIDE);
+		CString str = GetConfig () -> m_ApplicationPath;
+		CString str1 = GetConfig () -> m_ApplicationPath;
+		str += "\\tools\\dispwin.exe";
+		str1 += "\\tools\\current.cal";
+		sprintf(arg," -d%d " + str1, m_activeMonitorNum+1);
+		ShellExecute(NULL, "open", str, arg, NULL, SW_HIDE);
 		m_bConnect = FALSE;
 	}
 	return bOk;
