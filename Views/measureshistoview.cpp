@@ -189,7 +189,10 @@ void CMeasuresHistoView::OnInitialUpdate()
 	pGraphName  [ NbGraphCtrl ] = _T("Color Temp");
 	pGraphCtrl [ NbGraphCtrl ++ ] = & m_graphCtrl3;
 
-	rect2.left = rect.left + 14;
+	if (GetConfig()->isHighDPI)
+		rect2.left = rect.left + 28;
+	else
+		rect2.left = rect.left + 14;
 	rect2.right = rect.right;
 	for ( i = 0; i < NbGraphCtrl ; i ++ )
 	{
@@ -340,8 +343,17 @@ void CMeasuresHistoView::OnSize(UINT nType, int cx, int cy)
 
 	for ( i = 0; i < NbGraphCtrl ; i ++ )
 	{
-		if(IsWindow(pGraphCtrl[i]->m_hWnd))
-			pGraphCtrl [ i ] -> MoveWindow ( 14, i * cy / NbGraphCtrl, cx - 14, cy/NbGraphCtrl + 1 );
+		if (GetConfig()->isHighDPI)
+		{
+			if(IsWindow(pGraphCtrl[i]->m_hWnd))
+				pGraphCtrl [ i ] -> MoveWindow ( 28, i * cy / NbGraphCtrl, cx - 28, cy/NbGraphCtrl + 1 );
+		}
+		else
+		{
+			if(IsWindow(pGraphCtrl[i]->m_hWnd))
+				pGraphCtrl [ i ] -> MoveWindow ( 14, i * cy / NbGraphCtrl, cx - 14, cy/NbGraphCtrl + 1 );
+		}
+
 	}
 }
 
@@ -388,13 +400,18 @@ void CMeasuresHistoView::OnDraw(CDC* pDC)
 	}
 
 	// Declare a "vertical" font
-	font.CreateFont( 11, 0, 900, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_CHARACTER_PRECIS, DEFAULT_QUALITY, VARIABLE_PITCH | FF_DONTCARE, "Arial" );
+	if (GetConfig()->isHighDPI)
+		font.CreateFont( 24, 0, 900, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_CHARACTER_PRECIS, DEFAULT_QUALITY, VARIABLE_PITCH | FF_DONTCARE, "Arial" );
+	else
+		font.CreateFont( 9, 0, 900, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_CHARACTER_PRECIS, DEFAULT_QUALITY, VARIABLE_PITCH | FF_DONTCARE, "Arial" );
 
 	pOldFont = pDC -> SelectObject ( & font );
 	pDC -> SetBkColor ( bWhiteBkgnd?RGB(255,255,255):RGB(0,0,0) );
-
 	rect2.left = 0;
-	rect2.right = 14;
+	if (GetConfig()->isHighDPI)
+		rect2.right = 28;
+	else
+		rect2.right = 14;
 	for ( i = 0; i < NbGraphCtrl ; i ++ )
 	{
 		pDC -> SetTextColor ( clr [ i ] );

@@ -3697,12 +3697,12 @@ void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int Col
 		case 3:
 			Offset_opt = GetConfig() -> m_manualGOffset;
 			break;
-		case 4: //optimized, we should replace with bt.1886
+		case 4: //bt.1886
 			{
 				Offset_opt = 0.0;
 			}
 			break;
-		case 5: //optimized, we should replace with bt.1886
+		case 5: //ST2084
 			{
 				Offset_opt = 0.0;
 			}
@@ -3719,7 +3719,7 @@ void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int Col
 
 			int	nb = 0;
 			double avg = 0;
-			for (int i=1; i<Size-1; i++)
+			for (int i=1; i<Size-2; i++)
 			{
 				if ( lumlvl[i] > 0.0 )
 				{
@@ -3728,7 +3728,10 @@ void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int Col
                     if (m_bBT1886 && !GetConfig()->m_useMeasuredGamma)
                         avg += log(getEOTF(valx[i], GetMeasure()->GetGray(Size -1), GetMeasure()->GetGray(0), GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(valx[i]);
                     else
-		    			avg += log(lumlvl[i])/log(valx[i]);
+	                    if (mode == 5 && !GetConfig()->m_useMeasuredGamma)
+			                    avg += log(getEOTF(valx[i], GetMeasure()->GetGray(Size -1), GetMeasure()->GetGray(0), GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100.)/log(valx[i]);
+						else
+		    				avg += log(lumlvl[i])/log(valx[i]);
 					nb ++;
 				}
 			}

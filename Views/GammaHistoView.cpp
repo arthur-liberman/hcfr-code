@@ -120,14 +120,14 @@ void CGammaGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	// Compute offset
 	pDoc->ComputeGammaAndOffset(&GammaOpt, &GammaOffset, 1,1,size, false);
 	pDoc->ComputeGammaAndOffset(&LuxGammaOpt, &LuxGammaOffset, 2,1,size, false);
-	GammaOpt = floor(GammaOpt * 100) / 100;
+//	GammaOpt = floor(GammaOpt * 100) / 100;
 	
 	if ((m_showDataRef)&&(pDataRef !=NULL)&&(pDataRef !=pDoc))
 	{
 		pDoc->ComputeGammaAndOffset(&RefGammaOpt, &RefGammaOffset, 1,1,size,false);
 		pDoc->ComputeGammaAndOffset(&RefLuxGammaOpt, &RefLuxGammaOffset, 2,1,size,false);
 	}
-	RefGammaOpt = floor(RefGammaOpt * 100) / 100;
+//	RefGammaOpt = floor(RefGammaOpt * 100) / 100;
 
 	if (m_showReference && m_refLogGraphID != -1 && size > 0)
 	{	
@@ -144,7 +144,10 @@ void CGammaGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
 			{
 				valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
-                valy = getEOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+				if (mode == 5)
+		            valy = getEOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100.;
+				else
+		            valy = getEOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 			}
 			else
 			{
@@ -152,7 +155,7 @@ void CGammaGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 				valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 			}
 
-			if( valy > 0 && valx > 0)
+			if( valy > 0 && valx > 0 && valy != 1.0)
 				m_graphCtrl.AddPoint(m_refLogGraphID, x, log(valy)/ log(valx));
 		}
 	}
@@ -280,12 +283,16 @@ void CGammaGrapher::AddPointtoLumGraph(int ColorSpace,int ColorIndex,int Size,in
 		blacklvl=pDataSet->GetMeasure()->GetGray(0).GetRGBValue((GetColorReference()))[ColorIndex];
 		whitelvl=pDataSet->GetMeasure()->GetGray(Size-1).GetRGBValue((GetColorReference()))[ColorIndex];
 		colorlevel=pDataSet->GetMeasure()->GetGray(PointIndex).GetRGBValue((GetColorReference()))[ColorIndex];
+		if (GetConfig()->m_GammaOffsetType == 5)
+			whitelvl =  10000.;
 	}
 	else if (ColorSpace == 1) 
 	{
 		blacklvl=pDataSet->GetMeasure()->GetGray(0).GetLuxOrLumaValue(GetConfig () -> m_nLuminanceCurveMode);
 		whitelvl=pDataSet->GetMeasure()->GetGray(Size-1).GetLuxOrLumaValue(GetConfig () -> m_nLuminanceCurveMode);
 		colorlevel=pDataSet->GetMeasure()->GetGray(PointIndex).GetLuxOrLumaValue(GetConfig () -> m_nLuminanceCurveMode);
+		if (GetConfig()->m_GammaOffsetType == 5)
+			whitelvl =  10000.;
 	}
 	else 
 	{

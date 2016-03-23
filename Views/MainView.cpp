@@ -1915,15 +1915,15 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						double Intensity=GetConfig()->GetProfileInt("GDIGenerator","Intensity",100) / 100.;
                         if (m_displayMode == 0)
                         {
-                            str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->gw_Weight ) );
-       						dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->gw_Weight );
-       						dL=aMeasure.GetDeltaLCH ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->gw_Weight, dC, dH );
+							str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight ) );
+       						dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight );
+       						dL=aMeasure.GetDeltaLCH ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight, dC, dH );
                         }
                         else
                         {
                             str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, m_displayMode == 3 ? 1:GetConfig()->gw_Weight ) );
-    						dE=aMeasure.GetDeltaE ( YWhite, aReference,  1.0, GetColorReference(), GetConfig()->m_dE_form, true, m_displayMode == 3 ? 1:GetConfig()->gw_Weight );
-    						dL=aMeasure.GetDeltaLCH ( YWhite, aReference,  1.0, GetColorReference(), GetConfig()->m_dE_form, true, m_displayMode == 3 ? 1:GetConfig()->gw_Weight, dC, dH );
+    						dE=aMeasure.GetDeltaE ( YWhite, aReference,  1.0, GetColorReference(), GetConfig()->m_dE_form, true, m_displayMode == 3 ? 1:GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight );
+    						dL=aMeasure.GetDeltaLCH ( YWhite, aReference,  1.0, GetColorReference(), GetConfig()->m_dE_form, true, m_displayMode == 3 ? 1:GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight, dC, dH );
                         }
 
 						dEavg+=(isNan(dE)?dEavg:dE);
@@ -1947,10 +1947,9 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				else
 				{
 					double dL, dH, dC;
-					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight ) );
-					dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
-					dL=aMeasure.GetDeltaLCH ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight, dH, dC );
-//                    if (GetConfig()->GetCColorsSize() >= 96 )
+					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight ) );
+					dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight );
+					dL=aMeasure.GetDeltaLCH ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight, dH, dC );
                     dEvector.push_back(isNan(dE)?dEavg:dE);
                     dLvector.push_back(isNan(dL)?dLavg:dL);
                     dCvector.push_back(isNan(dC)?dCavg:dC);
@@ -2009,7 +2008,6 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				if (m_displayMode == 4)
 					size=GetDocument()->GetMeasure()->GetNearWhiteScaleSize();
 
-
 				if ( nCol > 1 && nCol < m_displayMode == 0?nGrayScaleSize:size )
 				{
 					CColor White = GetDocument()->GetMeasure()->GetOnOffWhite();
@@ -2021,8 +2019,6 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						double yblack = 0.0;
 						BOOL bIRE = GetDocument()->GetMeasure()->m_bIREScaleMode;
 						
-//		    double valx = (i == 0?0.0:GrayLevelToGrayProp( (double)i, GetConfig () -> m_bUseRoundDown));
-//		    double valx = (GrayLevelToGrayProp( (double)(i+101-size), GetConfig () -> m_bUseRoundDown));
 						if ( GetConfig ()->m_GammaOffsetType == 1 )
 							yblack = Black.GetY();
 						if (m_displayMode == 0)
@@ -2038,7 +2034,10 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						{
 							if (m_displayMode == 0)
 								valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
-                            valy = getEOTF(valx,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) * White.GetY();
+							if (mode == 5)
+	                            valy = getEOTF(valx,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) * 100.;
+							else
+	                            valy = getEOTF(valx,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) * White.GetY();
 							str.Format ( "%.3f", valy );
 						}
 						else
@@ -2418,10 +2417,12 @@ void CMainView::UpdateGrid()
         if ( nCount && GetDocument()->GetMeasure()->GetGray(0).isValid() )
 		{
             GetDocument()->ComputeGammaAndOffset(&Gamma, &Offset, 1, 1, nCount, false);
-			Gamma = floor(Gamma * 100) / 100;
+//			Gamma = floor(Gamma * 100) / 100;
 		}
+
         if (GetConfig()->m_useMeasuredGamma)
-			GetConfig()->m_GammaAvg = (Gamma<1?2.2:Gamma);
+			GetConfig()->m_GammaAvg = (Gamma<1?2.2:floor((Gamma+.005)*100.)/100.);
+
         GetConfig()->SetPropertiesSheetValues();
 
 		BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR);
@@ -2573,7 +2574,8 @@ void CMainView::UpdateGrid()
 			else
 				nRows ++;
 		}
-        dEvector.clear();
+        
+		dEvector.clear();
         dLvector.clear();
         dCvector.clear();
         dHvector.clear();
@@ -2602,6 +2604,7 @@ void CMainView::UpdateGrid()
 	                	CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
 						int mode = GetConfig()->m_GammaOffsetType;
 						if (GetConfig()->m_colorStandard == sRGB) mode = 7;
+
 						if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
 			            {
                             double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
@@ -2613,15 +2616,19 @@ void CMainView::UpdateGrid()
 				            valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 			            }
 
-						tmpColor[2] = valy;
+						if (mode  == 5)
+							tmpColor[2] = valy * 100. / YWhite;
+						else
+							tmpColor[2] = valy;
+
                         if (GetConfig ()->m_dE_gray == 2 || GetConfig ()->m_dE_form == 5 )
-                            tmpColor[2] = aColor [ 1 ] / YWhite; //perfect gamma
+								tmpColor[2] = aColor [ 1 ] / YWhite; //perfect gamma
+
 						refColor.SetxyYValue(tmpColor);
 					 }
 					 else
 					 {
-						// Use actual gray luminance as correct reference (absolute)
-                            YWhite = aColor [ 1 ];
+	                    YWhite = aColor [ 1 ];
 						if ( pDataRef )
 							YWhiteRefDoc = refDocColor [ 1 ];
 					 }
@@ -4457,6 +4464,7 @@ void CMainView::UpdateMeasurementsAfterBkgndMeasure ()
 			refDocColor = noDataColor;
 
 		double YWhite = GetDocument() -> GetMeasure () -> GetPrimeWhite () [ 1 ];
+
 		for( int i = 0 ; i < ( pDataRef ? 7 : 5 ) ; i ++ )
 		{
 			Item.row = i+1;
@@ -4494,9 +4502,15 @@ void CMainView::InitButtons()
 	CString	Msg, Msg2;
 
 	Msg.LoadString ( IDS_CONFIGURESENSOR );
-	m_configSensorButton.SetIcon(IDI_SETTINGS_ICON,18,18);
+	if (GetConfig()->isHighDPI)
+		m_configSensorButton.SetIcon(IDI_SETTINGS_ICON,32,32);
+	else
+		m_configSensorButton.SetIcon(IDI_SETTINGS_ICON,18,18);
 	Msg2.LoadString ( IDS_CONFIGURESENSOR2 );
-	m_configSensorButton2.SetIcon(IDI_START_ICON,16,16);
+	if (GetConfig()->isHighDPI)
+		m_configSensorButton2.SetIcon(IDI_START_ICON,28,28);
+	else
+		m_configSensorButton2.SetIcon(IDI_START_ICON,16,16);
 	m_configSensorButton.SetFont(GetFont());
 	m_configSensorButton2.SetFont(GetFont());
 	m_configSensorButton.EnableBalloonTooltip();
@@ -4524,7 +4538,10 @@ void CMainView::InitButtons()
 //	m_configSensorButton.DrawTransparent(TRUE);
 
 	Msg.LoadString ( IDS_CONFIGUREGENERATOR );
-	m_configGeneratorButton.SetIcon(IDI_SETTINGS_ICON,18,18);
+	if (GetConfig()->isHighDPI)
+		m_configGeneratorButton.SetIcon(IDI_SETTINGS_ICON,32,32);
+	else
+		m_configGeneratorButton.SetIcon(IDI_SETTINGS_ICON,18,18);
 	m_configGeneratorButton.SetFont(GetFont());
 	m_configGeneratorButton.EnableBalloonTooltip();
 	m_configGeneratorButton.SetTooltipText(Msg);

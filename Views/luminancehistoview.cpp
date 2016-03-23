@@ -136,11 +136,14 @@ void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 // Compute offset
 	pDoc->ComputeGammaAndOffset(&GammaOpt, &GammaOffset, 1,1,size,false);
 	pDoc->ComputeGammaAndOffset(&LuxGammaOpt, &LuxGammaOffset, 2,1,size,false);
+
 	if ((m_showDataRef)&&(pDataRef !=NULL)&&(pDataRef != pDoc))
 	{
 		pDoc->ComputeGammaAndOffset(&RefGammaOpt, &RefGammaOffset, 1,1,size,false);
 		pDoc->ComputeGammaAndOffset(&RefLuxGammaOpt, &RefLuxGammaOffset, 2,1,size,false);
 	}
+			
+	int mode = GetConfig()->m_GammaOffsetType;
 
 	if (m_showReference && m_refGraphID != -1 && size > 0 && bDataPresent)
 	{	
@@ -150,12 +153,14 @@ void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			x = ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown);
     		CColor White = pDoc -> GetMeasure () -> GetOnOffWhite();
 	    	CColor Black = pDoc -> GetMeasure () -> GetOnOffBlack();
-			int mode = GetConfig()->m_GammaOffsetType;
 			if (GetConfig()->m_colorStandard == sRGB) mode = 7;
-			if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
+			if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4 )
 			{
 				valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
-                valy = getEOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+				if (mode == 5)
+					valy = getEOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) * 100. / White.GetY();
+				else
+	                valy = getEOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 			}
 			else
             {
@@ -164,7 +169,12 @@ void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
             }
 
             if (!m_showL)
-				m_graphCtrl.AddPoint(m_refGraphID, x, 100.0*valy, NULL, White.GetY());
+			{
+				if (mode == 5)
+					m_graphCtrl.AddPoint(m_refGraphID, x, 100.0*valy, NULL, 10000.0);
+				else
+					m_graphCtrl.AddPoint(m_refGraphID, x, 100.0*valy, NULL, White.GetY());
+			}
             else
             {
                 valy = Y_to_L (valy);
@@ -190,13 +200,16 @@ void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 			valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+GammaOffset)/(1.0+GammaOffset);
             valy=pow(valx, GammaOpt );
-            if (!m_showL)
-				m_graphCtrl.AddPoint(m_avgGraphID, x, valy*100.0, NULL, White.GetY());
-            else
-            {
-                valy = Y_to_L (valy);
-                m_graphCtrl.AddPoint(m_avgGraphID, x, valy);
-            }
+            if (mode != 5)
+			{
+				if (!m_showL)
+					m_graphCtrl.AddPoint(m_avgGraphID, x, 100.0*valy, NULL, White.GetY());
+	            else
+		        {
+				    valy = Y_to_L (valy);
+					m_graphCtrl.AddPoint(m_avgGraphID, x, valy);
+			    }
+			}
 		}
 	}
 

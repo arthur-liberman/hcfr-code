@@ -156,12 +156,21 @@ void CNearWhiteGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			int mode = GetConfig()->m_GammaOffsetType;
 			if (GetConfig()->m_colorStandard == sRGB) mode = 7;
 			if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
-                val = getEOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+			{
+				if (mode == 5)
+	                val = getEOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) * 100. / White.GetY();
+				else
+	                val = getEOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+			}
+
 			if(val > 0 && i != (size-1))	// log scale is not valid for last value
 				 m_logGraphCtrl.AddPoint(m_refLogGraphID, valx * 100, log(val)/log(valx));
 
             if (!m_showL)
-    			m_graphCtrl.AddPoint(m_refGraphID, valx * 100., 100.0*val, NULL, White.GetY());
+				if (mode == 5)
+	    			m_graphCtrl.AddPoint(m_refGraphID, valx * 100., 100.0*val, NULL, 10000.0);
+				else
+	    			m_graphCtrl.AddPoint(m_refGraphID, valx * 100., 100.0*val, NULL, White.GetY());
             else
                 m_graphCtrl.AddPoint(m_refGraphID, valx * 100., Y_to_L(val));
 

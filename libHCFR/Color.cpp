@@ -883,17 +883,23 @@ double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhit
     //gray world weighted white reference
     switch (gw_Weight)
     {
-    case 1:
-    {
-        YWhiteRef = 0.15 * YWhiteRef;
-        YWhite = 0.15 * YWhite;
-        break;
-    }
-    case 2:
-    {
-        YWhiteRef = 0.05 * YWhiteRef;
-        YWhite = 0.05 * YWhite;
-    }
+		case 1:
+		{
+			YWhiteRef = 0.15 * YWhiteRef;
+			YWhite = 0.15 * YWhite;
+			break;
+		}
+		case 2:
+		{
+			YWhiteRef = 0.05 * YWhiteRef;
+			YWhite = 0.05 * YWhite;
+		}
+		case 3: //ST2084
+		{
+//			if (YWhite > 100)
+//				YWhite = 100;
+//			YWhiteRef = 0.01;
+		}
     }
 	if (!(colorReference.m_standard == HDTVb || colorReference.m_standard == CC6 || colorReference.m_standard == HDTVa))
 		cRef=colorReference;
@@ -2713,7 +2719,7 @@ double getEOTF ( double valx, CColor White, CColor Black, double g_rel, double s
 {
 //BT1886
 	double maxL = White.isValid()?White.GetY():100.0;
-	double minL = Black.isValid()?Black.GetY():0.0;
+	double minL = Black.isValid()?Black.GetY():0.012;
     double yh =  maxL * pow(0.5, g_rel);
     double exp0 = g_rel==0.0?2.4:g_rel;
 	double outL, Lbt, offset;
@@ -2741,8 +2747,20 @@ double getEOTF ( double valx, CColor White, CColor Black, double g_rel, double s
 	offset = split / 100.0 * minL;
     double a = pow ( ( pow (maxL,1.0/exp0 ) - pow ( offset,1.0/exp0 ) ),exp0 );
     double b = ( pow ( offset,1.0/exp0 ) ) / ( pow (maxL,1.0/exp0 ) - pow ( offset,1.0/exp0 ) );
-    if (g_rel != 0.)
+
+	if (g_rel != 0.)
+	{
         exp0 = (log(yh)-log(a))/log(0.5+b);
+
+		//refine
+		for (int i = 0;i < 9;i++)
+		{
+			a = pow ( ( pow (maxL,1.0/exp0 ) - pow ( offset,1.0/exp0 ) ),exp0 );
+			b = ( pow ( offset,1.0/exp0 ) ) / ( pow (maxL,1.0/exp0 ) - pow ( offset,1.0/exp0 ) );
+			exp0 = (log(yh)-log(a))/log(0.5+b);
+		}
+	}
+
 	Lbt = ( a * pow ( (valx + b)<0?0:(valx+b), exp0 ) );
 
 	switch (mode)
@@ -2752,6 +2770,7 @@ double getEOTF ( double valx, CColor White, CColor Black, double g_rel, double s
 		break;
 		case 5:
 		outL = pow(max(pow(valx,1.0 / m2) - c1,0) / (c2 - c3 * pow(valx, 1.0 / m2)), 1.0 / m1);
+		outL = outL * 10000. / 100.; //100 cd/m^2 reference white level
 		break;
 		case 7:
 		outL = outL_sRGB;

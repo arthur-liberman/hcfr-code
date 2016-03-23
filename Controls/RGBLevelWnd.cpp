@@ -298,9 +298,9 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
                         Gamma = GetConfig()->m_GammaRef;
                         GetConfig()->m_GammaAvg = Gamma;
                         m_pDocument->ComputeGammaAndOffset(&Gamma, &Offset, 1, 1, nCount, false);
-            			Gamma = floor(Gamma * 100) / 100;
+//            			Gamma = floor(Gamma * 100) / 100;
                         if (GetConfig()->m_useMeasuredGamma)
-			                GetConfig()->m_GammaAvg = (Gamma<1?2.2:Gamma);
+			                GetConfig()->m_GammaAvg = (Gamma<1?2.2:floor((Gamma+.005)*100.)/100.);
                         GetConfig()->SetPropertiesSheetValues();
             		    CColor White = m_pDocument -> GetMeasure () -> GetGray ( nCount - 1 );
 	                	CColor Black = m_pDocument -> GetMeasure () -> GetGray ( 0 );
@@ -317,9 +317,12 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 				            valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 			            }
 
-						tmpColor[2] = valy;
+						if ( mode == 5)
+							tmpColor[2] = valy * 100. / YWhite;
+						else
+							tmpColor[2] = valy;
                         if (GetConfig ()->m_dE_gray == 2 || GetConfig ()->m_dE_form == 5 )
-                            tmpColor[2] = m_pRefColor->GetY() / YWhite; //perfect gamma
+		                        tmpColor[2] = m_pRefColor->GetY() / YWhite; //perfect gamma
 						aReference.SetxyYValue(tmpColor);
 			}
 		    else
@@ -484,22 +487,41 @@ void CRGBLevelWnd::OnPaint()
 
 	// Initializes a CFont object with the specified characteristics. 
 	CFont font;
-
-	VERIFY(font.CreateFont(
-	   14,						  // nHeight
-	   4,                         // nWidth
-	   0,                         // nEscapement
-	   0,                         // nOrientation
-	   FW_BOLD,					  // nWeight
-	   FALSE,                     // bItalic
-	   FALSE,                     // bUnderline
-	   0,                         // cStrikeOut
-	   ANSI_CHARSET,              // nCharSet
-	   OUT_TT_ONLY_PRECIS,//OUT_DEFAULT_PRECIS,        // nOutPrecision
-	   CLIP_DEFAULT_PRECIS,       // nClipPrecision
-	   PROOF_QUALITY,//DEFAULT_QUALITY,           // nQuality
-	   VARIABLE_PITCH | FF_MODERN,//FIXED_PITCH,				  // nPitchAndFamily
-	   "Garamond"));                 // lpszFacename
+	if (GetConfig()->isHighDPI)
+	{
+		VERIFY(font.CreateFont(
+		   24,						  // nHeight
+		   0,                         // nWidth
+		   0,                         // nEscapement
+		   0,                         // nOrientation
+		   FW_BOLD,					  // nWeight
+		   FALSE,                     // bItalic
+		   FALSE,                     // bUnderline
+		   FALSE,                         // cStrikeOut
+		   0,              // nCharSet
+		   OUT_TT_ONLY_PRECIS,//OUT_DEFAULT_PRECIS,        // nOutPrecision
+		   CLIP_DEFAULT_PRECIS,       // nClipPrecision
+		   PROOF_QUALITY,//DEFAULT_QUALITY,           // nQuality
+		   VARIABLE_PITCH | FF_MODERN,//FIXED_PITCH,				  // nPitchAndFamily
+		   _T("Garamond")));                 // lpszFacename
+	} else
+	{
+		VERIFY(font.CreateFont(
+		   14,						  // nHeight
+		   0,                         // nWidth
+		   0,                         // nEscapement
+		   0,                         // nOrientation
+		   FW_BOLD,					  // nWeight
+		   FALSE,                     // bItalic
+		   FALSE,                     // bUnderline
+		   FALSE,                         // cStrikeOut
+		   0,              // nCharSet
+		   OUT_TT_ONLY_PRECIS,//OUT_DEFAULT_PRECIS,        // nOutPrecision
+		   CLIP_DEFAULT_PRECIS,       // nClipPrecision
+		   PROOF_QUALITY,//DEFAULT_QUALITY,           // nQuality
+		   VARIABLE_PITCH | FF_MODERN,//FIXED_PITCH,				  // nPitchAndFamily
+		   _T("Garamond")));                 // lpszFacename
+	}
 
 	// Do something with the font just created...
 	CFont* pOldFont = pDC->SelectObject(&font);

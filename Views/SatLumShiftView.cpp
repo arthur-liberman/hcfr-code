@@ -496,7 +496,12 @@ void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, cons
 	int mode = GetConfig()->m_GammaOffsetType;
 	if (GetConfig()->m_colorStandard == sRGB) mode = 7;
 	if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
-        gamma = log(getEOTF(pow(aColor.GetY() * pow(Intensity,2.22),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(aColor.GetY()*pow(Intensity,2.22),1.0/2.22));
+	{
+		if  (mode == 5)
+	        gamma = log(getEOTF(pow(aColor.GetY() * pow(Intensity,2.22),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode * 100. / White.GetY()))/log(pow(aColor.GetY()*pow(Intensity,2.22),1.0/2.22));
+		else
+	        gamma = log(getEOTF(pow(aColor.GetY() * pow(Intensity,2.22),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(aColor.GetY()*pow(Intensity,2.22),1.0/2.22));
+	}
 
 	r=(r<=0||r>=1)?min(max(r,0),1):pow(pow(r,1.0/2.22),gamma);
     g=(g<=0||g>=1)?min(max(g,0),1):pow(pow(g,1.0/2.22),gamma);

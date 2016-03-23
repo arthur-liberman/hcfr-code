@@ -770,8 +770,14 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 		int mode = GetConfig()->m_GammaOffsetType;
 		if (GetConfig()->m_colorStandard == sRGB) mode = 7;
         if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
-           gamma = log(getEOTF(pow(aColor[i].GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(aColor[i].GetY(),1.0/2.22));
-        r1=(r[i]<=0||r[i]>=1)?min(max(r[i],0),1):pow(pow(r[i],1.0/2.22),gamma);
+		{
+			if (mode == 5)
+	           gamma = log(getEOTF(pow(aColor[i].GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode * 100. / White.GetY()))/log(pow(aColor[i].GetY(),1.0/2.22));
+			else
+	           gamma = log(getEOTF(pow(aColor[i].GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(aColor[i].GetY(),1.0/2.22));
+		}
+
+		r1=(r[i]<=0||r[i]>=1)?min(max(r[i],0),1):pow(pow(r[i],1.0/2.22),gamma);
         g1=(g[i]<=0||g[i]>=1)?min(max(g[i],0),1):pow(pow(g[i],1.0/2.22),gamma);
         b1=(b[i]<=0||b[i]>=1)?min(max(b[i],0),1):pow(pow(b[i],1.0/2.22),gamma);
 		aColor[i].SetRGBValue (ColorRGB(r1,g1,b1),GetColorReference());	
@@ -1453,8 +1459,11 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 
                 ColorxyY tmpColor(GetColorReference().GetWhite());
                 tmpColor[2] = valy;
-                if ( GetConfig ()->m_dE_gray == 2 || GetConfig ()->m_dE_form == 5 )
-                    tmpColor[2] = aColor [ 1 ] / YWhite;
+				if (GetConfig()->m_GammaOffsetType == 5)
+	                    tmpColor[2] = valy * 100. / YWhite;
+
+				if ( GetConfig ()->m_dE_gray == 2 || GetConfig ()->m_dE_form == 5 )
+	                    tmpColor[2] = aColor [ 1 ] / YWhite;
                 refColor = ColorXYZ(tmpColor);
             }
             else
@@ -2879,9 +2888,18 @@ void CCIEChartView::UpdateTestColor ( CPoint point )
 		if (GetConfig()->m_colorStandard == sRGB) mode = 7;
         if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
         {
-    		r = (r<=0||r>=1)?min(max(r,0),1):pow(r,log(getEOTF(r, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(r));
-	    	g = (g<=0||g>=1)?min(max(g,0),1):pow(g,log(getEOTF(g, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(g));
-		    b = (b<=0||b>=1)?min(max(b,0),1):pow(b,log(getEOTF(b, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(b));
+			if (mode == 5)
+			{
+    			r = (r<=0||r>=1)?min(max(r,0),1):pow(r,log(getEOTF(r, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode * 100. / White.GetY()))/log(r));
+	    		g = (g<=0||g>=1)?min(max(g,0),1):pow(g,log(getEOTF(g, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode * 100. / White.GetY()))/log(g));
+				b = (b<=0||b>=1)?min(max(b,0),1):pow(b,log(getEOTF(b, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode * 100. / White.GetY()))/log(b));
+			}
+			else
+			{
+    			r = (r<=0||r>=1)?min(max(r,0),1):pow(r,log(getEOTF(r, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(r));
+	    		g = (g<=0||g>=1)?min(max(g,0),1):pow(g,log(getEOTF(g, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(g));
+				b = (b<=0||b>=1)?min(max(b,0),1):pow(b,log(getEOTF(b, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(b));
+			}
         }
         else
         {

@@ -122,6 +122,7 @@ public:
     int     m_dE_gray;
     int     gw_Weight;
     BOOL    doHighlight;
+	BOOL	isHighDPI;
 
 
 	// Global strings

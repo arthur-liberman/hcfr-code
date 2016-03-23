@@ -1544,7 +1544,11 @@ bool CExport::SaveGrayScaleSheet()
 			 }
 
             ColorxyY tmpColor(GetColorReference().GetWhite());
-			tmpColor[2] = valy;
+			if (GetConfig()->m_GammaOffsetType == 5)
+				tmpColor[2] = valy * 100. / YWhite;
+			else
+				tmpColor[2] = valy;
+
             if (GetConfig ()->m_dE_gray == 2 || GetConfig ()->m_dE_form == 5 )
                 tmpColor[2] = aColor [ 1 ] / YWhite;
 			refColor.SetxyYValue(tmpColor);

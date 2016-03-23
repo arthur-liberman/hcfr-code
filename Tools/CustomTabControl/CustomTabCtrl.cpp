@@ -9,6 +9,7 @@
 #include "stdafx.h"
 #include <AFXPRIV.H>
 #include "CustomTabCtrl.h"
+#include "..\ColorHCFR.h"
 
 // CCustomTabCtrlItem
 
@@ -264,8 +265,11 @@ void CCustomTabCtrlItem::Draw(CDC& dc, CFont& font, BOOL fOnTop, BOOL fRTL)
 //			DEFAULT_CHARSET, OUT_CHARACTER_PRECIS, CLIP_CHARACTER_PRECIS,
 //			DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Microsoft Sans Serif"};
 
-LOGFONT CCustomTabCtrl::lf_default = {12,0,0,0,FW_THIN,FALSE,FALSE,FALSE,0,OUT_TT_ONLY_PRECIS,CLIP_DEFAULT_PRECIS,PROOF_QUALITY,VARIABLE_PITCH | FF_MODERN,_T("Microsoft Sans Serif")};
 
+LOGFONT CCustomTabCtrl::lf_default = {12, 0, 0, 0, FW_NORMAL, 0, 0, 0,
+			DEFAULT_CHARSET, OUT_CHARACTER_PRECIS, CLIP_CHARACTER_PRECIS,
+			DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Microsoft Sans Serif"};
+	
 BYTE CCustomTabCtrl::m_bBitsGlyphs[] = {
 										0xBD,0xFB,0xDF,0xBD,0x3C,0x00,
 										0xB9,0xF3,0xCF,0x9D,0x99,0x00,
@@ -1479,9 +1483,11 @@ void CCustomTabCtrl::SetControlFont(const LOGFONT& lf, BOOL fRedraw)
 		m_FontSelected.m_hObject = NULL;
 	}
 
+	if (GetConfig()->isHighDPI)
+		lf_default.lfHeight = 28;
+
 	if(!m_Font.CreateFontIndirect(&lf))
 		m_Font.CreateFontIndirect(&lf_default);
-
 
 	LOGFONT lfSel;
 	m_Font.GetLogFont(&lfSel);

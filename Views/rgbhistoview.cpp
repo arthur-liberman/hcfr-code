@@ -141,6 +141,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			pDoc->ComputeGammaAndOffset(&Gamma, &Offset, 3, 1, size,false);
 
 		YWhite = pDoc->GetMeasure()->GetOnOffWhite()[1];
+
 		for (int i=1; i<size; i++)
 		{
 			ColorxyY aColor=pDoc->GetMeasure()->GetGray(i).GetxyYValue();
@@ -177,9 +178,13 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			        }
 
                     ColorxyY tmpColor(GetColorReference().GetWhite());
-					tmpColor[2] = valy;
+					if (mode == 5)
+						tmpColor[2] = valy * 100. / YWhite;
+					else
+						tmpColor[2] = valy;
                     if (GetConfig ()->m_dE_gray == 2 || GetConfig ()->m_dE_form == 5 )
-                        tmpColor[2] = aColor [ 2 ] / YWhite;
+	                    tmpColor[2] = aColor [ 2 ] / YWhite;
+
 					refColor.SetxyYValue(tmpColor);
 				}
 				else
@@ -252,9 +257,12 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	    				valyref=pow(valxref, GetConfig()->m_useMeasuredGamma ?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
                     }			
 					ColorxyY tmpColor(GetColorReference().GetWhite());
-					tmpColor[2] = valyref;
+					if (mode == 5)
+						tmpColor[2] = valyref * 100. / YWhite;
+					else
+						tmpColor[2] = valyref;
                     if (GetConfig ()->m_dE_gray == 2 || GetConfig ()->m_dE_form == 5)
-                        tmpColor[ 2] = aColor [ 2 ] / YWhite;
+		                    tmpColor[ 2] = aColor [ 2 ] / YWhite;
 					refColor.SetxyYValue(tmpColor);
 				}
 				else

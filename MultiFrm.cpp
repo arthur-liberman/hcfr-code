@@ -57,7 +57,7 @@ static char THIS_FILE[] = __FILE__;
 #define IDC_TABCTRL		1
 
 // Tab control height
-#define TABCTRL_HEIGHT	20
+#define TABCTRL_HEIGHT (GetConfig()->isHighDPI ? 30:20)
 
 CPtrList gOpenedFramesList;
 

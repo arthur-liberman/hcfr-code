@@ -309,6 +309,7 @@ void CColorHCFRConfig::InitDefaults()
     m_dE_gray = 2;
     gw_Weight = 0;
     doHighlight = TRUE;
+	isHighDPI = FALSE;
 }
 
 BOOL CColorHCFRConfig::LoadSettings()
@@ -385,6 +386,7 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_dE_form = GetProfileInt("Advanced","dE_form",5);
 	m_dE_gray = GetProfileInt("Advanced","dE_gray",2);
 	gw_Weight = GetProfileInt("Advanced","gw_Weight",0);
+	isHighDPI = (GetSystemMetrics(SM_CXFULLSCREEN) > 1920);
 	GetCColors();
 	return TRUE;
 }
@@ -648,7 +650,6 @@ BOOL CColorHCFRConfig::GetPropertiesSheetValues()
 	m_dE_form = m_advancedPropertiesPage.m_dE_form;
 	m_dE_gray = m_advancedPropertiesPage.m_dE_gray;
 	gw_Weight = m_advancedPropertiesPage.gw_Weight;
-
 	return needRestart;
 }
 
