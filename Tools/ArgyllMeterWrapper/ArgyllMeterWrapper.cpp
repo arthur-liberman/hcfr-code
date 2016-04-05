@@ -613,7 +613,7 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading(CString Spectral
     {
         int shortWavelength((int)(argyllReading.sp.spec_wl_short + 0.5));
         int longWavelength((int)(argyllReading.sp.spec_wl_long + 0.5));
-        int bandWidth((int)((argyllReading.sp.spec_wl_long - argyllReading.sp.spec_wl_short) / (double)argyllReading.sp.spec_n + 0.5));
+        double bandWidth( (double)(longWavelength - shortWavelength) / (double) (argyllReading.sp.spec_n - 1) );
         CSpectrum spectrum(argyllReading.sp.spec_n, shortWavelength, longWavelength, bandWidth, argyllReading.sp.spec);
         m_lastReading.SetSpectrum(spectrum);
     }
