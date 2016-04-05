@@ -1716,7 +1716,6 @@ bool CExport::SaveSpectralSheet()
 	else
 		rowNb=spectralSS.GetTotalRows()+1;
 
-	//Spectrum.m_WaveLengthMin + Spectrum.m_BandWidth * i
 	if (hasSpectrum)
 	{
 		for (i=0; i<nWavs; i++)

@@ -721,6 +721,11 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 		Msg.LoadString ( IDS_UHDTV2REDREF );
 		Msg2.LoadString ( IDS_UHDTV2GREENREF );
 		Msg3.LoadString ( IDS_UHDTV2BLUEREF );
+	} else if (GetConfig()->m_colorStandard == UHDTV3)
+	{
+		Msg.LoadString ( IDS_UHDTV2REDREF );
+		Msg2.LoadString ( IDS_UHDTV2GREENREF );
+		Msg3.LoadString ( IDS_UHDTV2BLUEREF );
 	} else if (GetConfig()->m_colorStandard == HDTV || GetConfig()->m_colorStandard == sRGB)
 	{
 		Msg.LoadString ( IDS_REC709REDREF );
@@ -753,35 +758,39 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	aColor[3].SetXYZValue(cY);
 	aColor[4].SetXYZValue(cC);
 	aColor[5].SetXYZValue(cM);
+	
 	ColorRGB rgb[6];
 	for(int i=0;i<6;i++)
-		rgb[i]=aColor[i].GetRGBValue ( GetColorReference() );
+		rgb[i]=aColor[i].GetRGBValue ( (GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()) );
 	double r[6],g[6],b[6];
     double gamma=(GetConfig()->m_useMeasuredGamma)?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef);
 	CColor White = pDoc->GetMeasure()->GetOnOffWhite();
 	CColor Black = pDoc->GetMeasure()->GetOnOffBlack();
 
-    for(int i=0;i<6;i++)
-    {
-        double r1,g1,b1;
-		r[i]=rgb[i][0];
-		g[i]=rgb[i][1];
-		b[i]=rgb[i][2];
-		int mode = GetConfig()->m_GammaOffsetType;
-		if (GetConfig()->m_colorStandard == sRGB) mode = 7;
-        if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
+	if (rgb[0][0] < 0.99 || rgb[0][1] < 0.99 || rgb[0][2] < 0.99)
+	{
+		for(int i=0;i<6;i++) //needed only for special subset colorspaces that depend on gamma
 		{
-			if (mode == 5)
-	           gamma = log(getEOTF(pow(aColor[i].GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode * 100. / White.GetY()))/log(pow(aColor[i].GetY(),1.0/2.22));
-			else
-	           gamma = log(getEOTF(pow(aColor[i].GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(aColor[i].GetY(),1.0/2.22));
-		}
+			double r1,g1,b1;
+			r[i]=rgb[i][0];
+			g[i]=rgb[i][1];
+			b[i]=rgb[i][2];
+			int mode = GetConfig()->m_GammaOffsetType;
+			if (GetConfig()->m_colorStandard == sRGB) mode = 7;
+			if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
+			{
+				if (mode == 5)
+				   gamma = log(getEOTF(pow(aColor[i].GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode * 100. / White.GetY()))/log(pow(aColor[i].GetY(),1.0/2.22));
+				else
+				   gamma = log(getEOTF(pow(aColor[i].GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(aColor[i].GetY(),1.0/2.22));
+			}
 
-		r1=(r[i]<=0||r[i]>=1)?min(max(r[i],0),1):pow(pow(r[i],1.0/2.22),gamma);
-        g1=(g[i]<=0||g[i]>=1)?min(max(g[i],0),1):pow(pow(g[i],1.0/2.22),gamma);
-        b1=(b[i]<=0||b[i]>=1)?min(max(b[i],0),1):pow(pow(b[i],1.0/2.22),gamma);
-		aColor[i].SetRGBValue (ColorRGB(r1,g1,b1),GetColorReference());	
-    }
+			r1=(r[i]<=0||r[i]>=1)?min(max(r[i],0),1):pow(pow(r[i],1.0/2.22),gamma);
+			g1=(g[i]<=0||g[i]>=1)?min(max(g[i],0),1):pow(pow(g[i],1.0/2.22),gamma);
+			b1=(b[i]<=0||b[i]>=1)?min(max(b[i],0),1):pow(pow(b[i],1.0/2.22),gamma);
+			aColor[i].SetRGBValue (ColorRGB(r1,g1,b1),(GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));	
+		}
+	}
 
 	CCIEGraphPoint refRedPrimaryPoint(aColor[0].GetXYZValue(), 1.0, Msg, m_bCIEuv, m_bCIEab);
 	CCIEGraphPoint refGreenPrimaryPoint(aColor[1].GetXYZValue(), 1.0, Msg2, m_bCIEuv, m_bCIEab);
@@ -1075,6 +1084,8 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 
 	pDC->SetBkMode(TRANSPARENT);
 	pDC->SetROP2(R2_COPYPEN);
+
+ 	// Draw reference gamut triangle 2020 outside P3
 
 	if ( hasdatarefPrimaries )
 	{
@@ -2882,7 +2893,7 @@ void CCIEChartView::UpdateTestColor ( CPoint point )
 		CColor White = GetDocument()->GetMeasure()->GetOnOffWhite();
 		CColor Black = GetDocument()->GetMeasure()->GetOnOffBlack();
 
-		RGBColor = ClickedColor.GetRGBValue ((GetColorReference()));
+		RGBColor = ClickedColor.GetRGBValue ((GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));
         double r=RGBColor[0],g=RGBColor[1],b=RGBColor[2];
 		int mode = GetConfig()->m_GammaOffsetType;
 		if (GetConfig()->m_colorStandard == sRGB) mode = 7;

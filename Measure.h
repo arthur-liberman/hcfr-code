@@ -141,6 +141,7 @@ public:
 	BOOL MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerator,BOOL bPrimaryOnly, CDataSetDoc *pDoc);
 	BOOL MeasurePrimarySecondarySaturationScales(CSensor *pSensor, CGenerator *pGenerator,BOOL bPrimaryOnly, CDataSetDoc *pDoc);
 	int GetSaturationSize() const { return m_redSatMeasureArray.GetSize(); }
+	int GetCC24MasterSaturationSize() const { return m_cc24SatMeasureArray_master.GetSize(); }
 	void SetSaturationSize(int steps);
 	CColor GetRedSat(int i) const;
 	void SetRedSat(int i,const CColor & aColor) {m_redSatMeasureArray[i]=aColor; m_isModified=TRUE; } 
@@ -156,6 +157,8 @@ public:
 	void SetMagentaSat(int i,const CColor & aColor) {m_magentaSatMeasureArray[i]=aColor; m_isModified=TRUE; } 
 	CColor GetCC24Sat(int i) const;
 	void SetCC24Sat(int i,const CColor & aColor) {m_cc24SatMeasureArray[i]=aColor; m_isModified=TRUE; } 
+	CColor GetCC24MasterSat(int i) const;
+	void SetCC24MasterSat(int i,const CColor & aColor) {m_cc24SatMeasureArray_master[i]=aColor; m_isModified=TRUE; } 
 	CString GetCCStr() const;
 
 	BOOL MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator, CDataSetDoc *pDoc);

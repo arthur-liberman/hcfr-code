@@ -95,14 +95,11 @@ void CSpectrumWnd::Refresh ()
 		int			i;
 		CSpectrum	Spectrum = m_pRefColor -> GetSpectrum ();
 		double		dMax = 0.0, dInterval;
-//        bool        isHiRes = (Spectrum.GetRows () > 40);
 
 		m_graphCtrl.ClearGraph(m_SpectrumGraphID);
 
 		m_graphCtrl.SetXAxisProps("nm", 25, Spectrum.m_WaveLengthMin, Spectrum.m_WaveLengthMax);
-//		m_graphCtrl.SetXAxisProps("nm", 25, 380, 780);
 
-//		for ( i = 0, WaveLength = (double) Spectrum.m_WaveLengthMin ; i < Spectrum.GetRows () ; WaveLength += (Spectrum.m_BandWidth + (isHiRes?0.3333:0.0)), i ++ )
         for ( i = 0; i < Spectrum.GetRows() ; i ++ )
 		{
             m_graphCtrl.AddPoint(m_SpectrumGraphID, Spectrum.m_WaveLengthMin + Spectrum.m_BandWidth * i , Spectrum[i]);
@@ -110,7 +107,6 @@ void CSpectrumWnd::Refresh ()
 				dMax = Spectrum[i];
 		}
 
-//		dMax = ceil ( dMax );
 		dInterval = pow ( 10.0, floor ( log ( dMax ) / log ( 10.0 ) ) ) / 10.0;
 
 		m_graphCtrl.SetYAxisProps("", dInterval, 0.0, dMax);

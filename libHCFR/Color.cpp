@@ -187,16 +187,8 @@ ColorxyY primariesRec709a[3] ={	ColorxyY(0.5575, 0.3298), //75% sat/lum Rec709 w
 								ColorxyY(0.3032, 0.5313),
 								ColorxyY(0.1911, 0.1279) };
 
-ColorxyY primariesCC6[3] ={	ColorxyY(0.3787, 0.3564), //some color check references, secondardies will add 3 more, GCD values
-								ColorxyY(0.2484, 0.2647),
-								ColorxyY(0.3418, 0.4327)};
-
-//ColorxyY primariesCC6a[3] ={	ColorxyY(0.3804, 0.3565), //some color check references, secondardies will add 3 more, MCD values
-//								ColorxyY(0.2493, 0.2667),
-//								ColorxyY(0.3379, 0.4327)};
-
 //optimized for plasma
-ColorxyY primariesCC6a[3] ={	ColorxyY(0.625, 0.330), 
+ColorxyY primariesCC6[3] ={	ColorxyY(0.625, 0.330), 
 								ColorxyY(0.303, 0.533),
 								ColorxyY(0.245, 0.217)};
 
@@ -273,10 +265,10 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
 		}
 		case UHDTV:
 		{
-			standardName="UHDTV DCI-P3";
-			whiteColor=illuminantDCI;
-			whiteName="DCI-P3";
-			m_white=DCI;
+			standardName="UHDTV DCI-P3/D65";
+			whiteColor=illuminantD65;
+			whiteName="D65";
+			m_white=D65;
             primaries = primariesP3;
 			break;
 		}
@@ -287,6 +279,15 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
 			whiteName="D65";
 			m_white=D65;
             primaries = primaries2020;
+			break;
+		}
+		case UHDTV3:
+		{
+			standardName="UHDTV P3 in REC2020";
+			whiteColor=illuminantD65;
+			whiteName="D65";
+			m_white=D65;
+            primaries = primariesP3;
 			break;
 		}
 		case HDTV:
@@ -307,22 +308,13 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
             primaries = primariesRec709a;
 			break;
 		}
-		case CC6:
-		{
-			standardName="Color Checker 6";
-			whiteColor=illuminantD65;
-			whiteName="D65";
-			m_white=D65;
-            primaries = primariesCC6;
-			break;
-		}
 		case HDTVb:
 		{
 			standardName="Color Checker HDTV OPT-Plasma";
 			whiteColor=illuminantD65;
 			whiteName="D65";
 			m_white=D65;
-            primaries = primariesCC6a;
+            primaries = primariesCC6;
 			break;
 		}
 		case sRGB:
@@ -517,6 +509,8 @@ ColorRGBDisplay::ColorRGBDisplay(double aGreyPercent)
 
 ColorRGBDisplay::ColorRGBDisplay(double aRedPercent,double aGreenPercent,double aBluePercent)
 {
+	CColorReference aColorRef = (CColorReference(UHDTV3));
+	ColorRGB outRGB;
     (*this)[0] = aRedPercent;
     (*this)[1] = aGreenPercent;
     (*this)[2] = aBluePercent;
@@ -1497,7 +1491,7 @@ ColorRGB CColor::GetRGBValue(CColorReference colorReference) const
 	{
 		CColorReference aColorRef=CColorReference(HDTV, D65);
         CLockWhileInScope dummy(m_matrixSection);
-		return ColorRGB((colorReference.m_standard==HDTVb||colorReference.m_standard==CC6||colorReference.m_standard==HDTVa)?aColorRef.XYZtoRGBMatrix*(m_XYZValues):colorReference.XYZtoRGBMatrix*(m_XYZValues));
+		return ColorRGB((colorReference.m_standard==HDTVb||colorReference.m_standard==HDTVa)?aColorRef.XYZtoRGBMatrix*(m_XYZValues):colorReference.XYZtoRGBMatrix*(m_XYZValues));
 	}
 	else
     {
@@ -1856,7 +1850,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
             GenColors [ 10 ] = ColorRGBDisplay( 51.14,50.23,68.95);
             GenColors [ 11 ] = ColorRGBDisplay( 38.81,73.97,66.21 );
             GenColors [ 12 ] = ColorRGBDisplay( 84.93,47.03,15.98);
-            GenColors [ 13 ] = ColorRGBDisplay( 28.22,36.07,63.93);
+            GenColors [ 13 ] = ColorRGBDisplay( 29.22,36.07,63.93);
             GenColors [ 14 ] = ColorRGBDisplay( 75.80, 32.88,37.90 );
             GenColors [ 15 ] = ColorRGBDisplay( 36.07, 24.20, 42.01);
             GenColors [ 16 ] = ColorRGBDisplay( 62.10, 73.06, 25.11 );

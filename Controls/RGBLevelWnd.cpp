@@ -298,7 +298,6 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
                         Gamma = GetConfig()->m_GammaRef;
                         GetConfig()->m_GammaAvg = Gamma;
                         m_pDocument->ComputeGammaAndOffset(&Gamma, &Offset, 1, 1, nCount, false);
-//            			Gamma = floor(Gamma * 100) / 100;
                         if (GetConfig()->m_useMeasuredGamma)
 			                GetConfig()->m_GammaAvg = (Gamma<1?2.2:floor((Gamma+.005)*100.)/100.);
                         GetConfig()->SetPropertiesSheetValues();

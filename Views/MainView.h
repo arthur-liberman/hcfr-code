@@ -125,6 +125,7 @@ public:
 	BOOL m_userBlack;
 	CColor m_oldBlackGS;
 	CColor m_oldBlackNB;
+	bool isSelectedWhiteY;
 
 	std::vector<double> dEvector, dLvector, dCvector, dHvector;
 

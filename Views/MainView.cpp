@@ -449,6 +449,7 @@ CMainView::CMainView()
 	m_oldBlackNB = noDataColor;
 	GetConfig()->m_bSave = FALSE;
 	GetConfig()->m_bSave2 = FALSE;
+	isSelectedWhiteY = FALSE;
 }
 
 CMainView::~CMainView()
@@ -1310,7 +1311,7 @@ void CMainView::InitGrid()
                 ColorRGB r_clr;
                 double inten;
                 s_clr=GetDocument()->GetMeasure()->GetRefCC24Sat(i);     
-                r_clr=s_clr.GetRGBValue(GetColorReference());
+                r_clr=s_clr.GetRGBValue((GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));
 				r_clr[0]=(min(max(r_clr[0],0),1));
 				r_clr[1]=(min(max(r_clr[1],0),1));
 				r_clr[2]=(min(max(r_clr[2],0),1));
@@ -1880,7 +1881,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
     					str.Format("%.3f",aMeasure.GetXYZValue()[aComponentNum]);
 					break;
 				case HCFR_RGB_VIEW:
-					str.Format("%.3f",aMeasure.GetRGBValue((GetColorReference()))[aComponentNum]);
+					str.Format("%.3f",aMeasure.GetRGBValue((GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()))[aComponentNum]);
 					break;
 				case HCFR_xyz2_VIEW:
 					if (aMeasure.GetY() == 0)
@@ -2104,7 +2105,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 
 				if (!white.isValid() || m_displayMode == 0 || m_displayMode == 2 || m_displayMode == 3)
 					white = GetDocument() -> GetMeasure () ->GetOnOffWhite();
-				if ( m_displayMode > 4 && (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb))
+				if ( m_displayMode > 4 && (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb || GetConfig()->m_colorStandard==UHDTV3))
 					white = GetDocument() -> GetMeasure () ->GetOnOffWhite();
 
 				//special case check if user has done a primaries run at less than 100%, use grayscale white instead for colorchecker
@@ -2158,6 +2159,9 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 							break;
 						case UHDTV2:
 							return "R2020";
+							break;
+						case UHDTV3:
+							return "R2020P3";
 							break;
 						case HDTV:
 							return "R709";
@@ -2215,6 +2219,9 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 						case UHDTV2:
 							return "G2020";
 							break;
+						case UHDTV3:
+							return "G2020P3";
+							break;
 						case sRGB:
 							return "G709";
 							break;
@@ -2268,6 +2275,9 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 							break;
 						case UHDTV2:
 							return "B2020";
+							break;
+						case UHDTV3:
+							return "B2020P3";
 							break;
 						case sRGB:
 							return "B709";
@@ -2499,7 +2509,7 @@ void CMainView::UpdateGrid()
 				 break;
 
 			default:
-				 bool isSpecial = (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb);
+				 bool isSpecial = (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb || GetConfig()->m_colorStandard==UHDTV3);
 				 YWhite = isSpecial?YWhiteOnOff:YWhitePrime;
 				 YWhiteRefDoc = isSpecial?YWhiteOnOffRefDoc:YWhitePrimeRefDoc;
 
@@ -3270,6 +3280,8 @@ void CMainView::OnGrayScaleGridBeginEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 	{
 		case 0:
 			 aColorMeasure=GetDocument()->GetMeasure()->GetGray(pItem->iColumn-1);
+			 if (pItem->iColumn == GetDocument()->GetMeasure()->GetGrayScaleSize())
+				isSelectedWhiteY = TRUE;
 			 break;
 
 		case 1:
@@ -3278,7 +3290,10 @@ void CMainView::OnGrayScaleGridBeginEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 			 else if ( pItem->iColumn < 7 )
 				aColorMeasure=GetDocument()->GetMeasure()->GetSecondary(pItem->iColumn-4);
 			 else if ( pItem->iColumn == 7 )
+			 {
 				aColorMeasure=GetDocument()->GetMeasure()->GetPrimeWhite();
+				isSelectedWhiteY = TRUE;
+			 }
 			 else if ( pItem->iColumn == 8 )
 				aColorMeasure=GetDocument()->GetMeasure()->GetOnOffBlack();
 			 else
@@ -3360,12 +3375,26 @@ void CMainView::OnGrayScaleGridBeginEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 			case HCFR_SENSORRGB_VIEW:
 			case HCFR_XYZ_VIEW:
 				aColor=aColorMeasure.GetXYZValue();
+				if (isSelectedWhiteY)
+				{
+					if (pItem->iRow == 2)
+						isSelectedWhiteY = TRUE;
+					else
+						isSelectedWhiteY = FALSE;
+				}
 				break;
 			case HCFR_RGB_VIEW:
-				aColor=aColorMeasure.GetRGBValue((GetColorReference()));
+				aColor=aColorMeasure.GetRGBValue((GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));
 				break;
 			case HCFR_xyY_VIEW:
 				aColor=aColorMeasure.GetxyYValue();
+				if (isSelectedWhiteY)
+				{
+					if (pItem->iRow == 3)
+						isSelectedWhiteY = TRUE;
+					else
+						isSelectedWhiteY = FALSE;
+				}
 				break;
 		}
 	}
@@ -3380,8 +3409,12 @@ void CMainView::OnGrayScaleGridBeginEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 
 		if ( aVal != FX_NODATA )
 			aNewStr.Format ( "%f", aVal );
+		else
+			isSelectedWhiteY = FALSE;
 		m_pGrayScaleGrid->SetItemText(pItem->iRow,pItem->iColumn,aNewStr);
 	}
+	else
+		isSelectedWhiteY = FALSE;
 }
 
 void CMainView::OnGrayScaleGridEndEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
@@ -3399,7 +3432,6 @@ void CMainView::OnGrayScaleGridEndEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 	BOOL bAcceptChange = !aNewStr.IsEmpty() && sscanf(aNewStr,"%lf",&aVal) && (m_displayType != HCFR_xyz2_VIEW);
 	if(bAcceptChange)	// update value in document
 	{
-//		aVal = max(aVal, 0.000000001);
 		// Get document XYZ value
 		CColor aColorMeasure;
 		
@@ -3492,7 +3524,173 @@ void CMainView::OnGrayScaleGridEndEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 			// No color value: build a color from reference white
 			aColorMeasure = GetColorReference().GetWhite ();
 		}
+		//allow user to scale all measurements to new white luminance
+		if (isSelectedWhiteY && GetColorApp()->InMeasureMessageBox("Scale all measurements to new white Y?","Scale all",MB_ICONQUESTION | MB_YESNO) == IDYES) 
+		{
+			double fact = aVal / aColorMeasure.GetY();
+			CColor aNewColor;
+			int nMeasures = GetDocument()->GetMeasure()->GetGrayScaleSize();
+			for (int i = 0; i < nMeasures; i++)
+			{
+				aNewColor = GetDocument()->GetMeasure()->GetGray(i);
+				if (aNewColor.isValid())
+				{
+					aNewColor.SetX(fact * aNewColor.GetX());
+					aNewColor.SetY(fact * aNewColor.GetY());
+					aNewColor.SetZ(fact * aNewColor.GetZ());
+					GetDocument()->GetMeasure()->SetGray(i, aNewColor);
+				}
+			}
+			for (int i = 0; i <= 2; i++)
+			{
+				aNewColor = GetDocument()->GetMeasure()->GetPrimary(i);
+				if (aNewColor.isValid())
+				{
+					aNewColor.SetX(fact * aNewColor.GetX());
+					aNewColor.SetY(fact * aNewColor.GetY());
+					aNewColor.SetZ(fact * aNewColor.GetZ());
+					GetDocument()->GetMeasure()->SetPrimary(i, aNewColor);
+				}
 
+				aNewColor = GetDocument()->GetMeasure()->GetSecondary(i);
+				if (aNewColor.isValid())
+				{
+					aNewColor.SetX(fact * aNewColor.GetX());
+					aNewColor.SetY(fact * aNewColor.GetY());
+					aNewColor.SetZ(fact * aNewColor.GetZ());
+					GetDocument()->GetMeasure()->SetSecondary(i, aNewColor);
+				}
+			}
+			nMeasures = GetDocument()->GetMeasure()->GetMeasurementsSize();
+			for (int i = 0; i < nMeasures; i++)
+			{
+				aNewColor = GetDocument()->GetMeasure()->GetMeasurement(i);
+				if (aNewColor.isValid())
+				{
+					aNewColor.SetX(fact * aNewColor.GetX());
+					aNewColor.SetY(fact * aNewColor.GetY());
+					aNewColor.SetZ(fact * aNewColor.GetZ());
+					GetDocument()->GetMeasure()->SetMeasurements(i, aNewColor);
+				}
+			}
+			nMeasures = GetDocument()->GetMeasure()->GetSaturationSize();
+			for (int i = 0; i < nMeasures; i++)
+			{
+				aNewColor = GetDocument()->GetMeasure()->GetRedSat(i);
+				if (aNewColor.isValid())
+				{
+					aNewColor.SetX(fact * aNewColor.GetX());
+					aNewColor.SetY(fact * aNewColor.GetY());
+					aNewColor.SetZ(fact * aNewColor.GetZ());
+					GetDocument()->GetMeasure()->SetRedSat(i, aNewColor);
+				}
+				aNewColor = GetDocument()->GetMeasure()->GetBlueSat(i);
+				if (aNewColor.isValid())
+				{
+					aNewColor.SetX(fact * aNewColor.GetX());
+					aNewColor.SetY(fact * aNewColor.GetY());
+					aNewColor.SetZ(fact * aNewColor.GetZ());
+					GetDocument()->GetMeasure()->SetBlueSat(i, aNewColor);
+				}
+				aNewColor = GetDocument()->GetMeasure()->GetGreenSat(i);
+				if (aNewColor.isValid())
+				{
+					aNewColor.SetX(fact * aNewColor.GetX());
+					aNewColor.SetY(fact * aNewColor.GetY());
+					aNewColor.SetZ(fact * aNewColor.GetZ());
+					GetDocument()->GetMeasure()->SetGreenSat(i, aNewColor);
+				}
+				aNewColor = GetDocument()->GetMeasure()->GetYellowSat(i);
+				if (aNewColor.isValid())
+				{
+					aNewColor.SetX(fact * aNewColor.GetX());
+					aNewColor.SetY(fact * aNewColor.GetY());
+					aNewColor.SetZ(fact * aNewColor.GetZ());
+					GetDocument()->GetMeasure()->SetYellowSat(i, aNewColor);
+				}
+				aNewColor = GetDocument()->GetMeasure()->GetCyanSat(i);
+				if (aNewColor.isValid())
+				{
+					aNewColor.SetX(fact * aNewColor.GetX());
+					aNewColor.SetY(fact * aNewColor.GetY());
+					aNewColor.SetZ(fact * aNewColor.GetZ());
+					GetDocument()->GetMeasure()->SetCyanSat(i, aNewColor);
+				}
+				aNewColor = GetDocument()->GetMeasure()->GetMagentaSat(i);
+				if (aNewColor.isValid())
+				{
+					aNewColor.SetX(fact * aNewColor.GetX());
+					aNewColor.SetY(fact * aNewColor.GetY());
+					aNewColor.SetZ(fact * aNewColor.GetZ());
+					GetDocument()->GetMeasure()->SetMagentaSat(i, aNewColor);
+				}
+			}
+			nMeasures = GetDocument()->GetMeasure()->GetCC24MasterSaturationSize();
+			for (int i = 0; i < nMeasures; i++)
+			{
+				aNewColor = GetDocument()->GetMeasure()->GetCC24MasterSat(i);
+				if (aNewColor.isValid())
+				{
+					aNewColor.SetX(fact * aNewColor.GetX());
+					aNewColor.SetY(fact * aNewColor.GetY());
+					aNewColor.SetZ(fact * aNewColor.GetZ());
+					GetDocument()->GetMeasure()->SetCC24MasterSat(i, aNewColor);
+				}
+			}
+			nMeasures = GetDocument()->GetMeasure()->GetNearBlackScaleSize();
+			for (int i = 0; i < nMeasures; i++)
+			{
+				aNewColor = GetDocument()->GetMeasure()->GetNearBlack(i);
+				if (aNewColor.isValid())
+				{
+					aNewColor.SetX(fact * aNewColor.GetX());
+					aNewColor.SetY(fact * aNewColor.GetY());
+					aNewColor.SetZ(fact * aNewColor.GetZ());
+					GetDocument()->GetMeasure()->SetNearBlack(i, aNewColor);
+				}
+			}
+			nMeasures = GetDocument()->GetMeasure()->GetNearWhiteScaleSize();
+			for (int i = 0; i < nMeasures; i++)
+			{
+				aNewColor = GetDocument()->GetMeasure()->GetNearWhite(i);
+				if (aNewColor.isValid())
+				{
+					aNewColor.SetX(fact * aNewColor.GetX());
+					aNewColor.SetY(fact * aNewColor.GetY());
+					aNewColor.SetZ(fact * aNewColor.GetZ());
+					GetDocument()->GetMeasure()->SetNearWhite(i, aNewColor);
+				}
+			}
+
+			aNewColor = GetDocument()->GetMeasure()->GetPrimeWhite();
+			aNewColor.SetX(fact * aNewColor.GetX());
+			aNewColor.SetY(fact * aNewColor.GetY());
+			aNewColor.SetZ(fact * aNewColor.GetZ());
+			GetDocument()->GetMeasure()->SetPrimeWhite(aNewColor);
+
+			aNewColor = GetDocument()->GetMeasure()->GetOnOffWhite();
+			aNewColor.SetX(fact * aNewColor.GetX());
+			aNewColor.SetY(fact * aNewColor.GetY());
+			aNewColor.SetZ(fact * aNewColor.GetZ());
+			GetDocument()->GetMeasure()->SetOnOffWhite(aNewColor);
+
+			aNewColor = GetDocument()->GetMeasure()->GetAnsiWhite();
+			aNewColor.SetX(fact * aNewColor.GetX());
+			aNewColor.SetY(fact * aNewColor.GetY());
+			aNewColor.SetZ(fact * aNewColor.GetZ());
+			GetDocument()->GetMeasure()->SetAnsiWhite(aNewColor);
+
+			aNewColor = GetDocument()->GetMeasure()->GetAnsiBlack();
+			aNewColor.SetX(fact * aNewColor.GetX());
+			aNewColor.SetY(fact * aNewColor.GetY());
+			aNewColor.SetZ(fact * aNewColor.GetZ());
+			GetDocument()->GetMeasure()->SetAnsiBlack(aNewColor);
+			isSelectedWhiteY = FALSE;
+			lHint = UPD_EVERYTHING;
+		} else //normal edit
+		{
+
+		int nsize=GetDocument()->GetMeasure()->GetGrayScaleSize();
 		ColorTriplet aColor = ColorXYZ();
 
 		// Get color data from XYZ value 
@@ -3505,7 +3703,7 @@ void CMainView::OnGrayScaleGridEndEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 				aColor=aColorMeasure.GetXYZValue();
 				break;
 			case HCFR_RGB_VIEW:
-				aColor=aColorMeasure.GetRGBValue((GetColorReference()));
+				aColor=aColorMeasure.GetRGBValue((GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));
 				break;
 			case HCFR_xyY_VIEW:
 				aColor=aColorMeasure.GetxyYValue();
@@ -3525,14 +3723,13 @@ void CMainView::OnGrayScaleGridEndEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 				aColorMeasure.SetXYZValue(ColorXYZ(aColor));
 				break;
 			case HCFR_RGB_VIEW:
-				aColorMeasure.SetRGBValue(ColorRGB(aColor), GetColorReference());
+				aColorMeasure.SetRGBValue(ColorRGB(aColor), (GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));
 				break;
 			case HCFR_xyY_VIEW:
 				aColorMeasure.SetxyYValue(ColorxyY(aColor));
 				break;
 		}
-				 int nsize=GetDocument()->GetMeasure()->GetGrayScaleSize();
-
+		
 		// Update document XYZ value
 		switch ( m_displayMode )
 		{
@@ -3661,6 +3858,7 @@ void CMainView::OnGrayScaleGridEndEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 				 }
 				 lHint = UPD_CONTRAST;
 				 break;
+		}
 		}
 
 		GetDocument()->SetModifiedFlag(TRUE);
@@ -5138,7 +5336,6 @@ void CMainView::OnEditCopy()
 			minRow = 1;
 		if ( maxRow > 3 )
 			maxRow = 3;
-
 		
 		m_pGrayScaleGrid -> SetRedraw(FALSE);
 

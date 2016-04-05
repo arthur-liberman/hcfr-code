@@ -490,7 +490,7 @@ void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, cons
 //    aColor.SetxyYValue (xtarget, ytarget, luma * pow(Intensity,2.22));
     aColor.SetxyYValue (xtarget, ytarget, luma );
 	ColorRGB rgb;
-	rgb=isSpecial?aColor.GetRGBValue(CColorReference(HDTV)):aColor.GetRGBValue (GetColorReference());
+	rgb=isSpecial?aColor.GetRGBValue(CColorReference(HDTV)):aColor.GetRGBValue ((GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));
 	double r=rgb[0],g=rgb[1],b=rgb[2];
 
 	int mode = GetConfig()->m_GammaOffsetType;
@@ -507,13 +507,13 @@ void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, cons
     g=(g<=0||g>=1)?min(max(g,0),1):pow(pow(g,1.0/2.22),gamma);
     b=(b<=0||b>=1)?min(max(b,0),1):pow(pow(b,1.0/2.22),gamma);
 	
-	aColor.SetRGBValue (ColorRGB(r,g,b), isSpecial?CColorReference(HDTV):GetColorReference() );	
+	aColor.SetRGBValue (ColorRGB(r,g,b), isSpecial?CColorReference(HDTV):GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference() );	
 	ColorxyY xyy=aColor.GetxyYValue();
 
 	xtarget=xyy[0];
 	ytarget=xyy[1];
 	
-	deltaE = SatColor.GetDeltaE(YWhite, aColor, 1.0, isSpecial?CColorReference(HDTV, D65):GetColorReference() , GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+	deltaE = SatColor.GetDeltaE(YWhite, aColor, 1.0, isSpecial?CColorReference(HDTV, D65):GetColorReference().m_standard==UHDTV3?CColorReference(UHDTV2):GetColorReference() , GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 	
 	// Compute projection on line (xstart,ystart) - (xend,yend) from measured point
 	dx = xend - xstart; 

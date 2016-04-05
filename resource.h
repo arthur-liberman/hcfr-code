@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by CHCFR21_ENGLISH.rc
+// Used by CHCFR21_FRANCAIS.rc
 //
 #define IDS_STRING_VERSION              1
 #define IDS_STRING_VERSION_WEB          2
@@ -798,7 +798,7 @@
 #define IDR_PATTERN_SPECTRUMv           1343
 #define IDR_PATTERN_80                  1344
 #define IDC_EDIT_MANUAL_BLACK           1345
-#define IDR_PATTERN_CALPIC             1346
+#define IDR_PATTERN_CALPIC              1346
 #define IDR_PATTERN_CALPICv             1347
 #define IDC_COLORTEMPHISTO_GRAPH        11003
 #define IDC_RGBHISTO_GRAPH              11101

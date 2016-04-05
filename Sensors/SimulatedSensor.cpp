@@ -292,7 +292,7 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 				gamma = peakY / 10000.;
 		}
 	else
-			gamma = getEOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+		gamma = getEOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 		simulColor[2]=gamma;
 	} 
 	else
@@ -308,11 +308,11 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 		value=max(aRGBValue[2]*gain+offset,0);
 		simulColor[2]=(pow(value/100.0,gamma));
 	}
-	Sleep(250);		// Sleep 200 ms to simulate acquisition (iris delay adds additional)
+	Sleep(100);
 
 	ColorRGB colMeasure(simulColor);
-	
-	CColor colSensor(ColorXYZ(colMeasure, GetColorReference()));
+	bool isSpecial = (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb);
+	CColor colSensor(ColorXYZ(colMeasure, isSpecial?CColorReference(HDTV):GetConfig()->m_colorStandard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));
 	colSensor.SetX(colSensor.GetX() * (mode==5?10000.:100.));
 	colSensor.SetY(colSensor.GetY() * (mode==5?10000.:100.));
 	colSensor.SetZ(colSensor.GetZ() * (mode==5?10000.:100.));
