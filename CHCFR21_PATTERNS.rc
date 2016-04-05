@@ -166,6 +166,8 @@ IDR_PATTERN_CONT_40     PATTERN                 "res\\patterns\\contrast_720\\co
 IDR_PATTERN_CONT_50     PATTERN                 "res\\patterns\\contrast_720\\contraste(0-100)1280-720-50-50.png"
 IDR_PATTERN_TESTIMG     PATTERN                 "res\\patterns\\skintonep.png"
 IDR_PATTERN_TESTIMGv     PATTERN                 "res\\patterns\\skintonev.png"
+IDR_PATTERN_CALPIC     PATTERN                 "res\\patterns\\calpic.png"
+IDR_PATTERN_CALPICv     PATTERN                 "res\\patterns\\calpicv.png"
 IDR_PATTERN_SMPTE75     PATTERN                 "res\\patterns\\smpte-75-bars1024.png"
 IDR_PATTERN_SMPTE75v	PATTERN					"res\\patterns\\smpte-75-bars1024v.png"
 IDR_PATTERN_1956        PATTERN                 "res\\patterns\\1956.png"

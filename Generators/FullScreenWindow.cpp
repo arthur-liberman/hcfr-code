@@ -1111,13 +1111,13 @@ void CFullScreenWindow::OnPaint()
 
 			//static pattern detection avoidance
 			//stagger every 50 patterns
-			if ((m_nPat > 1) && (m_nPat % 50) == 0)
-			{
-				brush.CreateSolidBrush ( RGB(0,0,0) );
-				dc.FillRect ( &rect, &brush );
-				brush.DeleteObject ();
-				Sleep(50);
-			}
+//			if ((m_nPat > 1) && (m_nPat % 50) == 0)
+//			{
+//				brush.CreateSolidBrush ( RGB(0,0,0) );
+//				dc.FillRect ( &rect, &brush );
+//				brush.DeleteObject ();
+//				Sleep(50);
+//			}
 
 			m_nPat++;
 			if(m_rectSizePercent < 100 && !isSpecial)  // Need to draw background and border
@@ -1161,9 +1161,9 @@ void CFullScreenWindow::OnPaint()
 			
 				CxImage* newImage = new CxImage();
 				if (m_b16_235)
-					hRsrc = ::FindResource(hPatterns,MAKEINTRESOURCE(IDR_PATTERN_TESTIMGv),"PATTERN");
+					hRsrc = ::FindResource(hPatterns,MAKEINTRESOURCE(IDR_PATTERN_CALPICv),"PATTERN");
 				else
-					hRsrc = ::FindResource(hPatterns,MAKEINTRESOURCE(IDR_PATTERN_TESTIMG),"PATTERN");
+					hRsrc = ::FindResource(hPatterns,MAKEINTRESOURCE(IDR_PATTERN_CALPIC),"PATTERN");
 
 				newImage->LoadResource(hRsrc, CXIMAGE_FORMAT_PNG, hPatterns);  
 		
