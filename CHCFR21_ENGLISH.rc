@@ -2987,9 +2987,15 @@ BEGIN
     IDS_CUSTREDREF          "Custom Red Reference"
     IDS_CUSTGREENREF        "Custom Green Reference"
     IDS_CUSTBLUEREF         "Custon Blue Reference"
-    IDS_UHDTVREDREF         "UHDTV Red Reference"
-    IDS_UHDTVGREENREF       "UHDTV Green Reference"
-    IDS_UHDTVBLUEREF        "UHDTV Blue Reference"
+    IDS_UHDTVREDREF         "UHDTV P3 Red Reference"
+    IDS_UHDTVGREENREF       "UHDTV P3 Green Reference"
+    IDS_UHDTVBLUEREF        "UHDTV P3 Blue Reference"
+    IDS_UHDTV2REDREF         "UHDTV Rec2020 Red Reference"
+    IDS_UHDTV2GREENREF       "UHDTV Rec2020 Green Reference"
+    IDS_UHDTV2BLUEREF        "UHDTV Rec2020 Blue Reference"
+    IDS_UHDTV3REDREF         "UHDTV P3 in Rec2020 Red Reference"
+    IDS_UHDTV3GREENREF       "UHDTV P3 in Rec2020 Green Reference"
+    IDS_UHDTV3BLUEREF        "UHDTV P3 in Rec2020 Blue Reference"
     IDS_CONFIGURESENSOR2    "Start/Stop Adaptive Integration"
 END
 

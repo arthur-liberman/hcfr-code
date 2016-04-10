@@ -1567,7 +1567,10 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	int		nForceMode = -1;
 	double	dContrast;
 	InitSelectedColorGrid();
-
+	CFrameWnd * pFrame = (CFrameWnd *)(AfxGetApp()->m_pMainWnd);
+//	if (pFrame)
+//		pFrame->GetActiveFrame()->ActivateFrame();
+	pFrame->OnUpdateFrameMenu(NULL);
 	// TODO: add a general option for that ?
 	if ( 1 )
 	{
@@ -1950,7 +1953,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 					double dL, dH, dC;
 					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight ) );
 					dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight );
-					dL=aMeasure.GetDeltaLCH ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight, dH, dC );
+					dL=aMeasure.GetDeltaLCH ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight, dC, dH );
                     dEvector.push_back(isNan(dE)?dEavg:dE);
                     dLvector.push_back(isNan(dL)?dLavg:dL);
                     dCvector.push_back(isNan(dC)?dCavg:dC);

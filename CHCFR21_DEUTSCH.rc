@@ -2834,9 +2834,15 @@ BEGIN
     IDS_CUSTREDREF          "Custom Rot Referenz"
     IDS_CUSTGREENREF        "Custom Grün Referenz"
     IDS_CUSTBLUEREF         "Custom Blau Referenz"
-    IDS_UHDTVREDREF         "UHDTV Rot Referenz"
-    IDS_UHDTVGREENREF       "UHDTV Grün Referenz"
-    IDS_UHDTVBLUEREF        "UHDTV Blau Referenz"
+    IDS_UHDTVREDREF         "UHDTV P3 Rot Referenz"
+    IDS_UHDTVGREENREF       "UHDTV P3 Grün Referenz"
+    IDS_UHDTVBLUEREF        "UHDTV P3 Blau Referenz"
+    IDS_UHDTV2REDREF         "UHDTV Rec2020 Rot Referenz"
+    IDS_UHDTV2GREENREF       "UHDTV Rec2020 Grün Referenz"
+    IDS_UHDTV2BLUEREF        "UHDTV Rec2020 Blau Referenz"
+    IDS_UHDTV3REDREF         "UHDTV P3 in Rec2020 Rot Referenz"
+    IDS_UHDTV3GREENREF       "UHDTV P3 in Rec2020 Grün Referenz"
+    IDS_UHDTV3BLUEREF        "UHDTV P3 in Rec2020 Blau Referenz"
     IDS_CONFIGURESENSOR2    "Start/Stop Adaptive Integration"
 END
 

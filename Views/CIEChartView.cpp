@@ -723,9 +723,9 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 		Msg3.LoadString ( IDS_UHDTV2BLUEREF );
 	} else if (GetConfig()->m_colorStandard == UHDTV3)
 	{
-		Msg.LoadString ( IDS_UHDTV2REDREF );
-		Msg2.LoadString ( IDS_UHDTV2GREENREF );
-		Msg3.LoadString ( IDS_UHDTV2BLUEREF );
+		Msg.LoadString ( IDS_UHDTV3REDREF );
+		Msg2.LoadString ( IDS_UHDTV3GREENREF );
+		Msg3.LoadString ( IDS_UHDTV3BLUEREF );
 	} else if (GetConfig()->m_colorStandard == HDTV || GetConfig()->m_colorStandard == sRGB)
 	{
 		Msg.LoadString ( IDS_REC709REDREF );
@@ -830,7 +830,9 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	// Take sum of primary colors Y by default, in case of no white measure found
 	double YWhite = redPrimaryColor[2]+greenPrimaryColor[2]+bluePrimaryColor[2];
 	
-	if ( pDoc -> GetMeasure () -> GetOnOffWhite ().isValid() )
+	if ( pDoc -> GetMeasure () -> GetPrimeWhite ().isValid() )
+		YWhite = pDoc -> GetMeasure () -> GetPrimeWhite () [ 1 ]; //check here first
+	else if ( pDoc -> GetMeasure () -> GetOnOffWhite ().isValid() )
 		YWhite = pDoc -> GetMeasure () -> GetOnOffWhite () [ 1 ]; //onoff white is always grayscale white
 
 	Msg.LoadString ( IDS_REDPRIMARY );

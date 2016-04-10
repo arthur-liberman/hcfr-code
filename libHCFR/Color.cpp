@@ -1470,9 +1470,9 @@ double CColor::GetDeltaE(double YWhite, const CColor & refColor, double YWhiteRe
 		return m_XYZValues.GetDeltaE(YWhite, refColor.m_XYZValues, YWhiteRef, colorReference, dE_form, isGS, gw_Weight );
 }
 
-double CColor::GetDeltaLCH(double YWhite, const CColor & refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form, bool isGS, int gw_Weight, double &dH, double &dC ) const
+double CColor::GetDeltaLCH(double YWhite, const CColor & refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form, bool isGS, int gw_Weight, double &dC, double &dH ) const
 {
-		return m_XYZValues.GetDeltaLCH(YWhite, refColor.m_XYZValues, YWhiteRef, colorReference, dE_form, isGS, gw_Weight, dH, dC );
+		return m_XYZValues.GetDeltaLCH(YWhite, refColor.m_XYZValues, YWhiteRef, colorReference, dE_form, isGS, gw_Weight, dC, dH );
 }
 
 double CColor::GetDeltaxy(const CColor & refColor, const CColorReference& colorReference) const

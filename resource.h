@@ -1582,6 +1582,9 @@
 #define IDS_UHDTV2GREENREF              41960
 #define IDS_UHDTV2BLUEREF               41961
 #define IDS_CONFIGURESENSOR2            41962
+#define IDS_UHDTV3REDREF                41963
+#define IDS_UHDTV3GREENREF              41964
+#define IDS_UHDTV3BLUEREF               41965
 #define IDS_ARGYLLSENSOR_PROPERTIES_TITLE 59394
 #define IDS_ARGYLLSENSOR_NAME           59395
 

@@ -57,7 +57,6 @@ public:
 protected:
 	CReferencesPropPage m_referencesPropertiesPage;
 	BOOL m_isModified;
-	BOOL m_bpreV10;
 	CArray<CColor,CColor> m_primariesArray;
 	CArray<CColor,CColor> m_secondariesArray;
 	CArray<CColor,CColor> m_grayMeasureArray;
@@ -82,6 +81,7 @@ protected:
 public:
 	BOOL	m_bIREScaleMode;
 	BOOL	m_binMeasure;
+	UINT	m_bpreV10;
 
 	// Internal data used by background measures threads (not serialized)
 public:
@@ -155,7 +155,7 @@ public:
 	void SetCyanSat(int i,const CColor & aColor) {m_cyanSatMeasureArray[i]=aColor; m_isModified=TRUE; } 
 	CColor GetMagentaSat(int i) const;
 	void SetMagentaSat(int i,const CColor & aColor) {m_magentaSatMeasureArray[i]=aColor; m_isModified=TRUE; } 
-	CColor GetCC24Sat(int i) const;
+	CColor GetCC24Sat(int i);
 	void SetCC24Sat(int i,const CColor & aColor) {m_cc24SatMeasureArray[i]=aColor; m_isModified=TRUE; } 
 	CColor GetCC24MasterSat(int i) const;
 	void SetCC24MasterSat(int i,const CColor & aColor) {m_cc24SatMeasureArray_master[i]=aColor; m_isModified=TRUE; } 

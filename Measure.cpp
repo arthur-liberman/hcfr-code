@@ -22,7 +22,7 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "ColorHCFR.h"
 #include "MainFrm.h"
 #include "Measure.h"
@@ -49,7 +49,7 @@ IMPLEMENT_SERIAL(CMeasure, CObject, 1)
 CMeasure::CMeasure()
 {
 	m_isModified = FALSE;
-	m_bpreV10 = FALSE;
+	m_bpreV10 = 0;
 	m_binMeasure = FALSE;
 	m_primariesArray.SetSize(3);
 	m_secondariesArray.SetSize(3);
@@ -392,7 +392,7 @@ void CMeasure::Serialize(CArchive& ar)
 			{
 				CString msg;
 				msg.SetString("Preferences in saved file differ from active preferences, overwrite?");
-				if (GetColorApp()->InMeasureMessageBox(msg,"Warning", MB_YESNO | MB_ICONWARNING) != 6 )
+				if (GetColorApp()->InMeasureMessageBox(msg,"Warning", MB_YESNO | MB_ICONWARNING) != IDYES )
 					over = FALSE;
 			}
 
@@ -529,7 +529,7 @@ void CMeasure::Serialize(CArchive& ar)
 							m_cc24SatMeasureArray_master[i].Serialize(ar);
 						m_CCStr=GetCCStr();
 					}
-					else
+					else //version for smaller save files (doesn't save/restore nodata values)
 					{
 						for(int i=0;i<size;i++)
 						{
@@ -548,10 +548,10 @@ void CMeasure::Serialize(CArchive& ar)
 					}
 				}
 				else
-					m_bpreV10 = TRUE;
+					m_bpreV10 = 1;
 			}
 			else
-				m_bpreV10 = TRUE;			
+				m_bpreV10 = 1;			
 		}
 		else
 		{
@@ -573,13 +573,6 @@ void CMeasure::Serialize(CArchive& ar)
 				m_cyanSatMeasureArray[i]=noDataColor;
 				m_magentaSatMeasureArray[i]=noDataColor;
 			}
-		}
-
-		if (m_bpreV10)
-		{
-			CString msg;
-			msg.SetString("Loading old color checker data, rerun series before saving new file.");
-//			GetColorApp()->InMeasureMessageBox(msg,"Warning",MB_OK | MB_ICONWARNING);
 		}
 		
 		ar >> size;
@@ -5829,13 +5822,54 @@ CColor CMeasure::GetCC24MasterSat(int i) const
 	return m_cc24SatMeasureArray_master[i]; 
 } 
 
-CColor CMeasure::GetCC24Sat(int i) const 
+CColor CMeasure::GetCC24Sat(int i) 
 { 
 	int iCC=GetConfig()->m_CCMode;
 
-	if (m_bpreV10 || m_binMeasure)
+	if (m_binMeasure)
 		return m_cc24SatMeasureArray[i]; 
-	else
+
+	if (m_bpreV10 > 0)
+	{
+		if (i == 0 && m_bpreV10 == 1)
+		{
+			CString msg;
+			BOOL isExtPat =( iCC == USER || iCC == CM10SAT || iCC == CM10SAT75 || iCC == CM5SAT || iCC == CM5SAT75 || iCC == CM4SAT || iCC == CM4SAT75 || iCC == CM4LUM || iCC == CM5LUM || iCC == CM10LUM || iCC == RANDOM250 || iCC == RANDOM500 || iCC == CM6NB || iCC == CMDNR);
+			msg.SetString("File contains old style colorchecker data, load into slot ");
+			msg+=(iCC == GCD?"Classic GCD":(GetConfig()->m_CCMode==MCD?"Classic MCD":(GetConfig()->m_CCMode==SKIN?"Pantone skin tones":(GetConfig()->m_CCMode==CCSG?"CalMan SG":isExtPat?GetConfig()->GetCColorsN(-1).c_str():(GetConfig()->m_CCMode==CMS?"CalMAN SG skin tones":(GetConfig()->m_CCMode==CPS?"ChromaPure skin tones":(GetConfig()->m_CCMode==CMC?"Classic CalMAN":"RGB Luminance Ramps")))))));
+			msg+="?\r\n\r\nClick no if this is not the correct series and choose another from advanced preferences.";
+			if (GetColorApp()->InMeasureMessageBox(msg,"Pre 3.3.0 file format dialog",MB_YESNO | MB_ICONQUESTION) == IDYES)			
+			{
+				CDataSetDoc *	pCurrentDocument = NULL;
+				CMDIChildWnd *  pMDIFrameWnd = ( ( CMDIFrameWnd * ) AfxGetMainWnd () ) -> MDIGetActive ();
+
+				pCurrentDocument = (CDataSetDoc *) pMDIFrameWnd->GetActiveDocument();
+				for (int j = 0;j < m_cc24SatMeasureArray.GetSize();j++)
+					m_cc24SatMeasureArray_master[j + (iCC<=19?(iCC * 100):(iCC==20?1900+250:1900+250+500))] = m_cc24SatMeasureArray[j];
+				if (GetColorApp()->InMeasureMessageBox("Save to new  file?","Pre 3.3.0 file format save dialog",MB_YESNO | MB_ICONQUESTION) == IDYES)
+				{
+					CFileDialog fileSaveDialog ( FALSE, ".chc", NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, "HCFR Save File (*.chc)|*.chc||" );
+					if ( fileSaveDialog.DoModal () == IDOK )
+					{
+						pCurrentDocument->OnSaveDocument(fileSaveDialog.GetPathName());
+					}
+				}
+				m_bpreV10 = 0;
+				pCurrentDocument->SetModifiedFlag();
+//				pCurrentDocument->UpdateAllViews();
+			}
+			else
+				m_bpreV10++;
+		}
+		else
+			m_bpreV10++;
+
+		if (m_bpreV10 == 5)
+			m_bpreV10 = 1;
+
+		return m_cc24SatMeasureArray[i]; 
+	}
+
 	return m_cc24SatMeasureArray_master[i + (iCC<=19?(iCC * 100):(iCC==20?1900+250:1900+250+500))];  //index increments by 100 until slot 19 (then 250 & 500)
 } 
 
