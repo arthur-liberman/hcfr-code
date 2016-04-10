@@ -310,13 +310,14 @@ void CColorHCFRConfig::InitDefaults()
     gw_Weight = 0;
     doHighlight = TRUE;
 	isHighDPI = FALSE;
+
 }
 
 BOOL CColorHCFRConfig::LoadSettings()
 {
 	m_doMultipleInstance=GetProfileInt("General","DoMultipleInstance",FALSE);
 	m_doSavePosition=GetProfileInt("General","DoSavePosition",TRUE);
-	m_doUpdateCheck=GetProfileInt("General","DoUpdateCheck",FALSE);
+	m_doUpdateCheck=GetProfileInt("General","DoUpdateCheck",TRUE);
 	m_BWColorsToAdd=GetProfileInt("General","BWColorsToAdd",1);
 	if ( m_BWColorsToAdd < 0 ) 
 		m_BWColorsToAdd = 0;

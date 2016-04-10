@@ -1053,7 +1053,7 @@ void CMainFrame::OnInitDefaults()
 {
 
 	int rv = GetColorApp()->InMeasureMessageBox("This will reset your preferences to their default values.\nAre you sure?", "Reset prefs", MB_YESNO);
-	if (rv == 6)
+	if (rv == IDYES)
 	{
 		CString strlang = GetConfig()->strLang;
 		DeleteFile("ColorHCFR.ini");
