@@ -188,7 +188,7 @@ ColorxyY primariesRec709a[3] ={	ColorxyY(0.5575, 0.3298), //75% sat/lum Rec709 w
 								ColorxyY(0.1911, 0.1279) };
 
 //optimized for plasma
-ColorxyY primariesCC6[3] ={	ColorxyY(0.625, 0.330), 
+ColorxyY primariesCC6[3] ={	ColorxyY(0.6400, 0.3300),//ColorxyY(0.625, 0.330), 
 								ColorxyY(0.303, 0.533),
 								ColorxyY(0.245, 0.217)};
 
@@ -469,9 +469,9 @@ void CColorReference::UpdateSecondary ( ColorXYZ & secondary, const ColorXYZ& pr
 	}
 	else //optimized
 	{
-		if (x1 <= 0.626 && x1 >= 0.624) aColor = ColorxyY(0.418,0.502,0.5644);
-		if (x1 <= 0.304 && x1 >= 0.302) aColor = ColorxyY(0.226,0.329,0.4798);
-		if (x1 <= 0.246 && x1 >= 0.244) aColor = ColorxyY(0.321,0.157,0.1775);
+		if (x1 <= 0.642 && x1 >= 0.638) aColor = ColorxyY(0.418,0.502,0.5644);
+		if (x1 <= 0.305 && x1 >= 0.301) aColor = ColorxyY(0.226,0.329,0.4798);
+		if (x1 <= 0.247 && x1 >= 0.243) aColor = ColorxyY(0.321,0.157,0.1775);
 	}
 	secondary = ColorXYZ(aColor);
 }

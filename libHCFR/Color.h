@@ -329,7 +329,8 @@ public:
 				luma = 0.214;
 				break;
 			case HDTVb:
-				luma = sats?0.214:0.1341;
+				luma = sats?0.214:0.214;
+//				luma = sats?0.214:0.1346;
 			case UHDTV3:
 				luma = 0.229;
 				break;

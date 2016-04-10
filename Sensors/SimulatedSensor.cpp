@@ -239,7 +239,7 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 		if(m_doGainError)
 			gain=1+(m_gainErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1.0 : 1.0);
 		if(m_doGammaError && m_gammaErrorMax != 0.0)
-			gamma=2.2+(m_gammaErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1.0 : 1.0);
+			gamma+=(m_gammaErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1.0 : 1.0);
 
 		value=max(aRGBValue[0]*gain+offset,0.0);
 		simulColor[0]=(pow(value/100.0,gamma));
@@ -271,7 +271,7 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 		if(m_doGainError )
 			gain=1+(m_gainErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1 : 1);
 		if(m_doGammaError && m_gammaErrorMax != 0.0)
-			gamma=2.2+(m_gammaErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1 : 1);
+			gamma+=(m_gammaErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1 : 1);
 
 		value=max(aRGBValue[1]*gain+offset,0);
 		simulColor[1]=(pow(value/100.0,gamma));
@@ -303,7 +303,7 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 		if(m_doGainError)
 			gain=1+(m_gainErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1 : 1);
 		if(m_doGammaError && m_gammaErrorMax != 0.0)
-			gamma=2.2+(m_gammaErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1 : 1);
+			gamma+=(m_gammaErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1 : 1);
 
 		value=max(aRGBValue[2]*gain+offset,0);
 		simulColor[2]=(pow(value/100.0,gamma));
