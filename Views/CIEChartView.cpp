@@ -2903,15 +2903,21 @@ void CCIEChartView::UpdateTestColor ( CPoint point )
         {
 			if (mode == 5)
 			{
-    			r = (r<=0||r>=1)?min(max(r,0),1):pow(r,log(getEOTF(r, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode * 100. / White.GetY()))/log(r));
-	    		g = (g<=0||g>=1)?min(max(g,0),1):pow(g,log(getEOTF(g, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode * 100. / White.GetY()))/log(g));
-				b = (b<=0||b>=1)?min(max(b,0),1):pow(b,log(getEOTF(b, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode * 100. / White.GetY()))/log(b));
+				if (r < 0.999 && r > 0.001)
+					r = (r<=0||r>=1)?min(max(r,0),1):pow(r,log(getEOTF(r, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode * 100. / White.GetY()))/log(r));
+				if (g < 0.999 && g > 0.001)
+		    		g = (g<=0||g>=1)?min(max(g,0),1):pow(g,log(getEOTF(g, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode * 100. / White.GetY()))/log(g));
+				if (b < 0.999 && b > 0.001)
+					b = (b<=0||b>=1)?min(max(b,0),1):pow(b,log(getEOTF(b, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode * 100. / White.GetY()))/log(b));
 			}
 			else
 			{
-    			r = (r<=0||r>=1)?min(max(r,0),1):pow(r,log(getEOTF(r, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(r));
-	    		g = (g<=0||g>=1)?min(max(g,0),1):pow(g,log(getEOTF(g, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(g));
-				b = (b<=0||b>=1)?min(max(b,0),1):pow(b,log(getEOTF(b, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(b));
+				if (r < 0.999 && r > 0.001)
+	    			r = (r<=0||r>=1)?min(max(r,0),1):pow(r,log(getEOTF(r, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(r));
+				if (g < 0.999 && g > 0.001)
+		    		g = (g<=0||g>=1)?min(max(g,0),1):pow(g,log(getEOTF(g, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(g));
+				if (b < 0.999 && b > 0.001)
+					b = (b<=0||b>=1)?min(max(b,0),1):pow(b,log(getEOTF(b, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(b));
 			}
         }
         else
