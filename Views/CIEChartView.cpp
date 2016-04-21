@@ -776,7 +776,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			g[i]=rgb[i][1];
 			b[i]=rgb[i][2];
 			int mode = GetConfig()->m_GammaOffsetType;
-			if (GetConfig()->m_colorStandard == sRGB) mode = 7;
+			if (GetConfig()->m_colorStandard == sRGB) mode = 8;
 			if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
 			{
 				if (mode == 5)
@@ -1458,7 +1458,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
     			CColor White = pDoc -> GetMeasure () -> GetGray ( nSize - 1 );
 	    		CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
 				int mode = GetConfig()->m_GammaOffsetType;
-				if (GetConfig()->m_colorStandard == sRGB) mode = 7;
+				if (GetConfig()->m_colorStandard == sRGB) mode = 8;
 				if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
 			    {
 				   double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
@@ -2898,7 +2898,7 @@ void CCIEChartView::UpdateTestColor ( CPoint point )
 		RGBColor = ClickedColor.GetRGBValue ((GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));
         double r=RGBColor[0],g=RGBColor[1],b=RGBColor[2];
 		int mode = GetConfig()->m_GammaOffsetType;
-		if (GetConfig()->m_colorStandard == sRGB) mode = 7;
+		if (GetConfig()->m_colorStandard == sRGB) mode = 8;
         if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
         {
 			if (mode == 5)

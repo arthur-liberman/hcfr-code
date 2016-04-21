@@ -3707,6 +3707,16 @@ void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int Col
 				Offset_opt = 0.0;
 			}
 			break;
+		case 6: //L*
+			{
+				Offset_opt = 0.0;
+			}
+			break;
+		case 7: //BBC hgl
+			{
+				Offset_opt = 0.0;
+			}
+			break;
 		}
 			double x, v;
 
@@ -3724,11 +3734,11 @@ void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int Col
 				if ( lumlvl[i] > 0.0 )
 				{
 					int mode = GetConfig()->m_GammaOffsetType;
-					if (GetConfig()->m_colorStandard == sRGB) mode = 7;
-                    if (m_bBT1886 && !GetConfig()->m_useMeasuredGamma)
+					if (GetConfig()->m_colorStandard == sRGB) mode = 8;
+                    if (m_bBT1886 || mode > 5) // !GetConfig()->m_useMeasuredGamma)
                         avg += log(getEOTF(valx[i], GetMeasure()->GetGray(Size -1), GetMeasure()->GetGray(0), GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(valx[i]);
                     else
-	                    if (mode == 5 && !GetConfig()->m_useMeasuredGamma)
+	                    if (mode == 5)// && !GetConfig()->m_useMeasuredGamma)
 			                    avg += log(getEOTF(valx[i], GetMeasure()->GetGray(Size -1), GetMeasure()->GetGray(0), GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100.)/log(valx[i]);
 						else
 		    				avg += log(lumlvl[i])/log(valx[i]);

@@ -132,7 +132,6 @@ protected:
 	afx_msg void OnHelpInstall();
 	afx_msg void OnHelpSupport();
 	afx_msg void OnLanguage();
-	afx_msg void OnInitDefaults();
 	afx_msg void OnUpdateSoft();
 	afx_msg void OnPatternDisplay();
 	afx_msg void OnRefreshLux();

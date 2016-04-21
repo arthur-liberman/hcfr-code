@@ -191,7 +191,7 @@ void CPatternDisplay::CreateGenerator()
 {
 	if(m_patternDGenerator != NULL)
 		delete m_patternDGenerator;
-	m_patternDGenerator=new CGDIGenerator(DISPLAY_GDI, GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0));
+	m_patternDGenerator=new CGDIGenerator(DISPLAY_GDI_Hide, GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0));
 }
 
 void CPatternDisplay::WaitKey()

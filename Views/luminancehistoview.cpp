@@ -87,6 +87,7 @@ CLuminanceGrapher::CLuminanceGrapher()
 	m_blueLumDataRefGraphID = m_graphCtrl.AddGraph(RGB(0,0,255), (LPSTR)(LPCSTR)Msg,1,PS_DOT); //Ki	
 	
 	m_graphCtrl.SetXAxisProps((LPSTR)(LPCSTR)GetConfig()->m_PercentGray, 10, 0, 100);
+	m_graphCtrl.SetYAxisProps(m_showL?"":"%", 10, 0, 100);
 	m_graphCtrl.SetScale(0,100,0,100);
 	m_graphCtrl.ReadSettings("Luminance Histo");
 
@@ -98,7 +99,6 @@ CLuminanceGrapher::CLuminanceGrapher()
 	m_showBlueLum=GetConfig()->GetProfileInt("Luminance Histo","Show Blue",FALSE);
 	m_showDataRef=GetConfig()->GetProfileInt("Luminance Histo","Show Reference Data",TRUE);	//Ki
 	m_showL=GetConfig()->GetProfileInt("Luminance Histo","Show L",FALSE);	//Ki
-	m_graphCtrl.SetYAxisProps(m_showL?"":"%", 10, 0, 100);
 }
 
 void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
@@ -145,7 +145,7 @@ void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			
 	int mode = GetConfig()->m_GammaOffsetType;
 
-	if (m_showReference && m_refGraphID != -1 && size > 0 && bDataPresent)
+	if (m_showReference && m_refGraphID != -1)// && size > 0)// && bDataPresent)
 	{	
 		for (int i=0; i<size; i++)
 		{
@@ -153,7 +153,7 @@ void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			x = ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown);
     		CColor White = pDoc -> GetMeasure () -> GetOnOffWhite();
 	    	CColor Black = pDoc -> GetMeasure () -> GetOnOffBlack();
-			if (GetConfig()->m_colorStandard == sRGB) mode = 7;
+			if (GetConfig()->m_colorStandard == sRGB) mode = 8;
 			if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4 )
 			{
 				valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
@@ -310,8 +310,7 @@ void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			}
 		}
 	}
-	m_graphCtrl.FitYScale(1,10);
-	m_graphCtrl.ReadSettings("Luminance Histo");
+//	m_graphCtrl.FitYScale(1,10);
 }
 
 /*
@@ -514,6 +513,7 @@ void CLuminanceHistoView::OnSize(UINT nType, int cx, int cy)
 void CLuminanceHistoView::OnDraw(CDC* pDC) 
 {
 	// TODO: Add your specialized code here and/or call the base class
+	m_Grapher.m_graphCtrl.WriteSettings("Luminance Histo");
 }
 
 BOOL CLuminanceHistoView::OnEraseBkgnd(CDC* pDC) 

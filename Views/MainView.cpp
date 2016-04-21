@@ -2042,6 +2042,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 	                            valy = getEOTF(valx,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) * 100.;
 							else
 	                            valy = getEOTF(valx,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) * White.GetY();
+
 							str.Format ( "%.3f", valy );
 						}
 						else
@@ -2616,7 +2617,7 @@ void CMainView::UpdateGrid()
             		    CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
 	                	CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
 						int mode = GetConfig()->m_GammaOffsetType;
-						if (GetConfig()->m_colorStandard == sRGB) mode = 7;
+						if (GetConfig()->m_colorStandard == sRGB) mode = 8;
 
 						if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
 			            {
@@ -5280,11 +5281,13 @@ void CMainView::OnInitDefaults()
 		DeleteFile("ColorHCFR.ini");
 		GetConfig()->InitDefaults();
 		GetConfig()->LoadSettings();
-		GetConfig()->ApplySettings(TRUE);
+		GetConfig()->ApplySettings(FALSE);
 		GetConfig()->WriteProfileString ( "Options", "Language", strlang );
 		GetConfig()->SaveSettings();
 		GetConfig()->m_bSave = TRUE;
-		UpdateAllGrids();
+		GetDocument()->SetModifiedFlag(TRUE);
+		GetDocument()->UpdateAllViews ( NULL, UPD_EVERYTHING );
+		AfxGetMainWnd()->SendMessage(WM_SYSCOLORCHANGE);
 	}
 }
 

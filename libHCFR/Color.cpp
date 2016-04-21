@@ -2737,6 +2737,18 @@ double getEOTF ( double valx, CColor White, CColor Black, double g_rel, double s
 		outL_lab = pow(t,3.0);
 	else
 		outL_lab = 3 * pow((6. / 29.),2) * (t - 4. / 29.);
+//BBC hybrid log for HDR Lmax=4, epsi=0.3733646177 (system gamma = 1.2)
+//graft at 37.37%, ref white at 74.19%
+	double mu = 0.139401137752;
+	double eta = pow(mu, 0.5) / 2.0; // 0.1867 
+	double rho = pow(mu, 0.5) * ( 1.0 - log(pow(mu, 0.5)) ); //0.7419
+	double epsi = 0.3733646177;
+	double outL_bbc, s = 1.2;
+
+	if (valx <= epsi)
+		outL_bbc = pow(valx, 2 * s);
+	else
+		outL_bbc = exp( s * (valx - rho)/eta );
 
 	offset = split / 100.0 * minL;
     double a = pow ( ( pow (maxL,1.0/exp0 ) - pow ( offset,1.0/exp0 ) ),exp0 );
@@ -2766,11 +2778,14 @@ double getEOTF ( double valx, CColor White, CColor Black, double g_rel, double s
 		outL = pow(max(pow(valx,1.0 / m2) - c1,0) / (c2 - c3 * pow(valx, 1.0 / m2)), 1.0 / m1);
 		outL = outL * 10000. / 100.; //100 cd/m^2 reference white level
 		break;
-		case 7:
-		outL = outL_sRGB;
-		break;
 		case 6:
 		outL = outL_lab;
+		break;
+		case 7: //bbc
+		outL = outL_bbc / exp( s * (1.0 - rho)/eta );
+		break;
+		case 8:
+		outL = outL_sRGB;
 		break;
 	}
     

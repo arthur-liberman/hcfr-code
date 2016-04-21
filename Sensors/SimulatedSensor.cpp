@@ -211,7 +211,7 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 
     gamma=GetConfig()->m_GammaRef;
 
-	if (GetConfig()->m_colorStandard == sRGB) mode = 7;
+	if (GetConfig()->m_colorStandard == sRGB) mode = 8;
 
 	if (  mode >= 4 )
     {
@@ -308,7 +308,6 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 		value=max(aRGBValue[2]*gain+offset,0);
 		simulColor[2]=(pow(value/100.0,gamma));
 	}
-	Sleep(100);
 
 	ColorRGB colMeasure(simulColor);
 	bool isSpecial = (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb);

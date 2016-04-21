@@ -6042,7 +6042,7 @@ CColor CMeasure::GetRefPrimary(int i) const
     b=rgbr[2];
     aColor.SetRGBValue(ColorRGB(r,g,b), (cRef.m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()) );
 	int mode = GetConfig()->m_GammaOffsetType;
-	if (GetConfig()->m_colorStandard == sRGB) mode = 7;
+	if (GetConfig()->m_colorStandard == sRGB) mode = 8;
 	if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4 )
 	{
 		if (mode == 5)
@@ -6136,7 +6136,7 @@ CColor CMeasure::GetRefSecondary(int i) const
     b=rgby[2];
     aColor.SetRGBValue(ColorRGB(r,g,b), (cRef.m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()) );
 	int mode = GetConfig()->m_GammaOffsetType;
-	if (GetConfig()->m_colorStandard == sRGB) mode = 7;
+	if (GetConfig()->m_colorStandard == sRGB) mode = 8;
 	if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
 	{
 		if (mode == 5)
@@ -6278,7 +6278,7 @@ CColor CMeasure::GetRefSat(int i, double sat_percent, bool special) const
 	if (sat_percent < 1 )
 	{
 		int mode = GetConfig()->m_GammaOffsetType;
-		if (GetConfig()->m_colorStandard == sRGB) mode = 7;
+		if (GetConfig()->m_colorStandard == sRGB) mode = 8;
 		if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
 		{
 			if (mode == 5)
@@ -6607,7 +6607,7 @@ CColor CMeasure::GetRefCC24Sat(int i) const
 	ColorRGB aRGBColor = tempColor.GetRGBValue(GetColorReference().m_standard==UHDTV3?CColorReference(UHDTV2):cRef);	
     double inr=aRGBColor[0],ing=aRGBColor[1],inb=aRGBColor[2];
 	int mode = GetConfig()->m_GammaOffsetType;
-	if (GetConfig()->m_colorStandard == sRGB) mode = 7;
+	if (GetConfig()->m_colorStandard == sRGB) mode = 8;
 	if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
     {
 		if (mode == 5)

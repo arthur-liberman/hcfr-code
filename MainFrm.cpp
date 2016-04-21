@@ -83,7 +83,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CNewMDIFrameWnd)
 	ON_COMMAND(IDM_HELP_INSTALL, OnHelpInstall)
 	ON_COMMAND(IDM_HELP_SUPPORT, OnHelpSupport)
 	ON_COMMAND(IDM_LANGUAGE, OnLanguage)
-	ON_COMMAND(IDC_INIT_BUTTON, OnInitDefaults)
 	ON_COMMAND(IDM_UPDATE_SOFT, OnUpdateSoft)
 	ON_COMMAND(IDM_PATTERN_DISP_ROOT, OnPatternDisplay)
 	ON_COMMAND(IDM_REFRESH_LUX, OnRefreshLux)
@@ -1049,32 +1048,6 @@ void CMainFrame::OnHelpSupport()
 	ShellExecute(NULL,"open","http://www.avsforum.com/forum/139-display-calibration/1393853-hcfr-open-source-projector-display-calibration-software.html",NULL,NULL,SW_SHOWNORMAL);
 }
 
-void CMainFrame::OnInitDefaults()
-{
-
-	int rv = GetColorApp()->InMeasureMessageBox("This will reset your preferences to their default values.\nAre you sure?", "Reset prefs", MB_YESNO);
-	if (rv == IDYES)
-	{
-		CString strlang = GetConfig()->strLang;
-		DeleteFile("ColorHCFR.ini");
-		GetConfig()->InitDefaults();
-		GetConfig()->LoadSettings();
-		GetConfig()->ApplySettings(TRUE);
-		GetConfig()->WriteProfileString ( "Options", "Language", strlang );
-		GetConfig()->SaveSettings();
-		GetConfig()->m_bSave = TRUE;
-		CDataSetDoc *	pCurrentDocument = NULL;
-		CMDIChildWnd *  pMDIFrameWnd = MDIGetActive();
-	
-		if (pMDIFrameWnd != NULL)
-		{
-			pCurrentDocument = (CDataSetDoc *) pMDIFrameWnd->GetActiveDocument();
-			pCurrentDocument->UpdateAllViews(NULL, UPD_EVERYTHING);
-		}
-
-	}
-}
-
 void CMainFrame::OnLanguage() 
 {
 	char			szBuf [ 256 ];
@@ -1218,7 +1191,7 @@ void CMainFrame::OnUpdateSoft()
 
 void CMainFrame::OnPatternDisplay()
 {
-		int m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI);
+		int m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide);
 		
 		if (m_nDisplayMode == DISPLAY_GDI || m_nDisplayMode == DISPLAY_GDI_nBG )
 		{

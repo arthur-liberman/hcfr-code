@@ -84,7 +84,7 @@ CGDIGenerator::CGDIGenerator()
 	GetMonitorList();
 	m_activeMonitorNum = m_monitorNb-1;
 
-	m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI);
+	m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide);
 	m_b16_235 = GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0);
 	m_busePic = GetConfig()->GetProfileInt("GDIGenerator","USEPIC",0);
 	m_bLinear = GetConfig()->GetProfileInt("GDIGenerator","LOADLINEAR",1);

@@ -494,7 +494,7 @@ void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, cons
 	double r=rgb[0],g=rgb[1],b=rgb[2];
 
 	int mode = GetConfig()->m_GammaOffsetType;
-	if (GetConfig()->m_colorStandard == sRGB) mode = 7;
+	if (GetConfig()->m_colorStandard == sRGB) mode = 8;
 	if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
 	{
 		if  (mode == 5)

@@ -310,7 +310,6 @@ void CColorHCFRConfig::InitDefaults()
     gw_Weight = 0;
     doHighlight = TRUE;
 	isHighDPI = FALSE;
-
 }
 
 BOOL CColorHCFRConfig::LoadSettings()
@@ -335,7 +334,7 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_latencyTime=GetProfileInt("References","IrisLatencyTime",300);
     // don't allow less than 250ms for latency, give windows and display a chance
     // to show the image default is 300ms
-    m_latencyTime = max(m_latencyTime, 250);
+    //m_latencyTime = max(m_latencyTime, 250);
 	m_bLatencyBeep=GetProfileInt("References","IrisLatencyBeep",0);
 	m_bUseRoundDown=GetProfileInt("References","SatUseMeasuredRef",0);
 	m_GammaRef=GetProfileDouble("References","GammaRefValue",2.2);

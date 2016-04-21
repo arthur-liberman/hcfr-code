@@ -140,7 +140,7 @@ void CGammaGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			double x, valx, valy;
 			x = ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown );
 			int mode = GetConfig()->m_GammaOffsetType;
-			if (GetConfig()->m_colorStandard == sRGB) mode = 7;
+			if (GetConfig()->m_colorStandard == sRGB) mode = 8;
 			if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
 			{
 				valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
@@ -156,7 +156,7 @@ void CGammaGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			}
 
 			if( valy > 0 && valx > 0 && valy != 1.0)
-				m_graphCtrl.AddPoint(m_refLogGraphID, x, log(valy)/ log(valx));
+				m_graphCtrl.AddPoint(m_refLogGraphID, x, log(valy)/log(valx));
 		}
 	}
 	
