@@ -46,6 +46,7 @@ CGeneralPropPage::CGeneralPropPage() : CPropertyPageWithHelp(CGeneralPropPage::I
 	m_doSavePosition = FALSE;
 	m_bContinuousMeasures = TRUE;
 	m_bLatencyBeep = FALSE;
+	bDisplayRT = TRUE;
 	m_BWColorsToAdd = -1;
 	m_bDetectPrimaries = TRUE;
 	m_useHSV = FALSE;
@@ -72,6 +73,7 @@ void CGeneralPropPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_SAVEPOSITION, m_doSavePosition);
 	DDX_Check(pDX, IDC_CHECK_CONTINUOUS, m_bContinuousMeasures);
 	DDX_Check(pDX, IDC_CHECK_BEEP, m_bLatencyBeep);
+	DDX_Check(pDX, IDC_CHECK_DISPLAYRT, bDisplayRT);
 	DDX_Radio(pDX, IDC_RADIO1, m_BWColorsToAdd);
 	DDX_Check(pDX, IDC_CHECK_DETECT_PRIMARIES, m_bDetectPrimaries);
 	DDX_Check(pDX, IDC_IS_SETTLING, m_isSettling);
@@ -90,6 +92,7 @@ BEGIN_MESSAGE_MAP(CGeneralPropPage, CPropertyPageWithHelp)
     ON_CONTROL_RANGE(EN_CHANGE, IDC_EDIT_IRIS_TIME, IDC_EDIT_IRIS_TIME, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_RADIO1, IDC_RADIO3, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_BEEP, IDC_CHECK_BEEP, OnControlClicked)
+    ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_DISPLAYRT, IDC_CHECK_DISPLAYRT, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_DETECT_PRIMARIES, IDC_CHECK_DETECT_PRIMARIES, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_USE_HSV, IDC_CHECK_USE_HSV, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_IS_SETTLING, IDC_IS_SETTLING, OnControlClicked)

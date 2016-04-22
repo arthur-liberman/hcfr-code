@@ -158,7 +158,10 @@ void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			{
 				valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
 				if (mode == 5)
+				{
 					valy = getEOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) * 100. / White.GetY();
+					valy=min(valy,1.2);
+				}
 				else
 	                valy = getEOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 			}

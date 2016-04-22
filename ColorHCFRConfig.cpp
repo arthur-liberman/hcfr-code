@@ -252,6 +252,7 @@ void CColorHCFRConfig::InitDefaults()
 	m_useHSV=FALSE;
 	m_latencyTime=0;
 	m_bLatencyBeep=FALSE;
+	bDisplayRT=TRUE;
 	m_bUseRoundDown=FALSE;
 	m_BWColorsToAdd=1;
 	m_GammaRef=2.2;
@@ -336,6 +337,7 @@ BOOL CColorHCFRConfig::LoadSettings()
     // to show the image default is 300ms
     //m_latencyTime = max(m_latencyTime, 250);
 	m_bLatencyBeep=GetProfileInt("References","IrisLatencyBeep",0);
+	bDisplayRT=GetProfileInt("References","Display RT",1);
 	m_bUseRoundDown=GetProfileInt("References","SatUseMeasuredRef",0);
 	m_GammaRef=GetProfileDouble("References","GammaRefValue",2.2);
 	m_GammaAvg=GetProfileDouble("References","GammaAvgValue",2.2);
@@ -418,6 +420,7 @@ void CColorHCFRConfig::SaveSettings()
 	WriteProfileInt("References","isSettling",m_isSettling);
 	WriteProfileInt("References","IrisLatencyTime",m_latencyTime);
 	WriteProfileInt("References","IrisLatencyBeep",m_bLatencyBeep);
+	WriteProfileInt("References","Display RT",bDisplayRT);
 	WriteProfileInt("References","SatUseMeasuredRef",m_bUseRoundDown);
 	WriteProfileDouble("References","GammaRefValue",m_GammaRef);
 	WriteProfileDouble("References","GammaAvgValue",m_GammaAvg);
@@ -473,6 +476,7 @@ void CColorHCFRConfig::SetPropertiesSheetValues()
 	m_generalPropertiesPage.m_useHSV=m_useHSV;
 	m_generalPropertiesPage.m_bContinuousMeasures=m_bContinuousMeasures;
 	m_generalPropertiesPage.m_bDetectPrimaries=m_bDetectPrimaries;
+	m_generalPropertiesPage.bDisplayRT=bDisplayRT;
 	m_generalPropertiesPage.m_latencyTime=m_latencyTime;
 	m_generalPropertiesPage.m_bLatencyBeep=m_bLatencyBeep;
 	m_generalPropertiesPage.m_bUseRoundDown=m_bUseRoundDown;
@@ -581,6 +585,7 @@ BOOL CColorHCFRConfig::GetPropertiesSheetValues()
 	m_bDetectPrimaries=m_generalPropertiesPage.m_bDetectPrimaries;
 	m_latencyTime=m_generalPropertiesPage.m_latencyTime;
 	m_bLatencyBeep=m_generalPropertiesPage.m_bLatencyBeep;
+	bDisplayRT=m_generalPropertiesPage.bDisplayRT;
 	m_bUseRoundDown=m_generalPropertiesPage.m_bUseRoundDown;
 
 	m_colorStandard=(ColorStandard)(m_referencesPropertiesPage.m_colorStandard);

@@ -67,6 +67,7 @@ public:
 	BOOL m_useHSV;
 	int m_latencyTime;
 	BOOL m_bLatencyBeep;
+	BOOL bDisplayRT;
 	BOOL m_bUseRoundDown;
 	int m_BWColorsToAdd;
 	double m_GammaRef;

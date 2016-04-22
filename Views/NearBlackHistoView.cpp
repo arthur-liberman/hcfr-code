@@ -149,7 +149,6 @@ void CNearBlackGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	{
 		valformax=pow((double)(size-1)/100.0, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef) );
 	}
-
 	m_graphCtrl.ClearGraph(m_refGraphID);
 	m_logGraphCtrl.ClearGraph(m_refLogGraphID);
 	if (m_showReference && m_refGraphID != -1 && size > 0)
@@ -157,28 +156,36 @@ void CNearBlackGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		for (int i=0; i<size; i++)
 		{
         	int g_size=pDoc->GetMeasure()->GetGrayScaleSize();
+			double GammaOffset,GammaOpt;
+			pDoc->ComputeGammaAndOffset(&GammaOpt, &GammaOffset, 1,1,g_size,false);
     		CColor White = pDoc -> GetMeasure () -> GetGray ( g_size - 1 );
 	    	CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
-		    double valx = (GrayLevelToGrayProp( (double)i, GetConfig () -> m_bUseRoundDown));
-			double val=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef) );
+			double x = ArrayIndexToGrayLevel ( i, 101, GetConfig () -> m_bUseRoundDown); 
+			double valx,val;//=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef) );
 			int mode = GetConfig()->m_GammaOffsetType;
 			if (GetConfig()->m_colorStandard == sRGB) mode = 8;
 			if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4) 
 			{
+			    valx = (GrayLevelToGrayProp( x, GetConfig () -> m_bUseRoundDown));
 				if  (mode == 5)
-	                val = getEOTF( valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode * 100 / White.GetY());
+	                val = getEOTF( valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) * 100 / White.GetY();
 				else
-	                val = getEOTF( valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+					val = getEOTF( valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);				
+			}
+			else
+			{
+                valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+GammaOffset)/(1.0+GammaOffset);
+                val=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 			}
 
 			//Reference plots
 			if (!m_showL)
 				if (mode == 5)
-					m_graphCtrl.AddPoint(m_refGraphID, valx * 100., 100.0*val, NULL, 10000.0);
+					m_graphCtrl.AddPoint(m_refGraphID, x, 100.0*val, NULL, 10000.0);
 				else
-					m_graphCtrl.AddPoint(m_refGraphID, valx * 100., 100.0*val, NULL, White.GetY());
+					m_graphCtrl.AddPoint(m_refGraphID, x, 100.0*val, NULL, White.GetY());
             else
-                m_graphCtrl.AddPoint(m_refGraphID, valx * 100., Y_to_L(val));
+                m_graphCtrl.AddPoint(m_refGraphID, x, Y_to_L(val));
 
 			if((val > 0) && (i != 0))	// log scale is not valid for first value
 				m_logGraphCtrl.AddPoint(m_refLogGraphID, valx * 100. , log(val)/log(valx), NULL, NULL);

@@ -268,6 +268,8 @@ BEGIN
     CONTROL         "Add settling pattern to automatic measures",IDC_IS_SETTLING,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,123,149,10
     CONTROL         "Check for updates",IDC_CHECK_UPDATE,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,21,77,10
+    CONTROL         "RealTime display of measures",IDC_CHECK_DISPLAYRT,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,101,95,108,10
 END
 
 IDD_EXPORTXLS_DIALOG DIALOG 0, 0, 226, 135

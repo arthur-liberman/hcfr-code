@@ -622,9 +622,7 @@ BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nP
 	ColorRGBDisplay p_clr;
 	BOOL do_Intensity=false;
 	if ( nPatternType == MT_PRIMARY || nPatternType == MT_SECONDARY || nPatternType == MT_SAT_RED || nPatternType == MT_SAT_GREEN || nPatternType == MT_SAT_BLUE || nPatternType == MT_SAT_YELLOW || nPatternType == MT_SAT_CYAN || nPatternType == MT_SAT_MAGENTA || nPatternType == MT_ACTUAL)
-	{
 		do_Intensity = true;
-	}
 
 	p_clr[0] = clr[0] * m_displayWindow.m_Intensity / 100;
 	p_clr[1] = clr[1] * m_displayWindow.m_Intensity / 100;
@@ -635,9 +633,11 @@ BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nP
 		Init();
 	if (m_GDIGenePropertiesPage.m_nDisplayMode == DISPLAY_GDI_Hide)
 	{
+//		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.SetColor ( RGB(p_clr[0] * 2.55,p_clr[1] * 2.55,p_clr[2] * 2.55) );
 		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.ShowWindow(SW_SHOW);
-		( (CMainFrame *) (AfxGetApp () -> m_pMainWnd)) -> EnableWindow ( TRUE );
+		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> EnableWindow (TRUE);
 		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.SetForegroundWindow();
+		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.RedrawWindow ();
 	} else
 	{
 		if ( m_GDIGenePropertiesPage.m_nDisplayMode == DISPLAY_madVR)
@@ -669,7 +669,6 @@ BOOL CGDIGenerator::CanDisplayAnimatedPatterns(BOOL isSpecialty)
 BOOL CGDIGenerator::DisplayAnsiBWRects(BOOL bInvert)
 {
 	m_displayWindow.DisplayAnsiBWRects(bInvert);
-
 	return TRUE;
 }
 

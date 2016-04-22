@@ -50,6 +50,7 @@ public:
 	BOOL	m_doSavePosition;
 	BOOL	m_bContinuousMeasures;
 	BOOL	m_bLatencyBeep;
+	BOOL	bDisplayRT;
 	int		m_BWColorsToAdd;
 	BOOL	m_bDetectPrimaries;
 	BOOL	m_useHSV;

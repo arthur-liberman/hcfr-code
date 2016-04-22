@@ -145,7 +145,10 @@ void CGammaGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			{
 				valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
 				if (mode == 5)
+				{
 		            valy = getEOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100.;
+					valy = min(valy,10);
+				}
 				else
 		            valy = getEOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 			}

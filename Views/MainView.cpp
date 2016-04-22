@@ -1692,6 +1692,7 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 			m_comboMode.SetCurSel (m_displayMode);
 			OnSelchangeComboMode();
 		}
+
 		last_minCol = GetDocument()->GetMeasure()->m_currentIndex + 1;
 		minCol = last_minCol;
 		UpdateGrid();

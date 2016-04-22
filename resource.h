@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by CHCFR21_ESPANOL.rc
+// Used by CHCFR21_FRANCAIS.rc
 //
 #define IDS_STRING_VERSION              1
 #define IDS_STRING_VERSION_WEB          2
@@ -586,6 +586,7 @@
 #define IDC_EDIT_PATTERN_CHECK_MAX_RETRY_BY_PATTERN 1203
 #define IDC_CHECK_CONTINUOUS2           1203
 #define IDC_CHECK_BEEP2                 1203
+#define IDC_CHECK_DISPLAYRT             1203
 #define IDC_DATA_YY2                    1204
 #define IDC_EDIT_PATTERN_CHECK_MAX_RETRY_BY_SERIES 1204
 #define IDC_DATA_X3                     1205

@@ -81,6 +81,7 @@ protected:
 public:
 	BOOL	m_bIREScaleMode;
 	BOOL	m_binMeasure;
+	BOOL	bDisplayRT;
 	UINT	m_bpreV10;
 
 	// Internal data used by background measures threads (not serialized)
