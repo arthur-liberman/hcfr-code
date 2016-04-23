@@ -2634,12 +2634,12 @@ BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "CompanyName", "Association Homecinema Francophone"
             VALUE "FileDescription", "Resources Colorimètre HCFR"
-            VALUE "FileVersion", "3,4,0"
+            VALUE "FileVersion", "3,4,1"
             VALUE "InternalName", "CHCFR21_ESPAÑOL"
             VALUE "LegalCopyright", "Copyright (C) 2005-2008"
             VALUE "OriginalFilename", "CHCFR21_ESPAÑOL.DLL"
             VALUE "ProductName", "Colorimètre HCFR langage Español"
-            VALUE "ProductVersion", "3,4,0"
+            VALUE "ProductVersion", "3,4,1"
         END
     END
     BLOCK "VarFileInfo"
@@ -2664,7 +2664,7 @@ IDC_CURSOR_MEASURE      CURSOR                  "res\\cursor_meas.cur"
 
 STRINGTABLE
 BEGIN
-    IDR_MAINFRAME           "Colorimètre HCFR - 3,4,0"
+    IDR_MAINFRAME           "Colorimètre HCFR - 3,4,1"
     IDR_MESURETYPE          "\nRelevé\nRelevé\nFichiers ColorHCFR (*.chc)\n.chc\nCOLORHCFR\nRelevé de couleurs HCFR"
 END
 

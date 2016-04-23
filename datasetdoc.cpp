@@ -4338,12 +4338,16 @@ void CDataSetDoc::OnMeasureFullTiltBoogie()
 	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( Msg, "On measure", MB_ICONQUESTION | MB_YESNO ) )
 	{
 		MeasureGrayScaleAndColors();
+		BOOL doSettling=GetConfig()->m_isSettling;
+		GetConfig()->m_isSettling = FALSE;
 		MeasureNearBlackScale();
 		MeasureNearWhiteScale();
 		MeasureAllSaturationScales();
+		MeasureContrast();
+		GetConfig()->m_isSettling = doSettling;
 		SetSelectedColor ( noDataColor );
 		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
-		}
+	}
 }
 
 void CDataSetDoc::OnUpdateMeasureFullTiltBoogie(CCmdUI* pCmdUI)

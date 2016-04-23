@@ -449,15 +449,11 @@ BOOL CGDIGenerator::DisplayRGBColormadVR( const ColorRGBDisplay& clr, bool first
 			MessageBox(0, "Test pattern failure.", "Error", MB_ICONERROR);
 			return false;
 		  }
-		  Sleep(1000);
-		  madVR_ShowRGB(.75,0,0);
-		  Sleep(1000);
-		  madVR_ShowRGB(0,.75,0);
-		  Sleep(1000);
-		  madVR_ShowRGB(0,0,.75);
-		  Sleep(1000);
-		  madVR_ShowRGB(.75,.75,.75);
-		  Sleep(1000);
+		  for (int i=0;i<=24;i++)
+		  {
+			  madVR_ShowRGB(double(i) * 10.0 / 255.0,double(i) * 10.0 / 255.0,double(i) * 10.0 / 255.0);
+			  Sleep(33);
+		  }
 	  }
       if (m_madVR_3d)
     	  sprintf(aBuf,"HCFR is measuring display, pleaset wait...%d:%d:%d[3dlut disabled]",rT,gT,bT);
@@ -465,7 +461,7 @@ BOOL CGDIGenerator::DisplayRGBColormadVR( const ColorRGBDisplay& clr, bool first
     	  sprintf(aBuf,"HCFR is measuring display, please wait...%d:%d:%d",rT,gT,bT);
       const CString s2(aBuf);
 	  madVR_SetOsdText(CT2CW(s2));
-
+/*
 	if ( (nPattern > 1) && (nPattern % 50) == 0)
 	{
 		  //sleep prevention every 50 patterns
@@ -477,7 +473,7 @@ BOOL CGDIGenerator::DisplayRGBColormadVR( const ColorRGBDisplay& clr, bool first
 		}	 
 		madVR_SetPatternConfig(Cgen.m_rectSizePercent, int (bgstim * 100), -1, 20);
 	}
-
+*/
 	if (!madVR_ShowRGB(r, g, b))
       {
         MessageBox(0, "Test pattern failure.", "Error", MB_ICONERROR);
@@ -551,17 +547,13 @@ BOOL CGDIGenerator::DisplayRGBCCast( const ColorRGBDisplay& clr, bool first, UIN
 	        MessageBox(0, "CCast Test pattern failure.", "set_bg", MB_ICONERROR);
 			return false;
 		  }
-		  Sleep(1000);
-		  ccwin->set_color(ccwin,.75,0,0);
-		  Sleep(1000);
-		  ccwin->set_color(ccwin,0,.75,0);
-		  Sleep(1000);
-		  ccwin->set_color(ccwin,0,0,.75);
-		  Sleep(1000);
-		  ccwin->set_color(ccwin,.75,.75,.75);
-		  Sleep(1000);
-	  }
-	
+		  for (int i=0;i<=10;i++)
+		  {
+			  ccwin->set_color(ccwin,double(i) * 25.0 /  255.0,double(i) * 25.0 / 255.0,double(i) * 25.0 / 255.0);
+			  Sleep(33);
+		  }
+	}
+/*	
 	if ((nPattern > 1) && (nPattern % 50) == 0)
 	{
 		//sleep prevention
@@ -574,7 +566,7 @@ BOOL CGDIGenerator::DisplayRGBCCast( const ColorRGBDisplay& clr, bool first, UIN
 		ccwin->set_bg(ccwin,bgstim);
 		Sleep(50);
 	}
-
+*/
 		if (ccwin->set_color(ccwin,r,g,b) != 0 )
 		{
 	        MessageBox(0, "CCast Test pattern failure.", "set_color", MB_ICONERROR);
@@ -633,11 +625,10 @@ BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nP
 		Init();
 	if (m_GDIGenePropertiesPage.m_nDisplayMode == DISPLAY_GDI_Hide)
 	{
-//		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.SetColor ( RGB(p_clr[0] * 2.55,p_clr[1] * 2.55,p_clr[2] * 2.55) );
 		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.ShowWindow(SW_SHOW);
 		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> EnableWindow (TRUE);
 		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.SetForegroundWindow();
-		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.RedrawWindow ();
+		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.RedrawWindow ();
 	} else
 	{
 		if ( m_GDIGenePropertiesPage.m_nDisplayMode == DISPLAY_madVR)
@@ -660,7 +651,7 @@ BOOL CGDIGenerator::CanDisplayAnsiBWRects()
 
 BOOL CGDIGenerator::CanDisplayAnimatedPatterns(BOOL isSpecialty)
 {
-	if (isSpecialty && m_GDIGenePropertiesPage.m_nDisplayMode != DISPLAY_madVR )
+	if (isSpecialty && m_GDIGenePropertiesPage.m_nDisplayMode != DISPLAY_madVR)
 		return TRUE;
 
 	return ((m_GDIGenePropertiesPage.m_nDisplayMode != DISPLAY_madVR) && (m_GDIGenePropertiesPage.m_nDisplayMode != DISPLAY_ccast)?TRUE:FALSE);

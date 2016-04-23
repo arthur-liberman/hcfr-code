@@ -226,6 +226,7 @@ public:
 	BOOL WaitForDynamicIris ( BOOL bIgnoreEscape = FALSE );
 	BOOL CheckBlackOverride (  );
 	void UpdateViews ( CDataSetDoc *pDoc = NULL, int Sequence = 0 );
+	void UpdateTstWnd ( CDataSetDoc *pDoc, int Sequence );
 	int m_currentIndex;
 
 	HANDLE InitBackgroundMeasures ( CSensor *pSensor, int nSteps );
