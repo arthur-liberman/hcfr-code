@@ -461,19 +461,20 @@ BOOL CGDIGenerator::DisplayRGBColormadVR( const ColorRGBDisplay& clr, bool first
     	  sprintf(aBuf,"HCFR is measuring display, please wait...%d:%d:%d",rT,gT,bT);
       const CString s2(aBuf);
 	  madVR_SetOsdText(CT2CW(s2));
-/*
-	if ( (nPattern > 1) && (nPattern % 50) == 0)
+
+	if ( (nPattern > 50) && (nPattern % 40) == 0 && GetConfig()->m_bABL)
 	{
-		  //sleep prevention every 50 patterns
+		//sleep prevention every 40 patterns for longer sequences
 		madVR_SetPatternConfig(100, 0, -1, 0);
-		if (!madVR_ShowRGB(0, 0, 0))
+		if (!madVR_ShowRGB(.2, .2 , .2))
 		{
 			MessageBox(0, "Test pattern failure.", "Error", MB_ICONERROR);
 			return false;
 		}	 
+		madVR_ShowRGB(.4, .4 , .4);
 		madVR_SetPatternConfig(Cgen.m_rectSizePercent, int (bgstim * 100), -1, 20);
 	}
-*/
+
 	if (!madVR_ShowRGB(r, g, b))
       {
         MessageBox(0, "Test pattern failure.", "Error", MB_ICONERROR);
@@ -547,18 +548,34 @@ BOOL CGDIGenerator::DisplayRGBCCast( const ColorRGBDisplay& clr, bool first, UIN
 	        MessageBox(0, "CCast Test pattern failure.", "set_bg", MB_ICONERROR);
 			return false;
 		  }
-		  for (int i=0;i<=10;i++)
+		  for (int i=0;i<=24;i++)
 		  {
-			  ccwin->set_color(ccwin,double(i) * 25.0 /  255.0,double(i) * 25.0 / 255.0,double(i) * 25.0 / 255.0);
-			  Sleep(33);
+			  ccwin->set_color(ccwin,double(i) * 10.0 /  255.0,double(i) * 10.0 / 255.0,double(i) * 10.0 / 255.0);
+			  Sleep(50);
 		  }
 	}
-/*	
-	if ((nPattern > 1) && (nPattern % 50) == 0)
+	
+	if ((nPattern > 50) && (nPattern % 40) == 0 && GetConfig()->m_bABL)
 	{
 		//sleep prevention
-		ccwin->set_bg(ccwin,0);
-		if (ccwin->set_color(ccwin,0,0,0) != 0 )
+		ccwin->set_bg(ccwin,.2);
+		if (ccwin->set_color(ccwin,.2,.2,.2) != 0 )
+		{
+	        MessageBox(0, "CCast Test pattern failure.", "set_color", MB_ICONERROR);
+			return false;
+		}
+		Sleep(50);
+
+		ccwin->set_bg(ccwin,.4);
+		if (ccwin->set_color(ccwin,.4,.4,.4) != 0 )
+		{
+	        MessageBox(0, "CCast Test pattern failure.", "set_color", MB_ICONERROR);
+			return false;
+		} 
+		ccwin->set_bg(ccwin,.6);
+		Sleep(50);
+
+		if (ccwin->set_color(ccwin,.6,.6,.6) != 0 )
 		{
 	        MessageBox(0, "CCast Test pattern failure.", "set_color", MB_ICONERROR);
 			return false;
@@ -566,7 +583,7 @@ BOOL CGDIGenerator::DisplayRGBCCast( const ColorRGBDisplay& clr, bool first, UIN
 		ccwin->set_bg(ccwin,bgstim);
 		Sleep(50);
 	}
-*/
+
 		if (ccwin->set_color(ccwin,r,g,b) != 0 )
 		{
 	        MessageBox(0, "CCast Test pattern failure.", "set_color", MB_ICONERROR);
@@ -627,6 +644,23 @@ BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nP
 	{
 		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.ShowWindow(SW_SHOW);
 		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> EnableWindow (TRUE);
+		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.SetForegroundWindow();
+//static pattern
+		if (nPatternInfo > 50 && nPatternInfo % 40 == 0 && GetConfig()->m_bABL)
+		{
+			WINDOWPLACEMENT wp;
+			CRect rect;
+			::GetWindowRect ( ::GetDesktopWindow (), & rect );
+			( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.GetWindowPlacement(&wp);			
+			( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.SetWindowPos(&CWnd::wndTop,0,0,rect.Width(),rect.Height(),SWP_SHOWWINDOW);
+			for (int i=0;i<=24;i++)
+			{
+				( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.SetColor ( RGB(i * 10,i * 10,i * 10) );
+				( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.RedrawWindow ();
+				Sleep(33);
+			}
+			( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.SetWindowPlacement(&wp);			
+		}
 		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.SetForegroundWindow();
 		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.RedrawWindow ();
 	} else

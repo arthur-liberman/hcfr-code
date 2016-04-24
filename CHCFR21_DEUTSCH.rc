@@ -236,7 +236,7 @@ BEGIN
     PUSHBUTTON      "Hilfe",IDHELP,140,154,49,14,WS_GROUP
 END
 
-IDD_GENERAL_PROP_PAGE DIALOGEX 0, 0, 212, 207
+IDD_GENERAL_PROP_PAGE DIALOGEX 0, 0, 213, 217
 STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Allgemeines"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -251,25 +251,26 @@ BEGIN
     CONTROL         "Fortlaufendes Messen",IDC_CHECK_CONTINUOUS,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,56,85,10
     CONTROL         "Grau/Primärfarben bei User-Messungen erkennen",IDC_CHECK_DETECT_PRIMARIES,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,67,175,10
-    GROUPBOX        "Dynamische Iris",IDC_STATIC,7,85,198,54,WS_GROUP
+    GROUPBOX        "Dynamische Iris",IDC_STATIC,7,85,198,59,WS_GROUP
     LTEXT           "Latenzzeit",IDC_STATIC,14,96,34,8
     EDITTEXT        IDC_EDIT_IRIS_TIME,60,93,21,14,ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "ms",IDC_STATIC,87,96,15,8
     CONTROL         "Signal bei Beginn der Messung (Latenzeinstellungshilfe)",IDC_CHECK_BEEP,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,107,189,10
-    GROUPBOX        "Farben hinzufügen bei Primär- und Sekundärfarbmessungen",IDC_STATIC,7,142,198,25,WS_GROUP
-    CONTROL         "Keine",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,153,34,10
-    CONTROL         "Weiß",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,69,153,33,10
-    CONTROL         "Weiß und Schwarz",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,115,153,76,10
-    GROUPBOX        "Gray levels rounding assumption",IDC_STATIC,7,171,198,26,WS_GROUP
+    GROUPBOX        "Farben hinzufügen bei Primär- und Sekundärfarbmessungen",IDC_STATIC,7,149,198,25,WS_GROUP
+    CONTROL         "Keine",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,160,34,10
+    CONTROL         "Weiß",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,69,160,33,10
+    CONTROL         "Weiß und Schwarz",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,115,160,76,10
+    GROUPBOX        "Gray levels rounding assumption",IDC_STATIC,7,180,198,26,WS_GROUP
     CONTROL         "Use round down levels (AVSHD, DVE)",IDC_CHECK_USE_ROUNDDOWN,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,182,164,10
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,191,164,10
     CONTROL         "Use HSV Level Bars",IDC_CHECK_USE_HSV,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,113,56,81,10
     CONTROL         "Add settling pattern to automatic measures",IDC_IS_SETTLING,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,123,149,10
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,120,149,10
     CONTROL         "Check for updates",IDC_CHECK_UPDATE,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,21,77,10
     CONTROL         "RealTime display of measures",IDC_CHECK_DISPLAYRT,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,101,95,108,10
+    CONTROL         "Inhibit ABL during long sequences",IDC_CHECK_ABL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,132,117,10
 END
 
 IDD_EXPORTXLS_DIALOG DIALOG 0, 0, 226, 135
@@ -2436,7 +2437,8 @@ BEGIN
 
     IDD_GENERAL_PROP_PAGE, DIALOG
     BEGIN
-        BOTTOMMARGIN, 199
+        RIGHTMARGIN, 212
+        BOTTOMMARGIN, 209
     END
 
     IDD_ONEDEVICESENSOR_PROP_PAGE, DIALOG

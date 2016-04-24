@@ -841,7 +841,8 @@ static void mem_flush_data(png_structp png_ptr) {
 void CFullScreenWindow::OnPaint() 
 {
 	CPaintDC	dc(this); // device context for painting
-	CRect		rect;
+	CPaintDC	dc1(this);
+	CRect		rect,rect_ABL;
 	int			row, col, dWidth, dHeight;
 	COLORREF	DisplayColor = m_Color;
 	BOOL		bDraw = FALSE;
@@ -1106,18 +1107,24 @@ void CFullScreenWindow::OnPaint()
 			dWidth = (int)(rect.Width()*(100-m_rectAreaPercent)/100.0);
 			dHeight = (int)(rect.Height()*(100-m_rectAreaPercent)/100.0);
 			borderArea = (dWidth + 40.) * (dHeight + 40.) - dWidth * dHeight; 
-	//		borderArea = 0;
-
 
 			//static pattern detection avoidance
-			//stagger every 50 patterns
-//			if ((m_nPat > 1) && (m_nPat % 50) == 0)
-//			{
-//				brush.CreateSolidBrush ( RGB(0,0,0) );
-//				dc.FillRect ( &rect, &brush );
-//				brush.DeleteObject ();
-//				Sleep(50);
-//			}
+			if ((m_nPat > 50) && (m_nPat % 40) == 0 && GetConfig()->m_bABL)
+			{				
+				GetClientRect(&rect_ABL);
+				for (int i=0;i<=24;i++)
+				{
+					brush.CreateSolidBrush ( RGB((i+1) * 10,(i+1) * 10,(i+1) * 10) );
+					dc.FillRect ( &rect_ABL, &brush );
+					Sleep(33);
+					brush.DeleteObject();
+				}
+				brush.CreateSolidBrush ( RGB(64,64,64) );
+				dc.FillRect ( &rect_ABL, &brush );
+				Sleep(33);
+				brush.DeleteObject();
+				DeleteDC(dc1);
+			}
 
 			m_nPat++;
 			if(m_rectSizePercent < 100 && !isSpecial)  // Need to draw background and border
@@ -1148,7 +1155,6 @@ void CFullScreenWindow::OnPaint()
 					brush.CreateSolidBrush ( RGB(0,0,0) );
 					dc.FillRect ( &borderRect, &brush );
 					brush.DeleteObject ();
-
 				}
 			}
 

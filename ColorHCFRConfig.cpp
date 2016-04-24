@@ -253,6 +253,7 @@ void CColorHCFRConfig::InitDefaults()
 	m_latencyTime=0;
 	m_bLatencyBeep=FALSE;
 	bDisplayRT=TRUE;
+	m_bABL=FALSE;
 	m_bUseRoundDown=FALSE;
 	m_BWColorsToAdd=1;
 	m_GammaRef=2.2;
@@ -338,6 +339,7 @@ BOOL CColorHCFRConfig::LoadSettings()
     //m_latencyTime = max(m_latencyTime, 250);
 	m_bLatencyBeep=GetProfileInt("References","IrisLatencyBeep",0);
 	bDisplayRT=GetProfileInt("References","Display RT",1);
+	m_bABL=GetProfileInt("References","ABL Inhibitor",0);
 	m_bUseRoundDown=GetProfileInt("References","SatUseMeasuredRef",0);
 	m_GammaRef=GetProfileDouble("References","GammaRefValue",2.2);
 	m_GammaAvg=GetProfileDouble("References","GammaAvgValue",2.2);
@@ -421,6 +423,7 @@ void CColorHCFRConfig::SaveSettings()
 	WriteProfileInt("References","IrisLatencyTime",m_latencyTime);
 	WriteProfileInt("References","IrisLatencyBeep",m_bLatencyBeep);
 	WriteProfileInt("References","Display RT",bDisplayRT);
+	WriteProfileInt("References","ABL Inhibitor",m_bABL);
 	WriteProfileInt("References","SatUseMeasuredRef",m_bUseRoundDown);
 	WriteProfileDouble("References","GammaRefValue",m_GammaRef);
 	WriteProfileDouble("References","GammaAvgValue",m_GammaAvg);
@@ -477,6 +480,7 @@ void CColorHCFRConfig::SetPropertiesSheetValues()
 	m_generalPropertiesPage.m_bContinuousMeasures=m_bContinuousMeasures;
 	m_generalPropertiesPage.m_bDetectPrimaries=m_bDetectPrimaries;
 	m_generalPropertiesPage.bDisplayRT=bDisplayRT;
+	m_generalPropertiesPage.m_bABL=m_bABL;
 	m_generalPropertiesPage.m_latencyTime=m_latencyTime;
 	m_generalPropertiesPage.m_bLatencyBeep=m_bLatencyBeep;
 	m_generalPropertiesPage.m_bUseRoundDown=m_bUseRoundDown;
@@ -586,6 +590,7 @@ BOOL CColorHCFRConfig::GetPropertiesSheetValues()
 	m_latencyTime=m_generalPropertiesPage.m_latencyTime;
 	m_bLatencyBeep=m_generalPropertiesPage.m_bLatencyBeep;
 	bDisplayRT=m_generalPropertiesPage.bDisplayRT;
+	m_bABL=m_generalPropertiesPage.m_bABL;
 	m_bUseRoundDown=m_generalPropertiesPage.m_bUseRoundDown;
 
 	m_colorStandard=(ColorStandard)(m_referencesPropertiesPage.m_colorStandard);

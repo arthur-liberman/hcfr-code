@@ -589,6 +589,8 @@
 #define IDC_CHECK_DISPLAYRT             1203
 #define IDC_DATA_YY2                    1204
 #define IDC_EDIT_PATTERN_CHECK_MAX_RETRY_BY_SERIES 1204
+#define IDC_CHECK_DISPLAYRT2            1204
+#define IDC_CHECK_ABL                   1204
 #define IDC_DATA_X3                     1205
 #define IDC_DTP_BLACKLEVEL              1205
 #define IDC_CHECK_VARIABLE_READTIME     1205

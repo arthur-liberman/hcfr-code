@@ -5067,7 +5067,7 @@ void CMeasure::UpdateTstWnd (CDataSetDoc *pDoc, int i )
 			for (int j=0;j<255;j++)
 			{
 				( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.SetColor ( RGB(j,j,j) );
-				( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.RedrawWindow();
+				( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.RedrawWindow();
 				Sleep(33);
 			}
 		}
