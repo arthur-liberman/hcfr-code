@@ -581,9 +581,15 @@ char*  PatName[96]={
 				break;
 			case MT_PRIMARY:
 			case MT_SECONDARY:
-			  if ( (GetColorReference().m_standard!=CC6))
-			  {
-				if(GetRValue(clr) == 0 && GetGValue(clr) == 0 && GetBValue(clr) == 0)
+//			  if ( (GetColorReference().m_standard!=CC6))
+//			  {
+				if(abs(GetGValue(clr) - GetRValue(clr)) < 30 && (GetRValue(clr) > GetBValue(clr)))
+					str2.LoadString ( IDS_YELLOWSECONDARY );
+				else if(abs(GetBValue(clr) - GetGValue(clr)) < 30 && (GetGValue(clr) > GetRValue(clr)))
+					str2.LoadString ( IDS_CYANSECONDARY );
+				else if(abs(GetBValue(clr) - GetRValue(clr)) < 30 && (GetRValue(clr) > GetGValue(clr)))
+					str2.LoadString ( IDS_MAGENTASECONDARY );
+				else if(GetRValue(clr) == 0 && GetGValue(clr) == 0 && GetBValue(clr) == 0)
 					str2.LoadString ( IDS_BLACK );
     			else if(GetRValue(clr) == GetGValue(clr) && GetBValue(clr) == GetGValue(clr))
 					str2.LoadString ( IDS_WHITE );
@@ -593,34 +599,28 @@ char*  PatName[96]={
 					str2.LoadString ( IDS_GREENPRIMARY );
 				else if((GetBValue(clr) > GetRValue(clr)) && (GetBValue(clr) > GetGValue(clr)))
 					str2.LoadString ( IDS_BLUEPRIMARY );
-				else if((GetRValue(clr) == GetGValue(clr)) && (GetRValue(clr) > GetBValue(clr)))
-					str2.LoadString ( IDS_YELLOWSECONDARY );
-				else if((GetGValue(clr) == GetBValue(clr)) && (GetGValue(clr) > GetRValue(clr)))
-					str2.LoadString ( IDS_CYANSECONDARY );
-				else if((GetRValue(clr) == GetBValue(clr)) && (GetRValue(clr) > GetGValue(clr)))
-					str2.LoadString ( IDS_MAGENTASECONDARY );
 				break;
-			  }
-			  else
-			  {
-				if(GetRValue(clr) == 0 && GetGValue(clr) == 0 && GetBValue(clr) == 0)
-					str2.LoadString ( IDS_BLACK );
-				else if(GetRValue(clr) == GetGValue(clr) && GetGValue(clr) == GetBValue(clr))
-					str2.LoadString ( IDS_WHITE );
-				else if(GetRValue(clr) > 180 && GetBValue(clr) > 120)
-					str2.LoadString ( IDS_CC6REDPRIMARY );
-				else if(GetRValue(clr) < 100 && GetBValue(clr) > 150)
-					str2.LoadString ( IDS_CC6GREENPRIMARY );
-				else if(GetRValue(clr) < 95 && GetBValue(clr) < 70)
-					str2.LoadString ( IDS_CC6BLUEPRIMARY );
-				else if(GetRValue(clr) > 120 && GetBValue(clr) > 170)
-					str2.LoadString ( IDS_CC6YELLOWSECONDARY );
-				else if(GetGValue(clr) > 180)
-					str2.LoadString ( IDS_CC6CYANSECONDARY );
-				else if(GetRValue(clr) > 220 && GetBValue(clr) < 50)
-					str2.LoadString ( IDS_CC6MAGENTASECONDARY );
-				break;
-			  }
+//			  }
+//			  else
+//			  {
+//				if(GetRValue(clr) == 0 && GetGValue(clr) == 0 && GetBValue(clr) == 0)
+//					str2.LoadString ( IDS_BLACK );
+//				else if(GetRValue(clr) == GetGValue(clr) && GetGValue(clr) == GetBValue(clr))
+//					str2.LoadString ( IDS_WHITE );
+//				else if(GetRValue(clr) > 180 && GetBValue(clr) > 120)
+//					str2.LoadString ( IDS_CC6REDPRIMARY );
+//				else if(GetRValue(clr) < 100 && GetBValue(clr) > 150)
+//					str2.LoadString ( IDS_CC6GREENPRIMARY );
+//				else if(GetRValue(clr) < 95 && GetBValue(clr) < 70)
+//					str2.LoadString ( IDS_CC6BLUEPRIMARY );
+//				else if(GetRValue(clr) > 120 && GetBValue(clr) > 170)
+//					str2.LoadString ( IDS_CC6YELLOWSECONDARY );
+//				else if(GetGValue(clr) > 180)
+//					str2.LoadString ( IDS_CC6CYANSECONDARY );
+//				else if(GetRValue(clr) > 220 && GetBValue(clr) < 50)
+//					str2.LoadString ( IDS_CC6MAGENTASECONDARY );
+//				break;
+//			  }
 			default:
 				if(GetRValue(clr) == 255 && GetGValue(clr) == 0 && GetBValue(clr) == 0)
 					str2.LoadString ( IDS_REDPRIMARY );

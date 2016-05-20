@@ -92,7 +92,7 @@ CGDIGenerator::CGDIGenerator()
     m_madVR_3d = GetConfig()->GetProfileInt("GDIGenerator","MADVR3D",0);
     m_madVR_vLUT = GetConfig()->GetProfileInt("GDIGenerator","MADVRvLUT",0);
     m_madVR_OSD = GetConfig()->GetProfileInt("GDIGenerator","MADVROSD",0);
-	m_displayWindow.SetDisplayMode(m_nDisplayMode);	// Always init in GDI mode during init
+	m_displayWindow.SetDisplayMode(m_nDisplayMode);	
 //	m_displayWindow.SetDisplayMode();	
 	m_bisInited = FALSE;
 

@@ -212,7 +212,12 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
     gamma=GetConfig()->m_GammaRef;
 
 	if (GetConfig()->m_colorStandard == sRGB) mode = 8;
-
+	if (mode == 1) //add small black offset
+	{
+		m_offsetR = 2;
+		m_offsetG = 4;
+		m_offsetB = 3;
+	}
 	if (  mode >= 4 )
     {
 		offset=m_offsetR;
@@ -309,6 +314,7 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 		simulColor[2]=(pow(value/100.0,gamma));
 	}
 
+	Sleep(50);
 	ColorRGB colMeasure(simulColor);
 	bool isSpecial = (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb);
 	CColor colSensor(ColorXYZ(colMeasure, isSpecial?CColorReference(HDTV):GetConfig()->m_colorStandard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));

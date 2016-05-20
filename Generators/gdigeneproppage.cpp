@@ -120,10 +120,11 @@ void CGDIGenePropPage::OnOK()
 		m_b16_235 = TRUE;
 	else
 		m_b16_235 = FALSE;
+	CheckRadioButton ( IDC_RGBLEVEL_RADIO1, IDC_RGBLEVEL_RADIO2, IDC_RGBLEVEL_RADIO1 + m_b16_235 );
 
 	CGDIGenerator m_pGenerator;
 	m_pGenerator.m_nDisplayMode = m_nDisplayMode;
-
+	GetConfig()->WriteProfileInt("GDIGenerator","DisplayMode",m_nDisplayMode);
 	CPropertyPageWithHelp::OnOK();
 }
 
@@ -141,7 +142,7 @@ BOOL CGDIGenePropPage::OnSetActive()
 	else
 		m_monitorComboCtrl.SetCurSel(0);
 	
-	CheckRadioButton ( IDC_RADIO1 + m_nDisplayMode,  IDC_RADIO1 + m_nDisplayMode , IDC_RADIO1 + m_nDisplayMode );
+	CheckRadioButton ( IDC_RADIO1,  IDC_RADIO1 + m_nDisplayMode , IDC_RADIO1 + m_nDisplayMode );
 	CheckRadioButton ( IDC_RGBLEVEL_RADIO1, IDC_RGBLEVEL_RADIO2, IDC_RGBLEVEL_RADIO1 + m_b16_235 );
 
 	if (IsDlgButtonChecked ( IDC_RADIO3 ) )
@@ -186,6 +187,7 @@ BOOL CGDIGenePropPage::OnKillActive()
 	{
 		m_nDisplayMode = DISPLAY_GDI;
 	}
+
 	if ( IsDlgButtonChecked ( IDC_RGBLEVEL_RADIO2 ) )
 	{
 		m_b16_235 = TRUE;
@@ -194,6 +196,7 @@ BOOL CGDIGenePropPage::OnKillActive()
 	{
 		m_b16_235 = FALSE;
 	}
+	CheckRadioButton ( IDC_RGBLEVEL_RADIO1, IDC_RGBLEVEL_RADIO2, IDC_RGBLEVEL_RADIO1 + m_b16_235 );
 
 	return CPropertyPageWithHelp::OnKillActive();
 }
