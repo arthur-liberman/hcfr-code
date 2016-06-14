@@ -265,7 +265,7 @@ void CColorHCFRConfig::InitDefaults()
 	m_useMeasuredGamma=FALSE;
 	m_bSave=FALSE;
 	m_bSave2=FALSE;
-	m_GammaOffsetType=1;
+	m_GammaOffsetType=4;
 	m_manualGOffset=0.099;
     m_manualWhitex = 0.312712;
     m_manualWhitey = 0.329008;

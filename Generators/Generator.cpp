@@ -135,7 +135,7 @@ BOOL CGenerator::Configure()
 	return result==IDOK;
 }
 
-BOOL CGenerator::Init(UINT nbMeasure)
+BOOL CGenerator::Init(UINT nbMeasure, bool isSpecial)
 {
 	nMeasureNumber = nbMeasure; 
 	CGDIGenerator Cgen;

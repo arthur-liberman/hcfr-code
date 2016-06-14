@@ -157,7 +157,7 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 			//look for white and disable if detect for primaries/secondaries is not selected
 			else if ( m_displayMode == 0 || (m_displayMode == 1 && minCol == 7) || m_displayMode == 3 || m_displayMode == 4 || m_pRefColor->GetDeltaxy ( GetColorReference().GetWhite(), GetColorReference() ) < 0.05)
 			{
-				m_bLumaMode = FALSE;
+				m_bLumaMode = m_displayMode==1?TRUE:FALSE;
 				aReference = GetColorReference().GetWhite();
 			}
 		} //mincol > 0
@@ -330,7 +330,7 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
                            YWhite = m_pRefColor->GetY();
 			}
         }
-			m_dEValue = aReference.isValid()?float(m_pRefColor->GetDeltaE(YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, !m_bLumaMode, GetConfig()->gw_Weight )):0 ;
+			m_dEValue = aReference.isValid()?float(m_pRefColor->GetDeltaE(YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, !m_bLumaMode,  m_displayMode == 3 ? 1:GetConfig()->gw_Weight )):0 ;
     } //have valid m_prefcolor
 	else
 	{

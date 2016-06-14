@@ -364,7 +364,7 @@ void CGDIGenerator::GetPropertiesSheetValues()
 	}
 }
 
-BOOL CGDIGenerator::Init(UINT nbMeasure)
+BOOL CGDIGenerator::Init(UINT nbMeasure, bool isSpecial)
 {
 	BOOL	bOk, bOnOtherMonitor;
 	GetMonitorList();
@@ -388,9 +388,16 @@ BOOL CGDIGenerator::Init(UINT nbMeasure)
 	m_displayWindow.SetRGBScale(m_b16_235);
 	m_displayWindow.MoveToMonitor(m_hMonitor[m_activeMonitorNum]);
 
-	if (m_nDisplayMode == DISPLAY_GDI || m_nDisplayMode == DISPLAY_GDI_nBG )
+//	if (m_nDisplayMode == DISPLAY_GDI_Hide)
+//	{
+//		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.ShowWindow(SW_SHOW);
+//		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> EnableWindow (TRUE);
+//		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.SetForegroundWindow();
+//	}
+
+	if (m_nDisplayMode == DISPLAY_GDI || m_nDisplayMode == DISPLAY_GDI_nBG || isSpecial )
 		m_displayWindow.ShowWindow(SW_SHOWMAXIMIZED);
-	if (m_nDisplayMode == DISPLAY_GDI_Hide) //to use test colour window instead
+	if (m_nDisplayMode == DISPLAY_GDI_Hide && !isSpecial) //to use test colour window instead
 		m_displayWindow.ShowWindow(SW_HIDE);
 
 	bOnOtherMonitor = IsOnOtherMonitor ();
@@ -640,7 +647,7 @@ BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nP
 	//see if we need to reconnect generator
 	if (!this->m_bisInited)
 		Init();
-	if (m_GDIGenePropertiesPage.m_nDisplayMode == DISPLAY_GDI_Hide)
+	if (m_GDIGenePropertiesPage.m_nDisplayMode == DISPLAY_GDI_Hide && nPatternType != MT_SPECIAL && nPatternType != MT_CONTRAST)
 	{
 		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.ShowWindow(SW_SHOW);
 		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> EnableWindow (TRUE);
@@ -688,7 +695,7 @@ BOOL CGDIGenerator::CanDisplayAnimatedPatterns(BOOL isSpecialty)
 	if (isSpecialty && m_GDIGenePropertiesPage.m_nDisplayMode != DISPLAY_madVR)
 		return TRUE;
 
-	return ((m_GDIGenePropertiesPage.m_nDisplayMode != DISPLAY_madVR) && (m_GDIGenePropertiesPage.m_nDisplayMode != DISPLAY_ccast)?TRUE:FALSE);
+	return ((m_GDIGenePropertiesPage.m_nDisplayMode != DISPLAY_madVR) && (m_GDIGenePropertiesPage.m_nDisplayMode != DISPLAY_ccast) ? TRUE:FALSE);
 }
 
 BOOL CGDIGenerator::DisplayAnsiBWRects(BOOL bInvert)

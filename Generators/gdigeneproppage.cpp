@@ -121,6 +121,7 @@ void CGDIGenePropPage::OnOK()
 	else
 		m_b16_235 = FALSE;
 	CheckRadioButton ( IDC_RGBLEVEL_RADIO1, IDC_RGBLEVEL_RADIO2, IDC_RGBLEVEL_RADIO1 + m_b16_235 );
+	CheckRadioButton ( IDC_RADIO1,  IDC_RADIO1 + m_nDisplayMode , IDC_RADIO1 + m_nDisplayMode );
 
 	CGDIGenerator m_pGenerator;
 	m_pGenerator.m_nDisplayMode = m_nDisplayMode;
@@ -197,6 +198,7 @@ BOOL CGDIGenePropPage::OnKillActive()
 		m_b16_235 = FALSE;
 	}
 	CheckRadioButton ( IDC_RGBLEVEL_RADIO1, IDC_RGBLEVEL_RADIO2, IDC_RGBLEVEL_RADIO1 + m_b16_235 );
+	CheckRadioButton ( IDC_RADIO1,  IDC_RADIO1 + m_nDisplayMode , IDC_RADIO1 + m_nDisplayMode );
 
 	return CPropertyPageWithHelp::OnKillActive();
 }

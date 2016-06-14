@@ -364,72 +364,72 @@ void CPatternDisplay::DisplayColorLevelPattern(INT clrLevel)
 
 void CPatternDisplay::OnPatternBlack() 
 {
-	m_patternDGenerator->Init();
-	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(0,0,0),CGenerator::MT_PRIMARY);
+	m_patternDGenerator->Init(0, TRUE);
+	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(0,0,0),CGenerator::MT_SPECIAL);
 	WaitKey();
 	m_patternDGenerator->Release();
 }
 
 void CPatternDisplay::OnPatternWhite() 
 {
-	m_patternDGenerator->Init();
-	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(100,100,100),CGenerator::MT_PRIMARY);
+	m_patternDGenerator->Init(0, TRUE);
+	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(100,100,100),CGenerator::MT_SPECIAL);
 	WaitKey();
 	m_patternDGenerator->Release();
 }
 
 void CPatternDisplay::OnPatternRed() 
 {
-	m_patternDGenerator->Init();
-	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(100,0,0),CGenerator::MT_PRIMARY);
+	m_patternDGenerator->Init(0, TRUE);
+	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(100,0,0),CGenerator::MT_SPECIAL);
 	WaitKey();
 	m_patternDGenerator->Release();
 }
 
 void CPatternDisplay::OnPatternGreen() 
 {
-	m_patternDGenerator->Init();
-	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(0,100,0),CGenerator::MT_PRIMARY);
+	m_patternDGenerator->Init(0, TRUE);
+	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(0,100,0),CGenerator::MT_SPECIAL);
 	WaitKey();
 	m_patternDGenerator->Release();
 }
 
 void CPatternDisplay::OnPatternBlue() 
 {
-	m_patternDGenerator->Init();
-	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(0,0,100),CGenerator::MT_PRIMARY);
+	m_patternDGenerator->Init(0, TRUE);
+	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(0,0,100),CGenerator::MT_SPECIAL);
 	WaitKey();
 	m_patternDGenerator->Release();
 }
 
 void CPatternDisplay::OnPatternCyan() 
 {
-	m_patternDGenerator->Init();
-	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(0,100,100),CGenerator::MT_PRIMARY);
+	m_patternDGenerator->Init(0, TRUE);
+	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(0,100,100),CGenerator::MT_SPECIAL);
 	WaitKey();
 	m_patternDGenerator->Release();
 }
 
 void CPatternDisplay::OnPatternMagenta() 
 {
-	m_patternDGenerator->Init();
-	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(100,0,100),CGenerator::MT_PRIMARY);
+	m_patternDGenerator->Init(0, TRUE);
+	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(100,0,100),CGenerator::MT_SPECIAL);
 	WaitKey();
 	m_patternDGenerator->Release();
 }
 
 void CPatternDisplay::OnPatternGrey() 
 {
-	m_patternDGenerator->Init();
-	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(50,50,50),CGenerator::MT_PRIMARY);
+	m_patternDGenerator->Init(0, TRUE);
+	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(50,50,50),CGenerator::MT_SPECIAL);
 	WaitKey();
 	m_patternDGenerator->Release();
 }
 
 void CPatternDisplay::OnPatternYellow() 
 {
-	m_patternDGenerator->Init();
-	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(100,100,0),CGenerator::MT_PRIMARY);
+	m_patternDGenerator->Init(0, TRUE);
+	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(100,100,0),CGenerator::MT_SPECIAL);
 	WaitKey();
 	m_patternDGenerator->Release();
 }
@@ -514,8 +514,8 @@ void CPatternDisplay::OnPatternBlackP()
 	double iPercent=0;
 	double step = 1. / 219. * 100.;
 
-	m_patternDGenerator->Init();
-	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(iPercent),CGenerator::MT_PRIMARY);
+	m_patternDGenerator->Init(0, TRUE);
+	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(iPercent),CGenerator::MT_SPECIAL);
 	while ( ! bKeyTyped )
 	{
 		while ( PeekMessage ( & Msg, NULL, WM_KEYDOWN, WM_MOUSELAST, TRUE ) )

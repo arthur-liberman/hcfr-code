@@ -1193,7 +1193,7 @@ void CMainFrame::OnPatternDisplay()
 {
 		int m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide);
 		
-		if (m_nDisplayMode == DISPLAY_GDI || m_nDisplayMode == DISPLAY_GDI_nBG )
+		if (m_nDisplayMode == DISPLAY_GDI || m_nDisplayMode == DISPLAY_GDI_nBG || (m_nDisplayMode == DISPLAY_GDI_Hide))
 		{
 	        if ( p_wndPatternDisplay == NULL )
 				delete p_wndPatternDisplay;

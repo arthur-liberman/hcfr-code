@@ -138,9 +138,9 @@ public:
 
 	CColor		m_SelectedColor;
 
-	void SetSelectedColor ( CColor & clr )	{ m_SelectedColor = clr; GetDocument () -> SetSelectedColor ( clr ); RefreshSelection (); }
+	void SetSelectedColor ( CColor & clr, bool inMeasure = FALSE )	{ m_SelectedColor = clr; GetDocument () -> SetSelectedColor ( clr ); if (!inMeasure) RefreshSelection (); }
 
-	void RefreshSelection (bool b_minCol=TRUE);
+	void RefreshSelection (bool b_minCol = TRUE, bool inMeasure = FALSE);
 
 // Operations
 public:

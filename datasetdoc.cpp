@@ -301,7 +301,7 @@ BOOL StartBackgroundMeasures ( CDataSetDoc * pDoc )
 				if ( m_d <= 1 || (m_d < 11 && m_d > 4) )
 					MT = CGenerator::MT_ACTUAL;
 				pDoc->GetGenerator()->DisplayRGBColor(clr,MT);
-				Sleep(500);
+				Sleep(500); //delay 1st pattern, after that delay is not needed [no color change]
 				
 				g_bGDIGeneratorRunning = TRUE;
 			}
@@ -2875,8 +2875,6 @@ void CDataSetDoc::OnPatternAnimBlack()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns(FALSE) )
 	{
-		if ( IDYES == GetColorApp()->InMeasureMessageBox( _S(IDS_DISPLAYANIMATEDPATTERN), "On Measure", MB_YESNO | MB_ICONQUESTION ) )
-		{
 			AfxGetMainWnd () -> EnableWindow ( FALSE );
 
 			m_pGenerator->Init();
@@ -2885,7 +2883,6 @@ void CDataSetDoc::OnPatternAnimBlack()
 			
 			AfxGetMainWnd () -> EnableWindow ( TRUE );
 			m_pGenerator->Release();
-		}
 	}
 	else
 	{
@@ -2898,8 +2895,6 @@ void CDataSetDoc::OnPatternAnimWhite()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns(FALSE) )
 	{
-		if ( IDYES == GetColorApp()->InMeasureMessageBox( _S(IDS_DISPLAYANIMATEDPATTERN), "On measure", MB_YESNO | MB_ICONQUESTION ) )
-		{
 			AfxGetMainWnd () -> EnableWindow ( FALSE );
 
 			m_pGenerator->Init();
@@ -2909,7 +2904,6 @@ void CDataSetDoc::OnPatternAnimWhite()
 			
 			AfxGetMainWnd () -> EnableWindow ( TRUE );
 			m_pGenerator->Release();
-		}
 	}
 	else
 	{

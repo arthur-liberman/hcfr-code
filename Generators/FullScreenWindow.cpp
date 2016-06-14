@@ -1049,7 +1049,7 @@ void CFullScreenWindow::OnPaint()
 		if (m_bAnimated)
 			m_rectAreaPercent = 100.;
 
-		if ( m_nDisplayMode != DISPLAY_GDI && m_nDisplayMode != DISPLAY_GDI_nBG )
+		if ( m_nDisplayMode != DISPLAY_GDI && m_nDisplayMode != DISPLAY_GDI_nBG && m_nDisplayMode != DISPLAY_GDI_Hide )
 		{
 			// Black is the color key
 			DisplayColor = 0x00000000;
@@ -1185,13 +1185,13 @@ void CFullScreenWindow::OnPaint()
 				//Settling pattern
 				if (GetConfig()->m_isSettling && GetConfig()->bDisplayRT)
 				{
-					for (int j=0;j<255;j++)
+					for (int j=0;j<255;j+=3)
 					{
 						CRect settlingRect=patternRect;
 						brush.CreateSolidBrush ( RGB(j,j,j) );
 						dc.FillRect ( &settlingRect, &brush );
 						brush.DeleteObject ();
-						Sleep(33);
+						Sleep(55);
 					}
 				}
 			}
@@ -1451,7 +1451,7 @@ void CFullScreenWindow::OnTimer(UINT nIDEvent)
 	if ( m_IdTimer == nIDEvent )
 	{
 		// Initializations
-		if ( (m_nDisplayMode == DISPLAY_GDI) || (m_nDisplayMode == DISPLAY_GDI_nBG) )
+		if ( (m_nDisplayMode == DISPLAY_GDI) || (m_nDisplayMode == DISPLAY_GDI_nBG) || (m_nDisplayMode == DISPLAY_GDI_Hide) )
 		{
 			if ( m_bWhite )
 			{
@@ -1526,7 +1526,7 @@ void CFullScreenWindow::OnTimer(UINT nIDEvent)
 				m_XMax = rect.right - m_XMargin - ( m_XWidth * 3 );
 				m_YMax = rect.bottom - m_YMargin;
 
-				if ((m_nDisplayMode == DISPLAY_GDI) || (m_nDisplayMode == DISPLAY_GDI_nBG) )
+				if ( (m_nDisplayMode == DISPLAY_GDI) || (m_nDisplayMode == DISPLAY_GDI_nBG) || (m_nDisplayMode == DISPLAY_GDI_Hide) )
 				{
 					// Initial drawing
 					SetRect ( &rect, m_XCurrent, m_YMargin, m_XCurrent + m_XWidth + 1, m_YMax + 1 );
@@ -1585,7 +1585,7 @@ void CFullScreenWindow::OnTimer(UINT nIDEvent)
 			}
 
 			// Draw evolution
-			if ((m_nDisplayMode == DISPLAY_GDI) || (m_nDisplayMode == DISPLAY_GDI_nBG) )
+			if ((m_nDisplayMode == DISPLAY_GDI) || (m_nDisplayMode == DISPLAY_GDI_nBG) || (m_nDisplayMode == DISPLAY_GDI_Hide))
 			{
 				SetRect ( &rect, x0, m_YMargin, x0 + m_AbsDeltaX + 1, m_YMax + 1 );
 				pDC -> SelectObject ( & br0 );

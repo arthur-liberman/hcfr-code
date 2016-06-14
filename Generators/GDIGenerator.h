@@ -67,7 +67,7 @@ public:
 	virtual void Serialize(CArchive& archive); 
 	CGenerator * m_patternDGenerator;
 
-	virtual BOOL Init(UINT nbMeasure = 0);
+	virtual BOOL Init(UINT nbMeasure = 0, bool isSpecial = FALSE);
 	virtual BOOL DisplayRGBColor(const ColorRGBDisplay& aRGBColor, MeasureType nPatternType = MT_UNKNOWN, UINT nPatternInfo = 0, BOOL bChangePattern = TRUE, BOOL bSilentMode = FALSE);
 	virtual BOOL DisplayRGBColormadVR(const ColorRGBDisplay& aRGBColor, bool first, UINT nPattern);
 	virtual BOOL DisplayRGBCCast(const ColorRGBDisplay& aRGBColor, bool first, UINT nPattern);

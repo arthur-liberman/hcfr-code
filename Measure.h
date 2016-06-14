@@ -116,7 +116,7 @@ public:
 	int GetGrayScaleSize() const { return m_grayMeasureArray.GetSize(); }
 	void SetGrayScaleSize(int steps);
 	void SetIREScaleMode(BOOL bIRE);
-	CColor lastColor;
+	CColor lastColor, previousColor;
 	CColor m_userBlack;
 	BOOL m_bOverRideBlack;
 

@@ -844,7 +844,7 @@ BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator, CDataS
 	double	dLuxValue;
 
 	CArray<CColor,int> measuredColor;
-	CColor previousColor;
+//	CColor previousColor;
 
 	BOOL	bUseLuxValues = TRUE;
 	CArray<double,int> measuredLux;
@@ -876,6 +876,7 @@ BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator, CDataS
 	}
 	
 	m_binMeasure = TRUE;
+	m_currentIndex = 0;
 	for(int i=(CheckBlackOverride()?1:0);i<size;i++)
 	{
 		if (i>0)
@@ -883,13 +884,13 @@ BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator, CDataS
 		else
 			doSettling = GetConfig()->m_isSettling;
 		
+		UpdateViews(pDoc, 0);
+		
 		if (!i && (GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide) == DISPLAY_GDI_Hide) )
 			UpdateTstWnd(pDoc, -1);
-
-		UpdateTstWnd(pDoc, i);
-
 		if( pGenerator->DisplayGray(ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown),CGenerator::MT_IRE ,!bRetry))
 		{
+			UpdateTstWnd(pDoc, i);
 			bEscape = WaitForDynamicIris (FALSE);
 			bRetry = FALSE;
 
@@ -991,7 +992,6 @@ BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator, CDataS
 			{
 				previousColor = lastColor;
 				lastColor = measuredColor[i];
-				UpdateViews(pDoc, 0);
 	
 				if(i != 0)
 				{
@@ -1049,6 +1049,7 @@ BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator, CDataS
 	}
 
 	m_binMeasure = FALSE;
+	UpdateViews(pDoc, 0);
 	m_isModified=TRUE;
 	return TRUE;
 }
@@ -1064,7 +1065,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 	double	dLuxValue;
 
 	CArray<CColor,int> measuredColor;
-	CColor previousColor;
+//	CColor previousColor;
 
 	BOOL	bUseLuxValues = TRUE;
 	CArray<double,int> measuredLux;
@@ -1096,18 +1097,22 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 	}
 
 	m_binMeasure = TRUE;
+	m_currentIndex = 0;
 	for(int i=(CheckBlackOverride()?1:0);i<size;i++)
 	{
 		if (i>0)
 			GetConfig()->m_isSettling=FALSE;
 		else
 			doSettling = GetConfig()->m_isSettling;
+		
+		UpdateViews(pDoc, 0);
 
 		if (!i && GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide) == DISPLAY_GDI_Hide)
 			UpdateTstWnd(pDoc, -1);
-		UpdateTstWnd(pDoc, i);
+
 		if( pGenerator->DisplayGray(ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown),CGenerator::MT_IRE ,!bRetry))
 		{
+			UpdateTstWnd(pDoc, i);
 			bEscape = WaitForDynamicIris (FALSE);
 			bRetry = FALSE;
 
@@ -1208,7 +1213,6 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 			{
 				previousColor = lastColor;			
 				lastColor = measuredColor[i];
-				UpdateViews(pDoc, 0);
 		
 				if(i != 0)
 				{
@@ -1292,14 +1296,16 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 									ColorRGBDisplay(primaryIRELevel,primaryIRELevel,primaryIRELevel),
 									ColorRGBDisplay(0,0,0)
 								};
-
+	m_currentIndex = 0;
 	for (int i = 0; i < 6 + GetConfig()->m_BWColorsToAdd ; i ++ )
 	{
+		UpdateViews(pDoc, 1);
 		if (!i && GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide) == DISPLAY_GDI_Hide)
 			UpdateTstWnd(pDoc, -1);
-		UpdateTstWnd(pDoc, i);
+
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SECONDARY,i,TRUE,TRUE) )
 		{
+			UpdateTstWnd(pDoc, i);
 			bEscape = WaitForDynamicIris (FALSE);
 			bRetry = FALSE;
 
@@ -1370,7 +1376,6 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 			{
 				previousColor = lastColor;			
 				lastColor = measuredColor[size+i];
-				UpdateViews(pDoc, 1);
 	
 				if (!pGenerator->HasPatternChanged(CGenerator::MT_SECONDARY,previousColor,lastColor))
 				{
@@ -1454,6 +1459,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 	GetConfig()->m_isSettling = doSettling;
 		
 	m_binMeasure = FALSE;
+	UpdateViews(pDoc, 1);
 	m_isModified=TRUE;
 	return TRUE;
 }
@@ -1469,7 +1475,7 @@ BOOL CMeasure::MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator, C
 	double	dLuxValue;
 
 	CArray<CColor,int> measuredColor;
-	CColor previousColor;
+//	CColor previousColor;
 
 	BOOL	bUseLuxValues = TRUE;
 	CArray<double,int> measuredLux;
@@ -1502,6 +1508,7 @@ BOOL CMeasure::MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator, C
 
 
 	m_binMeasure = TRUE;
+	m_currentIndex = 0;
 	for(int i=(CheckBlackOverride()?1:0);i<size;i++)
 	{
 		if (i>0)
@@ -1509,12 +1516,14 @@ BOOL CMeasure::MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator, C
 		else
 			doSettling = GetConfig()->m_isSettling;
 
+		UpdateViews(pDoc, 3);
 		if (!i && GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide) == DISPLAY_GDI_Hide)
 			UpdateTstWnd(pDoc, -1);
-		UpdateTstWnd(pDoc, i);
+
 		if( pGenerator->DisplayGray((ArrayIndexToGrayLevel ( i, 101, GetConfig () -> m_bUseRoundDown)),CGenerator::MT_NEARBLACK,!bRetry) )
 		{
 
+			UpdateTstWnd(pDoc, i);
 			bEscape = WaitForDynamicIris (FALSE);
 			bRetry = FALSE;
 
@@ -1615,7 +1624,6 @@ BOOL CMeasure::MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator, C
 			{
 				previousColor = lastColor;			
 				lastColor = measuredColor[i];
-				UpdateViews(pDoc, 3);
 	
 				if(i != 0)
 				{
@@ -1655,6 +1663,7 @@ BOOL CMeasure::MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator, C
 	GetConfig()->m_isSettling = doSettling;
 
 	m_binMeasure = FALSE;
+	UpdateViews(pDoc, 3);
 	m_isModified=TRUE;
 	return TRUE;
 }
@@ -1670,7 +1679,7 @@ BOOL CMeasure::MeasureNearWhiteScale(CSensor *pSensor, CGenerator *pGenerator, C
 	double	dLuxValue;
 
 	CArray<CColor,int> measuredColor;
-	CColor previousColor;
+//	CColor previousColor;
 
 	BOOL	bUseLuxValues = TRUE;
 	CArray<double,int> measuredLux;
@@ -1703,6 +1712,7 @@ BOOL CMeasure::MeasureNearWhiteScale(CSensor *pSensor, CGenerator *pGenerator, C
 
 	
 	m_binMeasure = TRUE;
+	m_currentIndex = 0;
 	for(int i=0;i<size;i++)
 	{
 		if (i>0)
@@ -1710,11 +1720,13 @@ BOOL CMeasure::MeasureNearWhiteScale(CSensor *pSensor, CGenerator *pGenerator, C
 		else
 			doSettling = GetConfig()->m_isSettling;
 
+		UpdateViews(pDoc, 4);
 		if (!i && GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide) == DISPLAY_GDI_Hide)
 			UpdateTstWnd(pDoc, -1);
-		UpdateTstWnd(pDoc, i);
+
 		if( pGenerator->DisplayGray((ArrayIndexToGrayLevel ( 101-size+i, 101, GetConfig () -> m_bUseRoundDown)),CGenerator::MT_NEARWHITE,!bRetry ) )
 		{
+			UpdateTstWnd(pDoc, i);
 			bEscape = WaitForDynamicIris (FALSE);
 			bRetry = FALSE;
 
@@ -1781,7 +1793,6 @@ BOOL CMeasure::MeasureNearWhiteScale(CSensor *pSensor, CGenerator *pGenerator, C
 			{
 				previousColor = lastColor;			
 				lastColor = measuredColor[i];
-				UpdateViews(pDoc, 4);
 
 				if(i != 0)
 				{
@@ -1818,6 +1829,7 @@ BOOL CMeasure::MeasureNearWhiteScale(CSensor *pSensor, CGenerator *pGenerator, C
 	GetConfig()->m_isSettling = doSettling;
 
 	m_binMeasure = FALSE;
+	UpdateViews(pDoc, 4);
 	m_isModified=TRUE;
 	return TRUE;
 }
@@ -1834,7 +1846,7 @@ BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator, CDat
 	double		dLuxValue;
 
 	CArray<CColor,int> measuredColor;
-	CColor previousColor;
+//	CColor previousColor;
 
 	BOOL	bUseLuxValues = TRUE;
 	CArray<double,int> measuredLux;
@@ -1871,13 +1883,15 @@ BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator, CDat
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
 	m_binMeasure = TRUE;
+	m_currentIndex = 0;
     for(int i=((GetConfig()->m_CCMode == MCD && pGenerator->GetName() == str)?1:0);i<size;i++)
 	{
 		if (i>0)
 			GetConfig()->m_isSettling=FALSE;
 		else
 			doSettling = GetConfig()->m_isSettling;
-
+		
+		UpdateViews(pDoc, 5);
 		if (GetConfig()->m_colorStandard == UHDTV3) //map p3 to 2020
 		{
 			CColor aColor;
@@ -1886,11 +1900,12 @@ BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator, CDat
 			rgbColor = aColor.GetRGBValue(CColorReference(UHDTV2));
 			GenColors[i] = ColorRGBDisplay(pow(rgbColor[0], 1.0 / 2.22) * 100.,pow(rgbColor[1], 1.0 / 2.22) * 100.0,pow(rgbColor[2], 1.0 / 2.22) * 100.);
 		}
+
 		if (!i && GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide) == DISPLAY_GDI_Hide)
 			UpdateTstWnd(pDoc, -1);
-		UpdateTstWnd(pDoc, i);
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_RED,100*i/(size - 1),!bRetry))
 		{
+			UpdateTstWnd(pDoc, i);
 			bEscape = WaitForDynamicIris (FALSE);
 			bRetry = FALSE;
 
@@ -1957,7 +1972,6 @@ BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator, CDat
 			{
 				previousColor = lastColor;			
 				lastColor = measuredColor[i];
-				UpdateViews(pDoc, 5);
 	
 				if(i != 0)
 				{
@@ -1994,6 +2008,7 @@ BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator, CDat
 	GetConfig()->m_isSettling = doSettling;
 
 	m_binMeasure = FALSE;
+	UpdateViews(pDoc, 5);
 	m_isModified=TRUE;
 	return TRUE;
 }
@@ -2010,7 +2025,7 @@ BOOL CMeasure::MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator, CD
 	double		dLuxValue;
 
 	CArray<CColor,int> measuredColor;
-	CColor previousColor;
+//	CColor previousColor;
 
 	BOOL	bUseLuxValues = TRUE;
 	CArray<double,int> measuredLux;
@@ -2046,12 +2061,14 @@ BOOL CMeasure::MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator, CD
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
 	m_binMeasure = TRUE;
+	m_currentIndex = 0;
 	for(int i=((GetConfig()->m_CCMode == MCD && pGenerator->GetName() == str)?1:0);i<size;i++)
 	{
 		if (i>0)
 			GetConfig()->m_isSettling=FALSE;
 		else
 			doSettling = GetConfig()->m_isSettling;
+		UpdateViews(pDoc, 6);
 
 		if (GetConfig()->m_colorStandard == UHDTV3) //map p3 to 2020
 		{
@@ -2061,11 +2078,13 @@ BOOL CMeasure::MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator, CD
 			rgbColor = aColor.GetRGBValue(CColorReference(UHDTV2));
 			GenColors[i] = ColorRGBDisplay(pow(rgbColor[0], 1.0 / 2.22) * 100.,pow(rgbColor[1], 1.0 / 2.22) * 100.0,pow(rgbColor[2], 1.0 / 2.22) * 100.);
 		}
+
 		if (!i && GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide) == DISPLAY_GDI_Hide)
 			UpdateTstWnd(pDoc, -1);
-		UpdateTstWnd(pDoc, i);
+
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_GREEN,100*i/(size - 1),!bRetry) )
 		{
+			UpdateTstWnd(pDoc, i);
 			bEscape = WaitForDynamicIris (FALSE);
 			bRetry = FALSE;
 
@@ -2132,7 +2151,6 @@ BOOL CMeasure::MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator, CD
 			{
 				previousColor = lastColor;			
 				lastColor = measuredColor[i];
-				UpdateViews(pDoc, 6);
 	
 				if(i != 0)
 				{
@@ -2169,6 +2187,7 @@ BOOL CMeasure::MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator, CD
 	GetConfig()->m_isSettling = doSettling;
 
 	m_binMeasure = FALSE;
+	UpdateViews(pDoc, 6);
 	m_isModified=TRUE;
 	return TRUE;
 }
@@ -2185,7 +2204,7 @@ BOOL CMeasure::MeasureBlueSatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 	double		dLuxValue;
 
 	CArray<CColor,int> measuredColor;
-	CColor previousColor;
+//	CColor previousColor;
 
 	BOOL	bUseLuxValues = TRUE;
 	CArray<double,int> measuredLux;
@@ -2222,6 +2241,7 @@ BOOL CMeasure::MeasureBlueSatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
 	m_binMeasure = TRUE;
+	m_currentIndex = 0;
     for(int i=((GetConfig()->m_CCMode == MCD && pGenerator->GetName() == str)?1:0);i<size;i++)
 	{
 		if (i>0)
@@ -2229,6 +2249,7 @@ BOOL CMeasure::MeasureBlueSatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 		else
 			doSettling = GetConfig()->m_isSettling;
 
+		UpdateViews(pDoc, 7);
 
 		if (GetConfig()->m_colorStandard == UHDTV3) //map p3 to 2020
 		{
@@ -2238,11 +2259,13 @@ BOOL CMeasure::MeasureBlueSatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 			rgbColor = aColor.GetRGBValue(CColorReference(UHDTV2));
 			GenColors[i] = ColorRGBDisplay(pow(rgbColor[0], 1.0 / 2.22) * 100.,pow(rgbColor[1], 1.0 / 2.22) * 100.0,pow(rgbColor[2], 1.0 / 2.22) * 100.);
 		}
+
 		if (!i && GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide) == DISPLAY_GDI_Hide)
 			UpdateTstWnd(pDoc, -1);
-		UpdateTstWnd(pDoc, i);
+
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_BLUE,100*i/(size - 1),!bRetry))
 		{
+			UpdateTstWnd(pDoc, i);
 			bEscape = WaitForDynamicIris (FALSE);
 			bRetry = FALSE;
 
@@ -2309,7 +2332,6 @@ BOOL CMeasure::MeasureBlueSatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 			{
 				previousColor = lastColor;			
 				lastColor = measuredColor[i];
-				UpdateViews(pDoc, 7);
 	
 				if(i != 0)
 				{
@@ -2346,6 +2368,7 @@ BOOL CMeasure::MeasureBlueSatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 	GetConfig()->m_isSettling = doSettling;
 
 	m_binMeasure = FALSE;
+	UpdateViews(pDoc, 7);
 	m_isModified=TRUE;
 	return TRUE;
 }
@@ -2362,7 +2385,7 @@ BOOL CMeasure::MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator, C
 	double		dLuxValue;
 
 	CArray<CColor,int> measuredColor;
-	CColor previousColor;
+//	CColor previousColor;
 
 	BOOL	bUseLuxValues = TRUE;
 	CArray<double,int> measuredLux;
@@ -2399,12 +2422,15 @@ BOOL CMeasure::MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator, C
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
 	m_binMeasure = TRUE;
+	m_currentIndex = 0;
     for(int i=((GetConfig()->m_CCMode == MCD && pGenerator->GetName() == str)?1:0);i<size;i++)
 	{
 		if (i>0)
 			GetConfig()->m_isSettling=FALSE;
 		else
 			doSettling = GetConfig()->m_isSettling;
+
+		UpdateViews(pDoc, 8);
 
 		if (GetConfig()->m_colorStandard == UHDTV3) //map p3 to 2020
 		{
@@ -2414,11 +2440,12 @@ BOOL CMeasure::MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator, C
 			rgbColor = aColor.GetRGBValue(CColorReference(UHDTV2));
 			GenColors[i] = ColorRGBDisplay(pow(rgbColor[0], 1.0 / 2.22) * 100.,pow(rgbColor[1], 1.0 / 2.22) * 100.0,pow(rgbColor[2], 1.0 / 2.22) * 100.);
 		}
+
 		if (!i && GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide) == DISPLAY_GDI_Hide)
 			UpdateTstWnd(pDoc, -1);
-		UpdateTstWnd(pDoc, i);
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_YELLOW,100*i/(size - 1),!bRetry))
 		{
+			UpdateTstWnd(pDoc, i);
 			bEscape = WaitForDynamicIris (FALSE);
 			bRetry = FALSE;
 
@@ -2485,7 +2512,6 @@ BOOL CMeasure::MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator, C
 			{
 				previousColor = lastColor;			
 				lastColor = measuredColor[i];
-				UpdateViews(pDoc, 8);
 	
 				if(i != 0)
 				{
@@ -2523,6 +2549,7 @@ BOOL CMeasure::MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator, C
 	GetConfig()->m_isSettling = doSettling;
 
 	m_binMeasure = FALSE;
+	UpdateViews(pDoc, 8);
 	m_isModified=TRUE;
 	return TRUE;
 }
@@ -2539,7 +2566,7 @@ BOOL CMeasure::MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 	double		dLuxValue;
 
 	CArray<CColor,int> measuredColor;
-	CColor previousColor;
+//	CColor previousColor;
 
 	BOOL	bUseLuxValues = TRUE;
 	CArray<double,int> measuredLux;
@@ -2576,6 +2603,7 @@ BOOL CMeasure::MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
 	m_binMeasure = TRUE;
+	m_currentIndex = 0;
     for(int i=((GetConfig()->m_CCMode == MCD && pGenerator->GetName() == str)?1:0);i<size;i++)
 	{
 		if (i>0)
@@ -2583,6 +2611,7 @@ BOOL CMeasure::MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 		else
 			doSettling = GetConfig()->m_isSettling;
 
+		UpdateViews(pDoc, 9);
 		if (GetConfig()->m_colorStandard == UHDTV3) //map p3 to 2020
 		{
 			CColor aColor;
@@ -2591,11 +2620,13 @@ BOOL CMeasure::MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 			rgbColor = aColor.GetRGBValue(CColorReference(UHDTV2));
 			GenColors[i] = ColorRGBDisplay(pow(rgbColor[0], 1.0 / 2.22) * 100.,pow(rgbColor[1], 1.0 / 2.22) * 100.0,pow(rgbColor[2], 1.0 / 2.22) * 100.);
 		}
+
 		if (!i && GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide) == DISPLAY_GDI_Hide)
 			UpdateTstWnd(pDoc, -1);
-		UpdateTstWnd(pDoc, i);
+
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_CYAN,100*i/(size - 1),!bRetry))
 		{
+			UpdateTstWnd(pDoc, i);
 			bEscape = WaitForDynamicIris (FALSE);
 			bRetry = FALSE;
 
@@ -2662,7 +2693,6 @@ BOOL CMeasure::MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 			{
 				previousColor = lastColor;			
 				lastColor = measuredColor[i];
-				UpdateViews(pDoc, 9);
 	
 				if(i != 0)
 				{
@@ -2700,6 +2730,7 @@ BOOL CMeasure::MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 	GetConfig()->m_isSettling = doSettling;
 
 	m_binMeasure = FALSE;
+	UpdateViews(pDoc, 9);
 	m_isModified=TRUE;
 	return TRUE;
 }
@@ -2716,7 +2747,7 @@ BOOL CMeasure::MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator, 
 	double		dLuxValue;
 
 	CArray<CColor,int> measuredColor;
-	CColor previousColor;
+//	CColor previousColor;
 
 	BOOL	bUseLuxValues = TRUE;
 	CArray<double,int> measuredLux;
@@ -2753,12 +2784,15 @@ BOOL CMeasure::MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator, 
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
 	m_binMeasure = TRUE;
+	m_currentIndex = 0;
     for(int i=((GetConfig()->m_CCMode == MCD && pGenerator->GetName() == str)?1:0);i<size;i++)
 	{
 		if (i>0)
 			GetConfig()->m_isSettling=FALSE;
 		else
 			doSettling = GetConfig()->m_isSettling;
+
+		UpdateViews(pDoc, 10);
 		if (GetConfig()->m_colorStandard == UHDTV3) //map p3 to 2020
 		{
 			CColor aColor;
@@ -2767,11 +2801,13 @@ BOOL CMeasure::MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator, 
 			rgbColor = aColor.GetRGBValue(CColorReference(UHDTV2));
 			GenColors[i] = ColorRGBDisplay(pow(rgbColor[0], 1.0 / 2.22) * 100.,pow(rgbColor[1], 1.0 / 2.22) * 100.0,pow(rgbColor[2], 1.0 / 2.22) * 100.);
 		}
+
 		if (!i && GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide) == DISPLAY_GDI_Hide)
 			UpdateTstWnd(pDoc, -1);
-		UpdateTstWnd(pDoc, i);
+
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_MAGENTA,100*i/(size - 1) ,!bRetry))
 		{
+			UpdateTstWnd(pDoc, i);
 			bEscape = WaitForDynamicIris (FALSE);
 			bRetry = FALSE;
 
@@ -2838,7 +2874,6 @@ BOOL CMeasure::MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator, 
 			{
 				previousColor = lastColor;			
 				lastColor = measuredColor[i];
-				UpdateViews(pDoc, 10);
 	
 				if(i != 0)
 				{
@@ -2873,7 +2908,9 @@ BOOL CMeasure::MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator, 
 			m_magentaSatMeasureArray[i].ResetLuxValue ();
 	}
 	GetConfig()->m_isSettling = doSettling;
+
 	m_binMeasure = FALSE;
+	UpdateViews(pDoc, 10);
 	m_isModified=TRUE;
 	return TRUE;
 }
@@ -2894,7 +2931,7 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
     if (isExtPat) size = GetConfig()->GetCColorsSize();
 
     CArray<CColor,int> measuredColor;
-	CColor previousColor;
+//	CColor previousColor;
 
 	BOOL	bUseLuxValues = TRUE;
 	CArray<double,int> measuredLux;
@@ -2980,6 +3017,7 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 	for (int i=0;i<1000;i++) 
 		m_cc24SatMeasureArray[i] = noDataColor;
 	m_binMeasure = TRUE;
+	m_currentIndex = 0;
 	for(int i=0;i<size;i++)
 	{
 		if (i>0)
@@ -2987,6 +3025,7 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 		else
 			doSettling = GetConfig()->m_isSettling;
 
+		UpdateViews(pDoc, 11);
 		if (GetConfig()->m_colorStandard == UHDTV3) //map p3 to 2020
 		{
 			CColor aColor;
@@ -2995,11 +3034,12 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 			rgbColor = aColor.GetRGBValue(CColorReference(UHDTV2));
 			GenColors[i] = ColorRGBDisplay(pow(rgbColor[0], 1.0 / 2.22) * 100.,pow(rgbColor[1], 1.0 / 2.22) * 100.0,pow(rgbColor[2], 1.0 / 2.22) * 100.);
 		}
+
 		if (!i && GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide) == DISPLAY_GDI_Hide)
 			UpdateTstWnd(pDoc, -1);
-		UpdateTstWnd(pDoc, i);
 		if( pGenerator->DisplayRGBColor(GenColors[i], nPattern , i, !bRetry))
 		{
+			UpdateTstWnd(pDoc, i);
 			bEscape = WaitForDynamicIris (FALSE);
 			bRetry = FALSE;
 
@@ -3076,7 +3116,6 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 			{
 				previousColor = lastColor;			
 				lastColor = measuredColor[i];
-				UpdateViews(pDoc, 11);
 	
 				if(i != 0)
 				{
@@ -3127,10 +3166,10 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 		for (int i=1900+250+500;i<1900+250+500+1000;i++)
 				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(1900+250+500)];
 
-	m_isModified=TRUE;
 	m_binMeasure = FALSE;
-	m_CCStr=GetCCStr();
 	UpdateViews(pDoc, 11);
+	m_isModified=TRUE;
+	m_CCStr=GetCCStr();
 	return TRUE;
 }
 
@@ -3193,7 +3232,7 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 							};
 
 	CArray<CColor,int> measuredColor;
-	CColor previousColor;
+//	CColor previousColor;
 
 	BOOL	bUseLuxValues = TRUE;
 	CArray<double,int> measuredLux;
@@ -3259,6 +3298,7 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 	m_binMeasure = TRUE;
 	for ( j = 0 ; j < ( bPrimaryOnly ? 3 : 7 ) ; j ++ )
 	{
+		m_currentIndex = 0;
 		if (j>0)
 			GetConfig()->m_isSettling=FALSE;
 		else
@@ -3276,9 +3316,24 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 				rgbColor = aColor.GetRGBValue(CColorReference(UHDTV2));
 				GenColors[(j*size)+i] = ColorRGBDisplay(pow(rgbColor[0], 1.0 / 2.22) * 100.,pow(rgbColor[1], 1.0 / 2.22) * 100.0,pow(rgbColor[2], 1.0 / 2.22) * 100.);
 			}
-			UpdateTstWnd(pDoc, i);
+			if (bPrimaryOnly)
+			{
+				if (j < 3)
+					UpdateViews(pDoc, j+5);
+				else
+					UpdateViews(pDoc, 11);
+			}
+			else
+			{
+				if (j < 6)
+					UpdateViews(pDoc, j+5);
+				else
+					UpdateViews(pDoc, 11);
+			}
+
 			if( pGenerator->DisplayRGBColor(GenColors[(j*size)+i],SaturationType[j],(j == 6 ? i:100*i/(size - 1)),!bRetry,(j>0)) )
 			{
+				UpdateTstWnd(pDoc, i);
 				bEscape = WaitForDynamicIris (FALSE);
 				bRetry = FALSE;
 
@@ -3364,20 +3419,6 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 				{
 					previousColor = lastColor;			
 					lastColor = measuredColor[(j*size)+i];
-						if (bPrimaryOnly)
-						{
-							if (j < 3)
-								UpdateViews(pDoc, j+5);
-							else
-								UpdateViews(pDoc, 11);
-						}
-						else
-						{
-							if (j < 6)
-								UpdateViews(pDoc, j+5);
-							else
-								UpdateViews(pDoc, 11);
-						}
 
 					if(i != 0)
 					{
@@ -3514,10 +3555,10 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 		for (int i=1900+250+500;i<1900+250+500+1000;i++)
 				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(1900+250+500)];
 
-	m_isModified=TRUE;
 	m_binMeasure = FALSE;
-	m_CCStr=GetCCStr();
 	UpdateViews(pDoc, 11);
+	m_isModified=TRUE;
+	m_CCStr=GetCCStr();
 	return TRUE;
 }
 
@@ -3545,7 +3586,7 @@ BOOL CMeasure::MeasurePrimarySecondarySaturationScales(CSensor *pSensor, CGenera
 							};
 
 	CArray<CColor,int> measuredColor;
-	CColor previousColor;
+//	CColor previousColor;
 
 	BOOL	bUseLuxValues = TRUE;
 	CArray<double,int> measuredLux;
@@ -3588,6 +3629,7 @@ BOOL CMeasure::MeasurePrimarySecondarySaturationScales(CSensor *pSensor, CGenera
 	m_binMeasure = TRUE;
 	for ( j = 0 ; j < ( bPrimaryOnly ? 3 : 6 ) ; j ++ )
 	{
+		m_currentIndex = 0;
 		for ( i = 0 ; i < size  ; i ++ )
 		{
 		if (i>0)
@@ -3603,11 +3645,13 @@ BOOL CMeasure::MeasurePrimarySecondarySaturationScales(CSensor *pSensor, CGenera
 				rgbColor = aColor.GetRGBValue(CColorReference(UHDTV2));
 				GenColors[(j*size)+i] = ColorRGBDisplay(pow(rgbColor[0], 1.0 / 2.22) * 100.,pow(rgbColor[1], 1.0 / 2.22) * 100.0,pow(rgbColor[2], 1.0 / 2.22) * 100.);
 			}
+			UpdateViews(pDoc, j+5);
 			if (!i && GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide) == DISPLAY_GDI_Hide)
 				UpdateTstWnd(pDoc, -1);
-			UpdateTstWnd(pDoc, i);
+
 			if( pGenerator->DisplayRGBColor(GenColors[(j*size)+i],SaturationType[j],100*i/(size - 1),!bRetry,(j>0)) )
 			{
+				UpdateTstWnd(pDoc, i);
 				bEscape = WaitForDynamicIris (FALSE);
 				bRetry = FALSE;
 
@@ -3688,7 +3732,6 @@ BOOL CMeasure::MeasurePrimarySecondarySaturationScales(CSensor *pSensor, CGenera
 				{
 					previousColor = lastColor;			
 					lastColor = measuredColor[(j*size)+i];
-					UpdateViews(pDoc, j+5);
 		
 					if(i != 0)
 					{
@@ -3772,6 +3815,7 @@ BOOL CMeasure::MeasurePrimarySecondarySaturationScales(CSensor *pSensor, CGenera
 	GetConfig()->m_isSettling = doSettling;
 
 	m_binMeasure = FALSE;
+	UpdateViews(pDoc, 10);
 	m_isModified=TRUE;
 	return TRUE;
 }
@@ -3785,7 +3829,7 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator, CDataS
 	BOOL	bRetry = FALSE;
 	CColor	measuredColor[5];
 	CString	strMsg, Title;
-	CColor previousColor;
+//	CColor previousColor;
 	double	dLuxValue;
 
 	BOOL	bUseLuxValues = TRUE;
@@ -3835,8 +3879,7 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator, CDataS
 
 	if ( GetColorReference().m_standard == HDTVb )
 	{
-//			GenColors [ 0 ] = ColorRGBDisplay(79.9087,10.0457,10.0457); 
-			GenColors [ 0 ] = ColorRGBDisplay(79.9087,0,0); 
+			GenColors [ 0 ] = ColorRGBDisplay(79.9087,10.0457,10.0457); 
 			GenColors [ 1 ] = ColorRGBDisplay(30.137,79.9087,30.137); 
 			GenColors [ 2 ] = ColorRGBDisplay(50.2283,50.2283,79.9087); 
 			GenColors [ 3 ] = ColorRGBDisplay(primaryIRELevel,primaryIRELevel,primaryIRELevel);
@@ -3870,6 +3913,7 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator, CDataS
 								};
 
 	m_binMeasure = TRUE;
+	m_currentIndex = 0;
 	for ( i = 0; i < ( 3 + GetConfig () -> m_BWColorsToAdd ) ; i ++ )
 	{
 		if (i>0)
@@ -3881,11 +3925,14 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator, CDataS
 			m_currentIndex = i;
 		else
 			m_currentIndex = i + 3;
+
+		UpdateViews(pDoc, 1);
 		if (!i && GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide) == DISPLAY_GDI_Hide)
 			UpdateTstWnd(pDoc, -1);
-		UpdateTstWnd(pDoc, m_currentIndex);
+
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_PRIMARY, i) )
 		{
+			UpdateTstWnd(pDoc, m_currentIndex);
 			bEscape = WaitForDynamicIris (FALSE);
 			bRetry = FALSE;
 
@@ -3953,7 +4000,6 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator, CDataS
 			{
 				previousColor = lastColor;			
 				lastColor = measuredColor[i];
-				UpdateViews(pDoc, 1);
 	
 				if (!pGenerator->HasPatternChanged(CGenerator::MT_PRIMARY,previousColor,lastColor))
 				{
@@ -4016,6 +4062,7 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator, CDataS
 		AfxMessageBox(pGenerator->GetRetryMessage(), MB_OK | MB_ICONWARNING);
 
 	m_binMeasure = FALSE;
+	UpdateViews(pDoc, 1);
 	m_isModified=TRUE;
 	return TRUE;
 }
@@ -4029,7 +4076,7 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator, CDat
 	BOOL	bRetry = FALSE;
 	CColor	measuredColor[8];
 	CString	strMsg, Title;
-	CColor previousColor;
+//	CColor previousColor;
 	double	dLuxValue;
 
 	BOOL	bUseLuxValues = TRUE;
@@ -4068,8 +4115,7 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator, CDat
 								};
 	if (GetColorReference().m_standard == HDTVb)
 	{
-//			GenColors [ 0 ] = ColorRGBDisplay(79.9087,10.0457,10.0457); 
-			GenColors [ 0 ] = ColorRGBDisplay(79.9087,0,0); 
+			GenColors [ 0 ] = ColorRGBDisplay(79.9087,10.0457,10.0457); 
 			GenColors [ 1 ] = ColorRGBDisplay(30.137,79.9087,30.137); 
 			GenColors [ 2 ] = ColorRGBDisplay(50.2283,50.2283,79.9087); 
 			GenColors [ 3 ] = ColorRGBDisplay(79.9087,79.9087,10.0457);
@@ -4114,6 +4160,7 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator, CDat
 								};
 
 	m_binMeasure = TRUE;
+	m_currentIndex = 0;
 	for ( i = 0; i < ( 6 + GetConfig () -> m_BWColorsToAdd ); i ++ )
 	{
 		if (i>0)
@@ -4121,11 +4168,13 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator, CDat
 		else
 			doSettling = GetConfig()->m_isSettling;
 
+		UpdateViews(pDoc, 1);
 		if (!i && GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide) == DISPLAY_GDI_Hide)
 			UpdateTstWnd(pDoc, -1);
-		UpdateTstWnd(pDoc, i);
+
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SECONDARY, i) )
 		{
+			UpdateTstWnd(pDoc, i);
 			bEscape = WaitForDynamicIris (FALSE);
 			bRetry = FALSE;
 
@@ -4196,7 +4245,6 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator, CDat
 			{
 				previousColor = lastColor;			
 				lastColor = measuredColor[i];
-				UpdateViews(pDoc, 1);
 	
 				if (!pGenerator->HasPatternChanged(CGenerator::MT_SECONDARY,previousColor,lastColor))
 				{
@@ -4267,6 +4315,7 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator, CDat
 		AfxMessageBox(pGenerator->GetRetryMessage(), MB_OK | MB_ICONWARNING);
 
 	m_binMeasure = FALSE;
+	UpdateViews(pDoc, 1);
 	m_isModified=TRUE;
 	return TRUE;
 }
@@ -4284,7 +4333,8 @@ BOOL CMeasure::MeasureContrast(CSensor *pSensor, CGenerator *pGenerator)
 	BOOL	bUseLuxValues = TRUE;
 	double	measuredLux[4];
 
-	if(pGenerator->Init(4) != TRUE)
+	
+	if(pGenerator->Init(4, TRUE) != TRUE)
 	{
 		Title.LoadString ( IDS_ERROR );
 		strMsg.LoadString ( IDS_ERRINITGENERATOR );
@@ -4307,14 +4357,17 @@ BOOL CMeasure::MeasureContrast(CSensor *pSensor, CGenerator *pGenerator)
 	double NearWhiteIRELevel=90.0;	
 	
 	CColor measure;
-	// Measure black for on/off contrast
+	// Measure black for on/off contrast, uses GDI if detached window is selected
 	m_binMeasure = TRUE;
-
-	if (GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide) == DISPLAY_GDI_Hide)
-		UpdateTstWnd(NULL, -1);
+	m_currentIndex = 0;
 
 	doSettling = GetConfig()->m_isSettling;
-	
+	if (GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide) == DISPLAY_GDI_Hide)
+	{
+			( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.ShowWindow(SW_HIDE);
+			( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> EnableWindow ( FALSE );
+	}
+
 	if (!CheckBlackOverride())
 	{
 		for ( i = 0; i < 1 ; i ++ )
@@ -4329,7 +4382,6 @@ BOOL CMeasure::MeasureContrast(CSensor *pSensor, CGenerator *pGenerator)
 					if ( bUseLuxValues )
 						StartLuxMeasure ();
 
-	//				if (!m_bOverRideBlack)
 						measure=pSensor->MeasureColor(ColorRGBDisplay(BlackIRELevel));
 				
 					if ( bUseLuxValues )
@@ -4781,6 +4833,13 @@ BOOL CMeasure::MeasureContrast(CSensor *pSensor, CGenerator *pGenerator)
 	if (bPatternRetry)
 		AfxMessageBox(pGenerator->GetRetryMessage(), MB_OK | MB_ICONWARNING);
 
+	if (GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide) == DISPLAY_GDI_Hide)
+	{
+			( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.ShowWindow(SW_SHOW);
+			( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> EnableWindow ( TRUE );
+			( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.SetForegroundWindow();
+	}
+
 	GetConfig()->m_isSettling = doSettling;
 	m_binMeasure = FALSE;
 	m_isModified=TRUE;
@@ -5048,7 +5107,10 @@ void CMeasure::UpdateViews ( CDataSetDoc *pDoc, int Sequence )
 	{
 		POSITION pos = pDoc -> GetFirstViewPosition ();
 		CView *pView = pDoc->GetNextView(pos);
-		((CMainView*)pView)->SetSelectedColor(lastColor);
+		if (!m_currentIndex)
+			((CMainView*)pView)->SetSelectedColor(noDataColor, TRUE);
+		else
+			((CMainView*)pView)->SetSelectedColor(lastColor, TRUE);
 		pDoc ->SetModifiedFlag(TRUE);
 		pDoc ->UpdateAllViews(NULL, UPD_REALTIME + Sequence);
 	}
@@ -5064,11 +5126,11 @@ void CMeasure::UpdateTstWnd (CDataSetDoc *pDoc, int i )
 			( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.ShowWindow(SW_SHOW);
 			( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> EnableWindow ( TRUE );
 			( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.SetForegroundWindow();
-			for (int j=0;j<255;j++)
+			for (int j=0;j<255;j+=3)
 			{
 				( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.SetColor ( RGB(j,j,j) );
 				( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.RedrawWindow();
-				Sleep(33);
+				Sleep(55);
 			}
 		}
 	}
@@ -5076,10 +5138,10 @@ void CMeasure::UpdateTstWnd (CDataSetDoc *pDoc, int i )
 	{
 		POSITION pos = pDoc->GetFirstViewPosition ();
 		CView *pView = pDoc->GetNextView(pos);
-		((CMainView*)pView)->last_minCol = i+1;
 		((CMainView*)pView)->minCol = i+1;
-		((CMainView*)pView)->RefreshSelection(FALSE);
-		m_currentIndex = i;
+		((CMainView*)pView)->last_minCol = i;
+		((CMainView*)pView)->RefreshSelection(FALSE, TRUE);
+		m_currentIndex = i+1;
 	}
 }
 

@@ -62,7 +62,7 @@ CTargetWnd::~CTargetWnd()
 {
 }
 
-void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMode, CDataSetDoc * pDoc)
+void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMode, CDataSetDoc * pDoc, bool bArrow)
 {	
 	if (m_pRefColor)
 	{
@@ -653,7 +653,8 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 
 		//Update test window for display when selected
 		BOOL		bDisplayColor = GetConfig () -> m_bDisplayTestColors;
-		if (bDisplayColor)
+
+		if (bDisplayColor && !bArrow)
 		{
 			( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.SetColor ( RGB(nR,nG,nB) );
 			( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.RedrawWindow ();

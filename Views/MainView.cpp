@@ -708,7 +708,7 @@ void CMainView::AddColorToGrid(const ColorTriplet& color, GV_ITEM& Item, const c
     m_pSelectedColorGrid->SetItem(&Item);
 }
 
-void CMainView::RefreshSelection(bool b_minCol)
+void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 {
 	int		i, aColorTemp;
 	double	YWhite = 1.0;
@@ -732,10 +732,22 @@ void CMainView::RefreshSelection(bool b_minCol)
         size = -1 * GetDocument()->GetMeasure()->GetNearWhiteScaleSize();
 		if (m_displayMode > 4 && m_displayMode < 12)
 			size=GetDocument()->GetMeasure()->GetSaturationSize();
+
+		if (inMeasure)
+		{
+			if (minCol > 1)
+			    m_RGBLevels.Refresh(last_minCol, m_displayMode, size);
+			else
+				m_RGBLevels.Refresh(minCol, m_displayMode, size);
+		}
+		else
+		    m_RGBLevels.Refresh(minCol, m_displayMode, size);
+
 		if (last_minCol != minCol && minCol > 0)
 			last_minCol = minCol;
-	    m_RGBLevels.Refresh(last_minCol, m_displayMode, size);
-		m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  last_minCol, size, m_displayMode, GetDocument());
+		m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  last_minCol, size, m_displayMode, GetDocument(), FALSE);
+		if (inMeasure)
+			m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  last_minCol - 1, size, m_displayMode, GetDocument(), TRUE);
     }
 
 	if(m_SelectedColor.isValid())
@@ -811,7 +823,10 @@ void CMainView::RefreshSelection(bool b_minCol)
                         size = -1 * GetDocument()->GetMeasure()->GetNearWhiteScaleSize();
 					if (m_displayMode > 4 && m_displayMode < 12)
 						size=GetDocument()->GetMeasure()->GetSaturationSize();
-                    ( ( CTargetWnd * ) m_pInfoWnd ) -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  minCol, size, m_displayMode, GetDocument());
+					( ( CTargetWnd * ) m_pInfoWnd ) -> m_pRefColor = & m_SelectedColor;
+                    ( ( CTargetWnd * ) m_pInfoWnd ) -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  last_minCol, size, m_displayMode, GetDocument(), FALSE);
+					if (inMeasure)
+	                    ( ( CTargetWnd * ) m_pInfoWnd ) -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  last_minCol - 1, size, m_displayMode, GetDocument(), TRUE);
                 }
 				break;
 
@@ -1686,15 +1701,18 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	}
 	else if ( lHint >= UPD_REALTIME ) //optimized for realtime
 	{
-		if (m_displayMode != (lHint - UPD_REALTIME))
+		last_minCol = GetDocument()->GetMeasure()->m_currentIndex;
+		minCol = last_minCol;
+
+		if (m_displayMode != (lHint - UPD_REALTIME)) //need to change to correct sequence
 		{
 			m_displayMode = (lHint - UPD_REALTIME);
 			m_comboMode.SetCurSel (m_displayMode);
 			OnSelchangeComboMode();
+			minCol = 1;
+			last_minCol = minCol;
 		}
 
-		last_minCol = GetDocument()->GetMeasure()->m_currentIndex + 1;
-		minCol = last_minCol;
 		UpdateGrid();
 		RefreshSelection(FALSE);
 		
@@ -2666,9 +2684,12 @@ void CMainView::UpdateGrid()
 					 }
 					 else if ( j == 6 )
 					 {
+			            ColorxyY tmpColor(GetColorReference().GetWhite());
 						aColor = GetDocument()->GetMeasure()->GetPrimeWhite();
-						refColor = noDataColor;
-						refDocColor = noDataColor;
+						refColor.SetxyYValue(tmpColor);
+						refDocColor.SetxyYValue(tmpColor);
+//						refColor = noDataColor;
+//						refDocColor = noDataColor;
 					 }
 					 else if ( j == 7 )
 					 {
@@ -5102,7 +5123,7 @@ void CMainView::OnSelchangeInfoDisplay()
 				if (m_displayMode > 4 && m_displayMode < 12)
 					size=GetDocument()->GetMeasure()->GetSaturationSize();
 			    pTargetWnd -> m_pRefColor = & m_SelectedColor;
-			    pTargetWnd -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  (m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1), size, m_displayMode, GetDocument() );
+			    pTargetWnd -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  (m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1), size, m_displayMode, GetDocument(), FALSE );
              }
 			 m_pInfoWnd = pTargetWnd;
 			 break;
