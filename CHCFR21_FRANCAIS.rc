@@ -555,7 +555,7 @@ BEGIN
     GROUPBOX        "Application",IDC_STATIC,7,2,198,30,WS_GROUP
     CONTROL         "Instances multiples",IDC_CHECK_MULTIPLEINSTANCE,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,11,77,10
     CONTROL         "Restaure taille et position",IDC_CHECK_SAVEPOSITION,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,95,18,99,10
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,95,11,99,10
     GROUPBOX        "Mesures utilisateur",IDC_STATIC,7,34,198,48,WS_GROUP
     CONTROL         "Affiche la couleur de test pendant les mesures",IDC_CHECK_COLORS,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,45,183,10
@@ -582,7 +582,8 @@ BEGIN
     CONTROL         "Check for updates",IDC_CHECK_UPDATE,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,21,77,10
     CONTROL         "RealTime display of measures",IDC_CHECK_DISPLAYRT,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,101,95,108,10
-    CONTROL         "Inhibit ABL during long sequences",IDC_CHECK_ABL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,138,117,10
+    CONTROL         "Inhibit ABL",IDC_CHECK_ABL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,138,52,10
+    CONTROL         "Disable High DPI scaling",IDC_CHECK_DISABLEDPI,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,95,24,91,10
 END
 
 IDD_EXPORTXLS_DIALOG DIALOG 0, 0, 226, 135

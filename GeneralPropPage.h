@@ -57,6 +57,7 @@ public:
 	BOOL	m_useHSV;
 	BOOL	m_isSettling;
 	BOOL	m_bUseRoundDown;
+	BOOL	m_bDisableHighDPI;
 	//}}AFX_DATA
 
 	virtual UINT GetHelpId ( LPSTR lpszTopic );

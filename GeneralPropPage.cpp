@@ -53,6 +53,7 @@ CGeneralPropPage::CGeneralPropPage() : CPropertyPageWithHelp(CGeneralPropPage::I
 	m_useHSV = FALSE;
 	m_isSettling = FALSE;
 	m_bUseRoundDown = FALSE;
+	m_bDisableHighDPI = FALSE;
 	//}}AFX_DATA_INIT
 
 	m_isModified = FALSE;
@@ -75,6 +76,7 @@ void CGeneralPropPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_CONTINUOUS, m_bContinuousMeasures);
 	DDX_Check(pDX, IDC_CHECK_BEEP, m_bLatencyBeep);
 	DDX_Check(pDX, IDC_CHECK_DISPLAYRT, bDisplayRT);
+	DDX_Check(pDX, IDC_CHECK_DISABLEDPI, m_bDisableHighDPI);
 	DDX_Check(pDX, IDC_CHECK_ABL, m_bABL);
 	DDX_Radio(pDX, IDC_RADIO1, m_BWColorsToAdd);
 	DDX_Check(pDX, IDC_CHECK_DETECT_PRIMARIES, m_bDetectPrimaries);
@@ -95,6 +97,7 @@ BEGIN_MESSAGE_MAP(CGeneralPropPage, CPropertyPageWithHelp)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_RADIO1, IDC_RADIO3, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_BEEP, IDC_CHECK_BEEP, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_DISPLAYRT, IDC_CHECK_DISPLAYRT, OnControlClicked)
+    ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_DISABLEDPI, IDC_CHECK_DISABLEDPI, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_ABL, IDC_CHECK_ABL, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_DETECT_PRIMARIES, IDC_CHECK_DETECT_PRIMARIES, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_USE_HSV, IDC_CHECK_USE_HSV, OnControlClicked)
@@ -123,6 +126,11 @@ void CGeneralPropPage::OnControlClicked(UINT nID)
 
 BOOL CGeneralPropPage::OnApply() 
 {
+	if (m_bDisableHighDPI)
+		GetConfig()->isHighDPI = FALSE;
+	else
+		GetConfig()->isHighDPI = TRUE;
+
     GetConfig()->ApplySettings(FALSE);
 	m_isModified=FALSE;
     return CPropertyPageWithHelp::OnApply();
