@@ -126,6 +126,7 @@ void CGDIGenePropPage::OnOK()
 	CGDIGenerator m_pGenerator;
 	m_pGenerator.m_nDisplayMode = m_nDisplayMode;
 	GetConfig()->WriteProfileInt("GDIGenerator","DisplayMode",m_nDisplayMode);
+	GetConfig()->WriteProfileInt("GDIGenerator","RGB_16_235",m_b16_235);
 	CPropertyPageWithHelp::OnOK();
 }
 
