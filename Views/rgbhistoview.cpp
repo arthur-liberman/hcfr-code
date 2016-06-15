@@ -144,12 +144,52 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 		for (int i=1; i<size; i++)
 		{
-			ColorxyY aColor=pDoc->GetMeasure()->GetGray(i).GetxyYValue();
-			ColorXYZ aMeasure(aColor[0]/aColor[1], 1.0, (1.0-(aColor[0]+aColor[1]))/aColor[1]);
-			ColorRGB normColor(aMeasure, GetColorReference());
-
 			double x = ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown );
             double valy;
+			ColorxyY aColor=pDoc->GetMeasure()->GetGray(i).GetxyYValue();
+            ColorxyY tmpColor(GetColorReference().GetWhite());
+
+			// Determine Reference Y luminance for Delta E calculus
+			if ( GetConfig ()->m_dE_gray >= 0 || GetConfig ()->m_dE_form == 5 )
+			{
+            	CColor White = pDoc -> GetMeasure () -> GetOnOffWhite();
+	           	CColor Black = pDoc -> GetMeasure () -> GetOnOffBlack();
+				int mode = GetConfig()->m_GammaOffsetType;
+				if (GetConfig()->m_colorStandard == sRGB) mode = 8;
+				if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
+		        {
+			        double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
+                    valy = getEOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+		        }
+		        else
+		        {
+			        double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
+			        valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
+		        }
+
+				if (mode == 5)
+					tmpColor[2] = valy * 100. / YWhite;
+				else
+					tmpColor[2] = valy;
+                if (GetConfig ()->m_dE_gray == 2 || GetConfig ()->m_dE_form == 5 )
+                    tmpColor[2] = aColor [ 2 ] / YWhite;
+
+				if ( GetConfig ()->m_dE_gray != 0 )
+					refColor.SetxyYValue(tmpColor);
+			}
+
+			if ( GetConfig ()->m_dE_gray == 0 )
+			{
+				// Use actual gray luminance as correct reference (absolute)
+	    		YWhite = aColor [ 2 ];
+			}
+//RGB plots now include luminance offset when grayscale dE handling includes it
+			double fact = aColor[2] / (tmpColor[2] * pDoc->GetMeasure()->GetOnOffWhite()[1]);
+
+			ColorXYZ aMeasure(aColor[0]/aColor[1] * fact, fact, (1.0-(aColor[0]+aColor[1]))/aColor[1] * fact);
+//			ColorXYZ aMeasure(aColor[0]/aColor[1], 1.0, (1.0-(aColor[0]+aColor[1]))/aColor[1]);
+			ColorRGB normColor(aMeasure, GetColorReference());
+
 			if (aColor.isValid())
 			{
 				m_graphCtrl.AddPoint(m_redGraphID, x, normColor[0]*100.0);
@@ -159,39 +199,6 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 			if(m_showDeltaE) 
 			{
-				// Determine Reference Y luminance for Delta E calculus
-				if ( GetConfig ()->m_dE_gray > 0 || GetConfig ()->m_dE_form == 5 )
-				{
-            		CColor White = pDoc -> GetMeasure () -> GetOnOffWhite();
-	            	CColor Black = pDoc -> GetMeasure () -> GetOnOffBlack();
-					int mode = GetConfig()->m_GammaOffsetType;
-					if (GetConfig()->m_colorStandard == sRGB) mode = 8;
-					if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
-			        {
-				        double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
-                        valy = getEOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
-			        }
-			        else
-			        {
-				        double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
-				        valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
-			        }
-
-                    ColorxyY tmpColor(GetColorReference().GetWhite());
-					if (mode == 5)
-						tmpColor[2] = valy * 100. / YWhite;
-					else
-						tmpColor[2] = valy;
-                    if (GetConfig ()->m_dE_gray == 2 || GetConfig ()->m_dE_form == 5 )
-	                    tmpColor[2] = aColor [ 2 ] / YWhite;
-
-					refColor.SetxyYValue(tmpColor);
-				}
-				else
-				{
-					// Use actual gray luminance as correct reference (absolute)
-	    				YWhite = aColor [ 2 ];
-				}
 				if (aColor.isValid())
 				{
 					CString str;
