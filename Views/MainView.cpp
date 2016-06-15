@@ -3485,6 +3485,8 @@ void CMainView::OnGrayScaleGridBeginEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 		switch(m_displayType)
 		{
 			case HCFR_SENSORRGB_VIEW:
+				isSelectedWhiteY = FALSE;
+				break;
 			case HCFR_XYZ_VIEW:
 				aColor=aColorMeasure.GetXYZValue();
 				if (isSelectedWhiteY)
@@ -3497,6 +3499,7 @@ void CMainView::OnGrayScaleGridBeginEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 				break;
 			case HCFR_RGB_VIEW:
 				aColor=aColorMeasure.GetRGBValue((GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));
+				isSelectedWhiteY = FALSE;
 				break;
 			case HCFR_xyY_VIEW:
 				aColor=aColorMeasure.GetxyYValue();
