@@ -169,6 +169,8 @@ void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
             {
                 valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+GammaOffset)/(1.0+GammaOffset);
                 valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
+				if (mode == 1) //black compensation target
+					valy = (Black.GetY() + ( valy * ( White.GetY() - Black.GetY() ) )) / White.GetY();
             }
 
             if (!m_showL)
@@ -355,12 +357,12 @@ void CLuminanceGrapher::AddPointtoLumGraph(int ColorSpace,int ColorIndex,int Siz
 			colorlevel=pDataSet->GetMeasure()->GetGray(PointIndex).GetLuxValue();
 		}
 
-		if(GetConfig() -> m_GammaOffsetType == 1 )
-		{
-			colorlevel-=blacklvl;
-			whitelvl-=blacklvl;
-			blacklvl = 0;
-		}
+//		if(GetConfig() -> m_GammaOffsetType == 1 )
+//		{
+//			colorlevel-=blacklvl;
+//			whitelvl-=blacklvl;
+//			blacklvl = 0;
+//		}
 
 		if ( pDataSet->GetMeasure()->GetGray(PointIndex).HasLuxValue () )
 		{

@@ -3733,7 +3733,7 @@ void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int Col
                         avg += log(getEOTF(valx[i], GetMeasure()->GetGray(Size -1), GetMeasure()->GetGray(0), GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(valx[i]);
                     else
 	                    if (mode == 5)// && !GetConfig()->m_useMeasuredGamma)
-			                    avg += log(getEOTF(valx[i], GetMeasure()->GetGray(Size -1), GetMeasure()->GetGray(0), GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100.)/log(valx[i]);
+			                avg += log(getEOTF(valx[i], GetMeasure()->GetGray(Size -1), GetMeasure()->GetGray(0), GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100.)/log(valx[i]);
 						else
 		    				avg += log(lumlvl[i])/log(valx[i]);
 					nb ++;

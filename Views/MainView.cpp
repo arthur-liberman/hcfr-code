@@ -2034,7 +2034,11 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				if ( nCol > 1 && nCol < m_displayMode == 0?nGrayScaleSize:size )
 				{
 					CColor White = GetDocument()->GetMeasure()->GetOnOffWhite();
-					CColor Black = GetDocument()->GetMeasure()->GetOnOffBlack();
+					CColor Black;
+					if (m_displayMode != 3)
+						Black = GetDocument()->GetMeasure()->GetOnOffBlack();
+					else
+						Black = GetDocument()->GetMeasure()->GetNearBlack(0);
 
 					if ( White.isValid() && Black.isValid())
 					{
@@ -2067,7 +2071,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						else
 						{
 							if (m_displayMode == 0)
-	    						valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
+		    					valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
 	    					valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 		    				str.Format ( "%.3f", yblack + ( valy * ( White.GetY () - yblack ) ) );
 						}
@@ -2647,6 +2651,8 @@ void CMainView::UpdateGrid()
 			            {
 				            double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
 				            valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
+							if (mode == 1) //black compensation target
+								valy = (Black.GetY() + ( valy * ( YWhite - Black.GetY() ) )) / YWhite;
 			            }
 
 						if (mode  == 5)
@@ -2776,16 +2782,96 @@ void CMainView::UpdateGrid()
 					 aColor = GetDocument()->GetMeasure()->GetNearBlack(j);
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetNearBlack(j);
-                        tmpColor[2] = aColor [ 1 ] / YWhite; //perfect gamma
+//                     double valy;
+					 // Determine Reference Y luminance for Delta E calculus
+					 if ( GetConfig ()->m_dE_gray > 0 || GetConfig ()->m_dE_form == 5 )
+					 {
+						// Compute reference Luminance regarding actual offset and reference gamma 
+                        // fixed to use correct gamma predicts
+                        // and added option to assume perfect gamma
+						double x = ArrayIndexToGrayLevel ( j, 101, GetConfig () -> m_bUseRoundDown );
+            		    CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
+						CColor Black = GetDocument() -> GetMeasure () -> GetNearBlack(0);
+						int mode = GetConfig()->m_GammaOffsetType;
+						if (GetConfig()->m_colorStandard == sRGB) mode = 8;
+
+						if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
+			            {
+                            double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
+                            valy = getEOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+			            }
+			            else
+			            {
+				            double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
+				            valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
+							if (mode == 1) //black compensation target
+								valy = (Black.GetY() + ( valy * ( YWhite - Black.GetY() ) )) / YWhite;
+			            }
+
+						if (mode  == 5)
+							tmpColor[2] = valy * 100. / YWhite;
+						else
+							tmpColor[2] = valy;
+
+                        if (GetConfig ()->m_dE_gray == 2 || GetConfig ()->m_dE_form == 5 )
+								tmpColor[2] = aColor [ 1 ] / YWhite; //perfect gamma
+
 						refColor.SetxyYValue(tmpColor);
+					 }
+					 else
+					 {
+	                    YWhite = aColor [ 1 ];
+						if ( pDataRef )
+							YWhiteRefDoc = refDocColor [ 1 ];
+					 }
 					 break;
 
 				case 4:
 					 aColor = GetDocument()->GetMeasure()->GetNearWhite(j);
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetNearWhite(j);
-                        tmpColor[2] = aColor [ 1 ] / YWhite; //perfect gamma
+//                     double valy;
+					 // Determine Reference Y luminance for Delta E calculus
+					 if ( GetConfig ()->m_dE_gray > 0 || GetConfig ()->m_dE_form == 5 )
+					 {
+						// Compute reference Luminance regarding actual offset and reference gamma 
+                        // fixed to use correct gamma predicts
+                        // and added option to assume perfect gamma
+						double x = ArrayIndexToGrayLevel ( 101 - nCount + j, 101, GetConfig () -> m_bUseRoundDown );
+            		    CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
+	                	CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
+						int mode = GetConfig()->m_GammaOffsetType;
+						if (GetConfig()->m_colorStandard == sRGB) mode = 8;
+
+						if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
+			            {
+                            double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
+                            valy = getEOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+			            }
+			            else
+			            {
+				            double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
+				            valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
+							if (mode == 1) //black compensation target
+								valy = (Black.GetY() + ( valy * ( YWhite - Black.GetY() ) )) / YWhite;
+			            }
+
+						if (mode  == 5)
+							tmpColor[2] = valy * 100. / YWhite;
+						else
+							tmpColor[2] = valy;
+
+                        if (GetConfig ()->m_dE_gray == 2 || GetConfig ()->m_dE_form == 5 )
+								tmpColor[2] = aColor [ 1 ] / YWhite; //perfect gamma
+
 						refColor.SetxyYValue(tmpColor);
+					 }
+					 else
+					 {
+	                    YWhite = aColor [ 1 ];
+						if ( pDataRef )
+							YWhiteRefDoc = refDocColor [ 1 ];
+					 }
 					 break;
 
 				case 5:

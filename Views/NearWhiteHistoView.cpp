@@ -172,6 +172,8 @@ void CNearWhiteGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			{
                 valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+GammaOffset)/(1.0+GammaOffset);
                 val=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
+				if (mode == 1) //black compensation target
+					val = (Black.GetY() + ( val * ( White.GetY() - Black.GetY() ) )) / White.GetY();
 			}
 
 			if(val > 0 && i != (size-1))	// log scale is not valid for last value

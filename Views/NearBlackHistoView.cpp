@@ -176,6 +176,8 @@ void CNearBlackGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			{
                 valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+GammaOffset)/(1.0+GammaOffset);
                 val=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
+				if (mode == 1) //black compensation target
+					val = (Black.GetY() + ( val * ( White.GetY() - Black.GetY() ) )) / White.GetY();
 			}
 
 			//Reference plots
@@ -346,7 +348,7 @@ void CNearBlackGrapher::AddPointtoLumGraph(int ColorSpace,int ColorIndex,int Siz
 		if (whitelvl == 0 && pDataSet->GetMeasure()->GetNearWhite(nearwhitescalesize-1).isValid())
 			whitelvl=pDataSet->GetMeasure()->GetNearWhite(nearwhitescalesize-1).GetLuxValue();
 	}
-
+/*
 	if(GetConfig() -> m_GammaOffsetType == 1 ) {
 		if (ColorSpace == 0) 
 		{
@@ -364,7 +366,7 @@ void CNearBlackGrapher::AddPointtoLumGraph(int ColorSpace,int ColorIndex,int Siz
 			max-=pDataSet->GetMeasure()->GetNearBlack(0).GetLuxValue();
 		}
 	}
-
+*/
 	if ( pDataSet->GetMeasure()->GetNearBlack(PointIndex).HasLuxValue () )
 	{
 		if ( GetConfig () ->m_bUseImperialUnits )

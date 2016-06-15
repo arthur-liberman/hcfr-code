@@ -212,60 +212,73 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 			if ((m_pDocument->GetMeasure()->GetPrimeWhite()[1] / m_pDocument->GetMeasure()->GetOnOffWhite()[1] < 0.9) && m_displayMode == 11)
 				white = m_pDocument -> GetMeasure () ->GetOnOffWhite();
 		
-		if (m_bLumaMode && aReference.isValid())
-		{
-            ColorXYZ aColor=m_pRefColor->GetXYZValue(), refColor=aReference.GetXYZValue() ;
-			
-			m_redValue=100.;
-			m_greenValue=100.;
-			m_blueValue=100.;
-            if ( white.isValid() )
-            {
+    	int nCount = m_pDocument -> GetMeasure () -> GetGrayScaleSize ();
+        double YWhite = white.GetY();
 
-            aColor[0]=aColor[0]/white.GetY();
-            aColor[1]=aColor[1]/white.GetY();
-            aColor[2]=aColor[2]/white.GetY();
-            ColorRGB aColorRGB(aColor, GetColorReference());
-            ColorRGB refColorRGB(refColor, GetColorReference());
-            cx = aColorRGB[0];
-            cy = aColorRGB[1];
-            cz = aColorRGB[2];
-            cxref = refColorRGB[0];
-            cyref = refColorRGB[1];
-            czref = refColorRGB[2];
-            // RGB or HSV vector differences for CMS, V = luminance
-            if (GetConfig() -> m_useHSV)
-            {
-                RGBTOHSV(aColorRGB[0],aColorRGB[1],aColorRGB[2],cx,cy,cz);
-                RGBTOHSV(refColorRGB[0],refColorRGB[1],refColorRGB[2],cxref,cyref,czref);
-                czref = refColor[1]; //set V to luminance
-                cz = aColor[1];
-            }
-            if (cxref > .01)
-                m_redValue=(float)(100.-(cxref-cx)/cxref*100.0);
-            else
-                m_redValue=(abs(cxref-cx)<0.3)?(float)(100.-(cxref-cx)*100.0):(float)(100.-(cxref+1.0-cx)*100.0);
-            if (cyref > .01)
-                m_greenValue=(float)(100.-(cyref-cy)/cyref*100.0);
-            else
-                m_greenValue=(float)(100.-(cyref-cy)*100.0);
-            if (czref > .01)
-                m_blueValue=(float)(100.-(czref-cz)/czref*100.0);
-            else
-                m_blueValue=(float)(100.-(czref-cz)*100.0);
-            
-            }
-		}
-		else //Always use RGB vector balance for grays
-		{
-            ColorxyY aColor = m_pRefColor -> GetxyYValue();
+        if (!m_bLumaMode)
+        {
+            ColorxyY tmpColor(GetColorReference().GetWhite());
+		    // Determine Reference Y luminance for Delta E calculus
+			if ( GetConfig ()->m_dE_gray > 0 || GetConfig ()->m_dE_form == 5 )
+			{
+				// Compute reference Luminance regarding actual offset and reference gamma 
+                // fixed to use correct gamma predicts
+                // and added option to assume perfect gamma
+					double x = ArrayIndexToGrayLevel ( minCol - 1 , nCount, GetConfig () -> m_bUseRoundDown );
+                    double valy, Gamma, Offset;
+                    Gamma = GetConfig()->m_GammaRef;
+                    GetConfig()->m_GammaAvg = Gamma;
+                    m_pDocument->ComputeGammaAndOffset(&Gamma, &Offset, 1, 1, nCount, false);
+                    if (GetConfig()->m_useMeasuredGamma)
+						GetConfig()->m_GammaAvg = (Gamma<1?2.2:floor((Gamma+.005)*100.)/100.);
+                    GetConfig()->SetPropertiesSheetValues();
+            		CColor White = m_pDocument -> GetMeasure () -> GetGray ( nCount - 1 );
+	                CColor Black = m_pDocument -> GetMeasure () -> GetGray ( 0 );
+					int mode = GetConfig()->m_GammaOffsetType;
+					if (GetConfig()->m_colorStandard == sRGB) mode = 8;
+					if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
+			        {
+						double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
+						valy = getEOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+			        }
+			        else
+			        {
+				        double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
+				        valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
+						if (mode == 1) //black compensation target
+							valy = (Black.GetY() + ( valy * ( YWhite - Black.GetY() ) )) / YWhite;
+			        }
+
+					if ( mode == 5)
+						tmpColor[2] = valy * 100. / YWhite;
+					else
+						tmpColor[2] = valy;
+                    if (GetConfig ()->m_dE_gray == 2 || GetConfig ()->m_dE_form == 5 )
+			            tmpColor[2] = m_pRefColor->GetY() / YWhite; //perfect gamma
+			
+					if ( GetConfig ()->m_dE_gray != 0 )
+						aReference.SetxyYValue(tmpColor);
+
+			}
+			//RGB plots now include luminance offset when grayscale dE handling includes it
+			double fact;
+			ColorxyY aColor = m_pRefColor -> GetxyYValue();
+			if ( GetConfig ()->m_dE_gray == 0 )
+		    {
+						// Use actual gray luminance as correct reference (absolute)
+                           YWhite = m_pRefColor->GetY();
+						   fact = 1.0;
+			}
+			else
+				fact = aColor[2] / (tmpColor[2] * white.GetY());
+
             ColorXYZ normColor;
 
             if(aColor[1] > 0.0)
             {
-                normColor[0]=(aColor[0]/aColor[1]);
-                normColor[1]=1.0;
-                normColor[2]=((1.0-(aColor[0]+aColor[1]))/aColor[1]);
+                normColor[0]=(aColor[0]/aColor[1])*fact;
+                normColor[1]=1.0*fact;
+                normColor[2]=((1.0-(aColor[0]+aColor[1]))/aColor[1])*fact;
             }
             else
             {
@@ -279,58 +292,50 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
             m_redValue=(float)(normColorRGB[0]*100.0);
             m_greenValue=(float)(normColorRGB[1]*100.0);
             m_blueValue=(float)(normColorRGB[2]*100.0);
-
         }
-    	int nCount = m_pDocument -> GetMeasure () -> GetGrayScaleSize ();
-        double YWhite = white.GetY();
-
-        if (!m_bLumaMode)
-        {
-            ColorxyY tmpColor(GetColorReference().GetWhite());
-		    // Determine Reference Y luminance for Delta E calculus
-			if ( GetConfig ()->m_dE_gray > 0 || GetConfig ()->m_dE_form == 5 )
-			{
-						// Compute reference Luminance regarding actual offset and reference gamma 
-                        // fixed to use correct gamma predicts
-                        // and added option to assume perfect gamma
-						double x = ArrayIndexToGrayLevel ( minCol - 1 , nCount, GetConfig () -> m_bUseRoundDown );
-                        double valy, Gamma, Offset;
-                        Gamma = GetConfig()->m_GammaRef;
-                        GetConfig()->m_GammaAvg = Gamma;
-                        m_pDocument->ComputeGammaAndOffset(&Gamma, &Offset, 1, 1, nCount, false);
-                        if (GetConfig()->m_useMeasuredGamma)
-			                GetConfig()->m_GammaAvg = (Gamma<1?2.2:floor((Gamma+.005)*100.)/100.);
-                        GetConfig()->SetPropertiesSheetValues();
-            		    CColor White = m_pDocument -> GetMeasure () -> GetGray ( nCount - 1 );
-	                	CColor Black = m_pDocument -> GetMeasure () -> GetGray ( 0 );
-						int mode = GetConfig()->m_GammaOffsetType;
-						if (GetConfig()->m_colorStandard == sRGB) mode = 8;
-						if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
-			            {
-                            double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
-							valy = getEOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
-			            }
-			            else
-			            {
-				            double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
-				            valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
-			            }
-
-						if ( mode == 5)
-							tmpColor[2] = valy * 100. / YWhite;
-						else
-							tmpColor[2] = valy;
-                        if (GetConfig ()->m_dE_gray == 2 || GetConfig ()->m_dE_form == 5 )
-		                        tmpColor[2] = m_pRefColor->GetY() / YWhite; //perfect gamma
-						aReference.SetxyYValue(tmpColor);
+		else if (aReference.isValid())
+		{
+            ColorXYZ aColor=m_pRefColor->GetXYZValue(), refColor=aReference.GetXYZValue() ;
+			
+			m_redValue=100.;
+			m_greenValue=100.;
+			m_blueValue=100.;
+            if ( white.isValid() )
+            {
+				aColor[0]=aColor[0]/white.GetY();
+				aColor[1]=aColor[1]/white.GetY();
+				aColor[2]=aColor[2]/white.GetY();
+				ColorRGB aColorRGB(aColor, GetColorReference());
+				ColorRGB refColorRGB(refColor, GetColorReference());
+				cx = aColorRGB[0];
+				cy = aColorRGB[1];
+				cz = aColorRGB[2];
+				cxref = refColorRGB[0];
+				cyref = refColorRGB[1];
+				czref = refColorRGB[2];
+				// RGB or HSV vector differences for CMS, V = luminance
+				if (GetConfig() -> m_useHSV)
+				{
+					RGBTOHSV(aColorRGB[0],aColorRGB[1],aColorRGB[2],cx,cy,cz);
+					RGBTOHSV(refColorRGB[0],refColorRGB[1],refColorRGB[2],cxref,cyref,czref);
+					czref = refColor[1]; //set V to luminance
+					cz = aColor[1];
+				}
+				if (cxref > .01)
+					m_redValue=(float)(100.-(cxref-cx)/cxref*100.0);
+				else
+					m_redValue=(abs(cxref-cx)<0.3)?(float)(100.-(cxref-cx)*100.0):(float)(100.-(cxref+1.0-cx)*100.0);
+				if (cyref > .01)
+					m_greenValue=(float)(100.-(cyref-cy)/cyref*100.0);
+				else
+					m_greenValue=(float)(100.-(cyref-cy)*100.0);
+				if (czref > .01)
+					m_blueValue=(float)(100.-(czref-cz)/czref*100.0);
+				else
+					m_blueValue=(float)(100.-(czref-cz)*100.0);                        
 			}
-		    else
-		    {
-						// Use actual gray luminance as correct reference (absolute)
-                           YWhite = m_pRefColor->GetY();
-			}
-        }
-			m_dEValue = aReference.isValid()?float(m_pRefColor->GetDeltaE(YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, !m_bLumaMode,  m_displayMode == 3 ? 1:GetConfig()->gw_Weight )):0 ;
+		}
+		m_dEValue = aReference.isValid()?float(m_pRefColor->GetDeltaE(YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, !m_bLumaMode,  m_displayMode == 3 ? 1:GetConfig()->gw_Weight )):0 ;
     } //have valid m_prefcolor
 	else
 	{
@@ -341,12 +346,9 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 	if (m_dEValue > 40) m_dEValue = 0.;
 	Invalidate(FALSE);
 
-//	if (m_bLumaMode != bWasLumaMode)
-//	{
-		CString title;
-        title.LoadString(m_bLumaMode ? (GetConfig()->m_useHSV?IDS_LCHLEVELS:IDS_RGBLEVELS) : IDS_RGBLEVELS);
-		((CMainView *)GetParent())->m_RGBLevelsLabel.SetWindowText ((LPCSTR)title);
-//	}
+	CString title;
+	title.LoadString(m_bLumaMode ? (GetConfig()->m_useHSV?IDS_LCHLEVELS:IDS_RGBLEVELS) : IDS_RGBLEVELS);
+	((CMainView *)GetParent())->m_RGBLevelsLabel.SetWindowText ((LPCSTR)title);
 } 
 
 

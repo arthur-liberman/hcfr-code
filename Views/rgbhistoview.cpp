@@ -164,7 +164,9 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		        else
 		        {
 			        double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
-			        valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
+			        valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef))+Offset;
+					if (mode == 1) //black compensation target
+						valy = (Black.GetY() + ( valy * ( YWhite - Black.GetY() ) )) / YWhite;
 		        }
 
 				if (mode == 5)
@@ -177,17 +179,18 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 				if ( GetConfig ()->m_dE_gray != 0 )
 					refColor.SetxyYValue(tmpColor);
 			}
-
+			//RGB plots now include luminance offset when grayscale dE handling includes it
+			double fact;
 			if ( GetConfig ()->m_dE_gray == 0 )
 			{
 				// Use actual gray luminance as correct reference (absolute)
 	    		YWhite = aColor [ 2 ];
+				fact = 1.0;
 			}
-//RGB plots now include luminance offset when grayscale dE handling includes it
-			double fact = aColor[2] / (tmpColor[2] * pDoc->GetMeasure()->GetOnOffWhite()[1]);
+			else
+				fact = aColor[2] / (tmpColor[2] * pDoc->GetMeasure()->GetOnOffWhite()[1]);
 
 			ColorXYZ aMeasure(aColor[0]/aColor[1] * fact, fact, (1.0-(aColor[0]+aColor[1]))/aColor[1] * fact);
-//			ColorXYZ aMeasure(aColor[0]/aColor[1], 1.0, (1.0-(aColor[0]+aColor[1]))/aColor[1]);
 			ColorRGB normColor(aMeasure, GetColorReference());
 
 			if (aColor.isValid())
@@ -248,8 +251,8 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 				if ( GetConfig ()->m_dE_gray > 0 || GetConfig ()->m_dE_form == 5 )
 				{
 					// Compute reference luminance regarding actual offset and reference gamma
-            		CColor White = pDoc -> GetMeasure () -> GetOnOffWhite();
-	            	CColor Black = pDoc -> GetMeasure () -> GetOnOffBlack();
+            		CColor White = pDataRef -> GetMeasure () -> GetOnOffWhite();
+	            	CColor Black = pDataRef -> GetMeasure () -> GetOnOffBlack();
                     double valxref,valyref;
 					int mode = GetConfig()->m_GammaOffsetType;
 					if (GetConfig()->m_colorStandard == sRGB) mode = 8;
@@ -262,10 +265,12 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
                     {
     					valxref=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+OffsetRef)/(1.0+OffsetRef);
 	    				valyref=pow(valxref, GetConfig()->m_useMeasuredGamma ?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
+						if (mode == 1) //black compensation target
+							valyref = (Black.GetY() + ( valyref * ( White.GetY() - Black.GetY() ) )) / White.GetY();
                     }			
 					ColorxyY tmpColor(GetColorReference().GetWhite());
 					if (mode == 5)
-						tmpColor[2] = valyref * 100. / YWhite;
+						tmpColor[2] = valyref * 100. / White.GetY();
 					else
 						tmpColor[2] = valyref;
                     if (GetConfig ()->m_dE_gray == 2 || GetConfig ()->m_dE_form == 5)
