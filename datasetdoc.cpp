@@ -257,8 +257,6 @@ BOOL StartBackgroundMeasures ( CDataSetDoc * pDoc )
 			return FALSE;
 		}
 		
-		pDoc->EnsureVisibleViewMeasuresCombo();
-
 		g_CurrentColor = ColorRGBDisplay(0.5, 0.5, 0.5);
 
 		CString str, str2;
@@ -1089,32 +1087,6 @@ BOOL CDataSetDoc::CanCloseFrame(CFrameWnd* pFrame)
 	return CDocument::CanCloseFrame(pFrame);
 }
 
-void CDataSetDoc::ShowViewOnTop(UINT nMsg)
-{
-	// TODO: OBSOLETE : remove this function, or put in in CMultiFrame
-}
-
-
-void CDataSetDoc::HideView(UINT nMsg)
-{
-	// TODO: OBSOLETE : remove this function, or put in in CMultiFrame
-}
-
-
-void CDataSetDoc::ShowAllViews() 
-{
-	// TODO: OBSOLETE : remove this function, or put in in CMultiFrame
-}
-
-void CDataSetDoc::HideAllViews() 
-{
-	// TODO: OBSOLETE : remove this function, or put in in CMultiFrame
-}
-
-void CDataSetDoc::EnsureVisibleViewMeasuresCombo()
-{
-	// TODO: OBSOLETE : use free measures in CMultiFrame, and use a tabbed button.
-}
 
 void CDataSetDoc::MeasureGrayScale() 
 {

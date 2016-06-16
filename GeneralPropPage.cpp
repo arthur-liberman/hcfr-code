@@ -129,7 +129,7 @@ BOOL CGeneralPropPage::OnApply()
 	if (m_bDisableHighDPI)
 		GetConfig()->isHighDPI = FALSE;
 	else
-		GetConfig()->isHighDPI = TRUE;
+		GetConfig()->isHighDPI = (GetSystemMetrics(SM_CXFULLSCREEN) > 1920);
 
     GetConfig()->ApplySettings(FALSE);
 	m_isModified=FALSE;

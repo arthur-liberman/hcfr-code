@@ -817,7 +817,7 @@ BEGIN
     PUSHBUTTON      "Delete",IDC_DELETEGRAYSCALE_BUTTON,353,119,35,17
     GROUPBOX        "Selected color",IDC_SELECTION_GROUP,3,164,189,148
     LTEXT           "RGB Levels",IDC_STATIC_RGBLEVELS,8,177,55,8
-    LTEXT           "RGB Levels",IDC_RGBLEVELS,4,191,100,47
+    LTEXT           "RGB Levels",IDC_RGBLEVELS,4,191,100,49
     LTEXT           "Target",IDC_STATIC_TARGET,8,243,21,8
     LTEXT           "Target",IDC_TARGET,22,258,58,51
     LTEXT           "Current Measure",IDC_STATIC_DATA,110,177,52,8

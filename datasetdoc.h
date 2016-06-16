@@ -161,7 +161,6 @@ public:
 	virtual void Dump(CDumpContext& dc) const;
 #endif
 
-	void EnsureVisibleViewMeasuresCombo();
 	void OnBkgndMeasureReady();
 
 protected:
