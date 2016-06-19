@@ -1970,30 +1970,30 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
 		//Chromapure skin
 	case SKIN:
 		{
-            GenColors [ 0 ] = ColorRGBDisplay( 100, 87.45, 76.86 );
-            GenColors [ 1 ] = ColorRGBDisplay( 94.12, 83.53, 74.51 );
-            GenColors [ 2 ] = ColorRGBDisplay( 93.33, 80.78, 70.20 );
-            GenColors [ 3 ] = ColorRGBDisplay( 88.24, 72.15, 60.00 );
-            GenColors [ 4 ] = ColorRGBDisplay( 89.80, 76.08, 59.61 );
-            GenColors [ 5 ] = ColorRGBDisplay( 100, 86.27, 69.80  );
-            GenColors [ 6 ] = ColorRGBDisplay( 89.80, 72.16, 56.08 );
-            GenColors [ 7 ] = ColorRGBDisplay( 89.80, 62.75, 45.10 );
-            GenColors [ 8 ] = ColorRGBDisplay( 90.59, 61.96, 42.75 );
-            GenColors [ 9 ] = ColorRGBDisplay( 85.88, 56.47, 39.61 );
-            GenColors [ 10 ] = ColorRGBDisplay( 80.78, 58.82, 48.63 );
-            GenColors [ 11 ] = ColorRGBDisplay( 77.65, 47.06, 33.73 );
-            GenColors [ 12 ] = ColorRGBDisplay( 72.94, 42.35, 28.63 );
-            GenColors [ 13 ] = ColorRGBDisplay( 64.71, 44.71, 34.12 );
-            GenColors [ 14 ] = ColorRGBDisplay( 94.12, 78.43, 78.82 );
-            GenColors [ 15 ] = ColorRGBDisplay( 86.67, 65.88, 62.75 );
-            GenColors [ 16 ] = ColorRGBDisplay( 72.55, 48.63, 42.75 );
-            GenColors [ 17 ] = ColorRGBDisplay( 65.88, 45.88, 42.35 );
-            GenColors [ 18 ] = ColorRGBDisplay( 67.84, 39.22, 32.16 );
-            GenColors [ 19 ] = ColorRGBDisplay( 36.08, 21.96, 21.18 );
-            GenColors [ 20 ] = ColorRGBDisplay( 79.61, 51.76, 25.88 );
-            GenColors [ 21 ] = ColorRGBDisplay( 74.12, 44.71, 23.53 );
-            GenColors [ 22 ] = ColorRGBDisplay( 43.92, 25.49, 22.35 );
-            GenColors [ 23 ] = ColorRGBDisplay( 63.92, 52.55, 41.57 );
+            GenColors [ 0 ] = ColorRGBDisplay(100,87.67123288,76.71232877);
+            GenColors [ 1 ] = ColorRGBDisplay(94.06392694,83.56164384,74.42922374);
+            GenColors [ 2 ] = ColorRGBDisplay(93.15068493,80.82191781,70.3196347);
+            GenColors [ 3 ] = ColorRGBDisplay(88.12785388,72.14611872,59.8173516);
+            GenColors [ 4 ] = ColorRGBDisplay(89.9543379,76.25570776,59.8173516);
+            GenColors [ 5 ] = ColorRGBDisplay(100,86.30136986,69.8630137);
+            GenColors [ 6 ] = ColorRGBDisplay(89.9543379,72.14611872,56.16438356);
+            GenColors [ 7 ] = ColorRGBDisplay(89.9543379,62.55707763,45.20547945);
+            GenColors [ 8 ] = ColorRGBDisplay(90.4109589,62.10045662,42.92237443);
+            GenColors [ 9 ] = ColorRGBDisplay(85.84474886,56.62100457,39.7260274);
+            GenColors [ 10 ] = ColorRGBDisplay(80.82191781,58.90410959,48.40182648);
+            GenColors [ 11 ] = ColorRGBDisplay(77.62557078,47.03196347,33.78995434);
+            GenColors [ 12 ] = ColorRGBDisplay(73.05936073,42.46575342,28.76712329);
+            GenColors [ 13 ] = ColorRGBDisplay(64.84018265,44.74885845,34.24657534);
+            GenColors [ 14 ] = ColorRGBDisplay(94.06392694,78.53881279,78.99543379);
+            GenColors [ 15 ] = ColorRGBDisplay(86.75799087,65.75342466,62.55707763);
+            GenColors [ 16 ] = ColorRGBDisplay(72.60273973,48.40182648,42.92237443);
+            GenColors [ 17 ] = ColorRGBDisplay(65.75342466,45.66210046,42.46575342);
+            GenColors [ 18 ] = ColorRGBDisplay(68.03652968,39.26940639,31.96347032);
+            GenColors [ 19 ] = ColorRGBDisplay(36.07305936,21.91780822,21.00456621);
+            GenColors [ 20 ] = ColorRGBDisplay(79.45205479,51.59817352,26.02739726);
+            GenColors [ 21 ] = ColorRGBDisplay(73.97260274,44.74885845,23.74429224);
+            GenColors [ 22 ] = ColorRGBDisplay(43.83561644,25.57077626,22.37442922);
+            GenColors [ 23 ] = ColorRGBDisplay(63.92694064,52.51141553,41.55251142);
         break;
 		}
 	case AXIS:
