@@ -109,7 +109,7 @@ protected:  // control bar embedded members
 	
 public:
 	CTestColorWnd		m_wndTestColorWnd;
-	CPatternDisplay * 	p_wndPatternDisplay; //Pa
+	CPatternDisplay * 	p_wndPatternDisplay; //original custom patterns
 
 // Generated message map functions
 protected:

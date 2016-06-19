@@ -1797,7 +1797,6 @@ BEGIN
     POPUP "&Ansicht"
     BEGIN
         MENUITEM "&Farbtest",                   IDM_VIEW_TESTCOLOR
-        MENUITEM "He&lligkeit",                 IDM_VIEW_LUMINANCE
         MENUITEM SEPARATOR
         MENUITEM "&Standard Symbole",           ID_VIEW_TOOLBAR
         MENUITEM "Ansicht Symbole",             ID_VIEW_VIEW_BAR

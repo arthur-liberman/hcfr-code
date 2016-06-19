@@ -2133,7 +2133,6 @@ BEGIN
     POPUP "&Ver"
     BEGIN
         MENUITEM "Couleurs de test",            IDM_VIEW_TESTCOLOR
-        MENUITEM "Luminance",                   IDM_VIEW_LUMINANCE
         MENUITEM SEPARATOR
         MENUITEM "&Barre d'outils",             ID_VIEW_TOOLBAR
         MENUITEM "Barre vues",                  ID_VIEW_VIEW_BAR

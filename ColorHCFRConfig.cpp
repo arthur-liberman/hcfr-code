@@ -745,7 +745,10 @@ void CColorHCFRConfig::ApplySettings(BOOL isStartupApply)
 			CDocEnumerator docEnumerator;	// Update all views of all docs
 			CDocument* pDoc;
 			while ((pDoc=docEnumerator.Next())!=NULL) 
+			{
 			   pDoc->UpdateAllViews(NULL, UPD_GENERALREFERENCES);
+			   pDoc->UpdateAllViews(NULL, UPD_SELECTEDCOLOR);
+			}
 			GetCColors(); //check for new colors 
 			AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
 	    }

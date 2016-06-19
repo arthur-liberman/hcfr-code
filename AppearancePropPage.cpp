@@ -114,7 +114,6 @@ LRESULT CAppearancePropPage::OnColorChanged(WPARAM wParam, LPARAM lParam)
 BOOL CAppearancePropPage::OnApply() 
 {
 	GetConfig()->ApplySettings(FALSE);
-	m_isModified=FALSE;
 	m_isWhiteModified=FALSE;
 	return CPropertyPageWithHelp::OnApply();
 }

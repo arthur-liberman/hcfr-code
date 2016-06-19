@@ -1793,8 +1793,7 @@ BEGIN
     END
     POPUP "&View"
     BEGIN
-        MENUITEM "&Test colors",                IDM_VIEW_TESTCOLOR
-        MENUITEM "Luminance",                   IDM_VIEW_LUMINANCE
+        MENUITEM "&Pattern window",             IDM_VIEW_TESTCOLOR
         MENUITEM SEPARATOR
         MENUITEM "&Standard Toolbar",           ID_VIEW_TOOLBAR
         MENUITEM "&Views toolbar",              ID_VIEW_VIEW_BAR

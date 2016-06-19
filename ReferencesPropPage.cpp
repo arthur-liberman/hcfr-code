@@ -218,6 +218,7 @@ BOOL CReferencesPropPage::OnApply()
 	else
 		m_ManualBlackEdit.EnableWindow(FALSE);
 
+	m_isModified=TRUE;
 	GetConfig()->ApplySettings(FALSE);
 	m_isModified=FALSE;
 
