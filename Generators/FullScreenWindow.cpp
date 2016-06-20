@@ -1413,6 +1413,8 @@ void CFullScreenWindow::OnPaint()
 			dc.Ellipse(0, maxY-halfCircle*2,halfCircle*2,maxY);
 			dc.Ellipse(maxX-halfCircle*2, 0,maxX,halfCircle*2);
 			dc.Ellipse(maxX-halfCircle*2, maxY-halfCircle*2,maxX,maxY);
+		
+			dc.Ellipse((maxX-maxY)/2, 0,(maxX+maxY)/2,maxY);	//center true circle		
 			br1.DeleteObject ();
 			ePen.DeleteObject ();
 
