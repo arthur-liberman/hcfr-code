@@ -228,12 +228,12 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 		value=max(aRGBValue[0]*gain+offset,0.0);
 		if (mode  == 5)
 		{
-			gamma = getEOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100.;
+			gamma = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100.;
 			if (gamma > peakY / 10000.)
 				gamma = peakY / 10000.;
 		}
 		else
-			gamma = getEOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+			gamma = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 		simulColor[0]=gamma;
 	} 
 	else
@@ -260,12 +260,12 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 		value=max(aRGBValue[1]*gain+offset,0.0);
 		if (mode  == 5)
 		{
-			gamma = getEOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100.;
+			gamma = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100.;
 			if (gamma > peakY / 10000.)
 				gamma = peakY / 10000.;
 		}
 		else
-			gamma = getEOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+			gamma = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 		simulColor[1]=gamma;
 	} 
 	else
@@ -292,12 +292,12 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 		value=max(aRGBValue[2]*gain+offset,0.0);
 		if (mode  == 5)
 		{
-			gamma = getEOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100.;
+			gamma = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100.;
 			if (gamma > peakY / 10000.)
 				gamma = peakY / 10000.;
 		}
 	else
-		gamma = getEOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+		gamma = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 		simulColor[2]=gamma;
 	} 
 	else

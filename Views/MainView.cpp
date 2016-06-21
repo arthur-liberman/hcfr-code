@@ -2062,9 +2062,9 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 							if (m_displayMode == 0)
 								valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
 							if (mode == 5)
-	                            valy = getEOTF(valx,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) * 100.;
+	                            valy = getL_EOTF(valx,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) * 100.;
 							else
-	                            valy = getEOTF(valx,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) * White.GetY();
+	                            valy = getL_EOTF(valx,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) * White.GetY();
 
 							str.Format ( "%.3f", valy );
 						}
@@ -2645,7 +2645,7 @@ void CMainView::UpdateGrid()
 						if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
 			            {
                             double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
-                            valy = getEOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+                            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 			            }
 			            else
 			            {
@@ -2798,7 +2798,7 @@ void CMainView::UpdateGrid()
 						if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
 			            {
                             double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
-                            valy = getEOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+                            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 			            }
 			            else
 			            {
@@ -2846,7 +2846,7 @@ void CMainView::UpdateGrid()
 						if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
 			            {
                             double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
-                            valy = getEOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+                            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 			            }
 			            else
 			            {

@@ -6199,9 +6199,9 @@ CColor CMeasure::GetRefPrimary(int i) const
 	if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4 )
 	{
 		if (mode == 5)
-	       gamma = log(getEOTF(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode * 100. / White.GetY()))/log(pow(aColor.GetY(),1.0/2.22));
+	       gamma = log(getL_EOTF(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100. )/log(pow(aColor.GetY(),1.0/2.22));
 		else
-	       gamma = log(getEOTF(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(aColor.GetY(),1.0/2.22));
+	       gamma = log(getL_EOTF(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(aColor.GetY(),1.0/2.22));
 	}
     if (isSpecial)
     {
@@ -6218,9 +6218,9 @@ CColor CMeasure::GetRefPrimary(int i) const
 	if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
 	{
 		if (mode == 5)
-	       gamma = log(getEOTF(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode * 100. / White.GetY()))/log(pow(aColor.GetY(),1.0/2.22));
+	       gamma = log(getL_EOTF(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode ) / 100. )/log(pow(aColor.GetY(),1.0/2.22));
 		else
-	       gamma = log(getEOTF(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode ))/log(pow(aColor.GetY(),1.0/2.22));
+	       gamma = log(getL_EOTF(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode ))/log(pow(aColor.GetY(),1.0/2.22));
 	}
     if (isSpecial)
     {
@@ -6236,7 +6236,7 @@ CColor CMeasure::GetRefPrimary(int i) const
     aColor.SetRGBValue(ColorRGB(r,g,b), (cRef.m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()) );
 	if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
     if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
-       gamma = log(getEOTF(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(aColor.GetY(),1.0/2.22));
+       gamma = log(getL_EOTF(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(aColor.GetY(),1.0/2.22));
     if (isSpecial)
     {
         r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1.0/2.22),gamma);
@@ -6293,9 +6293,9 @@ CColor CMeasure::GetRefSecondary(int i) const
 	if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
 	{
 		if (mode == 5)
-	       gamma = log(getEOTF(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode * 100. / White.GetY()))/log(pow(aColor.GetY(),1.0/2.22));
+	       gamma = log(getL_EOTF(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode ) / 100. )/log(pow(aColor.GetY(),1.0/2.22));
 		else
-	       gamma = log(getEOTF(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(aColor.GetY(),1.0/2.22));
+	       gamma = log(getL_EOTF(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(aColor.GetY(),1.0/2.22));
 	}
     if (isSpecial)
     {
@@ -6312,9 +6312,9 @@ CColor CMeasure::GetRefSecondary(int i) const
 	if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
 	{
 		if (mode  == 5)
-       gamma = log(getEOTF(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode * 100. / White.GetY()))/log(pow(aColor.GetY(),1.0/2.22));
+       gamma = log(getL_EOTF(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode ) / 100. )/log(pow(aColor.GetY(),1.0/2.22));
 		else
-       gamma = log(getEOTF(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(aColor.GetY(),1.0/2.22));
+       gamma = log(getL_EOTF(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(aColor.GetY(),1.0/2.22));
 	}
     if (isSpecial)
     {
@@ -6329,7 +6329,7 @@ CColor CMeasure::GetRefSecondary(int i) const
     b=rgbm[2];
     aColor.SetRGBValue(ColorRGB(r,g,b), (cRef.m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()) );
 	if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
-       gamma = log(getEOTF(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(aColor.GetY(),1.0/2.22));
+       gamma = log(getL_EOTF(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(aColor.GetY(),1.0/2.22));
     if (isSpecial)
     {
         r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1.0/2.22),gamma);
@@ -6435,9 +6435,9 @@ CColor CMeasure::GetRefSat(int i, double sat_percent, bool special) const
 		if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
 		{
 			if (mode == 5)
-			   gamma = log(getEOTF(pow(aColor.GetY() * pow(Intensity,2.22),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode * 100. / White.GetY()))/log(pow(aColor.GetY() * pow(Intensity,2.22),1.0/2.22));
+			   gamma = log(getL_EOTF(pow(aColor.GetY() * pow(Intensity,2.22),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode ) / 100. )/log(pow(aColor.GetY() * pow(Intensity,2.22),1.0/2.22));
 			else
-			   gamma = log(getEOTF(pow(aColor.GetY() * pow(Intensity,2.22),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(aColor.GetY() * pow(Intensity,2.22),1.0/2.22));
+			   gamma = log(getL_EOTF(pow(aColor.GetY() * pow(Intensity,2.22),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(aColor.GetY() * pow(Intensity,2.22),1.0/2.22));
 		}
 		
 		ColorRGB rgb;
@@ -6766,20 +6766,20 @@ CColor CMeasure::GetRefCC24Sat(int i) const
 		if (mode == 5)
 		{
 			if (RGB[i][0] < 0.999 && RGB[i][0] > 0.001)
-				inr=(inr<=0||inr>=1)?min(max(inr,0),1):pow(RGB[i][0],log(getEOTF(RGB[i][0],White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode * 100. / White.GetY()))/log(RGB[i][0]));
+				inr=(inr<=0||inr>=1)?min(max(inr,0),1):pow(RGB[i][0],log(getL_EOTF(RGB[i][0],White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode ) / 100. )/log(RGB[i][0]));
 			if (RGB[i][1] < 0.999 && RGB[i][1] > 0.001)
-				ing=(ing<=0||ing>=1)?min(max(ing,0),1):pow(RGB[i][1],log(getEOTF(RGB[i][1],White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode * 100. / White.GetY()))/log(RGB[i][1]));
+				ing=(ing<=0||ing>=1)?min(max(ing,0),1):pow(RGB[i][1],log(getL_EOTF(RGB[i][1],White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode ) / 100. )/log(RGB[i][1]));
 			if (RGB[i][2] < 0.999 && RGB[i][2] > 0.001)
-				inb=(inb<=0||inb>=1)?min(max(inb,0),1):pow(RGB[i][2],log(getEOTF(RGB[i][2],White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode * 100. / White.GetY()))/log(RGB[i][2]));
+				inb=(inb<=0||inb>=1)?min(max(inb,0),1):pow(RGB[i][2],log(getL_EOTF(RGB[i][2],White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode ) / 100. )/log(RGB[i][2]));
 		}
 		else
 		{
 			if (RGB[i][0] < 0.999 && RGB[i][0] > 0.001)
-				inr=(inr<=0||inr>=1)?min(max(inr,0),1):pow(RGB[i][0],log(getEOTF(RGB[i][0],White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(RGB[i][0]));
+				inr=(inr<=0||inr>=1)?min(max(inr,0),1):pow(RGB[i][0],log(getL_EOTF(RGB[i][0],White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(RGB[i][0]));
 			if (RGB[i][1] < 0.999 && RGB[i][1] > 0.001)
-				ing=(ing<=0||ing>=1)?min(max(ing,0),1):pow(RGB[i][1],log(getEOTF(RGB[i][1],White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(RGB[i][1]));
+				ing=(ing<=0||ing>=1)?min(max(ing,0),1):pow(RGB[i][1],log(getL_EOTF(RGB[i][1],White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(RGB[i][1]));
 			if (RGB[i][2] < 0.999 && RGB[i][2] > 0.001)
-				inb=(inb<=0||inb>=1)?min(max(inb,0),1):pow(RGB[i][2],log(getEOTF(RGB[i][2],White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(RGB[i][2]));
+				inb=(inb<=0||inb>=1)?min(max(inb,0),1):pow(RGB[i][2],log(getL_EOTF(RGB[i][2],White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(RGB[i][2]));
 		}
     }
     else

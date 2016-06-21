@@ -2709,8 +2709,10 @@ double GrayLevelToGrayProp ( double Level, bool m_bUseRoundDown)
 		return Level = (floor(Level / 100.0 * 219.0 + 16.5) - 16.0) / 219.0;
 }
 
-double getEOTF ( double valx, CColor White, CColor Black, double g_rel, double split, int mode)
+double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double split, int mode)
 {
+//Returns relative output luminance given input luma (stimulus)
+//exception is ST2084 which returns an absolute value
 //BT1886
 	double maxL = White.isValid()?White.GetY():100.0;
 	double minL = Black.isValid()?Black.GetY():0.012;

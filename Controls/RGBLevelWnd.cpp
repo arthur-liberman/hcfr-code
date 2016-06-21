@@ -239,7 +239,7 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 					if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
 			        {
 						double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
-						valy = getEOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+						valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 			        }
 			        else
 			        {

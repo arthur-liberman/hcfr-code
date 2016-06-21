@@ -159,7 +159,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 				if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
 		        {
 			        double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
-                    valy = getEOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+                    valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 		        }
 		        else
 		        {
@@ -259,7 +259,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 					if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
                     {
     					valxref=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown));
-                        valyref = getEOTF(valxref, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+                        valyref = getL_EOTF(valxref, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
                     }
                     else
                     {

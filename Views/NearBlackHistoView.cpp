@@ -168,9 +168,9 @@ void CNearBlackGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			{
 			    valx = (GrayLevelToGrayProp( x, GetConfig () -> m_bUseRoundDown));
 				if  (mode == 5)
-	                val = getEOTF( valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) * 100 / White.GetY();
+	                val = getL_EOTF( valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) * 100 / White.GetY();
 				else
-					val = getEOTF( valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);				
+					val = getL_EOTF( valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);				
 			}
 			else
 			{
