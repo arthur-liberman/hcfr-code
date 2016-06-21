@@ -5392,7 +5392,7 @@ void CMainView::OnInitDefaults()
 		DeleteFile("ColorHCFR.ini");
 		GetConfig()->InitDefaults();
 		GetConfig()->LoadSettings();
-		GetConfig()->ApplySettings(FALSE);
+		GetConfig()->ApplySettings(TRUE);
 		GetConfig()->WriteProfileString ( "Options", "Language", strlang );
 		GetConfig()->SaveSettings();
 		GetConfig()->m_bSave = TRUE;

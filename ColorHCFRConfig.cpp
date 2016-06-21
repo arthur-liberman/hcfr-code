@@ -313,6 +313,7 @@ void CColorHCFRConfig::InitDefaults()
     gw_Weight = 0;
     doHighlight = TRUE;
 	isHighDPI = FALSE;
+	m_userBlack = FALSE;
 }
 
 BOOL CColorHCFRConfig::LoadSettings()
