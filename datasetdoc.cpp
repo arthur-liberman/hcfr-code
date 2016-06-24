@@ -2853,14 +2853,17 @@ void CDataSetDoc::OnPatternAnimBlack()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns(FALSE) )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayAnimatedBlack();
-			WaitKey();
+				m_pGenerator->DisplayAnimatedBlack();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -2873,15 +2876,18 @@ void CDataSetDoc::OnPatternAnimWhite()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns(FALSE) )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayAnimatedWhite();
+				m_pGenerator->DisplayAnimatedWhite();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -2894,15 +2900,18 @@ void CDataSetDoc::OnPatternGradient()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayGradient();
+				m_pGenerator->DisplayGradient();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -2915,15 +2924,18 @@ void CDataSetDoc::OnPatternRB()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayRB();
+				m_pGenerator->DisplayRB();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -2935,15 +2947,18 @@ void CDataSetDoc::OnPatternRG()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayRG();
+				m_pGenerator->DisplayRG();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -2955,15 +2970,18 @@ void CDataSetDoc::OnPatternGB()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayGB();
+				m_pGenerator->DisplayGB();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -2975,15 +2993,18 @@ void CDataSetDoc::OnPatternRBd()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayRBd();
+				m_pGenerator->DisplayRBd();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -2995,15 +3016,18 @@ void CDataSetDoc::OnPatternRGd()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayRGd();
+				m_pGenerator->DisplayRGd();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -3016,15 +3040,18 @@ void CDataSetDoc::OnPatternGBd()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayGBd();
+				m_pGenerator->DisplayGBd();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -3037,15 +3064,18 @@ void CDataSetDoc::OnPatternLramp()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayLramp();
+				m_pGenerator->DisplayLramp();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -3058,15 +3088,18 @@ void CDataSetDoc::OnPatternGradient2()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayGradient2();
+				m_pGenerator->DisplayGradient2();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -3079,14 +3112,17 @@ void CDataSetDoc::OnPatternGranger()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayGranger();
-			WaitKey();
+				m_pGenerator->DisplayGranger();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -3099,14 +3135,14 @@ void CDataSetDoc::OnPattern80()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-//			AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->Display80();
-			WaitKey();
-			
-//			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+			if (m_pGenerator->Init())
+			{
+				m_pGenerator->Display80();
+				WaitKey();
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -3119,15 +3155,18 @@ void CDataSetDoc::OnPatternTV()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayTV();
+				m_pGenerator->DisplayTV();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -3140,15 +3179,18 @@ void CDataSetDoc::OnPatternTV2()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayTV2();
+				m_pGenerator->DisplayTV2();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -3161,15 +3203,18 @@ void CDataSetDoc::OnPatternSharp()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplaySharp();
+				m_pGenerator->DisplaySharp();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -3182,15 +3227,18 @@ void CDataSetDoc::OnPatternClipH()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayClipH();
+				m_pGenerator->DisplayClipH();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -3203,15 +3251,18 @@ void CDataSetDoc::OnPatternClipL()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayClipL();
+				m_pGenerator->DisplayClipL();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -3224,15 +3275,18 @@ void CDataSetDoc::OnPatternSpectrum()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplaySpectrum();
+				m_pGenerator->DisplaySpectrum();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -3245,15 +3299,18 @@ void CDataSetDoc::OnPatternSramp()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplaySramp();
+				m_pGenerator->DisplaySramp();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -3268,15 +3325,18 @@ void CDataSetDoc::OnPatternVSMPTE()
 	{
 		if (CheckVideoLevel())
 		{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayVSMPTE();
+				m_pGenerator->DisplayVSMPTE();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 		}
 	}
 	else
@@ -3290,15 +3350,18 @@ void CDataSetDoc::OnPatternEramp()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayEramp();
+				m_pGenerator->DisplayEramp();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -3311,15 +3374,18 @@ void CDataSetDoc::OnPatternTC0()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayTC0();
+				m_pGenerator->DisplayTC0();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -3332,15 +3398,18 @@ void CDataSetDoc::OnPatternTC1()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayTC1();
+				m_pGenerator->DisplayTC1();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -3353,15 +3422,18 @@ void CDataSetDoc::OnPatternTC2()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayTC2();
+				m_pGenerator->DisplayTC2();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -3374,15 +3446,18 @@ void CDataSetDoc::OnPatternTC3()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayTC3();
+				m_pGenerator->DisplayTC3();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -3395,15 +3470,18 @@ void CDataSetDoc::OnPatternTC4()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayTC4();
+				m_pGenerator->DisplayTC4();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -3416,15 +3494,18 @@ void CDataSetDoc::OnPatternTC5()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayTC5();
+				m_pGenerator->DisplayTC5();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -3439,15 +3520,18 @@ void CDataSetDoc::OnPatternBN()
 	{
 		if (CheckVideoLevel())
 		{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayBN();
+				m_pGenerator->DisplayBN();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 		}
 	}
 	else
@@ -3461,15 +3545,18 @@ void CDataSetDoc::OnPatternDR0()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayDR0();
+				m_pGenerator->DisplayDR0();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -3482,15 +3569,18 @@ void CDataSetDoc::OnPatternDR1()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayDR1();
+				m_pGenerator->DisplayDR1();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -3503,15 +3593,18 @@ void CDataSetDoc::OnPatternDR2()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayDR2();
+				m_pGenerator->DisplayDR2();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -3524,15 +3617,17 @@ void CDataSetDoc::OnPatternAlign()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayAlign();
-
-			WaitKey();
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
+				m_pGenerator->DisplayAlign();
+				WaitKey();
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
 	}
 	else
 	{
@@ -3545,15 +3640,18 @@ void CDataSetDoc::OnPatternTestimg()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayTestimg();
+				m_pGenerator->DisplayTestimg();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -3568,15 +3666,18 @@ void CDataSetDoc::OnPatternISO12233()
 	{
 		if (CheckVideoLevel())
 		{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayISO12233();
+				m_pGenerator->DisplayISO12233();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 		}
 	}
 	else
@@ -3592,15 +3693,18 @@ void CDataSetDoc::OnPatternBBCHD()
 	{
 		if (CheckVideoLevel())
 		{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayBBCHD();
+				m_pGenerator->DisplayBBCHD();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 		}
 	}
 	else
@@ -3614,15 +3718,18 @@ void CDataSetDoc::OnPatternZONE()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayZONE();
+				m_pGenerator->DisplayZONE();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -3634,15 +3741,18 @@ void CDataSetDoc::OnPatternCROSSd()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayCROSSd();
+				m_pGenerator->DisplayCROSSd();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -3655,15 +3765,18 @@ void CDataSetDoc::OnPatternCROSSl()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
-			AfxGetMainWnd () -> EnableWindow ( FALSE );
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-			m_pGenerator->Init();
-			m_pGenerator->DisplayCROSSl();
+				m_pGenerator->DisplayCROSSl();
 
-			WaitKey();
+				WaitKey();
 			
-			AfxGetMainWnd () -> EnableWindow ( TRUE );
-			m_pGenerator->Release();
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{
@@ -3678,15 +3791,18 @@ void CDataSetDoc::OnPatternPM5644()
 	{
 			if (CheckVideoLevel())
 			{
-				AfxGetMainWnd () -> EnableWindow ( FALSE );
+				if (m_pGenerator->Init())
+				{
+					AfxGetMainWnd () -> EnableWindow ( FALSE );
 
-				m_pGenerator->Init();
-				m_pGenerator->DisplayPM5644();
+					m_pGenerator->DisplayPM5644();
 
-				WaitKey();
+					WaitKey();
 			
-				AfxGetMainWnd () -> EnableWindow ( TRUE );
-				m_pGenerator->Release();
+					AfxGetMainWnd () -> EnableWindow ( TRUE );
+					m_pGenerator->Release();
+					AfxGetMainWnd () -> BringWindowToTop ( );
+				}
 			}
 	}
 	else

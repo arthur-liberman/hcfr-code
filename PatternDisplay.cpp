@@ -222,51 +222,61 @@ void CPatternDisplay::DisplayPattern(const ColorRGBDisplay& clr, UINT iMode)
 	BOOL	bKeyTyped = FALSE;
 	BOOL	doDisplay = FALSE;
 	MSG		Msg;
+	CString msg, Title;
 
-	m_patternDGenerator->Init();
-
-	if (iMode == 0) // Dots Pattern
-		m_patternDGenerator->DisplayDotPattern(clr, m_Dot2, m_nPads);
-	if (iMode == 1) // Conv Grid Pattern
-		m_patternDGenerator->DisplayConvPattern(m_Dot2, m_nPads);
-	if (iMode == 2) // Geometry Pattern
-		m_patternDGenerator->DisplayGeomPattern(m_Dot2, m_nPads);
-
-	while ( ! bKeyTyped )
+	if (m_patternDGenerator->Init())
 	{
-		while ( PeekMessage ( & Msg, NULL, WM_KEYDOWN, WM_MOUSELAST, TRUE ) )
-		{
-			if ( Msg.message == WM_KEYDOWN )
-			{
-				doDisplay = TRUE;
-				if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
-					bKeyTyped = TRUE;
-				else if ( ( Msg.wParam == VK_ADD || Msg.wParam == VK_PRIOR ) && m_nPads < 70) m_nPads++;
-				else if ( ( Msg.wParam == VK_SUBTRACT || Msg.wParam == VK_NEXT ) && m_nPads > 5) m_nPads--;         
-				else if ( ( Msg.wParam == VK_MULTIPLY || Msg.wParam == VK_HOME ) ) m_nPads = 25;
-				else if (Msg.wParam == VK_SPACE) m_Dot2 = !m_Dot2;
-				else doDisplay = FALSE;
-				
-				if (doDisplay && !bKeyTyped) {
-					if (iMode == 0) // Dots Pattern
-						m_patternDGenerator->DisplayDotPattern(clr, m_Dot2, m_nPads);
-					if (iMode == 1) // Conv Grid Pattern
-						m_patternDGenerator->DisplayConvPattern(m_Dot2, m_nPads);
-					if (iMode == 2) // Geometry Pattern
-						m_patternDGenerator->DisplayGeomPattern(m_Dot2, m_nPads);
-				}
 
-			}
-			else if ( Msg.message == WM_TIMER )
+		if (iMode == 0) // Dots Pattern
+			m_patternDGenerator->DisplayDotPattern(clr, m_Dot2, m_nPads);
+		if (iMode == 1) // Conv Grid Pattern
+			m_patternDGenerator->DisplayConvPattern(m_Dot2, m_nPads);
+		if (iMode == 2) // Geometry Pattern
+			m_patternDGenerator->DisplayGeomPattern(m_Dot2, m_nPads);
+
+		while ( ! bKeyTyped )
+		{
+			while ( PeekMessage ( & Msg, NULL, WM_KEYDOWN, WM_MOUSELAST, TRUE ) )
 			{
-				// Dispatch timer message to allow animation run
-				DispatchMessage ( &Msg );
+				if ( Msg.message == WM_KEYDOWN )
+				{
+					doDisplay = TRUE;
+					if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
+						bKeyTyped = TRUE;
+					else if ( ( Msg.wParam == VK_ADD || Msg.wParam == VK_PRIOR ) && m_nPads < 70) m_nPads++;
+					else if ( ( Msg.wParam == VK_SUBTRACT || Msg.wParam == VK_NEXT ) && m_nPads > 5) m_nPads--;         
+					else if ( ( Msg.wParam == VK_MULTIPLY || Msg.wParam == VK_HOME ) ) m_nPads = 25;
+					else if (Msg.wParam == VK_SPACE) m_Dot2 = !m_Dot2;
+					else doDisplay = FALSE;
+				
+					if (doDisplay && !bKeyTyped) {
+						if (iMode == 0) // Dots Pattern
+							m_patternDGenerator->DisplayDotPattern(clr, m_Dot2, m_nPads);
+						if (iMode == 1) // Conv Grid Pattern
+							m_patternDGenerator->DisplayConvPattern(m_Dot2, m_nPads);
+						if (iMode == 2) // Geometry Pattern
+							m_patternDGenerator->DisplayGeomPattern(m_Dot2, m_nPads);
+					}
+
+				}
+				else if ( Msg.message == WM_TIMER )
+				{
+					// Dispatch timer message to allow animation run
+					DispatchMessage ( &Msg );
+				}
 			}
+			Sleep(10);
 		}
-		Sleep(10);
+
+		m_patternDGenerator->Release();
+	}
+	else
+	{
+		msg.LoadString ( IDS_ERRINITGENERATOR );
+		Title.LoadString ( IDS_ERROR );
+		GetColorApp()->InMeasureMessageBox(msg,Title,MB_ICONERROR | MB_OK);
 	}
 
-	m_patternDGenerator->Release();
 }
 
 void CPatternDisplay::DisplayHVLinesPattern(const ColorRGBDisplay& clr, BOOL vLines) 
@@ -275,48 +285,58 @@ void CPatternDisplay::DisplayHVLinesPattern(const ColorRGBDisplay& clr, BOOL vLi
 	BOOL	doDisplay = FALSE;
 	MSG		Msg;
 	INT	currentColor = 0;
+	CString msg, Title;
 
-	m_patternDGenerator->Init();
-	m_patternDGenerator->DisplayHVLinesPattern(clr, m_Dot2, vLines);
-	while ( ! bKeyTyped )
+	if (m_patternDGenerator->Init())
 	{
-		while ( PeekMessage ( & Msg, NULL, WM_KEYDOWN, WM_MOUSELAST, TRUE ) )
+		m_patternDGenerator->DisplayHVLinesPattern(clr, m_Dot2, vLines);
+		while ( ! bKeyTyped )
 		{
-			if ( Msg.message == WM_KEYDOWN )
+			while ( PeekMessage ( & Msg, NULL, WM_KEYDOWN, WM_MOUSELAST, TRUE ) )
 			{
-                ColorRGBDisplay clr2;
-				doDisplay = TRUE;
-				if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
-					bKeyTyped = TRUE;
-				else if ( Msg.wParam == VK_ADD || Msg.wParam == VK_PRIOR ) currentColor++;
-				else if ( Msg.wParam == VK_SUBTRACT || Msg.wParam == VK_NEXT ) currentColor--;         
-				else if ( Msg.wParam == VK_MULTIPLY || Msg.wParam == VK_HOME ) clr2 = ColorRGBDisplay(100,100,100);
-				else if ( Msg.wParam == VK_SPACE ) m_Dot2 = !m_Dot2;
-				else doDisplay = FALSE;
-				if (currentColor > 3) currentColor = 0;
-				if (currentColor < 0) currentColor = 3;
+				if ( Msg.message == WM_KEYDOWN )
+				{
+					ColorRGBDisplay clr2;
+					doDisplay = TRUE;
+					if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
+						bKeyTyped = TRUE;
+					else if ( Msg.wParam == VK_ADD || Msg.wParam == VK_PRIOR ) currentColor++;
+					else if ( Msg.wParam == VK_SUBTRACT || Msg.wParam == VK_NEXT ) currentColor--;         
+					else if ( Msg.wParam == VK_MULTIPLY || Msg.wParam == VK_HOME ) clr2 = ColorRGBDisplay(100,100,100);
+					else if ( Msg.wParam == VK_SPACE ) m_Dot2 = !m_Dot2;
+					else doDisplay = FALSE;
+					if (currentColor > 3) currentColor = 0;
+					if (currentColor < 0) currentColor = 3;
 
-				switch (currentColor) {
-					case 0: clr2 = ColorRGBDisplay(100,100,100); break;
-					case 1: clr2 = ColorRGBDisplay(100,0,0); break;
-					case 2: clr2 = ColorRGBDisplay(0,100,0); break;
-					case 3: clr2 = ColorRGBDisplay(0,0,100); break;
+					switch (currentColor) {
+						case 0: clr2 = ColorRGBDisplay(100,100,100); break;
+						case 1: clr2 = ColorRGBDisplay(100,0,0); break;
+						case 2: clr2 = ColorRGBDisplay(0,100,0); break;
+						case 3: clr2 = ColorRGBDisplay(0,0,100); break;
+					}
+
+					if (doDisplay && !bKeyTyped)
+						m_patternDGenerator->DisplayHVLinesPattern(clr2, m_Dot2, vLines);
+
 				}
-
-				if (doDisplay && !bKeyTyped)
-					m_patternDGenerator->DisplayHVLinesPattern(clr2, m_Dot2, vLines);
-
+				else if ( Msg.message == WM_TIMER )
+				{
+					// Dispatch timer message to allow animation run
+					DispatchMessage ( &Msg );
+				}
 			}
-			else if ( Msg.message == WM_TIMER )
-			{
-				// Dispatch timer message to allow animation run
-				DispatchMessage ( &Msg );
-			}
+			Sleep(10);
 		}
-		Sleep(10);
+
+		m_patternDGenerator->Release();
+	}
+	else
+	{
+		msg.LoadString ( IDS_ERRINITGENERATOR );
+		Title.LoadString ( IDS_ERROR );
+		GetColorApp()->InMeasureMessageBox(msg,Title,MB_ICONERROR | MB_OK);
 	}
 
-	m_patternDGenerator->Release();
 }
 
 void CPatternDisplay::DisplayColorLevelPattern(INT clrLevel) 
@@ -324,38 +344,48 @@ void CPatternDisplay::DisplayColorLevelPattern(INT clrLevel)
 	BOOL	bKeyTyped = FALSE;
 	BOOL	doDisplay = FALSE;
 	MSG		Msg;
+	CString msg, Title;
 
-	m_patternDGenerator->Init();
-	m_patternDGenerator->DisplayColorLevelPattern(clrLevel, m_Dot2, m_nPads);
-	while ( ! bKeyTyped )
+	if (m_patternDGenerator->Init())
 	{
-		while ( PeekMessage ( & Msg, NULL, WM_KEYDOWN, WM_MOUSELAST, TRUE ) )
+		m_patternDGenerator->DisplayColorLevelPattern(clrLevel, m_Dot2, m_nPads);
+		while ( ! bKeyTyped )
 		{
-			if ( Msg.message == WM_KEYDOWN )
+			while ( PeekMessage ( & Msg, NULL, WM_KEYDOWN, WM_MOUSELAST, TRUE ) )
 			{
-				doDisplay = TRUE;
-				if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
-					bKeyTyped = TRUE;
-				else if ( ( Msg.wParam == VK_ADD || Msg.wParam == VK_PRIOR ) && m_nPads < 255 && clrLevel < 8) m_nPads++;
-				else if ( ( Msg.wParam == VK_SUBTRACT || Msg.wParam == VK_NEXT ) && m_nPads > 2 && clrLevel < 8) m_nPads--;         
-				else if ( Msg.wParam == VK_MULTIPLY || Msg.wParam == VK_HOME ) m_nPads = 11;
-				else if ( Msg.wParam == VK_SPACE ) m_Dot2 = !m_Dot2;
-				else doDisplay = FALSE;
+				if ( Msg.message == WM_KEYDOWN )
+				{
+					doDisplay = TRUE;
+					if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
+						bKeyTyped = TRUE;
+					else if ( ( Msg.wParam == VK_ADD || Msg.wParam == VK_PRIOR ) && m_nPads < 255 && clrLevel < 8) m_nPads++;
+					else if ( ( Msg.wParam == VK_SUBTRACT || Msg.wParam == VK_NEXT ) && m_nPads > 2 && clrLevel < 8) m_nPads--;         
+					else if ( Msg.wParam == VK_MULTIPLY || Msg.wParam == VK_HOME ) m_nPads = 11;
+					else if ( Msg.wParam == VK_SPACE ) m_Dot2 = !m_Dot2;
+					else doDisplay = FALSE;
 				
-				if (doDisplay && !bKeyTyped)
-					m_patternDGenerator->DisplayColorLevelPattern(clrLevel, m_Dot2, m_nPads);
+					if (doDisplay && !bKeyTyped)
+						m_patternDGenerator->DisplayColorLevelPattern(clrLevel, m_Dot2, m_nPads);
 
+				}
+				else if ( Msg.message == WM_TIMER )
+				{
+					// Dispatch timer message to allow animation run
+					DispatchMessage ( &Msg );
+				}
 			}
-			else if ( Msg.message == WM_TIMER )
-			{
-				// Dispatch timer message to allow animation run
-				DispatchMessage ( &Msg );
-			}
+			Sleep(10);
 		}
-		Sleep(10);
-	}
 
-	m_patternDGenerator->Release();
+		m_patternDGenerator->Release();
+	}
+		
+	else
+	{
+		msg.LoadString ( IDS_ERRINITGENERATOR );
+		Title.LoadString ( IDS_ERROR );
+		GetColorApp()->InMeasureMessageBox(msg,Title,MB_ICONERROR | MB_OK);
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -513,44 +543,62 @@ void CPatternDisplay::OnPatternBlackP()
 	MSG		Msg;
 	double iPercent=0;
 	double step = 1. / 219. * 100.;
+	CString msg, Title;
 
-	m_patternDGenerator->Init(0, TRUE);
-	m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(iPercent),CGenerator::MT_SPECIAL);
-	while ( ! bKeyTyped )
+	if (m_patternDGenerator->Init(0, TRUE))
 	{
-		while ( PeekMessage ( & Msg, NULL, WM_KEYDOWN, WM_MOUSELAST, TRUE ) )
+		m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(iPercent),CGenerator::MT_SPECIAL);
+		while ( ! bKeyTyped )
 		{
-			if ( Msg.message == WM_KEYDOWN )
+			while ( PeekMessage ( & Msg, NULL, WM_KEYDOWN, WM_MOUSELAST, TRUE ) )
 			{
-				doDisplay = TRUE;
-				if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
-					bKeyTyped = TRUE;
-				else if ( ( Msg.wParam == VK_ADD || Msg.wParam == VK_PRIOR ) && iPercent < 100) iPercent+=step;
-				else if ( ( Msg.wParam == VK_SUBTRACT || Msg.wParam == VK_NEXT ) && iPercent > 0) iPercent-=step;         
-				else if ( Msg.wParam == VK_MULTIPLY || Msg.wParam == VK_HOME ) iPercent = 50;
-				else doDisplay = FALSE;
+				if ( Msg.message == WM_KEYDOWN )
+				{
+					doDisplay = TRUE;
+					if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN )
+						bKeyTyped = TRUE;
+					else if ( ( Msg.wParam == VK_ADD || Msg.wParam == VK_PRIOR ) && iPercent < 100) iPercent+=step;
+					else if ( ( Msg.wParam == VK_SUBTRACT || Msg.wParam == VK_NEXT ) && iPercent > 0) iPercent-=step;         
+					else if ( Msg.wParam == VK_MULTIPLY || Msg.wParam == VK_HOME ) iPercent = 50;
+					else doDisplay = FALSE;
 				
-				if (doDisplay && !bKeyTyped)
-					m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(iPercent),CGenerator::MT_PRIMARY);
+					if (doDisplay && !bKeyTyped)
+						m_patternDGenerator->DisplayRGBColor(ColorRGBDisplay(iPercent),CGenerator::MT_PRIMARY);
+				}
+				else if ( Msg.message == WM_TIMER )
+				{
+					// Dispatch timer message to allow animation run
+					DispatchMessage ( &Msg );
+				}
 			}
-			else if ( Msg.message == WM_TIMER )
-			{
-				// Dispatch timer message to allow animation run
-				DispatchMessage ( &Msg );
-			}
+			Sleep(10);
 		}
-		Sleep(10);
-	}
 
-	m_patternDGenerator->Release();
+		m_patternDGenerator->Release();
+	}
+	else
+	{
+		msg.LoadString ( IDS_ERRINITGENERATOR );
+		Title.LoadString ( IDS_ERROR );
+		GetColorApp()->InMeasureMessageBox(msg,Title,MB_ICONERROR | MB_OK);
+	}
 }
 
 void CPatternDisplay::OnPatternColor() 
 {
-	m_patternDGenerator->Init();
-	m_patternDGenerator->DisplayColorPattern(FALSE);
-	WaitKey();
-	m_patternDGenerator->Release();
+	CString msg, Title;
+	if (m_patternDGenerator->Init())
+	{
+		m_patternDGenerator->DisplayColorPattern(FALSE);
+		WaitKey();
+		m_patternDGenerator->Release();
+	}
+	else
+	{
+		msg.LoadString ( IDS_ERRINITGENERATOR );
+		Title.LoadString ( IDS_ERROR );
+		GetColorApp()->InMeasureMessageBox(msg,Title,MB_ICONERROR | MB_OK);
+	}
 }
 
 void CPatternDisplay::OnPatternConvGrid() 
@@ -567,90 +615,144 @@ void CPatternDisplay::OnPatternPicture()
 {
 	HMODULE hPatterns;
 	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
-	m_patternDGenerator->Init();
-	if (GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0) == 0)
-		m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_TESTIMG,TRUE);
+	CString msg, Title;
+	if (m_patternDGenerator->Init())
+	{
+		if (GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0) == 0)
+			m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_TESTIMG,TRUE);
+		else
+			m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_TESTIMGv,TRUE);
+		WaitKey();
+		m_patternDGenerator->Release();
+		FreeLibrary(hPatterns);
+	}
 	else
-		m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_TESTIMGv,TRUE);
-	WaitKey();
-	m_patternDGenerator->Release();
-	FreeLibrary(hPatterns);
+	{
+		msg.LoadString ( IDS_ERRINITGENERATOR );
+		Title.LoadString ( IDS_ERROR );
+		GetColorApp()->InMeasureMessageBox(msg,Title,MB_ICONERROR | MB_OK);
+	}
 }
 
 void CPatternDisplay::OnPatternPictSMPTE() 
 {
 	HMODULE hPatterns;
+	CString msg, Title;
 	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
-	m_patternDGenerator->Init();
-	if ( !m_patternDGenerator->m_b16_235 )
+	if (m_patternDGenerator->Init())
 	{
-		if (IDYES == GetColorApp()->InMeasureMessageBox( "Caution, pattern is designed for video level output\nand you have selected full range. Continue?", "Pattern display", MB_ICONQUESTION | MB_YESNO ) )
+		if ( !m_patternDGenerator->m_b16_235 )
+		{
+			if (IDYES == GetColorApp()->InMeasureMessageBox( "Caution, pattern is designed for video level output\nand you have selected full range. Continue?", "Pattern display", MB_ICONQUESTION | MB_YESNO ) )
+			{
+				m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_SMPTE75,TRUE);
+				WaitKey();
+			}
+		}
+		else
 		{
 			m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_SMPTE75,TRUE);
 			WaitKey();
 		}
+
+		m_patternDGenerator->Release();
+		FreeLibrary(hPatterns);
 	}
 	else
 	{
-		m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_SMPTE75,TRUE);
-		WaitKey();
+		msg.LoadString ( IDS_ERRINITGENERATOR );
+		Title.LoadString ( IDS_ERROR );
+		GetColorApp()->InMeasureMessageBox(msg,Title,MB_ICONERROR | MB_OK);
 	}
-
-	m_patternDGenerator->Release();
-	FreeLibrary(hPatterns);
 }
 
 void CPatternDisplay::OnPatternPict1956() 
 {
 	HMODULE hPatterns;
+	CString msg, Title;
 	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
-	m_patternDGenerator->Init();
-	if ( !m_patternDGenerator->m_b16_235 )
+	if (m_patternDGenerator->Init())
 	{
-		if (IDYES == GetColorApp()->InMeasureMessageBox( "Caution, pattern is designed for video level output\nand you have selected full range. Continue?", "Pattern display", MB_ICONQUESTION | MB_YESNO ) )
+		if ( !m_patternDGenerator->m_b16_235 )
+		{
+			if (IDYES == GetColorApp()->InMeasureMessageBox( "Caution, pattern is designed for video level output\nand you have selected full range. Continue?", "Pattern display", MB_ICONQUESTION | MB_YESNO ) )
+			{
+				m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_1956,FALSE);
+				WaitKey();
+			}
+		}
+		else
 		{
 			m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_1956,FALSE);
 			WaitKey();
 		}
+
+		m_patternDGenerator->Release();
+		FreeLibrary(hPatterns);
 	}
 	else
 	{
-		m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_1956,FALSE);
-		WaitKey();
+		msg.LoadString ( IDS_ERRINITGENERATOR );
+		Title.LoadString ( IDS_ERROR );
+		GetColorApp()->InMeasureMessageBox(msg,Title,MB_ICONERROR | MB_OK);
 	}
-
-	m_patternDGenerator->Release();
-	FreeLibrary(hPatterns);
 }
 
 void CPatternDisplay::OnPatternTestimg() 
 {
 	HMODULE hPatterns;
+	CString msg, Title;
 	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
-	m_patternDGenerator->Init();
-	if (GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0) == 0)
-		m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_TESTIMG,TRUE);
+	if (m_patternDGenerator->Init())
+	{
+		if (GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0) == 0)
+			m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_TESTIMG,TRUE);
+		else
+			m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_TESTIMGv,TRUE);
+		WaitKey();
+		m_patternDGenerator->Release();
+		FreeLibrary(hPatterns);
+	}
 	else
-		m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_TESTIMGv,TRUE);
-	WaitKey();
-	m_patternDGenerator->Release();
-	FreeLibrary(hPatterns);
+	{
+		msg.LoadString ( IDS_ERRINITGENERATOR );
+		Title.LoadString ( IDS_ERROR );
+		GetColorApp()->InMeasureMessageBox(msg,Title,MB_ICONERROR | MB_OK);
+	}
 }
 
 void CPatternDisplay::OnPatternAnimB() 
 {
-	m_patternDGenerator->Init();
-	m_patternDGenerator->DisplayAnimatedBlack();
-	WaitKey();
-	m_patternDGenerator->Release();
+	CString msg, Title;
+	if (m_patternDGenerator->Init())
+	{
+		m_patternDGenerator->DisplayAnimatedBlack();
+		WaitKey();
+		m_patternDGenerator->Release();
+	}
+	else
+	{
+		msg.LoadString ( IDS_ERRINITGENERATOR );
+		Title.LoadString ( IDS_ERROR );
+		GetColorApp()->InMeasureMessageBox(msg,Title,MB_ICONERROR | MB_OK);
+	}
 }
 
 void CPatternDisplay::OnPatternAnimW() 
 {
-	m_patternDGenerator->Init();
-	m_patternDGenerator->DisplayAnimatedWhite();
-	WaitKey();
-	m_patternDGenerator->Release();
+	CString msg, Title;
+	if (m_patternDGenerator->Init())
+	{
+		m_patternDGenerator->DisplayAnimatedWhite();
+		WaitKey();
+		m_patternDGenerator->Release();
+	}
+	else
+	{
+		msg.LoadString ( IDS_ERRINITGENERATOR );
+		Title.LoadString ( IDS_ERROR );
+		GetColorApp()->InMeasureMessageBox(msg,Title,MB_ICONERROR | MB_OK);
+	}
 }
 
 void CPatternDisplay::OnPatternPictGrid()
