@@ -123,6 +123,7 @@ public:
 	void MeasureSecondaries();
 	void MeasureContrast();
 	void AddMeasurement();
+	bool CheckVideoLevel();
 	//void CalibrateSensor(BOOL doUpdateValues=TRUE);
 
 	CMeasure *GetMeasure() { return &m_measure; }
@@ -210,9 +211,16 @@ protected:
 	afx_msg void OnPatternGranger();
 	afx_msg void OnPattern80();
 	afx_msg void OnPatternTV();
+	afx_msg void OnPatternTV2();
 	afx_msg void OnPatternSpectrum();
 	afx_msg void OnPatternSramp();
 	afx_msg void OnPatternTestimg();
+	afx_msg void OnPatternISO12233();
+	afx_msg void OnPatternBBCHD();
+	afx_msg void OnPatternCROSSl();
+	afx_msg void OnPatternCROSSd();
+	afx_msg void OnPatternPM5644();
+	afx_msg void OnPatternZONE();
 	afx_msg void OnPatternVSMPTE();
 	afx_msg void OnPatternEramp();
 	afx_msg void OnPatternAlign();

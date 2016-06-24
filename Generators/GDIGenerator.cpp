@@ -783,6 +783,12 @@ BOOL CGDIGenerator::DisplayTV()
 	return TRUE;
 }
 
+BOOL CGDIGenerator::DisplayTV2()
+{
+	m_displayWindow.DisplayTV2();
+	return TRUE;
+}
+
 BOOL CGDIGenerator::DisplaySpectrum()
 {
 	m_displayWindow.DisplaySpectrum();
@@ -895,6 +901,42 @@ BOOL CGDIGenerator::DisplayClipL()
 BOOL CGDIGenerator::DisplayTestimg()
 {
 	m_displayWindow.DisplayTestimg();
+	return TRUE;
+}
+
+BOOL CGDIGenerator::DisplayISO12233()
+{
+	m_displayWindow.DisplayISO12233();
+	return TRUE;
+}
+
+BOOL CGDIGenerator::DisplayBBCHD()
+{
+	m_displayWindow.DisplayBBCHD();
+	return TRUE;
+}
+
+BOOL CGDIGenerator::DisplayCROSSl()
+{
+	m_displayWindow.DisplayCROSSl();
+	return TRUE;
+}
+
+BOOL CGDIGenerator::DisplayCROSSd()
+{
+	m_displayWindow.DisplayCROSSd();
+	return TRUE;
+}
+
+BOOL CGDIGenerator::DisplayPM5644()
+{
+	m_displayWindow.DisplayPM5644();
+	return TRUE;
+}
+
+BOOL CGDIGenerator::DisplayZONE()
+{
+	m_displayWindow.DisplayZONE();
 	return TRUE;
 }
 

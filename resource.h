@@ -263,6 +263,14 @@
 #define IDB_SATCC24                     384
 #define IDB_REFCC24SAT_BITMAP           385
 #define IDC_IS_SETTLING                 386
+#define IDR_PATTERN_ISO12233            387
+#define IDR_PATTERN_BBCHD               388
+#define IDR_PATTERN_PM5644              389
+#define IDR_PATTERN_ZONE                390
+#define IDR_PATTERN_CROSSl              391
+#define IDR_PATTERN_CROSSlv             392
+#define IDR_PATTERN_CROSSd              393
+#define IDR_PATTERN_CROSSdv             394
 #define IDC_GRAYSCALE_GRID              1001
 #define IDC_GRAPH_TITLE                 1002
 #define IDC_SENSORMATRIX_GRID           1002
@@ -741,10 +749,8 @@
 #define IDC_BLUE_X                      1287
 #define IDC_BLUE_Y                      1288
 #define IDC_MADVR_OSD                   1289
-#define IDR_PATTERN_SMPTE75v            1290
 #define IDC_MADVR_OSD2                  1290
 #define IDC_DISP_TRIP                   1290
-#define IDR_PATTERN_1956v               1291
 #define IDC_DISP_TRIP2                  1291
 #define IDR_PATTERN_TESTIMGv            1292
 #define IDR_PATTERN_GRADIENT            1293
@@ -753,7 +759,6 @@
 #define IDR_PATTERN_SRAMP               1296
 #define IDR_PATTERN_SRAMPv              1297
 #define IDR_PATTERN_VSMPTE              1298
-#define IDR_PATTERN_VSMPTEv             1299
 #define IDR_PATTERN_ERAMP               1300
 #define IDR_PATTERN_ALIGN               1301
 #define IDR_PATTERN_SPECTRUM            1302
@@ -797,11 +802,13 @@
 #define IDR_PATTERN_RBv                 1340
 #define IDR_PATTERN_GBv                 1341
 #define IDR_PATTERN_GRANGERv            1342
-#define IDR_PATTERN_SPECTRUMv           1343
 #define IDR_PATTERN_80                  1344
 #define IDC_EDIT_MANUAL_BLACK           1345
 #define IDR_PATTERN_CALPIC              1346
 #define IDR_PATTERN_CALPICv             1347
+#define IDR_PATTERN_ERAMPv              1348
+#define IDR_PATTERN_TV2                  1349
+#define IDR_PATTERN_TV2v                 1350
 #define IDC_COLORTEMPHISTO_GRAPH        11003
 #define IDC_RGBHISTO_GRAPH              11101
 #define IDC_RGBHISTO_GRAPH2             11102
@@ -1045,8 +1052,11 @@
 #define IDM_PATTERN_SHARP               33065
 #define IDM_PATTERN_CLIPL               33066
 #define IDM_PATTERN_CLIPH               33067
+#define ID_Menu33064                    33067
 #define IDM_PATTERN_TV                  33068
+#define ID_TARGETS_FOCUSRESOLUTION      33068
 #define IDM_PATTERN_GRADIENT2           33069
+#define ID_TARGETS_GRADIENTSRAMPS       33069
 #define IDM_PATTERN_RG                  33070
 #define IDM_PATTERN_RB                  33071
 #define IDM_PATTERN_GB                  33072
@@ -1056,8 +1066,21 @@
 #define IDM_EXPORT_PDF                  33076
 #define IDM_PATTERN_BN                  33077
 #define ID_MEASURES_FULLTILTBOOGIE      33078
+#define ID_FOCUSRESOLUTION_CONVERGENCE  33078
 #define IDM_CIE_AB                      33079
+#define ID_FOCUSRESOLUTION_ISO12233     33079
 #define IDM_PATTERN_80                  33080
+#define ID_FOCUSRESOLUTION_EIA1956      33081
+#define ID_FOCUSRESOLUTION_ZONEPLATE    33082
+#define ID_EVALUATIONIMAGES_BLACKWHITE  33083
+#define ID_BLACKWHITE_GRAYWORLD         33084
+#define ID_BLACKWHITE_SHADOWS           33085
+#define IDM_PATTERN_CONV                33086
+#define ID_FOCUSRESOLUTION_PHILLIPSPM5644 33087
+#define ID_FOCUSRESOLUTION_BBCHDTESTCARD 33088
+#define ID_CROSSGRADIENTS_FULLSET       33089
+#define ID_CROSSGRADIENTS_FULLSET33090  33090
+#define IDM_PATTERN_TV2                 33091
 #define IDS_LUMINANCEHISTOVIEW_NAME     41446
 #define IDS_COLORTEMPHISTOVIEW_NAME     41447
 #define IDS_RGBHISTOVIEW_NAME           41448
@@ -1596,7 +1619,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        382
-#define _APS_NEXT_COMMAND_VALUE         33064
+#define _APS_NEXT_COMMAND_VALUE         33092
 #define _APS_NEXT_CONTROL_VALUE         1288
 #define _APS_NEXT_SYMED_VALUE           143
 #endif

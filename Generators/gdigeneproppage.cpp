@@ -116,10 +116,23 @@ void CGDIGenePropPage::OnOK()
 	else
 		m_nDisplayMode = DISPLAY_GDI;
 
-	if ( IsDlgButtonChecked ( IDC_RGBLEVEL_RADIO2 ) )
-		m_b16_235 = TRUE;
-	else
-		m_b16_235 = FALSE;
+	if (m_nDisplayMode == DISPLAY_madVR || m_nDisplayMode == DISPLAY_ccast )
+	{
+		GetDlgItem(IDC_RGBLEVEL_RADIO1)->EnableWindow(FALSE);
+		GetDlgItem(IDC_RGBLEVEL_RADIO2)->EnableWindow(FALSE);
+		GetDlgItem(IDC_DISP_TRIP2)->EnableWindow(FALSE);
+	} else
+	{
+
+		GetDlgItem(IDC_RGBLEVEL_RADIO1)->EnableWindow(TRUE);
+		GetDlgItem(IDC_RGBLEVEL_RADIO2)->EnableWindow(TRUE);
+		GetDlgItem(IDC_DISP_TRIP2)->EnableWindow(TRUE);
+		if ( IsDlgButtonChecked ( IDC_RGBLEVEL_RADIO2 ) )
+			m_b16_235 = TRUE;
+		else
+			m_b16_235 = FALSE;
+	}
+
 	CheckRadioButton ( IDC_RGBLEVEL_RADIO1, IDC_RGBLEVEL_RADIO2, IDC_RGBLEVEL_RADIO1 + m_b16_235 );
 	CheckRadioButton ( IDC_RADIO1,  IDC_RADIO1 + m_nDisplayMode , IDC_RADIO1 + m_nDisplayMode );
 
@@ -159,6 +172,40 @@ BOOL CGDIGenePropPage::OnSetActive()
         m_madVREdit2.EnableWindow(FALSE);
         m_madVREdit3.EnableWindow(FALSE);
     }
+
+	if ( IsDlgButtonChecked ( IDC_RADIO2 ) )
+		m_nDisplayMode = DISPLAY_OVERLAY;
+	else if ( IsDlgButtonChecked ( IDC_RADIO3 ) )
+		m_nDisplayMode = DISPLAY_madVR;
+	else if ( IsDlgButtonChecked ( IDC_RADIO4 ) )
+		m_nDisplayMode = DISPLAY_GDI_nBG;
+	else if ( IsDlgButtonChecked ( IDC_RADIO5 ) )
+	{
+		m_nDisplayMode = DISPLAY_ccast;
+		m_b16_235 = TRUE;
+		CheckRadioButton ( IDC_RGBLEVEL_RADIO1, IDC_RGBLEVEL_RADIO2, IDC_RGBLEVEL_RADIO1 + m_b16_235 );
+	}
+	else if ( IsDlgButtonChecked ( IDC_RADIO6 ) )
+		m_nDisplayMode = DISPLAY_GDI_Hide;
+	else
+		m_nDisplayMode = DISPLAY_GDI;
+
+	if (m_nDisplayMode == DISPLAY_madVR || m_nDisplayMode == DISPLAY_ccast )
+	{
+		GetDlgItem(IDC_RGBLEVEL_RADIO1)->EnableWindow(FALSE);
+		GetDlgItem(IDC_RGBLEVEL_RADIO2)->EnableWindow(FALSE);
+		GetDlgItem(IDC_DISP_TRIP2)->EnableWindow(FALSE);
+	} else
+	{
+
+		GetDlgItem(IDC_RGBLEVEL_RADIO1)->EnableWindow(TRUE);
+		GetDlgItem(IDC_RGBLEVEL_RADIO2)->EnableWindow(TRUE);
+		GetDlgItem(IDC_DISP_TRIP2)->EnableWindow(TRUE);
+		if ( IsDlgButtonChecked ( IDC_RGBLEVEL_RADIO2 ) )
+			m_b16_235 = TRUE;
+		else
+			m_b16_235 = FALSE;
+	}
 
 	return CPropertyPageWithHelp::OnSetActive();
 }
@@ -235,6 +282,40 @@ void CGDIGenePropPage::OnClickmadVR()
         m_madVREdit2.EnableWindow(FALSE);
         m_madVREdit3.EnableWindow(FALSE);
     }
+	m_activeMonitorNum=m_monitorComboCtrl.GetCurSel();	
+	if ( IsDlgButtonChecked ( IDC_RADIO2 ) )
+		m_nDisplayMode = DISPLAY_OVERLAY;
+	else if ( IsDlgButtonChecked ( IDC_RADIO3 ) )
+		m_nDisplayMode = DISPLAY_madVR;
+	else if ( IsDlgButtonChecked ( IDC_RADIO4 ) )
+		m_nDisplayMode = DISPLAY_GDI_nBG;
+	else if ( IsDlgButtonChecked ( IDC_RADIO5 ) )
+	{
+		m_nDisplayMode = DISPLAY_ccast;
+		m_b16_235 = TRUE;
+		CheckRadioButton ( IDC_RGBLEVEL_RADIO1, IDC_RGBLEVEL_RADIO2, IDC_RGBLEVEL_RADIO1 + m_b16_235 );
+	}
+	else if ( IsDlgButtonChecked ( IDC_RADIO6 ) )
+		m_nDisplayMode = DISPLAY_GDI_Hide;
+	else
+		m_nDisplayMode = DISPLAY_GDI;
+
+	if (m_nDisplayMode == DISPLAY_madVR || m_nDisplayMode == DISPLAY_ccast )
+	{
+		GetDlgItem(IDC_RGBLEVEL_RADIO1)->EnableWindow(FALSE);
+		GetDlgItem(IDC_RGBLEVEL_RADIO2)->EnableWindow(FALSE);
+		GetDlgItem(IDC_DISP_TRIP2)->EnableWindow(FALSE);
+	} else
+	{
+
+		GetDlgItem(IDC_RGBLEVEL_RADIO1)->EnableWindow(TRUE);
+		GetDlgItem(IDC_RGBLEVEL_RADIO2)->EnableWindow(TRUE);
+		GetDlgItem(IDC_DISP_TRIP2)->EnableWindow(TRUE);
+		if ( IsDlgButtonChecked ( IDC_RGBLEVEL_RADIO2 ) )
+			m_b16_235 = TRUE;
+		else
+			m_b16_235 = FALSE;
+	}
 }
 
 UINT CGDIGenePropPage::GetHelpId ( LPSTR lpszTopic )

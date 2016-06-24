@@ -403,7 +403,7 @@ BEGIN
     CONTROL         "GDI(no background)",IDC_RADIO4,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,69,80,10
     CONTROL         "CCast",IDC_RADIO5,"Button",BS_AUTORADIOBUTTON,66,59,34,10
     CONTROL         "Floating Window",IDC_RADIO6,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,79,66,10
-    CONTROL         "Display Triplets",IDC_DISP_TRIP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,89,84,13
+    CONTROL         "Display Triplets",IDC_DISP_TRIP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,88,84,13
     CONTROL         "disable 3dLUT",IDC_MADVR_3D,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,100,64,70,13
     CONTROL         "disable video LUT",IDC_MADVR_3D2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,100,76,69,13
     CONTROL         "OSD",IDC_MADVR_OSD,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,145,53,31,13
@@ -420,8 +420,8 @@ BEGIN
     CONTROL         "Image background",IDC_USEPIC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,35,73,13
     LTEXT           "Pattern Intensity [%]",IDC_STATIC,86,37,75,8
     EDITTEXT        IDC_INTENSITY_EDIT,156,35,20,12,ES_AUTOHSCROLL | WS_GROUP
-    GROUPBOX        "Display mode",IDC_STATIC,9,48,177,53,WS_GROUP
-    GROUPBOX        "Gray Scale (GDI)",IDC_STATIC,9,106,167,38,WS_GROUP
+    GROUPBOX        "Display mode",IDC_STATIC,9,48,177,54,WS_GROUP
+    GROUPBOX        "GDI Options",IDC_STATIC,9,106,167,38,WS_GROUP
 END
 
 IDD_APPEARANCE_PROP_PAGE DIALOGEX 0, 0, 214, 166
@@ -756,7 +756,7 @@ BEGIN
     PUSHBUTTON      "Boxes",IDC_PATTERN_PICT_CBOX,129,190,60,10
     PUSHBUTTON      "Ansi 2",IDC_PATTERN_PICT_CANSI2,69,190,60,10
     PUSHBUTTON      "Ansi 1",IDC_PATTERN_PICT_CANSI1,9,190,60,10
-    PUSHBUTTON      "Res. 1956",IDC_PATTERN_1956,140,116,48,10
+    PUSHBUTTON      "EIA 1956",IDC_PATTERN_1956,140,116,48,10
     PUSHBUTTON      "SMPTE 75%",IDC_PATTERN_SMPTE75,94,116,46,10
 END
 
@@ -1927,51 +1927,70 @@ BEGIN
     END
     POPUP "&Advanced"
     BEGIN
-        POPUP "&Test patterns"
+        POPUP "&Targets\\Images\\Patterns"
         BEGIN
-            MENUITEM "Animated black level test pattern", IDM_PATTERN_ANIM_BLACK
-            MENUITEM "Animated white level test pattern", IDM_PATTERN_ANIM_WHITE
-            POPUP "&Gradient Patterns"
+            POPUP "&Levels"
+            BEGIN
+                MENUITEM "&Black +1% && +2% moving bars", IDM_PATTERN_ANIM_BLACK
+                MENUITEM "&White -1% && -2% moving bars", IDM_PATTERN_ANIM_WHITE
+                MENUITEM "&Shadow clipping",            IDM_PATTERN_CLIPL
+                MENUITEM "&Highlight clipping",         IDM_PATTERN_CLIPH
+            END
+            POPUP "&Focus && Resolution"
+            BEGIN
+                MENUITEM "&Alignment && Convergence",   IDM_PATTERN_ALIGN
+                MENUITEM "&IMATEST",                    IDM_PATTERN_SHARP
+                MENUITEM "IS&O 12233:2000",             ID_FOCUSRESOLUTION_ISO12233
+                MENUITEM "&Belle Nuit",                 IDM_PATTERN_BN
+                MENUITEM "BBC HD &Test Card",           ID_FOCUSRESOLUTION_BBCHDTESTCARD
+                MENUITEM "&Phillips PM5644",            ID_FOCUSRESOLUTION_PHILLIPSPM5644
+                MENUITEM "&SMPTE RP-133",               IDM_PATTERN_VSMPTE
+                MENUITEM "&Zone Plate[linear]",         ID_FOCUSRESOLUTION_ZONEPLATE
+            END
+            POPUP "&Gradients && Ramps"
             BEGIN
                 MENUITEM "&Neutral Gradient",           IDM_PATTERN_GRADIENT
-                MENUITEM "Reversed N&eutral Gradients", IDM_PATTERN_GRADIENT2
-                MENUITEM "Red/Green Cross Gradient",    IDM_PATTERN_RG
-                MENUITEM "Red/Blue Cross Gradient",     IDM_PATTERN_RB
-                MENUITEM "Green/Blue Cross Gradient",   IDM_PATTERN_GB
-                MENUITEM "Red/Green [dark] Cross Gradient", IDM_PATTERN_RGd
-                MENUITEM "Red/Blue [dark] Cross Gradient", IDM_PATTERN_RBd
-                MENUITEM "Green/Blue [dark] Cross Gradient", IDM_PATTERN_GBd
+                MENUITEM "&Opposing Neutral Gradients", IDM_PATTERN_GRADIENT2
+                MENUITEM "RGBYCMW Luma Ramps [Shades]", IDM_PATTERN_LRAMP
+                MENUITEM "RGBYCM Saturation Ramps [Tints]", IDM_PATTERN_SRAMP
+                MENUITEM "&Spectrum [light/full/dark]", IDM_PATTERN_SPECTRUM
+                MENUITEM "&Chroma-gray Circles",        IDM_PATTERN_ERAMP
+                POPUP "&Cross Gradients"
+                BEGIN
+                    MENUITEM "Full Set [light]",            ID_CROSSGRADIENTS_FULLSET
+                    MENUITEM "Full Set [dark]",             ID_CROSSGRADIENTS_FULLSET33090
+                    MENUITEM "Red/Green Cross Gradient",    IDM_PATTERN_RG
+                    MENUITEM "Red/Blue Cross Gradient",     IDM_PATTERN_RB
+                    MENUITEM "Green/Blue Cross Gradient",   IDM_PATTERN_GB
+                    MENUITEM "Red/Green [dark] Cross Gradient", IDM_PATTERN_RGd
+                    MENUITEM "Red/Blue [dark] Cross Gradient", IDM_PATTERN_RBd
+                    MENUITEM "Green/Blue [dark] Cross Gradient", IDM_PATTERN_GBd
+                END
+                MENUITEM "Granger Rainbow [HSL]",       IDM_PATTERN_GRANGER
             END
-            MENUITEM "&Clipping low",               IDM_PATTERN_CLIPL
-            MENUITEM "C&lipping high",              IDM_PATTERN_CLIPH
-            MENUITEM "RGBYCMW Luma Ramps",          IDM_PATTERN_LRAMP
-            MENUITEM "RGBYCM Saturation Ramps",     IDM_PATTERN_SRAMP
-            MENUITEM "Granger Rainbow",             IDM_PATTERN_GRANGER
-            MENUITEM "Light/Dark Spectrum",         IDM_PATTERN_SPECTRUM
-            MENUITEM "VSMPTE133",                   IDM_PATTERN_VSMPTE
-            MENUITEM "&Sharpness/Overscan",         IDM_PATTERN_SHARP
-            MENUITEM "Alignment",                   IDM_PATTERN_ALIGN
-            MENUITEM "Elliptical Ramp",             IDM_PATTERN_ERAMP
-            MENUITEM "Belle Nuit",                  IDM_PATTERN_BN
-            MENUITEM SEPARATOR
-            POPUP "Evaluation Sequence(Casino Royale)"
+            POPUP "&Evaluation Images"
             BEGIN
-                MENUITEM "00:01:17",                    IDM_PATTERN_TC0
-                MENUITEM "00:25:41",                    IDM_PATTERN_TC1
-                MENUITEM "00:25:48",                    IDM_PATTERN_TC2
-                MENUITEM "00:35:37",                    IDM_PATTERN_TC3
-                MENUITEM "00:57:48",                    IDM_PATTERN_TC4
-                MENUITEM "01:30:18",                    IDM_PATTERN_TC5
-            END
-            MENUITEM "&Evaluation Image[light skin]", IDM_PATTERN_TESTIMG
-            POPUP "Evaluation Images[dynamic range]"
-            BEGIN
-                MENUITEM "DR 1[Dark]",                  IDM_PATTERN_DR0
-                MENUITEM "DR 2[Light]",                 IDM_PATTERN_DR1
-                MENUITEM "Dark Detail",                 IDM_PATTERN_DR2
+                MENUITEM "&Red",                        IDM_PATTERN_TC0
+                MENUITEM "&Green",                      IDM_PATTERN_TC1
+                MENUITEM "&Blue",                       IDM_PATTERN_TC2
+                MENUITEM "&Yellow",                     IDM_PATTERN_TC3
+                MENUITEM "&Cyan",                       IDM_PATTERN_TC4
+                MENUITEM "&Magenta",                    IDM_PATTERN_TC5
+                MENUITEM SEPARATOR
+                MENUITEM "&Skintones",                  IDM_PATTERN_TESTIMG
+                MENUITEM SEPARATOR
+                MENUITEM "&High key",                   IDM_PATTERN_DR0
+                MENUITEM "&Full range",                 IDM_PATTERN_DR1
+                MENUITEM "&Low key",                    IDM_PATTERN_DR2
+                MENUITEM SEPARATOR
+                POPUP "B&lack && White"
+                BEGIN
+                    MENUITEM "&Gray World",                 IDM_PATTERN_TV
+                    MENUITEM "&Shadows",                    IDM_PATTERN_TV2
+                END
             END
             MENUITEM SEPARATOR
-            MENUITEM "Additional Patterns",         IDM_PATTERN_DISPLAY
+            MENUITEM "&Additional Patterns",        IDM_PATTERN_DISPLAY
         END
         MENUITEM SEPARATOR
         POPUP "Meter Correction file"
@@ -3604,7 +3623,6 @@ END
 STRINGTABLE
 BEGIN
     ID_MEASURES_FULLTILTBOOGIE "Measure everything\nMeasure everything"
-    IDM_CIE_AB              "Display CIE a*b* diagram\nCIE a*b* diagram"
 END
 
 STRINGTABLE
@@ -3667,12 +3685,6 @@ STRINGTABLE
 BEGIN
     IDM_MEASURE_SAT_PRIMARIES_SECONDARIES 
                             "Measure primary colors saturation scales\nMeasure primary and secondary colors saturation scales"
-END
-
-STRINGTABLE
-BEGIN
-    ID_EXPORT_PDF           "Create a 1 or 2 page PDF report"
-    IDM_CIE_WORST10         "Show worst 10% dE points\nShow worst 10% dE points"
 END
 
 STRINGTABLE

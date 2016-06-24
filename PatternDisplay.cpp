@@ -582,11 +582,20 @@ void CPatternDisplay::OnPatternPictSMPTE()
 	HMODULE hPatterns;
 	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
 	m_patternDGenerator->Init();
-	if (GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0) == 0)
-		m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_SMPTE75,TRUE);
+	if ( !m_patternDGenerator->m_b16_235 )
+	{
+		if (IDYES == GetColorApp()->InMeasureMessageBox( "Caution, pattern is designed for video level output\nand you have selected full range. Continue?", "Pattern display", MB_ICONQUESTION | MB_YESNO ) )
+		{
+			m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_SMPTE75,TRUE);
+			WaitKey();
+		}
+	}
 	else
-		m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_SMPTE75v,TRUE);
-	WaitKey();
+	{
+		m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_SMPTE75,TRUE);
+		WaitKey();
+	}
+
 	m_patternDGenerator->Release();
 	FreeLibrary(hPatterns);
 }
@@ -596,11 +605,20 @@ void CPatternDisplay::OnPatternPict1956()
 	HMODULE hPatterns;
 	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
 	m_patternDGenerator->Init();
-	if (GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0) == 0)
-		m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_1956,FALSE);
+	if ( !m_patternDGenerator->m_b16_235 )
+	{
+		if (IDYES == GetColorApp()->InMeasureMessageBox( "Caution, pattern is designed for video level output\nand you have selected full range. Continue?", "Pattern display", MB_ICONQUESTION | MB_YESNO ) )
+		{
+			m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_1956,FALSE);
+			WaitKey();
+		}
+	}
 	else
-		m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_1956v,FALSE);
-	WaitKey();
+	{
+		m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_1956,FALSE);
+		WaitKey();
+	}
+
 	m_patternDGenerator->Release();
 	FreeLibrary(hPatterns);
 }
@@ -618,7 +636,6 @@ void CPatternDisplay::OnPatternTestimg()
 	m_patternDGenerator->Release();
 	FreeLibrary(hPatterns);
 }
-
 
 void CPatternDisplay::OnPatternAnimB() 
 {

@@ -299,6 +299,11 @@ BOOL CGenerator::DisplayTV()
 	return TRUE;	  // need to be overriden
 }
 
+BOOL CGenerator::DisplayTV2()
+{
+	return TRUE;	  // need to be overriden
+}
+
 BOOL CGenerator::DisplaySpectrum()
 {
 	return TRUE;	  // need to be overriden
@@ -390,6 +395,36 @@ BOOL CGenerator::DisplayClipL()
 }
 
 BOOL CGenerator::DisplayTestimg()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplayISO12233()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplayBBCHD()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplayCROSSl()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplayCROSSd()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplayPM5644()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplayZONE()
 {
 	return TRUE;	  // need to be overriden
 }

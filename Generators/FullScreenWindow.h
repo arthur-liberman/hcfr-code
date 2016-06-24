@@ -138,6 +138,7 @@ public:
 	void DisplayGranger();
 	void Display80();
 	void DisplayTV();
+	void DisplayTV2();
 	void DisplaySpectrum();
 	void DisplayTestimg();
 	void DisplaySramp();
@@ -156,6 +157,12 @@ public:
 	void DisplaySharp();
 	void DisplayClipL();
 	void DisplayClipH();
+	void DisplayISO12233();
+	void DisplayBBCHD();
+	void DisplayCROSSd();
+	void DisplayCROSSl();
+	void DisplayPM5644();
+	void DisplayZONE();
 
 	//Patterns
 	void DisplayDotPattern( const ColorRGBDisplay&  clr , BOOL dot2, UINT nPads);

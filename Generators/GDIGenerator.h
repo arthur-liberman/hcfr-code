@@ -88,9 +88,16 @@ public:
 	virtual BOOL DisplayGranger();
 	virtual BOOL Display80();
 	virtual BOOL DisplayTV();
+	virtual BOOL DisplayTV2();
 	virtual BOOL DisplaySpectrum();
 	virtual BOOL DisplaySramp();
 	virtual BOOL DisplayTestimg();
+	virtual BOOL DisplayISO12233();
+	virtual BOOL DisplayBBCHD();
+	virtual BOOL DisplayCROSSd();
+	virtual BOOL DisplayCROSSl();
+	virtual BOOL DisplayPM5644();
+	virtual BOOL DisplayZONE();
 	virtual BOOL DisplayVSMPTE();
 	virtual BOOL DisplayEramp();
 	virtual BOOL DisplayAlign();

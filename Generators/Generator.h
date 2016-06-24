@@ -118,6 +118,12 @@ public:
 	virtual BOOL DisplaySpectrum();				// need to be overriden
 	virtual BOOL DisplaySramp();				// need to be overriden
 	virtual BOOL DisplayTestimg();				// need to be overriden
+	virtual BOOL DisplayISO12233();				// need to be overriden
+	virtual BOOL DisplayBBCHD();				// need to be overriden
+	virtual BOOL DisplayCROSSd();				// need to be overriden
+	virtual BOOL DisplayCROSSl();				// need to be overriden
+	virtual BOOL DisplayPM5644();				// need to be overriden
+	virtual BOOL DisplayZONE();				// need to be overriden
 	virtual BOOL DisplayVSMPTE();				// need to be overriden
 	virtual BOOL DisplayEramp();				// need to be overriden
 	virtual BOOL DisplayAlign();				// need to be overriden
@@ -135,6 +141,7 @@ public:
 	virtual BOOL DisplayClipL();				// need to be overriden
 	virtual BOOL DisplayClipH();				// need to be overriden
 	virtual BOOL DisplayTV();				// need to be overriden
+	virtual BOOL DisplayTV2();				// need to be overriden
 	virtual BOOL DisplayDotPattern(const ColorRGBDisplay& clr , BOOL dot2, UINT nPads)  { return TRUE; };
 	virtual BOOL DisplayHVLinesPattern(const ColorRGBDisplay& clr , BOOL dot2, BOOL vLines)  { return TRUE; };
 	virtual BOOL DisplayColorLevelPattern( INT clrLevel , BOOL dot2, UINT nPads) { return TRUE; };

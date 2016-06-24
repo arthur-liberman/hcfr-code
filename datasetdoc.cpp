@@ -469,6 +469,7 @@ BEGIN_MESSAGE_MAP(CDataSetDoc, CDocument)
 	ON_COMMAND(IDM_PATTERN_GRANGER, OnPatternGranger)
 	ON_COMMAND(IDM_PATTERN_80, OnPattern80)
 	ON_COMMAND(IDM_PATTERN_TV, OnPatternTV)
+	ON_COMMAND(IDM_PATTERN_TV2, OnPatternTV2)
 	ON_COMMAND(IDM_PATTERN_SPECTRUM, OnPatternSpectrum)
 	ON_COMMAND(IDM_PATTERN_SRAMP, OnPatternSramp)
 	ON_COMMAND(IDM_PATTERN_VSMPTE, OnPatternVSMPTE)
@@ -484,10 +485,15 @@ BEGIN_MESSAGE_MAP(CDataSetDoc, CDocument)
 	ON_COMMAND(IDM_PATTERN_TC5, OnPatternTC5)
 	ON_COMMAND(IDM_PATTERN_ALIGN, OnPatternAlign)
 	ON_COMMAND(IDM_PATTERN_SHARP, OnPatternSharp)
-	ON_COMMAND(IDM_PATTERN_TV, OnPatternTV)
 	ON_COMMAND(IDM_PATTERN_CLIPH, OnPatternClipH)
 	ON_COMMAND(IDM_PATTERN_CLIPL, OnPatternClipL)
 	ON_COMMAND(IDM_PATTERN_TESTIMG, OnPatternTestimg)
+	ON_COMMAND(ID_FOCUSRESOLUTION_ISO12233, OnPatternISO12233)
+	ON_COMMAND(ID_FOCUSRESOLUTION_BBCHDTESTCARD, OnPatternBBCHD)
+	ON_COMMAND(ID_FOCUSRESOLUTION_PHILLIPSPM5644, OnPatternPM5644)
+	ON_COMMAND(ID_FOCUSRESOLUTION_ZONEPLATE, OnPatternZONE)
+	ON_COMMAND(ID_CROSSGRADIENTS_FULLSET, OnPatternCROSSl)
+	ON_COMMAND(ID_CROSSGRADIENTS_FULLSET33090, OnPatternCROSSd)
 	ON_COMMAND(IDM_SINGLE_MEASUREMENT, OnSingleMeasurement)
 	ON_COMMAND(IDM_CONTINUOUS_MEASUREMENT, OnContinuousMeasurement)
 	ON_COMMAND(IDM_MEASURE_GRAYSCALE, OnMeasureGrayscale)
@@ -2414,7 +2420,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nSteps = GetMeasure () -> GetSaturationSize ();
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_RED;
-			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, true, false, false);
+			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, true, false, false, true);
 			 pValidationFunc = &CMeasure::ValidateBackgroundRedSatScale;
 			 lHint = UPD_REDSAT;
 			 break;
@@ -3129,6 +3135,27 @@ void CDataSetDoc::OnPatternTV()
 	}
 }
 
+void CDataSetDoc::OnPatternTV2() 
+{
+
+	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
+	{
+			AfxGetMainWnd () -> EnableWindow ( FALSE );
+
+			m_pGenerator->Init();
+			m_pGenerator->DisplayTV2();
+
+			WaitKey();
+			
+			AfxGetMainWnd () -> EnableWindow ( TRUE );
+			m_pGenerator->Release();
+	}
+	else
+	{
+		GetColorApp()->InMeasureMessageBox( _S(IDS_CANNOTDISPLAYANIMATION), "On measure", MB_OK | MB_ICONEXCLAMATION );
+	}
+}
+
 void CDataSetDoc::OnPatternSharp() 
 {
 
@@ -3239,6 +3266,8 @@ void CDataSetDoc::OnPatternVSMPTE()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
 	{
+		if (CheckVideoLevel())
+		{
 			AfxGetMainWnd () -> EnableWindow ( FALSE );
 
 			m_pGenerator->Init();
@@ -3248,6 +3277,7 @@ void CDataSetDoc::OnPatternVSMPTE()
 			
 			AfxGetMainWnd () -> EnableWindow ( TRUE );
 			m_pGenerator->Release();
+		}
 	}
 	else
 	{
@@ -3407,6 +3437,8 @@ void CDataSetDoc::OnPatternBN()
 
 	if ( m_pGenerator -> CanDisplayAnimatedPatterns(TRUE) )
 	{
+		if (CheckVideoLevel())
+		{
 			AfxGetMainWnd () -> EnableWindow ( FALSE );
 
 			m_pGenerator->Init();
@@ -3416,6 +3448,7 @@ void CDataSetDoc::OnPatternBN()
 			
 			AfxGetMainWnd () -> EnableWindow ( TRUE );
 			m_pGenerator->Release();
+		}
 	}
 	else
 	{
@@ -3521,6 +3554,140 @@ void CDataSetDoc::OnPatternTestimg()
 			
 			AfxGetMainWnd () -> EnableWindow ( TRUE );
 			m_pGenerator->Release();
+	}
+	else
+	{
+		GetColorApp()->InMeasureMessageBox( _S(IDS_CANNOTDISPLAYANIMATION), "On measure", MB_OK | MB_ICONEXCLAMATION );
+	}
+}
+
+void CDataSetDoc::OnPatternISO12233() 
+{
+
+	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
+	{
+		if (CheckVideoLevel())
+		{
+			AfxGetMainWnd () -> EnableWindow ( FALSE );
+
+			m_pGenerator->Init();
+			m_pGenerator->DisplayISO12233();
+
+			WaitKey();
+			
+			AfxGetMainWnd () -> EnableWindow ( TRUE );
+			m_pGenerator->Release();
+		}
+	}
+	else
+	{
+		GetColorApp()->InMeasureMessageBox( _S(IDS_CANNOTDISPLAYANIMATION), "On measure", MB_OK | MB_ICONEXCLAMATION );
+	}
+}
+
+void CDataSetDoc::OnPatternBBCHD() 
+{
+
+	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
+	{
+		if (CheckVideoLevel())
+		{
+			AfxGetMainWnd () -> EnableWindow ( FALSE );
+
+			m_pGenerator->Init();
+			m_pGenerator->DisplayBBCHD();
+
+			WaitKey();
+			
+			AfxGetMainWnd () -> EnableWindow ( TRUE );
+			m_pGenerator->Release();
+		}
+	}
+	else
+	{
+		GetColorApp()->InMeasureMessageBox( _S(IDS_CANNOTDISPLAYANIMATION), "On measure", MB_OK | MB_ICONEXCLAMATION );
+	}
+}
+
+void CDataSetDoc::OnPatternZONE() 
+{
+
+	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
+	{
+			AfxGetMainWnd () -> EnableWindow ( FALSE );
+
+			m_pGenerator->Init();
+			m_pGenerator->DisplayZONE();
+
+			WaitKey();
+			
+			AfxGetMainWnd () -> EnableWindow ( TRUE );
+			m_pGenerator->Release();
+	}
+	else
+	{
+		GetColorApp()->InMeasureMessageBox( _S(IDS_CANNOTDISPLAYANIMATION), "On measure", MB_OK | MB_ICONEXCLAMATION );
+	}
+}
+void CDataSetDoc::OnPatternCROSSd() 
+{
+
+	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
+	{
+			AfxGetMainWnd () -> EnableWindow ( FALSE );
+
+			m_pGenerator->Init();
+			m_pGenerator->DisplayCROSSd();
+
+			WaitKey();
+			
+			AfxGetMainWnd () -> EnableWindow ( TRUE );
+			m_pGenerator->Release();
+	}
+	else
+	{
+		GetColorApp()->InMeasureMessageBox( _S(IDS_CANNOTDISPLAYANIMATION), "On measure", MB_OK | MB_ICONEXCLAMATION );
+	}
+}
+
+void CDataSetDoc::OnPatternCROSSl() 
+{
+
+	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
+	{
+			AfxGetMainWnd () -> EnableWindow ( FALSE );
+
+			m_pGenerator->Init();
+			m_pGenerator->DisplayCROSSl();
+
+			WaitKey();
+			
+			AfxGetMainWnd () -> EnableWindow ( TRUE );
+			m_pGenerator->Release();
+	}
+	else
+	{
+		GetColorApp()->InMeasureMessageBox( _S(IDS_CANNOTDISPLAYANIMATION), "On measure", MB_OK | MB_ICONEXCLAMATION );
+	}
+}
+
+void CDataSetDoc::OnPatternPM5644() 
+{
+
+	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
+	{
+			if (CheckVideoLevel())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
+
+				m_pGenerator->Init();
+				m_pGenerator->DisplayPM5644();
+
+				WaitKey();
+			
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+			}
 	}
 	else
 	{
@@ -3721,6 +3888,18 @@ void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int Col
 	delete tmpx;
 }
 
+bool CDataSetDoc::CheckVideoLevel()
+{
+	if ( !m_pGenerator->m_b16_235 && GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide) != DISPLAY_ccast )
+	{
+		if (IDYES == GetColorApp()->InMeasureMessageBox( "Caution, pattern is designed for video level output\nand you have selected full range. Continue?", "Pattern display", MB_ICONQUESTION | MB_YESNO ) )
+			return TRUE;
+		else
+			return FALSE;
+	}
+	else
+		return TRUE;
+}
 
 void CDataSetDoc::OnBkgndMeasureReady()
 {
