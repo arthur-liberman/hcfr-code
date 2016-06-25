@@ -169,7 +169,7 @@ protected:
 	void CreateGenerator(int aID);
 	void DuplicateSensor(CDataSetDoc * pDoc);
 	void DuplicateGenerator(CDataSetDoc * pDoc);
-	void WaitKey();
+	void WaitKey(int Anim = 0);
 
 	void PerformSimultaneousMeasures ( int nMode );
 	

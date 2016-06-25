@@ -157,6 +157,8 @@ public:
 	void DisplaySharp();
 	void DisplayClipL();
 	void DisplayClipH();
+	void DisplayClipHO();
+	void DisplayClipLO();
 	void DisplayISO12233();
 	void DisplayBBCHD();
 	void DisplayCROSSd();

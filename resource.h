@@ -809,6 +809,8 @@
 #define IDR_PATTERN_ERAMPv              1348
 #define IDR_PATTERN_TV2                 1349
 #define IDR_PATTERN_TV2v                1350
+#define IDR_PATTERN_CLIPHO               1351
+#define IDR_PATTERN_CLIPLO               1352
 #define IDC_COLORTEMPHISTO_GRAPH        11003
 #define IDC_RGBHISTO_GRAPH              11101
 #define IDC_RGBHISTO_GRAPH2             11102

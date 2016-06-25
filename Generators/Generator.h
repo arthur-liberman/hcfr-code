@@ -139,7 +139,9 @@ public:
 	virtual BOOL DisplayDR2();				// need to be overriden
 	virtual BOOL DisplaySharp();				// need to be overriden
 	virtual BOOL DisplayClipL();				// need to be overriden
+	virtual BOOL DisplayClipLO();				// need to be overriden
 	virtual BOOL DisplayClipH();				// need to be overriden
+	virtual BOOL DisplayClipHO();				// need to be overriden
 	virtual BOOL DisplayTV();				// need to be overriden
 	virtual BOOL DisplayTV2();				// need to be overriden
 	virtual BOOL DisplayDotPattern(const ColorRGBDisplay& clr , BOOL dot2, UINT nPads)  { return TRUE; };

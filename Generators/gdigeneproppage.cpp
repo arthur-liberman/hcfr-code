@@ -110,7 +110,10 @@ void CGDIGenePropPage::OnOK()
 	else if ( IsDlgButtonChecked ( IDC_RADIO4 ) )
 		m_nDisplayMode = DISPLAY_GDI_nBG;
 	else if ( IsDlgButtonChecked ( IDC_RADIO5 ) )
+	{
 		m_nDisplayMode = DISPLAY_ccast;
+		m_b16_235 = FALSE;
+	}
 	else if ( IsDlgButtonChecked ( IDC_RADIO6 ) )
 		m_nDisplayMode = DISPLAY_GDI_Hide;
 	else
@@ -182,7 +185,7 @@ BOOL CGDIGenePropPage::OnSetActive()
 	else if ( IsDlgButtonChecked ( IDC_RADIO5 ) )
 	{
 		m_nDisplayMode = DISPLAY_ccast;
-		m_b16_235 = TRUE;
+		m_b16_235 = FALSE;
 		CheckRadioButton ( IDC_RGBLEVEL_RADIO1, IDC_RGBLEVEL_RADIO2, IDC_RGBLEVEL_RADIO1 + m_b16_235 );
 	}
 	else if ( IsDlgButtonChecked ( IDC_RADIO6 ) )
@@ -197,7 +200,6 @@ BOOL CGDIGenePropPage::OnSetActive()
 		GetDlgItem(IDC_DISP_TRIP2)->EnableWindow(FALSE);
 	} else
 	{
-
 		GetDlgItem(IDC_RGBLEVEL_RADIO1)->EnableWindow(TRUE);
 		GetDlgItem(IDC_RGBLEVEL_RADIO2)->EnableWindow(TRUE);
 		GetDlgItem(IDC_DISP_TRIP2)->EnableWindow(TRUE);
@@ -292,7 +294,7 @@ void CGDIGenePropPage::OnClickmadVR()
 	else if ( IsDlgButtonChecked ( IDC_RADIO5 ) )
 	{
 		m_nDisplayMode = DISPLAY_ccast;
-		m_b16_235 = TRUE;
+		m_b16_235 = FALSE;
 		CheckRadioButton ( IDC_RGBLEVEL_RADIO1, IDC_RGBLEVEL_RADIO2, IDC_RGBLEVEL_RADIO1 + m_b16_235 );
 	}
 	else if ( IsDlgButtonChecked ( IDC_RADIO6 ) )

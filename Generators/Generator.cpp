@@ -389,7 +389,17 @@ BOOL CGenerator::DisplayClipH()
 	return TRUE;	  // need to be overriden
 }
 
+BOOL CGenerator::DisplayClipHO()
+{
+	return TRUE;	  // need to be overriden
+}
+
 BOOL CGenerator::DisplayClipL()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplayClipLO()
 {
 	return TRUE;	  // need to be overriden
 }

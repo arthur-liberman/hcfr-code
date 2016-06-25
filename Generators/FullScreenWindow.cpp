@@ -703,6 +703,22 @@ void CFullScreenWindow::DisplayClipH()
 	FreeLibrary(hPatterns);
 }
 
+void CFullScreenWindow::DisplayClipHO() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_CLIPHO,TRUE);
+	FreeLibrary(hPatterns);
+}
+
+void CFullScreenWindow::DisplayClipLO() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_CLIPLO,TRUE);
+	FreeLibrary(hPatterns);
+}
+
 void CFullScreenWindow::DisplayEramp() 
 {
 	HMODULE hPatterns;

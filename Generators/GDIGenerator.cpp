@@ -892,9 +892,21 @@ BOOL CGDIGenerator::DisplayClipH()
 	return TRUE;
 }
 
+BOOL CGDIGenerator::DisplayClipHO()
+{
+	m_displayWindow.DisplayClipHO();
+	return TRUE;
+}
+
 BOOL CGDIGenerator::DisplayClipL()
 {
 	m_displayWindow.DisplayClipL();
+	return TRUE;
+}
+
+BOOL CGDIGenerator::DisplayClipLO()
+{
+	m_displayWindow.DisplayClipLO();
 	return TRUE;
 }
 

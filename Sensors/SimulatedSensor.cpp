@@ -207,7 +207,7 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 	White.SetY(100);
 	CColor Black = GetColorReference().GetWhite();
 	Black.SetY(0.012);
-	double peakY = 10000.;
+	double peakY = 500.;
 
     gamma=GetConfig()->m_GammaRef;
 

@@ -2824,15 +2824,51 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 	}
 }
 
-void CDataSetDoc::WaitKey()
+void CDataSetDoc::WaitKey(int Anim)
 {
 	BOOL	bKeyTyped = FALSE;
 	MSG		Msg;
+	bool	OFF = TRUE;
 	
 	while ( !bKeyTyped )
 	{
+		if (Anim != 0 && GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide) != DISPLAY_ccast) //on/off patterns
+		{
+			if (OFF)
+			{
+				switch (Anim)
+				{
+					case 1:
+					m_pGenerator->DisplayClipLO();
+					OFF = FALSE;
+					break;
+					case 2:
+					m_pGenerator->DisplayClipHO();
+					OFF = FALSE;
+					break;
+				}
+			Sleep(250);
+			}
+			else
+			{
+				switch (Anim)
+				{
+					case 1:
+					m_pGenerator->DisplayClipL();
+					OFF = TRUE;
+					break;
+					case 2:
+					m_pGenerator->DisplayClipH();
+					OFF = TRUE;
+					break;
+				}
+			Sleep(500);
+			}
+		}
+		
 		while ( PeekMessage ( & Msg, NULL, WM_KEYDOWN, WM_MOUSELAST, TRUE ) )
 		{
+
 			if ( Msg.message == WM_KEYDOWN || Msg.message == WM_SYSKEYDOWN)
 			{
 				if ( Msg.wParam == VK_ESCAPE || Msg.wParam == VK_RETURN || Msg.wParam == VK_CONTROL || Msg.wParam == VK_MENU )
@@ -3232,8 +3268,7 @@ void CDataSetDoc::OnPatternClipH()
 				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
 				m_pGenerator->DisplayClipH();
-
-				WaitKey();
+				WaitKey(2);
 			
 				AfxGetMainWnd () -> EnableWindow ( TRUE );
 				m_pGenerator->Release();
@@ -3257,7 +3292,7 @@ void CDataSetDoc::OnPatternClipL()
 
 				m_pGenerator->DisplayClipL();
 
-				WaitKey();
+				WaitKey(1);
 			
 				AfxGetMainWnd () -> EnableWindow ( TRUE );
 				m_pGenerator->Release();

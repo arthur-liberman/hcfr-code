@@ -113,7 +113,9 @@ public:
 	virtual BOOL DisplayDR2();
 	virtual BOOL DisplaySharp();
 	virtual BOOL DisplayClipL();
+	virtual BOOL DisplayClipLO();
 	virtual BOOL DisplayClipH();
+	virtual BOOL DisplayClipHO();
 	virtual BOOL DisplayDotPattern( const ColorRGBDisplay&  clr , BOOL dot2, UINT nPads);
 	virtual	BOOL DisplayHVLinesPattern( const ColorRGBDisplay&  clr , BOOL dot2, BOOL vLines);
 	virtual BOOL DisplayColorLevelPattern( INT clrLevel , BOOL dot2, UINT nPads);
