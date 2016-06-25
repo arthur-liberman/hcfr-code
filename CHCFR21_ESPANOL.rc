@@ -659,14 +659,14 @@ BEGIN
     CONTROL         "GDI(no background)",IDC_RADIO4,"Button",BS_AUTORADIOBUTTON,13,69,80,10
     CONTROL         "CCast",IDC_RADIO5,"Button",BS_AUTORADIOBUTTON,44,59,35,10
     CONTROL         "Floating Window",IDC_RADIO6,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,79,66,10
-    CONTROL         "Display Triplets",IDC_DISP_TRIP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,89,72,13
+    CONTROL         "Display Triplets",IDC_DISP_TRIP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,88,72,13
     CONTROL         "disable 3dLUT",IDC_MADVR_3D,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,97,65,85,13
     CONTROL         "disable video LUT",IDC_MADVR_3D2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,97,76,69,13
     CONTROL         "OSD",IDC_MADVR_OSD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,141,55,33,13
     CONTROL         "0 - 255",IDC_RGBLEVEL_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,127,38,10
     CONTROL         "16 - 235",IDC_RGBLEVEL_RADIO2,"Button",BS_AUTORADIOBUTTON,69,127,42,10
-    PUSHBUTTON      "Test Overlay",IDC_OVERLAY,113,124,54,14,WS_GROUP
-    CONTROL         "disable video LUT(GDI)",IDC_DISP_TRIP2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,137,91,13
+    PUSHBUTTON      "Test Overlay",IDC_OVERLAY,113,124,54,14,NOT WS_VISIBLE | WS_DISABLED | WS_GROUP
+    CONTROL         "disable video LUT",IDC_DISP_TRIP2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,137,91,13
     LTEXT           "Ecran cible:",IDC_STATIC,9,7,59,9
     COMBOBOX        IDC_MONITOR_COMBO,56,4,89,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     LTEXT           "Taille de la mire: [%]",IDC_STATIC,10,23,53,8
@@ -677,7 +677,7 @@ BEGIN
     LTEXT           "Pattern Intensity [%]",IDC_STATIC,86,36,75,8
     EDITTEXT        IDC_INTENSITY_EDIT,156,34,20,12,ES_AUTOHSCROLL | WS_GROUP
     GROUPBOX        "Display mode",IDC_STATIC,9,48,177,54,WS_GROUP
-    GROUPBOX        "Echelle niveaux de gris (GDI)",IDC_STATIC,8,117,167,35,WS_GROUP
+    GROUPBOX        "GDI Options",IDC_STATIC,8,114,167,38,WS_GROUP
 END
 
 IDD_APPEARANCE_PROP_PAGE DIALOGEX 0, 0, 212, 182
@@ -2656,12 +2656,12 @@ BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "CompanyName", "Association Homecinema Francophone"
             VALUE "FileDescription", "Resources Colorimètre HCFR"
-            VALUE "FileVersion", "3,4,1"
+            VALUE "FileVersion", "3,4,2"
             VALUE "InternalName", "CHCFR21_ESPAÑOL"
-            VALUE "LegalCopyright", "Copyright (C) 2005-2008"
+            VALUE "LegalCopyright", "Copyright (C) 2005-2016"
             VALUE "OriginalFilename", "CHCFR21_ESPAÑOL.DLL"
             VALUE "ProductName", "Colorimètre HCFR langage Español"
-            VALUE "ProductVersion", "3,4,1"
+            VALUE "ProductVersion", "3,4,2"
         END
     END
     BLOCK "VarFileInfo"
@@ -2686,7 +2686,7 @@ IDC_CURSOR_MEASURE      CURSOR                  "res\\cursor_meas.cur"
 
 STRINGTABLE
 BEGIN
-    IDR_MAINFRAME           "Colorimètre HCFR - 3,4,1"
+    IDR_MAINFRAME           "Colorimètre HCFR - 3,4,2"
     IDR_MESURETYPE          "\nRelevé\nRelevé\nFichiers ColorHCFR (*.chc)\n.chc\nCOLORHCFR\nRelevé de couleurs HCFR"
 END
 

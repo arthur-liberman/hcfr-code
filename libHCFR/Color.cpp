@@ -1819,7 +1819,7 @@ void CSpectrum::Serialize(CArchive& archive)
 }
 #endif
 
-bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
+bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode, int mode)
 {
 	//six cases, one for GCD sequence, one for Mascior's disk (Chromapure based), and four different generator only cases
 	//GCD
@@ -2136,7 +2136,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
                 s >> n2;
                 getline(s, field,',');
                 s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 -16) / 219.) * 100	, (	(n2-16) / 219.) * 100	,	( (n3-16) /219. ) * 100.	);
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
                 cnt++;
             }
 			}
@@ -2165,7 +2165,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
                 s >> n2;
                 getline(s, field,',');
                 s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 -16) / 219.) * 100	, (	(n2-16) / 219.) * 100	,	( (n3-16) /219. ) * 100.	);
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
                 cnt++;
             }
 			}
@@ -2194,7 +2194,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
                 s >> n2;
                 getline(s, field,',');
                 s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 -16) / 219.) * 100	, (	(n2-16) / 219.) * 100	,	( (n3-16) /219. ) * 100.	);
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
                 cnt++;
             }
 			}
@@ -2223,7 +2223,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
                 s >> n2;
                 getline(s, field,',');
                 s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 -16) / 219.) * 100	, (	(n2-16) / 219.) * 100	,	( (n3-16) /219. ) * 100.	);
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
                 cnt++;
             }
 			}
@@ -2252,7 +2252,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
                 s >> n2;
                 getline(s, field,',');
                 s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 -16) / 219.) * 100	, (	(n2-16) / 219.) * 100	,	( (n3-16) /219. ) * 100.	);
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
                 cnt++;
             }
 			}
@@ -2281,7 +2281,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
                 s >> n2;
                 getline(s, field,',');
                 s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 -16) / 219.) * 100	, (	(n2-16) / 219.) * 100	,	( (n3-16) /219. ) * 100.	);
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
                 cnt++;
             }
 			}
@@ -2310,7 +2310,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
                 s >> n2;
                 getline(s, field,',');
                 s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 -16) / 219.) * 100	, (	(n2-16) / 219.) * 100	,	( (n3-16) /219. ) * 100.	);
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
                 cnt++;
             }
 			}
@@ -2339,7 +2339,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
                 s >> n2;
                 getline(s, field,',');
                 s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 -16) / 219.) * 100	, (	(n2-16) / 219.) * 100	,	( (n3-16) /219. ) * 100.	);
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
                 cnt++;
             }
 			}
@@ -2368,7 +2368,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
                 s >> n2;
                 getline(s, field,',');
                 s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 -16) / 219.) * 100	, (	(n2-16) / 219.) * 100	,	( (n3-16) /219. ) * 100.	);
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
                 cnt++;
             }
 			}
@@ -2397,7 +2397,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
                 s >> n2;
                 getline(s, field,',');
                 s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 -16) / 219.) * 100	, (	(n2-16) / 219.) * 100	,	( (n3-16) /219. ) * 100.	);
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
                 cnt++;
             }
 			}
@@ -2426,7 +2426,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
                 s >> n2;
                 getline(s, field,',');
                 s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 -16) / 219.) * 100	, (	(n2-16) / 219.) * 100	,	( (n3-16) /219. ) * 100.	);
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
                 cnt++;
             }
 			}
@@ -2455,7 +2455,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
                 s >> n2;
                 getline(s, field,',');
                 s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 -16) / 219.) * 100	, (	(n2-16) / 219.) * 100	,	( (n3-16) /219. ) * 100.	);
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
                 cnt++;
             }
 			}
@@ -2484,7 +2484,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
                 s >> n2;
                 getline(s, field,',');
                 s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 -16) / 219.) * 100	, (	(n2-16) / 219.) * 100	,	( (n3-16) /219. ) * 100.	);
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
                 cnt++;
             }
 			}
@@ -2513,22 +2513,43 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode)
                 s >> n2;
                 getline(s, field,',');
                 s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 -16) / 219.) * 100	, (	(n2-16) / 219.) * 100	,	( (n3-16) /219. ) * 100.	);
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
                 cnt++;
             }
 			}
             break;
         }
-	}
+	}//switch
+		//HDR mode target recalculation
+		int n=sizeof(GenColors);
+		if (mode == 5)
+		{
+			for (int i=0; i<n; i++)
+			{
+				GenColors[i][0] = getL_EOTF(pow(GenColors[i][0] / 100., 2.22), noDataColor, noDataColor,0.0,0.0,-5);
+				GenColors[i][1] = getL_EOTF(pow(GenColors[i][1] / 100., 2.22), noDataColor, noDataColor,0.0,0.0,-5);
+				GenColors[i][2] = getL_EOTF(pow(GenColors[i][2] / 100., 2.22), noDataColor, noDataColor,0.0,0.0,-5);
+			}
+		}
+		if (mode == 7)
+		{
+			for (int i=0; i<n; i++)
+			{
+				GenColors[i][0] = getL_EOTF(pow(GenColors[i][0] / 100., 2.22), noDataColor, noDataColor,0.0,0.0,-7) * 100.;
+				GenColors[i][1] = getL_EOTF(pow(GenColors[i][1] / 100., 2.22), noDataColor, noDataColor,0.0,0.0,-7) * 100.;
+				GenColors[i][2] = getL_EOTF(pow(GenColors[i][2] / 100., 2.22), noDataColor, noDataColor,0.0,0.0,-7) * 100.;
+			}
+		}
 return bOk;
 }
 
-void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int nSteps, bool bRed, bool bGreen, bool bBlue )
+void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int nSteps, bool bRed, bool bGreen, bool bBlue, int mode )
 {
 	//use fully saturated space if user has special color space modes set
 	int m_cRef=colorReference.m_standard;
 	CColorReference cRef=((m_cRef==HDTVa  || m_cRef==HDTVb )?CColorReference(HDTV):colorReference);
-    // Retrieve color luminance coefficients matching actual reference
+
+	// Retrieve color luminance coefficients matching actual reference
     const double KR = cRef.GetRedReferenceLuma (true);  
     const double KG = cRef.GetGreenReferenceLuma (true);
     const double KB = cRef.GetBlueReferenceLuma (true); 
@@ -2602,10 +2623,54 @@ void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDi
                 comp = 1.0;
             }
         }
+
         // adjust "color gamma"
-		// here we use 2.2 and targets get adjusted for user gamma: Targets assume all generated RGB triplets @2.22 gamma
-        double clr2 = ( 100.0 * pow ( clr , 1.0/2.22 ) );
-        double comp2 = ( 100.0 * pow ( comp , 1.0/2.22 ) );
+		// here we use encoding gamma of 1 / 2.22 for SDR and targets get adjusted for user gamma: Targets assume all generated RGB triplets @2.22 gamma
+		double clr2=0, comp2=0;
+		double g1=2.0, g2=2.0;
+
+		if (mode <= 4 || mode == 6 || m_cRef == sRGB )
+		{
+			clr2 = ( 100.0 * pow ( clr , 1.0 / 2.22 ) );
+			comp2 = ( 100.0 * pow ( comp , 1.0 / 2.22 ) );
+		}
+		// HDR targets encoding, use PQ or BBC function
+		else
+		{
+			if (mode == 7)
+			{
+				if (clr != 0.0 && clr != 1.0)
+				{
+					clr2 = 100.0 * getL_EOTF(clr, noDataColor, noDataColor, 2.4, 0.9, -7);
+				}
+				else
+					clr2 = clr * 100.0;
+
+				if (comp != 0.0 && comp != 1.0)
+				{
+					comp2 = 100.0 * getL_EOTF(comp, noDataColor, noDataColor, 2.4, 0.9, -7);
+				}
+				else
+					comp2 = comp * 100.0;
+			}
+			else
+			{
+				if (clr != 0.0 && clr != 1.0)
+				{
+					clr2 = 100.0 * getL_EOTF(clr, noDataColor, noDataColor, 2.4, 0.9, -5);
+				}
+				else
+					clr2 = clr * 100.0;
+
+				if (comp != 0.0 && comp != 1.0)
+				{
+					comp2 = 100.0 * getL_EOTF(comp, noDataColor, noDataColor, 2.4, 0.9, -5);
+				}
+				else
+					comp2 = comp * 100.0;
+			}
+		}
+
 		GenColors [ i ] = ColorRGBDisplay( ( bRed ? clr2 : comp2 ), ( bGreen ? clr2 : comp2 ), ( bBlue ? clr2 : comp2 ) );
     }
 }
@@ -2739,13 +2804,13 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 		outL_lab = pow(t,3.0);
 	else
 		outL_lab = 3 * pow((6. / 29.),2) * (t - 4. / 29.);
-//BBC hybrid log for HDR Lmax=4, epsi=0.3733646177 (system gamma = 1.2)
+//BBC hybrid log for HDR Lmax=4, epsi=0.3733646177 (system gamma = 1.0)
 //graft at 37.37%, ref white at 74.19%
 	double mu = 0.139401137752;
 	double eta = pow(mu, 0.5) / 2.0; // 0.1867 
 	double rho = pow(mu, 0.5) * ( 1.0 - log(pow(mu, 0.5)) ); //0.7419
 	double epsi = 0.3733646177;
-	double outL_bbc, s = 1.2;
+	double outL_bbc, s = 1.0; //Lmax = 4
 
 	if (valx <= epsi)
 		outL_bbc = pow(valx, 2 * s);
@@ -2780,16 +2845,24 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 		outL = pow(max(pow(valx,1.0 / m2) - c1,0) / (c2 - c3 * pow(valx, 1.0 / m2)), 1.0 / m1);
 		outL = outL * 10000. / 100.; //100 cd/m^2 reference white level
 		break;
+		case -5:
+		outL = pow( (c1 + c2 * pow(valx,m1)) / (1 + c3 * pow(valx,m1)), m2); 
+		break;
 		case 6:
 		outL = outL_lab;
 		break;
 		case 7: //bbc
 		outL = outL_bbc / exp( s * (1.0 - rho)/eta );
 		break;
+		case -7: //bbc inverse
+		if (valx <= mu)
+			outL = pow(valx,0.5);// / rho;
+		else
+			outL = (eta * log (valx) + rho);// / rho;
+		break;
 		case 8:
 		outL = outL_sRGB;
 		break;
 	}
-    
 	return outL;
 }

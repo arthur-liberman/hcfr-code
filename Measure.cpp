@@ -1878,7 +1878,7 @@ BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator, CDat
 	}
 
 	// Generate saturation colors for red
-	GenerateSaturationColors (GetColorReference(), GenColors,size, true, false, false);
+	GenerateSaturationColors (GetColorReference(), GenColors,size, true, false, false, GetConfig()->m_GammaOffsetType);
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
@@ -2056,7 +2056,7 @@ BOOL CMeasure::MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator, CD
 		return FALSE;
 	}
 	// Generate saturation colors for green
-	GenerateSaturationColors (GetColorReference(), GenColors,size, false, true, false );
+	GenerateSaturationColors (GetColorReference(), GenColors,size, false, true, false, GetConfig()->m_GammaOffsetType );
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
@@ -2236,7 +2236,7 @@ BOOL CMeasure::MeasureBlueSatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 	}
 
 	// Generate saturation colors for blue
-		GenerateSaturationColors (GetColorReference(), GenColors,size, false, false, true );
+		GenerateSaturationColors (GetColorReference(), GenColors,size, false, false, true, GetConfig()->m_GammaOffsetType );
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
@@ -2417,7 +2417,7 @@ BOOL CMeasure::MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator, C
 	}
 
 	// Generate saturation colors for yellow
-	GenerateSaturationColors (GetColorReference(), GenColors,size, true, true, false );
+	GenerateSaturationColors (GetColorReference(), GenColors,size, true, true, false, GetConfig()->m_GammaOffsetType );
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
@@ -2598,7 +2598,7 @@ BOOL CMeasure::MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 	}
 
 	// Generate saturation colors for cyan
-	GenerateSaturationColors (GetColorReference(), GenColors,size, false, true, true );
+	GenerateSaturationColors (GetColorReference(), GenColors,size, false, true, true, GetConfig()->m_GammaOffsetType );
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
@@ -2779,7 +2779,7 @@ BOOL CMeasure::MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator, 
 	}
 
 	// Generate saturation colors for magenta
-	GenerateSaturationColors (GetColorReference(), GenColors,size, true, false, true );
+	GenerateSaturationColors (GetColorReference(), GenColors,size, true, false, true, GetConfig()->m_GammaOffsetType );
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
@@ -3006,7 +3006,7 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 		return FALSE;
 	}
 
-    if (!GenerateCC24Colors (GenColors, GetConfig()->m_CCMode))
+    if (!GenerateCC24Colors (GenColors, GetConfig()->m_CCMode, GetConfig()->m_GammaOffsetType))
 	{		
 		Title.LoadString ( IDS_ERROR );
 		strMsg.LoadString ( IDS_ERRINITGENERATOR );
@@ -3277,14 +3277,14 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 
 
 	// Generate saturations for all colors
-	GenerateSaturationColors (GetColorReference(), GenColors, size, true, false, false );				// Red
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 1 ], size, false, true, false );	// Green
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 2 ], size, false, false, true );	// Blue
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 3 ], size, true, true, false );	// Yellow
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 4 ], size, false, true, true );	// Cyan
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 5 ], size, true, false, true );	// Magenta
+	GenerateSaturationColors (GetColorReference(), GenColors, size, true, false, false, GetConfig()->m_GammaOffsetType );				// Red
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 1 ], size, false, true, false, GetConfig()->m_GammaOffsetType );	// Green
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 2 ], size, false, false, true, GetConfig()->m_GammaOffsetType );	// Blue
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 3 ], size, true, true, false, GetConfig()->m_GammaOffsetType );	// Yellow
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 4 ], size, false, true, true, GetConfig()->m_GammaOffsetType );	// Cyan
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 5 ], size, true, false, true, GetConfig()->m_GammaOffsetType );	// Magenta
 
-	if (!GenerateCC24Colors (& GenColors [ size * 6 ], GetConfig()->m_CCMode)) //color checker
+	if (!GenerateCC24Colors (& GenColors [ size * 6 ], GetConfig()->m_CCMode, GetConfig()->m_GammaOffsetType)) //color checker
 	{		
 		Title.LoadString ( IDS_ERROR );
 		strMsg.LoadString ( IDS_ERRINITGENERATOR );
@@ -3619,12 +3619,12 @@ BOOL CMeasure::MeasurePrimarySecondarySaturationScales(CSensor *pSensor, CGenera
 
 
 	// Generate saturations for all colors
-	GenerateSaturationColors (GetColorReference(), GenColors, size, true, false, false );				// Red
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 1 ], size, false, true, false );	// Green
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 2 ], size, false, false, true );	// Blue
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 3 ], size, true, true, false );	// Yellow
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 4 ], size, false, true, true );	// Cyan
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 5 ], size, true, false, true );	// Magenta
+	GenerateSaturationColors (GetColorReference(), GenColors, size, true, false, false, GetConfig()->m_GammaOffsetType );				// Red
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 1 ], size, false, true, false, GetConfig()->m_GammaOffsetType );	// Green
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 2 ], size, false, false, true, GetConfig()->m_GammaOffsetType );	// Blue
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 3 ], size, true, true, false, GetConfig()->m_GammaOffsetType );	// Yellow
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 4 ], size, false, true, true, GetConfig()->m_GammaOffsetType );	// Cyan
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 5 ], size, true, false, true, GetConfig()->m_GammaOffsetType );	// Magenta
 
 	m_binMeasure = TRUE;
 	for ( j = 0 ; j < ( bPrimaryOnly ? 3 : 6 ) ; j ++ )
@@ -6175,6 +6175,7 @@ CColor CMeasure::GetRefPrimary(int i) const
 {
     double gamma=(GetConfig()->m_useMeasuredGamma)?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef);
 	bool isSpecial = (GetColorReference().m_standard==HDTVa||GetColorReference().m_standard==CC6||GetColorReference().m_standard==HDTVb||GetColorReference().m_standard==UHDTV3);
+	bool isHDR = FALSE;
 	CColorReference cRef = GetColorReference();	
 	CColor	aColor,aColorr,aColorg,aColorb,White,Black;
 	aColorr.SetXYZValue (cRef.GetRed());
@@ -6189,59 +6190,80 @@ CColor CMeasure::GetRefPrimary(int i) const
 	    Black = CMeasure::GetGray ( 0 );
     }
 
-	double r,g,b;
+	double r,g,b, gamma1=gamma, gamma2=gamma, gamma3=gamma;
     r=rgbr[0];
     g=rgbr[1];
     b=rgbr[2];
     aColor.SetRGBValue(ColorRGB(r,g,b), (cRef.m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()) );
 	int mode = GetConfig()->m_GammaOffsetType;
 	if (GetConfig()->m_colorStandard == sRGB) mode = 8;
-	if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4 )
+	if (  (mode >= 4) )
 	{
-		if (mode == 5)
-	       gamma = log(getL_EOTF(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100. )/log(pow(aColor.GetY(),1.0/2.22));
+		if (mode == 5 || mode ==7)
+			isHDR = TRUE;
 		else
-	       gamma = log(getL_EOTF(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(aColor.GetY(),1.0/2.22));
+		{
+	       gamma1 = log(getL_EOTF(pow(r,1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(r,1.0/2.22));
+	       gamma2 = log(getL_EOTF(pow(g,1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(g,1.0/2.22));
+	       gamma3 = log(getL_EOTF(pow(b,1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(b,1.0/2.22));
+		}
 	}
-    if (isSpecial)
+    if (isSpecial && !isHDR)
     {
-        r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1.0/2.22),gamma);
-        g=(g<=0.0||g>=1.0)?min(max(g,0),1):pow(pow(g,1.0/2.22),gamma);
-        b=(b<=0.0||b>=1.0)?min(max(b,0),1):pow(pow(b,1.0/2.22),gamma);
+        r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1.0/2.22),gamma1);
+        g=(g<=0.0||g>=1.0)?min(max(g,0),1):pow(pow(g,1.0/2.22),gamma2);
+        b=(b<=0.0||b>=1.0)?min(max(b,0),1):pow(pow(b,1.0/2.22),gamma3);
     }
     aColorr.SetRGBValue (ColorRGB(r,g,b), (cRef.m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));	
-
+	gamma1 = gamma;
+	gamma2 = gamma;
+	gamma3 = gamma;
     r=rgbg[0];
     g=rgbg[1];
     b=rgbg[2];
     aColor.SetRGBValue(ColorRGB(r,g,b), (cRef.m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()) );
-	if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
+	if ( mode >= 4 )
 	{
-		if (mode == 5)
-	       gamma = log(getL_EOTF(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode ) / 100. )/log(pow(aColor.GetY(),1.0/2.22));
+		if (mode == 5 || mode ==7)
+			isHDR = TRUE;
 		else
-	       gamma = log(getL_EOTF(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode ))/log(pow(aColor.GetY(),1.0/2.22));
+		{
+	       gamma1 = log(getL_EOTF(pow(r,1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(r,1.0/2.22));
+	       gamma2 = log(getL_EOTF(pow(g,1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(g,1.0/2.22));
+	       gamma3 = log(getL_EOTF(pow(b,1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(b,1.0/2.22));
+		}
 	}
-    if (isSpecial)
+    if (isSpecial && !isHDR)
     {
-        r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1.0/2.22),gamma);
-        g=(g<=0.0||g>=1.0)?min(max(g,0),1):pow(pow(g,1.0/2.22),gamma);
-        b=(b<=0.0||b>=1.0)?min(max(b,0),1):pow(pow(b,1.0/2.22),gamma);
+        r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1.0/2.22),gamma1);
+        g=(g<=0.0||g>=1.0)?min(max(g,0),1):pow(pow(g,1.0/2.22),gamma2);
+        b=(b<=0.0||b>=1.0)?min(max(b,0),1):pow(pow(b,1.0/2.22),gamma3);
     }
     aColorg.SetRGBValue (ColorRGB(r,g,b), (cRef.m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));	
+	gamma1 = gamma;
+	gamma2 = gamma;
+	gamma3 = gamma;
 
     r=rgbb[0];
     g=rgbb[1];
     b=rgbb[2];
     aColor.SetRGBValue(ColorRGB(r,g,b), (cRef.m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()) );
-	if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
-    if (GetConfig()->m_GammaOffsetType == 4 && White.isValid() && Black.isValid())
-       gamma = log(getL_EOTF(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(aColor.GetY(),1.0/2.22));
-    if (isSpecial)
+	if ( mode >= 4 )
+	{
+		if (mode == 5 || mode ==7)
+			isHDR = TRUE;
+		else
+		{
+	       gamma1 = log(getL_EOTF(pow(r,1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(r,1.0/2.22));
+	       gamma2 = log(getL_EOTF(pow(g,1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(g,1.0/2.22));
+	       gamma3 = log(getL_EOTF(pow(b,1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(b,1.0/2.22));
+		}
+	}
+	if (isSpecial && !isHDR)
     {
-        r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1.0/2.22),gamma);
-        g=(g<=0.0||g>=1.0)?min(max(g,0),1):pow(pow(g,1.0/2.22),gamma);
-        b=(b<=0.0||b>=1.0)?min(max(b,0),1):pow(pow(b,1.0/2.22),gamma);
+        r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1.0/2.22),gamma1);
+        g=(g<=0.0||g>=1.0)?min(max(g,0),1):pow(pow(g,1.0/2.22),gamma2);
+        b=(b<=0.0||b>=1.0)?min(max(b,0),1):pow(pow(b,1.0/2.22),gamma3);
     }
     aColorb.SetRGBValue (ColorRGB(r,g,b), (cRef.m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));	
 
@@ -6268,8 +6290,9 @@ CColor CMeasure::GetRefPrimary(int i) const
 CColor CMeasure::GetRefSecondary(int i) const
 {
     double gamma=(GetConfig()->m_useMeasuredGamma)?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef);
-
+	double gamma1=gamma,gamma2=gamma,gamma3=gamma;
     bool isSpecial = (GetColorReference().m_standard==HDTVa||GetColorReference().m_standard==CC6||GetColorReference().m_standard==HDTVb||GetColorReference().m_standard==UHDTV3);
+	bool isHDR = FALSE;
 	CColorReference cRef=GetColorReference();
 	CColor	aColor,aColory,aColorc,aColorm,White,Black;
 	aColory.SetXYZValue (cRef.GetYellow());
@@ -6290,51 +6313,73 @@ CColor CMeasure::GetRefSecondary(int i) const
     aColor.SetRGBValue(ColorRGB(r,g,b), (cRef.m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()) );
 	int mode = GetConfig()->m_GammaOffsetType;
 	if (GetConfig()->m_colorStandard == sRGB) mode = 8;
-	if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
+	if ( mode >= 4 )
 	{
-		if (mode == 5)
-	       gamma = log(getL_EOTF(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode ) / 100. )/log(pow(aColor.GetY(),1.0/2.22));
+		if (mode == 5 || mode ==7)
+			isHDR = TRUE;
 		else
-	       gamma = log(getL_EOTF(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(aColor.GetY(),1.0/2.22));
+		{
+	       gamma1 = log(getL_EOTF(pow(r,1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(r,1.0/2.22));
+	       gamma2 = log(getL_EOTF(pow(g,1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(g,1.0/2.22));
+	       gamma3 = log(getL_EOTF(pow(b,1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(b,1.0/2.22));
+		}
 	}
-    if (isSpecial)
+    if (isSpecial && !isHDR)
     {
-        r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1.0/2.22),gamma);
-        g=(g<=0.0||g>=1.0)?min(max(g,0),1):pow(pow(g,1.0/2.22),gamma);
-        b=(b<=0.0||b>=1.0)?min(max(b,0),1):pow(pow(b,1.0/2.22),gamma);
+        r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1.0/2.22),gamma1);
+        g=(g<=0.0||g>=1.0)?min(max(g,0),1):pow(pow(g,1.0/2.22),gamma2);
+        b=(b<=0.0||b>=1.0)?min(max(b,0),1):pow(pow(b,1.0/2.22),gamma3);
     }
     aColory.SetRGBValue (ColorRGB(r,g,b), (cRef.m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));	
-
+	gamma1=gamma;
+	gamma2=gamma;
+	gamma3=gamma;
     r=rgbc[0];
     g=rgbc[1];
     b=rgbc[2];
     aColor.SetRGBValue(ColorRGB(r,g,b), (cRef.m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()) );
-	if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
+	if ( mode >= 4 )
 	{
-		if (mode  == 5)
-       gamma = log(getL_EOTF(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode ) / 100. )/log(pow(aColor.GetY(),1.0/2.22));
+		if (mode == 5 || mode ==7)
+			isHDR = TRUE;
 		else
-       gamma = log(getL_EOTF(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(aColor.GetY(),1.0/2.22));
+		{
+	       gamma1 = log(getL_EOTF(pow(r,1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(r,1.0/2.22));
+	       gamma2 = log(getL_EOTF(pow(g,1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(g,1.0/2.22));
+	       gamma3 = log(getL_EOTF(pow(b,1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(b,1.0/2.22));
+		}
 	}
-    if (isSpecial)
+    if (isSpecial && !isHDR)
     {
-        r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1.0/2.22),gamma);
-        g=(g<=0.0||g>=1.0)?min(max(g,0),1):pow(pow(g,1.0/2.22),gamma);
-        b=(b<=0.0||b>=1.0)?min(max(b,0),1):pow(pow(b,1.0/2.22),gamma);
+        r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1.0/2.22),gamma1);
+        g=(g<=0.0||g>=1.0)?min(max(g,0),1):pow(pow(g,1.0/2.22),gamma2);
+        b=(b<=0.0||b>=1.0)?min(max(b,0),1):pow(pow(b,1.0/2.22),gamma3);
     }
     aColorc.SetRGBValue (ColorRGB(r,g,b), (cRef.m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));	
+	gamma1=gamma;
+	gamma2=gamma;
+	gamma3=gamma;
 
     r=rgbm[0];
     g=rgbm[1];
     b=rgbm[2];
     aColor.SetRGBValue(ColorRGB(r,g,b), (cRef.m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()) );
-	if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
-       gamma = log(getL_EOTF(pow(aColor.GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(aColor.GetY(),1.0/2.22));
-    if (isSpecial)
+	if ( mode >= 4 )
+	{
+		if (mode == 5 || mode ==7)
+			isHDR = TRUE;
+		else
+		{
+	       gamma1 = log(getL_EOTF(pow(r,1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(r,1.0/2.22));
+	       gamma2 = log(getL_EOTF(pow(g,1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(g,1.0/2.22));
+	       gamma3 = log(getL_EOTF(pow(b,1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(b,1.0/2.22));
+		}
+	}
+    if (isSpecial && !isHDR)
     {
-        r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1.0/2.22),gamma);
-        g=(g<=0.0||g>=1.0)?min(max(g,0),1):pow(pow(g,1.0/2.22),gamma);
-        b=(b<=0.0||b>=1.0)?min(max(b,0),1):pow(pow(b,1.0/2.22),gamma);
+        r=(r<=0.0||r>=1.0)?min(max(r,0),1):pow(pow(r,1.0/2.22),gamma1);
+        g=(g<=0.0||g>=1.0)?min(max(g,0),1):pow(pow(g,1.0/2.22),gamma2);
+        b=(b<=0.0||b>=1.0)?min(max(b,0),1):pow(pow(b,1.0/2.22),gamma3);
     }
     aColorm.SetRGBValue (ColorRGB(r,g,b), (cRef.m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));	
 
@@ -6425,32 +6470,42 @@ CColor CMeasure::GetRefSat(int i, double sat_percent, bool special) const
     CColor White = CMeasure::GetGray ( CMeasure::GetGrayScaleSize() - 1 );
 	CColor Black = CMeasure::GetGray ( 0 );
     double gamma=GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef);
+	double gamma1 = gamma, gamma2 = gamma, gamma3 = gamma; //for HDR EOTFs
 
 	aColor.SetxyYValue (x, y, YLuma );
+	ColorRGB rgb;
 
-	if (sat_percent < 1 )
+	if (!special)
+		rgb=aColor.GetRGBValue ((GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));
+	else
+		rgb=aColor.GetRGBValue(CColorReference(HDTV));
+
+	double r=rgb[0],g=rgb[1],b=rgb[2];
+
+	if (sat_percent < 1 ) // adjust references locations for difference between target gamma and 2.2
 	{
 		int mode = GetConfig()->m_GammaOffsetType;
 		if (GetConfig()->m_colorStandard == sRGB) mode = 8;
-		if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
+		if ( mode >= 4 )
 		{
-			if (mode == 5)
-			   gamma = log(getL_EOTF(pow(aColor.GetY() * pow(Intensity,2.22),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode ) / 100. )/log(pow(aColor.GetY() * pow(Intensity,2.22),1.0/2.22));
+			if (mode == 5 || mode ==7)
+			{
+				gamma = 0;
+			}
 			else
-			   gamma = log(getL_EOTF(pow(aColor.GetY() * pow(Intensity,2.22),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(aColor.GetY() * pow(Intensity,2.22),1.0/2.22));
+			{
+			    gamma1 = log(getL_EOTF(pow(r, 1.0 / 2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(r, 1.0 / 2.22));
+			    gamma2 = log(getL_EOTF(pow(g, 1.0 / 2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(g, 1.0 / 2.22));
+			    gamma3 = log(getL_EOTF(pow(b, 1.0 / 2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(b, 1.0 / 2.22));
+			}
 		}
 		
-		ColorRGB rgb;
-		if (!special)
-			rgb=aColor.GetRGBValue ((GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));
-		else
-			rgb=aColor.GetRGBValue(CColorReference(HDTV));
-
-		double r=rgb[0],g=rgb[1],b=rgb[2];
-
-		r=(r<=0||r>=1)?min(max(r,0),1):pow(pow(r,1.0/2.22),gamma);
-		g=(g<=0||g>=1)?min(max(g,0),1):pow(pow(g,1.0/2.22),gamma);
-		b=(b<=0||b>=1)?min(max(b,0),1):pow(pow(b,1.0/2.22),gamma);
+		if (gamma != 0)
+		{
+			r=(r<=0||r>=1)?min(max(r,0),1):pow(pow(r,1.0/2.22),gamma1);
+			g=(g<=0||g>=1)?min(max(g,0),1):pow(pow(g,1.0/2.22),gamma2);
+			b=(b<=0||b>=1)?min(max(b,0),1):pow(pow(b,1.0/2.22),gamma3);
+		}
 
 		if (!special)
 			aColor.SetRGBValue (ColorRGB(r,g,b), (GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));	
@@ -6761,25 +6816,25 @@ CColor CMeasure::GetRefCC24Sat(int i) const
     double inr=aRGBColor[0],ing=aRGBColor[1],inb=aRGBColor[2];
 	int mode = GetConfig()->m_GammaOffsetType;
 	if (GetConfig()->m_colorStandard == sRGB) mode = 8;
-	if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
+	if ( mode >= 4 )
     {
-		if (mode == 5)
+		if (mode == 5) //HDR10 mode
 		{
 			if (RGB[i][0] < 0.999 && RGB[i][0] > 0.001)
-				inr=(inr<=0||inr>=1)?min(max(inr,0),1):pow(RGB[i][0],log(getL_EOTF(RGB[i][0],White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode ) / 100. )/log(RGB[i][0]));
+				inr=(inr<=0||inr>=1)?min(max(inr,0),1):getL_EOTF(RGB[i][0],White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100.;
 			if (RGB[i][1] < 0.999 && RGB[i][1] > 0.001)
-				ing=(ing<=0||ing>=1)?min(max(ing,0),1):pow(RGB[i][1],log(getL_EOTF(RGB[i][1],White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode ) / 100. )/log(RGB[i][1]));
+				ing=(ing<=0||ing>=1)?min(max(ing,0),1):getL_EOTF(RGB[i][1],White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100.;
 			if (RGB[i][2] < 0.999 && RGB[i][2] > 0.001)
-				inb=(inb<=0||inb>=1)?min(max(inb,0),1):pow(RGB[i][2],log(getL_EOTF(RGB[i][2],White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode ) / 100. )/log(RGB[i][2]));
+				inb=(inb<=0||inb>=1)?min(max(inb,0),1):getL_EOTF(RGB[i][2],White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100.;
 		}
 		else
 		{
 			if (RGB[i][0] < 0.999 && RGB[i][0] > 0.001)
-				inr=(inr<=0||inr>=1)?min(max(inr,0),1):pow(RGB[i][0],log(getL_EOTF(RGB[i][0],White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(RGB[i][0]));
+				inr=(inr<=0||inr>=1)?min(max(inr,0),1):getL_EOTF(RGB[i][0],White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 			if (RGB[i][1] < 0.999 && RGB[i][1] > 0.001)
-				ing=(ing<=0||ing>=1)?min(max(ing,0),1):pow(RGB[i][1],log(getL_EOTF(RGB[i][1],White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(RGB[i][1]));
+				ing=(ing<=0||ing>=1)?min(max(ing,0),1):getL_EOTF(RGB[i][1],White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 			if (RGB[i][2] < 0.999 && RGB[i][2] > 0.001)
-				inb=(inb<=0||inb>=1)?min(max(inb,0),1):pow(RGB[i][2],log(getL_EOTF(RGB[i][2],White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(RGB[i][2]));
+				inb=(inb<=0||inb>=1)?min(max(inb,0),1):getL_EOTF(RGB[i][2],White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 		}
     }
     else
@@ -6788,6 +6843,7 @@ CColor CMeasure::GetRefCC24Sat(int i) const
         ing=(ing<=0||ing>=1)?min(max(ing,0),1):pow(RGB[i][1],gamma);
         inb=(inb<=0||inb>=1)?min(max(inb,0),1):pow(RGB[i][2],gamma);
     }
+
 	ccRef.SetRGBValue(ColorRGB(inr,ing,inb),GetColorReference().m_standard==UHDTV3?CColorReference(UHDTV):cRef);
 	return ccRef;
 }

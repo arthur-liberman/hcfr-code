@@ -207,7 +207,7 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 	White.SetY(100);
 	CColor Black = GetColorReference().GetWhite();
 	Black.SetY(0.012);
-	double peakY = 1000.;
+	double peakY = 10000.;
 
     gamma=GetConfig()->m_GammaRef;
 
@@ -218,111 +218,86 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 		m_offsetG = 4;
 		m_offsetB = 3;
 	}
+
+	offset=m_offsetR;
+	if(m_doOffsetError)
+		offset+=(m_offsetErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1.0 : 1.0);
+	if(m_doGainError)
+		gain=1+(m_gainErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1.0 : 1.0);
+	value=max(aRGBValue[0]*gain+offset,0.0);
+	
 	if (  mode >= 4 )
     {
-		offset=m_offsetR;
-		if(m_doOffsetError)
-			offset+=(m_offsetErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1.0 : 1.0);
-		if(m_doGainError)
-			gain=1+(m_gainErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1.0 : 1.0);
-		value=max(aRGBValue[0]*gain+offset,0.0);
-		if (mode  == 5)
+		if (mode == 5)
 		{
-			gamma = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100.;
-			if (gamma > peakY / 10000.)
-				gamma = peakY / 10000.;
+			value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100.;
+			if (value > peakY / 10000.)
+				value = peakY / 10000.;
 		}
 		else
-			gamma = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
-		simulColor[0]=gamma;
+			value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+
+		simulColor[0] = value;
 	} 
 	else
-	{
-		offset=m_offsetR;
-		if(m_doOffsetError)
-			offset+=(m_offsetErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1.0 : 1.0);
-		if(m_doGainError)
-			gain=1+(m_gainErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1.0 : 1.0);
-		if(m_doGammaError && m_gammaErrorMax != 0.0)
-			gamma+=(m_gammaErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1.0 : 1.0);
-
-		value=max(aRGBValue[0]*gain+offset,0.0);
 		simulColor[0]=(pow(value/100.0,gamma));
-	}
+
+	offset=m_offsetG;
+	if(m_doOffsetError)
+		offset+=(m_offsetErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1.0 : 1.0);
+	if(m_doGainError)
+		gain=1+(m_gainErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1.0 : 1.0);
+	value = max(aRGBValue[1]*gain+offset,0.0);
 
 	if (  mode >= 4 )
     {
-		offset=m_offsetG;
-		if(m_doOffsetError)
-			offset+=(m_offsetErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1.0 : 1.0);
-		if(m_doGainError)
-			gain=1+(m_gainErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1.0 : 1.0);
-		value=max(aRGBValue[1]*gain+offset,0.0);
-		if (mode  == 5)
+		if (mode == 5)
 		{
-			gamma = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100.;
-			if (gamma > peakY / 10000.)
-				gamma = peakY / 10000.;
+			value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100.;
+			if (value > peakY / 10000.)
+				value = peakY / 10000.;
 		}
 		else
-			gamma = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
-		simulColor[1]=gamma;
+			value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+
+		simulColor[1] = value;
 	} 
 	else
-	{
-		offset=m_offsetG;
-		if(m_doOffsetError)
-			offset+=(m_offsetErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1 : 1);
-		if(m_doGainError )
-			gain=1+(m_gainErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1 : 1);
-		if(m_doGammaError && m_gammaErrorMax != 0.0)
-			gamma+=(m_gammaErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1 : 1);
-
-		value=max(aRGBValue[1]*gain+offset,0);
 		simulColor[1]=(pow(value/100.0,gamma));
-	}
+
+	offset=m_offsetB;
+	if(m_doOffsetError)
+		offset+=(m_offsetErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1.0 : 1.0);
+	if(m_doGainError)
+		gain=1+(m_gainErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1.0 : 1.0);
+	value = max(aRGBValue[2]*gain+offset,0.0);
 
 	if (  mode >= 4 )
     {
-		offset=m_offsetB;
-		if(m_doOffsetError)
-			offset+=(m_offsetErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1.0 : 1.0);
-		if(m_doGainError)
-			gain=1+(m_gainErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1.0 : 1.0);
-		value=max(aRGBValue[2]*gain+offset,0.0);
-		if (mode  == 5)
+		if (mode == 5)
 		{
-			gamma = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100.;
-			if (gamma > peakY / 10000.)
-				gamma = peakY / 10000.;
+			value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100.;
+			if (value > peakY / 10000.)
+				value = peakY / 10000.;
 		}
-	else
-		gamma = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
-		simulColor[2]=gamma;
+		else
+			value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+
+		simulColor[2] = value;
 	} 
 	else
-	{
-		offset=m_offsetB;
-		if(m_doOffsetError)
-			offset+=(m_offsetErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1 : 1);
-		if(m_doGainError)
-			gain=1+(m_gainErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1 : 1);
-		if(m_doGammaError && m_gammaErrorMax != 0.0)
-			gamma+=(m_gammaErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1 : 1);
-
-		value=max(aRGBValue[2]*gain+offset,0);
 		simulColor[2]=(pow(value/100.0,gamma));
-	}
 
 	Sleep(50);
 	ColorRGB colMeasure(simulColor);
 	bool isSpecial = (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb);
+	
 	CColor colSensor(ColorXYZ(colMeasure, isSpecial?CColorReference(HDTV):GetConfig()->m_colorStandard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));
-	colSensor.SetX(colSensor.GetX() * (mode==5?10000.:100.));
-	colSensor.SetY(colSensor.GetY() * (mode==5?10000.:100.));
-	colSensor.SetZ(colSensor.GetZ() * (mode==5?10000.:100.));
+	colSensor.SetX(colSensor.GetX() * (mode==5?10000.:mode==7?400.:100.));
+	colSensor.SetY(colSensor.GetY() * (mode==5?10000.:mode==7?400.:100.));
+	colSensor.SetZ(colSensor.GetZ() * (mode==5?10000.:mode==7?400.:100.));
 
-	double		Spectrum[18] = { 0.001, 0.01, 0.1, 0.15, 0.2, 0.4, 0.5, 0.6, 0.7, 1.2, 1.0, 1.1, 0.8, 0.9, 0.6, 0.5, 0.4, 0.15 };
+	double	Spectrum[18] = { 0.001, 0.01, 0.1, 0.15, 0.2, 0.4, 0.5, 0.6, 0.7, 1.2, 1.0, 1.1, 0.8, 0.9, 0.6, 0.5, 0.4, 0.15 };
 	colSensor.SetSpectrum ( CSpectrum ( 18, 380, 730, 20, Spectrum ) );
 	return colSensor;
 }

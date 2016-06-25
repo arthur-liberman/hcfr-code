@@ -2420,7 +2420,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nSteps = GetMeasure () -> GetSaturationSize ();
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_RED;
-			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, true, false, false);
+			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, true, false, false, GetConfig()->m_GammaOffsetType);
 			 pValidationFunc = &CMeasure::ValidateBackgroundRedSatScale;
 			 lHint = UPD_REDSAT;
 			 break;
@@ -2429,7 +2429,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nSteps = GetMeasure () -> GetSaturationSize ();
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_GREEN;
-			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, false, true, false );
+			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, false, true, false, GetConfig()->m_GammaOffsetType );
 			 pValidationFunc = &CMeasure::ValidateBackgroundGreenSatScale;
 			 lHint = UPD_GREENSAT;
 			 break;
@@ -2438,7 +2438,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nSteps = GetMeasure () -> GetSaturationSize ();
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_BLUE;
-			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, false, false, true );
+			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, false, false, true, GetConfig()->m_GammaOffsetType );
 			 pValidationFunc = &CMeasure::ValidateBackgroundBlueSatScale;
 			 lHint = UPD_BLUESAT;
 			 break;
@@ -2447,7 +2447,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nSteps = GetMeasure () -> GetSaturationSize ();
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_YELLOW;
-			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, true, true, false );
+			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, true, true, false, GetConfig()->m_GammaOffsetType );
 			 pValidationFunc = &CMeasure::ValidateBackgroundYellowSatScale;
 			 lHint = UPD_YELLOWSAT;
 			 break;
@@ -2456,7 +2456,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nSteps = GetMeasure () -> GetSaturationSize ();
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_CYAN;
-			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, false, true, true );
+			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, false, true, true, GetConfig()->m_GammaOffsetType );
 			 pValidationFunc = &CMeasure::ValidateBackgroundCyanSatScale;
 			 lHint = UPD_CYANSAT;
 			 break;
@@ -2465,7 +2465,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nSteps = GetMeasure () -> GetSaturationSize ();
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = CGenerator::MT_SAT_MAGENTA;
-			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, true, false, true );
+			 GenerateSaturationColors (GetColorReference(), GenColors, nSteps, true, false, true, GetConfig()->m_GammaOffsetType );
 			 pValidationFunc = &CMeasure::ValidateBackgroundMagentaSatScale;
 			 lHint = UPD_MAGENTASAT;
 			 break;
@@ -2506,7 +2506,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			}
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = nPattern;
-			 GenerateCC24Colors (GenColors, GetConfig()->m_CCMode );
+			 GenerateCC24Colors (GenColors, GetConfig()->m_CCMode, GetConfig()->m_GammaOffsetType );
 			 pValidationFunc = &CMeasure::ValidateBackgroundCC24SatScale;
 			 lHint = UPD_CC24SAT;
 			 break;

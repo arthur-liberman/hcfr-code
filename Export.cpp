@@ -1532,7 +1532,7 @@ bool CExport::SaveGrayScaleSheet()
 	    	CColor Black = m_pDoc -> GetMeasure () -> GetGray ( 0 );
 			int mode = GetConfig()->m_GammaOffsetType;
 			if (GetConfig()->m_colorStandard == sRGB) mode = 8;
-			if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
+			if (  (mode >= 4) )
 			{
 				double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
                 valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);

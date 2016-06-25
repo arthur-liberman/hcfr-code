@@ -164,7 +164,7 @@ void CNearBlackGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			double valx,val;//=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef) );
 			int mode = GetConfig()->m_GammaOffsetType;
 			if (GetConfig()->m_colorStandard == sRGB) mode = 8;
-			if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4) 
+			if ( mode >= 4 ) 
 			{
 			    valx = (GrayLevelToGrayProp( x, GetConfig () -> m_bUseRoundDown));
 				if  (mode == 5)

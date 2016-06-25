@@ -154,12 +154,12 @@ void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
     		CColor White = pDoc -> GetMeasure () -> GetOnOffWhite();
 	    	CColor Black = pDoc -> GetMeasure () -> GetOnOffBlack();
 			if (GetConfig()->m_colorStandard == sRGB) mode = 8;
-			if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4 )
+			if (  (mode >= 4) )
 			{
 				valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
 				if (mode == 5)
 				{
-					valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) * 100. / White.GetY();
+					valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) * 100. / (White.GetY());
 					valy=min(valy,1.2);
 				}
 				else

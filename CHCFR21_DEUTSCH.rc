@@ -375,8 +375,8 @@ BEGIN
     CONTROL         "OSD",IDC_MADVR_OSD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,141,53,33,13
     CONTROL         "0 - 255",IDC_RGBLEVEL_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,114,38,10
     CONTROL         "16 - 235",IDC_RGBLEVEL_RADIO2,"Button",BS_AUTORADIOBUTTON,69,114,42,10
-    PUSHBUTTON      "Overlay testen",IDC_OVERLAY,112,112,54,14,WS_GROUP
-    CONTROL         "disable video LUT(GDI)",IDC_DISP_TRIP2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,126,91,13
+    PUSHBUTTON      "Overlay testen",IDC_OVERLAY,112,112,54,14,NOT WS_VISIBLE | WS_DISABLED | WS_GROUP
+    CONTROL         "disable video LUT",IDC_DISP_TRIP2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,126,91,13
     LTEXT           "Zielbildschirm:",IDC_STATIC,9,7,59,9
     COMBOBOX        IDC_MONITOR_COMBO,68,4,89,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     LTEXT           "Bildgröße (%)",IDC_STATIC,10,22,53,8
@@ -387,7 +387,7 @@ BEGIN
     LTEXT           "Pattern Intensity [%]",IDC_STATIC,86,36,75,8
     EDITTEXT        IDC_INTENSITY_EDIT,156,34,20,12,ES_AUTOHSCROLL | WS_GROUP
     GROUPBOX        "Display mode",IDC_STATIC,9,48,177,54,WS_GROUP
-    GROUPBOX        "Grautreppe (GDI)",IDC_STATIC,9,104,167,32,WS_GROUP
+    GROUPBOX        "GDI Options",IDC_STATIC,9,104,167,32,WS_GROUP
 END
 
 IDD_APPEARANCE_PROP_PAGE DIALOGEX 0, 0, 212, 180
@@ -2407,12 +2407,12 @@ BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "CompanyName", "Association Homecinema Francophone"
             VALUE "FileDescription", "HCFR Colorimeter resources"
-            VALUE "FileVersion", "3,4,1"
+            VALUE "FileVersion", "3,4,2"
             VALUE "InternalName", "CHCFR21_DEUTSCH"
-            VALUE "LegalCopyright", "Copyright (C) 2005-2008"
+            VALUE "LegalCopyright", "Copyright (C) 2005-2016"
             VALUE "OriginalFilename", "CHCFR21_DEUTSCH.DLL"
             VALUE "ProductName", "HCFR Colorimeter German language"
-            VALUE "ProductVersion", "3,4,1"
+            VALUE "ProductVersion", "3,4,2"
         END
     END
     BLOCK "VarFileInfo"
@@ -2553,7 +2553,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDR_MAINFRAME           "HCFR Colorimeter - 3,4,1"
+    IDR_MAINFRAME           "HCFR Colorimeter - 3,4,2"
     IDR_MESURETYPE          "\nFarbmessungen\nFarbmessungen\nColorHCFR Datei (*.chc)\n.chc\nCOLORHCFR\nHCFR Farbmessungen"
 END
 

@@ -410,7 +410,7 @@ BEGIN
     CONTROL         "0 - 255",IDC_RGBLEVEL_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,119,38,10
     CONTROL         "16 - 235",IDC_RGBLEVEL_RADIO2,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,69,119,42,10
     PUSHBUTTON      "Test Overlay",IDC_OVERLAY,118,117,51,12,NOT WS_VISIBLE | WS_DISABLED | WS_GROUP
-    CONTROL         "disable video LUT(GDI)",IDC_DISP_TRIP2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,129,91,13
+    CONTROL         "disable video LUT",IDC_DISP_TRIP2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,129,91,13
     LTEXT           "Target screen:",IDC_STATIC,9,7,59,9
     COMBOBOX        IDC_MONITOR_COMBO,61,5,89,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     LTEXT           "Image area [%]",IDC_STATIC,11,24,53,8
@@ -1511,25 +1511,25 @@ END
 IDR_MAINFRAME ACCELERATORS
 BEGIN
     "1",            IDM_PATTERN_ALIGN,      VIRTKEY, ALT, NOINVERT
-    "2",            IDM_PATTERN_ANIM_BLACK,      VIRTKEY, ALT, NOINVERT
-    "3",            IDM_PATTERN_ANIM_WHITE,      VIRTKEY, ALT, NOINVERT
-    "4",            IDM_PATTERN_CLIPL,		VIRTKEY, ALT, NOINVERT
+    "2",            IDM_PATTERN_ANIM_BLACK, VIRTKEY, ALT, NOINVERT
+    "3",            IDM_PATTERN_ANIM_WHITE, VIRTKEY, ALT, NOINVERT
+    "4",            IDM_PATTERN_CLIPL,      VIRTKEY, ALT, NOINVERT
     "5",            IDM_PATTERN_CLIPH,      VIRTKEY, ALT, NOINVERT
     "6",            IDM_PATTERN_GRADIENT,   VIRTKEY, ALT, NOINVERT
-    "7",            IDM_PATTERN_GRADIENT2,    VIRTKEY, ALT, NOINVERT
-    "8",            IDM_PATTERN_LRAMP,        VIRTKEY, ALT, NOINVERT
-    "9",            IDM_PATTERN_SRAMP,        VIRTKEY, ALT, NOINVERT
-    "0",            IDM_PATTERN_SHARP,    VIRTKEY, ALT, NOINVERT
-    "1",            IDM_PATTERN_TC0,      VIRTKEY, CONTROL, NOINVERT
-    "2",            IDM_PATTERN_TC1,      VIRTKEY, CONTROL, NOINVERT
-    "3",            IDM_PATTERN_TC2,      VIRTKEY, CONTROL, NOINVERT
-    "4",            IDM_PATTERN_TC3,  VIRTKEY, CONTROL, NOINVERT
-    "5",            IDM_PATTERN_TC4,         VIRTKEY, CONTROL, NOINVERT
-    "6",            IDM_PATTERN_TC5,         VIRTKEY, CONTROL, NOINVERT
-    "7",            IDM_PATTERN_DR0,         VIRTKEY, CONTROL, NOINVERT
+    "7",            IDM_PATTERN_GRADIENT2,  VIRTKEY, ALT, NOINVERT
+    "8",            IDM_PATTERN_LRAMP,      VIRTKEY, ALT, NOINVERT
+    "9",            IDM_PATTERN_SRAMP,      VIRTKEY, ALT, NOINVERT
+    "0",            IDM_PATTERN_SHARP,      VIRTKEY, ALT, NOINVERT
+    "1",            IDM_PATTERN_TC0,        VIRTKEY, CONTROL, NOINVERT
+    "2",            IDM_PATTERN_TC1,        VIRTKEY, CONTROL, NOINVERT
+    "3",            IDM_PATTERN_TC2,        VIRTKEY, CONTROL, NOINVERT
+    "4",            IDM_PATTERN_TC3,        VIRTKEY, CONTROL, NOINVERT
+    "5",            IDM_PATTERN_TC4,        VIRTKEY, CONTROL, NOINVERT
+    "6",            IDM_PATTERN_TC5,        VIRTKEY, CONTROL, NOINVERT
+    "7",            IDM_PATTERN_DR0,        VIRTKEY, CONTROL, NOINVERT
     "8",            IDM_PATTERN_DR1,        VIRTKEY, CONTROL, NOINVERT
     "9",            IDM_PATTERN_DR2,        VIRTKEY, CONTROL, NOINVERT
-    "0",            IDM_PATTERN_TESTIMG,        VIRTKEY, CONTROL, NOINVERT
+    "0",            IDM_PATTERN_TESTIMG,    VIRTKEY, CONTROL, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
     "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
@@ -2474,12 +2474,12 @@ BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "CompanyName", "Association Homecinema Francophone"
             VALUE "FileDescription", "HCFR Colorimeter resources"
-            VALUE "FileVersion", "3,4,1"
+            VALUE "FileVersion", "3,4,2"
             VALUE "InternalName", "CHCFR21_ENGLISH"
-            VALUE "LegalCopyright", "Copyright (C) 2005-2008"
+            VALUE "LegalCopyright", "Copyright (C) 2005-2016"
             VALUE "OriginalFilename", "CHCFR21_ENGLISH.DLL"
             VALUE "ProductName", "HCFR Colorimeter English langage"
-            VALUE "ProductVersion", "3,4,1"
+            VALUE "ProductVersion", "3,4,2"
         END
     END
     BLOCK "VarFileInfo"
@@ -2691,7 +2691,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDR_MAINFRAME           "HCFR Colorimeter - 3.4.1"
+    IDR_MAINFRAME           "HCFR Colorimeter - 3.4.2"
     IDR_MESURETYPE          "\nColor Measures\nColor_Measures\nColorHCFR File (*.chc)\n.chc\nCOLORHCFR\nHCFR Color Measures"
 END
 

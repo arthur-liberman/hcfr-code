@@ -771,23 +771,31 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	{
 		for(int i=0;i<6;i++) //needed only for special subset colorspaces that depend on gamma
 		{
-			double r1,g1,b1;
+			double r1,g1,b1, gamma1=gamma, gamma2=gamma, gamma3=gamma;
 			r[i]=rgb[i][0];
 			g[i]=rgb[i][1];
 			b[i]=rgb[i][2];
 			int mode = GetConfig()->m_GammaOffsetType;
 			if (GetConfig()->m_colorStandard == sRGB) mode = 8;
-			if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
+			if ( mode >= 4 )
 			{
-				if (mode == 5)
-				   gamma = log(getL_EOTF(pow(aColor[i].GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode ) / 100.)/log(pow(aColor[i].GetY(),1.0/2.22));
+			if (mode == 5 || mode ==7)
+				gamma =  0.0; //leave HDR alone
 				else
-				   gamma = log(getL_EOTF(pow(aColor[i].GetY(),1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(aColor[i].GetY(),1.0/2.22));
+				{
+				   gamma1 = log(getL_EOTF(pow(r[i],1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(r[i],1.0/2.22));
+				   gamma2 = log(getL_EOTF(pow(g[i],1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(g[i],1.0/2.22));
+				   gamma3 = log(getL_EOTF(pow(b[i],1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(b[i],1.0/2.22));
+				}
 			}
 
-			r1=(r[i]<=0||r[i]>=1)?min(max(r[i],0),1):pow(pow(r[i],1.0/2.22),gamma);
-			g1=(g[i]<=0||g[i]>=1)?min(max(g[i],0),1):pow(pow(g[i],1.0/2.22),gamma);
-			b1=(b[i]<=0||b[i]>=1)?min(max(b[i],0),1):pow(pow(b[i],1.0/2.22),gamma);
+			if (gamma != 0.0)
+			{
+				r1=(r[i]<=0||r[i]>=1)?min(max(r[i],0),1):pow(pow(r[i],1.0/2.22),gamma1);
+				g1=(g[i]<=0||g[i]>=1)?min(max(g[i],0),1):pow(pow(g[i],1.0/2.22),gamma2);
+				b1=(b[i]<=0||b[i]>=1)?min(max(b[i],0),1):pow(pow(b[i],1.0/2.22),gamma3);
+			}
+
 			aColor[i].SetRGBValue (ColorRGB(r1,g1,b1),(GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));	
 		}
 	}
@@ -1459,7 +1467,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	    		CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
 				int mode = GetConfig()->m_GammaOffsetType;
 				if (GetConfig()->m_colorStandard == sRGB) mode = 8;
-				if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
+				if (  (mode >= 4) )
 			    {
 				   double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
                    valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
@@ -2901,25 +2909,25 @@ void CCIEChartView::UpdateTestColor ( CPoint point )
         double r=RGBColor[0],g=RGBColor[1],b=RGBColor[2];
 		int mode = GetConfig()->m_GammaOffsetType;
 		if (GetConfig()->m_colorStandard == sRGB) mode = 8;
-        if (  (mode == 4 && White.isValid() && Black.isValid()) || mode > 4)
+        if (  (mode >= 4) )
         {
 			if (mode == 5)
 			{
 				if (r < 0.999 && r > 0.001)
-					r = (r<=0||r>=1)?min(max(r,0),1):pow(r,log(getL_EOTF(r, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode ) / 100. )/log(r));
+					r = (r<=0||r>=1)?min(max(r,0),1):getL_EOTF(r, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode ) / 100.;
 				if (g < 0.999 && g > 0.001)
-		    		g = (g<=0||g>=1)?min(max(g,0),1):pow(g,log(getL_EOTF(g, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode ) / 100. )/log(g));
+		    		g = (g<=0||g>=1)?min(max(g,0),1):getL_EOTF(g, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode ) / 100.;
 				if (b < 0.999 && b > 0.001)
-					b = (b<=0||b>=1)?min(max(b,0),1):pow(b,log(getL_EOTF(b, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode ) / 100. )/log(b));
+					b = (b<=0||b>=1)?min(max(b,0),1):getL_EOTF(b, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode ) / 100.;
 			}
 			else
 			{
 				if (r < 0.999 && r > 0.001)
-	    			r = (r<=0||r>=1)?min(max(r,0),1):pow(r,log(getL_EOTF(r, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(r));
+	    			r = (r<=0||r>=1)?min(max(r,0),1):getL_EOTF(r, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 				if (g < 0.999 && g > 0.001)
-		    		g = (g<=0||g>=1)?min(max(g,0),1):pow(g,log(getL_EOTF(g, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(g));
+		    		g = (g<=0||g>=1)?min(max(g,0),1):getL_EOTF(g, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 				if (b < 0.999 && b > 0.001)
-					b = (b<=0||b>=1)?min(max(b,0),1):pow(b,log(getL_EOTF(b, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(b));
+					b = (b<=0||b>=1)?min(max(b,0),1):getL_EOTF(b, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 			}
         }
         else

@@ -721,8 +721,8 @@ extern CColor theMeasure;
 extern CColor noDataColor;
 
 // Tool functions
-extern void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int nSteps, bool bRed, bool bGreen, bool bBlue);
-extern bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode );
+extern void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int nSteps, bool bRed, bool bGreen, bool bBlue, int mode = 0);
+extern bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode, int mode );
 extern Matrix ComputeConversionMatrix(const ColorXYZ measures[3], const ColorXYZ references[3], const ColorXYZ & WhiteTest, const ColorXYZ & WhiteRef, bool	bUseOnlyPrimaries);
 double ArrayIndexToGrayLevel ( int nCol, int nSize, bool m_bUseRoundDown);
 double GrayLevelToGrayProp ( double Level, bool m_bUseRoundDown );
