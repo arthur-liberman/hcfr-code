@@ -1326,13 +1326,22 @@ void CMainView::InitGrid()
                 ColorRGB r_clr;
                 double inten;
                 s_clr=GetDocument()->GetMeasure()->GetRefCC24Sat(i);     
-                r_clr=s_clr.GetRGBValue((GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));
+				if (GetConfig()->m_GammaOffsetType == 5 || GetConfig()->m_GammaOffsetType == 7 )
+				{
+					s_clr.SetX(s_clr.GetX()*100);
+					s_clr.SetY(s_clr.GetY()*100);
+					s_clr.SetZ(s_clr.GetZ()*100);
+				}
+//                r_clr=s_clr.GetRGBValue((GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));
+                r_clr=s_clr.GetRGBValue(CColorReference(HDTV));
 				r_clr[0]=(min(max(r_clr[0],0),1));
 				r_clr[1]=(min(max(r_clr[1],0),1));
 				r_clr[2]=(min(max(r_clr[2],0),1));
-                inten = s_clr.GetLuminance();//GetConfig()->m_CCMode==USER?s_clr.GetLuminance():GetColorReference().GetCC24ReferenceLuma(i,GetConfig()->m_CCMode);
-    			m_pGrayScaleGrid->SetItemBkColour ( i2, i+1, RGB(pow(r_clr[0],1.0/2.2)*255,pow(r_clr[1],1.0/2.2)*255,pow(r_clr[2],1.0/2.2)*255) );
-                if (inten < 0.4)
+				inten = s_clr.GetLuminance();//GetConfig()->m_CCMode==USER?s_clr.GetLuminance():GetColorReference().GetCC24ReferenceLuma(i,GetConfig()->m_CCMode);
+
+	    		m_pGrayScaleGrid->SetItemBkColour ( i2, i+1, RGB(pow(r_clr[0],1.0/2.2)*255,pow(r_clr[1],1.0/2.2)*255,pow(r_clr[2],1.0/2.2)*255) );
+                
+				if (inten < 0.4)
                     m_pGrayScaleGrid->SetItemFgColour(i2, i+1, RGB(240,240,240));
                 else
                     m_pGrayScaleGrid->SetItemFgColour(i2, i+1, RGB(10,10,10));

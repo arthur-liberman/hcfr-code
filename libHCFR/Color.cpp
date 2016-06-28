@@ -2558,7 +2558,12 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 			double g = pow(GenColors[i][1] / 100.,2.22);
 			double b = pow(GenColors[i][2] / 100.,2.22);
 			if (constant_XYZ)		
+			{
 				tempColor.SetRGBValue(ColorRGB(r,g,b),CColorReference(HDTV));
+				tempColor.SetX(tempColor.GetX() / 100.); //100 cd/m^2 reference
+				tempColor.SetY(tempColor.GetY() / 100.);
+				tempColor.SetZ(tempColor.GetZ() / 100.);
+			}
 			else
 				tempColor.SetRGBValue(ColorRGB(r,g,b),colorReference.m_standard==UHDTV3?CColorReference(UHDTV2):colorReference);
 

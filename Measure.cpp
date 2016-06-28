@@ -6834,10 +6834,18 @@ CColor CMeasure::GetRefCC24Sat(int i) const
 	CColor Black = CMeasure::GetGray ( 0 );
     double gamma=GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef);
 	CColor tempColor;
+	int mode = GetConfig()->m_GammaOffsetType;
+	if (GetConfig()->m_colorStandard == sRGB) mode = 8;
+
 	// linearize R'G'B'
 	double r=pow(RGB[i][0],2.22),g=pow(RGB[i][1],2.22),b=pow(RGB[i][2],2.22);
-	if (const_XYZ)
+	if (const_XYZ && mode == 5 || mode == 7)
+	{
 		tempColor.SetRGBValue(ColorRGB(r,g,b), CColorReference(HDTV));
+		tempColor.SetX(tempColor.GetX() / 100.); //100 cd/m^2 reference for HDR-10
+		tempColor.SetY(tempColor.GetY() / 100.);
+		tempColor.SetZ(tempColor.GetZ() / 100.);
+	}
 	else
 		tempColor.SetRGBValue(ColorRGB(r,g,b), GetColorReference().m_standard==UHDTV3?CColorReference(UHDTV2):cRef);
 	ColorRGB aRGBColor = tempColor.GetRGBValue(GetColorReference().m_standard==UHDTV3?CColorReference(UHDTV2):cRef);	
@@ -6845,8 +6853,6 @@ CColor CMeasure::GetRefCC24Sat(int i) const
 	g = aRGBColor[1];
 	b = aRGBColor[2];
 
-	int mode = GetConfig()->m_GammaOffsetType;
-	if (GetConfig()->m_colorStandard == sRGB) mode = 8;
 	if ( mode == 6 || mode == 4 || mode == 8 )
     {
 		r=(r<=0||r>=1)?min(max(r,0),1):getL_EOTF(pow(r, 1. / 2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);

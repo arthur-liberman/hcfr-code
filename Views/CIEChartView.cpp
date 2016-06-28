@@ -380,16 +380,29 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 				double dXY = aGraphPoint.GetNormalizedColor().GetDeltaxy(pRefPoint->GetNormalizedColor(), GetColorReference());
 				str3.Format ( ": %.3f xy</font>", dXY );
 				str2 += str3;
-				ColorRGB measCol = ColorRGB(aGraphPoint.GetNormalizedColor(),GetColorReference());
-				ColorRGB refCol = ColorRGB(pRefPoint->GetNormalizedColor(),GetColorReference());
+				CColor aColor1 = aGraphPoint.GetNormalizedColor();
+				CColor aColor2 = pRefPoint->GetNormalizedColor();
+				if (GetConfig()->m_GammaOffsetType == 5)
+				{
+					aColor1.SetX(aColor1.GetX()*100.);
+					aColor1.SetY(aColor1.GetY()*100.);
+					aColor1.SetZ(aColor1.GetZ()*100.);
+					aColor2.SetX(aColor2.GetX()*100.);
+					aColor2.SetY(aColor2.GetY()*100.);
+					aColor2.SetZ(aColor2.GetZ()*100.);
+				}
+				ColorRGB measCol = ColorRGB(aColor1.GetRGBValue(CColorReference(HDTV)));
+				ColorRGB refCol = ColorRGB(aColor2.GetRGBValue(CColorReference(HDTV)));
 				double r1=min(max(measCol[0],0),1);
 				double g1=min(max(measCol[1],0),1);
 				double b1=min(max(measCol[2],0),1);
 				double r2=min(max(refCol[0],0),1);
 				double g2=min(max(refCol[1],0),1);
 				double b2=min(max(refCol[2],0),1);
+				
 				stRGB[m_ttID]=RGB(floor(pow(r1,1.0/2.2)*255.+0.5),floor(pow(g1,1.0/2.2)*255.+0.5),floor(pow(b1,1.0/2.2)*255.+0.5));
 				eRGB[m_ttID]=RGB(floor(pow(r2,1.0/2.2)*255.+0.5),floor(pow(g2,1.0/2.2)*255.+0.5),floor(pow(b2,1.0/2.2)*255.+0.5));
+
 				if (dark)
 					pTooltip -> AddTool(pWnd, "<b><font color=\"#EFEFEF\">"+CString(aGraphPoint.name) +"</font></b> \n\n\n" +str+str2,&rect_tip, m_ttID);
 				else
@@ -402,10 +415,18 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 		}
 		else
 		{
-			ColorRGB measCol = ColorRGB(aGraphPoint.GetNormalizedColor(),GetColorReference());
+			CColor aColor = aGraphPoint.GetNormalizedColor();
+			if (GetConfig()->m_GammaOffsetType == 5)
+			{
+				aColor.SetX(aColor.GetX()*100.);
+				aColor.SetY(aColor.GetY()*100.);
+				aColor.SetZ(aColor.GetZ()*100.);
+			}
+			ColorRGB measCol = ColorRGB(aColor.GetRGBValue(CColorReference(HDTV)));
 			double r1=min(max(measCol[0],0),1);
 			double g1=min(max(measCol[1],0),1);
 			double b1=min(max(measCol[2],0),1);
+			
 			stRGB[m_ttID]=RGB(floor(pow(r1,1.0/2.2)*255.+0.5),floor(pow(g1,1.0/2.2)*255.+0.5),floor(pow(b1,1.0/2.2)*255.+0.5));
 			eRGB[m_ttID]=stRGB[m_ttID];
 

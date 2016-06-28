@@ -182,7 +182,8 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 					p2=0.2;
 					p3=0.3;
 				}
-				if (isUHDTV3) //map p3 to 2020
+
+/*				if (isUHDTV3) //map p3 to 2020
 				{
 					CColor aColor;
 					ColorRGB rgbColor(pow(p1, 2.22), pow(p2, 2.22), pow(p3, 2.22));
@@ -193,7 +194,7 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 					p2 = rgbDisplayColor[1] / 100.;
 					p3 = rgbDisplayColor[2] / 100.;
 				}
-
+*/
 				x1 =  (int)floor(p1 * 255.0 + 0.5);
 				x2 =  (int)floor(p2 * 255.0 + 0.5);
 				x3 =  (int)floor(p3 * 255.0 + 0.5);
