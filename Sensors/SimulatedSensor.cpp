@@ -207,9 +207,9 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 	White.SetY(100);
 	CColor Black = GetColorReference().GetWhite();
 	Black.SetY(0.012);
-	double peakY = 500.;
+	double peakY = 10000.;
 
-    gamma=GetConfig()->m_GammaRef;
+	gamma=GetConfig()->m_GammaRef;
 
 	if (GetConfig()->m_colorStandard == sRGB) mode = 8;
 	if (mode == 1) //add small black offset
@@ -291,11 +291,12 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 	Sleep(50);
 	ColorRGB colMeasure(simulColor);
 	bool isSpecial = (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb);
-	
 	CColor colSensor(ColorXYZ(colMeasure, isSpecial?CColorReference(HDTV):GetConfig()->m_colorStandard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));
 	colSensor.SetX(colSensor.GetX() * (mode==5?10000.:mode==7?400.:100.));
 	colSensor.SetY(colSensor.GetY() * (mode==5?10000.:mode==7?400.:100.));
 	colSensor.SetZ(colSensor.GetZ() * (mode==5?10000.:mode==7?400.:100.));
+	if (mode == 4 && aRGBValue[0] == 0. && aRGBValue[1] == 0. && aRGBValue[2] == 0.)
+		colSensor.SetY(0.012);
 
 	double	Spectrum[18] = { 0.001, 0.01, 0.1, 0.15, 0.2, 0.4, 0.5, 0.6, 0.7, 1.2, 1.0, 1.1, 0.8, 0.9, 0.6, 0.5, 0.4, 0.15 };
 	colSensor.SetSpectrum ( CSpectrum ( 18, 380, 730, 20, Spectrum ) );

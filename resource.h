@@ -809,8 +809,8 @@
 #define IDR_PATTERN_ERAMPv              1348
 #define IDR_PATTERN_TV2                 1349
 #define IDR_PATTERN_TV2v                1350
-#define IDR_PATTERN_CLIPHO               1351
-#define IDR_PATTERN_CLIPLO               1352
+#define IDR_PATTERN_CLIPHO              1351
+#define IDR_PATTERN_CLIPLO              1352
 #define IDC_COLORTEMPHISTO_GRAPH        11003
 #define IDC_RGBHISTO_GRAPH              11101
 #define IDC_RGBHISTO_GRAPH2             11102
@@ -1621,7 +1621,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        382
-#define _APS_NEXT_COMMAND_VALUE         33092
+#define _APS_NEXT_COMMAND_VALUE         33093
 #define _APS_NEXT_CONTROL_VALUE         1288
 #define _APS_NEXT_SYMED_VALUE           143
 #endif

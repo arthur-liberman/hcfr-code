@@ -766,12 +766,13 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
     double gamma=(GetConfig()->m_useMeasuredGamma)?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef);
 	CColor White = pDoc->GetMeasure()->GetOnOffWhite();
 	CColor Black = pDoc->GetMeasure()->GetOnOffBlack();
+    bool isSpecial = (GetColorReference().m_standard==HDTVa||GetColorReference().m_standard==CC6||GetColorReference().m_standard==HDTVb||GetColorReference().m_standard==UHDTV3);
 
-	if (rgb[0][0] < 0.99 || rgb[0][1] < 0.99 || rgb[0][2] < 0.99)
+	if (isSpecial)
 	{
 		for(int i=0;i<6;i++) //needed only for special subset colorspaces that depend on gamma
 		{
-			double r1,g1,b1, gamma1=gamma, gamma2=gamma, gamma3=gamma;
+			double r1,g1,b1;
 			r[i]=rgb[i][0];
 			g[i]=rgb[i][1];
 			b[i]=rgb[i][2];
@@ -779,21 +780,24 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			if (GetConfig()->m_colorStandard == sRGB) mode = 8;
 			if ( mode >= 4 )
 			{
-			if (mode == 5 || mode ==7)
-				gamma =  0.0; //leave HDR alone
+				if (mode == 5 || mode == 7)
+				{
+					r1=r[i];
+					g1=g[i];
+					b1=b[i];
+				}
 				else
 				{
-				   gamma1 = log(getL_EOTF(pow(r[i],1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(r[i],1.0/2.22));
-				   gamma2 = log(getL_EOTF(pow(g[i],1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(g[i],1.0/2.22));
-				   gamma3 = log(getL_EOTF(pow(b[i],1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(b[i],1.0/2.22));
+				   r1 = (r[i]<=0.0||r[i]>=1.0)?min(max(r[i],0),1):getL_EOTF(pow(r[i],1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+				   g1 = (g[i]<=0.0||g[i]>=1.0)?min(max(g[i],0),1):getL_EOTF(pow(g[i],1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+				   b1 = (b[i]<=0.0||b[i]>=1.0)?min(max(b[i],0),1):getL_EOTF(pow(b[i],1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 				}
 			}
-
-			if (gamma != 0.0)
+			else
 			{
-				r1=(r[i]<=0||r[i]>=1)?min(max(r[i],0),1):pow(pow(r[i],1.0/2.22),gamma1);
-				g1=(g[i]<=0||g[i]>=1)?min(max(g[i],0),1):pow(pow(g[i],1.0/2.22),gamma2);
-				b1=(b[i]<=0||b[i]>=1)?min(max(b[i],0),1):pow(pow(b[i],1.0/2.22),gamma3);
+				r1=(r[i]<=0||r[i]>=1)?min(max(r[i],0),1):pow(pow(r[i],1.0/2.22),gamma);
+				g1=(g[i]<=0||g[i]>=1)?min(max(g[i],0),1):pow(pow(g[i],1.0/2.22),gamma);
+				b1=(b[i]<=0||b[i]>=1)?min(max(b[i],0),1):pow(pow(b[i],1.0/2.22),gamma);
 			}
 
 			aColor[i].SetRGBValue (ColorRGB(r1,g1,b1),(GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));	
@@ -2904,29 +2908,30 @@ void CCIEChartView::UpdateTestColor ( CPoint point )
 		CColor	ClickedColor ( x, y );
 		CColor White = GetDocument()->GetMeasure()->GetOnOffWhite();
 		CColor Black = GetDocument()->GetMeasure()->GetOnOffBlack();
-
-		RGBColor = ClickedColor.GetRGBValue ((GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));
+		int cRef=GetColorReference().m_standard;
+		RGBColor = ClickedColor.GetRGBValue ((cRef == HDTVa || cRef == HDTVb)?CColorReference(HDTV):cRef==UHDTV3?CColorReference(UHDTV2):GetColorReference());
         double r=RGBColor[0],g=RGBColor[1],b=RGBColor[2];
+/*
 		int mode = GetConfig()->m_GammaOffsetType;
 		if (GetConfig()->m_colorStandard == sRGB) mode = 8;
         if (  (mode >= 4) )
         {
 			if (mode == 5)
 			{
-				if (r < 0.999 && r > 0.001)
+//				if (r < 0.999 && r > 0.001)
 					r = (r<=0||r>=1)?min(max(r,0),1):getL_EOTF(r, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode ) / 100.;
-				if (g < 0.999 && g > 0.001)
+//				if (g < 0.999 && g > 0.001)
 		    		g = (g<=0||g>=1)?min(max(g,0),1):getL_EOTF(g, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode ) / 100.;
-				if (b < 0.999 && b > 0.001)
+//				if (b < 0.999 && b > 0.001)
 					b = (b<=0||b>=1)?min(max(b,0),1):getL_EOTF(b, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode ) / 100.;
 			}
 			else
 			{
-				if (r < 0.999 && r > 0.001)
+//				if (r < 0.999 && r > 0.001)
 	    			r = (r<=0||r>=1)?min(max(r,0),1):getL_EOTF(r, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
-				if (g < 0.999 && g > 0.001)
+//				if (g < 0.999 && g > 0.001)
 		    		g = (g<=0||g>=1)?min(max(g,0),1):getL_EOTF(g, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
-				if (b < 0.999 && b > 0.001)
+//				if (b < 0.999 && b > 0.001)
 					b = (b<=0||b>=1)?min(max(b,0),1):getL_EOTF(b, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 			}
         }
@@ -2936,7 +2941,7 @@ void CCIEChartView::UpdateTestColor ( CPoint point )
 	    	g = (g<=0||g>=1)?min(max(g,0),1):pow(g,gamma);
 		    b = (b<=0||b>=1)?min(max(b,0),1):pow(b,gamma);
         }
-
+*/
 		cmax = max(r,g);
 		if ( b>cmax)
 			cmax=b;

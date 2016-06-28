@@ -2506,7 +2506,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			}
 			 nMaxSteps = nSteps;
 			 mType [ 0 ] = nPattern;
-			 GenerateCC24Colors (GenColors, GetConfig()->m_CCMode, GetConfig()->m_GammaOffsetType );
+			 GenerateCC24Colors (GetColorReference(), GenColors, GetConfig()->m_CCMode, GetConfig()->m_GammaOffsetType );
 			 pValidationFunc = &CMeasure::ValidateBackgroundCC24SatScale;
 			 lHint = UPD_CC24SAT;
 			 break;

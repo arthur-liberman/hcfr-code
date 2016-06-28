@@ -509,8 +509,8 @@ ColorRGBDisplay::ColorRGBDisplay(double aGreyPercent)
 
 ColorRGBDisplay::ColorRGBDisplay(double aRedPercent,double aGreenPercent,double aBluePercent)
 {
-	CColorReference aColorRef = (CColorReference(UHDTV3));
-	ColorRGB outRGB;
+//	CColorReference aColorRef = (CColorReference(UHDTV3));
+//	ColorRGB outRGB;
     (*this)[0] = aRedPercent;
     (*this)[1] = aGreenPercent;
     (*this)[2] = aBluePercent;
@@ -1819,7 +1819,7 @@ void CSpectrum::Serialize(CArchive& archive)
 }
 #endif
 
-bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode, int mode)
+bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int aCCMode, int mode)
 {
 	//six cases, one for GCD sequence, one for Mascior's disk (Chromapure based), and four different generator only cases
 	//GCD
@@ -1831,13 +1831,15 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode, int mode)
 	path = getenv("APPDATA");
 	strcpy(appPath, path);
 	strcat(appPath, "\\color");
-	bool bOk = true;
+	bool bOk = true, constant_XYZ = FALSE;
+	int n_elements=24;
 	switch (aCCMode)
 	{
 	case GCD:
 		{
 //GCD
-            GenColors [ 0 ] = ColorRGBDisplay( 0, 0, 0 );
+			constant_XYZ = TRUE;
+			GenColors [ 0 ] = ColorRGBDisplay( 0, 0, 0 );
             GenColors [ 1 ] = ColorRGBDisplay( 62, 62, 62 );
             GenColors [ 2 ] = ColorRGBDisplay( 73, 73, 73 );
             GenColors [ 3 ] = ColorRGBDisplay( 82, 82, 82 );
@@ -1865,6 +1867,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode, int mode)
 		}
 	case MCD:
 		{
+			constant_XYZ = TRUE;
 	 	    GenColors [ 23 ] = ColorRGBDisplay( 21, 20.5, 21 );
             GenColors [ 22 ] = ColorRGBDisplay( 32.88, 32.88, 32.88 );
             GenColors [ 21 ] = ColorRGBDisplay( 47.49, 47.49, 47.03 );
@@ -1893,6 +1896,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode, int mode)
 		}
 	case CMC:
 		{
+			constant_XYZ = TRUE;
             GenColors [ 0 ] = ColorRGBDisplay( 100,	100,	100);
             GenColors [ 1 ] = ColorRGBDisplay( 89.9543379,	89.9543379,	89.9543379);
             GenColors [ 2 ] = ColorRGBDisplay( 82.19178082,	82.19178082,	82.19178082);
@@ -1922,6 +1926,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode, int mode)
 		//CalMan classic
 	case CMS:
 		{
+			constant_XYZ = TRUE;
             GenColors [ 0 ] = ColorRGBDisplay( 100, 100, 100 );
             GenColors [ 1 ] = ColorRGBDisplay( 0, 0, 0 );
             GenColors [ 2 ] = ColorRGBDisplay( 43.83561644,	25.11415525,	15.06849315 );
@@ -1941,11 +1946,13 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode, int mode)
             GenColors [ 16 ] = ColorRGBDisplay( 79.9086758,	56.16438356,	41.09589041);
             GenColors [ 17 ] = ColorRGBDisplay( 47.94520548,	29.22374429,	15.06849315);
             GenColors [ 18 ] = ColorRGBDisplay( 84.93150685,	54.79452055,	36.98630137);
+			n_elements= 19;
         break;
 		}
 		//CalMAN skin
 	case CPS:
 		{
+			constant_XYZ = TRUE;
             GenColors [ 0 ] = ColorRGBDisplay( 100, 100, 100 );
             GenColors [ 1 ] = ColorRGBDisplay( 84.47488584,	49.31506849,	34.24657534);
             GenColors [ 2 ] = ColorRGBDisplay( 78.99543379,	55.25114155,	48.40182648);
@@ -1965,11 +1972,13 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode, int mode)
             GenColors [ 16 ] = ColorRGBDisplay( 81.73515982,	60.2739726,	42.46575342);
             GenColors [ 17 ] = ColorRGBDisplay( 45.20547945,	31.96347032,	26.48401826);
             GenColors [ 18 ] = ColorRGBDisplay( 76.25570776,	58.90410959,	51.14155251);
+			n_elements= 19;
         break;
 		}
 		//Chromapure skin
 	case SKIN:
 		{
+			constant_XYZ = TRUE;
             GenColors [ 0 ] = ColorRGBDisplay(100,87.67123288,76.71232877);
             GenColors [ 1 ] = ColorRGBDisplay(94.06392694,83.56164384,74.42922374);
             GenColors [ 2 ] = ColorRGBDisplay(93.15068493,80.82191781,70.3196347);
@@ -2006,11 +2015,13 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode, int mode)
 			for (int i=0;i<10;i++) {GenColors [ i + 61 ] = ColorRGBDisplay( (i+1) * 10,	(i+1) * 10,	0);}
 			for (int i=0;i<10;i++) {GenColors [ i + 41 ] = ColorRGBDisplay( 0, (i+1) * 10,	(i+1) * 10);}
 			for (int i=0;i<10;i++) {GenColors [ i + 51] = ColorRGBDisplay( (i+1) * 10, 0, (i+1) * 10);}
+			n_elements= 70;
         break;
 		}
 		//ColorCheckerSG 96 colors
     case CCSG:
         {
+			constant_XYZ = TRUE;
             GenColors [ 0 ] = ColorRGBDisplay(	100	,	100	,	100	);
             GenColors [ 1 ] = ColorRGBDisplay(	87.2146119	,	87.2146119	,	87.2146119	);
             GenColors [ 2 ] = ColorRGBDisplay(	77.1689498	,	77.1689498	,	77.1689498	);
@@ -2107,6 +2118,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode, int mode)
             GenColors [ 93 ] = ColorRGBDisplay(	62.1004566	,	58.9041096	,	10.0456621	);
             GenColors [ 94 ] = ColorRGBDisplay(	64.8401826	,	73.0593607	,	0	);
             GenColors [ 95 ] = ColorRGBDisplay(	30.1369863	,	16.8949772	,	10.0456621	);
+			n_elements= 96;
             break;
         }
     case USER:
@@ -2139,6 +2151,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode, int mode)
                 GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
                 cnt++;
             }
+			n_elements= cnt;
 			}
             break;
         }
@@ -2168,6 +2181,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode, int mode)
                 GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
                 cnt++;
             }
+			n_elements= cnt;
 			}
             break;
         }
@@ -2197,6 +2211,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode, int mode)
                 GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
                 cnt++;
             }
+			n_elements= cnt;
 			}
             break;
         }
@@ -2226,6 +2241,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode, int mode)
                 GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
                 cnt++;
             }
+			n_elements= cnt;
 			}
             break;
         }
@@ -2255,6 +2271,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode, int mode)
                 GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
                 cnt++;
             }
+			n_elements= cnt;
 			}
             break;
         }
@@ -2284,6 +2301,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode, int mode)
                 GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
                 cnt++;
             }
+			n_elements= cnt;
 			}
             break;
         }
@@ -2313,6 +2331,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode, int mode)
                 GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
                 cnt++;
             }
+			n_elements= cnt;
 			}
             break;
         }
@@ -2342,6 +2361,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode, int mode)
                 GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
                 cnt++;
             }
+			n_elements= cnt;
 			}
             break;
         }
@@ -2371,6 +2391,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode, int mode)
                 GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
                 cnt++;
             }
+			n_elements= cnt;
 			}
             break;
         }
@@ -2400,6 +2421,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode, int mode)
                 GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
                 cnt++;
             }
+			n_elements= cnt;
 			}
             break;
         }
@@ -2429,6 +2451,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode, int mode)
                 GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
                 cnt++;
             }
+			n_elements= cnt;
 			}
             break;
         }
@@ -2458,6 +2481,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode, int mode)
                 GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
                 cnt++;
             }
+			n_elements = cnt;
 			}
             break;
         }
@@ -2487,6 +2511,7 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode, int mode)
                 GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
                 cnt++;
             }
+			n_elements = cnt;
 			}
             break;
         }
@@ -2516,38 +2541,42 @@ bool GenerateCC24Colors (ColorRGBDisplay* GenColors, int aCCMode, int mode)
                 GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
                 cnt++;
             }
+			n_elements = cnt;
 			}
             break;
         }
 	}//switch
-		//HDR mode target recalculation
-		int n=sizeof(GenColors);
-		if (mode == 5)
+
+	//HDR mode target recalculation
+	if (mode == 5 || mode == 7)
+	{
+		CColor tempColor;
+		for (int i=0; i<n_elements; i++)
 		{
-			for (int i=0; i<n; i++)
-			{
-				GenColors[i][0] = getL_EOTF(pow(GenColors[i][0] / 100., 2.22), noDataColor, noDataColor,0.0,0.0,-5);
-				GenColors[i][1] = getL_EOTF(pow(GenColors[i][1] / 100., 2.22), noDataColor, noDataColor,0.0,0.0,-5);
-				GenColors[i][2] = getL_EOTF(pow(GenColors[i][2] / 100., 2.22), noDataColor, noDataColor,0.0,0.0,-5);
-			}
+			//Constant XYZ
+			double r = pow(GenColors[i][0] / 100.,2.22);
+			double g = pow(GenColors[i][1] / 100.,2.22);
+			double b = pow(GenColors[i][2] / 100.,2.22);
+			if (constant_XYZ)		
+				tempColor.SetRGBValue(ColorRGB(r,g,b),CColorReference(HDTV));
+			else
+				tempColor.SetRGBValue(ColorRGB(r,g,b),colorReference.m_standard==UHDTV3?CColorReference(UHDTV2):colorReference);
+
+			ColorRGB aRGBColor = tempColor.GetRGBValue(colorReference.m_standard==UHDTV3?CColorReference(UHDTV2):colorReference);	
+			GenColors[i][0] = getL_EOTF(aRGBColor[0], noDataColor, noDataColor,0.0,0.0,-1*mode)*100.;
+			GenColors[i][1] = getL_EOTF(aRGBColor[1], noDataColor, noDataColor,0.0,0.0,-1*mode)*100.;
+			GenColors[i][2] = getL_EOTF(aRGBColor[2], noDataColor, noDataColor,0.0,0.0,-1*mode)*100.;
 		}
-		if (mode == 7)
-		{
-			for (int i=0; i<n; i++)
-			{
-				GenColors[i][0] = getL_EOTF(pow(GenColors[i][0] / 100., 2.22), noDataColor, noDataColor,0.0,0.0,-7) * 100.;
-				GenColors[i][1] = getL_EOTF(pow(GenColors[i][1] / 100., 2.22), noDataColor, noDataColor,0.0,0.0,-7) * 100.;
-				GenColors[i][2] = getL_EOTF(pow(GenColors[i][2] / 100., 2.22), noDataColor, noDataColor,0.0,0.0,-7) * 100.;
-			}
-		}
-return bOk;
+	}
+
+	return bOk;
 }
 
 void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int nSteps, bool bRed, bool bGreen, bool bBlue, int mode )
 {
 	//use fully saturated space if user has special color space modes set
 	int m_cRef=colorReference.m_standard;
-	CColorReference cRef=((m_cRef==HDTVa  || m_cRef==HDTVb )?CColorReference(HDTV):colorReference);
+	CColorReference cRef=((m_cRef==HDTVa  || m_cRef==HDTVb )?CColorReference(HDTV):m_cRef==UHDTV3?CColorReference(UHDTV):colorReference);
 
 	// Retrieve color luminance coefficients matching actual reference
     const double KR = cRef.GetRedReferenceLuma (true);  
@@ -2600,7 +2629,7 @@ void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDi
             ColorxyY UnsatClr_xyY(x,y,K);
             ColorXYZ UnsatClr(UnsatClr_xyY);
 
-            ColorRGB UnsatClr_rgb(UnsatClr, cRef);
+            ColorRGB UnsatClr_rgb(UnsatClr, cRef);//m_cRef==UHDTV3?CColorReference(UHDTV2):cRef);
 
             // Both components are theoretically equal, get medium value
             clr = ( ( ( bRed ? UnsatClr_rgb[0] : 0.0 ) + ( bGreen ? UnsatClr_rgb[1] : 0.0 ) + ( bBlue ? UnsatClr_rgb[2] : 0.0 ) ) / (double) ( bRed + bGreen + bBlue ) );
@@ -2624,54 +2653,40 @@ void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDi
             }
         }
 
-        // adjust "color gamma"
+		// adjust "color gamma"
 		// here we use encoding gamma of 1 / 2.22 for SDR and targets get adjusted for user gamma: Targets assume all generated RGB triplets @2.22 gamma
-		double clr2=0, comp2=0;
-		double g1=2.0, g2=2.0;
-
-		if (mode <= 4 || mode == 6 || m_cRef == sRGB )
+		CColor aColor;
+		ColorRGB rgbColor(( bRed ? clr : comp ), ( bGreen ? clr : comp ), ( bBlue ? clr : comp ));
+		if (m_cRef == UHDTV3)
 		{
-			clr2 = ( 100.0 * pow ( clr , 1.0 / 2.22 ) );
-			comp2 = ( 100.0 * pow ( comp , 1.0 / 2.22 ) );
+			aColor.SetRGBValue(rgbColor, CColorReference(UHDTV));
+			rgbColor = aColor.GetRGBValue(CColorReference(UHDTV2));
 		}
-		// HDR targets encoding, use PQ or BBC function
-		else
-		{
-			if (mode == 7)
-			{
-				if (clr != 0.0 && clr != 1.0)
-				{
-					clr2 = 100.0 * getL_EOTF(clr, noDataColor, noDataColor, 2.4, 0.9, -7);
-				}
-				else
-					clr2 = clr * 100.0;
 
-				if (comp != 0.0 && comp != 1.0)
-				{
-					comp2 = 100.0 * getL_EOTF(comp, noDataColor, noDataColor, 2.4, 0.9, -7);
-				}
-				else
-					comp2 = comp * 100.0;
+		if (mode == 5 || mode == 7)
+		{
+			if (mode == 5)
+			{
+				rgbColor[0] = 100.0 * getL_EOTF(rgbColor[0], noDataColor, noDataColor, 2.4, 0.9, -5);
+				rgbColor[1] = 100.0 * getL_EOTF(rgbColor[1], noDataColor, noDataColor, 2.4, 0.9, -5);
+				rgbColor[2] = 100.0 * getL_EOTF(rgbColor[2], noDataColor, noDataColor, 2.4, 0.9, -5);
 			}
 			else
 			{
-				if (clr != 0.0 && clr != 1.0)
-				{
-					clr2 = 100.0 * getL_EOTF(clr, noDataColor, noDataColor, 2.4, 0.9, -5);
-				}
-				else
-					clr2 = clr * 100.0;
-
-				if (comp != 0.0 && comp != 1.0)
-				{
-					comp2 = 100.0 * getL_EOTF(comp, noDataColor, noDataColor, 2.4, 0.9, -5);
-				}
-				else
-					comp2 = comp * 100.0;
+				rgbColor[0] = 100.0 * getL_EOTF(rgbColor[0], noDataColor, noDataColor, 2.4, 0.9, -7);
+				rgbColor[1] = 100.0 * getL_EOTF(rgbColor[1], noDataColor, noDataColor, 2.4, 0.9, -7);
+				rgbColor[2] = 100.0 * getL_EOTF(rgbColor[2], noDataColor, noDataColor, 2.4, 0.9, -7);
 			}
 		}
+		else
+		{
+			rgbColor[0] = 100.0 * pow(rgbColor[0], 1.0 / 2.22);
+			rgbColor[1] = 100.0 * pow(rgbColor[1], 1.0 / 2.22);
+			rgbColor[2] = 100.0 * pow(rgbColor[2], 1.0 / 2.22);
+		}
 
-		GenColors [ i ] = ColorRGBDisplay( ( bRed ? clr2 : comp2 ), ( bGreen ? clr2 : comp2 ), ( bBlue ? clr2 : comp2 ) );
+		GenColors [ i ] = ColorRGBDisplay( rgbColor[0], rgbColor[1], rgbColor[2] );
+        
     }
 }
 
@@ -2776,6 +2791,14 @@ double GrayLevelToGrayProp ( double Level, bool m_bUseRoundDown)
 
 double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double split, int mode)
 {
+	if (valx <= 0) return 0;
+	if (valx >= 1)
+	{
+		if (mode == 5)
+			return 100.;
+		else
+			return 1.;
+	}
 //Returns relative output luminance given input luma (stimulus)
 //exception is ST2084 which returns an absolute value
 //BT1886

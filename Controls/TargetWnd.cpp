@@ -145,7 +145,7 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 					break;
 				case 11:
 					centerXYZ =  pDoc->GetMeasure()->GetRefCC24Sat(minCol-1).GetXYZValue();
-					GenerateCC24Colors (GenColors, GetConfig()->m_CCMode, GetConfig()->m_GammaOffsetType);
+					GenerateCC24Colors (GetColorReference(), GenColors, GetConfig()->m_CCMode, GetConfig()->m_GammaOffsetType);
 					if (GetConfig()->m_CCMode == MCD)
 					{
 						if (minCol >= 7)

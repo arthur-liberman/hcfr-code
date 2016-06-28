@@ -469,7 +469,7 @@ void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, cons
 	double	xtarget, ytarget;
 	double	xmeasure, ymeasure;
 	double	xpoint, ypoint;
-	double	dx, dy, gamma1=gamma,gamma2=gamma,gamma3=gamma;
+	double	dx, dy;
 	// Retrieve measured point coordinates
 	xmeasure = SatColor.GetxyYValue()[0];
 	ymeasure = SatColor.GetxyYValue()[1];
@@ -498,20 +498,23 @@ void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, cons
 	if ( mode >= 4 )
 	{
 		if  (mode == 5 || mode == 7)
-			gamma = 0.0; //leave alone for HDR
+		{
+			r = r;
+			g = g;
+			b = b;
+		}
 		else
 		{
-	        gamma1 = log(getL_EOTF(pow(r,1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(r,1.0/2.22));
-	        gamma2 = log(getL_EOTF(pow(g,1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(g,1.0/2.22));
-	        gamma3 = log(getL_EOTF(pow(b,1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(pow(b,1.0/2.22));
+	        r = getL_EOTF(pow(r,1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+	        g = getL_EOTF(pow(g,1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+	        b = getL_EOTF(pow(b,1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 		}
-	}
-
-	if (gamma != 0.0)
+	} 
+	else
 	{
-		r=(r<=0||r>=1)?min(max(r,0),1):pow(pow(r,1.0/2.22),gamma1);
-		g=(g<=0||g>=1)?min(max(g,0),1):pow(pow(g,1.0/2.22),gamma2);
-		b=(b<=0||b>=1)?min(max(b,0),1):pow(pow(b,1.0/2.22),gamma3);
+		r=(r<=0||r>=1)?min(max(r,0),1):pow(pow(r,1.0/2.22),gamma);
+		g=(g<=0||g>=1)?min(max(g,0),1):pow(pow(g,1.0/2.22),gamma);
+		b=(b<=0||b>=1)?min(max(b,0),1):pow(pow(b,1.0/2.22),gamma);
 	}
 	
 	aColor.SetRGBValue (ColorRGB(r,g,b), isSpecial?CColorReference(HDTV):GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference() );	

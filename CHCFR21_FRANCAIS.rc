@@ -1897,6 +1897,7 @@ BEGIN
     VK_UP,          IDM_GRAPH_Y_SHIFT_TOP,  VIRTKEY, SHIFT, NOINVERT
     "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL, NOINVERT
     "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
+    "P",            IDM_GENERAL_CONFIG,     VIRTKEY, ALT, NOINVERT
 END
 
 
