@@ -489,11 +489,17 @@ void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, cons
 
 //    aColor.SetxyYValue (xtarget, ytarget, luma * pow(Intensity,2.22));
     aColor.SetxyYValue (xtarget, ytarget, luma );
+	int mode = GetConfig()->m_GammaOffsetType;
+	if (mode == 5)
+	{
+		aColor.SetX(aColor.GetX() / 100.);
+		aColor.SetY(aColor.GetY() / 100.);
+		aColor.SetZ(aColor.GetZ() / 100.);
+	}
 	ColorRGB rgb;
 	rgb=isSpecial?aColor.GetRGBValue(CColorReference(HDTV)):aColor.GetRGBValue ((GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));
 	double r=rgb[0],g=rgb[1],b=rgb[2];
 
-	int mode = GetConfig()->m_GammaOffsetType;
 	if (GetConfig()->m_colorStandard == sRGB) mode = 8;
 	if ( mode >= 4 )
 	{

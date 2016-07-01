@@ -179,9 +179,9 @@ ColorxyY primariesP3[3] = {		ColorxyY(0.6800, 0.3200),
 								ColorxyY(0.265, 0.6900),
 								ColorxyY(0.1500, 0.0600) };
 
-ColorxyY primaries2020[3] ={	ColorxyY(0.70792, 0.29203),
-								ColorxyY(0.17024, 0.79652),
-								ColorxyY(0.13137, 0.04588) };
+ColorxyY primaries2020[3] ={	ColorxyY(0.708, 0.292),
+								ColorxyY(0.170, 0.797),
+								ColorxyY(0.131, 0.046) };
 
 ColorxyY primariesRec709a[3] ={	ColorxyY(0.5575, 0.3298), //75% sat/lum Rec709 w/2.2 gamma
 								ColorxyY(0.3032, 0.5313),
@@ -1840,10 +1840,10 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 //GCD
 			constant_XYZ = TRUE;
 			GenColors [ 0 ] = ColorRGBDisplay( 0, 0, 0 );
-            GenColors [ 1 ] = ColorRGBDisplay( 62, 62, 62 );
-            GenColors [ 2 ] = ColorRGBDisplay( 73, 73, 73 );
-            GenColors [ 3 ] = ColorRGBDisplay( 82, 82, 82 );
-            GenColors [ 4 ] = ColorRGBDisplay( 90, 90, 90 );
+            GenColors [ 1 ] = ColorRGBDisplay( 62.1, 62.1, 62.1 );
+            GenColors [ 2 ] = ColorRGBDisplay( 73.06, 73.06, 73.06 );
+            GenColors [ 3 ] = ColorRGBDisplay( 82.19, 82.19, 82.19 );
+            GenColors [ 4 ] = ColorRGBDisplay( 89.95, 89.95, 89.95 );
             GenColors [ 5 ] = ColorRGBDisplay( 100, 100, 100 );
             GenColors [ 6 ] = ColorRGBDisplay( 45.2, 31.96, 26.03 );
             GenColors [ 7 ] = ColorRGBDisplay( 75.8, 58.9, 51.14 );
@@ -2554,23 +2554,35 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 		for (int i=0; i<n_elements; i++)
 		{
 			//Constant XYZ
+
 			double r = pow(GenColors[i][0] / 100.,2.22);
 			double g = pow(GenColors[i][1] / 100.,2.22);
 			double b = pow(GenColors[i][2] / 100.,2.22);
 			if (constant_XYZ)		
 			{
 				tempColor.SetRGBValue(ColorRGB(r,g,b),CColorReference(HDTV));
-				tempColor.SetX(tempColor.GetX() / 100.); //100 cd/m^2 reference
-				tempColor.SetY(tempColor.GetY() / 100.);
-				tempColor.SetZ(tempColor.GetZ() / 100.);
+				if (mode == 5)
+				{
+					tempColor.SetX(tempColor.GetX() / 100.); //100 cd/m^2 reference
+					tempColor.SetY(tempColor.GetY() / 100.);
+					tempColor.SetZ(tempColor.GetZ() / 100.);
+				}
 			}
 			else
 				tempColor.SetRGBValue(ColorRGB(r,g,b),colorReference.m_standard==UHDTV3?CColorReference(UHDTV2):colorReference);
 
 			ColorRGB aRGBColor = tempColor.GetRGBValue(colorReference.m_standard==UHDTV3?CColorReference(UHDTV2):colorReference);	
-			GenColors[i][0] = getL_EOTF(aRGBColor[0], noDataColor, noDataColor,0.0,0.0,-1*mode)*100.;
-			GenColors[i][1] = getL_EOTF(aRGBColor[1], noDataColor, noDataColor,0.0,0.0,-1*mode)*100.;
-			GenColors[i][2] = getL_EOTF(aRGBColor[2], noDataColor, noDataColor,0.0,0.0,-1*mode)*100.;
+
+			
+			r = getL_EOTF(aRGBColor[0], noDataColor, noDataColor,0.0,0.0,-1*mode);
+			g = getL_EOTF(aRGBColor[1], noDataColor, noDataColor,0.0,0.0,-1*mode);
+			b = getL_EOTF(aRGBColor[2], noDataColor, noDataColor,0.0,0.0,-1*mode);
+
+			//re-quantize to 8-bit video %
+			GenColors[i][0] = floor( (r * 219.) + 0.5 ) / 2.19;
+			GenColors[i][1] = floor( (g * 219.) + 0.5 ) / 2.19;
+			GenColors[i][2] = floor( (b * 219.) + 0.5 ) / 2.19;
+
 		}
 	}
 
@@ -2665,23 +2677,31 @@ void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDi
 		if (m_cRef == UHDTV3)
 		{
 			aColor.SetRGBValue(rgbColor, CColorReference(UHDTV));
+			if (mode == 5)
+			{
+				aColor.SetX(aColor.GetX()/100.);
+				aColor.SetY(aColor.GetY()/100.);
+				aColor.SetZ(aColor.GetZ()/100.);
+			}
 			rgbColor = aColor.GetRGBValue(CColorReference(UHDTV2));
+		}
+		else
+		{
+			aColor.SetRGBValue(rgbColor, colorReference);
+			if (mode == 5)
+			{
+				aColor.SetX(aColor.GetX()/100.);
+				aColor.SetY(aColor.GetY()/100.);
+				aColor.SetZ(aColor.GetZ()/100.);
+			}
+			rgbColor = aColor.GetRGBValue(colorReference);
 		}
 
 		if (mode == 5 || mode == 7)
 		{
-			if (mode == 5)
-			{
-				rgbColor[0] = 100.0 * getL_EOTF(rgbColor[0], noDataColor, noDataColor, 2.4, 0.9, -5);
-				rgbColor[1] = 100.0 * getL_EOTF(rgbColor[1], noDataColor, noDataColor, 2.4, 0.9, -5);
-				rgbColor[2] = 100.0 * getL_EOTF(rgbColor[2], noDataColor, noDataColor, 2.4, 0.9, -5);
-			}
-			else
-			{
-				rgbColor[0] = 100.0 * getL_EOTF(rgbColor[0], noDataColor, noDataColor, 2.4, 0.9, -7);
-				rgbColor[1] = 100.0 * getL_EOTF(rgbColor[1], noDataColor, noDataColor, 2.4, 0.9, -7);
-				rgbColor[2] = 100.0 * getL_EOTF(rgbColor[2], noDataColor, noDataColor, 2.4, 0.9, -7);
-			}
+				rgbColor[0] = 100.0 * getL_EOTF(rgbColor[0], noDataColor, noDataColor, 2.4, 0.9, -1*mode);
+				rgbColor[1] = 100.0 * getL_EOTF(rgbColor[1], noDataColor, noDataColor, 2.4, 0.9, -1*mode);
+				rgbColor[2] = 100.0 * getL_EOTF(rgbColor[2], noDataColor, noDataColor, 2.4, 0.9, -1*mode);
 		}
 		else
 		{
@@ -2689,6 +2709,11 @@ void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDi
 			rgbColor[1] = 100.0 * pow(rgbColor[1], 1.0 / 2.22);
 			rgbColor[2] = 100.0 * pow(rgbColor[2], 1.0 / 2.22);
 		}
+
+		//quantize to 8-bit video %
+		rgbColor[0] = floor( (rgbColor[0] / 100. * 219.) + 0.5 ) / 2.19;
+		rgbColor[1] = floor( (rgbColor[1] / 100. * 219.) + 0.5 ) / 2.19;
+		rgbColor[2] = floor( (rgbColor[2] / 100. * 219.) + 0.5 ) / 2.19;
 
 		GenColors [ i ] = ColorRGBDisplay( rgbColor[0], rgbColor[1], rgbColor[2] );
         

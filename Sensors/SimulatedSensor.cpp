@@ -209,6 +209,11 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 	Black.SetY(0.012);
 	double peakY = 10000.;
 
+//	quantize to 8bit video
+	double r =  floor( (aRGBValue[0] * 219.) + 0.5 ) / 219.;
+	double g =  floor( (aRGBValue[1] * 219.) + 0.5 ) / 219.;
+	double b =  floor( (aRGBValue[2] * 219.) + 0.5 ) / 219.;
+
 	gamma=GetConfig()->m_GammaRef;
 
 	if (GetConfig()->m_colorStandard == sRGB) mode = 8;
@@ -224,7 +229,7 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 		offset+=(m_offsetErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1.0 : 1.0);
 	if(m_doGainError)
 		gain=1+(m_gainErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1.0 : 1.0);
-	value=max(aRGBValue[0]*gain+offset,0.0);
+	value=max(r*gain+offset,0.0);
 	
 	if (  mode >= 4 )
     {
@@ -247,7 +252,7 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 		offset+=(m_offsetErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1.0 : 1.0);
 	if(m_doGainError)
 		gain=1+(m_gainErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1.0 : 1.0);
-	value = max(aRGBValue[1]*gain+offset,0.0);
+	value = max(g*gain+offset,0.0);
 
 	if (  mode >= 4 )
     {
@@ -270,7 +275,7 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 		offset+=(m_offsetErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1.0 : 1.0);
 	if(m_doGainError)
 		gain=1+(m_gainErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1.0 : 1.0);
-	value = max(aRGBValue[2]*gain+offset,0.0);
+	value = max(b*gain+offset,0.0);
 
 	if (  mode >= 4 )
     {

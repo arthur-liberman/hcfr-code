@@ -183,18 +183,6 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 					p3=0.3;
 				}
 
-/*				if (isUHDTV3) //map p3 to 2020
-				{
-					CColor aColor;
-					ColorRGB rgbColor(pow(p1, 2.22), pow(p2, 2.22), pow(p3, 2.22));
-					aColor.SetRGBValue(rgbColor, CColorReference(UHDTV));
-					rgbColor = aColor.GetRGBValue(CColorReference(UHDTV2));
-					ColorRGBDisplay rgbDisplayColor = ColorRGBDisplay(pow(rgbColor[0], 1.0 / 2.22) * 100.,pow(rgbColor[1], 1.0 / 2.22) * 100.0,pow(rgbColor[2], 1.0 / 2.22) * 100.);
-					p1 = rgbDisplayColor[0] / 100.;
-					p2 = rgbDisplayColor[1] / 100.;
-					p3 = rgbDisplayColor[2] / 100.;
-				}
-*/
 				x1 =  (int)floor(p1 * 255.0 + 0.5);
 				x2 =  (int)floor(p2 * 255.0 + 0.5);
 				x3 =  (int)floor(p3 * 255.0 + 0.5);
@@ -225,7 +213,7 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 						m_clr = RGB(nR,nG,nB);
 						break;
 					case UHDTV3:
-							nR = 224;
+							nR = 225;
 							nG = 64;
 							nB = 0;
 						m_clr = RGB(nR,nG,nB);
@@ -380,7 +368,7 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case UHDTV3:
-							nR = 230;
+							nR = 231;
 							nG = 71;
 							nB = 253;
 						m_clr = RGB(nR,nG,nB);

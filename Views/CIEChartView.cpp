@@ -328,7 +328,19 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 	
 		// Note: remove 5 pixels for transparency area of bitmap
 		CRect rect_tip(x-bm.bmWidth/2+5,y-bm.bmHeight/2+5,x+bm.bmWidth/2-5,y+bm.bmHeight/2-5);
-		bool dark = (aGraphPoint.GetNormalizedColor()[1] < 0.25);
+		CColor aColor1 = aGraphPoint.GetNormalizedColor();
+		bool dark = FALSE;
+		if (GetConfig()->m_GammaOffsetType == 5 && GetConfig()->m_bHDR100)
+		{
+			if (aColor1.GetY() < 0.0025)
+				dark = TRUE;
+		}
+		else
+		{
+			if (aColor1.GetY() < 0.25)
+				dark = TRUE;
+		}
+
 
 		if ( m_bCIEuv )
 			if (dark)
@@ -380,9 +392,9 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 				double dXY = aGraphPoint.GetNormalizedColor().GetDeltaxy(pRefPoint->GetNormalizedColor(), GetColorReference());
 				str3.Format ( ": %.3f xy</font>", dXY );
 				str2 += str3;
-				CColor aColor1 = aGraphPoint.GetNormalizedColor();
+				aColor1 = aGraphPoint.GetNormalizedColor();
 				CColor aColor2 = pRefPoint->GetNormalizedColor();
-				if (GetConfig()->m_GammaOffsetType == 5)
+				if (GetConfig()->m_GammaOffsetType == 5 && GetConfig()->m_bHDR100)
 				{
 					aColor1.SetX(aColor1.GetX()*100.);
 					aColor1.SetY(aColor1.GetY()*100.);
@@ -391,6 +403,7 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 					aColor2.SetY(aColor2.GetY()*100.);
 					aColor2.SetZ(aColor2.GetZ()*100.);
 				}
+//				dark = (aColor1.GetY() < 0.25);
 				ColorRGB measCol = ColorRGB(aColor1.GetRGBValue(CColorReference(HDTV)));
 				ColorRGB refCol = ColorRGB(aColor2.GetRGBValue(CColorReference(HDTV)));
 				double r1=min(max(measCol[0],0),1);
@@ -416,7 +429,7 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 		else
 		{
 			CColor aColor = aGraphPoint.GetNormalizedColor();
-			if (GetConfig()->m_GammaOffsetType == 5)
+			if (GetConfig()->m_GammaOffsetType == 5 && GetConfig()->m_bHDR100)
 			{
 				aColor.SetX(aColor.GetX()*100.);
 				aColor.SetY(aColor.GetY()*100.);
@@ -429,6 +442,7 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 			
 			stRGB[m_ttID]=RGB(floor(pow(r1,1.0/2.2)*255.+0.5),floor(pow(g1,1.0/2.2)*255.+0.5),floor(pow(b1,1.0/2.2)*255.+0.5));
 			eRGB[m_ttID]=stRGB[m_ttID];
+//			dark = (aColor.GetY() < 0.25);
 
 			if (dark)
 				pTooltip -> AddTool(pWnd, "<b><font color=\"#EFEFEF\">"+CString(aGraphPoint.name) +"</font></b> \n" +str+str2,&rect_tip, m_ttID);
@@ -2905,16 +2919,16 @@ void CCIEChartView::UpdateTestColor ( CPoint point )
 
 	GetReferenceRect ( & rect );
 
-	//CHECK THIS
-	x = (double)(point.x-m_Grapher.m_DeltaX) / (double)rect.Width() * (m_Grapher.m_bCIEuv ? 0.8 : 0.9);
-	y = (double)(rect.bottom-(point.y-m_Grapher.m_DeltaY)) / (double)rect.Height() * (m_Grapher.m_bCIEuv ? 0.8 : 1.0);
+	//-0.75 & -0.05 offsets from Chartimage drawing
+	x = (double)(point.x-m_Grapher.m_DeltaX) / (double)rect.Width() * (m_Grapher.m_bCIEuv ? 0.8 : 0.9) - 0.075;
+	y = (double)(rect.bottom-(point.y-m_Grapher.m_DeltaY)) / (double)rect.Height() * (m_Grapher.m_bCIEuv ? 0.8 : 1.0) - 0.05;
 
-	//CHECK THIS
-	if (m_Grapher.m_bCIEab)
-	{
-		x = (double)(point.x-m_Grapher.m_DeltaX) / (double)rect.Width() * (400);
-		y = (double)(rect.bottom-(point.y-m_Grapher.m_DeltaY)) / (double)rect.Height() * (400);
-	}
+	//need to convert xy->ab colors
+//	if (m_Grapher.m_bCIEab)
+//	{
+//		x = (double)(point.x-m_Grapher.m_DeltaX) / (double)rect.Width() * (400) - 220.;
+//		y = (double)(rect.bottom-(point.y-m_Grapher.m_DeltaY)) / (double)rect.Height() * (400) - 200;
+//	}
 
 	if ( m_Grapher.m_bCIEuv )
 	{
@@ -2930,53 +2944,16 @@ void CCIEChartView::UpdateTestColor ( CPoint point )
 		CColor White = GetDocument()->GetMeasure()->GetOnOffWhite();
 		CColor Black = GetDocument()->GetMeasure()->GetOnOffBlack();
 		int cRef=GetColorReference().m_standard;
-		RGBColor = ClickedColor.GetRGBValue ((cRef == HDTVa || cRef == HDTVb)?CColorReference(HDTV):cRef==UHDTV3?CColorReference(UHDTV2):GetColorReference());
+		ClickedColor.SetY(1.0);
+		RGBColor = ClickedColor.GetRGBValue ((cRef == HDTVa || cRef == HDTVb || cRef == UHDTV || cRef == UHDTV2 || cRef == UHDTV3)?CColorReference(HDTV):GetColorReference());
         double r=RGBColor[0],g=RGBColor[1],b=RGBColor[2];
-/*
-		int mode = GetConfig()->m_GammaOffsetType;
-		if (GetConfig()->m_colorStandard == sRGB) mode = 8;
-        if (  (mode >= 4) )
-        {
-			if (mode == 5)
-			{
-//				if (r < 0.999 && r > 0.001)
-					r = (r<=0||r>=1)?min(max(r,0),1):getL_EOTF(r, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode ) / 100.;
-//				if (g < 0.999 && g > 0.001)
-		    		g = (g<=0||g>=1)?min(max(g,0),1):getL_EOTF(g, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode ) / 100.;
-//				if (b < 0.999 && b > 0.001)
-					b = (b<=0||b>=1)?min(max(b,0),1):getL_EOTF(b, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode ) / 100.;
-			}
-			else
-			{
-//				if (r < 0.999 && r > 0.001)
-	    			r = (r<=0||r>=1)?min(max(r,0),1):getL_EOTF(r, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
-//				if (g < 0.999 && g > 0.001)
-		    		g = (g<=0||g>=1)?min(max(g,0),1):getL_EOTF(g, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
-//				if (b < 0.999 && b > 0.001)
-					b = (b<=0||b>=1)?min(max(b,0),1):getL_EOTF(b, White, Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
-			}
-        }
-        else
-        {
-    		r = (r<=0||r>=1)?min(max(r,0),1):pow(r,gamma);
-	    	g = (g<=0||g>=1)?min(max(g,0),1):pow(g,gamma);
-		    b = (b<=0||b>=1)?min(max(b,0),1):pow(b,gamma);
-        }
-*/
+
 		cmax = max(r,g);
 		if ( b>cmax)
 			cmax=b;
 
-		if(GetDocument()->GetGenerator()->m_b16_235)
-		{
-			base = 16.0;
-			coef = 235.0 - 16.0;
-		}
-		else
-		{
-			base = 0.0;
-			coef = 255.0;
-		}
+		base = 0.0;
+		coef = 255.0;
 
 		nR = (int) (r/cmax*coef+base);
 		nG = (int) (g/cmax*coef+base);

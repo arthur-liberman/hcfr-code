@@ -1326,7 +1326,7 @@ void CMainView::InitGrid()
                 ColorRGB r_clr;
                 double inten;
                 s_clr=GetDocument()->GetMeasure()->GetRefCC24Sat(i);     
-				if (GetConfig()->m_GammaOffsetType == 5 || GetConfig()->m_GammaOffsetType == 7 )
+				if (GetConfig()->m_GammaOffsetType == 5 && GetConfig()->m_bHDR100 )
 				{
 					s_clr.SetX(s_clr.GetX()*100);
 					s_clr.SetY(s_clr.GetY()*100);
@@ -2091,7 +2091,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 			{
 				// Display primary/secondary/saturations colors delta luminance
 				int	    nCol2 = nCol, satsize=GetDocument()->GetMeasure()->GetSaturationSize();;
-				double  RefLuma [1000], sat=double (nCol)/ double (satsize-1);
+				double  RefLuma [1000], sat=double (nCol-1)/ double (satsize-1);
 //                CColor White = GetDocument() -> GetMeasure () -> GetGray ( GetDocument()->GetMeasure()->GetGrayScaleSize() - 1 );
                 CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
 	            CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );

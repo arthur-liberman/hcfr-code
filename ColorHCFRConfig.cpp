@@ -267,6 +267,7 @@ void CColorHCFRConfig::InitDefaults()
 	m_bSave=FALSE;
 	m_bSave2=FALSE;
 	m_GammaOffsetType=4;
+	m_bHDR100 = FALSE;
 	m_manualGOffset=0.099;
     m_manualWhitex = 0.312712;
     m_manualWhitey = 0.329008;
@@ -965,7 +966,10 @@ void CColorHCFRConfig::GetCColors()
 
 ColorRGB CColorHCFRConfig::GetCColorsT(int index) 
 {
+	if (!cTargetR.empty())
 			return ColorRGB(	( (cTargetR[index] -16) / 219.)	, (	(cTargetG[index] - 16) / 219.) , ( (cTargetB[index] - 16) /219. ) );
+	else
+			return ColorRGB( 0.5, 0.5, 0.5 );
 }
 
 std::string CColorHCFRConfig::GetCColorsN(int index) 

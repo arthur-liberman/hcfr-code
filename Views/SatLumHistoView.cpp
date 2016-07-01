@@ -125,23 +125,36 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	m_graphCtrl.ClearGraph(m_ref_yellowLumGraphID);
 	m_graphCtrl.ClearGraph(m_ref_cyanLumGraphID);
 	m_graphCtrl.ClearGraph(m_ref_magentaLumGraphID);
+
+	double WhiteY = pDoc->GetMeasure()->GetOnOffWhite().GetLuminance(), ref_coeff=1.0;
+	if (pDoc->GetMeasure()->GetPrimeWhite().isValid() &&  !(GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb))
+		WhiteY = pDoc->GetMeasure()->GetPrimeWhite().GetLuminance();
+
+	if (GetConfig()->m_GammaOffsetType==5)
+	{
+		WhiteY = WhiteY / 100.;
+		ref_coeff = 100.;
+	}
+
+	double luma_coeff = ( 100.0 ) / WhiteY;
+	
 	
 	if (m_showReferences && m_ref_redLumGraphID != -1 && size > 0)
 	{	
 		for (int i=0; i<size; i++)
 		{
             satcolor = pDoc->GetMeasure()->GetRefSat(0,double (i)/ double(size-1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
-            KR = satcolor.GetLuminance();
+            KR = satcolor.GetLuminance() * ref_coeff;
             satcolor = pDoc->GetMeasure()->GetRefSat(1,double (i)/ double(size-1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
-            KG = satcolor.GetLuminance();
+            KG = satcolor.GetLuminance() * ref_coeff;
             satcolor = pDoc->GetMeasure()->GetRefSat(2,double (i)/ double(size-1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
-            KB = satcolor.GetLuminance();
+            KB = satcolor.GetLuminance() * ref_coeff;
             satcolor = pDoc->GetMeasure()->GetRefSat(3,double (i)/ double(size-1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
-            KY = satcolor.GetLuminance();
+            KY = satcolor.GetLuminance() * ref_coeff;
             satcolor = pDoc->GetMeasure()->GetRefSat(4,double (i)/ double(size-1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
-            KC = satcolor.GetLuminance();
+            KC = satcolor.GetLuminance() * ref_coeff;
             satcolor = pDoc->GetMeasure()->GetRefSat(5,double (i)/ double(size-1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
-            KM = satcolor.GetLuminance();
+            KM = satcolor.GetLuminance() * ref_coeff;
 			m_graphCtrl.AddPoint(m_ref_redLumGraphID, i*100/(size-1), KR * 100.0);
 			m_graphCtrl.AddPoint(m_ref_greenLumGraphID, i*100/(size-1), KG * 100.0);
 			m_graphCtrl.AddPoint(m_ref_blueLumGraphID, i*100/(size-1), KB * 100.0);
@@ -152,10 +165,7 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	}
 	
 	m_graphCtrl.ClearGraph(m_redLumGraphID);
-	double luma_coeff = ( 100.0 ) / pDoc->GetMeasure()->GetOnOffWhite().GetLuminance();
-	if (pDoc->GetMeasure()->GetPrimeWhite().isValid() &&  !(GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb))
-		luma_coeff = ( 100.0 ) / pDoc->GetMeasure()->GetPrimeWhite().GetLuminance();
-
+	
 	if (m_showPrimaries && m_redLumGraphID != -1 && size > 0 && pDoc->GetMeasure()->GetRedSat(0).isValid() )
 	{
 		
