@@ -509,8 +509,6 @@ ColorRGBDisplay::ColorRGBDisplay(double aGreyPercent)
 
 ColorRGBDisplay::ColorRGBDisplay(double aRedPercent,double aGreenPercent,double aBluePercent)
 {
-//	CColorReference aColorRef = (CColorReference(UHDTV3));
-//	ColorRGB outRGB;
     (*this)[0] = aRedPercent;
     (*this)[1] = aGreenPercent;
     (*this)[2] = aBluePercent;
@@ -2563,9 +2561,9 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 				tempColor.SetRGBValue(ColorRGB(r,g,b),CColorReference(HDTV));
 				if (mode == 5)
 				{
-					tempColor.SetX(tempColor.GetX() / 100.); //100 cd/m^2 reference
-					tempColor.SetY(tempColor.GetY() / 100.);
-					tempColor.SetZ(tempColor.GetZ() / 100.);
+					tempColor.SetX(tempColor.GetX() / 101.23271); //100 cd/m^2 reference
+					tempColor.SetY(tempColor.GetY() / 101.23271);
+					tempColor.SetZ(tempColor.GetZ() / 101.23271);
 				}
 			}
 			else
@@ -2673,15 +2671,22 @@ void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDi
 		// adjust "color gamma"
 		// here we use encoding gamma of 1 / 2.22 for SDR and targets get adjusted for user gamma: Targets assume all generated RGB triplets @2.22 gamma
 		CColor aColor;
+//		if (mode ==5)
+//		{
+//			clr = clr / 101.23271;
+//			comp = comp / 101.23271;
+//		}
+
 		ColorRGB rgbColor(( bRed ? clr : comp ), ( bGreen ? clr : comp ), ( bBlue ? clr : comp ));
+
 		if (m_cRef == UHDTV3)
 		{
 			aColor.SetRGBValue(rgbColor, CColorReference(UHDTV));
 			if (mode == 5)
 			{
-				aColor.SetX(aColor.GetX()/100.);
-				aColor.SetY(aColor.GetY()/100.);
-				aColor.SetZ(aColor.GetZ()/100.);
+				aColor.SetX(aColor.GetX()/101.23271);
+				aColor.SetY(aColor.GetY()/101.23271);
+				aColor.SetZ(aColor.GetZ()/101.23271);
 			}
 			rgbColor = aColor.GetRGBValue(CColorReference(UHDTV2));
 		}
@@ -2690,9 +2695,9 @@ void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDi
 			aColor.SetRGBValue(rgbColor, colorReference);
 			if (mode == 5)
 			{
-				aColor.SetX(aColor.GetX()/100.);
-				aColor.SetY(aColor.GetY()/100.);
-				aColor.SetZ(aColor.GetZ()/100.);
+				aColor.SetX(aColor.GetX()/101.23271);
+				aColor.SetY(aColor.GetY()/101.23271);
+				aColor.SetZ(aColor.GetZ()/101.23271);
 			}
 			rgbColor = aColor.GetRGBValue(colorReference);
 		}
@@ -2822,7 +2827,7 @@ double GrayLevelToGrayProp ( double Level, bool m_bUseRoundDown)
 double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double split, int mode)
 {
 	if (valx <= 0) return 0;
-	if (valx >= 1)
+	if (valx > 1)
 	{
 		if (mode == 5)
 			return 100.;

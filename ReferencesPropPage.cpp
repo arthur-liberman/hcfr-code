@@ -48,7 +48,7 @@ CReferencesPropPage::CReferencesPropPage() : CPropertyPageWithHelp(CReferencesPr
 	m_userBlack = FALSE;
 	m_ManualBlack = 0.0;
 	m_useMeasuredGamma = FALSE;
-	m_GammaOffsetType = 1;
+	m_GammaOffsetType = 4;
 	m_manualGOffset = 0.099;
     m_manualWhitex = 0.3127;
     m_manualWhitey = 0.3290;
@@ -267,6 +267,11 @@ BOOL CReferencesPropPage::OnInitDialog()
 		m_eMeasuredGamma.EnableWindow (FALSE);
  		m_manualGOffset = 0.055;
 	}
+	if (m_colorStandard == HDTVa || m_colorStandard == HDTVb)
+	{
+		GetDlgItem(IDC_GAMMA_OFFSET_RADIO6)->EnableWindow(FALSE);
+		GetDlgItem(IDC_GAMMA_OFFSET_RADIO8)->EnableWindow(FALSE);
+	}
 	m_GammaAvgEdit.EnableWindow(FALSE);
 	m_changeWhiteCheck = (m_whiteTarget!=(int)(GetStandardColorReference((ColorStandard)(m_colorStandard)).m_white));
 
@@ -425,6 +430,17 @@ void CReferencesPropPage::OnSelchangeColorrefCombo()
 		m_GammaRefEdit.EnableWindow (TRUE);
 		m_eMeasuredGamma.EnableWindow (TRUE);
 		m_manualGOffset = 0.099;
+	}
+	if (m_colorStandard == HDTVa || m_colorStandard == HDTVb)
+	{
+		int bID = GetCheckedRadioButton(IDC_GAMMA_OFFSET_RADIO6, IDC_GAMMA_OFFSET_RADIO8);
+		if (bID == IDC_GAMMA_OFFSET_RADIO6 || bID == IDC_GAMMA_OFFSET_RADIO8 )
+		{
+			m_GammaOffsetType = 4;
+			CheckRadioButton(IDC_GAMMA_OFFSET_RADIO1,IDC_GAMMA_OFFSET_RADIO1,IDC_GAMMA_OFFSET_RADIO1);
+		}
+		GetDlgItem(IDC_GAMMA_OFFSET_RADIO6)->EnableWindow(FALSE);
+		GetDlgItem(IDC_GAMMA_OFFSET_RADIO8)->EnableWindow(FALSE);
 	}
 	if (m_colorStandard == CC6)
 		m_CCMode = GCD;

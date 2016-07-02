@@ -132,7 +132,7 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 	if (GetConfig()->m_GammaOffsetType==5)
 	{
-		WhiteY = WhiteY / 100.;
+		WhiteY = 100.;
 		ref_coeff = 100.;
 	}
 

@@ -308,7 +308,7 @@ void CCIEChartGrapher::MakeBgBitmap(CRect rect, BOOL bWhiteBkgnd)	// Create back
 COLORREF stRGB[5000];
 COLORREF eRGB[5000];
 
-void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoint, CBitmap *pBitmap, CRect rect, CPPToolTip * pTooltip, CWnd * pWnd, CCIEGraphPoint * pRefPoint, bool isSelected, double dE10)
+void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoint, CBitmap *pBitmap, CRect rect, CPPToolTip * pTooltip, CWnd * pWnd, CCIEGraphPoint * pRefPoint, bool isSelected, double dE10, bool isPrimeSat)
 {
 	ASSERT(pBitmap);
 	ASSERT(pDC);
@@ -330,7 +330,7 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 		CRect rect_tip(x-bm.bmWidth/2+5,y-bm.bmHeight/2+5,x+bm.bmWidth/2-5,y+bm.bmHeight/2-5);
 		CColor aColor1 = aGraphPoint.GetNormalizedColor();
 		bool dark = FALSE;
-		if (GetConfig()->m_GammaOffsetType == 5 && GetConfig()->m_bHDR100)
+		if (!pRefPoint)
 		{
 			if (aColor1.GetY() < 0.0025)
 				dark = TRUE;
@@ -359,15 +359,24 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 		if ( pRefPoint )
 		{
 			double dC, dH;
-            double dE  = aGraphPoint.GetNormalizedColor().GetDeltaE(1.0, pRefPoint->GetNormalizedColor(), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
-            double dL  = aGraphPoint.GetNormalizedColor().GetDeltaLCH(1.0, pRefPoint->GetNormalizedColor(), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight, dC, dH );
+         	CColor aColor2 = pRefPoint->GetNormalizedColor();
+			
+			CColorReference cRef = GetColorReference();
+			if (GetConfig()->m_GammaOffsetType == 5 && GetConfig()->m_bHDR100 && !isPrimeSat)
+			{
+				aColor2.SetX(aColor2.GetX()*101.23271);
+				aColor2.SetY(aColor2.GetY()*101.23271);
+				aColor2.SetZ(aColor2.GetZ()*101.23271);
+			}
+			double dE  = aGraphPoint.GetNormalizedColor().GetDeltaE(1.0, aColor2.GetXYZValue(), 1.0, (cRef.m_standard == UHDTV3?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+            double dL  = aGraphPoint.GetNormalizedColor().GetDeltaLCH(1.0, aColor2.GetXYZValue(), 1.0, (cRef.m_standard == UHDTV3?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight, dC, dH );
 
 			if (dE > dE10)
 				bDrawBMP = TRUE;
 
-			double L  = ColorLab(pRefPoint->GetNormalizedColor(), 1.0, GetColorReference())[0];
-			double a  = ColorLab(pRefPoint->GetNormalizedColor(), 1.0, GetColorReference())[1];
-			double b  = ColorLab(pRefPoint->GetNormalizedColor(), 1.0, GetColorReference())[2];
+			double L  = ColorLab(aColor2.GetXYZValue(), 1.0, (cRef.m_standard == UHDTV3?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef))[0];
+			double a  = ColorLab(aColor2.GetXYZValue(), 1.0, (cRef.m_standard == UHDTV3?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef))[1];
+			double b  = ColorLab(aColor2.GetXYZValue(), 1.0, (cRef.m_standard == UHDTV3?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef))[2];
 			str1.Format("\nL*a*b*: %.2f %.3f %.3f <b>[Ref]</b>",L,a,b);
 			str += str1;
 
@@ -393,17 +402,7 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 				str3.Format ( ": %.3f xy</font>", dXY );
 				str2 += str3;
 				aColor1 = aGraphPoint.GetNormalizedColor();
-				CColor aColor2 = pRefPoint->GetNormalizedColor();
-				if (GetConfig()->m_GammaOffsetType == 5 && GetConfig()->m_bHDR100)
-				{
-					aColor1.SetX(aColor1.GetX()*100.);
-					aColor1.SetY(aColor1.GetY()*100.);
-					aColor1.SetZ(aColor1.GetZ()*100.);
-					aColor2.SetX(aColor2.GetX()*100.);
-					aColor2.SetY(aColor2.GetY()*100.);
-					aColor2.SetZ(aColor2.GetZ()*100.);
-				}
-//				dark = (aColor1.GetY() < 0.25);
+
 				ColorRGB measCol = ColorRGB(aColor1.GetRGBValue(CColorReference(HDTV)));
 				ColorRGB refCol = ColorRGB(aColor2.GetRGBValue(CColorReference(HDTV)));
 				double r1=min(max(measCol[0],0),1);
@@ -431,9 +430,9 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 			CColor aColor = aGraphPoint.GetNormalizedColor();
 			if (GetConfig()->m_GammaOffsetType == 5 && GetConfig()->m_bHDR100)
 			{
-				aColor.SetX(aColor.GetX()*100.);
-				aColor.SetY(aColor.GetY()*100.);
-				aColor.SetZ(aColor.GetZ()*100.);
+				aColor.SetX(aColor.GetX()*101.23271);
+				aColor.SetY(aColor.GetY()*101.23271);
+				aColor.SetZ(aColor.GetZ()*101.23271);
 			}
 			ColorRGB measCol = ColorRGB(aColor.GetRGBValue(CColorReference(HDTV)));
 			double r1=min(max(measCol[0],0),1);
@@ -442,7 +441,6 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 			
 			stRGB[m_ttID]=RGB(floor(pow(r1,1.0/2.2)*255.+0.5),floor(pow(g1,1.0/2.2)*255.+0.5),floor(pow(b1,1.0/2.2)*255.+0.5));
 			eRGB[m_ttID]=stRGB[m_ttID];
-//			dark = (aColor.GetY() < 0.25);
 
 			if (dark)
 				pTooltip -> AddTool(pWnd, "<b><font color=\"#EFEFEF\">"+CString(aGraphPoint.name) +"</font></b> \n" +str+str2,&rect_tip, m_ttID);
@@ -1447,16 +1445,16 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 		
 		if ( hasPrimaries )
 		{
-			DrawAlphaBitmap(pDC,redPrimaryPoint,&m_redPrimaryBitmap,rect,pTooltip,pWnd,&refRedPrimaryPoint, FALSE, dE10);
-			DrawAlphaBitmap(pDC,greenPrimaryPoint,&m_greenPrimaryBitmap,rect,pTooltip,pWnd,&refGreenPrimaryPoint, FALSE, dE10);
-			DrawAlphaBitmap(pDC,bluePrimaryPoint,&m_bluePrimaryBitmap,rect,pTooltip,pWnd,&refBluePrimaryPoint, FALSE, dE10);
+			DrawAlphaBitmap(pDC,redPrimaryPoint,&m_redPrimaryBitmap,rect,pTooltip,pWnd,&refRedPrimaryPoint, FALSE, dE10, TRUE);
+			DrawAlphaBitmap(pDC,greenPrimaryPoint,&m_greenPrimaryBitmap,rect,pTooltip,pWnd,&refGreenPrimaryPoint, FALSE, dE10, TRUE);
+			DrawAlphaBitmap(pDC,bluePrimaryPoint,&m_bluePrimaryBitmap,rect,pTooltip,pWnd,&refBluePrimaryPoint, FALSE, dE10, TRUE);
 		}
 		
 		if ( hasSecondaries )
 		{
-			DrawAlphaBitmap(pDC,yellowSecondaryPoint,&m_yellowSecondaryBitmap,rect,pTooltip,pWnd,&refYellowSecondaryPoint, FALSE, dE10);
-			DrawAlphaBitmap(pDC,cyanSecondaryPoint,&m_cyanSecondaryBitmap,rect,pTooltip,pWnd,&refCyanSecondaryPoint, FALSE, dE10);
-			DrawAlphaBitmap(pDC,magentaSecondaryPoint,&m_magentaSecondaryBitmap,rect,pTooltip,pWnd,&refMagentaSecondaryPoint, FALSE, dE10);
+			DrawAlphaBitmap(pDC,yellowSecondaryPoint,&m_yellowSecondaryBitmap,rect,pTooltip,pWnd,&refYellowSecondaryPoint, FALSE, dE10, TRUE);
+			DrawAlphaBitmap(pDC,cyanSecondaryPoint,&m_cyanSecondaryBitmap,rect,pTooltip,pWnd,&refCyanSecondaryPoint, FALSE, dE10,  TRUE);
+			DrawAlphaBitmap(pDC,magentaSecondaryPoint,&m_magentaSecondaryBitmap,rect,pTooltip,pWnd,&refMagentaSecondaryPoint, FALSE, dE10, TRUE);
 		}
 
 		if ( hasdatarefPrimaries )
