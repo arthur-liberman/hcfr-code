@@ -356,10 +356,11 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         223,IDC_STATIC,"Static",SS_BITMAP,7,7,172,62
     LTEXT           "Version 3.0",IDC_STATIC_VERSION,7,76,119,8,SS_NOPREFIX
-    LTEXT           "Copyright (C) 2012-2015 Hcfr Project\nCopyright (C) 2005-2008 Association Homecinema Francophone",IDC_STATIC2,7,88,168,24
+    LTEXT           "Copyright (C) 2012-2016 Hcfr Project\nCopyright (C) 2005-2008 Association Homecinema Francophone",IDC_STATIC2,7,88,168,24
     LTEXT           "hcfr.sourceforge.net",IDC_HOMECINEMA_HYPERLINK,7,119,80,8
     LTEXT           "IDC_PLACEHOLDER",IDC_PLACEHOLDER,4,136,177,117
     DEFPUSHBUTTON   "OK",IDOK,68,257,50,14,WS_GROUP
+    LTEXT           "donations",IDC_DONATION_HYPERLINK,80,119,46,8
 END
 
 IDD_ONEDEVICESENSOR_PROP_PAGE DIALOG 0, 0, 212, 191
@@ -3022,6 +3023,7 @@ BEGIN
     IDS_UHDTV3REDREF        "UHDTV P3 in Rec2020 Red Reference"
     IDS_UHDTV3GREENREF      "UHDTV P3 in Rec2020 Green Reference"
     IDS_UHDTV3BLUEREF       "UHDTV P3 in Rec2020 Blue Reference"
+    IDS_ABOUT_PATTERNS      "additional patterns - 2016"
 END
 
 STRINGTABLE
@@ -3665,7 +3667,7 @@ BEGIN
     IDS_MTCS_CALIBRATE      "Measure internal black level ?\nTo perform this operation, you must point instrument to an absolute black surface."
     IDS_CTRLCLICK_SIM       "Control+click -> simultaneous measures"
     IDS_MTCS_CALIBRATE_EX   "Black level measure is out of range regarding current probe internal offsets. Do you want to reconfigure internal offsets ?\nTo perform this operation, point instrument to an absolute black surface and click Yes."
-    IDS_DONATION_HYPERLINK  "http://hcfr.sourceforge.net/donate/"
+    IDS_DONATION_HYPERLINK  "https://www.paypal.me/zoyd"
     IDS_S3SENSOR_NAME       "Spyder III"
     IDS_S3SENSOR_PROPERTIES_TITLE "Spyder III parameters"
     IDS_SPYDER3             "Spyder III"

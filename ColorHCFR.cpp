@@ -514,6 +514,7 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CAboutDlg)
 	DDX_Control(pDX, IDC_STATIC_VERSION, m_Version);
 	DDX_Control(pDX, IDC_HOMECINEMA_HYPERLINK, m_hcfrHyperLink);
+	DDX_Control(pDX, IDC_DONATION_HYPERLINK, m_donationHyperLink);
 	//}}AFX_DATA_MAP
 }
 
@@ -1482,16 +1483,16 @@ BOOL CAboutDlg::OnInitDialog()
     }
     m_Version.SetWindowText(versionNumberString.c_str());
 
-
+	char	szPatterns[256];
 	char	szSensor[256];
 	char	szDevApp [ 256 ];
 	char	szSensorAndApp [ 256 ];
-	char	szExpert [ 256 ];
+	char	szExpert [ 256 ], szExpertAndDevApp[256];
 	char	szGraphics [ 256 ];
 	char	szDVD [ 256 ];
 	char	szValidation [ 256 ];
 	char	szGermanVersion [ 256 ];
-	char *auteurStyle[2]={"<p><font style='b' size='12' color='56,76,104'>","<br><font style='i' size='12' color='64,64,64'>"};
+	char *auteurStyle[2]={"<p><font style='b' size='14' color='56,76,104'>","<br><font style='i' size='12' color='64,64,64'>"};
 	char *auteurStrings[]={	"Patrice AFFLATET",szSensor,
 							"Benoit SEGUIN",szSensorAndApp,
 							"François-Xavier CHABOUD",szDevApp,
@@ -1508,7 +1509,8 @@ BOOL CAboutDlg::OnInitDialog()
 							"John ADCOCK",szDevApp,
 							"Nick BLIEVERS",szDevApp,
 							"Ian C",szDevApp,
-							"zoyd",szExpert,
+							"zoyd",szExpertAndDevApp,
+							"pixel8tor",szPatterns,
     };
 	int auteursNb=(sizeof(auteurStrings)/sizeof(char *));
 
@@ -1534,9 +1536,8 @@ BOOL CAboutDlg::OnInitDialog()
 	int classesNb=(sizeof(classesStrings)/sizeof(char *));
 	CString	str;
 
-    // disable donations for now
-	//str.LoadString ( IDS_DONATION_HYPERLINK );
-	//m_donationHyperLink.SetURL ( str );
+	str.LoadString ( IDS_DONATION_HYPERLINK );
+	m_donationHyperLink.SetURL ( str );
 
 	str.LoadString ( IDS_ABOUT_SENSOR );
 	strcpy_s ( szSensor, (LPCSTR) str );
@@ -1552,10 +1553,16 @@ BOOL CAboutDlg::OnInitDialog()
 	strcpy_s ( szValidation, (LPCSTR) str );
 	str.LoadString ( IDS_GERMANVERSION );
 	strcpy_s ( szGermanVersion, (LPCSTR) str );
+	str.LoadString ( IDS_ABOUT_PATTERNS );
+	strcpy_s ( szPatterns, (LPCSTR) str);
 
 	strcpy_s ( szSensorAndApp, szSensor );
 	strcat_s ( szSensorAndApp, "\n" );
 	strcat_s ( szSensorAndApp, szDevApp );
+
+	strcpy_s ( szExpertAndDevApp, szExpert );
+	strcat_s ( szExpertAndDevApp, "\n" );
+	strcat_s ( szExpertAndDevApp, szDevApp );
 
 	// Content	
 	CString s;
@@ -1604,7 +1611,7 @@ BOOL CAboutDlg::OnInitDialog()
 	m_wndCredits.m_nTimerSpeed = 200;	// To add delay of m_nTimerSpeed*10ms before scrolling
 	// now, we're ready to begin... create the window
 	m_wndCredits.Create(WS_EX_CLIENTEDGE,WS_VISIBLE|WS_CHILD,IDC_PLACEHOLDER,this);
-	m_wndCredits.m_nTimerSpeed = 50; // 
+	m_wndCredits.m_nTimerSpeed = 60; // 
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE

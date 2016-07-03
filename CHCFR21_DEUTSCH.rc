@@ -297,10 +297,11 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         223,IDC_STATIC,"Static",SS_BITMAP,7,7,172,62
     LTEXT           "Version 3.0",IDC_STATIC_VERSION,7,76,119,8,SS_NOPREFIX
-    LTEXT           "Copyright (C) 2012-2015 Hcfr Project\nCopyright (C) 2005-2008 Association Homecinema Francophone",IDC_STATIC2,7,88,168,29
+    LTEXT           "Copyright (C) 2012-2016 Hcfr Project\nCopyright (C) 2005-2008 Association Homecinema Francophone",IDC_STATIC2,7,88,168,29
     LTEXT           "hcfr.sourceforge.net",IDC_HOMECINEMA_HYPERLINK,7,120,80,8
     LTEXT           "IDC_PLACEHOLDER",IDC_PLACEHOLDER,4,136,177,117
     DEFPUSHBUTTON   "OK",IDOK,68,257,50,14,WS_GROUP
+    LTEXT           "donations",IDC_DONATION_HYPERLINK,90,120,46,8
 END
 
 IDD_ONEDEVICESENSOR_PROP_PAGE DIALOG 0, 0, 212, 191
@@ -2461,6 +2462,10 @@ BEGIN
         BOTTOMMARGIN, 209
     END
 
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+    END
+
     IDD_ONEDEVICESENSOR_PROP_PAGE, DIALOG
     BEGIN
     END
@@ -2869,6 +2874,7 @@ BEGIN
     IDS_UHDTV3REDREF        "UHDTV P3 in Rec2020 Rot Referenz"
     IDS_UHDTV3GREENREF      "UHDTV P3 in Rec2020 Grün Referenz"
     IDS_UHDTV3BLUEREF       "UHDTV P3 in Rec2020 Blau Referenz"
+    IDS_ABOUT_PATTERNS      "additional patterns - 2016"
 END
 
 STRINGTABLE
@@ -3503,7 +3509,7 @@ BEGIN
     IDS_MTCS_CALIBRATE      "Internen Schwarzwert messen?\nUm dies durchzuführen, müssen Sie das Gerät auf eine absolut schwarze Oberfläche richten."
     IDS_CTRLCLICK_SIM       "Strg+Klick -> Simultane Messungen"
     IDS_MTCS_CALIBRATE_EX   "Schwarzwert Messung ist mit den internen Offsets außerhalb des zulässigen Bereiches. Wollen Sie die internen Offsets rekonfigurieren?\nUm dies durchzuführen, richten Sie das Gerät auf eine absolut schwarze Oberfläche und klicken Sie auf Ja."
-    IDS_DONATION_HYPERLINK  "http://hcfr.sourceforge.net/donate/"
+    IDS_DONATION_HYPERLINK  "https://www.paypal.me/zoyd"
     IDS_S3SENSOR_NAME       "Spyder III"
     IDS_S3SENSOR_PROPERTIES_TITLE "Spyder III Parameter"
     IDS_SPYDER3             "Spyder III"
