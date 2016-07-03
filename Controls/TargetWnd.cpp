@@ -247,7 +247,7 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 					case UHDTV3:
 							nR = isHDR10?91:123;
 							nG = isHDR10?128:248;
-							nB = isHDR10?47:41;
+							nB = isHDR10?45:41;
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case HDTVb:
@@ -276,7 +276,7 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case UHDTV3:
-							nR = isHDR10?63:65;
+							nR = isHDR10?62:65;
 							nG = isHDR10?41:35;
 							nB = isHDR10?129:253;
 						m_clr = RGB(nR,nG,nB);
@@ -370,7 +370,7 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 					break;
 					case UHDTV3:
 							nR = isHDR10?123:231;
-							nG = isHDR10?66:71;
+							nG = isHDR10?65:71;
 							nB = isHDR10?129:253;
 						m_clr = RGB(nR,nG,nB);
 					break;
@@ -465,7 +465,7 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 					case UHDTV3:
 							nR = isHDR10?91:123;
 							nG = isHDR10?128:248;
-							nB = isHDR10?47:41;
+							nB = isHDR10?45:41;
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case HDTVb:
@@ -494,7 +494,7 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case UHDTV3:
-							nR = isHDR10?63:65;
+							nR = isHDR10?62:65;
 							nG = isHDR10?41:35;
 							nB = isHDR10?129:253;
 						m_clr = RGB(nR,nG,nB);
@@ -588,7 +588,7 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 					break;
 					case UHDTV3:
 							nR = isHDR10?123:230;
-							nG = isHDR10?66:71;
+							nG = isHDR10?65:71;
 							nB = isHDR10?129:253;
 						m_clr = RGB(nR,nG,nB);
 					break;

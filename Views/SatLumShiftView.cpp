@@ -529,6 +529,8 @@ void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, cons
 	xtarget=xyy[0];
 	ytarget=xyy[1];
 	
+	if (GetConfig()->m_GammaOffsetType == 5)
+		YWhite = 10000.;
 	deltaE = SatColor.GetDeltaE(YWhite, aColor, 1.0, isSpecial?CColorReference(HDTV, D65):GetColorReference().m_standard==UHDTV3?CColorReference(UHDTV2):GetColorReference() , GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 	
 	// Compute projection on line (xstart,ystart) - (xend,yend) from measured point

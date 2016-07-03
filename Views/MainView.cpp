@@ -1089,7 +1089,7 @@ void CMainView::InitGrid()
 				 break;
 
 			case 3:
-				 Item.strText.Format("%d",i);
+				 Item.strText.Format("%d",i*(GetConfig()->m_GammaOffsetType==5?2:1));
 				 break;
 
 			case 4:
@@ -1979,9 +1979,10 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				else
 				{
 					double dL, dH, dC;
+					CColorReference cRef = GetColorReference();
 					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight ) );
-					dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight );
-					dL=aMeasure.GetDeltaLCH ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight, dC, dH );
+					dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, cRef.m_standard==UHDTV3?CColorReference(UHDTV2):GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight );
+					dL=aMeasure.GetDeltaLCH ( YWhite, aReference, 1.0, cRef.m_standard==UHDTV3?CColorReference(UHDTV2):GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight, dC, dH );
                     dEvector.push_back(isNan(dE)?dEavg:dE);
                     dLvector.push_back(isNan(dL)?dLavg:dL);
                     dCvector.push_back(isNan(dC)?dCavg:dC);
@@ -2060,7 +2061,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						if (m_displayMode == 0)
 							x = ArrayIndexToGrayLevel ( nCol - 1, nGrayScaleSize, GetConfig () -> m_bUseRoundDown );
 						else if (m_displayMode == 3)
-							valx = GrayLevelToGrayProp ( (double)(nCol - 1), GetConfig () -> m_bUseRoundDown );
+							valx = GrayLevelToGrayProp ( (double)(nCol - 1)*(GetConfig()->m_GammaOffsetType==5?2:1), GetConfig () -> m_bUseRoundDown );
 						else if (m_displayMode == 4)
 							valx = GrayLevelToGrayProp ( (double)(nCol - 1 + 101 - size) , GetConfig () -> m_bUseRoundDown );
 
@@ -2111,42 +2112,42 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 					case 5:
 						satcolor = GetDocument()->GetMeasure()->GetRefSat(0, sat, (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
 						if (GetConfig()->m_GammaOffsetType == 5)
-		                    RefLuma [nCol - 1] = satcolor.GetLuminance() * 100.;
+		                    RefLuma [nCol - 1] = satcolor.GetLuminance() * 101.231;
 						else
 		                    RefLuma [nCol - 1] = satcolor.GetLuminance();
 						break;
 					case 6:
                         satcolor = GetDocument()->GetMeasure()->GetRefSat(1, sat, (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
 						if (GetConfig()->m_GammaOffsetType == 5)
-		                    RefLuma [nCol - 1] = satcolor.GetLuminance() * 100.;
+		                    RefLuma [nCol - 1] = satcolor.GetLuminance() * 101.231;
 						else
 		                    RefLuma [nCol - 1] = satcolor.GetLuminance();
 						break;
 					case 7:                                                
                         satcolor = GetDocument()->GetMeasure()->GetRefSat(2, sat, (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
 						if (GetConfig()->m_GammaOffsetType == 5)
-		                    RefLuma [nCol - 1] = satcolor.GetLuminance() * 100.;
+		                    RefLuma [nCol - 1] = satcolor.GetLuminance() * 101.231;
 						else
 		                    RefLuma [nCol - 1] = satcolor.GetLuminance();
 						break;
 					case 8:
                         satcolor = GetDocument()->GetMeasure()->GetRefSat(3, sat, (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
 						if (GetConfig()->m_GammaOffsetType == 5)
-		                    RefLuma [nCol - 1] = satcolor.GetLuminance() * 100.;
+		                    RefLuma [nCol - 1] = satcolor.GetLuminance() * 101.231;
 						else
 		                    RefLuma [nCol - 1] = satcolor.GetLuminance();
 						break;
 					case 9:
                         satcolor = GetDocument()->GetMeasure()->GetRefSat(4, sat, (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
 						if (GetConfig()->m_GammaOffsetType == 5)
-		                    RefLuma [nCol - 1] = satcolor.GetLuminance() * 100.;
+		                    RefLuma [nCol - 1] = satcolor.GetLuminance() * 101.231;
 						else
 		                    RefLuma [nCol - 1] = satcolor.GetLuminance();
 						break;
 					case 10:
                         satcolor = GetDocument()->GetMeasure()->GetRefSat(5, sat, (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
 						if (GetConfig()->m_GammaOffsetType == 5)
-		                    RefLuma [nCol - 1] = satcolor.GetLuminance() * 100.;
+		                    RefLuma [nCol - 1] = satcolor.GetLuminance() * 101.231;
 						else
 		                    RefLuma [nCol - 1] = satcolor.GetLuminance();
 						break;

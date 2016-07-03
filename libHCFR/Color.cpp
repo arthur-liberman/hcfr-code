@@ -2901,7 +2901,7 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 		break;
 		case 5:
 		outL = pow(max(pow(valx,1.0 / m2) - c1,0) / (c2 - c3 * pow(valx, 1.0 / m2)), 1.0 / m1);
-		outL = outL * 10000. / 100.; //100 cd/m^2 reference white level
+		outL = outL * 10000. / 100.00; //100 cd/m^2 reference white level
 		break;
 		case -5:
 		outL = pow( (c1 + c2 * pow(valx,m1)) / (1 + c3 * pow(valx,m1)), m2); 

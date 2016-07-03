@@ -1293,11 +1293,11 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 		else
 		{
 			GenColors [ 0 ] = ColorRGBDisplay(88.049588,24.921466,0.0);
-			GenColors [ 1 ] = ColorRGBDisplay(48.278360,97.333905,16.208696);
-			GenColors [ 2 ] = ColorRGBDisplay(25.359689,13.8979769,99.258157);
-			GenColors [ 3 ] = ColorRGBDisplay(97.829166,99.436062,15.5696732);
-			GenColors [ 4 ] = ColorRGBDisplay(53.180481,97.912641,100.0);
-			GenColors [ 5 ] = ColorRGBDisplay(90.0509533,27.781037,99.203102);
+			GenColors [ 1 ] = ColorRGBDisplay(48.401826,97.260274,15.981735);
+			GenColors [ 2 ] = ColorRGBDisplay(25.570776,13.698630,99.086758);
+			GenColors [ 3 ] = ColorRGBDisplay(97.716895,99.543379,15.525114);
+			GenColors [ 4 ] = ColorRGBDisplay(52.968037,97.716895,100.0);
+			GenColors [ 5 ] = ColorRGBDisplay(90.410959,27.853881,99.086758);
 			isSpecial = TRUE;
 		}
 
@@ -1495,7 +1495,6 @@ BOOL CMeasure::MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator, C
 	double	dLuxValue;
 
 	CArray<CColor,int> measuredColor;
-//	CColor previousColor;
 
 	BOOL	bUseLuxValues = TRUE;
 	CArray<double,int> measuredLux;
@@ -1540,7 +1539,7 @@ BOOL CMeasure::MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator, C
 		if (!i && GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide) == DISPLAY_GDI_Hide)
 			UpdateTstWnd(pDoc, -1);
 
-		if( pGenerator->DisplayGray((ArrayIndexToGrayLevel ( i, 101, GetConfig () -> m_bUseRoundDown)),CGenerator::MT_NEARBLACK,!bRetry) )
+		if( pGenerator->DisplayGray((ArrayIndexToGrayLevel ( i*(GetConfig()->m_GammaOffsetType==5?2:1), 101, GetConfig () -> m_bUseRoundDown)),CGenerator::MT_NEARBLACK,!bRetry) )
 		{
 
 			UpdateTstWnd(pDoc, i);
@@ -1552,7 +1551,7 @@ BOOL CMeasure::MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator, C
 				if ( bUseLuxValues )
 					StartLuxMeasure ();
 
-				measuredColor[i]=pSensor->MeasureGray(ArrayIndexToGrayLevel ( i, 101, GetConfig () -> m_bUseRoundDown));
+				measuredColor[i]=pSensor->MeasureGray(ArrayIndexToGrayLevel ( i*(GetConfig()->m_GammaOffsetType==5?2:1), 101, GetConfig () -> m_bUseRoundDown));
 				m_nearBlackMeasureArray[i] = measuredColor[i];
 				
 				if ( bUseLuxValues )
@@ -1699,7 +1698,6 @@ BOOL CMeasure::MeasureNearWhiteScale(CSensor *pSensor, CGenerator *pGenerator, C
 	double	dLuxValue;
 
 	CArray<CColor,int> measuredColor;
-//	CColor previousColor;
 
 	BOOL	bUseLuxValues = TRUE;
 	CArray<double,int> measuredLux;
@@ -1866,7 +1864,6 @@ BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator, CDat
 	double		dLuxValue;
 
 	CArray<CColor,int> measuredColor;
-//	CColor previousColor;
 
 	BOOL	bUseLuxValues = TRUE;
 	CArray<double,int> measuredLux;
@@ -2037,7 +2034,6 @@ BOOL CMeasure::MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator, CD
 	double		dLuxValue;
 
 	CArray<CColor,int> measuredColor;
-//	CColor previousColor;
 
 	BOOL	bUseLuxValues = TRUE;
 	CArray<double,int> measuredLux;
@@ -2207,7 +2203,6 @@ BOOL CMeasure::MeasureBlueSatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 	double		dLuxValue;
 
 	CArray<CColor,int> measuredColor;
-//	CColor previousColor;
 
 	BOOL	bUseLuxValues = TRUE;
 	CArray<double,int> measuredLux;
@@ -2379,7 +2374,6 @@ BOOL CMeasure::MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator, C
 	double		dLuxValue;
 
 	CArray<CColor,int> measuredColor;
-//	CColor previousColor;
 
 	BOOL	bUseLuxValues = TRUE;
 	CArray<double,int> measuredLux;
@@ -2551,7 +2545,6 @@ BOOL CMeasure::MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 	double		dLuxValue;
 
 	CArray<CColor,int> measuredColor;
-//	CColor previousColor;
 
 	BOOL	bUseLuxValues = TRUE;
 	CArray<double,int> measuredLux;
@@ -2724,7 +2717,6 @@ BOOL CMeasure::MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator, 
 	double		dLuxValue;
 
 	CArray<CColor,int> measuredColor;
-//	CColor previousColor;
 
 	BOOL	bUseLuxValues = TRUE;
 	CArray<double,int> measuredLux;
@@ -2900,7 +2892,6 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
     if (isExtPat) size = GetConfig()->GetCColorsSize();
 
     CArray<CColor,int> measuredColor;
-//	CColor previousColor;
 
 	BOOL	bUseLuxValues = TRUE;
 	CArray<double,int> measuredLux;
@@ -3193,7 +3184,6 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 							};
 
 	CArray<CColor,int> measuredColor;
-//	CColor previousColor;
 
 	BOOL	bUseLuxValues = TRUE;
 	CArray<double,int> measuredLux;
@@ -3539,7 +3529,6 @@ BOOL CMeasure::MeasurePrimarySecondarySaturationScales(CSensor *pSensor, CGenera
 							};
 
 	CArray<CColor,int> measuredColor;
-//	CColor previousColor;
 
 	BOOL	bUseLuxValues = TRUE;
 	CArray<double,int> measuredLux;
@@ -3774,7 +3763,6 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator, CDataS
 	BOOL	bRetry = FALSE, isSpecial = FALSE;
 	CColor	measuredColor[5];
 	CString	strMsg, Title;
-//	CColor previousColor;
 	double	dLuxValue;
 
 	BOOL	bUseLuxValues = TRUE;
@@ -3855,9 +3843,9 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator, CDataS
 		}
 		else
 		{
-			GenColors [ 0 ] = ColorRGBDisplay(88.049588,24.921466,0.0);
-			GenColors [ 1 ] = ColorRGBDisplay(48.278360,97.333905,16.208696);
-			GenColors [ 2 ] = ColorRGBDisplay(25.359689,13.8979769,99.258157);
+			GenColors [ 0 ] = ColorRGBDisplay(88.127854,25.114155,0.0);
+			GenColors [ 1 ] = ColorRGBDisplay(48.401826,97.260274,15.981735);
+			GenColors [ 2 ] = ColorRGBDisplay(25.570776,13.698630,99.086758);
 			isSpecial = TRUE;
 		}
 
@@ -4116,12 +4104,12 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator, CDat
 		}
 		else
 		{
-			GenColors [ 0 ] = ColorRGBDisplay(88.049588,24.921466,0.0);
-			GenColors [ 1 ] = ColorRGBDisplay(48.278360,97.333905,16.208696);
-			GenColors [ 2 ] = ColorRGBDisplay(25.359689,13.8979769,99.258157);
-			GenColors [ 3 ] = ColorRGBDisplay(97.829166,99.436062,15.5696732);
-			GenColors [ 4 ] = ColorRGBDisplay(53.180481,97.912641,100.0);
-			GenColors [ 5 ] = ColorRGBDisplay(90.0509533,27.781037,99.203102);
+			GenColors [ 0 ] = ColorRGBDisplay(88.127854,25.114155,0.0);
+			GenColors [ 1 ] = ColorRGBDisplay(48.401826,97.260274,15.981735);
+			GenColors [ 2 ] = ColorRGBDisplay(25.570776,13.698630,99.086758);
+			GenColors [ 3 ] = ColorRGBDisplay(97.716895,99.543379,15.525114);
+			GenColors [ 4 ] = ColorRGBDisplay(52.968037,97.716895,100.0);
+			GenColors [ 5 ] = ColorRGBDisplay(90.410959,27.853881,99.086758);
 			isSpecial = TRUE;
 		}
 
@@ -6175,8 +6163,8 @@ CColor CMeasure::GetRefPrimary(int i) const
 	double r,g,b;
 	if (mode == 5 && GetColorReference().m_standard == UHDTV3)
 	{
-		r=getL_EOTF(.479452055,noDataColor,noDataColor,0,0,5);
-		g=getL_EOTF(.2420091324,noDataColor,noDataColor,0,0,5);
+		r=getL_EOTF(.479452055,noDataColor,noDataColor,0,0,5) / 0.987835;
+		g=getL_EOTF(.2420091324,noDataColor,noDataColor,0,0,5) / 0.987835;
 		b=0.;
 	}
 	else
@@ -6216,9 +6204,9 @@ CColor CMeasure::GetRefPrimary(int i) const
 
 	if (mode == 5 && GetColorReference().m_standard == UHDTV3)
 	{
-		r=getL_EOTF(.3561643836,noDataColor,noDataColor,0,0,5);
-		g=getL_EOTF(.502283105	,noDataColor,noDataColor,0,0,5);
-		b=getL_EOTF(.1826484018,noDataColor,noDataColor,0,0,5);
+		r=getL_EOTF(.3561643836,noDataColor,noDataColor,0,0,5) / 0.987835;
+		g=getL_EOTF(.502283105	,noDataColor,noDataColor,0,0,5) / 0.987835;
+		b=getL_EOTF(.17808219,noDataColor,noDataColor,0,0,5) / 0.987835;
 	}
 	else
 	{
@@ -6255,9 +6243,9 @@ CColor CMeasure::GetRefPrimary(int i) const
 
 	if (mode == 5 && GetColorReference().m_standard == UHDTV3)
 	{
-		r=getL_EOTF(.2465753425,noDataColor,noDataColor,0,0,5);
-		g=getL_EOTF(.1598173516	,noDataColor,noDataColor,0,0,5);
-		b=getL_EOTF(.5068493151,noDataColor,noDataColor,0,0,5);
+		r=getL_EOTF(.24200913,noDataColor,noDataColor,0,0,5)/ 0.987835;
+		g=getL_EOTF(.15981735	,noDataColor,noDataColor,0,0,5) / 0.987835;
+		b=getL_EOTF(.50684932,noDataColor,noDataColor,0,0,5) / 0.987835;
 	}
 	else
 	{
@@ -6292,7 +6280,7 @@ CColor CMeasure::GetRefPrimary(int i) const
 	}
     aColorb.SetRGBValue (ColorRGB(r,g,b), (cRef.m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));	
 
-    switch ( i )
+	switch ( i )
 	{
 		case 0:	// red
 			return  isSpecial?aColorr.GetXYZValue():cRef.GetRed();
@@ -6334,9 +6322,9 @@ CColor CMeasure::GetRefSecondary(int i) const
 	int mode = GetConfig()->m_GammaOffsetType;
 	if (mode == 5 && GetColorReference().m_standard == UHDTV3)
 	{
-		r=getL_EOTF(.502283105, noDataColor,noDataColor,0,0,5);
-		g=getL_EOTF(.5068493151, noDataColor,noDataColor,0,0,5);
-		b=getL_EOTF(.1780821918, noDataColor,noDataColor,0,0,5);
+		r=getL_EOTF(.502283105, noDataColor,noDataColor,0,0,5) / 0.987835;
+		g=getL_EOTF(.5068493151, noDataColor,noDataColor,0,0,5) / 0.987835;
+		b=getL_EOTF(.1780821918, noDataColor,noDataColor,0,0,5) / 0.987835;
 	}
 	else
 	{
@@ -6374,9 +6362,9 @@ CColor CMeasure::GetRefSecondary(int i) const
 
 	if (mode == 5 && GetColorReference().m_standard == UHDTV3)
 	{
-		r=getL_EOTF(.3744292237,noDataColor,noDataColor,0,0,5);
-		g=getL_EOTF(.502283105	,noDataColor,noDataColor,0,0,5);
-		b=getL_EOTF(.5068493151,noDataColor,noDataColor,0,0,5);
+		r=getL_EOTF(.3744292237,noDataColor,noDataColor,0,0,5) / 0.987835;
+		g=getL_EOTF(.502283105	,noDataColor,noDataColor,0,0,5) / 0.987835;
+		b=getL_EOTF(.5068493151,noDataColor,noDataColor,0,0,5) / 0.987835;
 	}
 	else
 	{
@@ -6413,9 +6401,9 @@ CColor CMeasure::GetRefSecondary(int i) const
 
 	if (mode == 5 && GetColorReference().m_standard == UHDTV3)
 	{
-		r=getL_EOTF(.4840182648,noDataColor,noDataColor,0,0,5);
-		g=getL_EOTF(.2602739726,noDataColor,noDataColor,0,0,5);
-		b=getL_EOTF(.5068493151,noDataColor,noDataColor,0,0,5);
+		r=getL_EOTF(.4840182648,noDataColor,noDataColor,0,0,5) / 0.987835;
+		g=getL_EOTF(.25570776,noDataColor,noDataColor,0,0,5) / 0.987835;
+		b=getL_EOTF(.5068493151,noDataColor,noDataColor,0,0,5) / 0.987835;
 	}
 	else
 	{

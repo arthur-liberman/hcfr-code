@@ -736,8 +736,6 @@ bool CExport::SavePDF()
 	char str2[10];
 	if (GetConfig()->m_colorStandard != HDTVa && GetConfig()->m_colorStandard != HDTVb )
 		YWhite = m_pDoc->GetMeasure()->GetPrimeWhite().GetY();
-	else if (GetConfig()->m_GammaOffsetType == 5)
-		YWhite = 100.;
 	else
 		YWhite = m_pDoc->GetMeasure()->GetOnOffWhite().GetY();
 
@@ -779,11 +777,11 @@ bool CExport::SavePDF()
 		aColor = m_pDoc->GetMeasure()->GetCC24Sat(i);
 		aReference = m_pDoc->GetMeasure()->GetRefCC24Sat(i);
 		int mRef = GetColorReference().m_standard;
-		aRef = m_pDoc->GetMeasure()->GetRefCC24Sat(i).GetRGBValue(mRef == UHDTV3?CColorReference(UHDTV):(mRef == HDTVa || mRef == HDTVb)?CColorReference(HDTV):GetColorReference());		
+		aRef = m_pDoc->GetMeasure()->GetRefCC24Sat(i).GetRGBValue(mRef == UHDTV3?CColorReference(UHDTV2):(mRef == HDTVa || mRef == HDTVb)?CColorReference(HDTV):GetColorReference());		
 
 		if (aColor.isValid())
 		{
-			aMeasure = m_pDoc->GetMeasure()->GetCC24Sat(i).GetRGBValue(mRef == UHDTV3?CColorReference(UHDTV):(mRef == HDTVa || mRef == HDTVb)?CColorReference(HDTV):GetColorReference());
+			aMeasure = m_pDoc->GetMeasure()->GetCC24Sat(i).GetRGBValue(mRef == UHDTV3?CColorReference(UHDTV2):(mRef == HDTVa || mRef == HDTVb)?CColorReference(HDTV):GetColorReference());
 			tmp = aColor;
 			tmp.SetX(tmp.GetX() / YWhite);
 			tmp.SetY(tmp.GetY() / YWhite);
@@ -797,10 +795,10 @@ bool CExport::SavePDF()
 				aRef[1] = aRef[1] * 100.;
 				aRef[2] = aRef[2] * 100.;
 			}
-			aMeasure[0]=pow((tmp.GetRGBValue(mRef == UHDTV3?CColorReference(UHDTV):(mRef == HDTVa || mRef == HDTVb)?CColorReference(HDTV):GetColorReference())[0]), 1.0/2.22);
-			aMeasure[1]=pow((tmp.GetRGBValue(mRef == UHDTV3?CColorReference(UHDTV):(mRef == HDTVa || mRef == HDTVb)?CColorReference(HDTV):GetColorReference())[1]), 1.0/2.22);
-			aMeasure[2]=pow((tmp.GetRGBValue(mRef == UHDTV3?CColorReference(UHDTV):(mRef == HDTVa || mRef == HDTVb)?CColorReference(HDTV):GetColorReference())[2]), 1.0/2.22);
-			dE = aColor.GetDeltaE(YWhite, aReference, 1.0, mRef == UHDTV3?CColorReference(UHDTV):(mRef == HDTVa || mRef == HDTVb)?CColorReference(HDTV):GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+			aMeasure[0]=pow((tmp.GetRGBValue(mRef == UHDTV3?CColorReference(UHDTV2):(mRef == HDTVa || mRef == HDTVb)?CColorReference(HDTV):GetColorReference())[0]), 1.0/2.22);
+			aMeasure[1]=pow((tmp.GetRGBValue(mRef == UHDTV3?CColorReference(UHDTV2):(mRef == HDTVa || mRef == HDTVb)?CColorReference(HDTV):GetColorReference())[1]), 1.0/2.22);
+			aMeasure[2]=pow((tmp.GetRGBValue(mRef == UHDTV3?CColorReference(UHDTV2):(mRef == HDTVa || mRef == HDTVb)?CColorReference(HDTV):GetColorReference())[2]), 1.0/2.22);
+			dE = aColor.GetDeltaE(YWhite, aReference, 1.0, mRef == UHDTV3?CColorReference(UHDTV2):(mRef == HDTVa || mRef == HDTVb)?CColorReference(HDTV):GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 		}
 		else
 		{

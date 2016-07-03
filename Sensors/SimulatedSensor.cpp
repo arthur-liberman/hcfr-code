@@ -210,9 +210,9 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 	double peakY = 10000.;
 
 //	quantize to 8bit video
-	double r =  floor( (aRGBValue[0] * 219.) + 0.5 ) / 219.;
-	double g =  floor( (aRGBValue[1] * 219.) + 0.5 ) / 219.;
-	double b =  floor( (aRGBValue[2] * 219.) + 0.5 ) / 219.;
+	double r =  floor( (aRGBValue[0]/100. * 219.) + 0.5 ) / 2.19;
+	double g =  floor( (aRGBValue[1]/100. * 219.) + 0.5 ) / 2.19;
+	double b =  floor( (aRGBValue[2]/100. * 219.) + 0.5 ) / 2.19;
 
 	gamma=GetConfig()->m_GammaRef;
 
