@@ -2152,9 +2152,9 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 		                    RefLuma [nCol - 1] = satcolor.GetLuminance();
 						break;
 					case 11:
-						if (GetConfig()->m_GammaOffsetType == 5)
-	                        RefLuma [nCol -1] = aReference.GetLuminance() / 101.231;
-						else
+//						if (GetConfig()->m_GammaOffsetType == 5)
+//	                        RefLuma [nCol -1] = aReference.GetLuminance() / 101.231;
+//						else
 	                        RefLuma [nCol -1] = aReference.GetLuminance();
 						break;
 				}
@@ -2168,7 +2168,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 
 				//special case check if user has done a primaries run at less than 100%, use grayscale white instead for colorchecker
 				if (GetDocument()->GetMeasure()->GetOnOffWhite().isValid())
-					if ((GetDocument()->GetMeasure()->GetPrimeWhite()[1] / GetDocument()->GetMeasure()->GetOnOffWhite()[1] < 0.9) && m_displayMode == 11)
+					if ((GetDocument()->GetMeasure()->GetPrimeWhite()[1] / GetDocument()->GetMeasure()->GetOnOffWhite()[1] < 0.9) && m_displayMode == 11  && GetConfig()->m_GammaOffsetType !=5)
 						white = GetDocument() -> GetMeasure () ->GetOnOffWhite();
 				
 
