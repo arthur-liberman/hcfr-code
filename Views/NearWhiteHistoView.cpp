@@ -181,7 +181,7 @@ void CNearWhiteGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
             if (!m_showL)
 				if (mode == 5)
-	    			m_graphCtrl.AddPoint(m_refGraphID, x, 100.0*val, NULL, 10000.0);
+	    			m_graphCtrl.AddPoint(m_refGraphID, x, 100.0*val, NULL, White.GetY() * 101.23271);
 				else
 	    			m_graphCtrl.AddPoint(m_refGraphID, x, 100.0*val, NULL, White.GetY());
             else

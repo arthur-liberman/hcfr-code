@@ -886,12 +886,6 @@ double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhit
 			YWhiteRef = 0.05 * YWhiteRef;
 			YWhite = 0.05 * YWhite;
 		}
-		case 3: //ST2084
-		{
-//			if (YWhite > 100)
-//				YWhite = 100;
-//			YWhiteRef = 0.01;
-		}
     }
 	if (!(colorReference.m_standard == HDTVb || colorReference.m_standard == CC6 || colorReference.m_standard == HDTVa))
 		cRef=colorReference;

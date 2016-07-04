@@ -2152,7 +2152,10 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 		                    RefLuma [nCol - 1] = satcolor.GetLuminance();
 						break;
 					case 11:
-                        RefLuma [nCol -1] = aReference.GetLuminance();
+						if (GetConfig()->m_GammaOffsetType == 5)
+	                        RefLuma [nCol -1] = aReference.GetLuminance() / 101.231;
+						else
+	                        RefLuma [nCol -1] = aReference.GetLuminance();
 						break;
 				}
 
@@ -2570,7 +2573,7 @@ void CMainView::UpdateGrid()
 				 YWhiteRefDoc = isSpecial?YWhiteOnOffRefDoc:YWhitePrimeRefDoc;
 
 				 //special case check if user has done a less than 100% primaries run and use grayscale white instead for colorchecker
-				if (GetDocument()->GetMeasure()->GetOnOffWhite().isValid())
+				 if (GetDocument()->GetMeasure()->GetOnOffWhite().isValid()&&GetConfig()->m_GammaOffsetType!=5)
 					if ((YWhitePrime / YWhiteOnOff < 0.9) && m_displayMode == 11)
 					{
 						YWhite = YWhiteOnOff;
@@ -2905,7 +2908,11 @@ void CMainView::UpdateGrid()
 					 aColor = GetDocument()->GetMeasure()->GetRedSat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefSat(0,(double)j/(double)(nCount-1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
 					 if (GetConfig()->m_GammaOffsetType==5)
-						 YWhite = 10000.;
+					 {
+						 refColor.SetX((refColor.GetX() * 101.2327));
+						 refColor.SetY((refColor.GetY() * 101.2327));
+						 refColor.SetZ((refColor.GetZ() * 101.2327));
+					 }
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetRedSat(j);
 					 break;
@@ -2913,9 +2920,6 @@ void CMainView::UpdateGrid()
 				case 6:
 					 aColor = GetDocument()->GetMeasure()->GetGreenSat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefSat(1,(double)j/(double)(nCount-1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
-
-					 if (GetConfig()->m_GammaOffsetType==5)
-						 YWhite = 10000.;
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetGreenSat(j);
 					 break;
@@ -2923,9 +2927,6 @@ void CMainView::UpdateGrid()
 				case 7:
 					 aColor = GetDocument()->GetMeasure()->GetBlueSat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefSat(2,(double)j/(double)(nCount-1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
-
-					 if (GetConfig()->m_GammaOffsetType==5)
-						 YWhite = 10000.;
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetBlueSat(j);
 					 break;
@@ -2933,9 +2934,6 @@ void CMainView::UpdateGrid()
 				case 8:
 					 aColor = GetDocument()->GetMeasure()->GetYellowSat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefSat(3,(double)j/(double)(nCount-1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
-
-					 if (GetConfig()->m_GammaOffsetType==5)
-						 YWhite = 10000.;
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetYellowSat(j);
 					 break;
@@ -2943,9 +2941,6 @@ void CMainView::UpdateGrid()
 				case 9:
 					 aColor = GetDocument()->GetMeasure()->GetCyanSat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefSat(4,(double)j/(double)(nCount-1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
-					 
-					 if (GetConfig()->m_GammaOffsetType==5)
-						 YWhite = 10000.;
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetCyanSat(j);
 					 break;
@@ -2953,9 +2948,6 @@ void CMainView::UpdateGrid()
 				case 10:
 					 aColor = GetDocument()->GetMeasure()->GetMagentaSat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefSat(5,(double)j/(double)(nCount-1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
-
-					 if (GetConfig()->m_GammaOffsetType==5)
-						 YWhite = 10000.;
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetMagentaSat(j);
 					 break;
@@ -2963,8 +2955,6 @@ void CMainView::UpdateGrid()
 				case 11:
 					 aColor = GetDocument()->GetMeasure()->GetCC24Sat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefCC24Sat(j);
-					 if (GetConfig()->m_GammaOffsetType==5)
-						 YWhite = 10000.;
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetCC24Sat(j);
 					 break;
@@ -2992,6 +2982,12 @@ void CMainView::UpdateGrid()
 					 }
 			}
 
+			if (GetConfig()->m_GammaOffsetType==5 && m_displayMode <=11 && m_displayMode >= 5)
+			{
+				 refColor.SetX((refColor.GetX() * 101.2327));
+				 refColor.SetY((refColor.GetY() * 101.2327));
+				 refColor.SetZ((refColor.GetZ() * 101.2327));
+			 }
 			for( int i = 0 ; i < nRows ; i ++ )
 			{
 				Item.row = i+1;

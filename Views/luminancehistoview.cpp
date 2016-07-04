@@ -160,7 +160,7 @@ void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 				if (mode == 5)
 				{
 					valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) * 100. / (White.GetY());
-					valy=min(valy,1.2);
+					valy=min(valy,1.0);
 				}
 				else
 	                valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
@@ -176,7 +176,7 @@ void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
             if (!m_showL)
 			{
 				if (mode == 5)
-					m_graphCtrl.AddPoint(m_refGraphID, x, 100.0*valy, NULL, 10000.0);
+					m_graphCtrl.AddPoint(m_refGraphID, x, 100.0*valy, NULL, White.GetY()*101.23271);
 				else
 					m_graphCtrl.AddPoint(m_refGraphID, x, 100.0*valy, NULL, White.GetY());
 			}
