@@ -235,7 +235,7 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
             		CColor White = m_pDocument -> GetMeasure () -> GetGray ( nCount - 1 );
 	                CColor Black = m_pDocument -> GetMeasure () -> GetGray ( 0 );
 					int mode = GetConfig()->m_GammaOffsetType;
-					if (GetConfig()->m_colorStandard == sRGB) mode = 8;
+					if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 					if ( mode >= 4 )
 			        {
 						double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);

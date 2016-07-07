@@ -101,6 +101,13 @@ public:
 	virtual BOOL DisplayVSMPTE();
 	virtual BOOL DisplayEramp();
 	virtual BOOL DisplayAlign();
+	virtual BOOL DisplayAlign2();
+	virtual BOOL DisplayUser1();
+	virtual BOOL DisplayUser2();
+	virtual BOOL DisplayUser3();
+	virtual BOOL DisplayUser4();
+	virtual BOOL DisplayUser5();
+	virtual BOOL DisplayUser6();
 	virtual BOOL DisplayTC0();
 	virtual BOOL DisplayTC1();
 	virtual BOOL DisplayTC2();

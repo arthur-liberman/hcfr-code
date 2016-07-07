@@ -145,6 +145,13 @@ public:
 	void DisplayVSMPTE();
 	void DisplayEramp();
 	void DisplayAlign();
+	void DisplayAlign2();
+	void DisplayUser1();
+	void DisplayUser2();
+	void DisplayUser3();
+	void DisplayUser4();
+	void DisplayUser5();
+	void DisplayUser6();
 	void DisplayTC0();
 	void DisplayTC1();
 	void DisplayTC2();

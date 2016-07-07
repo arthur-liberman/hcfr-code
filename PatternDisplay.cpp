@@ -677,13 +677,13 @@ void CPatternDisplay::OnPatternPict1956()
 		{
 			if (IDYES == GetColorApp()->InMeasureMessageBox( "Caution, pattern is designed for video level output\nand you have selected full range. Continue?", "Pattern display", MB_ICONQUESTION | MB_YESNO ) )
 			{
-				m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_1956,FALSE);
+				m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_1956,TRUE);
 				WaitKey();
 			}
 		}
 		else
 		{
-			m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_1956,FALSE);
+			m_patternDGenerator->DisplayPatternPicture(hPatterns,IDR_PATTERN_1956,TRUE);
 			WaitKey();
 		}
 

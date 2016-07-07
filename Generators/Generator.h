@@ -127,6 +127,13 @@ public:
 	virtual BOOL DisplayVSMPTE();				// need to be overriden
 	virtual BOOL DisplayEramp();				// need to be overriden
 	virtual BOOL DisplayAlign();				// need to be overriden
+	virtual BOOL DisplayAlign2();				// need to be overriden
+	virtual BOOL DisplayUser1();				// need to be overriden
+	virtual BOOL DisplayUser2();				// need to be overriden
+	virtual BOOL DisplayUser3();				// need to be overriden
+	virtual BOOL DisplayUser4();				// need to be overriden
+	virtual BOOL DisplayUser5();				// need to be overriden
+	virtual BOOL DisplayUser6();				// need to be overriden
 	virtual BOOL DisplayTC0();				// need to be overriden
 	virtual BOOL DisplayTC1();				// need to be overriden
 	virtual BOOL DisplayTC2();				// need to be overriden

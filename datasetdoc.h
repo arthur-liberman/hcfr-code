@@ -224,6 +224,13 @@ protected:
 	afx_msg void OnPatternVSMPTE();
 	afx_msg void OnPatternEramp();
 	afx_msg void OnPatternAlign();
+	afx_msg void OnPatternAlign2();
+	afx_msg void OnPatternUser1();
+	afx_msg void OnPatternUser2();
+	afx_msg void OnPatternUser3();
+	afx_msg void OnPatternUser4();
+	afx_msg void OnPatternUser5();
+	afx_msg void OnPatternUser6();
 	afx_msg void OnPatternTC0();
 	afx_msg void OnPatternTC1();
 	afx_msg void OnPatternTC2();

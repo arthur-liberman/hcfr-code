@@ -364,9 +364,9 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 			CColorReference cRef = GetColorReference();
 			if (GetConfig()->m_GammaOffsetType == 5 && GetConfig()->m_bHDR100 && !isPrimeSat)
 			{
-				aColor2.SetX(aColor2.GetX()*101.23271);
-				aColor2.SetY(aColor2.GetY()*101.23271);
-				aColor2.SetZ(aColor2.GetZ()*101.23271);
+				aColor2.SetX(aColor2.GetX()*105.95640);
+				aColor2.SetY(aColor2.GetY()*105.95640);
+				aColor2.SetZ(aColor2.GetZ()*105.95640);
 			}
 			double dE  = aGraphPoint.GetNormalizedColor().GetDeltaE(1.0, aColor2.GetXYZValue(), 1.0, (cRef.m_standard == UHDTV3?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
             double dL  = aGraphPoint.GetNormalizedColor().GetDeltaLCH(1.0, aColor2.GetXYZValue(), 1.0, (cRef.m_standard == UHDTV3?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight, dC, dH );
@@ -430,9 +430,9 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 			CColor aColor = aGraphPoint.GetNormalizedColor();
 			if (GetConfig()->m_GammaOffsetType == 5 && GetConfig()->m_bHDR100)
 			{
-				aColor.SetX(aColor.GetX()*101.23271);
-				aColor.SetY(aColor.GetY()*101.23271);
-				aColor.SetZ(aColor.GetZ()*101.23271);
+				aColor.SetX(aColor.GetX()*105.95640);
+				aColor.SetY(aColor.GetY()*105.95640);
+				aColor.SetZ(aColor.GetZ()*105.95640);
 			}
 			ColorRGB measCol = ColorRGB(aColor.GetRGBValue(CColorReference(HDTV)));
 			double r1=min(max(measCol[0],0),1);
@@ -810,7 +810,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			g[i]=rgb[i][1];
 			b[i]=rgb[i][2];
 			int mode = GetConfig()->m_GammaOffsetType;
-			if (GetConfig()->m_colorStandard == sRGB) mode = 8;
+			if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 			if ( mode >= 4 )
 			{
 				if (mode == 5 || mode == 7)
@@ -1503,7 +1503,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
     			CColor White = pDoc -> GetMeasure () -> GetGray ( nSize - 1 );
 	    		CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
 				int mode = GetConfig()->m_GammaOffsetType;
-				if (GetConfig()->m_colorStandard == sRGB) mode = 8;
+				if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 				if (  (mode >= 4) )
 			    {
 				   double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);

@@ -93,6 +93,7 @@ public:
 	int m_GammaOffsetType;
     int m_nColors;
 	bool m_bHDR100;
+
 	// Appearance settings
 	BOOL m_drawMenuBorder;
 	int m_menuDrawMode;

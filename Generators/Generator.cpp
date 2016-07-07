@@ -142,7 +142,7 @@ BOOL CGenerator::Init(UINT nbMeasure, bool isSpecial)
 	CString str, msg;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 	BOOL madVR_Found;
-	
+
 	if (m_name != str)
 	{
 		if (Cgen.m_nDisplayMode == DISPLAY_ccast)
@@ -375,6 +375,41 @@ BOOL CGenerator::DisplayDR2()
 }
 
 BOOL CGenerator::DisplayAlign()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplayAlign2()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplayUser1()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplayUser2()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplayUser3()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplayUser4()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplayUser5()
+{
+	return TRUE;	  // need to be overriden
+}
+
+BOOL CGenerator::DisplayUser6()
 {
 	return TRUE;	  // need to be overriden
 }

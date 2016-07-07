@@ -155,7 +155,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
             	CColor White = pDoc -> GetMeasure () -> GetOnOffWhite();
 	           	CColor Black = pDoc -> GetMeasure () -> GetOnOffBlack();
 				int mode = GetConfig()->m_GammaOffsetType;
-				if (GetConfig()->m_colorStandard == sRGB) mode = 8;
+				if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 				if ( mode >= 4 )
 		        {
 			        double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
@@ -255,7 +255,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	            	CColor Black = pDataRef -> GetMeasure () -> GetOnOffBlack();
                     double valxref,valyref;
 					int mode = GetConfig()->m_GammaOffsetType;
-					if (GetConfig()->m_colorStandard == sRGB) mode = 8;
+					if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 					if ( mode >= 4 )
                     {
     					valxref=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown));

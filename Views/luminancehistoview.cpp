@@ -153,7 +153,7 @@ void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			x = ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown);
     		CColor White = pDoc -> GetMeasure () -> GetOnOffWhite();
 	    	CColor Black = pDoc -> GetMeasure () -> GetOnOffBlack();
-			if (GetConfig()->m_colorStandard == sRGB) mode = 8;
+			if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 			if (  (mode >= 4) )
 			{
 				valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
@@ -174,12 +174,7 @@ void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
             }
 
             if (!m_showL)
-			{
-				if (mode == 5)
-					m_graphCtrl.AddPoint(m_refGraphID, x, 100.0*valy, NULL, White.GetY()*101.23271);
-				else
-					m_graphCtrl.AddPoint(m_refGraphID, x, 100.0*valy, NULL, White.GetY());
-			}
+				m_graphCtrl.AddPoint(m_refGraphID, x, 100.0*valy, NULL, White.GetY());
             else
             {
                 valy = Y_to_L (valy);

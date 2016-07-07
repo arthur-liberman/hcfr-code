@@ -55,7 +55,7 @@ CFullScreenWindow::CFullScreenWindow(BOOL bTestOverlay)
 	m_rectSizePercent = GetConfig()->GetProfileInt("GDIGenerator","SizePercent",10);
 	m_bgStimPercent = 0;
 	
-	m_nDisplayMode = DISPLAY_GDI;
+//	m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide);
 	m_bDisableCursorHiding = FALSE;
 	m_b16_235 = GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0);
 	m_busePic = GetConfig()->GetProfileInt("GDIGenerator","USEPIC",0);
@@ -111,7 +111,7 @@ CFullScreenWindow::CFullScreenWindow(BOOL bTestOverlay)
 CFullScreenWindow::~CFullScreenWindow()
 {
 	Hide ();
-	SetDisplayMode ();
+	SetDisplayMode (GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide));
 
 	DestroyWindow ();
 
@@ -738,6 +738,62 @@ void CFullScreenWindow::DisplayAlign()
 	FreeLibrary(hPatterns);
 }
 
+void CFullScreenWindow::DisplayAlign2() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_ALIGN2,TRUE);
+	FreeLibrary(hPatterns);
+}
+
+void CFullScreenWindow::DisplayUser1() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_USER1,TRUE);
+	FreeLibrary(hPatterns);
+}
+
+void CFullScreenWindow::DisplayUser2() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_USER2,TRUE);
+	FreeLibrary(hPatterns);
+}
+
+void CFullScreenWindow::DisplayUser3() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_USER3,TRUE);
+	FreeLibrary(hPatterns);
+}
+
+void CFullScreenWindow::DisplayUser4() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_USER4,TRUE);
+	FreeLibrary(hPatterns);
+}
+
+void CFullScreenWindow::DisplayUser5() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_USER5,TRUE);
+	FreeLibrary(hPatterns);
+}
+
+void CFullScreenWindow::DisplayUser6() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_USER6,TRUE);
+	FreeLibrary(hPatterns);
+}
+
 void CFullScreenWindow::DisplayTestimg() 
 {
 	HMODULE hPatterns;
@@ -967,8 +1023,82 @@ void CFullScreenWindow::OnPaint()
 			if (m_uiPictRess == IDR_PATTERN_TV || m_uiPictRess == IDR_PATTERN_TVv)
 				newImage->LoadResource(hRsrc,CXIMAGE_FORMAT_JPG,m_hPatternInst);   
 			else
-				newImage->LoadResource(hRsrc,CXIMAGE_FORMAT_PNG,m_hPatternInst);  
+				newImage->LoadResource(hRsrc,CXIMAGE_FORMAT_PNG,m_hPatternInst);
 
+			bool isUser = FALSE;
+			CString str = GetConfig () -> m_ApplicationPath;
+			str += "\\userpngs\\";
+			switch (m_uiPictRess)
+			{
+				case IDR_PATTERN_USER1:
+				{
+					newImage->Load(str+"user1.png", CXIMAGE_FORMAT_PNG);
+					isUser = TRUE;
+					break;
+				}
+				case IDR_PATTERN_USER2:
+				{
+					newImage->Load(str+"user2.png", CXIMAGE_FORMAT_PNG);
+					isUser = TRUE;
+					break;
+				}
+				case IDR_PATTERN_USER3:
+				{
+					newImage->Load(str+"user3.png", CXIMAGE_FORMAT_PNG);
+					isUser = TRUE;
+					break;
+				}
+				case IDR_PATTERN_USER4:
+				{
+					newImage->Load(str+"user4.png", CXIMAGE_FORMAT_PNG);
+					isUser = TRUE;
+					break;
+				}
+				case IDR_PATTERN_USER5:
+				{
+					newImage->Load(str+"user5.png", CXIMAGE_FORMAT_PNG);
+					isUser = TRUE;
+					break;
+				}
+				case IDR_PATTERN_USER6:
+				{
+					newImage->Load(str+"user6.png", CXIMAGE_FORMAT_PNG);
+					isUser = TRUE;
+					break;
+				}
+
+			}
+
+			if (isUser)
+			{
+				if (!newImage->IsValid())
+				{
+					GetColorApp()->InMeasureMessageBox("User image not found.","Pattern Error", MB_OK + MB_ICONERROR);
+					AfxGetMainWnd()->PostMessage ( WM_KEYDOWN, VK_RETURN, 0 );
+				}
+				//scale to video levels
+				if ( m_b16_235 )
+				{
+					int sizeX, sizeY;
+					sizeX = newImage->GetWidth();
+					sizeY = newImage->GetHeight();
+					RGBQUAD rgb;
+					for (int i=0; i < sizeX - 1; i++)
+					{
+						for (int j=0; j < sizeY - 1; j++)
+						{
+							rgb = newImage->GetPixelColor(i, j);
+							BYTE red = rgb.rgbRed;
+							BYTE green = rgb.rgbGreen;
+							BYTE blue = rgb.rgbBlue;
+							red = ((double(red) / 255.) * 219. + 16.5);
+							green = ((double(green) / 255.) * 219. + 16.5);
+							blue = ((double(blue) / 255.) * 219. + 16.5);
+							newImage->SetPixelColor(i,j,RGB(red,green,blue));
+						}
+					}
+				}
+			}
 			iW = newImage->GetWidth();
 			iH = newImage->GetHeight();
 		}
@@ -1033,7 +1163,6 @@ void CFullScreenWindow::OnPaint()
 			free_ccids(ids);
 		} else
 		{
-
 			//resize but maintain aspect ratio
 			if (m_bResizePict && !(destW == iW && destH == iH))
 			{
@@ -1048,8 +1177,8 @@ void CFullScreenWindow::OnPaint()
 				{
 					newImage->Resample2((long)((float)destH/(float)iH * (float)iW), destH,CxImage::IM_BICUBIC2, CxImage::OM_REPEAT, newImage);
 				}
-				else if (iW != destW || iH != destH)
-					newImage->Resample2(destW, destH, CxImage::IM_BICUBIC2, CxImage::OM_REPEAT, newImage);
+//				else if (iW != destW || iH != destH)
+//					newImage->Resample2(destW, destH, CxImage::IM_BICUBIC2, CxImage::OM_REPEAT, newImage);
 			}
 
 			if (m_bResizePict && !isScaled) {

@@ -252,7 +252,10 @@ void CGDIGenerator::Serialize(CArchive& archive)
 		archive >> m_displayWindow.m_Intensity;
 		archive >> m_activeMonitorNum;
 		if ( version >= 2 )
+		{
 			archive >> m_nDisplayMode;
+			GetConfig()->WriteProfileInt("GDIGenerator","DisplayMode", DISPLAY_GDI_Hide);
+		}
 		else
 			m_nDisplayMode = DISPLAY_GDI;
 	}
@@ -368,7 +371,7 @@ BOOL CGDIGenerator::Init(UINT nbMeasure, bool isSpecial)
 {
 	BOOL	bOk, bOnOtherMonitor;
 	GetMonitorList();
-
+	m_nDisplayMode =  		GetConfig()->GetProfileInt("GDIGenerator","DisplayMode", DISPLAY_GDI_Hide);
 	if (!m_bConnect && m_bLinear) //linear gamma tables
 	{
 		char arg[255];
@@ -880,6 +883,48 @@ BOOL CGDIGenerator::DisplayAlign()
 	return TRUE;
 }
 
+BOOL CGDIGenerator::DisplayAlign2()
+{
+	m_displayWindow.DisplayAlign2();
+	return TRUE;
+}
+
+BOOL CGDIGenerator::DisplayUser1()
+{
+	m_displayWindow.DisplayUser1();
+	return TRUE;
+}
+
+BOOL CGDIGenerator::DisplayUser2()
+{
+	m_displayWindow.DisplayUser2();
+	return TRUE;
+}
+
+BOOL CGDIGenerator::DisplayUser3()
+{
+	m_displayWindow.DisplayUser3();
+	return TRUE;
+}
+
+BOOL CGDIGenerator::DisplayUser4()
+{
+	m_displayWindow.DisplayUser4();
+	return TRUE;
+}
+
+BOOL CGDIGenerator::DisplayUser5()
+{
+	m_displayWindow.DisplayUser5();
+	return TRUE;
+}
+
+BOOL CGDIGenerator::DisplayUser6()
+{
+	m_displayWindow.DisplayUser6();
+	return TRUE;
+}
+
 BOOL CGDIGenerator::DisplaySharp()
 {
 	m_displayWindow.DisplaySharp();
@@ -999,7 +1044,7 @@ BOOL CGDIGenerator::Release(INT nbNext)
 {
 	GetColorApp() -> SetPatternWindow ( NULL );
 	m_displayWindow.Hide();
-	m_displayWindow.SetDisplayMode();
+	m_displayWindow.SetDisplayMode(GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide));
 	m_displayWindow.m_nPat = 0;
 
 	BOOL bOk = CGenerator::Release();

@@ -406,7 +406,7 @@ bool CExport::SavePDF()
 	if (m_pDoc->GetGenerator()->GetName() == "View images")
 	{
 		CString dName;
-		int d = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI);
+		int d = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide);
 		switch (d)
 		{
 		case 0:
@@ -420,6 +420,9 @@ bool CExport::SavePDF()
 			break;
 		case 4:
 			dName = " [Chromecast]";
+			break;
+		case 5:
+			dName = " [GDI - detached window]";
 			break;
 		}
 	    HPDF_Page_ShowTextNextLine (page, "Generator: "+m_pDoc->GetGenerator()->GetName()+dName);
@@ -915,7 +918,7 @@ bool CExport::SavePDF()
 		if (pDataRef->GetGenerator()->GetName() == "View images")
 		{
 			CString dName;
-			int d = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI);
+			int d = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide);
 			switch (d)
 			{
 			case 0:
@@ -929,6 +932,9 @@ bool CExport::SavePDF()
 				break;
 			case 4:
 				dName = " [Chromecast]";
+				break;
+			case 5:
+				dName = " [GDI - detached window]";
 				break;
 			}
 			HPDF_Page_ShowTextNextLine (page2, "Generator: "+pDataRef->GetGenerator()->GetName()+dName);
@@ -1541,7 +1547,7 @@ bool CExport::SaveGrayScaleSheet()
     		CColor White = m_pDoc -> GetMeasure () -> GetGray ( size - 1 );
 	    	CColor Black = m_pDoc -> GetMeasure () -> GetGray ( 0 );
 			int mode = GetConfig()->m_GammaOffsetType;
-			if (GetConfig()->m_colorStandard == sRGB) mode = 8;
+			if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 			if (  (mode >= 4) )
 			{
 				double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);

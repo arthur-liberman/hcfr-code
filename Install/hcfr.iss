@@ -83,7 +83,7 @@ Source: "..\Install\data\*.png"; DestDir: "{userappdata}\color"; Flags: ignoreve
 Source: "..\Install\data\usercolors.csv"; DestDir: "{app}"; Flags: ignoreversion; Components: main
 Source: "..\Install\data\*.csv"; DestDir: "{userappdata}\color"; Flags: ignoreversion; Components: main
 Source: "..\Install\color\*.*"; DestDir: "{userappdata}\color"; Flags: ignoreversion; Components: main
-Source: "..\Tools\usb\*.cat"; DestDir: "{app}\Drivers"; Flags: ignoreversion; Components: main
+Source: "..\Install\userpngs\*.png"; DestDir: "{app}\userpngs"; Flags: ignoreversion; Components: main
 Source: "..\Tools\usb\*.inf"; DestDir: "{app}\Drivers"; Flags: ignoreversion; Components: main
 Source: "..\Tools\usb\*.txt"; DestDir: "{app}\Drivers"; Flags: ignoreversion; Components: main
 Source: "..\Tools\usb\bin\x86\*.sys"; DestDir: "{app}\Drivers\bin\x86"; Flags: ignoreversion; Components: main

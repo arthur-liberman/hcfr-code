@@ -657,9 +657,12 @@
 #define IDC_GAMMA_OFFSET_RADIO8         1221
 #define IDC_WHITE_1                     1222
 #define IDC_IRPROFILE_LIST              1222
+#define IDC_GAMMA_OFFSET_RADIO9         1222
 #define IDC_WHITE_2                     1223
 #define IDC_DELETEIRPROFILE             1223
+#define IDC_GAMMA_OFFSET_RADIO10        1223
 #define IDC_WHITE_3                     1224
+#define IDC_GAMMA_OFFSET_RADIO11        1224
 #define IDC_PATTERN_SMPTE75             1225
 #define IDC_PATTERN_1956                1226
 #define IDC_EDIT_GRAY                   1227
@@ -812,6 +815,13 @@
 #define IDR_PATTERN_TV2v                1350
 #define IDR_PATTERN_CLIPHO              1351
 #define IDR_PATTERN_CLIPLO              1352
+#define IDR_PATTERN_ALIGN2              1353
+#define IDR_PATTERN_USER1               1354
+#define IDR_PATTERN_USER2               1355
+#define IDR_PATTERN_USER3               1356
+#define IDR_PATTERN_USER4               1357
+#define IDR_PATTERN_USER5               1358
+#define IDR_PATTERN_USER6               1359
 #define IDC_COLORTEMPHISTO_GRAPH        11003
 #define IDC_RGBHISTO_GRAPH              11101
 #define IDC_RGBHISTO_GRAPH2             11102
@@ -1084,6 +1094,14 @@
 #define ID_CROSSGRADIENTS_FULLSET       33089
 #define ID_CROSSGRADIENTS_FULLSET33090  33090
 #define IDM_PATTERN_TV2                 33091
+#define IDM_PATTERN_ALIGN2              33093
+#define ID_EVALUATIONIMAGES_USERDEFINED 33094
+#define ID_USERDEFINED_USER1            33095
+#define ID_USERDEFINED_USER2            33096
+#define ID_USERDEFINED_USER3            33097
+#define ID_USERDEFINED_USER4            33098
+#define ID_USERDEFINED_USER5            33099
+#define ID_USERDEFINED_USER6            33100
 #define IDS_LUMINANCEHISTOVIEW_NAME     41446
 #define IDS_COLORTEMPHISTOVIEW_NAME     41447
 #define IDS_RGBHISTOVIEW_NAME           41448
@@ -1623,7 +1641,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        382
-#define _APS_NEXT_COMMAND_VALUE         33093
+#define _APS_NEXT_COMMAND_VALUE         33101
 #define _APS_NEXT_CONTROL_VALUE         1288
 #define _APS_NEXT_SYMED_VALUE           143
 #endif

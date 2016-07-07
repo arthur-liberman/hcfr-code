@@ -741,13 +741,14 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 				m_RGBLevels.Refresh(minCol, m_displayMode, size);
 		}
 		else
-		    m_RGBLevels.Refresh(minCol, m_displayMode, size);
+		    m_RGBLevels.Refresh(minCol == -1?last_minCol:minCol, m_displayMode, size);
 
 		if (last_minCol != minCol && minCol > 0)
 			last_minCol = minCol;
-		m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  last_minCol, size, m_displayMode, GetDocument(), FALSE);
 		if (inMeasure)
 			m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  last_minCol - 1, size, m_displayMode, GetDocument(), TRUE);
+		else
+			m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  last_minCol, size, m_displayMode, GetDocument(), FALSE);
     }
 
 	if(m_SelectedColor.isValid())
@@ -2033,7 +2034,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 		{
 			if ( m_displayMode == 0 || m_displayMode == 4 || m_displayMode == 3 )
 			{
-				// Display reference gamma Y
+				// Display reference Y
 				str.Empty();
 
 				int nGrayScaleSize = GetDocument()->GetMeasure()->GetGrayScaleSize ();
@@ -2041,7 +2042,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				if (m_displayMode == 4)
 					size=GetDocument()->GetMeasure()->GetNearWhiteScaleSize();
 
-				if ( nCol > 1 && nCol < m_displayMode == 0?nGrayScaleSize:size )
+				if ( nCol > 1 && nCol <= ((m_displayMode == 0)?nGrayScaleSize:size) )
 				{
 					CColor White = GetDocument()->GetMeasure()->GetOnOffWhite();
 					CColor Black;
@@ -2066,12 +2067,13 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 							valx = GrayLevelToGrayProp ( (double)(nCol - 1 + 101 - size) , GetConfig () -> m_bUseRoundDown );
 
 						int mode = GetConfig()->m_GammaOffsetType;
-						if (GetConfig()->m_colorStandard == sRGB) mode = 8;
+						if (GetConfig()->m_colorStandard == sRGB) mode = 99;
+
 						if (  (mode >= 4) )
 						{
 							if (m_displayMode == 0)
 								valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
-							if (mode == 5)
+							if (mode == 5) 
 	                            valy = getL_EOTF(valx,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) * 100.;
 							else
 	                            valy = getL_EOTF(valx,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) * White.GetY();
@@ -2112,49 +2114,46 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 					case 5:
 						satcolor = GetDocument()->GetMeasure()->GetRefSat(0, sat, (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
 						if (GetConfig()->m_GammaOffsetType == 5)
-		                    RefLuma [nCol - 1] = satcolor.GetLuminance() * 101.231;
+		                    RefLuma [nCol - 1] = satcolor.GetLuminance() * 105.95640;
 						else
 		                    RefLuma [nCol - 1] = satcolor.GetLuminance();
 						break;
 					case 6:
                         satcolor = GetDocument()->GetMeasure()->GetRefSat(1, sat, (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
 						if (GetConfig()->m_GammaOffsetType == 5)
-		                    RefLuma [nCol - 1] = satcolor.GetLuminance() * 101.231;
+		                    RefLuma [nCol - 1] = satcolor.GetLuminance() * 105.95640;
 						else
 		                    RefLuma [nCol - 1] = satcolor.GetLuminance();
 						break;
 					case 7:                                                
                         satcolor = GetDocument()->GetMeasure()->GetRefSat(2, sat, (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
 						if (GetConfig()->m_GammaOffsetType == 5)
-		                    RefLuma [nCol - 1] = satcolor.GetLuminance() * 101.231;
+		                    RefLuma [nCol - 1] = satcolor.GetLuminance() * 105.95640;
 						else
 		                    RefLuma [nCol - 1] = satcolor.GetLuminance();
 						break;
 					case 8:
                         satcolor = GetDocument()->GetMeasure()->GetRefSat(3, sat, (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
 						if (GetConfig()->m_GammaOffsetType == 5)
-		                    RefLuma [nCol - 1] = satcolor.GetLuminance() * 101.231;
+		                    RefLuma [nCol - 1] = satcolor.GetLuminance() * 105.95640;
 						else
 		                    RefLuma [nCol - 1] = satcolor.GetLuminance();
 						break;
 					case 9:
                         satcolor = GetDocument()->GetMeasure()->GetRefSat(4, sat, (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
 						if (GetConfig()->m_GammaOffsetType == 5)
-		                    RefLuma [nCol - 1] = satcolor.GetLuminance() * 101.231;
+		                    RefLuma [nCol - 1] = satcolor.GetLuminance() * 105.95640;
 						else
 		                    RefLuma [nCol - 1] = satcolor.GetLuminance();
 						break;
 					case 10:
                         satcolor = GetDocument()->GetMeasure()->GetRefSat(5, sat, (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
 						if (GetConfig()->m_GammaOffsetType == 5)
-		                    RefLuma [nCol - 1] = satcolor.GetLuminance() * 101.231;
+		                    RefLuma [nCol - 1] = satcolor.GetLuminance() * 105.95640;
 						else
 		                    RefLuma [nCol - 1] = satcolor.GetLuminance();
 						break;
 					case 11:
-//						if (GetConfig()->m_GammaOffsetType == 5)
-//	                        RefLuma [nCol -1] = aReference.GetLuminance() / 101.231;
-//						else
 	                        RefLuma [nCol -1] = aReference.GetLuminance();
 						break;
 				}
@@ -2672,8 +2671,8 @@ void CMainView::UpdateGrid()
             		    CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
 	                	CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
 						int mode = GetConfig()->m_GammaOffsetType;
-						if (GetConfig()->m_colorStandard == sRGB) mode = 8;
-
+						if (GetConfig()->m_colorStandard == sRGB) mode = 99;
+//						mode = 9;
 						if (  (mode >= 4) )
 			            {
                             double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
@@ -2823,7 +2822,7 @@ void CMainView::UpdateGrid()
             		    CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
 						CColor Black = GetDocument() -> GetMeasure () -> GetNearBlack(0);
 						int mode = GetConfig()->m_GammaOffsetType;
-						if (GetConfig()->m_colorStandard == sRGB) mode = 8;
+						if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 
 						if (  (mode >= 4) )
 			            {
@@ -2871,7 +2870,7 @@ void CMainView::UpdateGrid()
             		    CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
 	                	CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
 						int mode = GetConfig()->m_GammaOffsetType;
-						if (GetConfig()->m_colorStandard == sRGB) mode = 8;
+						if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 
 						if (  (mode >= 4) )
 			            {
@@ -2907,12 +2906,6 @@ void CMainView::UpdateGrid()
 				case 5:
 					 aColor = GetDocument()->GetMeasure()->GetRedSat(j);
 					 refColor = GetDocument()->GetMeasure()->GetRefSat(0,(double)j/(double)(nCount-1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
-					 if (GetConfig()->m_GammaOffsetType==5)
-					 {
-						 refColor.SetX((refColor.GetX() * 101.2327));
-						 refColor.SetY((refColor.GetY() * 101.2327));
-						 refColor.SetZ((refColor.GetZ() * 101.2327));
-					 }
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetRedSat(j);
 					 break;
@@ -2984,9 +2977,9 @@ void CMainView::UpdateGrid()
 
 			if (GetConfig()->m_GammaOffsetType==5 && m_displayMode <=11 && m_displayMode >= 5)
 			{
-				 refColor.SetX((refColor.GetX() * 101.2327));
-				 refColor.SetY((refColor.GetY() * 101.2327));
-				 refColor.SetZ((refColor.GetZ() * 101.2327));
+				 refColor.SetX((refColor.GetX() * 105.95640));
+				 refColor.SetY((refColor.GetY() * 105.95640));
+				 refColor.SetZ((refColor.GetZ() * 105.95640));
 			 }
 			for( int i = 0 ; i < nRows ; i ++ )
 			{
@@ -5430,6 +5423,8 @@ void CMainView::OnInitDefaults()
 		GetConfig()->LoadSettings();
 		GetConfig()->ApplySettings(TRUE);
 		GetConfig()->WriteProfileString ( "Options", "Language", strlang );
+		GetConfig()->WriteProfileInt("GDIGenerator","DisplayMode", DISPLAY_GDI_Hide);
+		GetDocument()->GetGenerator()->Configure();
 		GetConfig()->SaveSettings();
 		GetConfig()->m_bSave = TRUE;
 		GetDocument()->SetModifiedFlag(TRUE);

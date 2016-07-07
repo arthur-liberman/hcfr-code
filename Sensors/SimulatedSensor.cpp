@@ -208,7 +208,10 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 	CColor Black = GetColorReference().GetWhite();
 	Black.SetY(0.012);
 	double peakY = 10000.;
-
+	if (GetConfig()->m_colorStandard == sRGB)
+		mode = 99;
+	if  (mode == 7 || mode == 8 || mode == 9)
+		mode = 5; //simulate standard PQ curve
 //	quantize to 8bit video
 	double r =  floor( (aRGBValue[0]/100. * 219.) + 0.5 ) / 2.19;
 	double g =  floor( (aRGBValue[1]/100. * 219.) + 0.5 ) / 2.19;
@@ -216,7 +219,7 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 
 	gamma=GetConfig()->m_GammaRef;
 
-	if (GetConfig()->m_colorStandard == sRGB) mode = 8;
+	if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 	if (mode == 1) //add small black offset
 	{
 		m_offsetR = 2;
@@ -297,9 +300,18 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 	ColorRGB colMeasure(simulColor);
 	bool isSpecial = (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb);
 	CColor colSensor(ColorXYZ(colMeasure, isSpecial?CColorReference(HDTV):GetConfig()->m_colorStandard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));
-	colSensor.SetX(colSensor.GetX() * (mode==5?10000.:mode==7?400.:100.));
-	colSensor.SetY(colSensor.GetY() * (mode==5?10000.:mode==7?400.:100.));
-	colSensor.SetZ(colSensor.GetZ() * (mode==5?10000.:mode==7?400.:100.));
+	colSensor.SetX(colSensor.GetX() * (mode==5?10000.:100.));
+	colSensor.SetY(colSensor.GetY() * (mode==5?10000.:100.));
+	colSensor.SetZ(colSensor.GetZ() * (mode==5?10000.:100.));
+
+	//cap peak white
+	if (mode == 5)
+	{
+		double rescale = min(colSensor.GetY(), GetConfig()->m_GammaOffsetType==9?400.:500.)/colSensor.GetY();
+		colSensor.SetX(colSensor.GetX() * rescale);
+		colSensor.SetY(colSensor.GetY() * rescale);
+		colSensor.SetZ(colSensor.GetZ() * rescale);
+	}
 	if (mode == 4 && aRGBValue[0] == 0. && aRGBValue[1] == 0. && aRGBValue[2] == 0.)
 		colSensor.SetY(0.012);
 

@@ -150,7 +150,6 @@ BOOL CGDIGenePropPage::OnSetActive()
 {
 	// Init combo box with monitor list stored in array
 	m_monitorComboCtrl.ResetContent();
-
 	for(int i=0;i<m_monitorNameArray.GetSize();i++)
 		m_monitorComboCtrl.AddString(m_monitorNameArray[i]);
 

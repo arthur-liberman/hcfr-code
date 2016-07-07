@@ -252,7 +252,9 @@ BEGIN
     CONTROL         "ITU-R BT.1886",IDC_GAMMA_OFFSET_RADIO5,"Button",BS_AUTORADIOBUTTON,12,147,60,10,WS_EX_TRANSPARENT
     CONTROL         "SMPTE 2084 HDR",IDC_GAMMA_OFFSET_RADIO8,"Button",BS_AUTORADIOBUTTON,12,174,72,10,WS_EX_TRANSPARENT
     CONTROL         "L*",IDC_GAMMA_OFFSET_RADIO7,"Button",BS_AUTORADIOBUTTON,12,163,23,10,WS_EX_TRANSPARENT
-    CONTROL         "BBC Hybrid Log-Gamma",IDC_GAMMA_OFFSET_RADIO6,"Button",BS_AUTORADIOBUTTON,12,185,90,10,WS_EX_TRANSPARENT
+    CONTROL         "BBC Hybrid Log-Gamma",IDC_GAMMA_OFFSET_RADIO6,"Button",BS_AUTORADIOBUTTON,12,186,90,10,WS_EX_TRANSPARENT
+    CONTROL         "Dolby Vision 500 nits",IDC_GAMMA_OFFSET_RADIO9,"Button",BS_AUTORADIOBUTTON,107,185,90,10,WS_EX_TRANSPARENT
+    CONTROL         "Dolby Vision 400 nits",IDC_GAMMA_OFFSET_RADIO10,"Button",BS_AUTORADIOBUTTON,107,174,90,10,WS_EX_TRANSPARENT
     GROUPBOX        "Color Space",IDC_STATIC,7,3,198,75,WS_GROUP
     LTEXT           "Standard:",IDC_STATIC,9,19,32,8
     COMBOBOX        IDC_COLORREF_COMBO,41,18,109,73,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
@@ -1547,6 +1549,7 @@ BEGIN
     VK_F4,          IDM_MEASURE_SECONDARIES, VIRTKEY, NOINVERT
     VK_RIGHT,       IDM_NEXT_TAB,           VIRTKEY, ALT, NOINVERT
     "1",            IDM_PATTERN_ALIGN,      VIRTKEY, ALT, NOINVERT
+    "1",            IDM_PATTERN_ALIGN2,     VIRTKEY, SHIFT, ALT, NOINVERT
     "2",            IDM_PATTERN_ANIM_BLACK, VIRTKEY, ALT, NOINVERT
     "3",            IDM_PATTERN_ANIM_WHITE, VIRTKEY, ALT, NOINVERT
     "5",            IDM_PATTERN_CLIPH,      VIRTKEY, ALT, NOINVERT
@@ -1566,10 +1569,16 @@ BEGIN
     "5",            IDM_PATTERN_TC4,        VIRTKEY, CONTROL, NOINVERT
     "6",            IDM_PATTERN_TC5,        VIRTKEY, CONTROL, NOINVERT
     "0",            IDM_PATTERN_TESTIMG,    VIRTKEY, CONTROL, NOINVERT
+    "1",            ID_USERDEFINED_USER1,        VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "2",            ID_USERDEFINED_USER2,        VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "3",            ID_USERDEFINED_USER3,        VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "4",            ID_USERDEFINED_USER4,        VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "5",            ID_USERDEFINED_USER5,        VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "6",            ID_USERDEFINED_USER6,        VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "P",            IDM_GENERAL_CONFIG,     VIRTKEY, ALT, NOINVERT
     VK_LEFT,        IDM_PREV_TAB,           VIRTKEY, ALT, NOINVERT
     VK_F9,          IDM_SIM_SINGLEMEASURE,  VIRTKEY, NOINVERT
     VK_F7,          IDM_SINGLE_MEASUREMENT, VIRTKEY, NOINVERT
-    "P",            IDM_GENERAL_CONFIG,     VIRTKEY, ALT, NOINVERT
 END
 
 
@@ -1941,6 +1950,7 @@ BEGIN
             POPUP "&Focus && Resolution"
             BEGIN
                 MENUITEM "&Alignment && Convergence",   IDM_PATTERN_ALIGN
+                MENUITEM "&Alignment && Uniformity",    IDM_PATTERN_ALIGN2
                 MENUITEM "&IMATEST",                    IDM_PATTERN_SHARP
                 MENUITEM "IS&O 12233:2000",             ID_FOCUSRESOLUTION_ISO12233
                 MENUITEM "&Belle Nuit",                 IDM_PATTERN_BN
@@ -1989,6 +1999,16 @@ BEGIN
                 BEGIN
                     MENUITEM "&Gray World",                 IDM_PATTERN_TV
                     MENUITEM "&Shadows",                    IDM_PATTERN_TV2
+                END
+                MENUITEM SEPARATOR
+                POPUP "User Defined"
+                BEGIN
+                    MENUITEM "User1",                       ID_USERDEFINED_USER1
+                    MENUITEM "User2",                       ID_USERDEFINED_USER2
+                    MENUITEM "User3",                       ID_USERDEFINED_USER3
+                    MENUITEM "User4",                       ID_USERDEFINED_USER4
+                    MENUITEM "User5",                       ID_USERDEFINED_USER5
+                    MENUITEM "User6",                       ID_USERDEFINED_USER6
                 END
             END
             MENUITEM SEPARATOR

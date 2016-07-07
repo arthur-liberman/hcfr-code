@@ -182,6 +182,7 @@ IDR_PATTERN_VSMPTE        PATTERN                 "res\\patterns\\VSMPTE133b.png
 IDR_PATTERN_ERAMP        PATTERN                 "res\\patterns\\ERAMP.png"
 IDR_PATTERN_ERAMPv        PATTERN                 "res\\patterns\\ERAMPv.png"
 IDR_PATTERN_ALIGN        PATTERN                 "res\\patterns\\align.png"
+IDR_PATTERN_ALIGN2        PATTERN                 "res\\patterns\\align2.png"
 IDR_PATTERN_SPECTRUM        PATTERN                 "res\\patterns\\spectrum.png"
 IDR_PATTERN_TC0        PATTERN                 "res\\patterns\\timecode0.png"
 IDR_PATTERN_TC0v        PATTERN                 "res\\patterns\\timecode0v.png"

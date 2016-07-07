@@ -156,7 +156,7 @@ void CNearWhiteGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			double valx,val;//=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef) );
 
 			int mode = GetConfig()->m_GammaOffsetType;
-			if (GetConfig()->m_colorStandard == sRGB) mode = 8;
+			if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 			if ( mode >= 4 )
 			{
 			    valx = (GrayLevelToGrayProp( x, GetConfig () -> m_bUseRoundDown));
@@ -181,7 +181,7 @@ void CNearWhiteGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
             if (!m_showL)
 				if (mode == 5)
-	    			m_graphCtrl.AddPoint(m_refGraphID, x, 100.0*val, NULL, White.GetY() * 101.23271);
+	    			m_graphCtrl.AddPoint(m_refGraphID, x, 100.0*val, NULL, White.GetY() * 105.95640);
 				else
 	    			m_graphCtrl.AddPoint(m_refGraphID, x, 100.0*val, NULL, White.GetY());
             else
