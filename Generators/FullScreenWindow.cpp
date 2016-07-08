@@ -972,7 +972,29 @@ static void mem_flush_data(png_structp png_ptr) {
 	return;
 }
 
-void CFullScreenWindow::OnPaint() 
+void video_scale (CxImage *inImage)
+{
+		int sizeX, sizeY;
+		sizeX = inImage->GetWidth();
+		sizeY = inImage->GetHeight();
+		RGBQUAD rgb;
+		for (int i=0; i < sizeX - 1; i++)
+		{
+			for (int j=0; j < sizeY - 1; j++)
+			{
+				rgb = inImage->GetPixelColor(i, j);
+				BYTE red = rgb.rgbRed;
+				BYTE green = rgb.rgbGreen;
+				BYTE blue = rgb.rgbBlue;
+				red = ((double(red) / 255.) * 219. + 16.5);
+				green = ((double(green) / 255.) * 219. + 16.5);
+				blue = ((double(blue) / 255.) * 219. + 16.5);
+				inImage->SetPixelColor(i,j,RGB(red,green,blue));
+			}
+		}
+}
+
+	void CFullScreenWindow::OnPaint() 
 {
 	CPaintDC	dc(this); // device context for painting
 	CPaintDC	dc1(this);
@@ -1078,26 +1100,7 @@ void CFullScreenWindow::OnPaint()
 				}
 				//scale to video levels
 				if ( m_b16_235 )
-				{
-					int sizeX, sizeY;
-					sizeX = newImage->GetWidth();
-					sizeY = newImage->GetHeight();
-					RGBQUAD rgb;
-					for (int i=0; i < sizeX - 1; i++)
-					{
-						for (int j=0; j < sizeY - 1; j++)
-						{
-							rgb = newImage->GetPixelColor(i, j);
-							BYTE red = rgb.rgbRed;
-							BYTE green = rgb.rgbGreen;
-							BYTE blue = rgb.rgbBlue;
-							red = ((double(red) / 255.) * 219. + 16.5);
-							green = ((double(green) / 255.) * 219. + 16.5);
-							blue = ((double(blue) / 255.) * 219. + 16.5);
-							newImage->SetPixelColor(i,j,RGB(red,green,blue));
-						}
-					}
-				}
+					video_scale(newImage);
 			}
 			iW = newImage->GetWidth();
 			iH = newImage->GetHeight();
