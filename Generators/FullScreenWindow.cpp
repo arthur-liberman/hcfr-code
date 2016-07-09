@@ -61,6 +61,7 @@ CFullScreenWindow::CFullScreenWindow(BOOL bTestOverlay)
 	m_busePic = GetConfig()->GetProfileInt("GDIGenerator","USEPIC",0);
 	m_bLinear = GetConfig()->GetProfileInt("GDIGenerator","LOADLINEAR",1);
 	m_bdispTrip = GetConfig()->GetProfileInt("GDIGenerator","DISPLAYTRIPLETS",1);
+	m_bVideoScale = FALSE;
 
 	// Overlay data
 	m_lpDD = NULL;
@@ -461,7 +462,7 @@ void CFullScreenWindow::DisplayGB()
 	if (m_b16_235)
 		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_GBv,TRUE);
 	else
-		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_GBv,TRUE);
+		CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_GB,TRUE);
 	FreeLibrary(hPatterns);
 }
 void CFullScreenWindow::DisplayRGd() 
@@ -1042,13 +1043,9 @@ void video_scale (CxImage *inImage)
 		if (m_ansiCcast == -1)
 		{
 			HRSRC hRsrc = ::FindResource(m_hPatternInst,MAKEINTRESOURCE(m_uiPictRess),"PATTERN");
-			if (m_uiPictRess == IDR_PATTERN_TV || m_uiPictRess == IDR_PATTERN_TVv)
-				newImage->LoadResource(hRsrc,CXIMAGE_FORMAT_JPG,m_hPatternInst);   
-			else
-				newImage->LoadResource(hRsrc,CXIMAGE_FORMAT_PNG,m_hPatternInst);
-
 			bool isUser = FALSE;
 			CString str = GetConfig () -> m_ApplicationPath;
+
 			str += "\\userpngs\\";
 			switch (m_uiPictRess)
 			{
@@ -1102,8 +1099,17 @@ void video_scale (CxImage *inImage)
 				if ( m_b16_235 )
 					video_scale(newImage);
 			}
+			else
+			{
+				if (m_uiPictRess == IDR_PATTERN_TV || m_uiPictRess == IDR_PATTERN_TVv)
+					newImage->LoadResource(hRsrc,CXIMAGE_FORMAT_JPG,m_hPatternInst);   
+				else
+					newImage->LoadResource(hRsrc,CXIMAGE_FORMAT_PNG,m_hPatternInst);
+			}
 			iW = newImage->GetWidth();
 			iH = newImage->GetHeight();
+			if ( m_b16_235 && m_bVideoScale )
+				video_scale(newImage);
 		}
 		
 		float destA = (float)destW/(float)destH;
