@@ -745,8 +745,9 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 
 		if (last_minCol != minCol && minCol > 0)
 			last_minCol = minCol;
+
 		if (inMeasure)
-			m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  last_minCol - 1, size, m_displayMode, GetDocument(), TRUE);
+			m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  last_minCol - 1, size, m_displayMode, GetDocument(), FALSE);
 		else
 			m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  last_minCol, size, m_displayMode, GetDocument(), FALSE);
     }
