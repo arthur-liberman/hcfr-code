@@ -29,6 +29,7 @@
 #include "../libccast/ccmdns.h"
 #include "../libccast/ccwin.h"
 #include "../libccast/ccast.h"
+#include "../Tools/GoogleCastWrapper/GoogleCastWrapper.h"
 
 // Display modes
 #define DISPLAY_GDI		0

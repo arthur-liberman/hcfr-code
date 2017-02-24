@@ -81,6 +81,7 @@ public:
     BOOL m_madVR_3d;
     BOOL m_madVR_vLUT;
 	BOOL m_madVR_OSD;
+	UINT m_ccastIp;
 	dispwin *ccwin;
 protected:
 	BOOL m_isModified;

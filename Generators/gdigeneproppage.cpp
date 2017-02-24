@@ -145,6 +145,13 @@ void CGDIGenePropPage::OnOK()
 	m_pGenerator.m_nDisplayMode = m_nDisplayMode;
 	GetConfig()->WriteProfileInt("GDIGenerator","DisplayMode",m_nDisplayMode);
 	GetConfig()->WriteProfileInt("GDIGenerator","RGB_16_235",m_b16_235);
+	if (m_nDisplayMode == DISPLAY_ccast)
+	{
+		char nameBuf[1024];
+		m_cCastComboCtrl.GetWindowTextA(nameBuf, 1024);
+		GetConfig()->WriteProfileInt("GDIGenerator","CCastIp",m_GCast.getCcastIpAddress(m_GCast[nameBuf]));
+	}
+
 	CPropertyPageWithHelp::OnOK();
 }
 
@@ -191,8 +198,17 @@ BOOL CGDIGenePropPage::OnSetActive()
 		GetDlgItem(IDC_CCAST_COMBO)->EnableWindow(TRUE);
 		CheckRadioButton ( IDC_RGBLEVEL_RADIO1, IDC_RGBLEVEL_RADIO2, IDC_RGBLEVEL_RADIO1 + m_b16_235 );
 		m_GCast.RefreshList();
-		for(int i=0;i<m_GCast.getCount();i++)
-			m_cCastComboCtrl.AddString(m_GCast[i]->name);
+		unsigned int ccastIp = GetConfig()->GetProfileInt("GDIGenerator", "CCastIp", 0);
+		for (int i = 0 ; i < m_GCast.getCount(); i++)
+		{
+			if (m_GCast[i]->typ != cctyp_Audio)
+				m_cCastComboCtrl.AddString(m_GCast[i]->name);
+
+			if (ccastIp && m_cCastComboCtrl.GetCurSel() < 0 && m_GCast.getCcastIpAddress(m_GCast[i]) == ccastIp)
+				m_cCastComboCtrl.SetCurSel(i);
+		}
+		if (m_cCastComboCtrl.GetCurSel() < 0)
+			m_cCastComboCtrl.SetCurSel(0);
 	}
 	else if ( IsDlgButtonChecked ( IDC_RADIO6 ) )
 		m_nDisplayMode = DISPLAY_GDI_Hide;
@@ -296,9 +312,17 @@ void CGDIGenePropPage::OnClickmadVR()
 		GetDlgItem(IDC_CCAST_COMBO)->EnableWindow(TRUE);
 		m_cCastComboCtrl.ResetContent();
 		m_GCast.RefreshList();
-		for(int i=0;i<m_GCast.getCount();i++)
-			m_cCastComboCtrl.AddString(m_GCast[i]->name);
-		OutputDebugStringA(m_GCast.getCcastByIp(m_GCast.getCcastIpAddress(m_GCast[0]))->name);
+		unsigned int ccastIp = GetConfig()->GetProfileInt("GDIGenerator", "CCastIp", 0);
+		for (int i = 0 ; i < m_GCast.getCount(); i++)
+		{
+			if (m_GCast[i]->typ != cctyp_Audio)
+				m_cCastComboCtrl.AddString(m_GCast[i]->name);
+
+			if (ccastIp && m_cCastComboCtrl.GetCurSel() < 0 && m_GCast.getCcastIpAddress(m_GCast[i]) == ccastIp)
+				m_cCastComboCtrl.SetCurSel(i);
+		}
+		if (m_cCastComboCtrl.GetCurSel() < 0)
+			m_cCastComboCtrl.SetCurSel(0);
 	}
 	else
 		GetDlgItem(IDC_CCAST_COMBO)->EnableWindow(FALSE);

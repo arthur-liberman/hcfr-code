@@ -16,31 +16,31 @@ void CGoogleCastWrapper::RefreshList()
 {
 	this->cleanUp();
 	this->m_ids = get_ccids();
-	ccast_id **temp = this->m_ids;
-	while (*temp++)
+	ccast_id **id = this->m_ids;
+	while (*id++)
 		this->m_count++;
 
 	char buf[1024];
 	sprintf_s(buf, "Found %d Google Cast devices", this->m_count);
 	OutputDebugStringA(buf);
-	temp = this->m_ids;
-	while (*temp)
+	id = this->m_ids;
+	while (*id)
 	{
-		sprintf_s(buf, "%s at: %s", (*temp)->name, (*temp)->ip);
+		sprintf_s(buf, "%s (%s) at: %s", (*id)->name, cctype2str((*id)->typ), (*id)->ip);
 		OutputDebugStringA(buf);
-		temp++;
+		id++;
 	}
 }
 
 const ccast_id *CGoogleCastWrapper::operator[](const char *name) const
 {
 	ccast_id *ret = NULL;
-	ccast_id **temp = this->m_ids;
-	while (*temp++)
+
+	for (int i = 0; i < this->m_count; i++)
 	{
-		if (!strcmp((*temp)->name, name))
+		if (!strcmp(this->m_ids[i]->name, name))
 		{
-			ret = *temp;
+			ret = this->m_ids[i];
 			break;
 		}
 	}

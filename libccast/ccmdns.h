@@ -34,6 +34,7 @@ typedef enum {
 } cctype;
 
 /* Use cctype2str() to dump type */
+char *cctype2str(cctype typ);
 
 /* A record of a Chromecast that may be accessed */
 struct _ccast_id {
