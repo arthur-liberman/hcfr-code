@@ -72,7 +72,6 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <DisableSpecificWarnings>4101;4244;4018;4146;4999</DisableSpecificWarnings>
-      <DebugInformationFormat>OldStyle</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -108,7 +107,7 @@
     <ProjectReference Include="..\libconv\libconv.vcxproj">
       <Project>{5a67d03c-fe43-49fe-86f8-7a3b98e0a977}</Project>
       <Private>true</Private>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
@@ -116,7 +115,7 @@
     <ProjectReference Include="..\libnum\libnum.vcxproj">
       <Project>{fdaba3aa-ba68-4bee-adda-fd10d9928534}</Project>
       <Private>true</Private>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
@@ -124,7 +123,7 @@
     <ProjectReference Include="..\libyajl\libyajl.vcxproj">
       <Project>{32a6cd30-7808-4729-9589-8430ba8d3bff}</Project>
       <Private>true</Private>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>

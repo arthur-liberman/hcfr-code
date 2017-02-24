@@ -24,26 +24,39 @@
  * for the purposes of generating Video Test patches.
  */
 
+/* Chrome cast type */
+typedef enum {
+	cctyp_unkn = 0,			/* Unknown */
+	cctyp_1,				/* Chromecast 1 */
+	cctyp_2,				/* Chromecast 2 */
+	cctyp_Audio,			/* Chromecast Audio */
+	cctyp_Ultra				/* Chromecast Ultra */
+} cctype;
+
+/* Use cctype2str() to dump type */
+
 /* A record of a Chromecast that may be accessed */
 struct _ccast_id {
-	char *name;		/* Chromecast name */
+	char *name;		/* Chromecast friendly name */
 	char *ip;		/* IP address as string (ie. "10.0.0.128") */
+	cctype typ;		/* Chromecast type (If known) */
 }; typedef struct _ccast_id ccast_id;
 
 /* Get a list of Chromecasts. Return NULL on error */
 /* Last pointer in array is NULL */ 
 /* Takes 0.5 second to return */
-extern ccast_id **get_ccids(void);
+ccast_id **get_ccids(void);
 
 /* Free up what get_ccids returned */
-extern void free_ccids(ccast_id **ids);
+void free_ccids(ccast_id **ids);
 
 void ccast_id_copy(ccast_id *dst, ccast_id *src);
 ccast_id *ccast_id_clone(ccast_id *src);
 void ccast_id_del(ccast_id *id);
 
-#define CCMDNST_H
 #ifdef __cplusplus
 	}
 #endif
+
+#define CCMDNST_H
 #endif /* CCMDNST_H */

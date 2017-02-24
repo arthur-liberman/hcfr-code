@@ -25,32 +25,36 @@
 #include <string.h>
 #include <ctype.h>
 #include <limits.h>
-#include "../h/aconfig.h"
+#include "copyright.h"
+#include "aconfig.h"
 #include <sys/types.h>
-#ifndef SALONEINSTLIB
 #include "numlib.h"
+
+// Patch not having the correct configuration files:
+#define USING_AXTLS
+
+#ifdef USING_AXTLS
+# include "ssl.h"		/* axTLS header */
 #else
-#include "numsup.h"
+# include "openssl/ssl.h"		/* OpenSSL header */
 #endif
 
-#include "ssl.h"		/* axTLS header */
 #include "yajl.h"
 #include "conv.h"
 #include "ccpacket.h"
 #include "cast_channel.pb-c.h"
 #include "ccmes.h"
 
-#undef LOWVERBTRACE		/* Low verboseness message trace */
-#undef DEBUG			/* Full message trace + debug */
+#undef LOWVERBTRACE		/* [und] Low verboseness message trace */
+#undef DEBUG			/* [und] Full message trace + debug */
 
 /* ------------------------------------------------------------------- */
 
 #ifdef DEBUG
-# define DBG(xxx) fprintf xxx ;
+# define DBG(xxx) a1logd xxx ;
 #else
 # define DBG(xxx) ;
 #endif  /* DEBUG */
-# define dbgo stdout
 
 /* Error message from error number */
 char *ccmessv_emes(ccmessv_err rv) {
@@ -90,50 +94,50 @@ char *ccmessv_emes(ccmessv_err rv) {
 #if defined(LOWVERBTRACE) || defined(DEBUG)
 static void mes_dump(ccmes *mes, char *pfx) {
 #ifdef DEBUG
-	fprintf(dbgo,"%s message:\n",pfx);
-	fprintf(dbgo,"  source_id = '%s'\n",mes->source_id);
-	fprintf(dbgo,"  destination_id = '%s'\n",mes->destination_id);
-	fprintf(dbgo,"  namespace = '%s'\n",mes->namespace);
+	a1logd(g_log,0,"%s message:\n",pfx);
+	a1logd(g_log,0,"  source_id = '%s'\n",mes->source_id);
+	a1logd(g_log,0,"  destination_id = '%s'\n",mes->destination_id);
+	a1logd(g_log,0,"  namespace = '%s'\n",mes->namespace);
 	if (mes->binary) {
-		fprintf(dbgo,"  payload =\n");
-		cc_dump_bytes(dbgo,"  ", mes->data, mes->bin_len);
+		a1logd(g_log,0,"  payload =\n");
+		adump_bytes(g_log,"  ", mes->data, 0, mes->bin_len);
 	} else {
-		fprintf(dbgo,"  payload = '%s'\n",mes->data);
+		a1logd(g_log,0,"  payload = '%s'\n",mes->data);
 	}
 #else
-	fprintf(dbgo,"%s '%s'",pfx,mes->namespace); 
+	a1logd(g_log,0,"%s '%s'",pfx,mes->namespace); 
 #endif
 	if (mes->binary) {
 #ifdef DEBUG
-		fprintf(dbgo,"  %d bytes of binary data:\n",mes->bin_len);
-		cc_dump_bytes(dbgo,"  ", mes->data, mes->bin_len);
+		a1logd(g_log,0,"  %d bytes of binary data:\n",mes->bin_len);
+		adump_bytes(g_log,"  ", mes->data, 0, mes->bin_len);
 #else
-		fprintf(dbgo,", %d bytes of bin data:\n",mes->bin_len);
+		a1logd(g_log,0,", %d bytes of bin data:\n",mes->bin_len);
 #endif
 	} else {
 		/* Would like to pretty print the JSON data */
 		/* ie. convert json_reformat.c to a function */
 #ifdef DEBUG
-		fprintf(dbgo,"  %d bytes of text data:\n",strlen(mes->data));
-		fprintf(dbgo,"  '%s'\n",mes->data);
+		a1logd(g_log,0,"  %d bytes of text data:\n",strlen((char *)mes->data));
+		a1logd(g_log,0,"  '%s'\n",mes->data);
 #else
 		yajl_val tnode, v, i;
 		int len = strlen((char *)mes->data);
 		tnode = yajl_tree_parse((char *)mes->data, NULL, 0);
 		if (tnode == NULL) {
-			fprintf(dbgo,", %d bytes of text data\n",len);
+			a1logd(g_log,0,", %d bytes of text data\n",len);
 		} else {
 			if ((v = yajl_tree_get_first(tnode, "type", yajl_t_string)) != NULL) {
 				char *mtype = YAJL_GET_STRING(v);
 				if ((i = yajl_tree_get_first(tnode, "requestId", yajl_t_number)) != NULL) {
 					int rqid = YAJL_GET_INTEGER(i);
-					fprintf(dbgo,", %d bytes of JSON data, type '%s' id %d\n",
+					a1logd(g_log,0,", %d bytes of JSON data, type '%s' id %d\n",
 					                                 len,mtype,rqid);
 				} else { 
-					fprintf(dbgo,", %d bytes of JSON data, type '%s'\n",len,mtype);
+					a1logd(g_log,0,", %d bytes of JSON data, type '%s'\n",len,mtype);
 				}
 			} else {
-				fprintf(dbgo,", %d bytes of JSON data\n",len);
+				a1logd(g_log,0,", %d bytes of JSON data\n",len);
 			}
 		}
 #endif
@@ -283,15 +287,15 @@ ccmessv_err receive_ccmessv(ccmessv *p, ccmes *mes) {
 		char errbuf[1024];
 
 		if ((mes->tnode = yajl_tree_parse((char *)mes->data, errbuf, sizeof(errbuf))) == NULL) {
-			DBG((dbgo,"ccthread: yajl_tree_parse failed with '%s'\n",errbuf))
+			DBG((g_log,0,"ccthread: yajl_tree_parse failed with '%s'\n",errbuf))
 		} else if ((tyn = yajl_tree_get_first(mes->tnode, "type", yajl_t_string)) == NULL) {
-			DBG((dbgo,"ccthread: no type\n"))
+			DBG((g_log,0,"ccthread: no type\n"))
 		} else {
 			mes->mtype = YAJL_GET_STRING(tyn);
 			if ((idn = yajl_tree_get_first(mes->tnode, "requestId", yajl_t_number)) != NULL)
 				mes->rqid = YAJL_GET_INTEGER(idn);
 			else {
-				DBG((dbgo,"ccthread: no id\n"))
+				DBG((g_log,0,"ccthread: no id\n"))
 			}
 		}
 	}
@@ -315,7 +319,7 @@ ccmessv *new_ccmessv(ccpacket *pk) {
 	ccmessv *p = NULL;
 
 	if ((p = (ccmessv *)calloc(1, sizeof(ccmessv))) == NULL) {
-		DBG((dbgo, "calloc failed\n"))
+		DBG((g_log,0, "calloc failed\n"))
 		return NULL;
 	}
 

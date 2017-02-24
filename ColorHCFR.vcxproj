@@ -993,11 +993,6 @@
     </ProjectReference>
     <ProjectReference Include="libccast\libccast.vcxproj">
       <Project>{157843c3-1412-43dd-8832-19eac7df2b3f}</Project>
-      <Private>true</Private>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-      <LinkLibraryDependencies>true</LinkLibraryDependencies>
-      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
     </ProjectReference>
     <ProjectReference Include="libharu\libharu.vcxproj">
       <Project>{416e77ff-acfa-478d-9e8b-fa1e1296e007}</Project>
@@ -1017,6 +1012,10 @@
     <ProjectReference Include="Tools\ArgyllMeterWrapper\ArgyllMeterWrapper.vcxproj">
       <Project>{1a665dc9-9c8b-428a-ac8c-5e9dbc3529aa}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <Private>true</Private>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
     </ProjectReference>
     <ProjectReference Include="Tools\CxImage\cximage.vcxproj">
       <Project>{906a0b24-c4b5-4824-a027-ce75bf66242d}</Project>
