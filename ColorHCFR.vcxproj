@@ -853,6 +853,7 @@
     <ClInclude Include="htmlhelp.h" />
     <ClInclude Include="LuxScaleAdvisor.h" />
     <ClInclude Include="MainFrm.h" />
+    <ClInclude Include="Tools\GoogleCastWrapper\GoogleCastWrapper.h" />
     <ClInclude Include="Tools\MainWndPlacement.h" />
     <ClInclude Include="Measure.h" />
     <ClInclude Include="ModelessPropertySheet.h" />
@@ -1020,6 +1021,9 @@
     <ProjectReference Include="Tools\CxImage\cximage.vcxproj">
       <Project>{906a0b24-c4b5-4824-a027-ce75bf66242d}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="Tools\GoogleCastWrapper\GoogleCastWrapper.vcxproj">
+      <Project>{4d45250b-e23e-4097-a3c5-64d708528340}</Project>
     </ProjectReference>
     <ProjectReference Include="Tools\Jpeg\LibJpeg.vcxproj">
       <Project>{e4929e39-ef57-470e-a748-0a5c28d74c5e}</Project>

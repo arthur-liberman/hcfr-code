@@ -66,6 +66,7 @@ void CGDIGenePropPage::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CGDIGenePropPage)
     DDX_Control(pDX, IDC_MADVR_3D, m_madVREdit);    
 	DDX_Control(pDX, IDC_MONITOR_COMBO, m_monitorComboCtrl);
+	DDX_Control(pDX, IDC_CCAST_COMBO, m_cCastComboCtrl);
     DDX_Control(pDX, IDC_MADVR_3D2, m_madVREdit2);    
     DDX_Control(pDX, IDC_MADVR_OSD, m_madVREdit3);    
     DDX_Control(pDX, IDC_USEPIC, m_usePicEdit);    
@@ -103,6 +104,7 @@ END_MESSAGE_MAP()
 void CGDIGenePropPage::OnOK() 
 {
 	m_activeMonitorNum=m_monitorComboCtrl.GetCurSel();	
+	m_selectedGcastNum = m_cCastComboCtrl.GetCurSel();
 	if ( IsDlgButtonChecked ( IDC_RADIO2 ) )
 		m_nDisplayMode = DISPLAY_OVERLAY;
 	else if ( IsDlgButtonChecked ( IDC_RADIO3 ) )
@@ -150,6 +152,7 @@ BOOL CGDIGenePropPage::OnSetActive()
 {
 	// Init combo box with monitor list stored in array
 	m_monitorComboCtrl.ResetContent();
+	m_cCastComboCtrl.ResetContent();
 	for(int i=0;i<m_monitorNameArray.GetSize();i++)
 		m_monitorComboCtrl.AddString(m_monitorNameArray[i]);
 
@@ -185,7 +188,11 @@ BOOL CGDIGenePropPage::OnSetActive()
 	{
 		m_nDisplayMode = DISPLAY_ccast;
 		m_b16_235 = FALSE;
+		GetDlgItem(IDC_CCAST_COMBO)->EnableWindow(TRUE);
 		CheckRadioButton ( IDC_RGBLEVEL_RADIO1, IDC_RGBLEVEL_RADIO2, IDC_RGBLEVEL_RADIO1 + m_b16_235 );
+		m_GCast.RefreshList();
+		for(int i=0;i<m_GCast.getCount();i++)
+			m_cCastComboCtrl.AddString(m_GCast[i]->name);
 	}
 	else if ( IsDlgButtonChecked ( IDC_RADIO6 ) )
 		m_nDisplayMode = DISPLAY_GDI_Hide;
@@ -283,6 +290,20 @@ void CGDIGenePropPage::OnClickmadVR()
         m_madVREdit2.EnableWindow(FALSE);
         m_madVREdit3.EnableWindow(FALSE);
     }
+
+	if (IsDlgButtonChecked ( IDC_RADIO5 ) )
+	{
+		GetDlgItem(IDC_CCAST_COMBO)->EnableWindow(TRUE);
+		m_cCastComboCtrl.ResetContent();
+		m_GCast.RefreshList();
+		for(int i=0;i<m_GCast.getCount();i++)
+			m_cCastComboCtrl.AddString(m_GCast[i]->name);
+		OutputDebugStringA(m_GCast.getCcastByIp(m_GCast.getCcastIpAddress(m_GCast[0]))->name);
+	}
+	else
+		GetDlgItem(IDC_CCAST_COMBO)->EnableWindow(FALSE);
+
+
 	m_activeMonitorNum=m_monitorComboCtrl.GetCurSel();	
 	if ( IsDlgButtonChecked ( IDC_RADIO2 ) )
 		m_nDisplayMode = DISPLAY_OVERLAY;
