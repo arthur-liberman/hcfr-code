@@ -113,10 +113,6 @@ void CAdvancedPropPage::OnSelchangeLuxmeterComCombo()
 
 void CAdvancedPropPage::OnSelchangedECombo() 
 {
-	m_isModified=TRUE;
-	m_bSave = TRUE;
-	SetModified(TRUE);
-
 	if (m_dEform.GetCurSel() == 5)
 	{
 		m_dE_gray = 2;
@@ -131,6 +127,10 @@ void CAdvancedPropPage::OnSelchangedECombo()
 		m_dEgrayEdit.EnableWindow(TRUE);
 		m_gwWeightEdit.EnableWindow(TRUE);
 	}
+
+	m_isModified=TRUE;
+	m_bSave = TRUE;
+	SetModified(TRUE);
 }
 
 BOOL CAdvancedPropPage::OnApply() 
