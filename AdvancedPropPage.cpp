@@ -61,8 +61,9 @@ void CAdvancedPropPage::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPageWithHelp::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CAdvancedPropPage)
-    DDX_Control(pDX, IDC_COMBO_dE_WEIGHT, m_gwWeightEdit);
-    DDX_Control(pDX, IDC_COMBO_dE_GRAY, m_dEgrayEdit);
+	DDX_Control(pDX, IDC_COMBO_dE_WEIGHT, m_gwWeightEdit);
+	DDX_Control(pDX, IDC_COMBO_dE_GRAY, m_dEgrayEdit);
+	DDX_Control(pDX, IDC_COMBO_dE, m_dEform);
 	DDX_Check(pDX, IDC_CHECK_CONFIRM, m_bConfirmMeasures);
 	DDX_CBString(pDX, IDC_LUXMETER_COM_COMBO, m_comPort);
 	DDX_CBIndex(pDX, IDC_COMBO_dE, m_dE_form);
@@ -115,6 +116,21 @@ void CAdvancedPropPage::OnSelchangedECombo()
 	m_isModified=TRUE;
 	m_bSave = TRUE;
 	SetModified(TRUE);
+
+	if (m_dEform.GetCurSel() == 5)
+	{
+		m_dE_gray = 2;
+		m_dEgrayEdit.EnableWindow(FALSE);
+		((CComboBox&)m_dEgrayEdit).SetCurSel(m_dE_gray);
+		gw_Weight = 0;
+		m_gwWeightEdit.EnableWindow(FALSE);
+		((CComboBox&)m_gwWeightEdit).SetCurSel(gw_Weight);
+	}
+	else
+	{
+		m_dEgrayEdit.EnableWindow(TRUE);
+		m_gwWeightEdit.EnableWindow(TRUE);
+	}
 }
 
 BOOL CAdvancedPropPage::OnApply() 
