@@ -122,6 +122,12 @@ void CAdvancedPropPage::OnSelchangedECombo()
 		m_gwWeightEdit.EnableWindow(FALSE);
 		((CComboBox&)m_gwWeightEdit).SetCurSel(gw_Weight);
 	}
+	else if (((CComboBox&)m_dEgrayEdit).GetCurSel() == 0)
+	{
+		gw_Weight = 0;
+		m_gwWeightEdit.EnableWindow(FALSE);
+		((CComboBox&)m_gwWeightEdit).SetCurSel(gw_Weight);
+	}
 	else
 	{
 		m_dEgrayEdit.EnableWindow(TRUE);
