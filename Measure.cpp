@@ -5089,7 +5089,7 @@ void CMeasure::UpdateTstWnd (CDataSetDoc *pDoc, int i )
 {
 	if (i == -1)
 	{
-		GetConfig()->WriteProfileInt("GDIGenerator","DisplayMode", DISPLAY_DEFAULT_MODE);
+		GetConfig()->WriteProfileInt("GDIGenerator","DisplayMode", DISPLAY_GDI_Hide);
 		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.ShowWindow(SW_SHOW);
 		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> EnableWindow ( TRUE );
 		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.SetForegroundWindow();
