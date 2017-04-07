@@ -85,7 +85,7 @@ CGDIGenerator::CGDIGenerator()
 	GetMonitorList();
 	m_activeMonitorNum = m_monitorNb-1;
 
-	m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide);
+	m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_DEFAULT_MODE);
 	m_b16_235 = GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0);
 	m_busePic = GetConfig()->GetProfileInt("GDIGenerator","USEPIC",0);
 	m_bLinear = GetConfig()->GetProfileInt("GDIGenerator","LOADLINEAR",1);
@@ -255,7 +255,7 @@ void CGDIGenerator::Serialize(CArchive& archive)
 		if ( version >= 2 )
 		{
 			archive >> m_nDisplayMode;
-			GetConfig()->WriteProfileInt("GDIGenerator","DisplayMode", DISPLAY_GDI_Hide);
+			GetConfig()->WriteProfileInt("GDIGenerator","DisplayMode", DISPLAY_DEFAULT_MODE);
 		}
 		else
 			m_nDisplayMode = DISPLAY_GDI;
@@ -372,7 +372,7 @@ BOOL CGDIGenerator::Init(UINT nbMeasure, bool isSpecial)
 {
 	BOOL	bOk, bOnOtherMonitor;
 	GetMonitorList();
-	m_nDisplayMode =  		GetConfig()->GetProfileInt("GDIGenerator","DisplayMode", DISPLAY_GDI_Hide);
+	m_nDisplayMode =  		GetConfig()->GetProfileInt("GDIGenerator","DisplayMode", DISPLAY_DEFAULT_MODE);
 	if (!m_bConnect && m_bLinear) //linear gamma tables
 	{
 		char arg[255];
@@ -1051,7 +1051,7 @@ BOOL CGDIGenerator::Release(INT nbNext)
 {
 	GetColorApp() -> SetPatternWindow ( NULL );
 	m_displayWindow.Hide();
-	m_displayWindow.SetDisplayMode(GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide));
+	m_displayWindow.SetDisplayMode(GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_DEFAULT_MODE));
 	m_displayWindow.m_nPat = 0;
 
 	BOOL bOk = CGenerator::Release();

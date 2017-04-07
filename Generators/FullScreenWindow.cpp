@@ -55,7 +55,7 @@ CFullScreenWindow::CFullScreenWindow(BOOL bTestOverlay)
 	m_rectSizePercent = GetConfig()->GetProfileInt("GDIGenerator","SizePercent",10);
 	m_bgStimPercent = 0;
 	
-//	m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide);
+//	m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_DEFAULT_MODE);
 	m_bDisableCursorHiding = FALSE;
 	m_b16_235 = GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0);
 	m_busePic = GetConfig()->GetProfileInt("GDIGenerator","USEPIC",0);
@@ -112,7 +112,7 @@ CFullScreenWindow::CFullScreenWindow(BOOL bTestOverlay)
 CFullScreenWindow::~CFullScreenWindow()
 {
 	Hide ();
-	SetDisplayMode (GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide));
+	SetDisplayMode (GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_DEFAULT_MODE));
 
 	DestroyWindow ();
 

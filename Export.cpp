@@ -406,7 +406,7 @@ bool CExport::SavePDF()
 	if (m_pDoc->GetGenerator()->GetName() == "View images")
 	{
 		CString dName;
-		int d = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide);
+		int d = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_DEFAULT_MODE);
 		switch (d)
 		{
 		case 0:
@@ -918,7 +918,7 @@ bool CExport::SavePDF()
 		if (pDataRef->GetGenerator()->GetName() == "View images")
 		{
 			CString dName;
-			int d = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide);
+			int d = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_DEFAULT_MODE);
 			switch (d)
 			{
 			case 0:

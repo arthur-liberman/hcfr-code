@@ -382,7 +382,7 @@ void CArgyllSensor::Calibrate()
 		if (meterInstructions == "Provide an 80% or greater white test patch" && GetConfig()->GetProfileString("Defaults","Generator","") == "Automatic" )
 		{
 			CGDIGenerator *m_pGenerator;
-			int display_mode  = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode", DISPLAY_GDI_Hide);
+			int display_mode  = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode", DISPLAY_DEFAULT_MODE);
 			m_pGenerator = new CGDIGenerator(display_mode, false);
 			if (display_mode == DISPLAY_ccast)
 			{

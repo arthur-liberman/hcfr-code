@@ -2839,7 +2839,7 @@ void CDataSetDoc::WaitKey(int Anim)
 	
 	while ( !bKeyTyped )
 	{
-		if (Anim != 0 && GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide) != DISPLAY_ccast) //on/off patterns
+		if (Anim != 0 && GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_DEFAULT_MODE) != DISPLAY_ccast) //on/off patterns
 		{
 			if (OFF)
 			{
@@ -4209,7 +4209,7 @@ void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int Col
 
 bool CDataSetDoc::CheckVideoLevel()
 {
-	if ( !m_pGenerator->m_b16_235 && GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide) != DISPLAY_ccast )
+	if ( !m_pGenerator->m_b16_235 && GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_DEFAULT_MODE) != DISPLAY_ccast )
 	{
 		if (IDYES == GetColorApp()->InMeasureMessageBox( "Caution, pattern is designed for video level output\nand you have selected full range. Continue?", "Pattern display", MB_ICONQUESTION | MB_YESNO ) )
 			return TRUE;

@@ -40,6 +40,8 @@
 #define DISPLAY_ccast   4
 #define DISPLAY_GDI_Hide 5
 
+#define DISPLAY_DEFAULT_MODE	DISPLAY_GDI
+
 // Overlay surface resolution (can be anything)
 #define OVERLAY_SURFACE_WIDTH	720
 #define OVERLAY_SURFACE_HEIGHT	576

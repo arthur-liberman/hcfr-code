@@ -46,7 +46,7 @@ CGDIGenePropPage::CGDIGenePropPage() : CPropertyPageWithHelp(CGDIGenePropPage::I
 	m_Intensity = 0;
 	//}}AFX_DATA_INIT
 	m_activeMonitorNum = 0;
-	m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide);
+	m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_DEFAULT_MODE);
 	m_b16_235 = FALSE;
 	m_busePic = FALSE;
     m_madVR_3d = FALSE;

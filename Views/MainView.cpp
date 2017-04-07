@@ -5424,7 +5424,7 @@ void CMainView::OnInitDefaults()
 		GetConfig()->LoadSettings();
 		GetConfig()->ApplySettings(TRUE);
 		GetConfig()->WriteProfileString ( "Options", "Language", strlang );
-		GetConfig()->WriteProfileInt("GDIGenerator","DisplayMode", DISPLAY_GDI_Hide);
+		GetConfig()->WriteProfileInt("GDIGenerator","DisplayMode", DISPLAY_DEFAULT_MODE);
 		GetDocument()->GetGenerator()->Configure();
 		GetConfig()->SaveSettings();
 		GetConfig()->m_bSave = TRUE;
