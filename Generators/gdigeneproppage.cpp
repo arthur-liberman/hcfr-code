@@ -54,6 +54,7 @@ CGDIGenePropPage::CGDIGenePropPage() : CPropertyPageWithHelp(CGDIGenePropPage::I
 	m_madVR_OSD = FALSE;
 	m_bdispTrip = FALSE;
 	m_bLinear = FALSE;
+	m_bHdr10 = FALSE;
 }
 
 CGDIGenePropPage::~CGDIGenePropPage()
@@ -82,6 +83,7 @@ void CGDIGenePropPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_USEPIC, m_busePic);
 	DDX_Check(pDX, IDC_DISP_TRIP, m_bdispTrip);
 	DDX_Check(pDX, IDC_DISP_TRIP2, m_bLinear);
+	DDX_Check(pDX, IDC_ENBL_HDR, m_bHdr10);
 	//}}AFX_DATA_MAP
 }
 
@@ -138,6 +140,19 @@ void CGDIGenePropPage::OnOK()
 			m_b16_235 = FALSE;
 	}
 
+	if (m_nDisplayMode == DISPLAY_GDI || m_nDisplayMode == DISPLAY_GDI_Hide || m_nDisplayMode == DISPLAY_GDI_nBG)
+	{
+		GetDlgItem(IDC_ENBL_HDR)->EnableWindow(TRUE);
+		if ( IsDlgButtonChecked ( IDC_ENBL_HDR ) )
+			m_bHdr10 = TRUE;
+		else
+			m_bHdr10 = FALSE;
+	}
+	else
+	{
+		GetDlgItem(IDC_ENBL_HDR)->EnableWindow(FALSE);
+	}
+
 	CheckRadioButton ( IDC_RGBLEVEL_RADIO1, IDC_RGBLEVEL_RADIO2, IDC_RGBLEVEL_RADIO1 + m_b16_235 );
 	CheckRadioButton ( IDC_RADIO1,  IDC_RADIO1 + m_nDisplayMode , IDC_RADIO1 + m_nDisplayMode );
 
@@ -145,6 +160,7 @@ void CGDIGenePropPage::OnOK()
 	m_pGenerator.m_nDisplayMode = m_nDisplayMode;
 	GetConfig()->WriteProfileInt("GDIGenerator","DisplayMode",m_nDisplayMode);
 	GetConfig()->WriteProfileInt("GDIGenerator","RGB_16_235",m_b16_235);
+	GetConfig()->WriteProfileInt("GDIGenerator","EnableHDR10",m_bHdr10);
 	if (m_nDisplayMode == DISPLAY_ccast && m_GCast.getCount() > 0)
 	{
 		char nameBuf[1024];
@@ -231,6 +247,19 @@ BOOL CGDIGenePropPage::OnSetActive()
 			m_b16_235 = FALSE;
 	}
 
+	if (m_nDisplayMode == DISPLAY_GDI || m_nDisplayMode == DISPLAY_GDI_Hide || m_nDisplayMode == DISPLAY_GDI_nBG)
+	{
+		GetDlgItem(IDC_ENBL_HDR)->EnableWindow(TRUE);
+		if ( IsDlgButtonChecked ( IDC_ENBL_HDR ) )
+			m_bHdr10 = TRUE;
+		else
+			m_bHdr10 = FALSE;
+	}
+	else
+	{
+		GetDlgItem(IDC_ENBL_HDR)->EnableWindow(FALSE);
+	}
+
 	return CPropertyPageWithHelp::OnSetActive();
 }
 
@@ -269,6 +298,16 @@ BOOL CGDIGenePropPage::OnKillActive()
 	{
 		m_b16_235 = FALSE;
 	}
+	if ( IsDlgButtonChecked ( IDC_ENBL_HDR ) )
+	{
+		m_bHdr10 = TRUE;
+	}
+	else
+	{
+		m_bHdr10 = FALSE;
+	}
+
+
 	CheckRadioButton ( IDC_RGBLEVEL_RADIO1, IDC_RGBLEVEL_RADIO2, IDC_RGBLEVEL_RADIO1 + m_b16_235 );
 	CheckRadioButton ( IDC_RADIO1,  IDC_RADIO1 + m_nDisplayMode , IDC_RADIO1 + m_nDisplayMode );
 
@@ -361,6 +400,19 @@ void CGDIGenePropPage::OnClickmadVR()
 			m_b16_235 = TRUE;
 		else
 			m_b16_235 = FALSE;
+	}
+
+	if (m_nDisplayMode == DISPLAY_GDI || m_nDisplayMode == DISPLAY_GDI_Hide || m_nDisplayMode == DISPLAY_GDI_nBG)
+	{
+		GetDlgItem(IDC_ENBL_HDR)->EnableWindow(TRUE);
+		if ( IsDlgButtonChecked ( IDC_ENBL_HDR ) )
+			m_bHdr10 = TRUE;
+		else
+			m_bHdr10 = FALSE;
+	}
+	else
+	{
+		GetDlgItem(IDC_ENBL_HDR)->EnableWindow(FALSE);
 	}
 }
 

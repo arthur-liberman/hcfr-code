@@ -70,6 +70,7 @@ public:
 	BOOL					m_busePic;
 	BOOL					m_bdispTrip;
 	BOOL					m_bLinear;
+	BOOL					m_bHdr10;
 	BOOL					m_bVideoScale;
 
 	BOOL					m_bTestOverlay;

@@ -89,6 +89,7 @@ CGDIGenerator::CGDIGenerator()
 	m_b16_235 = GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0);
 	m_busePic = GetConfig()->GetProfileInt("GDIGenerator","USEPIC",0);
 	m_bLinear = GetConfig()->GetProfileInt("GDIGenerator","LOADLINEAR",1);
+	m_bHdr10 = GetConfig()->GetProfileInt("GDIGenerator","EnableHDR10",0);
 	m_bdispTrip = GetConfig()->GetProfileInt("GDIGenerator","DISPLAYTRIPLETS",1);
     m_madVR_3d = GetConfig()->GetProfileInt("GDIGenerator","MADVR3D",0);
     m_madVR_vLUT = GetConfig()->GetProfileInt("GDIGenerator","MADVRvLUT",0);
@@ -120,6 +121,7 @@ CGDIGenerator::CGDIGenerator(int nDisplayMode, BOOL b16_235)
 	m_displayWindow.m_busePic=FALSE;
 	m_displayWindow.m_bdispTrip=FALSE;
 	m_displayWindow.m_bLinear=FALSE;
+	m_displayWindow.m_bHdr10=FALSE;
 
 	GetMonitorList();
 	m_activeMonitorNum = m_monitorNb-1;
@@ -336,6 +338,13 @@ void CGDIGenerator::GetPropertiesSheetValues()
 	{
 		m_bLinear=m_GDIGenePropertiesPage.m_bLinear;
 		GetConfig()->WriteProfileInt("GDIGenerator","LOADLINEAR",m_bLinear);
+		SetModifiedFlag(TRUE);
+	}
+
+	if ( m_bHdr10!=m_GDIGenePropertiesPage.m_bHdr10 )
+	{
+		m_bHdr10=m_GDIGenePropertiesPage.m_bHdr10;
+		GetConfig()->WriteProfileInt("GDIGenerator","EnableHDR10",m_bLinear);
 		SetModifiedFlag(TRUE);
 	}
 

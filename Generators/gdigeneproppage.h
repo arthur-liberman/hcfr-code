@@ -64,6 +64,7 @@ public:
     BOOL m_madVR_vLUT;
 	BOOL m_madVR_OSD;
 	BOOL m_bLinear;
+	BOOL m_bHdr10;
 
 	HMONITOR	m_monitorHandle [ 16 ];
 	CGoogleCastWrapper m_GCast;

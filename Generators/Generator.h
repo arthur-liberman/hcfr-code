@@ -77,6 +77,7 @@ public:
 	BOOL m_b16_235;
 	BOOL m_busePic;
 	BOOL m_bLinear;
+	BOOL m_bHdr10;
 	BOOL m_bdispTrip;
     BOOL m_madVR_3d;
     BOOL m_madVR_vLUT;
