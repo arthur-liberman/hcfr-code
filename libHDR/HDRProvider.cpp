@@ -86,6 +86,11 @@ HDR_TYPE HDRProvider::GetSupportedHDRModes()
 	return m_ApiInterface ? m_ApiInterface->GetSupportedHDRModes() : HDR_TYPE_HDR10;
 }
 
+HDR_TYPE HDRProvider::GetCurrentHDRMode()
+{
+	return m_ApiInterface ? m_ApiInterface->GetCurrentHDRMode() : m_HdrMode;
+}
+
 HDR_STATUS HDRProvider::SetHDR10Mode(bool enable, const LIBHDR_HDR_METADATA_HDR10 &metaData)
 {
 	HDR_STATUS ret = HDR_OK;
@@ -97,6 +102,8 @@ HDR_STATUS HDRProvider::SetHDR10Mode(bool enable, const LIBHDR_HDR_METADATA_HDR1
 			ret = m_ApiInterface->SetHDR10Mode(enable, metaData);
 		else
 			ret = setDxHDRMode(enable, metaData);
+		if (SUCCEEDED(ret))
+			m_HdrMode = enable ? HDR_TYPE_HDR10 : HDR_TYPE_NONE;
 	}
 
 	return ret;

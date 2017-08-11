@@ -18,7 +18,7 @@ typedef enum
 
 typedef enum
 {
-	HDR_TYPE_HDR10 = 0x01, HDR_TYPE_HDR10_PLUS = 0x02, HDR_TYPE_DOLBY_VISION = 0x04, HDR_TYPE_HLG = 0x08,
+	HDR_TYPE_NONE = 0x00, HDR_TYPE_HDR10 = 0x01, HDR_TYPE_HDR10_PLUS = 0x02, HDR_TYPE_DOLBY_VISION = 0x04, HDR_TYPE_HLG = 0x08,
 } HDR_TYPE;
 
 // Identical to DXGI_HDR_METADATA_HDR10, see MSDN for instructions.
@@ -37,11 +37,15 @@ typedef struct LIBHDR_HDR_METADATA_HDR10
 class IHdrInterface
 {
 public:
-	IHdrInterface(HWND hWnd, HMONITOR hMonitor) { UNREFERENCED_PARAMETER(hWnd); UNREFERENCED_PARAMETER(hMonitor); }
+	IHdrInterface(HWND hWnd, HMONITOR hMonitor) : m_HdrMode(HDR_TYPE_NONE) { UNREFERENCED_PARAMETER(hWnd); UNREFERENCED_PARAMETER(hMonitor); }
 	virtual ~IHdrInterface() {}
 	virtual HDR_TYPE GetSupportedHDRModes() = 0;
+	virtual HDR_TYPE GetCurrentHDRMode() { return m_HdrMode; }
 	virtual HDR_STATUS SetHDR10Mode(bool enable, const LIBHDR_HDR_METADATA_HDR10 &metaData) = 0;
 	virtual int GetLastError() = 0;
+
+protected:
+	HDR_TYPE m_HdrMode;
 };
 
 IHdrInterface LIBHDR_DLL_EXPORT *GetHdrInterface(HWND hWnd, HMONITOR hMonitor);

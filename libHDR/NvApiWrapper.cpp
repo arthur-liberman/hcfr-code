@@ -33,6 +33,9 @@ HDR_STATUS NvApi::SetHDR10Mode(bool hdrOn, const LIBHDR_HDR_METADATA_HDR10 &meta
 {
 	HDR_STATUS ret = HDR_NV_DISPLAY_NOT_FOUND;
 
+	if ((hdrOn && m_HdrMode == HDR_TYPE_HDR10) || (!hdrOn && m_HdrMode == HDR_TYPE_NONE))
+		return HDR_OK;
+
 	if (m_DisplayId)
 	{
 		NV_HDR_COLOR_DATA hdrColorData;
@@ -40,6 +43,8 @@ HDR_STATUS NvApi::SetHDR10Mode(bool hdrOn, const LIBHDR_HDR_METADATA_HDR10 &meta
 		hdrColorData.hdrMode = hdrOn ? NV_HDR_MODE_UHDA_PASSTHROUGH : NV_HDR_MODE_OFF;
 		NvU32 nvStatus = NvAPI_Disp_HdrColorControl(m_DisplayId, &hdrColorData);
 		ret = nvStatus == NVAPI_OK ? HDR_OK : HDR_SET_HDR_NV_FAILED;
+		if (SUCCEEDED(ret))
+			m_HdrMode = hdrOn ? HDR_TYPE_HDR10 : HDR_TYPE_NONE;
 	}
 
 	return ret;

@@ -10,6 +10,7 @@ public:
 	HDRProvider(HWND hWnd, HMONITOR hMonitor);
 	virtual ~HDRProvider();
 	virtual HDR_TYPE GetSupportedHDRModes();
+	virtual HDR_TYPE GetCurrentHDRMode();
 	virtual HDR_STATUS SetHDR10Mode(bool enable, const LIBHDR_HDR_METADATA_HDR10 &metaData);
 	virtual inline int GetLastError() { return m_LastError; }
 
