@@ -9,14 +9,16 @@ class HDRProvider : public IHdrInterface
 public:
 	HDRProvider(HWND hWnd, HMONITOR hMonitor);
 	virtual ~HDRProvider();
-	virtual HDR_TYPE GetSupportedHDRModes();
-	virtual HDR_TYPE GetCurrentHDRMode();
+	virtual HDR_TYPE GetSupportedHDRModes() const;
+	virtual HDR_TYPE GetCurrentHDRMode() const;
+	virtual void SetWindowMonitor(HWND hWnd, HMONITOR hMonitor);
 	virtual HDR_STATUS SetHDR10Mode(bool enable, const LIBHDR_HDR_METADATA_HDR10 &metaData);
-	virtual inline int GetLastError() { return m_LastError; }
+	virtual int GetLastError() { return m_LastError; }
 
 private:
 	HDR_STATUS  setDirectX(bool hdrOn);
 	void cleanUpDirectX();
+	void fullCleanUp();
 
 	HDR_STATUS initDxgiFactory();
 	HDR_STATUS initAdapters();
@@ -27,9 +29,7 @@ private:
 	HDR_STATUS initSwapChain(bool hdrOn);
 	HDR_STATUS setDxHDRMode(bool hdrOn, const LIBHDR_HDR_METADATA_HDR10 &metaData);
 
-	HWND m_hWnd;
 	DXGI_OUTPUT_DESC m_OutputDesc;
-	HMONITOR m_hMonitor;
 	RECT m_MonitorResolution;
 	std::string m_MonitorDeviceName;
 

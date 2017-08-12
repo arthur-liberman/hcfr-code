@@ -46,18 +46,18 @@
 	x.size = sizeof(x);
 #endif
 
-IHdrInterface LIBHDR_DLL_EXPORT *GetHdrInterface(HWND hWnd, HMONITOR hMonitor)
+IHdrInterface LIBHDR_DLL_EXPORT *GetNewHdrInterface(HWND hWnd, HMONITOR hMonitor)
 {
-	static IHdrInterface *hdrInterface = nullptr;
-	if (hdrInterface == nullptr)
-		hdrInterface = new HDRProvider(hWnd, hMonitor);
-
+	OutputDebugString(TEXT("Enter: GetNewHdrInterface"));
+	IHdrInterface *hdrInterface = new HDRProvider(hWnd, hMonitor);
+	OutputDebugString(TEXT("Exit: GetNewHdrInterface"));
 	return hdrInterface;
 }
 
 HDRProvider::HDRProvider(HWND hWnd, HMONITOR hMonitor)
 	: IHdrInterface(hWnd, hMonitor)
 {
+	OutputDebugString(TEXT("Enter: HDRProvider::HDRProvider"));
 	m_LastError = S_OK;
 	m_DxReady = false;
 	m_Dxgi_Library = nullptr;
@@ -68,31 +68,54 @@ HDRProvider::HDRProvider(HWND hWnd, HMONITOR hMonitor)
 	m_ActiveAdapter = nullptr;
 	m_ApiInterface = nullptr;
 
-	m_hWnd = hWnd;
-	m_hMonitor = hMonitor;
 	ZeroMemory(&m_MonitorResolution, sizeof(RECT));
+	OutputDebugString(TEXT("Exit: HDRProvider::HDRProvider"));
 }
 
 HDRProvider::~HDRProvider()
 {
+	OutputDebugString(TEXT("Enter: HDRProvider::~HDRProvider"));
+	fullCleanUp();
+	OutputDebugString(TEXT("Exit: HDRProvider::~HDRProvider"));
+}
+
+void HDRProvider::fullCleanUp()
+{
+	OutputDebugString(TEXT("Enter: HDRProvider::fullCleanUp"));
 	LIBHDR_HDR_METADATA_HDR10 metaData = {0};
 	SetHDR10Mode(false, metaData);
 	cleanUpDirectX();
 	SAFE_DELETE(m_ApiInterface);
+	OutputDebugString(TEXT("Exit: HDRProvider::fullCleanUp"));
 }
 
-HDR_TYPE HDRProvider::GetSupportedHDRModes()
+HDR_TYPE HDRProvider::GetSupportedHDRModes() const
 {
+	OutputDebugString(TEXT("Enter: HDRProvider::GetSupportedHDRModes"));
+	OutputDebugString(TEXT("Exit: HDRProvider::GetSupportedHDRModes"));
 	return m_ApiInterface ? m_ApiInterface->GetSupportedHDRModes() : HDR_TYPE_HDR10;
 }
 
-HDR_TYPE HDRProvider::GetCurrentHDRMode()
+HDR_TYPE HDRProvider::GetCurrentHDRMode() const
 {
+	OutputDebugString(TEXT("Enter: HDRProvider::GetCurrentHDRMode"));
+	OutputDebugString(TEXT("Exit: HDRProvider::GetCurrentHDRMode"));
 	return m_ApiInterface ? m_ApiInterface->GetCurrentHDRMode() : m_HdrMode;
+}
+
+void HDRProvider::SetWindowMonitor(HWND hWnd, HMONITOR hMonitor)
+{
+	OutputDebugString(TEXT("Enter: HDRProvider::SetWindowMonitor"));
+	if (hWnd != m_hWnd || hMonitor != m_hMonitor)
+		fullCleanUp();
+	m_hWnd = hWnd;
+	m_hMonitor = hMonitor;
+	OutputDebugString(TEXT("Exit: HDRProvider::SetWindowMonitor"));
 }
 
 HDR_STATUS HDRProvider::SetHDR10Mode(bool enable, const LIBHDR_HDR_METADATA_HDR10 &metaData)
 {
+	OutputDebugString(TEXT("Enter: HDRProvider::SetHDR10Mode"));
 	HDR_STATUS ret = HDR_OK;
 
 	ret = setDirectX(enable);
@@ -106,11 +129,13 @@ HDR_STATUS HDRProvider::SetHDR10Mode(bool enable, const LIBHDR_HDR_METADATA_HDR1
 			m_HdrMode = enable ? HDR_TYPE_HDR10 : HDR_TYPE_NONE;
 	}
 
+	OutputDebugString(TEXT("Exit: HDRProvider::SetHDR10Mode"));
 	return ret;
 }
 
 HDR_STATUS HDRProvider::setDirectX(bool hdrOn)
 {
+	OutputDebugString(TEXT("Enter: HDRProvider::setDirectX"));
 	HDR_STATUS ret = HDR_OK;
 
 	if (!m_DxReady)
@@ -133,11 +158,13 @@ HDR_STATUS HDRProvider::setDirectX(bool hdrOn)
 		m_DxReady = SUCCEEDED(ret);
 	}
 
+	OutputDebugString(TEXT("Exit: HDRProvider::setDirectX"));
 	return ret;
 }
 
 HDR_STATUS HDRProvider::initDxgiFactory()
 {
+	OutputDebugString(TEXT("Enter: HDRProvider::initDxgiFactory"));
 	HDR_STATUS ret = HDR_DXGI_NOT_FOUND;
 
 	m_LastError = S_OK;
@@ -157,11 +184,13 @@ HDR_STATUS HDRProvider::initDxgiFactory()
 		}
 	}
 
+	OutputDebugString(TEXT("Exit: HDRProvider::initDxgiFactory"));
 	return ret;
 }
 
 HDR_STATUS HDRProvider::initAdapters()
 {
+	OutputDebugString(TEXT("Enter: HDRProvider::initAdapters"));
 	int i = 0;
 	IDXGIAdapter1 *pAdapter;
 	DXGI_ADAPTER_DESC desc;
@@ -179,11 +208,13 @@ HDR_STATUS HDRProvider::initAdapters()
 		}
 	}
 
+	OutputDebugString(TEXT("Exit: HDRProvider::initAdapters"));
 	return m_Adapters.size() > 0 ? HDR_OK : HDR_ADAPTERS_NOT_FOUND;
 }
 
 HDR_STATUS HDRProvider::mapDisplayToAdapter()
 {
+	OutputDebugString(TEXT("Enter: HDRProvider::mapDisplayToAdapter"));
 	HDR_STATUS ret = HDR_DISPLAYS_NOT_FOUND;
 
 	IDXGIOutput *pOutput;
@@ -205,11 +236,13 @@ HDR_STATUS HDRProvider::mapDisplayToAdapter()
 		}
 	}
 
+	OutputDebugString(TEXT("Exit: HDRProvider::mapDisplayToAdapter"));
 	return ret;
 }
 
 HDR_STATUS HDRProvider::initMonitor(const DXGI_OUTPUT_DESC &outputDesc)
 {
+	OutputDebugString(TEXT("Enter: HDRProvider::initMonitor"));
 	DISPLAY_DEVICE monitor;
 	INIT_STRUCT(monitor, cb);
 	HDR_STATUS ret = HDR_DISPLAY_INIT_FAILED;
@@ -224,21 +257,25 @@ HDR_STATUS HDRProvider::initMonitor(const DXGI_OUTPUT_DESC &outputDesc)
 		ret = HDR_OK;
 	}
 
+	OutputDebugString(TEXT("Exit: HDRProvider::initMonitor"));
 	return ret;
 }
 
 HDR_STATUS HDRProvider::initApiInterface()
 {
+	OutputDebugString(TEXT("Enter: HDRProvider::initApiInterface"));
 	SAFE_DELETE(m_ApiInterface);
 	m_ApiInterface = new NvApi();
 	if (!m_ApiInterface->MonitorExists(m_MonitorDeviceName.c_str()))
 		SAFE_DELETE(m_ApiInterface);
 
+	OutputDebugString(TEXT("Exit: HDRProvider::initApiInterface"));
 	return HDR_OK;
 }
 
 HDR_STATUS HDRProvider::initDx12()
 {
+	OutputDebugString(TEXT("Enter: HDRProvider::initDx12"));
 	HDR_STATUS ret = HDR_D3D12_RUNTIME_NOT_FOUND;
 
 	m_LastError = S_OK;
@@ -268,11 +305,13 @@ HDR_STATUS HDRProvider::initDx12()
 		}
 	}
 
+	OutputDebugString(TEXT("Exit: HDRProvider::initDx12"));
 	return ret;
 }
 
 HDR_STATUS HDRProvider::initSwapChain(bool hdrOn)
 {
+	OutputDebugString(TEXT("Enter: HDRProvider::initSwapChain"));
 	HDR_STATUS ret = HDR_CREATE_SWAP_CHAIN_FAILED;
 
 	IDXGISwapChain1 *swapChain1;
@@ -301,21 +340,25 @@ HDR_STATUS HDRProvider::initSwapChain(bool hdrOn)
 		SAFE_RELEASE(swapChain1);
 	}
 
+	OutputDebugString(TEXT("Exit: HDRProvider::initSwapChain"));
 	return ret;
 }
 
 HDR_STATUS HDRProvider::setDxHDRMode(bool hdrOn, const LIBHDR_HDR_METADATA_HDR10 &metaData)
 {
+	OutputDebugString(TEXT("Enter: HDRProvider::setDxHDRMode"));
 	if (hdrOn)
 		m_LastError = m_SwapChain4->SetHDRMetaData(DXGI_HDR_METADATA_TYPE_HDR10, sizeof(metaData), (void*)&metaData);
 	else
 		m_LastError = m_SwapChain4->SetHDRMetaData(DXGI_HDR_METADATA_TYPE_NONE, 0, NULL);
 
+	OutputDebugString(TEXT("Exit: HDRProvider::setDxHDRMode"));
 	return SUCCEEDED(m_LastError) ? HDR_OK : HDR_SET_HDR_DX_FAILED;
 }
 
 void HDRProvider::cleanUpDirectX()
 {
+	OutputDebugString(TEXT("Enter: HDRProvider::cleanUpDirectX"));
 	SAFE_RELEASE(m_SwapChain4);
 	SAFE_RELEASE(m_CommandQueue);
 	SAFE_RELEASE(m_D3D12Device);
@@ -331,4 +374,5 @@ void HDRProvider::cleanUpDirectX()
 	SAFE_FREE_LIB(m_Dxgi_Library);
 	m_DxReady = false;
 	m_LastError = S_OK;
+	OutputDebugString(TEXT("Exit: HDRProvider::cleanUpDirectX"));
 }

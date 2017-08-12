@@ -2,35 +2,46 @@
 
 NvApi::NvApi()
 {
+	OutputDebugString(TEXT("Enter: NvApi::NvApi"));
 	NvAPI_Initialize();
 	m_DisplayId = 0;
+	OutputDebugString(TEXT("Exit: NvApi::NvApi"));
 }
 
 NvApi::~NvApi()
 {
+	OutputDebugString(TEXT("Enter: NvApi::~NvApi"));
 	NvAPI_Unload();
+	OutputDebugString(TEXT("Exit: NvApi::~NvApi"));
 }
 
 bool NvApi::MonitorExists(const char *deviceName)
 {
+	OutputDebugString(TEXT("Enter: NvApi::MonitorExists"));
 	NvU32 nvStatus = NvAPI_DISP_GetDisplayIdByDisplayName(deviceName, &m_DisplayId);
 	bool ret = nvStatus == NVAPI_OK;
 
+	OutputDebugString(TEXT("Exit: NvApi::MonitorExists"));
 	return ret;
 }
 
 bool NvApi::Initialize()
 {
+	OutputDebugString(TEXT("Enter: NvApi::Initialize"));
+	OutputDebugString(TEXT("Exit: NvApi::Initialize"));
 	return true;
 }
 
-HDR_TYPE NvApi::GetSupportedHDRModes()
+HDR_TYPE NvApi::GetSupportedHDRModes() const
 {
+	OutputDebugString(TEXT("Enter: NvApi::GetSupportedHDRModes"));
+	OutputDebugString(TEXT("Exit: NvApi::GetSupportedHDRModes"));
 	return HDR_TYPE_HDR10;
 }
 
 HDR_STATUS NvApi::SetHDR10Mode(bool hdrOn, const LIBHDR_HDR_METADATA_HDR10 &metaData)
 {
+	OutputDebugString(TEXT("Enter: NvApi::SetHDR10Mode"));
 	HDR_STATUS ret = HDR_NV_DISPLAY_NOT_FOUND;
 
 	if ((hdrOn && m_HdrMode == HDR_TYPE_HDR10) || (!hdrOn && m_HdrMode == HDR_TYPE_NONE))
@@ -47,11 +58,13 @@ HDR_STATUS NvApi::SetHDR10Mode(bool hdrOn, const LIBHDR_HDR_METADATA_HDR10 &meta
 			m_HdrMode = hdrOn ? HDR_TYPE_HDR10 : HDR_TYPE_NONE;
 	}
 
+	OutputDebugString(TEXT("Exit: NvApi::SetHDR10Mode"));
 	return ret;
 }
 
 void NvApi::convertMetaDataStruct(NV_HDR_COLOR_DATA &destination, const LIBHDR_HDR_METADATA_HDR10 &source)
 {
+	OutputDebugString(TEXT("Enter: NvApi::convertMetaDataStruct"));
 	destination.version = NV_HDR_COLOR_DATA_VER;
 	destination.cmd = NV_HDR_CMD_SET;
 	destination.hdrMode = NV_HDR_MODE_OFF;
@@ -69,4 +82,5 @@ void NvApi::convertMetaDataStruct(NV_HDR_COLOR_DATA &destination, const LIBHDR_H
 	destination.mastering_display_data.min_display_mastering_luminance = (NvU16)source.MinMasteringLuminance;
 	destination.mastering_display_data.max_content_light_level = source.MaxContentLightLevel;
 	destination.mastering_display_data.max_frame_average_light_level = source.MaxFrameAverageLightLevel;
+	OutputDebugString(TEXT("Exit: NvApi::convertMetaDataStruct"));
 }

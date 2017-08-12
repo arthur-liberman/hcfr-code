@@ -37,15 +37,20 @@ typedef struct LIBHDR_HDR_METADATA_HDR10
 class IHdrInterface
 {
 public:
-	IHdrInterface(HWND hWnd, HMONITOR hMonitor) : m_HdrMode(HDR_TYPE_NONE) { UNREFERENCED_PARAMETER(hWnd); UNREFERENCED_PARAMETER(hMonitor); }
+	IHdrInterface(HWND hWnd, HMONITOR hMonitor) : m_HdrMode(HDR_TYPE_NONE), m_hMonitor(hMonitor), m_hWnd(hWnd) { }
 	virtual ~IHdrInterface() {}
-	virtual HDR_TYPE GetSupportedHDRModes() = 0;
-	virtual HDR_TYPE GetCurrentHDRMode() { return m_HdrMode; }
+	virtual HDR_TYPE GetSupportedHDRModes() const = 0;
+	virtual HDR_TYPE GetCurrentHDRMode() const { return m_HdrMode; }
+	virtual HMONITOR GetCurrentMonitor() const { return m_hMonitor; }
+	virtual HWND GetCurrentWindow() const { return m_hWnd; }
+	virtual void SetWindowMonitor(HWND hWnd, HMONITOR hMonitor) { m_hWnd = hWnd;  m_hMonitor = hMonitor; }
 	virtual HDR_STATUS SetHDR10Mode(bool enable, const LIBHDR_HDR_METADATA_HDR10 &metaData) = 0;
 	virtual int GetLastError() = 0;
 
 protected:
+	HWND m_hWnd;
+	HMONITOR m_hMonitor;
 	HDR_TYPE m_HdrMode;
 };
 
-IHdrInterface LIBHDR_DLL_EXPORT *GetHdrInterface(HWND hWnd, HMONITOR hMonitor);
+IHdrInterface LIBHDR_DLL_EXPORT *GetNewHdrInterface(HWND hWnd, HMONITOR hMonitor);

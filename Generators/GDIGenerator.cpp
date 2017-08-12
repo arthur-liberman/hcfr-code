@@ -81,6 +81,7 @@ CGDIGenerator::CGDIGenerator()
 	m_bgStimPercent = m_displayWindow.m_bgStimPercent;
 	m_Intensity = m_displayWindow.m_Intensity;
 	m_patternDGenerator=NULL;
+	m_HdrInterface=NULL;
 
 	GetMonitorList();
 	m_activeMonitorNum = m_monitorNb-1;
@@ -122,6 +123,7 @@ CGDIGenerator::CGDIGenerator(int nDisplayMode, BOOL b16_235)
 	m_displayWindow.m_bdispTrip=FALSE;
 	m_displayWindow.m_bLinear=FALSE;
 	m_displayWindow.m_bHdr10=FALSE;
+	m_HdrInterface=NULL;
 
 	GetMonitorList();
 	m_activeMonitorNum = m_monitorNb-1;
@@ -144,6 +146,11 @@ CGDIGenerator::CGDIGenerator(int nDisplayMode, BOOL b16_235)
 
 CGDIGenerator::~CGDIGenerator()
 {
+	if (m_HdrInterface)
+	{
+		OutputDebugString("Destroy existing HdrInterface");
+		delete m_HdrInterface;
+	}
 } 
 
 void CGDIGenerator::Copy(CGenerator * p)
@@ -400,6 +407,49 @@ BOOL CGDIGenerator::Init(UINT nbMeasure, bool isSpecial)
 	m_displayWindow.SetDisplayMode(m_nDisplayMode);
 	m_displayWindow.SetRGBScale(m_b16_235);
 	m_displayWindow.MoveToMonitor(m_hMonitor[m_activeMonitorNum]);
+
+	if (!m_HdrInterface)
+	{
+		OutputDebugString("Create HdrInterface");
+		m_HdrInterface = GetNewHdrInterface(m_displayWindow.hWnd, m_hMonitor[m_activeMonitorNum]);
+	}
+	else
+	{
+		OutputDebugString("Set HdrInterface's hMonitor and hWnd");
+		m_HdrInterface->SetWindowMonitor(m_displayWindow.hWnd, m_hMonitor[m_activeMonitorNum]);
+	}
+	if (m_HdrInterface)
+	{
+		OutputDebugString("HdrInterface exists");
+		OutputDebugString(m_bHdr10 ? "HDR10 enabled":"HDR10 disabled");
+		LIBHDR_HDR_METADATA_HDR10 metaData = {0};
+		if (m_bHdr10)
+		{
+			metaData.RedPrimary[0] = UINT16(0.680 * 50000.0);
+			metaData.RedPrimary[1] = UINT16(0.320 * 50000.0);
+			metaData.GreenPrimary[0] = UINT16(0.265 * 50000.0);
+			metaData.GreenPrimary[1] = UINT16(0.690 * 50000.0);
+			metaData.BluePrimary[0] = UINT16(0.150 * 50000.0);
+			metaData.BluePrimary[1] = UINT16(0.060 * 50000.0);
+			metaData.WhitePoint[0] = UINT16(0.3127 * 50000.0);
+			metaData.WhitePoint[1] = UINT16(0.3290 * 50000.0);
+			metaData.MaxMasteringLuminance = UINT(1000 * 10000.0);
+			metaData.MinMasteringLuminance = UINT(0.001 * 10000.0);
+			metaData.MaxContentLightLevel = 750;
+			metaData.MaxFrameAverageLightLevel = 300;
+		}
+		HDR_STATUS hdrStat = m_HdrInterface->SetHDR10Mode(m_bHdr10, metaData);
+		if (SUCCEEDED(hdrStat))
+			OutputDebugString("HDR mode switch successful");
+		else
+		{
+			char buffer[1024];
+			sprintf_s(buffer, "HDR mode switch failed, error number %d", (int)hdrStat);
+			OutputDebugString(buffer);
+		}
+	}
+	else
+		OutputDebugString("HdrInterface doesn't exist");
 
 //	if (m_nDisplayMode == DISPLAY_GDI_Hide)
 //	{

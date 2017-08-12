@@ -9,11 +9,11 @@ public:
 	NvApi();
 	virtual ~NvApi();
 
-	bool MonitorExists(const char *deviceName);
-	bool Initialize();
-	HDR_TYPE GetSupportedHDRModes();
-	HDR_STATUS SetHDR10Mode(bool enable, const LIBHDR_HDR_METADATA_HDR10 &metaData);
-	inline int GetLastError() { return m_LastError; }
+	virtual bool MonitorExists(const char *deviceName);
+	virtual bool Initialize();
+	virtual HDR_TYPE GetSupportedHDRModes() const;
+	virtual HDR_STATUS SetHDR10Mode(bool enable, const LIBHDR_HDR_METADATA_HDR10 &metaData);
+	virtual int GetLastError() { return m_LastError; }
 
 private:
 	DXGI_OUTPUT_DESC m_OutputDesc;
