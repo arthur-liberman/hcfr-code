@@ -351,7 +351,7 @@ void CGDIGenerator::GetPropertiesSheetValues()
 	if ( m_bHdr10!=m_GDIGenePropertiesPage.m_bHdr10 )
 	{
 		m_bHdr10=m_GDIGenePropertiesPage.m_bHdr10;
-		GetConfig()->WriteProfileInt("GDIGenerator","EnableHDR10",m_bLinear);
+		GetConfig()->WriteProfileInt("GDIGenerator","EnableHDR10",m_bHdr10);
 		SetModifiedFlag(TRUE);
 	}
 
@@ -425,6 +425,7 @@ BOOL CGDIGenerator::Init(UINT nbMeasure, bool isSpecial)
 		LIBHDR_HDR_METADATA_HDR10 metaData = {0};
 		if (m_bHdr10)
 		{
+			// Default to DCI/P3 primaries
 			metaData.RedPrimary[0] = UINT16(0.680 * 50000.0);
 			metaData.RedPrimary[1] = UINT16(0.320 * 50000.0);
 			metaData.GreenPrimary[0] = UINT16(0.265 * 50000.0);
@@ -433,10 +434,11 @@ BOOL CGDIGenerator::Init(UINT nbMeasure, bool isSpecial)
 			metaData.BluePrimary[1] = UINT16(0.060 * 50000.0);
 			metaData.WhitePoint[0] = UINT16(0.3127 * 50000.0);
 			metaData.WhitePoint[1] = UINT16(0.3290 * 50000.0);
-			metaData.MaxMasteringLuminance = UINT(1000 * 10000.0);
-			metaData.MinMasteringLuminance = UINT(0.001 * 10000.0);
-			metaData.MaxContentLightLevel = 750;
-			metaData.MaxFrameAverageLightLevel = 300;
+			// Default luminosity levels.
+			metaData.MaxMasteringLuminance = UINT(1000 * 10000.0);	// Max luminosity 1000	nits
+			metaData.MinMasteringLuminance = UINT(0.005 * 10000.0);	// Min luminosity 0.005	nits
+			metaData.MaxContentLightLevel = 1000;					// Max Content Light Level 1000  nits.
+			metaData.MaxFrameAverageLightLevel = 400;				// Frame Average Light Level 400 nits.
 		}
 		HDR_STATUS hdrStat = m_HdrInterface->SetHDR10Mode(m_bHdr10, metaData);
 		if (SUCCEEDED(hdrStat))

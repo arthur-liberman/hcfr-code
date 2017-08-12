@@ -54,7 +54,7 @@ CGDIGenePropPage::CGDIGenePropPage() : CPropertyPageWithHelp(CGDIGenePropPage::I
 	m_madVR_OSD = FALSE;
 	m_bdispTrip = FALSE;
 	m_bLinear = FALSE;
-	m_bHdr10 = FALSE;
+	m_bHdr10 = GetConfig()->GetProfileInt("GDIGenerator","EnableHDR10",0);
 }
 
 CGDIGenePropPage::~CGDIGenePropPage()
