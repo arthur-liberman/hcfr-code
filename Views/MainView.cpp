@@ -2043,7 +2043,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				if (m_displayMode == 4)
 					size=GetDocument()->GetMeasure()->GetNearWhiteScaleSize();
 
-				if ( nCol > 1 && nCol <= ((m_displayMode == 0)?nGrayScaleSize:size) )
+				if ( nCol >= 1 && nCol <= ((m_displayMode == 0)?nGrayScaleSize:size) )
 				{
 					CColor White = GetDocument()->GetMeasure()->GetOnOffWhite();
 					CColor Black;
@@ -2070,10 +2070,11 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						int mode = GetConfig()->m_GammaOffsetType;
 						if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 
-						if (  (mode >= 4) )
+						if ( mode >= 4 )
 						{
 							if (m_displayMode == 0)
 								valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
+							
 							if (mode == 5) 
 	                            valy = getL_EOTF(valx,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) * 100.;
 							else
