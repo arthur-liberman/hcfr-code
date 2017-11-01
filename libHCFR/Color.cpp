@@ -2276,7 +2276,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 	path = getenv("APPDATA");
 	strcpy(appPath, path);
 	strcat(appPath, "\\color");
-	bool bOk = true, constant_XYZ = FALSE;
+	bool bOk = true, constant_XYZ = FALSE, m_bRecalc = FALSE;
 	int n_elements=24;
 	switch (aCCMode)
 	{
@@ -2284,6 +2284,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 		{
 //GCD
 			constant_XYZ = TRUE;
+			m_bRecalc = TRUE;
 			GenColors [ 0 ] = ColorRGBDisplay( 0, 0, 0 );
             GenColors [ 1 ] = ColorRGBDisplay( 62.1, 62.1, 62.1 );
             GenColors [ 2 ] = ColorRGBDisplay( 73.06, 73.06, 73.06 );
@@ -2313,6 +2314,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 	case MCD:
 		{
 			constant_XYZ = TRUE;
+			m_bRecalc = TRUE;
 	 	    GenColors [ 23 ] = ColorRGBDisplay( 21, 20.5, 21 );
             GenColors [ 22 ] = ColorRGBDisplay( 32.88, 32.88, 32.88 );
             GenColors [ 21 ] = ColorRGBDisplay( 47.49, 47.49, 47.03 );
@@ -2342,6 +2344,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 	case CMC:
 		{
 			constant_XYZ = TRUE;
+			m_bRecalc = TRUE;
             GenColors [ 0 ] = ColorRGBDisplay( 100,	100,	100);
             GenColors [ 1 ] = ColorRGBDisplay( 89.9543379,	89.9543379,	89.9543379);
             GenColors [ 2 ] = ColorRGBDisplay( 82.19178082,	82.19178082,	82.19178082);
@@ -2372,6 +2375,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 	case CMS:
 		{
 			constant_XYZ = TRUE;
+			m_bRecalc = TRUE;
             GenColors [ 0 ] = ColorRGBDisplay( 100, 100, 100 );
             GenColors [ 1 ] = ColorRGBDisplay( 0, 0, 0 );
             GenColors [ 2 ] = ColorRGBDisplay( 43.83561644,	25.11415525,	15.06849315 );
@@ -2398,6 +2402,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 	case CPS:
 		{
 			constant_XYZ = TRUE;
+			m_bRecalc = TRUE;
             GenColors [ 0 ] = ColorRGBDisplay( 100, 100, 100 );
             GenColors [ 1 ] = ColorRGBDisplay( 84.47488584,	49.31506849,	34.24657534);
             GenColors [ 2 ] = ColorRGBDisplay( 78.99543379,	55.25114155,	48.40182648);
@@ -2424,6 +2429,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 	case SKIN:
 		{
 			constant_XYZ = TRUE;
+			m_bRecalc = TRUE;
             GenColors [ 0 ] = ColorRGBDisplay(100,87.67123288,76.71232877);
             GenColors [ 1 ] = ColorRGBDisplay(94.06392694,83.56164384,74.42922374);
             GenColors [ 2 ] = ColorRGBDisplay(93.15068493,80.82191781,70.3196347);
@@ -2452,6 +2458,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 		}
 	case AXIS:
 		{
+			m_bRecalc = FALSE;
 			GenColors [ 0 ] = ColorRGBDisplay(0,0,0);
 			for (int i=0;i<10;i++) {GenColors [ i + 1 ] = ColorRGBDisplay( (i+1) * 10,	(i+1) * 10,	(i+1) * 10);}
 			for (int i=0;i<10;i++) {GenColors [ i + 11 ] = ColorRGBDisplay( (i+1) * 10,	0,	0);}
@@ -2467,6 +2474,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
     case CCSG:
         {
 			constant_XYZ = TRUE;
+			m_bRecalc = TRUE;
             GenColors [ 0 ] = ColorRGBDisplay(	100	,	100	,	100	);
             GenColors [ 1 ] = ColorRGBDisplay(	87.2146119	,	87.2146119	,	87.2146119	);
             GenColors [ 2 ] = ColorRGBDisplay(	77.1689498	,	77.1689498	,	77.1689498	);
@@ -2568,6 +2576,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
         }
     case USER:
         {//read in user defined colors
+			m_bRecalc = FALSE;
             char m_ApplicationPath [MAX_PATH];
 			LPSTR lpStr;
             GetModuleFileName ( NULL, m_ApplicationPath, sizeof ( m_ApplicationPath ) );
@@ -2603,6 +2612,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 
 	case CM10SAT:
         {//read in user defined colors
+			m_bRecalc = TRUE;
 			strcat(appPath, "\\CM 10-Point Saturation (100AMP).csv");
 			ifstream colorFile(appPath);
             std::string line;
@@ -2633,6 +2643,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 
 	case CM10SAT75:
         {//read in user defined colors
+			m_bRecalc = TRUE;
 			strcat(appPath, "\\CM 10-Point Saturation (75AMP).csv");
             ifstream colorFile(appPath);
             std::string line;
@@ -2663,6 +2674,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 	
 	case CM4LUM:
         {//read in user defined colors
+			m_bRecalc = FALSE;
 			strcat(appPath, "\\CM 4-Point Luminance.csv");
             ifstream colorFile(appPath);
             std::string line;
@@ -2693,6 +2705,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 
 	case CM5LUM:
         {//read in user defined colors
+			m_bRecalc = FALSE;
 			strcat(appPath, "\\CM 5-Point Luminance.csv");
             ifstream colorFile(appPath);
             std::string line;
@@ -2723,6 +2736,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 	
 	case CM10LUM:
         {//read in user defined colors
+			m_bRecalc = FALSE;
 			strcat(appPath, "\\CM 10-Point Luminance.csv");
             ifstream colorFile(appPath);
             std::string line;
@@ -2753,6 +2767,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 	
 	case CM4SAT:
         {//read in user defined colors
+			m_bRecalc = TRUE;
 			strcat(appPath, "\\CM 4-Point Saturation (100AMP).csv");
             ifstream colorFile(appPath);
             std::string line;
@@ -2783,6 +2798,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 	
 	case CM4SAT75:
         {//read in user defined colors
+			m_bRecalc = TRUE;
 			strcat(appPath, "\\CM 4-Point Saturation (75AMP).csv");
             ifstream colorFile(appPath);
             std::string line;
@@ -2813,6 +2829,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 	
 	case CM5SAT:
         {//read in user defined colors
+			m_bRecalc = TRUE;
 			strcat(appPath, "\\CM 5-Point Saturation (100AMP).csv");
             ifstream colorFile(appPath);
             std::string line;
@@ -2843,6 +2860,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 	
 	case CM5SAT75:
         {//read in user defined colors
+			m_bRecalc = TRUE;
 			strcat(appPath, "\\CM 5-Point Saturation (75AMP).csv");
             ifstream colorFile(appPath);
             std::string line;
@@ -2873,6 +2891,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 	
 	case CM6NB:
         {//read in user defined colors
+			m_bRecalc = FALSE;
 			strcat(appPath, "\\CM 6-Point Near Black.csv");
             ifstream colorFile(appPath);
             std::string line;
@@ -2903,6 +2922,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 
 	case CMDNR:
         {//read in user defined colors
+			m_bRecalc = FALSE;
 			strcat(appPath, "\\CM Dynamic Range (Clipping).csv");
             ifstream colorFile(appPath);
             std::string line;
@@ -2933,6 +2953,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 
 	case RANDOM250:
         {//read in user defined colors
+			m_bRecalc = FALSE;
 			strcat(appPath, "\\Random_250.csv");
             ifstream colorFile(appPath);
             std::string line;
@@ -2963,6 +2984,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 	
 	case RANDOM500:
         {//read in user defined colors
+			m_bRecalc = FALSE;
 			strcat(appPath, "\\Random_500.csv");
             ifstream colorFile(appPath);
             std::string line;
@@ -2993,16 +3015,17 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 	}//switch
 
 	//HDR mode target recalculation
-	if (mode == 5 || mode == 7)
+	//Will recalc color checker and saturation based levels, luminance, random and user left as-is
+	if ( (mode == 5 || mode == 7 || mode == 8 || mode  == 9) && m_bRecalc )
 	{
 		CColor tempColor;
 		for (int i=0; i<n_elements; i++)
 		{
-			//Constant XYZ
-
+			//linearize
 			double r = pow(GenColors[i][0] / 100.,2.22);
 			double g = pow(GenColors[i][1] / 100.,2.22);
 			double b = pow(GenColors[i][2] / 100.,2.22);
+			//Constant XYZ - levels calculated to generate the same 709 XYZ values
 			if (constant_XYZ)		
 			{
 				tempColor.SetRGBValue(ColorRGB(r,g,b),CColorReference(HDTV));
@@ -3017,7 +3040,6 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 				tempColor.SetRGBValue(ColorRGB(r,g,b),colorReference.m_standard==UHDTV3?CColorReference(UHDTV2):colorReference);
 
 			ColorRGB aRGBColor = tempColor.GetRGBValue(colorReference.m_standard==UHDTV3?CColorReference(UHDTV2):colorReference);	
-
 			
 			r = getL_EOTF(aRGBColor[0], noDataColor, noDataColor,0.0,0.0,-1*mode);
 			g = getL_EOTF(aRGBColor[1], noDataColor, noDataColor,0.0,0.0,-1*mode);
@@ -3268,7 +3290,7 @@ double GrayLevelToGrayProp ( double Level, bool m_bUseRoundDown)
 
 double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double split, int mode)
 {
-	if (valx <= 0) return 0;
+	if (valx < 0) return 0;
 	if (valx > 1)
 	{
 		if (mode == 5)
