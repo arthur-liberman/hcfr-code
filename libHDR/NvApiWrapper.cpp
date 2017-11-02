@@ -20,7 +20,6 @@ bool NvApi::MonitorExists(const char *deviceName)
 	OutputDebugString(TEXT("Enter: NvApi::MonitorExists"));
 	NvU32 nvStatus = NvAPI_DISP_GetDisplayIdByDisplayName(deviceName, &m_DisplayId);
 	bool ret = nvStatus == NVAPI_OK;
-
 	OutputDebugString(TEXT("Exit: NvApi::MonitorExists"));
 	return ret;
 }

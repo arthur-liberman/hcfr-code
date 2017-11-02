@@ -435,8 +435,8 @@ BOOL CGDIGenerator::Init(UINT nbMeasure, bool isSpecial)
 			metaData.WhitePoint[0] = UINT16(0.3127 * 50000.0);
 			metaData.WhitePoint[1] = UINT16(0.3290 * 50000.0);
 			// Default luminosity levels.
-			metaData.MaxMasteringLuminance = UINT(1000 * 10000.0);	// Max luminosity 1000	nits
-			metaData.MinMasteringLuminance = UINT(0.005 * 10000.0);	// Min luminosity 0.005	nits
+			metaData.MaxMasteringLuminance = UINT(1000 * 10000.0);	// Max Mastering Luminance 1000  nits.
+			metaData.MinMasteringLuminance = UINT(0.005 * 10000.0);	// Min Mastering Luminance 0.005 nits.
 			metaData.MaxContentLightLevel = 1000;					// Max Content Light Level 1000  nits.
 			metaData.MaxFrameAverageLightLevel = 400;				// Frame Average Light Level 400 nits.
 		}

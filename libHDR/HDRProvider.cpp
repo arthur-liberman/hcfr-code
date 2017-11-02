@@ -92,15 +92,17 @@ void HDRProvider::fullCleanUp()
 HDR_TYPE HDRProvider::GetSupportedHDRModes() const
 {
 	OutputDebugString(TEXT("Enter: HDRProvider::GetSupportedHDRModes"));
+	HDR_TYPE modes = m_ApiInterface ? m_ApiInterface->GetSupportedHDRModes() : HDR_TYPE_HDR10;
 	OutputDebugString(TEXT("Exit: HDRProvider::GetSupportedHDRModes"));
-	return m_ApiInterface ? m_ApiInterface->GetSupportedHDRModes() : HDR_TYPE_HDR10;
+	return modes;
 }
 
 HDR_TYPE HDRProvider::GetCurrentHDRMode() const
 {
 	OutputDebugString(TEXT("Enter: HDRProvider::GetCurrentHDRMode"));
+	HDR_TYPE mode = m_ApiInterface ? m_ApiInterface->GetCurrentHDRMode() : m_HdrMode;
 	OutputDebugString(TEXT("Exit: HDRProvider::GetCurrentHDRMode"));
-	return m_ApiInterface ? m_ApiInterface->GetCurrentHDRMode() : m_HdrMode;
+	return mode;
 }
 
 void HDRProvider::SetWindowMonitor(HWND hWnd, HMONITOR hMonitor)
@@ -257,6 +259,7 @@ HDR_STATUS HDRProvider::initMonitor(const DXGI_OUTPUT_DESC &outputDesc)
 		ret = HDR_OK;
 	}
 
+	delete [] deviceName;
 	OutputDebugString(TEXT("Exit: HDRProvider::initMonitor"));
 	return ret;
 }
