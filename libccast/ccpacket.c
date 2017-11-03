@@ -25,19 +25,24 @@
 #include <string.h>
 #include <ctype.h>
 #include <limits.h>
-#include "../h/aconfig.h"
+#include "copyright.h"
+#include "aconfig.h"
 #include <sys/types.h>
-#ifndef SALONEINSTLIB
 #include "numlib.h"
-#else
-#include "numsup.h"
-#endif
 #include "conv.h"
-#include "ssl.h"		/* axTLS header */
+
+// Patch not having the correct configuration files:
 #define USING_AXTLS
-#undef DEBUG
-#undef DUMPSDATA		/* Send data */
-#undef DUMPRDATA		/* Receive data */
+
+#ifdef USING_AXTLS
+# include "ssl.h"		/* axTLS header */
+#else
+# include "openssl/ssl.h"		/* OpenSSL header */
+#endif
+
+#undef DEBUG			/* [und] */
+#undef DUMPSDATA		/* [und] Send data */
+#undef DUMPRDATA		/* [und] Receive data */
 
 #if defined(NT) // Windows specific
 # if _WIN32_WINNT < 0x0400

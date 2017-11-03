@@ -55,11 +55,12 @@ CFullScreenWindow::CFullScreenWindow(BOOL bTestOverlay)
 	m_rectSizePercent = GetConfig()->GetProfileInt("GDIGenerator","SizePercent",10);
 	m_bgStimPercent = 0;
 	
-//	m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide);
+//	m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_DEFAULT_MODE);
 	m_bDisableCursorHiding = FALSE;
 	m_b16_235 = GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0);
 	m_busePic = GetConfig()->GetProfileInt("GDIGenerator","USEPIC",0);
 	m_bLinear = GetConfig()->GetProfileInt("GDIGenerator","LOADLINEAR",1);
+	m_bHdr10 = GetConfig()->GetProfileInt("GDIGenerator","EnableHDR10",0);
 	m_bdispTrip = GetConfig()->GetProfileInt("GDIGenerator","DISPLAYTRIPLETS",1);
 	m_bVideoScale = FALSE;
 
@@ -112,7 +113,7 @@ CFullScreenWindow::CFullScreenWindow(BOOL bTestOverlay)
 CFullScreenWindow::~CFullScreenWindow()
 {
 	Hide ();
-	SetDisplayMode (GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide));
+	SetDisplayMode (GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_DEFAULT_MODE));
 
 	DestroyWindow ();
 
@@ -1117,20 +1118,27 @@ void video_scale (CxImage *inImage)
 							
 		if (m_nDisplayMode == DISPLAY_ccast)
 		{
-			ccast_id **ids;
-			if ((ids = get_ccids()) == NULL) 
+			OutputDebugString("FullScreenWindow::OnPaint");
+			unsigned int ccastIp = GetConfig()->GetProfileInt("GDIGenerator", "CCastIp", 0);
+			CGoogleCastWrapper GCast;
+			GCast.RefreshList();
+			if (GCast.getCount() == 0)
 			{
-				GetColorApp()->InMeasureMessageBox( "    ** Error discovering ChromeCasts **", "Error", MB_ICONERROR);
+				GetColorApp()->InMeasureMessageBox( "    ** No ChromeCasts found **", "Error", MB_ICONERROR);
+				OutputDebugString("    ** No ChromeCasts found **");
 			} else 
 			{
-				if (ids[0] == NULL)
+				const ccast_id *id = ccastIp ? GCast.getCcastByIp(ccastIp) : GCast[0];
+				if (id == NULL && (id = GCast[0]) == NULL)
 				{
-					GetColorApp()->InMeasureMessageBox( "    ** No ChromeCasts found **", "Error", MB_ICONERROR);
+					GetColorApp()->InMeasureMessageBox( "    ** Error discovering ChromeCasts **", "Error", MB_ICONERROR);
+					OutputDebugString("    ** Error discovering ChromeCasts **");
 				}
 				else 
 				{
+					OutputDebugString("Casting to: ");OutputDebugString(id->name);
 					chws *ws = NULL;
-					ws = new_chws(ids[0], 0, 0, 0, 0, FALSE);
+					ws = new_chws((ccast_id *)id, 0, 0, 0, 0, FALSE);
 
 					if (m_ansiCcast == 0)
 					{
@@ -1164,12 +1172,12 @@ void video_scale (CxImage *inImage)
 						char msg[255];
 						sprintf(msg,"Chromecast special test pattern failure. return: %d", rv);
 						GetColorApp()->InMeasureMessageBox(msg,"CCast Error", MB_OK + MB_ICONERROR);
+						OutputDebugString(msg);
 						ws->del(ws);
 					}
 					newImage->FreeMemory(obuf);
 				}
 			}
-			free_ccids(ids);
 		} else
 		{
 			//resize but maintain aspect ratio

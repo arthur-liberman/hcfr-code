@@ -62,7 +62,7 @@ CTargetWnd::~CTargetWnd()
 {
 }
 
-void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMode, CDataSetDoc * pDoc, bool bArrow)
+void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMode, CDataSetDoc * pDoc, int target)
 {	
 	if (m_pRefColor)
 	{
@@ -636,33 +636,38 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 	   				  m_clr = RGB(255,255,255);
 					  break;
 				}
-			}    //update RGB
-
-        ColorxyY aColor = m_pRefColor -> GetxyYValue();
-        ColorxyY centerxyY(centerXYZ);
+			}
 
 		//Update test window for display when selected
 		BOOL		bDisplayColor = GetConfig () -> m_bDisplayTestColors;
 
-		if (bDisplayColor && !bArrow)
+		if (bDisplayColor && target <= TARGET_ALL)
 		{
 			( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.SetColor ( RGB(nR,nG,nB) );
 			( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.RedrawWindow ();
 		}
-
-		m_deltax = (aColor[0]-centerxyY[0])/centerxyY[0];
-		m_deltay = (aColor[1]-centerxyY[1])/centerxyY[1];
 		
-		if ( m_tooltip.IsWindowVisible() )
+		if (target >= TARGET_ALL)
 		{
-			if ( pTooltipText )
+			//update RGB
+
+			ColorxyY aColor = m_pRefColor -> GetxyYValue();
+			ColorxyY centerxyY(centerXYZ);
+
+			m_deltax = (aColor[0]-centerxyY[0])/centerxyY[0];
+			m_deltay = (aColor[1]-centerxyY[1])/centerxyY[1];
+		
+			if ( m_tooltip.IsWindowVisible() )
 			{
-				pTooltipText -> Format("<b>delta x</b>: %.1f%% <br><b>delta y</b>: %.1f%%",m_deltax*100.0,m_deltay*100.0);
-				m_tooltip.Invalidate();
+				if ( pTooltipText )
+				{
+					pTooltipText -> Format("<b>delta x</b>: %.1f%% <br><b>delta y</b>: %.1f%%",m_deltax*100.0,m_deltay*100.0);
+					m_tooltip.Invalidate();
+				}
 			}
+			UpdateScaledBitmap();
+			Invalidate(TRUE);
 		}
-	UpdateScaledBitmap();
-	Invalidate(TRUE);
 	} //have valid m_prefcolor
 }
 

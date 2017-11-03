@@ -37,8 +37,9 @@
 #include <math.h>
 #include <sys/types.h>
 #include <time.h>
-#include "../h/aconfig.h"
-#include "../h/counters.h"
+#include "copyright.h"
+#include "aconfig.h"
+#include "counters.h"
 #ifndef SALONEINSTLIB
 #include "numlib.h"
 #else
@@ -230,8 +231,8 @@ static void upsample(double ret[3], double iipat[DISIZE][DISIZE][3]) {
 static void quant_rgb(int n, double out[3], double rgb[3]) {
 	double ycc[3], base[3];
 	double tmp[3], chval[3];
-	double  bdist = 1e6;
-//	double brgb[3], borgb[3];
+	double dist, bdist = 1e6;
+	double brgb[3], borgb[3];
 	int ix, k;
 
 //printf("Quant RGB %f %f %f n %d\n", rgb[0], rgb[1], rgb[2], n);
@@ -391,7 +392,7 @@ double get_ccast_dith(double ipat[DISIZE][DISIZE][3], double val[3]) {
 
 	/* 32 bit pseudo random sequencer based on XOR feedback */
 	/* generates number between 1 and 4294967295 */
-#define PSRAND32(S) (((S) & 0x80000000) ? (((S) << 1) ^ 0xa398655d) : ((S) << 1))
+#define PSRAND32F(S) (((S) & 0x80000000) ? (((S) << 1) ^ 0xa398655d) : ((S) << 1))
 
 	/* Locate the 8 surrounding RGB verticies */
 	for (n = 0; n < 8; n++) {
@@ -439,7 +440,7 @@ double get_ccast_dith(double ipat[DISIZE][DISIZE][3], double val[3]) {
 	if (vv) {
 		printf("There are %d unique surrounders:\n",nsur);
 		for (n = 0; n < nsur; n++) {
-			printf("sur %f %f %f\n",ressur[n][0], ressur[n][1], ressur[n][2], ressur[n][3]);
+			printf("sur %f %f %f\n",ressur[n][0], ressur[n][1], ressur[n][2]);
 		}
 	}
 #endif
@@ -605,10 +606,10 @@ double get_ccast_dith(double ipat[DISIZE][DISIZE][3], double val[3]) {
 		double bdot;
 		int bx, by;
 
-//		double  mm;
-//		double cell[3];		/* Cell being modified value */
-//		double ccell[3];	/* Corrected cell */
-//		double pcell[3];		/* Proposed new cell value */
+		double wycc, mm;
+		double cell[3];		/* Cell being modified value */
+		double ccell[3];	/* Corrected cell */
+		double pcell[3];		/* Proposed new cell value */
 
 		for (k = 0; k < 3; k++)
 			corr[k] = val[k] - dval[k];
@@ -661,7 +662,7 @@ double get_ccast_dith(double ipat[DISIZE][DISIZE][3], double val[3]) {
 //					dot += d_rand(-rlevel, rlevel);
 					/* use a deterministic random element, so that */
 					/* the dither patterns are repeatable. */
-					randv = PSRAND32(randv);
+					randv = PSRAND32F(randv);
 					dot += rlevel * 2.0 * ((randv - 1)/4294967294.0 - 0.5);
 
 					if (dot <= 0.0)

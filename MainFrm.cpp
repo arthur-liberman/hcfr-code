@@ -1135,8 +1135,8 @@ void CMainFrame::OnUpdateSoft()
 	::UpdateWindow ( hDlg );
 
 		WebUpdate.SetLocalDirectory("", true);
-		WebUpdate.SetUpdateFileURL("http://dl.dropboxusercontent.com/u/2621383/update.txt");
-		WebUpdate.SetRemoteURL("http://dl.dropboxusercontent.com/u/2621383/");
+		WebUpdate.SetUpdateFileURL("http://www.alcpu.com/HCFR/update.txt");
+		WebUpdate.SetRemoteURL("http://www.alcpu.com/HCFR/");
 
 		if (!WebUpdate.DoUpdateCheck())
 		{
@@ -1191,7 +1191,7 @@ void CMainFrame::OnUpdateSoft()
 
 void CMainFrame::OnPatternDisplay()
 {
-		int m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide);
+		int m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_DEFAULT_MODE);
 		
 		if (m_nDisplayMode == DISPLAY_GDI || m_nDisplayMode == DISPLAY_GDI_nBG || (m_nDisplayMode == DISPLAY_GDI_Hide))
 		{

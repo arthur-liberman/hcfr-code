@@ -202,8 +202,8 @@ draw_rect (HPDF_Page     page,
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-char *legendXYZ[3]={"X","Z","G"};
-char *legendRGB[3]={"Y","R","B"};
+char *legendXYZ[3]={"X","Y","Z"};
+char *legendRGB[3]={"R","G","B"};
 char *legendSensor[3]={"Rc","Gc","Bc"};
 char *primariesName[6]={"Red","Green","Blue","Yellow","Cyan","Magenta"};
 
@@ -406,7 +406,7 @@ bool CExport::SavePDF()
 	if (m_pDoc->GetGenerator()->GetName() == "View images")
 	{
 		CString dName;
-		int d = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide);
+		int d = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_DEFAULT_MODE);
 		switch (d)
 		{
 		case 0:
@@ -918,7 +918,7 @@ bool CExport::SavePDF()
 		if (pDataRef->GetGenerator()->GetName() == "View images")
 		{
 			CString dName;
-			int d = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide);
+			int d = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_DEFAULT_MODE);
 			switch (d)
 			{
 			case 0:

@@ -67,16 +67,18 @@
 #include <string.h>
 #include <ctype.h>
 #include <limits.h>
-#include "../h/aconfig.h"
+#include "copyright.h"
+#include "aconfig.h"
 #include <sys/types.h>
 #ifndef SALONEINSTLIB
 #include "numlib.h"
 #else
 #include "numsup.h"
 #endif
-#include "ccmdns.h"
 #include "conv.h"
-#undef DEBUG
+#include "ccmdns.h"
+
+#undef DEBUG		/* [und] */
 
 #if defined(NT) // Windows specific
 # if _WIN32_WINNT < 0x0400
@@ -126,8 +128,14 @@ typedef int SOCKET;
 
 #ifdef DEBUG
 # define DBG(xxx) a1logd xxx ;
+# define DBG2(xxx) a1logd xxx ;
+# define DLEV 0
+# define DLEVP1 0
 #else
 # define DBG(xxx) ;
+# define DBG2(xxx) a1logd xxx ;
+# define DLEV 2
+# define DLEVP1 3
 #endif  /* DEBUG */
 
 /* ================================================================ */
@@ -138,7 +146,7 @@ typedef int SOCKET;
 #define SOURCE_PORT 5353 
 #define DESTINATION_PORT 5353 
 
-#define BUFSIZE 1024
+#define BUFSIZE 2048
 
 /* Various DNS defines */
 #define DNS_CLASS_IN 0x0001
@@ -151,6 +159,23 @@ typedef int SOCKET;
 #define DNS_TYPE_AAAA 28	/* IPv6 address ???					*/
 #define DNS_TYPE_NSEC 47	/* DNS Next Secure Name				*/
 
+
+char *cctype2str(cctype typ) {
+	switch (typ) {
+		case cctyp_unkn:
+			return "Unknown";
+		case cctyp_1:
+			return "One";
+		case cctyp_2:
+			return "Two";
+		case cctyp_Audio:
+			return "Audio";
+		case cctyp_Ultra:
+			return "Ultra";
+		default:
+			return "Unexpected";
+	}
+}
 
 #ifdef NEVER
 /* Print out a V6 address in zero compresed form */
@@ -195,20 +220,21 @@ static int init_mDNS() {
 	return 0;
 }
 
-/* Setup the send socket */
+/* Setup the send and recieve socket */
 /* Return nz on error */
-static int init_send_mDNS(SOCKET *psock) {
+static int init_socket_mDNS(SOCKET *psock) {
 	int nRet, nOptVal; 
 	int off;
 	SOCKET sock; 
 	struct sockaddr_in stSourceAddr; 
+	struct ip_mreq stIpMreq;
 
-	DBG((g_log,0,"init_send_mDNS() called\n")) 
+	DBG((g_log,0,"init_socket_mDNS() called\n")) 
 
 	/* get a datagram (UDP) socket */ 
 	sock = socket(PF_INET, SOCK_DGRAM, 0); 
 	if (sock == INVALID_SOCKET) { 
-		DBG((g_log,0,"opening send UDP socked failed with %d\n",ERRNO)) 
+		DBG((g_log,0,"opening UDP socked failed with %d\n",ERRNO)) 
 		return 1;
 	} 
 
@@ -228,7 +254,7 @@ static int init_send_mDNS(SOCKET *psock) {
 	{
 		int on = 1;
 		if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char *)&on, sizeof(on))) {
-			DBG((g_log,0,"setsockopt(SO_REUSEADDR)  failed with %d\n",ERRNO))
+			DBG((g_log,0,"setsockopt(SO_REUSEADDR) failed with %d\n",ERRNO))
 			closesocket(sock);
 			return 1;
 		}
@@ -266,6 +292,9 @@ static int init_send_mDNS(SOCKET *psock) {
 		return 1;
 	} 
 
+	/* - - - - - - - */
+	/*   Send setup  */
+
 	/* disable loopback of multicast datagrams we send, since the 
 	 * default--according to Steve Deering--is to loopback all
 	 * datagrams sent on any interface which is a member of the
@@ -283,7 +312,8 @@ static int init_send_mDNS(SOCKET *psock) {
 		DBG((g_log,0,"[disabling loopback failed with %d]\n",ERRNO)) 
 	} 
 
-#ifdef NEVER		// We only want this to be local
+	/* Is this desirable ? */
+
 	/* increase the IP TTL from the default of one to 64, so our
 	 * multicast datagrams can get off of the local network 
 	 */
@@ -295,12 +325,53 @@ static int init_send_mDNS(SOCKET *psock) {
 		closesocket(sock);
 		return 1;
 	} 
+
+	if (psock != NULL)
+		*psock = sock;
+
+	/* - - - - - - - */
+	/* Recieve setup */
+
+	/* join the multicast group we want to receive datagrams from */ 
+	stIpMreq.imr_multiaddr.s_addr = inet_addr(DESTINATION_MCAST); /* group addr */ 
+	stIpMreq.imr_interface.s_addr = INADDR_ANY; /* use default */ 
+	nRet = setsockopt(sock, IPPROTO_IP, IP_ADD_MEMBERSHIP,
+					(char *)&stIpMreq, sizeof (struct ip_mreq));
+
+	if (nRet == SOCKET_ERROR) { 
+		DBG((g_log,0,"registering for read events failed with %d\n",ERRNO))
+		closesocket(sock);
+		return 1;
+	} 
+
+	/* Make this timeout after 100 msec second */
+#ifdef NT
+	{
+		DWORD tv;
+		tv = 100;
+		if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv)) < 0) {
+			DBG((g_log,0,"setsockopt timout failed with %d\n",ERRNO))
+			closesocket(sock);
+			return 1;
+		}
+	}
+#else
+	{
+		struct timeval tv;
+		tv.tv_sec = 0;
+		tv.tv_usec = 100 * 1000;
+		if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv)) < 0) {
+			DBG((g_log,0,"setsockopt timout failed with %d\n",ERRNO))
+			closesocket(sock);
+			return 1;
+		}
+	}
 #endif
 
 	if (psock != NULL)
 		*psock = sock;
 
-	DBG((g_log,0,"init sending mDNS succeed\n",ERRNO))
+	DBG((g_log,0,"init mDNS socket succeed\n",ERRNO))
 
 	return 0;
 }
@@ -354,7 +425,7 @@ static int send_mDNS(SOCKET sock) {
 	return 0;
 }
 
-static int parse_dns(char **name, char **ip, ORD8 *buf, int size);
+static int parse_dns(char **name, char **ip, cctype *typ, ORD8 *buf, int size);
 
 /* Free up what get_ccids returned */
 void free_ccids(ccast_id **ids) {
@@ -373,132 +444,21 @@ void free_ccids(ccast_id **ids) {
 /* Spend the given time waiting for replies. */
 /* (Note than on MSWin this will be a minimum of 500msec) */
 /* Add any ChromeCast replies to the list. */
-/* return nz on error */
-static int init_receive_mDNS(SOCKET *psock) {
-	int nRet; 
-	int off, size;
-	struct sockaddr_in stSourceAddr; 
-	struct ip_mreq stIpMreq; 
-	SOCKET sock;
-
-	DBG((g_log,0,"init_receive_mDNS() called\n"))
-
-	/* get a datagram (UDP) socket */ 
-	sock = socket(PF_INET, SOCK_DGRAM, 0); 
-	if (sock == INVALID_SOCKET) { 
-		DBG((g_log,0,"opening receive UDP socked failed with %d\n",ERRNO)) 
-		return 1;
-	} 
-
-	/* We can't receive from port 5353 if someone else is using it, */
-	/* so set the SO_REUSEADDR option (which is enough for MSWin), */
-	/* and SO_REUSEPORT for OS X and Linux */
-	{
-		int on = 1, off = 0;
-		if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char *) &on, sizeof(on))) {
-			DBG((g_log,0,"setsockopt(SO_REUSEADDR)  failed with %d\n",ERRNO))
-			closesocket(sock);
-			return 1;
-		}
-
-		/* Need this to be able to open port on Unix like systems */
-#ifndef NT
-# ifndef SO_REUSEPORT
-#  ifdef __APPLE__
-#   define SO_REUSEPORT 0x0200 
-#  else	/* Linux */
-#   define SO_REUSEPORT 15 
-#  endif
-# endif
-		if (setsockopt(sock, SOL_SOCKET, SO_REUSEPORT, (const char *)&on, sizeof(on))) {
-			DBG((g_log,0,"setsockopt(SO_REUSEPORT)  failed with %d\n",ERRNO))
-		}
-#endif
-	}
-
-	/* init source address structure */ 
-	stSourceAddr.sin_family = PF_INET; 
-	stSourceAddr.sin_port = htons(SOURCE_PORT); 
-	stSourceAddr.sin_addr.s_addr = INADDR_ANY; 
-
-	/* 
-	 * Calling bind() is not required, but some implementations need it 
-	 * before you can reference any multicast socket options
-	 * and in this case we must be on port 5353.
-	 */ 
-	nRet = bind(sock, (struct sockaddr *)&stSourceAddr, 
-				sizeof(struct sockaddr)); 
-	if (nRet == SOCKET_ERROR) { 
-		DBG((g_log,0,"bind failed with %d\n",ERRNO))
-		closesocket(sock);
-		return 1;
-	} 
-
-	/* join the multicast group we want to receive datagrams from */ 
-	stIpMreq.imr_multiaddr.s_addr = inet_addr(DESTINATION_MCAST); /* group addr */ 
-	stIpMreq.imr_interface.s_addr = INADDR_ANY; /* use default */ 
-	nRet = setsockopt(sock, IPPROTO_IP, IP_ADD_MEMBERSHIP,
-					(char *)&stIpMreq, sizeof (struct ip_mreq));
-
-	if (nRet == SOCKET_ERROR) { 
-		DBG((g_log,0,"registering for read events failed with %d\n",ERRNO))
-		closesocket(sock);
-		return 1;
-	} 
-
-	/* Make this timeout after 100 msec second */
-#ifdef NT
-	{
-		DWORD tv;
-		tv = 100;
-		if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv)) < 0) {
-			DBG((g_log,0,"setsockopt timout failed with %d\n",ERRNO))
-			closesocket(sock);
-			return 1;
-		}
-	}
-#else
-	{
-		struct timeval tv;
-		tv.tv_sec = 0;
-		tv.tv_usec = 100 * 1000;
-		if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv)) < 0) {
-			DBG((g_log,0,"setsockopt timout failed with %d\n",ERRNO))
-			closesocket(sock);
-			return 1;
-		}
-	}
-#endif
-
-	if (psock != NULL)
-		*psock = sock;
-
-	return 0;
-}
-
-/* Spend the given time waiting for replies. */
-/* (Note than on MSWin this will be a minimum of 500msec) */
-/* Add any ChromeCast replies to the list. */
 /* return nz on error & free *ids */
-static int receive_mDNS(SOCKET sock, ccast_id ***ids, int emsec) {
-	int nids = 0;
+static int receive_mDNS(SOCKET sock, ccast_id ***ids, int *nids, int emsec) {
 	unsigned int smsec;
 	unsigned int nSize;
 	int off, size;
 	ORD8 achInBuf[BUFSIZE]; 
 	struct sockaddr_in stSourceAddr; 
 
-	/* Count the number of current id's */
-	if (*ids != NULL) {
-		for (nids = 0; (*ids)[nids] != NULL; nids++)
-			;
-	}
+	DBG((g_log,0,"receive_mDNS() called with %d ids\n",*nids))
 
-	DBG((g_log,0,"receive_mDNS() called with %d ids\n",nids))
-
+	/* While there is still wait time */
 	for (smsec = msec_time(), emsec += smsec;msec_time() <= emsec;) {
 		int i;
 		char *name, *ip;
+		cctype typ;
 		struct sockaddr stSockAddr; 
 
 		/* Recv the available data */ 
@@ -508,60 +468,69 @@ static int receive_mDNS(SOCKET sock, ccast_id ***ids, int emsec) {
 		if (size == SOCKET_ERROR) { 
 			if (ERRNO == UDP_SOCKET_TIMEOUT)
 				continue;			/* Timeout */
-			DBG((g_log,0,"recvfrom failed with %d\n",ERRNO))
+			DBG2((g_log,DLEV,"recvfrom failed with %d\n",ERRNO))
 			free_ccids(*ids);
 			*ids = NULL;
 			return 1;
 		}
-		DBG((g_log,0,"Got mDNS message length %d bytes\n",size))
+
+		DBG2((g_log,DLEVP1,"Got mDNS message length %d bytes\n",size))
 #ifdef DEBUG
 		adump_bytes(g_log, "    ", achInBuf, 0, size);
 #endif
 
-		if (parse_dns(&name, &ip, achInBuf, size) != 0) {
+		if (parse_dns(&name, &ip, &typ, achInBuf, size) != 0) {
 			DBG((g_log,0,"Failed to parse the reply\n"))
 		} else {
 			DBG((g_log,0,"Parsed reply OK\n"))
 
-//if (*pnids > 0) {
-//	name = strdup("Argyll1234");
-//	ip = strdup("10.0.0.129");
-//}
 			/* If we found an entry */
 			if (name != NULL && ip != NULL) {
-				DBG((g_log,0,"Got a name '%s' & IP '%s'\n",name,ip))
-				/* Check if it is a duplcate */
-				for (i = 0; i < nids; i++) {
-					if (strcmp((*ids)[i]->name, name) == 0
-					 && strcmp((*ids)[i]->ip, ip) == 0)
-						break;	/* yes */
-				} 
-				if (i < nids) {
-					DBG((g_log,0,"Duplicate\n"))
+				DBG((g_log,0,"Got a name '%s', IP '%s', type %s\n",name,ip, cctype2str(typ)))
+
+				/* Check if it is a Chromecast-Audio */
+				if (typ == cctyp_Audio) {
+					DBG((g_log,0,"Ignoring Chromecast-Audio\n"))
 					free(name);
 					free(ip);
+
 				} else {
-					ccast_id **tids;
-					if ((tids = realloc(*ids, (nids + 2) * sizeof(ccast_id *))) == NULL
-					 || (*ids = tids, (*ids)[nids] = malloc(sizeof(ccast_id)), (*ids)[nids]) == NULL) {
-						DBG((g_log,0,"realloc/malloc fail\n"))
+			
+					/* Check if it is a duplcate */
+					for (i = 0; i < *nids; i++) {
+						if (strcmp((*ids)[i]->name, name) == 0
+						 && strcmp((*ids)[i]->ip, ip) == 0)
+							break;	/* yes */
+					} 
+					if (i < *nids) {
+						DBG((g_log,0,"Duplicate\n"))
 						free(name);
 						free(ip);
-						free_ccids(*ids);
-						*ids = NULL;
-						return 1;
 					} else {
-						DBG((g_log,0,"Adding entry\n"))
-						(*ids)[nids]->name = name;
-						(*ids)[nids]->ip = ip;
-						(*ids)[++nids] = NULL;		/* End marker */
+						ccast_id **tids;
+						if ((tids = realloc(*ids, (*nids + 2) * sizeof(ccast_id *))) == NULL
+						 || (*ids = tids, (*ids)[*nids] = malloc(sizeof(ccast_id)), (*ids)[*nids]) == NULL) {
+							DBG((g_log,0,"realloc/malloc fail\n"))
+							free(name);
+							free(ip);
+							free_ccids(*ids);
+							*ids = NULL;
+							return 1;
+						} else {
+							DBG((g_log,0,"Adding entry\n"))
+							(*ids)[*nids]->name = name;
+							(*ids)[*nids]->ip = ip;
+							(*ids)[*nids]->typ = typ;
+							(*nids)++;
+							(*ids)[*nids] = NULL;		/* End marker */
+						}
 					}
 				}
 			}
 		}
 	}
 
-	DBG((g_log,0,"receive_mDNS() returning %d in list\n",nids))
+	DBG2((g_log,DLEVP1,"receive_mDNS() returning %d in list\n",*nids))
 
 	return 0;
 }
@@ -570,89 +539,60 @@ static int receive_mDNS(SOCKET sock, ccast_id ***ids, int emsec) {
 
 /* Get a list of Chromecasts. Return NULL on error */
 /* Last pointer in array is NULL */
-/* Takes 0.5 second to return */
+/* Takes 1.5 second to return */
 ccast_id **get_ccids() {
 	ccast_id **ids = NULL;
-	int i, j;
+	int nids = 0;
+	int i, j, k;
 	unsigned int smsec;
-	SOCKET ssock, rsock;
+	int waittime = 200;
+	SOCKET sock;
+
+	DBG2((g_log,DLEV,"get_ccids: called\n"))
 
 	if (init_mDNS()) {
-		DBG((g_log,0,"init_mDNS() failed\n"))
+		DBG2((g_log,0,"get_ccids: init_mDNS() failed\n"))
 		return NULL;
 	}
 
-	if (init_send_mDNS(&ssock)) {
-		DBG((g_log,0,"init_send_mDNS() failed\n"))
-		return NULL;
-	}
-
-	if (init_receive_mDNS(&rsock)) {
-		DBG((g_log,0,"init_receive_mDNS() failed\n"))
-		closesocket(ssock);
+	if (init_socket_mDNS(&sock)) {
+		DBG2((g_log,0,"get_ccids: init_socket_mDNS() failed\n"))
 		return NULL;
 	}
 
 	smsec = msec_time();
 
-	DBG((g_log,0,"Sending mDNS query:\n"))
-	if (send_mDNS(ssock)) {
-		DBG((g_log,0,"send_mDNS() #1 failed\n"))
-		closesocket(ssock);
-		closesocket(rsock);
-		return NULL;
-	}
+	/* Try a few times, with increasing response wait time */
+	for (k = 1;
+		    ((msec_time() - smsec) < 700)
+		 || (nids == 0 && (msec_time() - smsec) < 1600);
+	     k++) {
 
-	if (receive_mDNS(rsock, &ids, 100)) {
-		DBG((g_log,0,"receive_mDNS() #1 failed\n"))
-		closesocket(ssock);
-		closesocket(rsock);
-		return NULL;
-	}
-
-	if (ids == NULL && (msec_time() - smsec) < 200) {
-
-		DBG((g_log,0,"Sending another mDNS query:\n"))
-		if (send_mDNS(ssock)) {
-			DBG((g_log,0,"send_mDNS() #2 failed\n"))
-			closesocket(ssock);
-			closesocket(rsock);
+		DBG2((g_log,DLEV,"get_ccids: Sending mDNS query #%d:\n",k))
+		if (send_mDNS(sock)) {
+			DBG2((g_log,0,"get_ccids: send_mDNS() #1 failed\n"))
+			closesocket(sock);
 			return NULL;
 		}
-
-		if (receive_mDNS(rsock, &ids, 500)) {
-			DBG((g_log,0,"receive_mDNS() #2 failed\n"))
-			closesocket(ssock);
-			closesocket(rsock);
+	
+		DBG2((g_log,DLEV,"get_ccids: Waiting for mDNS reply #%d:\n",k))
+		if (receive_mDNS(sock, &ids, &nids, waittime)) {
+			DBG2((g_log,0,"get_ccids: receive_mDNS() #%d failed\n",k))
+			closesocket(sock);
 			return NULL;
 		}
+		DBG2((g_log,DLEV,"get_ccids: have %d %s\n",nids, nids == 1 ? "reply" : "replies"))
+
+		if (waittime < 500)
+			waittime = 500;
 	}
-
-	if (ids == NULL) {
-
-		DBG((g_log,0,"Sending a final mDNS query:\n"))
-		if (send_mDNS(ssock)) {
-			DBG((g_log,0,"send_mDNS() #3 failed\n"))
-			closesocket(ssock);
-			closesocket(rsock);
-			return NULL;
-		}
-
-		if (receive_mDNS(rsock, &ids, 500)) {
-			DBG((g_log,0,"receive_mDNS() #3 failed\n"))
-			closesocket(ssock);
-			closesocket(rsock);
-			return NULL;
-		}
-	}
-
-	closesocket(ssock);
-	closesocket(rsock);
+	closesocket(sock);
 
 	/* If no ChromCasts found, return an empty list */
 	if (ids == NULL) {
+		DBG2((g_log,DLEV,"get_ccids: no devices found\n"))
 		if ((ids = calloc(sizeof(ccast_id *), 1)) == NULL) {
-			DBG((g_log,0,"calloc fail\n"))
+			DBG2((g_log,0,"get_ccids: calloc fail\n"))
 			return NULL;
 		}
 	}
@@ -667,6 +607,14 @@ ccast_id **get_ccids() {
 			}
 		}
 	}
+
+	for (i = 0; ids[i] != NULL; i++) {
+		DBG2((g_log,DLEV,"  Entry %d:\n",i))
+		DBG2((g_log,DLEV,"   Name: %s\n",ids[i]->name))
+		DBG2((g_log,DLEV,"   IP:   %s\n",ids[i]->ip))
+		DBG2((g_log,DLEV,"   Type: %s\n",cctype2str(ids[i]->typ)))
+	}
+	DBG2((g_log,DLEV,"get_ccids: Returning %d devices\n",i))
 
 	return ids;
 }
@@ -708,46 +656,66 @@ static int read_string_imp(char **rv, int *slen, ORD8 *buf, int off, int size, i
 	int len;
 	int d1 = 0;
 
-//printf("~1 read_string_imp called for off 0x%x rec %d\n",off,rec);
+	DBG((g_log,8,"read_string_imp called for off %d (0x%x) rec %d\n",off,off,rec));
 
-	if (rec > 10)		/* Too many recursions */
+	if (rec > 10) {		/* Too many recursions */
+		DBG((g_log,8,"read_string_imp too many recursions\n"));
 		return -1;		/* Error */
+	}
 
-	if (off >= size)
+	if (off >= size) {
+		DBG((g_log,8,"read_string_imp off %d >= size %d\n",off,size));
 		return -1;		/* Error */
+	}
 
 	for (;;) {
-//printf("~1 top of loop at off 0x%x\n",off);
+		DBG((g_log,8,"top of loop at off %d\n",off));
 		len = buf[off];
-		if (len == 0xc0) {		/* Is it an offset marker */
+		if ((len & 0xc0) == 0xc0) {	/* Is it an offset marker */
 			int poff;
-//printf("~1 got pointer\n");
-			if ((size - off) < 2)
+
+			DBG((g_log,8,"got pointer\n"));
+			if ((size - off) < 2) {
+				DBG((g_log,8,"read_string_imp size %d - off %d < 2\n",size,off));
 				return -1;
+			}
 
 			poff = read_ORD16_be(buf + off); off += 2;
 			poff -= 0xc000;
 
-			if (poff < 0 || poff >= size)
+			if (poff < 0 || poff >= size) {
 				return -1;
+			}
 
+			DBG((g_log,8,"read_string_imp recursing\n"));
 			read_string_imp(rv, slen, buf, poff, size, rec+1);
-//if (slen != NULL) printf("~1 after recurse, slen = %d, off = 0x%x\n",*slen,off);
 
+			if (slen != NULL) {
+				DBG((g_log,8,"after recurse, slen = %d, off = %d (0x%x)\n",*slen,off,off));
+			}
 			break;				/* we're done */
 
 		} else {
-//printf("~1 got string length %d\n",len);
-			off++;
-			if ((off + len) >= size)
-				return -1;
+			DBG((g_log,8,"got string length %d\n",len));
 
-			if (len == 0)
+			off++;
+			if ((off + len) >= size) {
+				DBG((g_log,8,"read_string_imp size off %d + len %d >= size %d\n",off,len,size));
+				return -1;
+			}
+
+			if (len == 0) {
+				DBG((g_log,8,"read_string_imp len == 0 - done\n"));
 				break;				/* we're done */
+			}
 
 			if (rv != NULL) {
 				memcpy(*rv, buf + off, len);
-//(*rv)[len] = '\000'; printf("Copied string %p = '%s'\n",*rv,*rv);
+
+#ifdef DEBUG
+				(*rv)[len] = '\000';
+				DBG((g_log,8,"Copied string %p = '%s'\n",*rv,*rv));
+#endif
 
 				*rv += len;
 			}
@@ -755,21 +723,25 @@ static int read_string_imp(char **rv, int *slen, ORD8 *buf, int off, int size, i
 
 			if (slen != NULL) {
 				(*slen) += len;
-//printf("~1 slen now = %d\n",*slen);
+				DBG((g_log,8,"slen now = %d\n",*slen));
 			}
 
 		}
 		d1 = 1;
 
-		if (slen != NULL)
+		if (slen != NULL) {
 			(*slen)++;
+		}
 
 		if (rv != NULL) {
 			(*rv)[0] = '.';
 			(*rv)++;
 		}
 	}
-//if (slen != NULL) printf("~1 returning slen = %d\n",*slen);
+	if (slen != NULL) {
+		DBG((g_log,8,"returning slen = %d\n",*slen));
+	}
+
 	return off;
 }
 
@@ -779,29 +751,31 @@ static int read_string(char **rv, ORD8 *buf, int off, int size) {
 	int len = 0, toff = off;
 	char *trv;
 
-//printf("~1 read_string called for off 0x%x\n",off);
+	DBG((g_log,7,"read_string called for off 0x%x\n",off));
 
 	/* See how long it will be */
 	if ((toff = read_string_imp(NULL, &len, buf, off, size, 0)) < 0) {
-//printf("~1 read_string_imp length returned error\n");
+		DBG((g_log,7,"read_string_imp length returned error\n"));
 		return toff;
 	}
-//printf("~1 read_string_imp got length %d\n",len);
+	DBG((g_log,7,"read_string_imp got length %d\n",len));
 
 	if (len == 0) {
-//printf("~1 Got zero length string\n");
+		DBG((g_log,7,"Got zero length string\n"));
 		len++;			/* Room for null string */
 	}
 	if ((*rv = trv = malloc(len)) == NULL) {
+		DBG((g_log,7,"malloc for string failed\n"));
 		return -1;
 	}
-//printf("Malloced %p\n",*rv);
+	DBG((g_log,7,"loced %p\n",*rv));
 	off = read_string_imp(&trv, NULL, buf, off, size, 0);
 	if (off >= 0) {
 		(*rv)[len-1] = '\000';
-//printf("~1 read string ok: %p = '%s'\n",*rv, *rv);
+		DBG((g_log,7,"read string ok: %p = '%s'\n",*rv, *rv));
+	} else {
+		DBG((g_log,7,"reading string failed\n"));
 	}
-//else printf("~1 reading string failed\n");
 	return off;
 }
  
@@ -830,9 +804,9 @@ int parse_query(ORD8 *buf, int off, int size) {
 	return off;
 }
 
-/* Parse an mDNS reply */
+/* Parse an mDNS reply, and set Friendly name (if known) + formal name + IP */
 /* Return updated off value or -1 on error */
-int parse_reply(char **pname, char **pip, ORD8 *buf, int off, int size) {
+int parse_reply(char **pname, char **pip, cctype *ptyp, ORD8 *buf, int off, int size) {
 	char *sv;
 	int rtype, rclass, rdlength;
 	unsigned int ttl;
@@ -841,21 +815,21 @@ int parse_reply(char **pname, char **pip, ORD8 *buf, int off, int size) {
 	if ((off = read_string(&sv, buf, off, size)) < 0)
 		return -1;
 
-	DBG((g_log,0," Got string '%s'\n",sv))
+	DBG((g_log,0," Got string '%s', now off = 0x%x\n",sv,off))
 
 	if ((size - off) < 2) {
 		free(sv);
 		return -1;
 	}
 	rtype = read_ORD16_be(buf + off); off += 2;
-	DBG((g_log,0," RTYPE = %d\n",rtype))
+	DBG((g_log,0," RTYPE = %d, now off = 0x%x\n",rtype,off))
 
 	if ((size - off) < 2) {
 		free(sv);
 		return -1;
 	}
 	rclass = read_ORD16_be(buf + off); off += 2;
-	DBG((g_log,0," RCLASS = 0x%04x\n",rclass))
+	DBG((g_log,0," RCLASS = 0x%04x, now off = 0x%x\n",rclass,off))
 	/* rclass top bit is cache flush bit */
 
 	if ((rclass & 0x7fff) != DNS_CLASS_IN) {
@@ -867,12 +841,12 @@ int parse_reply(char **pname, char **pip, ORD8 *buf, int off, int size) {
 	if ((size - off) < 4)
 		return -1;
 	ttl = read_ORD32_be(buf + off); off += 4;
-	DBG((g_log,0," TTL = %u\n",ttl))
+	DBG((g_log,0," TTL = %u, now off = 0x%x\n",ttl,off))
 
 	if ((size - off) < 2)
 		return -1;
 	rdlength = read_ORD16_be(buf + off); off += 2;
-	DBG((g_log,0," RDLENGTH = %d\n",rdlength))
+	DBG((g_log,0," RDLENGTH = %d, now off = 0x%x\n",rdlength,off))
 
 	if ((off + rdlength) > size) {
 		DBG((g_log,0," response RDLENGTH is longer than remaining buffer (%d)\n",size - off))
@@ -882,7 +856,9 @@ int parse_reply(char **pname, char **pip, ORD8 *buf, int off, int size) {
 	
 	/* Just decode the replies we need */
 	if (rtype == DNS_TYPE_TXT) {	/* Check it's a ChromeCast & get its name */
-		char *cp;
+		char *cp, *fn = NULL;
+		int rdsize = off + rdlength;
+
 		if ((cp = strchr(sv, '.')) == NULL) {
 			free(sv);
 			return -1;
@@ -894,12 +870,98 @@ int parse_reply(char **pname, char **pip, ORD8 *buf, int off, int size) {
 			return -1;
 		}
 
-		DBG((g_log,0," Chromacast '%s'\n", sv))
-		if ((*pname = strdup(sv)) == NULL) {
-			DBG((g_log,0,"strdup failed\n"))
-			free(sv);
-			return -1;
+#ifdef NEVER
+		DBG((g_log,0," TXT data:\n"))
+		adump_bytes(g_log, "    ", buf + off, 0, rdlength);
+#endif
+
+		/*	Chromecast TXT DATA format:
+
+			Buffer is series of strings, each beginning with a byte length.
+			Each string is id=value, with the following known values:
+
+			id=c17a8e82ee7187d5013e2d12c61bbd40		uuidNoHyphens
+			rm=669B9448366A01CB
+			ve=05									SW version ????
+			md=Chromecast							Model ?
+			   										i.e. ChromecastAudio
+			   										i.e. ChromecastUltra
+			   										i.e. Group
+			ic=/setup/icon.png						Icon file ??
+			fn=Chromecast6892						Friendly name
+			ca=4101									Capabilities bits ???
+			st=1									Application running ??
+			bs=FA8FCA566645							Application ID ??
+			rs=Pattern generator ready				Application state ??
+
+		 */
+
+		/* Parse the Chromacast TX Data */
+		for (; off < rdsize; ) {
+			int slen;
+			char *ss;
+
+			/* Read the string length */
+			if ((rdsize - off) < 1)
+				goto done_tx;
+
+			slen = read_ORD8(buf + off); off += 1;
+
+			if ((rdsize - off) < slen)
+				goto done_tx;
+			
+			if ((ss = malloc(slen + 1)) == NULL) {
+				DBG((g_log,0,"malloc for sub-string failed\n"));
+				return -1;
+			}
+
+			memcpy(ss, buf + off, slen);
+			ss[slen] = '\000';
+			off += slen;
+
+			DBG((g_log,0," TX Sub-string '%s'\n", ss))
+
+			/* Record info we want: */
+			if (strncmp(ss, "fn=", 3) == 0) {	/* Friendly name */
+				if ((fn = malloc(slen -3 +1)) == NULL) {
+					DBG((g_log,0,"malloc for fn-string failed\n"));
+					return -1;
+				}
+				strcpy(fn, ss + 3);
+			}
+			free(ss);
 		}
+
+	  done_tx:
+
+		if (fn != NULL) {
+			DBG((g_log,0," Chromacast '%s', fn '%s'\n", sv, fn))
+		} else {
+			DBG((g_log,0," Chromacast '%s'\n", sv))
+		}
+
+		if (strncmp(sv, "Chromecast-Ultra", 16) == 0) {
+			*ptyp = cctyp_Ultra;
+		} else if (strncmp(sv, "Chromecast-Audio", 16) == 0) {
+			*ptyp = cctyp_Audio;
+		} else {
+			// Hmm. Haven't found a way of detecing CC2
+			*ptyp = cctyp_1;
+		}
+
+		if (fn != NULL) {
+			*pname = fn;
+		} else {
+			free(fn);
+			if ((*pname = strdup(sv)) == NULL) {
+				DBG((g_log,0,"strdup failed\n"))
+				free(sv);
+				return -1;
+			}
+		}
+
+		off = rdsize;
+
 	} else if (rtype == DNS_TYPE_A) {
 		/* Should we check name matches ? */
 		if ((*pip = malloc(3 * 4 + 3 + 1)) == NULL) {
@@ -910,6 +972,7 @@ int parse_reply(char **pname, char **pip, ORD8 *buf, int off, int size) {
 		sprintf(*pip, "%d.%d.%d.%d", buf[off], buf[off+1], buf[off+2], buf[off+3]);
 		DBG((g_log,0," V4 address = %s\n",*pip))
 	
+		off += rdlength;
 	} else if (rtype == DNS_TYPE_AAAA) {		/* The IPV6 address */
 		/* Should we check name matches ? */
 		if ((*pip = malloc(8 * 4 + 7 + 1)) == NULL) {
@@ -928,10 +991,11 @@ int parse_reply(char **pname, char **pip, ORD8 *buf, int off, int size) {
 		buf[off+14] * 245 + buf[off+15]);
 		DBG((g_log,0," V6 address = %s\n",*pip))
 
+		off += rdlength;
 	} else {
 		DBG((g_log,0," Skipping reply at 0x%x\n",off))
+		off += rdlength;
 	}
-	off += rdlength;
 	free(sv);
 
 	return off;
@@ -940,7 +1004,7 @@ int parse_reply(char **pname, char **pip, ORD8 *buf, int off, int size) {
 /* Parse an mDNS reply into a ChromCast name & IP address */
 /* Allocate and return name and IP on finding ChromeCast reply, NULL otherwise */
 /* Return nz on failure */
-static int parse_dns(char **pname, char **pip, ORD8 *buf, int size) {
+static int parse_dns(char **pname, char **pip, cctype *ptyp, ORD8 *buf, int size) {
 	int i, off = 0;
 	int id, flags, qdcount, ancount, nscount, arcount;
 
@@ -986,7 +1050,7 @@ static int parse_dns(char **pname, char **pip, ORD8 *buf, int size) {
 
 	// Parse all the answers (ANCOUNT)
 	for (i = 0; i < ancount; i++) {
-		if ((off = parse_reply(pname, pip, buf, off, size)) < 0) {
+		if ((off = parse_reply(pname, pip, ptyp, buf, off, size)) < 0) {
 			DBG((g_log,0," ### Parsing answer failed ###\n"))
 			return 1;
 		}
@@ -994,7 +1058,7 @@ static int parse_dns(char **pname, char **pip, ORD8 *buf, int size) {
 
 	// Parse all the NS records (NSCOUNT)
 	for (i = 0; i < nscount; i++) {
-		if ((off = parse_reply(pname, pip, buf, off, size)) < 0) {
+		if ((off = parse_reply(pname, pip, ptyp, buf, off, size)) < 0) {
 			DBG((g_log,0," ### Parsing NS record failed ###\n"))
 			return 1;
 		}
@@ -1002,7 +1066,7 @@ static int parse_dns(char **pname, char **pip, ORD8 *buf, int size) {
 
 	// Parse all the addition RR answers (ARCOUNT)
 	for (i = 0; i < arcount; i++) {
-		if ((off = parse_reply(pname, pip, buf, off, size)) < 0) {
+		if ((off = parse_reply(pname, pip, ptyp, buf, off, size)) < 0) {
 			DBG((g_log,0," ### Parsing additional records failed ###\n"))
 			return 1;
 		}
@@ -1060,6 +1124,15 @@ static int parse_dns(char **pname, char **pip, ORD8 *buf, int size) {
     00f0: 09 c0 2e 00 05 00 00 80 00 40 c0 c4 00 2f 80 01  .........@.../..
     0100: 00 00 00 78 00 05 c0 c4 00 01 40                 ...x......@
 
+*/
+
+/* 
+
+	Can get info from Chromecast http server at http://XX.XX.XX.XX:8008/ssdp/device-desc.xml
+
+	Get infi about the app running: http://XX.XX.XX.XX:8008/apps/ChromeCast
+
 
 */
+
 

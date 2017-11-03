@@ -33,6 +33,7 @@
 #include "ccpacket.h"
 #include "ccmes.h"
 #include "yajl.h"
+#include "ccast.h"
 
 #define DO_WEIGHTING
 #define SUM_CONSTRAINT

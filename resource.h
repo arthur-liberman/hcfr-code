@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by CHCFR21_ENGLISH.rc
+// Used by ColorHCFR.rc
 //
 #define IDS_STRING_VERSION              1
 #define IDS_STRING_VERSION_WEB          2
@@ -393,6 +393,7 @@
 #define IDC_NBPERIODCOEF_EDIT           1068
 #define IDC_BLANKING_CHECK              1070
 #define IDC_MONITOR_COMBO               1071
+#define IDC_CCAST_COMBO                 1072
 #define IDC_SHOWDIALOG_CHECK            1073
 #define IDC_PATTERNSIZE_EDIT            1074
 #define IDC_TIMEOUT_MESURE_EDIT         1075
@@ -757,6 +758,7 @@
 #define IDC_DISP_TRIP                   1290
 #define IDC_DISP_TRIP2                  1291
 #define IDR_PATTERN_TESTIMGv            1292
+#define IDC_ENBL_HDR                    1292
 #define IDR_PATTERN_GRADIENT            1293
 #define IDR_PATTERN_LRAMP               1294
 #define IDR_PATTERN_GRANGER             1295
