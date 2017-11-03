@@ -84,9 +84,15 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 			{
 				centerXYZ = GetColorReference().GetWhite();
 	            if (nSize > 0)
-					p1 = (double)(minCol-1) / (double)(nSize-1);
+				{
+					if (isHDR10 && m_DisplayMode == 3)
+						p1 = (double)(minCol - 1) * 2. / (double)(nSize-1);
+					else
+						p1 = (double)(minCol-1) / (double)(nSize-1);
+				}
 			    else
     				p1 =(double)(101+nSize+minCol-1) / (double)(100.);
+
 				//fix 255->235 rounding errors that the generator will create
 				x1 =  (int)floor(p1 * 255.0 + 0.5);
 				y1 =  (int)floor(p1 * 219.0 + 0.5);
