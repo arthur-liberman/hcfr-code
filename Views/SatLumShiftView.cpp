@@ -562,8 +562,8 @@ void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, cons
 
 	k = ( ( xmeasure - xstart ) + ( ystart - ymeasure ) * ( dx / dy ) ) / ( ( dx * dx / dy ) + dy );
 
-	xpoint = xmeasure;// - k * dy;
-	ypoint = ymeasure;// + k * dx;
+	xpoint = xmeasure - k * dy;
+	ypoint = ymeasure + k * dx;
 
 	// Compute saturation shift
 	satshift = ( xpoint - xtarget ) / ( xend - xstart ) * 100.0;
