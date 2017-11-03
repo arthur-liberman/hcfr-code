@@ -118,12 +118,15 @@ protected:
 	afx_msg void OnUseMeasuredGammaCheck();
 	afx_msg void OnUserBlackCheck();
 	afx_msg void OnSelchangeColorrefCombo();
+	afx_msg void OnSelchangeWhiteCombo();
 	afx_msg void OnSelchangeCCmodeCombo();
 	afx_msg void OnChangeEditGammaOffset();
 	afx_msg void OnChangeEditManualGOffset();
 	//}}AFX_MSG
 	afx_msg void OnControlClicked(UINT nID);
 	DECLARE_MESSAGE_MAP()
+
+	void UpdateColorSpaceValues();
 
 };
 

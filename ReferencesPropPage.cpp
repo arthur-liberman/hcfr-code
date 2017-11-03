@@ -122,7 +122,6 @@ void CReferencesPropPage::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CReferencesPropPage, CPropertyPageWithHelp)
 	//{{AFX_MSG_MAP(CReferencesPropPage)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_GAMMA_OFFSET_RADIO1, IDC_GAMMA_OFFSET_RADIO10, OnControlClicked)
-    ON_CONTROL_RANGE(CBN_SELCHANGE, IDC_WHITETARGET_COMBO, IDC_WHITETARGET_COMBO, OnControlClicked)
 	ON_BN_CLICKED(IDC_CHECK_COLORS, OnCheckColors)
 	ON_EN_CHANGE(IDC_EDIT_IRIS_TIME, OnChangeEditIrisTime)
 	ON_EN_CHANGE(IDC_EDIT_GAMMA_REF, OnChangeEditGammaRef)
@@ -142,6 +141,7 @@ BEGIN_MESSAGE_MAP(CReferencesPropPage, CPropertyPageWithHelp)
 	ON_BN_CLICKED(IDC_USE_MEASURED_GAMMA, OnUseMeasuredGammaCheck)
 	ON_BN_CLICKED(IDC_USER_BLACK, OnUserBlackCheck)
 	ON_CBN_SELCHANGE(IDC_COLORREF_COMBO, OnSelchangeColorrefCombo)
+	ON_CBN_SELCHANGE(IDC_WHITETARGET_COMBO, OnSelchangeWhiteCombo)
 	ON_CBN_SELCHANGE(IDC_CCMODE_COMBO, OnSelchangeCCmodeCombo)
 	ON_EN_CHANGE(IDC_EDIT_MANUAL_GOFFSET, OnChangeEditManualGOffset)
 	//}}AFX_MSG_MAP
@@ -380,6 +380,7 @@ void CReferencesPropPage::OnChangeWhiteCheck()
 		m_isModified=TRUE;
 		SetModified(TRUE);
 		UpdateData(FALSE);	
+		OnSelchangeWhiteCombo();
 	}
 	m_whiteTargetCombo.EnableWindow (m_changeWhiteCheck);
 }
@@ -401,12 +402,26 @@ void CReferencesPropPage::OnUserBlackCheck()
 	m_ManualBlackEdit.EnableWindow(m_userBlack);
 }
 
+void CReferencesPropPage::OnSelchangeWhiteCombo()
+{
+	m_isModified=TRUE;
+	SetModified(TRUE);
+	m_bSave = TRUE;
+	UpdateData(TRUE);
+	BOOL enableEditControls = m_whiteTarget == DCUST ? TRUE : FALSE;
+	m_manualWhitexedit.EnableWindow (enableEditControls);
+	m_manualWhiteyedit.EnableWindow (enableEditControls);
+	UpdateColorSpaceValues();
+	UpdateData(FALSE);
+}
+
 void CReferencesPropPage::OnSelchangeColorrefCombo() 
 {
 	m_isModified=TRUE;
 	SetModified(TRUE);
 	m_bSave = TRUE;
-	UpdateData(TRUE);	
+	UpdateData(TRUE);
+	UpdateColorSpaceValues();
 	if (m_colorStandard == sRGB)
 	{
 		GetDlgItem(IDC_GAMMA_OFFSET_RADIO1)->EnableWindow(FALSE);
@@ -493,4 +508,30 @@ void CReferencesPropPage::OnChangeEditGammaOffset()
 	m_isModified=TRUE;
 	m_bSave = TRUE;
 	SetModified(TRUE);
+}
+
+void CReferencesPropPage::UpdateColorSpaceValues()
+{
+	CColorReference colorRef((ColorStandard)m_colorStandard, (WhiteTarget)m_whiteTarget);
+
+	if (m_whiteTarget != DCUST)
+	{
+		CColor whiteColor(colorRef.GetWhite());
+		m_manualWhitex = whiteColor.GetxyYValue()[0];
+		m_manualWhitey = whiteColor.GetxyYValue()[1];
+	}
+	if (m_colorStandard != CUSTOM)
+	{
+		CColor redColor(colorRef.GetRed());
+		m_manualRedx   = redColor.GetxyYValue()[0];
+		m_manualRedy   = redColor.GetxyYValue()[1];
+
+		CColor greenColor(colorRef.GetGreen());
+		m_manualGreenx = greenColor.GetxyYValue()[0];
+		m_manualGreeny = greenColor.GetxyYValue()[1];
+
+		CColor blueColor(colorRef.GetBlue());
+		m_manualBluex  = blueColor.GetxyYValue()[0];
+		m_manualBluey  = blueColor.GetxyYValue()[1];
+	}
 }

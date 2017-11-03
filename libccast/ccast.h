@@ -22,9 +22,6 @@
  */
 
 #include "ccmdns.h"		/* Function to get a list of ChromeCasts */
-#ifdef __cplusplus
-	extern "C" {
-#endif
 
 /* A ChromCast instance */
 struct _ccast {
@@ -105,9 +102,6 @@ void YCbCr2ccast_nq(void *ctx, double out[3], double in[3]);
 /* Compute pattern [width][height] */
 /* return the delta to the target */
 double get_ccast_dith(double ipat[CCDITHSIZE][CCDITHSIZE][3], double val[3]);
-#ifdef __cplusplus
-	}
-#endif
 
 #define CCAST_H
 #endif /* CCAST_H */

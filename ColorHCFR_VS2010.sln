@@ -67,6 +67,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CHCFR21_ENGLISH", "CHCFR21_
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libpdf", "libharu\libharu.vcxproj", "{416E77FF-ACFA-478D-9E8B-FA1E1296E007}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GoogleCastWrapper", "Tools\GoogleCastWrapper\GoogleCastWrapper.vcxproj", "{4D45250B-E23E-4097-A3C5-64D708528340}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libHDR", "libHDR\libHDR.vcxproj", "{FC86BD97-A8EA-46D7-BEA5-0DC7698C5BE1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -173,6 +177,14 @@ Global
 		{416E77FF-ACFA-478D-9E8B-FA1E1296E007}.Debug|Win32.Build.0 = Debug|Win32
 		{416E77FF-ACFA-478D-9E8B-FA1E1296E007}.Release|Win32.ActiveCfg = Release|Win32
 		{416E77FF-ACFA-478D-9E8B-FA1E1296E007}.Release|Win32.Build.0 = Release|Win32
+		{4D45250B-E23E-4097-A3C5-64D708528340}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4D45250B-E23E-4097-A3C5-64D708528340}.Debug|Win32.Build.0 = Debug|Win32
+		{4D45250B-E23E-4097-A3C5-64D708528340}.Release|Win32.ActiveCfg = Release|Win32
+		{4D45250B-E23E-4097-A3C5-64D708528340}.Release|Win32.Build.0 = Release|Win32
+		{FC86BD97-A8EA-46D7-BEA5-0DC7698C5BE1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{FC86BD97-A8EA-46D7-BEA5-0DC7698C5BE1}.Debug|Win32.Build.0 = Debug|Win32
+		{FC86BD97-A8EA-46D7-BEA5-0DC7698C5BE1}.Release|Win32.ActiveCfg = Release|Win32
+		{FC86BD97-A8EA-46D7-BEA5-0DC7698C5BE1}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

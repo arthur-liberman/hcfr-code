@@ -30,6 +30,7 @@
 #endif // _MSC_VER > 1000
 
 #include "Generator.h"
+#include "IHdrInterface.h"
 #include "GDIGenePropPage.h"
 
 #define MAX_MONITOR_NB 4
@@ -48,6 +49,7 @@ protected:
 // Attributes
 	CFullScreenWindow m_displayWindow;
 	CGDIGenePropPage m_GDIGenePropertiesPage;
+	IHdrInterface *m_HdrInterface;
 public:										// public because of callback
 	UINT m_monitorNb;						// number of detected monitors
 	HMONITOR m_hMonitor[MAX_MONITOR_NB];	// array of detected monitors handles

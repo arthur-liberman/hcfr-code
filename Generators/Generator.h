@@ -35,6 +35,7 @@
 #include "../libccast/ccmdns.h"
 #include "../libccast/ccwin.h"
 #include "../libccast/ccast.h"
+#include "../Tools/GoogleCastWrapper/GoogleCastWrapper.h"
 
 class CGenerator: public CObject    
 {
@@ -76,10 +77,12 @@ public:
 	BOOL m_b16_235;
 	BOOL m_busePic;
 	BOOL m_bLinear;
+	BOOL m_bHdr10;
 	BOOL m_bdispTrip;
     BOOL m_madVR_3d;
     BOOL m_madVR_vLUT;
 	BOOL m_madVR_OSD;
+	UINT m_ccastIp;
 	dispwin *ccwin;
 protected:
 	BOOL m_isModified;

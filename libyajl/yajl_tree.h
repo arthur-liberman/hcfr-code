@@ -165,6 +165,9 @@ yajl_val yajl_tree_get_first(yajl_val n, const char *key, yajl_type type);
  *  or NULL if the value is not a string. */
 #define YAJL_GET_STRING(v) (YAJL_IS_STRING(v) ? (v)->u.string : NULL)
 
+/* Same as above but return an allocated string or NULL */
+#define YAJL_GET_STRINGDUP(v) (YAJL_IS_STRING(v) ? strdup((v)->u.string) : NULL)
+
 /** Get the string representation of a number.  You should check type first,
  *  perhaps using YAJL_IS_NUMBER */
 #define YAJL_GET_NUMBER(v) ((v)->u.number.r)

@@ -37,6 +37,7 @@
 
 
 #include <string>
+#include <float.h>
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -80,14 +81,16 @@ CGDIGenerator::CGDIGenerator()
 	m_bgStimPercent = m_displayWindow.m_bgStimPercent;
 	m_Intensity = m_displayWindow.m_Intensity;
 	m_patternDGenerator=NULL;
+	m_HdrInterface=NULL;
 
 	GetMonitorList();
 	m_activeMonitorNum = m_monitorNb-1;
 
-	m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide);
+	m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_DEFAULT_MODE);
 	m_b16_235 = GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0);
 	m_busePic = GetConfig()->GetProfileInt("GDIGenerator","USEPIC",0);
 	m_bLinear = GetConfig()->GetProfileInt("GDIGenerator","LOADLINEAR",1);
+	m_bHdr10 = GetConfig()->GetProfileInt("GDIGenerator","EnableHDR10",0);
 	m_bdispTrip = GetConfig()->GetProfileInt("GDIGenerator","DISPLAYTRIPLETS",1);
     m_madVR_3d = GetConfig()->GetProfileInt("GDIGenerator","MADVR3D",0);
     m_madVR_vLUT = GetConfig()->GetProfileInt("GDIGenerator","MADVRvLUT",0);
@@ -119,6 +122,8 @@ CGDIGenerator::CGDIGenerator(int nDisplayMode, BOOL b16_235)
 	m_displayWindow.m_busePic=FALSE;
 	m_displayWindow.m_bdispTrip=FALSE;
 	m_displayWindow.m_bLinear=FALSE;
+	m_displayWindow.m_bHdr10=FALSE;
+	m_HdrInterface=NULL;
 
 	GetMonitorList();
 	m_activeMonitorNum = m_monitorNb-1;
@@ -141,6 +146,11 @@ CGDIGenerator::CGDIGenerator(int nDisplayMode, BOOL b16_235)
 
 CGDIGenerator::~CGDIGenerator()
 {
+	if (m_HdrInterface)
+	{
+		OutputDebugString("Destroy existing HdrInterface");
+		delete m_HdrInterface;
+	}
 } 
 
 void CGDIGenerator::Copy(CGenerator * p)
@@ -254,7 +264,7 @@ void CGDIGenerator::Serialize(CArchive& archive)
 		if ( version >= 2 )
 		{
 			archive >> m_nDisplayMode;
-			GetConfig()->WriteProfileInt("GDIGenerator","DisplayMode", DISPLAY_GDI_Hide);
+			GetConfig()->WriteProfileInt("GDIGenerator","DisplayMode", DISPLAY_DEFAULT_MODE);
 		}
 		else
 			m_nDisplayMode = DISPLAY_GDI;
@@ -338,6 +348,13 @@ void CGDIGenerator::GetPropertiesSheetValues()
 		SetModifiedFlag(TRUE);
 	}
 
+	if ( m_bHdr10!=m_GDIGenePropertiesPage.m_bHdr10 )
+	{
+		m_bHdr10=m_GDIGenePropertiesPage.m_bHdr10;
+		GetConfig()->WriteProfileInt("GDIGenerator","EnableHDR10",m_bHdr10);
+		SetModifiedFlag(TRUE);
+	}
+
 	if ( m_bdispTrip!=m_GDIGenePropertiesPage.m_bdispTrip )
 	{
 		m_bdispTrip=m_GDIGenePropertiesPage.m_bdispTrip;
@@ -371,7 +388,7 @@ BOOL CGDIGenerator::Init(UINT nbMeasure, bool isSpecial)
 {
 	BOOL	bOk, bOnOtherMonitor;
 	GetMonitorList();
-	m_nDisplayMode =  		GetConfig()->GetProfileInt("GDIGenerator","DisplayMode", DISPLAY_GDI_Hide);
+	m_nDisplayMode =  		GetConfig()->GetProfileInt("GDIGenerator","DisplayMode", DISPLAY_DEFAULT_MODE);
 	if (!m_bConnect && m_bLinear) //linear gamma tables
 	{
 		char arg[255];
@@ -390,6 +407,51 @@ BOOL CGDIGenerator::Init(UINT nbMeasure, bool isSpecial)
 	m_displayWindow.SetDisplayMode(m_nDisplayMode);
 	m_displayWindow.SetRGBScale(m_b16_235);
 	m_displayWindow.MoveToMonitor(m_hMonitor[m_activeMonitorNum]);
+
+	if (!m_HdrInterface)
+	{
+		OutputDebugString("Create HdrInterface");
+		m_HdrInterface = GetNewHdrInterface(m_displayWindow.hWnd, m_hMonitor[m_activeMonitorNum]);
+	}
+	else
+	{
+		OutputDebugString("Set HdrInterface's hMonitor and hWnd");
+		m_HdrInterface->SetWindowMonitor(m_displayWindow.hWnd, m_hMonitor[m_activeMonitorNum]);
+	}
+	if (m_HdrInterface)
+	{
+		OutputDebugString("HdrInterface exists");
+		OutputDebugString(m_bHdr10 ? "HDR10 enabled":"HDR10 disabled");
+		LIBHDR_HDR_METADATA_HDR10 metaData = {0};
+		if (m_bHdr10)
+		{
+			// Default to DCI/P3 primaries
+			metaData.RedPrimary[0] = UINT16(0.680 * 50000.0);
+			metaData.RedPrimary[1] = UINT16(0.320 * 50000.0);
+			metaData.GreenPrimary[0] = UINT16(0.265 * 50000.0);
+			metaData.GreenPrimary[1] = UINT16(0.690 * 50000.0);
+			metaData.BluePrimary[0] = UINT16(0.150 * 50000.0);
+			metaData.BluePrimary[1] = UINT16(0.060 * 50000.0);
+			metaData.WhitePoint[0] = UINT16(0.3127 * 50000.0);
+			metaData.WhitePoint[1] = UINT16(0.3290 * 50000.0);
+			// Default luminosity levels.
+			metaData.MaxMasteringLuminance = UINT(1000 * 10000.0);	// Max Mastering Luminance 1000  nits.
+			metaData.MinMasteringLuminance = UINT(0.005 * 10000.0);	// Min Mastering Luminance 0.005 nits.
+			metaData.MaxContentLightLevel = 1000;					// Max Content Light Level 1000  nits.
+			metaData.MaxFrameAverageLightLevel = 400;				// Frame Average Light Level 400 nits.
+		}
+		HDR_STATUS hdrStat = m_HdrInterface->SetHDR10Mode(m_bHdr10, metaData);
+		if (SUCCEEDED(hdrStat))
+			OutputDebugString("HDR mode switch successful");
+		else
+		{
+			char buffer[1024];
+			sprintf_s(buffer, "HDR mode switch failed, error number %d", (int)hdrStat);
+			OutputDebugString(buffer);
+		}
+	}
+	else
+		OutputDebugString("HdrInterface doesn't exist");
 
 //	if (m_nDisplayMode == DISPLAY_GDI_Hide)
 //	{
@@ -539,6 +601,11 @@ BOOL CGDIGenerator::DisplayRGBCCast( const ColorRGBDisplay& clr, bool first, UIN
 	g = ((clr[1]) / 100. );
     b = ((clr[2]) / 100. );
 
+	// Workaround ChromeCast crash on Red/Blue sweep
+	r = _isnan(r) ? 0 : r;
+	g = _isnan(g) ? 0 : g;
+	b = _isnan(b) ? 0 : b;
+
 	if (ccwin->height == 0) 
 	{
 		MessageBox(0, "Test pattern failure.", "Error", MB_ICONERROR);
@@ -590,6 +657,7 @@ BOOL CGDIGenerator::DisplayRGBCCast( const ColorRGBDisplay& clr, bool first, UIN
 	        MessageBox(0, "CCast Test pattern failure.", "set_color", MB_ICONERROR);
 			return false;
 		} 
+
 		ccwin->set_bg(ccwin,bgstim);
 		Sleep(50);
 	}
@@ -681,7 +749,7 @@ BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nP
 			DisplayRGBCCast (do_Intensity?p_clr:clr, GetConfig()->m_isSettling, nPatternInfo );
 		else
 			m_displayWindow.DisplayRGBColor(do_Intensity?p_clr:clr, nPatternInfo);
-		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.ShowWindow(SW_HIDE);
+		//( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.ShowWindow(SW_HIDE);
 	}
 
 	return TRUE;
@@ -1044,7 +1112,7 @@ BOOL CGDIGenerator::Release(INT nbNext)
 {
 	GetColorApp() -> SetPatternWindow ( NULL );
 	m_displayWindow.Hide();
-	m_displayWindow.SetDisplayMode(GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide));
+	m_displayWindow.SetDisplayMode(GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_DEFAULT_MODE));
 	m_displayWindow.m_nPat = 0;
 
 	BOOL bOk = CGenerator::Release();

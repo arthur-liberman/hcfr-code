@@ -47,6 +47,7 @@ CGenerator::CGenerator()
 	m_isModified=FALSE;
 	m_doScreenBlanking=GetConfig()->GetProfileInt("Generator","Blanking",0);
 	m_rectSizePercent=GetConfig()->GetProfileInt("GDIGenerator","SizePercent",10);
+	m_ccastIp = 0;
 	AddPropertyPage(&m_GeneratorPropertiePage);
 
 	CString str;
@@ -147,32 +148,38 @@ BOOL CGenerator::Init(UINT nbMeasure, bool isSpecial)
 	{
 		if (Cgen.m_nDisplayMode == DISPLAY_ccast)
 		{
-			ccast_id **ids;
-			if ((ids = get_ccids()) == NULL) 
+			OutputDebugString("CGenerator::Init");
+			m_ccastIp = GetConfig()->GetProfileInt("GDIGenerator", "CCastIp", 0);
+			CGoogleCastWrapper GCast;
+			GCast.RefreshList();
+			if (GCast.getCount() == 0)
 			{
-				GetColorApp()->InMeasureMessageBox( "    ** Error discovering ChromeCasts **", "Error", MB_ICONERROR);
+				GetColorApp()->InMeasureMessageBox( "    ** No ChromeCasts found **", "Error", MB_ICONERROR);
+				OutputDebugString("    ** No ChromeCasts found **");
 				return false;
 			} else 
 			{
-				if (ids[0] == NULL)
+				const ccast_id *id = m_ccastIp ? GCast.getCcastByIp(m_ccastIp) : GCast[0];
+				if (id == NULL && (id = GCast[0]) == NULL)
 				{
-					GetColorApp()->InMeasureMessageBox( "    ** No ChromeCasts found **", "Error", MB_ICONERROR);
+					GetColorApp()->InMeasureMessageBox( "    ** Error discovering ChromeCasts **", "Error", MB_ICONERROR);
+					OutputDebugString("    ** Error discovering ChromeCasts **");
 					return false;
 				}
 				else 
 				{
+					OutputDebugString("Casting to: ");OutputDebugString(id->name);
 					double rx = sqrt( double( (double)Cgen.m_rectSizePercent / 100.));
-					dw = new_ccwin(ids[0], 1000.0 * rx  , 565.0 * rx, 0.0, 0.0, 0, 0.1234);
+					dw = new_ccwin((ccast_id *)id, 1000.0 * rx  , 565.0 * rx, 0.0, 0.0, 0, 0.1234);
 					if (dw == NULL) 
 					{
-						GetColorApp()->InMeasureMessageBox( ids[0]->name, "new_ccwin failed!", MB_ICONERROR);
-						free_ccids(ids);
+						GetColorApp()->InMeasureMessageBox( id->name, "new_ccwin failed!", MB_ICONERROR);
+						OutputDebugString("new_ccwin failed! ");OutputDebugString(id->name);
 						return -1;
 					} 
 					ccwin = dw;				
 				}
 			}
-			free_ccids(ids);
 		} else if (Cgen.m_nDisplayMode == DISPLAY_madVR)
 		{
 			if (madVR_IsAvailable())

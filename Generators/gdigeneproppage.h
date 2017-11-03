@@ -43,6 +43,7 @@ public:
 	//{{AFX_DATA(CGDIGenePropPage)
 	enum { IDD = IDD_GENERATOR_GDI_PROP_PAGE };
 	CComboBox	m_monitorComboCtrl;
+	CComboBox	m_cCastComboCtrl;
 	UINT	m_rectSizePercent;
 	UINT	m_bgStimPercent;
 	UINT	m_Intensity;
@@ -55,6 +56,7 @@ public:
     CEdit m_usePicEdit;
 	int m_activeMonitorNum;
 	int	m_nDisplayMode;
+	int m_selectedGcastNum;
 	BOOL m_b16_235;
 	BOOL m_busePic;
 	BOOL m_bdispTrip;
@@ -62,8 +64,10 @@ public:
     BOOL m_madVR_vLUT;
 	BOOL m_madVR_OSD;
 	BOOL m_bLinear;
+	BOOL m_bHdr10;
 
 	HMONITOR	m_monitorHandle [ 16 ];
+	CGoogleCastWrapper m_GCast;
 
 	virtual UINT GetHelpId ( LPSTR lpszTopic );
 

@@ -20,32 +20,32 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <time.h>
-#include "../h/aconfig.h"
+#include "copyright.h"
+#include "aconfig.h"
 #ifndef SALONEINSTLIB
 #include "numlib.h"
 #else
 #include "numsup.h"
 #endif
-#include "yajl.h"
 #include "conv.h"
 #include "base64.h"
+#include "yajl.h"
 #include "ccpacket.h"
 #include "ccmes.h"
 #include "ccast.h"
 
-#undef DEBUG
-#undef CHECK_JSON
+#undef DEBUG				/* [und] */
+#undef USE_DEF_RECIEVER		/* [und] */
+#undef CHECK_JSON			/* [und] */
 
 #ifdef DEBUG
-# define dbgo stdout
-# define DBG(xxx) fprintf xxx ;
-void cc_dump_bytes(FILE *fp, char *pfx, unsigned char *buf, int len);
+# define DBG(xxx) a1logd xxx ;
 #else
 # define DBG(xxx) ;
 #endif  /* DEBUG */
 
-#define START_TRIES 2
-#define LOAD_TRIES 2
+#define START_TRIES 6
+#define LOAD_TRIES 4
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - */
 
@@ -58,8 +58,8 @@ static void check_json(char *mesbuf) {
 	char errbuf[1024];
 
 	if ((node = yajl_tree_parse(mesbuf, errbuf, sizeof(errbuf))) == NULL) {
-		fprintf(dbgo,"yajl_tree_parse of send message failed with '%s'\n",errbuf);
-		fprintf(dbgo,"JSON = '%s'\n",mesbuf);
+		fprintf(g_log,0,"yajl_tree_parse of send message failed with '%s'\n",errbuf);
+		fprintf(g_log,0,"JSON = '%s'\n",mesbuf);
 		exit(1);
 	}
 	yajl_tree_free(node);
@@ -80,11 +80,11 @@ static int cc_rec_thread(void *context) {
 	ccmessv_err merr;
 	ccmes mes, smes;
 	int errc = 0;
-//	char errbuf[1024];
-//	yajl_val idn;
+	char errbuf[1024];
+	yajl_val tyn, idn;
 	int rv = 0;
 
-	DBG((dbgo,"ccthread starting\n"))
+	DBG((g_log,0,"ccthread starting\n"))
 
 	ccmes_init(&mes);
 	ccmes_init(&smes);
@@ -100,21 +100,21 @@ static int cc_rec_thread(void *context) {
 
 		if ((merr = sv->receive(sv, &mes)) != ccmessv_OK) {
 			if (merr == ccmessv_timeout) {
-				DBG((dbgo,"ccthread: got receive timeout (OK)\n"))
+				DBG((g_log,0,"ccthread: got receive timeout (OK)\n"))
 				msec_sleep(100);
 			} else {
-				DBG((dbgo,"ccthread: messv->receive failed with '%s'\n",ccmessv_emes(merr)))
+				DBG((g_log,0,"ccthread: messv->receive failed with '%s'\n",ccmessv_emes(merr)))
 				msec_sleep(100);
 #ifdef NEVER
 //This won't work - we need to re-join the session etc.,
 				if (p->messv->pk->reconnect(p->messv->pk)) {
-					DBG((dbgo,"ccthread: reconnect after error failed\n"))
+					DBG((g_log,0,"ccthread: reconnect after error failed\n"))
 					rv = 1;
 					break;
 				}
 #endif
 				if (errc++ > 20) {		/* Too many failures */
-					DBG((dbgo,"ccthread: too many errors - giving up\n"))
+					DBG((g_log,0,"ccthread: too many errors - giving up\n"))
 					/* Hmm. The connection seems to have gone down ? */
 					rv = 1;
 					break;
@@ -129,13 +129,13 @@ static int cc_rec_thread(void *context) {
 		if (mes.mtype != NULL && strcmp(mes.mtype, "CLOSE") == 0) {
 			/* Hmm. That indicates an error */
 		
-			DBG((dbgo,"ccthread: got CLOSE message - giving up\n"))
+			DBG((g_log,0,"ccthread: got CLOSE message - giving up\n"))
 			rv = 1;
 			break;
 
 		} else if (mes.mtype != NULL && strcmp(mes.mtype, "PING") == 0) {
 			if ((merr = sv->send(sv, &smes)) != ccmessv_OK) {
-				DBG((dbgo,"ccthread: send PONG failed with '%s'\n",ccmessv_emes(merr)))
+				DBG((g_log,0,"ccthread: send PONG failed with '%s'\n",ccmessv_emes(merr)))
 			}
 		
 		/* Got reply - add to linked list */
@@ -143,12 +143,12 @@ static int cc_rec_thread(void *context) {
 			int found;
 #ifdef DEBUG
 			if (p->w_rq) {
-				DBG((dbgo,"ccthread: waiting for ns '%s' and mes->ns '%s'\n",
+				DBG((g_log,0,"ccthread: waiting for ns '%s' and mes->ns '%s'\n",
 				                                 p->w_rqns, mes.namespace))
-				DBG((dbgo,"ccthread: waiting for id %d and mes->id %d\n",
+				DBG((g_log,0,"ccthread: waiting for id %d and mes->id %d\n",
 				                                 p->w_rqid, mes.rqid))
 			} else {
-				DBG((dbgo,"ccthread: has no client waiting\n"))
+				DBG((g_log,0,"ccthread: has no client waiting\n"))
 			}
 #endif
 
@@ -160,18 +160,18 @@ static int cc_rec_thread(void *context) {
 			if (found || mes.rqid != 0) {
 				ccmes *nmes;
 				if ((nmes = (ccmes *)calloc(1, sizeof(ccmes))) == NULL) {
-					DBG((dbgo,"ccthread: calloc failed\n"))
+					DBG((g_log,0,"ccthread: calloc failed\n"))
 				} else {
 					ccmes_transfer(nmes, &mes);
 	
-					DBG((dbgo,"ccthread: adding message type '%s' id %d to list (found %d)\n",nmes->mtype,nmes->rqid,found))
+					DBG((g_log,0,"ccthread: adding message type '%s' id %d to list (found %d)\n",nmes->mtype,nmes->rqid,found))
 					amutex_lock(p->rlock);	/* We're modifying p->rmes list */
 					nmes->next = p->rmes;	/* Put at start of list */
 					p->rmes = nmes; 
 	
 					/* Client is waiting for this */
 					if (found) {
-						DBG((dbgo,"ccthread: client was waiting for this message\n"))
+						DBG((g_log,0,"ccthread: client was waiting for this message\n"))
 						acond_signal(p->rcond);
 					}
 					amutex_unlock(p->rlock);		/* We've finished modifying p->rmes list */
@@ -182,7 +182,7 @@ static int cc_rec_thread(void *context) {
 		/* Got anonomous status message */
 		ccmes_empty(&mes);
 	}
-	DBG((dbgo, "ccthread: about to exit - stop = %d\n",p->stop))
+	DBG((g_log,0, "ccthread: about to exit - stop = %d\n",p->stop))
 
 	/* We're bailing out or stopping */
 	p->stopped = 1;
@@ -190,12 +190,12 @@ static int cc_rec_thread(void *context) {
 	/* Release client if it was waiting */
 	amutex_lock(p->rlock);
 	if (p->w_rq != 0) { 
-		DBG((dbgo,"ccthread: client was waiting for message - abort it\n"))
+		DBG((g_log,0,"ccthread: client was waiting for message - abort it\n"))
 		acond_signal(p->rcond);
 	}
 	amutex_unlock(p->rlock);
 
-	DBG((dbgo,"ccthread returning %d\n",rv))
+	DBG((g_log,0,"ccthread returning %d\n",rv))
 
 	return rv;
 }
@@ -210,14 +210,14 @@ static int get_a_reply_id(ccast *p, char *namespace, int rqid, ccmes *rmes, int 
 	ccmes *mes, *xmes, *fmes = NULL;
 	int rv = 0;
 
-	DBG((dbgo," get_a_reply_id getting namespace '%s' id %d\n",
+	DBG((g_log,0," get_a_reply_id getting namespace '%s' id %d\n",
 	            namespace == NULL ? "(none)" : namespace, rqid))
 
 	amutex_lock(p->rlock);		/* We're modifying p->rmes list */
 
 	if (p->stop || p->stopped) {
 		amutex_unlock(p->rlock);		/* Allow thread to modify p->rmes list */
-		DBG((dbgo," get_a_reply_id: thread is stopping or stopped\n"))
+		DBG((g_log,0," get_a_reply_id: thread is stopping or stopped\n"))
 		return 1;
 	}
 
@@ -252,29 +252,29 @@ static int get_a_reply_id(ccast *p, char *namespace, int rqid, ccmes *rmes, int 
 		/* We need to wait until it turns up */
 		/* Allow thread to modify p->rmes list and signal us */
 		if (acond_timedwait(p->rcond, p->rlock, to) != 0) {
-			DBG((dbgo," get_a_reply_id timed out after %f secs\n",to/1000.0))
+			DBG((g_log,0," get_a_reply_id timed out after %f secs\n",to/1000.0))
 			rv = 2;
 			break;
 		}
 #else
 		acond_wait(p->rcond, p->rlock);
 #endif
-		DBG((dbgo," get_a_reply_id got released\n"))
+		DBG((g_log,0," get_a_reply_id got released\n"))
 	}
 	p->w_rq = 0;					/* We're not looking for anything now */
 	amutex_unlock(p->rlock);		/* Allow thread to modify p->rmes list */
 
 	if (p->stop || p->stopped) {
-		DBG((dbgo," get_a_reply_id failed because thread is stopped or stopping\n"))
+		DBG((g_log,0," get_a_reply_id failed because thread is stopped or stopping\n"))
 		ccmes_init(rmes);
 		return 1;
 	}
 
 	if (rv != 0) {
-		DBG((dbgo," get_a_reply_id returning error %d\n",rv))
+		DBG((g_log,0," get_a_reply_id returning error %d\n",rv))
 	} else {
 		ccmes_transfer(rmes, fmes);
-		DBG((dbgo," get_a_reply_id returning type '%s' id %d\n",rmes->mtype,rmes->rqid))
+		DBG((g_log,0," get_a_reply_id returning type '%s' id %d\n",rmes->mtype,rmes->rqid))
 	}
 
 	return rv;
@@ -287,7 +287,7 @@ void ccast_delete_from_cleanup_list(ccast *p);
 /* Cleanup any created objects */
 static void cleanup_ccast(ccast *p) {
 
-	DBG((dbgo," cleanup_ccast() called\n"))
+	DBG((g_log,0," cleanup_ccast() called\n"))
 
 	p->stop = 1;		/* Tell the thread to exit */
 
@@ -335,7 +335,7 @@ static void cleanup_ccast(ccast *p) {
 static void shutdown_ccast(ccast *p) {
 	ccmes mes;
 
-	DBG((dbgo," shutdown_ccast() called\n"))
+	DBG((g_log,0," shutdown_ccast() called\n"))
 
 	ccmes_init(&mes);
 
@@ -427,19 +427,19 @@ static int start_ccast(ccast *p) {
 
 		/* Hmm. Could put creation of pk inside new_ccmessv() ? */
 		if ((pk = new_ccpacket()) == NULL) {
-			DBG((dbgo,"start_ccast: new_ccpacket() failed\n"))
+			DBG((g_log,0,"start_ccast: new_ccpacket() failed\n"))
 			goto retry;
 		}
 		
 		if ((perr = pk->connect(pk, p->id.ip, 8009)) != ccpacket_OK) {
-			DBG((dbgo,"start_ccast: ccpacket connect failed with '%s'\n",ccpacket_emes(perr)))
+			DBG((g_log,0,"start_ccast: ccpacket connect failed with '%s'\n",ccpacket_emes(perr)))
 			goto retry;
 		} 
 
-		DBG((dbgo,"Got TLS connection to '%s\n'",p->id.name))
+		DBG((g_log,0,"Got TLS connection to '%s\n'",p->id.name))
 
 		if ((p->messv = new_ccmessv(pk)) == NULL) {
-			DBG((dbgo,"start_ccast: new_ccmessv() failed\n"))
+			DBG((g_log,0,"start_ccast: new_ccmessv() failed\n"))
 			goto retry;
 		}
 		pk = NULL;		/* Will get deleted with messv now */
@@ -451,7 +451,7 @@ static int start_ccast(ccast *p) {
 		mes.binary         = 0;
 		mes.data   = (ORD8 *)"{ \"type\": \"CONNECT\" }";
 		if ((merr = p->messv->send(p->messv, &mes)) != ccmessv_OK) {
-			DBG((dbgo,"start_ccast: CONNECT failed with '%s'\n",ccmessv_emes(merr)))
+			DBG((g_log,0,"start_ccast: CONNECT failed with '%s'\n",ccmessv_emes(merr)))
 			goto retry;
 		}
 
@@ -459,7 +459,7 @@ static int start_ccast(ccast *p) {
 		/* We don't want to start this until the TLS negotiations and */
 		/* the synchronous ssl_readi()'s it uses are complete. */ 
 		if ((p->rmesth = new_athread(cc_rec_thread, (void *)p)) == NULL) {
-			DBG((dbgo,"start_ccast: creating message thread failed\n"))
+			DBG((g_log,0,"start_ccast: creating message thread failed\n"))
 			goto retry;
 		}
 
@@ -468,10 +468,10 @@ static int start_ccast(ccast *p) {
 		mes.namespace      = heartbeat_chan;
 		mes.data   = (ORD8 *)"{ \"type\": \"PING\" }";
 		if ((merr = p->messv->send(p->messv, &mes)) != ccmessv_OK) {
-			DBG((dbgo,"start_ccast: PING failed with '%s'\n",ccmessv_emes(merr)))
+			DBG((g_log,0,"start_ccast: PING failed with '%s'\n",ccmessv_emes(merr)))
 			return 1;
 		}
-		
+
 		/* Wait for a PONG */
 //	get_a_reply(p->messv, NULL);
 #endif
@@ -497,14 +497,14 @@ static int start_ccast(ccast *p) {
 			sprintf(mesbuf, "{ \"requestId\": %d, \"type\": \"LAUNCH\", \"appId\": \"%s\" }",
 			              reqid, appid);
 
-			DBG((dbgo,"start_ccast: about to do LAUNCH\n"))
+			DBG((g_log,0,"start_ccast: about to do LAUNCH\n"))
 			/* Launch the default application */
 			/* (Presumably we would use the com.google.cast.receiver channel */
 			/*  for monitoring and controlling the reciever) */
 			mes.namespace      = receiver_chan;
 			mes.data   = (ORD8 *)mesbuf;
 			if ((merr = p->messv->send(p->messv, &mes)) != ccmessv_OK) {
-				DBG((dbgo,"start_ccast: LAUNCH failed with '%s'\n",ccmessv_emes(merr)))
+				DBG((g_log,0,"start_ccast: LAUNCH failed with '%s'\n",ccmessv_emes(merr)))
 				goto retry;
 			}
 
@@ -515,7 +515,7 @@ static int start_ccast(ccast *p) {
 
 			/* Wait for a reply to the LAUNCH (15 sec) */
 			if (get_a_reply_id(p, receiver_chan, reqid, &rmes, 15000) != 0) {
-				DBG((dbgo,"start_ccast: LAUNCH failed to get a reply\n"))
+				DBG((g_log,0,"start_ccast: LAUNCH failed to get a reply\n"))
 				goto retry;
 			}
 
@@ -529,7 +529,7 @@ static int start_ccast(ccast *p) {
 			 || strcmp(rmes.mtype, "LAUNCH_ERROR") != 0
 			 || rmes.tnode == NULL
 			 || (app+1) >= naps) {
-				DBG((dbgo,"start_ccast: LAUNCH failed to get a RECEIVER_STATUS or LAUNCH ERROR reply\n"))
+				DBG((g_log,0,"start_ccast: LAUNCH failed to get a RECEIVER_STATUS or LAUNCH ERROR reply\n"))
 				ccmes_empty(&rmes);
 				goto retry;
 			}
@@ -537,33 +537,33 @@ static int start_ccast(ccast *p) {
 			/* Try the next application */
 		}
 
-		DBG((dbgo,"start_ccast: LAUNCH soceeded, load delay = %d msec\n",p->load_delay))
+		DBG((g_log,0,"start_ccast: LAUNCH soceeded, load delay = %d msec\n",p->load_delay))
 		{
 			yajl_val idn, tpn;
 			if ((idn = yajl_tree_get_first(rmes.tnode, "sessionId", yajl_t_string)) == NULL
 			 || (tpn = yajl_tree_get_first(rmes.tnode, "transportId", yajl_t_string)) == NULL) {
-				DBG((dbgo,"start_ccast: LAUNCH failed to get sessionId & transportId\n"))
+				DBG((g_log,0,"start_ccast: LAUNCH failed to get sessionId & transportId\n"))
 				ccmes_empty(&rmes);
 				goto retry;
 			}
-			p->sessionId = strdup(YAJL_GET_STRING(idn));
-			p->transportId = strdup(YAJL_GET_STRING(tpn));
+			p->sessionId = YAJL_GET_STRINGDUP(idn);
+			p->transportId = YAJL_GET_STRINGDUP(tpn);
 			if (p->sessionId == NULL || p->transportId == NULL) {
-				DBG((dbgo,"start_ccast: strdup failed\n"))
+				DBG((g_log,0,"start_ccast: strdup failed\n"))
 				ccmes_empty(&rmes);
 				goto retry;
 			}
 		}
 		ccmes_empty(&rmes);
 
-		DBG((dbgo,"### Got sessionId = '%s', transportId = '%s'\n",p->sessionId, p->transportId))
+		DBG((g_log,0,"### Got sessionId = '%s', transportId = '%s'\n",p->sessionId, p->transportId))
 
 		/* Connect up to the reciever media channels */
 		mes.destination_id = p->transportId;
 		mes.namespace      = connection_chan;
 		mes.data   = (ORD8 *)"{ \"type\": \"CONNECT\" }";
 		if ((merr = p->messv->send(p->messv, &mes)) != ccmessv_OK) {
-			DBG((dbgo,"messv->send CONNECT failed with '%s'\n",ccmessv_emes(merr)))
+			DBG((g_log,0,"messv->send CONNECT failed with '%s'\n",ccmessv_emes(merr)))
 			goto retry;
 		}
 
@@ -585,11 +585,11 @@ static int start_ccast(ccast *p) {
 	}
 
 	if (tries >= maxtries) {
-		DBG((dbgo,"Failed to start ChromeCast\n"))
+		DBG((g_log,0,"Failed to start ChromeCast\n"))
 		return 1;
 	}
 
-	DBG((dbgo,"Succeeded in starting ChromeCast\n"))
+	DBG((g_log,0,"Succeeded in starting ChromeCast\n"))
 
 	ccast_install_signal_handlers(p);
 
@@ -612,11 +612,11 @@ static int get_direct_send(ccast *p) {
 /* Create a new ChromeCast */
 /* Return NULL on error */
 ccast *new_ccast(ccast_id *id,
-int forcedef) {
+int forcedef) {				// Force default reciever
 	ccast *p = NULL;
 
 	if ((p = (ccast *)calloc(1, sizeof(ccast))) == NULL) {
-		DBG((dbgo, "new_ccast: calloc failed\n"))
+		DBG((g_log,0, "new_ccast: calloc failed\n"))
 		return NULL;
 	}
 
@@ -627,6 +627,9 @@ int forcedef) {
 	p->get_load_delay  = get_load_delay;
 	p->get_direct_send = get_direct_send;
 
+#ifdef USE_DEF_RECIEVER
+	forcedef = 1;
+#endif
 	p->forcedef = forcedef;
 
 	ccast_id_copy(&p->id, id);
@@ -671,15 +674,15 @@ static int load_ccast(
 		size_t iilen = ilen;
 		firstid = lastid = reqid = ++p->requestId;
 
-		DBG((dbgo,"##### load_ccast try %d/%d\n",i+1,maxtries))
+		DBG((g_log,0,"##### load_ccast try %d/%d\n",i+1,maxtries))
 
 		if (p->messv == NULL) {
-			DBG((dbgo,"mes->send LOAD failed due to lost connection\n"))
+			DBG((g_log,0,"mes->send LOAD failed due to lost connection\n"))
 
 		} else {
 
 			if (url == NULL && !p->patgenrcv) {
-				DBG((dbgo,"mes->send not given URL\n"))
+				DBG((g_log,0,"mes->send not given URL\n"))
 				return 1;
 			}
 
@@ -719,7 +722,7 @@ static int load_ccast(
 				check_json((char *)mes.data);
 #endif
 				if ((merr = p->messv->send(p->messv, &mes)) != ccmessv_OK) {
-					DBG((dbgo,"mes->send LOAD failed with '%s'\n",ccmessv_emes(merr)))
+					DBG((g_log,0,"mes->send LOAD failed with '%s'\n",ccmessv_emes(merr)))
 					rv = 1;
 					goto retry;		/* Failed */
 				}
@@ -732,7 +735,7 @@ static int load_ccast(
 				int dlen;
 
 				if ((mesbuf = malloc(1024 + EBASE64LEN(iilen))) == NULL) {
-					DBG((dbgo,"mes->send malloc failed\n"))
+					DBG((g_log,0,"mes->send malloc failed\n"))
 					return 1;
 				}
 
@@ -741,7 +744,7 @@ static int load_ccast(
 				"{ \"contentId\": \"data:image/png;base64,",reqid);
 				ebase64(&dlen, cp, iibuf, iilen);
 				cp += dlen;
-				DBG((dbgo,"base64 encoded PNG = %d bytes\n",dlen))
+				DBG((g_log,0,"base64 encoded PNG = %d bytes\n",dlen))
 				sprintf(cp, "|rgb(%d, %d, %d)|%f|%f|%f|%f\","
 				"\"streamType\": \"LIVE\",\"contentType\": \"text/plain\" } }",
 				(int)(bg[0] * 255.0 + 0.5), (int)(bg[1] * 255.0 + 0.5), (int)(bg[2] * 255.0 + 0.5),
@@ -756,7 +759,7 @@ static int load_ccast(
 				check_json((char *)mes.data);
 #endif
 				if ((merr = p->messv->send(p->messv, &mes)) != ccmessv_OK) {
-					DBG((dbgo,"mes->send LOAD failed with '%s'\n",ccmessv_emes(merr)))
+					DBG((g_log,0,"mes->send LOAD failed with '%s'\n",ccmessv_emes(merr)))
 					free(mesbuf);
 					rv = 1;
 					goto retry;		/* Failed */
@@ -772,7 +775,7 @@ static int load_ccast(
 				int dlen;			/* Encoded length to send */
 
 				if ((mesbuf = malloc(61 * 1024)) == NULL) {
-					DBG((dbgo,"mes->send malloc failed\n"))
+					DBG((g_log,0,"mes->send malloc failed\n"))
 					return 1;
 				}
 
@@ -792,7 +795,7 @@ static int load_ccast(
 				cp += sprintf(cp, "\"encoding\": \"base64\",");
 				cp += sprintf(cp, "\"data\": \"");
 				ebase64(&dlen, cp, iibuf, meslen);
-				DBG((dbgo,"part base64 encoded PNG = %d bytes\n",dlen))
+				DBG((g_log,0,"part base64 encoded PNG = %d bytes\n",dlen))
 				iibuf += meslen;
 				iilen -= meslen;
 				senclen += dlen;
@@ -820,7 +823,7 @@ static int load_ccast(
 #endif
 
 				if ((merr = p->messv->send(p->messv, &mes)) != ccmessv_OK) {
-					DBG((dbgo,"mes->send LOAD failed with '%s'\n",ccmessv_emes(merr)))
+					DBG((g_log,0,"mes->send LOAD failed with '%s'\n",ccmessv_emes(merr)))
 					free(mesbuf);
 					rv = 1;
 					goto retry;		/* Failed */
@@ -834,7 +837,7 @@ static int load_ccast(
 					if (meslen > maxlen)	
 						meslen = maxlen;
 
-					DBG((dbgo,"Sending %d bytes of %d remaining in image\n",meslen,iilen))
+					DBG((g_log,0,"Sending %d bytes of %d remaining in image\n",meslen,iilen))
 
 					lastid = reqid = ++p->requestId;
 
@@ -843,7 +846,7 @@ static int load_ccast(
 					cp += sprintf(cp, "\"requestId\": %d,",reqid); 
 					cp += sprintf(cp, "\"foreground\": \"");
 					ebase64(&dlen, cp, iibuf, meslen);
-					DBG((dbgo,"part base64 encoded PNG = %d bytes\n",dlen))
+					DBG((g_log,0,"part base64 encoded PNG = %d bytes\n",dlen))
 					iibuf += meslen;
 					iilen -= meslen;
 					senclen += dlen;
@@ -861,7 +864,7 @@ static int load_ccast(
 					check_json((char *)mes.data);
 #endif
 					if ((merr = p->messv->send(p->messv, &mes)) != ccmessv_OK) {
-						DBG((dbgo,"mes->send LOAD failed with '%s'\n",ccmessv_emes(merr)))
+						DBG((g_log,0,"mes->send LOAD failed with '%s'\n",ccmessv_emes(merr)))
 						free(mesbuf);
 						rv = 1;
 						goto retry;		/* Failed */
@@ -871,41 +874,41 @@ static int load_ccast(
 
 						/* Wait for an ACK, to make sure the channel doesn't get choked up */
 						if (get_a_reply_id(p, direct_chan, firstid, &mes, 10000) != 0) {
-							DBG((dbgo,"load_ccast: failed to get reply\n"))
+							DBG((g_log,0,"load_ccast: failed to get reply\n"))
 							rv = 2;
 							goto retry;		/* Failed */
 						}
 						if (mes.mtype == NULL) {
-							DBG((dbgo,"load_ccast: mtype == NULL\n"))
+							DBG((g_log,0,"load_ccast: mtype == NULL\n"))
 							rv = 2;
 							goto retry;		/* Failed */
 					
 						} else if (dchan && strcmp(mes.mtype, "ACK") == 0) {
-							DBG((dbgo,"load_ccast: got ACK\n"))
+							DBG((g_log,0,"load_ccast: got ACK\n"))
 					
 						} else if (dchan && strcmp(mes.mtype, "NACK") == 0) {
 							/* Failed. Get error status */
 							yajl_val errors;
 							if ((errors = yajl_tree_get_first(mes.tnode, "errors", yajl_t_array)) != NULL) {
-								DBG((dbgo,"NACK returned errors:\n"))
+								DBG((g_log,0,"NACK returned errors:\n"))
 								if (YAJL_IS_ARRAY(errors)) {
 									for (i = 0; i < errors->u.array.len; i++) {
 										yajl_val error = errors->u.array.values[i];
-										DBG((dbgo,"%s\n",error->u.string))
+										DBG((g_log,0,"%s\n",error->u.string))
 									}
 					
 								} else {
-									DBG((dbgo,"NACK errors is not an array!\n"))
+									DBG((g_log,0,"NACK errors is not an array!\n"))
 								}
 							} else {
-								DBG((dbgo,"NACK failed to return errors\n"))
+								DBG((g_log,0,"NACK failed to return errors\n"))
 							}
 							rv = 2;
 							goto retry;		/* Failed */
 			
 						} else {
 							rv = 3;
-							DBG((dbgo,"load_ccast: got mtype '%s'\n",mes.mtype))
+							DBG((g_log,0,"load_ccast: got mtype '%s'\n",mes.mtype))
 							goto retry;		/* Failed */
 						}
 						ccmes_empty(&mes);
@@ -921,7 +924,7 @@ static int load_ccast(
 #endif /* !NEVER */
 
 			} else {
-				DBG((dbgo,"mes->send not given URL or png data\n"))
+				DBG((g_log,0,"mes->send not given URL or png data\n"))
 				return 1;
 			}
 		}
@@ -930,7 +933,7 @@ static int load_ccast(
 		for (reqid = firstid; reqid <= lastid; reqid++) {
 	
 			if (get_a_reply_id(p, dchan ? direct_chan : media_chan, reqid, &mes, 5000) != 0) {
-				DBG((dbgo,"load_ccast: failed to get reply\n"))
+				DBG((g_log,0,"load_ccast: failed to get reply\n"))
 				rv = 2;
 				goto retry;		/* Failed */
 			}
@@ -945,46 +948,46 @@ static int load_ccast(
 				NACK
 		 	*/
 			if (mes.mtype == NULL) {
-				DBG((dbgo,"load_ccast: mtype == NULL\n"))
+				DBG((g_log,0,"load_ccast: mtype == NULL\n"))
 				rv = 2;
 				goto retry;		/* Failed */
 		
 			} else if (dchan && strcmp(mes.mtype, "ACK") == 0) {
-				DBG((dbgo,"load_ccast: got ACK\n"))
+				DBG((g_log,0,"load_ccast: got ACK\n"))
 		
 			} else if (dchan && strcmp(mes.mtype, "NACK") == 0) {
 				/* Failed. Get error status */
 				yajl_val errors;
 				if ((errors = yajl_tree_get_first(mes.tnode, "errors", yajl_t_array)) != NULL) {
-					DBG((dbgo,"NACK returned errors:\n"))
+					DBG((g_log,0,"NACK returned errors:\n"))
 					if (YAJL_IS_ARRAY(errors)) {
 						for (i = 0; i < errors->u.array.len; i++) {
 							yajl_val error = errors->u.array.values[i];
-							DBG((dbgo,"%s\n",error->u.string))
+							DBG((g_log,0,"%s\n",error->u.string))
 						}
 		
 					} else {
-						DBG((dbgo,"NACK errors is not an array!\n"))
+						DBG((g_log,0,"NACK errors is not an array!\n"))
 					}
 				} else {
-					DBG((dbgo,"NACK failed to return errors\n"))
+					DBG((g_log,0,"NACK failed to return errors\n"))
 				}
 				rv = 2;
 				goto retry;		/* Failed */
 
 			} else if (strcmp(mes.mtype, "MEDIA_STATUS") == 0) {
-				yajl_val i;
+				yajl_val node, i;
 				if ((i = yajl_tree_get_first(mes.tnode, "mediaSessionId", yajl_t_number)) != NULL) {
 					p->mediaSessionId = YAJL_GET_INTEGER(i);
-					DBG((dbgo,"MEDIA_STATUS returned mediaSessionId %d\n",p->mediaSessionId))
+					DBG((g_log,0,"MEDIA_STATUS returned mediaSessionId %d\n",p->mediaSessionId))
 				} else {
-					DBG((dbgo,"MEDIA_STATUS failed to return mediaSessionId\n"))
+					DBG((g_log,0,"MEDIA_STATUS failed to return mediaSessionId\n"))
 				}
 				/* Suceeded */
 
 			} else {
 				rv = 3;
-				DBG((dbgo,"load_ccast: got mtype '%s'\n",mes.mtype))
+				DBG((g_log,0,"load_ccast: got mtype '%s'\n",mes.mtype))
 				goto retry;		/* Failed */
 			}
 			ccmes_empty(&mes);
@@ -999,10 +1002,10 @@ static int load_ccast(
 			return rv;		/* Too many tries - give up */
 		}
 	
-		DBG((dbgo,"load_ccast: failed on try %d/%d - re-connecting to chrome cast\n",i+1,maxtries))
+		DBG((g_log,0,"load_ccast: failed on try %d/%d - re-connecting to chrome cast\n",i+1,maxtries))
 		shutdown_ccast(p);	/* Tear connection down */
 		if (start_ccast(p)) {	/* Set it up again */
-			DBG((dbgo,"load_ccast: re-connecting failed\n"))
+			DBG((g_log,0,"load_ccast: re-connecting failed\n"))
 			return 1;
 		}
 		/* And retry */
@@ -1134,6 +1137,7 @@ void ccastQuant(void *ctx, double out[3], double in[3]) {
 	double r = in[0], g = in[1], b = in[2];
 	double Y, Cb, Cr;
 
+double or = r, og = g, ob = b;
 //	printf("ccastQuant: %f %f %f",r,g,b);
 
 	/* Scale RGB to 8 bit then quantize, since that's the limit of the frame buffer */
@@ -1197,6 +1201,11 @@ void ccastQuant(void *ctx, double out[3], double in[3]) {
 	out[1] = g;
 	out[2] = b;
 
+if (fabs(or - r) > 3.0
+ || fabs(og - g) > 3.0
+ || fabs(ob - b) > 3.0) {
+	printf("%f %f %f -> %f %f %f\n",or,og,ob,r,g,b);
+}
 //	printf(" -> %f %f %f\n",r,g,b);
 }
 

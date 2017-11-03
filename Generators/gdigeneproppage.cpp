@@ -46,7 +46,7 @@ CGDIGenePropPage::CGDIGenePropPage() : CPropertyPageWithHelp(CGDIGenePropPage::I
 	m_Intensity = 0;
 	//}}AFX_DATA_INIT
 	m_activeMonitorNum = 0;
-	m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_GDI_Hide);
+	m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_DEFAULT_MODE);
 	m_b16_235 = FALSE;
 	m_busePic = FALSE;
     m_madVR_3d = FALSE;
@@ -54,6 +54,7 @@ CGDIGenePropPage::CGDIGenePropPage() : CPropertyPageWithHelp(CGDIGenePropPage::I
 	m_madVR_OSD = FALSE;
 	m_bdispTrip = FALSE;
 	m_bLinear = FALSE;
+	m_bHdr10 = GetConfig()->GetProfileInt("GDIGenerator","EnableHDR10",0);
 }
 
 CGDIGenePropPage::~CGDIGenePropPage()
@@ -66,6 +67,7 @@ void CGDIGenePropPage::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CGDIGenePropPage)
     DDX_Control(pDX, IDC_MADVR_3D, m_madVREdit);    
 	DDX_Control(pDX, IDC_MONITOR_COMBO, m_monitorComboCtrl);
+	DDX_Control(pDX, IDC_CCAST_COMBO, m_cCastComboCtrl);
     DDX_Control(pDX, IDC_MADVR_3D2, m_madVREdit2);    
     DDX_Control(pDX, IDC_MADVR_OSD, m_madVREdit3);    
     DDX_Control(pDX, IDC_USEPIC, m_usePicEdit);    
@@ -81,6 +83,7 @@ void CGDIGenePropPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_USEPIC, m_busePic);
 	DDX_Check(pDX, IDC_DISP_TRIP, m_bdispTrip);
 	DDX_Check(pDX, IDC_DISP_TRIP2, m_bLinear);
+	DDX_Check(pDX, IDC_ENBL_HDR, m_bHdr10);
 	//}}AFX_DATA_MAP
 }
 
@@ -103,6 +106,7 @@ END_MESSAGE_MAP()
 void CGDIGenePropPage::OnOK() 
 {
 	m_activeMonitorNum=m_monitorComboCtrl.GetCurSel();	
+	m_selectedGcastNum = m_cCastComboCtrl.GetCurSel();
 	if ( IsDlgButtonChecked ( IDC_RADIO2 ) )
 		m_nDisplayMode = DISPLAY_OVERLAY;
 	else if ( IsDlgButtonChecked ( IDC_RADIO3 ) )
@@ -136,6 +140,19 @@ void CGDIGenePropPage::OnOK()
 			m_b16_235 = FALSE;
 	}
 
+	if (m_nDisplayMode == DISPLAY_GDI || m_nDisplayMode == DISPLAY_GDI_Hide || m_nDisplayMode == DISPLAY_GDI_nBG)
+	{
+		GetDlgItem(IDC_ENBL_HDR)->EnableWindow(TRUE);
+		if ( IsDlgButtonChecked ( IDC_ENBL_HDR ) )
+			m_bHdr10 = TRUE;
+		else
+			m_bHdr10 = FALSE;
+	}
+	else
+	{
+		GetDlgItem(IDC_ENBL_HDR)->EnableWindow(FALSE);
+	}
+
 	CheckRadioButton ( IDC_RGBLEVEL_RADIO1, IDC_RGBLEVEL_RADIO2, IDC_RGBLEVEL_RADIO1 + m_b16_235 );
 	CheckRadioButton ( IDC_RADIO1,  IDC_RADIO1 + m_nDisplayMode , IDC_RADIO1 + m_nDisplayMode );
 
@@ -143,6 +160,14 @@ void CGDIGenePropPage::OnOK()
 	m_pGenerator.m_nDisplayMode = m_nDisplayMode;
 	GetConfig()->WriteProfileInt("GDIGenerator","DisplayMode",m_nDisplayMode);
 	GetConfig()->WriteProfileInt("GDIGenerator","RGB_16_235",m_b16_235);
+	GetConfig()->WriteProfileInt("GDIGenerator","EnableHDR10",m_bHdr10);
+	if (m_nDisplayMode == DISPLAY_ccast && m_GCast.getCount() > 0)
+	{
+		char nameBuf[1024];
+		m_cCastComboCtrl.GetWindowTextA(nameBuf, 1024);
+		GetConfig()->WriteProfileInt("GDIGenerator","CCastIp",m_GCast.getCcastIpAddress(m_GCast[nameBuf]));
+	}
+
 	CPropertyPageWithHelp::OnOK();
 }
 
@@ -150,6 +175,7 @@ BOOL CGDIGenePropPage::OnSetActive()
 {
 	// Init combo box with monitor list stored in array
 	m_monitorComboCtrl.ResetContent();
+	m_cCastComboCtrl.ResetContent();
 	for(int i=0;i<m_monitorNameArray.GetSize();i++)
 		m_monitorComboCtrl.AddString(m_monitorNameArray[i]);
 
@@ -185,7 +211,20 @@ BOOL CGDIGenePropPage::OnSetActive()
 	{
 		m_nDisplayMode = DISPLAY_ccast;
 		m_b16_235 = FALSE;
+		GetDlgItem(IDC_CCAST_COMBO)->EnableWindow(TRUE);
 		CheckRadioButton ( IDC_RGBLEVEL_RADIO1, IDC_RGBLEVEL_RADIO2, IDC_RGBLEVEL_RADIO1 + m_b16_235 );
+		m_GCast.RefreshList();
+		unsigned int ccastIp = GetConfig()->GetProfileInt("GDIGenerator", "CCastIp", 0);
+		for (int i = 0 ; i < m_GCast.getCount(); i++)
+		{
+			if (m_GCast[i]->typ != cctyp_Audio)
+				m_cCastComboCtrl.AddString(m_GCast[i]->name);
+
+			if (ccastIp && m_cCastComboCtrl.GetCurSel() < 0 && m_GCast.getCcastIpAddress(m_GCast[i]) == ccastIp)
+				m_cCastComboCtrl.SetCurSel(i);
+		}
+		if (m_cCastComboCtrl.GetCurSel() < 0)
+			m_cCastComboCtrl.SetCurSel(0);
 	}
 	else if ( IsDlgButtonChecked ( IDC_RADIO6 ) )
 		m_nDisplayMode = DISPLAY_GDI_Hide;
@@ -206,6 +245,19 @@ BOOL CGDIGenePropPage::OnSetActive()
 			m_b16_235 = TRUE;
 		else
 			m_b16_235 = FALSE;
+	}
+
+	if (m_nDisplayMode == DISPLAY_GDI || m_nDisplayMode == DISPLAY_GDI_Hide || m_nDisplayMode == DISPLAY_GDI_nBG)
+	{
+		GetDlgItem(IDC_ENBL_HDR)->EnableWindow(TRUE);
+		if ( IsDlgButtonChecked ( IDC_ENBL_HDR ) )
+			m_bHdr10 = TRUE;
+		else
+			m_bHdr10 = FALSE;
+	}
+	else
+	{
+		GetDlgItem(IDC_ENBL_HDR)->EnableWindow(FALSE);
 	}
 
 	return CPropertyPageWithHelp::OnSetActive();
@@ -246,6 +298,16 @@ BOOL CGDIGenePropPage::OnKillActive()
 	{
 		m_b16_235 = FALSE;
 	}
+	if ( IsDlgButtonChecked ( IDC_ENBL_HDR ) )
+	{
+		m_bHdr10 = TRUE;
+	}
+	else
+	{
+		m_bHdr10 = FALSE;
+	}
+
+
 	CheckRadioButton ( IDC_RGBLEVEL_RADIO1, IDC_RGBLEVEL_RADIO2, IDC_RGBLEVEL_RADIO1 + m_b16_235 );
 	CheckRadioButton ( IDC_RADIO1,  IDC_RADIO1 + m_nDisplayMode , IDC_RADIO1 + m_nDisplayMode );
 
@@ -283,6 +345,28 @@ void CGDIGenePropPage::OnClickmadVR()
         m_madVREdit2.EnableWindow(FALSE);
         m_madVREdit3.EnableWindow(FALSE);
     }
+
+	if (IsDlgButtonChecked ( IDC_RADIO5 ) )
+	{
+		GetDlgItem(IDC_CCAST_COMBO)->EnableWindow(TRUE);
+		m_cCastComboCtrl.ResetContent();
+		m_GCast.RefreshList();
+		unsigned int ccastIp = GetConfig()->GetProfileInt("GDIGenerator", "CCastIp", 0);
+		for (int i = 0 ; i < m_GCast.getCount(); i++)
+		{
+			if (m_GCast[i]->typ != cctyp_Audio)
+				m_cCastComboCtrl.AddString(m_GCast[i]->name);
+
+			if (ccastIp && m_cCastComboCtrl.GetCurSel() < 0 && m_GCast.getCcastIpAddress(m_GCast[i]) == ccastIp)
+				m_cCastComboCtrl.SetCurSel(i);
+		}
+		if (m_cCastComboCtrl.GetCurSel() < 0)
+			m_cCastComboCtrl.SetCurSel(0);
+	}
+	else
+		GetDlgItem(IDC_CCAST_COMBO)->EnableWindow(FALSE);
+
+
 	m_activeMonitorNum=m_monitorComboCtrl.GetCurSel();	
 	if ( IsDlgButtonChecked ( IDC_RADIO2 ) )
 		m_nDisplayMode = DISPLAY_OVERLAY;
@@ -316,6 +400,19 @@ void CGDIGenePropPage::OnClickmadVR()
 			m_b16_235 = TRUE;
 		else
 			m_b16_235 = FALSE;
+	}
+
+	if (m_nDisplayMode == DISPLAY_GDI || m_nDisplayMode == DISPLAY_GDI_Hide || m_nDisplayMode == DISPLAY_GDI_nBG)
+	{
+		GetDlgItem(IDC_ENBL_HDR)->EnableWindow(TRUE);
+		if ( IsDlgButtonChecked ( IDC_ENBL_HDR ) )
+			m_bHdr10 = TRUE;
+		else
+			m_bHdr10 = FALSE;
+	}
+	else
+	{
+		GetDlgItem(IDC_ENBL_HDR)->EnableWindow(FALSE);
 	}
 }
 

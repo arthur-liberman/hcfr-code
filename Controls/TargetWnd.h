@@ -62,7 +62,9 @@ public:
 
 // Operations
 public:
-	void Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMode, CDataSetDoc * pDoc, bool bTarget);
+	enum { TARGET_TESTWINDOW = - 1, TARGET_ALL = 0, TARGET_TARGET = 1 };
+
+	void Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMode, CDataSetDoc * pDoc, int target);
 
 protected:
 	int m_prev_cx; 

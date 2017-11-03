@@ -29,6 +29,7 @@
 #include "../libccast/ccmdns.h"
 #include "../libccast/ccwin.h"
 #include "../libccast/ccast.h"
+#include "../Tools/GoogleCastWrapper/GoogleCastWrapper.h"
 
 // Display modes
 #define DISPLAY_GDI		0
@@ -38,6 +39,8 @@
 #define DISPLAY_GDI_nBG		3
 #define DISPLAY_ccast   4
 #define DISPLAY_GDI_Hide 5
+
+#define DISPLAY_DEFAULT_MODE	DISPLAY_GDI
 
 // Overlay surface resolution (can be anything)
 #define OVERLAY_SURFACE_WIDTH	720
@@ -67,6 +70,7 @@ public:
 	BOOL					m_busePic;
 	BOOL					m_bdispTrip;
 	BOOL					m_bLinear;
+	BOOL					m_bHdr10;
 	BOOL					m_bVideoScale;
 
 	BOOL					m_bTestOverlay;

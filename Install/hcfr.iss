@@ -38,7 +38,7 @@ AppSupportURL=http://www.avsforum.com/forum/139-display-calibration/1393853-hcfr
 ;required for installing the driver on NT platforms
 PrivilegesRequired=Admin
 DisableStartupPrompt=yes
-AppCopyright=Copyright (C) 2013-2015 HCFR Team
+AppCopyright=Copyright (C) 2013-2017 HCFR Team
 VersionInfoDescription=HCFR Setup
 VersionInfoProductVersion={#MyAppVersion}
 VersionInfoVersion={#MyAppVersion}
