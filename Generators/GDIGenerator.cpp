@@ -264,7 +264,7 @@ void CGDIGenerator::Serialize(CArchive& archive)
 		if ( version >= 2 )
 		{
 			archive >> m_nDisplayMode;
-			GetConfig()->WriteProfileInt("GDIGenerator","DisplayMode", DISPLAY_DEFAULT_MODE);
+			GetConfig()->WriteProfileInt("GDIGenerator","DisplayMode", m_nDisplayMode);
 		}
 		else
 			m_nDisplayMode = DISPLAY_GDI;
