@@ -3361,17 +3361,17 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 	double value;
 	switch (mode)
 	{
-		case 4:
+		case 4: //BT.1886
 		outL = (Lbt + minL * (1 - split / 100.))/(maxL + minL * (1 - split / 100.));
 		break;
-		case 5:
+		case 5: //BT.2084
 		outL = pow(max(pow(valx,1.0 / m2) - c1,0) / (c2 - c3 * pow(valx, 1.0 / m2)), 1.0 / m1);
 		outL = outL * 10000. / 100.00; 
 		break;
-		case -5:
+		case -5: //BT.2084 inverse
 		outL = pow( (c1 + c2 * pow(valx,m1)) / (1 + c3 * pow(valx,m1)), m2); 
 		break;
-		case 6:
+		case 6: //L*
 		outL = outL_lab;
 		break;
 		case 7: //bbc
@@ -3383,7 +3383,7 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 		else
 			outL = (eta * log (valx) + rho);// / rho;
 		break;
-		case 99:
+		case 99: //sRGB
 			outL = outL_sRGB;
 		break;
 		case 8: //DV_500 Dolby vision 500 cd/m^2 peak

@@ -157,7 +157,7 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 			//look for white and disable if detect for primaries/secondaries is not selected
 			else if ( m_displayMode == 0 || (m_displayMode == 1 && minCol == 7) || m_displayMode == 3 || m_displayMode == 4 || m_pRefColor->GetDeltaxy ( GetColorReference().GetWhite(), GetColorReference() ) < 0.05)
 			{
-				m_bLumaMode = m_displayMode==1?TRUE:FALSE;
+				m_bLumaMode = (m_displayMode==1)?TRUE:FALSE;
 				aReference = GetColorReference().GetWhite();
 			}
 		} //mincol > 0
@@ -202,7 +202,7 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 
 		CColor white = m_pDocument->GetMeasure()->GetPrimeWhite();
 
-		if (!white.isValid() || m_displayMode == 0 || m_displayMode == 2 || m_displayMode == 3)
+		if (!white.isValid() || m_displayMode == 0 || m_displayMode == 2 || m_displayMode == 3 || m_displayMode == 4)
 			white = m_pDocument -> GetMeasure () ->GetOnOffWhite();
 		if ( m_displayMode > 4 && (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb))
 			white = m_pDocument -> GetMeasure () ->GetOnOffWhite();
@@ -224,8 +224,22 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 				// Compute reference Luminance regarding actual offset and reference gamma 
                 // fixed to use correct gamma predicts
                 // and added option to assume perfect gamma
-					double x = ArrayIndexToGrayLevel ( minCol - 1 , nCount, GetConfig () -> m_bUseRoundDown );
-                    double valy, Gamma, Offset;
+					double x;
+					switch (m_displayMode)
+					{
+						int Count;
+						case 3:
+//						nCount = m_pDocument -> GetMeasure()->GetNearBlackScaleSize();
+						x = ArrayIndexToGrayLevel ( (minCol - 1)*(GetConfig()->m_GammaOffsetType==5?2:1), 101, GetConfig () -> m_bUseRoundDown );
+						break;
+						case 4:
+						Count = m_pDocument -> GetMeasure()->GetNearWhiteScaleSize();
+						x = ArrayIndexToGrayLevel ( 101 - Count + (minCol - 1), 101, GetConfig () -> m_bUseRoundDown );
+						break;
+						default:
+						x = ArrayIndexToGrayLevel ( minCol - 1 , nCount, GetConfig () -> m_bUseRoundDown );
+					}
+					double valy, Gamma, Offset;
                     Gamma = GetConfig()->m_GammaRef;
                     GetConfig()->m_GammaAvg = Gamma;
                     m_pDocument->ComputeGammaAndOffset(&Gamma, &Offset, 1, 1, nCount, false);
@@ -256,8 +270,7 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
                     if (GetConfig ()->m_dE_gray == 2 || GetConfig ()->m_dE_form == 5 )
 			            tmpColor[2] = m_pRefColor->GetY() / YWhite; //perfect gamma
 			
-					if ( GetConfig ()->m_dE_gray != 0 )
-						aReference.SetxyYValue(tmpColor);
+					aReference.SetxyYValue(tmpColor);
 
 			}
 			//RGB plots now include luminance offset when grayscale dE handling includes it
@@ -335,7 +348,7 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 					m_blueValue=(float)(100.-(czref-cz)*100.0);                        
 			}
 		}
-		m_dEValue = aReference.isValid()?float(m_pRefColor->GetDeltaE(YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, !m_bLumaMode,  m_displayMode == 3 ? 1:GetConfig()->gw_Weight )):0 ;
+		m_dEValue = aReference.isValid()?float(m_pRefColor->GetDeltaE(YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, !m_bLumaMode,  GetConfig()->gw_Weight )):0 ;
     } //have valid m_prefcolor
 	else
 	{
