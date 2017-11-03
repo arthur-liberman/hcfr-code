@@ -229,7 +229,6 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 					{
 						int Count;
 						case 3:
-//						nCount = m_pDocument -> GetMeasure()->GetNearBlackScaleSize();
 						x = ArrayIndexToGrayLevel ( (minCol - 1)*(GetConfig()->m_GammaOffsetType==5?2:1), 101, GetConfig () -> m_bUseRoundDown );
 						break;
 						case 4:
@@ -287,7 +286,7 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 
             ColorXYZ normColor;
 
-            if(aColor[1] > 0.0)
+            if(aColor[1] > 0.0 && (minCol != 1 || m_displayMode == 4))
             {
                 normColor[0]=(aColor[0]/aColor[1])*fact;
                 normColor[1]=1.0*fact;
@@ -356,7 +355,7 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 		//m_pRef
 	}
 
-	if (m_dEValue > 40) m_dEValue = 0.;
+	if (m_dEValue > 40 || (minCol == 1 && !m_bLumaMode && m_displayMode != 4) ) m_dEValue = 0.;
 	Invalidate(FALSE);
 
 	CString title;
