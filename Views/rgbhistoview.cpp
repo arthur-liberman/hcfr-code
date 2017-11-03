@@ -176,8 +176,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
                 if (GetConfig ()->m_dE_gray == 2 || GetConfig ()->m_dE_form == 5 )
                     tmpColor[2] = aColor [ 2 ] / YWhite;
 
-				if ( GetConfig ()->m_dE_gray != 0 )
-					refColor.SetxyYValue(tmpColor);
+				refColor.SetxyYValue(tmpColor);
 			}
 			//RGB plots now include luminance offset when grayscale dE handling includes it
 			double fact;
@@ -275,6 +274,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 						tmpColor[2] = valyref;
                     if (GetConfig ()->m_dE_gray == 2 || GetConfig ()->m_dE_form == 5)
 		                    tmpColor[ 2] = aColor [ 2 ] / YWhite;
+
 					refColor.SetxyYValue(tmpColor);
 				}
 				else

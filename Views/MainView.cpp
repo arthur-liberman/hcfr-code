@@ -1958,9 +1958,9 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
                         }
                         else
                         {
-                            str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, m_displayMode == 3 ? 1:GetConfig()->gw_Weight ) );
-    						dE=aMeasure.GetDeltaE ( YWhite, aReference,  1.0, GetColorReference(), GetConfig()->m_dE_form, true, m_displayMode == 3 ? 1:GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight );
-    						dL=aMeasure.GetDeltaLCH ( YWhite, aReference,  1.0, GetColorReference(), GetConfig()->m_dE_form, true, m_displayMode == 3 ? 1:GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight, dC, dH );
+                            str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->gw_Weight ) );
+    						dE=aMeasure.GetDeltaE ( YWhite, aReference,  1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight );
+    						dL=aMeasure.GetDeltaLCH ( YWhite, aReference,  1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight, dC, dH );
                         }
 
 						dEavg+=(isNan(dE)?dEavg:dE);
@@ -2020,7 +2020,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 		else if ( aComponentNum == 5 && (nCol > 1 || ( m_displayMode != 0 && m_displayMode != 3)) )
 		{
 			if ( aRefDocColor.isValid() )
-					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aRefDocColor, YWhiteRefDoc, GetColorReference(), GetConfig()->m_dE_form, m_displayMode == 0 || m_displayMode == 3 || m_displayMode == 4, m_displayMode == 3?1:GetConfig()->gw_Weight ) );
+					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aRefDocColor, YWhiteRefDoc, GetColorReference(), GetConfig()->m_dE_form, m_displayMode == 0 || m_displayMode == 3 || m_displayMode == 4, GetConfig()->gw_Weight ) );
 			else
 				str.Empty ();
 		}
@@ -2165,7 +2165,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 
 				CColor white = GetDocument()->GetMeasure()->GetPrimeWhite();
 
-				if (!white.isValid() || m_displayMode == 0 || m_displayMode == 2 || m_displayMode == 3)
+				if (!white.isValid() || m_displayMode == 0 || m_displayMode == 2 || m_displayMode == 3 || m_displayMode == 4)
 					white = GetDocument() -> GetMeasure () ->GetOnOffWhite();
 				if ( m_displayMode > 4 && (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb ))
 					white = GetDocument() -> GetMeasure () ->GetOnOffWhite();
@@ -2702,7 +2702,7 @@ void CMainView::UpdateGrid()
 						refColor.SetxyYValue(tmpColor);
 					 }
 					 else
-					 {
+					 { //Relative Y
 	                    YWhite = aColor [ 1 ];
 						if ( pDataRef )
 							YWhiteRefDoc = refDocColor [ 1 ];
@@ -3138,10 +3138,7 @@ void CMainView::UpdateGrid()
 						}
 					}
 					Msg += dEform;
-                    if (m_displayMode == 3 || m_displayMode == 4)
-                        dEform = m_displayMode == 3?" [Absolute Y w/o gamma, dark adapted]":" [Absolute Y w/o gamma]";
-                    else
-    					dEform = GetConfig()->m_dE_gray==0?" [Relative Y]":(GetConfig ()->m_dE_gray == 1?" [Absolute Y w/gamma]":" [Absolute Y w/o gamma]");
+   					dEform = GetConfig()->m_dE_gray==0?" [Relative Y]":(GetConfig ()->m_dE_gray == 1?" [Absolute Y w/gamma]":" [Absolute Y w/o gamma]");
 					Msg += dEform;
                     if (GetConfig()->doHighlight)
 					    m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
