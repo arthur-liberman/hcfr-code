@@ -1184,7 +1184,7 @@ void video_scale (CxImage *inImage)
 			if (m_bResizePict && !(destW == iW && destH == iH))
 			{
 				//switch for dealing with sending to CC
-				if (iW == 1920)
+				if (iW == 1920 || iW == 4200)
 					isScaled = TRUE;
 				if (destA < iA) //scale width
 				{
