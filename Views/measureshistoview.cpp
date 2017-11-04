@@ -25,6 +25,7 @@
 #include "DataSetDoc.h"
 #include "DocTempl.h"
 #include "MeasuresHistoView.h"
+#include "Views\MainView.h"
 #include <math.h>
 
 #ifdef _DEBUG
@@ -250,19 +251,83 @@ void CMeasuresHistoView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	nEnd = size;
 	nStart = max(0,nEnd-(nMaxX+1));
 
-	double YMax = 0;
+//Add full dE calc and Y weighted RGB errors
+	double	YMax = 0;
+	double	YWhite,x,valy;
+	double	Gamma, Offset; 
+	int		GlvlTarget = 5;
+	int		nsize=GetDocument()->GetMeasure()->GetGrayScaleSize();
 
+	YWhite = GetDocument()->GetMeasure()->GetOnOffWhite()[1];
+	
+	GetDocument()->ComputeGammaAndOffset(&Gamma, &Offset, 3, 1, nsize,false);
+	CColor			refColor = GetColorReference().GetWhite();
+	
 	for (i=nStart, j=0; i<nEnd; i++, j++)
 	{
 		int colorTemp=GetDocument()->GetMeasure()->GetMeasurement(i).GetXYZValue().GetColorTemp(GetColorReference());
 		double Y=GetDocument()->GetMeasure()->GetMeasurement(i).GetXYZValue()[1];
 		
 		if ( Y > YMax )
-			YMax = Y;
-
+		YMax = Y;
 		ColorxyY aColor=GetDocument()->GetMeasure()->GetMeasurement(i).GetxyYValue();
+		ColorXYZ aMeasure;
+//		ColorxyY sColor=GetDocument()->m_SelectedColor.GetxyYValue();
+		
+		//check for GS measurement
+		if (GetDocument()->GetMeasure()->GetGray(0).isValid()) 
+		{
+			POSITION pos = GetDocument()->GetFirstViewPosition ();
+			CView *pView = GetDocument()->GetNextView(pos);
+			int nCol = ((CMainView*)pView)->last_minCol - 1;
 
-		ColorXYZ aMeasure(aColor[0]/aColor[1], 1.0, (1.0-(aColor[0]+aColor[1]))/aColor[1]);
+			x = ArrayIndexToGrayLevel (  nCol , nsize, GetConfig () -> m_bUseRoundDown );
+			ColorxyY tmpColor(GetColorReference().GetWhite());
+			// Determine Reference Y luminance for Delta E calculus
+			if ( GetConfig ()->m_dE_gray > 0 || GetConfig ()->m_dE_form == 5 )
+			{
+            	CColor White = GetDocument()-> GetMeasure () -> GetOnOffWhite();
+	           	CColor Black = GetDocument()-> GetMeasure () -> GetOnOffBlack();
+				int mode = GetConfig()->m_GammaOffsetType;
+				if (GetConfig()->m_colorStandard == sRGB) mode = 99;
+				if ( mode >= 4 )
+		        {
+			        double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
+                    valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+		        }
+		        else
+		        {
+			        double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
+			        valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef))+Offset;
+					if (mode == 1) //black compensation target
+						valy = (Black.GetY() + ( valy * ( YWhite - Black.GetY() ) )) / YWhite;
+		        }
+
+				if (mode == 5)
+					tmpColor[2] = valy * 100. / YWhite;
+				else
+					tmpColor[2] = valy;
+                if (GetConfig ()->m_dE_gray == 2 || GetConfig ()->m_dE_form == 5 )
+                    tmpColor[2] = aColor [ 2 ] / YWhite;
+
+				refColor.SetxyYValue(tmpColor);
+			}
+			//RGB plots now include luminance offset when grayscale dE handling includes it
+			double fact;
+			if ( GetConfig ()->m_dE_gray == 0 )
+			{
+				// Use actual gray luminance as correct reference (absolute)
+	    		YWhite = aColor [ 2 ];
+				fact = 1.0;
+			}
+			else
+				fact = aColor[2] / (tmpColor[2] * GetDocument()->GetMeasure()->GetOnOffWhite()[1]);
+
+			aMeasure = ColorXYZ(aColor[0]/aColor[1] * fact, fact, (1.0-(aColor[0]+aColor[1]))/aColor[1] * fact);
+		}
+		else
+			aMeasure = ColorXYZ(aColor[0]/aColor[1], 1.0, (1.0-(aColor[0]+aColor[1]))/aColor[1]);
+		
 		ColorRGB normColor(aMeasure, GetColorReference());
 
 		m_graphCtrl.AddPoint(m_luminanceGraphID, j, Y);
@@ -270,9 +335,15 @@ void CMeasuresHistoView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 		m_graphCtrl1.AddPoint(m_redGraphID, j, normColor[0]*100.0);
 		m_graphCtrl1.AddPoint(m_greenGraphID, j, normColor[1]*100.0);
 		m_graphCtrl1.AddPoint(m_blueGraphID, j, normColor[2]*100.0);
-        //don't know reference Y so use old dE formula here
-		m_graphCtrl2.AddPoint(m_deltaEGraphID, j, GetDocument()->GetMeasure()->GetMeasurement(i).GetDeltaE(GetColorReference().GetWhite())); //stick with chromiticity only dE
 
+        //don't know reference Y so use old dE formula here
+		//m_graphCtrl2.AddPoint(m_deltaEGraphID, j, GetDocument()->GetMeasure()->GetMeasurement(i).GetDeltaE(GetColorReference().GetWhite())); //stick with chromiticity only dE
+		//new
+		if (GetDocument()->GetMeasure()->GetGray(0).isValid())
+			m_graphCtrl2.AddPoint(m_deltaEGraphID, j, GetDocument()->GetMeasure()->GetMeasurement(i).GetDeltaE(YWhite, refColor, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->gw_Weight));
+		else
+			m_graphCtrl2.AddPoint(m_deltaEGraphID, j, GetDocument()->GetMeasure()->GetMeasurement(i).GetDeltaE(GetColorReference().GetWhite())); //GS has not been run
+				
 		if(colorTemp > 1500 && colorTemp < 12000)
 			m_graphCtrl3.AddPoint(m_ColorTempGraphID, j, colorTemp);
 	}
