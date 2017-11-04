@@ -3021,10 +3021,12 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 		CColor tempColor;
 		for (int i=0; i<n_elements; i++)
 		{
+
 			//linearize
-			double r = pow(GenColors[i][0] / 100.,2.22);
-			double g = pow(GenColors[i][1] / 100.,2.22);
-			double b = pow(GenColors[i][2] / 100.,2.22);
+			double r = (GenColors[i][0]<=0.0||GenColors[i][0]>=100.0)?min(max(GenColors[i][0],0),100):pow(GenColors[i][0] / 100.,2.22);
+			double g = (GenColors[i][1]<=0.0||GenColors[i][1]>=100.0)?min(max(GenColors[i][1],0),100):pow(GenColors[i][1] / 100.,2.22);
+			double b = (GenColors[i][2]<=0.0||GenColors[i][2]>=100.0)?min(max(GenColors[i][2],0),100):pow(GenColors[i][2] / 100.,2.22);
+
 			//Constant XYZ - levels calculated to generate the same 709 XYZ values
 			if (constant_XYZ)		
 			{
@@ -3041,9 +3043,9 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 
 			ColorRGB aRGBColor = tempColor.GetRGBValue(colorReference.m_standard==UHDTV3?CColorReference(UHDTV2):colorReference);	
 			
-			r = getL_EOTF(aRGBColor[0], noDataColor, noDataColor,0.0,0.0,-1*mode);
-			g = getL_EOTF(aRGBColor[1], noDataColor, noDataColor,0.0,0.0,-1*mode);
-			b = getL_EOTF(aRGBColor[2], noDataColor, noDataColor,0.0,0.0,-1*mode);
+			r = (aRGBColor[0]<=0.0||aRGBColor[0]>=1.0)?min(max(aRGBColor[0],0),1):getL_EOTF(aRGBColor[0], noDataColor, noDataColor,0.0,0.0,-1*mode);
+			g = (aRGBColor[1]<=0.0||aRGBColor[1]>=1.0)?min(max(aRGBColor[1],0),1):getL_EOTF(aRGBColor[1], noDataColor, noDataColor,0.0,0.0,-1*mode);
+			b = (aRGBColor[2]<=0.0||aRGBColor[2]>=1.0)?min(max(aRGBColor[2],0),1):getL_EOTF(aRGBColor[2], noDataColor, noDataColor,0.0,0.0,-1*mode);
 
 			//re-quantize to 8-bit video %
 			GenColors[i][0] = floor( (r * 219.) + 0.5 ) / 2.19;
@@ -3168,22 +3170,22 @@ void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDi
 
 		if (mode == 5 || mode == 7)
 		{
-				rgbColor[0] = 100.0 * getL_EOTF(rgbColor[0], noDataColor, noDataColor, 2.4, 0.9, -1*mode);
-				rgbColor[1] = 100.0 * getL_EOTF(rgbColor[1], noDataColor, noDataColor, 2.4, 0.9, -1*mode);
-				rgbColor[2] = 100.0 * getL_EOTF(rgbColor[2], noDataColor, noDataColor, 2.4, 0.9, -1*mode);
+				rgbColor[0] = 100.0 * ( (rgbColor[0]<=0.0||rgbColor[0]>=1.0)?min(max(rgbColor[0],0),1):getL_EOTF(rgbColor[0], noDataColor, noDataColor, 2.4, 0.9, -1*mode) );
+				rgbColor[1] = 100.0 * ( (rgbColor[1]<=0.0||rgbColor[1]>=1.0)?min(max(rgbColor[1],0),1):getL_EOTF(rgbColor[1], noDataColor, noDataColor, 2.4, 0.9, -1*mode) );
+				rgbColor[2] = 100.0 * ( (rgbColor[2]<=0.0||rgbColor[2]>=1.0)?min(max(rgbColor[2],0),1):getL_EOTF(rgbColor[2], noDataColor, noDataColor, 2.4, 0.9, -1*mode) );
 		}
 		else
 		{
-			rgbColor[0] = 100.0 * pow(rgbColor[0], 1.0 / 2.22);
-			rgbColor[1] = 100.0 * pow(rgbColor[1], 1.0 / 2.22);
-			rgbColor[2] = 100.0 * pow(rgbColor[2], 1.0 / 2.22);
+			rgbColor[0] = 100.0 * ( (rgbColor[0]<=0.0||rgbColor[0]>=1.0)?min(max(rgbColor[0],0),1):pow(rgbColor[0], 1.0 / 2.22) );
+			rgbColor[1] = 100.0 * ( (rgbColor[1]<=0.0||rgbColor[1]>=1.0)?min(max(rgbColor[1],0),1):pow(rgbColor[1], 1.0 / 2.22) );
+			rgbColor[2] = 100.0 * ( (rgbColor[2]<=0.0||rgbColor[2]>=1.0)?min(max(rgbColor[2],0),1):pow(rgbColor[2], 1.0 / 2.22) );
 		}
 
 		//quantize to 8-bit video %
 		rgbColor[0] = floor( (rgbColor[0] / 100. * 219.) + 0.5 ) / 2.19;
 		rgbColor[1] = floor( (rgbColor[1] / 100. * 219.) + 0.5 ) / 2.19;
 		rgbColor[2] = floor( (rgbColor[2] / 100. * 219.) + 0.5 ) / 2.19;
-
+		
 		GenColors [ i ] = ColorRGBDisplay( rgbColor[0], rgbColor[1], rgbColor[2] );
         
     }
