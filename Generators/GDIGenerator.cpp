@@ -601,10 +601,10 @@ BOOL CGDIGenerator::DisplayRGBCCast( const ColorRGBDisplay& clr, bool first, UIN
 	g = ((clr[1]) / 100. );
     b = ((clr[2]) / 100. );
 
-	// Workaround ChromeCast crash on Red/Blue sweep
-	r = _isnan(r) ? 0 : r;
-	g = _isnan(g) ? 0 : g;
-	b = _isnan(b) ? 0 : b;
+	// Workaround ChromeCast crash on Red/Blue sweep //Added underflow checks in color generator
+//	r = _isnan(r) ? 0 : r;
+//	g = _isnan(g) ? 0 : g;
+//	b = _isnan(b) ? 0 : b;
 
 	if (ccwin->height == 0) 
 	{
