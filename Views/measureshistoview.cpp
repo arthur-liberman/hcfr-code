@@ -27,6 +27,7 @@
 #include "MeasuresHistoView.h"
 #include "Views\MainView.h"
 #include <math.h>
+#include <strsafe.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -194,12 +195,20 @@ void CMeasuresHistoView::OnInitialUpdate()
 		rect2.left = rect.left + 28;
 	else
 		rect2.left = rect.left + 14;
+
 	rect2.right = rect.right;
+
 	for ( i = 0; i < NbGraphCtrl ; i ++ )
 	{
 		rect2.top = rect.top + ( i * (rect.bottom - rect.top) / NbGraphCtrl );
 		rect2.bottom = rect.top + ( ( i + 1 ) * (rect.bottom - rect.top) / NbGraphCtrl );
-
+		if ( i == 0 )
+		{
+			if (GetConfig()->isHighDPI)
+				rect2.bottom = rect2.bottom - 30;
+			else
+				rect2.bottom = rect2.bottom - 15;
+		}
 		pGraphCtrl [ i ] -> Create ( pGraphName [ i ], rect2, this, IdGraphCtrl [ i ] );
 	}
 	
@@ -358,7 +367,6 @@ void CMeasuresHistoView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 		
 		m_graphCtrl.SetYAxisProps("", pow ( 10.0, (double) ( nFactor < 3 ? nTensScale - 1 : nTensScale ) ), 0, m_LumaMaxY * 2.0);
 	}
-
 	Invalidate(TRUE);
 }
 
@@ -416,13 +424,19 @@ void CMeasuresHistoView::OnSize(UINT nType, int cx, int cy)
 	{
 		if (GetConfig()->isHighDPI)
 		{
-			if(IsWindow(pGraphCtrl[i]->m_hWnd))
-				pGraphCtrl [ i ] -> MoveWindow ( 28, i * cy / NbGraphCtrl, cx - 28, cy/NbGraphCtrl + 1 );
+			if (IsWindow(pGraphCtrl[i]->m_hWnd))
+				if ( i )
+					pGraphCtrl [ i ] -> MoveWindow ( 28, i * cy / NbGraphCtrl, cx - 28, cy/NbGraphCtrl + 1 );
+				else
+					pGraphCtrl [ i ] -> MoveWindow ( 28, 30, cx - 28, cy/NbGraphCtrl + 1 - 30);
 		}
 		else
 		{
-			if(IsWindow(pGraphCtrl[i]->m_hWnd))
-				pGraphCtrl [ i ] -> MoveWindow ( 14, i * cy / NbGraphCtrl, cx - 14, cy/NbGraphCtrl + 1 );
+			if (IsWindow(pGraphCtrl[i]->m_hWnd))
+				if ( i )
+					pGraphCtrl [ i ] -> MoveWindow ( 14, i * cy / NbGraphCtrl, cx - 14, cy/NbGraphCtrl + 1);
+				else
+					pGraphCtrl [ i ] -> MoveWindow ( 14, 15, cx - 14, cy/NbGraphCtrl + 1 - 15);
 		}
 
 	}
@@ -443,11 +457,47 @@ void CMeasuresHistoView::OnDraw(CDC* pDC)
 	RECT		rect, rect2;
 	CSize		size;
 	CFont		font;
+	CFont *		pOldFont2;
 	CFont *		pOldFont;
+	LPCSTR		trkTxt = "Tracking level: ";
+	char		szBuf[10];
+	TCHAR		trkPerc[100] = _T("");
+
+	StringCchCat(trkPerc, 260, trkTxt); 
 
 	GetClientRect(&rect);	// fill entire window with three graphs
 	
 	NbGraphCtrl = 0;
+	POSITION pos = GetDocument()->GetFirstViewPosition ();
+	CView *pView = GetDocument()->GetNextView(pos);
+	int m_Display = ((CMainView*)pView)->m_displayMode;
+	int nSize = GetDocument()->GetMeasure()->GetNearWhiteScaleSize();
+	bool isHDR = GetConfig()->m_GammaOffsetType == 5;
+	int nCol;
+
+	if (  m_Display == 0 || m_Display == 3 || m_Display == 4  )
+	{
+		switch (m_Display)
+		{
+			case (0):
+				nCol = int( (((CMainView*)pView)->last_minCol - 1) * 10 );
+				break;
+			case (3):
+				nCol = int( (((CMainView*)pView)->last_minCol - 1) );
+				if (isHDR)
+					nCol = nCol * 2;
+				break;
+			case (4):
+				nCol = 101 - nSize + int( (((CMainView*)pView)->last_minCol - 1) );
+				break;
+		}
+
+		_ltoa(nCol, szBuf, 10);
+		StringCchCat(trkPerc, 260, szBuf);
+		StringCchCat(trkPerc, 260, _T("%"));
+	}
+	else
+		StringCchCat(trkPerc, 260, _T("Greyscale measures not active"));
 
 	if ( m_showLuminance )
 	{
@@ -475,14 +525,13 @@ void CMeasuresHistoView::OnDraw(CDC* pDC)
 		font.CreateFont( 24, 0, 900, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_CHARACTER_PRECIS, DEFAULT_QUALITY, VARIABLE_PITCH | FF_DONTCARE, "Arial" );
 	else
 		font.CreateFont( 9, 0, 900, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_CHARACTER_PRECIS, DEFAULT_QUALITY, VARIABLE_PITCH | FF_DONTCARE, "Arial" );
-
-	pOldFont = pDC -> SelectObject ( & font );
-	pDC -> SetBkColor ( bWhiteBkgnd?RGB(255,255,255):RGB(0,0,0) );
+		pOldFont = pDC -> SelectObject ( & font );	pDC -> SetBkColor ( bWhiteBkgnd?RGB(255,255,255):RGB(0,0,0) );
 	rect2.left = 0;
 	if (GetConfig()->isHighDPI)
 		rect2.right = 28;
 	else
 		rect2.right = 14;
+
 	for ( i = 0; i < NbGraphCtrl ; i ++ )
 	{
 		pDC -> SetTextColor ( clr [ i ] );
@@ -492,6 +541,28 @@ void CMeasuresHistoView::OnDraw(CDC* pDC)
 		size = pDC -> GetTextExtent ( lpszTexts [ i ], strlen ( lpszTexts [ i ] ) );
 		pDC -> TextOut ( rect2.left + 1, rect2.top + ( rect2.bottom - rect2.top + size.cx ) / 2, lpszTexts [ i ], strlen ( lpszTexts [ i ] ) );
 	}
+	//Tracking percentage
+	if (GetConfig()->isHighDPI)
+		font.CreateFont( 30, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_CHARACTER_PRECIS, DEFAULT_QUALITY, VARIABLE_PITCH | FF_DONTCARE, "Arial" );
+	else
+		font.CreateFont( 12, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_CHARACTER_PRECIS, DEFAULT_QUALITY, VARIABLE_PITCH | FF_DONTCARE, "Arial" );
+	pOldFont2 = pDC -> SelectObject ( & font );	pDC -> SetBkColor ( bWhiteBkgnd?RGB(255,255,255):RGB(0,0,0) );	pDC -> SetTextColor ( RGB(200,200,0) );
+
+	rect2.right = rect.right;
+	rect2.top = 0;
+	if (GetConfig()->isHighDPI)
+	{
+		rect2.left = 28;
+		rect2.bottom = 30;
+	}
+	else
+	{
+		rect2.left = 14;
+		rect2.bottom = 15;
+	}
+	
+	pDC -> FillSolidRect ( & rect2, bWhiteBkgnd?RGB(255,255,255):RGB(50,40,30) );
+	pDC -> TextOut ( rect2.left + 20, rect2.top+1, trkPerc, strlen ( trkPerc ) );
 
 	pDC -> SetTextColor ( RGB(0,0,0) );
 	pDC -> SetBkColor ( RGB(255,255,255) );
