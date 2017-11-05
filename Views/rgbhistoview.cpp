@@ -191,7 +191,6 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 			ColorXYZ aMeasure(aColor[0]/aColor[1] * fact, fact, (1.0-(aColor[0]+aColor[1]))/aColor[1] * fact);
 			ColorRGB normColor(aMeasure, GetColorReference());
-
 			if (aColor.isValid())
 			{
 				m_graphCtrl.AddPoint(m_redGraphID, x, normColor[0]*100.0);
