@@ -446,6 +446,8 @@ BOOL CMeasuresHistoView::OnEraseBkgnd(CDC* pDC)
 {
 	return TRUE;
 }
+	int l_Display=0;
+	int l_nCol=0;
 
 void CMeasuresHistoView::OnDraw(CDC* pDC) 
 {
@@ -475,10 +477,13 @@ void CMeasuresHistoView::OnDraw(CDC* pDC)
 	bool isHDR = GetConfig()->m_GammaOffsetType == 5;
 	int nCol;
 
-	if (  m_Display == 0 || m_Display == 3 || m_Display == 4  )
+	if (  m_Display == 0 || (m_Display == 2 && (l_Display == 0 || l_Display == 3 || l_Display == 4)) || m_Display == 3 || m_Display == 4  )
 	{
 		switch (m_Display)
 		{
+			case (2):
+				nCol = l_nCol;
+				break;
 			case (0):
 				nCol = int( (((CMainView*)pView)->last_minCol - 1) * 10 );
 				break;
@@ -494,10 +499,22 @@ void CMeasuresHistoView::OnDraw(CDC* pDC)
 
 		_ltoa(nCol, szBuf, 10);
 		StringCchCat(trkPerc, 260, szBuf);
-		StringCchCat(trkPerc, 260, _T("%"));
+		if (m_Display == 2)
+			StringCchCat(trkPerc, 260, _T("% (freemeasures page)"));
+		else
+			StringCchCat(trkPerc, 260, _T("%"));
 	}
 	else
+	{
 		StringCchCat(trkPerc, 260, _T("Greyscale measures not active"));
+		nCol = 0;
+	}
+						
+	if (m_Display != 2)
+	{
+		l_Display = m_Display;
+		l_nCol = nCol;
+	}
 
 	if ( m_showLuminance )
 	{

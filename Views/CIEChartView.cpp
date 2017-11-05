@@ -277,7 +277,6 @@ void CCIEChartGrapher::MakeBgBitmap(CRect rect, BOOL bWhiteBkgnd)	// Create back
 
 	bgDC.SelectObject(pOldPen);
 	bgDC.SelectObject(pOldFont);
-
 	CGraphControl::DrawFiligree ( &bgDC, rect, bWhiteBkgnd?RGB(192,192,192):RGB(64,64,64) );
 	
 	// Create stretched bitmap for gamut hilighting
@@ -953,7 +952,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	pDC->BitBlt(0,0,rect.Width(),rect.Height(),&dcBg,0,0,SRCCOPY);
 	dcBg.SelectObject(pOldBitmap);
 
-	// Fill triangle with ligthen chart
+	// Fill triangle with lighten chart
 	if(m_doDisplayBackground && hasPrimaries)
 	{
 		CBrush gamutBrush;
