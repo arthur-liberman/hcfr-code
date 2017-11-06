@@ -217,6 +217,8 @@ void CMeasuresHistoView::OnInitialUpdate()
 	OnUpdate(NULL,NULL,NULL);
 }
 
+int last_nCol = 5;
+int last_nsize = 101;
 void CMeasuresHistoView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
 {
 	int	i, j;
@@ -289,8 +291,39 @@ void CMeasuresHistoView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 			POSITION pos = GetDocument()->GetFirstViewPosition ();
 			CView *pView = GetDocument()->GetNextView(pos);
 			int nCol = ((CMainView*)pView)->last_minCol - 1;
+			int nDisp = ((CMainView*)pView)->m_displayMode;
+			switch (nDisp)
+			{
+				case 0:
+					nsize = GetDocument()->GetMeasure()->GetGrayScaleSize();
+					x = ArrayIndexToGrayLevel (  nCol , nsize, GetConfig () -> m_bUseRoundDown );
+					break;
+				case 2:
+					nsize = last_nsize;
+					x = ArrayIndexToGrayLevel (  last_nCol , nsize, GetConfig () -> m_bUseRoundDown );
+					break;
+				case 3:
+					nsize = 101;
+					if (GetConfig()->m_GammaOffsetType == 5)	
+						x = ArrayIndexToGrayLevel (  nCol * 2 , nsize, GetConfig () -> m_bUseRoundDown );
+					else
+						x = ArrayIndexToGrayLevel (  nCol , nsize, GetConfig () -> m_bUseRoundDown );
+					break;
+				case 4:
+					nsize = 101;
+					nCol = 101 - GetDocument()->GetMeasure()->GetNearWhiteScaleSize() + nCol;
+					x = ArrayIndexToGrayLevel ( nCol  , nsize, GetConfig () -> m_bUseRoundDown );
+					break;
+				default:
+					x = ArrayIndexToGrayLevel ( last_nCol  , last_nsize, GetConfig () -> m_bUseRoundDown );
+			}
 
-			x = ArrayIndexToGrayLevel (  nCol , nsize, GetConfig () -> m_bUseRoundDown );
+			if (nDisp != 2)
+			{
+				last_nCol = nCol;
+				last_nsize = nsize;
+			}
+
 			ColorxyY tmpColor(GetColorReference().GetWhite());
 			// Determine Reference Y luminance for Delta E calculus
 			if ( GetConfig ()->m_dE_gray > 0 || GetConfig ()->m_dE_form == 5 )
@@ -499,14 +532,24 @@ void CMeasuresHistoView::OnDraw(CDC* pDC)
 
 		_ltoa(nCol, szBuf, 10);
 		StringCchCat(trkPerc, 260, szBuf);
-		if (m_Display == 2)
-			StringCchCat(trkPerc, 260, _T("% (freemeasures page)"));
-		else
+		switch (l_Display)
+		{
+		case (0):
+			StringCchCat(trkPerc, 260, _T("% (Greyscale page)"));
+			break;
+		case (3):
+			StringCchCat(trkPerc, 260, _T("% (Near black page)"));
+			break;
+		case (4):
+			StringCchCat(trkPerc, 260, _T("% (Near white page)"));
+			break;
+		default:
 			StringCchCat(trkPerc, 260, _T("%"));
+		}
 	}
 	else
 	{
-		StringCchCat(trkPerc, 260, _T("Greyscale measures not active"));
+		StringCchCat(trkPerc, 260, _T("Tracking off..."));
 		nCol = 0;
 	}
 						
