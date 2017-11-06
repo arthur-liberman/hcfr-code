@@ -2502,12 +2502,12 @@ BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "CompanyName", "Association Homecinema Francophone"
             VALUE "FileDescription", "HCFR Colorimeter resources"
-            VALUE "FileVersion", "3,4,2"
+            VALUE "FileVersion", "3,4,4,2"
             VALUE "InternalName", "CHCFR21_ENGLISH"
             VALUE "LegalCopyright", "Copyright (C) 2005-2016"
             VALUE "OriginalFilename", "CHCFR21_ENGLISH.DLL"
             VALUE "ProductName", "HCFR Colorimeter English langage"
-            VALUE "ProductVersion", "3,4,2"
+            VALUE "ProductVersion", "3,4,4,2"
         END
     END
     BLOCK "VarFileInfo"
@@ -2719,7 +2719,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDR_MAINFRAME           "HCFR Colorimeter - 3.4.4"
+    IDR_MAINFRAME           "HCFR Colorimeter - 3.4.4.2"
     IDR_MESURETYPE          "\nColor Measures\nColor_Measures\nColorHCFR File (*.chc)\n.chc\nCOLORHCFR\nHCFR Color Measures"
 END
 

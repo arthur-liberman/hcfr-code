@@ -1946,22 +1946,16 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 			COLORREF clr;
 			double dE, dL, dC, dH;
 			if ( aReference.isValid() )
-				if (m_displayMode == 0 || m_displayMode == 3 || m_displayMode == 4)
-					if ( nCol > 1 || m_displayMode == 4 )
+			{
+				if (m_displayMode == 0 || m_displayMode == 2 || m_displayMode == 3 || m_displayMode == 4 )
+				{
+					if ( nCol > 1 || m_displayMode == 4 || m_displayMode == 2 )
 					{
 						double Intensity=GetConfig()->GetProfileInt("GDIGenerator","Intensity",100) / 100.;
-                        if (m_displayMode == 0)
-                        {
-							str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight ) );
-       						dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight );
-       						dL=aMeasure.GetDeltaLCH ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight, dC, dH );
-                        }
-                        else
-                        {
-                            str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->gw_Weight ) );
-    						dE=aMeasure.GetDeltaE ( YWhite, aReference,  1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight );
-    						dL=aMeasure.GetDeltaLCH ( YWhite, aReference,  1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight, dC, dH );
-                        }
+						
+						str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight ) );
+       					dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight );
+       					dL=aMeasure.GetDeltaLCH ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight, dC, dH );
 
 						dEavg+=(isNan(dE)?dEavg:dE);
 						dLavg+=(isNan(dL)?dLavg:dL);
@@ -1981,6 +1975,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 					}
 					else
 						str.Empty ();
+				}
 				else
 				{
 					double dL, dH, dC;
@@ -2007,6 +2002,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 					m_pGrayScaleGrid -> SetItemFont ( 4, nCol, m_pGrayScaleGrid->GetItemFont(0,0) ); // Set the font to bold
 					dEcnt++;
 				}
+			}
 			else
 				str.Empty ();
 		}
@@ -2404,6 +2400,9 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 	return "Undef";
 }
 
+int last_Col = 5;
+int last_Size = 11;
+
 void CMainView::UpdateGrid()
 {
 
@@ -2427,7 +2426,6 @@ void CMainView::UpdateGrid()
 		double			Gamma,Offset = 0.0;
 		COLORREF		clrSpecial1=RGB(128,128,128), clrSpecial2=RGB(128,128,128);
 		CDataSetDoc *	pDataRef = GetDataRef();
-
 		GV_ITEM Item;
 		Item.mask = GVIF_TEXT|GVIF_FORMAT;
 		Item.nFormat = DT_RIGHT|DT_VCENTER|DT_SINGLELINE|DT_END_ELLIPSIS|DT_NOPREFIX;
@@ -2538,6 +2536,8 @@ void CMainView::UpdateGrid()
 
 			case 2:
 				 nCount = GetDocument()->GetMeasure()->GetMeasurementsSize();
+				 YWhite = YWhiteGray;
+				 YWhiteRefDoc = YWhiteGrayRefDoc;
 				 if ( pDataRef && pDataRef->GetMeasure()->GetMeasurementsSize() != nCount )
 					 pDataRef = NULL;
 				 break;
@@ -2653,6 +2653,31 @@ void CMainView::UpdateGrid()
         dCvector.clear();
         dHvector.clear();
 
+			int nCol, nCnt = 11;
+			nCol = last_minCol - 1;
+			switch (m_displayMode)
+			{
+			case (0):
+				nCnt = GetDocument()->GetMeasure()->GetGrayScaleSize();
+				last_Col = nCol;
+				last_Size = nCnt;
+				break;
+			case (2):
+				nCol = last_Col;
+				nCnt = last_Size;
+				break;
+			case(3):
+				nCnt = 101;
+				last_Col = nCol;
+				last_Size = nCnt;
+				break;
+			case(4):
+				nCnt = 101;
+				nCol = 101 - GetDocument()->GetMeasure()->GetNearWhiteScaleSize() + nCol;
+				last_Col = nCol;
+				last_Size = nCnt;
+				break;
+			}
 		for( int j = 0 ; j < nCount ; j ++ )
 		{
             int i = GetDocument() -> GetMeasure () -> GetGrayScaleSize ();
@@ -2702,7 +2727,7 @@ void CMainView::UpdateGrid()
 						refColor.SetxyYValue(tmpColor);
 					 }
 					 else
-					 { //Relative Y
+					 {
 	                    YWhite = aColor [ 1 ];
 						if ( pDataRef )
 							YWhiteRefDoc = refDocColor [ 1 ];
@@ -2729,7 +2754,8 @@ void CMainView::UpdateGrid()
 			            ColorxyY tmpColor(GetColorReference().GetWhite());
 						aColor = GetDocument()->GetMeasure()->GetPrimeWhite();
 						refColor.SetxyYValue(tmpColor);
-						refDocColor.SetxyYValue(tmpColor);
+						if (pDataRef)
+							refDocColor.SetxyYValue(tmpColor);
 					 }
 					 else if ( j == 7 )
 					 {
@@ -2748,19 +2774,19 @@ void CMainView::UpdateGrid()
 
 				case 2:
 					 aColor = GetDocument()->GetMeasure()->GetMeasurement(j);
-					 if( m_pGrayScaleGrid -> GetColumnCount() <= j+1 )
-					 {
-						CString	str;
-						str.Format("%d",j+1);
-						m_pGrayScaleGrid -> InsertColumn(str);
-						m_pGrayScaleGrid -> SetItemFont ( 0, j+1, m_pGrayScaleGrid->GetItemFont(0,j) ); // Set the font to bold
-
-						m_pGrayScaleGrid->SetItemState ( 4, j+1, m_pGrayScaleGrid->GetItemState(4,j+1) | GVIS_READONLY );
-
-						m_pGrayScaleGrid->SetItemState ( 5, j+1, m_pGrayScaleGrid->GetItemState(5,j+1) | GVIS_READONLY );
-
-						bAddedCol = TRUE;
-					 }
+//					 if( m_pGrayScaleGrid -> GetColumnCount() <= j+1 )
+//					 {
+//						CString	str;
+//						str.Format("%d",j+1);
+//						m_pGrayScaleGrid -> InsertColumn(str);
+//						m_pGrayScaleGrid -> SetItemFont ( 0, j+1, m_pGrayScaleGrid->GetItemFont(0,j) ); // Set the font to bold
+//
+//						m_pGrayScaleGrid->SetItemState ( 4, j+1, m_pGrayScaleGrid->GetItemState(4,j+1) | GVIS_READONLY );
+//
+//						m_pGrayScaleGrid->SetItemState ( 5, j+1, m_pGrayScaleGrid->GetItemState(5,j+1) | GVIS_READONLY );
+//
+//						bAddedCol = TRUE;
+//					 }
 					 
 					 bSpecialRef = TRUE;
 					 //assume white 1st
@@ -2768,6 +2794,46 @@ void CMainView::UpdateGrid()
  					 {
 						bSpecialRef = FALSE;
 						refColor = GetColorReference().GetWhite();
+						double valy;
+						ColorxyY tmpColor(GetColorReference().GetWhite());
+
+					 if ( GetConfig ()->m_dE_gray > 0 || GetConfig ()->m_dE_form == 5 )
+					 {
+						// Compute reference Luminance regarding actual offset and reference gamma 
+                        // fixed to use correct gamma predicts
+                        // and added option to assume perfect gamma
+						double x = ArrayIndexToGrayLevel ( nCol, nCnt, GetConfig () -> m_bUseRoundDown );
+            		    CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
+	                	CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
+						int mode = GetConfig()->m_GammaOffsetType;
+						if (GetConfig()->m_colorStandard == sRGB) mode = 99;
+						if (  (mode >= 4) )
+			            {
+                            double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
+                            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+			            }
+			            else
+			            {
+				            double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
+				            valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
+							if (mode == 1) //black compensation target
+								valy = (Black.GetY() + ( valy * ( YWhite - Black.GetY() ) )) / YWhite;
+			            }
+
+						if (mode  == 5)
+							tmpColor[2] = valy * 100. / YWhite;
+						else
+							tmpColor[2] = valy;
+
+                        if (GetConfig ()->m_dE_gray == 2 || GetConfig ()->m_dE_form == 5 )
+								tmpColor[2] = aColor [ 1 ] / YWhite; //perfect gamma
+
+						refColor.SetxyYValue(tmpColor);
+					 }
+					 else
+					 {
+	                    YWhite = aColor [ 1 ];
+					 }
 					 }
 					 else if ( aColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefPrimary(0), GetColorReference() ) < 0.05 )
 					 {
@@ -2864,7 +2930,7 @@ void CMainView::UpdateGrid()
 					 aColor = GetDocument()->GetMeasure()->GetNearWhite(j);
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetNearWhite(j);
-//                     double valy;
+
 					 // Determine Reference Y luminance for Delta E calculus
 					 if ( GetConfig ()->m_dE_gray > 0 || GetConfig ()->m_dE_form == 5 )
 					 {
@@ -2979,7 +3045,7 @@ void CMainView::UpdateGrid()
 							 break;
 					 }
 			}
-
+			
 			if (GetConfig()->m_GammaOffsetType==5 && m_displayMode <=11 && m_displayMode >= 5)
 			{
 				 refColor.SetX((refColor.GetX() * 105.95640));
@@ -3029,7 +3095,7 @@ void CMainView::UpdateGrid()
 				}
 				else
 				{
-					Item.strText = GetItemText ( aColor, YWhite, refColor, refDocColor, YWhiteRefDoc, i, j+1, Offset );
+//					Item.strText = GetItemText ( aColor, YWhite, refColor, refDocColor, YWhiteRefDoc, i, j+1, Offset );
 				}
 				
 				m_pGrayScaleGrid->SetItem(&Item);
@@ -3138,7 +3204,7 @@ void CMainView::UpdateGrid()
 						}
 					}
 					Msg += dEform;
-   					dEform = GetConfig()->m_dE_gray==0?" [Relative Y]":(GetConfig ()->m_dE_gray == 1?" [Absolute Y w/gamma]":" [Absolute Y w/o gamma]");
+					dEform = GetConfig()->m_dE_gray==0?" [Relative Y]":(GetConfig ()->m_dE_gray == 1?" [Absolute Y w/gamma]":" [Absolute Y w/o gamma]");
 					Msg += dEform;
                     if (GetConfig()->doHighlight)
 					    m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
@@ -4698,12 +4764,61 @@ void CMainView::OnDeleteGrayscale()
 void CMainView::UpdateMeasurementsAfterBkgndMeasure ()
 {
 	CColor	MeasuredColor=noDataColor;
+	double YWhite = -1;
+	double YWhiteRefDoc = -1;
+	double			Gamma,Offset = 0.0;
+	int nCount = GetDocument()->GetMeasure()->GetGrayScaleSize();
+
+	// Retrieve gamma and offset in case user has modified
+    Gamma = GetConfig()->m_GammaRef;
+    GetConfig()->m_GammaAvg = Gamma; //targets can be reference power law or modified for user average gamma, BT.1886 handled separately
+
+	if ( nCount && GetDocument()->GetMeasure()->GetGray(0).isValid() )
+        GetDocument()->ComputeGammaAndOffset(&Gamma, &Offset, 1, 1, nCount, false);
+
+    if (GetConfig()->m_useMeasuredGamma)
+		GetConfig()->m_GammaAvg = (Gamma<1?2.2:floor((Gamma+.005)*100.)/100.);
+
+    GetConfig()->SetPropertiesSheetValues();
+	
+	if ( GetDocument() -> GetMeasure () -> GetOnOffWhite ().isValid() )
+		YWhite = GetDocument() -> GetMeasure () -> GetOnOffWhite () [ 1 ];
 
 	int	n = GetDocument()->GetMeasure()->GetMeasurementsSize();
 
 	if ( n > 0 )
 		MeasuredColor=GetDocument()->GetMeasure()->GetMeasurement(n-1);
 
+	int nCol = 1, nCnt = 11;
+	switch (m_displayMode)
+	{
+	case (0):
+		nCnt = GetDocument()->GetMeasure()->GetGrayScaleSize();
+		nCol = last_minCol - 1;
+		last_Col = nCol;
+		last_Size = nCnt;
+		break;
+	case (2):
+		nCnt = last_Size;
+		nCol = last_Col;
+		break;
+	case(3):
+		nCnt = 101;
+		if (GetConfig()->m_GammaOffsetType == 5)
+			nCol = (last_minCol - 1) * 2;
+		else
+			nCol = (last_minCol - 1);
+		last_Col = nCol;
+		last_Size = nCnt;
+		break;
+	case(4):
+		nCnt = 101;
+		nCol = 101 - GetDocument()->GetMeasure()->GetNearWhiteScaleSize() + nCol;
+		last_Col = nCol;
+		last_Size = nCnt;
+		break;
+	}
+	
 	if ( m_displayMode == 2 && n > 0 ) //this updates freemeasures grid
 	{
 		// Update grid only when in measurement mode
@@ -4713,15 +4828,21 @@ void CMainView::UpdateMeasurementsAfterBkgndMeasure ()
 		COLORREF		clrSpecial1=RGB(128,128,128), clrSpecial2=RGB(128,128,128);
 		CDataSetDoc *	pDataRef = GetDataRef();
 
-		GV_ITEM Item;
-
 		if ( pDataRef == GetDocument () )
 			pDataRef = NULL;
+
+		if (pDataRef)
+		{
+			if ( pDataRef -> GetMeasure () -> GetOnOffWhite ().isValid() )
+				YWhiteRefDoc = pDataRef -> GetMeasure () -> GetOnOffWhite () [ 1 ];
+		}
+
+		GV_ITEM Item;
 
 		if ( pDataRef && pDataRef->GetMeasure()->GetMeasurementsSize() != n )
 			pDataRef = NULL;
 
-		if ( m_pGrayScaleGrid->GetColumnCount()-1==n)
+		if ( m_pGrayScaleGrid->GetColumnCount() - 1 == n)
 		{
 			// Remove first column and reset column headers
 			m_pGrayScaleGrid -> DeleteColumn ( 1 );
@@ -4758,10 +4879,50 @@ void CMainView::UpdateMeasurementsAfterBkgndMeasure ()
 		}
 
 		bSpecialRef = TRUE;
+		double t =  MeasuredColor.GetDeltaxy ( GetColorReference().GetWhite(), GetColorReference() );
 		if ( MeasuredColor.GetDeltaxy ( GetColorReference().GetWhite(), GetColorReference() ) < 0.05 )
- 		{
+		{
 			bSpecialRef = FALSE;
-			refColor = GetColorReference().GetWhite();
+			double valy;
+			ColorxyY tmpColor(GetColorReference().GetWhite());
+
+			if ( GetConfig ()->m_dE_gray > 0 || GetConfig ()->m_dE_form == 5 )
+			{
+			// Compute reference Luminance regarding actual offset and reference gamma 
+             // fixed to use correct gamma predicts
+             // and added option to assume perfect gamma
+				double x = ArrayIndexToGrayLevel ( nCol, nCnt, GetConfig () -> m_bUseRoundDown );
+				CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
+	            CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
+				int mode = GetConfig()->m_GammaOffsetType;
+				if (GetConfig()->m_colorStandard == sRGB) mode = 99;
+				if (  (mode >= 4) )
+			    {
+					double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
+                    valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+			    }
+			    else
+			    {
+					double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
+						valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
+					if (mode == 1) //black compensation target
+						valy = (Black.GetY() + ( valy * ( YWhite - Black.GetY() ) )) / YWhite;
+			    }
+
+					if (mode  == 5)
+						tmpColor[2] = valy * 100. / YWhite;
+					else
+						tmpColor[2] = valy;
+
+                    if (GetConfig ()->m_dE_gray == 2 || GetConfig ()->m_dE_form == 5 )
+						tmpColor[2] = MeasuredColor [ 1 ] / YWhite; //perfect gamma
+
+					refColor.SetxyYValue(tmpColor);
+				}
+				else
+				{
+					YWhite = MeasuredColor [ 1 ];
+			}
 		}
 		else if ( MeasuredColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefPrimary(0), GetColorReference() ) < 0.05 )
 		{
@@ -4800,20 +4961,16 @@ void CMainView::UpdateMeasurementsAfterBkgndMeasure ()
 			clrSpecial2 = RGB(255,224,255);
 		}
 
-		CColor refDocColor;
+		CColor refDocColor = noDataColor;
 
 		if ( pDataRef )
 			refDocColor = pDataRef->GetMeasure()->GetMeasurement(n-1);
-		else
-			refDocColor = noDataColor;
-
-		double YWhite = GetDocument() -> GetMeasure () -> GetPrimeWhite () [ 1 ];
 
 		for( int i = 0 ; i < ( pDataRef ? 7 : 5 ) ; i ++ )
 		{
 			Item.row = i+1;
 			Item.col = n;
-			Item.strText = GetItemText ( MeasuredColor, YWhite, refColor, refDocColor, -1.0, i, n, 0.0 );
+			Item.strText = GetItemText ( MeasuredColor, YWhite, refColor, refDocColor, YWhiteRefDoc, i, n, 0.0 );
 			
 			m_pGrayScaleGrid->SetItem(&Item);
 
