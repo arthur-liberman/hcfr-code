@@ -91,12 +91,9 @@ CMeasure::CMeasure()
 	}	
 	for ( int i=0;i<m_cc24SatMeasureArray.GetSize();i++ )	m_cc24SatMeasureArray[i]=noDataColor;
 	for ( int i=0;i<m_cc24SatMeasureArray_master.GetSize();i++ )	m_cc24SatMeasureArray_master[i]=noDataColor;
-	m_OnOffWhite.SetXYZValue(GetColorReference().GetWhite());
-	m_PrimeWhite.SetXYZValue(GetColorReference().GetWhite());
-	m_PrimeWhite.SetY(100.);
-	m_OnOffWhite.SetY(100.);
-	m_OnOffBlack.SetXYZValue(GetColorReference().GetWhite());
-	m_OnOffBlack.SetY(0.012345);
+	m_OnOffWhite.SetXYZValue(ColorXYZ(95.047,100.,108.883));
+	m_PrimeWhite.SetXYZValue(ColorXYZ(95.047,100.,108.883));
+	m_OnOffBlack.SetXYZValue(ColorXYZ(0.0117336,0.012345,0.0134416));
 	m_AnsiBlack=m_AnsiWhite=noDataColor;
 	m_CCStr = (CString)"";
 	SetInfoString((CString)"Calibration by: \r\nDisplay: \r\nNote: \r\n");
