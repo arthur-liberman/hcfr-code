@@ -184,7 +184,6 @@ Global
 		{FC86BD97-A8EA-46D7-BEA5-0DC7698C5BE1}.Debug|Win32.ActiveCfg = Debug|Win32
 		{FC86BD97-A8EA-46D7-BEA5-0DC7698C5BE1}.Debug|Win32.Build.0 = Debug|Win32
 		{FC86BD97-A8EA-46D7-BEA5-0DC7698C5BE1}.Release|Win32.ActiveCfg = Release|Win32
-		{FC86BD97-A8EA-46D7-BEA5-0DC7698C5BE1}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
