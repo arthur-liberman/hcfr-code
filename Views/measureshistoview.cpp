@@ -468,14 +468,17 @@ void CMeasuresHistoView::OnDraw(CDC* pDC)
 	NbGraphCtrl = 0;
 	POSITION pos = GetDocument()->GetFirstViewPosition ();
 	CView *pView = GetDocument()->GetNextView(pos);
-	bool isHDR = GetConfig()->m_GammaOffsetType == 5;
 
 	l_Display=((CMainView*)pView)->last_Display;
 	l_nCol=((CMainView*)pView)->last_Col;
 	l_nSize=((CMainView*)pView)->last_Size;
+	double stepSize = 1;
 
-	_ltoa(l_nCol * (l_Display==0?10:1), szBuf, 10);
-	if (l_Display == 0 || l_Display == 1 || l_Display == 2)
+	if (l_Display == 0)
+		stepSize = 100. / (l_nSize - 1); 
+	_ltoa(l_nCol * stepSize, szBuf, 10);
+
+	if (l_Display == 0 || l_Display == 3 || l_Display == 4)
 		StringCchCat(trkPerc, 260, szBuf);
 
 	switch (l_Display)
