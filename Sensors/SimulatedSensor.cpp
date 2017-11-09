@@ -190,9 +190,9 @@ void CSimulatedSensor::GetPropertiesSheetValues()
 
 BOOL CSimulatedSensor::Init( BOOL bForSimultaneousMeasures )
 {
-	m_offsetR=m_offsetRed*(1+(double)rand()/(double)RAND_MAX);
-	m_offsetG=m_offsetGreen*(1+(double)rand()/(double)RAND_MAX);
-	m_offsetB=m_offsetBlue*(1+(double)rand()/(double)RAND_MAX);
+	m_offsetR=0;//m_offsetRed*(1+(double)rand()/(double)RAND_MAX);
+	m_offsetG=0;//m_offsetGreen*(1+(double)rand()/(double)RAND_MAX);
+	m_offsetB=0;//m_offsetBlue*(1+(double)rand()/(double)RAND_MAX);
 
 	return TRUE;
 }

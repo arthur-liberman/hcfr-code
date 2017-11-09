@@ -217,8 +217,6 @@ void CMeasuresHistoView::OnInitialUpdate()
 	OnUpdate(NULL,NULL,NULL);
 }
 
-int last_nCol = 5;
-int last_nsize = 101;
 void CMeasuresHistoView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
 {
 	int	i, j;
@@ -283,48 +281,12 @@ void CMeasuresHistoView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 		YMax = Y;
 		ColorxyY aColor=GetDocument()->GetMeasure()->GetMeasurement(i).GetxyYValue();
 		ColorXYZ aMeasure;
-//		ColorxyY sColor=GetDocument()->m_SelectedColor.GetxyYValue();
 		
 		//check for GS measurement
 		if (GetDocument()->GetMeasure()->GetGray(0).isValid()) 
 		{
-			POSITION pos = GetDocument()->GetFirstViewPosition ();
-			CView *pView = GetDocument()->GetNextView(pos);
-			int nCol = ((CMainView*)pView)->last_minCol - 1;
-			int nDisp = ((CMainView*)pView)->m_displayMode;
-			switch (nDisp)
-			{
-				case 0:
-					nsize = GetDocument()->GetMeasure()->GetGrayScaleSize();
-					x = ArrayIndexToGrayLevel (  nCol , nsize, GetConfig () -> m_bUseRoundDown );
-					break;
-				case 2:
-					nsize = last_nsize;
-					x = ArrayIndexToGrayLevel (  last_nCol , nsize, GetConfig () -> m_bUseRoundDown );
-					break;
-				case 3:
-					nsize = 101;
-					if (GetConfig()->m_GammaOffsetType == 5)	
-						x = ArrayIndexToGrayLevel (  nCol * 2 , nsize, GetConfig () -> m_bUseRoundDown );
-					else
-						x = ArrayIndexToGrayLevel (  nCol , nsize, GetConfig () -> m_bUseRoundDown );
-					break;
-				case 4:
-					nsize = 101;
-					nCol = 101 - GetDocument()->GetMeasure()->GetNearWhiteScaleSize() + nCol;
-					x = ArrayIndexToGrayLevel ( nCol  , nsize, GetConfig () -> m_bUseRoundDown );
-					break;
-				default:
-					x = ArrayIndexToGrayLevel ( last_nCol  , last_nsize, GetConfig () -> m_bUseRoundDown );
-			}
-
-			if (nDisp != 2)
-			{
-				last_nCol = nCol;
-				last_nsize = nsize;
-			}
-
 			ColorxyY tmpColor(GetColorReference().GetWhite());
+			x = ArrayIndexToGrayLevel ( l_nCol  , l_nSize, GetConfig () -> m_bUseRoundDown );
 			// Determine Reference Y luminance for Delta E calculus
 			if ( GetConfig ()->m_dE_gray > 0 || GetConfig ()->m_dE_form == 5 )
 			{
@@ -374,9 +336,12 @@ void CMeasuresHistoView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
 		m_graphCtrl.AddPoint(m_luminanceGraphID, j, Y);
 
-		m_graphCtrl1.AddPoint(m_redGraphID, j, normColor[0]*100.0);
-		m_graphCtrl1.AddPoint(m_greenGraphID, j, normColor[1]*100.0);
-		m_graphCtrl1.AddPoint(m_blueGraphID, j, normColor[2]*100.0);
+		if (normColor.isValid())
+		{
+			m_graphCtrl1.AddPoint(m_redGraphID, j, normColor[0]*100.0);
+			m_graphCtrl1.AddPoint(m_greenGraphID, j, normColor[1]*100.0);
+			m_graphCtrl1.AddPoint(m_blueGraphID, j, normColor[2]*100.0);
+		}
 
         //don't know reference Y so use old dE formula here
 		//m_graphCtrl2.AddPoint(m_deltaEGraphID, j, GetDocument()->GetMeasure()->GetMeasurement(i).GetDeltaE(GetColorReference().GetWhite())); //stick with chromiticity only dE
@@ -479,8 +444,6 @@ BOOL CMeasuresHistoView::OnEraseBkgnd(CDC* pDC)
 {
 	return TRUE;
 }
-	int l_Display=0;
-	int l_nCol=0;
 
 void CMeasuresHistoView::OnDraw(CDC* pDC) 
 {
@@ -505,60 +468,31 @@ void CMeasuresHistoView::OnDraw(CDC* pDC)
 	NbGraphCtrl = 0;
 	POSITION pos = GetDocument()->GetFirstViewPosition ();
 	CView *pView = GetDocument()->GetNextView(pos);
-	int m_Display = ((CMainView*)pView)->m_displayMode;
-	int nSize = GetDocument()->GetMeasure()->GetNearWhiteScaleSize();
 	bool isHDR = GetConfig()->m_GammaOffsetType == 5;
-	int nCol;
 
-	if (  m_Display == 0 || (m_Display == 2 && (l_Display == 0 || l_Display == 3 || l_Display == 4)) || m_Display == 3 || m_Display == 4  )
-	{
-		switch (m_Display)
-		{
-			case (2):
-				nCol = l_nCol;
-				break;
-			case (0):
-				nCol = int( (((CMainView*)pView)->last_minCol - 1) * 10 );
-				break;
-			case (3):
-				nCol = int( (((CMainView*)pView)->last_minCol - 1) );
-				if (isHDR)
-					nCol = nCol * 2;
-				break;
-			case (4):
-				nCol = 101 - nSize + int( (((CMainView*)pView)->last_minCol - 1) );
-				break;
-		}
+	l_Display=((CMainView*)pView)->last_Display;
+	l_nCol=((CMainView*)pView)->last_Col;
+	l_nSize=((CMainView*)pView)->last_Size;
 
-		_ltoa(nCol, szBuf, 10);
+	_ltoa(l_nCol * (l_Display==0?10:1), szBuf, 10);
+	if (l_Display == 0 || l_Display == 1 || l_Display == 2)
 		StringCchCat(trkPerc, 260, szBuf);
-		switch (l_Display)
-		{
-		case (0):
-			StringCchCat(trkPerc, 260, _T("% (Greyscale page)"));
-			break;
-		case (3):
-			StringCchCat(trkPerc, 260, _T("% (Near black page)"));
-			break;
-		case (4):
-			StringCchCat(trkPerc, 260, _T("% (Near white page)"));
-			break;
-		default:
-			StringCchCat(trkPerc, 260, _T("%"));
-		}
-	}
-	else
+
+	switch (l_Display)
 	{
-		StringCchCat(trkPerc, 260, _T("Tracking off..."));
-		nCol = 0;
+	case (0):
+		StringCchCat(trkPerc, 260, _T("% (Gray scale)"));
+		break;
+	case (3):
+		StringCchCat(trkPerc, 260, _T("% (Near black scale)"));
+		break;
+	case (4):
+		StringCchCat(trkPerc, 260, _T("% (Near white scale)"));
+		break;
+	default:
+	StringCchCat(trkPerc, 260, _T("Tracking off..."));
 	}
 						
-	if (m_Display != 2)
-	{
-		l_Display = m_Display;
-		l_nCol = nCol;
-	}
-
 	if ( m_showLuminance )
 	{
 		clr [ NbGraphCtrl ] = bWhiteBkgnd ? RGB (127,127,0) : RGB(255,255,0);

@@ -571,6 +571,7 @@ CDataSetDoc::CDataSetDoc()
 	m_pSensor = NULL;
 	m_pGenerator = NULL;
 	m_SelectedColor = noDataColor;
+	m_LastColor = noDataColor;
 	m_pWndPos = NULL;
 	m_pFramePosInfo = NULL;
 }
@@ -2247,9 +2248,12 @@ BOOL CDataSetDoc::ComputeAdjustmentMatrix()
                                     pDataRef->m_measure.GetBluePrimary().GetXYZValue()
                                 };
 
-    ColorXYZ whiteRef = pDataRef -> m_measure.GetPrimeWhite().GetXYZValue();
-
-    ColorXYZ white = m_measure.GetPrimeWhite().GetXYZValue();
+		    ColorXYZ whiteRef = pDataRef -> m_measure.GetPrimeWhite().GetXYZValue();
+			if (!whiteRef.isValid())
+				whiteRef = pDataRef -> m_measure.GetOnOffWhite().GetXYZValue();
+			ColorXYZ white = m_measure.GetPrimeWhite().GetXYZValue();
+			if (!white.isValid())
+				white = m_measure.GetOnOffWhite().GetXYZValue();
 
     // check that measure matrix is inversible
     Matrix oldMatrix = m_pSensor->GetSensorMatrix();

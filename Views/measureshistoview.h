@@ -82,6 +82,9 @@ public:
 	BOOL m_showDeltaE;
 	BOOL m_showColorTemp;
 	int	m_XScale;
+	int l_Display;
+	int l_nCol;
+	int l_nSize;
 // Operations
 public:
 

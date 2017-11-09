@@ -126,6 +126,9 @@ public:
 	CColor m_oldBlackGS;
 	CColor m_oldBlackNB;
 	bool isSelectedWhiteY;
+	int last_Col;
+	int last_Size;
+	int last_Display;
 
 	std::vector<double> dEvector, dLvector, dCvector, dHvector;
 
@@ -136,11 +139,13 @@ public:
 	CTargetWnd		m_Target;
 	CRGBLevelWnd	m_RGBLevels;
 
-	CColor		m_SelectedColor;
+	CColor		m_SelectedColor, m_LastColor;
 
 	void SetSelectedColor ( CColor & clr, bool inMeasure = FALSE )	{ m_SelectedColor = clr; GetDocument () -> SetSelectedColor ( clr ); if (!inMeasure) RefreshSelection (); }
+	void SetLastColor ( CColor & clr, bool inMeasure = FALSE )	{ m_LastColor = clr; GetDocument () -> SetLastColor ( clr ); if (!inMeasure) RefreshSelection (); }
 
 	void RefreshSelection (bool b_minCol = TRUE, bool inMeasure = FALSE);
+	void GetYRef (const CColor& aColor, CColor& refColor, int index, int nCount, CDataSetDoc * pDoc, double& YWhite, CDataSetDoc * pRefDoc, double& YWhiteRef );
 
 // Operations
 public:
@@ -156,7 +161,7 @@ protected:
 	void InitGroups();
 	void UpdateContrastValuesInGrid ();
 
-	CString GetItemText(CColor & aMeasure, double YWhite, CColor & aReference, CColor & aRefDocColor, double YWhiteRefDoc, int aComponentNum, int nCol, double Offset);
+	CString GetItemText(CColor & aMeasure, double YWhite, CColor & aReference, CColor & aRefDocColor, double YWhiteRefDoc, int aComponentNum, int nCol, double Offset, bool isGS);
 	LPSTR GetGridRowLabel(int aComponentNum);
 
 // Overrides
