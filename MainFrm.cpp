@@ -1135,8 +1135,8 @@ void CMainFrame::OnUpdateSoft()
 	::UpdateWindow ( hDlg );
 
 		WebUpdate.SetLocalDirectory("", true);
-		WebUpdate.SetUpdateFileURL("http://dl.dropboxusercontent.com/u/2621383/update.txt");
-		WebUpdate.SetRemoteURL("http://dl.dropboxusercontent.com/u/2621383/");
+		WebUpdate.SetUpdateFileURL("	ftp://prairie17.dyndns.org/shares/dload/update.txt");
+		WebUpdate.SetRemoteURL("	ftp://prairie17.dyndns.org/shares/dload/");
 
 		if (!WebUpdate.DoUpdateCheck())
 		{
