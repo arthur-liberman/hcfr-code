@@ -1135,8 +1135,8 @@ void CMainFrame::OnUpdateSoft()
 	::UpdateWindow ( hDlg );
 
 		WebUpdate.SetLocalDirectory("", true);
-		WebUpdate.SetUpdateFileURL("http://www.alcpu.com/HCFR/update.txt");
-		WebUpdate.SetRemoteURL("http://www.alcpu.com/HCFR/");
+		WebUpdate.SetUpdateFileURL("http://dl.dropboxusercontent.com/u/2621383/update.txt");
+		WebUpdate.SetRemoteURL("http://dl.dropboxusercontent.com/u/2621383/");
 
 		if (!WebUpdate.DoUpdateCheck())
 		{
