@@ -80,7 +80,7 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 			double	x1, x2, x3, p1, p2, p3, z1, z2, z3;
 			ColorRGBDisplay	GenColors [ 1010 ];
 		
-			if ((m_DisplayMode == 0 || m_DisplayMode == 3 || m_DisplayMode == 4 ))
+			if ((m_DisplayMode == 0 || m_DisplayMode == 2 || m_DisplayMode == 3 || m_DisplayMode == 4 ))
 			{
 				centerXYZ = GetColorReference().GetWhite();
 	            if (nSize > 0)

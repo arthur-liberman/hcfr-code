@@ -98,6 +98,7 @@ public:
 	CSensor *		m_pSensor;
 
 	CColor			m_SelectedColor;
+	CColor			m_LastColor;
 // Operations
 public:
 	void ShowAllViews();
@@ -138,6 +139,7 @@ public:
 	BOOL ComputeAdjustmentMatrix();
 
 	void SetSelectedColor ( const CColor & clr )	{ m_SelectedColor = clr; }
+	void SetLastColor ( const CColor & clr )	{ m_LastColor = clr; }
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CDataSetDoc)
