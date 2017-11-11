@@ -1,5 +1,6 @@
 // CWebUpdate.h : header file
 //
+#include <Wininet.h>
 
 #ifndef _CWEBUPDATE_H
 #define _CWEBUPDATE_H

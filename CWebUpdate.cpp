@@ -11,6 +11,8 @@
 
 #include <sys/stat.h>
 
+#pragma comment( lib, "wininet" )
+
 // Global variables
 CString remoteFile;
 CString localFile;
@@ -136,7 +138,7 @@ bool CWebUpdate::DoUpdateCheck()
 	CString path;
 	path = getenv("APPDATA");
 
-	localFile = path + "\\CheckUpdate.txt";
+	localFile = path + "\\color\\CheckUpdate.txt";
 	// Download
 	HANDLE	dloadHandle = (HANDLE)_beginthread(downloadFile, 0, (void*)"");
 	// Wait for it to finish
@@ -194,6 +196,7 @@ bool CWebUpdate::DoUpdateCheck()
 			missingFiles.Add(fileTo);
 		}
 	}
+
 	loadFile.Close();
 	DeleteFile(localFile);
 	return true;
