@@ -1135,8 +1135,11 @@ void CMainFrame::OnUpdateSoft()
 	::UpdateWindow ( hDlg );
 
 		WebUpdate.SetLocalDirectory("", true);
-		WebUpdate.SetUpdateFileURL("	ftp://prairie17.dyndns.org/shares/dload/update.txt");
-		WebUpdate.SetRemoteURL("	ftp://prairie17.dyndns.org/shares/dload/");
+		WebUpdate.SetUpdateFileURL("ftp://prairie17.dyndns.org/shares/dload/CheckUpdate.txt");
+		WebUpdate.SetRemoteURL("ftp://prairie17.dyndns.org/shares/dload/");
+		bool cacheDel = DeleteUrlCacheEntry("ftp://prairie17.dyndns.org/shares/dload/CheckUpdate.txt");
+		cacheDel = DeleteUrlCacheEntry("ftp://prairie17.dyndns.org/shares/dload/ColorHCFR.exe");
+
 
 		if (!WebUpdate.DoUpdateCheck())
 		{
