@@ -117,7 +117,6 @@ draw_image2 (HPDF_Doc     pdf,
 	char * path;
 	path = getenv("APPDATA");
 
-//    strcpy(filename1, "data");
 	strcpy(filename1, path);
     strcat(filename1, FILE_SEPARATOR);
     strcat(filename1, filename);
@@ -204,6 +203,8 @@ draw_rect (HPDF_Page     page,
 
 char *legendXYZ[3]={"X","Y","Z"};
 char *legendRGB[3]={"R","G","B"};
+char *legendRow1cc[3]={"X","Z","G"};
+char *legendRow2cc[3]={"Y","R","B"};
 char *legendSensor[3]={"Rc","Gc","Bc"};
 char *primariesName[6]={"Red","Green","Blue","Yellow","Cyan","Magenta"};
 
@@ -1995,8 +1996,8 @@ bool CExport::SaveCCSheet()
 	Rows.Add("Color");
 	for (i=0;i<3;i++)
 	{
-		Rows.Add(legendXYZ[i],CRowArray::floatType);
-		Rows.Add(legendRGB[i],CRowArray::floatType);
+		Rows.Add(legendRow1cc[i],CRowArray::floatType);
+		Rows.Add(legendRow2cc[i],CRowArray::floatType);
 	}
 	Rows.Add("deltaE",CRowArray::floatType);
 	result&=colorcheckerSS.AddHeaders(Rows,true);
