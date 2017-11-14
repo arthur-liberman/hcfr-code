@@ -5298,7 +5298,7 @@ BOOL CMeasure::ValidateBackgroundSingleMeasurement ( BOOL bUseLuxValues, double 
 	{
 		bOk = TRUE;
 		m_isModified=TRUE;
-
+				
 		CColor measurement;
 
 		measurement = (*m_pBkMeasuredColor)[0];
@@ -5315,7 +5315,7 @@ BOOL CMeasure::ValidateBackgroundSingleMeasurement ( BOOL bUseLuxValues, double 
 
 	// Close background thread and event objects
 	CancelBackgroundMeasures ();
-
+	Sleep((DWORD)GetConfig()->m_latencyTime);
 	return bOk;
 }
 
@@ -5453,6 +5453,7 @@ void CMeasure::FreeMeasurementAppended(int isPrimary, int last_minCol)
 		m_isModified=TRUE;
 //		UpdateViews(pDoc, isPrimary);
 	}
+	Sleep((DWORD)GetConfig()->m_latencyTime);
 }
 
 BOOL CMeasure::ValidateBackgroundNearBlack ( BOOL bUseLuxValues, double * pLuxValues )
