@@ -85,6 +85,7 @@ void CReferencesPropPage::DoDataExchange(CDataExchange* pDX)
 	DDV_MinMaxDouble(pDX, m_Split, 0., 100.);
 	DDV_MinMaxDouble(pDX, m_ManualBlack, 0., 1.);
 	DDX_Check(pDX, IDC_CHANGEWHITE_CHECK, m_changeWhiteCheck);
+	DDX_Control(pDX, IDC_CHANGEWHITE_CHECK, m_changeWhiteCheckCtrl);
 	DDX_Check(pDX, IDC_USE_MEASURED_GAMMA, m_useMeasuredGamma);
 	DDX_Check(pDX, IDC_USER_BLACK, m_userBlack);
 	DDX_Control(pDX, IDC_USE_MEASURED_GAMMA, m_eMeasuredGamma);
@@ -180,6 +181,18 @@ BOOL CReferencesPropPage::OnApply()
 {
 	GetConfig()->	WriteProfileDouble("References","Manual Black Level",m_ManualBlack);
 	GetConfig()->	WriteProfileDouble("References","Use Black Level",m_userBlack);
+	if (m_colorStandard == HDTVa || m_colorStandard == HDTVb || m_colorStandard == UHDTV3 || m_colorStandard == CC6) 
+	{
+		m_changeWhiteCheckCtrl.EnableWindow(FALSE);
+		m_changeWhiteCheck = FALSE;
+        m_whiteTargetCombo.EnableWindow (FALSE);
+        m_manualWhitexedit.EnableWindow (FALSE);
+        m_manualWhiteyedit.EnableWindow (FALSE);        
+		m_whiteTarget=(int)(GetStandardColorReference((ColorStandard)(m_colorStandard)).m_white);	
+	} 
+	else
+		m_changeWhiteCheckCtrl.EnableWindow(TRUE);
+
     if (m_whiteTarget == DCUST)
     {
         m_manualWhitexedit.EnableWindow (TRUE);
@@ -277,7 +290,13 @@ BOOL CReferencesPropPage::OnInitDialog()
 		GetDlgItem(IDC_GAMMA_OFFSET_RADIO10)->EnableWindow(FALSE);
 	}
 	m_GammaAvgEdit.EnableWindow(FALSE);
-	m_changeWhiteCheck = (m_whiteTarget!=(int)(GetStandardColorReference((ColorStandard)(m_colorStandard)).m_white));
+	if (m_colorStandard == HDTVa || m_colorStandard == HDTVb || m_colorStandard == UHDTV3 || m_colorStandard == CC6) 
+	{
+		m_changeWhiteCheckCtrl.EnableWindow(FALSE);
+		m_changeWhiteCheck = FALSE;
+		m_whiteTarget=(int)(GetStandardColorReference((ColorStandard)(m_colorStandard)).m_white);	}
+	else
+		m_changeWhiteCheck = (m_whiteTarget!=(int)(GetStandardColorReference((ColorStandard)(m_colorStandard)).m_white));
 
 	if(m_changeWhiteCheck)
 	{
@@ -489,6 +508,7 @@ void CReferencesPropPage::OnSelchangeColorrefCombo()
         m_manualBluexedit.EnableWindow (FALSE);
         m_manualBlueyedit.EnableWindow (FALSE);
 	}
+
 	UpdateData(FALSE);	
 }
 
