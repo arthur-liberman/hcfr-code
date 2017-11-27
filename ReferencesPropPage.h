@@ -68,6 +68,7 @@ public:
 	double	m_ManualBlack;
 	double  m_Split;
 	BOOL	m_changeWhiteCheck;
+	CEdit	m_changeWhiteCheckCtrl;
 	BOOL	m_useMeasuredGamma;
 	BOOL	m_bSave;
 	BOOL	m_userBlack;
