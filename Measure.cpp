@@ -885,7 +885,7 @@ BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator, CDataS
 		
 		if (!i && (GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_DEFAULT_MODE) == DISPLAY_GDI_Hide) )
 			UpdateTstWnd(pDoc, -1);
-		if( pGenerator->DisplayGray(ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown),CGenerator::MT_IRE ,!bRetry))
+		if( pGenerator->DisplayGray(ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit),CGenerator::MT_IRE ,!bRetry))
 		{
 			UpdateTstWnd(pDoc, i);
 			bEscape = WaitForDynamicIris (FALSE);
@@ -896,7 +896,7 @@ BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator, CDataS
 				if ( bUseLuxValues )
 					StartLuxMeasure ();
 
-				measuredColor[i]=pSensor->MeasureGray(ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown));
+				measuredColor[i]=pSensor->MeasureGray(ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit));
 
 				m_grayMeasureArray[i] = measuredColor[i];
 				
@@ -1107,7 +1107,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 		if (!i && GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_DEFAULT_MODE) == DISPLAY_GDI_Hide)
 			UpdateTstWnd(pDoc, -1);
 
-		if( pGenerator->DisplayGray(ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown),CGenerator::MT_IRE ,!bRetry))
+		if( pGenerator->DisplayGray(ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit),CGenerator::MT_IRE ,!bRetry))
 		{
 			UpdateTstWnd(pDoc, i);
 			bEscape = WaitForDynamicIris (FALSE);
@@ -1118,7 +1118,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 				if ( bUseLuxValues )
 					StartLuxMeasure ();
 
-				measuredColor[i]=pSensor->MeasureGray(ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown ));
+				measuredColor[i]=pSensor->MeasureGray(ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit ));
 				m_grayMeasureArray[i] = measuredColor[i];
 				
 				if ( bUseLuxValues )
@@ -1242,7 +1242,12 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 
 	double primaryIRELevel=100.0;	
 	if (mode == 5)
-		primaryIRELevel = 50.6849315;
+	{
+		primaryIRELevel = 50.22831;
+	//Special Case white for Mascior's HDR disk
+		if(pGenerator->GetName() == str && (GetColorReference().m_standard == UHDTV3 || GetColorReference().m_standard == UHDTV2))
+			primaryIRELevel = 50.00;
+	}
 	// Measure primary and secondary colors
 	ColorRGBDisplay	GenColors [ 8 ] = 
 								{	
@@ -1537,7 +1542,7 @@ BOOL CMeasure::MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator, C
 			UpdateTstWnd(pDoc, -1);
 
 		int nCol = i * (GetConfig()->m_GammaOffsetType == 5 ? 2 : 1);
-		if( pGenerator->DisplayGray((ArrayIndexToGrayLevel ( nCol, 101, GetConfig () -> m_bUseRoundDown)),CGenerator::MT_NEARBLACK,!bRetry) )
+		if( pGenerator->DisplayGray((ArrayIndexToGrayLevel ( nCol, 101, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit)),CGenerator::MT_NEARBLACK,!bRetry) )
 		{
 			UpdateTstWnd(pDoc, nCol);
 			bEscape = WaitForDynamicIris (FALSE);
@@ -1548,7 +1553,7 @@ BOOL CMeasure::MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator, C
 				if ( bUseLuxValues )
 					StartLuxMeasure ();
 
-				measuredColor[i]=pSensor->MeasureGray(ArrayIndexToGrayLevel ( nCol, 101, GetConfig () -> m_bUseRoundDown));
+				measuredColor[i]=pSensor->MeasureGray(ArrayIndexToGrayLevel ( nCol, 101, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit));
 				m_nearBlackMeasureArray[i] = measuredColor[i];
 				
 				if ( bUseLuxValues )
@@ -1739,7 +1744,7 @@ BOOL CMeasure::MeasureNearWhiteScale(CSensor *pSensor, CGenerator *pGenerator, C
 		if (!i && GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_DEFAULT_MODE) == DISPLAY_GDI_Hide)
 			UpdateTstWnd(pDoc, -1);
 
-		if( pGenerator->DisplayGray((ArrayIndexToGrayLevel ( 101-size+i, 101, GetConfig () -> m_bUseRoundDown)),CGenerator::MT_NEARWHITE,!bRetry ) )
+		if( pGenerator->DisplayGray((ArrayIndexToGrayLevel ( 101-size+i, 101, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit)),CGenerator::MT_NEARWHITE,!bRetry ) )
 		{
 			UpdateTstWnd(pDoc, i);
 			bEscape = WaitForDynamicIris (FALSE);
@@ -1750,7 +1755,7 @@ BOOL CMeasure::MeasureNearWhiteScale(CSensor *pSensor, CGenerator *pGenerator, C
 				if ( bUseLuxValues )
 					StartLuxMeasure ();
 
-				measuredColor[i]=pSensor->MeasureGray(ArrayIndexToGrayLevel ( 101-size+i, 101, GetConfig () -> m_bUseRoundDown));
+				measuredColor[i]=pSensor->MeasureGray(ArrayIndexToGrayLevel ( 101-size+i, 101, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit));
 				m_nearWhiteMeasureArray[i] = measuredColor[i];
 				
 				if ( bUseLuxValues )
@@ -3801,7 +3806,12 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator, CDataS
 	int mode = GetConfig()->m_GammaOffsetType;
 
 	if (mode == 5)
+	{
 		primaryIRELevel = 50.22831;
+	//Special Case white for Mascior's HDR disk
+		if(pGenerator->GetName() == str && (GetColorReference().m_standard == UHDTV3 || GetColorReference().m_standard == UHDTV2))
+			primaryIRELevel = 50.00;
+	}
 
 	ColorRGBDisplay	GenColors [ 5 ] = 
 								{	
@@ -4051,7 +4061,12 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator, CDat
 	int mode = GetConfig()->m_GammaOffsetType;
 
 	if (mode == 5)
+	{
 		primaryIRELevel = 50.22831;
+	//Special Case white for Mascior's HDR disk
+		if(pGenerator->GetName() == str && (GetColorReference().m_standard == UHDTV3 || GetColorReference().m_standard == UHDTV2))
+			primaryIRELevel = 50.00;
+	}
 
 	ColorRGBDisplay	GenColors [ 8 ] = 
 								{	
@@ -6144,6 +6159,7 @@ CColor CMeasure::GetRefPrimary(int i) const
 	bool isSpecial = (GetColorReference().m_standard==HDTVa||GetColorReference().m_standard==CC6||GetColorReference().m_standard==HDTVb||GetColorReference().m_standard==UHDTV3);
 	CColorReference cRef = GetColorReference();	
 	CColor	aColor,aColorr,aColorg,aColorb,White,Black;
+	double ref502 = 108.395, ref504 = 105.95640;
 
 
 	aColorr.SetXYZValue (cRef.GetRed());
@@ -7005,7 +7021,14 @@ CColor CMeasure::GetRefCC24Sat(int i) const
 		g=(qg<=0||qg>=1)?min(max(qg,0),1):pow(qg, gamma);
 		b=(qb<=0||qb>=1)?min(max(qb,0),1):pow(qb, gamma);
 	}
-
 	ccRef.SetRGBValue(ColorRGB(r,g,b),GetColorReference().m_standard==UHDTV3?CColorReference(UHDTV2):cRef);
+	//Special case White redefined on Mascior disk to level 502 50.0% 0.00092.254965 nits
+	CString	Msg, str;
+	Msg.LoadString ( IDS_GDIGENERATOR_NAME );
+	CString m_generatorChoice = GetConfig()->GetProfileString("Defaults","Generator",(LPCSTR)Msg);
+	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
+	bool DVD = (m_generatorChoice == str);	
+	if (!i && GetConfig()->m_CCMode == CPS && mode == 5 && DVD)
+		ccRef.SetRGBValue(ColorRGB(0.0092254965,0.0092254965,0.0092254965),GetColorReference().m_standard==UHDTV3?CColorReference(UHDTV2):cRef);
 	return ccRef;
 }

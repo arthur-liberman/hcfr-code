@@ -229,14 +229,14 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 					{
 						int Count;
 						case 3:
-						x = ArrayIndexToGrayLevel ( (minCol - 1)*(GetConfig()->m_GammaOffsetType==5?2:1), 101, GetConfig () -> m_bUseRoundDown );
+						x = ArrayIndexToGrayLevel ( (minCol - 1)*(GetConfig()->m_GammaOffsetType==5?2:1), 101, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
 						break;
 						case 4:
 						Count = m_pDocument -> GetMeasure()->GetNearWhiteScaleSize();
-						x = ArrayIndexToGrayLevel ( 101 - Count + (minCol - 1), 101, GetConfig () -> m_bUseRoundDown );
+						x = ArrayIndexToGrayLevel ( 101 - Count + (minCol - 1), 101, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
 						break;
 						default:
-						x = ArrayIndexToGrayLevel ( minCol - 1 , nCount, GetConfig () -> m_bUseRoundDown );
+						x = ArrayIndexToGrayLevel ( minCol - 1 , nCount, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
 					}
 					double valy, Gamma, Offset;
                     Gamma = GetConfig()->m_GammaRef;
@@ -251,12 +251,12 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 					if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 					if ( mode >= 4 )
 			        {
-						double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
+						double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
 						valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 			        }
 			        else
 			        {
-				        double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
+				        double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit)+Offset)/(1.0+Offset);
 				        valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 						if (mode == 1) //black compensation target
 							valy = (Black.GetY() + ( valy * ( YWhite - Black.GetY() ) )) / YWhite;

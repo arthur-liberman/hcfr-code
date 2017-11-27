@@ -298,7 +298,7 @@ BEGIN
     CONTROL         "Override black",IDC_USER_BLACK,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,144,83,57,10
 END
 
-IDD_GENERAL_PROP_PAGE DIALOGEX 0, 0, 210, 223
+IDD_GENERAL_PROP_PAGE DIALOGEX 0, 0, 210, 246
 STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "General"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -322,7 +322,7 @@ BEGIN
     CONTROL         "None",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,163,33,10
     CONTROL         "White",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,60,163,35,10
     CONTROL         "White and black",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,114,163,68,10
-    GROUPBOX        "Gray levels rounding assumption",IDC_STATIC,7,184,198,26,WS_GROUP
+    GROUPBOX        "Gray levels rounding assumption",IDC_STATIC,7,184,198,44,WS_GROUP
     CONTROL         "Use round down levels (AVSHD, DVE)",IDC_CHECK_USE_ROUNDDOWN,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,196,135,10
     CONTROL         "Use HSV Level Bars",IDC_CHECK_USE_HSV,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,105,56,81,10
@@ -333,6 +333,8 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,101,95,108,10
     CONTROL         "Inhibit ABL",IDC_CHECK_ABL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,134,76,10
     CONTROL         "Disable High DPI scaling",IDC_CHECK_DISABLEDPI,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,97,24,91,10
+    CONTROL         "Use 10 bit targets (HDR10 Blu-ray)",IDC_CHECK_USE_10bit,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,210,135,10
 END
 
 IDD_EXPORTXLS_DIALOG DIALOG 0, 0, 226, 135
@@ -1075,7 +1077,7 @@ BEGIN
     IDC_GENERATORCHOICE_COMBO, 0x403, 10, 0
 0x7541, 0x6f74, 0x616d, 0x6974, 0x0063, 
     IDC_GENERATORCHOICE_COMBO, 0x403, 11, 0
-0x5644, 0x2f44, 0x616d, 0x756e, 0x6c61, "\000" 
+0x5644, 0x2044, 0x616d, 0x756e, 0x6c61, "\000" 
     0
 END
 
@@ -1633,6 +1635,7 @@ BEGIN
         MENUITEM "Green",                       IDM_LUM_GRAPH_GREENLUM
         MENUITEM "Blue",                        IDM_LUM_GRAPH_BLUELUM
         MENUITEM SEPARATOR
+        MENUITEM "Absolute Y",                  IDM_LUM_GRAPH_Yab
         MENUITEM "L*",                          IDM_LUM_GRAPH_L
         MENUITEM SEPARATOR
         MENUITEM "Save...",                     IDM_GRAPH_SAVE
@@ -2109,6 +2112,7 @@ BEGIN
         MENUITEM "Green",                       IDM_LUM_GRAPH_GREENLUM
         MENUITEM "Blue",                        IDM_LUM_GRAPH_BLUELUM
         MENUITEM SEPARATOR
+        MENUITEM "Absolute Y",                  IDM_LUM_GRAPH_Yab
         MENUITEM "L*",                          IDM_LUM_GRAPH_L
         MENUITEM SEPARATOR
         MENUITEM "Save...",                     IDM_GRAPH_SAVE
@@ -2154,6 +2158,7 @@ BEGIN
         MENUITEM "Green",                       IDM_LUM_GRAPH_GREENLUM
         MENUITEM "Blue",                        IDM_LUM_GRAPH_BLUELUM
         MENUITEM SEPARATOR
+        MENUITEM "Absolute Y",                  IDM_LUM_GRAPH_Yab
         MENUITEM "L*",                          IDM_LUM_GRAPH_L
         MENUITEM SEPARATOR
         MENUITEM "Save...",                     IDM_GRAPH_SAVE
@@ -2483,8 +2488,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,4,5
- PRODUCTVERSION 3,4,5
+ FILEVERSION 3,4,5,0
+ PRODUCTVERSION 3,4,5,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2568,7 +2573,7 @@ BEGIN
     IDD_GENERAL_PROP_PAGE, DIALOG
     BEGIN
         RIGHTMARGIN, 209
-        BOTTOMMARGIN, 218
+        BOTTOMMARGIN, 241
     END
 
     IDD_EXPORTXLS_DIALOG, DIALOG

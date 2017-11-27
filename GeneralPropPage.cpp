@@ -53,6 +53,7 @@ CGeneralPropPage::CGeneralPropPage() : CPropertyPageWithHelp(CGeneralPropPage::I
 	m_useHSV = FALSE;
 	m_isSettling = FALSE;
 	m_bUseRoundDown = FALSE;
+	m_bUse10bit = FALSE;
 	m_bDisableHighDPI = FALSE;
 	//}}AFX_DATA_INIT
 
@@ -82,7 +83,37 @@ void CGeneralPropPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_DETECT_PRIMARIES, m_bDetectPrimaries);
 	DDX_Check(pDX, IDC_IS_SETTLING, m_isSettling);
 	DDX_Check(pDX, IDC_CHECK_USE_HSV, m_useHSV);
+	DDX_Control(pDX, IDC_CHECK_USE_ROUNDDOWN, m_bUseRoundDownCtrl);
+	DDX_Control(pDX, IDC_CHECK_USE_10bit, m_bUse10bitCtrl);
+	DDX_Check(pDX, IDC_CHECK_USE_10bit, m_bUse10bit);
 	DDX_Check(pDX, IDC_CHECK_USE_ROUNDDOWN, m_bUseRoundDown);
+	CString	Msg, str;
+	Msg.LoadString ( IDS_GDIGENERATOR_NAME );
+	CString m_generatorChoice = GetConfig()->GetProfileString("Defaults","Generator",(LPCSTR)Msg);
+	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
+	bool DVD = (m_generatorChoice == str);
+	if (DVD)
+	{
+		if (GetConfig()->m_GammaOffsetType == 5)
+		{
+			m_bUse10bitCtrl.EnableWindow(TRUE);
+			m_bUseRoundDownCtrl.EnableWindow(FALSE);
+			m_bUseRoundDown = FALSE;
+		}
+		else
+		{
+			m_bUseRoundDownCtrl.EnableWindow(TRUE);
+			m_bUse10bitCtrl.EnableWindow(FALSE);
+			m_bUse10bit = FALSE;
+		}
+	}
+	else
+	{
+		m_bUse10bitCtrl.EnableWindow(FALSE);
+		m_bUseRoundDownCtrl.EnableWindow(FALSE);
+		m_bUse10bit = FALSE;
+		m_bUseRoundDown = FALSE;
+	}
 	//}}AFX_DATA_MAP
 }
 
@@ -103,6 +134,7 @@ BEGIN_MESSAGE_MAP(CGeneralPropPage, CPropertyPageWithHelp)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_USE_HSV, IDC_CHECK_USE_HSV, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_IS_SETTLING, IDC_IS_SETTLING, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_USE_ROUNDDOWN, IDC_CHECK_USE_ROUNDDOWN, OnControlClicked)
+    ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_USE_10bit, IDC_CHECK_USE_10bit, OnControlClicked)
 	//{{AFX_MSG_MAP(CGeneralPropPage)
 		// NOTE: the ClassWizard will add message map macros here
 	//}}AFX_MSG_MAP
@@ -116,7 +148,35 @@ void CGeneralPropPage::OnControlClicked(UINT nID)
 	// m_isModified becomes true only when Continuous Reading flag changes. This flag
 	// allow parent dialog to send a WM_SYSCOLORCHANGE message to all DataSetView to change
 	// measurement button look (camera or start icon).
-	if ( nID == IDC_CHECK_CONTINUOUS || IDC_CHECK_USE_ROUNDDOWN )
+	CString	Msg, str;
+	Msg.LoadString ( IDS_GDIGENERATOR_NAME );
+	CString m_generatorChoice = GetConfig()->GetProfileString("Defaults","Generator",(LPCSTR)Msg);
+	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
+	bool DVD = (m_generatorChoice == str);
+	if (DVD)
+	{
+		if (GetConfig()->m_GammaOffsetType == 5)
+		{
+			m_bUse10bitCtrl.EnableWindow(TRUE);
+			m_bUseRoundDownCtrl.EnableWindow(FALSE);
+			m_bUseRoundDown = FALSE;
+		}
+		else
+		{
+			m_bUseRoundDownCtrl.EnableWindow(TRUE);
+			m_bUse10bitCtrl.EnableWindow(FALSE);
+			m_bUse10bit = FALSE;
+		}
+	}
+	else
+	{
+		m_bUse10bitCtrl.EnableWindow(FALSE);
+		m_bUseRoundDownCtrl.EnableWindow(FALSE);
+		m_bUse10bit = FALSE;
+		m_bUseRoundDown = FALSE;
+	}
+
+	if ( nID == IDC_CHECK_CONTINUOUS || IDC_CHECK_USE_ROUNDDOWN || IDC_CHECK_USE_10bit )
     {
 		m_isModified=TRUE;
     	SetModified(TRUE);

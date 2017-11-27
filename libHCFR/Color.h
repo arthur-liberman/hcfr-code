@@ -43,9 +43,9 @@ typedef enum
 	HDTVa = 3,
 	HDTVb = 4,
 	sRGB = 5,
-	UHDTV = 6,
-	UHDTV2 = 7,
-	UHDTV3 = 8,
+	UHDTV = 6,  //P3
+	UHDTV2 = 7, //BT.2020
+	UHDTV3 = 8, //P3 in BT.2020
     CUSTOM = 9,
 	CC6 = 10
 } ColorStandard;
@@ -724,8 +724,8 @@ extern CColor noDataColor;
 extern void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int nSteps, bool bRed, bool bGreen, bool bBlue, int mode = 0);
 extern bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int aCCMode, int mode );
 extern Matrix ComputeConversionMatrix(const ColorXYZ measures[3], const ColorXYZ references[3], const ColorXYZ & WhiteTest, const ColorXYZ & WhiteRef, bool	bUseOnlyPrimaries);
-double ArrayIndexToGrayLevel ( int nCol, int nSize, bool m_bUseRoundDown);
-double GrayLevelToGrayProp ( double Level, bool m_bUseRoundDown );
+double ArrayIndexToGrayLevel ( int nCol, int nSize, bool m_bUseRoundDown, bool m_b10bit = FALSE);
+double GrayLevelToGrayProp ( double Level, bool m_bUseRoundDown, bool m_b10bit = FALSE );
 double getL_EOTF ( double x, CColor White, CColor Black, double g_rel, double split, int mode );
 
 #endif // !defined(COLOR_H_INCLUDED_)

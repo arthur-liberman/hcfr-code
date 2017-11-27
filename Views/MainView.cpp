@@ -1092,9 +1092,9 @@ void CMainView::InitGrid()
 		{
 			case 0:
 				 if ( bIRE && i==0 )
-					Item.strText.Format("%.1f",ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown ));
+					Item.strText.Format("%.1f",ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit ));
 				 else
-					Item.strText.Format("%d", (int) floor(ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown )+0.5) );
+					Item.strText.Format("%d", (int) floor(ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit )+0.5) );
 				 break;
 
 			case 1:
@@ -1951,6 +1951,13 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aReference, CColor & aRefDocColor, double YWhiteRefDoc, int aComponentNum, int nCol, double Offset, bool isGS)
 {
 	CString str;
+	BOOL isHDR = ( GetConfig()->m_GammaOffsetType == 5 && (m_displayMode == 1 || m_displayMode >= 5 && m_displayMode <=10) );
+	//Special case White redefined on Mascior disk to level 502 50.0% 0.00092.254965 nits
+	CString	Msg, dstr;
+	Msg.LoadString ( IDS_GDIGENERATOR_NAME );
+	CString m_generatorChoice = GetConfig()->GetProfileString("Defaults","Generator",(LPCSTR)Msg);
+	dstr.LoadString(IDS_MANUALDVDGENERATOR_NAME);
+	BOOL DVD = (m_generatorChoice == dstr);	
 	if(aMeasure.isValid() || ( aComponentNum == 7 || ( aComponentNum == 5 && ( GetDataRef() == NULL || GetDataRef() == GetDocument () ) ) ))
 	{
 		if ( aComponentNum < 3 )
@@ -2023,11 +2030,32 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				}
 				else
 				{
-					double dL, dH, dC;
+					double dL, dH, dC, RefWhite = 1.0;
 					CColorReference cRef = GetColorReference();
-					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight ) );
-					dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, cRef.m_standard==UHDTV3?CColorReference(UHDTV2):GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight );
-					dL=aMeasure.GetDeltaLCH ( YWhite, aReference, 1.0, cRef.m_standard==UHDTV3?CColorReference(UHDTV2):GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight, dC, dH );
+					if (isHDR && cRef.m_standard == UHDTV2 || cRef.m_standard == UHDTV3 )
+					{
+						if (DVD)
+						{
+							if (m_displayMode == 1)
+							{
+								if (cRef.m_standard == UHDTV2 || nCol == 7)
+									RefWhite = 92.254965 / YWhite;
+							}
+							else
+							{
+								if (cRef.m_standard == UHDTV2 && nCol == 5)
+									RefWhite = 92.254965 / YWhite;
+							}
+						}
+						else
+						{
+							RefWhite = 94.37844 / YWhite;
+						}
+					}
+
+					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, RefWhite, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight ) );
+					dE=aMeasure.GetDeltaE ( YWhite, aReference, RefWhite, cRef.m_standard==UHDTV3?CColorReference(UHDTV2):GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight );
+					dL=aMeasure.GetDeltaLCH ( YWhite, aReference, RefWhite, cRef.m_standard==UHDTV3?CColorReference(UHDTV2):GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight, dC, dH );
                     dEvector.push_back(isNan(dE)?dEavg:dE);
                     dLvector.push_back(isNan(dL)?dLavg:dL);
                     dCvector.push_back(isNan(dC)?dCavg:dC);
@@ -2105,11 +2133,11 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						if ( GetConfig ()->m_GammaOffsetType == 1 )
 							yblack = Black.GetY();
 						if (m_displayMode == 0)
-							x = ArrayIndexToGrayLevel ( nCol - 1, nGrayScaleSize, GetConfig () -> m_bUseRoundDown );
+							x = ArrayIndexToGrayLevel ( nCol - 1, nGrayScaleSize, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
 						else if (m_displayMode == 3)
-							valx = GrayLevelToGrayProp ( (double)(nCol - 1)*(GetConfig()->m_GammaOffsetType==5?2:1), GetConfig () -> m_bUseRoundDown );
+							valx = GrayLevelToGrayProp ( (double)(nCol - 1)*(GetConfig()->m_GammaOffsetType==5?2:1), GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
 						else if (m_displayMode == 4)
-							valx = GrayLevelToGrayProp ( (double)(nCol - 1 + 101 - size) , GetConfig () -> m_bUseRoundDown );
+							valx = GrayLevelToGrayProp ( (double)(nCol - 1 + 101 - size) , GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
 
 						int mode = GetConfig()->m_GammaOffsetType;
 						if (GetConfig()->m_colorStandard == sRGB) mode = 99;
@@ -2117,7 +2145,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						if ( mode >= 4 )
 						{
 							if (m_displayMode == 0)
-								valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
+								valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
 							
 							if (mode == 5) 
 	                            valy = getL_EOTF(valx,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) * 100.;
@@ -2129,7 +2157,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						else
 						{
 							if (m_displayMode == 0)
-		    					valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
+		    					valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit)+Offset)/(1.0+Offset);
 	    					valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 		    				str.Format ( "%.3f", yblack + ( valy * ( White.GetY () - yblack ) ) );
 						}
@@ -2141,7 +2169,6 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				// Display primary/secondary/saturations colors delta luminance
 				int	    nCol2 = nCol, satsize=GetDocument()->GetMeasure()->GetSaturationSize();;
 				double  RefLuma [1000], sat=double (nCol-1)/ double (satsize-1);
-//                CColor White = GetDocument() -> GetMeasure () -> GetGray ( GetDocument()->GetMeasure()->GetGrayScaleSize() - 1 );
                 CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
 	            CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
 				CColor satcolor;
@@ -2216,6 +2243,26 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 					if ((GetDocument()->GetMeasure()->GetPrimeWhite()[1] / GetDocument()->GetMeasure()->GetOnOffWhite()[1] < 0.9) && m_displayMode == 11  && GetConfig()->m_GammaOffsetType !=5)
 						white = GetDocument() -> GetMeasure () ->GetOnOffWhite();
 				
+				if (isHDR && GetColorReference().m_standard == UHDTV2 || GetColorReference().m_standard == UHDTV3)
+				{
+					if (DVD)
+					{
+						if (m_displayMode == 1)
+						{
+							if (GetColorReference().m_standard == UHDTV2 || nCol == 7)
+								white.SetY(92.254965);
+						}
+						else
+						{
+							if (GetColorReference().m_standard == UHDTV2 && nCol == 5)
+								white.SetY(92.254965);
+						}
+					}
+					else
+					{
+						white.SetY(94.37844);
+					}
+				}
 
 				if ( nCol2 < ( (m_displayMode > 11 || m_displayMode < 5) ? 7 : 1001) && white.isValid() && white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) > 0.0001 )
     		    {
@@ -2462,19 +2509,19 @@ void GetYRef (const CColor& aColor, CColor& refColor, int index, int nCount, CDa
 						// Compute reference Luminance regarding actual offset and reference gamma 
                         // fixed to use correct gamma predicts
                         // and added option to assume perfect gamma
-						double x = ArrayIndexToGrayLevel ( index, nCount, GetConfig () -> m_bUseRoundDown );
+						double x = ArrayIndexToGrayLevel ( index, nCount, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
             		    CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
 	                	CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
 						int mode = GetConfig()->m_GammaOffsetType;
 						if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 						if (  (mode >= 4) )
 			            {
-                            double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
+                            double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
                             valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 			            }
 			            else
 			            {
-				            double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
+				            double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit)+Offset)/(1.0+Offset);
 				            valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 							if (mode == 1) //black compensation target
 								valy = (Black.GetY() + ( valy * ( YWhite - Black.GetY() ) )) / YWhite;
@@ -2597,7 +2644,6 @@ void CMainView::UpdateGrid()
 			case 0:
 				 YWhite = YWhiteGray;
 				 YWhiteRefDoc = YWhiteGrayRefDoc;
-
 				 nCount = GetDocument()->GetMeasure()->GetGrayScaleSize();
 				 if ( pDataRef && pDataRef->GetMeasure()->GetGrayScaleSize() != nCount )
 					pDataRef = NULL;
@@ -2672,12 +2718,12 @@ void CMainView::UpdateGrid()
 				 YWhiteRefDoc = isSpecial?YWhiteOnOffRefDoc:YWhitePrimeRefDoc;
 
 				 //special case check if user has done a less than 100% primaries run and use grayscale white instead for colorchecker
-				 if (GetDocument()->GetMeasure()->GetOnOffWhite().isValid()&&GetConfig()->m_GammaOffsetType!=5)
-					if ((YWhitePrime / YWhiteOnOff < 0.9) && m_displayMode == 11)
-					{
-						YWhite = YWhiteOnOff;
-						YWhiteRefDoc = YWhiteOnOffRefDoc;
-					}
+				if (GetDocument()->GetMeasure()->GetOnOffWhite().isValid()&&GetConfig()->m_GammaOffsetType!=5)
+				if ((YWhitePrime / YWhiteOnOff < 0.9) && m_displayMode == 11)
+				{
+					YWhite = YWhiteOnOff;
+					YWhiteRefDoc = YWhiteOnOffRefDoc;
+				}
 
 				 if (m_displayMode != 11) 
 				 {
@@ -2799,19 +2845,19 @@ void CMainView::UpdateGrid()
 						// Compute reference Luminance regarding actual offset and reference gamma 
                         // fixed to use correct gamma predicts
                         // and added option to assume perfect gamma
-						double x = ArrayIndexToGrayLevel ( j, nCount, GetConfig () -> m_bUseRoundDown );
+						double x = ArrayIndexToGrayLevel ( j, nCount, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
             		    CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
 	                	CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
 						int mode = GetConfig()->m_GammaOffsetType;
 						if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 						if (  (mode >= 4) )
 			            {
-                            double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
+                            double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
                             valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 			            }
 			            else
 			            {
-				            double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
+				            double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit)+Offset)/(1.0+Offset);
 				            valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 							if (mode == 1) //black compensation target
 								valy = (Black.GetY() + ( valy * ( YWhite - Black.GetY() ) )) / YWhite;
@@ -2909,19 +2955,19 @@ void CMainView::UpdateGrid()
 						// Compute reference Luminance regarding actual offset and reference gamma 
                         // fixed to use correct gamma predicts
                         // and added option to assume perfect gamma
-						double x = ArrayIndexToGrayLevel ( nCol, nCnt, GetConfig () -> m_bUseRoundDown );
+						double x = ArrayIndexToGrayLevel ( nCol, nCnt, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
             		    CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
 	                	CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
 						int mode = GetConfig()->m_GammaOffsetType;
 						if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 						if (  (mode >= 4) )
 			            {
-                            double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
+                            double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
                             valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 			            }
 			            else
 			            {
-				            double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
+				            double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit)+Offset)/(1.0+Offset);
 				            valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 							if (mode == 1) //black compensation target
 								valy = (Black.GetY() + ( valy * ( YWhite - Black.GetY() ) )) / YWhite;
@@ -2989,14 +3035,13 @@ void CMainView::UpdateGrid()
 					 aColor = GetDocument()->GetMeasure()->GetNearBlack(j);
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetNearBlack(j);
-//                     double valy;
 					 // Determine Reference Y luminance for Delta E calculus
 					 if ( GetConfig ()->m_dE_gray > 0 || GetConfig ()->m_dE_form == 5 )
 					 {
 						// Compute reference Luminance regarding actual offset and reference gamma 
                         // fixed to use correct gamma predicts
                         // and added option to assume perfect gamma
-						double x = ArrayIndexToGrayLevel ( j, 101, GetConfig () -> m_bUseRoundDown );
+						double x = ArrayIndexToGrayLevel ( j, 101, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
             		    CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
 						CColor Black = GetDocument() -> GetMeasure () -> GetNearBlack(0);
 						int mode = GetConfig()->m_GammaOffsetType;
@@ -3004,12 +3049,12 @@ void CMainView::UpdateGrid()
 
 						if (  (mode >= 4) )
 			            {
-                            double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
+                            double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
                             valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 			            }
 			            else
 			            {
-				            double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
+				            double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit)+Offset)/(1.0+Offset);
 				            valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 							if (mode == 1) //black compensation target
 								valy = (Black.GetY() + ( valy * ( YWhite - Black.GetY() ) )) / YWhite;
@@ -3044,7 +3089,7 @@ void CMainView::UpdateGrid()
 						// Compute reference Luminance regarding actual offset and reference gamma 
                         // fixed to use correct gamma predicts
                         // and added option to assume perfect gamma
-						double x = ArrayIndexToGrayLevel ( 101 - nCount + j, 101, GetConfig () -> m_bUseRoundDown );
+						double x = ArrayIndexToGrayLevel ( 101 - nCount + j, 101, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
             		    CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
 	                	CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
 						int mode = GetConfig()->m_GammaOffsetType;
@@ -3052,12 +3097,12 @@ void CMainView::UpdateGrid()
 
 						if (  (mode >= 4) )
 			            {
-                            double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
+                            double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
                             valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 			            }
 			            else
 			            {
-				            double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
+				            double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit)+Offset)/(1.0+Offset);
 				            valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 							if (mode == 1) //black compensation target
 								valy = (Black.GetY() + ( valy * ( YWhite - Black.GetY() ) )) / YWhite;
@@ -3159,6 +3204,7 @@ void CMainView::UpdateGrid()
 				 refColor.SetY((refColor.GetY() * 105.95640));
 				 refColor.SetZ((refColor.GetZ() * 105.95640));
 			 }
+
 			for( int i = 0 ; i < nRows ; i ++ )
 			{
 				Item.row = i+1;
@@ -5015,19 +5061,19 @@ void CMainView::UpdateMeasurementsAfterBkgndMeasure ()
 			// Compute reference Luminance regarding actual offset and reference gamma 
              // fixed to use correct gamma predicts
              // and added option to assume perfect gamma
-				double x = ArrayIndexToGrayLevel ( nCol, nCnt, GetConfig () -> m_bUseRoundDown );
+				double x = ArrayIndexToGrayLevel ( nCol, nCnt, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
 				CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
 	            CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
 				int mode = GetConfig()->m_GammaOffsetType;
 				if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 				if (  (mode >= 4) )
 			    {
-					double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
+					double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
                     valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 			    }
 			    else
 			    {
-					double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
+					double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit)+Offset)/(1.0+Offset);
 						valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 					if (mode == 1) //black compensation target
 						valy = (Black.GetY() + ( valy * ( YWhite - Black.GetY() ) )) / YWhite;

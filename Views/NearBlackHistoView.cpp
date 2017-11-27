@@ -37,6 +37,7 @@ static char THIS_FILE[] = __FILE__;
 
 // Implemented in luminancehistoview.cpp
 double Y_to_L( double val);
+double Y_to_abY ( double val, double Y );
 
 /////////////////////////////////////////////////////////////////////////////
 // CNearBlackGrapher
@@ -70,9 +71,10 @@ CNearBlackGrapher::CNearBlackGrapher()
 	m_blueLumDataRefGraphID = m_graphCtrl.AddGraph(RGB(0,0,255), (LPSTR)(LPCSTR)Msg,1,PS_DOT); //Ki
 
 	m_showL=GetConfig()->GetProfileInt("Near Black Histo","Show L",FALSE);
+	m_abY=GetConfig()->GetProfileInt("Near Black Histo","Show abY",FALSE);
 	m_graphCtrl.SetXAxisProps((LPSTR)(LPCSTR)GetConfig()->m_PercentGray, 1, 0, 10);
-	m_graphCtrl.SetYAxisProps(m_showL?"":"%", m_showL?1:0.1, 0, 20);
-    m_graphCtrl.SetScale(0,10,0,m_showL?10:0.5);
+	m_graphCtrl.SetYAxisProps(m_abY?" cd m-2":m_showL?"":"%", m_showL?1:0.1, 0, 20);
+    m_graphCtrl.SetScale(0,10,0,m_abY?1:m_showL?10:0.5);
 
 	Msg.LoadString ( IDS_GAMMA );
 	m_luminanceLogGraphID = m_logGraphCtrl.AddGraph(RGB(255,255,0),(LPSTR)(LPCSTR)Msg);
@@ -160,13 +162,13 @@ void CNearBlackGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			pDoc->ComputeGammaAndOffset(&GammaOpt, &GammaOffset, 1,1,g_size,false);
     		CColor White = pDoc -> GetMeasure () -> GetGray ( g_size - 1 );
 	    	CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
-			double x = ArrayIndexToGrayLevel ( i*(GetConfig()->m_GammaOffsetType==5?2:1), 101, GetConfig () -> m_bUseRoundDown); 
+			double x = ArrayIndexToGrayLevel ( i*(GetConfig()->m_GammaOffsetType==5?2:1), 101, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit); 
 			double valx,val;//=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef) );
 			int mode = GetConfig()->m_GammaOffsetType;
 			if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 			if ( mode >= 4 ) 
 			{
-			    valx = (GrayLevelToGrayProp( x, GetConfig () -> m_bUseRoundDown));
+			    valx = (GrayLevelToGrayProp( x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit));
 				if  (mode == 5)
 	                val = getL_EOTF( valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) * 100 / White.GetY();
 				else
@@ -174,20 +176,23 @@ void CNearBlackGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			}
 			else
 			{
-                valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+GammaOffset)/(1.0+GammaOffset);
+                valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit)+GammaOffset)/(1.0+GammaOffset);
                 val=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 				if (mode == 1) //black compensation target
 					val = (Black.GetY() + ( val * ( White.GetY() - Black.GetY() ) )) / White.GetY();
 			}
 
 			//Reference plots
-			if (!m_showL)
+			if (!m_showL && !m_abY)
 				if (mode == 5)
 					m_graphCtrl.AddPoint(m_refGraphID, x, 100.0*val, NULL, White.GetY() * 105.95640);
 				else
 					m_graphCtrl.AddPoint(m_refGraphID, x, 100.0*val, NULL, White.GetY());
             else
-                m_graphCtrl.AddPoint(m_refGraphID, x, Y_to_L(val));
+				if (m_showL)
+	                m_graphCtrl.AddPoint(m_refGraphID, x, Y_to_L(val));
+				else
+	                m_graphCtrl.AddPoint(m_refGraphID, x, Y_to_abY(val,White.GetY()));
 
 			if((val > 0) && (i != 0))	// log scale is not valid for first value
 				m_logGraphCtrl.AddPoint(m_refLogGraphID, valx * 100. , log(val)/log(valx), NULL, NULL);
@@ -379,20 +384,24 @@ void CNearBlackGrapher::AddPointtoLumGraph(int ColorSpace,int ColorIndex,int Siz
 	
 	if((whitelvl > 0)&&(PointIndex != 0))	// log scale is not valid for first value
 	{
-		m_logGraphCtrl.AddPoint(LogGraphID, GrayLevelToGrayProp( (double)PointIndex*(GetConfig()->m_GammaOffsetType==5?2:1), GetConfig () -> m_bUseRoundDown) * 100., log(colorlevel/whitelvl)/log(GrayLevelToGrayProp( (double)PointIndex, GetConfig () -> m_bUseRoundDown)), lpMsg, NULL);
+		m_logGraphCtrl.AddPoint(LogGraphID, GrayLevelToGrayProp( (double)PointIndex*(GetConfig()->m_GammaOffsetType==5?2:1), GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit) * 100., log(colorlevel/whitelvl)/log(GrayLevelToGrayProp( (double)PointIndex, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit)), lpMsg, NULL);
 	}
 
-    if (!m_showL)
+    if (!m_showL && !m_abY)
 	{
 		max = whitelvl;
 		if (ColorSpace == 1 && ColorIndex == 1)
-	        m_graphCtrl.AddPoint(GraphID, GrayLevelToGrayProp( (double)PointIndex*(GetConfig()->m_GammaOffsetType==5?2:1), GetConfig () -> m_bUseRoundDown) * 100., (colorlevel/max)*100.0, lpMsg, whitelvl);
+	        m_graphCtrl.AddPoint(GraphID, GrayLevelToGrayProp( (double)PointIndex*(GetConfig()->m_GammaOffsetType==5?2:1), GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit) * 100., (colorlevel/max)*100.0, lpMsg, whitelvl);
 		else
-	        m_graphCtrl.AddPoint(GraphID, GrayLevelToGrayProp( (double)PointIndex*(GetConfig()->m_GammaOffsetType==5?2:1), GetConfig () -> m_bUseRoundDown) * 100., (colorlevel/max)*100.0, lpMsg, NULL);
+	        m_graphCtrl.AddPoint(GraphID, GrayLevelToGrayProp( (double)PointIndex*(GetConfig()->m_GammaOffsetType==5?2:1), GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit) * 100., (colorlevel/max)*100.0, lpMsg, NULL);
 	}
 	else 
 	{
-        m_graphCtrl.AddPoint(GraphID, GrayLevelToGrayProp( (double)PointIndex*(GetConfig()->m_GammaOffsetType==5?2:1), GetConfig () -> m_bUseRoundDown) * 100., Y_to_L(whitelvl?colorlevel/whitelvl:colorlevel/max), lpMsg, NULL);
+		if (m_showL)
+	        m_graphCtrl.AddPoint(GraphID, GrayLevelToGrayProp( (double)PointIndex*(GetConfig()->m_GammaOffsetType==5?2:1), GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit) * 100., Y_to_L(whitelvl?colorlevel/whitelvl:colorlevel/max), lpMsg, NULL);
+		else
+	        m_graphCtrl.AddPoint(GraphID, GrayLevelToGrayProp( (double)PointIndex*(GetConfig()->m_GammaOffsetType==5?2:1), GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit) * 100., Y_to_abY(colorlevel, 1.0), lpMsg, NULL);
+
 	}
 }
 
@@ -426,6 +435,7 @@ BEGIN_MESSAGE_MAP(CNearBlackHistoView, CSavingView)
 	ON_COMMAND(IDM_LUM_GRAPH_DATAREF, OnLumGraphShowDataRef)	//Ki
 	ON_COMMAND(IDM_LUM_GRAPH_YLUM, OnLumGraphYLum)
 	ON_COMMAND(IDM_LUM_GRAPH_L, OnLumGraphL)
+	ON_COMMAND(IDM_LUM_GRAPH_Yab, OnLumGraphYab)
 	ON_COMMAND(IDM_GRAPH_SETTINGS, OnGraphSettings)
 	ON_COMMAND(IDM_GRAPH_Y_SHIFT_BOTTOM, OnGraphYShiftBottom)
 	ON_COMMAND(IDM_GRAPH_Y_SHIFT_TOP, OnGraphYShiftTop)
@@ -492,7 +502,8 @@ DWORD CNearBlackHistoView::GetUserInfo ()
 		  + ( ( m_Grapher.m_showGreenLum	& 0x0001 )	<< 4 )
 		  + ( ( m_Grapher.m_showBlueLum		& 0x0001 )	<< 5 )
 		  + ( ( m_Grapher.m_showDataRef		& 0x0001 )	<< 6 )
-		  + ( ( m_Grapher.m_showL		& 0x0001 )	<< 7 );
+		  + ( ( m_Grapher.m_showL			& 0x0001 )	<< 7 )
+		  + ( ( m_Grapher.m_abY				& 0x0001 )	<< 8 );
 }
 
 void CNearBlackHistoView::SetUserInfo ( DWORD dwUserInfo )
@@ -504,7 +515,8 @@ void CNearBlackHistoView::SetUserInfo ( DWORD dwUserInfo )
 	m_Grapher.m_showGreenLum	= ( dwUserInfo >> 4 ) & 0x0001;
 	m_Grapher.m_showBlueLum		= ( dwUserInfo >> 5 ) & 0x0001;
 	m_Grapher.m_showDataRef		= ( dwUserInfo >> 6 ) & 0x0001;
-	m_Grapher.m_showL		= ( dwUserInfo >> 7 ) & 0x0001;
+	m_Grapher.m_showL			= ( dwUserInfo >> 7 ) & 0x0001;
+	m_Grapher.m_abY				= ( dwUserInfo >> 7 ) & 0x0001;
 }
 
 void CNearBlackHistoView::OnSize(UINT nType, int cx, int cy) 
@@ -539,6 +551,7 @@ void CNearBlackHistoView::OnContextMenu(CWnd* pWnd, CPoint point)
     pPopup->CheckMenuItem(IDM_LUM_GRAPH_SHOWREF, m_Grapher.m_showReference ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
  	pPopup->CheckMenuItem(IDM_LUM_GRAPH_DATAREF, m_Grapher.m_showDataRef ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND); //Ki
  	pPopup->CheckMenuItem(IDM_LUM_GRAPH_L, m_Grapher.m_showL ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
+ 	pPopup->CheckMenuItem(IDM_LUM_GRAPH_Yab, m_Grapher.m_abY ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
  	pPopup->CheckMenuItem(IDM_LUM_GRAPH_LOGMODE, m_Grapher.m_doLogMode ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
 	pPopup->CheckMenuItem(IDM_LUM_GRAPH_YLUM, m_Grapher.m_showYLum ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
     pPopup->CheckMenuItem(IDM_LUM_GRAPH_REDLUM, m_Grapher.m_showRedLum ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
@@ -591,10 +604,25 @@ void CNearBlackHistoView::OnLumGraphYLum()
 void CNearBlackHistoView::OnLumGraphL() 
 {
 	m_Grapher.m_showL = !m_Grapher.m_showL;
+	if (m_Grapher.m_abY)
+		m_Grapher.m_abY = !m_Grapher.m_showL;
 	m_Grapher.m_graphCtrl.SetYAxisProps(m_Grapher.m_showL?"":"%", m_Grapher.m_showL?1:0.1, 0, m_Grapher.m_showL?10:1);
-	m_Grapher.m_graphCtrl.FitYScale(1, m_Grapher.m_showL?1:0.1);
 	GetConfig()->WriteProfileInt("Near Black Histo","Show L",m_Grapher.m_showL);
+	GetConfig()->WriteProfileInt("Near Black Histo","Absolute Y",m_Grapher.m_abY);
 	OnUpdate(NULL,NULL,NULL);
+	OnGraphYScaleFit();
+}
+
+void CNearBlackHistoView::OnLumGraphYab() 
+{
+	m_Grapher.m_abY = !m_Grapher.m_abY;
+	if (m_Grapher.m_showL)
+		m_Grapher.m_showL = !m_Grapher.m_abY;
+	GetConfig()->WriteProfileInt("Near Black Histo","Absolute Y",m_Grapher.m_abY);
+	GetConfig()->WriteProfileInt("Near Black Histo","Show L",m_Grapher.m_showL);
+	m_Grapher.m_graphCtrl.SetYAxisProps(m_Grapher.m_abY?" cd m-2 ":m_Grapher.m_abY?"":"%", .1, 0, 10);
+	OnUpdate(NULL,NULL,NULL);
+	OnGraphYScaleFit();
 }
 
 void CNearBlackHistoView::OnLumGraphRedLum() 
