@@ -1498,19 +1498,19 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
             // Determine Reference Y luminance for Delta E calculus
             if ( GetConfig ()->m_dE_gray > 0 || GetConfig ()->m_dE_form == 5 )
             {
-				double x = ArrayIndexToGrayLevel ( i, nSize, GetConfig () -> m_bUseRoundDown );
+				double x = ArrayIndexToGrayLevel ( i, nSize, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
     			CColor White = pDoc -> GetMeasure () -> GetGray ( nSize - 1 );
 	    		CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
 				int mode = GetConfig()->m_GammaOffsetType;
 				if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 				if (  (mode >= 4) )
 			    {
-				   double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown);
+				   double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
                    valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 			    }
 			    else
 			    {
-				   double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+Offset)/(1.0+Offset);
+				   double valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit)+Offset)/(1.0+Offset);
 				   valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 					if (mode == 1) //black compensation target
 						valy = (Black.GetY() + ( valy * ( YWhite - Black.GetY() ) )) / YWhite;

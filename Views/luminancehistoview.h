@@ -68,7 +68,8 @@ public:
 	BOOL m_showGreenLum;
 	BOOL m_showBlueLum;
 	BOOL m_showDataRef;	//Ki
-    BOOL m_showL;
+    BOOL m_showL, m_abY;
+
 
 // Operations
 	void UpdateGraph ( CDataSetDoc * pDoc );
@@ -130,6 +131,7 @@ protected:
 	afx_msg void OnLumGraphShowDataRef();	//Ki
 	afx_msg void OnLumGraphYLum();
 	afx_msg void OnLumGraphL();
+	afx_msg void OnLumGraphYab();
 	afx_msg void OnGraphSettings();
 	afx_msg void OnGraphXScaleFit();
 	afx_msg void OnGraphXZoomIn();

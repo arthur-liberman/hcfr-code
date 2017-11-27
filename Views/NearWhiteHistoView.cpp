@@ -151,7 +151,7 @@ void CNearWhiteGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			pDoc->ComputeGammaAndOffset(&GammaOpt, &GammaOffset, 1,1,g_size,false);
     		CColor White = pDoc -> GetMeasure () -> GetGray ( g_size - 1 );
 	    	CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
-			double x = ArrayIndexToGrayLevel ( 101 - size + i, 101, GetConfig () -> m_bUseRoundDown);
+			double x = ArrayIndexToGrayLevel ( 101 - size + i, 101, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
 
 			double valx,val;//=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef) );
 
@@ -159,7 +159,7 @@ void CNearWhiteGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 			if ( mode >= 4 )
 			{
-			    valx = (GrayLevelToGrayProp( x, GetConfig () -> m_bUseRoundDown));
+			    valx = (GrayLevelToGrayProp( x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit));
 				if  (mode == 5)
 				{
 	                val = getL_EOTF( valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) * 100 / White.GetY();
@@ -170,7 +170,7 @@ void CNearWhiteGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			}
 			else
 			{
-                valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown)+GammaOffset)/(1.0+GammaOffset);
+                valx=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit)+GammaOffset)/(1.0+GammaOffset);
                 val=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 				if (mode == 1) //black compensation target
 					val = (Black.GetY() + ( val * ( White.GetY() - Black.GetY() ) )) / White.GetY();
@@ -328,18 +328,18 @@ void CNearWhiteGrapher::AddPointtoLumGraph(int ColorSpace,int ColorIndex,int Siz
 	
     if(PointIndex != (Size-1))	// log scale is not valid for last value
 	{
-		m_logGraphCtrl.AddPoint(LogGraphID, GrayLevelToGrayProp( (double)(PointIndex+101-Size), GetConfig () -> m_bUseRoundDown) * 100., log(colorlevel/max)/log(GrayLevelToGrayProp( (double)(PointIndex+101-Size), GetConfig () -> m_bUseRoundDown)), lpMsg);
+		m_logGraphCtrl.AddPoint(LogGraphID, GrayLevelToGrayProp( (double)(PointIndex+101-Size), GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit) * 100., log(colorlevel/max)/log(GrayLevelToGrayProp( (double)(PointIndex+101-Size), GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit)), lpMsg);
 	}
 
     if (!m_showL)
 	{
 		if (ColorSpace == 1 && ColorIndex == 1)
-	    	m_graphCtrl.AddPoint(GraphID, GrayLevelToGrayProp( (double)(PointIndex+101-Size), GetConfig () -> m_bUseRoundDown) * 100., (colorlevel/max)*100.0, lpMsg, whitelvl);
+	    	m_graphCtrl.AddPoint(GraphID, GrayLevelToGrayProp( (double)(PointIndex+101-Size), GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit) * 100., (colorlevel/max)*100.0, lpMsg, whitelvl);
 		else
-	    	m_graphCtrl.AddPoint(GraphID, GrayLevelToGrayProp( (double)(PointIndex+101-Size), GetConfig () -> m_bUseRoundDown) * 100., (colorlevel/max)*100.0, lpMsg);
+	    	m_graphCtrl.AddPoint(GraphID, GrayLevelToGrayProp( (double)(PointIndex+101-Size), GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit) * 100., (colorlevel/max)*100.0, lpMsg);
 	}
     else
-    	m_graphCtrl.AddPoint(GraphID, GrayLevelToGrayProp( (double)(PointIndex+101-Size), GetConfig () -> m_bUseRoundDown) * 100., Y_to_L(colorlevel/max), lpMsg);
+    	m_graphCtrl.AddPoint(GraphID, GrayLevelToGrayProp( (double)(PointIndex+101-Size), GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit) * 100., Y_to_L(colorlevel/max), lpMsg);
 
 }
 

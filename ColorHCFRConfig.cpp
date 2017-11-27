@@ -256,6 +256,7 @@ void CColorHCFRConfig::InitDefaults()
 	m_bABL=FALSE;
 	m_bDisableHighDPI=FALSE;
 	m_bUseRoundDown=FALSE;
+	m_bUse10bit = FALSE;
 	m_BWColorsToAdd=1;
 	m_GammaRef=2.2;
 	m_GammaAvg=2.2;
@@ -345,6 +346,7 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_bABL=GetProfileInt("References","ABL Inhibitor",0);
 	m_bDisableHighDPI=GetProfileInt("References","High DPI",0);
 	m_bUseRoundDown=GetProfileInt("References","SatUseMeasuredRef",0);
+	m_bUse10bit=GetProfileInt("References","Use10bit",0);
 	m_GammaRef=GetProfileDouble("References","GammaRefValue",2.2);
 	m_GammaAvg=GetProfileDouble("References","GammaAvgValue",2.2);
 	m_GammaRel=GetProfileDouble("References","GammaRelValue",0.0);
@@ -431,6 +433,7 @@ void CColorHCFRConfig::SaveSettings()
 	WriteProfileInt("References","ABL Inhibitor",m_bABL);
 	WriteProfileInt("References","High DPI",m_bDisableHighDPI);
 	WriteProfileInt("References","SatUseMeasuredRef",m_bUseRoundDown);
+	WriteProfileInt("References","Use10bit",m_bUse10bit);
 	WriteProfileDouble("References","GammaRefValue",m_GammaRef);
 	WriteProfileDouble("References","GammaAvgValue",m_GammaAvg);
 	WriteProfileDouble("References","GammaRelValue",m_GammaRel);
@@ -491,6 +494,7 @@ void CColorHCFRConfig::SetPropertiesSheetValues()
 	m_generalPropertiesPage.m_latencyTime=m_latencyTime;
 	m_generalPropertiesPage.m_bLatencyBeep=m_bLatencyBeep;
 	m_generalPropertiesPage.m_bUseRoundDown=m_bUseRoundDown;
+	m_generalPropertiesPage.m_bUse10bit=m_bUse10bit;
 	m_generalPropertiesPage.m_isModified=FALSE;
 
 	m_referencesPropertiesPage.m_colorStandard=m_colorStandard;
@@ -600,6 +604,7 @@ BOOL CColorHCFRConfig::GetPropertiesSheetValues()
 	m_bABL=m_generalPropertiesPage.m_bABL;
 	m_bDisableHighDPI=m_generalPropertiesPage.m_bDisableHighDPI;
 	m_bUseRoundDown=m_generalPropertiesPage.m_bUseRoundDown;
+	m_bUse10bit=m_generalPropertiesPage.m_bUse10bit;
 
 	m_colorStandard=(ColorStandard)(m_referencesPropertiesPage.m_colorStandard);
 	m_CCMode=(CCPatterns)(m_referencesPropertiesPage.m_CCMode);

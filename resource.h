@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by ColorHCFR.rc
+// Used by CHCFR21_FRANCAIS.rc
 //
 #define IDS_STRING_VERSION              1
 #define IDS_STRING_VERSION_WEB          2
@@ -717,6 +717,8 @@
 #define IDC_EDIT_BLACK_2                1261
 #define IDC_CHECK_USE_ROUNDDOWN         1261
 #define IDC_EDIT_BLACK_3                1262
+#define IDC_CHECK_USE_ROUNDDOWN2        1262
+#define IDC_CHECK_USE_10bit             1262
 #define IDC_MEASURE_BLACK               1263
 #define IDC_FLASH_EEPROM_FILE           1264
 #define IDC_ARGYLLSENSOR_MODE_COMBO     1265
@@ -1104,6 +1106,8 @@
 #define ID_USERDEFINED_USER4            33098
 #define ID_USERDEFINED_USER5            33099
 #define ID_USERDEFINED_USER6            33100
+#define ID_Menu33101                    33101
+#define IDM_LUM_GRAPH_Yab               33102
 #define IDS_LUMINANCEHISTOVIEW_NAME     41446
 #define IDS_COLORTEMPHISTOVIEW_NAME     41447
 #define IDS_RGBHISTOVIEW_NAME           41448
@@ -1643,7 +1647,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        382
-#define _APS_NEXT_COMMAND_VALUE         33101
+#define _APS_NEXT_COMMAND_VALUE         33103
 #define _APS_NEXT_CONTROL_VALUE         1288
 #define _APS_NEXT_SYMED_VALUE           143
 #endif

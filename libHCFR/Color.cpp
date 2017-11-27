@@ -570,7 +570,7 @@ EOTF DV_400_EOTF[220] = {
 {	1	,	400.015	}
 };
 
-double m_HDRRefLevel = 1.0 / 94.37844 * 10000.; // 50% input luminance
+double m_HDRRefLevel = 1.0 / 94.37844 * 10000.; // 50.23% 8-bit level 126 (504) input luminance
 
 int XYZtoCorColorTemp(double *xyz, double *temp)
 {
@@ -1123,6 +1123,7 @@ int ColorXYZ::GetColorTemp(const CColorReference& colorReference) const
             return 12001;
         }
     }
+
 }
 
 double ColorXYZ::GetDeltaLCH(double YWhite, const ColorXYZ& refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form, bool isGS, int gw_Weight, double &dChrom, double &dHue ) const
@@ -1132,6 +1133,8 @@ double ColorXYZ::GetDeltaLCH(double YWhite, const ColorXYZ& refColor, double YWh
 	if (YWhite <= 0) YWhite = 120.;
 	if (YWhiteRef <= 0) YWhiteRef = 1.0;
     //gray world weighted white reference
+	try
+	{
     switch (gw_Weight)
     {
     case 1:
@@ -1316,6 +1319,11 @@ double ColorXYZ::GetDeltaLCH(double YWhite, const ColorXYZ& refColor, double YWh
 		break;
 		}
 	}
+	}
+	catch(...)
+    {
+        std::cerr << "Unexpected Exception in color calcs" << std::endl;
+    }
 	return dLight;
 }
 
@@ -1342,6 +1350,8 @@ double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhit
     }
 	if (!(colorReference.m_standard == HDTVb || colorReference.m_standard == CC6 || colorReference.m_standard == HDTVa))
 		cRef=colorReference;
+	try
+	{
 	switch (dE_form)
 	{
 		case 0:
@@ -1491,6 +1501,11 @@ double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhit
 		break;
 		}
 	}
+}
+    catch(...)
+    {
+        std::cerr << "Unexpected Exception in measurement thread" << std::endl;
+    }
 	return dE;
 }
 
@@ -1514,7 +1529,7 @@ double ColorXYZ::GetOldDeltaE(const ColorXYZ& refColor) const
 
 double ColorXYZ::GetDeltaxy(const ColorXYZ& refColor, const CColorReference& colorReference) const
 {
-    ColorxyY xyY(*this);
+	ColorxyY xyY(*this);
     ColorxyY xyYRef(refColor);
     if(!xyYRef.isValid())
     {
@@ -1630,6 +1645,8 @@ ColorLab::ColorLab(const Matrix& matrix) :
 
 ColorLab::ColorLab(const ColorXYZ& XYZ, double YWhiteRef, CColorReference colorReference)
 {
+	try
+	{
     if(XYZ.isValid())
     {
         double scaling = YWhiteRef/colorReference.GetWhite()[1];
@@ -1670,6 +1687,11 @@ ColorLab::ColorLab(const ColorXYZ& XYZ, double YWhiteRef, CColorReference colorR
         (*this)[1] = 500.0*(var_X-var_Y); // CIE-a*
         (*this)[2] = 200.0*(var_Y-var_Z); //CIE-b*
     }
+	}
+    catch(...)
+    {
+        std::cerr << "Unexpected Exception in measurement thread" << std::endl;
+    }
 }
 
 ColorLab::ColorLab(double l, double a, double b) :
@@ -1690,6 +1712,8 @@ ColorLuv::ColorLuv(const Matrix& matrix) :
 
 ColorLuv::ColorLuv(const ColorXYZ& XYZ, double YWhiteRef, CColorReference colorReference)
 {
+	try
+	{
     if(XYZ.isValid())
     {
         ColorxyY white(colorReference.GetWhite());
@@ -1724,6 +1748,11 @@ ColorLuv::ColorLuv(const ColorXYZ& XYZ, double YWhiteRef, CColorReference colorR
         (*this)[1] = 13.0 * (*this)[0] * (u - u_white);
         (*this)[2] = 13.0 * (*this)[0] * (v - v_white);
     }
+	}
+    catch(...)
+    {
+        std::cerr << "Unexpected Exception in measurement thread" << std::endl;
+    }
 }
 
 ColorLuv::ColorLuv(double l, double a, double b) :
@@ -1745,6 +1774,8 @@ ColorLCH::ColorLCH(const Matrix& matrix) :
 
 ColorLCH::ColorLCH(const ColorXYZ& XYZ, double YWhiteRef, CColorReference colorReference)
 {
+	try
+	{
     if(XYZ.isValid())
     {
         ColorLab Lab(XYZ, YWhiteRef, colorReference);
@@ -1761,6 +1792,11 @@ ColorLCH::ColorLCH(const ColorXYZ& XYZ, double YWhiteRef, CColorReference colorR
         (*this)[0] = L;
         (*this)[1] = C;
         (*this)[2] = H;
+    }
+}
+    catch(...)
+    {
+        std::cerr << "Unexpected Exception in measurement thread" << std::endl;
     }
 }
 
@@ -3023,9 +3059,9 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 		{
 
 			//linearize
-			double r = (GenColors[i][0]<=0.0||GenColors[i][0]>=100.0)?min(max(GenColors[i][0],0),100):pow(GenColors[i][0] / 100.,2.22);
-			double g = (GenColors[i][1]<=0.0||GenColors[i][1]>=100.0)?min(max(GenColors[i][1],0),100):pow(GenColors[i][1] / 100.,2.22);
-			double b = (GenColors[i][2]<=0.0||GenColors[i][2]>=100.0)?min(max(GenColors[i][2],0),100):pow(GenColors[i][2] / 100.,2.22);
+			double r = (GenColors[i][0]<=0.0||GenColors[i][0]>100.0)?min(max(GenColors[i][0],0),100):pow(GenColors[i][0] / 100.,2.22);
+			double g = (GenColors[i][1]<=0.0||GenColors[i][1]>100.0)?min(max(GenColors[i][1],0),100):pow(GenColors[i][1] / 100.,2.22);
+			double b = (GenColors[i][2]<=0.0||GenColors[i][2]>100.0)?min(max(GenColors[i][2],0),100):pow(GenColors[i][2] / 100.,2.22);
 
 			//Constant XYZ - levels calculated to generate the same 709 XYZ values
 			if (constant_XYZ)		
@@ -3033,7 +3069,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 				tempColor.SetRGBValue(ColorRGB(r,g,b),CColorReference(HDTV));
 				if (mode == 5)
 				{
-					tempColor.SetX(tempColor.GetX() / m_HDRRefLevel); //50% reference for HDR-10
+					tempColor.SetX(tempColor.GetX() / m_HDRRefLevel); //50.23% 8-bit reference for HDR-10
 					tempColor.SetY(tempColor.GetY() / m_HDRRefLevel);
 					tempColor.SetZ(tempColor.GetZ() / m_HDRRefLevel);
 				}
@@ -3043,9 +3079,9 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 
 			ColorRGB aRGBColor = tempColor.GetRGBValue(colorReference.m_standard==UHDTV3?CColorReference(UHDTV2):colorReference);	
 			
-			r = (aRGBColor[0]<=0.0||aRGBColor[0]>=1.0)?min(max(aRGBColor[0],0),1):getL_EOTF(aRGBColor[0], noDataColor, noDataColor,0.0,0.0,-1*mode);
-			g = (aRGBColor[1]<=0.0||aRGBColor[1]>=1.0)?min(max(aRGBColor[1],0),1):getL_EOTF(aRGBColor[1], noDataColor, noDataColor,0.0,0.0,-1*mode);
-			b = (aRGBColor[2]<=0.0||aRGBColor[2]>=1.0)?min(max(aRGBColor[2],0),1):getL_EOTF(aRGBColor[2], noDataColor, noDataColor,0.0,0.0,-1*mode);
+			r = (aRGBColor[0]<=0.0||aRGBColor[0]>1.0)?min(max(aRGBColor[0],0),1):getL_EOTF(aRGBColor[0], noDataColor, noDataColor,0.0,0.0,-1*mode);
+			g = (aRGBColor[1]<=0.0||aRGBColor[1]>1.0)?min(max(aRGBColor[1],0),1):getL_EOTF(aRGBColor[1], noDataColor, noDataColor,0.0,0.0,-1*mode);
+			b = (aRGBColor[2]<=0.0||aRGBColor[2]>1.0)?min(max(aRGBColor[2],0),1):getL_EOTF(aRGBColor[2], noDataColor, noDataColor,0.0,0.0,-1*mode);
 
 			//re-quantize to 8-bit video %
 			GenColors[i][0] = floor( (r * 219.) + 0.5 ) / 2.19;
@@ -3265,7 +3301,7 @@ Matrix ComputeConversionMatrix(const ColorXYZ measures[3], const ColorXYZ refere
     return transform;
 }
 
-double ArrayIndexToGrayLevel ( int nCol, int nSize, bool m_bUseRoundDown)//, bool m_b16_235)
+double ArrayIndexToGrayLevel ( int nCol, int nSize, bool m_bUseRoundDown, bool m_b10bit)
 {
     // Gray percent: return a value between 0 and 100 corresponding to whole number level based on
 	// normal rounding (GCD disk), round down (AVSHD disk)
@@ -3274,20 +3310,32 @@ double ArrayIndexToGrayLevel ( int nCol, int nSize, bool m_bUseRoundDown)//, boo
 		{
 			return (  floor((double)nCol / (double)(nSize-1) * 219.0) / 219.0 * 100.0 );
 		}
+		else if (m_b10bit)
+		{
+			return (  floor((double)nCol / (double)(nSize-1) * (219.0 * 4) + 0.5) / ( 219.0 * 4) * 100.0 ); //test 10-bit rounding
+		}
 		else
 		{
 			return ( floor((double)nCol / (double)(nSize-1) * 219.0 + 0.5) / 219.0 * 100.0 );
 		}
 }
 
-double GrayLevelToGrayProp ( double Level, bool m_bUseRoundDown)
+double GrayLevelToGrayProp ( double Level, bool m_bUseRoundDown, bool m_b10bit)
 {
     // Gray Level: return a value between 0 and 1 based on percentage level input
     //    normal rounding (GCD disk), round down (AVSHD disk)
 	if (m_bUseRoundDown)
+	{
     	return Level = (floor(Level / 100.0 * 219.0 + 16.0) - 16.0) / 219.0;
+	}
+	else if (m_b10bit)
+	{
+    	return Level = (floor(Level / 100.0 * (219.0 * 4) + (64.5)) - (16.0 * 4.0)) / (219.0 * 4.0);
+	}
 	else
+	{
 		return Level = (floor(Level / 100.0 * 219.0 + 16.5) - 16.0) / 219.0;
+	}
 }
 
 double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double split, int mode)
@@ -3361,6 +3409,8 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 	Lbt = ( a * pow ( (valx + b)<0?0:(valx+b), exp0 ) );
 
 	double value;
+	try
+	{
 	switch (mode)
 	{
 		case 4: //BT.1886
@@ -3441,5 +3491,10 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 			}
 		break;
 	}
+	}
+    catch(...)
+    {
+        std::cerr << "Unexpected Exception in measurement thread" << std::endl;
+    }
 	return outL;
 }

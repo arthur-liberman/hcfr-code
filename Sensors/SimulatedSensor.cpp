@@ -212,10 +212,21 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 		mode = 99;
 	if  (mode == 7 || mode == 8 || mode == 9)
 		mode = 5; //simulate standard PQ curve
-//	quantize to 8bit video
-	double r =  floor( (aRGBValue[0]/100. * 219.) + 0.5 ) / 2.19;
-	double g =  floor( (aRGBValue[1]/100. * 219.) + 0.5 ) / 2.19;
-	double b =  floor( (aRGBValue[2]/100. * 219.) + 0.5 ) / 2.19;
+//	quantize to 8 or 10 bit video
+	double r,g,b;
+	if (GetConfig() -> m_bUse10bit)
+	{
+		r =  floor( (aRGBValue[0]/100. * 219. * 4.) + 0.5 ) / (2.19 * 4.0);
+		g =  floor( (aRGBValue[1]/100. * 219. * 4.) + 0.5 ) / (2.19 * 4.0);
+		b =  floor( (aRGBValue[2]/100. * 219. * 4.) + 0.5 ) / (2.19 * 4.0);
+	}
+	else
+	{
+		r =  floor( (aRGBValue[0]/100. * 219.) + 0.5 ) / 2.19;
+		g =  floor( (aRGBValue[1]/100. * 219.) + 0.5 ) / 2.19;
+		b =  floor( (aRGBValue[2]/100. * 219.) + 0.5 ) / 2.19;
+	}
+		
 
 	gamma=GetConfig()->m_GammaRef;
 

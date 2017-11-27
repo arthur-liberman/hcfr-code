@@ -57,6 +57,9 @@ public:
 	BOOL	m_useHSV;
 	BOOL	m_isSettling;
 	BOOL	m_bUseRoundDown;
+	CEdit	m_bUseRoundDownCtrl;
+	BOOL	m_bUse10bit;
+	CEdit	m_bUse10bitCtrl;
 	BOOL	m_bDisableHighDPI;
 	//}}AFX_DATA
 
