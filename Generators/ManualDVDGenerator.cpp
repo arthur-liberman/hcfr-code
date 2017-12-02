@@ -293,7 +293,32 @@ char*  PatName[96]={
 						"Yellow 90",
 						"Yellow 100"
 						};
-
+						char*  PatNameSKIN[24]={
+							"Pantone#1",
+						"Pantone#2",
+						"Pantone#3",
+						"Pantone#4",
+						"Pantone#5",
+						"Pantone#6",
+						"Pantone#7",
+						"Pantone#8",
+						"Pantone#9",
+						"Pantone#10",
+						"Pantone#11",
+						"Pantone#12",
+						"Pantone#13",
+						"Pantone#14",
+						"Pantone#15",
+						"Pantone#16",
+						"Pantone#17",
+						"Pantone#18",
+						"Pantone#19",
+						"Pantone#20",
+						"Pantone#21",
+						"Pantone#22",
+						"Pantone#23",
+						"Pantone#24",
+						};
 	Title.LoadString ( IDS_INFORMATION );
 
 	str1.LoadString( IDS_DVDMANCHAPSEL );
@@ -492,6 +517,10 @@ char*  PatName[96]={
 			case MT_SAT_CC24_CPS:
 				str3.LoadString ( IDS_CC24SATPERCENT );
                 str2.Format(str3, PatNameCPS[nPatternInfo]);
+                break;
+			case MT_SAT_CC24_SKIN:
+				str3.LoadString ( IDS_CC24SATPERCENT );
+                str2.Format(str3, PatNameSKIN[nPatternInfo]);
                 break;
 			case MT_SAT_CC24_AXIS:
 				str3.LoadString ( IDS_CC24SATPERCENT );

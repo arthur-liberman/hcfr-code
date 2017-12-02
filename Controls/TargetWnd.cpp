@@ -91,7 +91,7 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 						p1 = (double)(minCol-1) / (double)(nSize-1);
 				}
 			    else
-    				p1 =(double)(101+nSize+minCol-1) / (double)(100.);
+    				p1 =(double)(pDoc->GetMeasure()->m_NearWhiteClipCol+nSize+minCol-1) / (double)(100.);
 
 				//fix 255->235 rounding errors that the generator will create
 				x1 =  (int)floor(p1 * 255.0 + 0.5);

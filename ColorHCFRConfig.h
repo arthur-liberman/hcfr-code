@@ -75,10 +75,12 @@ public:
 	int m_BWColorsToAdd;
 	double m_GammaRef;
 	double m_GammaAvg;
+	double m_MasterMinL, m_MasterMaxL, m_TargetMinL, m_TargetMaxL, m_DiffuseL;
 	double m_GammaRel;
 	double m_Split;
 	double m_ManualBlack;
-	BOOL m_userBlack;
+	BOOL m_userBlack, m_bOverRideTargs;
+	BOOL m_useToneMap;
 	BOOL m_useMeasuredGamma;
 	BOOL m_bSave;
 	BOOL m_bSave2;

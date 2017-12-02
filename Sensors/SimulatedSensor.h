@@ -65,6 +65,7 @@ public:
 	double m_gainErrorMax;		
 	BOOL m_doGammaError;
 	double m_gammaErrorMax;
+	BOOL m_bNW;
 
 protected:
 	CSimulatedSensorPropPage m_simulatedSensorPropertiesPage;

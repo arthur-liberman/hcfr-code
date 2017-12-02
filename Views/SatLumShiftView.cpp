@@ -511,9 +511,9 @@ void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, cons
 			qr = floor( (qr * 219.) + 0.5 ) / 219.;		
 			qg = floor( (qg * 219.) + 0.5 ) / 219.;		
 			qb = floor( (qb * 219.) + 0.5 ) / 219.;		
-			r = getL_EOTF(qr, noDataColor, noDataColor, 0, 0, mode) / (mode==5?100.:1.);
-			g = getL_EOTF(qg, noDataColor, noDataColor, 0, 0, mode) / (mode==5?100.:1.);
-			b = getL_EOTF(qb, noDataColor, noDataColor, 0, 0, mode) / (mode==5?100.:1.);
+			r = getL_EOTF(qr, noDataColor, noDataColor, 0, 0, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / (mode==5?100.:1.);
+			g = getL_EOTF(qg, noDataColor, noDataColor, 0, 0, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / (mode==5?100.:1.);
+			b = getL_EOTF(qb, noDataColor, noDataColor, 0, 0, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / (mode==5?100.:1.);
 		}
 		else
 		{

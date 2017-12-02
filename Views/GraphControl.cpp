@@ -225,7 +225,6 @@ void CGraphControl::WriteSettings(LPSTR aConfigStr)
 	GetConfig()->WriteProfileInt(aConfigStr,"Show All Points",m_doShowAllPoints);
 	GetConfig()->WriteProfileInt(aConfigStr,"Show All ToolTips",m_doShowAllToolTips);
 
-/* GGA: Do not save scale data */
 	GetConfig()->WriteProfileDouble(aConfigStr,"Min X",m_minX);
 	GetConfig()->WriteProfileDouble(aConfigStr,"Max X",m_maxX);
 	GetConfig()->WriteProfileDouble(aConfigStr,"Min Grow X",m_minXGrow);
@@ -236,7 +235,7 @@ void CGraphControl::WriteSettings(LPSTR aConfigStr)
 	GetConfig()->WriteProfileDouble(aConfigStr,"Min Grow Y",m_minYGrow);
 	GetConfig()->WriteProfileDouble(aConfigStr,"Max Grow Y",m_maxYGrow);
 	GetConfig()->WriteProfileDouble(aConfigStr,"Axis Step Y",m_yAxisStep);
-//*/
+
 	for(int i=0;i<m_graphArray.GetSize();i++)
 	{
 		CString aStr = CString(aConfigStr) + ": Graph " + m_graphArray[i].m_Title;
@@ -481,6 +480,10 @@ void CGraphControl::FitYScale(BOOL doRound, double roundStep)
 	m_minYGrow=min(minY,m_minYGrow);
 	m_maxYGrow=max(maxY,m_maxYGrow);
 	SetScale(m_minX,m_maxX,minY,maxY);
+	if ((maxY - minY) <= 30)
+		SetYAxisProps(m_pYUnitStr,maxY<0.5?0.05:maxY<1?0.1:maxY<15?1.0:2.0,m_minYGrow,m_maxYGrow);
+	else	
+		SetYAxisProps(m_pYUnitStr,maxY<100?10:maxY<200?20:maxY<500?25:maxY<1000?50:100,m_minYGrow,m_maxYGrow);
 }
 
 int CGraphControl::GetGraphX(double x,CRect rect) 
@@ -722,7 +725,7 @@ void CGraphControl::DrawGraphs(CDC *pDC, CRect rect)
 
 				if (m_graphArray[j].m_pointArray[i].Y > 0.0)
 				{
-					str2.Format("\n%.3f cd/m^2 ", m_graphArray[j].m_pointArray[i].y / 100. * m_graphArray[j].m_pointArray[i].Y);
+					str2.Format("\n%.3f cd/m^2 ", m_graphArray[j].m_pointArray[i].y / 100. *  m_graphArray[j].m_pointArray[i].Y);
 				} else
 					str2.Format("%s","\n");
 				

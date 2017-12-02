@@ -37,6 +37,7 @@ static char THIS_FILE[] = __FILE__;
 
 // Implemented in luminancehistoview.cpp
 double Y_to_L( double val);
+double Y_to_abY ( double val, double Y );
 
 /////////////////////////////////////////////////////////////////////////////
 // CNearWhiteGrapher
@@ -70,8 +71,9 @@ CNearWhiteGrapher::CNearWhiteGrapher()
 	m_blueLumDataRefGraphID = m_graphCtrl.AddGraph(RGB(0,0,255), (LPSTR)(LPCSTR)Msg,1,PS_DOT); //Ki
 	
 	m_showL=GetConfig()->GetProfileInt("Near White Histo","Show L",FALSE);
-	m_graphCtrl.SetXAxisProps((LPSTR)(LPCSTR)GetConfig()->m_PercentGray, 1, 80, 100);
-	m_graphCtrl.SetYAxisProps(m_showL?"":"%", 1, 80, 100);
+	m_abY=GetConfig()->GetProfileInt("Near White Histo","Absolute Y",FALSE);
+	m_graphCtrl.SetXAxisProps((LPSTR)(LPCSTR)GetConfig()->m_PercentGray, 1, 10, 100);
+	m_graphCtrl.SetYAxisProps(m_abY?" cd m-2":m_showL?"":"%", 1, 10, 4000);
     m_graphCtrl.SetScale(90,100,80,100);
 
 	Msg.LoadString ( IDS_GAMMA );
@@ -98,7 +100,7 @@ CNearWhiteGrapher::CNearWhiteGrapher()
 	Msg.LoadString ( IDS_GAMMABLUEDATAREF );
 	m_blueLumDataRefLogGraphID = m_logGraphCtrl.AddGraph(RGB(0,0,255), (LPSTR)(LPCSTR)Msg,1,PS_DOT); //Ki
 
-	m_logGraphCtrl.SetXAxisProps((LPSTR)(LPCSTR)GetConfig()->m_PercentGray, 1, 90, 100);
+	m_logGraphCtrl.SetXAxisProps((LPSTR)(LPCSTR)GetConfig()->m_PercentGray, 1, 10, 100);
 	m_logGraphCtrl.SetYAxisProps("", 0.1, 1, 4);
 	m_logGraphCtrl.SetScale(90,100,1,3);
 	m_logGraphCtrl.ReadSettings("Near White Histo Log");
@@ -106,6 +108,7 @@ CNearWhiteGrapher::CNearWhiteGrapher()
 	m_doLogMode=GetConfig()->GetProfileInt("Near White Histo","Log Mode",FALSE);
 	m_showReference=GetConfig()->GetProfileInt("Near White Histo","Show Reference",TRUE);
 	m_showYLum=GetConfig()->GetProfileInt("Near White Histo","Show Y lum",TRUE);
+	m_showYLum=GetConfig()->GetProfileInt("Near White Histo","Absolute Y",FALSE);
 	m_showRedLum=GetConfig()->GetProfileInt("Near White Histo","Show Red",FALSE);
 	m_showGreenLum=GetConfig()->GetProfileInt("Near White Histo","Show Green",FALSE);
 	m_showBlueLum=GetConfig()->GetProfileInt("Near White Histo","Show Blue",FALSE);
@@ -142,6 +145,7 @@ void CNearWhiteGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 	m_graphCtrl.ClearGraph(m_refGraphID);
 	m_logGraphCtrl.ClearGraph(m_refLogGraphID);
+
 	if (m_showReference && m_refGraphID != -1 && size > 0)
 	{	
 		for (int i=0; i<size; i++)
@@ -151,7 +155,7 @@ void CNearWhiteGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			pDoc->ComputeGammaAndOffset(&GammaOpt, &GammaOffset, 1,1,g_size,false);
     		CColor White = pDoc -> GetMeasure () -> GetGray ( g_size - 1 );
 	    	CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
-			double x = ArrayIndexToGrayLevel ( 101 - size + i, 101, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
+			double x = ArrayIndexToGrayLevel ( pDoc->GetMeasure()->m_NearWhiteClipCol - size + i, 101, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
 
 			double valx,val;//=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef) );
 
@@ -162,8 +166,8 @@ void CNearWhiteGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			    valx = (GrayLevelToGrayProp( x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit));
 				if  (mode == 5)
 				{
-	                val = getL_EOTF( valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) * 100 / White.GetY();
-					val=min(val,1.2);
+	                val = getL_EOTF( valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 100 / White.GetY();
+//					val=min(val,1.2);
 				}
 				else
 					val = getL_EOTF( valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);				
@@ -176,16 +180,17 @@ void CNearWhiteGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 					val = (Black.GetY() + ( val * ( White.GetY() - Black.GetY() ) )) / White.GetY();
 			}
 
+			//Reference plots
+			if (!m_showL && !m_abY)
+				m_graphCtrl.AddPoint(m_refGraphID, x, 100.0*val, NULL, White.GetY());
+            else
+				if (m_showL)
+	                m_graphCtrl.AddPoint(m_refGraphID, x, Y_to_L(val));
+				else
+	                m_graphCtrl.AddPoint(m_refGraphID, x, Y_to_abY(val,White.GetY()));
+
 			if(val > 0 && i != (size-1))	// log scale is not valid for last value
 				 m_logGraphCtrl.AddPoint(m_refLogGraphID, valx * 100, log(val)/log(valx));
-
-            if (!m_showL)
-				if (mode == 5)
-	    			m_graphCtrl.AddPoint(m_refGraphID, x, 100.0*val, NULL, White.GetY() * 105.95640);
-				else
-	    			m_graphCtrl.AddPoint(m_refGraphID, x, 100.0*val, NULL, White.GetY());
-            else
-                m_graphCtrl.AddPoint(m_refGraphID, x, Y_to_L(val));
 
 		}
 	}
@@ -292,9 +297,16 @@ void CNearWhiteGrapher::AddPointtoLumGraph(int ColorSpace,int ColorIndex,int Siz
 	
 	if (ColorSpace == 0) 
 	{
-//		max=pDataSet->GetMeasure()->GetNearWhite(Size-1).GetRGBValue(GetColorReference())[ColorIndex];
-		max=pDataSet->GetMeasure()->GetNearWhite(Size-1).GetLuxOrLumaValue(GetConfig () -> m_nLuminanceCurveMode);
+		max=pDataSet->GetMeasure()->GetNearWhite(Size-1).GetRGBValue(GetColorReference())[ColorIndex];
 		colorlevel=pDataSet->GetMeasure()->GetNearWhite(PointIndex).GetRGBValue(GetColorReference())[ColorIndex];
+
+		if (pDataSet->GetMeasure()->GetOnOffWhite().isValid())
+			whitelvl=pDataSet->GetMeasure()->GetOnOffWhite().GetY();
+		else if (pDataSet->GetMeasure()->GetNearWhite(Size-1).isValid())
+			whitelvl=pDataSet->GetMeasure()->GetNearWhite(Size-1).GetLuxOrLumaValue(GetConfig () -> m_nLuminanceCurveMode);
+		else
+			whitelvl=100.;
+
 	}
 	else if (ColorSpace == 1)
 	{
@@ -326,21 +338,30 @@ void CNearWhiteGrapher::AddPointtoLumGraph(int ColorSpace,int ColorIndex,int Siz
 		lpMsg = szBuf;
 	}
 	
-    if(PointIndex != (Size-1))	// log scale is not valid for last value
+    if(whitelvl>0 && PointIndex != (Size-1))	// log scale is not valid for last value
 	{
-		m_logGraphCtrl.AddPoint(LogGraphID, GrayLevelToGrayProp( (double)(PointIndex+101-Size), GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit) * 100., log(colorlevel/max)/log(GrayLevelToGrayProp( (double)(PointIndex+101-Size), GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit)), lpMsg);
+		m_logGraphCtrl.AddPoint(LogGraphID, GrayLevelToGrayProp( (double)(PointIndex+pDataSet->GetMeasure()->m_NearWhiteClipCol-Size), GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit) * 100., log(colorlevel/max)/log(GrayLevelToGrayProp( (double)(PointIndex+101-Size), GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit)), lpMsg);
 	}
 
-    if (!m_showL)
+	if (whitelvl < 0.1)
+		whitelvl = 0;
+
+	if (!m_showL && !m_abY)
 	{
+		max = whitelvl;
 		if (ColorSpace == 1 && ColorIndex == 1)
-	    	m_graphCtrl.AddPoint(GraphID, GrayLevelToGrayProp( (double)(PointIndex+101-Size), GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit) * 100., (colorlevel/max)*100.0, lpMsg, whitelvl);
+	        m_graphCtrl.AddPoint(GraphID, GrayLevelToGrayProp( (double)(PointIndex+pDataSet->GetMeasure()->m_NearWhiteClipCol-Size), GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit) * 100., (colorlevel/max)*100.0, lpMsg, whitelvl);
 		else
-	    	m_graphCtrl.AddPoint(GraphID, GrayLevelToGrayProp( (double)(PointIndex+101-Size), GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit) * 100., (colorlevel/max)*100.0, lpMsg);
+	        m_graphCtrl.AddPoint(GraphID, GrayLevelToGrayProp( (double)(PointIndex+pDataSet->GetMeasure()->m_NearWhiteClipCol-Size), GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit) * 100., (colorlevel/max)*100.0, lpMsg, NULL);
 	}
-    else
-    	m_graphCtrl.AddPoint(GraphID, GrayLevelToGrayProp( (double)(PointIndex+101-Size), GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit) * 100., Y_to_L(colorlevel/max), lpMsg);
+	else 
+	{
+		if (m_showL)
+	        m_graphCtrl.AddPoint(GraphID, GrayLevelToGrayProp( (double)(PointIndex+pDataSet->GetMeasure()->m_NearWhiteClipCol-Size), GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit) * 100., Y_to_L(whitelvl?colorlevel/whitelvl:colorlevel/max), lpMsg, NULL);
+		else
+	        m_graphCtrl.AddPoint(GraphID, GrayLevelToGrayProp( (double)(PointIndex+pDataSet->GetMeasure()->m_NearWhiteClipCol-Size), GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit) * 100., Y_to_abY(colorlevel, 1.0), lpMsg, NULL);
 
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -373,6 +394,7 @@ BEGIN_MESSAGE_MAP(CNearWhiteHistoView, CSavingView)
 	ON_COMMAND(IDM_LUM_GRAPH_DATAREF, OnLumGraphShowDataRef)	//Ki
 	ON_COMMAND(IDM_LUM_GRAPH_YLUM, OnLumGraphYLum)
 	ON_COMMAND(IDM_LUM_GRAPH_L, OnLumGraphL)
+	ON_COMMAND(IDM_LUM_GRAPH_Yab, OnLumGraphYab)
 	ON_COMMAND(IDM_GRAPH_SETTINGS, OnGraphSettings)
 	ON_COMMAND(IDM_GRAPH_Y_SHIFT_BOTTOM, OnGraphYShiftBottom)
 	ON_COMMAND(IDM_GRAPH_Y_SHIFT_TOP, OnGraphYShiftTop)
@@ -416,8 +438,8 @@ void CNearWhiteHistoView::OnInitialUpdate()
 	m_Grapher.m_graphCtrl.Create(_T("Graph Window"), rect, this, IDC_LUMINANCEHISTO_GRAPH);
 	m_Grapher.m_logGraphCtrl.Create(_T("Graph Window"), rect, this, IDC_LUMINANCEHISTOLOG_GRAPH);
 
-	m_Grapher.m_graphCtrl.SetXScale ( 101 - GetDocument()->GetMeasure()->GetNearWhiteScaleSize(), 100 );
-	m_Grapher.m_logGraphCtrl.SetXScale ( 101 - GetDocument()->GetMeasure()->GetNearWhiteScaleSize(), 100 );
+//	m_Grapher.m_graphCtrl.SetXScale ( GetDocument()->GetMeasure()->m_NearWhiteClipCol - GetDocument()->GetMeasure()->GetNearWhiteScaleSize(), 100);//GetDocument()->GetMeasure()->m_NearWhiteClipCol );
+//	m_Grapher.m_logGraphCtrl.SetXScale ( GetDocument()->GetMeasure()->m_NearWhiteClipCol - GetDocument()->GetMeasure()->GetNearWhiteScaleSize(), 100);// GetDocument()->GetMeasure()->m_NearWhiteClipCol );
 
 	OnUpdate(NULL,NULL,NULL);
 }
@@ -425,10 +447,9 @@ void CNearWhiteHistoView::OnInitialUpdate()
 void CNearWhiteHistoView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
 {
 	// Update this view only when we are concerned
-	if ( lHint == UPD_EVERYTHING || lHint == UPD_NEARWHITE || lHint == UPD_DATAREFDOC || lHint == UPD_REFERENCEDATA || lHint == UPD_ARRAYSIZES || lHint == UPD_GENERALREFERENCES || lHint == UPD_SENSORCONFIG || lHint >= UPD_REALTIME)
+	if ( lHint == UPD_EVERYTHING || lHint == UPD_GRAYSCALEANDCOLORS || lHint == UPD_GRAYSCALE || lHint == UPD_NEARBLACK || lHint == UPD_NEARWHITE || lHint == UPD_DATAREFDOC || lHint == UPD_REFERENCEDATA || lHint == UPD_ARRAYSIZES || lHint == UPD_GENERALREFERENCES || lHint == UPD_SENSORCONFIG || lHint >= UPD_REALTIME)
 	{
 		m_Grapher.UpdateGraph ( GetDocument () );
-
 		Invalidate(TRUE);
 	}
 }
@@ -442,7 +463,8 @@ DWORD CNearWhiteHistoView::GetUserInfo ()
 		  + ( ( m_Grapher.m_showGreenLum	& 0x0001 )	<< 4 )
 		  + ( ( m_Grapher.m_showBlueLum		& 0x0001 )	<< 5 )
 		  + ( ( m_Grapher.m_showDataRef		& 0x0001 )	<< 6 )
-		  + ( ( m_Grapher.m_showL		& 0x0001 )	<< 7 );
+		  + ( ( m_Grapher.m_showL			& 0x0001 )	<< 7 )
+		  + ( ( m_Grapher.m_abY				& 0x0001 )	<< 8 );
 }
 
 void CNearWhiteHistoView::SetUserInfo ( DWORD dwUserInfo )
@@ -454,7 +476,8 @@ void CNearWhiteHistoView::SetUserInfo ( DWORD dwUserInfo )
 	m_Grapher.m_showGreenLum	= ( dwUserInfo >> 4 ) & 0x0001;
 	m_Grapher.m_showBlueLum		= ( dwUserInfo >> 5 ) & 0x0001;
 	m_Grapher.m_showDataRef		= ( dwUserInfo >> 6 ) & 0x0001;
-	m_Grapher.m_showL		= ( dwUserInfo >> 7 ) & 0x0001;
+	m_Grapher.m_showL			= ( dwUserInfo >> 7 ) & 0x0001;
+	m_Grapher.m_abY				= ( dwUserInfo >> 8 ) & 0x0001;
 }
 
 void CNearWhiteHistoView::OnSize(UINT nType, int cx, int cy) 
@@ -491,6 +514,7 @@ void CNearWhiteHistoView::OnContextMenu(CWnd* pWnd, CPoint point)
 	pPopup->CheckMenuItem(IDM_LUM_GRAPH_LOGMODE, m_Grapher.m_doLogMode ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
     pPopup->CheckMenuItem(IDM_LUM_GRAPH_YLUM, m_Grapher.m_showYLum ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
  	pPopup->CheckMenuItem(IDM_LUM_GRAPH_L, m_Grapher.m_showL ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
+ 	pPopup->CheckMenuItem(IDM_LUM_GRAPH_Yab, m_Grapher.m_abY ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
     pPopup->CheckMenuItem(IDM_LUM_GRAPH_REDLUM, m_Grapher.m_showRedLum ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
     pPopup->CheckMenuItem(IDM_LUM_GRAPH_GREENLUM, m_Grapher.m_showGreenLum ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
     pPopup->CheckMenuItem(IDM_LUM_GRAPH_BLUELUM, m_Grapher.m_showBlueLum ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
@@ -541,10 +565,25 @@ void CNearWhiteHistoView::OnLumGraphYLum()
 void CNearWhiteHistoView::OnLumGraphL() 
 {
 	m_Grapher.m_showL = !m_Grapher.m_showL;
-	m_Grapher.m_graphCtrl.SetYAxisProps(m_Grapher.m_showL?"":"%", m_Grapher.m_showL?1:0.1, 0, 20);
+	if (m_Grapher.m_abY)
+		m_Grapher.m_abY = !m_Grapher.m_showL;
+	m_Grapher.m_graphCtrl.SetYAxisProps(m_Grapher.m_showL?"":"%", m_Grapher.m_showL?10:10, 0, 20);
 	GetConfig()->WriteProfileInt("Near White Histo","Show L",m_Grapher.m_showL);
+	GetConfig()->WriteProfileInt("Near White Histo","Absolute Y",m_Grapher.m_abY);
 	OnUpdate(NULL,NULL,NULL);
     OnGraphScaleFit();
+}
+
+void CNearWhiteHistoView::OnLumGraphYab() 
+{
+	m_Grapher.m_abY = !m_Grapher.m_abY;
+	if (m_Grapher.m_showL)
+		m_Grapher.m_showL = !m_Grapher.m_abY;
+	GetConfig()->WriteProfileInt("Near White Histo","Absolute Y",m_Grapher.m_abY);
+	GetConfig()->WriteProfileInt("Near White Histo","Show L",m_Grapher.m_showL);
+	m_Grapher.m_graphCtrl.SetYAxisProps(m_Grapher.m_abY?" cd m-2 ":m_Grapher.m_abY?"":"%", 10, 0, 10);
+	OnUpdate(NULL,NULL,NULL);
+	OnGraphScaleFit();
 }
 
 void CNearWhiteHistoView::OnLumGraphRedLum() 
@@ -656,7 +695,7 @@ void CNearWhiteHistoView::OnGraphScaleFit()
 	}
 	m_Grapher.m_graphCtrl.WriteSettings("Near White Histo");
 	m_Grapher.m_logGraphCtrl.WriteSettings("Near White Histo Log");
-	Invalidate(TRUE);
+	OnUpdate(NULL,NULL,NULL);
 }
 
 void CNearWhiteHistoView::OnLuminanceGraphYScale1() 
@@ -664,7 +703,7 @@ void CNearWhiteHistoView::OnLuminanceGraphYScale1()
 	m_Grapher.m_graphCtrl.SetYScale(80,100);
 	m_Grapher.m_graphCtrl.WriteSettings("Near White Histo");
 	m_Grapher.m_logGraphCtrl.WriteSettings("Near White Histo Log");
-	Invalidate(TRUE);
+	OnUpdate(NULL,NULL,NULL);
 }
 
 void CNearWhiteHistoView::OnGammaGraphYScale1() 
@@ -672,7 +711,7 @@ void CNearWhiteHistoView::OnGammaGraphYScale1()
 	m_Grapher.m_logGraphCtrl.SetYScale(1,3);
 	m_Grapher.m_graphCtrl.WriteSettings("Near White Histo");
 	m_Grapher.m_logGraphCtrl.WriteSettings("Near White Histo Log");
-	Invalidate(TRUE);
+	OnUpdate(NULL,NULL,NULL);
 }
 
 void CNearWhiteHistoView::OnGraphYScaleFit() 
@@ -692,7 +731,8 @@ void CNearWhiteHistoView::OnGraphYShiftBottom()
 		m_Grapher.m_logGraphCtrl.ShiftYScale(0.1);
 	else
 		m_Grapher.m_graphCtrl.ShiftYScale(2);
-	Invalidate(TRUE);
+
+	OnUpdate(NULL,NULL,NULL);
 }
 
 void CNearWhiteHistoView::OnGraphYShiftTop() 
@@ -701,7 +741,8 @@ void CNearWhiteHistoView::OnGraphYShiftTop()
 		m_Grapher.m_logGraphCtrl.ShiftYScale(-0.1);
 	else
 		m_Grapher.m_graphCtrl.ShiftYScale(-2);
-	Invalidate(TRUE);
+
+	OnUpdate(NULL,NULL,NULL);
 }
 
 void CNearWhiteHistoView::OnGraphYZoomIn() 
@@ -710,7 +751,8 @@ void CNearWhiteHistoView::OnGraphYZoomIn()
 		m_Grapher.m_logGraphCtrl.GrowYScale(0.1,-0.1);
 	else
 		m_Grapher.m_graphCtrl.GrowYScale(0,-2);
-	Invalidate(TRUE);
+
+	OnUpdate(NULL,NULL,NULL);
 }
 
 void CNearWhiteHistoView::OnGraphYZoomOut() 
@@ -719,7 +761,8 @@ void CNearWhiteHistoView::OnGraphYZoomOut()
 		m_Grapher.m_logGraphCtrl.GrowYScale(-0.1,0.1);
 	else
 		m_Grapher.m_graphCtrl.GrowYScale(0,2);
-	Invalidate(TRUE);
+
+	OnUpdate(NULL,NULL,NULL);
 }
 
 void CNearWhiteHistoView::OnHelp() 
