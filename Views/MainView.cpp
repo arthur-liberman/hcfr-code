@@ -2251,7 +2251,6 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				}
 
 				CColor white = GetDocument()->GetMeasure()->GetPrimeWhite();
-				double peakWhite = GetDocument()->GetMeasure()->GetOnOffWhite().GetY();
 
 				if (!white.isValid() && isHDR)
 					white = GetDocument()->GetMeasure()->GetGray((GetDocument()->GetMeasure()->GetGrayScaleSize()-1) / 2 );
@@ -2312,7 +2311,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 							str.Format("+%.1f %%", 100.0 * ( d - RefLuma [ nCol2 - 1 ] ) / RefLuma [ nCol2 - 1 ] );
 					}
 					else if (aComponentNum == 8 || aComponentNum == 6)
-						str.Format("%.1f", 100.0 * ( RefLuma [ nCol2 - 1 ] * white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter)/peakWhite ) );
+						str.Format("%.1f",  white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) * ( RefLuma [ nCol2 - 1 ] ) );
 				}
 				else
 					str.Empty();
