@@ -260,9 +260,15 @@ void CColorHCFRConfig::InitDefaults()
 	m_BWColorsToAdd=1;
 	m_GammaRef=2.2;
 	m_GammaAvg=2.2;
+	m_MasterMinL = 0.0;
+	m_MasterMaxL = 400.0;
+	m_TargetMinL = 0.05;
+	m_TargetMaxL = 500.;
+	m_DiffuseL = 94.37844;
     m_GammaRel=0.0;
 	m_Split=100.0; //all input offset
 	m_userBlack = FALSE;
+	m_useToneMap = FALSE;
 	m_ManualBlack = 0.0;
 	m_useMeasuredGamma=FALSE;
 	m_bSave=FALSE;
@@ -315,7 +321,6 @@ void CColorHCFRConfig::InitDefaults()
     gw_Weight = 0;
     doHighlight = TRUE;
 	isHighDPI = FALSE;
-	m_userBlack = FALSE;
 }
 
 BOOL CColorHCFRConfig::LoadSettings()
@@ -349,10 +354,17 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_bUse10bit=GetProfileInt("References","Use10bit",0);
 	m_GammaRef=GetProfileDouble("References","GammaRefValue",2.2);
 	m_GammaAvg=GetProfileDouble("References","GammaAvgValue",2.2);
+	m_MasterMinL=GetProfileDouble("References","MasterMinLValue",0.0);
+	m_MasterMaxL=GetProfileDouble("References","MasterMaxLValue",4000.0);
+	m_TargetMinL=GetProfileDouble("References","TargetMinLValue",0.05);
+	m_TargetMaxL=GetProfileDouble("References","TargetMaxLValue",500.0);
+	m_DiffuseL=GetProfileDouble("References","DiffuseLValue", 94.37844);
 	m_GammaRel=GetProfileDouble("References","GammaRelValue",0.0);
 	m_Split=GetProfileDouble("References","GammaSplitValue",100.0);
 	m_ManualBlack=GetProfileDouble("References","Manual Black Level",0.0);
 	m_userBlack=GetProfileInt("References","Use Black Level",0);
+	m_bOverRideTargs=GetProfileInt("References","Override Targets",0);
+	m_useToneMap=GetProfileInt("References","Use Tone Map",0);
 	m_useMeasuredGamma=GetProfileInt("References","UseMeasuredGamma",0);
 	m_GammaOffsetType=GetProfileInt("References","GammaOffsetType",4);
 	m_manualGOffset=GetProfileDouble("References","ManualGamOffset",0.099);
@@ -438,8 +450,15 @@ void CColorHCFRConfig::SaveSettings()
 	WriteProfileDouble("References","GammaAvgValue",m_GammaAvg);
 	WriteProfileDouble("References","GammaRelValue",m_GammaRel);
 	WriteProfileDouble("References","GammaSplitValue",m_Split);
+	WriteProfileDouble("References","MasterMinLValue",m_MasterMinL);
+	WriteProfileDouble("References","MasterMaxLValue",m_MasterMaxL);
+	WriteProfileDouble("References","TargetMinLValue",m_TargetMinL);
+	WriteProfileDouble("References","TargetMaxLValue",m_TargetMaxL);
+	WriteProfileDouble("References","DiffuseLValue",m_DiffuseL);
 	WriteProfileDouble("References","Manual Black Level",m_ManualBlack);
 	WriteProfileInt("References","Use Black Level",m_userBlack);
+	WriteProfileInt("References","Override Targets",m_bOverRideTargs);
+	WriteProfileInt("References","Use Tone Map",m_useToneMap);
 	WriteProfileInt("References","UseMeasuredGamma",m_useMeasuredGamma);
 	WriteProfileInt("Appearance","DrawMode",m_menuDrawMode);
 	WriteProfileInt("Appearance","DrawMemuBorder",m_drawMenuBorder);
@@ -503,8 +522,15 @@ void CColorHCFRConfig::SetPropertiesSheetValues()
   	m_referencesPropertiesPage.m_GammaRef=m_GammaRef;
   	m_referencesPropertiesPage.m_GammaAvg=m_GammaAvg;
   	m_referencesPropertiesPage.m_GammaRel=m_GammaRel;
+  	m_referencesPropertiesPage.m_MasterMinL=m_MasterMinL;
+  	m_referencesPropertiesPage.m_MasterMaxL=m_MasterMaxL;
+  	m_referencesPropertiesPage.m_TargetMinL=m_TargetMinL;
+  	m_referencesPropertiesPage.m_TargetMaxL=m_TargetMaxL;
+  	m_referencesPropertiesPage.m_DiffuseL=m_DiffuseL;
   	m_referencesPropertiesPage.m_Split=m_Split;
 	m_referencesPropertiesPage.m_userBlack=m_userBlack;
+	m_referencesPropertiesPage.m_bOverRideTargs=m_bOverRideTargs;
+	m_referencesPropertiesPage.m_useToneMap=m_useToneMap;
 	m_referencesPropertiesPage.m_ManualBlack=m_ManualBlack;
   	m_referencesPropertiesPage.m_useMeasuredGamma=m_useMeasuredGamma;
 	m_referencesPropertiesPage.m_manualGOffset=m_manualGOffset;
@@ -612,8 +638,15 @@ BOOL CColorHCFRConfig::GetPropertiesSheetValues()
 	m_GammaRef=m_referencesPropertiesPage.m_GammaRef;
 	m_GammaAvg=m_referencesPropertiesPage.m_GammaAvg;
 	m_GammaRel=m_referencesPropertiesPage.m_GammaRel;
+	m_MasterMinL=m_referencesPropertiesPage.m_MasterMinL;
+	m_MasterMaxL=m_referencesPropertiesPage.m_MasterMaxL;
+	m_TargetMinL=m_referencesPropertiesPage.m_TargetMinL;
+	m_TargetMaxL=m_referencesPropertiesPage.m_TargetMaxL;
+	m_DiffuseL=m_referencesPropertiesPage.m_DiffuseL;
 	m_Split=m_referencesPropertiesPage.m_Split;
 	m_userBlack=m_referencesPropertiesPage.m_userBlack;
+	m_bOverRideTargs=m_referencesPropertiesPage.m_bOverRideTargs;
+	m_useToneMap=m_referencesPropertiesPage.m_useToneMap;
 	m_ManualBlack=m_referencesPropertiesPage.m_ManualBlack;
 	m_useMeasuredGamma=m_referencesPropertiesPage.m_useMeasuredGamma;
 	m_bSave=m_referencesPropertiesPage.m_bSave;
@@ -932,6 +965,9 @@ void CColorHCFRConfig::GetCColors()
 				case RANDOM500:
 		        fName=strcat(appPath, "\\color\\Random_500.csv");
 				break;
+				case MASCIOR50:
+		        fName=strcat(appPath, "\\color\\Mascior50_50_BT2020_HDR.csv");
+				break;
 			}
 			ifstream colorFile(fName);
             std::string line;
@@ -988,7 +1024,7 @@ std::string CColorHCFRConfig::GetCColorsN(int index)
 int CColorHCFRConfig::GetCColorsSize() 
 {
     int cnt = 24;
-	BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR);
+	BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR || GetConfig()->m_CCMode == MASCIOR50);
     if (isExtPat)
 		cnt = numCC;
 		else if (GetConfig()->m_CCMode == CCSG) 

@@ -408,6 +408,8 @@ BOOL CGDIGenerator::Init(UINT nbMeasure, bool isSpecial)
 	m_displayWindow.SetRGBScale(m_b16_235);
 	m_displayWindow.MoveToMonitor(m_hMonitor[m_activeMonitorNum]);
 
+	try
+	{
 	if (!m_HdrInterface)
 	{
 		OutputDebugString("Create HdrInterface");
@@ -452,6 +454,12 @@ BOOL CGDIGenerator::Init(UINT nbMeasure, bool isSpecial)
 	}
 	else
 		OutputDebugString("HdrInterface doesn't exist");
+
+	}
+    catch(...)
+    {
+        std::cerr << "Unexpected Exception in measurement thread" << std::endl;
+    }
 
 //	if (m_nDisplayMode == DISPLAY_GDI_Hide)
 //	{

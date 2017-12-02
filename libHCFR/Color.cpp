@@ -2660,7 +2660,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 	        }
 			else
 			{
-            while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
+            while(std::getline(colorFile, line) && cnt < 100 ) //currently limited to 1000 colors
             {
                 std::istringstream s(line);
                 std::string field;
@@ -2691,7 +2691,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 	        }
 			else
 			{
-            while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
+            while(std::getline(colorFile, line) && cnt < 100 ) //currently limited to 1000 colors
             {
                 std::istringstream s(line);
                 std::string field;
@@ -2722,7 +2722,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 	        }
 			else
 			{
-            while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
+            while(std::getline(colorFile, line) && cnt < 100 ) //currently limited to 1000 colors
             {
                 std::istringstream s(line);
                 std::string field;
@@ -2753,7 +2753,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 	        }
 			else
 			{
-            while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
+            while(std::getline(colorFile, line) && cnt < 100 ) //currently limited to 1000 colors
             {
                 std::istringstream s(line);
                 std::string field;
@@ -2784,7 +2784,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 	        }
 			else
 			{
-            while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
+            while(std::getline(colorFile, line) && cnt < 100 ) //currently limited to 1000 colors
             {
                 std::istringstream s(line);
                 std::string field;
@@ -2815,7 +2815,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 	        }
 			else
 			{
-            while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
+            while(std::getline(colorFile, line) && cnt < 100 ) //currently limited to 1000 colors
             {
                 std::istringstream s(line);
                 std::string field;
@@ -2846,7 +2846,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 	        }
 			else
 			{
-            while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
+            while(std::getline(colorFile, line) && cnt < 100 ) //currently limited to 1000 colors
             {
                 std::istringstream s(line);
                 std::string field;
@@ -2877,7 +2877,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 	        }
 			else
 			{
-            while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
+            while(std::getline(colorFile, line) && cnt < 100 ) //currently limited to 1000 colors
             {
                 std::istringstream s(line);
                 std::string field;
@@ -2908,7 +2908,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 	        }
 			else
 			{
-            while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
+            while(std::getline(colorFile, line) && cnt < 100 ) //currently limited to 1000 colors
             {
                 std::istringstream s(line);
                 std::string field;
@@ -2939,7 +2939,39 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 	        }
 			else
 			{
-            while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
+            while(std::getline(colorFile, line) && cnt < 100 ) //currently limited to 1000 colors
+            {
+                std::istringstream s(line);
+                std::string field;
+                s >> n1;
+                getline(s, field,',');
+                s >> n2;
+                getline(s, field,',');
+                s >> n3;
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
+                cnt++;
+            }
+			n_elements= cnt;
+			}
+            break;
+        }
+
+	case MASCIOR50:
+        {//read in user defined colors
+//			constant_XYZ = TRUE;
+//			m_bRecalc = TRUE;
+			strcat(appPath, "\\Mascior50_50_BT2020_HDR.csv");
+            ifstream colorFile(appPath);
+            std::string line;
+            int cnt = 0;
+            int n1,n2,n3;
+            if (!colorFile) 
+            {
+				bOk = false;
+	        }
+			else
+			{
+            while(std::getline(colorFile, line) && cnt < 100 ) //currently limited to 1000 colors
             {
                 std::istringstream s(line);
                 std::string field;
@@ -2970,7 +3002,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 	        }
 			else
 			{
-            while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
+            while(std::getline(colorFile, line) && cnt < 100 ) //currently limited to 1000 colors
             {
                 std::istringstream s(line);
                 std::string field;
@@ -3001,7 +3033,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 	        }
 			else
 			{
-            while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
+            while(std::getline(colorFile, line) && cnt < 250 ) //currently limited to 1000 colors
             {
                 std::istringstream s(line);
                 std::string field;
@@ -3032,7 +3064,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 	        }
 			else
 			{
-            while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
+            while(std::getline(colorFile, line) && cnt < 500 ) //currently limited to 1000 colors
             {
                 std::istringstream s(line);
                 std::string field;
@@ -3206,9 +3238,9 @@ void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDi
 
 		if (mode == 5 || mode == 7)
 		{
-				rgbColor[0] = 100.0 * ( (rgbColor[0]<=0.0||rgbColor[0]>=1.0)?min(max(rgbColor[0],0),1):getL_EOTF(rgbColor[0], noDataColor, noDataColor, 2.4, 0.9, -1*mode) );
-				rgbColor[1] = 100.0 * ( (rgbColor[1]<=0.0||rgbColor[1]>=1.0)?min(max(rgbColor[1],0),1):getL_EOTF(rgbColor[1], noDataColor, noDataColor, 2.4, 0.9, -1*mode) );
-				rgbColor[2] = 100.0 * ( (rgbColor[2]<=0.0||rgbColor[2]>=1.0)?min(max(rgbColor[2],0),1):getL_EOTF(rgbColor[2], noDataColor, noDataColor, 2.4, 0.9, -1*mode) );
+				rgbColor[0] = 100.0 * ( (rgbColor[0]<=0.0||rgbColor[0]>1.0)?min(max(rgbColor[0],0),1):getL_EOTF(rgbColor[0], noDataColor, noDataColor, 2.4, 0.9, -1*mode) );
+				rgbColor[1] = 100.0 * ( (rgbColor[1]<=0.0||rgbColor[1]>1.0)?min(max(rgbColor[1],0),1):getL_EOTF(rgbColor[1], noDataColor, noDataColor, 2.4, 0.9, -1*mode) );
+				rgbColor[2] = 100.0 * ( (rgbColor[2]<=0.0||rgbColor[2]>1.0)?min(max(rgbColor[2],0),1):getL_EOTF(rgbColor[2], noDataColor, noDataColor, 2.4, 0.9, -1*mode) );
 		}
 		else
 		{
@@ -3305,7 +3337,8 @@ double ArrayIndexToGrayLevel ( int nCol, int nSize, bool m_bUseRoundDown, bool m
 {
     // Gray percent: return a value between 0 and 100 corresponding to whole number level based on
 	// normal rounding (GCD disk), round down (AVSHD disk)
-
+	// 10-bit target levels used for HDR/Ryan Mascior's disk
+	
 		if (m_bUseRoundDown)
 		{
 			return (  floor((double)nCol / (double)(nSize-1) * 219.0) / 219.0 * 100.0 );
@@ -3338,9 +3371,9 @@ double GrayLevelToGrayProp ( double Level, bool m_bUseRoundDown, bool m_b10bit)
 	}
 }
 
-double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double split, int mode)
+double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double split, int mode, double m_diffuseL, double m_MinML, double m_MaxML, double m_MinTL, double m_MaxTL, bool ToneMap)
 {
-	if (valx < 0) return 0;
+	if (valx <= 0 && mode > 4) return m_MinTL / 100.;
 	if (valx > 1)
 	{
 		if (mode == 5)
@@ -3348,6 +3381,8 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 		else
 			return 1.;
 	}
+	if (ToneMap && mode == 5)
+		mode = 10;
 //Returns relative output luminance given input luma (stimulus)
 //exception is ST2084 which returns an absolute value
 //BT1886
@@ -3408,32 +3443,67 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 
 	Lbt = ( a * pow ( (valx + b)<0?0:(valx+b), exp0 ) );
 
-	double value;
+	double value, Scale = 10000. * m_diffuseL / 94.37844, E3 = 0.0;
 	try
 	{
 	switch (mode)
 	{
 		case 4: //BT.1886
-		outL = (Lbt + minL * (1 - split / 100.))/(maxL + minL * (1 - split / 100.));
+			outL = (Lbt + minL * (1 - split / 100.))/(maxL + minL * (1 - split / 100.));
 		break;
 		case 5: //BT.2084
-		outL = pow(max(pow(valx,1.0 / m2) - c1,0) / (c2 - c3 * pow(valx, 1.0 / m2)), 1.0 / m1);
-		outL = outL * 10000. / 100.00; 
+			outL = pow(max(pow(valx,1.0 / m2) - c1,0) / (c2 - c3 * pow(valx, 1.0 / m2)), 1.0 / m1);
+			outL = outL * 10000. / 100.00 * m_diffuseL / 94.37844; 
+			outL = min(outL, m_MaxTL / 100.0);
 		break;
 		case -5: //BT.2084 inverse
-		outL = pow( (c1 + c2 * pow(valx,m1)) / (1 + c3 * pow(valx,m1)), m2); 
+			outL = pow( (c1 + c2 * pow(valx,m1)) / (1 + c3 * pow(valx,m1)), m2); 
 		break;
 		case 6: //L*
-		outL = outL_lab;
+			outL = outL_lab;
 		break;
 		case 7: //bbc
-		outL = outL_bbc / exp( s * (1.0 - rho)/eta );
+			outL = outL_bbc / exp( s * (1.0 - rho)/eta );
 		break;
 		case -7: //bbc inverse
-		if (valx <= mu)
+			if (valx <= mu)
 			outL = pow(valx,0.5);// / rho;
 		else
 			outL = (eta * log (valx) + rho);// / rho;
+		break;
+		case 10: //BT.2084/2390
+			double E1,E2,E4,b,d,KS,T;
+			E1 = valx - pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2);
+			d = pow( (c1 + c2 * pow(m_MaxML/Scale,m1)) / (1 + c3 * pow(m_MaxML/Scale,m1)), m2) - pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2);
+			E1 = E1 / d;
+			minL = (pow( (c1 + c2 * pow(m_MinTL/Scale,m1)) / (1 + c3 * pow(m_MinTL/Scale,m1)), m2)-pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2)) / d;
+			maxL = (pow( (c1 + c2 * pow(m_MaxTL/Scale,m1)) / (1 + c3 * pow(m_MaxTL/Scale,m1)), m2)-pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2)) / d;
+			KS = 1.5 * maxL - 0.5;
+			b = minL;
+			E2 = E1;
+
+			if (E1 >= KS && E1 <= 1.0)
+			{
+				T = (E1 - KS) / (1.0 - KS);
+				E2 = (2 * pow(T,3.0) - 3 * pow(T,2.0) + 1.0)*KS + (pow(T,3.0) - 2 * pow(T, 2.0) + T) * (1.0 - KS) + ( -2.0 * pow(T,3.0) + 3.0 * pow(T,2.0)) * maxL ;
+			}
+			
+			if (E2 >= 0.0 && E2 <= 1.0)
+			{
+				E3 = E2 + b * pow((1.0 - E2),4.0);
+				E3 = (E3 * d + pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2)); 
+				E4 = pow(max(pow(E3,1.0 / m2) - c1,0) / (c2 - c3 * pow(E3, 1.0 / m2)), 1.0 / m1);
+				outL = E4 * 10000. / 100.00 * m_diffuseL / 94.37844;
+			}
+			else
+			{
+				outL = pow(max(pow(valx,1.0 / m2) - c1,0) / (c2 - c3 * pow(valx, 1.0 / m2)), 1.0 / m1);
+				outL = outL * 10000. / 100.00 * m_diffuseL / 94.37844; 
+				outL = min(outL, m_MaxTL / 100.0);
+			}
+		break;
+		case -10: //BT.2084/2390 inverse
+			outL = pow( (c1 + c2 * pow(valx,m1)) / (1 + c3 * pow(valx,m1)), m2); 
 		break;
 		case 99: //sRGB
 			outL = outL_sRGB;

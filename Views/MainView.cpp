@@ -98,11 +98,11 @@ static const SCtrlLayout g_CtrlLayout [] = {
 { IDC_SENSOR_GROUP						, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
 { IDC_SENSORNAME_STATIC					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
 { IDC_SENSORNAME_STATIC2					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
-{ IDM_CONFIGURE_SENSOR					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP_OFFSET,			LAYOUT_TOP_OFFSET			},
-{ IDM_CONFIGURE_SENSOR2					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP_OFFSET,			LAYOUT_TOP_OFFSET			},
+{ IDM_CONFIGURE_SENSOR					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
+{ IDM_CONFIGURE_SENSOR2					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
 { IDC_GENERATOR_GROUP					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
 { IDC_GENERATORNAME_STATIC				, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
-{ IDM_CONFIGURE_GENERATOR				, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP_OFFSET,			LAYOUT_TOP_OFFSET			},
+{ IDM_CONFIGURE_GENERATOR				, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
 { IDC_DATAREF_GROUP						, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
 { IDC_DATAREF_CHECK						, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
 { IDC_ADJUSTXYZ_CHECK					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
@@ -987,7 +987,7 @@ void CMainView::InitGrid()
 	}
 	else if ( m_displayMode == 11)
 	{
-		BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR);
+		BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR || GetConfig()->m_CCMode == MASCIOR50);
         if (isExtPat)
             size = (GetConfig()->GetCColorsSize());		
         else
@@ -1011,6 +1011,9 @@ void CMainView::InitGrid()
 		nRows = 7;
 
 	if ( m_displayMode <= 1 || (m_displayMode >= 3 && m_displayMode <=11) )
+		nRows ++;
+
+	if (m_displayMode == 1 || (m_displayMode >= 5 && m_displayMode <=11) )
 		nRows ++;
 
 	if ( bHasLuxValues )
@@ -1086,7 +1089,7 @@ void CMainView::InitGrid()
 		Item.row = 0;
 		Item.col = i+1;
 		Item.nFormat = DT_CENTER|DT_WORDBREAK;
-		BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR);
+		BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR || GetConfig()->m_CCMode == MASCIOR50);
 
 		switch ( m_displayMode )
 		{
@@ -1143,7 +1146,7 @@ void CMainView::InitGrid()
 				 break;
 
 			case 4:
-				 Item.strText.Format("%d",i + 101 - size);
+				 Item.strText.Format("%d",i + GetDocument()->GetMeasure()->m_NearWhiteClipCol - size);
 				 break;
 
 			case 11:
@@ -1382,12 +1385,11 @@ void CMainView::InitGrid()
 					s_clr.SetY(s_clr.GetY()*100);
 					s_clr.SetZ(s_clr.GetZ()*100);
 				}
-//                r_clr=s_clr.GetRGBValue((GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));
                 r_clr=s_clr.GetRGBValue(CColorReference(HDTV));
 				r_clr[0]=(min(max(r_clr[0],0),1));
 				r_clr[1]=(min(max(r_clr[1],0),1));
 				r_clr[2]=(min(max(r_clr[2],0),1));
-				inten = s_clr.GetLuminance();//GetConfig()->m_CCMode==USER?s_clr.GetLuminance():GetColorReference().GetCC24ReferenceLuma(i,GetConfig()->m_CCMode);
+				inten = s_clr.GetLuminance();
 
 	    		m_pGrayScaleGrid->SetItemBkColour ( i2, i+1, RGB(pow(r_clr[0],1.0/2.2)*255,pow(r_clr[1],1.0/2.2)*255,pow(r_clr[2],1.0/2.2)*255) );
                 
@@ -1951,8 +1953,8 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aReference, CColor & aRefDocColor, double YWhiteRefDoc, int aComponentNum, int nCol, double Offset, bool isGS)
 {
 	CString str;
-	BOOL isHDR = ( GetConfig()->m_GammaOffsetType == 5 && (m_displayMode == 1 || m_displayMode >= 5 && m_displayMode <=10) );
-	//Special case White redefined on Mascior disk to level 502 50.0% 0.00092.254965 nits
+	BOOL isHDR = ( GetConfig()->m_GammaOffsetType == 5 && (m_displayMode == 1 || m_displayMode >= 5 && m_displayMode <= 11) );
+	//Special case White redefined on Mascior disk to level 502 50.0% 92.254965 nits
 	CString	Msg, dstr;
 	Msg.LoadString ( IDS_GDIGENERATOR_NAME );
 	CString m_generatorChoice = GetConfig()->GetProfileString("Defaults","Generator",(LPCSTR)Msg);
@@ -2032,24 +2034,36 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				{
 					double dL, dH, dC, RefWhite = 1.0;
 					CColorReference cRef = GetColorReference();
-					if (isHDR && cRef.m_standard == UHDTV2 || cRef.m_standard == UHDTV3 )
+					int satsize=GetDocument()->GetMeasure()->GetSaturationSize();
+					if (isHDR && cRef.m_standard == HDTV || cRef.m_standard == UHDTV || cRef.m_standard == UHDTV2 || cRef.m_standard == UHDTV3 )
 					{
+						bool shiftDiffuse = (abs(GetConfig()->m_DiffuseL-94.0)>0.5);
 						if (DVD)
 						{
 							if (m_displayMode == 1)
 							{
-								if (cRef.m_standard == UHDTV2 || nCol == 7)
-									RefWhite = 92.254965 / YWhite;
+								if ( (cRef.m_standard == UHDTV2 || cRef.m_standard == HDTV || cRef.m_standard == UHDTV || nCol == 7) )
+									RefWhite = (!shiftDiffuse?92.254965:GetConfig()->m_DiffuseL) / YWhite;
+								else
+									YWhite = YWhite * 94.37844 / GetConfig()->m_DiffuseL;
 							}
 							else
 							{
-								if (cRef.m_standard == UHDTV2 && nCol == 5)
+								if ( ((cRef.m_standard == UHDTV2 && nCol == satsize ) || cRef.m_standard == HDTV || cRef.m_standard == UHDTV)  && m_displayMode != 11 && !shiftDiffuse) //fixes skin && nCol == satsize
 									RefWhite = 92.254965 / YWhite;
+								else
+									YWhite = YWhite* 94.37844/GetConfig()->m_DiffuseL;
 							}
 						}
 						else
 						{
-							RefWhite = 94.37844 / YWhite;
+							if (m_displayMode == 1)
+								if (cRef.m_standard == UHDTV2 || cRef.m_standard == HDTV || cRef.m_standard == UHDTV || nCol == 7)
+									RefWhite = GetConfig()->m_DiffuseL / YWhite ;
+								else
+									YWhite = YWhite * 94.37844 / GetConfig()->m_DiffuseL ;
+							else
+								YWhite = YWhite * 94.37844 / GetConfig()->m_DiffuseL ;
 						}
 					}
 
@@ -2103,9 +2117,9 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 		else
 			str.Empty ();
 
-		if ( aComponentNum == 7 || ( aComponentNum == 5 && ( GetDataRef() == NULL || GetDataRef() == GetDocument () ) ) )
+		if ( (aComponentNum == 7 || ( aComponentNum == 5 && ( GetDataRef() == NULL || GetDataRef() == GetDocument () ) )) || (aComponentNum == 8 || ( aComponentNum == 6 && ( GetDataRef() == NULL || GetDataRef() == GetDocument () ) )) )
 		{
-			if ( m_displayMode == 0 || m_displayMode == 4 || m_displayMode == 3 )
+			if ( m_displayMode == 0 || m_displayMode == 3 || m_displayMode == 4 )
 			{
 				// Display reference Y
 				str.Empty();
@@ -2137,7 +2151,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						else if (m_displayMode == 3)
 							valx = GrayLevelToGrayProp ( (double)(nCol - 1)*(GetConfig()->m_GammaOffsetType==5?2:1), GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
 						else if (m_displayMode == 4)
-							valx = GrayLevelToGrayProp ( (double)(nCol - 1 + 101 - size) , GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
+							valx = GrayLevelToGrayProp ( (double)(nCol - 1 + GetDocument()->GetMeasure()->m_NearWhiteClipCol - size) , GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
 
 						int mode = GetConfig()->m_GammaOffsetType;
 						if (GetConfig()->m_colorStandard == sRGB) mode = 99;
@@ -2147,8 +2161,13 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 							if (m_displayMode == 0)
 								valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
 							
-							if (mode == 5) 
-	                            valy = getL_EOTF(valx,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) * 100.;
+							if (mode == 5)
+							{
+								if (m_displayMode != 4)
+									valy = getL_EOTF(valx,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 100.;
+								else
+									valy = getL_EOTF(valx,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) * 100.;
+							}
 							else
 	                            valy = getL_EOTF(valx,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) * White.GetY();
 
@@ -2167,7 +2186,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 			else
 			{
 				// Display primary/secondary/saturations colors delta luminance
-				int	    nCol2 = nCol, satsize=GetDocument()->GetMeasure()->GetSaturationSize();;
+				int	    nCol2 = nCol, satsize=GetDocument()->GetMeasure()->GetSaturationSize();
 				double  RefLuma [1000], sat=double (nCol-1)/ double (satsize-1);
                 CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
 	            CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
@@ -2232,9 +2251,14 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				}
 
 				CColor white = GetDocument()->GetMeasure()->GetPrimeWhite();
+				double peakWhite = GetDocument()->GetMeasure()->GetOnOffWhite().GetY();
+
+				if (!white.isValid() && isHDR)
+					white = GetDocument()->GetMeasure()->GetGray((GetDocument()->GetMeasure()->GetGrayScaleSize()-1) / 2 );
 
 				if (!white.isValid() || m_displayMode == 0 || m_displayMode == 2 || m_displayMode == 3 || m_displayMode == 4)
 					white = GetDocument() -> GetMeasure () ->GetOnOffWhite();
+
 				if ( m_displayMode > 4 && (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb ))
 					white = GetDocument() -> GetMeasure () ->GetOnOffWhite();
 
@@ -2243,39 +2267,52 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 					if ((GetDocument()->GetMeasure()->GetPrimeWhite()[1] / GetDocument()->GetMeasure()->GetOnOffWhite()[1] < 0.9) && m_displayMode == 11  && GetConfig()->m_GammaOffsetType !=5)
 						white = GetDocument() -> GetMeasure () ->GetOnOffWhite();
 				
-				if (isHDR && GetColorReference().m_standard == UHDTV2 || GetColorReference().m_standard == UHDTV3)
+				if (isHDR && GetColorReference().m_standard == HDTV || GetColorReference().m_standard == UHDTV || GetColorReference().m_standard == UHDTV2 || GetColorReference().m_standard == UHDTV3)
 				{
+					bool shiftDiffuse=(abs(GetConfig()->m_DiffuseL-94.0)>0.5);
 					if (DVD)
 					{
 						if (m_displayMode == 1)
 						{
-							if (GetColorReference().m_standard == UHDTV2 || nCol == 7)
-								white.SetY(92.254965);
+							if (GetColorReference().m_standard == UHDTV || GetColorReference().m_standard == UHDTV2 || GetColorReference().m_standard == HDTV || nCol == 7)
+								white.SetY(!shiftDiffuse?92.254965:GetConfig()->m_DiffuseL);
+							else
+								white.SetY(94.37844);
 						}
 						else
 						{
-							if (GetColorReference().m_standard == UHDTV2 && nCol == 5)
+							if ( ( (GetColorReference().m_standard == UHDTV2 && nCol == satsize) || GetColorReference().m_standard == HDTV || GetColorReference().m_standard == UHDTV) && m_displayMode != 11 && !shiftDiffuse) //&& nCol == (satsize)
 								white.SetY(92.254965);
+							else
+								white.SetY(94.37844);
 						}
 					}
 					else
 					{
-						white.SetY(94.37844);
+						if (m_displayMode == 1)
+							if (GetColorReference().m_standard == UHDTV2 || GetColorReference().m_standard == HDTV || GetColorReference().m_standard == UHDTV || nCol == 7)
+								white.SetY(GetConfig()->m_DiffuseL);
+							else
+								white.SetY(94.37844);
+						else
+							white.SetY(94.37844);
 					}
 				}
 
 				if ( nCol2 < ( (m_displayMode > 11 || m_displayMode < 5) ? 7 : 1001) && white.isValid() && white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) > 0.0001 )
     		    {
-					if (aMeasure.isValid())
+					if (aMeasure.isValid() && aComponentNum != 8 && aComponentNum != 6 )
 					{
-					double d = aMeasure.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) / white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter);
-					if ( fabs ( ( RefLuma [ nCol2 - 1 ] - d ) / RefLuma [ nCol2 - 1 ] ) < 0.001 )
-						str = "=";
-					else if ( d < RefLuma [ nCol2 - 1 ] )
-						str.Format("-%.1f %%", 100.0 * ( RefLuma [ nCol2 - 1 ] - d ) / RefLuma [ nCol2 - 1 ] );
-					else
-						str.Format("+%.1f %%", 100.0 * ( d - RefLuma [ nCol2 - 1 ] ) / RefLuma [ nCol2 - 1 ] );
+						double d = aMeasure.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) / white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter);
+						if ( fabs ( ( RefLuma [ nCol2 - 1 ] - d ) / RefLuma [ nCol2 - 1 ] ) < 0.001 )
+							str = "=";
+						else if ( d < RefLuma [ nCol2 - 1 ] )
+							str.Format("-%.1f %%", 100.0 * ( RefLuma [ nCol2 - 1 ] - d ) / RefLuma [ nCol2 - 1 ] );
+						else
+							str.Format("+%.1f %%", 100.0 * ( d - RefLuma [ nCol2 - 1 ] ) / RefLuma [ nCol2 - 1 ] );
 					}
+					else if (aComponentNum == 8 || aComponentNum == 6)
+						str.Format("%.1f", 100.0 * ( RefLuma [ nCol2 - 1 ] * white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter)/peakWhite ) );
 				}
 				else
 					str.Empty();
@@ -2481,11 +2518,15 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 			break;
 
 		case 6:
-			return "xy / ref";
+			return (m_displayMode == 0 || m_displayMode == 3 || m_displayMode == 4 ? "xy / ref":GetDataRef() && GetDataRef() != GetDocument ()?"xy / ref":"Y Target");
 			break;
 
 		case 7:
 			return ( m_displayMode == 0 || m_displayMode == 3 || m_displayMode == 4 ? "Y target" : "delta luminance" );
+			break;
+
+		case 8:
+			return  "Y target";
 			break;
 	}
 
@@ -2571,6 +2612,12 @@ void CMainView::UpdateGrid()
 		GV_ITEM Item;
 		Item.mask = GVIF_TEXT|GVIF_FORMAT;
 		Item.nFormat = DT_RIGHT|DT_VCENTER|DT_SINGLELINE|DT_END_ELLIPSIS|DT_NOPREFIX;
+		bool isHDR = GetConfig()->m_GammaOffsetType == 5;
+		CString dWhitestr;
+		dWhitestr.Format(": %g nits diffuse white", GetConfig()->m_DiffuseL);
+		if (GetConfig()->m_useToneMap)
+			dWhitestr += " w/BT.2390 Tonemap";
+
 		if  (m_userBlack)
 		{
 			double Yblack = GetConfig()->GetProfileDouble("References","Manual Black Level",0);
@@ -2638,7 +2685,7 @@ void CMainView::UpdateGrid()
 
         GetConfig()->SetPropertiesSheetValues();
 
-		BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR);
+		BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR || GetConfig()->m_CCMode == MASCIOR50);
 		switch ( m_displayMode )
 		{
 			case 0:
@@ -2718,7 +2765,7 @@ void CMainView::UpdateGrid()
 				 YWhiteRefDoc = isSpecial?YWhiteOnOffRefDoc:YWhitePrimeRefDoc;
 
 				 //special case check if user has done a less than 100% primaries run and use grayscale white instead for colorchecker
-				if (GetDocument()->GetMeasure()->GetOnOffWhite().isValid()&&GetConfig()->m_GammaOffsetType!=5)
+				if (GetDocument()->GetMeasure()->GetOnOffWhite().isValid()&&!isHDR)
 				if ((YWhitePrime / YWhiteOnOff < 0.9) && m_displayMode == 11)
 				{
 					YWhite = YWhiteOnOff;
@@ -2778,7 +2825,10 @@ void CMainView::UpdateGrid()
 		if ( pDataRef )
 			nRows = 7;
 
-		if ( m_displayMode <= 1 || (m_displayMode >= 3 && m_displayMode <=11) )
+		if ( m_displayMode <= 1 || (m_displayMode >= 3 && m_displayMode <= 11) )
+			nRows ++;
+
+		if ( m_displayMode == 1 || (m_displayMode >= 5 && m_displayMode <= 11) )
 			nRows ++;
 
 		if ( bHasLuxValues )
@@ -2809,7 +2859,7 @@ void CMainView::UpdateGrid()
 			break;
 		case(3):
 			nCnt = 101;
-			if (GetConfig()->m_GammaOffsetType == 5)
+			if (isHDR)
 				nCol = (last_minCol - 1) * 2;
 			else
 				nCol = (last_minCol - 1);
@@ -2819,11 +2869,25 @@ void CMainView::UpdateGrid()
 			break;
 		case(4):
 			nCnt = 101;
-			nCol = 101 - GetDocument()->GetMeasure()->GetNearWhiteScaleSize() + nCol;
+			nCol = GetDocument()->GetMeasure()->m_NearWhiteClipCol - GetDocument()->GetMeasure()->GetNearWhiteScaleSize() + nCol;
 			last_Col = nCol;
 			last_Size = nCnt;
 			last_Display = 4;
 			break;
+		}
+        
+		CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
+	    CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
+		if (!GetConfig()->m_bOverRideTargs)
+		{
+			if (Black.isValid())
+				GetConfig()->m_TargetMinL = Black.GetY()>1e-5?Black.GetY():0.0;
+			else
+				GetConfig()->m_TargetMinL = 0.0;
+			if (White.isValid())
+				GetConfig()->m_TargetMaxL = White.GetY();
+			else
+				GetConfig()->m_TargetMaxL = 100.0;
 		}
 
 		for( int j = 0 ; j < nCount ; j ++ )
@@ -2846,14 +2910,12 @@ void CMainView::UpdateGrid()
                         // fixed to use correct gamma predicts
                         // and added option to assume perfect gamma
 						double x = ArrayIndexToGrayLevel ( j, nCount, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
-            		    CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
-	                	CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
 						int mode = GetConfig()->m_GammaOffsetType;
 						if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 						if (  (mode >= 4) )
 			            {
                             double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
-                            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+                            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap);
 			            }
 			            else
 			            {
@@ -2963,7 +3025,7 @@ void CMainView::UpdateGrid()
 						if (  (mode >= 4) )
 			            {
                             double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
-                            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+                            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap);
 			            }
 			            else
 			            {
@@ -3041,16 +3103,16 @@ void CMainView::UpdateGrid()
 						// Compute reference Luminance regarding actual offset and reference gamma 
                         // fixed to use correct gamma predicts
                         // and added option to assume perfect gamma
-						double x = ArrayIndexToGrayLevel ( j, 101, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
+						int mode = GetConfig()->m_GammaOffsetType;
+						double x = ArrayIndexToGrayLevel ( j * (mode == 5?2:1), 101, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
             		    CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
 						CColor Black = GetDocument() -> GetMeasure () -> GetNearBlack(0);
-						int mode = GetConfig()->m_GammaOffsetType;
 						if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 
 						if (  (mode >= 4) )
 			            {
                             double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
-                            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+                            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap);
 			            }
 			            else
 			            {
@@ -3089,7 +3151,7 @@ void CMainView::UpdateGrid()
 						// Compute reference Luminance regarding actual offset and reference gamma 
                         // fixed to use correct gamma predicts
                         // and added option to assume perfect gamma
-						double x = ArrayIndexToGrayLevel ( 101 - nCount + j, 101, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
+						double x = ArrayIndexToGrayLevel ( GetDocument()->GetMeasure()->m_NearWhiteClipCol - nCount + j, 101, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
             		    CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
 	                	CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
 						int mode = GetConfig()->m_GammaOffsetType;
@@ -3198,7 +3260,7 @@ void CMainView::UpdateGrid()
 					 }
 			}
 			
-			if (GetConfig()->m_GammaOffsetType==5 && m_displayMode <=11 && m_displayMode >= 5)
+			if (isHDR && m_displayMode <=11 && m_displayMode >= 5)
 			{
 				 refColor.SetX((refColor.GetX() * 105.95640));
 				 refColor.SetY((refColor.GetY() * 105.95640));
@@ -3363,6 +3425,7 @@ void CMainView::UpdateGrid()
 					Msg += dEform;
 					dEform = GetConfig()->m_dE_gray==0?" [Relative Y]":(GetConfig ()->m_dE_gray == 1?" [Absolute Y w/gamma]":" [Absolute Y w/o gamma]");
 					Msg += dEform;
+					Msg += (isHDR ? " HDR"+ dWhitestr:" SDR");
                     if (GetConfig()->doHighlight)
 					    m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
 				}
@@ -3420,6 +3483,61 @@ void CMainView::UpdateGrid()
 						}
 					}
 					Msg += dEform;
+					CString cSpace;
+					switch (GetConfig()->m_colorStandard)
+					{
+					case 0:
+						{
+							cSpace = " PAL/SECAM "; 
+							break;
+						}
+					case 1:
+						{
+							cSpace = " Rec.601 "; 
+							break;
+						}
+					case 2:
+						{
+							cSpace = " Rec. 709 "; 
+							break;
+						}
+					case 3:
+						{
+							cSpace = " Rec.709 (75%/75%) "; 
+							break;
+						}
+					case 4:
+						{
+							cSpace = " Rec.709 (OPT/PLASMA) "; 
+							break;
+						}
+					case 5:
+						{
+							cSpace = " sRGB "; 
+							break;
+						}
+					case 6:
+						{
+							cSpace = " DCI/P3 "; 
+							break;
+						}
+					case 7:
+						{
+							cSpace = " Rec.2020 "; 
+							break;
+						}
+					case 8:
+						{
+							cSpace = " P3 in BT.2020 "; 
+							break;
+						}
+					case 9:
+						{
+							cSpace = " Custom "; 
+							break;
+						}
+					}
+					Msg += (isHDR ? cSpace + " HDR"+ dWhitestr:cSpace + " SDR");
                     if (GetConfig()->doHighlight)
                         m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
 			}
@@ -3502,6 +3620,61 @@ void CMainView::UpdateGrid()
 						}
 					}
 					Msg += dEform;
+					CString cSpace;
+					switch (GetConfig()->m_colorStandard)
+					{
+					case 0:
+						{
+							cSpace = " PAL/SECAM "; 
+							break;
+						}
+					case 1:
+						{
+							cSpace = " Rec.601 "; 
+							break;
+						}
+					case 2:
+						{
+							cSpace = " Rec. 709 "; 
+							break;
+						}
+					case 3:
+						{
+							cSpace = " Rec.709 (75%/75%) "; 
+							break;
+						}
+					case 4:
+						{
+							cSpace = " Rec.709 (OPT/PLASMA) "; 
+							break;
+						}
+					case 5:
+						{
+							cSpace = " sRGB "; 
+							break;
+						}
+					case 6:
+						{
+							cSpace = " DCI/P3 "; 
+							break;
+						}
+					case 7:
+						{
+							cSpace = " Rec.2020 "; 
+							break;
+						}
+					case 8:
+						{
+							cSpace = " P3 in BT.2020 "; 
+							break;
+						}
+					case 9:
+						{
+							cSpace = " Custom "; 
+							break;
+						}
+					}
+					Msg += (isHDR ? cSpace + " HDR"+ dWhitestr:cSpace + " SDR");
                     if (GetConfig()->doHighlight)
 					    m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
 			}
@@ -3509,7 +3682,7 @@ void CMainView::UpdateGrid()
 		} else if (m_displayMode == 11)
 		{
 			CString	Msg, Tmp;
-			BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR);
+			BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR || GetConfig()->m_CCMode == MASCIOR50);
 			Msg.LoadString ( IDS_CC24COLORS );
 			Msg += " - ";
 			Msg += (GetConfig()->m_CCMode == GCD?"Classic GCD":(GetConfig()->m_CCMode==MCD?"Classic MCD":(GetConfig()->m_CCMode==SKIN?"Pantone skin tones":(GetConfig()->m_CCMode==CCSG?"CalMan SG":isExtPat?GetConfig()->GetCColorsN(-1).c_str():(GetConfig()->m_CCMode==CMS?"CalMAN SG skin tones":(GetConfig()->m_CCMode==CPS?"ChromaPure skin tones":(GetConfig()->m_CCMode==CMC?"Classic CalMAN":"RGB Luminance Ramps")))))));
@@ -3589,6 +3762,61 @@ void CMainView::UpdateGrid()
 						}
 					}
 					Msg += dEform;
+					CString cSpace;
+					switch (GetConfig()->m_colorStandard)
+					{
+					case 0:
+						{
+							cSpace = " PAL/SECAM "; 
+							break;
+						}
+					case 1:
+						{
+							cSpace = " Rec.601 "; 
+							break;
+						}
+					case 2:
+						{
+							cSpace = " Rec. 709 "; 
+							break;
+						}
+					case 3:
+						{
+							cSpace = " Rec.709 (75%/75%) "; 
+							break;
+						}
+					case 4:
+						{
+							cSpace = " Rec.709 (OPT/PLASMA) "; 
+							break;
+						}
+					case 5:
+						{
+							cSpace = " sRGB "; 
+							break;
+						}
+					case 6:
+						{
+							cSpace = " DCI/P3 "; 
+							break;
+						}
+					case 7:
+						{
+							cSpace = " Rec.2020 "; 
+							break;
+						}
+					case 8:
+						{
+							cSpace = " P3 in BT.2020 "; 
+							break;
+						}
+					case 9:
+						{
+							cSpace = " Custom "; 
+							break;
+						}
+					}
+					Msg += (isHDR ? cSpace + " HDR"+ dWhitestr:cSpace + " SDR");
                     if (GetConfig()->doHighlight)
 					    m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
 			}
@@ -4806,7 +5034,7 @@ void CMainView::OnDeleteGrayscale()
 	{
 		int	j;
 		CCPatterns cPat = GetConfig()->m_CCMode;
-		BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR);
+		BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR || GetConfig()->m_CCMode == MASCIOR50);
 		switch ( m_displayMode )
 		{
 			case 0:
@@ -4978,7 +5206,7 @@ void CMainView::UpdateMeasurementsAfterBkgndMeasure ()
 		break;
 	case(4):
 		nCnt = 101;
-		nCol = 101 - GetDocument()->GetMeasure()->GetNearWhiteScaleSize() + nCol;
+		nCol = GetDocument()->GetMeasure()->m_NearWhiteClipCol - GetDocument()->GetMeasure()->GetNearWhiteScaleSize() + nCol;
 		last_Col = nCol;
 		last_Size = nCnt;
 		last_Display = 4;
@@ -5069,7 +5297,7 @@ void CMainView::UpdateMeasurementsAfterBkgndMeasure ()
 				if (  (mode >= 4) )
 			    {
 					double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
-                    valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+                    valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap);
 			    }
 			    else
 			    {

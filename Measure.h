@@ -83,6 +83,7 @@ public:
 	BOOL	m_binMeasure;
 	BOOL	bDisplayRT;
 	UINT	m_bpreV10;
+	UINT	m_NearWhiteClipCol;
 
 	// Internal data used by background measures threads (not serialized)
 public:
@@ -227,7 +228,7 @@ public:
 	BOOL CheckBlackOverride (  );
 	void UpdateViews ( CDataSetDoc *pDoc = NULL, int Sequence = 0 );
 	void UpdateTstWnd ( CDataSetDoc *pDoc, int Sequence );
-	int m_currentIndex;
+	int m_currentIndex, m_currentSequence;
 
 	HANDLE InitBackgroundMeasures ( CSensor *pSensor, int nSteps );
 	BOOL BackgroundMeasureColor ( int nCurStep, const ColorRGBDisplay& aRGBValue );

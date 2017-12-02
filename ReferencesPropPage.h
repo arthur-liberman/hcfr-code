@@ -67,11 +67,13 @@ public:
     double  m_GammaRel;
 	double	m_ManualBlack;
 	double  m_Split;
+	double	m_MasterMinL, m_MasterMaxL, m_TargetMinL, m_TargetMaxL, m_DiffuseL;
+	CEdit	m_TargetMinLCtrl, m_TargetMaxLCtrl;
 	BOOL	m_changeWhiteCheck;
 	CEdit	m_changeWhiteCheckCtrl;
 	BOOL	m_useMeasuredGamma;
 	BOOL	m_bSave;
-	BOOL	m_userBlack;
+	BOOL	m_userBlack, m_useToneMap, m_bOverRideTargs;
 	int		m_GammaOffsetType;
 	double	m_manualGOffset;
 	double	m_manualWhitex;
@@ -118,6 +120,7 @@ protected:
 	afx_msg void OnChangeWhiteCheck();
 	afx_msg void OnUseMeasuredGammaCheck();
 	afx_msg void OnUserBlackCheck();
+	afx_msg void OnUserOverRideTargsCheck();
 	afx_msg void OnSelchangeColorrefCombo();
 	afx_msg void OnSelchangeWhiteCombo();
 	afx_msg void OnSelchangeCCmodeCombo();

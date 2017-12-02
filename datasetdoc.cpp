@@ -2419,8 +2419,8 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 			 nMaxSteps = nSteps;
 			 for ( i = 0; i < nSteps ; i ++ )
 			 {
-				GenIRE [ i ] = 101-nSteps+i;
-				GenColors [ i ] = ColorRGBDisplay(101-nSteps+i,101-nSteps+i,101-nSteps+i);
+				GenIRE [ i ] = GetMeasure()->m_NearWhiteClipCol-nSteps+i;
+				GenColors [ i ] = ColorRGBDisplay(GetMeasure()->m_NearWhiteClipCol-nSteps+i,101-nSteps+i,101-nSteps+i);
 				mType [ i ] = CGenerator::MT_NEARWHITE;
 			 }
 			 pValidationFunc = &CMeasure::ValidateBackgroundNearWhite;
@@ -4195,7 +4195,7 @@ void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int Col
                         avg += log(getL_EOTF(valx[i], GetMeasure()->GetGray(Size -1), GetMeasure()->GetGray(0), GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(valx[i]);
                     else
 	                    if (mode == 5)// && !GetConfig()->m_useMeasuredGamma)
-			                avg += log(getL_EOTF(valx[i], GetMeasure()->GetGray(Size -1), GetMeasure()->GetGray(0), GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100.)/log(valx[i]);
+			                avg += log(getL_EOTF(valx[i], GetMeasure()->GetGray(Size -1), GetMeasure()->GetGray(0), GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100.)/log(valx[i]);
 						else
 		    				avg += log(lumlvl[i])/log(valx[i]);
 					nb ++;
@@ -4296,7 +4296,8 @@ void CDataSetDoc::OnMeasurePrimaries()
 {
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
-	if (!m_YWhite && (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb || GetConfig()->m_colorStandard == UHDTV3) )
+
+	if (!m_YWhite && (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb || GetConfig()->m_colorStandard == UHDTV3) && GetConfig()->m_GammaOffsetType == 4)
 		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first so that color targets can be calculated.","No grayscale measures found!",MB_OK);
 	else
 	{
@@ -4320,7 +4321,7 @@ void CDataSetDoc::OnMeasureSecondaries()
 {
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
-	if (!m_YWhite && (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb || GetConfig()->m_colorStandard == UHDTV3))
+	if (!m_YWhite && (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb || GetConfig()->m_colorStandard == UHDTV3) && GetConfig()->m_GammaOffsetType == 4)
 		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first so that color targets can be calculated.","No grayscale measures found!",MB_OK);
 	else
 	{
@@ -4347,7 +4348,7 @@ void CDataSetDoc::OnMeasureNearblack()
 	int		nNbPoints = GetMeasure () -> GetNearBlackScaleSize ();
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
-	if (!m_YWhite)
+	if (!m_YWhite && GetConfig()->m_GammaOffsetType == 4)
 		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first so that color targets can be calculated.","No grayscale measures found!",MB_OK);
 	else
     {
@@ -4377,7 +4378,7 @@ void CDataSetDoc::OnMeasureNearwhite()
 	int		nNbPoints = GetMeasure () -> GetNearWhiteScaleSize ();
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
-	if (!m_YWhite)
+	if (!m_YWhite && GetConfig()->m_GammaOffsetType == 4)
 		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first so that color targets can be calculated.","No grayscale measures found!",MB_OK);
 	else
     {
@@ -4407,8 +4408,12 @@ void CDataSetDoc::OnMeasureSatRed()
 	int		nNbPoints = GetMeasure () -> GetSaturationSize ();
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
-	if (!m_YWhite)
+	bool m_bPrimeWhite = GetMeasure()->GetPrimeWhite().isValid();
+
+	if (!m_YWhite && GetConfig()->m_GammaOffsetType == 4)
 		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first so that color targets can be calculated.","No grayscale measures found!",MB_OK);
+	else if (!m_YWhite && !m_bPrimeWhite)
+		GetColorApp()->InMeasureMessageBox("Please run a primaries/secondaries scan first so that color targets can be calculated.","No white reference measure found!",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -4438,8 +4443,12 @@ void CDataSetDoc::OnMeasureSatGreen()
 	int		nNbPoints = GetMeasure () -> GetSaturationSize ();
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
-	if (!m_YWhite)
+	bool m_bPrimeWhite = GetMeasure()->GetPrimeWhite().isValid();
+
+	if (!m_YWhite && GetConfig()->m_GammaOffsetType == 4)
 		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first so that color targets can be calculated.","No grayscale measures found!",MB_OK);
+	else if (!m_YWhite && !m_bPrimeWhite)
+		GetColorApp()->InMeasureMessageBox("Please run a primaries/secondaries scan first so that color targets can be calculated.","No white reference measure found!",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -4469,8 +4478,12 @@ void CDataSetDoc::OnMeasureSatBlue()
 	int		nNbPoints = GetMeasure () -> GetSaturationSize ();
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
-	if (!m_YWhite)
+	bool m_bPrimeWhite = GetMeasure()->GetPrimeWhite().isValid();
+
+	if (!m_YWhite && GetConfig()->m_GammaOffsetType == 4)
 		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first so that color targets can be calculated.","No grayscale measures found!",MB_OK);
+	else if (!m_YWhite && !m_bPrimeWhite)
+		GetColorApp()->InMeasureMessageBox("Please run a primaries/secondaries scan first so that color targets can be calculated.","No white reference measure found!",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -4500,8 +4513,12 @@ void CDataSetDoc::OnMeasureSatYellow()
 	int		nNbPoints = GetMeasure () -> GetSaturationSize ();
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
-	if (!m_YWhite)
+	bool m_bPrimeWhite = GetMeasure()->GetPrimeWhite().isValid();
+
+	if (!m_YWhite && GetConfig()->m_GammaOffsetType == 4)
 		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first so that color targets can be calculated.","No grayscale measures found!",MB_OK);
+	else if (!m_YWhite && !m_bPrimeWhite)
+		GetColorApp()->InMeasureMessageBox("Please run a primaries/secondaries scan first so that color targets can be calculated.","No white reference measure found!",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -4531,8 +4548,12 @@ void CDataSetDoc::OnMeasureSatCyan()
 	int		nNbPoints = GetMeasure () -> GetSaturationSize ();
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
-	if (!m_YWhite)
+	bool m_bPrimeWhite = GetMeasure()->GetPrimeWhite().isValid();
+
+	if (!m_YWhite && GetConfig()->m_GammaOffsetType == 4)
 		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first so that color targets can be calculated.","No grayscale measures found!",MB_OK);
+	else if (!m_YWhite && !m_bPrimeWhite)
+		GetColorApp()->InMeasureMessageBox("Please run a primaries/secondaries scan first so that color targets can be calculated.","No white reference measure found!",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -4562,8 +4583,12 @@ void CDataSetDoc::OnMeasureSatMagenta()
 	int		nNbPoints = GetMeasure () -> GetSaturationSize ();
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
-	if (!m_YWhite)
+	bool m_bPrimeWhite = GetMeasure()->GetPrimeWhite().isValid();
+
+	if (!m_YWhite && GetConfig()->m_GammaOffsetType == 4)
 		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first so that color targets can be calculated.","No grayscale measures found!",MB_OK);
+	else if (!m_YWhite && !m_bPrimeWhite)
+		GetColorApp()->InMeasureMessageBox("Please run a primaries/secondaries scan first so that color targets can be calculated.","No white reference measure found!",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -4585,14 +4610,18 @@ void CDataSetDoc::OnMeasureSatCC24()
 {
 	CString	Msg, MsgQueue, TmpStr;
 
-	BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR);
+	BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR || GetConfig()->m_CCMode == MASCIOR50);
     int		nNbPoints = (GetConfig()->m_CCMode==CCSG?96:isExtPat?GetConfig()->GetCColorsSize():(GetConfig()->m_CCMode==AXIS?71:24));
 	if (GetConfig()->m_CCMode==CMS || GetConfig()->m_CCMode==CPS)
 		nNbPoints = 19;
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
-	if (!m_YWhite)
+	bool m_bPrimeWhite = GetMeasure()->GetPrimeWhite().isValid();
+
+	if (!m_YWhite && GetConfig()->m_GammaOffsetType == 4)
 		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first so that color targets can be calculated.","No grayscale measures found!",MB_OK);
+	else if (!m_YWhite && !m_bPrimeWhite)
+		GetColorApp()->InMeasureMessageBox("Please run a primaries/secondaries scan first so that color targets can be calculated.","No white reference measure found!",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -4672,14 +4701,18 @@ void CDataSetDoc::OnMeasureSatAll()
 {
 	CString	Msg, MsgQueue, TmpStr;
 
-	BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR);
+	BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR || GetConfig()->m_CCMode == MASCIOR50);
     int		nNbPoints = (GetMeasure () -> GetSaturationSize ()) * 6 + (GetConfig()->m_CCMode==CCSG?96:isExtPat?GetConfig()->GetCColorsSize():(GetConfig()->m_CCMode==AXIS?71:24));
 	if (GetConfig()->m_CCMode==CMS || GetConfig()->m_CCMode==CPS)
 		nNbPoints = GetMeasure () -> GetSaturationSize () * 6 + 19;
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
-	if (!m_YWhite)
+	bool m_bPrimeWhite = GetMeasure()->GetPrimeWhite().isValid();
+
+	if (!m_YWhite && GetConfig()->m_GammaOffsetType == 4)
 		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first so that color targets can be calculated.","No grayscale measures found!",MB_OK);
+	else if (!m_YWhite && !m_bPrimeWhite)
+		GetColorApp()->InMeasureMessageBox("Please run a primaries/secondaries scan first so that color targets can be calculated.","No white reference measure found!",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -4734,8 +4767,12 @@ void CDataSetDoc::OnMeasureSatPrimaries()
 	int		nNbPoints =( GetMeasure () -> GetSaturationSize () ) * 3;
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
-	if (!m_YWhite)
+	bool m_bPrimeWhite = GetMeasure()->GetPrimeWhite().isValid();
+
+	if (!m_YWhite && GetConfig()->m_GammaOffsetType == 4)
 		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first so that color targets can be calculated.","No grayscale measures found!",MB_OK);
+	else if (!m_YWhite && !m_bPrimeWhite)
+		GetColorApp()->InMeasureMessageBox("Please run a primaries/secondaries scan first so that color targets can be calculated.","No white reference measure found!",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -4759,8 +4796,12 @@ void CDataSetDoc::OnMeasureSatPrimariesSecondaries()
 	int		nNbPoints =( GetMeasure () -> GetSaturationSize () ) * 6;
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
-	if (!m_YWhite)
+	bool m_bPrimeWhite = GetMeasure()->GetPrimeWhite().isValid();
+
+	if (!m_YWhite && GetConfig()->m_GammaOffsetType == 4)
 		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first so that color targets can be calculated.","No grayscale measures found!",MB_OK);
+	else if (!m_YWhite && !m_bPrimeWhite)
+		GetColorApp()->InMeasureMessageBox("Please run a primaries/secondaries scan first so that color targets can be calculated.","No white reference measure found!",MB_OK);
 	else
 	{
 		MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
@@ -4791,7 +4832,7 @@ void CDataSetDoc::OnUpdateMeasureSatPrimariesSecondaries(CCmdUI* pCmdUI)
 void CDataSetDoc::OnMeasureFullTiltBoogie()
 {
 	CString	Msg, MsgQueue, TmpStr;
-	BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR);
+	BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR || GetConfig()->m_CCMode == MASCIOR50);
     int		nNbPoints2 = (GetMeasure () -> GetSaturationSize ()) * 6 + (GetConfig()->m_CCMode==CCSG?96:isExtPat?GetConfig()->GetCColorsSize():(GetConfig()->m_CCMode==AXIS?71:24));
 	if (GetConfig()->m_CCMode==CMS || GetConfig()->m_CCMode==CPS)
 		nNbPoints2 = GetMeasure () -> GetSaturationSize () * 6 + 19;

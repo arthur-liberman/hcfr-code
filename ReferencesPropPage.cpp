@@ -46,12 +46,19 @@ CReferencesPropPage::CReferencesPropPage() : CPropertyPageWithHelp(CReferencesPr
 	m_GammaAvg = 2.2;
 	m_changeWhiteCheck = FALSE;
 	m_userBlack = FALSE;
+	m_bOverRideTargs = FALSE;
+	m_useToneMap = FALSE;
 	m_ManualBlack = 0.0;
 	m_useMeasuredGamma = FALSE;
 	m_GammaOffsetType = 4;
 	m_manualGOffset = 0.099;
     m_manualWhitex = 0.3127;
     m_manualWhitey = 0.3290;
+	m_MasterMinL = 0.0;
+	m_MasterMaxL = 400.0;
+	m_TargetMinL = 0.05;
+	m_TargetMaxL = 500.;
+	m_DiffuseL = 94.37844;
     //}}AFX_DATA_INIT
 
 	m_isModified=FALSE;
@@ -79,6 +86,18 @@ void CReferencesPropPage::DoDataExchange(CDataExchange* pDX)
   	DDX_Text(pDX, IDC_EDIT_MANUAL_BLACK, m_ManualBlack);
   	DDX_Text(pDX, IDC_EDIT_SPLIT, m_Split);
   	DDX_Text(pDX, IDC_EDIT_GAMMA_AVERAGE, m_GammaAvg);
+  	DDX_Text(pDX, IDC_EDIT_DIFFUSE_WHITE, m_DiffuseL);
+	DDV_MinMaxDouble(pDX, m_DiffuseL, 10., 200.);
+	DDX_Text(pDX, IDC_EDIT_MASTER_MINL, m_MasterMinL);
+	DDV_MinMaxDouble(pDX, m_MasterMinL, 0., 0.5);
+  	DDX_Text(pDX, IDC_EDIT_MASTER_MAXL, m_MasterMaxL);
+	DDV_MinMaxDouble(pDX, m_MasterMaxL, 1000., 10000.);
+  	DDX_Text(pDX, IDC_EDIT_TARGET_MINL, m_TargetMinL);
+  	DDX_Control(pDX, IDC_EDIT_TARGET_MINL, m_TargetMinLCtrl);
+	DDV_MinMaxDouble(pDX, m_TargetMinL, 0., 0.5);
+  	DDX_Text(pDX, IDC_EDIT_TARGET_MAXL, m_TargetMaxL);
+  	DDX_Control(pDX, IDC_EDIT_TARGET_MAXL, m_TargetMaxLCtrl);
+	DDV_MinMaxDouble(pDX, m_TargetMaxL, 50., 4000.);
 	DDV_MinMaxDouble(pDX, m_GammaRef, 1., 5.);
 	DDV_MinMaxDouble(pDX, m_GammaAvg, 1., 5.);
 	DDV_MinMaxDouble(pDX, m_GammaRel, 0., 5.);
@@ -88,6 +107,8 @@ void CReferencesPropPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_CHANGEWHITE_CHECK, m_changeWhiteCheckCtrl);
 	DDX_Check(pDX, IDC_USE_MEASURED_GAMMA, m_useMeasuredGamma);
 	DDX_Check(pDX, IDC_USER_BLACK, m_userBlack);
+	DDX_Check(pDX, IDC_USER_OVERRIDE_TARGS, m_bOverRideTargs);
+	DDX_Check(pDX, IDC_USE_TONEMAP, m_useToneMap);
 	DDX_Control(pDX, IDC_USE_MEASURED_GAMMA, m_eMeasuredGamma);
 	DDX_Radio(pDX, IDC_GAMMA_OFFSET_RADIO1, m_GammaOffsetType);
 	DDX_Text(pDX, IDC_EDIT_MANUAL_GOFFSET, m_manualGOffset);
@@ -138,9 +159,16 @@ BEGIN_MESSAGE_MAP(CReferencesPropPage, CPropertyPageWithHelp)
 	ON_EN_CHANGE(IDC_GREEN_Y, OnChangeEditGammaAvg)
 	ON_EN_CHANGE(IDC_BLUE_X, OnChangeEditGammaAvg)
 	ON_EN_CHANGE(IDC_BLUE_Y, OnChangeEditGammaAvg)
+	ON_EN_CHANGE(IDC_EDIT_DIFFUSE_WHITE, OnChangeEditGammaAvg)
+	ON_EN_CHANGE(IDC_EDIT_MASTER_MINL, OnChangeEditGammaAvg)
+	ON_EN_CHANGE(IDC_EDIT_MASTER_MAXL, OnChangeEditGammaAvg)
+	ON_EN_CHANGE(IDC_EDIT_TARGET_MINL, OnChangeEditGammaAvg)
+	ON_EN_CHANGE(IDC_EDIT_TARGET_MAXL, OnChangeEditGammaAvg)
 	ON_BN_CLICKED(IDC_CHANGEWHITE_CHECK, OnChangeWhiteCheck)
 	ON_BN_CLICKED(IDC_USE_MEASURED_GAMMA, OnUseMeasuredGammaCheck)
 	ON_BN_CLICKED(IDC_USER_BLACK, OnUserBlackCheck)
+	ON_BN_CLICKED(IDC_USER_OVERRIDE_TARGS, OnUserOverRideTargsCheck)
+	ON_BN_CLICKED(IDC_USE_TONEMAP, OnUserBlackCheck)
 	ON_CBN_SELCHANGE(IDC_COLORREF_COMBO, OnSelchangeColorrefCombo)
 	ON_CBN_SELCHANGE(IDC_WHITETARGET_COMBO, OnSelchangeWhiteCombo)
 	ON_CBN_SELCHANGE(IDC_CCMODE_COMBO, OnSelchangeCCmodeCombo)
@@ -181,6 +209,7 @@ BOOL CReferencesPropPage::OnApply()
 {
 	GetConfig()->	WriteProfileDouble("References","Manual Black Level",m_ManualBlack);
 	GetConfig()->	WriteProfileDouble("References","Use Black Level",m_userBlack);
+	GetConfig()->	WriteProfileDouble("References","Override Targets",m_bOverRideTargs);
 	if (m_colorStandard == HDTVa || m_colorStandard == HDTVb || m_colorStandard == UHDTV3 || m_colorStandard == CC6) 
 	{
 		m_changeWhiteCheckCtrl.EnableWindow(FALSE);
@@ -345,6 +374,8 @@ BOOL CReferencesPropPage::OnInitDialog()
 	m_manualGreenyold = m_manualGreeny;
 	m_manualWhitexold = m_manualWhitex;
 	m_manualWhiteyold = m_manualWhitey;
+	m_TargetMinLCtrl.EnableWindow(m_bOverRideTargs);
+	m_TargetMaxLCtrl.EnableWindow(m_bOverRideTargs);
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -421,6 +452,16 @@ void CReferencesPropPage::OnUserBlackCheck()
 	m_ManualBlackEdit.EnableWindow(m_userBlack);
 }
 
+void CReferencesPropPage::OnUserOverRideTargsCheck() 
+{
+	m_isModified=TRUE;
+	SetModified(TRUE);	
+	UpdateData(TRUE);
+	m_bSave = TRUE;
+	m_TargetMinLCtrl.EnableWindow(m_bOverRideTargs);
+	m_TargetMaxLCtrl.EnableWindow(m_bOverRideTargs);
+}
+
 void CReferencesPropPage::OnSelchangeWhiteCombo()
 {
 	m_isModified=TRUE;
@@ -473,7 +514,7 @@ void CReferencesPropPage::OnSelchangeColorrefCombo()
 		m_eMeasuredGamma.EnableWindow (TRUE);
 		m_manualGOffset = 0.099;
 	}
-	if (m_colorStandard == HDTVa || m_colorStandard == HDTVb)
+	if ( !(m_colorStandard == UHDTV || m_colorStandard == UHDTV2 || m_colorStandard == UHDTV3 || m_colorStandard == HDTV)  )
 	{
 		int bID = GetCheckedRadioButton(IDC_GAMMA_OFFSET_RADIO6, IDC_GAMMA_OFFSET_RADIO10);
 		if (bID == IDC_GAMMA_OFFSET_RADIO6 || bID == IDC_GAMMA_OFFSET_RADIO8 || bID == IDC_GAMMA_OFFSET_RADIO9 || bID == IDC_GAMMA_OFFSET_RADIO10 )

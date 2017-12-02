@@ -23,6 +23,7 @@
 
 #include "stdafx.h"
 #include "ColorHCFR.h"
+
 #include "SimulatedSensor.h"
 
 #include <math.h>
@@ -62,6 +63,7 @@ CSimulatedSensor::CSimulatedSensor()
 	SetName(str);
 
 	m_calibrationTime = 0;
+	
 }
 
 CSimulatedSensor::~CSimulatedSensor()
@@ -193,7 +195,7 @@ BOOL CSimulatedSensor::Init( BOOL bForSimultaneousMeasures )
 	m_offsetR=0;//m_offsetRed*(1+(double)rand()/(double)RAND_MAX);
 	m_offsetG=0;//m_offsetGreen*(1+(double)rand()/(double)RAND_MAX);
 	m_offsetB=0;//m_offsetBlue*(1+(double)rand()/(double)RAND_MAX);
-
+	m_bNW = bForSimultaneousMeasures; //use for turning off diffuse scaling in NW measures
 	return TRUE;
 }
 
@@ -206,13 +208,14 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 	int mode = GetConfig()->m_GammaOffsetType;
 	White.SetY(100);
 	CColor Black = GetColorReference().GetWhite();
-	Black.SetY(0.012);
+	Black.SetY(GetConfig()->m_TargetMinL);
 	double peakY = 10000.;
 	if (GetConfig()->m_colorStandard == sRGB)
 		mode = 99;
 	if  (mode == 7 || mode == 8 || mode == 9)
 		mode = 5; //simulate standard PQ curve
-//	quantize to 8 or 10 bit video
+	
+	//	quantize to 8 or 10 bit video
 	double r,g,b;
 	if (GetConfig() -> m_bUse10bit)
 	{
@@ -231,12 +234,6 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 	gamma=GetConfig()->m_GammaRef;
 
 	if (GetConfig()->m_colorStandard == sRGB) mode = 99;
-	if (mode == 1) //add small black offset
-	{
-		m_offsetR = 2;
-		m_offsetG = 4;
-		m_offsetB = 3;
-	}
 
 	offset=m_offsetR;
 	if(m_doOffsetError)
@@ -249,9 +246,12 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
     {
 		if (mode == 5)
 		{
-			value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100.;
-			if (value > peakY / 10000.)
-				value = peakY / 10000.;
+			if (m_bNW)
+				value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100.;
+			else
+				value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100.;
+
+			value = min(value,peakY / 10000.);
 		}
 		else
 			value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
@@ -272,9 +272,11 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
     {
 		if (mode == 5)
 		{
-			value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100.;
-			if (value > peakY / 10000.)
-				value = peakY / 10000.;
+			if (m_bNW)
+				value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100.;
+			else
+				value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100.;
+			value = min(value,peakY / 10000.);
 		}
 		else
 			value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
@@ -295,9 +297,11 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
     {
 		if (mode == 5)
 		{
-			value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100.;
-			if (value > peakY / 10000.)
-				value = peakY / 10000.;
+			if (m_bNW)
+				value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100.;
+			else
+				value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100.;
+			value = min(value,peakY / 10000.);
 		}
 		else
 			value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
@@ -310,21 +314,25 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 	Sleep(50);
 	ColorRGB colMeasure(simulColor);
 	bool isSpecial = (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb);
+
 	CColor colSensor(ColorXYZ(colMeasure, isSpecial?CColorReference(HDTV):GetConfig()->m_colorStandard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));
 	colSensor.SetX(colSensor.GetX() * (mode==5?10000.:100.));
 	colSensor.SetY(colSensor.GetY() * (mode==5?10000.:100.));
 	colSensor.SetZ(colSensor.GetZ() * (mode==5?10000.:100.));
 
-	//cap peak white
+	//cap peak white to target maxL
 	if (mode == 5)
 	{
-		double rescale = min(colSensor.GetY(), GetConfig()->m_GammaOffsetType==9?400.:500.)/colSensor.GetY();
+		double rescale = min(colSensor.GetY(), GetConfig()->m_TargetMaxL)/colSensor.GetY();
 		colSensor.SetX(colSensor.GetX() * rescale);
 		colSensor.SetY(colSensor.GetY() * rescale);
 		colSensor.SetZ(colSensor.GetZ() * rescale);
 	}
-	if (mode == 4 && aRGBValue[0] == 0. && aRGBValue[1] == 0. && aRGBValue[2] == 0.)
-		colSensor.SetY(0.012);
+
+	//set black to target minL
+	else if (aRGBValue[0] == 0. && aRGBValue[1] == 0. && aRGBValue[2] == 0.)
+		colSensor.SetY(GetConfig()->m_TargetMinL);
+
 
 	double	Spectrum[18] = { 0.001, 0.01, 0.1, 0.15, 0.2, 0.4, 0.5, 0.6, 0.7, 1.2, 1.0, 1.1, 0.8, 0.9, 0.6, 0.5, 0.4, 0.15 };
 	colSensor.SetSpectrum ( CSpectrum ( 18, 380, 730, 20, Spectrum ) );

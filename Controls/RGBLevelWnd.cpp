@@ -233,7 +233,7 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 						break;
 						case 4:
 						Count = m_pDocument -> GetMeasure()->GetNearWhiteScaleSize();
-						x = ArrayIndexToGrayLevel ( 101 - Count + (minCol - 1), 101, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
+						x = ArrayIndexToGrayLevel ( m_pDocument->GetMeasure()->m_NearWhiteClipCol - Count + (minCol - 1), 101, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
 						break;
 						default:
 						x = ArrayIndexToGrayLevel ( minCol - 1 , nCount, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
@@ -252,7 +252,7 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 					if ( mode >= 4 )
 			        {
 						double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
-						valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+						valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap);
 			        }
 			        else
 			        {

@@ -49,9 +49,12 @@
 #define IDD_AUDIO_SENSOR_PROP_PAGE      144
 #define IDC_EDIT_SPLIT                  144
 #define IDD_SENSOR_PROP_PAGE            145
+#define IDC_USE_MEASURED_GAMMA3         145
 #define IDD_SIMULATED_SENSOR_PROP_PAGE  146
 #define IDC_USE_MEASURED_GAMMA2         147
 #define IDC_USER_BLACK                  148
+#define IDC_USER_OVERRIDE_TARGS         149
+#define IDC_USER_BLACK2                 149
 #define IDD_KISENSOR_PROP_PAGE          150
 #define IDD_GENERATOR_PROP_PAGE         151
 #define IDR_MEDIUMTOOLBAR_VIEWS         152
@@ -271,6 +274,12 @@
 #define IDR_PATTERN_CROSSlv             392
 #define IDR_PATTERN_CROSSd              393
 #define IDR_PATTERN_CROSSdv             394
+#define IDC_EDIT_DIFFUSE_WHITE          395
+#define IDC_EDIT_MASTER_MINL            396
+#define IDC_EDIT_TARGET_MINL            398
+#define IDC_EDIT_MASTER_MAXL            399
+#define IDC_EDIT_TARGET_MAXL            400
+#define IDC_USE_TONEMAP                 401
 #define IDC_GRAYSCALE_GRID              1001
 #define IDC_GRAPH_TITLE                 1002
 #define IDC_SENSORMATRIX_GRID           1002
