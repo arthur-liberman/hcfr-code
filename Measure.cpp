@@ -91,6 +91,7 @@ CMeasure::CMeasure()
 	}	
 	for ( int i=0;i<m_cc24SatMeasureArray.GetSize();i++ )	m_cc24SatMeasureArray[i]=noDataColor;
 	for ( int i=0;i<m_cc24SatMeasureArray_master.GetSize();i++ )	m_cc24SatMeasureArray_master[i]=noDataColor;
+//pre-load typical display values
 	m_OnOffWhite.SetXYZValue(ColorXYZ(95.047,100.,108.883));
 	m_PrimeWhite.SetXYZValue(ColorXYZ(95.047,100.,108.883));
 	m_OnOffBlack.SetXYZValue(ColorXYZ(0.0117336,0.012345,0.0134416));
@@ -2907,6 +2908,7 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 	ColorRGBDisplay	GenColors [ 1010 ];
 	double		dLuxValue;
 	BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR || GetConfig()->m_CCMode == MASCIOR50);
+	isExtPat = (isExtPat || GetConfig()->m_CCMode > 19);
 
     if (isExtPat) size = GetConfig()->GetCColorsSize();
 
@@ -3124,21 +3126,18 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 	GetConfig()->m_isSettling = doSettling;
 
 	int iCC=GetConfig()->m_CCMode;
-	if (iCC < 19)
+	if (iCC < 24)
 		for (int i=0+100*iCC;i<100*(iCC+1);i++)
 				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-iCC*100];
-	else if (iCC == 19) 
+	else if (iCC == 24) 
 		for (int i=1900;i<1900+250;i++)
 				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-1900];
-	else if (iCC == 20) 
+	else if (iCC == 25) 
 		for (int i=1900+250;i<1900+250+500;i++)
 				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(1900+250)];
-	else if (iCC == 21) 
+	else if (iCC == 26) 
 		for (int i=1900+250+500;i<1900+250+500+1000;i++)
 				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(1900+250+500)];
-	else if (iCC == 22) 
-		for (int i=1900+250+500+1000;i<1900+250+500+1000+100;i++)
-				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(1900+250+500+1000)];
 
 	m_binMeasure = FALSE;
 	UpdateViews(pDoc, 11);
@@ -3507,21 +3506,18 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 
 	GetConfig()->m_isSettling = doSettling;
 	int iCC=GetConfig()->m_CCMode;
-	if (iCC < 19)
+	if (iCC < 24)
 		for (int i=0+100*iCC;i<100*(iCC+1);i++)
 				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-iCC*100];
-	else if (iCC == 19) 
+	else if (iCC == 24) 
 		for (int i=1900;i<1900+250;i++)
 				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-1900];
-	else if (iCC == 20) 
+	else if (iCC == 25) 
 		for (int i=1900+250;i<1900+250+500;i++)
 				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(1900+250)];
-	else if (iCC == 21) 
+	else if (iCC == 26) 
 		for (int i=1900+250+500;i<1900+250+500+1000;i++)
 				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(1900+250+500)];
-	else if (iCC == 22) 
-		for (int i=1900+250+500+1000;i<1900+250+500+1000+100;i++)
-				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(1900+250+500+1000)];
 
 	m_binMeasure = FALSE;
 	UpdateViews(pDoc, 11);
@@ -5466,29 +5462,24 @@ void CMeasure::FreeMeasurementAppended(int isPrimary, int last_minCol)
 		case 11: //color checker
 			SetCC24Sat(last_minCol - 1, m_measurementsArray[n-1]);
 			int iCC=GetConfig()->m_CCMode, i;
-			if (iCC < 19)
+			if (iCC < 24)
 			{
 				i = 0 + 100*iCC + last_minCol - 1;
 						m_cc24SatMeasureArray_master[i] = m_measurementsArray[n-1];
 			}
-			else if (iCC == 19)
+			else if (iCC == 24)
 			{
 				i = 1900 + last_minCol -1;
 						m_cc24SatMeasureArray_master[i] = m_measurementsArray[n-1];
 			}
-			else if (iCC == 20)
+			else if (iCC == 25)
 			{
 				i = 1900 + 250 + last_minCol -1;
 						m_cc24SatMeasureArray_master[i] = m_measurementsArray[n-1];
 			}
-			else if (iCC == 21) 
+			else if (iCC == 26) 
 			{
 				i = 1900 + 250 + 500 + last_minCol - 1;
-						m_cc24SatMeasureArray_master[i] = m_measurementsArray[n-1];
-			}
-			else if (iCC == 22) 
-			{
-				i = 1900 + 250 + 500 + 1000 + last_minCol - 1;
 						m_cc24SatMeasureArray_master[i] = m_measurementsArray[n-1];
 			}
 			break;
@@ -5917,21 +5908,18 @@ BOOL CMeasure::ValidateBackgroundCC24SatScale ( BOOL bUseLuxValues, double * pLu
 				m_cc24SatMeasureArray[i].ResetLuxValue ();
 		}
 		int iCC=GetConfig()->m_CCMode;
-		if (iCC < 19)
+		if (iCC < 24)
 			for (int i=0+100*iCC;i<100*(iCC+1);i++)
 					m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-iCC*100];
-		else if (iCC == 19) 
+		else if (iCC == 24) 
 			for (int i=1900;i<1900+250;i++)
 					m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-1900];
-		else if (iCC == 20) 
+		else if (iCC == 25) 
 			for (int i=1900+250;i<1900+250+500;i++)
 					m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(1900+250)];
-		else if (iCC == 21) 
+		else if (iCC == 26) 
 			for (int i=1900+250+500;i<1900+250+500+1000;i++)
 					m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(1900+250+500)];
-		else if (iCC == 22) 
-			for (int i=1900+250+500+1000;i<1900+250+500+1000+100;i++)
-					m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(1900+250+500+1000)];
 	}
 
 	// Close background thread and event objects
@@ -6003,6 +5991,8 @@ CColor CMeasure::GetCC24Sat(int i)
 		{
 			CString msg;
 			BOOL isExtPat =( iCC == USER || iCC == CM10SAT || iCC == CM10SAT75 || iCC == CM5SAT || iCC == CM5SAT75 || iCC == CM4SAT || iCC == CM4SAT75 || iCC == CM4LUM || iCC == CM5LUM || iCC == CM10LUM || iCC == RANDOM250 || iCC == RANDOM500 || iCC == CM6NB || iCC == CMDNR || GetConfig()->m_CCMode == MASCIOR50);
+			isExtPat = (isExtPat || GetConfig()->m_CCMode > 19);
+
 			msg.SetString("File contains old style colorchecker data, load into slot ");
 			msg+=(iCC == GCD?"Classic GCD":(GetConfig()->m_CCMode==MCD?"Classic MCD":(GetConfig()->m_CCMode==SKIN?"Pantone skin tones":(GetConfig()->m_CCMode==CCSG?"CalMan SG":isExtPat?GetConfig()->GetCColorsN(-1).c_str():(GetConfig()->m_CCMode==CMS?"CalMAN SG skin tones":(GetConfig()->m_CCMode==CPS?"ChromaPure skin tones":(GetConfig()->m_CCMode==CMC?"Classic CalMAN":"RGB Luminance Ramps")))))));
 			msg+="?\r\n\r\nClick no if this is not the correct series and choose another from advanced preferences.";
@@ -6013,7 +6003,7 @@ CColor CMeasure::GetCC24Sat(int i)
 
 				pCurrentDocument = (CDataSetDoc *) pMDIFrameWnd->GetActiveDocument();
 				for (int j = 0;j < m_cc24SatMeasureArray.GetSize();j++)
-					m_cc24SatMeasureArray_master[j + (iCC<=19?(iCC * 100):(iCC==20?1900+250:(iCC==21?1900+250+500:1900+250+500+1000)))] = m_cc24SatMeasureArray[j];
+					m_cc24SatMeasureArray_master[j + (iCC<=24?(iCC * 100):(iCC==25?1900+250:1900+250+500))] = m_cc24SatMeasureArray[j];
 				if (GetColorApp()->InMeasureMessageBox("Save to new  file?","Pre 3.3.0 file format save dialog",MB_YESNO | MB_ICONQUESTION) == IDYES)
 				{
 					CFileDialog fileSaveDialog ( FALSE, ".chc", NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, "HCFR Save File (*.chc)|*.chc||" );
@@ -6038,7 +6028,7 @@ CColor CMeasure::GetCC24Sat(int i)
 		return m_cc24SatMeasureArray[i]; 
 	}
 
-	return m_cc24SatMeasureArray_master[i + (iCC<=19?(iCC * 100):(iCC==20?1900+250:(iCC==21?1900+250+500:1900+250+500+1000)))];  //index increments by 100 until slot 19 (then 250 & 500 & user 1000 & 2020_50)
+	return m_cc24SatMeasureArray_master[i + (iCC<=24?(iCC * 100):(iCC==25?1900+250:1900+250+500))];  //index increments by 100 until slot 19 (then 250 & 500 & user 1000 & 2020_50)
 } 
 
 CString CMeasure::GetCCStr() const
@@ -6987,7 +6977,7 @@ CColor CMeasure::GetRefCC24Sat(int i) const
         //Custom color checker as default
 		default:
 			RGB [ i ] = GetConfig()->GetCColorsT(i);
-			if (GetConfig()->m_CCMode == MASCIOR50)
+			if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= LG400017 )
 				GetConfig()->m_bHDR100 = TRUE;
 			break;
     } 
@@ -6998,79 +6988,129 @@ CColor CMeasure::GetRefCC24Sat(int i) const
 	CColor tempColor;
 	int mode = GetConfig()->m_GammaOffsetType;
 	if (GetConfig()->m_colorStandard == sRGB) mode = 99;
-
-	// linearize R'G'B'
+	
+	
 	double r=pow(RGB[i][0],2.22),g=pow(RGB[i][1],2.22),b=pow(RGB[i][2],2.22);
 
-	if (const_XYZ && mode == 5)
-	{
-		tempColor.SetRGBValue(ColorRGB(r,g,b), CColorReference((GetConfig()->m_CCMode == MASCIOR50)?UHDTV:HDTV));
-		tempColor.SetX(tempColor.GetX() / 105.95640); //50% reference for HDR-10
-		tempColor.SetY(tempColor.GetY() / 105.95640);
-		tempColor.SetZ(tempColor.GetZ() / 105.95640);
-	}
-	else
-		tempColor.SetRGBValue(ColorRGB(r,g,b), GetColorReference().m_standard==UHDTV3?CColorReference(UHDTV2):cRef);
-
-	ColorRGB aRGBColor = tempColor.GetRGBValue(GetColorReference().m_standard==UHDTV3?CColorReference(UHDTV2):cRef);	
-	r = aRGBColor[0];
-	g = aRGBColor[1];
-	b = aRGBColor[2];
-
-	double qr,qg,qb;
-	if (mode == 5 || mode == 7)
-	{
-		qr = getL_EOTF(r,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode);
-		qg = getL_EOTF(g,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode);
-		qb = getL_EOTF(b,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode);
-		qr = floor( (qr * 219.) + 0.5 ) / 219.;
-		qg = floor( (qg * 219.) + 0.5 ) / 219.;
-		qb = floor( (qb * 219.) + 0.5 ) / 219.;
-		if (mode == 5)
-		{
-			r = getL_EOTF(qr,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100.;
-			g = getL_EOTF(qg,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100.;
-			b = getL_EOTF(qb,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100.;
-		}
-		else
-		{
-			r = getL_EOTF(qr,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
-			g = getL_EOTF(qg,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
-			b = getL_EOTF(qb,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
-		}
-	}
-	if ( mode == 6 || mode == 4 || mode == 8 )
-    {
-		qr = (r==0)?0:pow(r, 1.0 / 2.22);
-		qg = (g==0)?0:pow(g, 1.0 / 2.22);
-		qb = (b==0)?0:pow(b, 1.0 / 2.22);
-		qr = floor( (qr * 219.) + 0.5 ) / 219.;
-		qg = floor( (qg * 219.) + 0.5 ) / 219.;
-		qb = floor( (qb * 219.) + 0.5 ) / 219.;
-		r=(r<=0||r>=1)?min(max(r,0),1):getL_EOTF(qr,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
-		g=(g<=0||g>=1)?min(max(g,0),1):getL_EOTF(qg,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
-		b=(b<=0||b>=1)?min(max(b,0),1):getL_EOTF(qb,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
-    }
-	else if ( mode < 4 )
-	{
-		qr = (r==0)?0:pow(r, 1.0 / 2.22);
-		qg = (g==0)?0:pow(g, 1.0 / 2.22);
-		qb = (b==0)?0:pow(b, 1.0 / 2.22);
-		qr = floor( (qr * 219.) + 0.5 ) / 219.;
-		qg = floor( (qg * 219.) + 0.5 ) / 219.;
-		qb = floor( (qb * 219.) + 0.5 ) / 219.;
-		r=(qr<=0||qr>=1)?min(max(qr,0),1):pow(qr, gamma);
-		g=(qg<=0||qg>=1)?min(max(qg,0),1):pow(qg, gamma);
-		b=(qb<=0||qb>=1)?min(max(qb,0),1):pow(qb, gamma);
-	}
-	
-	if (GetConfig()->m_CCMode == MASCIOR50) //direct codes for HDR10 50%/50% primaries/secondaries
+	if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= LG400017)
 	{
 		r=RGB[i][0],g=RGB[i][1],b=RGB[i][2];
-		r = getL_EOTF(r,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100.;
-		g = getL_EOTF(g,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100.;
-		b = getL_EOTF(b,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100.;
+		double PeakWhite = 700; //default 2017 LGs
+		
+		if (White.isValid())
+			PeakWhite = White.GetY();
+
+		switch (GetConfig()->m_CCMode) //Special HDR sequences
+		{
+			case MASCIOR50:
+				{
+					r = getL_EOTF(r,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100.;
+					g = getL_EOTF(g,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100.;
+					b = getL_EOTF(b,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100.;
+				}
+			break;
+			case LG54016: 
+				{
+					double levels[21] = {0.0,0.0033,0.0059,0.0168,0.0418,0.0636,0.0941,0.1138,
+					0.1356,0.1632,0.1936,0.2319,0.2741,0.3271,0.3856,0.4588,0.5394,0.6403,0.7514,0.8905,1.0};
+					r = levels[i] / 100., g=levels[i] / 100., b=levels[i] / 100.;
+				break;
+				}
+			case LG54017: //2017 specified as PQ L normalized to 10000.
+				{
+					double levels1[21] = {0.0,0.00041568721,0.0010963512,0.0025700175,0.0036186520,0.0051448577,0.0059534422,0.0068068908,0.0080930827,0.0095057554,0.010926765,0.012793139,0.014811335,0.016962938,0.019784122,0.023048520,0.026571914,0.030322742,0.034906582,0.040533540,PeakWhite/10000.};
+					r = levels1[i] * 10000. / PeakWhite / 100., g=levels1[i] * 10000. / PeakWhite / 100., b=levels1[i] * 10000. / PeakWhite / 100.;
+				break;
+				}
+			case LG100017:
+				{
+					double levels2[21] = {0,0.00068780816,0.0015811979,0.0033531274,0.0047793624,0.0067374526,0.0080930827,0.0093174258,0.011035500,0.012668243,0.014811335,0.016799930,0.019408523,0.022187297,0.025104679,0.028928159,0.032997985,0.038327360,0.044075792,0.050192776,PeakWhite/10000.};
+					r = levels2[i] * 10000. / PeakWhite / 100., g=levels2[i] * 10000. / PeakWhite / 100., b=levels2[i] * 10000. / PeakWhite / 100.;
+				break;
+				}
+			case LG400017:
+				{
+					double levels3[21] = {0.,0.00090633254,0.0021676269,0.0046300845,0.0067374526,0.0092245709,0.010819026,0.012793139,0.014956038,0.017127426,0.020360505,0.023048520,0.027079017,0.031190355,0.036578259,0.042072311,0.048815980,0.055573426,0.063244199,0.063358607,PeakWhite/10000.};
+					r = levels3[i] * 10000. / PeakWhite /  100., g=levels3[i] * 10000. / PeakWhite / 100., b=levels3[i] * 10000. / PeakWhite / 100.;
+				break;
+				}
+		}
 	}
+	else
+	{
+
+		// linearize R'G'B'
+		if (const_XYZ && mode == 5)
+		{
+			tempColor.SetRGBValue(ColorRGB(r,g,b), CColorReference((GetConfig()->m_CCMode == MASCIOR50)?UHDTV:HDTV));
+			tempColor.SetX(tempColor.GetX() / 105.95640); //50% reference for HDR-10
+			tempColor.SetY(tempColor.GetY() / 105.95640);
+			tempColor.SetZ(tempColor.GetZ() / 105.95640);
+		}
+		else
+			tempColor.SetRGBValue(ColorRGB(r,g,b), GetColorReference().m_standard==UHDTV3?CColorReference(UHDTV2):cRef);
+
+		ColorRGB aRGBColor = tempColor.GetRGBValue(GetColorReference().m_standard==UHDTV3?CColorReference(UHDTV2):cRef);	
+		r = aRGBColor[0];
+		g = aRGBColor[1];
+		b = aRGBColor[2];
+
+		double qr,qg,qb;
+		if (mode == 5 || mode == 7)
+		{
+			qr = getL_EOTF(r,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode);
+			qg = getL_EOTF(g,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode);
+			qb = getL_EOTF(b,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode);
+			qr = floor( (qr * 219.) + 0.5 ) / 219.;
+			qg = floor( (qg * 219.) + 0.5 ) / 219.;
+			qb = floor( (qb * 219.) + 0.5 ) / 219.;
+			if (mode == 5)
+			{
+				r = getL_EOTF(qr,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100.;
+				g = getL_EOTF(qg,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100.;
+				b = getL_EOTF(qb,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100.;
+			}
+			else
+			{
+				r = getL_EOTF(qr,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+				g = getL_EOTF(qg,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+				b = getL_EOTF(qb,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+			}
+		}
+		if ( mode == 6 || mode == 4 || mode == 8 )
+		{
+			qr = (r==0)?0:pow(r, 1.0 / 2.22);
+			qg = (g==0)?0:pow(g, 1.0 / 2.22);
+			qb = (b==0)?0:pow(b, 1.0 / 2.22);
+			qr = floor( (qr * 219.) + 0.5 ) / 219.;
+			qg = floor( (qg * 219.) + 0.5 ) / 219.;
+			qb = floor( (qb * 219.) + 0.5 ) / 219.;
+			r=(r<=0||r>=1)?min(max(r,0),1):getL_EOTF(qr,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+			g=(g<=0||g>=1)?min(max(g,0),1):getL_EOTF(qg,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+			b=(b<=0||b>=1)?min(max(b,0),1):getL_EOTF(qb,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+		}
+		else if ( mode < 4 )
+		{
+			qr = (r==0)?0:pow(r, 1.0 / 2.22);
+			qg = (g==0)?0:pow(g, 1.0 / 2.22);
+			qb = (b==0)?0:pow(b, 1.0 / 2.22);
+			qr = floor( (qr * 219.) + 0.5 ) / 219.;
+			qg = floor( (qg * 219.) + 0.5 ) / 219.;
+			qb = floor( (qb * 219.) + 0.5 ) / 219.;
+			r=(qr<=0||qr>=1)?min(max(qr,0),1):pow(qr, gamma);
+			g=(qg<=0||qg>=1)?min(max(qg,0),1):pow(qg, gamma);
+			b=(qb<=0||qb>=1)?min(max(qb,0),1):pow(qb, gamma);
+		}
+	
+	}
+
+//		if (GetConfig()->m_CCMode == MASCIOR50) //direct codes for HDR10 50%/50% primaries/secondaries
+//		{
+//			r=RGB[i][0],g=RGB[i][1],b=RGB[i][2];
+//			r = getL_EOTF(r,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100.;
+//			g = getL_EOTF(g,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100.;
+//			b = getL_EOTF(b,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100.;
+//		}
 
 	ccRef.SetRGBValue(ColorRGB(r,g,b),GetColorReference().m_standard==UHDTV3?CColorReference(UHDTV2):cRef);
 	

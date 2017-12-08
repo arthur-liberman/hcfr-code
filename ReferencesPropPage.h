@@ -67,8 +67,8 @@ public:
     double  m_GammaRel;
 	double	m_ManualBlack;
 	double  m_Split;
-	double	m_MasterMinL, m_MasterMaxL, m_TargetMinL, m_TargetMaxL, m_DiffuseL;
-	CEdit	m_TargetMinLCtrl, m_TargetMaxLCtrl;
+	double	m_MasterMinL, m_MasterMaxL, m_TargetMinL, m_TargetMaxL, m_DiffuseL, m_TargetMinLUser, m_TargetMaxLUser, m_DiffuseLUser;
+	CEdit	m_TargetMinLCtrl, m_TargetMaxLCtrl, m_DiffuseLCtrl;
 	BOOL	m_changeWhiteCheck;
 	CEdit	m_changeWhiteCheckCtrl;
 	BOOL	m_useMeasuredGamma;

@@ -988,6 +988,7 @@ void CMainView::InitGrid()
 	else if ( m_displayMode == 11)
 	{
 		BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR || GetConfig()->m_CCMode == MASCIOR50);
+		isExtPat = (isExtPat || GetConfig()->m_CCMode > 19);
         if (isExtPat)
             size = (GetConfig()->GetCColorsSize());		
         else
@@ -1090,6 +1091,7 @@ void CMainView::InitGrid()
 		Item.col = i+1;
 		Item.nFormat = DT_CENTER|DT_WORDBREAK;
 		BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR || GetConfig()->m_CCMode == MASCIOR50);
+		isExtPat = (isExtPat || GetConfig()->m_CCMode > 19);
 
 		switch ( m_displayMode )
 		{
@@ -2063,7 +2065,10 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 								else
 									YWhite = YWhite * 94.37844 / GetConfig()->m_DiffuseL ;
 							else
-								YWhite = YWhite * 94.37844 / GetConfig()->m_DiffuseL ;
+								if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= LG400017 && m_displayMode == 11)	
+									YWhite = GetDocument()->GetMeasure()->GetGray((GetDocument()->GetMeasure()->GetGrayScaleSize()-1)).GetY() ;
+								else
+									YWhite = YWhite * 94.37844 / GetConfig()->m_DiffuseL ;
 						}
 					}
 
@@ -2202,6 +2207,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						RefLuma [ 3 ] = GetDocument()->GetMeasure()->GetRefSecondary(0).GetLuminance();
 						RefLuma [ 4 ] = GetDocument()->GetMeasure()->GetRefSecondary(1).GetLuminance();
 						RefLuma [ 5 ] = GetDocument()->GetMeasure()->GetRefSecondary(2).GetLuminance();
+						RefLuma [ 6 ] = 1.0;
 						break ;
 					case 5:
 						satcolor = GetDocument()->GetMeasure()->GetRefSat(0, sat, (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
@@ -2281,7 +2287,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						else
 						{
 							if ( ( (GetColorReference().m_standard == UHDTV2 && nCol == satsize) || GetColorReference().m_standard == HDTV || GetColorReference().m_standard == UHDTV) && m_displayMode != 11 && !shiftDiffuse) //&& nCol == (satsize)
-								white.SetY(92.254965);
+								white.SetY(92.25496);
 							else
 								white.SetY(94.37844);
 						}
@@ -2294,11 +2300,14 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 							else
 								white.SetY(94.37844);
 						else
-							white.SetY(94.37844);
+							if ((GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= LG400017) && m_displayMode == 11)
+								white.SetY(GetDocument()->GetMeasure()->GetGray((GetDocument()->GetMeasure()->GetGrayScaleSize()-1)).GetY());
+							else
+								white.SetY(94.37844);
 					}
 				}
 
-				if ( nCol2 < ( (m_displayMode > 11 || m_displayMode < 5) ? 7 : 1001) && white.isValid() && white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) > 0.0001 )
+				if ( (nCol2 < ( (m_displayMode > 11 || m_displayMode < 5) ? 7 : 1001) || (nCol2 == 7 && isHDR) ) && white.isValid() && white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) > 0.0001 )
     		    {
 					if (aMeasure.isValid() && aComponentNum != 8 && aComponentNum != 6 )
 					{
@@ -2685,6 +2694,8 @@ void CMainView::UpdateGrid()
         GetConfig()->SetPropertiesSheetValues();
 
 		BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR || GetConfig()->m_CCMode == MASCIOR50);
+		isExtPat = (isExtPat || GetConfig()->m_CCMode > 19);
+
 		switch ( m_displayMode )
 		{
 			case 0:
@@ -2877,16 +2888,17 @@ void CMainView::UpdateGrid()
         
 		CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
 	    CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
-		if (!GetConfig()->m_bOverRideTargs)
+		if (!GetConfig()->m_bOverRideTargs && Black.isValid() && White.isValid() && GetConfig()->m_GammaOffsetType == 5)
 		{
-			if (Black.isValid())
+			if (Black.GetY() < White.GetY())
 				GetConfig()->m_TargetMinL = Black.GetY()>1e-5?Black.GetY():0.0;
 			else
 				GetConfig()->m_TargetMinL = 0.0;
-			if (White.isValid())
+
+			if (White.GetY() > 0)
 				GetConfig()->m_TargetMaxL = White.GetY();
 			else
-				GetConfig()->m_TargetMaxL = 100.0;
+				GetConfig()->m_TargetMaxL = 700.;
 		}
 
 		for( int j = 0 ; j < nCount ; j ++ )
@@ -3259,12 +3271,21 @@ void CMainView::UpdateGrid()
 					 }
 			}
 			
-			if (isHDR && m_displayMode <=11 && m_displayMode >= 5)
+			if ( (isHDR && m_displayMode <=11 && m_displayMode >= 5) )
 			{
-				 refColor.SetX((refColor.GetX() * 105.95640));
-				 refColor.SetY((refColor.GetY() * 105.95640));
-				 refColor.SetZ((refColor.GetZ() * 105.95640));
-			 }
+				if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= LG400017 && m_displayMode == 11)	
+				{
+					refColor.SetX((refColor.GetX() * 100.));
+					refColor.SetY((refColor.GetY() * 100.));
+					refColor.SetZ((refColor.GetZ() * 100.));
+				}
+				else
+				{
+					refColor.SetX((refColor.GetX() * 105.95640));
+					refColor.SetY((refColor.GetY() * 105.95640));
+					refColor.SetZ((refColor.GetZ() * 105.95640));
+				}
+			}
 
 			for( int i = 0 ; i < nRows ; i ++ )
 			{
@@ -3682,6 +3703,7 @@ void CMainView::UpdateGrid()
 		{
 			CString	Msg, Tmp;
 			BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR || GetConfig()->m_CCMode == MASCIOR50);
+			isExtPat = (isExtPat || GetConfig()->m_CCMode > 19);
 			Msg.LoadString ( IDS_CC24COLORS );
 			Msg += " - ";
 			Msg += (GetConfig()->m_CCMode == GCD?"Classic GCD":(GetConfig()->m_CCMode==MCD?"Classic MCD":(GetConfig()->m_CCMode==SKIN?"Pantone skin tones":(GetConfig()->m_CCMode==CCSG?"CalMan SG":isExtPat?GetConfig()->GetCColorsN(-1).c_str():(GetConfig()->m_CCMode==CMS?"CalMAN SG skin tones":(GetConfig()->m_CCMode==CPS?"ChromaPure skin tones":(GetConfig()->m_CCMode==CMC?"Classic CalMAN":"RGB Luminance Ramps")))))));
@@ -5034,6 +5056,7 @@ void CMainView::OnDeleteGrayscale()
 		int	j;
 		CCPatterns cPat = GetConfig()->m_CCMode;
 		BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR || GetConfig()->m_CCMode == MASCIOR50);
+		isExtPat = (isExtPat || GetConfig()->m_CCMode > 19);
 		switch ( m_displayMode )
 		{
 			case 0:

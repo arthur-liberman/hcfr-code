@@ -56,9 +56,12 @@ CReferencesPropPage::CReferencesPropPage() : CPropertyPageWithHelp(CReferencesPr
     m_manualWhitey = 0.3290;
 	m_MasterMinL = 0.0;
 	m_MasterMaxL = 400.0;
-	m_TargetMinL = 0.05;
-	m_TargetMaxL = 500.;
+	m_TargetMinL = 0.00;
+	m_TargetMinLUser = m_TargetMinL;
+	m_TargetMaxL = 700.;
+	m_TargetMaxLUser = m_TargetMaxL;
 	m_DiffuseL = 94.37844;
+	m_DiffuseLUser = m_DiffuseL;
     //}}AFX_DATA_INIT
 
 	m_isModified=FALSE;
@@ -87,6 +90,7 @@ void CReferencesPropPage::DoDataExchange(CDataExchange* pDX)
   	DDX_Text(pDX, IDC_EDIT_SPLIT, m_Split);
   	DDX_Text(pDX, IDC_EDIT_GAMMA_AVERAGE, m_GammaAvg);
   	DDX_Text(pDX, IDC_EDIT_DIFFUSE_WHITE, m_DiffuseL);
+  	DDX_Control(pDX, IDC_EDIT_DIFFUSE_WHITE, m_DiffuseLCtrl);
 	DDV_MinMaxDouble(pDX, m_DiffuseL, 10., 200.);
 	DDX_Text(pDX, IDC_EDIT_MASTER_MINL, m_MasterMinL);
 	DDV_MinMaxDouble(pDX, m_MasterMinL, 0., 0.5);
@@ -94,10 +98,10 @@ void CReferencesPropPage::DoDataExchange(CDataExchange* pDX)
 	DDV_MinMaxDouble(pDX, m_MasterMaxL, 1000., 10000.);
   	DDX_Text(pDX, IDC_EDIT_TARGET_MINL, m_TargetMinL);
   	DDX_Control(pDX, IDC_EDIT_TARGET_MINL, m_TargetMinLCtrl);
-	DDV_MinMaxDouble(pDX, m_TargetMinL, 0., 0.5);
+	DDV_MinMaxDouble(pDX, m_TargetMinL, 0., 100.);
   	DDX_Text(pDX, IDC_EDIT_TARGET_MAXL, m_TargetMaxL);
   	DDX_Control(pDX, IDC_EDIT_TARGET_MAXL, m_TargetMaxLCtrl);
-	DDV_MinMaxDouble(pDX, m_TargetMaxL, 50., 4000.);
+	DDV_MinMaxDouble(pDX, m_TargetMaxL, 1., 700.);
 	DDV_MinMaxDouble(pDX, m_GammaRef, 1., 5.);
 	DDV_MinMaxDouble(pDX, m_GammaAvg, 1., 5.);
 	DDV_MinMaxDouble(pDX, m_GammaRel, 0., 5.);
@@ -207,9 +211,19 @@ void CReferencesPropPage::OnCheckColors()
 
 BOOL CReferencesPropPage::OnApply() 
 {
+	if (m_TargetMinL >= m_TargetMaxL)
+	{
+		m_TargetMinL = 0;
+		GetConfig()->m_TargetMinL = 0;
+		GetColorApp()->InMeasureMessageBox("Minumum Target Luminance must be greater than Maximum, setting to 0.",MB_OK); 
+	}
+
 	GetConfig()->	WriteProfileDouble("References","Manual Black Level",m_ManualBlack);
 	GetConfig()->	WriteProfileDouble("References","Use Black Level",m_userBlack);
 	GetConfig()->	WriteProfileDouble("References","Override Targets",m_bOverRideTargs);
+	GetConfig()->	WriteProfileDouble("References","DiffuseLValue",m_DiffuseLUser);
+	GetConfig()->	WriteProfileDouble("References","TargetMinLValue",m_TargetMinLUser);
+	GetConfig()->	WriteProfileDouble("References","TargetMaxLValue",m_TargetMaxLUser);
 	if (m_colorStandard == HDTVa || m_colorStandard == HDTVb || m_colorStandard == UHDTV3 || m_colorStandard == CC6) 
 	{
 		m_changeWhiteCheckCtrl.EnableWindow(FALSE);
@@ -376,6 +390,19 @@ BOOL CReferencesPropPage::OnInitDialog()
 	m_manualWhiteyold = m_manualWhitey;
 	m_TargetMinLCtrl.EnableWindow(m_bOverRideTargs);
 	m_TargetMaxLCtrl.EnableWindow(m_bOverRideTargs);
+	if (!m_bOverRideTargs)
+	{
+		m_DiffuseL = 94.37844;
+		m_TargetMinL = 0.0;
+		m_TargetMaxL = 700.0;
+	}
+	else
+	{
+		GetConfig()->m_DiffuseL = m_DiffuseL;
+		GetConfig()->m_TargetMinL = m_TargetMinL;
+		GetConfig()->m_TargetMaxL = m_TargetMaxL;
+	}
+	m_DiffuseLCtrl.EnableWindow(m_bOverRideTargs);
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -458,8 +485,27 @@ void CReferencesPropPage::OnUserOverRideTargsCheck()
 	SetModified(TRUE);	
 	UpdateData(TRUE);
 	m_bSave = TRUE;
+	m_DiffuseLCtrl.EnableWindow(m_bOverRideTargs);
+	if (!m_bOverRideTargs)
+	{
+		m_DiffuseLUser = m_DiffuseL;
+		m_DiffuseL = 94.37844;
+		m_TargetMinLUser = m_TargetMinL;
+		m_TargetMinL = 0.0;
+		m_TargetMaxLUser = m_TargetMaxL;
+		m_TargetMaxL = 700.;
+	}
+	else
+	{
+		m_DiffuseL = m_DiffuseLUser;
+		m_TargetMinL = m_TargetMinLUser;
+		m_TargetMaxL = m_TargetMaxLUser;
+	}
+
+	GetConfig()->m_DiffuseL = m_DiffuseL;
 	m_TargetMinLCtrl.EnableWindow(m_bOverRideTargs);
 	m_TargetMaxLCtrl.EnableWindow(m_bOverRideTargs);
+	UpdateData(FALSE);
 }
 
 void CReferencesPropPage::OnSelchangeWhiteCombo()
