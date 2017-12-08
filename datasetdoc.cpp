@@ -4611,7 +4611,8 @@ void CDataSetDoc::OnMeasureSatCC24()
 	CString	Msg, MsgQueue, TmpStr;
 
 	BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR || GetConfig()->m_CCMode == MASCIOR50);
-    int		nNbPoints = (GetConfig()->m_CCMode==CCSG?96:isExtPat?GetConfig()->GetCColorsSize():(GetConfig()->m_CCMode==AXIS?71:24));
+	isExtPat = (isExtPat || GetConfig()->m_CCMode > 19);
+	int		nNbPoints = (GetConfig()->m_CCMode==CCSG?96:isExtPat?GetConfig()->GetCColorsSize():(GetConfig()->m_CCMode==AXIS?71:24));
 	if (GetConfig()->m_CCMode==CMS || GetConfig()->m_CCMode==CPS)
 		nNbPoints = 19;
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
@@ -4702,7 +4703,9 @@ void CDataSetDoc::OnMeasureSatAll()
 	CString	Msg, MsgQueue, TmpStr;
 
 	BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR || GetConfig()->m_CCMode == MASCIOR50);
-    int		nNbPoints = (GetMeasure () -> GetSaturationSize ()) * 6 + (GetConfig()->m_CCMode==CCSG?96:isExtPat?GetConfig()->GetCColorsSize():(GetConfig()->m_CCMode==AXIS?71:24));
+	isExtPat = (isExtPat || GetConfig()->m_CCMode > 19);
+    
+	int		nNbPoints = (GetMeasure () -> GetSaturationSize ()) * 6 + (GetConfig()->m_CCMode==CCSG?96:isExtPat?GetConfig()->GetCColorsSize():(GetConfig()->m_CCMode==AXIS?71:24));
 	if (GetConfig()->m_CCMode==CMS || GetConfig()->m_CCMode==CPS)
 		nNbPoints = GetMeasure () -> GetSaturationSize () * 6 + 19;
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
@@ -4833,6 +4836,7 @@ void CDataSetDoc::OnMeasureFullTiltBoogie()
 {
 	CString	Msg, MsgQueue, TmpStr;
 	BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR || GetConfig()->m_CCMode == MASCIOR50);
+	isExtPat = (isExtPat || GetConfig()->m_CCMode > 19);
     int		nNbPoints2 = (GetMeasure () -> GetSaturationSize ()) * 6 + (GetConfig()->m_CCMode==CCSG?96:isExtPat?GetConfig()->GetCColorsSize():(GetConfig()->m_CCMode==AXIS?71:24));
 	if (GetConfig()->m_CCMode==CMS || GetConfig()->m_CCMode==CPS)
 		nNbPoints2 = GetMeasure () -> GetSaturationSize () * 6 + 19;

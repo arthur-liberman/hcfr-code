@@ -471,12 +471,14 @@ void CGraphControl::FitYScale(BOOL doRound, double roundStep)
 					maxY=m_graphArray[j].m_pointArray[i].y;
 			}
 		}
+
 	if(doRound)
 	{
 		minY=(floor(minY/roundStep)-1) * roundStep;
 		maxY=(floor(maxY/roundStep)+1) * roundStep;
 	}
-
+	//force all luminance plots to minY=0
+	minY = max(minY,0);
 	m_minYGrow=min(minY,m_minYGrow);
 	m_maxYGrow=max(maxY,m_maxYGrow);
 	SetScale(m_minX,m_maxX,minY,maxY);

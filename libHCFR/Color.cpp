@@ -1350,8 +1350,6 @@ double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhit
     }
 	if (!(colorReference.m_standard == HDTVb || colorReference.m_standard == CC6 || colorReference.m_standard == HDTVa))
 		cRef=colorReference;
-	try
-	{
 	switch (dE_form)
 	{
 		case 0:
@@ -1497,15 +1495,11 @@ double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhit
 		        double RC = 2 * sqrt ( pow(Cp, 7.0) / (pow(Cp, 7.0) + pow(25.0, 7.0)) );
 		        double RT = -1.0 * RC * sin(2 * dtheta / 180. * PI);
 		        dE = sqrt ( pow( dLp / SL, 2.0) + pow( dCp / SC, 2.0) + pow( dHp / SH, 2.0) + RT * (dCp / SC) * (dHp / SH));
-            }
+					std::cerr << "Unexpected Exception in measurement thread" << std::endl;
+				}
 		break;
 		}
-	}
 }
-    catch(...)
-    {
-        std::cerr << "Unexpected Exception in measurement thread" << std::endl;
-    }
 	return dE;
 }
 
@@ -2958,8 +2952,6 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 
 	case MASCIOR50:
         {//read in user defined colors
-//			constant_XYZ = TRUE;
-//			m_bRecalc = TRUE;
 			strcat(appPath, "\\Mascior50_50_BT2020_HDR.csv");
             ifstream colorFile(appPath);
             std::string line;
@@ -2988,7 +2980,127 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
             break;
         }
 
-	case CMDNR:
+		case LG54017:
+        {//read in user defined colors
+			strcat(appPath, "\\LG_540_Base_Tone_Curve_2017.csv");
+            ifstream colorFile(appPath);
+            std::string line;
+            int cnt = 0;
+            int n1,n2,n3;
+            if (!colorFile) 
+            {
+				bOk = false;
+	        }
+			else
+			{
+            while(std::getline(colorFile, line) && cnt < 100 ) //currently limited to 1000 colors
+            {
+                std::istringstream s(line);
+                std::string field;
+                s >> n1;
+                getline(s, field,',');
+                s >> n2;
+                getline(s, field,',');
+                s >> n3;
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
+                cnt++;
+            }
+			n_elements= cnt;
+			}
+            break;
+        }
+
+		case LG100017:
+        {//read in user defined colors
+			strcat(appPath, "\\LG_1000_Base_Tone_Curve_2017.csv");
+            ifstream colorFile(appPath);
+            std::string line;
+            int cnt = 0;
+            int n1,n2,n3;
+            if (!colorFile) 
+            {
+				bOk = false;
+	        }
+			else
+			{
+            while(std::getline(colorFile, line) && cnt < 100 ) //currently limited to 1000 colors
+            {
+                std::istringstream s(line);
+                std::string field;
+                s >> n1;
+                getline(s, field,',');
+                s >> n2;
+                getline(s, field,',');
+                s >> n3;
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
+                cnt++;
+            }
+			n_elements= cnt;
+			}
+            break;
+        }
+
+		case LG400017:
+        {//read in user defined colors
+			strcat(appPath, "\\LG_4000_Base_Tone_Curve_2017.csv");
+            ifstream colorFile(appPath);
+            std::string line;
+            int cnt = 0;
+            int n1,n2,n3;
+            if (!colorFile) 
+            {
+				bOk = false;
+	        }
+			else
+			{
+            while(std::getline(colorFile, line) && cnt < 100 ) //currently limited to 1000 colors
+            {
+                std::istringstream s(line);
+                std::string field;
+                s >> n1;
+                getline(s, field,',');
+                s >> n2;
+                getline(s, field,',');
+                s >> n3;
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
+                cnt++;
+            }
+			n_elements= cnt;
+			}
+            break;
+        }
+
+		case LG54016:
+        {//read in user defined colors
+			strcat(appPath, "\\LG_540_Base_Tone_Curve_2016.csv");
+            ifstream colorFile(appPath);
+            std::string line;
+            int cnt = 0;
+            int n1,n2,n3;
+            if (!colorFile) 
+            {
+				bOk = false;
+	        }
+			else
+			{
+            while(std::getline(colorFile, line) && cnt < 100 ) //currently limited to 1000 colors
+            {
+                std::istringstream s(line);
+                std::string field;
+                s >> n1;
+                getline(s, field,',');
+                s >> n2;
+                getline(s, field,',');
+                s >> n3;
+                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
+                cnt++;
+            }
+			n_elements= cnt;
+			}
+            break;
+        }
+
+		case CMDNR:
         {//read in user defined colors
 			m_bRecalc = FALSE;
 			strcat(appPath, "\\CM Dynamic Range (Clipping).csv");

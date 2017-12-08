@@ -71,10 +71,14 @@ typedef enum
 	CM10SAT75 = 16,
 	CM6NB = 17,
 	CMDNR = 18,
-	RANDOM250 = 19,
-	RANDOM500 = 20,
-    USER = 21,
-	MASCIOR50 = 22
+	MASCIOR50 = 19,
+	LG54016 = 20,
+	LG54017 = 21,
+	LG100017 = 22,
+	LG400017 = 23,
+	RANDOM250 = 24,
+	RANDOM500 = 25,
+    USER = 26
 } CCPatterns;
 
 typedef enum 
@@ -727,6 +731,6 @@ extern bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBD
 extern Matrix ComputeConversionMatrix(const ColorXYZ measures[3], const ColorXYZ references[3], const ColorXYZ & WhiteTest, const ColorXYZ & WhiteRef, bool	bUseOnlyPrimaries);
 double ArrayIndexToGrayLevel ( int nCol, int nSize, bool m_bUseRoundDown, bool m_b10bit = FALSE );
 double GrayLevelToGrayProp ( double Level, bool m_bUseRoundDown, bool m_b10bit = FALSE );
-double getL_EOTF ( double x, CColor White, CColor Black, double g_rel, double split, int mode, double m_DiffuseL = 94.37844, double m_MasterMinL = 0.0, double m_MasterMaxL = 4000.0, double m_TargetMinL = 0.05, double m_TargetMaxL = 500.0, bool ToneMap = FALSE );
+double getL_EOTF ( double x, CColor White, CColor Black, double g_rel, double split, int mode, double m_DiffuseL = 94.37844, double m_MasterMinL = 0.0, double m_MasterMaxL = 4000.0, double m_TargetMinL = 0.00, double m_TargetMaxL = 700.0, bool ToneMap = FALSE );
 
 #endif // !defined(COLOR_H_INCLUDED_)

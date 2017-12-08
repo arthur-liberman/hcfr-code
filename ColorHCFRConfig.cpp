@@ -261,7 +261,7 @@ void CColorHCFRConfig::InitDefaults()
 	m_GammaRef=2.2;
 	m_GammaAvg=2.2;
 	m_MasterMinL = 0.0;
-	m_MasterMaxL = 400.0;
+	m_MasterMaxL = 4000.0;
 	m_TargetMinL = 0.05;
 	m_TargetMaxL = 500.;
 	m_DiffuseL = 94.37844;
@@ -968,6 +968,18 @@ void CColorHCFRConfig::GetCColors()
 				case MASCIOR50:
 		        fName=strcat(appPath, "\\color\\Mascior50_50_BT2020_HDR.csv");
 				break;
+				case LG54016:
+		        fName=strcat(appPath, "\\color\\LG_540_Base_Tone_Curve_2016.csv");
+				break;
+				case LG54017:
+		        fName=strcat(appPath, "\\color\\LG_540_Base_Tone_Curve_2017.csv");
+				break;
+				case LG100017:
+		        fName=strcat(appPath, "\\color\\LG_1000_Base_Tone_Curve_2017.csv");
+				break;
+				case LG400017:
+		        fName=strcat(appPath, "\\color\\LG_4000_Base_Tone_Curve_2017.csv");
+				break;
 			}
 			ifstream colorFile(fName);
             std::string line;
@@ -1025,6 +1037,7 @@ int CColorHCFRConfig::GetCColorsSize()
 {
     int cnt = 24;
 	BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR || GetConfig()->m_CCMode == MASCIOR50);
+	isExtPat = (isExtPat || GetConfig()->m_CCMode > 19);
     if (isExtPat)
 		cnt = numCC;
 		else if (GetConfig()->m_CCMode == CCSG) 
