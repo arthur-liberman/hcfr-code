@@ -262,6 +262,8 @@ void CColorHCFRConfig::InitDefaults()
 	m_GammaAvg=2.2;
 	m_MasterMinL = 0.0;
 	m_MasterMaxL = 4000.0;
+	m_ContentMaxL = 4000.0;
+	m_FrameAvgMaxL = 400.0;
 	m_TargetMinL = 0.05;
 	m_TargetMaxL = 500.;
 	m_DiffuseL = 94.37844;
@@ -356,6 +358,8 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_GammaAvg=GetProfileDouble("References","GammaAvgValue",2.2);
 	m_MasterMinL=GetProfileDouble("References","MasterMinLValue",0.0);
 	m_MasterMaxL=GetProfileDouble("References","MasterMaxLValue",4000.0);
+	m_ContentMaxL=GetProfileDouble("References","ContentMaxLValue",4000.0);
+	m_FrameAvgMaxL=GetProfileDouble("References","FrameAvgMaxLValue",400.0);
 	m_TargetMinL=GetProfileDouble("References","TargetMinLValue",0.05);
 	m_TargetMaxL=GetProfileDouble("References","TargetMaxLValue",500.0);
 	m_DiffuseL=GetProfileDouble("References","DiffuseLValue", 94.37844);
@@ -452,6 +456,8 @@ void CColorHCFRConfig::SaveSettings()
 	WriteProfileDouble("References","GammaSplitValue",m_Split);
 	WriteProfileDouble("References","MasterMinLValue",m_MasterMinL);
 	WriteProfileDouble("References","MasterMaxLValue",m_MasterMaxL);
+	WriteProfileDouble("References","ContentMaxLValue",m_ContentMaxL);
+	WriteProfileDouble("References","FrameAvgMaxLValue",m_FrameAvgMaxL);
 	WriteProfileDouble("References","TargetMinLValue",m_TargetMinL);
 	WriteProfileDouble("References","TargetMaxLValue",m_TargetMaxL);
 	WriteProfileDouble("References","DiffuseLValue",m_DiffuseL);
@@ -524,6 +530,8 @@ void CColorHCFRConfig::SetPropertiesSheetValues()
   	m_referencesPropertiesPage.m_GammaRel=m_GammaRel;
   	m_referencesPropertiesPage.m_MasterMinL=m_MasterMinL;
   	m_referencesPropertiesPage.m_MasterMaxL=m_MasterMaxL;
+  	m_referencesPropertiesPage.m_ContentMaxL=m_ContentMaxL;
+  	m_referencesPropertiesPage.m_FrameAvgMaxL=m_FrameAvgMaxL;
   	m_referencesPropertiesPage.m_TargetMinL=m_TargetMinL;
   	m_referencesPropertiesPage.m_TargetMaxL=m_TargetMaxL;
   	m_referencesPropertiesPage.m_DiffuseL=m_DiffuseL;
@@ -640,6 +648,8 @@ BOOL CColorHCFRConfig::GetPropertiesSheetValues()
 	m_GammaRel=m_referencesPropertiesPage.m_GammaRel;
 	m_MasterMinL=m_referencesPropertiesPage.m_MasterMinL;
 	m_MasterMaxL=m_referencesPropertiesPage.m_MasterMaxL;
+	m_ContentMaxL=m_referencesPropertiesPage.m_ContentMaxL;
+	m_FrameAvgMaxL=m_referencesPropertiesPage.m_FrameAvgMaxL;
 	m_TargetMinL=m_referencesPropertiesPage.m_TargetMinL;
 	m_TargetMaxL=m_referencesPropertiesPage.m_TargetMaxL;
 	m_DiffuseL=m_referencesPropertiesPage.m_DiffuseL;
