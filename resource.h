@@ -276,10 +276,12 @@
 #define IDR_PATTERN_CROSSdv             394
 #define IDC_EDIT_DIFFUSE_WHITE          395
 #define IDC_EDIT_MASTER_MINL            396
+#define IDC_EDIT_CONTENT_MAXL           397
 #define IDC_EDIT_TARGET_MINL            398
 #define IDC_EDIT_MASTER_MAXL            399
 #define IDC_EDIT_TARGET_MAXL            400
 #define IDC_USE_TONEMAP                 401
+#define IDC_EDIT_FRAME_AVG_MAXL         402
 #define IDC_GRAYSCALE_GRID              1001
 #define IDC_GRAPH_TITLE                 1002
 #define IDC_SENSORMATRIX_GRID           1002

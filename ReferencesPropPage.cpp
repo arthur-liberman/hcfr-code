@@ -55,7 +55,9 @@ CReferencesPropPage::CReferencesPropPage() : CPropertyPageWithHelp(CReferencesPr
     m_manualWhitex = 0.3127;
     m_manualWhitey = 0.3290;
 	m_MasterMinL = 0.0;
-	m_MasterMaxL = 400.0;
+	m_MasterMaxL = 4000.0;
+	m_ContentMaxL = 4000.0;
+	m_FrameAvgMaxL = 400.0;
 	m_TargetMinL = 0.00;
 	m_TargetMinLUser = m_TargetMinL;
 	m_TargetMaxL = 700.;
@@ -94,8 +96,12 @@ void CReferencesPropPage::DoDataExchange(CDataExchange* pDX)
 	DDV_MinMaxDouble(pDX, m_DiffuseL, 10., 200.);
 	DDX_Text(pDX, IDC_EDIT_MASTER_MINL, m_MasterMinL);
 	DDV_MinMaxDouble(pDX, m_MasterMinL, 0., 0.5);
-  	DDX_Text(pDX, IDC_EDIT_MASTER_MAXL, m_MasterMaxL);
-	DDV_MinMaxDouble(pDX, m_MasterMaxL, 1000., 10000.);
+	DDX_Text(pDX, IDC_EDIT_MASTER_MAXL, m_MasterMaxL);
+	DDV_MinMaxDouble(pDX, m_MasterMaxL, 100., 10000.);
+	DDX_Text(pDX, IDC_EDIT_CONTENT_MAXL, m_ContentMaxL);
+	DDV_MinMaxDouble(pDX, m_ContentMaxL, 100., 10000.);
+	DDX_Text(pDX, IDC_EDIT_FRAME_AVG_MAXL, m_FrameAvgMaxL);
+	DDV_MinMaxDouble(pDX, m_FrameAvgMaxL, 100., 10000.);
   	DDX_Text(pDX, IDC_EDIT_TARGET_MINL, m_TargetMinL);
   	DDX_Control(pDX, IDC_EDIT_TARGET_MINL, m_TargetMinLCtrl);
 	DDV_MinMaxDouble(pDX, m_TargetMinL, 0., 100.);
@@ -166,6 +172,8 @@ BEGIN_MESSAGE_MAP(CReferencesPropPage, CPropertyPageWithHelp)
 	ON_EN_CHANGE(IDC_EDIT_DIFFUSE_WHITE, OnChangeEditGammaAvg)
 	ON_EN_CHANGE(IDC_EDIT_MASTER_MINL, OnChangeEditGammaAvg)
 	ON_EN_CHANGE(IDC_EDIT_MASTER_MAXL, OnChangeEditGammaAvg)
+	ON_EN_CHANGE(IDC_EDIT_CONTENT_MAXL, OnChangeEditGammaAvg)
+	ON_EN_CHANGE(IDC_EDIT_FRAME_AVG_MAXL, OnChangeEditGammaAvg)
 	ON_EN_CHANGE(IDC_EDIT_TARGET_MINL, OnChangeEditGammaAvg)
 	ON_EN_CHANGE(IDC_EDIT_TARGET_MAXL, OnChangeEditGammaAvg)
 	ON_BN_CLICKED(IDC_CHANGEWHITE_CHECK, OnChangeWhiteCheck)

@@ -67,7 +67,7 @@ public:
     double  m_GammaRel;
 	double	m_ManualBlack;
 	double  m_Split;
-	double	m_MasterMinL, m_MasterMaxL, m_TargetMinL, m_TargetMaxL, m_DiffuseL, m_TargetMinLUser, m_TargetMaxLUser, m_DiffuseLUser;
+	double	m_MasterMinL, m_MasterMaxL, m_ContentMaxL, m_FrameAvgMaxL, m_TargetMinL, m_TargetMaxL, m_DiffuseL, m_TargetMinLUser, m_TargetMaxLUser, m_DiffuseLUser;
 	CEdit	m_TargetMinLCtrl, m_TargetMaxLCtrl, m_DiffuseLCtrl;
 	BOOL	m_changeWhiteCheck;
 	CEdit	m_changeWhiteCheckCtrl;

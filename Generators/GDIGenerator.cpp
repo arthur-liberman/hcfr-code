@@ -408,8 +408,6 @@ BOOL CGDIGenerator::Init(UINT nbMeasure, bool isSpecial)
 	m_displayWindow.SetRGBScale(m_b16_235);
 	m_displayWindow.MoveToMonitor(m_hMonitor[m_activeMonitorNum]);
 
-	try
-	{
 	if (!m_HdrInterface)
 	{
 		OutputDebugString("Create HdrInterface");
@@ -427,20 +425,36 @@ BOOL CGDIGenerator::Init(UINT nbMeasure, bool isSpecial)
 		LIBHDR_HDR_METADATA_HDR10 metaData = {0};
 		if (m_bHdr10)
 		{
+			// Dump values to debug.
+			char buf[1024];
+			OutputDebugString("HDR10 Metadata to be used:");
+			sprintf_s(buf, "Red:   X = %.4f, Y = %.4f", GetConfig()->m_manualRedx, GetConfig()->m_manualRedy);
+			OutputDebugString(buf);
+			sprintf_s(buf, "Green: X = %.4f, Y = %.4f", GetConfig()->m_manualGreenx, GetConfig()->m_manualGreeny);
+			OutputDebugString(buf);
+			sprintf_s(buf, "Blue:  X = %.4f, Y = %.4f", GetConfig()->m_manualBluex, GetConfig()->m_manualBluey);
+			OutputDebugString(buf);
+			sprintf_s(buf, "White: X = %.4f, Y = %.4f", GetConfig()->m_manualWhitex, GetConfig()->m_manualWhitey);
+			OutputDebugString(buf);
+			sprintf_s(buf, "Master Max = %.2f, Master Min = %.4f", GetConfig()->m_MasterMaxL, GetConfig()->m_MasterMinL);
+			OutputDebugString(buf);
+			sprintf_s(buf, "Content Max = %.2f, Frame Avg. Max = %.2f", GetConfig()->m_ContentMaxL, GetConfig()->m_FrameAvgMaxL);
+			OutputDebugString(buf);
+
 			// Default to DCI/P3 primaries
-			metaData.RedPrimary[0] = UINT16(0.680 * 50000.0);
-			metaData.RedPrimary[1] = UINT16(0.320 * 50000.0);
-			metaData.GreenPrimary[0] = UINT16(0.265 * 50000.0);
-			metaData.GreenPrimary[1] = UINT16(0.690 * 50000.0);
-			metaData.BluePrimary[0] = UINT16(0.150 * 50000.0);
-			metaData.BluePrimary[1] = UINT16(0.060 * 50000.0);
-			metaData.WhitePoint[0] = UINT16(0.3127 * 50000.0);
-			metaData.WhitePoint[1] = UINT16(0.3290 * 50000.0);
+			metaData.RedPrimary[0] = UINT16(GetConfig()->m_manualRedx * 50000.0);
+			metaData.RedPrimary[1] = UINT16(GetConfig()->m_manualRedy * 50000.0);
+			metaData.GreenPrimary[0] = UINT16(GetConfig()->m_manualGreenx * 50000.0);
+			metaData.GreenPrimary[1] = UINT16(GetConfig()->m_manualGreeny * 50000.0);
+			metaData.BluePrimary[0] = UINT16(GetConfig()->m_manualBluex * 50000.0);
+			metaData.BluePrimary[1] = UINT16(GetConfig()->m_manualBluey * 50000.0);
+			metaData.WhitePoint[0] = UINT16(GetConfig()->m_manualWhitex * 50000.0);
+			metaData.WhitePoint[1] = UINT16(GetConfig()->m_manualWhitey * 50000.0);
 			// Default luminosity levels.
-			metaData.MaxMasteringLuminance = UINT(1000 * 10000.0);	// Max Mastering Luminance 1000  nits.
-			metaData.MinMasteringLuminance = UINT(0.005 * 10000.0);	// Min Mastering Luminance 0.005 nits.
-			metaData.MaxContentLightLevel = 1000;					// Max Content Light Level 1000  nits.
-			metaData.MaxFrameAverageLightLevel = 400;				// Frame Average Light Level 400 nits.
+			metaData.MaxMasteringLuminance = UINT(GetConfig()->m_MasterMaxL * 10000.0);
+			metaData.MinMasteringLuminance = UINT(GetConfig()->m_MasterMinL * 10000.0);
+			metaData.MaxContentLightLevel = USHORT(GetConfig()->m_ContentMaxL);
+			metaData.MaxFrameAverageLightLevel = USHORT(GetConfig()->m_FrameAvgMaxL);
 		}
 		HDR_STATUS hdrStat = m_HdrInterface->SetHDR10Mode(m_bHdr10, metaData);
 		if (SUCCEEDED(hdrStat))
@@ -454,12 +468,6 @@ BOOL CGDIGenerator::Init(UINT nbMeasure, bool isSpecial)
 	}
 	else
 		OutputDebugString("HdrInterface doesn't exist");
-
-	}
-    catch(...)
-    {
-        std::cerr << "Unexpected Exception in measurement thread" << std::endl;
-    }
 
 //	if (m_nDisplayMode == DISPLAY_GDI_Hide)
 //	{
