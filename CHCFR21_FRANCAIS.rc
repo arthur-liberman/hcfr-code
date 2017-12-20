@@ -355,6 +355,20 @@ IDI_NEARWHITE_ICON      ICON                    "res\\nearwhit.ico"
 // Dialog
 //
 
+IDD_GENERATE_SPECTRAL_SAMPLE DIALOGEX 0, 0, 225, 86
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION
+CAPTION "Colorimeter Calibration Spectral Sample"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_DISPLAY_NAME,89,17,115,14,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,107,65,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,161,65,50,14
+    GROUPBOX        "Reference Display",IDC_DISPLAY_GROUP,7,7,204,50
+    RTEXT           "Display name",IDC_STATIC,28,20,55,15
+    RTEXT           "Display technology",IDC_STATIC,17,38,66,15
+    EDITTEXT        IDC_DISPLAY_TECH,89,36,115,14,ES_AUTOHSCROLL
+END
+
 IDD_SENSOR_PROP_PAGE DIALOG 0, 0, 192, 191
 STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Matrice capteur"
@@ -2982,6 +2996,12 @@ END
 
 STRINGTABLE
 BEGIN
+    IDS_SPECTRAL_SAMPLE_USE_SPECTRO 
+                            "You must use a spectrometer as the reference instrument to create a colorimeter calibration spectral sample"
+    IDS_SPECTRAL_SAMPLE_CREATE 
+                            "Position the sensor on the screen and click yes to continue.\nYou may interrupt the readings by pressing the <ESC> key"
+    IDS_SPECTRAL_SAMPLE_UNEXPECTED_EXCEPTION 
+                            "Unexpected exception while generating colorimeter calibration spectral sample"
     IDS_REC709aREDREF       "Rec709 (75%) Red Reference"
     IDS_REC709aGREENREF     "Rec709 (75%) Green Reference"
     IDS_REC709aBLUEREF      "Rec709 (75%) Blue Reference"
