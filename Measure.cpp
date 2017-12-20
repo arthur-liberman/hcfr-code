@@ -230,8 +230,18 @@ void CMeasure::Serialize(CArchive& ar)
 
 	if (ar.IsStoring())
 	{
-	    int version = 14;
+	    int version = 15;
 		ar << version;
+
+		ar << GetConfig()->m_MasterMinL;
+		ar << GetConfig()->m_MasterMaxL;
+		ar << GetConfig()->m_TargetMinL;
+		ar << GetConfig()->m_TargetMaxL;
+		ar << GetConfig()->m_ContentMaxL;
+		ar << GetConfig()->m_FrameAvgMaxL;
+		ar << GetConfig()->m_useToneMap;
+		ar << GetConfig()->m_bOverRideTargs;
+		ar << GetConfig()->m_DiffuseL;
 
 		ar << m_NearWhiteClipCol;
 		ar << (int)GetConfig()->m_whiteTarget; //new in 12
@@ -347,10 +357,23 @@ void CMeasure::Serialize(CArchive& ar)
 	    int version;
 		ar >> version;
 
-		if ( version > 14)
+		if ( version > 15 )
 			AfxThrowArchiveException ( CArchiveException::badSchema );
 
-		if ( version > 13)
+		if ( version > 14 )
+		{
+			ar >> GetConfig()->m_MasterMinL;
+			ar >> GetConfig()->m_MasterMaxL;
+			ar >> GetConfig()->m_TargetMinL;
+			ar >> GetConfig()->m_TargetMaxL;
+			ar >> GetConfig()->m_ContentMaxL;
+			ar >> GetConfig()->m_FrameAvgMaxL;
+			ar >> GetConfig()->m_useToneMap;
+			ar >> GetConfig()->m_bOverRideTargs;
+			ar >> GetConfig()->m_DiffuseL;
+		}
+
+		if ( version > 13 )
 			ar >> m_NearWhiteClipCol;
 
 		if ( version > 11)
