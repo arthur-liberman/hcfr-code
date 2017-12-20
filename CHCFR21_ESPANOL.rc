@@ -2692,8 +2692,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,4,5,0
- PRODUCTVERSION 3,4,5,0
+ FILEVERSION 3,4,6,3
+ PRODUCTVERSION 3,4,6,3
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2741,7 +2741,7 @@ IDC_CURSOR_MEASURE      CURSOR                  "res\\cursor_meas.cur"
 
 STRINGTABLE
 BEGIN
-    IDR_MAINFRAME           "Colorimètre HCFR - 3,4,6,1"
+    IDR_MAINFRAME           "Colorimètre HCFR - 3,4,6,3"
     IDR_MESURETYPE          "\nRelevé\nRelevé\nFichiers ColorHCFR (*.chc)\n.chc\nCOLORHCFR\nRelevé de couleurs HCFR"
 END
 
