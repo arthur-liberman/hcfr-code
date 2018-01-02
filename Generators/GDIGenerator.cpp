@@ -26,7 +26,7 @@
 #include "ColorHCFR.h"
 #include "GDIGenerator.h"
 #include "madTPG.h"
-#include "..\PatternDisplay.h"
+#include "../PatternDisplay.h"
 #include "../libnum/numsup.h"
 #include "../libconv/conv.h"
 #include "../libccast/ccmdns.h"
@@ -87,13 +87,14 @@ CGDIGenerator::CGDIGenerator()
 	m_activeMonitorNum = m_monitorNb-1;
 
 	m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_DEFAULT_MODE);
-	m_b16_235 = GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0);
+	m_b16_235 = GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",1);
 	m_busePic = GetConfig()->GetProfileInt("GDIGenerator","USEPIC",0);
 	m_bLinear = GetConfig()->GetProfileInt("GDIGenerator","LOADLINEAR",1);
 	m_bHdr10 = GetConfig()->GetProfileInt("GDIGenerator","EnableHDR10",0);
 	m_bdispTrip = GetConfig()->GetProfileInt("GDIGenerator","DISPLAYTRIPLETS",1);
-    m_madVR_3d = GetConfig()->GetProfileInt("GDIGenerator","MADVR3D",0);
-    m_madVR_vLUT = GetConfig()->GetProfileInt("GDIGenerator","MADVRvLUT",0);
+    m_madVR_3d = GetConfig()->GetProfileInt("GDIGenerator","MADVR3D",1);
+    m_madVR_vLUT = GetConfig()->GetProfileInt("GDIGenerator","MADVRvLUT",1);
+    m_madVR_HDR = GetConfig()->GetProfileInt("GDIGenerator","MADVRHDR",0);
     m_madVR_OSD = GetConfig()->GetProfileInt("GDIGenerator","MADVROSD",0);
 	m_displayWindow.SetDisplayMode(m_nDisplayMode);	
 //	m_displayWindow.SetDisplayMode();	
@@ -286,6 +287,7 @@ void CGDIGenerator::SetPropertiesSheetValues()
 	m_GDIGenePropertiesPage.m_bdispTrip=m_bdispTrip;
 	m_GDIGenePropertiesPage.m_madVR_3d=m_madVR_3d;
 	m_GDIGenePropertiesPage.m_madVR_vLUT=m_madVR_vLUT;
+	m_GDIGenePropertiesPage.m_madVR_HDR=m_madVR_HDR;
 	m_GDIGenePropertiesPage.m_madVR_OSD=m_madVR_OSD;
 }
 
@@ -373,6 +375,13 @@ void CGDIGenerator::GetPropertiesSheetValues()
 	{
 		m_madVR_vLUT=m_GDIGenePropertiesPage.m_madVR_vLUT;
 		GetConfig()->WriteProfileInt("GDIGenerator","MADVRvLUT",m_madVR_vLUT);
+		SetModifiedFlag(TRUE);
+	}
+
+    if ( m_madVR_HDR!=m_GDIGenePropertiesPage.m_madVR_HDR )
+	{
+		m_madVR_HDR=m_GDIGenePropertiesPage.m_madVR_HDR;
+		GetConfig()->WriteProfileInt("GDIGenerator","MADVRHDR",m_madVR_HDR);
 		SetModifiedFlag(TRUE);
 	}
 
@@ -524,6 +533,9 @@ BOOL CGDIGenerator::DisplayRGBColormadVR( const ColorRGBDisplay& clr, bool first
       bT = (int) (b * (whiteLevel - blackLevel) + blackLevel + 0.5);
       char aBuf[128];
 	  madVR_SetDisableOsdButton(!m_madVR_OSD);
+	  madVR_SetHdrButton(m_madVR_HDR);
+	  if (m_madVR_HDR)
+		  madVR_SetHdrMetadata(GetConfig()->m_manualRedx, GetConfig()->m_manualRedy, GetConfig()->m_manualGreenx, GetConfig()->m_manualGreeny, GetConfig()->m_manualBluex, GetConfig()->m_manualBluey, GetConfig()->m_manualWhitex, GetConfig()->m_manualWhitey, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_ContentMaxL, GetConfig()->m_FrameAvgMaxL);
 	  CGDIGenerator Cgen;
 	  double bgstim = Cgen.m_bgStimPercent / 100.;
 	  madVR_SetPatternConfig(Cgen.m_rectSizePercent, int (bgstim * 100), -1, 20);
@@ -1131,6 +1143,9 @@ BOOL CGDIGenerator::Release(INT nbNext)
 	m_displayWindow.SetDisplayMode(GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_DEFAULT_MODE));
 	m_displayWindow.m_nPat = 0;
 
+	if (m_madVR_HDR && m_GDIGenePropertiesPage.m_nDisplayMode == DISPLAY_madVR)
+		  madVR_SetHdrButton(FALSE);
+
 	BOOL bOk = CGenerator::Release();
 
 	if ( m_bBlankingCanceled )
@@ -1138,6 +1153,7 @@ BOOL CGDIGenerator::Release(INT nbNext)
 		m_doScreenBlanking = TRUE;
 		m_bBlankingCanceled = FALSE;
 	}
+
 	//restore gamma tables
 	if (m_bConnect && m_bLinear)
 	{
@@ -1150,6 +1166,7 @@ BOOL CGDIGenerator::Release(INT nbNext)
 		ShellExecute(NULL, "open", str, arg, NULL, SW_HIDE);
 		m_bConnect = FALSE;
 	}
+
 	return bOk;
 }
 

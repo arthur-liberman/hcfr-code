@@ -28,6 +28,7 @@
 #include "Color.h"
 #include "madTPG.h"
 #include "Generator.h"
+//#include "..\Tools\pi\RB8PGenerator.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -48,6 +49,7 @@ CGenerator::CGenerator()
 	m_doScreenBlanking=GetConfig()->GetProfileInt("Generator","Blanking",0);
 	m_rectSizePercent=GetConfig()->GetProfileInt("GDIGenerator","SizePercent",10);
 	m_ccastIp = 0;
+	m_piIP = 0;
 	AddPropertyPage(&m_GeneratorPropertiePage);
 
 	CString str;
@@ -143,6 +145,9 @@ BOOL CGenerator::Init(UINT nbMeasure, bool isSpecial)
 	CString str, msg;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 	BOOL madVR_Found;
+//	char str1[20];
+	char *piIP;
+//	piIP = RB8PG_discovery();
 
 	if (m_name != str)
 	{
@@ -192,6 +197,10 @@ BOOL CGenerator::Init(UINT nbMeasure, bool isSpecial)
 					madVR_Disable3dlut();
 				if (m_madVR_OSD)
 					madVR_ShowProgressBar(nMeasureNumber + nSettling);
+				madVR_SetHdrButton(m_madVR_HDR);
+				if (m_madVR_HDR)
+					madVR_SetHdrMetadata(GetConfig()->m_manualRedx, GetConfig()->m_manualRedy, GetConfig()->m_manualGreenx, GetConfig()->m_manualGreeny, GetConfig()->m_manualBluex, GetConfig()->m_manualBluey, GetConfig()->m_manualWhitex, GetConfig()->m_manualWhitey, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_ContentMaxL, GetConfig()->m_FrameAvgMaxL);
+
 			}
 			else
 			{
