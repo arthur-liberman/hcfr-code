@@ -362,10 +362,10 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     EDITTEXT        IDC_DISPLAY_NAME,89,17,115,14,ES_AUTOHSCROLL
     DEFPUSHBUTTON   "OK",IDOK,107,65,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,161,65,50,14
-    GROUPBOX        "Reference Display",IDC_DISPLAY_GROUP,7,7,204,50
-    RTEXT           "Display name",IDC_STATIC,28,20,55,15
-    RTEXT           "Display technology",IDC_STATIC,17,38,66,15
+    PUSHBUTTON      "Annuler",IDCANCEL,161,65,50,14
+    GROUPBOX        "Affichage de référence",IDC_DISPLAY_GROUP,7,7,204,50
+    RTEXT           "Afficher un nom",IDC_STATIC,28,20,55,15
+    RTEXT           "Technologie d'affichage",IDC_STATIC,17,38,66,15
     EDITTEXT        IDC_DISPLAY_TECH,89,36,115,14,ES_AUTOHSCROLL
 END
 
@@ -395,8 +395,8 @@ BEGIN
     CONTROL         "Lancer un nouvel étalonnage du capteur",IDC_SENSORTRAININGMODE_RADIO2,
                     "Button",BS_AUTORADIOBUTTON,14,100,165,10
     COMBOBOX        IDC_SENSORTRAININGFILE_COMBO,20,77,146,105,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    CTEXT           "If you do not have a correction matrix that was created using your probe in combination with a spectrometer it is recommended that you use the appropriate spectral sample correction available in the display type dropdown in the next dialog.",IDC_STATIC,174,29,115,72,WS_BORDER,WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE
-    LTEXT           "D3/munki and Spyder 4 users",IDC_STATIC,184,17,95,8
+    CTEXT           "Si vous ne disposez pas d'une matrice de correction créée en utilisant votre sonde en combinaison avec un spectromètre, il est recommandé d'utiliser la correction d'échantillon spectral appropriée disponible dans la liste déroulante du type d'affichage danr???????ò?ò?ò????C:\\displ",IDC_STATIC,174,29,115,72,WS_BORDER,WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE
+    LTEXT           "D3 / munki et Spyder 4 utilisateurs",IDC_STATIC,184,17,95,8
 END
 
 IDD_SELECT_GENERATOR_PROPPAGE DIALOGEX 0, 0, 183, 94
@@ -440,9 +440,10 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,9,154,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,74,154,50,14
     PUSHBUTTON      "Aide",IDHELP,137,154,49,14,WS_GROUP
-    CONTROL         "Display data labels",IDC_GRAPH_SHOWDATALABELS_CHECK,
+    CONTROL         "Afficher les étiquettes de données",IDC_GRAPH_SHOWDATALABELS_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,97,139,86,10
-    CONTROL         "PDF User Scales",IDC_GRAPH_USERSCALES_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,140,77,10
+    CONTROL         "Balances utilisateur PDF",IDC_GRAPH_USERSCALES_CHECK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,140,77,10
 END
 
 IDD_GRAPH_SCALE_PROP_PAGE DIALOG 0, 0, 202, 171
@@ -527,16 +528,16 @@ BEGIN
     EDITTEXT        IDC_EDIT_MANUAL_GOFFSET,150,294,20,14,ES_AUTOHSCROLL | NOT WS_VISIBLE | WS_DISABLED | WS_GROUP
     GROUPBOX        "Réference Gamma",IDC_STATIC,22,154,84,29,WS_GROUP
     EDITTEXT        IDC_EDIT_GAMMA_REF,49,164,19,14,ES_AUTOHSCROLL | WS_GROUP
-    GROUPBOX        "Color Checker Patterns",IDC_STATIC,5,288,198,30,WS_GROUP
+    GROUPBOX        "Modèles de vérificateur de couleur",IDC_STATIC,5,288,198,30,WS_GROUP
     COMBOBOX        IDC_CCMODE_COMBO,17,299,125,73,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    GROUPBOX        "Target Gamma in use",IDC_STATIC,112,154,84,29,WS_GROUP
+    GROUPBOX        "Target Gamma en cours d'utilisation",IDC_STATIC,112,154,84,29,WS_GROUP
     EDITTEXT        IDC_EDIT_GAMMA_AVERAGE,137,164,20,14,ES_AUTOHSCROLL | WS_GROUP
-    CONTROL         "Use measured gamma",IDC_USE_MEASURED_GAMMA,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,159,132,60,23
+    CONTROL         "Utiliser le gamma mesuré",IDC_USE_MEASURED_GAMMA,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,159,132,60,23
     EDITTEXT        IDC_EDIT_GAMMA_REL,85,118,17,14,ES_AUTOHSCROLL | WS_GROUP
-    LTEXT           "Effective @50%\n[0=Absolute]",IDC_STATIC,108,118,54,16
+    LTEXT           "Efficace @50%\n[0=Absolue]",IDC_STATIC,108,118,54,16
     EDITTEXT        IDC_WHITE_X,164,24,36,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_WHITE_Y,163,38,36,14,ES_AUTOHSCROLL
-    CTEXT           "White",IDC_STATIC,167,14,26,10
+    CTEXT           "Blanc",IDC_STATIC,167,14,26,10
     LTEXT           "x",IDC_STATIC,155,25,8,8
     LTEXT           "y",IDC_STATIC,155,40,8,8
     EDITTEXT        IDC_RED_X,11,64,29,14,ES_AUTOHSCROLL
@@ -545,9 +546,9 @@ BEGIN
     EDITTEXT        IDC_GREEN_Y,102,64,32,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_BLUE_X,137,64,31,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_BLUE_Y,168,64,33,14,ES_AUTOHSCROLL
-    LTEXT           "Red",IDC_STATIC,34,54,17,8
-    LTEXT           "Green",IDC_STATIC,92,54,23,8
-    LTEXT           "Blue",IDC_STATIC,160,54,17,8
+    LTEXT           "Rouge",IDC_STATIC,34,54,17,8
+    LTEXT           "Vert",IDC_STATIC,92,54,23,8
+    LTEXT           "Bleu",IDC_STATIC,160,54,17,8
     LTEXT           "x",IDC_STATIC,84,56,8,8
     LTEXT           "x",IDC_STATIC,24,56,8,8
     LTEXT           "x",IDC_STATIC,150,55,8,8
@@ -555,24 +556,24 @@ BEGIN
     LTEXT           "y",IDC_STATIC,182,55,8,8
     LTEXT           "y",IDC_STATIC,53,55,8,8
     EDITTEXT        IDC_EDIT_SPLIT,85,133,17,14,ES_AUTOHSCROLL | WS_GROUP
-    LTEXT           "% input offset",IDC_STATIC,108,137,48,8
+    LTEXT           "% décalage d'entrée",IDC_STATIC,108,137,48,8
     EDITTEXT        IDC_EDIT_MANUAL_BLACK,159,106,28,13,ES_AUTOHSCROLL
     LTEXT           "cd/m^2",IDC_STATIC,189,107,27,8,NOT WS_GROUP
-    CONTROL         "Override black",IDC_USER_BLACK,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,160,94,60,10
+    CONTROL         "Remplacer le noir",IDC_USER_BLACK,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,160,94,60,10
     CONTROL         "Dolby Vision 500 nits",IDC_GAMMA_OFFSET_RADIO9,"Button",BS_AUTORADIOBUTTON | NOT WS_VISIBLE | WS_DISABLED,120,300,90,10,WS_EX_TRANSPARENT
     CONTROL         "Dolby Vision 400 nits",IDC_GAMMA_OFFSET_RADIO10,"Button",BS_AUTORADIOBUTTON | NOT WS_VISIBLE | WS_DISABLED,126,300,90,10,WS_EX_TRANSPARENT
     EDITTEXT        IDC_EDIT_DIFFUSE_WHITE,14,240,40,14,ES_AUTOHSCROLL
-    LTEXT           "Master MinL",IDC_STATIC,14,256,49,10
-    LTEXT           "Diffuse White [nits]",IDC_STATIC,12,221,42,16
-    LTEXT           "Master MaxL",IDC_STATIC,60,256,46,10
-    LTEXT           "Target MaxL",IDC_STATIC,105,225,24,18
-    LTEXT           "Target MinL",IDC_STATIC,62,222,24,18
+    LTEXT           "Maîtriser MinL",IDC_STATIC,14,256,49,10
+    LTEXT           "Diffuser Blanc [nits]",IDC_STATIC,12,221,42,16
+    LTEXT           "Maîtriser MaxL",IDC_STATIC,60,256,46,10
+    LTEXT           "Objectif MaxL",IDC_STATIC,105,225,24,18
+    LTEXT           "Objectif MinL",IDC_STATIC,62,222,24,18
     EDITTEXT        IDC_EDIT_MASTER_MINL,14,272,40,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_EDIT_TARGET_MINL,61,240,35,14,ES_AUTOHSCROLL | WS_GROUP
     EDITTEXT        IDC_EDIT_MASTER_MAXL,61,272,37,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_EDIT_TARGET_MAXL,104,240,40,14,ES_AUTOHSCROLL | WS_GROUP
-    CONTROL         "BT.2390 Tone Mapping",IDC_USE_TONEMAP,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,147,227,48,25
-    CONTROL         "Override Targets",IDC_USER_OVERRIDE_TARGS,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,147,208,66,16
+    CONTROL         "BT.2390 Mappage de tonalité",IDC_USE_TONEMAP,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,147,227,48,25
+    CONTROL         "Remplacer les cibles",IDC_USER_OVERRIDE_TARGS,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,147,208,66,16
     EDITTEXT        IDC_EDIT_CONTENT_MAXL,103,272,45,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_EDIT_FRAME_AVG_MAXL,156,272,45,14,ES_AUTOHSCROLL
     GROUPBOX        "EOTF (HDR)",IDC_STATIC,5,186,217,102,BS_CENTER | WS_GROUP
@@ -606,7 +607,7 @@ BEGIN
     CONTROL         "Aucune",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,172,41,10
     CONTROL         "Blanc",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,69,172,34,10
     CONTROL         "Blanc et noir",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,115,172,55,10
-    GROUPBOX        "Gray levels rounding assumption",IDC_STATIC,7,192,198,36,WS_GROUP
+    GROUPBOX        "Niveaux de gris arrondissant l'hypothèse",IDC_STATIC,7,192,198,36,WS_GROUP
     CONTROL         "Use round down levels (AVSHD, DVE)",IDC_CHECK_USE_ROUNDDOWN,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,203,185,10
     CONTROL         "Use HSV Bars",IDC_CHECK_USE_HSV,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,134,56,61,10
@@ -691,14 +692,14 @@ CAPTION "Display"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "GDI",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,59,29,10
-    CONTROL         "madTPG",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,98,55,40,10
-    CONTROL         "GDI(no background)",IDC_RADIO4,"Button",BS_AUTORADIOBUTTON,13,69,80,10
-    CONTROL         "CCast",IDC_RADIO5,"Button",BS_AUTORADIOBUTTON,13,91,34,10
-    CONTROL         "Floating Window",IDC_RADIO6,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,79,66,10
-    CONTROL         "Display Triplets",IDC_DISP_TRIP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,102,84,13
-    CONTROL         "disable 3dLUT",IDC_MADVR_3D,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,97,64,85,13
-    CONTROL         "disable video LUT",IDC_MADVR_3D2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,97,76,69,13
-    CONTROL         "OSD",IDC_MADVR_OSD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,141,54,33,13
+    CONTROL         "madTPG",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,93,55,40,10
+    CONTROL         "GDI(no background)",IDC_RADIO4,"Button",BS_AUTORADIOBUTTON,13,70,80,10
+    CONTROL         "CCast",IDC_RADIO5,"Button",BS_AUTORADIOBUTTON,13,93,34,10
+    CONTROL         "Floating Window",IDC_RADIO6,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,81,66,10
+    CONTROL         "Display Triplets",IDC_DISP_TRIP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,105,71,13
+    CONTROL         "disable 3dLUT",IDC_MADVR_3D,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,93,64,57,13
+    CONTROL         "disable video LUT",IDC_MADVR_3D2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,93,76,69,13
+    CONTROL         "OSD",IDC_MADVR_OSD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,154,54,26,13
     CONTROL         "0 - 255",IDC_RGBLEVEL_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,136,38,10
     CONTROL         "16 - 235",IDC_RGBLEVEL_RADIO2,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,69,136,42,10
     PUSHBUTTON      "Test Overlay",IDC_OVERLAY,118,134,51,12,NOT WS_VISIBLE | WS_DISABLED | WS_GROUP
@@ -712,10 +713,12 @@ BEGIN
     CONTROL         "Image background",IDC_USEPIC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,34,73,13
     LTEXT           "Pattern Intensity [%]",IDC_STATIC,86,37,75,8
     EDITTEXT        IDC_INTENSITY_EDIT,156,35,20,12,ES_AUTOHSCROLL | WS_GROUP
-    GROUPBOX        "Display mode",IDC_STATIC,9,48,177,70,WS_GROUP
+    GROUPBOX        "Display mode",IDC_STATIC,9,48,177,72,WS_GROUP
     GROUPBOX        "GDI Options",IDC_STATIC,9,123,167,38,WS_GROUP
-    COMBOBOX        IDC_CCAST_COMBO,100,90,75,62,CBS_DROPDOWNLIST | WS_DISABLED | WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    CONTROL         "Activer HDR10",IDC_ENBL_HDR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,100,102,76,13
+    COMBOBOX        IDC_CCAST_COMBO,68,92,75,62,CBS_DROPDOWNLIST | WS_DISABLED | WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    CONTROL         "Activer HDR10",IDC_ENBL_HDR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,98,105,70,13
+    CONTROL         "HDR",IDC_MADVR_HDR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,154,65,26,13
+    GROUPBOX        "",IDC_STATIC,89,49,94,42,WS_GROUP
 END
 
 IDD_APPEARANCE_PROP_PAGE DIALOGEX 0, 0, 212, 177
@@ -2698,12 +2701,12 @@ BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "CompanyName", "Association Homecinema Francophone"
             VALUE "FileDescription", "Resources Colorimètre HCFR"
-            VALUE "FileVersion", "3,4,5"
+            VALUE "FileVersion", "3,4,6,3"
             VALUE "InternalName", "CHCFR21_FRANCAIS"
             VALUE "LegalCopyright", "Copyright (C) 2005-2016"
             VALUE "OriginalFilename", "CHCFR21_FRANCAIS.DLL"
             VALUE "ProductName", "Colorimètre HCFR langage Français"
-            VALUE "ProductVersion", "3,4,5"
+            VALUE "ProductVersion", "3,4,6,3"
         END
     END
     BLOCK "VarFileInfo"

@@ -80,9 +80,9 @@ public:
 	BOOL m_bHdr10;
 	BOOL m_bdispTrip;
     BOOL m_madVR_3d;
-    BOOL m_madVR_vLUT;
+    BOOL m_madVR_vLUT, m_madVR_HDR;
 	BOOL m_madVR_OSD;
-	UINT m_ccastIp;
+	UINT m_ccastIp, m_piIP;
 	dispwin *ccwin;
 protected:
 	BOOL m_isModified;

@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by CHCFR21_ESPANOL.rc
+// Used by CHCFR21_FRANCAIS.rc
 //
 #define IDS_STRING_VERSION              1
 #define IDS_STRING_VERSION_WEB          2
@@ -771,7 +771,6 @@
 #define IDC_DISP_TRIP                   1290
 #define IDC_DISP_TRIP2                  1291
 #define IDR_PATTERN_TESTIMGv            1292
-#define IDC_ENBL_HDR                    1292
 #define IDR_PATTERN_GRADIENT            1293
 #define IDR_PATTERN_LRAMP               1294
 #define IDR_PATTERN_GRANGER             1295
@@ -837,6 +836,8 @@
 #define IDR_PATTERN_USER4               1357
 #define IDR_PATTERN_USER5               1358
 #define IDR_PATTERN_USER6               1359
+#define IDC_MADVR_HDR                   1360
+#define IDC_ENBL_HDR                    1361
 #define IDC_COLORTEMPHISTO_GRAPH        11003
 #define IDC_RGBHISTO_GRAPH              11101
 #define IDC_RGBHISTO_GRAPH2             11102

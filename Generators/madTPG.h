@@ -1,11 +1,20 @@
 // ***************************************************************
-//  madTPG.h                  version: 1.2.0  ·  date: 2014-12-01
+//  madTPG.h                  version: 1.6.0  ·  date: 2017-09-12
 //  -------------------------------------------------------------
 //  madTPG remote controlling
 //  -------------------------------------------------------------
-//  Copyright (C) 2013 - 2014 www.madshi.net, BSD license
+//  Copyright (C) 2013 - 2017 www.madshi.net, BSD license
 // ***************************************************************
 
+// 2017-09-12 1.6.0 added various HDR related APIs
+// 2015-07-19 1.5.0 (1) added IsFseModeEnabled API
+//                  (2) added Enabled/DisableFseMode APIs
+// 2015-06-28 1.4.0 (1) added IsLocal API
+//                  (2) added Is/Enter/LeaveFullscreen APIs
+//                  (3) added Get/SetWindowSize APIs
+//                  (4) added (Is)Min/Maximize(d)/Restore(d) APIs
+// 2015-01-03 1.3.0 (1) added GetVersion API
+//                  (2) added Get/SetSelected3dlut APIs
 // 2014-12-01 1.2.0 (1) added Connect, deprecated BindConnect and ConnectDialog
 //                  (2) added APIs to get/set "stay on top"    button state
 //                  (3) added APIs to get/set "use fullscreen" button state
@@ -78,14 +87,59 @@ const static int CM_Fail                   = 5;  // fail immediately
 // ----------------------------------------------------------------------------
 // remote controlling the connected madVR instance
 
+// "madVR_GetVersion" reports the madVR version number as a hex number.
+// E.g. version v0.87.12.0 is reported as 0x00871200. This format allows
+// you to do a simple version check like "if (version >= 0x00871200)".
+BOOL madVR_GetVersion(DWORD *version);
+
+// "madVR_IsLocal" reports whether the connected madTPG instance is running
+// on the local PC or not.
+BOOL madVR_IsLocal();
+
+// "madVR_Enter/LeaveFullscreen" switches madTPG into/out of fullscreen mode.
+// Calling this API has a similar effect to the user double clicking the
+// madTPG window.
+BOOL madVR_IsFullscreen();
+BOOL madVR_EnterFullscreen();
+BOOL madVR_LeaveFullscreen();
+
+// "madVR_IsFseModeEnabled" allows you to ask whether madTPG will switch
+// into (f)ull(s)creen (e)xclusive mode, when madTPG enters fullscreen
+// mode. Only FSE mode supports native 10bit output.
+// "madVR_En/DisableFseMode" overwrites the madVR user configuration to
+// forcefully enable or disable FSE mode.
+BOOL madVR_IsFseModeEnabled();
+BOOL madVR_EnableFseMode();
+BOOL madVR_DisableFseMode();
+
+// "madVR_Get/SetWindowSize" reads/changes the size of the madTPG window.
+BOOL madVR_GetWindowSize(RECT *windowSize);
+BOOL madVR_SetWindowSize(RECT *windowSize);
+
+// "madVR_IsMin/Maximized" and "madVR_Min/Maximize/Restore" read/change
+// the state of the madTPG window (minimized, maximized, restored).
+BOOL madVR_IsMinimized();
+BOOL madVR_IsMaximized();
+BOOL madVR_IsRestored();
+BOOL madVR_Minimize();
+BOOL madVR_Maximize();
+BOOL madVR_Restore();
+
 // The following functions allow you to read and set the "pressed" state
-// of the "stay on top", "use fullscreen" and "disable OSD" buttons.
+// of the "stay on top", "use fullscreen", "disable OSD" and "HDR" buttons.
 BOOL madVR_IsStayOnTopButtonPressed();
 BOOL madVR_IsUseFullscreenButtonPressed();
 BOOL madVR_IsDisableOsdButtonPressed();
+BOOL madVR_IsHdrButtonPressed();
 BOOL madVR_SetStayOnTopButton(BOOL pressed);
 BOOL madVR_SetUseFullscreenButton(BOOL pressed);
 BOOL madVR_SetDisableOsdButton(BOOL pressed);
+BOOL madVR_SetHdrButton(BOOL pressed);
+
+// "madVR_SetHdrMetadata" allows you to define which SMPTE 2086 metadata
+// is sent to the display when madTPG is in HDR mode.
+// minLum, maxLum, madCLL and maxFALL are floating point Nits values.
+BOOL madVR_SetHdrMetadata(double rx, double ry, double gx, double gy, double bx, double by, double wx, double wy, double minLum, double maxLum, double maxCLL, double maxFALL);
 
 // "madVR_GetBlackAndWhiteLevel" reports the madVR output level setup.
 // E.g. if madVR is setup to output TV levels, you'll get "blackLevel = 16" and
@@ -106,12 +160,21 @@ BOOL madVR_SetDisableOsdButton(BOOL pressed);
 // if you have the chance to measure colors with a bitdepth higher than 8bit.
 BOOL madVR_GetBlackAndWhiteLevel(int *blackLevel, int *whiteLevel);
 
-// "madVR_Disable3dlut" disables 3dlut processing.
-// The 3dlut stays disabled until the connection is closed.
+// "madVR_Get/SetSelected3dlut" allows you to ask/set which 3dlut is
+// currently being used by madTPG (e.g. BT.709 vs EBU/PAL).
+// Setting the 3dlut automatically enables the 3dlut (madVR_Enable3dlut).
+// In HDR mode only BT.709, BT.2020 and DCI-P3 are supported.
+// "thr3dlut" 0: BT.709; 1: SMPTE-C; 2: EBU/PAL; 3: BT.2020; 4: DCI-P3
+BOOL madVR_GetSelected3dlut (DWORD *thr3dlut);
+BOOL madVR_SetSelected3dlut (DWORD  thr3dlut);
+
+// "madVR_En/Disable3dlut" en/disables 3dlut processing.
+// The 3dlut stays en/disabled until the connection is closed.
 // Disable the 3dlut if you want to calibrate/profile the display, or if you
 // want to measure the display behaviour prior to calibration.
-// Don't disable the 3dlut if you want to measure the final display after full
+// Enable the 3dlut if you want to measure the final display after full
 // calibration.
+BOOL madVR_Enable3dlut();
 BOOL madVR_Disable3dlut();
 
 // "madVR_Get/SetDeviceGammaRamp" calls the win32 API "Get/SetDeviceGammaRamp"
@@ -176,31 +239,47 @@ typedef WORD     TMadVR3dlut[256][256][256][3];
 // "madVR_Convert3dlutFile" converts an existing eeColor 3dlut file to
 // the madVR 3dlut file format. The 64^3 3dlut is internally interpolated to
 // 256^3 by using a linear Mitchell filter.
+// In HDR mode only BT.709, BT.2020 and DCI-P3 are supported.
 // "gamut" 0: BT.709; 1: SMPTE-C; 2: EBU/PAL; 3: BT.2020; 4: DCI-P3
-BOOL madVR_Convert3dlutFile(LPWSTR eeColor3dlutFile, LPWSTR madVR3dlutFile, int gamut);
+// "sdrOutput" true: 3dlut outputs Gamma; false: 3dlut outputs PQ
+BOOL madVR_Convert3dlutFile    (LPWSTR eeColor3dlutFile, LPWSTR madVR3dlutFile, int gamut);
+BOOL madVR_ConvertHdr3dlutFile (LPWSTR eeColor3dlutFile, LPWSTR madVR3dlutFile, int gamut, bool sdrOutput);
 
 // "madVR_Create3dlutFileFromArray65/255" creates a madVR 3dlut file from
 // an array which is sorted in the same way as an eeColor 3dlut text file.
 // The 64^3 dlut is internally interpolated to 256^3 by using a linear
 // Mitchell filter.
+// In HDR mode only BT.709, BT.2020 and DCI-P3 are supported.
 // "gamut" 0: BT.709; 1: SMPTE-C; 2: EBU/PAL; 3: BT.2020; 4: DCI-P3
-BOOL madVR_Create3dlutFileFromArray65 (TEeColor3dlut *lutData, LPWSTR madVR3dlutFile, int gamut);
-BOOL madVR_Create3dlutFileFromArray256(  TMadVR3dlut *lutData, LPWSTR madVR3dlutFile, int gamut);
+// "sdrOutput" true: 3dlut outputs Gamma; false: 3dlut outputs PQ
+BOOL madVR_Create3dlutFileFromArray65     (TEeColor3dlut *lutData, LPWSTR madVR3dlutFile, int gamut);
+BOOL madVR_Create3dlutFileFromArray256    (  TMadVR3dlut *lutData, LPWSTR madVR3dlutFile, int gamut);
+BOOL madVR_CreateHdr3dlutFileFromArray65  (TEeColor3dlut *lutData, LPWSTR madVR3dlutFile, int gamut, bool sdrOutput);
+BOOL madVR_CreateHdr3dlutFileFromArray256 (  TMadVR3dlut *lutData, LPWSTR madVR3dlutFile, int gamut, bool sdrOutput);
 
 // "madVR_Load3dlutFile" loads a 3dlut (can be either eeColor or madVR
 // file format) into the connected madTPG instance.
+// Loading a 3dlut automatically enables the 3dlut (madVR_Enable3dlut).
+// In HDR mode only BT.709, BT.2020 and DCI-P3 are supported.
 // "saveToSettings=false" means: the 3dlut only stays loaded until madTPG is closed; "gamut" is ignored
 // "saveToSettings=true"  means: the 3dlut is permanently written to the madVR settings, to the "gamut" slot
 // "gamut" 0: BT.709; 1: SMPTE-C; 2: EBU/PAL; 3: BT.2020; 4: DCI-P3
-BOOL madVR_Load3dlutFile(LPWSTR lutFile, BOOL saveToSettings, int gamut);
+// "sdrOutput" true: 3dlut outputs Gamma; false: 3dlut outputs PQ
+BOOL madVR_Load3dlutFile    (LPWSTR lutFile, BOOL saveToSettings, int gamut);
+BOOL madVR_LoadHdr3dlutFile (LPWSTR lutFile, BOOL saveToSettings, int gamut, bool sdrOutput);
 
 // "madVR_Load3dlutFromArray65/255" loads a 3dlut into the connected
 // madTPG instance.
+// Loading a 3dlut automatically enables the 3dlut (madVR_Enable3dlut).
+// In HDR mode only BT.709, BT.2020 and DCI-P3 are supported.
 // "saveToSettings=false" means: the 3dlut only stays loaded until madTPG is closed; "gamut" is ignored
 // "saveToSettings=true"  means: the 3dlut is permanently written to the madVR settings, to the "gamut" slot
 // "gamut" 0: BT.709; 1: SMPTE-C; 2: EBU/PAL; 3: BT.2020; 4: DCI-P3
-BOOL madVR_Load3dlutFromArray65 (TEeColor3dlut *lutData, BOOL saveToSettings, int gamut);
-BOOL madVR_Load3dlutFromArray256(  TMadVR3dlut *lutData, BOOL saveToSettings, int gamut);
+// "sdrOutput" true: 3dlut outputs Gamma; false: 3dlut outputs PQ
+BOOL madVR_Load3dlutFromArray65     (TEeColor3dlut *lutData, BOOL saveToSettings, int gamut);
+BOOL madVR_Load3dlutFromArray256    (  TMadVR3dlut *lutData, BOOL saveToSettings, int gamut);
+BOOL madVR_LoadHdr3dlutFromArray65  (TEeColor3dlut *lutData, BOOL saveToSettings, int gamut, bool sdrOutput);
+BOOL madVR_LoadHdr3dlutFromArray256 (  TMadVR3dlut *lutData, BOOL saveToSettings, int gamut, bool sdrOutput);
 
 // ----------------------------------------------------------------------------
 // disconnecting from madVR
@@ -229,7 +308,7 @@ BOOL madVR_IsAvailable();
 // ----------------------------------------------------------------------------
 // finding / enumerating madVR instances on the LAN
 
-// The following API lets you automatically locate madVR instances running
+// The following APIs let you automatically locate madVR instances running
 // anywhere on either the local PC or remote PCs connected via LAN.
 // For every found madVR instance this full information record is returned:
 
@@ -250,7 +329,40 @@ typedef struct _TMadVRInstance
   LPWSTR    monitorName;    // "JVC HD-350"
 } TMadVRInstance, *PMadVRInstance;
 
-// "madVR_Find_Async" also starts a search for madVR instances, but instead of
+// Normally, a network search returns all running madVR instances in less than
+// a second. But under specific circumstances, the search can take several
+// seconds. because of that there are different ways to perform a search:
+
+// (1) synchronous search
+// Calling "madVR_Find" (see below) with a timeout means that madVR_Find will
+// perform a network search and only return when the search is complete, or
+// when the timeout is over.
+
+// (2) asynchronous search I
+// You can call "madVR_Find" with a timeout value of "0" to start the search.
+// madVR_Find will return at once, but it will start a search in the background.
+// Later, when you see fit, you can call madVR_Find another time (with or
+// without a timeout value) to pick up the search results.
+
+// (3) asynchronous search II
+// Call madVR_Find_Async (see below) to start a background network search.
+// Whenever a new madVR instance is found (and also when a madVR instance is
+// closed), a message will be sent to a window of your choice.
+// When that message arrives, you can call madVR_Find with a 0 timeout value
+// to fetch the updated list of found madVR instances.
+
+typedef struct _TMadVRInstances
+{
+  ULONGLONG      count;
+  TMadVRInstance items[1];
+} TMadVRInstances, *PMadVRInstances;
+
+// Returns information records about all madVR instances found in the network
+// The memory is allocated by madVR, don't allocate nor free it.
+// The memory is only valid until the next madVR_Find call.
+PMadVRInstances madVR_Find(DWORD timeOut = 1000);
+
+// "madVR_Find_Async" starts a search for madVR instances, but instead of
 // returning information directly, it will send a message to the specified
 // "window" for every found madVR instance.
 // After the search is complete, "madVR_Find_Async" will keep an eye open for
@@ -268,7 +380,7 @@ BOOL madVR_Find_Async(HWND window, DWORD msg);
 
 // "madVR_Connect" connects you to the specified madVR instance.
 // If a previous connection exists, it will be closed automatically.
-// The "handle" and "instance" originate from a "madVR_Find_Async" search.
+// The "handle" and "instance" originate from a "madVR_Find(_Async)" search.
 BOOL madVR_ConnectToInstance(HANDLE handle, ULONGLONG instance);
 
 // ----------------------------------------------------------------------------

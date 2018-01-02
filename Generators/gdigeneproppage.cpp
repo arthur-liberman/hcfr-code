@@ -51,6 +51,7 @@ CGDIGenePropPage::CGDIGenePropPage() : CPropertyPageWithHelp(CGDIGenePropPage::I
 	m_busePic = FALSE;
     m_madVR_3d = FALSE;
     m_madVR_vLUT = FALSE;
+	m_madVR_HDR = FALSE;
 	m_madVR_OSD = FALSE;
 	m_bdispTrip = FALSE;
 	m_bLinear = FALSE;
@@ -69,6 +70,7 @@ void CGDIGenePropPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_MONITOR_COMBO, m_monitorComboCtrl);
 	DDX_Control(pDX, IDC_CCAST_COMBO, m_cCastComboCtrl);
     DDX_Control(pDX, IDC_MADVR_3D2, m_madVREdit2);    
+    DDX_Control(pDX, IDC_MADVR_HDR, m_madVREdit4);    
     DDX_Control(pDX, IDC_MADVR_OSD, m_madVREdit3);    
     DDX_Control(pDX, IDC_USEPIC, m_usePicEdit);    
 	DDX_Text(pDX, IDC_PATTERNSIZE_EDIT, m_rectSizePercent);
@@ -79,6 +81,7 @@ void CGDIGenePropPage::DoDataExchange(CDataExchange* pDX)
 	DDV_MinMaxUInt(pDX, m_Intensity, 1, 100);
 	DDX_Check(pDX, IDC_MADVR_3D, m_madVR_3d);
 	DDX_Check(pDX, IDC_MADVR_3D2, m_madVR_vLUT);
+	DDX_Check(pDX, IDC_MADVR_HDR, m_madVR_HDR);
 	DDX_Check(pDX, IDC_MADVR_OSD, m_madVR_OSD);
 	DDX_Check(pDX, IDC_USEPIC, m_busePic);
 	DDX_Check(pDX, IDC_DISP_TRIP, m_bdispTrip);
@@ -193,12 +196,14 @@ BOOL CGDIGenePropPage::OnSetActive()
         m_madVREdit.EnableWindow(TRUE);
         m_madVREdit2.EnableWindow(TRUE);
         m_madVREdit3.EnableWindow(TRUE);
+        m_madVREdit4.EnableWindow(TRUE);
     }
     else
     {
         m_madVREdit.EnableWindow(FALSE);
         m_madVREdit2.EnableWindow(FALSE);
         m_madVREdit3.EnableWindow(FALSE);
+        m_madVREdit4.EnableWindow(FALSE);
     }
 
 	if ( IsDlgButtonChecked ( IDC_RADIO2 ) )
@@ -298,6 +303,7 @@ BOOL CGDIGenePropPage::OnKillActive()
 	{
 		m_b16_235 = FALSE;
 	}
+
 	if ( IsDlgButtonChecked ( IDC_ENBL_HDR ) )
 	{
 		m_bHdr10 = TRUE;
@@ -307,6 +313,14 @@ BOOL CGDIGenePropPage::OnKillActive()
 		m_bHdr10 = FALSE;
 	}
 
+	if ( IsDlgButtonChecked ( IDC_MADVR_HDR ) )
+	{
+		m_madVR_HDR = TRUE;
+	}
+	else
+	{
+		m_madVR_HDR = FALSE;
+	}
 
 	CheckRadioButton ( IDC_RGBLEVEL_RADIO1, IDC_RGBLEVEL_RADIO2, IDC_RGBLEVEL_RADIO1 + m_b16_235 );
 	CheckRadioButton ( IDC_RADIO1,  IDC_RADIO1 + m_nDisplayMode , IDC_RADIO1 + m_nDisplayMode );
@@ -338,12 +352,14 @@ void CGDIGenePropPage::OnClickmadVR()
         m_madVREdit.EnableWindow(TRUE);
         m_madVREdit2.EnableWindow(TRUE);
         m_madVREdit3.EnableWindow(TRUE);
+        m_madVREdit4.EnableWindow(TRUE);
     }
     else
     {
         m_madVREdit.EnableWindow(FALSE);
         m_madVREdit2.EnableWindow(FALSE);
         m_madVREdit3.EnableWindow(FALSE);
+        m_madVREdit4.EnableWindow(FALSE);
     }
 
 	if (IsDlgButtonChecked ( IDC_RADIO5 ) )

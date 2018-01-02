@@ -53,6 +53,7 @@ public:
     CEdit m_madVREdit;
     CEdit m_madVREdit2;
     CEdit m_madVREdit3;
+    CEdit m_madVREdit4;
     CEdit m_usePicEdit;
 	int m_activeMonitorNum;
 	int	m_nDisplayMode;
@@ -61,7 +62,7 @@ public:
 	BOOL m_busePic;
 	BOOL m_bdispTrip;
     BOOL m_madVR_3d;
-    BOOL m_madVR_vLUT;
+    BOOL m_madVR_vLUT, m_madVR_HDR;
 	BOOL m_madVR_OSD;
 	BOOL m_bLinear;
 	BOOL m_bHdr10;
