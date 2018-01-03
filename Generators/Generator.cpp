@@ -146,7 +146,7 @@ BOOL CGenerator::Init(UINT nbMeasure, bool isSpecial)
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 	BOOL madVR_Found;
 //	char str1[20];
-	char *piIP;
+//	char *piIP;
 //	piIP = RB8PG_discovery();
 
 	if (m_name != str)
@@ -508,7 +508,7 @@ BOOL CGenerator::Release(INT nbNext)
 	{
 	  if (madVR_IsAvailable())
 	    madVR_Disconnect();
-	} else if (Cgen.m_nDisplayMode == DISPLAY_ccast)
+	} else if (Cgen.m_nDisplayMode == DISPLAY_ccast && dw)
 		dw->del(dw);
 
 	if(m_doScreenBlanking)
