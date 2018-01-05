@@ -55,6 +55,7 @@ public:
     CEdit m_madVREdit3;
     CEdit m_madVREdit4;
     CEdit m_usePicEdit;
+	CEdit m_bIntensity;
 	int m_activeMonitorNum;
 	int	m_nDisplayMode;
 	int m_selectedGcastNum;

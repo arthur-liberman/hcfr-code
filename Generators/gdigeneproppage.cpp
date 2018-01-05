@@ -76,6 +76,7 @@ void CGDIGenePropPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_PATTERNSIZE_EDIT, m_rectSizePercent);
 	DDX_Text(pDX, IDC_BGSTIM_EDIT, m_bgStimPercent);
 	DDX_Text(pDX, IDC_INTENSITY_EDIT, m_Intensity);
+	DDX_Control(pDX, IDC_INTENSITY_EDIT, m_bIntensity);
 	DDV_MinMaxUInt(pDX, m_rectSizePercent, 1, 100);
 	DDV_MinMaxUInt(pDX, m_bgStimPercent, 0, 100);
 	DDV_MinMaxUInt(pDX, m_Intensity, 1, 100);
@@ -171,6 +172,14 @@ void CGDIGenePropPage::OnOK()
 		GetConfig()->WriteProfileInt("GDIGenerator","CCastIp",m_GCast.getCcastIpAddress(m_GCast[nameBuf]));
 	}
 
+	if (GetConfig()->m_GammaOffsetType == 5 || GetConfig()->m_GammaOffsetType == 7)
+	{
+		GetDlgItem(IDC_INTENSITY_EDIT)->EnableWindow(FALSE);
+		m_Intensity = 100;
+	}
+	else
+		GetDlgItem(IDC_INTENSITY_EDIT)->EnableWindow(TRUE);
+
 	CPropertyPageWithHelp::OnOK();
 }
 
@@ -264,6 +273,14 @@ BOOL CGDIGenePropPage::OnSetActive()
 	{
 		GetDlgItem(IDC_ENBL_HDR)->EnableWindow(FALSE);
 	}
+
+	if (GetConfig()->m_GammaOffsetType == 5 || GetConfig()->m_GammaOffsetType == 7)
+	{
+		GetDlgItem(IDC_INTENSITY_EDIT)->EnableWindow(FALSE);
+		m_Intensity = 100;
+	}
+	else
+		GetDlgItem(IDC_INTENSITY_EDIT)->EnableWindow(TRUE);
 
 	return CPropertyPageWithHelp::OnSetActive();
 }
