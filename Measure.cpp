@@ -1313,12 +1313,18 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 	{ 
 		if (mode == 5)
 		{
-			GenColors [ 0 ] = ColorRGBDisplay(47.94520548, 24.20091324, 0.0);
-			GenColors [ 1 ] = ColorRGBDisplay(35.61643836, 50.2283105,	17.8082192);
-			GenColors [ 2 ] = ColorRGBDisplay(24.2009132, 15.98173516, 50.68493151);
-			GenColors [ 3 ] = ColorRGBDisplay(50.2283105, 50.68493151,	17.80821918);
-			GenColors [ 4 ] = ColorRGBDisplay(37.44292237, 50.2283105,	50.68493151);
-			GenColors [ 5 ] = ColorRGBDisplay(48.40182648, 25.5707763, 50.68493151);
+			GenColors [ 0 ] = ColorRGBDisplay(47.43251, 23.76092, 0.0);
+			GenColors [ 1 ] = ColorRGBDisplay(35.15987, 49.77169,	17.80822);
+			GenColors [ 2 ] = ColorRGBDisplay(24.20091, 15.981735, 50.22831);
+			GenColors [ 3 ] = ColorRGBDisplay(49.77169, 50.22831,	17.35160);
+			GenColors [ 4 ] = ColorRGBDisplay(36.98630, 49.77169,	50.22831);
+			GenColors [ 5 ] = ColorRGBDisplay(47.94521, 25.57078, 50.22831);
+//			GenColors [ 0 ] = ColorRGBDisplay(47.94520548, 24.20091324, 0.0);
+//			GenColors [ 1 ] = ColorRGBDisplay(35.61643836, 50.2283105,	17.8082192);
+//			GenColors [ 2 ] = ColorRGBDisplay(24.2009132, 15.98173516, 50.68493151);
+//			GenColors [ 3 ] = ColorRGBDisplay(50.2283105, 50.68493151,	17.80821918);
+//			GenColors [ 4 ] = ColorRGBDisplay(37.44292237, 50.2283105,	50.68493151);
+//			GenColors [ 5 ] = ColorRGBDisplay(48.40182648, 25.5707763, 50.68493151);
 		}
 		else
 		{
@@ -1938,6 +1944,7 @@ BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator, CDat
 	}
 
 	// Generate saturation colors for red
+	double tmWhite = getL_EOTF(0.5022283, GetOnOffWhite(), GetOnOffBlack(), GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / GetConfig()->m_DiffuseL * 100.0;
 	GenerateSaturationColors (GetColorReference(), GenColors,size, true, false, false, GetConfig()->m_GammaOffsetType);
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
@@ -4135,13 +4142,19 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator, CDat
 	}
 	else if (GetColorReference().m_standard == HDTVa) //75%
 	{ 
-		GenColors [ 0 ] = ColorRGBDisplay(68.0,20.0,20.0);
-		GenColors [ 1 ] = ColorRGBDisplay(28.0,73.0,28.0);
-		GenColors [ 2 ] = ColorRGBDisplay(19.0,19.0,50.0);
-		GenColors [ 3 ] = ColorRGBDisplay(75.0,75.0,33.0);
-		GenColors [ 4 ] = ColorRGBDisplay(36.0,73.0,73.0);
-		GenColors [ 5 ] = ColorRGBDisplay(64.0,29.0,64.0);
-		GenColors [ 6 ] = ColorRGBDisplay(75.0,75.0,75.0);
+//		GenColors [ 0 ] = ColorRGBDisplay(68.0,20.0,20.0);
+//		GenColors [ 1 ] = ColorRGBDisplay(28.0,73.0,28.0);
+//		GenColors [ 2 ] = ColorRGBDisplay(19.0,19.0,50.0);
+//		GenColors [ 3 ] = ColorRGBDisplay(75.0,75.0,33.0);
+//		GenColors [ 4 ] = ColorRGBDisplay(36.0,73.0,73.0);
+//		GenColors [ 5 ] = ColorRGBDisplay(64.0,29.0,64.0);
+//		GenColors [ 6 ] = ColorRGBDisplay(75.0,75.0,75.0);
+		GenColors [ 0 ] = ColorRGBDisplay(68.04,20.09,20.09);
+		GenColors [ 1 ] = ColorRGBDisplay(27.85,73.06,27.85);
+		GenColors [ 2 ] = ColorRGBDisplay(19.18,19.18,50.22);
+		GenColors [ 3 ] = ColorRGBDisplay(74.89,74.89,32.88);
+		GenColors [ 4 ] = ColorRGBDisplay(36.07,73.06,73.06);
+		GenColors [ 5 ] = ColorRGBDisplay(63.92,29.22,63.93);
 		GenColors [ 7 ] = ColorRGBDisplay(0,0,0);	
 		isSpecial = TRUE;
 	}
@@ -6207,7 +6220,7 @@ CColor CMeasure::GetRefPrimary(int i) const
 	bool isSpecial = (GetColorReference().m_standard==HDTVa||GetColorReference().m_standard==CC6||GetColorReference().m_standard==HDTVb||GetColorReference().m_standard==UHDTV3);
 	CColorReference cRef = GetColorReference();	
 	CColor	aColor,aColorr,aColorg,aColorb,White,Black;
-	double ref502 = 108.395, ref504 = 105.95640;
+//	double ref502 = 108.395, ref504 = 105.95640;
 
 
 	aColorr.SetXYZValue (cRef.GetRed());
@@ -6277,6 +6290,7 @@ CColor CMeasure::GetRefPrimary(int i) const
 		g=rgbg[1];
 		b=rgbg[2];
 	}
+
     aColor.SetRGBValue(ColorRGB(r,g,b), (cRef.m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()) );
 	if ( isSpecial )
 	{
@@ -6611,7 +6625,7 @@ CColor CMeasure::GetRefSat(int i, double sat_ratio, bool special) const
 
 	int mode = GetConfig()->m_GammaOffsetType;
 	if (mode == 5 && sat_ratio == 1)
-		YLuma = YLuma * GetConfig()->m_DiffuseL / 94.37844;
+		YLuma = YLuma * (GetConfig()->m_DiffuseL) / 94.37844;
 
 	aColor.SetxyYValue (x, y, YLuma);
 
@@ -7066,9 +7080,9 @@ CColor CMeasure::GetRefCC24Sat(int i) const
 		if (const_XYZ && mode == 5)
 		{
 			tempColor.SetRGBValue(ColorRGB(r,g,b), CColorReference((GetConfig()->m_CCMode == MASCIOR50)?UHDTV:HDTV));
-			tempColor.SetX(tempColor.GetX() / 105.95640); //50% reference for HDR-10
-			tempColor.SetY(tempColor.GetY() / 105.95640);
-			tempColor.SetZ(tempColor.GetZ() / 105.95640);
+			tempColor.SetX(tempColor.GetX() / 105.95640 ); //50% reference for HDR-10
+			tempColor.SetY(tempColor.GetY() / 105.95640 );
+			tempColor.SetZ(tempColor.GetZ() / 105.95640 );
 		}
 		else
 			tempColor.SetRGBValue(ColorRGB(r,g,b), GetColorReference().m_standard==UHDTV3?CColorReference(UHDTV2):cRef);
