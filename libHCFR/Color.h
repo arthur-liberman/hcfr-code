@@ -166,6 +166,15 @@ public:
     ColorLab(double L, double a, double b);
 };
 
+class ColorICT: public ColorTriplet
+{
+public:
+    ColorICT();
+    explicit ColorICT(const Matrix& matrix);
+    ColorICT(const ColorXYZ& XYZ, double YWhiteRef, CColorReference colorReference);
+    ColorICT(double I, double C, double T);
+};
+
 class ColorLuv: public ColorTriplet
 {
 public:
@@ -227,6 +236,7 @@ public:
 	Colorxyz GetxyzValue() const;
 	ColorLab GetLabValue(double YWhiteRef, CColorReference colorReference) const;
 	ColorLCH GetLCHValue(double YWhiteRef, CColorReference colorReference) const;
+	ColorICT GetICTValue(double YWhiteRef, CColorReference colorReference) const;
 
 	void SetXYZValue(const ColorXYZ& aColor);
 	void SetRGBValue(const ColorRGB& aColor, CColorReference colorReference);
@@ -731,6 +741,6 @@ extern bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBD
 extern Matrix ComputeConversionMatrix(const ColorXYZ measures[3], const ColorXYZ references[3], const ColorXYZ & WhiteTest, const ColorXYZ & WhiteRef, bool	bUseOnlyPrimaries);
 double ArrayIndexToGrayLevel ( int nCol, int nSize, bool m_bUseRoundDown, bool m_b10bit = FALSE );
 double GrayLevelToGrayProp ( double Level, bool m_bUseRoundDown, bool m_b10bit = FALSE );
-double getL_EOTF ( double x, CColor White, CColor Black, double g_rel, double split, int mode, double m_DiffuseL = 94.37844, double m_MasterMinL = 0.0, double m_MasterMaxL = 4000.0, double m_TargetMinL = 0.00, double m_TargetMaxL = 700.0, bool ToneMap = FALSE );
+double getL_EOTF ( double x, CColor White, CColor Black, double g_rel, double split, int mode, double m_DiffuseL = 94.37844, double m_MasterMinL = 0.0, double m_MasterMaxL = 4000.0, double m_TargetMinL = 0.00, double m_TargetMaxL = 700.0, bool ToneMap = FALSE, bool cBT2390 = FALSE );
 
 #endif // !defined(COLOR_H_INCLUDED_)

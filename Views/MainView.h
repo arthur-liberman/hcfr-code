@@ -145,7 +145,6 @@ public:
 	void SetLastColor ( CColor & clr, bool inMeasure = FALSE )	{ m_LastColor = clr; GetDocument () -> SetLastColor ( clr ); if (!inMeasure) RefreshSelection (); }
 
 	void RefreshSelection (bool b_minCol = TRUE, bool inMeasure = FALSE);
-	void GetYRef (const CColor& aColor, CColor& refColor, int index, int nCount, CDataSetDoc * pDoc, double& YWhite, CDataSetDoc * pRefDoc, double& YWhiteRef );
 
 // Operations
 public:
