@@ -303,7 +303,7 @@ BOOL CMTCSSensor::Release()
 	return CSensor::Release();
 }
 
-CColor CMTCSSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
+CColor CMTCSSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue, int m_display)
 {
 #ifdef USE_NON_FREE_CODE
 	UINT		nTicks;

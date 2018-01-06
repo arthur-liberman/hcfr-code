@@ -56,6 +56,7 @@ CCIEGraphPoint::CCIEGraphPoint(const ColorXYZ& color, double WhiteYRef, CString 
     m_color(color)
 {
     m_color = ColorXYZ(color / WhiteYRef);
+	YWhite = WhiteYRef;
     ColorxyY colorxyY(color);
     ColorLab colorLab(color, WhiteYRef, GetColorReference());
     double aX = colorxyY[0]; 
@@ -361,22 +362,49 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
          	CColor aColor2 = pRefPoint->GetNormalizedColor();
 			
 			CColorReference cRef = GetColorReference();
+
 			if (GetConfig()->m_GammaOffsetType == 5 && GetConfig()->m_bHDR100 && !isPrimeSat)
 			{
 				aColor2.SetX(aColor2.GetX()*105.95640);
 				aColor2.SetY(aColor2.GetY()*105.95640);
 				aColor2.SetZ(aColor2.GetZ()*105.95640);
 			}
+							
+			double RefWhite = 1.0, YWhite = 1.0;
+//			if (m_displayMode == 1)
+//			{
+//				if (cRef.m_standard == UHDTV2 || cRef.m_standard == HDTV || cRef.m_standard == UHDTV || nCol == 7)
+//					RefWhite = YWhite / GetConfig()->m_DiffuseL ;
+//				else
+//				{
+//					RefWhite = YWhite / GetConfig()->m_DiffuseL ;
+//					YWhite = YWhite * 94.37844 / GetConfig()->m_DiffuseL ;
+//				}
+//			}
+//			else
+//			{
+//				if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= LG400017 && m_displayMode == 11)	
+//					YWhite = GetDocument()->GetMeasure()->GetGray((GetDocument()->GetMeasure()->GetGrayScaleSize()-1)).GetY() ;
+//				else
+//				{
+				if (GetConfig()->m_GammaOffsetType == 5)
+				{
+					RefWhite = aGraphPoint.YWhite / GetConfig()->m_DiffuseL ;
+					YWhite = 94.37844 / GetConfig()->m_DiffuseL ;
+				}
+//				}
+//			}
 
-			double dE  = aGraphPoint.GetNormalizedColor().GetDeltaE(1.0, aColor2.GetXYZValue(), 1.0, (cRef.m_standard == UHDTV3?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
-            double dL  = aGraphPoint.GetNormalizedColor().GetDeltaLCH(1.0, aColor2.GetXYZValue(), 1.0, (cRef.m_standard == UHDTV3?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight, dC, dH );
+
+			double dE  = aGraphPoint.GetNormalizedColor().GetDeltaE(YWhite, aColor2.GetXYZValue(), RefWhite, (cRef.m_standard == UHDTV3?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+            double dL  = aGraphPoint.GetNormalizedColor().GetDeltaLCH(YWhite, aColor2.GetXYZValue(), RefWhite, (cRef.m_standard == UHDTV3?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight, dC, dH );
 
 			if (dE > dE10)
 				bDrawBMP = TRUE;
 
-			double L  = ColorLab(aColor2.GetXYZValue(), 1.0, (cRef.m_standard == UHDTV3?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef))[0];
-			double a  = ColorLab(aColor2.GetXYZValue(), 1.0, (cRef.m_standard == UHDTV3?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef))[1];
-			double b  = ColorLab(aColor2.GetXYZValue(), 1.0, (cRef.m_standard == UHDTV3?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef))[2];
+			double L  = ColorLab(aColor2.GetXYZValue(), RefWhite, (cRef.m_standard == UHDTV3?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef))[0];
+			double a  = ColorLab(aColor2.GetXYZValue(), RefWhite, (cRef.m_standard == UHDTV3?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef))[1];
+			double b  = ColorLab(aColor2.GetXYZValue(), RefWhite, (cRef.m_standard == UHDTV3?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef))[2];
 			str1.Format("\nL*a*b*: %.2f %.3f %.3f <b>[Ref]</b>",L,a,b);
 			str += str1;
 
@@ -428,12 +456,14 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 		else
 		{
 			CColor aColor = aGraphPoint.GetNormalizedColor();
+
 			if (GetConfig()->m_GammaOffsetType == 5 && GetConfig()->m_bHDR100)
 			{
 				aColor.SetX(aColor.GetX()*105.95640);
 				aColor.SetY(aColor.GetY()*105.95640);
 				aColor.SetZ(aColor.GetZ()*105.95640);
 			}
+
 			ColorRGB measCol = ColorRGB(aColor.GetRGBValue(CColorReference(HDTV)));
 			double r1=min(max(measCol[0],0),1);
 			double g1=min(max(measCol[1],0),1);

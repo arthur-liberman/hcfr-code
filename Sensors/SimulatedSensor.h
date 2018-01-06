@@ -73,7 +73,7 @@ protected:
 	double m_offsetG;
 	double m_offsetB;
 private:
-    virtual CColor MeasureColorInternal(const ColorRGBDisplay& aRGBValue);
+    virtual CColor MeasureColorInternal(const ColorRGBDisplay& aRGBValue, int m_display = 0);
 };
 
 #endif // !defined(AFX_SIMULATEDSENSOR_H__0A1F47AC_62BE_4C6A_8B0B_F00C8F09C40E__INCLUDED_)

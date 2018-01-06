@@ -61,7 +61,7 @@ public:
 	virtual void Serialize(CArchive& archive); 
 
 	virtual BOOL Init( BOOL bForSimultaneousMeasures );
-	CColor MeasureColor(const ColorRGBDisplay& aRGBValue);
+	CColor MeasureColor(const ColorRGBDisplay& aRGBValue, int m_display = 0);
 	virtual CColor MeasureGray(double aIRELevel);
 	virtual BOOL Release();
 
@@ -113,7 +113,7 @@ public:
     virtual int ReadingType() const {return 0;}
     virtual bool setAvg() {return false;}
 private:
-    virtual CColor MeasureColorInternal(const ColorRGBDisplay& aRGBValue) { return noDataColor;};
+    virtual CColor MeasureColorInternal(const ColorRGBDisplay& aRGBValue, int m_display = 0) { return noDataColor;};
 };
 
 #endif // !defined(AFX_SENSOR_H__FD0761AA_CBEC_4A38_8A67_ADB0963FBAE4__INCLUDED_)
