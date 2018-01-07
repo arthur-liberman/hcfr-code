@@ -570,6 +570,8 @@ EOTF DV_400_EOTF[220] = {
 {	1	,	400.015	}
 };
 
+std::vector<double> BT2390x,BT2390y;
+
 double m_HDRRefLevel = 1.0 / 94.37844 * 10000.; // 50.23% 8-bit level 126 (504) input luminance
 
 int XYZtoCorColorTemp(double *xyz, double *temp)
@@ -1327,6 +1329,260 @@ double ColorXYZ::GetDeltaLCH(double YWhite, const ColorXYZ& refColor, double YWh
 	return dLight;
 }
 
+double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double split, int mode, double m_diffuseL, double m_MinML, double m_MaxML, double m_MinTL, double m_MaxTL, bool ToneMap, bool cBT2390)
+{
+	if (valx <= 0 && mode > 4) return m_MinTL / 100.;
+	if (valx > 1)
+	{
+		if (mode == 5)
+			return 100.;
+		else
+			return 1.;
+	}
+	if (ToneMap && mode == 5)
+		mode = 10;
+
+	if (ToneMap && mode == -5)
+		mode = -10;
+//Returns relative output luminance given input luma (stimulus)
+//exception is ST2084 which returns an absolute value
+//BT1886
+	double maxL = White.isValid()?White.GetY():100.0;
+	double minL = Black.isValid()?Black.GetY():0.012;
+    double yh =  maxL * pow(0.5, g_rel);
+    double exp0 = g_rel==0.0?2.4:g_rel;
+	double outL, Lbt, offset;
+//SMPTE2084
+	double m1=0.1593017578125;
+    double m2=78.84375;
+    double c1=0.8359375;
+    double c2=18.8515625;
+	double c3=18.6875;
+//sRGB
+	double outL_sRGB;
+    if( valx <= 0.04045 ) {
+        outL_sRGB = valx / 12.92;
+    }
+    else
+		outL_sRGB = pow( ( valx + 0.055 ) / 1.055, 2.4 );
+//L*
+	double outL_lab,t;
+	t = 1.0 / 116. * (valx * 100. + 16);
+	if ( 29 * t > 6)
+		outL_lab = pow(t,3.0);
+	else
+		outL_lab = 3 * pow((6. / 29.),2) * (t - 4. / 29.);
+//BBC hybrid log for HDR Lmax=4, epsi=0.3733646177 (system gamma = 1.0)
+//graft at 37.37%, ref white at 74.19%
+	double mu = 0.139401137752;
+	double eta = pow(mu, 0.5) / 2.0; // 0.1867 
+	double rho = pow(mu, 0.5) * ( 1.0 - log(pow(mu, 0.5)) ); //0.7419
+	double epsi = 0.3733646177;
+	double outL_bbc, s = 1.0; //Lmax = 4
+
+	if (valx <= epsi)
+		outL_bbc = pow(valx, 2 * s);
+	else
+		outL_bbc = exp( s * (valx - rho)/eta );
+
+	offset = split / 100.0 * minL;
+    double a = pow ( ( pow (maxL,1.0/exp0 ) - pow ( offset,1.0/exp0 ) ),exp0 );
+    double b = ( pow ( offset,1.0/exp0 ) ) / ( pow (maxL,1.0/exp0 ) - pow ( offset,1.0/exp0 ) );
+
+	if (g_rel != 0.)
+	{
+        exp0 = (log(yh)-log(a))/log(0.5+b);
+
+		//refine
+		for (int i = 0;i < 9;i++)
+		{
+			a = pow ( ( pow (maxL,1.0/exp0 ) - pow ( offset,1.0/exp0 ) ),exp0 );
+			b = ( pow ( offset,1.0/exp0 ) ) / ( pow (maxL,1.0/exp0 ) - pow ( offset,1.0/exp0 ) );
+			exp0 = (log(yh)-log(a))/log(0.5+b);
+		}
+	}
+
+	Lbt = ( a * pow ( (valx + b)<0?0:(valx+b), exp0 ) );
+
+	double value, Scale = 10000. * m_diffuseL / 94.37844, E3 = 0.0;
+	try
+	{
+	switch (mode)
+	{
+		case 4: //BT.1886
+			outL = (Lbt + minL * (1 - split / 100.))/(maxL + minL * (1 - split / 100.));
+		break;
+		case 5: //BT.2084
+			outL = pow(max(pow(valx,1.0 / m2) - c1,0) / (c2 - c3 * pow(valx, 1.0 / m2)), 1.0 / m1);
+			outL = outL * 10000. / 100.00 * m_diffuseL / 94.37844; 
+			outL = min(outL, m_MaxTL / 100.0);
+		break;
+		case -5: //BT.2084 inverse
+			outL = pow( (c1 + c2 * pow(valx,m1)) / (1 + c3 * pow(valx,m1)), m2); 
+		break;
+		case 6: //L*
+			outL = outL_lab;
+		break;
+		case 7: //bbc
+			outL = outL_bbc / exp( s * (1.0 - rho)/eta );
+		break;
+		case -7: //bbc inverse
+			if (valx <= mu)
+			outL = pow(valx,0.5);// / rho;
+		else
+			outL = (eta * log (valx) + rho);// / rho;
+		break;
+		case 10: //BT.2084/2390
+			double E1,E2,E4,b,d,KS,T;
+			if (!cBT2390)
+			{
+				E1 = valx - pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2);
+				d = pow( (c1 + c2 * pow(m_MaxML/Scale,m1)) / (1 + c3 * pow(m_MaxML/Scale,m1)), m2) - pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2);
+				E1 = E1 / d;
+				minL = (pow( (c1 + c2 * pow(m_MinTL/Scale,m1)) / (1 + c3 * pow(m_MinTL/Scale,m1)), m2)-pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2)) / d;
+				maxL = (pow( (c1 + c2 * pow(m_MaxTL/Scale,m1)) / (1 + c3 * pow(m_MaxTL/Scale,m1)), m2)-pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2)) / d;
+				KS = 1.5 * maxL - 0.5;
+				b = minL;
+				E2 = E1;
+
+				if (E1 >= KS && E1 <= 1.0)
+				{
+					T = (E1 - KS) / (1.0 - KS);
+					E2 = (2 * pow(T,3.0) - 3 * pow(T,2.0) + 1.0)*KS + (pow(T,3.0) - 2 * pow(T, 2.0) + T) * (1.0 - KS) + ( -2.0 * pow(T,3.0) + 3.0 * pow(T,2.0)) * maxL ;
+				}
+			
+				if (E2 >= 0.0 && E2 <= 1.0)
+				{
+					E3 = E2 + b * pow((1.0 - E2),4.0);
+					E3 = (E3 * d + pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2)); 
+					E4 = pow(max(pow(E3,1.0 / m2) - c1,0) / (c2 - c3 * pow(E3, 1.0 / m2)), 1.0 / m1);
+					outL = E4 * 10000. / 100.00 * m_diffuseL / 94.37844;
+				}
+				else
+				{
+					outL = pow(max(pow(valx,1.0 / m2) - c1,0) / (c2 - c3 * pow(valx, 1.0 / m2)), 1.0 / m1);
+					outL = outL * 10000. / 100.00 * m_diffuseL / 94.37844; 
+					outL = min(outL, m_MaxTL / 100.0);
+				}
+			}
+			else
+			{
+				BT2390x.clear();
+				BT2390y.clear();
+				for (int i=0; i < 2048;i++)
+				{
+					valx = i / 2048.;
+					E1 = valx - pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2);
+					d = pow( (c1 + c2 * pow(m_MaxML/Scale,m1)) / (1 + c3 * pow(m_MaxML/Scale,m1)), m2) - pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2);
+					E1 = E1 / d;
+					minL = (pow( (c1 + c2 * pow(m_MinTL/Scale,m1)) / (1 + c3 * pow(m_MinTL/Scale,m1)), m2)-pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2)) / d;
+					maxL = (pow( (c1 + c2 * pow(m_MaxTL/Scale,m1)) / (1 + c3 * pow(m_MaxTL/Scale,m1)), m2)-pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2)) / d;
+					KS = 1.5 * maxL - 0.5;
+					b = minL;
+					E2 = E1;
+
+					if (E1 >= KS && E1 <= 1.0)
+					{
+						T = (E1 - KS) / (1.0 - KS);
+						E2 = (2 * pow(T,3.0) - 3 * pow(T,2.0) + 1.0)*KS + (pow(T,3.0) - 2 * pow(T, 2.0) + T) * (1.0 - KS) + ( -2.0 * pow(T,3.0) + 3.0 * pow(T,2.0)) * maxL ;
+					}
+			
+					if (E2 >= 0.0 && E2 <= 1.0)
+					{
+						E3 = E2 + b * pow((1.0 - E2),4.0);
+						E3 = (E3 * d + pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2)); 
+						E4 = pow(max(pow(E3,1.0 / m2) - c1,0) / (c2 - c3 * pow(E3, 1.0 / m2)), 1.0 / m1);
+						outL = E4 * 10000. / 100.00 * m_diffuseL / 94.37844;
+					}
+					else
+					{
+						outL = pow(max(pow(valx,1.0 / m2) - c1,0) / (c2 - c3 * pow(valx, 1.0 / m2)), 1.0 / m1);
+						outL = outL * 10000. / 100.00 * m_diffuseL / 94.37844; 
+						outL = min(outL, m_MaxTL / 100.0);
+					}
+					BT2390x.push_back(valx);
+					BT2390y.push_back(outL / 100.0 / m_diffuseL * 94.37844);
+				}
+			}
+		break;
+		case -10: //BT.2084/2390 inverse curve look-up
+//			outL = pow( (c1 + c2 * pow(valx,m1)) / (1 + c3 * pow(valx,m1)), m2); 
+			getL_EOTF(valx, White, Black, g_rel, split, 5, m_diffuseL, m_MinML, m_MaxML, m_MinTL, m_MaxTL, ToneMap, TRUE);
+			value = abs(valx - BT2390y[0]);
+			outL = BT2390x[0];
+			for (int i = 0; i < (int)BT2390y.size(); i++)
+			{
+				if (value > abs(valx - BT2390y[i]))
+				{
+					 value = abs(valx - BT2390y[i]);
+					 outL = BT2390x[i];
+				}
+			}
+		break;
+		case 99: //sRGB
+			outL = outL_sRGB;
+		break;
+		case 8: //DV_500 Dolby vision 500 cd/m^2 peak
+			value = abs(valx - DV_500_EOTF[0].x);
+			outL = DV_500_EOTF[0].y;
+
+			for (int i = 0; i < 220; i++)
+			{
+				if (value > abs(valx - DV_500_EOTF[i].x))
+				{
+					 value = abs(valx - DV_500_EOTF[i].x);
+					 outL = DV_500_EOTF[i].y / DV_500_EOTF[219].y;
+				}
+			}
+		break;
+		case -8: //DV_500 Dolby vision
+			value = abs(valx - DV_500_EOTF[0].y);
+			outL = DV_500_EOTF[0].x;
+
+			for (int i = 0; i < 220; i++)
+			{
+				if (value > abs(valx - DV_500_EOTF[i].y))
+				{
+					 value = abs(valx - DV_500_EOTF[i].y);
+					 outL = DV_500_EOTF[i].x;
+				}
+			}
+		break;
+		case 9: //DV_400 Dolby vision use for 400 cd/m^2 peak
+			value = abs(valx - DV_400_EOTF[0].x);
+			outL = DV_400_EOTF[0].y;
+
+			for (int i = 0; i < 220; i++)
+			{
+				if (value > abs(valx - DV_400_EOTF[i].x))
+				{
+					 value = abs(valx - DV_400_EOTF[i].x);
+					 outL = DV_400_EOTF[i].y / DV_400_EOTF[219].y;
+				}
+			}
+		break;
+		case -9: //DV_400 Dolby vision
+			value = abs(valx - DV_400_EOTF[0].y);
+			outL = DV_400_EOTF[0].x;
+
+			for (int i = 0; i < 220; i++)
+			{
+				if (value > abs(valx - DV_400_EOTF[i].y))
+				{
+					 value = abs(valx - DV_400_EOTF[i].y);
+					 outL = DV_400_EOTF[i].x;
+				}
+			}
+		break;
+	}
+	}
+    catch(...)
+    {
+        std::cerr << "Unexpected Exception in measurement thread" << std::endl;
+    }
+	return outL;
+}
+
 double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form, bool isGS, int gw_Weight ) const
 {
 	CColorReference cRef=CColorReference(HDTV, D65, 2.2); //special modes assume rec.709
@@ -1358,6 +1614,10 @@ double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhit
 			ColorLuv LuvRef(refColor, YWhiteRef, cRef);
 			ColorLuv Luv(*this, YWhite, cRef);
 			dE = sqrt ( pow ((Luv[0] - LuvRef[0]),2) + pow((Luv[1] - LuvRef[1]),2) + pow((Luv[2] - LuvRef[2]),2) );
+			
+//			ColorICT ICTRef(refColor, 94., cRef);
+//			ColorICT ICT(*this, YWhite, cRef);
+//			dE = sqrt ( pow ((ICT[0] - ICTRef[0]),2) + pow((ICT[1] - ICTRef[1]),2) + pow((ICT[2] - ICTRef[2]),2) );
 			break;
 		}
 		case 1:
@@ -1692,6 +1952,55 @@ ColorLab::ColorLab(double l, double a, double b) :
     ColorTriplet(l, a, b)
 {
 }
+
+//////////////////////////////////////////////////////////////////////
+// implementation of the ColorICtCp class.
+//////////////////////////////////////////////////////////////////////
+ColorICT::ColorICT()
+{
+}
+
+ColorICT::ColorICT(const Matrix& matrix) :
+    ColorTriplet(matrix)
+{
+}
+
+ColorICT::ColorICT(const ColorXYZ& XYZ, double YWhiteRef, CColorReference colorReference)
+{
+	try
+	{
+    if(XYZ.isValid())
+    {
+//		double scaling = YWhiteRef / XYZ[1];
+		double scaling = 1.0;
+        double var_X = XYZ[0] * scaling ;
+        double var_Y = XYZ[1] * scaling ;
+        double var_Z = XYZ[2] * scaling ;
+
+        double L = 0.3593 * var_X + 0.6976 * var_Y - 0.0359 * var_Z;
+        double M = -0.1921 * var_X + 1.1005 * var_Y + 0.0754 * var_Z;
+        double S = 0.0071 * var_X + 0.0748 * var_Y + 0.8433 * var_Z;
+
+		double Lp = getL_EOTF(L / 10000., noDataColor, noDataColor, 0.0, 0.0, -5);
+		double Mp = getL_EOTF(M / 10000., noDataColor, noDataColor, 0.0, 0.0, -5);
+		double Sp = getL_EOTF(S / 10000., noDataColor, noDataColor, 0.0, 0.0, -5);
+
+        (*this)[0] = (0.5 * Lp + 0.5 * Mp);	 // I
+        (*this)[1] = (6610. * Lp - 13613. * Mp + 7003. * Sp) / 4096.; // Ct
+        (*this)[2] = (17933. * Lp - 17390. * Mp - 543. * Sp) / 4096.; // Cp
+    }
+	}
+    catch(...)
+    {
+        std::cerr << "Unexpected Exception in measurement thread" << std::endl;
+    }
+}
+
+ColorICT::ColorICT(double I, double C, double T) :
+    ColorTriplet(I, C, T)
+{
+}
+
 ////////////////////////////////////////////////////////////////////
 // implementation of the ColorLuv class.
 //////////////////////////////////////////////////////////////////////
@@ -1987,6 +2296,11 @@ Colorxyz CColor::GetxyzValue() const
 ColorLab CColor::GetLabValue(double YWhiteRef, CColorReference colorReference) const 
 {
     return ColorLab(m_XYZValues, YWhiteRef, colorReference);
+}
+
+ColorICT CColor::GetICTValue(double YWhiteRef, CColorReference colorReference) const 
+{
+    return ColorICT(m_XYZValues, YWhiteRef, colorReference);
 }
 
 ColorLCH CColor::GetLCHValue(double YWhiteRef, CColorReference colorReference) const 
@@ -3330,9 +3644,9 @@ void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDi
 			aColor.SetRGBValue(rgbColor, CColorReference(UHDTV));
 			if (mode == 5)
 			{
-				aColor.SetX(aColor.GetX()/m_HDRRefLevel);
-				aColor.SetY(aColor.GetY()/m_HDRRefLevel);
-				aColor.SetZ(aColor.GetZ()/m_HDRRefLevel);
+				aColor.SetX(aColor.GetX() / m_HDRRefLevel );
+				aColor.SetY(aColor.GetY() / m_HDRRefLevel );
+				aColor.SetZ(aColor.GetZ() / m_HDRRefLevel );
 			}
 			rgbColor = aColor.GetRGBValue(CColorReference(UHDTV2));
 		}
@@ -3341,9 +3655,9 @@ void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDi
 			aColor.SetRGBValue(rgbColor, colorReference);
 			if (mode == 5)
 			{
-				aColor.SetX(aColor.GetX()/m_HDRRefLevel);
-				aColor.SetY(aColor.GetY()/m_HDRRefLevel);
-				aColor.SetZ(aColor.GetZ()/m_HDRRefLevel);
+				aColor.SetX(aColor.GetX() / m_HDRRefLevel );
+				aColor.SetY(aColor.GetY() / m_HDRRefLevel );
+				aColor.SetZ(aColor.GetZ() / m_HDRRefLevel );
 			}
 			rgbColor = aColor.GetRGBValue(colorReference);
 		}
@@ -3483,200 +3797,3 @@ double GrayLevelToGrayProp ( double Level, bool m_bUseRoundDown, bool m_b10bit)
 	}
 }
 
-double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double split, int mode, double m_diffuseL, double m_MinML, double m_MaxML, double m_MinTL, double m_MaxTL, bool ToneMap)
-{
-	if (valx <= 0 && mode > 4) return m_MinTL / 100.;
-	if (valx > 1)
-	{
-		if (mode == 5)
-			return 100.;
-		else
-			return 1.;
-	}
-	if (ToneMap && mode == 5)
-		mode = 10;
-//Returns relative output luminance given input luma (stimulus)
-//exception is ST2084 which returns an absolute value
-//BT1886
-	double maxL = White.isValid()?White.GetY():100.0;
-	double minL = Black.isValid()?Black.GetY():0.012;
-    double yh =  maxL * pow(0.5, g_rel);
-    double exp0 = g_rel==0.0?2.4:g_rel;
-	double outL, Lbt, offset;
-//SMPTE2084
-	double m1=0.1593017578125;
-    double m2=78.84375;
-    double c1=0.8359375;
-    double c2=18.8515625;
-	double c3=18.6875;
-//sRGB
-	double outL_sRGB;
-    if( valx <= 0.04045 ) {
-        outL_sRGB = valx / 12.92;
-    }
-    else
-		outL_sRGB = pow( ( valx + 0.055 ) / 1.055, 2.4 );
-//L*
-	double outL_lab,t;
-	t = 1.0 / 116. * (valx * 100. + 16);
-	if ( 29 * t > 6)
-		outL_lab = pow(t,3.0);
-	else
-		outL_lab = 3 * pow((6. / 29.),2) * (t - 4. / 29.);
-//BBC hybrid log for HDR Lmax=4, epsi=0.3733646177 (system gamma = 1.0)
-//graft at 37.37%, ref white at 74.19%
-	double mu = 0.139401137752;
-	double eta = pow(mu, 0.5) / 2.0; // 0.1867 
-	double rho = pow(mu, 0.5) * ( 1.0 - log(pow(mu, 0.5)) ); //0.7419
-	double epsi = 0.3733646177;
-	double outL_bbc, s = 1.0; //Lmax = 4
-
-	if (valx <= epsi)
-		outL_bbc = pow(valx, 2 * s);
-	else
-		outL_bbc = exp( s * (valx - rho)/eta );
-
-	offset = split / 100.0 * minL;
-    double a = pow ( ( pow (maxL,1.0/exp0 ) - pow ( offset,1.0/exp0 ) ),exp0 );
-    double b = ( pow ( offset,1.0/exp0 ) ) / ( pow (maxL,1.0/exp0 ) - pow ( offset,1.0/exp0 ) );
-
-	if (g_rel != 0.)
-	{
-        exp0 = (log(yh)-log(a))/log(0.5+b);
-
-		//refine
-		for (int i = 0;i < 9;i++)
-		{
-			a = pow ( ( pow (maxL,1.0/exp0 ) - pow ( offset,1.0/exp0 ) ),exp0 );
-			b = ( pow ( offset,1.0/exp0 ) ) / ( pow (maxL,1.0/exp0 ) - pow ( offset,1.0/exp0 ) );
-			exp0 = (log(yh)-log(a))/log(0.5+b);
-		}
-	}
-
-	Lbt = ( a * pow ( (valx + b)<0?0:(valx+b), exp0 ) );
-
-	double value, Scale = 10000. * m_diffuseL / 94.37844, E3 = 0.0;
-	try
-	{
-	switch (mode)
-	{
-		case 4: //BT.1886
-			outL = (Lbt + minL * (1 - split / 100.))/(maxL + minL * (1 - split / 100.));
-		break;
-		case 5: //BT.2084
-			outL = pow(max(pow(valx,1.0 / m2) - c1,0) / (c2 - c3 * pow(valx, 1.0 / m2)), 1.0 / m1);
-			outL = outL * 10000. / 100.00 * m_diffuseL / 94.37844; 
-			outL = min(outL, m_MaxTL / 100.0);
-		break;
-		case -5: //BT.2084 inverse
-			outL = pow( (c1 + c2 * pow(valx,m1)) / (1 + c3 * pow(valx,m1)), m2); 
-		break;
-		case 6: //L*
-			outL = outL_lab;
-		break;
-		case 7: //bbc
-			outL = outL_bbc / exp( s * (1.0 - rho)/eta );
-		break;
-		case -7: //bbc inverse
-			if (valx <= mu)
-			outL = pow(valx,0.5);// / rho;
-		else
-			outL = (eta * log (valx) + rho);// / rho;
-		break;
-		case 10: //BT.2084/2390
-			double E1,E2,E4,b,d,KS,T;
-			E1 = valx - pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2);
-			d = pow( (c1 + c2 * pow(m_MaxML/Scale,m1)) / (1 + c3 * pow(m_MaxML/Scale,m1)), m2) - pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2);
-			E1 = E1 / d;
-			minL = (pow( (c1 + c2 * pow(m_MinTL/Scale,m1)) / (1 + c3 * pow(m_MinTL/Scale,m1)), m2)-pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2)) / d;
-			maxL = (pow( (c1 + c2 * pow(m_MaxTL/Scale,m1)) / (1 + c3 * pow(m_MaxTL/Scale,m1)), m2)-pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2)) / d;
-			KS = 1.5 * maxL - 0.5;
-			b = minL;
-			E2 = E1;
-
-			if (E1 >= KS && E1 <= 1.0)
-			{
-				T = (E1 - KS) / (1.0 - KS);
-				E2 = (2 * pow(T,3.0) - 3 * pow(T,2.0) + 1.0)*KS + (pow(T,3.0) - 2 * pow(T, 2.0) + T) * (1.0 - KS) + ( -2.0 * pow(T,3.0) + 3.0 * pow(T,2.0)) * maxL ;
-			}
-			
-			if (E2 >= 0.0 && E2 <= 1.0)
-			{
-				E3 = E2 + b * pow((1.0 - E2),4.0);
-				E3 = (E3 * d + pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2)); 
-				E4 = pow(max(pow(E3,1.0 / m2) - c1,0) / (c2 - c3 * pow(E3, 1.0 / m2)), 1.0 / m1);
-				outL = E4 * 10000. / 100.00 * m_diffuseL / 94.37844;
-			}
-			else
-			{
-				outL = pow(max(pow(valx,1.0 / m2) - c1,0) / (c2 - c3 * pow(valx, 1.0 / m2)), 1.0 / m1);
-				outL = outL * 10000. / 100.00 * m_diffuseL / 94.37844; 
-				outL = min(outL, m_MaxTL / 100.0);
-			}
-		break;
-		case -10: //BT.2084/2390 inverse
-			outL = pow( (c1 + c2 * pow(valx,m1)) / (1 + c3 * pow(valx,m1)), m2); 
-		break;
-		case 99: //sRGB
-			outL = outL_sRGB;
-		break;
-		case 8: //DV_500 Dolby vision 500 cd/m^2 peak
-			value = abs(valx - DV_500_EOTF[0].x);
-			outL = DV_500_EOTF[0].y;
-
-			for (int i = 0; i < 220; i++)
-			{
-				if (value > abs(valx - DV_500_EOTF[i].x))
-				{
-					 value = abs(valx - DV_500_EOTF[i].x);
-					 outL = DV_500_EOTF[i].y / DV_500_EOTF[219].y;
-				}
-			}
-		break;
-		case -8: //DV_500 Dolby vision
-			value = abs(valx - DV_500_EOTF[0].y);
-			outL = DV_500_EOTF[0].x;
-
-			for (int i = 0; i < 220; i++)
-			{
-				if (value > abs(valx - DV_500_EOTF[i].y))
-				{
-					 value = abs(valx - DV_500_EOTF[i].y);
-					 outL = DV_500_EOTF[i].x;
-				}
-			}
-		break;
-		case 9: //DV_400 Dolby vision use for 400 cd/m^2 peak
-			value = abs(valx - DV_400_EOTF[0].x);
-			outL = DV_400_EOTF[0].y;
-
-			for (int i = 0; i < 220; i++)
-			{
-				if (value > abs(valx - DV_400_EOTF[i].x))
-				{
-					 value = abs(valx - DV_400_EOTF[i].x);
-					 outL = DV_400_EOTF[i].y / DV_400_EOTF[219].y;
-				}
-			}
-		break;
-		case -9: //DV_400 Dolby vision
-			value = abs(valx - DV_400_EOTF[0].y);
-			outL = DV_400_EOTF[0].x;
-
-			for (int i = 0; i < 220; i++)
-			{
-				if (value > abs(valx - DV_400_EOTF[i].y))
-				{
-					 value = abs(valx - DV_400_EOTF[i].y);
-					 outL = DV_400_EOTF[i].x;
-				}
-			}
-		break;
-	}
-	}
-    catch(...)
-    {
-        std::cerr << "Unexpected Exception in measurement thread" << std::endl;
-    }
-	return outL;
-}
