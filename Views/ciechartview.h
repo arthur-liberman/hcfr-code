@@ -52,7 +52,7 @@ public:
 public:
 	double	x,a;
 	double	y,b;
-	double	L;
+	double	L, YWhite;
 	CString name;
 	BOOL	bCIEuv;
 	BOOL	bCIEab;
