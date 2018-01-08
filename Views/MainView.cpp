@@ -2864,8 +2864,8 @@ void CMainView::UpdateGrid()
 
 			if (White.GetY() > 0)
 				GetConfig()->m_TargetMaxL = White.GetY();
-			else
-				GetConfig()->m_TargetMaxL = 700.;
+//			else
+//				GetConfig()->m_TargetMaxL = 700.;
 		}
 
 		for( int j = 0 ; j < nCount ; j ++ )
