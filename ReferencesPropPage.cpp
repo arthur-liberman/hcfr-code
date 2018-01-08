@@ -95,11 +95,15 @@ void CReferencesPropPage::DoDataExchange(CDataExchange* pDX)
   	DDX_Control(pDX, IDC_EDIT_DIFFUSE_WHITE, m_DiffuseLCtrl);
 	DDV_MinMaxDouble(pDX, m_DiffuseL, 10., 200.);
 	DDX_Text(pDX, IDC_EDIT_MASTER_MINL, m_MasterMinL);
+	DDX_Control(pDX, IDC_EDIT_MASTER_MINL, m_MasterMinLCtrl);
 	DDV_MinMaxDouble(pDX, m_MasterMinL, 0., 0.5);
 	DDX_Text(pDX, IDC_EDIT_MASTER_MAXL, m_MasterMaxL);
+	DDX_Control(pDX, IDC_EDIT_MASTER_MAXL, m_MasterMaxLCtrl);
 	DDV_MinMaxDouble(pDX, m_MasterMaxL, 100., 10000.);
 	DDX_Text(pDX, IDC_EDIT_CONTENT_MAXL, m_ContentMaxL);
+	DDX_Control(pDX, IDC_EDIT_CONTENT_MAXL, m_ContentMaxLCtrl);
 	DDV_MinMaxDouble(pDX, m_ContentMaxL, 100., 10000.);
+	DDX_Control(pDX, IDC_EDIT_FRAME_AVG_MAXL, m_FrameAvgMaxLCtrl);
 	DDX_Text(pDX, IDC_EDIT_FRAME_AVG_MAXL, m_FrameAvgMaxL);
 	DDV_MinMaxDouble(pDX, m_FrameAvgMaxL, 100., 10000.);
   	DDX_Text(pDX, IDC_EDIT_TARGET_MINL, m_TargetMinL);
@@ -107,7 +111,7 @@ void CReferencesPropPage::DoDataExchange(CDataExchange* pDX)
 	DDV_MinMaxDouble(pDX, m_TargetMinL, 0., 100.);
   	DDX_Text(pDX, IDC_EDIT_TARGET_MAXL, m_TargetMaxL);
   	DDX_Control(pDX, IDC_EDIT_TARGET_MAXL, m_TargetMaxLCtrl);
-	DDV_MinMaxDouble(pDX, m_TargetMaxL, 1., 700.);
+	DDV_MinMaxDouble(pDX, m_TargetMaxL, 1., 10000.);
 	DDV_MinMaxDouble(pDX, m_GammaRef, 1., 5.);
 	DDV_MinMaxDouble(pDX, m_GammaAvg, 1., 5.);
 	DDV_MinMaxDouble(pDX, m_GammaRel, 0., 5.);
@@ -117,7 +121,9 @@ void CReferencesPropPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_CHANGEWHITE_CHECK, m_changeWhiteCheckCtrl);
 	DDX_Check(pDX, IDC_USE_MEASURED_GAMMA, m_useMeasuredGamma);
 	DDX_Check(pDX, IDC_USER_BLACK, m_userBlack);
+	DDX_Control(pDX, IDC_USER_OVERRIDE_TARGS, m_bOverRideTargsCtrl);
 	DDX_Check(pDX, IDC_USER_OVERRIDE_TARGS, m_bOverRideTargs);
+	DDX_Control(pDX, IDC_USE_TONEMAP, m_useToneMapCtrl);
 	DDX_Check(pDX, IDC_USE_TONEMAP, m_useToneMap);
 	DDX_Control(pDX, IDC_USE_MEASURED_GAMMA, m_eMeasuredGamma);
 	DDX_Radio(pDX, IDC_GAMMA_OFFSET_RADIO1, m_GammaOffsetType);
@@ -282,6 +288,34 @@ BOOL CReferencesPropPage::OnApply()
 	else
 		m_ManualBlackEdit.EnableWindow(FALSE);
 
+	if (m_GammaOffsetType == 5)
+	{
+		if (m_bOverRideTargs)
+		{
+			m_TargetMinLCtrl.EnableWindow (TRUE);
+  			m_TargetMaxLCtrl.EnableWindow (TRUE);
+  			m_DiffuseLCtrl.EnableWindow (TRUE);
+		}
+  		m_MasterMinLCtrl.EnableWindow (TRUE);
+  		m_MasterMaxLCtrl.EnableWindow (TRUE);
+  		m_ContentMaxLCtrl.EnableWindow (TRUE);
+  		m_FrameAvgMaxLCtrl.EnableWindow (TRUE);
+  		m_bOverRideTargsCtrl.EnableWindow (TRUE);
+  		m_useToneMapCtrl.EnableWindow (TRUE);
+	}
+	else
+	{
+		m_TargetMinLCtrl.EnableWindow (FALSE);
+  		m_TargetMaxLCtrl.EnableWindow (FALSE);
+  		m_MasterMinLCtrl.EnableWindow (FALSE);
+  		m_MasterMaxLCtrl.EnableWindow (FALSE);
+  		m_ContentMaxLCtrl.EnableWindow (FALSE);
+  		m_FrameAvgMaxLCtrl.EnableWindow (FALSE);
+  		m_bOverRideTargsCtrl.EnableWindow (FALSE);
+  		m_useToneMapCtrl.EnableWindow (FALSE);
+  		m_DiffuseLCtrl.EnableWindow (FALSE);
+	}
+
 	m_isModified=TRUE;
 	GetConfig()->ApplySettings(FALSE);
 	m_isModified=FALSE;
@@ -301,7 +335,6 @@ void CReferencesPropPage::OnOK()
 		|| (m_manualGreenx != m_manualGreenxold) || (m_manualGreeny != m_manualGreenyold) || (m_manualBluey != m_manualBlueyold)
 		|| (m_manualWhitex != m_manualWhitexold) || (m_manualWhitey != m_manualWhiteyold) )
 		m_bSave = TRUE;
-
 	CPropertyPageWithHelp::OnOK();
 }
 
@@ -402,7 +435,7 @@ BOOL CReferencesPropPage::OnInitDialog()
 	{
 		m_DiffuseL = 94.37844;
 		m_TargetMinL = 0.0;
-		m_TargetMaxL = 700.0;
+//		m_TargetMaxL = 700.0;
 	}
 	else
 	{
@@ -411,6 +444,33 @@ BOOL CReferencesPropPage::OnInitDialog()
 		GetConfig()->m_TargetMaxL = m_TargetMaxL;
 	}
 	m_DiffuseLCtrl.EnableWindow(m_bOverRideTargs);
+	if (m_GammaOffsetType == 5)
+	{
+		if (m_bOverRideTargs)
+		{
+			m_TargetMinLCtrl.EnableWindow (TRUE);
+  			m_TargetMaxLCtrl.EnableWindow (TRUE);
+  			m_DiffuseLCtrl.EnableWindow (TRUE);
+		}
+  		m_MasterMinLCtrl.EnableWindow (TRUE);
+  		m_MasterMaxLCtrl.EnableWindow (TRUE);
+  		m_ContentMaxLCtrl.EnableWindow (TRUE);
+  		m_FrameAvgMaxLCtrl.EnableWindow (TRUE);
+  		m_bOverRideTargsCtrl.EnableWindow (TRUE);
+  		m_useToneMapCtrl.EnableWindow (TRUE);
+	}
+	else
+	{
+		m_TargetMinLCtrl.EnableWindow (FALSE);
+  		m_TargetMaxLCtrl.EnableWindow (FALSE);
+  		m_MasterMinLCtrl.EnableWindow (FALSE);
+  		m_MasterMaxLCtrl.EnableWindow (FALSE);
+  		m_ContentMaxLCtrl.EnableWindow (FALSE);
+  		m_FrameAvgMaxLCtrl.EnableWindow (FALSE);
+  		m_bOverRideTargsCtrl.EnableWindow (FALSE);
+  		m_useToneMapCtrl.EnableWindow (FALSE);
+  		m_DiffuseLCtrl.EnableWindow (FALSE);
+	}
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -501,7 +561,7 @@ void CReferencesPropPage::OnUserOverRideTargsCheck()
 		m_TargetMinLUser = m_TargetMinL;
 		m_TargetMinL = 0.0;
 		m_TargetMaxLUser = m_TargetMaxL;
-		m_TargetMaxL = 700.;
+//		m_TargetMaxL = 700.;
 	}
 	else
 	{

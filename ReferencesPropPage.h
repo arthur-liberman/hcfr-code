@@ -68,7 +68,7 @@ public:
 	double	m_ManualBlack;
 	double  m_Split;
 	double	m_MasterMinL, m_MasterMaxL, m_ContentMaxL, m_FrameAvgMaxL, m_TargetMinL, m_TargetMaxL, m_DiffuseL, m_TargetMinLUser, m_TargetMaxLUser, m_DiffuseLUser;
-	CEdit	m_TargetMinLCtrl, m_TargetMaxLCtrl, m_DiffuseLCtrl;
+	CEdit	m_TargetMinLCtrl, m_TargetMaxLCtrl, m_DiffuseLCtrl, m_MasterMinLCtrl, m_MasterMaxLCtrl, m_ContentMaxLCtrl, m_FrameAvgMaxLCtrl, m_bOverRideTargsCtrl, m_useToneMapCtrl;
 	BOOL	m_changeWhiteCheck;
 	CEdit	m_changeWhiteCheckCtrl;
 	BOOL	m_useMeasuredGamma;
