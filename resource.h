@@ -282,6 +282,10 @@
 #define IDC_EDIT_TARGET_MAXL            400
 #define IDC_USE_TONEMAP                 401
 #define IDC_EDIT_FRAME_AVG_MAXL         402
+#define IDR_PATTERN_NB                  403
+#define IDR_PATTERN_NBv                 404
+#define IDR_PATTERN_NBHDR               405
+#define IDR_PATTERN_NBvHDR              406
 #define IDC_GRAYSCALE_GRID              1001
 #define IDC_GRAPH_TITLE                 1002
 #define IDC_SENSORMATRIX_GRID           1002
@@ -1120,6 +1124,7 @@
 #define ID_USERDEFINED_USER6            33100
 #define ID_Menu33101                    33101
 #define IDM_LUM_GRAPH_Yab               33102
+#define IDM_PATTERN_NB                  33103
 #define IDS_LUMINANCEHISTOVIEW_NAME     41446
 #define IDS_COLORTEMPHISTOVIEW_NAME     41447
 #define IDS_RGBHISTOVIEW_NAME           41448

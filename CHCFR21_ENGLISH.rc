@@ -1612,6 +1612,7 @@ BEGIN
     "4",            ID_USERDEFINED_USER4,   VIRTKEY, SHIFT, CONTROL, NOINVERT
     "5",            ID_USERDEFINED_USER5,   VIRTKEY, SHIFT, CONTROL, NOINVERT
     "6",            ID_USERDEFINED_USER6,   VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "7",            IDM_PATTERN_NB,   VIRTKEY, SHIFT, CONTROL, NOINVERT
     "P",            IDM_GENERAL_CONFIG,     VIRTKEY, ALT, NOINVERT
     VK_LEFT,        IDM_PREV_TAB,           VIRTKEY, ALT, NOINVERT
     VK_F9,          IDM_SIM_SINGLEMEASURE,  VIRTKEY, NOINVERT
@@ -1984,6 +1985,7 @@ BEGIN
                 MENUITEM "&White -1% && -2% moving bars", IDM_PATTERN_ANIM_WHITE
                 MENUITEM "&Shadow clipping",            IDM_PATTERN_CLIPL
                 MENUITEM "&Highlight clipping",         IDM_PATTERN_CLIPH
+                MENUITEM "&Near Black",                 IDM_PATTERN_NB
             END
             POPUP "&Focus && Resolution"
             BEGIN

@@ -302,8 +302,8 @@ BEGIN
     "#pragma code_page(1252)\r\n"
     "#endif //_WIN32\r\n"
     "#include ""res\\ColorHCFR.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
-    "#include ""l.esp\\afxres.rc""          // Standard components\r\n"
-    "#include ""l.esp\\afxprint.rc""        // printing/print preview resources\r\n"
+    "#include ""l.esn\\afxres.rc""          // Standard components\r\n"
+    "#include ""l.esn\\afxprint.rc""        // printing/print preview resources\r\n"
     "#endif\r\n"
     "\0"
 END
@@ -1923,6 +1923,7 @@ BEGIN
     "4",            ID_USERDEFINED_USER4,   VIRTKEY, SHIFT, CONTROL, NOINVERT
     "5",            ID_USERDEFINED_USER5,   VIRTKEY, SHIFT, CONTROL, NOINVERT
     "6",            ID_USERDEFINED_USER6,   VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "7",            IDM_PATTERN_NB,   VIRTKEY, SHIFT, CONTROL, NOINVERT
     "A",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     "G",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
@@ -2234,7 +2235,7 @@ BEGIN
         MENUITEM "&Presentación preliminar",    ID_FILE_PRINT_PREVIEW
         MENUITEM "Con&figurar impresora...",    ID_FILE_PRINT_SETUP
         MENUITEM SEPARATOR
-        MENUITEM "Archivo reciente",            ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM "Archivo reciente",            ID_FILE_MRU_FILE1
         MENUITEM SEPARATOR
         MENUITEM "&Salir",                      ID_APP_EXIT
     END
@@ -2331,6 +2332,7 @@ BEGIN
                 MENUITEM "&White -1% && -2% moving bars", IDM_PATTERN_ANIM_WHITE
                 MENUITEM "&Shadow clipping",            IDM_PATTERN_CLIPL
                 MENUITEM "&Highlight clipping",         IDM_PATTERN_CLIPH
+                MENUITEM "&Near Black",                 IDM_PATTERN_NB
             END
             POPUP "&Focus && Resolution"
             BEGIN

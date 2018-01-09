@@ -95,6 +95,7 @@ public:
 	virtual BOOL DisplaySramp();
 	virtual BOOL DisplayTestimg();
 	virtual BOOL DisplayISO12233();
+	virtual BOOL DisplayNB();
 	virtual BOOL DisplayBBCHD();
 	virtual BOOL DisplayCROSSd();
 	virtual BOOL DisplayCROSSl();

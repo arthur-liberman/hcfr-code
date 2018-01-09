@@ -40,8 +40,8 @@ typedef enum
 	PALSECAM = 0,
 	SDTV = 1,
 	HDTV = 2,
-	HDTVa = 3,
-	HDTVb = 4,
+	HDTVa = 3, //75%
+	HDTVb = 4, //Plasma
 	sRGB = 5,
 	UHDTV = 6,  //P3
 	UHDTV2 = 7, //BT.2020

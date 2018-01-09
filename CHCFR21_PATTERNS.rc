@@ -232,6 +232,10 @@ IDR_PATTERN_CROSSlv        PATTERN                 "res\\patterns\\crosslv.png"
 IDR_PATTERN_CROSSd        PATTERN                 "res\\patterns\\crossd.png"
 IDR_PATTERN_CROSSdv        PATTERN                 "res\\patterns\\crossdv.png"
 IDR_PATTERN_ZONE        PATTERN                 "res\\patterns\\zoneplate.png"
+IDR_PATTERN_NB        PATTERN                 "res\\patterns\\NBsdr.png"
+IDR_PATTERN_NBv        PATTERN                 "res\\patterns\\NBsdrv.png"
+IDR_PATTERN_NBHDR        PATTERN                 "res\\patterns\\NBhdr.png"
+IDR_PATTERN_NBvHDR        PATTERN                 "res\\patterns\\NBhdrv.png"
 #endif    // French (France) resourcesdi
 /////////////////////////////////////////////////////////////////////////////
 

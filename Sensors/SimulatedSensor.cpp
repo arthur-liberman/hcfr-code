@@ -217,8 +217,9 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 
 	if (GetConfig()->m_colorStandard == sRGB)
 		mode = 99;
-	if  (mode == 7 || mode == 8 || mode == 9)
-		mode = 5; //simulate standard PQ curve
+
+//	if  (mode == 7 || mode == 8 || mode == 9)
+//		mode = 5; //simulate standard PQ curve
 	
 	//	quantize to 8 or 10 bit video
 	double r,g,b;
@@ -321,12 +322,12 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 	bool isSpecial = (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb);
 
 	CColor colSensor(ColorXYZ(colMeasure, isSpecial?CColorReference(HDTV):GetConfig()->m_colorStandard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));
-	colSensor.SetX(colSensor.GetX() * (mode==5?10000.:100.));
-	colSensor.SetY(colSensor.GetY() * (mode==5?10000.:100.));
-	colSensor.SetZ(colSensor.GetZ() * (mode==5?10000.:100.));
+	colSensor.SetX(colSensor.GetX() * (mode==5?10000.:White.GetY()));
+	colSensor.SetY(colSensor.GetY() * (mode==5?10000.:White.GetY()));
+	colSensor.SetZ(colSensor.GetZ() * (mode==5?10000.:White.GetY()));
 
 	//cap peak white to target maxL
-	if (mode == 5)
+	if (mode == 5 || mode == 7)
 	{
 		double rescale = min(colSensor.GetY(), GetConfig()->m_TargetMaxL)/colSensor.GetY();
 		colSensor.SetX(colSensor.GetX() * rescale);

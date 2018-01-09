@@ -1063,6 +1063,12 @@ BOOL CGDIGenerator::DisplayISO12233()
 	return TRUE;
 }
 
+BOOL CGDIGenerator::DisplayNB()
+{
+	m_displayWindow.DisplayNB();
+	return TRUE;
+}
+
 BOOL CGDIGenerator::DisplayBBCHD()
 {
 	m_displayWindow.DisplayBBCHD();

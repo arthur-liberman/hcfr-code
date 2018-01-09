@@ -1584,6 +1584,7 @@ BEGIN
     "4",            ID_USERDEFINED_USER4,   VIRTKEY, SHIFT, CONTROL, NOINVERT
     "5",            ID_USERDEFINED_USER5,   VIRTKEY, SHIFT, CONTROL, NOINVERT
     "6",            ID_USERDEFINED_USER6,   VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "7",            IDM_PATTERN_NB,   VIRTKEY, SHIFT, CONTROL, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
     "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
@@ -1894,7 +1895,7 @@ BEGIN
         MENUITEM "Sei&tenansicht",              ID_FILE_PRINT_PREVIEW
         MENUITEM "Drucker&einrichtung...",      ID_FILE_PRINT_SETUP
         MENUITEM SEPARATOR
-        MENUITEM "Letzte Datei",                ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM "Letzte Datei",                ID_FILE_MRU_FILE1
         MENUITEM SEPARATOR
         MENUITEM "&Beenden",                    ID_APP_EXIT
     END
@@ -1990,6 +1991,7 @@ BEGIN
                 MENUITEM "&White -1% && -2% moving bars", IDM_PATTERN_ANIM_WHITE
                 MENUITEM "&Shadow clipping",            IDM_PATTERN_CLIPL
                 MENUITEM "&Highlight clipping",         IDM_PATTERN_CLIPH
+                MENUITEM "&Near Black",                 IDM_PATTERN_NB
             END
             POPUP "&Focus && Resolution"
             BEGIN

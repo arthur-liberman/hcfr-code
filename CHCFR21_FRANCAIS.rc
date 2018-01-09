@@ -395,7 +395,7 @@ BEGIN
     CONTROL         "Lancer un nouvel étalonnage du capteur",IDC_SENSORTRAININGMODE_RADIO2,
                     "Button",BS_AUTORADIOBUTTON,14,100,165,10
     COMBOBOX        IDC_SENSORTRAININGFILE_COMBO,20,77,146,105,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    CTEXT           "Si vous ne disposez pas d'une matrice de correction créée en utilisant votre sonde en combinaison avec un spectromètre, il est recommandé d'utiliser la correction d'échantillon spectral appropriée disponible dans la liste déroulante du type d'affichage danr???????ò?ò?ò????C:\\displ",IDC_STATIC,174,29,115,72,WS_BORDER,WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE
+    CTEXT           "Si vous ne disposez pas d'une matrice de correction créée en utilisant votre sonde en combinaison avec un spectromètre, il est recommandé d'utiliser la correction d'échantillon spectral appropriée disponible dans la liste déroulante du type d'affichage danr???????U?U?U????C:\\displ",IDC_STATIC,174,29,115,72,WS_BORDER,WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE
     LTEXT           "D3 / munki et Spyder 4 utilisateurs",IDC_STATIC,184,17,95,8
 END
 
@@ -1914,6 +1914,7 @@ BEGIN
     "4",            ID_USERDEFINED_USER4,   VIRTKEY, SHIFT, CONTROL, NOINVERT
     "5",            ID_USERDEFINED_USER5,   VIRTKEY, SHIFT, CONTROL, NOINVERT
     "6",            ID_USERDEFINED_USER6,   VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "7",            IDM_PATTERN_NB,   VIRTKEY, SHIFT, CONTROL, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
     "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
@@ -2319,6 +2320,7 @@ BEGIN
                 MENUITEM "&White -1% && -2% moving bars", IDM_PATTERN_ANIM_WHITE
                 MENUITEM "&Shadow clipping",            IDM_PATTERN_CLIPL
                 MENUITEM "&Highlight clipping",         IDM_PATTERN_CLIPH
+                MENUITEM "&Near Black",                 IDM_PATTERN_NB
             END
             POPUP "&Focus && Resolution"
             BEGIN
