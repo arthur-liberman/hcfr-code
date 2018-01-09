@@ -465,6 +465,11 @@ BOOL CGenerator::DisplayISO12233()
 	return TRUE;	  // need to be overriden
 }
 
+BOOL CGenerator::DisplayNB()
+{
+	return TRUE;	  // need to be overriden
+}
+
 BOOL CGenerator::DisplayBBCHD()
 {
 	return TRUE;	  // need to be overriden

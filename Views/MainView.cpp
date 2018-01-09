@@ -2855,7 +2855,7 @@ void CMainView::UpdateGrid()
         
 		CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
 	    CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
-		if (!GetConfig()->m_bOverRideTargs && Black.isValid() && White.isValid() && GetConfig()->m_GammaOffsetType == 5)
+		if (!GetConfig()->m_bOverRideTargs && Black.isValid() && White.isValid() && (GetConfig()->m_GammaOffsetType == 5 || GetConfig()->m_GammaOffsetType == 7))
 		{
 			if (Black.GetY() < White.GetY())
 				GetConfig()->m_TargetMinL = Black.GetY()>1e-5?Black.GetY():0.0;
@@ -3414,7 +3414,7 @@ void CMainView::UpdateGrid()
 					Msg += dEform;
 					dEform = GetConfig()->m_dE_gray==0?" [Relative Y]":(GetConfig ()->m_dE_gray == 1?" [Absolute Y w/gamma]":" [Absolute Y w/o gamma]");
 					Msg += dEform;
-					Msg += (isHDR ? " HDR"+ dWhitestr:" SDR");
+					Msg += (isHDR ? " HDR"+ dWhitestr:GetConfig()->m_GammaOffsetType == 7?" HLG":" SDR");
                     if (GetConfig()->doHighlight)
 					    m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
 				}
@@ -3526,7 +3526,7 @@ void CMainView::UpdateGrid()
 							break;
 						}
 					}
-					Msg += (isHDR ? cSpace + " HDR"+ dWhitestr:cSpace + " SDR");
+					Msg += (isHDR ? cSpace + " HDR"+ dWhitestr:GetConfig()->m_GammaOffsetType == 7?cSpace + "HLG":cSpace + " SDR");
                     if (GetConfig()->doHighlight)
                         m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
 			}
@@ -3663,8 +3663,8 @@ void CMainView::UpdateGrid()
 							break;
 						}
 					}
-					Msg += (isHDR ? cSpace + " HDR"+ dWhitestr:cSpace + " SDR");
-                    if (GetConfig()->doHighlight)
+					Msg += (isHDR ? cSpace + " HDR"+ dWhitestr:GetConfig()->m_GammaOffsetType == 7?cSpace + " HLG":cSpace + " SDR");
+                    if (GetConfig()->doHighlight) 
 					    m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
 			}
 			m_grayScaleGroup.SetText ( Msg );
@@ -3806,7 +3806,7 @@ void CMainView::UpdateGrid()
 							break;
 						}
 					}
-					Msg += (isHDR ? cSpace + " HDR"+ dWhitestr:cSpace + " SDR");
+					Msg += (isHDR ? cSpace + " HDR"+ dWhitestr:GetConfig()->m_GammaOffsetType == 7?cSpace + " HLG":cSpace + " SDR");
                     if (GetConfig()->doHighlight)
 					    m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
 			}

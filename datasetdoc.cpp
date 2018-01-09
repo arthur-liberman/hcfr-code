@@ -484,6 +484,7 @@ BEGIN_MESSAGE_MAP(CDataSetDoc, CDocument)
 	ON_COMMAND(IDM_PATTERN_DR2, OnPatternDR2)
 	ON_COMMAND(IDM_PATTERN_TC5, OnPatternTC5)
 	ON_COMMAND(IDM_PATTERN_ALIGN, OnPatternAlign)
+	ON_COMMAND(IDM_PATTERN_NB, OnPatternNB)
 	ON_COMMAND(IDM_PATTERN_ALIGN2, OnPatternAlign2)
 	ON_COMMAND(ID_USERDEFINED_USER1, OnPatternUser1)
 	ON_COMMAND(ID_USERDEFINED_USER2, OnPatternUser2)
@@ -3886,6 +3887,30 @@ void CDataSetDoc::OnPatternISO12233()
 				AfxGetMainWnd () -> BringWindowToTop ( );
 			}
 		}
+	}
+	else
+	{
+		GetColorApp()->InMeasureMessageBox( _S(IDS_CANNOTDISPLAYANIMATION), "On measure", MB_OK | MB_ICONEXCLAMATION );
+	}
+}
+
+void CDataSetDoc::OnPatternNB() 
+{
+
+	if ( m_pGenerator -> CanDisplayAnimatedPatterns() )
+	{
+			if (m_pGenerator->Init())
+			{
+				AfxGetMainWnd () -> EnableWindow ( FALSE );
+
+				m_pGenerator->DisplayNB();
+
+				WaitKey();
+			
+				AfxGetMainWnd () -> EnableWindow ( TRUE );
+				m_pGenerator->Release();
+				AfxGetMainWnd () -> BringWindowToTop ( );
+			}
 	}
 	else
 	{

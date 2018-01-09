@@ -218,6 +218,7 @@ protected:
 	afx_msg void OnPatternSramp();
 	afx_msg void OnPatternTestimg();
 	afx_msg void OnPatternISO12233();
+	afx_msg void OnPatternNB();
 	afx_msg void OnPatternBBCHD();
 	afx_msg void OnPatternCROSSl();
 	afx_msg void OnPatternCROSSd();

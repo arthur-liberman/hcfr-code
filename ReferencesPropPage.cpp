@@ -212,6 +212,35 @@ void CReferencesPropPage::OnControlClicked(UINT nID)
   	  m_GammaRefEdit.EnableWindow (TRUE);
       m_eMeasuredGamma.EnableWindow (TRUE);
     }
+
+	if (m_GammaOffsetType == 5)
+	{
+		if (m_bOverRideTargs)
+		{
+			m_TargetMinLCtrl.EnableWindow (TRUE);
+  			m_TargetMaxLCtrl.EnableWindow (TRUE);
+  			m_DiffuseLCtrl.EnableWindow (TRUE);
+		}
+  		m_MasterMinLCtrl.EnableWindow (TRUE);
+  		m_MasterMaxLCtrl.EnableWindow (TRUE);
+  		m_ContentMaxLCtrl.EnableWindow (TRUE);
+  		m_FrameAvgMaxLCtrl.EnableWindow (TRUE);
+  		m_bOverRideTargsCtrl.EnableWindow (TRUE);
+  		m_useToneMapCtrl.EnableWindow (TRUE);
+	}
+	else
+	{
+		m_TargetMinLCtrl.EnableWindow (FALSE);
+  		m_TargetMaxLCtrl.EnableWindow (FALSE);
+  		m_MasterMinLCtrl.EnableWindow (FALSE);
+  		m_MasterMaxLCtrl.EnableWindow (FALSE);
+  		m_ContentMaxLCtrl.EnableWindow (FALSE);
+  		m_FrameAvgMaxLCtrl.EnableWindow (FALSE);
+  		m_bOverRideTargsCtrl.EnableWindow (FALSE);
+  		m_useToneMapCtrl.EnableWindow (FALSE);
+  		m_DiffuseLCtrl.EnableWindow (FALSE);
+	}
+
 	m_isModified=TRUE;
 	SetModified(TRUE);	
 	UpdateData(TRUE);
@@ -287,34 +316,6 @@ BOOL CReferencesPropPage::OnApply()
 		m_ManualBlackEdit.EnableWindow(TRUE);
 	else
 		m_ManualBlackEdit.EnableWindow(FALSE);
-
-	if (m_GammaOffsetType == 5)
-	{
-		if (m_bOverRideTargs)
-		{
-			m_TargetMinLCtrl.EnableWindow (TRUE);
-  			m_TargetMaxLCtrl.EnableWindow (TRUE);
-  			m_DiffuseLCtrl.EnableWindow (TRUE);
-		}
-  		m_MasterMinLCtrl.EnableWindow (TRUE);
-  		m_MasterMaxLCtrl.EnableWindow (TRUE);
-  		m_ContentMaxLCtrl.EnableWindow (TRUE);
-  		m_FrameAvgMaxLCtrl.EnableWindow (TRUE);
-  		m_bOverRideTargsCtrl.EnableWindow (TRUE);
-  		m_useToneMapCtrl.EnableWindow (TRUE);
-	}
-	else
-	{
-		m_TargetMinLCtrl.EnableWindow (FALSE);
-  		m_TargetMaxLCtrl.EnableWindow (FALSE);
-  		m_MasterMinLCtrl.EnableWindow (FALSE);
-  		m_MasterMaxLCtrl.EnableWindow (FALSE);
-  		m_ContentMaxLCtrl.EnableWindow (FALSE);
-  		m_FrameAvgMaxLCtrl.EnableWindow (FALSE);
-  		m_bOverRideTargsCtrl.EnableWindow (FALSE);
-  		m_useToneMapCtrl.EnableWindow (FALSE);
-  		m_DiffuseLCtrl.EnableWindow (FALSE);
-	}
 
 	m_isModified=TRUE;
 	GetConfig()->ApplySettings(FALSE);

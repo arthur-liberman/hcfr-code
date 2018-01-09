@@ -837,6 +837,29 @@ void CFullScreenWindow::DisplayISO12233()
 	FreeLibrary(hPatterns);
 }
 
+void CFullScreenWindow::DisplayNB() 
+{
+	HMODULE hPatterns;
+	hPatterns = LoadLibrary(_T("CHCFR21_PATTERNS.dll"));
+	if (GetConfig()->m_GammaOffsetType == 5 || GetConfig()->m_GammaOffsetType == 7)
+	{
+
+		if (m_b16_235)
+			CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_NBvHDR,TRUE);
+		else
+			CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_NBHDR,TRUE);
+	}
+	else
+	{
+
+		if (m_b16_235)
+			CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_NBv,TRUE);
+		else
+			CFullScreenWindow::DisplayPatternPicture(hPatterns,IDR_PATTERN_NB,TRUE);
+	}
+	FreeLibrary(hPatterns);
+}
+
 void CFullScreenWindow::DisplayBBCHD() 
 {
 	HMODULE hPatterns;
