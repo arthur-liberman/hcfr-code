@@ -2858,6 +2858,10 @@ void CDataSetDoc::WaitKey(int Anim)
 					m_pGenerator->DisplayClipHO();
 					OFF = FALSE;
 					break;
+					case 3:
+					m_pGenerator->DisplayNBO();
+					OFF = FALSE;
+					break;
 				}
 			Sleep(250);
 			}
@@ -2871,6 +2875,10 @@ void CDataSetDoc::WaitKey(int Anim)
 					break;
 					case 2:
 					m_pGenerator->DisplayClipH();
+					OFF = TRUE;
+					case 3:
+					m_pGenerator->DisplayNB();
+					Sleep(1000);
 					OFF = TRUE;
 					break;
 				}
@@ -3904,8 +3912,7 @@ void CDataSetDoc::OnPatternNB()
 				AfxGetMainWnd () -> EnableWindow ( FALSE );
 
 				m_pGenerator->DisplayNB();
-
-				WaitKey();
+				WaitKey(3);
 			
 				AfxGetMainWnd () -> EnableWindow ( TRUE );
 				m_pGenerator->Release();
