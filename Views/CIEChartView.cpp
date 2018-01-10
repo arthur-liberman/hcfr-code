@@ -312,7 +312,6 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 {
 	ASSERT(pBitmap);
 	ASSERT(pDC);
-
 	BITMAP bm;
 	pBitmap->GetBitmap(&bm);
 	bool bDrawBMP = !m_bdE10;
@@ -392,6 +391,7 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 					RefWhite = aGraphPoint.YWhite / GetConfig()->m_DiffuseL ;
 					YWhite = 94.37844 / GetConfig()->m_DiffuseL ;
 				}
+
 //				}
 //			}
 
@@ -905,7 +905,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	// Take sum of primary colors Y by default, in case of no white measure found
 	double YWhite = redPrimaryColor[2]+greenPrimaryColor[2]+bluePrimaryColor[2];
 	
-	if ( pDoc -> GetMeasure () -> GetPrimeWhite ().isValid() )
+	if ( pDoc -> GetMeasure () -> GetPrimeWhite ().isValid() && (current_mode<=4 || current_mode>=12) && GetConfig()->m_colorStandard!=HDTVb )
 		YWhite = pDoc -> GetMeasure () -> GetPrimeWhite () [ 1 ]; //check here first
 	else if ( pDoc -> GetMeasure () -> GetOnOffWhite ().isValid() )
 		YWhite = pDoc -> GetMeasure () -> GetOnOffWhite () [ 1 ]; //onoff white is always grayscale white
@@ -1841,7 +1841,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			CCIEGraphPoint RedPointRef(pDoc->GetMeasure()->GetRefSat(0, (double)i / (double)(pDoc->GetMeasure()->GetSaturationSize()-1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb)).GetXYZValue(),
 								  1.0,
 								  str, m_bCIEuv, m_bCIEab );
-			DrawAlphaBitmap(pDC,RedPoint,&m_redPrimaryBitmap,rect,pTooltip,pWnd,&RedPointRef, FALSE, dE10);
+			DrawAlphaBitmap(pDC,RedPoint,&m_redPrimaryBitmap,rect,pTooltip,pWnd,&RedPointRef, FALSE, dE10, FALSE);
 
 			Msg.LoadString ( IDS_GREENSATPERCENT );
 			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
