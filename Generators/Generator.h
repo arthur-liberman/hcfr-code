@@ -123,6 +123,7 @@ public:
 	virtual BOOL DisplayTestimg();				// need to be overriden
 	virtual BOOL DisplayISO12233();				// need to be overriden
 	virtual BOOL DisplayNB();				// need to be overriden
+	virtual BOOL DisplayNBO();				// need to be overriden
 	virtual BOOL DisplayBBCHD();				// need to be overriden
 	virtual BOOL DisplayCROSSd();				// need to be overriden
 	virtual BOOL DisplayCROSSl();				// need to be overriden

@@ -173,6 +173,7 @@ public:
 	void DisplayClipLO();
 	void DisplayISO12233();
 	void DisplayNB();
+	void DisplayNBO();
 	void DisplayBBCHD();
 	void DisplayCROSSd();
 	void DisplayCROSSl();

@@ -286,6 +286,11 @@
 #define IDR_PATTERN_NBv                 404
 #define IDR_PATTERN_NBHDR               405
 #define IDR_PATTERN_NBvHDR              406
+#define IDR_PATTERN_NBHDRb              407
+#define IDR_PATTERN_NBHDRbv              408
+#define IDR_PATTERN_NBSDRb              409
+#define IDR_PATTERN_NBSDRbv              410
+#define IDR_PATTERN_BLACK               411
 #define IDC_GRAYSCALE_GRID              1001
 #define IDC_GRAPH_TITLE                 1002
 #define IDC_SENSORMATRIX_GRID           1002

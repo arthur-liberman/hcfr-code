@@ -1039,6 +1039,12 @@ BOOL CGDIGenerator::DisplayClipHO()
 	return TRUE;
 }
 
+BOOL CGDIGenerator::DisplayNBO()
+{
+	m_displayWindow.DisplayNBO();
+	return TRUE;
+}
+
 BOOL CGDIGenerator::DisplayClipL()
 {
 	m_displayWindow.DisplayClipL();

@@ -236,6 +236,11 @@ IDR_PATTERN_NB        PATTERN                 "res\\patterns\\NBsdr.png"
 IDR_PATTERN_NBv        PATTERN                 "res\\patterns\\NBsdrv.png"
 IDR_PATTERN_NBHDR        PATTERN                 "res\\patterns\\NBhdr.png"
 IDR_PATTERN_NBvHDR        PATTERN                 "res\\patterns\\NBhdrv.png"
+IDR_PATTERN_NBHDRb        PATTERN                 "res\\patterns\\NBhdrb.png"
+IDR_PATTERN_NBHDRbv        PATTERN                 "res\\patterns\\NBhdrbv.png"
+IDR_PATTERN_NBSDRb        PATTERN                 "res\\patterns\\NBsdrb.png"
+IDR_PATTERN_NBSDRbv        PATTERN                 "res\\patterns\\NBsdrbv.png"
+IDR_PATTERN_BLACK        PATTERN                 "res\\patterns\\black.png"
 #endif    // French (France) resourcesdi
 /////////////////////////////////////////////////////////////////////////////
 
