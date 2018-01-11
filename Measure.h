@@ -202,7 +202,7 @@ public:
 	double GetContrastMaxLum ();
 	void DeleteContrast ();
 	
-	BOOL AddMeasurement(CSensor *pSensor, CGenerator *pGenerator, CGenerator::MeasureType MT, int isPrimary, int last_minCol);
+	BOOL AddMeasurement(CSensor *pSensor, CGenerator *pGenerator, CGenerator::MeasureType MT, int isPrimary, int last_minCol, int m_d);
 	CColor GetMeasurement(int i) const;
 	void SetMeasurements(int i,const CColor & aColor) {m_measurementsArray[i]=aColor; m_isModified=TRUE; } 
 	void AppendMeasurements(const CColor & aColor, int isPrimary, int last_minCol);
@@ -228,7 +228,7 @@ public:
 	BOOL CheckBlackOverride (  );
 	void UpdateViews ( CDataSetDoc *pDoc = NULL, int Sequence = 0 );
 	void UpdateTstWnd ( CDataSetDoc *pDoc, int Sequence );
-	int m_currentIndex, m_currentSequence;
+	int m_currentIndex, m_currentSequence, displaymode;
 
 	HANDLE InitBackgroundMeasures ( CSensor *pSensor, int nSteps );
 	BOOL BackgroundMeasureColor ( int nCurStep, const ColorRGBDisplay& aRGBValue );

@@ -2062,6 +2062,8 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 								else
 								{
 									RefWhite = YWhite / (GetConfig()->m_DiffuseL * tmWhite) ;
+									if (m_displayMode == 11)
+										RefWhite = tmWhite ;
 									YWhite = YWhite * 94.37844 / (GetConfig()->m_DiffuseL * tmWhite);
 								}
 							}
@@ -2074,7 +2076,8 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 									RefWhite = YWhite / (GetConfig()->m_DiffuseL * tmWhite) ;
 								else
 								{
-									RefWhite = YWhite / (GetConfig()->m_DiffuseL * tmWhite) ;
+//									RefWhite = YWhite / (GetConfig()->m_DiffuseL * tmWhite) ;					
+									RefWhite = 1.0 / tmWhite ;
 									YWhite = YWhite * 94.37844 / (GetConfig()->m_DiffuseL * tmWhite) ;
 								}
 							}
@@ -2085,6 +2088,8 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 								else
 								{
 									RefWhite = YWhite / (GetConfig()->m_DiffuseL * tmWhite) ;
+									if (m_displayMode == 11)
+										RefWhite = 1./ tmWhite ;
 									YWhite = YWhite * 94.37844 / (GetConfig()->m_DiffuseL * tmWhite) ;
 								}
 							}
@@ -3247,6 +3252,12 @@ void CMainView::UpdateGrid()
 					refColor.SetX((refColor.GetX() * 100.));
 					refColor.SetY((refColor.GetY() * 100.));
 					refColor.SetZ((refColor.GetZ() * 100.));
+				}
+				else if (m_displayMode == 11)
+				{
+					refColor.SetX((refColor.GetX() * 105.95640));
+					refColor.SetY((refColor.GetY() * 105.95640));
+					refColor.SetZ((refColor.GetZ() * 105.95640));
 				}
 				else
 				{

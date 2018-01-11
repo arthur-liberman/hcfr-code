@@ -114,9 +114,14 @@ BOOL CSensor::Release()
 	return TRUE;
 }
 
-CColor CSensor::MeasureColor(const ColorRGBDisplay& aRGBValue)
+CColor CSensor::MeasureColor(const ColorRGBDisplay& aRGBValue, int displaymode)
 {
-    CColor result(MeasureColorInternal(aRGBValue));
+	CColor result;
+	if (this->GetName() == "Simulated sensor")
+	    result = MeasureColorInternal(aRGBValue, displaymode);
+	else
+		result = MeasureColorInternal(aRGBValue);
+	
 	result.SetX(max(result.GetX(),0.00000001));
 	result.SetY(max(result.GetY(),0.00000001));
 	result.SetZ(max(result.GetZ(),0.00000001));

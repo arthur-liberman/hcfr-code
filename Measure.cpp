@@ -1371,7 +1371,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 				if ( bUseLuxValues )
 					StartLuxMeasure ();
 
-				measuredColor[size+i]=pSensor->MeasureColor(GenColors[i]);
+				measuredColor[size+i]=pSensor->MeasureColor(GenColors[i], displaymode);
 				if (i<3)
 					m_primariesArray[i] = measuredColor[size+i];
 				if (i>=3&&i<6)
@@ -1972,7 +1972,7 @@ BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator, CDat
 				if ( bUseLuxValues )
 					StartLuxMeasure ();
 
-				measuredColor[i]=pSensor->MeasureColor(GenColors[i]);
+				measuredColor[i]=pSensor->MeasureColor(GenColors[i], displaymode);
 				m_redSatMeasureArray[i] = measuredColor[i];
 				
 				if ( bUseLuxValues )
@@ -2141,7 +2141,7 @@ BOOL CMeasure::MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator, CD
 				if ( bUseLuxValues )
 					StartLuxMeasure ();
 
-				measuredColor[i]=pSensor->MeasureColor(GenColors[i]);
+				measuredColor[i]=pSensor->MeasureColor(GenColors[i], displaymode);
 				m_greenSatMeasureArray[i] = measuredColor[i];
 				
 				if ( bUseLuxValues )
@@ -2312,7 +2312,7 @@ BOOL CMeasure::MeasureBlueSatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 				if ( bUseLuxValues )
 					StartLuxMeasure ();
 
-				measuredColor[i]=pSensor->MeasureColor(GenColors[i]);
+				measuredColor[i]=pSensor->MeasureColor(GenColors[i], displaymode);
 				m_blueSatMeasureArray[i] = measuredColor[i];
 				
 				if ( bUseLuxValues )
@@ -2482,7 +2482,7 @@ BOOL CMeasure::MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator, C
 				if ( bUseLuxValues )
 					StartLuxMeasure ();
 
-				measuredColor[i]=pSensor->MeasureColor(GenColors[i]);
+				measuredColor[i]=pSensor->MeasureColor(GenColors[i], displaymode);
 				m_yellowSatMeasureArray[i] = measuredColor[i];
 				
 				if ( bUseLuxValues )
@@ -2654,7 +2654,7 @@ BOOL CMeasure::MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 				if ( bUseLuxValues )
 					StartLuxMeasure ();
 
-				measuredColor[i]=pSensor->MeasureColor(GenColors[i]);
+				measuredColor[i]=pSensor->MeasureColor(GenColors[i], displaymode);
 				m_cyanSatMeasureArray[i] = measuredColor[i];
 				
 				if ( bUseLuxValues )
@@ -2826,7 +2826,7 @@ BOOL CMeasure::MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator, 
 				if ( bUseLuxValues )
 					StartLuxMeasure ();
 
-				measuredColor[i]=pSensor->MeasureColor(GenColors[i]);
+				measuredColor[i]=pSensor->MeasureColor(GenColors[i], displaymode);
 				m_magentaSatMeasureArray[i] = measuredColor[i];
 				
 				if ( bUseLuxValues )
@@ -3051,14 +3051,14 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 					StartLuxMeasure ();
 				if (GetConfig()->m_CCMode != MCD)
 				{
-					measuredColor[i]=pSensor->MeasureColor(GenColors[i]);
+					measuredColor[i]=pSensor->MeasureColor(GenColors[i], displaymode);
 				}
 				else
 				{
 					if (i < 18)
-						measuredColor[i+6]=pSensor->MeasureColor(GenColors[i]);	
+						measuredColor[i+6]=pSensor->MeasureColor(GenColors[i], displaymode);	
 					else
-						measuredColor[23-i]=pSensor->MeasureColor(GenColors[i]);	
+						measuredColor[23-i]=pSensor->MeasureColor(GenColors[i], displaymode);	
 				}
 
 				m_cc24SatMeasureArray[i] = measuredColor[i];
@@ -3335,7 +3335,7 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 					if ( bUseLuxValues )
 						StartLuxMeasure ();
 
-					measuredColor[(j*size)+i]=pSensor->MeasureColor(GenColors[(j*size)+i]);
+					measuredColor[(j*size)+i]=pSensor->MeasureColor(GenColors[(j*size)+i], displaymode);
 					if ((i+j*size)<size)
 						m_redSatMeasureArray[i] = measuredColor[j*size+i];
 					if ((i+j*size)<2*size&&(i+j*size)>=size)
@@ -3644,7 +3644,7 @@ BOOL CMeasure::MeasurePrimarySecondarySaturationScales(CSensor *pSensor, CGenera
 					if ( bUseLuxValues )
 						StartLuxMeasure ();
 
-					measuredColor[(j*size)+i]=pSensor->MeasureColor(GenColors[(j*size)+i]);
+					measuredColor[(j*size)+i]=pSensor->MeasureColor(GenColors[(j*size)+i], displaymode);
 					if ((i+j*size)<size)
 						m_redSatMeasureArray[i] = measuredColor[i];
 					if ((i+j*size)<size*2&&(i+j*size)>=size)
@@ -3947,7 +3947,7 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator, CDataS
 				if ( bUseLuxValues )
 					StartLuxMeasure ();
 
-				measuredColor[i]=pSensor->MeasureColor(GenColors[i]);
+				measuredColor[i]=pSensor->MeasureColor(GenColors[i], displaymode);
 				if (i < 3)
 					m_primariesArray[i] = measuredColor[i];
 				if ( bUseLuxValues )
@@ -4219,7 +4219,7 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator, CDat
 				if ( bUseLuxValues )
 					StartLuxMeasure ();
 
-				measuredColor[i]=pSensor->MeasureColor(GenColors[i]);
+				measuredColor[i]=pSensor->MeasureColor(GenColors[i], displaymode);
 				
 				if (i<3)
 					m_primariesArray[i] = measuredColor[i];
@@ -4936,7 +4936,7 @@ void CMeasure::DeleteContrast ()
 	m_isModified=TRUE; 
 }
 
-BOOL CMeasure::AddMeasurement(CSensor *pSensor, CGenerator *pGenerator,  CGenerator::MeasureType MT, int isPrimary, int last_minCol)
+BOOL CMeasure::AddMeasurement(CSensor *pSensor, CGenerator *pGenerator,  CGenerator::MeasureType MT, int isPrimary, int last_minCol, int m_d)
 {
 	BOOL		bDisplayColor = GetConfig () -> m_bDisplayTestColors;
 	BOOL		bOk;
@@ -4983,7 +4983,7 @@ BOOL CMeasure::AddMeasurement(CSensor *pSensor, CGenerator *pGenerator,  CGenera
 
 	if ( bOk )
 	{
-		measuredColor=pSensor->MeasureColor(ColorRGBDisplay(clr));
+		measuredColor=pSensor->MeasureColor(ColorRGBDisplay(clr), m_d);
 		if(!pSensor->IsMeasureValid())
 		{
 			Title.LoadString ( IDS_ERROR );
@@ -5178,6 +5178,7 @@ void CMeasure::UpdateTstWnd (CDataSetDoc *pDoc, int i )
 		((CMainView*)pView)->last_minCol = i;
 		((CMainView*)pView)->RefreshSelection(FALSE, TRUE);
 		m_currentIndex = i+1;
+		displaymode = ((CMainView*)pView)->m_displayMode;
 	}
 }
 
