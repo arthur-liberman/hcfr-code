@@ -1344,6 +1344,12 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 
 	if (ToneMap && mode == -5)
 		mode = -10;
+
+	if (ToneMap)
+	{
+		m_MaxML = m_MaxML * m_diffuseL / 94.37844; 
+	}
+
 //Returns relative output luminance given input luma (stimulus)
 //exception is ST2084 which returns an absolute value
 //BT1886
@@ -1618,10 +1624,6 @@ double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhit
 //			ColorICT ICTRef(refColor, 94., cRef);
 //			ColorICT ICT(*this, YWhite, cRef);
 //			dE = sqrt ( pow ((ICT[0] - ICTRef[0]),2) + pow((ICT[1] - ICTRef[1]),2) + pow((ICT[2] - ICTRef[2]),2) );
-			
-			ColorICT ICTRef(refColor, 94., cRef);
-			ColorICT ICT(*this, YWhite, cRef);
-			dE = sqrt ( pow ((ICT[0] - ICTRef[0]),2) + pow((ICT[1] - ICTRef[1]),2) + pow((ICT[2] - ICTRef[2]),2) );
 			break;
 		}
 		case 1:
