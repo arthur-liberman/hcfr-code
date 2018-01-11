@@ -386,6 +386,7 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 //					YWhite = GetDocument()->GetMeasure()->GetGray((GetDocument()->GetMeasure()->GetGrayScaleSize()-1)).GetY() ;
 //				else
 //				{
+
 				if (GetConfig()->m_GammaOffsetType == 5)
 				{
 					RefWhite = aGraphPoint.YWhite / GetConfig()->m_DiffuseL ;
@@ -905,7 +906,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	// Take sum of primary colors Y by default, in case of no white measure found
 	double YWhite = redPrimaryColor[2]+greenPrimaryColor[2]+bluePrimaryColor[2];
 	
-	if ( pDoc -> GetMeasure () -> GetPrimeWhite ().isValid() && (current_mode<=4 || current_mode>=12) && GetConfig()->m_colorStandard!=HDTVb )
+	if ( pDoc -> GetMeasure () -> GetPrimeWhite ().isValid() && !( (current_mode>=4 && current_mode<=12) && GetConfig()->m_colorStandard==HDTVb) )
 		YWhite = pDoc -> GetMeasure () -> GetPrimeWhite () [ 1 ]; //check here first
 	else if ( pDoc -> GetMeasure () -> GetOnOffWhite ().isValid() )
 		YWhite = pDoc -> GetMeasure () -> GetOnOffWhite () [ 1 ]; //onoff white is always grayscale white
@@ -960,7 +961,15 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 		if ( pDataRef -> GetMeasure () -> GetOnOffWhite ().isValid() )
 			YWhiteRef = pDataRef -> GetMeasure () -> GetOnOffWhite () [ 1 ]; //onoff white is always grayscale white
 	}
-	
+
+	if (GetConfig()->m_GammaOffsetType == 5)
+	{
+//		if ( pDataRef -> GetMeasure () -> GetOnOffWhite ().isValid() )
+//			YWhiteRef = pDataRef -> GetMeasure () -> GetOnOffWhite () [ 1 ]; //onoff white is always grayscale white
+//		YWhiteRef = YWhite / GetConfig()->m_DiffuseL ;
+//		YWhite = YWhite * 94.37844 / GetConfig()->m_DiffuseL ;
+	}
+
 	Msg.LoadString ( IDS_DATAREF_RED );
 	CCIEGraphPoint datarefRedPoint(datarefRed, YWhiteRef, Msg, m_bCIEuv, m_bCIEab);
 	Msg.LoadString ( IDS_DATAREF_GREEN );

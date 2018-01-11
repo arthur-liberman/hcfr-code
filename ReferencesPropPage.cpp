@@ -93,7 +93,7 @@ void CReferencesPropPage::DoDataExchange(CDataExchange* pDX)
   	DDX_Text(pDX, IDC_EDIT_GAMMA_AVERAGE, m_GammaAvg);
   	DDX_Text(pDX, IDC_EDIT_DIFFUSE_WHITE, m_DiffuseL);
   	DDX_Control(pDX, IDC_EDIT_DIFFUSE_WHITE, m_DiffuseLCtrl);
-	DDV_MinMaxDouble(pDX, m_DiffuseL, 10., 200.);
+	DDV_MinMaxDouble(pDX, m_DiffuseL, 5., 200.);
 	DDX_Text(pDX, IDC_EDIT_MASTER_MINL, m_MasterMinL);
 	DDX_Control(pDX, IDC_EDIT_MASTER_MINL, m_MasterMinLCtrl);
 	DDV_MinMaxDouble(pDX, m_MasterMinL, 0., 0.5);
