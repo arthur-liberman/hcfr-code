@@ -192,14 +192,14 @@ void CSimulatedSensor::GetPropertiesSheetValues()
 
 BOOL CSimulatedSensor::Init( BOOL bForSimultaneousMeasures )
 {
-	m_offsetR=0;//m_offsetRed*(1+(double)rand()/(double)RAND_MAX);
-	m_offsetG=0;//m_offsetGreen*(1+(double)rand()/(double)RAND_MAX);
-	m_offsetB=0;//m_offsetBlue*(1+(double)rand()/(double)RAND_MAX);
+	m_offsetR=0;
+	m_offsetG=0;
+	m_offsetB=0;
 	m_bNW = bForSimultaneousMeasures; //use for turning off diffuse scaling in NW measures
 	return TRUE;
 }
 
-CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
+CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue, int displaymode)
 {
 	ColorRGB simulColor;
 	double offset=0.0, gain=1.0 ,gamma;
@@ -210,16 +210,14 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 	CColor Black = GetColorReference().GetWhite();
 	Black.SetY(GetConfig()->m_TargetMinL);
 	double tmWhite = 1.0;
-	int m_display = 0;
-	if (m_display >= 5 && m_display <= 11)
+
+	if ( ((displaymode >= 5 && displaymode <= 11) || (displaymode == 1 && GetConfig()->m_colorStandard == UHDTV3)) && mode == 5 )
 		tmWhite = getL_EOTF(0.5022283, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / GetConfig()->m_DiffuseL * 100.0;
+
 	double peakY = 10000.;
 
 	if (GetConfig()->m_colorStandard == sRGB)
 		mode = 99;
-
-//	if  (mode == 7 || mode == 8 || mode == 9)
-//		mode = 5; //simulate standard PQ curve
 	
 	//	quantize to 8 or 10 bit video
 	double r,g,b;
@@ -322,6 +320,7 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
 	bool isSpecial = (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb);
 
 	CColor colSensor(ColorXYZ(colMeasure, isSpecial?CColorReference(HDTV):GetConfig()->m_colorStandard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));
+
 	colSensor.SetX(colSensor.GetX() * (mode==5?10000.:White.GetY()));
 	colSensor.SetY(colSensor.GetY() * (mode==5?10000.:White.GetY()));
 	colSensor.SetZ(colSensor.GetZ() * (mode==5?10000.:White.GetY()));

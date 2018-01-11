@@ -1305,7 +1305,7 @@ void CDataSetDoc::AddMeasurement()
 	if ( m_d <= 1 || (m_d < 11 &&  m_d > 4) )
 		MT = CGenerator::MT_ACTUAL;
 
-	if(m_measure.AddMeasurement(m_pSensor,m_pGenerator, MT, m_d, last_minCol))
+	if(m_measure.AddMeasurement(m_pSensor,m_pGenerator, MT, m_d, last_minCol, m_d))
 	{
 		SetModifiedFlag(m_measure.IsModified());
 		UpdateAllViews(NULL, UPD_FREEMEASUREAPPENDED);
