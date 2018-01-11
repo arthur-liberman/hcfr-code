@@ -2684,8 +2684,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,4,6,4
- PRODUCTVERSION 3,4,6,4
+ FILEVERSION 3,4,6,5
+ PRODUCTVERSION 3,4,6,5
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2703,12 +2703,12 @@ BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "CompanyName", "Association Homecinema Francophone"
             VALUE "FileDescription", "Resources Colorimètre HCFR"
-            VALUE "FileVersion", "3,4,6,4"
+            VALUE "FileVersion", "3,4,6,5"
             VALUE "InternalName", "CHCFR21_FRANCAIS"
             VALUE "LegalCopyright", "Copyright (C) 2005-2016"
             VALUE "OriginalFilename", "CHCFR21_FRANCAIS.DLL"
             VALUE "ProductName", "Colorimètre HCFR langage Français"
-            VALUE "ProductVersion", "3,4,6,4"
+            VALUE "ProductVersion", "3,4,6,5"
         END
     END
     BLOCK "VarFileInfo"
@@ -2733,7 +2733,7 @@ IDC_CURSOR_MEASURE      CURSOR                  "res\\cursor_meas.cur"
 
 STRINGTABLE
 BEGIN
-    IDR_MAINFRAME           "Colorimètre HCFR - 3,4,6,4"
+    IDR_MAINFRAME           "Colorimètre HCFR - 3,4,6,5"
     IDR_MESURETYPE          "\nRelevé\nRelevé\nFichiers ColorHCFR (*.chc)\n.chc\nCOLORHCFR\nRelevé de couleurs HCFR"
 END
 
