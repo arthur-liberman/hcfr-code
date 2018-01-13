@@ -34,8 +34,6 @@
 #include "../libccast/ccast.h"
 #include "../MainFrm.h"
 
-
-
 #include <string>
 #include <float.h>
 
@@ -478,18 +476,11 @@ BOOL CGDIGenerator::Init(UINT nbMeasure, bool isSpecial)
 	else
 		OutputDebugString("HdrInterface doesn't exist");
 
-//	if (m_nDisplayMode == DISPLAY_GDI_Hide)
-//	{
-//		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.ShowWindow(SW_SHOW);
-//		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> EnableWindow (TRUE);
-//		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.SetForegroundWindow();
-//	}
-
 	if (m_nDisplayMode == DISPLAY_GDI || m_nDisplayMode == DISPLAY_GDI_nBG || isSpecial )
 		m_displayWindow.ShowWindow(SW_SHOWMAXIMIZED);
 	if (m_nDisplayMode == DISPLAY_GDI_Hide && !isSpecial) //to use test colour window instead
 		m_displayWindow.ShowWindow(SW_HIDE);
-
+	
 	bOnOtherMonitor = IsOnOtherMonitor ();
 
 	if ( ! bOnOtherMonitor )
@@ -628,11 +619,6 @@ BOOL CGDIGenerator::DisplayRGBCCast( const ColorRGBDisplay& clr, bool first, UIN
     r = ((clr[0]) / 100. );
 	g = ((clr[1]) / 100. );
     b = ((clr[2]) / 100. );
-
-	// Workaround ChromeCast crash on Red/Blue sweep //Added underflow checks in color generator
-//	r = _isnan(r) ? 0 : r;
-//	g = _isnan(g) ? 0 : g;
-//	b = _isnan(b) ? 0 : b;
 
 	if (ccwin->height == 0) 
 	{

@@ -39,6 +39,7 @@
 #define DISPLAY_GDI_nBG		3
 #define DISPLAY_ccast   4
 #define DISPLAY_GDI_Hide 5
+#define DISPLAY_rPI 6
 
 #define DISPLAY_DEFAULT_MODE	DISPLAY_GDI
 
