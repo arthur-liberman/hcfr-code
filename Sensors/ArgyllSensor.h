@@ -85,7 +85,7 @@ public:
     virtual bool isRefresh() const;
 
 private:
-    virtual CColor MeasureColorInternal(const ColorRGBDisplay& aRGBValue);
+    virtual CColor MeasureColorInternal(const ColorRGBDisplay& aRGBValue, int displaymode = 0);
 };
 
 #endif // !defined(AFX_ARGYLLSENSOR_H__1493C213_6A02_44C5_8EB7_55B469092E14__INCLUDED_)

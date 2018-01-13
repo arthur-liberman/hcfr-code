@@ -331,7 +331,7 @@ BOOL CArgyllSensor::Release()
     return CSensor::Release();
 }
 
-CColor CArgyllSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue)
+CColor CArgyllSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue, int displaymode)
 {
     if(!m_meter) if(!Init(FALSE)) return noDataColor;
     ArgyllMeterWrapper::eMeterState state(ArgyllMeterWrapper::NEEDS_MANUAL_CALIBRATION);
