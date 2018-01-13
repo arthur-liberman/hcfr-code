@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by CHCFR21_FRANCAIS.rc
+// Used by CHCFR21_ENGLISH.rc
 //
 #define IDS_STRING_VERSION              1
 #define IDS_STRING_VERSION_WEB          2
@@ -287,9 +287,9 @@
 #define IDR_PATTERN_NBHDR               405
 #define IDR_PATTERN_NBvHDR              406
 #define IDR_PATTERN_NBHDRb              407
-#define IDR_PATTERN_NBHDRbv              408
+#define IDR_PATTERN_NBHDRbv             408
 #define IDR_PATTERN_NBSDRb              409
-#define IDR_PATTERN_NBSDRbv              410
+#define IDR_PATTERN_NBSDRbv             410
 #define IDR_PATTERN_BLACK               411
 #define IDC_GRAYSCALE_GRID              1001
 #define IDC_GRAPH_TITLE                 1002
@@ -540,6 +540,7 @@
 #define IDC_SECONDARIES_GRID            1152
 #define IDC_RADIO6                      1152
 #define IDC_MEASURESECONDARIES_BUTTON   1153
+#define IDC_RADIO8                      1153
 #define IDC_DELETESECONDARIES_BUTTON    1154
 #define IDC_SECONDARIESMATRIX_STATIC    1155
 #define IDC_SECONDAIRES_STATIC          1156

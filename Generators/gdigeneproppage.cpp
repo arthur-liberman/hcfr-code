@@ -124,6 +124,11 @@ void CGDIGenePropPage::OnOK()
 	}
 	else if ( IsDlgButtonChecked ( IDC_RADIO6 ) )
 		m_nDisplayMode = DISPLAY_GDI_Hide;
+	else if ( IsDlgButtonChecked ( IDC_RADIO7 ) )
+	{
+		m_nDisplayMode = DISPLAY_rPI;
+		m_b16_235 = FALSE;
+	}
 	else
 		m_nDisplayMode = DISPLAY_GDI;
 
@@ -221,7 +226,7 @@ BOOL CGDIGenePropPage::OnSetActive()
 		m_nDisplayMode = DISPLAY_madVR;
 	else if ( IsDlgButtonChecked ( IDC_RADIO4 ) )
 		m_nDisplayMode = DISPLAY_GDI_nBG;
-	else if ( IsDlgButtonChecked ( IDC_RADIO5 ) )
+	else if ( IsDlgButtonChecked ( IDC_RADIO8 ) )
 	{
 		m_nDisplayMode = DISPLAY_ccast;
 		m_b16_235 = FALSE;

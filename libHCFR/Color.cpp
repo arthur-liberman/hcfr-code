@@ -2614,7 +2614,7 @@ void CSpectrum::Serialize(CArchive& archive)
 }
 #endif
 
-bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int aCCMode, int mode)
+bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int aCCMode, int mode, double m_DiffuseL, double m_MasterMinL, double m_MasterMaxL, double m_TargetMinL, double m_TargetMaxL, bool ToneMap, bool cBT2390)
 {
 	//six cases, one for GCD sequence, one for Mascior's disk (Chromapure based), and four different generator only cases
 	//GCD
@@ -3543,9 +3543,9 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 
 			ColorRGB aRGBColor = tempColor.GetRGBValue(colorReference.m_standard==UHDTV3?CColorReference(UHDTV2):colorReference);	
 			
-			r = (aRGBColor[0]<=0.0||aRGBColor[0]>1.0)?min(max(aRGBColor[0],0),1):getL_EOTF(aRGBColor[0], noDataColor, noDataColor,0.0,0.0,-1*mode);
-			g = (aRGBColor[1]<=0.0||aRGBColor[1]>1.0)?min(max(aRGBColor[1],0),1):getL_EOTF(aRGBColor[1], noDataColor, noDataColor,0.0,0.0,-1*mode);
-			b = (aRGBColor[2]<=0.0||aRGBColor[2]>1.0)?min(max(aRGBColor[2],0),1):getL_EOTF(aRGBColor[2], noDataColor, noDataColor,0.0,0.0,-1*mode);
+			r = (aRGBColor[0]<=0.0||aRGBColor[0]>1.0)?min(max(aRGBColor[0],0),1):getL_EOTF(aRGBColor[0], noDataColor, noDataColor,0.0,0.0,-1*mode, m_DiffuseL, m_MasterMinL, m_MasterMaxL, m_TargetMinL, m_TargetMaxL, ToneMap, cBT2390 );
+			g = (aRGBColor[1]<=0.0||aRGBColor[1]>1.0)?min(max(aRGBColor[1],0),1):getL_EOTF(aRGBColor[1], noDataColor, noDataColor,0.0,0.0,-1*mode, m_DiffuseL, m_MasterMinL, m_MasterMaxL, m_TargetMinL, m_TargetMaxL, ToneMap, cBT2390 );
+			b = (aRGBColor[2]<=0.0||aRGBColor[2]>1.0)?min(max(aRGBColor[2],0),1):getL_EOTF(aRGBColor[2], noDataColor, noDataColor,0.0,0.0,-1*mode, m_DiffuseL, m_MasterMinL, m_MasterMaxL, m_TargetMinL, m_TargetMaxL, ToneMap, cBT2390 );
 
 			//re-quantize to 8-bit video %
 			GenColors[i][0] = floor( (r * 219.) + 0.5 ) / 2.19;
@@ -3558,7 +3558,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 	return bOk;
 }
 
-void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int nSteps, bool bRed, bool bGreen, bool bBlue, int mode )
+void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int nSteps, bool bRed, bool bGreen, bool bBlue, int mode, double m_DiffuseL, double m_MasterMinL, double m_MasterMaxL, double m_TargetMinL, double m_TargetMaxL, bool ToneMap, bool cBT2390 )
 {
 	//use fully saturated space if user has special color space modes set
 	int m_cRef=colorReference.m_standard;
@@ -3670,9 +3670,9 @@ void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDi
 
 		if (mode == 5 || mode == 7)
 		{
-				rgbColor[0] = 100.0 * ( (rgbColor[0]<=0.0||rgbColor[0]>1.0)?min(max(rgbColor[0],0),1):getL_EOTF(rgbColor[0], noDataColor, noDataColor, 2.4, 0.9, -1*mode) );
-				rgbColor[1] = 100.0 * ( (rgbColor[1]<=0.0||rgbColor[1]>1.0)?min(max(rgbColor[1],0),1):getL_EOTF(rgbColor[1], noDataColor, noDataColor, 2.4, 0.9, -1*mode) );
-				rgbColor[2] = 100.0 * ( (rgbColor[2]<=0.0||rgbColor[2]>1.0)?min(max(rgbColor[2],0),1):getL_EOTF(rgbColor[2], noDataColor, noDataColor, 2.4, 0.9, -1*mode) );
+				rgbColor[0] = 100.0 * ( (rgbColor[0]<=0.0||rgbColor[0]>1.0)?min(max(rgbColor[0],0),1):getL_EOTF(rgbColor[0], noDataColor, noDataColor, 2.4, 0.9, -1*mode,m_DiffuseL, m_MasterMinL, m_MasterMaxL, m_TargetMinL, m_TargetMaxL, ToneMap, cBT2390 ) );
+				rgbColor[1] = 100.0 * ( (rgbColor[1]<=0.0||rgbColor[1]>1.0)?min(max(rgbColor[1],0),1):getL_EOTF(rgbColor[1], noDataColor, noDataColor, 2.4, 0.9, -1*mode,m_DiffuseL, m_MasterMinL, m_MasterMaxL, m_TargetMinL, m_TargetMaxL, ToneMap, cBT2390 ) );
+				rgbColor[2] = 100.0 * ( (rgbColor[2]<=0.0||rgbColor[2]>1.0)?min(max(rgbColor[2],0),1):getL_EOTF(rgbColor[2], noDataColor, noDataColor, 2.4, 0.9, -1*mode,m_DiffuseL, m_MasterMinL, m_MasterMaxL, m_TargetMinL, m_TargetMaxL, ToneMap, cBT2390 ) );
 		}
 		else
 		{
