@@ -127,10 +127,19 @@ static UINT __cdecl BkgndThreadFunc ( LPVOID lpParameter )
 
 	    CView *			pView;
 	    POSITION		pos;
+		int				m_d = 0;
 			    
 		pos = g_pDataDocRunningThread -> GetFirstViewPosition ();
-		pView = g_pDataDocRunningThread -> GetNextView ( pos );
-		int m_d = ((CMainView*)pView)->m_displayMode;
+		if (!pos)
+			g_bTerminateThread = TRUE;
+		else
+		{
+			pView = g_pDataDocRunningThread -> GetNextView ( pos );
+			if (!pView)
+				g_bTerminateThread = TRUE;
+			else
+				m_d = ((CMainView*)pView)->m_displayMode;
+		}
 
 	    do
 	    {
@@ -170,7 +179,8 @@ static UINT __cdecl BkgndThreadFunc ( LPVOID lpParameter )
 				    *pMeasurement = measuredColor;
 
 				    while ( g_bInsideBkgndRefresh )
-					    Sleep ( 50 );
+					
+					Sleep ( 50 );
 
 				    EnterCriticalSection (& g_CritSec );
 				    g_MeasuredColorList.AddTail ( pMeasurement );
@@ -224,6 +234,7 @@ static UINT __cdecl BkgndThreadFunc ( LPVOID lpParameter )
 
 	    } while ( TRUE );
 
+		
 	    pSensor -> Release ();
 	    DeleteCriticalSection (& g_CritSec );
 	
@@ -314,6 +325,7 @@ BOOL StartBackgroundMeasures ( CDataSetDoc * pDoc )
 		if ( g_hThread != NULL )
 		{
 			// Background thread is running
+			pDoc->GetMeasure()->m_binMeasure = TRUE;
 			if ( GetConfig()->m_bContinuousMeasures )
 			{
 				pos = g_pDataDocRunningThread -> GetFirstViewPosition ();
@@ -389,6 +401,9 @@ void StopBackgroundMeasures ()
 	if ( g_pDataDocRunningThread )
 	{
 		// Check if view still exists.
+				
+		g_pDataDocRunningThread->GetMeasure()->m_binMeasure = FALSE;
+
 		if ( GetConfig()->m_bContinuousMeasures )
 		{
 			CString		Msg;
@@ -4272,6 +4287,8 @@ void CDataSetDoc::OnBkgndMeasureReady()
 		while ( pos )
 		{
 			CView *pView = g_pDataDocRunningThread -> GetNextView ( pos2 );
+			if (!pView)
+				break;
 			int m_d = ((CMainView*)pView)->m_displayMode;
 			int last_minCol = ((CMainView*)pView)->last_minCol;
 			pMeasurement = ( CColor * ) g_MeasuredColorList.GetNext ( pos );
