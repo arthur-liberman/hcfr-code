@@ -1331,7 +1331,9 @@ double ColorXYZ::GetDeltaLCH(double YWhite, const ColorXYZ& refColor, double YWh
 
 double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double split, int mode, double m_diffuseL, double m_MinML, double m_MaxML, double m_MinTL, double m_MaxTL, bool ToneMap, bool cBT2390)
 {
-	if (valx <= 0 && mode > 4) return m_MinTL / 100.;
+	if (valx == 0 && mode > 4) return m_MinTL / 100.;
+	if (valx < 0)
+		valx = 0;
 	if (valx > 1)
 	{
 		if (mode == 5)
@@ -1344,11 +1346,6 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 
 	if (ToneMap && mode == -5)
 		mode = -10;
-
-	if (ToneMap)
-	{
-		m_MaxML = m_MaxML * m_diffuseL / 94.37844; 
-	}
 
 //Returns relative output luminance given input luma (stimulus)
 //exception is ST2084 which returns an absolute value
@@ -1442,6 +1439,8 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 			double E1,E2,E4,b,d,KS,T;
 			if (!cBT2390)
 			{
+				double tmWhite = getL_EOTF(0.5022283, White, Black, g_rel, split, 5, m_diffuseL, m_MinML, m_MaxML, m_MinTL, m_MaxTL, ToneMap, TRUE) / m_diffuseL * 100.0;
+				m_MaxML = m_MaxML * m_diffuseL / 94.37844 * tmWhite; 
 				E1 = valx - pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2);
 				d = pow( (c1 + c2 * pow(m_MaxML/Scale,m1)) / (1 + c3 * pow(m_MaxML/Scale,m1)), m2) - pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2);
 				E1 = E1 / d;
@@ -1463,6 +1462,7 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 					E3 = (E3 * d + pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2)); 
 					E4 = pow(max(pow(E3,1.0 / m2) - c1,0) / (c2 - c3 * pow(E3, 1.0 / m2)), 1.0 / m1);
 					outL = E4 * 10000. / 100.00 * m_diffuseL / 94.37844;
+					outL = min(outL, m_MaxTL / 100.0);
 				}
 				else
 				{
@@ -1475,9 +1475,13 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 			{
 				BT2390x.clear();
 				BT2390y.clear();
-				for (int i=0; i < 2048;i++)
+				int ii = 2048;
+				if (valx = 0.5022283)
+					ii = 1;
+				for (int i=0; i < ii;i++)
 				{
-					valx = i / 2048.;
+					if (valx != 0.5022283)
+						valx = i / 2048.;
 					E1 = valx - pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2);
 					d = pow( (c1 + c2 * pow(m_MaxML/Scale,m1)) / (1 + c3 * pow(m_MaxML/Scale,m1)), m2) - pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2);
 					E1 = E1 / d;
@@ -1499,6 +1503,7 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 						E3 = (E3 * d + pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2)); 
 						E4 = pow(max(pow(E3,1.0 / m2) - c1,0) / (c2 - c3 * pow(E3, 1.0 / m2)), 1.0 / m1);
 						outL = E4 * 10000. / 100.00 * m_diffuseL / 94.37844;
+						outL = min(outL, m_MaxTL / 100.0);
 					}
 					else
 					{
@@ -1512,7 +1517,10 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 			}
 		break;
 		case -10: //BT.2084/2390 inverse curve look-up
+			{
 //			outL = pow( (c1 + c2 * pow(valx,m1)) / (1 + c3 * pow(valx,m1)), m2); 
+			double tmWhite = getL_EOTF(0.5022283, White, Black, g_rel, split, 5, m_diffuseL, m_MinML, m_MaxML, m_MinTL, m_MaxTL, ToneMap, TRUE) / m_diffuseL * 100.0;
+			m_MaxML = m_MaxML * m_diffuseL / 94.37844 * tmWhite; 
 			getL_EOTF(valx, White, Black, g_rel, split, 5, m_diffuseL, m_MinML, m_MaxML, m_MinTL, m_MaxTL, ToneMap, TRUE);
 			value = abs(valx - BT2390y[0]);
 			outL = BT2390x[0];
@@ -1523,6 +1531,7 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 					 value = abs(valx - BT2390y[i]);
 					 outL = BT2390x[i];
 				}
+			}
 			}
 		break;
 		case 99: //sRGB
@@ -1586,7 +1595,7 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
     {
         std::cerr << "Unexpected Exception in measurement thread" << std::endl;
     }
-	return outL;
+	return min(max(0,outL),100);
 }
 
 double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhiteRef, const CColorReference & colorReference, int dE_form, bool isGS, int gw_Weight ) const
@@ -3516,7 +3525,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 
 	//HDR mode target recalculation
 	//Will recalc color checker and saturation based levels, luminance, random and user left as-is
-	if ( (mode == 5 || mode == 7 || mode == 8 || mode  == 9) && m_bRecalc )
+	if ( (mode == 5 || mode == 7) && m_bRecalc )
 	{
 		CColor tempColor;
 		for (int i=0; i<n_elements; i++)
@@ -3543,9 +3552,9 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 
 			ColorRGB aRGBColor = tempColor.GetRGBValue(colorReference.m_standard==UHDTV3?CColorReference(UHDTV2):colorReference);	
 			
-			r = (aRGBColor[0]<=0.0||aRGBColor[0]>1.0)?min(max(aRGBColor[0],0),1):getL_EOTF(aRGBColor[0], noDataColor, noDataColor,0.0,0.0,-1*mode, m_DiffuseL, m_MasterMinL, m_MasterMaxL, m_TargetMinL, m_TargetMaxL, ToneMap, cBT2390 );
-			g = (aRGBColor[1]<=0.0||aRGBColor[1]>1.0)?min(max(aRGBColor[1],0),1):getL_EOTF(aRGBColor[1], noDataColor, noDataColor,0.0,0.0,-1*mode, m_DiffuseL, m_MasterMinL, m_MasterMaxL, m_TargetMinL, m_TargetMaxL, ToneMap, cBT2390 );
-			b = (aRGBColor[2]<=0.0||aRGBColor[2]>1.0)?min(max(aRGBColor[2],0),1):getL_EOTF(aRGBColor[2], noDataColor, noDataColor,0.0,0.0,-1*mode, m_DiffuseL, m_MasterMinL, m_MasterMaxL, m_TargetMinL, m_TargetMaxL, ToneMap, cBT2390 );
+			r = (aRGBColor[0]<=0.0||aRGBColor[0]>1.0)?min(max(aRGBColor[0],0),1):getL_EOTF(aRGBColor[0], noDataColor, noDataColor,0.0,0.0,-1*mode);
+			g = (aRGBColor[1]<=0.0||aRGBColor[1]>1.0)?min(max(aRGBColor[1],0),1):getL_EOTF(aRGBColor[1], noDataColor, noDataColor,0.0,0.0,-1*mode);
+			b = (aRGBColor[2]<=0.0||aRGBColor[2]>1.0)?min(max(aRGBColor[2],0),1):getL_EOTF(aRGBColor[2], noDataColor, noDataColor,0.0,0.0,-1*mode);
 
 			//re-quantize to 8-bit video %
 			GenColors[i][0] = floor( (r * 219.) + 0.5 ) / 2.19;
@@ -3670,9 +3679,9 @@ void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDi
 
 		if (mode == 5 || mode == 7)
 		{
-				rgbColor[0] = 100.0 * ( (rgbColor[0]<=0.0||rgbColor[0]>1.0)?min(max(rgbColor[0],0),1):getL_EOTF(rgbColor[0], noDataColor, noDataColor, 2.4, 0.9, -1*mode,m_DiffuseL, m_MasterMinL, m_MasterMaxL, m_TargetMinL, m_TargetMaxL, ToneMap, cBT2390 ) );
-				rgbColor[1] = 100.0 * ( (rgbColor[1]<=0.0||rgbColor[1]>1.0)?min(max(rgbColor[1],0),1):getL_EOTF(rgbColor[1], noDataColor, noDataColor, 2.4, 0.9, -1*mode,m_DiffuseL, m_MasterMinL, m_MasterMaxL, m_TargetMinL, m_TargetMaxL, ToneMap, cBT2390 ) );
-				rgbColor[2] = 100.0 * ( (rgbColor[2]<=0.0||rgbColor[2]>1.0)?min(max(rgbColor[2],0),1):getL_EOTF(rgbColor[2], noDataColor, noDataColor, 2.4, 0.9, -1*mode,m_DiffuseL, m_MasterMinL, m_MasterMaxL, m_TargetMinL, m_TargetMaxL, ToneMap, cBT2390 ) );
+				rgbColor[0] = 100.0 * ( (rgbColor[0]<=0.0||rgbColor[0]>1.0)?min(max(rgbColor[0],0),1):getL_EOTF(rgbColor[0], noDataColor, noDataColor, 2.4, 0.9, -1*mode));
+				rgbColor[1] = 100.0 * ( (rgbColor[1]<=0.0||rgbColor[1]>1.0)?min(max(rgbColor[1],0),1):getL_EOTF(rgbColor[1], noDataColor, noDataColor, 2.4, 0.9, -1*mode));
+				rgbColor[2] = 100.0 * ( (rgbColor[2]<=0.0||rgbColor[2]>1.0)?min(max(rgbColor[2],0),1):getL_EOTF(rgbColor[2], noDataColor, noDataColor, 2.4, 0.9, -1*mode));
 		}
 		else
 		{

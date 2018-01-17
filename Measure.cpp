@@ -1784,7 +1784,7 @@ BOOL CMeasure::MeasureNearWhiteScale(CSensor *pSensor, CGenerator *pGenerator, C
 			UpdateTstWnd(pDoc, -1);
 
 		//Autoscale range for clipped white in HDR mode
-		double PMax = getL_EOTF(YMax / 10000., noDataColor, noDataColor, 0, 0, -5);
+		double PMax = getL_EOTF(YMax / 10000., noDataColor, noDataColor, 0, 0, -5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap);
 
 		if (GetConfig()->m_GammaOffsetType == 5)
 			m_NearWhiteClipCol = int(101*PMax) + 1;
@@ -6238,6 +6238,7 @@ CColor CMeasure::GetRefPrimary(int i) const
 
 	int mode = GetConfig()->m_GammaOffsetType;
 	double r,g,b;
+
 	if (mode == 5 && GetColorReference().m_standard == UHDTV3)
 	{
 		r=getL_EOTF(0.474325,noDataColor,noDataColor,0,0,5,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 105.95640 / 100.0;
@@ -6282,7 +6283,7 @@ CColor CMeasure::GetRefPrimary(int i) const
 	if (mode == 5 && GetColorReference().m_standard == UHDTV3)
 	{
 		r=getL_EOTF(0.351598,noDataColor,noDataColor,0,0,5,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 105.95640 / 100.0;
-		g=getL_EOTF(0.497717	,noDataColor,noDataColor,0,0,5,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 105.95640 / 100.0;
+		g=getL_EOTF(0.497717,noDataColor,noDataColor,0,0,5,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 105.95640 / 100.0;
 		b=getL_EOTF(0.178082,noDataColor,noDataColor,0,0,5,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 105.95640 / 100.0;
 	}
 	else
@@ -6322,7 +6323,7 @@ CColor CMeasure::GetRefPrimary(int i) const
 	if (mode == 5 && GetColorReference().m_standard == UHDTV3)
 	{
 		r=getL_EOTF(0.242009,noDataColor,noDataColor,0,0,5,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 105.95640 / 100.0;
-		g=getL_EOTF(0.159817	,noDataColor,noDataColor,0,0,5,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 105.95640 / 100.0;
+		g=getL_EOTF(0.159817,noDataColor,noDataColor,0,0,5,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 105.95640 / 100.0;
 		b=getL_EOTF(0.502283,noDataColor,noDataColor,0,0,5,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 105.95640 / 100.0;
 	}
 	else
@@ -6388,7 +6389,7 @@ CColor CMeasure::GetRefSecondary(int i) const
 	aColory.SetXYZValue (cRef.GetYellow());
 	aColorc.SetXYZValue (cRef.GetCyan());
 	aColorm.SetXYZValue (cRef.GetMagenta());
-	ColorRGB rgby=aColory.GetRGBValue ((GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()) );
+	ColorRGB rgby=aColory.GetRGBValue ( (GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()) );
 	ColorRGB rgbc=aColorc.GetRGBValue ( (GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()) );
 	ColorRGB rgbm=aColorm.GetRGBValue ( (GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()) );
     if (CMeasure::GetGray(0).isValid())
@@ -6626,9 +6627,10 @@ CColor CMeasure::GetRefSat(int i, double sat_ratio, bool special) const
 
 	int mode = GetConfig()->m_GammaOffsetType;
 
-//	double tmWhite = getL_EOTF(0.5022283, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / GetConfig()->m_DiffuseL * 100.0;
-	if (mode == 5 && sat_ratio == 1)
-		YLuma = YLuma * (GetConfig()->m_DiffuseL) / 94.37844;// * tmWhite;
+	double tmWhite = getL_EOTF(0.5022283, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / GetConfig()->m_DiffuseL * 100.0;
+
+	if (mode == 5 && sat_ratio == 1 && GetConfig()->m_colorStandard != UHDTV3)
+		YLuma = YLuma * (GetConfig()->m_DiffuseL) / 94.37844 * tmWhite;
 
 	aColor.SetxyYValue (x, y, YLuma);
 
@@ -6650,16 +6652,16 @@ CColor CMeasure::GetRefSat(int i, double sat_ratio, bool special) const
 	double r=rgb[0],g=rgb[1],b=rgb[2];
 	double qr,qg,qb;
 
-	if (sat_ratio < 1 || (sat_ratio == 1 && GetConfig()->m_GammaOffsetType != 5) ) // adjust references locations for difference between target gamma and 2.2
+	if (sat_ratio < 1 || (sat_ratio == 1 && (GetConfig()->m_GammaOffsetType != 5 || GetConfig()->m_colorStandard == UHDTV3)) ) // adjust references locations for difference between target gamma and 2.2
 	{
 		if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 		if ( mode >= 4 )
 		{
 			if (mode == 5 || mode == 7)
 			{
-				qr = getL_EOTF(r,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap);
-				qg = getL_EOTF(g,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap);
-				qb = getL_EOTF(b,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap);
+				qr = getL_EOTF(r,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode);
+				qg = getL_EOTF(g,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode);
+				qb = getL_EOTF(b,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode);
 				qr = floor( (qr * 219.) + 0.5 ) / 219.;
 				qg = floor( (qg * 219.) + 0.5 ) / 219.;
 				qb = floor( (qb * 219.) + 0.5 ) / 219.;
@@ -7098,9 +7100,9 @@ CColor CMeasure::GetRefCC24Sat(int i) const
 		double qr,qg,qb;
 		if (mode == 5 || mode == 7)
 		{
-			qr = getL_EOTF(r,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap);
-			qg = getL_EOTF(g,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap);
-			qb = getL_EOTF(b,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap);
+			qr = getL_EOTF(r,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode);
+			qg = getL_EOTF(g,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode);
+			qb = getL_EOTF(b,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode);
 			qr = floor( (qr * 219.) + 0.5 ) / 219.;
 			qg = floor( (qg * 219.) + 0.5 ) / 219.;
 			qb = floor( (qb * 219.) + 0.5 ) / 219.;
