@@ -97,6 +97,7 @@ private:
 public:
 	int m_displayMode;
 	int m_infoDisplay;
+	bool m_bUpdate;
 	int m_displayType;
 	int	m_nSizeOffset;
 	int last_minCol;

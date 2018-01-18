@@ -413,6 +413,7 @@ CMainView::CMainView()
 	
 	m_SelectedColor = noDataColor;
 	m_LastColor = noDataColor;
+	m_bUpdate = TRUE;
 
 	m_pGrayScaleGrid = NULL;
 	m_pSelectedColorGrid = NULL;
@@ -520,11 +521,13 @@ void CMainView::OnInitialUpdate()
 
 	GetDlgItem ( IDC_STATIC_VIEW ) -> ShowWindow ( SW_HIDE );
 
-	m_displayMode = 0;
-	m_comboMode.SetCurSel ( m_displayMode );	// Echelle de gris
+//	m_displayMode = 0;
+//	m_comboMode.SetCurSel ( m_displayMode );	// Echelle de gris
 	
-	m_comboDisplay.SetCurSel ( 0 );
-	OnSelchangeInfoDisplay ();
+//	m_comboDisplay.SetCurSel ( 0 );
+//	m_bUpdate = FALSE;
+//	OnSelchangeInfoDisplay ();
+//	m_bUpdate = TRUE;
 
     // doesn't really make sense to see sensor values
 	if ( m_displayType == HCFR_SENSORRGB_VIEW )
@@ -651,11 +654,12 @@ void CMainView::OnInitialUpdate()
 
 	OnSize ( 0, 0, 0 );
 
-	if ( m_dwInitialUserInfo != 0 )
+	if ( m_dwInitialUserInfo == 0 )
 	{
 		// Define initial view status after global initial update
 		PostMessage ( WM_SET_USER_INFO_POST_INIT );
 	}
+	
 }
 
 LRESULT CMainView::OnSetUserInfoPostInitialUpdate(WPARAM wParam, LPARAM lParam)
@@ -673,6 +677,9 @@ LRESULT CMainView::OnSetUserInfoPostInitialUpdate(WPARAM wParam, LPARAM lParam)
 		//SendMessage ( WM_COMMAND, IDC_XYZ_RADIO + ( ( m_dwInitialUserInfo >> 6 ) & 0x000F ) );
 
 		// Set m_infoDisplay
+		m_infoDisplay = GetConfig()->GetProfileInt("MainView","Info Display",0);
+		m_comboDisplay.SetCurSel ( m_infoDisplay );
+
 		m_comboDisplay.SetCurSel ( ( m_dwInitialUserInfo >> 10 ) & 0x003F );
 		OnSelchangeInfoDisplay();
 
@@ -695,6 +702,13 @@ LRESULT CMainView::OnSetUserInfoPostInitialUpdate(WPARAM wParam, LPARAM lParam)
 
 		m_dwInitialUserInfo = 0;
 	}
+
+	//restore last saved info window
+	m_infoDisplay = GetConfig()->GetProfileInt("MainView","Info Display",0);
+	m_comboDisplay.SetCurSel ( m_infoDisplay );
+	m_bUpdate = FALSE;
+	OnSelchangeInfoDisplay();
+	m_bUpdate = TRUE;
 
 	return 0;
 }
@@ -5749,7 +5763,11 @@ void CMainView::OnSelchangeInfoDisplay()
 	ScreenToClient ( & Rect );
     int size=GetDocument()->GetMeasure()->GetGrayScaleSize();
 
-	m_infoDisplay = m_comboDisplay.GetCurSel ();
+	m_infoDisplay = m_comboDisplay.GetCurSel ( );
+
+	if (m_bUpdate)
+		GetConfig()->WriteProfileInt("MainView","Info Display",m_infoDisplay);
+
 	switch ( m_infoDisplay )
 	{
 		case 0:
@@ -5783,8 +5801,10 @@ void CMainView::OnSelchangeInfoDisplay()
 				}
 				else
 				{
-					pTargetWnd -> m_pRefColor = & m_SelectedColor;
-					pTargetWnd -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  (m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1), size, m_displayMode, GetDocument(), CTargetWnd::TARGET_ALL );
+					if (m_SelectedColor.isValid())
+						pTargetWnd -> m_pRefColor = & m_SelectedColor;
+					if (GetDocument())
+						pTargetWnd -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  (m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1), size, m_displayMode, GetDocument(), CTargetWnd::TARGET_ALL );
 				}
              }
 			 m_pInfoWnd = pTargetWnd;
