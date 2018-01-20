@@ -90,6 +90,7 @@ Source: "..\Tools\usb\bin\x86\*.sys"; DestDir: "{app}\Drivers\bin\x86"; Flags: i
 Source: "..\Tools\usb\bin\amd64\*.sys"; DestDir: "{app}\Drivers\bin\amd64"; Flags: ignoreversion; Components: main
 Source: "..\Tools\usb\bin\ia64\*.sys"; DestDir: "{app}\Drivers\bin\ia64"; Flags: ignoreversion; Components: main
 Source: "..\Tools\usb\bin\*.txt"; DestDir: "{app}\Drivers\bin"; Flags: ignoreversion; Components: main
+Source: "..\Tools\pi\RB8PGenerator.dll"; DestDir: "{app}"; Flags: ignoreversion; Components: main
 
 [INI]
 Filename: "{app}\HCFR.url"; Section: "InternetShortcut"; Key: "URL"; String: "http://hcfr.sourceforge.net/"

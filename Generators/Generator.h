@@ -82,7 +82,8 @@ public:
     BOOL m_madVR_3d;
     BOOL m_madVR_vLUT, m_madVR_HDR;
 	BOOL m_madVR_OSD;
-	UINT m_ccastIp, m_piIP;
+	UINT m_ccastIp; 
+	char *	m_piIP;
 	dispwin *ccwin;
 protected:
 	BOOL m_isModified;
@@ -103,6 +104,7 @@ public:
 	virtual BOOL DisplayGray(double aLevel,MeasureType nPatternType, BOOL bChangePattern = TRUE);
 	virtual BOOL DisplayRGBColor(const ColorRGBDisplay& aRGBColor, MeasureType nPatternType, UINT nPatternInfo = 0,BOOL bChangePattern = TRUE,BOOL bSilentMode = FALSE);	// need to be overriden
 	virtual BOOL DisplayRGBColormadVR(const ColorRGBDisplay& aRGBColor);	// need to be overriden
+	virtual BOOL DisplayRGBColorrPI(const ColorRGBDisplay& aRGBColor);	// need to be overriden
 	virtual BOOL DisplayRGBCCast(const ColorRGBDisplay& aRGBColor);	// need to be overriden
 	virtual BOOL DisplayAnsiBWRects(BOOL bInvert);		// need to be overriden
 	virtual BOOL DisplayAnimatedBlack();				// need to be overriden

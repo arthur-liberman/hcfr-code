@@ -99,9 +99,9 @@
       <Culture>0x040c</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>nvapi.lib;setupapi.lib;psapi.lib;msimg32.lib;htmlhelp.lib;Mscms.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>nvapi.lib;setupapi.lib;psapi.lib;msimg32.lib;htmlhelp.lib;Mscms.lib;RB8PGenerator.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>Release;Tools\spectro;Tools\NVAPI\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\displayCal\hcfr-code\Tools\pi;Release;Tools\spectro;Tools\NVAPI\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>

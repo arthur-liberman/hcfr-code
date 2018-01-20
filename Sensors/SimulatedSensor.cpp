@@ -241,7 +241,7 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue, 
 		offset+=(m_offsetErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1.0 : 1.0);
 	if(m_doGainError)
 		gain=1+(m_gainErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1.0 : 1.0);
-	value=max(r*gain+offset,0.0);
+	value=min(max(r*gain+offset,0.0),100.);
 	
 	if (  mode >= 4 )
     {
@@ -267,7 +267,7 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue, 
 		offset+=(m_offsetErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1.0 : 1.0);
 	if(m_doGainError)
 		gain=1+(m_gainErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1.0 : 1.0);
-	value = max(g*gain+offset,0.0);
+	value = min(max(g*gain+offset,0.0),100.);
 
 	if (  mode >= 4 )
     {
@@ -292,7 +292,7 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue, 
 		offset+=(m_offsetErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1.0 : 1.0);
 	if(m_doGainError)
 		gain=1+(m_gainErrorMax*(double)rand()/(double)RAND_MAX) * (rand() > RAND_MAX/2 ? -1.0 : 1.0);
-	value = max(b*gain+offset,0.0);
+	value = min(max(b*gain+offset,0.0),100.);
 
 	if (  mode >= 4 )
     {
