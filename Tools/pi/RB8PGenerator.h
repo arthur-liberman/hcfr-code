@@ -19,9 +19,9 @@ extern "C" {
 #endif
 
 RB8PGenerator_DLL char * __stdcall RB8PG_discovery();
-SOCKET RB8PGenerator_DLL __stdcall RB8PG_connect(const char *server_addr);
-int    RB8PGenerator_DLL __stdcall RB8PG_send(SOCKET sock,const char *message);
-int    RB8PGenerator_DLL __stdcall RB8PG_close(SOCKET sock);
+RB8PGenerator_DLL SOCKET __stdcall RB8PG_connect(const char *server_addr);
+RB8PGenerator_DLL int    __stdcall RB8PG_send(SOCKET sock,const char *message);
+RB8PGenerator_DLL int    __stdcall RB8PG_close(SOCKET sock);
 
 #ifdef DEBUG
 #define DEBUG 1
