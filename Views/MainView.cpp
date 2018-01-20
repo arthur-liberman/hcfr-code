@@ -521,14 +521,9 @@ void CMainView::OnInitialUpdate()
 
 	GetDlgItem ( IDC_STATIC_VIEW ) -> ShowWindow ( SW_HIDE );
 
-//	m_displayMode = 0;
-//	m_comboMode.SetCurSel ( m_displayMode );	// Echelle de gris
+	m_displayMode = 0;
+	m_comboMode.SetCurSel ( m_displayMode );	// Echelle de gris
 	
-//	m_comboDisplay.SetCurSel ( 0 );
-//	m_bUpdate = FALSE;
-//	OnSelchangeInfoDisplay ();
-//	m_bUpdate = TRUE;
-
     // doesn't really make sense to see sensor values
 	if ( m_displayType == HCFR_SENSORRGB_VIEW )
 		m_displayType = HCFR_xyY_VIEW;

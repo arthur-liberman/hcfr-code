@@ -101,6 +101,7 @@ BEGIN_MESSAGE_MAP(CGDIGenePropPage, CPropertyPageWithHelp)
 	ON_BN_CLICKED(IDC_RADIO4, OnClickmadVR)
 	ON_BN_CLICKED(IDC_RADIO5, OnClickmadVR)
 	ON_BN_CLICKED(IDC_RADIO6, OnClickmadVR)
+	ON_BN_CLICKED(IDC_RADIO8, OnClickmadVR)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -124,10 +125,9 @@ void CGDIGenePropPage::OnOK()
 	}
 	else if ( IsDlgButtonChecked ( IDC_RADIO6 ) )
 		m_nDisplayMode = DISPLAY_GDI_Hide;
-	else if ( IsDlgButtonChecked ( IDC_RADIO7 ) )
+	else if ( IsDlgButtonChecked ( IDC_RADIO8 ) )
 	{
 		m_nDisplayMode = DISPLAY_rPI;
-		m_b16_235 = FALSE;
 	}
 	else
 		m_nDisplayMode = DISPLAY_GDI;
@@ -226,7 +226,7 @@ BOOL CGDIGenePropPage::OnSetActive()
 		m_nDisplayMode = DISPLAY_madVR;
 	else if ( IsDlgButtonChecked ( IDC_RADIO4 ) )
 		m_nDisplayMode = DISPLAY_GDI_nBG;
-	else if ( IsDlgButtonChecked ( IDC_RADIO8 ) )
+	else if ( IsDlgButtonChecked ( IDC_RADIO5 ) )
 	{
 		m_nDisplayMode = DISPLAY_ccast;
 		m_b16_235 = FALSE;
@@ -247,6 +247,8 @@ BOOL CGDIGenePropPage::OnSetActive()
 	}
 	else if ( IsDlgButtonChecked ( IDC_RADIO6 ) )
 		m_nDisplayMode = DISPLAY_GDI_Hide;
+	else if ( IsDlgButtonChecked ( IDC_RADIO8 ) )
+		m_nDisplayMode = DISPLAY_rPI;
 	else
 		m_nDisplayMode = DISPLAY_GDI;
 
@@ -293,7 +295,12 @@ BOOL CGDIGenePropPage::OnSetActive()
 BOOL CGDIGenePropPage::OnKillActive() 
 {
 	m_activeMonitorNum=m_monitorComboCtrl.GetCurSel();	
-	if ( IsDlgButtonChecked ( IDC_RADIO6 ) )
+
+	if ( IsDlgButtonChecked ( IDC_RADIO8 ) )
+	{
+		m_nDisplayMode = DISPLAY_rPI;
+	}
+	else if ( IsDlgButtonChecked ( IDC_RADIO6 ) )
 	{
 		m_nDisplayMode = DISPLAY_GDI_Hide;
 	} else if ( IsDlgButtonChecked ( IDC_RADIO5 ) )
@@ -420,6 +427,8 @@ void CGDIGenePropPage::OnClickmadVR()
 	}
 	else if ( IsDlgButtonChecked ( IDC_RADIO6 ) )
 		m_nDisplayMode = DISPLAY_GDI_Hide;
+	else if ( IsDlgButtonChecked ( IDC_RADIO8 ) )
+		m_nDisplayMode = DISPLAY_rPI;
 	else
 		m_nDisplayMode = DISPLAY_GDI;
 
@@ -430,7 +439,6 @@ void CGDIGenePropPage::OnClickmadVR()
 		GetDlgItem(IDC_DISP_TRIP2)->EnableWindow(FALSE);
 	} else
 	{
-
 		GetDlgItem(IDC_RGBLEVEL_RADIO1)->EnableWindow(TRUE);
 		GetDlgItem(IDC_RGBLEVEL_RADIO2)->EnableWindow(TRUE);
 		GetDlgItem(IDC_DISP_TRIP2)->EnableWindow(TRUE);

@@ -28,7 +28,7 @@
 #include "Color.h"
 #include "madTPG.h"
 #include "Generator.h"
-//#include "..\Tools\pi\RB8PGenerator.h"
+#include "..\Tools\pi\RB8PGenerator.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -148,10 +148,31 @@ BOOL CGenerator::Init(UINT nbMeasure, bool isSpecial)
 //	char str1[20];
 //	char *piIP;
 //	piIP = RB8PG_discovery();
+//	SOCKET sock = RB8PG_connect(piIP);
+//	RB8PG_send(sock,"TESTTEMPLATE:PatternDynamic:150,60,70");
+//	Sleep (1000);
+//	RB8PG_send(sock,"TESTTEMPLATE:PatternDynamic:0,0,0");
+//	RB8PG_close(sock);
 
 	if (m_name != str)
 	{
-		if (Cgen.m_nDisplayMode == DISPLAY_ccast)
+		if (Cgen.m_nDisplayMode == DISPLAY_rPI)
+		{
+			m_piIP=RB8PG_discovery();
+			if(strlen(m_piIP) > 1)
+			{
+				SOCKET sock = RB8PG_connect(m_piIP);
+				RB8PG_send(sock,"TESTTEMPLATE:PatternDynamic:126,126,126");
+				RB8PG_close(sock);
+			}
+			else
+			{
+				GetColorApp()->InMeasureMessageBox( "    ** Raspberry PI generator not found **", "Error", MB_ICONERROR);
+				OutputDebugString("    ** RB8PG_discovery failed **");
+				return false;
+			}									
+		}
+		else if (Cgen.m_nDisplayMode == DISPLAY_ccast)
 		{
 			OutputDebugString("CGenerator::Init");
 			m_ccastIp = GetConfig()->GetProfileInt("GDIGenerator", "CCastIp", 0);
@@ -200,7 +221,6 @@ BOOL CGenerator::Init(UINT nbMeasure, bool isSpecial)
 				madVR_SetHdrButton(m_madVR_HDR);
 				if (m_madVR_HDR)
 					madVR_SetHdrMetadata(GetConfig()->m_manualRedx, GetConfig()->m_manualRedy, GetConfig()->m_manualGreenx, GetConfig()->m_manualGreeny, GetConfig()->m_manualBluex, GetConfig()->m_manualBluey, GetConfig()->m_manualWhitex, GetConfig()->m_manualWhitey, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_ContentMaxL, GetConfig()->m_FrameAvgMaxL);
-
 			}
 			else
 			{
@@ -226,6 +246,11 @@ BOOL CGenerator::Init(UINT nbMeasure, bool isSpecial)
 	GetColorApp() -> BeginMeasureCursor ();
 
 	return TRUE;
+}
+
+BOOL CGenerator::DisplayRGBColorrPI(const ColorRGBDisplay& aRGBColor )
+{
+	return TRUE;	  // need to be overriden
 }
 
 BOOL CGenerator::DisplayRGBColormadVR(const ColorRGBDisplay& aRGBColor )
@@ -514,12 +539,20 @@ BOOL CGenerator::DisplayGray(double aLevel, MeasureType nPatternType , BOOL bCha
 BOOL CGenerator::Release(INT nbNext)
 {
 	CGDIGenerator Cgen;
+
 	if (Cgen.m_nDisplayMode == DISPLAY_madVR)
 	{
 	  if (madVR_IsAvailable())
 	    madVR_Disconnect();
 	} else if (Cgen.m_nDisplayMode == DISPLAY_ccast && dw)
 		dw->del(dw);
+
+	if (Cgen.m_nDisplayMode == DISPLAY_rPI)
+	{
+		SOCKET sock = RB8PG_connect(m_piIP);
+		RB8PG_send(sock,"TESTTEMPLATE:PatternDynamic:0,0,0");
+		RB8PG_close(sock);
+	}
 
 	if(m_doScreenBlanking)
 		m_blankingWindow.Hide();

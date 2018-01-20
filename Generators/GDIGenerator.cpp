@@ -33,6 +33,7 @@
 #include "../libccast/ccwin.h"
 #include "../libccast/ccast.h"
 #include "../MainFrm.h"
+#include "..\Tools\pi\RB8PGenerator.h"
 
 #include <string>
 #include <float.h>
@@ -718,6 +719,132 @@ BOOL CGDIGenerator::DisplayRGBCCast( const ColorRGBDisplay& clr, bool first, UIN
 return TRUE;
 }
 
+BOOL CGDIGenerator::DisplayRGBColorrPI( const ColorRGBDisplay& clr, bool first, UINT nPattern )
+{
+	//init done in generator.cpp 
+	int r, g, b;
+	char msg[100];
+	CGDIGenerator Cgen;
+	double bgstim = Cgen.m_bgStimPercent / 100.;
+
+	if (m_b16_235)
+	{
+		r = floor((clr[0]) / 100. * 219.0 + 16.5);
+		g = floor((clr[1]) / 100. * 219.0 + 16.5);
+		b = floor((clr[2]) / 100. * 219.0 + 16.5);
+	}
+	else
+	{
+		r = floor((clr[0]) / 100. * 255.0 + 0.5 );
+		g = floor((clr[1]) / 100. * 255.0 + 0.5);
+		b = floor((clr[2]) / 100. * 255.0 + 0.5);
+	}
+
+	sprintf_s(msg,"TESTTEMPLATE:PatternDynamic:%d,%d,%d",r,g,b);
+	SOCKET sock = RB8PG_connect(m_piIP);
+	RB8PG_send(sock,msg);
+	RB8PG_close(sock);
+
+	// Sleep 80 ms while dispatching messages to ensure window is really displayed
+		MSG		Msg;
+		HWND	hEscapeWnd = NULL;
+		DWORD	dwWait = GetConfig () -> GetProfileInt ( "Debug", "WaitAfterDisplayPattern", 80 );
+		DWORD	dwStart = GetTickCount();
+		DWORD	dwNow = dwStart;
+		
+		// Wait until dwWait time is expired, but ensures all posted messages are treated even if wait time is zero
+		while((dwNow - dwStart) < dwWait)
+		{
+			while(PeekMessage(&Msg, NULL, NULL, NULL, PM_REMOVE))
+			{
+				if ( ( Msg.message == WM_KEYDOWN || Msg.message == WM_KEYUP ) && Msg.wParam == VK_ESCAPE )
+				{
+					// Do not treat this message, store it for later use
+					hEscapeWnd = Msg.hwnd;
+				}
+				else
+				{
+					TranslateMessage ( & Msg );
+					DispatchMessage ( & Msg );
+				}
+				Sleep(0);
+			}
+			dwNow = GetTickCount();
+		}
+		if ( hEscapeWnd )
+		{
+			// Escape key detected and stored during above loop: put it again in message loop to allow detection
+			::PostMessage ( hEscapeWnd, WM_KEYDOWN, VK_ESCAPE, NULL );
+			::PostMessage ( hEscapeWnd, WM_KEYUP, VK_ESCAPE, NULL );
+		}
+
+return TRUE;
+
+/*
+	if (ccwin->height == 0) 
+	{
+		MessageBox(0, "Test pattern failure.", "Error", MB_ICONERROR);
+		return false;
+	} 
+
+	if (ccwin->set_bg(ccwin,bgstim) != 0)
+	{
+		MessageBox(0, "CCast Test pattern failure.", "set_bg", MB_ICONERROR);
+		return false;
+	} 
+
+	if (first)
+	{
+		  if (ccwin->set_color(ccwin,0.75,0.75,0.75) != 0)
+		  {
+	        MessageBox(0, "CCast Test pattern failure.", "set_bg", MB_ICONERROR);
+			return false;
+		  }
+		  for (int i=0;i<=24;i++)
+		  {
+			  ccwin->set_color(ccwin,double(i) * 10.0 /  255.0,double(i) * 10.0 / 255.0,double(i) * 10.0 / 255.0);
+			  Sleep(50);
+		  }
+	}
+	
+	if ((nPattern > 50) && (nPattern % 40) == 0 && GetConfig()->m_bABL)
+	{
+		//sleep prevention
+		ccwin->set_bg(ccwin,.2);
+		if (ccwin->set_color(ccwin,.2,.2,.2) != 0 )
+		{
+	        MessageBox(0, "CCast Test pattern failure.", "set_color", MB_ICONERROR);
+			return false;
+		}
+		Sleep(50);
+
+		ccwin->set_bg(ccwin,.4);
+		if (ccwin->set_color(ccwin,.4,.4,.4) != 0 )
+		{
+	        MessageBox(0, "CCast Test pattern failure.", "set_color", MB_ICONERROR);
+			return false;
+		} 
+		ccwin->set_bg(ccwin,.6);
+		Sleep(50);
+
+		if (ccwin->set_color(ccwin,.6,.6,.6) != 0 )
+		{
+	        MessageBox(0, "CCast Test pattern failure.", "set_color", MB_ICONERROR);
+			return false;
+		} 
+
+		ccwin->set_bg(ccwin,bgstim);
+		Sleep(50);
+	}
+
+		if (ccwin->set_color(ccwin,r,g,b) != 0 )
+		{
+	        MessageBox(0, "CCast Test pattern failure.", "set_color", MB_ICONERROR);
+			return false;
+		} 
+*/	  
+}
+
 BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nPatternType , UINT nPatternInfo , BOOL bChangePattern, BOOL bSilentMode)
 {
 	ColorRGBDisplay p_clr;
@@ -761,6 +888,8 @@ BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nP
 			DisplayRGBColormadVR (do_Intensity?p_clr:clr, GetConfig()->m_isSettling, nPatternInfo);
 		else if ( m_GDIGenePropertiesPage.m_nDisplayMode == DISPLAY_ccast)
 			DisplayRGBCCast (do_Intensity?p_clr:clr, GetConfig()->m_isSettling, nPatternInfo );
+		else if ( m_GDIGenePropertiesPage.m_nDisplayMode == DISPLAY_rPI)
+			DisplayRGBColorrPI (do_Intensity?p_clr:clr, GetConfig()->m_isSettling, nPatternInfo );
 		else
 			m_displayWindow.DisplayRGBColor(do_Intensity?p_clr:clr, nPatternInfo);
 		//( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.ShowWindow(SW_HIDE);
