@@ -113,7 +113,7 @@ void CReferencesPropPage::DoDataExchange(CDataExchange* pDX)
   	DDX_Control(pDX, IDC_EDIT_TARGET_MAXL, m_TargetMaxLCtrl);
 	DDV_MinMaxDouble(pDX, m_TargetMaxL, 1., 10000.);
 	DDV_MinMaxDouble(pDX, m_GammaRef, 1., 5.);
-	DDV_MinMaxDouble(pDX, m_GammaAvg, 1., 5.);
+//	DDV_MinMaxDouble(pDX, m_GammaAvg, 1., 5.);
 	DDV_MinMaxDouble(pDX, m_GammaRel, 0., 5.);
 	DDV_MinMaxDouble(pDX, m_Split, 0., 100.);
 	DDV_MinMaxDouble(pDX, m_ManualBlack, 0., 1.);
@@ -206,6 +206,7 @@ void CReferencesPropPage::OnControlClicked(UINT nID)
     {
   	  m_GammaRefEdit.EnableWindow (FALSE);
       m_eMeasuredGamma.EnableWindow (FALSE);
+	  m_useMeasuredGamma = FALSE;
     }
 	else
     {
@@ -311,6 +312,7 @@ BOOL CReferencesPropPage::OnApply()
     {
   	  m_GammaRefEdit.EnableWindow (FALSE);
   	  m_eMeasuredGamma.EnableWindow (FALSE);
+	  m_useMeasuredGamma = FALSE;
     }
 	if (m_userBlack)
 		m_ManualBlackEdit.EnableWindow(TRUE);
@@ -418,6 +420,7 @@ BOOL CReferencesPropPage::OnInitDialog()
     {
   	  m_GammaRefEdit.EnableWindow (FALSE);
   	  m_eMeasuredGamma.EnableWindow (FALSE);
+	  m_useMeasuredGamma = FALSE;
     }
 
 	m_ManualBlackEdit.EnableWindow(m_userBlack);
@@ -626,7 +629,13 @@ void CReferencesPropPage::OnSelchangeColorrefCombo()
 		GetDlgItem(IDC_GAMMA_OFFSET_RADIO9)->EnableWindow(TRUE);
 		GetDlgItem(IDC_GAMMA_OFFSET_RADIO10)->EnableWindow(TRUE);
 		m_GammaRefEdit.EnableWindow (TRUE);
-		m_eMeasuredGamma.EnableWindow (TRUE);
+		if (m_GammaOffsetType < 4)
+			m_eMeasuredGamma.EnableWindow (TRUE);
+		else
+		{
+			m_eMeasuredGamma.EnableWindow (FALSE);
+	 	    m_useMeasuredGamma = FALSE;
+		}
 		m_manualGOffset = 0.099;
 	}
 	if ( !(m_colorStandard == UHDTV || m_colorStandard == UHDTV2 || m_colorStandard == UHDTV3 || m_colorStandard == HDTV)  )
