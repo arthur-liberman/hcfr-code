@@ -145,14 +145,6 @@ BOOL CGenerator::Init(UINT nbMeasure, bool isSpecial)
 	CString str, msg;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 	BOOL madVR_Found;
-//	char str1[20];
-//	char *piIP;
-//	piIP = RB8PG_discovery();
-//	SOCKET sock = RB8PG_connect(piIP);
-//	RB8PG_send(sock,"TESTTEMPLATE:PatternDynamic:150,60,70");
-//	Sleep (1000);
-//	RB8PG_send(sock,"TESTTEMPLATE:PatternDynamic:0,0,0");
-//	RB8PG_close(sock);
 
 	if (m_name != str)
 	{
@@ -161,9 +153,8 @@ BOOL CGenerator::Init(UINT nbMeasure, bool isSpecial)
 			m_piIP=RB8PG_discovery();
 			if(strlen(m_piIP) > 1)
 			{
-				SOCKET sock = RB8PG_connect(m_piIP);
+				sock = RB8PG_connect(m_piIP);
 				RB8PG_send(sock,"TESTTEMPLATE:PatternDynamic:126,126,126");
-				RB8PG_close(sock);
 			}
 			else
 			{
@@ -549,7 +540,6 @@ BOOL CGenerator::Release(INT nbNext)
 
 	if (Cgen.m_nDisplayMode == DISPLAY_rPI)
 	{
-		SOCKET sock = RB8PG_connect(m_piIP);
 		RB8PG_send(sock,"TESTTEMPLATE:PatternDynamic:0,0,0");
 		RB8PG_close(sock);
 	}

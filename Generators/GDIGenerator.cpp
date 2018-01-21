@@ -741,9 +741,7 @@ BOOL CGDIGenerator::DisplayRGBColorrPI( const ColorRGBDisplay& clr, bool first, 
 	}
 
 	sprintf_s(msg,"TESTTEMPLATE:PatternDynamic:%d,%d,%d",r,g,b);
-	SOCKET sock = RB8PG_connect(m_piIP);
 	RB8PG_send(sock,msg);
-	RB8PG_close(sock);
 
 	// Sleep 80 ms while dispatching messages to ensure window is really displayed
 		MSG		Msg;
