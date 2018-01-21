@@ -84,6 +84,7 @@ public:
 	BOOL m_madVR_OSD;
 	UINT m_ccastIp; 
 	char *	m_piIP;
+	SOCKET sock;
 	dispwin *ccwin;
 protected:
 	BOOL m_isModified;
