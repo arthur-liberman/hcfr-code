@@ -916,7 +916,7 @@ BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator, CDataS
 		if( pGenerator->DisplayGray(ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit),CGenerator::MT_IRE ,!bRetry))
 		{
 			UpdateTstWnd(pDoc, i);
-			bEscape = WaitForDynamicIris (FALSE);
+			bEscape = WaitForDynamicIris (FALSE, pDoc);
 			bRetry = FALSE;
 
 			if ( ! bEscape )
@@ -1138,7 +1138,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 		if( pGenerator->DisplayGray(ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit),CGenerator::MT_IRE ,!bRetry))
 		{
 			UpdateTstWnd(pDoc, i);
-			bEscape = WaitForDynamicIris (FALSE);
+			bEscape = WaitForDynamicIris (FALSE, pDoc);
 			bRetry = FALSE;
 
 			if ( ! bEscape )
@@ -1363,7 +1363,7 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SECONDARY,i,TRUE,TRUE) )
 		{
 			UpdateTstWnd(pDoc, i);
-			bEscape = WaitForDynamicIris (FALSE);
+			bEscape = WaitForDynamicIris (FALSE, pDoc);
 			bRetry = FALSE;
 
 			if ( ! bEscape )
@@ -1579,7 +1579,7 @@ BOOL CMeasure::MeasureNearBlackScale(CSensor *pSensor, CGenerator *pGenerator, C
 		if( pGenerator->DisplayGray((ArrayIndexToGrayLevel ( nCol, 101, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit)),CGenerator::MT_NEARBLACK,!bRetry) )
 		{
 			UpdateTstWnd(pDoc, nCol);
-			bEscape = WaitForDynamicIris (FALSE);
+			bEscape = WaitForDynamicIris (FALSE, pDoc);
 			bRetry = FALSE;
 
 			if ( ! bEscape )
@@ -1794,7 +1794,7 @@ BOOL CMeasure::MeasureNearWhiteScale(CSensor *pSensor, CGenerator *pGenerator, C
 		if( pGenerator->DisplayGray( (ArrayIndexToGrayLevel ( m_NearWhiteClipCol - size + i, 101, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit) ),CGenerator::MT_NEARWHITE,!bRetry ) )
 		{
 			UpdateTstWnd(pDoc, i);
-			bEscape = WaitForDynamicIris (FALSE);
+			bEscape = WaitForDynamicIris (FALSE, pDoc);
 			bRetry = FALSE;
 
 			if ( ! bEscape )
@@ -1964,7 +1964,7 @@ BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator, CDat
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_RED,100*i/(size - 1),!bRetry))
 		{
 			UpdateTstWnd(pDoc, i);
-			bEscape = WaitForDynamicIris (FALSE);
+			bEscape = WaitForDynamicIris (FALSE, pDoc);
 			bRetry = FALSE;
 
 			if ( ! bEscape )
@@ -2133,7 +2133,7 @@ BOOL CMeasure::MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator, CD
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_GREEN,100*i/(size - 1),!bRetry) )
 		{
 			UpdateTstWnd(pDoc, i);
-			bEscape = WaitForDynamicIris (FALSE);
+			bEscape = WaitForDynamicIris (FALSE, pDoc);
 			bRetry = FALSE;
 
 			if ( ! bEscape )
@@ -2304,7 +2304,7 @@ BOOL CMeasure::MeasureBlueSatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_BLUE,100*i/(size - 1),!bRetry))
 		{
 			UpdateTstWnd(pDoc, i);
-			bEscape = WaitForDynamicIris (FALSE);
+			bEscape = WaitForDynamicIris (FALSE, pDoc);
 			bRetry = FALSE;
 
 			if ( ! bEscape )
@@ -2474,7 +2474,7 @@ BOOL CMeasure::MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator, C
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_YELLOW,100*i/(size - 1),!bRetry))
 		{
 			UpdateTstWnd(pDoc, i);
-			bEscape = WaitForDynamicIris (FALSE);
+			bEscape = WaitForDynamicIris (FALSE, pDoc);
 			bRetry = FALSE;
 
 			if ( ! bEscape )
@@ -2646,7 +2646,7 @@ BOOL CMeasure::MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_CYAN,100*i/(size - 1),!bRetry))
 		{
 			UpdateTstWnd(pDoc, i);
-			bEscape = WaitForDynamicIris (FALSE);
+			bEscape = WaitForDynamicIris (FALSE, pDoc);
 			bRetry = FALSE;
 
 			if ( ! bEscape )
@@ -2818,7 +2818,7 @@ BOOL CMeasure::MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator, 
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SAT_MAGENTA,100*i/(size - 1) ,!bRetry))
 		{
 			UpdateTstWnd(pDoc, i);
-			bEscape = WaitForDynamicIris (FALSE);
+			bEscape = WaitForDynamicIris (FALSE, pDoc);
 			bRetry = FALSE;
 
 			if ( ! bEscape )
@@ -3042,7 +3042,7 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 		if( pGenerator->DisplayRGBColor(GenColors[i], nPattern , i, !bRetry))
 		{
 			UpdateTstWnd(pDoc, i);
-			bEscape = WaitForDynamicIris (FALSE);
+			bEscape = WaitForDynamicIris (FALSE, pDoc);
 			bRetry = FALSE;
 
 			if ( ! bEscape )
@@ -3327,7 +3327,7 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 			if( pGenerator->DisplayRGBColor(GenColors[(j*size)+i],SaturationType[j],(j == 6 ? i:100*i/(size - 1)),!bRetry,(j>0)) )
 			{
 				UpdateTstWnd(pDoc, i);
-				bEscape = WaitForDynamicIris (FALSE);
+				bEscape = WaitForDynamicIris (FALSE, pDoc);
 				bRetry = FALSE;
 
 				if ( ! bEscape )
@@ -3636,7 +3636,7 @@ BOOL CMeasure::MeasurePrimarySecondarySaturationScales(CSensor *pSensor, CGenera
 			if( pGenerator->DisplayRGBColor(GenColors[(j*size)+i],SaturationType[j],100*i/(size - 1),!bRetry,(j>0)) )
 			{
 				UpdateTstWnd(pDoc, i);
-				bEscape = WaitForDynamicIris (FALSE);
+				bEscape = WaitForDynamicIris (FALSE, pDoc);
 				bRetry = FALSE;
 
 				if ( ! bEscape )
@@ -3939,7 +3939,7 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator, CDataS
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_PRIMARY, i) )
 		{
 			UpdateTstWnd(pDoc, m_currentIndex);
-			bEscape = WaitForDynamicIris (FALSE);
+			bEscape = WaitForDynamicIris (FALSE, pDoc);
 			bRetry = FALSE;
 
 			if ( ! bEscape )
@@ -4211,7 +4211,7 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator, CDat
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_SECONDARY, i) )
 		{
 			UpdateTstWnd(pDoc, i);
-			bEscape = WaitForDynamicIris (FALSE);
+			bEscape = WaitForDynamicIris (FALSE, pDoc);
 			bRetry = FALSE;
 
 			if ( ! bEscape )
@@ -4409,7 +4409,7 @@ BOOL CMeasure::MeasureContrast(CSensor *pSensor, CGenerator *pGenerator)
 		{
 			if( pGenerator->DisplayGray(BlackIRELevel,CGenerator::MT_CONTRAST,!bRetry ) )
 			{
-				bEscape = WaitForDynamicIris ();
+				bEscape = WaitForDynamicIris (FALSE);
 				bRetry = FALSE;
 
 				if ( ! bEscape )
@@ -5090,19 +5090,30 @@ void CMeasure::ApplySensorAdjustmentMatrix(const Matrix& aMatrix)
 	m_AnsiWhite.applyAdjustmentMatrix(aMatrix);
 }
 
-BOOL CMeasure::WaitForDynamicIris ( BOOL bIgnoreEscape )
+BOOL CMeasure::WaitForDynamicIris ( BOOL bIgnoreEscape, CDataSetDoc *pDoc )
 {
 	BOOL bEscape = FALSE;
-	DWORD nLatencyTime = (DWORD)GetConfig()->m_latencyTime;
+	int nLatencyTime = GetConfig()->m_latencyTime;
+	UINT nLoopTime = 0;
 
-	if ( nLatencyTime > 0 )
+	if (nLatencyTime < 0) 
+		nLoopTime = -1 * nLatencyTime;
+	else
+	{
+		nLoopTime = nLatencyTime;
+		if (pDoc)
+			if (pDoc->GetSensor()->GetName() == "Simulated sensor")
+				nLoopTime = 0;
+	}
+
+	if ( nLoopTime > 0 )
 	{
 		// Sleep nLatencyTime ms while dispatching messages
 		MSG	Msg;
 		DWORD dwStart = GetTickCount();
 		DWORD dwNow = dwStart;
 
-		while((!bEscape) && ((dwNow - dwStart) < nLatencyTime + 100))
+		while((!bEscape) && ((dwNow - dwStart) < nLoopTime + 100))
 		{
 			Sleep(0);
 			while(PeekMessage(&Msg, NULL, NULL, NULL, TRUE ))
@@ -5386,7 +5397,7 @@ BOOL CMeasure::ValidateBackgroundSingleMeasurement ( BOOL bUseLuxValues, double 
 
 	// Close background thread and event objects
 	CancelBackgroundMeasures ();
-	Sleep((DWORD)GetConfig()->m_latencyTime);
+	Sleep(abs(GetConfig()->m_latencyTime));
 	return bOk;
 }
 
@@ -5522,9 +5533,8 @@ void CMeasure::FreeMeasurementAppended(int isPrimary, int last_minCol)
 			break;
 		}
 		m_isModified=TRUE;
-//		UpdateViews(pDoc, isPrimary);
 	}
-	Sleep((DWORD)GetConfig()->m_latencyTime);
+	Sleep(abs(GetConfig()->m_latencyTime));
 }
 
 BOOL CMeasure::ValidateBackgroundNearBlack ( BOOL bUseLuxValues, double * pLuxValues )

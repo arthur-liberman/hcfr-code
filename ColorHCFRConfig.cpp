@@ -345,9 +345,6 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_bDetectPrimaries=GetProfileInt("References","DetectPrimaries",1);
 	m_useHSV=GetProfileInt("References","UseHSV",0);
 	m_latencyTime=GetProfileInt("References","IrisLatencyTime",300);
-    // don't allow less than 250ms for latency, give windows and display a chance
-    // to show the image default is 300ms
-    //m_latencyTime = max(m_latencyTime, 250);
 	m_bLatencyBeep=GetProfileInt("References","IrisLatencyBeep",0);
 	bDisplayRT=GetProfileInt("References","Display RT",1);
 	m_bABL=GetProfileInt("References","ABL Inhibitor",0);
