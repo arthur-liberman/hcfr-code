@@ -224,7 +224,7 @@ public:
 
     void ApplySensorAdjustmentMatrix(const Matrix & matrixAdjustment);
 
-	BOOL WaitForDynamicIris ( BOOL bIgnoreEscape = FALSE );
+	BOOL WaitForDynamicIris ( BOOL bIgnoreEscape = FALSE, CDataSetDoc *pDoc = NULL );
 	BOOL CheckBlackOverride (  );
 	void UpdateViews ( CDataSetDoc *pDoc = NULL, int Sequence = 0 );
 	void UpdateTstWnd ( CDataSetDoc *pDoc, int Sequence );
