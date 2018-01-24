@@ -83,6 +83,14 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
     
 	BOOL bWasLumaMode = m_bLumaMode;
     double cx,cy,cz,cxref,cyref,czref;
+//	CColorReference cRef= (GetConfig()->m_colorStandard==UHDTV3?CColorReference(UHDTV2):GetColorReference());
+	CColorReference cRef= (GetColorReference());
+	int satsize=m_pDocument->GetMeasure()->GetSaturationSize();
+	CString	Msg, dstr;
+	Msg.LoadString ( IDS_GDIGENERATOR_NAME );
+	CString m_generatorChoice = GetConfig()->GetProfileString("Defaults","Generator",(LPCSTR)Msg);
+	dstr.LoadString(IDS_MANUALDVDGENERATOR_NAME);
+	BOOL DVD = (m_generatorChoice == dstr);	
 
 	if ( m_pRefColor)
 	{
@@ -124,83 +132,87 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 				m_bLumaMode = TRUE;
 				aReference = m_pDocument->GetMeasure()->GetRefSat(5, double(minCol-1) / double(nSize -1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb));
 			}
-			else if ( m_displayMode == 1 && (minCol == 1 || m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefPrimary(0), GetColorReference() ) < 0.05))
+			else if ( m_displayMode == 1 && (minCol == 1 || m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefPrimary(0), cRef ) < 0.05))
 			{
 				m_bLumaMode = TRUE;
 				aReference = m_pDocument->GetMeasure()->GetRefPrimary(0);
 			}
-			else if ( m_displayMode == 1 && (minCol == 2 || m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefPrimary(1), GetColorReference() ) < 0.05))
+			else if ( m_displayMode == 1 && (minCol == 2 || m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefPrimary(1), cRef ) < 0.05))
 			{
 				m_bLumaMode = TRUE;
 				aReference = m_pDocument->GetMeasure()->GetRefPrimary(1);
 			}
-			else if ( m_displayMode == 1 && (minCol == 3 || m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefPrimary(2), GetColorReference() ) < 0.05))
+			else if ( m_displayMode == 1 && (minCol == 3 || m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefPrimary(2), cRef ) < 0.05))
 			{
 				m_bLumaMode = TRUE;
 				aReference = m_pDocument->GetMeasure()->GetRefPrimary(2);
 			}
-			else if ( m_displayMode == 1 && (minCol == 4 || m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefSecondary(0), GetColorReference() ) < 0.05))
+			else if ( m_displayMode == 1 && (minCol == 4 || m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefSecondary(0), cRef ) < 0.05))
 			{
 				m_bLumaMode = TRUE;
 				aReference = m_pDocument->GetMeasure()->GetRefSecondary(0);
 			}
-			else if ( m_displayMode == 1 && (minCol == 5 || m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefSecondary(1), GetColorReference() ) < 0.05))
+			else if ( m_displayMode == 1 && (minCol == 5 || m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefSecondary(1), cRef ) < 0.05))
 			{
 				m_bLumaMode = TRUE;
 				aReference = m_pDocument->GetMeasure()->GetRefSecondary(1);
 			}
-			else if ( m_displayMode == 1 && (minCol == 6 || m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefSecondary(2), GetColorReference() ) < 0.05))
+			else if ( m_displayMode == 1 && (minCol == 6 || m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefSecondary(2), cRef ) < 0.05))
 			{
 				m_bLumaMode = TRUE;
 				aReference = m_pDocument->GetMeasure()->GetRefSecondary(2);
 			}
 			//look for white and disable if detect for primaries/secondaries is not selected
-			else if ( m_displayMode == 0 || (m_displayMode == 1 && minCol == 7) || m_displayMode == 3 || m_displayMode == 4 || m_pRefColor->GetDeltaxy ( GetColorReference().GetWhite(), GetColorReference() ) < 0.05)
+			else if ( m_displayMode == 0 || (m_displayMode == 1 && minCol == 7) || m_displayMode == 3 || m_displayMode == 4 || m_pRefColor->GetDeltaxy ( cRef.GetWhite(), cRef ) < 0.05)
 			{
 				m_bLumaMode = (m_displayMode==1)?TRUE:FALSE;
-				aReference = GetColorReference().GetWhite();
+				aReference = cRef.GetWhite();
 			}
 		} //mincol > 0
 		else //autodetect if mincol <= 0 (measuring) and this is primaries or grayscale page
 		{
-			if ( m_displayMode == 1 && (m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefPrimary(0), GetColorReference() ) < 0.05 && GetConfig()->m_bDetectPrimaries))
+			if ( m_displayMode == 1 && (m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefPrimary(0), cRef ) < 0.05 && GetConfig()->m_bDetectPrimaries))
 			{
 				m_bLumaMode = TRUE;
 				aReference = m_pDocument->GetMeasure()->GetRefPrimary(0);
 			}
-			else if ( m_displayMode == 1 && (m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefPrimary(1), GetColorReference() ) < 0.05) && GetConfig()->m_bDetectPrimaries)
+			else if ( m_displayMode == 1 && (m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefPrimary(1), cRef ) < 0.05) && GetConfig()->m_bDetectPrimaries)
 			{
 				m_bLumaMode = TRUE;
 				aReference = m_pDocument->GetMeasure()->GetRefPrimary(1);
 			}
-			else if ( m_displayMode == 1 && (m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefPrimary(2), GetColorReference() ) < 0.05) && GetConfig()->m_bDetectPrimaries)
+			else if ( m_displayMode == 1 && (m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefPrimary(2), cRef) < 0.05) && GetConfig()->m_bDetectPrimaries)
 			{
 				m_bLumaMode = TRUE;
 				aReference = m_pDocument->GetMeasure()->GetRefPrimary(2);
 			}
-			else if ( m_displayMode == 1 && (m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefSecondary(0), GetColorReference() ) < 0.05) && GetConfig()->m_bDetectPrimaries)
+			else if ( m_displayMode == 1 && (m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefSecondary(0), cRef ) < 0.05) && GetConfig()->m_bDetectPrimaries)
 			{
 				m_bLumaMode = TRUE;
 				aReference = m_pDocument->GetMeasure()->GetRefSecondary(0);
 			}
-			else if ( m_displayMode == 1 && (m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefSecondary(1), GetColorReference() ) < 0.05) && GetConfig()->m_bDetectPrimaries)
+			else if ( m_displayMode == 1 && (m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefSecondary(1), cRef ) < 0.05) && GetConfig()->m_bDetectPrimaries)
 			{
 				m_bLumaMode = TRUE;
 				aReference = m_pDocument->GetMeasure()->GetRefSecondary(1);
 			}
-			else if ( m_displayMode == 1 && (m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefSecondary(2), GetColorReference() ) < 0.05) && GetConfig()->m_bDetectPrimaries)
+			else if ( m_displayMode == 1 && (m_pRefColor->GetDeltaxy ( m_pDocument->GetMeasure()->GetRefSecondary(2), cRef ) < 0.05) && GetConfig()->m_bDetectPrimaries)
 			{
 				m_bLumaMode = TRUE;
 				aReference = m_pDocument->GetMeasure()->GetRefSecondary(2);
 			}
-			else if ( (m_displayMode == 1 || m_displayMode == 0) && m_pRefColor->GetDeltaxy ( GetColorReference().GetWhite(), GetColorReference() ) < 0.05 && GetConfig()->m_bDetectPrimaries)
+			else if ( (m_displayMode == 1 || m_displayMode == 0) && m_pRefColor->GetDeltaxy ( GetColorReference().GetWhite(), cRef ) < 0.05 && GetConfig()->m_bDetectPrimaries)
 			{
 				m_bLumaMode = FALSE;
-				aReference = GetColorReference().GetWhite();
+				aReference = cRef.GetWhite();
 			}
 		} 
 
+		BOOL isHDR = ( GetConfig()->m_GammaOffsetType == 5 && (m_displayMode == 1 || m_displayMode >= 5 && m_displayMode <= 11) );
 		CColor white = m_pDocument->GetMeasure()->GetPrimeWhite();
+
+		if (!white.isValid() && isHDR)
+			white = m_pDocument->GetMeasure()->GetGray((m_pDocument->GetMeasure()->GetGrayScaleSize()-1) / 2 );
 
 		if (!white.isValid() || m_displayMode == 0 || m_displayMode == 2 || m_displayMode == 3 || m_displayMode == 4)
 			white = m_pDocument -> GetMeasure () ->GetOnOffWhite();
@@ -209,11 +221,28 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 
 		//special case check if user has done a less than 100% primaries run and use grayscale white instead for colorchecker
 		if (m_pDocument->GetMeasure()->GetOnOffWhite().isValid())
-			if ((m_pDocument->GetMeasure()->GetPrimeWhite()[1] / m_pDocument->GetMeasure()->GetOnOffWhite()[1] < 0.9) && m_displayMode == 11)
+			if ((m_pDocument->GetMeasure()->GetPrimeWhite()[1] / m_pDocument->GetMeasure()->GetOnOffWhite()[1] < 0.9) && m_displayMode == 11  && GetConfig()->m_GammaOffsetType != 5)
 				white = m_pDocument -> GetMeasure () ->GetOnOffWhite();
 		
     	int nCount = m_pDocument -> GetMeasure () -> GetGrayScaleSize ();
         double YWhite = white.GetY();
+		double tmWhite = getL_EOTF(0.5022283, noDataColor, noDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / GetConfig()->m_DiffuseL * 100.0;
+
+			if ( (GetConfig()->m_GammaOffsetType == 5 && m_displayMode <=11 && m_displayMode >= 5) )
+			{
+				if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= LG400017 && m_displayMode == 11)	
+				{
+					aReference.SetX((aReference.GetX() * 100.));
+					aReference.SetY((aReference.GetY() * 100.));
+					aReference.SetZ((aReference.GetZ() * 100.));
+				}
+				else
+				{
+					aReference.SetX((aReference.GetX() * 105.95640));
+					aReference.SetY((aReference.GetY() * 105.95640));
+					aReference.SetZ((aReference.GetZ() * 105.95640));
+				}
+			}
 
         if (!m_bLumaMode)
         {
@@ -272,6 +301,7 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 					aReference.SetxyYValue(tmpColor);
 
 			}
+
 			//RGB plots now include luminance offset when grayscale dE handling includes it
 			double fact;
 			ColorxyY aColor = m_pRefColor -> GetxyYValue();
@@ -299,7 +329,7 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
                 normColor[2]=0.0;
             }
 
-            ColorRGB normColorRGB(normColor, GetColorReference());
+            ColorRGB normColorRGB(normColor, cRef);
                         
             m_redValue=(float)(normColorRGB[0]*100.0);
             m_greenValue=(float)(normColorRGB[1]*100.0);
@@ -312,13 +342,52 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 			m_redValue=100.;
 			m_greenValue=100.;
 			m_blueValue=100.;
+
             if ( white.isValid() )
             {
+
+				if ( isHDR )
+				{
+					bool shiftDiffuse=(abs(GetConfig()->m_DiffuseL-94.0)>0.5);
+					if (DVD)
+					{
+						tmWhite = getL_EOTF(0.50, noDataColor, noDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / GetConfig()->m_DiffuseL * 100.0;
+						if (m_displayMode == 1)
+						{
+							if (GetColorReference().m_standard == UHDTV || GetColorReference().m_standard == UHDTV2 || GetColorReference().m_standard == HDTV || minCol == 7)
+								white.SetY(!shiftDiffuse?92.254965:GetConfig()->m_DiffuseL * tmWhite);
+							else
+								white.SetY(94.37844);
+						}
+						else
+						{
+							if ( ( (GetColorReference().m_standard == UHDTV2 && minCol == satsize) || GetColorReference().m_standard == HDTV || GetColorReference().m_standard == UHDTV) && m_displayMode != 11)// && !shiftDiffuse) //&& nCol == (satsize)
+								white.SetY(92.25496);
+							else
+								white.SetY(94.37844);
+						}
+					}
+					else
+					{
+						if (m_displayMode == 1)
+							if (GetColorReference().m_standard == UHDTV2 || GetColorReference().m_standard == HDTV || GetColorReference().m_standard == UHDTV || minCol == 7)
+								white.SetY(GetConfig()->m_DiffuseL * tmWhite);
+							else
+								white.SetY(94.37844);
+						else
+							if ((GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= LG400017) && m_displayMode == 11)
+								white.SetY(m_pDocument->GetMeasure()->GetGray((m_pDocument->GetMeasure()->GetGrayScaleSize()-1)).GetY());
+							else
+								white.SetY(94.37844);
+					}
+				}
 				aColor[0]=aColor[0]/white.GetY();
 				aColor[1]=aColor[1]/white.GetY();
 				aColor[2]=aColor[2]/white.GetY();
-				ColorRGB aColorRGB(aColor, GetColorReference());
-				ColorRGB refColorRGB(refColor, GetColorReference());
+
+				ColorRGB aColorRGB(aColor, cRef);
+				ColorRGB refColorRGB(refColor, cRef);
+
 				cx = aColorRGB[0];
 				cy = aColorRGB[1];
 				cz = aColorRGB[2];
@@ -347,7 +416,61 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 					m_blueValue=(float)(100.-(czref-cz)*100.0);                        
 			}
 		}
-		m_dEValue = aReference.isValid()?float(m_pRefColor->GetDeltaE(YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, !m_bLumaMode,  GetConfig()->gw_Weight )):0 ;
+
+					double RefWhite = 1.0;
+
+					if ( isHDR )
+					{
+						bool shiftDiffuse = (abs(GetConfig()->m_DiffuseL-94.0)>0.5);
+						if (DVD)
+						{
+							if (m_displayMode == 1)
+							{
+									tmWhite = getL_EOTF(0.50, noDataColor, noDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / GetConfig()->m_DiffuseL * 100.0;								if ( (cRef.m_standard == UHDTV2 || cRef.m_standard == HDTV || cRef.m_standard == UHDTV || minCol == 7) ) //fix for P3/Mascior
+									RefWhite = YWhite / (!shiftDiffuse?92.254965:GetConfig()->m_DiffuseL * tmWhite);
+								else
+								{
+									RefWhite = YWhite / (GetConfig()->m_DiffuseL * tmWhite);
+									YWhite = YWhite * 94.37844 / (GetConfig()->m_DiffuseL * tmWhite);
+								}
+							}
+							else
+							{
+								if ( ((cRef.m_standard == UHDTV2 && minCol == satsize ) || cRef.m_standard == HDTV || cRef.m_standard == UHDTV)  && m_displayMode != 11)// && !shiftDiffuse) //fixes skin && nCol == satsize
+									RefWhite = YWhite / (92.254965 * tmWhite);
+								else
+								{
+									RefWhite = YWhite / (GetConfig()->m_DiffuseL * tmWhite) ;
+									YWhite = YWhite * 94.37844 / (GetConfig()->m_DiffuseL * tmWhite);
+								}
+							}
+						}
+						else
+						{
+							if (m_displayMode == 1)
+							{
+								if (cRef.m_standard == UHDTV2 || cRef.m_standard == HDTV || cRef.m_standard == UHDTV || minCol == 7)
+									RefWhite = YWhite / (GetConfig()->m_DiffuseL * tmWhite) ;
+								else
+								{
+									RefWhite = YWhite / (GetConfig()->m_DiffuseL * tmWhite) ;					
+									YWhite = YWhite * 94.37844 / (GetConfig()->m_DiffuseL * tmWhite) ;
+								}
+							}
+							else
+							{
+								if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= LG400017 && m_displayMode == 11)	
+									YWhite = m_pDocument->GetMeasure()->GetGray((m_pDocument->GetMeasure()->GetGrayScaleSize()-1)).GetY() ;
+								else
+								{
+									RefWhite = YWhite / (GetConfig()->m_DiffuseL * tmWhite) ;
+									YWhite = YWhite * 94.37844 / (GetConfig()->m_DiffuseL * tmWhite) ;
+								}
+							}
+						}
+					}
+
+		m_dEValue = aReference.isValid()?float(m_pRefColor->GetDeltaE(YWhite, aReference, RefWhite, cRef, GetConfig()->m_dE_form, !m_bLumaMode,  GetConfig()->gw_Weight )):0 ;
     } //have valid m_prefcolor
 	else
 	{
