@@ -28,7 +28,6 @@
 #include "Color.h"
 #include "madTPG.h"
 #include "Generator.h"
-#include "..\Tools\pi\RB8PGenerator.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -42,6 +41,10 @@ static char THIS_FILE[]=__FILE__;
 
 IMPLEMENT_SERIAL(CGenerator, CObject, 1) ;
 dispwin *dw;
+typedef int (__stdcall *RB8PG_send)(SOCKET sock,const char *message);
+typedef int (__stdcall *RB8PG_close)(SOCKET sock);
+typedef SOCKET (__stdcall *RB8PG_connect)(const char *server_addr);
+typedef char * (__stdcall *RB8PG_discovery)();
 
 CGenerator::CGenerator()
 {
@@ -49,7 +52,7 @@ CGenerator::CGenerator()
 	m_doScreenBlanking=GetConfig()->GetProfileInt("Generator","Blanking",0);
 	m_rectSizePercent=GetConfig()->GetProfileInt("GDIGenerator","SizePercent",10);
 	m_ccastIp = 0;
-	m_piIP = 0;
+	sock = NULL;
 	AddPropertyPage(&m_GeneratorPropertiePage);
 
 	CString str;
@@ -142,26 +145,52 @@ BOOL CGenerator::Init(UINT nbMeasure, bool isSpecial)
 {
 	nMeasureNumber = nbMeasure; 
 	CGDIGenerator Cgen;
-	CString str, msg;
+	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 	BOOL madVR_Found;
-
+	char *	m_piIP = "";
 	if (m_name != str)
 	{
 		if (Cgen.m_nDisplayMode == DISPLAY_rPI)
 		{
-			m_piIP=RB8PG_discovery();
-			if(strlen(m_piIP) > 1)
+			hInstLibrary = LoadLibrary("RB8PGenerator.dll");
+			if (hInstLibrary)
 			{
-				sock = RB8PG_connect(m_piIP);
-				RB8PG_send(sock,"TESTTEMPLATE:PatternDynamic:126,126,126");
+//				GetColorApp()->InMeasureMessageBox( "    ** Generator Init **", "Error", MB_ICONINFORMATION);
+				_RB8PG_send = (RB8PG_send)GetProcAddress(hInstLibrary, "RB8PG_send@8");
+				_RB8PG_connect = (RB8PG_connect)GetProcAddress(hInstLibrary, "RB8PG_connect@4");
+				_RB8PG_discovery = (RB8PG_discovery)GetProcAddress(hInstLibrary, "RB8PG_discovery@0");
+				_RB8PG_close = (RB8PG_close)GetProcAddress(hInstLibrary, "RB8PG_close@4");
+
+				if (_RB8PG_discovery)
+					m_piIP = _RB8PG_discovery();
+				
+				if(strlen(m_piIP) > 1)
+				{
+					if (_RB8PG_connect)
+						sock = _RB8PG_connect(m_piIP);
+					else
+						GetColorApp()->InMeasureMessageBox( "Error communicating with rPI", "Error", MB_ICONINFORMATION);
+
+					if (sock)
+						if (_RB8PG_send)
+							_RB8PG_send(sock,"TESTTEMPLATE:PatternDynamic:126,126,126");
+						else
+							GetColorApp()->InMeasureMessageBox( "Error communicating with rPI", "Error", MB_ICONINFORMATION);
+				}
+				else
+				{
+					GetColorApp()->InMeasureMessageBox( "    ** Raspberry Pi generator not found **", "Error", MB_ICONERROR);
+					OutputDebugString("    ** RB8PG_discovery failed **");
+					return false;
+				}			
 			}
 			else
 			{
-				GetColorApp()->InMeasureMessageBox( "    ** Raspberry PI generator not found **", "Error", MB_ICONERROR);
-				OutputDebugString("    ** RB8PG_discovery failed **");
+				GetColorApp()->InMeasureMessageBox( "    ** RB8PGenerator.dll not found **", "Error", MB_ICONERROR);
+				OutputDebugString("    ** Load_dll failed **");
 				return false;
-			}									
+			}			
 		}
 		else if (Cgen.m_nDisplayMode == DISPLAY_ccast)
 		{
@@ -540,8 +569,22 @@ BOOL CGenerator::Release(INT nbNext)
 
 	if (Cgen.m_nDisplayMode == DISPLAY_rPI)
 	{
-		RB8PG_send(sock,"TESTTEMPLATE:PatternDynamic:0,0,0");
-		RB8PG_close(sock);
+//		GetColorApp()->InMeasureMessageBox( "    ** Generator Release **", "Error", MB_ICONINFORMATION);
+		if (hInstLibrary)
+		{
+
+			if (_RB8PG_send)
+				_RB8PG_send(sock,"TESTTEMPLATE:PatternDynamic:0,0,0");
+			else
+				GetColorApp()->InMeasureMessageBox( "Error communicating with rPI", "Error", MB_ICONINFORMATION);
+
+			if (_RB8PG_close)
+				_RB8PG_close(sock);
+			else
+				GetColorApp()->InMeasureMessageBox( "Error communicating with rPI", "Error", MB_ICONINFORMATION);
+
+			FreeLibrary(hInstLibrary);
+		}
 	}
 
 	if(m_doScreenBlanking)

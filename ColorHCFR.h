@@ -49,7 +49,6 @@
 #define LUXMETER_SCALE_TOO_HIGH_MIN	5	// Scale is too high, and is the lowest: cannot measure value
 #define LUXMETER_NEW_SCALE_OK		6	// User changed scale and now value can be measured
 
-
 //////////////////////////////////////////////////////////////////////
 // Help handling in property sheets
 
