@@ -151,7 +151,7 @@ BOOL CGenerator::Init(UINT nbMeasure, bool isSpecial)
 	char *	m_piIP = "";
 	if (m_name != str)
 	{
-		if (Cgen.m_nDisplayMode == DISPLAY_rPI)
+		if (Cgen.m_nDisplayMode == DISPLAY_rPI && !sock)
 		{
 			hInstLibrary = LoadLibrary("RB8PGenerator.dll");
 			if (hInstLibrary)
@@ -567,11 +567,9 @@ BOOL CGenerator::Release(INT nbNext)
 	} else if (Cgen.m_nDisplayMode == DISPLAY_ccast && dw)
 		dw->del(dw);
 
-	if (Cgen.m_nDisplayMode == DISPLAY_rPI)
+	if (Cgen.m_nDisplayMode == DISPLAY_rPI && hInstLibrary)
 	{
 //		GetColorApp()->InMeasureMessageBox( "    ** Generator Release **", "Error", MB_ICONINFORMATION);
-		if (hInstLibrary)
-		{
 
 			if (_RB8PG_send)
 				_RB8PG_send(sock,"TESTTEMPLATE:PatternDynamic:0,0,0");
@@ -584,7 +582,6 @@ BOOL CGenerator::Release(INT nbNext)
 				GetColorApp()->InMeasureMessageBox( "Error communicating with rPI", "Error", MB_ICONINFORMATION);
 
 			FreeLibrary(hInstLibrary);
-		}
 	}
 
 	if(m_doScreenBlanking)

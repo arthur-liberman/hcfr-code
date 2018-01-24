@@ -141,6 +141,7 @@ CGDIGenerator::CGDIGenerator(int nDisplayMode, BOOL b16_235)
 	str.LoadString(IDS_GDIGENERATOR_NAME);
 	SetName(str);
 	m_bConnect = FALSE;
+	Init();
 }
 
 CGDIGenerator::~CGDIGenerator()
@@ -866,8 +867,8 @@ BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nP
 	p_clr[2] = clr[2] * m_displayWindow.m_Intensity / 100;
 
 	//see if we need to reconnect generator
-//	if (!this->m_bisInited)
-//		Init();
+	if (!this->m_bisInited)
+		Init();
 
 	if (m_GDIGenePropertiesPage.m_nDisplayMode == DISPLAY_GDI_Hide && nPatternType != MT_SPECIAL && nPatternType != MT_CONTRAST)
 	{
