@@ -37,6 +37,11 @@
 #include "../libccast/ccast.h"
 #include "../Tools/GoogleCastWrapper/GoogleCastWrapper.h"
 
+typedef int (__stdcall *RB8PG_send)(SOCKET sock,const char *message);
+typedef int (__stdcall *RB8PG_close)(SOCKET sock);
+typedef SOCKET (__stdcall *RB8PG_connect)(const char *server_addr);
+typedef char * (__stdcall *RB8PG_discovery)();
+
 class CGenerator: public CObject    
 {
 public:
@@ -83,10 +88,15 @@ public:
     BOOL m_madVR_vLUT, m_madVR_HDR;
 	BOOL m_madVR_OSD;
 	UINT m_ccastIp; 
-	char *	m_piIP;
 	SOCKET sock;
 	dispwin *ccwin;
+	RB8PG_send _RB8PG_send;
+	RB8PG_close _RB8PG_close;
+	RB8PG_connect _RB8PG_connect;
+	RB8PG_discovery _RB8PG_discovery;
+
 protected:
+	HINSTANCE hInstLibrary;
 	BOOL m_isModified;
 	CFullScreenWindow m_blankingWindow;
 

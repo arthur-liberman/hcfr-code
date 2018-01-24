@@ -33,7 +33,6 @@
 #include "../libccast/ccwin.h"
 #include "../libccast/ccast.h"
 #include "../MainFrm.h"
-#include "..\Tools\pi\RB8PGenerator.h"
 
 #include <string>
 #include <float.h>
@@ -394,6 +393,7 @@ void CGDIGenerator::GetPropertiesSheetValues()
 
 BOOL CGDIGenerator::Init(UINT nbMeasure, bool isSpecial)
 {
+//	GetColorApp()->InMeasureMessageBox( "    ** GDI Generator Init **", "Error", MB_ICONINFORMATION);
 	BOOL	bOk, bOnOtherMonitor;
 	GetMonitorList();
 	m_nDisplayMode =  		GetConfig()->GetProfileInt("GDIGenerator","DisplayMode", DISPLAY_DEFAULT_MODE);
@@ -723,7 +723,7 @@ BOOL CGDIGenerator::DisplayRGBColorrPI( const ColorRGBDisplay& clr, bool first, 
 {
 	//init done in generator.cpp 
 	int r, g, b;
-	char msg[100];
+	char CPat[256];
 	CGDIGenerator Cgen;
 	double bgstim = Cgen.m_bgStimPercent / 100.;
 
@@ -732,16 +732,27 @@ BOOL CGDIGenerator::DisplayRGBColorrPI( const ColorRGBDisplay& clr, bool first, 
 		r = floor((clr[0]) / 100. * 219.0 + 16.5);
 		g = floor((clr[1]) / 100. * 219.0 + 16.5);
 		b = floor((clr[2]) / 100. * 219.0 + 16.5);
+		r=min(max(r,0),235);
+		g=min(max(g,0),235);
+		b=min(max(b,0),235);
 	}
 	else
 	{
 		r = floor((clr[0]) / 100. * 255.0 + 0.5 );
 		g = floor((clr[1]) / 100. * 255.0 + 0.5);
 		b = floor((clr[2]) / 100. * 255.0 + 0.5);
+		r=min(max(r,0),255);
+		g=min(max(g,0),255);
+		b=min(max(b,0),255);
 	}
 
-	sprintf_s(msg,"TESTTEMPLATE:PatternDynamic:%d,%d,%d",r,g,b);
-	RB8PG_send(sock,msg);
+	sprintf_s(CPat,"TESTTEMPLATE:PatternDynamic:%d,%d,%d",r,g,b);
+	CString debug=_T(CPat);
+
+		if (CGenerator::_RB8PG_send)
+			CGenerator::_RB8PG_send(sock,CPat);
+		else
+			GetColorApp()->InMeasureMessageBox( "Error communicating with rPI", "Error", MB_ICONINFORMATION);
 
 	// Sleep 80 ms while dispatching messages to ensure window is really displayed
 		MSG		Msg;
@@ -855,8 +866,9 @@ BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nP
 	p_clr[2] = clr[2] * m_displayWindow.m_Intensity / 100;
 
 	//see if we need to reconnect generator
-	if (!this->m_bisInited)
-		Init();
+//	if (!this->m_bisInited)
+//		Init();
+
 	if (m_GDIGenePropertiesPage.m_nDisplayMode == DISPLAY_GDI_Hide && nPatternType != MT_SPECIAL && nPatternType != MT_CONTRAST)
 	{
 		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.ShowWindow(SW_SHOW);

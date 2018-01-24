@@ -59,6 +59,7 @@ public:										// public because of callback
 	UINT    m_Intensity;
 	BOOL	IsOnOtherMonitor ();
 	BOOL	m_bisInited;
+
 // Implementation
 public:
 	CGDIGenerator();
