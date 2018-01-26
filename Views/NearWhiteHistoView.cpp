@@ -157,7 +157,7 @@ void CNearWhiteGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	    	CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
 			double x = ArrayIndexToGrayLevel ( pDoc->GetMeasure()->m_NearWhiteClipCol - size + i, 101, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
 
-			double valx,val;//=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef) );
+			double valx,val;
 
 			int mode = GetConfig()->m_GammaOffsetType;
 			if (GetConfig()->m_colorStandard == sRGB) mode = 99;
@@ -166,6 +166,8 @@ void CNearWhiteGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			    valx = (GrayLevelToGrayProp( x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit));
 				if  (mode == 5)
 				{
+//					double tmWhite = GetConfig()->m_DiffuseL / 94.37844;
+//					White.SetY(White.GetY() * tmWhite);
 	                val = getL_EOTF( valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 100 / White.GetY();
 //					val=min(val,1.2);
 				}

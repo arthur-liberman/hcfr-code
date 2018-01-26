@@ -195,7 +195,6 @@ BOOL CSimulatedSensor::Init( BOOL bForSimultaneousMeasures )
 	m_offsetR=0;
 	m_offsetG=0;
 	m_offsetB=0;
-	m_bNW = bForSimultaneousMeasures; //use for turning off diffuse scaling in NW measures
 	return TRUE;
 }
 
@@ -209,7 +208,6 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue, 
 	White.SetY(GetConfig()->m_TargetMaxL);
 	CColor Black = GetColorReference().GetWhite();
 	Black.SetY(GetConfig()->m_TargetMinL);
-	double tmWhite = 1.0;
 
 	double peakY = 10000.;
 
@@ -247,11 +245,7 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue, 
     {
 		if (mode == 5)
 		{
-			if (m_bNW)
-				value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100.;
-			else
-				value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100. * tmWhite;
-
+			value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100.;
 			value = min(value,peakY / 10000.);
 		}
 		else
@@ -273,10 +267,7 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue, 
     {
 		if (mode == 5)
 		{
-			if (m_bNW)
-				value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100.;
-			else
-				value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100. * tmWhite;
+			value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100.;
 			value = min(value,peakY / 10000.);
 		}
 		else
@@ -298,10 +289,7 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue, 
     {
 		if (mode == 5)
 		{
-			if (m_bNW)
-				value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) / 100.;
-			else
-				value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100. * tmWhite;
+			value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100.;
 			value = min(value,peakY / 10000.);
 		}
 		else

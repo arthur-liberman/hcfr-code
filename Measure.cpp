@@ -1784,7 +1784,9 @@ BOOL CMeasure::MeasureNearWhiteScale(CSensor *pSensor, CGenerator *pGenerator, C
 			UpdateTstWnd(pDoc, -1);
 
 		//Autoscale range for clipped white in HDR mode
-		double PMax = getL_EOTF(YMax / 10000., noDataColor, noDataColor, 0, 0, -5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap);
+		double tmWhite = getL_EOTF(0.5022283, noDataColor, noDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 100.0 / 94.37844;
+
+		double PMax = getL_EOTF(YMax / 10000. / tmWhite, noDataColor, noDataColor, 0, 0, -5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL,  GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap);
 
 		if (GetConfig()->m_GammaOffsetType == 5)
 			m_NearWhiteClipCol = int(101*PMax) + 1;
@@ -6231,7 +6233,6 @@ CColor CMeasure::GetRefPrimary(int i) const
 	bool isSpecial = (GetColorReference().m_standard==HDTVa||GetColorReference().m_standard==CC6||GetColorReference().m_standard==HDTVb||GetColorReference().m_standard==UHDTV3);
 	CColorReference cRef = GetColorReference();	
 	CColor	aColor,aColorr,aColorg,aColorb,White,Black;
-//	double ref502 = 108.395, ref504 = 105.95640;
 
 
 	aColorr.SetXYZValue (cRef.GetRed());
@@ -6637,10 +6638,10 @@ CColor CMeasure::GetRefSat(int i, double sat_ratio, bool special) const
 
 	int mode = GetConfig()->m_GammaOffsetType;
 
-	double tmWhite = getL_EOTF(0.5022283, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / GetConfig()->m_DiffuseL * 100.0;
+	double tmWhite = getL_EOTF(0.5022283, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 100.0;
 
 	if (mode == 5 && sat_ratio == 1 && GetConfig()->m_colorStandard != UHDTV3)
-		YLuma = YLuma * (GetConfig()->m_DiffuseL) / 94.37844 * tmWhite;
+		YLuma = YLuma * tmWhite / 94.37844;
 
 	aColor.SetxyYValue (x, y, YLuma);
 
