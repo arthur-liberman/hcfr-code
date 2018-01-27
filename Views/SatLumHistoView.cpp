@@ -126,15 +126,15 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	m_graphCtrl.ClearGraph(m_ref_cyanLumGraphID);
 	m_graphCtrl.ClearGraph(m_ref_magentaLumGraphID);
 
+	CColor NoDataColor;
 	double WhiteY = pDoc->GetMeasure()->GetOnOffWhite().GetLuminance(), ref_coeff=1.0;
+	double tmWhite = getL_EOTF(0.5022283, NoDataColor, NoDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 100.0;
+	
 	if (pDoc->GetMeasure()->GetPrimeWhite().isValid() &&  !(GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb))
 		WhiteY = pDoc->GetMeasure()->GetPrimeWhite().GetLuminance();
 
 	if (GetConfig()->m_GammaOffsetType==5)
-	{
-		WhiteY = 100.;
-		ref_coeff = 100.;
-	}
+		ref_coeff = 100.0 * 100.0 / tmWhite;
 
 	double luma_coeff = ( 100.0 ) / WhiteY;
 	
