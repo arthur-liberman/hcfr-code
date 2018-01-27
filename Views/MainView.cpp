@@ -783,8 +783,8 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 		{
 			if (inMeasure)
 			{
-				m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  last_minCol - 1, size, m_displayMode, GetDocument(), CTargetWnd::TARGET_TARGET);
-				m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  last_minCol, size, m_displayMode, GetDocument(), CTargetWnd::TARGET_TESTWINDOW);
+				m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  last_minCol - 1, size, m_displayMode, GetDocument(), CTargetWnd::TARGET_ALL);
+//				m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  last_minCol - 1, size, m_displayMode, GetDocument(), CTargetWnd::TARGET_TESTWINDOW);
 			}
 			else
 				m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  last_minCol, size, m_displayMode, GetDocument(), CTargetWnd::TARGET_ALL);
@@ -879,21 +879,25 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 					if (m_displayMode > 4 && m_displayMode < 12)
 						size=GetDocument()->GetMeasure()->GetSaturationSize();
 
-					if (m_displayMode != 2)
+					if (m_displayMode == 2)
 					{
-	                    ( ( CTargetWnd * ) m_pInfoWnd ) -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  last_minCol, size, m_displayMode, GetDocument(), CTargetWnd::TARGET_ALL);
-						( ( CTargetWnd * ) m_pInfoWnd ) -> m_pRefColor = & m_SelectedColor;
+						if (inMeasure)
+						{
+							( ( CTargetWnd * ) m_pInfoWnd ) -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  last_Col + 1, last_Size, last_Display, GetDocument(), CTargetWnd::TARGET_TARGET);
+							( ( CTargetWnd * ) m_pInfoWnd ) -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  last_Col + 1, last_Size, last_Display, GetDocument(), CTargetWnd::TARGET_TESTWINDOW);
+						}
+						else
+							( ( CTargetWnd * ) m_pInfoWnd ) -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  last_Col + 1, last_Size, last_Display, GetDocument(), CTargetWnd::TARGET_ALL);
 					}
 					else
 					{
-	                    ( ( CTargetWnd * ) m_pInfoWnd ) -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  last_Col + 1, last_Size, last_Display, GetDocument(), CTargetWnd::TARGET_ALL);
-						( ( CTargetWnd * ) m_pInfoWnd ) -> m_pRefColor = & m_SelectedColor;
+						if (inMeasure)
+		                    ( ( CTargetWnd * ) m_pInfoWnd ) -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  last_minCol - 1, size, m_displayMode, GetDocument(), CTargetWnd::TARGET_ALL);
+						else
+		                    ( ( CTargetWnd * ) m_pInfoWnd ) -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  last_minCol, size, m_displayMode, GetDocument(), CTargetWnd::TARGET_ALL);
 					}
 
-					if (inMeasure && m_displayMode !=2)
-	                    ( ( CTargetWnd * ) m_pInfoWnd ) -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  last_minCol - 1, size, m_displayMode, GetDocument(), CTargetWnd::TARGET_TARGET);
-					else
-	                    ( ( CTargetWnd * ) m_pInfoWnd ) -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  last_Col + 1, last_Size, last_Display, GetDocument(), CTargetWnd::TARGET_TARGET);
+					( ( CTargetWnd * ) m_pInfoWnd ) -> m_pRefColor = & m_SelectedColor;
                 }
 				break;
 
