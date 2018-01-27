@@ -315,6 +315,9 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 	BITMAP bm;
 	pBitmap->GetBitmap(&bm);
 	bool bDrawBMP = !m_bdE10;
+	double RefWhite = 1.0, YWhite = 1.0, L = 100., a = 0., b = 0.;
+	CColorReference cRef = GetColorReference();
+	
 	if (isSelected)
 		bDrawBMP = TRUE;
 
@@ -322,24 +325,20 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 	if(!aGraphPoint.name.IsEmpty() && pWnd && !isSelected)
 	{
 		CString str, str1, str2, str3;
+		CColor NoDataColor;
+		double tmWhite = getL_EOTF(0.5022283, NoDataColor, NoDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 100.0;
+		
 		int x=aGraphPoint.GetGraphX(rect)+m_DeltaX;
 		int y=aGraphPoint.GetGraphY(rect)+m_DeltaY;		
-	
+		
 		// Note: remove 5 pixels for transparency area of bitmap
 		CRect rect_tip(x-bm.bmWidth/2+5,y-bm.bmHeight/2+5,x+bm.bmWidth/2-5,y+bm.bmHeight/2-5);
 		CColor aColor1 = aGraphPoint.GetNormalizedColor();
-		bool dark = FALSE;
-		if (!pRefPoint)
-		{
-			if (aColor1.GetY() < 0.0025)
-				dark = TRUE;
-		}
-		else
-		{
-			if (aColor1.GetY() < 0.25)
-				dark = TRUE;
-		}
 
+		bool dark = FALSE;
+		
+		if (aColor1.GetY() < 0.30)
+			dark = TRUE;
 
 		if ( m_bCIEuv )
 			if (dark)
@@ -352,60 +351,37 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 			else
 				str.Format("<font color=\"#004080\">x: %.3f, y: %.3f, Y: %.2f%%\n",aGraphPoint.x,aGraphPoint.y,aGraphPoint.GetNormalizedColor()[1]*100);
 
-		str1.Format("L*a*b*: %.2f %.3f %.3f",aGraphPoint.L,aGraphPoint.a,aGraphPoint.b);
-		str += str1;
+
+			str1.Format("L*a*b*: %.2f %.3f %.3f",aGraphPoint.L,aGraphPoint.a,aGraphPoint.b);
+			str += str1;
 
 		if ( pRefPoint )
 		{
 			double dC, dH;
          	CColor aColor2 = pRefPoint->GetNormalizedColor();
 			
-			CColorReference cRef = GetColorReference();
-
-			if (GetConfig()->m_GammaOffsetType == 5 && GetConfig()->m_bHDR100 && !isPrimeSat)
+			if (GetConfig()->m_GammaOffsetType == 5 && GetConfig()->m_bHDR100)// && !isPrimeSat)
 			{
 				aColor2.SetX(aColor2.GetX()*105.95640);
 				aColor2.SetY(aColor2.GetY()*105.95640);
 				aColor2.SetZ(aColor2.GetZ()*105.95640);
 			}
 							
-			double RefWhite = 1.0, YWhite = 1.0;
-//			if (m_displayMode == 1)
-//			{
-//				if (cRef.m_standard == UHDTV2 || cRef.m_standard == HDTV || cRef.m_standard == UHDTV || nCol == 7)
-//					RefWhite = YWhite / GetConfig()->m_DiffuseL ;
-//				else
-//				{
-//					RefWhite = YWhite / GetConfig()->m_DiffuseL ;
-//					YWhite = YWhite * 94.37844 / GetConfig()->m_DiffuseL ;
-//				}
-//			}
-//			else
-//			{
-//				if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= LG400017 && m_displayMode == 11)	
-//					YWhite = GetDocument()->GetMeasure()->GetGray((GetDocument()->GetMeasure()->GetGrayScaleSize()-1)).GetY() ;
-//				else
-//				{
-
-				if (GetConfig()->m_GammaOffsetType == 5)
-				{
-					RefWhite = aGraphPoint.YWhite / GetConfig()->m_DiffuseL ;
-					YWhite = 94.37844 / GetConfig()->m_DiffuseL ;
-				}
-
-//				}
-//			}
-
+			if (GetConfig()->m_GammaOffsetType == 5) //check for primaries/secondaries page
+				YWhite = YWhite * 94.37844 / (tmWhite) ;
 
 			double dE  = aGraphPoint.GetNormalizedColor().GetDeltaE(YWhite, aColor2.GetXYZValue(), RefWhite, (cRef.m_standard == UHDTV3?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
             double dL  = aGraphPoint.GetNormalizedColor().GetDeltaLCH(YWhite, aColor2.GetXYZValue(), RefWhite, (cRef.m_standard == UHDTV3?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight, dC, dH );
 
+			if (GetConfig()->m_GammaOffsetType == 5) //check for primaries/secondaries page
+				RefWhite = RefWhite * (tmWhite) / 94.37844 ;					
+
 			if (dE > dE10)
 				bDrawBMP = TRUE;
 
-			double L  = ColorLab(aColor2.GetXYZValue(), RefWhite, (cRef.m_standard == UHDTV3?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef))[0];
-			double a  = ColorLab(aColor2.GetXYZValue(), RefWhite, (cRef.m_standard == UHDTV3?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef))[1];
-			double b  = ColorLab(aColor2.GetXYZValue(), RefWhite, (cRef.m_standard == UHDTV3?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef))[2];
+			L  = ColorLab(aColor2.GetXYZValue(), RefWhite, (cRef.m_standard == UHDTV3?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef))[0];
+			a  = ColorLab(aColor2.GetXYZValue(), RefWhite, (cRef.m_standard == UHDTV3?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef))[1];
+			b  = ColorLab(aColor2.GetXYZValue(), RefWhite, (cRef.m_standard == UHDTV3?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef))[2];
 			str1.Format("\nL*a*b*: %.2f %.3f %.3f <b>[Ref]</b>",L,a,b);
 			str += str1;
 
@@ -427,10 +403,17 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 				str3.LoadString (IDS_DISTANCEINCIEXY);
 				str2 += str3; 
 
-				double dXY = aGraphPoint.GetNormalizedColor().GetDeltaxy(pRefPoint->GetNormalizedColor(), GetColorReference());
+				double dXY = aGraphPoint.GetNormalizedColor().GetDeltaxy(pRefPoint->GetNormalizedColor(), cRef);
 				str3.Format ( ": %.3f xy</font>", dXY );
 				str2 += str3;
 				aColor1 = aGraphPoint.GetNormalizedColor();
+
+				if (GetConfig()->m_GammaOffsetType == 5 && GetConfig()->m_bHDR100)
+				{
+					aColor2.SetX(aColor2.GetX()* 94.37844 / (tmWhite));
+					aColor2.SetY(aColor2.GetY()* 94.37844 / (tmWhite));
+					aColor2.SetZ(aColor2.GetZ()* 94.37844 / (tmWhite));
+				}
 
 				ColorRGB measCol = ColorRGB(aColor1.GetRGBValue(CColorReference(HDTV)));
 				ColorRGB refCol = ColorRGB(aColor2.GetRGBValue(CColorReference(HDTV)));
@@ -457,13 +440,6 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 		else
 		{
 			CColor aColor = aGraphPoint.GetNormalizedColor();
-
-			if (GetConfig()->m_GammaOffsetType == 5 && GetConfig()->m_bHDR100)
-			{
-				aColor.SetX(aColor.GetX()*105.95640);
-				aColor.SetY(aColor.GetY()*105.95640);
-				aColor.SetZ(aColor.GetZ()*105.95640);
-			}
 
 			ColorRGB measCol = ColorRGB(aColor.GetRGBValue(CColorReference(HDTV)));
 			double r1=min(max(measCol[0],0),1);
@@ -514,6 +490,8 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	CView *pView = pDoc->GetNextView(pos);
 	int current_mode = ((CMainView*)pView)->m_displayMode;
 	BOOL onEdit =  ((CMainView*)pView)->m_editCheckButton.GetCheck();
+	CColor NoDataColor;
+	double tmWhite = getL_EOTF(0.5022283, NoDataColor, NoDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 100.0;
 
 	dE10 = ((CMainView*)pView)->dE10min;
 	
@@ -822,6 +800,21 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	aColor[3].SetXYZValue(cY);
 	aColor[4].SetXYZValue(cC);
 	aColor[5].SetXYZValue(cM);
+	int mode = GetConfig()->m_GammaOffsetType;
+
+	if (mode == 5)
+	{
+		GetConfig()->m_bHDR100 = TRUE;
+		if (GetConfig()->m_colorStandard == UHDTV3)
+		{
+			for (int i=0; i<6; i++)
+			{
+				aColor[i].SetX(aColor[i].GetX()/105.95640);
+				aColor[i].SetY(aColor[i].GetY()/105.95640);
+				aColor[i].SetZ(aColor[i].GetZ()/105.95640);
+			}
+		}
+	}
 	
 	ColorRGB rgb[6];
 	for(int i=0;i<6;i++)
@@ -840,21 +833,26 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			r[i]=rgb[i][0];
 			g[i]=rgb[i][1];
 			b[i]=rgb[i][2];
-			int mode = GetConfig()->m_GammaOffsetType;
 			if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 			if ( mode >= 4 )
 			{
 				if (mode == 5 || mode == 7)
 				{
-					r1=r[i];
-					g1=g[i];
-					b1=b[i];
+					r1=getL_EOTF(r[i], noDataColor, noDataColor, 2.4, 0.9, -1*mode);
+					g1=getL_EOTF(g[i], noDataColor, noDataColor, 2.4, 0.9, -1*mode);
+					b1=getL_EOTF(b[i], noDataColor, noDataColor, 2.4, 0.9, -1*mode);
+					r1 = floor( (r1 * 219.) + 0.5 ) / 219.;
+					g1 = floor( (g1 * 219.) + 0.5 ) / 219.;
+					b1 = floor( (b1 * 219.) + 0.5 ) / 219.;
+				    r1 = getL_EOTF(r1,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100.;
+				    g1 = getL_EOTF(g1,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100.;
+				    b1 = getL_EOTF(b1,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100.;
 				}
 				else
 				{
-				   r1 = (r[i]<=0.0||r[i]>=1.0)?min(max(r[i],0),1):getL_EOTF(pow(r[i],1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
-				   g1 = (g[i]<=0.0||g[i]>=1.0)?min(max(g[i],0),1):getL_EOTF(pow(g[i],1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
-				   b1 = (b[i]<=0.0||b[i]>=1.0)?min(max(b[i],0),1):getL_EOTF(pow(b[i],1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+				   r1 = (r[i]<=0.0||r[i]>=1.0)?min(max(r[i],0),1):getL_EOTF(pow(r[i],1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap);
+				   g1 = (g[i]<=0.0||g[i]>=1.0)?min(max(g[i],0),1):getL_EOTF(pow(g[i],1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap);
+				   b1 = (b[i]<=0.0||b[i]>=1.0)?min(max(b[i],0),1):getL_EOTF(pow(b[i],1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap);
 				}
 			}
 			else
@@ -867,21 +865,24 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			aColor[i].SetRGBValue (ColorRGB(r1,g1,b1),(GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));	
 		}
 	}
+	double HDRfact = 1.0;
+	if (GetConfig()->m_colorStandard == UHDTV3 && mode == 5)
+		HDRfact = 105.95640 * 94.37844 / tmWhite; 
 
-	CCIEGraphPoint refRedPrimaryPoint(aColor[0].GetXYZValue(), 1.0, Msg, m_bCIEuv, m_bCIEab);
-	CCIEGraphPoint refGreenPrimaryPoint(aColor[1].GetXYZValue(), 1.0, Msg2, m_bCIEuv, m_bCIEab);
-	CCIEGraphPoint refBluePrimaryPoint(aColor[2].GetXYZValue(), 1.0, Msg3, m_bCIEuv, m_bCIEab);
+	CCIEGraphPoint refRedPrimaryPoint(aColor[0].GetXYZValue(), 1.0 / HDRfact, Msg, m_bCIEuv, m_bCIEab);
+	CCIEGraphPoint refGreenPrimaryPoint(aColor[1].GetXYZValue(), 1.0 / HDRfact, Msg2, m_bCIEuv, m_bCIEab);
+	CCIEGraphPoint refBluePrimaryPoint(aColor[2].GetXYZValue(), 1.0 / HDRfact, Msg3, m_bCIEuv, m_bCIEab);
 
 	CCIEGraphPoint whiteRef(GetColorReference().GetWhite(), 1.0, "", m_bCIEuv, m_bCIEab);
 
 	Msg.LoadString ( (GetColorReference().m_standard!=CC6)?IDS_YELLOWSECONDARYREF:IDS_CC6YELLOWSECONDARYREF );
-	CCIEGraphPoint refYellowSecondaryPoint(aColor[3].GetXYZValue(), 1.0, Msg, m_bCIEuv, m_bCIEab);
+	CCIEGraphPoint refYellowSecondaryPoint(aColor[3].GetXYZValue(), 1.0 / HDRfact, Msg, m_bCIEuv, m_bCIEab);
 
 	Msg.LoadString (  (GetColorReference().m_standard!=CC6)?IDS_CYANSECONDARYREF:IDS_CC6CYANSECONDARYREF );
-	CCIEGraphPoint refCyanSecondaryPoint(aColor[4].GetXYZValue(), 1.0, Msg, m_bCIEuv, m_bCIEab);
+	CCIEGraphPoint refCyanSecondaryPoint(aColor[4].GetXYZValue(), 1.0 / HDRfact, Msg, m_bCIEuv, m_bCIEab);
 
 	Msg.LoadString ( (GetColorReference().m_standard!=CC6)?IDS_MAGENTASECONDARYREF:IDS_CC6MAGENTASECONDARYREF );
-	CCIEGraphPoint refMagentaSecondaryPoint(aColor[5].GetXYZValue(), 1.0, Msg, m_bCIEuv, m_bCIEab);
+	CCIEGraphPoint refMagentaSecondaryPoint(aColor[5].GetXYZValue(), 1.0 / HDRfact, Msg, m_bCIEuv, m_bCIEab);
 
 	CCIEGraphPoint illuminantA(ColorXYZ(ColorxyY(0.4476,0.4074)),1.0, "Illuminant A", m_bCIEuv, m_bCIEab);
 	CCIEGraphPoint illuminantB(ColorXYZ(ColorxyY(0.3484,0.3516)), 1.0, "Illuminant B", m_bCIEuv, m_bCIEab);
@@ -958,16 +959,10 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 
 		YWhiteRef = datarefRed[1]+datarefGreen[1]+datarefBlue[1];
 		
-		if ( pDataRef -> GetMeasure () -> GetOnOffWhite ().isValid() )
+		if ( pDataRef -> GetMeasure () -> GetPrimeWhite ().isValid() )
+			YWhiteRef = pDataRef -> GetMeasure () -> GetPrimeWhite () [ 1 ];
+		else if ( pDataRef -> GetMeasure () -> GetOnOffWhite ().isValid() )
 			YWhiteRef = pDataRef -> GetMeasure () -> GetOnOffWhite () [ 1 ]; //onoff white is always grayscale white
-	}
-
-	if (GetConfig()->m_GammaOffsetType == 5)
-	{
-//		if ( pDataRef -> GetMeasure () -> GetOnOffWhite ().isValid() )
-//			YWhiteRef = pDataRef -> GetMeasure () -> GetOnOffWhite () [ 1 ]; //onoff white is always grayscale white
-//		YWhiteRef = YWhite / GetConfig()->m_DiffuseL ;
-//		YWhite = YWhite * 94.37844 / GetConfig()->m_DiffuseL ;
 	}
 
 	Msg.LoadString ( IDS_DATAREF_RED );
@@ -1541,7 +1536,6 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 				double x = ArrayIndexToGrayLevel ( i, nSize, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
     			CColor White = pDoc -> GetMeasure () -> GetGray ( nSize - 1 );
 	    		CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
-				int mode = GetConfig()->m_GammaOffsetType;
 				if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 				if (  (mode >= 4) )
 			    {
@@ -1579,6 +1573,11 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 		}
 	}
 
+	if (mode == 5)
+		YWhiteRef = 1. / (105.95640 * 94.37844 / tmWhite);
+	else
+		YWhiteRef = 1.0;
+
 	if(m_doShowSaturationScaleTarg) 
 	{
 		CString str;
@@ -1590,37 +1589,37 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			Msg.LoadString ( IDS_REDSATPERCENTREF );
 			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
 			CCIEGraphPoint RedPointRef(pDoc->GetMeasure()->GetRefSat(0, (double)i / (double)(pDoc->GetMeasure()->GetSaturationSize()-1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb)).GetXYZValue(),
-								  1.0,
+								  YWhiteRef,
 								  str, m_bCIEuv, m_bCIEab);
 			DrawAlphaBitmap(pDC,RedPointRef,&m_redSatRefBitmap,rect,pTooltip,pWnd);
 			Msg.LoadString ( IDS_GREENSATPERCENTREF );
 			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
 			CCIEGraphPoint GreenPointRef(pDoc->GetMeasure()->GetRefSat(1, (double)i / (double)(pDoc->GetMeasure()->GetSaturationSize()-1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb)).GetXYZValue(),
-								  1.0,
+								  YWhiteRef,
 								  str, m_bCIEuv, m_bCIEab);
 			DrawAlphaBitmap(pDC,GreenPointRef,&m_greenSatRefBitmap,rect,pTooltip,pWnd);
 						Msg.LoadString ( IDS_BLUESATPERCENTREF );
 			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
 			CCIEGraphPoint BluePointRef(pDoc->GetMeasure()->GetRefSat(2, (double)i / (double)(pDoc->GetMeasure()->GetSaturationSize()-1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb)).GetXYZValue(),
-								  1.0,
+								  YWhiteRef,
 								  str, m_bCIEuv, m_bCIEab);
 			DrawAlphaBitmap(pDC,BluePointRef,&m_blueSatRefBitmap,rect,pTooltip,pWnd);
 			Msg.LoadString ( IDS_YELLOWSATPERCENTREF );
 			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
 			CCIEGraphPoint YellowPointRef(pDoc->GetMeasure()->GetRefSat(3, (double)i / (double)(pDoc->GetMeasure()->GetSaturationSize()-1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb)).GetXYZValue(),
-								  1.0,
+								  YWhiteRef,
 								  str, m_bCIEuv, m_bCIEab);
 			DrawAlphaBitmap(pDC,YellowPointRef,&m_yellowSatRefBitmap,rect,pTooltip,pWnd);
 			Msg.LoadString ( IDS_CYANSATPERCENTREF );
 			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
 			CCIEGraphPoint CyanPointRef(pDoc->GetMeasure()->GetRefSat(4, (double)i / (double)(pDoc->GetMeasure()->GetSaturationSize()-1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb)).GetXYZValue(),
-								  1.0,
+								  YWhiteRef,
 								  str, m_bCIEuv, m_bCIEab);
 			DrawAlphaBitmap(pDC,CyanPointRef,&m_cyanSatRefBitmap,rect,pTooltip,pWnd);
 			Msg.LoadString ( IDS_MAGENTASATPERCENTREF );
 			str.Format(Msg, (i*100/(pDoc->GetMeasure()->GetSaturationSize()-1)));
 			CCIEGraphPoint MagentaPointRef(pDoc->GetMeasure()->GetRefSat(5, (double)i / (double)(pDoc->GetMeasure()->GetSaturationSize()-1), (GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb)).GetXYZValue(),
-								  1.0,
+								  YWhiteRef,
 								  str, m_bCIEuv, m_bCIEab);
 			DrawAlphaBitmap(pDC,MagentaPointRef,&m_magentaSatRefBitmap,rect,pTooltip,pWnd);
 			}
@@ -1637,168 +1636,168 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_1a:(GetConfig()->m_CCMode == SKIN?IDS_CC_1b:IDS_CC_1) );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc1Point(pDoc->GetMeasure()->GetRefCC24Sat(0).GetXYZValue(),
-								  1.0,
+								  YWhiteRef,
 								  str, m_bCIEuv, m_bCIEab);
 			DrawAlphaBitmap(pDC,cc1Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
 		
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_2a:(GetConfig()->m_CCMode == SKIN?IDS_CC_2b:IDS_CC_2) );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc2Point(pDoc->GetMeasure()->GetRefCC24Sat(1).GetXYZValue(),
-								  1.0,
+								  YWhiteRef,
 								  str, m_bCIEuv, m_bCIEab);
 			DrawAlphaBitmap(pDC,cc2Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_3a:(GetConfig()->m_CCMode == SKIN?IDS_CC_3b:IDS_CC_3) );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc3Point(pDoc->GetMeasure()->GetRefCC24Sat(2).GetXYZValue(),
-								  1.0,
+								  YWhiteRef,
 								  str, m_bCIEuv, m_bCIEab);
 			DrawAlphaBitmap(pDC,cc3Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_4a:(GetConfig()->m_CCMode == SKIN?IDS_CC_4b:IDS_CC_4) );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc4Point(pDoc->GetMeasure()->GetRefCC24Sat(3).GetXYZValue(),
-								  1.0,
+								  YWhiteRef,
 								  str, m_bCIEuv, m_bCIEab);
 			DrawAlphaBitmap(pDC,cc4Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_5a:(GetConfig()->m_CCMode == SKIN?IDS_CC_5b:IDS_CC_5) );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc5Point(pDoc->GetMeasure()->GetRefCC24Sat(4).GetXYZValue(),
-								  1.0,
+								  YWhiteRef,
 								  str, m_bCIEuv, m_bCIEab);
 			DrawAlphaBitmap(pDC,cc5Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_6a:(GetConfig()->m_CCMode == SKIN?IDS_CC_6b:IDS_CC_6) );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc6Point(pDoc->GetMeasure()->GetRefCC24Sat(5).GetXYZValue(),
-								  1.0,
+								  YWhiteRef,
 								  str, m_bCIEuv, m_bCIEab);
 			DrawAlphaBitmap(pDC,cc6Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_7a:(GetConfig()->m_CCMode == SKIN?IDS_CC_7b:IDS_CC_7) );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc7Point(pDoc->GetMeasure()->GetRefCC24Sat(6).GetXYZValue(),
-								  1.0,
+								  YWhiteRef,
 								  str, m_bCIEuv, m_bCIEab);
 			DrawAlphaBitmap(pDC,cc7Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_8a:(GetConfig()->m_CCMode == SKIN?IDS_CC_8b:IDS_CC_8) );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc8Point(pDoc->GetMeasure()->GetRefCC24Sat(7).GetXYZValue(),
-								  1.0,
+								  YWhiteRef,
 								  str, m_bCIEuv, m_bCIEab);
 			DrawAlphaBitmap(pDC,cc8Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_9a:(GetConfig()->m_CCMode == SKIN?IDS_CC_9b:IDS_CC_9) );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc9Point(pDoc->GetMeasure()->GetRefCC24Sat(8).GetXYZValue(),
-								  1.0,
+								  YWhiteRef,
 								  str, m_bCIEuv, m_bCIEab);
 			DrawAlphaBitmap(pDC,cc9Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_10a:(GetConfig()->m_CCMode == SKIN?IDS_CC_10b:IDS_CC_10) );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc10Point(pDoc->GetMeasure()->GetRefCC24Sat(9).GetXYZValue(),
-								  1.0,
+								  YWhiteRef,
 								  str, m_bCIEuv, m_bCIEab);
 			DrawAlphaBitmap(pDC,cc10Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_11a:(GetConfig()->m_CCMode == SKIN?IDS_CC_11b:IDS_CC_11) );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc11Point(pDoc->GetMeasure()->GetRefCC24Sat(10).GetXYZValue(),
-								  1.0,
+								  YWhiteRef,
 								  str, m_bCIEuv, m_bCIEab);
 			DrawAlphaBitmap(pDC,cc11Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_12a:(GetConfig()->m_CCMode == SKIN?IDS_CC_12b:IDS_CC_12) );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc12Point(pDoc->GetMeasure()->GetRefCC24Sat(11).GetXYZValue(),
-								  1.0,
+								  YWhiteRef,
 								  str, m_bCIEuv, m_bCIEab);
 			DrawAlphaBitmap(pDC,cc12Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_13a:(GetConfig()->m_CCMode == SKIN?IDS_CC_13b:IDS_CC_13) );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc13Point(pDoc->GetMeasure()->GetRefCC24Sat(12).GetXYZValue(),
-								  1.0,
+								  YWhiteRef,
 								  str, m_bCIEuv, m_bCIEab);
 			DrawAlphaBitmap(pDC,cc13Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_14a:(GetConfig()->m_CCMode == SKIN?IDS_CC_14b:IDS_CC_14) );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc14Point(pDoc->GetMeasure()->GetRefCC24Sat(13).GetXYZValue(),
-								  1.0,
+								  YWhiteRef,
 								  str, m_bCIEuv, m_bCIEab);
 			DrawAlphaBitmap(pDC,cc14Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_15a:(GetConfig()->m_CCMode == SKIN?IDS_CC_15b:IDS_CC_15) );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc15Point(pDoc->GetMeasure()->GetRefCC24Sat(14).GetXYZValue(),
-								  1.0,
+								  YWhiteRef,
 								  str, m_bCIEuv, m_bCIEab);
 			DrawAlphaBitmap(pDC,cc15Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_16a:(GetConfig()->m_CCMode == SKIN?IDS_CC_16b:IDS_CC_16) );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc16Point(pDoc->GetMeasure()->GetRefCC24Sat(15).GetXYZValue(),
-								  1.0,
+								  YWhiteRef,
 								  str, m_bCIEuv, m_bCIEab);
 			DrawAlphaBitmap(pDC,cc16Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_17a:(GetConfig()->m_CCMode == SKIN?IDS_CC_17b:IDS_CC_17) );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc17Point(pDoc->GetMeasure()->GetRefCC24Sat(16).GetXYZValue(),
-								  1.0,
+								  YWhiteRef,
 								  str, m_bCIEuv, m_bCIEab);
 			DrawAlphaBitmap(pDC,cc17Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_18a:(GetConfig()->m_CCMode == SKIN?IDS_CC_18b:IDS_CC_18) );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc18Point(pDoc->GetMeasure()->GetRefCC24Sat(17).GetXYZValue(),
-								  1.0,
+								  YWhiteRef,
 								  str, m_bCIEuv, m_bCIEab);
 			DrawAlphaBitmap(pDC,cc18Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_19a:(GetConfig()->m_CCMode == SKIN?IDS_CC_19b:IDS_CC_19) );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc19Point(pDoc->GetMeasure()->GetRefCC24Sat(18).GetXYZValue(),
-								  1.0,
+								  YWhiteRef,
 								  str, m_bCIEuv, m_bCIEab);
 			DrawAlphaBitmap(pDC,cc19Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_20a:(GetConfig()->m_CCMode == SKIN?IDS_CC_20b:IDS_CC_20) );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc20Point(pDoc->GetMeasure()->GetRefCC24Sat(19).GetXYZValue(),
-								  1.0,
+								  YWhiteRef,
 								  str, m_bCIEuv, m_bCIEab);
 			DrawAlphaBitmap(pDC,cc20Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_21a:(GetConfig()->m_CCMode == SKIN?IDS_CC_21b:IDS_CC_21) );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc21Point(pDoc->GetMeasure()->GetRefCC24Sat(20).GetXYZValue(),
-								  1.0,
+								  YWhiteRef,
 								  str, m_bCIEuv, m_bCIEab);
 			DrawAlphaBitmap(pDC,cc21Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_22a:(GetConfig()->m_CCMode == SKIN?IDS_CC_22b:IDS_CC_22) );
 			str.Format(Msg, 10);			
 			CCIEGraphPoint cc22Point(pDoc->GetMeasure()->GetRefCC24Sat(21).GetXYZValue(),
-								  1.0,
+								  YWhiteRef,
 								  str, m_bCIEuv, m_bCIEab);
 			DrawAlphaBitmap(pDC,cc22Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
 			
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_23a:(GetConfig()->m_CCMode == SKIN?IDS_CC_23b:IDS_CC_23) );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc23Point(pDoc->GetMeasure()->GetRefCC24Sat(22).GetXYZValue(),
-								  1.0,
+								  YWhiteRef,
 								  str, m_bCIEuv, m_bCIEab);
 			DrawAlphaBitmap(pDC,cc23Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
 
 			Msg.LoadString ( GetConfig()->m_CCMode == CMC?IDS_CC_24a:(GetConfig()->m_CCMode == SKIN?IDS_CC_24b:IDS_CC_24) );
 			str.Format(Msg, 10);
 			CCIEGraphPoint cc24Point(pDoc->GetMeasure()->GetRefCC24Sat(23).GetXYZValue(),
-								  1.0,
+								  YWhiteRef,
 								  str, m_bCIEuv, m_bCIEab );
 			DrawAlphaBitmap(pDC,cc24Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
             }
@@ -1812,7 +1811,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
             			Msg.SetString ( ccPat==CCSG?PatName[i]:(ccPat==CMS?PatNameCMS[i]:(ccPat==CPS?PatNameCPS[i]:PatNameAXIS[i])) );
 	            		str.Format(Msg, 10);
 		            	CCIEGraphPoint cc24Point(pDoc->GetMeasure()->GetRefCC24Sat(i).GetXYZValue(),
-	        					  1.0,
+	        					  YWhiteRef,
 		        				  str, m_bCIEuv, m_bCIEab );
 			            DrawAlphaBitmap(pDC,cc24Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
                     }
@@ -1827,7 +1826,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
                         Msg.SetString(aBuf);
 	        		    str.Format(Msg, 10);
 		        	    CCIEGraphPoint cc24Point(pDoc->GetMeasure()->GetRefCC24Sat(i).GetXYZValue(),
-			        					  1.0,
+			        					  YWhiteRef,
 				        				  str, m_bCIEuv, m_bCIEab );
 			            DrawAlphaBitmap(pDC,cc24Point,&m_cc24SatRefBitmap,rect,pTooltip,pWnd);
                     }

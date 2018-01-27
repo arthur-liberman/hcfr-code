@@ -803,7 +803,11 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 
 		if ( GetDocument() -> GetMeasure () -> GetOnOffWhite ().isValid() )
 			YWhite = GetDocument() -> GetMeasure () -> GetOnOffWhite () [ 1 ]; //onoff white is always grayscale white
-
+		//use primewhite in HDR mode for colors
+		
+		if (GetConfig()->m_GammaOffsetType == 5 && (m_displayMode == 1 || (m_displayMode >=5 && m_displayMode <= 11)))
+			YWhite = GetDocument() -> GetMeasure () -> GetPrimeWhite () [1];
+		
 		Item.strText.Format("%.3f",m_SelectedColor.GetLuminance());
 		Item.row = 0;
 		m_pSelectedColorGrid->SetItem(&Item);
@@ -837,11 +841,11 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 		}
 
         AddColorToGrid(m_SelectedColor.GetXYZValue(), Item, "%.3f");
-        AddColorToGrid(m_SelectedColor.GetRGBValue((GetColorReference())), Item, "%.3f");
+        AddColorToGrid(m_SelectedColor.GetRGBValue(((GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()))), Item, "%.3f");
         AddColorToGrid(m_SelectedColor.GetxyYValue(), Item, "%.3f");
         AddColorToGrid(m_SelectedColor.GetxyzValue(), Item, "%.3f");
-        AddColorToGrid(m_SelectedColor.GetLabValue(YWhite, GetColorReference()), Item, "%.1f");
-        AddColorToGrid(m_SelectedColor.GetLCHValue(YWhite, GetColorReference()), Item, "%.1f");
+        AddColorToGrid(m_SelectedColor.GetLabValue(YWhite, (GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference())), Item, "%.1f");
+        AddColorToGrid(m_SelectedColor.GetLCHValue(YWhite, (GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference())), Item, "%.1f");
 	}
 	else
 	{
@@ -2610,7 +2614,8 @@ void CMainView::UpdateGrid()
 		Item.nFormat = DT_RIGHT|DT_VCENTER|DT_SINGLELINE|DT_END_ELLIPSIS|DT_NOPREFIX;
 		bool isHDR = GetConfig()->m_GammaOffsetType == 5;
 		CString dWhitestr;
-		dWhitestr.Format(": %g nits diffuse white", GetConfig()->m_DiffuseL);
+		double tmWhite = getL_EOTF(0.5022283, noDataColor, noDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 100.0;
+		dWhitestr.Format(": %4.1f nits diffuse white", tmWhite);
 		if (GetConfig()->m_useToneMap)
 			dWhitestr += " w/BT.2390 Tonemap";
 
