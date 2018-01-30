@@ -370,8 +370,8 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 			if (GetConfig()->m_GammaOffsetType == 5) //check for primaries/secondaries page
 				YWhite = YWhite * 94.37844 / (tmWhite) ;
 
-			double dE  = aGraphPoint.GetNormalizedColor().GetDeltaE(YWhite, aColor2.GetXYZValue(), RefWhite, (cRef.m_standard == UHDTV3?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
-            double dL  = aGraphPoint.GetNormalizedColor().GetDeltaLCH(YWhite, aColor2.GetXYZValue(), RefWhite, (cRef.m_standard == UHDTV3?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight, dC, dH );
+			double dE  = aGraphPoint.GetNormalizedColor().GetDeltaE(YWhite, aColor2.GetXYZValue(), RefWhite, ((cRef.m_standard == UHDTV3||cRef.m_standard == UHDTV4)?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+            double dL  = aGraphPoint.GetNormalizedColor().GetDeltaLCH(YWhite, aColor2.GetXYZValue(), RefWhite, ((cRef.m_standard == UHDTV3||cRef.m_standard == UHDTV4)?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight, dC, dH );
 
 			if (GetConfig()->m_GammaOffsetType == 5) //check for primaries/secondaries page
 				RefWhite = RefWhite * (tmWhite) / 94.37844 ;					
@@ -379,9 +379,9 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 			if (dE > dE10)
 				bDrawBMP = TRUE;
 
-			L  = ColorLab(aColor2.GetXYZValue(), RefWhite, (cRef.m_standard == UHDTV3?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef))[0];
-			a  = ColorLab(aColor2.GetXYZValue(), RefWhite, (cRef.m_standard == UHDTV3?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef))[1];
-			b  = ColorLab(aColor2.GetXYZValue(), RefWhite, (cRef.m_standard == UHDTV3?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef))[2];
+			L  = ColorLab(aColor2.GetXYZValue(), RefWhite, ((cRef.m_standard == UHDTV3||cRef.m_standard == UHDTV4)?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef))[0];
+			a  = ColorLab(aColor2.GetXYZValue(), RefWhite, ((cRef.m_standard == UHDTV3||cRef.m_standard == UHDTV4)?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef))[1];
+			b  = ColorLab(aColor2.GetXYZValue(), RefWhite, ((cRef.m_standard == UHDTV3||cRef.m_standard == UHDTV4)?UHDTV2:cRef.m_standard == HDTVa || cRef.m_standard == HDTVb?HDTV:cRef))[2];
 			str1.Format("\nL*a*b*: %.2f %.3f %.3f <b>[Ref]</b>",L,a,b);
 			str += str1;
 
@@ -768,6 +768,11 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 		Msg.LoadString ( IDS_UHDTV3REDREF );
 		Msg2.LoadString ( IDS_UHDTV3GREENREF );
 		Msg3.LoadString ( IDS_UHDTV3BLUEREF );
+	} else if (GetConfig()->m_colorStandard == UHDTV4)
+	{
+		Msg.LoadString ( IDS_UHDTV4REDREF );
+		Msg2.LoadString ( IDS_UHDTV4GREENREF );
+		Msg3.LoadString ( IDS_UHDTV4BLUEREF );
 	} else if (GetConfig()->m_colorStandard == HDTV || GetConfig()->m_colorStandard == sRGB)
 	{
 		Msg.LoadString ( IDS_REC709REDREF );
@@ -805,7 +810,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	if (mode == 5)
 	{
 		GetConfig()->m_bHDR100 = TRUE;
-		if (GetConfig()->m_colorStandard == UHDTV3)
+		if (GetConfig()->m_colorStandard == UHDTV3 || GetConfig()->m_colorStandard == UHDTV4)
 		{
 			for (int i=0; i<6; i++)
 			{
@@ -818,12 +823,12 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	
 	ColorRGB rgb[6];
 	for(int i=0;i<6;i++)
-		rgb[i]=aColor[i].GetRGBValue ( (GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()) );
+		rgb[i]=aColor[i].GetRGBValue ( (GetColorReference().m_standard == UHDTV3 || GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):GetColorReference() );
 	double r[6],g[6],b[6];
     double gamma=(GetConfig()->m_useMeasuredGamma)?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef);
 	CColor White = pDoc->GetMeasure()->GetOnOffWhite();
 	CColor Black = pDoc->GetMeasure()->GetOnOffBlack();
-    bool isSpecial = (GetColorReference().m_standard==HDTVa||GetColorReference().m_standard==CC6||GetColorReference().m_standard==HDTVb||GetColorReference().m_standard==UHDTV3);
+    bool isSpecial = (GetColorReference().m_standard==HDTVa||GetColorReference().m_standard==CC6||GetColorReference().m_standard==HDTVb||GetColorReference().m_standard==UHDTV3||GetColorReference().m_standard==UHDTV4);
 
 	if (isSpecial)
 	{
@@ -862,11 +867,11 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 				b1=(b[i]<=0||b[i]>=1)?min(max(b[i],0),1):pow(pow(b[i],1.0/2.22),gamma);
 			}
 
-			aColor[i].SetRGBValue (ColorRGB(r1,g1,b1),(GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));	
+			aColor[i].SetRGBValue (ColorRGB(r1,g1,b1),((GetColorReference().m_standard == UHDTV3||GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):GetColorReference()));	
 		}
 	}
 	double HDRfact = 1.0;
-	if (GetConfig()->m_colorStandard == UHDTV3 && mode == 5)
+	if ((GetConfig()->m_colorStandard == UHDTV3||GetConfig()->m_colorStandard == UHDTV4) && mode == 5)
 		HDRfact = 105.95640 * 94.37844 / tmWhite; 
 
 	CCIEGraphPoint refRedPrimaryPoint(aColor[0].GetXYZValue(), 1.0 / HDRfact, Msg, m_bCIEuv, m_bCIEab);
@@ -2983,7 +2988,7 @@ void CCIEChartView::UpdateTestColor ( CPoint point )
 		CColor Black = GetDocument()->GetMeasure()->GetOnOffBlack();
 		int cRef=GetColorReference().m_standard;
 		ClickedColor.SetY(1.0);
-		RGBColor = ClickedColor.GetRGBValue ((cRef == HDTVa || cRef == HDTVb || cRef == UHDTV || cRef == UHDTV2 || cRef == UHDTV3)?CColorReference(HDTV):GetColorReference());
+		RGBColor = ClickedColor.GetRGBValue ((cRef == HDTVa || cRef == HDTVb || cRef == UHDTV || cRef == UHDTV2 || cRef == UHDTV3 || cRef == UHDTV4)?CColorReference(HDTV):GetColorReference());
         double r=RGBColor[0],g=RGBColor[1],b=RGBColor[2];
 
 		cmax = max(r,g);

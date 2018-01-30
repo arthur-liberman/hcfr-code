@@ -83,7 +83,6 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
     
 	BOOL bWasLumaMode = m_bLumaMode;
     double cx,cy,cz,cxref,cyref,czref;
-//	CColorReference cRef= (GetConfig()->m_colorStandard==UHDTV3?CColorReference(UHDTV2):GetColorReference());
 	CColorReference cRef= (GetColorReference());
 	int satsize=m_pDocument->GetMeasure()->GetSaturationSize();
 	CString	Msg, dstr;

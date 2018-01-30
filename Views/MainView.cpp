@@ -841,11 +841,11 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 		}
 
         AddColorToGrid(m_SelectedColor.GetXYZValue(), Item, "%.3f");
-        AddColorToGrid(m_SelectedColor.GetRGBValue(((GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()))), Item, "%.3f");
+        AddColorToGrid(m_SelectedColor.GetRGBValue((((GetColorReference().m_standard == UHDTV3||GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):GetColorReference()))), Item, "%.3f");
         AddColorToGrid(m_SelectedColor.GetxyYValue(), Item, "%.3f");
         AddColorToGrid(m_SelectedColor.GetxyzValue(), Item, "%.3f");
-        AddColorToGrid(m_SelectedColor.GetLabValue(YWhite, (GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference())), Item, "%.1f");
-        AddColorToGrid(m_SelectedColor.GetLCHValue(YWhite, (GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference())), Item, "%.1f");
+        AddColorToGrid(m_SelectedColor.GetLabValue(YWhite, ((GetColorReference().m_standard == UHDTV3||GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):GetColorReference())), Item, "%.1f");
+        AddColorToGrid(m_SelectedColor.GetLCHValue(YWhite, ((GetColorReference().m_standard == UHDTV3||GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):GetColorReference())), Item, "%.1f");
 	}
 	else
 	{
@@ -1994,7 +1994,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
     					str.Format("%.3f",aMeasure.GetXYZValue()[aComponentNum]);
 					break;
 				case HCFR_RGB_VIEW:
-					str.Format("%.3f",aMeasure.GetRGBValue((GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()))[aComponentNum]);
+					str.Format("%.3f",aMeasure.GetRGBValue(((GetColorReference().m_standard == UHDTV3||GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):GetColorReference()))[aComponentNum]);
 					break;
 				case HCFR_xyz2_VIEW:
 					if (aMeasure.GetY() == 0)
@@ -2114,8 +2114,8 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 					}
 
 					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, RefWhite, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight ) );
-					dE=aMeasure.GetDeltaE ( YWhite, aReference, RefWhite, cRef.m_standard==UHDTV3?CColorReference(UHDTV2):GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight );
-					dL=aMeasure.GetDeltaLCH ( YWhite, aReference, RefWhite, cRef.m_standard==UHDTV3?CColorReference(UHDTV2):GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight, dC, dH );
+					dE=aMeasure.GetDeltaE ( YWhite, aReference, RefWhite, (cRef.m_standard==UHDTV3||cRef.m_standard==UHDTV4)?CColorReference(UHDTV2):GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight );
+					dL=aMeasure.GetDeltaLCH ( YWhite, aReference, RefWhite, (cRef.m_standard==UHDTV3||cRef.m_standard==UHDTV4)?CColorReference(UHDTV2):GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight, dC, dH );
                     dEvector.push_back(isNan(dE)?dEavg:dE);
                     dLvector.push_back(isNan(dL)?dLavg:dL);
                     dCvector.push_back(isNan(dC)?dCavg:dC);
@@ -3499,7 +3499,7 @@ void CMainView::UpdateGrid()
 						}
 					case 2:
 						{
-							cSpace = " Rec. 709 "; 
+							cSpace = " Rec.709 "; 
 							break;
 						}
 					case 3:
@@ -3529,10 +3529,15 @@ void CMainView::UpdateGrid()
 						}
 					case 8:
 						{
-							cSpace = " P3 in BT.2020 "; 
+							cSpace = " P3 in Rec.2020 "; 
 							break;
 						}
 					case 9:
+						{
+							cSpace = " Rec.709 in Rec.2020 "; 
+							break;
+						}
+					case 10:
 						{
 							cSpace = " Custom "; 
 							break;
@@ -3670,6 +3675,11 @@ void CMainView::UpdateGrid()
 							break;
 						}
 					case 9:
+						{
+							cSpace = " Rec.709 in Rec.2020 "; 
+							break;
+						}
+					case 10:
 						{
 							cSpace = " Custom "; 
 							break;
@@ -3813,6 +3823,11 @@ void CMainView::UpdateGrid()
 							break;
 						}
 					case 9:
+						{
+							cSpace = " Rec.709 in Rec.2020 "; 
+							break;
+						}
+					case 10:
 						{
 							cSpace = " Custom "; 
 							break;
@@ -3982,7 +3997,7 @@ void CMainView::OnGrayScaleGridBeginEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 				}
 				break;
 			case HCFR_RGB_VIEW:
-				aColor=aColorMeasure.GetRGBValue((GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));
+				aColor=aColorMeasure.GetRGBValue(((GetColorReference().m_standard == UHDTV3||GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):GetColorReference()));
 				isSelectedWhiteY = FALSE;
 				break;
 			case HCFR_xyY_VIEW:
@@ -4302,7 +4317,7 @@ void CMainView::OnGrayScaleGridEndEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 				aColor=aColorMeasure.GetXYZValue();
 				break;
 			case HCFR_RGB_VIEW:
-				aColor=aColorMeasure.GetRGBValue((GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));
+				aColor=aColorMeasure.GetRGBValue(((GetColorReference().m_standard == UHDTV3||GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):GetColorReference()));
 				break;
 			case HCFR_xyY_VIEW:
 				aColor=aColorMeasure.GetxyYValue();
@@ -4322,7 +4337,7 @@ void CMainView::OnGrayScaleGridEndEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 				aColorMeasure.SetXYZValue(ColorXYZ(aColor));
 				break;
 			case HCFR_RGB_VIEW:
-				aColorMeasure.SetRGBValue(ColorRGB(aColor), (GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));
+				aColorMeasure.SetRGBValue(ColorRGB(aColor), ((GetColorReference().m_standard == UHDTV3||GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):GetColorReference()));
 				break;
 			case HCFR_xyY_VIEW:
 				aColorMeasure.SetxyYValue(ColorxyY(aColor));

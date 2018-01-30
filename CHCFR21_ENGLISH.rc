@@ -1145,6 +1145,9 @@ BEGIN
     IDC_COLORREF_COMBO, 0x403, 19, 0
 0x4855, 0x5444, 0x2056, 0x202d, 0x6552, 0x3263, 0x3230, 0x2f30, 0x3350, 
 "\000" 
+    IDC_COLORREF_COMBO, 0x403, 23, 0
+0x4855, 0x5444, 0x2056, 0x202d, 0x6552, 0x3263, 0x3230, 0x2f30, 0x6552, 
+0x3763, 0x3930, "\000" 
     IDC_COLORREF_COMBO, 0x403, 7, 0
 0x7543, 0x7473, 0x6d6f, "\000" 
     IDC_WHITETARGET_COMBO, 0x403, 4, 0
@@ -2520,8 +2523,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,5,0
- PRODUCTVERSION 3,5,0
+ FILEVERSION 3,5,0,1
+ PRODUCTVERSION 3,5,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2544,7 +2547,7 @@ BEGIN
             VALUE "LegalCopyright", "Copyright (C) 2005-2016"
             VALUE "OriginalFilename", "CHCFR21_ENGLISH.DLL"
             VALUE "ProductName", "HCFR Colorimeter English langage"
-            VALUE "ProductVersion", "3,5,0"
+            VALUE "ProductVersion", "3,5,0,1"
         END
     END
     BLOCK "VarFileInfo"
@@ -2756,7 +2759,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDR_MAINFRAME           "HCFR Colorimeter - 3.5.0"
+    IDR_MAINFRAME           "HCFR Colorimeter - 3.5.0.1"
     IDR_MESURETYPE          "\nColor Measures\nColor_Measures\nColorHCFR File (*.chc)\n.chc\nCOLORHCFR\nHCFR Color Measures"
 END
 
@@ -3087,6 +3090,13 @@ BEGIN
     IDS_UHDTV3GREENREF      "UHDTV P3 in Rec2020 Green Reference"
     IDS_UHDTV3BLUEREF       "UHDTV P3 in Rec2020 Blue Reference"
     IDS_ABOUT_PATTERNS      "additional patterns - 2016"
+    IDS_UHDTV4REDREF        "UHDTV Rec709 in Rec2020 Red Reference"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_UHDTV4GREENREF      "UHDTV Rec709 in Rec2020 Green Reference"
+    IDS_UHDTV4BLUEREF       "UHDTV Rec709 in Rec2020 Blue Reference"
 END
 
 STRINGTABLE

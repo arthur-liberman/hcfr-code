@@ -395,7 +395,7 @@ BEGIN
     CONTROL         "Lancer un nouvel étalonnage du capteur",IDC_SENSORTRAININGMODE_RADIO2,
                     "Button",BS_AUTORADIOBUTTON,14,100,165,10
     COMBOBOX        IDC_SENSORTRAININGFILE_COMBO,20,77,146,105,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    CTEXT           "Si vous ne disposez pas d'une matrice de correction créée en utilisant votre sonde en combinaison avec un spectromètre, il est recommandé d'utiliser la correction d'échantillon spectral appropriée disponible dans la liste déroulante du type d'affichage danr???????U?U?U????C:\\displ",IDC_STATIC,174,29,115,72,WS_BORDER,WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE
+    CTEXT           "Si vous ne disposez pas d'une matrice de correction créée en utilisant votre sonde en combinaison avec un spectromètre, il est recommandé d'utiliser la correction d'échantillon spectral appropriée disponible dans la liste déroulante du type d'affichage danr???????c?c?c????C:\\displ",IDC_STATIC,174,29,115,72,WS_BORDER,WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE
     LTEXT           "D3 / munki et Spyder 4 utilisateurs",IDC_STATIC,184,17,95,8
 END
 
@@ -1483,6 +1483,9 @@ BEGIN
     IDC_COLORREF_COMBO, 0x403, 19, 0
 0x4855, 0x5444, 0x2056, 0x202d, 0x6552, 0x3263, 0x3230, 0x2f30, 0x3350, 
 "\000" 
+    IDC_COLORREF_COMBO, 0x403, 23, 0
+0x4855, 0x5444, 0x2056, 0x202d, 0x6552, 0x3263, 0x3230, 0x2f30, 0x6552, 
+0x3763, 0x3930, "\000" 
     IDC_COLORREF_COMBO, 0x403, 7, 0
 0x7543, 0x7473, 0x6d6f, "\000" 
     IDC_WHITETARGET_COMBO, 0x403, 4, 0
@@ -2685,8 +2688,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,5,0
- PRODUCTVERSION 3,5,0
+ FILEVERSION 3,5,0,1
+ PRODUCTVERSION 3,5,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2704,12 +2707,12 @@ BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "CompanyName", "Association Homecinema Francophone"
             VALUE "FileDescription", "Resources Colorimètre HCFR"
-            VALUE "FileVersion", "3,5,0"
+            VALUE "FileVersion", "3,5,0,1"
             VALUE "InternalName", "CHCFR21_FRANCAIS"
             VALUE "LegalCopyright", "Copyright (C) 2005-2016"
             VALUE "OriginalFilename", "CHCFR21_FRANCAIS.DLL"
             VALUE "ProductName", "Colorimètre HCFR langage Français"
-            VALUE "ProductVersion", "3,5,0"
+            VALUE "ProductVersion", "3,5,0,1"
         END
     END
     BLOCK "VarFileInfo"
@@ -2734,7 +2737,7 @@ IDC_CURSOR_MEASURE      CURSOR                  "res\\cursor_meas.cur"
 
 STRINGTABLE
 BEGIN
-    IDR_MAINFRAME           "Colorimètre HCFR - 3,5,0"
+    IDR_MAINFRAME           "Colorimètre HCFR - 3,5,0,1"
     IDR_MESURETYPE          "\nRelevé\nRelevé\nFichiers ColorHCFR (*.chc)\n.chc\nCOLORHCFR\nRelevé de couleurs HCFR"
 END
 
@@ -3060,6 +3063,13 @@ BEGIN
     IDS_UHDTV3GREENREF      "Référence vert UHDTV P3 in Rec2020"
     IDS_UHDTV3BLUEREF       "Référence bleu UHDTV P3 in Rec2020"
     IDS_ABOUT_PATTERNS      "additional patterns - 2016"
+    IDS_UHDTV4REDREF        "UHDTV Rec709 in Rec2020 Red Reference"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_UHDTV4GREENREF      "UHDTV Rec709 in Rec2020 Green Reference"
+    IDS_UHDTV4BLUEREF       "UHDTV Rec709 in Rec2020 Blue Reference"
 END
 
 STRINGTABLE

@@ -581,6 +581,7 @@ BOOL CGenerator::Release(INT nbNext)
 			else
 				GetColorApp()->InMeasureMessageBox( "Error communicating with rPI", "Error", MB_ICONINFORMATION);
 
+			sock = NULL;
 			FreeLibrary(hInstLibrary);
 	}
 

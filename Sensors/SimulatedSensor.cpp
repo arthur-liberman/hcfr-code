@@ -304,7 +304,7 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue, 
 	ColorRGB colMeasure(simulColor);
 	bool isSpecial = (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb);
 
-	CColor colSensor(ColorXYZ(colMeasure, isSpecial?CColorReference(HDTV):GetConfig()->m_colorStandard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));
+	CColor colSensor(ColorXYZ(colMeasure, isSpecial?CColorReference(HDTV):(GetConfig()->m_colorStandard == UHDTV3||GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):GetColorReference()));
 
 	colSensor.SetX(colSensor.GetX() * (mode==5?10000.:White.GetY()));
 	colSensor.SetY(colSensor.GetY() * (mode==5?10000.:White.GetY()));
