@@ -479,7 +479,7 @@ void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, cons
 	ytarget = ystart + ( (yend - ystart) * (double) num / (double)(count - 1) );
 
 	//rejigger for user gamma, change reference to match user gamma
-	CColor	aColor;	
+	CColor	aColor,aColore;	
 	bool isSpecial = (GetConfig()->m_colorStandard==CC6||GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb);
 	CColor White = pDoc -> GetMeasure () -> GetOnOffWhite();
 	if (pDoc -> GetMeasure () -> GetPrimeWhite().isValid() && !isSpecial)
@@ -487,19 +487,39 @@ void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, cons
 	CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
 	double Intensity=GetConfig()->GetProfileInt("GDIGenerator","Intensity",100) / 100.;
 
-//    aColor.SetxyYValue (xtarget, ytarget, luma * pow(Intensity,2.22));
+	//Need a separte tracker for oddball UHDTV color spaces because color patterns are calculated in original HDTV or P3 space.
     aColor.SetxyYValue (xtarget, ytarget, luma );
+    aColore.SetxyYValue (xtarget, ytarget, luma );
+
 	int mode = GetConfig()->m_GammaOffsetType;
 	if (mode == 5)
 	{
 		aColor.SetX(aColor.GetX() / 105.95640);
 		aColor.SetY(aColor.GetY() / 105.95640);
 		aColor.SetZ(aColor.GetZ() / 105.95640);
+		aColore.SetX(aColore.GetX() / 105.95640);
+		aColore.SetY(aColore.GetY() / 105.95640);
+		aColore.SetZ(aColore.GetZ() / 105.95640);
 	}
-	ColorRGB rgb;
-	rgb=isSpecial?aColor.GetRGBValue(CColorReference(HDTV)):aColor.GetRGBValue ((GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));
+	
+	ColorRGB rgb,rgbe;
+	rgb=isSpecial?aColor.GetRGBValue(CColorReference(HDTV)):aColor.GetRGBValue(GetColorReference());
+	if (GetColorReference().m_standard == UHDTV3)
+		rgb=aColor.GetRGBValue(CColorReference(UHDTV));	
+	if (GetColorReference().m_standard == UHDTV4)
+		rgb=aColor.GetRGBValue(CColorReference(HDTV));	
+
+	rgbe=isSpecial?aColore.GetRGBValue(CColorReference(HDTV)):aColor.GetRGBValue(GetColorReference());
+	if (GetColorReference().m_standard == UHDTV3)
+		rgbe=aColore.GetRGBValue(CColorReference(UHDTV2));	
+	if (GetColorReference().m_standard == UHDTV4)
+		rgbe=aColore.GetRGBValue(CColorReference(UHDTV2));	
+
 	double r=rgb[0],g=rgb[1],b=rgb[2];
 	double qr,qg,qb;
+	double re=rgbe[0],ge=rgbe[1],be=rgbe[2];
+	double qre,qge,qbe;
+
 	if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 	if ( mode >= 4 )
 	{
@@ -514,6 +534,16 @@ void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, cons
 			r = getL_EOTF(qr, noDataColor, noDataColor, 0, 0, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / (mode==5?100.:1.);
 			g = getL_EOTF(qg, noDataColor, noDataColor, 0, 0, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / (mode==5?100.:1.);
 			b = getL_EOTF(qb, noDataColor, noDataColor, 0, 0, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / (mode==5?100.:1.);
+
+			qre = getL_EOTF(re, noDataColor, noDataColor, 0, 0, -1*mode);
+			qge = getL_EOTF(ge, noDataColor, noDataColor, 0, 0, -1*mode);
+			qbe = getL_EOTF(be, noDataColor, noDataColor, 0, 0, -1*mode);
+			qre = floor( (qre * 219.) + 0.5 ) / 219.;		
+			qge = floor( (qge * 219.) + 0.5 ) / 219.;		
+			qbe = floor( (qbe * 219.) + 0.5 ) / 219.;		
+			re = getL_EOTF(qre, noDataColor, noDataColor, 0, 0, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / (mode==5?100.:1.);
+			ge = getL_EOTF(qge, noDataColor, noDataColor, 0, 0, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / (mode==5?100.:1.);
+			be = getL_EOTF(qbe, noDataColor, noDataColor, 0, 0, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / (mode==5?100.:1.);
 		}
 		else
 		{
@@ -526,6 +556,16 @@ void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, cons
 	        r = getL_EOTF(qr,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 	        g = getL_EOTF(qg,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 	        b = getL_EOTF(qb,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+
+			qre = (re<=0||re>=1)?min(max(r,0),1):pow(r,1.0/2.22);
+	        qge = (ge<=0||ge>=1)?min(max(g,0),1):pow(g,1.0/2.22);
+	        qbe = (be<=0||be>=1)?min(max(b,0),1):pow(b,1.0/2.22);
+			qre = floor( (qre * 219.) + 0.5 ) / 219.;		
+			qge = floor( (qge * 219.) + 0.5 ) / 219.;		
+			qbe = floor( (qbe * 219.) + 0.5 ) / 219.;		
+	        re = getL_EOTF(qre,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+	        ge = getL_EOTF(qge,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+	        be = getL_EOTF(qbe,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 		}
 	} 
 	else
@@ -539,9 +579,30 @@ void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, cons
 		r=(qr<=0||qr>=1)?min(max(qr,0),1):pow(qr,gamma);
 		g=(qg<=0||qg>=1)?min(max(qg,0),1):pow(qg,gamma);
 		b=(qb<=0||qb>=1)?min(max(qb,0),1):pow(qb,gamma);
+
+		qre = (re<=0||re>=1)?min(max(r,0),1):pow(r,1.0/2.22);
+	    qge = (ge<=0||ge>=1)?min(max(g,0),1):pow(g,1.0/2.22);
+	    qbe = (be<=0||be>=1)?min(max(b,0),1):pow(b,1.0/2.22);
+		qre = floor( (qre * 219.) + 0.5 ) / 219.;		
+		qge = floor( (qge * 219.) + 0.5 ) / 219.;		
+		qbe = floor( (qbe * 219.) + 0.5 ) / 219.;		
+		re=(qre<=0||qre>=1)?min(max(qr,0),1):pow(qr,gamma);
+		ge=(qge<=0||qge>=1)?min(max(qg,0),1):pow(qg,gamma);
+		be=(qbe<=0||qbe>=1)?min(max(qb,0),1):pow(qb,gamma);
 	}
 	
-	aColor.SetRGBValue (ColorRGB(r,g,b), isSpecial?CColorReference(HDTV):GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference() );	
+	aColor.SetRGBValue (ColorRGB(r,g,b), isSpecial?CColorReference(HDTV):(GetColorReference().m_standard == UHDTV3||GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):GetColorReference() );	
+	if (GetColorReference().m_standard == UHDTV3)
+		aColor.SetRGBValue(ColorRGB(r,g,b),CColorReference(UHDTV));	
+	if (GetColorReference().m_standard == UHDTV4)
+		aColor.SetRGBValue(ColorRGB(r,g,b),CColorReference(HDTV));	
+
+	aColore.SetRGBValue (ColorRGB(re,ge,be), isSpecial?CColorReference(HDTV):(GetColorReference().m_standard == UHDTV3||GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):GetColorReference() );	
+	if (GetColorReference().m_standard == UHDTV3)
+		aColore.SetRGBValue(ColorRGB(re,ge,be),CColorReference(UHDTV2));	
+	if (GetColorReference().m_standard == UHDTV4)
+		aColore.SetRGBValue(ColorRGB(re,ge,be),CColorReference(UHDTV2));	
+
 	ColorxyY xyy=aColor.GetxyYValue();
 
 	xtarget=xyy[0];
@@ -554,11 +615,14 @@ void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, cons
 		aColor.SetX(aColor.GetX() * 105.95640);
 		aColor.SetY(aColor.GetY() * 105.95640);
 		aColor.SetZ(aColor.GetZ() * 105.95640);
+		aColore.SetX(aColore.GetX() * 105.95640);
+		aColore.SetY(aColore.GetY() * 105.95640);
+		aColore.SetZ(aColore.GetZ() * 105.95640);
 		RefWhite = YWhite / (tmWhite) ;
 		YWhite = YWhite * 94.37844 / (tmWhite);
 	}
 	
-	deltaE = SatColor.GetDeltaE(YWhite, aColor, RefWhite, isSpecial?CColorReference(HDTV, D65):GetColorReference().m_standard==UHDTV3?CColorReference(UHDTV2):GetColorReference() , GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+	deltaE = SatColor.GetDeltaE(YWhite, aColore, RefWhite, isSpecial?CColorReference(HDTV, D65):(GetColorReference().m_standard==UHDTV3||GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):GetColorReference() , GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 	
 	// Compute projection on line (xstart,ystart) - (xend,yend) from measured point
 	dx = xend - xstart; 

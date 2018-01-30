@@ -46,9 +46,9 @@ typedef enum
 	UHDTV = 6,  //P3
 	UHDTV2 = 7, //BT.2020
 	UHDTV3 = 8, //P3 in BT.2020
-    CUSTOM = 9,
-	CC6 = 10,
-	UHDTV4 = 11 //R709 in BT.2020
+	UHDTV4 = 9, //R709 in BT.2020
+    CUSTOM = 10,
+	CC6 = 11 //unused
 } ColorStandard;
 
 typedef enum 

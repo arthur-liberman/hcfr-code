@@ -268,7 +268,7 @@ BOOL CReferencesPropPage::OnApply()
 	GetConfig()->	WriteProfileDouble("References","DiffuseLValue",m_DiffuseLUser);
 	GetConfig()->	WriteProfileDouble("References","TargetMinLValue",m_TargetMinLUser);
 	GetConfig()->	WriteProfileDouble("References","TargetMaxLValue",m_TargetMaxLUser);
-	if (m_colorStandard == HDTVa || m_colorStandard == HDTVb || m_colorStandard == UHDTV3 || m_colorStandard == CC6) 
+	if (m_colorStandard == HDTVa || m_colorStandard == HDTVb || m_colorStandard == UHDTV3 || m_colorStandard == UHDTV4 || m_colorStandard == CC6) 
 	{
 		m_changeWhiteCheckCtrl.EnableWindow(FALSE);
 		m_changeWhiteCheck = FALSE;
@@ -377,7 +377,7 @@ BOOL CReferencesPropPage::OnInitDialog()
 		GetDlgItem(IDC_GAMMA_OFFSET_RADIO10)->EnableWindow(FALSE);
 	}
 	m_GammaAvgEdit.EnableWindow(FALSE);
-	if (m_colorStandard == HDTVa || m_colorStandard == HDTVb || m_colorStandard == UHDTV3 || m_colorStandard == CC6) 
+	if (m_colorStandard == HDTVa || m_colorStandard == HDTVb || m_colorStandard == UHDTV3 || m_colorStandard == UHDTV4 || m_colorStandard == CC6) 
 	{
 		m_changeWhiteCheckCtrl.EnableWindow(FALSE);
 		m_changeWhiteCheck = FALSE;
@@ -439,7 +439,6 @@ BOOL CReferencesPropPage::OnInitDialog()
 	{
 		m_DiffuseL = 94.37844;
 		m_TargetMinL = 0.0;
-//		m_TargetMaxL = 700.0;
 	}
 	else
 	{
@@ -638,7 +637,7 @@ void CReferencesPropPage::OnSelchangeColorrefCombo()
 		}
 		m_manualGOffset = 0.099;
 	}
-	if ( !(m_colorStandard == UHDTV || m_colorStandard == UHDTV2 || m_colorStandard == UHDTV3 || m_colorStandard == HDTV)  )
+	if ( !(m_colorStandard == UHDTV || m_colorStandard == UHDTV2 || m_colorStandard == UHDTV3 || m_colorStandard == UHDTV4 || m_colorStandard == HDTV)  )
 	{
 		int bID = GetCheckedRadioButton(IDC_GAMMA_OFFSET_RADIO6, IDC_GAMMA_OFFSET_RADIO10);
 		if (bID == IDC_GAMMA_OFFSET_RADIO6 || bID == IDC_GAMMA_OFFSET_RADIO8 || bID == IDC_GAMMA_OFFSET_RADIO9 || bID == IDC_GAMMA_OFFSET_RADIO10 )

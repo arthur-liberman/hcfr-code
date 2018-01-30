@@ -1642,7 +1642,7 @@ LRESULT CMultiFrame::OnDDERequest(WPARAM wParam, LPARAM lParam)
 							break;
 						case HCFR_RGB_VIEW:
                             {
-							    ColorRGB aColor=ReqColor.GetRGBValue((GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));
+							    ColorRGB aColor=ReqColor.GetRGBValue(((GetColorReference().m_standard == UHDTV3||GetColorReference().m_standard==UHDTV4)?CColorReference(UHDTV2):GetColorReference()));
 							    strData.Format("%.6f,%.6f,%.6f",aColor[0],aColor[1],aColor[2]);
                             }
 							break;
@@ -1771,7 +1771,7 @@ LRESULT CMultiFrame::OnDDEPoke(WPARAM wParam, LPARAM lParam)
 						ReceivedColor = ColorXYZ(a, b, c);
 						break;
 					case HCFR_RGB_VIEW:
-						ReceivedColor.SetRGBValue(ColorRGB(a, b, c), (GetColorReference().m_standard == UHDTV3?CColorReference(UHDTV2):GetColorReference()));
+						ReceivedColor.SetRGBValue(ColorRGB(a, b, c), ((GetColorReference().m_standard == UHDTV3||GetColorReference().m_standard==UHDTV4)?CColorReference(UHDTV2):GetColorReference()));
 						break;
 					case HCFR_xyY_VIEW:
 						ReceivedColor.SetxyYValue(a, b, c);

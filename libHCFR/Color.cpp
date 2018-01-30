@@ -729,7 +729,7 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
 		}
 		case UHDTV2:
 		{
-			standardName="UHDTV REC2020";
+			standardName="UHDTV Rec2020";
 			whiteColor=illuminantD65;
 			whiteName="D65";
 			m_white=D65;
@@ -738,7 +738,7 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
 		}
 		case UHDTV3:
 		{
-			standardName="UHDTV P3 in REC2020";
+			standardName="UHDTV P3 in Rec2020";
 			whiteColor=illuminantD65;
 			whiteName="D65";
 			m_white=D65;
@@ -747,7 +747,7 @@ CColorReference::CColorReference(ColorStandard aColorStandard, WhiteTarget aWhit
 		}
 		case UHDTV4:
 		{
-			standardName="UHDTV Rec.709 in REC2020";
+			standardName="UHDTV Rec709 in Rec2020";
 			whiteColor=illuminantD65;
 			whiteName="D65";
 			m_white=D65;
@@ -3558,9 +3558,9 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 				}
 			}
 			else
-				tempColor.SetRGBValue(ColorRGB(r,g,b),colorReference.m_standard==UHDTV3?CColorReference(UHDTV2):colorReference);
+				tempColor.SetRGBValue(ColorRGB(r,g,b),(colorReference.m_standard==UHDTV3||colorReference.m_standard==UHDTV4)?CColorReference(UHDTV2):colorReference);
 
-			ColorRGB aRGBColor = tempColor.GetRGBValue(colorReference.m_standard==UHDTV3?CColorReference(UHDTV2):colorReference);	
+			ColorRGB aRGBColor = tempColor.GetRGBValue((colorReference.m_standard==UHDTV3||colorReference.m_standard==UHDTV4)?CColorReference(UHDTV2):colorReference);	
 			
 			r = (aRGBColor[0]<=0.0||aRGBColor[0]>1.0)?min(max(aRGBColor[0],0),1):getL_EOTF(aRGBColor[0], noDataColor, noDataColor,0.0,0.0,-1*mode);
 			g = (aRGBColor[1]<=0.0||aRGBColor[1]>1.0)?min(max(aRGBColor[1],0),1):getL_EOTF(aRGBColor[1], noDataColor, noDataColor,0.0,0.0,-1*mode);
@@ -3580,8 +3580,9 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int nSteps, bool bRed, bool bGreen, bool bBlue, int mode, double m_DiffuseL, double m_MasterMinL, double m_MasterMaxL, double m_TargetMinL, double m_TargetMaxL, bool ToneMap, bool cBT2390 )
 {
 	//use fully saturated space if user has special color space modes set
+	//UHDTV pseudo-spaces XYZ is set in original space and mapped to BT.2020
 	int m_cRef=colorReference.m_standard;
-	CColorReference cRef=((m_cRef==HDTVa  || m_cRef==HDTVb )?CColorReference(HDTV):m_cRef==UHDTV3?CColorReference(UHDTV):colorReference);
+	CColorReference cRef=((m_cRef==HDTVa  || m_cRef==HDTVb || m_cRef==UHDTV4 )?CColorReference(HDTV):m_cRef==UHDTV3?CColorReference(UHDTV):colorReference);
 
 	// Retrieve color luminance coefficients matching actual reference
     const double KR = cRef.GetRedReferenceLuma (true);  

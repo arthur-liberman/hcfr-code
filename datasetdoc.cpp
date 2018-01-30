@@ -4346,7 +4346,7 @@ void CDataSetDoc::OnMeasurePrimaries()
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
 
-	if (!m_YWhite && (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb || GetConfig()->m_colorStandard == UHDTV3) && GetConfig()->m_GammaOffsetType == 4)
+	if (!m_YWhite && (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb || GetConfig()->m_colorStandard == UHDTV3 || GetConfig()->m_colorStandard == UHDTV4) && GetConfig()->m_GammaOffsetType == 4)
 		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first so that color targets can be calculated.","No grayscale measures found!",MB_OK);
 	else
 	{
@@ -4370,7 +4370,7 @@ void CDataSetDoc::OnMeasureSecondaries()
 {
 	int		nCount = GetMeasure () -> GetGrayScaleSize ();
     bool m_YWhite =  GetMeasure () -> GetGray ( nCount - 1 ).isValid();
-	if (!m_YWhite && (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb || GetConfig()->m_colorStandard == UHDTV3) && GetConfig()->m_GammaOffsetType == 4)
+	if (!m_YWhite && (GetConfig()->m_colorStandard == HDTVa || GetConfig()->m_colorStandard == HDTVb || GetConfig()->m_colorStandard == UHDTV3 || GetConfig()->m_colorStandard == UHDTV4) && GetConfig()->m_GammaOffsetType == 4)
 		GetColorApp()->InMeasureMessageBox("Please run the grayscale measures scan first so that color targets can be calculated.","No grayscale measures found!",MB_OK);
 	else
 	{
