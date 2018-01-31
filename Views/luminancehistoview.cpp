@@ -165,10 +165,7 @@ void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			{
 				valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
 				if (mode == 5)
-				{
 					valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 100. / (White.GetY());
-//					valy=min(valy,1.0);
-				}
 				else
 	                valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 			}
@@ -325,7 +322,6 @@ void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			}
 		}
 	}
-//	m_graphCtrl.FitYScale(1,10);
 }
 
 /*
