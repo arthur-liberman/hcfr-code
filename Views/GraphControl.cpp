@@ -1018,6 +1018,26 @@ void CGraphControl::SaveGraphs(CGraphControl *pGraphToAppend, CGraphControl *pGr
 				pGraphToAppend2->m_yAxisStep = (pGraphToAppend2->m_maxY > 3 ? (pGraphToAppend2->m_maxY >5?2:1):0.5);
 				pGraphToAppend2->m_yScale = (pGraphToAppend2->m_maxY > 3 ? (pGraphToAppend2->m_maxY >5?1.0/10.0:1.0/5.0):1.0/3.0);
 			}
+		case 4:
+			if (this->m_doUserScales)
+				this->ReadSettings("ColorTemp Histo");
+			else
+			{
+				this->FitYScale(FALSE);
+				this->m_minY = 5000; //CCT
+				this->m_maxY = this->m_maxY > 7500?8500:7500;
+				this->m_yAxisStep = 500;
+				this->m_yScale = this->m_maxY > 7500?1.0/3500.0:1.0/2500.0;
+				this->m_doShowDataLabel = TRUE; 
+			}
+			if (pGraphToAppend->m_doUserScales)
+				pGraphToAppend->ReadSettings("Luminance Histo");
+			else
+			{
+				pGraphToAppend->FitYScale(TRUE);
+				pGraphToAppend->m_doShowDataLabel = TRUE;
+			}
+			break;
 		}
 	}
 

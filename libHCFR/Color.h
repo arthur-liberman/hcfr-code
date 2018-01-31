@@ -320,7 +320,7 @@ public:
     void	UpdateSecondary ( ColorXYZ& secondary, const ColorXYZ& primary1, const ColorXYZ& primary2, const ColorXYZ& primaryOpposite );
 
 public:
-	CColorReference(ColorStandard aStandard, WhiteTarget aWhiteTarget=Default, double aGamma=-1.0, string strModified=" modified", ColorXYZ c_whitecolor=ColorXYZ(), ColorxyY c_redcolor=ColorxyY(), ColorxyY c_greencolor=ColorxyY(), ColorxyY c_bluecolor=ColorxyY() );
+	CColorReference(ColorStandard aStandard, WhiteTarget aWhiteTarget=Default, double aGamma=-1.0, string strModified=" ", ColorXYZ c_whitecolor=ColorXYZ(), ColorxyY c_redcolor=ColorxyY(), ColorxyY c_greencolor=ColorxyY(), ColorxyY c_bluecolor=ColorxyY() );
 	~CColorReference();
 	ColorXYZ GetWhite() const { return whiteColor; } 
 	string GetName() const {return standardName;}

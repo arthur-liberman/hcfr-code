@@ -42,6 +42,7 @@
 #include "GraphControl.h"
 #include "CxImage\ximage.h"
 #include "GammaHistoView.h"
+#include "Views\luminancehistoview.h"
 #include "colortemphistoview.h"
 #include "ciechartview.h"
 #include "SatLumHistoView.h"
@@ -342,7 +343,9 @@ bool CExport::SavePDF()
 	((CMainView*)pView)->UpdateAllGrids();
 	((CMainView*)pView)->m_displayMode = 5;
 	((CMainView*)pView)->UpdateAllGrids();
-	((CMainView*)pView)->m_displayMode=current_mode;
+	((CMainView*)pView)->m_displayMode = 1;
+	((CMainView*)pView)->UpdateAllGrids();
+	((CMainView*)pView)->m_displayMode = 0;
 	((CMainView*)pView)->UpdateAllGrids();
 
 	double dEavg_cc = ((CMainView*)pView)->dEavg_cc;
@@ -387,7 +390,6 @@ bool CExport::SavePDF()
     font = HPDF_GetFont (pdf, "Helvetica-Oblique", NULL);
     font2 = HPDF_GetFont (pdf, "Helvetica", NULL);
     fontg = HPDF_GetFont (pdf, "Symbol", NULL);
-//	HPDF_SetCompressionMode(pdf, HPDF_COMP_NONE);
 	HPDF_SetCompressionMode(pdf, HPDF_COMP_ALL);
 
     /* add a new page object. */
@@ -471,8 +473,6 @@ bool CExport::SavePDF()
 
 	HPDF_Page_BeginText (page);
 	HPDF_Page_SetFontAndSize (page, font2, 9);
-//	HPDF_Page_MoveTextPos (page, 6 + 300 + 5, 200);
-//	HPDF_Page_ShowText (page, str );
 	HPDF_Page_TextRect(page,311,215,601,160,str,HPDF_TALIGN_CENTER,NULL);
 	HPDF_Page_SetTextLeading (page, 14);
 	switch (GetConfig()->m_dE_form)
@@ -503,14 +503,18 @@ bool CExport::SavePDF()
 	double nCount = m_pDoc -> GetMeasure () -> GetGrayScaleSize ();
 	double Gamma = GetConfig()->m_GammaAvg;
 	double Offset;
-	if (nCount > 0)
+	bool isHDR = (GetConfig()->m_GammaOffsetType == 5 || GetConfig()->m_GammaOffsetType== 7);
+	if (nCount > 0 && !isHDR )
 	{
 		m_pDoc->ComputeGammaAndOffset(&Gamma, &Offset, 1, 1, nCount, false);
 		sprintf(str,"Average measured gamma: %.2f, Color dE formula: "+dEform2,Gamma);
 	}
 	else
 	{
-		sprintf(str,"Average measured gamma: No data");
+		if (isHDR && nCount)
+			sprintf(str,"Average measured gamma: HDR mode");
+		else
+			sprintf(str,"Average measured gamma: No data");
 	}
 	HPDF_Page_ShowTextNextLine (page, str);
 
@@ -521,6 +525,7 @@ bool CExport::SavePDF()
 
 	HPDF_Page_ShowTextNextLine (page, str + dEform);
 	double YWhite = m_pDoc->GetMeasure()->GetPrimeWhite().GetY();
+	double RefWhite = 1.0;
 	CColor rColor = m_pDoc->GetMeasure()->GetRedPrimary();
 	CColor gColor = m_pDoc->GetMeasure()->GetGreenPrimary();
 	CColor bColor = m_pDoc->GetMeasure()->GetBluePrimary();
@@ -528,19 +533,33 @@ bool CExport::SavePDF()
 	CColor cColor = m_pDoc->GetMeasure()->GetCyanSecondary();
 	CColor mColor = m_pDoc->GetMeasure()->GetMagentaSecondary();
 	double dEr=0,dEg=0,dEb=0,dEy=0,dEc=0,dEm=0;
+	CColor NoDataColor;
+	CColorReference cRef = GetColorReference();
+	double tmWhite = getL_EOTF(0.5022283, NoDataColor, NoDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 100.0;
+
+	if (GetConfig()->m_GammaOffsetType == 5)
+	{
+		if (cRef.m_standard == UHDTV2 || cRef.m_standard == HDTV || cRef.m_standard == UHDTV)
+			RefWhite = YWhite / (tmWhite) ;
+		else
+		{
+			RefWhite = YWhite / (tmWhite) ;					
+			YWhite = YWhite * 94.37844 / (tmWhite) ;
+		}
+	}
+
 	if (rColor.isValid())
-	 dEr = rColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefPrimary(0), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+	 dEr = rColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefPrimary(0), RefWhite, (cRef.m_standard==UHDTV3||cRef.m_standard==UHDTV4)?CColorReference(UHDTV2):GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 	if (gColor.isValid())
-	 dEg = gColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefPrimary(1), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+	 dEg = gColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefPrimary(1), RefWhite, (cRef.m_standard==UHDTV3||cRef.m_standard==UHDTV4)?CColorReference(UHDTV2):GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 	if (bColor.isValid())
-	 dEb = bColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefPrimary(2), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+	 dEb = bColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefPrimary(2), RefWhite, (cRef.m_standard==UHDTV3||cRef.m_standard==UHDTV4)?CColorReference(UHDTV2):GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 	if (yColor.isValid())
-	 dEy = yColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(0), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+	 dEy = yColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(0), RefWhite, (cRef.m_standard==UHDTV3||cRef.m_standard==UHDTV4)?CColorReference(UHDTV2):GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 	if (cColor.isValid())
-	 dEc = cColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(1), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+	 dEc = cColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(1), RefWhite, (cRef.m_standard==UHDTV3||cRef.m_standard==UHDTV4)?CColorReference(UHDTV2):GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 	if (mColor.isValid())
-	 dEm = mColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(2), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
-//	HPDF_Page_SetFontAndSize (page, fontg, 9);
+	 dEm = mColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(2), RefWhite, (cRef.m_standard==UHDTV3||cRef.m_standard==UHDTV4)?CColorReference(UHDTV2):GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 	sprintf(str,"Primary dE:     Red %.2f, Green %.2f, Blue %.2f",dEr,dEg,dEb);
 	HPDF_Page_ShowTextNextLine (page, str);
 	sprintf(str,"Secondary dE: Yellow %.2f, Cyan %.2f, Magenta %.2f",dEy,dEc,dEm);
@@ -695,16 +714,37 @@ bool CExport::SavePDF()
 	draw_image2(pdf, "color\\temp.png", 6, HPDF_Page_GetHeight (page) - 320, "Grayscale/Grayscale dE");
 
 	//Gamma-CT graph
-	
-	CGammaGrapher pGAMMA;
-	CColorTempGrapher pCT;
-	pGAMMA.UpdateGraph(m_pDoc);	
-	pCT.UpdateGraph(m_pDoc);	
-	pGAMMA.m_graphCtrl.DrawGraphs(&MemDC, Rect);
-	pCT.m_graphCtrl.DrawGraphs(&MemDC2, Rect);
-	pCT.m_graphCtrl.SaveGraphs(&pGAMMA.m_graphCtrl, NULL, NULL, FALSE, 2);	
 
-	draw_image2(pdf, "color\\temp.png", 6 + 300, HPDF_Page_GetHeight (page) - 320, "Correlated Color Temperature/Gamma");
+	CLuminanceGrapher pLUM;
+	CGammaGrapher pGAMMA;
+
+	CColorTempGrapher pCT;
+
+	if (isHDR)
+	{
+		pLUM.UpdateGraph(m_pDoc);	
+		pLUM.m_graphCtrl.DrawGraphs(&MemDC, Rect);
+	}
+	else
+	{
+		pGAMMA.UpdateGraph(m_pDoc);	
+		pGAMMA.m_graphCtrl.DrawGraphs(&MemDC, Rect);
+	}
+
+	pCT.UpdateGraph(m_pDoc);
+	pCT.m_graphCtrl.DrawGraphs(&MemDC2, Rect);
+
+	if (isHDR)
+	{
+		pCT.m_graphCtrl.SaveGraphs(&pLUM.m_graphCtrl, NULL, NULL, FALSE, 4);	
+		draw_image2(pdf, "color\\temp.png", 6 + 300, HPDF_Page_GetHeight (page) - 320, "Correlated Color Temperature/EOTF");
+	}
+	else
+	{
+		pCT.m_graphCtrl.SaveGraphs(&pGAMMA.m_graphCtrl, NULL, NULL, FALSE, 2);	
+		draw_image2(pdf, "color\\temp.png", 6 + 300, HPDF_Page_GetHeight (page) - 320, "Correlated Color Temperature/Gamma");
+	}
+
 	char * path;
 	char filename1[255];
 	path = getenv("APPDATA");
@@ -715,8 +755,9 @@ bool CExport::SavePDF()
 //CIE Chart
 	CCIEChartGrapher pCIE;
 	pCIE.SaveGraphFile(m_pDoc,CSize(dX,dY),filename1,2,95,TRUE);
-
-	draw_image2(pdf, "color\\temp.png", 6, HPDF_Page_GetHeight (page) - 320 - 230, "CIE Diagram");
+	cRef = GetColorReference();
+	CString sName = cRef.standardName.c_str();
+	draw_image2(pdf, "color\\temp.png", 6, HPDF_Page_GetHeight (page) - 320 - 230, "CIE Diagram "+sName);
 	
 //SATS/LUM Chart
 
@@ -742,6 +783,18 @@ bool CExport::SavePDF()
 		YWhite = m_pDoc->GetMeasure()->GetPrimeWhite().GetY();
 	else
 		YWhite = m_pDoc->GetMeasure()->GetOnOffWhite().GetY();
+
+	RefWhite = 1.0;
+	if (GetConfig()->m_GammaOffsetType == 5)
+	{
+		if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= LG400017)	
+			YWhite = m_pDoc->GetMeasure()->GetGray((m_pDoc->GetMeasure()->GetGrayScaleSize()-1)).GetY() ;
+		else
+		{
+			RefWhite = YWhite / (tmWhite) ;
+			YWhite = YWhite * 94.37844 / (tmWhite) ;
+		}
+	}
 
 	int ri = 6;
 
@@ -792,17 +845,29 @@ bool CExport::SavePDF()
 			tmp.SetZ(tmp.GetZ() / YWhite);
 			if (GetConfig()->m_GammaOffsetType == 5)
 			{
-				aReference.SetX(aReference.GetX() * 100.);
-				aReference.SetY(aReference.GetY() * 100.);
-				aReference.SetZ(aReference.GetZ() * 100.);
-				aRef[0] = aRef[0] * 100.;
-				aRef[1] = aRef[1] * 100.;
-				aRef[2] = aRef[2] * 100.;
+				if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= LG400017)
+				{
+					aReference.SetX(aReference.GetX() * 100.);
+					aReference.SetY(aReference.GetY() * 100.);
+					aReference.SetZ(aReference.GetZ() * 100.);
+					aRef[0] = aRef[0] * 100.;
+					aRef[1] = aRef[1] * 100.;
+					aRef[2] = aRef[2] * 100.;
+				}
+				else
+				{
+					aReference.SetX(aReference.GetX() * 105.95640);
+					aReference.SetY(aReference.GetY() * 105.95640);
+					aReference.SetZ(aReference.GetZ() * 105.95640);
+					aRef[0] = aRef[0] * 105.95640;
+					aRef[1] = aRef[1] * 105.95640;
+					aRef[2] = aRef[2] * 105.95640;
+				}
 			}
 			aMeasure[0]=pow((tmp.GetRGBValue((mRef == UHDTV3 || mRef == UHDTV4)?CColorReference(UHDTV2):(mRef == HDTVa || mRef == HDTVb)?CColorReference(HDTV):GetColorReference())[0]), 1.0/2.22);
 			aMeasure[1]=pow((tmp.GetRGBValue((mRef == UHDTV3 || mRef == UHDTV4)?CColorReference(UHDTV2):(mRef == HDTVa || mRef == HDTVb)?CColorReference(HDTV):GetColorReference())[1]), 1.0/2.22);
 			aMeasure[2]=pow((tmp.GetRGBValue((mRef == UHDTV3 || mRef == UHDTV4)?CColorReference(UHDTV2):(mRef == HDTVa || mRef == HDTVb)?CColorReference(HDTV):GetColorReference())[2]), 1.0/2.22);
-			dE = aColor.GetDeltaE(YWhite, aReference, 1.0, (mRef == UHDTV3 || mRef == UHDTV4)?CColorReference(UHDTV2):(mRef == HDTVa || mRef == HDTVb)?CColorReference(HDTV):GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+			dE = aColor.GetDeltaE(YWhite, aReference, RefWhite, (mRef == UHDTV3 || mRef == UHDTV4)?CColorReference(UHDTV2):(mRef == HDTVa || mRef == HDTVb)?CColorReference(HDTV):GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 		}
 		else
 		{
@@ -1202,15 +1267,34 @@ bool CExport::SavePDF()
 
 		//Gamma-CT graph
 	
+		CLuminanceGrapher pLUM;
 		CGammaGrapher pGAMMA;
-		CColorTempGrapher pCT;
-		pGAMMA.UpdateGraph(pDataRef);	
-		pCT.UpdateGraph(pDataRef);	
-		pGAMMA.m_graphCtrl.DrawGraphs(&MemDC, Rect);
-		pCT.m_graphCtrl.DrawGraphs(&MemDC2, Rect);
-		pCT.m_graphCtrl.SaveGraphs(&pGAMMA.m_graphCtrl, NULL, NULL, FALSE, 2);	
 
-		draw_image2(pdf, "color\\temp.png", 6 + 300, HPDF_Page_GetHeight (page2) - 320, "Correlated Color Temperature/Gamma");
+		CColorTempGrapher pCT;
+		if (isHDR)
+		{
+			pLUM.UpdateGraph(pDataRef);	
+			pLUM.m_graphCtrl.DrawGraphs(&MemDC, Rect);
+		}
+		else
+		{
+			pGAMMA.UpdateGraph(pDataRef);	
+			pGAMMA.m_graphCtrl.DrawGraphs(&MemDC, Rect);
+		}
+
+		pCT.UpdateGraph(pDataRef);
+		pCT.m_graphCtrl.DrawGraphs(&MemDC2, Rect);
+
+		if (isHDR)
+		{
+			pCT.m_graphCtrl.SaveGraphs(&pLUM.m_graphCtrl, NULL, NULL, FALSE, 4);	
+			draw_image2(pdf, "color\\temp.png", 6 + 300, HPDF_Page_GetHeight (page) - 320, "Correlated Color Temperature/EOTF");
+		}
+		else
+		{
+			pCT.m_graphCtrl.SaveGraphs(&pGAMMA.m_graphCtrl, NULL, NULL, FALSE, 2);	
+			draw_image2(pdf, "color\\temp.png", 6 + 300, HPDF_Page_GetHeight (page) - 320, "Correlated Color Temperature/Gamma");
+		}
 
 	//CIE Chart
 		char * path;
@@ -1222,7 +1306,7 @@ bool CExport::SavePDF()
 		CCIEChartGrapher pCIE;
 		pCIE.SaveGraphFile(pDataRef,CSize(dX,dY),filename1,2,95,TRUE);
 
-		draw_image2(pdf, "color\\temp.png", 6, HPDF_Page_GetHeight (page2) - 320 - 230, "CIE Diagram");
+		draw_image2(pdf, "color\\temp.png", 6, HPDF_Page_GetHeight (page2) - 320 - 230, "CIE Diagram "+sName);
 	
 	//SATS/LUM Chart
 

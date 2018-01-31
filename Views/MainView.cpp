@@ -2680,10 +2680,7 @@ void CMainView::UpdateGrid()
         Gamma = GetConfig()->m_GammaRef;
         GetConfig()->m_GammaAvg = Gamma; //targets can be reference power law or modified for user average gamma, BT.1886 handled separately
         if ( nCount && GetDocument()->GetMeasure()->GetGray(0).isValid() )
-		{
             GetDocument()->ComputeGammaAndOffset(&Gamma, &Offset, 1, 1, nCount, false);
-//			Gamma = floor(Gamma * 100) / 100;
-		}
 
         if (GetConfig()->m_useMeasuredGamma)
 			GetConfig()->m_GammaAvg = (Gamma<1?2.2:floor((Gamma+.005)*100.)/100.);
@@ -3484,65 +3481,8 @@ void CMainView::UpdateGrid()
 						}
 					}
 					Msg += dEform;
-					CString cSpace;
-					switch (GetConfig()->m_colorStandard)
-					{
-					case 0:
-						{
-							cSpace = " PAL/SECAM "; 
-							break;
-						}
-					case 1:
-						{
-							cSpace = " Rec.601 "; 
-							break;
-						}
-					case 2:
-						{
-							cSpace = " Rec.709 "; 
-							break;
-						}
-					case 3:
-						{
-							cSpace = " Rec.709 (75%/75%) "; 
-							break;
-						}
-					case 4:
-						{
-							cSpace = " Rec.709 (OPT/PLASMA) "; 
-							break;
-						}
-					case 5:
-						{
-							cSpace = " sRGB "; 
-							break;
-						}
-					case 6:
-						{
-							cSpace = " DCI/P3 "; 
-							break;
-						}
-					case 7:
-						{
-							cSpace = " Rec.2020 "; 
-							break;
-						}
-					case 8:
-						{
-							cSpace = " P3 in Rec.2020 "; 
-							break;
-						}
-					case 9:
-						{
-							cSpace = " Rec.709 in Rec.2020 "; 
-							break;
-						}
-					case 10:
-						{
-							cSpace = " Custom "; 
-							break;
-						}
-					}
+					CString cSpace = GetColorReference().standardName.c_str();
+					cSpace=" "+cSpace;
 					Msg += (isHDR ? cSpace + " HDR"+ dWhitestr:GetConfig()->m_GammaOffsetType == 7?cSpace + "HLG":cSpace + " SDR");
                     if (GetConfig()->doHighlight)
                         m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
@@ -3626,65 +3566,8 @@ void CMainView::UpdateGrid()
 						}
 					}
 					Msg += dEform;
-					CString cSpace;
-					switch (GetConfig()->m_colorStandard)
-					{
-					case 0:
-						{
-							cSpace = " PAL/SECAM "; 
-							break;
-						}
-					case 1:
-						{
-							cSpace = " Rec.601 "; 
-							break;
-						}
-					case 2:
-						{
-							cSpace = " Rec. 709 "; 
-							break;
-						}
-					case 3:
-						{
-							cSpace = " Rec.709 (75%/75%) "; 
-							break;
-						}
-					case 4:
-						{
-							cSpace = " Rec.709 (OPT/PLASMA) "; 
-							break;
-						}
-					case 5:
-						{
-							cSpace = " sRGB "; 
-							break;
-						}
-					case 6:
-						{
-							cSpace = " DCI/P3 "; 
-							break;
-						}
-					case 7:
-						{
-							cSpace = " Rec.2020 "; 
-							break;
-						}
-					case 8:
-						{
-							cSpace = " P3 in BT.2020 "; 
-							break;
-						}
-					case 9:
-						{
-							cSpace = " Rec.709 in Rec.2020 "; 
-							break;
-						}
-					case 10:
-						{
-							cSpace = " Custom "; 
-							break;
-						}
-					}
+					CString cSpace = GetColorReference().standardName.c_str();
+					cSpace = " "+cSpace;
 					Msg += (isHDR ? cSpace + " HDR"+ dWhitestr:GetConfig()->m_GammaOffsetType == 7?cSpace + " HLG":cSpace + " SDR");
                     if (GetConfig()->doHighlight) 
 					    m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
@@ -3774,65 +3657,8 @@ void CMainView::UpdateGrid()
 						}
 					}
 					Msg += dEform;
-					CString cSpace;
-					switch (GetConfig()->m_colorStandard)
-					{
-					case 0:
-						{
-							cSpace = " PAL/SECAM "; 
-							break;
-						}
-					case 1:
-						{
-							cSpace = " Rec.601 "; 
-							break;
-						}
-					case 2:
-						{
-							cSpace = " Rec. 709 "; 
-							break;
-						}
-					case 3:
-						{
-							cSpace = " Rec.709 (75%/75%) "; 
-							break;
-						}
-					case 4:
-						{
-							cSpace = " Rec.709 (OPT/PLASMA) "; 
-							break;
-						}
-					case 5:
-						{
-							cSpace = " sRGB "; 
-							break;
-						}
-					case 6:
-						{
-							cSpace = " DCI/P3 "; 
-							break;
-						}
-					case 7:
-						{
-							cSpace = " Rec.2020 "; 
-							break;
-						}
-					case 8:
-						{
-							cSpace = " P3 in BT.2020 "; 
-							break;
-						}
-					case 9:
-						{
-							cSpace = " Rec.709 in Rec.2020 "; 
-							break;
-						}
-					case 10:
-						{
-							cSpace = " Custom "; 
-							break;
-						}
-					}
+					CString cSpace = GetColorReference().standardName.c_str();
+					cSpace = " "+cSpace;
 					Msg += (isHDR ? cSpace + " HDR"+ dWhitestr:GetConfig()->m_GammaOffsetType == 7?cSpace + " HLG":cSpace + " SDR");
                     if (GetConfig()->doHighlight)
 					    m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
