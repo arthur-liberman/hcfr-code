@@ -839,13 +839,14 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 			Item.row = 2;
 			m_pSelectedColorGrid->SetItem(&Item);
 		}
+		CColorReference  bRef = ((GetColorReference().m_standard == UHDTV3 || GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):(GetColorReference().m_standard == HDTVa || GetColorReference().m_standard == HDTVb)?CColorReference(HDTV):GetColorReference());
 
         AddColorToGrid(m_SelectedColor.GetXYZValue(), Item, "%.3f");
-        AddColorToGrid(m_SelectedColor.GetRGBValue((((GetColorReference().m_standard == UHDTV3||GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):GetColorReference()))), Item, "%.3f");
+        AddColorToGrid(m_SelectedColor.GetRGBValue(bRef), Item, "%.3f");
         AddColorToGrid(m_SelectedColor.GetxyYValue(), Item, "%.3f");
         AddColorToGrid(m_SelectedColor.GetxyzValue(), Item, "%.3f");
-        AddColorToGrid(m_SelectedColor.GetLabValue(YWhite, ((GetColorReference().m_standard == UHDTV3||GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):GetColorReference())), Item, "%.1f");
-        AddColorToGrid(m_SelectedColor.GetLCHValue(YWhite, ((GetColorReference().m_standard == UHDTV3||GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):GetColorReference())), Item, "%.1f");
+        AddColorToGrid(m_SelectedColor.GetLabValue(YWhite, bRef), Item, "%.1f");
+        AddColorToGrid(m_SelectedColor.GetLCHValue(YWhite, bRef), Item, "%.1f");
 	}
 	else
 	{
@@ -1983,6 +1984,8 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 	CString m_generatorChoice = GetConfig()->GetProfileString("Defaults","Generator",(LPCSTR)Msg);
 	dstr.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 	BOOL DVD = (m_generatorChoice == dstr);	
+	CColorReference  bRef = ((GetColorReference().m_standard == UHDTV3 || GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):(GetColorReference().m_standard == HDTVa || GetColorReference().m_standard == HDTVb)?CColorReference(HDTV):GetColorReference());
+	
 	if(aMeasure.isValid() || ( aComponentNum == 7 || ( aComponentNum == 5 && ( GetDataRef() == NULL || GetDataRef() == GetDocument () ) ) ))
 	{
 		if ( aComponentNum < 3 )
@@ -1994,7 +1997,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
     					str.Format("%.3f",aMeasure.GetXYZValue()[aComponentNum]);
 					break;
 				case HCFR_RGB_VIEW:
-					str.Format("%.3f",aMeasure.GetRGBValue(((GetColorReference().m_standard == UHDTV3||GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):GetColorReference()))[aComponentNum]);
+					str.Format("%.3f",aMeasure.GetRGBValue(bRef)[aComponentNum]);
 					break;
 				case HCFR_xyz2_VIEW:
 					if (aMeasure.GetY() == 0)
@@ -2113,9 +2116,10 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						}
 					}
 
-					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, RefWhite, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight ) );
-					dE=aMeasure.GetDeltaE ( YWhite, aReference, RefWhite, (cRef.m_standard==UHDTV3||cRef.m_standard==UHDTV4)?CColorReference(UHDTV2):GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight );
-					dL=aMeasure.GetDeltaLCH ( YWhite, aReference, RefWhite, (cRef.m_standard==UHDTV3||cRef.m_standard==UHDTV4)?CColorReference(UHDTV2):GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight, dC, dH );
+					CColorReference  bRef = ((GetColorReference().m_standard == UHDTV3 || GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):(GetColorReference().m_standard == HDTVa || GetColorReference().m_standard == HDTVb)?CColorReference(HDTV):GetColorReference());
+					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, RefWhite, bRef, GetConfig()->m_dE_form, false, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight ) );
+					dE=aMeasure.GetDeltaE ( YWhite, aReference, RefWhite, bRef, GetConfig()->m_dE_form, false, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight );
+					dL=aMeasure.GetDeltaLCH ( YWhite, aReference, RefWhite, bRef, GetConfig()->m_dE_form, false, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight, dC, dH );
                     dEvector.push_back(isNan(dE)?dEavg:dE);
                     dLvector.push_back(isNan(dL)?dLavg:dL);
                     dCvector.push_back(isNan(dC)?dCavg:dC);
@@ -2142,21 +2146,21 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 		else if ( aComponentNum == 4 )
 		{
 			if ( aReference.isValid() && (nCol > 1 || ( m_displayMode != 0 && m_displayMode != 3)) )
-				str.Format("%.4f",aMeasure.GetDeltaxy ( aReference, GetColorReference()) );
+				str.Format("%.4f",aMeasure.GetDeltaxy ( aReference, bRef) );
 			else
 				str.Empty ();
 		}
 		else if ( aComponentNum == 5 && (nCol > 1 || ( m_displayMode != 0 && m_displayMode != 3)) )
 		{
 			if ( aRefDocColor.isValid() )
-					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aRefDocColor, YWhiteRefDoc, GetColorReference(), GetConfig()->m_dE_form, m_displayMode == 0 || m_displayMode == 3 || m_displayMode == 4, GetConfig()->gw_Weight ) );
+					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aRefDocColor, YWhiteRefDoc, bRef, GetConfig()->m_dE_form, m_displayMode == 0 || m_displayMode == 3 || m_displayMode == 4, GetConfig()->gw_Weight ) );
 			else
 				str.Empty ();
 		}
 		else if ( aComponentNum == 6 )
 		{
 			if ( aRefDocColor.isValid() && (nCol > 1 || ( m_displayMode != 0 && m_displayMode !=3)) )
-				str.Format("%.4f",aMeasure.GetDeltaxy ( aRefDocColor, GetColorReference()) );
+				str.Format("%.4f",aMeasure.GetDeltaxy ( aRefDocColor, bRef) );
 			else
 				str.Empty ();
 		}
@@ -2617,6 +2621,8 @@ void CMainView::UpdateGrid()
 		Item.mask = GVIF_TEXT|GVIF_FORMAT;
 		Item.nFormat = DT_RIGHT|DT_VCENTER|DT_SINGLELINE|DT_END_ELLIPSIS|DT_NOPREFIX;
 		bool isHDR = GetConfig()->m_GammaOffsetType == 5;
+		CColorReference  bRef = ((GetColorReference().m_standard == UHDTV3 || GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):(GetColorReference().m_standard == HDTVa || GetColorReference().m_standard == HDTVb)?CColorReference(HDTV):GetColorReference());
+
 		CString dWhitestr;
 		double tmWhite = getL_EOTF(0.5022283, noDataColor, noDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 100.0;
 		dWhitestr.Format(": %4.1f nits diffuse white", tmWhite);
@@ -2993,7 +2999,7 @@ void CMainView::UpdateGrid()
 					 aColor = GetDocument()->GetMeasure()->GetMeasurement(j);					 
 					 bSpecialRef = TRUE;
 					 //assume white 1st
-					 if ( aColor.GetDeltaxy ( GetColorReference().GetWhite(), GetColorReference() ) < 0.05 )
+					 if ( aColor.GetDeltaxy ( GetColorReference().GetWhite(), bRef ) < 0.05 )
  					 {
 						bSpecialRef = FALSE;
 						refColor = GetColorReference().GetWhite();
@@ -3039,37 +3045,37 @@ void CMainView::UpdateGrid()
 	                    YWhite = aColor [ 1 ];
 					 }
 					 }
-					 else if ( aColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefPrimary(0), GetColorReference() ) < 0.05 )
+					 else if ( aColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefPrimary(0), bRef ) < 0.05 )
 					 {
 						refColor = GetDocument()->GetMeasure()->GetRefPrimary(0);
 						clrSpecial1 = RGB(255,192,192);
 						clrSpecial2 = RGB(255,224,224);
 					 }
-					 else if ( aColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefPrimary(1), GetColorReference() ) < 0.05 )
+					 else if ( aColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefPrimary(1), bRef ) < 0.05 )
 					 {
 						refColor = GetDocument()->GetMeasure()->GetRefPrimary(1);
 						clrSpecial1 = RGB(192,255,192);
 						clrSpecial2 = RGB(224,255,224);
 					 }
-					 else if ( aColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefPrimary(2), GetColorReference() ) < 0.05 )
+					 else if ( aColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefPrimary(2), bRef ) < 0.05 )
 					 {
 						refColor = GetDocument()->GetMeasure()->GetRefPrimary(2);
 						clrSpecial1 = RGB(192,192,255);
 						clrSpecial2 = RGB(224,224,255);
 					 }
-					 else if ( aColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefSecondary(0), GetColorReference() ) < 0.05 )
+					 else if ( aColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefSecondary(0), bRef ) < 0.05 )
 					 {
 						refColor = GetDocument()->GetMeasure()->GetRefSecondary(0);
 						clrSpecial1 = RGB(255,255,192);
 						clrSpecial2 = RGB(255,255,224);
 					 }
-					 else if ( aColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefSecondary(1), GetColorReference() ) < 0.05 )
+					 else if ( aColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefSecondary(1), bRef ) < 0.05 )
 					 {
 						refColor = GetDocument()->GetMeasure()->GetRefSecondary(1);
 						clrSpecial1 = RGB(192,255,255);
 						clrSpecial2 = RGB(224,255,255);
 					 }
-					 else if ( aColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefSecondary(2), GetColorReference() ) < 0.05 )
+					 else if ( aColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefSecondary(2), bRef ) < 0.05 )
 					 {
 						refColor = GetDocument()->GetMeasure()->GetRefSecondary(2);
 						clrSpecial1 = RGB(255,192,255);
@@ -3712,6 +3718,7 @@ void CMainView::OnGrayScaleGridBeginEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 
 	// Get document XYZ value
 	CColor aColorMeasure;
+	CColorReference  bRef = ((GetColorReference().m_standard == UHDTV3 || GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):(GetColorReference().m_standard == HDTVa || GetColorReference().m_standard == HDTVb)?CColorReference(HDTV):GetColorReference());
 	
 	switch ( m_displayMode )
 	{
@@ -3823,7 +3830,7 @@ void CMainView::OnGrayScaleGridBeginEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 				}
 				break;
 			case HCFR_RGB_VIEW:
-				aColor=aColorMeasure.GetRGBValue(((GetColorReference().m_standard == UHDTV3||GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):GetColorReference()));
+				aColor=aColorMeasure.GetRGBValue(bRef);
 				isSelectedWhiteY = FALSE;
 				break;
 			case HCFR_xyY_VIEW:
@@ -3869,6 +3876,7 @@ void CMainView::OnGrayScaleGridEndEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 	CString aNewStr=m_pGrayScaleGrid->GetItemText(pItem->iRow,pItem->iColumn);
 	aNewStr.Replace(",",".");	// replace decimal separator if necessary
  	double aVal;
+	CColorReference  bRef = ((GetColorReference().m_standard == UHDTV3 || GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):(GetColorReference().m_standard == HDTVa || GetColorReference().m_standard == HDTVb)?CColorReference(HDTV):GetColorReference());
 	BOOL bAcceptChange = !aNewStr.IsEmpty() && sscanf(aNewStr,"%lf",&aVal) && (m_displayType != HCFR_xyz2_VIEW);
 	if(bAcceptChange)	// update value in document
 	{
@@ -4143,7 +4151,7 @@ void CMainView::OnGrayScaleGridEndEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 				aColor=aColorMeasure.GetXYZValue();
 				break;
 			case HCFR_RGB_VIEW:
-				aColor=aColorMeasure.GetRGBValue(((GetColorReference().m_standard == UHDTV3||GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):GetColorReference()));
+				aColor=aColorMeasure.GetRGBValue(bRef);
 				break;
 			case HCFR_xyY_VIEW:
 				aColor=aColorMeasure.GetxyYValue();
@@ -4163,7 +4171,7 @@ void CMainView::OnGrayScaleGridEndEdit(NMHDR *pNotifyStruct,LRESULT* pResult)
 				aColorMeasure.SetXYZValue(ColorXYZ(aColor));
 				break;
 			case HCFR_RGB_VIEW:
-				aColorMeasure.SetRGBValue(ColorRGB(aColor), ((GetColorReference().m_standard == UHDTV3||GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):GetColorReference()));
+				aColorMeasure.SetRGBValue(ColorRGB(aColor), bRef);
 				break;
 			case HCFR_xyY_VIEW:
 				aColorMeasure.SetxyYValue(ColorxyY(aColor));
@@ -5003,6 +5011,7 @@ void CMainView::UpdateMeasurementsAfterBkgndMeasure ()
 	double YWhiteRefDoc = -1;
 	double			Gamma,Offset = 0.0;
 	int nCount = GetDocument()->GetMeasure()->GetGrayScaleSize();
+	CColorReference  bRef = ((GetColorReference().m_standard == UHDTV3 || GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):(GetColorReference().m_standard == HDTVa || GetColorReference().m_standard == HDTVb)?CColorReference(HDTV):GetColorReference());
 
 	// Retrieve gamma and offset in case user has modified
     Gamma = GetConfig()->m_GammaRef;
@@ -5121,7 +5130,7 @@ void CMainView::UpdateMeasurementsAfterBkgndMeasure ()
 
 		bSpecialRef = TRUE;
 
-		if ( MeasuredColor.GetDeltaxy ( GetColorReference().GetWhite(), GetColorReference() ) < 0.05 )
+		if ( MeasuredColor.GetDeltaxy ( GetColorReference().GetWhite(), bRef ) < 0.05 )
 		{
 			bSpecialRef = FALSE;
 			double valy;
@@ -5166,37 +5175,37 @@ void CMainView::UpdateMeasurementsAfterBkgndMeasure ()
 					YWhite = MeasuredColor [ 1 ];
 			}
 		}
-		else if ( MeasuredColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefPrimary(0), GetColorReference() ) < 0.05 )
+		else if ( MeasuredColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefPrimary(0), bRef ) < 0.05 )
 		{
 			refColor = GetDocument()->GetMeasure()->GetRefPrimary(0);
 			clrSpecial1 = RGB(255,192,192);
 			clrSpecial2 = RGB(255,224,224);
 		}
-		else if ( MeasuredColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefPrimary(1), GetColorReference() ) < 0.05 )
+		else if ( MeasuredColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefPrimary(1), bRef ) < 0.05 )
 		{
 			refColor = GetDocument()->GetMeasure()->GetRefPrimary(1);
 			clrSpecial1 = RGB(192,255,192);
 			clrSpecial2 = RGB(224,255,224);
 		}
-		else if ( MeasuredColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefPrimary(2), GetColorReference() ) < 0.05 )
+		else if ( MeasuredColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefPrimary(2), bRef ) < 0.05 )
 		{
 			refColor = GetDocument()->GetMeasure()->GetRefPrimary(0);
 			clrSpecial1 = RGB(192,192,255);
 			clrSpecial2 = RGB(224,224,255);
 		}
-		else if ( MeasuredColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefSecondary(0), GetColorReference() ) < 0.05 )
+		else if ( MeasuredColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefSecondary(0), bRef ) < 0.05 )
 		{
 			refColor = GetDocument()->GetMeasure()->GetRefSecondary(0);
 			clrSpecial1 = RGB(255,255,192);
 			clrSpecial2 = RGB(255,255,224);
 		}
-		else if ( MeasuredColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefSecondary(1), GetColorReference() ) < 0.05 )
+		else if ( MeasuredColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefSecondary(1), bRef ) < 0.05 )
 		{
 			refColor = GetDocument()->GetMeasure()->GetRefSecondary(1);
 			clrSpecial1 = RGB(192,255,255);
 			clrSpecial2 = RGB(224,255,255);
 		}
-		else if ( MeasuredColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefSecondary(2), GetColorReference() ) < 0.05 )
+		else if ( MeasuredColor.GetDeltaxy ( GetDocument()->GetMeasure()->GetRefSecondary(2), bRef ) < 0.05 )
 		{
 			refColor = GetDocument()->GetMeasure()->GetRefSecondary(2);
 			clrSpecial1 = RGB(255,192,255);
