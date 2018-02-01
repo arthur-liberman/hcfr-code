@@ -534,12 +534,12 @@ bool CExport::SavePDF()
 	CColor mColor = m_pDoc->GetMeasure()->GetMagentaSecondary();
 	double dEr=0,dEg=0,dEb=0,dEy=0,dEc=0,dEm=0;
 	CColor NoDataColor;
-	CColorReference cRef = GetColorReference();
+	CColorReference  bRef = ((GetColorReference().m_standard == UHDTV3 || GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):(GetColorReference().m_standard == HDTVa || GetColorReference().m_standard == HDTVb)?CColorReference(HDTV):GetColorReference());
 	double tmWhite = getL_EOTF(0.5022283, NoDataColor, NoDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 100.0;
 
 	if (GetConfig()->m_GammaOffsetType == 5)
 	{
-		if (cRef.m_standard == UHDTV2 || cRef.m_standard == HDTV || cRef.m_standard == UHDTV)
+		if (GetColorReference().m_standard == UHDTV2 || GetColorReference().m_standard == HDTV || GetColorReference().m_standard == UHDTV)
 			RefWhite = YWhite / (tmWhite) ;
 		else
 		{
@@ -549,17 +549,17 @@ bool CExport::SavePDF()
 	}
 
 	if (rColor.isValid())
-	 dEr = rColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefPrimary(0), RefWhite, (cRef.m_standard==UHDTV3||cRef.m_standard==UHDTV4)?CColorReference(UHDTV2):GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+	 dEr = rColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefPrimary(0), RefWhite, bRef, GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 	if (gColor.isValid())
-	 dEg = gColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefPrimary(1), RefWhite, (cRef.m_standard==UHDTV3||cRef.m_standard==UHDTV4)?CColorReference(UHDTV2):GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+	 dEg = gColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefPrimary(1), RefWhite, bRef, GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 	if (bColor.isValid())
-	 dEb = bColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefPrimary(2), RefWhite, (cRef.m_standard==UHDTV3||cRef.m_standard==UHDTV4)?CColorReference(UHDTV2):GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+	 dEb = bColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefPrimary(2), RefWhite, bRef, GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 	if (yColor.isValid())
-	 dEy = yColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(0), RefWhite, (cRef.m_standard==UHDTV3||cRef.m_standard==UHDTV4)?CColorReference(UHDTV2):GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+	 dEy = yColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(0), RefWhite, bRef, GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 	if (cColor.isValid())
-	 dEc = cColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(1), RefWhite, (cRef.m_standard==UHDTV3||cRef.m_standard==UHDTV4)?CColorReference(UHDTV2):GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+	 dEc = cColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(1), RefWhite, bRef, GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 	if (mColor.isValid())
-	 dEm = mColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(2), RefWhite, (cRef.m_standard==UHDTV3||cRef.m_standard==UHDTV4)?CColorReference(UHDTV2):GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+	 dEm = mColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(2), RefWhite, bRef, GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 	sprintf(str,"Primary dE:     Red %.2f, Green %.2f, Blue %.2f",dEr,dEg,dEb);
 	HPDF_Page_ShowTextNextLine (page, str);
 	sprintf(str,"Secondary dE: Yellow %.2f, Cyan %.2f, Magenta %.2f",dEy,dEc,dEm);
@@ -755,7 +755,7 @@ bool CExport::SavePDF()
 //CIE Chart
 	CCIEChartGrapher pCIE;
 	pCIE.SaveGraphFile(m_pDoc,CSize(dX,dY),filename1,2,95,TRUE);
-	cRef = GetColorReference();
+	CColorReference cRef = GetColorReference();
 	CString sName = cRef.standardName.c_str();
 	draw_image2(pdf, "color\\temp.png", 6, HPDF_Page_GetHeight (page) - 320 - 230, "CIE Diagram "+sName);
 	
@@ -833,12 +833,11 @@ bool CExport::SavePDF()
 	{
 		aColor = m_pDoc->GetMeasure()->GetCC24Sat(i);
 		aReference = m_pDoc->GetMeasure()->GetRefCC24Sat(i);
-		int mRef = GetColorReference().m_standard;
-		aRef = m_pDoc->GetMeasure()->GetRefCC24Sat(i).GetRGBValue((mRef == UHDTV3 || mRef == UHDTV4)?CColorReference(UHDTV2):(mRef == HDTVa || mRef == HDTVb)?CColorReference(HDTV):GetColorReference());		
+		aRef = m_pDoc->GetMeasure()->GetRefCC24Sat(i).GetRGBValue(bRef);		
 
 		if (aColor.isValid())
 		{
-			aMeasure = m_pDoc->GetMeasure()->GetCC24Sat(i).GetRGBValue((mRef == UHDTV3 || mRef == UHDTV4)?CColorReference(UHDTV2):(mRef == HDTVa || mRef == HDTVb)?CColorReference(HDTV):GetColorReference());
+			aMeasure = m_pDoc->GetMeasure()->GetCC24Sat(i).GetRGBValue(bRef);
 			tmp = aColor;
 			tmp.SetX(tmp.GetX() / YWhite);
 			tmp.SetY(tmp.GetY() / YWhite);
@@ -864,10 +863,10 @@ bool CExport::SavePDF()
 					aRef[2] = aRef[2] * 105.95640;
 				}
 			}
-			aMeasure[0]=pow((tmp.GetRGBValue((mRef == UHDTV3 || mRef == UHDTV4)?CColorReference(UHDTV2):(mRef == HDTVa || mRef == HDTVb)?CColorReference(HDTV):GetColorReference())[0]), 1.0/2.22);
-			aMeasure[1]=pow((tmp.GetRGBValue((mRef == UHDTV3 || mRef == UHDTV4)?CColorReference(UHDTV2):(mRef == HDTVa || mRef == HDTVb)?CColorReference(HDTV):GetColorReference())[1]), 1.0/2.22);
-			aMeasure[2]=pow((tmp.GetRGBValue((mRef == UHDTV3 || mRef == UHDTV4)?CColorReference(UHDTV2):(mRef == HDTVa || mRef == HDTVb)?CColorReference(HDTV):GetColorReference())[2]), 1.0/2.22);
-			dE = aColor.GetDeltaE(YWhite, aReference, RefWhite, (mRef == UHDTV3 || mRef == UHDTV4)?CColorReference(UHDTV2):(mRef == HDTVa || mRef == HDTVb)?CColorReference(HDTV):GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+			aMeasure[0]=pow((tmp.GetRGBValue(bRef)[0]), 1.0/2.22);
+			aMeasure[1]=pow((tmp.GetRGBValue(bRef)[1]), 1.0/2.22);
+			aMeasure[2]=pow((tmp.GetRGBValue(bRef)[2]), 1.0/2.22);
+			dE = aColor.GetDeltaE(YWhite, aReference, RefWhite, bRef, GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 		}
 		else
 		{
@@ -1094,7 +1093,7 @@ bool CExport::SavePDF()
 
 		HPDF_Page_ShowTextNextLine (page2, str + dEform);
 
-		double YWhite = pDataRef->GetMeasure()->GetPrimeWhite().GetY();
+		YWhite = pDataRef->GetMeasure()->GetPrimeWhite().GetY();
 		CColor rColor = pDataRef->GetMeasure()->GetRedPrimary();
 		CColor gColor = pDataRef->GetMeasure()->GetGreenPrimary();
 		CColor bColor = pDataRef->GetMeasure()->GetBluePrimary();
@@ -1102,18 +1101,35 @@ bool CExport::SavePDF()
 		CColor cColor = pDataRef->GetMeasure()->GetCyanSecondary();
 		CColor mColor = pDataRef->GetMeasure()->GetMagentaSecondary();
 		double dEr=0,dEg=0,dEb=0,dEy=0,dEc=0,dEm=0;
+		CColor NoDataColor;
+		CColorReference cRef = GetColorReference();
+		CColorReference  bRef = ((GetColorReference().m_standard == UHDTV3 || GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):(GetColorReference().m_standard == HDTVa || GetColorReference().m_standard == HDTVb)?CColorReference(HDTV):GetColorReference());
+		tmWhite = getL_EOTF(0.5022283, NoDataColor, NoDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 100.0;
+		RefWhite = 1.0;
+
+		if (GetConfig()->m_GammaOffsetType == 5)
+		{
+			if (cRef.m_standard == UHDTV2 || cRef.m_standard == HDTV || cRef.m_standard == UHDTV)
+				RefWhite = YWhite / (tmWhite) ;
+			else
+			{
+				RefWhite = YWhite / (tmWhite) ;					
+				YWhite = YWhite * 94.37844 / (tmWhite) ;
+			}
+		}
+
 		if (rColor.isValid())
-		 dEr = rColor.GetDeltaE(YWhite, pDataRef->GetMeasure()->GetRefPrimary(0), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+		 dEr = rColor.GetDeltaE(YWhite, pDataRef->GetMeasure()->GetRefPrimary(0), RefWhite, bRef, GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 		if (gColor.isValid())
-		 dEg = gColor.GetDeltaE(YWhite, pDataRef->GetMeasure()->GetRefPrimary(1), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+		 dEg = gColor.GetDeltaE(YWhite, pDataRef->GetMeasure()->GetRefPrimary(1), RefWhite, bRef, GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 		if (bColor.isValid())
-		 dEb = bColor.GetDeltaE(YWhite, pDataRef->GetMeasure()->GetRefPrimary(2), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+		 dEb = bColor.GetDeltaE(YWhite, pDataRef->GetMeasure()->GetRefPrimary(2), RefWhite, bRef, GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 		if (yColor.isValid())
-		 dEy = yColor.GetDeltaE(YWhite, pDataRef->GetMeasure()->GetRefSecondary(0), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+		 dEy = yColor.GetDeltaE(YWhite, pDataRef->GetMeasure()->GetRefSecondary(0), RefWhite, bRef, GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 		if (cColor.isValid())
-		 dEc = cColor.GetDeltaE(YWhite, pDataRef->GetMeasure()->GetRefSecondary(1), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+		 dEc = cColor.GetDeltaE(YWhite, pDataRef->GetMeasure()->GetRefSecondary(1), RefWhite, bRef, GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 		if (mColor.isValid())
-		 dEm = mColor.GetDeltaE(YWhite, pDataRef->GetMeasure()->GetRefSecondary(2), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+		 dEm = mColor.GetDeltaE(YWhite, pDataRef->GetMeasure()->GetRefSecondary(2), RefWhite, bRef, GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 	
 		sprintf(str,"Primary dE:     Red %.2f, Green %.2f, Blue %.2f",dEr,dEg,dEb);
 		HPDF_Page_ShowTextNextLine (page2, str);
@@ -1336,6 +1352,23 @@ bool CExport::SavePDF()
 			WhiteRGB = pDataRef->GetMeasure()->GetOnOffWhite().GetRGBValue(GetColorReference());
 			YWhite = pDataRef->GetMeasure()->GetOnOffWhite().GetY();
 		}
+
+	if (GetConfig()->m_colorStandard != HDTVa && GetConfig()->m_colorStandard != HDTVb )
+		YWhite = m_pDoc->GetMeasure()->GetPrimeWhite().GetY();
+	else
+		YWhite = m_pDoc->GetMeasure()->GetOnOffWhite().GetY();
+
+		RefWhite = 1.0;
+		if (GetConfig()->m_GammaOffsetType == 5)
+		{
+			if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= LG400017)	
+				YWhite = m_pDoc->GetMeasure()->GetGray((m_pDoc->GetMeasure()->GetGrayScaleSize()-1)).GetY() ;
+			else
+			{
+				RefWhite = YWhite / (tmWhite) ;
+				YWhite = YWhite * 94.37844 / (tmWhite) ;
+			}
+		}
 		ri = 6;
 
 		if (nColors > 24)
@@ -1373,8 +1406,28 @@ bool CExport::SavePDF()
 		{
 			aColor = pDataRef->GetMeasure()->GetCC24Sat(i);
 			aReference = pDataRef->GetMeasure()->GetRefCC24Sat(i);
-			aRef = pDataRef->GetMeasure()->GetRefCC24Sat(i).GetRGBValue(GetColorReference());
-
+			aRef = pDataRef->GetMeasure()->GetRefCC24Sat(i).GetRGBValue((cRef.m_standard==UHDTV3||cRef.m_standard==UHDTV4)?CColorReference(UHDTV2):GetColorReference());
+			if (GetConfig()->m_GammaOffsetType == 5)
+			{
+				if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= LG400017)
+				{
+					aReference.SetX(aReference.GetX() * 100.);
+					aReference.SetY(aReference.GetY() * 100.);
+					aReference.SetZ(aReference.GetZ() * 100.);
+					aRef[0] = aRef[0] * 100.;
+					aRef[1] = aRef[1] * 100.;
+					aRef[2] = aRef[2] * 100.;
+				}
+				else
+				{
+					aReference.SetX(aReference.GetX() * 105.95640);
+					aReference.SetY(aReference.GetY() * 105.95640);
+					aReference.SetZ(aReference.GetZ() * 105.95640);
+					aRef[0] = aRef[0] * 105.95640;
+					aRef[1] = aRef[1] * 105.95640;
+					aRef[2] = aRef[2] * 105.95640;
+				}
+			}
 			if (aColor.isValid())
 			{
 				aMeasure = pDataRef->GetMeasure()->GetCC24Sat(i).GetRGBValue(GetColorReference());
@@ -1385,7 +1438,7 @@ bool CExport::SavePDF()
 				aMeasure[0]=pow((tmp.GetRGBValue(GetColorReference())[0]), 1.0/2.22);
 				aMeasure[1]=pow((tmp.GetRGBValue(GetColorReference())[1]), 1.0/2.22);
 				aMeasure[2]=pow((tmp.GetRGBValue(GetColorReference())[2]), 1.0/2.22);
-				dE = aColor.GetDeltaE(YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+				dE = aColor.GetDeltaE(YWhite, aReference, RefWhite, bRef, GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 			}
 			else
 			{
@@ -1681,7 +1734,11 @@ bool CExport::SavePrimariesSheet()
 	int rowNb=1;
 	int i,j;
 
-	double YWhite = m_pDoc->GetMeasure()->GetOnOffWhite().GetY();
+	double YWhite = m_pDoc->GetMeasure()->GetPrimeWhite().GetY();
+	
+	if (!YWhite)
+		YWhite = m_pDoc->GetMeasure()->GetOnOffWhite().GetY();
+
 	CColor rColor = m_pDoc->GetMeasure()->GetRedPrimary();
 	CColor gColor = m_pDoc->GetMeasure()->GetGreenPrimary();
 	CColor bColor = m_pDoc->GetMeasure()->GetBluePrimary();
@@ -1690,18 +1747,34 @@ bool CExport::SavePrimariesSheet()
 	CColor mColor = m_pDoc->GetMeasure()->GetMagentaSecondary();
 	
 	double dEr=0,dEg=0,dEb=0,dEy=0,dEc=0,dEm=0;
+	CColor NoDataColor;
+	CColorReference cRef = GetColorReference();
+	double tmWhite = getL_EOTF(0.5022283, NoDataColor, NoDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 100.0;
+	double RefWhite = 1.0;
+	CColorReference  bRef = ((GetColorReference().m_standard == UHDTV3 || GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):(GetColorReference().m_standard == HDTVa || GetColorReference().m_standard == HDTVb)?CColorReference(HDTV):GetColorReference());
+
+	if (GetConfig()->m_GammaOffsetType == 5)
+	{
+		if (cRef.m_standard == UHDTV2 || cRef.m_standard == HDTV || cRef.m_standard == UHDTV)
+			RefWhite = YWhite / (tmWhite) ;
+		else
+		{
+			RefWhite = YWhite / (tmWhite) ;					
+			YWhite = YWhite * 94.37844 / (tmWhite) ;
+		}
+	}
 	if (rColor.isValid())
-	 dEr = rColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefPrimary(0), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+	 dEr = rColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefPrimary(0), RefWhite, bRef, GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 	if (gColor.isValid())
-	 dEg = gColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefPrimary(1), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+	 dEg = gColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefPrimary(1), RefWhite, bRef, GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 	if (bColor.isValid())
-	 dEb = bColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefPrimary(2), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+	 dEb = bColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefPrimary(2), RefWhite, bRef, GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 	if (yColor.isValid())
-	 dEy = yColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(0), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+	 dEy = yColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(0), RefWhite, bRef, GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 	if (cColor.isValid())
-	 dEc = cColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(1), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+	 dEc = cColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(1), RefWhite, bRef, GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 	if (mColor.isValid())
-	 dEm = mColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(2), 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
+	 dEm = mColor.GetDeltaE(YWhite, m_pDoc->GetMeasure()->GetRefSecondary(2), RefWhite, bRef, GetConfig()->m_dE_form, false, GetConfig()->gw_Weight );
 
 	CString SheetOrSeparator="PrimariesSheet";
 	CString aFileName;
@@ -1747,9 +1820,9 @@ bool CExport::SavePrimariesSheet()
 		Rows.RemoveAll();
 		Rows.Add(legendRGB[i]);
 		for(j=0;j<3;j++)
-			Rows.Add((float)m_pDoc->GetMeasure()->GetPrimary(j).GetRGBValue(GetColorReference())[i]);
+			Rows.Add((float)m_pDoc->GetMeasure()->GetPrimary(j).GetRGBValue(bRef)[i]);
 		for(j=0;j<3;j++)
-			Rows.Add((float)m_pDoc->GetMeasure()->GetSecondary(j).GetRGBValue(GetColorReference())[i]);
+			Rows.Add((float)m_pDoc->GetMeasure()->GetSecondary(j).GetRGBValue(bRef)[i]);
 		result&=primariesSS.AddRow(Rows,rowNb,m_doReplace);
 		rowNb++;
 	}
@@ -1848,6 +1921,7 @@ bool CExport::SaveCCSheet()
 {
 	CRowArray Rows;
 	CString tempString;
+	CColorReference cRef = GetColorReference();
 	bool result=true;
 	int rowNb=1;
 	int i,j;
@@ -2217,22 +2291,56 @@ bool CExport::SaveCCSheet()
 				Rows.Add(-1.0);
 		}
 		
+		CColorReference  bRef = ((GetColorReference().m_standard == UHDTV3 || GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):(GetColorReference().m_standard == HDTVa || GetColorReference().m_standard == HDTVb)?CColorReference(HDTV):GetColorReference());
+
 		for(j=0;j<3;j++)
 		{
 			if (m_pDoc->GetMeasure()->GetCC24Sat(i).isValid())
-				Rows.Add((float)m_pDoc->GetMeasure()->GetCC24Sat(i).GetRGBValue(GetColorReference())[j]);
+				Rows.Add((float)m_pDoc->GetMeasure()->GetCC24Sat(i).GetRGBValue(bRef)[j]);
 			else
 				Rows.Add(-1.0);
 		}
 		
 		CColor aColor,aReference;
-		double YWhite = m_pDoc->GetMeasure()->GetOnOffWhite().GetY();
+		double YWhite, RefWhite = 1.0;
+		if (GetConfig()->m_colorStandard != HDTVa && GetConfig()->m_colorStandard != HDTVb )
+			YWhite = m_pDoc->GetMeasure()->GetPrimeWhite().GetY();
+		else
+			YWhite = m_pDoc->GetMeasure()->GetOnOffWhite().GetY();
+
+		CColor NoDataColor;
+		double tmWhite = getL_EOTF(0.5022283, NoDataColor, NoDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 100.0;
+		if (GetConfig()->m_GammaOffsetType == 5)
+		{
+			if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= LG400017)	
+				YWhite = m_pDoc->GetMeasure()->GetGray((m_pDoc->GetMeasure()->GetGrayScaleSize()-1)).GetY() ;
+			else
+			{
+				RefWhite = YWhite / (tmWhite) ;
+				YWhite = YWhite * 94.37844 / (tmWhite) ;
+			}
+		}
 
 		aColor = m_pDoc->GetMeasure()->GetCC24Sat(i);
 		aReference = m_pDoc->GetMeasure()->GetRefCC24Sat(i);
+		if (GetConfig()->m_GammaOffsetType == 5)
+		{
+			if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= LG400017)
+			{
+				aReference.SetX(aReference.GetX() * 100.);
+				aReference.SetY(aReference.GetY() * 100.);
+				aReference.SetZ(aReference.GetZ() * 100.);
+			}
+			else
+			{
+				aReference.SetX(aReference.GetX() * 105.95640);
+				aReference.SetY(aReference.GetY() * 105.95640);
+				aReference.SetZ(aReference.GetZ() * 105.95640);
+			}
+		}
 
 		if (aColor.isValid())
-			Rows.Add(aColor.GetDeltaE(YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, false, GetConfig()->gw_Weight ));
+			Rows.Add(aColor.GetDeltaE(YWhite, aReference, RefWhite, bRef, GetConfig()->m_dE_form, false, GetConfig()->gw_Weight ));
 		else
 			Rows.Add(-1);
 
