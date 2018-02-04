@@ -283,6 +283,7 @@
 #define IDC_USE_TONEMAP                 401
 #define IDC_EDIT_FRAME_AVG_MAXL         402
 #define IDR_PATTERN_NB                  403
+#define IDC_EDIT_TARGET_MAXL2           403
 #define IDR_PATTERN_NBv                 404
 #define IDR_PATTERN_NBHDR               405
 #define IDR_PATTERN_NBvHDR              406

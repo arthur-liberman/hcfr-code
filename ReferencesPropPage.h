@@ -67,14 +67,16 @@ public:
     double  m_GammaRel;
 	double	m_ManualBlack;
 	double  m_Split;
-	double	m_MasterMinL, m_MasterMaxL, m_ContentMaxL, m_FrameAvgMaxL, m_TargetMinL, m_TargetMaxL, m_DiffuseL, m_TargetMinLUser, m_TargetMaxLUser, m_DiffuseLUser;
+	double	m_MasterMinL, m_MasterMaxL, m_ContentMaxL, m_FrameAvgMaxL, m_TargetMinL, m_TargetMaxL, m_DiffuseL, m_TargetMinLUser, m_TargetMaxLUser, m_DiffuseLUser, m_TargetSysGammaUser;
 	CEdit	m_TargetMinLCtrl, m_TargetMaxLCtrl, m_DiffuseLCtrl, m_MasterMinLCtrl, m_MasterMaxLCtrl, m_ContentMaxLCtrl, m_FrameAvgMaxLCtrl, m_bOverRideTargsCtrl, m_useToneMapCtrl;
+	CEdit	m_TargetSysGammaCtrl;
 	BOOL	m_changeWhiteCheck;
 	CEdit	m_changeWhiteCheckCtrl;
 	BOOL	m_useMeasuredGamma;
 	BOOL	m_bSave;
 	BOOL	m_userBlack, m_useToneMap, m_bOverRideTargs;
 	int		m_GammaOffsetType;
+	double	m_TargetSysGamma;
 	double	m_manualGOffset;
 	double	m_manualWhitex;
 	double	m_manualWhitey;

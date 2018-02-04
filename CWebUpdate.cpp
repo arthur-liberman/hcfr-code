@@ -141,8 +141,52 @@ bool CWebUpdate::DoUpdateCheck()
 	localFile = path + "\\color\\CheckUpdate.txt";
 	// Download
 	HANDLE	dloadHandle = (HANDLE)_beginthread(downloadFile, 0, (void*)"");
+	
 	// Wait for it to finish
-	AtlWaitWithMessageLoop(dloadHandle);
+	//	AtlWaitWithMessageLoop(dloadHandle); //replace with routine below to prevent hang if
+
+	DWORD dwInitialTimeOutMilliseconds = 0;
+	DWORD dwIterateTimeOutMilliseconds = 500;
+	DWORD dwRet=0;
+
+	MSG msg={0};
+
+	dwRet = ::WaitForSingleObject(dloadHandle, dwInitialTimeOutMilliseconds);
+
+	if(dwRet == WAIT_OBJECT_0)
+	{
+		// The object is already signalled.
+	}
+	else
+	{
+		while(true)
+		{
+		// There are one or more window message available. Dispatch them.
+			while(::PeekMessage(&msg,NULL,NULL,NULL,PM_REMOVE))
+			{
+				::TranslateMessage(&msg);
+				::DispatchMessage(&msg);
+				dwRet = ::WaitForSingleObject(dloadHandle, 0);
+				if(dwRet == WAIT_OBJECT_0)
+				{
+					// The object is already signalled.
+
+					break;
+				}
+			}
+			// Now we’ve dispatched all the messages in the queue.
+			// Use MsgWaitForMultipleObjects to either tell us there are
+			// more messages to dispatch, or that our object has been signalled.
+			dwRet = ::MsgWaitForMultipleObjects(1, &dloadHandle, FALSE,
+			dwIterateTimeOutMilliseconds, QS_ALLINPUT);
+			if(dwRet == WAIT_OBJECT_0)
+			{
+			// The event was signaled.
+				break;
+			}
+		}
+	}
+
 
 	// The download failed, return false
 	if (!SUCCEEDED(dloadResult))
@@ -175,7 +219,6 @@ bool CWebUpdate::DoUpdateCheck()
 			{
 				// The files are the same, no worries
 				numSuccess++;
-
 				successfulFiles.Add(fileTo);
 			}
 
@@ -183,7 +226,6 @@ bool CWebUpdate::DoUpdateCheck()
 			{
 				// The files are different
 				numDifferent++;
-
 				differentFiles.Add(fileTo);
 			}
 		}
@@ -192,7 +234,6 @@ bool CWebUpdate::DoUpdateCheck()
 		{
 			// The files doesn't exist at all
 			numMissing++;
-
 			missingFiles.Add(fileTo);
 		}
 	}
@@ -234,7 +275,7 @@ bool CWebUpdate::DownloadDifferent(int i)
 	// Attempt to download the file
 	//	remoteFile = remoteURL + "/" + differentFiles.GetAt(i);
 	remoteFile = remoteURL + "/HCFRSetup.exe";
-//	localFile = localDir + "\\" + differentFiles.GetAt(i);
+	//	localFile = localDir + "\\" + differentFiles.GetAt(i);
 
 	CString path;
 	path = getenv("APPDATA");

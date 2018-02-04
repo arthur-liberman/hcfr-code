@@ -245,11 +245,11 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue, 
     {
 		if (mode == 5)
 		{
-			value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100.;
+			value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) / 100.;
 			value = min(value,peakY / 10000.);
 		}
 		else
-			value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+			value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma);
 
 		simulColor[0] = value;
 	} 
@@ -271,7 +271,7 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue, 
 			value = min(value,peakY / 10000.);
 		}
 		else
-			value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+			value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma);
 
 		simulColor[1] = value;
 	} 
@@ -293,7 +293,7 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue, 
 			value = min(value,peakY / 10000.);
 		}
 		else
-			value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
+			value = getL_EOTF(value / 100., White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma);
 
 		simulColor[2] = value;
 	} 

@@ -74,6 +74,7 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 		bool isUHDTV3 = GetConfig()->m_colorStandard == UHDTV3;
 		bool isUHDTV4 = GetConfig()->m_colorStandard == UHDTV4;
 		bool isHDR10 = GetConfig()->m_GammaOffsetType == 5;
+		bool isHLG = GetConfig()->m_GammaOffsetType == 7;
 
 		if (minCol > 0)
 		{
@@ -221,15 +222,15 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 						m_clr = RGB(nR,nG,nB);
 						break;
 					case UHDTV3:
-							nR = isHDR10?121:225;
-							nG = isHDR10?61:64;
+							nR = isHDR10?121:isHLG?242:225;
+							nG = isHDR10?61:isHLG?82:64;
 							nB = 0;
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case UHDTV4:
-							nR = isHDR10?116:207;
-							nG = isHDR10?68:77;
-							nB = isHDR10?44:40;
+							nR = isHDR10?116:isHLG?233:207;
+							nG = isHDR10?68:isHLG?115:77;
+							nB = isHDR10?44:isHLG?0:40;
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case HDTVb:
@@ -257,16 +258,16 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 							nB = 71;
 						m_clr = RGB(nR,nG,nB);
 					break;
-					case UHDTV4:
-							nR = isHDR10?101:155;
-							nG = isHDR10?126:246;
-							nB = isHDR10?72:85;
+					case UHDTV3:
+							nR = isHDR10?90:isHLG?177:123;
+							nG = isHDR10?127:isHLG?252:248;
+							nB = isHDR10?45:isHLG?0:41;
 						m_clr = RGB(nR,nG,nB);
 					break;
-					case UHDTV3:
-							nR = isHDR10?90:123;
-							nG = isHDR10?127:248;
-							nB = isHDR10?45:41;
+					case UHDTV4:
+							nR = isHDR10?101:isHLG?202:155;
+							nG = isHDR10?126:isHLG?251:246;
+							nB = isHDR10?72:isHLG?131:85;
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case HDTVb:
@@ -295,15 +296,15 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case UHDTV3:
-							nR = isHDR10?62:65;
-							nG = isHDR10?41:35;
-							nB = isHDR10?128:253;
+							nR = isHDR10?62:isHLG?86:65;
+							nG = isHDR10?41:isHLG?0:35;
+							nB = isHDR10?128:isHLG?254:253;
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case UHDTV4:
-							nR = isHDR10?59:62;
-							nG = isHDR10?40:34;
-							nB = isHDR10?126:242;
+							nR = isHDR10?59:isHLG?77:62;
+							nG = isHDR10?40:isHLG?0:34;
+							nB = isHDR10?126:isHLG?250:242;
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case HDTVb:
@@ -332,15 +333,15 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case UHDTV3:
-							nR = isHDR10?127:249;
-							nG = isHDR10?128:254;
-							nB = isHDR10?44:40;
+							nR = isHDR10?127:isHLG?253:249;
+							nG = isHDR10?128:isHLG?254:254;
+							nB = isHDR10?44:isHLG?0:40;
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case UHDTV4:
-							nR = isHDR10?127:250;
-							nG = isHDR10?128:254;
-							nB = isHDR10?76:92;
+							nR = isHDR10?127:isHLG?253:250;
+							nG = isHDR10?128:isHLG?254:254;
+							nB = isHDR10?76:isHLG?141:92;
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case HDTVb:
@@ -369,15 +370,15 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case UHDTV3:
-							nR = isHDR10?94:135;
-							nG = isHDR10?127:249;
-							nB = isHDR10?128:255;
+							nR = isHDR10?94:isHLG?188:135;
+							nG = isHDR10?127:isHLG?253:249;
+							nB = isHDR10?128:isHLG?255:255;
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case UHDTV4:
-							nR = isHDR10?104:163;
-							nG = isHDR10?126:247;
-							nB = isHDR10?128:253;
+							nR = isHDR10?104:isHLG?208:163;
+							nG = isHDR10?126:isHLG?252:247;
+							nB = isHDR10?128:isHLG?254:253;
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case HDTVb:
@@ -406,15 +407,15 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case UHDTV3:
-							nR = isHDR10?122:231;
-							nG = isHDR10?65:71;
-							nB = isHDR10?128:253;
+							nR = isHDR10?122:isHLG?245:231;
+							nG = isHDR10?65:isHLG?103:71;
+							nB = isHDR10?128:isHLG?254:253;
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case UHDTV4:
-							nR = isHDR10?118:213;
-							nG = isHDR10?71:82;
-							nB = isHDR10?126:245;
+							nR = isHDR10?118:isHLG?236:213;
+							nG = isHDR10?71:isHLG?125:82;
+							nB = isHDR10?126:isHLG?251:245;
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case HDTVb:
@@ -481,15 +482,15 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 						m_clr = RGB(nR,nG,nB);
 						break;
 					case UHDTV3:
-							nR = isHDR10?121:225;
-							nG = isHDR10?61:64;
+							nR = isHDR10?121:isHLG?242:225;
+							nG = isHDR10?61:isHLG?82:64;
 							nB = 0;
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case UHDTV4:
-							nR = isHDR10?116:207;
-							nG = isHDR10?68:77;
-							nB = isHDR10?44:40;
+							nR = isHDR10?116:isHLG?233:207;
+							nG = isHDR10?68:isHLG?115:77;
+							nB = isHDR10?44:isHLG?0:40;
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case HDTVb:
@@ -518,15 +519,15 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case UHDTV3:
-							nR = isHDR10?90:123;
-							nG = isHDR10?127:248;
-							nB = isHDR10?45:41;
+							nR = isHDR10?90:isHLG?177:123;
+							nG = isHDR10?127:isHLG?252:248;
+							nB = isHDR10?45:isHLG?0:41;
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case UHDTV4:
-							nR = isHDR10?101:155;
-							nG = isHDR10?126:246;
-							nB = isHDR10?72:85;
+							nR = isHDR10?101:isHLG?202:155;
+							nG = isHDR10?126:isHLG?251:246;
+							nB = isHDR10?72:isHLG?131:85;
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case HDTVb:
@@ -555,15 +556,15 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case UHDTV3:
-							nR = isHDR10?62:65;
-							nG = isHDR10?41:35;
-							nB = isHDR10?128:253;
+							nR = isHDR10?62:isHLG?86:65;
+							nG = isHDR10?41:isHLG?0:35;
+							nB = isHDR10?128:isHLG?254:253;
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case UHDTV4:
-							nR = isHDR10?59:62;
-							nG = isHDR10?40:34;
-							nB = isHDR10?126:242;
+							nR = isHDR10?59:isHLG?77:62;
+							nG = isHDR10?40:isHLG?0:34;
+							nB = isHDR10?126:isHLG?250:242;
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case HDTVb:
@@ -592,15 +593,15 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case UHDTV3:
-							nR = isHDR10?127:249;
-							nG = isHDR10?128:254;
-							nB = isHDR10?44:40;
+							nR = isHDR10?127:isHLG?253:249;
+							nG = isHDR10?128:isHLG?254:254;
+							nB = isHDR10?44:isHLG?0:40;
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case UHDTV4:
-							nR = isHDR10?127:250;
-							nG = isHDR10?128:254;
-							nB = isHDR10?76:92;
+							nR = isHDR10?127:isHLG?253:250;
+							nG = isHDR10?128:isHLG?254:254;
+							nB = isHDR10?76:isHLG?141:92;
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case HDTVb:
@@ -629,15 +630,15 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case UHDTV3:
-							nR = isHDR10?94:135;
-							nG = isHDR10?127:249;
-							nB = isHDR10?128:255;
+							nR = isHDR10?94:isHLG?188:135;
+							nG = isHDR10?127:isHLG?253:249;
+							nB = isHDR10?128:isHLG?255:255;
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case UHDTV4:
-							nR = isHDR10?104:163;
-							nG = isHDR10?126:247;
-							nB = isHDR10?128:253;
+							nR = isHDR10?104:isHLG?208:163;
+							nG = isHDR10?126:isHLG?252:247;
+							nB = isHDR10?128:isHLG?254:253;
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case HDTVb:
@@ -666,15 +667,15 @@ void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMod
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case UHDTV3:
-							nR = isHDR10?122:231;
-							nG = isHDR10?65:71;
-							nB = isHDR10?128:253;
+							nR = isHDR10?122:isHLG?245:231;
+							nG = isHDR10?65:isHLG?103:71;
+							nB = isHDR10?128:isHLG?254:253;
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case UHDTV4:
-							nR = isHDR10?118:213;
-							nG = isHDR10?71:82;
-							nB = isHDR10?126:245;
+							nR = isHDR10?118:isHLG?236:213;
+							nG = isHDR10?71:isHLG?125:82;
+							nB = isHDR10?126:isHLG?251:245;
 						m_clr = RGB(nR,nG,nB);
 					break;
 					case HDTVb:

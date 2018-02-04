@@ -166,13 +166,10 @@ void CNearWhiteGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			    valx = (GrayLevelToGrayProp( x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit));
 				if  (mode == 5)
 				{
-//					double tmWhite = GetConfig()->m_DiffuseL / 94.37844;
-//					White.SetY(White.GetY() * tmWhite);
 	                val = getL_EOTF( valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 100 / White.GetY();
-//					val=min(val,1.2);
 				}
 				else
-					val = getL_EOTF( valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);				
+					val = getL_EOTF( valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma);				
 			}
 			else
 			{

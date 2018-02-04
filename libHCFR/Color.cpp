@@ -1144,8 +1144,6 @@ double ColorXYZ::GetDeltaLCH(double YWhite, const ColorXYZ& refColor, double YWh
 	if (YWhite <= 0) YWhite = 120.;
 	if (YWhiteRef <= 0) YWhiteRef = 1.0;
     //gray world weighted white reference
-	try
-	{
     switch (gw_Weight)
     {
     case 1:
@@ -1330,15 +1328,10 @@ double ColorXYZ::GetDeltaLCH(double YWhite, const ColorXYZ& refColor, double YWh
 		break;
 		}
 	}
-	}
-	catch(...)
-    {
-        std::cerr << "Unexpected Exception in color calcs" << std::endl;
-    }
 	return dLight;
 }
 
-double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double split, int mode, double m_diffuseL, double m_MinML, double m_MaxML, double m_MinTL, double m_MaxTL, bool ToneMap, bool cBT2390)
+double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double split, int mode, double m_diffuseL, double m_MinML, double m_MaxML, double m_MinTL, double m_MaxTL, bool ToneMap, bool cBT2390, double bbc_gamma)
 {
 	if (valx == 0 && mode > 4) return (ToneMap?m_MinTL / 100.:0.0);
 	if (valx < 0)
@@ -1384,18 +1377,13 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 		outL_lab = pow(t,3.0);
 	else
 		outL_lab = 3 * pow((6. / 29.),2) * (t - 4. / 29.);
-//BBC hybrid log for HDR Lmax=4, epsi=0.3733646177 (system gamma = 1.0)
-//graft at 37.37%, ref white at 74.19%
-	double mu = 0.139401137752;
-	double eta = pow(mu, 0.5) / 2.0; // 0.1867 
-	double rho = pow(mu, 0.5) * ( 1.0 - log(pow(mu, 0.5)) ); //0.7419
-	double epsi = 0.3733646177;
-	double outL_bbc, s = 1.0; //Lmax = 4
 
-	if (valx <= epsi)
-		outL_bbc = pow(valx, 2 * s);
-	else
-		outL_bbc = exp( s * (valx - rho)/eta );
+//BBC hybrid log gamma BT.2100 version
+
+	double outL_bbc, bbc_a = 0.17883277, bbc_b = 1.0 - 4 * bbc_a, bbc_c = 0.5 - bbc_a * log(4 * bbc_a);
+	double bbc_alpha = (m_MaxTL - m_MinTL), bbc_beta = m_MinTL;
+//	if (bbc_gamma == 1.2)
+//		bbc_gamma = 1.2 + 0.42 * log10(m_MaxTL / 1000.) ; //for bbc EOTF
 
 	offset = split / 100.0 * minL;
     double a = pow ( ( pow (maxL,1.0/exp0 ) - pow ( offset,1.0/exp0 ) ),exp0 );
@@ -1417,8 +1405,6 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 	Lbt = ( a * pow ( (valx + b)<0?0:(valx+b), exp0 ) );
 
 	double value, Scale = 10000. * m_diffuseL / 94.37844, E3 = 0.0;
-	try
-	{
 	switch (mode)
 	{
 		case 4: //BT.1886
@@ -1435,14 +1421,21 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 		case 6: //L*
 			outL = outL_lab;
 		break;
-		case 7: //bbc
-			outL = outL_bbc / exp( s * (1.0 - rho)/eta );
+		case 7: //bbc EOTF
+			if (valx <= 0.5)
+				outL_bbc = pow(valx, 2) / 3.0;
+			else
+				outL_bbc = (exp( (valx - bbc_c)/bbc_a ) + bbc_b) / 12.0;
+
+			outL = (bbc_alpha * pow(outL_bbc, bbc_gamma - 1) * outL_bbc + bbc_beta) / White.GetY();
 		break;
-		case -7: //bbc inverse
-			if (valx <= mu)
-			outL = pow(valx,0.5);// / rho;
-		else
-			outL = (eta * log (valx) + rho);// / rho;
+		case -7: //bbc inverse EOTF
+			if (valx <=  1.0 / 12.0)
+				outL_bbc = pow(3 * valx, 0.5);
+			else
+				outL_bbc = bbc_a * log(12.0 * valx - bbc_b) + bbc_c;
+
+			outL = outL_bbc;
 		break;
 		case 10: //BT.2084/2390
 			double E1,E2,E4,b,d,KS,T,p;
@@ -1600,11 +1593,6 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 			}
 		break;
 	}
-	}
-    catch(...)
-    {
-        std::cerr << "Unexpected Exception in measurement thread" << std::endl;
-    }
 	return min(max(0,outL),100);
 }
 
@@ -1639,10 +1627,6 @@ double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhit
 			ColorLuv LuvRef(refColor, YWhiteRef, cRef);
 			ColorLuv Luv(*this, YWhite, cRef);
 			dE = sqrt ( pow ((Luv[0] - LuvRef[0]),2) + pow((Luv[1] - LuvRef[1]),2) + pow((Luv[2] - LuvRef[2]),2) );
-			
-//			ColorICT ICTRef(refColor, 94., cRef);
-//			ColorICT ICT(*this, YWhite, cRef);
-//			dE = sqrt ( pow ((ICT[0] - ICTRef[0]),2) + pow((ICT[1] - ICTRef[1]),2) + pow((ICT[2] - ICTRef[2]),2) );
 			break;
 		}
 		case 1:
@@ -1784,7 +1768,16 @@ double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhit
 				}
 		break;
 		}
-}
+		case 6:
+		{
+			//Used for HDR
+			ColorICtCp ICCRef(refColor, YWhite, cRef);
+			ColorICtCp ICC(*this, 1.0, cRef);
+			dE = sqrt ( pow ((ICC[0] - ICCRef[0]),2) + pow((ICC[1] - ICCRef[1]),2) + pow((ICC[2] - ICCRef[2]),2) );
+			break;
+		}
+		
+	}
 	return dE;
 }
 
@@ -1924,8 +1917,6 @@ ColorLab::ColorLab(const Matrix& matrix) :
 
 ColorLab::ColorLab(const ColorXYZ& XYZ, double YWhiteRef, CColorReference colorReference)
 {
-	try
-	{
     if(XYZ.isValid())
     {
         double scaling = YWhiteRef/colorReference.GetWhite()[1];
@@ -1966,11 +1957,6 @@ ColorLab::ColorLab(const ColorXYZ& XYZ, double YWhiteRef, CColorReference colorR
         (*this)[1] = 500.0*(var_X-var_Y); // CIE-a*
         (*this)[2] = 200.0*(var_Y-var_Z); //CIE-b*
     }
-	}
-    catch(...)
-    {
-        std::cerr << "Unexpected Exception in measurement thread" << std::endl;
-    }
 }
 
 ColorLab::ColorLab(double l, double a, double b) :
@@ -1981,23 +1967,21 @@ ColorLab::ColorLab(double l, double a, double b) :
 //////////////////////////////////////////////////////////////////////
 // implementation of the ColorICtCp class.
 //////////////////////////////////////////////////////////////////////
-ColorICT::ColorICT()
+ColorICtCp::ColorICtCp()
 {
 }
 
-ColorICT::ColorICT(const Matrix& matrix) :
+ColorICtCp::ColorICtCp(const Matrix& matrix) :
     ColorTriplet(matrix)
 {
 }
 
-ColorICT::ColorICT(const ColorXYZ& XYZ, double YWhiteRef, CColorReference colorReference)
+ColorICtCp::ColorICtCp(const ColorXYZ& XYZ, double YWhiteRef, CColorReference colorReference)
 {
-	try
-	{
     if(XYZ.isValid())
     {
 //		double scaling = YWhiteRef / XYZ[1];
-		double scaling = 1.0;
+		double scaling = YWhiteRef;
         double var_X = XYZ[0] * scaling ;
         double var_Y = XYZ[1] * scaling ;
         double var_Z = XYZ[2] * scaling ;
@@ -2005,24 +1989,25 @@ ColorICT::ColorICT(const ColorXYZ& XYZ, double YWhiteRef, CColorReference colorR
         double L = 0.3593 * var_X + 0.6976 * var_Y - 0.0359 * var_Z;
         double M = -0.1921 * var_X + 1.1005 * var_Y + 0.0754 * var_Z;
         double S = 0.0071 * var_X + 0.0748 * var_Y + 0.8433 * var_Z;
+		L = min(max(L,0),10000.);
+		M = min(max(M,0),10000.);
+		S = min(max(S,0),10000.);
 
 		double Lp = getL_EOTF(L / 10000., noDataColor, noDataColor, 0.0, 0.0, -5);
 		double Mp = getL_EOTF(M / 10000., noDataColor, noDataColor, 0.0, 0.0, -5);
 		double Sp = getL_EOTF(S / 10000., noDataColor, noDataColor, 0.0, 0.0, -5);
+		Lp = min(max(Lp,0),1.0);
+		Mp = min(max(Mp,0),1.0);
+		Sp = min(max(Sp,0),1.0);
 
         (*this)[0] = (0.5 * Lp + 0.5 * Mp);	 // I
         (*this)[1] = (6610. * Lp - 13613. * Mp + 7003. * Sp) / 4096.; // Ct
         (*this)[2] = (17933. * Lp - 17390. * Mp - 543. * Sp) / 4096.; // Cp
     }
-	}
-    catch(...)
-    {
-        std::cerr << "Unexpected Exception in measurement thread" << std::endl;
-    }
 }
 
-ColorICT::ColorICT(double I, double C, double T) :
-    ColorTriplet(I, C, T)
+ColorICtCp::ColorICtCp(double I, double Ct, double Cp) :
+    ColorTriplet(I, Ct, Cp)
 {
 }
 
@@ -2040,8 +2025,6 @@ ColorLuv::ColorLuv(const Matrix& matrix) :
 
 ColorLuv::ColorLuv(const ColorXYZ& XYZ, double YWhiteRef, CColorReference colorReference)
 {
-	try
-	{
     if(XYZ.isValid())
     {
         ColorxyY white(colorReference.GetWhite());
@@ -2076,11 +2059,6 @@ ColorLuv::ColorLuv(const ColorXYZ& XYZ, double YWhiteRef, CColorReference colorR
         (*this)[1] = 13.0 * (*this)[0] * (u - u_white);
         (*this)[2] = 13.0 * (*this)[0] * (v - v_white);
     }
-	}
-    catch(...)
-    {
-        std::cerr << "Unexpected Exception in measurement thread" << std::endl;
-    }
 }
 
 ColorLuv::ColorLuv(double l, double a, double b) :
@@ -2102,8 +2080,6 @@ ColorLCH::ColorLCH(const Matrix& matrix) :
 
 ColorLCH::ColorLCH(const ColorXYZ& XYZ, double YWhiteRef, CColorReference colorReference)
 {
-	try
-	{
     if(XYZ.isValid())
     {
         ColorLab Lab(XYZ, YWhiteRef, colorReference);
@@ -2120,11 +2096,6 @@ ColorLCH::ColorLCH(const ColorXYZ& XYZ, double YWhiteRef, CColorReference colorR
         (*this)[0] = L;
         (*this)[1] = C;
         (*this)[2] = H;
-    }
-}
-    catch(...)
-    {
-        std::cerr << "Unexpected Exception in measurement thread" << std::endl;
     }
 }
 
@@ -2321,11 +2292,6 @@ Colorxyz CColor::GetxyzValue() const
 ColorLab CColor::GetLabValue(double YWhiteRef, CColorReference colorReference) const 
 {
     return ColorLab(m_XYZValues, YWhiteRef, colorReference);
-}
-
-ColorICT CColor::GetICTValue(double YWhiteRef, CColorReference colorReference) const 
-{
-    return ColorICT(m_XYZValues, YWhiteRef, colorReference);
 }
 
 ColorLCH CColor::GetLCHValue(double YWhiteRef, CColorReference colorReference) const 

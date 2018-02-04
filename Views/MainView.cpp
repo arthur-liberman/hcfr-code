@@ -2216,7 +2216,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 								valy = getL_EOTF(valx,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 100.;
 							}
 							else
-	                            valy = getL_EOTF(valx,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode) * White.GetY();
+	                            valy = getL_EOTF(valx,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) * White.GetY();
 
 							str.Format ( "%.3f", valy );
 						}
@@ -2622,6 +2622,7 @@ void CMainView::UpdateGrid()
 		Item.nFormat = DT_RIGHT|DT_VCENTER|DT_SINGLELINE|DT_END_ELLIPSIS|DT_NOPREFIX;
 		bool isHDR = GetConfig()->m_GammaOffsetType == 5;
 		CColorReference  bRef = ((GetColorReference().m_standard == UHDTV3 || GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):(GetColorReference().m_standard == HDTVa || GetColorReference().m_standard == HDTVb)?CColorReference(HDTV):GetColorReference());
+		double BBC_gamma;
 
 		CString dWhitestr;
 		double tmWhite = getL_EOTF(0.5022283, noDataColor, noDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 100.0;
@@ -2897,7 +2898,11 @@ void CMainView::UpdateGrid()
 
 			if (White.GetY() > 0)
 				GetConfig()->m_TargetMaxL = White.GetY();
+
+			GetConfig()->m_TargetSysGamma = 1.2 + 0.42 * log10(GetConfig()->m_TargetMaxL / 1000.);
 		}
+
+		BBC_gamma = GetConfig()->m_TargetSysGamma;
 
 		for( int j = 0 ; j < nCount ; j ++ )
 		{
@@ -2924,7 +2929,7 @@ void CMainView::UpdateGrid()
 						if (  (mode >= 4) )
 			            {
                             double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
-                            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap);
+                            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma);
 			            }
 			            else
 			            {
@@ -3020,7 +3025,7 @@ void CMainView::UpdateGrid()
 						if (  (mode >= 4) )
 			            {
                             double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
-                            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap);
+                            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma);
 			            }
 			            else
 			            {
@@ -3107,7 +3112,7 @@ void CMainView::UpdateGrid()
 						if (  (mode >= 4) )
 			            {
                             double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
-                            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap);
+                            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma);
 			            }
 			            else
 			            {
@@ -3155,7 +3160,7 @@ void CMainView::UpdateGrid()
 						if (  (mode >= 4) )
 			            {
                             double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
-                            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap);
+                            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma);
 			            }
 			            else
 			            {
@@ -3425,11 +3430,21 @@ void CMainView::UpdateGrid()
 						b=5;
 						break;
 						}
+					case 6:
+						{
+						dEform = " [ICtCp] )";
+//						a=3.0;
+//						b=5;
+						break;
+						}
 					}
 					Msg += dEform;
 					dEform = GetConfig()->m_dE_gray==0?" [Relative Y]":(GetConfig ()->m_dE_gray == 1?" [Absolute Y w/gamma]":" [Absolute Y w/o gamma]");
 					Msg += dEform;
-					Msg += (isHDR ? " HDR"+ dWhitestr:GetConfig()->m_GammaOffsetType == 7?" HLG":" SDR");
+					//bbc_gamma
+					CString bbcstr;
+					bbcstr.Format("system gamma: %3.2f",BBC_gamma);
+					Msg += (isHDR ? " HDR"+ dWhitestr:GetConfig()->m_GammaOffsetType == 7?" HLG "+bbcstr:" SDR");
                     if (GetConfig()->doHighlight)
 					    m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
 				}
@@ -3485,11 +3500,19 @@ void CMainView::UpdateGrid()
 						dEform = " [CIE2000] )";
 						break;
 						}
+					case 6:
+						{
+						dEform = " [ICtCp] )";
+						break;
+						}
 					}
 					Msg += dEform;
 					CString cSpace = GetColorReference().standardName.c_str();
 					cSpace=" "+cSpace;
-					Msg += (isHDR ? cSpace + " HDR"+ dWhitestr:GetConfig()->m_GammaOffsetType == 7?cSpace + "HLG":cSpace + " SDR");
+					//bbc_gamma
+					CString bbcstr;
+					bbcstr.Format("system gamma: %3.2f",BBC_gamma);
+					Msg += (isHDR ? cSpace + " HDR"+ dWhitestr:GetConfig()->m_GammaOffsetType == 7?cSpace + "HLG "+bbcstr:cSpace + " SDR");
                     if (GetConfig()->doHighlight)
                         m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
 			}
@@ -3570,11 +3593,19 @@ void CMainView::UpdateGrid()
 						dEform = " [CIE2000] )";
 						break;
 						}
+					case 6:
+						{
+						dEform = " [ICtCp] )";
+						break;
+						}
 					}
 					Msg += dEform;
 					CString cSpace = GetColorReference().standardName.c_str();
 					cSpace = " "+cSpace;
-					Msg += (isHDR ? cSpace + " HDR"+ dWhitestr:GetConfig()->m_GammaOffsetType == 7?cSpace + " HLG":cSpace + " SDR");
+					//bbc_gamma
+					CString bbcstr;
+					bbcstr.Format("system gamma: %3.2f",BBC_gamma);
+					Msg += (isHDR ? cSpace + " HDR"+ dWhitestr:GetConfig()->m_GammaOffsetType == 7?cSpace + " HLG "+bbcstr:cSpace + " SDR");
                     if (GetConfig()->doHighlight) 
 					    m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
 			}
@@ -3661,11 +3692,19 @@ void CMainView::UpdateGrid()
 						dEform = " [CIE2000] )";
 						break;
 						}
+					case 6:
+						{
+						dEform = " [ICtCp] )";
+						break;
+						}
 					}
 					Msg += dEform;
 					CString cSpace = GetColorReference().standardName.c_str();
 					cSpace = " "+cSpace;
-					Msg += (isHDR ? cSpace + " HDR"+ dWhitestr:GetConfig()->m_GammaOffsetType == 7?cSpace + " HLG":cSpace + " SDR");
+					//bbc_gamma
+					CString bbcstr;
+					bbcstr.Format("system gamma: %3.2f",BBC_gamma);
+					Msg += (isHDR ? cSpace + " HDR"+ dWhitestr:GetConfig()->m_GammaOffsetType == 7?cSpace + " HLG "+bbcstr:cSpace + " SDR");
                     if (GetConfig()->doHighlight)
 					    m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
 			}
@@ -5150,7 +5189,8 @@ void CMainView::UpdateMeasurementsAfterBkgndMeasure ()
 				if (  (mode >= 4) )
 			    {
 					double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
-                    valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap);
+					valy = 
+						(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma);
 			    }
 			    else
 			    {
@@ -5256,12 +5296,12 @@ void CMainView::InitButtons()
 
 	Msg.LoadString ( IDS_CONFIGURESENSOR );
 	if (GetConfig()->isHighDPI)
-		m_configSensorButton.SetIcon(IDI_SETTINGS_ICON,32,32);
+		m_configSensorButton.SetIcon(IDI_SETTINGS_ICON,24,24);
 	else
 		m_configSensorButton.SetIcon(IDI_SETTINGS_ICON,18,18);
 	Msg2.LoadString ( IDS_CONFIGURESENSOR2 );
 	if (GetConfig()->isHighDPI)
-		m_configSensorButton2.SetIcon(IDI_START_ICON,28,28);
+		m_configSensorButton2.SetIcon(IDI_START_ICON,22,22);
 	else
 		m_configSensorButton2.SetIcon(IDI_START_ICON,16,16);
 	m_configSensorButton.SetFont(GetFont());
@@ -5292,7 +5332,7 @@ void CMainView::InitButtons()
 
 	Msg.LoadString ( IDS_CONFIGUREGENERATOR );
 	if (GetConfig()->isHighDPI)
-		m_configGeneratorButton.SetIcon(IDI_SETTINGS_ICON,32,32);
+		m_configGeneratorButton.SetIcon(IDI_SETTINGS_ICON,27,27);
 	else
 		m_configGeneratorButton.SetIcon(IDI_SETTINGS_ICON,18,18);
 	m_configGeneratorButton.SetFont(GetFont());
