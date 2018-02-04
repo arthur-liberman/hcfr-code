@@ -4239,7 +4239,7 @@ void CDataSetDoc::ComputeGammaAndOffset(double * Gamma, double * Offset, int Col
 					int mode = GetConfig()->m_GammaOffsetType;
 					if (GetConfig()->m_colorStandard == sRGB) mode = 99;
                     if (m_bBT1886 || mode > 5) // !GetConfig()->m_useMeasuredGamma)
-                        avg += log(getL_EOTF(valx[i], GetMeasure()->GetGray(Size -1), GetMeasure()->GetGray(0), GetConfig()->m_GammaRel, GetConfig()->m_Split, mode))/log(valx[i]);
+                        avg += log(getL_EOTF(valx[i], GetMeasure()->GetGray(Size -1), GetMeasure()->GetGray(0), GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma))/log(valx[i]);
                     else
 	                    if (mode == 5)// && !GetConfig()->m_useMeasuredGamma)
 			                avg += log(getL_EOTF(valx[i], GetMeasure()->GetGray(Size -1), GetMeasure()->GetGray(0), GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100.)/log(valx[i]);

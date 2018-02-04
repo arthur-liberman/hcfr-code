@@ -265,6 +265,7 @@ void CColorHCFRConfig::InitDefaults()
 	m_ContentMaxL = 4000.0;
 	m_FrameAvgMaxL = 400.0;
 	m_TargetMinL = 0.05;
+	m_TargetSysGamma = 1.2;
 	m_TargetMaxL = 500.;
 	m_DiffuseL = 94.37844;
     m_GammaRel=0.0;
@@ -359,6 +360,7 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_FrameAvgMaxL=GetProfileDouble("References","FrameAvgMaxLValue",400.0);
 	m_TargetMinL=GetProfileDouble("References","TargetMinLValue",0.05);
 	m_TargetMaxL=GetProfileDouble("References","TargetMaxLValue",500.0);
+	m_TargetSysGamma=GetProfileDouble("References","TargetSysGammaValue",1.2);
 	m_DiffuseL=GetProfileDouble("References","DiffuseLValue", 94.37844);
 	m_GammaRel=GetProfileDouble("References","GammaRelValue",0.0);
 	m_Split=GetProfileDouble("References","GammaSplitValue",100.0);
@@ -410,7 +412,7 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_dE_gray = GetProfileInt("Advanced","dE_gray",2);
 	gw_Weight = GetProfileInt("Advanced","gw_Weight",0);
 	if (!m_bDisableHighDPI)
-		isHighDPI = (GetSystemMetrics(SM_CXFULLSCREEN) > 1920);
+		isHighDPI = ((GetSystemMetrics(SM_CXSCREEN) > 1920) && (GetSystemMetrics(SM_CYSCREEN) > 1080));
 	GetCColors();
 	return TRUE;
 }
@@ -531,6 +533,7 @@ void CColorHCFRConfig::SetPropertiesSheetValues()
   	m_referencesPropertiesPage.m_FrameAvgMaxL=m_FrameAvgMaxL;
   	m_referencesPropertiesPage.m_TargetMinL=m_TargetMinL;
   	m_referencesPropertiesPage.m_TargetMaxL=m_TargetMaxL;
+  	m_referencesPropertiesPage.m_TargetSysGamma=m_TargetSysGamma;
   	m_referencesPropertiesPage.m_DiffuseL=m_DiffuseL;
   	m_referencesPropertiesPage.m_Split=m_Split;
 	m_referencesPropertiesPage.m_userBlack=m_userBlack;
@@ -649,6 +652,7 @@ BOOL CColorHCFRConfig::GetPropertiesSheetValues()
 	m_FrameAvgMaxL=m_referencesPropertiesPage.m_FrameAvgMaxL;
 	m_TargetMinL=m_referencesPropertiesPage.m_TargetMinL;
 	m_TargetMaxL=m_referencesPropertiesPage.m_TargetMaxL;
+	m_TargetSysGamma=m_referencesPropertiesPage.m_TargetSysGamma;
 	m_DiffuseL=m_referencesPropertiesPage.m_DiffuseL;
 	m_Split=m_referencesPropertiesPage.m_Split;
 	m_userBlack=m_referencesPropertiesPage.m_userBlack;

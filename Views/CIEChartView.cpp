@@ -383,7 +383,7 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 			L  = ColorLab(aColor2.GetXYZValue(), RefWhite, bRef)[0];
 			a  = ColorLab(aColor2.GetXYZValue(), RefWhite, bRef)[1];
 			b  = ColorLab(aColor2.GetXYZValue(), RefWhite, bRef)[2];
-			str1.Format("\nL*a*b*: %.2f %.3f %.3f <b>[Ref]</b>",L,a,b);
+			str1.Format("\nL*a*b*: %.2f %.3f %.3f <b>[Ref]</b>\n",L,a,b);
 			str += str1;
 
 			switch (GetConfig()->m_dE_form)
@@ -851,9 +851,9 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 					r1 = floor( (r1 * 219.) + 0.5 ) / 219.;
 					g1 = floor( (g1 * 219.) + 0.5 ) / 219.;
 					b1 = floor( (b1 * 219.) + 0.5 ) / 219.;
-				    r1 = getL_EOTF(r1,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100.;
-				    g1 = getL_EOTF(g1,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100.;
-				    b1 = getL_EOTF(b1,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100.;
+				    r1 = getL_EOTF(r1,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) / (mode==5?100.:1.0);
+				    g1 = getL_EOTF(g1,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) / (mode==5?100.:1.0);
+				    b1 = getL_EOTF(b1,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) / (mode==5?100.:1.0);
 				}
 				else
 				{
@@ -1548,7 +1548,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 				if (  (mode >= 4) )
 			    {
 				   double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
-                   valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap);
+                   valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma);
 			    }
 			    else
 			    {

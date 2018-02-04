@@ -177,7 +177,7 @@ void CGDIGenePropPage::OnOK()
 		GetConfig()->WriteProfileInt("GDIGenerator","CCastIp",m_GCast.getCcastIpAddress(m_GCast[nameBuf]));
 	}
 
-	if (GetConfig()->m_GammaOffsetType == 5 || GetConfig()->m_GammaOffsetType == 7)
+	if (GetConfig()->m_GammaOffsetType == 5)
 	{
 		GetDlgItem(IDC_INTENSITY_EDIT)->EnableWindow(FALSE);
 		m_Intensity = 100;

@@ -571,13 +571,15 @@ BEGIN
     EDITTEXT        IDC_EDIT_TARGET_MINL,64,230,44,14,ES_AUTOHSCROLL | WS_GROUP
     EDITTEXT        IDC_EDIT_MASTER_MAXL,63,263,46,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_EDIT_TARGET_MAXL,114,230,42,14,ES_AUTOHSCROLL | WS_GROUP
-    CONTROL         "BT.2390 Tone Mapping",IDC_USE_TONEMAP,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,165,214,48,31
-    CONTROL         "Override Targets",IDC_USER_OVERRIDE_TARGS,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,151,195,66,16
+    CONTROL         "BT.2390 Tone Mapping",IDC_USE_TONEMAP,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,168,214,48,31
+    CONTROL         "Override Targets",IDC_USER_OVERRIDE_TARGS,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,168,195,41,16
     EDITTEXT        IDC_EDIT_CONTENT_MAXL,114,263,45,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_EDIT_FRAME_AVG_MAXL,164,263,45,14,ES_AUTOHSCROLL
-    GROUPBOX        "EOTF (HDR)",IDC_STATIC,6,184,223,96,BS_CENTER | WS_GROUP
+    GROUPBOX        "EOTF (HDR)",IDC_STATIC,6,182,223,96,BS_CENTER | WS_GROUP
     LTEXT           "Content MaxL",IDC_STATIC,114,246,45,16
     LTEXT           "Frame Avg. MaxL",IDC_STATIC,164,246,45,16
+    EDITTEXT        IDC_EDIT_TARGET_MAXL2,113,199,45,12,ES_AUTOHSCROLL | WS_GROUP
+    LTEXT           "HLG System Gamma",IDC_STATIC,106,190,70,8
 END
 
 IDD_GENERAL_PROP_PAGE DIALOGEX 0, 0, 213, 246
@@ -2700,8 +2702,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,5,0,1
- PRODUCTVERSION 3,5,0,1
+ FILEVERSION 3,5,0,2
+ PRODUCTVERSION 3,5,0,2
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2719,12 +2721,12 @@ BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "CompanyName", "Association Homecinema Francophone"
             VALUE "FileDescription", "Resources Colorimètre HCFR"
-            VALUE "FileVersion", "3,5,0,1"
+            VALUE "FileVersion", "3,5,0,2"
             VALUE "InternalName", "CHCFR21_ESPAÑOL"
             VALUE "LegalCopyright", "Copyright (C) 2005-2016"
             VALUE "OriginalFilename", "CHCFR21_ESPAÑOL.DLL"
             VALUE "ProductName", "Colorimètre HCFR langage Español"
-            VALUE "ProductVersion", "3,5,0,1"
+            VALUE "ProductVersion", "3,5,0,2"
         END
     END
     BLOCK "VarFileInfo"
@@ -2749,7 +2751,7 @@ IDC_CURSOR_MEASURE      CURSOR                  "res\\cursor_meas.cur"
 
 STRINGTABLE
 BEGIN
-    IDR_MAINFRAME           "Colorimètre HCFR - 3,5,0,1"
+    IDR_MAINFRAME           "Colorimètre HCFR - 3,5,0,2"
     IDR_MESURETYPE          "\nRelevé\nRelevé\nFichiers ColorHCFR (*.chc)\n.chc\nCOLORHCFR\nRelevé de couleurs HCFR"
 END
 

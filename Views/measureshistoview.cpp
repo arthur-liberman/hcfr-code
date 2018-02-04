@@ -192,7 +192,7 @@ void CMeasuresHistoView::OnInitialUpdate()
 	pGraphCtrl [ NbGraphCtrl ++ ] = & m_graphCtrl3;
 
 	if (GetConfig()->isHighDPI)
-		rect2.left = rect.left + 28;
+		rect2.left = rect.left + 21;
 	else
 		rect2.left = rect.left + 14;
 
@@ -205,7 +205,7 @@ void CMeasuresHistoView::OnInitialUpdate()
 		if ( i == 0 )
 		{
 			if (GetConfig()->isHighDPI)
-				rect2.bottom = rect2.bottom - 30;
+				rect2.bottom = rect2.bottom - 22;
 			else
 				rect2.bottom = rect2.bottom - 15;
 		}
@@ -297,7 +297,7 @@ void CMeasuresHistoView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 				if ( mode >= 4 )
 		        {
 			        double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
-                    valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap);
+                    valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma);
 		        }
 		        else
 		        {
@@ -424,9 +424,9 @@ void CMeasuresHistoView::OnSize(UINT nType, int cx, int cy)
 		{
 			if (IsWindow(pGraphCtrl[i]->m_hWnd))
 				if ( i )
-					pGraphCtrl [ i ] -> MoveWindow ( 28, i * cy / NbGraphCtrl, cx - 28, cy/NbGraphCtrl + 1 );
+					pGraphCtrl [ i ] -> MoveWindow ( 21, i * cy / NbGraphCtrl, cx - 21, cy/NbGraphCtrl + 1 );
 				else
-					pGraphCtrl [ i ] -> MoveWindow ( 28, 30, cx - 28, cy/NbGraphCtrl + 1 - 30);
+					pGraphCtrl [ i ] -> MoveWindow ( 21, 22, cx - 21, cy/NbGraphCtrl + 1 - 22);
 		}
 		else
 		{
@@ -519,13 +519,13 @@ void CMeasuresHistoView::OnDraw(CDC* pDC)
 
 	// Declare a "vertical" font
 	if (GetConfig()->isHighDPI)
-		font.CreateFont( 24, 0, 900, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_CHARACTER_PRECIS, DEFAULT_QUALITY, VARIABLE_PITCH | FF_DONTCARE, "Arial" );
+		font.CreateFont( 15, 0, 900, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_CHARACTER_PRECIS, DEFAULT_QUALITY, VARIABLE_PITCH | FF_DONTCARE, "Arial" );
 	else
 		font.CreateFont( 9, 0, 900, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_CHARACTER_PRECIS, DEFAULT_QUALITY, VARIABLE_PITCH | FF_DONTCARE, "Arial" );
 		pOldFont = pDC -> SelectObject ( & font );	pDC -> SetBkColor ( bWhiteBkgnd?RGB(255,255,255):RGB(0,0,0) );
 	rect2.left = 0;
 	if (GetConfig()->isHighDPI)
-		rect2.right = 28;
+		rect2.right = 21;
 	else
 		rect2.right = 14;
 
@@ -540,7 +540,7 @@ void CMeasuresHistoView::OnDraw(CDC* pDC)
 	}
 	//Tracking percentage
 	if (GetConfig()->isHighDPI)
-		font.CreateFont( 30, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_CHARACTER_PRECIS, DEFAULT_QUALITY, VARIABLE_PITCH | FF_DONTCARE, "Arial" );
+		font.CreateFont( 18, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_CHARACTER_PRECIS, DEFAULT_QUALITY, VARIABLE_PITCH | FF_DONTCARE, "Arial" );
 	else
 		font.CreateFont( 12, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_CHARACTER_PRECIS, DEFAULT_QUALITY, VARIABLE_PITCH | FF_DONTCARE, "Arial" );
 	pOldFont2 = pDC -> SelectObject ( & font );	pDC -> SetBkColor ( bWhiteBkgnd?RGB(255,255,255):RGB(0,0,0) );	pDC -> SetTextColor ( RGB(200,200,0) );
@@ -549,8 +549,8 @@ void CMeasuresHistoView::OnDraw(CDC* pDC)
 	rect2.top = 0;
 	if (GetConfig()->isHighDPI)
 	{
-		rect2.left = 28;
-		rect2.bottom = 30;
+		rect2.left = 21;
+		rect2.bottom = 22;
 	}
 	else
 	{

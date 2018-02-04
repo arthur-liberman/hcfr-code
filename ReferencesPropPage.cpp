@@ -59,6 +59,8 @@ CReferencesPropPage::CReferencesPropPage() : CPropertyPageWithHelp(CReferencesPr
 	m_ContentMaxL = 4000.0;
 	m_FrameAvgMaxL = 400.0;
 	m_TargetMinL = 0.00;
+	m_TargetSysGamma = 1.2;
+	m_TargetSysGammaUser = m_TargetSysGamma;
 	m_TargetMinLUser = m_TargetMinL;
 	m_TargetMaxL = 700.;
 	m_TargetMaxLUser = m_TargetMaxL;
@@ -112,6 +114,9 @@ void CReferencesPropPage::DoDataExchange(CDataExchange* pDX)
   	DDX_Text(pDX, IDC_EDIT_TARGET_MAXL, m_TargetMaxL);
   	DDX_Control(pDX, IDC_EDIT_TARGET_MAXL, m_TargetMaxLCtrl);
 	DDV_MinMaxDouble(pDX, m_TargetMaxL, 1., 10000.);
+  	DDX_Text(pDX, IDC_EDIT_TARGET_MAXL2, m_TargetSysGamma);
+  	DDX_Control(pDX, IDC_EDIT_TARGET_MAXL2, m_TargetSysGammaCtrl);
+	DDV_MinMaxDouble(pDX, m_TargetSysGamma, 0.1, 2.0);
 	DDV_MinMaxDouble(pDX, m_GammaRef, 1., 5.);
 //	DDV_MinMaxDouble(pDX, m_GammaAvg, 1., 5.);
 	DDV_MinMaxDouble(pDX, m_GammaRel, 0., 5.);
@@ -182,6 +187,7 @@ BEGIN_MESSAGE_MAP(CReferencesPropPage, CPropertyPageWithHelp)
 	ON_EN_CHANGE(IDC_EDIT_FRAME_AVG_MAXL, OnChangeEditGammaAvg)
 	ON_EN_CHANGE(IDC_EDIT_TARGET_MINL, OnChangeEditGammaAvg)
 	ON_EN_CHANGE(IDC_EDIT_TARGET_MAXL, OnChangeEditGammaAvg)
+	ON_EN_CHANGE(IDC_EDIT_TARGET_MAXL2, OnChangeEditGammaAvg)
 	ON_BN_CLICKED(IDC_CHANGEWHITE_CHECK, OnChangeWhiteCheck)
 	ON_BN_CLICKED(IDC_USE_MEASURED_GAMMA, OnUseMeasuredGammaCheck)
 	ON_BN_CLICKED(IDC_USER_BLACK, OnUserBlackCheck)
@@ -214,13 +220,14 @@ void CReferencesPropPage::OnControlClicked(UINT nID)
       m_eMeasuredGamma.EnableWindow (TRUE);
     }
 
-	if (m_GammaOffsetType == 5)
+	if (m_GammaOffsetType == 5 || m_GammaOffsetType == 7 )
 	{
 		if (m_bOverRideTargs)
 		{
 			m_TargetMinLCtrl.EnableWindow (TRUE);
   			m_TargetMaxLCtrl.EnableWindow (TRUE);
   			m_DiffuseLCtrl.EnableWindow (TRUE);
+			m_TargetSysGammaCtrl.EnableWindow (TRUE);
 		}
   		m_MasterMinLCtrl.EnableWindow (TRUE);
   		m_MasterMaxLCtrl.EnableWindow (TRUE);
@@ -240,6 +247,7 @@ void CReferencesPropPage::OnControlClicked(UINT nID)
   		m_bOverRideTargsCtrl.EnableWindow (FALSE);
   		m_useToneMapCtrl.EnableWindow (FALSE);
   		m_DiffuseLCtrl.EnableWindow (FALSE);
+		m_TargetSysGammaCtrl.EnableWindow (FALSE);
 	}
 
 	m_isModified=TRUE;
@@ -268,6 +276,8 @@ BOOL CReferencesPropPage::OnApply()
 	GetConfig()->	WriteProfileDouble("References","DiffuseLValue",m_DiffuseLUser);
 	GetConfig()->	WriteProfileDouble("References","TargetMinLValue",m_TargetMinLUser);
 	GetConfig()->	WriteProfileDouble("References","TargetMaxLValue",m_TargetMaxLUser);
+	GetConfig()->	WriteProfileDouble("References","TargetSysGamma",m_TargetSysGamma);
+	GetConfig()->	WriteProfileDouble("References","TargetSysGammaUser",m_TargetSysGammaUser);
 	if (m_colorStandard == HDTVa || m_colorStandard == HDTVb || m_colorStandard == UHDTV3 || m_colorStandard == UHDTV4 || m_colorStandard == CC6) 
 	{
 		m_changeWhiteCheckCtrl.EnableWindow(FALSE);
@@ -435,10 +445,12 @@ BOOL CReferencesPropPage::OnInitDialog()
 	m_manualWhiteyold = m_manualWhitey;
 	m_TargetMinLCtrl.EnableWindow(m_bOverRideTargs);
 	m_TargetMaxLCtrl.EnableWindow(m_bOverRideTargs);
+	m_TargetSysGammaCtrl.EnableWindow(m_bOverRideTargs);
 	if (!m_bOverRideTargs)
 	{
 		m_DiffuseL = 94.37844;
 		m_TargetMinL = 0.0;
+		m_TargetSysGamma = 1.2 + 0.42 * log10(GetConfig()->m_TargetMaxL / 1000.);
 	}
 	else
 	{
@@ -447,13 +459,16 @@ BOOL CReferencesPropPage::OnInitDialog()
 		GetConfig()->m_TargetMaxL = m_TargetMaxL;
 	}
 	m_DiffuseLCtrl.EnableWindow(m_bOverRideTargs);
-	if (m_GammaOffsetType == 5)
+	GetConfig()->m_TargetSysGamma = m_TargetSysGamma;
+	
+	if (m_GammaOffsetType == 5 || m_GammaOffsetType == 7)
 	{
 		if (m_bOverRideTargs)
 		{
 			m_TargetMinLCtrl.EnableWindow (TRUE);
   			m_TargetMaxLCtrl.EnableWindow (TRUE);
   			m_DiffuseLCtrl.EnableWindow (TRUE);
+			m_TargetSysGammaCtrl.EnableWindow (TRUE);
 		}
   		m_MasterMinLCtrl.EnableWindow (TRUE);
   		m_MasterMaxLCtrl.EnableWindow (TRUE);
@@ -473,6 +488,7 @@ BOOL CReferencesPropPage::OnInitDialog()
   		m_bOverRideTargsCtrl.EnableWindow (FALSE);
   		m_useToneMapCtrl.EnableWindow (FALSE);
   		m_DiffuseLCtrl.EnableWindow (FALSE);
+		m_TargetSysGammaCtrl.EnableWindow (FALSE);
 	}
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -564,18 +580,23 @@ void CReferencesPropPage::OnUserOverRideTargsCheck()
 		m_TargetMinLUser = m_TargetMinL;
 		m_TargetMinL = 0.0;
 		m_TargetMaxLUser = m_TargetMaxL;
-//		m_TargetMaxL = 700.;
+		m_TargetSysGammaUser = m_TargetSysGamma;
+		m_TargetSysGamma = 1.2 + 0.42 * log10(GetConfig()->m_TargetMaxL / 1000.);
 	}
 	else
 	{
 		m_DiffuseL = m_DiffuseLUser;
 		m_TargetMinL = m_TargetMinLUser;
 		m_TargetMaxL = m_TargetMaxLUser;
+		m_TargetSysGamma = m_TargetSysGammaUser;
 	}
 
 	GetConfig()->m_DiffuseL = m_DiffuseL;
 	m_TargetMinLCtrl.EnableWindow(m_bOverRideTargs);
 	m_TargetMaxLCtrl.EnableWindow(m_bOverRideTargs);
+	m_TargetSysGammaCtrl.EnableWindow (m_bOverRideTargs);
+	GetConfig()->m_TargetSysGamma = m_TargetSysGamma;
+
 	UpdateData(FALSE);
 }
 
