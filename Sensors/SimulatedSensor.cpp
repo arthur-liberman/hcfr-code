@@ -208,6 +208,8 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue, 
 	White.SetY(GetConfig()->m_TargetMaxL);
 	CColor Black = GetColorReference().GetWhite();
 	Black.SetY(GetConfig()->m_TargetMinL);
+	if (GetConfig()->GetProfileDouble("References","Use Black Level",0))
+		Black.SetY(GetConfig()->GetProfileDouble("References","Manual Black Level",0));
 
 	double peakY = 10000.;
 
@@ -229,6 +231,12 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue, 
 		b =  floor( (aRGBValue[2]/100. * 219.) + 0.5 ) / 2.19;
 	}
 		
+	if (!GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",1)) //user outputs full range
+	{
+		r = floor( ((r / 100.) * 255. + 0.5) ) / 2.55;
+		g = floor( ((g / 100.) * 255. + 0.5) ) / 2.55;
+		b = floor( ((b / 100.) * 255. + 0.5) ) / 2.55;
+	}
 
 	gamma=GetConfig()->m_GammaRef;
 

@@ -484,7 +484,8 @@ void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, cons
 	CColor White = pDoc -> GetMeasure () -> GetOnOffWhite();
 	if (pDoc -> GetMeasure () -> GetPrimeWhite().isValid() && !isSpecial)
 		White = pDoc->GetMeasure()->GetPrimeWhite();
-	CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
+//	CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
+	CColor Black = pDoc -> GetMeasure () -> GetOnOffBlack();
 	double Intensity=GetConfig()->GetProfileInt("GDIGenerator","Intensity",100) / 100.;
 
 	//Need a separte tracker for oddball UHDTV color spaces because color patterns are calculated in original HDTV or P3 space.
@@ -557,9 +558,9 @@ void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, cons
 	        g = getL_EOTF(qg,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 	        b = getL_EOTF(qb,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode);
 
-			qre = (re<=0||re>=1)?min(max(r,0),1):pow(r,1.0/2.22);
-	        qge = (ge<=0||ge>=1)?min(max(g,0),1):pow(g,1.0/2.22);
-	        qbe = (be<=0||be>=1)?min(max(b,0),1):pow(b,1.0/2.22);
+			qre = (re<=0||re>=1)?min(max(re,0),1):pow(re,1.0/2.22);
+	        qge = (ge<=0||ge>=1)?min(max(ge,0),1):pow(ge,1.0/2.22);
+	        qbe = (be<=0||be>=1)?min(max(be,0),1):pow(be,1.0/2.22);
 			qre = floor( (qre * 219.) + 0.5 ) / 219.;		
 			qge = floor( (qge * 219.) + 0.5 ) / 219.;		
 			qbe = floor( (qbe * 219.) + 0.5 ) / 219.;		
@@ -580,15 +581,15 @@ void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, cons
 		g=(qg<=0||qg>=1)?min(max(qg,0),1):pow(qg,gamma);
 		b=(qb<=0||qb>=1)?min(max(qb,0),1):pow(qb,gamma);
 
-		qre = (re<=0||re>=1)?min(max(r,0),1):pow(r,1.0/2.22);
-	    qge = (ge<=0||ge>=1)?min(max(g,0),1):pow(g,1.0/2.22);
-	    qbe = (be<=0||be>=1)?min(max(b,0),1):pow(b,1.0/2.22);
+		qre = (re<=0||re>=1)?min(max(re,0),1):pow(re,1.0/2.22);
+	    qge = (ge<=0||ge>=1)?min(max(ge,0),1):pow(ge,1.0/2.22);
+	    qbe = (be<=0||be>=1)?min(max(be,0),1):pow(be,1.0/2.22);
 		qre = floor( (qre * 219.) + 0.5 ) / 219.;		
 		qge = floor( (qge * 219.) + 0.5 ) / 219.;		
 		qbe = floor( (qbe * 219.) + 0.5 ) / 219.;		
-		re=(qre<=0||qre>=1)?min(max(qr,0),1):pow(qr,gamma);
-		ge=(qge<=0||qge>=1)?min(max(qg,0),1):pow(qg,gamma);
-		be=(qbe<=0||qbe>=1)?min(max(qb,0),1):pow(qb,gamma);
+		re=(qre<=0||qre>=1)?min(max(qre,0),1):pow(qre,gamma);
+		ge=(qge<=0||qge>=1)?min(max(qge,0),1):pow(qge,gamma);
+		be=(qbe<=0||qbe>=1)?min(max(qbe,0),1):pow(qbe,gamma);
 	}
 	
 	aColor.SetRGBValue (ColorRGB(r,g,b), isSpecial?CColorReference(HDTV):(GetColorReference().m_standard == UHDTV3||GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):GetColorReference() );	

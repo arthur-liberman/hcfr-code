@@ -154,7 +154,8 @@ void CNearWhiteGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			double GammaOffset,GammaOpt;
 			pDoc->ComputeGammaAndOffset(&GammaOpt, &GammaOffset, 1,1,g_size,false);
     		CColor White = pDoc -> GetMeasure () -> GetGray ( g_size - 1 );
-	    	CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
+//	    	CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
+	    	CColor Black = pDoc -> GetMeasure () -> GetOnOffBlack();
 			double x = ArrayIndexToGrayLevel ( pDoc->GetMeasure()->m_NearWhiteClipCol - size + i, 101, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
 
 			double valx,val;
