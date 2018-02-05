@@ -1683,7 +1683,7 @@ bool CExport::SaveGrayScaleSheet()
 		    double x = ArrayIndexToGrayLevel ( j, size, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
             double valy;
     		CColor White = m_pDoc -> GetMeasure () -> GetGray ( size - 1 );
-	    	CColor Black = m_pDoc -> GetMeasure () -> GetGray ( 0 );
+			CColor Black = m_pDoc->GetMeasure()->GetOnOffBlack();
 			int mode = GetConfig()->m_GammaOffsetType;
 			if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 			if (  (mode >= 4) )

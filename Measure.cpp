@@ -6306,7 +6306,8 @@ CColor CMeasure::GetRefPrimary(int i) const
     if (CMeasure::GetGray(0).isValid())
     {
         White = CMeasure::GetGray ( CMeasure::GetGrayScaleSize() - 1 );
-	    Black = CMeasure::GetGray ( 0 );
+//	    Black = CMeasure::GetGray ( 0 );
+	    Black = CMeasure::GetOnOffBlack();
     }
 	PrimeWhite = CMeasure::GetPrimeWhite();
 
@@ -6468,7 +6469,8 @@ CColor CMeasure::GetRefSecondary(int i) const
     if (CMeasure::GetGray(0).isValid())
     {
         White = CMeasure::GetGray ( CMeasure::GetGrayScaleSize() - 1 );
-	    Black = CMeasure::GetGray ( 0 );
+//	    Black = CMeasure::GetGray ( 0 );
+	    Black = CMeasure::GetOnOffBlack();
     }	
     double r,g,b;
 	int mode = GetConfig()->m_GammaOffsetType;
@@ -6711,7 +6713,8 @@ CColor CMeasure::GetRefSat(int i, double sat_ratio, bool special) const
 
 	CColor	aColor;
     CColor White = CMeasure::GetGray ( CMeasure::GetGrayScaleSize() - 1 );
-	CColor Black = CMeasure::GetGray ( 0 );
+//	CColor Black = CMeasure::GetGray ( 0 );
+	CColor Black = CMeasure::GetOnOffBlack();
     double gamma=GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef);
 
 	double tmWhite = getL_EOTF(0.5022283, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 100.0;
@@ -7103,7 +7106,8 @@ CColor CMeasure::GetRefCC24Sat(int i) const
     } 
 
     CColor White = CMeasure::GetGray ( CMeasure::GetGrayScaleSize() - 1 );
-	CColor Black = CMeasure::GetGray ( 0 );
+//	CColor Black = CMeasure::GetGray ( 0 );
+	CColor Black = CMeasure::GetOnOffBlack();
     double gamma=GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef);
 	CColor tempColor;
 	int mode = GetConfig()->m_GammaOffsetType;

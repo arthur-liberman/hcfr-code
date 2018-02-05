@@ -163,7 +163,8 @@ void CNearBlackGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			double GammaOffset,GammaOpt;
 			pDoc->ComputeGammaAndOffset(&GammaOpt, &GammaOffset, 1,1,g_size,false);
     		CColor White = pDoc -> GetMeasure () -> GetGray ( g_size - 1 );
-	    	CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
+//	    	CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
+	    	CColor Black = pDoc -> GetMeasure () -> GetOnOffBlack();
 			double x = ArrayIndexToGrayLevel ( i*(GetConfig()->m_GammaOffsetType==5?2:1), 101, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit); 
 			double valx,val;//=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef) );
 			int mode = GetConfig()->m_GammaOffsetType;

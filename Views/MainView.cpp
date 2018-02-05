@@ -2065,7 +2065,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 					{
 						bool shiftDiffuse = (abs(GetConfig()->m_DiffuseL-94.0)>0.5);
 			            CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
-				        CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
+						CColor Black = GetDocument() -> GetMeasure() -> GetOnOffBlack();
 						double tmWhite = getL_EOTF(0.5022283, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 100.0;
 						if (DVD)
 						{
@@ -2236,7 +2236,8 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				int	    nCol2 = nCol, satsize=GetDocument()->GetMeasure()->GetSaturationSize();
 				double  RefLuma [1000], sat=double (nCol-1)/ double (satsize-1);
                 CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
-	            CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
+//	            CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
+	            CColor Black = GetDocument() -> GetMeasure () -> GetOnOffBlack();
 				CColor satcolor;
 				// Retrieve color luminance coefficients matching actual reference
 
@@ -2888,7 +2889,8 @@ void CMainView::UpdateGrid()
 		}
         
 		CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
-	    CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
+//	    CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
+	    CColor Black = GetDocument() -> GetMeasure () -> GetOnOffBlack();
 		if (!GetConfig()->m_bOverRideTargs && Black.isValid() && White.isValid() && (GetConfig()->m_GammaOffsetType == 5 || GetConfig()->m_GammaOffsetType == 7))
 		{
 			if (Black.GetY() < White.GetY())
@@ -3019,7 +3021,8 @@ void CMainView::UpdateGrid()
                         // and added option to assume perfect gamma
 						double x = ArrayIndexToGrayLevel ( nCol, nCnt, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
             		    CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
-	                	CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
+//	                	CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
+	                	CColor Black = GetDocument() -> GetMeasure () -> GetOnOffBlack();
 						int mode = GetConfig()->m_GammaOffsetType;
 						if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 						if (  (mode >= 4) )
@@ -3153,7 +3156,8 @@ void CMainView::UpdateGrid()
                         // and added option to assume perfect gamma
 						double x = ArrayIndexToGrayLevel ( GetDocument()->GetMeasure()->m_NearWhiteClipCol - nCount + j, 101, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
             		    CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
-	                	CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
+//	                	CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
+	                	CColor Black = GetDocument() -> GetMeasure () -> GetOnOffBlack();
 						int mode = GetConfig()->m_GammaOffsetType;
 						if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 
@@ -5183,7 +5187,8 @@ void CMainView::UpdateMeasurementsAfterBkgndMeasure ()
              // and added option to assume perfect gamma
 				double x = ArrayIndexToGrayLevel ( nCol, nCnt, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
 				CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
-	            CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
+//	            CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
+	            CColor Black = GetDocument() -> GetMeasure () -> GetOnOffBlack();
 				int mode = GetConfig()->m_GammaOffsetType;
 				if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 				if (  (mode >= 4) )

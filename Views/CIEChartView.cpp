@@ -1543,7 +1543,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
             {
 				double x = ArrayIndexToGrayLevel ( i, nSize, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
     			CColor White = pDoc -> GetMeasure () -> GetGray ( nSize - 1 );
-	    		CColor Black = pDoc -> GetMeasure () -> GetGray ( 0 );
+				CColor Black = pDoc->GetMeasure()->GetOnOffBlack();
 				if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 				if (  (mode >= 4) )
 			    {
