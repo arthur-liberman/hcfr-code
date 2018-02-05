@@ -205,6 +205,8 @@ bool CWebUpdate::DoUpdateCheck()
 		CString fileHash;
 		AfxExtractSubString(fileHash, curLine, 1, ' ');
 
+		AfxExtractSubString(fileVer, curLine, 2, ' ');
+
 		// So the path = ..
 		CString pathTo = localDir + "\\" + fileTo;
 

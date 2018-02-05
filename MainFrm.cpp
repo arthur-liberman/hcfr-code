@@ -1151,6 +1151,8 @@ void CMainFrame::OnUpdateSoft()
 
 		if (WebUpdate.GetNumberDifferent() == 1)
 		{
+			::SetWindowText ( hCtrl, "Version "+WebUpdate.fileVer+" is available..." );
+			Sleep(2000);
 			::ShowWindow ( hDlg, SW_HIDE );
 			if (AfxMessageBox(IDS_UPD_ASK_DOWNLOAD, MB_YESNO | MB_ICONQUESTION) == IDYES)
 			{
