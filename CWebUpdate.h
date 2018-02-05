@@ -38,6 +38,7 @@ public:
 
 	// Do the update
 	bool DoUpdateCheck();
+	CString fileVer; //new version
 
 // Implementation
 protected:
