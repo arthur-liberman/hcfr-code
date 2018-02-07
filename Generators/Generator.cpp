@@ -252,10 +252,11 @@ BOOL CGenerator::Init(UINT nbMeasure, bool isSpecial)
 									CString templ;
 									int x1 = (int)(pow((double)(Cgen.m_rectSizePercent)/100.0,0.5) * rPi_xWidth);
 									int y1 = (int)(pow((double)(Cgen.m_rectSizePercent)/100.0,0.5) * rPi_yHeight);
+									double t_fact = rPi_xWidth / 1920.; 
 									templ.Format("SETCONF:HCFR:TEMPLATERAMDISK:DRAW=TEXT\nDIM=18,0\nRESOLUTION=100\nRGB=20,128,128\nBG=%d,%d,%d\n" \
 										"POSITION=%d,20\nTEXT=RGB Triplet $RGB\nEND=1\n" \
 										"DRAW=RECTANGLE\nDIM=%d,%d\nRESOLUTION=100\n" \
-										"RGB=DYNAMIC\nBG=-1,-1,-1\nPOSITION=-1,-1\nEND=1",rb,gb,bb,rPi_xWidth / 2 - 175,x1,y1);
+										"RGB=DYNAMIC\nBG=-1,-1,-1\nPOSITION=-1,-1\nEND=1",rb,gb,bb,rPi_xWidth / 2 - int(175 * t_fact),x1,y1);
 							
 									CGenerator::_RB8PG_send(sock,templ);
 								}
