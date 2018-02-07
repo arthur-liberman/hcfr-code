@@ -491,7 +491,7 @@ void CRGBHistoView::OnContextMenu(CWnd* pWnd, CPoint point)
 	menu.LoadMenu(IDR_RGB_GRAPH_MENU);
 	CMenu* pPopup = menu.GetSubMenu(0);
 	ASSERT(pPopup);
-	
+
     pPopup->CheckMenuItem(IDM_RGB_GRAPH_REFERENCE, m_Grapher.m_showReference ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
     pPopup->CheckMenuItem(IDM_RGB_GRAPH_DELTAE, m_Grapher.m_showDeltaE ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
 	pPopup->CheckMenuItem(IDM_RGB_GRAPH_GAMMA, GetConfig()->m_dE_gray == 1 ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
@@ -522,6 +522,12 @@ void CRGBHistoView::OnRgbGraphDeltaE()
 
 void CRGBHistoView::OnRgbGraphGamma() 
 {
+	if (GetConfig()->m_dE_form == 5)
+	{
+		GetConfig()->m_dE_form = 0;
+		GetConfig()->WriteProfileInt("Advanced","dE_form",0);
+	}
+
 	if (GetConfig()->m_dE_gray == 1)
 	{
 		GetConfig()->WriteProfileInt("Advanced","dE_gray",2);

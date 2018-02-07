@@ -574,7 +574,7 @@ void CMeasuresHistoView::OnContextMenu(CWnd* pWnd, CPoint point)
 	menu.LoadMenu(IDR_MEASURES_GRAPH_MENU);
 	CMenu* pPopup = menu.GetSubMenu(0);
 	ASSERT(pPopup);
-	
+
     pPopup->CheckMenuItem(IDM_GRAPH_LUMINANCE, m_showLuminance ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
     pPopup->CheckMenuItem(IDM_RGB_GRAPH_DELTAE, m_showDeltaE ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
 	pPopup->CheckMenuItem(IDM_RGB_GRAPH_GAMMA, GetConfig()->m_dE_gray == 1 ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
@@ -615,6 +615,12 @@ void CMeasuresHistoView::OnGraphShowDeltaE()
 
 void CMeasuresHistoView::OnGraphGamma() 
 {
+	if (GetConfig()->m_dE_form == 5)
+	{
+		GetConfig()->m_dE_form = 0;
+		GetConfig()->WriteProfileInt("Advanced","dE_form",0);
+	}
+
 	if (GetConfig()->m_dE_gray == 1)
 	{
 		GetConfig()->WriteProfileInt("Advanced","dE_gray",2);
