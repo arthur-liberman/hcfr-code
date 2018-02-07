@@ -532,9 +532,9 @@ void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, cons
 			qr = floor( (qr * 219.) + 0.5 ) / 219.;		
 			qg = floor( (qg * 219.) + 0.5 ) / 219.;		
 			qb = floor( (qb * 219.) + 0.5 ) / 219.;		
-			r = getL_EOTF(qr, White, noDataColor, 0, 0, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) / (mode==5?100.:1.);
-			g = getL_EOTF(qg, White, noDataColor, 0, 0, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) / (mode==5?100.:1.);
-			b = getL_EOTF(qb, White, noDataColor, 0, 0, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) / (mode==5?100.:1.);
+			r = getL_EOTF(qr, White, noDataColor, 0, 0, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) / (mode==5?100.:1.);
+			g = getL_EOTF(qg, White, noDataColor, 0, 0, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) / (mode==5?100.:1.);
+			b = getL_EOTF(qb, White, noDataColor, 0, 0, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) / (mode==5?100.:1.);
 
 			qre = getL_EOTF(re, noDataColor, noDataColor, 0, 0, -1*mode);
 			qge = getL_EOTF(ge, noDataColor, noDataColor, 0, 0, -1*mode);
@@ -542,9 +542,9 @@ void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, cons
 			qre = floor( (qre * 219.) + 0.5 ) / 219.;		
 			qge = floor( (qge * 219.) + 0.5 ) / 219.;		
 			qbe = floor( (qbe * 219.) + 0.5 ) / 219.;		
-			re = getL_EOTF(qre, White, noDataColor, 0, 0, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) / (mode==5?100.:1.);
-			ge = getL_EOTF(qge, White, noDataColor, 0, 0, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) / (mode==5?100.:1.);
-			be = getL_EOTF(qbe, White, noDataColor, 0, 0, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) / (mode==5?100.:1.);
+			re = getL_EOTF(qre, White, noDataColor, 0, 0, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) / (mode==5?100.:1.);
+			ge = getL_EOTF(qge, White, noDataColor, 0, 0, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) / (mode==5?100.:1.);
+			be = getL_EOTF(qbe, White, noDataColor, 0, 0, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) / (mode==5?100.:1.);
 		}
 		else
 		{
@@ -612,7 +612,7 @@ void CSatLumShiftGrapher::GetSatShift ( double & satshift, double & deltaE, cons
 
 	if (GetConfig()->m_GammaOffsetType == 5)
 	{
-		double tmWhite = getL_EOTF(0.5022283, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 100.0;
+		double tmWhite = getL_EOTF(0.5022283, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) * 100.0;
 		aColor.SetX(aColor.GetX() * 105.95640);
 		aColor.SetY(aColor.GetY() * 105.95640);
 		aColor.SetZ(aColor.GetZ() * 105.95640);

@@ -31,11 +31,14 @@
 #include "GDIGenerator.h"
 #include "LuminanceHistoView.h"
 #include "NearBlackHistoView.h"
+#include "NearWhiteHistoView.h"
 #include "GammaHistoView.h"
 #include "RGBHistoView.h"
 #include "ColorTempHistoView.h"
 #include "CIEChartView.h"
 #include "MeasuresHistoView.h"
+#include "SatLumHistoView.h"
+#include "SatLumShiftView.h"
 #include "SpectrumDlg.h"
 #include "../ColorHCFRConfig.h"
 #include "../Measure.h"
@@ -420,6 +423,16 @@ CMainView::CMainView()
 	m_pBgBrush= new CBrush(FxGetMenuBgColor());
 
 	m_pInfoWnd = NULL;
+	m_pInfoWnd2 = NULL;
+	m_pInfoWnd3 = NULL;
+	m_pInfoWnd4 = NULL;
+	m_pInfoWnd5 = NULL;
+	m_pInfoWnd6 = NULL;
+	m_pInfoWnd7 = NULL;
+	m_pInfoWnd8 = NULL;
+	m_pInfoWnd9 = NULL;
+	m_pInfoWnd10 = NULL;
+	m_pInfoWnd11 = NULL;
 
 	m_displayType=GetConfig()->GetProfileInt("MainView","Display type",HCFR_xyY_VIEW);
 	dEavg_gs=0;
@@ -905,6 +918,42 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 			case 2:	// spectrum
 				 ( ( CSpectrumWnd * ) m_pInfoWnd ) -> Refresh ();
 				 break;
+
+			case 11: // target
+                if (m_displayMode <= 11)// && m_displayMode != 2)
+                {
+                    int size=GetDocument()->GetMeasure()->GetGrayScaleSize();
+					if (m_displayMode == 1)
+						size = 7;
+                    if (m_displayMode == 3)
+                        size = 101;
+                    else if (m_displayMode == 4)
+                        size = -1 * GetDocument()->GetMeasure()->GetNearWhiteScaleSize();
+				
+					if (m_displayMode > 4 && m_displayMode < 12)
+						size=GetDocument()->GetMeasure()->GetSaturationSize();
+
+					if (m_displayMode == 2)
+					{
+						if (inMeasure)
+						{
+							( ( CTargetWnd * ) m_pInfoWnd ) -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  last_Col + 1, last_Size, last_Display, GetDocument(), CTargetWnd::TARGET_TARGET);
+							( ( CTargetWnd * ) m_pInfoWnd ) -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  last_Col + 1, last_Size, last_Display, GetDocument(), CTargetWnd::TARGET_TESTWINDOW);
+						}
+						else
+							( ( CTargetWnd * ) m_pInfoWnd ) -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  last_Col + 1, last_Size, last_Display, GetDocument(), CTargetWnd::TARGET_ALL);
+					}
+					else
+					{
+						if (inMeasure)
+		                    ( ( CTargetWnd * ) m_pInfoWnd ) -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  last_minCol - 1, size, m_displayMode, GetDocument(), CTargetWnd::TARGET_ALL);
+						else
+		                    ( ( CTargetWnd * ) m_pInfoWnd ) -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  last_minCol, size, m_displayMode, GetDocument(), CTargetWnd::TARGET_ALL);
+					}
+
+					( ( CTargetWnd * ) m_pInfoWnd ) -> m_pRefColor = & m_SelectedColor;
+                }
+				break;
 		}
 	}
 }
@@ -1803,7 +1852,7 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 		
 		if ( m_pInfoWnd ) //in case colorchecker slot is updated
 		{
-				m_pInfoWnd ->SetWindowTextA(GetDocument()->GetMeasure()->GetInfoString());
+				m_pInfoWnd -> SetWindowTextA(GetDocument()->GetMeasure()->GetInfoString());
 				m_pInfoWnd -> Invalidate ();
 				m_pInfoWnd -> UpdateWindow();			
 		}
@@ -2066,10 +2115,10 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						bool shiftDiffuse = (abs(GetConfig()->m_DiffuseL-94.0)>0.5);
 			            CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
 						CColor Black = GetDocument() -> GetMeasure() -> GetOnOffBlack();
-						double tmWhite = getL_EOTF(0.5022283, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 100.0;
+						double tmWhite = getL_EOTF(0.5022283, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) * 100.0;
 						if (DVD)
 						{
-							tmWhite = getL_EOTF(0.50, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 100.0;
+							tmWhite = getL_EOTF(0.50, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) * 100.0;
 							if (m_displayMode == 1)
 							{
 								if ( (cRef.m_standard == UHDTV2 || cRef.m_standard == HDTV || cRef.m_standard == UHDTV || nCol == 7) ) //fix for P3/Mascior
@@ -2213,10 +2262,10 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 							
 							if (mode == 5)
 							{
-								valy = getL_EOTF(valx,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 100.;
+								valy = getL_EOTF(valx,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) * 100.;
 							}
 							else
-	                            valy = getL_EOTF(valx,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) * White.GetY();
+	                            valy = getL_EOTF(valx,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) * White.GetY();
 
 							str.Format ( "%.3f", valy );
 						}
@@ -2318,10 +2367,10 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 				if ( isHDR )
 				{
 					bool shiftDiffuse=(abs(GetConfig()->m_DiffuseL-94.0)>0.5);
-					double tmWhite = getL_EOTF(0.5022283, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 100.0;
+					double tmWhite = getL_EOTF(0.5022283, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) * 100.0;
 					if (DVD)
 					{
-						tmWhite = getL_EOTF(0.50, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 100.0;
+						tmWhite = getL_EOTF(0.50, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) * 100.0;
 						if (m_displayMode == 1)
 						{
 							if (GetColorReference().m_standard == UHDTV || GetColorReference().m_standard == UHDTV2 || GetColorReference().m_standard == HDTV || nCol == 7)
@@ -2626,9 +2675,9 @@ void CMainView::UpdateGrid()
 		double BBC_gamma;
 
 		CString dWhitestr;
-		double tmWhite = getL_EOTF(0.5022283, noDataColor, noDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 100.0;
+		double tmWhite = getL_EOTF(0.5022283, noDataColor, noDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) * 100.0;
 		dWhitestr.Format(": %4.1f nits diffuse white", tmWhite);
-		if (GetConfig()->m_useToneMap)
+		if (GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS)
 			dWhitestr += " w/BT.2390 Tonemap";
 
 		if  (m_userBlack)
@@ -2931,7 +2980,7 @@ void CMainView::UpdateGrid()
 						if (  (mode >= 4) )
 			            {
                             double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
-                            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma);
+                            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS);
 			            }
 			            else
 			            {
@@ -3028,7 +3077,7 @@ void CMainView::UpdateGrid()
 						if (  (mode >= 4) )
 			            {
                             double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
-                            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma);
+                            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS);
 			            }
 			            else
 			            {
@@ -3115,7 +3164,7 @@ void CMainView::UpdateGrid()
 						if (  (mode >= 4) )
 			            {
                             double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
-                            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma);
+                            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS);
 			            }
 			            else
 			            {
@@ -3164,7 +3213,7 @@ void CMainView::UpdateGrid()
 						if (  (mode >= 4) )
 			            {
                             double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
-                            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma);
+                            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS);
 			            }
 			            else
 			            {
@@ -5195,7 +5244,7 @@ void CMainView::UpdateMeasurementsAfterBkgndMeasure ()
 			    {
 					double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
 					valy = 
-						(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma);
+						(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS);
 			    }
 			    else
 			    {
@@ -5624,8 +5673,50 @@ void CMainView::OnSize(UINT nType, int cx, int cy)
 			pWnd = GetDlgItem ( IDC_STATIC_VIEW );
 			pWnd -> GetWindowRect ( & Rect );
 			ScreenToClient ( & Rect );
+			if (m_infoDisplay >= 1)
+			{
+				if (m_infoDisplay == 9)
+				{
+					m_pInfoWnd -> SetWindowPos ( pWnd, Rect.left, Rect.top, (Rect.right - Rect.left) / 2, Rect.bottom - Rect.top , SWP_NOACTIVATE );
+					m_pInfoWnd5 -> SetWindowPos ( pWnd, Rect.left + (Rect.right - Rect.left) / 2, Rect.top, (Rect.right - Rect.left) / 2, Rect.bottom - Rect.top, SWP_NOACTIVATE );
+				}
+				else if (m_infoDisplay == 10)
+				{
+					m_pInfoWnd -> SetWindowPos ( pWnd, Rect.left, Rect.top, (Rect.right - Rect.left) / 2, Rect.bottom - Rect.top , SWP_NOACTIVATE );
+					m_pInfoWnd6 -> SetWindowPos ( pWnd, Rect.left + (Rect.right - Rect.left) / 2, Rect.top, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
+				}
+				else if (m_infoDisplay == 4)
+				{
+					m_pInfoWnd -> SetWindowPos ( pWnd, Rect.left, Rect.top, (Rect.right - Rect.left) / 2, Rect.bottom - Rect.top , SWP_NOACTIVATE );
+					m_pInfoWnd7 -> SetWindowPos ( pWnd, Rect.left + (Rect.right - Rect.left) / 2, Rect.top, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
+				}
+				else if (m_infoDisplay == 1)
+				{
+					m_pInfoWnd -> SetWindowPos ( pWnd, Rect.left, Rect.top, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
+					m_pInfoWnd8 -> SetWindowPos ( pWnd, Rect.left + (Rect.right - Rect.left) / 2, Rect.top, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
+				}
+				else if (m_infoDisplay == 3)
+				{
+					m_pInfoWnd -> SetWindowPos ( pWnd, Rect.left, Rect.top, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
+					m_pInfoWnd9 -> SetWindowPos ( pWnd, Rect.left + (Rect.right - Rect.left) / 2, Rect.top, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
+				}
+				else if (m_infoDisplay == 11)
+				{
+					m_pInfoWnd -> SetWindowPos ( pWnd, Rect.left, Rect.top, (Rect.right - Rect.left) / 3, (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
+					m_pInfoWnd10 -> SetWindowPos ( pWnd, Rect.left + (Rect.right - Rect.left) / 3, Rect.top, (Rect.right - Rect.left) / 3, (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
+					m_pInfoWnd11 -> SetWindowPos ( pWnd, Rect.left + (Rect.right - Rect.left) / 3 * 2, Rect.top, (Rect.right - Rect.left) / 3, (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
+				}
+				else
+					m_pInfoWnd -> SetWindowPos ( pWnd, Rect.left, Rect.top, Rect.right - Rect.left, (Rect.bottom - Rect.top), SWP_NOACTIVATE );
+			}
+			else
+			{
+				m_pInfoWnd -> SetWindowPos ( pWnd, Rect.left, Rect.top, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) / 2, SWP_NOACTIVATE );
+				m_pInfoWnd2 -> SetWindowPos ( pWnd, Rect.left + (Rect.right - Rect.left) / 2, Rect.top, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) / 2, SWP_NOACTIVATE );
+				m_pInfoWnd3 -> SetWindowPos ( pWnd, Rect.left, Rect.top + (Rect.bottom - Rect.top) / 2, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) / 2, SWP_NOACTIVATE );
+				m_pInfoWnd4 -> SetWindowPos ( pWnd, Rect.left + (Rect.right - Rect.left) / 2, Rect.top + (Rect.bottom - Rect.top) / 2, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) / 2, SWP_NOACTIVATE );
+			}
 
-			m_pInfoWnd -> SetWindowPos ( pWnd, Rect.left, Rect.top, Rect.right - Rect.left, Rect.bottom - Rect.top, SWP_NOACTIVATE );
 		}
 
 		if ( ClientRect.bottom - ClientRect.top < m_InitialWindowSize.y + m_nSizeOffset )
@@ -5653,6 +5744,10 @@ void CMainView::OnSelchangeInfoDisplay()
 	CCreateContext			context;
 	CCIEChartView *			pCIEChartView;
 	CLuminanceHistoView *	pLuminanceHistoView;
+	CNearBlackHistoView *	pNearBlackHistoView;
+	CNearWhiteHistoView *	pNearWhiteHistoView;
+	CSatLumHistoView *		pSatLumHistoView;
+	CSatLumShiftView *		pSatLumShiftView;
 	CGammaHistoView	*		pGammaHistoView;
 	CRGBHistoView *			pRGBHistoView;
 	CColorTempHistoView *	pColorTempHistoView;
@@ -5662,7 +5757,7 @@ void CMainView::OnSelchangeInfoDisplay()
 	if ( m_pInfoWnd )
 	{
 		m_pInfoWnd -> DestroyWindow ();
-		if ( m_infoDisplay < 3 )
+		if ( m_infoDisplay < 3 || m_infoDisplay == 11 )
 			delete m_pInfoWnd;
 		m_pInfoWnd = NULL;
 	}
@@ -5677,6 +5772,68 @@ void CMainView::OnSelchangeInfoDisplay()
 	if (m_bUpdate)
 		GetConfig()->WriteProfileInt("MainView","Info Display",m_infoDisplay);
 
+	if ( m_pInfoWnd2 ) 
+	{
+		if (m_infoDisplay != 0 && m_pInfoWnd2 -> IsWindowVisible())
+		{
+			m_pInfoWnd2->DestroyWindow();
+			if (m_pInfoWnd3)
+				m_pInfoWnd3->DestroyWindow();
+			if (m_pInfoWnd4)
+				m_pInfoWnd4->DestroyWindow();
+		}
+	}
+	
+	if ( m_pInfoWnd5 ) 
+	{
+		if (m_infoDisplay != 9 && m_pInfoWnd5 -> IsWindowVisible())
+		{
+			m_pInfoWnd5->DestroyWindow();
+		}
+	}
+
+	if ( m_pInfoWnd6 ) 
+	{
+		if (m_infoDisplay != 10 && m_pInfoWnd6 -> IsWindowVisible())
+		{
+			m_pInfoWnd6->DestroyWindow();
+		}
+	}
+
+	if ( m_pInfoWnd7 ) 
+	{
+		if (m_infoDisplay != 4 && m_pInfoWnd7 -> IsWindowVisible())
+		{
+			m_pInfoWnd7->DestroyWindow();
+		}
+	}
+
+	if ( m_pInfoWnd8 ) 
+	{
+		if (m_infoDisplay != 1 && m_pInfoWnd8 -> IsWindowVisible())
+		{
+			m_pInfoWnd8->DestroyWindow();
+		}
+	}
+
+	if ( m_pInfoWnd9 ) 
+	{
+		if (m_infoDisplay != 3 && m_pInfoWnd9 -> IsWindowVisible())
+		{
+			m_pInfoWnd9->DestroyWindow();
+		}
+	}
+
+	if ( m_pInfoWnd10 ) 
+	{
+		if (m_infoDisplay != 11 && m_pInfoWnd10 -> IsWindowVisible())
+		{
+			m_pInfoWnd10->DestroyWindow();
+			if (m_pInfoWnd11)
+				m_pInfoWnd11->DestroyWindow();
+		}
+	}
+
 	switch ( m_infoDisplay )
 	{
 		case 0:
@@ -5687,6 +5844,61 @@ void CMainView::OnSelchangeInfoDisplay()
 			 pEdit -> SetWindowText ( GetDocument()->GetMeasure()->GetInfoString() );
 
 			 m_pInfoWnd = pEdit;
+			 m_pInfoWnd -> SetWindowPos ( pWnd, Rect.left, Rect.top, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) / 2, SWP_NOACTIVATE );
+
+			 pFrame = new CSubFrame;
+
+			 pFrame -> Create ( NULL, NULL, WS_CHILD | WS_VISIBLE, Rect, this );
+
+			 context.m_pCurrentDoc = GetDocument ();
+			 context.m_pCurrentFrame = pFrame;
+			 context.m_pLastView = this;
+			 context.m_pNewDocTemplate = GetDocument () -> GetDocTemplate ();
+			 context.m_pNewViewClass = RUNTIME_CLASS ( CCIEChartView );
+
+			 pCIEChartView = (CCIEChartView *) context.m_pNewViewClass->CreateObject();
+			 pCIEChartView -> Create ( NULL, NULL, AFX_WS_DEFAULT_VIEW, CRect(0,0,0,0), pFrame, IDC_INFO_VIEW, & context );
+			 pCIEChartView -> OnInitialUpdate ();
+			 pFrame -> SetActiveView ( pCIEChartView, FALSE );
+
+			 m_pInfoWnd2 = pFrame;
+			 m_pInfoWnd2 -> SetWindowPos ( pWnd, Rect.left + (Rect.right - Rect.left) / 2, Rect.top, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) / 2, SWP_NOACTIVATE );
+
+			 pFrame = new CSubFrame;
+
+			 pFrame -> Create ( NULL, NULL, WS_CHILD | WS_VISIBLE, Rect, this );
+
+			 context.m_pCurrentDoc = GetDocument ();
+			 context.m_pCurrentFrame = pFrame;
+			 context.m_pLastView = this;
+			 context.m_pNewDocTemplate = GetDocument () -> GetDocTemplate ();
+			 context.m_pNewViewClass = RUNTIME_CLASS ( CLuminanceHistoView );
+
+			 pLuminanceHistoView = (CLuminanceHistoView *) context.m_pNewViewClass->CreateObject();
+			 pLuminanceHistoView -> Create ( NULL, NULL, AFX_WS_DEFAULT_VIEW, CRect(0,0,0,0), pFrame, IDC_INFO_VIEW, & context );
+			 pLuminanceHistoView -> OnInitialUpdate ();
+			 pFrame -> SetActiveView ( pLuminanceHistoView, FALSE );
+
+			 m_pInfoWnd3 = pFrame;
+			 m_pInfoWnd3 -> SetWindowPos ( pWnd, Rect.left, Rect.top + (Rect.bottom - Rect.top) / 2, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) / 2, SWP_NOACTIVATE );
+
+			 pFrame = new CSubFrame;
+
+			 pFrame -> Create ( NULL, NULL, WS_CHILD | WS_VISIBLE, Rect, this );
+
+			 context.m_pCurrentDoc = GetDocument ();
+			 context.m_pCurrentFrame = pFrame;
+			 context.m_pLastView = this;
+			 context.m_pNewDocTemplate = GetDocument () -> GetDocTemplate ();
+			 context.m_pNewViewClass = RUNTIME_CLASS ( CRGBHistoView );
+
+			 pRGBHistoView = (CRGBHistoView *) context.m_pNewViewClass->CreateObject();
+			 pRGBHistoView -> Create ( NULL, NULL, AFX_WS_DEFAULT_VIEW, CRect(0,0,0,0), pFrame, IDC_INFO_VIEW, & context );
+			 pRGBHistoView -> OnInitialUpdate ();
+			 pFrame -> SetActiveView ( pRGBHistoView, FALSE );
+
+			 m_pInfoWnd4 = pFrame;
+			 m_pInfoWnd4 -> SetWindowPos ( pWnd, Rect.left + (Rect.right - Rect.left) / 2, Rect.top + (Rect.bottom - Rect.top) / 2, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) / 2, SWP_NOACTIVATE );
 			 break;
 
 		case 1: // target
@@ -5717,6 +5929,25 @@ void CMainView::OnSelchangeInfoDisplay()
 				}
              }
 			 m_pInfoWnd = pTargetWnd;
+			 m_pInfoWnd -> SetWindowPos ( pWnd, Rect.left, Rect.top, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
+
+			 pFrame = new CSubFrame;
+
+			 pFrame -> Create ( NULL, NULL, WS_CHILD | WS_VISIBLE, Rect, this );
+
+			 context.m_pCurrentDoc = GetDocument ();
+			 context.m_pCurrentFrame = pFrame;
+			 context.m_pLastView = this;
+			 context.m_pNewDocTemplate = GetDocument () -> GetDocTemplate ();
+			 context.m_pNewViewClass = RUNTIME_CLASS ( CCIEChartView );
+
+			 pCIEChartView = (CCIEChartView *) context.m_pNewViewClass->CreateObject();
+			 pCIEChartView -> Create ( NULL, NULL, AFX_WS_DEFAULT_VIEW, CRect(0,0,0,0), pFrame, IDC_INFO_VIEW, & context );
+			 pCIEChartView -> OnInitialUpdate ();
+			 pFrame -> SetActiveView ( pCIEChartView, FALSE );
+
+			 m_pInfoWnd8 = pFrame;
+			 m_pInfoWnd8 -> SetWindowPos ( pWnd, Rect.left + (Rect.right - Rect.left) / 2, Rect.top, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
 			 break;
 
 		case 2: // spectrum
@@ -5747,9 +5978,8 @@ void CMainView::OnSelchangeInfoDisplay()
 			 pFrame -> OnSize ( 0, 0, 0 );
 
 			 m_pInfoWnd = pFrame;
-			 break;
+			 m_pInfoWnd -> SetWindowPos ( pWnd, Rect.left, Rect.top, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
 
-		case 4: // gamma
 			 pFrame = new CSubFrame;
 
 			 pFrame -> Create ( NULL, NULL, WS_CHILD | WS_VISIBLE, Rect, this );
@@ -5764,9 +5994,49 @@ void CMainView::OnSelchangeInfoDisplay()
 			 pGammaHistoView -> Create ( NULL, NULL, AFX_WS_DEFAULT_VIEW, CRect(0,0,0,0), pFrame, IDC_INFO_VIEW, & context );
 			 pGammaHistoView -> OnInitialUpdate ();
 			 pFrame -> SetActiveView ( pGammaHistoView, FALSE );
+
+			 m_pInfoWnd9 = pFrame;
+			 m_pInfoWnd9 -> SetWindowPos ( pWnd, Rect.left + (Rect.right - Rect.left) / 2, Rect.top, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
+			 break;
+
+		case 4: // gamma
+			 pFrame = new CSubFrame;
+
+			 pFrame -> Create ( NULL, NULL, WS_CHILD | WS_VISIBLE, Rect, this );
+
+			 context.m_pCurrentDoc = GetDocument ();
+			 context.m_pCurrentFrame = pFrame;
+			 context.m_pLastView = this;
+			 context.m_pNewDocTemplate = GetDocument () -> GetDocTemplate ();
+			 context.m_pNewViewClass = RUNTIME_CLASS ( CRGBHistoView );
+
+			 pRGBHistoView = (CRGBHistoView *) context.m_pNewViewClass->CreateObject();
+			 pRGBHistoView -> Create ( NULL, NULL, AFX_WS_DEFAULT_VIEW, CRect(0,0,0,0), pFrame, IDC_INFO_VIEW, & context );
+			 pRGBHistoView -> OnInitialUpdate ();
+			 pFrame -> SetActiveView ( pRGBHistoView, FALSE );
+
 			 pFrame -> OnSize ( 0, 0, 0 );
 
 			 m_pInfoWnd = pFrame;
+			 m_pInfoWnd -> SetWindowPos ( pWnd, Rect.left, Rect.top, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
+
+			 pFrame = new CSubFrame;
+
+			 pFrame -> Create ( NULL, NULL, WS_CHILD | WS_VISIBLE, Rect, this );
+
+			 context.m_pCurrentDoc = GetDocument ();
+			 context.m_pCurrentFrame = pFrame;
+			 context.m_pLastView = this;
+			 context.m_pNewDocTemplate = GetDocument () -> GetDocTemplate ();
+			 context.m_pNewViewClass = RUNTIME_CLASS ( CGammaHistoView );
+
+			 pGammaHistoView = (CGammaHistoView *) context.m_pNewViewClass->CreateObject();
+			 pGammaHistoView -> Create ( NULL, NULL, AFX_WS_DEFAULT_VIEW, CRect(0,0,0,0), pFrame, IDC_INFO_VIEW, & context );
+			 pGammaHistoView -> OnInitialUpdate ();
+			 pFrame -> SetActiveView ( pGammaHistoView, FALSE );
+
+			 m_pInfoWnd7 = pFrame;
+			 m_pInfoWnd7 -> SetWindowPos ( pWnd, Rect.left + (Rect.right - Rect.left) / 2, Rect.top, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
 			 break;
 
 		case 5: // RGB
@@ -5848,11 +6118,158 @@ void CMainView::OnSelchangeInfoDisplay()
 
 			 m_pInfoWnd = pFrame;
 			 break;
+
+		case 9: // Nearblack/nearwhite
+			 pFrame = new CSubFrame;
+
+			 pFrame -> Create ( NULL, NULL, WS_CHILD | WS_VISIBLE, Rect, this );
+
+			 context.m_pCurrentDoc = GetDocument ();
+			 context.m_pCurrentFrame = pFrame;
+			 context.m_pLastView = this;
+			 context.m_pNewDocTemplate = GetDocument () -> GetDocTemplate ();
+			 context.m_pNewViewClass = RUNTIME_CLASS ( CNearBlackHistoView );
+
+			 pNearBlackHistoView = (CNearBlackHistoView *) context.m_pNewViewClass->CreateObject();
+			 pNearBlackHistoView -> Create ( NULL, NULL, AFX_WS_DEFAULT_VIEW, CRect(0,0,0,0), pFrame, IDC_INFO_VIEW, & context );
+			 pNearBlackHistoView -> OnInitialUpdate ();
+			 pFrame -> SetActiveView ( pNearBlackHistoView, FALSE );
+			 pFrame -> OnSize ( 0, 0, 0 );
+
+			 m_pInfoWnd = pFrame;
+			 m_pInfoWnd -> SetWindowPos ( pWnd, Rect.left, Rect.top, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
+			 
+			 pFrame = new CSubFrame;
+
+			 pFrame -> Create ( NULL, NULL, WS_CHILD | WS_VISIBLE, Rect, this );
+
+			 context.m_pCurrentDoc = GetDocument ();
+			 context.m_pCurrentFrame = pFrame;
+			 context.m_pLastView = this;
+			 context.m_pNewDocTemplate = GetDocument () -> GetDocTemplate ();
+			 context.m_pNewViewClass = RUNTIME_CLASS ( CNearWhiteHistoView );
+
+			 pNearWhiteHistoView = (CNearWhiteHistoView *) context.m_pNewViewClass->CreateObject();
+			 pNearWhiteHistoView -> Create ( NULL, NULL, AFX_WS_DEFAULT_VIEW, CRect(0,0,0,0), pFrame, IDC_INFO_VIEW, & context );
+			 pNearWhiteHistoView -> OnInitialUpdate ();
+			 pFrame -> SetActiveView ( pNearWhiteHistoView, FALSE );
+
+			 m_pInfoWnd5 = pFrame;
+			 m_pInfoWnd5 -> SetWindowPos ( pWnd, Rect.left + (Rect.right - Rect.left) / 2, Rect.top, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
+			 break;
+
+		case 10: // saturations
+			 pFrame = new CSubFrame;
+
+			 pFrame -> Create ( NULL, NULL, WS_CHILD | WS_VISIBLE, Rect, this );
+
+			 context.m_pCurrentDoc = GetDocument ();
+			 context.m_pCurrentFrame = pFrame;
+			 context.m_pLastView = this;
+			 context.m_pNewDocTemplate = GetDocument () -> GetDocTemplate ();
+			 context.m_pNewViewClass = RUNTIME_CLASS ( CSatLumHistoView );
+
+			 pSatLumHistoView = (CSatLumHistoView *) context.m_pNewViewClass->CreateObject();
+			 pSatLumHistoView -> Create ( NULL, NULL, AFX_WS_DEFAULT_VIEW, CRect(0,0,0,0), pFrame, IDC_INFO_VIEW, & context );
+			 pSatLumHistoView -> OnInitialUpdate ();
+			 pFrame -> SetActiveView ( pSatLumHistoView, FALSE );
+			 pFrame -> OnSize ( 0, 0, 0 );
+
+			 m_pInfoWnd = pFrame;
+			 m_pInfoWnd -> SetWindowPos ( pWnd, Rect.left, Rect.top, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
+			 
+			 pFrame = new CSubFrame;
+
+			 pFrame -> Create ( NULL, NULL, WS_CHILD | WS_VISIBLE, Rect, this );
+
+			 context.m_pCurrentDoc = GetDocument ();
+			 context.m_pCurrentFrame = pFrame;
+			 context.m_pLastView = this;
+			 context.m_pNewDocTemplate = GetDocument () -> GetDocTemplate ();
+			 context.m_pNewViewClass = RUNTIME_CLASS ( CSatLumShiftView );
+
+			 pSatLumShiftView = (CSatLumShiftView *) context.m_pNewViewClass->CreateObject();
+			 pSatLumShiftView -> Create ( NULL, NULL, AFX_WS_DEFAULT_VIEW, CRect(0,0,0,0), pFrame, IDC_INFO_VIEW, & context );
+			 pSatLumShiftView -> OnInitialUpdate ();
+			 pFrame -> SetActiveView ( pSatLumShiftView, FALSE );
+
+			 m_pInfoWnd6 = pFrame;
+			 m_pInfoWnd6 -> SetWindowPos ( pWnd, Rect.left + (Rect.right - Rect.left) / 2, Rect.top, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
+			 break;
+
+		case 11: //Target - RGB - gamma
+			 pTargetWnd = new CTargetWnd;
+
+			 pTargetWnd -> Create (NULL, NULL, WS_VISIBLE | WS_CHILD, Rect, this, IDC_INFO_VIEW, NULL );
+             if (m_displayMode <= 11 )// &&  m_displayMode != 2)
+             {
+		        if (m_displayMode == 3)
+				    size = 101;
+				else if (m_displayMode == 4)
+				size = -1 * GetDocument()->GetMeasure()->GetNearWhiteScaleSize();
+
+				if (m_displayMode > 4 && m_displayMode < 12)
+					size=GetDocument()->GetMeasure()->GetSaturationSize();
+
+				if (m_displayMode == 2)
+				{
+					pTargetWnd -> m_pRefColor = & m_SelectedColor;
+					pTargetWnd -> Refresh (GetDocument()->GetGenerator()->m_b16_235, last_Col + 1, size, last_Display, GetDocument(), CTargetWnd::TARGET_ALL );
+				}
+				else
+				{
+					if (m_SelectedColor.isValid())
+						pTargetWnd -> m_pRefColor = & m_SelectedColor;
+					if (GetDocument())
+						pTargetWnd -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  (m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1), size, m_displayMode, GetDocument(), CTargetWnd::TARGET_ALL );
+				}
+             }
+
+			 m_pInfoWnd = pTargetWnd;
+			 m_pInfoWnd -> SetWindowPos ( pWnd, Rect.left, Rect.top, (Rect.right - Rect.left) / 3, (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
+
+			 pFrame = new CSubFrame;
+
+			 pFrame -> Create ( NULL, NULL, WS_CHILD | WS_VISIBLE, Rect, this );
+
+			 context.m_pCurrentDoc = GetDocument ();
+			 context.m_pCurrentFrame = pFrame;
+			 context.m_pLastView = this;
+			 context.m_pNewDocTemplate = GetDocument () -> GetDocTemplate ();
+			 context.m_pNewViewClass = RUNTIME_CLASS ( CRGBHistoView );
+
+			 pRGBHistoView = (CRGBHistoView *) context.m_pNewViewClass->CreateObject();
+			 pRGBHistoView -> Create ( NULL, NULL, AFX_WS_DEFAULT_VIEW, CRect(0,0,0,0), pFrame, IDC_INFO_VIEW, & context );
+			 pRGBHistoView -> OnInitialUpdate ();
+			 pFrame -> SetActiveView ( pRGBHistoView, FALSE );
+
+			 m_pInfoWnd10 = pFrame;
+			 m_pInfoWnd10 -> SetWindowPos ( pWnd, Rect.left + (Rect.right - Rect.left) / 3, Rect.top, (Rect.right - Rect.left) / 3, (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
+
+			 pFrame = new CSubFrame;
+
+			 pFrame -> Create ( NULL, NULL, WS_CHILD | WS_VISIBLE, Rect, this );
+
+			 context.m_pCurrentDoc = GetDocument ();
+			 context.m_pCurrentFrame = pFrame;
+			 context.m_pLastView = this;
+			 context.m_pNewDocTemplate = GetDocument () -> GetDocTemplate ();
+			 context.m_pNewViewClass = RUNTIME_CLASS ( CGammaHistoView );
+
+			 pGammaHistoView = (CGammaHistoView *) context.m_pNewViewClass->CreateObject();
+			 pGammaHistoView -> Create ( NULL, NULL, AFX_WS_DEFAULT_VIEW, CRect(0,0,0,0), pFrame, IDC_INFO_VIEW, & context );
+			 pGammaHistoView -> OnInitialUpdate ();
+			 pFrame -> SetActiveView ( pGammaHistoView, FALSE );
+
+			 m_pInfoWnd11 = pFrame;
+			 m_pInfoWnd11 -> SetWindowPos ( pWnd, Rect.left + (Rect.right - Rect.left) / 3 * 2, Rect.top, (Rect.right - Rect.left) / 3, (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
+			 
+			 break;
 	}
 
+	
 	if ( m_pInfoWnd ) 
 		m_pInfoWnd -> Invalidate ();
-
 }
 
 void CMainView::OnChangeInfosEdit() 

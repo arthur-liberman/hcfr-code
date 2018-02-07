@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by CHCFR21_FRANCAIS.rc
+// Used by CHCFR21_ENGLISH.rc
 //
 #define IDS_STRING_VERSION              1
 #define IDS_STRING_VERSION_WEB          2
@@ -285,7 +285,9 @@
 #define IDR_PATTERN_NB                  403
 #define IDC_EDIT_TARGET_MAXL2           403
 #define IDR_PATTERN_NBv                 404
+#define IDC_EDIT_TARGET_MAXL3           404
 #define IDR_PATTERN_NBHDR               405
+#define IDC_EDIT_TARGET_MAXL4           405
 #define IDR_PATTERN_NBvHDR              406
 #define IDR_PATTERN_NBHDRb              407
 #define IDR_PATTERN_NBHDRbv             408
@@ -1132,6 +1134,9 @@
 #define ID_Menu33101                    33101
 #define IDM_LUM_GRAPH_Yab               33102
 #define IDM_PATTERN_NB                  33103
+#define ID_GRAPH_W                      33103
+#define IDM_RGB_GRAPH_GAMMA             33104
+#define ID_GRAPH_W33105                 33105
 #define IDS_LUMINANCEHISTOVIEW_NAME     41446
 #define IDS_COLORTEMPHISTOVIEW_NAME     41447
 #define IDS_RGBHISTOVIEW_NAME           41448
@@ -1674,7 +1679,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        382
-#define _APS_NEXT_COMMAND_VALUE         33103
+#define _APS_NEXT_COMMAND_VALUE         33106
 #define _APS_NEXT_CONTROL_VALUE         1288
 #define _APS_NEXT_SYMED_VALUE           143
 #endif

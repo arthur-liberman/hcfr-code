@@ -1331,7 +1331,7 @@ double ColorXYZ::GetDeltaLCH(double YWhite, const ColorXYZ& refColor, double YWh
 	return dLight;
 }
 
-double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double split, int mode, double m_diffuseL, double m_MinML, double m_MaxML, double m_MinTL, double m_MaxTL, bool ToneMap, bool cBT2390, double bbc_gamma)
+double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double split, int mode, double m_diffuseL, double m_MinML, double m_MaxML, double m_MinTL, double m_MaxTL, bool ToneMap, bool cBT2390, double bbc_gamma, double b_fact, double E2_fact)
 {
 	if (valx == 0 && mode > 4) return (ToneMap?m_MinTL / 100.:0.0);
 	if (valx < 0)
@@ -1405,6 +1405,7 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 	Lbt = ( a * pow ( (valx + b)<0?0:(valx+b), exp0 ) );
 
 	double value, Scale = 10000. * m_diffuseL / 94.37844, E3 = 0.0;
+
 	switch (mode)
 	{
 		case 4: //BT.1886
@@ -1454,13 +1455,13 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 
 				if (E1 >= KS && E1 <= 1.0)
 				{
-					T = (E1 - KS) / (1.0 - KS);
+					T = pow((E1 - KS) / (1.0 - KS),E2_fact);
 					E2 = (2 * pow(T,3.0) - 3 * pow(T,2.0) + 1.0)*KS + (pow(T,3.0) - 2 * pow(T, 2.0) + T) * (1.0 - KS) + ( -2.0 * pow(T,3.0) + 3.0 * pow(T,2.0)) * maxL ;
 				}
 			
 				if (E2 >= 0.0 && E2 <= 1.0)
 				{
-					p = min(1.0 / b, 4);
+					p = min(1.0 / b, 4 * b_fact);
 					E3 = E2 + b * pow((1.0 - E2),p);
 					E3 = (E3 * d + pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2)); 
 					E4 = pow(max(pow(E3,1.0 / m2) - c1,0) / (c2 - c3 * pow(E3, 1.0 / m2)), 1.0 / m1);
@@ -1496,13 +1497,13 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 
 					if (E1 >= KS && E1 <= 1.0)
 					{
-						T = (E1 - KS) / (1.0 - KS);
+						T = pow((E1 - KS) / (1.0 - KS),E2_fact);
 						E2 = (2 * pow(T,3.0) - 3 * pow(T,2.0) + 1.0)*KS + (pow(T,3.0) - 2 * pow(T, 2.0) + T) * (1.0 - KS) + ( -2.0 * pow(T,3.0) + 3.0 * pow(T,2.0)) * maxL ;
 					}
 			
 					if (E2 >= 0.0 && E2 <= 1.0)
 					{
-						p = min(1.0 / b, 4); //Hoech mod
+						p = min(1.0 / b, 4 * b_fact); //Hoech mod
 						E3 = E2 + b * pow((1.0 - E2),p);
 						E3 = (E3 * d + pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2)); 
 						E4 = pow(max(pow(E3,1.0 / m2) - c1,0) / (c2 - c3 * pow(E3, 1.0 / m2)), 1.0 / m1);
@@ -2599,7 +2600,7 @@ void CSpectrum::Serialize(CArchive& archive)
 }
 #endif
 
-bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int aCCMode, int mode, double m_DiffuseL, double m_MasterMinL, double m_MasterMaxL, double m_TargetMinL, double m_TargetMaxL, bool ToneMap, bool cBT2390)
+bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int aCCMode, int mode)
 {
 	//six cases, one for GCD sequence, one for Mascior's disk (Chromapure based), and four different generator only cases
 	//GCD
@@ -3543,7 +3544,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 	return bOk;
 }
 
-void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int nSteps, bool bRed, bool bGreen, bool bBlue, int mode, double m_DiffuseL, double m_MasterMinL, double m_MasterMaxL, double m_TargetMinL, double m_TargetMaxL, bool ToneMap, bool cBT2390 )
+void GenerateSaturationColors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int nSteps, bool bRed, bool bGreen, bool bBlue, int mode)
 {
 	//use fully saturated space if user has special color space modes set
 	//UHDTV pseudo-spaces XYZ is set in original space and mapped to BT.2020

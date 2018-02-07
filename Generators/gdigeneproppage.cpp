@@ -95,13 +95,13 @@ void CGDIGenePropPage::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CGDIGenePropPage, CPropertyPageWithHelp)
 	//{{AFX_MSG_MAP(CGDIGenePropPage)
 	ON_BN_CLICKED(IDC_OVERLAY, OnTestOverlay)
-	ON_BN_CLICKED(IDC_RADIO1, OnClickmadVR)
-	ON_BN_CLICKED(IDC_RADIO2, OnClickmadVR)
-	ON_BN_CLICKED(IDC_RADIO3, OnClickmadVR)
-	ON_BN_CLICKED(IDC_RADIO4, OnClickmadVR)
-	ON_BN_CLICKED(IDC_RADIO5, OnClickmadVR)
-	ON_BN_CLICKED(IDC_RADIO6, OnClickmadVR)
-	ON_BN_CLICKED(IDC_RADIO8, OnClickmadVR)
+	ON_BN_CLICKED(IDC_RADIO1, OnClickSelection)
+	ON_BN_CLICKED(IDC_RADIO2, OnClickSelection)
+	ON_BN_CLICKED(IDC_RADIO3, OnClickSelection)
+	ON_BN_CLICKED(IDC_RADIO4, OnClickSelection)
+	ON_BN_CLICKED(IDC_RADIO5, OnClickSelection)
+	ON_BN_CLICKED(IDC_RADIO6, OnClickSelection)
+	ON_BN_CLICKED(IDC_RADIO8, OnClickSelection)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -184,6 +184,14 @@ void CGDIGenePropPage::OnOK()
 	}
 	else
 		GetDlgItem(IDC_INTENSITY_EDIT)->EnableWindow(TRUE);
+
+	if (m_nDisplayMode == DISPLAY_GDI)
+		m_usePicEdit.EnableWindow(TRUE);
+	else
+	{
+		m_usePicEdit.EnableWindow(FALSE);
+		m_busePic = false;
+	}
 
 	CPropertyPageWithHelp::OnOK();
 }
@@ -289,6 +297,14 @@ BOOL CGDIGenePropPage::OnSetActive()
 	else
 		GetDlgItem(IDC_INTENSITY_EDIT)->EnableWindow(TRUE);
 
+	if (m_nDisplayMode == DISPLAY_GDI)
+		m_usePicEdit.EnableWindow(TRUE);
+	else
+	{
+		m_usePicEdit.EnableWindow(FALSE);
+		m_busePic = false;
+	}
+
 	return CPropertyPageWithHelp::OnSetActive();
 }
 
@@ -374,7 +390,7 @@ void CGDIGenePropPage::OnTestOverlay()
 		MessageBox ( "An error occured during Overlay creation.", "Overlay", MB_OK | MB_ICONHAND );
 }
 
-void CGDIGenePropPage::OnClickmadVR() 
+void CGDIGenePropPage::OnClickSelection() 
 {
     if (IsDlgButtonChecked ( IDC_RADIO3 ) )
     {
@@ -460,6 +476,15 @@ void CGDIGenePropPage::OnClickmadVR()
 	{
 		GetDlgItem(IDC_ENBL_HDR)->EnableWindow(FALSE);
 	}
+
+	if (m_nDisplayMode == DISPLAY_GDI)
+		m_usePicEdit.EnableWindow(TRUE);
+	else
+	{
+		m_usePicEdit.EnableWindow(FALSE);
+		m_busePic = false;
+	}
+
 }
 
 UINT CGDIGenePropPage::GetHelpId ( LPSTR lpszTopic )

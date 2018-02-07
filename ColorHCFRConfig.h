@@ -75,8 +75,8 @@ public:
 	int m_BWColorsToAdd;
 	double m_GammaRef;
 	double m_GammaAvg;
-	double m_MasterMinL, m_MasterMaxL, m_ContentMaxL, m_FrameAvgMaxL, m_TargetMinL, m_TargetMaxL, m_DiffuseL, m_TargetSysGamma;
-	double m_GammaRel;
+	double m_MasterMinL, m_MasterMaxL, m_ContentMaxL, m_FrameAvgMaxL, m_TargetMinL, m_TargetMaxL, m_DiffuseL, m_TargetSysGamma, m_BT2390_BS;
+	double m_GammaRel, m_BT2390_WS; 
 	double m_Split;
 	double m_ManualBlack;
 	BOOL m_userBlack, m_bOverRideTargs;

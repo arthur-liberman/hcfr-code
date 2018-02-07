@@ -128,7 +128,7 @@ void CSatLumGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 	CColor NoDataColor;
 	double WhiteY = pDoc->GetMeasure()->GetOnOffWhite().GetLuminance(), ref_coeff=1.0;
-	double tmWhite = getL_EOTF(0.5022283, NoDataColor, NoDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 100.0;
+	double tmWhite = getL_EOTF(0.5022283, NoDataColor, NoDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) * 100.0;
 	
 	if (pDoc->GetMeasure()->GetPrimeWhite().isValid() &&  !(GetConfig()->m_colorStandard==HDTVa||GetConfig()->m_colorStandard==HDTVb))
 		WhiteY = pDoc->GetMeasure()->GetPrimeWhite().GetLuminance();

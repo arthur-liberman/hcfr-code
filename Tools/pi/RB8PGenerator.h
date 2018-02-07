@@ -18,10 +18,11 @@ extern "C" {
 #define RB8PGenerator_DLL __declspec(dllimport)
 #endif
 
-RB8PGenerator_DLL char * __stdcall RB8PG_discovery();
-RB8PGenerator_DLL SOCKET __stdcall RB8PG_connect(const char *server_addr);
-RB8PGenerator_DLL int    __stdcall RB8PG_send(SOCKET sock,const char *message);
-RB8PGenerator_DLL int    __stdcall RB8PG_close(SOCKET sock);
+char * __stdcall RB8PGenerator_DLL RB8PG_discovery();
+SOCKET __stdcall RB8PGenerator_DLL RB8PG_connect(const char *server_addr);
+int    __stdcall RB8PGenerator_DLL RB8PG_send(SOCKET sock,const char *message);
+char * __stdcall RB8PGenerator_DLL RB8PG_get(SOCKET sock,const char *message);
+int    __stdcall RB8PGenerator_DLL RB8PG_close(SOCKET sock);
 
 #ifdef DEBUG
 #define DEBUG 1

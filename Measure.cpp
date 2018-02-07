@@ -230,8 +230,11 @@ void CMeasure::Serialize(CArchive& ar)
 
 	if (ar.IsStoring())
 	{
-	    int version = 16;
+	    int version = 17;
 		ar << version;
+
+		ar << GetConfig()->m_BT2390_BS;
+		ar << GetConfig()->m_BT2390_WS;
 
 		ar << GetConfig()->m_TargetSysGamma;
 
@@ -359,8 +362,14 @@ void CMeasure::Serialize(CArchive& ar)
 	    int version;
 		ar >> version;
 
-		if ( version > 16 )
+		if ( version > 17 )
 			AfxThrowArchiveException ( CArchiveException::badSchema );
+
+		if ( version > 16)
+		{
+			ar >> GetConfig()->m_BT2390_BS;
+			ar >> GetConfig()->m_BT2390_WS;
+		}
 
 		if ( version > 15)
 			ar >> GetConfig()->m_TargetSysGamma;
@@ -1808,9 +1817,9 @@ BOOL CMeasure::MeasureNearWhiteScale(CSensor *pSensor, CGenerator *pGenerator, C
 			UpdateTstWnd(pDoc, -1);
 
 		//Autoscale range for clipped white in HDR mode
-		double tmWhite = getL_EOTF(0.5022283, noDataColor, noDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 100.0 / 94.37844;
+		double tmWhite = getL_EOTF(0.5022283, noDataColor, noDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) * 100.0 / 94.37844;
 
-		double PMax = getL_EOTF(YMax / 10000. / tmWhite, noDataColor, noDataColor, 0, 0, -5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL,  GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap);
+		double PMax = getL_EOTF(YMax / 10000. / tmWhite, noDataColor, noDataColor, 0, 0, -5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL,  GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS);
 
 		if (GetConfig()->m_GammaOffsetType == 5)
 			m_NearWhiteClipCol = int(101*PMax) + 1;
@@ -1970,7 +1979,7 @@ BOOL CMeasure::MeasureRedSatScale(CSensor *pSensor, CGenerator *pGenerator, CDat
 	}
 
 	// Generate saturation colors for red
-	GenerateSaturationColors (GetColorReference(), GenColors,size, true, false, false, GetConfig()->m_GammaOffsetType, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap);
+	GenerateSaturationColors (GetColorReference(), GenColors,size, true, false, false, GetConfig()->m_GammaOffsetType);
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
@@ -2139,7 +2148,7 @@ BOOL CMeasure::MeasureGreenSatScale(CSensor *pSensor, CGenerator *pGenerator, CD
 		return FALSE;
 	}
 	// Generate saturation colors for green
-	GenerateSaturationColors (GetColorReference(), GenColors,size, false, true, false, GetConfig()->m_GammaOffsetType, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap );
+	GenerateSaturationColors (GetColorReference(), GenColors,size, false, true, false, GetConfig()->m_GammaOffsetType);
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
@@ -2309,7 +2318,7 @@ BOOL CMeasure::MeasureBlueSatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 	}
 
 	// Generate saturation colors for blue
-		GenerateSaturationColors (GetColorReference(), GenColors,size, false, false, true, GetConfig()->m_GammaOffsetType, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap );
+		GenerateSaturationColors (GetColorReference(), GenColors,size, false, false, true, GetConfig()->m_GammaOffsetType);
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
@@ -2480,7 +2489,7 @@ BOOL CMeasure::MeasureYellowSatScale(CSensor *pSensor, CGenerator *pGenerator, C
 	}
 
 	// Generate saturation colors for yellow
-	GenerateSaturationColors (GetColorReference(), GenColors,size, true, true, false, GetConfig()->m_GammaOffsetType, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap );
+	GenerateSaturationColors (GetColorReference(), GenColors,size, true, true, false, GetConfig()->m_GammaOffsetType);
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
@@ -2651,7 +2660,7 @@ BOOL CMeasure::MeasureCyanSatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 	}
 
 	// Generate saturation colors for cyan
-	GenerateSaturationColors (GetColorReference(), GenColors,size, false, true, true, GetConfig()->m_GammaOffsetType,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap );
+	GenerateSaturationColors (GetColorReference(), GenColors,size, false, true, true, GetConfig()->m_GammaOffsetType);
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
@@ -2823,7 +2832,7 @@ BOOL CMeasure::MeasureMagentaSatScale(CSensor *pSensor, CGenerator *pGenerator, 
 	}
 
 	// Generate saturation colors for magenta
-	GenerateSaturationColors (GetColorReference(), GenColors,size, true, false, true, GetConfig()->m_GammaOffsetType,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap );
+	GenerateSaturationColors (GetColorReference(), GenColors,size, true, false, true, GetConfig()->m_GammaOffsetType);
 	CString str;
 	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
 
@@ -3042,7 +3051,7 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 		return FALSE;
 	}
 
-    if (!GenerateCC24Colors (GetColorReference(), GenColors, GetConfig()->m_CCMode, GetConfig()->m_GammaOffsetType, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap))
+    if (!GenerateCC24Colors (GetColorReference(), GenColors, GetConfig()->m_CCMode, GetConfig()->m_GammaOffsetType))
 	{		
 		Title.LoadString ( IDS_ERROR );
 		strMsg.LoadString ( IDS_ERRINITGENERATOR );
@@ -3304,14 +3313,14 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 
 
 	// Generate saturations for all colors
-	GenerateSaturationColors (GetColorReference(), GenColors, size, true, false, false, GetConfig()->m_GammaOffsetType,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap );				// Red
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 1 ], size, false, true, false, GetConfig()->m_GammaOffsetType, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap );	// Green
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 2 ], size, false, false, true, GetConfig()->m_GammaOffsetType, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap );	// Blue
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 3 ], size, true, true, false, GetConfig()->m_GammaOffsetType, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap );	// Yellow
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 4 ], size, false, true, true, GetConfig()->m_GammaOffsetType, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap );	// Cyan
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 5 ], size, true, false, true, GetConfig()->m_GammaOffsetType, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap );	// Magenta
+	GenerateSaturationColors (GetColorReference(), GenColors, size, true, false, false, GetConfig()->m_GammaOffsetType);			// Red
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 1 ], size, false, true, false, GetConfig()->m_GammaOffsetType);	// Green
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 2 ], size, false, false, true, GetConfig()->m_GammaOffsetType);	// Blue
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 3 ], size, true, true, false, GetConfig()->m_GammaOffsetType);	// Yellow
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 4 ], size, false, true, true, GetConfig()->m_GammaOffsetType);	// Cyan
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 5 ], size, true, false, true, GetConfig()->m_GammaOffsetType);	// Magenta
 
-	if (!GenerateCC24Colors (GetColorReference(), & GenColors [ size * 6 ], GetConfig()->m_CCMode, GetConfig()->m_GammaOffsetType, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap)) //color checker
+	if (!GenerateCC24Colors (GetColorReference(), & GenColors [ size * 6 ], GetConfig()->m_CCMode, GetConfig()->m_GammaOffsetType)) //color checker
 	{		
 		Title.LoadString ( IDS_ERROR );
 		strMsg.LoadString ( IDS_ERRINITGENERATOR );
@@ -3637,12 +3646,12 @@ BOOL CMeasure::MeasurePrimarySecondarySaturationScales(CSensor *pSensor, CGenera
 
 
 	// Generate saturations for all colors
-	GenerateSaturationColors (GetColorReference(), GenColors, size, true, false, false, GetConfig()->m_GammaOffsetType, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap );				// Red
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 1 ], size, false, true, false, GetConfig()->m_GammaOffsetType, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap );	// Green
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 2 ], size, false, false, true, GetConfig()->m_GammaOffsetType, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap );	// Blue
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 3 ], size, true, true, false, GetConfig()->m_GammaOffsetType, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap );	// Yellow
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 4 ], size, false, true, true, GetConfig()->m_GammaOffsetType, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap );	// Cyan
-	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 5 ], size, true, false, true, GetConfig()->m_GammaOffsetType, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap );	// Magenta
+	GenerateSaturationColors (GetColorReference(), GenColors, size, true, false, false, GetConfig()->m_GammaOffsetType);				// Red
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 1 ], size, false, true, false, GetConfig()->m_GammaOffsetType);	// Green
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 2 ], size, false, false, true, GetConfig()->m_GammaOffsetType);	// Blue
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 3 ], size, true, true, false, GetConfig()->m_GammaOffsetType);	// Yellow
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 4 ], size, false, true, true, GetConfig()->m_GammaOffsetType);	// Cyan
+	GenerateSaturationColors (GetColorReference(), & GenColors [ size * 5 ], size, true, false, true, GetConfig()->m_GammaOffsetType);	// Magenta
 
 	m_binMeasure = TRUE;
 	for ( j = 0 ; j < ( bPrimaryOnly ? 3 : 6 ) ; j ++ )
@@ -6315,9 +6324,9 @@ CColor CMeasure::GetRefPrimary(int i) const
 	double r,g,b;
 	if ((mode == 5 || mode == 7) && (GetColorReference().m_standard == UHDTV3||GetColorReference().m_standard == UHDTV4))
 	{
-		r=getL_EOTF(GetColorReference().m_standard == UHDTV3?(mode==7?0.94977169:0.474325):(mode==7?0.91324201:0.456621),PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) * (mode==5?(105.95640 / 100.0):1.0);
-		g=getL_EOTF(GetColorReference().m_standard == UHDTV3?(mode==7?0.32420091:0.237609):(mode==7?0.45205479:0.26484018),PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) * (mode==5?(105.95640 / 100.0):1.0);
-		b=getL_EOTF(GetColorReference().m_standard == UHDTV3?(0.0):(mode==7?0.0:0.17351598),PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) * (mode==5?(105.95640 / 100.0):1.0);
+		r=getL_EOTF(GetColorReference().m_standard == UHDTV3?(mode==7?0.94977169:0.474325):(mode==7?0.91324201:0.456621),PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) * (mode==5?(105.95640 / 100.0):1.0);
+		g=getL_EOTF(GetColorReference().m_standard == UHDTV3?(mode==7?0.32420091:0.237609):(mode==7?0.45205479:0.26484018),PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) * (mode==5?(105.95640 / 100.0):1.0);
+		b=getL_EOTF(GetColorReference().m_standard == UHDTV3?(0.0):(mode==7?0.0:0.17351598),PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) * (mode==5?(105.95640 / 100.0):1.0);
 	}
 	else
 	{
@@ -6355,9 +6364,9 @@ CColor CMeasure::GetRefPrimary(int i) const
     aColorr.SetRGBValue (ColorRGB(r,g,b), ((cRef.m_standard == UHDTV3||cRef.m_standard == UHDTV4)?CColorReference(UHDTV2):GetColorReference()));	
 	if ((mode == 5 || mode == 7) && (GetColorReference().m_standard == UHDTV3||GetColorReference().m_standard == UHDTV4))
 	{
-		r=getL_EOTF(GetColorReference().m_standard == UHDTV3?(mode==7?0.69406393:0.351598):(mode==7?0.79452055:0.39726027),PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) * (mode==5?(105.95640 / 100.0):1.0);
-		g=getL_EOTF(GetColorReference().m_standard == UHDTV3?(mode==7?0.99086758:0.497717):(mode==7?0.98630137:0.49315068),PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) * (mode==5?(105.95640 / 100.0):1.0);
-		b=getL_EOTF(GetColorReference().m_standard == UHDTV3?(mode==7?0.0:0.178082):(mode==7?0.51141553:0.28310502),PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) * (mode==5?(105.95640 / 100.0):1.0);
+		r=getL_EOTF(GetColorReference().m_standard == UHDTV3?(mode==7?0.69406393:0.351598):(mode==7?0.79452055:0.39726027),PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) * (mode==5?(105.95640 / 100.0):1.0);
+		g=getL_EOTF(GetColorReference().m_standard == UHDTV3?(mode==7?0.99086758:0.497717):(mode==7?0.98630137:0.49315068),PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) * (mode==5?(105.95640 / 100.0):1.0);
+		b=getL_EOTF(GetColorReference().m_standard == UHDTV3?(mode==7?0.0:0.178082):(mode==7?0.51141553:0.28310502),PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) * (mode==5?(105.95640 / 100.0):1.0);
 	}
 	else
 	{
@@ -6395,9 +6404,9 @@ CColor CMeasure::GetRefPrimary(int i) const
 
 	if ((mode == 5 || mode == 7) && (GetColorReference().m_standard == UHDTV3||GetColorReference().m_standard == UHDTV4))
 	{
-		r=getL_EOTF(GetColorReference().m_standard == UHDTV3?(mode==7?0.33789954:0.242009):(mode==7?0.30136986:0.23287671),PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) * (mode==5?(105.95640 / 100.0):1.0);
-		g=getL_EOTF(GetColorReference().m_standard == UHDTV3?(mode==7?0.0:0.159817):(mode==7?0.0:0.15525114),PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) * (mode==5?(105.95640 / 100.0):1.0);
-		b=getL_EOTF(GetColorReference().m_standard == UHDTV3?(mode==7?0.99543379:0.502283):(mode==7?0.98173516:0.49315068),PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) * (mode==5?(105.95640 / 100.0):1.0);
+		r=getL_EOTF(GetColorReference().m_standard == UHDTV3?(mode==7?0.33789954:0.242009):(mode==7?0.30136986:0.23287671),PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) * (mode==5?(105.95640 / 100.0):1.0);
+		g=getL_EOTF(GetColorReference().m_standard == UHDTV3?(mode==7?0.0:0.159817):(mode==7?0.0:0.15525114),PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) * (mode==5?(105.95640 / 100.0):1.0);
+		b=getL_EOTF(GetColorReference().m_standard == UHDTV3?(mode==7?0.99543379:0.502283):(mode==7?0.98173516:0.49315068),PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) * (mode==5?(105.95640 / 100.0):1.0);
 	}
 	else
 	{
@@ -6476,9 +6485,9 @@ CColor CMeasure::GetRefSecondary(int i) const
 	int mode = GetConfig()->m_GammaOffsetType;
 	if ((mode == 5 || mode == 7) && (cRef.m_standard == UHDTV3||cRef.m_standard == UHDTV4))
 	{
-		r=getL_EOTF(cRef.m_standard == UHDTV3?(mode==7?0.99086758:0.4977169):(mode==7?0.99086758:0.49771689), PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) * (mode==5?(105.95640 / 100.0):1.0);
-		g=getL_EOTF(cRef.m_standard == UHDTV3?(mode==7?0.99543379:0.5022831):(mode==7?1.0:0.50228311), PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) * (mode==5?(105.95640 / 100.0):1.0);
-		b=getL_EOTF(cRef.m_standard == UHDTV3?(mode==7?0.0:0.1735160):(mode==7?0.55251142:0.29680365), PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) * (mode==5?(105.95640 / 100.0):1.0);
+		r=getL_EOTF(cRef.m_standard == UHDTV3?(mode==7?0.99086758:0.4977169):(mode==7?0.99086758:0.49771689), PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) * (mode==5?(105.95640 / 100.0):1.0);
+		g=getL_EOTF(cRef.m_standard == UHDTV3?(mode==7?0.99543379:0.5022831):(mode==7?1.0:0.50228311), PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) * (mode==5?(105.95640 / 100.0):1.0);
+		b=getL_EOTF(cRef.m_standard == UHDTV3?(mode==7?0.0:0.1735160):(mode==7?0.55251142:0.29680365), PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) * (mode==5?(105.95640 / 100.0):1.0);
 	}
 	else
 	{
@@ -6516,9 +6525,9 @@ CColor CMeasure::GetRefSecondary(int i) const
 
 	if ((mode == 5 || mode ==7) && (cRef.m_standard == UHDTV3||cRef.m_standard == UHDTV4))
 	{
-		r=getL_EOTF(cRef.m_standard == UHDTV3?(mode==7?0.73515982:0.3698630):(mode==7?0.81735160:0.40639269),PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) * (mode==5?(105.95640 / 100.0):1.0);
-		g=getL_EOTF(cRef.m_standard == UHDTV3?(mode==7?0.99086758:0.4977169):(mode==7?0.98630137:0.49315068),PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) * (mode==5?(105.95640 / 100.0):1.0);
-		b=getL_EOTF(cRef.m_standard == UHDTV3?(mode==7?100.0:0.50228311):(mode==7?0.99543379:0.50228311),PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) * (mode==5?(105.95640 / 100.0):1.0);
+		r=getL_EOTF(cRef.m_standard == UHDTV3?(mode==7?0.73515982:0.3698630):(mode==7?0.81735160:0.40639269),PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) * (mode==5?(105.95640 / 100.0):1.0);
+		g=getL_EOTF(cRef.m_standard == UHDTV3?(mode==7?0.99086758:0.4977169):(mode==7?0.98630137:0.49315068),PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) * (mode==5?(105.95640 / 100.0):1.0);
+		b=getL_EOTF(cRef.m_standard == UHDTV3?(mode==7?100.0:0.50228311):(mode==7?0.99543379:0.50228311),PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) * (mode==5?(105.95640 / 100.0):1.0);
 	}
 	else
 	{
@@ -6555,9 +6564,9 @@ CColor CMeasure::GetRefSecondary(int i) const
 
 	if ((mode == 5 || mode == 7) && (cRef.m_standard == UHDTV3||cRef.m_standard == UHDTV4))
 	{
-		r=getL_EOTF(cRef.m_standard == UHDTV3?(mode==7?0.95890411:0.4794521):(mode==7?0.92694064:0.46118721),PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) * (mode==5?(105.95640 / 100.0):1.0);
-		g=getL_EOTF(cRef.m_standard == UHDTV3?(mode==7?0.40182648:0.2557078):(mode==7?0.49315068:0.27853881),PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) * (mode==5?(105.95640 / 100.0):1.0);
-		b=getL_EOTF(cRef.m_standard == UHDTV3?(mode==7?0.99543379:0.5022831):(mode==7?0.98173516:0.49315068),PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) * (mode==5?(105.95640 / 100.0):1.0);
+		r=getL_EOTF(cRef.m_standard == UHDTV3?(mode==7?0.95890411:0.4794521):(mode==7?0.92694064:0.46118721),PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) * (mode==5?(105.95640 / 100.0):1.0);
+		g=getL_EOTF(cRef.m_standard == UHDTV3?(mode==7?0.40182648:0.2557078):(mode==7?0.49315068:0.27853881),PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) * (mode==5?(105.95640 / 100.0):1.0);
+		b=getL_EOTF(cRef.m_standard == UHDTV3?(mode==7?0.99543379:0.5022831):(mode==7?0.98173516:0.49315068),PrimeWhite,noDataColor,0,0,mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) * (mode==5?(105.95640 / 100.0):1.0);
 	}
 	else
 	{
@@ -6717,7 +6726,7 @@ CColor CMeasure::GetRefSat(int i, double sat_ratio, bool special) const
 	CColor Black = CMeasure::GetOnOffBlack();
     double gamma=GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef);
 
-	double tmWhite = getL_EOTF(0.5022283, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) * 100.0;
+	double tmWhite = getL_EOTF(0.5022283, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) * 100.0;
 
 	if (mode == 5 && sat_ratio == 1 && GetConfig()->m_colorStandard != UHDTV3 && GetConfig()->m_colorStandard != UHDTV4)
 		YLuma = YLuma * tmWhite / 94.37844;
@@ -6756,9 +6765,9 @@ CColor CMeasure::GetRefSat(int i, double sat_ratio, bool special) const
 				qg = floor( (qg * 219.) + 0.5 ) / 219.;
 				qb = floor( (qb * 219.) + 0.5 ) / 219.;
 				
-				r = getL_EOTF(qr,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) / (mode==5?100.:1.0);
-				g = getL_EOTF(qg,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) / (mode==5?100.:1.0);
-				b = getL_EOTF(qb,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) / (mode==5?100.:1.0);
+				r = getL_EOTF(qr,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) / (mode==5?100.:1.0);
+				g = getL_EOTF(qg,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) / (mode==5?100.:1.0);
+				b = getL_EOTF(qb,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) / (mode==5?100.:1.0);
 			}
 			else
 			{
@@ -7128,9 +7137,9 @@ CColor CMeasure::GetRefCC24Sat(int i) const
 		{
 			case MASCIOR50:
 				{
-					r = getL_EOTF(r,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) / 100.;
-					g = getL_EOTF(g,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) / 100.;
-					b = getL_EOTF(b,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) / 100.;
+					r = getL_EOTF(r,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) / 100.;
+					g = getL_EOTF(g,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) / 100.;
+					b = getL_EOTF(b,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) / 100.;
 				}
 			break;
 			case LG54016: 
@@ -7191,9 +7200,9 @@ CColor CMeasure::GetRefCC24Sat(int i) const
 			qr = floor( (qr * 219.) + 0.5 ) / 219.;
 			qg = floor( (qg * 219.) + 0.5 ) / 219.;
 			qb = floor( (qb * 219.) + 0.5 ) / 219.;
-			r = getL_EOTF(qr,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) / (mode==5?100.:1.0);
-			g = getL_EOTF(qg,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) / (mode==5?100.:1.0);
-			b = getL_EOTF(qb,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma) / (mode==5?100.:1.0);
+			r = getL_EOTF(qr,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) / (mode==5?100.:1.0);
+			g = getL_EOTF(qg,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) / (mode==5?100.:1.0);
+			b = getL_EOTF(qb,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) / (mode==5?100.:1.0);
 		}
 		if ( mode == 6 || mode == 4 || mode == 8 )
 		{

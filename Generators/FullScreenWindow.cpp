@@ -36,12 +36,16 @@
 #include "../libccast/ccwin.h"
 #include "../libccast/ccast.h"
 #include "../Tools/png/png.h"
+#include <algorithm>
 
 #ifndef MAKEFOURCC
 	#include <mmsystem.h>
 #endif
 
 #define ANSI_CONTRAST_BLOCKS	5
+
+std::vector<CString> patterns;
+std::vector<int> patternsID;
 
 CFullScreenWindow::CFullScreenWindow(BOOL bTestOverlay)
 {
@@ -106,7 +110,160 @@ CFullScreenWindow::CFullScreenWindow(BOOL bTestOverlay)
 	}
 	hWnd = ::CreateWindowEx ( WS_EX_TOOLWINDOW, AfxRegisterWndClass ( 0, ::LoadCursor(NULL,IDC_ARROW) ), "", WS_POPUP, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, NULL, (HMENU) NULL, GetModuleHandle ( NULL ), NULL );
 	SubclassWindow ( hWnd );
-
+	patternsID.push_back(IDR_PATTERN_TESTIMG); 
+	patterns.push_back("skintonep.png");	
+	patternsID.push_back(IDR_PATTERN_TESTIMGv);
+	patterns.push_back("skintonev.png");
+	patternsID.push_back(IDR_PATTERN_CALPIC);
+	patterns.push_back("calpic.png");
+	patternsID.push_back(IDR_PATTERN_CALPICv);
+	patterns.push_back("calpicv.png");
+	patternsID.push_back(IDR_PATTERN_SMPTE75);
+	patterns.push_back("smpte-75-bars1024.png");
+	patternsID.push_back(IDR_PATTERN_1956);
+	patterns.push_back("1956.png");
+	patternsID.push_back(IDR_PATTERN_GRADIENT);
+	patterns.push_back("gradient.png");
+	patternsID.push_back(IDR_PATTERN_GRADIENT2);
+	patterns.push_back("gradient2.png");
+	patternsID.push_back(IDR_PATTERN_LRAMP);
+	patterns.push_back("lramp.png");
+	patternsID.push_back(IDR_PATTERN_GRANGER);
+	patterns.push_back("granger.png");
+	patternsID.push_back(IDR_PATTERN_GRANGERv);
+	patterns.push_back("grangerv.png");
+	patternsID.push_back(IDR_PATTERN_80);
+	patterns.push_back("80.png");
+	patternsID.push_back(IDR_PATTERN_SRAMP);
+	patterns.push_back("sramp.png");
+	patternsID.push_back(IDR_PATTERN_SRAMPv);
+	patterns.push_back("srampv.png");
+	patternsID.push_back(IDR_PATTERN_VSMPTE);
+	patterns.push_back("VSMPTE133b.png");
+	patternsID.push_back(IDR_PATTERN_ERAMP);
+	patterns.push_back("ERAMP.png");
+	patternsID.push_back(IDR_PATTERN_ERAMPv);
+	patterns.push_back("ERAMPv.png");
+	patternsID.push_back(IDR_PATTERN_ALIGN);
+	patterns.push_back("align.png");
+	patternsID.push_back(IDR_PATTERN_ALIGN2);
+	patterns.push_back("align2.png");
+	patternsID.push_back(IDR_PATTERN_SPECTRUM);
+	patterns.push_back("spectrum.png");
+	patternsID.push_back(IDR_PATTERN_TC0);
+	patterns.push_back("timecode0.png");
+	patternsID.push_back(IDR_PATTERN_TC0v);
+	patterns.push_back("timecode0v.png");
+	patternsID.push_back(IDR_PATTERN_TC1);
+	patterns.push_back("timecode1.png");
+	patternsID.push_back(IDR_PATTERN_TC1v);
+	patterns.push_back("timecode1v.png");
+	patternsID.push_back(IDR_PATTERN_TC2);
+	patterns.push_back("timecode2.png");
+	patternsID.push_back(IDR_PATTERN_TC2v);
+	patterns.push_back("timecode2v.png");
+	patternsID.push_back(IDR_PATTERN_TC3);
+	patterns.push_back("timecode3.png");
+	patternsID.push_back(IDR_PATTERN_TC3v);
+	patterns.push_back("timecode3v.png");
+	patternsID.push_back(IDR_PATTERN_TC4);
+	patterns.push_back("timecode4.png");
+	patternsID.push_back(IDR_PATTERN_TC4v);
+	patterns.push_back("timecode4v.png");
+	patternsID.push_back(IDR_PATTERN_TC5);
+	patterns.push_back("timecode5.png");
+	patternsID.push_back(IDR_PATTERN_TC5v);
+	patterns.push_back("timecode5v.png");
+	patternsID.push_back(IDR_PATTERN_DR0);
+	patterns.push_back("dynamicp.png");
+	patternsID.push_back(IDR_PATTERN_DR0v);
+	patterns.push_back("dynamicv.png");
+	patternsID.push_back(IDR_PATTERN_DR1);
+	patterns.push_back("dynamic1p.png");
+	patternsID.push_back(IDR_PATTERN_DR1v);
+	patterns.push_back("dynamic1v.png");
+	patternsID.push_back(IDR_PATTERN_DR2);
+	patterns.push_back("bkp.png");
+	patternsID.push_back(IDR_PATTERN_DR2v);
+	patterns.push_back("bkv.png");
+	patternsID.push_back(IDR_PATTERN_SHARP);
+	patterns.push_back("sharp.png");
+	patternsID.push_back(IDR_PATTERN_SHARPv);
+	patterns.push_back("sharpv.png");
+	patternsID.push_back(IDR_PATTERN_CLIPH);
+	patterns.push_back("cliph.png");
+	patternsID.push_back(IDR_PATTERN_CLIPHO);
+	patterns.push_back("cliphoff.png");
+	patternsID.push_back(IDR_PATTERN_CLIPL);
+	patterns.push_back("clipl.png");
+	patternsID.push_back(IDR_PATTERN_CLIPLO);
+	patterns.push_back("cliploff.png");
+	patternsID.push_back(IDR_PATTERN_TVv);
+	patterns.push_back("bw1v.jpg");
+	patternsID.push_back(IDR_PATTERN_TV);
+	patterns.push_back("bw1.jpg");
+	patternsID.push_back(IDR_PATTERN_TV2v);
+	patterns.push_back("bw2v.png");
+	patternsID.push_back(IDR_PATTERN_TV2);
+	patterns.push_back("bw2.png");
+	patternsID.push_back(IDR_PATTERN_RB);
+	patterns.push_back("rbramp.png");
+	patternsID.push_back(IDR_PATTERN_RG);
+	patterns.push_back("rgramp.png");
+	patternsID.push_back(IDR_PATTERN_GB);
+	patterns.push_back("gbramp.png");
+	patternsID.push_back(IDR_PATTERN_RBv);
+	patterns.push_back("rbrampv.png");
+	patternsID.push_back(IDR_PATTERN_RGv);
+	patterns.push_back("rgrampv.png");
+	patternsID.push_back(IDR_PATTERN_GBv);
+	patterns.push_back("gbrampv.png");
+	patternsID.push_back(IDR_PATTERN_RBd);
+	patterns.push_back("rbramp_d2.png");
+	patternsID.push_back(IDR_PATTERN_RGd);
+	patterns.push_back("rgramp_d2.png");
+	patternsID.push_back(IDR_PATTERN_GBd);
+	patterns.push_back("gbramp_d2.png");
+	patternsID.push_back(IDR_PATTERN_BN);
+	patterns.push_back("bellenuit.png");
+	patternsID.push_back(IDR_PATTERN_ANSI1);
+	patterns.push_back("ansi1.png");
+	patternsID.push_back(IDR_PATTERN_ANSI2);
+	patterns.push_back("ansi2.png");
+	patternsID.push_back(IDR_PATTERN_ISO12233);
+	patterns.push_back("iso12233.png");
+	patternsID.push_back(IDR_PATTERN_BBCHD);
+	patterns.push_back("BBCHD.png");
+	patternsID.push_back(IDR_PATTERN_PM5644);
+	patterns.push_back("PM5644.png");
+	patternsID.push_back(IDR_PATTERN_CROSSl);
+	patterns.push_back("crossl.png");
+	patternsID.push_back(IDR_PATTERN_CROSSlv);
+	patterns.push_back("crosslv.png");
+	patternsID.push_back(IDR_PATTERN_CROSSd);
+	patterns.push_back("crossd.png");
+	patternsID.push_back(IDR_PATTERN_CROSSdv);
+	patterns.push_back("crossdv.png");
+	patternsID.push_back(IDR_PATTERN_ZONE);
+	patterns.push_back("zoneplate.png");
+	patternsID.push_back(IDR_PATTERN_NB);
+	patterns.push_back("NBsdr.png");
+	patternsID.push_back(IDR_PATTERN_NBv);
+	patterns.push_back("NBsdrv.png");
+	patternsID.push_back(IDR_PATTERN_NBHDR);
+	patterns.push_back("NBhdr.png");
+	patternsID.push_back(IDR_PATTERN_NBvHDR);
+	patterns.push_back("NBhdrv.png");
+	patternsID.push_back(IDR_PATTERN_NBHDRb);
+	patterns.push_back("NBhdrb.png");
+	patternsID.push_back(IDR_PATTERN_NBHDRbv);
+	patterns.push_back("NBhdrbv.png");
+	patternsID.push_back(IDR_PATTERN_NBSDRb);
+	patterns.push_back("NBsdrb.png");
+	patternsID.push_back(IDR_PATTERN_NBSDRbv);
+	patterns.push_back("NBsdrbv.png");
+	patternsID.push_back(IDR_PATTERN_BLACK);
+	patterns.push_back("black.png");
 }
 
 
@@ -1092,7 +1249,6 @@ void video_scale (CxImage *inImage)
 			HRSRC hRsrc = ::FindResource(m_hPatternInst,MAKEINTRESOURCE(m_uiPictRess),"PATTERN");
 			bool isUser = FALSE;
 			CString str = GetConfig () -> m_ApplicationPath;
-
 			str += "\\userpngs\\";
 			switch (m_uiPictRess)
 			{
@@ -1224,6 +1380,100 @@ void video_scale (CxImage *inImage)
 					newImage->FreeMemory(obuf);
 				}
 			}
+		} else if (m_nDisplayMode == DISPLAY_rPI)
+		{
+				typedef int (__stdcall *RB8PG_send)(SOCKET sock,const char *message);
+				RB8PG_send	 _RB8PG_send;
+				SOCKET sock = GetConfig()->GetProfileInt("GDIGenerator", "rPiSock", 0);
+				int rPi_memSize = GetConfig()->GetProfileInt("GDIGenerator", "rPiGPU", 0);
+				int rPi_x = GetConfig()->GetProfileInt("GDIGenerator", "rPiWidth", 1920);
+				int rPi_y = GetConfig()->GetProfileInt("GDIGenerator", "rPiHeight", 1080);
+				if (rPi_memSize >= 192)
+				{
+					if (sock)
+					{
+						bool isUser;
+						CString x,y;
+						x.Format("%d",rPi_x);
+						y.Format("%d",rPi_y);
+						CString Pat = "RGB=IMAGE;"+x+","+y+","+";100;255,255,255;0,0,0;-1,-1;/var/lib/PGenerator/images-HCFR/";
+						switch (m_uiPictRess)
+						{
+							case IDR_PATTERN_USER1:
+							{
+								Pat = "RGB=IMAGE;"+x+","+y+","+";100;255,255,255;0,0,0;-1,-1;/var/lib/PGenerator/images/user1.png";
+								isUser = TRUE;
+								break;
+							}
+							case IDR_PATTERN_USER2:
+							{
+								Pat = "RGB=IMAGE;"+x+","+y+","+";100;255,255,255;0,0,0;-1,-1;/var/lib/PGenerator/images/user2.png";
+								isUser = TRUE;
+								break;
+							}
+							case IDR_PATTERN_USER3:
+							{
+								Pat = "RGB=IMAGE;"+x+","+y+","+";100;255,255,255;0,0,0;-1,-1;/var/lib/PGenerator/images/user3.png";
+								isUser = TRUE;
+								break;
+							}
+							case IDR_PATTERN_USER4:
+							{
+								Pat = "RGB=IMAGE;"+x+","+y+","+";100;255,255,255;0,0,0;-1,-1;/var/lib/PGenerator/images/user4.png";
+								isUser = TRUE;
+								break;
+							}
+							case IDR_PATTERN_USER5:
+							{
+								Pat = "RGB=IMAGE;"+x+","+y+","+";255,255,255;0,0,0;-1,-1;/var/lib/PGenerator/images/user5.png";
+								isUser = TRUE;
+								break;
+							}
+							case IDR_PATTERN_USER6:
+							{
+								Pat = "RGB=IMAGE;"+x+","+y+","+";100;255,255,255;0,0,0;-1,-1;/var/lib/PGenerator/images/user6.png";
+								isUser = TRUE;
+								break;
+							}
+
+						}
+						ptrdiff_t index = find(patternsID.begin(), patternsID.end(), m_uiPictRess) - patternsID.begin();
+						if (!isUser)
+						{
+							if(index >= patternsID.size())
+							{
+								GetColorApp()->InMeasureMessageBox( "    ** rPi: Invalid image resource  **", "Error", MB_ICONERROR);
+								AfxGetMainWnd()->PostMessage ( WM_KEYDOWN, VK_RETURN, 0 );
+							}
+							else
+							{
+								HINSTANCE hInstLibrary;
+								hInstLibrary = LoadLibrary("RB8PGenerator.dll");
+								_RB8PG_send = (RB8PG_send)GetProcAddress(hInstLibrary, "RB8PG_send@8");
+								_RB8PG_send(sock,(Pat+patterns[index]));
+								FreeLibrary(hInstLibrary);
+							}
+						}
+						else
+						{
+							HINSTANCE hInstLibrary;
+							hInstLibrary = LoadLibrary("RB8PGenerator.dll");
+							_RB8PG_send = (RB8PG_send)GetProcAddress(hInstLibrary, "RB8PG_send@8");
+							_RB8PG_send(sock,Pat);
+							FreeLibrary(hInstLibrary);
+						}
+					}
+					else
+					{
+						GetColorApp()->InMeasureMessageBox( "    ** rPi not connected **", "Error", MB_ICONERROR);
+						AfxGetMainWnd()->PostMessage ( WM_KEYDOWN, VK_RETURN, 0 );
+					}
+				}
+				else
+				{
+					GetColorApp()->InMeasureMessageBox( "    ** rPi has insufficient GPU memory for pattern display **", "Error", MB_ICONERROR);
+					AfxGetMainWnd()->PostMessage ( WM_KEYDOWN, VK_RETURN, 0 );
+				}
 		} else
 		{
 			//resize but maintain aspect ratio

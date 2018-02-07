@@ -114,6 +114,7 @@ protected:
 	afx_msg void OnColorTempGraphShowRef();
 	afx_msg void OnGraphShowLuminance();
 	afx_msg void OnGraphShowDeltaE();
+	afx_msg void OnGraphGamma();
 	afx_msg void OnGraphShowColorTemp();
 	afx_msg void OnRGBGraphYScale1();
 	afx_msg void OnRGBGraphYScale2();

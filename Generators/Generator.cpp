@@ -53,6 +53,9 @@ CGenerator::CGenerator()
 	m_rectSizePercent=GetConfig()->GetProfileInt("GDIGenerator","SizePercent",10);
 	m_ccastIp = 0;
 	sock = NULL;
+	rPi_xWidth = 1980;
+	rPi_yHeight = 1080;
+	rPi_memSize  = 0;
 	AddPropertyPage(&m_GeneratorPropertiePage);
 
 	CString str;
@@ -151,46 +154,170 @@ BOOL CGenerator::Init(UINT nbMeasure, bool isSpecial)
 	char *	m_piIP = "";
 	if (m_name != str)
 	{
-		if (Cgen.m_nDisplayMode == DISPLAY_rPI && !sock)
+		if (Cgen.m_nDisplayMode == DISPLAY_rPI)
 		{
-			hInstLibrary = LoadLibrary("RB8PGenerator.dll");
-			if (hInstLibrary)
+			if (!sock) //initialization
 			{
-//				GetColorApp()->InMeasureMessageBox( "    ** Generator Init **", "Error", MB_ICONINFORMATION);
-				_RB8PG_send = (RB8PG_send)GetProcAddress(hInstLibrary, "RB8PG_send@8");
-				_RB8PG_connect = (RB8PG_connect)GetProcAddress(hInstLibrary, "RB8PG_connect@4");
-				_RB8PG_discovery = (RB8PG_discovery)GetProcAddress(hInstLibrary, "RB8PG_discovery@0");
-				_RB8PG_close = (RB8PG_close)GetProcAddress(hInstLibrary, "RB8PG_close@4");
-
-				if (_RB8PG_discovery)
-					m_piIP = _RB8PG_discovery();
-				
-				if(strlen(m_piIP) > 1)
+				hInstLibrary = LoadLibrary("RB8PGenerator.dll");
+				if (hInstLibrary)
 				{
-					if (_RB8PG_connect)
-						sock = _RB8PG_connect(m_piIP);
-					else
-						GetColorApp()->InMeasureMessageBox( "Error communicating with rPI", "Error", MB_ICONINFORMATION);
+					_RB8PG_discovery = (RB8PG_discovery)GetProcAddress(hInstLibrary, "RB8PG_discovery@0");
+					_RB8PG_connect = (RB8PG_connect)GetProcAddress(hInstLibrary, "RB8PG_connect@4");
+					_RB8PG_get = (RB8PG_get)GetProcAddress(hInstLibrary, "RB8PG_get@8");
+					_RB8PG_send = (RB8PG_send)GetProcAddress(hInstLibrary, "RB8PG_send@8");
+					_RB8PG_close = (RB8PG_close)GetProcAddress(hInstLibrary, "RB8PG_close@4");
 
-					if (sock)
-						if (_RB8PG_send)
-							_RB8PG_send(sock,"TESTTEMPLATE:PatternDynamic:126,126,126");
+					if (_RB8PG_discovery)
+						m_piIP = _RB8PG_discovery();
+								
+					if(strlen(m_piIP) > 5)
+					{
+						CString cs = m_piIP;
+						if (_RB8PG_connect)
+							sock = _RB8PG_connect(m_piIP);
 						else
-							GetColorApp()->InMeasureMessageBox( "Error communicating with rPI", "Error", MB_ICONINFORMATION);
+						{
+							GetColorApp()->InMeasureMessageBox( "Error connecting with rPI: "+cs, "Error", MB_ICONINFORMATION);
+							return false;
+						}
+
+						if (sock)
+						{
+							if (_RB8PG_send)
+							{
+								pi_Res = _RB8PG_get(sock,"CMD:GET_RESOLUTION");
+							
+								CString cs1(pi_Res);
+								CString cs2,cs3,xW,yH;
+								AfxExtractSubString(cs2, cs1, 0, ':');
+								if (cs2 != "OK")
+								{
+									GetColorApp()->InMeasureMessageBox( "Failed to get rPi resolution", "GET_RESOLUTION", MB_ICONINFORMATION);
+									return false;
+								}
+								AfxExtractSubString(cs3, cs1, 1, ':');
+								AfxExtractSubString(xW, cs3, 0, 'x');
+							
+								int xsize = xW.GetLength();
+								yH = cs3.Mid(xsize+1);
+
+								rPi_xWidth = atoi(xW);
+								rPi_yHeight = atoi(yH);
+
+								pi_Res = _RB8PG_get(sock,"CMD:GET_GPU_MEMORY");
+								CString cs4(pi_Res),cs5,cs6;
+								AfxExtractSubString(cs5, cs4, 0, ':');
+								if (cs5 != "OK")
+								{
+									GetColorApp()->InMeasureMessageBox( "Failed to get rPi GPU memory size", "GET_GPU_MEMORY", MB_ICONINFORMATION);
+									return false;
+								}
+								cs6=cs4.Mid(3);
+								cs6.Remove('M');
+								rPi_memSize = atoi(cs6);
+								GetConfig()->WriteProfileInt("GDIGenerator", "rPiSock", sock);
+								GetConfig()->WriteProfileInt("GDIGenerator", "rPiGPU", rPi_memSize);
+								GetConfig()->WriteProfileInt("GDIGenerator", "rPiWidth", rPi_xWidth);
+								GetConfig()->WriteProfileInt("GDIGenerator", "rPiHeight", rPi_yHeight);
+								CString msg;
+								msg.Format("RGB=TEXT;12,0;100;16,128,128;0,0,0;100,300;Initializing PGenerator at: "+cs+" Res [%dx%d], GPU Mem [%dM]",rPi_xWidth, rPi_yHeight,rPi_memSize);
+								_RB8PG_send(sock,msg);
+								Sleep(1000);
+								_RB8PG_send(sock,"RGB=IMAGE;1920,1080;100;255,255,255;0,0,0;-1,-1;/var/lib/PGenerator/images-HCFR/gbramp.png");
+								Sleep(1000);
+								if (m_bdispTrip)
+								{
+									CGDIGenerator Cgen;
+									double bgstim = Cgen.m_bgStimPercent / 100.;
+									int rb,gb,bb;
+
+									if (m_b16_235)
+									{
+										rb = floor(bgstim * 219.0 + 16.5);
+										gb = floor(bgstim * 219.0 + 16.5);
+										bb = floor(bgstim * 219.0 + 16.5);
+										rb=min(max(rb,0),235);
+										gb=min(max(gb,0),235);
+										bb=min(max(bb,0),235);
+									}
+									else
+									{
+										rb = floor(bgstim * 255.0 + 0.5);
+										gb = floor(bgstim * 255.0 + 0.5);
+										bb = floor(bgstim * 255.0 + 0.5);
+										rb=min(max(rb,0),255);
+										gb=min(max(gb,0),255);
+										bb=min(max(bb,0),255);
+									}
+									CString templ;
+									int x1 = (int)(pow((double)(Cgen.m_rectSizePercent)/100.0,0.5) * rPi_xWidth);
+									int y1 = (int)(pow((double)(Cgen.m_rectSizePercent)/100.0,0.5) * rPi_yHeight);
+									templ.Format("SETCONF:HCFR:TEMPLATERAMDISK:DRAW=TEXT\nDIM=18,0\nRESOLUTION=100\nRGB=20,128,128\nBG=%d,%d,%d\n" \
+										"POSITION=%d,20\nTEXT=RGB Triplet $RGB\nEND=1\n" \
+										"DRAW=RECTANGLE\nDIM=%d,%d\nRESOLUTION=100\n" \
+										"RGB=DYNAMIC\nBG=-1,-1,-1\nPOSITION=-1,-1\nEND=1",rb,gb,bb,rPi_xWidth / 2 - 175,x1,y1);
+							
+									CGenerator::_RB8PG_send(sock,templ);
+								}
+							}
+							else
+							{
+								GetColorApp()->InMeasureMessageBox( "Error communicating with rPI", "Error", MB_ICONINFORMATION);
+								return false;
+							}
+						}
+					}
+					else
+					{
+						GetColorApp()->InMeasureMessageBox( "    ** Raspberry Pi generator not found **", "Error", MB_ICONERROR);
+						OutputDebugString("    ** RB8PG_discovery failed **");
+						return false;
+					}			
 				}
 				else
 				{
-					GetColorApp()->InMeasureMessageBox( "    ** Raspberry Pi generator not found **", "Error", MB_ICONERROR);
-					OutputDebugString("    ** RB8PG_discovery failed **");
+					GetColorApp()->InMeasureMessageBox( "    ** RB8PGenerator.dll not found **", "Error", MB_ICONERROR);
+					OutputDebugString("    ** Load_dll failed **");
 					return false;
-				}			
+				}
 			}
-			else
+			else //in case template needs updating
 			{
-				GetColorApp()->InMeasureMessageBox( "    ** RB8PGenerator.dll not found **", "Error", MB_ICONERROR);
-				OutputDebugString("    ** Load_dll failed **");
-				return false;
-			}			
+				if (m_bdispTrip)
+				{
+					CGDIGenerator Cgen;
+					double bgstim = Cgen.m_bgStimPercent / 100.;
+					int rb,gb,bb;
+					if (m_b16_235)
+					{
+						rb = floor(bgstim * 219.0 + 16.5);
+						gb = floor(bgstim * 219.0 + 16.5);
+						bb = floor(bgstim * 219.0 + 16.5);
+						rb=min(max(rb,0),235);
+						gb=min(max(gb,0),235);
+						bb=min(max(bb,0),235);
+					}
+					else
+					{
+						rb = floor(bgstim * 255.0 + 0.5);
+						gb = floor(bgstim * 255.0 + 0.5);
+						bb = floor(bgstim * 255.0 + 0.5);
+						rb=min(max(rb,0),255);
+						gb=min(max(gb,0),255);
+						bb=min(max(bb,0),255);
+					}
+					CString templ;
+					int x1 = (int)(pow((double)(Cgen.m_rectSizePercent)/100.0,0.5) * rPi_xWidth);
+					int y1 = (int)(pow((double)(Cgen.m_rectSizePercent)/100.0,0.5) * rPi_yHeight);
+					double t_fact = rPi_xWidth / 1920.; 
+					templ.Format("SETCONF:HCFR:TEMPLATERAMDISK:DRAW=TEXT\nDIM=18,0\nRESOLUTION=100\nRGB=20,128,128\nBG=%d,%d,%d\n" \
+						"POSITION=%d,20\nTEXT=RGB Triplet $RGB\nEND=1\n" \
+						"DRAW=RECTANGLE\nDIM=%d,%d\nRESOLUTION=100\n" \
+						"RGB=DYNAMIC\nBG=-1,-1,-1\nPOSITION=-1,-1\nEND=1",rb,gb,bb,rPi_xWidth / 2 - int(175 * t_fact),x1,y1);
+				
+					CGenerator::_RB8PG_send(sock,templ);
+				}
+			}
 		}
 		else if (Cgen.m_nDisplayMode == DISPLAY_ccast)
 		{
@@ -567,12 +694,31 @@ BOOL CGenerator::Release(INT nbNext)
 	} else if (Cgen.m_nDisplayMode == DISPLAY_ccast && dw)
 		dw->del(dw);
 
-	if (Cgen.m_nDisplayMode == DISPLAY_rPI && hInstLibrary)
+	if (sock && Cgen.m_nDisplayMode == DISPLAY_rPI)
 	{
-//		GetColorApp()->InMeasureMessageBox( "    ** Generator Release **", "Error", MB_ICONINFORMATION);
+			if (_RB8PG_send)
+			{
+				CString msg;
+				msg.Format("RGB=TEXT;14,0;100;16,128,128;0,0,0;100,300;End of sequence");
+				_RB8PG_send(sock,msg);
+				Sleep(1000);
+				_RB8PG_send(sock,"TESTTEMPLATE:PatternDynamic:0,0,0");
+			}
+			else
+				GetColorApp()->InMeasureMessageBox( "Error communicating with rPI", "Error", MB_ICONINFORMATION);
+	}
+
+	if (sock && Cgen.m_nDisplayMode != DISPLAY_rPI && hInstLibrary) //disconnect only after generator change
+	{
 
 			if (_RB8PG_send)
+			{
+				CString msg;
+				msg.Format("RGB=TEXT;14,0;100;16,128,128;0,0,0;100,300;Disconnecting from PGenerator");
+				_RB8PG_send(sock,msg);
+				Sleep(1000);
 				_RB8PG_send(sock,"TESTTEMPLATE:PatternDynamic:0,0,0");
+			}
 			else
 				GetColorApp()->InMeasureMessageBox( "Error communicating with rPI", "Error", MB_ICONINFORMATION);
 
@@ -582,6 +728,8 @@ BOOL CGenerator::Release(INT nbNext)
 				GetColorApp()->InMeasureMessageBox( "Error communicating with rPI", "Error", MB_ICONINFORMATION);
 
 			sock = NULL;
+			GetConfig()->WriteProfileInt("GDIGenerator", "rPiSock", 0);
+			GetConfig()->WriteProfileInt("GDIGenerator", "rPiGPU", 0);
 			FreeLibrary(hInstLibrary);
 	}
 
