@@ -116,6 +116,7 @@ protected:
 	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
 	afx_msg void OnRgbGraphReference();
 	afx_msg void OnRgbGraphDeltaE();
+	afx_msg void OnRgbGraphGamma();
 	afx_msg void OnRgbGraphDataRef();	//Ki
 	afx_msg void OnGraphSettings();
 	afx_msg void OnGraphXScaleFit();

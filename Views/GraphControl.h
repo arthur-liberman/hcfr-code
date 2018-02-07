@@ -141,7 +141,7 @@ public:
 	void GrowXScale(double deltaMinX, double deltaMaxX);
 	void GrowYScale(double deltaMinY, double deltaMaxY);
 	void FitXScale(BOOL doRound=FALSE, double roundStep=10.0);
-	void FitYScale(BOOL doRound=FALSE, double roundStep=10.0);
+	void FitYScale(BOOL doRound=FALSE, double roundStep=10.0, bool isGamma = false);
 
 	void DrawAxis(CDC *pDC, CRect rect, BOOL bWhiteBkgnd);
 	void DrawBackground(CDC *pDC, CRect rect, BOOL bForFile);

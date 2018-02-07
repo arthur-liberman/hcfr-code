@@ -89,7 +89,7 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(CGDIGenePropPage)
 	afx_msg void OnTestOverlay();
-	afx_msg void OnClickmadVR();
+	afx_msg void OnClickSelection();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

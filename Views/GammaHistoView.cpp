@@ -36,6 +36,8 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 double Y_to_L( double val );
+std::vector<double> m_yref_abs;
+
 /////////////////////////////////////////////////////////////////////////////
 // CGammaGrapher
 
@@ -72,8 +74,10 @@ CGammaGrapher::CGammaGrapher ()
 	m_blueLumDataRefLogGraphID = m_graphCtrl.AddGraph(RGB(0,0,255), (LPSTR)(LPCSTR)Msg,1,PS_DOT); //Ki
 	
 	m_graphCtrl.SetXAxisProps((LPSTR)(LPCSTR)GetConfig()->m_PercentGray, 10, 0, 100);
-	m_graphCtrl.SetYAxisProps("", 0.1, 1, 4);
-	m_graphCtrl.SetScale(0,100,1,3);
+	bool isHDR = (GetConfig()->m_GammaOffsetType == 5 || GetConfig()->m_GammaOffsetType == 7);
+
+	m_graphCtrl.SetYAxisProps(isHDR?"cd m-2":"", isHDR?1:0.1, isHDR?-100:1, isHDR?100:4);
+	m_graphCtrl.SetScale(0,100,isHDR?-20:1,isHDR?20:3);
 	m_graphCtrl.ReadSettings("Gamma Histo");
 
 	m_showReference=GetConfig()->GetProfileInt("Gamma Histo","Show Reference",TRUE);
@@ -91,6 +95,7 @@ void CGammaGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	BOOL	bDataPresent = FALSE;
 	BOOL	bIRE = pDoc->GetMeasure()->m_bIREScaleMode;
 	double GammaOffset,GammaOpt,RefGammaOffset,RefGammaOpt,LuxGammaOffset,LuxGammaOpt,RefLuxGammaOffset,RefLuxGammaOpt;
+	m_yref_abs.clear();
 
 	m_graphCtrl.SetXAxisProps(bIRE?"IRE":(LPSTR)(LPCSTR)GetConfig()->m_PercentGray, 10, 0, 100);
 
@@ -127,30 +132,29 @@ void CGammaGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		pDoc->ComputeGammaAndOffset(&RefGammaOpt, &RefGammaOffset, 1,1,size,false);
 		pDoc->ComputeGammaAndOffset(&RefLuxGammaOpt, &RefLuxGammaOffset, 2,1,size,false);
 	}
-//	RefGammaOpt = floor(RefGammaOpt * 100) / 100;
 
-	if (m_showReference && m_refLogGraphID != -1 && size > 0)
+	if (m_showReference && m_refLogGraphID != -1 && size > 0 || (m_refLogGraphID != -1 && (GetConfig()->m_GammaOffsetType == 5 || GetConfig()->m_GammaOffsetType == 7 )))
 	{	
 		// log scale is not valid for first and last value
 
 		CColor White = pDoc -> GetMeasure () -> GetOnOffWhite();
 		CColor Black = pDoc -> GetMeasure () -> GetOnOffBlack();
-		for (int i=1; i<size-1; i++)
+		int mode = GetConfig()->m_GammaOffsetType;
+		bool isHDR = (mode == 5 || mode == 7);
+		for (int i=(isHDR?0:1); i<(isHDR?size:(size-1)); i++)
 		{
 			double x, valx, valy;
 			x = ArrayIndexToGrayLevel ( i, size, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
-			int mode = GetConfig()->m_GammaOffsetType;
 			if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 			if (  (mode >= 4) )
 			{
 				valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
-//		        valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap);
 				if (mode == 5)
 				{
-		            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap) / 100.;
+		            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) / 100.;
 				}
 				else
-		            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma);
+		            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS);
 			}
 			else
 			{
@@ -158,13 +162,17 @@ void CGammaGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 				valy=pow(valx, GetConfig()->m_useMeasuredGamma?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef));
 			}
 
-			if( valy > 0 && valx > 0 && valy != 1.0)
+			m_yref_abs.push_back(valy);
+
+			if (GetConfig()->m_GammaOffsetType == 5 || GetConfig()->m_GammaOffsetType == 7)
+				m_graphCtrl.AddPoint(m_refLogGraphID, x, 0);
+			else if( valy > 0 && valx > 0 && valy != 1.0)
 				m_graphCtrl.AddPoint(m_refLogGraphID, x, log(valy)/log(valx));
 		}
 	}
 	
 
-	if (m_showAverage && m_avgLogGraphID != -1 && size > 0 && bDataPresent)
+	if (m_showAverage && m_avgLogGraphID != -1 && size > 0 && bDataPresent && !(GetConfig()->m_GammaOffsetType == 5 || GetConfig()->m_GammaOffsetType == 7 ))
 	{	
 		// Le calcul de la moyenne des gamma et la représentation en échelle log 
 		// ne se fait plus avec l'échelle des x = % de blanc mais avec la formule : 
@@ -187,7 +195,7 @@ void CGammaGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 	m_graphCtrl.ClearGraph(m_redLumLogGraphID);
 	m_graphCtrl.ClearGraph(m_redLumDataRefLogGraphID); //Ki
-	if (m_showRedLum && m_redLumLogGraphID != -1 && size > 0)
+	if (m_showRedLum && m_redLumLogGraphID != -1 && size > 0 && !(GetConfig()->m_GammaOffsetType == 5 || GetConfig()->m_GammaOffsetType == 7 ))
 	{
 		for (int i=0; i<size; i++)
 		{
@@ -200,7 +208,7 @@ void CGammaGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 	m_graphCtrl.ClearGraph(m_greenLumLogGraphID);
 	m_graphCtrl.ClearGraph(m_greenLumDataRefLogGraphID); //Ki
-	if (m_showGreenLum && m_greenLumLogGraphID != -1 && size > 0)
+	if (m_showGreenLum && m_greenLumLogGraphID != -1 && size > 0 && !(GetConfig()->m_GammaOffsetType == 5 || GetConfig()->m_GammaOffsetType == 7 ))
 	{
 		for (int i=0; i<size; i++)
 		{
@@ -213,7 +221,7 @@ void CGammaGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 
 	m_graphCtrl.ClearGraph(m_blueLumLogGraphID);
 	m_graphCtrl.ClearGraph(m_blueLumDataRefLogGraphID); //Ki
-	if (m_showBlueLum && m_blueLumLogGraphID != -1 && size > 0) 
+	if (m_showBlueLum && m_blueLumLogGraphID != -1 && size > 0 && !(GetConfig()->m_GammaOffsetType == 5 || GetConfig()->m_GammaOffsetType == 7 )) 
 	{
 		for (int i=0; i<size; i++) 
 		{
@@ -325,13 +333,17 @@ void CGammaGrapher::AddPointtoLumGraph(int ColorSpace,int ColorIndex,int Size,in
 	// ne se fait plus avec l'échelle des x = % de blanc mais avec la formule : 
 	// (x + offset) / (1+offset) 
 
-	if((GraphID != -1)&&(PointIndex != 0 && PointIndex != (Size-1)) && colorlevel > 0.0001)	// log scale is not valid for first and last value nor for negative values
+	if((GraphID != -1)&&((PointIndex != 0 && PointIndex != (Size-1)) && colorlevel > 0.0001) || (GraphID != -1&&(GetConfig()->m_GammaOffsetType == 5 || GetConfig()->m_GammaOffsetType == 7 )))	// log scale is not valid for first and last value nor for negative values
 	{
 		double x = ArrayIndexToGrayLevel ( PointIndex, Size, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
 
 		double valxprime=(GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit)+GammaOffset)/(1.0+GammaOffset);
 
-		m_graphCtrl.AddPoint(GraphID, x, log((colorlevel)/whitelvl)/log(valxprime), lpMsg);
+		if (GetConfig()->m_GammaOffsetType == 5 || GetConfig()->m_GammaOffsetType == 7) 
+			m_graphCtrl.AddPoint(GraphID, x, colorlevel - whitelvl * m_yref_abs[PointIndex], lpMsg);
+		else
+			m_graphCtrl.AddPoint(GraphID, x, log((colorlevel)/whitelvl)/log(valxprime), lpMsg);
+
 	}
 	}
 }
@@ -559,21 +571,26 @@ void CGammaHistoView::OnGraphScaleCustom()
 void CGammaHistoView::OnGraphScaleFit() 
 {
 	m_Grapher.m_graphCtrl.FitXScale(TRUE);
-	m_Grapher.m_graphCtrl.FitYScale(TRUE,0.1);
+	bool isHDR = (GetConfig()->m_GammaOffsetType == 5 || GetConfig()->m_GammaOffsetType == 7);
+	m_Grapher.m_graphCtrl.FitYScale(TRUE,isHDR?1:0.1,true);
 	m_Grapher.m_graphCtrl.WriteSettings("Gamma Histo");
 	Invalidate(TRUE);
 }
 
 void CGammaHistoView::OnGammaGraphYScale1() 
 {
-	m_Grapher.m_graphCtrl.SetYScale(1,3);
+	bool isHDR = (GetConfig()->m_GammaOffsetType == 5 || GetConfig()->m_GammaOffsetType == 7);
+	m_Grapher.m_graphCtrl.SetYAxisProps(isHDR?" cd m-2 ":"", isHDR?1:0.1, isHDR?-100:1, isHDR?100:4);
+	m_Grapher.m_graphCtrl.SetYScale(isHDR?-10:1,isHDR?10:3);
 	m_Grapher.m_graphCtrl.WriteSettings("Gamma Histo");
 	Invalidate(TRUE);
 }
 
 void CGammaHistoView::OnGraphYScaleFit() 
 {
-	m_Grapher.m_graphCtrl.FitYScale(TRUE,0.1);
+	bool isHDR = (GetConfig()->m_GammaOffsetType == 5 || GetConfig()->m_GammaOffsetType == 7);
+	m_Grapher.m_graphCtrl.SetYAxisProps(isHDR?" cd m-2 ":"", isHDR?1:0.1, isHDR?-100:1, isHDR?100:4);
+	m_Grapher.m_graphCtrl.FitYScale(TRUE,isHDR?1:0.1, true);
 	m_Grapher.m_graphCtrl.WriteSettings("Gamma Histo");
 	Invalidate(TRUE);
 }

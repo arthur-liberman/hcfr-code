@@ -723,7 +723,7 @@ return TRUE;
 BOOL CGDIGenerator::DisplayRGBColorrPI( const ColorRGBDisplay& clr, bool first, UINT nPattern )
 {
 	//init done in generator.cpp 
-	int r, g, b;
+	int r, g, b, rb, gb, bb;
 	char CPat[256];
 	CGDIGenerator Cgen;
 	double bgstim = Cgen.m_bgStimPercent / 100.;
@@ -736,18 +736,36 @@ BOOL CGDIGenerator::DisplayRGBColorrPI( const ColorRGBDisplay& clr, bool first, 
 		r=min(max(r,0),235);
 		g=min(max(g,0),235);
 		b=min(max(b,0),235);
+		rb = floor(bgstim * 219.0 + 16.5);
+		gb = floor(bgstim * 219.0 + 16.5);
+		bb = floor(bgstim * 219.0 + 16.5);
+		rb=min(max(rb,0),235);
+		gb=min(max(gb,0),235);
+		bb=min(max(bb,0),235);
 	}
 	else
 	{
-		r = floor((clr[0]) / 100. * 255.0 + 0.5 );
+		r = floor((clr[0]) / 100. * 255.0 + 0.5);
 		g = floor((clr[1]) / 100. * 255.0 + 0.5);
 		b = floor((clr[2]) / 100. * 255.0 + 0.5);
 		r=min(max(r,0),255);
 		g=min(max(g,0),255);
 		b=min(max(b,0),255);
+		rb = floor(bgstim * 255.0 + 0.5);
+		gb = floor(bgstim * 255.0 + 0.5);
+		bb = floor(bgstim * 255.0 + 0.5);
+		rb=min(max(rb,0),255);
+		gb=min(max(gb,0),255);
+		bb=min(max(bb,0),255);
 	}
 
-	sprintf_s(CPat,"TESTTEMPLATE:PatternDynamic:%d,%d,%d",r,g,b);
+	if (!m_bdispTrip)
+		sprintf_s(CPat,"RGB=RECTANGLE;%d,%d;100;%d,%d,%d;%d,%d,%d;-1,-1", (int)(pow((double)(Cgen.m_rectSizePercent)/100.0,0.5) * rPi_xWidth),(int)(pow((double)(Cgen.m_rectSizePercent)/100.0,0.5) * rPi_yHeight),r,g,b,rb,gb,bb);
+	else
+	{
+		sprintf_s(CPat, "TESTTEMPLATERAMDISK:HCFR:%d,%d,%d",r,g,b);
+	}
+
 	CString debug=_T(CPat);
 
 		if (CGenerator::_RB8PG_send)
@@ -790,69 +808,6 @@ BOOL CGDIGenerator::DisplayRGBColorrPI( const ColorRGBDisplay& clr, bool first, 
 
 return TRUE;
 
-/*
-	if (ccwin->height == 0) 
-	{
-		MessageBox(0, "Test pattern failure.", "Error", MB_ICONERROR);
-		return false;
-	} 
-
-	if (ccwin->set_bg(ccwin,bgstim) != 0)
-	{
-		MessageBox(0, "CCast Test pattern failure.", "set_bg", MB_ICONERROR);
-		return false;
-	} 
-
-	if (first)
-	{
-		  if (ccwin->set_color(ccwin,0.75,0.75,0.75) != 0)
-		  {
-	        MessageBox(0, "CCast Test pattern failure.", "set_bg", MB_ICONERROR);
-			return false;
-		  }
-		  for (int i=0;i<=24;i++)
-		  {
-			  ccwin->set_color(ccwin,double(i) * 10.0 /  255.0,double(i) * 10.0 / 255.0,double(i) * 10.0 / 255.0);
-			  Sleep(50);
-		  }
-	}
-	
-	if ((nPattern > 50) && (nPattern % 40) == 0 && GetConfig()->m_bABL)
-	{
-		//sleep prevention
-		ccwin->set_bg(ccwin,.2);
-		if (ccwin->set_color(ccwin,.2,.2,.2) != 0 )
-		{
-	        MessageBox(0, "CCast Test pattern failure.", "set_color", MB_ICONERROR);
-			return false;
-		}
-		Sleep(50);
-
-		ccwin->set_bg(ccwin,.4);
-		if (ccwin->set_color(ccwin,.4,.4,.4) != 0 )
-		{
-	        MessageBox(0, "CCast Test pattern failure.", "set_color", MB_ICONERROR);
-			return false;
-		} 
-		ccwin->set_bg(ccwin,.6);
-		Sleep(50);
-
-		if (ccwin->set_color(ccwin,.6,.6,.6) != 0 )
-		{
-	        MessageBox(0, "CCast Test pattern failure.", "set_color", MB_ICONERROR);
-			return false;
-		} 
-
-		ccwin->set_bg(ccwin,bgstim);
-		Sleep(50);
-	}
-
-		if (ccwin->set_color(ccwin,r,g,b) != 0 )
-		{
-	        MessageBox(0, "CCast Test pattern failure.", "set_color", MB_ICONERROR);
-			return false;
-		} 
-*/	  
 }
 
 BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nPatternType , UINT nPatternInfo , BOOL bChangePattern, BOOL bSilentMode)
@@ -903,7 +858,6 @@ BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nP
 			DisplayRGBColorrPI (do_Intensity?p_clr:clr, GetConfig()->m_isSettling, nPatternInfo );
 		else
 			m_displayWindow.DisplayRGBColor(do_Intensity?p_clr:clr, nPatternInfo);
-		//( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.ShowWindow(SW_HIDE);
 	}
 
 	return TRUE;
@@ -920,7 +874,7 @@ BOOL CGDIGenerator::CanDisplayAnimatedPatterns(BOOL isSpecialty)
 	if (isSpecialty && m_GDIGenePropertiesPage.m_nDisplayMode != DISPLAY_madVR)
 		return TRUE;
 
-	return ((m_GDIGenePropertiesPage.m_nDisplayMode != DISPLAY_madVR) && (m_GDIGenePropertiesPage.m_nDisplayMode != DISPLAY_ccast) ? TRUE:FALSE);
+	return ((m_GDIGenePropertiesPage.m_nDisplayMode != DISPLAY_madVR) && (m_GDIGenePropertiesPage.m_nDisplayMode != DISPLAY_ccast) && (m_GDIGenePropertiesPage.m_nDisplayMode != DISPLAY_rPI) ? TRUE:FALSE);
 }
 
 BOOL CGDIGenerator::DisplayAnsiBWRects(BOOL bInvert)

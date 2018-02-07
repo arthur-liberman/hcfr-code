@@ -720,7 +720,7 @@ BEGIN
     CONTROL         "Habilitar HDR10",IDC_ENBL_HDR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,100,117,76,13
     CONTROL         "HDR",IDC_MADVR_HDR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,153,65,26,13
     GROUPBOX        "",IDC_STATIC,89,49,94,42,WS_GROUP
-    CONTROL         "Raspberry PI",IDC_RADIO8,"Button",BS_AUTORADIOBUTTON,13,105,59,10
+    CONTROL         "Raspberry PI",IDC_RADIO7,"Button",BS_AUTORADIOBUTTON,13,105,59,10
 END
 
 IDD_APPEARANCE_PROP_PAGE DIALOGEX 0, 0, 212, 182
@@ -2702,8 +2702,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,5,0,2
- PRODUCTVERSION 3,5,0,2
+ FILEVERSION 3,5,0,3
+ PRODUCTVERSION 3,5,0,3
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2721,12 +2721,12 @@ BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "CompanyName", "Association Homecinema Francophone"
             VALUE "FileDescription", "Resources Colorimètre HCFR"
-            VALUE "FileVersion", "3,5,0,2"
+            VALUE "FileVersion", "3,5,0,3"
             VALUE "InternalName", "CHCFR21_ESPAÑOL"
             VALUE "LegalCopyright", "Copyright (C) 2005-2016"
             VALUE "OriginalFilename", "CHCFR21_ESPAÑOL.DLL"
             VALUE "ProductName", "Colorimètre HCFR langage Español"
-            VALUE "ProductVersion", "3,5,0,2"
+            VALUE "ProductVersion", "3,5,0,3"
         END
     END
     BLOCK "VarFileInfo"
@@ -2751,7 +2751,7 @@ IDC_CURSOR_MEASURE      CURSOR                  "res\\cursor_meas.cur"
 
 STRINGTABLE
 BEGIN
-    IDR_MAINFRAME           "Colorimètre HCFR - 3,5,0,2"
+    IDR_MAINFRAME           "Colorimètre HCFR - 3,5,0,3"
     IDR_MESURETYPE          "\nRelevé\nRelevé\nFichiers ColorHCFR (*.chc)\n.chc\nCOLORHCFR\nRelevé de couleurs HCFR"
 END
 

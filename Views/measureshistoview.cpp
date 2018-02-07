@@ -126,6 +126,7 @@ BEGIN_MESSAGE_MAP(CMeasuresHistoView, CSavingView)
 	ON_COMMAND(IDM_COLORTEMP_GRAPH_REFERENCE, OnColorTempGraphShowRef)
 	ON_COMMAND(IDM_GRAPH_LUMINANCE, OnGraphShowLuminance)
 	ON_COMMAND(IDM_RGB_GRAPH_DELTAE, OnGraphShowDeltaE)
+	ON_COMMAND(IDM_RGB_GRAPH_GAMMA, OnGraphGamma)
 	ON_COMMAND(IDM_GRAPH_COLORTEMP, OnGraphShowColorTemp)
 	ON_COMMAND(IDM_RGB_GRAPH_Y_SCALE1, OnRGBGraphYScale1)
 	ON_COMMAND(IDM_RGB_GRAPH_Y_SCALE2, OnRGBGraphYScale2)
@@ -297,7 +298,7 @@ void CMeasuresHistoView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 				if ( mode >= 4 )
 		        {
 			        double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
-                    valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma);
+                    valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS);
 		        }
 		        else
 		        {
@@ -576,6 +577,7 @@ void CMeasuresHistoView::OnContextMenu(CWnd* pWnd, CPoint point)
 	
     pPopup->CheckMenuItem(IDM_GRAPH_LUMINANCE, m_showLuminance ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
     pPopup->CheckMenuItem(IDM_RGB_GRAPH_DELTAE, m_showDeltaE ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
+	pPopup->CheckMenuItem(IDM_RGB_GRAPH_GAMMA, GetConfig()->m_dE_gray == 1 ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
     pPopup->CheckMenuItem(IDM_GRAPH_COLORTEMP, m_showColorTemp ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
     pPopup->CheckMenuItem(IDM_COLORTEMP_GRAPH_REFERENCE, m_showReference ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
 
@@ -609,6 +611,22 @@ void CMeasuresHistoView::OnGraphShowDeltaE()
 	OnSize(SIZE_RESTORED,rect.Width(),rect.Height());	// to size graph according to visible graphs
 
 	OnUpdate(NULL,NULL,NULL);
+}
+
+void CMeasuresHistoView::OnGraphGamma() 
+{
+	if (GetConfig()->m_dE_gray == 1)
+	{
+		GetConfig()->WriteProfileInt("Advanced","dE_gray",2);
+		GetConfig()->m_dE_gray = 2;
+	}
+	else
+	{
+		GetConfig()->WriteProfileInt("Advanced","dE_gray",1);
+		GetConfig()->m_dE_gray = 1;
+	}
+
+	GetDocument()->UpdateAllViews(NULL, UPD_GRAYSCALE, NULL);
 }
 
 void CMeasuresHistoView::OnGraphShowColorTemp() 

@@ -92,6 +92,17 @@ private:
 
 	// Information windows
 	CWnd *		m_pInfoWnd;
+	CWnd *		m_pInfoWnd2;
+	CWnd *		m_pInfoWnd3;
+	CWnd *		m_pInfoWnd4;
+	CWnd *		m_pInfoWnd5;
+	CWnd *		m_pInfoWnd6;
+	CWnd *		m_pInfoWnd7;
+	CWnd *		m_pInfoWnd8;
+	CWnd *		m_pInfoWnd9;
+	CWnd *		m_pInfoWnd10;
+	CWnd *		m_pInfoWnd11;
+
 
 // Attributes
 public:

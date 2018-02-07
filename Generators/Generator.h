@@ -41,6 +41,7 @@ typedef int (__stdcall *RB8PG_send)(SOCKET sock,const char *message);
 typedef int (__stdcall *RB8PG_close)(SOCKET sock);
 typedef SOCKET (__stdcall *RB8PG_connect)(const char *server_addr);
 typedef char * (__stdcall *RB8PG_discovery)();
+typedef char * (__stdcall *RB8PG_get)(SOCKET sock,const char *message);
 
 class CGenerator: public CObject    
 {
@@ -89,11 +90,16 @@ public:
 	BOOL m_madVR_OSD;
 	UINT m_ccastIp; 
 	SOCKET sock;
+	int rPi_xWidth;
+	int rPi_yHeight;
+	int rPi_memSize;
 	dispwin *ccwin;
 	RB8PG_send _RB8PG_send;
 	RB8PG_close _RB8PG_close;
 	RB8PG_connect _RB8PG_connect;
 	RB8PG_discovery _RB8PG_discovery;
+	RB8PG_get	_RB8PG_get;
+	char * pi_Res;
 
 protected:
 	HINSTANCE hInstLibrary;

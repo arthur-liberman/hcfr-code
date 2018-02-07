@@ -384,9 +384,13 @@ void CArgyllSensor::Calibrate()
 			CGDIGenerator *m_pGenerator;
 			int display_mode  = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode", DISPLAY_DEFAULT_MODE);
 			m_pGenerator = new CGDIGenerator(display_mode, false);
-			if (display_mode == DISPLAY_ccast)
+			if (display_mode == DISPLAY_ccast || display_mode == DISPLAY_rPI)
 			{
-				GetColorApp()->InMeasureMessageBox( "Place test window and meter on Chromecast connected monitor to be calibrated.", "Calibration Instructions", MB_OK);
+				if (display_mode == DISPLAY_ccast)
+					GetColorApp()->InMeasureMessageBox( "Place test window and meter on monitor connected to your ChromeCast device.", "Calibration Instructions", MB_OK);
+				else
+					GetColorApp()->InMeasureMessageBox( "Place test window and meter on monitor connected to your rPi device.", "Calibration Instructions", MB_OK);
+
 				m_pGenerator->Display80();
 				delete m_pGenerator;
 			}

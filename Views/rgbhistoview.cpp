@@ -159,7 +159,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 				if ( mode >= 4 )
 		        {
 			        double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
-                    valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma);
+                    valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS);
 		        }
 		        else
 		        {
@@ -242,7 +242,7 @@ void CRGBGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 				if ( mode >= 4 )
 		        {
 			        double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
-                    valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma);
+                    valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS);
 		        }
 		        else
 		        {
@@ -327,6 +327,7 @@ BEGIN_MESSAGE_MAP(CRGBHistoView, CSavingView)
 	ON_WM_CONTEXTMENU()
 	ON_COMMAND(IDM_RGB_GRAPH_REFERENCE, OnRgbGraphReference)
 	ON_COMMAND(IDM_RGB_GRAPH_DELTAE, OnRgbGraphDeltaE)
+	ON_COMMAND(IDM_RGB_GRAPH_GAMMA, OnRgbGraphGamma)
 	ON_COMMAND(IDM_RGB_GRAPH_DATAREF, OnRgbGraphDataRef)	//Ki
 	ON_COMMAND(IDM_GRAPH_SETTINGS, OnGraphSettings)
 	ON_COMMAND(IDM_GRAPH_X_SCALE_FIT, OnGraphXScaleFit)
@@ -398,7 +399,6 @@ void CRGBHistoView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	if ( lHint == UPD_EVERYTHING || lHint == UPD_GRAYSCALEANDCOLORS || lHint == UPD_GRAYSCALE || lHint == UPD_DATAREFDOC || lHint == UPD_REFERENCEDATA || lHint == UPD_ARRAYSIZES || lHint == UPD_GENERALREFERENCES || lHint == UPD_SENSORCONFIG || lHint == UPD_FREEMEASUREAPPENDED || lHint >= UPD_REALTIME)
 	{
 		m_Grapher.UpdateGraph ( GetDocument () );
-
 		Invalidate(TRUE);
 	}
 }
@@ -494,6 +494,7 @@ void CRGBHistoView::OnContextMenu(CWnd* pWnd, CPoint point)
 	
     pPopup->CheckMenuItem(IDM_RGB_GRAPH_REFERENCE, m_Grapher.m_showReference ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
     pPopup->CheckMenuItem(IDM_RGB_GRAPH_DELTAE, m_Grapher.m_showDeltaE ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
+	pPopup->CheckMenuItem(IDM_RGB_GRAPH_GAMMA, GetConfig()->m_dE_gray == 1 ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
 	pPopup->CheckMenuItem(IDM_RGB_GRAPH_DATAREF, m_Grapher.m_showDataRef ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND); //Ki
 
 	pPopup->TrackPopupMenu( TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_VERTICAL,
@@ -517,6 +518,22 @@ void CRGBHistoView::OnRgbGraphDeltaE()
 	OnSize(SIZE_RESTORED,rect.Width(),rect.Height());	// to size graph according to m_showDeltaE
 
 	OnUpdate(NULL,NULL,NULL);
+}
+
+void CRGBHistoView::OnRgbGraphGamma() 
+{
+	if (GetConfig()->m_dE_gray == 1)
+	{
+		GetConfig()->WriteProfileInt("Advanced","dE_gray",2);
+		GetConfig()->m_dE_gray = 2;
+	}
+	else
+	{
+		GetConfig()->WriteProfileInt("Advanced","dE_gray",1);
+		GetConfig()->m_dE_gray = 1;
+	}
+
+	GetDocument()->UpdateAllViews(NULL, UPD_GRAYSCALE, NULL);
 }
 
 void CRGBHistoView::OnRgbGraphDataRef()  //Ki
