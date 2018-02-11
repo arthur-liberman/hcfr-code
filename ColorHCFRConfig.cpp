@@ -265,9 +265,10 @@ void CColorHCFRConfig::InitDefaults()
 	m_ContentMaxL = 4000.0;
 	m_FrameAvgMaxL = 400.0;
 	m_TargetMinL = 0.05;
-	m_TargetSysGamma = 1.2;
+	m_TargetSysGamma = 1.20;
 	m_BT2390_BS = 1.0;
-	m_BT2390_WS = 1.0;
+	m_BT2390_WS = 0.0;
+	m_BT2390_WS1 = 25;
 	m_TargetMaxL = 500.;
 	m_DiffuseL = 94.37844;
     m_GammaRel=0.0;
@@ -362,9 +363,10 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_FrameAvgMaxL=GetProfileDouble("References","FrameAvgMaxLValue",400.0);
 	m_TargetMinL=GetProfileDouble("References","TargetMinLValue",0.05);
 	m_TargetMaxL=GetProfileDouble("References","TargetMaxLValue",500.0);
-	m_TargetSysGamma=GetProfileDouble("References","TargetSysGammaValue",1.2);
+	m_TargetSysGamma=GetProfileDouble("References","TargetSysGammaValue",1.20);
 	m_BT2390_BS=GetProfileDouble("References","BT2390BlackSlopeFactor",1.0);
-	m_BT2390_WS=GetProfileDouble("References","BT2390WhiteSlopeFactor",1.0);
+	m_BT2390_WS=GetProfileDouble("References","BT2390WhiteSlopeFactor",0.0);
+	m_BT2390_WS1=GetProfileDouble("References","BT2390WhiteSlopeFactor1",25);
 	m_DiffuseL=GetProfileDouble("References","DiffuseLValue", 94.37844);
 	m_GammaRel=GetProfileDouble("References","GammaRelValue",0.0);
 	m_Split=GetProfileDouble("References","GammaSplitValue",100.0);
@@ -540,6 +542,7 @@ void CColorHCFRConfig::SetPropertiesSheetValues()
   	m_referencesPropertiesPage.m_TargetSysGamma=m_TargetSysGamma;
   	m_referencesPropertiesPage.m_BT2390_BS=m_BT2390_BS;
   	m_referencesPropertiesPage.m_BT2390_WS=m_BT2390_WS;
+  	m_referencesPropertiesPage.m_BT2390_WS1=m_BT2390_WS1;
   	m_referencesPropertiesPage.m_DiffuseL=m_DiffuseL;
   	m_referencesPropertiesPage.m_Split=m_Split;
 	m_referencesPropertiesPage.m_userBlack=m_userBlack;
@@ -661,6 +664,7 @@ BOOL CColorHCFRConfig::GetPropertiesSheetValues()
 	m_TargetSysGamma=m_referencesPropertiesPage.m_TargetSysGamma;
 	m_BT2390_BS=m_referencesPropertiesPage.m_BT2390_BS;
 	m_BT2390_WS=m_referencesPropertiesPage.m_BT2390_WS;
+	m_BT2390_WS1=m_referencesPropertiesPage.m_BT2390_WS1;
 	m_DiffuseL=m_referencesPropertiesPage.m_DiffuseL;
 	m_Split=m_referencesPropertiesPage.m_Split;
 	m_userBlack=m_referencesPropertiesPage.m_userBlack;

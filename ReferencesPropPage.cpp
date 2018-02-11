@@ -59,11 +59,13 @@ CReferencesPropPage::CReferencesPropPage() : CPropertyPageWithHelp(CReferencesPr
 	m_ContentMaxL = 4000.0;
 	m_FrameAvgMaxL = 400.0;
 	m_TargetMinL = 0.00;
-	m_TargetSysGamma = 1.2;
+	m_TargetSysGamma = 1.20;
 	m_BT2390_BS = 1.0;
-	m_BT2390_WS = 1.0;
+	m_BT2390_WS = 0.0;
+	m_BT2390_WS1 = 25;
 	m_TargetSysGammaUser = m_TargetSysGamma;
 	m_BT2390_BSUser = m_BT2390_BS;
+	m_BT2390_WS1User = m_BT2390_WS1;
 	m_BT2390_WSUser = m_BT2390_WS;
 	m_TargetMinLUser = m_TargetMinL;
 	m_TargetMaxL = 700.;
@@ -99,7 +101,7 @@ void CReferencesPropPage::DoDataExchange(CDataExchange* pDX)
   	DDX_Text(pDX, IDC_EDIT_GAMMA_AVERAGE, m_GammaAvg);
   	DDX_Text(pDX, IDC_EDIT_DIFFUSE_WHITE, m_DiffuseL);
   	DDX_Control(pDX, IDC_EDIT_DIFFUSE_WHITE, m_DiffuseLCtrl);
-	DDV_MinMaxDouble(pDX, m_DiffuseL, 5., 200.);
+	DDV_MinMaxDouble(pDX, m_DiffuseL, 1., 200.);
 	DDX_Text(pDX, IDC_EDIT_MASTER_MINL, m_MasterMinL);
 	DDX_Control(pDX, IDC_EDIT_MASTER_MINL, m_MasterMinLCtrl);
 	DDV_MinMaxDouble(pDX, m_MasterMinL, 0., 0.5);
@@ -124,8 +126,11 @@ void CReferencesPropPage::DoDataExchange(CDataExchange* pDX)
 	DDV_MinMaxDouble(pDX, m_BT2390_BS, 0.1, 3.0);
   	DDX_Control(pDX, IDC_EDIT_TARGET_MAXL3, m_BT2390_BSCtrl);
   	DDX_Text(pDX, IDC_EDIT_TARGET_MAXL4, m_BT2390_WS);
-	DDV_MinMaxDouble(pDX, m_BT2390_WS, 0.5, 2.0);
+	DDV_MinMaxDouble(pDX, m_BT2390_WS, -4.5, 4.5);
   	DDX_Control(pDX, IDC_EDIT_TARGET_MAXL4, m_BT2390_WSCtrl);
+  	DDX_Text(pDX, IDC_EDIT_TARGET_MAXL5, m_BT2390_WS1);
+	DDV_MinMaxDouble(pDX, m_BT2390_WS1, 0, 50);
+  	DDX_Control(pDX, IDC_EDIT_TARGET_MAXL5, m_BT2390_WS1Ctrl);
 	DDV_MinMaxDouble(pDX, m_TargetSysGamma, 0.1, 2.0);
 	DDV_MinMaxDouble(pDX, m_GammaRef, 1., 5.);
 	DDV_MinMaxDouble(pDX, m_GammaRel, 0., 5.);
@@ -199,6 +204,7 @@ BEGIN_MESSAGE_MAP(CReferencesPropPage, CPropertyPageWithHelp)
 	ON_EN_CHANGE(IDC_EDIT_TARGET_MAXL2, OnChangeEditGammaAvg)
 	ON_EN_CHANGE(IDC_EDIT_TARGET_MAXL3, OnChangeEditGammaAvg)
 	ON_EN_CHANGE(IDC_EDIT_TARGET_MAXL4, OnChangeEditGammaAvg)
+	ON_EN_CHANGE(IDC_EDIT_TARGET_MAXL5, OnChangeEditGammaAvg)
 	ON_BN_CLICKED(IDC_CHANGEWHITE_CHECK, OnChangeWhiteCheck)
 	ON_BN_CLICKED(IDC_USE_MEASURED_GAMMA, OnUseMeasuredGammaCheck)
 	ON_BN_CLICKED(IDC_USER_BLACK, OnUserBlackCheck)
@@ -216,8 +222,8 @@ END_MESSAGE_MAP()
 
 void CReferencesPropPage::OnControlClicked(UINT nID) 
 {
-	UpdateData(TRUE);
 	m_bSave = TRUE;
+	UpdateData(TRUE);
 
 	if (m_GammaOffsetType >= 4 || GetConfig()->m_colorStandard == sRGB)
     {
@@ -241,6 +247,7 @@ void CReferencesPropPage::OnControlClicked(UINT nID)
 			m_TargetSysGammaCtrl.EnableWindow (TRUE);
 			m_BT2390_BSCtrl.EnableWindow (TRUE);
 			m_BT2390_WSCtrl.EnableWindow (TRUE);
+			m_BT2390_WS1Ctrl.EnableWindow (TRUE);
 		}
   		m_MasterMinLCtrl.EnableWindow (TRUE);
   		m_MasterMaxLCtrl.EnableWindow (TRUE);
@@ -263,6 +270,8 @@ void CReferencesPropPage::OnControlClicked(UINT nID)
 		m_TargetSysGammaCtrl.EnableWindow (FALSE);
 		m_BT2390_BSCtrl.EnableWindow (FALSE);
 		m_BT2390_WSCtrl.EnableWindow (FALSE);
+		m_BT2390_WS1Ctrl.EnableWindow (FALSE);
+		m_TargetSysGamma = floor( (1.2 + 0.42 * log10(GetConfig()->m_TargetMaxL / 1000.))*100.+0.5)/100.;
 	}
 
 	m_isModified=TRUE;
@@ -294,6 +303,7 @@ BOOL CReferencesPropPage::OnApply()
 	GetConfig()->	WriteProfileDouble("References","TargetSysGamma",m_TargetSysGamma);
 	GetConfig()->	WriteProfileDouble("References","BT2390BlackSlopeFactor",m_BT2390_BS);
 	GetConfig()->	WriteProfileDouble("References","BT2390WhiteSlopeFactor",m_BT2390_WS);
+	GetConfig()->	WriteProfileDouble("References","BT2390WhiteSlopeFactor1",m_BT2390_WS1);
 	GetConfig()->	WriteProfileDouble("References","TargetSysGammaUser",m_TargetSysGammaUser);
 	if (m_colorStandard == HDTVa || m_colorStandard == HDTVb || m_colorStandard == UHDTV3 || m_colorStandard == UHDTV4 || m_colorStandard == CC6) 
 	{
@@ -365,6 +375,7 @@ void CReferencesPropPage::OnOK()
 		|| (m_manualGreenx != m_manualGreenxold) || (m_manualGreeny != m_manualGreenyold) || (m_manualBluey != m_manualBlueyold)
 		|| (m_manualWhitex != m_manualWhitexold) || (m_manualWhitey != m_manualWhiteyold) )
 		m_bSave = TRUE;
+
 	CPropertyPageWithHelp::OnOK();
 }
 
@@ -465,13 +476,15 @@ BOOL CReferencesPropPage::OnInitDialog()
 	m_TargetSysGammaCtrl.EnableWindow(m_bOverRideTargs);
 	m_BT2390_BSCtrl.EnableWindow (m_bOverRideTargs);
 	m_BT2390_WSCtrl.EnableWindow (m_bOverRideTargs);
+	m_BT2390_WS1Ctrl.EnableWindow (m_bOverRideTargs);
 	if (!m_bOverRideTargs)
 	{
 		m_DiffuseL = 94.37844;
 		m_TargetMinL = 0.0;
-		m_TargetSysGamma = 1.2 + 0.42 * log10(GetConfig()->m_TargetMaxL / 1000.);
+		m_TargetSysGamma = floor( (1.2 + 0.42 * log10(GetConfig()->m_TargetMaxL / 1000.))*100.+0.5)/100.;
 		m_BT2390_BS = 1.0;
-		m_BT2390_WS = 1.0;
+		m_BT2390_WS = 0.0;
+		m_BT2390_WS1 = 25;
 	}
 	else
 	{
@@ -483,6 +496,7 @@ BOOL CReferencesPropPage::OnInitDialog()
 	GetConfig()->m_TargetSysGamma = m_TargetSysGamma;
 	GetConfig()->m_BT2390_BS = m_BT2390_BS;
 	GetConfig()->m_BT2390_WS = m_BT2390_WS;
+	GetConfig()->m_BT2390_WS1 = m_BT2390_WS1;
 	
 	if (m_GammaOffsetType == 5 || m_GammaOffsetType == 7)
 	{
@@ -494,6 +508,7 @@ BOOL CReferencesPropPage::OnInitDialog()
 			m_TargetSysGammaCtrl.EnableWindow (TRUE);
 			m_BT2390_BSCtrl.EnableWindow (TRUE);
 			m_BT2390_WSCtrl.EnableWindow (TRUE);
+			m_BT2390_WS1Ctrl.EnableWindow (TRUE);
 		}
   		m_MasterMinLCtrl.EnableWindow (TRUE);
   		m_MasterMaxLCtrl.EnableWindow (TRUE);
@@ -516,6 +531,7 @@ BOOL CReferencesPropPage::OnInitDialog()
 		m_TargetSysGammaCtrl.EnableWindow (FALSE);
 		m_BT2390_BSCtrl.EnableWindow (FALSE);
 		m_BT2390_WSCtrl.EnableWindow (FALSE);
+		m_BT2390_WS1Ctrl.EnableWindow (FALSE);
 	}
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -608,10 +624,11 @@ void CReferencesPropPage::OnUserOverRideTargsCheck()
 		m_TargetMinL = 0.0;
 		m_TargetMaxLUser = m_TargetMaxL;
 		m_TargetSysGammaUser = m_TargetSysGamma;
-		m_TargetSysGamma = 1.2 + 0.42 * log10(GetConfig()->m_TargetMaxL / 1000.);
+		m_TargetSysGamma = floor( (1.2 + 0.42 * log10(GetConfig()->m_TargetMaxL / 1000.))*100.0 + 0.5) / 100.0;
 		m_BT2390_BSUser = m_BT2390_BS;
 		m_BT2390_WSUser = m_BT2390_WS;
-		m_TargetSysGamma = 1.0;
+		m_BT2390_WS1User = m_BT2390_WS1;
+		m_TargetSysGamma = 1.20;
 	}
 	else
 	{
@@ -621,6 +638,7 @@ void CReferencesPropPage::OnUserOverRideTargsCheck()
 		m_TargetSysGamma = m_TargetSysGammaUser;
 		m_BT2390_BS = m_BT2390_BSUser;
 		m_BT2390_WS = m_BT2390_WSUser;
+		m_BT2390_WS1 = m_BT2390_WS1User;
 	}
 
 	GetConfig()->m_DiffuseL = m_DiffuseL;
@@ -629,9 +647,11 @@ void CReferencesPropPage::OnUserOverRideTargsCheck()
 	m_TargetSysGammaCtrl.EnableWindow (m_bOverRideTargs);
 	m_BT2390_BSCtrl.EnableWindow (m_bOverRideTargs);
 	m_BT2390_WSCtrl.EnableWindow (m_bOverRideTargs);
+	m_BT2390_WS1Ctrl.EnableWindow (m_bOverRideTargs);
 	GetConfig()->m_TargetSysGamma = m_TargetSysGamma;
 	GetConfig()->m_BT2390_BS = m_BT2390_BS;
 	GetConfig()->m_BT2390_WS = m_BT2390_WS;
+	GetConfig()->m_BT2390_WS1 = m_BT2390_WS1;
 
 	UpdateData(FALSE);
 }

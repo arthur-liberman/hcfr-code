@@ -97,7 +97,9 @@ void CGammaGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	double GammaOffset,GammaOpt,RefGammaOffset,RefGammaOpt,LuxGammaOffset,LuxGammaOpt,RefLuxGammaOffset,RefLuxGammaOpt;
 	m_yref_abs.clear();
 
+	bool isHDR = (GetConfig()->m_GammaOffsetType == 5 || GetConfig()->m_GammaOffsetType == 7);
 	m_graphCtrl.SetXAxisProps(bIRE?"IRE":(LPSTR)(LPCSTR)GetConfig()->m_PercentGray, 10, 0, 100);
+	m_graphCtrl.SetYAxisProps(isHDR?"cd m-2":"", isHDR?1:0.1, isHDR?-100:1, isHDR?100:4);
 
 	CDataSetDoc *pDataRef = GetDataRef();
 	int size=pDoc->GetMeasure()->GetGrayScaleSize();
@@ -151,10 +153,10 @@ void CGammaGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 				valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
 				if (mode == 5)
 				{
-		            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) / 100.;
+		            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1) / 100.;
 				}
 				else
-		            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS);
+		            valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
 			}
 			else
 			{
@@ -580,8 +582,8 @@ void CGammaHistoView::OnGraphScaleFit()
 void CGammaHistoView::OnGammaGraphYScale1() 
 {
 	bool isHDR = (GetConfig()->m_GammaOffsetType == 5 || GetConfig()->m_GammaOffsetType == 7);
-	m_Grapher.m_graphCtrl.SetYAxisProps(isHDR?" cd m-2 ":"", isHDR?1:0.1, isHDR?-100:1, isHDR?100:4);
 	m_Grapher.m_graphCtrl.SetYScale(isHDR?-10:1,isHDR?10:3);
+	m_Grapher.m_graphCtrl.SetYAxisProps(isHDR?" cd m-2 ":"", isHDR?1:0.1, isHDR?-100:1, isHDR?100:4);
 	m_Grapher.m_graphCtrl.WriteSettings("Gamma Histo");
 	Invalidate(TRUE);
 }
@@ -589,8 +591,8 @@ void CGammaHistoView::OnGammaGraphYScale1()
 void CGammaHistoView::OnGraphYScaleFit() 
 {
 	bool isHDR = (GetConfig()->m_GammaOffsetType == 5 || GetConfig()->m_GammaOffsetType == 7);
-	m_Grapher.m_graphCtrl.SetYAxisProps(isHDR?" cd m-2 ":"", isHDR?1:0.1, isHDR?-100:1, isHDR?100:4);
 	m_Grapher.m_graphCtrl.FitYScale(TRUE,isHDR?1:0.1, true);
+	m_Grapher.m_graphCtrl.SetYAxisProps(isHDR?" cd m-2 ":"", isHDR?1:0.1, isHDR?-100:1, isHDR?100:4);
 	m_Grapher.m_graphCtrl.WriteSettings("Gamma Histo");
 	Invalidate(TRUE);
 }

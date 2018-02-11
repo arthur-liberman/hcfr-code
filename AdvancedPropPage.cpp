@@ -188,5 +188,6 @@ BOOL CAdvancedPropPage::OnSetActive()
 	m_bSave = GetConfig()->m_bSave2;
 	GetConfig()->ApplySettings(FALSE);
 	m_isModified=FALSE;
+	SetModified(FALSE);	
 	return bOk;
 }

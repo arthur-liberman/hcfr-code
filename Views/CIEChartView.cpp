@@ -306,8 +306,7 @@ void CCIEChartGrapher::MakeBgBitmap(CRect rect, BOOL bWhiteBkgnd)	// Create back
 	bgDC.SelectObject(pOldBitmap);
 }
 
-COLORREF stRGB[5000];
-COLORREF eRGB[5000];
+std::vector <COLORREF> stRGB,eRGB;
 
 void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoint, CBitmap *pBitmap, CRect rect, CPPToolTip * pTooltip, CWnd * pWnd, CCIEGraphPoint * pRefPoint, bool isSelected, double dE10, bool isPrimeSat)
 {
@@ -327,7 +326,7 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 	{
 		CString str, str1, str2, str3;
 		CColor NoDataColor;
-		double tmWhite = getL_EOTF(0.5022283, NoDataColor, NoDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) * 100.0;
+		double tmWhite = getL_EOTF(0.5022283, NoDataColor, NoDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1) * 100.0;
 		
 		int x=aGraphPoint.GetGraphX(rect)+m_DeltaX;
 		int y=aGraphPoint.GetGraphY(rect)+m_DeltaY;		
@@ -425,18 +424,23 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 				double g2=min(max(refCol[1],0),1);
 				double b2=min(max(refCol[2],0),1);
 				
-				stRGB[m_ttID]=RGB(floor(pow(r1,1.0/2.2)*255.+0.5),floor(pow(g1,1.0/2.2)*255.+0.5),floor(pow(b1,1.0/2.2)*255.+0.5));
-				eRGB[m_ttID]=RGB(floor(pow(r2,1.0/2.2)*255.+0.5),floor(pow(g2,1.0/2.2)*255.+0.5),floor(pow(b2,1.0/2.2)*255.+0.5));
+				stRGB.push_back(RGB(floor(pow(r1,1.0/2.2)*255.+0.5),floor(pow(g1,1.0/2.2)*255.+0.5),floor(pow(b1,1.0/2.2)*255.+0.5)));
+				eRGB.push_back(RGB(floor(pow(r2,1.0/2.2)*255.+0.5),floor(pow(g2,1.0/2.2)*255.+0.5),floor(pow(b2,1.0/2.2)*255.+0.5)));
 
 				if (dark)
 					pTooltip -> AddTool(pWnd, "<b><font color=\"#EFEFEF\">"+CString(aGraphPoint.name) +"</font></b> \n\n\n" +str+str2,&rect_tip, m_ttID);
 				else
 					pTooltip -> AddTool(pWnd, "<b><font color=\"#101010\">"+CString(aGraphPoint.name) +"</font></b> \n\n\n" +str+str2,&rect_tip, m_ttID);
 
-				if (m_ttID < 4999)
+//				if (m_ttID < 999)
 					m_ttID++;
-				else
-					m_ttID = 0;
+//				else
+//				{
+//					m_ttID = 0;
+//					stRGB.clear();
+//					eRGB.clear();
+//					pTooltip->RemoveAllTools();
+//				}
 		}
 		else
 		{
@@ -447,18 +451,24 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 			double g1=min(max(measCol[1],0),1);
 			double b1=min(max(measCol[2],0),1);
 			
-			stRGB[m_ttID]=RGB(floor(pow(r1,1.0/2.2)*255.+0.5),floor(pow(g1,1.0/2.2)*255.+0.5),floor(pow(b1,1.0/2.2)*255.+0.5));
-			eRGB[m_ttID]=stRGB[m_ttID];
+			stRGB.push_back(RGB(floor(pow(r1,1.0/2.2)*255.+0.5),floor(pow(g1,1.0/2.2)*255.+0.5),floor(pow(b1,1.0/2.2)*255.+0.5)));
+			eRGB.push_back(RGB(floor(pow(r1,1.0/2.2)*255.+0.5),floor(pow(g1,1.0/2.2)*255.+0.5),floor(pow(b1,1.0/2.2)*255.+0.5)));
 
 			if (dark)
 				pTooltip -> AddTool(pWnd, "<b><font color=\"#EFEFEF\">"+CString(aGraphPoint.name) +"</font></b> \n" +str+str2,&rect_tip, m_ttID);
 			else
 				pTooltip -> AddTool(pWnd, "<b><font color=\"#101010\">"+CString(aGraphPoint.name) +"</font></b> \n" +str+str2,&rect_tip, m_ttID);
 
-			if (m_ttID < 4999)
+//			if (m_ttID < 999)
 				m_ttID++;
-			else
-				m_ttID = 0;
+//			else
+//			{
+//				m_ttID = 0;
+//				stRGB.clear();
+//				eRGB.clear();
+//				pTooltip->RemoveAllTools();
+//			}
+
 			bDrawBMP = TRUE;
 		}
 		
@@ -492,7 +502,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	int current_mode = ((CMainView*)pView)->m_displayMode;
 	BOOL onEdit =  ((CMainView*)pView)->m_editCheckButton.GetCheck();
 	CColor NoDataColor;
-	double tmWhite = getL_EOTF(0.5022283, NoDataColor, NoDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) * 100.0;
+	double tmWhite = getL_EOTF(0.5022283, NoDataColor, NoDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1) * 100.0;
 	CColorReference  bRef = ((GetColorReference().m_standard == UHDTV3 || GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):(GetColorReference().m_standard == HDTVa || GetColorReference().m_standard == HDTVb)?CColorReference(HDTV):GetColorReference());
 
 	dE10 = ((CMainView*)pView)->dE10min;
@@ -851,15 +861,15 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 					r1 = floor( (r1 * 219.) + 0.5 ) / 219.;
 					g1 = floor( (g1 * 219.) + 0.5 ) / 219.;
 					b1 = floor( (b1 * 219.) + 0.5 ) / 219.;
-				    r1 = getL_EOTF(r1,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) / (mode==5?100.:1.0);
-				    g1 = getL_EOTF(g1,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) / (mode==5?100.:1.0);
-				    b1 = getL_EOTF(b1,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS) / (mode==5?100.:1.0);
+				    r1 = getL_EOTF(r1,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1) / (mode==5?100.:1.0);
+				    g1 = getL_EOTF(g1,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1) / (mode==5?100.:1.0);
+				    b1 = getL_EOTF(b1,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1) / (mode==5?100.:1.0);
 				}
 				else
 				{
-				   r1 = (r[i]<=0.0||r[i]>=1.0)?min(max(r[i],0),1):getL_EOTF(pow(r[i],1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS);
-				   g1 = (g[i]<=0.0||g[i]>=1.0)?min(max(g[i],0),1):getL_EOTF(pow(g[i],1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS);
-				   b1 = (b[i]<=0.0||b[i]>=1.0)?min(max(b[i],0),1):getL_EOTF(pow(b[i],1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS);
+				   r1 = (r[i]<=0.0||r[i]>=1.0)?min(max(r[i],0),1):getL_EOTF(pow(r[i],1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+				   g1 = (g[i]<=0.0||g[i]>=1.0)?min(max(g[i],0),1):getL_EOTF(pow(g[i],1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+				   b1 = (b[i]<=0.0||b[i]>=1.0)?min(max(b[i],0),1):getL_EOTF(pow(b[i],1.0/2.22),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
 				}
 			}
 			else
@@ -1548,7 +1558,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 				if (  (mode >= 4) )
 			    {
 				   double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
-                   valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS);
+                   valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
 			    }
 			    else
 			    {
