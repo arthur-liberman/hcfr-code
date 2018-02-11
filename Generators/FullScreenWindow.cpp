@@ -1362,7 +1362,6 @@ void video_scale (CxImage *inImage)
 
 					CxMemFile memfile;
 					memfile.Open();
-//					newImage->Resample2(1280, 720, CxImage::IM_BICUBIC2, CxImage::OM_REPEAT, newImage, TRUE);
 					newImage->Encode(&memfile, CXIMAGE_FORMAT_PNG);
 					BYTE *obuf = memfile.GetBuffer();
 					long olen = memfile.Size();

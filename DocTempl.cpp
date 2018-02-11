@@ -250,7 +250,10 @@ CDataSetFrameInfo::CDataSetFrameInfo ( CFrameWnd * pFrame )
 		pMultiFrame -> m_TabCtrl.GetItemData ( i, nViewIndex );
 
 		if ( pMultiFrame -> m_nTabbedViewIndex [ nViewIndex ] == IDS_DATASETVIEW_NAME )
+		{
+			ASSERT (pMultiFrame -> m_pTabbedView [ nViewIndex ]->IsKindOf(RUNTIME_CLASS(CMainView)));
 			dwUserInfo = ( ( CMainView * ) pMultiFrame -> m_pTabbedView [ nViewIndex ] ) -> GetUserInfo ();
+		}
 		else
 		{
 			ASSERT ( pMultiFrame -> m_pTabbedView [ nViewIndex ] -> IsKindOf ( RUNTIME_CLASS(CSavingView) ) );

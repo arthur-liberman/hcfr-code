@@ -573,6 +573,7 @@ EOTF DV_400_EOTF[220] = {
 std::vector<double> BT2390x,BT2390y;
 
 double m_HDRRefLevel = 1.0 / 94.37844 * 10000.; // 50.23% 8-bit level 126 (504) input luminance
+double Scale = 10000.;
 
 int XYZtoCorColorTemp(double *xyz, double *temp)
 {
@@ -1331,7 +1332,7 @@ double ColorXYZ::GetDeltaLCH(double YWhite, const ColorXYZ& refColor, double YWh
 	return dLight;
 }
 
-double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double split, int mode, double m_diffuseL, double m_MinML, double m_MaxML, double m_MinTL, double m_MaxTL, bool ToneMap, bool cBT2390, double bbc_gamma, double b_fact, double E2_fact)
+double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double split, int mode, double m_diffuseL, double m_MinML, double m_MaxML, double m_MinTL, double m_MaxTL, bool ToneMap, bool cBT2390, double bbc_gamma, double b_fact, double E2_fact, double E2_fact1)
 {
 	if (valx == 0 && mode > 4) return (ToneMap?m_MinTL / 100.:0.0);
 	if (valx < 0)
@@ -1404,7 +1405,8 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 
 	Lbt = ( a * pow ( (valx + b)<0?0:(valx+b), exp0 ) );
 
-	double value, Scale = 10000. * m_diffuseL / 94.37844, E3 = 0.0;
+	double value, E3 = 0.0;
+	Scale = m_diffuseL / 94.37844 * 10000.;
 
 	switch (mode)
 	{
@@ -1442,8 +1444,13 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 			double E1,E2,E4,b,d,KS,T,p;
 			if (!cBT2390)
 			{
-				double tmWhite = getL_EOTF(0.5022283, White, Black, g_rel, split, 5, m_diffuseL, m_MinML, m_MaxML, m_MinTL, m_MaxTL, ToneMap, TRUE) * 100.0;
-				m_MaxML = m_MaxML * tmWhite / 94.37844; 
+				double tmWhite = getL_EOTF(0.5022283, White, Black, g_rel, split, 5, m_diffuseL, m_MinML, m_MaxML, m_MinTL, m_MaxTL, ToneMap, TRUE, bbc_gamma, b_fact, E2_fact) * 100.0;
+//				m_MaxML = m_MaxML * tmWhite / 94.37844 ; 
+				m_MaxML = m_MaxML * m_diffuseL / 94.37844 ; 
+
+				if (m_MinML > m_MinTL)
+					m_MinML = m_MinTL;
+
 				E1 = valx - pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2);
 				d = pow( (c1 + c2 * pow(m_MaxML/Scale,m1)) / (1 + c3 * pow(m_MaxML/Scale,m1)), m2) - pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2);
 				E1 = E1 / d;
@@ -1453,12 +1460,23 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 				b = minL;
 				E2 = E1;
 
+				double slope = 1.0;
+				double lower = KS;
+				double upper = pow( (c1 + c2 * pow(m_MaxML/Scale,m1)) / (1 + c3 * pow(m_MaxML/Scale,m1)), m2);
+				double mmaxL = lower + E2_fact1 / 100 * (upper - lower);
+
+				if (E1 >= mmaxL && (upper > lower))
+				{
+						slope = pow((E1 - mmaxL),2.0) * pow((1.0-E1),0.75)*E2_fact*(2.5*pow(mmaxL,2.0)+3*pow(mmaxL,3.0)) + 1.0;
+						E1 = E1 / slope;
+				}
+
 				if (E1 >= KS && E1 <= 1.0)
 				{
-					T = pow((E1 - KS) / (1.0 - KS),E2_fact);
-					E2 = (2 * pow(T,3.0) - 3 * pow(T,2.0) + 1.0)*KS + (pow(T,3.0) - 2 * pow(T, 2.0) + T) * (1.0 - KS) + ( -2.0 * pow(T,3.0) + 3.0 * pow(T,2.0)) * maxL ;
+					T = (E1 - KS) / (1.0 - KS);
+					E2 = ((2 * pow(T,3.0) - 3 * pow(T,2.0) + 1.0)*KS + (pow(T,3.0) - 2 * pow(T, 2.0) + T) * (1.0 - KS)) + ( -2.0 * pow(T,3.0) + 3.0 * pow(T,2.0)) * maxL;
 				}
-			
+
 				if (E2 >= 0.0 && E2 <= 1.0)
 				{
 					p = min(1.0 / b, 4 * b_fact);
@@ -1466,7 +1484,7 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 					E3 = (E3 * d + pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2)); 
 					E4 = pow(max(pow(E3,1.0 / m2) - c1,0) / (c2 - c3 * pow(E3, 1.0 / m2)), 1.0 / m1);
 					outL = E4 * 10000. / 100.00 * m_diffuseL / 94.37844;
-					outL = min(outL, m_MaxTL / 100.0);
+					outL = min(outL, m_MaxTL / 100.0 );
 				}
 				else
 				{
@@ -1479,13 +1497,19 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 			{
 				BT2390x.clear();
 				BT2390y.clear();
-				int ii = 2048;
+				int ii = 1024;
+
+				if (m_MinML > m_MinTL)
+					m_MinML = m_MinTL;
+				m_MaxML = m_MaxML * m_diffuseL / 94.37844; 
+
 				if (valx == 0.5022283)
 					ii = 1;
 				for (int i=0; i < ii;i++)
 				{
 					if (valx != 0.5022283)
-						valx = i / 2048.;
+						valx = i / 1024.;
+
 					E1 = valx - pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2);
 					d = pow( (c1 + c2 * pow(m_MaxML/Scale,m1)) / (1 + c3 * pow(m_MaxML/Scale,m1)), m2) - pow( (c1 + c2 * pow(m_MinML/Scale,m1)) / (1 + c3 * pow(m_MinML/Scale,m1)), m2);
 					E1 = E1 / d;
@@ -1495,10 +1519,21 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 					b = minL;
 					E2 = E1;
 
-					if (E1 >= KS && E1 <= 1.0)
+					double slope = 1.0;
+					double lower = KS;
+					double upper = pow( (c1 + c2 * pow(m_MaxML/Scale,m1)) / (1 + c3 * pow(m_MaxML/Scale,m1)), m2);
+					double mmaxL = lower + E2_fact1 / 100 * (upper - lower);
+
+					if (E1 >= mmaxL && (upper > lower))
 					{
-						T = pow((E1 - KS) / (1.0 - KS),E2_fact);
-						E2 = (2 * pow(T,3.0) - 3 * pow(T,2.0) + 1.0)*KS + (pow(T,3.0) - 2 * pow(T, 2.0) + T) * (1.0 - KS) + ( -2.0 * pow(T,3.0) + 3.0 * pow(T,2.0)) * maxL ;
+							slope = pow((E1 - mmaxL),2.0) * pow((1.0-E1),0.75)*E2_fact*(2.5*pow(mmaxL,2.0)+3*pow(mmaxL,3.0)) + 1.0;
+							E1 = E1 / slope;
+					}
+
+					if (E1 >= KS && E1 <= 1.2)
+					{
+						T = (E1 - KS) / (1.0 - KS);
+						E2 = ((2 * pow(T,3.0) - 3 * pow(T,2.0) + 1.0)*KS + (pow(T,3.0) - 2 * pow(T, 2.0) + T) * (1.0 - KS))  + ( -2.0 * pow(T,3.0) + 3.0 * pow(T,2.0)) * maxL;
 					}
 			
 					if (E2 >= 0.0 && E2 <= 1.0)
@@ -1523,9 +1558,10 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 		break;
 		case -10: //BT.2084/2390 inverse curve look-up
 			{
-				double tmWhite = getL_EOTF(0.5022283, White, Black, g_rel, split, 5, m_diffuseL, m_MinML, m_MaxML, m_MinTL, m_MaxTL, ToneMap, TRUE) * 100.0;
-				m_MaxML = m_MaxML * tmWhite / 94.37844;
-				getL_EOTF(valx, White, Black, g_rel, split, 5, m_diffuseL, m_MinML, m_MaxML, m_MinTL, m_MaxTL, ToneMap, TRUE);
+//				double tmWhite = getL_EOTF(0.5022283, White, Black, g_rel, split, 5, m_diffuseL, m_MinML, m_MaxML, m_MinTL, m_MaxTL, ToneMap, TRUE, bbc_gamma, b_fact, E2_fact, E2_fact1) * 100.0;
+//				m_MaxML = m_MaxML * tmWhite / 94.37844;
+//				m_MaxML = m_MaxML * m_diffuseL / 94.37844 ; 
+				getL_EOTF(valx, White, Black, g_rel, split, 5, m_diffuseL, m_MinML, m_MaxML, m_MinTL, m_MaxTL, ToneMap, TRUE, bbc_gamma, b_fact, E2_fact, E2_fact1);
 				value = abs(valx - BT2390y[0]);
 				outL = BT2390x[0];
 				for (int i = 0; i < (int)BT2390y.size(); i++)
