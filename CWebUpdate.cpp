@@ -128,6 +128,8 @@ bool CWebUpdate::DoUpdateCheck()
 	numMissing = 0;
 	numDifferent = 0;
 	numSuccess = 0;
+	//wait in case program start-up
+	Sleep(1000);
 
 	missingFiles.RemoveAll();
 	differentFiles.RemoveAll();
