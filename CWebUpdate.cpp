@@ -143,10 +143,10 @@ bool CWebUpdate::DoUpdateCheck()
 	HANDLE	dloadHandle = (HANDLE)_beginthread(downloadFile, 0, (void*)"");
 	
 	// Wait for it to finish
-	//	AtlWaitWithMessageLoop(dloadHandle); //replace with routine below to prevent hang if
+	//	AtlWaitWithMessageLoop(dloadHandle); //replace with routine below to prevent hang
 
 	DWORD dwInitialTimeOutMilliseconds = 0;
-	DWORD dwIterateTimeOutMilliseconds = 500;
+	DWORD dwIterateTimeOutMilliseconds = 250;
 	DWORD dwRet=0;
 
 	MSG msg={0};
@@ -159,18 +159,18 @@ bool CWebUpdate::DoUpdateCheck()
 	}
 	else
 	{
-		while(true)
+		int timer = 0;
+		while(timer < 20)
 		{
 		// There are one or more window message available. Dispatch them.
 			while(::PeekMessage(&msg,NULL,NULL,NULL,PM_REMOVE))
 			{
 				::TranslateMessage(&msg);
 				::DispatchMessage(&msg);
-				dwRet = ::WaitForSingleObject(dloadHandle, 0);
+				dwRet = ::WaitForSingleObject(dloadHandle, 5);
 				if(dwRet == WAIT_OBJECT_0)
 				{
 					// The object is already signalled.
-
 					break;
 				}
 			}
@@ -184,12 +184,16 @@ bool CWebUpdate::DoUpdateCheck()
 			// The event was signaled.
 				break;
 			}
+			timer++;
 		}
+
+		if (dwRet != WAIT_OBJECT_0)
+			AfxMessageBox("Update Check timed out.", MB_OK | MB_ICONWARNING);
 	}
 
 
 	// The download failed, return false
-	if (!SUCCEEDED(dloadResult))
+	if (!SUCCEEDED(dloadResult) || dwRet != WAIT_OBJECT_0)
 		return false;
 
 	// It downloaded, now we parse it
