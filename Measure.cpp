@@ -3196,14 +3196,14 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 		for (int i=0+100*iCC;i<100*(iCC+1);i++)
 				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-iCC*100];
 	else if (iCC == 24) 
-		for (int i=1900;i<1900+250;i++)
-				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-1900];
+		for (int i=2400;i<2400+250;i++)
+				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-2400];
 	else if (iCC == 25) 
-		for (int i=1900+250;i<1900+250+500;i++)
-				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(1900+250)];
+		for (int i=2400+250;i<2400+250+500;i++)
+				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(2400+250)];
 	else if (iCC == 26) 
-		for (int i=1900+250+500;i<1900+250+500+1000;i++)
-				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(1900+250+500)];
+		for (int i=2400+250+500;i<1900+250+500+1000;i++)
+				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(2400+250+500)];
 
 	m_binMeasure = FALSE;
 	UpdateViews(pDoc, 11);
@@ -3576,14 +3576,14 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 		for (int i=0+100*iCC;i<100*(iCC+1);i++)
 				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-iCC*100];
 	else if (iCC == 24) 
-		for (int i=1900;i<1900+250;i++)
-				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-1900];
+		for (int i=2400;i<2400+250;i++)
+				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-2400];
 	else if (iCC == 25) 
-		for (int i=1900+250;i<1900+250+500;i++)
-				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(1900+250)];
+		for (int i=2400+250;i<2400+250+500;i++)
+				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(2400+250)];
 	else if (iCC == 26) 
-		for (int i=1900+250+500;i<1900+250+500+1000;i++)
-				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(1900+250+500)];
+		for (int i=2400+250+500;i<2400+250+500+1000;i++)
+				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(2400+250+500)];
 
 	m_binMeasure = FALSE;
 	UpdateViews(pDoc, 11);
@@ -6035,14 +6035,14 @@ BOOL CMeasure::ValidateBackgroundCC24SatScale ( BOOL bUseLuxValues, double * pLu
 			for (int i=0+100*iCC;i<100*(iCC+1);i++)
 					m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-iCC*100];
 		else if (iCC == 24) 
-			for (int i=1900;i<1900+250;i++)
-					m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-1900];
+			for (int i=2400;i<2400+250;i++)
+					m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-2400];
 		else if (iCC == 25) 
-			for (int i=1900+250;i<1900+250+500;i++)
-					m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(1900+250)];
+			for (int i=2400+250;i<2400+250+500;i++)
+					m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(2400+250)];
 		else if (iCC == 26) 
-			for (int i=1900+250+500;i<1900+250+500+1000;i++)
-					m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(1900+250+500)];
+			for (int i=2400+250+500;i<2400+250+500+1000;i++)
+					m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(2400+250+500)];
 	}
 
 	// Close background thread and event objects
