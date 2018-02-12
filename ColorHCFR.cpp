@@ -388,9 +388,12 @@ BOOL CColorHCFRApp::InitInstance()
 		if (WebUpdate.GetNumberDifferent() == 1)
 		{
 			::SetWindowText ( hCtrl, "Version "+WebUpdate.fileVer+" is available..." );
-			Sleep(2000);
+			Sleep(1500);
 			::ShowWindow ( hDlg, SW_HIDE );
-			if (AfxMessageBox(IDS_UPD_ASK_DOWNLOAD, MB_YESNO | MB_ICONQUESTION) == IDYES)
+			CString msg;
+			msg.LoadStringA(IDS_UPD_ASK_DOWNLOAD);
+			msg+="(v:"+WebUpdate.fileVer+")";
+			if (AfxMessageBox(msg, MB_YESNO | MB_ICONQUESTION) == IDYES)
 			{
 				::SetWindowText ( hCtrl, "Downloading install file for version to APPDATA, please wait..." );
 				::ShowWindow ( hDlg, SW_SHOW );
