@@ -47,6 +47,13 @@ CGammaGrapher::CGammaGrapher ()
 
 	Msg.LoadString ( IDS_GAMMA );
 	m_luminanceLogGraphID = m_graphCtrl.AddGraph(RGB(255,255,0),(LPSTR)(LPCSTR)Msg);
+	Msg.LoadString ( IDS_GAMMAREFERENCE );
+	m_refLogGraphID = m_graphCtrl.AddGraph(RGB(230,230,230),(LPSTR)(LPCSTR)Msg,1,PS_DOT);
+	Msg.LoadString ( IDS_GAMMADATAREF );
+	m_luminanceDataRefLogGraphID = m_graphCtrl.AddGraph(RGB(255,255,0),(LPSTR)(LPCSTR)Msg,1,PS_DOT); //Ki
+	Msg += " (lux)";
+	m_luxmeterDataRefLogGraphID = m_graphCtrl.AddGraph(RGB(255,128,0),(LPSTR)(LPCSTR)Msg,1,PS_DOT);
+	Msg.LoadString ( IDS_GAMMA );
 	Msg += " (lux)";
 	m_luxmeterLogGraphID = m_graphCtrl.AddGraph(RGB(255,128,0),(LPSTR)(LPCSTR)Msg);
 	Msg.LoadString ( IDS_GAMMARED );
@@ -55,17 +62,11 @@ CGammaGrapher::CGammaGrapher ()
 	m_greenLumLogGraphID = m_graphCtrl.AddGraph(RGB(0,255,0),(LPSTR)(LPCSTR)Msg);
 	Msg.LoadString ( IDS_GAMMABLUE );
 	m_blueLumLogGraphID = m_graphCtrl.AddGraph(RGB(0,0,255),(LPSTR)(LPCSTR)Msg);
-	Msg.LoadString ( IDS_GAMMAREFERENCE );
-	m_refLogGraphID = m_graphCtrl.AddGraph(RGB(230,230,230),(LPSTR)(LPCSTR)Msg,1,PS_DOT);
 	Msg.LoadString ( IDS_GAMMAAVERAGE );
 	m_avgLogGraphID = m_graphCtrl.AddGraph(RGB(0,255,255),(LPSTR)(LPCSTR)Msg,1,PS_DOT);
 	Msg += " (lux)";
 	m_luxmeterAvgLogGraphID = m_graphCtrl.AddGraph(RGB(128,0,255),(LPSTR)(LPCSTR)Msg,1,PS_DOT);
 	
-	Msg.LoadString ( IDS_GAMMADATAREF );
-	m_luminanceDataRefLogGraphID = m_graphCtrl.AddGraph(RGB(255,255,0),(LPSTR)(LPCSTR)Msg,1,PS_DOT); //Ki
-	Msg += " (lux)";
-	m_luxmeterDataRefLogGraphID = m_graphCtrl.AddGraph(RGB(255,128,0),(LPSTR)(LPCSTR)Msg,1,PS_DOT);
 	Msg.LoadString ( IDS_GAMMAREDDATAREF );
 	m_redLumDataRefLogGraphID = m_graphCtrl.AddGraph(RGB(255,0,0), (LPSTR)(LPCSTR)Msg,1,PS_DOT); //Ki
 	Msg.LoadString ( IDS_GAMMAGREENDATAREF );
@@ -100,6 +101,10 @@ void CGammaGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 	bool isHDR = (GetConfig()->m_GammaOffsetType == 5 || GetConfig()->m_GammaOffsetType == 7);
 	m_graphCtrl.SetXAxisProps(bIRE?"IRE":(LPSTR)(LPCSTR)GetConfig()->m_PercentGray, 10, 0, 100);
 	m_graphCtrl.SetYAxisProps(isHDR?"cd m-2":"", isHDR?1:0.1, isHDR?-100:1, isHDR?100:4);
+	m_graphCtrl. SetYAxisProps(isHDR?"cd m-2":"", isHDR?1:0.1, isHDR?-100:1, isHDR?100:4);
+	m_graphCtrl.m_graphArray[2].m_Title=isHDR?"delta Luminance Ref Measure":"Reference Measure Gamma";
+	m_graphCtrl.m_graphArray[1].m_Title=isHDR?"delta Luminance Ref":"Gamma Reference";
+	m_graphCtrl.m_graphArray[0].m_Title=isHDR?"delta Luminance":"Gamma";
 
 	CDataSetDoc *pDataRef = GetDataRef();
 	int size=pDoc->GetMeasure()->GetGrayScaleSize();
@@ -493,11 +498,21 @@ void CGammaHistoView::OnContextMenu(CWnd* pWnd, CPoint point)
 	
     pPopup->CheckMenuItem(IDM_LUM_GRAPH_SHOWREF, m_Grapher.m_showReference ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
  	pPopup->CheckMenuItem(IDM_LUM_GRAPH_DATAREF, m_Grapher.m_showDataRef ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND); //Ki
-	pPopup->CheckMenuItem(IDM_LUM_GRAPH_SHOW_AVG, m_Grapher.m_showAverage ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
     pPopup->CheckMenuItem(IDM_LUM_GRAPH_YLUM, m_Grapher.m_showYLum ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
-    pPopup->CheckMenuItem(IDM_LUM_GRAPH_REDLUM, m_Grapher.m_showRedLum ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
-    pPopup->CheckMenuItem(IDM_LUM_GRAPH_GREENLUM, m_Grapher.m_showGreenLum ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
-    pPopup->CheckMenuItem(IDM_LUM_GRAPH_BLUELUM, m_Grapher.m_showBlueLum ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
+
+	if (GetConfig()->m_GammaOffsetType == 5 || GetConfig()->m_GammaOffsetType == 7)
+	{
+		pPopup->EnableMenuItem(IDM_LUM_GRAPH_SHOW_AVG, MF_DISABLED | MF_GRAYED);
+		pPopup->EnableMenuItem(IDM_LUM_GRAPH_REDLUM, MF_DISABLED | MF_GRAYED);
+		pPopup->EnableMenuItem(IDM_LUM_GRAPH_GREENLUM, MF_DISABLED | MF_GRAYED);
+		pPopup->EnableMenuItem(IDM_LUM_GRAPH_BLUELUM, MF_DISABLED | MF_GRAYED);
+	} else
+	{
+		pPopup->CheckMenuItem(IDM_LUM_GRAPH_SHOW_AVG, m_Grapher.m_showAverage ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
+		pPopup->CheckMenuItem(IDM_LUM_GRAPH_REDLUM, m_Grapher.m_showRedLum ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
+		pPopup->CheckMenuItem(IDM_LUM_GRAPH_GREENLUM, m_Grapher.m_showGreenLum ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
+		pPopup->CheckMenuItem(IDM_LUM_GRAPH_BLUELUM, m_Grapher.m_showBlueLum ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
+	}
 
 	pPopup->TrackPopupMenu( TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_VERTICAL, point.x, point.y, this);
 }
