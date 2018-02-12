@@ -153,7 +153,6 @@ CCIEChartGrapher::CCIEChartGrapher()
 	m_ZoomFactor = 1000;
 	m_DeltaX = 0;
 	m_DeltaY = 0;
-	m_ttID = 0;
 	dE10 = 0.;
 }
 
@@ -432,15 +431,7 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 				else
 					pTooltip -> AddTool(pWnd, "<b><font color=\"#101010\">"+CString(aGraphPoint.name) +"</font></b> \n\n\n" +str+str2,&rect_tip, m_ttID);
 
-//				if (m_ttID < 999)
 					m_ttID++;
-//				else
-//				{
-//					m_ttID = 0;
-//					stRGB.clear();
-//					eRGB.clear();
-//					pTooltip->RemoveAllTools();
-//				}
 		}
 		else
 		{
@@ -459,15 +450,7 @@ void CCIEChartGrapher::DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoi
 			else
 				pTooltip -> AddTool(pWnd, "<b><font color=\"#101010\">"+CString(aGraphPoint.name) +"</font></b> \n" +str+str2,&rect_tip, m_ttID);
 
-//			if (m_ttID < 999)
 				m_ttID++;
-//			else
-//			{
-//				m_ttID = 0;
-//				stRGB.clear();
-//				eRGB.clear();
-//				pTooltip->RemoveAllTools();
-//			}
 
 			bDrawBMP = TRUE;
 		}
@@ -504,6 +487,10 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	CColor NoDataColor;
 	double tmWhite = getL_EOTF(0.5022283, NoDataColor, NoDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1) * 100.0;
 	CColorReference  bRef = ((GetColorReference().m_standard == UHDTV3 || GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):(GetColorReference().m_standard == HDTVa || GetColorReference().m_standard == HDTVb)?CColorReference(HDTV):GetColorReference());
+	m_ttID = 0;
+	stRGB.clear();
+	eRGB.clear();
+	pTooltip->RemoveAllTools();
 
 	dE10 = ((CMainView*)pView)->dE10min;
 	
