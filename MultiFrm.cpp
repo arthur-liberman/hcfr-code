@@ -179,9 +179,11 @@ CMultiFrame::CMultiFrame()
 {
 	m_MinSize.x = 100;
 	m_MinSize.y = 100;
-	m_MinSize2.x = 784;//844;
+	m_MinSize2.x = 844;//844;
 	m_MinSize2.y = 464;//569;//320;
 	m_bUseMinSize2 = FALSE;
+	m_bHasStarted = FALSE;
+	m_bHide = FALSE;
 
 	m_NbTabbedViews = 0;
 	m_bDisplayTab = TRUE;
@@ -451,6 +453,8 @@ BOOL CMultiFrame::OnCreateClient( LPCREATESTRUCT lpcs, CCreateContext* pContext 
 CView * CMultiFrame::CreateTabbedView ( CCreateContext * pContext, int nIDName, int nIDTooltipText, RECT Rect, BOOL bDisableInitialUpdate )
 {
 	CView *		pView = NULL;
+	CView *		pView2 = NULL;
+	CView *		pView3 = NULL;
 	CString		Name, TooltipText;
 
 	if ( m_NbTabbedViews < MAX_TABBED_VIEW )
@@ -462,12 +466,13 @@ CView * CMultiFrame::CreateTabbedView ( CCreateContext * pContext, int nIDName, 
 		if ( m_NbTabbedViews > 0 && ! bDisableInitialUpdate )
 			pView -> OnInitialUpdate();
 
-		Name.LoadString ( nIDName );
-		TooltipText.LoadString ( nIDTooltipText );
-		
 		pView -> SetWindowPos ( NULL, Rect.left, Rect.top, Rect.right - Rect.left, Rect.bottom - Rect.top, SWP_HIDEWINDOW | SWP_NOACTIVATE | SWP_NOOWNERZORDER );
 		m_pTabbedView [ m_NbTabbedViews ] = pView;
 		m_nTabbedViewIndex [ m_NbTabbedViews ] = nIDName;
+
+		Name.LoadString ( nIDName );
+		TooltipText.LoadString ( nIDTooltipText );
+
 		if ( m_bDisplayTab )
 		{
 			m_TabCtrl.InsertItem ( m_NbTabbedViews, Name );
@@ -479,8 +484,64 @@ CView * CMultiFrame::CreateTabbedView ( CCreateContext * pContext, int nIDName, 
 			pView -> ShowWindow ( SW_SHOW );
 		}
 		m_NbTabbedViews ++;
-	}
 
+		if (m_NbTabbedViews > 1)
+		{
+			if (m_NbTabbedViews == 2)
+				GetConfig()->WriteProfileInt ( "Tabbed Views", "Tab1", GetViewTypeIndex(nIDName) );
+			if (m_NbTabbedViews == 3)
+				GetConfig()->WriteProfileInt ( "Tabbed Views", "Tab2", GetViewTypeIndex(nIDName) );
+		}
+		else if (!m_bHasStarted)
+		{
+			int a = GetConfig()->GetProfileInt ( "Tabbed Views", "Tab1", 0 );
+
+			if (a)
+			{
+				CCreateContext	context2;
+				POSITION		pos = AfxGetApp () -> GetFirstDocTemplatePosition ();
+
+				context2.m_pCurrentDoc = m_pDocument;
+				context2.m_pCurrentFrame = this;
+				context2.m_pLastView = ( m_NbTabbedViews ? m_pTabbedView [ m_NbTabbedViews - 1 ] : NULL );
+				context2.m_pNewDocTemplate = AfxGetApp () -> GetNextDocTemplate(pos);
+				context2.m_pNewViewClass = g_ViewType [ a ].pRunTime;
+				pView2 = (CView *) CreateView ( &context2, AFX_IDW_PANE_FIRST );
+				Name.LoadString (  g_ViewType [ a ].nIDName );
+				TooltipText.LoadString ( nIDTooltipText );
+				pView2 -> SetWindowPos ( NULL, Rect.left, Rect.top, Rect.right - Rect.left, Rect.bottom - Rect.top, SWP_HIDEWINDOW | SWP_NOACTIVATE | SWP_NOOWNERZORDER );
+				m_pTabbedView [ m_NbTabbedViews ] = pView2;
+				m_nTabbedViewIndex [ m_NbTabbedViews ] =  g_ViewType [ a ].nIDName;
+				m_TabCtrl.InsertItem ( m_NbTabbedViews, Name );
+				m_TabCtrl.SetItemData ( m_NbTabbedViews, m_NbTabbedViews );
+				m_TabCtrl.SetItemTooltipText ( m_NbTabbedViews, TooltipText );
+				m_NbTabbedViews ++;
+			}
+			a = GetConfig()->GetProfileInt ( "Tabbed Views", "Tab2", 0 );
+
+			if (a)
+			{
+				CCreateContext	context2;
+				POSITION		pos = AfxGetApp () -> GetFirstDocTemplatePosition ();
+
+				context2.m_pCurrentDoc = m_pDocument;
+				context2.m_pCurrentFrame = this;
+				context2.m_pLastView = ( m_NbTabbedViews ? m_pTabbedView [ m_NbTabbedViews - 1 ] : NULL );
+				context2.m_pNewDocTemplate = AfxGetApp () -> GetNextDocTemplate(pos);
+				context2.m_pNewViewClass = g_ViewType [ a ].pRunTime;
+				pView2 = (CView *) CreateView ( &context2, AFX_IDW_PANE_FIRST );
+				Name.LoadString (  g_ViewType [ a ].nIDName );
+				TooltipText.LoadString ( nIDTooltipText );
+				pView2 -> SetWindowPos ( NULL, Rect.left, Rect.top, Rect.right - Rect.left, Rect.bottom - Rect.top, SWP_HIDEWINDOW | SWP_NOACTIVATE | SWP_NOOWNERZORDER );
+				m_pTabbedView [ m_NbTabbedViews ] = pView2;
+				m_nTabbedViewIndex [ m_NbTabbedViews ] =  g_ViewType [ a ].nIDName;
+				m_TabCtrl.InsertItem ( m_NbTabbedViews, Name );
+				m_TabCtrl.SetItemData ( m_NbTabbedViews, m_NbTabbedViews );
+				m_TabCtrl.SetItemTooltipText ( m_NbTabbedViews, TooltipText );
+				m_NbTabbedViews ++;
+			}
+		}
+	}
 	return pView;
 }
 
@@ -522,13 +583,29 @@ CView * CMultiFrame::CreateOrActivateView ( int nViewIndex, BOOL bForceCreate, B
 
 		pView = CreateTabbedView ( & context, g_ViewType [ nViewIndex ].nIDName, g_ViewType [ nViewIndex ].nIDTooltipText, Rect, bDisableInitialUpdate );
 		
+		if (m_NbTabbedViews > 1)
+		{
+			if (( (CMainView *) m_pTabbedView[0] )->m_infoDisplay == 12)
+			{
+				m_TabCtrl.SetCurSel ( 0 );
+				m_bHide = true;
+				OnTabChanged ( NULL, NULL );
+				( (CMainView *) m_pTabbedView[0] )->refresh = true;
+				( (CMainView *) m_pTabbedView[0] )->OnSelchangeInfoDisplay();			
+				( (CMainView *) m_pTabbedView[0] )->refresh = false;
+			}
+		}
+
+		m_bHide = false;
+
 		if ( m_bDisplayTab && ! bDisableInitialUpdate )
 		{
 			// Select new view in Tab
-			m_TabCtrl.SetCurSel ( m_NbTabbedViews - 1 );
+			m_TabCtrl.SetCurSel (m_bHasStarted?(m_NbTabbedViews - 1):0 );
 			OnTabChanged ( NULL, NULL );
+			m_bHasStarted = true;
 		}
-
+		
 		if ( nViewIndex == VIEW_IDX_DATASET && ! bDisableInitialUpdate )
 		{
 			// Ensure minimum frame window size
@@ -596,9 +673,10 @@ void CMultiFrame::OnTabChanged(NMHDR* pNMHDR, LRESULT* pResult)
 	}
 
 	m_pTabbedView [ nSelView ] -> SetWindowPos ( NULL, Rect.left, Rect.top, Rect.right - Rect.left, Rect.bottom - Rect.top, SWP_NOOWNERZORDER );
-	m_pTabbedView [ nSelView ] -> ShowWindow ( SW_SHOW );
+	if (!m_bHide)
+		m_pTabbedView [ nSelView ] -> ShowWindow ( SW_SHOW );
 	SetActiveView ( m_pTabbedView [ nSelView ] );
-
+	
 	if ( pResult )
 		*pResult = 0;
 }
@@ -1009,13 +1087,32 @@ void CMultiFrame::OnCloseTab()
 		m_TabCtrl.GetItemData ( m_LastRightClickedTab, nSelView );
 		
 		m_pTabbedView [ nSelView ] -> DestroyWindow ();
+		m_nTabbedViewIndex [ nSelView ] = -1;
 
 		if ( nSelView < (DWORD)(m_NbTabbedViews - 1))
 		{
 			memmove ( & m_pTabbedView [ nSelView ], & m_pTabbedView [ nSelView + 1 ], ( m_NbTabbedViews - nSelView - 1 ) * sizeof ( m_pTabbedView [ 0 ] ) );
 			memmove ( & m_nTabbedViewIndex [ nSelView ], & m_nTabbedViewIndex [ nSelView + 1 ], ( m_NbTabbedViews - nSelView - 1 ) * sizeof ( m_nTabbedViewIndex [ 0 ] ) );
 		}
+
+		if (nSelView == 1 && m_NbTabbedViews == 3)
+			m_nTabbedViewIndex [ nSelView + 1 ] = -1;
+
 		m_NbTabbedViews --;
+		
+		GetConfig()->WriteProfileInt ( "Tabbed Views", "Tab1", 0 );
+		GetConfig()->WriteProfileInt ( "Tabbed Views", "Tab2", 0 );		
+		
+		if (m_NbTabbedViews > 1)
+		{
+			if (m_NbTabbedViews == 2)
+				GetConfig()->WriteProfileInt ( "Tabbed Views", "Tab1", GetViewTypeIndex(m_nTabbedViewIndex [ 1 ]) );
+			if (m_NbTabbedViews == 3)
+			{
+				GetConfig()->WriteProfileInt ( "Tabbed Views", "Tab1", GetViewTypeIndex(m_nTabbedViewIndex [ 1 ]) );
+				GetConfig()->WriteProfileInt ( "Tabbed Views", "Tab2", GetViewTypeIndex(m_nTabbedViewIndex [ 2 ]) );
+			}
+		}
 
 		if ( m_TabCtrl.GetCurSel () == m_LastRightClickedTab )
 		{
@@ -1039,6 +1136,28 @@ void CMultiFrame::OnCloseTab()
 				m_TabCtrl.SetItemData ( nCurTab, nCurView - 1 );
 		}
 
+		if (( (CMainView *) m_pTabbedView[0] )->m_infoDisplay == 12)
+		{
+			int CurSel = m_TabCtrl.GetCurSel(); 
+			if ( CurSel != 0)
+			{
+				m_TabCtrl.SetCurSel ( 0 );
+				m_bHide = true;
+				OnTabChanged ( NULL, NULL );
+			}
+				( (CMainView *) m_pTabbedView[0] )->refresh = true;
+				( (CMainView *) m_pTabbedView[0] )->OnSelchangeInfoDisplay();			
+				( (CMainView *) m_pTabbedView[0] )->refresh = false;
+			
+			if ( CurSel != 0)
+			{
+				m_TabCtrl.SetCurSel ( CurSel );
+				m_bHide = false;
+				OnTabChanged ( NULL, NULL );
+			}
+		}
+	
+		
 		if ( GetViewTabIndex ( IDS_DATASETVIEW_NAME ) < 0 )
 			m_bUseMinSize2 = FALSE;
 	}

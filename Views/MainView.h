@@ -102,13 +102,14 @@ private:
 	CWnd *		m_pInfoWnd9;
 	CWnd *		m_pInfoWnd10;
 	CWnd *		m_pInfoWnd11;
+	CWnd *		m_pInfoWnd12;
 
 
 // Attributes
 public:
 	int m_displayMode;
 	int m_infoDisplay;
-	bool m_bUpdate;
+	bool m_bUpdate, refresh;
 	int m_displayType;
 	int	m_nSizeOffset;
 	int last_minCol;
@@ -206,6 +207,7 @@ protected:
 
 public:
 	void UpdateMeasurementsAfterBkgndMeasure ();
+	afx_msg void OnSelchangeInfoDisplay();
 
 // Generated message map functions
 protected:
@@ -226,7 +228,6 @@ protected:
 	afx_msg void OnMeasureGrayScale();
 	afx_msg void OnDeleteGrayscale();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
-	afx_msg void OnSelchangeInfoDisplay();
 	afx_msg void OnChangeInfosEdit();
 	afx_msg void OnHelp();
 	afx_msg void OnEditCopy();
