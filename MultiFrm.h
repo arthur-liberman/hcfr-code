@@ -90,6 +90,8 @@ public:
 	CCustomTabCtrl	m_TabCtrl;
 	BOOL			m_bDisplayTab;
 	BOOL			m_bTabUp;
+	BOOL			m_bHasStarted;
+	BOOL			m_bHide;
 	
 	int				m_NbTabbedViews;
 	CView *			m_pTabbedView [ MAX_TABBED_VIEW ];
