@@ -481,14 +481,21 @@ void CGraphControl::FitYScale(BOOL doRound, double roundStep, bool isGamma)
 	//force all luminance plots to minY=0
 	if (!isGamma)
 	{
-		minY = max(minY,0);
 		m_minYGrow=min(minY,m_minYGrow);
 		m_maxYGrow=max(maxY,m_maxYGrow);
+
 		double delta = (maxY - minY);
+
 		if ( delta <= 30)
 			SetYAxisProps(m_pYUnitStr,maxY<0.5?0.05:(maxY<1||delta<5)?0.1:maxY<15?1.0:2.0,m_minYGrow,m_maxYGrow);
 		else	
 			SetYAxisProps(m_pYUnitStr,maxY<100?10:maxY<200?20:maxY<500?25:maxY<1000?50:100,m_minYGrow,m_maxYGrow);
+
+		if (GetConfig()->GetProfileInt("Luminance Histo","Log Y",0) == 1)
+			SetYAxisProps(m_pYUnitStr,0.5,m_minYGrow,m_maxYGrow);
+		else
+			minY = max(minY, 0);
+			
 	} else
 	{
 		if (GetConfig()->m_GammaOffsetType == 5 || GetConfig()->m_GammaOffsetType == 7)

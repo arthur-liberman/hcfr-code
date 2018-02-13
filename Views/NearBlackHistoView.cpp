@@ -281,7 +281,7 @@ void CNearBlackGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 		}
 	}
 	m_graphCtrl.FitXScale(1,1);
-	m_graphCtrl.FitYScale(1,(m_showL||m_abY)?1.0:0.1);
+	m_graphCtrl.FitYScale(TRUE,(m_showL||m_abY)?1.0:1,0.1);
 	m_logGraphCtrl.ReadSettings("Near Black Histo Log");
 	m_graphCtrl.ReadSettings("Near Black Histo");
 }
