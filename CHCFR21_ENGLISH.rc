@@ -1447,6 +1447,8 @@ BEGIN
     IDC_INFO_DISPLAY, 0x403, 21, 0
 0x6154, 0x6772, 0x7465, 0x2d20, 0x5220, 0x4247, 0x2d20, 0x4720, 0x6d61, 
 0x616d, "\000" 
+    IDC_INFO_DISPLAY, 0x403, 5, 0
+0x7541, 0x6f74, "\000" 
     0
 END
 
@@ -1690,6 +1692,7 @@ BEGIN
         MENUITEM "Blue",                        IDM_LUM_GRAPH_BLUELUM
         MENUITEM SEPARATOR
         MENUITEM "Absolute Y",                  IDM_LUM_GRAPH_Yab
+        MENUITEM "log(Y)",                      IDM_LUM_GRAPH_YLog
         MENUITEM "L*",                          IDM_LUM_GRAPH_L
         MENUITEM SEPARATOR
         MENUITEM "Save...",                     IDM_GRAPH_SAVE
