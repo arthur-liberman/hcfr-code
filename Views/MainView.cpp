@@ -434,6 +434,7 @@ CMainView::CMainView()
 	m_pInfoWnd10 = NULL;
 	m_pInfoWnd11 = NULL;
 	m_pInfoWnd12 = NULL;
+	m_pInfoWnd13 = NULL;
 
 	m_displayType=GetConfig()->GetProfileInt("MainView","Display type",HCFR_xyY_VIEW);
 	dEavg_gs=0;
@@ -750,7 +751,7 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 	if (b_minCol)
 		minCol = m_pGrayScaleGrid -> GetSelectedCellRange().IsValid()?m_pGrayScaleGrid -> GetSelectedCellRange().GetMinCol():-1;
 
-	if (m_displayMode <= 11 ) //&&  m_displayMode != 2)  
+	if (m_displayMode <= 11 )  
     {
         int size=GetDocument()->GetMeasure()->GetGrayScaleSize();
 		if (m_displayMode == 1)
@@ -798,7 +799,7 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 			if (inMeasure)
 			{
 				m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  last_minCol - 1, size, m_displayMode, GetDocument(), CTargetWnd::TARGET_ALL);
-//				m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  last_minCol - 1, size, m_displayMode, GetDocument(), CTargetWnd::TARGET_TESTWINDOW);
+				m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  last_minCol - 1, size, m_displayMode, GetDocument(), CTargetWnd::TARGET_TESTWINDOW);
 			}
 			else
 				m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  last_minCol, size, m_displayMode, GetDocument(), CTargetWnd::TARGET_ALL);
@@ -5709,10 +5710,19 @@ void CMainView::OnSize(UINT nType, int cx, int cy)
 				}
 				else if (m_infoDisplay == 12)
 				{
-					if (m_pInfoWnd)
+					if (m_pInfoWnd13)
+					{
+						m_pInfoWnd -> SetWindowPos ( pWnd, Rect.left, Rect.top, (Rect.right - Rect.left) / 3., (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
+						m_pInfoWnd12 -> SetWindowPos ( pWnd, Rect.left + (Rect.right - Rect.left) / 3., Rect.top, (Rect.right - Rect.left) / 3., (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
+						m_pInfoWnd13 -> SetWindowPos ( pWnd, Rect.left + (Rect.right - Rect.left) / 3. * 2., Rect.top, (Rect.right - Rect.left) / 3., (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
+					}
+					else if (m_pInfoWnd12)
+					{
 						m_pInfoWnd -> SetWindowPos ( pWnd, Rect.left, Rect.top, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
-					if (m_pInfoWnd12)
 						m_pInfoWnd12 -> SetWindowPos ( pWnd, Rect.left + (Rect.right - Rect.left) / 2, Rect.top, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
+					}
+					else if (m_pInfoWnd)
+						m_pInfoWnd -> SetWindowPos ( pWnd, Rect.left, Rect.top, (Rect.right - Rect.left), (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
 				}
 				else
 					m_pInfoWnd -> SetWindowPos ( pWnd, Rect.left, Rect.top, Rect.right - Rect.left, (Rect.bottom - Rect.top), SWP_NOACTIVATE );
@@ -5835,6 +5845,12 @@ void CMainView::OnSelchangeInfoDisplay()
 	{
 		m_pInfoWnd12->DestroyWindow();
 		m_pInfoWnd12 = NULL;
+	}
+
+	if ( m_pInfoWnd13 ) 
+	{
+		m_pInfoWnd13->DestroyWindow();
+		m_pInfoWnd13 = NULL;
 	}
 
 	pWnd = GetDlgItem ( IDC_STATIC_VIEW );
@@ -6282,15 +6298,17 @@ void CMainView::OnSelchangeInfoDisplay()
 
 		case 12: //auto
 				CMultiFrame * pActiveFrame = (CMultiFrame *) ( (CMainFrame *) AfxGetMainWnd () ) -> MDIGetActive();
-				int c1=0, c2=0;
+				int c1=0, c2=0, c3 = 0;
 
 				if (pActiveFrame)
 				{
 					c1 = pActiveFrame->m_nTabbedViewIndex[1];
 					c2 = pActiveFrame->m_nTabbedViewIndex[2];
+					c3 = pActiveFrame->m_nTabbedViewIndex[3];
 				}
 				bool g1 = false;
 				bool g2 = false;
+				bool g3 = false;
 
 				switch (c1)
 				{
@@ -6692,7 +6710,211 @@ void CMainView::OnSelchangeInfoDisplay()
 					}
 				}
 
-				if (g1 && g2)
+				if (g2)
+				{
+					switch (c3)
+					{
+						case IDS_LUMINANCE:
+						 pFrame = new CSubFrame;
+
+						 pFrame -> Create ( NULL, NULL, WS_CHILD | WS_VISIBLE, Rect, this );
+
+						 context.m_pCurrentDoc = GetDocument ();
+						 context.m_pCurrentFrame = pFrame;
+						 context.m_pLastView = this;
+						 context.m_pNewDocTemplate = GetDocument () -> GetDocTemplate ();
+						 context.m_pNewViewClass = RUNTIME_CLASS ( CLuminanceHistoView );
+
+						 pLuminanceHistoView = (CLuminanceHistoView *) context.m_pNewViewClass->CreateObject();
+						 pLuminanceHistoView -> Create ( NULL, NULL, AFX_WS_DEFAULT_VIEW, CRect(0,0,0,0), pFrame, IDC_INFO_VIEW, & context );
+						 pLuminanceHistoView -> OnInitialUpdate ();
+						 pFrame -> SetActiveView ( pLuminanceHistoView, FALSE );
+						 m_pInfoWnd13 = pFrame;
+						 g3 = true;
+						break;
+
+					case IDS_GAMMA:
+						 pFrame = new CSubFrame;
+
+						 pFrame -> Create ( NULL, NULL, WS_CHILD | WS_VISIBLE, Rect, this );
+
+						 context.m_pCurrentDoc = GetDocument ();
+						 context.m_pCurrentFrame = pFrame;
+						 context.m_pLastView = this;
+						 context.m_pNewDocTemplate = GetDocument () -> GetDocTemplate ();
+						 context.m_pNewViewClass = RUNTIME_CLASS ( CGammaHistoView );
+
+						 pGammaHistoView = (CGammaHistoView *) context.m_pNewViewClass->CreateObject();
+						 pGammaHistoView -> Create ( NULL, NULL, AFX_WS_DEFAULT_VIEW, CRect(0,0,0,0), pFrame, IDC_INFO_VIEW, & context );
+						 pGammaHistoView -> OnInitialUpdate ();
+						 pFrame -> SetActiveView ( pGammaHistoView, FALSE );
+						 m_pInfoWnd13 = pFrame;
+						 g3 = true;
+						break;
+
+					case IDS_NEARBLACK:
+						 pFrame = new CSubFrame;
+
+						 pFrame -> Create ( NULL, NULL, WS_CHILD | WS_VISIBLE, Rect, this );
+
+						 context.m_pCurrentDoc = GetDocument ();
+						 context.m_pCurrentFrame = pFrame;
+						 context.m_pLastView = this;
+						 context.m_pNewDocTemplate = GetDocument () -> GetDocTemplate ();
+						 context.m_pNewViewClass = RUNTIME_CLASS ( CNearBlackHistoView );
+
+						 pNearBlackHistoView = (CNearBlackHistoView *) context.m_pNewViewClass->CreateObject();
+						 pNearBlackHistoView -> Create ( NULL, NULL, AFX_WS_DEFAULT_VIEW, CRect(0,0,0,0), pFrame, IDC_INFO_VIEW, & context );
+						 pNearBlackHistoView -> OnInitialUpdate ();
+						 pFrame -> SetActiveView ( pNearBlackHistoView, FALSE );
+						 m_pInfoWnd13 = pFrame;
+						 g3 = true;
+					break;
+
+					case IDS_NEARWHITE:
+						 pFrame = new CSubFrame;
+
+						 pFrame -> Create ( NULL, NULL, WS_CHILD | WS_VISIBLE, Rect, this );
+
+						 context.m_pCurrentDoc = GetDocument ();
+						 context.m_pCurrentFrame = pFrame;
+						 context.m_pLastView = this;
+						 context.m_pNewDocTemplate = GetDocument () -> GetDocTemplate ();
+						 context.m_pNewViewClass = RUNTIME_CLASS ( CNearWhiteHistoView );
+
+						 pNearWhiteHistoView = (CNearWhiteHistoView *) context.m_pNewViewClass->CreateObject();
+						 pNearWhiteHistoView -> Create ( NULL, NULL, AFX_WS_DEFAULT_VIEW, CRect(0,0,0,0), pFrame, IDC_INFO_VIEW, & context );
+						 pNearWhiteHistoView -> OnInitialUpdate ();
+						 pFrame -> SetActiveView ( pNearWhiteHistoView, FALSE );
+						 m_pInfoWnd13 = pFrame;
+						 g3 = true;
+					break;
+
+					case IDS_RGBLEVELS:
+						 pFrame = new CSubFrame;
+
+						 pFrame -> Create ( NULL, NULL, WS_CHILD | WS_VISIBLE, Rect, this );
+
+						 context.m_pCurrentDoc = GetDocument ();
+						 context.m_pCurrentFrame = pFrame;
+						 context.m_pLastView = this;
+						 context.m_pNewDocTemplate = GetDocument () -> GetDocTemplate ();
+						 context.m_pNewViewClass = RUNTIME_CLASS ( CRGBHistoView );
+
+						 pRGBHistoView = (CRGBHistoView *) context.m_pNewViewClass->CreateObject();
+						 pRGBHistoView -> Create ( NULL, NULL, AFX_WS_DEFAULT_VIEW, CRect(0,0,0,0), pFrame, IDC_INFO_VIEW, & context );
+						 pRGBHistoView -> OnInitialUpdate ();
+						 pFrame -> SetActiveView ( pRGBHistoView, FALSE );
+						 m_pInfoWnd13 = pFrame;
+						 g3 = true;
+					break;
+
+					case IDS_COLORTEMP:
+						 pFrame = new CSubFrame;
+
+						 pFrame -> Create ( NULL, NULL, WS_CHILD | WS_VISIBLE, Rect, this );
+
+						 context.m_pCurrentDoc = GetDocument ();
+						 context.m_pCurrentFrame = pFrame;
+						 context.m_pLastView = this;
+						 context.m_pNewDocTemplate = GetDocument () -> GetDocTemplate ();
+						 context.m_pNewViewClass = RUNTIME_CLASS ( CColorTempHistoView );
+
+						 pColorTempHistoView = (CColorTempHistoView *) context.m_pNewViewClass->CreateObject();
+						 pColorTempHistoView -> Create ( NULL, NULL, AFX_WS_DEFAULT_VIEW, CRect(0,0,0,0), pFrame, IDC_INFO_VIEW, & context );
+						 pColorTempHistoView -> OnInitialUpdate ();
+						 pFrame -> SetActiveView ( pColorTempHistoView, FALSE );
+						 m_pInfoWnd13 = pFrame;
+						 g3 = true;
+					break;
+
+					case IDS_SATLUM:
+						 pFrame = new CSubFrame;
+
+						 pFrame -> Create ( NULL, NULL, WS_CHILD | WS_VISIBLE, Rect, this );
+
+						 context.m_pCurrentDoc = GetDocument ();
+						 context.m_pCurrentFrame = pFrame;
+						 context.m_pLastView = this;
+						 context.m_pNewDocTemplate = GetDocument () -> GetDocTemplate ();
+						 context.m_pNewViewClass = RUNTIME_CLASS ( CSatLumHistoView );
+
+						 pSatLumHistoView = (CSatLumHistoView *) context.m_pNewViewClass->CreateObject();
+						 pSatLumHistoView -> Create ( NULL, NULL, AFX_WS_DEFAULT_VIEW, CRect(0,0,0,0), pFrame, IDC_INFO_VIEW, & context );
+						 pSatLumHistoView -> OnInitialUpdate ();
+						 pFrame -> SetActiveView ( pSatLumHistoView, FALSE );
+						 m_pInfoWnd13 = pFrame;
+						 g3 = true;
+					break;
+
+					case IDS_SATLUMSHIFT:
+						 pFrame = new CSubFrame;
+
+						 pFrame -> Create ( NULL, NULL, WS_CHILD | WS_VISIBLE, Rect, this );
+
+						 context.m_pCurrentDoc = GetDocument ();
+						 context.m_pCurrentFrame = pFrame;
+						 context.m_pLastView = this;
+						 context.m_pNewDocTemplate = GetDocument () -> GetDocTemplate ();
+						 context.m_pNewViewClass = RUNTIME_CLASS ( CSatLumShiftView );
+
+						 pSatLumShiftView = (CSatLumShiftView *) context.m_pNewViewClass->CreateObject();
+						 pSatLumShiftView -> Create ( NULL, NULL, AFX_WS_DEFAULT_VIEW, CRect(0,0,0,0), pFrame, IDC_INFO_VIEW, & context );
+						 pSatLumShiftView -> OnInitialUpdate ();
+						 pFrame -> SetActiveView ( pSatLumShiftView, FALSE );
+						 m_pInfoWnd13 = pFrame;
+						 g3 = true;
+					break;
+
+					case IDS_FREEMEASURES:
+						 pFrame = new CSubFrame;
+
+						 pFrame -> Create ( NULL, NULL, WS_CHILD | WS_VISIBLE, Rect, this );
+
+						 context.m_pCurrentDoc = GetDocument ();
+						 context.m_pCurrentFrame = pFrame;
+						 context.m_pLastView = this;
+						 context.m_pNewDocTemplate = GetDocument () -> GetDocTemplate ();
+						 context.m_pNewViewClass = RUNTIME_CLASS ( CMeasuresHistoView );
+
+						 pMeasuresHistoView = (CMeasuresHistoView *) context.m_pNewViewClass->CreateObject();
+						 pMeasuresHistoView -> Create ( NULL, NULL, AFX_WS_DEFAULT_VIEW, CRect(0,0,0,0), pFrame, IDC_INFO_VIEW, & context );
+						 pMeasuresHistoView -> OnInitialUpdate ();
+						 pFrame -> SetActiveView ( pMeasuresHistoView, FALSE );
+						 m_pInfoWnd13 = pFrame;
+						 g3 = true;
+					break;
+
+					case IDS_CIECHARTVIEW_NAME:
+						 pFrame = new CSubFrame;
+
+						 pFrame -> Create ( NULL, NULL, WS_CHILD | WS_VISIBLE, Rect, this );
+
+						 context.m_pCurrentDoc = GetDocument ();
+						 context.m_pCurrentFrame = pFrame;
+						 context.m_pLastView = this;
+						 context.m_pNewDocTemplate = GetDocument () -> GetDocTemplate ();
+						 context.m_pNewViewClass = RUNTIME_CLASS ( CCIEChartView );
+
+						 pCIEChartView = (CCIEChartView *) context.m_pNewViewClass->CreateObject();
+						 pCIEChartView -> Create ( NULL, NULL, AFX_WS_DEFAULT_VIEW, CRect(0,0,0,0), pFrame, IDC_INFO_VIEW, & context );
+						 pCIEChartView -> OnInitialUpdate ();
+						 pFrame -> SetActiveView ( pCIEChartView, FALSE );
+						 m_pInfoWnd13 = pFrame;
+						 g3 = true;
+					break;
+
+					}
+				}
+
+
+				if (g1 && g2 && g3)
+				{
+					 m_pInfoWnd -> SetWindowPos ( pWnd, Rect.left, Rect.top, (Rect.right - Rect.left) / 3., (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
+					 m_pInfoWnd12 -> SetWindowPos ( pWnd, Rect.left + (Rect.right - Rect.left) / 3., Rect.top, (Rect.right - Rect.left) / 3., (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
+					 m_pInfoWnd13 -> SetWindowPos ( pWnd, Rect.left + (Rect.right - Rect.left) / 3. * 2., Rect.top, (Rect.right - Rect.left) / 3., (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
+				}
+				else if (g1 && g2)
 				{
 					 m_pInfoWnd -> SetWindowPos ( pWnd, Rect.left, Rect.top, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
 					 m_pInfoWnd12 -> SetWindowPos ( pWnd, Rect.left + (Rect.right - Rect.left) / 2, Rect.top, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) , SWP_NOACTIVATE );
