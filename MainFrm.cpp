@@ -1249,4 +1249,3 @@ void CMainFrame::OnUpdateViewLuminance(CCmdUI* pCmdUI)
 	pCmdUI -> SetCheck ( m_wndLuminanceWnd.m_hWnd != NULL && m_wndLuminanceWnd.IsWindowVisible () );
 
 }
-

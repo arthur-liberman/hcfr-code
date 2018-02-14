@@ -1695,6 +1695,8 @@ BEGIN
         MENUITEM "Grün",                        IDM_LUM_GRAPH_GREENLUM
         MENUITEM "Blau",                        IDM_LUM_GRAPH_BLUELUM
         MENUITEM SEPARATOR
+        MENUITEM "Absolute Y",                  IDM_LUM_GRAPH_Yab
+        MENUITEM "log(Y)",                      IDM_LUM_GRAPH_YLog
         MENUITEM "L*",                          IDM_LUM_GRAPH_L
         MENUITEM SEPARATOR
         MENUITEM "Speichern...",                IDM_GRAPH_SAVE
@@ -2161,6 +2163,7 @@ BEGIN
         MENUITEM "Grün",                        IDM_LUM_GRAPH_GREENLUM
         MENUITEM "Blau",                        IDM_LUM_GRAPH_BLUELUM
         MENUITEM SEPARATOR
+        MENUITEM "Absolute Y",                  IDM_LUM_GRAPH_Yab
         MENUITEM "L*",                          IDM_LUM_GRAPH_L
         MENUITEM SEPARATOR
         MENUITEM "Speichern...",                IDM_GRAPH_SAVE
@@ -2206,6 +2209,7 @@ BEGIN
         MENUITEM "Grün",                        IDM_LUM_GRAPH_GREENLUM
         MENUITEM "Blau",                        IDM_LUM_GRAPH_BLUELUM
         MENUITEM SEPARATOR
+        MENUITEM "Absolute Y",                  IDM_LUM_GRAPH_Yab
         MENUITEM "L*",                          IDM_LUM_GRAPH_L
         MENUITEM SEPARATOR
         MENUITEM "Speichern...",                IDM_GRAPH_SAVE

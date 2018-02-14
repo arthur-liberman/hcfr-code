@@ -31,7 +31,6 @@
 
 /////////////////////////////////////////////////////////////////////////////
 // Document template (for window positions serialization)
-
 class CMyMultiDocTemplate : public CNewMultiDocTemplate
 {
 	DECLARE_DYNAMIC(CMyMultiDocTemplate)

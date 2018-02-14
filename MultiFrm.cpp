@@ -377,7 +377,9 @@ BOOL CMultiFrame::OnCreateClient( LPCREATESTRUCT lpcs, CCreateContext* pContext 
 				m_bDisplayTab = FALSE;
 		}
 	}
-	
+	pWndPlacement -> showCmd = SW_SHOW;
+	bMaximize = TRUE;
+
 	GetClientRect ( & Rect );
 
 	if ( m_bDisplayTab )
@@ -419,7 +421,9 @@ BOOL CMultiFrame::OnCreateClient( LPCREATESTRUCT lpcs, CCreateContext* pContext 
 		if ( dwUserInfo != 0 )
 		{
 			if ( nViewIndex == VIEW_IDX_DATASET )
+			{
 				( (CMainView *) pView ) -> SetUserInfo ( dwUserInfo );
+			}
 			else
 			{
 				ASSERT ( pView -> IsKindOf ( RUNTIME_CLASS(CSavingView) ) );
@@ -446,7 +450,7 @@ BOOL CMultiFrame::OnCreateClient( LPCREATESTRUCT lpcs, CCreateContext* pContext 
 		PostMessage ( WM_SYSCOMMAND, SC_MAXIMIZE );
 	else if ( bMinimize )
 		PostMessage ( WM_SYSCOMMAND, SC_MINIMIZE );
-
+			
 	return ( m_NbTabbedViews > 0 );
 }
 
@@ -651,6 +655,7 @@ void CMultiFrame::EnsureMinimumSize ()
 	RECT	Rect;
 
 	GetWindowRect ( & Rect );
+
 	SetWindowPos ( NULL, Rect.left, Rect.top, Rect.right - Rect.left, Rect.bottom - Rect.top, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE );
 }
 
@@ -703,8 +708,10 @@ void CMultiFrame::OnTabChanged(NMHDR* pNMHDR, LRESULT* pResult)
 	}
 
 	m_pTabbedView [ nSelView ] -> SetWindowPos ( NULL, Rect.left, Rect.top, Rect.right - Rect.left, Rect.bottom - Rect.top, SWP_NOOWNERZORDER );
+
 	if (!m_bHide)
 		m_pTabbedView [ nSelView ] -> ShowWindow ( SW_SHOW );
+
 	SetActiveView ( m_pTabbedView [ nSelView ] );
 	
 	if ( pResult )
