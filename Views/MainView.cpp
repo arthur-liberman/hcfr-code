@@ -669,7 +669,9 @@ void CMainView::OnInitialUpdate()
 		// Define initial view status after global initial update
 		PostMessage ( WM_SET_USER_INFO_POST_INIT );
 	}
-	
+
+	( (CMultiFrame *) GetParentFrame () )->CMDIChildWnd::MDIMaximize();
+
 }
 
 LRESULT CMainView::OnSetUserInfoPostInitialUpdate(WPARAM wParam, LPARAM lParam)
