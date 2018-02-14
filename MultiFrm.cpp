@@ -377,8 +377,6 @@ BOOL CMultiFrame::OnCreateClient( LPCREATESTRUCT lpcs, CCreateContext* pContext 
 				m_bDisplayTab = FALSE;
 		}
 	}
-	pWndPlacement -> showCmd = SW_SHOW;
-	bMaximize = TRUE;
 
 	GetClientRect ( & Rect );
 
@@ -450,7 +448,7 @@ BOOL CMultiFrame::OnCreateClient( LPCREATESTRUCT lpcs, CCreateContext* pContext 
 		PostMessage ( WM_SYSCOMMAND, SC_MAXIMIZE );
 	else if ( bMinimize )
 		PostMessage ( WM_SYSCOMMAND, SC_MINIMIZE );
-			
+
 	return ( m_NbTabbedViews > 0 );
 }
 
@@ -646,7 +644,7 @@ CView * CMultiFrame::CreateOrActivateView ( int nViewIndex, BOOL bForceCreate, B
 			EnsureMinimumSize ();
 		}
 	}
-	
+
 	return pView;
 }
 
@@ -672,6 +670,7 @@ void CMultiFrame::CreateNewFrameOnView ( int nViewIndex, BOOL bAlone )
 	// Restore internal flags
 	m_nCreateFrameStyle = 0;
 	m_nViewTypeDefinition = 0;
+	
 }
 
 int	CMultiFrame::GetViewTabIndex ( int nIDName )
