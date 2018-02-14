@@ -145,6 +145,7 @@ CDocument* CMyMultiDocTemplate::OpenDocumentFile(LPCTSTR lpszPathName,
 					// This redraw avoid little trouble during multiple windows resizing during initialization
 					if ( pDocument -> m_pFramePosInfo -> m_FramePlacement.showCmd != SW_SHOWMINIMIZED && pDocument -> m_pFramePosInfo -> m_FramePlacement.showCmd != SW_SHOWMAXIMIZED )
 						pFrame -> RedrawWindow ();
+
 				}
 			}
 
@@ -184,9 +185,9 @@ CDocument* CMyMultiDocTemplate::OpenDocumentFile(LPCTSTR lpszPathName,
 		}
 
 	}
+
 	return pDocument;
 }
-
 /////////////////////////////////////////////////////////////////////////////
 // Classes for window positions serialization
 
