@@ -44,6 +44,7 @@ VersionInfoProductVersion={#MyAppVersion}
 VersionInfoVersion={#MyAppVersion}
 SetupIconFile=..\res\ColorHCFR.ico
 OutputDir=..\Release
+DisableDirPage=no
 
 
 

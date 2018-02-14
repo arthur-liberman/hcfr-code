@@ -103,6 +103,7 @@ private:
 	CWnd *		m_pInfoWnd10;
 	CWnd *		m_pInfoWnd11;
 	CWnd *		m_pInfoWnd12;
+	CWnd *		m_pInfoWnd13;
 
 
 // Attributes

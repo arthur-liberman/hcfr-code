@@ -223,8 +223,11 @@ BOOL CGenerator::Init(UINT nbMeasure, bool isSpecial)
 								msg.Format("RGB=TEXT;12,0;100;16,128,128;0,0,0;100,300;Initializing PGenerator at: "+cs+" Res [%dx%d], GPU Mem [%dM]",rPi_xWidth, rPi_yHeight,rPi_memSize);
 								_RB8PG_send(sock,msg);
 								Sleep(1000);
-								_RB8PG_send(sock,"RGB=IMAGE;1920,1080;100;255,255,255;0,0,0;-1,-1;/var/lib/PGenerator/images-HCFR/gbramp.png");
-								Sleep(1000);
+								if (rPi_memSize >= 192)
+								{
+									_RB8PG_send(sock,"RGB=IMAGE;1920,1080;100;255,255,255;0,0,0;-1,-1;/var/lib/PGenerator/images-HCFR/gbramp.png");
+									Sleep(1000);
+								}
 								if (m_bdispTrip)
 								{
 									CGDIGenerator Cgen;
