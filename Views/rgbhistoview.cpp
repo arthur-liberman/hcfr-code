@@ -390,6 +390,7 @@ void CRGBHistoView::OnInitialUpdate()
 	m_Grapher.m_graphCtrl2.Create(_T("Graph2 Window"), rect, this, IDC_RGBHISTO_GRAPH2);
 
 	OnSize(SIZE_RESTORED,rect.Width(),rect.Height());	// to size graph according to m_showDeltaE
+
 	OnUpdate(NULL,UPD_EVERYTHING,NULL);
 }
 
@@ -475,6 +476,10 @@ void CRGBHistoView::OnSize(UINT nType, int cx, int cy)
 
 void CRGBHistoView::OnDraw(CDC* pDC) 
 {
+	if (GetConfig()->m_dE_gray == 1)
+		m_Grapher.m_graphCtrl.m_graphArray[0].p_Title="Gray Scale Balance w/gamma";
+	else
+		m_Grapher.m_graphCtrl.m_graphArray[0].p_Title="Gray Scale Balance w/o gamma";
 	m_Grapher.m_graphCtrl.WriteSettings("RGB Histo");
 	m_Grapher.m_graphCtrl2.WriteSettings("RGB Histo2");
 }

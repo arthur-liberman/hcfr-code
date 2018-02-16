@@ -114,6 +114,8 @@ CLuminanceGrapher::CLuminanceGrapher()
 	m_showGreenLum=GetConfig()->GetProfileInt("Luminance Histo","Show Green",FALSE);
 	m_showBlueLum=GetConfig()->GetProfileInt("Luminance Histo","Show Blue",FALSE);
 	m_showDataRef=GetConfig()->GetProfileInt("Luminance Histo","Show Reference Data",TRUE);	//Ki
+	m_graphCtrl.m_graphArray[0].p_Title="Luminance Response";
+
 }
 
 void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
@@ -542,6 +544,8 @@ void CLuminanceHistoView::OnSize(UINT nType, int cx, int cy)
 void CLuminanceHistoView::OnDraw(CDC* pDC) 
 {
 	// TODO: Add your specialized code here and/or call the base class
+	//Graph title
+
 	m_Grapher.m_graphCtrl.WriteSettings("Luminance Histo");
 }
 

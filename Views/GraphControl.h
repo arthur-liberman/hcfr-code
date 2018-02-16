@@ -59,6 +59,7 @@ public:
 	int m_penStyle;
 	int m_penWidth;
 	CString m_Title;
+	CString p_Title;
 	BOOL m_doShowPoints;
 	BOOL m_doShowToolTips;
 	CArray<CDecimalPoint,CDecimalPoint> m_pointArray;

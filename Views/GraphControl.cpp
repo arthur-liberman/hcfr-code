@@ -28,6 +28,7 @@
 #include "graphsettingsdialog.h"
 #include "graphscalepropdialog.h"
 #include "savegraphdialog.h"
+#include <strsafe.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -60,6 +61,7 @@ CGraph::CGraph()
 CGraph::CGraph(const CGraph & aGraph)
 {
 	m_Title=aGraph.m_Title;
+	p_Title=aGraph.p_Title;
 	m_color=aGraph.m_color;
 	m_penWidth=aGraph.m_penWidth;
 	m_penStyle=aGraph.m_penStyle;
@@ -72,6 +74,7 @@ CGraph& CGraph::operator =(const CGraph& obj)
 {
 	if(&obj == this) return *this;
 	m_Title=obj.m_Title;
+	p_Title=obj.p_Title;
 	m_color=obj.m_color;
 	m_penWidth=obj.m_penWidth;
 	m_penStyle=obj.m_penStyle;
@@ -779,11 +782,11 @@ void CGraphControl::DrawGraphs(CDC *pDC, CRect rect)
 					char outStr[10];
 					double y = m_graphArray[j].m_pointArray[i].y;
 					if (y < 100)
-						sprintf(outStr,"%0.2f",y);
+						sprintf_s(outStr,"%0.2f",y);
 					else
-						sprintf(outStr,"%0.0f",y);
+						sprintf_s(outStr,"%0.0f",y);
 					if (y < 1)
-						sprintf(outStr,"%0.3f",y);
+						sprintf_s(outStr,"%0.3f",y);
 
 					pDC->SetTextColor(RGB(220,240,0));
 					pDC->TextOutA(pointPos.x,pointPos.y,outStr);
@@ -919,6 +922,29 @@ void CGraphControl::OnPaint()
 	
 	DrawAxis(pDC,rect,GetConfig()->m_bWhiteBkgndOnScreen);
 	DrawGraphs(pDC,rect);
+
+	CFont		font;
+	CFont *		pOldFont;
+	CString		GTxt = m_graphArray[0].p_Title;
+	BOOL		bWhiteBkgnd = GetConfig () -> m_bWhiteBkgndOnScreen;
+	TCHAR		GLabel[100] = _T("");
+	StringCchCat(GLabel, 260, GTxt); 
+		pOldFont = pDC -> SelectObject ( & font );	pDC -> SetBkColor ( bWhiteBkgnd?RGB(255,255,255):RGB(0,0,0) );
+	if (GetConfig()->isHighDPI)
+		font.CreateFont( 14, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_CHARACTER_PRECIS, DEFAULT_QUALITY, VARIABLE_PITCH | FF_DONTCARE, "Arial" );
+	else
+		font.CreateFont( 18, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_CHARACTER_PRECIS, DEFAULT_QUALITY, VARIABLE_PITCH | FF_DONTCARE, "Arial" );
+	pOldFont = pDC -> SelectObject ( & font );	pDC -> SetBkColor ( bWhiteBkgnd?RGB(255,255,255):RGB(0,0,0) );	if (GTxt == "Near White Luminance Response")		pDC -> SetTextColor ( RGB(100,50,100) );
+	else
+		pDC -> SetTextColor ( RGB(210,210,10) );
+
+	int sL = strlen( GLabel );	
+	pDC -> TextOut ( (rect.right - rect.left)/2 - (sL * 3.5), 18, GLabel, sL );
+
+	pDC -> SetTextColor ( RGB(0,0,0) );
+	pDC -> SetBkColor ( RGB(255,255,255) );
+	pDC -> SelectObject ( pOldFont );
+
 }
 
 void CGraphControl::OnSize(UINT nType, int cx, int cy) 
@@ -946,7 +972,7 @@ void CGraphControl::DrawFiligree(CDC *pDC, CRect rect, COLORREF clr)
 	logfont.lfClipPrecision = CLIP_DEFAULT_PRECIS;
 	logfont.lfQuality = PROOF_QUALITY;
 	logfont.lfPitchAndFamily = VARIABLE_PITCH;
-	strcpy(logfont.lfFaceName,"Arial");
+	strcpy_s(logfont.lfFaceName,"Arial");
 
 	font.CreateFontIndirect (&logfont);
 
@@ -1137,9 +1163,9 @@ void CGraphControl::SaveGraphs(CGraphControl *pGraphToAppend, CGraphControl *pGr
 		char * path;
 		char filename1[255];
 		path = getenv("APPDATA");
-		strcpy(filename1, path);
-		strcat(filename1, "\\");
-		strcat(filename1, "color\\temp.png");
+		strcpy_s(filename1, path);
+		strcat_s(filename1, "\\");
+		strcat_s(filename1, "color\\temp.png");
 		size = CSize(900,600);
 		SaveGraphFile ( size, filename1, 2, 95, pOtherGraphs, NbOtherGraphs, do_Dialog );
 	}

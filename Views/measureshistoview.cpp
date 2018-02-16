@@ -112,6 +112,7 @@ CMeasuresHistoView::CMeasuresHistoView()
 	m_showLuminance=GetConfig()->GetProfileInt("Combo Histo","Show Luminance",TRUE);
 	m_showDeltaE=GetConfig()->GetProfileInt("Combo Histo","Show Delta E",TRUE);
 	m_showColorTemp=GetConfig()->GetProfileInt("Combo Histo","Show Color Temperature",TRUE);
+	m_graphCtrl.m_graphArray[0].p_Title=""; //y-axis is labelled separately
 }
 
 CMeasuresHistoView::~CMeasuresHistoView()
@@ -539,12 +540,13 @@ void CMeasuresHistoView::OnDraw(CDC* pDC)
 		size = pDC -> GetTextExtent ( lpszTexts [ i ], strlen ( lpszTexts [ i ] ) );
 		pDC -> TextOut ( rect2.left + 1, rect2.top + ( rect2.bottom - rect2.top + size.cx ) / 2, lpszTexts [ i ], strlen ( lpszTexts [ i ] ) );
 	}
+
 	//Tracking percentage
 	if (GetConfig()->isHighDPI)
 		font.CreateFont( 18, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_CHARACTER_PRECIS, DEFAULT_QUALITY, VARIABLE_PITCH | FF_DONTCARE, "Arial" );
 	else
 		font.CreateFont( 12, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_CHARACTER_PRECIS, DEFAULT_QUALITY, VARIABLE_PITCH | FF_DONTCARE, "Arial" );
-	pOldFont2 = pDC -> SelectObject ( & font );	pDC -> SetBkColor ( bWhiteBkgnd?RGB(255,255,255):RGB(0,0,0) );	pDC -> SetTextColor ( RGB(200,200,0) );
+	pOldFont2 = pDC -> SelectObject ( & font );//	pDC -> SetBkColor ( bWhiteBkgnd?RGB(255,255,255):RGB(0,0,0) );	pDC -> SetTextColor ( RGB(200,200,0) );
 
 	rect2.right = rect.right;
 	rect2.top = 0;

@@ -71,6 +71,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GoogleCastWrapper", "Tools\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libHDR", "libHDR\libHDR.vcxproj", "{FC86BD97-A8EA-46D7-BEA5-0DC7698C5BE1}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CHCFR21_ITALIAN", "CHCFR21_ITALIAN.vcxproj", "{BA5C7D32-633F-483D-B23C-A1F509898BF6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -184,6 +186,10 @@ Global
 		{FC86BD97-A8EA-46D7-BEA5-0DC7698C5BE1}.Debug|Win32.ActiveCfg = Debug|Win32
 		{FC86BD97-A8EA-46D7-BEA5-0DC7698C5BE1}.Debug|Win32.Build.0 = Debug|Win32
 		{FC86BD97-A8EA-46D7-BEA5-0DC7698C5BE1}.Release|Win32.ActiveCfg = Release|Win32
+		{BA5C7D32-633F-483D-B23C-A1F509898BF6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BA5C7D32-633F-483D-B23C-A1F509898BF6}.Debug|Win32.Build.0 = Debug|Win32
+		{BA5C7D32-633F-483D-B23C-A1F509898BF6}.Release|Win32.ActiveCfg = Release|Win32
+		{BA5C7D32-633F-483D-B23C-A1F509898BF6}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

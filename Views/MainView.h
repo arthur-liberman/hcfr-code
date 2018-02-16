@@ -73,11 +73,13 @@ public:
 	CStatic	m_colordataStatic;
 	CString	m_generatorName;
 	CString	m_sensorName;
+	CString	m_refInfo;
 	CStatic	m_TargetStatic;
 	CStatic	m_RGBLevelsStatic;
 	CStatic		m_RGBLevelsLabel;
 	CComboBox	m_comboDisplay;
 	CButtonST	m_testAnsiPatternButton;
+	CButtonST	m_refs;
 	//}}AFX_DATA
 
 private:
@@ -143,6 +145,8 @@ public:
 	int last_Col;
 	int last_Size;
 	int last_Display;
+	bool smFont;
+	CString m_infoLine;
 
 	std::vector<double> dEvector, dLvector, dCvector, dHvector;
 
@@ -168,7 +172,7 @@ public:
 
 protected:
 	void UpdateGrid();
-	void InitGrid();
+	void InitGrid(bool sizeGrid=false);
 	void InitSelectedColorGrid();
 	void InitButtons();
 	void InitGroups();
@@ -241,6 +245,7 @@ protected:
 	afx_msg void OnUpdateEditUndo(CCmdUI* pCmdUI);
 	afx_msg void OnDeltaposSpinView(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnAnsiContrastPatternTestButton();
+	afx_msg void OnRefs();
 	//}}AFX_MSG
 	afx_msg LRESULT OnSetUserInfoPostInitialUpdate(WPARAM wParam, LPARAM lParam);
  public:

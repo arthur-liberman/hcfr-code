@@ -59,6 +59,7 @@ public:										// public because of callback
 	UINT    m_Intensity;
 	BOOL	IsOnOtherMonitor ();
 	BOOL	m_bisInited;
+	int		m_nPat;
 
 // Implementation
 public:

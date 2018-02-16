@@ -177,10 +177,10 @@ END_MESSAGE_MAP()
 
 CMultiFrame::CMultiFrame()
 {
-	m_MinSize.x = 100;
-	m_MinSize.y = 100;
-	m_MinSize2.x = 844;//844;
-	m_MinSize2.y = 464;//569;//320;
+	m_MinSize.x = 1100;
+	m_MinSize.y = 700;
+	m_MinSize2.x = 1100;
+	m_MinSize2.y = 700;
 	m_bUseMinSize2 = FALSE;
 	m_bHasStarted = FALSE;
 	m_bHide = FALSE;
@@ -251,6 +251,19 @@ void CMultiFrame::OnGetMinMaxInfo(MINMAXINFO FAR* lpMMI)
 	{
 		lpMMI->ptMinTrackSize.x=m_MinSize.x;
 		lpMMI->ptMinTrackSize.y=m_MinSize.y + ( m_bDisplayTab ? TABCTRL_HEIGHT : 0 );
+	}
+		
+	GetWindowRect(&Rect);
+
+	if (Rect.Width() < 1280)
+	{
+		lpMMI->ptMinTrackSize.x = m_MinSize.x;
+		lpMMI->ptMinTrackSize.y = m_MinSize.y;
+	}
+	else
+	{
+		lpMMI->ptMinTrackSize.x = m_MinSize.x - 300;
+		lpMMI->ptMinTrackSize.y = m_MinSize.y - 200;
 	}
 }
 

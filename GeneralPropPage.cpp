@@ -43,6 +43,7 @@ CGeneralPropPage::CGeneralPropPage() : CPropertyPageWithHelp(CGeneralPropPage::I
 	m_doUpdateCheck = FALSE;
 	m_bDisplayTestColors = TRUE;
 	m_latencyTime = 0;
+	m_ablFreq = 10;
 	m_doSavePosition = FALSE;
 	m_bContinuousMeasures = TRUE;
 	m_bLatencyBeep = FALSE;
@@ -72,7 +73,9 @@ void CGeneralPropPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_UPDATE, m_doUpdateCheck);
 	DDX_Check(pDX, IDC_CHECK_COLORS, m_bDisplayTestColors);
 	DDX_Text(pDX, IDC_EDIT_IRIS_TIME, m_latencyTime);
+	DDX_Text(pDX, IDC_EDIT_IRIS_TIME2, m_ablFreq);
 	DDV_MinMaxInt(pDX, m_latencyTime, -30000, 30000);
+	DDV_MinMaxInt(pDX, m_ablFreq, 2, 100);
 	DDX_Check(pDX, IDC_CHECK_SAVEPOSITION, m_doSavePosition);
 	DDX_Check(pDX, IDC_CHECK_CONTINUOUS, m_bContinuousMeasures);
 	DDX_Check(pDX, IDC_CHECK_BEEP, m_bLatencyBeep);
@@ -125,6 +128,7 @@ BEGIN_MESSAGE_MAP(CGeneralPropPage, CPropertyPageWithHelp)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_COLORS, IDC_CHECK_COLORS, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_CONTINUOUS, IDC_CHECK_CONTINUOUS, OnControlClicked)
     ON_CONTROL_RANGE(EN_CHANGE, IDC_EDIT_IRIS_TIME, IDC_EDIT_IRIS_TIME, OnControlClicked)
+    ON_CONTROL_RANGE(EN_CHANGE, IDC_EDIT_IRIS_TIME2, IDC_EDIT_IRIS_TIME2, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_RADIO1, IDC_RADIO3, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_BEEP, IDC_CHECK_BEEP, OnControlClicked)
     ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_DISPLAYRT, IDC_CHECK_DISPLAYRT, OnControlClicked)

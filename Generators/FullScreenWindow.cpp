@@ -108,8 +108,10 @@ CFullScreenWindow::CFullScreenWindow(BOOL bTestOverlay)
 		rect.left = rect.right - OVERLAY_SMALL_WIDTH;
 		rect.bottom = rect.top + OVERLAY_SMALL_HEIGHT;
 	}
+
 	hWnd = ::CreateWindowEx ( WS_EX_TOOLWINDOW, AfxRegisterWndClass ( 0, ::LoadCursor(NULL,IDC_ARROW) ), "", WS_POPUP, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, NULL, (HMENU) NULL, GetModuleHandle ( NULL ), NULL );
 	SubclassWindow ( hWnd );
+	
 	patternsID.push_back(IDR_PATTERN_TESTIMG); 
 	patterns.push_back("skintonep.png");	
 	patternsID.push_back(IDR_PATTERN_TESTIMGv);
@@ -147,7 +149,7 @@ CFullScreenWindow::CFullScreenWindow(BOOL bTestOverlay)
 	patternsID.push_back(IDR_PATTERN_ALIGN);
 	patterns.push_back("align.png");
 	patternsID.push_back(IDR_PATTERN_ALIGN2);
-	patterns.push_back("align2.png");
+	patterns.push_back("Align2.png");
 	patternsID.push_back(IDR_PATTERN_SPECTRUM);
 	patterns.push_back("spectrum.png");
 	patternsID.push_back(IDR_PATTERN_TC0);
@@ -1628,24 +1630,18 @@ void video_scale (CxImage *inImage)
 			borderArea = (dWidth + 40.) * (dHeight + 40.) - dWidth * dHeight; 
 
 			//static pattern detection avoidance
-			if ((m_nPat > 50) && (m_nPat % 40) == 0 && GetConfig()->m_bABL)
+			m_nPat++;
+
+			if ((m_nPat % GetConfig()->m_ablFreq) == 0 && GetConfig()->m_bABL)
 			{				
 				GetClientRect(&rect_ABL);
-				for (int i=0;i<=24;i++)
-				{
-					brush.CreateSolidBrush ( RGB((i+1) * 10,(i+1) * 10,(i+1) * 10) );
-					dc.FillRect ( &rect_ABL, &brush );
-					Sleep(33);
-					brush.DeleteObject();
-				}
-				brush.CreateSolidBrush ( RGB(64,64,64) );
+				brush.CreateSolidBrush ( RGB(0,0,0) );
 				dc.FillRect ( &rect_ABL, &brush );
-				Sleep(33);
+				Sleep(500);
 				brush.DeleteObject();
 				DeleteDC(dc1);
 			}
 
-			m_nPat++;
 			if(m_rectSizePercent < 100 && !isSpecial)  // Need to draw background and border
 			{
 				if (m_nDisplayMode != DISPLAY_GDI_nBG && !m_busePic)

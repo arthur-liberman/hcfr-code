@@ -120,9 +120,9 @@ public:
 	virtual BOOL Init(UINT nbMeasure = 0, bool isSpecial =  FALSE);
 	virtual BOOL DisplayGray(double aLevel,MeasureType nPatternType, BOOL bChangePattern = TRUE);
 	virtual BOOL DisplayRGBColor(const ColorRGBDisplay& aRGBColor, MeasureType nPatternType, UINT nPatternInfo = 0,BOOL bChangePattern = TRUE,BOOL bSilentMode = FALSE);	// need to be overriden
-	virtual BOOL DisplayRGBColormadVR(const ColorRGBDisplay& aRGBColor);	// need to be overriden
-	virtual BOOL DisplayRGBColorrPI(const ColorRGBDisplay& aRGBColor);	// need to be overriden
-	virtual BOOL DisplayRGBCCast(const ColorRGBDisplay& aRGBColor);	// need to be overriden
+	virtual BOOL DisplayRGBColormadVR(const ColorRGBDisplay& aRGBColor, MeasureType nPatternType = MT_UNKNOWN, UINT nPatternInfo = 0);	// need to be overriden
+	virtual BOOL DisplayRGBColorrPI(const ColorRGBDisplay& aRGBColor, MeasureType nPatternType = MT_UNKNOWN, UINT nPatternInfo = 0);	// need to be overriden
+	virtual BOOL DisplayRGBCCast(const ColorRGBDisplay& aRGBColor, MeasureType nPatternType = MT_UNKNOWN, UINT nPatternInfo = 0);	// need to be overriden
 	virtual BOOL DisplayAnsiBWRects(BOOL bInvert);		// need to be overriden
 	virtual BOOL DisplayAnimatedBlack();				// need to be overriden
 	virtual BOOL DisplayAnimatedWhite();				// need to be overriden

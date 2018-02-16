@@ -117,6 +117,8 @@ CNearBlackGrapher::CNearBlackGrapher()
 	m_showGreenLum=GetConfig()->GetProfileInt("Near Black Histo","Show Green",FALSE);
 	m_showBlueLum=GetConfig()->GetProfileInt("Near Black Histo","Show Blue",FALSE);
 	m_showDataRef=GetConfig()->GetProfileInt("Near Black Histo","Show Reference Data",TRUE);	//Ki
+	m_graphCtrl.m_graphArray[0].p_Title="Near Black Luminance Response";
+	m_logGraphCtrl.m_graphArray[0].p_Title="Near Black Luminance Response";
 }
 
 void CNearBlackGrapher::UpdateGraph ( CDataSetDoc * pDoc )
@@ -280,8 +282,8 @@ void CNearBlackGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			}
 		}
 	}
-	m_graphCtrl.FitXScale(1,1);
-	m_graphCtrl.FitYScale(TRUE,(m_showL||m_abY)?1.0:1,0.1);
+	m_graphCtrl.FitXScale(TRUE,1);
+	m_graphCtrl.FitYScale(TRUE,(m_showL||m_abY)?1.0:1,FALSE);
 	m_logGraphCtrl.ReadSettings("Near Black Histo Log");
 	m_graphCtrl.ReadSettings("Near Black Histo");
 }
