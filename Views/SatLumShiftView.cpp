@@ -113,6 +113,8 @@ CSatLumShiftGrapher::CSatLumShiftGrapher ()
 	m_showCyan=GetConfig()->GetProfileInt("Saturation Shift","Show Cyan",TRUE);
 	m_showMagenta=GetConfig()->GetProfileInt("Saturation Shift","Show Magenta",TRUE);
 	m_showDataRef=GetConfig()->GetProfileInt("Saturation Shift","Show Reference Data",TRUE);
+	m_graphCtrl.m_graphArray[0].p_Title="Saturation Scan Shifts";
+
 }
 
 void CSatLumShiftGrapher::UpdateGraph ( CDataSetDoc * pDoc )

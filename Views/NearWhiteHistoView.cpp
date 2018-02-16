@@ -114,6 +114,9 @@ CNearWhiteGrapher::CNearWhiteGrapher()
 	m_showBlueLum=GetConfig()->GetProfileInt("Near White Histo","Show Blue",FALSE);
 	m_showDataRef=GetConfig()->GetProfileInt("Near White Histo","Show Reference Data",TRUE);	//Ki
 	m_graphCtrl.ReadSettings("Near White Histo");
+	m_graphCtrl.m_graphArray[0].p_Title="Near White Luminance Response";
+	m_logGraphCtrl.m_graphArray[0].p_Title="Near White Luminance Response";
+
 }
 
 void CNearWhiteGrapher::UpdateGraph ( CDataSetDoc * pDoc )

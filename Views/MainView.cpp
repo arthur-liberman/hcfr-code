@@ -82,8 +82,8 @@ struct SCtrlInitPos
 
 static const SCtrlLayout g_CtrlLayout [] = {
 { IDC_PARAM_GROUP						, LAYOUT_LEFT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
-{ IDC_GRAYSCALESTEPS_COMBOMODE			, LAYOUT_LEFT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
-{ IDC_EDITGRID_CHECK					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
+{ IDC_GRAYSCALESTEPS_COMBOMODE			, LAYOUT_LEFT,	LAYOUT_LEFT,	LAYOUT_TOP,			LAYOUT_TOP			},
+{ IDC_EDITGRID_CHECK					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP_OFFSET,	LAYOUT_TOP_OFFSET	},
 { IDC_SPIN_VIEW							, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
 { IDC_GRAYSCALE_GROUP					, LAYOUT_LEFT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP_OFFSET	}, 
 { IDC_VALUES_STATIC						, LAYOUT_LEFT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP_OFFSET	}, 
@@ -92,15 +92,15 @@ static const SCtrlLayout g_CtrlLayout [] = {
 { IDC_DELETEGRAYSCALE_BUTTON			, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP_OFFSET,	LAYOUT_TOP_OFFSET	},
 																												
 { IDC_DISPLAY_GROUP						, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP_OFFSET	},
-{ IDC_SENSORRGB_RADIO					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
-{ IDC_RGB_RADIO							, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
-{ IDC_XYZ_RADIO							, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
-{ IDC_XYZ_RADIO2						, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
-{ IDC_XYY_RADIO 						, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
+{ IDC_SENSORRGB_RADIO					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP_OFFSET			},
+{ IDC_RGB_RADIO							, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP_OFFSET			},
+{ IDC_XYZ_RADIO							, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP_OFFSET			},
+{ IDC_XYZ_RADIO2						, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP_OFFSET			},
+{ IDC_XYY_RADIO 						, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP_OFFSET			},
 																												
 { IDC_SENSOR_GROUP						, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
 { IDC_SENSORNAME_STATIC					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
-{ IDC_SENSORNAME_STATIC2					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
+{ IDC_SENSORNAME_STATIC2				, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
 { IDM_CONFIGURE_SENSOR					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
 { IDM_CONFIGURE_SENSOR2					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
 { IDC_GENERATOR_GROUP					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
@@ -118,12 +118,14 @@ static const SCtrlLayout g_CtrlLayout [] = {
 { IDC_STATIC_VIEW						, LAYOUT_LEFT,	LAYOUT_RIGHT,	LAYOUT_TOP_OFFSET,	LAYOUT_BOTTOM		},
 { IDC_STATIC_RGBLEVELS					, LAYOUT_LEFT,	LAYOUT_LEFT,	LAYOUT_TOP_OFFSET,	LAYOUT_TOP_OFFSET	},
 { IDC_RGBLEVELS							, LAYOUT_LEFT,	LAYOUT_LEFT,	LAYOUT_TOP_OFFSET,	LAYOUT_TOP_OFFSET	},
-{ IDC_STATIC_TARGET						, LAYOUT_LEFT,	LAYOUT_LEFT,	LAYOUT_TOP_OFFSET,	LAYOUT_TOP_OFFSET	},
+{ IDC_STATIC_TARGET						, LAYOUT_LEFT,	LAYOUT_LEFT,	LAYOUT_BOTTOM,		LAYOUT_BOTTOM		},
 { IDC_TARGET							, LAYOUT_LEFT,	LAYOUT_LEFT,	LAYOUT_TOP_OFFSET,	LAYOUT_TOP_OFFSET	},
 { IDC_STATIC_DATA						, LAYOUT_LEFT,	LAYOUT_LEFT,	LAYOUT_TOP_OFFSET,	LAYOUT_TOP_OFFSET	},
 { IDC_RGBLEVELS2						, LAYOUT_LEFT,	LAYOUT_LEFT,	LAYOUT_TOP_OFFSET,	LAYOUT_TOP_OFFSET	},
-{ IDC_TARGET2							, LAYOUT_LEFT,	LAYOUT_LEFT,	LAYOUT_TOP_OFFSET,	LAYOUT_TOP_OFFSET	},
-{ IDC_ANSICONTRAST_PATTERN_TEST_BUTTON  , LAYOUT_RIGHT, LAYOUT_RIGHT,	LAYOUT_TOP_OFFSET,	LAYOUT_TOP_OFFSET	}
+{ IDC_INFOLINE							, LAYOUT_LEFT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
+{ IDC_TARGET2							, LAYOUT_LEFT,	LAYOUT_LEFT,	LAYOUT_BOTTOM,		LAYOUT_BOTTOM		},
+{ IDC_ANSICONTRAST_PATTERN_TEST_BUTTON  , LAYOUT_RIGHT, LAYOUT_RIGHT,	LAYOUT_TOP_OFFSET,	LAYOUT_TOP_OFFSET	},
+{ IDC_REFS_BUTTON					  , LAYOUT_RIGHT, LAYOUT_RIGHT,	LAYOUT_TOP_OFFSET,	LAYOUT_TOP_OFFSET	}
 
 };
 
@@ -374,6 +376,7 @@ BEGIN_MESSAGE_MAP(CMainView, CFormView)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_UNDO, OnUpdateEditUndo)
 	ON_NOTIFY(UDN_DELTAPOS, IDC_SPIN_VIEW, OnDeltaposSpinView)
 	ON_BN_CLICKED(IDC_ANSICONTRAST_PATTERN_TEST_BUTTON, OnAnsiContrastPatternTestButton)
+	ON_BN_CLICKED(IDC_REFS_BUTTON, OnRefs)
 	ON_EN_CHANGE(IDC_INFO_VIEW, OnChangeInfosEdit)
 	//}}AFX_MSG_MAP
 	// Standard printing commands
@@ -470,6 +473,8 @@ CMainView::CMainView()
 	last_Col = 5;
 	last_Size = 11;
 	last_Display = 0;
+	smFont = false;
+	m_infoLine = "Welcome to HCFR";
 }
 
 CMainView::~CMainView()
@@ -523,10 +528,13 @@ void CMainView::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_COLORDATA_STATIC, m_colordataStatic);
 	DDX_Text(pDX, IDC_GENERATORNAME_STATIC, m_generatorName);
 	DDX_Text(pDX, IDC_SENSORNAME_STATIC, m_sensorName);
+	DDX_Text(pDX, IDC_INFOLINE, m_refInfo);
 	DDX_Control(pDX, IDC_TARGET, m_TargetStatic);
 	DDX_Control(pDX, IDC_RGBLEVELS, m_RGBLevelsStatic);
 	DDX_Control(pDX, IDC_STATIC_RGBLEVELS, m_RGBLevelsLabel);
 	DDX_Control(pDX, IDC_ANSICONTRAST_PATTERN_TEST_BUTTON, m_testAnsiPatternButton);
+	DDX_Control(pDX, IDC_REFS_BUTTON, m_refs);
+	
 	//}}AFX_DATA_MAP
 }
 
@@ -586,17 +594,6 @@ void CMainView::OnInitialUpdate()
 
 	InitButtons();
 	InitGroups();
-	InitGrid();
-	InitSelectedColorGrid();
-
-	UpdateData(FALSE);
-
-	UpdateGrid();
-	if(m_pGrayScaleGrid->GetColumnCount() > 12)	// Needed after data is set to get correctly sized cells when scrollbar is present
-	{
-		m_pGrayScaleGrid->ExpandRowsToFit(FALSE);
-		m_pGrayScaleGrid->AutoSizeColumns();
-	}
 
 	RECT	Rect;
 
@@ -662,7 +659,7 @@ void CMainView::OnInitialUpdate()
 	( (CMultiFrame *) GetParentFrame () ) -> m_MinSize2.y = m_InitialWindowSize.y + GetSystemMetrics ( SM_CYCAPTION ) + GetSystemMetrics ( SM_CYSIZEFRAME ) + 6 - 105;
 	( (CMultiFrame *) GetParentFrame () ) -> m_bUseMinSize2 = TRUE;
 
-	OnSize ( 0, 0, 0 );
+//	OnSize ( 0, 0, 0 );
 
 	if ( m_dwInitialUserInfo == 0 )
 	{
@@ -670,7 +667,32 @@ void CMainView::OnInitialUpdate()
 		PostMessage ( WM_SET_USER_INFO_POST_INIT );
 	}
 
-	( (CMultiFrame *) GetParentFrame () )->CMDIChildWnd::MDIMaximize();
+	( (CMultiFrame *) GetParentFrame () )->CMDIChildWnd::MDIMaximize(); //this maximizes and calls onsize
+
+//	InitGrid(true); //done in onsize
+	InitSelectedColorGrid();
+
+	UpdateData(FALSE);
+	// Get current font.
+    CFont* pFont = GetDlgItem( IDC_INFOLINE )->GetFont();
+    LOGFONT LogFont = { 0 };
+    pFont->GetLogFont( &LogFont );
+
+    // Create new font with underline style.
+	
+//    LogFont.lfUnderline = TRUE;
+	LogFont.lfWeight = FW_MEDIUM;
+	LogFont.lfQuality = PROOF_QUALITY;
+	LogFont.lfPitchAndFamily = VARIABLE_PITCH;
+	strcpy_s(LogFont.lfFaceName,"Arial");
+
+	CFont m_StaticFont;
+    m_StaticFont.CreateFontIndirect( &LogFont );
+
+	// Sets the new font back to static text.
+    GetDlgItem( IDC_INFOLINE )->SetFont( &m_StaticFont );
+
+	UpdateGrid();
 
 }
 
@@ -801,7 +823,7 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 			if (inMeasure)
 			{
 				m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  last_minCol - 1, size, m_displayMode, GetDocument(), CTargetWnd::TARGET_ALL);
-				m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  last_minCol - 1, size, m_displayMode, GetDocument(), CTargetWnd::TARGET_TESTWINDOW);
+//				m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  last_minCol - 1, size, m_displayMode, GetDocument(), CTargetWnd::TARGET_TESTWINDOW);
 			}
 			else
 				m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  last_minCol, size, m_displayMode, GetDocument(), CTargetWnd::TARGET_ALL);
@@ -962,7 +984,7 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 	}
 }
 
-void CMainView::InitGrid()
+void CMainView::InitGrid(bool sizeGrid)
 {
 	if(m_pGrayScaleGrid==NULL)
 		return;
@@ -1548,17 +1570,32 @@ void CMainView::InitGrid()
 		m_pGrayScaleGrid->SetItem(&Item);
 	}
 
-	m_pGrayScaleGrid->AutoSizeColumn(0);
-	m_pGrayScaleGrid -> AutoSizeRows ();
-
-	int width = m_pGrayScaleGrid -> GetColumnWidth ( 0 );
-	for ( i = 1 ; i <= size ; i ++ )
-		m_pGrayScaleGrid -> SetColumnWidth ( i, width * 11 / 10 );
-
-	if ( m_displayMode != 2 && size < 12 ) 
+	if (sizeGrid)
 	{
-		// No scrollbars needed : use all the place for cells
+		m_pGrayScaleGrid->AutoSizeColumns();
 		m_pGrayScaleGrid->ExpandColumnsToFit(FALSE);
+		double width = m_pGrayScaleGrid -> GetColumnWidth ( 1 );
+		width = max(width, 80);
+		if (size < 4)
+			width = min(width, 100);
+		if (width == 80 || width == 100)
+		{
+			for ( i = 1 ; i <= size ; i ++ )
+				m_pGrayScaleGrid -> SetColumnWidth ( i, width);
+		}
+
+		m_pGrayScaleGrid->AutoSizeRows();
+		m_pGrayScaleGrid->ExpandRowsToFit(FALSE);
+		double height = m_pGrayScaleGrid -> GetRowHeight ( 1 );
+		height = min(height, 40);
+		height = max(height, 25);
+		if (height == 40 || height == 25)
+		{
+			for ( i = 1 ; i <= nRows ; i ++ )
+				m_pGrayScaleGrid -> SetRowHeight ( i, height);
+		}
+
+
 	}
 
 	if  (GetConfig()->GetProfileDouble("References","Use Black Level",0)) //store/retrieve real black measurements
@@ -1603,7 +1640,6 @@ void CMainView::InitGrid()
    			m_pGrayScaleGrid->SetItemFgColour ( 3, 1, RGB(0,0,0) );
 	}
 
-	
 	OnEditgridCheck();
 }
 
@@ -1727,6 +1763,49 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	// TODO: add a general option for that ?
 	if ( 1 )
 	{
+		bool isHDR = GetConfig()->m_GammaOffsetType == 5;
+		double 	BBC_gamma = GetConfig()->m_TargetSysGamma;
+		CString dWhitestr;
+		double tmWhite = getL_EOTF(0.5022283, noDataColor, noDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1) * 100.0;
+		dWhitestr.Format("%4.1f nits diffuse white", tmWhite);
+		
+		if (GetConfig()->m_useToneMap)
+			dWhitestr += " w/BT.2390 Tonemap";
+		CString bbcstr,sdrstr;
+		bbcstr.Format("system gamma: %3.2f",BBC_gamma);
+
+		CString CS = GetColorReference().standardName.c_str();
+		CString WP = GetColorReference().whiteName;
+
+		switch(GetConfig()->m_GammaOffsetType)
+		{
+			case 0:
+				sdrstr.Format(" SDR, Power law w/gamma = %3.2f", GetConfig()->m_GammaAvg);
+			break;
+			case 1:
+				sdrstr.Format(" SDR, Power law (black compensation) w/gamma = %3.2f", GetConfig()->m_GammaAvg);
+			break;
+			case 2:
+				sdrstr.Format(" SDR, Power law w/Camera gamma = %3.2", GetConfig()->m_GammaAvg);
+			break;
+			case 3:
+				sdrstr.Format(" SDR, Power law w/Camera gamma = %3.2f", GetConfig()->m_GammaAvg);
+			break;
+			case 4:
+				if (GetConfig()->m_GammaRel == 0)
+					sdrstr.SetString(" SDR, BT.1886 w/default gamma");
+				else
+					sdrstr.Format(" SDR, BT.1886 w/relative gamma = %3.2f", GetConfig()->m_GammaRel);
+			break;
+			case 6:
+				sdrstr.SetString(" SDR, L*");
+			break;
+		}
+
+		m_infoLine = "Color Space: "+CS+", White Point: "+WP+", EOTF: "+(isHDR ? " HDR10, "+ dWhitestr:GetConfig()->m_GammaOffsetType == 7?" HLG, "+bbcstr:sdrstr);
+		CString t = CTime::GetCurrentTime().Format("    (%H:%M)");
+		m_refInfo.SetString(m_infoLine + t);
+
 		// Adjust grid selection if necessary
 		switch ( lHint )
 		{
@@ -1851,7 +1930,8 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 			last_minCol = minCol;
 		}
 
-		UpdateGrid();
+		if(m_pGrayScaleGrid)
+			UpdateGrid();
 		RefreshSelection(FALSE);
 		
 		if ( m_pInfoWnd ) //in case colorchecker slot is updated
@@ -1879,7 +1959,8 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 		if ( ( lHint >= UPD_EVERYTHING && lHint <= UPD_FREEMEASURES ) || lHint == UPD_ARRAYSIZES || lHint == UPD_GENERALREFERENCES || lHint == UPD_DATAREFDOC || lHint == UPD_REFERENCEDATA )
 		{
 			InitGrid(); // to update row labels (if colorReference setting has changed, or if lux values appeared)
-			UpdateGrid();
+			if(m_pGrayScaleGrid)
+				UpdateGrid();
 		}
 		
 		if ( lHint == UPD_FREEMEASUREAPPENDED )
@@ -2629,7 +2710,7 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 		 	if ( GetDataRef() && GetDataRef() != GetDocument () )
 				return "dE / ref";
 			else
-				return ( m_displayMode == 0 || m_displayMode == 3 || m_displayMode == 4 ? "Y target" : "delta luminance" );
+				return ( m_displayMode == 0 || m_displayMode == 3 || m_displayMode == 4 ? "Y target" : "delta L" );
 			break;
 
 		case 6:
@@ -2637,7 +2718,7 @@ LPSTR CMainView::GetGridRowLabel(int aComponentNum)
 			break;
 
 		case 7:
-			return ( m_displayMode == 0 || m_displayMode == 3 || m_displayMode == 4 ? "Y target" : "delta luminance" );
+			return ( m_displayMode == 0 || m_displayMode == 3 || m_displayMode == 4 ? "Y target" : "delta L" );
 			break;
 
 		case 8:
@@ -2676,13 +2757,7 @@ void CMainView::UpdateGrid()
 		Item.nFormat = DT_RIGHT|DT_VCENTER|DT_SINGLELINE|DT_END_ELLIPSIS|DT_NOPREFIX;
 		bool isHDR = GetConfig()->m_GammaOffsetType == 5;
 		CColorReference  bRef = ((GetColorReference().m_standard == UHDTV3 || GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):(GetColorReference().m_standard == HDTVa || GetColorReference().m_standard == HDTVb)?CColorReference(HDTV):GetColorReference());
-		double BBC_gamma;
-
-		CString dWhitestr;
-		double tmWhite = getL_EOTF(0.5022283, noDataColor, noDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1) * 100.0;
-		dWhitestr.Format(": %4.1f nits diffuse white", tmWhite);
-		if (GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1)
-			dWhitestr += " w/BT.2390 Tonemap";
+		double 	BBC_gamma = GetConfig()->m_TargetSysGamma;
 
 		if  (m_userBlack)
 		{
@@ -2956,8 +3031,6 @@ void CMainView::UpdateGrid()
 
 			GetConfig()->m_TargetSysGamma = floor( (1.2 + 0.42 * log10(GetConfig()->m_TargetMaxL / 1000.))*100. + 0.5) / 100.0;
 		}
-
-		BBC_gamma = GetConfig()->m_TargetSysGamma;
 
 		for( int j = 0 ; j < nCount ; j ++ )
 		{
@@ -3402,13 +3475,13 @@ void CMainView::UpdateGrid()
 		if ( m_displayMode == 0 || m_displayMode == 3 || m_displayMode == 4)
 		{
 			// Gray scale mode: update group box title
-			CString	Msg, Tmp;
-			if (m_displayMode == 0)
-				Msg.LoadString ( IDS_GRAYSCALE );
-			else if (m_displayMode == 3)
-				Msg.LoadString ( IDS_NEARBLACK );
-			else if (m_displayMode == 4)
-				Msg.LoadString ( IDS_NEARWHITE );
+			CString	Msg="", Tmp;
+//			if (m_displayMode == 0)
+//				Msg.LoadString ( IDS_GRAYSCALE );
+//			else if (m_displayMode == 3)
+//				Msg.LoadString ( IDS_NEARBLACK );
+//			else if (m_displayMode == 4)
+//				Msg.LoadString ( IDS_NEARWHITE );
 			m_grayScaleGroup.SetText ( Msg );
 
 			if (GetDocument()->GetMeasure()->GetGray(0).isValid())
@@ -3498,20 +3571,24 @@ void CMainView::UpdateGrid()
 					Msg += dEform;
 					dEform = GetConfig()->m_dE_gray==0?" [Relative Y]":(GetConfig ()->m_dE_gray == 1?" [Absolute Y w/gamma]":" [Absolute Y w/o gamma]");
 					Msg += dEform;
-					//bbc_gamma
-					CString bbcstr;
-					bbcstr.Format("system gamma: %3.2f",BBC_gamma);
-					Msg += (isHDR ? " HDR"+ dWhitestr:GetConfig()->m_GammaOffsetType == 7?" HLG "+bbcstr:" SDR");
+//					//bbc_gamma
+//					CString bbcstr;
+//					bbcstr.Format("system gamma: %3.2f",BBC_gamma);
+//					Msg += (isHDR ? " HDR"+ dWhitestr:GetConfig()->m_GammaOffsetType == 7?" HLG "+bbcstr:" SDR");
                     if (GetConfig()->doHighlight)
 					    m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
 				}
 			}
 
 			m_grayScaleGroup.SetText ( Msg );
+			if (smFont) 
+				m_grayScaleGroup.SetFontSize(5);
+			else
+				m_grayScaleGroup.SetFontSize(7);
 		} else if ( m_displayMode == 1 )
 		{
-			CString	Msg, Tmp;;
-			Msg.LoadString ( IDS_SECONDARYCOLORS );
+			CString	Msg="", Tmp;
+//			Msg.LoadString ( IDS_SECONDARYCOLORS );
 			m_grayScaleGroup.SetText ( Msg );
 			if (GetDocument()->GetMeasure()->GetRedPrimary().isValid() && dEcnt > 0 )
 		    {
@@ -3564,20 +3641,24 @@ void CMainView::UpdateGrid()
 						}
 					}
 					Msg += dEform;
-					CString cSpace = GetColorReference().standardName.c_str();
-					cSpace=" "+cSpace;
-					//bbc_gamma
-					CString bbcstr;
-					bbcstr.Format("system gamma: %3.2f",BBC_gamma);
-					Msg += (isHDR ? cSpace + " HDR"+ dWhitestr:GetConfig()->m_GammaOffsetType == 7?cSpace + "HLG "+bbcstr:cSpace + " SDR");
+//					CString cSpace = GetColorReference().standardName.c_str();
+//					cSpace=" "+cSpace;
+//					//bbc_gamma
+//					CString bbcstr;
+//					bbcstr.Format("system gamma: %3.2f",BBC_gamma);
+//					Msg += (isHDR ? cSpace + " HDR"+ dWhitestr:GetConfig()->m_GammaOffsetType == 7?cSpace + "HLG "+bbcstr:cSpace + " SDR");
                     if (GetConfig()->doHighlight)
                         m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
 			}
 			m_grayScaleGroup.SetText ( Msg );
+			if (smFont) 
+				m_grayScaleGroup.SetFontSize(5);
+			else
+				m_grayScaleGroup.SetFontSize(7);
 		} else if ( m_displayMode > 4 && m_displayMode < 11 )
 		{
-			CString	Msg, Tmp;;
-			Msg.LoadString ( IDS_SATURATIONCOLORS );
+			CString	Msg="", Tmp;;
+//			Msg.LoadString ( IDS_SATURATIONCOLORS );
 			m_grayScaleGroup.SetText ( Msg );
 			if (GetDocument()->GetMeasure()->GetRedSat(0).isValid() && dEcnt > 0 )
 		    {
@@ -3657,23 +3738,27 @@ void CMainView::UpdateGrid()
 						}
 					}
 					Msg += dEform;
-					CString cSpace = GetColorReference().standardName.c_str();
-					cSpace = " "+cSpace;
-					//bbc_gamma
-					CString bbcstr;
-					bbcstr.Format("system gamma: %3.2f",BBC_gamma);
-					Msg += (isHDR ? cSpace + " HDR"+ dWhitestr:GetConfig()->m_GammaOffsetType == 7?cSpace + " HLG "+bbcstr:cSpace + " SDR");
+//					CString cSpace = GetColorReference().standardName.c_str();
+//					cSpace = " "+cSpace;
+//					//bbc_gamma
+//					CString bbcstr;
+//					bbcstr.Format("system gamma: %3.2f",BBC_gamma);
+//					Msg += (isHDR ? cSpace + " HDR"+ dWhitestr:GetConfig()->m_GammaOffsetType == 7?cSpace + " HLG "+bbcstr:cSpace + " SDR");
                     if (GetConfig()->doHighlight) 
 					    m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
 			}
 			m_grayScaleGroup.SetText ( Msg );
+			if (smFont) 
+				m_grayScaleGroup.SetFontSize(5);
+			else
+				m_grayScaleGroup.SetFontSize(7);
 		} else if (m_displayMode == 11)
 		{
-			CString	Msg, Tmp;
+			CString	Msg="", Tmp;
 			BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR || GetConfig()->m_CCMode == MASCIOR50);
 			isExtPat = (isExtPat || GetConfig()->m_CCMode > 19);
-			Msg.LoadString ( IDS_CC24COLORS );
-			Msg += " - ";
+//			Msg.LoadString ( IDS_CC24COLORS );
+//			Msg += " - ";
 			Msg += (GetConfig()->m_CCMode == GCD?"Classic GCD":(GetConfig()->m_CCMode==MCD?"Classic MCD":(GetConfig()->m_CCMode==SKIN?"Pantone skin tones":(GetConfig()->m_CCMode==CCSG?"CalMan SG":isExtPat?GetConfig()->GetCColorsN(-1).c_str():(GetConfig()->m_CCMode==CMS?"CalMAN SG skin tones":(GetConfig()->m_CCMode==CPS?"ChromaPure skin tones":(GetConfig()->m_CCMode==CMC?"Classic CalMAN":"RGB Luminance Ramps")))))));
 			m_grayScaleGroup.SetText ( Msg );
 			if (GetDocument()->GetMeasure()->GetCC24Sat(0).isValid() && dEcnt > 0 )
@@ -3756,16 +3841,20 @@ void CMainView::UpdateGrid()
 						}
 					}
 					Msg += dEform;
-					CString cSpace = GetColorReference().standardName.c_str();
-					cSpace = " "+cSpace;
-					//bbc_gamma
-					CString bbcstr;
-					bbcstr.Format("system gamma: %3.2f",BBC_gamma);
-					Msg += (isHDR ? cSpace + " HDR"+ dWhitestr:GetConfig()->m_GammaOffsetType == 7?cSpace + " HLG "+bbcstr:cSpace + " SDR");
+//					CString cSpace = GetColorReference().standardName.c_str();
+//					cSpace = " "+cSpace;
+//					//bbc_gamma
+//					CString bbcstr;
+//					bbcstr.Format("system gamma: %3.2f",BBC_gamma);
+//					Msg += (isHDR ? cSpace + " HDR"+ dWhitestr:GetConfig()->m_GammaOffsetType == 7?cSpace + " HLG "+bbcstr:cSpace + " SDR");
                     if (GetConfig()->doHighlight)
 					    m_grayScaleGroup.SetBorderColor (dEavg / dEcnt < a ? RGB(0,230,0):(dEavg / dEcnt < b?RGB(230,230,0):RGB(230,0,0)));
 			}
 			m_grayScaleGroup.SetText ( Msg );
+			if (smFont) 
+				m_grayScaleGroup.SetFontSize(5);
+			else
+				m_grayScaleGroup.SetFontSize(7);
 		}
 	}
 }
@@ -4664,9 +4753,15 @@ void CMainView::OnSelchangeComboMode()
 	m_displayMode = nNewMode;
 
 	if ( m_displayMode == 12 )
+	{
 		m_testAnsiPatternButton.ShowWindow ( SW_SHOW );
+		m_refs.ShowWindow ( SW_HIDE );
+	}
 	else
+	{
 		m_testAnsiPatternButton.ShowWindow ( SW_HIDE );
+		m_refs.ShowWindow ( SW_SHOW );
+	}
 
 	MsgAdd.LoadString ( IDS_CTRLCLICK_SIM );
 
@@ -4826,9 +4921,6 @@ void CMainView::OnSelchangeComboMode()
 			 m_grayScaleDeleteButton.SetTooltipText(Msg);
 			 break;
 	}
-
-	InitGrid();
-	UpdateGrid();
 	
 	if ( m_pGrayScaleGrid->GetSelectedCellRange().IsValid () )
 	{
@@ -4837,6 +4929,10 @@ void CMainView::OnSelchangeComboMode()
 		SetSelectedColor ( noDataColor );
 		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
 	}
+
+	InitGrid(true);
+	if(m_pGrayScaleGrid)
+		UpdateGrid();
 }
 
 void CMainView::OnMeasureGrayScale() 
@@ -5455,10 +5551,32 @@ void CMainView::InitButtons()
 	m_testAnsiPatternButton.OffsetColor(CButtonST::BTNST_COLOR_BK_IN, 30);
 	m_testAnsiPatternButton.OffsetColor(CButtonST::BTNST_COLOR_FG_IN, 30);
 
+	m_refs.SetIcon(IDI_SPECTRUM_ICON,32,32);
+	m_refs.SetFont(GetFont());
+	m_refs.EnableBalloonTooltip();
+	m_refs.SetTooltipText("Open references menu");
+	m_refs.DrawFlatFocus(FALSE);
+	m_refs.SetColor(CButtonST::BTNST_COLOR_FG_IN,FxGetSysColor(COLOR_MENUTEXT));
+	m_refs.SetColor(CButtonST::BTNST_COLOR_FG_OUT,FxGetSysColor(COLOR_MENUTEXT));
+	m_refs.SetColor(CButtonST::BTNST_COLOR_FG_FOCUS,FxGetSysColor(COLOR_MENUTEXT));
+	m_refs.SetColor(CButtonST::BTNST_COLOR_BK_IN,FxGetMenuBgColor());
+	m_refs.SetColor(CButtonST::BTNST_COLOR_BK_OUT,FxGetMenuBgColor());
+	m_refs.SetColor(CButtonST::BTNST_COLOR_BK_FOCUS,FxGetMenuBgColor());
+	m_refs.OffsetColor(CButtonST::BTNST_COLOR_BK_IN, 30);
+	m_refs.OffsetColor(CButtonST::BTNST_COLOR_FG_IN, 30);
+
+	m_refInfo.SetString(m_infoLine);
+
 	if ( m_displayMode == 12 )
+	{
 		m_testAnsiPatternButton.ShowWindow ( SW_SHOW );
+		m_refs.ShowWindow ( SW_HIDE );
+	}
 	else
+	{
 		m_testAnsiPatternButton.ShowWindow ( SW_HIDE );
+		m_refs.ShowWindow ( SW_SHOW );
+	}
 }
 void CMainView::InitGroups()
 {
@@ -5648,21 +5766,6 @@ void CMainView::OnSize(UINT nType, int cx, int cy)
 
 		EndDeferWindowPos ( hwdp );
 
-		if ( m_displayMode != 2 && m_pGrayScaleGrid -> GetColumnCount () < 13 )
-		{
-			m_pGrayScaleGrid -> ExpandColumnsToFit(FALSE);
-		}
-		else
-		{
-		}
-
-		m_pSelectedColorGrid->SetRedraw ( FALSE, FALSE );
-		m_pSelectedColorGrid->ExpandColumnsToFit(TRUE);
-		m_pSelectedColorGrid->AutoSizeColumn(0);
-		m_pSelectedColorGrid->ExpandColumnsToFit(TRUE);
-		m_pSelectedColorGrid->SetRedraw ( TRUE, FALSE );
-	    m_pSelectedColorGrid->AutoSizeRows();
-
 		pos = m_CtrlInitPos.GetHeadPosition ();
 		while ( pos )
 		{
@@ -5749,8 +5852,21 @@ void CMainView::OnSize(UINT nType, int cx, int cy)
 				m_Target.ShowWindow ( SW_SHOW );
 		}
 		
-		InitGrid();
-		UpdateGrid();
+		CRect windowRect;
+		GetClientRect(windowRect);
+		int x1 = windowRect.right - windowRect.left;
+
+		bool refresh = smFont;
+
+		smFont = false;
+		
+//		if (x1 < 1500) //disabled after moving info to top line
+//			smFont = true;
+
+		InitGrid(true);
+
+		if(m_pGrayScaleGrid==NULL || (smFont != refresh))
+			UpdateGrid();
 	}
 }
 
@@ -7118,12 +7234,8 @@ void CMainView::OnUpdateEditUndo(CCmdUI* pCmdUI)
 void CMainView::UpdateAllGrids() 
 {
 	InitGrid();
-	UpdateGrid();
-	if(m_pGrayScaleGrid->GetColumnCount() > 12)	// Needed after data is set to get correctly sized cells when scrollbar is present
-	{
-		m_pGrayScaleGrid->ExpandRowsToFit(TRUE);
-//		m_pGrayScaleGrid->AutoSizeColumns();
-	}
+	if(m_pGrayScaleGrid)
+		UpdateGrid();
 	
 	if ( m_pGrayScaleGrid->GetSelectedCellRange().IsValid () )
 	{
@@ -7255,3 +7367,8 @@ void CMainView::OnAnsiContrastPatternTestButton()
 	pGenerator->Release();
 }
 
+
+void CMainView::OnRefs() 
+{
+	GetConfig()->ChangeSettings(1);
+}

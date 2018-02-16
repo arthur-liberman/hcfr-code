@@ -490,7 +490,8 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 	m_ttID = 0;
 	stRGB.clear();
 	eRGB.clear();
-	pTooltip->RemoveAllTools();
+	if (pTooltip)
+		pTooltip->RemoveAllTools();
 
 	dE10 = ((CMainView*)pView)->dE10min;
 	

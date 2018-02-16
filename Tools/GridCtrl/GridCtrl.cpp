@@ -3105,8 +3105,8 @@ void CGridCtrl::ResetScrollBars()
 		              GetVirtualWidth(), GetVirtualHeight());
     
     // Removed to fix single row scrollbar problem (Pontus Goffe)
-    // CCellRange visibleCells = GetUnobstructedNonFixedCellRange();
-    // if (!IsValid(visibleCells)) return;
+    //CCellRange visibleCells = GetUnobstructedNonFixedCellRange();
+    //if (!IsValid(visibleCells)) return;
         
     //TRACE(_T("Visible: %d x %d, Virtual %d x %d.  H %d, V %d\n"), 
     //      VisibleRect.Width(), VisibleRect.Height(),

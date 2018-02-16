@@ -65,7 +65,7 @@ public:
 	BOOL m_bDetectPrimaries;
 	BOOL m_isSettling;
 	BOOL m_useHSV;
-	int m_latencyTime;
+	int m_latencyTime, m_ablFreq;
 	BOOL m_bLatencyBeep;
 	BOOL bDisplayRT;
 	BOOL m_bABL;

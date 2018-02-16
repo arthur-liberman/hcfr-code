@@ -222,7 +222,7 @@ BOOL CGenerator::Init(UINT nbMeasure, bool isSpecial)
 								CString msg;
 								msg.Format("RGB=TEXT;12,0;100;16,128,128;0,0,0;100,300;Initializing PGenerator at: "+cs+" Res [%dx%d], GPU Mem [%dM]",rPi_xWidth, rPi_yHeight,rPi_memSize);
 								_RB8PG_send(sock,msg);
-								Sleep(1000);
+								Sleep(3000);
 								if (rPi_memSize >= 192)
 								{
 									_RB8PG_send(sock,"RGB=IMAGE;1920,1080;100;255,255,255;0,0,0;-1,-1;/var/lib/PGenerator/images-HCFR/gbramp.png");
@@ -399,17 +399,17 @@ BOOL CGenerator::Init(UINT nbMeasure, bool isSpecial)
 	return TRUE;
 }
 
-BOOL CGenerator::DisplayRGBColorrPI(const ColorRGBDisplay& aRGBColor )
+BOOL CGenerator::DisplayRGBColorrPI(const ColorRGBDisplay& aRGBColor, MeasureType nPatternType, UINT nPatternInfo )
 {
 	return TRUE;	  // need to be overriden
 }
 
-BOOL CGenerator::DisplayRGBColormadVR(const ColorRGBDisplay& aRGBColor )
+BOOL CGenerator::DisplayRGBColormadVR(const ColorRGBDisplay& aRGBColor, MeasureType nPatternType, UINT nPatternInfo )
 {
 	return TRUE;	  // need to be overriden
 }
 
-BOOL CGenerator::DisplayRGBCCast(const ColorRGBDisplay& aRGBColor )
+BOOL CGenerator::DisplayRGBCCast(const ColorRGBDisplay& aRGBColor, MeasureType nPatternType, UINT nPatternInfo )
 {
 	return TRUE;	  // need to be overriden
 }
@@ -703,9 +703,12 @@ BOOL CGenerator::Release(INT nbNext)
 			if (_RB8PG_send)
 			{
 				CString msg;
-				msg.Format("RGB=TEXT;14,0;100;16,128,128;0,0,0;100,300;End of sequence");
-				_RB8PG_send(sock,msg);
-				Sleep(1000);
+				if (nbNext == -1)
+				{
+					msg.Format("RGB=TEXT;14,0;100;16,128,128;0,0,0;100,300;End of sequence");
+					_RB8PG_send(sock,msg);
+					Sleep(2000);
+				}
 				_RB8PG_send(sock,"TESTTEMPLATE:PatternDynamic:0,0,0");
 			}
 			else
@@ -720,7 +723,7 @@ BOOL CGenerator::Release(INT nbNext)
 				CString msg;
 				msg.Format("RGB=TEXT;14,0;100;16,128,128;0,0,0;100,300;Disconnecting from PGenerator");
 				_RB8PG_send(sock,msg);
-				Sleep(1000);
+				Sleep(3000);
 				_RB8PG_send(sock,"TESTTEMPLATE:PatternDynamic:0,0,0");
 			}
 			else

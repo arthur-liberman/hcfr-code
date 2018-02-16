@@ -123,6 +123,7 @@ CGDIGenerator::CGDIGenerator(int nDisplayMode, BOOL b16_235)
 	m_displayWindow.m_bLinear=FALSE;
 	m_displayWindow.m_bHdr10=FALSE;
 	m_HdrInterface=NULL;
+	m_nPat = 0;
 
 	GetMonitorList();
 	m_activeMonitorNum = m_monitorNb-1;
@@ -555,16 +556,18 @@ BOOL CGDIGenerator::DisplayRGBColormadVR( const ColorRGBDisplay& clr, bool first
       const CString s2(aBuf);
 	  madVR_SetOsdText(CT2CW(s2));
 
-	if ( (nPattern > 50) && (nPattern % 40) == 0 && GetConfig()->m_bABL)
+	m_nPat++;
+	if ( (m_nPat % GetConfig()->m_ablFreq) == 0 && GetConfig()->m_bABL)
 	{
 		//sleep prevention every 40 patterns for longer sequences
 		madVR_SetPatternConfig(100, 0, -1, 0);
-		if (!madVR_ShowRGB(.2, .2 , .2))
+		if (!madVR_ShowRGB(0, 0 , 0))
 		{
 			MessageBox(0, "Test pattern failure.", "Error", MB_ICONERROR);
 			return false;
 		}	 
-		madVR_ShowRGB(.4, .4 , .4);
+//		madVR_ShowRGB(.4, .4 , .4);
+		Sleep(500);
 		madVR_SetPatternConfig(Cgen.m_rectSizePercent, int (bgstim * 100), -1, 20);
 	}
 
@@ -648,34 +651,19 @@ BOOL CGDIGenerator::DisplayRGBCCast( const ColorRGBDisplay& clr, bool first, UIN
 		  }
 	}
 	
-	if ((nPattern > 50) && (nPattern % 40) == 0 && GetConfig()->m_bABL)
+	m_nPat++;
+	if ((m_nPat % GetConfig()->m_ablFreq) == 0 && GetConfig()->m_bABL)
 	{
 		//sleep prevention
-		ccwin->set_bg(ccwin,.2);
-		if (ccwin->set_color(ccwin,.2,.2,.2) != 0 )
+		ccwin->set_bg(ccwin,0);
+		if (ccwin->set_color(ccwin,0,0,0) != 0 )
 		{
 	        MessageBox(0, "CCast Test pattern failure.", "set_color", MB_ICONERROR);
 			return false;
 		}
-		Sleep(50);
-
-		ccwin->set_bg(ccwin,.4);
-		if (ccwin->set_color(ccwin,.4,.4,.4) != 0 )
-		{
-	        MessageBox(0, "CCast Test pattern failure.", "set_color", MB_ICONERROR);
-			return false;
-		} 
-		ccwin->set_bg(ccwin,.6);
-		Sleep(50);
-
-		if (ccwin->set_color(ccwin,.6,.6,.6) != 0 )
-		{
-	        MessageBox(0, "CCast Test pattern failure.", "set_color", MB_ICONERROR);
-			return false;
-		} 
+		Sleep(1000);
 
 		ccwin->set_bg(ccwin,bgstim);
-		Sleep(50);
 	}
 
 		if (ccwin->set_color(ccwin,r,g,b) != 0 )
@@ -758,20 +746,34 @@ BOOL CGDIGenerator::DisplayRGBColorrPI( const ColorRGBDisplay& clr, bool first, 
 		gb=min(max(gb,0),255);
 		bb=min(max(bb,0),255);
 	}
+	
+	bool m_bPause = false;
+	m_nPat++;
 
-	if (!m_bdispTrip)
-		sprintf_s(CPat,"RGB=RECTANGLE;%d,%d;100;%d,%d,%d;%d,%d,%d;-1,-1", (int)(pow((double)(Cgen.m_rectSizePercent)/100.0,0.5) * rPi_xWidth),(int)(pow((double)(Cgen.m_rectSizePercent)/100.0,0.5) * rPi_yHeight),r,g,b,rb,gb,bb);
+	if ((m_nPat % GetConfig()->m_ablFreq) == 0 && GetConfig()->m_bABL)
+	{
+		sprintf_s(CPat, "TESTTEMPLATERAMDISK:HCFR:%d,%d,%d",0,0,0);
+		m_bPause = true;
+	}
 	else
 	{
-		sprintf_s(CPat, "TESTTEMPLATERAMDISK:HCFR:%d,%d,%d",r,g,b);
+		if (!m_bdispTrip)
+			sprintf_s(CPat,"RGB=RECTANGLE;%d,%d;100;%d,%d,%d;%d,%d,%d;-1,-1", (int)(pow((double)(Cgen.m_rectSizePercent)/100.0,0.5) * rPi_xWidth),(int)(pow((double)(Cgen.m_rectSizePercent)/100.0,0.5) * rPi_yHeight),r,g,b,rb,gb,bb);
+		else
+		{
+			sprintf_s(CPat, "TESTTEMPLATERAMDISK:HCFR:%d,%d,%d",r,g,b);
+		}
 	}
 
 	CString debug=_T(CPat);
 
-		if (CGenerator::_RB8PG_send)
+		if (CGenerator::_RB8PG_send && CPat)
 			CGenerator::_RB8PG_send(sock,CPat);
 		else
 			GetColorApp()->InMeasureMessageBox( "Error communicating with rPI", "Error", MB_ICONINFORMATION);
+
+		if (m_bPause)
+			Sleep(500);
 
 	// Sleep 80 ms while dispatching messages to ensure window is really displayed
 		MSG		Msg;
@@ -831,19 +833,20 @@ BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nP
 		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> EnableWindow (TRUE);
 		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.SetForegroundWindow();
 //static pattern
-		if (nPatternInfo > 50 && nPatternInfo % 40 == 0 && GetConfig()->m_bABL)
+		m_nPat++;
+		if (m_nPat % GetConfig()->m_ablFreq == 0 && GetConfig()->m_bABL)
 		{
 			WINDOWPLACEMENT wp;
 			CRect rect;
 			::GetWindowRect ( ::GetDesktopWindow (), & rect );
 			( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.GetWindowPlacement(&wp);			
 			( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.SetWindowPos(&CWnd::wndTop,0,0,rect.Width(),rect.Height(),SWP_SHOWWINDOW);
-			for (int i=0;i<=24;i++)
-			{
-				( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.SetColor ( RGB(i * 10,i * 10,i * 10) );
-				( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.RedrawWindow ();
-				Sleep(33);
-			}
+
+			( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.SetColor ( RGB(0,0,0) );
+			
+			( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.RedrawWindow ();
+			
+			Sleep(500);
 			( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.SetWindowPlacement(&wp);			
 		}
 		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.SetForegroundWindow();
@@ -1238,8 +1241,8 @@ BOOL CGDIGenerator::Release(INT nbNext)
 	if (m_madVR_HDR && m_GDIGenePropertiesPage.m_nDisplayMode == DISPLAY_madVR)
 		  madVR_SetHdrButton(FALSE);
 
-	BOOL bOk = CGenerator::Release();
-
+	BOOL bOk = CGenerator::Release(nbNext);
+	m_nPat = 0;
 	if ( m_bBlankingCanceled )
 	{
 		m_doScreenBlanking = TRUE;

@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by CHCFR21_FRANCAIS.rc
+// Used by CHCFR21_ENGLISH.rc
 //
 #define IDS_STRING_VERSION              1
 #define IDS_STRING_VERSION_WEB          2
@@ -552,6 +552,7 @@
 #define IDC_CHECK_COLORS                1158
 #define IDC_EDIT_IRIS_TIME              1159
 #define IDC_STATIC_NB                   1160
+#define IDC_EDIT_IRIS_TIME2             1160
 #define IDC_STATIC_MAX                  1161
 #define IDC_STATIC_MIN                  1162
 #define IDC_KISENSOR_GETVERSION         1163
@@ -598,6 +599,7 @@
 #define IDC_DELTA_E                     1194
 #define IDC_RGBLEVELS                   1195
 #define IDC_DATA_X                      1196
+#define IDC_INFOLINE                    1196
 #define IDC_DATA_Y                      1197
 #define IDC_CHANGEWHITE_CHECK           1197
 #define IDC_DATA_Z                      1198
@@ -783,6 +785,7 @@
 #define IDC_MADVR_OSD                   1289
 #define IDC_MADVR_OSD2                  1290
 #define IDC_DISP_TRIP                   1290
+#define IDC_REFS_BUTTON                 1290
 #define IDC_DISP_TRIP2                  1291
 #define IDR_PATTERN_TESTIMGv            1292
 #define IDR_PATTERN_GRADIENT            1293
@@ -1683,7 +1686,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        382
 #define _APS_NEXT_COMMAND_VALUE         33108
-#define _APS_NEXT_CONTROL_VALUE         1288
+#define _APS_NEXT_CONTROL_VALUE         1291
 #define _APS_NEXT_SYMED_VALUE           143
 #endif
 #endif
