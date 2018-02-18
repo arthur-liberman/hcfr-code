@@ -427,6 +427,9 @@ bool CExport::SavePDF()
 		case 5:
 			dName = " [GDI - detached window]";
 			break;
+		case 6:
+			dName = " [Raspberry Pi]";
+			break;
 		}
 	    HPDF_Page_ShowTextNextLine (page, "Generator: "+m_pDoc->GetGenerator()->GetName()+dName);
 	}

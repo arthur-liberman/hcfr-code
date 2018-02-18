@@ -59,7 +59,7 @@ CFullScreenWindow::CFullScreenWindow(BOOL bTestOverlay)
 	m_rectSizePercent = GetConfig()->GetProfileInt("GDIGenerator","SizePercent",10);
 	m_bgStimPercent = 0;
 	
-//	m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_DEFAULT_MODE);
+	m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_DEFAULT_MODE);
 	m_bDisableCursorHiding = FALSE;
 	m_b16_235 = GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0);
 	m_busePic = GetConfig()->GetProfileInt("GDIGenerator","USEPIC",0);
@@ -333,6 +333,8 @@ void CFullScreenWindow::MoveToMonitor ( HMONITOR hMon )
 
 void CFullScreenWindow::DisplayRGBColor(const ColorRGBDisplay& clr, BOOL bDisableWaiting )
 {
+	m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_DEFAULT_MODE);
+
 	if ( m_nDisplayMode == DISPLAY_ccast )
 	    DisplayRGBColorInternal(clr.GetColorRef(m_b16_235), TRUE);
 	else

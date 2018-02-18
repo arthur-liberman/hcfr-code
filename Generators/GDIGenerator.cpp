@@ -258,17 +258,24 @@ void CGDIGenerator::Serialize(CArchive& archive)
 		archive >> version;
 		if ( version > 2 )
 			AfxThrowArchiveException ( CArchiveException::badSchema );
+
 		archive >> m_displayWindow.m_rectSizePercent;
 		archive >> m_displayWindow.m_bgStimPercent;
 		archive >> m_displayWindow.m_Intensity;
 		archive >> m_activeMonitorNum;
-		if ( version >= 2 )
+		if ( version > 1 )
 		{
+			int m_cDisplayMode = m_nDisplayMode;
 			archive >> m_nDisplayMode;
-			GetConfig()->WriteProfileInt("GDIGenerator","DisplayMode", m_nDisplayMode);
+			if (m_nDisplayMode != m_cDisplayMode)
+			{
+				GetColorApp()->InMeasureMessageBox("Restoring generator setting from save file...", "Generator Change", MB_OK);
+				GetConfig()->WriteProfileInt("GDIGenerator","DisplayMode", m_nDisplayMode);
+				SetPropertiesSheetValues();
+			}
 		}
 		else
-			m_nDisplayMode = DISPLAY_GDI;
+			m_nDisplayMode = DISPLAY_DEFAULT_MODE;
 	}
 }
 
