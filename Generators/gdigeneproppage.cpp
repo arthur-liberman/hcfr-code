@@ -24,7 +24,6 @@
 #include "stdafx.h"
 #include "ColorHCFR.h"
 #include "GDIGenerator.h"
-#include "DataSetDoc.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -165,8 +164,6 @@ void CGDIGenePropPage::OnOK()
 	CheckRadioButton ( IDC_RGBLEVEL_RADIO1, IDC_RGBLEVEL_RADIO2, IDC_RGBLEVEL_RADIO1 + m_b16_235 );
 	CheckRadioButton ( IDC_RADIO1,  IDC_RADIO1 + m_nDisplayMode , IDC_RADIO1 + m_nDisplayMode );
 
-	CGDIGenerator m_pGenerator;
-	m_pGenerator.m_nDisplayMode = m_nDisplayMode;
 	GetConfig()->WriteProfileInt("GDIGenerator","DisplayMode",m_nDisplayMode);
 	GetConfig()->WriteProfileInt("GDIGenerator","RGB_16_235",m_b16_235);
 	GetConfig()->WriteProfileInt("GDIGenerator","EnableHDR10",m_bHdr10);
@@ -192,7 +189,9 @@ void CGDIGenePropPage::OnOK()
 		m_usePicEdit.EnableWindow(FALSE);
 		m_busePic = false;
 	}
-
+	GetConfig()->m_isModified = true;
+	GetConfig()->ApplySettings(FALSE);
+	GetConfig()->m_isModified = false;
 	CPropertyPageWithHelp::OnOK();
 }
 
@@ -484,7 +483,6 @@ void CGDIGenePropPage::OnClickSelection()
 		m_usePicEdit.EnableWindow(FALSE);
 		m_busePic = false;
 	}
-
 }
 
 UINT CGDIGenePropPage::GetHelpId ( LPSTR lpszTopic )

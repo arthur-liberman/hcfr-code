@@ -217,7 +217,7 @@ static UINT __cdecl BkgndThreadFunc ( LPVOID lpParameter )
     			
 			    if ( g_bGDIGeneratorRunning )
 			    {
-				    g_pDataDocRunningThread->GetGenerator()->Release();
+				    g_pDataDocRunningThread->GetGenerator()->Release(-99);
 
 				    if ( g_bGeneratorUsesScreenBlanking )
 				    {
@@ -352,7 +352,7 @@ BOOL StartBackgroundMeasures ( CDataSetDoc * pDoc )
 			pDoc->m_pSensor->Release ();
 			if ( g_bGDIGeneratorRunning )
 			{
-				pDoc->GetGenerator()->Release();
+				pDoc->GetGenerator()->Release(-99);
 
 				if ( g_bGeneratorUsesScreenBlanking )
 				{
@@ -430,7 +430,7 @@ void StopBackgroundMeasures ()
 		
 		if ( g_bGDIGeneratorRunning )
 		{
-			g_pDataDocRunningThread->GetGenerator()->Release();
+			g_pDataDocRunningThread->GetGenerator()->Release(-99);
 
 			if ( g_bGeneratorUsesScreenBlanking )
 			{
@@ -1643,7 +1643,7 @@ void CDataSetDoc::OnCalibrationManual()
 			Title.LoadString ( IDS_ERROR );
 			strMsg.LoadString ( IDS_ERRINITSENSOR );
 			GetColorApp()->InMeasureMessageBox(strMsg,Title,MB_ICONERROR | MB_OK);
-			m_pGenerator->Release();
+			m_pGenerator->Release(-99);
 			return;
 		}
 
@@ -1679,7 +1679,7 @@ void CDataSetDoc::OnCalibrationManual()
 				if ( bEscape )
 				{
 					m_pSensor->Release();
-					m_pGenerator->Release();
+					m_pGenerator->Release(-99);
 					strMsg.LoadString ( IDS_MEASURESCANCELED );
 					GetColorApp()->InMeasureMessageBox ( strMsg, NULL, MB_OK | MB_ICONINFORMATION );
 					return;
@@ -1693,7 +1693,7 @@ void CDataSetDoc::OnCalibrationManual()
 					if(result == IDABORT)
 					{
 						m_pSensor->Release();
-						m_pGenerator->Release();
+						m_pGenerator->Release(-99);
 						return;
 					}
 					if(result == IDRETRY)
@@ -1705,7 +1705,7 @@ void CDataSetDoc::OnCalibrationManual()
 			else
 			{
 				m_pSensor->Release();
-				m_pGenerator->Release();
+				m_pGenerator->Release(-99);
 				return;
 			}
 		}
@@ -1739,7 +1739,7 @@ void CDataSetDoc::OnCalibrationManual()
 				if ( bEscape )
 				{
 					m_pSensor->Release();
-					m_pGenerator->Release();
+					m_pGenerator->Release(-99);
 					strMsg.LoadString ( IDS_MEASURESCANCELED );
 					GetColorApp()->InMeasureMessageBox ( strMsg, NULL, MB_OK | MB_ICONINFORMATION );
 					return;
@@ -1753,7 +1753,7 @@ void CDataSetDoc::OnCalibrationManual()
 					if(result == IDABORT)
 					{
 						m_pSensor->Release();
-						m_pGenerator->Release();
+						m_pGenerator->Release(-99);
 						return;
 					}
 					if(result == IDRETRY)
@@ -1765,7 +1765,7 @@ void CDataSetDoc::OnCalibrationManual()
 			else
 			{
 				m_pSensor->Release();
-				m_pGenerator->Release();
+				m_pGenerator->Release(-99);
 				return;
 			}
 		}
@@ -1799,7 +1799,7 @@ void CDataSetDoc::OnCalibrationManual()
 				if ( bEscape )
 				{
 					m_pSensor->Release();
-					m_pGenerator->Release();
+					m_pGenerator->Release(-99);
 					strMsg.LoadString ( IDS_MEASURESCANCELED );
 					GetColorApp()->InMeasureMessageBox( strMsg, NULL, MB_OK | MB_ICONINFORMATION );
 					return;
@@ -1813,7 +1813,7 @@ void CDataSetDoc::OnCalibrationManual()
 					if(result == IDABORT)
 					{
 						m_pSensor->Release();
-						m_pGenerator->Release();
+						m_pGenerator->Release(-99);
 						return;
 					}
 					if(result == IDRETRY)
@@ -1825,7 +1825,7 @@ void CDataSetDoc::OnCalibrationManual()
 			else
 			{
 				m_pSensor->Release();
-				m_pGenerator->Release();
+				m_pGenerator->Release(-99);
 				return;
 			}
 		}
@@ -1859,7 +1859,7 @@ void CDataSetDoc::OnCalibrationManual()
 				if ( bEscape )
 				{
 					m_pSensor->Release();
-					m_pGenerator->Release();
+					m_pGenerator->Release(-99);
 					strMsg.LoadString ( IDS_MEASURESCANCELED );
 					GetColorApp()->InMeasureMessageBox ( strMsg, NULL, MB_OK | MB_ICONINFORMATION );
 					return;
@@ -1873,7 +1873,7 @@ void CDataSetDoc::OnCalibrationManual()
 					if(result == IDABORT)
 					{
 						m_pSensor->Release();
-						m_pGenerator->Release();
+						m_pGenerator->Release(-99);
 						return;
 					}
 					if(result == IDRETRY)
@@ -1885,13 +1885,13 @@ void CDataSetDoc::OnCalibrationManual()
 			else
 			{
 				m_pSensor->Release();
-				m_pGenerator->Release();
+				m_pGenerator->Release(-99);
 				return;
 			}
 		}
 
 		m_pSensor->Release();
-		m_pGenerator->Release();
+		m_pGenerator->Release(-99);
 
         CRefColorDlg dlg;
 		if ( dlg.DoModal () == IDOK )
@@ -1978,7 +1978,7 @@ void CDataSetDoc::OnCalibrationSpectralSample()
 			Title.LoadString ( IDS_ERROR );
 			strMsg.LoadString ( IDS_ERRINITSENSOR );
 			GetColorApp()->InMeasureMessageBox(strMsg,Title,MB_ICONERROR | MB_OK);
-			m_pGenerator->Release();
+			m_pGenerator->Release(-99);
 			return;
 		}
 
@@ -2005,7 +2005,7 @@ void CDataSetDoc::OnCalibrationSpectralSample()
 				if ( bEscape )
 				{
 					m_pSensor->Release();
-					m_pGenerator->Release();
+					m_pGenerator->Release(-99);
 					strMsg.LoadString ( IDS_MEASURESCANCELED );
 					GetColorApp()->InMeasureMessageBox ( strMsg, NULL, MB_OK | MB_ICONINFORMATION );
 					return;
@@ -2019,7 +2019,7 @@ void CDataSetDoc::OnCalibrationSpectralSample()
 					if(result == IDABORT)
 					{
 						m_pSensor->Release();
-						m_pGenerator->Release();
+						m_pGenerator->Release(-99);
 						return;
 					}
 					if(result == IDRETRY)
@@ -2031,7 +2031,7 @@ void CDataSetDoc::OnCalibrationSpectralSample()
 			else
 			{
 				m_pSensor->Release();
-				m_pGenerator->Release();
+				m_pGenerator->Release(-99);
 				return;
 			}
 		}
@@ -2056,7 +2056,7 @@ void CDataSetDoc::OnCalibrationSpectralSample()
 				if ( bEscape )
 				{
 					m_pSensor->Release();
-					m_pGenerator->Release();
+					m_pGenerator->Release(-99);
 					strMsg.LoadString ( IDS_MEASURESCANCELED );
 					GetColorApp()->InMeasureMessageBox ( strMsg, NULL, MB_OK | MB_ICONINFORMATION );
 					return;
@@ -2070,7 +2070,7 @@ void CDataSetDoc::OnCalibrationSpectralSample()
 					if(result == IDABORT)
 					{
 						m_pSensor->Release();
-						m_pGenerator->Release();
+						m_pGenerator->Release(-99);
 						return;
 					}
 					if(result == IDRETRY)
@@ -2082,7 +2082,7 @@ void CDataSetDoc::OnCalibrationSpectralSample()
 			else
 			{
 				m_pSensor->Release();
-				m_pGenerator->Release();
+				m_pGenerator->Release(-99);
 				return;
 			}
 		}
@@ -2107,7 +2107,7 @@ void CDataSetDoc::OnCalibrationSpectralSample()
 				if ( bEscape )
 				{
 					m_pSensor->Release();
-					m_pGenerator->Release();
+					m_pGenerator->Release(-99);
 					strMsg.LoadString ( IDS_MEASURESCANCELED );
 					GetColorApp()->InMeasureMessageBox( strMsg, NULL, MB_OK | MB_ICONINFORMATION );
 					return;
@@ -2121,7 +2121,7 @@ void CDataSetDoc::OnCalibrationSpectralSample()
 					if(result == IDABORT)
 					{
 						m_pSensor->Release();
-						m_pGenerator->Release();
+						m_pGenerator->Release(-99);
 						return;
 					}
 					if(result == IDRETRY)
@@ -2133,7 +2133,7 @@ void CDataSetDoc::OnCalibrationSpectralSample()
 			else
 			{
 				m_pSensor->Release();
-				m_pGenerator->Release();
+				m_pGenerator->Release(-99);
 				return;
 			}
 		}
@@ -2158,7 +2158,7 @@ void CDataSetDoc::OnCalibrationSpectralSample()
 				if ( bEscape )
 				{
 					m_pSensor->Release();
-					m_pGenerator->Release();
+					m_pGenerator->Release(-99);
 					strMsg.LoadString ( IDS_MEASURESCANCELED );
 					GetColorApp()->InMeasureMessageBox ( strMsg, NULL, MB_OK | MB_ICONINFORMATION );
 					return;
@@ -2172,7 +2172,7 @@ void CDataSetDoc::OnCalibrationSpectralSample()
 					if(result == IDABORT)
 					{
 						m_pSensor->Release();
-						m_pGenerator->Release();
+						m_pGenerator->Release(-99);
 						return;
 					}
 					if(result == IDRETRY)
@@ -2184,7 +2184,7 @@ void CDataSetDoc::OnCalibrationSpectralSample()
 			else
 			{
 				m_pSensor->Release();
-				m_pGenerator->Release();
+				m_pGenerator->Release(-99);
 				return;
 			}
 		}
@@ -2242,7 +2242,7 @@ void CDataSetDoc::OnCalibrationSpectralSample()
 		}
 		
 		m_pSensor->Release();
-		m_pGenerator->Release();
+		m_pGenerator->Release(-99);
 	}
 }
 
@@ -2802,7 +2802,7 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 				}
 			}
 
-			pGenerator -> Release ();
+			pGenerator -> Release (-99);
 		}
 
 		if ( bOk )
