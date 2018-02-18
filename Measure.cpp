@@ -3202,7 +3202,7 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 		for (int i=2400+250;i<2400+250+500;i++)
 				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(2400+250)];
 	else if (iCC == 26) 
-		for (int i=2400+250+500;i<1900+250+500+1000;i++)
+		for (int i=2400+250+500;i<2400+250+500+1000;i++)
 				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(2400+250+500)];
 
 	m_binMeasure = FALSE;
@@ -5037,7 +5037,7 @@ BOOL CMeasure::AddMeasurement(CSensor *pSensor, CGenerator *pGenerator,  CGenera
 		Msg.LoadString ( IDS_ERRINITSENSOR );
 		GetColorApp()->InMeasureMessageBox(Msg,Title,MB_ICONERROR | MB_OK);
 		if ( bDisplayColor )
-			pGenerator->Release();
+			pGenerator->Release(-99);
 		return FALSE;
 	}
 
@@ -5069,7 +5069,7 @@ BOOL CMeasure::AddMeasurement(CSensor *pSensor, CGenerator *pGenerator,  CGenera
 			{
 				pSensor->Release();
 				if ( bDisplayColor )
-					pGenerator->Release();
+					pGenerator->Release(-99);
 				return FALSE;
 			}
 		}
@@ -5078,7 +5078,7 @@ BOOL CMeasure::AddMeasurement(CSensor *pSensor, CGenerator *pGenerator,  CGenera
 	{
 		pSensor->Release();
 		if ( bDisplayColor )
-			pGenerator->Release();
+			pGenerator->Release(-99);
 		return FALSE;
 	}
 
@@ -5090,7 +5090,7 @@ BOOL CMeasure::AddMeasurement(CSensor *pSensor, CGenerator *pGenerator,  CGenera
 
 	pSensor->Release();
 	if ( bDisplayColor )
-		pGenerator->Release();
+		pGenerator->Release(-99);
 
 	return TRUE;
 }
@@ -5593,17 +5593,17 @@ void CMeasure::FreeMeasurementAppended(int isPrimary, int last_minCol)
 			}
 			else if (iCC == 24)
 			{
-				i = 1900 + last_minCol -1;
+				i = 2400 + last_minCol -1;
 						m_cc24SatMeasureArray_master[i] = m_measurementsArray[n-1];
 			}
 			else if (iCC == 25)
 			{
-				i = 1900 + 250 + last_minCol -1;
+				i = 2400 + 250 + last_minCol -1;
 						m_cc24SatMeasureArray_master[i] = m_measurementsArray[n-1];
 			}
 			else if (iCC == 26) 
 			{
-				i = 1900 + 250 + 500 + last_minCol - 1;
+				i = 2400 + 250 + 500 + last_minCol - 1;
 						m_cc24SatMeasureArray_master[i] = m_measurementsArray[n-1];
 			}
 			break;
@@ -6126,7 +6126,7 @@ CColor CMeasure::GetCC24Sat(int i)
 
 				pCurrentDocument = (CDataSetDoc *) pMDIFrameWnd->GetActiveDocument();
 				for (int j = 0;j < m_cc24SatMeasureArray.GetSize();j++)
-					m_cc24SatMeasureArray_master[j + (iCC<=24?(iCC * 100):(iCC==25?1900+250:1900+250+500))] = m_cc24SatMeasureArray[j];
+					m_cc24SatMeasureArray_master[j + (iCC<=24?(iCC * 100):(iCC==25?2400+250:2400+250+500))] = m_cc24SatMeasureArray[j];
 				if (GetColorApp()->InMeasureMessageBox("Save to new  file?","Pre 3.3.0 file format save dialog",MB_YESNO | MB_ICONQUESTION) == IDYES)
 				{
 					CFileDialog fileSaveDialog ( FALSE, ".chc", NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, "HCFR Save File (*.chc)|*.chc||" );
@@ -6151,13 +6151,13 @@ CColor CMeasure::GetCC24Sat(int i)
 		return m_cc24SatMeasureArray[i]; 
 	}
 
-	return m_cc24SatMeasureArray_master[i + (iCC<=24?(iCC * 100):(iCC==25?1900+250:1900+250+500))];  //index increments by 100 until slot 19 (then 250 & 500 & user 1000 & 2020_50)
+	return m_cc24SatMeasureArray_master[i + (iCC<=24?(iCC * 100):(iCC==25?2400+250:2400+250+500))];  //index increments by 100 until slot 19 (then 250 & 500 & user 1000 & 2020_50)
 } 
 
 CString CMeasure::GetCCStr() const
 {
 	CString mStr("Color Checker sweeps active:\r\n");
-	char *sweeps[23]={"GCD Classic \r\n","MCD Classic \r\n","Pantone Skin \r\n",
+	char *sweeps[27]={"GCD Classic \r\n","MCD Classic \r\n","Pantone Skin \r\n",
 		"CalMAN Classic \r\n",
 		"CalMAN Skin \r\n",
 		"Chromapure Skin \r\n",
@@ -6174,24 +6174,28 @@ CString CMeasure::GetCCStr() const
 		"CalMAN 10 pt Sat.(75AMP) \r\n",
 		"CalMAN near black \r\n",
 		"CalMan dynamic range \r\n",
+		"BT2020_50 HDR\r\n",
+		"LG_540_2016 HDR\r\n",
+		"LG_540_2017 HDR\r\n",
+		"LG_1000_2017 HDR\r\n",
+		"LG_4000_2017 HDR\r\n",
 		"Random 250 \r\n",
 		"Random 500 \r\n",
-		"User\r\n",
-		"BT2020_50 HDR\r\n"
+		"User\r\n"
 	};
-	for (int i=0;i<=23;i++)
+	for (int i=0;i<=26;i++)
 	{
-		if (i<=19)
+		if (i<=23)
 			if (m_cc24SatMeasureArray_master[i*100].isValid())
 				mStr+=sweeps[i];
-		if (i==20)
-			if (m_cc24SatMeasureArray_master[1900+250].isValid())
+		if (i==24)
+			if (m_cc24SatMeasureArray_master[2300+100].isValid())
 				mStr+=sweeps[i];
-		if (i==21)
-			if (m_cc24SatMeasureArray_master[1900+250+500].isValid())
+		if (i==25)
+			if (m_cc24SatMeasureArray_master[2300+100+250].isValid())
 				mStr+=sweeps[i];
-		if (i==22)
-			if (m_cc24SatMeasureArray_master[1900+250+500+1000].isValid())
+		if (i==26)
+			if (m_cc24SatMeasureArray_master[2300+100+250+500].isValid())
 				mStr+=sweeps[i];
 	}
 	return mStr+="\r\n";
