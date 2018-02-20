@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by CHCFR21_ENGLISH.rc
+// Used by CHCFR21_FRANCAIS.rc
 //
 #define IDS_STRING_VERSION              1
 #define IDS_STRING_VERSION_WEB          2
@@ -436,6 +436,7 @@
 #define IDC_DELETEMEASURE_BUTTON        1085
 #define IDC_SENSORNAME_STATIC2          1085
 #define IDC_GRAYSCALESTEPS_COMBO        1086
+#define IDC_GENERATORNAME_STATIC2       1086
 #define IDC_DELETEGRAYSCALE_BUTTON      1087
 #define IDC_GRAYSCALESTEPS_COMBOMODE    1088
 #define IDC_INFO_DISPLAY                1089
@@ -596,7 +597,10 @@
 #define IDC_TARGET                      1191
 #define IDC_LUMINANCE                   1192
 #define IDC_TEMP                        1193
+#define IDC_CCOMP2                      1193
+#define IDC_CCOMP                       1193
 #define IDC_DELTA_E                     1194
+#define IDC_CCOMP3                      1194
 #define IDC_RGBLEVELS                   1195
 #define IDC_DATA_X                      1196
 #define IDC_INFOLINE                    1196
@@ -787,6 +791,7 @@
 #define IDC_DISP_TRIP                   1290
 #define IDC_REFS_BUTTON                 1290
 #define IDC_DISP_TRIP2                  1291
+#define IDC_EDIT1                       1291
 #define IDR_PATTERN_TESTIMGv            1292
 #define IDR_PATTERN_GRADIENT            1293
 #define IDR_PATTERN_LRAMP               1294
@@ -1686,7 +1691,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        382
 #define _APS_NEXT_COMMAND_VALUE         33108
-#define _APS_NEXT_CONTROL_VALUE         1291
+#define _APS_NEXT_CONTROL_VALUE         1292
 #define _APS_NEXT_SYMED_VALUE           143
 #endif
 #endif

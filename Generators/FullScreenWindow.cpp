@@ -1637,6 +1637,7 @@ void video_scale (CxImage *inImage)
 			if ((m_nPat % GetConfig()->m_ablFreq) == 0 && GetConfig()->m_bABL)
 			{				
 				GetClientRect(&rect_ABL);
+				rect_ABL.DeflateRect(dWidth/2,dHeight/2);
 				brush.CreateSolidBrush ( RGB(0,0,0) );
 				dc.FillRect ( &rect_ABL, &brush );
 				Sleep(500);

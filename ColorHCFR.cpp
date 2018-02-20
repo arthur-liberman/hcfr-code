@@ -44,10 +44,9 @@
 #include "EyeOneSensor.h"
 #include "SerialCom.h"
 #include "VersionInfoFromFile.h"
-
 #include "ximage.h"
-
 #include "CWebUpdate.h"
+
 
 #ifdef USE_NON_FREE_CODE
 // Include for device interface (this device interface is outside GNU GPL license)

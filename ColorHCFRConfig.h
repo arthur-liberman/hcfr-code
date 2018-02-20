@@ -117,6 +117,7 @@ public:
 	BOOL m_doMultipleInstance;
 	BOOL m_doUpdateCheck;
 	BOOL m_doSavePosition;
+	BOOL m_isModified;
 
 	// Advanced settings
 	int		m_TBViewsRightClickMode;

@@ -175,7 +175,10 @@ void CLuminanceGrapher::UpdateGraph ( CDataSetDoc * pDoc )
 			{
 				valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
 				if (mode == 5)
+				{
 					valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1) * 100. / (White.GetY());
+//					valy = min(valy, GetConfig()->m_TargetMaxL);
+				}
 				else
 	                valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
 			}
@@ -706,7 +709,11 @@ void CLuminanceHistoView::OnGraphScaleFit()
 
 void CLuminanceHistoView::OnLuminanceGraphYScale1() 
 {
-	m_Grapher.m_graphCtrl.SetYScale(m_Grapher.m_logY?-3:0,m_Grapher.m_logY?2:100);
+	if (m_Grapher.m_abY || m_Grapher.m_logY || m_Grapher.m_showL)
+		m_Grapher.m_graphCtrl.FitYScale(TRUE,m_Grapher.m_logY?1:10);
+	else
+		m_Grapher.m_graphCtrl.SetYScale(0,100);
+	
 	m_Grapher.m_graphCtrl.WriteSettings("Luminance Histo");
 	Invalidate(TRUE);
 }
