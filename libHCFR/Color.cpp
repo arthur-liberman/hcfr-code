@@ -1372,19 +1372,23 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
     else
 		outL_sRGB = pow( ( valx + 0.055 ) / 1.055, 2.4 );
 //L*
-	double outL_lab,t;
+	double outL_lab,t,outL_labF;
 	t = 1.0 / 116. * (valx * 100. + 16);
 	if ( 29 * t > 6)
 		outL_lab = pow(t,3.0);
 	else
 		outL_lab = 3 * pow((6. / 29.),2) * (t - 4. / 29.);
 
+	t = valx;
+	if ( t > pow(6./29.,3))
+		outL_labF = pow(t,1.0/3.0);
+	else
+		outL_labF = t / (3.0 * pow(6./29.,2)) + 4.0 / 29.0;
+
 //BBC hybrid log gamma BT.2100 version
 
 	double outL_bbc, bbc_a = 0.17883277, bbc_b = 1.0 - 4 * bbc_a, bbc_c = 0.5 - bbc_a * log(4 * bbc_a);
 	double bbc_alpha = (m_MaxTL - m_MinTL), bbc_beta = m_MinTL;
-//	if (bbc_gamma == 1.2)
-//		bbc_gamma = 1.2 + 0.42 * log10(m_MaxTL / 1000.) ; //for bbc EOTF
 
 	offset = split / 100.0 * minL;
     double a = pow ( ( pow (maxL,1.0/exp0 ) - pow ( offset,1.0/exp0 ) ),exp0 );
@@ -1413,10 +1417,15 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 		case 4: //BT.1886
 			outL = (Lbt + minL * (1 - split / 100.))/(maxL + minL * (1 - split / 100.));
 		break;
+		case -4: //BT.1886 OETF
+			outL = pow((valx*(maxL+minL*(1-split/100.)-minL*(1-split/100.)))/a,1.0/exp0)-b;
+//			outL = (Lbt + minL * (1 - split / 100.))/(maxL + minL * (1 - split / 100.));
+		break;
 		case 5: //BT.2084
 			outL = pow(max(pow(valx,1.0 / m2) - c1,0) / (c2 - c3 * pow(valx, 1.0 / m2)), 1.0 / m1);
 			outL = outL * 10000. / 100.00 * m_diffuseL / 94.37844; 
 			outL = min(outL, m_MaxTL / 100.0);
+//			outL = min(outL, 100.0);
 		break;
 		case -5: //BT.2084 inverse
 			outL = pow( (c1 + c2 * pow(valx,m1)) / (1 + c3 * pow(valx,m1)), m2); 
@@ -1424,7 +1433,10 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 		case 6: //L*
 			outL = outL_lab;
 		break;
-		case 7: //bbc EOTF
+		case -6: //L* OETF
+			outL = (outL_labF * 116.0 - 16.0) / 100.;
+		break;
+		case 7: //bbc non-linear to linear OOTF[EOTF = OETF^-1]
 			if (valx <= 0.5)
 				outL_bbc = pow(valx, 2) / 3.0;
 			else
@@ -1432,7 +1444,7 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 
 			outL = (bbc_alpha * pow(outL_bbc, bbc_gamma - 1) * outL_bbc + bbc_beta) / White.GetY();
 		break;
-		case -7: //bbc inverse EOTF
+		case -7: //bbc linear to non-linear OETF
 			if (valx <=  1.0 / 12.0)
 				outL_bbc = pow(3 * valx, 0.5);
 			else
@@ -1445,7 +1457,6 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 			if (!cBT2390)
 			{
 				double tmWhite = getL_EOTF(0.5022283, White, Black, g_rel, split, 5, m_diffuseL, m_MinML, m_MaxML, m_MinTL, m_MaxTL, ToneMap, TRUE, bbc_gamma, b_fact, E2_fact) * 100.0;
-//				m_MaxML = m_MaxML * tmWhite / 94.37844 ; 
 				m_MaxML = m_MaxML * m_diffuseL / 94.37844 ; 
 
 				if (m_MinML > m_MinTL)
@@ -1491,6 +1502,7 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 					outL = pow(max(pow(valx,1.0 / m2) - c1,0) / (c2 - c3 * pow(valx, 1.0 / m2)), 1.0 / m1);
 					outL = outL * 10000. / 100.00 * m_diffuseL / 94.37844; 
 					outL = min(outL, m_MaxTL / 100.0);
+//					outL = min(outL, 100.0);
 				}
 			}
 			else
@@ -1550,6 +1562,7 @@ double getL_EOTF ( double valx, CColor White, CColor Black, double g_rel, double
 						outL = pow(max(pow(valx,1.0 / m2) - c1,0) / (c2 - c3 * pow(valx, 1.0 / m2)), 1.0 / m1);
 						outL = outL * 10000. / 100.00 * m_diffuseL / 94.37844; 
 						outL = min(outL, m_MaxTL / 100.0);
+//						outL = min(outL, 100.0);
 					}
 					BT2390x.push_back(valx);
 					BT2390y.push_back(outL / 100.0 / m_diffuseL * 94.37844);

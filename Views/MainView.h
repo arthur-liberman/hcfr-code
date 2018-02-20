@@ -75,6 +75,7 @@ public:
 	CString	m_sensorName;
 	CString	m_refInfo;
 	CStatic	m_TargetStatic;
+	CStatic	m_Ccomp,m_Ccomp3;
 	CStatic	m_RGBLevelsStatic;
 	CStatic		m_RGBLevelsLabel;
 	CComboBox	m_comboDisplay;
@@ -146,6 +147,9 @@ public:
 	int last_Size;
 	int last_Display;
 	bool smFont;
+	double m_RefWhite,m_r1,m_g1,m_b1,m_r,m_g,m_b,m_r1d,m_g1d,m_b1d,m_rd,m_gd,m_bd;
+	double m_YWhite;
+
 	CString m_infoLine;
 
 	std::vector<double> dEvector, dLvector, dCvector, dHvector;
@@ -157,7 +161,7 @@ public:
 	CTargetWnd		m_Target;
 	CRGBLevelWnd	m_RGBLevels;
 
-	CColor		m_SelectedColor, m_LastColor;
+	CColor		m_SelectedColor, m_LastColor, m_RefColor, m_lastRefColor;
 
 	void SetSelectedColor ( CColor & clr, bool inMeasure = FALSE )	{ m_SelectedColor = clr; GetDocument () -> SetSelectedColor ( clr ); if (!inMeasure) RefreshSelection (); }
 	void SetLastColor ( CColor & clr, bool inMeasure = FALSE )	{ m_LastColor = clr; GetDocument () -> SetLastColor ( clr ); if (!inMeasure) RefreshSelection (); }
@@ -205,7 +209,6 @@ public:
 protected:
 	CGridCtrl* m_pGrayScaleGrid;
 	CGridCtrl* m_pSelectedColorGrid;
-
 	void OnGrayScaleGridBeginEdit(NMHDR *pNotifyStruct,LRESULT* pResult);
 	void OnGrayScaleGridEndEdit(NMHDR *pNotifyStruct,LRESULT* pResult);
 	void OnGrayScaleGridEndSelChange(NMHDR *pNotifyStruct,LRESULT* pResult);
@@ -230,6 +233,7 @@ protected:
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnSysColorChange();
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
+	afx_msg LRESULT OnCtlColorStatic(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnMeasureGrayScale();
 	afx_msg void OnDeleteGrayscale();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
@@ -278,7 +282,6 @@ public:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
-
 
 /////////////////////////////////////////////////////////////////////////////
 

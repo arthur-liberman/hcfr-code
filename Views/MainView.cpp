@@ -81,22 +81,23 @@ struct SCtrlInitPos
 };
 
 static const SCtrlLayout g_CtrlLayout [] = {
+
 { IDC_PARAM_GROUP						, LAYOUT_LEFT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
 { IDC_GRAYSCALESTEPS_COMBOMODE			, LAYOUT_LEFT,	LAYOUT_LEFT,	LAYOUT_TOP,			LAYOUT_TOP			},
-{ IDC_EDITGRID_CHECK					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP_OFFSET,	LAYOUT_TOP_OFFSET	},
+{ IDC_EDITGRID_CHECK					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
 { IDC_SPIN_VIEW							, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
 { IDC_GRAYSCALE_GROUP					, LAYOUT_LEFT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP_OFFSET	}, 
 { IDC_VALUES_STATIC						, LAYOUT_LEFT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP_OFFSET	}, 
 { IDC_GRAYSCALE_GRID					, LAYOUT_LEFT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP_OFFSET	}, 
-{ IDC_MEASUREGRAYSCALE_BUTTON			, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP_OFFSET,	LAYOUT_TOP_OFFSET	},
-{ IDC_DELETEGRAYSCALE_BUTTON			, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP_OFFSET,	LAYOUT_TOP_OFFSET	},
+{ IDC_MEASUREGRAYSCALE_BUTTON			, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
+{ IDC_DELETEGRAYSCALE_BUTTON			, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
 																												
-{ IDC_DISPLAY_GROUP						, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP_OFFSET	},
-{ IDC_SENSORRGB_RADIO					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP_OFFSET			},
-{ IDC_RGB_RADIO							, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP_OFFSET			},
-{ IDC_XYZ_RADIO							, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP_OFFSET			},
-{ IDC_XYZ_RADIO2						, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP_OFFSET			},
-{ IDC_XYY_RADIO 						, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP_OFFSET			},
+{ IDC_DISPLAY_GROUP						, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP	},
+{ IDC_SENSORRGB_RADIO					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP	},
+{ IDC_RGB_RADIO							, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP	},
+{ IDC_XYZ_RADIO							, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP	},
+{ IDC_XYZ_RADIO2						, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP	},
+{ IDC_XYY_RADIO 						, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP	},
 																												
 { IDC_SENSOR_GROUP						, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
 { IDC_SENSORNAME_STATIC					, LAYOUT_RIGHT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
@@ -118,14 +119,16 @@ static const SCtrlLayout g_CtrlLayout [] = {
 { IDC_STATIC_VIEW						, LAYOUT_LEFT,	LAYOUT_RIGHT,	LAYOUT_TOP_OFFSET,	LAYOUT_BOTTOM		},
 { IDC_STATIC_RGBLEVELS					, LAYOUT_LEFT,	LAYOUT_LEFT,	LAYOUT_TOP_OFFSET,	LAYOUT_TOP_OFFSET	},
 { IDC_RGBLEVELS							, LAYOUT_LEFT,	LAYOUT_LEFT,	LAYOUT_TOP_OFFSET,	LAYOUT_TOP_OFFSET	},
-{ IDC_STATIC_TARGET						, LAYOUT_LEFT,	LAYOUT_LEFT,	LAYOUT_BOTTOM,		LAYOUT_BOTTOM		},
+{ IDC_STATIC_TARGET						, LAYOUT_LEFT,	LAYOUT_LEFT,	LAYOUT_TOP_OFFSET,	LAYOUT_TOP_OFFSET	},
 { IDC_TARGET							, LAYOUT_LEFT,	LAYOUT_LEFT,	LAYOUT_TOP_OFFSET,	LAYOUT_TOP_OFFSET	},
 { IDC_STATIC_DATA						, LAYOUT_LEFT,	LAYOUT_LEFT,	LAYOUT_TOP_OFFSET,	LAYOUT_TOP_OFFSET	},
 { IDC_RGBLEVELS2						, LAYOUT_LEFT,	LAYOUT_LEFT,	LAYOUT_TOP_OFFSET,	LAYOUT_TOP_OFFSET	},
 { IDC_INFOLINE							, LAYOUT_LEFT,	LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			},
-{ IDC_TARGET2							, LAYOUT_LEFT,	LAYOUT_LEFT,	LAYOUT_BOTTOM,		LAYOUT_BOTTOM		},
+{ IDC_TARGET2							, LAYOUT_LEFT,	LAYOUT_LEFT,	LAYOUT_TOP_OFFSET,	LAYOUT_TOP_OFFSET	},
+{ IDC_CCOMP								, LAYOUT_LEFT,	LAYOUT_LEFT,	LAYOUT_TOP_OFFSET,	LAYOUT_TOP_OFFSET	},
+{ IDC_CCOMP3							, LAYOUT_LEFT,	LAYOUT_LEFT,	LAYOUT_TOP_OFFSET,	LAYOUT_TOP_OFFSET	},
 { IDC_ANSICONTRAST_PATTERN_TEST_BUTTON  , LAYOUT_RIGHT, LAYOUT_RIGHT,	LAYOUT_TOP_OFFSET,	LAYOUT_TOP_OFFSET	},
-{ IDC_REFS_BUTTON					  , LAYOUT_RIGHT, LAYOUT_RIGHT,	LAYOUT_TOP_OFFSET,	LAYOUT_TOP_OFFSET	}
+{ IDC_REFS_BUTTON						, LAYOUT_RIGHT, LAYOUT_RIGHT,	LAYOUT_TOP,			LAYOUT_TOP			}
 
 };
 
@@ -389,6 +392,7 @@ BEGIN_MESSAGE_MAP(CMainView, CFormView)
 	ON_NOTIFY(GVN_ENDLABELEDIT, IDC_GRAYSCALE_GRID, OnGrayScaleGridEndEdit)
 	ON_NOTIFY(GVN_SELCHANGED, IDC_GRAYSCALE_GRID, OnGrayScaleGridEndSelChange)
 	ON_MESSAGE(WM_SET_USER_INFO_POST_INIT, OnSetUserInfoPostInitialUpdate)
+	ON_MESSAGE(WM_CTLCOLORSTATIC, OnCtlColorStatic)
 END_MESSAGE_MAP()
 
 
@@ -398,7 +402,7 @@ void StopBackgroundMeasures ();
 extern CDataSetDoc *	g_pDataDocRunningThread;
 extern BOOL				g_bTerminateThread;
 extern CWinThread*			g_hThread;
-
+//CColorReference m_bRef(HDTV);
 /////////////////////////////////////////////////////////////////////////////
 // CMainView construction/destruction
 
@@ -410,15 +414,18 @@ CMainView::CMainView()
 	//}}AFX_DATA_INIT
 
 	m_displayMode = 0;
-	m_infoDisplay = 0;
+	m_infoDisplay = 5;
 	m_nSizeOffset = 0;
 	m_bPositionsInit = FALSE;
 	m_dwInitialUserInfo = 0;
-	last_minCol = 1;
-	minCol = 1;
+	last_minCol = 4;
+	minCol = 4;
 	
-	m_SelectedColor = noDataColor;
-	m_LastColor = noDataColor;
+	m_SelectedColor = noDataColor;//CColor(0.31,0.33);
+//	m_SelectedColor[2]=12.0;
+	m_LastColor = m_SelectedColor;
+	m_RefColor = m_SelectedColor;
+	m_lastRefColor = m_SelectedColor;;
 	m_bUpdate = TRUE;
 
 	m_pGrayScaleGrid = NULL;
@@ -473,6 +480,17 @@ CMainView::CMainView()
 	last_Col = 5;
 	last_Size = 11;
 	last_Display = 0;
+	m_YWhite = 100.;
+	m_RefWhite = 1.;
+	m_r1 = 0.1;
+	m_g1 = 0.1;
+	m_b1 = 0.1;
+	m_r1d = 0.1;
+	m_g1d = 0.1;
+	m_b1d = 0.1;
+	m_r = 0.1;
+	m_g = 0.1;
+	m_b = 0.1;
 	smFont = false;
 	m_infoLine = "Welcome to HCFR";
 }
@@ -530,6 +548,8 @@ void CMainView::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_SENSORNAME_STATIC, m_sensorName);
 	DDX_Text(pDX, IDC_INFOLINE, m_refInfo);
 	DDX_Control(pDX, IDC_TARGET, m_TargetStatic);
+	DDX_Control(pDX, IDC_CCOMP, m_Ccomp);
+	DDX_Control(pDX, IDC_CCOMP3, m_Ccomp3);
 	DDX_Control(pDX, IDC_RGBLEVELS, m_RGBLevelsStatic);
 	DDX_Control(pDX, IDC_STATIC_RGBLEVELS, m_RGBLevelsLabel);
 	DDX_Control(pDX, IDC_ANSICONTRAST_PATTERN_TEST_BUTTON, m_testAnsiPatternButton);
@@ -544,7 +564,7 @@ void CMainView::OnInitialUpdate()
 
 	GetDlgItem ( IDC_STATIC_VIEW ) -> ShowWindow ( SW_HIDE );
 
-	m_displayMode = 0;
+	m_displayMode = GetConfig()->GetProfileInt("MainView","Chart Display",0);
 	m_comboMode.SetCurSel ( m_displayMode );	// Echelle de gris
 	
     // doesn't really make sense to see sensor values
@@ -594,6 +614,9 @@ void CMainView::OnInitialUpdate()
 
 	InitButtons();
 	InitGroups();
+
+	if (m_displayMode != 0)
+		OnSelchangeComboMode();
 
 	RECT	Rect;
 
@@ -711,7 +734,7 @@ LRESULT CMainView::OnSetUserInfoPostInitialUpdate(WPARAM wParam, LPARAM lParam)
 		//SendMessage ( WM_COMMAND, IDC_XYZ_RADIO + ( ( m_dwInitialUserInfo >> 6 ) & 0x000F ) );
 
 		// Set m_infoDisplay
-		m_infoDisplay = GetConfig()->GetProfileInt("MainView","Info Display",0);
+		m_infoDisplay = GetConfig()->GetProfileInt("MainView","Info Display",5);
 		m_comboDisplay.SetCurSel ( m_infoDisplay );
 
 		m_comboDisplay.SetCurSel ( ( m_dwInitialUserInfo >> 10 ) & 0x003F );
@@ -738,7 +761,7 @@ LRESULT CMainView::OnSetUserInfoPostInitialUpdate(WPARAM wParam, LPARAM lParam)
 	}
 
 	//restore last saved info window
-	m_infoDisplay = GetConfig()->GetProfileInt("MainView","Info Display",0);
+	m_infoDisplay = GetConfig()->GetProfileInt("MainView","Info Display",5);
 	m_comboDisplay.SetCurSel ( m_infoDisplay );
 	m_bUpdate = FALSE;
 	OnSelchangeInfoDisplay();
@@ -822,23 +845,46 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 		{
 			if (inMeasure)
 			{
-				m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  last_minCol - 1, size, m_displayMode, GetDocument(), CTargetWnd::TARGET_ALL);
+//				m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  last_minCol - 1, size, m_displayMode, GetDocument(), CTargetWnd::TARGET_ALL);
 //				m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  last_minCol - 1, size, m_displayMode, GetDocument(), CTargetWnd::TARGET_TESTWINDOW);
 			}
 			else
 				m_Target.Refresh(GetDocument()->GetGenerator()->m_b16_235,  last_minCol, size, m_displayMode, GetDocument(), CTargetWnd::TARGET_ALL);
 
 		}
-			UpdateGrid();
+
+	}
+
+	if (!inMeasure)
+	{
+		UpdateGrid();
+		CString trip;
+		trip.SetString("No\nMeasure");
+		m_Ccomp3.Invalidate();
+		m_Ccomp.Invalidate();
+
+		trip.SetString("No\nReference");
+		if (m_RefColor.isValid() && m_SelectedColor.isValid())
+		{
+			if (GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0))
+				trip.Format("%d,%d,%d\nReference",((int)floor((m_r1d)*219.+0.5)+16),(int)(floor((m_g1d)*219.+0.5)+16),(int)(floor((m_b1d)*219.+0.5)+16));
+			else
+				trip.Format("%d,%d,%d\nReference",((int)floor((m_r1d)*255.+0.5)),(int)(floor((m_g1d)*255.+0.5)),(int)(floor((m_b1d)*255.+0.5)));
+		}
+
+		SetDlgItemTextA(IDC_CCOMP3, trip);
 	}
 
 	if(m_SelectedColor.isValid())
 	{
-		// Retrieve measured white luminance to compute exact delta E, Lab and LCH values
 		if (m_displayMode != 2)
 			SetLastColor(m_SelectedColor, TRUE);
 
 		SetSelectedColor (m_SelectedColor, TRUE);
+
+		// Retrieve measured white luminance to compute exact delta E, Lab and LCH values
+		if (!b_minCol)
+			SetSelectedColor (m_SelectedColor, TRUE);
 
 		if ( GetDocument() -> GetMeasure () -> GetOnOffWhite ().isValid() )
 			YWhite = GetDocument() -> GetMeasure () -> GetOnOffWhite () [ 1 ]; //onoff white is always grayscale white
@@ -919,6 +965,8 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 					if (m_displayMode > 4 && m_displayMode < 12)
 						size=GetDocument()->GetMeasure()->GetSaturationSize();
 
+					( ( CTargetWnd * ) m_pInfoWnd ) -> m_pRefColor = & m_SelectedColor;
+
 					if (m_displayMode == 2)
 					{
 						if (inMeasure)
@@ -937,7 +985,6 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 		                    ( ( CTargetWnd * ) m_pInfoWnd ) -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  last_minCol, size, m_displayMode, GetDocument(), CTargetWnd::TARGET_ALL);
 					}
 
-					( ( CTargetWnd * ) m_pInfoWnd ) -> m_pRefColor = & m_SelectedColor;
                 }
 				break;
 
@@ -959,6 +1006,8 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 					if (m_displayMode > 4 && m_displayMode < 12)
 						size=GetDocument()->GetMeasure()->GetSaturationSize();
 
+					( ( CTargetWnd * ) m_pInfoWnd ) -> m_pRefColor = & m_SelectedColor;
+
 					if (m_displayMode == 2)
 					{
 						if (inMeasure)
@@ -977,7 +1026,6 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 		                    ( ( CTargetWnd * ) m_pInfoWnd ) -> Refresh (GetDocument()->GetGenerator()->m_b16_235,  last_minCol, size, m_displayMode, GetDocument(), CTargetWnd::TARGET_ALL);
 					}
 
-					( ( CTargetWnd * ) m_pInfoWnd ) -> m_pRefColor = & m_SelectedColor;
                 }
 				break;
 		}
@@ -1805,7 +1853,7 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 		m_infoLine = "Color Space: "+CS+", White Point: "+WP+", EOTF: "+(isHDR ? " HDR10, "+ dWhitestr:GetConfig()->m_GammaOffsetType == 7?" HLG, "+bbcstr:sdrstr);
 		CString t = CTime::GetCurrentTime().Format("    (%H:%M)");
 		m_refInfo.SetString(m_infoLine + t);
-
+		
 		// Adjust grid selection if necessary
 		switch ( lHint )
 		{
@@ -1932,6 +1980,7 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
 		if(m_pGrayScaleGrid)
 			UpdateGrid();
+
 		RefreshSelection(FALSE);
 		
 		if ( m_pInfoWnd ) //in case colorchecker slot is updated
@@ -2003,7 +2052,34 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
 		if ( lHint == UPD_EVERYTHING || lHint == UPD_GENERATORCONFIG )
 		{
-			m_generatorName=GetDocument()->m_pGenerator->GetName();
+//			m_generatorName=GetDocument()->m_pGenerator->GetName();
+			CString dName,tName=GetDocument()->GetGenerator()->GetName();
+			int d = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_DEFAULT_MODE);
+			if ( tName == "View images" || tName == "Affichage mires" || tName == "Bildschirmanzeige")
+			{
+				switch (d)
+				{
+					case 0:
+						dName = "GDI";
+						break;
+					case 3:
+						dName = "GDI(overlay)";
+						break;
+					case 2:
+						dName = "madTPG";
+						break;
+					case 4:
+						dName = "Chromecast";
+						break;
+					case 5:
+						dName = "GDI(window)";
+						break;
+						case 6:
+						dName = "Raspberry Pi";
+						break;
+				}
+				m_generatorName.SetString(dName);
+			}
 			m_testAnsiPatternButton.EnableWindow(GetDocument()->m_pGenerator->CanDisplayAnsiBWRects());
 		}
 
@@ -2020,8 +2096,8 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 					if (GetDataRef() != pDoc)
 						pDoc->UpdateAllViews(NULL, UPD_REFERENCEDATA);
 				}
-				RefreshSelection ();
-				AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+//				RefreshSelection (FALSE);
+//				AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
 			}
 		}
 
@@ -2166,7 +2242,12 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 					if ( nCol > 1 || m_displayMode == 4 || m_displayMode == 2 )
 					{
 						double Intensity=GetConfig()->GetProfileInt("GDIGenerator","Intensity",100) / 100.;
-						
+						if (nCol == minCol)
+						{
+							m_RefColor = aReference;
+							m_RefWhite = 1.0;
+							m_YWhite = YWhite;
+						}
 						str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight ) );
        					dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight );
        					dL=aMeasure.GetDeltaLCH ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight, dC, dH );
@@ -2188,7 +2269,18 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 						dEcnt++;
 					}
 					else
+					{//black or free measure nCol = -1
+						if (nCol == 1 && nCol == minCol)
+						{
+							m_RefColor[0] = 0;
+							m_RefColor[1] = 0;
+							m_RefColor[2] = 0;
+						}
+						else
+							m_RefColor = noDataColor;
+
 						str.Empty ();
+					}
 				}
 				else
 				{
@@ -2251,6 +2343,13 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 					}
 
 					CColorReference  bRef = ((GetColorReference().m_standard == UHDTV3 || GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):(GetColorReference().m_standard == HDTVa || GetColorReference().m_standard == HDTVb)?CColorReference(HDTV):GetColorReference());
+
+					if (nCol == minCol)
+					{
+						m_RefColor = aReference;
+						m_RefWhite = RefWhite;
+						m_YWhite = YWhite;
+					}
 					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, RefWhite, bRef, GetConfig()->m_dE_form, false, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight ) );
 					dE=aMeasure.GetDeltaE ( YWhite, aReference, RefWhite, bRef, GetConfig()->m_dE_form, false, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight );
 					dL=aMeasure.GetDeltaLCH ( YWhite, aReference, RefWhite, bRef, GetConfig()->m_dE_form, false, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight, dC, dH );
@@ -2287,7 +2386,15 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 		else if ( aComponentNum == 5 && (nCol > 1 || ( m_displayMode != 0 && m_displayMode != 3)) )
 		{
 			if ( aRefDocColor.isValid() )
+			{
+					if (nCol == minCol)
+					{
+						m_RefColor = aRefDocColor;
+						m_RefWhite = YWhiteRefDoc;
+						m_YWhite = YWhite;
+					}
 					str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aRefDocColor, YWhiteRefDoc, bRef, GetConfig()->m_dE_form, m_displayMode == 0 || m_displayMode == 3 || m_displayMode == 4, GetConfig()->gw_Weight ) );
+			}
 			else
 				str.Empty ();
 		}
@@ -2348,6 +2455,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 							if (mode == 5)
 							{
 								valy = getL_EOTF(valx,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1) * 100.;
+//								valy = min(valy, GetConfig()->m_TargetMaxL);
 							}
 							else
 	                            valy = getL_EOTF(valx,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1) * White.GetY();
@@ -2757,14 +2865,18 @@ void CMainView::UpdateGrid()
 		Item.nFormat = DT_RIGHT|DT_VCENTER|DT_SINGLELINE|DT_END_ELLIPSIS|DT_NOPREFIX;
 		bool isHDR = GetConfig()->m_GammaOffsetType == 5;
 		CColorReference  bRef = ((GetColorReference().m_standard == UHDTV3 || GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):(GetColorReference().m_standard == HDTVa || GetColorReference().m_standard == HDTVb)?CColorReference(HDTV):GetColorReference());
-		double 	BBC_gamma = GetConfig()->m_TargetSysGamma;
+		GetConfig()->WriteProfileInt("MainView","Chart Display",m_displayMode);
 
 		if  (m_userBlack)
 		{
 			double Yblack = GetConfig()->GetProfileDouble("References","Manual Black Level",0);
-			GetDocument()->GetMeasure()->SetGray(0, ColorXYZ(Yblack*.95047,Yblack,Yblack*1.0883));
-			GetDocument()->GetMeasure()->SetNearBlack(0, ColorXYZ(Yblack*.95047,Yblack,Yblack*1.0883)) ;
-			GetDocument()->GetMeasure()->SetOnOffBlack(ColorXYZ(Yblack*.95047,Yblack,Yblack*1.0883)) ;
+			CColor BlackColor = GetColorReference().GetWhite();
+			BlackColor[0] = BlackColor[0] * Yblack;
+			BlackColor[1] = BlackColor[1] * Yblack;
+			BlackColor[2] = BlackColor[2] * Yblack;
+			GetDocument()->GetMeasure()->SetGray(0, BlackColor);
+			GetDocument()->GetMeasure()->SetNearBlack(0, BlackColor);
+			GetDocument()->GetMeasure()->SetOnOffBlack(BlackColor);
 		}
 
 		// update values
@@ -3058,6 +3170,7 @@ void CMainView::UpdateGrid()
 			            {
                             double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
                             valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+//							valy = min(valy, GetConfig()->m_TargetMaxL);
 			            }
 			            else
 			            {
@@ -3147,7 +3260,6 @@ void CMainView::UpdateGrid()
                         // and added option to assume perfect gamma
 						double x = ArrayIndexToGrayLevel ( nCol, nCnt, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
             		    CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
-//	                	CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
 	                	CColor Black = GetDocument() -> GetMeasure () -> GetOnOffBlack();
 						int mode = GetConfig()->m_GammaOffsetType;
 						if (GetConfig()->m_colorStandard == sRGB) mode = 99;
@@ -3155,6 +3267,7 @@ void CMainView::UpdateGrid()
 			            {
                             double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
                             valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+//							valy = min(valy, GetConfig()->m_TargetMaxL);
 			            }
 			            else
 			            {
@@ -3242,6 +3355,7 @@ void CMainView::UpdateGrid()
 			            {
                             double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
                             valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+//							valy = min(valy, GetConfig()->m_TargetMaxL);
 			            }
 			            else
 			            {
@@ -3291,6 +3405,7 @@ void CMainView::UpdateGrid()
 			            {
                             double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
                             valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+//							valy = min(valy, GetConfig()->m_TargetMaxL);
 			            }
 			            else
 			            {
@@ -3779,8 +3894,10 @@ void CMainView::UpdateGrid()
                     int pos = distance(dEvector.begin(), max);
                     std::sort ( dEvector.begin(), dEvector.end() );
                     for ( unsigned i = (int) (dEvector.size() - (dEvector.size() / 10 + 1)); i < dEvector.size(); i++ ) dE10+=(float)dEvector[i];
-					dE10min = dEvector[(int) (dEvector.size() - (dEvector.size() / 10 + 1))];
-                    dE10 = dE10 / (int) ( (dEvector.size() / 10 + 1) );
+					if (m_displayMode == 11)
+						dE10min = dEvector[(int) (dEvector.size() - (dEvector.size() / 10 + 1))];
+ 
+					dE10 = dE10 / (int) ( (dEvector.size() / 10 + 1) );
                     char aBuf[10];
                     sprintf(aBuf,"Color %d",pos+1);
 					dEmax_cc = maxv;
@@ -4922,12 +5039,15 @@ void CMainView::OnSelchangeComboMode()
 			 break;
 	}
 	
-	if ( m_pGrayScaleGrid->GetSelectedCellRange().IsValid () )
+	if ( m_pGrayScaleGrid)
 	{
-		m_pGrayScaleGrid->SetSelectedRange(-1,-1,-1,-1);
-		m_pGrayScaleGrid->SetFocusCell(-1,-1);
-		SetSelectedColor ( noDataColor );
-		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+		if ( m_pGrayScaleGrid->GetSelectedCellRange().IsValid () )
+		{
+			m_pGrayScaleGrid->SetSelectedRange(-1,-1,-1,-1);
+			m_pGrayScaleGrid->SetFocusCell(-1,-1);
+			SetSelectedColor ( noDataColor );
+			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+		}
 	}
 
 	InitGrid(true);
@@ -5567,6 +5687,13 @@ void CMainView::InitButtons()
 
 	m_refInfo.SetString(m_infoLine);
 
+	CFont m_Font;
+	m_Font.Detach();
+	m_Font.CreateFont(7, 0, 0, 0, FW_MEDIUM, FALSE, FALSE,FALSE,0,OUT_TT_ONLY_PRECIS,0,PROOF_QUALITY,0, "Tahoma");
+
+	m_Ccomp.SetFont(&m_Font);
+	m_Ccomp3.SetFont(&m_Font);
+
 	if ( m_displayMode == 12 )
 	{
 		m_testAnsiPatternButton.ShowWindow ( SW_SHOW );
@@ -5640,6 +5767,35 @@ void CMainView::InitGroups()
 	m_viewGroup.SetFontBold(TRUE);
 //	m_viewGroup.SetFontItalic(TRUE);
 	m_viewGroup.SetCaptionTextColor(LightenColor(70,FxGetSysColor(COLOR_MENUTEXT)));
+	
+	CString dName,tName=GetDocument()->GetGenerator()->GetName();
+	int d = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_DEFAULT_MODE);
+
+	if (tName == "View images" || tName == "Affichage mires" || tName == "Bildschirmanzeige")
+	{
+		switch (d)
+		{
+		case 0:
+			dName = "GDI";
+			break;
+		case 3:
+			dName = "GDI(overlay)";
+			break;
+		case 2:
+			dName = "madTPG";
+			break;
+		case 4:
+			dName = "Chromecast";
+			break;
+		case 5:
+			dName = "GDI(window)";
+			break;
+			case 6:
+			dName = "Raspberry Pi";
+			break;
+		}
+		m_generatorName.SetString(dName);
+	}
 }	
 
 BOOL CMainView::OnEraseBkgnd(CDC* pDC) 
@@ -5650,8 +5806,7 @@ BOOL CMainView::OnEraseBkgnd(CDC* pDC)
 	COLORREF colorTop,colorBottom;
 	FxGetMenuBgColors(colorTop,colorBottom);
 	DrawGradient(pDC,windowRect,colorTop,colorBottom,false);
-
-	return TRUE;
+	return true;
 }
 
 void CMainView::OnSysColorChange() 
@@ -5668,6 +5823,7 @@ void CMainView::OnSysColorChange()
 HBRUSH CMainView::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor) 
 {
 	HBRUSH hbr=CFormView::OnCtlColor(pDC, pWnd, nCtlColor);
+
 	switch(nCtlColor)
 	{
 		case CTLCOLOR_STATIC:
@@ -5683,7 +5839,167 @@ HBRUSH CMainView::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 			pDC->SetTextColor(FxGetSysColor(COLOR_MENUTEXT));
 			return *m_pBgBrush;
 	}
+
 	return hbr;
+}
+
+LRESULT CMainView::OnCtlColorStatic(WPARAM wParam, LPARAM lParam)
+{
+
+	HWND hWnd = (HWND)lParam;
+	COLORREF color=RGB(25,50,75);
+	ColorRGB ref(.5,.5,.5);
+	ColorRGB meas(0.5,0.5,0.5);
+	CColorReference  bRef = ((GetColorReference().m_standard == UHDTV3 || GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):(GetColorReference().m_standard == HDTVa || GetColorReference().m_standard == HDTVb)?CColorReference(HDTV):GetColorReference());
+	CColor White = GetDocument()->GetMeasure()->GetOnOffWhite();
+	CColor Black = GetDocument()->GetMeasure()->GetOnOffBlack();
+	int mode = GetConfig()->m_GammaOffsetType;
+	double tmWhite = getL_EOTF(0.5022283, noDataColor, noDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1) * 100.0 / 94.378;
+
+	if (m_RefColor.isValid())
+		m_lastRefColor = m_RefColor;
+	else
+		m_RefColor = m_lastRefColor; //restore last reference when using freemeasures where minCol = -1
+
+	if (m_RefColor.isValid())
+	{
+		ref = ColorRGB(m_RefColor.GetRGBValue(bRef));
+		if (mode == 5)
+		{
+			m_r1d = min(max(ref[0]/m_RefWhite/10000.*GetConfig()->m_TargetMaxL/tmWhite,0),1);
+			m_g1d = min(max(ref[1]/m_RefWhite/10000.*GetConfig()->m_TargetMaxL/tmWhite,0),1);
+			m_b1d = min(max(ref[2]/m_RefWhite/10000.*GetConfig()->m_TargetMaxL/tmWhite,0),1);
+		}
+		else
+		{
+			m_r1d = min(max(ref[0]/m_RefWhite,0),1);
+			m_g1d = min(max(ref[1]/m_RefWhite,0),1);
+			m_b1d = min(max(ref[2]/m_RefWhite,0),1);
+		}
+
+		if ( mode >= 4 )
+		{
+			if (mode == 5 || mode == 7)
+			{
+				m_r1d = getL_EOTF(m_r1d, noDataColor, noDataColor, 2.4, 0.9, -1*mode);
+				m_g1d = getL_EOTF(m_g1d, noDataColor, noDataColor, 2.4, 0.9, -1*mode);
+				m_b1d = getL_EOTF(m_b1d, noDataColor, noDataColor, 2.4, 0.9, -1*mode);
+			}
+			else
+			{
+				m_r1d = getL_EOTF((m_r1d),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+				m_g1d = getL_EOTF((m_g1d),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+				m_b1d = getL_EOTF((m_b1d),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+			}
+		}
+		else
+		{
+			m_r1d = max(0,min(pow(m_r1d,1.0/GetConfig()->m_GammaAvg),1)); //exact video or full scale %
+			m_g1d = max(0,min(pow(m_g1d,1.0/GetConfig()->m_GammaAvg),1));
+			m_b1d = max(0,min(pow(m_b1d,1.0/GetConfig()->m_GammaAvg),1));
+		}
+
+		if (m_g1d > 0.4 || m_r1d > 0.6)
+			color=RGB(25,50,75);
+		else
+			color=RGB(125,150,175);
+	}
+
+	if (::GetDlgCtrlID(hWnd) == IDC_CCOMP) //measured color
+	{
+		HDC hDC = (HDC)wParam;
+		SetBkMode(hDC, TRANSPARENT);
+		SetTextColor(hDC, color); //set to reference
+		CString trip="No\nMeasure";
+		if (m_SelectedColor.isValid())
+		{
+			meas = ColorRGB(m_SelectedColor.GetRGBValue(bRef));
+			if (mode == 5)
+			{
+				m_rd = min(max(meas[0]/m_YWhite/10000.*GetConfig()->m_TargetMaxL/tmWhite,0),1);
+				m_gd = min(max(meas[1]/m_YWhite/10000.*GetConfig()->m_TargetMaxL/tmWhite,0),1);
+				m_bd = min(max(meas[2]/m_YWhite/10000.*GetConfig()->m_TargetMaxL/tmWhite,0),1);
+			}
+			else
+			{
+				m_rd = min(max(meas[0]/m_YWhite,0),1);
+				m_gd = min(max(meas[1]/m_YWhite,0),1);
+				m_bd = min(max(meas[2]/m_YWhite,0),1);
+			}
+
+			if ( mode >= 4 )
+			{
+				if (mode == 5 || mode == 7)
+				{
+					m_rd=getL_EOTF(m_rd, noDataColor, noDataColor, 2.4, 0.9, -1*mode);
+					m_gd=getL_EOTF(m_gd, noDataColor, noDataColor, 2.4, 0.9, -1*mode);
+					m_bd=getL_EOTF(m_bd, noDataColor, noDataColor, 2.4, 0.9, -1*mode);
+				}
+				else
+				{
+					m_rd = getL_EOTF((m_rd),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+					m_gd = getL_EOTF((m_gd),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+					m_bd = getL_EOTF((m_bd),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+				}
+			}
+			else
+			{
+				m_rd = max(0,min(pow(m_rd,1.0/GetConfig()->m_GammaAvg),1)); //exact video or full scale %
+				m_gd = max(0,min(pow(m_gd,1.0/GetConfig()->m_GammaAvg),1));
+				m_bd = max(0,min(pow(m_bd,1.0/GetConfig()->m_GammaAvg),1));
+			}
+			
+			if (m_SelectedColor.isValid())
+			{
+				if (GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0))
+				{
+					m_rd = floor(m_rd*219. + 16.5); //round to video levels for label
+					m_gd = floor(m_gd*219. + 16.5);
+					m_bd = floor(m_bd*219. + 16.5);
+					trip.Format("%d,%d,%d",(int)m_rd,(int)m_gd,(int)m_bd);
+					m_rd = floor((m_rd-16.)/219.*255. + 0.5); //PC levels for display
+					m_gd = floor((m_gd-16.)/219.*255. + 0.5);
+					m_bd = floor((m_bd-16.)/219.*255. + 0.5);
+				}
+				else
+				{
+					m_rd = floor(m_rd*255. + 0.5); //exact PC levels
+					m_gd = floor(m_gd*255. + 0.5);
+					m_bd = floor(m_bd*255. + 0.5);
+					trip.Format("%d,%d,%d",(int)m_rd,(int)m_gd,(int)m_bd);
+				}
+			}
+
+			SetDlgItemTextA(IDC_CCOMP, trip);
+			return BOOL(CreateSolidBrush(RGB(m_rd,m_gd,m_bd)));
+		}
+
+		SetDlgItemTextA(IDC_CCOMP, trip);
+	}
+	else if (::GetDlgCtrlID(hWnd) == IDC_CCOMP3) //reference color
+	{
+		if (m_RefColor.isValid() && m_SelectedColor.isValid())
+		{
+			HDC hDC = (HDC)wParam;
+			SetBkMode(hDC, TRANSPARENT);
+			m_r1d = floor(m_r1d*255. + 0.5); //exact PC levels
+			m_g1d = floor(m_g1d*255. + 0.5);
+			m_b1d = floor(m_b1d*255. + 0.5);
+			SetTextColor(hDC, color);
+			return BOOL(CreateSolidBrush(RGB(m_r1d,m_g1d,m_b1d)));
+		}
+	} //else if (::GetDlgCtrlID(hWnd) == IDC_GENERATORNAME_STATIC)
+//	{
+//		HDC hDC = (HDC)wParam;
+//		SetBkMode(hDC, TRANSPARENT);
+//		m_r1d = floor(m_r1d*255. + 0.5);
+//		m_g1d = floor(m_g1d*255. + 0.5);
+//		m_b1d = floor(m_b1d*255. + 0.5);
+//		SetTextColor(hDC, color);
+//		return BOOL(CreateSolidBrush(RGB(128,128,128)));
+//	}
+
+	return DefWindowProc(WM_CTLCOLORSTATIC, wParam, lParam);
 }
 
 void CMainView::OnSize(UINT nType, int cx, int cy) 
@@ -5834,10 +6150,10 @@ void CMainView::OnSize(UINT nType, int cx, int cy)
 			}
 			else
 			{
-				m_pInfoWnd -> SetWindowPos ( pWnd, Rect.left, Rect.top, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) / 2, SWP_NOACTIVATE );
-				m_pInfoWnd2 -> SetWindowPos ( pWnd, Rect.left + (Rect.right - Rect.left) / 2, Rect.top, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) / 2, SWP_NOACTIVATE );
-				m_pInfoWnd3 -> SetWindowPos ( pWnd, Rect.left, Rect.top + (Rect.bottom - Rect.top) / 2, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) / 2, SWP_NOACTIVATE );
-				m_pInfoWnd4 -> SetWindowPos ( pWnd, Rect.left + (Rect.right - Rect.left) / 2, Rect.top + (Rect.bottom - Rect.top) / 2, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) / 2, SWP_NOACTIVATE );
+				m_pInfoWnd -> SetWindowPos ( pWnd, Rect.left, Rect.top, (Rect.right - Rect.left), (Rect.bottom - Rect.top), SWP_NOACTIVATE );
+//				m_pInfoWnd2 -> SetWindowPos ( pWnd, Rect.left + (Rect.right - Rect.left) / 2, Rect.top, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) / 2, SWP_NOACTIVATE );
+//				m_pInfoWnd3 -> SetWindowPos ( pWnd, Rect.left, Rect.top + (Rect.bottom - Rect.top) / 2, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) / 2, SWP_NOACTIVATE );
+//				m_pInfoWnd4 -> SetWindowPos ( pWnd, Rect.left + (Rect.right - Rect.left) / 2, Rect.top + (Rect.bottom - Rect.top) / 2, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) / 2, SWP_NOACTIVATE );
 			}
 
 		}
@@ -5992,9 +6308,9 @@ void CMainView::OnSelchangeInfoDisplay()
 			 pEdit -> SetWindowText ( GetDocument()->GetMeasure()->GetInfoString() );
 
 			 m_pInfoWnd = pEdit;
-			 m_pInfoWnd -> SetWindowPos ( pWnd, Rect.left, Rect.top, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) / 2, SWP_NOACTIVATE );
+			 m_pInfoWnd -> SetWindowPos ( pWnd, Rect.left, Rect.top, (Rect.right - Rect.left), (Rect.bottom - Rect.top), SWP_NOACTIVATE );
 
-			 pFrame = new CSubFrame;
+/*			 pFrame = new CSubFrame;
 
 			 pFrame -> Create ( NULL, NULL, WS_CHILD | WS_VISIBLE, Rect, this );
 
@@ -6047,7 +6363,7 @@ void CMainView::OnSelchangeInfoDisplay()
 
 			 m_pInfoWnd4 = pFrame;
 			 m_pInfoWnd4 -> SetWindowPos ( pWnd, Rect.left + (Rect.right - Rect.left) / 2, Rect.top + (Rect.bottom - Rect.top) / 2, (Rect.right - Rect.left) / 2, (Rect.bottom - Rect.top) / 2, SWP_NOACTIVATE );
-			 break;
+*/			 break;
 
 		case 1: // target
              pTargetWnd = new CTargetWnd;
@@ -7092,7 +7408,7 @@ void CMainView::OnInitDefaults()
 		GetConfig()->ApplySettings(TRUE);
 		GetConfig()->WriteProfileString ( "Options", "Language", strlang );
 		GetConfig()->WriteProfileInt("GDIGenerator","DisplayMode", DISPLAY_DEFAULT_MODE);
-		GetDocument()->GetGenerator()->Configure();
+		GetDocument()->GetGenerator()->SetPropertiesSheetValues();
 		GetConfig()->SaveSettings();
 		GetConfig()->m_bSave = TRUE;
 		GetDocument()->SetModifiedFlag(TRUE);
@@ -7310,8 +7626,9 @@ void CSubFrame::OnSize(UINT nType, int cx, int cy)
 
 BOOL CSubFrame::OnEraseBkgnd(CDC* pDC) 
 {
+
 	// No erase at all: fully transparent window
-	return TRUE;
+	return true;
 }
 
 void CSubFrame::OnDestroy() 

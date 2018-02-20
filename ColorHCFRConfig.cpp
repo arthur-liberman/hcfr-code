@@ -230,7 +230,7 @@ CColorHCFRConfig::CColorHCFRConfig()
 	InitDefaults();
 	LoadSettings();
 	ApplySettings(TRUE);
-
+	m_isModified = false;
 	InitializeCriticalSection ( & LogFileCritSec );
 }
 
@@ -350,7 +350,7 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_bDetectPrimaries=GetProfileInt("References","DetectPrimaries",1);
 	m_useHSV=GetProfileInt("References","UseHSV",0);
 	m_latencyTime=GetProfileInt("References","IrisLatencyTime",300);
-	m_latencyTime=GetProfileInt("References","BlkFrameFreq",10);
+	m_ablFreq=GetProfileInt("References","BlkFrameFreq",10);
 	m_bLatencyBeep=GetProfileInt("References","IrisLatencyBeep",0);
 	bDisplayRT=GetProfileInt("References","Display RT",1);
 	m_bABL=GetProfileInt("References","ABL Inhibitor",0);
@@ -775,14 +775,14 @@ void CColorHCFRConfig::ApplySettings(BOOL isStartupApply)
 	if (m_whiteTarget == DCUST && m_colorStandard != CUSTOM)
 	{
 		ColorxyY whitecolor=ColorxyY(m_manualWhitex,m_manualWhitey);
-	    GetColorApp()->m_pColorReference = new CColorReference(m_colorStandard, m_whiteTarget,-1, "modified", ColorXYZ(whitecolor));
+	    GetColorApp()->m_pColorReference = new CColorReference(m_colorStandard, m_whiteTarget,-1, " modified", ColorXYZ(whitecolor));
 	}
 	else if (m_colorStandard == CUSTOM && m_whiteTarget != DCUST) 	//Custom Color only
 	{
 	    ColorxyY redcolor=ColorxyY(m_manualRedx,m_manualRedy);
 		ColorxyY greencolor=ColorxyY(m_manualGreenx,m_manualGreeny);
 		ColorxyY bluecolor=ColorxyY(m_manualBluex,m_manualBluey);
-	    GetColorApp()->m_pColorReference = new CColorReference(m_colorStandard, m_whiteTarget,-1, "modified", 	GetColorApp()->m_pColorReference->GetWhite(), redcolor, greencolor, bluecolor);
+	    GetColorApp()->m_pColorReference = new CColorReference(m_colorStandard, m_whiteTarget,-1, " modified", 	GetColorApp()->m_pColorReference->GetWhite(), redcolor, greencolor, bluecolor);
 	} 
 	else if (m_colorStandard == CUSTOM && m_whiteTarget == DCUST)	//Both
 	{
@@ -790,7 +790,7 @@ void CColorHCFRConfig::ApplySettings(BOOL isStartupApply)
 	    ColorxyY redcolor=ColorxyY(m_manualRedx,m_manualRedy);
 		ColorxyY greencolor=ColorxyY(m_manualGreenx,m_manualGreeny);
 		ColorxyY bluecolor=ColorxyY(m_manualBluex,m_manualBluey);
-	    GetColorApp()->m_pColorReference = new CColorReference(m_colorStandard, m_whiteTarget,-1, "modified", ColorXYZ(whitecolor), redcolor, greencolor, bluecolor);
+	    GetColorApp()->m_pColorReference = new CColorReference(m_colorStandard, m_whiteTarget,-1, " modified", ColorXYZ(whitecolor), redcolor, greencolor, bluecolor);
 	} else //normal
 	    GetColorApp()->m_pColorReference = new CColorReference(m_colorStandard, m_whiteTarget,-1);
 	
@@ -808,7 +808,7 @@ void CColorHCFRConfig::ApplySettings(BOOL isStartupApply)
 		if(m_appearancePropertiesPage.m_isModified || m_generalPropertiesPage.m_isModified)	
 			AfxGetMainWnd()->SendMessage(WM_SYSCOLORCHANGE); // to update color changes 
 
-		if(m_referencesPropertiesPage.m_isModified || m_advancedPropertiesPage.m_isModified || m_appearancePropertiesPage.m_isWhiteModified)	
+		if(m_referencesPropertiesPage.m_isModified || m_advancedPropertiesPage.m_isModified || m_appearancePropertiesPage.m_isWhiteModified || m_isModified)	
 		{
 			CDocEnumerator docEnumerator;	// Update all views of all docs
 			CDocument* pDoc;
@@ -816,6 +816,7 @@ void CColorHCFRConfig::ApplySettings(BOOL isStartupApply)
 			{
 			   pDoc->UpdateAllViews(NULL, UPD_GENERALREFERENCES);
 			   pDoc->UpdateAllViews(NULL, UPD_SELECTEDCOLOR);
+			   pDoc->UpdateAllViews(NULL, UPD_GENERATORCONFIG);
 			}
 			GetCColors(); //check for new colors 
 			AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls

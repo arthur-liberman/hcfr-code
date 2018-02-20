@@ -3985,10 +3985,10 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator, CDataS
 		else
 			doSettling = GetConfig()->m_isSettling;
 
-		if (i<3)
-			m_currentIndex = i;
-		else
-			m_currentIndex = i + 3;
+//		if (i<3)
+//			m_currentIndex = i;
+//		else
+//			m_currentIndex = i;
 
 		UpdateViews(pDoc, 1);
 		if (!i && GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_DEFAULT_MODE) == DISPLAY_GDI_Hide)
@@ -3996,7 +3996,7 @@ BOOL CMeasure::MeasurePrimaries(CSensor *pSensor, CGenerator *pGenerator, CDataS
 
 		if( pGenerator->DisplayRGBColor(GenColors[i],CGenerator::MT_PRIMARY, i) )
 		{
-			UpdateTstWnd(pDoc, m_currentIndex);
+			UpdateTstWnd(pDoc, i<3?i:i+3);
 			bEscape = WaitForDynamicIris (FALSE, pDoc);
 			bRetry = FALSE;
 
@@ -5261,9 +5261,9 @@ void CMeasure::UpdateTstWnd (CDataSetDoc *pDoc, int i )
 	{
 		POSITION pos = pDoc->GetFirstViewPosition ();
 		CView *pView = pDoc->GetNextView(pos);
+		((CMainView*)pView)->RefreshSelection(FALSE, TRUE);
 		((CMainView*)pView)->minCol = i+1;
 		((CMainView*)pView)->last_minCol = i;
-		((CMainView*)pView)->RefreshSelection(FALSE, TRUE);
 		m_currentIndex = i+1;
 		displaymode = ((CMainView*)pView)->m_displayMode;
 	}

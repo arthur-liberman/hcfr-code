@@ -495,14 +495,14 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 
 	dE10 = ((CMainView*)pView)->dE10min;
 	
-	if (current_mode != 11 && !pDoc->GetMeasure()->m_binMeasure && !onEdit && pDoc->GetMeasure()->GetCC24Sat(0).isValid())
-	{
-		((CMainView*)pView)->m_displayMode = 11;
-		((CMainView*)pView)->UpdateAllGrids();
-		dE10 = ((CMainView*)pView)->dE10min;
-		((CMainView*)pView)->m_displayMode = current_mode;
-		((CMainView*)pView)->UpdateAllGrids();
-	}
+//	if (current_mode != 11 && !pDoc->GetMeasure()->m_binMeasure && !onEdit && pDoc->GetMeasure()->GetCC24Sat(0).isValid())
+//	{
+//		((CMainView*)pView)->m_displayMode = 11;
+//		((CMainView*)pView)->UpdateAllGrids();
+//		dE10 = ((CMainView*)pView)->dE10min;
+//		((CMainView*)pView)->m_displayMode = current_mode;
+//		((CMainView*)pView)->UpdateAllGrids();
+//	}
                    
 				char*  PatName[96]={
                     "White",
@@ -1547,6 +1547,7 @@ void CCIEChartGrapher::DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPTo
 			    {
 				   double valx = GrayLevelToGrayProp(x, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit);
                    valy = getL_EOTF(valx, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+//				   valy = min(valy, GetConfig()->m_TargetMaxL);
 			    }
 			    else
 			    {
