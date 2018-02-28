@@ -79,6 +79,7 @@ void CGenerator::Copy(CGenerator * p)
 	m_busePic = p->m_busePic;
 	m_bdispTrip = p->m_bdispTrip;
 	m_bLinear = p->m_bLinear;
+	m_brPi_user = p->m_brPi_user;
 }
 
 void CGenerator::Serialize(CArchive& archive)
@@ -86,19 +87,20 @@ void CGenerator::Serialize(CArchive& archive)
 	CObject::Serialize(archive) ;
 	if (archive.IsStoring())
 	{
-		int version=5;
+		int version=6;
 		archive << version;
 		archive << m_doScreenBlanking;
 		archive << m_b16_235;
 		archive << m_busePic;
 		archive << m_bdispTrip;
 		archive << m_bLinear;
+		archive << m_brPi_user;
 	}
 	else
 	{
 		int version;
 		archive >> version;
-		if ( version > 5 )
+		if ( version > 6 )
 			AfxThrowArchiveException ( CArchiveException::badSchema );
 		archive >> m_doScreenBlanking;
 		if ( version > 1 )
@@ -109,6 +111,8 @@ void CGenerator::Serialize(CArchive& archive)
 			archive >> m_bdispTrip;
 		if ( version > 4 )
 			archive >> m_bLinear;
+		if ( version > 5 )
+			archive >>	m_brPi_user;
 	}
 }
 
@@ -256,10 +260,11 @@ BOOL CGenerator::Init(UINT nbMeasure, bool isSpecial)
 									int x1 = (int)(pow((double)(Cgen.m_rectSizePercent)/100.0,0.5) * rPi_xWidth);
 									int y1 = (int)(pow((double)(Cgen.m_rectSizePercent)/100.0,0.5) * rPi_yHeight);
 									double t_fact = rPi_xWidth / 1920.; 
-									templ.Format("SETCONF:HCFR:TEMPLATERAMDISK:DRAW=TEXT\nDIM=18,0\nRESOLUTION=100\nRGB=20,128,128\nBG=%d,%d,%d\n" \
+									templ.Format("SETCONF:HCFR:TEMPLATERAMDISK:DRAW=TEXT\nDIM=18,0\nRESOLUTION=100\nRGB=20,128,128\nBG=20,40,60\n" \
 										"POSITION=%d,20\nTEXT=RGB Triplet $RGB\nEND=1\n" \
 										"DRAW=RECTANGLE\nDIM=%d,%d\nRESOLUTION=100\n" \
-										"RGB=DYNAMIC\nBG=-1,-1,-1\nPOSITION=-1,-1\nEND=1",rb,gb,bb,rPi_xWidth / 2 - int(175 * t_fact),x1,y1);
+										"RGB=DYNAMIC\nBG=DYNAMIC\nPOSITION=-1,-1\nEND=1",rPi_xWidth / 2 - int(175 * t_fact),x1,y1);
+//										"RGB=DYNAMIC\nBG=-1,-1,-1\nPOSITION=-1,-1\nEND=1",rb,gb,bb,rPi_xWidth / 2 - int(175 * t_fact),x1,y1);
 							
 									CGenerator::_RB8PG_send(sock,templ);
 								}
@@ -314,10 +319,11 @@ BOOL CGenerator::Init(UINT nbMeasure, bool isSpecial)
 					int x1 = (int)(pow((double)(Cgen.m_rectSizePercent)/100.0,0.5) * rPi_xWidth);
 					int y1 = (int)(pow((double)(Cgen.m_rectSizePercent)/100.0,0.5) * rPi_yHeight);
 					double t_fact = rPi_xWidth / 1920.; 
-					templ.Format("SETCONF:HCFR:TEMPLATERAMDISK:DRAW=TEXT\nDIM=18,0\nRESOLUTION=100\nRGB=20,128,128\nBG=%d,%d,%d\n" \
-						"POSITION=%d,20\nTEXT=RGB Triplet $RGB\nEND=1\n" \
-						"DRAW=RECTANGLE\nDIM=%d,%d\nRESOLUTION=100\n" \
-						"RGB=DYNAMIC\nBG=-1,-1,-1\nPOSITION=-1,-1\nEND=1",rb,gb,bb,rPi_xWidth / 2 - int(175 * t_fact),x1,y1);
+					templ.Format("SETCONF:HCFR:TEMPLATERAMDISK:DRAW=TEXT\nDIM=18,0\nRESOLUTION=100\nRGB=20,128,128\nBG=20,40,60\n" \
+							"POSITION=%d,20\nTEXT=RGB Triplet $RGB\nEND=1\n" \
+							"DRAW=RECTANGLE\nDIM=%d,%d\nRESOLUTION=100\n" \
+							"RGB=DYNAMIC\nBG=DYNAMIC\nPOSITION=-1,-1\nEND=1",rPi_xWidth / 2 - int(175 * t_fact),x1,y1);
+//						"RGB=DYNAMIC\nBG=-1,-1,-1\nPOSITION=-1,-1\nEND=1",rb,gb,bb,rPi_xWidth / 2 - int(175 * t_fact),x1,y1);
 				
 					CGenerator::_RB8PG_send(sock,templ);
 				}

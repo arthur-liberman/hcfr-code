@@ -547,6 +547,7 @@ void CRGBHistoView::OnRgbGraphGamma()
 	}
 
 	GetDocument()->UpdateAllViews(NULL, UPD_GRAYSCALE, NULL);
+	GetDocument()->UpdateAllViews(NULL, UPD_SELECTEDCOLOR, NULL);
 }
 
 void CRGBHistoView::OnRgbGraphDataRef()  //Ki

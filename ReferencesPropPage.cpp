@@ -68,7 +68,7 @@ CReferencesPropPage::CReferencesPropPage() : CPropertyPageWithHelp(CReferencesPr
 	m_BT2390_WS1User = m_BT2390_WS1;
 	m_BT2390_WSUser = m_BT2390_WS;
 	m_TargetMinLUser = m_TargetMinL;
-	m_TargetMaxL = 700.;
+	m_TargetMaxL = 120.;
 	m_TargetMaxLUser = m_TargetMaxL;
 	m_DiffuseL = 94.37844;
 	m_DiffuseLUser = m_DiffuseL;
@@ -237,7 +237,7 @@ void CReferencesPropPage::OnControlClicked(UINT nID)
       m_eMeasuredGamma.EnableWindow (TRUE);
     }
 
-	if (m_GammaOffsetType == 5 || m_GammaOffsetType == 7 )
+	if (1) //(m_GammaOffsetType == 5 || m_GammaOffsetType == 7 )
 	{
 		if (m_bOverRideTargs)
 		{
@@ -628,7 +628,6 @@ void CReferencesPropPage::OnUserOverRideTargsCheck()
 		m_BT2390_BSUser = m_BT2390_BS;
 		m_BT2390_WSUser = m_BT2390_WS;
 		m_BT2390_WS1User = m_BT2390_WS1;
-		m_TargetSysGamma = 1.20;
 	}
 	else
 	{

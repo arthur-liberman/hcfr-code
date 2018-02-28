@@ -73,7 +73,7 @@ public:
 	CStatic	m_colordataStatic;
 	CString	m_generatorName;
 	CString	m_sensorName;
-	CString	m_refInfo;
+	CStatic	m_refInfo;
 	CStatic	m_TargetStatic;
 	CStatic	m_Ccomp,m_Ccomp3;
 	CStatic	m_RGBLevelsStatic;
@@ -111,7 +111,7 @@ private:
 
 // Attributes
 public:
-	int m_displayMode;
+	int m_displayMode, target_Size;
 	int m_infoDisplay;
 	bool m_bUpdate, refresh;
 	int m_displayType;
@@ -140,17 +140,25 @@ public:
 	double dE10;
 	double dE10min;
 	BOOL m_userBlack;
-	CColor m_oldBlackGS;
+	CColor m_oldBlackGS, refColor_for_color_comp;
+	double YWhite_for_color_comp;
 	CColor m_oldBlackNB;
 	bool isSelectedWhiteY;
 	int last_Col;
 	int last_Size;
 	int last_Display;
-	bool smFont;
-	double m_RefWhite,m_r1,m_g1,m_b1,m_r,m_g,m_b,m_r1d,m_g1d,m_b1d,m_rd,m_gd,m_bd;
-	double m_YWhite;
-
+	double m_RefWhite;
+	double m_YWhite, m_dE;
+	bool isGS;
+	double r1, r2;
+	double g1, g2;
+	double b1, b2;
+	HBRUSH CCompClr;
+	CString trip1,trip2;
 	CString m_infoLine;
+	COLORREF t_color;
+	double m_meas_r, m_meas_g, m_meas_b;
+	double m_ref_r, m_ref_g, m_ref_b;
 
 	std::vector<double> dEvector, dLvector, dCvector, dHvector;
 
@@ -173,15 +181,16 @@ public:
 	void UpdateAllGrids();
 	DWORD	GetUserInfo ();
 	void	SetUserInfo ( DWORD dwUserInfo );
+	virtual BOOL PreTranslateMessage( MSG* pMsg);
+	void InitGrid(bool sizeGrid=false);
+	void UpdateGrid();
 
 protected:
-	void UpdateGrid();
-	void InitGrid(bool sizeGrid=false);
 	void InitSelectedColorGrid();
 	void InitButtons();
 	void InitGroups();
 	void UpdateContrastValuesInGrid ();
-
+	CPPToolTip	m_tooltip,m_tooltip2;
 	CString GetItemText(CColor & aMeasure, double YWhite, CColor & aReference, CColor & aRefDocColor, double YWhiteRefDoc, int aComponentNum, int nCol, double Offset, bool isGS);
 	LPSTR GetGridRowLabel(int aComponentNum);
 
@@ -216,6 +225,7 @@ protected:
 public:
 	void UpdateMeasurementsAfterBkgndMeasure ();
 	afx_msg void OnSelchangeInfoDisplay();
+	afx_msg void OnSelchangeComboMode();
 
 // Generated message map functions
 protected:
@@ -225,7 +235,6 @@ protected:
 	afx_msg void OnRgbRadio();
 	afx_msg void OnXyz2Radio();
 	afx_msg void OnxyYRadio();
-	afx_msg void OnSelchangeComboMode();
 	afx_msg void OnEditgridCheck();
 	afx_msg void OnDatarefCheck();
 	afx_msg void OnAdjustXYZCheck();

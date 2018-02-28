@@ -37,7 +37,7 @@ public:
 	bool DownloadDifferent(int i);
 
 	// Do the update
-	bool DoUpdateCheck();
+	int DoUpdateCheck();
 	CString fileVer; //new version
 
 // Implementation

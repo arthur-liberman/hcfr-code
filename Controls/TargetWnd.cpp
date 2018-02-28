@@ -970,6 +970,7 @@ void CTargetWnd::UpdateScaledBitmap()
 
 	memDCSrc.SetStretchBltMode(oldMode);
     memDCSrc.SelectObject(pOld); 
+	ReleaseDC(&dc);
 }
 
 void CTargetWnd::MakeBgBitmap()	// Create background bitmap

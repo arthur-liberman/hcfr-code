@@ -498,6 +498,9 @@ bool CExport::SavePDF()
 		case 5:
 		dEform = " [CIE76(uv)]";
 		break;
+		case 6:
+		dEform = " [dICtCp]";
+		break;
 	}
 
 	CString dEform2 = GetConfig()->m_dE_form==5?" [CIE2000]":dEform;
@@ -1069,6 +1072,9 @@ bool CExport::SavePDF()
 			break;
 			case 5:
 			dEform = " [CIE76(uv)]";
+			break;
+			case 6:
+			dEform = " [dICtCp]";
 			break;
 		}
 

@@ -636,6 +636,7 @@ void CMeasuresHistoView::OnGraphGamma()
 	}
 
 	GetDocument()->UpdateAllViews(NULL, UPD_GRAYSCALE, NULL);
+	GetDocument()->UpdateAllViews(NULL, UPD_SELECTEDCOLOR, NULL);
 }
 
 void CMeasuresHistoView::OnGraphShowColorTemp() 

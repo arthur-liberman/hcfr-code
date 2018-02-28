@@ -47,6 +47,7 @@ public:
 	int GetGraphY(CRect rect) const;
 	CPoint GetGraphPoint(CRect rect) const;
     ColorXYZ GetNormalizedColor() const {return m_color;}
+    ColorXYZ GetAbsoluteColor() const {return a_color;}
 
 // Attributes
 public:
@@ -57,6 +58,7 @@ public:
 	BOOL	bCIEuv;
 	BOOL	bCIEab;
     ColorXYZ m_color;
+    ColorXYZ a_color;
 };
 
 class CCIEChartGrapher
@@ -113,6 +115,7 @@ class CCIEChartGrapher
 	BOOL m_bCIEab;
 	BOOL m_bdE10;
 	double dE10;
+	BOOL isSat;
 
 	int		m_ttID; //tooltip index, max of 5000 entries per chart
 
@@ -125,7 +128,6 @@ class CCIEChartGrapher
 	void MakeBgBitmap(CRect rect,BOOL bWhiteBkgnd);
 	void DrawAlphaBitmap(CDC *pDC, const CCIEGraphPoint& aGraphPoint, CBitmap *pBitmap, CRect rect, CPPToolTip * pTooltip, CWnd * pWnd, CCIEGraphPoint * pRefPoint = NULL, bool isSelected = FALSE, double dE10=100.0, bool isPrimeSec = FALSE);
 	void DrawChart(CDataSetDoc * pDoc, CDC* pDC, CRect rect, CPPToolTip * pTooltip, CWnd * pWnd);
-	
 	void SaveGraphFile ( CDataSetDoc * pDoc, CSize ImageSize, LPCSTR lpszPathName, int ImageFormat = 0, int ImageQuality = 95, bool PDF=FALSE );
 };
 
@@ -162,7 +164,6 @@ public:
 public:
 	void	UpdateTestColor ( CPoint point );
 	void	GetReferenceRect ( LPRECT lpRect );		// Returns client rect with size increased regarding zoom factor
-
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CCIEChartView)

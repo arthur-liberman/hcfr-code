@@ -1140,12 +1140,17 @@ void CMainFrame::OnUpdateSoft()
 		bool cacheDel = DeleteUrlCacheEntry("ftp://prairie17.dyndns.org/shares/dload/CheckUpdate.txt");
 		cacheDel = DeleteUrlCacheEntry("ftp://prairie17.dyndns.org/shares/dload/ColorHCFR.exe");
 
-
-		if (!WebUpdate.DoUpdateCheck())
+		int m_WebUp = WebUpdate.DoUpdateCheck();
+		if (!m_WebUp)
 		{
 			//update check failed
 			::DestroyWindow ( hDlg );
 			AfxMessageBox(IDS_UPD_IMPOSSIBLE, MB_OK | MB_ICONWARNING);
+			return;
+		} else if (m_WebUp == -99)
+		{
+			::DestroyWindow ( hDlg );
+			AfxMessageBox("Update Check timed out.\n(Network not found)", MB_OK | MB_ICONWARNING);
 			return;
 		}
 

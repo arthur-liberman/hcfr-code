@@ -20,6 +20,7 @@
 // MultiFrm.h : interface of the CMultiFrame class
 //
 /////////////////////////////////////////////////////////////////////////////
+#define TMSCHEMA_H
 
 #if !defined(AFX_MULTIFRM_H__0FA24630_ABBF_472F_9EBC_142687A72E75__INCLUDED_)
 #define AFX_MULTIFRM_H__0FA24630_ABBF_472F_9EBC_142687A72E75__INCLUDED_

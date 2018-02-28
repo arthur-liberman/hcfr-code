@@ -1145,6 +1145,7 @@ double ColorXYZ::GetDeltaLCH(double YWhite, const ColorXYZ& refColor, double YWh
 	if (YWhite <= 0) YWhite = 120.;
 	if (YWhiteRef <= 0) YWhiteRef = 1.0;
     //gray world weighted white reference
+
     switch (gw_Weight)
     {
     case 1:
@@ -1327,6 +1328,16 @@ double ColorXYZ::GetDeltaLCH(double YWhite, const ColorXYZ& refColor, double YWh
 				dHue = sqrt( pow( dHp / SH, 2.0));
             }
 		break;
+		case 6: //LMS
+			{
+				//Color needs to be unnormalized and ref normalized
+				ColorICtCp LMSRef(refColor, YWhite, cRef);
+				ColorICtCp LMS(*this, YWhiteRef, cRef);
+				dLight = sqrt(pow ((LMS[0] - LMSRef[0]),2))*155.;
+				dChrom = sqrt(pow((LMS[1] - LMSRef[1]),2))*155.;
+				dHue = sqrt(pow((LMS[2] - LMSRef[2]),2))*155.;
+				break;
+			}
 		}
 	}
 	return dLight;
@@ -1820,10 +1831,10 @@ double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhit
 		}
 		case 6:
 		{
-			//Used for HDR
+			//Color needs to be unnormalized and ref normalized
 			ColorICtCp ICCRef(refColor, YWhite, cRef);
-			ColorICtCp ICC(*this, 1.0, cRef);
-			dE = sqrt ( pow ((ICC[0] - ICCRef[0]),2) + pow((ICC[1] - ICCRef[1]),2) + pow((ICC[2] - ICCRef[2]),2) );
+			ColorICtCp ICC(*this, YWhiteRef, cRef);
+			dE = sqrt ( pow ((ICC[0] - ICCRef[0]),2) + pow((ICC[1] - ICCRef[1]),2) + pow((ICC[2] - ICCRef[2]),2) ) * 155.0; //normalization to 500 random CC Bt.709 and Bt.2020 average
 			break;
 		}
 		
@@ -2030,15 +2041,29 @@ ColorICtCp::ColorICtCp(const ColorXYZ& XYZ, double YWhiteRef, CColorReference co
 {
     if(XYZ.isValid())
     {
-//		double scaling = YWhiteRef / XYZ[1];
+//		requires physical values cd/m^2
+//		ColorRGB XYZRGB=ColorRGB(XYZ, colorReference);
 		double scaling = YWhiteRef;
-        double var_X = XYZ[0] * scaling ;
-        double var_Y = XYZ[1] * scaling ;
-        double var_Z = XYZ[2] * scaling ;
+		double var_X = XYZ[0] * scaling ;
+		double var_Y = XYZ[1] * scaling ;
+		double var_Z = XYZ[2] * scaling ;
+		double L,M,S;
 
-        double L = 0.3593 * var_X + 0.6976 * var_Y - 0.0359 * var_Z;
-        double M = -0.1921 * var_X + 1.1005 * var_Y + 0.0754 * var_Z;
-        double S = 0.0071 * var_X + 0.0748 * var_Y + 0.8433 * var_Z;
+		//LMS matrix is normalized to D65 (Von Kries)
+		//BT.2020 RGB to LMS includes 4% cross-talk matrix
+		if (colorReference.m_standard == UHDTV2 || colorReference.m_standard == UHDTV3 || colorReference.m_standard == UHDTV4)
+		{
+			L = 0.3592 * var_X + 0.6976 * var_Y - 0.0358 * var_Z;
+			M = -0.1922 * var_X + 1.1004 * var_Y + 0.0755 * var_Z;
+			S = 0.0070 * var_X + 0.0749 * var_Y + 0.8434 * var_Z;
+		}
+		else //no cross-talk
+		{
+			L = 0.4002 * var_X + 0.7076 * var_Y - 0.0808 * var_Z;
+			M = -0.2263 * var_X + 1.653 * var_Y + 0.0457 * var_Z;
+			S = 0.0 * var_X + 0.0 * var_Y + 0.9182 * var_Z;
+		}
+
 		L = min(max(L,0),10000.);
 		M = min(max(M,0),10000.);
 		S = min(max(S,0),10000.);
@@ -2058,6 +2083,60 @@ ColorICtCp::ColorICtCp(const ColorXYZ& XYZ, double YWhiteRef, CColorReference co
 
 ColorICtCp::ColorICtCp(double I, double Ct, double Cp) :
     ColorTriplet(I, Ct, Cp)
+{
+}
+
+//////////////////////////////////////////////////////////////////////
+// implementation of the ColorLMS class.
+//////////////////////////////////////////////////////////////////////
+ColorLMS::ColorLMS()
+{
+}
+
+ColorLMS::ColorLMS(const Matrix& matrix) :
+    ColorTriplet(matrix)
+{
+}
+
+ColorLMS::ColorLMS(const ColorXYZ& XYZ, double YWhiteRef, CColorReference colorReference)
+{
+    if(XYZ.isValid())
+    {
+//		requires physical values cd/m^2
+//		ColorRGB XYZRGB=ColorRGB(XYZ, colorReference);
+		double scaling = YWhiteRef;
+		double var_X = XYZ[0] * scaling ;
+		double var_Y = XYZ[1] * scaling ;
+		double var_Z = XYZ[2] * scaling ;
+		double L,M,S;
+
+		//LMS matrix is normalized to D65 (Von Kries)
+		//BT.2020 RGB to LMS includes 4% cross-talk matrix
+		if (colorReference.m_standard == UHDTV2 || colorReference.m_standard == UHDTV3 || colorReference.m_standard == UHDTV4)
+		{
+			L = 0.3592 * var_X + 0.6976 * var_Y - 0.0358 * var_Z;
+			M = -0.1922 * var_X + 1.1004 * var_Y + 0.0755 * var_Z;
+			S = 0.0070 * var_X + 0.0749 * var_Y + 0.8434 * var_Z;
+		}
+		else //no cross-talk
+		{
+			L = 0.4002 * var_X + 0.7076 * var_Y - 0.0808 * var_Z;
+			M = -0.2263 * var_X + 1.653 * var_Y + 0.0457 * var_Z;
+			S = 0.0 * var_X + 0.0 * var_Y + 0.9182 * var_Z;
+		}
+
+		L = min(max(L,0),10000.);
+		M = min(max(M,0),10000.);
+		S = min(max(S,0),10000.);
+
+        (*this)[0] = L;	 // L
+        (*this)[1] = M; // M
+        (*this)[2] = S; // S
+    }
+}
+
+ColorLMS::ColorLMS(double L, double M, double S) :
+    ColorTriplet(L, M, S)
 {
 }
 
@@ -2347,6 +2426,16 @@ ColorLab CColor::GetLabValue(double YWhiteRef, CColorReference colorReference) c
 ColorLCH CColor::GetLCHValue(double YWhiteRef, CColorReference colorReference) const 
 {
     return ColorLCH(m_XYZValues, YWhiteRef, colorReference);
+}
+
+ColorLMS CColor::GetLMSValue(double YWhiteRef, CColorReference colorReference) const 
+{
+    return ColorLMS(m_XYZValues, YWhiteRef, colorReference);
+}
+
+ColorICtCp CColor::GetICtCpValue(double YWhiteRef, CColorReference colorReference) const 
+{
+    return ColorICtCp(m_XYZValues, YWhiteRef, colorReference);
 }
 
 void CColor::SetXYZValue(const ColorXYZ& aColor) 

@@ -1649,7 +1649,7 @@ void video_scale (CxImage *inImage)
 			{
 				if (m_nDisplayMode != DISPLAY_GDI_nBG && !m_busePic)
 				{
-					double R1,G1,B1;
+					double R1=0.,G1=0.,B1=0.;
 					//subtract window area and border area
 					R1 = max(0,(bgstim*255 - R*m_rectSizePercent/100.))/(1-m_rectSizePercent/100. - borderArea/(rect.Width()*rect.Height()) );
 					G1 = max(0,(bgstim*255 - G*m_rectSizePercent/100.))/(1-m_rectSizePercent/100. - borderArea/(rect.Width()*rect.Height()) );
