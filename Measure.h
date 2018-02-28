@@ -84,6 +84,7 @@ public:
 	BOOL	bDisplayRT;
 	UINT	m_bpreV10;
 	UINT	m_NearWhiteClipCol;
+	UINT	m_NMeasurements;
 
 	// Internal data used by background measures threads (not serialized)
 public:

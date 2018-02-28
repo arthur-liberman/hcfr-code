@@ -270,7 +270,7 @@ void CColorHCFRConfig::InitDefaults()
 	m_BT2390_BS = 1.0;
 	m_BT2390_WS = 0.0;
 	m_BT2390_WS1 = 25;
-	m_TargetMaxL = 500.;
+	m_TargetMaxL = 120.;
 	m_DiffuseL = 94.37844;
     m_GammaRel=0.0;
 	m_Split=100.0; //all input offset
@@ -334,7 +334,7 @@ BOOL CColorHCFRConfig::LoadSettings()
 {
 	m_doMultipleInstance=GetProfileInt("General","DoMultipleInstance",FALSE);
 	m_doSavePosition=GetProfileInt("General","DoSavePosition",TRUE);
-	m_doUpdateCheck=GetProfileInt("General","DoUpdateCheck",TRUE);
+	m_doUpdateCheck=GetProfileInt("General","DoUpdateCheck",FALSE);
 	m_BWColorsToAdd=GetProfileInt("General","BWColorsToAdd",1);
 	if ( m_BWColorsToAdd < 0 ) 
 		m_BWColorsToAdd = 0;
@@ -364,7 +364,7 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_ContentMaxL=GetProfileDouble("References","ContentMaxLValue",4000.0);
 	m_FrameAvgMaxL=GetProfileDouble("References","FrameAvgMaxLValue",400.0);
 	m_TargetMinL=GetProfileDouble("References","TargetMinLValue",0.05);
-	m_TargetMaxL=GetProfileDouble("References","TargetMaxLValue",500.0);
+	m_TargetMaxL=GetProfileDouble("References","TargetMaxLValue",120.0);
 	m_TargetSysGamma=GetProfileDouble("References","TargetSysGammaValue",1.20);
 	m_BT2390_BS=GetProfileDouble("References","BT2390BlackSlopeFactor",1.0);
 	m_BT2390_WS=GetProfileDouble("References","BT2390WhiteSlopeFactor",0.0);
@@ -805,21 +805,22 @@ void CColorHCFRConfig::ApplySettings(BOOL isStartupApply)
 
 	if(!isStartupApply)
 	{
-		if(m_appearancePropertiesPage.m_isModified || m_generalPropertiesPage.m_isModified)	
+		if(m_appearancePropertiesPage.m_isModified)// || m_generalPropertiesPage.m_isModified)	
 			AfxGetMainWnd()->SendMessage(WM_SYSCOLORCHANGE); // to update color changes 
 
-		if(m_referencesPropertiesPage.m_isModified || m_advancedPropertiesPage.m_isModified || m_appearancePropertiesPage.m_isWhiteModified || m_isModified)	
+		if(m_generalPropertiesPage.m_isModified || m_referencesPropertiesPage.m_isModified || m_advancedPropertiesPage.m_isModified || m_appearancePropertiesPage.m_isWhiteModified || m_isModified)	
 		{
 			CDocEnumerator docEnumerator;	// Update all views of all docs
 			CDocument* pDoc;
 			while ((pDoc=docEnumerator.Next())!=NULL) 
 			{
-			   pDoc->UpdateAllViews(NULL, UPD_GENERALREFERENCES);
-			   pDoc->UpdateAllViews(NULL, UPD_SELECTEDCOLOR);
-			   pDoc->UpdateAllViews(NULL, UPD_GENERATORCONFIG);
+//			   pDoc->UpdateAllViews(NULL, UPD_GENERALREFERENCES);
+//			   pDoc->UpdateAllViews(NULL, UPD_SELECTEDCOLOR);
+//			   pDoc->UpdateAllViews(NULL, UPD_GENERATORCONFIG);
+			   pDoc->UpdateAllViews(NULL, UPD_EVERYTHING);
 			}
 			GetCColors(); //check for new colors 
-			AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+//			AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
 	    }
 	}
 }

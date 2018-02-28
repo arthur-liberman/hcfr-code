@@ -48,6 +48,7 @@ IMPLEMENT_SERIAL(CMeasure, CObject, 1)
 
 CMeasure::CMeasure()
 {
+	m_NMeasurements = 0;
 	m_isModified = FALSE;
 	m_bpreV10 = 0;
 	m_binMeasure = FALSE;
@@ -74,6 +75,8 @@ CMeasure::CMeasure()
 	for(int i=0;i<m_grayMeasureArray.GetSize();i++)	// Init default values: by default m_grayMeasureArray init to D65, Y=1
 		m_grayMeasureArray[i]=GetPrimary(0);	
 
+	m_grayMeasureArray[m_grayMeasureArray.GetSize()-1].SetXYZValue(ColorXYZ(GetConfig()->m_TargetMaxL*0.95047,GetConfig()->m_TargetMaxL,GetConfig()->m_TargetMaxL*1.08883));
+
 	for(int i=0;i<m_nearBlackMeasureArray.GetSize();i++)
 		m_nearBlackMeasureArray[i]=noDataColor;	
 
@@ -92,9 +95,9 @@ CMeasure::CMeasure()
 	for ( int i=0;i<m_cc24SatMeasureArray.GetSize();i++ )	m_cc24SatMeasureArray[i]=noDataColor;
 	for ( int i=0;i<m_cc24SatMeasureArray_master.GetSize();i++ )	m_cc24SatMeasureArray_master[i]=noDataColor;
 //pre-load typical display values
-	m_OnOffWhite.SetXYZValue(ColorXYZ(95.047,100.,108.883));
-	m_PrimeWhite.SetXYZValue(ColorXYZ(95.047,100.,108.883));
-	m_OnOffBlack.SetXYZValue(ColorXYZ(0.0117336,0.012345,0.0134416));
+	m_OnOffWhite.SetXYZValue(ColorXYZ(95.047,GetConfig()->m_TargetMaxL,108.883));
+	m_PrimeWhite.SetXYZValue(ColorXYZ(GetConfig()->m_TargetMaxL*0.95047,GetConfig()->m_TargetMaxL,GetConfig()->m_TargetMaxL*1.08883));
+	m_OnOffBlack.SetXYZValue(ColorXYZ(GetConfig()->m_TargetMinL*0.95047,GetConfig()->m_TargetMinL,GetConfig()->m_TargetMinL*1.08833));
 	m_AnsiBlack=m_AnsiWhite=noDataColor;
 	m_CCStr = (CString)"";
 	SetInfoString((CString)"Calibration by: \r\nDisplay: \r\nNote: \r\n");
@@ -363,8 +366,10 @@ void CMeasure::Serialize(CArchive& ar)
 	    int version;
 		ar >> version;
 
+		
 		if ( version > 17 )
 			AfxThrowArchiveException ( CArchiveException::badSchema );
+
 
 		if ( version > 16)
 		{
@@ -924,7 +929,7 @@ BOOL CMeasure::MeasureGrayScale(CSensor *pSensor, CGenerator *pGenerator, CDataS
 			GetConfig()->m_isSettling=FALSE;
 		else
 			doSettling = GetConfig()->m_isSettling;
-		
+
 		UpdateViews(pDoc, 0);
 		
 		if (!i && (GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_DEFAULT_MODE) == DISPLAY_GDI_Hide) )
@@ -5171,6 +5176,7 @@ BOOL CMeasure::WaitForDynamicIris ( BOOL bIgnoreEscape, CDataSetDoc *pDoc )
 	BOOL bEscape = FALSE;
 	int nLatencyTime = GetConfig()->m_latencyTime;
 	UINT nLoopTime = 10;
+	m_NMeasurements++;
 
 	if (nLatencyTime < 0) 
 		nLoopTime = -1 * nLatencyTime;
@@ -5225,7 +5231,7 @@ BOOL CMeasure::CheckBlackOverride ( )
 
 void CMeasure::UpdateViews ( CDataSetDoc *pDoc, int Sequence )
 {
-	if (pDoc && GetConfig()->bDisplayRT)
+	if (pDoc )
 	{
 		POSITION pos = pDoc -> GetFirstViewPosition ();
 		CView *pView = pDoc->GetNextView(pos);
@@ -5233,8 +5239,12 @@ void CMeasure::UpdateViews ( CDataSetDoc *pDoc, int Sequence )
 			((CMainView*)pView)->SetSelectedColor(noDataColor, TRUE);
 		else
 			((CMainView*)pView)->SetSelectedColor(lastColor, TRUE);
-		pDoc ->SetModifiedFlag(TRUE);
-		pDoc ->UpdateAllViews(NULL, UPD_REALTIME + Sequence);
+
+		if (GetConfig()->bDisplayRT)
+		{
+			pDoc ->SetModifiedFlag(TRUE);
+			pDoc ->UpdateAllViews(NULL, UPD_REALTIME + Sequence);
+		}
 	}
 
 }
@@ -5261,7 +5271,7 @@ void CMeasure::UpdateTstWnd (CDataSetDoc *pDoc, int i )
 	{
 		POSITION pos = pDoc->GetFirstViewPosition ();
 		CView *pView = pDoc->GetNextView(pos);
-		((CMainView*)pView)->RefreshSelection(FALSE, TRUE);
+		((CMainView*)pView)->m_Target.Refresh(pDoc->GetGenerator()->m_b16_235,  i+1, ((CMainView*)pView)->target_Size, ((CMainView*)pView)->m_displayMode, pDoc, CTargetWnd::TARGET_TESTWINDOW);
 		((CMainView*)pView)->minCol = i+1;
 		((CMainView*)pView)->last_minCol = i;
 		m_currentIndex = i+1;

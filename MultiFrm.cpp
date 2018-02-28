@@ -177,10 +177,10 @@ END_MESSAGE_MAP()
 
 CMultiFrame::CMultiFrame()
 {
-	m_MinSize.x = 1100;
-	m_MinSize.y = 700;
-	m_MinSize2.x = 1100;
-	m_MinSize2.y = 700;
+	m_MinSize.x = 100;
+	m_MinSize.y = 100;
+	m_MinSize2.x = 300;
+	m_MinSize2.y = 200;
 	m_bUseMinSize2 = FALSE;
 	m_bHasStarted = FALSE;
 	m_bHide = FALSE;
@@ -253,7 +253,7 @@ void CMultiFrame::OnGetMinMaxInfo(MINMAXINFO FAR* lpMMI)
 		lpMMI->ptMinTrackSize.y=m_MinSize.y + ( m_bDisplayTab ? TABCTRL_HEIGHT : 0 );
 	}
 		
-	GetWindowRect(&Rect);
+/*	GetWindowRect(&Rect);
 
 	if (Rect.Width() < 1280)
 	{
@@ -264,7 +264,7 @@ void CMultiFrame::OnGetMinMaxInfo(MINMAXINFO FAR* lpMMI)
 	{
 		lpMMI->ptMinTrackSize.x = m_MinSize.x - 300;
 		lpMMI->ptMinTrackSize.y = m_MinSize.y - 200;
-	}
+	}*/
 }
 
 void CMultiFrame::OnDestroy() 
@@ -635,6 +635,7 @@ CView * CMultiFrame::CreateOrActivateView ( int nViewIndex, BOOL bForceCreate, B
 				m_TabCtrl.SetCurSel ( 0 );
 				m_bHide = true;
 				OnTabChanged ( NULL, NULL );
+
 				( (CMainView *) m_pTabbedView[0] )->refresh = true;
 				( (CMainView *) m_pTabbedView[0] )->OnSelchangeInfoDisplay();			
 				( (CMainView *) m_pTabbedView[0] )->refresh = false;
@@ -1270,9 +1271,10 @@ void CMultiFrame::OnCloseTab()
 				m_bHide = true;
 				OnTabChanged ( NULL, NULL );
 			}
-				( (CMainView *) m_pTabbedView[0] )->refresh = true;
-				( (CMainView *) m_pTabbedView[0] )->OnSelchangeInfoDisplay();			
-				( (CMainView *) m_pTabbedView[0] )->refresh = false;
+
+			( (CMainView *) m_pTabbedView[0] )->refresh = true;
+			( (CMainView *) m_pTabbedView[0] )->OnSelchangeInfoDisplay();			
+			( (CMainView *) m_pTabbedView[0] )->refresh = false;
 			
 			if ( CurSel != 0)
 			{

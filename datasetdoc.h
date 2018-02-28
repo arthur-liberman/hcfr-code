@@ -99,7 +99,7 @@ public:
 
 	CColor			m_SelectedColor;
 	CColor			m_LastColor;
-// Operations
+	// Operations
 public:
 	void ShowAllViews();
 

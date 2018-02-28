@@ -122,14 +122,12 @@ void CWebUpdate::SetLocalDirectory(LPCSTR pathTo, bool generate)
 
 // Perform the actual update
 //
-bool CWebUpdate::DoUpdateCheck()
+int CWebUpdate::DoUpdateCheck()
 {
 	// Reset previous attributes
 	numMissing = 0;
 	numDifferent = 0;
 	numSuccess = 0;
-	//wait in case program start-up
-	Sleep(1000);
 
 	missingFiles.RemoveAll();
 	differentFiles.RemoveAll();
@@ -161,8 +159,8 @@ bool CWebUpdate::DoUpdateCheck()
 	}
 	else
 	{
-		int timer = 0;
-		while(timer < 20)
+		int timer = 0, t_end = 100;
+		while(timer < t_end)
 		{
 		// There are one or more window message available. Dispatch them.
 			while(::PeekMessage(&msg,NULL,NULL,NULL,PM_REMOVE))
@@ -187,10 +185,11 @@ bool CWebUpdate::DoUpdateCheck()
 				break;
 			}
 			timer++;
+			Sleep(10);
 		}
 
-		if (dwRet != WAIT_OBJECT_0)
-			AfxMessageBox("Update Check timed out.", MB_OK | MB_ICONWARNING);
+		if ((dwRet != WAIT_OBJECT_0) && (timer == 500))
+			return -99;
 	}
 
 

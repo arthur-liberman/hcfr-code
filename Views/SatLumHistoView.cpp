@@ -391,7 +391,7 @@ void CSatLumHistoView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	// Do nothing when not concerned
 	switch ( lHint )
 	{
-		case UPD_GRAYSCALE:
+//		case UPD_GRAYSCALE:
 		case UPD_NEARBLACK:
 		case UPD_NEARWHITE:
 		case UPD_CONTRAST:

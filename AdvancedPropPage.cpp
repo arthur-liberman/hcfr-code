@@ -155,9 +155,10 @@ BOOL CAdvancedPropPage::OnApply()
         gw_Weight = 0;
         m_gwWeightEdit.EnableWindow(FALSE);
     }
-	m_isModified=TRUE;
-	GetConfig()->ApplySettings(FALSE);
-	m_isModified = FALSE;
+
+//	m_isModified=TRUE;
+//	GetConfig()->ApplySettings(FALSE);
+//	m_isModified = FALSE;
 	m_bSave = TRUE;
 	return CPropertyPageWithHelp::OnApply();
 }

@@ -53,6 +53,9 @@ CGDIGenePropPage::CGDIGenePropPage() : CPropertyPageWithHelp(CGDIGenePropPage::I
 	m_madVR_HDR = FALSE;
 	m_madVR_OSD = FALSE;
 	m_bdispTrip = FALSE;
+	m_bdispTrip = GetConfig()->GetProfileInt("GDIGenerator","DISPLAYTRIPLETS",1);
+	m_bdispTriplast = m_bdispTrip;
+	m_brPi_user = FALSE;
 	m_bLinear = FALSE;
 	m_bHdr10 = GetConfig()->GetProfileInt("GDIGenerator","EnableHDR10",0);
 }
@@ -86,6 +89,7 @@ void CGDIGenePropPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_USEPIC, m_busePic);
 	DDX_Check(pDX, IDC_DISP_TRIP, m_bdispTrip);
 	DDX_Check(pDX, IDC_DISP_TRIP2, m_bLinear);
+	DDX_Check(pDX, IDC_DISP_TRIP3, m_brPi_user);
 	DDX_Check(pDX, IDC_ENBL_HDR, m_bHdr10);
 	//}}AFX_DATA_MAP
 }
@@ -192,6 +196,7 @@ void CGDIGenePropPage::OnOK()
 	GetConfig()->m_isModified = true;
 	GetConfig()->ApplySettings(FALSE);
 	GetConfig()->m_isModified = false;
+//	GetDocument()->UpdateAllViews(NULL, UPD_SELECTEDCOLOR, NULL);
 	CPropertyPageWithHelp::OnOK();
 }
 
@@ -304,6 +309,14 @@ BOOL CGDIGenePropPage::OnSetActive()
 		m_busePic = false;
 	}
 
+	if (m_nDisplayMode == DISPLAY_rPI)
+	{
+		GetDlgItem(IDC_DISP_TRIP3)->EnableWindow(TRUE);
+	}
+	else
+	{
+		GetDlgItem(IDC_DISP_TRIP3)->EnableWindow(FALSE);
+	}
 	return CPropertyPageWithHelp::OnSetActive();
 }
 
@@ -482,6 +495,21 @@ void CGDIGenePropPage::OnClickSelection()
 	{
 		m_usePicEdit.EnableWindow(FALSE);
 		m_busePic = false;
+	}
+	
+	if (m_nDisplayMode == DISPLAY_rPI)
+	{
+		GetDlgItem(IDC_DISP_TRIP3)->EnableWindow(TRUE);
+		if (m_brPi_user)
+		{
+			m_bdispTrip = FALSE;
+		}
+		GetDlgItem(IDC_DISP_TRIP)->EnableWindow(!m_brPi_user);
+	}
+	else
+	{
+		GetDlgItem(IDC_DISP_TRIP3)->EnableWindow(FALSE);
+		GetDlgItem(IDC_DISP_TRIP)->EnableWindow(TRUE);
 	}
 }
 

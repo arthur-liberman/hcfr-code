@@ -93,6 +93,7 @@ CString g_NewDocName;
 CString g_ThcFileName;
 int		g_NewDocGeneratorID = 0;
 int		g_NewDocSensorID = 0;
+UINT	m_nPat;
 Matrix	g_NewDocSensorMatrix;
 
 CDataSetDoc * g_DocToDuplicate;
@@ -152,14 +153,24 @@ static UINT __cdecl BkgndThreadFunc ( LPVOID lpParameter )
 
 			if ( g_bGDIGeneratorRunning )
 		    {
-			    ColorRGBDisplay clr((( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.GetColor ())& 0x00FFFFFF);
-			    if ( g_CurrentColor != clr )
+				CGenerator::MeasureType MT = CGenerator::MT_UNKNOWN;
+				ColorRGBDisplay clr((( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) ->m_wndTestColorWnd.m_colorPicker.GetColor ())& 0x00FFFFFF);
+		    
+				m_nPat++;
+				if ( ( (m_nPat % GetConfig()->m_ablFreq) == 0) && GetConfig()->m_bABL )
+				{
+					pGenerator->DisplayRGBColor(ColorRGBDisplay(0.0), MT);
+					Sleep(1000);
+				}
+
+				if ( g_CurrentColor != clr || (( (m_nPat % GetConfig()->m_ablFreq) == 0) && GetConfig()->m_bABL) )
 			    {
 				    g_CurrentColor = clr;
-					CGenerator::MeasureType MT = CGenerator::MT_UNKNOWN;							
+												
 					if ( m_d == 1 || (m_d < 11 && m_d > 4) )
 						MT = CGenerator::MT_ACTUAL;
-					pGenerator->DisplayRGBColor(clr, MT);
+
+						pGenerator->DisplayRGBColor(clr, MT);
 			    }
 		    }
 
@@ -309,9 +320,8 @@ BOOL StartBackgroundMeasures ( CDataSetDoc * pDoc )
 				CGenerator::MeasureType MT = CGenerator::MT_UNKNOWN;							
 				if ( m_d <= 1 || (m_d < 11 && m_d > 4) )
 					MT = CGenerator::MT_ACTUAL;
-				pDoc->GetGenerator()->DisplayRGBColor(clr,MT);
+				pDoc->GetGenerator()->DisplayRGBColor(clr,MT, m_nPat);
 				Sleep(500); //delay 1st pattern, after that delay is not needed [no color change]
-				
 				g_bGDIGeneratorRunning = TRUE;
 			}
 		}
@@ -590,6 +600,7 @@ CDataSetDoc::CDataSetDoc()
 	m_LastColor = noDataColor;
 	m_pWndPos = NULL;
 	m_pFramePosInfo = NULL;
+	m_nPat = 0;
 }
 
 CDataSetDoc::~CDataSetDoc()
@@ -1315,7 +1326,7 @@ void CDataSetDoc::AddMeasurement()
 	Settling=GetConfig()->m_isSettling;
 	GetConfig()->m_isSettling = FALSE;
 	m_d=((CMainView *)pView)->m_displayMode;
-	last_minCol=((CMainView *)pView)->last_minCol;
+	last_minCol=((CMainView *)pView)->minCol;
 	CGenerator::MeasureType MT = CGenerator::MT_UNKNOWN;							
 	if ( m_d <= 1 || (m_d < 11 &&  m_d > 4) )
 		MT = CGenerator::MT_ACTUAL;
@@ -4086,6 +4097,7 @@ void CDataSetDoc::OnContinuousMeasurement()
 	}
 	else
 	{
+		m_nPat = 0;
 		Settling=GetConfig()->m_isSettling;
 		GetConfig()->m_isSettling = FALSE;
 		StartBackgroundMeasures ( this );
@@ -4304,7 +4316,7 @@ void CDataSetDoc::OnBkgndMeasureReady()
 		}
 		g_MeasuredColorList.RemoveAll ();
 		LeaveCriticalSection ( & g_CritSec );
-		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+//		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
 	}
 
 	g_bInsideBkgndRefresh = FALSE;
@@ -4331,8 +4343,8 @@ void CDataSetDoc::OnMeasureGrayscale()
 	{
 		MeasureGrayScale();
 
-		SetSelectedColor ( noDataColor );
-		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+//		SetSelectedColor ( noDataColor );
+//		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
 	}
 }
 
@@ -4355,8 +4367,8 @@ void CDataSetDoc::OnMeasurePrimaries()
 		{
 			MeasurePrimaries();
 		
-			SetSelectedColor ( noDataColor );
-			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+//			SetSelectedColor ( noDataColor );
+//			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
 		}
 	}
 }
@@ -4379,8 +4391,8 @@ void CDataSetDoc::OnMeasureSecondaries()
 		{
 			MeasureSecondaries();
 		
-			SetSelectedColor ( noDataColor );
-			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+//			SetSelectedColor ( noDataColor );
+//			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
 		}
 	}
 }
@@ -4411,8 +4423,8 @@ void CDataSetDoc::OnMeasureNearblack()
 	    {
 		    MeasureNearBlackScale();
 
-    		SetSelectedColor ( noDataColor );
-	    	(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+//    		SetSelectedColor ( noDataColor );
+//	    	(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
 	    }
     }
 }
@@ -4441,8 +4453,8 @@ void CDataSetDoc::OnMeasureNearwhite()
 	    {
 		    MeasureNearWhiteScale();
 
-    		SetSelectedColor ( noDataColor );
-	    	(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+//    		SetSelectedColor ( noDataColor );
+//	    	(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
 	    }
     }
 }
@@ -4475,8 +4487,8 @@ void CDataSetDoc::OnMeasureSatRed()
 		{
 			MeasureRedSatScale();
 
-			SetSelectedColor ( noDataColor );
-			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+//			SetSelectedColor ( noDataColor );
+//			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
 		}
 	}
 }
@@ -4510,8 +4522,8 @@ void CDataSetDoc::OnMeasureSatGreen()
 		{
 			MeasureGreenSatScale();
 
-			SetSelectedColor ( noDataColor );
-			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+//			SetSelectedColor ( noDataColor );
+//			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
 		}
 	}
 }
@@ -4545,8 +4557,8 @@ void CDataSetDoc::OnMeasureSatBlue()
 		{
 			MeasureBlueSatScale();
 
-			SetSelectedColor ( noDataColor );
-			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+//			SetSelectedColor ( noDataColor );
+//			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
 		}
 	}
 }
@@ -4580,8 +4592,8 @@ void CDataSetDoc::OnMeasureSatYellow()
 		{
 			MeasureYellowSatScale();
 
-			SetSelectedColor ( noDataColor );
-			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+//			SetSelectedColor ( noDataColor );
+//			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
 		}
 	}
 }
@@ -4615,8 +4627,8 @@ void CDataSetDoc::OnMeasureSatCyan()
 		{
 			MeasureCyanSatScale();
 
-			SetSelectedColor ( noDataColor );
-			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+//			SetSelectedColor ( noDataColor );
+//			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
 		}
 	}
 }
@@ -4650,8 +4662,8 @@ void CDataSetDoc::OnMeasureSatMagenta()
 		{
 			MeasureMagentaSatScale();
 
-			SetSelectedColor ( noDataColor );
-			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+//			SetSelectedColor ( noDataColor );
+//			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
 		}
 	}
 }
@@ -4684,8 +4696,8 @@ void CDataSetDoc::OnMeasureSatCC24()
 		{
 			MeasureCC24SatScale();
 
-			SetSelectedColor ( noDataColor );
-			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+//			SetSelectedColor ( noDataColor );
+//			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
 		}
 	}
 }
@@ -4738,8 +4750,8 @@ void CDataSetDoc::OnMeasureContrast()
 	{
 		MeasureContrast();
 
-		SetSelectedColor ( noDataColor );
-		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+//		SetSelectedColor ( noDataColor );
+//		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
 	}
 }
 
@@ -4777,8 +4789,8 @@ void CDataSetDoc::OnMeasureSatAll()
 		{
 			MeasureAllSaturationScales();
 
-			SetSelectedColor ( noDataColor );
-			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+//			SetSelectedColor ( noDataColor );
+//			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
 		}
 	}
 }
@@ -4803,8 +4815,8 @@ void CDataSetDoc::OnMeasureGrayscaleColors()
 	{
 		MeasureGrayScaleAndColors();
 
-		SetSelectedColor ( noDataColor );
-		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+//		SetSelectedColor ( noDataColor );
+//		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
 	}
 	
 }
@@ -4837,8 +4849,8 @@ void CDataSetDoc::OnMeasureSatPrimaries()
 		{
 			MeasurePrimarySaturationScales();
 
-			SetSelectedColor ( noDataColor );
-			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+//			SetSelectedColor ( noDataColor );
+//			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
 		}
 	}
 }
@@ -4866,8 +4878,8 @@ void CDataSetDoc::OnMeasureSatPrimariesSecondaries()
 		{
 			MeasurePrimarySecondarySaturationScales();
 
-			SetSelectedColor ( noDataColor );
-			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+//			SetSelectedColor ( noDataColor );
+//			(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
 		}
 	}
 }
@@ -4887,11 +4899,13 @@ void CDataSetDoc::OnMeasureFullTiltBoogie()
 	CString	Msg, MsgQueue, TmpStr;
 	BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR || GetConfig()->m_CCMode == MASCIOR50);
 	isExtPat = (isExtPat || GetConfig()->m_CCMode > 19);
-    int		nNbPoints2 = (GetMeasure () -> GetSaturationSize ()) * 6 + (GetConfig()->m_CCMode==CCSG?96:isExtPat?GetConfig()->GetCColorsSize():(GetConfig()->m_CCMode==AXIS?71:24));
+
+	int	nNbPoints2 = (GetMeasure () -> GetSaturationSize ()) * 6 + (GetConfig()->m_CCMode==CCSG?96:isExtPat?GetConfig()->GetCColorsSize():(GetConfig()->m_CCMode==AXIS?71:24));
+	
 	if (GetConfig()->m_CCMode==CMS || GetConfig()->m_CCMode==CPS)
 		nNbPoints2 = GetMeasure () -> GetSaturationSize () * 6 + 19;
 
-	int		nNbPoints = GetMeasure () -> GetGrayScaleSize () + 6 +  GetMeasure () -> GetNearBlackScaleSize () +  GetMeasure () -> GetNearWhiteScaleSize () + nNbPoints2;
+	int		nNbPoints = GetMeasure () -> GetGrayScaleSize () + 6+GetConfig()->m_BWColorsToAdd +  GetMeasure () -> GetNearBlackScaleSize () +  GetMeasure () -> GetNearWhiteScaleSize () + nNbPoints2 + 4;//4 for contrast measurement
 	
 	MsgQueue.LoadString ( IDS_RUNQUEUEWARNING );
 
@@ -4900,16 +4914,18 @@ void CDataSetDoc::OnMeasureFullTiltBoogie()
 	Msg += TmpStr + MsgQueue;
 	if ( ! GetConfig()->m_bConfirmMeasures || IDYES == GetColorApp()->InMeasureMessageBox( Msg, "On measure", MB_ICONQUESTION | MB_YESNO ) )
 	{
-		MeasureGrayScaleAndColors();
-		BOOL doSettling=GetConfig()->m_isSettling;
-		GetConfig()->m_isSettling = FALSE;
-		MeasureNearBlackScale();
-		MeasureNearWhiteScale();
-		MeasureAllSaturationScales();
-		MeasureContrast();
-		GetConfig()->m_isSettling = doSettling;
-		SetSelectedColor ( noDataColor );
-		(CMDIFrameWnd *)AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
+			MeasureGrayScaleAndColors();
+			BOOL doSettling=GetConfig()->m_isSettling;
+			GetConfig()->m_isSettling = FALSE;
+			MeasureNearBlackScale();
+			MeasureNearWhiteScale();
+			MeasureAllSaturationScales();
+			MeasureContrast();
+			GetConfig()->m_isSettling = doSettling;
+			POSITION pos = this->GetFirstViewPosition ();
+			CView *pView = this->GetNextView(pos);
+			((CMainView*)pView)->m_comboMode.SetCurSel ( 0 );
+			((CMainView*)pView)->OnSelchangeComboMode();
 	}
 }
 
