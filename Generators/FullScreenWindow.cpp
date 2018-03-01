@@ -1443,7 +1443,7 @@ void video_scale (CxImage *inImage)
 						ptrdiff_t index = find(patternsID.begin(), patternsID.end(), m_uiPictRess) - patternsID.begin();
 						if (!isUser)
 						{
-							if(index >= patternsID.size())
+							if(index >= (int)patternsID.size())
 							{
 								GetColorApp()->InMeasureMessageBox( "    ** rPi: Invalid image resource  **", "Error", MB_ICONERROR);
 								AfxGetMainWnd()->PostMessage ( WM_KEYDOWN, VK_RETURN, 0 );
