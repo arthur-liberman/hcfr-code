@@ -108,7 +108,7 @@ CNearWhiteGrapher::CNearWhiteGrapher()
 	m_doLogMode=GetConfig()->GetProfileInt("Near White Histo","Log Mode",FALSE);
 	m_showReference=GetConfig()->GetProfileInt("Near White Histo","Show Reference",TRUE);
 	m_showYLum=GetConfig()->GetProfileInt("Near White Histo","Show Y lum",TRUE);
-	m_showYLum=GetConfig()->GetProfileInt("Near White Histo","Absolute Y",FALSE);
+	m_abY=GetConfig()->GetProfileInt("Near White Histo","Absolute Y",FALSE);
 	m_showRedLum=GetConfig()->GetProfileInt("Near White Histo","Show Red",FALSE);
 	m_showGreenLum=GetConfig()->GetProfileInt("Near White Histo","Show Green",FALSE);
 	m_showBlueLum=GetConfig()->GetProfileInt("Near White Histo","Show Blue",FALSE);
@@ -451,7 +451,7 @@ void CNearWhiteHistoView::OnInitialUpdate()
 void CNearWhiteHistoView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
 {
 	// Update this view only when we are concerned
-	if ( lHint == UPD_EVERYTHING || lHint == UPD_GRAYSCALEANDCOLORS || lHint == UPD_GRAYSCALE || lHint == UPD_NEARBLACK || lHint == UPD_NEARWHITE || lHint == UPD_DATAREFDOC || lHint == UPD_REFERENCEDATA || lHint == UPD_ARRAYSIZES || lHint == UPD_GENERALREFERENCES || lHint == UPD_SENSORCONFIG || lHint >= UPD_REALTIME)
+	if ( lHint == UPD_EVERYTHING || lHint == UPD_GRAYSCALEANDCOLORS || lHint == UPD_GRAYSCALE || lHint == UPD_NEARBLACK || lHint == UPD_NEARWHITE || lHint == UPD_DATAREFDOC || lHint == UPD_REFERENCEDATA || lHint == UPD_ARRAYSIZES || lHint >= UPD_REALTIME)
 	{
 		m_Grapher.UpdateGraph ( GetDocument () );
 		Invalidate(TRUE);

@@ -74,6 +74,7 @@ CGDIGenerator::CGDIGenerator()
 	m_displayWindow.m_Intensity=GetConfig()->GetProfileInt("GDIGenerator","Intensity",100);
 	m_displayWindow.m_busePic=GetConfig()->GetProfileInt("GDIGenerator","USEPIC",0);
 	m_displayWindow.m_bdispTrip=GetConfig()->GetProfileInt("GDIGenerator","DISPLAYTRIPLETS",1);
+	m_displayWindow.m_brPi_user=GetConfig()->GetProfileInt("GDIGenerator","DISPLAYRPIUSER",0);
 	m_displayWindow.m_bLinear=GetConfig()->GetProfileInt("GDIGenerator","LOADLINEAR",1);
 	m_rectSizePercent = m_displayWindow.m_rectSizePercent;
 	m_bgStimPercent = m_displayWindow.m_bgStimPercent;
@@ -90,6 +91,7 @@ CGDIGenerator::CGDIGenerator()
 	m_bLinear = GetConfig()->GetProfileInt("GDIGenerator","LOADLINEAR",1);
 	m_bHdr10 = GetConfig()->GetProfileInt("GDIGenerator","EnableHDR10",0);
 	m_bdispTrip = GetConfig()->GetProfileInt("GDIGenerator","DISPLAYTRIPLETS",1);
+	m_brPi_user = GetConfig()->GetProfileInt("GDIGenerator","DISPLAYRPIUSER",0);
     m_madVR_3d = GetConfig()->GetProfileInt("GDIGenerator","MADVR3D",1);
     m_madVR_vLUT = GetConfig()->GetProfileInt("GDIGenerator","MADVRvLUT",1);
     m_madVR_HDR = GetConfig()->GetProfileInt("GDIGenerator","MADVRHDR",0);
@@ -119,6 +121,7 @@ CGDIGenerator::CGDIGenerator(int nDisplayMode, BOOL b16_235)
 	m_displayWindow.m_bgStimPercent=0;
 	m_displayWindow.m_Intensity=100;
 	m_displayWindow.m_busePic=FALSE;
+	m_displayWindow.m_brPi_user = FALSE;
 	m_displayWindow.m_bdispTrip=FALSE;
 	m_displayWindow.m_bLinear=FALSE;
 	m_displayWindow.m_bHdr10=FALSE;
@@ -292,6 +295,7 @@ void CGDIGenerator::SetPropertiesSheetValues()
 	m_GDIGenePropertiesPage.m_busePic=m_busePic;
 	m_GDIGenePropertiesPage.m_bLinear=m_bLinear;
 	m_GDIGenePropertiesPage.m_bdispTrip=m_bdispTrip;
+	m_GDIGenePropertiesPage.m_brPi_user=m_brPi_user;
 	m_GDIGenePropertiesPage.m_madVR_3d=m_madVR_3d;
 	m_GDIGenePropertiesPage.m_madVR_vLUT=m_madVR_vLUT;
 	m_GDIGenePropertiesPage.m_madVR_HDR=m_madVR_HDR;
@@ -368,6 +372,13 @@ void CGDIGenerator::GetPropertiesSheetValues()
 	{
 		m_bdispTrip=m_GDIGenePropertiesPage.m_bdispTrip;
 		GetConfig()->WriteProfileInt("GDIGenerator","DISPLAYTRIPLETS",m_bdispTrip);
+		SetModifiedFlag(TRUE);
+	}
+
+	if ( m_brPi_user!=m_GDIGenePropertiesPage.m_brPi_user )
+	{
+		m_brPi_user=m_GDIGenePropertiesPage.m_brPi_user;
+		GetConfig()->WriteProfileInt("GDIGenerator","DISPLAYRPIUSER",m_brPi_user);
 		SetModifiedFlag(TRUE);
 	}
 
@@ -564,7 +575,7 @@ BOOL CGDIGenerator::DisplayRGBColormadVR( const ColorRGBDisplay& clr, bool first
 	  madVR_SetOsdText(CT2CW(s2));
 
 	m_nPat++;
-	if ( (m_nPat % GetConfig()->m_ablFreq) == 0 && GetConfig()->m_bABL)
+	if ( (m_nPat % GetConfig()->m_ablFreq == 0) && GetConfig()->m_bABL )
 	{
 		//sleep prevention every 40 patterns for longer sequences
 		madVR_SetPatternConfig(100, 0, -1, 0);
@@ -632,13 +643,25 @@ BOOL CGDIGenerator::DisplayRGBCCast( const ColorRGBDisplay& clr, bool first, UIN
 	g = ((clr[1]) / 100. );
     b = ((clr[2]) / 100. );
 
+	double R1=0.,G1=0.,B1=0.;
+	//subtract window area for APL
+	if (Cgen.m_rectSizePercent < 100)
+	{
+		R1 = max(0,(bgstim - r*Cgen.m_rectSizePercent/100.))/(1-Cgen.m_rectSizePercent/100. );
+		G1 = max(0,(bgstim - g*Cgen.m_rectSizePercent/100.))/(1-Cgen.m_rectSizePercent/100. );
+		B1 = max(0,(bgstim - b*Cgen.m_rectSizePercent/100.))/(1-Cgen.m_rectSizePercent/100. );
+		R1 = min(R1, 1);
+		G1 = min(G1, 1);
+		B1 = min(B1, 1);
+	}
+
 	if (ccwin->height == 0) 
 	{
 		MessageBox(0, "Test pattern failure.", "Error", MB_ICONERROR);
 		return false;
 	} 
 
-	if (ccwin->set_bg(ccwin,bgstim) != 0)
+	if (ccwin->set_bg(ccwin,(R1+G1+B1)/3.) != 0)
 	{
 		MessageBox(0, "CCast Test pattern failure.", "set_bg", MB_ICONERROR);
 		return false;
@@ -659,7 +682,7 @@ BOOL CGDIGenerator::DisplayRGBCCast( const ColorRGBDisplay& clr, bool first, UIN
 	}
 	
 	m_nPat++;
-	if ((m_nPat % GetConfig()->m_ablFreq) == 0 && GetConfig()->m_bABL)
+	if ( (m_nPat % GetConfig()->m_ablFreq == 0) && GetConfig()->m_bABL)
 	{
 		//sleep prevention
 		ccwin->set_bg(ccwin,0);
@@ -718,10 +741,21 @@ return TRUE;
 BOOL CGDIGenerator::DisplayRGBColorrPI( const ColorRGBDisplay& clr, bool first, UINT nPattern )
 {
 	//init done in generator.cpp 
-	int r, g, b, rb, gb, bb;
+	int r=0, g=0, b=0;
 	char CPat[256];
 	CGDIGenerator Cgen;
 	double bgstim = Cgen.m_bgStimPercent / 100.;
+	double R1=0.,G1=0.,B1=0.;
+	//subtract window area for APL
+	if (Cgen.m_rectSizePercent < 100)
+	{
+		R1 = max(0,(bgstim*255 - clr[0]*Cgen.m_rectSizePercent/100.))/(1-m_rectSizePercent/100. );
+		G1 = max(0,(bgstim*255 - clr[1]*Cgen.m_rectSizePercent/100.))/(1-m_rectSizePercent/100. );
+		B1 = max(0,(bgstim*255 - clr[2]*Cgen.m_rectSizePercent/100.))/(1-m_rectSizePercent/100. );
+		R1 = min(R1, 255);
+		G1 = min(G1, 255);
+		B1 = min(B1, 255);
+	}
 
 	if (m_b16_235)
 	{
@@ -731,12 +765,9 @@ BOOL CGDIGenerator::DisplayRGBColorrPI( const ColorRGBDisplay& clr, bool first, 
 		r=min(max(r,0),235);
 		g=min(max(g,0),235);
 		b=min(max(b,0),235);
-		rb = floor(bgstim * 219.0 + 16.5);
-		gb = floor(bgstim * 219.0 + 16.5);
-		bb = floor(bgstim * 219.0 + 16.5);
-		rb=min(max(rb,0),235);
-		gb=min(max(gb,0),235);
-		bb=min(max(bb,0),235);
+		R1 = floor(R1/255. * 219. + 16.5);
+		G1 = floor(G1/255. * 219. + 16.5);
+		B1 = floor(B1/255. * 219. + 16.5);
 	}
 	else
 	{
@@ -746,30 +777,24 @@ BOOL CGDIGenerator::DisplayRGBColorrPI( const ColorRGBDisplay& clr, bool first, 
 		r=min(max(r,0),255);
 		g=min(max(g,0),255);
 		b=min(max(b,0),255);
-		rb = floor(bgstim * 255.0 + 0.5);
-		gb = floor(bgstim * 255.0 + 0.5);
-		bb = floor(bgstim * 255.0 + 0.5);
-		rb=min(max(rb,0),255);
-		gb=min(max(gb,0),255);
-		bb=min(max(bb,0),255);
 	}
 	
 	bool m_bPause = false;
 	m_nPat++;
 
-	if ((m_nPat % GetConfig()->m_ablFreq) == 0 && GetConfig()->m_bABL)
+	if ( (m_nPat % GetConfig()->m_ablFreq == 0) && GetConfig()->m_bABL)
 	{
-		sprintf_s(CPat, "TESTTEMPLATERAMDISK:HCFR:%d,%d,%d",0,0,0);
+		sprintf_s(CPat,"RGB=RECTANGLE;%d,%d;100;%d,%d,%d;%d,%d,%d;-1,-1", (int)(pow((double)(Cgen.m_rectSizePercent)/100.0,0.5) * rPi_xWidth),(int)(pow((double)(Cgen.m_rectSizePercent)/100.0,0.5) * rPi_yHeight),0,0,0,0,0,0);
 		m_bPause = true;
 	}
 	else
 	{
-		if (!m_bdispTrip)
-			sprintf_s(CPat,"RGB=RECTANGLE;%d,%d;100;%d,%d,%d;%d,%d,%d;-1,-1", (int)(pow((double)(Cgen.m_rectSizePercent)/100.0,0.5) * rPi_xWidth),(int)(pow((double)(Cgen.m_rectSizePercent)/100.0,0.5) * rPi_yHeight),r,g,b,rb,gb,bb);
+		if (m_brPi_user) //user background
+			sprintf_s(CPat, "TESTTEMPLATEDISK:PatternDynamic:%d,%d,%d",r,g,b);
+		else if (!m_bdispTrip)
+			sprintf_s(CPat,"RGB=RECTANGLE;%d,%d;100;%d,%d,%d;%d,%d,%d;-1,-1", (int)(pow((double)(Cgen.m_rectSizePercent)/100.0,0.5) * rPi_xWidth),(int)(pow((double)(Cgen.m_rectSizePercent)/100.0,0.5) * rPi_yHeight),r,g,b,(int)R1,(int)G1,(int)B1);
 		else
-		{
-			sprintf_s(CPat, "TESTTEMPLATERAMDISK:HCFR:%d,%d,%d",r,g,b);
-		}
+			sprintf_s(CPat, "TESTTEMPLATERAMDISK:HCFR:%d,%d,%d;%d,%d,%d",r,g,b,(int)R1,(int)G1,(int)B1);
 	}
 
 	CString debug=_T(CPat);
@@ -780,7 +805,7 @@ BOOL CGDIGenerator::DisplayRGBColorrPI( const ColorRGBDisplay& clr, bool first, 
 			GetColorApp()->InMeasureMessageBox( "Error communicating with rPI", "Error", MB_ICONINFORMATION);
 
 		if (m_bPause)
-			Sleep(500);
+			Sleep(300);
 
 	// Sleep 80 ms while dispatching messages to ensure window is really displayed
 		MSG		Msg;
@@ -841,7 +866,7 @@ BOOL CGDIGenerator::DisplayRGBColor( const ColorRGBDisplay& clr , MeasureType nP
 		( (CMainFrame *) ( AfxGetApp () -> m_pMainWnd ) ) -> m_wndTestColorWnd.SetForegroundWindow();
 //static pattern
 		m_nPat++;
-		if (m_nPat % GetConfig()->m_ablFreq == 0 && GetConfig()->m_bABL)
+		if ((m_nPat % GetConfig()->m_ablFreq == 0)  && GetConfig()->m_bABL)
 		{
 			WINDOWPLACEMENT wp;
 			CRect rect;

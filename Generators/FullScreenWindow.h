@@ -69,7 +69,7 @@ public:
 	BOOL					m_bIRE;
 	BOOL					m_b16_235;
 	BOOL					m_busePic;
-	BOOL					m_bdispTrip;
+	BOOL					m_bdispTrip, m_brPi_user;
 	BOOL					m_bLinear;
 	BOOL					m_bHdr10;
 	BOOL					m_bVideoScale;

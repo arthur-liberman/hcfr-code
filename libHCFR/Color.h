@@ -194,6 +194,16 @@ public:
     ColorLCH(double L, double C, double H);
 };
 
+class ColorLMS: public ColorTriplet
+{
+
+public:
+    ColorLMS();
+    explicit ColorLMS(const Matrix& matrix);
+    ColorLMS(const ColorXYZ& XYZ, double YWhiteRef, CColorReference colorReference);
+    ColorLMS(double L, double M, double S);
+};
+
 class ColorRGBDisplay : public ColorTriplet
 {
 public:
@@ -237,6 +247,8 @@ public:
 	Colorxyz GetxyzValue() const;
 	ColorLab GetLabValue(double YWhiteRef, CColorReference colorReference) const;
 	ColorLCH GetLCHValue(double YWhiteRef, CColorReference colorReference) const;
+	ColorLMS GetLMSValue(double YWhiteRef, CColorReference colorReference) const;
+	ColorICtCp GetICtCpValue(double YWhiteRef, CColorReference colorReference) const;
 
 	void SetXYZValue(const ColorXYZ& aColor);
 	void SetRGBValue(const ColorRGB& aColor, CColorReference colorReference);

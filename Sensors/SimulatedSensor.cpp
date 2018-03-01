@@ -231,12 +231,12 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue, 
 		b =  floor( (aRGBValue[2]/100. * 219.) + 0.5 ) / 2.19;
 	}
 		
-	if (!GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",1)) //user outputs full range
-	{
-		r = floor( ((r / 100.) * 255. + 0.5) ) / 2.55;
-		g = floor( ((g / 100.) * 255. + 0.5) ) / 2.55;
-		b = floor( ((b / 100.) * 255. + 0.5) ) / 2.55;
-	}
+//	if (!GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",1)) //user outputs full range -can be set to simulate rounding errors
+//	{
+//		r = floor( ((r / 100.) * 255. + 0.5) ) / 2.55;
+//		g = floor( ((g / 100.) * 255. + 0.5) ) / 2.55;
+//		b = floor( ((b / 100.) * 255. + 0.5) ) / 2.55;
+//	}
 
 	gamma=GetConfig()->m_GammaRef;
 
@@ -325,9 +325,7 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue, 
 		colSensor.SetX(colSensor.GetX() * rescale);
 		colSensor.SetY(colSensor.GetY() * rescale);
 		colSensor.SetZ(colSensor.GetZ() * rescale);
-	}
-
-	//set black to target minL
+	}	//set black to target minL
 	else if (aRGBValue[0] == 0. && aRGBValue[1] == 0. && aRGBValue[2] == 0.)
 	{
 		CColor BlackColor = GetColorReference().GetWhite();
@@ -335,7 +333,6 @@ CColor CSimulatedSensor::MeasureColorInternal(const ColorRGBDisplay& aRGBValue, 
 		colSensor[1]=BlackColor[1]*GetConfig()->m_TargetMinL;
 		colSensor[2]=BlackColor[2]*GetConfig()->m_TargetMinL;
 	}
-
 
 	double	Spectrum[18] = { 0.001, 0.01, 0.1, 0.15, 0.2, 0.4, 0.5, 0.6, 0.7, 1.2, 1.0, 1.1, 0.8, 0.9, 0.6, 0.5, 0.4, 0.15 };
 	colSensor.SetSpectrum ( CSpectrum ( 18, 380, 730, 20, Spectrum ) );

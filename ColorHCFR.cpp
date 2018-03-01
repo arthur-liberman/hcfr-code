@@ -47,7 +47,6 @@
 #include "ximage.h"
 #include "CWebUpdate.h"
 
-
 #ifdef USE_NON_FREE_CODE
 // Include for device interface (this device interface is outside GNU GPL license)
 #include "devlib\CHCFRDI3.h"
@@ -218,6 +217,13 @@ BOOL CColorHCFRApp::InitInstance()
 	CWnd	SplashWnd;
 	CDC *	pDC;
 
+//	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+//	_CrtSetReportMode(_CRT_ERROR , _CRTDBG_MODE_DEBUG);
+//	_CrtSetBreakAlloc(28545);
+//	_CrtSetBreakAlloc(212642);
+//	_CrtSetBreakAlloc(28483);
+//	_CrtSetBreakAlloc(28483);
+
 	HRSRC hRsrc = ::FindResource(AfxGetInstanceHandle(),MAKEINTRESOURCE(IDR_SPLASH_SCREEN),"SPLASHSCREEN");
 	SplashImage.LoadResource(hRsrc,CXIMAGE_FORMAT_PNG,AfxGetInstanceHandle());   
 
@@ -367,7 +373,7 @@ BOOL CColorHCFRApp::InitInstance()
 
 		hDlg = ::CreateDialog ( AfxGetResourceHandle (), MAKEINTRESOURCE(IDD_WEB_UPDATE), NULL, NULL );
 		hCtrl = ::GetDlgItem ( hDlg, IDC_STATIC1 );
-		::ShowWindow ( hDlg, SW_SHOW );
+		::ShowWindow ( hDlg, SW_HIDE );
 		::UpdateWindow ( hDlg );
 
 		WebUpdate.SetLocalDirectory("", true);
@@ -376,16 +382,24 @@ BOOL CColorHCFRApp::InitInstance()
 		bool cacheDel = DeleteUrlCacheEntry("ftp://prairie17.dyndns.org/shares/dload/CheckUpdate.txt");
 		cacheDel = DeleteUrlCacheEntry("ftp://prairie17.dyndns.org/shares/dload/ColorHCFR.exe");
 
-		if (!WebUpdate.DoUpdateCheck())
+		int m_WebUp = WebUpdate.DoUpdateCheck();
+		if (!m_WebUp)
 		{
 			//update check failed
 			::DestroyWindow ( hDlg );
-			AfxMessageBox(IDS_UPD_IMPOSSIBLE, MB_OK | MB_ICONWARNING);
+//			AfxMessageBox(IDS_UPD_IMPOSSIBLE, MB_OK | MB_ICONWARNING);
+			return TRUE;
+		} else if (m_WebUp == -99)
+		{
+			//update check timed out
+			::DestroyWindow ( hDlg );
 			return TRUE;
 		}
 
 		if (WebUpdate.GetNumberDifferent() == 1)
 		{
+			::ShowWindow ( hDlg, SW_SHOW );
+			::UpdateWindow ( hDlg );
 			::SetWindowText ( hCtrl, "Version "+WebUpdate.fileVer+" is available..." );
 			Sleep(1500);
 			::ShowWindow ( hDlg, SW_HIDE );
@@ -425,8 +439,8 @@ BOOL CColorHCFRApp::InitInstance()
 		}
 		else
 		{
-			::SetWindowText ( hCtrl, "No updates found." );
-			Sleep(1000);
+//			::SetWindowText ( hCtrl, "No updates found." );
+//			Sleep(1000);
 		}
 
 		::DestroyWindow ( hDlg );
@@ -550,7 +564,6 @@ int CColorHCFRApp::ExitInstance()
         delete m_pConfig;
         m_pConfig = NULL;
     }
-
 	return CWinApp::ExitInstance();
 }
 

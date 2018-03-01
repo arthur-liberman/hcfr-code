@@ -731,7 +731,7 @@ void CSatLumShiftView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	// Do nothing when not concerned
 	switch ( lHint )
 	{
-		case UPD_GRAYSCALE:
+//		case UPD_GRAYSCALE: //used as catchall for preferences change
 		case UPD_NEARBLACK:
 		case UPD_NEARWHITE:
 		case UPD_CONTRAST:
