@@ -57,6 +57,8 @@ CFullScreenWindow::CFullScreenWindow(BOOL bTestOverlay)
 	m_ansiCcast = -1;
 	m_bTestOverlay = bTestOverlay;
 	m_rectSizePercent = GetConfig()->GetProfileInt("GDIGenerator","SizePercent",10);
+	m_offsetx = GetConfig()->GetProfileInt("GDIGenerator","XOffset",0);
+	m_offsety = GetConfig()->GetProfileInt("GDIGenerator","YOffset",0);
 	m_bgStimPercent = 0;
 	
 	m_nDisplayMode = GetConfig()->GetProfileInt("GDIGenerator","DisplayMode",DISPLAY_DEFAULT_MODE);

@@ -59,6 +59,7 @@ public:
 public:
 	COLORREF				m_Color;
 	UINT					m_rectSizePercent;
+	int						m_offsetx,m_offsety;
 	UINT					m_bgStimPercent;
 	UINT 					m_Intensity;
 	UINT					m_nPat;

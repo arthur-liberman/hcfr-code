@@ -90,7 +90,7 @@ private:
 	POINT		m_InitialWindowSize;
 	RECT		m_OriginalRect;
 	CPtrList	m_CtrlInitPos;
-
+	CFont		line_Font;
 	DWORD		m_dwInitialUserInfo;
 
 	// Information windows
@@ -193,7 +193,7 @@ protected:
 	CPPToolTip	m_tooltip,m_tooltip2;
 	CString GetItemText(CColor & aMeasure, double YWhite, CColor & aReference, CColor & aRefDocColor, double YWhiteRefDoc, int aComponentNum, int nCol, double Offset, bool isGS);
 	LPSTR GetGridRowLabel(int aComponentNum);
-
+	bool binfoRedraw;
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CMainView)

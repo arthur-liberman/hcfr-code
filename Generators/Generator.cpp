@@ -160,6 +160,8 @@ BOOL CGenerator::Init(UINT nbMeasure, bool isSpecial)
 	{
 		if (Cgen.m_nDisplayMode == DISPLAY_rPI)
 		{
+			int x2 = Cgen.m_offsetx;
+			int y2 = Cgen.m_offsety;
 			if (!sock) //initialization
 			{
 				hInstLibrary = LoadLibrary("RB8PGenerator.dll");
@@ -232,7 +234,7 @@ BOOL CGenerator::Init(UINT nbMeasure, bool isSpecial)
 									_RB8PG_send(sock,"RGB=IMAGE;1920,1080;100;255,255,255;0,0,0;-1,-1;/var/lib/PGenerator/images-HCFR/gbramp.png");
 									Sleep(1000);
 								}
-								if (m_bdispTrip)
+								if (m_bdispTrip || x2 != 0 || y2 != 0)
 								{
 									CGDIGenerator Cgen;
 									double bgstim = Cgen.m_bgStimPercent / 100.;
@@ -263,7 +265,7 @@ BOOL CGenerator::Init(UINT nbMeasure, bool isSpecial)
 									templ.Format("SETCONF:HCFR:TEMPLATERAMDISK:DRAW=TEXT\nDIM=18,0\nRESOLUTION=100\nRGB=20,128,128\nBG=20,40,60\n" \
 										"POSITION=%d,20\nTEXT=RGB Triplet $RGB\nEND=1\n" \
 										"DRAW=RECTANGLE\nDIM=%d,%d\nRESOLUTION=100\n" \
-										"RGB=DYNAMIC\nBG=DYNAMIC\nPOSITION=-1,-1\nEND=1",rPi_xWidth / 2 - int(175 * t_fact),x1,y1);
+										"RGB=DYNAMIC\nBG=DYNAMIC\nPOSITION=-1,-1,%d,%d\nEND=1",rPi_xWidth / 2 - int(175 * t_fact),x1,y1,x2,y2);
 //										"RGB=DYNAMIC\nBG=-1,-1,-1\nPOSITION=-1,-1\nEND=1",rb,gb,bb,rPi_xWidth / 2 - int(175 * t_fact),x1,y1);
 							
 									CGenerator::_RB8PG_send(sock,templ);
@@ -292,7 +294,7 @@ BOOL CGenerator::Init(UINT nbMeasure, bool isSpecial)
 			}
 			else //in case template needs updating
 			{
-				if (m_bdispTrip)
+				if (m_bdispTrip || x2 !=0 || y2 != 0)
 				{
 					CGDIGenerator Cgen;
 					double bgstim = Cgen.m_bgStimPercent / 100.;
@@ -316,13 +318,14 @@ BOOL CGenerator::Init(UINT nbMeasure, bool isSpecial)
 						bb=min(max(bb,0),255);
 					}
 					CString templ;
-					int x1 = (int)(pow((double)(Cgen.m_rectSizePercent)/100.0,0.5) * rPi_xWidth);
-					int y1 = (int)(pow((double)(Cgen.m_rectSizePercent)/100.0,0.5) * rPi_yHeight);
+					int x1 = (UINT)(pow((double)(Cgen.m_rectSizePercent)/100.0,0.5) * rPi_xWidth);
+					int y1 = (UINT)(pow((double)(Cgen.m_rectSizePercent)/100.0,0.5) * rPi_yHeight);
+
 					double t_fact = rPi_xWidth / 1920.; 
 					templ.Format("SETCONF:HCFR:TEMPLATERAMDISK:DRAW=TEXT\nDIM=18,0\nRESOLUTION=100\nRGB=20,128,128\nBG=20,40,60\n" \
 							"POSITION=%d,20\nTEXT=RGB Triplet $RGB\nEND=1\n" \
 							"DRAW=RECTANGLE\nDIM=%d,%d\nRESOLUTION=100\n" \
-							"RGB=DYNAMIC\nBG=DYNAMIC\nPOSITION=-1,-1\nEND=1",rPi_xWidth / 2 - int(175 * t_fact),x1,y1);
+							"RGB=DYNAMIC\nBG=DYNAMIC\nPOSITION=-1,-1,%d,%d\nEND=1",rPi_xWidth / 2 - int(175 * t_fact),x1,y1,x2,y2);
 //						"RGB=DYNAMIC\nBG=-1,-1,-1\nPOSITION=-1,-1\nEND=1",rb,gb,bb,rPi_xWidth / 2 - int(175 * t_fact),x1,y1);
 				
 					CGenerator::_RB8PG_send(sock,templ);

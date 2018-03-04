@@ -47,6 +47,7 @@ public:
 	UINT	m_rectSizePercent;
 	UINT	m_bgStimPercent;
 	UINT	m_Intensity;
+	int		m_offsetx,m_offsety;
 	//}}AFX_DATA
 
 	CArray <CString,CString> m_monitorNameArray;

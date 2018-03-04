@@ -412,7 +412,7 @@ CMainView::CMainView()
     //{{AFX_DATA_INIT(CMainView)
 	m_datarefCheckButton = FALSE;
 	//}}AFX_DATA_INIT
-
+	binfoRedraw = false;
 	m_displayMode = 0;
 	m_infoDisplay = 5;
 	m_nSizeOffset = 0;
@@ -511,6 +511,7 @@ CMainView::~CMainView()
 		delete pCtrlPos;
 	}
 	m_CtrlInitPos.RemoveAll ();
+	line_Font.DeleteObject();
 }
 
 void CMainView::DoDataExchange(CDataExchange* pDX)
@@ -682,52 +683,6 @@ void CMainView::OnInitialUpdate()
 	InitSelectedColorGrid();
 
 	UpdateData(FALSE);
-	// Get current font.
-    CFont* pFont = GetDlgItem( IDC_INFOLINE )->GetFont();
-    LOGFONT LogFont = { 0 };
-    pFont->GetLogFont( &LogFont );
-
-    // Create new font with underline style.
-	
-	//    LogFont.lfUnderline = TRUE;
-	LogFont.lfWeight = FW_MEDIUM;
-	LogFont.lfQuality = PROOF_QUALITY;
-	LogFont.lfPitchAndFamily = VARIABLE_PITCH;
-	strcpy_s(LogFont.lfFaceName,"Arial");
-
-	CFont m_StaticFont;
-    m_StaticFont.CreateFontIndirect( &LogFont );
-
-	// Sets the new font back to static text.
-    GetDlgItem( IDC_INFOLINE )->SetFont( &m_StaticFont );
-
-//	UpdateGrid();
-
-	m_tooltip.Create(this);	
-	m_tooltip.SetBehaviour(PPTOOLTIP_CLOSE_LEAVEWND);
-	m_tooltip.SetNotify(TRUE);
-	m_tooltip.SetBorder(::CreateSolidBrush(RGB(212,175,55)),1,1);
-
-	CWnd * pWnd = GetDlgItem(IDC_INFOLINE);
-	m_tooltip.AddTool(pWnd, m_infoLine);
-	m_tooltip.SetColorBk(RGB(255,165,0),RGB(0,128,128));
-	m_tooltip.SetEffectBk(CPPDrawManager::EFFECT_HGRADIENT);
-	m_tooltip.SetBorder(::CreateSolidBrush(RGB(212,175,55)),1,1);
-	pWnd->SetWindowTextA(m_infoLine);
-	pWnd->Invalidate();
-
-	m_tooltip2.Create(this);	
-	m_tooltip2.SetBehaviour(PPTOOLTIP_CLOSE_LEAVEWND);
-	m_tooltip2.SetNotify(TRUE);
-	m_tooltip2.SetSize(0, 72);
-	pWnd = GetDlgItem(IDC_CCOMP3);
-	m_tooltip2.AddTool(pWnd, "Color Comparator\n____________________________________________\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-	m_tooltip2.SetColorBk(RGB(110,110,110),RGB(128,128,128));
-	m_tooltip2.SetEffectBk(CPPDrawManager::EFFECT_SOLID);
-	m_tooltip2.SetBorder(::CreateSolidBrush(RGB(212,175,55)),1,1);
-			
-	m_tooltip.SetFont(&m_StaticFont);
-	m_tooltip2.SetFont(&m_StaticFont);
 }
 
 LRESULT CMainView::OnSetUserInfoPostInitialUpdate(WPARAM wParam, LPARAM lParam)
@@ -1047,7 +1002,7 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 			ref = ColorRGB(m_RefColor.GetRGBValue(bRef));
 			if (mode == 5)
 			{
-				double Yref = ((m_displayMode==0||m_displayMode==3||m_displayMode==4||m_displayMode==12)?m_RefWhite/tmWhite:1.0);
+				double Yref = ((m_displayMode==0||m_displayMode==3||m_displayMode==4||m_displayMode==12)?(GetConfig()->m_useToneMap?((GetConfig()->m_DiffuseL/94.37844) /(GetConfig()->m_TargetMaxL/10000.)):tmWhite/(GetConfig()->m_TargetMaxL/10000.)):(m_displayMode==1?1.0:(GetConfig()->m_DiffuseL/94.37844)));
 				m_ref_rd = min(max(ref[0]/Yref,0),1);
 				m_ref_gd = min(max(ref[1]/Yref,0),1);
 				m_ref_bd = min(max(ref[2]/Yref,0),1);
@@ -1063,15 +1018,15 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 			{
 				if (mode == 5 || mode == 7)
 				{
-					m_ref_rd = getL_EOTF(m_ref_rd, noDataColor, noDataColor, 2.4, 0.9, -1*mode);
-					m_ref_gd = getL_EOTF(m_ref_gd, noDataColor, noDataColor, 2.4, 0.9, -1*mode);
-					m_ref_bd = getL_EOTF(m_ref_bd, noDataColor, noDataColor, 2.4, 0.9, -1*mode);
+					m_ref_rd = getL_EOTF(m_ref_rd, noDataColor, noDataColor, 2.4, 0.9, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma);
+					m_ref_gd = getL_EOTF(m_ref_gd, noDataColor, noDataColor, 2.4, 0.9, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma);
+					m_ref_bd = getL_EOTF(m_ref_bd, noDataColor, noDataColor, 2.4, 0.9, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma);
 				}
 				else
 				{
-					m_ref_rd = getL_EOTF((m_ref_rd),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
-					m_ref_gd = getL_EOTF((m_ref_gd),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
-					m_ref_bd = getL_EOTF((m_ref_bd),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+					m_ref_rd = getL_EOTF((m_ref_rd),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, 1.0, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+					m_ref_gd = getL_EOTF((m_ref_gd),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, 1.0, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+					m_ref_bd = getL_EOTF((m_ref_bd),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, 1.0, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
 				}
 			}
 			else
@@ -1117,7 +1072,7 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 
 				if (mode == 5)
 				{
-					double Yref = ((m_displayMode==0||m_displayMode==3||m_displayMode==4||m_displayMode==12)?10000.:m_YWhite/tmWhite);
+					double Yref = ((m_displayMode==0||m_displayMode==3||m_displayMode==4||m_displayMode==12)?(GetConfig()->m_useToneMap?10000.*(GetConfig()->m_DiffuseL/94.37844):tmWhite*10000.):m_YWhite);
 					m_meas_r = min(max(meas[0]/Yref,0),1);
 					m_meas_g = min(max(meas[1]/Yref,0),1);
 					m_meas_b = min(max(meas[2]/Yref,0),1);
@@ -1148,12 +1103,12 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 					}
 					else
 					{
-						m_meas_r = getL_EOTF(m_meas_r,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
-						m_meas_g = getL_EOTF(m_meas_g,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
-						m_meas_b = getL_EOTF(m_meas_b,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
-						m_meas_rd = getL_EOTF(m_meas_rd,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
-						m_meas_gd = getL_EOTF(m_meas_gd,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
-						m_meas_bd = getL_EOTF(m_meas_bd,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+						m_meas_r = getL_EOTF(m_meas_r,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, 1.0, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+						m_meas_g = getL_EOTF(m_meas_g,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, 1.0, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+						m_meas_b = getL_EOTF(m_meas_b,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, 1.0, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+						m_meas_rd = getL_EOTF(m_meas_rd,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, 1.0, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+						m_meas_gd = getL_EOTF(m_meas_gd,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, 1.0, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+						m_meas_bd = getL_EOTF(m_meas_bd,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, 1.0, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
 					}
 				}
 				else
@@ -1201,7 +1156,6 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 					trip2.Format("%d,%d,%d\nReference",((int)floor((m_ref_rd)*219.+0.5)+16),(int)(floor((m_ref_gd)*219.+0.5)+16),(int)(floor((m_ref_bd)*219.+0.5)+16));
 				else
 					trip2.Format("%d,%d,%d\nReference",((int)floor((m_ref_rd)*255.+0.5)),(int)(floor((m_ref_gd)*255.+0.5)),(int)(floor((m_ref_bd)*255.+0.5)));
-
 			}
 
 		SetDlgItemTextA(IDC_CCOMP, trip1); //this calls window redraw as well
@@ -1368,7 +1322,6 @@ void CMainView::InitGrid(bool sizeGrid)
 	pFont->GetLogFont(&lf);
 	lf.lfWeight=FW_BOLD;
 	m_pGrayScaleGrid->SetItemFont(0,0, &lf); // Set the font to bold
-
 	// set column label
 	GV_ITEM Item;
 	Item.mask = GVIF_TEXT|GVIF_FORMAT;
@@ -1988,54 +1941,6 @@ void CMainView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	// TODO: add a general option for that ?
 	if ( 1 )
 	{
-		bool isHDR = GetConfig()->m_GammaOffsetType == 5;
-		double 	BBC_gamma = GetConfig()->m_TargetSysGamma;
-		CString dWhitestr;
-		double tmWhite = getL_EOTF(0.5022283, noDataColor, noDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1) * 100.0;
-		dWhitestr.Format("%4.1f nits diffuse white", tmWhite);
-		
-		if (GetConfig()->m_useToneMap)
-			dWhitestr += " w/BT.2390 Tonemap";
-		CString bbcstr,sdrstr;
-		bbcstr.Format("system gamma: %3.2f",BBC_gamma);
-
-		CString CS = GetColorReference().standardName.c_str();
-		CString WP = GetColorReference().whiteName;
-
-		switch(GetConfig()->m_GammaOffsetType)
-		{
-			case 0:
-				sdrstr.Format(" SDR, Power law w/gamma = %3.2f", GetConfig()->m_GammaAvg);
-			break;
-			case 1:
-				sdrstr.Format(" SDR, Power law (black compensation) w/gamma = %3.2f", GetConfig()->m_GammaAvg);
-			break;
-			case 2:
-				sdrstr.Format(" SDR, Power law w/Camera gamma = %3.2", GetConfig()->m_GammaAvg);
-			break;
-			case 3:
-				sdrstr.Format(" SDR, Power law w/Camera gamma = %3.2f", GetConfig()->m_GammaAvg);
-			break;
-			case 4:
-				if (GetConfig()->m_GammaRel == 0)
-					sdrstr.SetString(" SDR, BT.1886 w/default gamma");
-				else
-					sdrstr.Format(" SDR, BT.1886 w/relative gamma = %3.2f", GetConfig()->m_GammaRel);
-			break;
-			case 6:
-				sdrstr.SetString(" SDR, L*");
-			break;
-		}
-
-		m_infoLine = "Color Space: "+CS+", White Point: "+WP+", EOTF: "+(isHDR ? " HDR10, "+ dWhitestr:GetConfig()->m_GammaOffsetType == 7?" HLG, "+bbcstr:sdrstr);
-		CString t = CTime::GetCurrentTime().Format(" [%H:%M:%S]");
-		CWnd * pWnd = GetDlgItem(IDC_INFOLINE);
-		CString nMeasures;
-		nMeasures.Format(", # of measures: %d",GetDocument()->GetMeasure()->m_NMeasurements);
-		pWnd->SetWindowTextA(m_infoLine + nMeasures + t);
-		m_tooltip.RemoveAllTools();
-		m_tooltip.AddTool(pWnd, m_infoLine + nMeasures + t);
-		
 		// Adjust grid selection if necessary
 		switch ( lHint )
 		{
@@ -2646,7 +2551,6 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 							if (mode == 5)
 							{
 								valy = getL_EOTF(valx,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1) * 100.;
-//								valy = min(valy, GetConfig()->m_TargetMaxL);
 							}
 							else
 	                            valy = getL_EOTF(valx,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1) * White.GetY();
@@ -4132,6 +4036,52 @@ void CMainView::UpdateGrid()
 			m_grayScaleGroup.SetText ( Msg );
 		}
 	}
+		bool isHDR = GetConfig()->m_GammaOffsetType == 5;
+		double 	BBC_gamma = GetConfig()->m_TargetSysGamma;
+		CString dWhitestr;
+		double tmWhite = getL_EOTF(0.5022283, noDataColor, noDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1) * 100.0;
+		dWhitestr.Format("%4.1f nits diffuse white", tmWhite);
+		
+		if (GetConfig()->m_useToneMap)
+			dWhitestr += " w/BT.2390 Tonemap";
+		CString bbcstr,sdrstr;
+		bbcstr.Format("system gamma: %3.2f",BBC_gamma);
+
+		CString CS = GetColorReference().standardName.c_str();
+		CString WP = GetColorReference().whiteName;
+
+		switch(GetConfig()->m_GammaOffsetType)
+		{
+			case 0:
+				sdrstr.Format(" SDR, Power law w/gamma = %3.2f", GetConfig()->m_GammaAvg);
+			break;
+			case 1:
+				sdrstr.Format(" SDR, Power law (black compensation) w/gamma = %3.2f", GetConfig()->m_GammaAvg);
+			break;
+			case 2:
+				sdrstr.Format(" SDR, Power law w/Camera gamma = %3.2", GetConfig()->m_GammaAvg);
+			break;
+			case 3:
+				sdrstr.Format(" SDR, Power law w/Camera gamma = %3.2f", GetConfig()->m_GammaAvg);
+			break;
+			case 4:
+				if (GetConfig()->m_GammaRel == 0)
+					sdrstr.SetString(" SDR, BT.1886 w/default gamma");
+				else
+					sdrstr.Format(" SDR, BT.1886 w/relative gamma = %3.2f", GetConfig()->m_GammaRel);
+			break;
+			case 6:
+				sdrstr.SetString(" SDR, L*");
+			break;
+		}
+		m_infoLine = "Color Space: "+CS+", White Point: "+WP+", EOTF: "+(isHDR ? " HDR10, "+ dWhitestr:GetConfig()->m_GammaOffsetType == 7?" HLG, "+bbcstr:sdrstr);
+		CString t = CTime::GetCurrentTime().Format(" [%H:%M:%S]");
+		CWnd * pWnd = GetDlgItem(IDC_INFOLINE);
+		CString nMeasures;
+		nMeasures.Format(", # of measures: %d",GetDocument()->GetMeasure()->m_NMeasurements);
+		pWnd->SetWindowTextA(m_infoLine + nMeasures + t);
+		m_tooltip.RemoveAllTools();
+		m_tooltip.AddTool(pWnd, m_infoLine + nMeasures + t);
 }
 
 void CMainView::UpdateContrastValuesInGrid ()
@@ -5846,7 +5796,7 @@ void CMainView::InitButtons()
 
 	CFont m_Font;
 	m_Font.Detach();
-	m_Font.CreateFont(7, 0, 0, 0, FW_MEDIUM, FALSE, FALSE,FALSE,0,OUT_TT_ONLY_PRECIS,0,PROOF_QUALITY,0, "Tahoma");
+	m_Font.CreateFont(8, 0, 0, 0, FW_SEMIBOLD, FALSE, FALSE,FALSE,0,OUT_TT_ONLY_PRECIS,0,PROOF_QUALITY,0, "Tahoma");
 
 	m_Ccomp.SetFont(&m_Font);
 	m_Ccomp3.SetFont(&m_Font);
@@ -5861,6 +5811,37 @@ void CMainView::InitButtons()
 		m_testAnsiPatternButton.ShowWindow ( SW_HIDE );
 		m_refs.ShowWindow ( SW_SHOW );
 	}
+	m_Font.DeleteObject();
+
+	line_Font.CreateFontA(18,0,0,0,FW_SEMIBOLD,0,0,0,0,0,0,PROOF_QUALITY,VARIABLE_PITCH,_T("Arial"));
+	m_refInfo.SetFont(&line_Font);
+
+    GetDlgItem( IDC_INFOLINE )->SetFont( &line_Font );
+
+	m_tooltip.Create(this);	
+	m_tooltip.SetBehaviour(PPTOOLTIP_CLOSE_LEAVEWND);
+	m_tooltip.SetNotify(TRUE);
+	m_tooltip.SetBorder(::CreateSolidBrush(RGB(212,175,55)),1,1);
+	GetDlgItem( IDC_INFOLINE )->SetWindowTextA(m_infoLine);
+
+	CWnd * pWnd = GetDlgItem(IDC_INFOLINE);
+	pWnd = GetDlgItem(IDC_CCOMP3);
+
+	m_tooltip.AddTool(pWnd, m_infoLine);
+	m_tooltip.SetColorBk(RGB(255,165,0),RGB(0,128,128));
+	m_tooltip.SetEffectBk(CPPDrawManager::EFFECT_HGRADIENT);
+	m_tooltip.SetBorder(::CreateSolidBrush(RGB(212,175,55)),1,1);
+
+	m_tooltip2.Create(this);	
+	m_tooltip2.SetBehaviour(PPTOOLTIP_CLOSE_LEAVEWND);
+	m_tooltip2.SetNotify(TRUE);
+	m_tooltip2.SetSize(0, 72);
+	m_tooltip2.AddTool(pWnd, "Color Comparator\n____________________________________________\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+	m_tooltip2.SetColorBk(RGB(110,110,110),RGB(128,128,128));
+	m_tooltip2.SetEffectBk(CPPDrawManager::EFFECT_SOLID);
+	m_tooltip2.SetBorder(::CreateSolidBrush(RGB(212,175,55)),1,1);
+	m_tooltip.SetFont(&line_Font);
+	m_tooltip2.SetFont(&line_Font);
 }
 void CMainView::InitGroups()
 {
@@ -5991,7 +5972,6 @@ HBRUSH CMainView::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 			break;
 		case CTLCOLOR_BTN:
 		case CTLCOLOR_EDIT:
-			break;
 		default:
 			pDC->SetBkMode(TRANSPARENT);
 			pDC->SetTextColor(FxGetSysColor(COLOR_MENUTEXT));
@@ -6202,9 +6182,7 @@ void CMainView::OnSize(UINT nType, int cx, int cy)
 		}
 		
 		InitGrid(true);
-
-//		if(m_pGrayScaleGrid==NULL)
-			UpdateGrid();
+		UpdateGrid();
 	}
 }
 
