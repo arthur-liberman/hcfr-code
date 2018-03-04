@@ -70,6 +70,8 @@ CGDIGenerator::CGDIGenerator()
 {
 	m_bBlankingCanceled = FALSE;
 	m_displayWindow.m_rectSizePercent=GetConfig()->GetProfileInt("GDIGenerator","SizePercent",10);
+	m_displayWindow.m_offsetx = GetConfig()->GetProfileInt("GDIGenerator","XOffset",0);
+	m_displayWindow.m_offsety = GetConfig()->GetProfileInt("GDIGenerator","YOffset",0);
 	m_displayWindow.m_bgStimPercent=GetConfig()->GetProfileInt("GDIGenerator","bgStimPercent",0);
 	m_displayWindow.m_Intensity=GetConfig()->GetProfileInt("GDIGenerator","Intensity",100);
 	m_displayWindow.m_busePic=GetConfig()->GetProfileInt("GDIGenerator","USEPIC",0);
@@ -78,6 +80,8 @@ CGDIGenerator::CGDIGenerator()
 	m_displayWindow.m_bLinear=GetConfig()->GetProfileInt("GDIGenerator","LOADLINEAR",1);
 	m_rectSizePercent = m_displayWindow.m_rectSizePercent;
 	m_bgStimPercent = m_displayWindow.m_bgStimPercent;
+	m_offsetx = m_displayWindow.m_offsetx;
+	m_offsety = m_displayWindow.m_offsety;
 	m_Intensity = m_displayWindow.m_Intensity;
 	m_patternDGenerator=NULL;
 	m_HdrInterface=NULL;
@@ -119,6 +123,8 @@ CGDIGenerator::CGDIGenerator(int nDisplayMode, BOOL b16_235)
 	m_doScreenBlanking = FALSE;
 	m_displayWindow.m_rectSizePercent=100;
 	m_displayWindow.m_bgStimPercent=0;
+	m_displayWindow.m_offsetx = 0;
+	m_displayWindow.m_offsety = 0;
 	m_displayWindow.m_Intensity=100;
 	m_displayWindow.m_busePic=FALSE;
 	m_displayWindow.m_brPi_user = FALSE;
@@ -247,8 +253,10 @@ void CGDIGenerator::Serialize(CArchive& archive)
 
 	if (archive.IsStoring())
 	{
-		int version=2;
+		int version=3;
 		archive << version;
+		archive << m_displayWindow.m_offsetx;
+		archive << m_displayWindow.m_offsety;
 		archive << m_displayWindow.m_rectSizePercent;
 		archive << m_displayWindow.m_bgStimPercent;
 		archive << m_displayWindow.m_Intensity;
@@ -259,9 +267,13 @@ void CGDIGenerator::Serialize(CArchive& archive)
 	{
 		int version;
 		archive >> version;
-		if ( version > 2 )
+		if ( version > 3 )
 			AfxThrowArchiveException ( CArchiveException::badSchema );
-
+		if ( version > 2)
+		{
+			archive >> m_displayWindow.m_offsetx;
+			archive >> m_displayWindow.m_offsety;
+		}
 		archive >> m_displayWindow.m_rectSizePercent;
 		archive >> m_displayWindow.m_bgStimPercent;
 		archive >> m_displayWindow.m_Intensity;
@@ -289,6 +301,8 @@ void CGDIGenerator::SetPropertiesSheetValues()
 	m_GDIGenePropertiesPage.m_rectSizePercent=m_displayWindow.m_rectSizePercent;
 	m_GDIGenePropertiesPage.m_bgStimPercent=m_displayWindow.m_bgStimPercent;
 	m_GDIGenePropertiesPage.m_Intensity=m_displayWindow.m_Intensity;
+	m_GDIGenePropertiesPage.m_offsetx=m_displayWindow.m_offsetx;
+	m_GDIGenePropertiesPage.m_offsety=m_displayWindow.m_offsety;
 	m_GDIGenePropertiesPage.m_activeMonitorNum=m_activeMonitorNum;
 	m_GDIGenePropertiesPage.m_nDisplayMode=m_nDisplayMode;
 	m_GDIGenePropertiesPage.m_b16_235=m_b16_235;
@@ -324,6 +338,20 @@ void CGDIGenerator::GetPropertiesSheetValues()
 	{
 		m_displayWindow.m_Intensity=m_GDIGenePropertiesPage.m_Intensity;
 		GetConfig()->WriteProfileInt("GDIGenerator","Intensity",m_displayWindow.m_Intensity);
+		SetModifiedFlag(TRUE);
+	}
+
+	if( m_displayWindow.m_offsetx != m_GDIGenePropertiesPage.m_offsetx )
+	{
+		m_displayWindow.m_offsetx=m_GDIGenePropertiesPage.m_offsetx;
+		GetConfig()->WriteProfileInt("GDIGenerator","XOffset",m_displayWindow.m_offsetx);
+		SetModifiedFlag(TRUE);
+	}
+
+	if( m_displayWindow.m_offsety != m_GDIGenePropertiesPage.m_offsety )
+	{
+		m_displayWindow.m_offsety=m_GDIGenePropertiesPage.m_offsety;
+		GetConfig()->WriteProfileInt("GDIGenerator","YOffset",m_displayWindow.m_offsety);
 		SetModifiedFlag(TRUE);
 	}
 

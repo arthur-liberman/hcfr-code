@@ -54,8 +54,9 @@ public:										// public because of callback
 	UINT m_monitorNb;						// number of detected monitors
 	HMONITOR m_hMonitor[MAX_MONITOR_NB];	// array of detected monitors handles
 	int		m_nDisplayMode;
-    int     m_rectSizePercent;
-	int     m_bgStimPercent;
+    UINT     m_rectSizePercent;
+	UINT     m_bgStimPercent;
+	int		m_offsetx,m_offsety;
 	UINT    m_Intensity;
 	BOOL	IsOnOtherMonitor ();
 	BOOL	m_bisInited;

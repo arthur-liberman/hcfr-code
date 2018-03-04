@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by CHCFR21_ENGLISH.rc
+// Used by CHCFR21_ITALIAN.rc
 //
 #define IDS_STRING_VERSION              1
 #define IDS_STRING_VERSION_WEB          2
@@ -770,6 +770,8 @@
 #define IDC_BGSTIM_EDIT                 1274
 #define IDC_INTENSITY_EDIT              1275
 #define IDC_OVERLAY                     1276
+#define IDC_YOFFSET_EDIT                1277
+#define IDC_XOFFSET_EDIT                1278
 #define IDC_CHECK1                      1279
 #define IDC_MADVR_3D                    1279
 #define IDC_HIGHLIGHT                   1279

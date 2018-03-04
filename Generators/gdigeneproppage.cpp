@@ -41,6 +41,8 @@ CGDIGenePropPage::CGDIGenePropPage() : CPropertyPageWithHelp(CGDIGenePropPage::I
 {
 	//{{AFX_DATA_INIT(CGDIGenePropPage)
 	m_rectSizePercent = 0;
+	m_offsetx = 0;
+	m_offsety =0;
 	m_bgStimPercent = 0;
 	m_Intensity = 0;
 	//}}AFX_DATA_INIT
@@ -78,6 +80,8 @@ void CGDIGenePropPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_PATTERNSIZE_EDIT, m_rectSizePercent);
 	DDX_Text(pDX, IDC_BGSTIM_EDIT, m_bgStimPercent);
 	DDX_Text(pDX, IDC_INTENSITY_EDIT, m_Intensity);
+	DDX_Text(pDX, IDC_XOFFSET_EDIT, m_offsetx);
+	DDX_Text(pDX, IDC_YOFFSET_EDIT, m_offsety);
 	DDX_Control(pDX, IDC_INTENSITY_EDIT, m_bIntensity);
 	DDV_MinMaxUInt(pDX, m_rectSizePercent, 1, 100);
 	DDV_MinMaxUInt(pDX, m_bgStimPercent, 0, 100);
@@ -311,10 +315,14 @@ BOOL CGDIGenePropPage::OnSetActive()
 
 	if (m_nDisplayMode == DISPLAY_rPI)
 	{
+		GetDlgItem(IDC_XOFFSET_EDIT)->EnableWindow(TRUE);
+		GetDlgItem(IDC_YOFFSET_EDIT)->EnableWindow(TRUE);
 		GetDlgItem(IDC_DISP_TRIP3)->EnableWindow(TRUE);
 	}
 	else
 	{
+		GetDlgItem(IDC_XOFFSET_EDIT)->EnableWindow(FALSE);
+		GetDlgItem(IDC_YOFFSET_EDIT)->EnableWindow(FALSE);
 		GetDlgItem(IDC_DISP_TRIP3)->EnableWindow(FALSE);
 	}
 	return CPropertyPageWithHelp::OnSetActive();
@@ -500,6 +508,8 @@ void CGDIGenePropPage::OnClickSelection()
 	if (m_nDisplayMode == DISPLAY_rPI)
 	{
 		GetDlgItem(IDC_DISP_TRIP3)->EnableWindow(TRUE);
+		GetDlgItem(IDC_XOFFSET_EDIT)->EnableWindow(TRUE);
+		GetDlgItem(IDC_YOFFSET_EDIT)->EnableWindow(TRUE);
 		if (m_brPi_user)
 		{
 			m_bdispTrip = FALSE;
@@ -510,6 +520,8 @@ void CGDIGenePropPage::OnClickSelection()
 	{
 		GetDlgItem(IDC_DISP_TRIP3)->EnableWindow(FALSE);
 		GetDlgItem(IDC_DISP_TRIP)->EnableWindow(TRUE);
+		GetDlgItem(IDC_XOFFSET_EDIT)->EnableWindow(FALSE);
+		GetDlgItem(IDC_YOFFSET_EDIT)->EnableWindow(FALSE);
 	}
 }
 

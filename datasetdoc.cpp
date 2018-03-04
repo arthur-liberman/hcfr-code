@@ -191,7 +191,7 @@ static UINT __cdecl BkgndThreadFunc ( LPVOID lpParameter )
 
 				    while ( g_bInsideBkgndRefresh )
 					
-					Sleep ( 50 );
+					Sleep ( 500 ); //allow for user interaction
 
 				    EnterCriticalSection (& g_CritSec );
 				    g_MeasuredColorList.AddTail ( pMeasurement );

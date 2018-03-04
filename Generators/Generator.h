@@ -79,7 +79,8 @@ public:
 
 	UINT nMeasureNumber;
 	BOOL m_doScreenBlanking;
-	int m_rectSizePercent;
+	UINT m_rectSizePercent;
+	int	 m_offsetx,m_offsety;
 	BOOL m_b16_235;
 	BOOL m_busePic;
 	BOOL m_bLinear;
