@@ -194,6 +194,7 @@ void CArgyllSensor::Serialize(CArchive& archive)
             archive >> meterName;
             for(size_t i(0); i < meters.size(); ++i)
             {
+			    GetColorApp()->InMeasureMessageBox( meterName, "Argyll Meter used during this session...", MB_OK+MB_ICONHAND);
                 if(meters[i]->getMeterName().c_str() == meterName)
                 {
                     m_meter = meters[i];
