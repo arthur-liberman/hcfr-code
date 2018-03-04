@@ -133,7 +133,7 @@ BEGIN
     CONTROL         "Create a new meter correction file",IDC_SENSORTRAININGMODE_RADIO2,
                     "Button",BS_AUTORADIOBUTTON,20,100,146,10
     COMBOBOX        IDC_SENSORTRAININGFILE_COMBO,20,77,146,105,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    CTEXT           "If you do not have a correction matrix that was created using your probe in combination with a spectrometer it is recommended that you use the appropriate spectral sample correction available in the display type dropdown in the next dialog.",IDC_STATIC,174,26,115,72,WS_BORDER,WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE
+    CTEXT           "If you do not have a correction matrix that was created using your probe in combination with a spectrometer, it is recommended that you use the appropriate spectral sample correction available in the display type dropdown in the next dialog.",IDC_STATIC,174,26,115,72,WS_BORDER,WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE
     LTEXT           "D3/munki and Spyder 4 users",IDC_STATIC,186,18,95,8
 END
 
@@ -356,7 +356,7 @@ BEGIN
     CONTROL         "Check for updates",IDC_CHECK_UPDATE,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,26,77,10
     CONTROL         "RealTime display of measures",IDC_CHECK_DISPLAYRT,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,101,106,105,10
-    CONTROL         "Black frame insertion",IDC_CHECK_ABL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,141,82,10
+    CONTROL         "Black frame insertion",IDC_CHECK_ABL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,141,76,10
     CONTROL         "Disable High DPI scaling",IDC_CHECK_DISABLEDPI,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,97,27,91,10
     CONTROL         "Use 10 bit targets (HDR10 Blu-ray)",IDC_CHECK_USE_10bit,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,228,135,10
