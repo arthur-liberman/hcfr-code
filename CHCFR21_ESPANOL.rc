@@ -6,21 +6,124 @@
 #define APSTUDIO_HIDDEN_SYMBOLS
 #include "resource.hm"
 #undef APSTUDIO_HIDDEN_SYMBOLS
-
-#define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
-//
-// Generated from the TEXTINCLUDE 2 resource.
-//
-#include "afxres.h"
-
-/////////////////////////////////////////////////////////////////////////////
-#undef APSTUDIO_READONLY_SYMBOLS
-
-/////////////////////////////////////////////////////////////////////////////
-// Spanish resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (United States) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// French (France) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRA)
+LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
+#pragma code_page(1252)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_IRPROFILE_PROP_PAGE DIALOG 0, 0, 226, 214
+STYLE DS_SETFONT | WS_POPUP | WS_CAPTION
+CAPTION "Profil IR"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,20,193,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,85,193,50,14
+    EDITTEXT        IDC_EDIT_CODE_IR,10,45,207,77,ES_MULTILINE | ES_AUTOVSCROLL | WS_VSCROLL
+    PUSHBUTTON      "Validity test",IDC_TEST_IR_VALID,10,125,62,14
+    PUSHBUTTON      "Code acquisition",IDC_ACQUIRE,82,125,62,14
+    PUSHBUTTON      "Send code",IDC_SEND_IR_CODE,154,125,62,14
+    GROUPBOX        "Latency time (milliseconds)",IDC_STATIC,10,144,207,47
+    LTEXT           "Navigation menu",IDC_STATIC,15,156,64,8
+    LTEXT           "Validation menu",IDC_STATIC,83,157,64,8
+    LTEXT           "Next chapter",IDC_STATIC,151,157,64,8
+    EDITTEXT        IDC_EDIT_LATENCY_NAV,15,168,58,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_LATENCY_VALID,83,168,58,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_LATENCY_NEXT,151,168,58,14,ES_AUTOHSCROLL
+    LTEXT           "Name",IDC_STATIC,10,13,64,8
+    EDITTEXT        IDC_IR_PROFILE_NAME,85,9,58,14,ES_AUTOHSCROLL
+    LTEXT           "IR Code for",IDC_STATIC,10,31,70,8
+    COMBOBOX        IDC_COMBO_CODE_NAME,85,28,73,65,CBS_DROPDOWNLIST | WS_GROUP | WS_TABSTOP
+    PUSHBUTTON      "Help",IDHELP,157,193,50,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_IRPROFILE_PROP_PAGE DLGINIT
+BEGIN
+    IDC_COMBO_CODE_NAME, 0x403, 13, 0
+0x654e, 0x7478, 0x6320, 0x6168, 0x7470, 0x7265, "\000" 
+    IDC_COMBO_CODE_NAME, 0x403, 3, 0
+0x4b4f, "\000" 
+    IDC_COMBO_CODE_NAME, 0x403, 11, 0
+0x6f44, 0x6e77, 0x6120, 0x7272, 0x776f, "\000" 
+    IDC_COMBO_CODE_NAME, 0x403, 12, 0
+0x6952, 0x6867, 0x2074, 0x7261, 0x6f72, 0x0077, 
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_IRPROFILE_PROP_PAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 219
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 207
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // French (France) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Spanish (Spain, International Sort) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ESN)
 LANGUAGE LANG_SPANISH, SUBLANG_SPANISH_MODERN
 #pragma code_page(1252)
 
@@ -386,7 +489,7 @@ BEGIN
     CONTROL         "Blank screen during measure",IDC_BLANKING_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,20,112,10
 END
 
-IDD_GENERATOR_GDI_PROP_PAGE DIALOGEX 0, 0, 186, 180
+IDD_GENERATOR_GDI_PROP_PAGE DIALOGEX 0, 0, 186, 184
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Display"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -2623,7 +2726,7 @@ BEGIN
     IDD_GENERATOR_GDI_PROP_PAGE, DIALOG
     BEGIN
         RIGHTMARGIN, 176
-        BOTTOMMARGIN, 174
+        BOTTOMMARGIN, 178
     END
 
     IDD_APPEARANCE_PROP_PAGE, DIALOG
@@ -3761,86 +3864,7 @@ BEGIN
     IDC_INIT_BUTTON         "Reset your preferences to default values"
 END
 
-#endif    // English (United States) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// French (France) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRA)
-LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
-#pragma code_page(1252)
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
-
-IDD_IRPROFILE_PROP_PAGE DIALOG 0, 0, 226, 214
-STYLE DS_SETFONT | WS_POPUP | WS_CAPTION
-CAPTION "Profil IR"
-FONT 8, "MS Sans Serif"
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,20,193,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,85,193,50,14
-    EDITTEXT        IDC_EDIT_CODE_IR,10,45,207,77,ES_MULTILINE | ES_AUTOVSCROLL | WS_VSCROLL
-    PUSHBUTTON      "Validity test",IDC_TEST_IR_VALID,10,125,62,14
-    PUSHBUTTON      "Code acquisition",IDC_ACQUIRE,82,125,62,14
-    PUSHBUTTON      "Send code",IDC_SEND_IR_CODE,154,125,62,14
-    GROUPBOX        "Latency time (milliseconds)",IDC_STATIC,10,144,207,47
-    LTEXT           "Navigation menu",IDC_STATIC,15,156,64,8
-    LTEXT           "Validation menu",IDC_STATIC,83,157,64,8
-    LTEXT           "Next chapter",IDC_STATIC,151,157,64,8
-    EDITTEXT        IDC_EDIT_LATENCY_NAV,15,168,58,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_LATENCY_VALID,83,168,58,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_LATENCY_NEXT,151,168,58,14,ES_AUTOHSCROLL
-    LTEXT           "Name",IDC_STATIC,10,13,64,8
-    EDITTEXT        IDC_IR_PROFILE_NAME,85,9,58,14,ES_AUTOHSCROLL
-    LTEXT           "IR Code for",IDC_STATIC,10,31,70,8
-    COMBOBOX        IDC_COMBO_CODE_NAME,85,28,73,65,CBS_DROPDOWNLIST | WS_GROUP | WS_TABSTOP
-    PUSHBUTTON      "Help",IDHELP,157,193,50,14
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog Info
-//
-
-IDD_IRPROFILE_PROP_PAGE DLGINIT
-BEGIN
-    IDC_COMBO_CODE_NAME, 0x403, 13, 0
-0x654e, 0x7478, 0x6320, 0x6168, 0x7470, 0x7265, "\000" 
-    IDC_COMBO_CODE_NAME, 0x403, 3, 0
-0x4b4f, "\000" 
-    IDC_COMBO_CODE_NAME, 0x403, 11, 0
-0x6f44, 0x6e77, 0x6120, 0x7272, 0x776f, "\000" 
-    IDC_COMBO_CODE_NAME, 0x403, 12, 0
-0x6952, 0x6867, 0x2074, 0x7261, 0x6f72, 0x0077, 
-    0
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO
-BEGIN
-    IDD_IRPROFILE_PROP_PAGE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 219
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 207
-    END
-END
-#endif    // APSTUDIO_INVOKED
-
-#endif    // French (France) resources
+#endif    // Spanish (Spain, International Sort) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -3850,20 +3874,7 @@ END
 //
 // Generated from the TEXTINCLUDE 3 resource.
 //
-#define _AFX_NO_SPLITTER_RESOURCES
-#define _AFX_NO_OLE_RESOURCES
-#define _AFX_NO_TRACKER_RESOURCES
-#define _AFX_NO_PROPERTY_RESOURCES
 
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ESP)
-#ifdef _WIN32
-LANGUAGE LANG_SPANISH, SUBLANG_SPANISH_MODERN
-#pragma code_page(1252)
-#endif //_WIN32
-#include "res\ColorHCFR.rc2"  // non-Microsoft Visual C++ edited resources
-#include "l.esn\afxres.rc"          // Standard components
-#include "l.esn\afxprint.rc"        // printing/print preview resources
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
