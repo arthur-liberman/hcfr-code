@@ -558,7 +558,8 @@ void CMainView::OnInitialUpdate()
 
 	GetDlgItem ( IDC_STATIC_VIEW ) -> ShowWindow ( SW_HIDE );
 
-	m_displayMode = GetConfig()->GetProfileInt("MainView","Chart Display",0);
+//	m_displayMode = GetConfig()->GetProfileInt("MainView","Chart Display",0);
+	m_displayMode = 0;
 	m_comboMode.SetCurSel ( m_displayMode );	// Echelle de gris
 	
     // doesn't really make sense to see sensor values
@@ -986,9 +987,6 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 		CColor Black = GetDocument()->GetMeasure()->GetOnOffBlack();
 		int mode = GetConfig()->m_GammaOffsetType;
 		double tmWhite = getL_EOTF(0.5022283, noDataColor, noDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1) * 100.0 / 94.37844;
-		double fact = ((GetConfig()->m_colorStandard == HDTVa && m_displayMode == 1)?0.75:1.0); //75% white reference for primaries.
-		if (mode == 5 && ( m_displayMode == 1 ||  (m_displayMode > 4 &&  m_displayMode < 12)) )
-			fact = 0.5022283;
 
 		double m_meas_rd, m_meas_gd, m_meas_bd, m_ref_rd, m_ref_gd, m_ref_bd;
 
@@ -1002,13 +1000,15 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 			ref = ColorRGB(m_RefColor.GetRGBValue(bRef));
 			if (mode == 5)
 			{
-				double Yref = ((m_displayMode==0||m_displayMode==3||m_displayMode==4||m_displayMode==12)?(GetConfig()->m_useToneMap?((GetConfig()->m_DiffuseL/94.37844) /(GetConfig()->m_TargetMaxL/10000.)):tmWhite/(GetConfig()->m_TargetMaxL/10000.)):(m_displayMode==1?1.0:(GetConfig()->m_DiffuseL/94.37844)));
+				double Yref = ((m_displayMode==0||m_displayMode==3||m_displayMode==4||m_displayMode==12)?(GetConfig()->m_useToneMap?((GetConfig()->m_DiffuseL/94.37844) /(GetConfig()->m_TargetMaxL/10000.)):tmWhite/(GetConfig()->m_TargetMaxL/10000.)):(m_displayMode == 1 && !(GetConfig()->m_colorStandard==UHDTV2||GetConfig()->m_colorStandard==UHDTV3))?(m_RefWhite * 10000./94.37844):(m_RefWhite * 10000./94.37844*tmWhite));
 				m_ref_rd = min(max(ref[0]/Yref,0),1);
 				m_ref_gd = min(max(ref[1]/Yref,0),1);
 				m_ref_bd = min(max(ref[2]/Yref,0),1);
 			}
 			else
 			{
+				if ((GetConfig()->m_colorStandard == HDTVa && m_displayMode == 1))
+					m_RefWhite = m_RefWhite * GetConfig()->m_TargetMaxL / m_YWhite;
 				m_ref_rd = min(max(ref[0]/m_RefWhite,0),1);
 				m_ref_gd = min(max(ref[1]/m_RefWhite,0),1);
 				m_ref_bd = min(max(ref[2]/m_RefWhite,0),1);
@@ -1018,15 +1018,15 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 			{
 				if (mode == 5 || mode == 7)
 				{
-					m_ref_rd = getL_EOTF(m_ref_rd, noDataColor, noDataColor, 2.4, 0.9, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma);
-					m_ref_gd = getL_EOTF(m_ref_gd, noDataColor, noDataColor, 2.4, 0.9, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma);
-					m_ref_bd = getL_EOTF(m_ref_bd, noDataColor, noDataColor, 2.4, 0.9, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma);
+					m_ref_rd = getL_EOTF(m_ref_rd, noDataColor, noDataColor, 2.4, 0.9, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL);//,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma,GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+					m_ref_gd = getL_EOTF(m_ref_gd, noDataColor, noDataColor, 2.4, 0.9, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL);//,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma,GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+					m_ref_bd = getL_EOTF(m_ref_bd, noDataColor, noDataColor, 2.4, 0.9, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL);//,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma,GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
 				}
 				else
 				{
-					m_ref_rd = getL_EOTF((m_ref_rd),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, 1.0, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
-					m_ref_gd = getL_EOTF((m_ref_gd),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, 1.0, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
-					m_ref_bd = getL_EOTF((m_ref_bd),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, 1.0, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+					m_ref_rd = getL_EOTF((m_ref_rd),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode);//,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+					m_ref_gd = getL_EOTF((m_ref_gd),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode);//,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+					m_ref_bd = getL_EOTF((m_ref_bd),White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode);//,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
 				}
 			}
 			else
@@ -1036,9 +1036,9 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 				m_ref_bd = max(0,min(pow(m_ref_bd,1.0/GetConfig()->m_GammaAvg),1));
 			}
 
-			m_ref_rd = m_ref_rd * fact;
-			m_ref_gd = m_ref_gd * fact;
-			m_ref_bd = m_ref_bd * fact;
+			m_ref_rd = m_ref_rd;
+			m_ref_gd = m_ref_gd;
+			m_ref_bd = m_ref_bd;
 
 			m_ref_r = m_ref_rd;
 			m_ref_g = m_ref_gd;
@@ -1072,7 +1072,7 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 
 				if (mode == 5)
 				{
-					double Yref = ((m_displayMode==0||m_displayMode==3||m_displayMode==4||m_displayMode==12)?(GetConfig()->m_useToneMap?10000.*(GetConfig()->m_DiffuseL/94.37844):tmWhite*10000.):m_YWhite);
+					double Yref = ((m_displayMode==0||m_displayMode==3||m_displayMode==4||m_displayMode==12)?(GetConfig()->m_useToneMap?10000.*(GetConfig()->m_DiffuseL/94.37844):tmWhite*10000.):(m_displayMode == 1 && !(GetConfig()->m_colorStandard==UHDTV2||GetConfig()->m_colorStandard==UHDTV3))?(m_YWhite * 10000./94.37844):(m_YWhite * 10000./94.37844*tmWhite));
 					m_meas_r = min(max(meas[0]/Yref,0),1);
 					m_meas_g = min(max(meas[1]/Yref,0),1);
 					m_meas_b = min(max(meas[2]/Yref,0),1);
@@ -1082,6 +1082,8 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 				}
 				else
 				{
+					if ((GetConfig()->m_colorStandard == HDTVa && m_displayMode == 1))
+						m_YWhite = GetConfig()->m_TargetMaxL;
 					m_meas_r = min(max(meas[0]/m_YWhite,0),1);
 					m_meas_g = min(max(meas[1]/m_YWhite,0),1);
 					m_meas_b = min(max(meas[2]/m_YWhite,0),1);
@@ -1094,21 +1096,21 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 				{
 					if (mode == 5 || mode == 7)
 					{
-						m_meas_r=getL_EOTF(m_meas_r, noDataColor, noDataColor, 2.4, 0.9, -1*mode);
-						m_meas_g=getL_EOTF(m_meas_g, noDataColor, noDataColor, 2.4, 0.9, -1*mode);
-						m_meas_b=getL_EOTF(m_meas_b, noDataColor, noDataColor, 2.4, 0.9, -1*mode);
-						m_meas_rd=getL_EOTF(m_meas_rd, noDataColor, noDataColor, 2.4, 0.9, -1*mode);
-						m_meas_gd=getL_EOTF(m_meas_gd, noDataColor, noDataColor, 2.4, 0.9, -1*mode);
-						m_meas_bd=getL_EOTF(m_meas_bd, noDataColor, noDataColor, 2.4, 0.9, -1*mode);
+						m_meas_r=getL_EOTF(m_meas_r, noDataColor, noDataColor, 2.4, 0.9, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL);//,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+						m_meas_g=getL_EOTF(m_meas_g, noDataColor, noDataColor, 2.4, 0.9, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL);//,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+						m_meas_b=getL_EOTF(m_meas_b, noDataColor, noDataColor, 2.4, 0.9, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL);//,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+						m_meas_rd=getL_EOTF(m_meas_rd, noDataColor, noDataColor, 2.4, 0.9, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL);//,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+						m_meas_gd=getL_EOTF(m_meas_gd, noDataColor, noDataColor, 2.4, 0.9, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL);//,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+						m_meas_bd=getL_EOTF(m_meas_bd, noDataColor, noDataColor, 2.4, 0.9, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL);//,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
 					}
 					else
 					{
-						m_meas_r = getL_EOTF(m_meas_r,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, 1.0, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
-						m_meas_g = getL_EOTF(m_meas_g,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, 1.0, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
-						m_meas_b = getL_EOTF(m_meas_b,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, 1.0, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
-						m_meas_rd = getL_EOTF(m_meas_rd,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, 1.0, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
-						m_meas_gd = getL_EOTF(m_meas_gd,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, 1.0, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
-						m_meas_bd = getL_EOTF(m_meas_bd,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, 1.0, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+						m_meas_r = getL_EOTF(m_meas_r,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode);//,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, 1.0, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+						m_meas_g = getL_EOTF(m_meas_g,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode);//,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, 1.0, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+						m_meas_b = getL_EOTF(m_meas_b,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode);//,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, 1.0, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+						m_meas_rd = getL_EOTF(m_meas_rd,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode);//,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, 1.0, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+						m_meas_gd = getL_EOTF(m_meas_gd,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode);//,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, 1.0, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
+						m_meas_bd = getL_EOTF(m_meas_bd,White,Black,GetConfig()->m_GammaRel, GetConfig()->m_Split, -1*mode);//,GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, 1.0, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1);
 					}
 				}
 				else
@@ -1125,24 +1127,24 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 				{
 					if (GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0))
 					{
-						m_meas_rd = floor(m_meas_rd*219.*fact + 16.5); //round to video levels for label
-						m_meas_gd = floor(m_meas_gd*219.*fact + 16.5);
-						m_meas_bd = floor(m_meas_bd*219.*fact + 16.5);
+						m_meas_rd = floor(m_meas_rd*219. + 16.5); //round to video levels for label
+						m_meas_gd = floor(m_meas_gd*219. + 16.5);
+						m_meas_bd = floor(m_meas_bd*219. + 16.5);
 					}
 					else
 					{
-						m_meas_rd = floor(m_meas_rd*255.*fact + 0.5); //exact PC levels
-						m_meas_gd = floor(m_meas_gd*255.*fact + 0.5);
-						m_meas_bd = floor(m_meas_bd*255.*fact + 0.5);
+						m_meas_rd = floor(m_meas_rd*255. + 0.5); //exact PC levels
+						m_meas_gd = floor(m_meas_gd*255. + 0.5);
+						m_meas_bd = floor(m_meas_bd*255. + 0.5);
 					}
 						trip1.Format("%d,%d,%d\nMeasure",(int)m_meas_rd,(int)m_meas_gd,(int)m_meas_bd);
 				}
 
 			}
 
-			m_meas_r = m_meas_r * fact;
-			m_meas_g = m_meas_g * fact;
-			m_meas_b = m_meas_b * fact;
+			m_meas_r = m_meas_r;
+			m_meas_g = m_meas_g;
+			m_meas_b = m_meas_b;
 
 			trip2.SetString("No\nMeasure\n");				
 			if (m_SelectedColor.isValid())
@@ -1155,7 +1157,7 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 				if (GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0))
 					trip2.Format("%d,%d,%d\nReference",((int)floor((m_ref_rd)*219.+0.5)+16),(int)(floor((m_ref_gd)*219.+0.5)+16),(int)(floor((m_ref_bd)*219.+0.5)+16));
 				else
-					trip2.Format("%d,%d,%d\nReference",((int)floor((m_ref_rd)*255.+0.5)),(int)(floor((m_ref_gd)*255.+0.5)),(int)(floor((m_ref_bd)*255.+0.5)));
+					trip2.Format("%d,%d,%d\nReference",((int)floor((m_ref_rd)*255+0.5)),(int)(floor((m_ref_gd)*255.+0.5)),(int)(floor((m_ref_bd)*255.+0.5)));
 			}
 
 		SetDlgItemTextA(IDC_CCOMP, trip1); //this calls window redraw as well
@@ -5813,7 +5815,7 @@ void CMainView::InitButtons()
 	}
 	m_Font.DeleteObject();
 
-	line_Font.CreateFontA(18,0,0,0,FW_SEMIBOLD,0,0,0,0,0,0,PROOF_QUALITY,VARIABLE_PITCH,_T("Arial"));
+	line_Font.CreateFontA(17,0,0,0,FW_SEMIBOLD,0,0,0,0,0,0,PROOF_QUALITY,VARIABLE_PITCH,_T("ARIAL"));
 	m_refInfo.SetFont(&line_Font);
 
     GetDlgItem( IDC_INFOLINE )->SetFont( &line_Font );
