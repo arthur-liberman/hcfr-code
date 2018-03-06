@@ -30,7 +30,7 @@
 #endif // _MSC_VER > 1000
 
 #include "Generator.h"
-#include "IHdrInterface.h"
+#include "../libHDR/IHdrInterface.h"
 #include "GDIGenePropPage.h"
 
 #define MAX_MONITOR_NB 4

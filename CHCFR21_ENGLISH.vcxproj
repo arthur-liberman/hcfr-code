@@ -91,6 +91,7 @@
       </DataExecutionPrevention>
       <ImportLibrary>.\Debug/CHCFR21_ENGLISH.lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
