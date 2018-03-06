@@ -1333,9 +1333,9 @@ double ColorXYZ::GetDeltaLCH(double YWhite, const ColorXYZ& refColor, double YWh
 				//Color needs to be unnormalized and ref normalized
 				ColorICtCp LMSRef(refColor, YWhite, cRef);
 				ColorICtCp LMS(*this, YWhiteRef, cRef);
-				dLight = sqrt(pow ((LMS[0] - LMSRef[0]),2))*155.;
-				dChrom = sqrt(pow((LMS[1] - LMSRef[1]),2))*155.;
-				dHue = sqrt(pow((LMS[2] - LMSRef[2]),2))*155.;
+				dLight = sqrt(4 * pow ((LMS[0] - LMSRef[0]),2))*240.;
+				dChrom = sqrt(0.25 * pow((LMS[1] - LMSRef[1]),2))*240.;
+				dHue = sqrt(pow((LMS[2] - LMSRef[2]),2))*240.;
 				break;
 			}
 		}
@@ -1834,7 +1834,7 @@ double ColorXYZ::GetDeltaE(double YWhite, const ColorXYZ& refColor, double YWhit
 			//Color needs to be unnormalized and ref normalized
 			ColorICtCp ICCRef(refColor, YWhite, cRef);
 			ColorICtCp ICC(*this, YWhiteRef, cRef);
-			dE = sqrt ( pow ((ICC[0] - ICCRef[0]),2) + pow((ICC[1] - ICCRef[1]),2) + pow((ICC[2] - ICCRef[2]),2) ) * 155.0; //normalization to 500 random CC Bt.709 and Bt.2020 average
+			dE = sqrt ( 4 * pow ((ICC[0] - ICCRef[0]),2) + 0.25 * pow((ICC[1] - ICCRef[1]),2) + pow((ICC[2] - ICCRef[2]),2) ) * 240.; //normalization per Pytlarz
 			break;
 		}
 		

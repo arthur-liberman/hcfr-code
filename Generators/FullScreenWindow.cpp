@@ -30,11 +30,11 @@
 #include "FullScreenWindow.h"
 #include <math.h>
 #include "ximage.h"
-#include "../libnum/numsup.h"
-#include "../libconv/conv.h"
-#include "../libccast/ccmdns.h"
-#include "../libccast/ccwin.h"
-#include "../libccast/ccast.h"
+//#include "../libnum/numsup.h"
+//#include "../libconv/conv.h"
+//#include "../libccast/ccmdns.h"
+//#include "../libccast/ccwin.h"
+//#include "../libccast/ccast.h"
 #include "../Tools/png/png.h"
 #include <algorithm>
 
@@ -1197,9 +1197,9 @@ void video_scale (CxImage *inImage)
 				BYTE red = rgb.rgbRed;
 				BYTE green = rgb.rgbGreen;
 				BYTE blue = rgb.rgbBlue;
-				red = ((double(red) / 255.) * 219. + 16.5);
-				green = ((double(green) / 255.) * 219. + 16.5);
-				blue = ((double(blue) / 255.) * 219. + 16.5);
+				red = (byte)floor((double(red) / 255.) * 219. + 16.5);
+				green = (byte)floor((double(green) / 255.) * 219. + 16.5);
+				blue = (byte)floor((double(blue) / 255.) * 219. + 16.5);
 				inImage->SetPixelColor(i,j,RGB(red,green,blue));
 			}
 		}
