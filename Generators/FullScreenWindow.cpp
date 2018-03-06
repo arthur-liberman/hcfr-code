@@ -1397,7 +1397,7 @@ void video_scale (CxImage *inImage)
 				{
 					if (sock)
 					{
-						bool isUser;
+						bool isUser=FALSE;
 						CString x,y;
 						x.Format("%d",rPi_x);
 						y.Format("%d",rPi_y);
