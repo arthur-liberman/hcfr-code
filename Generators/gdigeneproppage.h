@@ -62,7 +62,7 @@ public:
 	int m_selectedGcastNum;
 	BOOL m_b16_235;
 	BOOL m_busePic;
-	BOOL m_bdispTrip,m_brPi_user,m_bdispTriplast;
+	BOOL m_bdispTrip,m_brPi_user;
     BOOL m_madVR_3d;
     BOOL m_madVR_vLUT, m_madVR_HDR;
 	BOOL m_madVR_OSD;

@@ -56,7 +56,6 @@ CGDIGenePropPage::CGDIGenePropPage() : CPropertyPageWithHelp(CGDIGenePropPage::I
 	m_madVR_OSD = FALSE;
 	m_bdispTrip = FALSE;
 	m_bdispTrip = GetConfig()->GetProfileInt("GDIGenerator","DISPLAYTRIPLETS",1);
-	m_bdispTriplast = m_bdispTrip;
 	m_brPi_user = FALSE;
 	m_bLinear = FALSE;
 	m_bHdr10 = GetConfig()->GetProfileInt("GDIGenerator","EnableHDR10",0);
@@ -109,6 +108,7 @@ BEGIN_MESSAGE_MAP(CGDIGenePropPage, CPropertyPageWithHelp)
 	ON_BN_CLICKED(IDC_RADIO5, OnClickSelection)
 	ON_BN_CLICKED(IDC_RADIO6, OnClickSelection)
 	ON_BN_CLICKED(IDC_RADIO8, OnClickSelection)
+	ON_BN_CLICKED(IDC_DISP_TRIP3, OnClickSelection)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -412,6 +412,7 @@ void CGDIGenePropPage::OnTestOverlay()
 
 void CGDIGenePropPage::OnClickSelection() 
 {
+
     if (IsDlgButtonChecked ( IDC_RADIO3 ) )
     {
         m_madVREdit.EnableWindow(TRUE);
@@ -510,11 +511,10 @@ void CGDIGenePropPage::OnClickSelection()
 		GetDlgItem(IDC_DISP_TRIP3)->EnableWindow(TRUE);
 		GetDlgItem(IDC_XOFFSET_EDIT)->EnableWindow(TRUE);
 		GetDlgItem(IDC_YOFFSET_EDIT)->EnableWindow(TRUE);
-		if (m_brPi_user)
-		{
-			m_bdispTrip = FALSE;
-		}
-		GetDlgItem(IDC_DISP_TRIP)->EnableWindow(!m_brPi_user);
+		if (IsDlgButtonChecked (IDC_DISP_TRIP3))
+			GetDlgItem(IDC_DISP_TRIP)->EnableWindow(FALSE);
+		else
+			GetDlgItem(IDC_DISP_TRIP)->EnableWindow(TRUE);
 	}
 	else
 	{

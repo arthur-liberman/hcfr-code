@@ -22,9 +22,11 @@
 
 #pragma once
 
+#ifdef _DEBUG
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
 #include <crtdbg.h>
+#endif
 
 /// CrashDump
 /// Create and instance of this object to enable crash dumps on the current thread

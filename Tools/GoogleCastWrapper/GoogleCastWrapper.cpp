@@ -1,5 +1,5 @@
 #include "GoogleCastWrapper.h"
-#include <string>
+#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <Windows.h> // For OutputDebugString.

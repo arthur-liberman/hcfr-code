@@ -1324,9 +1324,9 @@ BOOL CMeasure::MeasureGrayScaleAndColors(CSensor *pSensor, CGenerator *pGenerato
 		GenColors [ 0 ] = ColorRGBDisplay(68.04,20.09,20.09);
 		GenColors [ 1 ] = ColorRGBDisplay(27.85,73.06,27.85);
 		GenColors [ 2 ] = ColorRGBDisplay(19.18,19.18,50.22);
-		GenColors [ 3 ] = ColorRGBDisplay(74.89,74.89,32.88);
+		GenColors [ 3 ] = ColorRGBDisplay(73.9726,73.9726,33.3333);
 		GenColors [ 4 ] = ColorRGBDisplay(36.07,73.06,73.06);
-		GenColors [ 5 ] = ColorRGBDisplay(63.92,29.22,63.93);
+		GenColors [ 5 ] = ColorRGBDisplay(64.3836,29.2237,64.3836);
 		GenColors [ 6 ] = ColorRGBDisplay(75.0,75.0,75.0);
 		isSpecial = TRUE;
 	}
@@ -4207,9 +4207,9 @@ BOOL CMeasure::MeasureSecondaries(CSensor *pSensor, CGenerator *pGenerator, CDat
 		GenColors [ 0 ] = ColorRGBDisplay(68.04,20.09,20.09);
 		GenColors [ 1 ] = ColorRGBDisplay(27.85,73.06,27.85);
 		GenColors [ 2 ] = ColorRGBDisplay(19.18,19.18,50.22);
-		GenColors [ 3 ] = ColorRGBDisplay(74.89,74.89,32.88);
+		GenColors [ 3 ] = ColorRGBDisplay(73.9726,73.9726,33.3333);
 		GenColors [ 4 ] = ColorRGBDisplay(36.07,73.06,73.06);
-		GenColors [ 5 ] = ColorRGBDisplay(63.92,29.22,63.93);
+		GenColors [ 5 ] = ColorRGBDisplay(64.3836,29.2237,64.3836);
 		GenColors [ 6 ] = ColorRGBDisplay(75.0,75.0,75.0);
 		GenColors [ 7 ] = ColorRGBDisplay(0,0,0);	
 		isSpecial = TRUE;
@@ -6331,7 +6331,6 @@ CColor CMeasure::GetRefPrimary(int i) const
     if (CMeasure::GetGray(0).isValid())
     {
         White = CMeasure::GetGray ( CMeasure::GetGrayScaleSize() - 1 );
-//	    Black = CMeasure::GetGray ( 0 );
 	    Black = CMeasure::GetOnOffBlack();
     }
 	PrimeWhite = CMeasure::GetPrimeWhite();
@@ -6494,7 +6493,6 @@ CColor CMeasure::GetRefSecondary(int i) const
     if (CMeasure::GetGray(0).isValid())
     {
         White = CMeasure::GetGray ( CMeasure::GetGrayScaleSize() - 1 );
-//	    Black = CMeasure::GetGray ( 0 );
 	    Black = CMeasure::GetOnOffBlack();
     }	
     double r,g,b;

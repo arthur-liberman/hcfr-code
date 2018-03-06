@@ -92,6 +92,12 @@ CColorHCFRApp::CColorHCFRApp()
 #ifdef _DEBUG
     // uncomment to put on full memory checking which we still have lots of mem leaks/issues
     //_CrtSetDbgFlag(0x37);
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+	_CrtSetReportMode(_CRT_ERROR , _CRTDBG_MODE_DEBUG);
+//	_CrtSetBreakAlloc(28545);
+//	_CrtSetBreakAlloc(212642);
+//	_CrtSetBreakAlloc(28483);
+//	_CrtSetBreakAlloc(28483);
 #endif
 
 	// Place all significant initialization in InitInstance
@@ -216,13 +222,6 @@ BOOL CColorHCFRApp::InitInstance()
 	CxImage SplashImage;
 	CWnd	SplashWnd;
 	CDC *	pDC;
-
-//	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-//	_CrtSetReportMode(_CRT_ERROR , _CRTDBG_MODE_DEBUG);
-//	_CrtSetBreakAlloc(28545);
-//	_CrtSetBreakAlloc(212642);
-//	_CrtSetBreakAlloc(28483);
-//	_CrtSetBreakAlloc(28483);
 
 	HRSRC hRsrc = ::FindResource(AfxGetInstanceHandle(),MAKEINTRESOURCE(IDR_SPLASH_SCREEN),"SPLASHSCREEN");
 	SplashImage.LoadResource(hRsrc,CXIMAGE_FORMAT_PNG,AfxGetInstanceHandle());   

@@ -404,10 +404,10 @@ public:
 		switch(m_standard)
 		{
 			case HDTVa:
-				luma = 0.939;
+				luma = 0.91125;
 				break;
 			case HDTVb:
-				luma = sats?0.939:0.564;
+				luma = sats?0.91125:0.564;
 				break;
 			default:
 				luma = RGBtoXYZMatrix(1,1)+RGBtoXYZMatrix(1,0); 
@@ -421,10 +421,10 @@ public:
 		switch(m_standard)
 		{
 			case HDTVa:
-				luma = 0.787;
+				luma = 0.7789;
 				break;
 			case HDTVb:
-				luma = sats?0.787:0.4798;
+				luma = sats?0.7789:0.4798;
 				break;
 			default:
 				luma = RGBtoXYZMatrix(1,1)+RGBtoXYZMatrix(1,2); 
@@ -438,10 +438,10 @@ public:
 		switch(m_standard)
 		{
 			case HDTVa:
-				luma = 0.289;
+				luma = 0.27296;
 				break;
 			case HDTVb:
-				luma = sats?0.289:0.1775;
+				luma = sats?0.27296:0.1775;
 				break;
 			default:
 				luma = RGBtoXYZMatrix(1,0)+RGBtoXYZMatrix(1,2); 
