@@ -807,7 +807,6 @@ BOOL CGDIGenerator::DisplayRGBColorrPI( const ColorRGBDisplay& clr, bool first, 
 		b=min(max(b,0),255);
 	}
 	
-	bool m_bPause = false;
 	m_nPat++;
 
 	int x2 = Cgen.m_offsetx;
@@ -824,17 +823,20 @@ BOOL CGDIGenerator::DisplayRGBColorrPI( const ColorRGBDisplay& clr, bool first, 
 	if ( (m_nPat % GetConfig()->m_ablFreq == 0) && GetConfig()->m_bABL)
 	{
 		sprintf_s(CPat,"RGB=RECTANGLE;%d,%d;100;%d,%d,%d;%d,%d,%d;-1,-1", (int)(pow((double)(Cgen.m_rectSizePercent)/100.0,0.5) * rPi_xWidth),(int)(pow((double)(Cgen.m_rectSizePercent)/100.0,0.5) * rPi_yHeight),0,0,0,0,0,0);
-		m_bPause = true;
+		if (CGenerator::_RB8PG_send && CPat)
+			CGenerator::_RB8PG_send(sock,CPat);
+		else
+			GetColorApp()->InMeasureMessageBox( "Error communicating with rPI", "Error", MB_ICONINFORMATION);
+
+		Sleep(1000);
 	}
-	else
-	{
+
 		if (m_brPi_user) //user background
 			sprintf_s(CPat, "TESTTEMPLATEDISK:PatternDynamic:%d,%d,%d",r,g,b);
 		else if (!m_bdispTrip)
 			sprintf_s(CPat,"RGB=RECTANGLE;%d,%d;100;%d,%d,%d;%d,%d,%d;-1,-1,%d,%d", (int)(pow((double)(Cgen.m_rectSizePercent)/100.0,0.5) * rPi_xWidth),(int)(pow((double)(Cgen.m_rectSizePercent)/100.0,0.5) * rPi_yHeight),r,g,b,(int)R1,(int)G1,(int)B1,x2,y2);
 		else
 			sprintf_s(CPat, "TESTTEMPLATERAMDISK:HCFR:%d,%d,%d;%d,%d,%d",r,g,b,(int)R1,(int)G1,(int)B1);
-	}
 
 	CString debug=_T(CPat);
 
@@ -842,9 +844,6 @@ BOOL CGDIGenerator::DisplayRGBColorrPI( const ColorRGBDisplay& clr, bool first, 
 			CGenerator::_RB8PG_send(sock,CPat);
 		else
 			GetColorApp()->InMeasureMessageBox( "Error communicating with rPI", "Error", MB_ICONINFORMATION);
-
-		if (m_bPause)
-			Sleep(300);
 
 	// Sleep 80 ms while dispatching messages to ensure window is really displayed
 		MSG		Msg;
