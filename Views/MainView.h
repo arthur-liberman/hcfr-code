@@ -159,6 +159,8 @@ public:
 	COLORREF t_color;
 	double m_meas_r, m_meas_g, m_meas_b;
 	double m_ref_r, m_ref_g, m_ref_b;
+	double m_meas_r1, m_meas_g1, m_meas_b1;
+	double m_ref_r1, m_ref_g1, m_ref_b1;
 
 	std::vector<double> dEvector, dLvector, dCvector, dHvector;
 
