@@ -1656,13 +1656,14 @@ bool CExport::SaveGrayScaleSheet()
 		result&=graySS.AddRow(Rows,rowNb,m_doReplace);
 		rowNb++;
 	}
+	CColorReference  bRef = ((GetColorReference().m_standard == UHDTV3 || GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):(GetColorReference().m_standard == HDTVa || GetColorReference().m_standard == HDTVb)?CColorReference(HDTV):GetColorReference());
 
 	for (i=0; i<3; i++)
 	{
 		Rows.RemoveAll();
 		Rows.Add(legendRGB[i]);
 		for(j=0;j<size;j++)
-			Rows.Add((float)m_pDoc->GetMeasure()->GetGray(j).GetRGBValue(GetColorReference())[i]);
+			Rows.Add((float)m_pDoc->GetMeasure()->GetGray(j).GetRGBValue(bRef)[i]);
 		result&=graySS.AddRow(Rows,rowNb,m_doReplace);
 		rowNb++;
 	}
@@ -1677,7 +1678,8 @@ bool CExport::SaveGrayScaleSheet()
 	// Retrieve white reference, gamma and offset
 	double		Gamma,Offset;
 	CColor		refColor = GetColorReference().GetWhite();
-    ColorXYZ aColor(m_pDoc->GetMeasure()->GetGray(i).GetXYZValue());
+//    ColorXYZ aColor(m_pDoc->GetMeasure()->GetGray(i).GetXYZValue());
+
 	if ( size && m_pDoc->GetMeasure()->GetGray(0).isValid() )
 		m_pDoc->ComputeGammaAndOffset(&Gamma, &Offset, 3, 1, size, false);
 
@@ -1686,13 +1688,14 @@ bool CExport::SaveGrayScaleSheet()
 	double YWhite = m_pDoc->GetMeasure()->GetGray(size-1)[1];
 	for(j=0;j<size;j++)
 	{
+		CColor aColor = m_pDoc->GetMeasure()->GetGray(j);
 		// Determine Reference Y luminance for Delta E calculus
 		if ( GetConfig ()->m_dE_gray > 0 || GetConfig ()->m_dE_form == 5 )
 		{
 		    double x = ArrayIndexToGrayLevel ( j, size, GetConfig () -> m_bUseRoundDown, GetConfig () -> m_bUse10bit );
             double valy;
-    		CColor White = m_pDoc -> GetMeasure () -> GetGray ( size - 1 );
-			CColor Black = m_pDoc->GetMeasure()->GetOnOffBlack();
+			CColor White = m_pDoc -> GetMeasure () -> GetOnOffWhite();
+			CColor Black = m_pDoc -> GetMeasure () -> GetOnOffBlack();
 			int mode = GetConfig()->m_GammaOffsetType;
 			if (GetConfig()->m_colorStandard == sRGB) mode = 99;
 			if (  (mode >= 4) )
@@ -1710,6 +1713,7 @@ bool CExport::SaveGrayScaleSheet()
 			 }
 
             ColorxyY tmpColor(GetColorReference().GetWhite());
+
 			if (GetConfig()->m_GammaOffsetType == 5)
 				tmpColor[2] = valy * 100. / YWhite;
 			else
@@ -1717,12 +1721,13 @@ bool CExport::SaveGrayScaleSheet()
 
             if (GetConfig ()->m_dE_gray == 2 || GetConfig ()->m_dE_form == 5 )
                 tmpColor[2] = aColor [ 1 ] / YWhite;
+
 			refColor.SetxyYValue(tmpColor);
 		}
 		else
 		{
 			// Use actual gray luminance as correct reference (Delta E will check color only, not brightness)
-			    YWhite = m_pDoc->GetMeasure()->GetGray(j) [ 1 ];
+			    YWhite = aColor [ 1 ];
 		}
 		
 		Rows.Add((float)m_pDoc->GetMeasure()->GetGray(j).GetDeltaE(YWhite, refColor, 1.0, GetColorReference(), 	GetConfig()->m_dE_form, true, GetConfig()->gw_Weight ));
