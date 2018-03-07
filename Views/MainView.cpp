@@ -483,6 +483,8 @@ CMainView::CMainView()
 	m_RefWhite = 1.;
 	m_ref_r = 0.,m_ref_g = 0.,m_ref_b = 0.;
 	m_meas_r = 0.,m_meas_g = 0.,m_meas_b = 0.;
+	m_ref_r1 = 0.,m_ref_g1 = 0.,m_ref_b1 = 0.;
+	m_meas_r1 = 0.,m_meas_g1 = 0.,m_meas_b1 = 0.;
 	refresh = false;
 	m_infoLine = "Welcome to HCFR";
 	CCompClr = NULL;
@@ -1141,10 +1143,14 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 				}
 
 			}
-
-			m_meas_r = m_meas_r;
-			m_meas_g = m_meas_g;
-			m_meas_b = m_meas_b;
+			ColorXYZ measXYZ(ColorRGB(pow(m_meas_r,2.22),pow(m_meas_g,2.22),pow(m_meas_b,2.22)), bRef);
+			ColorXYZ measXYZref(ColorRGB(pow(m_ref_r,2.22),pow(m_ref_g,2.22),pow(m_ref_b,2.22)), bRef);
+			m_meas_r1 = pow(min(max(ColorRGB(measXYZ,CColorReference(HDTV))[0],0.0),1.0),1./2.22);
+			m_meas_g1 = pow(min(max(ColorRGB(measXYZ,CColorReference(HDTV))[1],0.0),1.0),1./2.22);
+			m_meas_b1 = pow(min(max(ColorRGB(measXYZ,CColorReference(HDTV))[2],0.0),1.0),1./2.22);
+			m_ref_r1 = pow(min(max(ColorRGB(measXYZref,CColorReference(HDTV))[0],0.0),1.0),1./2.22);
+			m_ref_g1 = pow(min(max(ColorRGB(measXYZref,CColorReference(HDTV))[1],0.0),1.0),1./2.22);
+			m_ref_b1 = pow(min(max(ColorRGB(measXYZref,CColorReference(HDTV))[2],0.0),1.0),1./2.22);
 
 			trip2.SetString("No\nMeasure\n");				
 			if (m_SelectedColor.isValid())
@@ -1153,7 +1159,7 @@ void CMainView::RefreshSelection(bool b_minCol, bool inMeasure)
 				CString dEstr;
 				dEstr.Format("Color Comparator\n______________________%3.2f dE______________________\n\n\n\n\n\n\n\n\n\n\n\n\n\n", m_dE);
 				m_tooltip2.AddTool(GetDlgItem(IDC_CCOMP3), dEstr);
-				m_tooltip2.SetColorBk(RGB(floor(pow(m_meas_r,1.0)*255.+0.5),floor(pow(m_meas_g,1.0)*255.+0.5),floor(pow(m_meas_b,1.0)*255.+0.5)),RGB(floor(pow(m_ref_r,1.0)*255.+0.5),floor(pow(m_ref_g,1.0)*255.+0.5),floor(pow(m_ref_b,1.0)*255.+0.5)));
+				m_tooltip2.SetColorBk(RGB(floor(m_meas_r1*255.+0.5),floor(m_meas_g1*255.+0.5),floor(m_meas_b1*255.+0.5)),RGB(floor(m_ref_r1*255.+0.5),floor(m_ref_g1*255.+0.5),floor(m_ref_b1*255.+0.5)));
 				if (GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0))
 					trip2.Format("%d,%d,%d\nReference",((int)floor((m_ref_rd)*219.+0.5)+16),(int)(floor((m_ref_gd)*219.+0.5)+16),(int)(floor((m_ref_bd)*219.+0.5)+16));
 				else
@@ -6000,7 +6006,7 @@ LRESULT CMainView::OnCtlColorStatic(WPARAM wParam, LPARAM lParam)
 		HDC hDC = (HDC)wParam;
 		SetBkMode(hDC, TRANSPARENT);
 		SetTextColor(hDC, t_color); //set to reference
-		CCompClr=CreateSolidBrush(RGB(floor(pow(m_meas_r,1.0)*255.+0.5),floor(pow(m_meas_g,1.0)*255.+0.5),floor(pow(m_meas_b,1.0)*255.+0.5)));
+		CCompClr=CreateSolidBrush(RGB(floor(pow(m_meas_r1,1.0)*255.+0.5),floor(pow(m_meas_g1,1.0)*255.+0.5),floor(pow(m_meas_b1,1.0)*255.+0.5)));
 		return BOOL(CCompClr);
 	}
 	else if (::GetDlgCtrlID(hWnd) == IDC_CCOMP3 && m_SelectedColor.isValid()) //reference color
@@ -6008,7 +6014,7 @@ LRESULT CMainView::OnCtlColorStatic(WPARAM wParam, LPARAM lParam)
 		HDC hDC = (HDC)wParam;
 		SetBkMode(hDC, TRANSPARENT);
 		SetTextColor(hDC, t_color); //set to reference
-		CCompClr = CreateSolidBrush(RGB(floor(pow(m_ref_r,1.0)*255.+0.5),floor(pow(m_ref_g,1.0)*255.+0.5),floor(pow(m_ref_b,1.0)*255.+0.5)));
+		CCompClr = CreateSolidBrush(RGB(floor(pow(m_ref_r1,1.0)*255.+0.5),floor(pow(m_ref_g1,1.0)*255.+0.5),floor(pow(m_ref_b1,1.0)*255.+0.5)));
 		return BOOL(CCompClr);
 	}
 
