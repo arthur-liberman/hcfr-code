@@ -2336,7 +2336,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 					if ( nCol > 1 || m_displayMode == 4 || m_displayMode == 2 )
 					{
 						double Intensity=GetConfig()->GetProfileInt("GDIGenerator","Intensity",100) / 100.;
-						str.Format("%.1f",aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight ) );
+						str.Format("%.1f",aMeasure. GetDeltaE( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight ) );
        					dE=aMeasure.GetDeltaE ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight );
        					dL=aMeasure.GetDeltaLCH ( YWhite, aReference, 1.0, GetColorReference(), GetConfig()->m_dE_form, true, GetConfig()->m_GammaOffsetType == 5?3:GetConfig()->gw_Weight, dC, dH );
 						dEavg+=(isNan(dE)?dEavg:dE);
@@ -3303,8 +3303,6 @@ void CMainView::UpdateGrid()
 
                         if (GetConfig ()->m_dE_gray == 2 || GetConfig ()->m_dE_form == 5 )
 								tmpColor[2] = aColor [ 1 ] / YWhite; //perfect gamma
-
-//						tmpColor[2] = aColor [ 1 ] / YWhite; //perfect gamma
 
 						refColor.SetxyYValue(tmpColor);
 					 }
