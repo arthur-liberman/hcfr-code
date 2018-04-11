@@ -226,11 +226,11 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_wndMenuBar.SetWindowText(_T("Menu standard"));
 	m_wndToolBar.SetWindowText(_T("Toolbar standard"));
 	m_wndToolBarViews.SetWindowText(_T("Toolbar views"));
-	m_wndToolBarViews.SetSizes(CSize(32,32), CSize(32,32));
+	m_wndToolBarViews.SetSizes(CSize(32+7,32+6), CSize(32,32));
 	m_wndToolBarMeasures.SetWindowText(_T("Toolbar measures"));
 	m_wndToolBarMeasuresEx.SetWindowText(_T("Toolbar measures ext"));
 	m_wndToolBarMeasuresSat.SetWindowText(_T("Toolbar measures sat"));
-	m_wndToolBarMeasures.SetSizes(CSize(32,32), CSize(32,32));
+	m_wndToolBarMeasures.SetSizes(CSize(32+7,32+6), CSize(32,32));
 
 	if(!LoadToolbars())
 	{
@@ -616,13 +616,17 @@ LRESULT CMainFrame::OnDDEInitiate(WPARAM wParam, LPARAM lParam)
 		}
 	}
 
-	if ( lResult != -1 )
-		return lResult;
+	if (lResult != -1)
+	{
+	}
+//		return lResult;
 	else
 	{
 		// Transfer initiate command to MFC file open handler
-		return CNewMDIFrameWnd::OnDDEInitiate(wParam, lParam);
+//		return CNewMDIFrameWnd::OnDDEInitiate(wParam, lParam);
+		CNewMDIFrameWnd::OnDDEInitiate(CWnd::FromHandle(hWndClient), LOBYTE(lParam), HIBYTE(lParam));
 	}
+	return 0;
 }
 
 LRESULT CMainFrame::OnDDEExecute(WPARAM wParam, LPARAM lParam)
@@ -869,7 +873,9 @@ LRESULT CMainFrame::OnDDEExecute(WPARAM wParam, LPARAM lParam)
 	if ( lRes != -1 )
 		return lRes;
 	else
-		return CNewMDIFrameWnd::OnDDEExecute(wParam, lParam);
+//		return CNewMDIFrameWnd::OnDDEExecute(wParam, lParam);
+	CNewMDIFrameWnd::OnDDEExecute(CWnd::FromHandle(hWndClient), hWndClient);
+	return 0;
 }
 
 LRESULT CMainFrame::OnDDERequest(WPARAM wParam, LPARAM lParam)
@@ -896,10 +902,16 @@ LRESULT CMainFrame::OnDDETerminate(WPARAM wParam, LPARAM lParam)
 {
 	LRESULT	lRes = -1;
 	
-	if ( lRes != -1 )
-		return lRes;
+	if (lRes != -1)
+	{
+
+	}
+//		return lRes;
 	else
-		return CNewMDIFrameWnd::OnDDETerminate(wParam, lParam);
+//		return CNewMDIFrameWnd::OnDDEInitiate(wParam, lParam);
+		CNewMDIFrameWnd::OnDDETerminate(CWnd::FromHandle((HWND)wParam));
+
+	return 0;
 }
 
 
@@ -1137,7 +1149,7 @@ void CMainFrame::OnUpdateSoft()
 		WebUpdate.SetLocalDirectory("", true);
 		WebUpdate.SetUpdateFileURL("ftp://prairie17.dyndns.org/shares/dload/CheckUpdate.txt");
 		WebUpdate.SetRemoteURL("ftp://prairie17.dyndns.org/shares/dload/");
-		bool cacheDel = DeleteUrlCacheEntry("ftp://prairie17.dyndns.org/shares/dload/CheckUpdate.txt");
+		BOOL cacheDel = DeleteUrlCacheEntry("ftp://prairie17.dyndns.org/shares/dload/CheckUpdate.txt");
 		cacheDel = DeleteUrlCacheEntry("ftp://prairie17.dyndns.org/shares/dload/ColorHCFR.exe");
 
 		int m_WebUp = WebUpdate.DoUpdateCheck();
