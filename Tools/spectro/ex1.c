@@ -344,7 +344,7 @@ ex1_init_inst(inst *pp) {
 	if (sconf->wl_long > 800.0)
 		sconf->wl_long = 800.0;
 
-	sconf->nwav = (int)floor(sconf->wl_long - sconf->wl_short)/sconf->wl_space + 1;
+	sconf->nwav = (int)(floor(sconf->wl_long - sconf->wl_short)/sconf->wl_space + 1);
 	
 	a1logd(p->log, 1, " %d Wavelengths %f - %f spacing %f\n",sconf->nwav,
 		                  sconf->wl_short,sconf->wl_long,sconf->wl_space);

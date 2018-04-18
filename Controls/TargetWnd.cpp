@@ -62,7 +62,7 @@ CTargetWnd::~CTargetWnd()
 {
 }
 
-void CTargetWnd::Refresh(bool m_b16_235, int minCol, int nSize, int m_DisplayMode, CDataSetDoc * pDoc, int target)
+void CTargetWnd::Refresh(BOOL m_b16_235, int minCol, int nSize, int m_DisplayMode, CDataSetDoc * pDoc, int target)
 {	
 	if (m_pRefColor)
 	{

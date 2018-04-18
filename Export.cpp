@@ -57,7 +57,7 @@ void error_handler  (HPDF_STATUS   error_no,
                 void         *user_data)
 {
 	char msg[50];
-    sprintf (msg,"ERROR: error_no=%04X, File already open?\n", (HPDF_UINT)error_no,
+    sprintf (msg,"ERROR: error_no=%04X, detail_no=%04X, File already open?\n", (HPDF_UINT)error_no,
                 (HPDF_UINT)detail_no);
 			if(GetColorApp()->InMeasureMessageBox(msg,"PDF ERROR, Yes to continue",MB_YESNO)!=IDYES)
     longjmp(env, 1);
@@ -324,7 +324,7 @@ bool CExport::SavePDF()
 	POSITION		pos;
 	double CR = NULL;
 
-	bool bk=GetConfig()->m_bWhiteBkgndOnFile;
+	bool bk=GetConfig()->m_bWhiteBkgndOnFile != 0;
 	GetConfig()->m_bWhiteBkgndOnFile=FALSE;
 	pos = m_pDoc -> GetFirstViewPosition ();
 	pView = m_pDoc -> GetNextView ( pos );

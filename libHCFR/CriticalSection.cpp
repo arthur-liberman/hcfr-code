@@ -27,6 +27,7 @@ CriticalSection::CriticalSection()
     pthread_mutex_init(&m_matrixMutex, NULL);
 #endif
 }
+
 CriticalSection::~CriticalSection()
 {
 #ifdef LIBHCFR_HAS_WIN32_API
@@ -35,16 +36,17 @@ CriticalSection::~CriticalSection()
     pthread_mutex_destroy(&m_matrixMutex);
 #endif
 }
-void CriticalSection::lock()
+
+_Acquires_lock_(&m_critcalSection) void CriticalSection::lock()
 {
 #ifdef LIBHCFR_HAS_WIN32_API
-    EnterCriticalSection(&m_critcalSection);
+	EnterCriticalSection(&m_critcalSection);
 #elif LIBHCFR_HAS_PTHREADS
     pthread_mutex_lock(&m_matrixMutex);
 #endif
 }
 
-void CriticalSection::unlock()
+_Releases_lock_(&m_critcalSection) void CriticalSection::unlock()
 {
 #ifdef LIBHCFR_HAS_WIN32_API
     LeaveCriticalSection(&m_critcalSection);

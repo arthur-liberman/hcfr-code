@@ -437,7 +437,7 @@ static inst_code uicallback(void *cntx, inst_ui_purp purp) {
 
 void
 usage(char *diag, ...) {
-	int i;
+//	int i;
 	icompaths *icmps;
 	inst2_capability cap2 = 0;
 	fprintf(stderr,"Measure spot values, Version %s\n",ARGYLL_VERSION_STR);
@@ -628,7 +628,7 @@ int main(int argc, char *argv[]) {
 	xsp2cie *sp2cie = NULL;			/* default conversion */
 	xsp2cie *sp2cief[26];			/* FWA corrected conversions */
 	double wXYZ[3] = { -10.0, 0, 0 };/* White XYZ for display white relative */
-	double chmat[3][3];				/* Chromatic adapation matrix for white point relative */
+//	double chmat[3][3];				/* Chromatic adapation matrix for white point relative */
 	double XYZ[3] = { 0.0, 0.0, 0.0 };		/* Last XYZ scaled 0..100 or absolute */
 	double Lab[3] = { -10.0, 0, 0};	/* Last Lab */
 	double rXYZ[3] = { 0.0, -10.0, 0};	/* Reference XYZ */
@@ -1010,7 +1010,7 @@ int main(int argc, char *argv[]) {
 			/* Colorimeter Correction Matrix or */
 			/* Colorimeter Calibration Spectral Samples */
 			} else if (argv[fa][1] == 'X') {
-				int ix;
+//				int ix;
 				fa = nfa;
 				if (na == NULL) usage("Parameter expected after -K");
 				strncpy(ccxxname,na,MAXNAMEL-1); ccxxname[MAXNAMEL-1] = '\000';
@@ -1841,8 +1841,8 @@ int main(int argc, char *argv[]) {
 
 	/* Read spots until the user quits */
 	for (ix = 1;; ix++) {
-		ipatch val;								/* Raw measurement value */
-		double tXYZ[3];
+		ipatch val;
+//		double tXYZ[3];
 #ifndef SALONEINSTLIB
 		double cct, vct, vdt;
 		double cct_de, vct_de, vdt_de;

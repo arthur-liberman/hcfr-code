@@ -628,7 +628,7 @@ void CKiSensor::decodeKiStr(char *kiStr, int RGB[3])
 		CTime theTime = CTime::GetCurrentTime(); 
 		CString s = theTime.Format( "%d/%m/%y %H:%M:%S" );		
 		FILE *f = fopen ( GetConfig () -> m_logFileName, "a" );
-		fprintf(f, "HCFR - %s : %s R:%d G:%d B:%d\n", s, kiStr, RGB[0],RGB[1],RGB[2]);
+		fprintf(f, "HCFR - %s : %s R:%d G:%d B:%d\n", s.GetString(), kiStr, RGB[0],RGB[1],RGB[2]);
 		fclose(f);
 		LeaveCriticalSection ( & GetConfig () -> LogFileCritSec );
 	}

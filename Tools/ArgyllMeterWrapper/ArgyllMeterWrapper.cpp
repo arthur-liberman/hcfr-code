@@ -206,7 +206,7 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
     if(!m_meter->inited)
     {
 		instType Spyder = m_meter->get_itype(m_meter);
-		if ( Spyder == instSpyder1 || Spyder == instSpyder1)
+		if ( Spyder == instSpyder1 || Spyder == instSpyder2)
 		if (setup_spyd2(Spyder == instSpyder1?0:1) == 2)
 			MessageBox(NULL,"WARNING: This file contains a proprietary firmware image, and may not be freely distributed !","Loaded PLD",MB_OK);
 

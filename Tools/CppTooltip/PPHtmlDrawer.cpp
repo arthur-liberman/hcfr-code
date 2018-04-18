@@ -2362,7 +2362,7 @@ HCURSOR CPPHtmlDrawer::GetHyperlinkCursor() const
 ///////////////////////////////////////////////////////////////////////
 void CPPHtmlDrawer::SetCallbackHyperlink(HWND hWnd, UINT nMessage, LPARAM lParam /* = 0 */)
 {
-	TRACE(_T("CPPHtmlDrawer::SetCallbackHyperlink()\n"));
+//	TRACE(_T("CPPHtmlDrawer::SetCallbackHyperlink()\n"));
 
 	m_csCallbackLink.hWnd = hWnd;
 	if (NULL == hWnd)
@@ -2379,7 +2379,7 @@ void CPPHtmlDrawer::SetCallbackHyperlink(HWND hWnd, UINT nMessage, LPARAM lParam
 
 void CPPHtmlDrawer::SetCallbackRepaint(HWND hWnd, UINT nMessage, LPARAM lParam /* = 0 */)
 {
-	TRACE(_T("CPPHtmlDrawer::SetCallbackRepaint()\n"));
+//	TRACE(_T("CPPHtmlDrawer::SetCallbackRepaint()\n"));
 
 	m_csCallbackRepaint.hWnd = hWnd;
 	if (NULL == hWnd)

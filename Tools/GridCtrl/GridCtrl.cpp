@@ -1757,7 +1757,7 @@ void CGridCtrl::OnDraw(CDC* pDC)
 #ifdef _DEBUG
 	LARGE_INTEGER iEndCount;
 	QueryPerformanceCounter(&iEndCount);
-	TRACE1("Draw counter ticks: %d\n", iEndCount.LowPart-iStartCount.LowPart);
+//	TRACE1("Draw counter ticks: %d\n", iEndCount.LowPart-iStartCount.LowPart);
 #endif
 
 }
@@ -5585,7 +5585,7 @@ void CGridCtrl::OnMouseMove(UINT /*nFlags*/, CPoint point)
                         && pCell->GetTipTextRect( &TextRect)
                         && GetCellRect(idCurrentCell.row, idCurrentCell.col, CellRect) )
                     {
-						TRACE0("Showing TitleTip\n");
+//						TRACE0("Showing TitleTip\n");
 						m_TitleTip.Show(TextRect, pCell->GetTipText(),  0, CellRect,
                                         pCell->GetFont(),  GetTitleTipTextClr(), GetTitleTipBackClr());
                     }
@@ -5697,7 +5697,7 @@ CPoint CGridCtrl::GetPointClicked(int nRow, int nCol, const CPoint& point)
 
 void CGridCtrl::OnLButtonDblClk(UINT nFlags, CPoint point)
 {
-    TRACE0("CGridCtrl::OnLButtonDblClk\n");
+//    TRACE0("CGridCtrl::OnLButtonDblClk\n");
 
     CCellID cell = GetCellFromPt(point);
     if( !IsValid( cell) )

@@ -46,7 +46,13 @@ CPatternDisplay::CPatternDisplay(CWnd* pParent /*=NULL*/)
 	CreateGenerator();
 }
 
+CPatternDisplay::~CPatternDisplay()
+{
+	if ( m_patternDGenerator)
+		delete m_patternDGenerator;
 
+	m_patternDGenerator = NULL;
+}
 void CPatternDisplay::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
@@ -191,7 +197,8 @@ void CPatternDisplay::CreateGenerator()
 {
 	if(m_patternDGenerator != NULL)
 		delete m_patternDGenerator;
-	m_patternDGenerator=new CGDIGenerator(DISPLAY_GDI_Hide, GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0));
+
+	m_patternDGenerator = new CGDIGenerator(DISPLAY_GDI_Hide, GetConfig()->GetProfileInt("GDIGenerator","RGB_16_235",0));
 }
 
 void CPatternDisplay::WaitKey()

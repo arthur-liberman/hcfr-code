@@ -157,10 +157,10 @@ void CPPDrawManager::AlphaBitBlt(HDC hDestDC, int nDestX, int nDestY, DWORD dwWi
 			::BitBlt (hDestDC, nDestX, nDestY, dwWidth, dwHeight, hTempDC, 0, 0, SRCCOPY);
 			::SelectObject (hTempDC, hOldTempBmp);
 
-			delete lpbiDest;
+			delete[] lpbiDest;
 			::DeleteObject(hDestDib);
 		} //if
-		delete lpbiSrc;
+		delete[] lpbiSrc;
 		::DeleteObject(hSrcDib);
 		::DeleteObject(hOldTempBmp);
 	} //if
@@ -239,7 +239,7 @@ HBITMAP CPPDrawManager::CreateImageEffect(HBITMAP hBitmap, DWORD dwWidth, DWORD 
 	::DeleteDC(hResDC);
 	::ReleaseDC(NULL, hMainDC);
 	
-	delete lpbi;
+	delete[] lpbi;
 
 	return hDibBmp;
 } //End CreateImageEffect
@@ -967,7 +967,7 @@ void CPPDrawManager::DrawShadow(HDC hDestDC, int nDestX, int nDestY, DWORD dwWid
 			::BitBlt (hDestDC, nDestX, nDestY, dwWidth, dwHeight, hTempDC, 0, 0, SRCCOPY);
 			::SelectObject (hTempDC, hOldTempBmp);
 
-			delete lpbiDest;
+			delete[] lpbiDest;
 			::DeleteObject(hDestDib);
 		} //if
 		delete lpbiSrc;

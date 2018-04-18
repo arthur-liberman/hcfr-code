@@ -1326,7 +1326,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 			/* Decide how many extra readings to average into result. */
 			/* Interpolate between the thresholds */
 			if (v < 0.2) {
-				ntav = nav[0];
+				ntav = (int)nav[0];
 			} else if (v < thr[1]) {
 				vv = 1.0 - (v - thr[0]) / (thr[1] - thr[0]);
 				vv = vv * vv * vv;

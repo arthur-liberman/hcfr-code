@@ -85,7 +85,7 @@ CArgyllSensor::CArgyllSensor(ArgyllMeterWrapper* meter) :
     m_ReadingType = GetConfig()->GetProfileInt(meterName.c_str(), "ReadingType", 0);
     m_SpectralType = GetConfig()->GetProfileString(meterName.c_str(), "SpectralType", "Default");
     m_intTime = GetConfig()->GetProfileInt(meterName.c_str(), "IntTime", 1);
-    m_debugMode = GetConfig()->GetProfileInt(meterName.c_str(), "DebugMode", 0);
+    m_debugMode = GetConfig()->GetProfileInt(meterName.c_str(), "DebugMode", 0) != 0;
     m_HiRes = GetConfig()->GetProfileInt(meterName.c_str(), "HiRes", 0);
 
     m_Adapt = GetConfig()->GetProfileInt(meterName.c_str(), "Adapt", 0);
@@ -243,7 +243,7 @@ void CArgyllSensor::GetPropertiesSheetValues()
     if(m_debugMode != !!m_ArgyllSensorPropertiesPage.m_DebugMode) 
     {
         SetModifiedFlag(TRUE);
-        m_debugMode = m_ArgyllSensorPropertiesPage.m_DebugMode;
+        m_debugMode = m_ArgyllSensorPropertiesPage.m_DebugMode != 0;
         GetConfig()->WriteProfileInt(meterName.c_str(), "DebugMode", m_debugMode?1:0);
     }
 
@@ -375,7 +375,7 @@ void CArgyllSensor::Calibrate()
     while(state != ArgyllMeterWrapper::READY)
     {
 		bool b_TestWindow = false;
-        std::string meterInstructions(m_meter->getCalibrationInstructions(m_HiRes));
+        std::string meterInstructions(m_meter->getCalibrationInstructions(m_HiRes != 0));
         if(meterInstructions.empty())
         {
             break;

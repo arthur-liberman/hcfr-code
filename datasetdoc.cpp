@@ -4709,7 +4709,7 @@ void CDataSetDoc::OnUpdateMeasureSatMagenta(CCmdUI* pCmdUI)
 
 void CDataSetDoc::OnUpdateMeasureSatCC24(CCmdUI* pCmdUI) 
 {
-	CGenerator::MeasureType nPattern;
+	CGenerator::MeasureType nPattern = CGenerator::MT_UNKNOWN;
 	switch (GetConfig()->m_CCMode)
 	{
 	case MCD:

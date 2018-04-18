@@ -70,7 +70,7 @@ void writeCString (ofstream &file, const char *string)
   }
   else if (stringSize < 0xFFFF)
   {
-    char marker = 0xFF;
+    char marker = (char)0xFF;
     file.write(&marker, 1);
     uint16_t actualSize = stringSize & 0xFFFF;
     actualSize = hostUint16TolittleEndian(actualSize);
@@ -78,7 +78,7 @@ void writeCString (ofstream &file, const char *string)
   }
   else
   {
-    char marker[3] = {0xFF, 0xFF, 0xFF};
+    char marker[3] = {(char)0xFF, (char)0xFF, (char)0xFF};
     file.write(marker, 3);
     uint32_t actualSize = hostUint32TolittleEndian(stringSize);
     file.write((char*)&actualSize, sizeof(uint32_t));
