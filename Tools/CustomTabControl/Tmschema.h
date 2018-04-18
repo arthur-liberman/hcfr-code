@@ -7,6 +7,9 @@
 //         single logical table and ensure they stay in sync with
 //         each other.
 //-----------------------------------------------------------------
+
+
+
 #if (defined(SCHEMA_STRINGS)) || (! defined(TMSCHEMA_H))
 //-----------------------------------------------------------------
 #define TMSCHEMA_H

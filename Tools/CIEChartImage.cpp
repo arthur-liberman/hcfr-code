@@ -1396,8 +1396,8 @@ void DrawCIEChart(CDC* pDC, int cxMax, int cyMax, BOOL doFullChart, BOOL doShowB
 					}
 					
 					Color = RGB ( (int)(pow(val_r,gamma) * nMaxRgbVal), (int)(pow(val_g,gamma) * nMaxRgbVal), (int)(pow(val_b,gamma) * nMaxRgbVal) );
-
-					pDC -> SetPixel ( k ++, Y_Cour, Color );
+					if (pDC)
+						pDC -> SetPixel ( k ++, Y_Cour, Color );
 				}
 			}
 		}

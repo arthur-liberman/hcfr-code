@@ -111,6 +111,7 @@ BOOL CSensor::Init( BOOL bForSimultaneousMeasures )
 
 BOOL CSensor::Release()
 {
+	
 	return TRUE;
 }
 

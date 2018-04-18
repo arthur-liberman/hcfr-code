@@ -379,7 +379,7 @@ BOOL CDTPSensor::SendAndReceive ( LPCSTR lpszCmd, LPSTR lpszResponse, size_t nBu
 		CTime theTime = CTime::GetCurrentTime(); 
 		CString s = theTime.Format( "%d/%m/%y %H:%M:%S" );		
 		FILE *f = fopen ( GetConfig () -> m_logFileName, "a" );
-		fprintf(f, "DTP94 - %s : %-6s : %s\n", s, lpszCmd, ( bOk ? ( lpszResponse ? lpszResponse : "succeeded" ) : "failed" ) );
+		fprintf(f, "DTP94 - %s : %-6s : %s\n", s.GetString(), lpszCmd, ( bOk ? ( lpszResponse ? lpszResponse : "succeeded" ) : "failed" ) );
 		fclose(f);
 		LeaveCriticalSection ( & GetConfig () -> LogFileCritSec );
 	}

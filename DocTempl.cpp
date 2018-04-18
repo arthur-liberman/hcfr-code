@@ -165,6 +165,7 @@ CDocument* CMyMultiDocTemplate::OpenDocumentFile(LPCTSTR lpszPathName,
 			// Activate the selected frame
 			if ( pActiveFrame )
 				( (CMainFrame *) AfxGetMainWnd () ) -> MDIActivate ( pActiveFrame );
+
 		}
 		else
 		{

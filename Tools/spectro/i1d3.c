@@ -1711,7 +1711,7 @@ i1d3_take_emis_measurement(
 								nedgec = 2.0;
 
 							/* Round down to nearest even edge count */
-							inedgec = 2.0 * (int)floor(nedgec/2.0);
+							inedgec = (int)(2.0 * floor(nedgec/2.0));
 
 							a1logd(p->log,3,"chan %d set edgec to %d\n",i,inedgec);
 

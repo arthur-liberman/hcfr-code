@@ -482,8 +482,8 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 	Invalidate(FALSE);
 
 	CString title;
-	title.LoadString(m_bLumaMode ? (GetConfig()->m_useHSV?IDS_LCHLEVELS:IDS_RGBLEVELS) : IDS_RGBLEVELS);
-	((CMainView *)GetParent())->m_RGBLevelsLabel.SetWindowText ((LPCSTR)title);
+	if (title.LoadString(m_bLumaMode ? (GetConfig()->m_useHSV?IDS_LCHLEVELS:IDS_RGBLEVELS) : IDS_RGBLEVELS))
+		((CMainView *)GetParent())->m_RGBLevelsLabel.SetWindowText ((LPCSTR)title);
 } 
 
 

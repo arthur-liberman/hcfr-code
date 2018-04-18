@@ -117,7 +117,7 @@ void CCreditsCtrl::OnPaint()
 
 	// calculate hot rectagle position and save background at that location
 	CDC hotBgDC;
-	CBitmap hotbgBmp,*pOldHBgBmp;
+	CBitmap hotbgBmp,*pOldHBgBmp=NULL;
 	CRect rcHotRect;
 	if(m_rcHotRect != CRect(0,0,0,0))
 	{
@@ -804,10 +804,10 @@ void CCreditsCtrl::Parse_AppendText(CDC *pDC, CDC *pHoverDC, int *pnCurHPos, int
 {
 	CRect rect(0,0,pga->nMaxWidth,pga->nMaxHeight);
 	CDC dc,hoverDC;
-	CBitmap hoverBmp,bmp,*pOldHBmp;
+	CBitmap hoverBmp,bmp,*pOldHBmp=NULL;
 	dc.CreateCompatibleDC(pDC);
 
-	CFont font,hover_font,*pOldHFont;
+	CFont font,hover_font,*pOldHFont=NULL;
 	font.CreateFont(-pfa->nSize,0,0,0,pfa->bBold?FW_BOLD:0,pfa->bItalic,pfa->bUnderline,pfa->bStrikeout,0,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,PROOF_QUALITY,DEFAULT_PITCH|FF_DONTCARE,pfa->szName);
 	CFont *pOldFont = dc.SelectObject(&font);
 	dc.SetTextColor(pfa->crColor == CLR_NONE ? m_crInternalTransparentColor : pfa->crColor);

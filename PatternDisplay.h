@@ -39,6 +39,7 @@ public:
 	CGenerator * m_patternDGenerator;
 	BOOL m_Dot2; 
 	UINT m_nPads;
+	virtual ~CPatternDisplay();
 
 
 // Dialog Data

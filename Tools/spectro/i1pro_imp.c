@@ -7698,7 +7698,7 @@ i1pro_code i1pro2_match_wl_meas(i1pro *p, double *pled_off, double *wlraw) {
 		return I1PRO_WL_SHAPE; 
 	}
 
-	roff = m->wl_led_ref_off;		/* reference raw offset */
+	roff = (int)m->wl_led_ref_off;		/* reference raw offset */
 	moff = mpoff - rpoff;			/* rough measured raw offset */
 
 	a1logd(p->log,3, "Preliminary WL peak match at ref base offset %d into measurement\n", moff);

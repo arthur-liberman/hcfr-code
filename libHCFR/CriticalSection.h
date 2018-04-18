@@ -38,8 +38,8 @@ class CriticalSection
 public:
     CriticalSection();
     ~CriticalSection();
-    void lock();
-    void unlock();
+	_Acquires_lock_(&m_critcalSection) void lock();
+	_Releases_lock_(&m_critcalSection) void unlock();
 private:
 #   ifdef LIBHCFR_HAS_WIN32_API
         CRITICAL_SECTION m_critcalSection;

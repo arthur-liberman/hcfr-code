@@ -114,6 +114,7 @@ namespace
             // only detect meters once if some are found
             // means that we don't support an extra meter being adding during the
             // run at the moment, but I can live with this
+			m_meters.resize(0);
             if(m_meters.empty())
             {
                 if (m_ComPaths != 0)
@@ -206,7 +207,7 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
     if(!m_meter->inited)
     {
 		instType Spyder = m_meter->get_itype(m_meter);
-		if ( Spyder == instSpyder1 || Spyder == instSpyder1)
+		if ( Spyder == instSpyder1 || Spyder == instSpyder2)
 		if (setup_spyd2(Spyder == instSpyder1?0:1) == 2)
 			MessageBox(NULL,"WARNING: This file contains a proprietary firmware image, and may not be freely distributed !","Loaded PLD",MB_OK);
 

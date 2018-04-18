@@ -178,7 +178,7 @@ END_MESSAGE_MAP()
 // CPPToolTip message handlers
 BOOL CPPToolTip::Create(CWnd* pParentWnd, BOOL bBalloon /* = TRUE */) 
 {
-	TRACE(_T("CPPToolTip::Create\n"));
+//	TRACE(_T("CPPToolTip::Create\n"));
 	
 	ASSERT_VALID(pParentWnd);
 	
@@ -223,7 +223,7 @@ void CPPToolTip::OnActivateApp(BOOL bActive, DWORD hTask)
 
 LRESULT CPPToolTip::SendNotify(LPPOINT pt, PPTOOLTIP_INFO & ti) 
 { 
-	TRACE(_T("CPPToolTip::SendNotify()\n")); 
+//	TRACE(_T("CPPToolTip::SendNotify()\n")); 
 	// Make sure this is a valid window  
 	if (!IsWindow(GetSafeHwnd())) 
 		return 0L; 
@@ -254,7 +254,7 @@ LRESULT CPPToolTip::SendNotify(LPPOINT pt, PPTOOLTIP_INFO & ti)
 ///////////////////////////////////////////////////////////////////////
 BOOL CPPToolTip::IsNotify()
 {
-	TRACE(_T("CPPToolTip::IsNotify\n"));
+//	TRACE(_T("CPPToolTip::IsNotify\n"));
 	
 	return (BOOL)(m_hNotifyWnd != NULL);
 }  //End of IsNotify
@@ -264,7 +264,7 @@ BOOL CPPToolTip::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 	CPoint ptClient;
 	::GetCursorPos(&ptClient);
 	ScreenToClient(&ptClient);
-	TRACE (_T("CPPToolTip::OnSetCursor(x=%d, y=%d)\n"), ptClient.x, ptClient.y);
+//	TRACE (_T("CPPToolTip::OnSetCursor(x=%d, y=%d)\n"), ptClient.x, ptClient.y);
 	if (m_drawer.OnSetCursor(ptClient))
 		return TRUE; //The cursor over the hyperlink
 	
@@ -276,7 +276,7 @@ BOOL CPPToolTip::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 
 LRESULT CPPToolTip::OnRepaintWindow(WPARAM wParam, LPARAM lParam)
 {
-	TRACE (_T("CPPToolTip::OnRepaintWindow()\n"));
+//	TRACE (_T("CPPToolTip::OnRepaintWindow()\n"));
 	if (m_bHyperlinkEnabled)
 	{
 		//Window's repaint enabled
@@ -323,7 +323,7 @@ void CPPToolTip::OnDrawBorder(HDC hDC, HRGN hRgn)
 ////////////////////////////////////////////////////////////////////////
 void CPPToolTip::OnRedrawTooltip(HDC hDC, BYTE nTransparency /* = 0 */)
 {
-	TRACE (_T("CPPToolTip::OnRedrawTooltip(Transparency = %d)\n"), nTransparency);
+//	TRACE (_T("CPPToolTip::OnRedrawTooltip(Transparency = %d)\n"), nTransparency);
 
 	//ENG: If a transparency more then max value
 	//RUS: Если значение прозрачности больше максимально допустимого
@@ -458,7 +458,7 @@ void CPPToolTip::OnRedrawTooltip(HDC hDC, BYTE nTransparency /* = 0 */)
 
 void CPPToolTip::OnPaint() 
 {
-	TRACE("CPPToolTip::OnPaint()\n");
+//	TRACE("CPPToolTip::OnPaint()\n");
 	CPaintDC dc(this); // device context for painting
 	
 	//Copying info about current tool to displayed
@@ -492,7 +492,7 @@ BOOL CPPToolTip::RelayEvent(MSG* pMsg)
 		rect.left = 0;
 		break;
 	case WM_LBUTTONDOWN:
-		TRACE("CPPToolTip::WM_LBUTTONDOWN\n");
+//		TRACE("CPPToolTip::WM_LBUTTONDOWN\n");
 		if (IsCursorOverTooltip())
 		{
 			//Left Button was pressed over the tooltip
@@ -629,8 +629,8 @@ BOOL CPPToolTip::RelayEvent(MSG* pMsg)
 
 void CPPToolTip::SetNewTooltip(HWND hWnd, const PPTOOLTIP_INFO & ti, BOOL bDisplayWithDelay /* = TRUE */, TooltipType type /* = PPTOOLTIP_NORMAL */)
 {
-	TRACE (_T("CPPToolTip::SetNewTooltip(hWnd=0x%08X, CRect(left=%d, top=%d, right=%d, bottom=%d), nID=%d)\n"), 
-		hWnd, ti.rectBounds.left, ti.rectBounds.top, ti.rectBounds.right, ti.rectBounds.bottom, ti.nIDTool);
+//	TRACE (_T("CPPToolTip::SetNewTooltip(hWnd=0x%08X, CRect(left=%d, top=%d, right=%d, bottom=%d), nID=%d)\n"), 
+//		hWnd, ti.rectBounds.left, ti.rectBounds.top, ti.rectBounds.right, ti.rectBounds.bottom, ti.nIDTool);
 	
 	m_bNextToolExist = FALSE;
 
@@ -647,7 +647,7 @@ void CPPToolTip::SetNewTooltip(HWND hWnd, const PPTOOLTIP_INFO & ti, BOOL bDispl
 	m_tiNextTool = ti;
 	if (PPTOOLTIP_STATE_HIDEN != m_nTooltipState)
 	{
-		TRACE(_T("SetNewTooltip2(%d)\n"), m_nNextTooltipType);
+//		TRACE(_T("SetNewTooltip2(%d)\n"), m_nNextTooltipType);
 		m_bNextToolExist = TRUE;
 		if (bDisplayWithDelay && m_dwTimeInitial)
 			m_bDelayNextTool = TRUE;
@@ -670,7 +670,7 @@ void CPPToolTip::OnTimer(UINT nIDEvent)
 	switch (nIDEvent)
 	{
 	case TIMER_SHOW:
-		TRACE(_T("OnTimerShow(%d)\n"), m_nNextTooltipType);
+//		TRACE(_T("OnTimerShow(%d)\n"), m_nNextTooltipType);
 		//ENG: Kill SHOW timer 
 		//RUS: Убить таймер ожидания показа тултипа
 		KillTimer(TIMER_SHOW);
@@ -685,12 +685,12 @@ void CPPToolTip::OnTimer(UINT nIDEvent)
 		{
 			//ENG: If mouse coordinates was changed
 			//RUS: Если курсор сдвинулся, то уничтожить тултип
-			TRACE(_T("OnTimerShow(HideTooltip)\n"));
+//			TRACE(_T("OnTimerShow(HideTooltip)\n"));
 			HideTooltip();
 		}
 		else if (PPTOOLTIP_STATE_HIDEN == m_nTooltipState)
 		{
-			TRACE(_T("OnTimerShow(Showing)\n"));
+//			TRACE(_T("OnTimerShow(Showing)\n"));
 			m_nTooltipState = PPTOOLTIP_STATE_SHOWING;
 			//Display first step
 			PrepareDisplayTooltip(&m_ptOriginal);
@@ -698,12 +698,12 @@ void CPPToolTip::OnTimer(UINT nIDEvent)
 			//Fade In effect
 			if ((SHOWEFFECT_FADEINOUT == m_dwShowEffect) && m_dwTimeFadeIn)
 			{
-				TRACE(_T("OnTimerShow(FadeIn)\n"));
+//				TRACE(_T("OnTimerShow(FadeIn)\n"));
 				SetTimer(TIMER_SHOWING, m_dwTimeFadeIn, NULL); //Fade in showing was enabled
 			}
 			else
 			{
-				TRACE(_T("OnTimerShow(Shown)\n"));
+//				TRACE(_T("OnTimerShow(Shown)\n"));
 				m_nTooltipState = PPTOOLTIP_STATE_SHOWN; //Tooltip is already show
 				if (m_dwTimeAutoPop && !(m_tiNextTool.nBehaviour & PPTOOLTIP_DISABLE_AUTOPOP))
 					SetTimer(TIMER_HIDE, m_dwTimeAutoPop, NULL); //Hiding by timer was enabled
@@ -711,7 +711,7 @@ void CPPToolTip::OnTimer(UINT nIDEvent)
 		} //if
 		break;
 	case TIMER_SHOWING:
-		TRACE("OnTimerFadeIn(Current Transparency=%d )\n", m_dwCurTransparency);
+//		TRACE("OnTimerFadeIn(Current Transparency=%d )\n", m_dwCurTransparency);
 		//ENG: If fade-in effect was finished then sets minimum transparency
 		//RUS: Если шаги эффекта плавного показа исчерпаны, то установить минимальную прозрачность
 		if (m_dwCurTransparency > (PERCENT_MIN_TRANSPARENCY + PERCENT_STEP_FADEIN))
@@ -734,7 +734,7 @@ void CPPToolTip::OnTimer(UINT nIDEvent)
 		OnRedrawTooltip(NULL, m_dwCurTransparency);
 		break;	
 	case TIMER_HIDE:
-		TRACE(_T("OnTimerHide()\n"));
+//		TRACE(_T("OnTimerHide()\n"));
 		//ENG: Kill all timers except HIDING timer
 		//RUS: Убиваем все таймеры за исключением таймера HIDING
 		KillTimer(TIMER_SHOW);
@@ -761,7 +761,7 @@ void CPPToolTip::OnTimer(UINT nIDEvent)
 		} //if
 		break;
 	case TIMER_HIDING:
-		TRACE("OnTimerFadeOut(Current Transparency=%d)\n", m_dwCurTransparency);
+//		TRACE("OnTimerFadeOut(Current Transparency=%d)\n", m_dwCurTransparency);
 		//ENG: If fade-out effect was finished then sets maximum transparency
 		//RUS: Если шаги эффекта плавного сокрытия исчерпаны, то установить максимальную прозрачность
 		if (m_dwCurTransparency < (PERCENT_MAX_TRANSPARENCY - PERCENT_STEP_FADEOUT))
@@ -825,14 +825,14 @@ void CPPToolTip::HideTooltip()
 
 void CPPToolTip::SetAutoPopTimer()
 {
-	TRACE (_T("CPPToolTip::SetAutoPopTimer()\n"));
+//	TRACE (_T("CPPToolTip::SetAutoPopTimer()\n"));
 	if (m_dwTimeAutoPop && !(m_tiDisplayed.nBehaviour & PPTOOLTIP_DISABLE_AUTOPOP))
 		SetTimer(TIMER_HIDE, m_dwTimeAutoPop, NULL);
 } //End of SetAutoPopTimer
 
 void CPPToolTip::KillTimers(DWORD dwIdTimer /* = NULL */)
 {
-	TRACE (_T("CPPToolTip::KillTimers()\n"));
+//	TRACE (_T("CPPToolTip::KillTimers()\n"));
 	if (dwIdTimer == NULL)
 	{
 		KillTimer(TIMER_SHOW);
@@ -848,7 +848,7 @@ void CPPToolTip::KillTimers(DWORD dwIdTimer /* = NULL */)
 
 void CPPToolTip::Pop()
 {
-	TRACE (_T("CPPToolTip::Pop()\n"));
+//	TRACE (_T("CPPToolTip::Pop()\n"));
 	m_nTooltipState = PPTOOLTIP_STATE_HIDEN;
 	m_nTooltipType = PPTOOLTIP_NORMAL;
 	m_nNextTooltipType = PPTOOLTIP_NORMAL;
@@ -867,7 +867,7 @@ void CPPToolTip::Pop()
 
 void CPPToolTip::PrepareDisplayTooltip(LPPOINT lpPoint)
 {
-	TRACE (_T("CPPToolTip::PrepareDisplayTooltip()\n"));
+//	TRACE (_T("CPPToolTip::PrepareDisplayTooltip()\n"));
 	
 	//Fills default members
 	if (!(m_tiNextTool.nMask & PPTOOLTIP_MASK_STYLES))
@@ -1057,7 +1057,7 @@ void CPPToolTip::FreeResources()
 
 void CPPToolTip::OutputTooltipOnScreen(LPPOINT lpPoint, HDC hDC /* = NULL */)
 {
-	TRACE("OutputTooltipOnScreen()\n");
+//	TRACE("OutputTooltipOnScreen()\n");
 	CRect rect = m_rcBoundsTooltip;
 	rect.OffsetRect(*lpPoint);
 	//m_dwCurDirection = GetTooltipDirection(m_tiNextTool.nDirection, &pt, &ptAnchor, m_rcTooltip, m_rcBoundsTooltip, m_rcTipArea);
@@ -1822,7 +1822,7 @@ void CPPToolTip::AddTool(CWnd * pWnd, PPTOOLTIP_INFO & ti)
 ////////////////////////////////////////////////////////////////////
 void CPPToolTip::RemoveTool(CWnd * pWnd, LPCRECT lpRectBounds /* = NULL */)
 {
-	TRACE ("CPPToolTip::RemoveTool(hWnd=0x%08X)\n", pWnd->GetSafeHwnd());
+//	TRACE ("CPPToolTip::RemoveTool(hWnd=0x%08X)\n", pWnd->GetSafeHwnd());
 	ASSERT(pWnd);
 	
 	//ENG: Gets HWND of a window
@@ -1882,7 +1882,7 @@ void CPPToolTip::RemoveTool(CWnd * pWnd, LPCRECT lpRectBounds /* = NULL */)
 ////////////////////////////////////////////////////////////////////
 void CPPToolTip::RemoveAllTools()
 {
-	TRACE ("CPPToolTip::RemoveAllTools()\n");
+//	TRACE ("CPPToolTip::RemoveAllTools()\n");
 
 	//ENG: Removes all tools
 	//RUS: Удаляем все инструменты
@@ -1904,7 +1904,7 @@ void CPPToolTip::RemoveAllTools()
 ////////////////////////////////////////////////////////////////////
 void CPPToolTip::AddToolBar(CToolBar * pBar)
 {
-	TRACE ("CPPToolTip::AddToolBar(hWnd=0x%08X)\n", pBar->GetSafeHwnd());
+//	TRACE ("CPPToolTip::AddToolBar(hWnd=0x%08X)\n", pBar->GetSafeHwnd());
 	ASSERT(pBar);
 
 	//ENG: Gets HWND toolbar's window
@@ -1963,7 +1963,7 @@ void CPPToolTip::EnableHyperlink(BOOL bEnable /* = TRUE */)
 ////////////////////////////////////////////////////////////////////
 void CPPToolTip::SetCallbackHyperlink(HWND hWnd, UINT nMessage, LPARAM lParam /* = 0 */)
 {
-	TRACE(_T("CPPToolTip::SetCallbackHyperlink()\n"));
+//	TRACE(_T("CPPToolTip::SetCallbackHyperlink()\n"));
 	
 	m_drawer.SetCallbackHyperlink(hWnd, nMessage, lParam);
 } //End of SetCallbackHyperlink
@@ -1990,7 +1990,7 @@ void CPPToolTip::SetNotify(BOOL bParentNotify /* = TRUE */)
 
 void CPPToolTip::SetNotify(HWND hWnd)
 {
-	TRACE(_T("CPPToolTip::SetNotify\n"));
+//	TRACE(_T("CPPToolTip::SetNotify\n"));
 	
 	m_hNotifyWnd = hWnd;
 } //End of SetNotify
@@ -2022,7 +2022,7 @@ void CPPToolTip::SetNotify(HWND hWnd)
 /////////////////////////////////////////////////////////////////////////////
 void CPPToolTip::SetSize(DWORD nSizeIndex, DWORD nValue)
 {
-	TRACE(_T("CPPToolTip::SetSize(nSizeIndex = %d, nValue = %d)\n"), nSizeIndex, nValue);
+//	TRACE(_T("CPPToolTip::SetSize(nSizeIndex = %d, nValue = %d)\n"), nSizeIndex, nValue);
 	if (nSizeIndex >= PPTTSZ_MAX_SIZES)
 		return;
 
@@ -2042,7 +2042,7 @@ void CPPToolTip::SetSize(DWORD nSizeIndex, DWORD nValue)
 /////////////////////////////////////////////////////////////////////////////
 DWORD CPPToolTip::GetSize(DWORD nSizeIndex)
 {
-	TRACE(_T("CPPToolTip::GetSize(nSizeIndex = %d)\n"), nSizeIndex);
+//	TRACE(_T("CPPToolTip::GetSize(nSizeIndex = %d)\n"), nSizeIndex);
 	if (nSizeIndex >= PPTTSZ_MAX_SIZES)
 		return 0;
 
@@ -2059,7 +2059,7 @@ DWORD CPPToolTip::GetSize(DWORD nSizeIndex)
 /////////////////////////////////////////////////////////////////////////////
 void CPPToolTip::SetDefaultSizes(BOOL bBalloonSize /* = TRUE */)
 {
-	TRACE(_T("CPPToolTip::SetDefaultSizes()\n"));
+//	TRACE(_T("CPPToolTip::SetDefaultSizes()\n"));
 
 	if (bBalloonSize)
 	{
@@ -2267,7 +2267,7 @@ DWORD CPPToolTip::GetDelayTime(DWORD dwDuration) const
 /////////////////////////////////////////////////////////////////////////////
 void CPPToolTip::SetDirection(DWORD dwDirection /* = PPTOOLTIP_BOTTOMEDGE_LEFT */)
 {
-	TRACE(_T("CPPToolTip::SetDirection(nDirection = %d)\n"), dwDirection);
+//	TRACE(_T("CPPToolTip::SetDirection(nDirection = %d)\n"), dwDirection);
 
 	m_dwDirection = dwDirection;
 } //End of SetDirection	
@@ -2282,7 +2282,7 @@ void CPPToolTip::SetDirection(DWORD dwDirection /* = PPTOOLTIP_BOTTOMEDGE_LEFT *
 /////////////////////////////////////////////////////////////////////////////
 DWORD CPPToolTip::GetDirection()
 {
-	TRACE(_T("CPPToolTip::GetDirection()\n"));
+//	TRACE(_T("CPPToolTip::GetDirection()\n"));
 
 	return m_dwDirection;
 } //End of GetDirection
@@ -2380,7 +2380,7 @@ void CPPToolTip::ShowHelpTooltip(LPPOINT pt, LPCTSTR lpszString, DWORD dwIdIcon,
 
 void CPPToolTip::ShowHelpTooltip(LPPOINT pt, PPTOOLTIP_INFO & ti)
 {
-	TRACE("CPPToolTip::ShowHelpTooltip\n");
+//	TRACE("CPPToolTip::ShowHelpTooltip\n");
 
 	m_ptOriginal = CPoint(pt->x, pt->y);
 	ti.nBehaviour = m_dwBehaviour | PPTOOLTIP_DISABLE_AUTOPOP;

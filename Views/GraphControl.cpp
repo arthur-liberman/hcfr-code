@@ -1105,8 +1105,8 @@ void CGraphControl::SaveGraphs(CGraphControl *pGraphToAppend, CGraphControl *pGr
 	if (do_Dialog)
 	{
 		CSaveGraphDialog dialog;
-		char *defExt;
-		char *filter;
+		char *defExt=NULL;
+		char *filter=NULL;
 
 		if(dialog.DoModal()!=IDOK)
 			return;

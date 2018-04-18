@@ -448,6 +448,7 @@ void CNewIconBarItem::PaintHotButton(HDC hDC)
 
 void CNewIconBarItem::DrawBarItem(HWND hWndOwner, HDC hDC)
 {
+
   PaintHotButton(hDC);
 
   CRect rect = GetRect(m_nState&ODS_DRAW_VERTICAL);
@@ -457,8 +458,10 @@ void CNewIconBarItem::DrawBarItem(HWND hWndOwner, HDC hDC)
   {
   case HBMMENU_SYSTEM:
     {
+	  HWND hMDIClient = NULL;
       rect.OffsetRect(2,2);
-      HWND hMDIClient = GetMDIClient(hWndOwner);
+	  if (hWndOwner)
+	      hMDIClient = GetMDIClient(hWndOwner);
       if(hMDIClient)
       {
         HICON hIcon = (HICON)GetClassLong( hMDIClient,GCL_HICONSM);
@@ -1566,8 +1569,8 @@ void CNewMenuBar::OnPaint()
     {
       pBarItem->m_nState &= ~ODS_DRAW_VERTICAL;
     }
-
-    pBarItem->DrawBarItem(m_hWndOwner,dc);
+	if (m_hWndOwner && dc)
+	    pBarItem->DrawBarItem(m_hWndOwner,dc);
   }
   dc.SelectObject(pOldFont);
 }

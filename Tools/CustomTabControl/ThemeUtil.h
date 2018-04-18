@@ -8,7 +8,7 @@
 **
 **********************************************************************/
 
-#include "TmSchema.h"
+//#include "TmSchema.h"
 
 #define THM_WM_THEMECHANGED     0x031A
 

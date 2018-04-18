@@ -156,7 +156,7 @@ colorhug_command(colorhug *p,
 				 unsigned char *out, unsigned int out_size,
 				 double timeout)
 {
-	int i;
+//	int i;
 	unsigned char buf[64];
 	int xwbytes, wbytes;
 	int xrbytes, xrbytes2, rbytes;
@@ -337,7 +337,7 @@ static double buf2pfdouble(unsigned char *buf)
 static inst_code
 colorhug_set_LEDs(colorhug *p, int mask)
 {
-	int i;
+//	int i;
 	unsigned char ibuf[4];
 	inst_code ev;
 
@@ -577,7 +577,7 @@ colorhug_init_inst(inst *pp)
 {
 	colorhug *p = (colorhug *)pp;
 	inst_code ev;
-	int i;
+//	int i;
 
 	a1logd(p->log, 2, "colorhug_init_coms: About to init coms\n");
 
@@ -1190,7 +1190,7 @@ colorhug_get_set_opt(inst *pp, inst_opt_type m, ...)
 /* Constructor */
 extern colorhug *new_colorhug(icoms *icom, instType itype) {
 	colorhug *p;
-	int i;
+//	int i;
 
 	if ((p = (colorhug *)calloc(sizeof(colorhug),1)) == NULL) {
 		a1loge(icom->log, 1, "new_colorhug: malloc failed!\n");
