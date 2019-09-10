@@ -1,6 +1,8 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29230.47
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ColorHCFR", "ColorHCFR.vcxproj", "{E51019A9-5EBB-406A-82DB-480660D666BA}"
 	ProjectSection(ProjectDependencies) = postProject
 		{BA5C7D32-633F-483D-B23C-A1F509898BF6} = {BA5C7D32-633F-483D-B23C-A1F509898BF6}
@@ -182,6 +184,7 @@ Global
 		{4D45250B-E23E-4097-A3C5-64D708528340}.Release|Win32.Build.0 = Release|Win32
 		{FC86BD97-A8EA-46D7-BEA5-0DC7698C5BE1}.Debug|Win32.ActiveCfg = Debug|Win32
 		{FC86BD97-A8EA-46D7-BEA5-0DC7698C5BE1}.Release|Win32.ActiveCfg = Release|Win32
+		{FC86BD97-A8EA-46D7-BEA5-0DC7698C5BE1}.Release|Win32.Build.0 = Release|Win32
 		{BA5C7D32-633F-483D-B23C-A1F509898BF6}.Debug|Win32.ActiveCfg = Release|Win32
 		{BA5C7D32-633F-483D-B23C-A1F509898BF6}.Debug|Win32.Build.0 = Release|Win32
 		{BA5C7D32-633F-483D-B23C-A1F509898BF6}.Release|Win32.ActiveCfg = Release|Win32
@@ -189,5 +192,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {749C24E8-BEC0-4DBA-90E4-EC048EC85606}
 	EndGlobalSection
 EndGlobal

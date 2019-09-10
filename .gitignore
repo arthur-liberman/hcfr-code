@@ -29,3 +29,7 @@ Tools/libusb1/libusb/os/objfre_wxp_x86/
 UnitTests/tests.xml
 
 
+/.vs/ColorHCFR_VS2010/v16/*.db
+/.vs/ColorHCFR_VS2010/v16/*.db-shm
+/.vs/ColorHCFR_VS2010/v16/*.db-wal
+/.vs/ColorHCFR_VS2010/v16

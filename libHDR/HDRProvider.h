@@ -1,6 +1,7 @@
 #pragma once
 #include "IApiInterface.h"
 #include "win10sdk.h"
+#include <string>
 
 typedef HRESULT(WINAPI *PFN_CreateDXGIFactory2)(UINT Flags, REFIID riid, _COM_Outptr_ void **ppFactory);
 
