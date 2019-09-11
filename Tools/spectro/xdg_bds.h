@@ -32,9 +32,9 @@
 
 /* Which type of storage */
 typedef enum {
-	xdg_data,
-	xdg_conf,
-	xdg_cache			/* Note there is no xdg_local cache */
+	xdg_data,			/* User/System Application related data */
+	xdg_conf,			/* User/System Application configuration settings */
+	xdg_cache			/* User Application cache storage area */
 } xdg_storage_type;
 
 /* What operation is being performed */
@@ -48,8 +48,14 @@ typedef enum {
 /* the user context then the local system context.) */
 typedef enum {
 	xdg_user,			/* User context */
-	xdg_local			/* Local system wide context */
+	xdg_local			/* Local System wide context */
 } xdg_scope;
+
+/* Optional flags */
+typedef enum {
+	xdg_none        = 0x0000,		/* No options */
+	xdg_all_matches = 0x0001		/* Return all matching files */
+} xdg_options;
 
 /* An error code */
 typedef enum {
@@ -70,7 +76,7 @@ typedef enum {
 #endif
 
 								/* ONLY use this for xdg_data type */
-#ifdef __APPLE__				/* fudge to assist OS X migration from */
+#ifdef UNIX_APPLE				/* fudge to assist OS X migration from */
 #define XDG_FUDGE SSEPS "../"	/* Library/color to Library/Application Support/ArgyllCMS */
 #else
 #define XDG_FUDGE SSEPS
@@ -96,6 +102,7 @@ int xdg_bds(
 	xdg_storage_type st,	/* Specify the storage type */
 	xdg_op_type op,			/* Operation type */
 	xdg_scope sc,			/* Scope if write */
+	xdg_options opt,        /* Options flags */
 	char *spath				/* Sub-path and file name or file pattern */
 );
 

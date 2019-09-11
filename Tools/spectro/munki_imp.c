@@ -60,6 +60,7 @@
 #include "numsup.h"
 #include "rspl1.h"
 #endif /* SALONEINSTLIB */
+#include "cgats.h"
 #include "xspect.h"
 #include "insttypes.h"
 #include "conv.h"
@@ -146,6 +147,7 @@
 
 #include "munki.h"
 #include "munki_imp.h"
+#include "xrga.h"
 
 /* - - - - - - - - - - - - - - - - - - */
 
@@ -478,11 +480,26 @@ munki_code munki_imp_init(munki *p) {
 	unsigned char buf[4];
 	int calsize = 0, rucalsize;
 	unsigned char *calbuf;	/* EEProm contents */
+	char *envv;
 
 	a1logd(p->log,2,"munki_init:\n");
 
-	if (p->itype != instColorMunki)
+	if (p->dtype != instColorMunki)
 		return MUNKI_UNKNOWN_MODEL;
+
+
+	m->native_calstd = xcalstd_xrga;
+	m->target_calstd = xcalstd_native;		/* Default to native calibration standard*/
+
+	/* Honour Environment override */
+	if ((envv = getenv("ARGYLL_XCALSTD")) != NULL) {
+		if (strcmp(envv, "XRGA") == 0)
+			m->target_calstd = xcalstd_xrga;
+		else if (strcmp(envv, "XRDI") == 0)
+			m->target_calstd = xcalstd_xrdi;
+		else if (strcmp(envv, "GMDI") == 0)
+			m->target_calstd = xcalstd_gmdi;
+	}
 
 #ifdef ENABLE_SPOS_CHECK
 	m->nosposcheck = 0;
@@ -523,7 +540,7 @@ munki_code munki_imp_init(munki *p) {
 		return ev; 
 
 	/* Dump the eeprom contents as a block */
-	if (p->log->debug >= 7) {
+	if (p->log->debug >= 9) {
 		int base, size;
 	
 		a1logd(p->log,7, "EEPROM contents:\n"); 
@@ -960,6 +977,7 @@ munki_code munki_imp_calibrate(
 	munki *p,
 	inst_cal_type *calt,	/* Calibration type to do/remaining */
 	inst_cal_cond *calc,	/* Current condition/desired condition */
+	inst_calc_id_type *idtype,	/* Condition identifier type */
 	char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 ) {
 	munki_code ev = MUNKI_OK;
@@ -1670,24 +1688,28 @@ if (ss->idark_int_time[j] != s->idark_int_time[j])
 			return MUNKI_CAL_SETUP;
 		}
 	} else if (*calt & inst_calt_em_dark) {		/* Emissive Dark calib */
+		*idtype = inst_calc_id_none;
 		id[0] = '\000';
 		if ((*calc & inst_calc_cond_mask) != inst_calc_man_cal_smode) {
 			*calc = inst_calc_man_cal_smode;
 			return MUNKI_CAL_SETUP;
 		}
 	} else if (*calt & inst_calt_trans_dark) {	/* Transmissive dark */
+		*idtype = inst_calc_id_none;
 		id[0] = '\000';
 		if ((*calc & inst_calc_cond_mask) != inst_calc_man_cal_smode) {
 			*calc = inst_calc_man_cal_smode;
 			return MUNKI_CAL_SETUP;
 		}
 	} else if (*calt & inst_calt_trans_vwhite) {	/* Transmissive white for emulated trans. */
+		*idtype = inst_calc_id_none;
 		id[0] = '\000';
 		if ((*calc & inst_calc_cond_mask) != inst_calc_man_trans_white) {
 			*calc = inst_calc_man_trans_white;
 			return MUNKI_CAL_SETUP;
 		}
 	} else if (*calt & inst_calt_emis_int_time) {
+		*idtype = inst_calc_id_none;
 		id[0] = '\000';
 		if ((*calc & inst_calc_cond_mask) != inst_calc_emis_white) {
 			*calc = inst_calc_emis_white;
@@ -1709,10 +1731,13 @@ if (ss->idark_int_time[j] != s->idark_int_time[j])
 	
 	if (m->transwarn) {
 		*calc = inst_calc_message;
-		if (m->transwarn & 2)
+		if (m->transwarn & 2) {
+			*idtype = inst_calc_id_trans_low;
 			strcpy(id, "Warning: Transmission light source is too low for accuracy!");
-		else
+		} else {
+			*idtype = inst_calc_id_trans_wl;
 			strcpy(id, "Warning: Transmission light source is low at some wavelengths!");
+		}
 		m->transwarn = 0;
 		return MUNKI_OK;
 	}
@@ -2259,8 +2284,13 @@ munki_code munki_imp_measure(
 	/* Indicate to the user that they can now scan the instrument, */
 	/* after a little delay that allows for the instrument reaction time. */
 	if (s->scan) {
-		/* 100msec delay, 1KHz for 200 msec */
-		msec_beep(0 + (int)(invsampt * 1000.0 + 0.9), 1000, 200);
+		int delay = 100 + (int)(invsampt * 1000.0 + 0.9);
+		if (p->eventcallback != NULL) {
+			issue_scan_ready((inst *)p, delay);
+		} else {
+			/* delay then 1KHz for 200 msec */
+			msec_beep(delay, 1000, 200);
+		}
 	}
 
 	/* Retry loop in case a display read is saturated */
@@ -3154,7 +3184,8 @@ munki_code munki_save_calibration(munki *p) {
 #endif
 
 	sprintf(cal_name, "ArgyllCMS/.mk_%s.cal", m->serno);
-	if ((no_paths = xdg_bds(NULL, &cal_paths, xdg_cache, xdg_write, xdg_user, cal_name)) < 1) {
+	if ((no_paths = xdg_bds(NULL, &cal_paths, xdg_cache, xdg_write, xdg_user, xdg_none,
+		                                                                      cal_name)) < 1) {
 		a1logd(p->log,1,"munki_save_calibration xdg_bds returned no paths\n");
 		return MUNKI_INT_CAL_SAVE;
 	}
@@ -3270,7 +3301,8 @@ munki_code munki_restore_calibration(munki *p) {
 #endif
 
 	sprintf(cal_name, "ArgyllCMS/.mk_%s.cal" SSEPS "color/.mk_%s.cal", m->serno, m->serno);
-	if ((no_paths = xdg_bds(NULL, &cal_paths, xdg_cache, xdg_read, xdg_user, cal_name)) < 1) {
+	if ((no_paths = xdg_bds(NULL, &cal_paths, xdg_cache, xdg_read, xdg_user, xdg_none,
+		                                                                     cal_name)) < 1) {
 		a1logd(p->log,1,"munki_restore_calibration xdg_bds returned no paths\n");
 		return MUNKI_INT_CAL_RESTORE;
 	}
@@ -3587,7 +3619,8 @@ munki_code munki_touch_calibration(munki *p) {
 	int rv;
 
 	sprintf(cal_name, "ArgyllCMS/.mk_%s.cal" SSEPS "color/.mk_%s.cal", m->serno, m->serno);
-	if ((no_paths = xdg_bds(NULL, &cal_paths, xdg_cache, xdg_read, xdg_user, cal_name)) < 1)
+	if ((no_paths = xdg_bds(NULL, &cal_paths, xdg_cache, xdg_read, xdg_user, xdg_none,
+		                                                                     cal_name)) < 1)
 		return MUNKI_INT_CAL_TOUCH;
 
 	a1logd(p->log,2,"munki_touch_calibration touching file '%s'\n",cal_paths[0]);
@@ -5716,9 +5749,10 @@ munki_code munki_extract_patches_multimeas(
 		if (pat[k].use == 0)
 			continue;
 
-		nno = (pat[k].no * 3)/4;
-//		nno = (pat[k].no * 2)/3;		// experimental tighter trim
-		trim = (pat[k].no - nno)/2;
+//		nno = (pat[k].no * 3 + 0)/4;		/* Trim to 75% & round down */
+		nno = (pat[k].no * 2 + 0)/3;		/* Trim to 66% & round down [def] */
+//		nno = (pat[k].no * 2 + 0)/4;		/* Trim to 50% & round down */
+		trim = (pat[k].no - nno + 1)/2;
 
 		pat[k].ss += trim;
 		pat[k].no = nno;
@@ -6257,6 +6291,8 @@ void munki_scale_specrd(
 
 #define DO_CCDNORM			/* [def] Normalise CCD values to original */
 #define DO_CCDNORMAVG		/* [und???] Normalise averages rather than per CCD bin */
+#define BOX_INTEGRATE    	/* [und] Integrate raw samples as if they were +/-0.5 boxes */
+							/*       (This improves coeficient consistency a bit ?) */
 
 #ifdef NEVER
 /* Plot the matrix coefficients */
@@ -6918,7 +6954,7 @@ munki_code munki_create_hr(munki *p, int ref) {
 				if (fabs(w1 - cwl) > fshmax && fabs(w2 - cwl) > fshmax)
 					continue;		/* Doesn't fall into this filter */
 
-#ifndef NEVER
+#ifdef BOX_INTEGRATE
 				/* Integrate in 0.05 nm increments from filter shape */
 				{
 					int nn;
@@ -7850,9 +7886,9 @@ munki_code munki_conv2XYZ(
 	double sms;			/* Weighting */
 
 	if (s->emiss)
-		conv = new_xsp2cie(icxIT_none, NULL, icxOT_CIE_1931_2, NULL, icSigXYZData, (icxClamping)clamp);
+		conv = new_xsp2cie(icxIT_none, 0.0, NULL, icxOT_CIE_1931_2, NULL, icSigXYZData, (icxClamping)clamp);
 	else
-		conv = new_xsp2cie(icxIT_D50, NULL, icxOT_CIE_1931_2, NULL, icSigXYZData, (icxClamping)clamp);
+		conv = new_xsp2cie(icxIT_D50, 0.0, NULL, icxOT_CIE_1931_2, NULL, icSigXYZData, (icxClamping)clamp);
 	if (conv == NULL)
 		return MUNKI_INT_CIECONVFAIL;
 
@@ -7924,6 +7960,15 @@ munki_code munki_conv2XYZ(
 	}
 
 	conv->del(conv);
+
+	/* Apply any XRGA conversion */
+	ipatch_convert_xrga(vals, nvals, xcalstd_nonpol, m->target_calstd, m->native_calstd, clamp);
+
+	/* Apply custom filter compensation */
+	if (m->custfilt_en)
+		ipatch_convert_custom_filter(vals, nvals, &m->custfilt, clamp);
+
+
 	return MUNKI_OK;
 }
 

@@ -1,5 +1,5 @@
-
- /* Windows NT serial I/O class */
+ 
+/* Windows NT serial I/O class */
 
 /* 
  * Argyll Color Correction System
@@ -14,195 +14,192 @@
  * see the License2.txt file for licencing details.
  */
 
+#if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
+
 #include <conio.h>
 
-#if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
-instType fast_ser_inst_type(icoms *p, int tryhard, void *, void *); 
-#endif /* ENABLE_SERIAL */
+devType fast_ser_dev_type(icoms *p, int tryhard, void *, void *); 
 
-/* Create and return a list of available serial ports or USB instruments for this system. */
-/* We look at the registry key "HKEY_LOCAL_MACHINE\HARDWARE\DEVICEMAP\SERIALCOMM" */
-/* to determine serial ports, and use libusb to discover USB instruments. */
-/* Create and return a list of available serial ports or USB instruments for this system */
-/* return icom error */
-int icompaths_refresh_paths(icompaths *p) {
-	int rv, usbend = 0;
-	int i, j;
+/* Add paths to serial connected device. */
+/* Return an icom error */
+int serial_get_paths(icompaths *p, icom_type mask) {
+	int i;
 	LONG stat;
 	HKEY sch;		/* Serial coms handle */
 
-	a1logd(p->log, 8, "icoms_get_paths: called\n");
+	a1logd(p->log, 7, "serial_get_paths: called with mask = %d\n",mask);
 
-	/* Clear any existing paths */
-	p->clear(p);
-
-#ifdef ENABLE_USB
-	if ((rv = hid_get_paths(p)) != ICOM_OK)
-		return rv;
-	if ((rv = usb_get_paths(p)) != ICOM_OK)
-		return rv;
-#endif /* ENABLE_USB */
-	usbend = p->npaths;
-
-	a1logd(p->log, 6, "icoms_get_paths: got %d paths, looking up the registry for serial ports\n",p->npaths);
-
-#if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
 	// (Beware KEY_WOW64_64KEY ?)
 
 #define MXKSIZE 500
 #define MXVSIZE 300
 
-	/* Look in the registry for serial ports */
-	if ((stat = RegOpenKeyEx(HKEY_LOCAL_MACHINE, "HARDWARE\\DEVICEMAP\\SERIALCOMM",
-	                         0, KEY_READ, &sch)) != ERROR_SUCCESS) {
-		a1logd(p->log, 1, "icoms_get_paths: There don't appear to be any serial ports\n");
-		return ICOM_OK;			/* Maybe they have USB ports */
-	}
+	if (mask & (icomt_serial | icomt_fastserial | icomt_btserial)) {
 
-	/* Look at all the values in this key */
-	a1logd(p->log, 8, "icoms_get_paths: looking through all the values in the SERIALCOMM key\n");
-
-	for (i = 0; ; i++) {
-		char valname[MXKSIZE], *vp;
-		DWORD vnsize = MXKSIZE;
-		DWORD vtype;
-		char value[MXVSIZE];
-		DWORD vsize = MXVSIZE;
-		icom_ser_attr sattr = icom_normal;
-
-		stat = RegEnumValue(
-			sch,		/* handle to key to enumerate */
-			i,			/* index of subkey to enumerate */
-			valname,    /* address of buffer for value name */
-			&vnsize,	/* address for size of value name buffer */
-			NULL,		/* reserved */
-			&vtype,		/* Address of value type */
-			value,		/* Address of value buffer */
-			&vsize		/* Address of value buffer size */
-		);
-		if (stat == ERROR_NO_MORE_ITEMS) {
-			a1logd(p->log, 8, "icoms_get_paths: got ERROR_NO_MORE_ITEMS\n");
-			break;
-		}
-		if (stat == ERROR_MORE_DATA		/* Hmm. Should expand buffer size */
-		 || stat != ERROR_SUCCESS) {
-			a1logw(p->log, "icoms_get_paths: RegEnumValue failed with %d\n",stat);
-			break;
-		}
-		valname[MXKSIZE-1] = '\000';
-		value[MXVSIZE-1] = '\000';
-
-		if (vtype != REG_SZ) {
-			a1logw(p->log, "icoms_get_paths: RegEnumValue didn't return stringz type\n");
-			continue;
+		a1logd(p->log, 6, "serial_get_paths: looking up the registry for serial ports\n");
+		/* Look in the registry for serial ports */
+		if ((stat = RegOpenKeyEx(HKEY_LOCAL_MACHINE, "HARDWARE\\DEVICEMAP\\SERIALCOMM",
+		                         0, KEY_READ, &sch)) != ERROR_SUCCESS) {
+			a1logd(p->log, 1, "serial_get_paths: There don't appear to be any serial ports\n");
+			return ICOM_OK;
 		}
 
-		if ((vp = strrchr(valname, '\\')) == NULL)
-			vp = valname;
-		else
-			vp++;
+		/* Look at all the values in this key */
+		a1logd(p->log, 8, "serial_get_paths: looking through all the values in the SERIALCOMM key\n");
 
-		/* See if it looks like a fast port */
-		if (strncmp(vp, "VCP", 3) == 0) {				/* Virtual */
-			sattr |= icom_fast;
-		}
+		for (i = 0; ; i++) {
+			char valname[MXKSIZE], *vp;
+			DWORD vnsize = MXKSIZE;
+			DWORD vtype;
+			char value[MXVSIZE];
+			DWORD vsize = MXVSIZE;
+			icom_type dctype = icomt_unknown;
 
-		if (strncmp(vp, "BtPort", 6) == 0) {		/* Blue tooth */
-			sattr |= icom_fast;
-			sattr |= icom_bt;
-		}
+			stat = RegEnumValue(
+				sch,		/* handle to key to enumerate */
+				i,			/* index of subkey to enumerate */
+				valname,    /* address of buffer for value name */
+				&vnsize,	/* address for size of value name buffer */
+				NULL,		/* reserved */
+				&vtype,		/* Address of value type */
+				value,		/* Address of value buffer */
+				&vsize		/* Address of value buffer size */
+			);
+			if (stat == ERROR_NO_MORE_ITEMS) {
+				a1logd(p->log, 8, "serial_get_paths: got ERROR_NO_MORE_ITEMS\n");
+				break;
+			}
+			if (stat == ERROR_MORE_DATA		/* Hmm. Should expand buffer size */
+			 || stat != ERROR_SUCCESS) {
+				a1logw(p->log, "serial_get_paths: RegEnumValue failed with %d\n",stat);
+				break;
+			}
+			valname[MXKSIZE-1] = '\000';
+			value[MXVSIZE-1] = '\000';
+
+			if (vtype != REG_SZ) {
+				a1logw(p->log, "serial_get_paths: RegEnumValue didn't return stringz type\n");
+				continue;
+			}
+
+			if ((vp = strrchr(valname, '\\')) == NULL)
+				vp = valname;
+			else
+				vp++;
+
+			a1logd(p->log, 8, "serial_get_paths: checking '%s'\n",vp);
+
+			/* See if it looks like a fast port */
+			if (strncmp(vp, "VCP", 3) == 0) {			/* Virtual */
+				dctype |= icomt_fastserial;
+			}
+
+			if (strncmp(vp, "USBSER", 6) == 0) {		/* USB Serial port */
+				dctype |= icomt_fastserial;
+			}
+
+			if (strncmp(vp, "BtPort", 6) == 0			/* Blue tooth */
+			 || strncmp(vp, "BthModem", 8) == 0) {
+				dctype |= icomt_fastserial;
+				dctype |= icomt_btserial;
+			}
 
 #ifndef ENABLE_SERIAL
-		if (sattr & icom_fast) {		/* Only add fast ports if !ENABLE_SERIAL */
+			if (dctype & icomt_fastserial) {	/* Only add fast ports if !ENABLE_SERIAL */
 #endif
-		/* Add the port to the list */
-		p->add_serial(p, value, value, sattr);
-		a1logd(p->log, 8, "icoms_get_paths: Added path '%s' sattr 0x%x\n",value,sattr);
+			if (((mask & icomt_serial) && !(dctype & icomt_fastserial))
+			 || ((mask & icomt_fastserial) && (dctype & icomt_fastserial)
+			                               && !(dctype & icomt_btserial))
+			 || ((mask & icomt_btserial) && (dctype & icomt_btserial))) {
+
+				// ~~ would be nice to add better description, similar
+				//    to that of device manager, i.e. "Prolific USB-to-SerialBridge (COM6)"
+				/* Add the port to the list */
+				p->add_serial(p, value, value, dctype);
+				a1logd(p->log, 8, "serial_get_paths: Added '%s' path '%s' dctype 0x%x\n",vp, value,dctype);
+			}
 #ifndef ENABLE_SERIAL
-		}
+			}
 #endif
 
-		/* If fast, try and identify it */
-		if (sattr & icom_fast) {
-			icompath *path;
-			icoms *icom;
-			if ((path = p->get_last_path(p)) != NULL
-			 && (icom = new_icoms(path, p->log)) != NULL) {
-				instType itype = fast_ser_inst_type(icom, 0, NULL, NULL);
-				if (itype != instUnknown)
-					icompaths_set_serial_itype(path, itype);
-				icom->del(icom);
+			/* If fast, try and identify it */
+			if (dctype & icomt_fastserial) {
+				icompath *path;
+				icoms *icom;
+				if ((path = p->get_last_path(p)) != NULL
+				 && (icom = new_icoms(path, p->log)) != NULL) {
+					if (!p->fs_excluded(p, path)) {
+						devType itype = fast_ser_dev_type(icom, 0, NULL, NULL);
+						if (itype != instUnknown)
+							icompaths_set_serial_itype(path, itype);	/* And set category */
+					}
+					icom->del(icom);
+				}
+				a1logd(p->log, 8, "serial_get_paths: Identified '%s' dctype 0x%x\n",inst_sname(path->dtype),path->dctype);
 			}
 		}
-	}
-	if ((stat = RegCloseKey(sch)) != ERROR_SUCCESS) {
-		a1logw(p->log, "icoms_get_paths: RegCloseKey failed with %d\n",stat);
-	}
-#endif /* ENABLE_SERIAL || ENABLE_FAST_SERIAL */
-
-	/* Sort the COM keys so people don't get confused... */
-	/* Sort identified instruments ahead of unknown serial ports */
-	a1logd(p->log, 6, "icoms_get_paths: we now have %d entries and are about to sort them\n",p->npaths);
-	for (i = usbend; i < (p->npaths-1); i++) {
-		for (j = i+1; j < p->npaths; j++) {
-			if ((p->paths[i]->itype == instUnknown && p->paths[j]->itype != instUnknown)
-			 || (((p->paths[i]->itype == instUnknown && p->paths[j]->itype == instUnknown)
-			   || (p->paths[i]->itype != instUnknown && p->paths[j]->itype != instUnknown))
-			  && strcmp(p->paths[i]->name, p->paths[j]->name) > 0)) {
-				icompath *tt = p->paths[i];
-				p->paths[i] = p->paths[j];
-				p->paths[j] = tt;
-			}
+		if ((stat = RegCloseKey(sch)) != ERROR_SUCCESS) {
+			a1logw(p->log, "serial_get_paths: RegCloseKey failed with %d\n",stat);
 		}
 	}
-
-	a1logd(p->log, 8, "icoms_get_paths: returning %d paths and ICOM_OK\n",p->npaths);
 
 	return ICOM_OK;
 }
 
+/* -------------------------------------------------------------------- */
 
-/* Close the port */
-static void icoms_close_port(icoms *p) {
-	if (p->is_open) {
-#ifdef ENABLE_USB
-		if (p->usbd) {
-			usb_close_port(p);
-		} else if (p->hidd) {
-			hid_close_port(p);
-		}
-#endif
-#if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
-		if (p->phandle != NULL) {
-			CloseHandle(p->phandle);
-		}
-#endif /* ENABLE_SERIAL */
-		p->is_open = 0;
+/* Is the serial port actually open ? */
+int serial_is_open(icoms *p) {
+	return p->phandle != NULL;
+}
+
+/* Close the serial port */
+void serial_close_port(icoms *p) {
+
+	if (p->is_open && p->phandle != NULL) {
+		CloseHandle(p->phandle);
+		p->phandle = NULL;
+		msec_sleep(100);		/* Improves reliability of USB<->Serial converters */
 	}
 }
 
-#if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
+/* Clear any serial errors */
+static void nt_ser_clearerr(icoms *p) {
+	DWORD errs;
 
-static int icoms_ser_write(icoms *p, char *wbuf, int nwch, double tout);
-static int icoms_ser_read(icoms *p, char *rbuf, int bsize, int *bread,
-                                    char *tc, int ntc, double tout);
+	if (!ClearCommError(p->phandle, &errs,NULL))
+   		error("nt_ser_clearerr: failed, and Clear error failed");
 
+	return;
+}
+
+/* -------------------------------------------------------------------- */
+
+#ifndef CBR_230400
+# define CBR_230400 230400
+#endif
+#ifndef CBR_460800
+# define CBR_460800 460800
+#endif
+#ifndef CBR_512000
+# define CBR_512000 512000
+#endif
 #ifndef CBR_921600
 # define CBR_921600 921600
 #endif
 
-/* Set the serial port characteristics */
+/* Set the serial port characteristics - extended */
 /* This always re-opens the port */
 /* return an icom error */
 static int
-icoms_set_ser_port(
+icoms_set_ser_port_ex(
 icoms *p, 
 flow_control fc,
 baud_rate	 baud,
 parity		 parity,
 stop_bits	 stop,
-word_length	 word)
-{
+word_length	 word,
+int          delayms) {		/* Delay after open in msec */		
 
 	a1logd(p->log, 8, "icoms_set_ser_port: About to set port characteristics:\n"
 		              "       Port name = %s\n"
@@ -211,10 +208,15 @@ word_length	 word)
 		              "       Parity = %d\n"
 		              "       Stop bits = %d\n"
 		              "       Word length = %d\n"
-		              ,p->name ,fc ,baud_rate_to_str(baud) ,parity ,stop ,word);
+		              "       Open delay = %d ms\n"
+		              ,p->name ,fc ,baud_rate_to_str(baud) ,parity ,stop ,word, delayms);
 
-	if (p->is_open)
+#ifdef NEVER	/* Is this needed ? */
+	if (p->is_open) {
+		a1logd(p->log, 8, "icoms_set_ser_port: closing port '%s'\n",p->name);
 		p->close_port(p);
+	}
+#endif
 
 	if (p->port_type(p) == icomt_serial) {
 		DCB dcb;
@@ -234,7 +236,7 @@ word_length	 word)
 
 		/* Make sure the port is open */
 		if (!p->is_open) {
-			char buf[50];	/* Temporary for COM device path */
+			char buf[100];	/* Temporary for COM device path */
 
 			a1logd(p->log, 8, "icoms_set_ser_port: about to open serial port '%s'\n",p->spath);
 
@@ -253,11 +255,18 @@ word_length	 word)
 				a1logd(p->log, 1, "icoms_set_ser_port: open port '%s' failed with LastError %d\n",buf,GetLastError());
 				return ICOM_SYS;
 			}
+
+			if (delayms < 160)		/* Seems to need at least 80 msec with many drivers */
+				delayms = 160;
+
+			msec_sleep(delayms);	/* For Bluetooth */
+
 			p->is_open = 1;
 		}
 
 		if (GetCommState(p->phandle, &dcb) == FALSE) {
 			CloseHandle(p->phandle);
+			msec_sleep(100);		/* Improves reliability of USB<->Serial converters */
 			a1loge(p->log, ICOM_SYS, "icoms_set_ser_port: reading state '%s' failed with LastError %d\n",p->spath,GetLastError());
 			return ICOM_SYS;
 		}
@@ -274,14 +283,17 @@ word_length	 word)
 		dcb.fErrorChar = FALSE;
 		dcb.fNull = FALSE;
 		dcb.fRtsControl = RTS_CONTROL_ENABLE;		/* Turn RTS on during connection */
-//		dcb.fAbortOnError = TRUE;					// Hmm. Stuffs up FTDI. Is it needed ?
-		dcb.fAbortOnError = FALSE;
+		dcb.fAbortOnError = FALSE;					/* Hmm. TRUE Stuffs up FTDI. Is it needed ? */
 
 		switch (p->fc) {
 			case fc_nc:
 				CloseHandle(p->phandle);
+				msec_sleep(100);		/* Improves reliability of USB<->Serial converters */
 				a1loge(p->log, ICOM_SYS, "icoms_set_ser_port: illegal flow control %d\n",p->fc);
 				return ICOM_SYS;
+			case fc_None:
+				/* Use no flow control */
+				break;
 			case fc_XonXOff:
 				/* Use Xon/Xoff bi-directional flow control */
 				dcb.fOutX = TRUE;
@@ -307,6 +319,7 @@ word_length	 word)
 		switch (p->py) {
 			case parity_nc:
 				CloseHandle(p->phandle);
+				msec_sleep(100);		/* Improves reliability of USB<->Serial converters */
 				a1loge(p->log, ICOM_SYS, "icoms_set_ser_port: illegal parity setting %d\n",p->py);
 				return ICOM_SYS;
 			case parity_none:
@@ -328,6 +341,7 @@ word_length	 word)
 		switch (p->sb) {
 			case stop_nc:
 				CloseHandle(p->phandle);
+				msec_sleep(100);		/* Improves reliability of USB<->Serial converters */
 				a1loge(p->log, ICOM_SYS, "icoms_set_ser_port: illegal stop bits %d\n",p->sb);
 				return ICOM_SYS;
 			case stop_1:
@@ -341,6 +355,7 @@ word_length	 word)
 		switch (p->wl) {
 			case length_nc:
 				CloseHandle(p->phandle);
+				msec_sleep(100);		/* Improves reliability of USB<->Serial converters */
 				a1loge(p->log, ICOM_SYS, "icoms_set_ser_port: illegal word length %d\n",p->wl);
 				return ICOM_SYS;
 			case length_5:
@@ -394,34 +409,58 @@ word_length	 word)
 			case baud_115200:
 				dcb.BaudRate = CBR_115200;
 				break;
+			case baud_230400:
+				dcb.BaudRate = CBR_230400;
+				break;
 			case baud_921600:
 				dcb.BaudRate = CBR_921600;
 				break;
 			default:
 				CloseHandle(p->phandle);
+				msec_sleep(100);		/* Improves reliability of USB<->Serial converters */
 				a1loge(p->log, ICOM_SYS, "icoms_set_ser_port: illegal baud rate! (0x%x)\n",p->br);
 				return ICOM_SYS;
 		}
 
-		PurgeComm(p->phandle, PURGE_TXCLEAR | PURGE_RXCLEAR);
+		PurgeComm(p->phandle, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXABORT | PURGE_TXCLEAR);
 
 		if (!SetCommState(p->phandle, &dcb)) {
 			CloseHandle(p->phandle);
+			msec_sleep(100);		/* Improves reliability of USB<->Serial converters */
 			a1loge(p->log, ICOM_SYS, "icoms_set_ser_port: SetCommState failed with LastError %d\n",
 			                                                                   GetLastError());
 			return ICOM_SYS;
 		}
 
-		PurgeComm(p->phandle, PURGE_TXCLEAR | PURGE_RXCLEAR);
+		PurgeComm(p->phandle, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXABORT | PURGE_TXCLEAR);
+
+		msec_sleep(50);		/* Improves reliability of USB<->Serial converters */
 
 		p->write = icoms_ser_write;
 		p->read = icoms_ser_read;
+		p->ser_clearerr = nt_ser_clearerr;
 
 	}
 	a1logd(p->log, 8, "icoms_set_ser_port: port characteristics set ok\n");
 
 	return ICOM_OK;
 }
+
+/* Set the serial port characteristics */
+/* This always re-opens the port */
+/* return an icom error */
+static int
+icoms_set_ser_port(
+icoms *p, 
+flow_control fc,
+baud_rate	 baud,
+parity		 parity,
+stop_bits	 stop,
+word_length	 word)
+{
+	return icoms_set_ser_port_ex(p, fc, baud, parity, stop, word, 0);
+}
+
 
 /* ---------------------------------------------------------------------------------*/
 /* Serial write, read */
@@ -430,7 +469,7 @@ word_length	 word)
 /* Data will be written up to the terminating nul */
 /* Return relevant error status bits */
 /* Set the icoms lserr value */
-static int
+int
 icoms_ser_write(
 icoms *p,
 char *wbuf,			/* null terminated unless nwch > 0 */
@@ -519,7 +558,7 @@ double tout)
 
 /* Read characters into the buffer */
 /* Return string will be terminated with a nul */
-static int
+int
 icoms_ser_read(
 icoms *p,
 char *rbuf,			/* Buffer to store characters read */
@@ -645,30 +684,5 @@ double tout			/* Time out in seconds */
 	return p->lserr;
 }
 
-#endif /* ENABLE_SERIAL */
-/* ---------------------------------------------------------------------------------*/
-
-
-/* Destroy ourselves */
-static void
-icoms_del(icoms *p) {
-	a1logd(p->log, 8, "icoms_del: called\n");
-	if (p->is_open) {
-		a1logd(p->log, 8, "icoms_del: closing port\n");
-		p->close_port(p);
-	}
-#ifdef ENABLE_USB
-	usb_del_usb(p);
-	hid_del_hid(p);
-#endif
-#if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
-	if (p->spath != NULL)
-		free(p->spath);
-#endif
-	p->log = del_a1log(p->log);
-	if (p->name != NULL)
-		free(p->name);
-	p->log = del_a1log(p->log);		/* unref */
-	free (p);
-}
+#endif /* ENABLE_SERIAL || ENABLE_FAST_SERIAL*/
 

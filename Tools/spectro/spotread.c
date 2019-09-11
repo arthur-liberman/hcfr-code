@@ -21,6 +21,8 @@
 
 /* TTBD
  *
+ *  Add option to automatically read continuously, until stopped. (A bit like -O)
+
  *	Make -V average the spectrum too (if present), and allow it to
  *  be saved to a .sp file.
  *
@@ -45,32 +47,224 @@
 #include <time.h>
 #include <string.h>
 #ifndef SALONEINSTLIB
-#include "copyright.h"
-#include "aconfig.h"
-#include "numlib.h"
-#include "cgats.h"
-#include "xicc.h"
-#include "conv.h"
-#include "plot.h"
-#include "ui.h"
+# include "copyright.h"
+# include "aconfig.h"
+# include "numlib.h"
+# include "cgats.h"
+# include "xicc.h"
+# include "conv.h"
+# include "plot.h"
+# include "ui.h"
 #else /* SALONEINSTLIB */
-#include "sa_config.h"
-#include "numsup.h"
-#include "xspect.h"
-#include "conv.h"
+# include "sa_config.h"
+# include "numsup.h"
+# include "xspect.h"
+# include "conv.h"
 #endif /* SALONEINSTLIB */
 #include "inst.h"
 #include "icoms.h"
 #include "ccss.h"
 #include "ccmx.h"
 #include "instappsup.h"
-#ifdef ENABLE_USB
+#if !defined(NOT_ALLINSTS) || defined(EN_SPYD2)
 # include "spyd2.h"
 #endif
 
 #if defined (NT)
 #include <conio.h>
 #endif
+
+#undef DO_TM3015_PLOT	/* Diagnostic */
+
+/* ----------------------------------------------------------------- */
+
+#ifdef DO_TM3015_PLOT
+
+#pragma message("#### spectro/spotread.c DO_TM3015_PLOT is enabled ####")
+
+#define SSAMP 4
+
+// Note that bins is modified
+static void tm3015_plot(double bins[IES_TM_30_15_BINS][2][3]) {
+	double rvecs[SSAMP * 16][2];	// DEBUG ref light circle vectors
+	double tvecs[SSAMP * 16][2];	// test light circle vectors
+	double shvec[2 * 16][2];		// Shift vectors
+	int i, j, k;
+	double maxr = 0.0;
+	plot_g gg = { 0 };
+	float lblack[3] = { 0.5, 0.5, 0.5 };
+	float lred[3]   = { 1.0, 0.5, 0.5 };
+	float black[3] = { 0.0, 0.0, 0.0 };
+	float red[3]   = { 1.0, 0.0, 0.0 };
+	float blue[3] = { 0.2, 0.2, 1.0 };
+
+#ifdef NEVER
+	clear_g(&gg);
+
+	for (i = 0; i < 16; i++) {
+		int ip1 = i < 15 ? i+1 : 0; 
+		
+		add_vec_g(&gg, bins[i][0][1], bins[i][0][2], bins[ip1][0][1], bins[ip1][0][2], lblack);
+		add_vec_g(&gg, bins[i][1][1], bins[i][1][2], bins[ip1][1][1], bins[ip1][1][2], lred);
+	}
+	do_plot_g(&gg, 0.0, 0.0, 0.0, 0.0, 1.0, 0, 1);
+#endif
+
+	clear_g(&gg);
+
+	/* Copy raw shift vectors */
+	for (i = 0; i < 16; i++) {
+		shvec[2 * i + 0][0] = bins[i][0][1];
+		shvec[2 * i + 0][1] = bins[i][0][2];
+		shvec[2 * i + 1][0] = bins[i][1][1];
+		shvec[2 * i + 1][1] = bins[i][1][2];
+	}
+
+	// Convert to angle & radius 
+	for (i = 0; i < 16; i++) {
+		for (j = 0; j < 2; j++) {
+			double x = bins[i][j][1];
+			double y = bins[i][j][2];
+
+			// atan2 returns -pi < val <= +pi
+			bins[i][j][1] = atan2(y, x);
+			bins[i][j][2] = sqrt(x * x + y * y);
+		}
+	}
+
+	// Interpolate test points, and normalize them by interp. reference points */
+	for (i = 0; i < 16; i++) {
+		int ip1 = i < 15 ? i+1 : 0; 
+		int k = i, kp1 = ip1;
+		for (j = 0; j < SSAMP; j++) {	// 4 x interpolation
+			double ra, rr, ta, tr;
+			double ra0, ra1, ta0, ta1;
+			double bl = (double)j/SSAMP;
+			double nf = 1.0;
+
+//printf("vec %d i %d j %d bl %f\n",SSAMP * i + j, i, j, bl);
+
+			ra0 = bins[i][0][1];
+			ra1 = bins[ip1][0][1];
+			ta0 = bins[i][1][1];
+			ta1 = bins[ip1][1][1];
+
+//printf("raw ra0 %f ra1 %f ta0 %f ta1 %f\n", ra0, ra1, ta0, ta1);
+
+			// Make sure pairs are ordered
+			if ((ra1 - ra0) > (1.0 * DBL_PI))
+				ra0 += 2.0 * DBL_PI;
+			else if ((ra1 - ra0) < -(1.0 * DBL_PI))
+				ra0 -= 2.0 * DBL_PI;
+
+			if ((ta1 - ta0) > (1.0 * DBL_PI))
+				ta0 += 2.0 * DBL_PI;
+			else if ((ta1 - ta0) < -(1.0 * DBL_PI))
+				ta0 -= 2.0 * DBL_PI;
+
+//printf("fix ra0 %f ra1 %f ta0 %f ta1 %f\n", ra0, ra1, ta0, ta1);
+
+			// Interpolated values
+			ra = (1.0 - bl) * ra0 + bl * ra1;
+			rr = (1.0 - bl) * bins[i][0][2] + bl * bins[ip1][0][2];
+			ta = (1.0 - bl) * ta0 + bl * ta1;
+			tr = (1.0 - bl) * bins[i][1][2] + bl * bins[ip1][1][2];
+
+//printf(" raw  ra %f rr %f ta %f tr %f\n",ra, rr, ta, tr);
+
+			nf = rr;		// Normalization factor
+
+			tr /= nf;
+			rr /= nf;
+
+			if (tr > maxr)
+				maxr = tr;
+
+//printf(" norm ra %f rr %f ta %f tr %f\n",ra, rr, ta, tr);
+
+			rvecs[SSAMP * i + j][0] = ra;
+			rvecs[SSAMP * i + j][1] = rr; 
+
+			tvecs[SSAMP * i + j][0] = ta;
+			tvecs[SSAMP * i + j][1] = tr; 
+
+			// Set shift vectors
+			if (j == 0) {
+				shvec[2 * i + 0][0] = ra;
+				shvec[2 * i + 0][1] = rr;
+				shvec[2 * i + 1][0] = ta; 
+				shvec[2 * i + 1][1] = tr; 
+//printf(" shft ra %f rr %f ta %f tr %f\n",ra, rr, ta, tr);
+			}
+//printf("\n");
+		}
+	}
+
+//printf("Done all, convert back\n");
+
+	// Convert back to cartesian
+	for (i = 0; i < (SSAMP * 16); i++) {
+		double a = tvecs[i][0];
+		double r = tvecs[i][1];
+
+		tvecs[i][0] = r * cos(a); 
+		tvecs[i][1] = r * sin(a);
+//printf(" tvecs[%d] a %f r %f x %f y %f\n",i,a,r,tvecs[i][0],tvecs[i][1]);
+	}
+
+	for (i = 0; i < (SSAMP * 16); i++) {
+		double a = rvecs[i][0];
+		double r = rvecs[i][1];
+
+		rvecs[i][0] = r * cos(a); 
+		rvecs[i][1] = r * sin(a);
+//printf(" rvecs[%d] a %f r %f x %f y %f\n",i,a,r,rvecs[i][0],rvecs[i][1]);
+	}
+
+	for (i = 0; i < (2 * 16); i++) {
+		double a = shvec[i][0];
+		double r = shvec[i][1];
+
+		shvec[i][0] = r * cos(a); 
+		shvec[i][1] = r * sin(a);
+//printf(" shvec[%d] a %f r %f x %f y %f\n",i,a,r,shvec[i][0],shvec[i][1]);
+	}
+
+//printf("About to plot\n");
+
+	for (i = 0; i < (SSAMP * 16); i++) {
+		int ip1 = i < (SSAMP * 16 -1) ? i+1 : 0; 
+		double x0, y0, x1, y1, r0, r1;
+
+		x0 = tvecs[i][0];
+		y0 = tvecs[i][1];
+		x1 = tvecs[ip1][0];
+		y1 = tvecs[ip1][1];
+
+		r0 = sqrt(x0 * x0 + y0 * y0);
+		r1 = sqrt(x1 * x1 + y1 * y1);
+
+		add_vec_g(&gg, x0/r0, y0/r0, x1/r1, y1/r1, black);
+//		add_vec_g(&gg, rvecs[i][0], rvecs[i][1], rvecs[ip1][0], rvecs[ip1][1], black);
+
+		add_vec_g(&gg, x0, y0, x1, y1, red);
+
+	}
+
+	for (i = 0; i < 16; i++) {
+		add_vec_g(&gg, shvec[2 * i + 0][0], shvec[2 * i + 0][1],
+		               shvec[2 * i + 1][0], shvec[2 * i + 1][1], blue);
+	}
+
+	do_plot_g(&gg, 0.0, 0.0, 0.0, 0.0, 1.0, 0, 1);
+	
+}
+
+#undef SSAMP
+
+#endif /* DO_TM3015_PLOT */
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #ifdef NEVER	/* Not currently used */
 /* Convert control chars to ^[A-Z] notation in a string */
@@ -207,21 +401,6 @@ static int ierror(inst *it, inst_code ic) {
 	return 0;
 }
 
-/* A color structure */
-/* This can hold all representations simultaniously */
-typedef struct {
-	double gy;
-	double r,g,b;
-	double cmyk[4];
-	double XYZ[4];		/* Colorimeter readings */
-	double eXYZ[4];		/* Expected XYZ values */
-	xspect sp;			/* Spectral reading */
-	
-	char *id;			/* Id string */
-	char *loc;			/* Location string */
-	int loci;			/* Location integer = pass * 256 + step */
-} col;
-
 #ifdef TEST_EVENT_CALLBACK
 	void test_event_callback(void *cntx, inst_event_type event) {
 		a1logd(g_log,0,"Got event_callback with 0x%x\n",event);
@@ -252,7 +431,7 @@ static inst_code uicallback(void *cntx, inst_ui_purp purp) {
 
          ABCDEFGHIJKLMNOPQRSTUVWXYZ
   upper     ... .  .  .. . .. ...  
-  lower  . .... ..      .  .. . .. 
+  lower  . .... ..      .  .. .... 
 
 */
 
@@ -277,7 +456,7 @@ usage(char *diag, ...) {
 #ifndef SALONEINSTLIB
 	fprintf(stderr," -S                   Plot spectrum for each reading\n");
 #endif /* !SALONEINSTLIB */
-	fprintf(stderr," -c listno            Set communication port from the following list (default %d)\n",COMPORT);
+	fprintf(stderr," -c listno            Set instrument port from the following list (default %d)\n",COMPORT);
 	if ((icmps = new_icompaths(g_log)) != NULL) {
 		icompath **paths;
 		if ((paths = icmps->paths) != NULL) {
@@ -285,10 +464,12 @@ usage(char *diag, ...) {
 			for (i = 0; ; i++) {
 				if (paths[i] == NULL)
 					break;
-				if ((paths[i]->itype == instSpyder1 && setup_spyd2(0) == 0)
-				 || (paths[i]->itype == instSpyder2 && setup_spyd2(1) == 0))
+#if !defined(NOT_ALLINSTS) || defined(EN_SPYD2)
+				if ((paths[i]->dtype == instSpyder1 && setup_spyd2(0) == 0)
+				 || (paths[i]->dtype == instSpyder2 && setup_spyd2(1) == 0))
 					fprintf(stderr,"    %d = '%s' !! Disabled - no firmware !!\n",i+1,paths[i]->name);
 				else
+#endif
 					fprintf(stderr,"    %d = '%s'\n",i+1,paths[i]->name);
 			}
 		} else
@@ -316,9 +497,9 @@ usage(char *diag, ...) {
 #endif
 	fprintf(stderr," -Q observ            Choose CIE Observer for spectral data or CCSS instrument:\n");
 #ifndef SALONEINSTLIB
-	fprintf(stderr,"                      1931_2 (def), 1964_10, S&B 1955_2, shaw, J&V 1978_2\n");
+	fprintf(stderr,"                      1931_2 (def), 1964_10, 2012_2, 2012_10, S&B 1955_2, shaw, J&V 1978_2 or file.cmf\n");
 #else
-	fprintf(stderr,"                      1931_2 (def), 1964_10\n");
+	fprintf(stderr,"                      1931_2 (def), 1964_10, 2012_2, 2012_10 or file.cmf\n");
 #endif
 #ifndef SALONEINSTLIB
 	fprintf(stderr,"                      (Choose FWA during operation)\n");
@@ -328,26 +509,45 @@ usage(char *diag, ...) {
 	fprintf(stderr,"    p                  Polarising filter\n");
 	fprintf(stderr,"    6                  D65\n");
 	fprintf(stderr,"    u                  U.V. Cut\n");
-	fprintf(stderr," -E extrafilterfile   Apply extra filter compensation file\n");
+	fprintf(stderr," -E customfilter.sp   Compensate for emission measurement filter\n");
+	fprintf(stderr," -A N|A|X|G           XRGA conversion (default N)\n");
+#ifndef SALONEINSTLIB
+	fprintf(stderr," -w                   Use -i param. illuminant for comuting L*a*b*\n");
+#endif
 	fprintf(stderr," -x                   Display Yxy instead of Lab\n");
 	fprintf(stderr," -h                   Display LCh instead of Lab\n");
+#ifndef SALONEINSTLIB
+	fprintf(stderr," -u                   Display Yuv instead of Lab\n");
+#endif
 	fprintf(stderr," -V                   Show running average and std. devation from ref.\n");
 #ifndef SALONEINSTLIB
-	fprintf(stderr," -T                   Display correlated color temperatures, CRI and TLCI\n");
+	fprintf(stderr," -T                   Display correlated color temperatures, CRI, TLCI & IES TM-30-15\n");
 #endif /* !SALONEINSTLIB */
 //	fprintf(stderr," -K type              Run instrument calibration first\n");
 	fprintf(stderr," -N                   Disable auto calibration of instrument\n");
+#ifndef SALONEINSTLIB
+	fprintf(stderr," -O [fname.sp]        Do one cal. or measure and exit [save spectrum to file]\n");
+#else
 	fprintf(stderr," -O                   Do one cal. or measure and exit\n");
+#endif
 	fprintf(stderr," -H                   Start in high resolution spectrum mode (if available)\n");
 	if (cap2 & inst2_ccmx)
 		fprintf(stderr," -X file.ccmx         Apply Colorimeter Correction Matrix\n");
 	if (cap2 & inst2_ccss) {
 		fprintf(stderr," -X file.ccss         Use Colorimeter Calibration Spectral Samples for calibration\n");
 	}
+#ifndef SALONEINSTLIB
+	fprintf(stderr," -R fname.sp          Preset reference to spectrum\n");
+#endif
 	fprintf(stderr," -Y r|n               Override refresh, non-refresh display mode\n");
 	fprintf(stderr," -Y R:rate            Override measured refresh rate with rate Hz\n");
 	fprintf(stderr," -Y A                 Use non-adaptive integration time mode (if available).\n");
+	fprintf(stderr," -Y l|L               Test for i1Pro Lamp Drift (l), and remediate it (L)\n");
+	fprintf(stderr," -Y a                 Use Averaging mode (if available).\n");
 //	fprintf(stderr," -Y U                 Test i1pro2 UV measurement mode\n");
+#ifndef SALONEINSTLIB
+	fprintf(stderr," -Y W:fname.sp        Save white tile ref. spectrum to file\n");
+#endif	/* !SALONEINSTLIB */
 	fprintf(stderr," -W n|h|x             Override serial port flow control: n = none, h = HW, x = Xon/Xoff\n");
 	fprintf(stderr," -D [level]           Print debug diagnostics to stderr\n");
 	fprintf(stderr," logfile              Optional file to save reading results as text\n");
@@ -364,7 +564,8 @@ int main(int argc, char *argv[]) {
 	int debug = 0;
 	int docalib = 0;				/* Do a manual instrument calibration */
 	int nocal = 0;					/* Disable auto calibration */
-	int doone = 0;					/* Do one calibration or measure and exit */
+	int doone = 0;					/* 1 = Do one calibration or measure and exit */
+									/* 2 = + also save result to outspname */
 	int pspec = 0;					/* 1 = Print out the spectrum for each reading */
 									/* 2 = Plot out the spectrum for each reading */
 	int trans = 0;					/* Use transmissioin mode */
@@ -373,12 +574,18 @@ int main(int argc, char *argv[]) {
 	int tele = 0;					/* 1 = Use telephoto emissive sub-mode. */
 	int ambient = 0;				/* 1 = Use ambient emissive mode, 2 = ambient flash mode */
 	int highres = 0;				/* Use high res mode if available */
+	int lampdrift = 0;				/* i1Pro Lamp Drift test (1) & fix (2) */
 	int uvmode = 0;					/* ~~~ i1pro2 test mode ~~~ */
+	xcalstd calstd = xcalstd_none;	/* X-Rite calibration standard */
 	int refrmode = -1;				/* -1 = default, 0 = non-refresh mode, 1 = refresh mode */
 	double refrate = 0.0;			/* 0.0 = default, > 0.0 = override refresh rate */ 
 	int nadaptive = 0;				/* Use non-apative mode if available */
+	int averagemode = 0;			/* Use averaging mode if available */
 	int doYxy= 0;					/* Display Yxy instead of Lab */
 	int doLCh= 0;					/* Display LCh instead of Lab */
+#ifndef SALONEINSTLIB
+	int doYuv= 0;					/* Display Yuv instead of Lab */
+#endif
 	int doCCT= 0;					/* Display correlated color temperatures */
 	inst_mode mode = 0, smode = 0;	/* Normal mode and saved readings mode */
 	inst_opt_type trigmode = inst_opt_unknown;	/* Chosen trigger mode */
@@ -387,11 +594,14 @@ int main(int argc, char *argv[]) {
 	char outname[MAXNAMEL+1] = "\000";  /* Output logfile name */
 	char ccxxname[MAXNAMEL+1] = "\000";  /* Colorimeter Correction/Colorimeter Calibration name */
 	char filtername[MAXNAMEL+1] = "\000";  /* Filter compensation */
+	char wtilename[MAXNAMEL+1] = "\000";  /* White file spectrum */
+	char psetrefname[MAXNAMEL+1] = "\000";  /* Preset reference spectrum */
+	char outspname[MAXNAMEL+1] = "\000";  /* Save doone spectrum file */
 	FILE *fp = NULL;				/* Logfile */
 	icompaths *icmps = NULL;
 	int comport = COMPORT;				/* COM port used */
 	icompath *ipath = NULL;
-	int dtype = 0;					/* Display type selection charater */
+	int ditype = 0;					/* Display type selection character(s) */
 	inst_mode cap = inst_mode_none;		/* Instrument mode capabilities */
 	inst2_capability cap2 = inst2_none;	/* Instrument capabilities 2 */
 	inst3_capability cap3 = inst3_none;	/* Instrument capabilities 3 */
@@ -408,9 +618,13 @@ int main(int argc, char *argv[]) {
 	int illum_set = 0;				/* User asked for custom illuminant spectrum */
 	icxIllumeType illum = icxIT_D50;	/* Spectral defaults */
 	xspect cust_illum;				/* Custom illumination spectrum */
-	icxObserverType obType = icxOT_default;
-	xspect sp;						/* Last spectrum read */
-	xspect rsp;						/* Reference spectrum */
+	int labwpillum = 0;				/* nz to use illum WP for L*a*b* conversion */
+	icmXYZNumber labwp = { icmD50_100.X, icmD50_100.Y, icmD50_100.Z };	/* Lab conversion wp */
+	char labwpname[100] = "D50";	/* Name of Lab conversion wp */
+	icxObserverType obType = icxOT_default;		/* Default is 1931_2 */
+	xspect custObserver[3];			/* If obType = icxOT_custom */
+	xspect sp;						/* Last spectrum read (fwa adjusted) */
+	xspect rsp;						/* Reference spectrum (fwa adjusted) */
 	xsp2cie *sp2cie = NULL;			/* default conversion */
 	xsp2cie *sp2cief[26];			/* FWA corrected conversions */
 	double wXYZ[3] = { -10.0, 0, 0 };/* White XYZ for display white relative */
@@ -421,6 +635,9 @@ int main(int argc, char *argv[]) {
 	double rLab[3] = { -10.0, 0, 0};	/* Reference Lab */
 	double Yxy[3] = { 0.0, 0, 0};	/* Yxy value */
 	double LCh[3] = { 0.0, 0, 0};	/* LCh value */
+#ifndef SALONEINSTLIB
+	double Yuv[3] = { 0.0, 0, 0};	/* Yuv value */
+#endif
 	double refstats = 0;			/* Print running avg & stddev against ref */
 	double rstat_n;					/* Stats N */
 	double rstat_XYZ[3];			/* Stats sum of XYZ's */
@@ -493,7 +710,9 @@ int main(int argc, char *argv[]) {
 			} else if (argv[fa][1] == 'y') {
 				fa = nfa;
 				if (na == NULL) usage("Paramater expected following -y");
-				dtype = na[0];
+				ditype = na[0];
+				if (ditype == '_' && na[1] != '\000')
+					ditype = ditype << 8 | na[1];
 
 #ifndef SALONEINSTLIB
 			/* Simulated instrument illumination (FWA) */
@@ -529,12 +748,21 @@ int main(int argc, char *argv[]) {
 					tillum_set = spec = 1;
 					tillum = icxIT_F10;
 				} else {	/* Assume it's a filename */
+					inst_meas_type mt;
+
 					tillum_set = spec = 1;
 					tillum = icxIT_custom;
-					if (read_xspect(&cust_tillum, na) != 0)
+					if (read_xspect(&cust_tillum, &mt, na) != 0)
 						usage("Failed to read custom target illuminant spectrum in file '%s'",na);
+
+					if (mt != inst_mrt_none
+					 && mt != inst_mrt_emission
+					 && mt != inst_mrt_ambient
+					 && mt != inst_mrt_emission_flash
+					 && mt != inst_mrt_ambient_flash)
+						error("Target illuminant '%s' is wrong measurement type",na);
 				}
-#endif /* SALONEINSTLIB */
+#endif /* !SALONEINSTLIB */
 
 			/* Spectral Illuminant type for XYZ computation */
 			} else if (argv[fa][1] == 'i') {
@@ -566,15 +794,30 @@ int main(int argc, char *argv[]) {
 					illum_set = spec = 1;
 					illum = icxIT_F10;
 				} else {	/* Assume it's a filename */
+					inst_meas_type mt;
+
 					illum_set = spec = 1;
 					illum = icxIT_custom;
-					if (read_xspect(&cust_illum, na) != 0)
+					if (read_xspect(&cust_illum, &mt, na) != 0)
 						usage("Unable to read custom illuminant file '%s'",na);
+
+					if (mt != inst_mrt_none
+					 && mt != inst_mrt_emission
+					 && mt != inst_mrt_ambient
+					 && mt != inst_mrt_emission_flash
+					 && mt != inst_mrt_ambient_flash)
+						error("Custom illuminant '%s' is wrong measurement type",na);
 				}
 #else /* SALONEINSTLIB */
 				} else
 					usage("Unrecognised illuminant '%s'",na);
 #endif /* SALONEINSTLIB */
+
+#ifndef SALONEINSTLIB
+			/* Use -i illuminant for L*a*b* conversion */
+			} else if (argv[fa][1] == 'w') {
+				labwpillum = 1;
+#endif /* !SALONEINSTLIB */
 
 			/* Spectral Observer type */
 			} else if (argv[fa][1] == 'Q') {
@@ -584,6 +827,10 @@ int main(int argc, char *argv[]) {
 					obType = icxOT_CIE_1931_2;
 				} else if (strcmp(na, "1964_10") == 0) {	/* Classic 10 degree */
 					obType = icxOT_CIE_1964_10;
+				} else if (strcmp(na, "2012_2") == 0) {		/* Latest 2 degree */
+					obType = icxOT_CIE_2012_2;
+				} else if (strcmp(na, "2012_10") == 0) {	/* Latest 10 degree */
+					obType = icxOT_CIE_2012_10;
 #ifndef SALONEINSTLIB
 				} else if (strcmp(na, "1955_2") == 0) {		/* Stiles and Burch 1955 2 degree */
 					obType = icxOT_Stiles_Burch_2;
@@ -592,15 +839,18 @@ int main(int argc, char *argv[]) {
 				} else if (strcmp(na, "shaw") == 0) {		/* Shaw and Fairchilds 1997 2 degree */
 					obType = icxOT_Shaw_Fairchild_2;
 #endif /* !SALONEINSTLIB */
-				} else
-					usage("Spectral observer type '%s' not recognised",na);
+				} else {
+					obType = icxOT_custom;
+					if (read_cmf(custObserver, na) != 0)
+						usage(0,"Failed to read custom observer CMF from -Q file '%s'",na);
+				}
 
 			/* Request transmission measurement */
 			} else if (argv[fa][1] == 't') {
 				emiss = 0;
 				trans = 1;
 				tele = 0;
-				ambient = 0;
+				ambient = 0;		/* Default normal diffuse/90 geometry trans. */
 
 			/* Request emissive measurement */
 			} else if (argv[fa][1] == 'e' || argv[fa][1] == 'd') {
@@ -642,10 +892,14 @@ int main(int argc, char *argv[]) {
 
 			/* Request ambient measurement */
 			} else if (argv[fa][1] == 'a') {
-				emiss = 1;
-				trans = 0;
-				tele = 0;
-				ambient = 1;
+				if (trans) {
+					ambient = 1;		/* Alternate 90/diffuse geometry */
+				} else {
+					emiss = 1;
+					trans = 0;
+					tele = 0;
+					ambient = 1;
+				}
 
 			/* Request ambient flash measurement */
 			} else if (argv[fa][1] == 'f') {
@@ -675,15 +929,44 @@ int main(int argc, char *argv[]) {
 				if (na == NULL) usage("Paramater expected following -E");
 				strncpy(filtername,na,MAXNAMEL-1); filtername[MAXNAMEL-1] = '\000';
 
+			/* XRGA conversion */
+			} else if (argv[fa][1] == 'A') {
+				fa = nfa;
+				if (na == NULL) usage("Paramater expected following -A");
+				if (na[0] == 'N')
+					calstd = xcalstd_none;
+				else if (na[0] == 'A')
+					calstd = xcalstd_xrga;
+				else if (na[0] == 'X')
+					calstd = xcalstd_xrdi;
+				else if (na[0] == 'G')
+					calstd = xcalstd_gmdi;
+				else
+					usage("Paramater after -A '%c' not recognized",na[0]);
+
 			/* Show Yxy */
 			} else if (argv[fa][1] == 'x') {
 				doYxy = 1;
 				doLCh = 0;
+#ifndef SALONEINSTLIB
+				doYuv = 0;
+#endif
 
 			/* Show LCh */
 			} else if (argv[fa][1] == 'h') {
 				doYxy = 0;
 				doLCh = 1;
+#ifndef SALONEINSTLIB
+				doYuv = 0;
+#endif
+
+#ifndef SALONEINSTLIB
+			/* Show Yuv */
+			} else if (argv[fa][1] == 'u') {
+				doYxy = 0;
+				doLCh = 0;
+				doYuv = 1;
+#endif
 
 			/* Compute running average and standard deviation from ref. */
 			/* Also turns off clamping */
@@ -712,6 +995,13 @@ int main(int argc, char *argv[]) {
 			/* Do one cal. or measure and exit */
 			} else if (argv[fa][1] == 'O') {
 				doone = 1;
+#ifndef SALONEINSTLIB
+				if (na != NULL) {
+					strncpy(outspname,na,MAXNAMEL-1); outspname[MAXNAMEL-1] = '\000';
+					doone = 2;
+					fa = nfa;
+				}
+#endif
 
 			/* High res mode */
 			} else if (argv[fa][1] == 'H') {
@@ -725,6 +1015,15 @@ int main(int argc, char *argv[]) {
 				if (na == NULL) usage("Parameter expected after -K");
 				strncpy(ccxxname,na,MAXNAMEL-1); ccxxname[MAXNAMEL-1] = '\000';
 
+#ifndef SALONEINSTLIB
+			/* Preset reference spectrum */
+			} else if (argv[fa][1] == 'R') {
+				fa = nfa;
+				if (na == NULL)
+					usage("-R fname.sp syntax incorrect");
+				strncpy(psetrefname,na,MAXNAMEL-1); psetrefname[MAXNAMEL-1] = '\000';
+#endif
+
 			/* Extra flags */
 			} else if (argv[fa][1] == 'Y') {
 				if (na == NULL)
@@ -732,6 +1031,8 @@ int main(int argc, char *argv[]) {
 			
 				if (na[0] == 'A') {
 					nadaptive = 1;
+				} else if (na[0] == 'a') {
+					averagemode = 1;
 				} else if (na[0] == 'r') {
 					refrmode = 1;
 				} else if (na[0] == 'n') {
@@ -742,9 +1043,25 @@ int main(int argc, char *argv[]) {
 					refrate = atof(na+2);
 					if (refrate < 5.0 || refrate > 150.0)
 						usage("-Y R:rate %f Hz not in valid range",refrate);
+
+#ifndef SALONEINSTLIB
+				/* Save white tile reference spectrum to a file */
+				} else if (na[0] == 'W') {
+					if (na[1] != ':')
+						usage("-Y W:fname.sp syntax incorrect");
+						strncpy(wtilename,&na[2],MAXNAMEL-1); wtilename[MAXNAMEL-1] = '\000';
+#endif	/* !SALONEINSTLIB */
+
+				/* i1Pro lamp drift test & fix */
+				} else if (na[0] == 'l') {
+					lampdrift = 1;
+				} else if (na[0] == 'L') {
+					lampdrift = 2;
+
 				/* ~~~ i1pro2 test code ~~~ */
 				} else if (na[0] == 'U') {
 					uvmode = 1;
+
 				} else {
 					usage("-Y parameter '%c' not recognised",na[0]);
 				}
@@ -755,7 +1072,7 @@ int main(int argc, char *argv[]) {
 				fa = nfa;
 				if (na == NULL) usage("Parameter expected after -W");
 				if (na[0] == 'n' || na[0] == 'N')
-					fc = fc_none;
+					fc = fc_None;
 				else if (na[0] == 'h' || na[0] == 'H')
 					fc = fc_Hardware;
 				else if (na[0] == 'x' || na[0] == 'X')
@@ -790,11 +1107,29 @@ int main(int argc, char *argv[]) {
 	}
 
 	/* Check for some user mistakes */
-
-	if ((tillum_set || illum_set) && emiss)
+	if ((tillum_set || illum_set) && emiss )
 		warning("-I or -i parameter makes no sense with emissive or ambient measurement!");
 
+	if (illum_set && labwpillum && emiss) {
+		warning("-w for emissive is ignored!");
+		labwpillum = 0;
+	}
+
 	/* - - - - - - - - - - - - - - - - - - -  */
+	/* Setup Lab conversion wp if not D50 */
+	if (illum_set && labwpillum && !emiss) {
+		double xyz[3];
+
+		strcpy(labwpname, standardIlluminant_name(illum, 0.0));
+
+		if (icx_ill_sp2XYZ(xyz, obType, custObserver, illum, 0.0, &cust_illum, 0))     
+			error("Looking up W.P. of illuminant failed");
+
+		icmScale3(xyz, xyz, 100.0);
+		icmAry2XYZ(labwp, xyz);
+
+	}
+
 	if ((icmps = new_icompaths(g_log)) == NULL)
 		error("Finding instrument paths failed");
 	if ((ipath = icmps->get_path(icmps, comport)) == NULL)
@@ -850,6 +1185,135 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 	
+	/* Check i1Pro lamp drift, and remediate if it is too large */
+	/* (Hmm. If cooltime is too long, drift appears to be worse
+	    after remediation. It's not clear why, but it returns
+	    to expected values once instrument has truly cooled down (i.e. 2+min ?)
+	 */
+	if (lampdrift) {
+		int pass = 0;
+		double remtime = 0.0;
+		int cooltime = 30;
+
+		if (it->dtype != instI1Pro
+		 && it->dtype != instI1Pro2) {
+			printf("LampDrift is only applicable to i1Pro instrument");
+		}
+
+		/* Disable initial calibration of machine if selected */
+		if (nocal != 0) {
+			if ((rv = it->get_set_opt(it,inst_opt_noinitcalib, 0)) != inst_ok) {
+				printf("Setting no-initial calibrate failed with '%s' (%s)\n",
+			       it->inst_interp_error(it, rv), it->interp_error(it, rv));
+				printf("Disable initial-calibrate not supported\n");
+			}
+		}
+
+		if ((rv = it->get_set_opt(it, inst_opt_trig_prog)) != inst_ok)
+			error("Setting trigger mode failed with error :'%s' (%s)",
+	       	       it->inst_interp_error(it, rv), it->interp_error(it, rv));
+
+		for (pass = 0; pass < 2; pass++) {
+			ipatch val;
+			double dl, maxdl = -100.0, de, maxde = -100.0;
+			int ii;
+
+			printf("\nDoing Lamp Drift check - place instrument on calibration tile\n");
+
+			/* Do any needed calibration before the user places the instrument on a desired spot */
+			if (it->needs_calibration(it) & inst_calt_n_dfrble_mask) {
+				inst_code ev;
+
+				printf("\nNeed a calibration before continuing\n");
+
+				ev = inst_handle_calibrate(it, inst_calt_needed, inst_calc_none, NULL, NULL, doone);
+				if (ev != inst_ok) {	/* Abort or fatal error */
+					error("Got abort or error from calibration");
+				}
+			}
+
+#ifndef NEVER
+			/* Ensure lamp has cooled down */
+			printf("\nAllowing lamp to cool\n");
+			for (i = cooltime; i > 0; i--) {
+				msec_sleep(1000);
+				printf("\r%d ",i); fflush(stdout);
+			}
+			printf("\r0 \n");
+#endif
+	
+			printf("\nChecking Lamp Drift\n");
+			/* Measure 1 spot and save as ref */
+			if ((rv = it->read_sample(it, "SPOT", &val, instNoClamp)) != inst_ok) {
+				error("Read sample failed with '%s' (%s)",
+				       it->inst_interp_error(it, rv), it->interp_error(it, rv));
+			}
+			if (val.XYZ_v == 0) error("Instrument didn't return XYZ value");
+			icmXYZ2Lab(&icmD50_100, rLab, val.XYZ);
+	
+			// Until measurement is stable, or 30 measurements
+			// Read and save max DE
+
+			/* 30 trials, or no new biggest in 4 measurements */
+			for (ii = 100, i = 0; i < 40 && (i < 10 || (i - ii) < 6) ; i++) {
+				if ((rv = it->read_sample(it, "SPOT", &val, instNoClamp)) != inst_ok) {
+					error("Read sample failed with '%s' (%s)",
+					       it->inst_interp_error(it, rv), it->interp_error(it, rv));
+				}
+				if (val.XYZ_v == 0) error("Instrument didn't return XYZ value");
+				icmXYZ2Lab(&icmD50_100, Lab, val.XYZ);
+
+				dl = Lab[0] - rLab[0]; 
+				de = icmLabDE(Lab, rLab);
+
+				/* Keep going while dl is rising */
+				if (dl > maxdl) {
+					maxdl = dl;
+					ii = i;
+				}
+				if (de > maxde) {
+					maxde = de;
+					printf("\r%1.3f DE",de); fflush(stdout);
+				}
+			}
+	
+			// Print DE
+//			printf("\nLamp Drift Delta E = %f\n",maxde);
+
+			if (lampdrift == 1) {
+				printf("\nDrift test complete - %s\n", maxde >= 0.09 ? "Needs Fixing!" : "OK");
+				break;
+			}
+
+			if (pass > 0) {
+				printf("\nDrift test & fix complete\n");
+				break;
+			}
+	
+			if (maxde >= 0.09) 
+				remtime = 60.0;
+			else if (maxde >= 0.12)
+				remtime = 90.0;
+			else if (maxde > 0.20)
+				remtime = 120.0;
+	
+			if (remtime > 0.0) {
+				printf("\nDoing %.0f seconds of remediation\n",remtime);
+				// Do remediation */
+				if ((rv = it->get_set_opt(it, inst_opt_lamp_remediate, remtime)) != inst_ok) {
+					error("Remediating Lamp Drift failed with error :'%s' (%s)\n",
+			       	       it->inst_interp_error(it, rv), it->interp_error(it, rv));
+				}
+				cooltime = 45;
+			} else {
+				printf("\nDrift is OK\n");
+				break;
+			}
+		}
+		
+		goto done;
+	}
+
 	/* Configure the instrument mode */
 	{
 		int ccssset = 0;
@@ -873,17 +1337,26 @@ int main(int argc, char *argv[]) {
 		}
 
 		if (trans) {
-			if (!IMODETST(cap, inst_mode_trans_spot)
-			 || it->check_mode(it, inst_mode_trans_spot) != inst_ok) {
-				printf("Need transmission spot capability,\n");
-				printf("and instrument doesn't support it\n");
-				it->del(it);
-				return -1;
+			/* Alternate geometry - 90/diffuse */
+			if (ambient) {
+				if (it->check_mode(it, inst_mode_trans_spot_a) != inst_ok) {
+					printf("Need transmission spot (alt) capability,\n");
+					printf("and instrument doesn't support it\n");
+					it->del(it);
+					return -1;
+				}
+			/* Normal geometry - diffuce/90 */
+			} else {
+				if (it->check_mode(it, inst_mode_trans_spot) != inst_ok) {
+					printf("Need transmission spot capability,\n");
+					printf("and instrument doesn't support it\n");
+					it->del(it);
+					return -1;
+				}
 			}
 
 		} else if (ambient == 1) {
-			if (!IMODETST(cap, inst_mode_emis_ambient)
-			 || it->check_mode(it, inst_mode_emis_ambient) != inst_ok) {
+			if (it->check_mode(it, inst_mode_emis_ambient) != inst_ok) {
 				printf("Requested ambient light capability,\n");
 				printf("and instrument doesn't support it.\n");
 				return -1;
@@ -895,8 +1368,7 @@ int main(int argc, char *argv[]) {
 			}
 
 		} else if (ambient == 2) {
-			if (!IMODETST(cap, inst_mode_emis_ambient_flash)
-			 || it->check_mode(it, inst_mode_emis_ambient_flash) != inst_ok) {
+			if (it->check_mode(it, inst_mode_emis_ambient_flash) != inst_ok) {
 				printf("Requested ambient flash capability,\n");
 				printf("and instrument doesn't support it.\n");
 				it->del(it);
@@ -912,22 +1384,20 @@ int main(int argc, char *argv[]) {
 		} else if (emiss || tele) {
 
 			/* If there is a tele mode but no emission, use tele */
-			if (!IMODETST(cap, inst_mode_emis_spot)
-			 && IMODETST(cap, inst_mode_emis_tele)) {
+			if (it->check_mode(it, inst_mode_emis_spot) != inst_ok
+			 && it->check_mode(it, inst_mode_emis_tele) == inst_ok) {
 				tele = 1;
 			}
 
 			if (tele) {
-				if (!IMODETST(cap, inst_mode_emis_tele)
-			 || it->check_mode(it, inst_mode_emis_tele) != inst_ok) {
+				if (it->check_mode(it, inst_mode_emis_tele) != inst_ok) {
 					printf("Need telephoto spot capability\n");
 					printf("and instrument doesn't support it\n");
 					it->del(it);
 					return -1;
 				}
 			} else {
-				if (!IMODETST(cap, inst_mode_emis_spot)
-			 || it->check_mode(it, inst_mode_emis_spot) != inst_ok) {
+				if (it->check_mode(it, inst_mode_emis_spot) != inst_ok) {
 					printf("Need emissive spot capability\n");
 					printf("and instrument doesn't support it\n");
 					it->del(it);
@@ -941,16 +1411,15 @@ int main(int argc, char *argv[]) {
 					nadaptive = 0;
 				}
 			}
-			if (refrmode >= 0 && !IMODETST(cap, inst_mode_emis_refresh_ovd)
-			                  && !IMODETST(cap, inst_mode_emis_norefresh_ovd)) {
+			if (refrmode >= 0 && it->check_mode(it, inst_mode_emis_refresh_ovd) != inst_ok
+			                  && it->check_mode(it, inst_mode_emis_norefresh_ovd) != inst_ok) {
 				if (verb) {
 					printf("Requested refresh mode override and instrument doesn't support it (ignored)\n");
 					refrmode = -1;
 				}
 			}
 		} else {
-			if (!IMODETST(cap, inst_mode_ref_spot)
-			 || it->check_mode(it, inst_mode_ref_spot) != inst_ok) {
+			if (it->check_mode(it, inst_mode_ref_spot) != inst_ok) {
 				printf("Need reflection spot reading capability,\n");
 				printf("and instrument doesn't support it\n");
 				it->del(it);
@@ -959,12 +1428,12 @@ int main(int argc, char *argv[]) {
 		}
 
 		/* Set displaytype or calibration mode */
-		if (dtype != 0) {
+		if (ditype != 0) {
 			if (cap2 & inst2_disptype) {
 				int ix;
-				if ((ix = inst_get_disptype_index(it, dtype, 0)) < 0) {
+				if ((ix = inst_get_disptype_index(it, ditype, 0)) < 0) {
 					it->del(it);
-					usage("Failed to locate display type matching '%c'",dtype);
+					usage("Failed to locate display type matching '%s'",inst_distr(ditype));
 				}
 	
 				if ((rv = it->set_disptype(it, ix)) != inst_ok) {
@@ -1007,12 +1476,15 @@ int main(int argc, char *argv[]) {
 		/* Set it to the appropriate mode */
 
 		/* Should look at instrument type & user spec ??? */
-		if (trans)
-			smode = mode = inst_mode_trans_spot;
-		else if (ambient == 1 && IMODETST(cap, inst_mode_emis_ambient)
+		if (trans) {
+			if (ambient)
+				smode = mode = inst_mode_trans_spot_a;
+			else
+				smode = mode = inst_mode_trans_spot;
+		} else if (ambient == 1
 			 && it->check_mode(it, inst_mode_emis_ambient) == inst_ok)
 			smode = mode = inst_mode_emis_ambient;
-		else if (ambient == 2 && IMODETST(cap, inst_mode_emis_ambient_flash)
+		else if (ambient == 2
 			 && it->check_mode(it, inst_mode_emis_ambient_flash) == inst_ok)
 			smode = mode = inst_mode_emis_ambient_flash;
 		else if (tele)							// Hmm. What about tele flash ?
@@ -1021,8 +1493,7 @@ int main(int argc, char *argv[]) {
 			smode = mode = inst_mode_emis_spot;
 		else {
 			smode = mode = inst_mode_ref_spot;
-			if (IMODETST(cap, inst_mode_s_ref_spot)
-			 && it->check_mode(it, inst_mode_s_ref_spot) == inst_ok)
+			if (it->check_mode(it, inst_mode_s_ref_spot) == inst_ok)
 				smode = inst_mode_s_ref_spot;
 		}
 
@@ -1077,11 +1548,34 @@ int main(int argc, char *argv[]) {
 		}
 		it->capabilities(it, &cap, &cap2, &cap3);
 
-		/* Apply Extra filter compensation */
+		/* If requested, average several readings (i.e. JETI 1211) */
+		if (averagemode) {
+			if (!IMODETST(cap3, inst3_average)) {
+				if (verb)
+					printf("Requested averaging mode and instrument doesn't support it (ignored)\n");
+				averagemode = 0;
+			} else if ((rv = it->get_set_opt(it, inst_opt_set_averages, 10)) != inst_ok) {
+				printf("Setting no of averages to 10 failed with '%s' (%s) !!!\n",
+			       it->inst_interp_error(it, rv), it->interp_error(it, rv));
+			}
+		}
+
+		/* Apply emission filter compensation */
 		if (filtername[0] != '\000') {
-			if ((rv = it->comp_filter(it, filtername)) != inst_ok) {
-				printf("\nSetting filter compensation failed with error :'%s' (%s)\n",
-			     	       it->inst_interp_error(it, rv), it->interp_error(it, rv));
+			xspect sp;
+			if (read_xspect(&sp, NULL, filtername) != 0)
+				error("Failed to emission filter compensation file '%s'",filtername);
+
+			if ((rv = it->get_set_opt(it, inst_opt_set_custom_filter, &sp)) != inst_ok) {
+				printf("Setting emission filter compensation failed with '%s' (%s) !!!\n",
+			       it->inst_interp_error(it, rv), it->interp_error(it, rv));
+			}
+		}
+
+		/* set XRGA conversion */
+		if (calstd != xcalstd_none) {
+			if ((rv = it->get_set_opt(it, inst_opt_set_xcalstd, calstd)) != inst_ok) {
+				printf("Setting calibration standard not supported by instrument\n");
 				it->del(it);
 				return -1;
 			}
@@ -1135,7 +1629,7 @@ int main(int argc, char *argv[]) {
 					it->del(it);
 					return -1;
 				}
-				if ((rv = it->get_set_opt(it, inst_opt_set_ccss_obs, obType, NULL)) != inst_ok) {
+				if ((rv = it->get_set_opt(it, inst_opt_set_ccss_obs, obType, custObserver)) != inst_ok) {
 					printf("\nSetting CCS Observer failed with error :'%s' (%s)\n",
 				     	       it->inst_interp_error(it, rv), it->interp_error(it, rv));
 					cs->del(cs);
@@ -1171,7 +1665,7 @@ int main(int argc, char *argv[]) {
 
 		/* If non-standard observer wasn't set by a CCSS file above */
 		if (obType != icxOT_default && (cap2 & inst2_ccss) && ccssset == 0) {
-			if ((rv = it->get_set_opt(it, inst_opt_set_ccss_obs, obType, 0)) != inst_ok) {
+			if ((rv = it->get_set_opt(it, inst_opt_set_ccss_obs, obType, custObserver)) != inst_ok) {
 				printf("\nSetting CCSS Observer failed with error :'%s' (%s)\n",
 			     	       it->inst_interp_error(it, rv), it->interp_error(it, rv));
 				it->del(it);
@@ -1242,6 +1736,26 @@ int main(int argc, char *argv[]) {
 		inst_set_uih(0x1b, 0x1b, DUIH_ABORT);		/* Esc */
 	}
 
+#ifndef SALONEINSTLIB
+	/* Save reference white tile reflectance spectrum */
+	if (wtilename[0] != '\000') {
+		xspect sp;
+
+		if ((rv = it->get_set_opt(it, inst_opt_get_cal_tile_sp, &sp)) != inst_ok) {
+			printf("\nGetting reference white tile spectrum failed with error :'%s' (%s)\n",
+	       	       it->inst_interp_error(it, rv), it->interp_error(it, rv));
+			it->del(it);
+			return -1;
+		}
+
+		if (write_xspect(wtilename, inst_mrt_reflective, &sp) != 0)
+			error("Failed to save spectrum to file '%s'",wtilename);
+
+		if (verb)
+			printf("Saved reference white tile spectrum to '%s'\n",wtilename);
+	}
+#endif	/* !SALONEINSTLIB */
+
 #ifdef DEBUG
 	printf("About to enter read loop\n");
 #endif
@@ -1253,13 +1767,13 @@ int main(int argc, char *argv[]) {
 		it->set_uicallback(it, uicallback, NULL);
 	}
 
-	if (spec) {
+	if (spec || psetrefname[0] != '\000') {
 		/* Any non-illuminated mode has no illuminant */
-		if (emiss || tele || ambient)
+		if (emiss || ambient)
 			illum = icxIT_none;
 
 		/* Create a spectral conversion object */
-		if ((sp2cie = new_xsp2cie(illum, &cust_illum, obType, NULL, icSigXYZData,
+		if ((sp2cie = new_xsp2cie(illum, 0.0, &cust_illum, obType, custObserver, icSigXYZData,
 			                           refstats ? icxNoClamp : icxClamp)) == NULL)
 			error("Creation of spectral conversion object failed");
 
@@ -1273,6 +1787,43 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	}
+
+#ifndef SALONEINSTLIB
+	/* Load preset reference spectrum */
+	if (psetrefname[0] != '\000') {
+		inst_meas_type mt;
+
+		if (read_xspect(&rsp, &mt, psetrefname) != 0)
+			error("Failed to read spectrum from file '%s'",psetrefname);
+
+		if (!emiss && !ambient) {
+			if (mt != inst_mrt_none
+			 && mt != inst_mrt_transmissive
+			 && mt != inst_mrt_reflective)
+				error("Reference reflectance spectrum '%s' is wrong measurement type",psetrefname);
+		} else {
+			if (mt != inst_mrt_none
+			 && mt != inst_mrt_emission
+			 && mt != inst_mrt_ambient
+			 && mt != inst_mrt_emission_flash
+			 && mt != inst_mrt_ambient_flash)
+				error("Reference reflectance spectrum '%s' is wrong measurement type",psetrefname);
+		}
+
+		if (verb)
+			printf("Loaded reference spectrum from '%s'\n",psetrefname);
+
+		sp2cie->convert(sp2cie, rXYZ, &rsp);
+
+		if (!(emiss || tele || ambient)) {
+			for (j = 0; j < 3; j++)
+				rXYZ[j] *= 100.0;		/* 0..100 scale */
+		}
+		icmXYZ2Lab(&labwp, rLab, rXYZ);
+		if (verb)
+			printf("Preset ref. XYZ %f %f %f, %s Lab %f %f %f\n", rXYZ[0], rXYZ[1], rXYZ[2], labwpname, rLab[0], rLab[1], rLab[2]);
+	}
+#endif
 
 	/* Hold table */
 	if (cap2 & inst2_xy_holdrel) {
@@ -1290,11 +1841,12 @@ int main(int argc, char *argv[]) {
 
 	/* Read spots until the user quits */
 	for (ix = 1;; ix++) {
-		ipatch val;
+		ipatch val;								/* Raw measurement value */
 		double tXYZ[3];
 #ifndef SALONEINSTLIB
 		double cct, vct, vdt;
 		double cct_de, vct_de, vdt_de;
+		double cct_sn, vct_sn, vdt_sn;			/* Sign: 1 + above, -1 = below */
 #endif /* !SALONEINSTLIB */
 		int ch = '0';		/* Character */
 		int sufwa = 0;		/* Setup for FWA compensation */
@@ -1338,8 +1890,7 @@ int main(int argc, char *argv[]) {
 
 #endif // NEVER
 
-		if (savdrd != -1 && IMODETST(cap, inst_mode_s_ref_spot)
-			 && it->check_mode(it, inst_mode_s_ref_spot) == inst_ok) {
+		if (savdrd != -1 && it->check_mode(it, inst_mode_s_ref_spot) == inst_ok) {
 			inst_stat_savdrd sv;
 
 			savdrd = 0;
@@ -1353,7 +1904,10 @@ int main(int argc, char *argv[]) {
 				savdrd = 1;
 		}
 
-		/* Read a stored value */
+		/* We now wait for a user to trigger a measurement with a key, */
+		/* or issue a command using a key. */
+
+		/* Read a stored value from the instrument */
 		if (savdrd == 1) {
 			inst_code ev;
 
@@ -1670,7 +2224,8 @@ int main(int argc, char *argv[]) {
 				break;
 			}
 			printf("\n");
-			if (it->icom->port_type(it->icom) == icomt_serial) {
+			if ((it->icom->port_type(it->icom) & icomt_serial)
+			 && !(it->icom->port_attr(it->icom) & icomt_fastserial)) {
 				/* Allow retrying at a lower baud rate */
 				int tt = it->last_scomerr(it);
 				if (tt & (ICOM_BRK | ICOM_FER | ICOM_PER | ICOM_OER)) {
@@ -1778,21 +2333,13 @@ int main(int argc, char *argv[]) {
 		if (ch == 'S' || ch == 's') {	/* Save last spectral into file */
 			if (sp.spec_n > 0) {
 				char buf[500];
-				xspect tsp;
 
-				if (val.sp.spec_n <= 0)
-					error("Instrument didn't return spectral data");
-
-				tsp = val.sp;		/* Temp. save spectral reading */
-
-				/* Compute FWA corrected spectrum */
-				if (dofwa != 0) {
-					sp2cief[fidx]->sconvert(sp2cief[fidx], &tsp, NULL, &tsp);
-				}
+				if (sp.spec_n <= 0)
+					error("Save: Instrument didn't return spectral data");
 
 				printf("\nEnter filename (ie. xxxx.sp): "); fflush(stdout);
 				if (getns(buf, 500) != NULL && strlen(buf) > 0) {
-					if(write_xspect(buf, &tsp))
+					if(write_xspect(buf, val.mtype, &sp))
 						printf("\nWriting file '%s' failed\n",buf);
 					else
 						printf("\nWriting file '%s' succeeded\n",buf);
@@ -1808,6 +2355,9 @@ int main(int argc, char *argv[]) {
 #endif /* !SALONEINSTLIB */
 		if (ch == 'K' || ch == 'k') {	/* Do a calibration */
 			inst_code ev;
+
+			/* Should we do a get_n_a_cals() first, so we can abort */
+			/* if no calibrations are available ?? */
 
 			printf("\nDoing a calibration\n");
 
@@ -1972,13 +2522,15 @@ int main(int argc, char *argv[]) {
 
 		}
 
+		sp = val.sp;		/* Save as last spectral reading */
+
 		/* Setup FWA compensation */
 		if (sufwa) {
 			double FWAc;
 			xspect insp;			/* Instrument illuminant */
 
-			if (val.sp.spec_n <= 0) {
-				error("Instrument didn't return spectral data");
+			if (sp.spec_n <= 0) {
+				error("FWA Setup: Instrument didn't return spectral data");
 			}
 
 			if (inst_illuminant(&insp, it->get_itype(it)) != 0)
@@ -1986,12 +2538,12 @@ int main(int argc, char *argv[]) {
 
 			/* Creat the base conversion object */
 			if (sp2cief[fidx] == NULL) {
-				if ((sp2cief[fidx] = new_xsp2cie(illum, &cust_illum, obType,
-				            NULL, icSigXYZData, refstats ? icxNoClamp : icxClamp)) == NULL)
+				if ((sp2cief[fidx] = new_xsp2cie(illum, 0.0, &cust_illum, obType,
+				            custObserver, icSigXYZData, refstats ? icxNoClamp : icxClamp)) == NULL)
 					error("Creation of spectral conversion object failed");
 			}
 
-			if (sp2cief[fidx]->set_fwa(sp2cief[fidx], &insp, tillump, &val.sp)) 
+			if (sp2cief[fidx]->set_fwa(sp2cief[fidx], &insp, tillump, &sp)) 
 				error ("Set FWA on sp2cie failed");
 
 			sp2cief[fidx]->get_fwa_info(sp2cief[fidx], &FWAc);
@@ -2003,91 +2555,7 @@ int main(int argc, char *argv[]) {
 		}
 #endif /* !SALONEINSTLIB */
 
-		/* Print and/or plot out spectrum, */
-		/* even if it's an FWA setup */
-		if (pspec) {
-			xspect tsp;
-
-			if (val.sp.spec_n <= 0)
-				error("Instrument didn't return spectral data");
-
-			tsp = val.sp;		/* Temp. save spectral reading */
-
-			/* Compute FWA corrected spectrum */
-			if (dofwa != 0) {
-				sp2cief[fidx]->sconvert(sp2cief[fidx], &tsp, NULL, &tsp);
-			}
-
-			printf("Spectrum from %f to %f nm in %d steps\n",
-		                tsp.spec_wl_short, tsp.spec_wl_long, tsp.spec_n);
-
-			for (j = 0; j < tsp.spec_n; j++)
-				printf("%s%8.3f",j > 0 ? ", " : "", tsp.spec[j]);
-			printf("\n");
-
-#ifndef SALONEINSTLIB
-			/* Plot the spectrum */
-			if (pspec == 2) {
-				double xx[XSPECT_MAX_BANDS];
-				double yy[XSPECT_MAX_BANDS];
-				double yr[XSPECT_MAX_BANDS];
-				double xmin, xmax, ymin, ymax;
-				xspect trsp = rsp;
-				xspect *ss;		/* Spectrum range to use */
-				int nn;
-
-				if (dofwa != 0) {
-					sp2cief[fidx]->sconvert(sp2cief[fidx], &trsp, NULL, &tsp);
-				}
-
-				if (trsp.spec_n > 0) {
-					if ((tsp.spec_wl_long - tsp.spec_wl_short) > 
-					    (trsp.spec_wl_long - trsp.spec_wl_short))
-						ss = &tsp;
-					else
-						ss = &trsp;
-				} else 
-					ss = &tsp;
-
-				if (tsp.spec_n > trsp.spec_n)
-					nn = tsp.spec_n;
-				else
-					nn = trsp.spec_n;
-
-				if (nn > XSPECT_MAX_BANDS)
-					error("Got > %d spectral values (%d)",XSPECT_MAX_BANDS,nn);
-
-				for (j = 0; j < nn; j++) {
-#if defined(__APPLE__) && defined(__POWERPC__)
-					gcc_bug_fix(j);
-#endif
-					xx[j] = ss->spec_wl_short
-					      + j * (ss->spec_wl_long - ss->spec_wl_short)/(nn-1);
-
-					yy[j] = value_xspect(&tsp, xx[j]);
-
-					if (rLab[0] >= -1.0) {	/* If there is a reference */
-						yr[j] = value_xspect(&trsp, xx[j]);
-					}
-				}
-				
-				xmax = ss->spec_wl_long;
-				xmin = ss->spec_wl_short;
-				if (emiss || uvmode) {
-					ymin = ymax = 0.0;	/* let it scale */
-				} else {
-					ymin = 0.0;
-					ymax = 120.0;
-				}
-				do_plot_x(xx, yy, rLab[0] >= -1.0 ? yr : NULL, NULL, nn, 1,
-				          xmin, xmax, ymin, ymax, 2.0);
-			}
-#endif /* !SALONEINSTLIB */
-		}
-
-		if (sufwa == 0) {		/* Not setting up fwa, so show reading */
-
-			sp = val.sp;		/* Save as last spectral reading */
+		if (sufwa == 0) {		/* Not setting up fwa, so process reading */
 
 			/* Compute the XYZ & Lab */
 			if (dofwa == 0 && spec == 0) {
@@ -2101,14 +2569,14 @@ int main(int argc, char *argv[]) {
 				/* Compute XYZ given spectral */
 	
 				if (sp.spec_n <= 0) {
-					error("Instrument didn't return spectral data");
+					error("FAW Convert: Instrument didn't return spectral data");
 				}
 	
 				if (dofwa == 0) {
 					/* Convert it to XYZ space using uncompensated */
 					sp2cie->convert(sp2cie, XYZ, &sp);
 				} else {
-					/* Convert using compensated conversion */
+					/* Convert using FWA compensated conversion */
 					sp2cief[fidx]->sconvert(sp2cief[fidx], &sp, XYZ, &sp);
 				}
 				if (!(emiss || tele || ambient)) {
@@ -2119,6 +2587,81 @@ int main(int argc, char *argv[]) {
 
 			/* XYZ is 0 .. 100 for reflective/transmissive, and absolute for emissibe here */
 			/* XYZ is 0 .. 1 for reflective/transmissive, and absolute for emissibe here */
+		}
+
+		/* Print and/or plot out spectrum, */
+		/* even if it's an FWA setup */
+		if (pspec) {
+
+			if (sp.spec_n <= 0)
+				error("Print: Instrument didn't return spectral data");
+
+			printf("Spectrum from %.3f to %.3f nm in %d steps\n",
+		                sp.spec_wl_short, sp.spec_wl_long, sp.spec_n);
+
+			for (j = 0; j < sp.spec_n; j++)
+				printf("%s%g",j > 0 ? ", " : "", sp.spec[j]);
+			printf("\n");
+
+#ifndef SALONEINSTLIB
+			/* Plot the spectrum */
+			if (pspec == 2) {
+				double xx[XSPECT_MAX_BANDS];
+				double yy[XSPECT_MAX_BANDS];
+				double yr[XSPECT_MAX_BANDS];
+				double xmin, xmax, ymin, ymax;
+				xspect *ss;				/* Spectrum range to use */
+				int nn;
+
+				if (rsp.spec_n > 0) {
+					if ((sp.spec_wl_long - sp.spec_wl_short) > 
+					    (rsp.spec_wl_long - rsp.spec_wl_short))
+						ss = &sp;
+					else
+						ss = &rsp;
+				} else 
+					ss = &sp;
+
+				if (sp.spec_n > rsp.spec_n)
+					nn = sp.spec_n;
+				else
+					nn = rsp.spec_n;
+
+				if (nn > XSPECT_MAX_BANDS)
+					error("Got > %d spectral values (%d)",XSPECT_MAX_BANDS,nn);
+
+				for (j = 0; j < nn; j++) {
+#if defined(__APPLE__) && defined(__POWERPC__)
+					gcc_bug_fix(j);
+#endif
+					xx[j] = ss->spec_wl_short
+					      + j * (ss->spec_wl_long - ss->spec_wl_short)/(nn-1);
+
+					yy[j] = value_xspect(&sp, xx[j]);
+
+					if (rLab[0] >= -1.0) {	/* If there is a reference */
+						yr[j] = value_xspect(&rsp, xx[j]);
+					}
+				}
+				
+				xmax = ss->spec_wl_long;
+				xmin = ss->spec_wl_short;
+				if (emiss || uvmode) {
+					ymin = ymax = 0.0;	/* let it scale */
+				} else {
+					ymin = 0.0;
+					ymax = 120.0;
+				}
+				do_plot_x(xx, yy, NULL, rLab[0] >= -1.0 ? yr : NULL, nn, 0,
+				          xmin, xmax, ymin, ymax, 2.0);
+			}
+#endif /* !SALONEINSTLIB */
+		}
+
+		if (sufwa == 0) {		/* Not setting up fwa, so show reading */
+
+			/* XYZ is 0 .. 100 for reflective/transmissive, and absolute for emissibe here */
+			/* XYZ is 0 .. 1 for reflective/transmissive, and absolute for emissibe here */
 
 #ifndef SALONEINSTLIB
 			/* Compute color temperatures */
@@ -2126,24 +2669,36 @@ int main(int argc, char *argv[]) {
 				icmXYZNumber wp;
 				double nxyz[3], axyz[3];
 				double lab[3], alab[3];
+				double yxy[3], ayxy[3];
 
+				/* Y normalized sample */
 				nxyz[0] = XYZ[0] / XYZ[1];
 				nxyz[2] = XYZ[2] / XYZ[1];
 				nxyz[1] = XYZ[1] / XYZ[1];
 
 				/* Compute CCT */
-				if ((cct = icx_XYZ2ill_ct(axyz, icxIT_Ptemp, obType, NULL, XYZ, NULL, 0)) < 0)
+				if ((cct = icx_XYZ2ill_ct(axyz, icxIT_Ptemp, obType, custObserver, nxyz, NULL, 0)) < 0)
 					error ("Got bad cct\n");
 				axyz[0] /= axyz[1];
 				axyz[2] /= axyz[1];
 				axyz[1] /= axyz[1];
-				icmAry2XYZ(wp, axyz);
-				icmXYZ2Lab(&wp, lab, nxyz);
-				icmXYZ2Lab(&wp, alab, axyz);
-				cct_de = icmLabDE(lab, alab);
+				icmXYZ21960UCS(lab, nxyz);
+				icmXYZ21960UCS(alab, axyz);
+				cct_de = sqrt((lab[1] - alab[1]) * (lab[1] - alab[1])
+				            + (lab[2] - alab[2]) * (lab[2] - alab[2]));
+
+				
+				cct_sn = 1.0;
+				icmXYZ2Yxy(yxy, nxyz);
+				icmXYZ2Yxy(ayxy, axyz);
+				/* Dot product of vector from aprox. locus curve "center" */
+				/* xy 0.5, 0.25 with vector from	*/
+				if ((yxy[1] - ayxy[1]) * (ayxy[1] - 0.5)
+				  + (yxy[2] - ayxy[2]) * (ayxy[2] - 0.25) < 0.0)
+					cct_sn = -1.0;
 			
 				/* Compute VCT */
-				if ((vct = icx_XYZ2ill_ct(axyz, icxIT_Ptemp, obType, NULL, XYZ, NULL, 1)) < 0)
+				if ((vct = icx_XYZ2ill_ct(axyz, icxIT_Ptemp, obType, custObserver, nxyz, NULL, 1)) < 0)
 					error ("Got bad vct\n");
 				axyz[0] /= axyz[1];
 				axyz[2] /= axyz[1];
@@ -2151,10 +2706,17 @@ int main(int argc, char *argv[]) {
 				icmAry2XYZ(wp, axyz);
 				icmXYZ2Lab(&wp, lab, nxyz);
 				icmXYZ2Lab(&wp, alab, axyz);
-				vct_de = icmLabDE(lab, alab);
+				vct_de = icmCIE2K(lab, alab);
 
+				vct_sn = 1.0;
+				icmXYZ2Yxy(yxy, nxyz);
+				icmXYZ2Yxy(ayxy, axyz);
+				if ((yxy[1] - ayxy[1]) * (ayxy[1] - 0.5)
+				  + (yxy[2] - ayxy[2]) * (ayxy[2] - 0.25) < 0.0)
+					vct_sn = -1.0;
+			
 				/* Compute VDT */
-				if ((vdt = icx_XYZ2ill_ct(axyz, icxIT_Dtemp, obType, NULL, XYZ, NULL, 1)) < 0)
+				if ((vdt = icx_XYZ2ill_ct(axyz, icxIT_Dtemp, obType, custObserver, nxyz, NULL, 1)) < 0)
 					error ("Got bad vct\n");
 				axyz[0] /= axyz[1];
 				axyz[2] /= axyz[1];
@@ -2162,17 +2724,27 @@ int main(int argc, char *argv[]) {
 				icmAry2XYZ(wp, axyz);
 				icmXYZ2Lab(&wp, lab, nxyz);
 				icmXYZ2Lab(&wp, alab, axyz);
-				vdt_de = icmLabDE(lab, alab);
+				vdt_de = icmCIE2K(lab, alab);
+
+				vdt_sn = 1.0;
+				icmXYZ2Yxy(yxy, nxyz);
+				icmXYZ2Yxy(ayxy, axyz);
+				if ((yxy[1] - ayxy[1]) * (ayxy[1] - 0.5)
+				  + (yxy[2] - ayxy[2]) * (ayxy[2] - 0.25) < 0.0)
+					vdt_sn = -1.0;
 			}
 
-			/* Compute D50 Lab from XYZ */
-			icmXYZ2Lab(&icmD50_100, Lab, XYZ);
+			/* Compute D50 (or other) Lab from XYZ */
+			icmXYZ2Lab(&labwp, Lab, XYZ);
 
 			/* Compute Yxy from XYZ */
 			icmXYZ2Yxy(Yxy, XYZ);
 
 			/* Compute LCh from Lab */
 			icmLab2LCh(LCh, Lab);
+
+			/* Compute Yuv from XYZ */
+			icmXYZ21976UCS(Yuv, XYZ);
 
 #else /* SALONEINSTLIB */
 			/* Compute D50 Lab from XYZ */
@@ -2189,8 +2761,8 @@ int main(int argc, char *argv[]) {
 				if (wXYZ[0] < 0.0) {		/* If we haven't save a white ref. yet */
 					if (XYZ[1] < 10.0)
 						error ("White of XYZ %f %f %f doesn't seem reasonable",XYZ[0], XYZ[1], XYZ[2]);
-					printf("\n Making result XYZ: %f %f %f, D50 Lab: %f %f %f white reference.\n",
-					XYZ[0], XYZ[1], XYZ[2], Lab[0], Lab[1], Lab[2]);
+					printf("\n Making result XYZ: %f %f %f, %s Lab: %f %f %f white reference.\n",
+					XYZ[0], XYZ[1], XYZ[2], labwpname, Lab[0], Lab[1], Lab[2]);
 					wXYZ[0] = XYZ[0];
 					wXYZ[1] = XYZ[1];
 					wXYZ[2] = XYZ[2];
@@ -2218,13 +2790,16 @@ int main(int argc, char *argv[]) {
 				}
 
 				/* recompute Lab */
-				icmXYZ2Lab(&icmD50_100, Lab, XYZ);
+				icmXYZ2Lab(&labwp, Lab, XYZ);
 
 				/* recompute Yxy from XYZ */
 				icmXYZ2Yxy(Yxy, XYZ);
 
 				/* recompute LCh from Lab */
 				icmLab2LCh(LCh, Lab);
+
+				/* recompute Yuv */
+				icmXYZ21976UCS(Yuv, XYZ);
 #else /* SALONEINSTLIB */
 				  else {
 
@@ -2256,10 +2831,16 @@ int main(int argc, char *argv[]) {
 					/* Print out the XYZ and LCh */
 					printf("\n Result is XYZ: %f %f %f, LCh: %f %f %f\n",
 					XYZ[0], XYZ[1], XYZ[2], LCh[0], LCh[1], LCh[2]);
+#ifndef SALONEINSTLIB
+				} else if (doYuv) {
+					/* Print out the XYZ and Yuv */
+					printf("\n Result is XYZ: %f %f %f, Yuv: %f %f %f\n",
+					XYZ[0], XYZ[1], XYZ[2], Yuv[0], Yuv[1], Yuv[2]);
+#endif
 				} else {
 					/* Print out the XYZ and Lab */
-					printf("\n Result is XYZ: %f %f %f, D50 Lab: %f %f %f\n",
-					XYZ[0], XYZ[1], XYZ[2], Lab[0], Lab[1], Lab[2]);
+					printf("\n Result is XYZ: %f %f %f, %s Lab: %f %f %f\n",
+					XYZ[0], XYZ[1], XYZ[2], labwpname, Lab[0], Lab[1], Lab[2]);
 				}
 			}
 
@@ -2310,15 +2891,15 @@ int main(int argc, char *argv[]) {
 						           log(XYZ[1]/2.5)/log(2.0));
 				} else {
 #ifndef SALONEINSTLIB
-					printf(" Ambient = %.1f Lux%s, CCT = %.0fK (Delta E %f)\n",
+					printf(" Ambient = %.1f Lux%s, CCT = %.0fK (Duv %.4f)\n",
 					       XYZ[1], ambient == 2 ? "-Seconds" : "",
-					       cct, cct_de);
+					       cct, cct_sn * cct_de);
 					if (ambient != 2) 
 						printf(" Suggested EV @ ISO100 for %.1f Lux incident light = %.1f\n",
 							       XYZ[1],
 						           log(XYZ[1]/2.5)/log(2.0));
-					printf(" Closest Planckian temperature = %.0fK (Delta E %f)\n",vct, vct_de);
-					printf(" Closest Daylight temperature  = %.0fK (Delta E %f)\n",vdt, vdt_de);
+					printf(" Closest Planckian temperature = %.0fK (DE2K %.1f)\n",vct, vct_sn * vct_de);
+					printf(" Closest Daylight temperature  = %.0fK (DE2K %.1f)\n",vdt, vdt_sn * vdt_de);
 #else /* SALONEINSTLIB */
 					printf(" Ambient = %.1f Lux%s\n",
 					       XYZ[1], ambient == 2 ? "-Seconds" : "");
@@ -2326,25 +2907,44 @@ int main(int argc, char *argv[]) {
 				}
 #ifndef SALONEINSTLIB
 			} else if (doCCT) {
-				printf("                           CCT = %.0fK (Delta E %f)\n",cct, cct_de);
-				printf(" Closest Planckian temperature = %.0fK (Delta E %f)\n",vct, vct_de);
-				printf(" Closest Daylight temperature  = %.0fK (Delta E %f)\n",vdt, vdt_de);
+				printf("                           CCT = %.0fK (Duv %.4f)\n",cct, cct_sn * cct_de);
+				printf(" Closest Planckian temperature = %.0fK (DE2K %.1f)\n",vct, vct_sn * vct_de);
+				printf(" Closest Daylight temperature  = %.0fK (DE2K %.1f)\n",vdt, vdt_sn * vdt_de);
 #endif
 			}
 #ifndef SALONEINSTLIB
-			if (val.sp.spec_n > 0 && (ambient || doCCT)) {
-				int invalid = 0;
+			if (sp.spec_n > 0 && (ambient || doCCT)) {
+				int i, invalid = 0;
 				double RR[14];
 				double cri;
 				cri = icx_CIE1995_CRI(&invalid, RR, &sp);
 				printf(" Color Rendering Index (Ra) = %.1f [ R9 = %.1f ]%s\n",
-				                       cri, RR[9-1], invalid ? " (Invalid)" : "");
+				                       cri, RR[9-1], invalid ? " (Caution)" : "");
+				for (i = 0; i < 14; i++) {
+					printf("  R%d%s = %.1f", i+1, i < 9 ? " " : "", RR[i]);
+					if (i == 6)
+						printf("\n");
+				}
+				printf("\n");
 			}
-			if (val.sp.spec_n > 0 && (ambient || doCCT)) {
+			if (sp.spec_n > 0 && (ambient || doCCT)) {
 				int invalid = 0;
 				double tlci;
 				tlci = icx_EBU2012_TLCI(&invalid, &sp);
-				printf(" Television Lighting Consistency Index 2012 (Qa) = %.1f%s\n",tlci,invalid ? " (Invalid)" : "");
+				printf(" Television Lighting Consistency Index 2012 (Qa) = %.1f%s\n",tlci,invalid ? " (Caution)" : "");
+			}
+			if (sp.spec_n > 0 && (ambient || doCCT)) {
+				int invalid;
+				double Rf, Rg, cct, dc;
+				double bins[IES_TM_30_15_BINS][2][3];
+
+				invalid = icx_IES_TM_30_15(&Rf, &Rg, &cct, &dc, bins, &sp);
+
+				printf(" IES TM-30-15 Rf = %.2f Rg = %.2f CCT = %.0f Duv = %f%s\n", Rf, Rg, cct, dc, invalid ? " (Caution)" : "");
+
+#ifdef DO_TM3015_PLOT
+				tm3015_plot(bins);
+#endif
 			}
 #endif
 
@@ -2357,7 +2957,7 @@ int main(int argc, char *argv[]) {
 						for (j = 0; j < sp.spec_n; j++) {
 							double wvl = sp.spec_wl_short 
 								      + j * (sp.spec_wl_long - sp.spec_wl_short)/(sp.spec_n-1);
-							fprintf(fp,"\t%3f",wvl);
+							fprintf(fp,"\t%.3f",wvl);
 						}
 					}
 					fprintf(fp,"\n");
@@ -2370,15 +2970,30 @@ int main(int argc, char *argv[]) {
 	
 				if (pspec != 0) {
 					for (j = 0; j < sp.spec_n; j++)
-						fprintf(fp,"\t%8.3f",sp.spec[j]);
+						fprintf(fp,"\t%g",sp.spec[j]);
 				}
 				fprintf(fp,"\n");
 			}
 		}
+
+#ifndef SALONEINSTLIB
+		if (doone == 2) {
+			if (sp.spec_n <= 0)
+				error("Save: Instrument didn't return spectral data");
+
+			if (write_xspect(outspname, val.mtype, &sp))
+				printf("Writing file '%s' failed\n",outspname);
+			else
+				printf("Writing file '%s' succeeded\n",outspname);
+		}
+#endif
+
 		if (doone)
 			break;
 
 	}	/* Next reading */
+
+done:;
 
 	/* Release paper */
 	if (cap2 & inst2_xy_holdrel) {

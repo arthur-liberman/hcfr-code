@@ -20,6 +20,10 @@
 
 #include "inst.h"
 
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
 /* Note: update colorhug_interp_error() and colorhug_interp_code() in colorhug.c */
 /* if anything of these #defines are added or subtracted */
 
@@ -93,6 +97,10 @@ struct _colorhug {
 
 /* Constructor */
 extern colorhug *new_colorhug(icoms *icom, instType itype);
+
+#ifdef __cplusplus
+	}
+#endif
 
 
 #define COLORHUG_H

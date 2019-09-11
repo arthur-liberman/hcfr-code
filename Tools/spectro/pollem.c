@@ -1,5 +1,5 @@
 
- /* Unix serial I/O class poll() emulation. */
+/* Unix serial I/O class poll() emulation. */
 
 /* 
  * Argyll Color Correction System

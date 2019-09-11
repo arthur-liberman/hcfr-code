@@ -1,6 +1,9 @@
 
 /* 
  * parse library stdio and malloc utility classes.
+ */
+
+/*
  * Version 2.05
  *
  * Author: Graeme W. Gill
@@ -10,12 +13,13 @@
  * All rights reserved.
  *
  * This material is licensed with an "MIT" free use license:-
- * see the License.txt file in this directory for licensing details.
+ * see the License4.txt file in this directory for licensing details.
  *
  * These are kept in a separate file to allow them to be
  * selectively ommitted from the cgats library.
  *
  */
+
 
 #define _PARSSTD_C_
 

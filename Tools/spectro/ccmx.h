@@ -5,6 +5,9 @@
  * Argyll Color Correction System
  * Colorimeter Correction Matrix support.
  *
+ */
+
+/*
  * Author: Graeme W. Gill
  * Date:   19/8/2010
  *
@@ -18,6 +21,10 @@
  * on other libraries that are licenced under the GNU AFFERO GENERAL PUBLIC LICENSE Version 3.
  *
  */
+
+#ifdef __cplusplus
+	extern "C" {
+#endif
 
 /*
  * This object provides storage and application of a 3x3 XYZ
@@ -46,13 +53,13 @@ struct _ccmx {
 
 	/* write a CGATS .ccmx file to a memory buffer. */
 	/* return nz on error, with message in err[] */
-	int (*buf_write_ccmx)(struct _ccmx *p, unsigned char **buf, int *len);
+	int (*buf_write_ccmx)(struct _ccmx *p, unsigned char **buf, size_t *len);
 
 	/* read from a CGATS .ccmx file */
 	int (*read_ccmx)(struct _ccmx *p, char *filename);
 
 	/* read from a CGATS .ccmx file from a memory buffer. */
-	int (*buf_read_ccmx)(struct _ccmx *p, unsigned char *buf, int len);
+	int (*buf_read_ccmx)(struct _ccmx *p, unsigned char *buf, size_t len);
 
 	/* Correct an XYZ value */
 	void (*xform) (struct _ccmx *p,
@@ -82,6 +89,10 @@ struct _ccmx {
 
 /* Create a new, uninitialised ccmx */
 ccmx *new_ccmx(void);
+
+#ifdef __cplusplus
+	}
+#endif
 
 #endif /* CCMX_H */
 

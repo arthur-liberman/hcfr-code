@@ -53,6 +53,7 @@
 #include "sa_config.h"
 #include "numsup.h"
 #endif /* SALONEINSTLIB */
+#include "cgats.h"
 #include "xspect.h"
 #include "insttypes.h"
 #include "conv.h"
@@ -125,8 +126,8 @@ typedef enum {
     i1d3_firmver      = 0x0012,		/* Firmware version string */
     i1d3_firmdate     = 0x0013,		/* Firmware date string */
     i1d3_locked       = 0x0020,		/* Get locked status */
-    i1d3_measure1     = 0x0100,		/* Used by all measure */
-    i1d3_measure2     = 0x0200,		/* Used by all measure except ambient */
+    i1d3_freqmeas     = 0x0100,		/* Measure transition over given time */
+    i1d3_periodmeas   = 0x0200,		/* Measure time between transition count */
     i1d3_readintee    = 0x0800,		/* Read internal EEPROM */
     i1d3_readextee    = 0x1200,		/* Read external EEPROM */
     i1d3_setled       = 0x2100,		/* Set the LED state */
@@ -155,10 +156,10 @@ static char *inst_desc(i1Disp3CC cc) {
 			return "GetFirmwareDate";
 		case i1d3_locked:
 			return "GetLockedStatus";
-		case i1d3_measure1:
-			return "Measure1";
-		case i1d3_measure2:
-			return "Measure2";
+		case i1d3_freqmeas:
+			return "Frequency Measure";
+		case i1d3_periodmeas:
+			return "Period Measure";
 		case i1d3_readintee:
 			return "ReadInternalEEPROM";
 		case i1d3_readextee:
@@ -278,9 +279,9 @@ i1d3_command(
 	}
 
 	/* Hmm. Not sure about this bug workaround. Is this a rev B thing ? */
-	/* May get status 0x83 on i1d3_measure2 when there are no transitions ? */ 
+	/* May get status 0x83 on i1d3_periodmeas when there are no transitions ? */ 
 	/* If so, ignore the error. */
-	if (rv == inst_ok && cc == i1d3_measure2 && recv[1] == 0x02 && recv[0] == 0x83) {
+	if (rv == inst_ok && cc == i1d3_periodmeas && recv[1] == 0x02 && recv[0] == 0x83) {
 		int i;
 		for (i = 2; i < 14; i++) {
 			if (recv[i] != 0)
@@ -587,7 +588,7 @@ i1d3_unlock(
 	struct {
 		char *pname;							/* Product name */
 		unsigned int key[2];					/* Unlock code */
-		i1d3_dtype dtype;						/* Base type enumerator */
+		i1d3_dtype btype;						/* Base type enumerator */
 		i1d3_dtype stype;						/* Sub type enumerator */
 	} codes[] = {
 		{ "i1Display3 ",         { 0xe9622e9f, 0x8d63e133 }, i1d3_disppro,  i1d3_disppro },
@@ -597,6 +598,7 @@ i1d3_unlock(
 		{ "i1Display3 ",         { 0x160eb6ae, 0x14440e70 }, i1d3_disppro,  i1d3_quato_sh3 },
 		{ "i1Display3 ",         { 0x291e41d7, 0x51937bdd }, i1d3_disppro,  i1d3_hp_dreamc },
 		{ "i1Display3 ",         { 0xc9bfafe0, 0x02871166 }, i1d3_disppro,  i1d3_sc_c6 },
+		{ "i1Display3 ",         { 0x1abfae03, 0xf25ac8e8 }, i1d3_disppro,  i1d3_wacom_dc },
 		{ NULL } 
 	}; 
 	inst_code ev;
@@ -630,7 +632,7 @@ i1d3_unlock(
 //			codes[ix].key[0], codes[ix].key[1]);
 		a1logd(p->log, 3, "i1d3_unlock: Trying unlock key %d/%d\n", ix+1, nix);
 
-		p->dtype = codes[ix].dtype;
+		p->btype = codes[ix].btype;
 		p->stype = codes[ix].stype;
 
 		/* Attempt unlock */
@@ -778,7 +780,7 @@ i1d3_read_external_eeprom(
 
 /* Take a raw measurement using a given integration time. */
 /* The measurent is the count of (both) edges from the L2V */
-/* over the integration time */
+/* over the integration time. */
 static inst_code
 i1d3_freq_measure(
 	i1d3 *p,				/* Object */
@@ -804,21 +806,31 @@ i1d3_freq_measure(
 
 	todev[23] = 0;			/* Unknown parameter, always 0 */
 	
-	if ((ev = i1d3_command(p, i1d3_measure1, todev, fromdev, I1D3_MEAS_TIMEOUT, 0)) != inst_ok)
+	if ((ev = i1d3_command(p, i1d3_freqmeas, todev, fromdev, I1D3_MEAS_TIMEOUT, 0)) != inst_ok)
 		return ev;
 	
 	rgb[0] = (double)buf2uint(fromdev + 2);
 	rgb[1] = (double)buf2uint(fromdev + 6);
 	rgb[2] = (double)buf2uint(fromdev + 10);
 
+	/* The HW holds the L2F *OE high (disabled) until the start of the measurement period, */
+	/* and this has the effect of holding the internal integrator in a reset state. */
+	/* This then synchronizes the frequency output to the start of */
+	/* the measurement, which has the effect of rounding down the count output. */
+	/* To compensate, we have to add 0.5 to the count. */
+	rgb[0] += 0.5;
+	rgb[1] += 0.5;
+	rgb[2] += 0.5;
+
 	return inst_ok;
 }
 
 /* Take a raw measurement that returns the number of clocks */
-/* between and initial edge and edgec[] subsequent edges of the L2F. */
-/* The edge count must be between 1 and 65535 inclusive. */ 
-/* Both edges are counted. It's advisable to use an even edgec[], */
-/* because the L2F output may not be symetric. */
+/* between and initial edge at the start of the period (triggered by */
+/* the *OE going low and the integrator being started) and edgec[] */
+/* subsequent edges of the L2F. The edge count must be between */
+/* 1 and 65535 inclusive. Both edges are counted. It's advisable */
+/* to use an even edgec[], because the L2F output may not be symetric. */
 /* If there are no edges within 10 seconds, return a count of 0 */
 static inst_code
 i1d3_period_measure(
@@ -841,7 +853,7 @@ i1d3_period_measure(
 	todev[7] = (unsigned char)mask;	
 	todev[8] = 0;			/* Unknown parameter, always 0 */	
 	
-	if ((ev = i1d3_command(p, i1d3_measure2, todev, fromdev, I1D3_MEAS_TIMEOUT, 0)) != inst_ok)
+	if ((ev = i1d3_command(p, i1d3_periodmeas, todev, fromdev, I1D3_MEAS_TIMEOUT, 0)) != inst_ok)
 		return ev;
 	
 	rgb[0] = (double)buf2uint(fromdev + 2);
@@ -932,6 +944,9 @@ i1d3_set_LEDs(
 
 	To break up the USB synchronization, the integration time
 	is randomized slightly.
+
+	NOTE :- we should really switch to using period measurement mode here,
+    since it is more accurate ?
 */
 
 #ifndef PSRAND32L 
@@ -1577,7 +1592,8 @@ i1d3_take_emis_measurement(
 	isth = p->th_en;
 	p->th_en = 0;
 
-	/* If we should take a frequency measurement first */
+	/* If we should take a frequency measurement first, */
+	/* since it is done in a predictable duration */
 	if (mode == i1d3_adaptive || mode == i1d3_frequency) {
 
 		/* Typically this is 200msec for non-refresh, 400msec for refresh. */
@@ -1635,7 +1651,7 @@ i1d3_take_emis_measurement(
 					continue;
 				
 				if (rmeas[i] < 10.0
-				 || (p->dtype != i1d3_munkdisp && rmeas[i] < 20.0)) {
+				 || (p->btype != i1d3_munkdisp && rmeas[i] < 20.0)) {
 					a1logd(p->log,3,"chan %d needs pre-measurement\n",i);
 					mask2 |= 1 << i;			
 				} else {
@@ -1667,7 +1683,7 @@ i1d3_take_emis_measurement(
 				/* Transfer updated counts from 1st initial measurement */
 				for (i = 0; i < 3; i++) {
 					if ((mask2 & (1 << i)) != 0) {
-						rmeas[i]  = rmeas2[i];
+						rmeas[i] = rmeas2[i];
 
 						/* Compute trial RGB in case we need it later */
 						if (rmeas[i] >= 0.5) {
@@ -1680,7 +1696,7 @@ i1d3_take_emis_measurement(
 				/* we are measuring a CRT with a refresh rate which adds innacuracy, */
 				/* and could result in a unecessarily long re-reading. */
 				/* Don't do this for Munki Display, because of its slow measurements. */
-				if (p->dtype != i1d3_munkdisp) {
+				if (p->btype != i1d3_munkdisp) {
 					for (i = 0; i < 3; i++) {
 						if ((mask2 & (1 << i)) == 0)
 							continue;
@@ -2052,20 +2068,31 @@ static inst_code i1d3_decode_extEE(
 
 	rchsum = buf2short(buf + 2);
 
-	/* For the "A-01" revsions the checksum is from 4 to 0x179a */
-	/* The "A-02" seems to have abandoned reliable checksums ?? */
-	for (chsum = 0, i = 4; i < 0x179a; i++) {
+	/* For the "A-01" revsions the checksum is from 0x4 to 0x179a */
+	/* The "A-02" & B seems to have abandoned reliable checksums ?? */
+	/* (Some seem to work between 0x4 - 0x178e or 0xf - 0x1792) */
+	for (chsum = 0, i = 4; i < 0x179a; i++)
 		chsum += buf[i];
-	}
-
 	chsum &= 0xffff;
 
 	if (rchsum != chsum) {
-		a1logd(p->log, 3, "i1d3_decode_extEE: checksum failed, is 0x%x, should be 0x%x\n",chsum,rchsum);
-		if (strcmp(p->vers_no, "A-01") == 0) 
-			return i1d3_interp_code((inst *)p, I1D3_BAD_EX_CHSUM);
 
-		/* Else ignore checksum error */
+		if (strcmp(p->vers_no, "A-01") == 0) { 
+			a1logd(p->log, 1, "i1d3_decode_extEE: checksum failed, is 0x%x, should be 0x%x\n",chsum,rchsum);
+			return i1d3_interp_code((inst *)p, I1D3_BAD_EX_CHSUM);
+		}
+
+		/* Hmm. Try alternate range */ 
+		for (chsum = 0, i = 4; i < 0x178e; i++)
+			chsum += buf[i];
+		chsum &= 0xffff;
+
+		if (rchsum != chsum) {
+			a1logd(p->log, 3, "i1d3_decode_extEE: '%s' checksum failed, is 0x%x, should be 0x%x\n",p->vers_no,chsum,rchsum);
+		} else {
+			a1logd(p->log, 3, "i1d3_decode_extEE: '%s' alternate checksum succeded!\n",p->vers_no);
+		}
+		/* Ignore checksum error */
 	}
 		
 	/* Read 3 x sensor spectral sensitivits */
@@ -2189,7 +2216,7 @@ i1d3_comp_calmat(
 	sampRGB = dmatrix(0, nsamp-1, 0, 3-1);
 
 	/* Compute XYZ of the sample array */
-	if ((conv = new_xsp2cie(icxIT_none, NULL, obType, custObserver, icSigXYZData, icxClamp)) == NULL)
+	if ((conv = new_xsp2cie(icxIT_none, 0.0, NULL, obType, custObserver, icSigXYZData, icxClamp)) == NULL)
 		return i1d3_interp_code((inst *)p, I1D3_INT_CIECONVFAIL);
 	for (i = 0; i < nsamp; i++) {
 		conv->convert(conv, sampXYZ[i], &samples[i]); 
@@ -2197,7 +2224,7 @@ i1d3_comp_calmat(
 	conv->del(conv);
 
 	/* Compute sensor RGB of the sample array */
-	if ((conv = new_xsp2cie(icxIT_none, NULL, icxOT_custom, RGBcmfs, icSigXYZData, icxClamp)) == NULL) {
+	if ((conv = new_xsp2cie(icxIT_none, 0.0, NULL, icxOT_custom, RGBcmfs, icSigXYZData, icxClamp)) == NULL) {
 		free_dmatrix(sampXYZ, 0, nsamp-1, 0, 3-1);
 		free_dmatrix(sampRGB, 0, nsamp-1, 0, 3-1);
 		return i1d3_interp_code((inst *)p, I1D3_INT_CIECONVFAIL);
@@ -2464,8 +2491,13 @@ i1d3_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	/* On Linux, the i1d3 doesn't seem to close properly, and won't re-open - */
 	/* something to do with detaching the default HID driver ?? */
 #if defined(UNIX_X11)
+	usbflags |= icomuf_detach;
 	usbflags |= icomuf_reset_before_close;
 #endif
+
+	/* On MSWin it doesn't like clearing on open when running direct (i.e not HID) */
+	usbflags |= icomuf_no_open_clear;
+
 	/* Open as an HID if available */
 	if (p->icom->port_type(p->icom) == icomt_hid) {
 
@@ -2485,7 +2517,7 @@ i1d3_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 		/* Set config, interface, write end point, read end point */
 		/* ("serial" end points aren't used - the i1d3 uses USB control messages) */
 		/* We need to detatch the HID driver on Linux */
-		if ((se = p->icom->set_usb_port(p->icom, 1, 0x00, 0x00, usbflags | icomuf_detach, 0, NULL))
+		if ((se = p->icom->set_usb_port(p->icom, 1, 0x00, 0x00, usbflags, 0, NULL))
 			                                                                          != ICOM_OK) { 
 			a1logd(p->log, 1, "i1d3_init_coms: set_usb_port failed ICOM err 0x%x\n",se);
 			return i1d3_interp_code((inst *)p, icoms2i1d3_err(se, 0));
@@ -2577,7 +2609,7 @@ i1d3_init_inst(inst *pp) {
 		return ev;
 	if (p->prod_type == 0x0002) {	/* If ColorMunki Display */
 		/* Set this in case it doesn't need unlocking */
-		p->dtype = p->stype = i1d3_munkdisp;
+		p->btype = p->stype = i1d3_munkdisp;
 	}
 	if ((ev = i1d3_get_firmver(p, p->firm_ver)) != inst_ok)
 		return ev;
@@ -2695,6 +2727,8 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	if (!p->inited)
 		return inst_no_init;
 
+	a1logd(p->log, 1, "i1d3: i1d3_read_sample called\n");
+
 	if (p->trig == inst_opt_trig_user) {
 
 		if (p->uicallback == NULL) {
@@ -2727,7 +2761,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	}
 
 	/* Attempt a refresh display frame rate calibration if needed */
-	if (p->dtype != i1d3_munkdisp && p->refrmode != 0 && p->rrset == 0) {
+	if (p->btype != i1d3_munkdisp && p->refrmode != 0 && p->rrset == 0) {
 		inst_code ev = inst_ok;
 
 		p->mininttime = 2.0 * p->dinttime;
@@ -2800,7 +2834,7 @@ double *ref_rate) {
 	if (!p->inited)
 		return inst_no_init;
 
-	if (p->dtype == i1d3_munkdisp)
+	if (p->btype == i1d3_munkdisp)
 		return inst_unsupported;
 
 	if (ref_rate != NULL)
@@ -2857,7 +2891,7 @@ double mtx[3][3]
 	i1d3 *p = (i1d3 *)pp;
 	inst_code ev = inst_ok;
 
-	a1logd(p->log, 4, "i1d3_col_cor_mat%s\n",mtx == NULL ? " (noop)": "");
+	a1logd(p->log, 4, "i1d3_col_cor_mat%s dtech %d cbid %d\n",mtx == NULL ? " (noop)": "",dtech,cbid);
 
 	if (!p->gotcoms)
 		return inst_no_coms;
@@ -2924,7 +2958,7 @@ static inst_code i1d3_get_n_a_cals(inst *pp, inst_cal_type *pn_cals, inst_cal_ty
 	inst_cal_type n_cals = inst_calt_none;
 	inst_cal_type a_cals = inst_calt_none;
 		
-	if (p->dtype != i1d3_munkdisp && p->refrmode != 0) {
+	if (p->btype != i1d3_munkdisp && p->refrmode != 0) {
 		if (p->rrset == 0)
 			n_cals |= inst_calt_ref_freq;
 		a_cals |= inst_calt_ref_freq;
@@ -2944,6 +2978,7 @@ static inst_code i1d3_calibrate(
 inst *pp,
 inst_cal_type *calt,	/* Calibration type to do/remaining */
 inst_cal_cond *calc,	/* Current condition/desired condition */
+inst_calc_id_type *idtype,	/* Condition identifier type */
 char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 ) {
 	i1d3 *p = (i1d3 *)pp;
@@ -2955,6 +2990,7 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 	if (!p->inited)
 		return inst_no_init;
 
+	*idtype = inst_calc_id_none;
 	id[0] = '\000';
 
 	if ((ev = i1d3_get_n_a_cals((inst *)p, &needed, &available)) != inst_ok)
@@ -2982,7 +3018,7 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 		return inst_unsupported;
 	}
 
-	if ((*calt & inst_calt_ref_freq) && p->dtype != i1d3_munkdisp && p->refrmode != 0) {
+	if ((*calt & inst_calt_ref_freq) && p->btype != i1d3_munkdisp && p->refrmode != 0) {
 		inst_code ev = inst_ok;
 
 		p->mininttime = 2.0 * p->dinttime;
@@ -3492,7 +3528,7 @@ inst3_capability *pcap3) {
 	     |  inst2_set_min_int_time
 	        ;
 
-	if (p->dtype != i1d3_munkdisp) {
+	if (p->btype != i1d3_munkdisp) {
 		cap2 |= inst2_meas_disp_update;
 		cap2 |= inst2_get_refresh_rate;
 		cap2 |= inst2_set_refresh_rate;
@@ -3696,9 +3732,6 @@ static inst_code set_disp_type(i1d3 *p, inst_disptypesel *dentry) {
 			p->cbid = 0;	/* Matrix will be an override of cbid set in i1d3_set_cal() */
 
 		} else {	/* Native */
-		//we don't use ccmx and need to unapply ccss if refresh/non-refresh is chosen after a ccss load
-			if ((ev = i1d3_set_speccal(p, NULL, NULL)) != inst_ok) 
-				return ev;
 			if ((ev = i1d3_set_matcal(p, NULL)) != inst_ok)		/* Noop */
 				return ev;
 			p->ucbid = dentry->cbid;	/* This is underying base if dentry is base selection */
@@ -3819,8 +3852,7 @@ int *cbid) {
  * error if it hasn't been initialised.
  */
 static inst_code
-i1d3_get_set_opt(inst *pp, inst_opt_type m, ...)
-{
+i1d3_get_set_opt(inst *pp, inst_opt_type m, ...) {
 	i1d3 *p = (i1d3 *)pp;
 	inst_code ev;
 
@@ -3863,7 +3895,7 @@ i1d3_get_set_opt(inst *pp, inst_opt_type m, ...)
 		p->omininttime = dval;
 
 		/* Hmm. This code is duplicated a lot.. */
-		if (p->dtype != i1d3_munkdisp && p->refrmode != 0) {
+		if (p->btype != i1d3_munkdisp && p->refrmode != 0) {
 			inst_code ev = inst_ok;
 	
 			p->mininttime = 2.0 * p->dinttime;
@@ -4021,11 +4053,22 @@ i1d3_get_set_opt(inst *pp, inst_opt_type m, ...)
 		if (trans_time_prop != NULL) *trans_time_prop = p->led_trans_time_prop;
 		return inst_ok;
 	}
-	return inst_unsupported;
+
+	/* Use default implementation of other inst_opt_type's */
+	{
+		inst_code rv;
+		va_list args;
+
+		va_start(args, m);
+		rv = inst_get_set_opt_def(pp, m, args);
+		va_end(args);
+
+		return rv;
+	}
 }
 
 /* Constructor */
-extern i1d3 *new_i1d3(icoms *icom, instType itype) {
+extern i1d3 *new_i1d3(icoms *icom, instType dtype) {
 	i1d3 *p;
 
 	if ((p = (i1d3 *)calloc(sizeof(i1d3),1)) == NULL) {
@@ -4060,7 +4103,7 @@ extern i1d3 *new_i1d3(icoms *icom, instType itype) {
 	p->del               = i1d3_del;
 
 	p->icom = icom;
-	p->itype = itype;
+	p->dtype = dtype;
 
 	amutex_init(p->lock);
 	icmSetUnity3x3(p->ccmat);

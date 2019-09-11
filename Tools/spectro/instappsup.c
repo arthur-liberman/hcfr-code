@@ -1,5 +1,5 @@
 
- /* Instrument command line application support functions */
+/* Instrument command line application support functions */
 
 /* 
  * Argyll Color Correction System
@@ -27,6 +27,7 @@
 #include "sa_config.h"
 #endif /* !SALONEINSTLIB */
 #include "numsup.h"
+#include "cgats.h"
 #include "xspect.h"
 #include "conv.h"
 #include "insttypes.h"
@@ -72,7 +73,6 @@ static inst_code def_uicallback(void *cntx, inst_ui_purp purp) {
 				return inst_user_trig;
 		}
 
-	/* Change in measurement configuration */
 	} else if (purp == inst_measuring) {
 		return inst_ok;
 	}
@@ -173,8 +173,9 @@ inst_code inst_handle_calibrate(
 	int doimmediately		/* If nz, don't wait for user, calibrate immediatley */
 ) {
 	inst_code rv = inst_ok, ev;
-	int usermes = 0;		/* User was given a message */
-	char id[200];			/* Condition identifier */
+	int usermes = 0;			/* User was given a message */
+	inst_calc_id_type idtype;	/* Condition identifier type */
+	char id[200];				/* Condition identifier */
 	int ch;
 
 	a1logd(p->log,1,"inst_handle_calibrate called\n");
@@ -183,13 +184,15 @@ inst_code inst_handle_calibrate(
 	for (;;) {
 
 		a1logd(p->log,1,"About to call calibrate at top of loop\n");
-	    ev = p->calibrate(p, &calt, &calc, id);
+	    ev = p->calibrate(p, &calt, &calc, &idtype, id);
 		a1logd(p->log,1,"Calibrate returned calt 0x%x, calc 0x%x, ev 0x%x\n",calt,calc,ev);
 
 		/* We're done */
 		if ((ev & inst_mask) == inst_ok) {
-			if ((calc & inst_calc_cond_mask) == inst_calc_message)
+			if ((calc & inst_calc_cond_mask) == inst_calc_message) {
+				/* (Or could create our own message text based on value of idtype) */
 				printf("%s\n",id);
+			}
 			if (usermes)
 				printf("Calibration complete\n");
 			fflush(stdout);
@@ -249,7 +252,7 @@ inst_code inst_handle_calibrate(
 					break;
 			
 				case inst_calc_man_ref_white:
-					printf("Place the instrument on its reflective white reference %s,\n",id);
+					printf("Place the instrument on its reflective white reference S/N %s,\n",id);
 					printf(" and then hit any key to continue,\n"); 
 					break;
 
@@ -448,12 +451,12 @@ inst2_capability inst_show_disptype_options(FILE *fp, char *oline, icompaths *ic
 
 	olen = strlen(oline);		/* lenth of option part of line */
 
-	for (i = 0; icmps != NULL && i < icmps->npaths; i++) {
+	for (i = 0; icmps != NULL && i < icmps->ndpaths[dtix_inst]; i++) {
 		inst *it;
 		inst2_capability cap;
 		int k;
 
-		if ((it = new_inst(icmps->paths[i], 1, g_log, NULL, NULL)) == NULL) {
+		if ((it = new_inst(icmps->dpaths[dtix_inst][i], 1, g_log, NULL, NULL)) == NULL) {
 			notall = 1;
 			continue;
 		}
@@ -476,6 +479,7 @@ inst2_capability inst_show_disptype_options(FILE *fp, char *oline, icompaths *ic
 				if (docbib && sels[j].cbid == 0)
 					continue;			/* Skip non cbid type */
 
+				/* Break up selector chars/pairs with '|' */
 				m = pstart;
 				for (k = 0; k < (INST_DTYPE_SEL_LEN-1); k++) {
 					if (sels[j].sel[k] == '\000')
@@ -483,6 +487,8 @@ inst2_capability inst_show_disptype_options(FILE *fp, char *oline, icompaths *ic
 					if (m > pstart)
 						buf[m++] = '|';
 					buf[m++] = sels[j].sel[k];
+					if (sels[j].sel[k] == '_')
+						buf[m++] = sels[j].sel[++k];
 				}
 				while (m < (olen+1))	/* Indent it by 1 */
 					buf[m++] = ' ';
@@ -502,7 +508,7 @@ inst2_capability inst_show_disptype_options(FILE *fp, char *oline, icompaths *ic
 					strcat(extra, "]");
 				}
 
-				fprintf(fp, "%s%s: %s%s\n",buf, inst_sname(it->itype), sels[j].desc, extra);
+				fprintf(fp, "%s%s: %s%s\n",buf, inst_sname(it->dtype), sels[j].desc, extra);
 
 				if (j == 0) {
 					for (m = 0; m < pstart; m++)
@@ -531,8 +537,9 @@ inst2_capability inst_show_disptype_options(FILE *fp, char *oline, icompaths *ic
 
 /* A helper function to turn a -y flag into a selection index */
 /* If docbib is nz, then only allow base calibration display types */
+/* c will be 16 bits ('_' + 'X') if a 2 char selector */
 /* Return -1 on error */
-int inst_get_disptype_index(inst *it, int c, int docbib) {
+int inst_get_disptype_index(inst *it, int ditype, int docbib) {
 	inst2_capability cap;
 	int j, k;
 
@@ -552,7 +559,14 @@ int inst_get_disptype_index(inst *it, int c, int docbib) {
 			for (k = 0; k < (INST_DTYPE_SEL_LEN-1); k++) {
 				if (sels[j].sel[k] == '\000')
 					break;
-				if (sels[j].sel[k] == c) {
+				if (sels[j].sel[k] == '_') {	/* 2 char selector */
+					k++;
+					if (sels[j].sel[k-1] == (0xff & (ditype >> 8))
+					 && sels[j].sel[k] == (0xff & ditype)) {
+						return j;
+					}
+				}
+				if (sels[j].sel[k] == ditype) {
 					return j;
 				}
 			}
@@ -561,6 +575,21 @@ int inst_get_disptype_index(inst *it, int c, int docbib) {
 	return -1;
 }
 
+/* Return a static string of the ditype flag char(s) */
+char *inst_distr(int ditype) {
+	static char buf[5];
+	
+	if ((ditype >> 8) & 0xff) {
+		buf[0] = (ditype >> 8) & 0xff;
+		buf[1] = ditype & 0xff;
+		buf[2] = '\000';
+	} else {
+		buf[0] = ditype;
+		buf[1] = '\000';
+	}
+
+	return buf;
+}
 /* ================================================================= */
 
 

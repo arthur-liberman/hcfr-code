@@ -45,6 +45,10 @@ typedef struct {
 
 
 /* Create the aglob for files matching the given path and pattern. */
+/* Characters '*' and '?' are treated as wildcards. */
+/* Note that on Unix, '?' matches exactly one character, while on */
+/* MSWin it matches 0 or 1 characters. */
+/* Any file extension will be treated as case insensitive on all OS's. */
 /* Return nz on malloc error */
 int aglob_create(aglob *g, char *spath);
 

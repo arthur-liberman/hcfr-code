@@ -3,6 +3,9 @@
  * Argyll Color Correction System
  * Colorimeter Correction Matrix
  *
+ */
+
+/*
  * Author: Graeme W. Gill
  * Date:   19/8/2010
  *
@@ -15,6 +18,7 @@
  * NOTE though that if SALONEINSTLIB is not defined, that this file depends
  * on other libraries that are licenced under the GNU AFFERO GENERAL PUBLIC LICENSE Version 3.
  */
+
 
 /*
  * TTBD:
@@ -34,7 +38,7 @@
 #include "icc.h"
 #else
 #include "numsup.h"
-#include "conv.h"
+#include "sa_conv.h"
 #endif
 #include "cgats.h"
 #include "disptechs.h"
@@ -146,7 +150,7 @@ char *outname	/* Filename to write to */
 static int buf_write_ccmx(
 ccmx *p,
 unsigned char **buf,		/* Return allocated buffer */
-int *len					/* Return length */
+size_t *len					/* Return length */
 ) {
 	int rv;
 	cgats *ocg;				/* CGATS structure */
@@ -274,13 +278,6 @@ cgats *icg			/* input cgats structure */
 	}
 
 	if ((ti = icg->find_kword(icg, 0, "OEM")) >= 0) {
-		if ((p->ref = strdup(icg->t[0].kdata[ti])) == NULL) {
-			sprintf(p->err, "read_ccmx: malloc failed");
-			return 2;
-		}
-	}
-
-	if ((ti = icg->find_kword(icg, 0, "OEM")) >= 0) {
 		if (stricmp(icg->t[0].kdata[ti], "YES") == 0)
 			p->oem = 1;
 		else if (stricmp(icg->t[0].kdata[ti], "NO") == 0)
@@ -353,7 +350,7 @@ char *inname	/* Filename to read from */
 static int buf_read_ccmx(
 ccmx *p,		/* This */
 unsigned char *buf,
-int len
+size_t len
 ) {
 	int rv;
 	cgatsFile *fp;
@@ -685,7 +682,7 @@ int refrmode,		/* Display refresh mode, -1 = unknown, 0 = n, 1 = yes */
 int cbid,			/* Display type calibration base index, 0 = unknown */
 char *sel,			/* UI selector characters - NULL for none */
 char *refd,			/* Reference spectrometer description (optional) */
-int oem,
+int oem,			/* NZ if OEM source */
 int npat,			/* Number of samples in following arrays */
 double (*refs)[3],	/* Array of XYZ values from spectrometer */
 double (*cols)[3]		/* Array of XYZ values from colorimeter */

@@ -9,6 +9,10 @@
  * see the License2.txt file for licencing details.
  */
 
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
 
 #ifdef ENABLE_SERIAL
 # include "dtp22.h"
@@ -24,13 +28,14 @@
 #endif
 
 #ifdef ENABLE_USB
-//# include "dtp20.h"
+# include "dtp20.h"
 # include "dtp92.h"
 # include "i1disp.h"
 # include "i1d3.h"
 # include "i1pro.h"
 # include "munki.h"
 # include "spyd2.h"
+# include "spydX.h"
 # include "huey.h"
 # include "ex1.h"
 # include "hcfr.h"

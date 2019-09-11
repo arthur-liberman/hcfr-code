@@ -43,18 +43,22 @@
 	There is a bug or limitation with using -N to skip the calibration
 	when using any of the emissive modes - the readings end up being nearly zero.
 
+	When -N is used, doing a manual calibration (i.e. spotread 'k') doesn't
+	work.
+
 	We aren't saving the spectrolino fake tranmission white reference in
 	a calibration file, so -N doesn't work with it.
 
 	You can't trigger a calibration reading using the instrument switch.
 
-	You should be able to do use the table enter key anywhere the user
+	You should be able to use the table enter key anywhere the user
 	is asked to hit a key.
 
-	The corner positioning could be smarter.
+	The corner positioning could be smarter (i.e. move to the anticipated corned
+	automatically).
 
-	The SpectroscanT transmission cal. merely reminds the user (vie verbose)
-	that it is assuming the correct apatture, rather than given them
+	The SpectroscanT transmission cal. merely reminds the user (via verbose)
+	that it is assuming the correct apature, rather than given them
 	a chance to change it.
 
  */
@@ -73,11 +77,13 @@
 #include "sa_config.h"
 #include "numsup.h"
 #endif /* SALONEINSTLIB */
+#include "cgats.h"
 #include "xspect.h"
 #include "insttypes.h"
 #include "conv.h"
 #include "icoms.h"
 #include "ss.h"
+#include "xrga.h"
 
 /* Default flow control */
 #define DEFFC fc_Hardware
@@ -95,6 +101,17 @@ char* filter_desc[] = {
 	"(Unknown Filter)",
 	"UV cut Filter",
 	"Custon Filter"
+};
+
+/* Filter id */
+inst_calc_id_type filter_id[] = {
+	inst_calc_id_filt_unkn,
+	inst_calc_id_filt_none,
+	inst_calc_id_filt_pol,
+	inst_calc_id_filt_D65,
+	inst_calc_id_filt_unkn,
+	inst_calc_id_filt_UV,
+	inst_calc_id_filt_cust
 };
 
 #define SS_REF_CAL_COUNT 50
@@ -165,7 +182,7 @@ ss_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 		fcc1 = ss_ctt_ProtokolWithHardwareHS;
 		fcc2 = ss_hst_Hardware;
 	} else {
-		fc = fc_none;
+		fc = fc_None;
 		fcc1 = ss_ctt_ProtokolWithoutXonXoff;
 		fcc2 = ss_hst_None;
 	}
@@ -195,7 +212,7 @@ ss_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 		/* Until we time out, find the correct baud rate */
 		for (i = ci; clock() < etime;) {
 			a1logd(p->log, 4, "ss_init_coms: trying baud rate %d\n",i);
-			if ((se = p->icom->set_ser_port(p->icom, fc_none, brt[i], parity_none,
+			if ((se = p->icom->set_ser_port(p->icom, fc_None, brt[i], parity_none,
 				                                    stop_1, length_8)) != ICOM_OK) { 
 				a1logd(p->log, 1, "ss_init_coms: set_ser_port failed ICOM err 0x%x\n",se);
 				p->snerr = icoms2ss_err(se);
@@ -208,7 +225,7 @@ ss_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 			ss_command(p, SH_TMO);
 			
 			if (ss_sub_1(p) == ss_AnsPFX) {				/* Got comms */
-				p->itype = instSpectroScan;				/* Preliminary */
+				p->dtype = instSpectroScan;				/* Preliminary */
 				break;
 			}
 
@@ -218,7 +235,7 @@ ss_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 			ss_command(p, SH_TMO);
 			
 			if (ss_sub_1(p) == ss_ParameterAnswer) {	/* Got comms */
-			 	p->itype = instSpectrolino;
+			 	p->dtype = instSpectrolino;
 				break;
 			}
 			
@@ -244,7 +261,7 @@ ss_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	a1logd(p->log, 4, "ss_init_coms: got basic communications\n");
 
 	/* Finalise the communications */
-	if (p->itype == instSpectrolino) {
+	if (p->dtype == instSpectrolino) {
 
 		if ((ev = so_do_MeasControlDownload(p, fcc1)) != inst_ok)
 			return ev;
@@ -258,7 +275,23 @@ ss_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 			return ss_inst_err(p);
 		}
 
+		/* Make sure the Spectrolino is still talking to us. */
+		ss_init_send(p);
+		ss_add_soreq(p, ss_ParameterRequest);
+		ss_command(p, SH_TMO);
+		
+		if (ss_sub_1(p) != ss_ParameterAnswer) {	/* Comms failed */
+			a1logd(p->log, 1, "ss_init_coms: spectrolino, instrument isn't communicating after final coms setup");
+			return inst_coms_fail; 
+		}
+			
 	} else {	/* Spectroscan */
+
+        /* Reset the Spectroscan, in case Spectrolino got messed up. */
+        if ((ev = ss_do_ScanInitializeDevice(p)) != inst_ok) {
+            a1logd(p->log, 1, "ss_init_coms: Spectroscan reset failed ICOM err 0x%x\n",ev);
+            return ev;
+        }
 
 		ss_do_SetDeviceOnline(p);	/* Put the device online */
 
@@ -275,9 +308,19 @@ ss_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 			return ss_inst_err(p);
 		}
 
-		/* Make sure the Spectrolino is talking to us. */
+		/* Make sure the Spectroscan is still talking to us. */
+		ss_init_send(p);
+		ss_add_ssreq(p, ss_OutputStatus);
+		ss_command(p, SH_TMO);
+		
+		if (ss_sub_1(p) != ss_AnsPFX) {				/* Comms failed */
+			a1logd(p->log, 1, "ss_init_coms: spectroscan, instrument isn't communicating after final coms setup");
+			return inst_coms_fail; 
+		}
+
+		/* Make sure the Spectrolino is talking to Spectroscan. */
 		if ((ev = ss_do_ScanSpectrolino(p)) != inst_ok) {
-			a1logd(p->log, 1, "ss_init_coms: spectroscan, instrument isn't communicating ICOM err 0x%x\n",se);
+			a1logd(p->log, 1, "ss_init_coms: Spectrolino isn't communicating with Spectroscan ICOM err 0x%x\n",ev);
 			return ev;
 		}
 	}
@@ -285,7 +328,7 @@ ss_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	a1logd(p->log, 4, "ss_init_coms: establish communications\n");
 
 	/* See if we have a Spectroscan or SpectroscanT, and get other details */
-	p->itype = instUnknown;
+	p->dtype = instUnknown;
 	{
 		char devn[19];
 
@@ -294,9 +337,9 @@ ss_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 		if (ev == inst_ok) {
 			a1logd(p->log, 5, "ss_init_coms: got device name '%s'\n",devn);
 			if (strncmp(devn, "SpectroScanT",12) == 0) {
-				p->itype = instSpectroScanT;
+				p->dtype = instSpectroScanT;
 			} else if (strncmp(devn, "SpectroScan",11) == 0) {
-				p->itype = instSpectroScan;
+				p->dtype = instSpectroScan;
 			}
 		}
 	}
@@ -322,8 +365,8 @@ ss_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 			  || strncmp(devn, "Spectrolino",11) != 0)
 				return inst_unknown_model;
 	
-			if (p->itype == instUnknown)	/* No SpectrScan */
-			 	p->itype = instSpectrolino;
+			if (p->dtype == instUnknown)	/* No SpectroScan */
+			 	p->dtype = instSpectrolino;
 		}
 	}
 	
@@ -349,15 +392,15 @@ static void ss_determine_capabilities(ss *p) {
 	       | inst_mode_spectral
 	       ;
 
-	if (p->itype == instSpectrolino) {
+	if (p->dtype == instSpectrolino) {
 		p->cap |= inst_mode_trans_spot;		/* Support this manually using a light table */
 	}
 
-	if (p->itype == instSpectroScan
-	 || p->itype == instSpectroScanT)	/* Only in reflective mode */
+	if (p->dtype == instSpectroScan
+	 || p->dtype == instSpectroScanT)	/* Only in reflective mode */
 		p->cap |= inst_mode_ref_xy;
 
-	if (p->itype == instSpectroScanT) {
+	if (p->dtype == instSpectroScanT) {
 		p->cap |= inst_mode_trans_spot;
 	}
 
@@ -367,8 +410,8 @@ static void ss_determine_capabilities(ss *p) {
 	        | inst2_user_switch_trig
 	        ;
 
-	if (p->itype == instSpectroScan
-	 || p->itype == instSpectroScanT) {
+	if (p->dtype == instSpectroScan
+	 || p->dtype == instSpectroScanT) {
 		/* These are not available in transmission mode */
 		if ((p->mode & inst_mode_illum_mask) != inst_mode_transmission) {
 			p->cap2 |= inst2_xy_holdrel
@@ -387,6 +430,7 @@ static void ss_determine_capabilities(ss *p) {
 /* return non-zero on an error, with dtp error code */
 static inst_code
 ss_init_inst(inst *pp) {
+	char *envv;
 	ss *p = (ss *)pp;
 	inst_code rv = inst_ok;
 
@@ -395,11 +439,24 @@ ss_init_inst(inst *pp) {
 	if (p->gotcoms == 0)
 		return inst_internal_error;		/* Must establish coms before calling init */
 
+	p->native_calstd = xcalstd_gmdi;		/* Native is GMDI */
+	p->target_calstd = xcalstd_native;		/* Default to native calibration */
+
+	/* Honor Environment override */
+	if ((envv = getenv("ARGYLL_XCALSTD")) != NULL) {
+		if (strcmp(envv, "XRGA") == 0)
+			p->target_calstd = xcalstd_xrga;
+		else if (strcmp(envv, "XRDI") == 0)
+			p->target_calstd = xcalstd_xrdi;
+		else if (strcmp(envv, "GMDI") == 0)
+			p->target_calstd = xcalstd_gmdi;
+	}
+
 	/* Reset the instrument to a known state */
-	if (p->itype != instSpectrolino) { 
+	if (p->dtype != instSpectrolino) { 
 		
 		/* Initialise the device without resetting the baud rate */
-		if (p->itype == instSpectroScanT) {
+		if (p->dtype == instSpectroScanT) {
 			if ((rv = ss_do_SetTableMode(p, ss_tmt_Reflectance)) != inst_ok)
 				return rv; 
 		}
@@ -409,8 +466,9 @@ ss_init_inst(inst *pp) {
 			return rv;
 		if ((rv = ss_do_ReleasePaper(p)) != inst_ok)
 			return rv;
-		if ((rv = ss_do_InitMotorPosition(p)) != inst_ok)
-			return rv;
+		/* Skip this since we did a ss_do_ScanInitializeDevice() */
+//		if ((rv = ss_do_InitMotorPosition(p)) != inst_ok)
+//			return rv;
 
 		if (p->log->verb) {
 			char dn[19];		/* Device name */
@@ -642,7 +700,7 @@ struct _inst *pp) {
 	return rv;
 }
 
-static inst_code ss_calibrate_imp(ss *p, inst_cal_type *calt, inst_cal_cond *calc, char id[CALIDLEN]);
+static inst_code ss_calibrate_imp(ss *p, inst_cal_type *calt, inst_cal_cond *calc, inst_calc_id_type *idtype, char id[CALIDLEN]);
 
 /* Read a sheet full of patches using xy mode */
 /* Return the inst error code */
@@ -670,8 +728,8 @@ ipatch *vals) { 		/* Pointer to array of values */
 	if (!p->inited)
 		return inst_no_init;
 
-	if (p->itype != instSpectroScan
-	 && p->itype != instSpectroScanT)
+	if (p->dtype != instSpectroScan
+	 && p->dtype != instSpectroScanT)
 		return inst_unsupported;
 
 	/* Move quickest in X direction to minimise noise, */
@@ -725,10 +783,11 @@ ipatch *vals) { 		/* Pointer to array of values */
 				if ( (p->need_wd_cal || p->need_t_cal) && p->noinitcalib == 0) {
 					inst_cal_type calt = inst_calt_needed;
 					inst_cal_cond calc = inst_calc_none;
+					inst_calc_id_type idtype;
 					char id[CALIDLEN];
 
 					/* We expect this to be automatic, but handle as if it mightn't be */
-					if ((rv = ss_calibrate_imp(p, &calt, &calc, id)) != inst_ok) {
+					if ((rv = ss_calibrate_imp(p, &calt, &calc, &idtype, id)) != inst_ok) {
 						if (rv == inst_cal_setup)
 							return inst_needs_cal;	/* Not automatic, needs a manual setup */
 						if (try < notries) {
@@ -818,6 +877,15 @@ ipatch *vals) { 		/* Pointer to array of values */
 			}
 		}
 	}
+
+	/* Apply any XRGA conversion */
+	ipatch_convert_xrga(vals, npatch, 
+	                   p->filt == ss_aft_PolFilter ? xcalstd_pol : xcalstd_nonpol,
+	                   p->target_calstd, p->native_calstd, instClamp);
+
+	/* Apply custom filter compensation */
+	if (p->custfilt_en)
+		ipatch_convert_custom_filter(vals, npatch, &p->custfilt, instClamp);
 
 	return rv;
 }
@@ -945,10 +1013,11 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	if ((p->need_wd_cal || p->need_t_cal) && p->noinitcalib == 0) {
 		inst_cal_type calt = inst_calt_needed;
 		inst_cal_cond calc = inst_calc_none;
+		inst_calc_id_type idtype;
 		char id[CALIDLEN];
 
 		/* This could be automatic or need manual intervention */
-		if ((rv = ss_calibrate_imp(p, &calt, &calc, id)) != inst_ok) {
+		if ((rv = ss_calibrate_imp(p, &calt, &calc, &idtype, id)) != inst_ok) {
 			if (rv == inst_cal_setup) {
 				return inst_needs_cal;	/* Not automatic, needs a manual setup */
 			}
@@ -981,7 +1050,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 				break;
 			}
 			/* If SpectroScanT transmission, poll the enter key */
-			if (p->itype == instSpectroScanT
+			if (p->dtype == instSpectroScanT
 			 && (p->mode & inst_mode_illum_mask) == inst_mode_transmission) {
 				ss_sks sk;
 				ss_ptt pt;
@@ -1054,14 +1123,14 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 
 		/* For the spectroscan, make sure the instrument is on line, */
 		/* since it may be off line to allow the user to position it. */
-		if (p->itype != instSpectrolino && p->offline) {
+		if (p->dtype != instSpectrolino && p->offline) {
 			if ((rv = p->xy_locate_end((inst *)p)) != inst_ok)
 				return rv;
 		}
 
 		/* For reflection spot mode on a SpectroScan, lower the head. */
 		/* (A SpectroScanT in transmission will position automatically) */
-		if (p->itype != instSpectrolino
+		if (p->dtype != instSpectrolino
 		 && (p->mode & inst_mode_illum_mask) != inst_mode_transmission) {
 			if ((rv = ss_do_MoveDown(p)) != inst_ok)
 					return rv;
@@ -1076,7 +1145,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 
 		/* For reflection spot mode on a SpectroScan, raise the head. */
 		/* (A SpectroScanT in transmission will position automatically) */
-		if (p->itype != instSpectrolino
+		if (p->dtype != instSpectrolino
 		 && (p->mode & inst_mode_illum_mask) != inst_mode_transmission) {
 			if ((rv = ss_do_MoveUp(p)) != inst_ok)
 					return rv;
@@ -1090,7 +1159,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 
 	/* Emulated spot transmission mode: */
 	if ((p->mode & inst_mode_illum_mask) == inst_mode_transmission
-	 && p->itype == instSpectrolino) {
+	 && p->dtype == instSpectrolino) {
 		ss_st rst;		/* Return Spectrum Type (Reflectance/Density) */
 		ss_rvt rvf;		/* Return Reference Valid Flag */
 		ss_aft af;		/* Return filter being used (None/Pol/D65/UV/custom */
@@ -1151,89 +1220,6 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 		val->XYZ_v = 1;
 		val->mtype = inst_mrt_transmissive;
 	 
-
-	/* Using filter compensation */
-	/* This isn't applicable to emulated transmission mode, because */
-	/* the filter will be calibrated out in the illuminant measurement. */
-	} else if (p->compen != 0) {
-		ss_cst rct;
-		ss_st rst;		/* Return Spectrum Type (Reflectance/Density) */
-		ss_rvt rvf;		/* Return Reference Valid Flag */
-		ss_aft af;		/* Return filter being used (None/Pol/D65/UV/custom */
-		ss_ilt it;
-		ss_ot  ot;
-		ss_wbt wb;		/* Return white base (Paper/Absolute) */
-#ifdef NEVER
-		double norm;	/* Y normalisation factor */
-#endif
-		double XYZ[3];
-		int j, tix = 0;	/* Default 2 degree */
-
-		/* Get the XYZ */
-		if ((rv = so_do_CParameterRequest(p, ss_cst_XYZ, &rct, col, &rvf,
-		     &af, &wb, &it, &ot)) != inst_ok)
-			return rv;
-
-		/* Get the spectrum */
-		if ((rv = so_do_SpecParameterRequest(p, ss_st_LinearSpectrum,
-		          &rst, spec, &rvf, &af, &wb)) != inst_ok)
-			return rv;
-
-		/* Multiply by the filter compensation values to do correction */
-		for (i = 0; i < 36; i++) {
-			spec[i] *= p->comp[i];
-		}
-
-		/* Return the results */
-		if (p->mode & inst_mode_spectral) {
-			val->sp.spec_n = 36;
-			val->sp.spec_wl_short = 380;
-			val->sp.spec_wl_long = 730;
-			if ((p->mode & inst_mode_illum_mask) == inst_mode_emission) {
-				val->sp.norm = 1.0;
-				for (i = 0; i < val->sp.spec_n; i++)
-					val->sp.spec[i] = (double)spec[i];
-			} else {
-				val->sp.norm = 100.0;
-				for (i = 0; i < val->sp.spec_n; i++)
-					val->sp.spec[i] = 100.0 * (double)spec[i];
-			}
-		}
-
-		/* Convert to desired illuminant XYZ */
-		if (p->obsv == ss_ot_TenDeg)
-			tix = 1;
-
-		/* Compute XYZ */
-		for (j = 0; j < 3; j++)
-			XYZ[j] = 0.0;
-		for (i = 0; i < 36; i++)
-			for (j = 0; j < 3; j++)
-				XYZ[j] += obsv[tix][j][i] * spec[i];
-
-		/* This may not change anything since instrument may clamp */
-		if (clamp)
-			icmClamp3(XYZ, XYZ);
-
-		if ((p->mode & inst_mode_illum_mask) == inst_mode_emission) {
-			/* Emission XYZ seems to be Luminous Watts, so */
-			/* convert to cd/m^2 */
-			val->XYZ_v = 1;
-			val->XYZ[0] = XYZ[0] * 683.002;
-			val->XYZ[1] = XYZ[1] * 683.002;
-			val->XYZ[2] = XYZ[2] * 683.002;
-			val->mtype = inst_mrt_emission;
-		} else {
-			val->XYZ_v = 1;
-			val->XYZ[0] = XYZ[0];
-			val->XYZ[1] = XYZ[1];
-			val->XYZ[2] = XYZ[2];
-			if ((p->mode & inst_mode_illum_mask) == inst_mode_transmission)
-				val->mtype = inst_mrt_transmissive;
-			else
-				val->mtype = inst_mrt_reflective;
-		}
-
 	/* Normal instrument values */
 	} else {
 		ss_cst rct;
@@ -1269,7 +1255,8 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 		}
 
 		/* spectrum data is returned only if requested */
-		if (p->mode & inst_mode_spectral) {
+		if (p->mode & inst_mode_spectral
+		 || XCALSTD_NEEDED(p->target_calstd, p->native_calstd)) {
 			ss_st rst;		/* Return Spectrum Type (Reflectance/Density) */
 			ss_rvt rvf;		/* Return Reference Valid Flag */
 			ss_aft af;		/* Return filter being used (None/Pol/D65/UV/custom */
@@ -1294,6 +1281,12 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 			}
 		}
 	}
+
+	/* Apply any XRGA conversion to the measurement */
+	ipatch_convert_xrga(val, 1, 
+	                   p->filt == ss_aft_PolFilter ? xcalstd_pol : xcalstd_nonpol,
+	                   p->target_calstd, p->native_calstd, clamp);
+
 	if (user_trig)
 		return inst_user_trig;
 	return rv;
@@ -1306,7 +1299,7 @@ static inst_code ss_get_n_a_cals(inst *pp, inst_cal_type *pn_cals, inst_cal_type
 	inst_cal_type a_cals = inst_calt_none;
 		
 	if ((p->mode & inst_mode_illum_mask) == inst_mode_transmission) {
-		if (p->itype == instSpectrolino) {		/* Emulated transmission */
+		if (p->dtype == instSpectrolino) {		/* Emulated transmission */
 			if (p->need_wd_cal && p->noinitcalib == 0)
 				n_cals |= inst_calt_ref_white;
 			a_cals |= inst_calt_ref_white;
@@ -1342,6 +1335,7 @@ static inst_code ss_calibrate_imp(
 ss *p,
 inst_cal_type *calt,	/* Calibration type to do/remaining */
 inst_cal_cond *calc,	/* Current condition/desired condition */
+inst_calc_id_type *idtype,	/* Condition identifier type */
 char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 ) {
 	inst_code rv = inst_ok;
@@ -1350,6 +1344,7 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 	ss_owrt owr;	/* Original white reference */
 	inst_cal_type needed, available;
 
+	*idtype = inst_calc_id_none;
 	id[0] = '\000';
 
 	a1logd(p->log, 3, "ss calibrate called with calt = 0x%x, condition 0x%x, need w %d, t %d\n", *calt, *calc, p->need_wd_cal, p->need_t_cal);
@@ -1392,7 +1387,7 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 			p->filt = ss_aft_NoFilter;	/* Need no filter for emission */
 	
 		/* Set mode to reflection as a default for calibration */
-		if (p->itype == instSpectroScanT) {
+		if (p->dtype == instSpectroScanT) {
 			if ((rv = ss_do_SetTableMode(p, ss_tmt_Reflectance)) != inst_ok)
 				return rv;
 		} else {
@@ -1407,11 +1402,12 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 		/* Get the name of the expected white reference */
 		if ((rv = so_do_WhiteReferenceRequest(p, p->filt, &afilt, sp, &owr, id)) != inst_ok)
 			return rv;
+		*idtype = inst_calc_id_ref_sn;
 
 		if (p->noinitcalib == 0) {
 
 			/* Make sure we're in a condition to do the calibration */
-			if (p->itype == instSpectrolino
+			if (p->dtype == instSpectrolino
 			 && (*calc & inst_calc_cond_mask) != inst_calc_man_ref_white) {
 				*calc = inst_calc_man_ref_white;
 				a1logd(p->log, 3, "ss cal need cond. inst_calc_man_ref_white and haven't got it\n");
@@ -1423,7 +1419,7 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 
 				a1logd(p->log, 3, "ss cal doing white reflective cal\n");
 				/* For SpectroScan, move to the white reference in slot 1 and lower */
-				if (p->itype != instSpectrolino) {
+				if (p->dtype != instSpectrolino) {
 					if ((rv = ss_do_MoveToWhiteRefPos(p, ss_wrpt_RefTile1)) != inst_ok)
 						return rv;
 					if ((rv = ss_do_MoveDown(p)) != inst_ok)
@@ -1437,7 +1433,7 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 				rv = inst_ok;
 
 				/* For SpectroScan, raise */
-				if (p->itype != instSpectrolino) {
+				if (p->dtype != instSpectrolino) {
 					if ((rv = ss_do_MoveUp(p)) != inst_ok)
 						return rv;
 				}
@@ -1457,6 +1453,7 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 
 					a1logd(p->log, 3, "got filt %d, want %d\n",af,p->filt);
 
+					*idtype = filter_id[p->filt];
 					strcpy(id, filter_desc[p->filt]);
 					*calc = inst_calc_change_filter;
 					return inst_cal_setup;
@@ -1467,7 +1464,7 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 			/* Emission or spot transmission mode, dark calibration. */
 			if ((p->mode & inst_mode_illum_mask) == inst_mode_emission
 			 || ((p->mode & inst_mode_illum_mask) == inst_mode_transmission
-			     && p->itype == instSpectrolino)) {
+			     && p->dtype == instSpectrolino)) {
 					a1logd(p->log, 3, "emmission/transmission dark calibration:\n");
 					/* Set emission mode */
 					if ((rv = so_do_MeasControlDownload(p, ss_ctt_EmissionMeas)) != inst_ok)
@@ -1489,7 +1486,7 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 		/* Restore the instrument to the desired mode */
 		/* SpectroScanT - Transmission mode, set transmission mode. */
 		if ((p->mode & inst_mode_illum_mask) == inst_mode_transmission
-		     && p->itype == instSpectroScanT) {
+		     && p->dtype == instSpectroScanT) {
 
 			if ((p->mode & inst_mode_illum_mask) == inst_mode_transmission) {
 				if ((rv = ss_do_SetTableMode(p, ss_tmt_Transmission)) != inst_ok)
@@ -1510,7 +1507,7 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 
 		a1logd(p->log, 3, "ss cal need trans with calt = trans_white\n");
 		/* Emulated spot transmission using spectrolino */
-		if ((*calt & inst_calt_trans_vwhite) && p->itype == instSpectrolino) {
+		if ((*calt & inst_calt_trans_vwhite) && p->dtype == instSpectrolino) {
 			ss_st rst;		/* Return Spectrum Type (Reflectance/Density) */
 			ss_rvt rvf;		/* Return Reference Valid Flag */
 			ss_aft af;		/* Return filter being used (None/Pol/D65/UV/custom */
@@ -1543,6 +1540,7 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 
 			if (i < 36) {
 				*calc = inst_calc_message;
+				*idtype = inst_calc_id_trans_wl;
 				strcpy(id, "Warning: Transmission light source is low at some wavelengths!");
 				rv = inst_ok;
 			}
@@ -1556,7 +1554,7 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 			a1logd(p->log, 3, "transmission lino cal done\n");
 
 		/* SpectroScanT */
-		} else if ((*calt & inst_calt_trans_white) && p->itype != instSpectrolino) {
+		} else if ((*calt & inst_calt_trans_white) && p->dtype != instSpectrolino) {
 			/* Hmm. Should we really return a message and resume somehow, */
 			/* rather than communicating directly with the user... */
 
@@ -1596,6 +1594,7 @@ inst_code ss_calibrate(
 inst *pp,
 inst_cal_type *calt,	/* Calibration type to do/remaining */
 inst_cal_cond *calc,	/* Current condition/desired condition */
+inst_calc_id_type *idtype,	/* Condition identifier type */
 char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 ) {
 	ss *p = (ss *)pp;
@@ -1605,44 +1604,7 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 	if (!p->inited)
 		return inst_no_init;
 
-	return ss_calibrate_imp(p, calt, calc, id);
-}
-
-/* Insert a compensation filter in the instrument readings */
-/* This is typically needed if an adapter is being used, that alters */
-/* the spectrum of the light reaching the instrument */
-/* To remove the filter, pass NULL for the filter filename */
-inst_code ss_comp_filter(
-struct _inst *pp,
-char *filtername
-) {
-	ss *p = (ss *)pp;
-	
-	if (!p->gotcoms)
-		return inst_no_coms;
-	if (!p->inited)
-		return inst_no_init;
-
-#ifndef SALONEINSTLIB
-	if (filtername == NULL) {
-		p->compen = 0;
-	} else {
-		xspect sp;
-		int i;
-		if (read_xspect(&sp, filtername) != 0) {
-			return inst_wrong_setup;
-		}
-		if (sp.spec_n != 36 || sp.spec_wl_short != 380.0 || sp.spec_wl_long != 730.0) {
-			return inst_wrong_setup;
-		}
-		for (i = 0; i < 36; i++)
-			p->comp[i] = sp.spec[i];
-		p->compen = 1;
-	}
-	return inst_ok;
-#else /* SALONEINSTLIB */
-	return inst_unsupported; 
-#endif /* SALONEINSTLIB */
+	return ss_calibrate_imp(p, calt, calc, idtype, id);
 }
 
 /* Instrument specific error codes interpretation */
@@ -1944,6 +1906,54 @@ ss_get_set_opt(inst *pp, inst_opt_type m, ...) {
 				break;
 		}
 		return inst_unsupported;
+
+	} else if (m == inst_opt_set_custom_filter) {
+		va_list args;
+		xspect *sp = NULL;
+
+		va_start(args, m);
+
+		sp = va_arg(args, xspect *);
+
+		va_end(args);
+
+		if (sp == NULL || sp->spec_n == 0) {
+			p->custfilt_en = 0;
+			p->custfilt.spec_n = 0;
+		} else {
+			p->custfilt_en = 1;
+			p->custfilt = *sp;			/* Struct copy */
+		}
+		return inst_ok;
+
+	/* Set the current xcalstd */
+	} else if (m == inst_opt_set_xcalstd) {
+		xcalstd standard;
+		va_list args;
+
+		va_start(args, m);
+		standard = va_arg(args, xcalstd);
+		va_end(args);
+
+		p->target_calstd = standard;
+
+		return inst_ok;
+
+	/* Get the current effective xcalstd */
+	} else if (m == inst_opt_get_xcalstd) {
+		xcalstd *standard;
+		va_list args;
+
+		va_start(args, m);
+		standard = va_arg(args, xcalstd *);
+		va_end(args);
+
+		if (p->target_calstd == xcalstd_native)
+			*standard = p->native_calstd;		/* If not overridden */
+		else
+			*standard = p->target_calstd;		/* Overidden std. */
+
+		return inst_ok;
 	}
 
 	/* Record the trigger mode */
@@ -2002,6 +2012,50 @@ ss_get_set_opt(inst *pp, inst_opt_type m, ...) {
 		return inst_ok;
 	}
 
+	if (m == inst_stat_get_custom_filter) {
+		va_list args;
+		xspect *sp = NULL;
+
+		va_start(args, m);
+		sp = va_arg(args, xspect *);
+		va_end(args);
+
+		if (p->custfilt_en) {
+			*sp = p->custfilt;			/* Struct copy */
+		} else {
+			sp = NULL;
+		}
+		return inst_ok;
+	}
+
+	/* Return the white calibration tile spectrum for current filter */
+	if (m == inst_opt_get_cal_tile_sp) {
+		ss_aft raf;
+		ss_owrt owr;
+		xspect *sp;
+		char dtn[19];
+		inst_code rv;
+		va_list args;
+		int i;
+
+		va_start(args, m);
+		sp = va_arg(args, xspect *);
+		va_end(args);
+
+		/* Queries the spectra of the white tile reference for the desired filter */
+		if ((rv = so_do_WhiteReferenceRequest(p, p->filt, &raf, sp->spec, &owr, dtn)) != inst_ok)   
+			return rv;
+
+		sp->spec_n = 36;
+		sp->spec_wl_short = 380;
+		sp->spec_wl_long = 730;
+		sp->norm = 100.0;
+		for (i = 0; i < sp->spec_n; i++)
+			sp->spec[i] *= 100.0;
+
+		return inst_ok;
+	}
+
 	/* Use default implementation of other inst_opt_type's */
 	{
 		va_list args;
@@ -2021,7 +2075,7 @@ ss_del(inst *pp) {
 	ss *p = (ss *)pp;
 
 	if (p->inited
-	 && p->itype == instSpectroScanT
+	 && p->dtype == instSpectroScanT
 	 && (p->mode & inst_mode_illum_mask) == inst_mode_transmission) {
 		ss_do_SetDeviceOnline(p);
 		ss_do_SetTableMode(p, ss_tmt_Reflectance);
@@ -2042,7 +2096,7 @@ ss_del(inst *pp) {
 }
 
 /* Constructor */
-extern ss *new_ss(icoms *icom, instType itype) {
+extern ss *new_ss(icoms *icom, instType dtype) {
 	ss *p;
 	if ((p = (ss *)calloc(sizeof(ss),1)) == NULL) {
 		a1loge(icom->log, 1, "new_ss: malloc failed!\n");
@@ -2070,13 +2124,12 @@ extern ss *new_ss(icoms *icom, instType itype) {
 	p->read_sample 	    = ss_read_sample;
 	p->get_n_a_cals     = ss_get_n_a_cals;
 	p->calibrate    	= ss_calibrate;
-	p->comp_filter    	= ss_comp_filter;
 	p->interp_error 	= ss_interp_error;
 	p->del          	= ss_del;
 
 	/* Init state */
 	p->icom = icom;
-	p->itype = itype;
+	p->dtype = dtype;
 	p->cap = inst_mode_none;				/* Unknown until initialised */
 	p->mode = inst_mode_none;				/* Not in a known mode yet */
 	p->nextmode = inst_mode_none;			/* Not in a known mode yet */

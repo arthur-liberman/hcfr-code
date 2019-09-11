@@ -46,7 +46,7 @@
 struct _munki {
 	INST_OBJ_BASE
 
-	int       dtype;			/* Device type: 0 = ?? */	
+	int       idtype;			/* Device type: 0 = ?? */	
 
 	/* *** munki private data **** */
 	inst_mode  cap;				/* Instrument mode capability */

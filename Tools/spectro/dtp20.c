@@ -67,11 +67,13 @@
 #include "sa_config.h"
 #endif /* SALONEINSTLIB */
 #include "numsup.h"
+#include "cgats.h"
 #include "xspect.h"
 #include "insttypes.h"
 #include "conv.h"
 #include "icoms.h"
 #include "dtp20.h"
+#include "xrga.h"
 
 static inst_code dtp20_interp_code(inst *pp, int ec);
 static inst_code activate_mode(dtp20 *p);
@@ -217,7 +219,7 @@ double top) {		/* Timout in seconds */
 }
 
 /* Establish communications with a DTP20 */
-/* Return DTP_COMS_FAIL on failure to establish communications */
+/* Return DTP20_COMS_FAIL on failure to establish communications */
 static inst_code
 dtp20_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	dtp20 *p = (dtp20 *)pp;
@@ -345,11 +347,26 @@ dtp20_init_inst(inst *pp) {
 	dtp20 *p = (dtp20 *)pp;
 	char buf[MAX_MES_SIZE];
 	inst_code rv = inst_ok;
+	char *envv;
 
 	a1logd(p->log, 2, "dtp20_init_inst: called\n");
 
 	if (p->gotcoms == 0)
 		return inst_no_coms;		/* Must establish coms before calling init */
+
+
+	p->native_calstd = xcalstd_xrdi;
+	p->target_calstd = xcalstd_native;		/* Default to native calibration standard*/
+
+	/* Honour Environment override */
+	if ((envv = getenv("ARGYLL_XCALSTD")) != NULL) {
+		if (strcmp(envv, "XRGA") == 0)
+			p->target_calstd = xcalstd_xrga;
+		else if (strcmp(envv, "XRDI") == 0)
+			p->target_calstd = xcalstd_xrdi;
+		else if (strcmp(envv, "GMDI") == 0)
+			p->target_calstd = xcalstd_gmdi;
+	}
 
 	/* Reset it (without disconnecting USB or clearing stored data) */
 	if ((rv = dtp20_command(p, "0PR\r", buf, MAX_MES_SIZE, 2.0)) != inst_ok)
@@ -534,7 +551,9 @@ ipatch *vals) {		/* Pointer to array of values */
 			tp += strlen(tp) + 1;
 		}
 
-		if (p->mode & inst_mode_spectral) {
+		if (p->mode & inst_mode_spectral
+		 || XCALSTD_NEEDED(p->target_calstd, p->native_calstd)
+		 || p->custfilt_en) {
 
 			/* Gather the results in Spectral reflectance */
 			if ((ev = dtp20_command(p, "0318CF\r", buf, MAX_RD_SIZE, 0.5)) != inst_ok)
@@ -575,6 +594,15 @@ ipatch *vals) {		/* Pointer to array of values */
 	}
 
 	a1logv(p->log, 1, "All saved strips read\n");
+
+	/* Apply any XRGA conversion */
+	ipatch_convert_xrga(vals, npatch, xcalstd_nonpol, p->target_calstd, p->native_calstd,
+	                    instClamp);
+
+	/* Apply custom filter compensation */
+	if (p->custfilt_en)
+		ipatch_convert_custom_filter(vals, npatch, &p->custfilt, instClamp);
+
 	return inst_ok;
 }
 
@@ -762,7 +790,8 @@ ipatch *vals) {		/* Pointer to array of instrument patch values */
 
 	}
 
-	if (p->mode & inst_mode_spectral) {
+	if (p->mode & inst_mode_spectral
+	 || XCALSTD_NEEDED(p->target_calstd, p->native_calstd)) {
 
 		/* Gather the results in Spectral reflectance */
 		if ((ev = dtp20_command(p, "0318CF\r", buf, MAX_RD_SIZE, 0.5)) != inst_ok)
@@ -812,6 +841,11 @@ ipatch *vals) {		/* Pointer to array of instrument patch values */
 			msec_sleep(200);
 		}
 	}
+
+
+	/* Apply any XRGA conversion */
+	ipatch_convert_xrga(vals, npatch, xcalstd_nonpol, p->target_calstd, p->native_calstd,
+	                    instClamp);
 
 	if (user_trig)
 		return inst_user_trig;
@@ -993,7 +1027,8 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	val->duration = 0.0;
 
 
-	if (p->mode & inst_mode_spectral) {
+	if (p->mode & inst_mode_spectral
+	 || XCALSTD_NEEDED(p->target_calstd, p->native_calstd)) {
 		int j;
 
 		/* Set to read spectral reflectance */
@@ -1051,6 +1086,9 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 		}
 	}
 
+	/* Apply any XRGA conversion */
+	ipatch_convert_xrga(val, 1, xcalstd_nonpol, p->target_calstd, p->native_calstd, clamp);
+
 	if (user_trig)
 		return inst_user_trig;
 	return inst_ok;
@@ -1086,6 +1124,7 @@ static inst_code dtp20_calibrate(
 inst *pp,
 inst_cal_type *calt,	/* Calibration type to do/remaining */
 inst_cal_cond *calc,	/* Current condition/desired condition */
+inst_calc_id_type *idtype,	/* Condition identifier type */
 char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 ) {
 	dtp20 *p = (dtp20 *)pp;
@@ -1098,6 +1137,7 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 	if (!p->inited)
 		return inst_no_init;
 
+	*idtype = inst_calc_id_none;
 	id[0] = '\000';
 
 	if ((ev = dtp20_get_n_a_cals((inst *)p, &needed, &available)) != inst_ok)
@@ -1128,7 +1168,7 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 	if (*calt & inst_calt_ref_white) {
 		int i;
 
-		if (*calc != inst_calc_man_ref_white) {
+		if ((*calc & inst_calc_cond_mask) != inst_calc_man_ref_white) {
 			char *cp;
 			if ((ev = dtp20_command(p, "04SN\r", buf, MAX_MES_SIZE, 4.5)) != inst_ok)
 				return ev;
@@ -1136,6 +1176,7 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 				;
 			*cp = '\000';
 			strcpy(id, buf);
+			*idtype = inst_calc_id_ref_sn;
 			*calc = inst_calc_man_ref_white;
 			return inst_cal_setup;
 		}
@@ -1402,7 +1443,8 @@ dtp20_del(inst *pp) {
 	dtp20 *p = (dtp20 *)pp;
 	if (p->icom != NULL)
 		p->icom->del(p->icom);
-	free (p);
+	p->vdel(pp);
+	free(p);
 }
 
 /* Set the instrument capabilities */
@@ -1510,6 +1552,73 @@ inst_opt_type m,	/* Requested status type */
 		return inst_no_coms;
 	if (!p->inited)
 		return inst_no_init;
+
+	/* Set xcalstd */
+	if (m == inst_opt_set_xcalstd) {
+		xcalstd standard;
+		va_list args;
+
+		va_start(args, m);
+		standard = va_arg(args, xcalstd);
+		va_end(args);
+
+		p->target_calstd = standard;
+
+		return inst_ok;
+	}
+
+	/* Get the current effective xcalstd */
+	if (m == inst_opt_get_xcalstd) {
+		xcalstd *standard;
+		va_list args;
+
+		va_start(args, m);
+		standard = va_arg(args, xcalstd *);
+		va_end(args);
+
+		if (p->target_calstd == xcalstd_native)
+			*standard = p->native_calstd;		/* If not overridden */
+		else
+			*standard = p->target_calstd;		/* Overidden std. */
+
+		return inst_ok;
+	}
+
+	if (m == inst_opt_set_custom_filter) {
+		va_list args;
+		xspect *sp = NULL;
+
+		va_start(args, m);
+
+		sp = va_arg(args, xspect *);
+
+		va_end(args);
+
+		if (sp == NULL || sp->spec_n == 0) {
+			p->custfilt_en = 0;
+			p->custfilt.spec_n = 0;
+		} else {
+			p->custfilt_en = 1;
+			p->custfilt = *sp;			/* Struct copy */
+		}
+		return inst_ok;
+	}
+
+	if (m == inst_stat_get_custom_filter) {
+		va_list args;
+		xspect *sp = NULL;
+
+		va_start(args, m);
+		sp = va_arg(args, xspect *);
+		va_end(args);
+
+		if (p->custfilt_en) {
+			*sp = p->custfilt;			/* Struct copy */
+		} else {
+			sp = NULL;
+		}
+		return inst_ok;
+	}
 
 	if (m == inst_stat_saved_readings) {
 		char buf[MAX_MES_SIZE];
@@ -1685,7 +1794,7 @@ inst_opt_type m,	/* Requested status type */
 	}
 
 	/* !! It's not clear if there is a way of knowing */
-	/* whether the instrument has a UV filter. */
+	/* whether the instrument has a UV filter !! */
 
 	/* Use default implementation of other inst_opt_type's */
 	{
@@ -1701,7 +1810,7 @@ inst_opt_type m,	/* Requested status type */
 }
 
 /* Constructor */
-extern dtp20 *new_dtp20(icoms *icom, instType itype) {
+extern dtp20 *new_dtp20(icoms *icom, instType dtype) {
 	dtp20 *p;
 	if ((p = (dtp20 *)calloc(sizeof(dtp20),1)) == NULL) {
 		a1loge(icom->log, 1, "new_dtp20: malloc failed!\n");
@@ -1725,7 +1834,7 @@ extern dtp20 *new_dtp20(icoms *icom, instType itype) {
 	p->del             = dtp20_del;
 
 	p->icom = icom;
-	p->itype = icom->itype;
+	p->dtype = dtype;
 	p->cap = inst_mode_none;		/* Unknown until set */
 	p->mode = inst_mode_none;		/* Not in a known mode yet */
 

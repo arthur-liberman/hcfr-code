@@ -54,6 +54,7 @@
 #include "sa_config.h"
 #include "numsup.h"
 #endif /* !SALONEINSTLIB */
+#include "cgats.h"
 #include "xspect.h"
 #include "insttypes.h"
 #include "conv.h"
@@ -61,10 +62,6 @@
 #include "inst.h"
 #include "rspec.h"
 #include "ex1.h"
-#undef SALONEINSTLIB
-#include "icc.h"
-#define SALONEINSTLIB
-
 
 #define ENABLE_NONVCAL	/* [Def] Enable saving calibration state between program runs in a file */
 
@@ -162,7 +159,7 @@ static int ex1_touch_calibration(ex1 *p);
 static inst_code
 ex1_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	ex1 *p = (ex1 *) pp;
-	instType itype = pp->itype;
+	instType dtype = pp->dtype;
 	int se;
 
 	inst_code ev = inst_ok;
@@ -332,7 +329,9 @@ ex1_init_inst(inst *pp) {
 //printf("~1 raw range = %d - %d\n",sconf->rawrange.off, sconf->rawrange.off + sconf->rawrange.num-1);
 //printf("~1 = %f - %f nm\n",rspec_raw2nm(sconf, sconf->rawrange.off), rspec_raw2nm(sconf, sconf->rawrange.off + sconf->rawrange.num-1));
 
-	sconf->ktype = rspec_gausian;
+	sconf->ktype = rspec_gausian;			/* Default */
+//	sconf->ktype = rspec_lanczos2;
+//	sconf->ktype = rspec_lanczos3;
 //	sconf->ktype = rspec_triangle;
 //	sconf->ktype = rspec_cubicspline;
 	sconf->wl_space = 2.0;
@@ -383,7 +382,7 @@ ex1_init_inst(inst *pp) {
 	}
 #endif /* NEVER */
 
-	p->conv = new_xsp2cie(icxIT_none, NULL, icxOT_CIE_1931_2, NULL, icSigXYZData, icxNoClamp);
+	p->conv = new_xsp2cie(icxIT_none, 0.0, NULL, icxOT_CIE_1931_2, NULL, icSigXYZData, icxNoClamp);
 
 	if (p->conv == NULL)
 		return EX1_INT_CIECONVFAIL;
@@ -472,7 +471,7 @@ instClamping clamp	/* NZ if clamp XYZ/Lab to be +ve */
 	ex1 *p = (ex1 *)pp;
 	int user_trig = 0;
 	int pos = -1;
-	inst_code rv = inst_ok;
+	inst_code rv = inst_protocol_error;
 	rspec_inf *sconf = &p->sconf; 
 	rspec *raw = NULL, *wav = NULL;
 	int ec, i; 
@@ -706,6 +705,7 @@ inst_code ex1_calibrate(
 inst *pp,
 inst_cal_type *calt,	/* Calibration type to do/remaining */
 inst_cal_cond *calc,	/* Current condition/desired condition */
+inst_calc_id_type *idtype,	/* Condition identifier type */
 char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 ) {
 	ex1 *p = (ex1 *)pp;
@@ -1063,7 +1063,6 @@ inst3_capability *pcap3) {
 	cap1 |= inst_mode_emis_tele
 	     |  inst_mode_colorimeter
 	     |  inst_mode_spectral
-		 | inst_mode_calibration
 	        ;
 
 	cap2 |= inst2_prog_trig
@@ -1165,8 +1164,7 @@ static void ex1_set_noinitcalib(ex1 *p, int v, int losecs) {
  * error if it hasn't been initialised.
  */
 static inst_code
-ex1_get_set_opt(inst *pp, inst_opt_type m, ...)
-{
+ex1_get_set_opt(inst *pp, inst_opt_type m, ...) {
 	ex1 *p = (ex1 *)pp;
 	inst_code ev = inst_ok;
 
@@ -1199,11 +1197,21 @@ ex1_get_set_opt(inst *pp, inst_opt_type m, ...)
 	if (!p->inited)
 		return inst_no_init;
 
-	return inst_unsupported;
+	/* Use default implementation of other inst_opt_type's */
+	{
+		inst_code rv;
+		va_list args;
+
+		va_start(args, m);
+		rv = inst_get_set_opt_def(pp, m, args);
+		va_end(args);
+
+		return rv;
+	}
 }
 
 /* Constructor */
-extern ex1 *new_ex1(icoms *icom, instType itype) {
+extern ex1 *new_ex1(icoms *icom, instType dtype) {
 	ex1 *p;
 	if ((p = (ex1 *)calloc(sizeof(ex1),1)) == NULL) {
 		a1loge(icom->log, 1, "new_ex1: malloc failed!\n");
@@ -1234,7 +1242,7 @@ extern ex1 *new_ex1(icoms *icom, instType itype) {
 	p->del               = ex1_del;
 
 	p->icom = icom;
-	p->itype = itype;
+	p->dtype = dtype;
 
 	p->want_dcalib = 1;		/* Always do an initial dark calibration */
 

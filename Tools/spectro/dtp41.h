@@ -37,6 +37,10 @@
 
 #include "inst.h"
 
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
 /* Fake Error codes */
 #define DTP41_INTERNAL_ERROR		0x61			/* Internal software error */
 #define DTP41_COMS_FAIL				0x62			/* Communication failure */
@@ -101,10 +105,20 @@ struct _dtp41 {
 	int need_cal;				/* needs calibration */
 	inst_opt_type trig;			/* Reading trigger mode */
 	
+	xcalstd native_calstd;		/* Instrument native calibration standard */
+	xcalstd target_calstd;		/* Returned calibration standard */
+
+	int custfilt_en;			/* Custom filter enabled */
+	xspect custfilt;			/* Custom filter */
+
 	}; typedef struct _dtp41 dtp41;
 
 /* Constructor */
 extern dtp41 *new_dtp41(icoms *icom, instType itype);
+
+#ifdef __cplusplus
+	}
+#endif
 
 #define DTP41_H
 #endif /* DTP41_H */

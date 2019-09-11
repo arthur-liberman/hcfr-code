@@ -1,7 +1,7 @@
 
 #ifndef HIDIO_H
 
- /* General USB HID I/O support */
+/* General USB HID I/O support */
 
 /* 
  * Argyll Color Correction System
@@ -16,16 +16,17 @@
  * see the License2.txt file for licencing details.
  */
 
+
 /* These routines supliement the class code in ntio.c and unixio.c */
 
-#ifdef __APPLE__
+#ifdef UNIX_APPLE
 #include <sys/param.h>
 #include <IOKit/IOKitLib.h>
 #include <IOKit/IOCFPlugIn.h>
 #include <IOKit/hid/IOHIDLib.h>
 #include <IOKit/hid/IOHIDKeys.h>
 #include <CoreFoundation/CoreFoundation.h>
-#endif /* __APPLE__ */
+#endif /* UNIX_APPLE */
 
 #ifdef __cplusplus
 	extern "C" {
@@ -59,7 +60,7 @@ struct hid_idevice {
 	HANDLE fh;					/* File handle for write/read */
 	OVERLAPPED ols;				/* Overlapped structure for write/read */
 #endif
-#if defined(__APPLE__)
+#if defined(UNIX_APPLE)
 # if defined(USE_NEW_OSX_CODE) && __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
 	int lid;							/* Location ID */
 	IOHIDDeviceRef ioob;				/* Object to open */

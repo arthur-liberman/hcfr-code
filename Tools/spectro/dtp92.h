@@ -35,6 +35,10 @@
 
 #include "inst.h"
 
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
 /* Note: update dtp92_interp_error() and dtp92_interp_code() in dtp92.c */
 /* if anything of these #defines are added or subtracted */
 
@@ -100,6 +104,9 @@ struct _dtp92 {
 /* Constructor */
 extern dtp92 *new_dtp92(icoms *icom, instType itype);
 
+#ifdef __cplusplus
+	}
+#endif
 
 #define DTP92_H
 #endif /* DTP92_H */

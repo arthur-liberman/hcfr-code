@@ -33,6 +33,7 @@
 #include "sa_config.h"
 #endif
 #include "numsup.h"
+#include "cgats.h"
 #include "xspect.h"
 #include "insttypes.h"
 #include "conv.h"
@@ -90,7 +91,7 @@ static int icoms_usb_wait_io(
 # ifdef NT
 #  include "usbio_nt.c"
 # endif
-# if defined(__APPLE__)
+# if defined(UNIX_APPLE)
 #  include "usbio_ox.c"
 # endif
 # if defined(UNIX_X11)
@@ -491,7 +492,7 @@ double tout)		/* Time out in seconds */
 		return ICOM_SYS;
 	}
 
-	if (p->port_type(p) == icomt_usbserial)
+	if (p->dctype & icomt_fastserial)
 		fastserial  = 1;
 
 	for (j = 0; j < bsize; j++)
@@ -517,7 +518,7 @@ double tout)		/* Time out in seconds */
 		int c, rv;
 		int rsize = bsize; 
 
-		/* If not a fast USB serial port, read in quanta size chunks */ 
+		/* If not a fast USB/BT serial port, read in quanta size chunks */ 
 		if (!fastserial && rsize > p->rd_qa)
 			rsize = p->rd_qa;
 
@@ -614,8 +615,7 @@ char **pnames			/* List of process names to try and kill before opening */
 ) {
 	a1logd(p->log, 8, "icoms_set_usb_port: About to set usb port characteristics\n");
 
-	if (p->port_type(p) == icomt_usb
-	 || p->port_type(p) == icomt_usbserial) {
+	if (p->port_type(p) & icomt_usb) {
 		int rv;
 
 		if (p->is_open) 

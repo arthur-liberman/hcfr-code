@@ -22,6 +22,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
+#include <sys/time.h>
 #include <linux/usbdevice_fs.h>
 
 /* select() defined, but not poll(), so emulate poll() */
@@ -81,7 +82,7 @@ char *dpath		/* path to device */
 	unsigned char buf[IUSB_DESC_TYPE_DEVICE_SIZE];
 	unsigned vid, pid, nep10 = 0xffff;
 	unsigned int configix, nconfig, totlen;
-	instType itype;
+	devType itype;
 	struct usb_idevice *usbd = NULL;
 	int fd;			/* device file descriptor */
 
@@ -322,7 +323,7 @@ icompaths *p
 		}
 	}
 
-	a1logd(p->log, 8, "usb_get_paths: returning %d paths and ICOM_OK\n",p->npaths);
+	a1logd(p->log, 8, "usb_get_paths: returning %d paths and ICOM_OK\n",p->ndpaths[dtix_combined]);
 	return ICOM_OK;
 }
 
@@ -384,6 +385,9 @@ void usb_close_port(icoms *p) {
 			ioctl(p->usbd->fd, USBDEVFS_RELEASEINTERFACE, &iface);
 
 		/* Workaround for some bugs - reset device on close */
+		/* !!!! Alternative would be to do reset before open. 
+		   On Linux the path stays the same, so could do open/reset/open
+		 */
 		if (p->uflags & icomuf_reset_before_close) {
 			if ((rv = ioctl(p->usbd->fd, USBDEVFS_RESET, NULL)) != 0) {
 				a1logd(p->log, 1, "usb_close_port: reset returned %d\n",rv);
@@ -460,8 +464,11 @@ char **pnames		/* List of process names to try and kill before opening */
 			if ((rv = p->usbd->fd = open(p->usbd->dpath, O_RDWR)) < 0) {
 				a1logd(p->log, 8, "usb_open_port: open '%s' config %d failed (%d) (Permissions ?)\n",p->usbd->dpath,config,rv);
 				if (retries <= 0) {
-					if (kpc != NULL)
+					if (kpc != NULL) {
+						if (kpc->th->result < 0)
+							a1logw(p->log, "usb_open_port: killing competing processes failed\n");
 						kpc->del(kpc); 
+					}
 					a1loge(p->log, ICOM_SYS, "usb_open_port: open '%s' config %d failed (%d) (Permissions ?)\n",p->usbd->dpath,config,rv);
 					return ICOM_SYS;
 				}
@@ -528,7 +535,8 @@ char **pnames		/* List of process names to try and kill before opening */
 
 		/* Clear any errors. */
 		/* (Some I/F seem to hang if we do this, some seem to hang if we don't !) */
-		/* The ColorMunki on Linux only starts every second time if we don't do this. */
+		/* (The ColorMunki on some Linux's only starts every second time if we don't do this, */
+		/* and on others, every second time if we do.) */
 		if (!(p->uflags & icomuf_no_open_clear)) {
 			for (i = 0; i < 32; i++) {
 				if (!p->ep[i].valid)
@@ -603,7 +611,7 @@ static int cancel_req(icoms *p, usbio_req *req, int thisurb) {
 		int ev;
 		// ~~99 can we skip done, errored or cancelled urbs ?
 		// Does it matter if there is a race between cancellers ? */
-		a1logd(p->log, 7, "cancel_req %d\n",i);
+		a1logd(p->log, 8, "cancel_req %d\n",i);
 		ev = ioctl(p->usbd->fd, USBDEVFS_DISCARDURB, &req->urbs[i].urb);
 		if (ev != 0 && ev != EINVAL) {
 			/* Hmmm */
@@ -624,7 +632,7 @@ static void *urb_reaper(void *context) {
 	int rv;
 	struct pollfd pa[2];        /* Poll array to monitor urb result or shutdown */
 
-	a1logd(p->log, 6, "urb_reaper: reap starting\n");
+	a1logd(p->log, 8, "urb_reaper: reap starting\n");
 
 	/* Wait for a URB, and signal the requester */
 	for (;;) {
@@ -636,25 +644,53 @@ static void *urb_reaper(void *context) {
 		pa[0].events = POLLIN | POLLOUT;
 		pa[0].revents = 0;
 	
+		/* Setup to wait for a shutdown signal via the sd_pipe */
 		pa[1].fd = p->usbd->sd_pipe[0];
 		pa[1].events = POLLIN;
 		pa[1].revents = 0;
 
-		/* Wait for fd to become ready or shutdown */
-		if ((rv = poll_x(pa, 2, -1)) < 0 || pa[1].revents || pa[0].revents == 0) {
-			a1logd(p->log, 6, "urb_reaper: poll returned %d and events %d %d\n",rv,pa[0].revents,pa[1].revents);
+		/* Wait for fd to become ready or fail */
+		rv = poll_x(pa, 2, -1);
+
+		/* Failed */
+		if (rv < 0) {
+			a1logd(p->log, 2, "urb_reaper: poll failed with %d\n",rv);
+				if (errc++ < 5) {
+				continue;
+			}
+			a1logd(p->log, 2, "urb_reaper: poll failed too many times - shutting down\n");
 			p->usbd->shutdown = 1;
 			break;
+		}
+
+		/* Shutdown event */
+		if (pa[1].revents != 0) {
+			a1logd(p->log, 6, "urb_reaper: poll returned events %d %d - shutting down\n",
+			                   pa[0].revents,pa[1].revents);
+			p->usbd->shutdown = 1;
+			break;
+		}
+
+		/* Hmm. poll returned without event from fd. */
+		if (pa[0].revents == 0) {
+			a1logd(p->log, 8, "urb_reaper: poll returned events %d %d - ignoring\n",
+			                   pa[0].revents,pa[1].revents);
+			continue;
 		}
 
 		/* Not sure what this returns if there is nothing there */
 		rv = ioctl(p->usbd->fd, USBDEVFS_REAPURBNDELAY, &out);
 
+		if (rv == EAGAIN) {
+			a1logd(p->log, 8, "urb_reaper: reap returned EAGAIN - ignored\n");
+			continue;
+		}
 		if (rv < 0) {
-			a1logd(p->log, 2, "urb_reaper: reap failed with %d\n",rv);
+			a1logd(p->log, 8, "urb_reaper: reap failed with %d\n",rv);
 				if (errc++ < 5) {
 				continue;
 			}
+			a1logd(p->log, 8, "urb_reaper: reap failed too many times - shutting down\n");
 			p->usbd->shutdown = 1;
 			break;
 		}
@@ -662,7 +698,7 @@ static void *urb_reaper(void *context) {
 		errc = 0;
 
 		if (out == NULL) {
-			a1logd(p->log, 2, "urb_reaper: reap returned NULL URB\n");
+			a1logd(p->log, 8, "urb_reaper: reap returned NULL URB - ignored\n");
 			continue;
 		}
 
@@ -670,7 +706,8 @@ static void *urb_reaper(void *context) {
 		iurb = (usbio_urb *)out->usercontext;
 		req = iurb->req;
 
-		a1logd(p->log, 8, "urb_reaper: urb reap URB %d with status %d bytes %d, urbs left %d\n",iurb->urbno, out->status, out->actual_length, req->nourbs-1);
+		a1logd(p->log, 8, "urb_reaper: urb reap URB %d with status %d, bytes %d, urbs left %d\n",iurb->urbno, out->status, out->actual_length, req->nourbs-1);
+
 
 		pthread_mutex_lock(&req->lock);	/* Stop requester from missing reap */
 		req->nourbs--;					/* We're reaped one */
@@ -679,7 +716,7 @@ static void *urb_reaper(void *context) {
 		if (req->nourbs > 0 && !req->cancelled
 		 && ((out->actual_length < out->buffer_length)
 		   || (out->status < 0 && out->status != -ECONNRESET))) {
-			a1logd(p->log, 6, "urb_reaper: reaper canceling failed or done urb's\n",rv);
+			a1logd(p->log, 8, "urb_reaper: reaper canceling failed or done urb's\n",rv);
 			if (cancel_req(p, req, iurb->urbno) != ICOM_OK) {
 				pthread_mutex_unlock(&req->lock);
 				/* Is this fatal ? Assume so for the moment ... */
@@ -710,7 +747,7 @@ static void *urb_reaper(void *context) {
 
 			pthread_mutex_lock(&req->lock);	
 			for (i = req->nourbs-1; i >= 0; i--) {
-				req->urbs[i].urb.status = ICOM_SYS;
+				req->urbs[i].urb.status = -ENOMSG;	/* Use ENOMSG as error marker */
 			}
 			req->nourbs = 0;
 			pthread_cond_signal(&req->cond);
@@ -718,7 +755,7 @@ static void *urb_reaper(void *context) {
 			req = req->next;
 		}
 		pthread_mutex_unlock(&p->usbd->lock);
-		a1logd(p->log, 1, "urb_reaper: cleared requests\n");
+		a1logd(p->log, 8, "urb_reaper: cleared requests\n");
 	}
 	p->usbd->running = 0;
 
@@ -747,7 +784,10 @@ static int icoms_usb_transaction(
 	int i;
 
 	in_usb_rw++;
-	a1logd(p->log, 8, "icoms_usb_transaction: req type 0x%x ep 0x%x size %d\n",ttype,endpoint,length);
+	a1logd(p->log, 8, "icoms_usb_transaction: req type 0x%x ep 0x%x size %d to %d\n",ttype,endpoint,length, timeout);
+
+	if (transferred != NULL)
+		*transferred = 0;
 
 	if (!p->usbd->running) {
 		in_usb_rw--;
@@ -803,7 +843,7 @@ static int icoms_usb_transaction(
 		bp += req.urbs[i].urb.buffer_length;
 		req.urbs[i].urb.status = -EINPROGRESS;
 	}
-a1logd(p->log, 8, "icoms_usb_transaction: reset req 0x%p nourbs to %d\n",&req,req.nourbs);
+	a1logd(p->log, 8, "icoms_usb_transaction: set req %p nourbs to %d\n",&req,req.nourbs);
 
 	/* Add our request to the req list so that it can be cancelled on reap failure */
 	pthread_mutex_lock(&p->usbd->lock);
@@ -815,7 +855,7 @@ a1logd(p->log, 8, "icoms_usb_transaction: reset req 0x%p nourbs to %d\n",&req,re
 	for (i = 0; i < req.nurbs; i++) {
 		if ((rv = ioctl(p->usbd->fd, USBDEVFS_SUBMITURB, &req.urbs[i].urb)) < 0) {
 			a1logd(p->log, 1, "coms_usb_transaction: Submitting urb to fd %d failed with %d\n",p->usbd->fd, rv);
-			req.urbs[i].urb.status = ICOM_SYS;	/* Mark it as failed to submit */
+			req.urbs[i].urb.status = -ENOMSG;	/* Mark it as failed to submit */
 			req.nourbs--;
 		}
 	}
@@ -824,7 +864,7 @@ a1logd(p->log, 8, "icoms_usb_transaction: reset req 0x%p nourbs to %d\n",&req,re
 		amutex_lock(cancelt->cmtx);
 		cancelt->hcancel = (void *)&req;
 		cancelt->state = 1;
-		amutex_unlock(cancelt->cond);		/* Signal any thread waiting for IO start */
+		amutex_unlock(cancelt->condx);	/* Signal any thread waiting for IO start */
 		amutex_unlock(cancelt->cmtx);
 	}
 
@@ -887,7 +927,7 @@ a1logd(p->log, 8, "icoms_usb_transaction: reset req 0x%p nourbs to %d\n",&req,re
 		int stat = req.urbs[i].urb.status;
 		xlength += req.urbs[i].urb.actual_length;
 
-		if (stat == ICOM_SYS) {	/* Submit or cancel failed */
+		if (stat == -ENOMSG) {	/* Submit or cancel failed */
 			reqrv = ICOM_SYS;
 		} else if (reqrv == ICOM_OK && stat < 0 && stat != -ECONNRESET) {	/* Error result */
 			if ((endpoint & IUSB_ENDPOINT_DIR_MASK) == IUSB_ENDPOINT_OUT)
@@ -919,7 +959,7 @@ done:;
 		amutex_lock(cancelt->cmtx);
 		cancelt->hcancel = (void *)NULL;
 		if (cancelt->state == 0)
-			amutex_unlock(cancelt->cond);
+			amutex_unlock(cancelt->condx);
 		cancelt->state = 2;
 		amutex_unlock(cancelt->cmtx);
 	}

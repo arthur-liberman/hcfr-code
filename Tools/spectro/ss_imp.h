@@ -37,6 +37,9 @@
    and agreed to support.
  */
 
+#ifdef __cplusplus
+	extern "C" {
+#endif
 
 /* Communication symbol definitions */
 /* From the Gretag Spectrolino/Spectroscan */
@@ -1086,7 +1089,8 @@ ss_toost oo		/* Activated/Deactivated */
 /* Device Initialisation and configuration */
 
 /* Initialise the device. Scans the Spectrolino */
-/* (Doesn't work when device is offline ) */
+/* (Doesn't work when device is offline, */
+/* takes some seconds for the device to recover after reply.) */
 inst_code ss_do_ScanInitializeDevice(struct _ss *p);
 
 /* Establish communications between the SpectroScan and Spectrolino */
@@ -1330,6 +1334,10 @@ inst_code ss_do_OutputSpecialStatus(
 struct _ss *p,
 ss_sss *sss	/* Return Special Status bits */
 );
+
+#ifdef __cplusplus
+	}
+#endif
 
 #define SS_IMP_H
 #endif /* SS_IMP_H */

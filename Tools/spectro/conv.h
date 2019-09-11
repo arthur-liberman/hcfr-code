@@ -19,9 +19,6 @@
  * 
  * Derived from icoms.h
  */
-#ifdef __cplusplus
-	extern "C" {
-#endif
 
 #if defined (NT)
 # if !defined(_WIN32_WINNT) || _WIN32_WINNT < 0x0501
@@ -35,12 +32,15 @@
 # include <io.h>
 #endif
 
-#if defined (UNIX) || defined(__APPLE__)
+#if defined(UNIX)
 # include <unistd.h>
 # include <glob.h>
 # include <pthread.h>
 #endif
 
+#ifdef __cplusplus
+	extern "C" {
+#endif
 
 /* - - - - - - - - - - - - - - - - - - -- */
 /* System dependent convenience functions */
@@ -57,19 +57,8 @@ int poll_con_char(void);
 /* (If not_interactive, does nothing) */
 void empty_con_chars(void);
 
-/* Sleep for the given number of msec */
-void msec_sleep(unsigned int msec);
-
-/* Return the current time in msec since */
-/* the first invokation of msec_time() */
-unsigned int msec_time();
-
-/* Return the current time in usec */
-/* the first invokation of usec_time() */
-double usec_time();
-
 /* Activate the system beeper after a delay */
-/* (Note frequancy and duration may not be honoured on all systems) */
+/* (Note frequency and duration may not be honoured on all systems) */
 void msec_beep(int delay, int freq, int msec);
 
 void normal_beep(); /* Emit a "normal" beep */
@@ -149,7 +138,7 @@ struct _athread {
 #if defined (NT)
 	HANDLE th;				/* Thread */
 #endif
-#if defined (UNIX) || defined(__APPLE__)
+#if defined(UNIX)
 	pthread_t thid;			/* Thread ID */
 #endif
 	int finished;			/* Set when the thread returned */
@@ -179,6 +168,10 @@ athread *new_athread(int (*function)(void *context), void *context);
 
 /* - - - - - - - - - - - - - - - - - - -- */
 
+/* Return the login $HOME directory. */
+/* (Useful if we might be running sudo) */
+char *login_HOME();
+
 /* Delete a file */
 void delete_file(char *fname);
 
@@ -197,7 +190,7 @@ struct _kkill_nproc_ctx {
     void (*del)(struct _kkill_nproc_ctx *p);
 }; typedef struct _kkill_nproc_ctx kkill_nproc_ctx;
 
-#if defined(__APPLE__) || defined(NT)
+#if defined(UNIX_APPLE) || defined(NT)
 
 /* Kill a list of named processes. NULL for last */
 /* return < 0 if this fails. */
@@ -209,68 +202,9 @@ int kill_nprocess(char **pname, a1log *log);
 /* Call ctx->del() when done */
 kkill_nproc_ctx *kkill_nprocess(char **pname, a1log *log);
 
-#endif /* __APPLE__ || NT */
+#endif /* UNIX_APPLE || NT */
 
 #include "xdg_bds.h"
-
-/* - - - - - - - - - - - - - - - - - - -- */
-/* A very small subset of icclib */
-#ifdef SALONEINSTLIB
-
-typedef struct {
-    double  X;
-    double  Y;
-    double  Z;
-} sa_XYZNumber;
-
-typedef enum {
-    sa_SigXYZData                        = 0x58595A20L,  /* 'XYZ ' */
-    sa_SigLabData                        = 0x4C616220L   /* 'Lab ' */
-} sa_ColorSpaceSignature;
-
-extern sa_XYZNumber sa_D50;
-extern sa_XYZNumber sa_D65;
-void sa_SetUnity3x3(double mat[3][3]);
-void sa_Cpy3x3(double out[3][3], double mat[3][3]);
-void sa_MulBy3x3(double out[3], double mat[3][3], double in[3]);
-void sa_Mul3x3_2(double dst[3][3], double src1[3][3], double src2[3][3]);
-int sa_Inverse3x3(double out[3][3], double in[3][3]);
-void sa_Transpose3x3(double out[3][3], double in[3][3]);
-void sa_Scale3(double out[3], double in[3], double rat);
-double sa_LabDE(double *in0, double *in1);
-void sa_Clamp3(double out[3], double in[3]);
-void sa_XYZ2Lab(sa_XYZNumber *w, double *out0, double *in0);
-/* Yxy to XYZ */
-//extern void sa_Yxy2XYZ(double *out, double *in);
-
-#define icmXYZNumber sa_XYZNumber
-#define icColorSpaceSignature sa_ColorSpaceSignature
-#define icSigXYZData sa_SigXYZData
-#define icSigLabData sa_SigLabData
-#define icmD50 sa_D50
-#define icmD65 sa_D65
-#define icmSetUnity3x3 sa_SetUnity3x3
-#define icmCpy3x3 sa_Cpy3x3
-#define icmMulBy3x3 sa_MulBy3x3
-#define icmMul3x3_2 sa_Mul3x3_2
-#define icmInverse3x3 sa_Inverse3x3
-#define icmTranspose3x3 sa_Transpose3x3
-#define icmScale3 sa_Scale3
-#define icmClamp3 sa_Clamp3
-#define icmLabDE sa_LabDE
-#define icmXYZ2Lab sa_XYZ2Lab
-//#define icmYxy2XYZ sa_Yxy2XYZ
-
-/* A subset of numlib */
-
-int sa_lu_psinvert(double **out, double **in, int m, int n);
-
-#define lu_psinvert sa_lu_psinvert
-
-#endif /* SALONEINSTLIB */
-
-/* - - - - - - - - - - - - - - - - - - -- */
-
 
 #ifdef __cplusplus
 	}

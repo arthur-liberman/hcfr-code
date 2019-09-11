@@ -22,14 +22,15 @@
 #include <ctype.h>
 #include <string.h>
 #include <time.h>
+#include "numsup.h"
 #ifndef SALONEINSTLIB
 #include "copyright.h"
 #include "aconfig.h"
 #include "icc.h"
 #else
 #include "sa_config.h"
+#include "sa_conv.h"
 #endif /* !SALONEINSTLIB */
-#include "numsup.h"
 #include "conv.h"
 #include "disptechs.h"
 
@@ -230,6 +231,7 @@ static disptech_info disptech_info_array[] = {
 		"b"
 
 	},
+
 	{	disptech_lcd_rgledp,
 		"LCD RG Phosphor",
 		"LCD RG Phosphor",
@@ -263,6 +265,72 @@ static disptech_info disptech_info_array[] = {
 		"h"
 	},
 
+	{	disptech_lcd_nrgledp,
+		"LCD PFS Phosphor",
+		"LCD PFS Phosphor",
+		0,
+		DISPTECH_LCD_RISE,
+		DISPTECH_LCD_FALL,
+		"h"
+	},
+	{	disptech_lcd_nrgledp_ips,
+		"LCD PFS Phosphor IPS",
+		"LCD PFS Phosphor IPS",
+		0,
+		DISPTECH_LCD_RISE,
+		DISPTECH_LCD_FALL,
+		"h"
+	},
+	{	disptech_lcd_nrgledp_vpa,
+		"LCD PFS Phosphor VPA",
+		"LCD PFS Phosphor VPA",
+		0,
+		DISPTECH_LCD_RISE,
+		DISPTECH_LCD_FALL,
+		"h"
+	},
+	{	disptech_lcd_nrgledp_tft,
+		"LCD PFS Phosphor TFT",
+		"LCD PFS Phosphor TFT",
+		0,
+		DISPTECH_LCD_RISE,
+		DISPTECH_LCD_FALL,
+		"h"
+	},
+
+	{	disptech_lcd_gbrledp,
+		"LCD GB-R Phosphor",
+		"LCD GB-R Phosphor",
+		0,
+		DISPTECH_LCD_RISE,
+		DISPTECH_LCD_FALL,
+		"i"
+	},
+	{	disptech_lcd_gbrledp_ips,
+		"LCD GB-R Phosphor IPS",
+		"LCD GB-R Phosphor IPS",
+		0,
+		DISPTECH_LCD_RISE,
+		DISPTECH_LCD_FALL,
+		"i"
+	},
+	{	disptech_lcd_gbrledp_vpa,
+		"LCD GB-R Phosphor VPA",
+		"LCD GB-R Phosphor VPA",
+		0,
+		DISPTECH_LCD_RISE,
+		DISPTECH_LCD_FALL,
+		"i"
+	},
+	{	disptech_lcd_gbrledp_tft,
+		"LCD GB-R Phosphor TFT",
+		"LCD GB-R Phosphor TFT",
+		0,
+		DISPTECH_LCD_RISE,
+		DISPTECH_LCD_FALL,
+		"i"
+	},
+
 	{	disptech_oled,
 		"LED OLED",
 		"LED OLED",
@@ -278,6 +346,14 @@ static disptech_info disptech_info_array[] = {
 		DISPTECH_LED_RISE,
 		DISPTECH_LED_FALL,
 		"a"
+	},
+	{	disptech_woled,
+		"LED WOLED",
+		"LED WOLED",
+		0,
+		DISPTECH_LED_RISE,
+		DISPTECH_LED_FALL,
+		"w"
 	},
 
 	{	disptech_dlp,
@@ -329,7 +405,7 @@ static disptech_info disptech_info_array[] = {
 };
 
 
-static int unknown_ix = -1;
+static int unknown_ix = -1;			/* Set to actual index by find_unknown() */
 
 static void find_unknown() {
 	int i;

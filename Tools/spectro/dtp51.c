@@ -51,6 +51,7 @@
 #include "sa_config.h"
 #include "numsup.h"
 #endif /* !SALONEINSTLIB */
+#include "cgats.h"
 #include "xspect.h"
 #include "insttypes.h"
 #include "conv.h"
@@ -180,7 +181,7 @@ double to) {		/* Timout in seconts */
 
 /* Establish communications with a DTP51 */
 /* Use the baud rate given, and timeout in to secs */
-/* Return DTP_COMS_FAIL on failure to establish communications */
+/* Return DTP51_COMS_FAIL on failure to establish communications */
 static inst_code
 dtp51_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	dtp51 *p = (dtp51 *)pp;
@@ -202,7 +203,7 @@ dtp51_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	} else if (fc == fc_Hardware) {
 		fcc = "0104CF\r";
 	} else {
-		fc = fc_none;
+		fc = fc_None;
 		fcc = "0004CF\r";
 	}
 
@@ -225,37 +226,36 @@ dtp51_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	/* The tick to give up on */
 	etime = msec_time() + (long)(1000.0 * tout + 0.5);
 
-	while (msec_time() < etime) {
-
-		/* Until we time out, find the correct baud rate */
-		for (i = ci; msec_time() < etime;) {
-			if ((se = p->icom->set_ser_port(p->icom, fc_none, brt[i], parity_none,
-				                                    stop_1, length_8)) != ICOM_OK) { 
-				a1logd(p->log, 1, "dtp51_init_coms: set_ser_port failed ICOM err 0x%x\n",se);
-				return dtp51_interp_code((inst *)p, icoms2dtp51_err(se));
-			}
-
-			if (((ev = dtp51_command(p, "\r", buf, MAX_MES_SIZE, 0.5)) & inst_mask)
-				                                                 != inst_coms_fail)
-				break;		/* We've got coms */
-
-			/* Check for user abort */
-			if (p->uicallback != NULL) {
-				inst_code ev;
-				if ((ev = p->uicallback(p->uic_cntx, inst_negcoms)) == inst_user_abort) {
-					a1logd(p->log, 1, "dtp22_init_coms: user aborted\n");
-					return inst_user_abort;
-				}
-			}
-			if (++i >= 5)
-				i = 0;
+	/* Until we time out, find the correct baud rate */
+	for (i = ci; msec_time() < etime;) {
+		a1logd(p->log, 4, "dtp51_init_coms: Trying %s baud, %d msec to go\n",
+			                      baud_rate_to_str(brt[i]), etime- msec_time());
+		if ((se = p->icom->set_ser_port(p->icom, fc_None, brt[i], parity_none,
+			                                    stop_1, length_8)) != ICOM_OK) { 
+			a1logd(p->log, 1, "dtp51_init_coms: set_ser_port failed ICOM err 0x%x\n",se);
+			return dtp51_interp_code((inst *)p, icoms2dtp51_err(se));
 		}
-		break;		/* Got coms */
+
+		if (((ev = dtp51_command(p, "\r", buf, MAX_MES_SIZE, 0.5)) & inst_mask)
+			                                                 != inst_coms_fail)
+			goto got_coms;		/* We've got coms or user abort */
+
+		/* Check for user abort */
+		if (p->uicallback != NULL) {
+			inst_code ev;
+			if ((ev = p->uicallback(p->uic_cntx, inst_negcoms)) == inst_user_abort) {
+				a1logd(p->log, 1, "dtp22_init_coms: user aborted\n");
+				return inst_user_abort;
+			}
+		}
+		if (++i >= 5)
+			i = 0;
 	}
 
-	if (msec_time() >= etime) {		/* We haven't established comms */
-		return inst_coms_fail;
-	}
+	/* We haven't established comms */
+	return inst_coms_fail;
+
+  got_coms:;
 
 	/* Set the handshaking */
 	if ((ev = dtp51_command(p, fcc, buf, MAX_MES_SIZE, 1.5)) != inst_ok)
@@ -367,7 +367,7 @@ dtp51_init_inst(inst *pp) {
 	/* Reset it */
 	if ((ev = dtp51_command(p, "0PR\r", buf, MAX_MES_SIZE, 1.5)) != inst_ok)
 		return ev;
-	msec_sleep(2 * 1000);	/* Let it recover from reset */
+	sleep(2);	/* Let it recover from reset */
 
 	/* Turn echoing of characters off */
 	if ((ev = dtp51_command(p, "EC\r", buf, MAX_MES_SIZE, 1.5)) != inst_ok)
@@ -595,6 +595,7 @@ inst_code dtp51_calibrate(
 inst *pp,
 inst_cal_type *calt,	/* Calibration type to do/remaining */
 inst_cal_cond *calc,	/* Current condition/desired condition */
+inst_calc_id_type *idtype,	/* Condition identifier type */
 char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 ) {
 	dtp51 *p = (dtp51 *)pp;
@@ -606,6 +607,7 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 	if (!p->inited)
 		return inst_no_init;
 
+	*idtype = inst_calc_id_none;
 	id[0] = '\000';
 
 	if ((ev = dtp51_get_n_a_cals((inst *)p, &needed, &available)) != inst_ok)
@@ -635,8 +637,9 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 
 	if (*calt & inst_calt_ref_white) {
 
-		if (*calc != inst_calc_uop_ref_white) {
-			*calc = inst_calc_uop_ref_white;	/* Ask user to do calibration */
+		if ((*calc & inst_calc_cond_mask) != inst_calc_uop_ref_white) {
+			/* Ask user to do calibration */
+			*calc = inst_calc_uop_ref_white;
 			return inst_cal_setup;
 		}
 		p->need_cal = 0;
@@ -786,6 +789,7 @@ dtp51_del(inst *pp) {
 	dtp51 *p = (dtp51 *)pp;
 	if (p->icom != NULL)
 		p->icom->del(p->icom);
+	p->vdel(pp);
 	free(p);
 }
 
@@ -855,8 +859,7 @@ inst_code dtp51_set_mode(inst *pp, inst_mode m) {
  * was assume that all of these can be done before initialisation.
  */
 static inst_code
-dtp51_get_set_opt(inst *pp, inst_opt_type m, ...)
-{
+dtp51_get_set_opt(inst *pp, inst_opt_type m, ...) {
 	dtp51 *p = (dtp51 *)pp;
 	static char buf[MAX_MES_SIZE];
 
@@ -866,11 +869,35 @@ dtp51_get_set_opt(inst *pp, inst_opt_type m, ...)
 		return inst_ok;
 	}
 
-	return inst_unsupported;
+	/* Get the current effective xcalstd */
+	if (m == inst_opt_get_xcalstd) {
+		xcalstd *standard;
+		va_list args;
+
+		va_start(args, m);
+		standard = va_arg(args, xcalstd *);
+		va_end(args);
+
+		*standard = p->native_calstd;
+
+		return inst_ok;
+	}
+
+	/* Use default implementation of other inst_opt_type's */
+	{
+		inst_code rv;
+		va_list args;
+
+		va_start(args, m);
+		rv = inst_get_set_opt_def(pp, m, args);
+		va_end(args);
+
+		return rv;
+	}
 }
 
 /* Constructor */
-extern dtp51 *new_dtp51(icoms *icom, instType itype) {
+extern dtp51 *new_dtp51(icoms *icom, instType dtype) {
 	dtp51 *p;
 	if ((p = (dtp51 *)calloc(sizeof(dtp51),1)) == NULL) {
 		a1loge(icom->log, 1, "new_dtp51: malloc failed!\n");
@@ -892,7 +919,9 @@ extern dtp51 *new_dtp51(icoms *icom, instType itype) {
 	p->del          	= dtp51_del;
 
 	p->icom = icom;
-	p->itype = icom->itype;
+	p->dtype = dtype;
+
+	p->native_calstd = xcalstd_xrdi;		/* Not alterable */
 
 	return p;
 }

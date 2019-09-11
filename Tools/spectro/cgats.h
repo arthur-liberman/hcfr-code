@@ -4,7 +4,9 @@
  * Committee for Graphics Arts Technologies Standards
  * CGATS.5 and IT8.7 family file I/O class
  * Version 2.05
- *
+ */
+
+/*
  * Author: Graeme W. Gill
  * Date:   20/12/95
  *
@@ -12,7 +14,7 @@
  * All rights reserved.
  *
  * This material is licensed with an "MIT" free use license:-
- * see the License.txt file in this directory for licensing details.
+ * see the License4.txt file in this directory for licensing details.
  */
 
 /* Version of cgatslib release */
@@ -124,12 +126,17 @@ struct _cgats {
 											/* Return the index of the table */
 											/* Return -2, set errc & err on system error */
 											/* if tt is tt_other, io sets the other index */
+	int (*set_table_type)(struct _cgats *p, int table, table_type tt, int oi);
+						/* Override the table type */
 	int (*set_table_flags)(struct _cgats *p, int table, int sup_id,int sup_kwords,int sup_fields);
 						/* Set or reset table output suppresion flags */
 						/* Return -ve, set errc & err on error */
 	int (*add_kword)(struct _cgats *p, int table, const char *ksym, const char *kdata, const char *kcom);
 						/* Add a new keyword/value pair + optional comment to the table */
 						/* Return index of new keyword, or -1, errc & err on error */
+	int (*add_kword_at)(struct _cgats *p, int table, int pos, const char *ksym,
+	                                      const char *kdata, const char *kcom);
+						/* Replace or append a new keyword/value pair + optional comment */
 	int (*add_field)(struct _cgats *p, int table, const char *fsym, data_type ftype);
 						/* Add a new field to the table */
 						/* Return index of new field, or -1, -2, errc and err on error */

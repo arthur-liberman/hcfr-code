@@ -68,10 +68,12 @@
 #include "copyright.h"
 #include "aconfig.h"
 #include "numlib.h"
-#else	/* !SALONEINSTLIB */
+#else	/* SALONEINSTLIB */
 #include "sa_config.h"
 #include "numsup.h"
+#include "sa_conv.h"
 #endif /* !SALONEINSTLIB */
+#include "cgats.h"
 #include "xspect.h"
 #include "insttypes.h"
 #include "conv.h"
@@ -202,7 +204,7 @@ smcube_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	baud_rate brt[] = { baud_38400, baud_nc };
 	unsigned int etime;
 	unsigned int i;
-	instType itype = pp->itype;
+	instType dtype = pp->dtype;
 	int se;
 
 	inst_code ev = inst_ok;
@@ -210,12 +212,13 @@ smcube_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	a1logd(p->log, 2, "smcube_init_coms: About to init Serial I/O\n");
 
 
-	if (p->icom->port_type(p->icom) != icomt_serial
-	 && p->icom->port_type(p->icom) != icomt_usbserial) {
-		a1logd(p->log, 1, "smcube_init_coms: wrong communications type for device!\n");
+	if (!(p->icom->dctype & icomt_seriallike)
+	 && !(p->icom->dctype & icomt_fastserial)) {
+		a1logd(p->log, 1, "smcube_init_coms: wrong communications type for device! (dctype 0x%x)\n",p->icom->dctype);
 		return inst_coms_fail;
 	}
 	
+	/* Communications has already been established */
 	if (p->bt) {
 		amutex_lock(p->lock);
 
@@ -234,8 +237,8 @@ smcube_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 		}
 		amutex_unlock(p->lock);
 
+	/* We need to setup communications */
 	} else {
-
 		amutex_lock(p->lock);
 
 		/* The tick to give up on */
@@ -248,7 +251,8 @@ smcube_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 			if (brt[i] == baud_nc) {
 				i = 0;
 			}
-			a1logd(p->log, 5, "smcube_init_coms: trying %s baud\n",baud_rate_to_str(brt[i]));
+			a1logd(p->log, 4, "smcube_init_coms: Trying %s baud, %d msec to go\n",
+				                      baud_rate_to_str(brt[i]), etime- msec_time());
 			if ((se = p->icom->set_ser_port(p->icom, fc_Hardware, brt[i], parity_none,
 				                         stop_1, length_8)) != ICOM_OK) { 
 				amutex_unlock(p->lock);
@@ -260,7 +264,7 @@ smcube_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 			buf[0] = 0x7e, buf[1] = 0x00, buf[2] = 0x02, buf[3] = 0x00; /* Ping command */
 			if (((ev = smcube_command(p, buf, 4, buf, 4, DEFTO)) & inst_mask)
 				                                                       != inst_coms_fail) {
-				break;		/* We've got coms or user abort */
+				goto got_coms;		/* We've got coms or user abort */
 			}
 	
 			/* Check for user abort */
@@ -274,11 +278,12 @@ smcube_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 			}
 		}
 	
-		if (msec_time() >= etime) {		/* We haven't established comms */
-			amutex_unlock(p->lock);
-			a1logd(p->log, 2, "smcube_init_coms: failed to establish coms\n");
-			return inst_coms_fail;
-		}
+		/* We haven't established comms */
+		amutex_unlock(p->lock);
+		a1logd(p->log, 2, "smcube_init_coms: failed to establish coms\n");
+		return inst_coms_fail;
+
+	  got_coms:;
 	
 		/* Check the response */
 		if (buf[0] != 0x7e || buf[1] != 0x20 || buf[2] != 0x02 || buf[3] != 0x00) {
@@ -609,6 +614,7 @@ inst_code smcube_calibrate(
 inst *pp,
 inst_cal_type *calt,	/* Calibration type to do/remaining */
 inst_cal_cond *calc,	/* Current condition/desired condition */
+inst_calc_id_type *idtype,	/* Condition identifier type */
 char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 ) {
 	smcube *p = (smcube *)pp;
@@ -621,6 +627,7 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 	if (!p->inited)
 		return inst_no_init;
 
+	*id = inst_calc_id_none;
 	id[0] = '\000';
 
 	if ((ev = smcube_get_n_a_cals((inst *)p, &needed, &available)) != inst_ok)
@@ -1056,8 +1063,7 @@ static void set_optcalibs_default(smcube *p) {
  * error if it hasn't been initialised.
  */
 static inst_code
-smcube_get_set_opt(inst *pp, inst_opt_type m, ...)
-{
+smcube_get_set_opt(inst *pp, inst_opt_type m, ...) {
 	smcube *p = (smcube *)pp;
 	inst_code ev = inst_ok;
 
@@ -1114,17 +1120,21 @@ smcube_get_set_opt(inst *pp, inst_opt_type m, ...)
 		return inst_ok;
 	}
 
-	/* Get/Sets that require instrument coms. */
-	if (!p->gotcoms)
-		return inst_no_coms;
-	if (!p->inited)
-		return inst_no_init;
+	/* Use default implementation of other inst_opt_type's */
+	{
+		inst_code rv;
+		va_list args;
 
-	return inst_unsupported;
+		va_start(args, m);
+		rv = inst_get_set_opt_def(pp, m, args);
+		va_end(args);
+
+		return rv;
+	}
 }
 
 /* Constructor */
-extern smcube *new_smcube(icoms *icom, instType itype) {
+extern smcube *new_smcube(icoms *icom, instType dtype) {
 	smcube *p;
 	if ((p = (smcube *)calloc(sizeof(smcube),1)) == NULL) {
 		a1loge(icom->log, 1, "new_smcube: malloc failed!\n");
@@ -1149,7 +1159,7 @@ extern smcube *new_smcube(icoms *icom, instType itype) {
 
 	p->icom = icom;
 	icom->icntx = (void *)p;	/* Allow us to get instrument from icom */
-	p->itype = itype;
+	p->dtype = dtype;
 
 	amutex_init(p->lock);
 

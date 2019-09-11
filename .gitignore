@@ -1,7 +1,6 @@
 
 /Help/en/ColorHCFR_en.chm
 /Help/fr/ColorHCFR_fr.chm
-*.user
 Debug/
 Release/
 libHCFR/mac project files/build/

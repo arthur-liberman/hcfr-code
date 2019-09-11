@@ -37,6 +37,10 @@
 
 #include "inst.h"
 
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
 /* Note: update huey_interp_error() and huey_interp_code() in huey.c */
 /* if anything of these #defines are added or subtracted */
 
@@ -131,6 +135,9 @@ struct _huey {
 /* Constructor */
 extern huey *new_huey(icoms *icom, instType itype);
 
+#ifdef __cplusplus
+	}
+#endif
 
 #define HUEY_H
 #endif /* HUEY_H */

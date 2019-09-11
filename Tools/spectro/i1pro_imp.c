@@ -3,7 +3,9 @@
  * Argyll Color Correction System
  *
  * Gretag i1Pro implementation functions
- *
+ */
+
+/*
  * Author: Graeme W. Gill
  * Date:   24/11/2006
  *
@@ -34,6 +36,10 @@
 
 /* TTBD:
 
+	Would be nice to have option to save raw scan data to .ti3 file,
+	and then have a utility/option to replay it through scan
+	recognition, to be able to help remote diagnose scan problems.
+
 	Some things probably aren't quite correct:
 	The way the sensor saturation and optimal target is
 	computed probably doesn't account for the dark level
@@ -46,9 +52,6 @@
 	(see i1d3.c). Whether this will noticably improve repeatibility
 	remains to be seen.
 
-	Would be nice to have option to save raw scan data to .ti3 file,
-	and then have a utility/option to replay it through scan
-	recognition, to be able to help remote diagnose scan problems.
 */
 
 /*
@@ -89,6 +92,7 @@
 #include "numsup.h"
 #include "rspl1.h"
 #endif /* SALONEINSTLIB */
+#include "cgats.h"
 #include "xspect.h"
 #include "insttypes.h"
 #include "conv.h"
@@ -112,7 +116,7 @@
 #define DCALTOUT2 ( 1 * 60 * 60) /* [1 Hr] i1pro2 Dark Calibration timeout in seconds */
 #define WCALTOUT  ( 1 * 60 * 60) /* [1 Hr] White Calibration timeout in seconds */
 
-#define MAXSCANTIME 20.0	/* [20] Maximum scan time in seconds */
+#define MAXSCANTIME 30.0	/* [30] Maximum scan time in seconds */
 #define SW_THREAD_TIMEOUT	(10 * 60.0) 	/* [10 Min] Switch read thread timeout */
 
 #define SINGLE_READ		/* [Def] Use a single USB read for scan to eliminate latency issues. */
@@ -131,6 +135,7 @@
 #undef TEST_DARK_INTERP    /* Test out the dark interpolation (need DEBUG for plot) */
 #undef PATREC_DEBUG			/* Print & Plot patch/flash recognition information */
 #undef PATREC_ALLBANDS		/* Plot all bands of scan */
+#undef PATREC_SAVETRIMMED	/* Saved trimmed raw to file "i1pro_raw_trimed_N.csv */
 #undef IGNORE_WHITE_INCONS	/* Ignore define reference reading inconsistency */
 #undef HIGH_RES_DEBUG
 #undef HIGH_RES_PLOT
@@ -138,8 +143,8 @@
 #undef PLOT_BLACK_SUBTRACT	/* Plot temperature corrected black subtraction */
 #undef FAKE_AMBIENT		/* Fake the ambient mode for a Rev A */
 
-#define MATCH_SPOT_OMD			/* [Def] Match Original Manufacturers Driver. Reduce */
-								/* integration time and lamp turn on time */
+#undef USE_SPOT_OMD				/* [Und] Use Original Manufacturers Driver timing. Reduce */
+								/* integration time and lamp turn on time. */
 
 #define DISP_INTT 2.0			/* Seconds per reading in display spot mode */
 								/* More improves repeatability in dark colors, but limits */
@@ -171,6 +176,7 @@
 
 #include "i1pro.h"
 #include "i1pro_imp.h"
+#include "xrga.h"
 
 /* - - - - - - - - - - - - - - - - - - */
 #define LAMP_OFF_TIME 1500		/* msec to make sure lamp is dark for dark measurement */
@@ -367,7 +373,7 @@ void del_i1proimp(i1pro *p) {
 		i1pro_state *s;
 		i1pro_code ev;
 
-		if (p->itype != instI1Pro2 && (ev = i1pro_update_log(p)) != I1PRO_OK) {
+		if (p->dtype != instI1Pro2 && (ev = i1pro_update_log(p)) != I1PRO_OK) {
 			a1logd(p->log,2,"i1pro_update_log: Updating the cal and log parameters to"
 			                                              " EEProm failed failed\n");
 		}
@@ -448,21 +454,38 @@ i1pro_code i1pro_imp_init(i1pro *p) {
 	i1pro_code ev = I1PRO_OK;
 	unsigned char *eeprom;	/* EEProm contents, i1pro = half, i1pro2 = full */
 	int len = 8192;
+	char *envv;
 
 	a1logd(p->log,5,"i1pro_init:\n");
 
+	m->native_calstd = xcalstd_gmdi;		/* Rev A-D */
+	if (p->dtype == instI1Pro2) {
+		m->native_calstd = xcalstd_xrga;	/* Rev E */
+	}
+	m->target_calstd = xcalstd_native;		/* Default to native calibration */
+
+	/* Honor Environment override */
+	if ((envv = getenv("ARGYLL_XCALSTD")) != NULL) {
+		if (strcmp(envv, "XRGA") == 0)
+			m->target_calstd = xcalstd_xrga;
+		else if (strcmp(envv, "XRDI") == 0)
+			m->target_calstd = xcalstd_xrdi;
+		else if (strcmp(envv, "GMDI") == 0)
+			m->target_calstd = xcalstd_gmdi;
+	}
+
 	/* Revert to i1pro if i1pro2 driver is not enabled */
-	if (p->itype == instI1Pro2
+	if (p->dtype == instI1Pro2
 #ifdef ENABLE_2
 	 && getenv("ARGYLL_DISABLE_I1PRO2_DRIVER") != NULL	/* Disabled by environment */
 #endif
 	) {
-		p->itype = instI1Pro;
+		p->dtype = instI1Pro;
 	}
 
-	if (p->itype != instI1Monitor
-	 && p->itype != instI1Pro
-	 && p->itype != instI1Pro2)
+	if (p->dtype != instI1Monitor
+	 && p->dtype != instI1Pro
+	 && p->dtype != instI1Pro2)
 		return I1PRO_UNKNOWN_MODEL;
 
 	m->trig = inst_opt_trig_user;
@@ -491,14 +514,14 @@ i1pro_code i1pro_imp_init(i1pro *p) {
 		return ev; 
 	a1logd(p->log,2,"Firmware rev = %d, max +ve value = 0x%x\n",m->fwrev, m->maxpve);
 
-	if (p->itype == instI1Pro2 && m->fwrev < 600) {		/* Hmm */
+	if (p->dtype == instI1Pro2 && m->fwrev < 600) {		/* Hmm */
 		a1logd(p->log,2, "Strange, firmware isn't up to i1pro2 but has extra pipe..revert to i1pro driver\n",m->fwrev);
-		p->itype = instI1Pro;
+		p->dtype = instI1Pro;
 	}
 
 	/* Get the EEProm size */
 	m->eesize = 8192;		/* Rev A..D */
-	if (p->itype == instI1Pro2) {
+	if (p->dtype == instI1Pro2) {
 #ifdef NEVER
 // ~~99		Hmm. makes it worse. Why ???
 //		/* Make sure LED sequence is finished, because it interferes with EEProm read! */
@@ -528,7 +551,7 @@ i1pro_code i1pro_imp_init(i1pro *p) {
 		return ev;
 	}
 
-	if (p->itype == instI1Pro2) {
+	if (p->dtype == instI1Pro2) {
 		/* Get the Chip ID (This doesn't work until after reading the EEProm !) */
 		if ((ev = i1pro2_getchipid(p, m->chipid)) != I1PRO_OK) {
 			free(eeprom);
@@ -543,7 +566,7 @@ i1pro_code i1pro_imp_init(i1pro *p) {
 	}
 
 	/* Parse the i1pro2 extra data */
-	if (p->itype == instI1Pro2) {
+	if (p->dtype == instI1Pro2) {
 		if ((ev = m->data->parse_eeprom(m->data, eeprom, m->eesize, 1)) != I1PRO_OK) {
 			free(eeprom);
 			return ev;
@@ -559,25 +582,33 @@ i1pro_code i1pro_imp_init(i1pro *p) {
 
 		/* Information about the instrument */
 
-		if ((ip = m->data->get_ints(m->data, &count, key_serno)) == NULL || count < 1)
+		if ((ip = m->data->get_ints(m->data, &count, key_serno)) == NULL || count < 1) {
+			a1logd(p->log,7,"Missing key_serno\n");
 			return I1PRO_HW_CALIBINFO;
+		}
 		m->serno = ip[0];
 		a1logd(p->log,2,"Serial number = %d\n",m->serno);
 		sprintf(m->sserno,"%ud",m->serno);
 
-		if ((ip = m->data->get_ints(m->data, &count, key_dom)) == NULL || count < 1)
+		if ((ip = m->data->get_ints(m->data, &count, key_dom)) == NULL || count < 1) {
+			a1logd(p->log,7,"Missing key_dom\n");
 			return I1PRO_HW_CALIBINFO;
+		}
 		m->dom = ip[0];
 		a1logd(p->log,2, "Date of manufactur = %d-%d-%d\n",
 		                          m->dom/1000000, (m->dom/10000) % 100, m->dom % 10000);
 
-		if ((ip = m->data->get_ints(m->data, &count, key_cpldrev)) == NULL || count < 1)
+		if ((ip = m->data->get_ints(m->data, &count, key_cpldrev)) == NULL || count < 1) {
+			a1logd(p->log,7,"Missing key_cpldrev\n");
 			return I1PRO_HW_CALIBINFO;
+		}
 		m->cpldrev = ip[0];
 		a1logd(p->log,2,"CPLD rev = %d\n",m->cpldrev);
 
-		if ((ip = m->data->get_ints(m->data, &count, key_capabilities)) == NULL || count < 1)
+		if ((ip = m->data->get_ints(m->data, &count, key_capabilities)) == NULL || count < 1) {
+			a1logd(p->log,7,"Missing key_capabilities\n");
 			return I1PRO_HW_CALIBINFO;
+		}
 		m->capabilities = ip[0];
 		if (m->capabilities & 0x6000)		/* Has ambient */
 			m->capabilities2 |= I1PRO_CAP2_AMBIENT;	/* Mimic in capabilities2 */
@@ -585,8 +616,10 @@ i1pro_code i1pro_imp_init(i1pro *p) {
 		if (m->capabilities & 0x6000)
 			a1logd(p->log,2," Can read ambient\n");
 
-		if ((ip = m->data->get_ints(m->data, &count, key_physfilt)) == NULL || count < 1)
+		if ((ip = m->data->get_ints(m->data, &count, key_physfilt)) == NULL || count < 1) {
+			a1logd(p->log,7,"Missing key_physfilt\n");
 			return I1PRO_HW_CALIBINFO;
+		}
 		m->physfilt = ip[0];
 		if (m->physfilt == 0x82)
 			m->capabilities2 |= I1PRO_CAP2_UV_FILT;	/* Mimic in cap 2 */
@@ -602,7 +635,7 @@ i1pro_code i1pro_imp_init(i1pro *p) {
 
 		m->nsen = 128;
 		m->nraw = 128;
-		if (p->itype == instI1Pro2) {
+		if (p->dtype == instI1Pro2) {
 			int clkusec, subdiv, xraw, nraw;
 			if ((ev = i1pro2_getmeaschar(p, &clkusec, &xraw, &nraw, &subdiv)) != I1PRO_OK)
 				return ev;
@@ -616,10 +649,14 @@ i1pro_code i1pro_imp_init(i1pro *p) {
 			if (m->nsen > NSEN_MAX)		/* Static allocation assumed */
 				return I1PRO_HW_UNEX_SPECPARMS;
 		}
-		if (m->data->get_ints(m->data, &m->nwav[0], key_mtx_index) == 0)
+		if (m->data->get_ints(m->data, &m->nwav[0], key_mtx_index) == 0) {
+			a1logd(p->log,7,"Missing key_mtx_index\n");
 			return I1PRO_HW_CALIBINFO;
-		if (m->nwav[0] != 36)
+		}
+		if (m->nwav[0] != 36) {
+			a1logd(p->log,7,"key_mtx_index != 36 elements\n");
 			return I1PRO_HW_CALIBINFO;
+		}
 		m->wl_short[0] = 380.0;		/* Normal res. range */
 		m->wl_long[0] = 730.0;
 
@@ -628,18 +665,24 @@ i1pro_code i1pro_imp_init(i1pro *p) {
 		m->wl_long[1] = HIGHRES_LONG;
 		m->nwav[1] = (int)((m->wl_long[1]-m->wl_short[1])/HIGHRES_WIDTH + 0.5) + 1;	
 
-		if ((dp = m->data->get_doubles(m->data, &count, key_hg_factor)) == NULL || count < 1)
+		if ((dp = m->data->get_doubles(m->data, &count, key_hg_factor)) == NULL || count < 1) {
+			a1logd(p->log,7,"Missing key_hg_factor\n");
 			return I1PRO_HW_CALIBINFO;
+		}
 		m->highgain = dp[0];
 		a1logd(p->log,2,"High gain         = %.10f\n",m->highgain);
 
 		if ((m->lin0 = m->data->get_doubles(m->data, &m->nlin0, key_ng_lin)) == NULL
-		                                                               || m->nlin0 < 1)
+		                                                               || m->nlin0 < 1) {
+			a1logd(p->log,7,"Missing key_ng_lin\n");
 			return I1PRO_HW_CALIBINFO;
+		}
 
 		if ((m->lin1 = m->data->get_doubles(m->data, &m->nlin1, key_hg_lin)) == NULL
-		                                                               || m->nlin1 < 1)
+		                                                               || m->nlin1 < 1) {
+			a1logd(p->log,7,"Missing key_hg_lin\n");
 			return I1PRO_HW_CALIBINFO;
+		}
 
 		if (p->log->debug >= 2) {
 			char oline[200] = { '\000' }, *bp = oline;
@@ -658,12 +701,14 @@ i1pro_code i1pro_imp_init(i1pro *p) {
 			a1logd(p->log,2,oline);
 		}
 
-		if ((dp = m->data->get_doubles(m->data, &count, key_min_int_time)) == NULL || count < 1)
+		if ((dp = m->data->get_doubles(m->data, &count, key_min_int_time)) == NULL || count < 1) {
+			a1logd(p->log,7,"Missing key_min_int_time\n");
 			return I1PRO_HW_CALIBINFO;
+		}
 		m->min_int_time = dp[0];
 
 		/* And then override it */
-		if (p->itype == instI1Pro2) {
+		if (p->dtype == instI1Pro2) {
 			m->min_int_time = m->subclkdiv2 * m->intclkp2;		/* 0.004896 */
 		} else {
 			if (m->fwrev >= 301)
@@ -672,62 +717,84 @@ i1pro_code i1pro_imp_init(i1pro *p) {
 				m->min_int_time = 0.00884;		/* == 1 sub clock */
 		}
 
-		if ((dp = m->data->get_doubles(m->data, &count, key_max_int_time)) == NULL || count < 1)
+		if ((dp = m->data->get_doubles(m->data, &count, key_max_int_time)) == NULL || count < 1) {
+			a1logd(p->log,7,"Missing key_max_int_time\n");
 			return I1PRO_HW_CALIBINFO;
+		}
 		m->max_int_time = dp[0];
 
 
 		if ((m->mtx_o.index = m->data->get_ints(m->data, &count, key_mtx_index)) == NULL
-		                                                                   || count != m->nwav[0])
+		                                                       || count != m->nwav[0]) {
+			a1logd(p->log,7,"Missing key_mtx_index\n");
 			return I1PRO_HW_CALIBINFO;
+		}
 
 		if ((m->mtx_o.nocoef = m->data->get_ints(m->data, &count, key_mtx_nocoef)) == NULL
-		                                                                   || count != m->nwav[0])
+		                                                           || count != m->nwav[0]) {
+			a1logd(p->log,7,"Missing key_mtx_nocoef\n");
 			return I1PRO_HW_CALIBINFO;
+		}
 
 		for (xcount = i = 0; i < m->nwav[0]; i++)	/* Count number expected in matrix coeffs */
 			xcount += m->mtx_o.nocoef[i];
 
 		if ((m->mtx_o.coef = m->data->get_doubles(m->data, &count, key_mtx_coef)) == NULL
-		                                                                    || count != xcount)
+		                                                             || count != xcount) {
+			a1logd(p->log,7,"Missing key_mtx_coef\n");
 			return I1PRO_HW_CALIBINFO;
+		}
 
 		if ((m->white_ref[0] = m->data->get_doubles(m->data, &count, key_white_ref)) == NULL
-		                                                                   || count != m->nwav[0]) {
-			if (p->itype != instI1Monitor)
+		                                                           || count != m->nwav[0]) {
+			if (p->dtype != instI1Monitor) {
+				a1logd(p->log,7,"Missing key_white_ref\n");
 				return I1PRO_HW_CALIBINFO;
+			}
 			m->white_ref[0] = NULL;
 		}
 
 		if ((m->emis_coef[0] = m->data->get_doubles(m->data, &count, key_emis_coef)) == NULL
-		                                                                   || count != m->nwav[0])
+		                                                           || count != m->nwav[0]) {
+			a1logd(p->log,7,"Missing key_emis_coef\n");
 			return I1PRO_HW_CALIBINFO;
+		}
 
 		if ((m->amb_coef[0] = m->data->get_doubles(m->data, &count, key_amb_coef)) == NULL
-		                                                                   || count != m->nwav[0]) {
-			if (p->itype != instI1Monitor
-			 && m->capabilities & 0x6000)		/* Expect ambient calibration */
+		                                                          || count != m->nwav[0]) {
+			if (p->dtype != instI1Monitor
+			 && m->capabilities & 0x6000) {		/* Expect ambient calibration */
+				a1logd(p->log,7,"Missing key_amb_coef\n");
 				return I1PRO_HW_CALIBINFO;
+			}
 			m->amb_coef[0] = NULL;
 		}
 		/* Default to original EEProm raw to wav filters values*/
 		m->mtx[0][0] = m->mtx_o;	/* Std res reflective */
 		m->mtx[0][1] = m->mtx_o;	/* Std res emissive */
 
-		if ((ip = m->data->get_ints(m->data, &count, key_sens_target)) == NULL || count < 1)
+		if ((ip = m->data->get_ints(m->data, &count, key_sens_target)) == NULL || count < 1) {
+			a1logd(p->log,7,"Missing key_sens_target\n");
 			return I1PRO_HW_CALIBINFO;
+		}
 		m->sens_target = ip[0];
 
-		if ((ip = m->data->get_ints(m->data, &count, key_sens_dark)) == NULL || count < 1)
+		if ((ip = m->data->get_ints(m->data, &count, key_sens_dark)) == NULL || count < 1) {
+			a1logd(p->log,7,"Missing key_sens_dark\n");
 			return I1PRO_HW_CALIBINFO;
+		}
 		m->sens_dark = ip[0];
 
-		if ((ip = m->data->get_ints(m->data, &count, key_ng_sens_sat)) == NULL || count < 1)
+		if ((ip = m->data->get_ints(m->data, &count, key_ng_sens_sat)) == NULL || count < 1) {
+			a1logd(p->log,7,"Missing key_ng_sens_sat\n");
 			return I1PRO_HW_CALIBINFO;
+		}
 		m->sens_sat0 = ip[0];
 
-		if ((ip = m->data->get_ints(m->data, &count, key_hg_sens_sat)) == NULL || count < 1)
+		if ((ip = m->data->get_ints(m->data, &count, key_hg_sens_sat)) == NULL || count < 1) {
+			a1logd(p->log,7,"Missing key_hg_sens_sat\n");
 			return I1PRO_HW_CALIBINFO;
+		}
 		m->sens_sat1 = ip[0];
 
 		a1logd(p->log,2,"sens_target %d, sens_dark %d, sens_sat0 %d, sens_sat1 %d\n",
@@ -777,7 +844,7 @@ i1pro_code i1pro_imp_init(i1pro *p) {
 	}
 
 	/* Read Rev E specific keys */
-	if (p->itype == instI1Pro2) {
+	if (p->dtype == instI1Pro2) {
 		int i, j;
 		double *dp;
 		int *sip;
@@ -786,8 +853,10 @@ i1pro_code i1pro_imp_init(i1pro *p) {
 
 		/* Capability bits */
 		if ((ip = m->data->get_ints(m->data, &count, key2_capabilities)) == NULL
-		                                                                  || count != 1)
+		                                                           || count != 1) {
+			a1logd(p->log,7,"Missing key2_capabilities\n");
 			return I1PRO_HW_CALIBINFO;
+		}
 		m->capabilities2 = *ip;
 		if (p->log->debug >= 2) {
 			a1logd(p->log,2,"Capabilities2 flag = 0x%x\n",m->capabilities2);
@@ -808,64 +877,94 @@ i1pro_code i1pro_imp_init(i1pro *p) {
 		if (m->capabilities2 & I1PRO_CAP2_WL_LED) {
 			/* wavelength LED calibration integration time (0.56660) */
 			if ((dp = m->data->get_doubles(m->data, &count, key2_wlcal_intt)) == NULL
-			                                                                  || count != 1)
+			                                                           || count != 1) {
+				a1logd(p->log,7,"Missing key2_wlcal_intt\n");
 				return I1PRO_HW_CALIBINFO;
+			}
 			m->wl_cal_inttime = *dp;
 	
 			/* Wavelength calibration minimum level */
 			if ((ip = m->data->get_ints(m->data, &count, key2_wlcal_minlev)) == NULL
-			                                                                  || count != 1)
+			                                                         || count != 1) {
+				a1logd(p->log,7,"Missing key2_wlcal_minlev\n");
 				return I1PRO_HW_CALIBINFO;
+			}
 			/* Normalize it to 1.0 seconds (ie. 500/0.56660) */
 			m->wl_cal_min_level = (double)(*ip) / m->wl_cal_inttime;
 	
 			/* wavelength LED measurement expected FWHM in nm */
 			if ((dp = m->data->get_doubles(m->data, &count, key2_wlcal_fwhm)) == NULL
-			                                                                  || count != 1)
+			                                                          || count != 1) {
+				a1logd(p->log,7,"Missing key2_wlcal_fwhm\n");
 				return I1PRO_HW_CALIBINFO;
+			}
 			m->wl_cal_fwhm = *dp;
 	
 			/* wavelength LED measurement FWHM tollerance in nm */
 			if ((dp = m->data->get_doubles(m->data, &count, key2_wlcal_fwhm_tol)) == NULL
-			                                                                  || count != 1)
+			                                                              || count != 1) {
+				a1logd(p->log,7,"Missing key2_wlcal_fwhm_tol\n");
 				return I1PRO_HW_CALIBINFO;
+			}
 			m->wl_cal_fwhm_tol = *dp;
 	
 			/* wavelength LED reference spectrum */
-			if ((m->wl_led_spec = m->data->get_doubles(m->data, &m->wl_led_count, key2_wlcal_spec)) == NULL)
+			if ((m->wl_led_spec = m->data->get_doubles(m->data, &m->wl_led_count,
+				                                       key2_wlcal_spec)) == NULL) {
+				a1logd(p->log,7,"Missing key2_wlcal_spec\n");
 				return I1PRO_HW_CALIBINFO;
+			}
 	
 			/* wavelength LED spectraum reference offset */
 			if ((ip = m->data->get_ints(m->data, &count, key2_wlcal_ooff)) == NULL
-			                                                                  || count != 1)
+			                                                       || count != 1) {
+				a1logd(p->log,7,"Missing key2_wlcal_ooff\n");
 				return I1PRO_HW_CALIBINFO;
+			}
 			m->wl_led_ref_off = *ip;
 			/* Hmm. this is odd, but it doesn't work correctly otherwise... */
 			m->wl_led_ref_off--;
 	
 			/* wavelength calibration maximum error */
 			if ((dp = m->data->get_doubles(m->data, &count, key2_wlcal_max)) == NULL
-			                                                                  || count != 1)
+			                                                           || count != 1) {
+				a1logd(p->log,7,"Missing key2_wlcal_max\n");
 				return I1PRO_HW_CALIBINFO;
+			}
 			m->wl_err_max = *dp;
 		}
 
-		/* CCD bin to wavelength polinomial */
-		if ((m->wlpoly1 = m->data->get_doubles(m->data, &count, key2_wlpoly_1)) == NULL || count != 4)
+		/* CCD bin to wavelength polinomial (Emission) */
+		if ((m->wlpoly2 = m->data->get_doubles(m->data, &count, key2_wlpoly_2)) == NULL
+			                                                             || count != 4) {
+			a1logd(p->log,7,"Missing key2_wlpoly_2\n");
 			return I1PRO_HW_CALIBINFO;
+		}
 
-		if ((m->wlpoly2 = m->data->get_doubles(m->data, &count, key2_wlpoly_2)) == NULL || count != 4)
-			return I1PRO_HW_CALIBINFO;
+		/* CCD bin to wavelength polinomial (Reflection) */
+		if ((m->wlpoly1 = m->data->get_doubles(m->data, &count, key2_wlpoly_1)) == NULL || count != 4) {
+			/* Hmm. no key2_wlpoly_1. This seems to be the case for */
+			/* some stripped down OEM instruments. Use key2_wlpoly_2 instead */
+			if ((m->wlpoly2 = m->data->get_doubles(m->data, &count, key2_wlpoly_2)) == NULL
+				                                                              || count != 4) {
+				a1logd(p->log,7,"Missing key2_wlpoly_1 and key2_wlpoly_2\n");
+				return I1PRO_HW_CALIBINFO;
+			}
+		}
 
 		/* Stray light compensation. Note that 16 bit numbers are signed. */
 		if ((sip = m->data->get_shorts(m->data, &count, key2_straylight)) == NULL
-		                                                          || count != (36 * 36))
+		                                                     || count != (36 * 36)) {
+			a1logd(p->log,7,"Missing key2_straylight\n");
 			return I1PRO_HW_CALIBINFO;
+		}
 
 		/* stray light scale factor */
 		if ((dp = m->data->get_doubles(m->data, &count, key2_straylight_scale)) == NULL
-		                                                                  || count != 1)
+		                                                                  || count != 1) {
+			a1logd(p->log,7,"Missing key2_straylight_scale\n");
 			return I1PRO_HW_CALIBINFO;
+		}
 
 		/* Convert from ints to floats */
 		m->straylight[0] = dmatrixz(0, 35, 0, 35);  
@@ -979,7 +1078,7 @@ i1pro_code i1pro_imp_init(i1pro *p) {
 			s->dark_int_time4 = DISP_INTT4;	/* 0.1 */
 
 			s->idark_int_time[0] = s->idark_int_time[2] = m->min_int_time;
-			if (p->itype == instI1Pro2) {
+			if (p->dtype == instI1Pro2) {
 				s->idark_int_time[1] = s->idark_int_time[3] = ADARKINT_MAX2; /* 4.0 */
 			} else {
 #ifdef USE_HIGH_GAIN_MODE
@@ -1006,22 +1105,27 @@ i1pro_code i1pro_imp_init(i1pro *p) {
 
 					s->dadaptime = 0.10;
 					s->wadaptime = 0.10;
-#ifdef MATCH_SPOT_OMD
-					s->lamptime = 0.18;			/* Lamp turn on time, close to OMD */
-												/* (Not ideal, but partly compensated by calib.) */
-												/* (The actual value the OMD uses is 0.20332) */
-					s->dcaltime = 0.05;			/* Longer than the original driver for lower */
-												/* noise, and lamptime has been reduces to */
-												/* compensate. (OMD uses 0.014552) */
-					s->wcaltime = 0.05;
-					s->dreadtime = 0.05;
-					s->wreadtime = 0.05;
+#ifdef USE_SPOT_OMD
+					s->lamptime  = 0.20332;		/* (Lamp doesn't stabilize with this) */
+					s->dcaltime  = 0.02366;
+					s->wcaltime  = 0.02366;
+					s->dreadtime = 0.02366;
+					s->wreadtime = 0.02366;
 #else
-					s->lamptime = 0.5;			/* This should give better accuracy, and better */
-					s->dcaltime = 0.5;			/* match the scan readings. Difference is about */
-					s->wcaltime = 0.5;			/* 0.1 DE though, but would be lost in the */
-					s->dreadtime = 0.5;			/* repeatability noise... */
-					s->wreadtime = 0.5;
+#ifndef NEVER
+					s->lamptime = 0.25;			/* This should give better accuracy */
+					s->dcaltime = 0.05;			/* without increasing lamp usage much. */
+					s->wcaltime = 0.05;			/* Make it too large (ie. 1.0 sec total) */
+					s->dreadtime = 0.05;		/* and it will dirty the i1pro2 lamp quickly */
+					s->wreadtime = 0.05;		/* though. */
+#else
+#  pragma message("######### i1pro_imp.c Dirty Lamp timing !!!!! ########")
+					s->lamptime = 0.5;			/* Dirty up the lamp. */
+					s->dcaltime = 2.0;
+					s->wcaltime = 2.0;
+					s->dreadtime = 2.0;
+					s->wreadtime = 2.0;
+#endif
 #endif
 					s->maxscantime = 0.0;
 					s->min_wl = HIGHRES_REF_MIN;/* Too much stray light below this */
@@ -1032,18 +1136,18 @@ i1pro_code i1pro_imp_init(i1pro *p) {
 					s->scan = 1;
 					s->adaptive = 1;
 					s->inttime = m->min_int_time;	/* Maximize scan rate */
+													/* (see i1pro_imp_calibrate() too) */
 					s->dark_int_time = s->inttime;
 					if (m->fwrev >= 301)			/* (We're not using scan targoscale though) */
 						s->targoscale = 0.25;
 					else
 						s->targoscale = 0.5;
-
-					s->lamptime = 0.5;		/* Lamp turn on time - lots to match scan */
+					s->lamptime = 0.5;				/* Lamp turn on time - lots to match scan */
 					s->dadaptime = 0.10;
 					s->wadaptime = 0.10;
 					s->dcaltime = 0.5;
-					s->wcaltime = 0.5;
-					s->dreadtime = 0.10;
+					s->wcaltime = 2.5;				/* Lots to get lamp up to temp */
+					s->dreadtime = 0.10;			/* and to match OMD scan cal. on time */
 					s->wreadtime = 0.10;
 					s->maxscantime = MAXSCANTIME;
 					s->min_wl = HIGHRES_REF_MIN;	/* Too much stray light below this */
@@ -1058,7 +1162,7 @@ i1pro_code i1pro_imp_init(i1pro *p) {
 					s->adaptive = 0;
 
 					s->inttime = DISP_INTT;		/* Default disp integration time (ie. 2.0 sec) */
-					s->lamptime = 0.20;			/* ???? */
+					s->lamptime = 0.0;
 					s->dark_int_time = s->inttime;
 					s->dark_int_time2 = DISP_INTT2;	/* Alternate disp integration time (ie. 0.8) */
 					s->dark_int_time3 = DISP_INTT3;	/* Alternate disp integration time (ie. 0.3) */
@@ -1083,7 +1187,7 @@ i1pro_code i1pro_imp_init(i1pro *p) {
 					s->emiss = 1;
 					s->adaptive = 1;
 
-					s->lamptime = 0.20;			/* ???? */
+					s->lamptime = 0.0;
 					s->dadaptime = 0.0;
 					s->wadaptime = 0.10;
 					s->dcaltime = 1.0;
@@ -1100,7 +1204,8 @@ i1pro_code i1pro_imp_init(i1pro *p) {
 					s->scan = 1;
 					s->adaptive = 1;			/* ???? */
 					s->inttime = m->min_int_time;	/* Maximize scan rate */
-					s->lamptime = 0.20;			/* ???? */
+													/* (see i1pro_imp_calibrate() too) */
+					s->lamptime = 0.0;
 					s->dark_int_time = s->inttime;
 					if (m->fwrev >= 301)
 						s->targoscale = 0.25;		/* (We're not using scan targoscale though) */
@@ -1132,7 +1237,7 @@ i1pro_code i1pro_imp_init(i1pro *p) {
 					s->ambient = 1;
 					s->adaptive = 1;
 
-					s->lamptime = 0.20;			/* ???? */
+					s->lamptime = 0.0;
 					s->dadaptime = 0.0;
 					s->wadaptime = 0.10;
 					s->dcaltime = 1.0;
@@ -1161,7 +1266,7 @@ i1pro_code i1pro_imp_init(i1pro *p) {
 					s->flash = 1;
 
 					s->inttime = m->min_int_time;	/* Maximize scan rate */
-					s->lamptime = 0.20;			/* ???? */
+					s->lamptime = 0.0;
 					s->dark_int_time = s->inttime;
 					if (m->fwrev >= 301)
 						s->targoscale = 0.25;		/* (We're not using scan targoscale though) */
@@ -1181,7 +1286,7 @@ i1pro_code i1pro_imp_init(i1pro *p) {
 					s->trans = 1;
 					s->adaptive = 1;
 
-					s->lamptime = 0.20;			/* ???? */
+					s->lamptime = 0.0;
 					s->dadaptime = 0.10;
 					s->wadaptime = 0.10;
 					s->dcaltime = 1.0;
@@ -1196,13 +1301,14 @@ i1pro_code i1pro_imp_init(i1pro *p) {
 					s->scan = 1;
 					s->adaptive = 0;
 					s->inttime = m->min_int_time;	/* Maximize scan rate */
+													/* (see i1pro_imp_calibrate() too) */
 					s->dark_int_time = s->inttime;
 					if (m->fwrev >= 301)			/* (We're not using scan targoscale though) */
 						s->targoscale = 0.25;
 					else
 						s->targoscale = 0.5;
 
-					s->lamptime = 0.20;			/* ???? */
+					s->lamptime = 0.0;
 					s->dadaptime = 0.10;
 					s->wadaptime = 0.10;
 					s->dcaltime = 1.0;
@@ -1216,8 +1322,8 @@ i1pro_code i1pro_imp_init(i1pro *p) {
 		}
 	}
 
-	if (p->itype != instI1Monitor		/* Monitor doesn't have reflective cal */
-	 && p->itype != instI1Pro2) {		/* Rev E mode has different calibration */
+	if (p->dtype != instI1Monitor		/* Monitor doesn't have reflective cal */
+	 && p->dtype != instI1Pro2) {		/* Rev E mode has different calibration */
 		/* Restore the previous reflective spot calibration from the EEProm */
 		/* Get ready to operate the instrument */
 		if ((ev = i1pro_restore_refspot_cal(p)) != I1PRO_OK)
@@ -1240,11 +1346,11 @@ i1pro_code i1pro_imp_init(i1pro *p) {
 		return ev; 
 
 	if (p->log->verb >= 1) {
-		a1logv(p->log,1,"Instrument Type:   %s\n",inst_name(p->itype));
+		a1logv(p->log,1,"Instrument Type:   %s\n",inst_name(p->dtype));
 		a1logv(p->log,1,"Serial Number:     %d\n",m->serno);
 		a1logv(p->log,1,"Firmware version:  %d\n",m->fwrev);
 		a1logv(p->log,1,"CPLD version:      %d\n",m->cpldrev);
-		if (p->itype == instI1Pro2)
+		if (p->dtype == instI1Pro2)
 			a1logv(p->log,1,"Chip ID:           %02x-%02x%02x%02x%02x%02x%02x%02x\n",
 			                           m->chipid[0], m->chipid[1], m->chipid[2], m->chipid[3],
 			                           m->chipid[4], m->chipid[5], m->chipid[6], m->chipid[7]);
@@ -1264,7 +1370,7 @@ i1pro_code i1pro_imp_init(i1pro *p) {
 
 #ifdef NEVER
 // ~~99 play with LED settings
-	if (p->itype == instI1Pro2) {
+	if (p->dtype == instI1Pro2) {
 
 		/* Makes it white */
 		unsigned char b2[] = {
@@ -1329,7 +1435,7 @@ i1pro_code i1pro_imp_set_mode(
 	switch(mmode) {
 		case i1p_refl_spot:
 		case i1p_refl_scan:
-			if (p->itype == instI1Monitor)
+			if (p->dtype == instI1Monitor)
 				return I1PRO_INT_ILLEGALMODE;		/* i1Monitor can't do reflection */
 			break;
 		case i1p_emiss_spot_na:
@@ -1388,11 +1494,11 @@ i1pro_code i1pro_imp_get_n_a_cals(i1pro *p, inst_cal_type *pn_cals, inst_cal_typ
 			wl_valid = 0;
 		}
 	}
-	if ((curtime - cs->iddate) > ((p->itype == instI1Pro2) ? DCALTOUT2 : DCALTOUT)) {
+	if ((curtime - cs->iddate) > ((p->dtype == instI1Pro2) ? DCALTOUT2 : DCALTOUT)) {
 		a1logd(p->log,2,"Invalidating adaptive dark cal as %d secs from last cal\n",curtime - cs->iddate);
 		idark_valid = 0;
 	}
-	if ((curtime - cs->ddate) > ((p->itype == instI1Pro2) ? DCALTOUT2 : DCALTOUT)) {
+	if ((curtime - cs->ddate) > ((p->dtype == instI1Pro2) ? DCALTOUT2 : DCALTOUT)) {
 		a1logd(p->log,2,"Invalidating dark cal as %d secs from last cal\n",curtime - cs->ddate);
 		dark_valid = 0;
 	}
@@ -1460,7 +1566,7 @@ i1pro_code i1pro_imp_get_n_a_cals(i1pro *p, inst_cal_type *pn_cals, inst_cal_typ
 	 && m->hr_inited						/* and hi-res has been setup */
 	 && (!m->emis_hr_cal || (n_cals & inst_calt_em_dark)) /* and the emis cal hasn't been */
 											/* fine tuned or we will be doing a dark cal */
-	 && p->itype != instI1Monitor) {		/* i1Monitor doesn't have reflective cal capability */
+	 && p->dtype != instI1Monitor) {		/* i1Monitor doesn't have reflective cal capability */
 		n_cals |= inst_calt_ref_white;		/* Need a reflective white calibration */
 		a_cals |= inst_calt_ref_white;
 	}
@@ -1483,6 +1589,7 @@ i1pro_code i1pro_imp_calibrate(
 	i1pro *p,
 	inst_cal_type *calt,	/* Calibration type to do/remaining */
 	inst_cal_cond *calc,	/* Current condition/desired condition */
+	inst_calc_id_type *idtype,	/* Condition identifier type */
 	char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 ) {
 	i1pro_code ev = I1PRO_OK;
@@ -1806,7 +1913,7 @@ i1pro_code i1pro_imp_calibrate(
 			}
 		
 #ifdef USE_HIGH_GAIN_MODE
-			if (p->itype != instI1Pro2) {	/* Rev E doesn't have high gain mode */
+			if (p->dtype != instI1Pro2) {	/* Rev E doesn't have high gain mode */
 				nummeas = i1pro_comp_nummeas(p, s->dcaltime, s->idark_int_time[2]);
 				a1logd(p->log,2,"Doing adaptive interpolated black calibration, dcaltime %f, idark_int_time[2] %f, nummeas %d, gainmode %d\n", s->dcaltime, s->idark_int_time[2], nummeas, 1);
 				if ((ev = i1pro_dark_measure(p, s->idark_data[2],
@@ -1856,7 +1963,7 @@ i1pro_code i1pro_imp_calibrate(
 					ss->dark_int_time = s->dark_int_time;
 					ss->dark_gain_mode = s->dark_gain_mode;
 #ifdef USE_HIGH_GAIN_MODE
-					for (j = 0; j < (p->itype != instI1Pro2) ? 4 : 2; j++)
+					for (j = 0; j < (p->dtype != instI1Pro2) ? 4 : 2; j++)
 #else
 					for (j = 0; j < 2; j++)
 #endif
@@ -1906,7 +2013,7 @@ i1pro_code i1pro_imp_calibrate(
 #endif
 				
 #ifdef USE_HIGH_GAIN_MODE
-				if (p->itype != instI1Pro2) {	/* Rev E doesn't have high gain mode */
+				if (p->dtype != instI1Pro2) {	/* Rev E doesn't have high gain mode */
 	//				fprintf(stderr,"High gain offsets:\n");
 	//				plot_raw(s->idark_data[2]);
 	//				fprintf(stderr,"High gain multiplier:\n");
@@ -1966,7 +2073,7 @@ i1pro_code i1pro_imp_calibrate(
 			}
 		
 #ifdef USE_HIGH_GAIN_MODE
-			if (p->itype != instI1Pro2) {	/* Rev E doesn't have high gain mode */
+			if (p->dtype != instI1Pro2) {	/* Rev E doesn't have high gain mode */
 				s->idark_int_time[2] = s->inttime;
 				nummeas = i1pro_comp_nummeas(p, s->dcaltime, s->idark_int_time[2]);
 				a1logd(p->log,2,"Doing adaptive scan black calibration, dcaltime %f, idark_int_time[2] %f, nummeas %d, gainmode %d\n", s->dcaltime, s->idark_int_time[2], nummeas, s->gainmode);
@@ -2016,7 +2123,7 @@ i1pro_code i1pro_imp_calibrate(
 					ss->dark_int_time = s->dark_int_time;
 					ss->dark_gain_mode = s->dark_gain_mode;
 #ifdef USE_HIGH_GAIN_MODE
-					for (j = 0; j < (p->itype != instI1Pro2) ? 4 : 2; j += 2)
+					for (j = 0; j < (p->dtype != instI1Pro2) ? 4 : 2; j += 2)
 #else
 					for (j = 0; j < 2; j += 2)
 #endif
@@ -2180,7 +2287,7 @@ i1pro_code i1pro_imp_calibrate(
 						m->mmode = mmode;			/* Restore actual mode */
 						return ev;
 					}
-				} else if (p->itype != instI1Pro2 && s->gainmode == 0 && scale > m->highgain) {
+				} else if (p->dtype != instI1Pro2 && s->gainmode == 0 && scale > m->highgain) {
 #ifdef USE_HIGH_GAIN_MODE
 					a1logd(p->log,3,"Scan signal is so low we're switching to high gain mode\n");
 					s->gainmode = 1;
@@ -2250,6 +2357,16 @@ i1pro_code i1pro_imp_calibrate(
 				                s->cal_factor[0], m->white_ref[0], s->cal_factor[0],
 				                s->cal_factor[1], m->white_ref[1], s->cal_factor[1],
 								!s->scan);		/* Use this for emis hires fine tune if not scan */
+
+				/* Print white lamp magnitude to track lamp darkening */
+				if (p->log != NULL && p->log->debug >= 1) {
+					double sum = 0.0;
+					for (i = 0; i < m->nwav[0]; i++)
+						sum += 1.0/s->cal_factor[0][i]; 
+
+					a1logd(p->log,1,"Refl. lamp magnitude = %e\n",sum);
+				}
+
 				if (ev == I1PRO_RD_TRANSWHITEWARN)		/* Shouldn't happen ? */
 					ev = I1PRO_OK;
 				if (ev != I1PRO_OK) {
@@ -2365,7 +2482,8 @@ i1pro_code i1pro_imp_calibrate(
 	/* Do ref_white first in case we are doing a high res fine tune. */
 
 	if (*calt & (inst_calt_ref_dark | inst_calt_ref_white)) {
-		sprintf(id, "Serial no. %d",m->serno);
+		*idtype = inst_calc_id_ref_sn;
+		sprintf(id, "%d",m->serno);
 		if ((*calc & inst_calc_cond_mask) != inst_calc_man_ref_white) {
 			/* Calibrate using white tile */
 			*calc = inst_calc_man_ref_white;
@@ -2373,6 +2491,7 @@ i1pro_code i1pro_imp_calibrate(
 		}
 	} else if (*calt & inst_calt_wavelength) {		/* Wavelength calibration */
 		if (cs->emiss && cs->ambient) {
+			*idtype = inst_calc_id_none;
 			id[0] = '\000';
 			if ((*calc & inst_calc_cond_mask) != inst_calc_man_am_dark) {
 				/* Calibrate using ambient adapter */
@@ -2380,7 +2499,8 @@ i1pro_code i1pro_imp_calibrate(
 				return I1PRO_CAL_SETUP;
 			}
 		} else {
-			sprintf(id, "Serial no. %d",m->serno);
+			*idtype = inst_calc_id_ref_sn;
+			sprintf(id, "%d",m->serno);
 			if ((*calc & inst_calc_cond_mask) != inst_calc_man_ref_white) {
 				/* Calibrate using white tile */
 				*calc = inst_calc_man_ref_white;
@@ -2388,6 +2508,7 @@ i1pro_code i1pro_imp_calibrate(
 			}
 		}
 	} else if (*calt & inst_calt_em_dark) {		/* Emissive Dark calib */
+		*idtype = inst_calc_id_none;
 		id[0] = '\000';
 		if ((*calc & inst_calc_cond_mask) != inst_calc_man_em_dark) {
 			/* Any sort of dark reference */
@@ -2395,18 +2516,21 @@ i1pro_code i1pro_imp_calibrate(
 			return I1PRO_CAL_SETUP;
 		}
 	} else if (*calt & inst_calt_trans_dark) {	/* Transmissvice dark */
+		*idtype = inst_calc_id_none;
 		id[0] = '\000';
 		if ((*calc & inst_calc_cond_mask) != inst_calc_man_trans_dark) {
 			*calc = inst_calc_man_trans_dark;
 			return I1PRO_CAL_SETUP;
 		}
 	} else if (*calt & inst_calt_trans_vwhite) {/* Transmissvice white for emulated transmission */
+		*idtype = inst_calc_id_none;
 		id[0] = '\000';
 		if ((*calc & inst_calc_cond_mask) != inst_calc_man_trans_white) {
 			*calc = inst_calc_man_trans_white;
 			return I1PRO_CAL_SETUP;
 		}
 	} else if (*calt & inst_calt_emis_int_time) {
+		*idtype = inst_calc_id_none;
 		id[0] = '\000';
 		if ((*calc & inst_calc_cond_mask) != inst_calc_emis_white) {
 			*calc = inst_calc_emis_white;
@@ -2438,10 +2562,13 @@ i1pro_code i1pro_imp_calibrate(
 
 	if (m->transwarn) {
 		*calc = inst_calc_message;
-		if (m->transwarn & 2)
+		if (m->transwarn & 2) {
+			*idtype = inst_calc_id_trans_low;
 			strcpy(id, "Warning: Transmission light source is too low for accuracy!");
-		else
+		} else {
+			*idtype = inst_calc_id_trans_wl;
 			strcpy(id, "Warning: Transmission light source is low at some wavelengths!");
+		}
 		m->transwarn = 0;
 	}
 
@@ -2454,6 +2581,51 @@ i1pro_code i1pro_imp_calibrate(
 int icoms2i1pro_err(int se) {
 	if (se != ICOM_OK)
 		return I1PRO_COMS_FAIL;
+	return I1PRO_OK;
+}
+
+/* - - - - - - - - - - - - - - - - */
+/* Do a dummy reflective read, to fix Lamp Drift. */
+
+i1pro_code i1pro_imp_lamp_fix(
+i1pro *p,
+double seconds) {	/* Number of seconds to turn lamp on for */
+	i1pro_code ev = I1PRO_OK;
+	i1proimp *m = (i1proimp *)p->m;
+	int nummeas;
+	double inttime;
+	unsigned char *buf;		/* Raw USB reading buffer */
+	unsigned int bsize;
+	i1p_mode cmode = m->mmode;		/* Remember current mode */
+
+	if (seconds > (5 * 60.0)) {
+		a1loge(p->log, inst_internal_error, "i1pro_imp_lamp_fix %f sec is too long\n",seconds);
+		return I1PRO_INT_ASSERT;
+	}
+
+	m->mmode = i1p_refl_spot;		/* Override current mode */
+	inttime = 0.2;					/* Constrain buffer size */
+	nummeas = (int)(seconds/inttime + 0.5);
+	bsize = m->nsen * 2 * nummeas;	/* 16 bit raw values */
+
+	if ((buf = (unsigned char *)malloc(sizeof(unsigned char) * bsize)) == NULL) {
+		m->mmode = cmode;
+		a1logd(p->log,1,"i1pro_read_patches malloc %d bytes failed (11)\n",bsize);
+		return I1PRO_INT_MALLOC;
+	}
+
+	/* Trigger measure and gather raw readings */
+	a1logd(p->log, 1, "i1pro_imp_lamp_fix %f seconds\n",seconds);
+	if ((ev = i1pro_read_patches_1(p, nummeas, nummeas, &inttime, 0,
+	                                       NULL, buf, bsize)) != I1PRO_OK) { 
+		m->mmode = cmode;
+		free(buf);
+		return ev;
+	}
+
+	m->mmode = cmode;
+	free(buf);
+
 	return I1PRO_OK;
 }
 
@@ -2519,7 +2691,7 @@ int *pinstmsec) {	/* Return instrument latency in msec */
 	}
 
 	if (m->whitestamp < 0.0) {
-		a1logd(p->log, 1, "i1d3_meas_delay: White transition wasn't timestamped\n");
+		a1logd(p->log, 1, "i1pro_meas_delay: White transition wasn't timestamped\n");
 		return inst_internal_error; 
 	}
 
@@ -2940,8 +3112,13 @@ i1pro_code i1pro_imp_measure(
 	/* Indicate to the user that they can now scan the instrument, */
 	/* after a little delay that allows for the instrument reaction time. */
 	if (s->scan) {
-		/* 500msec delay, 1KHz for 200 msec */
-		msec_beep(200 + (int)(s->lamptime * 1000.0 + 0.5), 1000, 200);
+		int delay = 200 + (int)(s->lamptime * 1000.0 + 0.5);
+		if (p->eventcallback != NULL) {
+			issue_scan_ready((inst *)p, delay);
+		} else {
+			/* delay then 1KHz for 200 msec */
+			msec_beep(delay, 1000, 200);
+		}
 	}
 
 	/* Retry loop for certaing cases */
@@ -4121,6 +4298,7 @@ i1pro_code i1pro_save_calibration(i1pro *p) {
 	i1pnonv x;
 	int ss;
 	int argyllversion = ARGYLL_VERSION;
+	int isRevE = p->dtype == instI1Pro2 ? 1 : 0; 
 
 	strcpy(nmode, "w");
 #if !defined(O_CREAT) && !defined(_O_CREAT)
@@ -4132,7 +4310,8 @@ i1pro_code i1pro_save_calibration(i1pro *p) {
 
 	/* Create the file name */
 	sprintf(cal_name, "ArgyllCMS/.i1p_%d.cal", m->serno);
-	if ((no_paths = xdg_bds(NULL, &cal_paths, xdg_cache, xdg_write, xdg_user, cal_name)) < 1) {
+	if ((no_paths = xdg_bds(NULL, &cal_paths, xdg_cache, xdg_write, xdg_user, xdg_none,
+		                                                                      cal_name)) < 1) {
 		a1logd(p->log,1,"i1pro_save_calibration xdg_bds returned no paths\n");
 		return I1PRO_INT_CAL_SAVE;
 	}
@@ -4157,6 +4336,7 @@ i1pro_code i1pro_save_calibration(i1pro *p) {
 	write_ints(&x, fp, &argyllversion, 1);
 	write_ints(&x, fp, &ss, 1);
 	write_ints(&x, fp, &m->serno, 1);
+	write_ints(&x, fp, &isRevE, 1);
 	write_ints(&x, fp, (int *)&m->nraw, 1);
 	write_ints(&x, fp, (int *)&m->nwav[0], 1);
 	write_ints(&x, fp, (int *)&m->nwav[1], 1);
@@ -4242,6 +4422,7 @@ i1pro_code i1pro_restore_calibration(i1pro *p) {
 	FILE *fp;
 	i1pnonv x;
 	int argyllversion;
+	int isRevE;
 	int ss, serno, nraw, nwav0, nwav1, nbytes, chsum1, chsum2;
 
 	strcpy(nmode, "r");
@@ -4253,7 +4434,8 @@ i1pro_code i1pro_restore_calibration(i1pro *p) {
 #endif
 	/* Create the file name */
 	sprintf(cal_name, "ArgyllCMS/.i1p_%d.cal" SSEPS "color/.i1p_%d.cal", m->serno, m->serno);
-	if ((no_paths = xdg_bds(NULL, &cal_paths, xdg_cache, xdg_read, xdg_user, cal_name)) < 1) {
+	if ((no_paths = xdg_bds(NULL, &cal_paths, xdg_cache, xdg_read, xdg_user, xdg_none,
+		                                                                     cal_name)) < 1) {
 		a1logd(p->log,2,"i1pro_restore_calibration xdg_bds failed to locate file'\n");
 		return I1PRO_INT_CAL_RESTORE;
 	}
@@ -4286,6 +4468,7 @@ i1pro_code i1pro_restore_calibration(i1pro *p) {
 	read_ints(&x, fp, &argyllversion, 1);
 	read_ints(&x, fp, &ss, 1);
 	read_ints(&x, fp, &serno, 1);
+	read_ints(&x, fp, &isRevE, 1);
 	read_ints(&x, fp, &nraw, 1);
 	read_ints(&x, fp, &nwav0, 1);
 	read_ints(&x, fp, &nwav1, 1);
@@ -4293,6 +4476,7 @@ i1pro_code i1pro_restore_calibration(i1pro *p) {
 	 || argyllversion != ARGYLL_VERSION
 	 || ss != (sizeof(i1pro_state) + sizeof(i1proimp))
 	 || serno != m->serno
+	 || isRevE != (p->dtype == instI1Pro2 ? 1 : 0)
 	 || nraw != m->nraw
 	 || nwav0 != m->nwav[0]
 	 || nwav1 != m->nwav[1]) {
@@ -4398,6 +4582,7 @@ i1pro_code i1pro_restore_calibration(i1pro *p) {
 	read_ints(&x, fp, &argyllversion, 1);
 	read_ints(&x, fp, &ss, 1);
 	read_ints(&x, fp, &m->serno, 1);
+	read_ints(&x, fp, &isRevE, 1);
 	read_ints(&x, fp, (int *)&m->nraw, 1);
 	read_ints(&x, fp, (int *)&m->nwav[0], 1);
 	read_ints(&x, fp, (int *)&m->nwav[1], 1);
@@ -4572,7 +4757,8 @@ i1pro_code i1pro_touch_calibration(i1pro *p) {
 
 	/* Locate the file name */
 	sprintf(cal_name, "ArgyllCMS/.i1p_%d.cal" SSEPS "color/.i1p_%d.cal", m->serno, m->serno);
-	if ((no_paths = xdg_bds(NULL, &cal_paths, xdg_cache, xdg_read, xdg_user, cal_name)) < 1) {
+	if ((no_paths = xdg_bds(NULL, &cal_paths, xdg_cache, xdg_read, xdg_user, xdg_none,
+		                                                                     cal_name)) < 1) {
 		a1logd(p->log,2,"i1pro_restore_calibration xdg_bds failed to locate file'\n");
 		return I1PRO_INT_CAL_TOUCH;
 	}
@@ -5323,6 +5509,7 @@ i1pro_code i1pro_read_patches_2(
 		} else {
 			a1logd(p->log,3,"Number of patches measured = %d\n",nmeasuered);
 
+{
 			/* Recognise the required number of ref/trans patch locations, */
 			/* and average the measurements within each patch. */
 			if ((ev = i1pro_extract_patches_multimeas(p, &rv, absraw, numpatches, multimes,
@@ -5332,6 +5519,7 @@ i1pro_code i1pro_read_patches_2(
 				a1logd(p->log,2,"i1pro_read_patches_2 spot read failed at i1pro_extract_patches_multimeas\n");
 				return ev;
 			}
+}
 		}
 	}
 	free_dmatrix(multimes, 0, nmeasuered-1, -1, m->nraw-1);
@@ -5532,7 +5720,7 @@ i1pro_code i1pro_read_patches_all(
 	unsigned int bsize;
 	int rv = 0;
 
-	bsize = m->nsen * 2 * numpatches;
+	bsize = m->nsen * 2 * numpatches;	/* 16 bit raw values */
 	if ((buf = (unsigned char *)malloc(sizeof(unsigned char) * bsize)) == NULL) {
 		a1logd(p->log,1,"i1pro_read_patches malloc %d bytes failed (11)\n",bsize);
 		return I1PRO_INT_MALLOC;
@@ -5711,8 +5899,13 @@ i1pro_trigger_one_measure(
 	int measmodeflags;	/* Measurement mode command flags */
 	int measmodeflags2;	/* Rev E Measurement mode command flags */
 
+	/* Sanity check in case bad value was restored, due to switch */
+	/* from Rev A-D to Rev E mode. */
+	if (*inttime < m->min_int_time)
+		*inttime = m->min_int_time; 
+
 	/* The Rev E measure mode has it's own settings */
-	if (p->itype == instI1Pro2) {
+	if (p->dtype == instI1Pro2) {
 		m->intclkp = m->intclkp2;		/* From i1pro2_getmeaschar() ? */
 		m->subclkdiv = m->subclkdiv2;
 		m->subtmode = 0;
@@ -5782,7 +5975,7 @@ i1pro_trigger_one_measure(
 
 	/* Compute integration clocks */
 	dintclocks = floor(*inttime/m->intclkp + 0.5);
-	if (p->itype == instI1Pro2) {
+	if (p->dtype == instI1Pro2) {
 		if (dintclocks > 4294967296.0)		/* This is probably not the actual limit */
 			return I1PRO_INT_INTTOOBIG;
 	} else {
@@ -5816,7 +6009,7 @@ i1pro_trigger_one_measure(
 	if (gainmode == 0)
 		measmodeflags |= I1PRO_MMF_LOWGAIN;		/* Normal gain mode */
 
-	if (p->itype == instI1Pro2) {
+	if (p->dtype == instI1Pro2) {
 		measmodeflags2 = 0;
 		if (s->scan && !(mmodif & 0x20))			/* Never scan on a calibration */
 			measmodeflags2 |= I1PRO2_MMF_SCAN;
@@ -5848,7 +6041,7 @@ i1pro_trigger_one_measure(
 #endif /* NEVER */
 	{
 
-		if (p->itype != instI1Pro2) {			/* Rev E sets the params in the measure command */
+		if (p->dtype != instI1Pro2) {			/* Rev E sets the params in the measure command */
 			/* Set the hardware for measurement */
 			if ((ev = i1pro_setmeasparams(p, intclocks, lampclocks, nummeas, measmodeflags)) != I1PRO_OK)
 				return ev;
@@ -5878,7 +6071,7 @@ i1pro_trigger_one_measure(
 
 	/* Trigger a measurement */
 	usb_reinit_cancel(&m->rd_sync);			/* Prepare to sync rd and trigger */
-	if (p->itype != instI1Pro2) {
+	if (p->dtype != instI1Pro2) {
 		if ((ev = i1pro_triggermeasure(p, TRIG_DELAY)) != I1PRO_OK)
 			return ev;
 	} else {
@@ -6378,7 +6571,7 @@ i1pro_code i1pro_extract_patches_multimeas(
 
 #ifdef PATREC_DEBUG
 	/* Plot out 6 lots of 8 values each */ 
-	plot = dmatrixz(0, 8, 0, nummeas-1);  
+	plot = dmatrixz(0, 11, 0, nummeas-1);  
 //	for (j = 45; j <= (m->nraw-8); j += 100) 		/* Do just one band */
 #ifdef PATREC_ALLBANDS
 	for (j = 0; j <= (m->nraw-8); j += 8) 			/* Plot all the bands */
@@ -6500,7 +6693,6 @@ i1pro_code i1pro_extract_patches_multimeas(
 				/* to skew slightly towards the center */
 				for (k = 0; k < FW; k++) { 
 					double wt;
-
 					wt = fabs(2.0 * k - (FW -1.0))/(FW-1.0);
 					dev[k] += wt * bdev;
 				}
@@ -6689,6 +6881,7 @@ i1pro_code i1pro_extract_patches_multimeas(
 				break;
 			pat[npat].no++;
 		}
+
 		avglegth += (double) pat[npat].no;
 		npat++;
 	}
@@ -6812,20 +7005,80 @@ i1pro_code i1pro_extract_patches_multimeas(
 		a1logd(p->log,7,"Patch %d, start %d, length %d:\n",i, pat[i].ss, pat[i].no, pat[i].use);
 	}
 
-	/* Now trim the patches simply by shrinking their windows */
+#ifdef NEVER /* [Und] - doesn't seem as good for normal patch sizes. */
+	/* Now trim the patches by expanding the spacers/transitions */
+	for (k = 1; k < (npat-1); k++) {
+		int sw, xsw, trim;
+
+		if (pat[k].use == 0)
+			continue;
+		
+printf("Patch %d @ %d len %d ->",k,pat[k].ss,pat[k].no);
+		/* Figure the previous spacer width */
+		sw = pat[k].ss - (pat[k-1].ss + pat[k-1].no);
+		xsw = (sw * 170 + 85)/100;			/* Expand spacer by 170% */
+		trim = (xsw - sw + 1)/2;			/* Move start of patch half that expansion */
+		pat[k].ss += trim;
+		pat[k].no -= trim;
+		
+		/* Figure the next spacer width */
+		sw = pat[k+1].ss - (pat[k].ss + pat[k].no);
+		xsw = (sw * 170 + 85)/100;			/* Expand spacer by 170% */
+		trim = (xsw - sw + 1)/2;			/* Move end of patch half that expansion */
+		pat[k].no -= trim;
+		
+		if (pat[k].no < 0)
+			pat[k].no = 0; 
+printf(" @ %d len %d\n",pat[k].ss,pat[k].no);
+	}
+#else
+	/* Now trim the patches by shrinking their windows */
 	for (k = 1; k < (npat-1); k++) {
 		int nno, trim;
 
 		if (pat[k].use == 0)
 			continue;
-
 		
-		nno = (pat[k].no * 3)/4;
-		trim = (pat[k].no - nno)/2;
+//		nno = (pat[k].no * 3 + 0)/4;		/* Trim to 75% & round down */
+		nno = (pat[k].no * 2 + 0)/3;		/* Trim to 66% & round down [def] */
+//		nno = (pat[k].no * 2 + 0)/4;		/* Trim to 50% & round down */
+		trim = (pat[k].no - nno + 1)/2;
 
 		pat[k].ss += trim;
 		pat[k].no = nno;
 	}
+#endif
+
+#ifdef PATREC_SAVETRIMMED			/* Save debugging file */
+	{
+		static int filen = 0;		/* Debug file index */
+		char fname[100];
+		FILE *fp;
+
+		sprintf(fname, "i1pro_raw_trimed_%d.csv",filen++);
+
+		if ((fp = fopen(fname, "w")) == NULL)
+			error("Unable to open debug output file '%'",fname);
+
+		/* Create fake "slope" value that marks patches */
+		for (i = 0; i < nummeas; i++) 
+			slope[i] = 1.0;
+		for (k = 1; k < (npat-1); k++) {
+			if (pat[k].use == 0)
+				continue;
+			for (i = pat[k].ss; i < (pat[k].ss + pat[k].no); i++)
+				slope[i] = 0.0;
+		}
+
+		for (i = 0; i < nummeas; i++) { 
+			fprintf(fp, "%f\t",slope[i]);
+			for (j = 0; j < m->nraw; j++)
+				fprintf(fp, "%f\t", multimeas[i][j]/maxval[j]);
+			fprintf(fp, "\n");
+		}
+		fclose(fp);
+	}
+#endif
 
 #ifdef PATREC_DEBUG
 	a1logd(p->log,7,"After trimming got:\n");
@@ -6846,6 +7099,17 @@ i1pro_code i1pro_extract_patches_multimeas(
 	}
 
 	printf("Trimmed output:\n");
+#ifdef PATREC_ALLBANDS
+	for (j = 0; j <= (m->nraw-9); j += 9) { 			/* Plot all the bands, 9 at a time */
+		for (i = 0; i < nummeas; i++) { 
+			for (k = 0; k < 9; k++)
+				plot[k][i] = multimeas[i][j+k]/maxval[j+k];
+			plot[10][i] = (double)i;
+		}
+		printf("Bands %d - %d\n",j,j+9);
+		do_plot10(plot[10], slope, plot[0], plot[1], plot[2], plot[3], plot[4], plot[5], plot[6], plot[7], plot[8], nummeas, 0);
+	}
+#else
 	for (i = 0; i < nummeas; i++) { 
 		int jj;
 		for (jj = 0, j = b_lo; jj < 6 && j < b_hi; jj++, j += ((b_hi-b_lo)/6)) {
@@ -6856,8 +7120,9 @@ i1pro_code i1pro_extract_patches_multimeas(
 		}
 	}
 	for (i = 0; i < nummeas; i++)
-		plot[6][i] = (double)i;
-	do_plot6(plot[6], slope, plot[0], plot[1], plot[2], plot[3], plot[4], nummeas);
+		plot[10][i] = (double)i;
+	do_plot6(plot[10], slope, plot[0], plot[1], plot[2], plot[3], plot[4], nummeas);
+#endif
 #endif	/* PATREC_DEBUG */
 
 #ifdef PATREC_DEBUG
@@ -7214,7 +7479,7 @@ void i1pro_sub_absraw(
 	/* black. It's not clear why it works best this way, or how */
 	/* dependent on the particular instrument the magic numbers are, */
 	/* but it reduces the black level error from over 10% to about 0.3% */
-	if (p->itype == instI1Pro2) {
+	if (p->dtype == instI1Pro2) {
 //		double xx[NSEN_MAX], in[NSEN_MAX], res[NSEN_MAX];
 		double asub[NSEN_MAX];
 		double avgscell, zero;
@@ -7334,7 +7599,7 @@ void i1pro_absraw_to_abswav(
 			abswav[i][j] = tm[j] = oval;
 		}
 
-		if (p->itype == instI1Pro2) {
+		if (p->dtype == instI1Pro2) {
 			/* Now apply stray light compensation */ 
 			/* For each output wavelength */
 			for (j = 0; j < m->nwav[highres]; j++) {
@@ -7431,7 +7696,7 @@ static double i1pro_raw2wav_uncal(i1pro *p, double raw) {
 	double ov;
 	int k;
 
-	if (p->itype == instI1Pro2) {
+	if (p->dtype == instI1Pro2) {
 		raw = 128.0 - raw;		/* Quadratic expects +ve correlation */
 		
 		/* Compute polinomial */
@@ -7459,7 +7724,7 @@ static double i1pro_raw2wav(i1pro *p, int refl, double raw) {
 	double ov;
 	int k;
 
-	if (p->itype == instI1Pro2) {
+	if (p->dtype == instI1Pro2) {
 		i1pro_state *s = &m->ms[m->mmode];
 
 		/* Correct for CCD offset and scale back to reference */
@@ -7798,6 +8063,7 @@ i1pro_code i1pro2_match_wl_meas(i1pro *p, double *pled_off, double *wlraw) {
 			/* at 550 nm. (see above), which amounts to about +0.026, leaving 0.2528 */
 			/* unexplained. It appears the CCD wavelength has a dependence on the */
 			/* angle that the light enters the optics ?? */
+			/* (- is it just a change in the spectrum shape ??) */
 
 			led_off += 0.2528;	/* Hack to make ambient cap correction == white tile correction */
 
@@ -7884,6 +8150,8 @@ i1pro_code i1pro2_match_wl_meas(i1pro *p, double *pled_off, double *wlraw) {
 /* given the current wl_led_off, and set them as current, */
 /* using triangular filters of the lagrange interpolation of the */
 /* CCD values (i.e. the same type of filter used by the OEM driver) */
+/* [ Interestingly, the resulting filter shape is a bit like lanczos2, */
+/*   but not identical. ] */
 i1pro_code i1pro_compute_wav_filters(i1pro *p, int hr, int refl) {
 	i1proimp *m = (i1proimp *)p->m;
 	i1pro_state *s = &m->ms[m->mmode];
@@ -7979,6 +8247,12 @@ i1pro_code i1pro_compute_wav_filters(i1pro *p, int hr, int refl) {
 			wlcop[i] = 0.0;
 		
 		/* for each Lagrange interpolation position (adjacent CCD locations) */
+		/* create the Lagrange and then accuumulate the integral of the convolution */
+		/* of the overlap of the central region, with the triangle of our */
+		/* underlying re-sampling filter. */
+		/* (If we were to run out of enough source points for the Lagrange to */
+		/* encompas the region, then in theory we could use the Lagrange to */
+		/* extrapolate beyond the end from points within.) */
 		for (lip = six; (lip + 3) < eix; lip++) {
 			double rwav[4];		/* Relative wavelength of these Lagrange points */
 			double den[4];		/* Denominator values for points */
@@ -8032,6 +8306,7 @@ i1pro_code i1pro_compute_wav_filters(i1pro *p, int hr, int refl) {
 				ihigh = rwav[1]; 
 				ilow = rwav[2]; 
 
+				/* Over just the central portion, if it overlaps the triangle. */
 				if ((k == 0 && ilow <= twidth && ihigh >= 0.0)		/* Portion is +ve side */
 				 || (k == 1 && ilow <= 0.0 && ihigh >= -twidth)) {	/* Portion is -ve side */
 
@@ -8186,6 +8461,8 @@ i1pro_code i1pro_compute_wav_filters(i1pro *p, int hr, int refl) {
 #define DO_CCDNORMAVG		/* [und ???] Normalise averages rather than per CCD bin */
 							/* (We relly on fine cal & white cal to fix it) */
 
+#define BOX_INTEGRATE    	/* [und] Integrate raw samples as if they were +/-0.5 boxes */
+							/*       (This improves coeficient consistency a bit ?) */
 #undef COMPUTE_DISPERSION	/* Compute slit & optics dispersion from red laser data */
 
 #ifdef NEVER
@@ -8219,7 +8496,7 @@ static void i1pro_debug_plot_mtx_coef(i1pro *p) {
 
 	do_plot6(xx, yy[0], yy[1], yy[2], yy[3], yy[4], yy[5], m->nraw);
 	free_dvector(xx, -1, m->nraw-1);
-	free_dmatrix(yy, 0, 2, -1, m->nraw-1);
+	free_dmatrix(yy, 0, 5, -1, m->nraw-1);
 }
 #endif	/* NEVER */
 
@@ -8620,7 +8897,7 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 	/* use the orginal filters to figure this out. */
 	if (m->raw2wav == NULL
 #ifndef ANALIZE_EXISTING
-	 && p->itype != instI1Pro2
+	 && p->dtype != instI1Pro2
 #endif
 	) {
 		i1pro_fc coeff[100][16];	/* Existing filter cooefficients */
@@ -9225,7 +9502,7 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 		trspl->del(trspl);
 
 		/* Upsample stray light */
-		if (p->itype == instI1Pro2) {
+		if (p->dtype == instI1Pro2) {
 #ifdef ONEDSTRAYLIGHTUS
 			double **slp;			/* 2D Array of stray light values */
 
@@ -9540,7 +9817,7 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 				w1 = i1pro_raw2wav(p, refl, (double)i - 0.5);
 				w2 = i1pro_raw2wav(p, refl, (double)i + 0.5);
 
-//			printf("~1 CCD %d, w1 %f, wl %f, w2 %f\n",i,w1,wl,w2);
+//				printf("~1 CCD %d, w1 %f, wl %f, w2 %f\n",i,w1,wl,w2);
 
 				/* For each filter */
 				for (j = 0; j < m->nwav[1]; j++) {
@@ -9554,6 +9831,7 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 					if (fabs(w1 - cwl) > fshmax && fabs(w2 - cwl) > fshmax)
 						continue;		/* Doesn't fall into this filter */
 
+#ifdef BOX_INTEGRATE 
 					/* Integrate in 0.05 nm increments from filter shape */
 					/* using triangular integration. */
 					{
@@ -9582,6 +9860,9 @@ i1pro_code i1pro_create_hr(i1pro *p) {
 							lw = cw;
 						}
 					}
+#else
+					we = fabs(w2 - w1) * lanczos2(twidth, rwl);
+#endif
 
 					if (m->mtx_c[1][refl].nocoef[j] >= MXNOFC) {
 						a1logw(p->log, "i1pro: run out of high res filter space\n");
@@ -9943,7 +10224,7 @@ i1pro_code i1pro_set_scan_toll(i1pro *p, double toll_ratio) {
 }
 
 
-/* Optics adjustment weights */
+/* Optical adjustment weights */
 static double opt_adj_weights[21] = {
 	1.4944496665144658e-282, 2.0036175483913455e-070, 1.2554893022685038e+232,
 	2.3898157055642966e+190, 1.5697625128432372e-076, 6.6912978722191457e+281,
@@ -9954,7 +10235,8 @@ static double opt_adj_weights[21] = {
 	9.2709981544886391e+122, 3.7958270103353899e-153, 7.1366083837501666e-154
 };
 
-/* Convert from spectral to XYZ, and transfer to the ipatch array */
+/* Convert from spectral to XYZ, and transfer to the ipatch array. */
+/* Apply XRGA conversion if needed */
 i1pro_code i1pro_conv2XYZ(
 	i1pro *p,
 	ipatch *vals,		/* Values to return */
@@ -9972,9 +10254,9 @@ i1pro_code i1pro_conv2XYZ(
 	double sms;			/* Weighting */
 
 	if (s->emiss)
-		conv = new_xsp2cie(icxIT_none, NULL, icxOT_CIE_1931_2, NULL, icSigXYZData, (icxClamping)clamp);
+		conv = new_xsp2cie(icxIT_none, 0.0, NULL, icxOT_CIE_1931_2, NULL, icSigXYZData, (icxClamping)clamp);
 	else
-		conv = new_xsp2cie(icxIT_D50, NULL, icxOT_CIE_1931_2, NULL, icSigXYZData, (icxClamping)clamp);
+		conv = new_xsp2cie(icxIT_D50, 0.0, NULL, icxOT_CIE_1931_2, NULL, icSigXYZData, (icxClamping)clamp);
 	if (conv == NULL)
 		return I1PRO_INT_CIECONVFAIL;
 
@@ -10062,6 +10344,14 @@ i1pro_code i1pro_conv2XYZ(
 	}
 
 	conv->del(conv);
+
+	/* Apply any XRGA conversion */
+	ipatch_convert_xrga(vals, nvals, xcalstd_nonpol, m->target_calstd, m->native_calstd, clamp);
+
+	/* Apply custom filter compensation */
+	if (m->custfilt_en)
+		ipatch_convert_custom_filter(vals, nvals, &m->custfilt, clamp);
+
 	return I1PRO_OK;
 }
 
@@ -10118,16 +10408,16 @@ i1pro_code i1pro_check_white_reference1(
 
 	/* And check them against tolerance for the illuminant. */
 	if (m->physfilt == 0x82) {		/* UV filter */
-		a1logd(p->log,2,"Checking white reference (UV): 0.0 < avg01 %f < 0.05, 1.2 < avg2227 %f < 1.76\n",avg01,avg2227);
-		if (0.0 < avg01 && avg01 < 0.05
-		 && 1.2 < avg2227 && avg2227 < 1.76) {
+		a1logd(p->log,2,"Checking white reference (UV): 0.0 <= avg01 %f <= 0.05, 1.2 <= avg2227 %f <= 1.76\n",avg01,avg2227);
+		if (0.0 <= avg01 && avg01 <= 0.05
+		 && 1.2 <= avg2227 && avg2227 <= 1.76) {
 			return I1PRO_OK;
 		}
 
 	} else {						/* No filter */
-		a1logd(p->log,2,"Checking white reference: 0.11 < avg01 %f < 0.22, 1.35 < avg2227 %f < 1.6\n",avg01,avg2227);
-		if (0.11 < avg01 && avg01 < 0.22
-		 && 1.35 < avg2227 && avg2227 < 1.6) {
+		a1logd(p->log,2,"Checking white reference: 0.11 <= avg01 %f <= 0.22, 1.35 <= avg2227 %f <= 1.6\n",avg01,avg2227);
+		if (0.11 <= avg01 && avg01 <= 0.22
+		 && 1.35 <= avg2227 && avg2227 <= 1.6) {
 			return I1PRO_OK;
 		}
 	}
@@ -10525,7 +10815,7 @@ i1pro_code i1pro_optimise_sensor(
 		/* expected level is < target_level/gain */
 		/* Hmm. It may not be a good idea to use high gain mode if it compromises */
 		/* the longer integration time which reduces noise. */
-		if (p->itype != instI1Pro2 && new_int_time > m->max_int_time && permithg) {
+		if (p->dtype != instI1Pro2 && new_int_time > m->max_int_time && permithg) {
 			new_int_time /= m->highgain;
 			new_gain_mode = 1;
 			a1logd(p->log,3,"Switching to high gain mode\n");
@@ -10608,7 +10898,7 @@ i1pro_prepare_idark(
 			/* Compute base */
 			s->idark_data[i+0][j] = d01 - s->idark_data[i+1][j] * s->idark_int_time[i+0];
 		}
-		if (p->itype == instI1Pro2) 	/* Rev E doesn't have high gain mode */
+		if (p->dtype == instI1Pro2) 	/* Rev E doesn't have high gain mode */
 			break;
 	}
 }
@@ -10726,7 +11016,7 @@ i1pro_reset(
 
 	pbuf[0] = mask;
 
-	if (p->itype == instI1Pro2) {
+	if (p->dtype == instI1Pro2) {
 		pbuf[1] = 0;		/* Not known what i1pro2 second byte is for */
 		len = 2;
 	}
@@ -10776,7 +11066,7 @@ i1pro_readEEProm(
 	short2buf(&pbuf[4], size);
 	pbuf[6] = pbuf[7] = 0;		/* Ignored */
 
-	if (p->itype == instI1Pro2)
+	if (p->dtype == instI1Pro2)
 		len = 6;
 
   	se = p->icom->usb_control(p->icom,
@@ -10864,7 +11154,7 @@ i1pro_writeEEProm(
 	short2buf(&pbuf[4], size);
 	short2buf(&pbuf[6], 0x100);		/* Might be accidental, left over from getmisc.. */
 
-	if (p->itype == instI1Pro2)
+	if (p->dtype == instI1Pro2)
 		len = 6;
 
   	se = p->icom->usb_control(p->icom,
@@ -11383,6 +11673,7 @@ i1pro_setmcmode(
 	}
 
 	/* Hmm. Give the instrument a little time to reconfigure itself. */
+	/* (Probably needs about 1msec, but err on the safe side) */
 	msec_sleep(10);
 
 	a1logd(p->log,2,"i1pro_setmcmode: done, ICOM err 0x%x (%d msec)\n",
@@ -11727,7 +12018,7 @@ i1pro2_triggermeasure(i1pro *p, int delay) {
 	i1proimp *m = (i1proimp *)p->m;
 	int rv = I1PRO_OK;
 
-	a1logd(p->log,2,"i1pro2_triggermeasure: triggering Rev Emeasurement after %dmsec "
+	a1logd(p->log,2,"i1pro2_triggermeasure: triggering Rev E measurement after %dmsec "
 	                               "delay @ %d msec\n", delay, msec_time() - m->msec);
 
 	/* NOTE := would be better here to create thread once, and then trigger it */
@@ -11909,7 +12200,7 @@ i1pro2_indLEDoff(void *pp) {
 #ifdef NEVER
 
 	// ~~99 play with LED settings
-	if (p->itype == instI1Pro2) {
+	if (p->dtype == instI1Pro2) {
 
 		// LED is capable of white and red
 
@@ -12512,6 +12803,8 @@ static i1pro_code i1data_parse_eeprom(i1data *d, unsigned char *buf, unsigned in
 	i1pro *p = d->p;
 	int rv = I1PRO_OK;
 	int dir = 0x1000;		/* Location of key directory */
+	int minkeys = 300;		/* Expected minumum number of bytes for keys */
+	int maxkeys = 512;		/* Expected maxumum number of bytes for keys */
 	int block_id;			/* Block id */
 	int nokeys;
 	i1key key, off, nkey = 0, noff = 0;
@@ -12519,14 +12812,16 @@ static i1pro_code i1data_parse_eeprom(i1data *d, unsigned char *buf, unsigned in
 	unsigned char *bp;
 	int i;
 
-	if (extra) 
+	if (extra) { 
 		dir = 0x2000;	/* Directory is at half way in i1pro2 2nd table */
+		minkeys = 200;	/* Hmm. Had a report that the i1Pro2 failed to parse */
+	}
 
-	a1logd(p->log,3,"i1pro_parse_eeprom called with %d bytes\n",len);
+	a1logd(p->log,3,"i1pro_parse_eeprom called with %d bytes, table %d\n",len,extra);
 
 	/* Room for minimum number of keys ? */
-	if ((dir + 300) > len)
-		return I1PRO_DATA_KEY_COUNT;
+	if ((dir + minkeys) > len)
+		return I1PRO_DATA_KEY_COUNT_SMALL;
 
 	block_id = buf2ushort(buf + dir);
 	if ((extra == 0 && block_id != 1)	/* Must be 1 for base data */
@@ -12534,12 +12829,15 @@ static i1pro_code i1data_parse_eeprom(i1data *d, unsigned char *buf, unsigned in
 		return I1PRO_DATA_KEY_CORRUPT;
 	
 	nokeys = buf2ushort(buf + dir + 2);	/* Bytes in key table */
-	if (nokeys < 300 || nokeys > 512)
-		return I1PRO_DATA_KEY_COUNT;
+	a1logd(p->log,3,"%d bytes for keys in EEProm table %d\n",nokeys, extra);
+	if (nokeys < minkeys)
+		return I1PRO_DATA_KEY_COUNT_SMALL;
+	if (nokeys > maxkeys)
+		return I1PRO_DATA_KEY_COUNT_LARGE;
 
 	nokeys = (nokeys - 4)/6;				/* Number of 6 byte entries */
 
-	a1logd(p->log,3,"%d key/values in EEProm table %d\n",nokeys, extra);
+	a1logd(p->log,3,"%d keys & values in EEProm table %d\n",nokeys, extra);
 
 	/* We need current and next value to figure data size out */
 	bp = buf + dir + 4;
@@ -12717,7 +13015,7 @@ static i1_dtype i1data_det_type(i1data *d, i1key key) {
 	if (key < 0x100)
 		return i1_dtype_section;
 
-	switch(key) {
+	switch((int)key) {
 		/* Log keys */
 		case key_meascount:
 		case key_meascount + 1000:

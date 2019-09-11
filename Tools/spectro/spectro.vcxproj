@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -14,6 +14,7 @@
     <ProjectGuid>{5AA3F412-D3AB-437E-A8CF-C1B9ACBCA25E}</ProjectGuid>
     <RootNamespace>spectro</RootNamespace>
     <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -55,7 +56,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\librspl;..\usb\driver;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;NT;_CRT_SECURE_NO_WARNINGS;SALONEINSTLIB;ENABLE_USB;ENABLE_FAST_SERIAL;_USE_32BIT_TIME_T;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;NT;_CRT_SECURE_NO_WARNINGS;SALONEINSTLIB;ENABLE_SERIAL;ENABLE_FAST_SERIAL;ENABLE_USB;_USE_32BIT_TIME_T;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <ExceptionHandling>Async</ExceptionHandling>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
@@ -72,8 +73,8 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\librspl;..\usb\driver;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;NT;_CRT_SECURE_NO_WARNINGS;SALONEINSTLIB;ENABLE_USB;ENABLE_FAST_SERIAL;_USE_32BIT_TIME_T;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\librspl;usb\driver;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;NT;_CRT_SECURE_NO_WARNINGS;SALONEINSTLIB;ENABLE_SERIAL;ENABLE_FAST_SERIAL;ENABLE_USB;_USE_32BIT_TIME_T;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -88,7 +89,61 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\libconv\pollem.c" />
+    <ProjectReference Include="..\..\libnum\libnum.vcxproj">
+      <Project>{fdaba3aa-ba68-4bee-adda-fd10d9928534}</Project>
+      <Private>true</Private>
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="aglob.h" />
+    <ClInclude Include="ccmx.h" />
+    <ClInclude Include="ccss.h" />
+    <ClInclude Include="cgats.h" />
+    <ClInclude Include="colorhug.h" />
+    <ClInclude Include="conv.h" />
+    <ClInclude Include="disptechs.h" />
+    <ClInclude Include="dtp20.h" />
+    <ClInclude Include="dtp22.h" />
+    <ClInclude Include="dtp41.h" />
+    <ClInclude Include="dtp51.h" />
+    <ClInclude Include="dtp92.h" />
+    <ClInclude Include="hcfr.h" />
+    <ClInclude Include="hidio.h" />
+    <ClInclude Include="huey.h" />
+    <ClInclude Include="i1d3.h" />
+    <ClInclude Include="i1disp.h" />
+    <ClInclude Include="i1pro.h" />
+    <ClInclude Include="i1pro_imp.h" />
+    <ClInclude Include="icoms.h" />
+    <ClInclude Include="inst.h" />
+    <ClInclude Include="instappsup.h" />
+    <ClInclude Include="insttypeinst.h" />
+    <ClInclude Include="insttypes.h" />
+    <ClInclude Include="kleink10.h" />
+    <ClInclude Include="munki.h" />
+    <ClInclude Include="munki_imp.h" />
+    <ClInclude Include="pars.h" />
+    <ClInclude Include="pollem.h" />
+    <ClInclude Include="rspec.h" />
+    <ClInclude Include="rspl1.h" />
+    <ClInclude Include="sa_conv.h" />
+    <ClInclude Include="sort.h" />
+    <ClInclude Include="specbos.h" />
+    <ClInclude Include="spyd2.h" />
+    <ClInclude Include="spydX.h" />
+    <ClInclude Include="ss.h" />
+    <ClInclude Include="ss_imp.h" />
+    <ClInclude Include="usbio.h" />
+    <ClInclude Include="usb\driver\driver_api.h" />
+    <ClInclude Include="xdg_bds.h" />
+    <ClInclude Include="xrga.h" />
+    <ClInclude Include="xspect.h" />
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="aglob.c" />
     <ClCompile Include="ccmx.c" />
     <ClCompile Include="ccss.c" />
@@ -97,6 +152,10 @@
     <ClCompile Include="colorhug.c" />
     <ClCompile Include="conv.c" />
     <ClCompile Include="disptechs.c" />
+    <ClCompile Include="dtp20.c" />
+    <ClCompile Include="dtp22.c" />
+    <ClCompile Include="dtp41.c" />
+    <ClCompile Include="dtp51.c" />
     <ClCompile Include="dtp92.c" />
     <ClCompile Include="ex1.c" />
     <ClCompile Include="hcfr.c" />
@@ -106,76 +165,28 @@
     <ClCompile Include="i1disp.c" />
     <ClCompile Include="i1pro.c" />
     <ClCompile Include="i1pro_imp.c" />
-    <ClCompile Include="icc.c" />
     <ClCompile Include="icoms.c" />
-    <ClCompile Include="icoms_nt.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="inst.c" />
     <ClCompile Include="insttypes.c" />
     <ClCompile Include="kleink10.c" />
     <ClCompile Include="munki.c" />
     <ClCompile Include="munki_imp.c" />
+    <ClCompile Include="numsup.c" />
     <ClCompile Include="pars.c" />
-    <ClCompile Include="plot.c" />
+    <ClCompile Include="parsstd.c" />
     <ClCompile Include="rspec.c" />
     <ClCompile Include="rspl1.c" />
+    <ClCompile Include="sa_conv.c" />
+    <ClCompile Include="smcube.c" />
     <ClCompile Include="specbos.c" />
     <ClCompile Include="spyd2.c" />
+    <ClCompile Include="spydX.c" />
     <ClCompile Include="ss.c" />
     <ClCompile Include="ss_imp.c" />
     <ClCompile Include="usbio.c" />
-    <ClCompile Include="usbio_nt.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="xdg_bds.c" />
+    <ClCompile Include="xrga.c" />
     <ClCompile Include="xspect.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="aglob.h" />
-    <ClInclude Include="ccmx.h" />
-    <ClInclude Include="ccss.h" />
-    <ClInclude Include="cgats.h" />
-    <ClInclude Include="colorhug.h" />
-    <ClInclude Include="conv.h" />
-    <ClInclude Include="copyright.h" />
-    <ClInclude Include="disptechs.h" />
-    <ClInclude Include="dispwin.h" />
-    <ClInclude Include="dtp92.h" />
-    <ClInclude Include="ex1.h" />
-    <ClInclude Include="hcfr.h" />
-    <ClInclude Include="hidio.h" />
-    <ClInclude Include="huey.h" />
-    <ClInclude Include="i1d3.h" />
-    <ClInclude Include="i1disp.h" />
-    <ClInclude Include="i1pro.h" />
-    <ClInclude Include="i1pro_imp.h" />
-    <ClInclude Include="icc.h" />
-    <ClInclude Include="icoms.h" />
-    <ClInclude Include="inst.h" />
-    <ClInclude Include="insttypeinst.h" />
-    <ClInclude Include="insttypes.h" />
-    <ClInclude Include="kleink10.h" />
-    <ClInclude Include="munki.h" />
-    <ClInclude Include="munki_imp.h" />
-    <ClInclude Include="numsup.h" />
-    <ClInclude Include="pars.h" />
-    <ClInclude Include="pollem.h" />
-    <ClInclude Include="render.h" />
-    <ClInclude Include="rspl1.h" />
-    <ClInclude Include="specbos.h" />
-    <ClInclude Include="spyd2.h" />
-    <ClInclude Include="spyd2setup.h" />
-    <ClInclude Include="ss.h" />
-    <ClInclude Include="ss_imp.h" />
-    <ClInclude Include="usbio.h" />
-    <ClInclude Include="xdg_bds.h" />
-    <ClInclude Include="xspect.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Readme.txt" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\libnum\libnum.vcxproj">

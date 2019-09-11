@@ -34,7 +34,12 @@
    will not support developers that they have not qualified
    and agreed to support.
  */
+
 #include "inst.h"
+
+#ifdef __cplusplus
+	extern "C" {
+#endif
 
 /* Communication errors */
 #define EX1_TIMEOUT				    0xFF02		/* Communication timeout */
@@ -141,6 +146,10 @@ struct _ex1 {
 
 /* Constructor */
 extern ex1 *new_ex1(icoms *icom, instType itype);
+
+#ifdef __cplusplus
+	}
+#endif
 
 #define EX1_H
 #endif /* EX1_H */

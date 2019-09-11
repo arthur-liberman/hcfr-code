@@ -22,7 +22,7 @@
 	extern "C" {
 #endif
 
-#define MAX_ARCH_LISTS 40
+#define MAX_ARCH_LISTS 50
 
 /* Possible type of files/stage of processing */
 typedef enum {
@@ -78,6 +78,9 @@ xfile *add_xf(xfile **l);
 /* Return point to that entry */
 xfile *new_add_xf(xfile **l, char *name, unsigned char *buf, unsigned long len,
                                                file_type ftype, targ_type ttype);
+
+/* Clear this (last) entry on the list so that it becomes the end marker */
+void rm_xf(xfile *xf);
 
 /* Free up a whole list */
 void del_xf(xfile *l);

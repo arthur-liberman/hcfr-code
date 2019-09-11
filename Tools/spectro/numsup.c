@@ -17,6 +17,7 @@
 #include <string.h>
 #include <limits.h>
 #include <time.h>
+#include <ctype.h>
 #if defined (NT)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -24,7 +25,13 @@
 #ifdef UNIX
 #include <unistd.h>
 #include <sys/param.h>
+#include <sys/utsname.h>
 #include <pthread.h>
+#endif
+#ifndef SALONEINSTLIB
+#include "aconfig.h"
+#else
+#include "sa_config.h"
 #endif
 
 #define NUMSUP_C
@@ -44,6 +51,7 @@ char *exe_path = "\000";			/* Directory executable resides in ('/' dir separator
 //char *error_program = "Unknown";	/* Name to report as responsible for an error */
 
 static int g_log_init = 0;	/* Initialised ? */
+static int g_deb_init = 0;	/* Debug output Initialised ? */
 extern a1log default_log;
 extern a1log *g_log;
 
@@ -63,7 +71,7 @@ void set_exe_path(char *argv0) {
 	g_log->tag = argv0;
 	i = strlen(argv0);
 	if ((exe_path = malloc(i + 5)) == NULL) {
-		a1loge(g_log, 1, "set_exe_path: malloc %d bytes failed",i+5);
+		a1loge(g_log, 1, "set_exe_path: malloc %d bytes failed\n",i+5);
 		return;
 	}
 	strcpy(exe_path, argv0);
@@ -79,8 +87,8 @@ void set_exe_path(char *argv0) {
 		if (i < 4 || _stricmp(exe_path +i -4, ".exe") != 0)
 			strcat(exe_path, ".exe");
 
-		if ((mh = GetModuleHandle((LPCSTR)exe_path)) == NULL) {
-			a1loge(g_log, 1, "set_exe_path: GetModuleHandle '%s' failed with%d",
+		if ((mh = GetModuleHandle(exe_path)) == NULL) {
+			a1loge(g_log, 1, "set_exe_path: GetModuleHandle '%s' failed with%d\n",
 			                                            exe_path,GetLastError());
 			exe_path[0] = '\000';
 			return;
@@ -91,12 +99,12 @@ void set_exe_path(char *argv0) {
 			if (tpath != NULL)
 				free(tpath);
 			if ((tpath = malloc(pl)) == NULL) {
-				a1loge(g_log, 1, "set_exe_path: malloc %d bytes failed",pl);
+				a1loge(g_log, 1, "set_exe_path: malloc %d bytes failed\n",pl);
 				exe_path[0] = '\000';
 			return;
 			}
-			if ((i = GetModuleFileName(mh, (LPSTR)(tpath), pl)) == 0) {
-				a1loge(g_log, 1, "set_exe_path: GetModuleFileName '%s' failed with%d",
+			if ((i = GetModuleFileName(mh, tpath, pl)) == 0) {
+				a1loge(g_log, 1, "set_exe_path: GetModuleFileName '%s' failed with%d\n",
 				                                                tpath,GetLastError());
 				exe_path[0] = '\000';
 				return;
@@ -135,7 +143,7 @@ void set_exe_path(char *argv0) {
 				else
 					ll = p - cp;
 				if ((ll + 1 + strlen(exe_path) + 1) > PATH_MAX) {
-					a1loge(g_log, 1, "set_exe_path: Search path exceeds PATH_MAX");
+					a1loge(g_log, 1, "set_exe_path: Search path exceeds PATH_MAX\n");
 					exe_path[0] = '\000';
 					return;
 				}
@@ -148,7 +156,7 @@ void set_exe_path(char *argv0) {
 						found = 1;
 						free(exe_path);
 						if ((exe_path = malloc(strlen(b2)+1)) == NULL) {
-							a1loge(g_log, 1, "set_exe_path: malloc %d bytes failed",strlen(b2)+1);
+							a1loge(g_log, 1, "set_exe_path: malloc %d bytes failed\n",strlen(b2)+1);
 							exe_path[0] = '\000';
 							return;
 						}
@@ -170,7 +178,7 @@ void set_exe_path(char *argv0) {
 		if (exe_path[i] == '/') {
 			char *tpath;
 			if ((tpath = malloc(strlen(exe_path + i))) == NULL) {
-				a1loge(g_log, 1, "set_exe_path: malloc %d bytes failed",strlen(exe_path + i));
+				a1loge(g_log, 1, "set_exe_path: malloc %d bytes failed\n",strlen(exe_path + i));
 				exe_path[0] = '\000';
 				return;
 			}
@@ -220,22 +228,146 @@ void check_if_not_interactive() {
 /* It's values can be overridden to redirect these messages.      */
 /******************************************************************/
 
+static void va_loge(a1log *p, char *fmt, ...);
+
 #ifdef NT
-# define A1LOG_LOCK(log)									\
+
+/* Get a string describing the MWin operating system */
+
+typedef struct {
+    DWORD dwOSVersionInfoSize;
+    DWORD dwMajorVersion;
+    DWORD dwMinorVersion;
+    DWORD dwBuildNumber;
+    DWORD dwPlatformId;
+    WCHAR  szCSDVersion[128];
+    WORD   wServicePackMajor;
+    WORD   wServicePackMinor;
+    WORD   wSuiteMask;
+    BYTE  wProductType;
+    BYTE  wReserved;
+} osversioninfoexw;
+
+#ifndef VER_NT_DOMAIN_CONTROLLER
+# define VER_NT_DOMAIN_CONTROLLER 0x0000002
+# define VER_NT_SERVER 0x0000003
+# define VER_NT_WORKSTATION 0x0000001 
+#endif
+
+static char *get_sys_info() {
+	static char sysinfo[100] = { "Unknown" };
+	LONG (WINAPI *pfnRtlGetVersion)(osversioninfoexw*);
+
+	*(FARPROC *)&pfnRtlGetVersion
+	 = GetProcAddress(GetModuleHandle("ntdll.dll"), "RtlGetVersion");
+	if (pfnRtlGetVersion != NULL) {
+	    osversioninfoexw ver = { 0 };
+	    ver.dwOSVersionInfoSize = sizeof(ver);
+
+	    if (pfnRtlGetVersion(&ver) == 0) {
+			if (ver.dwMajorVersion > 6 || (ver.dwMajorVersion == 6 && ver.dwMinorVersion > 3)) {
+				if (ver.wProductType == VER_NT_WORKSTATION)
+					sprintf(sysinfo,"Windows V%d.%d SP %d",
+						ver.dwMajorVersion,ver.dwMinorVersion,
+						ver.wServicePackMajor);
+				else
+					sprintf(sysinfo,"Windows Server 2016 V%d.%d SP %d",
+						ver.dwMajorVersion,ver.dwMinorVersion,
+						ver.wServicePackMajor);
+				
+			} else if (ver.dwMajorVersion == 6 && ver.dwMinorVersion == 3) {
+				if (ver.wProductType == VER_NT_WORKSTATION)
+					sprintf(sysinfo,"Windows V8.1 SP %d",
+						ver.wServicePackMajor);
+				else
+					sprintf(sysinfo,"Windows Server 2012 R2 SP %d",
+						ver.wServicePackMajor);
+
+			} else if (ver.dwMajorVersion == 6 && ver.dwMinorVersion == 2) {
+				if (ver.wProductType == VER_NT_WORKSTATION)
+					sprintf(sysinfo,"Windows V8 SP %d",
+						ver.wServicePackMajor);
+				else
+					sprintf(sysinfo,"Windows Server SP %d",
+						ver.wServicePackMajor);
+
+			} else if (ver.dwMajorVersion == 6 && ver.dwMinorVersion == 1) {
+				if (ver.wProductType == VER_NT_WORKSTATION)
+					sprintf(sysinfo,"Windows V7 SP %d",
+						ver.wServicePackMajor);
+				else
+					sprintf(sysinfo,"Windows Server 2008 R2 SP %d",
+						ver.wServicePackMajor);
+
+			} else if (ver.dwMajorVersion == 6 && ver.dwMinorVersion == 0) {
+				if (ver.wProductType == VER_NT_WORKSTATION)
+					sprintf(sysinfo,"Windows Vista SP %d",
+						ver.wServicePackMajor);
+				else
+					sprintf(sysinfo,"Windows Server 2008 SP %d",
+						ver.wServicePackMajor);
+
+			} else if (ver.dwMajorVersion == 5 && ver.dwMinorVersion == 2) {
+				// Actually could be Server 2003, Home Server, Server 2003 R2
+				sprintf(sysinfo,"Windows XP Pro64 SP %d",
+					ver.wServicePackMajor);
+
+			} else if (ver.dwMajorVersion == 5 && ver.dwMinorVersion == 1) {
+				sprintf(sysinfo,"Windows XP SP %d",
+						ver.wServicePackMajor);
+
+			} else if (ver.dwMajorVersion == 5 && ver.dwMinorVersion == 0) {
+				sprintf(sysinfo,"Windows XP SP %d",
+						ver.wServicePackMajor);
+
+			} else {
+				sprintf(sysinfo,"Windows Maj %d Min %d SP %d",
+					ver.dwMajorVersion,ver.dwMinorVersion,
+					ver.wServicePackMajor);
+			}
+		}
+	}
+	return sysinfo;
+}
+
+
+# define A1LOG_LOCK(log, deb)								\
 	if (g_log_init == 0) {									\
 	    InitializeCriticalSection(&log->lock);				\
+		EnterCriticalSection(&log->lock);					\
 		g_log_init = 1;										\
+	} else {												\
+		EnterCriticalSection(&log->lock);					\
 	}														\
-	EnterCriticalSection(&log->lock)
+	if (deb && !g_deb_init) {								\
+		va_loge(log, "Argyll 'V%s' Build '%s' System '%s'\n",ARGYLL_VERSION_STR,ARGYLL_BUILD_STR, get_sys_info());	\
+		g_deb_init = 1;										\
+	}
 # define A1LOG_UNLOCK(log) LeaveCriticalSection(&log->lock)
 #endif
 #ifdef UNIX
-# define A1LOG_LOCK(log)									\
+
+static char *get_sys_info() {
+	static char sysinfo[200] = { "Unknown" };
+	struct utsname ver;
+
+	if (uname(&ver) == 0)
+		sprintf(sysinfo,"%s %s %s %s",ver.sysname, ver.version, ver.release, ver.machine);
+	return sysinfo;
+}
+
+# define A1LOG_LOCK(log, deb)								\
 	if (g_log_init == 0) {									\
 	    pthread_mutex_init(&log->lock, NULL);				\
+		pthread_mutex_lock(&log->lock);						\
 		g_log_init = 1;										\
+	} else {												\
+		pthread_mutex_lock(&log->lock);						\
 	}														\
-	pthread_mutex_lock(&log->lock)
+	if (deb && !g_deb_init) {								\
+		va_loge(log, "Argyll 'V%s' Build '%s' System '%s'\n",ARGYLL_VERSION_STR,ARGYLL_BUILD_STR, get_sys_info());	\
+		g_deb_init = 1;										\
+	}
 # define A1LOG_UNLOCK(log) pthread_mutex_unlock(&log->lock)
 #endif
 
@@ -256,6 +388,14 @@ static void a1_default_de_log(void *cntx, a1log *p, char *fmt, va_list args) {
 #define a1_default_d_log a1_default_de_log
 #define a1_default_e_log a1_default_de_log
 
+
+/* Call log->loge() with variags */
+static void va_loge(a1log *p, char *fmt, ...) {
+	va_list args;
+	va_start(args, fmt);
+	p->loge(p->cntx, p, fmt, args);
+	va_end(args);
+}
 
 /* Global log */
 a1log default_log = {
@@ -343,18 +483,35 @@ a1log *del_a1log(a1log *log) {
 	return NULL;
 }
 
+/* Set the debug level. */
+void a1log_debug(a1log *log, int level) {
+	if (log != NULL) {
+		log->debug = level;
+	}
+}
+
+/* Set the vebosity level. */
+void a1log_verb(a1log *log, int level) {
+	if (log != NULL) {
+		log->verb = level;
+	}
+}
+
 /* Set the tag. Note that the tage string is NOT copied, just referenced */
 void a1log_tag(a1log *log, char *tag) {
-	log->tag = tag;
+	if (log != NULL) {
+		log->tag = tag;
+	}
 }
 
 /* Log a verbose message if level >= verb */
 void a1logv(a1log *log, int level, char *fmt, ...) {
+
 	if (log != NULL) {
 		if (log->verb >= level) {
 			va_list args;
-	
-			A1LOG_LOCK(log);
+
+			A1LOG_LOCK(log, 0);
 			va_start(args, fmt);
 			log->logv(log->cntx, log, fmt, args);
 			va_end(args);
@@ -369,9 +526,9 @@ void a1logd(a1log *log, int level, char *fmt, ...) {
 		if (log->debug >= level) {
 			va_list args;
 	
-			A1LOG_LOCK(log);
+			A1LOG_LOCK(log, 1);
 			va_start(args, fmt);
-			log->loge(log->cntx, log, fmt, args);
+			log->logd(log->cntx, log, fmt, args);
 			va_end(args);
 			A1LOG_UNLOCK(log);
 		}
@@ -384,20 +541,20 @@ void a1logw(a1log *log, char *fmt, ...) {
 		va_list args;
 	
 		/* log to all the outputs, but only log once */
-		A1LOG_LOCK(log);
+		A1LOG_LOCK(log, 0);
 		va_start(args, fmt);
 		log->loge(log->cntx, log, fmt, args);
 		va_end(args);
 		A1LOG_UNLOCK(log);
 		if (log->logd != log->loge) {
-			A1LOG_LOCK(log);
+			A1LOG_LOCK(log, 1);
 			va_start(args, fmt);
 			log->logd(log->cntx, log, fmt, args);
 			va_end(args);
 			A1LOG_UNLOCK(log);
 		}
 		if (log->logv != log->loge && log->logv != log->logd) {
-			A1LOG_LOCK(log);
+			A1LOG_LOCK(log, 0);
 			va_start(args, fmt);
 			log->logv(log->cntx, log, fmt, args);
 			va_end(args);
@@ -414,7 +571,7 @@ void a1loge(a1log *log, int ecode, char *fmt, ...) {
 		va_list args;
 	
 		if (log->errc == 0) {
-			A1LOG_LOCK(log);
+			A1LOG_LOCK(log, 0);
 			log->errc = ecode;
 			va_start(args, fmt);
 			vsnprintf(log->errm, A1_LOG_BUFSIZE, fmt, args);
@@ -423,20 +580,20 @@ void a1loge(a1log *log, int ecode, char *fmt, ...) {
 		}
 		va_start(args, fmt);
 		/* log to all the outputs, but only log once */
-		A1LOG_LOCK(log);
+		A1LOG_LOCK(log, 0);
 		va_start(args, fmt);
 		log->loge(log->cntx, log, fmt, args);
 		va_end(args);
 		A1LOG_UNLOCK(log);
 		if (log->logd != log->loge) {
-			A1LOG_LOCK(log);
+			A1LOG_LOCK(log, 1);
 			va_start(args, fmt);
 			log->logd(log->cntx, log, fmt, args);
 			va_end(args);
 			A1LOG_UNLOCK(log);
 		}
 		if (log->logv != log->loge && log->logv != log->logd) {
-			A1LOG_LOCK(log);
+			A1LOG_LOCK(log, 0);
 			va_start(args, fmt);
 			log->logv(log->cntx, log, fmt, args);
 			va_end(args);
@@ -451,6 +608,36 @@ void a1logue(a1log *log) {
 	if (log != NULL) {
 		log->errc = 0;
 		log->errm[0] = '\000';
+	}
+}
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+/* Print bytes as hex to debug log */
+/* base is the base of the displayed offset */
+void adump_bytes(a1log *log, char *pfx, unsigned char *buf, int base, int len) {
+	int i, j, ii;
+	char oline[200] = { '\000' }, *bp = oline;
+	if (pfx == NULL)
+		pfx = "";
+	for (i = j = 0; i < len; i++) {
+		if ((i % 16) == 0)
+			bp += sprintf(bp,"%s%04x:",pfx,base+i);
+		bp += sprintf(bp," %02x",buf[i]);
+		if ((i+1) >= len || ((i+1) % 16) == 0) {
+			for (ii = i; ((ii+1) % 16) != 0; ii++)
+				bp += sprintf(bp,"   ");
+			bp += sprintf(bp,"  ");
+			for (; j <= i; j++) {
+				if (!(buf[j] & 0x80) && isprint(buf[j]))
+					bp += sprintf(bp,"%c",buf[j]);
+				else
+					bp += sprintf(bp,".");
+			}
+			bp += sprintf(bp,"\n");
+			a1logd(log,0,"%s",oline);
+			bp = oline;
+		}
 	}
 }
 
@@ -481,7 +668,7 @@ verbose(int level, char *fmt, ...) {
 	if (g_log->verb >= level) {
 		va_list args;
 
-		A1LOG_LOCK(g_log);
+		A1LOG_LOCK(g_log, 0);
 		g_logv("%s: ",g_log->tag);
 		va_start(args, fmt);
 		g_log->logv(g_log->cntx, g_log, fmt, args);
@@ -495,7 +682,7 @@ void
 warning(char *fmt, ...) {
 	va_list args;
 
-	A1LOG_LOCK(g_log);
+	A1LOG_LOCK(g_log, 0);
 	g_loge("%s: Warning - ",g_log->tag);
 	va_start(args, fmt);
 	g_log->loge(g_log->cntx, g_log, fmt, args);
@@ -508,7 +695,7 @@ ATTRIBUTE_NORETURN void
 error(char *fmt, ...) {
 	va_list args;
 
-	A1LOG_LOCK(g_log);
+	A1LOG_LOCK(g_log, 0);
 	g_loge("%s: Error - ",g_log->tag);
 	va_start(args, fmt);
 	g_log->loge(g_log->cntx, g_log, fmt, args);
@@ -530,7 +717,7 @@ error(char *fmt, ...) {
 
 /* a * b */
 static size_t ssat_mul(size_t a, size_t b) {
-//	size_t c;
+	size_t c;
 
 	if (a == 0 || b == 0)
 		return 0;
@@ -568,6 +755,180 @@ size_t nsize
 
 	return ptr;
 }
+
+/******************************************************************/
+/* OS X App Nap fixes                                             */
+/******************************************************************/
+
+#if defined(__APPLE__)
+
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1050
+# include <objc/runtime.h>
+# include <objc/message.h>
+#else
+# include <objc/objc-runtime.h>
+#endif
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
+# include <objc/objc-auto.h>
+#endif
+
+/*
+	OS X 10.9+ App Nap problems bug:
+
+	<http://stackoverflow.com/questions/22784886/what-can-make-nanosleep-drift-with-exactly-10-sec-on-mac-os-x-10-9>
+
+	NSProcessInfo variables:
+
+	<https://developer.apple.com/library/prerelease/ios/documentation/Cocoa/Reference/Foundation/Classes/NSProcessInfo_Class/#//apple_ref/c/tdef/NSActivityOptions>
+
+	 typedef enum : uint64_t { NSActivityIdleDisplaySleepDisabled = (1ULL << 40),
+		NSActivityIdleSystemSleepDisabled = (1ULL << 20),
+		NSActivitySuddenTerminationDisabled = (1ULL << 14),
+		NSActivityAutomaticTerminationDisabled = (1ULL << 15),
+		NSActivityUserInitiated = (0x00FFFFFFULL | NSActivityIdleSystemSleepDisabled ),
+		NSActivityUserInitiatedAllowingIdleSystemSleep =
+		           (NSActivityUserInitiated & ~NSActivityIdleSystemSleepDisabled ),
+		NSActivityBackground = 0x000000FFULL,
+		NSActivityLatencyCritical = 0xFF00000000ULL,
+	} NSActivityOptions; 
+
+	See <http://stackoverflow.com/questions/19847293/disable-app-nap-in-macos-10-9-mavericks-application>:
+
+	@property (strong) id activity;
+
+	if ([[NSProcessInfo processInfo] respondsToSelector:@selector(beginActivityWithOptions:reason:)]) {
+    self.activity = [[NSProcessInfo processInfo] beginActivityWithOptions:0x00FFFFFF reason:@"receiving OSC messages"];
+}
+
+	<http://stackoverflow.com/questions/19671197/disabling-app-nap-with-beginactivitywithoptions>
+
+	NSProcessInfo = interface(NSObject)['{B96935F6-3809-4A49-AD4F-CBBAB0F2C961}']
+	function beginActivityWithOptions(options: NSActivityOptions; reason: NSString): NSObject; cdecl;
+
+	<http://stackoverflow.com/questions/22164571/weird-behaviour-of-dispatch-after>
+
+*/
+
+static int osx_userinitiated_cnt = 0;
+static id osx_userinitiated_activity = nil;
+
+/* Tell App Nap that this is user initiated */
+void osx_userinitiated_start() {
+	Class pic;		/* Process info class */
+	SEL pis;		/* Process info selector */
+	SEL bawo;		/* Begin Activity With Options selector */
+	id pi;			/* Process info */
+	id str;
+
+	if (osx_userinitiated_cnt++ != 0)
+		return;
+
+	a1logd(g_log, 7, "OS X - User Initiated Activity start\n");
+	
+	/* We have to be conservative to avoid triggering an exception when run on older OS X, */
+	/* since beginActivityWithOptions is only available in >= 10.9 */
+	if ((pic = (Class)objc_getClass("NSProcessInfo")) == nil) {
+		return;
+	}
+
+	if (class_getClassMethod(pic, (pis = sel_getUid("processInfo"))) == NULL) { 
+		return;
+	}
+
+	if (class_getInstanceMethod(pic, (bawo = sel_getUid("beginActivityWithOptions:reason:"))) == NULL) {
+		a1logd(g_log, 7, "OS X - beginActivityWithOptions not supported\n");
+		return;
+	}
+
+	/* Get the process instance */
+	if ((pi = objc_msgSend((id)pic, pis)) == nil) {
+		return;
+	}
+
+	/* Create a reason string */
+	str = objc_msgSend((id)objc_getClass("NSString"), sel_getUid("alloc"));
+	str = objc_msgSend(str, sel_getUid("initWithUTF8String:"), "ArgyllCMS");
+			
+	/* Start activity that tells App Nap to mind its own business. */
+	/* NSActivityUserInitiatedAllowingIdleSystemSleep */
+	osx_userinitiated_activity = objc_msgSend(pi, bawo, 0x00FFFFFFULL, str);
+}
+
+/* Done with user initiated */
+void osx_userinitiated_end() {
+	if (osx_userinitiated_cnt > 0) {
+		osx_userinitiated_cnt--;
+		if (osx_userinitiated_cnt == 0 && osx_userinitiated_activity != nil) {
+			a1logd(g_log, 7, "OS X - User Initiated Activity end");
+			objc_msgSend(
+			             objc_msgSend((id)objc_getClass("NSProcessInfo"),
+			             sel_getUid("processInfo")), sel_getUid("endActivity:"),
+			             osx_userinitiated_activity);
+			osx_userinitiated_activity = nil;
+		}
+	}
+}
+
+static int osx_latencycritical_cnt = 0;
+static id osx_latencycritical_activity = nil;
+
+/* Tell App Nap that this is latency critical */
+void osx_latencycritical_start() {
+	Class pic;		/* Process info class */
+	SEL pis;		/* Process info selector */
+	SEL bawo;		/* Begin Activity With Options selector */
+	id pi;		/* Process info */
+	id str;
+
+	if (osx_latencycritical_cnt++ != 0)
+		return;
+
+	a1logd(g_log, 7, "OS X - Latency Critical Activity start\n");
+	
+	/* We have to be conservative to avoid triggering an exception when run on older OS X */
+	if ((pic = (Class)objc_getClass("NSProcessInfo")) == nil) {
+		return;
+	}
+
+	if (class_getClassMethod(pic, (pis = sel_getUid("processInfo"))) == NULL) { 
+		return;
+	}
+
+	if (class_getInstanceMethod(pic, (bawo = sel_getUid("beginActivityWithOptions:reason:"))) == NULL) {
+		a1logd(g_log, 7, "OS X - beginActivityWithOptions not supported\n");
+		return;
+	}
+
+	/* Get the process instance */
+	if ((pi = objc_msgSend((id)pic, pis)) == nil) {
+		return;
+	}
+
+	/* Create a reason string */
+	str = objc_msgSend((id)objc_getClass("NSString"), sel_getUid("alloc"));
+	str = objc_msgSend(str, sel_getUid("initWithUTF8String:"), "Measuring Color");
+			
+	/* Start activity that tells App Nap to mind its own business. */
+	/* NSActivityUserInitiatedAllowingIdleSystemSleep | NSActivityLatencyCritical */
+	osx_latencycritical_activity = objc_msgSend(pi, bawo, 0x00FFFFFFULL | 0xFF00000000ULL, str);
+}
+
+/* Done with latency critical */
+void osx_latencycritical_end() {
+	if (osx_latencycritical_cnt > 0) {
+		osx_latencycritical_cnt--;
+		if (osx_latencycritical_cnt == 0 && osx_latencycritical_activity != nil) {
+			a1logd(g_log, 7, "OS X - Latency Critical Activity end");
+			objc_msgSend(
+			             objc_msgSend((id)objc_getClass("NSProcessInfo"),
+			             sel_getUid("processInfo")), sel_getUid("endActivity:"),
+			             osx_latencycritical_activity);
+			osx_latencycritical_activity = nil;
+		}
+	}
+}
+
+#endif	/* __APPLE__ */
 
 /******************************************************************/
 /* Numerical Recipes Vector/Matrix Support functions              */
@@ -617,7 +978,7 @@ int nh		/* Highest index */
 }
 
 /* --------------------- */
-/* 2D Double vector malloc/free */
+/* 2D Double matrix malloc/free */
 double **dmatrix(
 int nrl,	/* Row low index */
 int nrh,	/* Row high index */
@@ -717,6 +1078,29 @@ int nch
 
 	free((char *)(m[nrl-1]));
 	free((char *)(m+nrl-1));
+}
+
+/* In case rows have been swapped, reset the pointers */
+void dmatrix_reset(
+double **m,
+int nrl,	/* Row low index */
+int nrh,	/* Row high index */
+int ncl,	/* Col low index */
+int nch		/* Col high index */
+) {
+	int i;
+	int cols;
+
+	if (nrh < nrl)	/* Prevent failure for 0 dimension */
+		nrh = nrl;
+	if (nch < ncl)
+		nch = ncl;
+
+	cols = nch - ncl + 1;
+
+	m[nrl] = m[nrl-1] - ncl;		/* Set first row address, offset to ncl */
+	for(i = nrl+1; i <= nrh; i++)	/* Set subsequent row addresses */
+		m[i] = m[i-1] + cols;
 }
 
 /* --------------------- */
@@ -839,7 +1223,7 @@ int nch
 }
 
 /* --------------------- */
-/* 2D vector copy */
+/* matrix copy */
 void copy_dmatrix(
 double **dst,
 double **src,
@@ -1373,6 +1757,19 @@ void matrix_trans(double **d, double **s, int nr,  int nc) {
 	}
 }
 
+/* Transpose a 0 base symetrical matrix in place */
+void sym_matrix_trans(double **m, int n) {
+	int i, j;
+
+	for (i = 0; i < n; i++) {
+		for (j = i+1; j < n; j++) {
+			double tt = m[j][i]; 
+			m[j][i] = m[i][j];
+			m[i][j] = tt;
+		}
+	}
+}
+
 /* Multiply two 0 based matricies */
 /* Return nz on matching error */
 int matrix_mult(
@@ -1406,20 +1803,636 @@ int matrix_mult(
 	return 0;
 }
 
-/* Diagnostic - print to g_log debug */
-void matrix_print(char *c, double **a, int nr,  int nc) {
+/* Matrix multiply transpose of s1 by s2 */
+/* 0 based matricies,  */
+/* This is usefull for using results of lu_invert() */
+int matrix_trans_mult(
+	double **d,  int nr,  int nc,
+	double **ts1, int nr1, int nc1,
+	double **s2, int nr2, int nc2
+) {
+	int i, j, k;
+
+	/* s1 and s2 must mesh */
+	if (nr1 != nr2)
+		return 1;
+
+	/* Output rows = s1 rows */
+	if (nr != nc1)
+		return 2;
+
+	/* Output colums = s2 columns */
+	if (nc != nc2)
+		return 2;
+
+	for (i = 0; i < nc1; i++) {
+		for (j = 0; j < nc2; j++) { 
+			d[i][j] = 0.0;  
+			for (k = 0; k < nr1; k++) {
+				d[i][j] += ts1[k][i] * s2[k][j];
+			}
+		}
+	}
+
+	return 0;
+}
+
+/* Multiply a 0 based matrix by a vector */
+/* d may be same as v */
+int matrix_vect_mult(
+	double *d, int nd,
+	double **m, int nr, int nc,
+	double *v, int nv
+) {
 	int i, j;
-	a1logd(g_log, 0, "%s, %d x %d\n",c,nr,nc);
+	double *_v = v, vv[20];
+
+	if (d == v) {
+		if (nv <= 20) {
+			_v = vv;
+		} else {
+			_v = dvector(0, nv-1);
+		}
+		for (j = 0; j < nv; j++)
+			_v[j]  = v[j];
+	}
+
+	/* Input vector must match matrix columns */
+	if (nv != nc)
+		return 1;
+
+	/* Output vector must match matrix rows */
+	if (nd != nr)
+		return 1;
+
+	for (i = 0; i < nd; i++) {
+		d[i] = 0.0;  
+		for (j = 0; j < nv; j++)
+			d[i] += m[i][j] * _v[j];
+	}
+
+	if (_v != v && _v != vv)
+		free_dvector(_v, 0, nv-1);
+
+	return 0;
+}
+
+/* Multiply a 0 based transposed matrix by a vector */
+/* d may be same as v */
+int matrix_trans_vect_mult(
+	double *d, int nd,
+	double **m, int nr, int nc,
+	double *v, int nv
+) {
+	int i, j;
+	double *_v = v, vv[20];
+
+	if (d == v) {
+		if (nv <= 20) {
+			_v = vv;
+		} else {
+			_v = dvector(0, nv-1);
+		}
+		for (j = 0; j < nv; j++)
+			_v[j]  = v[j];
+	}
+
+	/* Input vector must match matrix columns */
+	if (nv != nr)
+		return 1;
+
+	/* Output vector must match matrix rows */
+	if (nd != nc)
+		return 1;
+
+	for (i = 0; i < nd; i++) {
+		d[i] = 0.0;  
+		for (j = 0; j < nv; j++)
+			d[i] += m[j][i] * _v[j];
+	}
+
+	if (_v != v && _v != vv)
+		free_dvector(_v, 0, nv-1);
+
+	return 0;
+}
+
+
+/* Set zero based dvector */
+void vect_set(double *d, double v, int len) {
+	if (v == 0.0)
+		memset((char *)d, 0, len * sizeof(double));
+	else {
+		int i;
+		for (i = 0; i < len; i++)
+			d[i] = v;
+	}
+}
+
+
+/* Negate and copy a vector, d = -v */
+/* d may be same as v */
+void vect_neg(double *d, double *s, int len) {
+	int i;
+	for (i = 0; i < len; i++)
+		d[i] = -s[i];
+}
+
+/* Add two vectors */
+/* d may be same as v */
+void vect_add(
+	double *d,
+	double *v, int len
+) {
+	int i;
+
+	for (i = 0; i < len; i++)
+		d[i] += v[i];
+}
+
+/* Add two vectors, d = s1 + s2 */
+void vect_add3(
+	double *d, double *s1, double *s2, int len
+) {
+	int i;
+	for (i = 0; i < len; i++)
+		d[i] = s1[i] + s2[i];
+}
+
+/* Subtract two vectors, d -= v */
+/* d may be same as v */
+void vect_sub(
+	double *d, double *v, int len
+) {
+	int i;
+	for (i = 0; i < len; i++)
+		d[i] -= v[i];
+}
+
+/* Subtract two vectors, d = s1 - s2 */
+void vect_sub3(
+	double *d, double *s1, double *s2, int len
+) {
+	int i;
+	for (i = 0; i < len; i++)
+		d[i] = s1[i] - s2[i];
+}
+
+/* Invert and copy a vector, d = 1/s */
+void vect_invert(double *d, double *s, int len) {
+	int i;
+	for (i = 0; i < len; i++)
+		d[i] = 1.0/s[i];
+}
+
+/* Multiply the elements of two vectors, d = s1 * s2 */
+void vect_mul3(
+	double *d, double *s1, double *s2, int len
+) {
+	int i;
+	for (i = 0; i < len; i++)
+		d[i] = s1[i] * s2[i];
+}
+
+/* Scale a vector, */
+/* d may be same as v */
+void vect_scale(double *d, double *s, double scale, int len) {
+	int i;
+
+	for (i = 0; i < len; i++)
+		d[i] = s[i] * scale;
+}
+
+/* Blend between s0 and s1 for bl 0..1 */
+void vect_blend(double *d, double *s0, double *s1, double bl, int len) {
+	int i;
+
+	for (i = 0; i < len; i++)
+		d[i] = (1.0 - bl) * s0[i] + bl * s1[i];
+}
+
+/* Scale s and add to d */
+void vect_scaleadd(double *d, double *s, double scale, int len) {
+	int i;
+
+	for (i = 0; i < len; i++)
+		d[i] += s[i] * scale;
+}
+
+/* Take dot product of two vectors */
+double vect_dot(double *s1, double *s2, int len) {
+	int i;
+	double rv = 0.0;
+	for (i = 0; i < len; i++)
+		rv += s1[i] * s2[i];
+	return rv;
+}
+
+/* Return the vectors magnitude (norm) */
+double vect_mag(double *s, int len) {
+	int i;
+	double rv = 0.0;
+
+	for (i = 0; i < len; i++)
+		rv += s[i] * s[i];
+
+	return sqrt(rv);
+}
+
+/* Return the magnitude (norm) of the difference between two vectors */
+double vect_diffmag(double *s1, double *s2, int len) {
+	int i;
+	double rv = 0.0;
+
+	for (i = 0; i < len; i++) {
+		double tt = s1[i] - s2[i];
+		rv += tt * tt;
+	}
+
+	return sqrt(rv);
+}
+
+/* Return the normalized vectors */
+/* Return nz if norm is zero */
+int vect_normalize(double *d, double *s, int len) {
+	int i;
+	double nv = 0.0;
+	int rv = 0;
+
+	for (i = 0; i < len; i++)
+		nv += s[i] * s[i];
+	nv = sqrt(nv);
+
+	if (nv < 1e-9) {
+		nv = 1.0;
+		rv = 0;
+	}
+
+	for (i = 0; i < len; i++)
+		d[i] = s[i]/nv;
+
+	return rv;
+}
+
+/* Return the vectors elements maximum magnitude (+ve) */
+double vect_max(double *s, int len) {
+	int i;
+	double rv = 0.0;
+
+	for (i = 0; i < len; i++) {
+		double tt = fabs(s[i]);
+		if (tt > rv)
+			rv = tt;
+	}
+
+	return rv;
+}
+
+/* Take absolute of each element */
+void vect_abs(double *d, double *s, int len) {
+	int i;
+
+	for (i = 0; i < len; i++)
+		d[i] = fabs(s[i]);
+}
+
+/* Take individual elements to signed power */
+void vect_spow(double *d, double *s, double pv, int len) {
+	int i;
+
+	for (i = 0; i < len; i++) {
+		/* pow() isn't guaranteed to behave ... */
+		if (pv != 0.0) {
+			if (pv < 0.0) {
+				if (s[i] < 0.0)
+					d[i] = 1.0/-pow(-s[i], -pv);
+				else
+					d[i] = 1.0/pow(s[i], -pv);
+			} else {
+				if (s[i] < 0.0)
+					d[i] = -pow(-s[i], pv);
+				else
+					d[i] = pow(s[i], pv);
+			}
+		}
+	}
+}
+
+/* - - - - - - - - - - - - - - - - - - - - - - */
+
+/* Set zero based ivector */
+void ivect_set(int *d, int v, int len) {
+	if (v == 0)
+		memset((char *)d, 0, len * sizeof(int));
+	else {
+		int i;
+		for (i = 0; i < len; i++)
+			d[i] = v;
+	}
+}
+
+
+/* - - - - - - - - - - - - - - - - - - - - - - */
+
+/* Print double matrix to g_log debug */
+/* id identifies matrix */
+/* pfx used at start of each line */
+/* Assumed indexed from 0 */
+void adump_dmatrix(a1log *log, char *id, char *pfx, double **a, int nr,  int nc) {
+	int i, j;
+	a1logd(g_log, 0, "%s%s[%d][%d]\n",pfx,id,nr,nc);
 
 	for (j = 0; j < nr; j++) {
-		a1logd(g_log, 0, " ");
-		for (i = 0; i < nc; i++) {
-			a1logd(g_log, 0, " %.2f",a[j][i]);
-		}
+		a1logd(g_log, 0, "%s ",pfx);
+		for (i = 0; i < nc; i++)
+			a1logd(g_log, 0, "%f%s",a[j][i], i < (nc-1) ? ", " : "");
 		a1logd(g_log, 0, "\n");
 	}
 }
 
+/* Print float matrix to g_log debug */
+/* id identifies matrix */
+/* pfx used at start of each line */
+/* Assumed indexed from 0 */
+void adump_fmatrix(a1log *log, char *id, char *pfx, float **a, int nr,  int nc) {
+	int i, j;
+	a1logd(g_log, 0, "%s%s[%d][%d]\n",pfx,id,nr,nc);
+
+	for (j = 0; j < nr; j++) {
+		a1logd(g_log, 0, "%s ",pfx);
+		for (i = 0; i < nc; i++)
+			a1logd(g_log, 0, "%f%s",a[j][i], i < (nc-1) ? ", " : "");
+		a1logd(g_log, 0, "\n");
+	}
+}
+
+/* Print int matrix to g_log debug */
+/* id identifies matrix */
+/* pfx used at start of each line */
+/* Assumed indexed from 0 */
+void adump_imatrix(a1log *log, char *id, char *pfx, int **a, int nr,  int nc) {
+	int i, j;
+	a1logd(g_log, 0, "%s%s[%d][%d]\n",pfx,id,nr,nc);
+
+	for (j = 0; j < nr; j++) {
+		a1logd(g_log, 0, "%s ",pfx);
+		for (i = 0; i < nc; i++)
+			a1logd(g_log, 0, "%d%s",a[j][i], i < (nc-1) ? ", " : "");
+		a1logd(g_log, 0, "\n");
+	}
+}
+
+/* Print short matrix to g_log debug */
+/* id identifies matrix */
+/* pfx used at start of each line */
+/* Assumed indexed from 0 */
+void adump_smatrix(a1log *log, char *id, char *pfx, short **a, int nr,  int nc) {
+	int i, j;
+	a1logd(g_log, 0, "%s%s[%d][%d]\n",pfx,id,nr,nc);
+
+	for (j = 0; j < nr; j++) {
+		a1logd(g_log, 0, "%s ",pfx);
+		for (i = 0; i < nc; i++)
+			a1logd(g_log, 0, "%d%s",a[j][i], i < (nc-1) ? ", " : "");
+		a1logd(g_log, 0, "\n");
+	}
+}
+
+/* Format double matrix as C code to FILE */
+/* id is variable name */
+/* pfx used at start of each line */
+/* hb sets horizontal element limit to wrap */
+/* Assumed indexed from 0 */
+void acode_dmatrix(FILE *fp, char *id, char *pfx, double **a, int nr,  int nc, int hb) {
+	int i, j;
+	fprintf(fp, "%sdouble %s[%d][%d] = {\n",pfx,id,nr,nc);
+
+	for (j = 0; j < nr; j++) {
+		fprintf(fp, "%s\t{ ",pfx);
+		for (i = 0; i < nc; i++) {
+			fprintf(fp, "%f%s",a[j][i], i < (nc-1) ? ", " : "");
+			if ((i % hb) == (hb-1))
+				fprintf(fp, "\n%s\t  ",pfx);
+		}
+		fprintf(fp, " }%s\n", j < (nr-1) ? "," : "");
+	}
+	fprintf(fp, "%s};\n",pfx);
+}
+
+/* Print double vector to g_log debug */
+/* id identifies vector */
+/* pfx used at start of each line */
+/* Assumed indexed from 0 */
+void adump_dvector(a1log *log, char *id, char *pfx, double *a, int nc) {
+	int i;
+	a1logd(g_log, 0, "%s%s[%d]\n",pfx,id,nc);
+	a1logd(g_log, 0, "%s ",pfx);
+	for (i = 0; i < nc; i++)
+		a1logd(g_log, 0, "%f%s",a[i], i < (nc-1) ? ", " : "");
+	a1logd(g_log, 0, "\n");
+}
+
+/* Print float vector to g_log debug */
+/* id identifies vector */
+/* pfx used at start of each line */
+/* Assumed indexed from 0 */
+void adump_fvector(a1log *log, char *id, char *pfx, float *a, int nc) {
+	int i;
+	a1logd(g_log, 0, "%s%s[%d]\n",pfx,id,nc);
+	a1logd(g_log, 0, "%s ",pfx);
+	for (i = 0; i < nc; i++)
+		a1logd(g_log, 0, "%f%s",a[i], i < (nc-1) ? ", " : "");
+	a1logd(g_log, 0, "\n");
+}
+
+/* Print int vector to g_log debug */
+/* id identifies vector */
+/* pfx used at start of each line */
+/* Assumed indexed from 0 */
+void adump_ivector(a1log *log, char *id, char *pfx, int *a, int nc) {
+	int i;
+	a1logd(g_log, 0, "%s%s[%d]\n",pfx,id,nc);
+	a1logd(g_log, 0, "%s ",pfx);
+	for (i = 0; i < nc; i++)
+		a1logd(g_log, 0, "%d%s",a[i], i < (nc-1) ? ", " : "");
+	a1logd(g_log, 0, "\n");
+}
+
+/* Print short vector to g_log debug */
+/* id identifies vector */
+/* pfx used at start of each line */
+/* Assumed indexed from 0 */
+void adump_svector(a1log *log, char *id, char *pfx, short *a, int nc) {
+	int i;
+	a1logd(g_log, 0, "%s%s[%d]\n",pfx,id,nc);
+	a1logd(g_log, 0, "%s ",pfx);
+	for (i = 0; i < nc; i++)
+		a1logd(g_log, 0, "%d%s",a[i], i < (nc-1) ? ", " : "");
+	a1logd(g_log, 0, "\n");
+}
+
+/* ============================================================================ */
+/* C matrix support */
+
+/* Clip a vector to the range 0.0 .. 1.0 */
+/* and return any clipping margine */
+double vect_ClipNmarg(int n, double *out, double *in) {
+	int j;
+	double tt, marg = 0.0;
+	for (j = 0; j < n; j++) {
+		out[j] = in[j];
+		if (out[j] < 0.0) {
+			tt = 0.0 - out[j];
+			out[j] = 0.0;
+			if (tt > marg)
+				marg = tt;
+		} else if (out[j] > 1.0) {
+			tt = out[j] - 1.0;
+			out[j] = 1.0;
+			if (tt > marg)
+				marg = tt;
+		}
+	}
+	return marg;
+}
+
+/* 
+
+  mat     in    out
+
+[     ]   []    []
+[     ]   []    []
+[     ] * [] => []
+[     ]   []    []
+[     ]   []    []
+
+ */
+
+/* Multiply N vector by NxN transform matrix */
+/* Organization is mat[out][in] */
+void vect_MulByNxN(int n, double *out, double *mat, double *in) {
+	int i, j;
+	double _tt[20], *tt = _tt;
+
+	if (n > 20)
+		tt = dvector(0, n-1);
+
+	for (i = 0; i < n; i++) {
+		tt[i] = 0.0;
+		for (j = 0; j < n; j++)
+			tt[i] += mat[i * n + j] * in[j];
+	}
+
+	for (i = 0; i < n; i++)
+		out[i] = tt[i];
+
+	if (n > 20)
+		free_dvector(tt, 0, n-1);
+}
+
+/* 
+
+  mat         in    out
+     N       
+              []    
+  [     ]     []    []
+M [     ] * N [] => [] M
+  [     ]     []    []
+              []    
+
+ */
+
+/* Multiply N vector by MxN transform matrix to make M vector */
+/* Organization is mat[out=M][in=N] */
+void vect_MulByMxN(int n, int m, double *out, double *mat, double *in) {
+	int i, j;
+	double _tt[20], *tt = _tt;
+
+	if (m > 20)
+		tt = dvector(0, m-1);
+
+	for (i = 0; i < m; i++) {
+		tt[i] = 0.0;
+		for (j = 0; j < n; j++)
+			tt[i] += mat[i * n + j] * in[j];
+	}
+
+	for (i = 0; i < m; i++)
+		out[i] = tt[i];
+
+	if (m > 20)
+		free_dvector(tt, 0, m-1);
+}
+
+/*
+   in         mat       out
+               M   
+            [     ]    
+   N        [     ]      M
+[     ] * N [     ] => [   ]
+            [     ]  
+            [     ]    
+
+ */
+
+/* Multiply N vector by transposed NxM transform matrix to make M vector */
+/* Organization is mat[in=N][out=M] */
+void vect_MulByNxM(int n, int m, double *out, double *mat, double *in) {
+	int i, j;
+	double _tt[20], *tt = _tt;
+
+	if (m > 20)
+		tt = dvector(0, m-1);
+
+	for (i = 0; i < m; i++) {
+		tt[i] = 0.0;
+		for (j = 0; j < n; j++)
+			tt[i] += mat[j * m + i] * in[j];
+	}
+
+	for (i = 0; i < m; i++)
+		out[i] = tt[i];
+
+	if (m > 20)
+		free_dvector(tt, 0, m-1);
+}
+
+
+/* Transpose an NxN matrix */
+void matrix_TransposeNxN(int n, double *out, double *in) {
+	int i, j;
+
+	if (in != out) {
+		for (i = 0; i < n; i++)
+			for (j = 0; j < n; j++)
+				out[i * n + j] = in[j * n + i];
+	} else {
+		for (i = 0; i < n; i++) {
+			for (j = i+1; j < n; j++) {
+				double tt;
+				tt = out[i * n + j];
+				out[i * n + j] = out[j * n + i];
+				out[j * n + i] = tt;
+			}
+		}
+	}
+}
+
+/* Print C double matrix to g_log debug */
+/* id identifies matrix */
+/* pfx used at start of each line */
+/* Assumed indexed from 0 */
+void adump_C_dmatrix(a1log *log, char *id, char *pfx, double *a, int nr, int nc) {
+	int i, j;
+	a1logd(g_log, 0, "%s%s[%d][%d]\n",pfx,id,nr,nc);
+
+	for (j = 0; j < nr; j++, a += nc) {
+		a1logd(g_log, 0, "%s ",pfx);
+		for (i = 0; i < nc; i++)
+			a1logd(g_log, 0, "%f%s",a[i], i < (nc-1) ? ", " : "");
+		a1logd(g_log, 0, "\n");
+	}
+}
 
 /*******************************************/
 /* Platform independent IEE754 conversions */
@@ -1609,7 +2622,7 @@ unsigned int read_ORD8(ORD8 *p) {
 	return rv;
 }
 
-void write_ORD8(unsigned int d, ORD8 *p) {
+void write_ORD8(ORD8 *p, unsigned int d) {
 	if (d > 0xff)
 		d = 0xff;
 	p[0] = (ORD8)(d);
@@ -1624,7 +2637,7 @@ int read_INR8(ORD8 *p) {
 	return rv;
 }
 
-void write_INR8(int d, ORD8 *p) {
+void write_INR8(ORD8 *p, int d) {
 	if (d > 0x7f)
 		d = 0x7f;
 	else if (d < -0x80)
@@ -1649,14 +2662,14 @@ unsigned int read_ORD16_le(ORD8 *p) {
 	return rv;
 }
 
-void write_ORD16_be(unsigned int d, ORD8 *p) {
+void write_ORD16_be(ORD8 *p, unsigned int d) {
 	if (d > 0xffff)
 		d = 0xffff;
 	p[0] = (ORD8)(d >> 8);
 	p[1] = (ORD8)(d);
 }
 
-void write_ORD16_le(unsigned int d, ORD8 *p) {
+void write_ORD16_le(ORD8 *p, unsigned int d) {
 	if (d > 0xffff)
 		d = 0xffff;
 	p[0] = (ORD8)(d);
@@ -1680,7 +2693,7 @@ int read_INR16_le(ORD8 *p) {
 	return rv;
 }
 
-void write_INR16_be(int d, ORD8 *p) {
+void write_INR16_be(ORD8 *p, int d) {
 	if (d > 0x7fff)
 		d = 0x7fff;
 	else if (d < -0x8000)
@@ -1689,7 +2702,7 @@ void write_INR16_be(int d, ORD8 *p) {
 	p[1] = (ORD8)(d);
 }
 
-void write_INR16_le(int d, ORD8 *p) {
+void write_INR16_le(ORD8 *p, int d) {
 	if (d > 0x7fff)
 		d = 0x7fff;
 	else if (d < -0x8000)
@@ -1719,14 +2732,14 @@ unsigned int read_ORD32_le(ORD8 *p) {
 	return rv;
 }
 
-void write_ORD32_be(unsigned int d, ORD8 *p) {
+void write_ORD32_be(ORD8 *p, unsigned int d) {
 	p[0] = (ORD8)(d >> 24);
 	p[1] = (ORD8)(d >> 16);
 	p[2] = (ORD8)(d >> 8);
 	p[3] = (ORD8)(d);
 }
 
-void write_ORD32_le(unsigned int d, ORD8 *p) {
+void write_ORD32_le(ORD8 *p, unsigned int d) {
 	p[0] = (ORD8)(d);
 	p[1] = (ORD8)(d >> 8);
 	p[2] = (ORD8)(d >> 16);
@@ -1754,14 +2767,14 @@ int read_INR32_le(ORD8 *p) {
 	return rv;
 }
 
-void write_INR32_be(int d, ORD8 *p) {
+void write_INR32_be(ORD8 *p, int d) {
 	p[0] = (ORD8)(d >> 24);
 	p[1] = (ORD8)(d >> 16);
 	p[2] = (ORD8)(d >> 8);
 	p[3] = (ORD8)(d);
 }
 
-void write_INR32_le(int d, ORD8 *p) {
+void write_INR32_le(ORD8 *p, int d) {
 	p[0] = (ORD8)(d);
 	p[1] = (ORD8)(d >> 8);
 	p[2] = (ORD8)(d >> 16);
@@ -1797,7 +2810,7 @@ ORD64 read_ORD64_le(ORD8 *p) {
 	return rv;
 }
 
-void write_ORD64_be(ORD64 d, ORD8 *p) {
+void write_ORD64_be(ORD8 *p, ORD64 d) {
 	p[0] = (ORD8)(d >> 56);
 	p[1] = (ORD8)(d >> 48);
 	p[2] = (ORD8)(d >> 40);
@@ -1808,7 +2821,7 @@ void write_ORD64_be(ORD64 d, ORD8 *p) {
 	p[7] = (ORD8)(d);
 }
 
-void write_ORD64_le(ORD64 d, ORD8 *p) {
+void write_ORD64_le(ORD8 *p, ORD64 d) {
 	p[0] = (ORD8)(d);
 	p[1] = (ORD8)(d >> 8);
 	p[2] = (ORD8)(d >> 16);
@@ -1848,7 +2861,7 @@ INR64 read_INR64_le(ORD8 *p) {
 	return rv;
 }
 
-void write_INR64_be(INR64 d, ORD8 *p) {
+void write_INR64_be(ORD8 *p, INR64 d) {
 	p[0] = (ORD8)(d >> 56);
 	p[1] = (ORD8)(d >> 48);
 	p[2] = (ORD8)(d >> 40);
@@ -1859,7 +2872,7 @@ void write_INR64_be(INR64 d, ORD8 *p) {
 	p[7] = (ORD8)(d);
 }
 
-void write_INR64_le(INR64 d, ORD8 *p) {
+void write_INR64_le(ORD8 *p, INR64 d) {
 	p[0] = (ORD8)(d);
 	p[1] = (ORD8)(d >> 8);
 	p[2] = (ORD8)(d >> 16);
@@ -1870,3 +2883,275 @@ void write_INR64_le(INR64 d, ORD8 *p) {
 	p[7] = (ORD8)(d >> 56);
 }
 
+/*******************************/
+/* System independent timing */
+
+#ifdef NT
+
+/* Sleep for the given number of msec */
+void msec_sleep(unsigned int msec) {
+	Sleep(msec);
+}
+
+/* Return the current time in msec since */
+/* the first invokation of msec_time() */
+/* (Is this based on timeGetTime() ? ) */
+unsigned int msec_time() {
+	unsigned int rv;
+	static unsigned int startup = 0;
+
+	rv =  GetTickCount();
+	if (startup == 0)
+		startup = rv;
+
+	return rv - startup;
+}
+
+/* Return the current time in usec */
+/* since the first invokation of usec_time() */
+/* Return -1.0 if not available */
+double usec_time() {
+	double rv;
+	LARGE_INTEGER val;
+	static double scale = 0.0;
+	static LARGE_INTEGER startup;
+
+	if (scale == 0.0) {
+		if (QueryPerformanceFrequency(&val) == 0)
+			return -1.0;
+		scale = 1000000.0/val.QuadPart;
+		QueryPerformanceCounter(&val);
+		startup.QuadPart = val.QuadPart;
+
+	} else {
+		QueryPerformanceCounter(&val);
+	}
+	val.QuadPart -= startup.QuadPart;
+
+	rv = val.QuadPart * scale;
+		
+	return rv;
+}
+
+#endif /* NT */
+
+#if defined(UNIX)
+
+/* Sleep for the given number of msec */
+/* (Note that OS X 10.9+ App Nap can wreck this, unless */
+/*  it is turned off.) */
+void msec_sleep(unsigned int msec) {
+#ifdef NEVER
+	if (msec > 1000) {
+		unsigned int secs;
+		secs = msec / 1000;
+		msec = msec % 1000;
+		sleep(secs);
+	}
+	usleep(msec * 1000);
+#else
+	struct timespec ts;
+
+	ts.tv_sec = msec / 1000;
+	ts.tv_nsec = (msec % 1000) * 1000000;
+	nanosleep(&ts, NULL);
+#endif
+}
+
+
+#if defined(__APPLE__) /* && !defined(CLOCK_MONOTONIC) */
+
+#include <mach/mach_time.h>
+
+/* Return the current time in msec */
+/* since the first invokation of msec_time() */
+unsigned int msec_time() {
+    mach_timebase_info_data_t timebase;
+    static uint64_t startup = 0;
+    uint64_t time;
+	double msec;
+
+    time = mach_absolute_time();
+	if (startup == 0)
+		startup = time;
+
+    mach_timebase_info(&timebase);
+	time -= startup;
+    msec = ((double)time * (double)timebase.numer)/((double)timebase.denom * 1e6);
+
+    return (unsigned int)floor(msec + 0.5);
+}
+
+/* Return the current time in usec */
+/* since the first invokation of usec_time() */
+double usec_time() {
+    mach_timebase_info_data_t timebase;
+    static uint64_t startup = 0;
+    uint64_t time;
+	double usec;
+
+    time = mach_absolute_time();
+	if (startup == 0)
+		startup = time;
+
+    mach_timebase_info(&timebase);
+	time -= startup;
+    usec = ((double)time * (double)timebase.numer)/((double)timebase.denom * 1e3);
+
+    return usec;
+}
+
+#else
+
+/* Return the current time in msec */
+/* since the first invokation of msec_time() */
+unsigned int msec_time() {
+	unsigned int rv;
+	static struct timespec startup = { 0, 0 };
+	struct timespec cv;
+
+	clock_gettime(CLOCK_MONOTONIC, &cv);
+
+	/* Set time to 0 on first invocation */
+	if (startup.tv_sec == 0 && startup.tv_nsec == 0)
+		startup = cv;
+
+	/* Subtract, taking care of carry */
+	cv.tv_sec -= startup.tv_sec;
+	if (startup.tv_nsec > cv.tv_nsec) {
+		cv.tv_sec--;
+		cv.tv_nsec += 1000000000;
+	}
+	cv.tv_nsec -= startup.tv_nsec;
+
+	/* Convert nsec to msec */
+	rv = cv.tv_sec * 1000 + cv.tv_nsec / 1000000;
+
+	return rv;
+}
+
+/* Return the current time in usec */
+/* since the first invokation of usec_time() */
+double usec_time() {
+	double rv;
+	static struct timespec startup = { 0, 0 };
+	struct timespec cv;
+
+	clock_gettime(CLOCK_MONOTONIC, &cv);
+
+	/* Set time to 0 on first invocation */
+	if (startup.tv_sec == 0 && startup.tv_nsec == 0)
+		startup = cv;
+
+	/* Subtract, taking care of carry */
+	cv.tv_sec -= startup.tv_sec;
+	if (startup.tv_nsec > cv.tv_nsec) {
+		cv.tv_sec--;
+		cv.tv_nsec += 1000000000;
+	}
+	cv.tv_nsec -= startup.tv_nsec;
+
+	/* Convert to usec */
+	rv = cv.tv_sec * 1000000.0 + cv.tv_nsec/1000;
+
+	return rv;
+}
+
+#endif
+
+#endif /* UNIX */
+
+/*******************************/
+/* Debug convenience functions */
+/*******************************/
+
+#define DEB_MAX_CHAN 24
+
+/* Print an int vector to a string. */
+/* Returned static buffer is re-used every 5 calls. */
+char *debPiv(int di, int *p) {
+	static char buf[5][DEB_MAX_CHAN * 16];
+	static int ix = 0;
+	int e;
+	char *bp;
+
+	if (p == NULL)
+		return "(null)";
+
+	if (++ix >= 5)
+		ix = 0;
+	bp = buf[ix];
+
+	if (di > DEB_MAX_CHAN)
+		di = DEB_MAX_CHAN;		/* Make sure that buf isn't overrun */
+
+	for (e = 0; e < di; e++) {
+		if (e > 0)
+			*bp++ = ' ';
+		sprintf(bp, "%d", p[e]); bp += strlen(bp);
+	}
+	return buf[ix];
+}
+
+/* Print a double color vector to a string with format. */
+/* Returned static buffer is re-used every 5 calls. */
+char *debPdvf(int di, char *fmt, double *p) {
+	static char buf[5][DEB_MAX_CHAN * 50];
+	static int ix = 0;
+	int e;
+	char *bp;
+
+	if (p == NULL)
+		return "(null)";
+
+	if (fmt == NULL)
+		fmt = "%.8f";
+
+	if (++ix >= 5)
+		ix = 0;
+	bp = buf[ix];
+
+	if (di > DEB_MAX_CHAN)
+		di = DEB_MAX_CHAN;		/* Make sure that buf isn't overrun */
+
+	for (e = 0; e < di; e++) {
+		if (e > 0)
+			*bp++ = ' ';
+		sprintf(bp, fmt, p[e]); bp += strlen(bp);
+	}
+	return buf[ix];
+}
+
+/* Print a double color vector to a string. */
+/* Returned static buffer is re-used every 5 calls. */
+char *debPdv(int di, double *p) {
+	return debPdvf(di, NULL, p);
+}
+
+/* Print a float color vector to a string. */
+/* Returned static buffer is re-used every 5 calls. */
+char *debPfv(int di, float *p) {
+	static char buf[5][DEB_MAX_CHAN * 50];
+	static int ix = 0;
+	int e;
+	char *bp;
+
+	if (p == NULL)
+		return "(null)";
+
+	if (++ix >= 5)
+		ix = 0;
+	bp = buf[ix];
+
+	if (di > DEB_MAX_CHAN)
+		di = DEB_MAX_CHAN;		/* Make sure that buf isn't overrun */
+
+	for (e = 0; e < di; e++) {
+		if (e > 0)
+			*bp++ = ' ';
+		sprintf(bp, "%.8f", p[e]); bp += strlen(bp);
+	}
+	return buf[ix];
+}
+
+#undef DEB_MAX_CHAN

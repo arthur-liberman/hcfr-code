@@ -1,5 +1,5 @@
 
- /* Single dimension regularized spline data structure */
+/* Single dimension regularized spline data structure */
 
 /* 
  * Argyll Color Correction System
@@ -339,6 +339,11 @@ static int fit_rspl(
 	                    smooth, avgdev, ipos);
 }
 
+/* Return a pointer to the resolution array */
+static int *get_res(rspl *s) {
+	return &s->nig;
+}
+
 /* Initialise the regular spline from scattered data with weights */
 /* Return nz on error */
 static int
@@ -361,6 +366,80 @@ fit_rspl_w(
 	                    smooth, avgdev, ipos);
 }
 
+/* Initialize the grid from a provided function.  */
+/* Grid index values are supplied "under" in[] at *((int*)&iv[-e-1]) */
+static int set_rspl(
+	struct _rspl *s,/* this */
+	int flags,		/* (Not used) */
+	void *cbctx,	/* Opaque function context */
+	void (*func)(void *cbctx, double *out, double *in),		/* Function to set from */
+	datai glow,		/* Grid low scale, NULL = default 0.0 */
+	datai ghigh,	/* Grid high scale, NULL = default 1.0 */
+	int *gres,		/* Spline grid resolution for each dimension */
+	datao vlow,		/* Data value low normalize, NULL = default 0.0 */
+	datao vhigh		/* Data value high normalize, NULL = default 1.0 */
+) {
+	int n;
+	double _iv[2 * MXDI], *iv = &_iv[MXDI];	/* Real index value/table value */
+	double ov[MXDO];
+
+	DBGF((DBGA, "rspl1:set_rspl() callen"));
+
+	/* Allocate space for interpolation grid */
+	s->nig = *gres;
+
+	if ((s->x   = dvector(0, s->nig)) == NULL) {
+		DBGF((DBGA, "rspl1:Malloc of vector x failed\n"));
+		return 1;
+	}
+
+	s->xl = s->gl = glow != NULL ? *glow : 0.0;
+	s->xh = s->gh = ghigh != NULL ? *ghigh : 1.0;
+
+	/* Set the input scaling */
+	s->gw  = (s->gh - s->gl)/(double)(s->nig-1);
+
+	/* Set the default output scaling */
+	s->vl  = vlow != NULL ? *vlow : 0.0;
+	s->vw  = ((vhigh != NULL ? *vhigh : 1.0) - s->vl);
+
+	DBGF((DBGA, "rspl1:gl %f, gh %f, gw %f, vl %f, vw %f\n",s->gl,s->gh,s->gw,s->vl,s->vw));
+
+	/* Lookup the values at the grid points */
+	for (n = 0; n < s->nig; n++) {
+		double vv;
+
+		/* Compute grid pointer and input sample values */
+		iv[0] = s->gl + n * s->gw;			/* Input sample values */
+		*((int *)&iv[-1-1]) = n;	/* Trick to supply grid index in iv[] */
+
+		/* Apply incolor -> outcolor function we want to represent */
+		func(cbctx, ov, iv);
+
+		s->x[n] = (float)ov[0];		/* Set unscaled output value */
+
+		if (s->x[n] < s->dl)
+			s->dl = s->x[n];
+		if (s->x[n] > s->dh)
+			s->dh = s->x[n];
+	}
+
+	/* Adjust output scaling */
+	s->vw += s->vl;			/* Convert to high */
+	if (s->dl < s->vl)
+		s->vl = s->dl;
+	if (s->dh < s->vw)
+		s->vw = s->dh;
+	s->vw -= s->vl;			/* Convert to width */
+
+	/* Apply scaling to data */
+	for (n = 0; n < s->nig; n++) {
+		s->x[n] = (s->x[n] - s->vl)/s->vw;
+	}
+
+	return 0;
+}
+
 /* Construct an empty rspl1 */
 /* Return NULL if something goes wrong. */
 rspl *new_rspl(int flags, int di, int fdi) {
@@ -380,6 +459,8 @@ rspl *new_rspl(int flags, int di, int fdi) {
 	t->interp     = interp;
 	t->fit_rspl   = fit_rspl; 
 	t->fit_rspl_w = fit_rspl_w; 
+	t->set_rspl   = set_rspl; 
+	t->get_res    = get_res; 
 	t->del        = del_rspl;
 
 	return t;

@@ -91,7 +91,10 @@ inst2_capability inst_show_disptype_options(FILE *fp, char *oline, icompaths *ic
 /* A helper function to turn a -y flag into a list index */
 /* If docbib is nz, then only allow base calibration display types */
 /* Return 0 on error */
-int inst_get_disptype_index(inst *it, int c, int docbib);
+int inst_get_disptype_index(inst *it, int ditype, int docbib);
+
+/* Return a static string of the ditype flag char(s) */
+char *inst_distr(int ditype);
 
 #ifdef __cplusplus
 	}

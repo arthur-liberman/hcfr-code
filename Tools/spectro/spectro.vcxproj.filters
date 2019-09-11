@@ -15,43 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="cgats.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="cgatsstd.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="hidio.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="i1d3.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="icoms.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="icoms_nt.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="inst.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="usbio.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="usbio_nt.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="xspect.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ccss.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ccmx.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="disptechs.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="colorhug.c">
@@ -90,43 +57,91 @@
     <ClCompile Include="ss.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ss_imp.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="spyd2.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\libconv\pollem.c">
+    <ClCompile Include="dtp20.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="aglob.c">
+    <ClCompile Include="dtp22.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="rspec.c">
+    <ClCompile Include="dtp41.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="plot.c">
+    <ClCompile Include="dtp51.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="spydX.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="usbio.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="insttypes.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="rspl1.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="xdg_bds.c">
+    <ClCompile Include="rspec.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pars.c">
+    <ClCompile Include="xrga.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="icoms.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hidio.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ex1.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="smcube.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="xdg_bds.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="disptechs.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ccss.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="xspect.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cgatsstd.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cgats.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="numsup.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="conv.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="icc.c">
+    <ClCompile Include="sa_conv.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="insttypes.c">
+    <ClCompile Include="parsstd.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ccmx.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pars.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="aglob.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ss_imp.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -141,9 +156,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="conv.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="copyright.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="dtp92.h">
@@ -188,9 +200,6 @@
     <ClInclude Include="munki_imp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="numsup.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="pars.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -233,23 +242,38 @@
     <ClInclude Include="ccss.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="spyd2setup.h">
+    <ClInclude Include="usb\driver\driver_api.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="dispwin.h">
+    <ClInclude Include="dtp20.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="render.h">
+    <ClInclude Include="dtp22.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ex1.h">
+    <ClInclude Include="dtp41.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="icc.h">
+    <ClInclude Include="dtp51.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Readme.txt" />
+    <ClInclude Include="instappsup.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rspec.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sa_conv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sort.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="spydX.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="xrga.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

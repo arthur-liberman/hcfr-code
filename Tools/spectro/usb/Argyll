@@ -1,0 +1,9 @@
+#!/bin/sh
+# Copy to /etc/hotplug/usb/Argyll
+#
+# Argyll hotplug script. Adds the USB devices to the colord group.
+if [ "${ACTION}" = "add" ] && [ -f "${DEVICE}" ]
+then
+    chgrp colord "${DEVICE}"
+    chmod 660 "${DEVICE}"
+fi

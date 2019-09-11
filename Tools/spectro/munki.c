@@ -49,6 +49,7 @@
 #include "sa_config.h"
 #include "numsup.h"
 #endif /* SALONEINSTLIB */
+#include "cgats.h"
 #include "xspect.h"
 #include "insttypes.h"
 #include "conv.h"
@@ -71,8 +72,15 @@ static inst_code
 munki_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	munki *p = (munki *) pp;
 	int se;
+#if defined(UNIX_X11)
+	/* Some Linux drivers fail to start every second time the device is opened */
+	/* if no clear halt is done on open, and some do the opposite. So */
+	/* reset after close to avoid the problem in all cases. */ 
+	icomuflags usbflags = icomuf_no_open_clear | icomuf_reset_before_close;
+#else
 	icomuflags usbflags = icomuf_none;
-#ifdef __APPLE__
+#endif
+#ifdef UNIX_APPLE
 	/* If the ColorMunki software has been installed, then there will */
 	/* be a daemon process that has the device open. Kill that process off */
 	/* so that we can open it here, before it re-spawns. */
@@ -82,10 +90,10 @@ munki_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 			NULL
 	};
 	int retries = 20;
-#else /* !__APPLE__ */
+#else /* !UNIX_APPLE */
 	char **pnames = NULL;
 	int retries = 0;
-#endif /* !__APPLE__ */
+#endif /* !UNIX_APPLE */
 
 	a1logd(p->log, 2, "munki_init_coms: called\n");
 
@@ -98,6 +106,8 @@ munki_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 
 	/* Set config, interface, write end point, read end point, read quanta */
 	/* ("serial" end points aren't used - the Munki uses USB control messages) */
+	/* (The ColorMunki on Linux only starts every second time if we use the */
+	/* icomuf_no_open_clear flag.) */
 	if ((se = p->icom->set_usb_port(p->icom, 1, 0x00, 0x00, usbflags, retries, pnames))
 		                                                                   != ICOM_OK) { 
 		a1logd(p->log, 1, "munki_init_coms: failed ICOM err 0x%x\n",se);
@@ -368,6 +378,7 @@ static inst_code munki_calibrate(
 inst *pp,
 inst_cal_type *calt,	/* Calibration type to do/remaining */
 inst_cal_cond *calc,	/* Current condition/desired condition */
+inst_calc_id_type *idtype,	/* Condition identifier type */
 char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 ) {
 	munki *p = (munki *)pp;
@@ -378,7 +389,7 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 	if (!p->inited)
 		return inst_no_init;
 
-	rv = munki_imp_calibrate(p, calt, calc, id);
+	rv = munki_imp_calibrate(p, calt, calc, idtype, id);
 
 	return munki_interp_code(p, rv);
 }
@@ -455,7 +466,7 @@ munki_interp_error(inst *pp, munki_code ec) {
 		case MUNKI_RD_TOOMANYPATCHES:
 			return "Too many patches";
 		case MUNKI_RD_NOTENOUGHSAMPLES:
-			return "Not enough samples per patch";
+			return "Not enough samples per patch - Slow Down!";
 		case MUNKI_RD_NOFLASHES:
 			return "No flashes recognized";
 		case MUNKI_RD_NOAMBB4FLASHES:
@@ -797,6 +808,77 @@ munki_get_set_opt(inst *pp, inst_opt_type m, ...) {
 		return munki_interp_code(p, munki_set_scan_toll(p, toll_ratio));
 	}
 
+	/* Set xcalstd */
+	if (m == inst_opt_set_xcalstd) {
+		munkiimp *imp = (munkiimp *)p->m;
+		xcalstd standard;
+		va_list args;
+
+		va_start(args, m);
+		standard = va_arg(args, xcalstd);
+		va_end(args);
+
+		imp->target_calstd = standard;
+
+		return inst_ok;
+	}
+
+	/* Get the current effective xcalstd */
+	if (m == inst_opt_get_xcalstd) {
+		munkiimp *imp = (munkiimp *)p->m;
+		xcalstd *standard;
+		va_list args;
+
+		va_start(args, m);
+		standard = va_arg(args, xcalstd *);
+		va_end(args);
+
+		if (imp->target_calstd == xcalstd_native)
+			*standard = imp->native_calstd;		/* If not overridden */
+		else
+			*standard = imp->target_calstd;		/* Overidden std. */
+
+		return inst_ok;
+	}
+
+	if (m == inst_opt_set_custom_filter) {
+		munkiimp *imp = (munkiimp *)p->m;
+		va_list args;
+		xspect *sp = NULL;
+
+		va_start(args, m);
+
+		sp = va_arg(args, xspect *);
+
+		va_end(args);
+
+		if (sp == NULL || sp->spec_n == 0) {
+			imp->custfilt_en = 0;
+			imp->custfilt.spec_n = 0;
+		} else {
+			imp->custfilt_en = 1;
+			imp->custfilt = *sp;			/* Struct copy */
+		}
+		return inst_ok;
+	}
+
+	if (m == inst_stat_get_custom_filter) {
+		munkiimp *imp = (munkiimp *)p->m;
+		va_list args;
+		xspect *sp = NULL;
+
+		va_start(args, m);
+		sp = va_arg(args, xspect *);
+		va_end(args);
+
+		if (imp->custfilt_en) {
+			*sp = imp->custfilt;			/* Struct copy */
+		} else {
+			sp = NULL;
+		}
+		return inst_ok;
+	}
+
 	if (!p->gotcoms)
 		return inst_no_coms;
 	if (!p->inited)
@@ -915,6 +997,33 @@ munki_get_set_opt(inst *pp, inst_opt_type m, ...) {
 		return inst_ok;
 	}
 
+	/* Return the white calibration tile spectrum */
+	/* (We always return the normal rez. reference values) */
+	if (m == inst_opt_get_cal_tile_sp) {
+		munkiimp *imp = (munkiimp *)p->m;
+		xspect *sp;
+		inst_code rv;
+		va_list args;
+		int i;
+
+		va_start(args, m);
+		sp = va_arg(args, xspect *);
+		va_end(args);
+
+		if (imp->white_ref1 == NULL)
+			return inst_no_init;
+
+		sp->spec_n = imp->nwav1;
+		sp->spec_wl_short = imp->wl_short1;
+		sp->spec_wl_long = imp->wl_long1;
+		sp->norm = 100.0;
+
+		for (i = 0; i < sp->spec_n; i++)
+			sp->spec[i] = imp->white_ref1[i] * 100.0; 
+		
+		return inst_ok;
+	}
+
 	/* Use default implementation of other inst_opt_type's */
 	{
 		inst_code rv;
@@ -942,7 +1051,7 @@ munki_del(inst *pp) {
 }
 
 /* Constructor */
-extern munki *new_munki(icoms *icom, instType itype) {
+extern munki *new_munki(icoms *icom, instType dtype) {
 	munki *p;
 	int rv;
 	if ((p = (munki *)calloc(sizeof(munki),1)) == NULL) {
@@ -973,7 +1082,7 @@ extern munki *new_munki(icoms *icom, instType itype) {
 	p->del               = munki_del;
 
 	p->icom = icom;
-	p->itype = itype;
+	p->dtype = dtype;
 
 	/* Preliminary capabilities */
 	munki_determine_capabilities(p);

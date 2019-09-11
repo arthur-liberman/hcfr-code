@@ -73,6 +73,7 @@
 #include "sa_config.h"
 #endif
 #include "numsup.h"
+#include "cgats.h"
 #include "xspect.h"
 #include "insttypes.h"
 #include "conv.h"
@@ -178,7 +179,7 @@ int hid_get_paths(icompaths *p) {
 		pdidd->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
 		dinfod.cbSize = sizeof(SP_DEVINFO_DATA);
 		for (i = 0; ; i++) {
-			instType itype;
+			devType itype;
 
 			if (SetupDiEnumDeviceInterfaces(hdinfo, NULL, &HidGuid, i, &did) == 0) {
 				if (GetLastError() == ERROR_NO_MORE_ITEMS) {
@@ -269,7 +270,7 @@ int hid_get_paths(icompaths *p) {
 	}
 #endif /* NT */
 
-#ifdef __APPLE__
+#ifdef UNIX_APPLE
 # if defined(USE_NEW_OSX_CODE) && __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
 	{
 		CFAllocatorContext alocctx;
@@ -308,7 +309,7 @@ int hid_get_paths(icompaths *p) {
 			CFNumberRef vref, pref;					/* HID Vendor and Product ID propeties */
 			CFNumberRef lidpref;					/* Location ID properties */
 			unsigned int vid = 0, pid = 0, lid = 0;
-			instType itype;
+			devType itype;
 			IOHIDDeviceRef ioob = values[i];		/* HID object found */
 
         	if ((vref = IOHIDDeviceGetProperty(ioob, CFSTR(kIOHIDVendorIDKey))) != NULL) {
@@ -376,7 +377,7 @@ int hid_get_paths(icompaths *p) {
 			CFNumberRef vref, pref;					/* HID Vendor and Product ID propeties */
 			CFNumberRef lidpref;					/* Location ID properties */
 			unsigned int vid = 0, pid = 0, lid = 0;
-			instType itype;
+			devType itype;
 
 		    if ((ioob = IOIteratorNext(mit)) == 0)
 				break;
@@ -419,6 +420,8 @@ int hid_get_paths(icompaths *p) {
 
 				/* Add the path to the list */
 				p->add_hid(p, pname, vid, pid, 0, hidd, itype);
+			} else {
+	        	a1logd(p->log, 4, "skipping HID device VID 0x%x PID 0x%x lid 0x%x that we don't want\n",vid, pid, lid);
 			}
 			if (ioob != 0)		/* If we haven't kept it */
 			    IOObjectRelease(ioob);		/* Release found object */
@@ -426,7 +429,7 @@ int hid_get_paths(icompaths *p) {
 	    IOObjectRelease(mit);			/* Release the itterator */
 	}
 #endif	/* __MAC_OS_X_VERSION_MAX_ALLOWED < 1060 */
-#endif /* __APPLE__ */
+#endif /* UNIX_APPLE */
 
 #if defined(UNIX_X11)
 
@@ -483,14 +486,14 @@ int hid_get_paths(icompaths *p) {
 #endif /* NEVER */
 #endif /* UNIX_X11 */
 
-	a1logd(p->log, 8, "icoms_get_paths: returning %d paths and ICOM_OK\n",p->npaths);
+	a1logd(p->log, 8, "icoms_get_paths: returning %d paths and ICOM_OK\n",p->ndpaths[dtix_combined]);
 
 	return ICOM_OK;
 }
 
 /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#ifdef __APPLE__
+#ifdef UNIX_APPLE
 
 /* HID Interrupt callback for OS X */
 /* This seems to only get called when the run loop is active. */
@@ -516,7 +519,7 @@ UInt32 size
 		a1logd(p->log, 8, "HID callback has no run loop\n");
 }
 
-#endif /* __APPLE__ */
+#endif /* UNIX_APPLE */
 
 /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
@@ -543,6 +546,7 @@ char **pnames			/* List of process names to try and kill before opening */
 #if defined(NT) 
 		{
 			int tries = 0;
+			int last_err = 0;
 
 			for (tries = 0; retries >= 0; retries--, tries++) {
 				/* Open the device */
@@ -556,7 +560,9 @@ char **pnames			/* List of process names to try and kill before opening */
 						return ICOM_SYS;
 					}
 					break;
-				}
+				} else
+					last_err = GetLastError();
+
 				if (tries > 0 && pnames != NULL) {
 					/* Open failed. This could be the i1ProfileTray.exe */
 					kill_nprocess(pnames, p->log);		/* Try and kill it once */
@@ -565,13 +571,13 @@ char **pnames			/* List of process names to try and kill before opening */
 			}
 			if (p->hidd->fh == INVALID_HANDLE_VALUE) {
 				a1loge(p->log, ICOM_SYS, "hid_open_port: Failed to open "
-				                     "path '%s' with err %d\n",p->hidd->dpath, GetLastError());
+				                     "path '%s' with err %d\n",p->hidd->dpath, last_err);
 				return ICOM_SYS;
 			}
 		}
 #endif /* NT */
 
-#ifdef __APPLE__
+#ifdef UNIX_APPLE
 # if defined(USE_NEW_OSX_CODE) && __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
 		{
 			/* Open the device */
@@ -644,7 +650,7 @@ char **pnames			/* List of process names to try and kill before opening */
 			}
 		}
 #endif	/* __MAC_OS_X_VERSION_MAX_ALLOWED < 1060 */
-#endif /* __APPLE__ */
+#endif /* UNIX_APPLE */
 
 		p->is_open = 1;
 		a1logd(p->log, 8, "hid_open_port: HID port is now open\n");
@@ -669,7 +675,7 @@ void hid_close_port(icoms *p) {
 		CloseHandle(p->hidd->fh);
 #endif /* NT */
 
-#ifdef __APPLE__
+#ifdef UNIX_APPLE
 # if defined(USE_NEW_OSX_CODE) && __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
 		if (IOHIDDeviceClose(p->hidd->ioob, kIOHIDOptionsTypeNone) != kIOReturnSuccess) {
 			a1loge(p->log, ICOM_SYS, "hid_close_port: closing HID port '%s' failed",p->name);
@@ -701,7 +707,7 @@ void hid_close_port(icoms *p) {
 		}
 		p->hidd->device = NULL;
 #endif	/* __MAC_OS_X_VERSION_MAX_ALLOWED < 1060 */
-#endif /* __APPLE__ */
+#endif /* UNIX_APPLE */
 
 		p->is_open = 0;
 		a1logd(p->log, 8, "hid_close_port: has been released and closed\n");
@@ -770,7 +776,7 @@ icoms_hid_read(icoms *p,
 	}
 #endif /* NT */
 
-#ifdef __APPLE__
+#ifdef UNIX_APPLE
 # if defined(USE_NEW_OSX_CODE) && __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
 	{
 		IOReturn result;
@@ -899,7 +905,7 @@ printf("~1 IOHIDDeviceGet returned 0x%x\n",result);
 	}
 #endif	// NEVER
 #endif	/* __MAC_OS_X_VERSION_MAX_ALLOWED < 1060 */
-#endif /* __APPLE__ */
+#endif /* UNIX_APPLE */
 
 	if (breadp != NULL)
 		*breadp = bread;
@@ -968,7 +974,7 @@ icoms_hid_write(icoms *p,
 	}
 #endif /* NT */
 
-#ifdef __APPLE__
+#ifdef UNIX_APPLE
 # if defined(USE_NEW_OSX_CODE) && __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
 	{
 		IOReturn result;
@@ -1039,7 +1045,7 @@ printf("~1 IOHIDDeviceSetReportWithCallback returned 0x%x\n",result);
 		}
 	}
 #endif	/* __MAC_OS_X_VERSION_MAX_ALLOWED < 1060 */
-#endif /* __APPLE__ */
+#endif /* UNIX_APPLE */
 
 	if (bwrittenp != NULL)
 		*bwrittenp = bwritten;
@@ -1101,7 +1107,7 @@ int hid_copy_hid_idevice(icoms *d, icompath *s) {
 		return ICOM_SYS;
 	}
 #endif
-#if defined(__APPLE__)
+#if defined(UNIX_APPLE)
 # if defined(USE_NEW_OSX_CODE) && __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
 	d->hidd->ioob = s->hidd->ioob;
 	CFRetain(d->hidd->ioob);
@@ -1109,7 +1115,7 @@ int hid_copy_hid_idevice(icoms *d, icompath *s) {
 	d->hidd->ioob = s->hidd->ioob;
 	IOObjectRetain(d->hidd->ioob);
 #endif	/* __MAC_OS_X_VERSION_MAX_ALLOWED < 1060 */
-#endif	/* __APPLE__ */
+#endif	/* UNIX_APPLE */
 #if defined (UNIX_X11)
 #endif
 	return ICOM_OK;
@@ -1124,7 +1130,7 @@ void hid_del_hid_idevice(struct hid_idevice *hidd) {
 	if (hidd->dpath != NULL)
 		free(hidd->dpath);
 #endif
-#if defined(__APPLE__)
+#if defined(UNIX_APPLE)
 # if defined(USE_NEW_OSX_CODE) && __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
 	if (hidd->ioob != 0)
 		CFRelease(hidd->ioob);
@@ -1132,7 +1138,7 @@ void hid_del_hid_idevice(struct hid_idevice *hidd) {
 	if (hidd->ioob != 0)
 		IOObjectRelease(hidd->ioob);
 #endif	/* __MAC_OS_X_VERSION_MAX_ALLOWED < 1060 */
-#endif	/* __APPLE__ */
+#endif	/* UNIX_APPLE */
 #if defined (UNIX_X11)
 #endif
 	free(hidd);

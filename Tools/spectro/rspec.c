@@ -44,13 +44,19 @@
 #include "sa_config.h"
 #include "numsup.h"
 #endif /* !SALONEINSTLIB */
-#include "plot.h"
+#ifndef SALONEINSTLIB
+#  include "plot.h"
+#endif
+#include "cgats.h"
 #include "xspect.h"
 #include "insttypes.h"
 #include "conv.h"
 #include "icoms.h"
 #include "inst.h"
 #include "rspec.h"
+
+#define BOX_INTEGRATE	/* [und] Integrate raw samples as if they were +/-0.5 boxes */
+						/*       (This improves coeficient consistency a bit ?) */
 
 /* -------------------------------------------------- */
 #if defined(__APPLE__) && defined(__POWERPC__)
@@ -251,6 +257,7 @@ void del_rspec(rspec *p) {
 
 /* Plot the first rspec */
 void plot_rspec1(rspec *p) {
+#ifndef SALONEINSTLIB
 	int i, no;
 	double xx[RSPEC_MAXSAMP];
 	double yy[RSPEC_MAXSAMP];
@@ -265,10 +272,12 @@ void plot_rspec1(rspec *p) {
 		yy[i] = p->samp[0][i];
 	}
 	do_plot(xx, yy, NULL, NULL, no);
+#endif
 }
 
 /* Plot the first rspec of 2 */
 void plot_rspec2(rspec *p1, rspec *p2) {
+#ifndef SALONEINSTLIB
 	int i, no;
 	double xx[RSPEC_MAXSAMP];
 	double y1[RSPEC_MAXSAMP];
@@ -287,9 +296,11 @@ void plot_rspec2(rspec *p1, rspec *p2) {
 		y2[i] = p2->samp[0][i];
 	}
 	do_plot(xx, y1, y2, NULL, no);
+#endif
 }
 
 void plot_ecal(rspec_inf *inf) {
+#ifndef SALONEINSTLIB
 	int i, no;
 	double xx[RSPEC_MAXSAMP];
 	double yy[RSPEC_MAXSAMP];
@@ -304,6 +315,7 @@ void plot_ecal(rspec_inf *inf) {
 		yy[i] = inf->ecal[i];
 	}
 	do_plot(xx, yy, NULL, NULL, no);
+#endif
 }
 
 
@@ -711,7 +723,7 @@ void rspec_make_resample_filters(rspec_inf *inf) {
 
 	a1logd(inf->log, 4,"rspec_make_resample_filters: maxcoeffs = %d\n",maxcoeffs);
 
-	/* Figure out integration step size */
+	/* Figure out box integration step size */
 #ifdef FAST_HIGH_RES_SETUP
 	finc = twidth/50.0;
 	if (rawspace/finc < 10.0)
@@ -755,6 +767,7 @@ void rspec_make_resample_filters(rspec_inf *inf) {
 			if (fabs(w1 - cwl) > fshmax && fabs(w2 - cwl) > fshmax)
 				continue;		/* Doesn't fall into this filter */
 
+#ifdef BOX_INTEGRATE
 			/* Integrate in finc nm increments from filter shape */
 			/* using triangular integration. */
 			{
@@ -779,6 +792,9 @@ void rspec_make_resample_filters(rspec_inf *inf) {
 					lw = cw;
 				}
 			}
+#else
+			we = fabs(w2 - w1) * kernel(twidth, rwl);
+#endif
 
 			if (inf->fnocoef[j] >= maxcoeffs)
 				error("rspec_make_resample_filters: run out of high res filter space\n");
@@ -847,6 +863,7 @@ void rspec_make_resample_filters(rspec_inf *inf) {
 
 /* Plot the wave resampling filters */
 void plot_resample_filters(rspec_inf *inf) {
+#ifndef SALONEINSTLIB
 	double *xx, *ss;
 	double **yy;
 	int i, j, k, sx;
@@ -878,6 +895,7 @@ void plot_resample_filters(rspec_inf *inf) {
 	do_plot6(xx, yy[0], yy[1], yy[2], yy[3], yy[4], yy[5], inf->nraw);
 	free_dvector(xx, 0, inf->nraw-1);
 	free_dmatrix(yy, 0, 2, 0, inf->nraw-1);
+#endif 
 }
 
 /* ================================================== */
@@ -911,7 +929,8 @@ int calf_open(calf *x, a1log *log, char *fname, int wr) {
 		sprintf(cal_name, "ArgyllCMS/%s", fname);
 	else
 		sprintf(cal_name, "ArgyllCMS/%s" SSEPS "color/%s", fname, fname);
-	if ((no_paths = xdg_bds(NULL, &cal_paths, xdg_cache, xdg_write, xdg_user, cal_name)) < 1) {
+	if ((no_paths = xdg_bds(NULL, &cal_paths, xdg_cache, xdg_write, xdg_user, xdg_none,
+		                                                                      cal_name)) < 1) {
 		a1logd(x->log,1,"calf_open: xdg_bds returned no paths\n");
 		return 1;
 	}
@@ -954,7 +973,8 @@ int calf_touch(a1log *log, char *fname) {
 	/* Locate the file name */
 	sprintf(cal_name, "ArgyllCMS/%s" SSEPS "color/%s", fname, fname);
 
-	if ((no_paths = xdg_bds(NULL, &cal_paths, xdg_cache, xdg_read, xdg_user, cal_name)) < 1) {
+	if ((no_paths = xdg_bds(NULL, &cal_paths, xdg_cache, xdg_read, xdg_user, xdg_none,
+		                                                                     cal_name)) < 1) {
 		a1logd(log,2,"calf_touch: xdg_bds failed to locate file'\n");
 		return 1;
 	}

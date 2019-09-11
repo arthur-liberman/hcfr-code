@@ -2,7 +2,9 @@
 /* 
  * Argyll Color Correction System
  * Colorimeter Correction Matrix
- *
+ */
+
+/*
  * Author: Graeme W. Gill
  * Date:   9/8/2010
  *
@@ -12,6 +14,7 @@
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
  * see the License2.txt file for licencing details.
  */
+
 
 /*
  * TTBD:
@@ -27,11 +30,13 @@
 #include <sys/types.h>
 #include <time.h>
 #ifndef SALONEINSTLIB
-#include "numlib.h"
-#include "icc.h"
+# include "aconfig.h"
+# include "numlib.h"
+# include "icc.h"
+#  include "plot.h"			/* For debugging */
 #else
-#include "numsup.h"
-#include "conv.h"
+# include "numsup.h"
+# include "sa_conv.h"
 #endif
 #include "cgats.h"
 #include "xspect.h"
@@ -201,7 +206,7 @@ char *outname	/* Filename to write to */
 static int buf_write_ccss(
 ccss *p,
 unsigned char **buf,		/* Return allocated buffer */
-int *len					/* Return length */
+size_t *len					/* Return length */
 ) {
 	int rv;
 	cgats *ocg;				/* CGATS structure */
@@ -231,7 +236,7 @@ int *len					/* Return length */
 	}
 
 	/* Get the buffer the ccss has been written to */
-	if (fp->get_buf(fp, buf, (size_t *)len)) {
+	if (fp->get_buf(fp, buf, len)) {
 		strcpy(p->err, "cgatsFileMem get_buf failed");
 		return 2;
 	}
@@ -434,7 +439,7 @@ char *inname	/* Filename to read from */
 static int buf_read_ccss(
 ccss *p,		/* This */
 unsigned char *buf,
-int len
+size_t len
 ) {
 	int rv;
 	cgatsFile *fp;

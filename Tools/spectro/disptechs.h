@@ -45,48 +45,61 @@
 /* Type of display technology */
 typedef enum {
 
-	disptech_unknown            = 0x0000,		/* Unknown dislay type */
+	disptech_unknown            = 0x0000,	/* Unknown dislay type */
 
-	disptech_none               = 0x0001,		/* display type is inaplicable (ie. ambient) */
+	disptech_none               = 0x0001,	/* display type is inaplicable (ie. ambient) */
 
-	disptech_crt                = 0x1000,		/* Generic CRT */
+	disptech_crt                = 0x1000,	/* Generic CRT */
 
-	disptech_plasma             = 0x2000,		/* Generic Plasma */
+	disptech_plasma             = 0x2000,	/* Generic Plasma */
 
-	disptech_lcd                = 0x3000,		/* Generic LCD */
+	disptech_lcd                = 0x3000,	/* Generic LCD */
 
-	disptech_lcd_ccfl           = 0x3100,		/* LCD with CCFL */
-	disptech_lcd_ccfl_ips       = 0x3110,		/* IPS LCD with CCFL */
-	disptech_lcd_ccfl_vpa       = 0x3120,		/* VPA LCD with CCFL */
-	disptech_lcd_ccfl_tft       = 0x3130,		/* TFT LCD with CCFL */
+	disptech_lcd_ccfl           = 0x3100,	/* LCD with CCFL */
+	disptech_lcd_ccfl_ips       = 0x3110,	/* IPS LCD with CCFL */
+	disptech_lcd_ccfl_vpa       = 0x3120,	/* VPA LCD with CCFL */
+	disptech_lcd_ccfl_tft       = 0x3130,	/* TFT LCD with CCFL */
 
-	disptech_lcd_ccfl_wg        = 0x3200,		/* Wide gamut LCD with CCFL */
-	disptech_lcd_ccfl_wg_ips    = 0x3210,		/* IPS wide gamut LCD with CCFL */
-	disptech_lcd_ccfl_wg_vpa    = 0x3220,		/* VPA wide gamut LCD with CCFL */
-	disptech_lcd_ccfl_wg_tft    = 0x3230,		/* TFT wide gamut LCD with CCFL */
+	disptech_lcd_ccfl_wg        = 0x3200,	/* Wide gamut LCD with CCFL */
+	disptech_lcd_ccfl_wg_ips    = 0x3210,	/* IPS wide gamut LCD with CCFL */
+	disptech_lcd_ccfl_wg_vpa    = 0x3220,	/* VPA wide gamut LCD with CCFL */
+	disptech_lcd_ccfl_wg_tft    = 0x3230,	/* TFT wide gamut LCD with CCFL */
 	
-	disptech_lcd_wled           = 0x3300,		/* LCD with white LED */
-	disptech_lcd_wled_ips       = 0x3310,		/* IPS LCD with white LED */
-	disptech_lcd_wled_vpa       = 0x3320,		/* VPA LCD with white LED */
-	disptech_lcd_wled_tft       = 0x3330,		/* TFT LCD with white LED */
+	disptech_lcd_wled           = 0x3300,	/* LCD with white LED */
+	disptech_lcd_wled_ips       = 0x3310,	/* IPS LCD with white LED */
+	disptech_lcd_wled_vpa       = 0x3320,	/* VPA LCD with white LED */
+	disptech_lcd_wled_tft       = 0x3330,	/* TFT LCD with white LED */
 
-	disptech_lcd_rgbled         = 0x3400,		/* LCD with RGB LED */
-	disptech_lcd_rgbled_ips     = 0x3410,		/* IPS LCD with RGB LED */
-	disptech_lcd_rgbled_vpa     = 0x3420,		/* VPA LCD with RGB LED */
-	disptech_lcd_rgbled_tft     = 0x3430,		/* TFT LCD with RGB LED */
+	disptech_lcd_rgbled         = 0x3400,	/* LCD with RGB LED */
+	disptech_lcd_rgbled_ips     = 0x3410,	/* IPS LCD with RGB LED */
+	disptech_lcd_rgbled_vpa     = 0x3420,	/* VPA LCD with RGB LED */
+	disptech_lcd_rgbled_tft     = 0x3430,	/* TFT LCD with RGB LED */
 
-	disptech_lcd_rgledp         = 0x3500,		/* IPS LCD with RG LED + Phosphor */
-	disptech_lcd_rgledp_ips     = 0x3510,		/* IPS LCD with RG LED + Phosphor */
-	disptech_lcd_rgledp_vpa     = 0x3520,		/* VPA LCD with RG LED + Phosphor */
-	disptech_lcd_rgledp_tft     = 0x3530,		/* TFT LCD with RG LED + Phosphor */
+	disptech_lcd_rgledp         = 0x3500,	/* IPS LCD with B LED + RG Phosphor */
+	disptech_lcd_rgledp_ips     = 0x3510,	/* IPS LCD with B LED + RG Phosphor */
+	disptech_lcd_rgledp_vpa     = 0x3520,	/* VPA LCD with B LED + RG Phosphor */
+	disptech_lcd_rgledp_tft     = 0x3530,	/* TFT LCD with B LED + RG Phosphor */
 
-	disptech_oled               = 0x4000,		/* Organic LED */
-	disptech_amoled             = 0x4010,		/* Active Matrix Organic LED */
+							/* PFS = potassium fluorosilicate, narrow red band phsophor */
+	disptech_lcd_nrgledp        = 0x3600,	/* IPS LCD with B LED + PFS R + G Phosphor */
+	disptech_lcd_nrgledp_ips    = 0x3610,	/* IPS LCD with B LED + PFS R + G Phosphor */
+	disptech_lcd_nrgledp_vpa    = 0x3620,	/* VPA LCD with B LED + PFS R + G Phosphor */
+	disptech_lcd_nrgledp_tft    = 0x3630,	/* TFT LCD with B LED + PFS R + G Phosphor */
 
-	disptech_dlp                = 0x5000,		/* Generic Digital Light Processing projector */
-	disptech_dlp_rgb            = 0x5010,		/* DLP projector with RGB filter */
-	disptech_dlp_rgbw           = 0x5020,		/* DLP projector with RGBW filter */
-	disptech_dlp_rgbcmy         = 0x5030,		/* DLP projector with RGBCMY filter */
+							/* GB Led, GB-R Led. Red Phosphor is smooth like LED */
+	disptech_lcd_gbrledp        = 0x3700,	/* IPS LCD with GB LED + R Phosphor */
+	disptech_lcd_gbrledp_ips    = 0x3710,	/* IPS LCD with GB LED + R Phosphor */
+	disptech_lcd_gbrledp_vpa    = 0x3720,	/* VPA LCD with GB LED + R Phosphor */
+	disptech_lcd_gbrledp_tft    = 0x3730,	/* TFT LCD with GB LED + R Phosphor */
+
+	disptech_oled               = 0x4000,	/* Organic LED */
+	disptech_amoled             = 0x4010,	/* Active Matrix Organic LED */
+	disptech_woled              = 0x4020,	/* Organic LED with WRGB primaries */
+
+	disptech_dlp                = 0x5000,	/* Generic Digital Light Processing projector */
+	disptech_dlp_rgb            = 0x5010,	/* DLP projector with RGB filter */
+	disptech_dlp_rgbw           = 0x5020,	/* DLP projector with RGBW filter */
+	disptech_dlp_rgbcmy         = 0x5030,	/* DLP projector with RGBCMY filter */
 
 	disptech_end                = 0xffffffff	/* List end marker */
 	

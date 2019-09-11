@@ -15,6 +15,8 @@
  * see the License2.txt file for licencing details.
  */
 
+/* OS X I/O error codes are in IOKit/IOReturn.h */
+
 #include <sys/time.h>
 
 #include <CoreFoundation/CoreFoundation.h>
@@ -62,7 +64,7 @@ icompaths *p
 		CFNumberRef nconfref;					/* No configurations */
 		CFNumberRef nepref, lidpref;			/* No ep's, Location ID properties */
 		unsigned int vid = 0, pid = 0, nep, tnep, nconfig = 0, lid = 0;
-		instType itype;
+		devType itype;
 
 	    if ((ioob = IOIteratorNext(mit)) == 0)
 			break;
@@ -91,18 +93,18 @@ icompaths *p
 		    CFRelease(lidpref);
 		}
 
-		a1logd(p->log, 6, "usb_check_and_add: checking vid 0x%04x, pid 0x%04x, lid 0x%x\n",vid,pid,lid);
+		a1logd(p->log, 6, "usb_get_paths: checking vid 0x%04x, pid 0x%04x, lid 0x%x\n",vid,pid,lid);
 
 		/* Do a preliminary match */
 		if ((itype = inst_usb_match(vid, pid, 0)) == instUnknown) {
-			a1logd(p->log, 6 , "usb_check_and_add: 0x%04x 0x%04x not reconized\n",vid,pid);
+			a1logd(p->log, 6 , "usb_get_paths: 0x%04x 0x%04x not reconized\n",vid,pid);
 		    IOObjectRelease(ioob);		/* Release found object */
 			continue;
 		}
 
 		/* Allocate an idevice so that we can fill in the end point information */
 		if ((usbd = (struct usb_idevice *) calloc(sizeof(struct usb_idevice), 1)) == NULL) {
-			a1loge(p->log, ICOM_SYS, "icoms: calloc failed!\n");
+			a1loge(p->log, ICOM_SYS, "usb_get_paths: calloc failed!\n");
 			return ICOM_SYS;
 		}
 
@@ -115,7 +117,7 @@ icompaths *p
 		                          kIORegistryIterateRecursively, &it1)) != KERN_SUCCESS) {
 			IOObjectRelease(ioob);
 			IOObjectRelease(mit);
-			a1loge(p->log, kstat, "usb_check_and_add: IORegistryEntryCreateIterator() with %d\n",kstat);
+			a1loge(p->log, kstat, "usb_get_paths: IORegistryEntryCreateIterator() with %d\n",kstat);
 		    return ICOM_SYS;
 		}
 		usbd->nifce = 0;
@@ -127,7 +129,7 @@ icompaths *p
 				unsigned int config = 0;
 				
 				/* Get the configuration number */
-				if ((nconfref = IORegistryEntryCreateCFProperty(ch1, CFSTR(kUSBNumEndpoints),
+				if ((nconfref = IORegistryEntryCreateCFProperty(ch1, CFSTR(kUSBConfigurationValue),
 				                                         kCFAllocatorDefault,kNilOptions)) != 0) {
 					CFNumberGetValue(nconfref, kCFNumberIntType, &config);
 				    CFRelease(nconfref);
@@ -157,22 +159,22 @@ icompaths *p
 
 			/* If this device is HID, it will have already added to the paths list, */
 			/* so check for this and skip this device if it is already there. */
-			for (i = 0; i < p->npaths; i++) {
-				if (p->paths[i]->vid == vid
-				 && p->paths[i]->pid == pid
-				 && p->paths[i]->hidd != NULL
-				 && p->paths[i]->hidd->lid == lid) {
-					a1logd(p->log, 1, "usb_check_and_add: Ignoring device because it is already in list as HID\n");
+			for (i = 0; i < p->ndpaths[dtix_combined]; i++) {
+				if (p->dpaths[i][dtix_combined]->vid == vid
+				 && p->dpaths[i][dtix_combined]->pid == pid
+				 && p->dpaths[i][dtix_combined]->hidd != NULL
+				 && p->dpaths[i][dtix_combined]->hidd->lid == lid) {
+					a1logd(p->log, 1, "usb_get_paths: Ignoring device because it is already in list as HID\n");
 					break;
 				}
 			}
-			if (i < p->npaths) {
+			if (i < p->ndpaths[dtix_combined]) {
 			    IOObjectRelease(ioob);		/* Release found object */
 				free(usbd);
 
 			} else {
 			
-				a1logd(p->log, 1, "usb_check_and_add: found instrument vid 0x%04x, pid 0x%04x\n",vid,pid);
+				a1logd(p->log, 1, "usb_get_paths: found instrument vid 0x%04x, pid 0x%04x\n",vid,pid);
 				usbd->lid = lid;
 				usbd->ioob = ioob;
 
@@ -195,7 +197,7 @@ icompaths *p
 	}
     IOObjectRelease(mit);			/* Release the itterator */
 
-	a1logd(p->log, 8, "usb_get_paths: returning %d paths and ICOM_OK\n",p->npaths);
+	a1logd(p->log, 8, "usb_get_paths: returning %d paths and ICOM_OK\n",p->ndpaths[dtix_combined]);
 	return ICOM_OK;
 }
 
@@ -244,16 +246,6 @@ static void cleanup_device(icoms *p) {
 		if (p->usbd->device != NULL) {	/* device is open */
 			int i;
 
-			/* Stop the RunLoop and wait for it */
-			if (p->usbd->cfrunloop != NULL) {
-
-				a1logd(p->log, 6, "usb_close_port: waiting for RunLoop thread to exit\n");
-				CFRunLoopStop(p->usbd->cfrunloop);
-				CFRelease(p->usbd->cfrunloop);
-				if (p->usbd->thread != NULL)
-					pthread_join(p->usbd->thread, NULL);
-			}
-
 			/* Release all the interfaces */
 			for (i = 0; i < p->usbd->nifce; i++) {
 				if (p->usbd->interfaces[i] != NULL) {
@@ -266,9 +258,6 @@ static void cleanup_device(icoms *p) {
 			(*(p->usbd->device))->USBDeviceClose(p->usbd->device);
 			(*(p->usbd->device))->Release(p->usbd->device);
 		}
-		pthread_cond_destroy(&p->usbd->cond);
-		pthread_mutex_destroy(&p->usbd->lock);
-
 		memset(p->usbd, 0, sizeof(struct usb_idevice));
 	}
 }
@@ -284,6 +273,8 @@ void usb_close_port(icoms *p) {
 		/* Workaround for some bugs - reset device on close */
 		if (p->uflags & icomuf_reset_before_close) {
 			IOReturn rv;
+			// ~~~~ may have to switch to ->USBDeviceReEnumerate(p->usbd->device, 0) ???
+			// because new OS X 10.11 ignore ResetDevice ?
 			if ((rv = (*(p->usbd->device))->ResetDevice(p->usbd->device)) != kIOReturnSuccess) {
 				a1logd(p->log, 1, "usb_close_port: ResetDevice failed with 0x%x\n",rv);
 			}
@@ -336,9 +327,6 @@ char **pnames		/* List of process names to try and kill before opening */
 			return ICOM_NOTS;
 		}
 
-		pthread_mutex_init(&p->usbd->lock, NULL);
-		pthread_cond_init(&p->usbd->cond, NULL);
-
 		/* Do open retries */
 		for (tries = 0; retries >= 0; retries--, tries++) {
 			IOCFPlugInInterface **piif = NULL;
@@ -353,6 +341,7 @@ char **pnames		/* List of process names to try and kill before opening */
 			if (tries > 0 && pnames != NULL && kpc == NULL) {
 				if ((kpc = kkill_nprocess(pnames, p->log)) == NULL) {
 					a1logd(p->log, 1, "kkill_nprocess returned error!\n");
+					return ICOM_SYS;
 				}
 			}
 
@@ -377,8 +366,11 @@ char **pnames		/* List of process names to try and kill before opening */
 			if ((rv = (*p->usbd->device)->USBDeviceOpenSeize(p->usbd->device)) != kIOReturnSuccess) {
 				a1logd(p->log, 8, "usb_open_port: open '%s' config %d failed (0x%x) (Device being used ?)\n",p->name,config,rv);
 				if (retries <= 0) {
-					if (kpc != NULL)
+					if (kpc != NULL) {
+						if (kpc->th->result < 0)
+							a1logw(p->log, "usb_open_port: killing competing processes failed\n");
 						kpc->del(kpc); 
+					}
 					a1loge(p->log, rv, "usb_open_port: open '%s' config %d failed (0x%x) (Device being used ?)\n",p->name, config, rv);
 					(*p->usbd->device)->Release(p->usbd->device);
 					return ICOM_SYS;
@@ -403,7 +395,7 @@ char **pnames		/* List of process names to try and kill before opening */
 		/* mess up the Spyder2, BUT we can't do a get config because this */
 		/* messes up the i1pro-D. */
 
-		/* OS X doesn't do a set_configuration() by default */
+		/* OS X doesn't do a set_configuration() by default, so force one. */
 		p->cconfig = 0;
 
 		if (p->cconfig != config) {
@@ -465,12 +457,20 @@ char **pnames		/* List of process names to try and kill before opening */
 				(*pluginref)->Stop(pluginref);
 				IODestroyPlugInInterface(pluginref);	// this stops IOServices though ??
 
+				/* This can fail if the device has multiple interfaces, and */
+				/* one of them is grabbed by a system interface (i.e. debug serial port) */
+				/* So soft fail, and rely on ep use to fail for invalid interface */
 				if ((rv = (*(p->usbd->interfaces[i]))->USBInterfaceOpen(
 					           p->usbd->interfaces[i])) != kIOReturnSuccess) {
-					a1loge(p->log, rv, "usb_open_port: USBInterfaceOpen failed with 0x%x\n",rv);
+#ifdef NEVER
+					a1loge(p->log, rv, "usb_open_port: USBInterfaceOpen %d failed with 0x%x\n",i, rv);
 					IOObjectRelease(ioit);
 					cleanup_device(p);
 					return ICOM_SYS;
+#else
+					a1logw(p->log, "usb_open_port: USBInterfaceOpen %d failed with 0x%x\n",i,rv);
+					continue;
+#endif
 				}
 
 				/* Get the end point details, and set reference to pipe no and interfece ix */
@@ -508,28 +508,6 @@ char **pnames		/* List of process names to try and kill before opening */
 
 			IOObjectRelease(ioit);
 		}
-		{
-			/* Setup the RunLoop thread */
-			a1logd(p->log, 6, "usb_open_port: Starting RunLoop thread\n");
-			if ((rv = pthread_create(&p->usbd->thread, NULL, io_runloop, (void*)p)) < 0) {
-				a1loge(p->log, ICOM_SYS, "usb_open_port: creating RunLoop thread failed with %s\n",rv);
-				cleanup_device(p);
-				return ICOM_SYS;
-			}
-
-			/* Wait for the runloop thread to start and create a cfrunloop */
-			pthread_mutex_lock(&p->usbd->lock);
-			while (p->usbd->cfrunloop == NULL)
-				pthread_cond_wait(&p->usbd->cond, &p->usbd->lock);
-			pthread_mutex_unlock(&p->usbd->lock);
-			if (p->usbd->thrv != kIOReturnSuccess) {	/* Thread failed */
-				pthread_join(p->usbd->thread, NULL);
-				cleanup_device(p);
-				return ICOM_SYS;
-			}
-			CFRetain(p->usbd->cfrunloop);
-			a1logd(p->log, 6, "usb_open_port: RunLoop thread started\n");
-		}
 
 		/* Clear any errors */
 		/* (Some I/F seem to hang if we do this, some seem to hang if we don't !) */
@@ -562,70 +540,6 @@ char **pnames		/* List of process names to try and kill before opening */
 
 /*  -------------------------------------------------------------- */
 
-/* The run loop thread */
-static void *io_runloop(void *context) {
-	icoms *p = (icoms *)context;
-	int i;
-
-	/* Register this thread with the Objective-C garbage collector */
-#if MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
-	 objc_registerThreadWithCollector();
-#endif
-
-	a1logd(p->log, 6, "io_runloop: thread started\n");
-
-	p->usbd->cfrunloop = CFRunLoopGetCurrent();		/* Get this threads RunLoop */
-	CFRetain(p->usbd->cfrunloop);
-
-	/* Add a device event source */
-	if ((p->usbd->thrv = (*(p->usbd->device))->CreateDeviceAsyncEventSource(
-		              p->usbd->device, &p->usbd->cfsource)) != kIOReturnSuccess) {
-		a1loge(p->log, p->usbd->thrv, "io_runloop: CreateDeviceAsyncEventSource failed with 0x%x\n",p->usbd->thrv);
-	} else {
-		CFRunLoopAddSource(p->usbd->cfrunloop, p->usbd->cfsource, kCFRunLoopDefaultMode);
-	}
-
-	/* Create an async event source for the interfaces */
-	for (i = 0; p->usbd->thrv == kIOReturnSuccess && i < p->usbd->nifce; i++) {
-		if ((p->usbd->thrv = (*(p->usbd->interfaces[i]))->CreateInterfaceAsyncEventSource(
-			     p->usbd->interfaces[i], &p->usbd->cfsources[i])) != kIOReturnSuccess) {
-			a1loge(p->log, p->usbd->thrv, "io_runloop: CreateInterfaceAsyncEventSource failed with 0x%x\n",p->usbd->thrv);
-		} else {
-			/* Add it to the RunLoop */
-			CFRunLoopAddSource(p->usbd->cfrunloop, p->usbd->cfsources[i], kCFRunLoopDefaultMode);
-		}
-	}
-
-	/* Signal main thread that we've started */
-	pthread_mutex_lock(&p->usbd->lock);
-	pthread_cond_signal(&p->usbd->cond);
-	pthread_mutex_unlock(&p->usbd->lock);
-
-	/* Run the loop, or exit on error */
-	if (p->usbd->thrv == kIOReturnSuccess) {
-		CFRunLoopRun();		/* Run the loop and deliver events */
-	}
-
-	/* Delete the interfaces async event sources */
-	for (i = 0; i < p->usbd->nifce; i++) {
-		if (p->usbd->cfsources[i] != NULL) {
-			CFRunLoopRemoveSource(p->usbd->cfrunloop, p->usbd->cfsources[i], kCFRunLoopDefaultMode);
-			CFRelease(p->usbd->cfsources[i]);
-		}
-	}
-
-	/* Delete the devices event sources */
-	if (p->usbd->cfsource != NULL) {
-		CFRunLoopRemoveSource(p->usbd->cfrunloop, p->usbd->cfsource, kCFRunLoopDefaultMode);
-		CFRelease(p->usbd->cfsource);
-	}
-
-	CFRelease(p->usbd->cfrunloop);
-
-	a1logd(p->log, 6, "io_runloop: thread done\n");
-	return NULL;
-}
-
 /* I/O structures */
 
 typedef struct _usbio_req {
@@ -633,14 +547,12 @@ typedef struct _usbio_req {
 	int iix;					/* Interface index */
 	UInt8 pno;					/* pipe index */
 	volatile int done;			/* Done flag */
-	pthread_mutex_t lock;		/* Protect req & callback access */
-	pthread_cond_t cond;		/* Signal to thread waiting on req */
 	int xlength;				/* Bytes transferred */
 	IOReturn result;			/* Result of transaction */
+	CFRunLoopRef rlr;			/* RunLoop of calling thread */
 } usbio_req;
 
-
-/* Async completion callback - called by RunLoop thread */
+/* Async completion callback - called by RunLoop */
 static void io_callback(void *refcon, IOReturn result, void *arg0) {
 	usbio_req *req = (usbio_req *)refcon;
 
@@ -649,9 +561,8 @@ static void io_callback(void *refcon, IOReturn result, void *arg0) {
 	req->xlength = (int)(long)arg0;
 	req->result = result;
 	req->done = 1;
-	pthread_mutex_lock(&req->lock);
-	pthread_cond_signal(&req->cond);
-	pthread_mutex_unlock(&req->lock);
+
+    CFRunLoopStop(req->rlr);        /* We're done */
 }
 
 /* Our universal USB transfer function */
@@ -669,12 +580,16 @@ static int icoms_usb_transaction(
 	int dirw = (endpoint & IUSB_ENDPOINT_DIR_MASK) == IUSB_ENDPOINT_OUT ? 1 : 0;
 	usbio_req req;
 	IOReturn result;
+	CFRunLoopSourceRef cfsource;	/* Device event sources */
 	int iix = p->EPINFO(endpoint).interface;
 	UInt8 pno = (UInt8)p->EPINFO(endpoint).pipe;
 
 	in_usb_rw++;
 
 	a1logd(p->log, 8, "icoms_usb_transaction: req type 0x%x ep 0x%x size %d\n",ttype,endpoint,length);
+
+	if (transferred != NULL)
+		*transferred = 0;
 
 	if (ttype != icom_usb_trantype_interrutpt
 	 && ttype != icom_usb_trantype_bulk) {
@@ -687,16 +602,30 @@ static int icoms_usb_transaction(
 	req.pno = pno;
 	req.xlength = 0;
 	req.done = 0;
-	pthread_mutex_init(&req.lock, NULL);
-	pthread_cond_init(&req.cond, NULL);
+
+	req.rlr = CFRunLoopGetCurrent();		/* Get this threads RunLoop */
+	CFRetain(req.rlr);
+
+	/* Create an async event source for the interface */
+	if ((result = (*(p->usbd->interfaces[iix]))->CreateInterfaceAsyncEventSource(
+		     p->usbd->interfaces[iix], &cfsource)) != kIOReturnSuccess) {
+		a1logw(p->log, "icoms_usb_transaction: CreateInterfaceAsyncEventSource failed with 0x%x\n",result);
+		CFRelease(req.rlr);
+		return ICOM_SYS;
+	} 
+	CFRetain(cfsource);
+
+	/* Add it to the RunLoop */
+	CFRunLoopAddSource(req.rlr, cfsource, kCFRunLoopDefaultMode);
 
 	if (dirw)
 		result = (*p->usbd->interfaces[iix])->WritePipeAsync(p->usbd->interfaces[iix], 
 		                                  pno, buffer, length, io_callback, &req); 
-	else
+	else 
 		result = (*p->usbd->interfaces[iix])->ReadPipeAsync(p->usbd->interfaces[iix], 
 		                                  pno, buffer, length, io_callback, &req); 
 
+	
 	if (result != kIOReturnSuccess) {
 		a1loge(p->log, ICOM_SYS, "icoms_usb_transaction: %sPipeAsync failed with 0x%x\n",dirw ? "Write" : "Read", result);
 		reqrv = ICOM_SYS;
@@ -707,66 +636,46 @@ static int icoms_usb_transaction(
 		amutex_lock(cancelt->cmtx);
 		cancelt->hcancel = (void *)&req;
 		cancelt->state = 1;
-		amutex_unlock(cancelt->cond);		/* Signal any thread waiting for IO start */
+		amutex_unlock(cancelt->condx);		/* Signal any thread waiting for IO start */
 		amutex_unlock(cancelt->cmtx);
 	}
 				
-	/* Wait for the callback to complete */
-	pthread_mutex_lock(&req.lock);
-	if (!req.done) {
-		struct timeval tv;
-		struct timespec ts;
+	/* Wait for the callback to complete or for a timeout */
+	result = CFRunLoopRunInMode(kCFRunLoopDefaultMode, timeout / 1000.0, false);
 
-		// this is unduly complicated...
-		gettimeofday(&tv, NULL);
-		ts.tv_sec = tv.tv_sec + timeout/1000;
-		ts.tv_nsec = (tv.tv_usec + (timeout % 1000) * 1000) * 1000L;
-		if (ts.tv_nsec > 1000000000L) {
-			ts.tv_nsec -= 1000000000L;
-			ts.tv_sec++;
-		}
-		
-		for(;;) {	/* Ignore spurious wakeups */
-			if ((rv = pthread_cond_timedwait(&req.cond, &req.lock, &ts)) != 0) {
-				if (rv != ETIMEDOUT) {
-					a1logd(p->log, 1, "coms_usb_transaction: pthread_cond_timedwait failed with %d\n",rv);
-					(*p->usbd->interfaces[iix])->AbortPipe(p->usbd->interfaces[iix], pno);
-					req.result = kIOReturnAborted;
-					reqrv = ICOM_SYS;
-					break;
-				}
+	// kCFRunLoopRunFinished = 1
+	// kCFRunLoopRunStopped = 2
+	// kCFRunLoopRunTimedOut = 3
+	// kCFRunLoopRunHandledSource = 4 
 
-				/* Timed out */
-				a1logd(p->log, 8, "coms_usb_transaction: time out - aborting io\n");
-				(*p->usbd->interfaces[iix])->AbortPipe(p->usbd->interfaces[iix], pno);
-				reqrv = ICOM_TO;
-				/* Wait for the cancelled io to be signalled */
-				if ((rv = pthread_cond_wait(&req.cond, &req.lock)) != 0) {
-					pthread_mutex_unlock(&req.lock);
-					a1logd(p->log, 1, "coms_usb_transaction:  pthread_cond_wait failed with %d\n",rv);
-					req.result = kIOReturnAborted;
-					reqrv = ICOM_SYS;
-					break;
-				}
-				break;
-			}
-			if (req.done)	/* Ignore spurious wakeups */
-				break;
-		}
+	if (result == kCFRunLoopRunTimedOut) {
+		/* Timed out - so abort i/o */
+		a1logd(p->log, 8, "coms_usb_transaction: time out - aborting io\n");
+		(*p->usbd->interfaces[iix])->AbortPipe(p->usbd->interfaces[iix], pno);
+		CFRunLoopRun();		/* Wait for abort */
+		reqrv = ICOM_TO;
+	} else if (result != kCFRunLoopRunStopped) {
+		a1logd(p->log, 8, "coms_usb_transaction: unexpected result 0x%x\n",result);
+	    reqrv = ICOM_USBR;
 	}
-	pthread_mutex_unlock(&req.lock);
+
+ done:;
+	CFRunLoopRemoveSource(req.rlr, cfsource, kCFRunLoopDefaultMode);
+	CFRelease(cfsource);
+	CFRelease(req.rlr);
 
 	a1logd(p->log, 8, "coms_usb_transaction: completed with reqrv 0x%x and xlength %d\n",req.result,req.xlength);
 
 	/* If io was aborted, ClearPipeStall */
 	if (req.result == kIOReturnAborted) {
-#if defined(NEVER) && (InterfaceVersion > 182)
+		a1logd(p->log, 8, "coms_usb_transaction: io was aborted\n");
+#if (InterfaceVersion > 182)
 		(*p->usbd->interfaces[iix])->ClearPipeStallBothEnds(p->usbd->interfaces[iix], pno);
 #else
 		(*p->usbd->interfaces[iix])->ClearPipeStall(p->usbd->interfaces[iix], pno);
-		icoms_usb_control_msg(p, NULL, IUSB_REQ_HOST_TO_DEV | IUSB_REQ_TYPE_STANDARD
-		                       | IUSB_REQ_RECIP_ENDPOINT, IUSB_REQ_CLEAR_FEATURE,
-		                         IUSB_FEATURE_EP_HALT, endpoint, NULL, 0, 200);
+//		icoms_usb_control_msg(p, NULL, IUSB_REQ_HOST_TO_DEV | IUSB_REQ_TYPE_STANDARD
+//		                       | IUSB_REQ_RECIP_ENDPOINT, IUSB_REQ_CLEAR_FEATURE,
+//		                         IUSB_FEATURE_EP_HALT, endpoint, NULL, 0, 200);
 #endif
 		if (reqrv == ICOM_OK)		/* If not aborted for a known reason, must be cancelled */
 			reqrv = ICOM_CANC;
@@ -788,18 +697,14 @@ static int icoms_usb_transaction(
 	if (transferred != NULL)
 		*transferred = req.xlength;
 
-done:;
 	if (cancelt != NULL) {
 		amutex_lock(cancelt->cmtx);
 		cancelt->hcancel = (void *)NULL;
 		if (cancelt->state == 0)
-			amutex_unlock(cancelt->cond);
+			amutex_unlock(cancelt->condx);
 		cancelt->state = 2;
 		amutex_unlock(cancelt->cmtx);
 	}
-
-	pthread_cond_destroy(&req.cond);
-	pthread_mutex_destroy(&req.lock);
 
 	if (in_usb_rw < 0)
 		exit(0);
@@ -917,7 +822,7 @@ int icoms_usb_clearhalt(
 	IOReturn rv;
 	int irv;
 
-#if defined(NEVER) && (InterfaceVersion > 182)
+#if (InterfaceVersion > 182)
 	if ((rv = (*p->usbd->interfaces[iix])->ClearPipeStallBothEnds(
 		         p->usbd->interfaces[iix], pno)) != kIOReturnSuccess) {
 		a1logd(p->log, 1, "icoms_usb_clearhalt failed with 0x%x\n",rv);

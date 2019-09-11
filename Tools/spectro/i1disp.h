@@ -35,6 +35,10 @@
 
 #include "inst.h"
 
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
 /* Note: update i1disp_interp_error() and i1disp_interp_code() in i1disp.c */
 /* if anything of these #defines are added or subtracted */
 
@@ -72,17 +76,29 @@
 #define I1DISP_WRONG_DEVICE             0x26
 #define I1DISP_LOCKED            	    0x27
 
+/* Sub-type of instrument (i.e. based on vers, char code, unlock code) */
+typedef enum {
+	i1d2_unkn       = -1,
+	i1d2_norm       = 0,	/* Normal (i1d1, i1d2, Smile) */
+	i1d2_lite       = 1,	/* "Lite" */
+	i1d2_munki      = 2,	/* "Munk" */
+	i1d2_hpdream    = 3,	/* "ObiW" */
+	i1d1_calmanx2   = 4,	/* "CMX2" */
+	i1d1_chroma4    = 5,	/* Chroma 4 */
+	i1d1_chroma5    = 6,	/* Chroma 5 */
+	i1d1_sencoreIII = 7, 	/* Sencore ColorPro III */
+	i1d1_sencoreIV  = 8, 	/* Sencore ColorPro IV */
+	i1d1_sencoreV   = 9 	/* Sencore ColorPro V */
+} i1d2_stype;
+
 
 /* I1DISP communication object */
 struct _i1disp {
 	INST_OBJ_BASE
 
-	int       dtype;			/* Device type: 0 = i1D1, 1 = i1D2, 2 = Smile */	
-	int       lite;				/* i1D2: 0 = normal, 1 = "Lite" */
-	int       munki;			/* i1D2: 0 = normal, 1 = "Munk" */
-	int       hpdream;			/* i1D2: 0 = normal, 1 = "ObiW" */
-	int       calmanx2;			/* i1D2: 0 = normal, 1 = "CMX2" */
-	int       chroma4;			/* 0 = other, 1 = Sequel Chroma 4 (i1D1 based) */
+	int        btype;			/* Device type: 0 = i1D1, 1 = i1D2, 2 = Smile */	
+	i1d2_stype stype;			/* Sub type */
+
 	inst_mode mode;				/* Currently selected mode */
 
 	inst_opt_type trig;			/* Reading trigger mode */
@@ -169,6 +185,9 @@ struct _i1disp {
 /* Constructor */
 extern i1disp *new_i1disp(icoms *icom, instType itype);
 
+#ifdef __cplusplus
+	}
+#endif
 
 #define I1DISP_H
 #endif /* I1DISP_H */

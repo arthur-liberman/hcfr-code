@@ -1,0 +1,155 @@
+# Version=1.7.0
+# udev rule to recognize instruments and make them accessible to user applications.
+# Copy this to /etc/udev/rules.d/55-Argyll.rules
+# or           /usr/lib/udev/rules.d/55-Argyll.rules
+# and remove   /usr/lib/udev/rules.d/69-cd-sensors.rules
+# as appropriate for your system
+# NOTE that hex values must be lower case!
+
+#--------------------------------------------------------------------------
+# Copyright 2012 Graeme W. Gill.
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this file, to deal in this file without restriction, including without
+# limitation the rights to use, copy, modify, merge, publish, distribute,
+# sublicense, and/or sell copies of this file, and to permit persons to whom
+# this file is furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of this file.
+# 
+# THIS FILE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THIS FILE OR THE USE OR OTHER DEALINGS IN
+# THIS FILE.
+#--------------------------------------------------------------------------
+
+# Skip all this to speed things up if it'a not a usb add.
+ACTION!="add", GOTO="argyll_rules_end"
+SUBSYSTEM!="usb", GOTO="argyll_rules_end"
+
+# Recognize the color measurement devices
+# COLORD_SENSOR_KIND, COLORD_SENSOR_CAPS, COLORD_SENSOR_EMBEDDED, COLORD_IGNORE
+# are for the benefit of Gnome Color Manager - ArgyllCMS doesn't use them.  
+
+# Colorimtre HCFR
+ATTRS{idVendor}=="04db", ATTRS{idProduct}=="005b", ENV{COLORD_SENSOR_KIND}="colorimtre-hcfr", ENV{COLORD_SENSOR_CAPS}="projector"
+
+
+# MonacoOPTIX (Same as i1 Display 1)
+ATTRS{idVendor}=="0670", ATTRS{idProduct}=="0001", ENV{COLORD_SENSOR_KIND}="i1-display1", ENV{COLORD_SENSOR_CAPS}="lcd crt"
+
+
+# HueyL (not tested)
+ATTRS{idVendor}=="0765", ATTRS{idProduct}=="5001", ENV{COLORD_SENSOR_KIND}="huey", ENV{COLORD_SENSOR_CAPS}="lcd crt" ENV{COLORD_SENSOR_EMBEDDED}="1"
+
+# HueyL (not tested)
+ATTRS{idVendor}=="0765", ATTRS{idProduct}=="5010", ENV{COLORD_SENSOR_KIND}="huey", ENV{COLORD_SENSOR_CAPS}="lcd crt" ENV{COLORD_SENSOR_EMBEDDED}="1"
+
+# i1Display 3
+ATTRS{idVendor}=="0765", ATTRS{idProduct}=="5020", ENV{COLORD_SENSOR_KIND}="i1-display3", ENV{COLORD_SENSOR_CAPS}="lcd crt projector ambient"
+
+# ColorMunki Smile
+ATTRS{idVendor}=="0765", ATTRS{idProduct}=="6003", ENV{COLORD_SENSOR_KIND}="color-munki-smile", ENV{COLORD_SENSOR_CAPS}="lcd-ccfl lcd-white-led"
+
+# ColorMunki i1 Studio
+ATTRS{idVendor}=="0765", ATTRS{idProduct}=="6008", ENV{COLORD_SENSOR_KIND}="color-munki-photo" ENV{COLORD_SENSOR_CAPS}="lcd crt projector printer spot ambient"
+
+# DTP20
+ATTRS{idVendor}=="0765", ATTRS{idProduct}=="d020", ENV{COLORD_SENSOR_KIND}="dtp20" ENV{COLORD_SENSOR_CAPS}="printer spot"
+
+# DTP92Q (not tested)
+ATTRS{idVendor}=="0765", ATTRS{idProduct}=="d092", ENV{COLORD_SENSOR_KIND}="dtp92" ENV{COLORD_SENSOR_CAPS}="crt"
+
+# DTP94
+ATTRS{idVendor}=="0765", ATTRS{idProduct}=="d094", ENV{COLORD_SENSOR_KIND}="dtp94" ENV{COLORD_SENSOR_CAPS}="lcd crt"
+
+
+# i1Pro
+ATTRS{idVendor}=="0971", ATTRS{idProduct}=="2000", ENV{COLORD_SENSOR_KIND}="i1-pro" ENV{COLORD_SENSOR_CAPS}="lcd crt projector printer ambient"
+
+# i1Monitor
+ATTRS{idVendor}=="0971", ATTRS{idProduct}=="2001", ENV{COLORD_SENSOR_KIND}="i1-pro" ENV{COLORD_SENSOR_CAPS}="lcd crt"
+
+# i1Display
+ATTRS{idVendor}=="0971", ATTRS{idProduct}=="2003", ENV{COLORD_SENSOR_KIND}="i1-display1" ENV{COLORD_SENSOR_CAPS}="lcd crt"
+
+# i1 io table (not tested)
+ATTRS{idVendor}=="0971", ATTRS{idProduct}=="2004", ENV{COLORD_SENSOR_KIND}="i1-pro" ENV{COLORD_SENSOR_CAPS}="printer"
+
+# Huey
+ATTRS{idVendor}=="0971", ATTRS{idProduct}=="2005", ENV{COLORD_SENSOR_KIND}="huey" ENV{COLORD_SENSOR_CAPS}="lcd crt ambient"
+
+# i1 iSis (not tested)
+ATTRS{idVendor}=="0971", ATTRS{idProduct}=="2006", ENV{COLORD_SENSOR_KIND}="iSis" ENV{COLORD_SENSOR_CAPS}="printer"
+
+# ColorMunki
+ATTRS{idVendor}=="0971", ATTRS{idProduct}=="2007", ENV{COLORD_SENSOR_KIND}="color-munki-photo" ENV{COLORD_SENSOR_CAPS}="lcd crt projector printer spot ambient"
+
+
+# Spyder 1
+ATTRS{idVendor}=="085c", ATTRS{idProduct}=="0100", ENV{COLORD_SENSOR_KIND}="spyder1" ENV{COLORD_SENSOR_CAPS}="lcd crt"
+
+# Spyder 2
+ATTRS{idVendor}=="085c", ATTRS{idProduct}=="0200", ENV{COLORD_SENSOR_KIND}="spyder2" ENV{COLORD_SENSOR_CAPS}="lcd crt"
+
+# Spyder 3
+ATTRS{idVendor}=="085c", ATTRS{idProduct}=="0300", ENV{COLORD_SENSOR_KIND}="spyder3" ENV{COLORD_SENSOR_CAPS}="lcd crt ambient"
+
+# Spyder 4
+ATTRS{idVendor}=="085c", ATTRS{idProduct}=="0400", ENV{COLORD_SENSOR_KIND}="spyder4" ENV{COLORD_SENSOR_CAPS}="lcd crt ambient"
+
+# Spyder 5
+ATTRS{idVendor}=="085c", ATTRS{idProduct}=="0500", ENV{COLORD_SENSOR_KIND}="spyder5" ENV{COLORD_SENSOR_CAPS}="lcd crt ambient"
+
+# Spyder X
+ATTRS{idVendor}=="085c", ATTRS{idProduct}=="0a00", ENV{COLORD_SENSOR_KIND}="spyderX" ENV{COLORD_SENSOR_CAPS}="lcd crt ambient"
+
+# JETI & KLEIN serial port (not used)
+#KERNEL=="ttyUSB[0-9]*", TAG+="udev-acl", TAG+="uaccess"
+
+# ArgyllCMS USB serial chip driver for JETI & KLEIN (not used)
+#ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", ENV{COLORD_SENSOR_KIND}="FT232R" 
+#ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6015", ENV{COLORD_SENSOR_KIND}="FT231XS" 
+
+
+# ColorHug, old and new USB ID's, ColorHug 2
+ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="f8da", ENV{COLORD_SENSOR_KIND}="colorhug" ENV{COLORD_SENSOR_CAPS}="lcd" ENV{COLORD_IGNORE}="1"
+
+ATTRS{idVendor}=="273f", ATTRS{idProduct}=="1001", ENV{COLORD_SENSOR_KIND}="colorhug" ENV{COLORD_SENSOR_CAPS}="lcd"
+
+ATTRS{idVendor}=="273f", ATTRS{idProduct}=="1004", ENV{COLORD_SENSOR_KIND}="colorhug" ENV{COLORD_SENSOR_CAPS}="lcd"
+
+# ColorHug Spectro
+ATTRS{idVendor}=="273f", ATTRS{idProduct}=="1002", ENV{COLORD_SENSOR_KIND}="colorhug-spectro", ENV{COLORD_SENSOR_CAPS}="lcd"
+
+# Image Engineering EX1
+ATTRS{idVendor}=="2457", ATTRS{idProduct}=="4000", ENV{COLORD_SENSOR_KIND}="ex1", ENV{COLORD_SENSOR_CAPS}="lcd crt ambient"
+
+#########################################################
+
+# Set ID_VENDOR and ID_MODEL acording to VID and PID
+#TEST=="/lib/udev/usb-db", IMPORT{program}="usb-db %p"
+ENV{COLORD_SENSOR_KIND}=="*?", ENV{ID_MODEL}=="", IMPORT{program}="usb_id --export %p"
+ENV{COLORD_SENSOR_KIND}=="*?", ENV{ID_MODEL_FROM_DATABASE}=="", IMPORT{program}="usb-db %p"
+
+# Is a color calibration device. 70-uaccess.rules may use this to set TAG+="uaccess",
+# but there is no way to know if this is the case from here.
+# May also be used by other rules to avoid claiming this device.
+ENV{COLORD_SENSOR_KIND}=="*?", ENV{COLOR_MEASUREMENT_DEVICE}="1"
+
+# Let ConsoleKit udev-acl manage these devices, if it's available.
+# (Except that this stuffs up on Slackware 14.1 because
+#  ConsoleKit/database is present even when ACL is not enabled).
+# Some recent systems no longer use ConsoleKit or ACL_MANAGE - acl is done by systemd ?
+# TEST=="/var/run/ConsoleKit/database", ENV{COLOR_MEASUREMENT_DEVICE}=="*?", ENV{ACL_MANAGE}="1"
+ENV{COLOR_MEASUREMENT_DEVICE}=="*?", ENV{ACL_MANAGE}="1"
+
+# In any case, make color instruments accessible to members of the colord group,
+# which the user may have to add to the system and add themselves to if ACL isn't present.
+ENV{COLOR_MEASUREMENT_DEVICE}=="*?", MODE="660", GROUP="colord"
+
+LABEL="argyll_rules_end"

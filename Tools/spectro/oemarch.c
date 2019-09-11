@@ -21,6 +21,8 @@
 		Although we have made an allowance for a Spyder 1 PLD pattern,
 		we know nothing about it, or even if it exists...
 
+C:\Program Files (x86)\X-Rite\Devices\i1d3\Calibrations
+
  */
 
 #include <stdio.h>
@@ -38,6 +40,8 @@
 #include <sys/param.h>
 #include <sys/mount.h>
 #include <ctype.h>
+#include <sys/types.h>
+#include <pwd.h>
 #endif /* UNIX */
 #ifndef SALONEINSTLIB
 #include "copyright.h"
@@ -49,6 +53,7 @@
 #include "numsup.h"
 #endif /* SALONEINSTLIB */
 #include "xdg_bds.h"
+#include "cgats.h"
 #include "xspect.h"
 #include "conv.h"
 #include "aglob.h"
@@ -96,7 +101,7 @@ oem_target oemtargs = {
 		{ NULL }
 	}
 #endif /* NT */
-#ifdef __APPLE__
+#ifdef UNIX_APPLE
 	{	/* Installed files */
 		{ "/Applications/Spyder2express 2.2/Spyder2express.app/Contents/MacOSClassic/Spyder.lib", targ_spyd2_pld },
 		{ "/Applications/Spyder2pro 2.2/Spyder2pro.app/Contents/MacOSClassic/Spyder.lib", targ_spyd2_pld },
@@ -117,25 +122,35 @@ oem_target oemtargs = {
 		{ "/PhotoCAL/PhotoCAL Setup.exe",          targ_spyd2_pld },
 		{ "/OptiCAL/OptiCAL Setup.exe",            targ_spyd2_pld },
 		{ "/setup/setup.exe",                      targ_spyd2_pld },
-		{ "/Data/setup.exe",                       targ_spyd_cal },
+//		{ "/Data/setup.exe",                       targ_spyd_cal },
+		{ "/Data/Setup.exe",                       targ_spyd_cal },
 		{ "/Installer/Setup.exe",                  targ_i1d3_edr },
 		{ "/Installer/ColorMunkiDisplaySetup.exe", targ_i1d3_edr },
 		{ NULL }
 	}
-#endif /* __APPLE__ */
+#endif /* UNIX_APPLE */
 #ifdef UNIX_X11
 	{	/* Installed files */
 		{ NULL }
 	},
-	{	/* Volume names the CDROM may have */
+	{	/* Volume names the CDROM may have. */
+		/* (It's a pity the linux developers have no idea what a stable API looks like...) */
+		{ "/run/media/$USER/ColorVision", targ_spyd2_pld | targ_spyd_cal },
+		{ "/run/media/$USER/Datacolor",   targ_spyd2_pld | targ_spyd_cal },
+		{ "/run/media/$USER/i1Profiler",	                              targ_i1d3_edr },
+		{ "/run/media/$USER/ColorMunki Displ",	                          targ_i1d3_edr },
+
 		{ "/media/ColorVision", targ_spyd2_pld | targ_spyd_cal },
 		{ "/media/Datacolor",   targ_spyd2_pld | targ_spyd_cal },
 		{ "/media/i1Profiler",	                                targ_i1d3_edr },
 		{ "/media/ColorMunki Displ",	                        targ_i1d3_edr },
+
 		{ "/mnt/cdrom",         targ_spyd2_pld | targ_spyd_cal | targ_i1d3_edr },
 		{ "/mnt/cdrecorder",    targ_spyd2_pld | targ_spyd_cal | targ_i1d3_edr },
+
 		{ "/media/cdrom",       targ_spyd2_pld | targ_spyd_cal | targ_i1d3_edr },
 		{ "/media/cdrecorder",  targ_spyd2_pld | targ_spyd_cal | targ_i1d3_edr },
+
 		{ "/cdrom",             targ_spyd2_pld | targ_spyd_cal | targ_i1d3_edr },
 		{ "/cdrecorder",        targ_spyd2_pld | targ_spyd_cal | targ_i1d3_edr },
 		{ NULL }
@@ -152,14 +167,14 @@ oem_target oemtargs = {
 #endif /* UNIX_X11 */
 };
 
-#if defined(__APPLE__)
+#if defined(UNIX_APPLE)
 /* Global: */
 char *oemamount_path = NULL;
 #endif 
 
 /* Cleanup function for transfer on Apple OS X */
 void oem_umiso() {
-#if defined(__APPLE__)
+#if defined(UNIX_APPLE)
 	if (oemamount_path != NULL) {
 		char sbuf[MAXNAMEL+1 + 100];
 		sprintf(sbuf, "umount \"%s\"",oemamount_path);
@@ -167,7 +182,7 @@ void oem_umiso() {
 		sprintf(sbuf, "rmdir \"%s\"",oemamount_path);
 		system(sbuf);
 	}
-#endif /* __APPLE__ */
+#endif /* UNIX_APPLE */
 }
 
 static xfile *locate_volume(int verb);
@@ -190,8 +205,7 @@ int is_s4cal(xfile *xf);
 int is_inno(xfile *xf);
 int is_cab(xfile *xf);
 static xfile *inno_extract(xfile *xi, char *tfilename, int verb);
-static xfile *ai_extract_cab(xfile **pxf, xfile *xi, char *tname, int verb);
-//static xfile *aifile_extract(xfile **pxf, xfile *xi, char *tname, int verb);
+static xfile *ai_extract_cab(xfile **pxf, xfile *xi, char *key, char *tname, int verb);
 static xfile *msi_extract_cab(xfile **pxf, xfile *xi, char *tname, int verb);
 static xfile *cab_extract(xfile **pxf, xfile *xi, char *text, int verb);
 
@@ -227,7 +241,7 @@ static void list_files(char *s, xfile *xf) {
 /* Return NULL if none found. files is deleted. */
 xfile *oemarch_get_ifiles(xfile *files, int verb) {
 	int i;
-	xfile *ofiles, *nfiles = NULL;	/* Ping pong */
+	xfile *ofiles = NULL, *nfiles = NULL;	/* Ping pong */
 
 #ifdef DEBUG
 	list_files("On entry", files);
@@ -258,11 +272,21 @@ xfile *oemarch_get_ifiles(xfile *files, int verb) {
 		/* Look for files on a CD */
 		xfile *vol;		/* CD volume located */
 
+#ifdef DEBUG
+		printf("Looking for CD files:\n");
+#endif
+
 		if ((vol = locate_volume(verb)) == NULL) {
+#ifdef DEBUG
+			printf("No CD volumes found\n");
+#endif
 			return NULL;
 		}
 
 		if ((files = locate_read_archive(vol, verb)) == NULL) {
+#ifdef DEBUG
+			printf("locate_read_archive failed\n");
+#endif
 			oem_umiso();
 			return NULL;
 		}
@@ -280,6 +304,10 @@ xfile *oemarch_get_ifiles(xfile *files, int verb) {
 	/* Now process any archives - extract dll & cab's */
 	for (i = 0; files[i].name != NULL; i++) {
 		xfile *arch = files + i;
+
+#ifdef DEBUG
+		printf("processing '%s'\n",files[i].name);
+#endif
 
 		/* Preserve & skip non-archives */
 		if (files[i].ftype != file_arch) {
@@ -331,7 +359,7 @@ xfile *oemarch_get_ifiles(xfile *files, int verb) {
 			if ((exe = inno_extract(arch, "{tmp}\\XRD Manager.exe", verb)) != NULL) {
 	
 				/* Extract the "disk1.cab" from the AI installer exectutable */
-				if ((ai_extract_cab(&nfiles, exe, "disk1.cab", verb)) != NULL) {
+				if ((ai_extract_cab(&nfiles, exe, ".edr", "disk1.cab", verb)) != NULL) {
 					del_xf(exe);
 					continue;
 				}
@@ -345,15 +373,15 @@ xfile *oemarch_get_ifiles(xfile *files, int verb) {
 				continue;
 
 			/* Extract the "disk1.cab" from the AI installer exectutable */
-			if ((ai_extract_cab(&nfiles, arch, "disk1.cab", verb)) != NULL)
+			if ((ai_extract_cab(&nfiles, arch, ".edr", "disk1.cab", verb)) != NULL)
 				continue;
 #endif
 		}
 		if (verb) printf("Warning: unhandled archive '%s' discarded\n",arch->name);
 	}
-	ofiles = files;		/* Swap to new list */
-	files = nfiles;
 	del_xf(ofiles);
+	ofiles = NULL;		/* Swap to new list */
+	files = nfiles;
 	nfiles = NULL;
 	
 #ifdef DEBUG
@@ -399,9 +427,9 @@ xfile *oemarch_get_ifiles(xfile *files, int verb) {
 		}
 		if (verb) printf("Warning: unhandled dll/cab '%s' discarded\n",dllcab->name);
 	}
-	ofiles = files;		/* Swap to new list */
-	files = nfiles;
 	del_xf(ofiles);
+	ofiles = NULL;		/* Swap to new list */
+	files = nfiles;
 	nfiles = NULL;
 
 #ifdef DEBUG
@@ -414,31 +442,44 @@ xfile *oemarch_get_ifiles(xfile *files, int verb) {
 	/* Process any .edr files - convert to ccss */
 	for (i = 0; files[i].name != NULL; i++) {
 
+#ifdef DEBUG
+		printf(" file '%s' ftype 0x%x ttype 0x%x\n", files[i].name,files[i].ftype,files[i].ttype);
+#endif
+
 		/* Preserve non-edr */
 		if (files[i].ftype != file_data
 		 || (files[i].ttype & targ_i1d3_edr) == 0
 		 || !is_edr(&files[i])
 		) {
+#ifdef DEBUG
+			printf(" preserving '%s'\n", files[i].name);
+#endif
 			new_add_xf(&nfiles, files[i].name, files[i].buf, files[i].len,
 			                                files[i].ftype, files[i].ttype);
 			files[i].buf = NULL;	/* We've taken these */
 			files[i].len = 0;
 			continue;
 		}
+#ifdef DEBUG
+		printf(" converting '%s'\n", files[i].name);
+#endif
+
 		if (edr_convert(&nfiles, files + i, verb) != NULL)
 			continue;
 
 		if (verb) printf("Warning: unhandled edr '%s' discarded\n",files[i].name);
 	}
-	ofiles = files;		/* Swap to new list */
-	files = nfiles;
 	del_xf(ofiles);
+	ofiles = NULL;		/* Swap to new list */
+	files = nfiles;
 	nfiles = NULL;
 
 	/* Mark any files that wern't recognized as unknown */
-	for (i = 0; files[i].name != NULL; i++) {
-		if (files[i].ttype & targ_unknown)
-			files[i].ttype = targ_unknown;
+	if (files != NULL) {
+		for (i = 0; files[i].name != NULL; i++) {
+			if (files[i].ttype & targ_unknown)
+				files[i].ttype = targ_unknown;
+		}
 	}
 
 #ifdef DEBUG
@@ -561,7 +602,7 @@ static xfile *locate_volume(int verb) {
 	}
 #endif /* NT */
 
-#if defined(__APPLE__)
+#if defined(UNIX_APPLE)
 	{
 		int j;
 		char tname[MAXNAMEL+1] = { '\000' };
@@ -626,7 +667,7 @@ static xfile *locate_volume(int verb) {
 			}
 		}
 	}
-#endif /* __APPLE__ */
+#endif /* UNIX_APPLE */
 
 #if defined(UNIX_X11)
 		{
@@ -635,15 +676,49 @@ static xfile *locate_volume(int verb) {
 			/* See if we can see what we're looking for on one of the volumes */
 			/* It would be nice to be able to read the volume name ! */
 			for (j = 0;;j++) {
-				if (oemtargs.volnames[j].path == NULL)
+				char *vol, *cp;
+
+				vol = oemtargs.volnames[j].path;
+
+				if (vol == NULL)
 					break;
 				
-				if (access(oemtargs.volnames[j].path, 0) == 0) {
-					if (verb) printf("found '%s'\n",oemtargs.volnames[j].path);
-					new_add_xf(&xf, oemtargs.volnames[j].path, NULL, 0,
-					                         file_vol, oemtargs.volnames[j].ttype);
-					break;		
+				/* Some linux paths include the real user name */
+				if ((cp = strstr(vol, "$USER")) != NULL) {
+					char *ivol = vol;
+					char *usr;
+					int len;
+		
+					/* Media gets mounted as console user, */
+					/* so we need to know what that is. */
+					/* (Hmm. this solves access problem when
+					   running as root, but not saving resulting
+					   file to $HOME/.local/etc */
+					if ((usr = getenv("SUDO_USER")) == NULL) {
+						if ((usr = getenv("USER")) == NULL)
+							error("$USER is empty");
+					}
+
+					len = strlen(ivol) - 5 + strlen(usr) + 1;
+
+					if ((vol = malloc(len)) == NULL)
+						error("Malloc of volume path length %d failed",len);
+
+					strncpy(vol, ivol, cp-ivol);
+					vol[cp-ivol]= '\000';
+					strcat(vol, usr);
+					strcat(vol, cp + 5);
 				}
+
+				if (access(vol, 0) == 0) {
+					if (verb) printf("found '%s'\n",vol);
+					new_add_xf(&xf, vol, NULL, 0, file_vol, oemtargs.volnames[j].ttype);
+					if (vol != oemtargs.volnames[j].path)
+						free(vol);
+					break;
+				}
+				if (vol != oemtargs.volnames[j].path)
+					free(vol);
 			}
 		}
 #endif	/* UNIX */
@@ -688,10 +763,23 @@ static xfile *locate_read_archive(xfile *vol, int verb) {
 	return xf;
 }
 
+/* Do a string copy while replacing all '\' characters with '/' */
+static void copyfixdirsep(char *d, char *s) { 
+	for (;;) {
+		*d = *s;
+		if (*s == '\000')
+			break;
+		if (*d == '\\')
+			*d = '/';
+		s++;
+		d++;
+	}
+}
+
 /* Locate and read any OEM install files. */
-/* Return NULL if not found */
+/* Return last file or NULL if not found */
 static xfile *locate_read_oeminstall(xfile **pxf, int verb) {
-	int j;
+	int j, k;
 	char tname[1000], *pf, *ap;
 	xfile *xf = NULL;		/* return value */
 	aglob ag;
@@ -701,11 +789,30 @@ static xfile *locate_read_oeminstall(xfile **pxf, int verb) {
 	tname[0] = '\000';
 
 #ifdef NT
+# if defined(_WIN64)
+	for  (k = 0; k < 2; k++) { 
+		if (k == 0) {
+			/* Where the normal instalation goes */
+			if ((pf = getenv("PROGRAMFILES")) != NULL)
+				copyfixdirsep(tname, pf);
+			else
+				strcpy(tname, "C:/Program Files");
+
+		} else {
+			/* WOW64 installations */
+			/* Where the normal instalation goes */
+			if ((pf = getenv("PROGRAMFILES(x86)")) != NULL)
+				copyfixdirsep(tname, pf);
+			else
+				strcpy(tname, "C:/Program Files (x86)");
+		}
+#else
 	/* Where the normal instalation goes */
 	if ((pf = getenv("PROGRAMFILES")) != NULL)
-		strcpy(tname, pf);
+		copyfixdirsep(tname, pf);
 	else
 		strcpy(tname, "C:/Program Files");
+#endif
 #endif /* NT */
 
 	ap = tname + strlen(tname);
@@ -721,15 +828,24 @@ static xfile *locate_read_oeminstall(xfile **pxf, int verb) {
 
 		for (;;) {
 			char *pp;
+
 			if ((pp = aglob_next(&ag)) == NULL)
 				break;
-			xf = new_add_xf(&xf, pp, NULL, 0, oemtargs.archnames[j].ftype,
-			                                   oemtargs.archnames[j].ttype);
+
+			xf = new_add_xf(pxf, pp, NULL, 0, oemtargs.instpaths[j].ftype,
+			                                  oemtargs.instpaths[j].ttype);
+
 			if (load_xfile(xf, verb))
 				error("Failed to load file '%s'",xf->name);
+
+			if (verb > 1) printf("Loaded '%s'\n",xf->name);
 		}
 		aglob_cleanup(&ag);
 	}
+
+#if defined(NT) && defined(_WIN64)
+	}		/* Next Program Files directory */
+#endif
 	return xf;
 }
 
@@ -737,6 +853,7 @@ static xfile *locate_read_oeminstall(xfile **pxf, int verb) {
 /* A list of files stored in memory. The last entry of the list has name == NULL */
 
 /* return a list with the given number of available entries */
+/* plus one more for the end marker */
 xfile *new_xf(int n) {
 	xfile *l;
 
@@ -747,7 +864,8 @@ xfile *new_xf(int n) {
 }
 
 /* Add an entry to the list. Create the list if it is NULL */
-/* Return point to that entry */
+/* Set end marker. */
+/* Return the pointer to the new entry */
 xfile *add_xf(xfile **l) {
 	int n;
 	xfile *ll;
@@ -761,6 +879,7 @@ xfile *add_xf(xfile **l) {
 
 	if ((*l = (xfile *)realloc(*l, (n+2) * sizeof(xfile))) == NULL)
 		error("new_xf: Failed to realloc xfile structure of %d x %d bytes",(n+2), sizeof(xfile));
+
 	(*l)[n+1].name = NULL;		/* End marker */
 	(*l)[n+1].buf = NULL;
 	(*l)[n+1].len = 0;
@@ -775,6 +894,7 @@ xfile *add_xf(xfile **l) {
 xfile *new_add_xf(xfile **pxf, char *name, unsigned char *buf, unsigned long len,
                                             file_type ftype, targ_type ttype) {
 	xfile *xf;
+
 	xf = add_xf(pxf);
 	if ((xf->name = strdup(name)) == NULL) 
 		error("new_add_xf: strdup failed");
@@ -782,7 +902,16 @@ xfile *new_add_xf(xfile **pxf, char *name, unsigned char *buf, unsigned long len
 	xf->len = len;
 	xf->ftype = ftype;
 	xf->ttype = ttype;
+
 	return xf;
+}
+
+/* Clear this (last) entry on the list so that it becomes the end marker */
+void rm_xf(xfile *xf) {
+	free(xf->name);
+	xf->name = NULL;
+	free(xf->buf);
+	xf->buf = NULL;
 }
 
 /* Free up a whole list */
@@ -1407,7 +1536,7 @@ static xfile *edr_convert(xfile **pxf, xfile *xi, int verb) {
 		char *ccssname;
 		char *edrname;
 		unsigned char *buf;
-		int len;
+		size_t len;
 		if (c->buf_write_ccss(c, &buf, &len)) {
 			error("Failed to create ccss for '%s' error '%s'",xi->name,c->err);
 		}
@@ -1532,14 +1661,17 @@ static ccss *parse_EDR(
 
 	/* We hard code the mapping between the .edr display technology and the */
 	/* ArgyllCMS equivalent. We could in theory figure it out by reading the */
-	/* TechnologyStrings.txt file that comes with the .edr's */
+	/* TechnologyStrings.txt file that comes with the .edr's, but often this */
+	/* is not up to date */
 	{
 		ttmin = 0;
-		ttmax = 22;
+		ttmax = 64;
 		if ((tdtypes = (disptech *)malloc(sizeof(disptech) * (ttmax - ttmin + 2))) == NULL) {
 			if (verb) printf("Malloc failed\n");
 			return NULL;
 		}
+		for (i = 0; i <= (ttmax+1); i++)
+			tdtypes[i] = disptech_unknown;
 
 		tdtypes[0]  = disptech_unknown; /* CMF */
 		tdtypes[1]  = disptech_unknown; /* Custom */
@@ -1564,7 +1696,9 @@ static ccss *parse_EDR(
 		tdtypes[10] = disptech_dlp_rgbw;
 		tdtypes[21] = disptech_dlp_rgbcmy;
 		tdtypes[22] = disptech_dlp;
-		tdtypes[23] = disptech_unknown;
+		tdtypes[23] = disptech_lcd_nrgledp_ips;		// PFS_Phosphor_Family
+		tdtypes[24] = disptech_woled;				// FSI_XM55U, LG WOLED 
+		tdtypes[64] = disptech_lcd_gbrledp_ips;		// NEC_64_690E_PA242W GB-R LED-backlight
 	}
 
 	if (len < 600) {
@@ -1823,6 +1957,7 @@ static ccss *parse_EDR(
 	}
 
 	if (ttype < ttmin || ttype > ttmax) {
+		if (verb) printf(".edr technology type %d out of range\n",ttype);
 		ttype = ttmax + 1;			/* Set to Unknown */
 	}
 
@@ -2557,11 +2692,13 @@ static xfile *msi_extract_cab(xfile **pxf, xfile *xi, char *tname, int verb) {
 }
 
 /* Extract a .cab file from an "Advanced Installer" file. */
+/* We can't actually identify the .cab file name this way, */
+/* so we can try and pick out the one we want based on its contents (key string). */
 /* It's stored in the file uncompressed and contiguous, but */
 /* with the first 0x200 bytes inverted, so we */
 /* just need to identify where it is and its length. */
 /* Return NULL if not found */
-static xfile *ai_extract_cab(xfile **pxf, xfile *xi, char *tname, int verb) {
+static xfile *ai_extract_cab(xfile **pxf, xfile *xi, char *key, char *tname, int verb) {
 	int i, j, k;
 	xfile *xf = NULL;
 	unsigned long cabo, cabsz;
@@ -2569,62 +2706,89 @@ static xfile *ai_extract_cab(xfile **pxf, xfile *xi, char *tname, int verb) {
 
 	if (verb) printf("Attempting to extract '%s' from '%s'\n",tname,xi->name);
 
-	/* Search for inverted .cab signature */
-	for (i = 0; i < (xi->len - 8 - 4); i++) {
-		if (xi->buf[i + 0] == 0xb2
-		 && xi->buf[i + 1] == 0xac
-		 && xi->buf[i + 2] == 0xbc
-		 && xi->buf[i + 3] == 0xb9
-		 && xi->buf[i + 4] == 0xff
-		 && xi->buf[i + 5] == 0xff
-		 && xi->buf[i + 6] == 0xff
-		 && xi->buf[i + 7] == 0xff) {
-			if (verb > 1) printf("Found inverted .cab sig at 0x%x\n",i);
-			break;
+	/* Until we find a .cab with key, or give up */
+	for (i = 0;;i += 8) {
+
+		/* Search for inverted .cab signature */
+		for (; i < (xi->len - 8 - 4); i++) {
+			if (xi->buf[i + 0] == 0xb2
+			 && xi->buf[i + 1] == 0xac
+			 && xi->buf[i + 2] == 0xbc
+			 && xi->buf[i + 3] == 0xb9
+			 && xi->buf[i + 4] == 0xff
+			 && xi->buf[i + 5] == 0xff
+			 && xi->buf[i + 6] == 0xff
+			 && xi->buf[i + 7] == 0xff) {
+				if (verb > 1) printf("Found inverted .cab sig at 0x%x\n",i);
+				break;
+			}
 		}
+		if (i > (xi->len - 8 - 4)) {
+			if (verb) printf(".cab sig not found\n");
+			return NULL;
+		}
+
+		/* Lookup the .cab size (really 64 bit, but we don't care) */
+		len = ibuf2uint(xi->buf + i + 8);
+
+		if (verb > 1) printf("'%s' is length %ld\n",tname,len);
+
+		if ((xi->len - i) < len) {
+			if (verb) printf("Not enough room for .cab file in source\n");
+			return NULL;
+		}  
+
+		xf = add_xf(pxf);
+		xf->len = len;
+
+		if ((xf->buf = malloc(xf->len)) == NULL) {
+			fprintf(stderr,"maloc of .cab buffer failed\n");
+			exit(-1);
+		}
+		memmove(xf->buf, xi->buf + i ,xf->len);
+
+		/* Restore first 0x200 bytes */
+		for (j = 0; j < 0x200 && j < xf->len; j++) {
+			xf->buf[j] = ~xf->buf[j];
+		}
+
+		if ((xf->name = strdup(tname)) == NULL) {
+			fprintf(stderr,"maloc of .cab name failed\n");
+			exit(-1);
+		}
+
+		xf->ftype = file_dllcab;
+		xf->ttype = xi->ttype;
+
+		if (verb) printf("Extracted .cab '%s' length %ld\n",xf->name,xf->len);
+
+//	/* Save diagnostic file */
+//	save_xfile(xf, "temp.cab", NULL, verb);
+
+		/* If we are givem a key string, check it is located within the buffer */
+		if (key != NULL) {
+			int klen = strlen(key); 
+
+			/* Look for the key string in the buffer */
+			for (j = 0; j < (xf->len -klen); j++) {
+				if (xf->buf[j] == key[0]) {
+					if (strncmp((char *)&xf->buf[j], key, klen) == 0)
+						break;
+				}
+			}
+			if (j >= (xf->len -klen)) {
+				if (verb) printf("Failed to find key '%s' in '%s'\n",key,xf->name);
+				rm_xf(xf);		/* Remove this last entry */
+				xf = NULL;
+			} else {
+				if (verb) printf("Found key '%s' in '%s' at %d\n",key,xf->name, j);
+				if (verb) printf("~~ found '%s'\n",&xf->buf[j]);
+			}
+		}
+		if (xf != NULL)
+			return xf;
 	}
-	if (i > (xi->len - 8 - 4)) {
-		if (verb) printf(".cab sig not found\n");
-		return NULL;
-	}
-
-	/* Lookup the .cab size (really 64 bit, but we don't care) */
-	len = ibuf2uint(xi->buf + i + 8);
-
-	if (verb > 1) printf("'%s' is length %ld\n",tname,len);
-
-	if ((xi->len - i) < len) {
-		if (verb) printf("Not enough room for .cab file in source\n");
-		return NULL;
-	}  
-
-	xf = add_xf(pxf);
-	xf->len = len;
-
-	if ((xf->buf = malloc(xf->len)) == NULL) {
-		fprintf(stderr,"maloc of .cab buffer failed\n");
-		exit(-1);
-	}
-	memmove(xf->buf, xi->buf + i ,xf->len);
-
-	/* Restor first 0x200 bytes */
-	for (i = 0; i < 0x200 && i < xf->len; i++) {
-		xf->buf[i] = ~xf->buf[i];
-	}
-
-	if ((xf->name = strdup(tname)) == NULL) {
-		fprintf(stderr,"maloc of .cab name failed\n");
-		exit(-1);
-	}
-
-	xf->ftype = file_dllcab;
-	xf->ttype = xi->ttype;
-
-	if (verb) printf("Extracted '%s' length %ld\n",xf->name,xf->len);
-
-save_xfile(xf, "temp.cab", NULL, verb);
-
-	return xf;
+	return NULL;
 }
 
 
@@ -2946,10 +3110,11 @@ static xfile *cab_extract(xfile **pxf, xfile *xi, char *text, int verb) {
 	}
 
 	if (flags & 4) {		/* If researved fields */
+		fprintf(stderr,"'%s' has reserved fields\n",xi->name);
 		// cbCFHeader, cbCFFolder, and cbCFData are present.
 		headerres = buf2short(buf + 0x24);
 		folderres = buf[0x26];
-		datares = buf[0x27];
+		datares   = buf[0x27];
 
 		hextra = 4 + headerres;
 	}
@@ -2970,7 +3135,8 @@ static xfile *cab_extract(xfile **pxf, xfile *xi, char *text, int verb) {
 		unsigned long fsize;		/* Uncompressed size */
 		unsigned long foff;
 		short ffix;
-		char fname[95];
+		char fname[257];
+		int mxnl = 256, rem;
 		
 		if (off > (len - 80)) {
 			fprintf(stderr,"'%s' too short for directory\n",xi->name);
@@ -2981,8 +3147,11 @@ static xfile *cab_extract(xfile **pxf, xfile *xi, char *text, int verb) {
 		foff  = buf2uint(buf + off + 0x04);
 		ffix  = buf2short(buf + off + 0x08);
 
-		strncpy(fname, (char *)buf + off + 0x10, 94);
-		fname[94] = '\000';
+		rem = len - off;		/* Remaining length in buffer */
+		if (rem < mxnl)
+			mxnl = rem;
+		strncpy(fname, (char *)buf + off + 0x10, mxnl);
+		fname[256] = '\000';
 
 		if (verb > 1) printf("file %d is '%s' at 0x%lx length %ld\n",k,fname, foff,fsize);
 

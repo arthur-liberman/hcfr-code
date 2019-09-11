@@ -44,7 +44,7 @@ struct usb_idevice {
 
 # endif	/* NT */
 
-# if defined(UNIX) && defined(__APPLE__)
+# if defined(UNIX_APPLE)
 
 /* OS X structure version wrangling */
 
@@ -127,7 +127,7 @@ struct usb_idevice {
 };
 # endif	/* OS X */
 
-# if defined(UNIX) && !defined(__APPLE__)
+# if defined(UNIX_X11)
 
 #  if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
 

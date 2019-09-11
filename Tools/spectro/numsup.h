@@ -43,9 +43,9 @@
 /* so long shouldn't really be used in any code.... */
 /* (duplicated in icc.h) */ 
 
-/* Use __LP64__ as cross platform 64 bit pointer #define */
-#if !defined(__LP64__) && defined(_WIN64)
-# define __LP64__ 1
+/* Use __P64__ as cross platform 64 bit pointer #define */
+#if defined(__LP64__) || defined(__ILP64__) || defined(__LLP64__) || defined(_WIN64)
+# define __P64__ 1
 #endif
 
 #ifndef ORD32
@@ -59,16 +59,32 @@
 #define INR8   int8_t		/* 8 bit signed */
 #define INR16  int16_t		/* 16 bit signed */
 #define INR32  int32_t		/* 32 bit signed */
-#define INR64  int64_t		/* 64 bit signed - not used in icclib */
+#define INR64  int64_t		/* 64 bit signed */
 #define ORD8   uint8_t		/* 8 bit unsigned */
 #define ORD16  uint16_t		/* 16 bit unsigned */
 #define ORD32  uint32_t		/* 32 bit unsigned */
-#define ORD64  uint64_t		/* 64 bit unsigned - not used in icclib */
+#define ORD64  uint64_t		/* 64 bit unsigned */
 
 #define PNTR intptr_t
 
 #define PF64PREC "ll"		/* printf format precision specifier */
 #define CF64PREC "LL"		/* Constant precision specifier */
+
+#ifndef ATTRIBUTE_NORETURN
+# ifdef _MSC_VER
+#  define ATTRIBUTE_NORETURN __declspec(noreturn)
+# else
+#  define ATTRIBUTE_NORETURN __attribute__((noreturn))
+# endif
+#endif
+
+#ifndef INLINE
+# ifdef _MSC_VER
+#  define INLINE __inline
+# else
+#  define INLINE inline
+# endif
+#endif
 
 #else  /* !__STDC_VERSION__ */
 
@@ -77,16 +93,24 @@
 #define INR8   __int8				/* 8 bit signed */
 #define INR16  __int16				/* 16 bit signed */
 #define INR32  __int32				/* 32 bit signed */
-#define INR64  __int64				/* 64 bit signed - not used in icclib */
+#define INR64  __int64				/* 64 bit signed */
 #define ORD8   unsigned __int8		/* 8 bit unsigned */
 #define ORD16  unsigned __int16		/* 16 bit unsigned */
 #define ORD32  unsigned __int32		/* 32 bit unsigned */
-#define ORD64  unsigned __int64		/* 64 bit unsigned - not used in icclib */
+#define ORD64  unsigned __int64		/* 64 bit unsigned */
 
 #define PNTR UINT_PTR
 
 #define PF64PREC "I64"				/* printf format precision specifier */
 #define CF64PREC "LL"				/* Constant precision specifier */
+
+#ifndef ATTRIBUTE_NORETURN
+# define ATTRIBUTE_NORETURN __declspec(noreturn)
+#endif
+
+#ifndef INLINE
+# define INLINE __inline
+#endif
 
 #else  /* !_MSC_VER */
 
@@ -101,29 +125,31 @@
 #define ORD32  unsigned int		/* 32 bit unsigned */
 
 #ifdef __GNUC__
-# define INR64  long long			/* 64 bit signed - not used in icclib */
-# define ORD64  unsigned long long	/* 64 bit unsigned - not used in icclib */
-# define PF64PREC "ll"			/* printf format precision specifier */
-# define CF64PREC "LL"			/* Constant precision specifier */
+# ifdef __LP64__	/* long long could be 128 bit ? */
+#  define INR64  long				/* 64 bit signed */
+#  define ORD64  unsigned long		/* 64 bit unsigned */
+#  define PF64PREC "l"			/* printf format precision specifier */
+#  define CF64PREC "L"			/* Constant precision specifier */
+# else
+#  define INR64  long long			/* 64 bit signed */
+#  define ORD64  unsigned long long	/* 64 bit unsigned */
+#  define PF64PREC "ll"			/* printf format precision specifier */
+#  define CF64PREC "LL"			/* Constant precision specifier */
+# endif /* !__LP64__ */
 #endif /* __GNUC__ */
 
 #define PNTR unsigned long 
 
-#endif /* !_MSC_VER */
-#endif /* !__STDC_VERSION__ */
-#endif /* !ORD32 */
-
-#ifdef _MSC_VER
-#ifndef ATTRIBUTE_NORETURN
-# define ATTRIBUTE_NORETURN __declspec(noreturn)
-#endif
-#endif
-
-#ifdef __GNUC__
 #ifndef ATTRIBUTE_NORETURN
 # define ATTRIBUTE_NORETURN __attribute__((noreturn))
 #endif
-#endif
+#ifndef INLINE
+#  define INLINE inline
+#endif /* INLINE */
+
+#endif /* !_MSC_VER */
+#endif /* !__STDC_VERSION__ */
+#endif /* !ORD32 */
 
 /* =========================================================== */
 /* System compatibility #defines */
@@ -288,6 +314,12 @@ a1log *new_a1log_d(a1log *log);
 /* Returns NULL */
 a1log *del_a1log(a1log *log);
 
+/* Set the debug logging level. */
+void a1log_debug(a1log *log, int level);
+
+/* Set the vebosity level. */
+void a1log_verb(a1log *log, int level);
+
 /* Set the tag. Note that the tag string is NOT copied, just referenced */
 void a1log_tag(a1log *log, char *tag);
 
@@ -379,6 +411,7 @@ void free_dvector(double *v,int nl,int nh);
 double **dmatrix(int nrl, int nrh, int ncl, int nch);
 double **dmatrixz(int nrl, int nrh, int ncl, int nch);
 void free_dmatrix(double **m, int nrl, int nrh, int ncl, int nch);
+void dmatrix_reset(double **m, int nrl, int nrh, int ncl, int nch);
 
 double **dhmatrix(int nrl, int nrh, int ncl, int nch);
 double **dhmatrixz(int nrl, int nrh, int ncl, int nch);
@@ -387,6 +420,7 @@ void free_dhmatrix(double **m, int nrl, int nrh, int ncl, int nch);
 void copy_dmatrix(double **dst, double **src, int nrl, int nrh, int ncl, int nch);
 void copy_dmatrix_to3x3(double dst[3][3], double **src, int nrl, int nrh, int ncl, int nch);
 
+/* Convert from C matrix to matrix */
 double **convert_dmatrix(double *a,int nrl,int nrh,int ncl,int nch);
 void free_convert_dmatrix(double **m,int nrl,int nrh,int ncl,int nch);
 
@@ -426,6 +460,9 @@ void free_smatrix(short **m,int nrl,int nrh,int ncl,int nch);
 /* Transpose a 0 base matrix */
 void matrix_trans(double **d, double **s, int nr,  int nc);
 
+/* Transpose a 0 base symetrical matrix in place */
+void sym_matrix_trans(double **m, int n);
+
 /* Matrix multiply 0 based matricies */
 int matrix_mult(
 	double **d,  int nr,  int nc,
@@ -433,8 +470,150 @@ int matrix_mult(
 	double **s2, int nr2, int nc2
 );
 
-/* Diagnostic */
-void matrix_print(char *c, double **a, int nr,  int nc);
+/* Matrix multiply transpose of s1 by s2 */
+/* 0 based matricies,  */
+/* This is usefull for using results of lu_invert() */
+int matrix_trans_mult(
+	double **d,  int nr,  int nc,
+	double **ts1, int nr1, int nc1,
+	double **s2, int nr2, int nc2
+);
+
+/* Multiply a 0 based matrix by a vector */
+/* d may be same as v */
+int matrix_vect_mult(
+	double *d, int nd,
+	double **m, int nr, int nc,
+	double *v, int nv
+);
+
+/* Multiply a 0 based transposed matrix by a vector */
+/* d may be same as v */
+int matrix_trans_vect_mult(
+	double *d, int nd,
+	double **m, int nr, int nc,
+	double *v, int nv
+);
+
+/* Set zero based dvector */
+void vect_set(double *d, double v, int len);
+
+/* Copy zero based dvector */
+void vect_cpy(double *d, double *s, int len);
+
+/* Copy zero based dvector */
+#define vect_cpy(dd, ss, len) memmove((char *)(dd), (char *)(ss), (len) * sizeof(double))
+
+/* Negate and copy a vector, d = -v */
+/* d may be same as v */
+void vect_neg(double *d, double *s, int len);
+
+/* Add two vectors, d += v */
+/* d may be same as v */
+void vect_add(double *d, double *v, int len);
+
+/* Add two vectors, d = s1 + s2 */
+void vect_add3(double *d, double *s1, double *s2, int len);
+
+/* Subtract two vectors, d -= v */
+/* d may be same as v */
+void vect_sub(double *d, double *v, int len);
+
+/* Subtract two vectors, d =  s1 - s2 */
+void vect_sub3(double *d, double *s1, double *s2, int len);
+
+/* Invert and copy a vector, d = 1/s */
+void vect_invert(double *d, double *s, int len);
+
+/* Multiply the elements of two vectors, d = s1 * s2 */
+void vect_mul3(double *d, double *s1, double *s2, int len);
+
+/* Blend two vectors, d = bl * s1 + (1 - bl) * s2 */
+/* Blend between s0 and s1 for bl 0..1 */
+void vect_blend(double *d, double *s0, double *s1, double bl, int len);
+
+/* Scale a vector, */
+/* d may be same as v */
+void vect_scale(double *d, double *s, double scale, int len);
+
+/* Scale s and add to d */
+void vect_scaleadd(double *d, double *s, double scale, int len);
+
+/* Take dot product of two vectors */
+double vect_dot(double *s1, double *s2, int len);
+
+/* Return the vectors magnitude (norm) */
+double vect_mag(double *s, int len);
+
+/* Return the magnitude (norm) of the difference between two vectors */
+double vect_diffmag(double *s1, double *s2, int len);
+
+/* Return the normalized vectors */
+/* Return nz if norm is zero */
+int vect_normalize(double *d, double *s, int len);
+
+/* Return the vectors elements maximum magnitude (+ve) */
+double vect_max(double *s, int len);
+
+/* Take absolute of each element */
+void vect_abs(double *d, double *s, int len);
+
+/* Take individual elements to signed power */
+void vect_spow(double *d, double *s, double pv, int len);
+
+/* Copy zero based ivector */
+#define ivect_cpy(dd, ss, len) memmove((char *)(dd), (char *)(ss), (len) * sizeof(int))
+
+/* Set zero based ivector */
+void ivect_set(int *d, int v, int len);
+
+/* Diagnostics */
+/* id identifies matrix/vector */
+/* pfx used at start of each line */
+/* Assumed indexed from 0 */
+
+void adump_dmatrix(a1log *log, char *id, char *pfx, double **a, int nr,  int nc);
+void adump_fmatrix(a1log *log, char *id, char *pfx, float **a, int nr,  int nc);
+void adump_imatrix(a1log *log, char *id, char *pfx, int **a, int nr,  int nc);
+void adump_smatrix(a1log *log, char *id, char *pfx, short **a, int nr,  int nc);
+
+void adump_dvector(a1log *log, char *id, char *pfx, double *a, int nc);
+void adump_fvector(a1log *log, char *id, char *pfx, float *a, int nc);
+void adump_ivector(a1log *log, char *id, char *pfx, int *a, int nc);
+void adump_svector(a1log *log, char *id, char *pfx, short *a, int nc);
+
+/* Dump out matrix/vector as a C array to FILE */
+/* id is the variable name */
+/* pfx used at start of each line */
+/* hb sets horizontal element limit to wrap */
+/* Assumed indexed from 0 */
+
+void acode_dmatrix(FILE *fp, char *id, char *pfx, double **a, int nr,  int nc, int hb);
+
+/* ===================================================== */
+/* C matrix support */
+
+/* Clip a vector to the range 0.0 .. 1.0 */
+/* and return any clipping margine */
+double vect_ClipNmarg(int n, double *out, double *in);
+
+/* Multiply N vector by NxN transform matrix */
+/* Organization is mat[out][in] */
+void vect_MulByNxN(int n, double *out, double *mat, double *in);
+
+/* Multiply N vector by MxN transform matrix */
+/* Organization is mat[out][in] */
+void vect_MulByMxN(int n, int m, double *out, double *mat, double *in);
+
+/* Multiply N vector by transposed NxM transform matrix */
+/* Organization is mat[in][out] */
+void vect_MulByNxM(int n, int m, double *out, double *mat, double *in);
+
+/* Transpose an NxN matrix */
+void matrix_TransposeNxN(int n, double *out, double *in);
+
+/* Dump C type matrix */
+void adump_C_dmatrix(a1log *log, char *id, char *pfx, double *a, int nr,  int nc);
 
 /* =========================================================== */
 
@@ -517,12 +696,45 @@ void write_INR64_be(ORD8 *p, INR64 d);
 void write_INR64_le(ORD8 *p, INR64 d);
 
 /*******************************************/
+
+/* Sleep for the given number of msec */
+void msec_sleep(unsigned int msec);
+
+/* Return the current time in msec since */
+/* the first invokation of msec_time() */
+unsigned int msec_time();
+
+/* Return the current time in usec */
+/* (The first invokation of usec_time() returns zero) */
+double usec_time();
+
+/*******************************************/
+/* Debug convenience functions (duplicated in icc) */
+
+/* Print an int vector to a string. */
+/* Returned static buffer is re-used every 5 calls. */
+char *debPiv(int di, int *p);
+
+/* Print a double vector to a string. */
+/* Returned static buffer is re-used every 5 calls. */
+char *debPdv(int di, double *p);
+
+/* Print a double vector to a string with format. */
+/* Returned static buffer is re-used every 5 calls. */
+char *debPdvf(int di, char *fmt, double *p);
+
+/* Print a float vector to a string. */
+/* Returned static buffer is re-used every 5 calls. */
+char *debPfv(int di, float *p);
+
+
+/*******************************************/
 /* Numerical diagnostics */
 
 #ifndef isNan
 #define isNan(x) ((x) != (x))
-#define isFinite(x) ((x) == 0.0 || (x) * 1.0000001 != (x))
-#define isNFinite(x) ((x) != 0.0 && (x) * 1.0000001 == (x))
+#define isNFinite(x) ( isNan(x) || (x) < DBL_MIN || DBL_MAX < (x))
+#define isFinite(x) (!isNFinite(x))
 #endif
 
 

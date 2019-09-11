@@ -2,6 +2,9 @@
 /* 
  * Simple ASCII file parsing object.
  * Used as a base for the CGATS.5 and IT8.7 family file I/O class
+ */
+
+/*
  * Version 2.01
  *
  * Author: Graeme W. Gill
@@ -11,8 +14,12 @@
  * All rights reserved.
  *
  * This material is licensed with an "MIT" free use license:-
- * see the License.txt file in this directory for licensing details.
+ * see the License4.txt file in this directory for licensing details.
  */
+
+#ifdef __cplusplus
+	extern "C" {
+#endif
 
 #undef CGATS_DEBUG_MALLOC	/* Turns on partial support for filename and linenumber capture */
 
@@ -236,6 +243,10 @@ extern parse *new_parse_al(cgatsAlloc *al, cgatsFile *fp);	/* With allocator cla
 
 /* Available when SEPARATE_STD is not defined: */
 extern parse *new_parse(cgatsFile *fp);					/* Default allocator */
+
+#ifdef __cplusplus
+	}
+#endif
 
 #define PARS_H
 #endif /* PARS_H */

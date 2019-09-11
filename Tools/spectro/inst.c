@@ -1,5 +1,5 @@
 
- /* Abstract instrument class implemenation */
+/* Abstract instrument class implemenation */
 
 /* 
  * Argyll Color Correction System
@@ -41,10 +41,12 @@
 #ifndef SALONEINSTLIB
 #include "copyright.h"
 #include "aconfig.h"
+#include "rand.h"
 #else
 #include "sa_config.h"
 #endif /* !SALONEINSTLIB */
 #include "numsup.h"
+#include "cgats.h"
 #include "xspect.h"
 #include "conv.h"
 
@@ -58,13 +60,15 @@
 #include "sort.h"
 
 #if defined(ENABLE_FAST_SERIAL)
-instType fast_ser_inst_type(icoms *p, int tryhard, 
+devType fast_ser_dev_type(icoms *p, int tryhard, 
        inst_code (*uicallback)(void *cntx, inst_ui_purp purp), void *cntx);
 # if defined(ENABLE_SERIAL)
 static instType ser_inst_type(icoms *p, 
        inst_code (*uicallback)(void *cntx, inst_ui_purp purp), void *cntx);
 # endif /* ENABLE_SERIAL */
 #endif /* ENABLE_FAST_SERIAL */
+
+icom_type dev_category(instType itype);
 
 /* ------------------------------------ */
 /* Default methods for instrument class */
@@ -89,7 +93,7 @@ inst *p) {
 /* Return the instrument type */
 static instType get_itype(inst *p) {
 	if (p != NULL)
-		return p->itype;
+		return p->dtype;
 	return instUnknown;
 }
 
@@ -373,6 +377,7 @@ static inst_code calibrate(
 inst *p,
 inst_cal_type *calt,	/* Calibration type to do/remaining */
 inst_cal_cond *calc,	/* Current condition/desired condition */
+inst_calc_id_type *idtype,	/* Condition identifier type */
 char id[CALIDLEN]) {	/* Condition identifier (ie. white reference ID, filter ID) */
 	return inst_unsupported;
 }
@@ -458,16 +463,6 @@ double ref_rate) {
 	return inst_unsupported;
 }
 
-/* Insert a compensation filter in the instrument readings */
-/* This is typically needed if an adapter is being used, that alters */     
-/* the spectrum of the light reaching the instrument */                     
-/* To remove the filter, pass NULL for the filter filename */               
-static inst_code comp_filter(											        
-inst *p,
-char *filtername) {		/* File containing compensating filter */
-	return inst_unsupported;
-}
-
 /* Insert a colorimetric correction matrix in the instrument XYZ readings */
 /* This is only valid for colorimetric instruments. */
 /* To remove the matrix, pass NULL for the matrix */
@@ -522,6 +517,8 @@ static char *inst_interp_error(inst *p, inst_code ec) {
 			return "Internal error - communications needed but not established";
 		case inst_no_init:
 			return "Internal error - initialisation needed but not done";
+		case inst_unsupported:
+			return "Unsupported function";
 		case inst_internal_error:
 			return "Internal software error";
 		case inst_coms_fail:
@@ -544,8 +541,6 @@ static char *inst_interp_error(inst *p, inst_code ec) {
 			return "Instrument needs calibration";
 		case inst_cal_setup:
 			return "Instrument needs to be setup for calibration";
-		case inst_unsupported:
-			return "Unsupported function";
 		case inst_unexpected_reply:
 			return "Unexpected Reply";
 		case inst_wrong_config:
@@ -585,7 +580,7 @@ static inst_config config_enum(inst *p, int ec) {
 /* Delete things set/done by new_inst() */
 static inst_code virtual_del(inst *p) {
 
-#if defined(__APPLE__)
+#if defined(UNIX_APPLE)
 	osx_latencycritical_end();
 #endif
 
@@ -612,7 +607,7 @@ void *cntx			/* Context for callback */
 		return NULL;
 	}
 
-	a1logd(log, 2, "new_inst: called with path '%s'\n",path->name);
+	a1logd(log, 2, "new_inst: called with path '%s' type '%s'\n",path->name,inst_sname(path->dtype));
 
 	if ((icom = new_icoms(path, log)) == NULL) {
 		a1logd(log, 2, "new_inst: new_icoms failed to open it\n");
@@ -622,17 +617,22 @@ void *cntx			/* Context for callback */
 
 
 	/* Set instrument type from USB port, if not specified */
-	itype = icom->itype;		/* Instrument type if its known from usb/hid */
+	itype = icom->dtype;		/* Instrument type if its known from usb/hid */
 
 #if defined(ENABLE_FAST_SERIAL)
-	if (itype == instUnknown && !nocoms && (icom->sattr & icom_fast)) {
-		itype = fast_ser_inst_type(icom, 1, uicallback, cntx);		/* Else type from serial */
+	if (itype == instUnknown && !nocoms && (icom->dctype & icomt_fastserial)) {
+		itype = fast_ser_dev_type(icom, 1, uicallback, cntx);		/* Else type from serial */
+		icom->dctype = (icom->dctype & ~icomt_cat_mask) | dev_category(itype);
+		a1logd(log, 8, "new_inst: fast set '%s' dctype 0x%x\n",icom->name,icom->dctype);
 	}
 #endif /* ENABLE_FAST_SERIAL */
 
 #if defined(ENABLE_SERIAL)
-	if (itype == instUnknown && !nocoms)
+	if (itype == instUnknown && !nocoms) {
 		itype = ser_inst_type(icom, uicallback, cntx);		/* Else type from serial */
+		icom->dctype = (icom->dctype & ~icomt_cat_mask) | dev_category(itype);
+		a1logd(log, 8, "new_inst: set '%s' dctype 0x%x\n",icom->name,icom->dctype);
+	}
 #endif /* ENABLE_SERIAL */
 
 
@@ -657,7 +657,8 @@ void *cntx			/* Context for callback */
 
 #ifdef ENABLE_FAST_SERIAL
 	if (itype == instSpecbos1201
-	 || itype == instSpecbos)
+	 || itype == instSpecbos
+	 || itype == instSpectraval)
 		p = (inst *)new_specbos(icom, itype);
 	if (itype == instKleinK10)
 		p = (inst *)new_kleink10(icom, itype);
@@ -666,8 +667,8 @@ void *cntx			/* Context for callback */
 #ifdef ENABLE_USB
 	if (itype == instDTP94)
 		p = (inst *)new_dtp92(icom, itype);
-//	else if (itype == instDTP20)
-//		p = (inst *)new_dtp20(icom, itype);
+	else if (itype == instDTP20)
+		p = (inst *)new_dtp20(icom, itype);
 	else if (itype == instI1Disp1 ||
 		    itype == instI1Disp2)
 		p = (inst *)new_i1disp(icom, itype);
@@ -690,14 +691,18 @@ void *cntx			/* Context for callback */
 		p = (inst *)new_spyd2(icom, itype);
 	else if (itype == instSpyder5)
 		p = (inst *)new_spyd2(icom, itype);
+	else if (itype == instSpyderX)
+		p = (inst *)new_spydX(icom, itype);
 	else if (itype == instEX1)
 		p = (inst *)new_ex1(icom, itype);
 	if (itype == instHuey)
 		p = (inst *)new_huey(icom, itype);
 	else if (itype == instSmile)
 		p = (inst *)new_i1disp(icom, itype);
-//	else if (itype == instSMCube)
-//		p = (inst *)new_smcube(icom, itype);
+#ifdef ENABLE_FAST_SERIAL
+	else if (itype == instSMCube)
+		p = (inst *)new_smcube(icom, itype);
+#endif
 	else if (itype == instHCFR)
 		p = (inst *)new_hcfr(icom, itype);
 	else if (itype == instColorHug
@@ -777,8 +782,6 @@ void *cntx			/* Context for callback */
 		p->get_refr_rate = get_refr_rate;
 	if (p->set_refr_rate == NULL)
 		p->set_refr_rate = set_refr_rate;
-	if (p->comp_filter == NULL)
-		p->comp_filter = comp_filter;
 	if (p->col_cor_mat == NULL)
 		p->col_cor_mat = col_cor_mat;
 	if (p->col_cal_spec_set == NULL)
@@ -799,7 +802,7 @@ void *cntx			/* Context for callback */
 	/* Set the provided user interaction callback */
 	p->set_uicallback(p, uicallback, cntx);
 
-#if defined(__APPLE__)
+#if defined(UNIX_APPLE)
 	osx_latencycritical_start();
 #endif
 
@@ -868,6 +871,12 @@ static inst_disptypesel *expand_dlist(inst_disptypesel *list, int nlist, int *na
 	than any aliases that come after it, and the
 	aliases as more important than the fallback list,
 	so we need to do three passes through all the selections.
+
+	If we run out of single letter selectors (i.e. K10),
+	then we switch to the two letter prefixed selector "_X".
+
+	NOTE that we assume that we cannot exaust the single letter
+	selectors via hard coded, ccmx or ccss calibrations.
 */
 
 /* Create the display type list */
@@ -879,8 +888,8 @@ int doccss,						/* Add installed ccss files */
 int doccmx						/* Add matching installed ccmx files */
 ) {
 	inst_disptypesel *list = NULL;
-	int i, j, k, nlist = 0, nalist = 0;
-	char usels[256];			/* Used selectors */
+	int i, j, k, k2, nlist = 0, nalist = 0;
+	char usels[256];			/* Used selectors 1 */
 	static char *asels = "123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	int fail = 0;
 
@@ -889,8 +898,9 @@ int doccmx						/* Add matching installed ccmx files */
 	*pdtlist = NULL;
 	*pndtlist = 0;
 
-	for (i = 0; i < 256; i++)
-		usels[i] = ((char)-1);
+	for (j = 0; j < 256; j++)
+		usels[j] = ((char)-1);
+	k2 = 0;		/* Single letter selector */
 	k = 0;		/* Next selector index */
 
 	/* First create a list of calibrations and their desired selectors: */
@@ -917,8 +927,10 @@ int doccmx						/* Add matching installed ccmx files */
 
 		for (i = 0; ss_list[i].path != NULL; i++) {
 	
-			if ((list = expand_dlist(list, ++nlist, &nalist)) == NULL)
+			if ((list = expand_dlist(list, ++nlist, &nalist)) == NULL) {
+				free_iccss(ss_list);
 				return inst_internal_error;
+			}
 	
 			list[nlist-1].flags = inst_dtflags_ccss | inst_dtflags_ld | inst_dtflags_wr;
 			if (!ss_list[i].oem)
@@ -938,6 +950,7 @@ int doccmx						/* Add matching installed ccmx files */
 			list[nlist-1].sets = ss_list[i].sets; ss_list[i].sets = NULL;
 			list[nlist-1].no_sets = ss_list[i].no_sets; ss_list[i].no_sets = 0;
 		}
+		free_iccss(ss_list);
 	}
 
 	/* Add any OEM and custom ccmx's */
@@ -945,7 +958,7 @@ int doccmx						/* Add matching installed ccmx files */
 		iccmx *ss_list;
 
 		/* Just ccmx's for this instrument */
-		if ((ss_list = list_iccmx(p->itype, NULL)) == NULL) {
+		if ((ss_list = list_iccmx(p->dtype, NULL)) == NULL) {
 			free(list);
 			return inst_internal_error;
 		}
@@ -963,8 +976,10 @@ int doccmx						/* Add matching installed ccmx files */
 				continue;
 			}
 
-			if ((list = expand_dlist(list, ++nlist, &nalist)) == NULL)
+			if ((list = expand_dlist(list, ++nlist, &nalist)) == NULL) {
+				free_iccmx(ss_list);
 				return inst_internal_error;
+			}
 	
 			list[nlist-1].flags = inst_dtflags_ccmx | inst_dtflags_ld | inst_dtflags_wr;
 			if (!ss_list[i].oem)
@@ -984,6 +999,7 @@ int doccmx						/* Add matching installed ccmx files */
 			list[nlist-1].cc_cbid = ss_list[i].cc_cbid;
 			icmCpy3x3(list[nlist-1].mat, ss_list[i].mat);
 		}
+		free_iccmx(ss_list);
 	}
 
 	/* Copy candidate selectors to private isel[] list */
@@ -1012,26 +1028,42 @@ int doccmx						/* Add matching installed ccmx files */
 
 	/* Set remaining from fallback */
 	for (i = 0; i < nlist; i++) {
-		disptechs_set_sel(2, i, list[i].sel, list[i].isel, usels, &k, asels);
-		if (list[i].sel[0] == '\000')
-			fail = 1;
+		if (k2 == 0) {		/* Single letter selector */
+			disptechs_set_sel(2, i, list[i].sel, list[i].isel, usels, &k, asels);
+			if (list[i].sel[0] == '\000') {	/* Switch to two letter */
+				for (j = 0; j < 256; j++)
+					usels[j] = ((char)-1);
+				k2 = 1;		/* Two letter selector */
+				k = 0;		/* Next selector index */
+			}
+		} 
+		if (k2 == 1) {		/* Two letter selector */
+			list[i].sel[0] = '_';
+			disptechs_set_sel(2, i, &list[i].sel[1], list[i].isel, usels, &k, asels);
+			if (list[i].sel[0] == '\000') {	/* Ran out of two letter selectors! */
+				fail = 1;
+				break;
+			}
+		}
 	}
 
 	/* Any calibrations that failed to find a character will be left as a nul string */
 
 	/* Add alternate selectors if they are free. */
-	for (;;) {
-		int more = 0;
-		for (i = 0; i < nlist; i++) {
-			/* Add unused secondaries */
-			disptechs_set_sel(3, i, list[i].sel, list[i].isel, usels, &k, asels);
-
-			if (list[i].isel[0] != '\000') {		/* Still more secondaries available */
-				more = 1;
+	if (k2 == 0) {		/* If not run out of 1 letter selectors */
+		for (;;) {
+			int more = 0;
+			for (i = 0; i < nlist; i++) {
+				/* Add unused secondaries */
+				disptechs_set_sel(3, i, list[i].sel, list[i].isel, usels, &k, asels);
+	
+				if (list[i].isel[0] != '\000') {		/* Still more secondaries available */
+					more = 1;
+				}
 			}
+			if (!more)
+				break;
 		}
-		if (!more)
-			break;
 	}
 
 	if (pndtlist != NULL)
@@ -1045,6 +1077,39 @@ int doccmx						/* Add matching installed ccmx files */
 	}
 
 	return inst_ok;
+}
+
+/* --------------------------------------------------- */
+
+/* Delayed scan-ready prompt handler */
+static int delayed_scan_ready(void *pp) {
+	inst *p = (inst *)pp;
+
+	msec_sleep(p->scan_ready_delay);
+	a1logd(g_log,8, "delayed scan_ready activate\n");
+
+	if (p->eventcallback != NULL)
+		p->eventcallback(p->event_cntx, inst_event_scan_ready);
+	return 0;
+}
+
+/* Issue an inst_event_scan_ready event/prompt after a delay */
+void issue_scan_ready(inst *p, int delay) {
+	a1logd(g_log,8, "msec_scan_ready %d msec\n",delay);
+
+	if (p->eventcallback == NULL)		/* Hmm. */
+		return;
+
+	if (delay > 0) {
+		if (p->scan_ready_thread != NULL)
+			p->scan_ready_thread->del(p->scan_ready_thread);
+		p->scan_ready_delay = delay;
+		if ((p->scan_ready_thread = new_athread(delayed_scan_ready, (void *)p)) == NULL)
+			a1logw(g_log, "msec_scan_ready: Delayed scan_ready failed to create thread\n");
+	} else {
+		a1logd(g_log,8, "msec_scan_ready activate\n");
+		p->eventcallback(p->event_cntx, inst_event_scan_ready);
+	}
 }
 
 /* ============================================================= */
@@ -1063,7 +1128,7 @@ iccmx *list_iccmx(instType itype, int *no) {
 	int npaths = 0;
 
 
-	npaths = xdg_bds(NULL, &paths, xdg_data, xdg_read, xdg_user,
+	npaths = xdg_bds(NULL, &paths, xdg_data, xdg_read, xdg_user, xdg_none,
 						"ArgyllCMS/\052.ccmx" XDG_FUDGE "color/\052.ccmx"
 	);
 
@@ -1089,6 +1154,7 @@ iccmx *list_iccmx(instType itype, int *no) {
 				free(rv[j].desc);
 			}
 			xdg_free(paths, npaths);
+			free(rv);
 			if (no != NULL) *no = -1;
 			return NULL;
 		}
@@ -1098,8 +1164,10 @@ iccmx *list_iccmx(instType itype, int *no) {
 		}
 
 		/* Skip any that don't match */
-		if (itype != instUnknown && cs->inst != NULL && inst_enum(cs->inst) != itype)
+		if (itype != instUnknown && cs->inst != NULL && inst_enum(cs->inst) != itype) {
+			cs->del(cs);
 			continue;
+		}
 
 		a1logd(g_log, 5, "Reading '%s'\n",paths[i]);
 		if ((tech = cs->tech) == NULL)
@@ -1200,7 +1268,7 @@ iccss *list_iccss(int *no) {
 	int npaths = 0;
 
 
-	npaths = xdg_bds(NULL, &paths, xdg_data, xdg_read, xdg_user,
+	npaths = xdg_bds(NULL, &paths, xdg_data, xdg_read, xdg_user, xdg_none,
 						"ArgyllCMS/\052.ccss" XDG_FUDGE "color/\052.ccss"
 	);
 
@@ -1324,33 +1392,57 @@ void free_iccss(iccss *list) {
 /* Detect fast serial instruments */
 
 #ifdef ENABLE_FAST_SERIAL
+
+static void radiance_delimiters(icoms *p, int lgchsum);
+static void radiance_random(icoms *p, int lgchsum);
 static void hex2bin(char *buf, int len);
 
 /* Heuristicly determine the instrument type for */
 /* a fast serial connection, and instUnknown if not serial. */
 /* Set it in icoms and also return it. */
-instType fast_ser_inst_type(
+devType fast_ser_dev_type(
 	icoms *p,
 	int tryhard,
-	inst_code (*uicallback)(void *cntx, inst_ui_purp purp),		/* optional uicallback */
+	inst_code (*uicallback)(void *cntx, inst_ui_purp purp),		/* optional uicallback for abort */
 	void *cntx			/* Context for callback */
 ) {
 	instType rv = instUnknown;
-#define BUFSZ (128 + 10)
+#define BUFSZ (2048 + 10)
 	char buf[BUFSZ];
-	baud_rate brt[] = { baud_921600, baud_115200, baud_38400, baud_9600, baud_nc };
+	baud_rate brt1[] = { baud_9600, baud_921600, baud_115200, 
+	                     baud_38400, baud_nc };			/* HS - do K10/Spectrolino first */
+	baud_rate brt2[] = { baud_115200, baud_nc };		/* Bluetooth */
+
+	baud_rate *brt = brt1;
 	unsigned int etime;
 	unsigned int i;
+	int delayms = 0;
 	int se, len;
-	
-	if (p->port_type(p) != icomt_serial
-	 && p->port_type(p) != icomt_usbserial)
-		return p->itype;
+	double tryto = 0.1;		/* [0.1] Communication timout */
+//	double tryto = 0.9;		/* Communication timout (test) */
+
+	a1logd(p->log, 8, "fast_ser_dev_type: on '%s' dctype 0x%x\n",p->name,p->dctype);
+
+	if (!(p->dctype & icomt_seriallike)
+	 && !(p->dctype & icomt_fastserial)) {
+		return p->dtype;
+	}
 
 	/* The tick to give up on */
+#if defined(__APPLE__)
+	etime = msec_time() + (long)(2500.0 + 0.5);			/* OS X open() is really slow (1500msec) */
+#else
 	etime = msec_time() + (long)(2000.0 + 0.5);
+#endif
+//	etime = msec_time() + (long)(20000.0 + 0.5);		/* (test) */
 
-	a1logd(p->log, 1, "fser_inst_type: Trying different baud rates (%u msec to go)\n",etime - msec_time());
+	a1logd(p->log, 1, "fser_inst_type: Trying different baud rates (%u msec to go) Path %s%s\n",
+	                  etime - msec_time(),p->spath,(p->dctype & icomt_btserial) ? " [Bluetooth]" : "");
+
+	if (p->dctype & icomt_btserial) {
+		brt = brt2;		/* Only try BT relevant baud rates. */
+		delayms = 600;	/* Spectraval locks up otherwise. */
+	}
 
 	/* Until we time out, find the correct baud rate */
 	for (i = 0; msec_time() < etime; i++) {
@@ -1359,42 +1451,171 @@ instType fast_ser_inst_type(
 			if (!tryhard)
 				break;		/* try only once */
 		}
-		a1logd(p->log, 5, "Trying %s baud\n",baud_rate_to_str(brt[i]));
+		a1logd(p->log, 5, "Trying %s baud, %d msec to go\n",baud_rate_to_str(brt[i]),etime - msec_time());
 
-		if ((se = p->set_ser_port(p, fc_none, brt[i], parity_none,
-			                         stop_1, length_8)) != ICOM_OK) { 
+		if ((se = p->set_ser_port_ex(p, fc_None, brt[i], parity_none,
+			                         stop_1, length_8, delayms)) != ICOM_OK) { 
 			a1logd(p->log, 5, "fser_inst_type: set_ser_port failed with 0x%x\n",se);
-			return instUnknown;		/* Give up */
+			return instUnknown;		/* Give up on port */
 		}
 
-		if (brt[i] == baud_9600) {
-			/* See if it's a Klein K10 */
+		/* Assume Klein K10 only uses 9600. */
+		/* We need to also assume that we might be talking to a Spectrolino, */
+		/* and avoid upsetting it, or some other serial instrument that */
+		/* is set to 9600 baud. */
+		if ((p->dctype & icomt_btserial) == 0 && brt[i] == baud_9600) {
+			double sto = 0.2;	/* Give 9600 a little more time */
+			int bread, len;
+			int lgchsum = 0;
 
-			if ((se = p->write_read(p, "P0\r", 0, buf, BUFSZ, NULL, ">", 1, 0.100)) != inst_ok) {
-				/* Check for user abort */
-				if (uicallback != NULL) {
-					inst_code ev;
-					if ((ev = uicallback(cntx, inst_negcoms)) == inst_user_abort) {
-						a1logd(p->log, 5, "fser_inst_type: User aborted\n");
-						return instUnknown;
+			/* Try a spectrolino/spectroscan command first */
+			if (tryto > sto)
+				sto = tryto;
+
+			/* Do first character only and see if there is an echo */
+			p->write_read_ex(p, ";", 1, buf, BUFSZ-1, &bread, "\r", 1, 0.2, 1);
+			if (bread == 1 && buf[0] == ';')
+#ifdef ENABLE_VTPGLUT
+				goto check_lumagen;
+#else
+				goto continue_looking;
+#endif
+
+			/* Send the rest of the spectrolino command */
+			p->write_read_ex(p, "D024\r\n", 0, buf, BUFSZ-1, &bread, "\r", 1, 0.2, 1);
+
+			if (bread == 0) {
+				char *bp;
+				a1logd(p->log, 5, "fser_inst_type: Spectrolino command returned nothing\n");
+
+#ifdef ENABLE_VTPGLUT
+				/* It could be a Lumagen Radiance with echo off, */
+				/* so poke it and see if it responds. */
+				/* (Unfortunately the Lumagen delimeters modes aren't */
+				/*  backwards compatible, so we may have to poke it twice...) */
+				/* Send "X" first, to get it out of menu mode ? */
+				p->write_read_ex(p, "X", 1, buf, BUFSZ, NULL, "\n", 1, 0.1, 1);		// Menu off
+				a1logd(p->log, 5, "fser_inst_type: Checking for Lumagen Radiance\n");
+				p->write_read_ex(p, "#ZQS00\r", 0, buf, BUFSZ, &bread, "\n", 1, sto, 1);
+				if (bread == 0) {
+					p->write_read_ex(p, "#0ZQS008E\r", 0, buf, BUFSZ, &bread, "\n", 1, sto, 1);
+					lgchsum = 1;
+				}
+
+				if (bread > 0
+				 && (bp = strrchr(buf, '!')) != NULL
+				 && strlen(bp) >= 4
+				 && strncmp(bp,"!S00",4) == 0) {
+					goto check_lumagen;
+				}
+#endif /* ENABLE_VTPGLUT */
+
+				/* Nope - look for something at a different baud rate */
+				goto continue_looking;
+			}
+
+			buf[bread] = '\000';
+			len = strlen(buf);
+
+			a1logd(p->log, 5, "fser_inst_type: got %d bytes\n",len);
+
+			/* Is this a Spectrolino or Spectroscan error resonse ? */
+			if ((len >= 5 && strncmp(buf, ":26", 3) == 0)
+			  || (len >= 7 && strncmp(buf, ":D183", 5) == 0)) {
+				a1logd(p->log, 5, "fser_inst_type: Ignore Spectrolino\n");
+				return instUnknown;		/* Not doing Spectrolino detection here */
+			}
+
+			/* Is this an X-Rite error value such as "<01>" ? */
+			if ((buf[0] == '<' && isdigit(buf[1]) && isdigit(buf[2]) && buf[3] == '>')
+			 || (isdigit(buf[0]) && isdigit(buf[1]) && buf[2] == '>')) {
+				a1logd(p->log, 5, "fser_inst_type: Ignore X-Rite\n");
+				return instUnknown;		/* Not doing X-Rite detection here */
+			}
+
+			/* The Klein K10 seems to respond with it's calibration list, preceeded by "D4" ? */
+			if (buf[0] == 'D' && buf[1] == '4') {
+				a1logd(p->log, 5, "fser_inst_type: Looks like it may be a Klein\n");
+	
+				/* Confirm this is a Klein instrument  */
+	
+				/* The first response is the calibration list, and it may need flushing. */
+				/* (write_read_ex doesn't cope with time it takes to dump this.) */
+				for (;;) {
+					bread = 0;
+					p->read(p, buf, BUFSZ, &bread, NULL, BUFSZ, 0.1);
+					if (bread == 0)
+						break;
+				}
+	
+				if ((se = p->write_read_ex(p, "P0\r", 0, buf, BUFSZ, NULL, ">", 1, tryto, 1)) == inst_ok) {
+	
+					/* Is this a Klein K1/K8/K10 response ? */
+					if (strncmp(buf, "P0K-1 ", 6) == 0
+					 || strncmp(buf, "P0K-8 ", 6) == 0
+					 || strncmp(buf, "P0K-10", 6) == 0
+					 || strncmp(buf, "P0KV-10", 7) == 0) {
+						a1logd(p->log, 5, "fser_inst_type: found Klein K1/K8/K10\n");
+						rv = instKleinK10;
+						break;
 					}
 				}
-				continue;
 			}
-			len = strlen(buf);
-	
-			/* Is this a Klein K1/K8/K10 response ? */
-			if (strncmp(buf, "P0K-1 ", 6) == 0
-			 || strncmp(buf, "P0K-8 ", 6) == 0
-			 || strncmp(buf, "P0K-10", 6) == 0
-			 || strncmp(buf, "P0KV-10", 7) == 0) {
-				a1logd(p->log, 5, "fser_inst_type: found Klein K1/K8/K10\n");
-				rv = instKleinK10;
-				break;
+
+#ifdef ENABLE_VTPGLUT
+			/* Is this a Lumagen Radiance with echo on, it responds with ";D024..." */
+			if ((len >= 4 && strncmp(buf, ";D024", 4) == 0)
+			 || (len >= 4 && strncmp(buf, "!N\n\r", 4) == 0)) {
+				char *bp;
+
+			  check_lumagen:;
+
+				/* Send "X" first, to get it out of menu mode ? */
+				p->write_read_ex(p, "X", 1, buf, BUFSZ, NULL, "\n", 1, 0.1, 1);		// Menu off
+
+				/* Get the Lumagen device information */
+				p->write_read_ex(p, lgchsum ? "#0ZQS018F\r" : "#ZQS01\r",
+					                    0, buf, BUFSZ, &bread, "\n", 1, sto, 1);
+
+				/* Might have echo with checksum, so lgchsum not set correctly */
+				if (!lgchsum && bread > 0 && strstr(buf, "!N") != NULL) {
+					p->write_read_ex(p, "#0ZQS018F\r", 0, buf, BUFSZ, &bread, "\n", 1, sto, 1);
+					if (bread >= 11 && strncmp(buf, "#0ZQS018F!Y", 11) == 0)
+						lgchsum = 1;
+				}
+			
+				/* returns something like "ZQS01!S01,Radiance2020,030115,1016,001309\r\m" */
+				if ((bp = strrchr(buf, '!')) != NULL && strlen(bp) >= 13) {
+				    if (strncmp(bp,"!S01,Radiance",13) == 0) {
+						a1logd(p->log, 5, "fser_inst_type: Found Lumagen Radiance\n");
+
+#ifdef NEVER	/* Test various Lumagen com. settings */
+						radiance_random(p, lgchsum);
+//					 	radiance_delimiters(p, lgchsum);
+#endif
+					 	radiance_delimiters(p, lgchsum);
+						return devRadiance;
+					}
+				}
+				a1logd(p->log, 5, "fser_inst_type: Not Lumagen Radiance\n");
+				return instUnknown;
 			}
-		}
-		if (brt[i] == baud_38400)
-		{
+#endif /* ENABLE_VTPGLUT */
+
+		continue_looking:;
+
+			/* Check for user abort */
+			if (uicallback != NULL) {
+				inst_code ev;
+				if ((ev = uicallback(cntx, inst_negcoms)) == inst_user_abort) {
+						a1logd(p->log, 5, "fser_inst_type: User aborted\n");
+						return instUnknown;
+				}
+			}
+		}	/* 9600 baud */
+
+		/* SwatchMate Cube only uses 38400 */
+		if ((p->dctype & icomt_btserial) == 0 && brt[i] == baud_38400) {
 			int bread;
 
 			/* See if it's a SwatchMate Cube. */
@@ -1403,56 +1624,81 @@ instType fast_ser_inst_type(
 			buf[1] = 0x00;
 			buf[2] = 0x02;		/* Ping command */
 			buf[3] = 0x00;
-			if ((se = p->write_read(p, buf, 4, buf, BUFSZ, &bread, NULL, 4, 0.100)) != inst_ok) {
-				/* Check for user abort */
-				if (uicallback != NULL) {
-					inst_code ev;
-					if ((ev = uicallback(cntx, inst_negcoms)) == inst_user_abort) {
-						a1logd(p->log, 5, "fser_inst_type: User aborted\n");
-						return instUnknown;
+			if ((se = p->write_read_ex(p, buf, 4, buf, BUFSZ, &bread, NULL, 4, tryto, 1)) == inst_ok) {
+				if (bread == 4) {
+					if (buf[0] == 0x7e && buf[1] == 0x20 && buf[2] == 0x02 && buf[3] == 0x00) {
+						a1logd(p->log, 5, "fser_inst_type: found SwatchMate Cube\n");
+						rv = instSMCube;
+						break;
 					}
 				}
-				continue;
 			}
-			if (bread == 4) {
-				if (buf[0] == 0x7e && buf[1] == 0x20 && buf[2] == 0x02 && buf[3] == 0x00) {
-					a1logd(p->log, 5, "fser_inst_type: found SwatchMate Cube\n");
-					rv = instSMCube;
-					break;
+
+			/* Check for user abort */
+			if (uicallback != NULL) {
+				inst_code ev;
+				if ((ev = uicallback(cntx, inst_negcoms)) == inst_user_abort) {
+					a1logd(p->log, 5, "fser_inst_type: User aborted\n");
+					return instUnknown;
 				}
 			}
 		}
-		/* Bluetooth only uses baud_115200 */ 
-		if ((p->sattr & icom_bt) == 0 || brt[i] == baud_115200) {
+
+		/* JETI specbos or spectraval. */
+		/* We are not allowing for all possible baud rate selections here - */
+		/* the 1211 RS and BT can't handle 921600, */
+		/* while the 15x1 can handle 230400 & 3000000, which we don't test for... */
+//		if ((p->dctype & icomt_btserial) == 0 || brt[i] == baud_115200)
+		if (brt[i] == baud_38400 || brt[i] == baud_115200 || brt[i] == baud_921600)
+		{
+			int bread;
 
 			/* See if it's a JETI specbos */
-			if ((se = p->write_read(p, "*idn?\r", 0, buf, BUFSZ, NULL, "\r", 1, 0.100)) != inst_ok) {
-				/* Check for user abort */
-				if (uicallback != NULL) {
-					inst_code ev;
-					if ((ev = uicallback(cntx, inst_negcoms)) == inst_user_abort) {
-						a1logd(p->log, 5, "fser_inst_type: User aborted\n");
-						return instUnknown;
-					}
+			p->write_read_ex(p, "*idn?\r", 0, buf, BUFSZ, &bread, "\r", 1, tryto, 1);
+			if (bread > 0) {
+				len = strlen(buf);
+		
+				/* JETI specbos returns "JETI_SBXXXX", where XXXX is the instrument type, */
+				/* except for the 1201 which returns "SB05" */
+				/* The spectraval 1501 returns JETI_SDCM3 NNNNNNN */
+		
+				/* Over Bluetooth, we get an erronious string "AT+JSCR\r\n" mixed in our output. */
+				/* This would appear to be from the eBMU Bluetooth adapter AT command set. */
+				if (len > 9 && strncmp(buf, "AT+JSCR\r\n", 9) == 0) {
+					memmove(buf, buf+9, len-9);
+					len -= 9;
 				}
-				continue;
+
+				/* Is this a JETI specbos 1201 response ? */
+				if (strncmp(buf, "SB05", 4) == 0) {
+					a1logd(p->log, 5, "fser_inst_type: found JETI specbos 1201\n");
+					rv = instSpecbos1201;
+					break;
+				}
+				/* Is this a JETI specbos XXXX response ? */
+				if (len >= 11 && strncmp(buf, "JETI_SB", 7) == 0) {
+					a1logd(p->log, 5, "fser_inst_type: found JETI specbos\n");
+					rv = instSpecbos;
+					break;
+				}
+				/* Is this a JETI spectraval response ? */
+				/* (Bluetooth returns "DCM3_JETI ... and other rubbish for some reason.) */
+				if ((len >= 10  && strncmp(buf, "JETI_SDCM3", 10) == 0)
+				 || (len >= 9   && strncmp(buf, "DCM3_JETI", 9) == 0)
+				 || (len >= 17  && strncmp(buf, "PECFIRM_JETI_1501", 17) == 0)
+				 || (len >= 18  && strncmp(buf, "SPECFIRM_JETI_1501", 18) == 0)) {
+					a1logd(p->log, 5, "fser_inst_type: found JETI spectraval\n");
+					rv = instSpectraval;
+					break;
+				}
 			}
-			len = strlen(buf);
-	
-			/* JETI specbos returns "JETI_SBXXXX", where XXXX is the instrument type, */
-			/* except for the 1201 which returns "SB05" */
-	
-			/* Is this a JETI specbos 1201 response ? */
-			if (strncmp(buf, "SB05", 4) == 0) {
-				a1logd(p->log, 5, "fser_inst_type: found JETI specbos 1201\n");
-				rv = instSpecbos1201;
-				break;
-			}
-			/* Is this a JETI specbos XXXX response ? */
-			if (len >= 11 && strncmp(buf, "JETI_SB", 7) == 0) {
-				a1logd(p->log, 5, "fser_inst_type: found JETI specbos\n");
-				rv = instSpecbos;
-				break;
+			/* Check for user abort */
+			if (uicallback != NULL) {
+				inst_code ev;
+				if ((ev = uicallback(cntx, inst_negcoms)) == inst_user_abort) {
+					a1logd(p->log, 5, "fser_inst_type: User aborted\n");
+					return instUnknown;
+				}
 			}
 		}
 	}
@@ -1460,16 +1706,116 @@ instType fast_ser_inst_type(
 	if (rv == instUnknown
 	 && msec_time() >= etime) {		/* We haven't established comms */
 		a1logd(p->log, 5, "fser_inst_type: Failed to establish coms\n");
-		p->itype = rv;
+		p->dtype = rv;
 		return instUnknown;
 	}
 
 	a1logd(p->log, 5, "fser_inst_type: Instrument type is '%s'\n", inst_name(rv));
 
-	p->itype = rv;
+	p->dtype = rv;
 
 	return rv;
 }
+
+#ifdef ENABLE_VTPGLUT
+
+
+/*
+	Lumagen uses following sequence to setup coms:
+
+	Sent			Recieved		Comments
+	----            --------		--------
+	M0931			M0931			use %M0931 to ensure it's on
+	f				Ok				if on, else echo's 'f'
+	B009600							then close & re-open port at 9600 baud.
+20x e		   20x	Ok				Some sort of exit menu command ?
+	e				Ok
+	I				030115.14.051d......
+	g				Ok5b28
+	L000100NQ		.....
+	lots more
+
+	These sequences seem to not honour the Delimeters etc., but
+	work all the time ??
+
+	Needs 'X' to exit M0931 to respond to normal "Z" sequences.
+
+*/
+
+/* Switch Lumagen Radiance to Echo + Delimiters mode */
+static void radiance_delimiters(icoms *p, int lgchsum) {
+	time_t clk = time(0);
+	char *com, *chcom;
+	char buf[BUFSZ];
+
+	// Echo On
+	p->write_read_ex(p, lgchsum ? "#0ZE100\r" : "#ZE1\r",
+	               0, buf, BUFSZ, NULL, "\n", 1, 0.1, 1);
+
+#ifndef NEVER
+	// Delimeters off
+	com = "#ZD0\r";
+	chcom = "#0ZD0FE\r";
+#else
+	// Delimiters on
+	com = "#ZD1\r";
+	chcom = "#0ZD1FF\r";
+#endif
+
+	p->write_read_ex(p, lgchsum ? chcom : com, 0, buf, BUFSZ, NULL, "\n", 1, 0.1, 1);
+
+#ifdef NEVER
+	// ~~~999 see if delimiters works
+//	p->write_read_ex(p, "%", 1, buf, BUFSZ, NULL, "\n", 1, 0.2, 1);		// Doesn't work !
+//	msec_sleep(1000);
+	p->write_read_ex(p, "M0931", 5, buf, BUFSZ, NULL, "\n", 1, 0.2, 1);
+	p->write_read_ex(p, "f", 1, buf, BUFSZ, NULL, "\n", 1, 0.2, 1);
+	p->write_read_ex(p, "X", 1, buf, BUFSZ, NULL, "\n", 1, 0.2, 1);		// Menu off
+//	p->write_read_ex(p, "eeeeeeeeeeeeeeeeeeee", 20, buf, BUFSZ, NULL, "\n", 1, 0.2, 1);
+#endif
+}
+
+/* Test code for Lumagen com. settings; */
+/* - set a random echo and delimeters. */
+static void radiance_random(icoms *p, int lgchsum) {
+	time_t clk = time(0);
+	int ech, del;
+	char *com, *chcom;
+	char buf[BUFSZ];
+
+	rand32(clk);
+
+	del = i_rand(0, 3);
+	ech = i_rand(0, 1);
+
+	fprintf(stderr, "echo %d, del %d\n",ech, del);
+	// Random Echo:
+	if (ech == 1) {
+		p->write_read_ex(p, lgchsum ? "#0ZE100\r" : "#ZE1\r",
+		               0, buf, BUFSZ, NULL, "\n", 1, 0.1, 1);
+	} else {
+		p->write_read_ex(p, lgchsum ? "#0ZE0FF\r" : "#ZE0\r",
+		               0, buf, BUFSZ, NULL, "\n", 1, 0.1, 1);
+	}
+
+	// Random Delimeters:
+	if (del == 0) {
+		com = "#ZD0\r";
+		chcom = "#0ZD0FE\r";
+	} else if (del == 1) {
+		com = "#ZD1\r";
+		chcom = "#0ZD1FF\r";
+	} else if (del == 2) {
+		com = "#ZD2\r";
+		chcom = "#0ZD200\r";
+	} else {
+		com = "#ZD3\r";
+		chcom = "#0ZD301\r";
+	}
+	p->write_read_ex(p, lgchsum ? chcom : com, 0, buf, BUFSZ, NULL, "\n", 1, 0.1, 1);
+}
+#endif /* ENABLE_VTPGLUT */
+
 #undef BUFSZ
 
 #endif /* ENABLE_FAST_SERIAL */
@@ -1492,18 +1838,19 @@ static instType ser_inst_type(
 #define BUFSZ (128 + 10)
 	char buf[BUFSZ];
 	baud_rate brt[] = { baud_9600, baud_19200, baud_4800, baud_2400,
-	                     baud_1200, baud_38400, baud_57600, baud_115200,
-	                     baud_600, baud_300, baud_110, baud_nc };
+	                    baud_1200, baud_38400, baud_57600, baud_115200,
+	                    baud_600, baud_300, baud_110, baud_nc };
 	unsigned int etime;
 	unsigned int bi, i;
 	int se, len, bread;
+	int klein = 0;
 	int xrite = 0;
 	int ss = 0;
 	int so = 0;
 	
 #ifdef ENABLE_USB
 	if (p->usbd != NULL || p->hidd != NULL)
-		return p->itype;
+		return p->dtype;
 #endif /* ENABLE_USB */
 
 	bi = 0;
@@ -1517,7 +1864,7 @@ static instType ser_inst_type(
 	for (i = bi; msec_time() < etime; i++) {
 		if (brt[i] == baud_nc)
 			i = 0;
-		if ((se = p->set_ser_port(p, fc_none, brt[i], parity_none,
+		if ((se = p->set_ser_port(p, fc_None, brt[i], parity_none,
 			                         stop_1, length_8)) != ICOM_OK) { 
 			a1logd(p->log, 5, "ser_inst_type: set_ser_port failed with 0x%x\n",se);
 			return instUnknown;		/* Give up */
@@ -1525,26 +1872,36 @@ static instType ser_inst_type(
 
 		a1logd(p->log, 5, "Trying %s baud\n",baud_rate_to_str(brt[i]));
 		bread = 0;
-		if ((se = p->write_read(p, ";D024\r\n", 0, buf, BUFSZ, &bread, "\r", 1, 0.5)) != inst_ok) {
-			/* Check for user abort */
-			if (uicallback != NULL) {
-				inst_code ev;
-				if ((ev = uicallback(cntx, inst_negcoms)) == inst_user_abort) {
-					a1logd(p->log, 5, "ser_inst_type: User aborted\n");
-					return instUnknown;
-				}
-			}
-			if (bread == 0)
-				continue;
+
+		/* Try a spectrolino/spectroscan command first, */
+		/* but do first character only and see if there is an echo */
+		p->write_read_ex(p, ";", 1, buf, BUFSZ-1, &bread, "\r", 1, 0.2, 1);
+		if (bread == 1 && buf[0] == ';')
+			goto continue_looking;		/* It may be a Lumagen, so skip it. */
+
+		/* Send the rest of the spectrolino command */
+		p->write_read_ex(p, "D024\r\n", 0, buf, BUFSZ-1, &bread, "\r", 1, 0.5, 1);
+
+		if (bread == 0) {
+			goto continue_looking;
 		}
+		buf[bread] = '\000';
 		len = strlen(buf);
 
 //		a1logd(p->log, 5, "len = %d\n",len);
-		if (len < 4)
-			continue;
+
+		/* The Klein K10 seems to respond with it's calibration list, preceeded by "D4" ? */
+		/* - don't know how reliable this is though. Another way may be to look for a */
+		/* response len > 100 characters ?? */
+		if (len >= 3 && buf[0] == 'D' && buf[1] == '4') {
+//			a1logd(p->log, 5, "klein\n");
+			klein = 1;
+			break;
+		}
 
 		/* Is this an X-Rite error value such as "<01>" ? */
-		if (buf[0] == '<' && isdigit(buf[1]) && isdigit(buf[2]) && buf[3] == '>') {
+		if ((len >= 4 && buf[0] == '<' && isdigit(buf[1]) && isdigit(buf[2]) && buf[3] == '>')
+		 || (len >= 3 && isdigit(buf[0]) && isdigit(buf[1]) && buf[2] == '>')) {
 //			a1logd(p->log, 5, "xrite\n");
 			xrite = 1;
 			break;
@@ -1562,9 +1919,24 @@ static instType ser_inst_type(
 			ss = 1;
 			break;
 		}
+
+	continue_looking:;
+
+		/* Check for user abort */
+		if (uicallback != NULL) {
+			inst_code ev;
+			if ((ev = uicallback(cntx, inst_negcoms)) == inst_user_abort) {
+				a1logd(p->log, 5, "ser_inst_type: User aborted\n");
+				return instUnknown;
+			}
+		}
 	}
 
 	if (rv == instUnknown
+	 && klein == 0
+	 && xrite == 0
+	 && ss == 0
+	 && so == 0
 	 && msec_time() >= etime) {		/* We haven't established comms */
 		a1logd(p->log, 5, "ser_inst_type: Failed to establish coms\n");
 		return instUnknown;
@@ -1580,7 +1952,7 @@ static instType ser_inst_type(
 	/* SpectroScan */
 	if (ss) {
 		rv = instSpectroScan;
-		if ((se = p->write_read(p, ";D030\r\n", 0, buf, BUFSZ, NULL, "\n", 1, 1.5)) == 0)  {
+		if ((se = p->write_read_ex(p, ";D030\r\n", 0, buf, BUFSZ, NULL, "\n", 1, 1.5, 1)) == 0)  {
 			if (strlen(buf) >= 41) {
 				hex2bin(&buf[5], 12);
 //				a1logd(p->log, 5, "spectroscan type = '%s'\n",buf);
@@ -1592,7 +1964,7 @@ static instType ser_inst_type(
 	if (xrite) {
 
 		/* Get the X-Rite model and version number */
-		if ((se = p->write_read(p, "SV\r\n", 0, buf, BUFSZ, NULL, ">", 1, 2.5)) != 0)
+		if ((se = p->write_read_ex(p, "SV\r\n", 0, buf, BUFSZ, NULL, ">", 1, 2.5, 1)) != 0)
 			return instUnknown;
 	
 		if (strlen(buf) >= 12) {
@@ -1613,11 +1985,36 @@ static instType ser_inst_type(
 		}
 	}
 
+	if (klein) {
+
+		/* The first response is the calibration list, and it may need flushing. */
+		/* (write_read_ex doesn't cope with time it takes to dump this.) */
+		for (;;) {
+			bread = 0;
+			p->read(p, buf, BUFSZ, &bread, NULL, BUFSZ, 0.1);
+			if (bread == 0)
+				break;
+		}
+
+		/* See if this is a Klein K10 or similar */
+		if ((se = p->write_read_ex(p, "P0\r", 0, buf, BUFSZ, NULL, ">", 1, 1.5, 1)) != inst_ok)
+			return instUnknown;
+
+		/* Is this a Klein K1/K8/K10 response ? */
+		if (strncmp(buf, "P0K-1 ", 6) == 0
+		 || strncmp(buf, "P0K-8 ", 6) == 0
+		 || strncmp(buf, "P0K-10", 6) == 0
+		 || strncmp(buf, "P0KV-10", 7) == 0) {
+			a1logd(p->log, 5, "fser_inst_type: found Klein K1/K8/K10\n");
+			rv = instKleinK10;
+		}
+	}
+
 	a1logd(p->log, 5, "ser_inst_type: Instrument type is '%s'\n", inst_name(rv));
 
 	p->close_port(p);	/* Or should we leave it open ?? */
 
-	p->itype = rv;
+	p->dtype = rv;
 
 	return rv;
 }
@@ -1732,8 +2129,51 @@ int sym_to_inst_mode(inst_mode *mode, const char *sym) {
 	return rv;
 }
 
+/* ============================================================= */
+/* Custom filter support */
 
+/* Apply a custom filer to an array of ipatch's */
+/* Spetral values are divided by filter spectrum and XYZ recomputed */
+void ipatch_convert_custom_filter(ipatch *vals, int nvals, xspect *filt, int clamp) {
+	xspect tmp;
+	xsp2cie *conv = NULL;	/* Spectral to XYZ conversion object */
+	int i, j;
 
+	/* If no conversion needed */
+	if (filt->spec_n == 0)
+		return;
+
+	for (i = 0; i < nvals; i++) {
+		if ((   vals[i].mtype != inst_mrt_emission
+		     && vals[i].mtype != inst_mrt_ambient
+		     && vals[i].mtype != inst_mrt_emission_flash
+		     && vals[i].mtype != inst_mrt_ambient_flash)
+		 || vals[i].sp.spec_n <= 0) {
+			continue;
+		}
+
+		/* Apply the filter compensation values */
+		for (j = 0; j < vals[i].sp.spec_n; j++) {
+			double nm = XSPECT_XWL(&vals[i].sp, j);
+			double fw;
+			getval_xspec(filt, &fw, nm);		/* Gets interp/extrap normalized value */
+			vals[i].sp.spec[j] /= fw;
+		}
+
+		/* Re-compute XYZ */
+		if (vals[i].XYZ_v) {
+			if (conv == NULL) {
+				conv = new_xsp2cie(icxIT_none, 0.0, NULL, icxOT_CIE_1931_2,
+				                   NULL, icSigXYZData, (icxClamping)clamp);
+			}
+			conv->convert(conv, vals[i].XYZ, &vals[i].sp);
+			vals[i].XYZ_v = 1;
+			vals[i].sp.norm = 1.0;
+		}
+	}
+	if (conv != NULL)
+		conv->del(conv);
+}
 
 
 

@@ -3,6 +3,11 @@
  * cgats library stdio and malloc utility classes.
  * Version 2.05
  *
+ * These are kept in a separate file to allow them to be
+ * selectively ommitted from the cgats library.
+ */
+
+/*
  * Author: Graeme W. Gill
  * Date:   2002/10/24
  *
@@ -10,12 +15,11 @@
  * All rights reserved.
  *
  * This material is licensed with an "MIT" free use license:-
- * see the License.txt file in this directory for licensing details.
- *
- * These are kept in a separate file to allow them to be
- * selectively ommitted from the cgats library.
+ * see the License4.txt file in this directory for licensing details.
  *
  */
+
+
 
 #ifndef COMBINED_STD
 

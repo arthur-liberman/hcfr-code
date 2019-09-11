@@ -37,6 +37,10 @@
 
 #include "inst.h"
 
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
 /* Fake Error codes */
 #define DTP20_INTERNAL_ERROR			0x81			/* Internal software error */
 #define DTP20_COMS_FAIL					0x82			/* Communication failure */
@@ -128,12 +132,20 @@ struct _dtp20 {
 
 	int savix;					/* Index of last saved spot reading read */
 
+	xcalstd native_calstd;		/* Instrument native calibration standard */
+	xcalstd target_calstd;		/* Returned calibration standard */
+
+	int custfilt_en;			/* Custom filter enabled */
+	xspect custfilt;			/* Custom filter */
+
 }; typedef struct _dtp20 dtp20;
 
 /* Constructor */
 extern dtp20 *new_dtp20(icoms *icom, instType itype);
 
-
+#ifdef __cplusplus
+	}
+#endif
 
 #define DTP20_H
 #endif /* DTP20_H */

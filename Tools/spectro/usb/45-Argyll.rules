@@ -1,0 +1,76 @@
+# udev rule to change permissions so that the USB instruments can be accessed by Argyll
+# where the udev is old and doesn't understand the more modern syntax in 55-Argyll.rules.
+# Copy to /etc/udev/rules.d/45-Argyll.rules
+# NOTE that hex values must be lower case!
+	
+# Colorimtre HCFR
+SYSFS{idVendor}=="04db", SYSFS{idProduct}=="005b", PROGRAM="/bin/sh -c 'K=%k; K=$${K#usbdev}; printf bus/usb/%%03i/%%03i $${K%%%%.*} $${K#*.}'", NAME="%c", MODE="660", GROUP="colord"
+
+# MonacoOPTIX (Same as i1 Display 1)
+SYSFS{idVendor}=="0670", SYSFS{idProduct}=="0001", PROGRAM="/bin/sh -c 'K=%k; K=$${K#usbdev}; printf bus/usb/%%03i/%%03i $${K%%%%.*} $${K#*.}'", NAME="%c", MODE="660", GROUP="colord"
+
+
+# Huey (Lenovo W70DS Laptop ?)
+SYSFS{idVendor}=="0765", SYSFS{idProduct}=="5001", PROGRAM="/bin/sh -c 'K=%k; K=$${K#usbdev}; printf bus/usb/%%03i/%%03i $${K%%%%.*} $${K#*.}'", NAME="%c", MODE="660", GROUP="colord"
+
+# Huey (Lenovo W530 Laptop ?)
+SYSFS{idVendor}=="0765", SYSFS{idProduct}=="5010", PROGRAM="/bin/sh -c 'K=%k; K=$${K#usbdev}; printf bus/usb/%%03i/%%03i $${K%%%%.*} $${K#*.}'", NAME="%c", MODE="660", GROUP="colord"
+
+# i1Display 3
+SYSFS{idVendor}=="0765", SYSFS{idProduct}=="5020", PROGRAM="/bin/sh -c 'K=%k; K=$${K#usbdev}; printf bus/usb/%%03i/%%03i $${K%%%%.*} $${K#*.}'", NAME="%c", MODE="660", GROUP="colord"
+
+# ColorMunki Smile
+SYSFS{idVendor}=="0765", SYSFS{idProduct}=="6003", PROGRAM="/bin/sh -c 'K=%k; K=$${K#usbdev}; printf bus/usb/%%03i/%%03i $${K%%%%.*} $${K#*.}'", NAME="%c", MODE="660", GROUP="colord"
+
+# ColorMunki i1 Studio
+SYSFS{idVendor}=="0765", SYSFS{idProduct}=="6008", PROGRAM="/bin/sh -c 'K=%k; K=$${K#usbdev}; printf bus/usb/%%03i/%%03i $${K%%%%.*} $${K#*.}'", NAME="%c", MODE="660", GROUP="colord"
+
+# DTP20
+SYSFS{idVendor}=="0765", SYSFS{idProduct}=="d020", PROGRAM="/bin/sh -c 'K=%k; K=$${K#usbdev}; printf bus/usb/%%03i/%%03i $${K%%%%.*} $${K#*.}'", NAME="%c", MODE="660", GROUP="colord"
+
+# DTP92Q - not tested
+SYSFS{idVendor}=="0765", SYSFS{idProduct}=="d092", PROGRAM="/bin/sh -c 'K=%k; K=$${K#usbdev}; printf bus/usb/%%03i/%%03i $${K%%%%.*} $${K#*.}'", NAME="%c", MODE="660", GROUP="colord"
+
+# DTP94
+SYSFS{idVendor}=="0765", SYSFS{idProduct}=="d094", PROGRAM="/bin/sh -c 'K=%k; K=$${K#usbdev}; printf bus/usb/%%03i/%%03i $${K%%%%.*} $${K#*.}'", NAME="%c", MODE="660", GROUP="colord"
+
+# Spyder 1
+SYSFS{idVendor}=="085c", SYSFS{idProduct}=="0100", PROGRAM="/bin/sh -c 'K=%k; K=$${K#usbdev}; printf bus/usb/%%03i/%%03i $${K%%%%.*} $${K#*.}'", NAME="%c", MODE="660", GROUP="colord"
+
+# Spyder 2
+SYSFS{idVendor}=="085c", SYSFS{idProduct}=="0200", PROGRAM="/bin/sh -c 'K=%k; K=$${K#usbdev}; printf bus/usb/%%03i/%%03i $${K%%%%.*} $${K#*.}'", NAME="%c", MODE="660", GROUP="colord"
+
+# Spyder 3
+SYSFS{idVendor}=="085c", SYSFS{idProduct}=="0300", PROGRAM="/bin/sh -c 'K=%k; K=$${K#usbdev}; printf bus/usb/%%03i/%%03i $${K%%%%.*} $${K#*.}'", NAME="%c", MODE="660", GROUP="colord"
+
+# Spyder 4
+SYSFS{idVendor}=="085c", SYSFS{idProduct}=="0400", PROGRAM="/bin/sh -c 'K=%k; K=$${K#usbdev}; printf bus/usb/%%03i/%%03i $${K%%%%.*} $${K#*.}'", NAME="%c", MODE="660", GROUP="colord"
+
+# Spyder 5
+SYSFS{idVendor}=="085c", SYSFS{idProduct}=="0500", PROGRAM="/bin/sh -c 'K=%k; K=$${K#usbdev}; printf bus/usb/%%03i/%%03i $${K%%%%.*} $${K#*.}'", NAME="%c", MODE="660", GROUP="colord"
+
+# Spyder X
+SYSFS{idVendor}=="085c", SYSFS{idProduct}=="0a00", PROGRAM="/bin/sh -c 'K=%k; K=$${K#usbdev}; printf bus/usb/%%03i/%%03i $${K%%%%.*} $${K#*.}'", NAME="%c", MODE="660", GROUP="colord"
+
+# i1Pro
+SYSFS{idVendor}=="0971", SYSFS{idProduct}=="2000", PROGRAM="/bin/sh -c 'K=%k; K=$${K#usbdev}; printf bus/usb/%%03i/%%03i $${K%%%%.*} $${K#*.}'", NAME="%c", MODE="660", GROUP="colord"
+
+# i1Monitor
+SYSFS{idVendor}=="0971", SYSFS{idProduct}=="2001", PROGRAM="/bin/sh -c 'K=%k; K=$${K#usbdev}; printf bus/usb/%%03i/%%03i $${K%%%%.*} $${K#*.}'", NAME="%c", MODE="660", GROUP="colord"
+
+# i1Display
+SYSFS{idVendor}=="0971", SYSFS{idProduct}=="2003", PROGRAM="/bin/sh -c 'K=%k; K=$${K#usbdev}; printf bus/usb/%%03i/%%03i $${K%%%%.*} $${K#*.}'", NAME="%c", MODE="660", GROUP="colord"
+
+# Huey
+SYSFS{idVendor}=="0971", SYSFS{idProduct}=="2005", PROGRAM="/bin/sh -c 'K=%k; K=$${K#usbdev}; printf bus/usb/%%03i/%%03i $${K%%%%.*} $${K#*.}'", NAME="%c", MODE="660", GROUP="colord"
+
+# ColorMunki
+SYSFS{idVendor}=="0971", SYSFS{idProduct}=="2007", PROGRAM="/bin/sh -c 'K=%k; K=$${K#usbdev}; printf bus/usb/%%03i/%%03i $${K%%%%.*} $${K#*.}'", NAME="%c", MODE="660", GROUP="colord"
+
+# ColorHug
+SYSFS{idVendor}=="04d8", SYSFS{idProduct}=="f8da", PROGRAM="/bin/sh -c 'K=%k; K=$${K#usbdev}; printf bus/usb/%%03i/%%03i $${K%%%%.*} $${K#*.}'", NAME="%c", MODE="660", GROUP="colord"
+SYSFS{idVendor}=="273f", SYSFS{idProduct}=="1001", PROGRAM="/bin/sh -c 'K=%k; K=$${K#usbdev}; printf bus/usb/%%03i/%%03i $${K%%%%.*} $${K#*.}'", NAME="%c", MODE="660", GROUP="colord"
+SYSFS{idVendor}=="273f", SYSFS{idProduct}=="1004", PROGRAM="/bin/sh -c 'K=%k; K=$${K#usbdev}; printf bus/usb/%%03i/%%03i $${K%%%%.*} $${K#*.}'", NAME="%c", MODE="660", GROUP="colord"
+
+# Image Engineering EX1
+SYSFS{idVendor}=="2457", SYSFS{idProduct}=="4000", PROGRAM="/bin/sh -c 'K=%k; K=$${K#usbdev}; printf bus/usb/%%03i/%%03i $${K%%%%.*} $${K#*.}'", NAME="%c", MODE="660", GROUP="colord"

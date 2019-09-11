@@ -35,6 +35,10 @@
 
 #include "inst.h"
 
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
 /* Fake Error codes */
 #define DTP51_INTERNAL_ERROR		0x61			/* Internal software error */
 #define DTP51_COMS_FAIL				0x62			/* Communication failure */
@@ -91,12 +95,16 @@ struct _dtp51 {
 	int need_cal;				/* needs calibration */
 	inst_opt_type trig;			/* Reading trigger mode */
 	
-	}; typedef struct _dtp51 dtp51;
+	xcalstd native_calstd;		/* Instrument native calibration standard */
+
+}; typedef struct _dtp51 dtp51;
 
 /* Constructor */
 extern dtp51 *new_dtp51(icoms *icom, instType itype);
 
-
+#ifdef __cplusplus
+	}
+#endif
 
 #define DTP51_H
 #endif /* DTP51_H */

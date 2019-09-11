@@ -99,14 +99,14 @@ int *retsz) {
 	return ICOM_OK;
 }
 
-/* Add paths to USB connected instruments */
+/* Add paths to USB connected device */
 /* Return an icom error */
 int usb_get_paths(
 icompaths *p 
 ) {
 	unsigned int vid, pid, nep10 = 0xffff;
 	unsigned int configix, nconfig, nifce;
-	instType itype;
+	devType itype;
 	struct usb_idevice *usbd = NULL;
 	int rv, retsz, i;
 
@@ -270,7 +270,7 @@ icompaths *p
 						usbd->EPINFO(ad).addr = ad;
 						usbd->EPINFO(ad).packetsize = buf2ushort(bp + 4);
 						usbd->EPINFO(ad).type = bp[3] & IUSB_ENDPOINT_TYPE_MASK;
-						usbd->EPINFO(ad).interfacenum = ifaceno;
+						usbd->EPINFO(ad).interface = ifaceno;
 						a1logd(p->log, 6, "set ep ad 0x%x packetsize %d type %d\n",ad,usbd->EPINFO(ad).packetsize,usbd->EPINFO(ad).type);
 					}
 				}
@@ -589,6 +589,9 @@ static int icoms_usb_transaction(
 
 	a1logd(p->log, 8, "icoms_usb_transaction: req type 0x%x ep 0x%x size %d\n",ttype,endpoint,length);
 
+	if (transferred != NULL)
+		*transferred = 0;
+
 	if (ttype != icom_usb_trantype_interrutpt
 	 && ttype != icom_usb_trantype_bulk) {
 		/* We only handle interrupt & bulk, not control */
@@ -691,6 +694,9 @@ int timeout) {
 	int retsz = 0;
 
 	a1logd(p->log, 8, "icoms_usb_control_msg: type 0x%x req 0x%x size %d\n",requesttype,request,size);
+
+	if (transferred != NULL)
+		*transferred = 0;
 
 	memset(&req, 0, sizeof(libusb_request));
     req.timeout = timeout;

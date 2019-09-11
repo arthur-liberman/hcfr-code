@@ -37,6 +37,10 @@
 
 #include "inst.h"
 
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
 /* Fake Error codes */
 #define SPECBOS_INTERNAL_ERROR			0xff01		/* Internal software error */
 #define SPECBOS_TIMEOUT				    0xff02		/* Communication timeout */
@@ -122,11 +126,15 @@
 struct _specbos {
 	INST_OBJ_BASE
 
+	int bt;						/* Bluetooth coms rather than USB/serial flag */
+
 	amutex lock;				/* Command lock */
 
-	int model;					/* JETI specbos model number */
+	int model;					/* JETI specbos/spectraval model number */
 								/* 1201 */
 								/* 1211 */
+								/* 1501 */
+								/* 1511 - has display */
 
 	int noXYZ;					/* nz if firmware doesn't support fetch*XYZ */
 	int badCal;					/* nz if its been calibrated with a reduced WL range by 3rd party */
@@ -142,23 +150,35 @@ struct _specbos {
 
 	inst_opt_type trig;			/* Reading trigger mode */
 
-	double measto;				/* Expected measurement timeout value */
+	double measto;				/* Measurement maximum time target value */
 	int nbands;					/* Number of spectral bands */
 	double wl_short;
 	double wl_long;
 
+	xspect trans_white;			/* Synthetic transmission mode white reference */
+	xsp2cie *conv;				/* transmission spectral to XYZ conversion */
+	int doing_cal;				/* Flag - doing internal calibration measure */
+
 	/* Other state */
+	int noaverage;				/* Current setting of number of measurements to average */
+								/* 0 for default */
+
 	athread *th;                /* Diffuser position monitoring thread */
 	volatile int th_term;		/* nz to terminate thread */
 	volatile int th_termed;		/* nz when thread terminated */
 	int dpos;					/* Diffuser position, 0 = emissive, 1 = ambient */
 	int laser;					/* Target laser state, nz = on */
 
+	int maxtin_warn;			/* NZ if conf:maxtin failure warning has been given */
+
 	}; typedef struct _specbos specbos;
 
 /* Constructor */
 extern specbos *new_specbos(icoms *icom, instType itype);
 
+#ifdef __cplusplus
+	}
+#endif
 
 #define SPECBOS_H
 #endif /* SPECBOS_H */

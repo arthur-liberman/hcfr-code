@@ -33,6 +33,7 @@
 #include "sa_config.h"
 #include "numsup.h"
 #endif /* SALONEINSTLIB */
+#include "cgats.h"
 #include "xspect.h"
 #include "insttypes.h"
 #include "conv.h"
@@ -434,6 +435,7 @@ static inst_code
 colorhug_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	int se;
 	colorhug *p = (colorhug *) pp;
+	icomuflags usbflags = icomuf_none;
 
 	a1logd(p->log, 2, "colorhug_init_coms: About to init coms\n");
 
@@ -443,7 +445,7 @@ colorhug_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 		a1logd(p->log, 3, "colorhug_init_coms: About to init HID\n");
 
 		/* Set config, interface */
-		if ((se = p->icom->set_hid_port(p->icom, icomuf_none, 0, NULL)) != ICOM_OK) {
+		if ((se = p->icom->set_hid_port(p->icom, usbflags, 0, NULL)) != ICOM_OK) {
 			a1logd(p->log, 1, "colorhug_init_coms: set_hid_port failed ICOM err 0x%x\n",se);
 			return colorhug_interp_code((inst *)p, icoms2colorhug_err(se));
 		}
@@ -452,9 +454,16 @@ colorhug_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 
 		a1logd(p->log, 3, "colorhug_init_coms: About to init USB\n");
 
+#if defined(UNIX_X11)
+		usbflags |= icomuf_detach;
+		/* Some Linux drivers can't open the device a second time, so */
+		/* use the reset on close workaround. */
+		usbflags |= icomuf_reset_before_close;
+#endif
+
 		/* Set config, interface, write end point, read end point */
 		// ~~ does Linux need icomuf_reset_before_close ? Why ?
-		if ((se = p->icom->set_usb_port(p->icom, 1, 0x00, 0x00, icomuf_detach, 0, NULL))
+		if ((se = p->icom->set_usb_port(p->icom, 1, 0x00, 0x00, usbflags, 0, NULL))
 			                                                                 != ICOM_OK) { 
 			a1logd(p->log, 1, "colorhug_init_coms: set_usb_port failed ICOM err 0x%x\n",se);
 			return colorhug_interp_code((inst *)p, icoms2colorhug_err(se));
@@ -1138,8 +1147,7 @@ int *cbid) {
  * error if it hasn't been initialised.
  */
 static inst_code
-colorhug_get_set_opt(inst *pp, inst_opt_type m, ...)
-{
+colorhug_get_set_opt(inst *pp, inst_opt_type m, ...) {
 	colorhug *p = (colorhug *)pp;
 	inst_code ev = inst_ok;
 
@@ -1184,11 +1192,21 @@ colorhug_get_set_opt(inst *pp, inst_opt_type m, ...)
 		return colorhug_set_LEDs(p, mask);
 	}
 
-	return inst_unsupported;
+	/* Use default implementation of other inst_opt_type's */
+	{
+		inst_code rv;
+		va_list args;
+
+		va_start(args, m);
+		rv = inst_get_set_opt_def(pp, m, args);
+		va_end(args);
+
+		return rv;
+	}
 }
 
 /* Constructor */
-extern colorhug *new_colorhug(icoms *icom, instType itype) {
+extern colorhug *new_colorhug(icoms *icom, instType dtype) {
 	colorhug *p;
 	int i;
 
@@ -1214,9 +1232,9 @@ extern colorhug *new_colorhug(icoms *icom, instType itype) {
 	p->del               = colorhug_del;
 
 	p->icom = icom;
-	p->itype = itype;
+	p->dtype = dtype;
 
-	if (itype == instColorHug2)
+	if (dtype == instColorHug2)
 		p->stype = ch_two;
 
 	icmSetUnity3x3(p->ccmat);

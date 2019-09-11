@@ -28,7 +28,7 @@
 #include <algorithm>
 
 //#define SALONEINSTLIB
-#define ENABLE_USB
+//#define ENABLE_USB
 #define ENABLE_FAST_SERIAL
 #if defined(_MSC_VER)
 #pragma warning(disable:4200)

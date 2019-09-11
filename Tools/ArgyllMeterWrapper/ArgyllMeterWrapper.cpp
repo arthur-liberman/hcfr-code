@@ -28,9 +28,8 @@
 #include "LockWhileInScope.h"
 #include <stdexcept>
 
-
 //#define SALONEINSTLIB
-#define ENABLE_USB
+//#define ENABLE_USB
 #define ENABLE_FAST_SERIAL
 #if defined(_MSC_VER)
 #pragma warning(disable:4200)
@@ -46,6 +45,7 @@
 //#include "spyd2setup.h"
 #include "spyd2.h"
 //#undef SALONEINSTLIB
+
 
 namespace
 {
@@ -500,6 +500,7 @@ bool ArgyllMeterWrapper::setObType(CString SpectralType)
         obType=icxOT_CIE_1931_2;
     if (SpectralType == "CIE 1964 10 deg")
         obType=icxOT_CIE_1964_10;
+#ifndef SALONEINSTLIB
     if (SpectralType == "Stiles&Burch 2 deg")
         obType=icxOT_Stiles_Burch_2;
     if (SpectralType == "Judd&Vos 2 deg")
@@ -510,7 +511,8 @@ bool ArgyllMeterWrapper::setObType(CString SpectralType)
         obType=icxOT_Shaw_Fairchild_2;
     if (SpectralType == "Stockman and Sharpe 2006 10 deg")
         obType=icxOT_Stockman_Sharpe_2006_10;
-    if (obType != m_obType || !isColorimeter())
+#endif /* !SALONEINSTLIB*/
+	if (obType != m_obType || !isColorimeter())
     {
         m_obType = obType;
         return true;
@@ -531,7 +533,9 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading(CString Spectral
     {
         if (setObType(SpectralType))		
 //            MessageBox(NULL,"Set observer to "+SpectralType,"Setting observer",MB_OK);
-        if ((sp2cie = new_xsp2cie(icxIT_none, &cust_illum, static_cast<icxObserverType>(m_obType), NULL, icSigXYZData,
+//        if ((sp2cie = new_xsp2cie(icxIT_none, &cust_illum, static_cast<icxObserverType>(m_obType), NULL, icSigXYZData,
+//			                           icxNoClamp)) == NULL)
+        if ((sp2cie = new_xsp2cie(icxIT_none, (int)6500, &cust_illum, static_cast<icxObserverType>(m_obType), NULL, icSigXYZData,
 			                           icxNoClamp)) == NULL)
             MessageBox(NULL,"Creation of sp2cie object failed","Error setting observer",MB_OK);
     }
@@ -542,7 +546,9 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading(CString Spectral
         // try autocalibration - we might get lucky
         m_nextCalibration = 0;
         inst_cal_type calType(inst_calt_needed);
-        instCode = m_meter->calibrate(m_meter, &calType, (inst_cal_cond*)&m_nextCalibration, m_calibrationMessage);
+		    //bberu
+        inst_calc_id_type calcidtype(inst_calc_id_none);
+        instCode = m_meter->calibrate(m_meter, &calType, (inst_cal_cond*)&m_nextCalibration, &calcidtype, m_calibrationMessage);
         // if that didn't work tell the user
         if(isInstCodeReason(instCode, inst_cal_setup))
         {
@@ -627,9 +633,11 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::calibrate()
    checkMeterIsInitialized();
     m_calibrationMessage[0] = '\0';
     inst_cal_type calType(inst_calt_available);
+	  //bberu
+    inst_calc_id_type calcidtype(inst_calc_id_none);
     if (dark_only)
             calType = inst_calt_em_dark;
-    inst_code instCode = m_meter->calibrate(m_meter, &calType, (inst_cal_cond*)&m_nextCalibration, m_calibrationMessage);
+    inst_code instCode = m_meter->calibrate(m_meter, &calType, (inst_cal_cond*)&m_nextCalibration, &calcidtype, m_calibrationMessage);
     if(isInstCodeReason(instCode, inst_cal_setup))
     {
         // special case for colormunki when calibrating the
@@ -682,6 +690,8 @@ std::string ArgyllMeterWrapper::getCalibrationInstructions(bool isHiRes)
     if(m_nextCalibration == 0)
     {
         inst_cal_type calType(inst_calt_available);
+		    //bberu
+        inst_calc_id_type calcidtype(inst_calc_id_none);
         dark_only = FALSE;
 		if (m_meterType == instEX1) dark_only = TRUE;
         if ( (m_meterType == instI1Pro || m_meterType == instI1Pro2) )
@@ -700,7 +710,7 @@ std::string ArgyllMeterWrapper::getCalibrationInstructions(bool isHiRes)
             }
         }
 
-        instCode = m_meter->calibrate(m_meter, &calType, (inst_cal_cond*)&m_nextCalibration, m_calibrationMessage);
+        instCode = m_meter->calibrate(m_meter, &calType, (inst_cal_cond*)&m_nextCalibration, &calcidtype, m_calibrationMessage);
 		if(instCode == inst_ok || isInstCodeReason(instCode, inst_unsupported))
         {
             // we don't need to do anything

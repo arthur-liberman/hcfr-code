@@ -35,10 +35,13 @@
 
 #include "inst.h"
 
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
 /* Required minimum firmware version */
 #define HCFR_FIRMWARE_MAJOR_VERSION	5
 #define HCFR_FIRMWARE_MINOR_VERSION	0
-
 
 /* Command byte contents. (A value of 0x00 won't be tranmsitted properly) */
 /* 0xff = get firmware version */
@@ -99,6 +102,9 @@ struct _hcfr {
 /* Constructor */
 extern hcfr *new_hcfr(icoms *icom, instType itype);
 
+#ifdef __cplusplus
+	}
+#endif
 
 #define HCFR_H
 #endif /* HCFR_H */

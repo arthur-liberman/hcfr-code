@@ -37,6 +37,10 @@
 
 #include "inst.h"
 
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
 /* Fake Error codes */
 #define K10_INTERNAL_ERROR			0xff01		/* Internal software error */
 #define K10_TIMEOUT				    0xff02		/* Communication timeout */
@@ -116,6 +120,9 @@ struct _kleink10 {
 /* Constructor */
 extern kleink10 *new_kleink10(icoms *icom, instType itype);
 
+#ifdef __cplusplus
+	}
+#endif
 
 #define KLEINK10_H
 #endif /* KLEINK10_H */

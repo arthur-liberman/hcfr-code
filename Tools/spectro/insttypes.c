@@ -1,5 +1,5 @@
 
- /* Instrument supported types utilities */
+/* Instrument supported types utilities */
 
 /* 
  * Argyll Color Correction System
@@ -26,6 +26,7 @@
 #include "sa_config.h"
 #endif /* !SALONEINSTLIB */
 #include "numsup.h"
+#include "cgats.h"
 #include "xspect.h"
 #include "insttypes.h"
 #include "conv.h"
@@ -36,6 +37,73 @@
 /* inst.c as well !!! */
 
 /* Utility functions */
+
+/* Given a device type, return the corrsponding */
+/* category */
+extern icom_type dev_category(devType dtype) {
+	switch (dtype) {
+
+	/* Color measurement instruments */
+	case instDTP22:
+	case instDTP41:
+	case instDTP51:
+	case instSpectrolino:
+	case instSpectroScan:
+	case instSpectroScanT:
+	case instSpectrocam:
+	case instSpecbos1201:
+	case instSpecbos:
+	case instSpectraval:
+	case instKleinK10:
+	case instSMCube:
+	case instDTP20:
+	case instDTP92:
+	case instDTP94:
+	case instI1Disp1:
+	case instI1Disp2:
+	case instI1Disp3:
+	case instI1Monitor:
+	case instI1Pro:
+	case instI1Pro2:
+	case instColorMunki:
+	case instHCFR:
+	case instSpyder1:
+	case instSpyder2:
+	case instSpyder3:
+	case instSpyder4:
+	case instSpyder5:
+	case instSpyderX:
+	case instHuey:
+	case instSmile:
+	case instEX1:
+	case instColorHug:
+	case instColorHug2:
+
+
+		return icomt_instrument;
+
+#ifdef ENABLE_VTPGLUT
+	/* 3D cLUT box */
+	case devRadiance:
+		return icomt_v3dlut | icomt_vtpg;
+	case devPrisma:
+		return icomt_v3dlut;
+
+	/* Video test patern generator box */
+
+#endif
+
+
+
+	case instFakeDisp:
+		return icomt_unknown;		// ???
+
+
+	case devUnknown:
+		return icomt_unknown;		// ???
+	}
+	return icomt_cat_any;
+}
 
 /* Return the short instrument identification name (static string) */
 char *inst_sname(instType itype) {
@@ -86,6 +154,8 @@ char *inst_sname(instType itype) {
 			return "Spyder4";
 		case instSpyder5:
 			return "Spyder5";
+		case instSpyderX:
+			return "SpyderX";
 		case instHuey:
 			return "Huey";
 		case instSmile:
@@ -94,6 +164,8 @@ char *inst_sname(instType itype) {
 			return "specbos 1201";
 		case instSpecbos:
 			return "specbos";
+		case instSpectraval:
+			return "spectraval";
 		case instKleinK10:
 			return "K-10";
 		case instEX1:
@@ -104,6 +176,17 @@ char *inst_sname(instType itype) {
 			return "ColorHug";
 		case instColorHug2:
 			return "ColorHug2";
+
+
+#ifdef ENABLE_VTPGLUT
+		case devRadiance:
+			return "Radiance";
+		case devPrisma:
+			return "Prisma";
+#endif
+
+
+
 		default:
 			break;
 	}
@@ -159,6 +242,8 @@ char *inst_name(instType itype) {
 			return "Datacolor Spyder4";
 		case instSpyder5:
 			return "Datacolor Spyder5";
+		case instSpyderX:
+			return "Datacolor SpyderX";
 		case instHuey:
 			return "GretagMacbeth Huey";
 		case instSmile:
@@ -167,6 +252,8 @@ char *inst_name(instType itype) {
 			return "JETI specbos 1201";
 		case instSpecbos:
 			return "JETI specbos";
+		case instSpectraval:
+			return "JETI spectraval";
 		case instKleinK10:
 			return "Klein K-10";
 		case instEX1:
@@ -177,6 +264,17 @@ char *inst_name(instType itype) {
 			return "Hughski ColorHug";
 		case instColorHug2:
 			return "Hughski ColorHug2";
+
+
+#ifdef ENABLE_VTPGLUT
+		case devRadiance:
+			return "Lumagen Radiance";
+		case devPrisma:
+			return "Q, Inc Prisma";
+#endif
+
+
+
 		default:
 			break;
 	}
@@ -250,6 +348,8 @@ instType inst_enum(char *name) {
 		return instSpyder4;
 	else if (strcmp(name, "Datacolor Spyder5") == 0)
 		return instSpyder5;
+	else if (strcmp(name, "Datacolor SpyderX") == 0)
+		return instSpyderX;
 	else if (strcmp(name, "GretagMacbeth Huey") == 0)
 		return instHuey;
 	else if (strcmp(name, "ColorMunki Smile") == 0)
@@ -258,6 +358,8 @@ instType inst_enum(char *name) {
 		return instSpecbos1201;
 	else if (strcmp(name, "JETI specbos") == 0)
 		return instSpecbos;
+	else if (strcmp(name, "JETI spectraval") == 0)
+		return instSpectraval;
 	else if (strcmp(name, "Klein K-10") == 0)
 		return instKleinK10;
 	else if (strcmp(name, "Image Engineering EX1") == 0)
@@ -268,6 +370,16 @@ instType inst_enum(char *name) {
 		return instColorHug;
 	else if (strcmp(name, "Hughski ColorHug2") == 0)
 		return instColorHug2;
+
+
+#ifdef ENABLE_VTPGLUT
+	if (strcmp(name, "Lumagen Radiance") == 0)
+		return devRadiance;
+
+	if (strcmp(name, "Q, Inc Prisma") == 0)
+		return devPrisma;
+#endif
+
 
 
 	return instUnknown;
@@ -304,6 +416,8 @@ int nep) {					/* Number of end points */
 			return instI1Disp3;
 	  	if (idProduct == 0x6003)	/* ColorMinki Smile (aka. ColorMunki Display Lite) */
 			return instSmile;
+		if (idProduct == 0x6008)	/* ColorMunki i1Studio */
+			return instColorMunki;
 		if (idProduct == 0xD020)	/* DTP20 */
 			return instDTP20;
 		if (idProduct == 0xD092)	/* DTP92Q */
@@ -323,6 +437,8 @@ int nep) {					/* Number of end points */
 			return instSpyder4;
 		if (idProduct == 0x0500)	/* DataColor Spyder5 */
 			return instSpyder5;
+		if (idProduct == 0x0A00)	/* DataColor SpyderX */
+			return instSpyderX;
 	}
 
 	if (idVendor == 0x0971) {		/* Gretag Macbeth */
@@ -357,6 +473,8 @@ int nep) {					/* Number of end points */
 		return instColorHug2;
 	}
 	/* Add other instruments here */
+
+
 
 
 
@@ -435,6 +553,7 @@ int inst_illuminant(xspect *sp, instType itype) {
 		case instSpyder3:
 		case instSpyder4:
 		case instSpyder5:
+		case instSpyderX:
 			return 1;										/* Not applicable */
 
 		case instHuey:
@@ -445,6 +564,7 @@ int inst_illuminant(xspect *sp, instType itype) {
 
 		case instSpecbos1201:
 		case instSpecbos:
+		case instSpectraval:
 			return 1;										/* Not applicable */
 
 		case instKleinK10:
@@ -456,6 +576,7 @@ int inst_illuminant(xspect *sp, instType itype) {
 		case instSMCube:
 			return 1;										/* Not applicable */
 
+
 		case instColorHug:
 		case instColorHug2:
 			return 1;										/* Not applicable */
@@ -466,5 +587,41 @@ int inst_illuminant(xspect *sp, instType itype) {
 	}
 	return 1;
 }
+
+/* ============================================================= */
+/* XRGA support */
+
+/* Return a string for the xcalstd enum */
+char *xcalstd2str(xcalstd std) {
+	switch(std) {
+		case xcalstd_native:
+			return "NATIVE";
+		case xcalstd_xrdi:
+			return "XRDI";
+		case xcalstd_gmdi:
+			return "GMDI";
+		case xcalstd_xrga:
+			return "XRGA";
+		default:
+			break;
+	}
+	return "None";
+}
+
+/* Parse a string to xcalstd, */
+/* return xcalstd_none if not recognized */
+xcalstd str2xcalstd(char *str) {
+	if (strcmp(str, "NATIVE") == 0)
+		return xcalstd_native;
+	if (strcmp(str, "XRDI") == 0)
+		return xcalstd_xrdi;
+	if (strcmp(str, "GMDI") == 0)
+		return xcalstd_gmdi;
+	if (strcmp(str, "XRGA") == 0)
+		return xcalstd_xrga;
+
+	return xcalstd_none;
+}
+
 
 

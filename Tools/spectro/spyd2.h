@@ -34,11 +34,12 @@
    will not support developers that they have not qualified
    and agreed to support.
  */
+
+#include "inst.h"
+
 #ifdef __cplusplus
 	extern "C" {
 #endif
-
-#include "inst.h"
 
 /* Note: update spyd2_interp_error() and spyd2_interp_code() in spyd2.c */
 /* if anything of these #defines are added or subtracted */

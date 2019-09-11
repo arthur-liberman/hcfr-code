@@ -10,6 +10,10 @@
  * see the License2.txt file for licencing details.
  */
 
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
 /* Device and/or Interface Class codes */
 #define IUSB_CLASS_PER_INTERFACE     0x00    /* for DeviceClass */
 #define IUSB_CLASS_AUDIO             0x01
@@ -93,11 +97,11 @@
 #define IUSB_REQ_DIR_MASK              0x80
 
 #define IUSB_REQ_TYPE_SHIFT           5
-#define IUSB_REQ_TYPE_STANDARD        (0x00 << IUSB_REQ_TYPE_SHIFT)
-#define IUSB_REQ_TYPE_CLASS           (0x01 << IUSB_REQ_TYPE_SHIFT)
-#define IUSB_REQ_TYPE_VENDOR          (0x02 << IUSB_REQ_TYPE_SHIFT)
-#define IUSB_REQ_TYPE_RESERVED        (0x03 << IUSB_REQ_TYPE_SHIFT)
-#define IUSB_REQ_TYPE_MASK            (0x03 << IUSB_REQ_TYPE_SHIFT)
+#define IUSB_REQ_TYPE_STANDARD        (0x00 << IUSB_REQ_TYPE_SHIFT)		// 0x00
+#define IUSB_REQ_TYPE_CLASS           (0x01 << IUSB_REQ_TYPE_SHIFT)		// 0x20
+#define IUSB_REQ_TYPE_VENDOR          (0x02 << IUSB_REQ_TYPE_SHIFT)		// 0x40
+#define IUSB_REQ_TYPE_RESERVED        (0x03 << IUSB_REQ_TYPE_SHIFT)		// 0x60
+#define IUSB_REQ_TYPE_MASK            (0x03 << IUSB_REQ_TYPE_SHIFT)		// 0x60
 
 #define IUSB_REQ_RECIP_DEVICE          0x00
 #define IUSB_REQ_RECIP_INTERFACE       0x01
@@ -126,6 +130,10 @@
 #define IUSB_DEVICE_STATUS_SELFPWR        0x0001
 #define IUSB_DEVICE_STATUS_REMOTE_WAKEUP  0x0002
 #define IUSB_ENDPOINT_STATUS_HALT         0x0001
+
+#ifdef __cplusplus
+	}
+#endif
 
 #define _IUSB_H_
 #endif /* _IUSB_H_ */

@@ -83,9 +83,7 @@
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="aglob.c" />
     <ClCompile Include="base64.c" />
-    <ClCompile Include="conv.c" />
     <ClCompile Include="pollem.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1,7 +1,7 @@
 
 #ifndef _RSPL1_H_
 
- /* Single dimension regularized spline data structure */
+/* Single dimension regularized spline data structure */
 
 /* 
  * Argyll Color Correction System
@@ -18,8 +18,20 @@
  *
  */
 
+/*
+ * Might be nice to add support for simple rev lookup, so that
+ * standalone xcal can use it ??
+ */
+
+
 #ifdef __cplusplus
 extern "C" {
+#endif
+
+/* Make up for possible lack of rspl.h */
+#ifndef MXDI
+# define MXDI 10			/* Maximum input dimensionality */
+# define MXDO 10			/* Maximum output dimensionality (Is not fully tested!!!) */
 #endif
 
 /* General data point position/value structure */
@@ -94,11 +106,29 @@ struct _rspl {
 		double **ipos 	/* (not used) */
 	); 
 
+	/* Initialize the grid from a provided function. */
+	/* Grid index values are supplied "under" in[] at *((int*)&in[-e-1]) */
+	int
+	(*set_rspl)(
+		struct _rspl *s,	/* this */
+		int flags,		/* (Not used) */
+		void *cbntx,	/* Opaque function context */
+		void (*func)(void *cbntx, double *out, double *in),		/* Function to set from */
+		datai glow,		/* Grid low scale, NULL = default 0.0 */
+		datai ghigh,	/* Grid high scale, NULL = default 1.0 */
+		int gres[MXDI],	/* Spline grid resolution */
+		datao vlow,		/* Data value low normalize, NULL = default 0.0 */
+		datao vhigh		/* Data value high normalize - NULL = default 1.0 */
+	);
+
 	/* Do forward interpolation */
 	/* Return 0 if OK, 1 if input was clipped to grid */
 	int (*interp)(
 		struct _rspl *s,	/* this */
 		co *p);				/* Input and output values */
+
+	/* Return a pointer to the resolution array */
+	int *(*get_res)(struct _rspl *s);
 
 }; typedef struct _rspl rspl;
 

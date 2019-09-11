@@ -2,7 +2,7 @@
 /* 
  * Argyll Color Correction System
  *
- * JETI kleink10 1211/1201 related functions
+ * Klein K10 related functions
  *
  * Author: Graeme W. Gill
  * Date:   29/4/2014
@@ -54,6 +54,7 @@
 #include "sa_config.h"
 #include "numsup.h"
 #endif /* !SALONEINSTLIB */
+#include "cgats.h"
 #include "xspect.h"
 #include "insttypes.h"
 #include "conv.h"
@@ -67,6 +68,7 @@
 #undef PLOT_REFRESH     /* [und] Plot refresh rate measurement info */
 #undef PLOT_UPDELAY     /* [und] Plot update delay measurement info */
 
+#undef TEST_FAKE_CALIBS	/* Fake having a full calibration set (98 calibs) */
 #undef TEST_BAUD_CHANGE	/* Torture test baud rate change on non high speed K10 */
 
 static inst_disptypesel k10_disptypesel[98];
@@ -215,7 +217,7 @@ int nd					/* nz to disable debug messages */
 	strncpy((char *)cmd, (char *)in, 2);
 	cmd[2] = '\000';
 
-	if ((se = p->icom->write_read(p->icom, in, 0, out, bsize, &bread, NULL, nchar, to))
+	if ((se = p->icom->write_read_ex(p->icom, in, 0, out, bsize, &bread, NULL, nchar, to, 1))
 		                                                                    != ICOM_OK) {
 		rv =  icoms2k10_err(se);
 
@@ -330,7 +332,7 @@ struct _kleink10 *p,
 baud_rate br
 ) {
 	int se, rv = K10_OK;
-	if ((se = p->icom->set_ser_port(p->icom, fc_HardwareDTR, br, parity_none,
+	if ((se = p->icom->set_ser_port(p->icom, fc_None, br, parity_none,
 		                                      stop_1, length_8)) != ICOM_OK) {
 		rv =  icoms2k10_err(se);
 	} else {
@@ -354,7 +356,7 @@ k10_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 	baud_rate brt[] = { baud_9600, baud_nc };
 	unsigned int etime;
 	unsigned int i;
-	instType itype = pp->itype;
+	instType dtype = pp->dtype;
 	int se;
 	char *cp;
 
@@ -369,8 +371,7 @@ k10_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 
 	amutex_lock(p->lock);
 
-	if (p->icom->port_type(p->icom) != icomt_serial
-	 && p->icom->port_type(p->icom) != icomt_usbserial) {
+	if (!(p->icom->port_type(p->icom) & icomt_serial)) {
 		amutex_unlock(p->lock);
 		a1logd(p->log, 1, "k10_init_coms: wrong communications type for device!\n");
 		return inst_coms_fail;
@@ -386,8 +387,9 @@ k10_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 		if (brt[i] == baud_nc) {
 			i = 0;
 		}
-		a1logd(p->log, 5, "k10_init_coms: trying baud ix %d\n",brt[i]);
-		if ((se = p->icom->set_ser_port(p->icom, fc_HardwareDTR, brt[i], parity_none,
+		a1logd(p->log, 5, "k10_init_coms: Trying %s baud, %d msec to go\n",
+			                      baud_rate_to_str(brt[i]), etime- msec_time());
+		if ((se = p->icom->set_ser_port(p->icom, fc_None, brt[i], parity_none,
 			                         stop_1, length_8)) != ICOM_OK) { 
 			amutex_unlock(p->lock);
 			a1logd(p->log, 5, "k10_init_coms: set_ser_port failed with 0x%x\n",se);
@@ -397,7 +399,7 @@ k10_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 		/* Check instrument is responding */
 		if (((ev = k10_command(p, "P0\r", buf, MAX_MES_SIZE, NULL, 21, ec_ec, 0.5)) & inst_mask)
 			                                                       != inst_coms_fail) {
-			break;		/* We've got coms or user abort */
+			goto got_coms;		/* We've got coms or user abort */
 		}
 
 		/* Check for user abort */
@@ -411,11 +413,12 @@ k10_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 		}
 	}
 
-	if (msec_time() >= etime) {		/* We haven't established comms */
-		amutex_unlock(p->lock);
-		a1logd(p->log, 2, "k10_init_coms: failed to establish coms\n");
-		return inst_coms_fail;
-	}
+	/* We haven't established comms */
+	amutex_unlock(p->lock);
+	a1logd(p->log, 2, "k10_init_coms: failed to establish coms\n");
+	return inst_coms_fail;
+
+  got_coms:;
 
 	/* Check the response */
 	if (ev != inst_ok) {
@@ -870,8 +873,16 @@ kleink10 *p) {
 			name[j] = buf[i + j];
 
 		if (((unsigned char *)name)[0] == 0xff) {
+#ifdef TEST_FAKE_CALIBS
+ #pragma message("!!!!!!!!!!!!!!! Klein K10 TEST_FULL_CALIB set !!!!!!!!!!!!!!!!!!!")
+			sprintf(name, "Fake_%d",ix);
+#else
+			//printf("Cal %d is 0xff - skipping\n",ix);
 			continue;
+#endif
 		}
+
+		/* Remove trailing spaces */
 		for (j = 19; j >= 0; j--) {
 			if (name[j] != ' ') {
 				name[j+1] = '\000';
@@ -879,7 +890,7 @@ kleink10 *p) {
 			}
 		}
 
-//		printf("Adding Cal %d is '%s'\n",ix,name);
+		// printf("Adding Cal %d is '%s'\n",ix,name);
 
 		/* Add it to the list */
 		memset((void *)&k10_disptypesel[n], 0, sizeof(inst_disptypesel));
@@ -972,7 +983,7 @@ int usefast				/* If nz use fast rate is possible */
 #ifdef HIGH_SPEED
 	/* This isn't reliable, because there is no way to ensure that */
 	/* the T1 command has been sent before we change the baud rate, */
-	/* anf if we wait too long will will loose the measurements. */
+	/* and if we wait too long we will loose the measurements. */
 	if (usefast && strcmp(p->firm_ver, "v01.09fh") > 0) {
 		isnew = 1;			/* We can use faster T1 command */
 		rate = 384;
@@ -1485,8 +1496,8 @@ static inst_code k10_imp_measure_refresh(
 
 	/* Locate the smallest values and maximum time */
 	maxt = -1e6;
-	minv = minv = minv = 1e20;
-	maxv = maxv = maxv = -11e20;
+	minv = 1e20;
+	maxv = -11e20;
 	for (i = nfsamps-1; i >= 0; i--) {
 		if (samp[i] < minv)
 			minv = samp[i]; 
@@ -2255,6 +2266,7 @@ inst_code k10_calibrate(
 inst *pp,
 inst_cal_type *calt,	/* Calibration type to do/remaining */
 inst_cal_cond *calc,	/* Current condition/desired condition */
+inst_calc_id_type *idtype,	/* Condition identifier type */
 char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 ) {
 	kleink10 *p = (kleink10 *)pp;
@@ -2267,6 +2279,7 @@ char id[CALIDLEN]		/* Condition identifier (ie. white reference ID) */
 	if (!p->inited)
 		return inst_no_init;
 
+	*idtype = inst_calc_id_none;
 	id[0] = '\000';
 
 	if ((ev = k10_get_n_a_cals((inst *)p, &needed, &available)) != inst_ok)
@@ -2738,8 +2751,7 @@ double mtx[3][3]
  * error if it hasn't been initialised.
  */
 static inst_code
-k10_get_set_opt(inst *pp, inst_opt_type m, ...)
-{
+k10_get_set_opt(inst *pp, inst_opt_type m, ...) {
 	kleink10 *p = (kleink10 *)pp;
 	char buf[MAX_MES_SIZE];
 	int se;
@@ -2752,6 +2764,11 @@ k10_get_set_opt(inst *pp, inst_opt_type m, ...)
 		p->trig = m;
 		return inst_ok;
 	}
+
+	if (!p->gotcoms)
+		return inst_no_coms;
+	if (!p->inited)
+		return inst_no_init;
 
 	/* Get target light state */
 	if (m == inst_opt_get_target_state) {
@@ -2821,16 +2838,21 @@ k10_get_set_opt(inst *pp, inst_opt_type m, ...)
 		return inst_ok;
 	}
 
-	if (!p->gotcoms)
-		return inst_no_coms;
-	if (!p->inited)
-		return inst_no_init;
+	/* Use default implementation of other inst_opt_type's */
+	{
+		inst_code rv;
+		va_list args;
 
-	return inst_unsupported;
+		va_start(args, m);
+		rv = inst_get_set_opt_def(pp, m, args);
+		va_end(args);
+
+		return rv;
+	}
 }
 
 /* Constructor */
-extern kleink10 *new_kleink10(icoms *icom, instType itype) {
+extern kleink10 *new_kleink10(icoms *icom, instType dtype) {
 	kleink10 *p;
 	if ((p = (kleink10 *)calloc(sizeof(kleink10),1)) == NULL) {
 		a1loge(icom->log, 1, "new_kleink10: malloc failed!\n");
@@ -2859,7 +2881,7 @@ extern kleink10 *new_kleink10(icoms *icom, instType itype) {
 	p->del               = k10_del;
 
 	p->icom = icom;
-	p->itype = itype;
+	p->dtype = dtype;
 	p->dtech = disptech_unknown;
 
 	amutex_init(p->lock);

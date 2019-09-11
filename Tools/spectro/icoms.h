@@ -1,7 +1,7 @@
 
 #ifndef ICOMS_H
 
- /* An abstracted instrument serial and USB communication class. */
+/* An abstracted instrument serial and USB communication class. */
 
 /* 
  * Argyll Color Correction System
@@ -30,7 +30,7 @@
 #include <windows.h>
 #endif
 
-#if defined(__APPLE__)
+#if defined(UNIX_APPLE)
 #include <IOKit/usb/IOUSBLib.h>
 #endif
 
@@ -39,6 +39,77 @@
 #endif
 
 #undef QUIET_MEMCHECKERS		/* #define to memset coms read buffers before reading */
+
+/* USB open/handling/buf workaround flags */
+typedef enum {
+	icomuf_none                = 0x0000,
+	icomuf_detach              = 0x0001,	/* Attempt to detach from system driver */
+	icomuf_no_open_clear       = 0x0002,	/* Don't send a clear_halt after opening the port */
+	icomuf_reset_before_close  = 0x0004,	/* Reset port before closing it */
+											/* ??? Could change to reset before open ??? */
+	icomuf_resetep_before_read = 0x0008		/* Do a usb_resetep before each ep read */
+} icomuflags;
+
+typedef enum {
+	icomt_unknown        = 0x0000,
+
+	/* Category of device */
+	icomt_instrument     = 0x010000,		/* Color measurement instrument (default) */
+	icomt_v3dlut         = 0x020000,		/* A Video 3D cLUT box */
+	icomt_vtpg           = 0x040000,		/* A Video test patern generator box */
+	icomt_printer        = 0x080000,		/* A printing device */
+	icomt_cmfm           = 0x100000,		/* A CMF Measuring device */
+
+	icomt_cat_any        = 0x1f0000,		/* Could be any device category */
+	icomt_cat_mask       = 0xff0000,		/* Mask for device category */
+
+	/* Type of underlying communication port */
+	/* (fastserio driver will have icomt_serial and icomt_usb set) */
+	icomt_serial         = 0x000001,		/* Serial port (i.e. has baud rate etc.) */
+	icomt_usb            = 0x000002,		/* USB port */
+	icomt_hid            = 0x000004,		/* HID USB port */
+	icomt_bt             = 0x000008,		/* Bluetooth (non-serial) */
+//	icomt_net            = 0x000010,		/* Network Connected */
+
+	icomt_port_mask      = 0x0000ff,		/* Mask for port type */
+
+	/* Attributes */
+	icomt_fastserial     = 0x000100,		/* Fast Serial (i.e. USB, fastserio, Bluetooth) */
+	icomt_btserial       = 0x000200,		/* Bluetooth serial port */
+	icomt_seriallike     = 0x000400,		/* Uses serial message methods, but */
+											/* may not be actual icomt_serial. */
+
+	icomt_attr_mask      = 0x00ff00,		/* Mask for port attributes */
+
+	icomt_portattr_mask  = icomt_port_mask | icomt_attr_mask,
+
+	icomt_portattr_all   = icomt_portattr_mask	/* Scan for all port types */
+
+} icom_type;
+
+/* Status bits/return values */
+#define ICOM_OK	    0x000000		/* No error */
+
+#define ICOM_NOTS 	0x001000		/* Not supported */
+#define ICOM_SIZE	0x002000		/* Request/response size exceeded limits */
+#define ICOM_TO		0x004000		/* Timed out, but there may be bytes read/written */
+#define ICOM_SHORT	0x008000		/* No timeout but number of bytes wasn't read/written */
+#define ICOM_CANC	0x010000		/* Was cancelled */
+#define ICOM_SYS	0x020000		/* System error (ie. malloc, system call fail) */
+#define ICOM_VER	0x040000		/* Version error - need up to date kernel driver */
+
+#define ICOM_USBR	0x000100		/* Unspecified USB read error */
+#define ICOM_USBW	0x000200		/* Unspecified USB write error */
+#define ICOM_SERR	0x000400		/* Unspecified Serial read error */
+#define ICOM_SERW	0x000800		/* Unspecified Serial write error */
+
+#define ICOM_XRE	0x000040		/* Xmit shift reg empty */
+#define ICOM_XHE	0x000020		/* Xmit hold reg empty */
+#define ICOM_BRK	0x000010		/* Break detected */
+#define ICOM_FER	0x000008		/* Framing error */
+#define ICOM_PER	0x000004		/* Parity error */
+#define ICOM_OER	0x000002		/* Overun error */
+#define ICOM_DRY	0x000001		/* Recv data ready */
 
 typedef struct _icompath icompath;
 typedef struct _icompaths icompaths;
@@ -55,8 +126,8 @@ typedef struct {
 	int addr;			/* Address of end point */
 	int packetsize;		/* The max packet size */
 	int type;			/* 2 = bulk, 3 = interrupt */	
-	int interfacenum;		/* interface number */
-#if defined(__APPLE__)
+	int interface;		/* interface number */
+#if defined(UNIX_APPLE)
 	int pipe;			/* pipe number (1..N, OS X only) */
 #endif
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
@@ -72,27 +143,17 @@ typedef struct {
 
 #endif /* ENABLE_USB */
 
-#if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
-
-/* Attributes of the serial port */
-typedef enum {
-	icom_normal =     0x0000,		/* Normal serial port */
-	icom_fast =       0x0001,		/* Fast port */
-	icom_bt =         0x0002		/* Bluetooth serial port */
-} icom_ser_attr;
-
-#endif
-
 /* - - - - - - - - - - - - - - - - - - - -  */
 
 /* Store information about a possible instrument communication path */
-/* (Note a path doesn't have a reference to icompaths or its' log) */
-struct _icompath{
-	instType itype;				/* Type of instrument if known */
+/* (Note a path doesn't have a reference to icompaths or its log) */
+struct _icompath {
+	devType dtype;				/* Type of device if known */
 	char *name;					/* instance description */
+
+	icom_type dctype;			/* Device and com. type */
 #if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
 	char *spath;				/* Serial device path */
-	icom_ser_attr sattr;		/* Virtual serial port that can be identified quickly */
 #endif
 #ifdef ENABLE_USB
 	int nep;					/* Number of end points */
@@ -104,55 +165,100 @@ struct _icompath{
 
 extern icompath icomFakeDevice;	/* Declare fake device */
 
+/* Device type specific list index */
+typedef enum {
+	dtix_combined = 0,		/* Combined list */
+	dtix_inst,				/* Instrument */
+	dtix_3dlut,
+	dtix_vtpg,
+	dtix_printer,
+	dtix_cmfm,
+
+	dtix_number				/* Number of entries */
+} icom_dtix;
+
 /* The available instrument communication paths */
 struct _icompaths {
-	int npaths;					/* Number of paths */
-	icompath **paths;			/* Paths if any */
 	a1log *log;					/* Verbose, debuge & error logging */
 
-	/* Re-populate the available instrument list */
+	/* Combined and device category specific path lists (read only). */
+	/* Paths may appear on more than one, if they are multi-function, */
+	/* or the category can't be determined without opening them. */
+	/* (dpaths[dtix_combined] is the owner of the icompath, */
+	/* and all the others are only populated after discovery.) */
+	icompath **dpaths[dtix_number];		/* Device paths if any */
+	int ndpaths[dtix_number];			/* Number of device paths */
+
+	/* Alias of dpaths[dtix_inst] for backwards compatibility, */
+	/* only set after discovery. */
+	icompath **paths;			/* Device instrument if any */
+	int npaths;					/* Number of instrument paths */
+
+	/* Re-discover and populate the available instrument list */
 	/* return icom error */
 	int (*refresh)(struct _icompaths *p);
 
-#if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
-	/* Add a serial path. path is copied. Return icom error */
-	int (*add_serial)(struct _icompaths *p, char *name, char *spath, icom_ser_attr sattr);
-#endif /* ENABLE_SERIAL */
+	/* Same as above, but just scan for selected types of devices and/or port types */
+	int (*refresh_sel)(struct _icompaths *p, icom_type mask);
 
-#ifdef ENABLE_USB
-	/* Add a usb path. usbd is taken, others are copied. Return icom error */
-	int (*add_usb)(struct _icompaths *p, char *name, unsigned int vid, unsigned int pid,
-	                int nep, struct usb_idevice *usbd, instType itype);
-
-	/* Add an hid path. hidd is taken, others are copied. Return icom error */
-	int (*add_hid)(struct _icompaths *p, char *name, unsigned int vid, unsigned int pid,
-	                int nep, struct hid_idevice *hidd, instType itype);
-#endif /* ENABLE_USB */
-
-	/* Delete the last path */
-	void (*del_last_path)(struct _icompaths *p);
-
-	/* Return the last path */
-	icompath *(*get_last_path)(struct _icompaths *p);
-
-	/* Return the path corresponding to the port number, or NULL if out of range */
+	/* Return the instrument path corresponding to the port number, or NULL if out of range */
 	icompath *(*get_path)(
 		struct _icompaths *p, 
 		int  	       port);		/* Enumerated port number, 1..n */
 #define FAKE_DEVICE_PORT -98		/* Fake display & instrument */
 #define DEMO_DEVICE_PORT -99		/* Fake Demo instrument */
 
-	/* Clear all the paths */
+	/* Return the device path corresponding to the port number, or NULL if out of range */
+	icompath *(*get_path_sel)(
+		struct _icompaths *p, 
+		icom_dtix dtix,				/* Device type list */
+		int  	       port);		/* Enumerated port number, 1..n */
+
+	/* Clear all the device paths */
 	void (*clear)(struct _icompaths *p);
 
 	/* We're done */
 	void (*del)(struct _icompaths *p);
 
+	/* ====== internal implementation ======= */
+
+	/* Fast serial scan exclusion list - from ARGYLL_EXCLUDE_SERIAL_SCAN env. var. */
+	int exno;
+	char **exlist;
+
+#if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
+	/* Return nz if the serial port is on the fast serial scan exclusion list */
+	int (*fs_excluded)(struct _icompaths *p, struct _icompath *path);
+
+	/* Add a serial path to combined. path is copied. Return icom error */
+	int (*add_serial)(struct _icompaths *p, char *name, char *spath, icom_type dctype);
+#endif /* ENABLE_SERIAL */
+
+#ifdef ENABLE_USB
+	/* Add a usb path to combined. usbd is taken, others are copied. Return icom error */
+	int (*add_usb)(struct _icompaths *p, char *name, unsigned int vid, unsigned int pid,
+	               int nep, struct usb_idevice *usbd, devType dtype);
+
+	/* Add an hid path to combined. hidd is taken, others are copied. Return icom error */
+	int (*add_hid)(struct _icompaths *p, char *name, unsigned int vid, unsigned int pid,
+	               int nep, struct hid_idevice *hidd, devType dtype);
+#endif /* ENABLE_USB */
+
+	/* Delete the last combined path */
+	void (*del_last_path)(struct _icompaths *p);
+
+	/* Return the last combined path */
+	icompath *(*get_last_path)(struct _icompaths *p);
+
 };
 
 /* Allocate an icom paths and set it to the list of available devices */
+/* Use g_log as argument for default logging. */
 /* Return NULL on error */
 icompaths *new_icompaths(a1log *log);
+
+/* Same as above, but just scan for selected types of devices and/or port types */
+icompaths *new_icompaths_sel(a1log *log, icom_type mask);
 
 
 /* - - - - - - - - - - - */
@@ -161,7 +267,7 @@ icompaths *new_icompaths(a1log *log);
 /* Flow control */
 typedef enum {
 	fc_nc = 0,			/* not configured/default */
-	fc_none,
+	fc_None,
 	fc_XonXOff,
 	fc_Hardware,		/* RTS CTS flow control */
 	fc_HardwareDTR		/* DTR DSR flow control */			
@@ -182,7 +288,8 @@ typedef enum {
 	baud_38400   = 10,
 	baud_57600   = 11,
 	baud_115200  = 12,
-	baud_921600  = 13
+	baud_230400  = 13,
+	baud_921600  = 14
 } baud_rate;
 
 char *baud_rate_to_str(baud_rate br);
@@ -211,47 +318,6 @@ typedef enum {
 	length_8
 } word_length;
 
-/* USB open/handling/buf workaround flags */
-typedef enum {
-	icomuf_none                = 0x0000,
-	icomuf_detach              = 0x0001,	/* Attempt to detach from system driver */
-	icomuf_no_open_clear       = 0x0001,	/* Don't send a clear_halt after opening the port */
-	icomuf_reset_before_close  = 0x0004,	/* Reset port before closing it */
-	icomuf_resetep_before_read = 0x0008		/* Do a usb_resetep before each ep read */
-} icomuflags;
-
-/* Type of port driver */
-typedef enum {
-	icomt_serial,		/* Serial port */
-	icomt_usbserial,	/* Serial port using fastserio.c driver */
-	icomt_usb,			/* USB port */
-	icomt_hid			/* HID (USB) port */
-} icom_type;
-
-/* Status bits/return values */
-#define ICOM_OK	    0x000000		/* No error */
-
-#define ICOM_NOTS 	0x001000		/* Not supported */
-#define ICOM_SIZE	0x002000		/* Request/response size exceeded limits */
-#define ICOM_TO		0x004000		/* Timed out, but there may be bytes read/written */
-#define ICOM_SHORT	0x008000		/* No timeout but number of bytes wasn't read/written */
-#define ICOM_CANC	0x010000		/* Was cancelled */
-#define ICOM_SYS	0x020000		/* System error (ie. malloc, system call fail) */
-#define ICOM_VER	0x040000		/* Version error - need up to date kernel driver */
-
-#define ICOM_USBR	0x000100		/* Unspecified USB read error */
-#define ICOM_USBW	0x000200		/* Unspecified USB write error */
-#define ICOM_SERR	0x000400		/* Unspecified Serial read error */
-#define ICOM_SERW	0x000800		/* Unspecified Serial write error */
-
-#define ICOM_XRE	0x000040		/* Xmit shift reg empty */
-#define ICOM_XHE	0x000020		/* Xmit hold reg empty */
-#define ICOM_BRK	0x000010		/* Break detected */
-#define ICOM_FER	0x000008		/* Framing error */
-#define ICOM_PER	0x000004		/* Parity error */
-#define ICOM_OER	0x000002		/* Overun error */
-#define ICOM_DRY	0x000001		/* Recv data ready */
-
 /* Interrupt callback type */
 typedef enum {
 	icomi_data_available		/* Data is available to be read */
@@ -270,8 +336,10 @@ struct _icoms {
   /* Private: */
 
 	/* Copy of some of icompath contents: */
+	icom_type dctype;			/* Device cat. and com. type */
+	devType dtype;				/* Type of device if known */
+
 	char *name;					/* Device description */
-	instType itype;				/* Type of instrument if known */
 	
 	int is_open;				/* Flag, NZ if this port is open */
 
@@ -287,11 +355,9 @@ struct _icoms {
 #if defined (NT)
 	HANDLE phandle;				/* NT handle */
 #endif
-#if defined (UNIX) || defined(__APPLE__)
+#if defined (UNIX)
 	int fd;						/* Unix file descriptor */
 #endif
-	icom_ser_attr sattr;		/* Serial port attributes, such as being fast */
-
 	flow_control fc;
 	baud_rate	br;
 	parity		py;
@@ -339,10 +405,31 @@ struct _icoms {
 	
   /* Public: */
 
-	/* Return the port type */
+	/* Return the device category */
+	/* (Returns bit flags) */
+	icom_type (*dev_cat)(struct _icoms *p);
+
+	/* Return the communication port type */
+	/* (Can use equality tests on return value for normal ports, */
+	/* or bit flag for fastserio USB/serial port) */
 	icom_type (*port_type)(struct _icoms *p);
 
+	/* Return the communication port attributes */
+	/* (Returns bit flags) */
+	icom_type (*port_attr)(struct _icoms *p);
+
 #if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
+	/* Select the serial communications port and characteristics - extended version */
+	/* return icom error */
+	int (*set_ser_port_ex)(
+		struct _icoms *p, 
+		flow_control fc,		/* Flow control */
+		baud_rate	 baud,
+		parity		 parity,
+		stop_bits	 stop_bits,
+		word_length	 word_length,
+		int delayms);			/* Delay in ms after open */
+
 	/* Select the serial communications port and characteristics */
 	/* return icom error */
 	int (*set_ser_port)(
@@ -413,6 +500,23 @@ struct _icoms {
 		char *tc,			/* Terminating characers, NULL for none or char count mode */
 		int ntc,			/* Number of any terminating characters needed, or char count needed */
 		double tout);		/* Timeout in seconds */
+
+	/* "Serial" write and read with read flush */
+	/* return icom error */
+	int (*write_read_ex)(
+		struct _icoms *p,
+		char *wbuf,			/* Write puffer */
+		int nwch,			/* if > 0, number of characters to write, else nul terminated */
+		char *rbuf,			/* Read buffer */
+		int bsize,			/* Buffer size. Make this larger than chars required! */
+		int *bread,			/* Bytes read (not including forced '\000') */
+		char *tc,			/* Terminating characers, NULL for none or char count mode */
+		int ntc,			/* Number of any terminating characters needed, or char count needed */
+		double tout,		/* Timeout in seconds */
+		int frbw);			/* nz to Flush Read Before Write */
+
+	/* For serial device, clear any errors */
+	void (*ser_clearerr)(struct _icoms *p);
 
 	/* For a USB device, do a control message */
 	/* return icom error */
@@ -503,6 +607,16 @@ char *icoms_fix(char *s);
 
 /* Convert a limited binary buffer to a list of hex */
 char *icoms_tohex(unsigned char *s, int len);
+
+/* Implementation declarations */
+
+#if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
+
+int icoms_ser_write(icoms *p, char *wbuf, int nwch, double tout);
+int icoms_ser_read(icoms *p, char *rbuf, int bsize, int *bread,
+                                    char *tc, int ntc, double tout);
+
+#endif
 
 #ifdef __cplusplus
 	}

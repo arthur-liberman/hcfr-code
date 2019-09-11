@@ -177,13 +177,20 @@ struct _munkiimp {
 
 	double intclkp;				/* Integration clock period (computed from tickdur) */
 
+	xcalstd native_calstd;		/* Instrument native calibration standard */
+	xcalstd target_calstd;		/* Returned calibration standard */
+
+	int custfilt_en;			/* Custom filter enabled */
+	xspect custfilt;			/* Custom filter */
+
 	/* Current state of hardware (~~99 are all these used ??) */
 	double c_inttime;			/* Integration period (=inttime + deadtime) */
 	int c_measmodeflags;		/* Measurement mode flags (set by trigger() */
 
 	/* Information from the HW */
 	int fwrev;					/* int - Firmware revision number, from getfirm() */
-								/* Typically 0120 = V1.32 */
+								/* Typically 0120 = V1.32 (Build 1303) */
+								/* i1Studio 0200 = V2.00 (Build 1310) */
 	unsigned char chipid[8];	/* HW serial number */
 	char vstring[37];			/* Asciiz version string */
 	int tickdur;				/* Tick duration (usec, converted to intclkp) */
@@ -418,6 +425,7 @@ munki_code munki_imp_calibrate(
 munki *p,
 inst_cal_type *calt,	/* Calibration type to do/remaining */
 inst_cal_cond *calc,	/* Current condition/desired condition */
+inst_calc_id_type *idtype,	/* Condition identifier type */
 char id[100]			/* Condition identifier (ie. white reference ID) */
 );
 

@@ -41,6 +41,9 @@
 #include <stdarg.h>
 #include <errno.h>
 #include <string.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <pwd.h>
 
 /* select() defined, but not poll(), so emulate poll() */
 #if defined(FD_CLR) && !defined(POLLIN)
@@ -59,12 +62,13 @@
 #include "sa_config.h"
 #endif
 #include "numsup.h"
+#include "cgats.h"
 #include "xspect.h"
 #include "insttypes.h"
 #include "conv.h"
 #include "icoms.h"
 
-#ifdef __APPLE__
+#ifdef UNIX_APPLE
 //#include <stdbool.h>
 #include <sys/sysctl.h>
 #include <sys/param.h>
@@ -81,7 +85,7 @@
 #if MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
 # include <objc/objc-auto.h>
 #endif
-#endif /* __APPLE__ */
+#endif /* UNIX_APPLE */
 
 #undef DEBUG
 
@@ -131,6 +135,8 @@ int next_con_char(void) {
 	return c;
 }
 
+#ifdef NEVER	// Don't need this now.
+
 /* Horrible hack to poll stdin when we're not interactive. */
 /* This has the drawback that the char and returm must be */
 /* written in one operation for the character to be recognised - */
@@ -143,8 +149,11 @@ static int th_read_char(void *pp) {
 	DWORD bread;
 
 	if ((stdinh = GetStdHandle(STD_INPUT_HANDLE)) == INVALID_HANDLE_VALUE) {
+		*rp = 0;		/* We've started */
 		return 0;
 	}
+
+	*rp = 0;		/* We've started */
 
 	if (ReadFile(stdinh, buf, 1, &bread, NULL)
 	 && bread == 1
@@ -154,32 +163,65 @@ static int th_read_char(void *pp) {
 
 	return 0;
 }
+#endif	/* NEVER */
 
 /* If there is one, return the next character from the keyboard, else return 0 */
 /* (If not_interactive, always returns 0) */
 int poll_con_char(void) {
 
 	if (not_interactive) {		/* Can't assume that it's the console */
+
+#ifdef NEVER	// Use better approach below.
 		athread *getch_thread = NULL;
-		char c = 0;
+		volatile char c = 0xff;
 	
 		/* This is pretty horrible. The problem is that we can't use */
 		/* any of MSWin's async file read functions, because we */
 		/* have no way of ensuring that the STD_INPUT_HANDLE has been */
 		/* opened with FILE_FLAG_OVERLAPPED. Used a thread instead... */
-		/* ReOpenFile() would fix this, but it's not available in WinXP, only Visa+ :-( */
-		if ((getch_thread = new_athread(th_read_char, &c)) != NULL) {
+		/* ReOpenFile() would in theory fix this, but it's not available in WinXP, only Visa+, */
+		/* and aparently doesn't work on stdin anyway! :-( */
+		if ((getch_thread = new_athread(th_read_char, (char *)&c)) != NULL) {
 			HANDLE stdinh;
 
 			if ((stdinh = GetStdHandle(STD_INPUT_HANDLE)) == INVALID_HANDLE_VALUE) {
 				return 0;
 			}
 
-			Sleep(100);			/* We just hope 1 msec is enough for the thread to start */
-			CancelIo(stdinh);
+			/* Wait for the thread to start */
+			while (c == 0xff) {
+				Sleep(10);			/* We just hope 1 msec is enough for the thread to start */
+			}
+			Sleep(10);			/* Give it time to read */
+			CancelIo(stdinh);	/* May not work since ReadFile() is on a different thread ? */
 			getch_thread->del(getch_thread);
 			return c;
 		}
+#else	/* ! NEVER */
+		/* This approach is very flakey from the console, but seems */
+		/* to work reliably when operated progromatically. */
+		HANDLE stdinh;
+		char buf[10] = { 0 }, c;
+		DWORD bread;
+
+		if ((stdinh = GetStdHandle(STD_INPUT_HANDLE)) == INVALID_HANDLE_VALUE) {
+			return 0;
+		}
+//		printf("Waiting\n");
+		if (WaitForSingleObject(stdinh, 1) == WAIT_OBJECT_0) {
+//			printf("stdin signalled\n");
+			
+//			FlushFileBuffers(stdinh);
+//			FlushConsoleInputBuffer(stdinh);
+			if (ReadFile(stdinh, buf, 1, &bread, NULL)) {
+				int i;
+//				fprintf(stderr,"Read %d chars 0x%x 0x%x 0x%x\n",bread,buf[0],buf[1], buf[2]);
+				if (buf[0] != '\r' && buf[0] != '\n')
+					return buf[0];
+				return 0;
+			}
+		}
+#endif	/* !NEVER */
 		return 0;
 	}
 
@@ -192,10 +234,29 @@ int poll_con_char(void) {
 }
 
 /* Suck all characters from the keyboard */
-/* (If not_interactive, does nothing) */
+/* (If not_interactive, does nothing ?) */
 void empty_con_chars(void) {
 
 	if (not_interactive) {
+		HANDLE stdinh;
+		char buf[100] = { 0 }, c;
+		DWORD bread;
+
+		if ((stdinh = GetStdHandle(STD_INPUT_HANDLE)) == INVALID_HANDLE_VALUE)
+			return;
+		for (;;) {
+			/* Wait for 1msec */
+
+			/* Do dummy read, as stdin seems to be signalled on startup */
+			if (WaitForSingleObject(stdinh, 1) == WAIT_OBJECT_0)
+				ReadFile(stdinh, buf, 0, &bread, NULL);
+
+			if (WaitForSingleObject(stdinh, 1) == WAIT_OBJECT_0) {
+				ReadFile(stdinh, buf, 100, &bread, NULL);
+			} else {
+				break;
+			}
+		}
 		return;
 	}
 
@@ -209,51 +270,6 @@ void empty_con_chars(void) {
 /* Sleep for the given number of seconds */
 void sleep(unsigned int secs) {
 	Sleep(secs * 1000);
-}
-
-/* Sleep for the given number of msec */
-void msec_sleep(unsigned int msec) {
-	Sleep(msec);
-}
-
-/* Return the current time in msec since */
-/* the first invokation of msec_time() */
-/* (Is this based on timeGetTime() ? ) */
-unsigned int msec_time() {
-	unsigned int rv;
-	static unsigned int startup = 0;
-
-	rv =  GetTickCount();
-	if (startup == 0)
-		startup = rv;
-
-	return rv - startup;
-}
-
-/* Return the current time in usec */
-/* since the first invokation of usec_time() */
-/* Return -1.0 if not available */
-double usec_time() {
-	double rv;
-	LARGE_INTEGER val;
-	static double scale = 0.0;
-	static LARGE_INTEGER startup;
-
-	if (scale == 0.0) {
-		if (QueryPerformanceFrequency(&val) == 0)
-			return -1.0;
-		scale = 1000000.0/val.QuadPart;
-		QueryPerformanceCounter(&val);
-		startup.QuadPart = val.QuadPart;
-
-	} else {
-		QueryPerformanceCounter(&val);
-	}
-	val.QuadPart -= startup.QuadPart;
-
-	rv = val.QuadPart * scale;
-		
-	return rv;
 }
 
 static athread *beep_thread = NULL;
@@ -417,6 +433,13 @@ athread *new_athread(
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+/* Return the login $HOME directory. */
+/* (Useful if we might be running sudo) */
+/* No NT equivalent ?? */
+char *login_HOME() {
+	return getenv("HOME");
+}
+
 /* Delete a file */
 void delete_file(char *fname) {
 	_unlink(fname);
@@ -552,126 +575,6 @@ void empty_con_chars(void) {
 	tcflush(STDIN_FILENO, TCIFLUSH);
 }
 
-/* Sleep for the given number of msec */
-/* (Note that OS X 10.9+ App Nap can wreck this, unless */
-/*  it is turned off.) */
-void msec_sleep(unsigned int msec) {
-#ifdef NEVER
-	if (msec > 1000) {
-		unsigned int secs;
-		secs = msec / 1000;
-		msec = msec % 1000;
-		sleep(secs);
-	}
-	usleep(msec * 1000);
-#else
-	struct timespec ts;
-
-	ts.tv_sec = msec / 1000;
-	ts.tv_nsec = (msec % 1000) * 1000000;
-	nanosleep(&ts, NULL);
-#endif
-}
-
-
-#if defined(__APPLE__) && !defined(CLOCK_MONOTONIC)
-
-#include <mach/mach_time.h>
-
-unsigned int msec_time() {
-    mach_timebase_info_data_t timebase;
-    static uint64_t startup = 0;
-    uint64_t time;
-	double msec;
-
-    time = mach_absolute_time();
-	if (startup == 0)
-		startup = time;
-
-    mach_timebase_info(&timebase);
-	time -= startup;
-    msec = ((double)time * (double)timebase.numer)/((double)timebase.denom * 1e6);
-
-    return (unsigned int)floor(msec + 0.5);
-}
-
-/* Return the current time in usec */
-/* since the first invokation of usec_time() */
-double usec_time() {
-    mach_timebase_info_data_t timebase;
-    static uint64_t startup = 0;
-    uint64_t time;
-	double usec;
-
-    time = mach_absolute_time();
-	if (startup == 0)
-		startup = time;
-
-    mach_timebase_info(&timebase);
-	time -= startup;
-    usec = ((double)time * (double)timebase.numer)/((double)timebase.denom * 1e3);
-
-    return usec;
-}
-
-#else
-
-/* Return the current time in msec */
-/* since the first invokation of msec_time() */
-unsigned int msec_time() {
-	unsigned int rv;
-	static struct timespec startup = { 0, 0 };
-	struct timespec cv;
-
-	clock_gettime(CLOCK_MONOTONIC, &cv);
-
-	/* Set time to 0 on first invocation */
-	if (startup.tv_sec == 0 && startup.tv_nsec == 0)
-		startup = cv;
-
-	/* Subtract, taking care of carry */
-	cv.tv_sec -= startup.tv_sec;
-	if (startup.tv_nsec > cv.tv_nsec) {
-		cv.tv_sec--;
-		cv.tv_nsec += 1000000000;
-	}
-	cv.tv_nsec -= startup.tv_nsec;
-
-	/* Convert nsec to msec */
-	rv = cv.tv_sec * 1000 + cv.tv_nsec / 1000000;
-
-	return rv;
-}
-
-/* Return the current time in usec */
-/* since the first invokation of usec_time() */
-double usec_time() {
-	double rv;
-	static struct timespec startup = { 0, 0 };
-	struct timespec cv;
-
-	clock_gettime(CLOCK_MONOTONIC, &cv);
-
-	/* Set time to 0 on first invocation */
-	if (startup.tv_sec == 0 && startup.tv_nsec == 0)
-		startup = cv;
-
-	/* Subtract, taking care of carry */
-	cv.tv_sec -= startup.tv_sec;
-	if (startup.tv_nsec > cv.tv_nsec) {
-		cv.tv_sec--;
-		cv.tv_nsec += 1000000000;
-	}
-	cv.tv_nsec -= startup.tv_nsec;
-
-	/* Convert to usec */
-	rv = cv.tv_sec * 1000000.0 + cv.tv_nsec/1000;
-
-	return rv;
-}
-
-#endif
-
 /* - - - - - - - - - - - - - - - - - - - - - - - - */
 
 int acond_timedwait_imp(pthread_cond_t *cond, pthread_mutex_t *lock, int msec) {
@@ -699,7 +602,7 @@ int acond_timedwait_imp(pthread_cond_t *cond, pthread_mutex_t *lock, int msec) {
 
 /* Set the current threads priority */
 int set_interactive_priority() {
-#ifdef __APPLE__
+#ifdef UNIX_APPLE
 #ifdef NEVER
     int rv = 0;
     struct task_category_policy tcatpolicy;
@@ -725,7 +628,7 @@ int set_interactive_priority() {
 //		a1logd(g_log, 8, "set_interactive_priority: set to important got %d\n",rv);
 	return rv;
 #endif /* NEVER */
-#else /* !APPLE */
+#else /* !UNIX_APPLE */
 	int rv;
 	struct sched_param param;
 	param.sched_priority = 32;
@@ -734,11 +637,11 @@ int set_interactive_priority() {
 	rv = pthread_setschedparam(pthread_self(), SCHED_FIFO, &param);
 //		a1logd(g_log, 8, "set_interactive_priority: set got %d\n",rv);
 	return rv;
-#endif /* !APPLE */
+#endif /* !UNIX_APPLE */
 }
 
 int set_normal_priority() {
-#ifdef __APPLE__
+#ifdef UNIX_APPLE
 #ifdef NEVER
     int rv = 0;
     struct task_category_policy tcatpolicy;
@@ -763,7 +666,7 @@ int set_normal_priority() {
 //		a1logd(g_log, 8, "set_normal_priority: set to standard got %d\n",rv);
 	return rv;
 #endif /* NEVER */
-#else /* !APPLE */
+#else /* !UNIX_APPLE */
 	struct sched_param param;
 	param.sched_priority = 0;
 	int rv;
@@ -771,7 +674,7 @@ int set_normal_priority() {
 	rv = pthread_setschedparam(pthread_self(), SCHED_OTHER, &param);
 //		a1logd(g_log, 8, "set_normal_priority: reset got %d\n",rv);
 	return rv;
-#endif /* !APPLE */
+#endif /* !UNIX_APPLE */
 }
 
 #endif /* NEVER */
@@ -786,7 +689,7 @@ static int beep_msec;
 static int delayed_beep(void *pp) {
 	msec_sleep(beep_delay);
 	a1logd(g_log,8, "msec_beep activate\n");
-#ifdef __APPLE__
+#ifdef UNIX_APPLE
 # if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1050
 	AudioServicesPlayAlertSound(kUserPreferredAlert);
 # else
@@ -794,6 +697,9 @@ static int delayed_beep(void *pp) {
 # endif
 #else	/* UNIX */
 	/* Linux is pretty lame in this regard... */
+	/* Maybe we could write an 8Khz 8 bit sample to /dev/dsp, or /dev/audio ? */
+	/* The ALSA system is the modern way for audio output. */
+	/* Also check out what sox does: <http://sox.sourceforge.net/> */
 	fprintf(stdout, "\a"); fflush(stdout);
 #endif 
 	return 0;
@@ -801,6 +707,7 @@ static int delayed_beep(void *pp) {
 
 /* Activate the system beeper */
 void msec_beep(int delay, int freq, int msec) {
+	a1logd(g_log,8, "msec_beep %d msec\n",msec);
 	if (delay > 0) {
 		if (beep_thread != NULL)
 			beep_thread->del(beep_thread);
@@ -810,7 +717,8 @@ void msec_beep(int delay, int freq, int msec) {
 		if ((beep_thread = new_athread(delayed_beep, NULL)) == NULL)
 			a1logw(g_log, "msec_beep: Delayed beep failed to create thread\n");
 	} else {
-#ifdef __APPLE__
+		a1logd(g_log,8, "msec_beep activate\n");
+#ifdef UNIX_APPLE
 # if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1050
 			AudioServicesPlayAlertSound(kUserPreferredAlert);
 # else
@@ -901,6 +809,7 @@ static void *threadproc(
 	athread *p = (athread *)param;
 
 	/* Register this thread with the Objective-C garbage collector */
+	/* (Hmm. Done by default in latter versions though, hence deprecated in them ?) */
 #if MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
 	 objc_registerThreadWithCollector();
 #endif
@@ -931,6 +840,27 @@ athread *new_athread(
 	p->wait = athread_wait;
 	p->del = athread_del;
 
+#if defined(UNIX_APPLE)
+	{
+		pthread_attr_t stackSzAtrbt;
+
+		/* Default stack size is 512K - this is a bit small - raise it to 4MB */
+		if ((rv = pthread_attr_init(&stackSzAtrbt)) != 0
+		 || (rv = pthread_attr_setstacksize(&stackSzAtrbt, 4 * 1024 * 1024)) != 0) {
+			fprintf(stderr,"new_athread: thread_attr_setstacksize failed with %d\n",rv);
+			return NULL;
+		}
+
+		/* Create a thread */
+		rv = pthread_create(&p->thid, &stackSzAtrbt, threadproc, (void *)p);
+		if (rv != 0) {
+			a1loge(g_log, 1, "new_athread: pthread_create failed with %d\n",rv);
+			athread_del(p);
+			return NULL;
+		}
+	}
+#else	/* !APPLE */
+
 	/* Create a thread */
 	rv = pthread_create(&p->thid, NULL, threadproc, (void *)p);
 	if (rv != 0) {
@@ -938,12 +868,36 @@ athread *new_athread(
 		athread_del(p);
 		return NULL;
 	}
+#endif /* !APPLE */
 
 	DBG("About to exit new_athread()\n");
 	return p;
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - */
+
+/* Return the login $HOME directory. */
+/* (Useful if we might be running sudo) */
+char *login_HOME() {
+
+	if (getuid() == 0) {	/* If we are running as root */
+		char *uids;
+
+		if ((uids = getenv("SUDO_UID")) != NULL) {		/* And we sudo's to get it */
+			int uid;
+			struct passwd *pwd;
+
+			uid = atoi(uids);
+
+			if ((pwd = getpwuid(uid)) != NULL) {
+				return pwd->pw_dir;
+			}
+		}
+	}
+
+	return getenv("HOME");
+}
+
 
 /* Delete a file */
 void delete_file(char *fname) {
@@ -978,7 +932,7 @@ int create_parent_directories(char *path) {
 #endif /* defined(UNIX) */
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - */
-#if defined(__APPLE__) || defined(NT)
+#if defined(UNIX_APPLE) || defined(NT)
 
 /* Thread to monitor and kill the named processes */
 static int th_kkill_nprocess(void *pp) {
@@ -1107,7 +1061,7 @@ int kill_nprocess(char **pname, a1log *log) {
 
 #endif /* NT */
 
-#if defined(__APPLE__)
+#if defined(UNIX_APPLE)
 
 /* Kill a list of named process. */
 /* Kill the first process found, then return */
@@ -1186,439 +1140,8 @@ int kill_nprocess(char **pname, a1log *log) {
 	return rv;
 }
 
-#endif /* __APPLE__ */
+#endif /* UNIX_APPLE */
 
-#endif /* __APPLE__ || NT */
-
-/* ============================================================= */
-
-/* A very small subset of icclib, copied to here. */
-/* This is just enough to support the standalone instruments */
-#ifdef SALONEINSTLIB
-
-sa_XYZNumber sa_D50 = {
-    0.9642, 1.0000, 0.8249
-};
-
-sa_XYZNumber sa_D65 = {
-    0.9505, 1.0000, 1.0890
-};
-
-void sa_SetUnity3x3(double mat[3][3]) {
-	int i, j;
-	for (j = 0; j < 3; j++) {
-		for (i = 0; i < 3; i++) {
-			if (i == j)
-				mat[j][i] = 1.0;
-			else
-				mat[j][i] = 0.0;
-		}
-	}
-	
-}
-
-void sa_Cpy3x3(double dst[3][3], double src[3][3]) {
-	int i, j;
-
-	for (j = 0; j < 3; j++) {
-		for (i = 0; i < 3; i++)
-			dst[j][i] = src[j][i];
-	}
-}
-
-void sa_MulBy3x3(double out[3], double mat[3][3], double in[3]) {
-	double tt[3];
-
-	tt[0] = mat[0][0] * in[0] + mat[0][1] * in[1] + mat[0][2] * in[2];
-	tt[1] = mat[1][0] * in[0] + mat[1][1] * in[1] + mat[1][2] * in[2];
-	tt[2] = mat[2][0] * in[0] + mat[2][1] * in[1] + mat[2][2] * in[2];
-
-	out[0] = tt[0];
-	out[1] = tt[1];
-	out[2] = tt[2];
-}
-
-void sa_Mul3x3_2(double dst[3][3], double src1[3][3], double src2[3][3]) {
-	int i, j, k;
-	double td[3][3];		/* Temporary dest */
-
-	for (j = 0; j < 3; j++) {
-		for (i = 0; i < 3; i++) {
-			double tt = 0.0;
-			for (k = 0; k < 3; k++)
-				tt += src1[j][k] * src2[k][i];
-			td[j][i] = tt;
-		}
-	}
-
-	/* Copy result out */
-	for (j = 0; j < 3; j++)
-		for (i = 0; i < 3; i++)
-			dst[j][i] = td[j][i];
-}
-
-
-/* Matrix Inversion by Richard Carling from "Graphics Gems", Academic Press, 1990 */
-#define det2x2(a, b, c, d) (a * d - b * c)
-
-static void adjoint(
-double out[3][3],
-double in[3][3]
-) {
-    double a1, a2, a3, b1, b2, b3, c1, c2, c3;
-
-    /* assign to individual variable names to aid  */
-    /* selecting correct values  */
-
-	a1 = in[0][0]; b1 = in[0][1]; c1 = in[0][2];
-	a2 = in[1][0]; b2 = in[1][1]; c2 = in[1][2];
-	a3 = in[2][0]; b3 = in[2][1]; c3 = in[2][2];
-
-    /* row column labeling reversed since we transpose rows & columns */
-
-    out[0][0]  =   det2x2(b2, b3, c2, c3);
-    out[1][0]  = - det2x2(a2, a3, c2, c3);
-    out[2][0]  =   det2x2(a2, a3, b2, b3);
-        
-    out[0][1]  = - det2x2(b1, b3, c1, c3);
-    out[1][1]  =   det2x2(a1, a3, c1, c3);
-    out[2][1]  = - det2x2(a1, a3, b1, b3);
-        
-    out[0][2]  =   det2x2(b1, b2, c1, c2);
-    out[1][2]  = - det2x2(a1, a2, c1, c2);
-    out[2][2]  =   det2x2(a1, a2, b1, b2);
-}
-
-static double sa_Det3x3(double in[3][3]) {
-    double a1, a2, a3, b1, b2, b3, c1, c2, c3;
-    double ans;
-
-	a1 = in[0][0]; b1 = in[0][1]; c1 = in[0][2];
-	a2 = in[1][0]; b2 = in[1][1]; c2 = in[1][2];
-	a3 = in[2][0]; b3 = in[2][1]; c3 = in[2][2];
-
-    ans = a1 * det2x2(b2, b3, c2, c3)
-        - b1 * det2x2(a2, a3, c2, c3)
-        + c1 * det2x2(a2, a3, b2, b3);
-    return ans;
-}
-
-#define SA__SMALL_NUMBER	1.e-8
-
-int sa_Inverse3x3(double out[3][3], double in[3][3]) {
-    int i, j;
-    double det;
-
-    /*  calculate the 3x3 determinant
-     *  if the determinant is zero, 
-     *  then the inverse matrix is not unique.
-     */
-    det = sa_Det3x3(in);
-
-    if ( fabs(det) < SA__SMALL_NUMBER)
-        return 1;
-
-    /* calculate the adjoint matrix */
-    adjoint(out, in);
-
-    /* scale the adjoint matrix to get the inverse */
-    for (i = 0; i < 3; i++)
-        for(j = 0; j < 3; j++)
-		    out[i][j] /= det;
-	return 0;
-}
-
-#undef SA__SMALL_NUMBER	
-#undef det2x2
-
-/* - - - - - - - - - - - - - - - - - - - - - - - - */
-/* Transpose a 3x3 matrix */
-void sa_Transpose3x3(double out[3][3], double in[3][3]) {
-	int i, j;
-	if (out != in) {
-		for (i = 0; i < 3; i++)
-			for (j = 0; j < 3; j++)
-				out[i][j] = in[j][i];
-	} else {
-		double tt[3][3];
-		for (i = 0; i < 3; i++)
-			for (j = 0; j < 3; j++)
-				tt[i][j] = in[j][i];
-		for (i = 0; i < 3; i++)
-			for (j = 0; j < 3; j++)
-				out[i][j] = tt[i][j];
-	}
-}
-
-/* Scale a 3 vector by the given ratio */
-void sa_Scale3(double out[3], double in[3], double rat) {
-	out[0] = in[0] * rat;
-	out[1] = in[1] * rat;
-	out[2] = in[2] * rat;
-}
-
-/* Clamp a 3 vector to be +ve */
-void sa_Clamp3(double out[3], double in[3]) {
-	int i;
-	for (i = 0; i < 3; i++)
-		out[i] = in[i] < 0.0 ? 0.0 : in[i];
-}
-
-/* Return the normal Delta E given two Lab values */
-double sa_LabDE(double *Lab0, double *Lab1) {
-	double rv = 0.0, tt;
-
-	tt = Lab0[0] - Lab1[0];
-	rv += tt * tt;
-	tt = Lab0[1] - Lab1[1];
-	rv += tt * tt;
-	tt = Lab0[2] - Lab1[2];
-	rv += tt * tt;
-
-	return sqrt(rv);
-}
-
-/* CIE XYZ to perceptual CIE 1976 L*a*b* */
-void
-sa_XYZ2Lab(icmXYZNumber *w, double *out, double *in) {
-	double X = in[0], Y = in[1], Z = in[2];
-	double x,y,z,fx,fy,fz;
-
-	x = X/w->X;
-	y = Y/w->Y;
-	z = Z/w->Z;
-
-	if (x > 0.008856451586)
-		fx = pow(x,1.0/3.0);
-	else
-		fx = 7.787036979 * x + 16.0/116.0;
-
-	if (y > 0.008856451586)
-		fy = pow(y,1.0/3.0);
-	else
-		fy = 7.787036979 * y + 16.0/116.0;
-
-	if (z > 0.008856451586)
-		fz = pow(z,1.0/3.0);
-	else
-		fz = 7.787036979 * z + 16.0/116.0;
-
-	out[0] = 116.0 * fy - 16.0;
-	out[1] = 500.0 * (fx - fy);
-	out[2] = 200.0 * (fy - fz);
-}
-
-/* - - - - - - - - - - - - - - - - - - - - - - - - */
-/* A sub-set of ludecomp code from numlib          */
-
-int sa_lu_decomp(double **a, int n, int *pivx, double *rip) {
-	int    i, j;
-	double *rscale, RSCALE[10];		
-
-	if (n <= 10)
-		rscale = RSCALE;
-	else
-		rscale = dvector(0, n-1);
-
-	for (i = 0; i < n; i++) {
-		double big;
-		for (big = 0.0, j=0; j < n; j++) {
-			double temp;
-			temp = fabs(a[i][j]);
-			if (temp > big)
-				big = temp;
-		}
-		if (fabs(big) <= DBL_MIN) {
-			if (rscale != RSCALE)
-				free_dvector(rscale, 0, n-1);
-			return 1;		
-		}
-		rscale[i] = 1.0/big;	
-	}
-
-	for (*rip = 1.0, j = 0; j < n; j++) {
-		double big;
-		int k, bigi = 0;
-
-		for (i = 0; i < j; i++) {
-			double sum;
-			sum = a[i][j];
-			for (k = 0; k < i; k++)
-				sum -= a[i][k] * a[k][j];
-			a[i][j] = sum;
-		}
-
-		for (big = 0.0, i = j; i < n; i++) {
-			double sum, temp;
-			sum = a[i][j];
-			for (k = 0; k < j; k++)
-				sum -= a[i][k] * a[k][j];
-			a[i][j] = sum;
-			temp = rscale[i] * fabs(sum);	
-			if (temp >= big) {
-				big = temp;		
-				bigi = i;		
-			}
-		}
-		
-		if (j != bigi) {
-			{	
-				double *temp;
-				temp = a[bigi];
-				a[bigi] = a[j];
-				a[j] = temp;
-			}
-			*rip = -(*rip);				
-			rscale[bigi] = rscale[j];	
-		}
-		
-		pivx[j] = bigi;					
-		if (fabs(a[j][j]) <= DBL_MIN) {
-			if (rscale != RSCALE)
-				free_dvector(rscale, 0, n-1);
-			return 1; 					
-		}
-
-		if (j != (n-1)) {
-			double temp;
-			temp = 1.0/a[j][j];
-			for (i = j+1; i < n; i++)
-				a[i][j] *= temp;
-		}
-	}
-	if (rscale != RSCALE)
-		free_dvector(rscale, 0, n-1);
-	return 0;
-}
-
-void sa_lu_backsub(double **a, int n, int *pivx, double  *b) {
-	int i, j;
-	int nvi;		
-	
-	for (nvi = -1, i = 0; i < n; i++) {
-		int px;
-		double sum;
-
-		px = pivx[i];
-		sum = b[px];
-		b[px] = b[i];
-		if (nvi >= 0) {
-			for (j = nvi; j < i; j++)
-				sum -= a[i][j] * b[j];
-		} else {
-			if (sum != 0.0)
-				nvi = i;			
-		}
-		b[i] = sum;
-	}
-
-	for (i = (n-1); i >= 0; i--) {
-		double sum;
-		sum = b[i];
-		for (j = i+1; j < n; j++)
-			sum -= a[i][j] * b[j];
-		b[i] = sum/a[i][i];
-	}
-}
-
-int sa_lu_invert(double **a, int n) {
-	int i, j;
-	double rip;		
-	int *pivx, PIVX[10];
-	double **y;
-
-	if (n <= 10)
-		pivx = PIVX;
-	else
-		pivx = ivector(0, n-1);
-
-	if (sa_lu_decomp(a, n, pivx, &rip)) {
-		if (pivx != PIVX)
-			free_ivector(pivx, 0, n-1);
-		return 1;
-	}
-
-	y = dmatrix(0, n-1, 0, n-1);
-	for (i = 0; i < n; i++) {
-		for (j = 0; j < n; j++) {
-			y[i][j] = a[i][j];
-		}
-	}
-
-	for (i = 0; i < n; i++) {
-		for (j = 0; j < n; j++)
-			a[i][j] = 0.0;
-		a[i][i] = 1.0;
-		sa_lu_backsub(y, n, pivx, a[i]);
-	}
-
-	free_dmatrix(y, 0, n-1, 0, n-1);
-	if (pivx != PIVX)
-		free_ivector(pivx, 0, n-1);
-
-	return 0;
-}
-
-int sa_lu_psinvert(double **out, double **in, int m, int n) {
-	int rv = 0;
-	double **tr;		
-	double **sq;		
-
-	tr = dmatrix(0, n-1, 0, m-1);
-	matrix_trans(tr, in, m,  n);
-
-	if (m > n) {
-		sq = dmatrix(0, n-1, 0, n-1);
-		if ((rv = matrix_mult(sq, n, n, tr, n, m, in, m, n)) == 0) {
-			if ((rv = sa_lu_invert(sq, n)) == 0) {
-				rv = matrix_mult(out, n, m, sq, n, n, tr, n, m);
-			}
-		}
-		free_dmatrix(sq, 0, n-1, 0, n-1);
-	} else {
-		sq = dmatrix(0, m-1, 0, m-1);
-		if ((rv = matrix_mult(sq, m, m, in, m, n, tr, n, m)) == 0) {
-			if ((rv = sa_lu_invert(sq, m)) == 0) {
-				rv = matrix_mult(out, n, m, tr, n, m, sq, m, m);
-			}
-		}
-		free_dmatrix(sq, 0, m-1, 0, m-1);
-	}
-
-	free_dmatrix(tr, 0, n-1, 0, m-1);
-	return rv;
-}
-
-
-#endif /* SALONEINSTLIB */
-/* ============================================================= */
-
-/* Diagnostic aids */
-
-// Print bytes as hex to debug log */
-//void adump_bytes(a1log *log, char *pfx, unsigned char *buf, int base, int len) {
-//	int i, j, ii;
-//	char oline[200] = { '\000' }, *bp = oline;
-//	for (i = j = 0; i < len; i++) {
-//		if ((i % 16) == 0)
-//			bp += sprintf(bp,"%s%04x:",pfx,base+i);
-//		bp += sprintf(bp," %02x",buf[i]);
-//		if ((i+1) >= len || ((i+1) % 16) == 0) {
-//			for (ii = i; ((ii+1) % 16) != 0; ii++)
-//				bp += sprintf(bp,"   ");
-//			bp += sprintf(bp,"  ");
-//			for (; j <= i; j++) {
-//				if (!(buf[j] & 0x80) && isprint(buf[j]))
-//					bp += sprintf(bp,"%c",buf[j]);
-//				else
-//					bp += sprintf(bp,".");
-//			}
-//			bp += sprintf(bp,"\n");
-//			a1logd(log,0,"%s",oline);
-//			bp = oline;
-//		}
-//	}
-//}
-
+#endif /* UNIX_APPLE || NT */
 
 

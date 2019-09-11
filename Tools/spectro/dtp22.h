@@ -35,6 +35,10 @@
 
 #include "inst.h"
 
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
 /* Note: update dtp22_interp_error() and dtp22_interp_code() in dtp22.c */
 /* if anything of these #defines are added or subtracted */
 
@@ -95,11 +99,20 @@ struct _dtp22 {
 	int noutocalib;				/* Don't mode change or auto calibrate */
 	inst_opt_type trig;			/* Reading trigger mode */
 
+	xcalstd native_calstd;		/* Instrument native calibration standard */
+	xcalstd target_calstd;		/* Returned calibration standard */
+
+	int custfilt_en;			/* Custom filter enabled */
+	xspect custfilt;			/* Custom filter */
+
 	}; typedef struct _dtp22 dtp22;
 
 /* Constructor */
 extern dtp22 *new_dtp22(icoms *icom, instType itype);
 
+#ifdef __cplusplus
+	}
+#endif
 
 #define DTP22_H
 #endif /* DTP22_H */

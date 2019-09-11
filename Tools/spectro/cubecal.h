@@ -1,6 +1,7 @@
 
 /*
  * Calibration Table for SwatchMate Cube
+ * This is #included in smcube.c
  *
  * Copyright 2015 Graeme W. Gill
  * All rights reserved

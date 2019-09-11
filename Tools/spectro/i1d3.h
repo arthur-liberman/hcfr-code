@@ -36,7 +36,10 @@
  */
 
 #include "inst.h"
-#pragma warning(disable : 4024 4047)
+
+#ifdef __cplusplus
+	extern "C" {
+#endif
 
 /* Note: update huey_interp_error() and huey_interp_code() in huey.c */
 /* if anything of these #defines are added or subtracted */
@@ -78,14 +81,19 @@
 
 /* Sub-type of instrument */
 typedef enum {
-	i1d3_disppro    = 0,	/* i1 DisplayPro */
-	i1d3_munkdisp   = 1,	/* ColorMunki Display */
-	i1d3_oem        = 2,	/* OEM */
-	i1d3_nec_ssp    = 3, 	/* NEC SpectraSensor Pro */
-	i1d3_quato_sh3  = 4, 	/* Quato Silver Haze 3 */
-	i1d3_hp_dreamc  = 5, 	/* HP DreameColor */
-	i1d3_sc_c6      = 6 	/* SpectraCal C6 */
+	i1d3_disppro        = 0,	/* i1 DisplayPro */
+	i1d3_munkdisp       = 1,	/* ColorMunki Display */
+	i1d3_oem            = 2,	/* Generic OEM */
+	i1d3_nec_ssp        = 3, 	/* NEC SpectraSensor Pro */
+	i1d3_quato_sh3      = 4, 	/* Quato Silver Haze 3 */
+	i1d3_hp_dreamc      = 5, 	/* HP DreameColor */
+	i1d3_sc_c6          = 6, 	/* SpectraCal C6 */
+	i1d3_wacom_dc       = 7, 	/* Wacom DC */
 } i1d3_dtype;
+
+/* Generic OEM aliases:
+	i1d3_viewsonic_xri1
+*/
 
 /* Measurement mode */
 typedef enum {
@@ -105,7 +113,7 @@ struct _i1d3 {
 	inst_opt_type trig;			/* Reading trigger mode */
 
 	/* Information and EEPROM values */
-	i1d3_dtype dtype;			/* Base type of instrument, ie i1d3_disppro or i1d3_munkdisp */
+	i1d3_dtype btype;			/* Base type of instrument, ie i1d3_disppro or i1d3_munkdisp */
 	i1d3_dtype stype;			/* Sub type of instrument, ie. any of i1d3_dtype. */
 								/* (Only accurate if it needed unlocking). */
 	int status;					/* 0 if status is ok (not sure what this is) */
@@ -170,6 +178,9 @@ struct _i1d3 {
 /* Constructor */
 extern i1d3 *new_i1d3(icoms *icom, instType itype);
 
+#ifdef __cplusplus
+	}
+#endif
 
 #define I1D3_H
 #endif /* I1D3_H */

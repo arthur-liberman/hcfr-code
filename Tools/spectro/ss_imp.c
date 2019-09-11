@@ -50,6 +50,7 @@
 #include "sa_config.h"
 #include "numsup.h"
 #endif /* SALONEINSTLIB */
+#include "cgats.h"
 #include "xspect.h"
 #include "insttypes.h"
 #include "conv.h"
@@ -511,7 +512,7 @@ void ss_command(ss *p, double tmo) {
 	p->sbuf[2] = '\00';					/* write_read terminates on nul */
 
 	p->rbuf = p->_rbuf;				/* Reset read pointer */
-	if ((se = p->icom->write_read(p->icom, p->_sbuf, 0, p->_rbuf, SS_MAX_RD_SIZE, NULL, "\n", 1, tmo)) != 0) {
+	if ((se = p->icom->write_read_ex(p->icom, p->_sbuf, 0, p->_rbuf, SS_MAX_RD_SIZE, NULL, "\n", 1, tmo, 1)) != 0) {
 		p->snerr = icoms2ss_err(se);
 		return;
 	}
@@ -631,7 +632,7 @@ char pn[9],			/* Return the part number */
 unsigned int *sn,	/* Return serial number */
 char sv[13]			/* Return software version */
 ) {
-	char rsv[17];	/* Space for resered field */
+	char rsv[17];	/* Space for reserved field */
 	ss_add_soreq(p, ss_DeviceDataRequest);
 	ss_command(p, DF_TMO);
 	ss_sub_soans(p, ss_DeviceDataAnswer);
@@ -866,13 +867,13 @@ int ct		/* Color temperature to set for illuminant Dxx in deg K/100 */
 	return ss_inst_err(p);
 }
 
-/* Queries the spectra of the white reference for the desired filter */
+/* Queries the spectra of the white tile reference for the desired filter */
 inst_code so_do_WhiteReferenceRequest(
 ss *p,
 ss_aft af,		/* Filter being queried (None/Pol/D65/UV/custom */
 ss_aft *raf,	/* Return filter being queried (None/Pol/D65/UV/custom */
 double sp[36],	/* Return 36 spectral values */
-ss_owrt *owr,	/* Return original white reference */
+ss_owrt *owr,	/* Return original white reference (i.e. factory/user) */
 char dtn[19]	/* Return name of data table */
 ) {
 	int i;
@@ -890,6 +891,7 @@ char dtn[19]	/* Return name of data table */
 }
 
 /* Load spectra of a user defined white reference for the desired filter. */
+/* This lets the user override the factory white tile calibration */
 /* A name can be given to the white reference. */
 inst_code so_do_WhiteReferenceDownld(
 ss *p,
@@ -1312,12 +1314,20 @@ ss_toost oo		/* Activated/Deactivated */
 /* Initialise the device. Scans the Spectrolino */
 /* (Doesn't work when device is offline ) */
 inst_code ss_do_ScanInitializeDevice(ss *p) {
+	inst_code rv;
 	ss_add_ssreq(p, ss_InitializeDevice);
 	ss_command(p, IT_TMO);
 	ss_sub_ssans(p, ss_ErrorAnswer);
 	ss_incorp_scanerr(p, ss_sub_1(p));
 	chended(p);
-	return ss_inst_err(p);
+	rv = ss_inst_err(p);
+
+	if (rv != inst_ok)
+		return rv;
+
+	/* Wait for Spectroscan to finish init. */
+	msec_sleep(3000);
+	return rv;
 }
 
 /* Establish communications between the SpectroScan and Spectrolino */
@@ -1487,8 +1497,8 @@ ss_tmt tm	/* Table mode (Reflectance/Transmission) */
 inst_code ss_do_SetDeviceOnline(ss *p) {
 #ifdef EMSST
 	if (p->tmode != 0)
-		*((char *)0) = 55;
-//	return inst_unsupported;
+//		*((char *)0) = 55;		// Trigger backtrace
+		return inst_unsupported;
 #endif
 	ss_add_ssreq(p, ss_SetDeviceOnline);
 	ss_command(p, DF_TMO);
@@ -1504,7 +1514,8 @@ inst_code ss_do_SetDeviceOnline(ss *p) {
 inst_code ss_do_SetDeviceOffline(ss *p) {
 #ifdef EMSST
 	if (p->tmode != 0)
-		*((char *)0) = 55;
+//		*((char *)0) = 55;		// Trigger backtrace
+		return inst_unsupported;
 #endif
 	ss_add_ssreq(p, ss_SetDeviceOffline);
 	ss_command(p, DF_TMO);
@@ -1549,7 +1560,8 @@ double y	/* Y coord in mm, 0-230.0, accurate to 0.1mm */
 ) {
 #ifdef EMSST
 	if (p->tmode != 0)
-		*((char *)0) = 55;
+//		*((char *)0) = 55;		// Trigger backtrace
+		return inst_unsupported;
 #endif
 	ss_add_ssreq(p, ss_MoveAbsolut);
 	ss_add_1(p, r);
@@ -1571,7 +1583,8 @@ double y	/* Y distance in mm, 0-230.0, accurate to 0.1mm */
 ) {
 #ifdef EMSST
 	if (p->tmode != 0)
-		*((char *)0) = 55;
+//		*((char *)0) = 55;		// Trigger backtrace
+		return inst_unsupported;
 #endif
 	ss_add_ssreq(p, ss_MoveRelative);
 	ss_add_2(p, (int)(x * 10 + 0.5));
@@ -1590,7 +1603,8 @@ ss *p
 ) {
 #ifdef EMSST
 	if (p->tmode != 0)
-		*((char *)0) = 55;
+//		*((char *)0) = 55;		// Trigger backtrace
+		return inst_unsupported;
 #endif
 	ss_add_ssreq(p, ss_MoveHome);
 	ss_command(p, MV_TMO);
@@ -1607,7 +1621,8 @@ ss *p
 ) {
 #ifdef EMSST
 	if (p->tmode != 0)
-		*((char *)0) = 55;
+//		*((char *)0) = 55;		// Trigger backtrace
+		return inst_unsupported;
 #endif
 	ss_add_ssreq(p, ss_MoveUp);
 	ss_command(p, MV_TMO);
@@ -1624,7 +1639,8 @@ ss *p
 ) {
 #ifdef EMSST
 	if (p->tmode != 0)
-		*((char *)0) = 55;
+//		*((char *)0) = 55;		// Trigger backtrace
+		return inst_unsupported;
 #endif
 	ss_add_ssreq(p, ss_MoveDown);
 	ss_command(p, MV_TMO);
@@ -1646,7 +1662,8 @@ ss_zkt *zk	/* Return the Z coordinate (Up/Down) */
 ) {
 #ifdef EMSST
 	if (p->tmode != 0)
-		*((char *)0) = 55;
+//		*((char *)0) = 55;		// Trigger backtrace
+		return inst_unsupported;
 #endif
 	ss_add_ssreq(p, ss_OutputActualPosition);
 	ss_add_1(p, r);
@@ -1670,7 +1687,8 @@ ss_wrpt wrp		/* White Reference Position (Tile1/Tile2) */
 ) {
 #ifdef EMSST
 	if (p->tmode != 0)
-		*((char *)0) = 55;
+//		*((char *)0) = 55;		// Trigger backtrace
+		return inst_unsupported;
 #endif
 	ss_add_ssreq(p, ss_MoveToWhiteRefPos);
 	ss_add_1(p, wrp);
@@ -1739,7 +1757,8 @@ ss_llt ll	/* Transmission light level (Off/Surround/Low) */
 	if (p->tmode != 0)
 		return inst_ok;
 	else
-		*((char *)0) = 55;
+//		*((char *)0) = 55;		// Trigger backtrace
+		return inst_unsupported;
 #endif
 	ss_add_ssreq(p, ss_SetLightLevel);
 	ss_add_1(p, ll);
@@ -1765,7 +1784,8 @@ double y	/* Y coord in mm, 0-230.0, accurate to 0.1mm */
 		p->sby = y;
 		return inst_ok;
 	} else {
-		*((char *)0) = 55;
+//		*((char *)0) = 55;		// Trigger backtrace
+		return inst_unsupported;
 	}
 #endif
 	ss_add_ssreq(p, ss_SetTransmStandbyPos);

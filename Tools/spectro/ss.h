@@ -44,6 +44,10 @@
 #include "inst.h"
 #include "ss_imp.h"
 
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
 #define SS_MAX_WR_SIZE 1000	/* Assumed maximum normal message query size */
 #define SS_MAX_RD_SIZE 1000	/* Assumed maximum normal messagle answer size */
 
@@ -60,7 +64,7 @@ struct _ss {
 	inst_mode	mode;			/* Currently instrument mode */
 
 	/* Desired measurement configuration */
-	ss_aft     filt;			/* Filter type (None/UV/D65 etc.) */
+	ss_aft     filt;			/* Filter type (None/UV/D65/Pol etc.) */
 	ss_dst     dstd;			/* Density standard (ANSI A/ANSI T/DIN etc.) */
 	ss_ilt     illum;			/* Illuminant type (A/C/D50 etc.) */
 	ss_ot      obsv;			/* Observer type (2deg/10deg) */
@@ -81,9 +85,12 @@ struct _ss {
 	double tref[36];			/* White reference spectrum */
 	double cill[36];			/* Colorimetry illuminant */
 
-	/* telescopic adapter compensation */
-	int compen;					/* Compensation filter enabled */
-	double comp[36];			/* Compensation filter */
+	/* Custom compensation filter */
+	int custfilt_en;			/* Custom filter enabled */
+	xspect custfilt;			/* Custom filter */
+
+	xcalstd native_calstd;		/* Instrument native calibration standard */
+	xcalstd target_calstd;		/* Returned calibration standard */
 
 #ifdef EMSST
 	int tmode;					/* Transmission mode */
@@ -110,6 +117,10 @@ struct _ss {
 
 /* Constructor */
 extern ss *new_ss(icoms *icom, instType itype);
+
+#ifdef __cplusplus
+	}
+#endif
 
 #define SS_H
 #endif /* SS_H */

@@ -1,4 +1,6 @@
 
+#ifndef SORT_H
+
 /*
  * Copyright 1996 - 2010 Graeme W. Gill
  * All rights reserved.
@@ -7,13 +9,17 @@
  * see the License2.txt file for licencing details.
  */
 
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
 /*
  * Heapsort macro - sort smallest to largest.
  * Heapsort is guaranteed nlogn, doesn't need any
  * extra storage, but often isn't as fast as quicksort.
  */
 
-/* Need to #define HEAP_COMPARE(A,B) so it returns true if A < B */
+/* To sort ascenting, need to #define HEAP_COMPARE(A,B) so it returns true if A < B */
 /* Note that A will be ARRAY[a], and B will be ARRAY[b] where a and b are indexes. */
 /* TYPE should be the type of each entry of the ARRAY */
 #define HEAPSORT(TYPE,ARRAY,NUMBER) \
@@ -22,10 +28,10 @@
 		int hs_l,hs_j,hs_ir,hs_i;	\
 		TYPE hs_rra;	\
 		\
-		if (NUMBER >= 2)	\
+		if ((NUMBER) >= 2)	\
 			{	\
-			hs_l = NUMBER >> 1;	\
-			hs_ir = NUMBER-1;	\
+			hs_l = (NUMBER) >> 1;	\
+			hs_ir = (NUMBER)-1;	\
 			for (;;)	\
 				{	\
 				if (hs_l > 0)	\
@@ -60,3 +66,9 @@
 			}	\
 		}
 
+#ifdef __cplusplus
+	}
+#endif
+
+#define SORT_H
+#endif /* SORT_H */

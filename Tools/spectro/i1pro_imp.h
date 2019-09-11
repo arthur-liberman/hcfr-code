@@ -4,7 +4,9 @@
  * Argyll Color Correction System
  *
  * Gretag i1Pro implementation defines
- *
+ */
+
+/*
  * Author: Graeme W. Gill
  * Date:   20/12/2006
  *
@@ -14,6 +16,10 @@
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
  * see the License2.txt file for licencing details.
  */
+
+#ifdef __cplusplus
+	extern "C" {
+#endif
 
 /* 
    If you make use of the instrument driver code here, please note
@@ -182,6 +188,12 @@ struct _i1proimp {
 	int uv_en;					/* NZ to do UV reflective measurement */
 								/* ~~ change this to uv_mode of none, uv, strip1, 2pass */
 
+	xcalstd native_calstd;		/* Instrument native calibration standard */
+	xcalstd target_calstd;		/* Returned calibration standard */
+
+	int custfilt_en;			/* Custom filter enabled */
+	xspect custfilt;			/* Custom filter */
+
 	double intclkp;				/* Integration clock period (typically 68 usec) */
 	int subclkdiv;				/* Sub clock divider ratio */
 	int subtmode;				/* Reading 127 subtract mode (version 301 or greater) */
@@ -239,7 +251,7 @@ struct _i1proimp {
 							/* 0x81 == emission only ?? */
 							/* 0x82 == UV filter */
 	int capabilities2;		/* Rev E capabilities - set #defines above */
-							/* Also set for RevA-D */
+							/* Also set for RevA-D to simplify capability testing */
 
 	/* Underlying calibration information */
 	int nsen;				/* Raw + extra sample bands read = 128 for i1pro, 136 for Rev E */
@@ -363,10 +375,11 @@ void del_i1proimp(i1pro *p);
 #define I1PRO_DATA_KEYNOTFOUND			0x05		/* a key value wasn't found */
 #define I1PRO_DATA_WRONGTYPE			0x06		/* a key is the wrong type */
 #define I1PRO_DATA_KEY_CORRUPT		    0x07		/* key table seems to be corrupted */
-#define I1PRO_DATA_KEY_COUNT		    0x08		/* key table count is too big or small */
-#define I1PRO_DATA_KEY_UNKNOWN		    0x09		/* unknown key type */
-#define I1PRO_DATA_KEY_MEMRANGE		    0x0a		/* key data is out of range of EEProm */
-#define I1PRO_DATA_KEY_ENDMARK		    0x0b		/* And end section marker was missing */
+#define I1PRO_DATA_KEY_COUNT_SMALL	    0x08		/* key table count is too small */
+#define I1PRO_DATA_KEY_COUNT_LARGE	    0x09		/* key table count is too big */
+#define I1PRO_DATA_KEY_UNKNOWN		    0x0a		/* unknown key type */
+#define I1PRO_DATA_KEY_MEMRANGE		    0x0b		/* key data is out of range of EEProm */
+#define I1PRO_DATA_KEY_ENDMARK		    0x0c		/* And end section marker was missing */
 
 /* HW errors */
 #define I1PRO_HW_HIGHPOWERFAIL			0x10		/* Switch to high power mode failed */
@@ -464,6 +477,7 @@ i1pro_code i1pro_imp_calibrate(
 	i1pro *p,
 	inst_cal_type *calt,	/* Calibration type to do/remaining */
 	inst_cal_cond *calc,	/* Current condition/desired condition */
+	inst_calc_id_type *idtype,	/* Condition identifier type */
 	char id[100]			/* Condition identifier (ie. white reference ID) */
 );
 
@@ -473,6 +487,12 @@ i1pro_code i1pro_imp_measure(
 	ipatch *val,		/* Pointer to array of instrument patch value */
 	int nvals,			/* Number of values */	
 	instClamping clamp	/* Clamp XYZ/Lab to be +ve */
+);
+
+/* Do a dummy reflective read, to fix Lamp Drift. */
+i1pro_code i1pro_imp_lamp_fix(
+	i1pro *p,
+	double seconds	/* Number of seconds to turn lamp on for */
 );
 
 /* Measure the emissive refresh rate */
@@ -1052,6 +1072,7 @@ i1pro2_getmeaschar(
 #define I1PRO2_MMF_LAMP 	   0x0100	/* Use the Incandescent Lamp as the illuminant */
 #define I1PRO2_MMF_UV_LED	   0x0200	/* Use the Ultra Violet LED as the illuminant */
 #define I1PRO2_MMF_WL_LED	   0x0300	/* Use the Wavelength Reference LED as the illuminant */
+
 //#define I1PRO2_MMF_HIGHGAIN    0x0000	/* Rev E mode has no high gain mode ? */
 #define I1PRO2_MMF_SCAN	       0x0001	/* Scan mode bit, else spot mode */ 
 #define I1PRO2_MMF_RULER_START 0x0004	/* Start ruler tracking in scan mode */
@@ -1272,13 +1293,44 @@ typedef enum {
 
 	key2_wlcal_max  = 0x2f46,	/* double, wavelength calibration error limit, ie. 5.0 */
  
-	key2_wlpoly_1   = 0x2f62,	/* double[4], CCD bin to wavelength polinomial #1 (normal) */
-	key2_wlpoly_2   = 0x2f63,	/* double[4], CCD bin to wavelength polinomial #2 ??? */
+	key2_wlpoly_1   = 0x2f62,	/* double[4], CCD bin to wavelength polinomial #1 (reflective ?) */
+	key2_wlpoly_2   = 0x2f63,	/* double[4], CCD bin to wavelength polinomial #2 (emissive ?) */
 
 	key2_straylight = 0x2f58,	/* int16[36][6] signed stray light values */
 	key2_straylight_scale = 0x2f59	/* double stray light scale factor */
 
 } i1key;
+
+/*
+
+Missing keys for Stripped down OEM i1pro2 (Capabilities2 flag = 0x30)
+i.e. missing Ambient, WL Led, UV Led, Zebra ruller,    
+     has indicator Leds, UV filter.
+
+Table entry 34 is Key 0x0bba, type 3 addr 0x1c4c, size 4	Unkn
+
+Table entry 5 is Key 0x2eea, type 3 addr 0x2218, size 4		Unkn
+Table entry 6 is Key 0x2eeb, type 3 addr 0x221c, size 4		key2_sens_target
+Table entry 9 is Key 0x2ef5, type 4 addr 0x2228, size 4		Unkn
+Table entry 10 is Key 0x2ef6, type 4 addr 0x222c, size 4	Unkn
+Table entry 11 is Key 0x2ef9, type 4 addr 0x2230, size 4	key2_uvcal_intt
+Table entry 12 is Key 0x2efa, type 4 addr 0x2234, size 4	key2_wlcal_intt
+Table entry 13 is Key 0x2efe, type 3 addr 0x2238, size 4	key2_wlcal_minlev
+Table entry 14 is Key 0x2eff, type 3 addr 0x223c, size 4	Unkn
+Table entry 21 is Key 0x2f44, type 4 addr 0x2258, size 200	key2_wlcal_spec
+Table entry 22 is Key 0x2f45, type 3 addr 0x2320, size 4	key2_wlcal_ooff
+Table entry 23 is Key 0x2f46, type 4 addr 0x2324, size 4	key2_wlcal_max
+Table entry 24 is Key 0x2f4e, type 4 addr 0x2328, size 4	key2_wlcal_fwhm
+Table entry 25 is Key 0x2f4f, type 4 addr 0x232c, size 4	key2_wlcal_fwhm_tol
+Table entry 26 is Key 0x2f50, type 4 addr 0x2330, size 4	Unkn
+Table entry 29 is Key 0x2f62, type 4 addr 0x2d58, size 16	key2_wlpoly_1
+Table entry 31 is Key 0x2f6c, type 4 addr 0x2d78, size 8	Unkn
+Table entry 32 is Key 0x2f6d, type 4 addr 0x2d80, size 4	Unkn
+Table entry 33 is Key 0x2f6e, type 4 addr 0x2d84, size 4	Unkn
+Table entry 34 is Key 0x2f76, type 4 addr 0x2d88, size 72	Unkn
+Table entry 35 is Key 0x2f77, type 4 addr 0x2dd0, size 72	Unkn
+
+*/
 
 
 /* Data type */
@@ -1403,6 +1455,10 @@ struct _i1data {
 
 /* Constructor. Construct from the EEprom contents */
 extern i1data *new_i1data(i1proimp *m);
+
+#ifdef __cplusplus
+	}
+#endif
 
 #define I1PRO_IMP
 #endif /* I1PRO_IMP */

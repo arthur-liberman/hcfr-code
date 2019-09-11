@@ -4,7 +4,9 @@
 /* 
  * Argyll Color Correction System
  * Colorimeter Calibration Spectral Set support.
- *
+ */
+
+/*
  * Author: Graeme W. Gill
  * Date:   18/8/2011
  *
@@ -17,18 +19,26 @@
  * Based on ccmx.h
  */
 
-/*
- * This object provides storage and application of emisive spectral
- * samples that can be used to compute calibration for suitable
- * colorimeters (such as the i1d3) tuned for particular types of displays.
- */
-
-/* ------------------------------------------------------------------------------ */
 #include "disptechs.h"
 
 #ifdef __cplusplus
 	extern "C" {
 #endif
+
+/*
+ * This object provides storage and application of emisive spectral
+ * samples that can be used to compute calibration for suitable
+ * colorimeters (such as the i1d3) tuned for particular types of displays.
+ * 
+ * (Note that I suggested this idea publically on the ArgyllCMS mailing
+ *  list in Jan 2008:
+ *  <https://www.freelists.org/post/argyllcms/Calibrate-a-HCFR-hardware,9>
+ *  well before X-Rite & DataColor released instruments that used this approach,
+ *  And in more detail in April 2010:
+ *  <https://www.freelists.org/post/argyllcms/Correction-for-wide-gamut-screens-andor-RGBLED,1>)
+ */
+
+/* ------------------------------------------------------------------------------ */
 
 struct _ccss {
 
@@ -47,7 +57,7 @@ struct _ccss {
 
 	/* write a CGATS .ccss file to a memory buffer. */
 	/* return nz on error, with message in err[] */
-	int (*buf_write_ccss)(struct _ccss *p, unsigned char **buf, int *len);
+	int (*buf_write_ccss)(struct _ccss *p, unsigned char **buf, size_t *len);
 
 	/* read from a CGATS .ccss file */
 	/* return nz on error, with message in err[] */
@@ -55,7 +65,7 @@ struct _ccss {
 
 	/* read from a CGATS .ccss file from a memory buffer. */
 	/* return nz on error, with message in err[] */
-	int (*buf_read_ccss)(struct _ccss *p, unsigned char *buf, int len);
+	int (*buf_read_ccss)(struct _ccss *p, unsigned char *buf, size_t len);
 
   /* Private: */
 	/* (All char * are owned by ccss) */
