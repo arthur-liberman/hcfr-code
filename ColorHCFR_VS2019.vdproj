@@ -93,20 +93,8 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_1F664374819C4391B335B16678F99C28"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_20EB2D3228514CE9A0C64A9A58878C38"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_2339E1436C4D4C981863F99F563D1F51"
-        "OwnerKey" = "8:_8EBE4DD84D194F4A819F981A06427E11"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -243,12 +231,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_59D9716AA7684457A94E1CEE73C0DFF7"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_5E7EE4AAEBD94C8EAB7E683923E7499D"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -262,12 +244,6 @@
         "Entry"
         {
         "MsmKey" = "8:_5F3D06B51AE34B009D525BB28BB8B76E"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_60FB2AD0A48249FA8043C507E81EE67A"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -316,6 +292,12 @@
         "Entry"
         {
         "MsmKey" = "8:_7A1009822FE84F9AA123C4F377D83BD6"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_7B6CD1B6BA394F7DA312F5AF7A077A7E"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -417,6 +399,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_B21822EB06134407868BFCD5A82FDD92"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_B3E81BF4E435449A8323EFEE21854D1D"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -513,6 +501,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_D58FDB9B8E23418E8FCEBADFBC5132E2"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_D9EA15C47B7742458A68485E11688391"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -585,19 +579,7 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_EBE01D4B87594E239A08BC1F87DD16DC"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_EC846A1C5AA447108CBE2F9B9E66C8D2"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_F90812477F864BD9B33763C2335585EB"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -628,12 +610,12 @@
     }
     "Configurations"
     {
-       "Release"
+        "Release"
         {
         "DisplayName" = "8:Release"
         "IsDebugOnly" = "11:FALSE"
         "IsReleaseOnly" = "11:TRUE"
-        "OutputFilename" = "8:Release\\Installer\\ColorHCFR.msi"
+        "OutputFilename" = "8:Release\\Installer\\HCFR.msi"
         "PackageFilesAs" = "3:2"
         "PackageFileSize" = "3:-2147483648"
         "CabType" = "3:1"
@@ -940,26 +922,6 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_1F664374819C4391B335B16678F99C28"
-            {
-            "SourcePath" = "8:Help\\fr\\Contrat_de_license.htm"
-            "TargetName" = "8:Contrat_de_license.htm"
-            "Tag" = "8:"
-            "Folder" = "8:_1A0F14BEC533441AA2BE864EB2BA566D"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_20EB2D3228514CE9A0C64A9A58878C38"
             {
             "SourcePath" = "8:Install\\Etalon_HCFR\\Mitsubishi-Hc3100.thc"
@@ -978,26 +940,6 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_2339E1436C4D4C981863F99F563D1F51"
-            {
-            "SourcePath" = "8:SETUPAPI.dll"
-            "TargetName" = "8:SETUPAPI.dll"
-            "Tag" = "8:"
-            "Folder" = "8:_CBA93CD1FDCA460399C4B48902B51B88"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:TRUE"
-            "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_26BF51BF2D244382843850F45D91EA08"
@@ -1400,26 +1342,6 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_59D9716AA7684457A94E1CEE73C0DFF7"
-            {
-            "SourcePath" = "8:Help\\fr\\popup\\license_gnu.htm"
-            "TargetName" = "8:license_gnu.htm"
-            "Tag" = "8:"
-            "Folder" = "8:_1A0F14BEC533441AA2BE864EB2BA566D"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_5E7EE4AAEBD94C8EAB7E683923E7499D"
             {
             "SourcePath" = "8:Install\\Etalon_HCFR\\BenQ-8720.thc"
@@ -1446,26 +1368,6 @@
             "TargetName" = "8:Hitachi-PJ-TX300.thc"
             "Tag" = "8:"
             "Folder" = "8:_7EBFCBDC869A4C1492F635B211DC177F"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_60FB2AD0A48249FA8043C507E81EE67A"
-            {
-            "SourcePath" = "8:Install\\Help\\Contrat de licence.rtf"
-            "TargetName" = "8:Contrat de licence.rtf"
-            "Tag" = "8:"
-            "Folder" = "8:_11F4839401A44116817388885D6F974B"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -1626,6 +1528,26 @@
             "TargetName" = "8:Onkyo.ihc"
             "Tag" = "8:"
             "Folder" = "8:_B47D7F3CE6E04B68BF44099FA39E59F4"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_7B6CD1B6BA394F7DA312F5AF7A077A7E"
+            {
+            "SourcePath" = "8:res\\ColorMeasurementsDoc.ico"
+            "TargetName" = "8:ColorMeasurementsDoc.ico"
+            "Tag" = "8:"
+            "Folder" = "8:_CBA93CD1FDCA460399C4B48902B51B88"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -1920,6 +1842,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_B21822EB06134407868BFCD5A82FDD92"
+            {
+            "SourcePath" = "8:Install\\gpl.rtf"
+            "TargetName" = "8:gpl.rtf"
+            "Tag" = "8:"
+            "Folder" = "8:_11F4839401A44116817388885D6F974B"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_B3E81BF4E435449A8323EFEE21854D1D"
             {
             "SourcePath" = "8:Install\\Etalon_HCFR\\Sharp-Z3000.thc"
@@ -2200,6 +2142,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_D58FDB9B8E23418E8FCEBADFBC5132E2"
+            {
+            "SourcePath" = "8:Install\\data\\usercolors.csv"
+            "TargetName" = "8:usercolors.csv"
+            "Tag" = "8:"
+            "Folder" = "8:_CBA93CD1FDCA460399C4B48902B51B88"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_D9EA15C47B7742458A68485E11688391"
             {
             "SourcePath" = "8:Install\\Etalon_HCFR\\Epson-TW600-Dynamique-filtre-IR.thc"
@@ -2420,52 +2382,12 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_EBE01D4B87594E239A08BC1F87DD16DC"
-            {
-            "SourcePath" = "8:Help\\en\\popup\\license_gnu.htm"
-            "TargetName" = "8:license_gnu.htm"
-            "Tag" = "8:"
-            "Folder" = "8:_41D2768067C24CCBA61954B0CC139896"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_EC846A1C5AA447108CBE2F9B9E66C8D2"
             {
             "SourcePath" = "8:Tools\\spectro\\usb\\bin\\libusb-win32-bin-README.txt"
             "TargetName" = "8:libusb-win32-bin-README.txt"
             "Tag" = "8:"
             "Folder" = "8:_14021D169CCE4BA9965FC724825F92C9"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_F90812477F864BD9B33763C2335585EB"
-            {
-            "SourcePath" = "8:Help\\en\\Contrat_de_license.htm"
-            "TargetName" = "8:Contrat_de_license.htm"
-            "Tag" = "8:"
-            "Folder" = "8:_41D2768067C24CCBA61954B0CC139896"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -2563,6 +2485,29 @@
         }
         "FileType"
         {
+            "{5EB83D71-FA18-4901-BE56-DE22E13CC478}:_F93FE77534AB404F8826E853444BC85C"
+            {
+            "Name" = "8:Color HCFR result file"
+            "Description" = "8:Color HCFR result file"
+            "Extensions" = "8:.chc"
+            "MIME" = "8:application"
+            "Icon" = "8:_7B6CD1B6BA394F7DA312F5AF7A077A7E"
+            "IconIndex" = "3:0"
+                "Command"
+                {
+                "Command" = "8:_B67B0B3487F14058AFFDA8EFD8EB2AF0"
+                }
+                "Verbs"
+                {
+                    "{95C0C507-CBF0-42B8-B119-07219E384A4A}:_8051A0C2798746E48B55FBA6DBB1A790"
+                    {
+                    "Command" = "8:&Open"
+                    "Verb" = "8:open"
+                    "Arguments" = "8:\"%1\""
+                    "Order" = "3:0"
+                    }
+                }
+            }
         }
         "Folder"
         {
@@ -2607,28 +2552,6 @@
                     "Property" = "8:_7AB245E078D34D12B70D9DC92C873932"
                         "Folders"
                         {
-                            "{9EF0B969-E518-4E46-987F-47570745A589}:_1A0F14BEC533441AA2BE864EB2BA566D"
-                            {
-                            "Name" = "8:fr"
-                            "AlwaysCreate" = "11:FALSE"
-                            "Condition" = "8:"
-                            "Transitive" = "11:FALSE"
-                            "Property" = "8:_1A537C384E784854943A31983F8E163B"
-                                "Folders"
-                                {
-                                }
-                            }
-                            "{9EF0B969-E518-4E46-987F-47570745A589}:_41D2768067C24CCBA61954B0CC139896"
-                            {
-                            "Name" = "8:en"
-                            "AlwaysCreate" = "11:FALSE"
-                            "Condition" = "8:"
-                            "Transitive" = "11:FALSE"
-                            "Property" = "8:_9DB3EF5A2ADD43FE997E9AE51EB731BB"
-                                "Folders"
-                                {
-                                }
-                            }
                         }
                     }
                     "{9EF0B969-E518-4E46-987F-47570745A589}:_6BDD350839BC4C12B6956CC3487B571E"
@@ -2747,9 +2670,9 @@
         "Product"
         {
         "Name" = "8:Microsoft Visual Studio"
-        "ProductName" = "8:ColorHCFR"
+        "ProductName" = "8:HCFR"
         "ProductCode" = "8:{CE7C821C-108E-4203-9F99-2F243477FE4F}"
-        "PackageCode" = "8:{38603EBE-2682-4C44-B7D1-134B2BA3FB50}"
+        "PackageCode" = "8:{D94CD662-0688-4FFC-9E73-AFD2BA97303D}"
         "UpgradeCode" = "8:{DB7FD0E2-11D3-4C2C-8B91-90B3306C7084}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
@@ -2760,7 +2683,7 @@
         "Manufacturer" = "8:ColorHCFR"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:https://www.avsforum.com/forum/139-display-calibration/1393853-hcfr-open-source-projector-display-calibration-software.html"
-        "Title" = "8:ColorHCFR"
+        "Title" = "8:Color HCFR"
         "Subject" = "8:"
         "ARPCONTACT" = "8:ColorHCFR"
         "Keywords" = "8:"
@@ -3212,7 +3135,7 @@
                             "ContextData" = "8:"
                             "Attributes" = "3:0"
                             "Setting" = "3:2"
-                            "Value" = "8:_60FB2AD0A48249FA8043C507E81EE67A"
+                            "Value" = "8:_B21822EB06134407868BFCD5A82FDD92"
                             "UsePlugInResources" = "11:TRUE"
                             }
                             "Sunken"
