@@ -74,6 +74,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libHDR", "libHDR\libHDR.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CHCFR21_ITALIAN", "CHCFR21_ITALIAN.vcxproj", "{BA5C7D32-633F-483D-B23C-A1F509898BF6}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "ColorHCFR_Installer", "ColorHCFR_VS2019.vdproj", "{9C30D8B6-63D2-4FF4-854F-25DA03E6A8B7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -189,6 +191,10 @@ Global
 		{BA5C7D32-633F-483D-B23C-A1F509898BF6}.Debug|Win32.Build.0 = Release|Win32
 		{BA5C7D32-633F-483D-B23C-A1F509898BF6}.Release|Win32.ActiveCfg = Release|Win32
 		{BA5C7D32-633F-483D-B23C-A1F509898BF6}.Release|Win32.Build.0 = Release|Win32
+		{9C30D8B6-63D2-4FF4-854F-25DA03E6A8B7}.Debug|Win32.ActiveCfg = Release
+		{9C30D8B6-63D2-4FF4-854F-25DA03E6A8B7}.Debug|Win32.Build.0 = Release
+		{9C30D8B6-63D2-4FF4-854F-25DA03E6A8B7}.Release|Win32.ActiveCfg = Release
+		{9C30D8B6-63D2-4FF4-854F-25DA03E6A8B7}.Release|Win32.Build.0 = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
