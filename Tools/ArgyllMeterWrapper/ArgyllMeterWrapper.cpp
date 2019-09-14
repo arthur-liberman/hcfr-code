@@ -546,7 +546,6 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::takeReading(CString Spectral
         // try autocalibration - we might get lucky
         m_nextCalibration = 0;
         inst_cal_type calType(inst_calt_needed);
-		    //bberu
         inst_calc_id_type calcidtype(inst_calc_id_none);
         instCode = m_meter->calibrate(m_meter, &calType, (inst_cal_cond*)&m_nextCalibration, &calcidtype, m_calibrationMessage);
         // if that didn't work tell the user
@@ -633,7 +632,6 @@ ArgyllMeterWrapper::eMeterState ArgyllMeterWrapper::calibrate()
    checkMeterIsInitialized();
     m_calibrationMessage[0] = '\0';
     inst_cal_type calType(inst_calt_available);
-	  //bberu
     inst_calc_id_type calcidtype(inst_calc_id_none);
     if (dark_only)
             calType = inst_calt_em_dark;
@@ -690,7 +688,6 @@ std::string ArgyllMeterWrapper::getCalibrationInstructions(bool isHiRes)
     if(m_nextCalibration == 0)
     {
         inst_cal_type calType(inst_calt_available);
-		    //bberu
         inst_calc_id_type calcidtype(inst_calc_id_none);
         dark_only = FALSE;
 		if (m_meterType == instEX1) dark_only = TRUE;

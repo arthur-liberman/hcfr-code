@@ -195,12 +195,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_41879D384E694AD291C801D49D189A42"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_4355E3E10E5647E2AB56F4A531CC55AD"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -292,12 +286,6 @@
         "Entry"
         {
         "MsmKey" = "8:_7A1009822FE84F9AA123C4F377D83BD6"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_7B6CD1B6BA394F7DA312F5AF7A077A7E"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -447,12 +435,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_BC151C58D1D546AA9490D63C1FE34CFF"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_C012971BD6244F818B95C7C8BACBBBC5"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -562,6 +544,12 @@
         "Entry"
         {
         "MsmKey" = "8:_E66F00A943E841D8A542D75C80799B92"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_E6B6894D894945DC9EDE1DD6CDF8D49A"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -1542,26 +1530,6 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_7B6CD1B6BA394F7DA312F5AF7A077A7E"
-            {
-            "SourcePath" = "8:res\\ColorMeasurementsDoc.ico"
-            "TargetName" = "8:ColorMeasurementsDoc.ico"
-            "Tag" = "8:"
-            "Folder" = "8:_CBA93CD1FDCA460399C4B48902B51B88"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_7BBDBD403F6E4C4E94907782CC949C54"
             {
             "SourcePath" = "8:Install\\Etalon_HCFR\\Sony-VW50-Pearl.thc"
@@ -2342,6 +2310,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_E6B6894D894945DC9EDE1DD6CDF8D49A"
+            {
+            "SourcePath" = "8:res\\HCFR_File_icon.ico"
+            "TargetName" = "8:HCFR_File_icon.ico"
+            "Tag" = "8:"
+            "Folder" = "8:_CBA93CD1FDCA460399C4B48902B51B88"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_E9469873E3BB40679FD6931CC23F329B"
             {
             "SourcePath" = "8:Install\\Etalon_HCFR\\Optoma-H78.thc"
@@ -2490,8 +2478,8 @@
             "Name" = "8:Color HCFR result file"
             "Description" = "8:Color HCFR result file"
             "Extensions" = "8:.chc"
-            "MIME" = "8:application"
-            "Icon" = "8:_7B6CD1B6BA394F7DA312F5AF7A077A7E"
+            "MIME" = "8:"
+            "Icon" = "8:_E6B6894D894945DC9EDE1DD6CDF8D49A"
             "IconIndex" = "3:0"
                 "Command"
                 {
@@ -2672,7 +2660,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:HCFR"
         "ProductCode" = "8:{CE7C821C-108E-4203-9F99-2F243477FE4F}"
-        "PackageCode" = "8:{D94CD662-0688-4FFC-9E73-AFD2BA97303D}"
+        "PackageCode" = "8:{7A8A0441-D466-4276-9010-22E9E3FE273D}"
         "UpgradeCode" = "8:{DB7FD0E2-11D3-4C2C-8B91-90B3306C7084}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
@@ -2713,15 +2701,51 @@
                     "Transitive" = "11:FALSE"
                         "Keys"
                         {
-                            "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_9F290083D77A41B6A5C6B284032B13DF"
+                            "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_DA4D89F491714EB9A5A211468B34DD3F"
                             {
-                            "Name" = "8:[Manufacturer]"
+                            "Name" = "8:Classes"
                             "Condition" = "8:"
                             "AlwaysCreate" = "11:FALSE"
                             "DeleteAtUninstall" = "11:FALSE"
                             "Transitive" = "11:FALSE"
                                 "Keys"
                                 {
+                                    "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_9C3D8E52F7054930A1FD582FDBF579DC"
+                                    {
+                                    "Name" = "8:Color HCFR result file"
+                                    "Condition" = "8:True"
+                                    "AlwaysCreate" = "11:TRUE"
+                                    "DeleteAtUninstall" = "11:FALSE"
+                                    "Transitive" = "11:FALSE"
+                                        "Keys"
+                                        {
+                                            "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_5706538FACF34732BEFE7D020198E8EF"
+                                            {
+                                            "Name" = "8:DefaultIcon"
+                                            "Condition" = "8:"
+                                            "AlwaysCreate" = "11:TRUE"
+                                            "DeleteAtUninstall" = "11:TRUE"
+                                            "Transitive" = "11:FALSE"
+                                                "Keys"
+                                                {
+                                                }
+                                                "Values"
+                                                {
+                                                    "{ADCFDA98-8FDD-45E4-90BC-E3D20B029870}:_4649BDEE230940CDB52482446A8B4AB9"
+                                                    {
+                                                    "Name" = "8:"
+                                                    "Condition" = "8:"
+                                                    "Transitive" = "11:FALSE"
+                                                    "ValueTypes" = "3:1"
+                                                    "Value" = "8:[TARGETDIR]\\HCFR_File_icon.ico"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        "Values"
+                                        {
+                                        }
+                                    }
                                 }
                                 "Values"
                                 {
@@ -3316,34 +3340,6 @@
                 {
                 }
             }
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_41879D384E694AD291C801D49D189A42"
-            {
-            "SourcePath" = "8:Release\\CHCFR21_DEUTSCH.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_CBA93CD1FDCA460399C4B48902B51B88"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            "ProjectOutputGroupRegister" = "3:1"
-            "OutputConfiguration" = "8:"
-            "OutputGroupCanonicalName" = "8:Built"
-            "OutputProjectGuid" = "8:{91467326-9EDB-43A2-990D-9EE94B6B2516}"
-            "ShowKeyOutput" = "11:TRUE"
-                "ExcludeFilters"
-                {
-                }
-            }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_5ED953BEFBC349E69E635DE72C256C16"
             {
             "SourcePath" = "8:Release\\CHCFR21_ENGLISH.dll"
@@ -3451,34 +3447,6 @@
             "OutputConfiguration" = "8:"
             "OutputGroupCanonicalName" = "8:Built"
             "OutputProjectGuid" = "8:{E51019A9-5EBB-406A-82DB-480660D666BA}"
-            "ShowKeyOutput" = "11:TRUE"
-                "ExcludeFilters"
-                {
-                }
-            }
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_BC151C58D1D546AA9490D63C1FE34CFF"
-            {
-            "SourcePath" = "8:Release\\CHCFR21_ITALIAN.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_CBA93CD1FDCA460399C4B48902B51B88"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            "ProjectOutputGroupRegister" = "3:1"
-            "OutputConfiguration" = "8:"
-            "OutputGroupCanonicalName" = "8:Built"
-            "OutputProjectGuid" = "8:{BA5C7D32-633F-483D-B23C-A1F509898BF6}"
             "ShowKeyOutput" = "11:TRUE"
                 "ExcludeFilters"
                 {
