@@ -6,46 +6,22 @@
 #define APSTUDIO_HIDDEN_SYMBOLS
 #include "resource.hm"
 #undef APSTUDIO_HIDDEN_SYMBOLS
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
 /////////////////////////////////////////////////////////////////////////////
 // English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-#pragma code_page(1252)
-
-#ifdef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// TEXTINCLUDE
-//
-
-1 TEXTINCLUDE 
-BEGIN
-    "resource.h\0"
-END
-
-2 TEXTINCLUDE 
-BEGIN
-    "\0"
-END
-
-3 TEXTINCLUDE 
-BEGIN
-    "\r\n"
-    "\0"
-END
-
-#endif    // APSTUDIO_INVOKED
-
-#endif    // English (United States) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// French (France) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRA)
-LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
 #pragma code_page(1252)
 
 /////////////////////////////////////////////////////////////////////////////
@@ -126,45 +102,6 @@ END
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ESN)
 LANGUAGE LANG_SPANISH, SUBLANG_SPANISH_MODERN
 #pragma code_page(1252)
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-IDR_APPICON             ICON                    "res\\icon1.ico"
-IDR_RGBVIEW_TMPL        ICON                    "res\\idr_rgbv.ico"
-IDR_CIECHARTVIEW_TMPL   ICON                    "res\\idr_ciec.ico"
-IDR_LUMINANCEHISTOVIEW_TMPL ICON                    "res\\idr_lumi.ico"
-IDR_RGBHISTOVIEW_TMPL   ICON                    "res\\idr_rgbh.ico"
-IDR_SATLUMHISTOVIEW_TMPL ICON                    "res\\idr_slum.ico"
-IDR_SATLUMSHIFTVIEW_TMPL ICON                    "res\\idr_sshi.ico"
-IDR_COLORTEMPHISTOVIEW_TMPL ICON                    "res\\idr_coltemp.ico"
-IDI_PROPERTIES_ICON     ICON                    "res\\properties.ico"
-IDR_PROPERTIES_ICON     ICON                    "res\\idr_prop.ico"
-IDI_TRASH_ICON          ICON                    "res\\trash.ico"
-IDI_SETTINGS_ICON       ICON                    "res\\settings.ico"
-IDI_CAMERA_ICON         ICON                    "res\\camera.ico"
-IDI_DELETE_ICON         ICON                    "res\\delete.ico"
-IDR_NEARBLACKHISTOVIEW_TMPL ICON                    "res\\idr_nebl.ico"
-IDR_NEARWHITEHISTOVIEW_TMPL ICON                    "res\\idr_newh.ico"
-IDR_MEASURESHISTOVIEW_TMPL ICON                    "res\\idr_meas.ico"
-IDR_MAINFRAME           ICON                    "res\\ColorHCFR.ico"
-IDR_MESURETYPE          ICON                    "res\\ColorMeasurementsDoc.ico"
-IDI_START_ICON          ICON                    "res\\idi_start.ico"
-IDI_STOP_ICON           ICON                    "res\\idi_stop.ico"
-IDR_DOCREF              ICON                    "res\\docref.ico"
-IDR_DOCTREE             ICON                    "res\\idr_doct.ico"
-IDI_NEWTAB_ICON         ICON                    "res\\newtab_i.ico"
-IDR_GAMMAHISTOVIEW_TMPL ICON                    "res\\idr_gamm.ico"
-IDI_SPECTRUM_ICON       ICON                    "res\\spectrum.ico"
-IDI_GRAYSCALE_ICON      ICON                    "res\\grayscal.ico"
-IDI_GRAYCOLORS_ICON     ICON                    "res\\graycolo.ico"
-IDI_COLORS_ICON         ICON                    "res\\colors_i.ico"
-IDI_NEARBLACK_ICON      ICON                    "res\\nearblac.ico"
-IDI_NEARWHITE_ICON      ICON                    "res\\nearwhit.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -450,7 +387,7 @@ CAPTION "About HCFR Colorimeter"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         223,IDC_STATIC,"Static",SS_BITMAP,7,7,172,62
-    LTEXT           "Version 3.0",IDC_STATIC_VERSION,7,76,119,8,SS_NOPREFIX
+    LTEXT           "Version 3.5.2",IDC_STATIC_VERSION,7,76,119,8,SS_NOPREFIX
     LTEXT           "Copyright (C) 2012-2017 Hcfr Project\nCopyright (C) 2005-2008 Association Homecinema Francophone",IDC_STATIC2,7,88,168,24
     LTEXT           "hcfr.sourceforge.net",IDC_HOMECINEMA_HYPERLINK,7,119,80,8
     LTEXT           "IDC_PLACEHOLDER",IDC_PLACEHOLDER,4,136,177,117
@@ -489,41 +426,46 @@ BEGIN
     CONTROL         "Blank screen during measure",IDC_BLANKING_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,20,112,10
 END
 
-IDD_GENERATOR_GDI_PROP_PAGE DIALOGEX 0, 0, 186, 184
+IDD_GENERATOR_GDI_PROP_PAGE DIALOGEX 0, 0, 186, 214
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Display"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    CONTROL         "GDI",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,59,29,10
-    CONTROL         "madTPG",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,90,55,43,10
-    CONTROL         "GDI(no background)",IDC_RADIO4,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,70,80,10
-    CONTROL         "CCast",IDC_RADIO5,"Button",BS_AUTORADIOBUTTON,13,94,34,10
-    CONTROL         "Floating Window",IDC_RADIO6,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,82,66,10
-    CONTROL         "Display Triplets",IDC_DISP_TRIP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,118,65,13
-    CONTROL         "disable 3dLUT",IDC_MADVR_3D,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,91,65,59,13
-    CONTROL         "disable video LUT",IDC_MADVR_3D2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,91,79,69,8
-    CONTROL         "OSD",IDC_MADVR_OSD,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,152,54,28,13
-    CONTROL         "0 - 255",IDC_RGBLEVEL_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,152,38,10
-    CONTROL         "16 - 235",IDC_RGBLEVEL_RADIO2,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,69,152,42,10
-    PUSHBUTTON      "Test Overlay",IDC_OVERLAY,118,150,51,12,NOT WS_VISIBLE | WS_DISABLED | WS_GROUP
-    CONTROL         "disable video LUT",IDC_DISP_TRIP2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,162,91,13
-    LTEXT           "Target screen:",IDC_STATIC,9,7,59,9
-    COMBOBOX        IDC_MONITOR_COMBO,61,5,89,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    LTEXT           "Image area [%]",IDC_STATIC,11,24,53,8
-    EDITTEXT        IDC_PATTERNSIZE_EDIT,60,22,20,12,ES_AUTOHSCROLL | WS_GROUP
+    CONTROL         "GDI (fullscreen)",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,85,59,10
+    CONTROL         "madTPG",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,90,81,43,10
+    CONTROL         "GDI (overlay)",IDC_RADIO4,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,96,71,10
+    CONTROL         "CCast",IDC_RADIO5,"Button",BS_AUTORADIOBUTTON,13,120,34,10
+    CONTROL         "Floating Window",IDC_RADIO6,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,108,66,10
+    CONTROL         "Display Triplets",IDC_DISP_TRIP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,144,65,13
+    CONTROL         "disable 3dLUT",IDC_MADVR_3D,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,91,91,59,13
+    CONTROL         "disable video LUT",IDC_MADVR_3D2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,91,105,69,8
+    CONTROL         "OSD",IDC_MADVR_OSD,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,152,80,28,13
+    CONTROL         "0 - 255",IDC_RGBLEVEL_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,176,38,10
+    CONTROL         "16 - 235",IDC_RGBLEVEL_RADIO2,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,69,176,42,10
+    PUSHBUTTON      "Test Overlay",IDC_OVERLAY,118,174,51,12,NOT WS_VISIBLE | WS_DISABLED | WS_GROUP
+    CONTROL         "disable video LUT",IDC_DISP_TRIP2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,186,91,13
+    LTEXT           "Target screen:",IDC_STATIC,21,7,51,9
+    COMBOBOX        IDC_MONITOR_COMBO,75,5,89,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    LTEXT           "Image area [%]",IDC_STATIC,14,24,53,8
+    EDITTEXT        IDC_PATTERNSIZE_EDIT,61,22,20,12,ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "APL (video) level [%]",IDC_STATIC,86,24,75,8
     EDITTEXT        IDC_BGSTIM_EDIT,156,22,20,12,ES_AUTOHSCROLL | WS_GROUP
-    CONTROL         "Image background",IDC_USEPIC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,35,73,13
+    CONTROL         "Image background",IDC_USEPIC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,35,67,13
     LTEXT           "Pattern Intensity [%]",IDC_STATIC,86,37,75,8
     EDITTEXT        IDC_INTENSITY_EDIT,156,35,20,12,ES_AUTOHSCROLL | WS_GROUP
-    GROUPBOX        "Display mode",IDC_STATIC,9,47,177,85,WS_GROUP
-    GROUPBOX        "GDI Options",IDC_STATIC,9,139,167,38,WS_GROUP
-    COMBOBOX        IDC_CCAST_COMBO,59,94,75,62,CBS_DROPDOWNLIST | WS_DISABLED | WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    CONTROL         "HDR",IDC_MADVR_HDR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,65,26,13
-    CONTROL         "Enable HDR10",IDC_ENBL_HDR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,91,120,76,9
-    GROUPBOX        "",IDC_STATIC,89,49,94,42,WS_GROUP
-    CONTROL         "Raspberry Pi",IDC_RADIO8,"Button",BS_AUTORADIOBUTTON,13,107,53,10
-    CONTROL         "rPi user pattern",IDC_DISP_TRIP3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,91,106,59,11
+    GROUPBOX        "Display mode",IDC_STATIC,9,73,177,85,WS_GROUP
+    GROUPBOX        "GDI Options",IDC_STATIC,9,163,167,38,WS_GROUP
+    COMBOBOX        IDC_CCAST_COMBO,59,120,75,62,CBS_DROPDOWNLIST | WS_DISABLED | WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    CONTROL         "HDR",IDC_MADVR_HDR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,91,26,13
+    CONTROL         "Enable HDR10",IDC_ENBL_HDR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,91,146,76,9
+    GROUPBOX        "",IDC_STATIC,89,76,94,42,WS_GROUP
+    CONTROL         "Raspberry Pi",IDC_RADIO8,"Button",BS_AUTORADIOBUTTON,13,133,53,10
+    CONTROL         "rPi user pattern",IDC_DISP_TRIP3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,91,132,59,11
+    EDITTEXT        IDC_YOFFSET_EDIT,93,53,20,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_XOFFSET_EDIT,41,53,20,12,ES_AUTOHSCROLL
+    LTEXT           "YOffset",IDC_STATIC,66,55,22,8,NOT WS_GROUP
+    LTEXT           "XOffset",IDC_STATIC,14,55,25,8,NOT WS_GROUP
+    LTEXT           "Pattern offsets from center[pixels]",IDC_STATIC,119,52,60,16,NOT WS_GROUP
 END
 
 IDD_APPEARANCE_PROP_PAGE DIALOGEX 0, 0, 214, 166
@@ -930,7 +872,7 @@ BEGIN
     PUSHBUTTON      "Average...",IDM_CONFIGURE_SENSOR2,225,24,11,6
     LTEXT           "Adaptive IT",IDC_SENSORNAME_STATIC2,173,24,33,8
     COMBOBOX        IDC_GRAYSCALESTEPS_COMBOMODE,2,16,100,123,CBS_DROPDOWNLIST | WS_GROUP | WS_TABSTOP,WS_EX_DLGMODALFRAME
-    LTEXT           "",IDC_INFOLINE,107,15,43,16,SS_NOTIFY | SS_SUNKEN | SS_WORDELLIPSIS
+    LTEXT           "",IDC_INFOLINE,107,15,43,16,SS_SUNKEN | SS_WORDELLIPSIS
     PUSHBUTTON      "Refs",IDC_REFS_BUTTON,420,132,42,18,0,WS_EX_DLGMODALFRAME
     CTEXT           "Measure",IDC_CCOMP,7,252,48,42
     CTEXT           "Reference",IDC_CCOMP3,55,252,48,42
@@ -1095,76 +1037,6 @@ BEGIN
     EDITTEXT        IDC_DISPLAY_TECH,89,36,115,14,ES_AUTOHSCROLL
 END
 
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Bitmap
-//
-
-IDB_CAMERA_BITMAP       BITMAP                  "res\\camera_b.bmp"
-IDB_DELETE_BITMAP       BITMAP                  "res\\delete_b.bmp"
-IDB_MEDIUMTOOLBAR_MAIN_HICOL BITMAP                  "res\\medium_tb_main_hicol.bmp"
-IDB_MEDIUMTOOLBAR_VIEW_HICOL BITMAP                  "res\\medium_tb_views_hicol.bmp"
-IDB_MEDIUMTOOLBAR_MEASURE_HICOL BITMAP                  "res\\medium_tb_measures_hicol.bmp"
-IDB_MEDIUMTOOLBAR_MEAS_EX_HICOL BITMAP                  "res\\medium_tb_measures_ex_hicol.bmp"
-IDB_POINT_BITMAP        BITMAP                  "res\\target.bmp"
-IDB_REFBLUEPRIMARY_BITMAP BITMAP                  "res\\refblueprimary.bmp"
-IDB_REFGREENPRIMARY_BITMAP BITMAP                  "res\\refgreenprimary.bmp"
-IDB_REFREDPRIMARY_BITMAP BITMAP                  "res\\refredprimary.bmp"
-IDB_REFBLUESAT_BITMAP   BITMAP                  "res\\refbluesat.bmp"
-IDB_REFGREENSAT_BITMAP  BITMAP                  "res\\refgreensat.bmp"
-IDB_REFREDSAT_BITMAP    BITMAP                  "res\\refredsat.bmp"
-IDB_REFYELLOWSAT_BITMAP BITMAP                  "res\\refyellowsat.bmp"
-IDB_REFCYANSAT_BITMAP   BITMAP                  "res\\refcyansat.bmp"
-IDB_REFMAGENTASAT_BITMAP BITMAP                  "res\\refmagentasat.bmp"
-IDB_REFCC24SAT_BITMAP   BITMAP                  "res\\refcc24sat.bmp"
-IDB_ILLUMINANTPOINT_BITMAP BITMAP                  "res\\illuminantplot.bmp"
-IDB_COLORTEMPPOINT_BITMAP BITMAP                  "res\\colortempplot.bmp"
-IDB_BLUEPRIMARY_BITMAP  BITMAP                  "res\\blueprimary.bmp"
-IDB_GREENPRIMARY_BITMAP BITMAP                  "res\\greenprimary.bmp"
-IDB_YELLOWSECONDARY_BITMAP BITMAP                  "res\\yellowsecondary.bmp"
-IDB_MAGENTASECONDARY_BITMAP BITMAP                  "res\\magentasecondary.bmp"
-IDB_CYANSECONDARY_BITMAP BITMAP                  "res\\cyansecondary.bmp"
-IDB_REDPRIMARY_BITMAP   BITMAP                  "res\\redprimary.bmp"
-IDB_GRAYPLOT_BITMAP     BITMAP                  "res\\grayplot.bmp"
-IDB_MEASUREPLOT_BITMAP  BITMAP                  "res\\measureplot.bmp"
-IDB_SELECTEDPLOT_BITMAP BITMAP                  "res\\selectedplot.bmp"
-IDB_ANSICONTRAST_BITMAP BITMAP                  "res\\bitmap1.bmp"
-IDB_LOGO                BITMAP                  "res\\logo.bmp"
-IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
-IDR_MEDIUMTOOLBAR_VIEWS BITMAP                  "res\\medtoot.bmp"
-IDR_MEDIUMTOOLBAR_MAIN  BITMAP                  "res\\mediumto.bmp"
-IDB_REFYELLOWSECONDARY_BITMAP BITMAP                  "res\\refyellowsecondary.bmp"
-IDB_REFCYANSECONDARY_BITMAP BITMAP                  "res\\refcyansecondary.bmp"
-IDB_REFMAGENTASECONDARY_BITMAP BITMAP                  "res\\refmagentasecondary.bmp"
-IDR_MENUBARGRAPH        BITMAP                  "res\\menubarg.bmp"
-IDB_SATRED              BITMAP                  "res\\satred.bmp"
-IDB_SATGREEN            BITMAP                  "res\\satgreen.bmp"
-IDB_SATBLUE             BITMAP                  "res\\satblue.bmp"
-IDB_SATYELLOW           BITMAP                  "res\\satyellow.bmp"
-IDB_SATCYAN             BITMAP                  "res\\satcyan.bmp"
-IDB_SATMAGENTA          BITMAP                  "res\\satmagenta.bmp"
-IDB_SATCC24             BITMAP                  "res\\sat_all.bmp"
-IDB_SATALL              BITMAP                  "res\\sat_all.bmp"
-IDR_MEDIUMTOOLBAR_MEASURES BITMAP                  "res\\tbmeasures.bmp"
-IDR_MEDIUMTOOLBAR_MEASURES_EX BITMAP                  "res\\tbmeasures_ex.bmp"
-IDB_NEARBLACK           BITMAP                  "res\\nearblack.bmp"
-IDB_NEARWHITE           BITMAP                  "res\\nearwhite.bmp"
-IDB_MEAS_PRIMARIES      BITMAP                  "res\\meas_p.bmp"
-IDB_MEAS_PRIM_SEC       BITMAP                  "res\\meas_ps.bmp"
-IDB_MEAS_PRIM_SEC_GRAYS BITMAP                  "res\\meas_psg.bmp"
-IDB_MEAS_GRAYS          BITMAP                  "res\\meas_g.bmp"
-IDB_MEAS_CONT           BITMAP                  "res\\meas_cont.bmp"
-IDB_MEAS_STOP           BITMAP                  "res\\meas_stop.bmp"
-IDB_REFCROSS_RED        BITMAP                  "res\\refcrossred.bmp"
-IDB_REFCROSS_GREEN      BITMAP                  "res\\refcrossgreen.bmp"
-IDB_REFCROSS_BLUE       BITMAP                  "res\\refcrossblue.bmp"
-IDB_REFCROSS_YELLOW     BITMAP                  "res\\refcrossyellow.bmp"
-IDB_REFCROSS_CYAN       BITMAP                  "res\\refcrosscyan.bmp"
-IDB_REFCROSS_MAGENTA    BITMAP                  "res\\refcrossmagenta.bmp"
-IDB_CONTRAST            BITMAP                  "res\\contrast.bmp"
-IDR_MEDIUMTOOLBAR_MEASURES_SAT BITMAP                  "res\\tbmeasures_sat.bmp"
-IDB_MEDIUMTOOLBAR_MEAS_SAT_HICOL BITMAP                  "res\\medium_tb_measures_sat_hicol.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1639,6 +1511,341 @@ BEGIN
     0
 END
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_SENSOR_PROP_PAGE, DIALOG
+    BEGIN
+    END
+
+    IDD_SELECT_SENSOR_PROPPAGE, DIALOG
+    BEGIN
+        RIGHTMARGIN, 304
+        BOTTOMMARGIN, 122
+    END
+
+    IDD_SELECT_GENERATOR_PROPPAGE, DIALOG
+    BEGIN
+    END
+
+    IDD_GRAPH_PROP_PAGE, DIALOG
+    BEGIN
+    END
+
+    IDD_GRAPH_SCALE_PROP_PAGE, DIALOG
+    BEGIN
+    END
+
+    IDD_GRAPH_SAVE_DIALOG, DIALOG
+    BEGIN
+    END
+
+    IDD_REFERENCE_PROP_PAGE, DIALOG
+    BEGIN
+        RIGHTMARGIN, 245
+        BOTTOMMARGIN, 342
+    END
+
+    IDD_GENERAL_PROP_PAGE, DIALOG
+    BEGIN
+        RIGHTMARGIN, 215
+        BOTTOMMARGIN, 251
+    END
+
+    IDD_EXPORTXLS_DIALOG, DIALOG
+    BEGIN
+    END
+
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+    END
+
+    IDD_ONEDEVICESENSOR_PROP_PAGE, DIALOG
+    BEGIN
+    END
+
+    IDD_GENERATOR_PROP_PAGE, DIALOG
+    BEGIN
+    END
+
+    IDD_GENERATOR_GDI_PROP_PAGE, DIALOG
+    BEGIN
+        RIGHTMARGIN, 176
+        BOTTOMMARGIN, 208
+    END
+
+    IDD_APPEARANCE_PROP_PAGE, DIALOG
+    BEGIN
+        RIGHTMARGIN, 212
+        BOTTOMMARGIN, 158
+    END
+
+    IDD_KISENSOR_PROP_PAGE, DIALOG
+    BEGIN
+    END
+
+    IDD_COLORTEST, DIALOG
+    BEGIN
+        RIGHTMARGIN, 89
+    END
+
+    IDD_LANGSELECTION, DIALOG
+    BEGIN
+    END
+
+    IDD_I1SENSOR_PROP_PAGE, DIALOG
+    BEGIN
+    END
+
+    IDD_ARGYLL_SENSOR_PROP_PAGE, DIALOG
+    BEGIN
+        RIGHTMARGIN, 303
+        BOTTOMMARGIN, 171
+    END
+
+    IDD_DUPLICATEDOC_DIALOG, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 139
+    END
+
+    IDD_REF_COLOR_VALUES, DIALOG
+    BEGIN
+    END
+
+    IDD_SIMULATED_SENSOR_PROP_PAGE, DIALOG
+    BEGIN
+    END
+
+    IDD_WEB_UPDATE, DIALOG
+    BEGIN
+    END
+
+    IDD_GENERATOR_KI_PROP_PAGE, DIALOG
+    BEGIN
+    END
+
+    IDD_PATTERNS, DIALOG
+    BEGIN
+    END
+
+    IDD_SCALESIZES, DIALOG
+    BEGIN
+    END
+
+    IDD_MAINVIEW_FORM, DIALOG
+    BEGIN
+        RIGHTMARGIN, 459
+        BOTTOMMARGIN, 370
+    END
+
+    IDD_ADVANCED_PROP_PAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 205
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 237
+    END
+
+    IDD_SIGNATURE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 66
+    END
+
+    IDD_MTCSSENSOR_PROP_PAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 205
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 272
+    END
+
+    IDD_LUXMETER_SCALE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 196
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 66
+    END
+
+    IDD_TOOLBAR_PROP_PAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 205
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 130
+    END
+
+    IDD_AUDIO_SENSOR_PROP_PAGE, DIALOG
+    BEGIN
+    END
+
+    IDD_GENERATE_SPECTRAL_SAMPLE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 218
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 79
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif //_WIN32\r\n"
+    "#include ""res\\ColorHCFR.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""          // Standard components\r\n"
+    "#include ""afxprint.rc""        // printing/print preview resources\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_APPICON             ICON                    "res\\icon1.ico"
+IDR_RGBVIEW_TMPL        ICON                    "res\\idr_rgbv.ico"
+IDR_CIECHARTVIEW_TMPL   ICON                    "res\\idr_ciec.ico"
+IDR_LUMINANCEHISTOVIEW_TMPL ICON                    "res\\idr_lumi.ico"
+IDR_RGBHISTOVIEW_TMPL   ICON                    "res\\idr_rgbh.ico"
+IDR_SATLUMHISTOVIEW_TMPL ICON                    "res\\idr_slum.ico"
+IDR_SATLUMSHIFTVIEW_TMPL ICON                    "res\\idr_sshi.ico"
+IDR_COLORTEMPHISTOVIEW_TMPL ICON                    "res\\idr_coltemp.ico"
+IDI_PROPERTIES_ICON     ICON                    "res\\properties.ico"
+IDR_PROPERTIES_ICON     ICON                    "res\\idr_prop.ico"
+IDI_TRASH_ICON          ICON                    "res\\trash.ico"
+IDI_SETTINGS_ICON       ICON                    "res\\settings.ico"
+IDI_CAMERA_ICON         ICON                    "res\\camera.ico"
+IDI_DELETE_ICON         ICON                    "res\\delete.ico"
+IDR_NEARBLACKHISTOVIEW_TMPL ICON                    "res\\idr_nebl.ico"
+IDR_NEARWHITEHISTOVIEW_TMPL ICON                    "res\\idr_newh.ico"
+IDR_MEASURESHISTOVIEW_TMPL ICON                    "res\\idr_meas.ico"
+IDR_MAINFRAME           ICON                    "res\\ColorHCFR.ico"
+IDR_MESURETYPE          ICON                    "res\\ColorMeasurementsDoc.ico"
+IDI_START_ICON          ICON                    "res\\idi_start.ico"
+IDI_STOP_ICON           ICON                    "res\\idi_stop.ico"
+IDR_DOCREF              ICON                    "res\\docref.ico"
+IDR_DOCTREE             ICON                    "res\\idr_doct.ico"
+IDI_NEWTAB_ICON         ICON                    "res\\newtab_i.ico"
+IDR_GAMMAHISTOVIEW_TMPL ICON                    "res\\idr_gamm.ico"
+IDI_SPECTRUM_ICON       ICON                    "res\\spectrum.ico"
+IDI_GRAYSCALE_ICON      ICON                    "res\\grayscal.ico"
+IDI_GRAYCOLORS_ICON     ICON                    "res\\graycolo.ico"
+IDI_COLORS_ICON         ICON                    "res\\colors_i.ico"
+IDI_NEARBLACK_ICON      ICON                    "res\\nearblac.ico"
+IDI_NEARWHITE_ICON      ICON                    "res\\nearwhit.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_CAMERA_BITMAP       BITMAP                  "res\\camera_b.bmp"
+IDB_DELETE_BITMAP       BITMAP                  "res\\delete_b.bmp"
+IDB_MEDIUMTOOLBAR_MAIN_HICOL BITMAP                  "res\\medium_tb_main_hicol.bmp"
+IDB_MEDIUMTOOLBAR_VIEW_HICOL BITMAP                  "res\\medium_tb_views_hicol.bmp"
+IDB_MEDIUMTOOLBAR_MEASURE_HICOL BITMAP                  "res\\medium_tb_measures_hicol.bmp"
+IDB_MEDIUMTOOLBAR_MEAS_EX_HICOL BITMAP                  "res\\medium_tb_measures_ex_hicol.bmp"
+IDB_POINT_BITMAP        BITMAP                  "res\\target.bmp"
+IDB_REFBLUEPRIMARY_BITMAP BITMAP                  "res\\refblueprimary.bmp"
+IDB_REFGREENPRIMARY_BITMAP BITMAP                  "res\\refgreenprimary.bmp"
+IDB_REFREDPRIMARY_BITMAP BITMAP                  "res\\refredprimary.bmp"
+IDB_REFBLUESAT_BITMAP   BITMAP                  "res\\refbluesat.bmp"
+IDB_REFGREENSAT_BITMAP  BITMAP                  "res\\refgreensat.bmp"
+IDB_REFREDSAT_BITMAP    BITMAP                  "res\\refredsat.bmp"
+IDB_REFYELLOWSAT_BITMAP BITMAP                  "res\\refyellowsat.bmp"
+IDB_REFCYANSAT_BITMAP   BITMAP                  "res\\refcyansat.bmp"
+IDB_REFMAGENTASAT_BITMAP BITMAP                  "res\\refmagentasat.bmp"
+IDB_REFCC24SAT_BITMAP   BITMAP                  "res\\refcc24sat.bmp"
+IDB_ILLUMINANTPOINT_BITMAP BITMAP                  "res\\illuminantplot.bmp"
+IDB_COLORTEMPPOINT_BITMAP BITMAP                  "res\\colortempplot.bmp"
+IDB_BLUEPRIMARY_BITMAP  BITMAP                  "res\\blueprimary.bmp"
+IDB_GREENPRIMARY_BITMAP BITMAP                  "res\\greenprimary.bmp"
+IDB_YELLOWSECONDARY_BITMAP BITMAP                  "res\\yellowsecondary.bmp"
+IDB_MAGENTASECONDARY_BITMAP BITMAP                  "res\\magentasecondary.bmp"
+IDB_CYANSECONDARY_BITMAP BITMAP                  "res\\cyansecondary.bmp"
+IDB_REDPRIMARY_BITMAP   BITMAP                  "res\\redprimary.bmp"
+IDB_GRAYPLOT_BITMAP     BITMAP                  "res\\grayplot.bmp"
+IDB_MEASUREPLOT_BITMAP  BITMAP                  "res\\measureplot.bmp"
+IDB_SELECTEDPLOT_BITMAP BITMAP                  "res\\selectedplot.bmp"
+IDB_ANSICONTRAST_BITMAP BITMAP                  "res\\bitmap1.bmp"
+IDB_LOGO                BITMAP                  "res\\logo.bmp"
+IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
+IDR_MEDIUMTOOLBAR_VIEWS BITMAP                  "res\\medtoot.bmp"
+IDR_MEDIUMTOOLBAR_MAIN  BITMAP                  "res\\mediumto.bmp"
+IDB_REFYELLOWSECONDARY_BITMAP BITMAP                  "res\\refyellowsecondary.bmp"
+IDB_REFCYANSECONDARY_BITMAP BITMAP                  "res\\refcyansecondary.bmp"
+IDB_REFMAGENTASECONDARY_BITMAP BITMAP                  "res\\refmagentasecondary.bmp"
+IDR_MENUBARGRAPH        BITMAP                  "res\\menubarg.bmp"
+IDB_SATRED              BITMAP                  "res\\satred.bmp"
+IDB_SATGREEN            BITMAP                  "res\\satgreen.bmp"
+IDB_SATBLUE             BITMAP                  "res\\satblue.bmp"
+IDB_SATYELLOW           BITMAP                  "res\\satyellow.bmp"
+IDB_SATCYAN             BITMAP                  "res\\satcyan.bmp"
+IDB_SATMAGENTA          BITMAP                  "res\\satmagenta.bmp"
+IDB_SATCC24             BITMAP                  "res\\sat_all.bmp"
+IDB_SATALL              BITMAP                  "res\\sat_all.bmp"
+IDR_MEDIUMTOOLBAR_MEASURES BITMAP                  "res\\tbmeasures.bmp"
+IDR_MEDIUMTOOLBAR_MEASURES_EX BITMAP                  "res\\tbmeasures_ex.bmp"
+IDB_NEARBLACK           BITMAP                  "res\\nearblack.bmp"
+IDB_NEARWHITE           BITMAP                  "res\\nearwhite.bmp"
+IDB_MEAS_PRIMARIES      BITMAP                  "res\\meas_p.bmp"
+IDB_MEAS_PRIM_SEC       BITMAP                  "res\\meas_ps.bmp"
+IDB_MEAS_PRIM_SEC_GRAYS BITMAP                  "res\\meas_psg.bmp"
+IDB_MEAS_GRAYS          BITMAP                  "res\\meas_g.bmp"
+IDB_MEAS_CONT           BITMAP                  "res\\meas_cont.bmp"
+IDB_MEAS_STOP           BITMAP                  "res\\meas_stop.bmp"
+IDB_REFCROSS_RED        BITMAP                  "res\\refcrossred.bmp"
+IDB_REFCROSS_GREEN      BITMAP                  "res\\refcrossgreen.bmp"
+IDB_REFCROSS_BLUE       BITMAP                  "res\\refcrossblue.bmp"
+IDB_REFCROSS_YELLOW     BITMAP                  "res\\refcrossyellow.bmp"
+IDB_REFCROSS_CYAN       BITMAP                  "res\\refcrosscyan.bmp"
+IDB_REFCROSS_MAGENTA    BITMAP                  "res\\refcrossmagenta.bmp"
+IDB_CONTRAST            BITMAP                  "res\\contrast.bmp"
+IDR_MEDIUMTOOLBAR_MEASURES_SAT BITMAP                  "res\\tbmeasures_sat.bmp"
+IDB_MEDIUMTOOLBAR_MEAS_SAT_HICOL BITMAP                  "res\\medium_tb_measures_sat_hicol.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2660,193 +2867,6 @@ END
 
 IDC_CURSORMOVE          CURSOR                  "res\\DRAGMOVE.CUR"
 IDC_CURSOR_MEASURE      CURSOR                  "res\\cursor_meas.cur"
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO
-BEGIN
-    IDD_SENSOR_PROP_PAGE, DIALOG
-    BEGIN
-    END
-
-    IDD_SELECT_SENSOR_PROPPAGE, DIALOG
-    BEGIN
-        RIGHTMARGIN, 304
-        BOTTOMMARGIN, 122
-    END
-
-    IDD_SELECT_GENERATOR_PROPPAGE, DIALOG
-    BEGIN
-    END
-
-    IDD_GRAPH_PROP_PAGE, DIALOG
-    BEGIN
-    END
-
-    IDD_GRAPH_SCALE_PROP_PAGE, DIALOG
-    BEGIN
-    END
-
-    IDD_GRAPH_SAVE_DIALOG, DIALOG
-    BEGIN
-    END
-
-    IDD_REFERENCE_PROP_PAGE, DIALOG
-    BEGIN
-        RIGHTMARGIN, 245
-        BOTTOMMARGIN, 342
-    END
-
-    IDD_GENERAL_PROP_PAGE, DIALOG
-    BEGIN
-        RIGHTMARGIN, 215
-        BOTTOMMARGIN, 251
-    END
-
-    IDD_EXPORTXLS_DIALOG, DIALOG
-    BEGIN
-    END
-
-    IDD_ABOUTBOX, DIALOG
-    BEGIN
-    END
-
-    IDD_ONEDEVICESENSOR_PROP_PAGE, DIALOG
-    BEGIN
-    END
-
-    IDD_GENERATOR_PROP_PAGE, DIALOG
-    BEGIN
-    END
-
-    IDD_GENERATOR_GDI_PROP_PAGE, DIALOG
-    BEGIN
-        RIGHTMARGIN, 176
-        BOTTOMMARGIN, 178
-    END
-
-    IDD_APPEARANCE_PROP_PAGE, DIALOG
-    BEGIN
-        RIGHTMARGIN, 212
-        BOTTOMMARGIN, 158
-    END
-
-    IDD_KISENSOR_PROP_PAGE, DIALOG
-    BEGIN
-    END
-
-    IDD_COLORTEST, DIALOG
-    BEGIN
-        RIGHTMARGIN, 89
-    END
-
-    IDD_LANGSELECTION, DIALOG
-    BEGIN
-    END
-
-    IDD_I1SENSOR_PROP_PAGE, DIALOG
-    BEGIN
-    END
-
-    IDD_ARGYLL_SENSOR_PROP_PAGE, DIALOG
-    BEGIN
-        RIGHTMARGIN, 303
-        BOTTOMMARGIN, 171
-    END
-
-    IDD_DUPLICATEDOC_DIALOG, DIALOG
-    BEGIN
-        BOTTOMMARGIN, 139
-    END
-
-    IDD_REF_COLOR_VALUES, DIALOG
-    BEGIN
-    END
-
-    IDD_SIMULATED_SENSOR_PROP_PAGE, DIALOG
-    BEGIN
-    END
-
-    IDD_WEB_UPDATE, DIALOG
-    BEGIN
-    END
-
-    IDD_GENERATOR_KI_PROP_PAGE, DIALOG
-    BEGIN
-    END
-
-    IDD_PATTERNS, DIALOG
-    BEGIN
-    END
-
-    IDD_SCALESIZES, DIALOG
-    BEGIN
-    END
-
-    IDD_MAINVIEW_FORM, DIALOG
-    BEGIN
-        RIGHTMARGIN, 459
-        BOTTOMMARGIN, 370
-    END
-
-    IDD_ADVANCED_PROP_PAGE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 205
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 237
-    END
-
-    IDD_SIGNATURE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 179
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 66
-    END
-
-    IDD_MTCSSENSOR_PROP_PAGE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 205
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 272
-    END
-
-    IDD_LUXMETER_SCALE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 196
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 66
-    END
-
-    IDD_TOOLBAR_PROP_PAGE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 205
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 130
-    END
-
-    IDD_AUDIO_SENSOR_PROP_PAGE, DIALOG
-    BEGIN
-    END
-
-    IDD_GENERATE_SPECTRAL_SAMPLE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 218
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 79
-    END
-END
-#endif    // APSTUDIO_INVOKED
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -3874,7 +3894,20 @@ END
 //
 // Generated from the TEXTINCLUDE 3 resource.
 //
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
 
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+#include "res\ColorHCFR.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"          // Standard components
+#include "afxprint.rc"        // printing/print preview resources
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
