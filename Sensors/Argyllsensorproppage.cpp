@@ -70,6 +70,11 @@ void CArgyllSensorPropPage::DoDataExchange(CDataExchange* pDX)
         m_pSensor->FillDisplayTypeCombo(m_DisplayTypeCombo);
     }
     m_DisplayTypeCombo.EnableWindow((m_DisplayTypeCombo.GetCount() != 0)?TRUE:FALSE);
+    if (m_SpectralTypeCombo.GetCurSel() == CB_ERR)
+    {
+        m_pSensor->FillSpectralTypeCombo(m_SpectralTypeCombo);
+        m_SpectralTypeCombo.SetCurSel(0);
+    }
     m_SpectralTypeCombo.EnableWindow(m_obTypeEnabled);
     m_IntTypeCombo.EnableWindow(m_intTimeEnabled);
 

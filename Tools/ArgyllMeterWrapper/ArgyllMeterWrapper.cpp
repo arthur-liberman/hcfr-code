@@ -492,14 +492,39 @@ void ArgyllMeterWrapper::setDisplayType(int displayMode)
     } 
 }
 
+int ArgyllMeterWrapper::getNumberOfObTypes()
+{
+    return icxOT_MAX;
+}
+
+const char* ArgyllMeterWrapper::getObTypeText(int obTypeInt)
+{
+    return standardObserverDescription((icxObserverType) obTypeInt);
+}
+
+void ArgyllMeterWrapper::setObType(int obTypeInt)
+{
+    m_obType = obTypeInt;
+}
+
+int ArgyllMeterWrapper::getObType()
+{
+    return m_obType;
+}
+
 bool ArgyllMeterWrapper::setObType(CString SpectralType)
 {
     icxObserverType obType=icxOT_default;
  
+    /*
     if (SpectralType == "CIE 1931 2 deg")
         obType=icxOT_CIE_1931_2;
     if (SpectralType == "CIE 1964 10 deg")
         obType=icxOT_CIE_1964_10;
+    if (SpectralType == "CIE 2012 2 deg")
+        obType=icxOT_CIE_2012_2;
+    if (SpectralType == "CIE 2012 10 deg")
+        obType=icxOT_CIE_2012_10;
 #ifndef SALONEINSTLIB
     if (SpectralType == "Stiles&Burch 2 deg")
         obType=icxOT_Stiles_Burch_2;
@@ -511,7 +536,15 @@ bool ArgyllMeterWrapper::setObType(CString SpectralType)
         obType=icxOT_Shaw_Fairchild_2;
     if (SpectralType == "Stockman and Sharpe 2006 10 deg")
         obType=icxOT_Stockman_Sharpe_2006_10;
-#endif /* !SALONEINSTLIB*/
+#endif *//* !SALONEINSTLIB*/
+    for (; obType < icxOT_MAX; obType = (icxObserverType) (obType + 1)) {
+        if (SpectralType == standardObserverDescription(obType))
+            break;
+    }
+    if (obType == icxOT_MAX) {
+        //obType = icxOT_default;
+        return false;
+    }
 	if (obType != m_obType || !isColorimeter())
     {
         m_obType = obType;

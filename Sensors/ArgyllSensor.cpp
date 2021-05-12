@@ -437,33 +437,17 @@ void CArgyllSensor::FillDisplayTypeCombo(CComboBox& comboToFill)
         }
     }
 }
-/*
+
 void CArgyllSensor::FillSpectralTypeCombo(CComboBox& comboToFill)
 {
-    if (!m_meter->doesMeterSupportSpectralSamples())
-	{
-        return;    
-	}
-	
-	comboToFill.AddString("<None>");
+    int numObTypes(m_meter->getNumberOfObTypes());
 
-    try
+    comboToFill.ResetContent();
+    for (int i(0); i < m_meter->getNumberOfObTypes(); ++i)
     {
-        SpectralSampleFiles::SpectralSampleDescriptions::const_iterator iter;
-
-        for (iter = m_spectralSamples->getDescriptions().begin(); iter != m_spectralSamples->getDescriptions().end(); iter++)
-        {
-            comboToFill.AddString(iter->c_str());
-        }
-        comboToFill.EnableWindow((comboToFill.GetCount() != 0)?TRUE:FALSE);
+        comboToFill.AddString(m_meter->getObTypeText(i));
     }
-    catch (std::logic_error& e)
-    {
-        MessageBox(NULL, e.what(), "Argyll Meter", MB_OK+MB_ICONHAND);
-    }
-    
 }
-*/
 
 // very basic logging and error handling to override
 // the standard argyll verion

@@ -218,12 +218,12 @@ typedef enum {
     icxIT_D65		 = 8,	/* Daylight 6500K */
     icxIT_D75		 = 9,	/* Daylight 7500K (uses specified temperature) */
     icxIT_E		     = 10,	/* Equal Energy = flat = 1.0 */
-#ifndef SALONEINSTLIB
+//#ifndef SALONEINSTLIB
     icxIT_F5		 = 11,	/* Fluorescent, Standard, 6350K, CRI 72 */
     icxIT_F8		 = 12,	/* Fluorescent, Broad Band 5000K, CRI 95 */
     icxIT_F10		 = 13,	/* Fluorescent Narrow Band 5000K, CRI 81 */
 	icxIT_Spectrocam = 14,	/* Spectrocam Xenon Lamp */
-#endif /* !SALONEINSTLIB*/
+//#endif /* !SALONEINSTLIB*/
     icxIT_ODtemp	 = 15,	/* Old daylight at specified temperature */
     icxIT_Dtemp		 = 16,	/* CIE 15.2004 Appendix C daylight at specified temperature */
     icxIT_OPtemp     = 17,	/* Old planckian at specified temperature */
@@ -258,13 +258,14 @@ typedef enum {
     icxOT_CIE_1964_10		= 4,	/* Standard CIE 1964 10 degree */
     icxOT_CIE_2012_2		= 5,	/* Proposed Standard CIE 2012 2 degree */
     icxOT_CIE_2012_10		= 6,	/* Proposed Standard CIE 2012 10 degree */
-#ifndef SALONEINSTLIB
+//#ifndef SALONEINSTLIB
     icxOT_Stiles_Burch_2	= 7,	/* Stiles & Burch 1955 2 degree */
     icxOT_Judd_Voss_2		= 8,	/* Judd & Voss 1978 2 degree */
     icxOT_CIE_1964_10c		= 9,	/* Standard CIE 1964 10 degree, 2 degree compatible */
     icxOT_Shaw_Fairchild_2	= 10,	/* Shaw & Fairchild 1997 2 degree */
-    icxOT_EBU_2012	        = 11	/* EBU standard camera curves 2012 */
-#endif /* !SALONEINSTLIB*/
+    icxOT_EBU_2012	        = 11,	/* EBU standard camera curves 2012 */
+//#endif /* !SALONEINSTLIB*/
+	icxOT_MAX
 } icxObserverType;
 
 /* Return pointers to three xpsects with a standard observer weighting curves */

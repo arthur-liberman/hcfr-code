@@ -569,7 +569,7 @@ static int planckian_old_il(xspect *sp, double ct) {
 }
 
 
-#ifndef SALONEINSTLIB
+//#ifndef SALONEINSTLIB
 
 /* CIE F5 */
 /* Fluorescent, Standard, 6350K, CRI 72 */
@@ -666,7 +666,7 @@ static xspect il_Spectrocam = {
    }
 };
 
-#endif /* !SALONEINSTLIB */
+//#endif /* !SALONEINSTLIB */
 
 /* Apply ISO 13655:2009 UV filter to the given spectrum. */
 /* The filter is applied point by point. */
@@ -725,7 +725,7 @@ double temp					/* Optional temperature in degrees kelvin, for Dtemp and Ptemp *
 	    case icxIT_E:
 			*sp = il_none;
 			return 0;
-#ifndef SALONEINSTLIB
+//#ifndef SALONEINSTLIB
 	    case icxIT_F5:
 			*sp = il_F5;
 			return 0;
@@ -738,7 +738,7 @@ double temp					/* Optional temperature in degrees kelvin, for Dtemp and Ptemp *
 		case icxIT_Spectrocam:
 			*sp = il_Spectrocam;
 			return 0;
-#endif 
+//#endif 
 		case icxIT_ODtemp:
 			return daylight_old_il(sp, temp);
 		case icxIT_Dtemp:
@@ -780,7 +780,7 @@ double temp				/* Optional temperature in degrees kelvin, For Dtemp and Ptemp */
 			return "D75";
 	    case icxIT_E:
 			return "E";
-#ifndef SALONEINSTLIB
+//#ifndef SALONEINSTLIB
 	    case icxIT_F5:
 			return "F5";
 	    case icxIT_F8:
@@ -789,7 +789,7 @@ double temp				/* Optional temperature in degrees kelvin, For Dtemp and Ptemp */
 			return "F10";
 		case icxIT_Spectrocam:
 			return "Spectrocam";
-#endif 
+//#endif 
 		case icxIT_ODtemp:
 			sprintf(buf, "OD%d",(int)(temp+0.5));
 			return buf;
@@ -2005,7 +2005,7 @@ static xspect ob_CIE_2012_10[3] = {
 	}
 };
 
-#ifndef SALONEINSTLIB
+//#ifndef SALONEINSTLIB
 /* Standard CIE 1964 10 degree observer, */
 /* adjusted for compatibility with 2 degree observer. */
 /* This has a problem in that it will return -ve XYZ values !! */
@@ -2592,7 +2592,7 @@ static xspect ob_EBU_2012[3] = {
 	}
 };
 
-#endif /* !SALONEINSTLIB */
+//#endif /* !SALONEINSTLIB */
 
 /* Return pointers to three xpsects with a standard observer weighting curves */
 /* return 0 on sucecss, nz if not matched */
@@ -2626,7 +2626,7 @@ icxObserverType obType		/* Type of observer */
 			sp[1] = &ob_CIE_2012_10[1];
 			sp[2] = &ob_CIE_2012_10[2];
 			return 0;
-#ifndef SALONEINSTLIB
+//#ifndef SALONEINSTLIB
     	case icxOT_Stiles_Burch_2:
 			sp[0] = &ob_Stiles_Burch_2[0];
 			sp[1] = &ob_Stiles_Burch_2[1];
@@ -2652,7 +2652,7 @@ icxObserverType obType		/* Type of observer */
 			sp[1] = &ob_EBU_2012[1];
 			sp[2] = &ob_EBU_2012[2];
 			return 0;
-#endif /* !SALONEINSTLIB */
+//#endif /* !SALONEINSTLIB */
 		default:
 			return 1;
 	}
@@ -2666,6 +2666,7 @@ char *standardObserverDescription(icxObserverType obType) {
     	case icxOT_none:
 			return "No observer";
     	case icxOT_default:
+			return "Default";
     	case icxOT_CIE_1931_2:
 			return "CIE 1931 2 degree observer";
     	case icxOT_CIE_1964_10:
@@ -2674,7 +2675,7 @@ char *standardObserverDescription(icxObserverType obType) {
 			return "CIE 2012 2 degree observer";
     	case icxOT_CIE_2012_10:
 			return "CIE 2012 10 degree observer";
-#ifndef SALONEINSTLIB
+//#ifndef SALONEINSTLIB
     	case icxOT_Stiles_Burch_2:
 			return "Stiles & Burch 1955 2 degree observer (aligned)";
     	case icxOT_Judd_Voss_2:
@@ -2685,13 +2686,13 @@ char *standardObserverDescription(icxObserverType obType) {
 			return "Shaw & Fairchild 1997 2 degree observer";
     	case icxOT_EBU_2012:
 			return "EBU Standard Camera 2012";
-#endif /* !SALONEINSTLIB */
+//#endif /* !SALONEINSTLIB */
 	}
 	return "Unknown observer";
 }
 
 
-#ifndef SALONEINSTLIB
+//#ifndef SALONEINSTLIB
 /* ----------------------------------- */
 /* Standard refelective sample spectra */
 
@@ -3571,7 +3572,7 @@ static xspect FWA1_emit = {
  
 #endif /* STOCKFWA */
 
-#endif /* !SALONEINSTLIB */
+//#endif /* !SALONEINSTLIB */
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /* Return a string describing the inst_meas_type */

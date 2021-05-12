@@ -83,6 +83,10 @@ public:
 
     //Set the observer type used for meter->XYZ calcs, spectral devices only, return true if changed
     bool setObType(CString SpectralType);
+    void setObType(int obTypeInt);
+    const char* getObTypeText(int obTypeInt);
+    int getNumberOfObTypes();
+    int getObType();
 
 	// Load the supplied spectral sample
     bool loadSpectralSample(const SpectralSample& sample);
