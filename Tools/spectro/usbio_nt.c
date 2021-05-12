@@ -23,7 +23,7 @@
 #include <windows.h>
 #include <winioctl.h>
 #include <setupapi.h>
-#include <driver_api.h>
+#include "driver_api.h"
 
 #undef DEBUG		/* Turn on debug messages */
 
