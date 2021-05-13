@@ -18,13 +18,7 @@
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="aglob.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="base64.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="conv.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="pollem.c">
