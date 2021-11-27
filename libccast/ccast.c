@@ -71,8 +71,8 @@ static void check_json(char *mesbuf) {
 
 /* Read messages. If they are ones we deal with, send a reply */
 /* If they are anonomous (sessionId == 0), then ignore them */
-/* (Could save last known anonomous message if they prove useful) */
 /* and if they are numbered, keep then in a sorted list. */
+/* (Could save last known anonomous message if they prove useful) */
 
 static int cc_rec_thread(void *context) {
 	ccast *p = (ccast *)context;

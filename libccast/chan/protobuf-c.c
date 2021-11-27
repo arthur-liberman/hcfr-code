@@ -2818,7 +2818,7 @@ protobuf_c_message_unpack(const ProtobufCMessageDescriptor *desc,
 				/* NOTE: scan_length_prefixed_data calls UNPACK_ERROR */
 				goto error_cleanup_during_scan;
 			}
-			tmp.length_prefix_len = (uint8_t)pref_len;
+			tmp.length_prefix_len = pref_len;
 			break;
 		}
 		case PROTOBUF_C_WIRE_TYPE_32BIT:

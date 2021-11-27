@@ -172,6 +172,8 @@ char *cctype2str(cctype typ) {
 			return "Audio";
 		case cctyp_Ultra:
 			return "Ultra";
+		case cctyp_Other:
+			return "Other";
 		default:
 			return "Unexpected";
 	}
@@ -376,8 +378,8 @@ static int init_socket_mDNS(SOCKET *psock) {
 	return 0;
 }
 
-/* Send an mDNS quesry */
-/* on some platforms if we try to transmit & recieve at the same time */
+/* Send an mDNS query */
+/* On some platforms if we try to transmit & recieve at the same time (what ?) */
 /* Return nz on error */
 static int send_mDNS(SOCKET sock) {
 	int nRet; 
@@ -425,7 +427,7 @@ static int send_mDNS(SOCKET sock) {
 	return 0;
 }
 
-static int parse_dns(char **name, char **ip, cctype *typ, ORD8 *buf, int size);
+static int parse_dns(char **name, char **ip, cctype *ptyp, int *pcaflags, ORD8 *buf, int size);
 
 /* Free up what get_ccids returned */
 void free_ccids(ccast_id **ids) {
@@ -459,6 +461,7 @@ static int receive_mDNS(SOCKET sock, ccast_id ***ids, int *nids, int emsec) {
 		int i;
 		char *name, *ip;
 		cctype typ;
+		int caflags;					/* (We're not currently saving this) */
 		struct sockaddr stSockAddr; 
 
 		/* Recv the available data */ 
@@ -479,7 +482,7 @@ static int receive_mDNS(SOCKET sock, ccast_id ***ids, int *nids, int emsec) {
 		adump_bytes(g_log, "    ", achInBuf, 0, size);
 #endif
 
-		if (parse_dns(&name, &ip, &typ, achInBuf, size) != 0) {
+		if (parse_dns(&name, &ip, &typ, &caflags, achInBuf, size) != 0) {
 			DBG((g_log,0,"Failed to parse the reply\n"))
 		} else {
 			DBG((g_log,0,"Parsed reply OK\n"))
@@ -488,9 +491,10 @@ static int receive_mDNS(SOCKET sock, ccast_id ***ids, int *nids, int emsec) {
 			if (name != NULL && ip != NULL) {
 				DBG((g_log,0,"Got a name '%s', IP '%s', type %s\n",name,ip, cctype2str(typ)))
 
-				/* Check if it is a Chromecast-Audio */
-				if (typ == cctyp_Audio) {
-					DBG((g_log,0,"Ignoring Chromecast-Audio\n"))
+				/* Check if it is a Chromecast-Audio or Other */
+				if (typ == cctyp_Audio
+				 || typ == cctyp_Other) {
+					DBG((g_log,0,"Ignoring Chromecast-Audio/Other\n"))
 					free(name);
 					free(ip);
 
@@ -537,7 +541,7 @@ static int receive_mDNS(SOCKET sock, ccast_id ***ids, int *nids, int emsec) {
 
 /* ==================================================================== */
 
-/* Get a list of Chromecasts. Return NULL on error */
+/* Get a list of Video output capable Chromecasts. Return NULL on error */
 /* Last pointer in array is NULL */
 /* Takes 1.5 second to return */
 ccast_id **get_ccids() {
@@ -806,7 +810,7 @@ int parse_query(ORD8 *buf, int off, int size) {
 
 /* Parse an mDNS reply, and set Friendly name (if known) + formal name + IP */
 /* Return updated off value or -1 on error */
-int parse_reply(char **pname, char **pip, cctype *ptyp, ORD8 *buf, int off, int size) {
+int parse_reply(char **pname, char **pip, cctype *ptyp, int *pcaflags, ORD8 *buf, int off, int size) {
 	char *sv;
 	int rtype, rclass, rdlength;
 	unsigned int ttl;
@@ -858,6 +862,7 @@ int parse_reply(char **pname, char **pip, cctype *ptyp, ORD8 *buf, int off, int 
 	if (rtype == DNS_TYPE_TXT) {	/* Check it's a ChromeCast & get its name */
 		char *cp, *fn = NULL;
 		int rdsize = off + rdlength;
+		int caflags = 0;
 
 		if ((cp = strchr(sv, '.')) == NULL) {
 			free(sv);
@@ -884,8 +889,8 @@ int parse_reply(char **pname, char **pip, cctype *ptyp, ORD8 *buf, int off, int 
 			rm=669B9448366A01CB
 			ve=05									SW version ????
 			md=Chromecast							Model ?
-			   										i.e. ChromecastAudio
-			   										i.e. ChromecastUltra
+			   										i.e. Chromecast-Audio
+			   										i.e. Chromecast-Ultra
 			   										i.e. Group
 			ic=/setup/icon.png						Icon file ??
 			fn=Chromecast6892						Friendly name
@@ -929,6 +934,10 @@ int parse_reply(char **pname, char **pip, cctype *ptyp, ORD8 *buf, int off, int 
 				}
 				strcpy(fn, ss + 3);
 			}
+
+			if (strncmp(ss, "ca=", 3) == 0) {	/* Capability bits ? */
+				caflags = atoi(ss + 3);
+			}
 			free(ss);
 		}
 
@@ -940,13 +949,23 @@ int parse_reply(char **pname, char **pip, cctype *ptyp, ORD8 *buf, int off, int 
 			DBG((g_log,0," Chromacast '%s'\n", sv))
 		}
 
+		DBG2((g_log,DLEV,"ca bits 0x%x\n", caflags))
+
 		if (strncmp(sv, "Chromecast-Ultra", 16) == 0) {
 			*ptyp = cctyp_Ultra;
 		} else if (strncmp(sv, "Chromecast-Audio", 16) == 0) {
 			*ptyp = cctyp_Audio;
 		} else {
-			// Hmm. Haven't found a way of detecing CC2
-			*ptyp = cctyp_1;
+			// Hmm. A CC1 or non-Google device.
+
+			/* We're guessing that bit 0 of the ca bits == Video capable */
+			/* and bit 1 of the ca bits == Audio capable */
+			if (caflags & 1)
+				*ptyp = cctyp_1;
+			else if (caflags & 4)
+				*ptyp = cctyp_Audio;
+			else
+				*ptyp = cctyp_Other;
 		}
 
 		if (fn != NULL) {
@@ -1004,7 +1023,7 @@ int parse_reply(char **pname, char **pip, cctype *ptyp, ORD8 *buf, int off, int 
 /* Parse an mDNS reply into a ChromCast name & IP address */
 /* Allocate and return name and IP on finding ChromeCast reply, NULL otherwise */
 /* Return nz on failure */
-static int parse_dns(char **pname, char **pip, cctype *ptyp, ORD8 *buf, int size) {
+static int parse_dns(char **pname, char **pip, cctype *ptyp, int *pcaflags, ORD8 *buf, int size) {
 	int i, off = 0;
 	int id, flags, qdcount, ancount, nscount, arcount;
 
@@ -1050,7 +1069,7 @@ static int parse_dns(char **pname, char **pip, cctype *ptyp, ORD8 *buf, int size
 
 	// Parse all the answers (ANCOUNT)
 	for (i = 0; i < ancount; i++) {
-		if ((off = parse_reply(pname, pip, ptyp, buf, off, size)) < 0) {
+		if ((off = parse_reply(pname, pip, ptyp, pcaflags, buf, off, size)) < 0) {
 			DBG((g_log,0," ### Parsing answer failed ###\n"))
 			return 1;
 		}
@@ -1058,7 +1077,7 @@ static int parse_dns(char **pname, char **pip, cctype *ptyp, ORD8 *buf, int size
 
 	// Parse all the NS records (NSCOUNT)
 	for (i = 0; i < nscount; i++) {
-		if ((off = parse_reply(pname, pip, ptyp, buf, off, size)) < 0) {
+		if ((off = parse_reply(pname, pip, ptyp, pcaflags, buf, off, size)) < 0) {
 			DBG((g_log,0," ### Parsing NS record failed ###\n"))
 			return 1;
 		}
@@ -1066,7 +1085,7 @@ static int parse_dns(char **pname, char **pip, cctype *ptyp, ORD8 *buf, int size
 
 	// Parse all the addition RR answers (ARCOUNT)
 	for (i = 0; i < arcount; i++) {
-		if ((off = parse_reply(pname, pip, ptyp, buf, off, size)) < 0) {
+		if ((off = parse_reply(pname, pip, ptyp, pcaflags, buf, off, size)) < 0) {
 			DBG((g_log,0," ### Parsing additional records failed ###\n"))
 			return 1;
 		}
@@ -1106,6 +1125,35 @@ static int parse_dns(char **pname, char **pip, cctype *ptyp, ORD8 *buf, int size
 
 	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+*/
+
+/*
+	.ca values:
+
+	Original CC		   5 = 0x0005
+	Latest CC1		4101 = 0x1005
+	Latest CC2		4101 = 0x1005
+	Latest CC3		4101 = 0x1005
+	Vizio TV        2053 = 0x0805
+	Toshiba TV		4101 = 0x1005
+	Audio CC        4100 = 0x1004
+	Sound bar		2052 = 0x0804
+
+	Google documents the following Capability strings:
+
+	VIDEO_OUT The receiver supports video output.
+	VIDEO_IN The receiver supports video input (camera).
+	AUDIO_OUT The receiver supports audio output.
+	AUDIO_IN The receiver supports audio input (microphone).
+	MULTIZONE_GROUP The receiver represents a multi-zone group.
+
+	Which may correspond to ca bits 0, 1, 2, 3 respectively ?
+
+*/
+
+/*
+	Original CC 1 dump ?
+
     0000: 00 00 84 00 00 00 00 01 00 00 00 05 0b 5f 67 6f  ............._go
     0010: 6f 67 6c 65 63 61 73 74 04 5f 74 63 70 05 6c 6f  oglecast._tcp.lo
     0020: 63 61 6c 00 00 0c 00 01 00 00 11 94 00 11 0e 43  cal............C
@@ -1126,12 +1174,204 @@ static int parse_dns(char **pname, char **pip, cctype *ptyp, ORD8 *buf, int size
 
 */
 
+/*
+
+	ChromeCast 1 dump
+
+0000: 00 00 84 00 00 00 00 01 00 00 00 03 0b 5f 67 6f  ............._go
+0010: 6f 67 6c 65 63 61 73 74 04 5f 74 63 70 05 6c 6f  oglecast._tcp.lo
+0020: 63 61 6c 00 00 0c 00 01 00 00 00 78 00 44 2b 43  cal........x.D+C
+0030: 68 72 6f 6d 65 63 61 73 74 2d 63 31 37 61 65 38  hromecast-c17ae8
+0040: 38 32 65 37 65 31 38 37 35 64 30 31 33 65 64 32  82e7e1875d013ed2
+0050: 31 32 63 31 36 62 62 64 34 30 0b 5f 67 6f 6f 67  12c16bbd40._goog
+0060: 6c 65 63 61 73 74 04 5f 74 63 70 05 6c 6f 63 61  lecast._tcp.loca
+0070: 6c 00 2b 43 68 72 6f 6d 65 63 61 73 74 2d 63 31  l.+Chromecast-c1
+0080: 37 61 65 38 38 32 65 37 65 31 38 37 35 64 30 31  7ae882e7e1875d01
+0090: 33 65 64 32 31 32 63 31 36 62 62 64 34 30 0b 5f  3ed212c16bbd40._
+00a0: 67 6f 6f 67 6c 65 63 61 73 74 04 5f 74 63 70 05  googlecast._tcp.
+00b0: 6c 6f 63 61 6c 00 00 10 80 01 00 00 11 94 00 82  local...........
+00c0: 23 69 64 3d 63 31 37 61 65 38 38 32 65 37 65 31  #id=c17ae882e7e1
+00d0: 38 37 35 64 30 31 33 65 64 32 31 32 63 31 36 62  875d013ed212c16b
+00e0: 62 64 34 30 03 72 6d 3d 05 76 65 3d 30 35 0d 6d  bd40.rm=.ve=05.m
+00f0: 64 3d 43 68 72 6f 6d 65 63 61 73 74 12 69 63 3d  d=Chromecast.ic=
+0100: 2f 73 65 74 75 70 2f 69 63 6f 6e 2e 70 6e 67 11  /setup/icon.png.
+0110: 66 6e 3d 43 68 72 6f 6d 65 63 61 73 74 36 38 39  fn=Chromecast689
+0120: 32 07 63 61 3d 34 31 30 31 04 73 74 3d 30 0f 62  2.ca=4101.st=0.b
+0130: 73 3d 46 41 38 46 43 41 35 36 36 36 34 35 03 72  s=FA8FCA566645.r
+0140: 73 3d 2b 43 68 72 6f 6d 65 63 61 73 74 2d 63 31  s=+Chromecast-c1
+0150: 37 61 65 38 38 32 65 37 65 31 38 37 35 64 30 31  7ae882e7e1875d01
+0160: 33 65 64 32 31 32 63 31 36 62 62 64 34 30 0b 5f  3ed212c16bbd40._
+0170: 67 6f 6f 67 6c 65 63 61 73 74 04 5f 74 63 70 05  googlecast._tcp.
+0180: 6c 6f 63 61 6c 00 00 21 80 01 00 00 00 78 00 32  local..!.....x.2
+0190: 00 00 00 00 1f 49 24 63 31 37 61 65 38 38 32 2d  .....I$c17ae882-
+01a0: 65 37 65 31 2d 38 37 35 64 2d 30 31 33 65 2d 64  e7e1-875d-013e-d
+01b0: 32 31 32 63 31 36 62 62 64 34 30 05 6c 6f 63 61  212c16bbd40.loca
+01c0: 6c 00 24 63 31 37 61 65 38 38 32 2d 65 37 65 31  l.$c17ae882-e7e1
+01d0: 2d 38 37 35 64 2d 30 31 33 65 2d 64 32 31 32 63  -875d-013e-d212c
+01e0: 31 36 62 62 64 34 30 05 6c 6f 63 61 6c 00 00 01  16bbd40.local...
+01f0: 80 01 00 00 00 78 00 04 c0 a8 01 68              .....x.....h
+
+
+ChromeCast 2 dump:
+
+0000: 00 00 84 00 00 00 00 01 00 00 00 03 0b 5f 67 6f  ............._go
+0010: 6f 67 6c 65 63 61 73 74 04 5f 74 63 70 05 6c 6f  oglecast._tcp.lo
+0020: 63 61 6c 00 00 0c 00 01 00 00 00 78 00 44 2b 43  cal........x.D+C
+0030: 68 72 6f 6d 65 63 61 73 74 2d 38 32 38 30 30 66  hromecast-82800f
+0040: 65 63 33 37 37 36 35 39 38 66 35 38 64 34 61 61  ec3776598f58d4aa
+0050: 63 39 65 36 35 64 30 30 30 61 0b 5f 67 6f 6f 67  c9e65d000a._goog
+0060: 6c 65 63 61 73 74 04 5f 74 63 70 05 6c 6f 63 61  lecast._tcp.loca
+0070: 6c 00 2b 43 68 72 6f 6d 65 63 61 73 74 2d 38 32  l.+Chromecast-82
+0080: 38 30 30 66 65 63 33 37 37 36 35 39 38 66 35 38  800fec3776598f58
+0090: 64 34 61 61 63 39 65 36 35 64 30 30 30 61 0b 5f  d4aac9e65d000a._
+00a0: 67 6f 6f 67 6c 65 63 61 73 74 04 5f 74 63 70 05  googlecast._tcp.
+00b0: 6c 6f 63 61 6c 00 00 10 80 01 00 00 11 94 00 a9  local...........
+00c0: 23 69 64 3d 38 32 38 30 30 66 65 63 33 37 37 36  #id=82800fec3776
+00d0: 35 39 38 66 35 38 64 34 61 61 63 39 65 36 35 64  598f58d4aac9e65d
+00e0: 30 30 30 61 13 72 6d 3d 36 36 39 42 39 34 34 38  000a.rm=669B9448
+00f0: 36 33 36 30 41 31 43 42 05 76 65 3d 30 35 0d 6d  6360A1CB.ve=05.m
+0100: 64 3d 43 68 72 6f 6d 65 63 61 73 74 12 69 63 3d  d=Chromecast.ic=
+0110: 2f 73 65 74 75 70 2f 69 63 6f 6e 2e 70 6e 67 11  /setup/icon.png.
+0120: 66 6e 3d 43 68 72 6f 6d 65 63 61 73 74 36 35 30  fn=Chromecast650
+0130: 32 07 63 61 3d 34 31 30 31 04 73 74 3d 31 0f 62  2.ca=4101.st=1.b
+0140: 73 3d 46 41 38 46 43 41 39 45 33 45 30 31 1a 72  s=FA8FCA9E3E01.r
+0150: 73 3d 50 61 74 74 65 72 6e 20 67 65 6e 65 72 61  s=Pattern genera
+0160: 74 6f 72 20 72 65 61 64 79 2b 43 68 72 6f 6d 65  tor ready+Chrome
+0170: 63 61 73 74 2d 38 32 38 30 30 66 65 63 33 37 37  cast-82800fec377
+0180: 36 35 39 38 66 35 38 64 34 61 61 63 39 65 36 35  6598f58d4aac9e65
+0190: 64 30 30 30 61 0b 5f 67 6f 6f 67 6c 65 63 61 73  d000a._googlecas
+01a0: 74 04 5f 74 63 70 05 6c 6f 63 61 6c 00 00 21 80  t._tcp.local..!.
+01b0: 01 00 00 00 78 00 32 00 00 00 00 1f 49 24 38 32  ....x.2.....I$82
+01c0: 38 30 30 66 65 63 2d 33 37 37 36 2d 35 39 38 66  800fec-3776-598f
+01d0: 2d 35 38 64 34 2d 61 61 63 39 65 36 35 64 30 30  -58d4-aac9e65d00
+01e0: 30 61 05 6c 6f 63 61 6c 00 24 38 32 38 30 30 66  0a.local.$82800f
+01f0: 65 63 2d 33 37 37 36 2d 35 39 38 66 2d 35 38 64  ec-3776-598f-58d
+0200: 34 2d 61 61 63 39 65 36 35 64 30 30 30 61 05 6c  4-aac9e65d000a.l
+0210: 6f 63 61 6c 00 00 01 80 01 00 00 00 78 00 04 0a  ocal........x...
+0220: 00 00 80                                         ...
+
+ChromeCast 3 (Ultra)
+
+0000: 00 00 84 00 00 00 00 01 00 00 00 03 0b 5f 67 6f  ............._go
+0010: 6f 67 6c 65 63 61 73 74 04 5f 74 63 70 05 6c 6f  oglecast._tcp.lo
+0020: 63 61 6c 00 00 0c 00 01 00 00 00 78 00 34 31 43  cal........x.41C
+0030: 68 72 6f 6d 65 63 61 73 74 2d 55 6c 74 72 61 2d  hromecast-Ultra-
+0040: 32 38 36 65 36 63 63 65 38 34 65 32 38 65 61 33  286e6cce84e28ea3
+0050: 36 63 37 63 33 31 39 32 66 33 35 62 65 30 33 65  6c7c3192f35be03e
+0060: c0 0c c0 2e 00 10 80 01 00 00 11 94 00 8d 23 69  ..............#i
+0070: 64 3d 32 38 36 65 36 63 63 65 38 34 65 32 38 65  d=286e6cce84e28e
+0080: 61 33 36 63 37 63 33 31 39 32 66 33 35 62 65 30  a36c7c3192f35be0
+0090: 33 65 03 72 6d 3d 05 76 65 3d 30 35 13 6d 64 3d  3e.rm=.ve=05.md=
+00a0: 43 68 72 6f 6d 65 63 61 73 74 20 55 6c 74 72 61  Chromecast Ultra
+00b0: 12 69 63 3d 2f 73 65 74 75 70 2f 69 63 6f 6e 2e  .ic=/setup/icon.
+00c0: 70 6e 67 16 66 6e 3d 43 68 72 6f 6d 65 63 61 73  png.fn=Chromecas
+00d0: 74 55 6c 74 72 61 36 32 35 30 07 63 61 3d 34 31  tUltra6250.ca=41
+00e0: 30 31 04 73 74 3d 30 0f 62 73 3d 46 41 38 46 43  01.st=0.bs=FA8FC
+00f0: 41 37 30 38 35 42 35 03 72 73 3d c0 2e 00 21 80  A7085B5.rs=...!.
+0100: 01 00 00 00 78 00 2d 00 00 00 00 1f 49 24 32 38  ....x.-.....I$28
+0110: 36 65 36 63 63 65 2d 38 34 65 32 2d 38 65 61 33  6e6cce-84e2-8ea3
+0120: 2d 36 63 37 63 2d 33 31 39 32 66 33 35 62 65 30  -6c7c-3192f35be0
+0130: 33 65 c0 1d c1 0d 00 01 80 01 00 00 00 78 00 04  3e...........x..
+0140: 0a 00 01 1d                                      ....
+
+*/
+
+
+/* Other non-Google devices:
+
+Vizio M60-D1 :- Smart TV
+
+00000000  00 00 84 00 00 00 00 01  00 00 00 03 0b 5f 67 6f  |............._go|
+00000010  6f 67 6c 65 63 61 73 74  04 5f 74 63 70 05 6c 6f  |oglecast._tcp.lo|
+00000020  63 61 6c 00 00 0c 00 01  00 00 00 78 00 40 27 4d  |cal........x.@'M|
+00000030  36 30 2d 44 31 2d 37 63  35 35 36 37 39 31 35 38  |60-D1-7c55679158|
+00000040  38 64 63 64 33 37 63 37  37 32 33 31 61 30 64 64  |8dcd37c77231a0dd|
+00000050  31 35 61 35 30 36 0b 5f  67 6f 6f 67 6c 65 63 61  |15a506._googleca|
+00000060  73 74 04 5f 74 63 70 05  6c 6f 63 61 6c 00 27 4d  |st._tcp.local.'M|
+00000070  36 30 2d 44 31 2d 37 63  35 35 36 37 39 31 35 38  |60-D1-7c55679158|
+00000080  38 64 63 64 33 37 63 37  37 32 33 31 61 30 64 64  |8dcd37c77231a0dd|
+00000090  31 35 61 35 30 36 0b 5f  67 6f 6f 67 6c 65 63 61  |15a506._googleca|
+000000a0  73 74 04 5f 74 63 70 05  6c 6f 63 61 6c 00 00 10  |st._tcp.local...|
+000000b0  80 01 00 00 11 94 00 80  23 69 64 3d 37 63 35 35  |........#id=7c55|
+000000c0  36 37 39 31 35 38 38 64  63 64 33 37 63 37 37 32  |6791588dcd37c772|
+000000d0  33 31 61 30 64 64 31 35  61 35 30 36 13 72 6d 3d  |31a0dd15a506.rm=|
+000000e0  31 33 39 46 33 32 34 34  38 34 44 46 41 39 32 34  |139F324484DFA924|
+000000f0  05 76 65 3d 30 35 09 6d  64 3d 4d 36 30 2d 44 31  |.ve=05.md=M60-D1|
+00000100  12 69 63 3d 2f 73 65 74  75 70 2f 69 63 6f 6e 2e  |.ic=/setup/icon.|
+00000110  70 6e 67 0f 66 6e 3d 56  69 7a 69 6f 20 4d 36 30  |png.fn=Vizio M60|
+00000120  2d 44 31 07 63 61 3d 32  30 35 33 04 73 74 3d 30  |-D1.ca=2053.st=0|
+00000130  03 62 73 3d 03 72 73 3d  27 4d 36 30 2d 44 31 2d  |.bs=.rs='M60-D1-|
+00000140  37 63 35 35 36 37 39 31  35 38 38 64 63 64 33 37  |7c556791588dcd37|
+00000150  63 37 37 32 33 31 61 30  64 64 31 35 61 35 30 36  |c77231a0dd15a506|
+00000160  0b 5f 67 6f 6f 67 6c 65  63 61 73 74 04 5f 74 63  |._googlecast._tc|
+00000170  70 05 6c 6f 63 61 6c 00  00 21 80 01 00 00 00 78  |p.local..!.....x|
+00000180  00 32 00 00 00 00 1f 49  24 37 63 35 35 36 37 39  |.2.....I$7c55679|
+00000190  31 2d 35 38 38 64 2d 63  64 33 37 2d 63 37 37 32  |1-588d-cd37-c772|
+000001a0  2d 33 31 61 30 64 64 31  35 61 35 30 36 05 6c 6f  |-31a0dd15a506.lo|
+000001b0  63 61 6c 00 24 37 63 35  35 36 37 39 31 2d 35 38  |cal.$7c556791-58|
+000001c0  38 64 2d 63 64 33 37 2d  63 37 37 32 2d 33 31 61  |8d-cd37-c772-31a|
+000001d0  30 64 64 31 35 61 35 30  36 05 6c 6f 63 61 6c 00  |0dd15a506.local.|
+000001e0  00 01 80 01 00 00 00 78  00 04 c0 a8 00 3e        |.......x.....>|
+000001ee
+
+SmartCast Sound Bar 3851-D0  :- Sound bar
+
+00000000  00 00 84 00 00 00 00 01  00 00 00 03 0b 5f 67 6f  |............._go|
+00000010  6f 67 6c 65 63 61 73 74  04 5f 74 63 70 05 6c 6f  |oglecast._tcp.lo|
+00000020  63 61 6c 00 00 0c 00 01  00 00 00 78 00 22 09 53  |cal........x.".S|
+00000030  42 33 38 35 31 2d 44 30  0b 5f 67 6f 6f 67 6c 65  |B3851-D0._google|
+00000040  63 61 73 74 04 5f 74 63  70 05 6c 6f 63 61 6c 00  |cast._tcp.local.|
+00000050  09 53 42 33 38 35 31 2d  44 30 0b 5f 67 6f 6f 67  |.SB3851-D0._goog|
+00000060  6c 65 63 61 73 74 04 5f  74 63 70 05 6c 6f 63 61  |lecast._tcp.loca|
+00000070  6c 00 00 10 80 01 00 00  11 94 00 8a 23 69 64 3d  |l...........#id=|
+00000080  64 35 36 63 33 66 30 39  36 66 30 31 30 31 36 66  |d56c3f096f01016f|
+00000090  33 64 37 30 65 62 62 63  36 32 36 34 65 66 33 31  |3d70ebbc6264ef31|
+000000a0  05 76 65 3d 30 34 1e 6d  64 3d 53 6d 61 72 74 43  |.ve=04.md=SmartC|
+000000b0  61 73 74 20 53 6f 75 6e  64 20 42 61 72 20 33 38  |ast Sound Bar 38|
+000000c0  35 31 2d 44 30 12 69 63  3d 2f 73 65 74 75 70 2f  |51-D0.ic=/setup/|
+000000d0  69 63 6f 6e 2e 70 6e 67  0c 66 6e 3d 53 42 33 38  |icon.png.fn=SB38|
+000000e0  35 31 2d 44 30 07 63 61  3d 32 30 35 32 04 73 74  |51-D0.ca=2052.st|
+000000f0  3d 30 0f 62 73 3d 46 46  46 46 46 46 46 46 46 46  |=0.bs=FFFFFFFFFF|
+00000100  46 46 03 72 73 3d 09 53  42 33 38 35 31 2d 44 30  |FF.rs=.SB3851-D0|
+00000110  0b 5f 67 6f 6f 67 6c 65  63 61 73 74 04 5f 74 63  |._googlecast._tc|
+00000120  70 05 6c 6f 63 61 6c 00  00 21 80 01 00 00 00 78  |p.local..!.....x|
+00000130  00 17 00 00 00 00 1f 49  09 53 42 33 38 35 31 2d  |.......I.SB3851-|
+00000140  44 30 05 6c 6f 63 61 6c  00 09 53 42 33 38 35 31  |D0.local..SB3851|
+00000150  2d 44 30 05 6c 6f 63 61  6c 00 00 01 80 01 00 00  |-D0.local.......|
+00000160  00 78 00 04 c0 a8 00 26                           |.x.....&|
+00000168
+
+ZChromecast Toshiba :- TV ?
+
+00000000  00 00 84 00 00 00 00 01  00 00 00 03 0b 5f 67 6f  |............._go|
+00000010  6f 67 6c 65 63 61 73 74  04 5f 74 63 70 05 6c 6f  |oglecast._tcp.lo|
+00000020  63 61 6c 00 00 0c 00 01  00 00 00 78 00 2e 2b 43  |cal........x..+C|
+00000030  68 72 6f 6d 65 63 61 73  74 2d 64 61 30 33 34 62  |hromecast-da034b|
+00000040  31 39 30 30 34 34 62 63  38 65 35 33 30 31 34 37  |190044bc8e530147|
+00000050  63 37 61 65 33 32 63 35  61 33 c0 0c c0 2e 00 10  |c7ae32c5a3......|
+00000060  80 01 00 00 11 94 00 87  23 69 64 3d 64 61 30 33  |........#id=da03|
+00000070  34 62 31 39 30 30 34 34  62 63 38 65 35 33 30 31  |4b190044bc8e5301|
+00000080  34 37 63 37 61 65 33 32  63 35 61 33 03 72 6d 3d  |47c7ae32c5a3.rm=|
+00000090  05 76 65 3d 30 35 0d 6d  64 3d 43 68 72 6f 6d 65  |.ve=05.md=Chrome|
+000000a0  63 61 73 74 12 69 63 3d  2f 73 65 74 75 70 2f 69  |cast.ic=/setup/i|
+000000b0  63 6f 6e 2e 70 6e 67 16  66 6e 3d 5a 43 68 72 6f  |con.png.fn=ZChro|
+000000c0  6d 65 63 61 73 74 20 54  6f 73 68 69 62 61 07 63  |mecast Toshiba.c|
+000000d0  61 3d 34 31 30 31 04 73  74 3d 30 0f 62 73 3d 46  |a=4101.st=0.bs=F|
+000000e0  41 38 46 43 41 37 30 32  30 36 32 03 72 73 3d c0  |A8FCA702062.rs=.|
+000000f0  2e 00 21 80 01 00 00 00  78 00 2d 00 00 00 00 1f  |..!.....x.-.....|
+00000100  49 24 64 61 30 33 34 62  31 39 2d 30 30 34 34 2d  |I$da034b19-0044-|
+00000110  62 63 38 65 2d 35 33 30  31 2d 34 37 63 37 61 65  |bc8e-5301-47c7ae|
+00000120  33 32 63 35 61 33 c0 1d  c1 01 00 01 80 01 00 00  |32c5a3..........|
+00000130  00 78 00 04 c0 a8 00 1b                           |.x......|
+00000138
+
+*/
+
 /* 
 
 	Can get info from Chromecast http server at http://XX.XX.XX.XX:8008/ssdp/device-desc.xml
 
-	Get infi about the app running: http://XX.XX.XX.XX:8008/apps/ChromeCast
-
+	Get info about the app running: http://XX.XX.XX.XX:8008/apps/ChromeCast
 
 */
 

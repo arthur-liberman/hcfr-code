@@ -1,0 +1,40 @@
+
+PREF_CCFLAGS 	= $(CCOPTFLAG) ;		# Turn optimisation on
+#PREF_CCFLAGS	= $(CCDEBUGFLAG) ;		# Debugging flags
+PREF_LINKFLAGS	= $(LINKDEBUGFLAG) ;
+
+if $(NT) {
+	DEFINES += WIN32 ;
+} else {
+	if $(OS) = MACOSX {
+	} else if $(OS) = FREEBSD {
+	} else {
+		DEFINES += CONFIG_PLATFORM_LINUX ;
+	}
+}
+
+# axTLS library
+LIBSRCS = 
+	aes.c
+	asn1.c
+	bigint.c
+	crypto_misc.c
+	gen_cert.c
+	hmac.c
+	loader.c
+	md2.c
+	md5.c
+	openssl.c
+	os_port.c
+	p12.c
+	rc4.c
+	rsa.c
+	sha1.c
+	tls1.c
+	tls1_clnt.c
+	tls1_svr.c
+	x509.c
+	;
+
+Library libaxtls.lib : $(LIBSRCS) ;
+

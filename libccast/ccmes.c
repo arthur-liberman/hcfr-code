@@ -30,13 +30,10 @@
 #include <sys/types.h>
 #include "numlib.h"
 
-// Patch not having the correct configuration files:
-#define USING_AXTLS
-
-#ifdef USING_AXTLS
-# include "ssl.h"		/* axTLS header */
-#else
+#ifndef USING_AXTLS
 # include "openssl/ssl.h"		/* OpenSSL header */
+#else
+# include "ssl.h"		/* axTLS header */
 #endif
 
 #include "yajl.h"
