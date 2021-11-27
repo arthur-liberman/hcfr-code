@@ -14,7 +14,7 @@
     <ProjectGuid>{157843C3-1412-43DD-8832-19EAC7DF2B3F}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>libccast</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

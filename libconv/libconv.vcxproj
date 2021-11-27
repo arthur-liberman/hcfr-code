@@ -14,7 +14,7 @@
     <ProjectGuid>{5A67D03C-FE43-49FE-86F8-7A3B98E0A977}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>libconv</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

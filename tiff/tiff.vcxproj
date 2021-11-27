@@ -14,7 +14,7 @@
     <ProjectGuid>{01DED230-6F48-43DF-ACD2-CD8B5E8E815C}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>tiff</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
