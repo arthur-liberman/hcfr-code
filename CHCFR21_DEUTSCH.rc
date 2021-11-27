@@ -139,7 +139,7 @@ STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Sensorauswahl"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    LTEXT           "Wählen Sie einen Sensor in der Liste",IDC_STATIC,20,15,80,8
+    LTEXT           "Wï¿½hlen Sie einen Sensor in der Liste",IDC_STATIC,20,15,80,8
     COMBOBOX        IDC_SENSORCHOICE_COMBO,20,25,146,96,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     LTEXT           "Wie wollen Sie den Sensor kalibrieren ?",IDC_STATIC,20,50,134,8
     CONTROL         "Existierende Kalibrierungsdatei verwenden",IDC_SENSORTRAININGMODE_RADIO1,
@@ -156,7 +156,7 @@ STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Bildquellenauswahl"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    LTEXT           "Wählen Sie eine Bildquelle aus der Liste",IDC_STATIC,29,31,91,8
+    LTEXT           "Wï¿½hlen Sie eine Bildquelle aus der Liste",IDC_STATIC,29,31,91,8
     COMBOBOX        IDC_GENERATORCHOICE_COMBO,30,43,106,43,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
@@ -173,7 +173,7 @@ BEGIN
     PUSHBUTTON      "Button1",IDC_GRAPHCOLOR_BUTTON,98,42,26,12
     CONTROL         "Punkte anzeigen",IDC_GRAPH_SHOWPOINTS_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,61,76,10
     CONTROL         "Tooltips anzeigen",IDC_GRAPH_SHOWTOOLTIPS_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,98,61,80,10
-    LTEXT           "Linienstärke:",IDC_STATIC,17,77,39,8
+    LTEXT           "Linienstï¿½rke:",IDC_STATIC,17,77,39,8
     COMBOBOX        IDC_GRAPH_LINEWIDTH_COMBO,59,76,31,54,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Stil:",IDC_STATIC,96,78,21,8
     COMBOBOX        IDC_GRAPH_LINETYPE_COMBO,119,76,59,51,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
@@ -230,20 +230,20 @@ STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Diagramm speichern"
 FONT 8, "MS Sans Serif"
 BEGIN
-    GROUPBOX        "Bildgröße",IDC_STATIC,10,7,180,78
-    CONTROL         "Fenstergröße",IDC_SIZE_RADIO,"Button",BS_AUTORADIOBUTTON | WS_GROUP,22,21,160,10
+    GROUPBOX        "Bildgrï¿½ï¿½e",IDC_STATIC,10,7,180,78
+    CONTROL         "Fenstergrï¿½ï¿½e",IDC_SIZE_RADIO,"Button",BS_AUTORADIOBUTTON | WS_GROUP,22,21,160,10
     CONTROL         "300 x 200",IDC_SIZE_RADIO2,"Button",BS_AUTORADIOBUTTON,22,32,160,10
     CONTROL         "600 x 400",IDC_SIZE_RADIO3,"Button",BS_AUTORADIOBUTTON,22,43,160,10
     CONTROL         "Benutzerdefiniert",IDC_SIZE_RADIO4,"Button",BS_AUTORADIOBUTTON,22,54,160,10
     LTEXT           "Breite:",IDC_STATIC,34,66,37,8
     EDITTEXT        IDC_SAVE_WIDTH_EDIT,74,64,26,14,ES_AUTOHSCROLL
-    LTEXT           "Höhe:",IDC_STATIC,105,66,37,8
+    LTEXT           "Hï¿½he:",IDC_STATIC,105,66,37,8
     EDITTEXT        IDC_SAVE_HEIGHT_EDIT,147,64,26,14,ES_AUTOHSCROLL
     GROUPBOX        "Dateityp",IDC_STATIC,10,92,180,57
     CONTROL         "JPEG",IDC_FILE_TYPE_RADIO,"Button",BS_AUTORADIOBUTTON | WS_GROUP,22,105,37,10
     CONTROL         "BMP",IDC_FILE_TYPE_RADIO2,"Button",BS_AUTORADIOBUTTON,22,117,37,10
     CONTROL         "PNG",IDC_FILE_TYPE_RADIO3,"Button",BS_AUTORADIOBUTTON,22,129,37,10
-    LTEXT           "JPEG Qualität (in %):",IDC_STATIC,61,106,78,8
+    LTEXT           "JPEG Qualitï¿½t (in %):",IDC_STATIC,61,106,78,8
     EDITTEXT        IDC_SAVE_JPEGQUALITY_EDIT,143,103,18,14,ES_AUTOHSCROLL
     DEFPUSHBUTTON   "OK",IDOK,10,154,50,14
     PUSHBUTTON      "Abbrechen",IDCANCEL,75,154,50,14
@@ -257,13 +257,13 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     GROUPBOX        "Anwendung",IDC_STATIC,7,1,203,35,WS_GROUP
     CONTROL         "Mehrere Instanzen",IDC_CHECK_MULTIPLEINSTANCE,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,10,77,10
-    CONTROL         "Größen/Positionen speichern",IDC_CHECK_SAVEPOSITION,
+    CONTROL         "Grï¿½ï¿½en/Positionen speichern",IDC_CHECK_SAVEPOSITION,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,95,10,110,10
     GROUPBOX        "Benutzermessungen",IDC_STATIC,7,41,203,48,WS_GROUP
     CONTROL         "Testfarbe bei der Messung anzeigen",IDC_CHECK_COLORS,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,52,183,10
     CONTROL         "Fortlaufendes Messen",IDC_CHECK_CONTINUOUS,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,63,85,10
-    CONTROL         "Grau/Primärfarben bei User-Messungen erkennen",IDC_CHECK_DETECT_PRIMARIES,
+    CONTROL         "Grau/Primï¿½rfarben bei User-Messungen erkennen",IDC_CHECK_DETECT_PRIMARIES,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,74,175,10
     GROUPBOX        "Dynamische Iris",IDC_STATIC,7,93,203,59,WS_GROUP
     LTEXT           "Latenzzeit",IDC_STATIC,14,104,34,8
@@ -271,10 +271,10 @@ BEGIN
     LTEXT           "ms",IDC_STATIC,87,104,15,8
     CONTROL         "Signal bei Beginn der Messung (Latenzeinstellungshilfe)",IDC_CHECK_BEEP,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,116,189,10
-    GROUPBOX        "Farben hinzufügen bei Primär- und Sekundärfarbmessungen",IDC_STATIC,7,160,203,25,WS_GROUP
+    GROUPBOX        "Farben hinzufï¿½gen bei Primï¿½r- und Sekundï¿½rfarbmessungen",IDC_STATIC,7,160,203,25,WS_GROUP
     CONTROL         "Keine",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,171,34,10
-    CONTROL         "Weiß",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,69,171,33,10
-    CONTROL         "Weiß und Schwarz",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,115,171,76,10
+    CONTROL         "Weiï¿½",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,69,171,33,10
+    CONTROL         "Weiï¿½ und Schwarz",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,115,171,76,10
     GROUPBOX        "Gray levels rounding assumption",IDC_STATIC,7,192,203,42,WS_GROUP
     CONTROL         "Use round down levels (AVSHD, DVE)",IDC_CHECK_USE_ROUNDDOWN,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,203,164,10
@@ -297,9 +297,9 @@ STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Excel Export"
 FONT 8, "MS Sans Serif"
 BEGIN
-    LTEXT           "Diese Datei enthält bereits Messungen",IDC_STATIC,10,8,209,8
+    LTEXT           "Diese Datei enthï¿½lt bereits Messungen",IDC_STATIC,10,8,209,8
     LTEXT           "Was wollen Sie tun ?",IDC_STATIC,10,19,209,8
-    CONTROL         "Messungen nach den bestehenden Daten anfügen",IDC_APPEND_RADIO,
+    CONTROL         "Messungen nach den bestehenden Daten anfï¿½gen",IDC_APPEND_RADIO,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,10,34,203,10
     CONTROL         "Bestehende Daten ersetzen",IDC_REPLACE_RADIO,"Button",BS_AUTORADIOBUTTON,10,46,206,10
     LISTBOX         IDC_REPLACEMEASURE_LIST,10,60,203,39,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_GROUP | WS_TABSTOP
@@ -310,7 +310,7 @@ END
 
 IDD_ABOUTBOX DIALOGEX 0, 0, 186, 278
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Über HCFR Colorimeter"
+CAPTION "ï¿½ber HCFR Colorimeter"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         223,IDC_STATIC,"Static",SS_BITMAP,7,7,172,62
@@ -330,18 +330,18 @@ BEGIN
     GROUPBOX        "Referenz",IDC_STATIC,5,2,197,105
     LTEXT           "Modell:",IDC_STATIC,15,15,31,8
     COMBOBOX        IDC_DISPLAYREF_COMBO,49,13,140,44,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Primärfarbpunkte",IDC_STATIC,15,31,100,9
+    LTEXT           "Primï¿½rfarbpunkte",IDC_STATIC,15,31,100,9
     CONTROL         "",IDC_PRIMARIESMATRIX_STATIC,"Static",SS_ETCHEDFRAME,15,41,104,60
-    LTEXT           "Weißpunkt",IDC_STATIC,131,31,64,16
+    LTEXT           "Weiï¿½punkt",IDC_STATIC,131,31,64,16
     CONTROL         "",IDC_WHITEMATRIX_STATIC,"Static",SS_ETCHEDFRAME,133,50,46,43
     GROUPBOX        "Optionen",IDC_STATIC,5,107,197,80
     CONTROL         "Schwarzkompensation",IDC_BLACK_COMPENSATION_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,119,167,10
-    CONTROL         "Farbadditivität prüfen",IDC_VERIFY_ADDITIVITY_CHECK,
+    CONTROL         "Farbadditivitï¿½t prï¿½fen",IDC_VERIFY_ADDITIVITY_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,133,166,10
     LTEXT           "Max Fehler (in %) :",IDC_STATIC,37,145,69,8
     EDITTEXT        IDC_MAX_ADDITIVITY_ERROR_EDIT,113,145,25,12,ES_AUTOHSCROLL
-    CONTROL         "Additivitätsergebniss anzeigen",IDC_SHOW_ADDITIVITY_CHECK,
+    CONTROL         "Additivitï¿½tsergebniss anzeigen",IDC_SHOW_ADDITIVITY_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,158,168,10
     LTEXT           "IRE Niveau",IDC_STATIC,26,173,85,8
     COMBOBOX        IDC_RGBLEVEL_COMBO,113,170,32,47,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
@@ -354,17 +354,17 @@ FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "Rot Offset",IDC_STATIC,19,15,50,10
     EDITTEXT        IDC_REDOFFSET_EDIT,71,11,28,12,ES_AUTOHSCROLL
-    LTEXT           "Grün Offset",IDC_STATIC,19,29,50,10
+    LTEXT           "Grï¿½n Offset",IDC_STATIC,19,29,50,10
     EDITTEXT        IDC_GREENOFFSET_EDIT,71,27,27,12,ES_AUTOHSCROLL
     LTEXT           "Blau Offset",IDC_STATIC,19,43,50,10
     EDITTEXT        IDC_BLUEOFFSET_EDIT,71,42,27,12,ES_AUTOHSCROLL
-    CONTROL         "Zufälliges Offset",IDC_OFFSET_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,65,83,10
+    CONTROL         "Zufï¿½lliges Offset",IDC_OFFSET_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,65,83,10
     LTEXT           "Max Offset Fehler",IDC_STATIC,31,76,70,10
     EDITTEXT        IDC_OFFSETERROR_EDIT,103,74,19,12,ES_AUTOHSCROLL
-    CONTROL         "Zufälliges Gamma",IDC_GAMMA_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,90,83,10
+    CONTROL         "Zufï¿½lliges Gamma",IDC_GAMMA_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,90,83,10
     LTEXT           "Max Gamma Fehler",IDC_STATIC,31,101,70,10
     EDITTEXT        IDC_GAMMAERROR_EDIT,103,99,19,12,ES_AUTOHSCROLL
-    CONTROL         "Zufällige Verstärkung",IDC_GAIN_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,116,83,10
+    CONTROL         "Zufï¿½llige Verstï¿½rkung",IDC_GAIN_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,116,83,10
     LTEXT           "Max Fehler",IDC_STATIC,31,128,70,10
     EDITTEXT        IDC_GAINERROR_EDIT,103,125,19,12,ES_AUTOHSCROLL
 END
@@ -398,7 +398,7 @@ BEGIN
     CONTROL         "disable video LUT",IDC_DISP_TRIP2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,181,91,13
     LTEXT           "Zielbildschirm:",IDC_STATIC,9,7,59,9
     COMBOBOX        IDC_MONITOR_COMBO,68,4,89,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    LTEXT           "Bildgröße (%)",IDC_STATIC,10,22,53,8
+    LTEXT           "Bildgrï¿½ï¿½e (%)",IDC_STATIC,10,22,53,8
     EDITTEXT        IDC_PATTERNSIZE_EDIT,60,20,20,12,ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "APL (video) level [%]",IDC_STATIC,86,23,75,8
     EDITTEXT        IDC_BGSTIM_EDIT,156,21,20,12,ES_AUTOHSCROLL | WS_GROUP
@@ -407,7 +407,7 @@ BEGIN
     EDITTEXT        IDC_INTENSITY_EDIT,156,34,20,12,ES_AUTOHSCROLL | WS_GROUP
     GROUPBOX        "Display mode",IDC_STATIC,5,63,177,90,WS_GROUP
     GROUPBOX        "GDI Options",IDC_STATIC,9,158,167,38,WS_GROUP
-    COMBOBOX        IDC_CCAST_COMBO,55,108,75,62,CBS_DROPDOWNLIST | WS_DISABLED | WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    COMBOBOX        IDC_CCAST_COMBO,55,108,124,62,CBS_DROPDOWNLIST | WS_DISABLED | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     CONTROL         "HDR10 aktivieren",IDC_ENBL_HDR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,96,137,76,12
     CONTROL         "HDR",IDC_MADVR_HDR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,148,80,26,13
     GROUPBOX        "",IDC_STATIC,85,64,94,42,WS_GROUP
@@ -427,14 +427,14 @@ BEGIN
     GROUPBOX        "Visueller Stil",IDC_STATIC,7,7,199,45,WS_GROUP
     LTEXT           "Theme:",IDC_STATIC,13,20,33,9
     COMBOBOX        IDC_THEME_COMBO,49,18,62,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    CONTROL         "Menübegrenzer anzeigen",IDC_MENUBORDER_CHECK,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,36,117,10
+    CONTROL         "Menï¿½begrenzer anzeigen",IDC_MENUBORDER_CHECK,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,36,117,10
     CONTROL         "XP blending",IDC_XPBLENDING_CHECK,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,136,15,67,10
     CONTROL         "Gloom",IDC_GLOOM_CHECK,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,136,25,67,10
     CONTROL         "Auswahl inaktiv",IDC_DISABLE_CHECK,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,136,36,67,10
     GROUPBOX        "Farben",IDC_STATIC,7,53,199,57,WS_GROUP
     CONTROL         "Windowsfarben",IDC_CUSTOMCOLOR_RADIO,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,66,146,10
     CONTROL         "Benutzerfarben",IDC_RADIO7,"Button",BS_AUTORADIOBUTTON | BS_MULTILINE,15,76,66,25
-    LTEXT           "Menü",IDC_STATIC,84,78,19,8
+    LTEXT           "Menï¿½",IDC_STATIC,84,78,19,8
     PUSHBUTTON      "Button1",IDC_MENUCOLOR_BUTTON,109,76,23,12,WS_GROUP
     LTEXT           "Text",IDC_STATIC,84,93,15,8
     PUSHBUTTON      "Button1",IDC_TEXTCOLOR_BUTTON,109,91,23,12,WS_GROUP
@@ -443,9 +443,9 @@ BEGIN
     LTEXT           "Auswahl",IDC_STATIC,136,94,39,8
     PUSHBUTTON      "Button1",IDC_SELECTIONCOLOR_BUTTON,177,91,23,12,WS_GROUP
     GROUPBOX        "Tabellen",IDC_STATIC,7,111,199,53,WS_GROUP
-    CONTROL         "Tabellen mit weißem Hintergrund anzeigen",IDC_BK_WHITE_SCREEN,
+    CONTROL         "Tabellen mit weiï¿½em Hintergrund anzeigen",IDC_BK_WHITE_SCREEN,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,16,123,149,10
-    CONTROL         "Tabellendateien mit weißem Hintergrund speichern",IDC_BK_WHITE_FILE,
+    CONTROL         "Tabellendateien mit weiï¿½em Hintergrund speichern",IDC_BK_WHITE_FILE,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,16,135,175,10
     CONTROL         "Move Pop-ups off center",IDC_MOVE_MESSAGE,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,16,147,94,10
 END
@@ -472,7 +472,7 @@ BEGIN
     CONTROL         "Nein",IDC_KISENSOR_INTERLACE_0,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,100,94,89,10
     CONTROL         "Zwei Werte",IDC_KISENSOR_INTERLACE_1,"Button",BS_AUTORADIOBUTTON,100,105,89,10
     CONTROL         "Vier Werte",IDC_KISENSOR_INTERLACE_2,"Button",BS_AUTORADIOBUTTON,100,116,89,10
-    CONTROL         "Weiß messen",IDC_KISENSOR_WHITE,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,12,138,73,10
+    CONTROL         "Weiï¿½ messen",IDC_KISENSOR_WHITE,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,12,138,73,10
     CONTROL         "Schnellmessung (ungenauer)",IDC_KISENSOR_FASTMEASURE,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,90,138,106,10
 END
@@ -495,7 +495,7 @@ BEGIN
     COMBOBOX        IDC_S2SENSOR_MODE_COMBO,114,17,52,82,CBS_DROPDOWN | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     LTEXT           "Lesezeit (ms)",-1,13,37,98,8,0,0,0x80ebffff
     EDITTEXT        IDC_READTIME_EDIT,114,35,52,12,ES_AUTOHSCROLL | WS_GROUP
-    CONTROL         "Lesezeit bei dunklen Messungen erhöhen",IDC_CHECK_VARIABLE_READTIME,
+    CONTROL         "Lesezeit bei dunklen Messungen erhï¿½hen",IDC_CHECK_VARIABLE_READTIME,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,53,178,10
     CONTROL         "Mittelwertbildung bei dunklen Messungen",IDC_CHECK_AVG_MEASURES,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,66,146,10
@@ -529,7 +529,7 @@ BEGIN
     CONTROL         "Nutze Sensorinterne Offsets",IDC_CHECK_USE_BLACKLEVEL,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,89,104,10
     PUSHBUTTON      "Sensorinterne Offsets kalibrieren",IDC_DTP_BLACKLEVEL,15,102,178,14
-    PUSHBUTTON      "Geräteinterne Temperatur messen",IDC_DTP_TEMP,15,130,178,14
+    PUSHBUTTON      "Gerï¿½teinterne Temperatur messen",IDC_DTP_TEMP,15,130,178,14
     CONTROL         "Debug (Daten in decoder.log speichern)",IDC_KISENSOR_DEBUG_CB,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,15,150,184,10
 END
@@ -566,19 +566,19 @@ FONT 8, "MS Sans Serif"
 BEGIN
     PUSHBUTTON      "Abbrechen",IDCANCEL,222,110,50,14
     DEFPUSHBUTTON   "OK",IDOK,222,131,50,14
-    GROUPBOX        "Messwerte übernehmen",IDC_STATIC,7,3,201,142
+    GROUPBOX        "Messwerte ï¿½bernehmen",IDC_STATIC,7,3,201,142
     CONTROL         "Grautreppe",IDC_DUPLGRAYLEVEL_CHECK,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,14,183,13
     CONTROL         "Abstufung nahe Schwarz",IDC_DUPLNEARBLACK_CHECK,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,27,183,13
-    CONTROL         "Abstufung nahe Weiß",IDC_DUPLNEARWHITE_CHECK,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,40,183,13
-    CONTROL         "Sättigungsverlauf der Primärfarben",IDC_DUPLPRIMARIESSAT_CHECK,
+    CONTROL         "Abstufung nahe Weiï¿½",IDC_DUPLNEARWHITE_CHECK,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,40,183,13
+    CONTROL         "Sï¿½ttigungsverlauf der Primï¿½rfarben",IDC_DUPLPRIMARIESSAT_CHECK,
                     "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,53,183,13
-    CONTROL         "Sättigungsverlauf der Sekundärfarben",IDC_DUPLSECONDARIESSAT_CHECK,
+    CONTROL         "Sï¿½ttigungsverlauf der Sekundï¿½rfarben",IDC_DUPLSECONDARIESSAT_CHECK,
                     "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,66,183,13
-    CONTROL         "Primärfarben",IDC_DUPLPRIMARIESCOL_CHECK,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,79,183,13
-    CONTROL         "Sekundärfarben",IDC_DUPLSECONDARIESCOL_CHECK,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,92,183,13
+    CONTROL         "Primï¿½rfarben",IDC_DUPLPRIMARIESCOL_CHECK,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,79,183,13
+    CONTROL         "Sekundï¿½rfarben",IDC_DUPLSECONDARIESCOL_CHECK,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,92,183,13
     CONTROL         "Kontrast",IDC_DUPLCONTRAST_CHECK,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,105,183,13
     CONTROL         "Informationen",IDC_DUPLINFO_CHECK,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,118,183,13
-    PUSHBUTTON      "Löschen",IDC_CLEAR_BUTTON,222,7,50,14
+    PUSHBUTTON      "Lï¿½schen",IDC_CLEAR_BUTTON,222,7,50,14
     PUSHBUTTON      "Invertieren",IDC_INVERT_BUTTON,222,28,50,14
     PUSHBUTTON      "Hilfe",ID_HELP,222,63,50,14
 END
@@ -598,7 +598,7 @@ BEGIN
     EDITTEXT        IDC_RED_1,77,18,40,14,ES_AUTOHSCROLL | WS_GROUP
     EDITTEXT        IDC_RED_2,77,34,40,14,ES_AUTOHSCROLL | WS_GROUP
     EDITTEXT        IDC_RED_3,77,50,40,14,ES_AUTOHSCROLL | WS_GROUP
-    LTEXT           "Grün",IDC_STATIC,128,6,16,8
+    LTEXT           "Grï¿½n",IDC_STATIC,128,6,16,8
     EDITTEXT        IDC_GREEN_1,127,18,40,14,ES_AUTOHSCROLL | WS_GROUP
     EDITTEXT        IDC_GREEN_2,127,34,40,14,ES_AUTOHSCROLL | WS_GROUP
     EDITTEXT        IDC_GREEN_3,127,50,40,14,ES_AUTOHSCROLL | WS_GROUP
@@ -606,7 +606,7 @@ BEGIN
     EDITTEXT        IDC_BLUE_1,177,18,40,14,ES_AUTOHSCROLL | WS_GROUP
     EDITTEXT        IDC_BLUE_2,177,34,40,14,ES_AUTOHSCROLL | WS_GROUP
     EDITTEXT        IDC_BLUE_3,177,50,40,14,ES_AUTOHSCROLL | WS_GROUP
-    LTEXT           "Weiß",IDC_STATIC,228,6,18,8
+    LTEXT           "Weiï¿½",IDC_STATIC,228,6,18,8
     EDITTEXT        IDC_WHITE_1,227,18,40,14,ES_AUTOHSCROLL | WS_GROUP
     EDITTEXT        IDC_WHITE_2,227,34,40,14,ES_AUTOHSCROLL | WS_GROUP
     EDITTEXT        IDC_WHITE_3,227,50,40,14,ES_AUTOHSCROLL | WS_GROUP
@@ -646,7 +646,7 @@ BEGIN
     GROUPBOX        "Farben",IDC_STATIC,7,7,198,71,WS_GROUP
     LTEXT           "Standard:",IDC_STATIC,10,19,32,8
     COMBOBOX        IDC_COLORREF_COMBO,44,16,106,73,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    CONTROL         "Weiß ändern",IDC_CHANGEWHITE_CHECK,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,33,66,10
+    CONTROL         "Weiï¿½ ï¿½ndern",IDC_CHANGEWHITE_CHECK,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,33,66,10
     COMBOBOX        IDC_WHITETARGET_COMBO,88,32,57,84,CBS_DROPDOWNLIST | WS_DISABLED | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     EDITTEXT        IDC_EDIT_MANUAL_GOFFSET,135,123,21,13,ES_AUTOHSCROLL | NOT WS_VISIBLE | WS_DISABLED | WS_GROUP
     GROUPBOX        "Gamma Referenz",IDC_STATIC,21,147,84,29,WS_GROUP
@@ -725,7 +725,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,48,146,10
     GROUPBOX        "Schwarzwert",IDC_STATIC,6,70,198,36
     PUSHBUTTON      "Sensorinterne Offsets kalibrieren",IDC_DTP_BLACKLEVEL,15,84,178,14
-    GROUPBOX        "Zeit in der die Gerätkalibrierung gültig bleibt",IDC_STATIC,6,111,198,34
+    GROUPBOX        "Zeit in der die Gerï¿½tkalibrierung gï¿½ltig bleibt",IDC_STATIC,6,111,198,34
     LTEXT           "Zeit in Minuten (0: unbegrenzt)",IDC_STATIC,13,127,97,8
     EDITTEXT        IDC_EDIT_MINUTES,119,124,40,14,ES_AUTOHSCROLL
     CONTROL         "Debug (Daten in decoder.log speichern)",IDC_KISENSOR_DEBUG_CB,
@@ -740,19 +740,19 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,20,193,50,14
     PUSHBUTTON      "Abbrechen",IDCANCEL,85,193,50,14
     EDITTEXT        IDC_EDIT_CODE_IR,10,45,207,77,ES_MULTILINE | ES_AUTOVSCROLL | WS_VSCROLL
-    PUSHBUTTON      "Gültigkeitsprüfung",IDC_TEST_IR_VALID,10,125,62,14
+    PUSHBUTTON      "Gï¿½ltigkeitsprï¿½fung",IDC_TEST_IR_VALID,10,125,62,14
     PUSHBUTTON      "Code aufzeichnen",IDC_ACQUIRE,82,125,62,14
     PUSHBUTTON      "Code senden",IDC_SEND_IR_CODE,154,125,62,14
     GROUPBOX        "Latenzzeit (milliseconds)",IDC_STATIC,10,144,207,47
-    LTEXT           "Navigationsmenü",IDC_STATIC,15,156,64,8
-    LTEXT           "Messungsmenü",IDC_STATIC,83,157,64,8
-    LTEXT           "Nächstes Kapitel",IDC_STATIC,151,157,64,8
+    LTEXT           "Navigationsmenï¿½",IDC_STATIC,15,156,64,8
+    LTEXT           "Messungsmenï¿½",IDC_STATIC,83,157,64,8
+    LTEXT           "Nï¿½chstes Kapitel",IDC_STATIC,151,157,64,8
     EDITTEXT        IDC_EDIT_LATENCY_NAV,15,168,58,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_EDIT_LATENCY_VALID,83,168,58,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_EDIT_LATENCY_NEXT,151,168,58,14,ES_AUTOHSCROLL
     LTEXT           "Name",IDC_STATIC,10,13,64,8
     EDITTEXT        IDC_IR_PROFILE_NAME,85,9,58,14,ES_AUTOHSCROLL
-    LTEXT           "IR Code für",IDC_STATIC,10,31,70,8
+    LTEXT           "IR Code fï¿½r",IDC_STATIC,10,31,70,8
     COMBOBOX        IDC_COMBO_CODE_NAME,85,28,73,65,CBS_DROPDOWNLIST | WS_GROUP | WS_TABSTOP
     PUSHBUTTON      "Hilfe",IDHELP,157,193,50,14
 END
@@ -767,10 +767,10 @@ BEGIN
     COMBOBOX        IDC_KISENSOR_COM_COMBO,89,23,52,82,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "Bildwechsel erkennen",IDC_STATIC,10,144,207,101
     CONTROL         "Grautreppe",IDC_PATTERN_CHECK_ON_GRAYSCALE_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,214,95,10
-    CONTROL         "Sättigung",IDC_PATTERN_CHECK_ON_SATURATION_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,226,95,10
-    CONTROL         "Primärfarben",IDC_PATTERN_CHECK_ON_PRIMARIES_CHECK,
+    CONTROL         "Sï¿½ttigung",IDC_PATTERN_CHECK_ON_SATURATION_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,226,95,10
+    CONTROL         "Primï¿½rfarben",IDC_PATTERN_CHECK_ON_PRIMARIES_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,117,215,95,10
-    CONTROL         "Sekundärfarben",IDC_PATTERN_CHECK_ON_SECONDARIES_CHECK,
+    CONTROL         "Sekundï¿½rfarben",IDC_PATTERN_CHECK_ON_SECONDARIES_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,117,227,95,10
     LTEXT           "Minimal Grenzwert :",IDC_STATIC,17,155,61,8
     LTEXT           "Maximale Versuche pro Bild :",IDC_STATIC,18,175,117,8
@@ -782,9 +782,9 @@ BEGIN
     GROUPBOX        "Aktivieren bei",IDC_STATIC,13,203,201,38
     PUSHBUTTON      "Neu",IDC_NEWIRPROFILE,160,55,49,15
     GROUPBOX        "IR Profil",IDC_STATIC,9,39,207,103
-    PUSHBUTTON      "Ändern",IDC_MODIFYIRPROFILE,161,77,48,15
+    PUSHBUTTON      "ï¿½ndern",IDC_MODIFYIRPROFILE,161,77,48,15
     LISTBOX         IDC_IRPROFILE_LIST,15,52,137,83,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "Löschen",IDC_DELETEIRPROFILE,161,99,48,15
+    PUSHBUTTON      "Lï¿½schen",IDC_DELETEIRPROFILE,161,99,48,15
 END
 
 IDD_REF_CHECKBOX DIALOG 0, 0, 137, 12
@@ -803,19 +803,19 @@ FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Hilfsmittel",IDC_STATIC,4,64,192,79,0,WS_EX_TRANSPARENT
     GROUPBOX        "Farben",IDC_STATIC,4,6,192,56,0,WS_EX_TRANSPARENT
-    PUSHBUTTON      "Weißwert",IDC_PATTERN_WHITE_LEVEL,129,46,60,10
+    PUSHBUTTON      "Weiï¿½wert",IDC_PATTERN_WHITE_LEVEL,129,46,60,10
     PUSHBUTTON      "Schwarzwert",IDC_PATTERN_BLACK_LEVEL,69,46,60,10
     PUSHBUTTON      "Alle Abstufungen",IDC_PATTERN_ALL_SHAD,9,46,60,10
     PUSHBUTTON      "Blauabstufung",IDC_PATTERN_BLUE_SHAD,129,36,60,10
-    PUSHBUTTON      "Grünabstufung",IDC_PATTERN_GREEN_SHAD,69,36,60,10
+    PUSHBUTTON      "Grï¿½nabstufung",IDC_PATTERN_GREEN_SHAD,69,36,60,10
     PUSHBUTTON      "Rotabstufung",IDC_PATTERN_RED_SHAD,9,36,60,10
     PUSHBUTTON      "Blau",IDC_PATTERN_BLUE,69,26,30,10
-    PUSHBUTTON      "Grün",IDC_PATTERN_GREEN,39,26,30,10
+    PUSHBUTTON      "Grï¿½n",IDC_PATTERN_GREEN,39,26,30,10
     PUSHBUTTON      "Rot",IDC_PATTERN_RED,9,26,30,10
     PUSHBUTTON      "Farbe",IDC_PATTERN_COLOR,159,16,30,10
     PUSHBUTTON      "Schw. +",IDC_PATTERN_BLACK_P,129,16,30,10
     PUSHBUTTON      "Grau",IDC_PATTERN_GREY,99,16,30,10
-    PUSHBUTTON      "Weiß",IDC_PATTERN_WHITE,69,16,30,10
+    PUSHBUTTON      "Weiï¿½",IDC_PATTERN_WHITE,69,16,30,10
     PUSHBUTTON      "Schw.",IDC_PATTERN_BLACK,39,16,30,10
     PUSHBUTTON      "S&&W",IDC_PATTERN_BW,9,16,30,10
     PUSHBUTTON      "Horizontale Linien",IDC_PATTERN_H_LINE,94,106,94,10
@@ -823,18 +823,18 @@ BEGIN
     PUSHBUTTON      "Vertikale Linien",IDC_PATTERN_V_LINE,94,96,94,10
     PUSHBUTTON      "Konvergenz",IDC_PATTERN_CONV_GRID,94,76,94,10
     PUSHBUTTON      "Blaue Punkte",IDC_PATTERN_BLUE_DOT,10,106,79,10
-    PUSHBUTTON      "Grüne Punkte",IDC_PATTERN_GREEN_DOT,10,96,79,10
+    PUSHBUTTON      "Grï¿½ne Punkte",IDC_PATTERN_GREEN_DOT,10,96,79,10
     PUSHBUTTON      "Rote Punkte",IDC_PATTERN_RED_DOT,10,86,79,10
-    PUSHBUTTON      "Weiße Punkte",IDC_PATTERN_WHITE_DOT,10,76,79,10
+    PUSHBUTTON      "Weiï¿½e Punkte",IDC_PATTERN_WHITE_DOT,10,76,79,10
     PUSHBUTTON      "Gelb",IDC_PATTERN_YELLOW,159,26,30,10
     PUSHBUTTON      "Magenta",IDC_PATTERN_MAGENTA,129,26,30,10
     PUSHBUTTON      "Zyan",IDC_PATTERN_CYAN,99,26,30,10
     PUSHBUTTON      "Helligkeit",IDC_PATTERN_ANIM_B,10,116,79,10
     PUSHBUTTON      "Kontrast",IDC_PATTERN_ANIM_W,10,127,79,10
     PUSHBUTTON      "Testbild",IDC_PATTERN_PICTURE,94,126,94,10
-    LTEXT           """+"" und ""-"" Tasten (Numpad) fügen einen Wert hinzu oder löschen ihn - oder wechseln das Testbild.",IDC_STATIC,3,209,193,18
+    LTEXT           """+"" und ""-"" Tasten (Numpad) fï¿½gen einen Wert hinzu oder lï¿½schen ihn - oder wechseln das Testbild.",IDC_STATIC,3,209,193,18
     LTEXT           """*"" Taste stellt Defaultbild wieder ein",IDC_STATIC,3,228,193,10
-    LTEXT           """ESC"" und ""Enter"" schließen die Anzeige",IDC_STATIC,3,253,193,11
+    LTEXT           """ESC"" und ""Enter"" schlieï¿½en die Anzeige",IDC_STATIC,3,253,193,11
     LTEXT           """SPACE"" Taste wechselt die Anzeige",IDC_STATIC,3,240,193,10
     GROUPBOX        "Bilder, Iris && Definition ",IDC_STATIC,4,146,192,29
     PUSHBUTTON      "Iris && Definition ",IDC_PATTERN_PICT_IRIS,129,159,60,10
@@ -859,9 +859,9 @@ BEGIN
     CONTROL         "Grautreppe in NTSC IRE Levels",IDC_CHECK_IRE,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_DISABLED | WS_TABSTOP,7,24,117,10
     LTEXT           "Anzahl der nahe Schwarz Stufen",IDC_STATIC,7,40,104,8
     EDITTEXT        IDC_EDIT_NEARBLACK,133,36,40,14,ES_AUTOHSCROLL | WS_GROUP
-    LTEXT           "Anzahl der nahe Weiß Stufen",IDC_STATIC,7,57,94,8
+    LTEXT           "Anzahl der nahe Weiï¿½ Stufen",IDC_STATIC,7,57,94,8
     EDITTEXT        IDC_EDIT_NEARWHITE,133,53,40,14,ES_AUTOHSCROLL | WS_GROUP
-    LTEXT           "Anzahl der Sättigungsstufen",IDC_STATIC,7,74,89,8
+    LTEXT           "Anzahl der Sï¿½ttigungsstufen",IDC_STATIC,7,74,89,8
     EDITTEXT        IDC_EDIT_SAT,133,70,40,14,ES_AUTOHSCROLL | WS_GROUP
     DEFPUSHBUTTON   "OK",IDOK,7,91,50,14,WS_GROUP
     PUSHBUTTON      "Abbrechen",IDCANCEL,65,91,50,14,WS_GROUP
@@ -874,7 +874,7 @@ FONT 9, "Verdana", 700, 0, 0x0
 BEGIN
     GROUPBOX        "Ansicht",IDC_PARAM_GROUP,0,0,216,40,BS_NOTIFY,WS_EX_DLGMODALFRAME
     CONTROL         "Spin1",IDC_SPIN_VIEW,"msctls_updown32",UDS_ARROWKEYS | WS_GROUP | WS_TABSTOP,202,17,11,14
-    CONTROL         "Daten änderbar",IDC_EDITGRID_CHECK,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,477,167,41,16,WS_EX_TRANSPARENT
+    CONTROL         "Daten ï¿½nderbar",IDC_EDITGRID_CHECK,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,477,167,41,16,WS_EX_TRANSPARENT
     GROUPBOX        "Sensor",IDC_SENSOR_GROUP,216,0,150,40,0,WS_EX_DLGMODALFRAME
     PUSHBUTTON      "Average...",IDM_CONFIGURE_SENSOR2,281,27,15,6
     PUSHBUTTON      "Configure...",IDM_CONFIGURE_SENSOR,353,26,7,7,BS_BITMAP
@@ -892,8 +892,8 @@ BEGIN
     CONTROL         "xyz",IDC_XYZ_RADIO2,"Button",BS_AUTORADIOBUTTON,478,84,26,8,WS_EX_TRANSPARENT
     CONTROL         "xyY",IDC_XYY_RADIO,"Button",BS_AUTORADIOBUTTON,478,94,32,8,WS_EX_TRANSPARENT
     PUSHBUTTON      "Start",IDC_MEASUREGRAYSCALE_BUTTON,475,104,46,21,0,WS_EX_DLGMODALFRAME
-    PUSHBUTTON      "Löschen",IDC_DELETEGRAYSCALE_BUTTON,475,124,46,21,0,WS_EX_DLGMODALFRAME
-    GROUPBOX        "Gewählte Farbe",IDC_SELECTION_GROUP,0,185,216,193,0,WS_EX_DLGMODALFRAME
+    PUSHBUTTON      "Lï¿½schen",IDC_DELETEGRAYSCALE_BUTTON,475,124,46,21,0,WS_EX_DLGMODALFRAME
+    GROUPBOX        "Gewï¿½hlte Farbe",IDC_SELECTION_GROUP,0,185,216,193,0,WS_EX_DLGMODALFRAME
     LTEXT           "RGB Niveau",IDC_STATIC_RGBLEVELS,17,198,41,8
     LTEXT           "RGB Levels",IDC_RGBLEVELS,12,207,108,52,0,WS_EX_DLGMODALFRAME
     LTEXT           "Ziel",IDC_STATIC_TARGET,18,314,12,8
@@ -920,9 +920,9 @@ CAPTION "Erweitert"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Start einer Messung",IDC_STATIC,7,7,199,28,WS_GROUP
-    CONTROL         "Bestätigungsnachricht",IDC_CHECK_CONFIRM,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,19,86,10
+    CONTROL         "Bestï¿½tigungsnachricht",IDC_CHECK_CONFIRM,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,19,86,10
     GROUPBOX        "Kalibrierungsdateien - Erweiterte Nutzung",IDC_STATIC,7,38,199,40,WS_GROUP
-    CONTROL         "Weiß bei der Matrix Kalkulation nicht benutzen (R1.x)",IDC_CHECK_CALIBRATION_OLD,
+    CONTROL         "Weiï¿½ bei der Matrix Kalkulation nicht benutzen (R1.x)",IDC_CHECK_CALIBRATION_OLD,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,62,183,10
     GROUPBOX        "Luxmeter LX-1108",IDC_STATIC,8,82,199,86,WS_GROUP
     LTEXT           "COM Port",IDC_STATIC,17,95,43,8,0,0,HIDC_STATIC
@@ -930,7 +930,7 @@ BEGIN
     CONTROL         "Imperiale Einheiten",IDC_CHECK_IMPERIAL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,123,94,75,10
     CONTROL         "Kurven mit Colorimeter Helligkeit anzeigen",IDC_RADIO1,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,114,147,10
-    CONTROL         "Luxmeter-Wert bevorzugen, wenn verfügbar",IDC_RADIO2,
+    CONTROL         "Luxmeter-Wert bevorzugen, wenn verfï¿½gbar",IDC_RADIO2,
                     "Button",BS_AUTORADIOBUTTON,13,125,155,10
     CONTROL         "Zwei separate Helligkeitskurven anzeigen",IDC_RADIO3,
                     "Button",BS_AUTORADIOBUTTON,13,136,147,10
@@ -967,24 +967,24 @@ BEGIN
     GROUPBOX        "Konfiguration",IDC_STATIC,6,5,198,43,WS_GROUP
     LTEXT           "Lesezeit (ms)",IDC_STATIC,13,18,98,8,0,0,HIDC_STATIC
     EDITTEXT        IDC_READTIME_EDIT,114,16,52,12,ES_AUTOHSCROLL | WS_GROUP
-    CONTROL         "Lesezeit bei dunklen Messungen erhöhen",IDC_CHECK_VARIABLE_READTIME,
+    CONTROL         "Lesezeit bei dunklen Messungen erhï¿½hen",IDC_CHECK_VARIABLE_READTIME,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,32,178,10
     CONTROL         "Debug (Daten in decoder.log speichern)",IDC_KISENSOR_DEBUG_CB,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,54,184,10
-    GROUPBOX        "Geräteinterne Konvertierungsmatrix",IDC_STATIC,7,68,198,112,WS_GROUP
+    GROUPBOX        "Gerï¿½teinterne Konvertierungsmatrix",IDC_STATIC,7,68,198,112,WS_GROUP
     CONTROL         "",IDC_SENSORMATRIX_STATIC,"Static",SS_ETCHEDFRAME,13,83,122,34
     PUSHBUTTON      "Interne Konvertierungsmatrix auslesen",IDC_DISPLAY_MATRIX,13,122,156,14
-    PUSHBUTTON      "Matrix in das Gerät schreiben (EEPROM)",IDC_FLASH_EEPROM,13,140,156,14
-    PUSHBUTTON      "Default Matrix in das Gerät schreiben",IDC_FLASH_EEPROM_DEF,13,158,156,14
-    GROUPBOX        "Geräteinterner Schwarzwert",IDC_STATIC,7,185,198,87
+    PUSHBUTTON      "Matrix in das Gerï¿½t schreiben (EEPROM)",IDC_FLASH_EEPROM,13,140,156,14
+    PUSHBUTTON      "Default Matrix in das Gerï¿½t schreiben",IDC_FLASH_EEPROM_DEF,13,158,156,14
+    GROUPBOX        "Gerï¿½teinterner Schwarzwert",IDC_STATIC,7,185,198,87
     LTEXT           "R",IDC_STATIC,13,200,8,8
     EDITTEXT        IDC_EDIT_BLACK_1,22,198,40,14,ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "G",IDC_STATIC,67,200,8,8
     EDITTEXT        IDC_EDIT_BLACK_2,76,198,40,14,ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "B",IDC_STATIC,120,200,8,8
     EDITTEXT        IDC_EDIT_BLACK_3,129,198,40,14,ES_AUTOHSCROLL | WS_GROUP
-    PUSHBUTTON      "Geräteinternen Schwarzwert auslesen",IDC_DISPLAY_BLACK,13,215,156,14
-    PUSHBUTTON      "Werte in das Gerät schreiben (EEPROM)",IDC_FLASH_EEPROM_BLACK,13,233,156,14
+    PUSHBUTTON      "Gerï¿½teinternen Schwarzwert auslesen",IDC_DISPLAY_BLACK,13,215,156,14
+    PUSHBUTTON      "Werte in das Gerï¿½t schreiben (EEPROM)",IDC_FLASH_EEPROM_BLACK,13,233,156,14
     PUSHBUTTON      "Schwarzwert messen",IDC_MEASURE_BLACK,13,251,156,14
 END
 
@@ -997,7 +997,7 @@ BEGIN
     LTEXT           "Aktuelle Luxmeter Skalierung erlaubt keine Messung.",IDC_STATIC,7,8,168,8
     LTEXT           "Bitte die Luxmeter Skalierung updaten. Die Messung wird",IDC_STATIC,7,18,180,8
     LTEXT           "forgesetzt, sobald die Skalierung adaptiert ist.",IDC_STATIC,7,28,143,8
-    LTEXT           "Sie können fortfahren mit einem der Buttons.",IDC_STATIC,7,38,140,8
+    LTEXT           "Sie kï¿½nnen fortfahren mit einem der Buttons.",IDC_STATIC,7,38,140,8
     PUSHBUTTON      "Messung ohne Luxmeter fortsetzen",IDOK,7,52,115,14
     PUSHBUTTON      "Messung abbrechen",IDCANCEL,125,52,70,14
 END
@@ -1008,19 +1008,19 @@ CAPTION "Symbole"
 FONT 8, "MS Sans Serif"
 BEGIN
     GROUPBOX        "Rechtsklick auf die Toolbar einer Ansicht",IDC_STATIC,7,7,198,60,WS_GROUP
-    CONTROL         "Ansicht in neuem Fenster öffnen",IDC_RADIO_TBV_1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,20,117,10
-    CONTROL         "Ansicht in allen geöffneten Fenstern aktivieren",IDC_RADIO_TBV_2,
+    CONTROL         "Ansicht in neuem Fenster ï¿½ffnen",IDC_RADIO_TBV_1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,20,117,10
+    CONTROL         "Ansicht in allen geï¿½ffneten Fenstern aktivieren",IDC_RADIO_TBV_2,
                     "Button",BS_AUTORADIOBUTTON,13,31,161,10
-    CONTROL         "Neue Ansicht öffnen, auch wenn sie schon existiert",IDC_RADIO_TBV_3,
+    CONTROL         "Neue Ansicht ï¿½ffnen, auch wenn sie schon existiert",IDC_RADIO_TBV_3,
                     "Button",BS_AUTORADIOBUTTON,13,42,177,10
-    CONTROL         "Ansicht schließen",IDC_RADIO_TBV_4,"Button",BS_AUTORADIOBUTTON,13,53,71,10
+    CONTROL         "Ansicht schlieï¿½en",IDC_RADIO_TBV_4,"Button",BS_AUTORADIOBUTTON,13,53,71,10
     GROUPBOX        "Mittlere Maustaste auf die Toolbar einer Ansicht",IDC_STATIC,7,70,198,60,WS_GROUP
-    CONTROL         "Ansicht in neuem Fenster öffnen",IDC_RADIO_TBV_5,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,84,117,10
-    CONTROL         "Ansicht in allen geöffneten Fenstern aktivieren",IDC_RADIO_TBV_6,
+    CONTROL         "Ansicht in neuem Fenster ï¿½ffnen",IDC_RADIO_TBV_5,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,84,117,10
+    CONTROL         "Ansicht in allen geï¿½ffneten Fenstern aktivieren",IDC_RADIO_TBV_6,
                     "Button",BS_AUTORADIOBUTTON,13,94,161,10
-    CONTROL         "Neue Ansicht öffnen, auch wenn sie schon existiert",IDC_RADIO_TBV_7,
+    CONTROL         "Neue Ansicht ï¿½ffnen, auch wenn sie schon existiert",IDC_RADIO_TBV_7,
                     "Button",BS_AUTORADIOBUTTON,13,105,177,10
-    CONTROL         "Ansicht schließen",IDC_RADIO_TBV_8,"Button",BS_AUTORADIOBUTTON,13,116,71,10
+    CONTROL         "Ansicht schlieï¿½en",IDC_RADIO_TBV_8,"Button",BS_AUTORADIOBUTTON,13,116,71,10
 END
 
 IDD_S3SENSOR_PROP_PAGE DIALOGEX 0, 0, 212, 174
@@ -1031,7 +1031,7 @@ BEGIN
     GROUPBOX        "Konfiguration",-1,6,5,198,61,WS_GROUP
     LTEXT           "Lesezeit (ms)",-1,13,20,98,8,0,0,0x8177ffff
     EDITTEXT        IDC_READTIME_EDIT,114,18,52,12,ES_AUTOHSCROLL | WS_GROUP
-    CONTROL         "Lesezeit bei dunklen Messungen erhöhen",IDC_CHECK_VARIABLE_READTIME,
+    CONTROL         "Lesezeit bei dunklen Messungen erhï¿½hen",IDC_CHECK_VARIABLE_READTIME,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,36,178,10
     CONTROL         "Mittelwertbildung bei dunklen Messungen",IDC_CHECK_AVG_MEASURES,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,49,146,10
@@ -1675,7 +1675,7 @@ BEGIN
     POPUP "CIE"
     BEGIN
         MENUITEM "Grau anzeigen",               IDM_CIE_SHOWGRAYSCALE
-        MENUITEM "Sättigung anzeigen",          IDM_CIE_SHOWSATURATIONSCALE
+        MENUITEM "Sï¿½ttigung anzeigen",          IDM_CIE_SHOWSATURATIONSCALE
         MENUITEM "Display saturations targets", IDM_CIE_SHOWSATURATIONSCALETARG
         MENUITEM "Display color checker measures", IDM_CIE_SHOWCCSCALE
         MENUITEM "Display color checker targets", IDM_CIE_SHOWCCSCALETARG
@@ -1707,7 +1707,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Helligkeit",                  IDM_LUM_GRAPH_YLUM
         MENUITEM "Rot",                         IDM_LUM_GRAPH_REDLUM
-        MENUITEM "Grün",                        IDM_LUM_GRAPH_GREENLUM
+        MENUITEM "Grï¿½n",                        IDM_LUM_GRAPH_GREENLUM
         MENUITEM "Blau",                        IDM_LUM_GRAPH_BLUELUM
         MENUITEM SEPARATOR
         MENUITEM "Absolute Y",                  IDM_LUM_GRAPH_Yab
@@ -1742,8 +1742,8 @@ BEGIN
         MENUITEM "Referenz anzeigen",           IDM_LUM_GRAPH_SHOWREF
         MENUITEM "Referenzmessung anzeigen",    IDM_LUM_GRAPH_DATAREF
         MENUITEM SEPARATOR
-        MENUITEM "Primärfarben",                IDM_LUM_GRAPH_PRIMARIES
-        MENUITEM "Sekundärfarben",              IDM_LUM_GRAPH_SECONDARIES
+        MENUITEM "Primï¿½rfarben",                IDM_LUM_GRAPH_PRIMARIES
+        MENUITEM "Sekundï¿½rfarben",              IDM_LUM_GRAPH_SECONDARIES
         MENUITEM SEPARATOR
         MENUITEM "Speichern...",                IDM_GRAPH_SAVE
         POPUP "Skalierung"
@@ -1765,7 +1765,7 @@ BEGIN
         MENUITEM "Referenzmessung anzeigen",    IDM_LUM_GRAPH_DATAREF
         MENUITEM SEPARATOR
         MENUITEM "Rot",                         IDM_LUM_GRAPH_REDSHIFT
-        MENUITEM "Grün",                        IDM_LUM_GRAPH_GREENSHIFT
+        MENUITEM "Grï¿½n",                        IDM_LUM_GRAPH_GREENSHIFT
         MENUITEM "Blau",                        IDM_LUM_GRAPH_BLUESHIFT
         MENUITEM "Gelb",                        IDM_LUM_GRAPH_YELLOWSHIFT
         MENUITEM "Cyan",                        IDM_LUM_GRAPH_CYANSHIFT
@@ -1775,7 +1775,7 @@ BEGIN
         POPUP "Skalierung"
         BEGIN
             MENUITEM "Automatisch",                 IDM_GRAPH_SCALE_FIT
-            POPUP "Sättigung"
+            POPUP "Sï¿½ttigung"
             BEGIN
                 MENUITEM "-100% / +100%",               IDM_LUMINANCE_GRAPH_Y_SCALE1
                 MENUITEM "-20% / +20%",                 IDM_LUMINANCE_GRAPH_Y_SCALE2
@@ -1882,7 +1882,7 @@ BEGIN
     POPUP "&Datei"
     BEGIN
         MENUITEM "&Neu\tStrg+N",                ID_FILE_NEW
-        MENUITEM "Ö&ffnen...\tStrg+O",          ID_FILE_OPEN
+        MENUITEM "ï¿½&ffnen...\tStrg+O",          ID_FILE_OPEN
         MENUITEM SEPARATOR
         MENUITEM "Letzte Datei",                ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
@@ -1896,7 +1896,7 @@ BEGIN
         MENUITEM "Ansicht Symbole",             ID_VIEW_VIEW_BAR
         MENUITEM "&Messung Symbole",            ID_VIEW_MEASURE_BAR
         MENUITEM "&Erweiterte Messung Symbole", ID_VIEW_MEASURE_EXT_BAR
-        MENUITEM "Sä&ttigung Messung Symbole",  ID_VIEW_MEASURE_SAT_BAR
+        MENUITEM "Sï¿½&ttigung Messung Symbole",  ID_VIEW_MEASURE_SAT_BAR
         MENUITEM "S&tatuszeile",                ID_VIEW_STATUS_BAR
     END
     POPUP "&Erweitert"
@@ -1916,7 +1916,7 @@ BEGIN
         END
         MENUITEM "&Support",                    IDM_HELP_SUPPORT, INACTIVE
         MENUITEM SEPARATOR
-        MENUITEM "Info über H&CFR ...",         ID_APP_ABOUT
+        MENUITEM "Info ï¿½ber H&CFR ...",         ID_APP_ABOUT
     END
 END
 
@@ -1925,9 +1925,9 @@ BEGIN
     POPUP "&Datei"
     BEGIN
         MENUITEM "&Neu\tStrg+N",                ID_FILE_NEW
-        MENUITEM "Ö&ffnen...\tStrg+O",          ID_FILE_OPEN
+        MENUITEM "ï¿½&ffnen...\tStrg+O",          ID_FILE_OPEN
         MENUITEM "&Duplizieren",                IDM_DUPLICATEDOC
-        MENUITEM "&Schließen",                  ID_FILE_CLOSE
+        MENUITEM "&Schlieï¿½en",                  ID_FILE_CLOSE
         MENUITEM "S&peichern\tStrg+S",          ID_FILE_SAVE
         MENUITEM "Speichern &unter...",         ID_FILE_SAVE_AS
         MENUITEM SEPARATOR
@@ -1941,11 +1941,11 @@ BEGIN
     END
     POPUP "&Bearbeiten"
     BEGIN
-        MENUITEM "&Rückgängig\tStrg+Z",         ID_EDIT_UNDO
+        MENUITEM "&Rï¿½ckgï¿½ngig\tStrg+Z",         ID_EDIT_UNDO
         MENUITEM SEPARATOR
         MENUITEM "&Ausschneiden\tStrg+X",       ID_EDIT_CUT
         MENUITEM "&Kopieren\tStrg+C",           ID_EDIT_COPY
-        MENUITEM "E&infügen\tStrg+V",           ID_EDIT_PASTE
+        MENUITEM "E&infï¿½gen\tStrg+V",           ID_EDIT_PASTE
     END
     POPUP "&Ansicht"
     BEGIN
@@ -1956,7 +1956,7 @@ BEGIN
         MENUITEM "&Ansicht Symbole",            ID_VIEW_VIEW_BAR
         MENUITEM "&Messung Symbole",            ID_VIEW_MEASURE_BAR
         MENUITEM "&Erweiterte Messung Symbole", ID_VIEW_MEASURE_EXT_BAR
-        MENUITEM "Sä&ttigung Messung Symbole",  ID_VIEW_MEASURE_SAT_BAR
+        MENUITEM "Sï¿½&ttigung Messung Symbole",  ID_VIEW_MEASURE_SAT_BAR
         MENUITEM "S&tatuszeile",                ID_VIEW_STATUS_BAR
         MENUITEM SEPARATOR
         MENUITEM "&Reiter oben",                IDM_TOGGLE_TAB
@@ -1964,23 +1964,23 @@ BEGIN
     POPUP "&Messung"
     BEGIN
         MENUITEM "&Grautreppe",                 IDM_MEASURE_GRAYSCALE
-        MENUITEM "&Primärfarben",               IDM_MEASURE_PRIMARIES
-        MENUITEM "Primär- und &Sekundärfarben", IDM_MEASURE_SECONDARIES
+        MENUITEM "&Primï¿½rfarben",               IDM_MEASURE_PRIMARIES
+        MENUITEM "Primï¿½r- und &Sekundï¿½rfarben", IDM_MEASURE_SECONDARIES
         MENUITEM "Grautreppe und Farben\tF5",   IDM_MEASURE_GRAYSCALE_COLORS
         MENUITEM SEPARATOR
         MENUITEM "Nahe Schwarz A&bstufung",     IDM_MEASURE_NEARBLACK
-        MENUITEM "Nahe &Weiß Abstufung",        IDM_MEASURE_NEARWHITE
-        POPUP "S&ättigung"
+        MENUITEM "Nahe &Weiï¿½ Abstufung",        IDM_MEASURE_NEARWHITE
+        POPUP "S&ï¿½ttigung"
         BEGIN
             MENUITEM "&Rot",                        IDM_MEASURE_SAT_RED
-            MENUITEM "&Grün",                       IDM_MEASURE_SAT_GREEN
+            MENUITEM "&Grï¿½n",                       IDM_MEASURE_SAT_GREEN
             MENUITEM "&Blau",                       IDM_MEASURE_SAT_BLUE
             MENUITEM "G&elb",                       IDM_MEASURE_SAT_YELLOW
             MENUITEM "&Zyan",                       IDM_MEASURE_SAT_CYAN
             MENUITEM "&Magenta",                    IDM_MEASURE_SAT_MAGENTA
             MENUITEM "&ColorChecker",               IDM_MEASURE_SAT_CC24
             MENUITEM SEPARATOR
-            MENUITEM "&Primärfarben",               IDM_MEASURE_SAT_PRIMARIES
+            MENUITEM "&Primï¿½rfarben",               IDM_MEASURE_SAT_PRIMARIES
             MENUITEM "&Primary and Secondary colors", IDM_MEASURE_SAT_PRIMARIES_SECONDARIES
             MENUITEM "&Alle Farben",                IDM_MEASURE_SAT_ALL
         END
@@ -1993,12 +1993,12 @@ BEGIN
         POPUP "&Sensor"
         BEGIN
             MENUITEM "&Konfigurieren...",           IDM_CONFIGURE_SENSOR
-            MENUITEM "&Auswählen...",               IDM_CHANGE_SENSOR
+            MENUITEM "&Auswï¿½hlen...",               IDM_CHANGE_SENSOR
         END
         POPUP "B&ildquelle"
         BEGIN
             MENUITEM "&Konfigurieren...",           IDM_CONFIGURE_GENERATOR
-            MENUITEM "&Auswählen...",               IDM_CHANGE_GENERATOR
+            MENUITEM "&Auswï¿½hlen...",               IDM_CHANGE_GENERATOR
         END
         MENUITEM "Para&meter...",               IDM_MEASURE_DEFINESCALE
     END
@@ -2014,12 +2014,12 @@ BEGIN
         MENUITEM "&CIE Diagramm",               IDM_VIEW_CIECHART
         MENUITEM SEPARATOR
         MENUITEM "Histogramm nahe &Schwarz",    IDM_VIEW_NEARBLACKHISTO
-        MENUITEM "Histogramm nahe &Weiß",       IDM_VIEW_NEARWHITEHISTO
+        MENUITEM "Histogramm nahe &Weiï¿½",       IDM_VIEW_NEARWHITEHISTO
         MENUITEM SEPARATOR
-        MENUITEM "Histogramm Sä&ttigung - Helligkeit", IDM_VIEW_SATLUMHISTO
-        MENUITEM "Histogramm Sättigungs&verschiebung", IDM_VIEW_SATLUMSHIFT
+        MENUITEM "Histogramm Sï¿½&ttigung - Helligkeit", IDM_VIEW_SATLUMHISTO
+        MENUITEM "Histogramm Sï¿½ttigungs&verschiebung", IDM_VIEW_SATLUMSHIFT
         MENUITEM SEPARATOR
-        MENUITEM "Kombiniertes H&istogramm für freie Messungen", IDM_VIEW_MEASURESCOMBO
+        MENUITEM "Kombiniertes H&istogramm fï¿½r freie Messungen", IDM_VIEW_MEASURESCOMBO
     END
     POPUP "&Erweitert"
     BEGIN
@@ -2105,16 +2105,16 @@ BEGIN
         POPUP "Simultane Messungen"
         BEGIN
             MENUITEM "Grautreppe",                  IDM_SIM_GRAYSCALE
-            MENUITEM "Primärfarben",                IDM_SIM_PRIMARIES
-            MENUITEM "Primärfarben und Sekundärfarben", IDM_SIM_SECONDARIES
+            MENUITEM "Primï¿½rfarben",                IDM_SIM_PRIMARIES
+            MENUITEM "Primï¿½rfarben und Sekundï¿½rfarben", IDM_SIM_SECONDARIES
             MENUITEM "Grautreppe und Farben",       IDM_SIM_GRAYSCALE_AND_COLORS
             MENUITEM SEPARATOR
             MENUITEM "Nahe &Schwarz Abstufung",     IDM_SIM_NEARBLACK
-            MENUITEM "Nahe &Weiß Abstufung",        IDM_SIM_NEARWHITE
-            POPUP "S&ättigung"
+            MENUITEM "Nahe &Weiï¿½ Abstufung",        IDM_SIM_NEARWHITE
+            POPUP "S&ï¿½ttigung"
             BEGIN
                 MENUITEM "&Rot",                        IDM_SIM_SAT_RED
-                MENUITEM "&Grün",                       IDM_SIM_SAT_GREEN
+                MENUITEM "&Grï¿½n",                       IDM_SIM_SAT_GREEN
                 MENUITEM "&Blau",                       IDM_SIM_SAT_BLUE
                 MENUITEM "G&elb",                       IDM_SIM_SAT_YELLOW
                 MENUITEM "&Zyan",                       IDM_SIM_SAT_CYAN
@@ -2138,7 +2138,7 @@ BEGIN
     POPUP "&Fenster"
     BEGIN
         MENUITEM "Neues &Fenster",              ID_WINDOW_NEW
-        MENUITEM "Über&lappend",                ID_WINDOW_CASCADE
+        MENUITEM "ï¿½ber&lappend",                ID_WINDOW_CASCADE
         MENUITEM "&Nebeneinander",              ID_WINDOW_TILE_HORZ
         MENUITEM "&Symbole anordnen",           ID_WINDOW_ARRANGE
     END
@@ -2153,7 +2153,7 @@ BEGIN
         MENUITEM "&Support",                    IDM_HELP_SUPPORT, INACTIVE
         MENUITEM "HCFR &Forum",                 IDM_HELP_FORUM, INACTIVE
         MENUITEM SEPARATOR
-        MENUITEM "Info über HCFR &Colorimeter...", ID_APP_ABOUT
+        MENUITEM "Info ï¿½ber HCFR &Colorimeter...", ID_APP_ABOUT
     END
 END
 
@@ -2175,7 +2175,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Helligkeit",                  IDM_LUM_GRAPH_YLUM
         MENUITEM "Rot",                         IDM_LUM_GRAPH_REDLUM
-        MENUITEM "Grün",                        IDM_LUM_GRAPH_GREENLUM
+        MENUITEM "Grï¿½n",                        IDM_LUM_GRAPH_GREENLUM
         MENUITEM "Blau",                        IDM_LUM_GRAPH_BLUELUM
         MENUITEM SEPARATOR
         MENUITEM "Absolute Y",                  IDM_LUM_GRAPH_Yab
@@ -2221,7 +2221,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Helligkeit",                  IDM_LUM_GRAPH_YLUM
         MENUITEM "Rot",                         IDM_LUM_GRAPH_REDLUM
-        MENUITEM "Grün",                        IDM_LUM_GRAPH_GREENLUM
+        MENUITEM "Grï¿½n",                        IDM_LUM_GRAPH_GREENLUM
         MENUITEM "Blau",                        IDM_LUM_GRAPH_BLUELUM
         MENUITEM SEPARATOR
         MENUITEM "Absolute Y",                  IDM_LUM_GRAPH_Yab
@@ -2303,16 +2303,16 @@ BEGIN
     POPUP "Anwendung"
     BEGIN
         MENUITEM "Neues Dokument",              ID_FILE_NEW
-        MENUITEM "Dokument öffnen...",          ID_FILE_OPEN
+        MENUITEM "Dokument ï¿½ffnen...",          ID_FILE_OPEN
         MENUITEM SEPARATOR
         MENUITEM "Nur existierende Ansichten anzeigen", IDM_SHOWOPENVIEWSONLY
     END
     POPUP "Dokument"
     BEGIN
         MENUITEM "Neu",                         ID_FILE_NEW
-        MENUITEM "Öffnen...",                   ID_FILE_OPEN
+        MENUITEM "ï¿½ffnen...",                   ID_FILE_OPEN
         MENUITEM "Duplizieren",                 IDM_DUPLICATEDOC
-        MENUITEM "Schließen",                   ID_FILE_CLOSE
+        MENUITEM "Schlieï¿½en",                   ID_FILE_CLOSE
         MENUITEM "Speichern",                   ID_FILE_SAVE
         MENUITEM "Speichern unter...",          ID_FILE_SAVE_AS
         MENUITEM SEPARATOR
@@ -2322,26 +2322,26 @@ BEGIN
         BEGIN
             MENUITEM "Histogramm &Helligkeit",      IDM_VIEW_LUMINANCEHISTO
             MENUITEM "Histogramm nahe &Schwarz",    IDM_VIEW_NEARBLACKHISTO
-            MENUITEM "Histogramm nahe &Weiß",       IDM_VIEW_NEARWHITEHISTO
+            MENUITEM "Histogramm nahe &Weiï¿½",       IDM_VIEW_NEARWHITEHISTO
             MENUITEM SEPARATOR
             MENUITEM "Histogramm &RGB Niveau",      IDM_VIEW_RGBHISTO
             MENUITEM "Histogramm Farb&temperatur",  IDM_VIEW_COLORTEMPHISTO
             MENUITEM "&CIE Diagramm",               IDM_VIEW_CIECHART
             MENUITEM SEPARATOR
-            MENUITEM "Histogramm Sä&ttigung - Helligkeit", IDM_VIEW_SATLUMHISTO
-            MENUITEM "Histogramm Sättigungs&verschiebung", IDM_VIEW_SATLUMSHIFT
+            MENUITEM "Histogramm Sï¿½&ttigung - Helligkeit", IDM_VIEW_SATLUMHISTO
+            MENUITEM "Histogramm Sï¿½ttigungs&verschiebung", IDM_VIEW_SATLUMSHIFT
             MENUITEM SEPARATOR
-            MENUITEM "Kombiniertes H&istogramm für freie Messungen", IDM_VIEW_MEASURESCOMBO
+            MENUITEM "Kombiniertes H&istogramm fï¿½r freie Messungen", IDM_VIEW_MEASURESCOMBO
         END
         MENUITEM "Alle Ansichten anzeigen",     IDM_SHOWALLVIEWS
-        MENUITEM "Alle Ansichten schließen",    IDM_CLOSEALLVIEWS
+        MENUITEM "Alle Ansichten schlieï¿½en",    IDM_CLOSEALLVIEWS
     END
     POPUP "Ansicht"
     BEGIN
         MENUITEM "Anzeigen",                    IDM_SHOWVIEW
-        MENUITEM "Für alle Dokumente anzeigen", IDM_SHOWVIEWFORALLDOC
-        MENUITEM "Schließen",                   IDM_CLOSEVIEW
-        MENUITEM "Andere Ansichten schließen",  IDM_CLOSEOTHERVIEWS
+        MENUITEM "Fï¿½r alle Dokumente anzeigen", IDM_SHOWVIEWFORALLDOC
+        MENUITEM "Schlieï¿½en",                   IDM_CLOSEVIEW
+        MENUITEM "Andere Ansichten schlieï¿½en",  IDM_CLOSEOTHERVIEWS
     END
 END
 
@@ -2352,9 +2352,9 @@ BEGIN
         MENUITEM "Reiter aktivieren",           IDM_TAB_ACTIVATE
         MENUITEM "Reiter bei allen Dokumenten aktivieren\tCtrl+Click", IDM_TAB_ACTIVATE_ON_ALL
         MENUITEM "Reiter duplizieren",          IDM_TAB_DUPLICATE
-        MENUITEM "Reiter in neuem Fenster öffnen", IDM_TAB_NEWFRAME
+        MENUITEM "Reiter in neuem Fenster ï¿½ffnen", IDM_TAB_NEWFRAME
         MENUITEM SEPARATOR
-        MENUITEM "Reiter schließen",            IDM_TAB_CLOSE
+        MENUITEM "Reiter schlieï¿½en",            IDM_TAB_CLOSE
     END
 END
 
@@ -2368,7 +2368,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Helligkeit",                  IDM_LUM_GRAPH_YLUM
         MENUITEM "Rot",                         IDM_LUM_GRAPH_REDLUM
-        MENUITEM "Grün",                        IDM_LUM_GRAPH_GREENLUM
+        MENUITEM "Grï¿½n",                        IDM_LUM_GRAPH_GREENLUM
         MENUITEM "Blau",                        IDM_LUM_GRAPH_BLUELUM
         MENUITEM SEPARATOR
         MENUITEM "Speichern...",                IDM_GRAPH_SAVE
@@ -2675,19 +2675,19 @@ BEGIN
     ID_INDICATOR_CAPS       "UF"
     ID_INDICATOR_NUM        "NUM"
     ID_INDICATOR_SCRL       "RF"
-    ID_INDICATOR_OVR        "ÜB"
+    ID_INDICATOR_OVR        "ï¿½B"
     ID_INDICATOR_REC        "MA"
 END
 
 STRINGTABLE
 BEGIN
     ID_FILE_NEW             "Erstellt ein neues Dokument.\nNeu"
-    ID_FILE_OPEN            "Öffnet ein bestehendes Dokument.\nÖffnen"
-    ID_FILE_CLOSE           "Schließt das aktive Dokument.\nSchließen"
+    ID_FILE_OPEN            "ï¿½ffnet ein bestehendes Dokument.\nï¿½ffnen"
+    ID_FILE_CLOSE           "Schlieï¿½t das aktive Dokument.\nSchlieï¿½en"
     ID_FILE_SAVE            "Speichert das aktive Dokument.\nSpeichern"
     ID_FILE_SAVE_AS         "Speichert das aktive Dokument unter neuem Namen.\nSpeichern unter"
-    ID_FILE_PAGE_SETUP      "Ändert die Druckoptionen.\nSeite einrichten"
-    ID_FILE_PRINT_SETUP     "Ändert den Drucker und die Druckoptionen.\nDruckereinrichtung"
+    ID_FILE_PAGE_SETUP      "ï¿½ndert die Druckoptionen.\nSeite einrichten"
+    ID_FILE_PRINT_SETUP     "ï¿½ndert den Drucker und die Druckoptionen.\nDruckereinrichtung"
     ID_FILE_PRINT           "Druckt das aktive Dokument.\nDrucken"
     ID_FILE_PRINT_PREVIEW   "Zeigt ganze Seiten an.\nSeitenansicht"
 END
@@ -2695,45 +2695,45 @@ END
 STRINGTABLE
 BEGIN
     ID_APP_ABOUT            "Zeigt Programm-Informationen, Versionsnummer und Copyright an.\nInfo"
-    ID_APP_EXIT             "Verläßt die Anwendung; fragt, ob Dokumente gespeichert werden sollen.\nBeenden"
-    ID_HELP_INDEX           "Öffnet die Hilfe\nHilfe"
+    ID_APP_EXIT             "Verlï¿½ï¿½t die Anwendung; fragt, ob Dokumente gespeichert werden sollen.\nBeenden"
+    ID_HELP_INDEX           "ï¿½ffnet die Hilfe\nHilfe"
     ID_HELP_FINDER          "Listet die Hilfethemen auf\nHilfethemen"
     ID_HELP_USING           "Zeigt Anweisungen an, wie die Hilfe benutzt wird\nHilfe"
-    ID_CONTEXT_HELP         "Zeigt die Hilfe für angeklickte Buttons, Menüs und Fenster an\nHilfe"
-    ID_HELP                 "Zeigt die Hilfe für die aktuelle Aufgabe oder Kommando an\nHilfe"
+    ID_CONTEXT_HELP         "Zeigt die Hilfe fï¿½r angeklickte Buttons, Menï¿½s und Fenster an\nHilfe"
+    ID_HELP                 "Zeigt die Hilfe fï¿½r die aktuelle Aufgabe oder Kommando an\nHilfe"
 END
 
 STRINGTABLE
 BEGIN
-    ID_FILE_MRU_FILE1       "Öffnet dieses Dokument."
-    ID_FILE_MRU_FILE2       "Öffnet dieses Dokument."
-    ID_FILE_MRU_FILE3       "Öffnet dieses Dokument."
-    ID_FILE_MRU_FILE4       "Öffnet dieses Dokument."
-    ID_FILE_MRU_FILE5       "Öffnet dieses Dokument."
-    ID_FILE_MRU_FILE6       "Öffnet dieses Dokument."
-    ID_FILE_MRU_FILE7       "Öffnet dieses Dokument."
-    ID_FILE_MRU_FILE8       "Öffnet dieses Dokument."
-    ID_FILE_MRU_FILE9       "Öffnet dieses Dokument."
-    ID_FILE_MRU_FILE10      "Öffnet dieses Dokument."
-    ID_FILE_MRU_FILE11      "Öffnet dieses Dokument."
-    ID_FILE_MRU_FILE12      "Öffnet dieses Dokument."
-    ID_FILE_MRU_FILE13      "Öffnet dieses Dokument."
-    ID_FILE_MRU_FILE14      "Öffnet dieses Dokument."
-    ID_FILE_MRU_FILE15      "Öffnet dieses Dokument."
-    ID_FILE_MRU_FILE16      "Öffnet dieses Dokument."
+    ID_FILE_MRU_FILE1       "ï¿½ffnet dieses Dokument."
+    ID_FILE_MRU_FILE2       "ï¿½ffnet dieses Dokument."
+    ID_FILE_MRU_FILE3       "ï¿½ffnet dieses Dokument."
+    ID_FILE_MRU_FILE4       "ï¿½ffnet dieses Dokument."
+    ID_FILE_MRU_FILE5       "ï¿½ffnet dieses Dokument."
+    ID_FILE_MRU_FILE6       "ï¿½ffnet dieses Dokument."
+    ID_FILE_MRU_FILE7       "ï¿½ffnet dieses Dokument."
+    ID_FILE_MRU_FILE8       "ï¿½ffnet dieses Dokument."
+    ID_FILE_MRU_FILE9       "ï¿½ffnet dieses Dokument."
+    ID_FILE_MRU_FILE10      "ï¿½ffnet dieses Dokument."
+    ID_FILE_MRU_FILE11      "ï¿½ffnet dieses Dokument."
+    ID_FILE_MRU_FILE12      "ï¿½ffnet dieses Dokument."
+    ID_FILE_MRU_FILE13      "ï¿½ffnet dieses Dokument."
+    ID_FILE_MRU_FILE14      "ï¿½ffnet dieses Dokument."
+    ID_FILE_MRU_FILE15      "ï¿½ffnet dieses Dokument."
+    ID_FILE_MRU_FILE16      "ï¿½ffnet dieses Dokument."
 END
 
 STRINGTABLE
 BEGIN
-    ID_NEXT_PANE            "Wechselt zum nächsten Fensterausschnitt.\nNächster Ausschnitt"
-    ID_PREV_PANE            "Springt zum vorherigen Fensterausschnitt zurück.\nVorheriger Ausschnitt"
+    ID_NEXT_PANE            "Wechselt zum nï¿½chsten Fensterausschnitt.\nNï¿½chster Ausschnitt"
+    ID_PREV_PANE            "Springt zum vorherigen Fensterausschnitt zurï¿½ck.\nVorheriger Ausschnitt"
 END
 
 STRINGTABLE
 BEGIN
-    ID_WINDOW_NEW           "Öffnet ein weiteres Fenster für das aktive Dokument.\nNeues Fenster"
+    ID_WINDOW_NEW           "ï¿½ffnet ein weiteres Fenster fï¿½r das aktive Dokument.\nNeues Fenster"
     ID_WINDOW_ARRANGE       "Ordnet die Symbole im unteren Bereich des Fensters an.\nSymbole anordnen"
-    ID_WINDOW_CASCADE       "Ordnet die Fenster überlappend an.\nÜberlappende Fenster"
+    ID_WINDOW_CASCADE       "Ordnet die Fenster ï¿½berlappend an.\nï¿½berlappende Fenster"
     ID_WINDOW_TILE_HORZ     "Ordnet die Fenster horizontal nebeneinander an.\nFenster horizontal nebeneinander"
     ID_WINDOW_TILE_VERT     "Ordnet die Fenster vertikal nebeneinander an.\nFenster vertikal nebeneinander"
     ID_WINDOW_SPLIT         "Teilt das aktive Fenster in Ausschnitte.\nTeilen"
@@ -2741,17 +2741,17 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_EDIT_CLEAR           "Löscht die Markierung.\nLöschen"
-    ID_EDIT_CLEAR_ALL       "Löscht alles.\nAlles löschen"
-    ID_EDIT_COPY            "Kopiert die Markierung und überträgt sie in die Zwischenablage.\nKopieren"
-    ID_EDIT_CUT             "Entfernt die Markierung und überträgt sie in die Zwischenablage.\nAusschneiden"
+    ID_EDIT_CLEAR           "Lï¿½scht die Markierung.\nLï¿½schen"
+    ID_EDIT_CLEAR_ALL       "Lï¿½scht alles.\nAlles lï¿½schen"
+    ID_EDIT_COPY            "Kopiert die Markierung und ï¿½bertrï¿½gt sie in die Zwischenablage.\nKopieren"
+    ID_EDIT_CUT             "Entfernt die Markierung und ï¿½bertrï¿½gt sie in die Zwischenablage.\nAusschneiden"
     ID_EDIT_FIND            "Sucht den angegebenen Text.\nSuchen"
-    ID_EDIT_PASTE           "Fügt den Inhalt der Zwischenablage ein.\nEinfügen"
+    ID_EDIT_PASTE           "Fï¿½gt den Inhalt der Zwischenablage ein.\nEinfï¿½gen"
     ID_EDIT_REPEAT          "Wiederholt die letzte Aktion.\nWiederholen"
     ID_EDIT_REPLACE         "Ersetzt einen bestimmten Text durch einen anderen.\nErsetzen"
     ID_EDIT_SELECT_ALL      "Markiert das gesamte Dokument.\nAlles markieren"
-    ID_EDIT_UNDO            "Macht die letzte Aktion rückgängig.\nRückgängig"
-    ID_EDIT_REDO            "Wiederholt die vorher rückgängig gemachte Aktion.\nWiederherstellen"
+    ID_EDIT_UNDO            "Macht die letzte Aktion rï¿½ckgï¿½ngig.\nRï¿½ckgï¿½ngig"
+    ID_EDIT_REDO            "Wiederholt die vorher rï¿½ckgï¿½ngig gemachte Aktion.\nWiederherstellen"
 END
 
 STRINGTABLE
@@ -2764,18 +2764,18 @@ END
 
 STRINGTABLE
 BEGIN
-    AFX_IDS_SCSIZE          "Ändert die Fenstergröße."
-    AFX_IDS_SCMOVE          "Ändert die Position des Fensters."
+    AFX_IDS_SCSIZE          "ï¿½ndert die Fenstergrï¿½ï¿½e."
+    AFX_IDS_SCMOVE          "ï¿½ndert die Position des Fensters."
     AFX_IDS_SCMINIMIZE      "Verkleinert das Fenster zu einem Symbol."
-    AFX_IDS_SCMAXIMIZE      "Vergrößert das Fenster zu voller Größe."
-    AFX_IDS_SCNEXTWINDOW    "Wechselt zum nächsten Dokumentenfenster."
+    AFX_IDS_SCMAXIMIZE      "Vergrï¿½ï¿½ert das Fenster zu voller Grï¿½ï¿½e."
+    AFX_IDS_SCNEXTWINDOW    "Wechselt zum nï¿½chsten Dokumentenfenster."
     AFX_IDS_SCPREVWINDOW    "Wechselt zum vorherigen Dokumentenfenster."
-    AFX_IDS_SCCLOSE         "Schließt das aktive Fenster und fordert zur Dokumentspeicherung auf."
+    AFX_IDS_SCCLOSE         "Schlieï¿½t das aktive Fenster und fordert zur Dokumentspeicherung auf."
 END
 
 STRINGTABLE
 BEGIN
-    AFX_IDS_SCRESTORE       "Stellt das Fenster in seiner normalen Größe wieder her."
+    AFX_IDS_SCRESTORE       "Stellt das Fenster in seiner normalen Grï¿½ï¿½e wieder her."
     AFX_IDS_SCTASKLIST      "Aktiviert die Task-Liste."
     AFX_IDS_MDICHILD        "Aktiviert dieses Fenster."
 END
@@ -2810,11 +2810,11 @@ BEGIN
     IDS_SIMULATEDSENSOR_NAME "Simulierter Sensor"
     IDS_KISENSOR_NAME       "HCFR Sensor"
     IDS_SETTINGS_PROPERTIES_TITLE "Voreinstellungen"
-    IDS_SATLUMHISTOVIEW_NAME "Histogramm Sättigung - Helligkeit"
-    IDS_SATLUMSHIFTVIEW_NAME "Histogramm Sättigungsverschiebung"
+    IDS_SATLUMHISTOVIEW_NAME "Histogramm Sï¿½ttigung - Helligkeit"
+    IDS_SATLUMSHIFTVIEW_NAME "Histogramm Sï¿½ttigungsverschiebung"
     IDS_NEARBLACKHISTOVIEW_NAME "Histogramm Helligkeit nahe Schwarz"
-    IDS_NEARWHITEHISTOVIEW_NAME "Histogramm Helligkeit nahe Weiß"
-    IDS_MEASURESHISTOVIEW_NAME "Kombiniertes Histogramm für freie Messungen"
+    IDS_NEARWHITEHISTOVIEW_NAME "Histogramm Helligkeit nahe Weiï¿½"
+    IDS_MEASURESHISTOVIEW_NAME "Kombiniertes Histogramm fï¿½r freie Messungen"
     IDS_CALIBRATESENSOR     "Sensor kalibrieren ?"
 END
 
@@ -2825,8 +2825,8 @@ BEGIN
     IDM_VIEW_LUMINANCEHISTO "Helligkeitshistogramm anzeigen\nHistogramm Helligkeit"
     IDM_VIEW_RGBHISTO       "Histogramm RGB Niveau anzeigen\nHistogramm RGB Niveau"
     IDM_VIEW_COLORTEMPHISTO "Histogramm Farbtemperatur anzeigen\nHistogramm Farbtemperatur"
-    IDM_VIEW_SATLUMHISTO    "Histogramm Sättigung - Helligkeit anzeigen\nHistogramm Sättigung - Helligkeit"
-    IDM_VIEW_SATLUMSHIFT    "Histogramm Sättigungsverschiebung anzeigen\nHistogramm Sättigungsverschiebung"
+    IDM_VIEW_SATLUMHISTO    "Histogramm Sï¿½ttigung - Helligkeit anzeigen\nHistogramm Sï¿½ttigung - Helligkeit"
+    IDM_VIEW_SATLUMSHIFT    "Histogramm Sï¿½ttigungsverschiebung anzeigen\nHistogramm Sï¿½ttigungsverschiebung"
 END
 
 STRINGTABLE
@@ -2840,13 +2840,13 @@ BEGIN
     ID_UNITS_SENSOR         "Sensorwerte"
     IDM_CONFIGURE_SENSOR    "Sensorparameter konfigurieren"
     IDM_CONFIGURE_GENERATOR "Bildquellenparameter konfigurieren"
-    IDM_CHANGE_SENSOR       "Sensor auswählen"
-    IDM_CHANGE_GENERATOR    "Bildquelle auswählen"
+    IDM_CHANGE_SENSOR       "Sensor auswï¿½hlen"
+    IDM_CHANGE_GENERATOR    "Bildquelle auswï¿½hlen"
 END
 
 STRINGTABLE
 BEGIN
-    ID_VIEW_MEASURE_SAT_BAR "Blendet die Sä&ttigung Messungen Symbole ein oder aus\nSä&ttigung Messungen Symbole"
+    ID_VIEW_MEASURE_SAT_BAR "Blendet die Sï¿½&ttigung Messungen Symbole ein oder aus\nSï¿½&ttigung Messungen Symbole"
     IDM_LOAD_CALIBRATION_FILE "Select new calibration file"
     IDM_CIE_SHOWSATURATIONSCALETARG 
                             "Show saturation scale targets\nDisplay saturation targets"
@@ -2857,7 +2857,7 @@ STRINGTABLE
 BEGIN
     IDM_VIEW_TESTCOLOR      "Farbtest anzeigen\nFarbtest"
     IDM_CIE_SHOWSATURATIONSCALE 
-                            "Skalenpunkte Sättigung anzeigen\nSättigungspunkte anzeigen"
+                            "Skalenpunkte Sï¿½ttigung anzeigen\nSï¿½ttigungspunkte anzeigen"
     ID_UNITS_xyz_2          "xyz"
 END
 
@@ -2887,16 +2887,16 @@ BEGIN
     IDM_HELP_INSTALL        "Hilfe: HCFR Sensor Installation\nInstallation"
     IDM_WHATS_THIS          "Kontexthilfe\nKontexthilfe"
     IDM_VIEW_NEARBLACKHISTO "Histogramm Helligkeit nahe Schwarz anzeigen\nHistogramm Helligkeit nahe Schwarz"
-    IDM_VIEW_NEARWHITEHISTO "Histogramm Helligkeit nahe Weiß anzeigen\nHistogramm Helligkeit nahe Weiß"
-    IDM_VIEW_INFOMEASURE    "Informationen über die ausgewählte Messung anzeigen\nMessinformationen anzeigen"
+    IDM_VIEW_NEARWHITEHISTO "Histogramm Helligkeit nahe Weiï¿½ anzeigen\nHistogramm Helligkeit nahe Weiï¿½"
+    IDM_VIEW_INFOMEASURE    "Informationen ï¿½ber die ausgewï¿½hlte Messung anzeigen\nMessinformationen anzeigen"
 END
 
 STRINGTABLE
 BEGIN
     IDM_CIE_UV              "CIE u'v' Diagramm anzeigen\nCIE u'v' Diagramm"
-    IDM_VIEW_MEASURESCOMBO  "Kombiniertes Histogramm für freie Messungen anzeigen\nKombiniertes Histogramm für freie Messungen"
-    IDM_LANGUAGE            "Die Anwendungssprache auswählen"
-    IDM_CIE_SHOWDELTAE      "Zeigt Kreise um die Weißreferenz an, die Delta E = 3 und 10 repräsentieren\nKreise für Delta E = 3 und 10 anzeigen"
+    IDM_VIEW_MEASURESCOMBO  "Kombiniertes Histogramm fï¿½r freie Messungen anzeigen\nKombiniertes Histogramm fï¿½r freie Messungen"
+    IDM_LANGUAGE            "Die Anwendungssprache auswï¿½hlen"
+    IDM_CIE_SHOWDELTAE      "Zeigt Kreise um die Weiï¿½referenz an, die Delta E = 3 und 10 reprï¿½sentieren\nKreise fï¿½r Delta E = 3 und 10 anzeigen"
 END
 
 STRINGTABLE
@@ -2910,13 +2910,13 @@ BEGIN
     IDS_CANNOTDISPLAYCOLOR  "Die Farbe kann nicht angezeigt werden."
     IDS_ERRGENERATOR        "Sendefehler"
     IDS_RED                 "Rot"
-    IDS_GREEN               "Grün"
+    IDS_GREEN               "Grï¿½n"
     IDS_S2SENSOR_NAME       "Spyder II"
     IDS_BLUE                "Blau"
-    IDS_WHITE               "Weiß"
+    IDS_WHITE               "Weiï¿½"
     IDS_BLACK               "Schwarz"
     IDS_ERRADDITIVITY       "Farbadditionsfehler"
-    IDS_BADADDITIVITYFOR    "Schlechte Additivität für"
+    IDS_BADADDITIVITYFOR    "Schlechte Additivitï¿½t fï¿½r"
 END
 
 STRINGTABLE
@@ -2942,38 +2942,38 @@ END
 STRINGTABLE
 BEGIN
     IDS_INSTEADOF           "anstelle von"
-    IDS_ADDITIVITY          "Additivität:"
+    IDS_ADDITIVITY          "Additivitï¿½t:"
     IDS_ADDITIVITYRESULTS   "Additionsergebniss"
-    IDS_INVALIDMEASUREMATRIX "Ungültige Messmatrix"
+    IDS_INVALIDMEASUREMATRIX "Ungï¿½ltige Messmatrix"
     IDS_ERRSENSOR           "Sensorfehler"
-    IDS_INVALIDSENSORMATRIX "Ungültige Sensormatrix"
-    IDS_MUSTSAVEINSUBDIR    "Sie müssen diese Datei im aktuellen Ordner speichern um sie später zu benutzen."
-    IDS_RUNCONTINUOUS       "Kontinuierliche Messungen ausführen - F8"
-    IDS_ONEMEASURE          "Eine Messung ausführen - F7"
+    IDS_INVALIDSENSORMATRIX "Ungï¿½ltige Sensormatrix"
+    IDS_MUSTSAVEINSUBDIR    "Sie mï¿½ssen diese Datei im aktuellen Ordner speichern um sie spï¿½ter zu benutzen."
+    IDS_RUNCONTINUOUS       "Kontinuierliche Messungen ausfï¿½hren - F8"
+    IDS_ONEMEASURE          "Eine Messung ausfï¿½hren - F7"
     IDS_CONFIGURESENSOR     "Sensor konfigurieren"
     IDS_CONFIGUREGENERATOR  "Bildquelle konfigurieren"
     IDS_MEASUREGRAYSCALE    "Grautreppe messen"
-    IDS_DELETEGRAYSCALE     "Grautreppe löschen"
+    IDS_DELETEGRAYSCALE     "Grautreppe lï¿½schen"
     IDS_MEASURECONTRAST     "Kontrast messen"
-    IDS_DELETECONTRAST      "Kontrast löschen"
-    IDS_MEASUREPRIMARIES    "Primärfarben messen"
+    IDS_DELETECONTRAST      "Kontrast lï¿½schen"
+    IDS_MEASUREPRIMARIES    "Primï¿½rfarben messen"
 END
 
 STRINGTABLE
 BEGIN
     IDS_LCHLEVELS           "HSV Levels"
     IDS_CUSTREDREF          "Custom Rot Referenz"
-    IDS_CUSTGREENREF        "Custom Grün Referenz"
+    IDS_CUSTGREENREF        "Custom Grï¿½n Referenz"
     IDS_CUSTBLUEREF         "Custom Blau Referenz"
     IDS_UHDTVREDREF         "UHDTV P3 Rot Referenz"
-    IDS_UHDTVGREENREF       "UHDTV P3 Grün Referenz"
+    IDS_UHDTVGREENREF       "UHDTV P3 Grï¿½n Referenz"
     IDS_UHDTVBLUEREF        "UHDTV P3 Blau Referenz"
     IDS_UHDTV2REDREF        "UHDTV Rec2020 Rot Referenz"
-    IDS_UHDTV2GREENREF      "UHDTV Rec2020 Grün Referenz"
+    IDS_UHDTV2GREENREF      "UHDTV Rec2020 Grï¿½n Referenz"
     IDS_UHDTV2BLUEREF       "UHDTV Rec2020 Blau Referenz"
     IDS_CONFIGURESENSOR2    "Start/Stop Adaptive Integration"
     IDS_UHDTV3REDREF        "UHDTV P3 in Rec2020 Rot Referenz"
-    IDS_UHDTV3GREENREF      "UHDTV P3 in Rec2020 Grün Referenz"
+    IDS_UHDTV3GREENREF      "UHDTV P3 in Rec2020 Grï¿½n Referenz"
     IDS_UHDTV3BLUEREF       "UHDTV P3 in Rec2020 Blau Referenz"
     IDS_ABOUT_PATTERNS      "additional patterns - 2016"
     IDS_UHDTV4REDREF        "UHDTV Rec709 in Rec2020 Red Reference"
@@ -2987,11 +2987,11 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_DELETEPRIMARIES     "Primärfarben löschen"
-    IDS_MEASURESECONDARIES  "Primärfarben und Sekundärfarben messen"
-    IDS_DELETESECONDARIES   "Primärfarben und Sekundärfarben löschen"
-    IDS_DELETEALLMEASURES   "Alle Messungen löschen"
-    IDS_DELETETHISMEASURE   "Die ausgewählten Messungen löschen"
+    IDS_DELETEPRIMARIES     "Primï¿½rfarben lï¿½schen"
+    IDS_MEASURESECONDARIES  "Primï¿½rfarben und Sekundï¿½rfarben messen"
+    IDS_DELETESECONDARIES   "Primï¿½rfarben und Sekundï¿½rfarben lï¿½schen"
+    IDS_DELETEALLMEASURES   "Alle Messungen lï¿½schen"
+    IDS_DELETETHISMEASURE   "Die ausgewï¿½hlten Messungen lï¿½schen"
     IDS_DISPLAYANSICONTRAST "ANSI-Kontrastmuster anzeigen"
     IDS_STOPCONTINUOUS      "Kontinuierliche Messungen stoppen - F8"
     IDS_YELLOW              "Gelb"
@@ -3106,62 +3106,62 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_MEASURESATCYAN      "Cyan-Sättigung messen"
-    IDS_MEASURESATMAGENTA   "Magenta-Sättigung messen"
+    IDS_MEASURESATCYAN      "Cyan-Sï¿½ttigung messen"
+    IDS_MEASURESATMAGENTA   "Magenta-Sï¿½ttigung messen"
     IDS_GRAYSCALE           "Grautreppe"
     IDS_NEARBLACK           "Abstufung nahe Schwarz"
-    IDS_NEARWHITE           "Abstufung nahe Weiß"
-    IDS_SATRED              "Verlauf der Rot-Sättigung"
-    IDS_SATGREEN            "Verlauf der Grün-Sättigung"
-    IDS_SATBLUE             "Verlauf der Blau-Sättigung"
-    IDS_SATYELLOW           "Verlauf der Gelb-Sättigung"
-    IDS_SATCYAN             "Verlauf der Cyan-Sättigung"
-    IDS_SATMAGENTA          "Verlauf der Magenta-Sättigung"
-    IDS_DELETENEARBLACK     "Abstufung nahe Schwarz löschen"
-    IDS_DELETENEARWHITE     "Abstufung nahe Weiß löschen"
-    IDS_DELETESATRED        "Rot-Sättigungen löschen"
-    IDS_DELETESATGREEN      "Grün-Sättigungen löschen"
-    IDS_DELETESATBLUE       "Blau-Sättigungen löschen"
+    IDS_NEARWHITE           "Abstufung nahe Weiï¿½"
+    IDS_SATRED              "Verlauf der Rot-Sï¿½ttigung"
+    IDS_SATGREEN            "Verlauf der Grï¿½n-Sï¿½ttigung"
+    IDS_SATBLUE             "Verlauf der Blau-Sï¿½ttigung"
+    IDS_SATYELLOW           "Verlauf der Gelb-Sï¿½ttigung"
+    IDS_SATCYAN             "Verlauf der Cyan-Sï¿½ttigung"
+    IDS_SATMAGENTA          "Verlauf der Magenta-Sï¿½ttigung"
+    IDS_DELETENEARBLACK     "Abstufung nahe Schwarz lï¿½schen"
+    IDS_DELETENEARWHITE     "Abstufung nahe Weiï¿½ lï¿½schen"
+    IDS_DELETESATRED        "Rot-Sï¿½ttigungen lï¿½schen"
+    IDS_DELETESATGREEN      "Grï¿½n-Sï¿½ttigungen lï¿½schen"
+    IDS_DELETESATBLUE       "Blau-Sï¿½ttigungen lï¿½schen"
 END
 
 STRINGTABLE
 BEGIN
-    IDS_DELETESATYELLOW     "Gelb-Sättigungen löschen"
-    IDS_DELETESATCYAN       "Cyan-Sättigungen löschen"
-    IDS_DELETESATMAGENTA    "Magenta-Sättigungen löschen"
-    IDS_CONFIRMDELETE       "Wollen Sie die Werte wirklich löschen?"
-    IDS_RUNGRAYSCALEON      "Messung der Grautreppe ausführen mit"
-    IDS_RUNNEARBLACKON      "Messungen nahe Schwarz ausführen mit"
-    IDS_RUNNEARWHITEON      "Messungen nahe Weiß ausführen mit"
-    IDS_RUNSATURATIONON     "Sättigungsmessung ausführen mit"
-    IDS_RUNQUEUEWARNING     "Werten ?\nWarnung: Aktuelle Daten gehen verloren...\n\nBemerkung: Sie können die Messung mit ESCAPE abbrechen."
-    IDS_RUNPRIMARIES        "Messung der Primärfarben ausführen ?\nWarnung: Aktuelle Daten gehen verloren...\n\nBemerkung: Sie können die Messung mit ESCAPE abbrechen."
-    IDS_RUNSECONDARIES      "Messung der Primärfarben und Sekundärfarben ausführen ?\nWarnung: Aktuelle Daten gehen verloren...\n\nBemerkung: Sie können die Messung mit ESCAPE abbrechen."
-    IDS_RUNCONTRAST         "Kontrastmessung ausführen ?\nWarnung: Aktuelle Daten gehen verloren...\n\nBemerkung: Sie können die Messung mit ESCAPE abbrechen."
+    IDS_DELETESATYELLOW     "Gelb-Sï¿½ttigungen lï¿½schen"
+    IDS_DELETESATCYAN       "Cyan-Sï¿½ttigungen lï¿½schen"
+    IDS_DELETESATMAGENTA    "Magenta-Sï¿½ttigungen lï¿½schen"
+    IDS_CONFIRMDELETE       "Wollen Sie die Werte wirklich lï¿½schen?"
+    IDS_RUNGRAYSCALEON      "Messung der Grautreppe ausfï¿½hren mit"
+    IDS_RUNNEARBLACKON      "Messungen nahe Schwarz ausfï¿½hren mit"
+    IDS_RUNNEARWHITEON      "Messungen nahe Weiï¿½ ausfï¿½hren mit"
+    IDS_RUNSATURATIONON     "Sï¿½ttigungsmessung ausfï¿½hren mit"
+    IDS_RUNQUEUEWARNING     "Werten ?\nWarnung: Aktuelle Daten gehen verloren...\n\nBemerkung: Sie kï¿½nnen die Messung mit ESCAPE abbrechen."
+    IDS_RUNPRIMARIES        "Messung der Primï¿½rfarben ausfï¿½hren ?\nWarnung: Aktuelle Daten gehen verloren...\n\nBemerkung: Sie kï¿½nnen die Messung mit ESCAPE abbrechen."
+    IDS_RUNSECONDARIES      "Messung der Primï¿½rfarben und Sekundï¿½rfarben ausfï¿½hren ?\nWarnung: Aktuelle Daten gehen verloren...\n\nBemerkung: Sie kï¿½nnen die Messung mit ESCAPE abbrechen."
+    IDS_RUNCONTRAST         "Kontrastmessung ausfï¿½hren ?\nWarnung: Aktuelle Daten gehen verloren...\n\nBemerkung: Sie kï¿½nnen die Messung mit ESCAPE abbrechen."
     IDS_CONFIRMDELETESELECTION 
-                            "Wollen Sie die ausgwählten Werte wirklich löschen ?"
-    IDS_CONFIRMDELETEALL    "Wollen Sie wirklich alle Werte löschen ?"
-    IDS_CLICKOK             "Klicken Sie OK um ins Programm zurückzukehren"
+                            "Wollen Sie die ausgwï¿½hlten Werte wirklich lï¿½schen ?"
+    IDS_CONFIRMDELETEALL    "Wollen Sie wirklich alle Werte lï¿½schen ?"
+    IDS_CLICKOK             "Klicken Sie OK um ins Programm zurï¿½ckzukehren"
     IDS_TEMPERATURE         "Temperatur"
 END
 
 STRINGTABLE
 BEGIN
     IDS_PALREDREF           "PAL Rot Referenz"
-    IDS_PALGREENREF         "PAL Grün Referenz"
+    IDS_PALGREENREF         "PAL Grï¿½n Referenz"
     IDS_PALBLUEREF          "PAL Blau Referenz"
     IDS_NTSCREDREF          "Rec601 Rot Referenz"
-    IDS_NTSCGREENREF        "Rec601 Grün Referenz"
+    IDS_NTSCGREENREF        "Rec601 Grï¿½n Referenz"
     IDS_NTSCBLUEREF         "Rec601 Blau Referenz"
     IDS_REC709REDREF        "Rec709 Rot Referenz"
-    IDS_REC709GREENREF      "Rec709 Grün Referenz"
+    IDS_REC709GREENREF      "Rec709 Grï¿½n Referenz"
     IDS_REC709BLUEREF       "Rec709 Blau Referenz"
-    IDS_REDPRIMARY          "Primärfarbe Rot"
-    IDS_GREENPRIMARY        "Primärfarbe Grün"
-    IDS_BLUEPRIMARY         "Primärfarbe Blau"
-    IDS_YELLOWSECONDARY     "Sekundärfarbe Gelb"
-    IDS_CYANSECONDARY       "Sekundärfarbe Cyan"
-    IDS_MAGENTASECONDARY    "Sekundärfarbe Magenta"
+    IDS_REDPRIMARY          "Primï¿½rfarbe Rot"
+    IDS_GREENPRIMARY        "Primï¿½rfarbe Grï¿½n"
+    IDS_BLUEPRIMARY         "Primï¿½rfarbe Blau"
+    IDS_YELLOWSECONDARY     "Sekundï¿½rfarbe Gelb"
+    IDS_CYANSECONDARY       "Sekundï¿½rfarbe Cyan"
+    IDS_MAGENTASECONDARY    "Sekundï¿½rfarbe Magenta"
     IDS_GRAYIRE             "%d%% Grau video level"
 END
 
@@ -3186,14 +3186,14 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_REDSATPERCENT       "Rot gesättigt bei %d%%"
-    IDS_GREENSATPERCENT     "Grün gesättigt bei %d%%"
-    IDS_BLUESATPERCENT      "Blau gesättigt bei %d%%"
-    IDS_YELLOWSATPERCENT    "Gelb gesättigt bei %d%%"
-    IDS_CYANSATPERCENT      "Cyan gesättigt bei %d%%"
-    IDS_MAGENTASATPERCENT   "Magenta gesättigt bei %d%%"
+    IDS_REDSATPERCENT       "Rot gesï¿½ttigt bei %d%%"
+    IDS_GREENSATPERCENT     "Grï¿½n gesï¿½ttigt bei %d%%"
+    IDS_BLUESATPERCENT      "Blau gesï¿½ttigt bei %d%%"
+    IDS_YELLOWSATPERCENT    "Gelb gesï¿½ttigt bei %d%%"
+    IDS_CYANSATPERCENT      "Cyan gesï¿½ttigt bei %d%%"
+    IDS_MAGENTASATPERCENT   "Magenta gesï¿½ttigt bei %d%%"
     IDS_MEASURENUM          "Messung %d"
-    IDS_SELECTION           "Gewählte Farbe"
+    IDS_SELECTION           "Gewï¿½hlte Farbe"
     IDS_COLORTEMP           "Farbtemperatur"
     IDS_REFERENCE           "Referenz"
     IDS_LUMINANCE           "Helligkeit"
@@ -3201,7 +3201,7 @@ BEGIN
     IDS_SMOOTHEDAVERAGE     "Durchschnitt"
     IDS_GAMMA               "Gamma"
     IDS_GAMMARED            "Rot Gamma"
-    IDS_GAMMAGREEN          "Grün Gamma"
+    IDS_GAMMAGREEN          "Grï¿½n Gamma"
 END
 
 STRINGTABLE
@@ -3211,13 +3211,13 @@ BEGIN
     IDS_GAMMAAVERAGE        "Durchschnitt Gamma"
     IDS_RGBREFERENCE        "RGB Referenz"
     IDS_RGBLEVELRED         "Rot Niveau"
-    IDS_RGBLEVELGREEN       "Grün Niveau"
+    IDS_RGBLEVELGREEN       "Grï¿½n Niveau"
     IDS_RGBLEVELBLUE        "Blau Niveau"
     IDS_DELTAE              "Delta E"
     IDS_COLORTEMPREF        "Referenztemperatur"
     IDS_S2SENSOR_PROPERTIES_TITLE "Spyder II Parameter"
     IDS_REFRED              "Rot Referenz"
-    IDS_REFGREEN            "Grün Referenz"
+    IDS_REFGREEN            "Grï¿½n Referenz"
     IDS_REFBLUE             "Blau Referenz"
     IDS_REFYELLOW           "Gelb Referenz"
     IDS_REFCYAN             "Cyan Referenz"
@@ -3227,13 +3227,13 @@ END
 STRINGTABLE
 BEGIN
     IDS_PERCENTSATRED       "% Sat Rot"
-    IDS_PERCENTSATGREEN     "% Sat Grün"
+    IDS_PERCENTSATGREEN     "% Sat Grï¿½n"
     IDS_PERCENTSATBLUE      "% Sat Blau"
     IDS_PERCENTSATYELLOW    "% Sat Gelb"
     IDS_PERCENTSATCYAN      "% Sat Cyan"
     IDS_PERCENTSATMAGENTA   "% Sat Magenta"
     IDS_DELTAERED           "Delta E Rot"
-    IDS_DELTAEGREEN         "Delta E Grün"
+    IDS_DELTAEGREEN         "Delta E Grï¿½n"
     IDS_DELTAEBLUE          "Delta E Blau"
     IDS_DELTAEYELLOW        "Delta E Gelb"
     IDS_DELTAECYAN          "Delta E Cyan"
@@ -3241,57 +3241,57 @@ BEGIN
     IDS_COLORRGBVALUES      "R:%03d, G:%03d, B:%03d"
     IDS_COLOR               "Farbe"
     IDS_REDIRE              "%d%% Rot video level"
-    IDS_GREENIRE            "%d%% Grün video level"
+    IDS_GREENIRE            "%d%% Grï¿½n video level"
 END
 
 STRINGTABLE
 BEGIN
     IDS_BLUEIRE             "%d%% Blau video level"
-    IDS_INVALIDCODE1        "Ungültiges Zeichen. Nur hexadezimale Zeichen (0-9, A-F) und Leerzeichen sind gültig."
-    IDS_INVALIDCODE2        "Falsche Anzahl Zeichen. Es muß ein Vielfaches von 4 sein."
-    IDS_INVALIDCODE3        "Falscher Header. Gültige Werte sind 0000, 5000 und 6000."
-    IDS_INVALIDCODE4        "Falsche Anzahl Zeichen. Es müssen 6 Gruppen zu je  4 hexadezimalen Stellen sein."
-    IDS_INVALIDCODE5        "Dieser Code ist zu lang für den IR Sender."
+    IDS_INVALIDCODE1        "Ungï¿½ltiges Zeichen. Nur hexadezimale Zeichen (0-9, A-F) und Leerzeichen sind gï¿½ltig."
+    IDS_INVALIDCODE2        "Falsche Anzahl Zeichen. Es muï¿½ ein Vielfaches von 4 sein."
+    IDS_INVALIDCODE3        "Falscher Header. Gï¿½ltige Werte sind 0000, 5000 und 6000."
+    IDS_INVALIDCODE4        "Falsche Anzahl Zeichen. Es mï¿½ssen 6 Gruppen zu je  4 hexadezimalen Stellen sein."
+    IDS_INVALIDCODE5        "Dieser Code ist zu lang fï¿½r den IR Sender."
     IDS_INVALIDCODE6        "Falsche Anzahl Zeichen. Dieser Code ist zu kurz."
     IDS_INVALIDCODE7        "Falsche Anzahl Zeichen. Dieser Code ist zu lang."
     IDS_CODEOK              "Code OK."
     IDS_NOCODE              "Kein Code."
-    IDS_CODERECEIVED        "Ein IR Code wurde empfangen. Gültigkeit prüfen."
+    IDS_CODERECEIVED        "Ein IR Code wurde empfangen. Gï¿½ltigkeit prï¿½fen."
     IDS_NOCODERECEIVED      "Es wurde kein Code empfangen."
     IDS_CODESENT            "Code erfolgreich gesendet."
     IDS_CODENOTSENT         "Ein Fehler ist beim Senden des Codes aufgetreten."
-    IDS_NONEXTCHAPTERCODE   "Kein IR Code für 'Nächstes Kapitel'.\r\nDer HCFR IR Sender kann ohne diesen Code nicht arbeiten."
-    IDS_DVDPOS1             "Prüfen Sie, das Sie im 'Einstellungen'  DVD-Menü sind\nmit Auswahl auf 0% Grau"
+    IDS_NONEXTCHAPTERCODE   "Kein IR Code fï¿½r 'Nï¿½chstes Kapitel'.\r\nDer HCFR IR Sender kann ohne diesen Code nicht arbeiten."
+    IDS_DVDPOS1             "Prï¿½fen Sie, das Sie im 'Einstellungen'  DVD-Menï¿½ sind\nmit Auswahl auf 0% Grau"
 END
 
 STRINGTABLE
 BEGIN
-    IDS_DVDPOS2             "Prüfen Sie, das Sie auf dem ersten nahe Scharz Bild sind."
-    IDS_DVDPOS3             "Prüfen Sie, das Sie auf dem ersten nahe Weiß Bild sind."
-    IDS_DVDPOS4             "Prüfen Sie, das Sie auf dem ersten Kontrastmuster sind."
-    IDS_DVDPOS5             "Prüfen Sie, das Sie auf dem 0% Grau Bild des 'Adjustments' DVD-Menü stehen."
-    IDS_PRIMARYCOLORS       "Primärfarben"
-    IDS_SECONDARYCOLORS     "Primärfarben und Sekundärfarben"
-    IDS_DVDPOS6             "Prüfen Sie, das Sie im 'Sensorkalibrierung' Menü sind\nmit Auswahl auf dem ersten Bild."
-    IDS_SATRED2             "Rot Sättigung"
-    IDS_SATGREEN2           "Grün Sättigung"
-    IDS_SATBLUE2            "Blau Sättigung"
-    IDS_SATYELLOW2          "Gelb Sättigung"
-    IDS_SATCYAN2            "Cyan Sättigung"
-    IDS_SATMAGENTA2         "Magenta Sättigung"
-    IDS_CONFIRMCOLOR        "Prüfen Sie, das Sie auf dem Bild der zu messenden Farbe sind."
-    IDS_DVDPOS7             "Prüfen Sie, das Sie im Primärfarben Sättigung DVD-Menü sind\nmit Auswahl auf Rot."
-    IDS_DVDPOS8             "Prüfen Sie, das Sie im Sekundärfarben Sättigung DVD-Menü sind\nmit Auswahl auf Gelb."
+    IDS_DVDPOS2             "Prï¿½fen Sie, das Sie auf dem ersten nahe Scharz Bild sind."
+    IDS_DVDPOS3             "Prï¿½fen Sie, das Sie auf dem ersten nahe Weiï¿½ Bild sind."
+    IDS_DVDPOS4             "Prï¿½fen Sie, das Sie auf dem ersten Kontrastmuster sind."
+    IDS_DVDPOS5             "Prï¿½fen Sie, das Sie auf dem 0% Grau Bild des 'Adjustments' DVD-Menï¿½ stehen."
+    IDS_PRIMARYCOLORS       "Primï¿½rfarben"
+    IDS_SECONDARYCOLORS     "Primï¿½rfarben und Sekundï¿½rfarben"
+    IDS_DVDPOS6             "Prï¿½fen Sie, das Sie im 'Sensorkalibrierung' Menï¿½ sind\nmit Auswahl auf dem ersten Bild."
+    IDS_SATRED2             "Rot Sï¿½ttigung"
+    IDS_SATGREEN2           "Grï¿½n Sï¿½ttigung"
+    IDS_SATBLUE2            "Blau Sï¿½ttigung"
+    IDS_SATYELLOW2          "Gelb Sï¿½ttigung"
+    IDS_SATCYAN2            "Cyan Sï¿½ttigung"
+    IDS_SATMAGENTA2         "Magenta Sï¿½ttigung"
+    IDS_CONFIRMCOLOR        "Prï¿½fen Sie, das Sie auf dem Bild der zu messenden Farbe sind."
+    IDS_DVDPOS7             "Prï¿½fen Sie, das Sie im Primï¿½rfarben Sï¿½ttigung DVD-Menï¿½ sind\nmit Auswahl auf Rot."
+    IDS_DVDPOS8             "Prï¿½fen Sie, das Sie im Sekundï¿½rfarben Sï¿½ttigung DVD-Menï¿½ sind\nmit Auswahl auf Gelb."
 END
 
 STRINGTABLE
 BEGIN
-    IDS_DVDPOS9             "Prüfen Sie, das Sie auf dem ersten Bild der 'Primärfarben' Serie sind."
-    IDS_DVDPOS10            "Prüfen Sie, das Sie auf dem ersten Bild %s sind."
+    IDS_DVDPOS9             "Prï¿½fen Sie, das Sie auf dem ersten Bild der 'Primï¿½rfarben' Serie sind."
+    IDS_DVDPOS10            "Prï¿½fen Sie, das Sie auf dem ersten Bild %s sind."
     IDS_DVDMANPOS1          "Gehen Sie zum Testbild '%g%% grau video level' und klicken Sie OK"
     IDS_DVDMANPOS2          "Gehen Sie zum Testbild '%s' und klicken Sie OK"
-    IDS_DVDPOS11            "Prüfen Sie, das Sie im 'Advanced adjustments' DVD-Menü sind\nmit Auswahl auf Grau"
-    IDS_DVDPOS12            "Prüfen Sie, das Sie auf dem 0%% video level Bild im 'Advanced Adjustments' DVD-Menü stehen"
+    IDS_DVDPOS11            "Prï¿½fen Sie, das Sie im 'Advanced adjustments' DVD-Menï¿½ sind\nmit Auswahl auf Grau"
+    IDS_DVDPOS12            "Prï¿½fen Sie, das Sie auf dem 0%% video level Bild im 'Advanced Adjustments' DVD-Menï¿½ stehen"
     IDS_ERRLEVELNUMBER      "Die Anzahl der Werte passt nicht zur HCFR Test-DVD"
     IDS_MTCSSENSOR_NAME     "Mazet MTCS-C2"
     IDS_MTCSSENSOR_PROPERTIES_TITLE "MTCS-C2 Parameter"
@@ -3299,27 +3299,27 @@ BEGIN
     IDS_DVDMANPOS9          "Gehen Sie zum Kapitel 'Kontrast ANSI 1' und klicken Sie OK"
     IDS_DVDMANPOS10         "Gehen Sie zum Kapitel 'Kontrast ANSI 2' und klicken Sie OK"
     IDS_BADFIRMWARE1        "Falsche HCFR Sensor Firmware Version.\r\nDas HCFR Colorimeter akzeptiert Firmwareversion %d.x mit x >= %d.\r\nDie aktuelle Firmware ist %s."
-    IDS_BADFIRMWARE2        "Der HCFR Sensor gab eine ungültige Version (%s) zurück.\r\nDieser Sensor kann nicht benutzt werden."
-    IDS_SENSORNOTFOUND      "Der HCFR Sensor wurde nicht gefunden. Prüfen Sie die Verbindung und den COM / USB port."
+    IDS_BADFIRMWARE2        "Der HCFR Sensor gab eine ungï¿½ltige Version (%s) zurï¿½ck.\r\nDieser Sensor kann nicht benutzt werden."
+    IDS_SENSORNOTFOUND      "Der HCFR Sensor wurde nicht gefunden. Prï¿½fen Sie die Verbindung und den COM / USB port."
     IDS_SENSORVERSION       "Sensor Version:"
 END
 
 STRINGTABLE
 BEGIN
-    IDS_MODIFIED            " geändert"
+    IDS_MODIFIED            " geï¿½ndert"
     IDS_UNKNOWN             "Unbekannt"
-    IDS_MUSTRESTART         "Sie müssen die Anwendung neu starten, damit die Änderungen wirksam werden."
+    IDS_MUSTRESTART         "Sie mï¿½ssen die Anwendung neu starten, damit die ï¿½nderungen wirksam werden."
     IDS_UNKNOWNSENSOR1      "Unbekannte Sensor Klasse\nBenutzen Sie den simulierten Sensor."
     IDS_UNKNOWNSENSOR2      "Unbekannte Sensor Klasse."
     IDS_UNKNOWNGENERATOR1   "Unbekannte IR Sender Klasse\nBenutzen Sie die Bildanzeige."
     IDS_UNKNOWNGENERATOR2   "Unbekannte IR Sender Klasse."
-    IDS_INVALIDFILEFORMAT   "Ungültiges Dateiformat..."
+    IDS_INVALIDFILEFORMAT   "Ungï¿½ltiges Dateiformat..."
     IDS_PRESERVESENSORDATA  "Sensordaten behalten ? \n(Wenn nein, werden XYZ Werte behalten)"
     IDS_SAVECALDATA         "Kalibrierungsdaten sichern?"
     IDS_CONFIRMSENSORCHANGE "Warnung: Die aktuellen Sensorparameter gehen verloren...\nWollen Sie wirklich den Sensor wechseln ?"
     IDS_SENSOR              "Sensor"
     IDS_EXPORT              "Export"
-    IDS_NOMEASURES          "Die Datei ist leer. Soll diese Messung hinzugefügt werden ?"
+    IDS_NOMEASURES          "Die Datei ist leer. Soll diese Messung hinzugefï¿½gt werden ?"
     IDS_ERREXPORT           "Ein unerwarteter Fehler ist beim Export aufgetreten:"
     IDS_MEASURESCANCELED    "Messung abgebrochen"
 END
@@ -3329,19 +3329,19 @@ BEGIN
     IDS_ANERROROCCURED      "Ein Fehler ist aufgetreten:\n"
     IDS_SPYDER              "Spyder II"
     IDS_ERRSPYDERDLL1       "CVSpyder.DLL nicht gefunden. Spyder II kann nicht benutzt werden."
-    IDS_ERRSPYDERDLL2       "Ungültige CVSpyder.DLL. Spyder II kann nicht benutzt werden."
-    IDS_SPYDERERROR         "CVSpyder.dll gab einen Fehler bei der Initialisierung zurück."
+    IDS_ERRSPYDERDLL2       "Ungï¿½ltige CVSpyder.DLL. Spyder II kann nicht benutzt werden."
+    IDS_SPYDERERROR         "CVSpyder.dll gab einen Fehler bei der Initialisierung zurï¿½ck."
     IDS_RGBLEVELREDDATAREF  "Referenzmessung Rot Niveau"
-    IDS_RGBLEVELGREENDATAREF "Referenzmessung Grün Niveau"
+    IDS_RGBLEVELGREENDATAREF "Referenzmessung Grï¿½n Niveau"
     IDS_RGBLEVELBLUEDATAREF "Referenzmessung Blau Niveau"
     IDS_DELTAEDATAREF       "Referenzmessung Delta E"
     IDS_LUMINANCEDATAREF    "Referenzmessung Helligkeit"
     IDS_REDDATAREF          "Referenzmessung Rot"
-    IDS_GREENDATAREF        "Referenzmessung Grün"
+    IDS_GREENDATAREF        "Referenzmessung Grï¿½n"
     IDS_BLUEDATAREF         "Referenzmessung Blau"
     IDS_GAMMADATAREF        "Referenzmessung Gamma"
     IDS_GAMMAREDDATAREF     "Referenzmessung Rot Gamma"
-    IDS_GAMMAGREENDATAREF   "Referenzmessung Grün Gamma"
+    IDS_GAMMAGREENDATAREF   "Referenzmessung Grï¿½n Gamma"
 END
 
 STRINGTABLE
@@ -3351,11 +3351,11 @@ BEGIN
     IDS_DTPSENSOR_NAME      "X-Rite DTP-94"
     IDS_DTPSENSOR_PROPERTIES_TITLE "X-Rite DTP-94 Parameter"
     IDS_ERRXDSDLL1          "XdsIII.DLL nicht gefunden. DTP kann nicht benutzt werden."
-    IDS_ERRXDSDLL2          "Ungültige XdsIII.DLL. DTP kann nicht benutzt werden."
-    IDS_XDSERROR            "XdsIII.dll gab einen Fehler bei der Initialisierung zurück."
+    IDS_ERRXDSDLL2          "Ungï¿½ltige XdsIII.DLL. DTP kann nicht benutzt werden."
+    IDS_XDSERROR            "XdsIII.dll gab einen Fehler bei der Initialisierung zurï¿½ck."
     IDS_ERRXDSINIT1         "Kann USB-Verbindung zum DTP nicht aufbauen"
-    IDS_ERRXDSINIT2         "Kann logische Verbindung zum DTP nicht öffnen"
-    IDS_DTP_CALIBRATE       "Interne Offsets messen ?\nUm diese Operation auszuführen, müssen Sie das Gerät auf eine absolut schwarze Oberfläche richten. Die Messung dauert ungefähr 8 Sekunden."
+    IDS_ERRXDSINIT2         "Kann logische Verbindung zum DTP nicht ï¿½ffnen"
+    IDS_DTP_CALIBRATE       "Interne Offsets messen ?\nUm diese Operation auszufï¿½hren, mï¿½ssen Sie das Gerï¿½t auf eine absolut schwarze Oberflï¿½che richten. Die Messung dauert ungefï¿½hr 8 Sekunden."
     IDS_DTP_CALIBRATION_SUCCESS 
                             "Messung der internen Offsets erfolgreich. Geliefertes Ergebniss:\n"
     IDS_ABOUT_SENSOR        "HCFR Sensor Konzeption"
@@ -3373,19 +3373,19 @@ END
 STRINGTABLE
 BEGIN
     IDS_ABOUT_VALIDATION    "Tests und Validierung"
-    IDS_ABOUT_THANK_HEADER  "<font size='11' color='0,0,0' align='center'>Besonderen Dank an <font style='ub'><a href='http://www.codeproject.com/'>The Code Project</a> </font>dafür das sie<br>die coolste VC++/MFC Seite sind!<br>Dieses Programm benutzt die folgenden Klassen:</font><br>"
+    IDS_ABOUT_THANK_HEADER  "<font size='11' color='0,0,0' align='center'>Besonderen Dank an <font style='ub'><a href='http://www.codeproject.com/'>The Code Project</a> </font>dafï¿½r das sie<br>die coolste VC++/MFC Seite sind!<br>Dieses Programm benutzt die folgenden Klassen:</font><br>"
     IDS_AUTHORS             "Autoren"
     IDS_YELLOWDATAREF       "Referenzmessung Gelb"
     IDS_CYANDATAREF         "Referenzmessung Cyan"
     IDS_MAGENTADATAREF      "Referenzmessung Magenta"
     IDS_PERCENTSATREDDATAREF "Referenzmessung % Sat Rot"
-    IDS_PERCENTSATGREENDATAREF "Referenzmessung % Sat Grün"
+    IDS_PERCENTSATGREENDATAREF "Referenzmessung % Sat Grï¿½n"
     IDS_PERCENTSATBLUEDATAREF "Referenzmessung % Sat Blau"
     IDS_PERCENTSATYELLOWDATAREF "Referenzmessung % Sat Gelb"
     IDS_PERCENTSATCYANDATAREF "Referenzmessung % Sat Cyan"
     IDS_PERCENTSATMAGENTADATAREF "Referenzmessung % Sat Magenta"
     IDS_DELTAEREDDATAREF    "Referenzmessung Delta E Rot"
-    IDS_DELTAEGREENDATAREF  "Referenzmessung Delta E Grün"
+    IDS_DELTAEGREENDATAREF  "Referenzmessung Delta E Grï¿½n"
     IDS_DELTAEBLUEDATAREF   "Referenzmessung Delta E Blau"
     IDS_DELTAEYELLOWDATAREF "Referenzmessung Delta E Gelb"
 END
@@ -3394,15 +3394,15 @@ STRINGTABLE
 BEGIN
     IDS_DELTAECYANDATAREF   "Referenzmessung Delta E Cyan"
     IDS_DELTAEMAGENTADATAREF "Referenzmessung Delta E Magenta"
-    IDS_YELLOWSECONDARYREF  "Referenz Sekundärfarbe Gelb"
-    IDS_CYANSECONDARYREF    "Referenz Sekundärfarbe Cyan"
-    IDS_MAGENTASECONDARYREF "Referenz Sekundärfarbe Magenta"
+    IDS_YELLOWSECONDARYREF  "Referenz Sekundï¿½rfarbe Gelb"
+    IDS_CYANSECONDARYREF    "Referenz Sekundï¿½rfarbe Cyan"
+    IDS_MAGENTASECONDARYREF "Referenz Sekundï¿½rfarbe Magenta"
     IDS_DELTAEBETWEENDATAANDREF "Delta E zwischen Messung und Referenz"
-    IDS_GERMANVERSION       "Deutsche Übersetzung"
+    IDS_GERMANVERSION       "Deutsche ï¿½bersetzung"
     IDS_EYEONE              "Eye One"
     IDS_ERREYEONEDLL        "EyeOne.DLL nicht gefunden. Eye One kann nicht benutzt werden."
-    IDS_ERREYEONEDLL2       "Ungültige EyeOne.DLL. Eye One kann nicht benutzt werden."
-    IDS_EYEONEERROR         "EyeOne.dll gab einen Fehler bei der Initialisierung zurück."
+    IDS_ERREYEONEDLL2       "Ungï¿½ltige EyeOne.DLL. Eye One kann nicht benutzt werden."
+    IDS_EYEONEERROR         "EyeOne.dll gab einen Fehler bei der Initialisierung zurï¿½ck."
     IDS_I1SENSOR_NAME       "Eye One"
     IDS_I1SENSOR_PROPERTIES_TITLE "Eye One Parameter"
     IDS_EYEONE_CALIBRATE    "Eye One kalibrieren ?"
@@ -3417,35 +3417,35 @@ END
 
 STRINGTABLE
 BEGIN
-    IDM_SIM_GRAYSCALE       "Simultane Messungen mit den Sensoren aller offenen Dokumente für die Grautreppe ausführen\nSimultane Messungen der Grautreppe"
-    IDM_SIM_PRIMARIES       "Simultane Messungen mit den Sensoren aller offenen Dokumente für die Primärfarben ausführen\nSimultane Messungen der Primärfarben"
-    IDM_SIM_SECONDARIES     "Simultane Messungen mit den Sensoren aller offenen Dokumente für die Primärfarben und Sekundärfarben ausführen\nSimultane Messungen der Primärfarben und Sekundärfarben"
+    IDM_SIM_GRAYSCALE       "Simultane Messungen mit den Sensoren aller offenen Dokumente fï¿½r die Grautreppe ausfï¿½hren\nSimultane Messungen der Grautreppe"
+    IDM_SIM_PRIMARIES       "Simultane Messungen mit den Sensoren aller offenen Dokumente fï¿½r die Primï¿½rfarben ausfï¿½hren\nSimultane Messungen der Primï¿½rfarben"
+    IDM_SIM_SECONDARIES     "Simultane Messungen mit den Sensoren aller offenen Dokumente fï¿½r die Primï¿½rfarben und Sekundï¿½rfarben ausfï¿½hren\nSimultane Messungen der Primï¿½rfarben und Sekundï¿½rfarben"
     IDM_CALIBRATION_SIM     "Eine Kalibrierungsdatei aus simultanen Messungen zwischen dem aktuellen und einem anderen Dokument mit einem Referenzsensor erzeugen\nKalibrierungsdatei aus simultanen Messungen erzeugen"
-    IDM_CALIBRATION_MANUAL  "Kalibrierungsdatei aus Primärfarbenmessungen und simultanen manuellen Messungen von einem Referenz Colorimeter erzeugen\nKalibrierungsdatei manuell mit einem Referenz Colorimeter erzeugen"
+    IDM_CALIBRATION_MANUAL  "Kalibrierungsdatei aus Primï¿½rfarbenmessungen und simultanen manuellen Messungen von einem Referenz Colorimeter erzeugen\nKalibrierungsdatei manuell mit einem Referenz Colorimeter erzeugen"
 END
 
 STRINGTABLE
 BEGIN
-    IDS_PATTERN_RETRY       "Mehrere Messungen waren bei den folgenden Testbildern nötig :\n%sPrüfen Sie die Stimmigkeit der Ergebnisse oder schalten Sie den Bildwechseltest ab."
+    IDS_PATTERN_RETRY       "Mehrere Messungen waren bei den folgenden Testbildern nï¿½tig :\n%sPrï¿½fen Sie die Stimmigkeit der Ergebnisse oder schalten Sie den Bildwechseltest ab."
     IDS_MANYDOCSUSESAMESENSOR 
-                            "Simultane Messung kann nicht ausgeführt werden: Mehrere Dokumente benutzen Sensor %s."
-    IDS_CANNOTINITDOC       "Fehler bei der Initialisierung der simultanen Messung für Dokument %s.\nOperation abgebrochen."
+                            "Simultane Messung kann nicht ausgefï¿½hrt werden: Mehrere Dokumente benutzen Sensor %s."
+    IDS_CANNOTINITDOC       "Fehler bei der Initialisierung der simultanen Messung fï¿½r Dokument %s.\nOperation abgebrochen."
     IDS_ONLYONEDOC          "Sie brauchen mehr als ein offenes Dokument um simultane Messungen zu benutzen.\nOperation abgebrochen."
     IDS_RUN_SIM_CALIBRATION "Kalibrierungsdatei mit simultanen Messungen im aktuellen und Referenzdokument erzeugen ?\nWarnung: Aktuelle Daten gehen verloren..."
-    IDS_SIM_CAL_ERROR1      "Um eine Kalibrierungsdatei zu erzeugen müssen Sie ein Referenzdokument mit einem Referenz Colorimeter definieren.\nOperation abgebrochen."
+    IDS_SIM_CAL_ERROR1      "Um eine Kalibrierungsdatei zu erzeugen mï¿½ssen Sie ein Referenzdokument mit einem Referenz Colorimeter definieren.\nOperation abgebrochen."
     IDS_SIM_CAL_ERROR2      "Um eine Kalibrierungsdatei zu erzeugen, muss das aktuelle Dokument einen Sensor benutzen, der eine Kalibrierungsdatei braucht.\nOperation abgebrochen."
     IDS_SIM_CAL_ERROR3      "Um eine Kalibrierungsdatei zu erzeugen darf das aktuelle Dokument nicht das Referenzdokument sein.\nOperation abgebrochen."
     IDS_MEASUREGRAYANDCOLORS 
-                            "Grautreppe, Primär- und Sekundärfarben simultan messen ?\nWarnung: Aktuelle Daten gehen verloren...\n\nBemerkung: Sie können die Messung mit ESCAPE abbrechen."
+                            "Grautreppe, Primï¿½r- und Sekundï¿½rfarben simultan messen ?\nWarnung: Aktuelle Daten gehen verloren...\n\nBemerkung: Sie kï¿½nnen die Messung mit ESCAPE abbrechen."
     IDS_RUN_MANUAL_CALIBRATION 
-                            "Kalibrierungsdatei aus manuellen Messungen der Primärfarben und Weiß mit einem Referenz Colorimeter erzeugen ?\n\nWarnung: Um die nächste Farbe anzuzeigen drücken Sie ENTER - nachdem Sie die Werte von Ihrem Referenz Colorimeter notiert haben.\nSie können die Messung mit ESCAPE abbrechen."
+                            "Kalibrierungsdatei aus manuellen Messungen der Primï¿½rfarben und Weiï¿½ mit einem Referenz Colorimeter erzeugen ?\n\nWarnung: Um die nï¿½chste Farbe anzuzeigen drï¿½cken Sie ENTER - nachdem Sie die Werte von Ihrem Referenz Colorimeter notiert haben.\nSie kï¿½nnen die Messung mit ESCAPE abbrechen."
     IDS_DISTANCEINCIEXY     "Abstand zur Referenz in CIExy"
     IDS_CANNOTMEASUREGRAYANDCOLORS 
-                            "%s kann Grautreppe, Primärfarben und Sekundärfarben nicht in einer einzigen Serie anzeigen.\nBitte benutzen Sie einzelne Kommandos anstelle von diesem."
+                            "%s kann Grautreppe, Primï¿½rfarben und Sekundï¿½rfarben nicht in einer einzigen Serie anzeigen.\nBitte benutzen Sie einzelne Kommandos anstelle von diesem."
     IDS_CANNOTDISPLAYANIMATION 
                             "Diese Bildquelle kann keine animierten Testbilder anzeigen."
     IDS_DISPLAYANIMATEDPATTERN 
-                            "Animiertes Testbild anzeigen ?\nDrücken Sie ENTER oder ESCAPE, um die Anzeige zu beenden."
+                            "Animiertes Testbild anzeigen ?\nDrï¿½cken Sie ENTER oder ESCAPE, um die Anzeige zu beenden."
     IDS_WITHBLACKCOMPENSATION "mit Schwarzkompensation"
     IDS_SPECTRUM            "Spektrum"
 END
@@ -3453,12 +3453,12 @@ END
 STRINGTABLE
 BEGIN
     IDM_SIM_GRAYSCALE_AND_COLORS 
-                            "Simultane Messungen der Grautreppe, Primär- und Sekundärfarben in einem Schritt ausführen\nSimultane Messungen der Grautreppe, Primär- und Sekundärfarben"
+                            "Simultane Messungen der Grautreppe, Primï¿½r- und Sekundï¿½rfarben in einem Schritt ausfï¿½hren\nSimultane Messungen der Grautreppe, Primï¿½r- und Sekundï¿½rfarben"
     IDM_PATTERN_ANIM_BLACK  "Animiertes Schwarzwert Testbild mit zwei Streifen bei 1%% video level und 2%% video level auf einem schwarzen Hintergrund anzeigen\nAnimiertes Schwarzwert Testbild"
-    IDM_PATTERN_ANIM_WHITE  "Animiertes Weißwert Testbild mit zwei Streifen bei 98%% video level und 99%% video level auf einem weißen Hintergrund anzeigen\nAnimiertes Weißwert Testbild"
+    IDM_PATTERN_ANIM_WHITE  "Animiertes Weiï¿½wert Testbild mit zwei Streifen bei 98%% video level und 99%% video level auf einem weiï¿½en Hintergrund anzeigen\nAnimiertes Weiï¿½wert Testbild"
     ID_VIEW_SPECTRUM        "Blendet das Spektrum Fenster ein oder aus\nSpektrum"
     IDM_UPDATE_SOFT         "Check for software updates."
-    IDM_SINGLE_MEASUREMENT  "Eine einmalige Messung ausführen\nEine einmalige Messung ausführen"
+    IDM_SINGLE_MEASUREMENT  "Eine einmalige Messung ausfï¿½hren\nEine einmalige Messung ausfï¿½hren"
     IDM_CONTINUOUS_MEASUREMENT 
                             "Kontinuierliche Messungen starten oder stoppen\nKontinuierliche Messungen starten oder stoppen"
     IDM_PATTERN_DISPLAY     "Verschiedene Testbilder anzeigen..."
@@ -3469,28 +3469,28 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_NOSPECTRUM          "Keine Spektraldaten verfügbar."
+    IDS_NOSPECTRUM          "Keine Spektraldaten verfï¿½gbar."
     IDS_MEASUREGRAYSCALE_SIM 
-                            "Grautreppe simultan messen ?\nWarnung: Aktuelle Daten gehen verloren...\n\nBemerkung: Sie können die Messung mit ESCAPE abbrechen."
+                            "Grautreppe simultan messen ?\nWarnung: Aktuelle Daten gehen verloren...\n\nBemerkung: Sie kï¿½nnen die Messung mit ESCAPE abbrechen."
     IDS_MEASUREPRIMARIES_SIM 
-                            "Primärfarben simultan messen ?\nWarnung: Aktuelle Daten gehen verloren...\n\nBemerkung: Sie können die Messung mit ESCAPE abbrechen."
+                            "Primï¿½rfarben simultan messen ?\nWarnung: Aktuelle Daten gehen verloren...\n\nBemerkung: Sie kï¿½nnen die Messung mit ESCAPE abbrechen."
     IDS_MEASURESECONDARIES_SIM 
-                            "Primärfarben und Sekundärfarben simultan messen ?\nWarnung: Aktuelle Daten gehen verloren...\n\nBemerkung: Sie können die Messung mit ESCAPE abbrechen."
+                            "Primï¿½rfarben und Sekundï¿½rfarben simultan messen ?\nWarnung: Aktuelle Daten gehen verloren...\n\nBemerkung: Sie kï¿½nnen die Messung mit ESCAPE abbrechen."
     IDS_MEASURENEARBLACK_SIM 
-                            "Abstufungen nahe Schwarz simultan messen ?\nWarnung: Aktuelle Daten gehen verloren...\n\nBemerkung: Sie können die Messung mit ESCAPE abbrechen."
+                            "Abstufungen nahe Schwarz simultan messen ?\nWarnung: Aktuelle Daten gehen verloren...\n\nBemerkung: Sie kï¿½nnen die Messung mit ESCAPE abbrechen."
     IDS_MEASURENEARWHITE_SIM 
-                            "Abstufungen nahe Weiß simultan messen ?\nWarnung: Aktuelle Daten gehen verloren...\n\nBemerkung: Sie können die Messung mit ESCAPE abbrechen."
-    IDS_MEASURESATRED_SIM   "Rot-Sättigung simultan messen ?\nWarnung: Aktuelle Daten gehen verloren...\n\nBemerkung: Sie können die Messung mit ESCAPE abbrechen."
-    IDS_MEASURESATGREEN_SIM "Grün-Sättigung simultan messen ?\nWarnung: Aktuelle Daten gehen verloren...\n\nBemerkung: Sie können die Messung mit ESCAPE abbrechen."
-    IDS_MEASURESATBLUE_SIM  "Blau-Sättigung simultan messen ?\nWarnung: Aktuelle Daten gehen verloren...\n\nBemerkung: Sie können die Messung mit ESCAPE abbrechen."
+                            "Abstufungen nahe Weiï¿½ simultan messen ?\nWarnung: Aktuelle Daten gehen verloren...\n\nBemerkung: Sie kï¿½nnen die Messung mit ESCAPE abbrechen."
+    IDS_MEASURESATRED_SIM   "Rot-Sï¿½ttigung simultan messen ?\nWarnung: Aktuelle Daten gehen verloren...\n\nBemerkung: Sie kï¿½nnen die Messung mit ESCAPE abbrechen."
+    IDS_MEASURESATGREEN_SIM "Grï¿½n-Sï¿½ttigung simultan messen ?\nWarnung: Aktuelle Daten gehen verloren...\n\nBemerkung: Sie kï¿½nnen die Messung mit ESCAPE abbrechen."
+    IDS_MEASURESATBLUE_SIM  "Blau-Sï¿½ttigung simultan messen ?\nWarnung: Aktuelle Daten gehen verloren...\n\nBemerkung: Sie kï¿½nnen die Messung mit ESCAPE abbrechen."
     IDS_MEASURESATYELLOW_SIM 
-                            "Gelb-Sättigung simultan messen ?\nWarnung: Aktuelle Daten gehen verloren...\n\nBemerkung: Sie können die Messung mit ESCAPE abbrechen."
-    IDS_MEASURESATCYAN_SIM  "Cyan-Sättigung simultan messen ?\nWarnung: Aktuelle Daten gehen verloren...\n\nBemerkung: Sie können die Messung mit ESCAPE abbrechen."
+                            "Gelb-Sï¿½ttigung simultan messen ?\nWarnung: Aktuelle Daten gehen verloren...\n\nBemerkung: Sie kï¿½nnen die Messung mit ESCAPE abbrechen."
+    IDS_MEASURESATCYAN_SIM  "Cyan-Sï¿½ttigung simultan messen ?\nWarnung: Aktuelle Daten gehen verloren...\n\nBemerkung: Sie kï¿½nnen die Messung mit ESCAPE abbrechen."
     IDS_MEASURESATMAGENTA_SIM 
-                            "Magenta-Sättigung simultan messen ?\nWarnung: Aktuelle Daten gehen verloren...\n\nBemerkung: Sie können die Messung mit ESCAPE abbrechen."
-    IDS_UPD_IMPOSSIBLE      "Update nicht möglich (Verbindungsaufbau ist fehlgeschlagen)."
-    IDS_NO_UPD              "Es sind keine Updates verfügbar."
-    IDS_UPD_ASK_DOWNLOAD    "Ein Update ist verfügbar. Wollen Sie es herunterladen?"
+                            "Magenta-Sï¿½ttigung simultan messen ?\nWarnung: Aktuelle Daten gehen verloren...\n\nBemerkung: Sie kï¿½nnen die Messung mit ESCAPE abbrechen."
+    IDS_UPD_IMPOSSIBLE      "Update nicht mï¿½glich (Verbindungsaufbau ist fehlgeschlagen)."
+    IDS_NO_UPD              "Es sind keine Updates verfï¿½gbar."
+    IDS_UPD_ASK_DOWNLOAD    "Ein Update ist verfï¿½gbar. Wollen Sie es herunterladen?"
     IDS_UPD_DOWNLOAD_SUCCEED "Der Download wurde erfolgreich abgeschlossen."
 END
 
@@ -3501,75 +3501,75 @@ BEGIN
     IDS_OFFSET              "Offset"
     IDS_CONFIRMTRAINING     "Wollen Sie eine Korrektur auf das aktuelle Dokument anwenden, damit die Werte mit denen im Referenzdokument vergleichbar sind ?"
     IDS_CANCELTRAINING      "Wollen Sie die Korrektur der XYZ Koordinaten im aktuellen Dokument entfernen ?"
-    IDS_TRAININGNEEDREF     "Um eine Korrektur der XYZ Koordinaten im aktuellen Dokument anzuwenden, müssen Sie ein Referenzdokument mit den Ziel-Primärfarben definieren."
-    IDS_TRAININGNEEDPRIMARY "Um eine Korrektur der XYZ Koordinaten im aktuellen Dokument anzuwenden, müssen in beiden Dokumenten die Primärfarben gemessen sein. Es wird auch empfohlen, das in beiden Dokumenten die Grautreppe gemessen wird, um die Messgenauigkeit zu prüfen."
-    IDS_TRAININGNOTREF      "Sie können keine Korrektur im Referenzdokument anwenden. Bitte wählen Sie ein anderes Zieldokument."
+    IDS_TRAININGNEEDREF     "Um eine Korrektur der XYZ Koordinaten im aktuellen Dokument anzuwenden, mï¿½ssen Sie ein Referenzdokument mit den Ziel-Primï¿½rfarben definieren."
+    IDS_TRAININGNEEDPRIMARY "Um eine Korrektur der XYZ Koordinaten im aktuellen Dokument anzuwenden, mï¿½ssen in beiden Dokumenten die Primï¿½rfarben gemessen sein. Es wird auch empfohlen, das in beiden Dokumenten die Grautreppe gemessen wird, um die Messgenauigkeit zu prï¿½fen."
+    IDS_TRAININGNOTREF      "Sie kï¿½nnen keine Korrektur im Referenzdokument anwenden. Bitte wï¿½hlen Sie ein anderes Zieldokument."
     IDS_CALIBRATE_I1DISPLAY_LCD 
-                            "Um den Eye One Display für LCDs oder Plasmas zu kalibrieren, legen Sie ihn auf eine glatte Oberfläche und klicken Sie OK."
+                            "Um den Eye One Display fï¿½r LCDs oder Plasmas zu kalibrieren, legen Sie ihn auf eine glatte Oberflï¿½che und klicken Sie OK."
     IDS_CALIBRATE_I1DISPLAY_CRT 
-                            "Um den Eye One Display für CRTs zu kalibrieren, richten Sie ihn auf dem Bildschirm aus und klicken Sie OK."
-    IDS_CALIBRATE_I1PRO     "Um den Eye One Pro zu kalibrieren, setzen Sie das Gerät auf das wieße Viereck zur Schwarzmessung und klicken Sie OK."
+                            "Um den Eye One Display fï¿½r CRTs zu kalibrieren, richten Sie ihn auf dem Bildschirm aus und klicken Sie OK."
+    IDS_CALIBRATE_I1PRO     "Um den Eye One Pro zu kalibrieren, setzen Sie das Gerï¿½t auf das wieï¿½e Viereck zur Schwarzmessung und klicken Sie OK."
     IDS_CALIBRATE_SUCCESS2  "Kalibrierung beendet. Bringen Sie den Eye One in Messposition und klicken Sie OK."
-    IDS_NOIRPROFILENAME     "Bitten geben Sie einen Namen für das IR-Profil an"
+    IDS_NOIRPROFILENAME     "Bitten geben Sie einen Namen fï¿½r das IR-Profil an"
     IDS_IRPROFILEEXIST      "IR-Profil %s existiert bereits.\n Ersetzen ?"
-    IDS_IRDELETEPROFILE     "IR-Profil %s löschen ?"
-    IDS_NOIRPROFILESELECTED "Bitte wählen Sie ein IR-Profil"
+    IDS_IRDELETEPROFILE     "IR-Profil %s lï¿½schen ?"
+    IDS_NOIRPROFILESELECTED "Bitte wï¿½hlen Sie ein IR-Profil"
 END
 
 STRINGTABLE
 BEGIN
     IDS_FREEMEASURES        "Freie Messungen"
     IDS_RGBLEVELS           "RGB Niveau"
-    IDS_SATLUMSHIFT         "Sättigungsverschiebung"
-    IDS_SATLUM              "Sättigung - Helligkeit"
+    IDS_SATLUMSHIFT         "Sï¿½ttigungsverschiebung"
+    IDS_SATLUM              "Sï¿½ttigung - Helligkeit"
     ID_LUX_VALUE            "00000000 Lux"
-    IDS_RUNSATREDON         "Rot-Sättigungsmessung ausführen mit"
-    IDS_RUNSATGREENON       "Grün-Sättigungsmessung ausführen mit"
-    IDS_RUNSATBLUEON        "Blau-Sättigungsmessung ausführen mit"
-    IDS_RUNSATYELLOWON      "Gelb-Sättigungsmessung ausführen mit"
-    IDS_RUNSATCYANON        "Cyan-Sättigungsmessung ausführen mit"
-    IDS_RUNSATMAGENTAON     "Magenta-Sättigungsmessung ausführen mit"
-    IDS_RUNALLSATON         "Alles Sättigungsmessung ausführen mit"
+    IDS_RUNSATREDON         "Rot-Sï¿½ttigungsmessung ausfï¿½hren mit"
+    IDS_RUNSATGREENON       "Grï¿½n-Sï¿½ttigungsmessung ausfï¿½hren mit"
+    IDS_RUNSATBLUEON        "Blau-Sï¿½ttigungsmessung ausfï¿½hren mit"
+    IDS_RUNSATYELLOWON      "Gelb-Sï¿½ttigungsmessung ausfï¿½hren mit"
+    IDS_RUNSATCYANON        "Cyan-Sï¿½ttigungsmessung ausfï¿½hren mit"
+    IDS_RUNSATMAGENTAON     "Magenta-Sï¿½ttigungsmessung ausfï¿½hren mit"
+    IDS_RUNALLSATON         "Alles Sï¿½ttigungsmessung ausfï¿½hren mit"
     IDS_MEASUREGRAYANDCOLORSON 
-                            "Messung der Primärfarben, Sekundärfarben und Grautreppe fortsetzen"
-    IDS_PERCENTGRAY         "% weiß"
-    IDS_OPENNEWTAB          "Einen neuen Reiter öffnen"
-    IDS_MEASURESINGLE_SIM   "Eine einmalige freie Messung in allen Dokumenten simultan ausführen ?"
+                            "Messung der Primï¿½rfarben, Sekundï¿½rfarben und Grautreppe fortsetzen"
+    IDS_PERCENTGRAY         "% weiï¿½"
+    IDS_OPENNEWTAB          "Einen neuen Reiter ï¿½ffnen"
+    IDS_MEASURESINGLE_SIM   "Eine einmalige freie Messung in allen Dokumenten simultan ausfï¿½hren ?"
 END
 
 STRINGTABLE
 BEGIN
-    IDM_TAB_CLOSE           "Reiter schließen"
-    IDM_TAB_NEWFRAME        "Reiter in neuem Fenster öffnen"
+    IDM_TAB_CLOSE           "Reiter schlieï¿½en"
+    IDM_TAB_NEWFRAME        "Reiter in neuem Fenster ï¿½ffnen"
     IDM_TAB_DUPLICATE       "Reiter duplizieren"
     IDM_TAB_ACTIVATE        "Reiter aktivieren"
     IDM_MEASURE_GRAYSCALE   "Grautreppe messen\nGrautreppe messen"
-    IDM_MEASURE_PRIMARIES   "Primärfarben messen\nPrimärfarben messen"
-    IDM_MEASURE_SECONDARIES "Primär- und Sekundärfarben messen\nPrimär- und Sekundärfarben messen"
+    IDM_MEASURE_PRIMARIES   "Primï¿½rfarben messen\nPrimï¿½rfarben messen"
+    IDM_MEASURE_SECONDARIES "Primï¿½r- und Sekundï¿½rfarben messen\nPrimï¿½r- und Sekundï¿½rfarben messen"
     IDM_MEASURE_DEFINESCALE "Messparameter definieren (Anzahl der Werte)"
     IDM_MEASURE_NEARBLACK   "Nahe Schwarz Abstufung messen\nNahe Schwarz Abstufung messen"
-    IDM_MEASURE_NEARWHITE   "Nahe Weiß Abstufung messen\nNahe Weiß Abstufung messen"
-    IDM_MEASURE_SAT_RED     "Abstufung der Rot Sättigung messen\nAbstufung der Rot Sättigung messen"
-    IDM_MEASURE_SAT_GREEN   "Abstufung der Grün Sättigung messen\nAbstufung der Grün Sättigung messen"
-    IDM_MEASURE_SAT_BLUE    "Abstufung der Blau Sättigung messen\nAbstufung der Blau Sättigung messen"
-    IDM_MEASURE_SAT_YELLOW  "Abstufung der Gelb Sättigung messen\nAbstufung der Gelb Sättigung messen"
-    IDM_MEASURE_SAT_CYAN    "Abstufung der Zyan Sättigung messen\nAbstufung der Zyan Sättigung messen"
-    IDM_MEASURE_SAT_MAGENTA "Abstufung der Magenta Sättigung messen\nAbstufung der Magenta Sättigung messen"
+    IDM_MEASURE_NEARWHITE   "Nahe Weiï¿½ Abstufung messen\nNahe Weiï¿½ Abstufung messen"
+    IDM_MEASURE_SAT_RED     "Abstufung der Rot Sï¿½ttigung messen\nAbstufung der Rot Sï¿½ttigung messen"
+    IDM_MEASURE_SAT_GREEN   "Abstufung der Grï¿½n Sï¿½ttigung messen\nAbstufung der Grï¿½n Sï¿½ttigung messen"
+    IDM_MEASURE_SAT_BLUE    "Abstufung der Blau Sï¿½ttigung messen\nAbstufung der Blau Sï¿½ttigung messen"
+    IDM_MEASURE_SAT_YELLOW  "Abstufung der Gelb Sï¿½ttigung messen\nAbstufung der Gelb Sï¿½ttigung messen"
+    IDM_MEASURE_SAT_CYAN    "Abstufung der Zyan Sï¿½ttigung messen\nAbstufung der Zyan Sï¿½ttigung messen"
+    IDM_MEASURE_SAT_MAGENTA "Abstufung der Magenta Sï¿½ttigung messen\nAbstufung der Magenta Sï¿½ttigung messen"
 END
 
 STRINGTABLE
 BEGIN
-    IDM_MEASURE_SAT_ALL     "Abstufung der Sättigung aller Farben messen\nAbstufung der Sättigung aller Farben messen"
+    IDM_MEASURE_SAT_ALL     "Abstufung der Sï¿½ttigung aller Farben messen\nAbstufung der Sï¿½ttigung aller Farben messen"
     IDM_MEASURE_GRAYSCALE_COLORS 
-                            "Grautreppe, Primär- und Sekundärfarben in einem Schritt messen\nGrautreppe, Primär- und Sekundärfarben messen"
-    IDM_SIM_NEARBLACK       "Simultane Messungen mit den Sensoren aller offenen Dokumente für die Abstufungen nahe Schwarz ausführen\nSimultane Messungen der Abstufungen nahe Schwarz"
-    IDM_SIM_NEARWHITE       "Simultane Messungen mit den Sensoren aller offenen Dokumente für die Abstufungen nahe Weiß ausführen\nSimultane Messungen der Abstufungen nahe Weiß"
-    IDM_SIM_SAT_RED         "Simultane Messungen mit den Sensoren aller offenen Dokumente für die Rot Sättigung ausführen\nSimultane Messungen der Rot Sättigung"
-    IDM_SIM_SAT_GREEN       "Simultane Messungen mit den Sensoren aller offenen Dokumente für die Grün Sättigung ausführen\nSimultane Messungen der Grün Sättigung"
-    IDM_SIM_SAT_BLUE        "Simultane Messungen mit den Sensoren aller offenen Dokumente für die Blau Sättigung ausführen\nSimultane Messungen der Blau Sättigung"
-    IDM_SIM_SAT_YELLOW      "Simultane Messungen mit den Sensoren aller offenen Dokumente für die Gelb Sättigung ausführen\nSimultane Messungen der Gelb Sättigung"
-    IDM_SIM_SAT_CYAN        "Simultane Messungen mit den Sensoren aller offenen Dokumente für die Zyan Sättigung ausführen\nSimultane Messungen der Zyan Sättigung"
-    IDM_SIM_SAT_MAGENTA     "Simultane Messungen mit den Sensoren aller offenen Dokumente für die Magenta Sättigung ausführen\nSimultane Messungen der Magenta Sättigung"
+                            "Grautreppe, Primï¿½r- und Sekundï¿½rfarben in einem Schritt messen\nGrautreppe, Primï¿½r- und Sekundï¿½rfarben messen"
+    IDM_SIM_NEARBLACK       "Simultane Messungen mit den Sensoren aller offenen Dokumente fï¿½r die Abstufungen nahe Schwarz ausfï¿½hren\nSimultane Messungen der Abstufungen nahe Schwarz"
+    IDM_SIM_NEARWHITE       "Simultane Messungen mit den Sensoren aller offenen Dokumente fï¿½r die Abstufungen nahe Weiï¿½ ausfï¿½hren\nSimultane Messungen der Abstufungen nahe Weiï¿½"
+    IDM_SIM_SAT_RED         "Simultane Messungen mit den Sensoren aller offenen Dokumente fï¿½r die Rot Sï¿½ttigung ausfï¿½hren\nSimultane Messungen der Rot Sï¿½ttigung"
+    IDM_SIM_SAT_GREEN       "Simultane Messungen mit den Sensoren aller offenen Dokumente fï¿½r die Grï¿½n Sï¿½ttigung ausfï¿½hren\nSimultane Messungen der Grï¿½n Sï¿½ttigung"
+    IDM_SIM_SAT_BLUE        "Simultane Messungen mit den Sensoren aller offenen Dokumente fï¿½r die Blau Sï¿½ttigung ausfï¿½hren\nSimultane Messungen der Blau Sï¿½ttigung"
+    IDM_SIM_SAT_YELLOW      "Simultane Messungen mit den Sensoren aller offenen Dokumente fï¿½r die Gelb Sï¿½ttigung ausfï¿½hren\nSimultane Messungen der Gelb Sï¿½ttigung"
+    IDM_SIM_SAT_CYAN        "Simultane Messungen mit den Sensoren aller offenen Dokumente fï¿½r die Zyan Sï¿½ttigung ausfï¿½hren\nSimultane Messungen der Zyan Sï¿½ttigung"
+    IDM_SIM_SAT_MAGENTA     "Simultane Messungen mit den Sensoren aller offenen Dokumente fï¿½r die Magenta Sï¿½ttigung ausfï¿½hren\nSimultane Messungen der Magenta Sï¿½ttigung"
     IDM_VIEW_GAMMAHISTO     "Gammahistogramm anzeigen\nHistogramm Gamma"
 END
 
@@ -3583,9 +3583,9 @@ BEGIN
     ID_VIEW_MEASURE_BAR     "Blendet die Messungen Symbole ein oder aus\nMessungen Symbole"
     IDM_TAB_ACTIVATE_ON_ALL "Diesen Reiter bei allen Dokumenten aktivieren"
     ID_VIEW_MEASURE_EXT_BAR "Blendet die Erweiterte Messungen Symbole ein oder aus\nErweiterte Messungen Symbole"
-    IDM_SIM_SINGLEMEASURE   "Eine einmalige freie Messung simultan für alle Dokumente ausführen\nSimultane freie Messung"
+    IDM_SIM_SINGLEMEASURE   "Eine einmalige freie Messung simultan fï¿½r alle Dokumente ausfï¿½hren\nSimultane freie Messung"
     IDM_MEASURE_SAT_PRIMARIES 
-                            "Die Abstufung der Sättigung der Primärfarben messen\nAbstufung der Sättigung der Primärfarben messen"
+                            "Die Abstufung der Sï¿½ttigung der Primï¿½rfarben messen\nAbstufung der Sï¿½ttigung der Primï¿½rfarben messen"
     IDM_MEASURE_CONTRAST    "Den Kontrast messen\nKontrast messen"
     IDM_SAVE_CALIBRATION_FILE 
                             "Kalibrierungsdatei speichern\nKalibrierungsdatei speichern"
@@ -3595,35 +3595,35 @@ END
 STRINGTABLE
 BEGIN
     IDS_DATAREF_RED         "Referenzdokument Rot"
-    IDS_DATAREF_GREEN       "Referenzdokument Grün"
+    IDS_DATAREF_GREEN       "Referenzdokument Grï¿½n"
     IDS_DATAREF_BLUE        "Referenzdokument Blau"
     IDS_DATAREF_YELLOW      "Referenzdokument Gelb"
     IDS_DATAREF_CYAN        "Referenzdokument Zyan"
     IDS_DATAREF_MAGENTA     "Referenzdokument Magenta"
-    IDS_RUNPRIMSATON        "Primär-Sättigungsmessung ausführen mit"
+    IDS_RUNPRIMSATON        "Primï¿½r-Sï¿½ttigungsmessung ausfï¿½hren mit"
     IDS_CREATE_CALIBRATION_FILE "Neue Kalibrierungsdatei anlegen"
     IDS_DONOTUSE_CALIBRATION "Kalibrierungsdatei nicht benutzen"
     IDS_ERRMTCSDLL1         "MTCSApi.DLL nicht gefunden. MTCS-C2 kann nicht benutzt werden."
-    IDS_ERRMTCSDLL2         "Ungültige MTCSApi.DLL. MTCS-C2 kann nicht benutzt werden."
-    IDS_MTCSERROR           "MTCSApi.dll gab einen Fehler bei der Initialisierung zurück."
-    IDS_LUXMETER_OUTOFRANGE "Luxmeter nicht im zulässigen Bereich. Wert kann nicht gemessen werden.\nEs wird fortgefahren und die Lux Messungen ignoriert."
-    IDS_FLASH_MTCS_EEPROM   "Wollen Sie wirklich das Geräte-EEPROM mit dieser Matrix beschreiben?\nDas wird alle zukünftigen Messungen beeinflussen."
-    IDS_OPERATION_SUCCESSFUL "Operation erfolgreich durchgeführt."
+    IDS_ERRMTCSDLL2         "Ungï¿½ltige MTCSApi.DLL. MTCS-C2 kann nicht benutzt werden."
+    IDS_MTCSERROR           "MTCSApi.dll gab einen Fehler bei der Initialisierung zurï¿½ck."
+    IDS_LUXMETER_OUTOFRANGE "Luxmeter nicht im zulï¿½ssigen Bereich. Wert kann nicht gemessen werden.\nEs wird fortgefahren und die Lux Messungen ignoriert."
+    IDS_FLASH_MTCS_EEPROM   "Wollen Sie wirklich das Gerï¿½te-EEPROM mit dieser Matrix beschreiben?\nDas wird alle zukï¿½nftigen Messungen beeinflussen."
+    IDS_OPERATION_SUCCESSFUL "Operation erfolgreich durchgefï¿½hrt."
 END
 
 STRINGTABLE
 BEGIN
     IDS_OPERATION_FAILED    "Operation fehlgeschlagen."
-    IDS_MTCS_CALIBRATE      "Internen Schwarzwert messen?\nUm dies durchzuführen, müssen Sie das Gerät auf eine absolut schwarze Oberfläche richten."
+    IDS_MTCS_CALIBRATE      "Internen Schwarzwert messen?\nUm dies durchzufï¿½hren, mï¿½ssen Sie das Gerï¿½t auf eine absolut schwarze Oberflï¿½che richten."
     IDS_CTRLCLICK_SIM       "Strg+Klick -> Simultane Messungen"
-    IDS_MTCS_CALIBRATE_EX   "Schwarzwert Messung ist mit den internen Offsets außerhalb des zulässigen Bereiches. Wollen Sie die internen Offsets rekonfigurieren?\nUm dies durchzuführen, richten Sie das Gerät auf eine absolut schwarze Oberfläche und klicken Sie auf Ja."
+    IDS_MTCS_CALIBRATE_EX   "Schwarzwert Messung ist mit den internen Offsets auï¿½erhalb des zulï¿½ssigen Bereiches. Wollen Sie die internen Offsets rekonfigurieren?\nUm dies durchzufï¿½hren, richten Sie das Gerï¿½t auf eine absolut schwarze Oberflï¿½che und klicken Sie auf Ja."
     IDS_DONATION_HYPERLINK  "https://www.paypal.me/zoyd"
     IDS_S3SENSOR_NAME       "Spyder III"
     IDS_S3SENSOR_PROPERTIES_TITLE "Spyder III Parameter"
     IDS_SPYDER3             "Spyder III"
     IDS_ERRSPYDER3DLL       "Spyder3.DLL nicht gefunden. Spyder III kann nicht benutzt werden."
-    IDS_ERRSPYDER3DLL2      "Ungültige Spyder3.DLL. Spyder III kann nicht benutzt werden."
-    IDS_SPYDER3ERROR        "Spyder3.dll gab einen Fehler bei der Initialisierung zurück."
+    IDS_ERRSPYDER3DLL2      "Ungï¿½ltige Spyder3.DLL. Spyder III kann nicht benutzt werden."
+    IDS_SPYDER3ERROR        "Spyder3.dll gab einen Fehler bei der Initialisierung zurï¿½ck."
     IDS_SPYDER3UTILITYRUNNING 
                             "Spyder3Utility is currently running. ColorHCFR cannot use Spyder3 device. Do you want ColorHCFR close Spyder3Utility process ?"
     IDS_SENSORHWVERSION     "Sensor HW version:"

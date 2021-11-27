@@ -31,9 +31,6 @@
 #include "numlib.h"
 #include "conv.h"
 
-// Patch not having the correct configuration files:
-#define USING_AXTLS
-
 #ifdef USING_AXTLS
 # include "ssl.h"		/* axTLS header */
 #else
@@ -158,9 +155,12 @@ static ccpacket_err connect_ccpacket_imp(
 
 #ifdef USING_AXTLS
 	if ((p->ctx = ssl_ctx_new(SSL_SERVER_VERIFY_LATER, 1)) == NULL)
-#else
+
 	// Want to use TLS_client_method(), but older OpenSSL doesn't have it...
+#elif OPENSSL_VERSION_NUMBER < 0x10100000L
 	if ((p->ctx = SSL_CTX_new(TLSv1_client_method())) == NULL)
+#else
+	if ((p->ctx = SSL_CTX_new(TLS_client_method())) == NULL)
 #endif
 	{
 		DBG((g_log,0, "connect ssl_ctx_new failed\n"))
@@ -168,9 +168,14 @@ static ccpacket_err connect_ccpacket_imp(
 	}
 
 #ifndef USING_AXTLS
-	// SSL_CTX_set_mode();
+# if OPENSSL_VERSION_NUMBER < 0x10100000L
+ 	SSL_load_error_strings();
+ 	SSL_library_init();
 	SSL_CTX_set_verify(p->ctx, SSL_VERIFY_NONE, NULL);
-#endif
+# else 
+	OPENSSL_init_ssl(0, NULL);
+# endif
+#endif /* !defined USING_AXTLS */
 
 	/* Open socket */
 	if ((p->sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == INVALID_SOCKET) {
