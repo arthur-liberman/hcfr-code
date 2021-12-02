@@ -464,66 +464,70 @@ BOOL CGDIGenerator::Init(UINT nbMeasure, bool isSpecial)
 	m_displayWindow.SetRGBScale(m_b16_235);
 	m_displayWindow.MoveToMonitor(m_hMonitor[m_activeMonitorNum]);
 
-	if (!m_HdrInterface)
+	if (m_nDisplayMode == DISPLAY_GDI || m_nDisplayMode == DISPLAY_OVERLAY || m_nDisplayMode == DISPLAY_GDI_nBG ||
+		m_nDisplayMode == DISPLAY_GDI_Hide || m_nDisplayMode == DISPLAY_VMR9 || isSpecial)
 	{
-		OutputDebugString("Create HdrInterface");
-		m_HdrInterface = GetNewHdrInterface(m_displayWindow.hWnd, m_hMonitor[m_activeMonitorNum]);
-	}
-	else
-	{
-		OutputDebugString("Set HdrInterface's hMonitor and hWnd");
-		m_HdrInterface->SetWindowMonitor(m_displayWindow.hWnd, m_hMonitor[m_activeMonitorNum]);
-	}
-	if (m_HdrInterface)
-	{
-		OutputDebugString("HdrInterface exists");
-		OutputDebugString(m_bHdr10 ? "HDR10 enabled":"HDR10 disabled");
-		LIBHDR_HDR_METADATA_HDR10 metaData = {0};
-		if (m_bHdr10)
+		if (!m_HdrInterface)
 		{
-			// Dump values to debug.
-			char buf[1024];
-			OutputDebugString("HDR10 Metadata to be used:");
-			sprintf_s(buf, "Red:   X = %.4f, Y = %.4f", GetConfig()->m_manualRedx, GetConfig()->m_manualRedy);
-			OutputDebugString(buf);
-			sprintf_s(buf, "Green: X = %.4f, Y = %.4f", GetConfig()->m_manualGreenx, GetConfig()->m_manualGreeny);
-			OutputDebugString(buf);
-			sprintf_s(buf, "Blue:  X = %.4f, Y = %.4f", GetConfig()->m_manualBluex, GetConfig()->m_manualBluey);
-			OutputDebugString(buf);
-			sprintf_s(buf, "White: X = %.4f, Y = %.4f", GetConfig()->m_manualWhitex, GetConfig()->m_manualWhitey);
-			OutputDebugString(buf);
-			sprintf_s(buf, "Master Max = %.2f, Master Min = %.4f", GetConfig()->m_MasterMaxL, GetConfig()->m_MasterMinL);
-			OutputDebugString(buf);
-			sprintf_s(buf, "Content Max = %.2f, Frame Avg. Max = %.2f", GetConfig()->m_ContentMaxL, GetConfig()->m_FrameAvgMaxL);
-			OutputDebugString(buf);
-
-			// Default to DCI/P3 primaries
-			metaData.RedPrimary[0] = UINT16(GetConfig()->m_manualRedx * 50000.0);
-			metaData.RedPrimary[1] = UINT16(GetConfig()->m_manualRedy * 50000.0);
-			metaData.GreenPrimary[0] = UINT16(GetConfig()->m_manualGreenx * 50000.0);
-			metaData.GreenPrimary[1] = UINT16(GetConfig()->m_manualGreeny * 50000.0);
-			metaData.BluePrimary[0] = UINT16(GetConfig()->m_manualBluex * 50000.0);
-			metaData.BluePrimary[1] = UINT16(GetConfig()->m_manualBluey * 50000.0);
-			metaData.WhitePoint[0] = UINT16(GetConfig()->m_manualWhitex * 50000.0);
-			metaData.WhitePoint[1] = UINT16(GetConfig()->m_manualWhitey * 50000.0);
-			// Default luminosity levels.
-			metaData.MaxMasteringLuminance = UINT(GetConfig()->m_MasterMaxL * 10000.0);
-			metaData.MinMasteringLuminance = UINT(GetConfig()->m_MasterMinL * 10000.0);
-			metaData.MaxContentLightLevel = USHORT(GetConfig()->m_ContentMaxL);
-			metaData.MaxFrameAverageLightLevel = USHORT(GetConfig()->m_FrameAvgMaxL);
+			OutputDebugString("Create HdrInterface\n");
+			m_HdrInterface = GetNewHdrInterface(m_displayWindow.hWnd, m_hMonitor[m_activeMonitorNum]);
 		}
-		HDR_STATUS hdrStat = m_HdrInterface->SetHDR10Mode(m_bHdr10, metaData);
-		if (SUCCEEDED(hdrStat))
-			OutputDebugString("HDR mode switch successful");
 		else
 		{
-			char buffer[1024];
-			sprintf_s(buffer, "HDR mode switch failed, error number %d", (int)hdrStat);
-			OutputDebugString(buffer);
+			OutputDebugString("Set HdrInterface's hMonitor and hWnd\n");
+			m_HdrInterface->SetWindowMonitor(m_displayWindow.hWnd, m_hMonitor[m_activeMonitorNum]);
 		}
+		if (m_HdrInterface)
+		{
+			OutputDebugString("HdrInterface exists\n");
+			OutputDebugString(m_bHdr10 ? "HDR10 enabled\n":"HDR10 disabled\n");
+			LIBHDR_HDR_METADATA_HDR10 metaData = {0};
+			if (m_bHdr10)
+			{
+				// Dump values to debug.
+				char buf[1024];
+				OutputDebugString("HDR10 Metadata to be used:\n");
+				sprintf_s(buf, "Red:   X = %.4f, Y = %.4f\n", GetConfig()->m_manualRedx, GetConfig()->m_manualRedy);
+				OutputDebugString(buf);
+				sprintf_s(buf, "Green: X = %.4f, Y = %.4f\n", GetConfig()->m_manualGreenx, GetConfig()->m_manualGreeny);
+				OutputDebugString(buf);
+				sprintf_s(buf, "Blue:  X = %.4f, Y = %.4f\n", GetConfig()->m_manualBluex, GetConfig()->m_manualBluey);
+				OutputDebugString(buf);
+				sprintf_s(buf, "White: X = %.4f, Y = %.4f\n", GetConfig()->m_manualWhitex, GetConfig()->m_manualWhitey);
+				OutputDebugString(buf);
+				sprintf_s(buf, "Master Max = %.2f, Master Min = %.4f\n", GetConfig()->m_MasterMaxL, GetConfig()->m_MasterMinL);
+				OutputDebugString(buf);
+				sprintf_s(buf, "Content Max = %.2f, Frame Avg. Max = %.2f\n", GetConfig()->m_ContentMaxL, GetConfig()->m_FrameAvgMaxL);
+				OutputDebugString(buf);
+
+				// Default to DCI/P3 primaries
+				metaData.RedPrimary[0] = UINT16(GetConfig()->m_manualRedx * 50000.0);
+				metaData.RedPrimary[1] = UINT16(GetConfig()->m_manualRedy * 50000.0);
+				metaData.GreenPrimary[0] = UINT16(GetConfig()->m_manualGreenx * 50000.0);
+				metaData.GreenPrimary[1] = UINT16(GetConfig()->m_manualGreeny * 50000.0);
+				metaData.BluePrimary[0] = UINT16(GetConfig()->m_manualBluex * 50000.0);
+				metaData.BluePrimary[1] = UINT16(GetConfig()->m_manualBluey * 50000.0);
+				metaData.WhitePoint[0] = UINT16(GetConfig()->m_manualWhitex * 50000.0);
+				metaData.WhitePoint[1] = UINT16(GetConfig()->m_manualWhitey * 50000.0);
+				// Default luminosity levels.
+				metaData.MaxMasteringLuminance = UINT(GetConfig()->m_MasterMaxL * 10000.0);
+				metaData.MinMasteringLuminance = UINT(GetConfig()->m_MasterMinL * 10000.0);
+				metaData.MaxContentLightLevel = USHORT(GetConfig()->m_ContentMaxL);
+				metaData.MaxFrameAverageLightLevel = USHORT(GetConfig()->m_FrameAvgMaxL);
+			}
+			HDR_STATUS hdrStat = m_HdrInterface->SetHDR10Mode(m_bHdr10, metaData);
+			if (SUCCEEDED(hdrStat))
+				OutputDebugString("HDR mode switch successful\n");
+			else
+			{
+				char buffer[1024];
+				sprintf_s(buffer, "HDR mode switch failed, error number %d\n", (int)hdrStat);
+				OutputDebugString(buffer);
+			}
+		}
+		else
+			OutputDebugString("HdrInterface doesn't exist\n");
 	}
-	else
-		OutputDebugString("HdrInterface doesn't exist");
 
 	if (m_nDisplayMode == DISPLAY_GDI || m_nDisplayMode == DISPLAY_GDI_nBG || isSpecial )
 		m_displayWindow.ShowWindow(SW_SHOWMAXIMIZED);
