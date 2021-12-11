@@ -174,7 +174,16 @@ BOOL CGenerator::Init(UINT nbMeasure, bool isSpecial)
 					_RB8PG_close = (RB8PG_close)GetProcAddress(hInstLibrary, "RB8PG_close@4");
 
 					if (_RB8PG_discovery)
-						m_piIP = _RB8PG_discovery();
+					{
+						for (int i = 0; i < 10; i++)
+						{
+							m_piIP = _RB8PG_discovery();
+							if (strlen(m_piIP) > 5)
+								break;
+							else
+								Sleep(200);
+						}
+					}
 								
 					if(strlen(m_piIP) > 5)
 					{
@@ -331,16 +340,17 @@ BOOL CGenerator::Init(UINT nbMeasure, bool isSpecial)
 						bb=min(max(bb,0),255);
 					}
 					CString templ;
-					int x1 = (UINT)(pow((double)(Cgen.m_rectSizePercent)/100.0,0.5) * rPi_xWidth);
-					int y1 = (UINT)(pow((double)(Cgen.m_rectSizePercent)/100.0,0.5) * rPi_yHeight);
+					int x1 = (int)(pow((double)(Cgen.m_rectSizePercent) / 100.0, 0.5) * rPi_xWidth);
+					int y1 = (int)(pow((double)(Cgen.m_rectSizePercent) / 100.0, 0.5) * rPi_yHeight);
+
 					if (x2 > 0)
-						x2 = min(x2, rPi_xWidth / 2. - pow(Cgen.m_rectSizePercent/100.0,0.5) * rPi_xWidth / 2.);
+						x2 = (int) min(x2, rPi_xWidth / 2. - pow(Cgen.m_rectSizePercent/100.0,0.5) * rPi_xWidth / 2.);
 					else
-						x2 = max(x2, -1*(rPi_xWidth / 2. - pow(Cgen.m_rectSizePercent/100.0,0.5) * rPi_xWidth) / 2. );
+						x2 = (int) max(x2, -1*(rPi_xWidth / 2. - pow(Cgen.m_rectSizePercent/100.0,0.5) * rPi_xWidth / 2. )); // Omardris
 					if (y2 > 0)
-						y2 = min(y2, rPi_yHeight / 2. - pow(Cgen.m_rectSizePercent/100.0,0.5) * rPi_yHeight / 2.);
+						y2 = (int) min(y2, rPi_yHeight / 2. - pow(Cgen.m_rectSizePercent/100.0,0.5) * rPi_yHeight / 2.);
 					else
-						y2 = max(y2, -1*(rPi_yHeight / 2. - pow(Cgen.m_rectSizePercent/100.0,0.5) * rPi_yHeight / 2.));
+						y2 = (int) max(y2, -1*(rPi_yHeight / 2. - pow(Cgen.m_rectSizePercent/100.0,0.5) * rPi_yHeight / 2.));
 
 					double t_fact = rPi_xWidth / 1920.; 
 					templ.Format("SETCONF:HCFR:TEMPLATERAMDISK:DRAW=TEXT\nDIM=18,0\nRESOLUTION=100\nRGB=20,128,128\nBG=DYNAMIC\n" \
