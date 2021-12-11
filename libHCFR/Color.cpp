@@ -2738,6 +2738,31 @@ void CSpectrum::Serialize(CArchive& archive)
 }
 #endif
 
+int ReadColorsFromCsv(ColorRGBDisplay* genColors, int maxEntries, CString csvPath)
+{
+	ifstream colorFile(csvPath);
+	std::string line;
+	int cnt = 0;
+	int n1, n2, n3;
+	if (!colorFile)
+	{
+		return -1;
+	}
+	while (std::getline(colorFile, line) && cnt < maxEntries) //currently limited to 1000 colors
+	{
+		std::istringstream s(line);
+		std::string field;
+		s >> n1;
+		getline(s, field, ',');
+		s >> n2;
+		getline(s, field, ',');
+		s >> n3;
+		genColors[cnt] = ColorRGBDisplay(((n1 - 16) / 219.) * 100, ((n2 - 16) / 219.) * 100, ((n3 - 16) / 219.) * 100.);
+		cnt++;
+	}
+	return cnt;
+}
+
 bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay* GenColors, int aCCMode, int mode)
 {
 	//six cases, one for GCD sequence, one for Mascior's disk (Chromapure based), and four different generator only cases
@@ -3057,30 +3082,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
 			lpStr [ 1 ] = '\0';
             CString strPath = m_ApplicationPath;
-            ifstream colorFile(strPath+"usercolors.csv");
-            std::string line;
-            int cnt = 0;
-            int n1,n2,n3;
-            if (!colorFile) 
-            {
-				bOk = false;
-	        }
-			else
-			{
-            while(std::getline(colorFile, line) && cnt < 1000 ) //currently limited to 1000 colors
-            {
-                std::istringstream s(line);
-                std::string field;
-                s >> n1;
-                getline(s, field,',');
-                s >> n2;
-                getline(s, field,',');
-                s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
-                cnt++;
-            }
-			n_elements= cnt;
-			}
+			n_elements = ReadColorsFromCsv(GenColors, 1000, strPath + "usercolors.csv");
             break;
         }
 
@@ -3088,30 +3090,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
         {//read in user defined colors
 			m_bRecalc = TRUE;
 			strcat(appPath, "\\CM 10-Point Saturation (100AMP).csv");
-			ifstream colorFile(appPath);
-            std::string line;
-            int cnt = 0;
-            int n1,n2,n3;
-            if (!colorFile) 
-            {
-				bOk = false;
-	        }
-			else
-			{
-            while(std::getline(colorFile, line) && cnt < 100 ) //currently limited to 1000 colors
-            {
-                std::istringstream s(line);
-                std::string field;
-                s >> n1;
-                getline(s, field,',');
-                s >> n2;
-                getline(s, field,',');
-                s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
-                cnt++;
-            }
-			n_elements= cnt;
-			}
+			n_elements = ReadColorsFromCsv(GenColors, 100, appPath);
             break;
         }
 
@@ -3119,30 +3098,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
         {//read in user defined colors
 			m_bRecalc = TRUE;
 			strcat(appPath, "\\CM 10-Point Saturation (75AMP).csv");
-            ifstream colorFile(appPath);
-            std::string line;
-            int cnt = 0;
-            int n1,n2,n3;
-            if (!colorFile) 
-            {
-				bOk = false;
-	        }
-			else
-			{
-            while(std::getline(colorFile, line) && cnt < 100 ) //currently limited to 1000 colors
-            {
-                std::istringstream s(line);
-                std::string field;
-                s >> n1;
-                getline(s, field,',');
-                s >> n2;
-                getline(s, field,',');
-                s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
-                cnt++;
-            }
-			n_elements= cnt;
-			}
+			n_elements = ReadColorsFromCsv(GenColors, 100, appPath);
             break;
         }
 	
@@ -3150,30 +3106,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
         {//read in user defined colors
 			m_bRecalc = FALSE;
 			strcat(appPath, "\\CM 4-Point Luminance.csv");
-            ifstream colorFile(appPath);
-            std::string line;
-            int cnt = 0;
-            int n1,n2,n3;
-            if (!colorFile) 
-            {
-				bOk = false;
-	        }
-			else
-			{
-            while(std::getline(colorFile, line) && cnt < 100 ) //currently limited to 1000 colors
-            {
-                std::istringstream s(line);
-                std::string field;
-                s >> n1;
-                getline(s, field,',');
-                s >> n2;
-                getline(s, field,',');
-                s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
-                cnt++;
-            }
-			n_elements= cnt;
-			}
+			n_elements = ReadColorsFromCsv(GenColors, 100, appPath);
             break;
         }
 
@@ -3181,30 +3114,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
         {//read in user defined colors
 			m_bRecalc = FALSE;
 			strcat(appPath, "\\CM 5-Point Luminance.csv");
-            ifstream colorFile(appPath);
-            std::string line;
-            int cnt = 0;
-            int n1,n2,n3;
-            if (!colorFile) 
-            {
-				bOk = false;
-	        }
-			else
-			{
-            while(std::getline(colorFile, line) && cnt < 100 ) //currently limited to 1000 colors
-            {
-                std::istringstream s(line);
-                std::string field;
-                s >> n1;
-                getline(s, field,',');
-                s >> n2;
-                getline(s, field,',');
-                s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
-                cnt++;
-            }
-			n_elements= cnt;
-			}
+			n_elements = ReadColorsFromCsv(GenColors, 100, appPath);
             break;
         }
 	
@@ -3212,30 +3122,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
         {//read in user defined colors
 			m_bRecalc = FALSE;
 			strcat(appPath, "\\CM 10-Point Luminance.csv");
-            ifstream colorFile(appPath);
-            std::string line;
-            int cnt = 0;
-            int n1,n2,n3;
-            if (!colorFile) 
-            {
-				bOk = false;
-	        }
-			else
-			{
-            while(std::getline(colorFile, line) && cnt < 100 ) //currently limited to 1000 colors
-            {
-                std::istringstream s(line);
-                std::string field;
-                s >> n1;
-                getline(s, field,',');
-                s >> n2;
-                getline(s, field,',');
-                s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
-                cnt++;
-            }
-			n_elements= cnt;
-			}
+			n_elements = ReadColorsFromCsv(GenColors, 100, appPath);
             break;
         }
 	
@@ -3243,30 +3130,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
         {//read in user defined colors
 			m_bRecalc = TRUE;
 			strcat(appPath, "\\CM 4-Point Saturation (100AMP).csv");
-            ifstream colorFile(appPath);
-            std::string line;
-            int cnt = 0;
-            int n1,n2,n3;
-            if (!colorFile) 
-            {
-				bOk = false;
-	        }
-			else
-			{
-            while(std::getline(colorFile, line) && cnt < 100 ) //currently limited to 1000 colors
-            {
-                std::istringstream s(line);
-                std::string field;
-                s >> n1;
-                getline(s, field,',');
-                s >> n2;
-                getline(s, field,',');
-                s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
-                cnt++;
-            }
-			n_elements= cnt;
-			}
+			n_elements = ReadColorsFromCsv(GenColors, 100, appPath);
             break;
         }
 	
@@ -3274,30 +3138,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
         {//read in user defined colors
 			m_bRecalc = TRUE;
 			strcat(appPath, "\\CM 4-Point Saturation (75AMP).csv");
-            ifstream colorFile(appPath);
-            std::string line;
-            int cnt = 0;
-            int n1,n2,n3;
-            if (!colorFile) 
-            {
-				bOk = false;
-	        }
-			else
-			{
-            while(std::getline(colorFile, line) && cnt < 100 ) //currently limited to 1000 colors
-            {
-                std::istringstream s(line);
-                std::string field;
-                s >> n1;
-                getline(s, field,',');
-                s >> n2;
-                getline(s, field,',');
-                s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
-                cnt++;
-            }
-			n_elements= cnt;
-			}
+			n_elements = ReadColorsFromCsv(GenColors, 100, appPath);
             break;
         }
 	
@@ -3305,30 +3146,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
         {//read in user defined colors
 			m_bRecalc = TRUE;
 			strcat(appPath, "\\CM 5-Point Saturation (100AMP).csv");
-            ifstream colorFile(appPath);
-            std::string line;
-            int cnt = 0;
-            int n1,n2,n3;
-            if (!colorFile) 
-            {
-				bOk = false;
-	        }
-			else
-			{
-            while(std::getline(colorFile, line) && cnt < 100 ) //currently limited to 1000 colors
-            {
-                std::istringstream s(line);
-                std::string field;
-                s >> n1;
-                getline(s, field,',');
-                s >> n2;
-                getline(s, field,',');
-                s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
-                cnt++;
-            }
-			n_elements= cnt;
-			}
+			n_elements = ReadColorsFromCsv(GenColors, 100, appPath);
             break;
         }
 	
@@ -3336,30 +3154,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
         {//read in user defined colors
 			m_bRecalc = TRUE;
 			strcat(appPath, "\\CM 5-Point Saturation (75AMP).csv");
-            ifstream colorFile(appPath);
-            std::string line;
-            int cnt = 0;
-            int n1,n2,n3;
-            if (!colorFile) 
-            {
-				bOk = false;
-	        }
-			else
-			{
-            while(std::getline(colorFile, line) && cnt < 100 ) //currently limited to 1000 colors
-            {
-                std::istringstream s(line);
-                std::string field;
-                s >> n1;
-                getline(s, field,',');
-                s >> n2;
-                getline(s, field,',');
-                s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
-                cnt++;
-            }
-			n_elements= cnt;
-			}
+			n_elements = ReadColorsFromCsv(GenColors, 100, appPath);
             break;
         }
 	
@@ -3367,211 +3162,120 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
         {//read in user defined colors
 			m_bRecalc = FALSE;
 			strcat(appPath, "\\CM 6-Point Near Black.csv");
-            ifstream colorFile(appPath);
-            std::string line;
-            int cnt = 0;
-            int n1,n2,n3;
-            if (!colorFile) 
-            {
-				bOk = false;
-	        }
-			else
-			{
-            while(std::getline(colorFile, line) && cnt < 100 ) //currently limited to 1000 colors
-            {
-                std::istringstream s(line);
-                std::string field;
-                s >> n1;
-                getline(s, field,',');
-                s >> n2;
-                getline(s, field,',');
-                s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
-                cnt++;
-            }
-			n_elements= cnt;
-			}
+			n_elements = ReadColorsFromCsv(GenColors, 100, appPath);
             break;
         }
 
 	case MASCIOR50:
         {//read in user defined colors
 			strcat(appPath, "\\Mascior50_50_BT2020_HDR.csv");
-            ifstream colorFile(appPath);
-            std::string line;
-            int cnt = 0;
-            int n1,n2,n3;
-            if (!colorFile) 
-            {
-				bOk = false;
-	        }
-			else
-			{
-            while(std::getline(colorFile, line) && cnt < 100 ) //currently limited to 1000 colors
-            {
-                std::istringstream s(line);
-                std::string field;
-                s >> n1;
-                getline(s, field,',');
-                s >> n2;
-                getline(s, field,',');
-                s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
-                cnt++;
-            }
-			n_elements= cnt;
-			}
+			n_elements = ReadColorsFromCsv(GenColors, 100, appPath);
             break;
         }
 
 		case LG54017:
         {//read in user defined colors
 			strcat(appPath, "\\LG_540_Base_Tone_Curve_2017.csv");
-            ifstream colorFile(appPath);
-            std::string line;
-            int cnt = 0;
-            int n1,n2,n3;
-            if (!colorFile) 
-            {
-				bOk = false;
-	        }
-			else
-			{
-            while(std::getline(colorFile, line) && cnt < 100 ) //currently limited to 1000 colors
-            {
-                std::istringstream s(line);
-                std::string field;
-                s >> n1;
-                getline(s, field,',');
-                s >> n2;
-                getline(s, field,',');
-                s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
-                cnt++;
-            }
-			n_elements= cnt;
-			}
+			n_elements = ReadColorsFromCsv(GenColors, 100, appPath);
             break;
         }
 
 		case LG100017:
         {//read in user defined colors
 			strcat(appPath, "\\LG_1000_Base_Tone_Curve_2017.csv");
-            ifstream colorFile(appPath);
-            std::string line;
-            int cnt = 0;
-            int n1,n2,n3;
-            if (!colorFile) 
-            {
-				bOk = false;
-	        }
-			else
-			{
-            while(std::getline(colorFile, line) && cnt < 100 ) //currently limited to 1000 colors
-            {
-                std::istringstream s(line);
-                std::string field;
-                s >> n1;
-                getline(s, field,',');
-                s >> n2;
-                getline(s, field,',');
-                s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
-                cnt++;
-            }
-			n_elements= cnt;
-			}
+			n_elements = ReadColorsFromCsv(GenColors, 100, appPath);
             break;
         }
 
 		case LG400017:
         {//read in user defined colors
 			strcat(appPath, "\\LG_4000_Base_Tone_Curve_2017.csv");
-            ifstream colorFile(appPath);
-            std::string line;
-            int cnt = 0;
-            int n1,n2,n3;
-            if (!colorFile) 
-            {
-				bOk = false;
-	        }
-			else
-			{
-            while(std::getline(colorFile, line) && cnt < 100 ) //currently limited to 1000 colors
-            {
-                std::istringstream s(line);
-                std::string field;
-                s >> n1;
-                getline(s, field,',');
-                s >> n2;
-                getline(s, field,',');
-                s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
-                cnt++;
-            }
-			n_elements= cnt;
-			}
+			n_elements = ReadColorsFromCsv(GenColors, 100, appPath);
             break;
         }
 
 		case LG54016:
         {//read in user defined colors
 			strcat(appPath, "\\LG_540_Base_Tone_Curve_2016.csv");
-            ifstream colorFile(appPath);
-            std::string line;
-            int cnt = 0;
-            int n1,n2,n3;
-            if (!colorFile) 
-            {
-				bOk = false;
-	        }
-			else
-			{
-            while(std::getline(colorFile, line) && cnt < 100 ) //currently limited to 1000 colors
-            {
-                std::istringstream s(line);
-                std::string field;
-                s >> n1;
-                getline(s, field,',');
-                s >> n2;
-                getline(s, field,',');
-                s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
-                cnt++;
-            }
-			n_elements= cnt;
-			}
+			n_elements = ReadColorsFromCsv(GenColors, 100, appPath);
             break;
         }
+
+		case LGUK65XX:
+		{//read in user defined colors
+			strcat(appPath, "\\LG_UK65xx_HDR10_20_Point_Luminance.csv");
+			n_elements = ReadColorsFromCsv(GenColors, 100, appPath);
+			break;
+		}
+
+		case LGOLEDV12018:
+		{//read in user defined colors
+			strcat(appPath, "\\LG_2018_V1_HDR10_20_Point_Luminance.csv");
+			n_elements = ReadColorsFromCsv(GenColors, 100, appPath);
+			break;
+		}
+
+		case LGOLEDV22018:
+		{//read in user defined colors
+			strcat(appPath, "\\LG_2018_V2_HDR10_20_Point_Luminance.csv");
+			n_elements = ReadColorsFromCsv(GenColors, 100, appPath);
+			break;
+		}
+
+		case LGOLEDV32018:
+		{//read in user defined colors
+			strcat(appPath, "\\LG_2018_V3_HDR10_20_Point_Luminance.csv");
+			n_elements = ReadColorsFromCsv(GenColors, 100, appPath);
+			break;
+		}
+
+		case LGOLED102019:
+		{//read in user defined colors
+			strcat(appPath, "\\LG_2019_HDR10_10_Point_Luminance.csv");
+			n_elements = ReadColorsFromCsv(GenColors, 100, appPath);
+			break;
+		}
+
+		case LGOLED222019:
+		{//read in user defined colors
+			strcat(appPath, "\\LG_2019_HDR10_22_Point_Luminance.csv");
+			n_elements = ReadColorsFromCsv(GenColors, 100, appPath);
+			break;
+		}
+
+		case LGOLED102020:
+		{//read in user defined colors
+			strcat(appPath, "\\LG_2020_HDR10_10_Point_Luminance.csv");
+			n_elements = ReadColorsFromCsv(GenColors, 100, appPath);
+			break;
+		}
+
+		case LGOLED222020:
+		{//read in user defined colors
+			strcat(appPath, "\\LG_2020_HDR10_22_Point_Luminance.csv");
+			n_elements = ReadColorsFromCsv(GenColors, 100, appPath);
+			break;
+		}
+
+		case LGOLED102021:
+		{//read in user defined colors
+			strcat(appPath, "\\LG_2021_HDR10_10_Point_Luminance.csv");
+			n_elements = ReadColorsFromCsv(GenColors, 100, appPath);
+			break;
+		}
+
+		case LGOLED222021:
+		{//read in user defined colors
+			strcat(appPath, "\\LG_2021_HDR10_22_Point_Luminance.csv");
+			n_elements = ReadColorsFromCsv(GenColors, 100, appPath);
+			break;
+		}
 
 		case CMDNR:
         {//read in user defined colors
 			m_bRecalc = FALSE;
 			strcat(appPath, "\\CM Dynamic Range (Clipping).csv");
-            ifstream colorFile(appPath);
-            std::string line;
-            int cnt = 0;
-            int n1,n2,n3;
-            if (!colorFile) 
-            {
-				bOk = false;
-	        }
-			else
-			{
-            while(std::getline(colorFile, line) && cnt < 100 ) //currently limited to 1000 colors
-            {
-                std::istringstream s(line);
-                std::string field;
-                s >> n1;
-                getline(s, field,',');
-                s >> n2;
-                getline(s, field,',');
-                s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
-                cnt++;
-            }
-			n_elements = cnt;
-			}
+			n_elements = ReadColorsFromCsv(GenColors, 100, appPath);
             break;
         }
 
@@ -3579,30 +3283,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
         {//read in user defined colors
 			m_bRecalc = FALSE;
 			strcat(appPath, "\\Random_250.csv");
-            ifstream colorFile(appPath);
-            std::string line;
-            int cnt = 0;
-            int n1,n2,n3;
-            if (!colorFile) 
-            {
-				bOk = false;
-	        }
-			else
-			{
-            while(std::getline(colorFile, line) && cnt < 250 ) //currently limited to 1000 colors
-            {
-                std::istringstream s(line);
-                std::string field;
-                s >> n1;
-                getline(s, field,',');
-                s >> n2;
-                getline(s, field,',');
-                s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
-                cnt++;
-            }
-			n_elements = cnt;
-			}
+			n_elements = ReadColorsFromCsv(GenColors, 100, appPath);
             break;
         }
 	
@@ -3610,33 +3291,15 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
         {//read in user defined colors
 			m_bRecalc = FALSE;
 			strcat(appPath, "\\Random_500.csv");
-            ifstream colorFile(appPath);
-            std::string line;
-            int cnt = 0;
-            int n1,n2,n3;
-            if (!colorFile) 
-            {
-				bOk = false;
-	        }
-			else
-			{
-            while(std::getline(colorFile, line) && cnt < 500 ) //currently limited to 1000 colors
-            {
-                std::istringstream s(line);
-                std::string field;
-                s >> n1;
-                getline(s, field,',');
-                s >> n2;
-                getline(s, field,',');
-                s >> n3;
-                GenColors [ cnt ] = ColorRGBDisplay(	( (n1 - 16) / 219.) * 100	, (	(n2 - 16) / 219.) * 100	,	( (n3 - 16) /219. ) * 100.	);
-                cnt++;
-            }
-			n_elements = cnt;
-			}
+			n_elements = ReadColorsFromCsv(GenColors, 100, appPath);
             break;
         }
 	}//switch
+	if (n_elements < 0)
+	{
+		bOk = false;
+		n_elements = 24;
+	}
 
 	//HDR mode target recalculation
 	//Will recalc color checker and saturation based levels, luminance, random and user left as-is

@@ -14,7 +14,7 @@
 //  GNU General Public License for more details
 /////////////////////////////////////////////////////////////////////////////
 //  Author(s):
-//	François-Xavier CHABOUD
+//	FranÃ§ois-Xavier CHABOUD
 //	Georges GALLERAND
 /////////////////////////////////////////////////////////////////////////////
 
@@ -39,6 +39,8 @@
 static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
+
+#define PATTERN_SIZE (RANDOM250 * 100)
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -608,7 +610,7 @@ void CMeasure::Serialize(CArchive& ar)
 			m_yellowSatMeasureArray.SetSize(5);
 			m_cyanSatMeasureArray.SetSize(5);
 			m_magentaSatMeasureArray.SetSize(5);
-			m_cc24SatMeasureArray.SetSize(24);
+			m_cc24SatMeasureArray.SetSize(RANDOM250);
 			for(int i=0;i<m_cc24SatMeasureArray.GetSize();i++) 
 				m_cc24SatMeasureArray[i]=noDataColor;
 			for(int i=0;i<m_redSatMeasureArray.GetSize();i++)
@@ -2974,7 +2976,7 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 	BOOL		bPatternRetry = FALSE;
 	BOOL		bRetry = FALSE;
 	CCPatterns	ccPat = GetConfig()->m_CCMode;
-	int			size = ccPat == CCSG?96:(ccPat == CMS || ccPat ==CPS)?19:(ccPat==AXIS?71:24);
+	int			size = ccPat == CCSG?96:(ccPat == CMS || ccPat ==CPS)?19:(ccPat==AXIS?71:RANDOM250);
 	CString		strMsg, Title;
 	ColorRGBDisplay	GenColors [ 1010 ];
 	double		dLuxValue;
@@ -3197,18 +3199,18 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 	GetConfig()->m_isSettling = doSettling;
 
 	int iCC=GetConfig()->m_CCMode;
-	if (iCC < 24)
+	if (iCC < RANDOM250)
 		for (int i=0+100*iCC;i<100*(iCC+1);i++)
 				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-iCC*100];
-	else if (iCC == 24) 
-		for (int i=2400;i<2400+250;i++)
-				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-2400];
-	else if (iCC == 25) 
-		for (int i=2400+250;i<2400+250+500;i++)
-				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(2400+250)];
-	else if (iCC == 26) 
-		for (int i=2400+250+500;i<2400+250+500+1000;i++)
-				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(2400+250+500)];
+	else if (iCC == RANDOM250)
+		for (int i=PATTERN_SIZE;i<PATTERN_SIZE+250;i++)
+				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-PATTERN_SIZE];
+	else if (iCC == RANDOM500)
+		for (int i=PATTERN_SIZE+250;i<PATTERN_SIZE+250+500;i++)
+				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(PATTERN_SIZE+250)];
+	else if (iCC == USER)
+		for (int i=PATTERN_SIZE+250+500;i<PATTERN_SIZE+250+500+1000;i++)
+				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(PATTERN_SIZE+250+500)];
 
 	m_binMeasure = FALSE;
 	UpdateViews(pDoc, 11);
@@ -3226,7 +3228,7 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 	BOOL		bRetry = FALSE;
 	int			size = GetSaturationSize ();
 	CCPatterns	ccPat = GetConfig()->m_CCMode;
-	int			ccSize = ccPat == CCSG?96:(ccPat == CMS || ccPat == CPS)?19:(ccPat==AXIS?71:24);
+	int			ccSize = ccPat == CCSG?96:(ccPat == CMS || ccPat == CPS)?19:(ccPat==AXIS?71:RANDOM250);
 	CString		strMsg, Title;
 	ColorRGBDisplay	GenColors [ 7 * 256 ];
 
@@ -3577,18 +3579,18 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 
 	GetConfig()->m_isSettling = doSettling;
 	int iCC=GetConfig()->m_CCMode;
-	if (iCC < 24)
+	if (iCC < RANDOM250)
 		for (int i=0+100*iCC;i<100*(iCC+1);i++)
 				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-iCC*100];
-	else if (iCC == 24) 
-		for (int i=2400;i<2400+250;i++)
-				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-2400];
-	else if (iCC == 25) 
-		for (int i=2400+250;i<2400+250+500;i++)
-				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(2400+250)];
-	else if (iCC == 26) 
-		for (int i=2400+250+500;i<2400+250+500+1000;i++)
-				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(2400+250+500)];
+	else if (iCC == RANDOM250)
+		for (int i=PATTERN_SIZE;i<PATTERN_SIZE+250;i++)
+				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-PATTERN_SIZE];
+	else if (iCC == RANDOM500)
+		for (int i=PATTERN_SIZE+250;i<PATTERN_SIZE+250+500;i++)
+				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(PATTERN_SIZE+250)];
+	else if (iCC == USER)
+		for (int i=PATTERN_SIZE+250+500;i<PATTERN_SIZE+250+500+1000;i++)
+				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(PATTERN_SIZE+250+500)];
 
 	m_binMeasure = FALSE;
 	UpdateViews(pDoc, 11);
@@ -5596,24 +5598,24 @@ void CMeasure::FreeMeasurementAppended(int isPrimary, int last_minCol)
 		case 11: //color checker
 			SetCC24Sat(last_minCol - 1, m_measurementsArray[n-1]);
 			int iCC=GetConfig()->m_CCMode, i;
-			if (iCC < 24)
+			if (iCC < RANDOM250)
 			{
 				i = 0 + 100*iCC + last_minCol - 1;
 						m_cc24SatMeasureArray_master[i] = m_measurementsArray[n-1];
 			}
-			else if (iCC == 24)
+			else if (iCC == RANDOM250)
 			{
-				i = 2400 + last_minCol -1;
+				i = PATTERN_SIZE + last_minCol -1;
 						m_cc24SatMeasureArray_master[i] = m_measurementsArray[n-1];
 			}
-			else if (iCC == 25)
+			else if (iCC == RANDOM500)
 			{
-				i = 2400 + 250 + last_minCol -1;
+				i = PATTERN_SIZE + 250 + last_minCol -1;
 						m_cc24SatMeasureArray_master[i] = m_measurementsArray[n-1];
 			}
-			else if (iCC == 26) 
+			else if (iCC == USER) 
 			{
-				i = 2400 + 250 + 500 + last_minCol - 1;
+				i = PATTERN_SIZE + 250 + 500 + last_minCol - 1;
 						m_cc24SatMeasureArray_master[i] = m_measurementsArray[n-1];
 			}
 			break;
@@ -6041,18 +6043,18 @@ BOOL CMeasure::ValidateBackgroundCC24SatScale ( BOOL bUseLuxValues, double * pLu
 				m_cc24SatMeasureArray[i].ResetLuxValue ();
 		}
 		int iCC=GetConfig()->m_CCMode;
-		if (iCC < 24)
+		if (iCC < RANDOM250)
 			for (int i=0+100*iCC;i<100*(iCC+1);i++)
 					m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-iCC*100];
-		else if (iCC == 24) 
-			for (int i=2400;i<2400+250;i++)
-					m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-2400];
-		else if (iCC == 25) 
-			for (int i=2400+250;i<2400+250+500;i++)
-					m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(2400+250)];
-		else if (iCC == 26) 
-			for (int i=2400+250+500;i<2400+250+500+1000;i++)
-					m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(2400+250+500)];
+		else if (iCC == RANDOM250) 
+			for (int i=PATTERN_SIZE;i<PATTERN_SIZE+250;i++)
+					m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-PATTERN_SIZE];
+		else if (iCC == RANDOM500) 
+			for (int i=PATTERN_SIZE+250;i<PATTERN_SIZE+250+500;i++)
+					m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(PATTERN_SIZE+250)];
+		else if (iCC == USER) 
+			for (int i=PATTERN_SIZE+250+500;i<PATTERN_SIZE+250+500+1000;i++)
+					m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(PATTERN_SIZE+250+500)];
 	}
 
 	// Close background thread and event objects
@@ -6136,7 +6138,7 @@ CColor CMeasure::GetCC24Sat(int i)
 
 				pCurrentDocument = (CDataSetDoc *) pMDIFrameWnd->GetActiveDocument();
 				for (int j = 0;j < m_cc24SatMeasureArray.GetSize();j++)
-					m_cc24SatMeasureArray_master[j + (iCC<=24?(iCC * 100):(iCC==25?2400+250:2400+250+500))] = m_cc24SatMeasureArray[j];
+					m_cc24SatMeasureArray_master[j + (iCC<=RANDOM250?(iCC * 100):(iCC==RANDOM500?PATTERN_SIZE+250:PATTERN_SIZE+250+500))] = m_cc24SatMeasureArray[j];
 				if (GetColorApp()->InMeasureMessageBox("Save to new  file?","Pre 3.3.0 file format save dialog",MB_YESNO | MB_ICONQUESTION) == IDYES)
 				{
 					CFileDialog fileSaveDialog ( FALSE, ".chc", NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, "HCFR Save File (*.chc)|*.chc||" );
@@ -6161,13 +6163,13 @@ CColor CMeasure::GetCC24Sat(int i)
 		return m_cc24SatMeasureArray[i]; 
 	}
 
-	return m_cc24SatMeasureArray_master[i + (iCC<=24?(iCC * 100):(iCC==25?2400+250:2400+250+500))];  //index increments by 100 until slot 19 (then 250 & 500 & user 1000 & 2020_50)
+	return m_cc24SatMeasureArray_master[i + (iCC<=RANDOM250?(iCC * 100):(iCC==RANDOM500?PATTERN_SIZE+250:PATTERN_SIZE+250+500))];  //index increments by 100 until slot 19 (then 250 & 500 & user 1000 & 2020_50)
 } 
 
 CString CMeasure::GetCCStr() const
 {
 	CString mStr("Color Checker sweeps active:\r\n");
-	char *sweeps[27]={"GCD Classic \r\n","MCD Classic \r\n","Pantone Skin \r\n",
+	char *sweeps[37]={"GCD Classic \r\n","MCD Classic \r\n","Pantone Skin \r\n",
 		"CalMAN Classic \r\n",
 		"CalMAN Skin \r\n",
 		"Chromapure Skin \r\n",
@@ -6189,22 +6191,32 @@ CString CMeasure::GetCCStr() const
 		"LG_540_2017 HDR\r\n",
 		"LG_1000_2017 HDR\r\n",
 		"LG_4000_2017 HDR\r\n",
+		"LG_UK65xx_2018 HDR\r\n",
+		"LG_OLED_V1_2018 HDR\r\n",
+		"LG_OLED_V2_2018 HDR\r\n",
+		"LG_OLED_V3_2018 HDR\r\n",
+		"LG_OLED_10P_2019 HDR\r\n",
+		"LG_OLED_22P_2019 HDR\r\n",
+		"LG_OLED_10P_2020 HDR\r\n",
+		"LG_OLED_22P_2020 HDR\r\n",
+		"LG_OLED_10P_2021 HDR\r\n",
+		"LG_OLED_22P_2021 HDR\r\n",
 		"Random 250 \r\n",
 		"Random 500 \r\n",
 		"User\r\n"
 	};
-	for (int i=0;i<=26;i++)
+	for (int i=0;i<=USER;i++)
 	{
-		if (i<=23)
+		if (i<RANDOM250)
 			if (m_cc24SatMeasureArray_master[i*100].isValid())
 				mStr+=sweeps[i];
-		if (i==24)
+		if (i==RANDOM250)
 			if (m_cc24SatMeasureArray_master[2300+100].isValid())
 				mStr+=sweeps[i];
-		if (i==25)
+		if (i==RANDOM500)
 			if (m_cc24SatMeasureArray_master[2300+100+250].isValid())
 				mStr+=sweeps[i];
-		if (i==26)
+		if (i==USER)
 			if (m_cc24SatMeasureArray_master[2300+100+250+500].isValid())
 				mStr+=sweeps[i];
 	}

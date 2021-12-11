@@ -1010,6 +1010,36 @@ void CColorHCFRConfig::GetCColors()
 				case LG400017:
 		        fName=strcat(appPath, "\\color\\LG_4000_Base_Tone_Curve_2017.csv");
 				break;
+				case LGUK65XX:
+				fName = strcat(appPath, "\\color\\LG_UK65xx_HDR10_20_Point_Luminance.csv");
+				break;
+				case LGOLEDV12018:
+				fName = strcat(appPath, "\\color\\LG_2018_V1_HDR10_20_Point_Luminance.csv");
+				break;
+				case LGOLEDV22018:
+				fName = strcat(appPath, "\\color\\LG_2018_V2_HDR10_20_Point_Luminance.csv");
+				break;
+				case LGOLEDV32018:
+				fName = strcat(appPath, "\\color\\LG_2018_V3_HDR10_20_Point_Luminance.csv");
+				break;
+				case LGOLED102019:
+				fName = strcat(appPath, "\\color\\LG_2019_HDR10_10_Point_Luminance.csv");
+				break;
+				case LGOLED222019:
+				fName = strcat(appPath, "\\color\\LG_2019_HDR10_22_Point_Luminance.csv");
+				break;
+				case LGOLED102020:
+				fName = strcat(appPath, "\\color\\LG_2020_HDR10_10_Point_Luminance.csv");
+				break;
+				case LGOLED222020:
+				fName = strcat(appPath, "\\color\\LG_2020_HDR10_22_Point_Luminance.csv");
+				break;
+				case LGOLED102021:
+				fName = strcat(appPath, "\\color\\LG_2021_HDR10_10_Point_Luminance.csv");
+				break;
+				case LGOLED222021:
+				fName = strcat(appPath, "\\color\\LG_2021_HDR10_22_Point_Luminance.csv");
+				break;
 			}
 			ifstream colorFile(fName);
             std::string line;
