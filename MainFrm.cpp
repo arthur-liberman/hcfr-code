@@ -1220,11 +1220,9 @@ void CMainFrame::OnPatternDisplay()
 				delete p_wndPatternDisplay;
 			    p_wndPatternDisplay = new CPatternDisplay;
 				p_wndPatternDisplay->Create(IDD_PATTERNS,this);
+				Sleep(50);
 			}
-			else
-			{
-				p_wndPatternDisplay->BringWindowToTop();
-			}
+			p_wndPatternDisplay->BringWindowToTop();
 		}
 		else
 			GetColorApp()->InMeasureMessageBox( "You must change to the GDI generator to display these additional advanced patterns.", "On PatternDisplay", MB_OK | MB_ICONEXCLAMATION );
