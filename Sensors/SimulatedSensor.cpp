@@ -96,8 +96,10 @@ void CSimulatedSensor::Serialize(CArchive& archive)
 
 	if (archive.IsStoring())
 	{
-		int version=1;
+		int version=2;
 		archive << version;
+		archive << m_offsetErrorMax;
+		// v1
 		archive << m_offsetRed;
 		archive << m_offsetGreen;
 		archive << m_offsetBlue;
@@ -111,8 +113,11 @@ void CSimulatedSensor::Serialize(CArchive& archive)
 	{
 		int version;
 		archive >> version;
-		if ( version > 1 )
+		if ( version > 2 )
 			AfxThrowArchiveException ( CArchiveException::badSchema );
+		if ( version > 1 )
+			archive >> m_offsetErrorMax;
+
 		archive >> m_offsetRed;
 		archive >> m_offsetGreen;
 		archive >> m_offsetBlue;
