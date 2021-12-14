@@ -20,6 +20,7 @@ typedef struct {
 	float table[17][17][17][3];
 } cube_clut;
 
+#pragma warning(disable:4305) // 'initializing': truncation from 'double' to 'float'
 cube_clut clut = {
 	17,
 	0.560000,
@@ -5552,4 +5553,5 @@ cube_clut clut = {
 		}
 	}
 };
+#pragma warning(default:4305) // 'initializing': truncation from 'double' to 'float'
 
