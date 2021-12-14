@@ -1,6 +1,6 @@
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * HCFR Association HCFR sensor related functions
  *
@@ -16,7 +16,7 @@
 
 /* 
    If you make use of the instrument driver code here, please note
-   that it is the author(s) of the code who take responsibility
+   that it is the author(s) of the code who are responsibility
    for its operation. Any problems or queries regarding driving
    instruments with the Argyll drivers, should be directed to
    the Argyll's author(s), and not to any other party.
@@ -106,7 +106,7 @@ hcfr_break(
 
 	se = p->icom->usb_control(p->icom,
 		               IUSB_ENDPOINT_OUT | IUSB_REQ_TYPE_CLASS | IUSB_REQ_RECIP_INTERFACE,
-	                   0x22, 0, 0, NULL, 0, 1.0);
+	                   0x22, 0, 0, NULL, 0, NULL, 1.0);
 
 	rv = hcfr_interp_code((inst *)p, icoms2hcfr_err(se));
 
@@ -511,6 +511,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 
 	val->loc[0] = '\000';
 	val->mtype = inst_mrt_emission;
+	val->mcond = inst_mrc_none;
 	val->XYZ_v = 1;		/* These are absolute XYZ readings */
 	val->sp.spec_n = 0;
 	val->duration = 0.0;

@@ -4,7 +4,7 @@
 /* This file is conditionaly #included into usbio.c */
  
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Author: Graeme W. Gill
  * Date:   2006/22/4
@@ -947,12 +947,12 @@ static int icoms_usb_transaction(
 	if (ttype == icom_usb_trantype_command)
 		xlength += IUSB_REQ_HEADER_SIZE;		/* Account for header - linux doesn't */
 
-	/* requested size wasn't transferred ? */
-	if (reqrv == ICOM_OK && xlength != length)
-		reqrv = ICOM_SHORT;
-
 	if (transferred != NULL)
 		*transferred = xlength;
+
+	/* requested size wasn't transferred ? */
+	if (reqrv == ICOM_OK && xlength != length)
+		reqrv |= ICOM_SHORT;
 
 done:;
 	if (cancelt != NULL) {

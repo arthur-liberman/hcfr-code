@@ -1,7 +1,7 @@
 #ifndef COLORHUG_H
 
 /*
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Hughski ColorHug related defines
  *

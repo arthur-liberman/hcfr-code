@@ -1,6 +1,6 @@
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Author: Graeme W. Gill
  * Date:   12/1/2009
@@ -16,7 +16,7 @@
 
 /* 
    If you make use of the instrument driver code here, please note
-   that it is the author(s) of the code who take responsibility
+   that it is the author(s) of the code who are responsibility
    for its operation. Any problems or queries regarding driving
    instruments with the Argyll drivers, should be directed to
    the Argyll's author(s), and not to any other party.
@@ -109,7 +109,8 @@
 #undef PLOT_RCALCURVE	/* Plot the reflection reference curve */
 #undef PLOT_ECALCURVES	/* Plot the emission reference curves */
 #undef PLOT_TEMPCOMP	/* Plot before and after LED temp. compensation */
-#undef PLOT_PATREC		/* Print & Plot patch/flash recognition information */
+#undef PATREC_DEBUG		/* Print & Plot patch/flash recognition information */
+#undef PATREC_PLOT_ALLBANDS	/* Plot all bands of scan */
 #undef HIGH_RES_DEBUG
 #undef HIGH_RES_PLOT
 #undef HIGH_RES_PLOT_STRAYL		/* Plot stray light upsample */
@@ -170,7 +171,7 @@
 /* ============================================================ */
 /* Debugging plot support */
 
-#if defined(DEBUG) || defined(PLOT_DEBUG) || defined(PLOT_PATREC) || defined(HIGH_RES_PLOT) ||  defined(HIGH_RES_PLOT_STRAYL)
+#if defined(DEBUG) || defined(PLOT_DEBUG) || defined(PATREC_DEBUG) || defined(HIGH_RES_PLOT) ||  defined(HIGH_RES_PLOT_STRAYL)
 
 # include <plot.h>
 
@@ -180,7 +181,7 @@ static int disdebplot = 0;
 # define ENDPLOT disdebplot = 0;
 
 /* Plot a CCD spectra */
-void plot_raw(double *data) {
+static void plot_raw(double *data) {
 	int i;
 	double xx[NSEN_MAX];
 	double yy[NSEN_MAX];
@@ -196,7 +197,7 @@ void plot_raw(double *data) {
 }
 
 /* Plot two CCD spectra */
-void plot_raw2(double *data1, double *data2) {
+static void plot_raw2(double *data1, double *data2) {
 	int i;
 	double xx[NSEN_MAX];
 	double y1[NSEN_MAX];
@@ -214,7 +215,7 @@ void plot_raw2(double *data1, double *data2) {
 }
 
 /* Plot a converted spectra */
-void plot_wav(munkiimp *m, double *data) {
+static void plot_wav(munkiimp *m, double *data) {
 	int i;
 	double xx[NSEN_MAX];
 	double yy[NSEN_MAX];
@@ -230,7 +231,7 @@ void plot_wav(munkiimp *m, double *data) {
 }
 
 /* Plot a standard res spectra */
-void plot_wav1(munkiimp *m, double *data) {
+static void plot_wav1(munkiimp *m, double *data) {
 	int i;
 	double xx[36];
 	double yy[36];
@@ -246,7 +247,7 @@ void plot_wav1(munkiimp *m, double *data) {
 }
 
 /* Plot a high res spectra */
-void plot_wav2(munkiimp *m, double *data) {
+static void plot_wav2(munkiimp *m, double *data) {
 	int i;
 	double xx[NSEN_MAX];
 	double yy[NSEN_MAX];
@@ -318,6 +319,7 @@ void del_munkiimp(munki *p) {
 				msec_sleep(50);	/* Wait for thread to terminate */
 			if (i >= 5) {
 				a1logd(p->log,3,"Munki switch thread termination failed\n");
+				m->th->terminate(m->th);	/* Try and force thread to terminate */
 			}
 			m->th->del(m->th);
 			usb_uninit_cancel(&m->sw_cancel);	/* Don't need cancel token now */
@@ -329,6 +331,7 @@ void del_munkiimp(munki *p) {
 				msec_sleep(50);	/* Wait for thread to terminate */
 			if (i >= 5) {
 				a1logd(p->log,3,"Munki spos thread termination failed\n");
+				m->spos_th->terminate(m->spos_th);	/* Try and force thread to terminate */
 			}
 			m->spos_th->del(m->spos_th);
 		}
@@ -348,10 +351,6 @@ void del_munkiimp(munki *p) {
 			free_dvector(s->cal_factor1, 0, m->nwav1-1);
 			free_dvector(s->cal_factor2, 0, m->nwav2-1);
 		}
-
-		/* Free EEProm key data */
-		if (m->data != NULL)
-			m->data->del(m->data);
 
 		/* Free arrays */
 
@@ -568,7 +567,7 @@ munki_code munki_imp_init(munki *p) {
 		return MUNKI_INT_CALTOOBIG;
 
 	/* Read the calibration raw data from the EEProm */
-	 if ((calbuf = (unsigned char *)calloc(rucalsize, sizeof(unsigned char))) == NULL) {
+	if ((calbuf = (unsigned char *)calloc(rucalsize, sizeof(unsigned char))) == NULL) {
 		a1logd(p->log,3,"munki_imp_init malloc %d bytes failed\n",rucalsize);
 		return MUNKI_INT_MALLOC;
 	}
@@ -2477,6 +2476,7 @@ munki_code munki_imp_meas_refrate(
 		return MUNKI_UNSUPPORTED;
 	}
 
+	/* Try different sample rates. Need 3 out of 8 to proceed. */
 	for (mm = 0; mm < TRIES; mm++) {
 		rfreq[mm] = 0.0;
 		npeaks = 0;			/* Number of peaks */
@@ -3040,14 +3040,12 @@ munki_code munki_imp_meas_refrate(
 			} else { 
 				if (ref_rate != NULL)
 					*ref_rate = brate;
-		
-				/* Error against my 85Hz CRT - GWG */
-//				a1logd(p->log, 1, "Refresh rate %f Hz, error = %.4f%%\n",brate,100.0 * fabs(brate - 85.0)/(85.0));
+				a1logd(p->log, 1, "Measured refresh rate %f Hz\n",brate);
 				return MUNKI_OK;
 			}
 		}
 	} else {
-		a1logd(p->log, 3, "Not enough tries suceeded to determine refresh rate\n");
+		a1logd(p->log, 3, "Not enough tries (%d) suceeded to determine refresh rate\n",tix);
 	}
 
 	return MUNKI_RD_NOREFR_FOUND; 
@@ -3066,14 +3064,14 @@ munki_code munki_imp_meas_refrate(
 
 /* non-volatile save/restor state to/from a file */
 typedef struct {
-	int ef;					/* Error flag, 1 = write failed, 2 = close failed */
-	unsigned int chsum;		/* Checksum */
+	int ef;				/* Error flag, 1 = write failed, 2 = close failed */
+	ORD32 chsum;		/* Checksum */
 } mknonv;
 
 static void update_chsum(mknonv *x, unsigned char *p, int nn) {
 	int i;
 	for (i = 0; i < nn; i++, p++)
-		x->chsum = ((x->chsum << 13) | (x->chsum >> (32-13))) + *p;
+		x->chsum = ((x->chsum << 5) | (((1 << 5)-1) & (x->chsum >> (32-5)))) + *p;
 }
 
 /* Write an array of chars to the file. Set the error flag to nz on error */
@@ -3367,6 +3365,19 @@ munki_code munki_restore_calibration(munki *p) {
 		read_ints(&x, fp, &ambient, 1);
 		read_ints(&x, fp, &projector, 1);
 		read_ints(&x, fp, &adaptive, 1);
+
+		/* Check the mode identification */
+		if (emiss != s->emiss
+		 || trans != s->trans
+		 || reflective != s->reflective
+		 || scan != s->scan
+		 || flash != s->flash
+		 || ambient != s->ambient
+		 || projector != s->projector
+		 || adaptive != s->adaptive) {
+			a1logd(p->log,3,"Mode config. didn't verify\n");
+			goto reserr;
+		}
 
 		/* Configuration calibration is valid for */
 		read_ints(&x, fp, &di, 1);					/* gainmode */
@@ -4316,7 +4327,7 @@ munki_code munki_read_patches_2(
 	if (s->reflective) {
 
 #ifdef PLOT_TEMPCOMP
-	/* Plot the raw spectra, 6 at a time */
+		/* Plot the raw spectra, 6 at a time */
 		{
 			int i, j, k;
 			double *indx;
@@ -4337,6 +4348,7 @@ munki_code munki_read_patches_2(
 				printf("Before temp comp, bands %d - %d\n",j, j+5);
 				do_plot6(indx, mod[0], mod[1], mod[2], mod[3], mod[4], mod[5], nummeas);
 			}
+//		}
 			free_dvector(indx, 0, nummeas-1);  
 		  	free_dmatrix(mod, 0, 5, 0, nummeas-1);
 		}
@@ -4372,6 +4384,7 @@ munki_code munki_read_patches_2(
 				printf("After temp comp, bands %d - %d\n",j, j+5);
 				do_plot6(indx, mod[0], mod[1], mod[2], mod[3], mod[4], mod[5], nummeas);
 			}
+//			}
 			free_dvector(indx, 0, nummeas-1);  
 		  	free_dmatrix(mod, 0, 5, 0, nummeas-1);
 		}
@@ -4494,7 +4507,7 @@ munki_code munki_read_patches_2(
 		int i, j;
 		FILE *fp;
 		
-		/* Create wavelegth label */
+		/* Create wavelength label */
 		if ((fp = fopen("mkdump.txt", "r")) == NULL) {
 			if ((fp = fopen("mkdump.txt", "w")) == NULL)
 				a1logw(p->log,"Unable to reate debug file mkdump.txt\n");
@@ -4829,7 +4842,7 @@ munki_code munki_sens_to_raw(
 	int ninvalid,			/* Number of initial invalid readings to skip */
 	int nummeas,			/* Number of readings measured */
 	double satthresh,		/* Saturation threshold to trigger error in raw units (if > 0.0) */
-	double *pdarkthresh		/* Return a dark threshold value = sheilded cell values */
+	double *pdarkthresh		/* Return a dark threshold value = shielded cell values */
 ) {
 	munkiimp *m = (munkiimp *)p->m;
 	int i, j, k;
@@ -5225,12 +5238,15 @@ int munki_average_multimeas(
 }
 
 /* Minimum number of scan samples in a patch */
-#define MIN_SAMPLES 2
+#define MIN_SAMPLES 3
+
+/* Number of window size tries to use */
+#define WIN_TRIES 20
 
 /* Range of bands to detect transitions */
-#define BL 5	/* Start */
-#define BH 105	/* End */
-#define BW 5	/* Width */
+#define BL 30	/* Start */
+#define BH 101	/* End */
+#define NFB 7	/* [7] Number of filtered bands (must be odd and < 10) */
 
 /* Record of possible patch within a reading buffer */
 typedef struct {
@@ -5255,7 +5271,8 @@ munki_code munki_extract_patches_multimeas(
 ) {
 	munkiimp *m = (munkiimp *)p->m;
 	int i, j, k, pix;
-	double **sslope;			/* Signed difference between i and i+1 */
+	int fbands[NFB][2];			/* Start & end+1 raw indexes of filter bands */
+	double **fraw;				/* NFB filtered raw bands */
 	double *slope;				/* Accumulated absolute difference between i and i+1 */
 	double *fslope;				/* Filtered slope */
 	munki_patch *pat;			/* Possible patch information */
@@ -5266,15 +5283,18 @@ munki_code munki_extract_patches_multimeas(
 	double minslope =  1e38;
 	double thresh = 0.4;		/* Slope threshold */
 	int try;					/* Thresholding try */
-	double avglegth;			/* Average length of patches */
+	double avglength;			/* Average length of patches */
+	double maxlength;			/* Max length of of patches */
 	int *sizepop;				/* Size popularity of potential patches */
+	int msthr;					/* Median search threshold */
 	double median;				/* median potential patch width */
 	double window;				/* +/- around median to accept */
 	double white_avg;			/* Average of (aproximate) white data */
 	int rv = 0;
 	double patch_cons_thr = PATCH_CONS_THR * m->scan_toll_ratio;
-#ifdef PLOT_PATREC
+#ifdef PATREC_DEBUG
 	double **plot;
+	double *pplot[10];
 #endif
 
 	a1logd(p->log,3,"munki_extract_patches_multimeas: looking for %d patches out of %d samples\n",tnpatch,nummeas);
@@ -5295,23 +5315,29 @@ munki_code munki_extract_patches_multimeas(
 			maxval[j] = 1.0;
 	}
 
-#ifdef PLOT_PATREC
-	/* Plot out 6 lots of 6 values each */ 
-	plot = dmatrixz(0, 6, 0, nummeas-1);  
-//	for (j = 1; j < (m->nraw-6); j += 6) 			/* Plot all the bands */
-//	for (j = 45; j < (m->nraw-6); j += 100) 		/* Do just one band */
-	for (j = 5; j < (m->nraw-6); j += 30) {		/* Do four bands */
-		for (k = 0; k < 6; k ++) {
-			for (i = 0; i < nummeas; i++) { 
-				plot[k][i] = multimeas[i][j+k]/maxval[j+k];
+#ifdef PATREC_DEBUG
+	plot = dmatrixz(0, 10, 0, nummeas-1);			/* Up to 11 values */  
+#ifdef PATREC_PLOT_ALLBANDS
+	for (j = 0; j < (m->nraw-10); j += 10) 			/* Plot all the bands */
+#else
+	for (j = 24; j < (111-10); j += 30) 			/* Do some of the bands */
+#endif
+	{
+		for (k = 0; k < 10; k ++) {
+			if (j + k >= m->nraw) {
+				pplot[k] = NULL;
+				continue;
 			}
+			for (i = 0; i < nummeas; i++)
+				plot[k][i] = multimeas[i][j+k]/maxval[j+k];
+			pplot[k] = plot[k];
 		}
 		for (i = 0; i < nummeas; i++)
-			plot[6][i] = (double)i;
-		printf("Bands %d - %d\n",j,j+5);
-		do_plot6(plot[6], plot[0], plot[1], plot[2], plot[3], plot[4], plot[5], nummeas);
+			plot[10][i] = (double)i;
+		printf("Raw Bands %d - %d\n",j,j+9);
+		do_plot10(plot[10], pplot[0], pplot[1], pplot[2], pplot[3], pplot[4], pplot[5], pplot[6], pplot[7], pplot[8], pplot[9], nummeas, 0);
 	}
-#endif
+#endif	/* PATREC_DEBUG */
 
 #ifdef NEVER
 	/* Plot the shielded cell value */
@@ -5323,66 +5349,43 @@ munki_code munki_extract_patches_multimeas(
 	do_plot6(plot[6], plot[0], NULL, NULL, NULL, NULL, NULL, nummeas);
 #endif
 
-	sslope = dmatrixz(0, nummeas-1, -1, m->nraw-1);  
+	/* Compute the range of each filter band */
+	{
+		double fbwidth;				/* Number of raw in each band */
+		double st;
+
+		fbwidth = (BH - BL)/(double)(NFB/2+1);
+
+		for (st = BL, i = 0; i < NFB; i++) {
+			fbands[i][0] = (int)(floor(st)); 
+			fbands[i][1] = (int)(floor(st + fbwidth));
+			st += 0.5 * fbwidth;
+		}
+//printf("fbwidth = %f\n",fbwidth);
+//for (i = 0; i < NFB; i++) printf("~1 band %d is %d - %d\n",i,fbands[i][0],fbands[i][1]);
+	}
+
+	fraw = dmatrixz(0, nummeas-1, 0, NFB-1); 
+
+	/* Weighted box average raw to create filtered bands */
+	for (i = 0; i < nummeas; i++) {
+		for (j = 0; j < NFB; j++) {
+			fraw[i][j] = 0.0;
+			for (k = fbands[j][0]; k < fbands[j][1]; k++) {
+				fraw[i][j] += multimeas[i][k]/maxval[k];
+			}
+			fraw[i][j] /= (double)(fbands[j][1] - fbands[j][0]);
+		}
+	}
+
 	slope = dvectorz(0, nummeas-1);  
 	fslope = dvectorz(0, nummeas-1);  
 	sizepop = ivectorz(0, nummeas-1);
 
-#ifndef NEVER		/* Good with this on */
-	/* Average bands together */
-	for (i = 0; i < nummeas; i++) {
-		for (j = BL + BW; j < (BH - BW); j++) {
-			for (k = -BL; k <= BW; k++)		/* Box averaging filter over bands */
-				 sslope[i][j] += multimeas[i][j + k]/maxval[j];
-		}
-	}
-#else
-	/* Don't average bands */
-	for (i = 0; i < nummeas; i++) {
-		for (j = 0; j < m->nraw; j++) {
-			sslope[i][j] = multimeas[i][j]/maxval[j];
-		}
-	}
-#endif
-
 	/* Compute slope result over readings and bands */
 	/* Compute signed slope result over readings and bands */
 
-#ifdef NEVER		/* Works well for non-noisy readings */
-	/* Median of 5 differences from 6 points */
-	for (i = 2; i < (nummeas-3); i++) {
-		for (j = BL; j < BH; j++) {
-			double sl, asl[5];
-			int r, s;
-			asl[0] = fabs(sslope[i-2][j] - sslope[i-1][j]);
-			asl[1] = fabs(sslope[i-1][j] - sslope[i-0][j]);
-			asl[2] = fabs(sslope[i-0][j] - sslope[i+1][j]);
-			asl[3] = fabs(sslope[i+1][j] - sslope[i+2][j]);
-			asl[4] = fabs(sslope[i+2][j] - sslope[i+3][j]);
-
-			/* Sort them */
-			for (r = 0; r < (5-1); r++) {
-				for (s = r+1; s < 5; s++) {
-					if (asl[s] < asl[r]) {
-						double tt;
-						tt = asl[s];
-						asl[s] = asl[r];
-						asl[r] = tt;
-					}
-				}
-			}
-			/* Pick middle one */
-			sl = asl[2];
-			if (sl > slope[i])
-				slope[i] = sl;
-		}
-	}
-
-#else	/* Works better for noisy readings */
-
-	/* Compute sliding window average and deviation that contains */
-	/* our output point, and chose the average with the minimum deviation. */
-#define FW 3		/* Number of delta's to average */
+#define FW 5		/* [3] Number of delta's to average */
 	for (i = FW-1; i < (nummeas-FW); i++) {		/* Samples */
 		double basl, bdev;		/* Best average slope, Best deviation */
 		double sl[2 * FW -1];
@@ -5393,11 +5396,11 @@ munki_code munki_extract_patches_multimeas(
 
 		for (pp = 0; pp < 2; pp++) { 			/* For each pass */
 
-			for (j = BL; j < BH; j++) {				/* Bands */
+			for (j = 0; j < NFB; j++) {			/* For each band */
 
 				/* Compute differences for the range of our windows */
 				for (k = 0; k < (2 * FW -1); k++)
-					sl[k] = sslope[i+k-FW+1][j] - sslope[i+k+-FW+2][j];
+					sl[k] = fraw[i+k-FW+1][j] - fraw[i+k+-FW+2][j];
 
 				/* For each window offset, compute average and deviation squared */
 				bdev = 1e38;
@@ -5420,16 +5423,13 @@ munki_code munki_extract_patches_multimeas(
 						bdev = dev[k];
 				}
 
-#ifndef NEVER	/* Use this */
 				/* Weight the deviations with a triangular weighting */
 				/* to skew slightly towards the center */
 				for (k = 0; k < FW; k++) { 
 					double wt;
-
 					wt = fabs(2.0 * k - (FW -1.0))/(FW-1.0);
 					dev[k] += wt * bdev;
 				}
-#endif
 
 				/* For each window offset, choose the one to use. */
 				bdev = 1e38;
@@ -5464,10 +5464,7 @@ munki_code munki_extract_patches_multimeas(
 		}		/* Next pass */
 	}
 #undef FW
-#endif
 
-#ifndef NEVER		/* Good with this on */
-	/* Normalise the slope values */
 	/* Locate the minumum and maximum values */
 	maxslope = 0.0;
 	minslope = 1e38;
@@ -5498,7 +5495,7 @@ munki_code munki_extract_patches_multimeas(
 	}
 
 	/* "Automatic Gain control" the raw slope information. */
-#define LFW 20		/* Half width of triangular filter */
+#define LFW 40		/* [40] Half width of triangular filter */
 	for (i = 0; i < nummeas; i++) {
 		double sum, twt;
 		
@@ -5519,17 +5516,6 @@ munki_code munki_extract_patches_multimeas(
 	}
 #undef LFW
 
-#ifdef NEVER		/* Better with the off, for very noisy samples */
-	/* Apply AGC with limited gain */
-	for (i = 0; i < nummeas; i++) {
-		if (fslope[i] > fmaxslope/4.0)
-			slope[i] = slope[i]/fslope[i];
-		else
-			slope[i] = slope[i] * 4.0/fmaxslope;
-	}
-#endif
-#endif /* NEVER */
-
 	/* Locate the minumum and maximum values */
 	maxslope = 0.0;
 	minslope = 1e38;
@@ -5548,7 +5534,6 @@ munki_code munki_extract_patches_multimeas(
 			minslope = avs;
 	}
 
-#ifndef NEVER		/* Good with this on */
 	/* Normalise the slope again */
 	maxslope *= 0.3;
 	minslope *= 3.0;
@@ -5559,38 +5544,37 @@ munki_code munki_extract_patches_multimeas(
 		else if (slope[i] > 1.0)
 			slope[i] = 1.0;
 	}
-#endif
 
-#ifdef PLOT_PATREC
-	printf("Slope filter output\n");
-	for (i = 0; i < nummeas; i++) { 
-		int jj;
-		for (jj = 0, j = BL; jj < 6 && j < BH; jj++, j += ((BH-BL)/6)) {
-			double sum = 0.0;
-			for (k = -BL; k <= BW; k++)		/* Box averaging filter over bands */
-				sum += multimeas[i][j + k];
-			plot[jj][i] = sum/((2.0 * BL + 1.0) * maxval[j+k]);
-		}
+
+#ifdef PATREC_DEBUG
+	printf("Slope filter output + filtered raw:\n");
+	for (j = 0; j < NFB; j++) {
+		for (i = 0; i < nummeas; i++)
+			plot[j][i] = fraw[i][j];
+		pplot[j] = plot[j];
 	}
+	for (; j < 10; j++)
+		pplot[j] = NULL;
+
 	for (i = 0; i < nummeas; i++)
-		plot[6][i] = (double)i;
-	do_plot6(plot[6], slope, plot[0], plot[1], plot[2], plot[3], plot[4], nummeas);
-#endif
+		plot[10][i] = (double)i;
+	do_plot10(plot[10], slope, pplot[0], pplot[1], pplot[2], pplot[3], pplot[4], pplot[5], pplot[6], pplot[7], pplot[8], nummeas, 0);
+#endif	/* PATREC_DEBUG */
 
 	free_dvector(fslope, 0, nummeas-1);  
-	free_dmatrix(sslope, 0, nummeas-1, -1, m->nraw-1);  
 
 	/* Now threshold the measurements into possible patches */
 	apat = 2 * nummeas;
 	if ((pat = (munki_patch *)malloc(sizeof(munki_patch) * apat)) == NULL) {
 		a1logd(p->log,1,"munki: malloc of patch structures failed!\n");
+		free_dmatrix(fraw, 0, nummeas-1, 0, NFB-1);
 		free_ivector(sizepop, 0, nummeas-1);
 		free_dvector(slope, 0, nummeas-1);  
 		free_dvector(maxval, -1, m->nraw-1);  
 		return MUNKI_INT_MALLOC;
 	}
 
-	avglegth = 0.0;
+	avglength = maxlength = 0.0;
 	for (npat = i = 0; i < (nummeas-1); i++) {
 		if (slope[i] > thresh)
 			continue;
@@ -5599,6 +5583,7 @@ munki_code munki_extract_patches_multimeas(
 		if (npat >= apat) {
 			apat *= 2;
 			if ((pat = (munki_patch *)realloc(pat, sizeof(munki_patch) * apat)) == NULL) {
+				free_dmatrix(fraw, 0, nummeas-1, 0, NFB-1);
 				free_ivector(sizepop, 0, nummeas-1);
 				free_dvector(slope, 0, nummeas-1);  
 				free_dvector(maxval, -1, m->nraw-1);  
@@ -5614,7 +5599,9 @@ munki_code munki_extract_patches_multimeas(
 				break;
 			pat[npat].no++;
 		}
-		avglegth += (double) pat[npat].no;
+		avglength += (double) pat[npat].no;
+		if (pat[npat].no > maxlength)
+			maxlength = pat[npat].no;
 		npat++;
 	}
 	a1logd(p->log,7,"Number of patches = %d\n",npat);
@@ -5622,13 +5609,15 @@ munki_code munki_extract_patches_multimeas(
 	/* We don't count the first and last patches, as we assume they are white leader. */
 	/* (They are marked !use in list anyway) */
 	if (npat < (tnpatch + 2)) {
+		free_dmatrix(fraw, 0, nummeas-1, 0, NFB-1);
 		free_ivector(sizepop, 0, nummeas-1);
 		free_dvector(slope, 0, nummeas-1);  
 		free_dvector(maxval, -1, m->nraw-1);  
 		free(pat);
 		a1logd(p->log,1,"Patch recog failed - unable to detect enough possible patches\n");
 		return MUNKI_RD_NOTENOUGHPATCHES;
-	} else if (npat >= (2 * tnpatch) + 2) {
+	} else if (npat >= (5 * tnpatch) + 2) {
+		free_dmatrix(fraw, 0, nummeas-1, 0, NFB-1);
 		free_ivector(sizepop, 0, nummeas-1);
 		free_dvector(slope, 0, nummeas-1);  
 		free_dvector(maxval, -1, m->nraw-1);  
@@ -5636,9 +5625,9 @@ munki_code munki_extract_patches_multimeas(
 		a1logd(p->log,1,"Patch recog failed - detecting too many possible patches\n");
 		return MUNKI_RD_TOOMANYPATCHES;
 	}
-	avglegth /= (double)npat;
+	avglength /= (double)npat;
 
-#ifdef PLOT_PATREC
+#ifdef PATREC_DEBUG
 	for (i = 0; i < npat; i++) {
 		printf("Raw patch %d, start %d, length %d\n",i, pat[i].ss, pat[i].no);
 	}
@@ -5649,9 +5638,15 @@ munki_code munki_extract_patches_multimeas(
 		sizepop[pat[i].no]++;
 
 	/* Locate the median potential patch width */
-	for (j = 0, i = 0; i < nummeas; i++) {
+	msthr = npat - tnpatch;			/* Excess number of patches */
+	if (msthr > 2)
+		msthr = 2;
+	msthr += tnpatch/2;				/* Expected median largest patch no. */	
+
+	/* Search from largest to smallest for median */
+	for (j = 0, i = maxlength; i > 0; i--) {
 		j += sizepop[i];
-		if (j > ((npat-2)/2))
+		if (j >= msthr)
 			break;
 	}
 	median = (double)i;
@@ -5660,7 +5655,7 @@ munki_code munki_extract_patches_multimeas(
 
 	/* Now decide which patches to use. */
 	/* Try a widening window around the median. */
-	for (window = 0.2, try = 0; try < 15; window *= 1.4, try++) {
+	for (window = 0.1, try = 0; try < WIN_TRIES; window *= 1.3, try++) {
 		int bgcount = 0, bgstart = 0;
 		int gcount, gstart;
 		double wmin = median/(1.0 + window);
@@ -5701,6 +5696,7 @@ munki_code munki_extract_patches_multimeas(
 					j++;
 					if (pat[i].no < MIN_SAMPLES) {
 						a1logd(p->log,7,"Too few samples\n");
+						free_dmatrix(fraw, 0, nummeas-1, 0, NFB-1);
 						free_ivector(sizepop, 0, nummeas-1);
 						free_dvector(slope, 0, nummeas-1);  
 						free_dvector(maxval, -1, m->nraw-1);  
@@ -5714,6 +5710,7 @@ munki_code munki_extract_patches_multimeas(
 
 		} else if (bgcount > tnpatch) {
 			a1logd(p->log,7,"Too many patches\n");
+			free_dmatrix(fraw, 0, nummeas-1, 0, NFB-1);
 			free_ivector(sizepop, 0, nummeas-1);
 			free_dvector(slope, 0, nummeas-1);  
 			free_dvector(maxval, -1, m->nraw-1);  
@@ -5724,6 +5721,7 @@ munki_code munki_extract_patches_multimeas(
 	}
 	if (try >= 15) {
 		a1logd(p->log,7,"Not enough patches\n");
+		free_dmatrix(fraw, 0, nummeas-1, 0, NFB-1);
 		free_ivector(sizepop, 0, nummeas-1);
 		free_dvector(slope, 0, nummeas-1);  
 		free_dvector(maxval, -1, m->nraw-1);  
@@ -5732,15 +5730,13 @@ munki_code munki_extract_patches_multimeas(
 		return MUNKI_RD_NOTENOUGHPATCHES;
 	}
 
-#ifdef PLOT_PATREC
-	printf("Got %d patches out of potentional %d:\n",tnpatch, npat);
-	printf("Average patch legth %f\n",avglegth);
+	a1logd(p->log,7,"Got %d patches out of potential %d:\n",tnpatch, npat);
+	a1logd(p->log,7,"Average patch length %f\n",avglength);
 	for (i = 1; i < (npat-1); i++) {
 		if (pat[i].use == 0)
 			continue;
-		printf("Patch %d, start %d, length %d, use %d\n",i, pat[i].ss, pat[i].no, pat[i].use);
+		a1logd(p->log,7,"Patch %d, start %d, length %d:\n",i, pat[i].ss, pat[i].no, pat[i].use);
 	}
-#endif
 
 	/* Now trim the patches simply by shrinking their windows */
 	for (k = 1; k < (npat-1); k++) {
@@ -5758,12 +5754,12 @@ munki_code munki_extract_patches_multimeas(
 		pat[k].no = nno;
 	}
 
-#ifdef PLOT_PATREC
-	printf("After trimming got:\n");
+#ifdef PATREC_DEBUG
+	a1logd(p->log,7,"After trimming got:\n");
 	for (i = 1; i < (npat-1); i++) {
 		if (pat[i].use == 0)
 			continue;
-		printf("Patch %d, start %d, length %d, use %d\n",i, pat[i].ss, pat[i].no, pat[i].use);
+		printf("Patch %d, start %d, length %d:\n",i, pat[i].ss, pat[i].no, pat[i].use);
 	}
 
 	/* Create fake "slope" value that marks patches */
@@ -5776,38 +5772,30 @@ munki_code munki_extract_patches_multimeas(
 			slope[i] = 0.0;
 	}
 
-	printf("Trimmed output - averaged bands:\n");
-	/* Plot box averaged bands */
-	for (i = 0; i < nummeas; i++) { 
-		int jj;
-		for (jj = 0, j = BL; jj < 6 && j < BH; jj++, j += ((BH-BL)/6)) {
-			double sum = 0.0;
-			for (k = -BL; k <= BW; k++)		/* Box averaging filter over bands */
-				sum += multimeas[i][j + k];
-			plot[jj][i] = sum/((2.0 * BL + 1.0) * maxval[j+k]);
-		}
-	}
-	for (i = 0; i < nummeas; i++)
-		plot[6][i] = (double)i;
-	do_plot6(plot[6], slope, plot[0], plot[1], plot[2], plot[3], plot[4], nummeas);
-
-#ifdef NEVER
-	/* Plot all the bands */
-	printf("Trimmed output - all bands:\n");
-	for (j = 0; j < (m->nraw-5); j += 5) {
-		for (k = 0; k < 5; k ++) {
-			for (i = 0; i < nummeas; i++) { 
-				plot[k][i] = multimeas[i][j+k]/maxval[j+k];
+	printf("Trimmed output:\n");
+#ifdef PATREC_PLOT_ALLBANDS
+	for (j = 0; j < (m->nraw-9); j += 9) 			/* Plot all the bands */
+#else
+	for (j = 24; j < (111-9); j += 30) 			/* Do some of the bands */
+#endif
+	{
+		for (k = 0; k < 9; k ++) {
+			if (j + k >= m->nraw) {
+				pplot[k] = NULL;
+				continue;
 			}
+			for (i = 0; i < nummeas; i++)
+				plot[k][i] = multimeas[i][j+k]/maxval[j+k];
+			pplot[k] = plot[k];
 		}
 		for (i = 0; i < nummeas; i++)
-			plot[6][i] = (double)i;
-		printf("Bands %d - %d\n",j,j+5);
-		do_plot6(plot[6], slope, plot[0], plot[1], plot[2], plot[3], plot[4], nummeas);
+			plot[10][i] = (double)i;
+		printf("Raw Bands %d - %d\n",j,j+8);
+		do_plot10(plot[10], slope, pplot[0], pplot[1], pplot[2], pplot[3], pplot[4], pplot[5], pplot[6], pplot[7], pplot[8], nummeas, 0);
 	}
-#endif
 
-#endif
+	free_dmatrix(plot, 0, 10, 0, nummeas-1);  
+#endif	/* PATREC_DEBUG */
 
 	/* Now compute averaged patch values */
 	
@@ -5832,6 +5820,7 @@ munki_code munki_extract_patches_multimeas(
 
 		if (pat[k].no <= MIN_SAMPLES) {
 			a1logd(p->log,7,"Too few samples\n");
+			free_dmatrix(fraw, 0, nummeas-1, 0, NFB-1);
 			free_dvector(slope, 0, nummeas-1);  
 			free_ivector(sizepop, 0, nummeas-1);
 			free_dvector(maxval, -1, m->nraw-1);  
@@ -5874,10 +5863,7 @@ munki_code munki_extract_patches_multimeas(
 	if (flags != NULL)
 		*flags = rv;
 
-#ifdef PLOT_PATREC
-	free_dmatrix(plot, 0, 6, 0, nummeas-1);  
-#endif
-
+	free_dmatrix(fraw, 0, nummeas-1, 0, NFB-1);
 	free_dvector(slope, 0, nummeas-1);  
 	free_ivector(sizepop, 0, nummeas-1);
 	free_dvector(maxval, -1, m->nraw-1);  
@@ -5920,7 +5906,7 @@ munki_code munki_extract_patches_flash(
 	double *aavg;				/* ambient average [-1 nraw] */
 	double finttime;			/* Flash integration time */
 	int rv = 0;
-#ifdef PLOT_PATREC
+#ifdef PATREC_DEBUG
 	double **plot;
 #endif
 
@@ -5956,7 +5942,7 @@ munki_code munki_extract_patches_flash(
 	thresh = (3.0 * mean + maxval)/4.0;
 	a1logd(p->log,7,"munki_extract_patches_flash band %d minval %f maxval %f, mean = %f, thresh = %f\n",maxband,minval,maxval,mean, thresh);
 
-#ifdef PLOT_PATREC
+#ifdef PATREC_DEBUG
 	/* Plot out 6 lots of 6 values each */ 
 	plot = dmatrixz(0, 6, 0, nummeas-1);  
 	for (j = maxband -3; j>= 0 && j < (m->nraw-6); j += 100)		/* Do one set around max */
@@ -5974,7 +5960,7 @@ munki_code munki_extract_patches_flash(
 	free_dmatrix(plot,0,6,0,nummeas-1);
 #endif
 
-#ifdef PLOT_PATREC
+#ifdef PATREC_DEBUG
 	/* Plot just the pulses */
 	{
 		int start, end;
@@ -6034,11 +6020,11 @@ munki_code munki_extract_patches_flash(
 	/* total number of samples in the pulses. */
 	fsampl = -1;
 	for (nsampl = i = 0; i < nummeas; i++) {
-		for (j = 0; j < m->nraw-1; j++) {
+		for (j = 0; j < m->nraw; j++) {
 			if (multimeas[i][j] >= thresh)
 				break;
 		}
-		if (j < m->nraw-1) {
+		if (j < m->nraw) {
 			if (fsampl < 0)
 				fsampl = i;
 			nsampl++;
@@ -6059,19 +6045,19 @@ munki_code munki_extract_patches_flash(
 	a1logd(p->log,7,"Ambient samples %d to %d \n",i,fsampl-3);
 	aavg = dvectorz(-1, m->nraw-1);  
 	for (nsampl = 0; i < (fsampl-3); i++) {
-		for (j = 0; j < m->nraw-1; j++)
+		for (j = 0; j < m->nraw; j++)
 			aavg[j] += multimeas[i][j];
 		nsampl++;
 	}
 
 	/* Integrate all the values over the threshold, */
 	/* and also one either side of flash */
-	for (j = 0; j < m->nraw-1; j++)
+	for (j = 0; j < m->nraw; j++)
 		pavg[j] = 0.0;
 
 	for (k = 0, i = 1; i < (nummeas-1); i++) {
 		int sample = 0;
-		for (j = 0; j < m->nraw-1; j++) {
+		for (j = 0; j < m->nraw; j++) {
 			if (multimeas[i-1][j] >= thresh) {
 				sample = 1;
 				break;
@@ -6085,14 +6071,14 @@ munki_code munki_extract_patches_flash(
 				break;
 			}
 		}
-		if (j < m->nraw-1) {
+		if (j < m->nraw) {
 			a1logd(p->log,7,"Integrating flash sample no %d \n",i);
-			for (j = 0; j < m->nraw-1; j++)
+			for (j = 0; j < m->nraw; j++)
 				pavg[j] += multimeas[i][j];
 			k++;
 		}
 	}
-	for (j = 0; j < m->nraw-1; j++)
+	for (j = 0; j < m->nraw; j++)
 		pavg[j] = pavg[j]/(double)k - aavg[j]/(double)nsampl;
 
 	a1logd(p->log,7,"Number of flash patches integrated = %d\n",k);
@@ -6102,7 +6088,7 @@ munki_code munki_extract_patches_flash(
 		*duration = finttime;
 
 	/* Convert to cd/m^2 seconds */
-	for (j = 0; j < m->nraw-1; j++)
+	for (j = 0; j < m->nraw; j++)
 		pavg[j] *= finttime;
 
 	if (flags != NULL)
@@ -6356,7 +6342,7 @@ typedef struct {
 
 /* Wavelenth calibration crossover point information */
 typedef struct {
-	double wav;				/* Wavelegth of point */
+	double wav;				/* Wavelength of point */
 	double raw;				/* Raw index of point */		
 	double wei;				/* Weigting of the point */
 } munki_xp;
@@ -6726,7 +6712,7 @@ munki_code munki_create_hr(munki *p, int ref) {
 #endif /* HIGH_RES_DEBUG */
 
 	/* From our crossover data, create a rspl that maps raw CCD index */
-	/* value into wavelegth. */
+	/* value into wavelength. */
 	{
 		co sd[101];				/* Scattered data points */
 		datai glow, ghigh;
@@ -6767,7 +6753,7 @@ munki_code munki_create_hr(munki *p, int ref) {
 	/* perhaps it's closer to a lanczos2 if this were done ? */
 	{
 		for (i = 0; i < nwav1; i++) {
-			double cwl;		/* center wavelegth */
+			double cwl;		/* center wavelength */
 			double weight = 0.0;
 
 			for (j = 0; j < (mtx_nocoef1[i]); j++) {
@@ -6941,7 +6927,7 @@ munki_code munki_create_hr(munki *p, int ref) {
 
 			/* For each filter */
 			for (j = 0; j < m->nwav2; j++) {
-				double cwl, rwl;		/* center, relative wavelegth */
+				double cwl, rwl;		/* center, relative wavelength */
 				double we;
 
 				cwl = m->wl_short2 + (double)j * (m->wl_long2 - m->wl_short2)/(m->nwav2-1.0);
@@ -7091,6 +7077,7 @@ munki_code munki_create_hr(munki *p, int ref) {
 #ifdef DO_CCDNORM			/* Normalise CCD values to original */
 		{
 			double x[4], y[4];
+			int maxix[2];
 			double avg[2], max[2];
 			double ccdsum[2][128];			/* Target weight/actual for each CCD */
 			double dth[2];
@@ -7155,20 +7142,22 @@ munki_code munki_create_hr(munki *p, int ref) {
 			for (k = 0; k < 2; k++) {
 
 				for (i = 0; i < 128; i++) {
-					if (ccdsum[k][i] > max[k])
+					if (ccdsum[k][i] > max[k]) {
 						max[k] = ccdsum[k][i];
+						maxix[k] = i;
+					}
 				}
 
 //printf("~1 max[%d] = %f\n",k, max[k]);
 				/* Figure out the valid range */
-				for (i = 64; i >= 0; i--) {
+				for (i = maxix[k]; i >= 0; i--) {
 					if (ccdsum[k][i] > (0.8 * max[k])) {
 						x[0] = (double)i;
 					} else {
 						break;
 					}
 				}
-				for (i = 64; i < 128; i++) {
+				for (i = maxix[k]; i < 128; i++) {
 					if (ccdsum[k][i] > (0.8 * max[k])) {
 						x[3] = (double)i;
 					} else {
@@ -7878,12 +7867,12 @@ munki_code munki_conv2XYZ(
 ) {
 	munkiimp *m = (munkiimp *)p->m;
 	munki_state *s = &m->ms[m->mmode];
-	xsp2cie *conv;	/* Spectral to XYZ conversion object */
+	xsp2cie *conv;			/* Spectral to XYZ conversion object */
 	int i, j, k;
-	int six = 0;		/* Starting index */
-	int nwl = m->nwav;	/* Number of wavelegths */
-	double wl_short = m->wl_short;	/* Starting wavelegth */
-	double sms;			/* Weighting */
+	int six = 0;			/* Starting index */
+	int nwl = m->nwav;		/* Number of wavelengths */
+	double wl_short = m->wl_short;	/* Starting wavelength */
+	volatile double sms;	/* Weighting ("volatile" thanks to mips compiler) */
 
 	if (s->emiss)
 		conv = new_xsp2cie(icxIT_none, 0.0, NULL, icxOT_CIE_1931_2, NULL, icSigXYZData, (icxClamping)clamp);
@@ -7904,6 +7893,7 @@ munki_code munki_conv2XYZ(
 
 		vals[i].loc[0] = '\000';
 		vals[i].mtype = inst_mrt_none;
+		vals[i].mcond = inst_mrc_none;
 		vals[i].XYZ_v = 0;
 		vals[i].sp.spec_n = 0;
 		vals[i].duration = 0.0;
@@ -7949,14 +7939,18 @@ munki_code munki_conv2XYZ(
 
 			if (s->trans)
 				vals[i].mtype = inst_mrt_transmissive;
-			else
+			else {
 				vals[i].mtype = inst_mrt_reflective;
+				vals[i].mcond = inst_mrc_uvcut;
+			}
 		}
 
 		/* Don't return spectral if not asked for */
 		if (!m->spec_en) {
 			vals[i].sp.spec_n = 0;
 		}
+		a1logd(p->log,3,"munki_conv2XYZ returning XYZi[%d] %f %f %f\n",
+		              i, vals[i].XYZ[0], vals[i].XYZ[1], vals[i].XYZ[2]);
 	}
 
 	conv->del(conv);
@@ -8307,8 +8301,8 @@ static int munki_switch_thread(void *pp) {
 			m->spos_msec = msec_time();
 			m->spos_change++;
 #else
-			if (m->eventcallback != NULL) {
-				m->eventcallback(p->event_cntx, inst_event_mconf);
+			if (p->eventcallback != NULL) {
+				p->eventcallback(p->event_cntx, inst_event_mconf);
 			}
 #endif
 		}
@@ -8374,7 +8368,7 @@ munki_readEEProm(
 	int2buf(&pbuf[4], size);
   	se = p->icom->usb_control(p->icom,
 		               IUSB_ENDPOINT_OUT | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
-	                   0x81, 0, 0, pbuf, 8, 2.0);
+	                   0x81, 0, 0, pbuf, 8, NULL, 2.0);
 
 	if ((rv = icoms2munki_err(se)) != MUNKI_OK) {
 		a1logd(p->log,1,"munki_readEEProm: read failed (1) with ICOM err 0x%x\n",se);
@@ -8438,7 +8432,7 @@ munki_getfirm(
 
 	se = p->icom->usb_control(p->icom,
 		               IUSB_ENDPOINT_IN | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
-	                   0x86, 0, 0, pbuf, 24, 2.0);
+	                   0x86, 0, 0, pbuf, 24, NULL, 2.0);
 
 	if ((rv = icoms2munki_err(se)) != MUNKI_OK) {
 		a1logd(p->log,1,"munki_getfirm: failed with ICOM err 0x%x\n",se);
@@ -8477,7 +8471,7 @@ munki_getchipid(
 
 	se = p->icom->usb_control(p->icom,
 		               IUSB_ENDPOINT_IN | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
-	                   0x8A, 0, 0, chipid, 8, 2.0);
+	                   0x8A, 0, 0, chipid, 8, NULL, 2.0);
 
 	if ((rv = icoms2munki_err(se)) != MUNKI_OK) {
 		a1logd(p->log,1,"munki_getchipid:  GetChipID failed with ICOM err 0x%x\n",se);
@@ -8502,7 +8496,7 @@ munki_getversionstring(
 
 	se = p->icom->usb_control(p->icom,
 		               IUSB_ENDPOINT_IN | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
-	                   0x85, 0, 0, (unsigned char *)vstring, 36, 2.0);
+	                   0x85, 0, 0, (unsigned char *)vstring, 36, NULL, 2.0);
 
 	if ((rv = icoms2munki_err(se)) != MUNKI_OK) {
 		a1logd(p->log,1,"munki_getversionstring: failed with ICOM err 0x%x\n",se);
@@ -8537,7 +8531,7 @@ munki_getmeasstate(
 
 	se = p->icom->usb_control(p->icom,
 		               IUSB_ENDPOINT_IN | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
-	                   0x8F, 0, 0, pbuf, 16, 2.0);
+	                   0x8F, 0, 0, pbuf, 16, NULL, 2.0);
 
 	if ((rv = icoms2munki_err(se)) != MUNKI_OK) {
 		a1logd(p->log,1,"munki_getmeasstate: failed with ICOM err 0x%x\n",se);
@@ -8578,7 +8572,7 @@ munki_getstatus(
 
 	se = p->icom->usb_control(p->icom,
 		               IUSB_ENDPOINT_IN | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
-	                   0x87, 0, 0, pbuf, 2, 2.0);
+	                   0x87, 0, 0, pbuf, 2, NULL, 2.0);
 
 	if ((rv = icoms2munki_err(se)) != MUNKI_OK) {
 		a1logd(p->log,1,"munki_getstatus: failed with ICOM err 0x%x\n",se);
@@ -8643,7 +8637,7 @@ munki_setindled(
 
 	se = p->icom->usb_control(p->icom,
 		               IUSB_ENDPOINT_OUT | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
-	                   0x92, 0, 0, pbuf, 20, 2.0);
+	                   0x92, 0, 0, pbuf, 20, NULL, 2.0);
 
 	if ((rv = icoms2munki_err(se)) != MUNKI_OK) {
 		a1logd(p->log,1,"munki_setindled: failed with ICOM err 0x%x\n",se);
@@ -8686,7 +8680,7 @@ munki_triggermeasure(
 
 	se = p->icom->usb_control(p->icom,
 		               IUSB_ENDPOINT_OUT | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
-	                   0x80, 0, 0, pbuf, 12, 2.0);
+	                   0x80, 0, 0, pbuf, 12, NULL, 2.0);
 	m->trigstamp = usec_time();
 
 	m->tr_t2 = msec_time();     /* Diagnostic */
@@ -8891,7 +8885,7 @@ munki_code munki_simulate_event(munki *p, mk_eve ecode,  int timestamp) {
 
 	se = p->icom->usb_control(p->icom,
 		               IUSB_ENDPOINT_OUT | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
-	                   0x8E, 0, 0, pbuf, 8, 2.0);
+	                   0x8E, 0, 0, pbuf, 8, NULL, 2.0);
 
 	if ((rv = icoms2munki_err(se)) != MUNKI_OK)
 		a1logd(p->log,1,"munki_simulate_event: event 0x%x failed with ICOM err 0x%x\n",ecode,se);
@@ -9142,7 +9136,7 @@ munki_code munki_parse_eeprom(munki *p, unsigned char *buf, unsigned int len) {
 
 
 	/* Create class to handle EEProm parsing */
-	if ((d = m->data = new_mkdata(p, buf, len)) == NULL)
+	if ((d = new_mkdata(p, buf, len)) == NULL)
 		return MUNKI_INT_CREATE_EEPROM_STORE;
 
 	/* Check out the version */
@@ -9471,6 +9465,8 @@ munki_code munki_parse_eeprom(munki *p, unsigned char *buf, unsigned int len) {
 	m->highgain = 1.0/m->lin1[1];	/* Gain is encoded in linearity */
 	a1logd(p->log,3, "highgain = %f\n",m->highgain);
 
+	d->del(d);
+
 	return rv;
 }
 
@@ -9736,7 +9732,7 @@ mkdata *new_mkdata(munki *p, unsigned char *buf, int len) {
 	d->get_32_doubles  = mkdata_get_32_doubles;
 	d->rget_32_doubles = mkdata_rget_32_doubles;
 
-	d->del           = mkdata_del;
+	d->del             = mkdata_del;
 
 	return d;
 }

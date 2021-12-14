@@ -1,6 +1,6 @@
 
 /*
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Xrite DTP20 related functions
  *
@@ -20,7 +20,7 @@
 
 /* 
    If you make use of the instrument driver code here, please note
-   that it is the author(s) of the code who take responsibility
+   that it is the author(s) of the code who are responsibility
    for its operation. Any problems or queries regarding driving
    instruments with the Argyll drivers, should be directed to
    the Argyll's author(s), and not to any other party.
@@ -138,7 +138,7 @@ double to) {			/* Timout in seconts */
 
 	insize = strlen(in);
 	if (insize > 0) {
-		if ((se = p->icom->usb_control(p->icom, 0x41, 0x00, 0x00, 0x00, (unsigned char *)in, insize, to)) != ICOM_OK) {
+		if ((se = p->icom->usb_control(p->icom, 0x41, 0x00, 0x00, 0x00, (unsigned char *)in, insize, NULL, to)) != ICOM_OK) {
 			a1logd(p->log, 1, "dtp20: send command failed ICOM err 0x%x\n",se);
 			return dtp20_interp_code((inst *)p, icoms2dtp20_err(se));
 		}
@@ -156,7 +156,7 @@ double to) {			/* Timout in seconts */
 			rv &= inst_imask;
 			if (rv != DTP20_OK) {	/* Clear the error */
 				char buf[MAX_MES_SIZE];
-				p->icom->usb_control(p->icom, 0x41, 0x00, 0x00, 0x00, (unsigned char *)"CE\r", 3, 0.5);
+				p->icom->usb_control(p->icom, 0x41, 0x00, 0x00, 0x00, (unsigned char *)"CE\r", 3, NULL, 0.5);
 				p->icom->read(p->icom, buf, MAX_MES_SIZE, NULL, tc, ntc, 0.5);
 			}
 		}
@@ -185,7 +185,7 @@ double top) {		/* Timout in seconds */
 
 	insize = strlen(in);
 	if (insize > 0) {
-		if ((se = p->icom->usb_control(p->icom, 0x41, 0x00, 0x00, 0x00, (unsigned char *)in, insize, top)) != ICOM_OK) {
+		if ((se = p->icom->usb_control(p->icom, 0x41, 0x00, 0x00, 0x00, (unsigned char *)in, insize, NULL, top)) != ICOM_OK) {
 			a1logd(p->log, 1, "dtp20: send failed ICOM err 0x%x\n",se);
 			return dtp20_interp_code((inst *)p, icoms2dtp20_err(se));
 		}
@@ -545,6 +545,7 @@ ipatch *vals) {		/* Pointer to array of values */
 			}
 			tvals[i].loc[0] = '\000';
 			tvals[i].mtype = inst_mrt_reflective;
+			tvals[i].mcond = inst_mrc_none;
 			tvals[i].XYZ_v = 1;
 			tvals[i].sp.spec_n = 0;
 			tvals[i].duration = 0.0;
@@ -783,6 +784,7 @@ ipatch *vals) {		/* Pointer to array of instrument patch values */
 		}
 		vals[i].loc[0] = '\000';
 		vals[i].mtype = inst_mrt_reflective;
+		vals[i].mcond = inst_mrc_none;
 		vals[i].XYZ_v = 1;
 		vals[i].sp.spec_n = 0;
 		vals[i].duration = 0.0;
@@ -1022,6 +1024,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 		icmClamp3(val->XYZ, val->XYZ);
 	val->loc[0] = '\000';
 	val->mtype = inst_mrt_reflective;
+	val->mcond = inst_mrc_none;
 	val->XYZ_v = 1;
 	val->sp.spec_n = 0;
 	val->duration = 0.0;

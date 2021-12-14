@@ -4,7 +4,7 @@
 /* Single dimension regularized spline data structure */
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  * Author: Graeme W. Gill
  * Date:   2000/10/29
  *

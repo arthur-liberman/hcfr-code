@@ -2,7 +2,7 @@
  /* Spectrometer/Colorimeter color spot reader utility */
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  * Author: Graeme W. Gill
  * Date:   3/10/2001
  *
@@ -22,14 +22,12 @@
 /* TTBD
  *
  *  Add option to automatically read continuously, until stopped. (A bit like -O)
-
+ *
  *	Make -V average the spectrum too (if present), and allow it to
  *  be saved to a .sp file.
  *
  *  Should fix plot so that it is a separate object running its own thread,
  *  so that it can be sent a graph without needing to be clicked in all the time.
- *
- *  Should add option to show reflective/tranmsission density values.
  *
  *  Should add option for Y u' v' values.
  */
@@ -437,7 +435,7 @@ static inst_code uicallback(void *cntx, inst_ui_purp purp) {
 
 void
 usage(char *diag, ...) {
-//	int i;
+	int i;
 	icompaths *icmps;
 	inst2_capability cap2 = 0;
 	fprintf(stderr,"Measure spot values, Version %s\n",ARGYLL_VERSION_STR);
@@ -484,6 +482,7 @@ usage(char *diag, ...) {
 	fprintf(stderr," -pw                  Use projector white point relative chromatically adjusted mode\n");
 	fprintf(stderr," -a                   Use ambient measurement mode (absolute results)\n");
 	fprintf(stderr," -f                   Use ambient flash measurement mode (absolute results)\n");
+	fprintf(stderr," -rw                  Use reflection white point relative chromatically adjusted mode\n");
 	cap2 = inst_show_disptype_options(stderr, " -y                   ", icmps, 0);
 #ifndef SALONEINSTLIB
 	fprintf(stderr," -I illum             Set simulated instrument illumination using FWA (def -i illum):\n");
@@ -505,14 +504,15 @@ usage(char *diag, ...) {
 	fprintf(stderr,"                      (Choose FWA during operation)\n");
 #endif
 	fprintf(stderr," -F filter            Set filter configuration (if aplicable):\n");
-	fprintf(stderr,"    n                  None\n");
-	fprintf(stderr,"    p                  Polarising filter\n");
+	fprintf(stderr,"    n                  None (M0)\n");
+	fprintf(stderr,"    5                  D50 (M1)\n");
 	fprintf(stderr,"    6                  D65\n");
-	fprintf(stderr,"    u                  U.V. Cut\n");
+	fprintf(stderr,"    u                  U.V. Cut (M2)\n");
+	fprintf(stderr,"    p                  Polarising filter (M3)\n");
 	fprintf(stderr," -E customfilter.sp   Compensate for emission measurement filter\n");
 	fprintf(stderr," -A N|A|X|G           XRGA conversion (default N)\n");
 #ifndef SALONEINSTLIB
-	fprintf(stderr," -w                   Use -i param. illuminant for comuting L*a*b*\n");
+	fprintf(stderr," -w                   Use -i param. illuminant for computing L*a*b*\n");
 #endif
 	fprintf(stderr," -x                   Display Yxy instead of Lab\n");
 	fprintf(stderr," -h                   Display LCh instead of Lab\n");
@@ -522,6 +522,7 @@ usage(char *diag, ...) {
 	fprintf(stderr," -V                   Show running average and std. devation from ref.\n");
 #ifndef SALONEINSTLIB
 	fprintf(stderr," -T                   Display correlated color temperatures, CRI, TLCI & IES TM-30-15\n");
+	fprintf(stderr," -d                   Display density values\n");
 #endif /* !SALONEINSTLIB */
 //	fprintf(stderr," -K type              Run instrument calibration first\n");
 	fprintf(stderr," -N                   Disable auto calibration of instrument\n");
@@ -543,7 +544,7 @@ usage(char *diag, ...) {
 	fprintf(stderr," -Y R:rate            Override measured refresh rate with rate Hz\n");
 	fprintf(stderr," -Y A                 Use non-adaptive integration time mode (if available).\n");
 	fprintf(stderr," -Y l|L               Test for i1Pro Lamp Drift (l), and remediate it (L)\n");
-	fprintf(stderr," -Y a                 Use Averaging mode (if available).\n");
+	fprintf(stderr," -Y a                 Use Averaging mode (if available) aa, aaa for more.\n");
 //	fprintf(stderr," -Y U                 Test i1pro2 UV measurement mode\n");
 #ifndef SALONEINSTLIB
 	fprintf(stderr," -Y W:fname.sp        Save white tile ref. spectrum to file\n");
@@ -568,6 +569,7 @@ int main(int argc, char *argv[]) {
 									/* 2 = + also save result to outspname */
 	int pspec = 0;					/* 1 = Print out the spectrum for each reading */
 									/* 2 = Plot out the spectrum for each reading */
+	int refwr = 0;					/* Reflection mode white relative mode */
 	int trans = 0;					/* Use transmissioin mode */
 	int emiss = 0;					/* 1 = Use emissive mode, 2 = display bright rel. */
 	                                /* 3 = display white rel. */
@@ -580,13 +582,14 @@ int main(int argc, char *argv[]) {
 	int refrmode = -1;				/* -1 = default, 0 = non-refresh mode, 1 = refresh mode */
 	double refrate = 0.0;			/* 0.0 = default, > 0.0 = override refresh rate */ 
 	int nadaptive = 0;				/* Use non-apative mode if available */
-	int averagemode = 0;			/* Use averaging mode if available */
+	int averagemode = 0;			/* Use averaging mode if available, 2 = extra averaging */
 	int doYxy= 0;					/* Display Yxy instead of Lab */
 	int doLCh= 0;					/* Display LCh instead of Lab */
 #ifndef SALONEINSTLIB
 	int doYuv= 0;					/* Display Yuv instead of Lab */
 #endif
 	int doCCT= 0;					/* Display correlated color temperatures */
+	int doDensity= 0;				/* Display density values */
 	inst_mode mode = 0, smode = 0;	/* Normal mode and saved readings mode */
 	inst_opt_type trigmode = inst_opt_unknown;	/* Chosen trigger mode */
 	inst_opt_filter fe = inst_opt_filter_unknown;
@@ -628,7 +631,7 @@ int main(int argc, char *argv[]) {
 	xsp2cie *sp2cie = NULL;			/* default conversion */
 	xsp2cie *sp2cief[26];			/* FWA corrected conversions */
 	double wXYZ[3] = { -10.0, 0, 0 };/* White XYZ for display white relative */
-//	double chmat[3][3];				/* Chromatic adapation matrix for white point relative */
+	double chmat[3][3];				/* Chromatic adapation matrix for white point relative */
 	double XYZ[3] = { 0.0, 0.0, 0.0 };		/* Last XYZ scaled 0..100 or absolute */
 	double Lab[3] = { -10.0, 0, 0};	/* Last Lab */
 	double rXYZ[3] = { 0.0, -10.0, 0};	/* Reference XYZ */
@@ -705,6 +708,7 @@ int main(int argc, char *argv[]) {
 					comport = atoi(na);
 					if (comport < 1 || comport > 40) usage("-c parameter %d out of range",comport);
 				}
+			got_comport:;
 
 			/* Display type */
 			} else if (argv[fa][1] == 'y') {
@@ -752,7 +756,7 @@ int main(int argc, char *argv[]) {
 
 					tillum_set = spec = 1;
 					tillum = icxIT_custom;
-					if (read_xspect(&cust_tillum, &mt, na) != 0)
+					if (read_xspect(&cust_tillum, &mt, NULL, na) != 0)
 						usage("Failed to read custom target illuminant spectrum in file '%s'",na);
 
 					if (mt != inst_mrt_none
@@ -798,7 +802,7 @@ int main(int argc, char *argv[]) {
 
 					illum_set = spec = 1;
 					illum = icxIT_custom;
-					if (read_xspect(&cust_illum, &mt, na) != 0)
+					if (read_xspect(&cust_illum, &mt, NULL, na) != 0)
 						usage("Unable to read custom illuminant file '%s'",na);
 
 					if (mt != inst_mrt_none
@@ -853,10 +857,7 @@ int main(int argc, char *argv[]) {
 				ambient = 0;		/* Default normal diffuse/90 geometry trans. */
 
 			/* Request emissive measurement */
-			} else if (argv[fa][1] == 'e' || argv[fa][1] == 'd') {
-
-				if (argv[fa][1] == 'd')
-					warning("spotread -d flag is deprecated");
+			} else if (argv[fa][1] == 'e') {
 
 				emiss = 1;
 				trans = 0;
@@ -869,7 +870,7 @@ int main(int argc, char *argv[]) {
 					else if (argv[fa][2] == 'w' || argv[fa][2] == 'W')
 						emiss = 3;
 					else
-						usage("-d modifier '%c' not recognised",argv[fa][2]);
+						usage("-e modifier '%c' not recognised",argv[fa][2]);
 				}
 
 			/* Request telephoto measurement */
@@ -908,18 +909,35 @@ int main(int argc, char *argv[]) {
 				tele = 0;
 				ambient = 2;
 
+			/* Request reflective white point relative measurement */
+			} else if (argv[fa][1] == 'r') {
+
+				emiss = 0;
+				trans = 0;
+				tele = 0;
+				ambient = 0;
+
+				if (argv[fa][2] != '\000') {
+					if (argv[fa][2] == 'w' || argv[fa][2] == 'W')
+						refwr = 1;
+					else
+						usage("-r modifier '%c' not recognised",argv[fa][2]);
+				}
+
 			/* Filter configuration */
 			} else if (argv[fa][1] == 'F') {
 				fa = nfa;
 				if (na == NULL) usage("Paramater expected following -F");
 				if (na[0] == 'n' || na[0] == 'N')
 					fe = inst_opt_filter_none;
-				else if (na[0] == 'p' || na[0] == 'P')
-					fe = inst_opt_filter_pol;
+				else if (na[0] == '5')
+					fe = inst_opt_filter_D50;
 				else if (na[0] == '6')
 					fe = inst_opt_filter_D65;
 				else if (na[0] == 'u' || na[0] == 'U')
 					fe = inst_opt_filter_UVCut;
+				else if (na[0] == 'p' || na[0] == 'P')
+					fe = inst_opt_filter_pol;
 				else
 					usage("-F type '%c' not recognised",na[0]);
 
@@ -977,6 +995,11 @@ int main(int argc, char *argv[]) {
 			/* Show CCT etc. */
 			} else if (argv[fa][1] == 'T') {
 				doCCT = 1;
+
+			/* Show densities */
+			} else if (argv[fa][1] == 'd') {
+				doDensity = 1;
+
 #endif /* !SALONEINSTLIB */
 
 			/* Manual calibration */
@@ -1010,7 +1033,7 @@ int main(int argc, char *argv[]) {
 			/* Colorimeter Correction Matrix or */
 			/* Colorimeter Calibration Spectral Samples */
 			} else if (argv[fa][1] == 'X') {
-//				int ix;
+				int ix;
 				fa = nfa;
 				if (na == NULL) usage("Parameter expected after -K");
 				strncpy(ccxxname,na,MAXNAMEL-1); ccxxname[MAXNAMEL-1] = '\000';
@@ -1033,6 +1056,11 @@ int main(int argc, char *argv[]) {
 					nadaptive = 1;
 				} else if (na[0] == 'a') {
 					averagemode = 1;
+				    if (na[1] == 'a') {
+						averagemode = 2;
+					    if (na[2] == 'a')
+							averagemode = 3;
+					}
 				} else if (na[0] == 'r') {
 					refrmode = 1;
 				} else if (na[0] == 'n') {
@@ -1167,15 +1195,6 @@ int main(int argc, char *argv[]) {
 #ifdef DEBUG
 	printf("About to init the instrument\n");
 #endif
-
-	/* set filter configuration before initialising/calibrating */
-	if (fe != inst_opt_filter_unknown) {
-		if ((rv = it->get_set_opt(it, inst_opt_set_filter, fe)) != inst_ok) {
-			printf("Setting filter configuration not supported by instrument\n");
-			it->del(it);
-			return -1;
-		}
-	}
 
 	/* Initialise the instrument */
 	if ((rv = it->init_inst(it)) != inst_ok) {
@@ -1519,16 +1538,6 @@ int main(int argc, char *argv[]) {
 			smode |= inst_mode_spectral;
 		}
 
-		if (highres) {
-			if (IMODETST(cap, inst_mode_highres)) {
-				mode  |= inst_mode_highres;
-				smode |= inst_mode_highres;
-			} else if (verb) {
-				printf("high resolution ignored - instrument doesn't support high res. mode\n");
-				highres = 0;
-			}
-		}
-
 		// ~~~ i1pro2 test code ~~~ */
 		if (uvmode) {
 			if (!IMODETST(cap, inst_mode_ref_uv)) {
@@ -1548,13 +1557,49 @@ int main(int argc, char *argv[]) {
 		}
 		it->capabilities(it, &cap, &cap2, &cap3);
 
+		/* Check and update mode for any mode dependent capabilities. */
+		/* (Could set this without check, or use get_set_opt() afterwards) */
+		if (highres) {
+			if (IMODETST(cap, inst_mode_highres)) {
+				mode  |= inst_mode_highres;
+				smode |= inst_mode_highres;
+
+				if ((rv = it->set_mode(it, mode)) != inst_ok) {
+					printf("\nSetting instrument mode failed with error :'%s' (%s)\n",
+		   		  	       it->inst_interp_error(it, rv), it->interp_error(it, rv));
+					it->del(it);
+					return -1;
+				}
+			
+			} else if (verb) {
+				printf("high resolution ignored - instrument doesn't support high res. mode\n");
+				highres = 0;
+			}
+		}
+
+		/* Optional reflective measurement filters */
+		if (fe != inst_opt_filter_unknown) {
+			if ((rv = it->get_set_opt(it, inst_opt_set_filter, fe)) != inst_ok) {
+				printf("Setting requested filter not supported by instrument\n");
+				it->del(it);
+				return -1;
+			}
+		}
+
 		/* If requested, average several readings (i.e. JETI 1211) */
 		if (averagemode) {
+			int navg = 10;
+
+			if (averagemode == 2)
+				navg = 20;
+			else if (averagemode == 3)
+				navg = 100;
+
 			if (!IMODETST(cap3, inst3_average)) {
 				if (verb)
 					printf("Requested averaging mode and instrument doesn't support it (ignored)\n");
 				averagemode = 0;
-			} else if ((rv = it->get_set_opt(it, inst_opt_set_averages, 10)) != inst_ok) {
+			} else if ((rv = it->get_set_opt(it, inst_opt_set_averages, navg)) != inst_ok) {
 				printf("Setting no of averages to 10 failed with '%s' (%s) !!!\n",
 			       it->inst_interp_error(it, rv), it->interp_error(it, rv));
 			}
@@ -1563,7 +1608,7 @@ int main(int argc, char *argv[]) {
 		/* Apply emission filter compensation */
 		if (filtername[0] != '\000') {
 			xspect sp;
-			if (read_xspect(&sp, NULL, filtername) != 0)
+			if (read_xspect(&sp, NULL, NULL, filtername) != 0)
 				error("Failed to emission filter compensation file '%s'",filtername);
 
 			if ((rv = it->get_set_opt(it, inst_opt_set_custom_filter, &sp)) != inst_ok) {
@@ -1748,7 +1793,7 @@ int main(int argc, char *argv[]) {
 			return -1;
 		}
 
-		if (write_xspect(wtilename, inst_mrt_reflective, &sp) != 0)
+		if (write_xspect(wtilename, inst_mrt_reflective, inst_mrc_none, &sp) != 0)
 			error("Failed to save spectrum to file '%s'",wtilename);
 
 		if (verb)
@@ -1768,6 +1813,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (spec || psetrefname[0] != '\000') {
+
 		/* Any non-illuminated mode has no illuminant */
 		if (emiss || ambient)
 			illum = icxIT_none;
@@ -1792,8 +1838,9 @@ int main(int argc, char *argv[]) {
 	/* Load preset reference spectrum */
 	if (psetrefname[0] != '\000') {
 		inst_meas_type mt;
+		inst_meas_cond mc;
 
-		if (read_xspect(&rsp, &mt, psetrefname) != 0)
+		if (read_xspect(&rsp, &mt, &mc, psetrefname) != 0)
 			error("Failed to read spectrum from file '%s'",psetrefname);
 
 		if (!emiss && !ambient) {
@@ -1841,8 +1888,8 @@ int main(int argc, char *argv[]) {
 
 	/* Read spots until the user quits */
 	for (ix = 1;; ix++) {
-		ipatch val;
-//		double tXYZ[3];
+		ipatch val;								/* Raw measurement value */
+		double tXYZ[3];
 #ifndef SALONEINSTLIB
 		double cct, vct, vdt;
 		double cct_de, vct_de, vdt_de;
@@ -2059,7 +2106,7 @@ int main(int argc, char *argv[]) {
 				} else {
 
 					/* If this is display white brightness relative, read the white */
-					if ((emiss > 1  || tele > 1) && wXYZ[0] < 0.0)
+					if ((refwr != 0 || emiss > 1 || tele > 1) && wXYZ[0] < 0.0)
 						printf("\nPlace instrument on white reference spot,\n");
 					else {
 						printf("\nPlace instrument on spot to be measured,\n");
@@ -2339,7 +2386,7 @@ int main(int argc, char *argv[]) {
 
 				printf("\nEnter filename (ie. xxxx.sp): "); fflush(stdout);
 				if (getns(buf, 500) != NULL && strlen(buf) > 0) {
-					if(write_xspect(buf, val.mtype, &sp))
+					if(write_xspect(buf, val.mtype, val.mcond, &sp))
 						printf("\nWriting file '%s' failed\n",buf);
 					else
 						printf("\nWriting file '%s' succeeded\n",buf);
@@ -2592,6 +2639,7 @@ int main(int argc, char *argv[]) {
 		/* Print and/or plot out spectrum, */
 		/* even if it's an FWA setup */
 		if (pspec) {
+			double blev = -1e38, bwl;
 
 			if (sp.spec_n <= 0)
 				error("Print: Instrument didn't return spectral data");
@@ -2599,9 +2647,16 @@ int main(int argc, char *argv[]) {
 			printf("Spectrum from %.3f to %.3f nm in %d steps\n",
 		                sp.spec_wl_short, sp.spec_wl_long, sp.spec_n);
 
-			for (j = 0; j < sp.spec_n; j++)
+			for (j = 0; j < sp.spec_n; j++) {
 				printf("%s%g",j > 0 ? ", " : "", sp.spec[j]);
+				if (sp.spec[j] > blev) {
+					blev = sp.spec[j];
+					bwl = XSPECT_XWL(&sp, j);
+				}
+			}
 			printf("\n");
+
+			printf("Peak value %f at (aprox.) %.1f nm\n",blev, bwl);
 
 #ifndef SALONEINSTLIB
 			/* Plot the spectrum */
@@ -2757,7 +2812,7 @@ int main(int argc, char *argv[]) {
 			Lab2LCh(LCh, Lab);
 #endif /* SALONEINSTLIB */
 
-			if (emiss > 1 || tele > 1) {
+			if (refwr != 0 || emiss > 1 || tele > 1) {
 				if (wXYZ[0] < 0.0) {		/* If we haven't save a white ref. yet */
 					if (XYZ[1] < 10.0)
 						error ("White of XYZ %f %f %f doesn't seem reasonable",XYZ[0], XYZ[1], XYZ[2]);
@@ -2782,7 +2837,7 @@ int main(int argc, char *argv[]) {
 					XYZ[2] = 100.0 * XYZ[2] / wXYZ[1];
 				} 
 #ifndef SALONEINSTLIB
-				  else {	/* emiss == 3, white point relative */
+				  else {	/* refwr != 0 || emiss == 3, white point relative */
 
 					/* Normalize to white and scale to 0..100 */
 					icmMulBy3x3(XYZ, chmat, XYZ);
@@ -2870,9 +2925,9 @@ int main(int argc, char *argv[]) {
 					rstat_n, avg[0], avg[1], avg[2], sdev[0], sdev[1], sdev[2]);
 				}
 #ifndef SALONEINSTLIB
-				printf(" Delta E to reference is %f %f %f (%f, CIE94 %f)\n",
+				printf(" Delta E to reference is %f %f %f (DE76 %f, CIE94 %f, DE2K %f)\n",
 				Lab[0] - rLab[0], Lab[1] - rLab[1], Lab[2] - rLab[2],
-				icmLabDE(Lab, rLab), icmCIE94(Lab, rLab));
+				icmLabDE(Lab, rLab), icmCIE94(Lab, rLab), icmCIE2K(Lab, rLab));
 #else
 				printf(" Delta E to reference is %f %f %f (%f)\n",
 				Lab[0] - rLab[0], Lab[1] - rLab[1], Lab[2] - rLab[2],
@@ -2946,7 +3001,26 @@ int main(int argc, char *argv[]) {
 				tm3015_plot(bins);
 #endif
 			}
-#endif
+			
+			if (sp.spec_n > 0 && doDensity) {
+				double den[4];
+
+				xsp_density(den, &sp, icxDT_ISO);
+				printf("ISO Vis, Type 1, Type 2 Density: %f %f %f\n", den[0],den[1],den[2]);
+
+				xsp_density(den, &sp, icxDT_A);
+				printf("Status A CMYV Density: %f %f %f %f\n", den[0], den[1], den[2], den[3]);
+
+				xsp_density(den, &sp, icxDT_M);
+				printf("Status M CMYV Density: %f %f %f %f\n", den[0], den[1], den[2], den[3]);
+
+				xsp_density(den, &sp, icxDT_T);
+				printf("Status T CMYV Density: %f %f %f %f\n", den[0], den[1], den[2], den[3]);
+
+				xsp_density(den, &sp, icxDT_E);
+				printf("Status E CMYV Density: %f %f %f %f\n", den[0], den[1], den[2], den[3]);
+			}
+#endif	/* !SALONEINSTLIB */
 
 			/* Save reading to the log file */
 			if (fp != NULL) {
@@ -2981,7 +3055,7 @@ int main(int argc, char *argv[]) {
 			if (sp.spec_n <= 0)
 				error("Save: Instrument didn't return spectral data");
 
-			if (write_xspect(outspname, val.mtype, &sp))
+			if (write_xspect(outspname, val.mtype, val.mcond, &sp))
 				printf("Writing file '%s' failed\n",outspname);
 			else
 				printf("Writing file '%s' succeeded\n",outspname);

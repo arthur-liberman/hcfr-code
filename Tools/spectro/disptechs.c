@@ -4,7 +4,7 @@
  /* Standardized display types for use with libinst */
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Author: Graeme W. Gill
  * Date:   14/5/2014
@@ -117,9 +117,9 @@ static disptech_info disptech_info_array[] = {
 		DISPTECH_LCD_FALL,
 		"l"
 	},
-	{	disptech_lcd_ccfl_vpa,
-		"LCD CCFL VPA",
-		"LCD CCFL VPA",
+	{	disptech_lcd_ccfl_pva,
+		"LCD CCFL PVA",
+		"LCD CCFL PVA",
 		0,
 		DISPTECH_LCD_RISE,
 		DISPTECH_LCD_FALL,
@@ -150,9 +150,9 @@ static disptech_info disptech_info_array[] = {
 		DISPTECH_LCD_FALL,
 		"L"
 	},
-	{	disptech_lcd_ccfl_wg_vpa,
-		"LCD CCFL Wide Gamut VPA",
-		"LCD CCFL Wide Gamut VPA",
+	{	disptech_lcd_ccfl_wg_pva,
+		"LCD CCFL Wide Gamut PVA",
+		"LCD CCFL Wide Gamut PVA",
 		0,
 		DISPTECH_LCD_RISE,
 		DISPTECH_LCD_FALL,
@@ -182,9 +182,9 @@ static disptech_info disptech_info_array[] = {
 		DISPTECH_LCD_FALL,
 		"e"
 	},
-	{	disptech_lcd_wled_vpa,
-		"LCD White LED VPA",
-		"LCD White LED VPA",
+	{	disptech_lcd_wled_pva,
+		"LCD White LED PVA",
+		"LCD White LED PVA",
 		0,
 		DISPTECH_LCD_RISE,
 		DISPTECH_LCD_FALL,
@@ -214,9 +214,9 @@ static disptech_info disptech_info_array[] = {
 		DISPTECH_LCD_FALL,
 		"b"
 	},
-	{	disptech_lcd_rgbled_vpa,
-		"LCD RGB LED VPA",
-		"LCD RGB LED VPA",
+	{	disptech_lcd_rgbled_pva,
+		"LCD RGB LED PVA",
+		"LCD RGB LED PVA",
 		0,
 		DISPTECH_LCD_RISE,
 		DISPTECH_LCD_FALL,
@@ -248,9 +248,9 @@ static disptech_info disptech_info_array[] = {
 		DISPTECH_LCD_FALL,
 		"h"
 	},
-	{	disptech_lcd_rgledp_vpa,
-		"LCD RG Phosphor VPA",
-		"LCD RG Phosphor VPA",
+	{	disptech_lcd_rgledp_pva,
+		"LCD RG Phosphor PVA",
+		"LCD RG Phosphor PVA",
 		0,
 		DISPTECH_LCD_RISE,
 		DISPTECH_LCD_FALL,
@@ -281,9 +281,9 @@ static disptech_info disptech_info_array[] = {
 		DISPTECH_LCD_FALL,
 		"h"
 	},
-	{	disptech_lcd_nrgledp_vpa,
-		"LCD PFS Phosphor VPA",
-		"LCD PFS Phosphor VPA",
+	{	disptech_lcd_nrgledp_pva,
+		"LCD PFS Phosphor PVA",
+		"LCD PFS Phosphor PVA",
 		0,
 		DISPTECH_LCD_RISE,
 		DISPTECH_LCD_FALL,
@@ -314,9 +314,9 @@ static disptech_info disptech_info_array[] = {
 		DISPTECH_LCD_FALL,
 		"i"
 	},
-	{	disptech_lcd_gbrledp_vpa,
-		"LCD GB-R Phosphor VPA",
-		"LCD GB-R Phosphor VPA",
+	{	disptech_lcd_gbrledp_pva,
+		"LCD GB-R Phosphor PVA",
+		"LCD GB-R Phosphor PVA",
 		0,
 		DISPTECH_LCD_RISE,
 		DISPTECH_LCD_FALL,
@@ -437,8 +437,16 @@ disptech_info *disptech_get_id(disptech id) {
 /* Return the disptech_unknown entry if not matched */
 disptech_info *disptech_get_strid(char *strid) {
 	int i;
+	char *bp;
+
+	/* Backwards compatibility hack - replace " VPA" with " PVA" */
+	if ((bp = strstr(strid, " VPA")) != NULL) {
+		bp[1] = 'P';
+		bp[2] = 'V';
+	}
 
 	for (i = 0; disptech_info_array[i].dtech != disptech_end; i++) {
+
 		if (strcmp(disptech_info_array[i].strid, strid) == 0)
 			return &disptech_info_array[i]; 
 	} 

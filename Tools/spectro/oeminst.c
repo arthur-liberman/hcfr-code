@@ -1,5 +1,5 @@
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * OEM data file installer.
  *

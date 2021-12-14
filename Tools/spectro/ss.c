@@ -1,6 +1,6 @@
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Gretag Spectrolino and Spectroscan related
  * defines and declarations.
@@ -21,7 +21,7 @@
 
 /* 
    If you make use of the instrument driver code here, please note
-   that it is the author(s) of the code who take responsibility
+   that it is the author(s) of the code who are responsibility
    for its operation. Any problems or queries regarding driving
    instruments with the Argyll drivers, should be directed to
    the Argyll's author(s), and not to any other party.
@@ -417,11 +417,16 @@ static void ss_determine_capabilities(ss *p) {
 			p->cap2 |= inst2_xy_holdrel
 		            |  inst2_xy_locate
 		            |  inst2_xy_position
-	            	   ;
+			        ;
 		}
 	}
 
-	p->cap3 = inst3_none;
+	p->cap3 = inst3_filter_none
+	        | inst3_filter_D65
+	        | inst3_filter_UVCut
+	        | inst3_filter_pol
+	        | inst3_filter_Custom
+	        ;
 
 	a1logd(p->log, 4, "ss_determine_capabilities got cap1 0x%x cap2 0x%x\n",p->cap,p->cap2);
 }
@@ -807,6 +812,7 @@ ipatch *vals) { 		/* Pointer to array of values */
 
 					vals[patch].loc[0] = '\000';
 					vals[patch].mtype = inst_mrt_none;
+					vals[patch].mcond = inst_mrc_none;
 					vals[patch].XYZ_v = 0;
 					vals[patch].sp.spec_n = 0;
 					vals[patch].duration = 0.0;
@@ -1250,8 +1256,17 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 			val->XYZ[2] = col[2];
 			if ((p->mode & inst_mode_illum_mask) == inst_mode_transmission)
 				val->mtype = inst_mrt_transmissive;
-			else
+			else {
 				val->mtype = inst_mrt_reflective;
+				if (p->filt == ss_aft_PolFilter)
+					val->mcond = inst_mrc_pol;
+				else if (p->filt == ss_aft_D65Filter)
+					val->mcond = inst_mrc_D65;
+				else if (p->filt == ss_aft_UVCutFilter)
+					val->mcond = inst_mrc_uvcut;
+				else if (p->filt == ss_aft_CustomFilter)
+					val->mcond = inst_mrc_custom;
+			}
 		}
 
 		/* spectrum data is returned only if requested */

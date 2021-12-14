@@ -1,12 +1,12 @@
 #ifndef CONV_H
 
 /*
- * Some system dependent comvenience functions.
+ * Some system dependent convenience functions.
  * Implemented in unixio.c and ntio.c
  */
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Author: Graeme W. Gill
  * Date:   2008/2/9
@@ -83,25 +83,36 @@ int set_normal_priority();
 /* amutex_trylock() returns nz if it can't lock the mutex */
 /* acond_timedwait() returns nz if it times out */
 
+/* We have to use a hack to get a static amutex to work for NT */
+/* We invoke an initilizer function if we notice that it hasn't been initialized. */
+
+/* NOTE !!!	Locks are counted, so the number of locks and unlocks have to balance, */
+/* AND this means that locks only work between threads !!!! */
+
 #ifdef NT
+
 # define amutex CRITICAL_SECTION 
-# define amutex_static(lock) CRITICAL_SECTION lock = {(void*)-1,-1 }
-# define amutex_init(lock) InitializeCriticalSection(&(lock))
-# define amutex_del(lock) DeleteCriticalSection(&(lock))
-# define amutex_lock(lock) EnterCriticalSection(&(lock))
-# define amutex_trylock(lock) (!TryEnterCriticalSection(&(lock)))
-# define amutex_unlock(lock) LeaveCriticalSection(&(lock))
+# define amutex_static_LockCount -9999		/* Sentinel value */
+# define AMUTEXCHK(lock) ((lock).LockCount == amutex_static_LockCount ? amutex_chk(&(lock)) : 0)
+
+# define amutex_static(lock) CRITICAL_SECTION lock = { NULL, amutex_static_LockCount, 0 }
+# define amutex_init(lock)    InitializeCriticalSection(&(lock))
+# define amutex_del(lock)     DeleteCriticalSection(&(lock))
+# define amutex_lock(lock)    (AMUTEXCHK(lock), EnterCriticalSection(&(lock)))
+# define amutex_trylock(lock) (AMUTEXCHK(lock), !TryEnterCriticalSection(&(lock)))
+# define amutex_unlock(lock)  (AMUTEXCHK(lock), LeaveCriticalSection(&(lock)))
 
 # define acond HANDLE
-# define acond_static(cond) pthread_cond_t (cond) = PTHREAD_COND_INITIALIZER
+//# define acond_static(cond) pthread_cond_t (cond) = PTHREAD_COND_INITIALIZER
 # define acond_init(cond) (cond = CreateEvent(NULL, 0, 0, NULL))
 # define acond_del(cond) CloseHandle(cond)
 # define acond_wait(cond, lock) (LeaveCriticalSection(&(lock)),	\
                           WaitForSingleObject(cond, INFINITE),	\
                           EnterCriticalSection(&(lock)))
 # define acond_signal(cond) SetEvent(cond)
-# define acond_timedwait(cond, lock, msec) \
-         acond_timedwait_imp(cond, &(lock), msec)
+# define acond_timedwait(cond, lock, msec) acond_timedwait_imp(cond, &(lock), msec)
+
+int amutex_chk(CRITICAL_SECTION *lock);
 
 int acond_timedwait_imp(HANDLE cond, CRITICAL_SECTION *lock, int msec);
 
@@ -123,8 +134,7 @@ int acond_timedwait_imp(HANDLE cond, CRITICAL_SECTION *lock, int msec);
 # define acond_del(cond) pthread_cond_destroy(&(cond))
 # define acond_wait(cond, lock) pthread_cond_wait(&(cond), &(lock))
 # define acond_signal(cond) pthread_cond_signal(&(cond))
-# define acond_timedwait(cond, lock, msec) \
-         acond_timedwait_imp(&(cond), &(lock), msec)
+# define acond_timedwait(cond, lock, msec) acond_timedwait_imp(&(cond), &(lock), msec)
 
 int acond_timedwait_imp(pthread_cond_t *cond, pthread_mutex_t *lock, int msec);
 
@@ -141,7 +151,23 @@ struct _athread {
 #if defined(UNIX)
 	pthread_t thid;			/* Thread ID */
 #endif
-	int finished;			/* Set when the thread returned */
+
+	/* - - - - - - - - - - */
+	/* Resuable mechanics: */
+	int reusable;			/* nz if thread is reusable */
+	int dofinish;			/* signal thread to exit reuse loop */
+
+	amutex startm;			/* Thread checkpoint */
+	acond startc;
+	int startv;
+
+	amutex stopm;			/* Client checkpoint */
+	acond stopc;
+	int stopv;
+
+	/* - - - - - - - - */
+
+	int joined;				/* Set when the thread was joined */
 	int result;				/* Return code from thread function */
 
 	/* Thread function to call */
@@ -150,12 +176,23 @@ struct _athread {
 	/* And the context to call it with */
 	void *context;
 
-	/* Wait for the thread to exit. Return the result */
+
+	/* If reusable, start a stopped thread. NOP if not reusable */
+	void (*start)(struct _athread *p);
+
+	/* If reusable, wait for the thread to stop. Return the result. NOP if not reusable */
+	int (*wait_stop)(struct _athread *p);
+
+	/* Wait for the thread to exit. Return the result. Causes reusable thread to exit. */
 	int (*wait)(struct _athread *p);
 
-    /* Kill the thread and delete the object */
-	/* (Killing it may have side effects, so this is a last */
+    /* Forcefully terminate the thread. */
+	/* (Termination may have side effects, so this is a last */
 	/*  resort if the thread hasn't exited) */
+    void (*terminate)(struct _athread *p);
+
+	/* Wait for the thread if it has not already been waited or terminated, */
+	/* and then delete the threads resources. */
     void (*del)(struct _athread *p);
 
 }; typedef struct _athread athread;
@@ -163,7 +200,14 @@ struct _athread {
 /* Create and start a thread. Return NULL on error. */
 /* Thread function should only return on completion or error. */
 /* It should return 0 on completion or exit, nz on error. */
-athread *new_athread(int (*function)(void *context), void *context);
+
+/* If reusable is nz, then thread is created in stopped mode, and */
+/* can be started using ->start(). Once the function has returned, */
+/* it stops again, and can be re-started using ->start(). */ 
+
+athread *new_athread_reusable(int (*function)(void *context), void *context, int reusable);
+
+#define new_athread(func, ctx) new_athread_reusable(func, ctx, 0)
 
 
 /* - - - - - - - - - - - - - - - - - - -- */
@@ -178,6 +222,11 @@ void delete_file(char *fname);
 /* Given the path to a file, ensure that all the parent directories */
 /* are created. return nz on error */
 int create_parent_directories(char *path);
+
+/* - - - - - - - - - - - - - - - - - - -- */
+
+/* return the number of processors */
+int system_processors();
 
 /* - - - - - - - - - - - - - - - - - - -- */
 
@@ -205,6 +254,14 @@ kkill_nproc_ctx *kkill_nprocess(char **pname, a1log *log);
 #endif /* UNIX_APPLE || NT */
 
 #include "xdg_bds.h"
+
+/* - - - - - - - - - - - - - - - - - - -- */
+/* Some compatibility functions */
+
+#if defined(UNIX_APPLE)
+size_t osx_strnlen(const char *string, size_t maxlen);
+char *osx_strndup(const char *s, size_t n);
+#endif
 
 #ifdef __cplusplus
 	}

@@ -4,7 +4,7 @@
  /* Standardized display types for use with libinst */
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Author: Graeme W. Gill
  * Date:   14/5/2014
@@ -57,39 +57,39 @@ typedef enum {
 
 	disptech_lcd_ccfl           = 0x3100,	/* LCD with CCFL */
 	disptech_lcd_ccfl_ips       = 0x3110,	/* IPS LCD with CCFL */
-	disptech_lcd_ccfl_vpa       = 0x3120,	/* VPA LCD with CCFL */
+	disptech_lcd_ccfl_pva       = 0x3120,	/* PVA LCD with CCFL */
 	disptech_lcd_ccfl_tft       = 0x3130,	/* TFT LCD with CCFL */
 
 	disptech_lcd_ccfl_wg        = 0x3200,	/* Wide gamut LCD with CCFL */
 	disptech_lcd_ccfl_wg_ips    = 0x3210,	/* IPS wide gamut LCD with CCFL */
-	disptech_lcd_ccfl_wg_vpa    = 0x3220,	/* VPA wide gamut LCD with CCFL */
+	disptech_lcd_ccfl_wg_pva    = 0x3220,	/* PVA wide gamut LCD with CCFL */
 	disptech_lcd_ccfl_wg_tft    = 0x3230,	/* TFT wide gamut LCD with CCFL */
 	
 	disptech_lcd_wled           = 0x3300,	/* LCD with white LED */
 	disptech_lcd_wled_ips       = 0x3310,	/* IPS LCD with white LED */
-	disptech_lcd_wled_vpa       = 0x3320,	/* VPA LCD with white LED */
+	disptech_lcd_wled_pva       = 0x3320,	/* PVA LCD with white LED */
 	disptech_lcd_wled_tft       = 0x3330,	/* TFT LCD with white LED */
 
 	disptech_lcd_rgbled         = 0x3400,	/* LCD with RGB LED */
 	disptech_lcd_rgbled_ips     = 0x3410,	/* IPS LCD with RGB LED */
-	disptech_lcd_rgbled_vpa     = 0x3420,	/* VPA LCD with RGB LED */
+	disptech_lcd_rgbled_pva     = 0x3420,	/* PVA LCD with RGB LED */
 	disptech_lcd_rgbled_tft     = 0x3430,	/* TFT LCD with RGB LED */
 
 	disptech_lcd_rgledp         = 0x3500,	/* IPS LCD with B LED + RG Phosphor */
 	disptech_lcd_rgledp_ips     = 0x3510,	/* IPS LCD with B LED + RG Phosphor */
-	disptech_lcd_rgledp_vpa     = 0x3520,	/* VPA LCD with B LED + RG Phosphor */
+	disptech_lcd_rgledp_pva     = 0x3520,	/* PVA LCD with B LED + RG Phosphor */
 	disptech_lcd_rgledp_tft     = 0x3530,	/* TFT LCD with B LED + RG Phosphor */
 
 							/* PFS = potassium fluorosilicate, narrow red band phsophor */
 	disptech_lcd_nrgledp        = 0x3600,	/* IPS LCD with B LED + PFS R + G Phosphor */
 	disptech_lcd_nrgledp_ips    = 0x3610,	/* IPS LCD with B LED + PFS R + G Phosphor */
-	disptech_lcd_nrgledp_vpa    = 0x3620,	/* VPA LCD with B LED + PFS R + G Phosphor */
+	disptech_lcd_nrgledp_pva    = 0x3620,	/* PVA LCD with B LED + PFS R + G Phosphor */
 	disptech_lcd_nrgledp_tft    = 0x3630,	/* TFT LCD with B LED + PFS R + G Phosphor */
 
 							/* GB Led, GB-R Led. Red Phosphor is smooth like LED */
 	disptech_lcd_gbrledp        = 0x3700,	/* IPS LCD with GB LED + R Phosphor */
 	disptech_lcd_gbrledp_ips    = 0x3710,	/* IPS LCD with GB LED + R Phosphor */
-	disptech_lcd_gbrledp_vpa    = 0x3720,	/* VPA LCD with GB LED + R Phosphor */
+	disptech_lcd_gbrledp_pva    = 0x3720,	/* PVA LCD with GB LED + R Phosphor */
 	disptech_lcd_gbrledp_tft    = 0x3730,	/* TFT LCD with GB LED + R Phosphor */
 
 	disptech_oled               = 0x4000,	/* Organic LED */

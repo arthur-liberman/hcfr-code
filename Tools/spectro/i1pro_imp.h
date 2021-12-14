@@ -1,7 +1,7 @@
 #ifndef I1PRO_IMP_H
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Gretag i1Pro implementation defines
  */
@@ -23,7 +23,7 @@
 
 /* 
    If you make use of the instrument driver code here, please note
-   that it is the author(s) of the code who take responsibility
+   that it is the author(s) of the code who are responsibility
    for its operation. Any problems or queries regarding driving
    instruments with the Argyll drivers, should be directed to
    the Argyll's author(s), and not to any other party.
@@ -155,13 +155,15 @@ typedef struct {
 	double *coef;		/* [nwav * mtx_nocoef] Matrix cooeficients to compute each wavelength */
 } i1pro_r2wtab;
 
-/* RevE capability bits */
-#define I1PRO_CAP2_AMBIENT		0x01		/* Has ambient measurement capability */	
-#define I1PRO_CAP2_WL_LED		0x02		/* Has wavelenght LED */	
-#define I1PRO_CAP2_UV_LED		0x04		/* Has Ultra Violet LED */	
-#define I1PRO_CAP2_ZEB_RUL		0x08		/* Has zerbra ruler sensor */	
-#define I1PRO_CAP2_IND_LED		0x10		/* Has indicator LEDs */
-#define I1PRO_CAP2_UV_FILT		0x20		/* Has Ultra Violet Filter */
+/* RevE capability bits stored in capabilities2 */
+/* Also set for RevA-D to simplify capability testing. */
+/* (Letters in brackets may correspond with part number letters) */
+#define I1PRO_CAP2_AMBIENT		0x01		/* Has ambient measurement capability (L) */	
+#define I1PRO_CAP2_WL_LED		0x02		/* Has wavelenght LED (W) */	
+#define I1PRO_CAP2_UV_LED		0x04		/* Has Ultra Violet LED (not F ?) */	
+#define I1PRO_CAP2_ZEB_RUL		0x08		/* Has zerbra ruler sensor (Z) */	
+#define I1PRO_CAP2_IND_LED		0x10		/* Has user indicator LEDs (U) */
+#define I1PRO_CAP2_UV_FILT		0x20		/* Has Ultra Violet Filter (F) */
 
 /* I1PRO implementation class */
 struct _i1proimp {
@@ -254,7 +256,7 @@ struct _i1proimp {
 							/* Also set for RevA-D to simplify capability testing */
 
 	/* Underlying calibration information */
-	int nsen;				/* Raw + extra sample bands read = 128 for i1pro, 136 for Rev E */
+	int nsen;				/* Raw + extra sample bands read = 128 for i1pro, 134 for Rev E */
 							/* Rev <= D have exactly 128 */
 							/* Rev E has 134, of which 128 are measurements. */
 							/* 5 are skipped at the start, and 1 at the end */
@@ -363,7 +365,7 @@ void del_i1proimp(i1pro *p);
 
 #define I1PRO_UNSUPPORTED		   		0x79		/* Unsupported function */
 #define I1PRO_CAL_SETUP                 0x7A		/* Cal. retry with correct setup is needed */
-#define I1PRO_RD_TRANSWHITEWARN         0x7B		/* Transmission white ref wl are low */
+#define I1PRO_CAL_TRANSWHITEWARN        0x7B		/* Transmission white ref wl are low */
 
 /* Real error code */
 #define I1PRO_OK   						0x00
@@ -1130,7 +1132,7 @@ i1pro_code i1pro_terminate_switch(i1pro *p);
 /* -------------------------------------------------- */
 /* Key/Value storage */
 
-/* Calibration data storage class */
+/* Calibration data storage class. */
 /* The i1pro stores all it's calibration information */
 /* using a key/values arrangement. */
 /* We provide a place to store and retrieve that information here. */
@@ -1168,6 +1170,7 @@ typedef enum {
 	key_lampage		= 0x2714,	/* double - Total lamp usage time (??) */
 
 /* Duplicate of above, keys += 0x3E8 (+1000) */
+/* Is for ping-ponging for safety ? */
 // (0x2af8 = 11000)
 
 	key_2logoff		= 0x03e8,	/* Offset from first to second copy of log keys */
@@ -1452,9 +1455,6 @@ struct _i1data {
 	int (*checksum)(struct _i1data *d, i1key keyoffset); 
 
 }; typedef struct _i1data i1data;
-
-/* Constructor. Construct from the EEprom contents */
-extern i1data *new_i1data(i1proimp *m);
 
 #ifdef __cplusplus
 	}

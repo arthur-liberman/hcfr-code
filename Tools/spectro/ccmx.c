@@ -1,6 +1,6 @@
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  * Colorimeter Correction Matrix
  *
  */
@@ -64,7 +64,7 @@ static int create_ccmx_cgats(
 ccmx *p,			/* This */
 cgats **pocg        /* return CGATS structure */
 ) {
-	int i;//, j, n;
+	int i, j, n;
 	time_t clk = time(0);
 	struct tm *tsp = localtime(&clk);
 	char *atm = asctime(tsp); /* Ascii time */
@@ -192,7 +192,7 @@ static int read_ccmx_cgats(
 ccmx *p,			/* This */
 cgats *icg			/* input cgats structure */
 ) {
-	int i, ix;// j, n, ix;
+	int i, j, n, ix;
 	int ti;				/* Temporary CGATs index */
 	int  spi[3];		/* CGATS indexes for each band */
 	char *xyzfname[3] = { "XYZ_X", "XYZ_Y", "XYZ_Z" };

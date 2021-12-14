@@ -4,7 +4,7 @@
  /* X-Rite ColorMunki related defines */
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Author: Graeme W. Gill
  * Date:   12/1/2009
@@ -20,7 +20,7 @@
 
 /* 
    If you make use of the instrument driver code here, please note
-   that it is the author(s) of the code who take responsibility
+   that it is the author(s) of the code who are responsibility
    for its operation. Any problems or queries regarding driving
    instruments with the Argyll drivers, should be directed to
    the Argyll's author(s), and not to any other party.
@@ -155,7 +155,6 @@ struct _munkiimp {
 	munki *p;
 
 	/* Misc. and top level */
-	struct _mkdata *data;		/* EEProm data container */
 	athread *th;				/* Switch monitoring thread (NULL if not used) */
 	volatile int switch_count;	/* Incremented in thread */
 	volatile int hide_switch;	/* Set to supress switch event during read */
@@ -363,6 +362,7 @@ void del_munkiimp(munki *p);
 #define MUNKI_RD_NOREFR_FOUND           0x40		/* Unable to measure refresh rate */
 #define MUNKI_RD_NOTRANS_FOUND          0x41		/* Unable to measure delay transition */
 
+/* User errors */
 #define MUNKI_SPOS_PROJ                 0x48		/* Sensor needs to be in projector position */
 #define MUNKI_SPOS_SURF                 0x49		/* Sensor needs to be in surface position */
 #define MUNKI_SPOS_CALIB                0x4A		/* Sensor needs to be in calibration position */

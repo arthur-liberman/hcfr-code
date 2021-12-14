@@ -1,6 +1,6 @@
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Image Engineering EX1 related functions
  *
@@ -18,7 +18,7 @@
 
 /* 
    If you make use of the instrument driver code here, please note
-   that it is the author(s) of the code who take responsibility
+   that it is the author(s) of the code who are responsibility
    for its operation. Any problems or queries regarding driving
    instruments with the Argyll drivers, should be directed to
    the Argyll's author(s), and not to any other party.
@@ -344,7 +344,7 @@ ex1_init_inst(inst *pp) {
 	if (sconf->wl_long > 800.0)
 		sconf->wl_long = 800.0;
 
-	sconf->nwav = (int)(floor(sconf->wl_long - sconf->wl_short)/sconf->wl_space + 1);
+	sconf->nwav = (int)floor(sconf->wl_long - sconf->wl_short)/sconf->wl_space + 1;
 	
 	a1logd(p->log, 1, " %d Wavelengths %f - %f spacing %f\n",sconf->nwav,
 		                  sconf->wl_short,sconf->wl_long,sconf->wl_space);
@@ -444,6 +444,7 @@ static int ex1_do_meas(ex1 *p, rspec **praw, double *inttime, double duration) {
 	}
 
 	sens->mtype = inst_mrt_emission;
+	sens->mcond = inst_mrc_none;
 	sens->inttime = p->inttime;
 
 	/* + Any other processing from sens to raw, */
@@ -645,6 +646,7 @@ instClamping clamp	/* NZ if clamp XYZ/Lab to be +ve */
 #endif
 
 	val->mtype = wav->mtype;
+	val->mcond = wav->mcond;
 
 	/* Copy spectral in */
 	val->sp.spec_n = sconf->nwav;

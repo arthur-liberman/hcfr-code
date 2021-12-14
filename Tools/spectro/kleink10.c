@@ -1,6 +1,6 @@
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Klein K10 related functions
  *
@@ -18,7 +18,7 @@
 
 /* 
    If you make use of the instrument driver code here, please note
-   that it is the author(s) of the code who take responsibility
+   that it is the author(s) of the code who are responsibility
    for its operation. Any problems or queries regarding driving
    instruments with the Argyll drivers, should be directed to
    the Argyll's author(s), and not to any other party.
@@ -64,6 +64,7 @@
 #undef HIGH_SPEED			/* [und] Use high speed flicker measure for refresh rate etc. */
 #define AUTO_AVERAGE		/* [def] Automatically average more readings for low light */
 #define RETRY_RANGE_ERROR 4	/* [4]   Retry range error readings 4 times */
+#undef ENABLE_L01_ERROR		/* [und] Error on L0 and L1 command failure */
 
 #undef PLOT_REFRESH     /* [und] Plot refresh rate measurement info */
 #undef PLOT_UPDELAY     /* [und] Plot update delay measurement info */
@@ -477,8 +478,8 @@ k10_init_inst(inst *pp) {
 	amutex_lock(p->lock);
 	
 	/* Make sure the target lights are off */
-	if ((ev = k10_command(p, "L0\r", buf, MAX_MES_SIZE, NULL, 2+3, ec_ec, 1.0)) != inst_ok
-		/* Strangely the L0/1 command mat return irrelevant error codes... */
+	if ((ev = k10_command(p, "L0\r", buf, MAX_MES_SIZE, NULL, 2+3, ec_ec, 0.5)) != inst_ok
+		/* Strangely the L0/1 command may return irrelevant error codes... */
 	 	&& (ev & inst_imask) != K10_UNKNOWN
 	 	&& (ev & inst_imask) != K10_BLACK_EXCESS
 		&& (ev & inst_imask) != K10_BLACK_OVERDRIVE
@@ -486,8 +487,12 @@ k10_init_inst(inst *pp) {
 		&& (ev & inst_imask) != K10_OVER_HIGH_RANGE
 		&& (ev & inst_imask) != K10_TOP_OVER_RANGE
 		&& (ev & inst_imask) != K10_BOT_UNDER_RANGE) {
+#ifdef ENABLE_L01_ERROR
 		amutex_unlock(p->lock);
 		return ev;
+#else
+		a1logd(p->log, 1, "k10_init_inst: warning - L0 failed with 0x%x - ignored\n",ev);
+#endif
 	}
 	p->lights = 0;
 
@@ -1017,10 +1022,14 @@ int usefast				/* If nz use fast rate is possible */
 			&& (ev & inst_imask) != K10_OVER_HIGH_RANGE
 			&& (ev & inst_imask) != K10_TOP_OVER_RANGE
 			&& (ev & inst_imask) != K10_BOT_UNDER_RANGE) {
+#ifdef ENABLE_L01_ERROR
 			amutex_unlock(p->lock);
 			free(retbuf);
 			a1logd(p->log, 1, "k10_read_flicker: L0 failed\n");
 			return ev;
+#else
+			a1logd(p->log, 1, "k10_read_flicker: warning - L0 failed with 0x%x - ignored\n",ev);
+#endif
 		}
 		p->lights = 0;
 	}
@@ -1270,7 +1279,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 
 	/* Make sure the target lights are off */
 	if (p->lights) {
-		if ((rv = k10_command(p, "L0\r", buf, MAX_MES_SIZE, NULL, 2+3, ec_ec, 1.0)) != inst_ok
+		if ((rv = k10_command(p, "L0\r", buf, MAX_MES_SIZE, NULL, 2+3, ec_ec, 0.5)) != inst_ok
 			/* Strangely the L0/1 command mat return irrelevant error codes... */
 	 		&& (rv & inst_imask) != K10_UNKNOWN
 		 	&& (rv & inst_imask) != K10_BLACK_EXCESS
@@ -1279,9 +1288,13 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 			&& (rv & inst_imask) != K10_OVER_HIGH_RANGE
 			&& (rv & inst_imask) != K10_TOP_OVER_RANGE
 			&& (rv & inst_imask) != K10_BOT_UNDER_RANGE) {
+#ifdef ENABLE_L01_ERROR
 			amutex_unlock(p->lock);
 			a1logd(p->log, 1, "k10_read_sample: L0 failed\n");
 			return rv;
+#else
+			a1logd(p->log, 1, "k10_read_sample: warning - L0 failed with 0x%x - ignored\n",rv);
+#endif
 		}
 		p->lights = 0;
 	}
@@ -1326,7 +1339,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 			/* Decide how many extra readings to average into result. */
 			/* Interpolate between the thresholds */
 			if (v < 0.2) {
-				ntav = (int)nav[0];
+				ntav = nav[0];
 			} else if (v < thr[1]) {
 				vv = 1.0 - (v - thr[0]) / (thr[1] - thr[0]);
 				vv = vv * vv * vv;
@@ -1401,6 +1414,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 		val->mtype = inst_mrt_ambient;
 	else
 		val->mtype = inst_mrt_emission;
+	val->mcond = inst_mrc_none;
 	val->XYZ_v = 1;		/* These are absolute XYZ readings */
 	val->sp.spec_n = 0;
 	val->duration = 0.0;
@@ -2813,9 +2827,13 @@ k10_get_set_opt(inst *pp, inst_opt_type m, ...) {
 				&& (ev & inst_imask) != K10_OVER_HIGH_RANGE
 				&& (ev & inst_imask) != K10_TOP_OVER_RANGE
 				&& (ev & inst_imask) != K10_BOT_UNDER_RANGE) {
+#ifdef ENABLE_L01_ERROR
 				amutex_unlock(p->lock);
 				a1logd(p->log, 1, "k10_get_set_opt: L1 failed\n");
 				return ev;
+#else
+				a1logd(p->log, 1, "k10_get_set_opt: warning - L1 failed with 0x%x - ignored\n",ev);
+#endif
 			}
 			p->lights = 1;
 		} else if (state == 0) {	/* Turn off */
@@ -2828,9 +2846,13 @@ k10_get_set_opt(inst *pp, inst_opt_type m, ...) {
 				&& (ev & inst_imask) != K10_OVER_HIGH_RANGE
 				&& (ev & inst_imask) != K10_TOP_OVER_RANGE
 				&& (ev & inst_imask) != K10_BOT_UNDER_RANGE) {
+#ifdef ENABLE_L01_ERROR
 				amutex_unlock(p->lock);
 				a1logd(p->log, 1, "k10_get_set_opt: L0 failed\n");
 				return ev;
+#else
+				a1logd(p->log, 1, "k10_get_set_opt: warning - L0 failed with 0x%x - ignored\n",ev);
+#endif
 			}
 			p->lights = 0;
 		}

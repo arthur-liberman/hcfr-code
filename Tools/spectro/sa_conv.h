@@ -6,7 +6,7 @@
  */
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Author: Graeme W. Gill
  * Date:   2008/2/9
@@ -115,7 +115,6 @@ void sa_Mul3x3_2(double dst[3][3], double src1[3][3], double src2[3][3]);
 int sa_Inverse3x3(double out[3][3], double in[3][3]);
 void sa_Transpose3x3(double out[3][3], double in[3][3]);
 void sa_Scale3(double out[3], double in[3], double rat);
-void sa_Clamp3(double out[3], double in[3]);
 double sa_LabDE(double *in0, double *in1);
 double sa_CIE94sq(double *in0, double *in1);
 void sa_Lab2XYZ(sa_XYZNumber *w, double *out, double *in);

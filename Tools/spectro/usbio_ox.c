@@ -3,7 +3,7 @@
 /* This file is conditionaly #included into usbio.c */
  
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Author: Graeme W. Gill
  * Date:   2006/22/4
@@ -565,7 +565,7 @@ static void io_callback(void *refcon, IOReturn result, void *arg0) {
     CFRunLoopStop(req->rlr);        /* We're done */
 }
 
-/* Our universal USB transfer function */
+/* Our universal (non-control) USB transfer function */
 static int icoms_usb_transaction(
 	icoms *p,
 	usb_cancelt *cancelt,
@@ -756,6 +756,10 @@ int timeout) {
 	} else {
 		if (transferred != NULL)
 			*transferred = req.wLenDone;
+
+		/* The requested size wasn't transferred */
+		if (req.wLenDone != size)
+			reqrv |= ICOM_SHORT;
 	}
 
 	a1logd(p->log, 8, "icoms_usb_control_msg: returning err 0x%x and %d bytes\n",reqrv, transferred != NULL ? *transferred : -1);

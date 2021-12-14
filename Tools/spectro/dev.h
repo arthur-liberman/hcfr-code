@@ -6,7 +6,7 @@
  */
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Author: Graeme W. Gill
  * Date:   17/8/2016
@@ -38,10 +38,6 @@
 struct _dev {
 	DEV_OBJ_BASE
 }; typedef struct _dev dev;
-
-#ifdef __cplusplus
-	}
-#endif
 
 #define DEV_H
 #endif /* DEV_H */

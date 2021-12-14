@@ -1,6 +1,6 @@
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * GretagMacbeth Huey related functions
  *
@@ -18,7 +18,7 @@
 
 /* 
    If you make use of the instrument driver code here, please note
-   that it is the author(s) of the code who take responsibility
+   that it is the author(s) of the code who are responsibility
    for its operation. Any problems or queries regarding driving
    instruments with the Argyll drivers, should be directed to
    the Argyll's author(s), and not to any other party.
@@ -75,7 +75,7 @@
 #define I1D3_MEAS_TIMEOUT 40.0      /* Longest reading timeout in seconds */ 
 									/* Typically 20.0 is the maximum needed. */
 
-#define I1D3_SAT_FREQ 100000.0		/* L2F sensor frequency limit */
+#define I1D3_SAT_FREQ 100000.0		/* L2F sensor frequency limit ? Should this be increased ?? */
 
 static inst_code i1d3_interp_code(inst *pp, int ec);
 static inst_code i1d3_check_unlock(i1d3 *p);
@@ -593,12 +593,13 @@ i1d3_unlock(
 	} codes[] = {
 		{ "i1Display3 ",         { 0xe9622e9f, 0x8d63e133 }, i1d3_disppro,  i1d3_disppro },
 		{ "Colormunki Display ", { 0xe01e6e0a, 0x257462de }, i1d3_munkdisp, i1d3_munkdisp },
-		{ "i1Display3 ",         { 0xcaa62b2c, 0x30815b61 }, i1d3_disppro,  i1d3_oem },
+		{ "i1Display3 ",         { 0xcaa62b2c, 0x30815b61 }, i1d3_disppro,  i1d3_dpp_oem },
 		{ "i1Display3 ",         { 0xa9119479, 0x5b168761 }, i1d3_disppro,  i1d3_nec_ssp },
 		{ "i1Display3 ",         { 0x160eb6ae, 0x14440e70 }, i1d3_disppro,  i1d3_quato_sh3 },
 		{ "i1Display3 ",         { 0x291e41d7, 0x51937bdd }, i1d3_disppro,  i1d3_hp_dreamc },
 		{ "i1Display3 ",         { 0xc9bfafe0, 0x02871166 }, i1d3_disppro,  i1d3_sc_c6 },
 		{ "i1Display3 ",         { 0x1abfae03, 0xf25ac8e8 }, i1d3_disppro,  i1d3_wacom_dc },
+		{ "i1Display3 ",         { 0x828c43e9, 0xcbb8a8ed }, i1d3_disppro,  i1d3_tpa_1 },
 		{ NULL } 
 	}; 
 	inst_code ev;
@@ -815,9 +816,10 @@ i1d3_freq_measure(
 
 	/* The HW holds the L2F *OE high (disabled) until the start of the measurement period, */
 	/* and this has the effect of holding the internal integrator in a reset state. */
-	/* This then synchronizes the frequency output to the start of */
-	/* the measurement, which has the effect of rounding down the count output. */
-	/* To compensate, we have to add 0.5 to the count. */
+	/* This then synchronizes the frequency output to the start of the measurement,*/
+	/* which has the effect of rounding down the count output (0 to -1 bit error). */
+	/* To compensate, we have to add 0.5 to the count to make the quantization error */
+	/* symetric and minimal (-.5 to .5 bit error) */
 	rgb[0] += 0.5;
 	rgb[1] += 0.5;
 	rgb[2] += 0.5;
@@ -825,7 +827,7 @@ i1d3_freq_measure(
 	return inst_ok;
 }
 
-/* Take a raw measurement that returns the number of clocks */
+/* Take a raw measurement that returns the number of clocks (i.e. period) */
 /* between and initial edge at the start of the period (triggered by */
 /* the *OE going low and the integrator being started) and edgec[] */
 /* subsequent edges of the L2F. The edge count must be between */
@@ -1727,7 +1729,7 @@ i1d3_take_emis_measurement(
 								nedgec = 2.0;
 
 							/* Round down to nearest even edge count */
-							inedgec = (int)(2.0 * floor(nedgec/2.0));
+							inedgec = 2.0 * (int)floor(nedgec/2.0);
 
 							a1logd(p->log,3,"chan %d set edgec to %d\n",i,inedgec);
 
@@ -1993,7 +1995,7 @@ i1d3_take_XYZ_measurement(
  			return ev;
 	
 		if (pos != 1)
-			return i1d3_interp_code((inst *)p, I1D3_SPOS_EMIS);
+			return i1d3_interp_code((inst *)p, I1D3_SPOS_AMB);
 
 		/* Best type of reading, including refresh support */
 		if ((ev = i1d3_take_emis_measurement(p, mmode, XYZ)) != inst_ok)
@@ -2810,6 +2812,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 		val->mtype = inst_mrt_ambient;
 	else
 		val->mtype = inst_mrt_emission;
+	val->mcond = inst_mrc_none;
 	val->XYZ_v = 1;
 	val->sp.spec_n = 0;
 	val->duration = 0.0;
@@ -3485,6 +3488,7 @@ i1d3_del(inst *pp) {
 				msec_sleep(50);	/* Wait for thread to terminate */
 			if (i >= 5) {
 				a1logd(p->log,3,"i1d3 diffuser thread termination failed\n");
+				p->th->terminate(p->th);		/* Try and force thread to terminate */
 			}
 			p->th->del(p->th);
 		}
@@ -4124,7 +4128,7 @@ static void create_unlock_response(unsigned int *k, unsigned char *c, unsigned c
 	for (i = 0; i < 8; i++)
 		sc[i] = c[3] ^ c[35 + i];
 	
-	/* Combine key with 16 byte challenge to create core 16 byte response */
+	/* Combine 8 byte key with 16 byte challenge to create core 16 byte response */
 	{
 		unsigned int ci[2];		/* challenge as 4 ints */
 		unsigned int co[4];		/* product, difference of 4 ints */
@@ -4162,7 +4166,7 @@ static void create_unlock_response(unsigned int *k, unsigned char *c, unsigned c
 		s0 =  sum       & 0xff;
 		s1 = (sum >> 8) & 0xff;
 	
-		/* Final computation of bytes from 4 ints + sum bytes */
+		/* Final computation of 16 bytes from 4 ints + sum bytes */
 		sr[0] =  ((co[0] >> 16) & 0xff) + s0;
 		sr[1] =  ((co[2] >>  8) & 0xff) - s1;
 		sr[2] =  ( co[3]        & 0xff) + s1;
@@ -4183,14 +4187,16 @@ static void create_unlock_response(unsigned int *k, unsigned char *c, unsigned c
 
 	/* The OEM driver sets the resonse to random bytes, */
 	/* but we don't need to do this, since the device doesn't */
-	/* look at them. */
+	/* look at them. We could add random bytes if an instrument */
+	/* update were to reject zero bytes. */
 	for (i = 0; i < 64; i++)
 		r[i] = 0;
 
 	/* The actual resonse is 16 bytes at offset 24 in the response buffer. */
-	/* The OEM driver xor's challeng byte 2 with response bytes 4..63, but */
+	/* The OEM driver xor's challenge byte 2 with response bytes 4..63, but */
 	/* since the instrument doesn't look at them, we only do this to the actual */
 	/* response. */
 	for (i = 0; i < 16; i++)
 		r[24 + i] = c[2] ^ sr[i];
 }
+

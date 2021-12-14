@@ -1,6 +1,6 @@
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Author: Graeme W. Gill
  * Date:   20015
@@ -23,6 +23,8 @@
  * of common code in i1pro_imp.c & munki_imp.c.
  */
 
+//#define EN_PLOT			/* Enable plot support. Set in Jamfile */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -44,9 +46,11 @@
 #include "sa_config.h"
 #include "numsup.h"
 #endif /* !SALONEINSTLIB */
-#ifndef SALONEINSTLIB
-#  include "plot.h"
-#endif
+# ifndef SALONEINSTLIB
+#  ifdef EN_PLOT
+#   include "plot.h"
+#  endif
+# endif
 #include "cgats.h"
 #include "xspect.h"
 #include "insttypes.h"
@@ -57,6 +61,12 @@
 
 #define BOX_INTEGRATE	/* [und] Integrate raw samples as if they were +/-0.5 boxes */
 						/*       (This improves coeficient consistency a bit ?) */
+
+# ifndef SALONEINSTLIB
+#  ifndef EN_PLOT
+#   pragma message("###### EN_PLOT is not defined ######")
+#  endif
+# endif
 
 /* -------------------------------------------------- */
 #if defined(__APPLE__) && defined(__POWERPC__)
@@ -206,6 +216,7 @@ rspec *new_rspec_proto(rspec *rs, int nmeas) {
 	p->inf = rs->inf;
 	p->stype = rs->stype;
 	p->mtype = rs->mtype;
+	p->mcond = rs->mcond;
 	p->state = rs->state;
 	p->inttime = rs->inttime;
 
@@ -230,6 +241,7 @@ rspec *new_rspec_clone(rspec *rs) {
 	p->inf = rs->inf;
 	p->stype = rs->stype;
 	p->mtype = rs->mtype;
+	p->mcond = rs->mcond;
 	p->state = rs->state;
 	p->inttime = rs->inttime;
 
@@ -258,6 +270,7 @@ void del_rspec(rspec *p) {
 /* Plot the first rspec */
 void plot_rspec1(rspec *p) {
 #ifndef SALONEINSTLIB
+#  ifdef EN_PLOT
 	int i, no;
 	double xx[RSPEC_MAXSAMP];
 	double yy[RSPEC_MAXSAMP];
@@ -272,12 +285,14 @@ void plot_rspec1(rspec *p) {
 		yy[i] = p->samp[0][i];
 	}
 	do_plot(xx, yy, NULL, NULL, no);
+#  endif
 #endif
 }
 
 /* Plot the first rspec of 2 */
 void plot_rspec2(rspec *p1, rspec *p2) {
 #ifndef SALONEINSTLIB
+#  ifdef EN_PLOT
 	int i, no;
 	double xx[RSPEC_MAXSAMP];
 	double y1[RSPEC_MAXSAMP];
@@ -296,11 +311,13 @@ void plot_rspec2(rspec *p1, rspec *p2) {
 		y2[i] = p2->samp[0][i];
 	}
 	do_plot(xx, y1, y2, NULL, no);
+#  endif
 #endif
 }
 
 void plot_ecal(rspec_inf *inf) {
 #ifndef SALONEINSTLIB
+#  ifdef EN_PLOT
 	int i, no;
 	double xx[RSPEC_MAXSAMP];
 	double yy[RSPEC_MAXSAMP];
@@ -315,6 +332,7 @@ void plot_ecal(rspec_inf *inf) {
 		yy[i] = inf->ecal[i];
 	}
 	do_plot(xx, yy, NULL, NULL, no);
+#  endif
 #endif
 }
 
@@ -360,6 +378,7 @@ rspec *extract_raw_from_sensor_rspec(rspec *sens) {
 	raw = new_rspec(sens->inf, rspec_raw, sens->nmeas);
 
 	raw->mtype = sens->mtype;
+	raw->mcond = sens->mcond;
 	raw->state = sens->state;
 	raw->inttime = sens->inttime;
 
@@ -540,6 +559,7 @@ rspec *convert_wav_from_raw_rspec(rspec *raw) {
 	wav = new_rspec(raw->inf, rspec_wav, raw->nmeas);
 
 	wav->mtype = raw->mtype;
+	wav->mcond = raw->mcond;
 	wav->state = raw->state;
 	wav->inttime = raw->inttime;
 
@@ -864,6 +884,7 @@ void rspec_make_resample_filters(rspec_inf *inf) {
 /* Plot the wave resampling filters */
 void plot_resample_filters(rspec_inf *inf) {
 #ifndef SALONEINSTLIB
+#  ifdef EN_PLOT
 	double *xx, *ss;
 	double **yy;
 	int i, j, k, sx;
@@ -895,7 +916,8 @@ void plot_resample_filters(rspec_inf *inf) {
 	do_plot6(xx, yy[0], yy[1], yy[2], yy[3], yy[4], yy[5], inf->nraw);
 	free_dvector(xx, 0, inf->nraw-1);
 	free_dmatrix(yy, 0, 2, 0, inf->nraw-1);
-#endif 
+#  endif
+#endif
 }
 
 /* ================================================== */
@@ -1222,6 +1244,7 @@ void calf_wrspec(calf *x, rspec *s) {
 
 	calf_wints(x, (int *)&s->stype, 1);
 	calf_wints(x, (int *)&s->mtype, 1);
+	calf_wints(x, (int *)&s->mcond, 1);
 	calf_wints(x, (int *)&s->state, 1);
 	calf_wdoubles(x, &s->inttime, 1);
 	calf_wints(x, &s->nmeas, 1);
@@ -1250,6 +1273,7 @@ void calf_rrspec(calf *x, rspec **dp, rspec_inf *inf) {
 	
 	calf_rints2(x, (int *)&s->stype, 1);
 	calf_rints2(x, (int *)&s->mtype, 1);
+	calf_rints2(x, (int *)&s->mcond, 1);
 	calf_rints2(x, (int *)&s->state, 1);
 	calf_rdoubles(x, &s->inttime, 1);
 	calf_rints2(x, &s->nmeas, 1);

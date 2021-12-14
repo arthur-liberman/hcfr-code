@@ -2,7 +2,7 @@
 /* Windows NT serial I/O class */
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Author: Graeme W. Gill
  * Date:   28/9/97
@@ -168,7 +168,7 @@ static void nt_ser_clearerr(icoms *p) {
 	DWORD errs;
 
 	if (!ClearCommError(p->phandle, &errs,NULL))
-   		error("nt_ser_clearerr: failed, and Clear error failed");
+   		warning("nt_ser_clearerr: failed, and Clear error failed in %s at %d",__FILE__,__LINE__);
 
 	return;
 }
@@ -529,7 +529,7 @@ double tout)
 		if (rv == 0) {
 			DWORD errs;
 			if (!ClearCommError(p->phandle,&errs,NULL))
-				error("icoms_ser_write: failed, and Clear error failed");
+				warning("icoms_ser_write: failed, and Clear error failed in %s at %d",__FILE__,__LINE__);
 			if (errs & CE_BREAK)
 				retrv |= ICOM_BRK; 
 			if (errs & CE_FRAME)
@@ -649,7 +649,7 @@ double tout			/* Time out in seconds */
 		if (rv == 0) {
 			DWORD errs;
 			if (!ClearCommError(p->phandle,&errs,NULL))
-				error("icoms_ser_read: failed, and Clear error failed");
+				warning("icoms_ser_read: failed, and Clear error failed in %s at %d",__FILE__,__LINE__);
 			if (errs & CE_BREAK)
 				retrv |= ICOM_BRK; 
 			if (errs & CE_FRAME)

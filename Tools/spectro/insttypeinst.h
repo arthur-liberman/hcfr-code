@@ -33,6 +33,7 @@
 # include "i1disp.h"
 # include "i1d3.h"
 # include "i1pro.h"
+# include "i1pro3.h"
 # include "munki.h"
 # include "spyd2.h"
 # include "spydX.h"

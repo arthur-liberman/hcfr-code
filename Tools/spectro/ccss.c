@@ -1,6 +1,6 @@
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  * Colorimeter Correction Matrix
  */
 
@@ -95,7 +95,8 @@ cgats **pocg		/* return CGATS structure */
 	if (p->disp)
 		ocg->add_kword(ocg, 0, "DISPLAY",p->disp, NULL);
 
-	ocg->add_kword(ocg, 0, "TECHNOLOGY", disptech_get_id(p->dtech)->strid,NULL);
+	p->tech = disptech_get_id(p->dtech)->strid;
+	ocg->add_kword(ocg, 0, "TECHNOLOGY", p->tech, NULL);
 
 	if (p->disp == NULL && p->tech == NULL) {
 		sprintf(p->err, "write_ccss: ccss doesn't contain display or techology strings");

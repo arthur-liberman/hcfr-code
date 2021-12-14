@@ -47,54 +47,54 @@
 
 	Unix:
 		$XDG_DATA_HOME
-		$HOME/.local/share
+		 $HOME/.local/share
 
 		$XDG_CONFIG_HOME
-		$HOME/.config
+		 $HOME/.config
 
 		$XDG_CACHE_HOME
-		$HOME/.cache
+		 $HOME/.cache
 
 		$XDG_DATA_DIRS
-		/usr/local/share:/usr/share
+		 /usr/local/share:/usr/share
 
 		$XDG_CONFIG_DIRS
-		/etc/xdg
+		 /etc/xdg
 
 	OS X:
 		$XDG_DATA_HOME
-		$HOME/Library/Application Support
+		 $HOME/Library/Application Support
 
 		$XDG_CONFIG_HOME
-		$HOME/Library/Preferences
+		 $HOME/Library/Preferences
 
 		$XDG_CACHE_HOME
-		$HOME/Library/Caches
+		 $HOME/Library/Caches
 
 		$XDG_DATA_DIRS
-		/Library/Application Support
+		 /Library/Application Support
 
 		$XDG_CONFIG_DIRS
-		/Library/Preferences
+		 /Library/Preferences
 
 	MSWin:
 		$XDG_DATA_HOME
-		$APPDATA
-		$HOME/.local/share
+		 $APPDATA
+		 $HOME/.local/share
 
 		$XDG_CONFIG_HOME
-		$APPDATA
-		$HOME/.config
+		 $APPDATA
+		 $HOME/.config
 
 		$XDG_CACHE_HOME
-		$APPDATA/Cache
-		$HOME/.cache
+		 $APPDATA/Cache
+		 $HOME/.cache
 
 		$XDG_DATA_DIRS
-		$ALLUSERSPROFILE
+		 $ALLUSERSPROFILE
 
 		$XDG_CONFIG_DIRS
-		$ALLUSERSPROFILE
+		 $ALLUSERSPROFILE
  */
 
 
@@ -790,8 +790,10 @@ int xdg_bds(
 								/* Doesn't exist */
 								DBG((DBGA,"Path '%s' doesn't exist - creating it\n",schpath))
 								if (mkdir(schpath, mode) != 0) {
-									DBG((DBGA,"mkdir failed - giving up on this one\n"))
-									break;
+									/* Depending on the permissions this can be flakey... */
+									DBG((DBGA,"mkdir failed - ignoring & continuing\n"))
+//									DBG((DBGA,"mkdir failed - giving up on this one\n"))
+//									break;
 								}
 							} else {
 								mode = sbuf.st_mode;

@@ -1,7 +1,7 @@
 #ifndef I1D3_H
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * X-Rite i1d3 related defines
  *
@@ -19,7 +19,7 @@
 
 /* 
    If you make use of the instrument driver code here, please note
-   that it is the author(s) of the code who take responsibility
+   that it is the author(s) of the code who are responsibility
    for its operation. Any problems or queries regarding driving
    instruments with the Argyll drivers, should be directed to
    the Argyll's author(s), and not to any other party.
@@ -41,7 +41,7 @@
 	extern "C" {
 #endif
 
-/* Note: update huey_interp_error() and huey_interp_code() in huey.c */
+/* Note: update i1d3_interp_error() and i1d3_interp_code() in i1d3.c */
 /* if anything of these #defines are added or subtracted */
 
 /* Fake Error codes */
@@ -83,12 +83,13 @@
 typedef enum {
 	i1d3_disppro        = 0,	/* i1 DisplayPro */
 	i1d3_munkdisp       = 1,	/* ColorMunki Display */
-	i1d3_oem            = 2,	/* Generic OEM */
+	i1d3_dpp_oem        = 2,	/* i1 DisplayPro Plus, Generic OEM */
 	i1d3_nec_ssp        = 3, 	/* NEC SpectraSensor Pro */
 	i1d3_quato_sh3      = 4, 	/* Quato Silver Haze 3 */
 	i1d3_hp_dreamc      = 5, 	/* HP DreameColor */
 	i1d3_sc_c6          = 6, 	/* SpectraCal C6 */
 	i1d3_wacom_dc       = 7, 	/* Wacom DC */
+	i1d3_tpa_1          = 8 	/* Toshiba TPA-1 */
 } i1d3_dtype;
 
 /* Generic OEM aliases:
@@ -122,8 +123,8 @@ struct _i1d3 {
 	char prod_name[32];			/* "i1Display3 " or "ColorMunki Display" */
 	int prod_type;				/* 16 bit product type number. i1d3_disppro = 0x0001, */
 								/* i1d3_munkdisp = 0x0002 */
-	char firm_ver[32];			/* Firmwar version string. ie. "v1.0 " */
-	char firm_date[32];			/* Firmwar date string. ie. "11Jan11" */
+	char firm_ver[32];			/* Firmware version string. ie. "v1.0 " */
+	char firm_date[32];			/* Firmware date string. ie. "11Jan11" */
 
 	/* Calibration information */
 	ORD64 cal_date;				/* Calibration date */

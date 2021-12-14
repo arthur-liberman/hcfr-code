@@ -92,8 +92,8 @@ int vinflate(void);
 */
 
 #define WSIZE 0x8000
-unsigned int wp;             /* current position in slide */
-uch slide[32768];
+static unsigned int wp;             /* current position in slide */
+static uch slide[32768];
 
 static int vflush_output(unsigned int w) {
 	wp = w;
@@ -160,10 +160,10 @@ static ush cpdext[] = {         /* Extra bits for distance codes */
    the stream.
  */
 
-ulg bb;                         /* bit buffer */
-unsigned bk;                    /* bits in bit buffer */
+static ulg bb;                         /* bit buffer */
+static unsigned bk;                    /* bits in bit buffer */
 
-ush vmask_bits[] = {
+static ush vmask_bits[] = {
     0x0000,
     0x0001, 0x0003, 0x0007, 0x000f, 0x001f, 0x003f, 0x007f, 0x00ff,
     0x01ff, 0x03ff, 0x07ff, 0x0fff, 0x1fff, 0x3fff, 0x7fff, 0xffff
@@ -230,8 +230,8 @@ ush vmask_bits[] = {
  */
 
 
-int vlbits = 9;          /* bits in base literal/length lookup table */
-int vdbits = 6;          /* bits in base distance lookup table */
+static int vlbits = 9;          /* bits in base literal/length lookup table */
+static int vdbits = 6;          /* bits in base distance lookup table */
 
 
 /* If BMAX needs to be larger than 16, then h and x[] should be ulg. */
@@ -239,7 +239,7 @@ int vdbits = 6;          /* bits in base distance lookup table */
 #define N_MAX 288       /* maximum number of codes in any set */
 
 
-unsigned hufts;         /* track memory usage */
+static unsigned hufts;         /* track memory usage */
 
 /* Given a list of code lengths and a maximum table size, make a set of
    tables to decode that set of codes.  Return zero on success, one if

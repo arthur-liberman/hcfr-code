@@ -2,7 +2,7 @@
 /* Instrument supported types utilities */
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Author: Graeme W. Gill
  * Date:   10/3/2001
@@ -65,6 +65,7 @@ extern icom_type dev_category(devType dtype) {
 	case instI1Monitor:
 	case instI1Pro:
 	case instI1Pro2:
+	case instI1Pro3:
 	case instColorMunki:
 	case instHCFR:
 	case instSpyder1:
@@ -137,9 +138,11 @@ char *inst_sname(instType itype) {
 		case instI1Monitor:
 			return "i1 Monitor";
 		case instI1Pro:
-			return "i1 Pro";
+			return "i1Pro";
 		case instI1Pro2:
-			return "i1 Pro 2";
+			return "i1Pro2";
+		case instI1Pro3:
+			return "i1Pro3";
 		case instColorMunki:
 			return "ColorMunki";
 		case instHCFR:
@@ -228,6 +231,8 @@ char *inst_name(instType itype) {
 			return "GretagMacbeth i1 Pro";
 		case instI1Pro2:
 			return "X-Rite i1 Pro 2";
+		case instI1Pro3:
+			return "X-Rite i1 Pro 3";
 		case instColorMunki:
 			return "X-Rite ColorMunki";
 		case instHCFR:
@@ -333,6 +338,9 @@ instType inst_enum(char *name) {
 	else if (strcmp(name, "Xrite i1 Pro 2") == 0
 		  || strcmp(name, "X-Rite i1 Pro 2") == 0)
 		return instI1Pro2;
+	else if (strcmp(name, "Xrite i1 Pro 3") == 0
+		  || strcmp(name, "X-Rite i1 Pro 3") == 0)
+		return instI1Pro3;
 	else if (strcmp(name, "XRite ColorMunki") == 0
 		  || strcmp(name, "X-Rite ColorMunki") == 0)
 		return instColorMunki;
@@ -418,6 +426,8 @@ int nep) {					/* Number of end points */
 			return instSmile;
 		if (idProduct == 0x6008)	/* ColorMunki i1Studio */
 			return instColorMunki;
+		if (idProduct == 0x6009)	/* i1Pro 3 */
+			return instI1Pro3;
 		if (idProduct == 0xD020)	/* DTP20 */
 			return instDTP20;
 		if (idProduct == 0xD092)	/* DTP92Q */
@@ -442,7 +452,7 @@ int nep) {					/* Number of end points */
 	}
 
 	if (idVendor == 0x0971) {		/* Gretag Macbeth */
-		if (idProduct == 0x2000) {	/* i1 Pro or i1 Pro 2*/
+		if (idProduct == 0x2000) {	/* i1Pro or i1Pro 2 */
 			
 			/* The i1pro2/rev E has 5 pipes - it has EP 85 */
 			if (nep >= 5)
@@ -541,6 +551,9 @@ int inst_illuminant(xspect *sp, instType itype) {
 		case instI1Pro:
 		case instI1Pro2:
 			return standardIlluminant(sp, icxIT_A, 0);		/* Standard A type assumed */
+
+		case instI1Pro3:
+			return standardIlluminant(sp, icxIT_A, 0);		/* Standard A type emulated ?? */
 
 		case instColorMunki:
 			return 1;										/* No U.V. */

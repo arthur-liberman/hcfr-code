@@ -1,6 +1,6 @@
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Datacolor/ColorVision Spyder 2/3/4/5 related software.
  *
@@ -40,7 +40,7 @@
     The purchaser of a Spyder 4 or 5 instrument should have received a copy
     of this calibration data along with their instrument, and should therefore
 	be able to enable the use of the full range of calibration settings
-	by using the spyd4en utility to create a spyd4cal.bin file.
+	by using the oeminst utility to create a spyd4cal.bin file.
 
 	Alternatively, you can use Argyll .ccss files to set a Spyder 4
 	calibration.
@@ -58,7 +58,7 @@
 
 /* 
    If you make use of the instrument driver code here, please note
-   that it is the author(s) of the code who take responsibility
+   that it is the author(s) of the code who are responsibility
    for its operation. Any problems or queries regarding driving
    instruments with the Argyll drivers, should be directed to
    the Argyll's author(s), and not to any other party.
@@ -267,7 +267,7 @@ spyd2_reset(
 	for (retr = 0; ; retr++) {
 		se = p->icom->usb_control(p->icom,
 		               IUSB_ENDPOINT_OUT | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
-	                   0xC7, 0, 0, NULL, 0, 5.0);
+	                   0xC7, 0, 0, NULL, 0, NULL, 5.0);
 
 		if (se == ICOM_OK) {
 			a1logd(p->log, 6, "spyd2_reset: complete, ICOM code 0x%x\n",se);
@@ -303,7 +303,7 @@ spyd2_getstatus(
 	for (retr = 0; ; retr++) {
 		se = p->icom->usb_control(p->icom,
 		               IUSB_ENDPOINT_IN | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
-	                   0xC6, 0, 0, pbuf, 8, 5.0);
+	                   0xC6, 0, 0, pbuf, 8, NULL, 5.0);
 
 		if (se == ICOM_OK)
 			break;
@@ -352,7 +352,7 @@ spyd2_readEEProm_imp(
 	for (retr = 0; ; retr++) {
 		se = p->icom->usb_control(p->icom,
 			               IUSB_ENDPOINT_IN | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
-		                   0xC4, addr, size, buf, size, 5.0);
+		                   0xC4, addr, size, buf, size, NULL, 5.0);
 		if (se == ICOM_OK)
 			break;
 		if (retr >= RETRIES) {
@@ -411,7 +411,7 @@ spyd2_loadPLD(
 	for (retr = 0; ; retr++) {
 		se = p->icom->usb_control(p->icom,
 		               IUSB_ENDPOINT_OUT | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
-	                   0xC0, 0, 0, buf, size, 5.0);
+	                   0xC0, 0, 0, buf, size, NULL, 5.0);
 
 		if (se == ICOM_OK)
 			break;
@@ -465,7 +465,7 @@ spyd2_GetMinMax(
 		/* Issue the trigger command */
 		se = p->icom->usb_control(p->icom,
 		               IUSB_ENDPOINT_OUT | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
-	                   0xC2, value, index, NULL, 0, 5.0);
+	                   0xC2, value, index, NULL, 0, NULL, 5.0);
 
 		if ((se != ICOM_OK && retr >= RETRIES)) {
 			/* Complete the operation so as not to leave the instrument in a hung state */
@@ -562,7 +562,7 @@ spyd2_GetRefRate_ll(
 	for (retr = 0; ; retr++) {
 		se = p->icom->usb_control(p->icom,
 		               IUSB_ENDPOINT_OUT | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
-	                   0xC3, value, index, buf1, 8, 5.0);
+	                   0xC3, value, index, buf1, 8, NULL, 5.0);
 
 		if (se != ICOM_OK && retr >= RETRIES) {
 			/* Complete the operation so as not to leave the instrument in a hung state */
@@ -700,7 +700,7 @@ spyd2_GetReading_ll(
 		/* Issue the triggering command */
 		se = p->icom->usb_control(p->icom,
 		               IUSB_ENDPOINT_OUT | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
-	                   0xC1, value, index, buf1, 8, 5.0);
+	                   0xC1, value, index, buf1, 8, NULL, 5.0);
 
 		if (se != ICOM_OK && retr >= RETRIES) {
 			/* Complete the operation so as not to leave the instrument in a hung state */
@@ -1036,7 +1036,7 @@ spyd2_setLED(
 		/* Issue the trigger command */
 		se = p->icom->usb_control(p->icom,
 		               IUSB_ENDPOINT_OUT | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
-	                   0xF6, value, index, NULL, 0, 5.0);
+	                   0xF6, value, index, NULL, 0, NULL, 5.0);
 
 		if (se == ICOM_OK) {
 			a1logd(p->log, 5, "spyd2_setLED: OK, ICOM code 0x%x\n",se);
@@ -1077,7 +1077,7 @@ spyd2_SetAmbReg(
 		/* Issue the trigger command */
 		se = p->icom->usb_control(p->icom,
 		               IUSB_ENDPOINT_OUT | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
-	                   0xF3, value, 0, NULL, 0, 5.0);
+	                   0xF3, value, 0, NULL, 0, NULL, 5.0);
 
 		if (se == ICOM_OK) {
 			a1logd(p->log, 5, "spyd2_SetAmbReg: OK, ICOM code 0x%x\n",se);
@@ -1115,7 +1115,7 @@ spyd2_ReadAmbTiming(
 	for (retr = 0; ; retr++) {
 		se = p->icom->usb_control(p->icom,
 		               IUSB_ENDPOINT_IN | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
-	                   0xF4, 0, 0, pbuf, 1, 5.0);
+	                   0xF4, 0, 0, pbuf, 1, NULL, 5.0);
 
 		if (se == ICOM_OK)
 			break;
@@ -1157,7 +1157,7 @@ spyd2_ReadAmbChan(
 	for (retr = 0; ; retr++) {
 		se = p->icom->usb_control(p->icom,
 		               IUSB_ENDPOINT_IN | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
-	                   0xF0 + chan, 0, 0, pbuf, 2, 5.0);
+	                   0xF0 + chan, 0, 0, pbuf, 2, NULL, 5.0);
 
 		if (se == ICOM_OK)
 			break;
@@ -1197,7 +1197,7 @@ spyd2_ReadTempConfig(
 	for (retr = 0; ; retr++) {
 		se = p->icom->usb_control(p->icom,
 		               IUSB_ENDPOINT_IN | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
-	                   0xE1, 0, 0, pbuf, 1, 5.0);
+	                   0xE1, 0, 0, pbuf, 1, NULL, 5.0);
 
 		if (se == ICOM_OK)
 			break;
@@ -1245,7 +1245,7 @@ spyd2_WriteReg(
 		/* Issue the trigger command */
 		se = p->icom->usb_control(p->icom,
 		               IUSB_ENDPOINT_OUT | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
-	                   0xE2, value, 0, NULL, 0, 5.0);
+	                   0xE2, value, 0, NULL, 0, NULL, 5.0);
 
 		if (se == ICOM_OK) {
 			a1logd(p->log, 5, "spyd2_WriteReg: OK, ICOM code 0x%x\n",se);
@@ -1284,7 +1284,7 @@ spyd2_ReadRegister(
 	for (retr = 0; ; retr++) {
 		se = p->icom->usb_control(p->icom,
 		               IUSB_ENDPOINT_IN | IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_DEVICE,
-	                   0xE0, reg, 0, pbuf, 2, 5.0);
+	                   0xE0, reg, 0, pbuf, 2, NULL, 5.0);
 
 		if (se == ICOM_OK)
 			break;
@@ -3130,6 +3130,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 		val->mtype = inst_mrt_ambient;
 	else
 		val->mtype = inst_mrt_emission;
+	val->mcond = inst_mrc_none;
 	val->XYZ_v = 1;		/* These are absolute XYZ readings ? */
 	val->sp.spec_n = 0;
 	val->duration = 0.0;

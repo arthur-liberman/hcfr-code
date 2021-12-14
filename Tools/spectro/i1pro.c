@@ -1,6 +1,6 @@
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Gretag i1Monitor & i1Pro related functions
  */
@@ -18,7 +18,7 @@
 
 /* 
    If you make use of the instrument driver code here, please note
-   that it is the author(s) of the code who take responsibility
+   that it is the author(s) of the code who are responsibility
    for its operation. Any problems or queries regarding driving
    instruments with the Argyll drivers, should be directed to
    the Argyll's author(s), and not to any other party.
@@ -128,6 +128,8 @@ i1pro_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 
 static inst_code
 i1pro_determine_capabilities(i1pro *p) {
+	i1proimp *m = (i1proimp *)p->m;
+	i1pro_state *s = m != NULL ? &m->ms[m->mmode] : NULL;
 
 	/* Set the base Monitor/Pro capabilities mask */
 	p->cap =  inst_mode_emis_spot
@@ -180,7 +182,12 @@ i1pro_determine_capabilities(i1pro *p) {
 		}
 	}
 
-	p->cap3 = inst3_none;
+	if (s != NULL && s->reflective) {
+		if (m->capabilities2 & I1PRO_CAP2_UV_FILT)
+			p->cap3 = inst3_filter_UVCut;
+		else
+			p->cap3 = inst3_filter_none;
+	}
 
 	return inst_ok;
 }
@@ -371,6 +378,8 @@ i1pro_interp_error(inst *pp, i1pro_code ec) {
 			return "Unsupported function";
 		case I1PRO_CAL_SETUP:
 			return "Calibration retry with correct setup is needed";
+		case I1PRO_CAL_TRANSWHITEWARN:
+			return "Transmission white is too low at some wavelengths";
 
 		case I1PRO_OK:
 			return "No device error";

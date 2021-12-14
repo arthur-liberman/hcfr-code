@@ -1,22 +1,25 @@
-
-#ifndef MUNKI_H
-
- /* X-Rite ColorMunki related defines */
+#ifndef I1PRO3_H
 
 /* 
  * Argyll Color Management System
  *
+ * Gretag i1Pro related defines
+ */
+
+/*
  * Author: Graeme W. Gill
- * Date:   12/1/2009
+ * Date:   14/9/2020
  *
- * Copyright 2006 - 2013, Graeme W. Gill
+ * Copyright 2006 - 2021, Graeme W. Gill
  * All rights reserved.
  *
  * This material is licenced under the GNU GENERAL PUBLIC LICENSE Version 2 or later :-
  * see the License2.txt file for licencing details.
- *
- * (Based on i1pro.h)
  */
+
+#ifdef __cplusplus
+	extern "C" {
+#endif
 
 /* 
    If you make use of the instrument driver code here, please note
@@ -38,35 +41,27 @@
 
 #include "inst.h"
 
-#ifdef __cplusplus
-	extern "C" {
-#endif
-
-/* MUNKI communication object */
-struct _munki {
+/* I1PRO3 communication object */
+struct _i1pro3 {
 	INST_OBJ_BASE
 
-	int       idtype;			/* Device type: 0 = ?? */	
+//	int       idtype;			/* Device type: 0 = ?? */	
 
-	/* *** munki private data **** */
+
+	/* *** i1pro3 private data **** */
 	inst_mode  cap;				/* Instrument mode capability */
 	inst2_capability cap2;		/* Instrument capability 2 */
 	inst3_capability cap3;		/* Instrument capability 3 */
 
-	void *m;					/* Implementation - munkiimp type */
-
-	/* Other state */
-	int     led_state;			/* : Current LED on/off state */
-	double	led_period, led_on_time_prop, led_trans_time_prop;	/* Pulse state */
-
-}; typedef struct _munki munki;
+	void *m;					/* Implementation - i1pro3imp type */
+}; typedef struct _i1pro3 i1pro3;
 
 /* Constructor */
-extern munki *new_munki(icoms *icom, instType itype);
+extern i1pro3 *new_i1pro3(icoms *icom, instType itype);
 
 #ifdef __cplusplus
 	}
 #endif
 
-#define MUNKI_H
-#endif /* MUNKI_H */
+#define I1PRO3_H
+#endif /* I1PRO3_H */

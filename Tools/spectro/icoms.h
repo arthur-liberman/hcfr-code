@@ -4,7 +4,7 @@
 /* An abstracted instrument serial and USB communication class. */
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Author: Graeme W. Gill
  * Date:   2006/4/20
@@ -58,9 +58,9 @@ typedef enum {
 	icomt_v3dlut         = 0x020000,		/* A Video 3D cLUT box */
 	icomt_vtpg           = 0x040000,		/* A Video test patern generator box */
 	icomt_printer        = 0x080000,		/* A printing device */
-	icomt_cmfm           = 0x100000,		/* A CMF Measuring device */
 
-	icomt_cat_any        = 0x1f0000,		/* Could be any device category */
+
+	icomt_cat_any        = 0x3f0000,		/* Could be any device category */
 	icomt_cat_mask       = 0xff0000,		/* Mask for device category */
 
 	/* Type of underlying communication port */
@@ -172,7 +172,6 @@ typedef enum {
 	dtix_3dlut,
 	dtix_vtpg,
 	dtix_printer,
-	dtix_cmfm,
 
 	dtix_number				/* Number of entries */
 } icom_dtix;
@@ -324,6 +323,7 @@ typedef enum {
 } icom_int;
 
 /* Cancelation token. */
+/* Note that reinit & usb_transaction's must balance! */
 typedef struct _usb_cancelt usb_cancelt;
 
 #ifdef ENABLE_USB
@@ -334,6 +334,9 @@ void usb_reinit_cancel(usb_cancelt *p);
 
 struct _icoms {
   /* Private: */
+
+	amutex lock;				/* Protect against thread races for some operations */
+								/* (i.e. close) */
 
 	/* Copy of some of icompath contents: */
 	icom_type dctype;			/* Device cat. and com. type */
@@ -526,7 +529,8 @@ struct _icoms {
 		int value,				/* 16 bit value (USB wValue, sent little endian) */
 		int index,				/* 16 bit index (USB wIndex, sent little endian) */
 		unsigned char *rwbuf,	/* Read or write buffer */
-		int rwsize,				/* Bytes to read or write */
+		int rwsize, 			/* Size to write/max bytes to read */
+		int *xferred,			/* Bytes written or read (may be NULL) */
 		double tout);			/* Timeout in seconds */
 
 	/* For a USB device, do a bulk or interrupt read from an end point */
@@ -592,7 +596,6 @@ struct _icoms {
 
 	/* Destroy ourselves */
 	void (*del)(struct _icoms *p);
-
 };
 
 /* Constructor */

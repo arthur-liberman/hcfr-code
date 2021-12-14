@@ -1,6 +1,6 @@
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Xrite DTP41 related functions
  *
@@ -18,7 +18,7 @@
 
 /* 
    If you make use of the instrument driver code here, please note
-   that it is the author(s) of the code who take responsibility
+   that it is the author(s) of the code who are responsibility
    for its operation. Any problems or queries regarding driving
    instruments with the Argyll drivers, should be directed to
    the Argyll's author(s), and not to any other party.
@@ -612,6 +612,7 @@ ipatch *vals) {		/* Pointer to array of instrument patch values */
 			vals[i].mtype = inst_mrt_transmissive;
 		else
 			vals[i].mtype = inst_mrt_reflective;
+		vals[i].mcond = inst_mrc_none;
 		vals[i].XYZ_v = 1;
 		vals[i].sp.spec_n = 0;
 		vals[i].duration = 0.0;
@@ -814,6 +815,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 		val->mtype = inst_mrt_transmissive;
 	else
 		val->mtype = inst_mrt_reflective;
+	val->mcond = inst_mrc_none;
 	val->XYZ_v = 1;
 	val->sp.spec_n = 0;
 	val->duration = 0.0;

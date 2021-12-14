@@ -2,7 +2,7 @@
  /* X-Rite ColorMunki related functions */
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Author: Graeme W. Gill
  * Date:   12/1/2009
@@ -18,7 +18,7 @@
 
 /* 
    If you make use of the instrument driver code here, please note
-   that it is the author(s) of the code who take responsibility
+   that it is the author(s) of the code who are responsibility
    for its operation. Any problems or queries regarding driving
    instruments with the Argyll drivers, should be directed to
    the Argyll's author(s), and not to any other party.
@@ -122,6 +122,8 @@ munki_init_coms(inst *pp, baud_rate br, flow_control fc, double tout) {
 
 static inst_code
 munki_determine_capabilities(munki *p) {
+	munkiimp *m = (munkiimp *)p->m;
+	munki_state *s = m != NULL ? &m->ms[m->mmode] : NULL;
 
 	/* Set the Munki capabilities mask */
 	p->cap = inst_mode_ref_spot
@@ -161,7 +163,9 @@ munki_determine_capabilities(munki *p) {
 		}
 	}
 
-	p->cap3 = inst3_none;
+	if (s != NULL && s->reflective) {
+		p->cap3 = inst3_filter_UVCut;
+	}
 
 	return inst_ok;
 }
@@ -186,7 +190,7 @@ int *conf_ix
 	if (conf_ix == NULL
 	 || *conf_ix < mk_spos_proj
 	 || *conf_ix > mk_spos_amb) {
-		/* Return current configuration measrement modes */
+		/* Return current configuration measurement modes */
 		ev = munki_getstatus(p, &spos, NULL);
 		if (ev != MUNKI_OK)
 			return munki_interp_code(p, ev);

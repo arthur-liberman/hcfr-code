@@ -1,6 +1,6 @@
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Gretag i1Display related functions
  *
@@ -16,7 +16,7 @@
 
 /* 
    If you make use of the instrument driver code here, please note
-   that it is the author(s) of the code who take responsibility
+   that it is the author(s) of the code who are responsibility
    for its operation. Any problems or queries regarding driving
    instruments with the Argyll drivers, should be directed to
    the Argyll's author(s), and not to any other party.
@@ -177,7 +177,7 @@ i1disp_command_1(
 		
 		smsec = msec_time();
 		if ((se = p->icom->usb_control(p->icom, requesttype, request, value, index,
-		                                                        buf, rwsize, to)) != 0) {
+		                                                        buf, rwsize, NULL, to)) != 0) {
 			a1logd(p->log, 1, "i1disp: Message send failed with ICOM err 0x%x\n",se);
 			p->last_com_err = se;
 			return i1disp_interp_code((inst *)p, I1DISP_COMS_FAIL);
@@ -1927,6 +1927,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 		val->mtype = inst_mrt_ambient;
 	else
 		val->mtype = inst_mrt_emission;
+	val->mcond = inst_mrc_none;
 	val->XYZ_v = 1;		/* These are absolute XYZ readings ? */
 	val->sp.spec_n = 0;
 	val->duration = 0.0;

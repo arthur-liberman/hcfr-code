@@ -117,6 +117,8 @@
     <ClInclude Include="i1d3.h" />
     <ClInclude Include="i1disp.h" />
     <ClInclude Include="i1pro.h" />
+    <ClInclude Include="i1pro3.h" />
+    <ClInclude Include="i1pro3_imp.h" />
     <ClInclude Include="i1pro_imp.h" />
     <ClInclude Include="icoms.h" />
     <ClInclude Include="inst.h" />
@@ -164,6 +166,8 @@
     <ClCompile Include="i1d3.c" />
     <ClCompile Include="i1disp.c" />
     <ClCompile Include="i1pro.c" />
+    <ClCompile Include="i1pro3.c" />
+    <ClCompile Include="i1pro3_imp.c" />
     <ClCompile Include="i1pro_imp.c" />
     <ClCompile Include="icoms.c" />
     <ClCompile Include="inst.c" />

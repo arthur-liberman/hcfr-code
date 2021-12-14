@@ -2,7 +2,7 @@
 /* Unix serial I/O class poll() emulation. */
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Author: Graeme W. Gill
  * Date:   12/9/2004

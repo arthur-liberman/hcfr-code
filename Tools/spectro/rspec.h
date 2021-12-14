@@ -1,7 +1,7 @@
 #ifndef RSPEC_H
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Author: Graeme W. Gill
  * Date:   20015
@@ -54,6 +54,7 @@ struct _rspec {
 
 	rspec_type     stype;	/* Spectral type - sensor, raw, cooked */
 	inst_meas_type mtype;	/* Measurement type (emis, ambient, reflective etc.) */
+	inst_meas_cond mcond;	/* Reflective Measurement conditions */
 	rspec_state    state;	/* Processing state */
 
 	double inttime;		/* Integration time */

@@ -4,7 +4,7 @@
 /* Device and Instrument suported types definitions. */
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Author: Graeme W. Gill
  * Date:   15/3/2001
@@ -49,6 +49,7 @@ typedef enum {
 	instI1Monitor,				/* GretagMacbeth i1 Monitor */
 	instI1Pro,					/* GretagMacbeth i1 Pro */
 	instI1Pro2,					/* X-Rite i1 Pro2 */
+	instI1Pro3,					/* X-Rite i1 Pro3 */
 	instColorMunki,				/* X-Rite ColorMunki */
 	instHCFR,					/* Colorimtre HCFR */
 	instSpyder1,				/* Datacolor/ColorVision Spyder1 */

@@ -144,6 +144,12 @@
     <ClCompile Include="ss_imp.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="i1pro3.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="i1pro3_imp.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="aglob.h">
@@ -273,6 +279,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="xrga.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="i1pro3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="i1pro3_imp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

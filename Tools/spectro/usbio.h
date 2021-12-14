@@ -4,7 +4,7 @@
  /* General USB I/O support */
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Author: Graeme W. Gill
  * Date:   2006/22/4
@@ -182,6 +182,7 @@ typedef enum {
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 /* Cancelation token. */
+/* Note that reinit & usb_transaction's must balance! */
 struct _usb_cancelt {
 	amutex cmtx;
 	int state;			/* 0 = init, 1 = pending, 2 = complete */

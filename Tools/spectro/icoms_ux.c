@@ -3,7 +3,7 @@
 /* This is #includeed in icom.c */
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Author: Graeme W. Gill
  * Date:   18/11/2000

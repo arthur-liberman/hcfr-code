@@ -3,7 +3,7 @@
 /* This file is conditionaly #included into usbio.c */
  
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Author: Graeme W. Gill
  * Date:   2006/22/4
@@ -23,7 +23,7 @@
 #include <windows.h>
 #include <winioctl.h>
 #include <setupapi.h>
-#include "driver_api.h"
+#include <driver_api.h>
 
 #undef DEBUG		/* Turn on debug messages */
 
@@ -567,23 +567,23 @@ char **pnames		/* List of process names to try and kill before opening */
 
 /*  -------------------------------------------------------------- */
 
-/* Our universal USB transfer function, used for rd/wr. */
+/* Our universal (non-control pipe) USB transfer function, used for rd/wr. */
 /* It appears that we may return a timeout with valid characters. */
 static int icoms_usb_transaction(
 	icoms *p,
-	usb_cancelt *cancelt,
+	usb_cancelt *cancelt,		/* if !NULL, allows signalling another thread that op has started */
 	int *transferred,
 	icom_usb_trantype ttype,	/* transfer type */
 	unsigned char endpoint,		/* 0x80 for control write, 0x00 for control read */
 	unsigned char *buffer,
-	int length,
+	int length,					/* Length to write/expected length to read */
 	unsigned int timeout		/* In msec */
 ) {
 	int rv = ICOM_OK;
 	int dirw = (endpoint & IUSB_ENDPOINT_DIR_MASK) == IUSB_ENDPOINT_OUT ? 1 : 0;
     libusb_request req;
 	OVERLAPPED olaps;
-	DWORD xlength = 0;
+	DWORD xlength = 0;			/* Transferred length */
 
 	in_usb_rw++;
 
@@ -649,8 +649,9 @@ done:;
 	if (cancelt != NULL) {
 		amutex_lock(cancelt->cmtx);
 		cancelt->hcancel = (void *)NULL;
-		if (cancelt->state == 0)
+		if (cancelt->state == 0) {
 			amutex_unlock(cancelt->condx);		/* Make sure this gets unlocked */
+		}
 		cancelt->state = 2;
 		amutex_unlock(cancelt->cmtx);
 	}
@@ -662,7 +663,7 @@ done:;
 
 	/* The requested size wasn't transferred */
 	if (rv == ICOM_OK  && xlength != length)
-		rv = ICOM_SHORT;
+		rv |= ICOM_SHORT;
 
 	if (in_usb_rw < 0)
 		exit(0);
@@ -678,11 +679,16 @@ done:;
 /* Our control message routine */
 /* Return error icom error code */
 static int icoms_usb_control_msg(
-icoms *p,
-int *transferred,
-int requesttype, int request,
-int value, int index, unsigned char *bytes, int size, 
-int timeout) {
+	icoms *p,
+	int *transferred,
+	int requesttype,
+	int request,
+	int value,
+	int index,
+	unsigned char *bytes,
+	int size, 
+	int timeout
+) {
 	int rv = ICOM_OK;
 	int dirw = (requesttype & IUSB_REQ_DIR_MASK) == IUSB_REQ_HOST_TO_DEV ? 1 : 0;
     libusb_request req;
@@ -816,6 +822,10 @@ int timeout) {
 
 	if (transferred != NULL)	/* Adjust for header size requested */
 		*transferred = retsz;
+
+	/* The requested size wasn't transferred */
+	if (rv == ICOM_OK  && retsz != size)
+		rv |= ICOM_SHORT;
 
 	a1logd(p->log, 8, "icoms_usb_control_msg: returning err 0x%x and %d bytes\n",rv, *transferred);
 	return rv;

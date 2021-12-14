@@ -2,7 +2,7 @@
 #define CCMX_H
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  * Colorimeter Correction Matrix support.
  *
  */

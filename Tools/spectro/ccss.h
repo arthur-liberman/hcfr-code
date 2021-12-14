@@ -2,7 +2,7 @@
 #define CCSS_H
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  * Colorimeter Calibration Spectral Set support.
  */
 
@@ -18,8 +18,6 @@
  *
  * Based on ccmx.h
  */
-
-#include "disptechs.h"
 
 #ifdef __cplusplus
 	extern "C" {

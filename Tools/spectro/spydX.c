@@ -1,6 +1,6 @@
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Datacolor Spyder X related software.
  *
@@ -18,7 +18,7 @@
 
 /* 
    If you make use of the instrument driver code here, please note
-   that it is the author(s) of the code who take responsibility
+   that it is the author(s) of the code who are responsibility
    for its operation. Any problems or queries regarding driving
    instruments with the Argyll drivers, should be directed to
    the Argyll's author(s), and not to any other party.
@@ -101,7 +101,7 @@ spydX_reset(
 
 	se = p->icom->usb_control(p->icom,
 	               IUSB_REQ_TYPE_VENDOR | IUSB_REQ_RECIP_INTERFACE,
-                   0x02, 2, 0, NULL, 0, 5.0);
+                   0x02, 2, 0, NULL, 0, NULL, 5.0);
 
 	if (se == ICOM_OK) {
 		a1logd(p->log, 6, "spydX_reset: complete, ICOM code 0x%x\n",se);
@@ -840,6 +840,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 		val->mtype = inst_mrt_ambient;
 	else
 		val->mtype = inst_mrt_emission;
+	val->mcond = inst_mrc_none;
 	val->XYZ_v = 1;		/* These are absolute XYZ readings ? */
 	val->sp.spec_n = 0;
 	val->duration = 0.0;

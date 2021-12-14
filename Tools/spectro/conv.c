@@ -2,7 +2,7 @@
  /* Platform isolation convenience functions */
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Author: Graeme W. Gill
  * Date:   28/9/97
@@ -179,7 +179,7 @@ int poll_con_char(void) {
 		/* any of MSWin's async file read functions, because we */
 		/* have no way of ensuring that the STD_INPUT_HANDLE has been */
 		/* opened with FILE_FLAG_OVERLAPPED. Used a thread instead... */
-		/* ReOpenFile() would in theory fix this, but it's not available in WinXP, only Visa+, */
+		/* ReOpenFile() would in theory fix this, but it's not available in WinXP, only Vista+, */
 		/* and aparently doesn't work on stdin anyway! :-( */
 		if ((getch_thread = new_athread(th_read_char, (char *)&c)) != NULL) {
 			HANDLE stdinh;
@@ -304,6 +304,34 @@ void msec_beep(int delay, int freq, int msec) {
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+/* Hack to deal with a possibly statically initilized amutex on MSWin. */
+/* We statically initilize the CRITICAL_SECTION with a sentinel */
+/* LockCount value, and if this value is set, use an atomic */
+/* lock to do the initilization before any other operation on it. */
+/* (A more robust trick may be to declare the amutex as a pointer */
+/*  and create it if it is NULL using a InterlockedCompareExchange()) */
+int amutex_chk(CRITICAL_SECTION *lock) {
+
+	if (lock->LockCount == amutex_static_LockCount) {		/* Not initialized */
+		static volatile LONG ilock = 0;
+
+		/* Try ilock */
+		if (InterlockedCompareExchange((LONG **)&ilock, (LONG *)1, (LONG *)0) == 0) {
+			/* We locked it */
+			if (lock->LockCount == amutex_static_LockCount) {	/* Still not inited */
+				InitializeCriticalSection(lock);				/* So we init it */
+			}
+			ilock = 0;		/* We're done */
+		} else {			/* Wait for other thread to finish init */
+			while(ilock != 0) {
+				msec_sleep(1);
+			}
+		}
+	}
+	return 0;
+}
+
+
 int acond_timedwait_imp(HANDLE cond, CRITICAL_SECTION *lock, int msec) {
 	int rv;
 	LeaveCriticalSection(lock);
@@ -341,18 +369,74 @@ int set_normal_priority() {
 
 #undef USE_BEGINTHREAD
 
-/* Wait for the thread to exit. Return the result */
-static int athread_wait(struct _athread *p) {
+/* If reusable, start a stopped thread. NOP if not reusable */
+static void athread_start(
+athread *p
+) {
+	DBG("athread_start called\n");
+	if (!p->reusable)
+		return;
 
-	if (p->finished)
+	/* Signal to the thread that it should start */
+	amutex_lock(p->startm);
+	p->startv = 1;
+	acond_signal(p->startc);
+	amutex_unlock(p->startm);
+}
+
+/* If reusable, wait for the thread to stop. Return the result. NOP if not reusable */
+static int athread_wait_stop(
+athread *p
+) {
+	DBG("athread_wait_stop called\n");
+	if (!p->reusable)
 		return p->result;
 
-	WaitForSingleObject(p->th, INFINITE);
+	/* Wait for thread to stop */
+	amutex_lock(p->stopm);
+	while (p->stopv == 0)
+		acond_wait(p->stopc, p->stopm);
+	p->stopv = 0;
+	amutex_unlock(p->stopm);
 
 	return p->result;
 }
 
-/* Destroy the thread */
+/* Wait for the thread to exit. Return the result */
+static int athread_wait(struct _athread *p) {
+
+	if (p->reusable) {
+		p->dofinish = 1;
+		athread_start(p);	/* Wake thread up to cause it to exit */
+	}
+
+	if (p->joined)
+		return p->result;
+
+	WaitForSingleObject(p->th, INFINITE);
+	p->joined = 1;
+
+	return p->result;
+}
+
+/* Forcefully terminate the thread */
+static void athread_terminate(
+athread *p
+) {
+	DBG("athread_terminate called\n");
+
+	if (p == NULL || p->joined)
+		return;
+
+	if (p->th != NULL) {
+		DBG("athread_del calling TerminateThread()\n");
+		TerminateThread(p->th, (DWORD)-1);
+//		WaitForSingleObject(p->th, INFINITE);	// Don't join in case it doesn't terminate	
+	}
+	p->joined = 1;		/* Skip any join afterwards */
+}
+
+/* Free the thread */
 static void athread_del(
 athread *p
 ) {
@@ -362,11 +446,16 @@ athread *p
 		return;
 
 	if (p->th != NULL) {
-		if (!p->finished) {
-			DBG("athread_del calling TerminateThread() because thread hasn't finished\n");
-			TerminateThread(p->th, (DWORD)-1);		/* But it is worse to leave it hanging around */
-		}
+		if (!p->joined)
+			WaitForSingleObject(p->th, INFINITE);
 		CloseHandle(p->th);
+	}
+
+	if (p->reusable) {
+		acond_del(p->startc);
+		amutex_del(p->startm);
+		acond_del(p->stopc);
+		amutex_del(p->stopm);
 	}
 
 	free(p);
@@ -386,18 +475,45 @@ DWORD WINAPI threadproc(
 #endif
 	athread *p = (athread *)lpParameter;
 
-	p->result = p->function(p->context);
-	p->finished = 1;
+	if (p->reusable) {		/* Run over and over */
+		for (;;) {
+
+			/* Wait for client to start us */
+			amutex_lock(p->startm);
+			while (p->startv == 0)
+				acond_wait(p->startc, p->startm);
+			p->startv = 0;
+			amutex_unlock(p->startm);
+
+			if (p->dofinish)
+				break;
+
+			p->result = p->function(p->context);
+
+			if (p->dofinish)
+				break;
+
+			/* Signal to the client that we've stopped */
+			amutex_lock(p->stopm);
+			p->stopv = 1;
+			acond_signal(p->stopc);
+			amutex_unlock(p->stopm);
+		}
+
+	} else {
+		p->result = p->function(p->context);
+	}
+//	p->finished = 1;
 #ifdef USE_BEGINTHREAD
 #else
 	return 0;
 #endif
 }
  
-
-athread *new_athread(
+athread *new_athread_reusable(
 	int (*function)(void *context),
-	void *context
+	void *context,
+	int reusable
 ) {
 	athread *p = NULL;
 
@@ -408,9 +524,23 @@ athread *new_athread(
 		return NULL;
 	}
 
+	p->reusable = reusable;
+	if (p->reusable) {
+		amutex_init(p->startm);
+		p->startv = 0;
+		acond_init(p->startc);
+
+		amutex_init(p->stopm);
+		p->stopv = 0;
+		acond_init(p->stopc);
+	}
+
 	p->function = function;
 	p->context = context;
+	p->start = athread_start;
+	p->wait_stop = athread_wait_stop;
 	p->wait = athread_wait;
+	p->terminate = athread_terminate;
 	p->del = athread_del;
 
 	/* Create a thread */
@@ -423,7 +553,7 @@ athread *new_athread(
 #endif
 		a1loge(g_log, 1, "new_athread: CreateThread failed with %d\n",GetLastError());
 		p->th = NULL;
-		athread_del(p);
+		athread_del(p);		/* Cleanup any resources */
 		return NULL;
 	}
 
@@ -470,6 +600,13 @@ int create_parent_directories(char *path) {
 		}
 	}
 	return 0;
+}
+
+/* return the number of processors */
+int system_processors() {
+	SYSTEM_INFO sysinfo;
+	GetSystemInfo(&sysinfo);
+	return sysinfo.dwNumberOfProcessors;
 }
 
 #endif /* NT */
@@ -776,18 +913,76 @@ XBell(..);
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - */
 
-/* Wait for the thread to exit. Return the result */
-static int athread_wait(struct _athread *p) {
+/* If reusable, start a stopped thread. NOP if not reusable */
+static void athread_start(
+athread *p
+) {
+	DBG("athread_start called\n");
+	if (!p->reusable)
+		return;
 
-	if (p->finished)
+	/* Signal to the thread that it should start */
+	amutex_lock(p->startm);
+	p->startv = 1;
+	acond_signal(p->startc);
+	amutex_unlock(p->startm);
+}
+
+/* If reusable, wait for the thread to stop. Return the result. NOP if not reusable */
+static int athread_wait_stop(
+athread *p
+) {
+	DBG("athread_wait_stop called\n");
+	if (!p->reusable)
 		return p->result;
 
-	pthread_join(p->thid, NULL);
+	/* Wait for thread to stop */
+	amutex_lock(p->stopm);
+	while (p->stopv == 0)
+		acond_wait(p->stopc, p->stopm);
+	p->stopv = 0;
+	amutex_unlock(p->stopm);
 
 	return p->result;
 }
 
-/* Destroy the thread */
+/* Wait for the thread to exit. Return the result */
+static int athread_wait(struct _athread *p) {
+	int rv;
+
+	if (p->reusable) {
+		p->dofinish = 1;
+		athread_start(p);	/* Wake thread up to cause it to exit */
+	}
+
+	if (p->joined)
+		return p->result;
+
+    if ((rv = pthread_join(p->thid, NULL)) != 0) 
+		warning("pthread_join of thid %d failed with %d",p->thid,rv);
+	p->joined = 1;
+
+	return p->result;
+}
+
+/* Forcefully terminate the thread */
+static void athread_terminate(
+athread *p
+) {
+	DBG("athread_terminate called\n");
+
+	if (p == NULL || p->joined)
+		return;
+
+	if (p->thid != (pthread_t)0) {
+		DBG("athread_terminate calling pthread_cancel()\n");
+		pthread_cancel(p->thid);
+//	    pthread_join(p->thid, NULL);	// Don't join in case it doesn't terminate
+	}
+	p->joined = 1;		/* Skip any join afterwards */
+}
+
+/* Free up thread resources */
 static void athread_del(
 athread *p
 ) {
@@ -796,10 +991,19 @@ athread *p
 	if (p == NULL)
 		return;
 
-	if (!p->finished) {
-		pthread_cancel(p->thid);
+	if (p->thid != 0 && !p->joined) {
+		int rv;
+	    if ((rv = pthread_join(p->thid, NULL)) != 0) 
+			warning("pthread_join of thid %d failed with %d",p->thid,rv);
 	}
-	pthread_join(p->thid, NULL);
+
+	if (p->reusable) {
+		acond_del(p->startc);
+		amutex_del(p->startm);
+		acond_del(p->stopc);
+		amutex_del(p->stopm);
+	}
+
 	free(p);
 }
 
@@ -814,16 +1018,41 @@ static void *threadproc(
 	 objc_registerThreadWithCollector();
 #endif
 
-	p->result = p->function(p->context);
-	p->finished = 1;
+	if (p->reusable) {		/* Run over and over */
+		for (;;) {
+
+			/* Wait for client to start us */
+			amutex_lock(p->startm);
+			while (p->startv == 0)
+				acond_wait(p->startc, p->startm);
+			p->startv = 0;
+			amutex_unlock(p->startm);
+
+			if (p->dofinish)		/* If we've been woken up so we can exit */
+				break;
+
+			p->result = p->function(p->context);
+
+			/* Signal to the client that we've stopped */
+			amutex_lock(p->stopm);
+			p->stopv = 1;
+			acond_signal(p->stopc);
+			amutex_unlock(p->stopm);
+		}
+
+	} else {
+		p->result = p->function(p->context);
+	}
+//	p->finished = 1;
 
 	return 0;
 }
  
 
-athread *new_athread(
+athread *new_athread_reusable(
 	int (*function)(void *context),
-	void *context
+	void *context,
+	int reusable
 ) {
 	int rv;
 	athread *p = NULL;
@@ -835,8 +1064,21 @@ athread *new_athread(
 		return NULL;
 	}
 
+	p->reusable = reusable;
+	if (p->reusable) {
+		amutex_init(p->startm);
+		p->startv = 0;
+		acond_init(p->startc);
+
+		amutex_init(p->stopm);
+		p->stopv = 0;
+		acond_init(p->stopc);
+	}
+
 	p->function = function;
 	p->context = context;
+	p->start = athread_start;
+	p->wait_stop = athread_wait_stop;
 	p->wait = athread_wait;
 	p->del = athread_del;
 
@@ -865,6 +1107,7 @@ athread *new_athread(
 	rv = pthread_create(&p->thid, NULL, threadproc, (void *)p);
 	if (rv != 0) {
 		a1loge(g_log, 1, "new_athread: pthread_create failed with %d\n",rv);
+		p->thid = 0;
 		athread_del(p);
 		return NULL;
 	}
@@ -928,6 +1171,38 @@ int create_parent_directories(char *path) {
 	}
 	return 0;
 }
+
+#if !defined(UNIX_APPLE) || __MAC_OS_X_VERSION_MAX_ALLOWED >= 1040
+
+/* return the number of processors */
+int system_processors() {
+	return sysconf(_SC_NPROCESSORS_ONLN);
+}
+
+#else	/* OS X < 10.4 code */
+
+/* return the number of processors using BSD code */
+int system_processors() {
+	int mib[4];
+	int numCPU;
+	size_t len = sizeof(numCPU); 
+
+	mib[0] = CTL_HW;
+	mib[1] = HW_AVAILCPU; 
+
+	sysctl(mib, 2, &numCPU, &len, NULL, 0);
+
+	if (numCPU < 1) {
+	    mib[1] = HW_NCPU;
+		sysctl(mib, 2, &numCPU, &len, NULL, 0);
+		if (numCPU < 1)
+			numCPU = 1;
+	}
+
+	return numCPU;
+}
+
+#endif
 
 #endif /* defined(UNIX) */
 
@@ -1144,4 +1419,24 @@ int kill_nprocess(char **pname, a1log *log) {
 
 #endif /* UNIX_APPLE || NT */
 
+/* ===================================================================== */
+/* Some compatibility functions */
 
+#if defined(UNIX_APPLE) 
+
+size_t osx_strnlen(const char *string, size_t maxlen) {
+  const char *end = memchr(string, '\0', maxlen);
+  return end ? end - string : maxlen;
+}
+
+char *osx_strndup(const char *s, size_t n) {
+	size_t len = osx_strnlen(s, n);
+	char *buf = malloc(len + 1);
+
+	if (buf == NULL)
+		return NULL;
+	buf[len] = '\0';
+  	return memcpy(buf, s, len);
+}
+
+#endif // APPLE && < 1040

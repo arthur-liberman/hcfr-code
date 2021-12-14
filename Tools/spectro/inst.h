@@ -12,7 +12,7 @@
  */
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Author: Graeme W. Gill
  * Date:   15/3/2001
@@ -27,7 +27,7 @@
 
 /* 
    If you make use of the instrument driver code here, please note
-   that it is the author(s) of the code who take responsibility
+   that it is the author(s) of the code who are responsibility
    for its operation. Any problems or queries regarding driving
    instruments with the Argyll drivers, should be directed to
    the Argyll's author(s), and not to any other party.
@@ -89,6 +89,20 @@ typedef enum {						/* XYZ units,      Spectral units */
 	inst_mrt_frequency      = 7		/* Hz */
 } inst_meas_type;
 
+/* Note that reflectance is measured under the given conditions, but that */
+/* by default XYZ is computed as if the spectral reflectance was illuminated */
+/* by a non-fluorescent stimulating D50 illuminant. */
+
+/* Reflective measurement conditions */
+typedef enum {
+	inst_mrc_none           = 0,	/* M0 - Default */
+	inst_mrc_D50            = 1,	/* M1 - D50 illuminant */
+	inst_mrc_D65            = 2,	/*      D65 Illuminant */
+	inst_mrc_uvcut          = 3,	/* M2 - U.V. Cut */ 
+	inst_mrc_pol            = 4,	/* M3 - Polarized */
+	inst_mrc_custom         = 5  	/*      Custom */
+} inst_meas_conditions;
+
 #endif // NEVER
 
 #define ICOM_MAX_LOC_LEN 10
@@ -96,7 +110,8 @@ typedef enum {						/* XYZ units,      Spectral units */
 struct _ipatch {
 	char loc[ICOM_MAX_LOC_LEN];	/* patch location */
 
-	inst_meas_type mtype;	/* Measurement type */
+	inst_meas_type mtype;		/* Measurement type */
+	inst_meas_cond mcond;		/* Reflective measurement conditions */
 	
 	int XYZ_v;				/* XYZ valid */
 	double XYZ[3];			/* XYZ values */
@@ -215,20 +230,20 @@ typedef enum {
 #   define inst_mode_emis_nonadaptive_sys       "EMNA"
 	inst_mode_ref_uv             = 0x00001000,	/* Ultra Violet measurement mode */
 #   define inst_mode_ref_uv_sym                 "REUV"
-	inst_mode_emis_refresh_ovd   = 0x00002000,	/* Emissom Refresh mode override */
+	inst_mode_emis_refresh_ovd   = 0x00002000,	/* Emission Refresh mode override */
 #   define inst_mode_emis_refresh_ovd_sym       "EMRO"
-	inst_mode_emis_norefresh_ovd = 0x00006000,	/* Emissom Non-refresh mode override */
+	inst_mode_emis_norefresh_ovd = 0x00006000,	/* Emission Non-refresh mode override */
 #   define inst_mode_emis_norefresh_ovd_sym     "ENRO"
 	inst_mode_dep_extra_mask     = 0x00007800,	/* Mask of measurement modifiers */
 
 	/* Extra independent modes */
-	inst_mode_colorimeter        = 0x00004000,	/* Colorimetric mode */
+	inst_mode_colorimeter        = 0x00010000,	/* Colorimetric mode */
 #   define inst_mode_colorimeter_sym            "COLI"
-	inst_mode_spectral           = 0x00008000,	/* Spectral mode */
+	inst_mode_spectral           = 0x00020000,	/* Spectral mode */
 #   define inst_mode_spectral_sym               "SPEC"
-	inst_mode_highres            = 0x00010000,	/* High Resolution Spectral mode */
+	inst_mode_highres            = 0x00040000,	/* High Resolution Spectral mode */
 #   define inst_mode_highres_sym                "HIRZ"
-	inst_mode_extra_mask         = 0x0001c000,	/* Mask of extra modes */
+	inst_mode_extra_mask         = 0x00070000,	/* Mask of extra modes */
 
 	/* Configured for calibration & capable of returning it from inst_mode_calibration */
 	inst_mode_calibration        = 0x80000000,	/* Configured for calibration */
@@ -358,8 +373,17 @@ typedef enum {
 typedef enum {
 	inst3_none              = 0x00000000, /* No capabilities */
 
-	inst3_average           = 0x00000001  /* Can set to average multiple measurements into 1 */
+	inst3_average           = 0x00000001, /* Can set to average multiple measurements into 1 */
 										  /* See inst_opt_set_averages */
+
+	/* inst_opt_set_filter() support: */
+	inst3_filter_none       = 0x00000010,	/* M0 - No filter */
+	inst3_filter_D50        = 0x00000020,	/* M1 - D50 illuminant filter */
+	inst3_filter_D65        = 0x00000040,	/*      D65 Illuminant filter */
+	inst3_filter_UVCut      = 0x00000080,	/* M2 - U.V. Cut filter */
+	inst3_filter_pol        = 0x00000100,	/* M3 - Polarising filter */ 
+	inst3_filter_Custom     = 0x00000200,	/* Manufacturers custom Filter */
+	inst3_filter_mask       = 0x000003F0 	/* Mask of all filter options */
 
 } inst3_capability;
 
@@ -476,7 +500,6 @@ typedef enum {
 	                                        /*        xspect custObserver[3] */
 
 	inst_opt_set_filter         = 0x000E,	/* Set an instrument filter configuration */
-											/* Set this before calling init_coms() */
 											/* [1 argument type inst_opt_filter] */
 
 	inst_opt_set_custom_filter  = 0x000F,	/* Set a custom filter configuration. */
@@ -530,14 +553,15 @@ typedef enum {
 } inst_opt_type;
 
 /* Optional manufacturers instrument filter fitted to instrument (for inst_opt_set_filter) */
-/* Set this before calling init_coms() */
+/* These could be physical (i.e. Spectrolino, i1Pro3), or they could be virtual (i.e. i1Pro3) */  
 typedef enum {
 	inst_opt_filter_unknown  = 0xffff,	/* Unspecified filter */
-	inst_opt_filter_none     = 0x0000,	/* No filters fitted */
-	inst_opt_filter_pol      = 0x0001,	/* Polarising filter */ 
-	inst_opt_filter_D65      = 0x0002,	/* D65 Illuminant filter */
-	inst_opt_filter_UVCut    = 0x0004,	/* U.V. Cut filter */
-	inst_opt_filter_Custom   = 0x0008	/* Manufacturers custom Filter */
+	inst_opt_filter_none     = 0x0000,	/* M0 - No filters fitted */
+	inst_opt_filter_D50      = 0x0001,	/* M1 - D50 illuminant filtrr */
+	inst_opt_filter_D65      = 0x0002,	/*      D65 Illuminant filter */
+	inst_opt_filter_UVCut    = 0x0004,	/* M2 - U.V. Cut filter */
+	inst_opt_filter_pol      = 0x0008,	/* M3 - Polarising filter */ 
+	inst_opt_filter_Custom   = 0x0010	/* Manufacturers custom Filter */
 } inst_opt_filter;
 
 /* Off-line pending readings available (status) */
@@ -599,7 +623,7 @@ char *calt2str(inst_cal_type calt);
 /* This is how the instrument communicates to the calling program */
 /* about how to facilitate a calibration, or what it's current measurement */
 /* configuration provides. */
-/* [There is no provission for explictly indicating calibrations that can be */
+/* [There is no provision for explictly indicating calibrations that can be */
 /* performed automatically and transparently by the instrument - for instance */
 /* in the case of the spectroscan, since the required condition can be obtained */
 /* without the users interaction. ] */
@@ -654,11 +678,12 @@ typedef enum {
 	inst_calc_id_trans_low = 0x00010000,	/* Trans. Ref. light is too low for accuracy warning */
 	inst_calc_id_trans_wl  = 0x00020000,	/* Trans. Ref. light is low at some wavelengths warning */
 	inst_calc_id_filt_unkn = 0x00100000,	/* Request unknown filter */
-	inst_calc_id_filt_none = 0x00200000,	/* Request no filter */
-	inst_calc_id_filt_pol  = 0x00300000,	/* Request polarizing filter */
+	inst_calc_id_filt_none = 0x00200000,	/* Request no filter (M0) */
+	inst_calc_id_filt_D50  = 0x00300000,	/* Request D50 filter (M1) */
 	inst_calc_id_filt_D65  = 0x00400000,	/* Request D65 filter */
-	inst_calc_id_filt_UV   = 0x00500000,	/* Request UV cut filter */
-	inst_calc_id_filt_cust = 0x00600000		/* Request instrument custom filter */
+	inst_calc_id_filt_UV   = 0x00500000,	/* Request UV cut filter (M2) */
+	inst_calc_id_filt_pol  = 0x00600000,	/* Request polarizing filter (M3) */
+	inst_calc_id_filt_cust = 0x00700000		/* Request instrument custom filter */
 } inst_calc_id_type;
 
 /* Clamping state */
@@ -679,7 +704,7 @@ typedef enum {
 /* Asynchronous event callback type */
 typedef enum {
     inst_event_switch,		/* Instrument measure/calibrate switch pressed. */
-    inst_event_mconf,		/* Change in measurement configuration (ie. sensor position) */
+    inst_event_mconf,		/* Change in measurement configuration (ie. sensor position, adapter) */
     inst_event_scan_ready	/* Ready for manual strip scan (i.e. issue audible prompt) */
 } inst_event_type;
 
@@ -688,10 +713,24 @@ typedef enum {
     inst_conf_unknown,
     inst_conf_projector,
     inst_conf_surface,	
+	inst_conf_surface_polarized,
     inst_conf_emission,	
 	inst_conf_calibration,
+	inst_conf_polarized_calibration,
 	inst_conf_ambient
 } inst_config;
+
+/* - - - - - - - - - - - - - - - - - - - */
+
+/* Structure used to return measurement conditions type selection information. */
+typedef struct _inst_meascondsel {
+
+	char desc[INST_DTYPE_DESC_LEN];	/* Textural description */
+	inst_opt_filter fsel;			/* Corrsponding filter to set */ 
+
+} inst_meascondsel;
+
+/* - - - - - - - - - - - - - - - - - - - */
 
 # define EXTRA_INST_OBJ
 
@@ -788,6 +827,7 @@ typedef enum {
         struct _inst *p,														\
 		int *no_selectors,		/* Return number of display types */			\
 		inst_disptypesel **sels,/* Return the array of display types */			\
+								/* Either re-use the list or call inst_del_disptype_list() */	\
 		int allconfig,			/* nz to return list for all configs, not just current. */	\
 		int recreate);			/* nz to re-check for new ccmx & ccss files */	\
 																				\
@@ -810,6 +850,13 @@ typedef enum {
 		int *refrmode,															\
 		int *cbid);																\
 	                                                                            \
+	/* Return array of reflective measurement conditions selectors in current mode */			\
+	inst_code (*get_meascond)(													\
+        struct _inst *p,														\
+		int *no_selectors,		/* Return number of display types */			\
+		inst_meascondsel **sels);/* Return the array of measurement conditions types */			\
+								 /* Free it after use */						\
+																				\
     /* Get a status or get or set an option */                                  \
 	/* option state. */															\
 	/* Some options can be set before init */									\
@@ -1121,7 +1168,7 @@ typedef enum {
 /* The base object type */
 struct _inst {
 	INST_OBJ_BASE
-	}; typedef struct _inst inst;
+}; typedef struct _inst inst;
 
 /* Virtual constructor. */
 /* Return NULL for unknown instrument, */

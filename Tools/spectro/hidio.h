@@ -4,7 +4,7 @@
 /* General USB HID I/O support */
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Author: Graeme W. Gill
  * Date:   2007/10/10

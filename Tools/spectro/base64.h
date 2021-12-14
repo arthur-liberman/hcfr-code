@@ -2,7 +2,7 @@
 #ifndef BASE64_H
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Very simple & concise base64 encoder/decoder
  */

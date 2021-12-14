@@ -1,6 +1,6 @@
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * SwatchMate Cube related functions
  *
@@ -18,7 +18,7 @@
 
 /* 
    If you make use of the instrument driver code here, please note
-   that it is the author(s) of the code who take responsibility
+   that it is the author(s) of the code who are responsibility
    for its operation. Any problems or queries regarding driving
    instruments with the Argyll drivers, should be directed to
    the Argyll's author(s), and not to any other party.
@@ -555,6 +555,7 @@ instClamping clamp) {		/* NZ if clamp XYZ/Lab to be +ve */
 	val->loc[0] = '\000';
 
 	val->mtype = inst_mrt_reflective;
+	val->mcond = inst_mrc_none;
 	val->XYZ_v = 1;		/* These are absolute XYZ readings */
 
 	val->sp.spec_n = 0;
@@ -856,6 +857,7 @@ smcube_del(inst *pp) {
 				msec_sleep(100);	/* Wait for thread to terminate */
 			if (i >= 5) {
 				a1logd(p->log,3,"smcube diffuser thread termination failed\n");
+				p->th->terminate(p->th);	/* Try and force thread to terminate */
 			}
 			p->th->del(p->th);
 		}

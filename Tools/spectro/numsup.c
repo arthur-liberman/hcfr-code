@@ -340,15 +340,17 @@ static char *get_sys_info() {
 		EnterCriticalSection(&log->lock);					\
 	}														\
 	if (deb && !g_deb_init) {								\
+		va_loge(log, "\n#######################################################################\n");	\
 		va_loge(log, "Argyll 'V%s' Build '%s' System '%s'\n",ARGYLL_VERSION_STR,ARGYLL_BUILD_STR, get_sys_info());	\
 		g_deb_init = 1;										\
 	}
 # define A1LOG_UNLOCK(log) LeaveCriticalSection(&log->lock)
 #endif
+
 #ifdef UNIX
 
 static char *get_sys_info() {
-	static char sysinfo[200] = { "Unknown" };
+	static char sysinfo[300] = { "Unknown" };
 	struct utsname ver;
 
 	if (uname(&ver) == 0)
@@ -365,6 +367,7 @@ static char *get_sys_info() {
 		pthread_mutex_lock(&log->lock);						\
 	}														\
 	if (deb && !g_deb_init) {								\
+		va_loge(log, "\n#######################################################################\n");	\
 		va_loge(log, "Argyll 'V%s' Build '%s' System '%s'\n",ARGYLL_VERSION_STR,ARGYLL_BUILD_STR, get_sys_info());	\
 		g_deb_init = 1;										\
 	}
@@ -613,6 +616,35 @@ void a1logue(a1log *log) {
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+/* Print bytes as hex to FILE */
+/* base is the base of the displayed offset */
+void dump_bytes(FILE *fp, char *pfx, unsigned char *buf, int base, int len) {
+	int i, j, ii;
+	char oline[200] = { '\000' }, *bp = oline;
+	if (pfx == NULL)
+		pfx = "";
+	for (i = j = 0; i < len; i++) {
+		if ((i % 16) == 0)
+			bp += sprintf(bp,"%s%04x:",pfx,base+i);
+		bp += sprintf(bp," %02x",buf[i]);
+		if ((i+1) >= len || ((i+1) % 16) == 0) {
+			for (ii = i; ((ii+1) % 16) != 0; ii++)
+				bp += sprintf(bp,"   ");
+			bp += sprintf(bp,"  ");
+			for (; j <= i; j++) {
+				if (!(buf[j] & 0x80) && isprint(buf[j]))
+					bp += sprintf(bp,"%c",buf[j]);
+				else
+					bp += sprintf(bp,".");
+			}
+			bp += sprintf(bp,"\n");
+			fprintf(fp,"%s",oline);
+			bp = oline;
+		}
+	}
+}
+
+
 /* Print bytes as hex to debug log */
 /* base is the base of the displayed offset */
 void adump_bytes(a1log *log, char *pfx, unsigned char *buf, int base, int len) {
@@ -807,6 +839,14 @@ size_t nsize
 
 	<http://stackoverflow.com/questions/22164571/weird-behaviour-of-dispatch-after>
 
+	New (10.15) objc_msgSend prototype:
+	<https://www.mikeash.com/pyblog/objc_msgsends-new-prototype.html>
+
+	Could get away with casting to old prototype on Intel ABI:
+
+#define OBJC_MSGSEND ((id (*)(id, SEL, ...))objc_msgSend)
+
+	but this will fail on ARM64 ABI, so we explicitly cast it.
 */
 
 static int osx_userinitiated_cnt = 0;
@@ -840,6 +880,21 @@ void osx_userinitiated_start() {
 		return;
 	}
 
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 101500
+	/* Get the process instance */
+	if ((pi = ((id (*)(id, SEL))objc_msgSend)((id)pic, pis)) == nil) {
+		return;
+	}
+
+	/* Create a reason string */
+	str = ((id (*)(id, SEL))objc_msgSend)((id)objc_getClass("NSString"), sel_getUid("alloc"));
+	str = ((id (*)(id, SEL, char*))objc_msgSend)(str, sel_getUid("initWithUTF8String:"), "ArgyllCMS");
+			
+	/* Start activity that tells App Nap to mind its own business. */
+	/* NSActivityUserInitiatedAllowingIdleSystemSleep */
+	osx_userinitiated_activity = ((id (*)(id, SEL, uint64_t, id))objc_msgSend)(pi, bawo, 0x00FFFFFFULL, str);
+
+#else
 	/* Get the process instance */
 	if ((pi = objc_msgSend((id)pic, pis)) == nil) {
 		return;
@@ -852,8 +907,25 @@ void osx_userinitiated_start() {
 	/* Start activity that tells App Nap to mind its own business. */
 	/* NSActivityUserInitiatedAllowingIdleSystemSleep */
 	osx_userinitiated_activity = objc_msgSend(pi, bawo, 0x00FFFFFFULL, str);
+#endif
 }
 
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 101500
+/* Done with user initiated */
+void osx_userinitiated_end() {
+	if (osx_userinitiated_cnt > 0) {
+		osx_userinitiated_cnt--;
+		if (osx_userinitiated_cnt == 0 && osx_userinitiated_activity != nil) {
+			a1logd(g_log, 7, "OS X - User Initiated Activity end");
+			((id (*)(id, SEL, id))objc_msgSend)(
+			             ((id (*)(id, SEL))objc_msgSend)((id)objc_getClass("NSProcessInfo"),
+			             sel_getUid("processInfo")), sel_getUid("endActivity:"),
+			             osx_userinitiated_activity);
+			osx_userinitiated_activity = nil;
+		}
+	}
+}
+#else
 /* Done with user initiated */
 void osx_userinitiated_end() {
 	if (osx_userinitiated_cnt > 0) {
@@ -868,6 +940,7 @@ void osx_userinitiated_end() {
 		}
 	}
 }
+#endif
 
 static int osx_latencycritical_cnt = 0;
 static id osx_latencycritical_activity = nil;
@@ -899,6 +972,20 @@ void osx_latencycritical_start() {
 		return;
 	}
 
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 101500
+	/* Get the process instance */
+	if ((pi = ((id (*)(id, SEL))objc_msgSend)((id)pic, pis)) == nil) {
+		return;
+	}
+
+	/* Create a reason string */
+	str = ((id (*)(id, SEL))objc_msgSend)((id)objc_getClass("NSString"), sel_getUid("alloc"));
+	str = ((id (*)(id, SEL, char*))objc_msgSend)(str, sel_getUid("initWithUTF8String:"), "Measuring Color");
+			
+	/* Start activity that tells App Nap to mind its own business. */
+	/* NSActivityUserInitiatedAllowingIdleSystemSleep | NSActivityLatencyCritical */
+	osx_latencycritical_activity = ((id (*)(id, SEL, uint64_t, id))objc_msgSend)(pi, bawo, 0x00FFFFFFULL | 0xFF00000000ULL, str);
+#else
 	/* Get the process instance */
 	if ((pi = objc_msgSend((id)pic, pis)) == nil) {
 		return;
@@ -911,8 +998,25 @@ void osx_latencycritical_start() {
 	/* Start activity that tells App Nap to mind its own business. */
 	/* NSActivityUserInitiatedAllowingIdleSystemSleep | NSActivityLatencyCritical */
 	osx_latencycritical_activity = objc_msgSend(pi, bawo, 0x00FFFFFFULL | 0xFF00000000ULL, str);
+#endif
 }
 
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 101500
+/* Done with latency critical */
+void osx_latencycritical_end() {
+	if (osx_latencycritical_cnt > 0) {
+		osx_latencycritical_cnt--;
+		if (osx_latencycritical_cnt == 0 && osx_latencycritical_activity != nil) {
+			a1logd(g_log, 7, "OS X - Latency Critical Activity end");
+			((id (*)(id, SEL, id))objc_msgSend)(
+			             ((id (*)(id, SEL))objc_msgSend)((id)objc_getClass("NSProcessInfo"),
+			             sel_getUid("processInfo")), sel_getUid("endActivity:"),
+			             osx_latencycritical_activity);
+			osx_latencycritical_activity = nil;
+		}
+	}
+}
+#else
 /* Done with latency critical */
 void osx_latencycritical_end() {
 	if (osx_latencycritical_cnt > 0) {
@@ -927,6 +1031,7 @@ void osx_latencycritical_end() {
 		}
 	}
 }
+#endif
 
 #endif	/* __APPLE__ */
 
@@ -997,6 +1102,7 @@ int nch		/* Col high index */
 	rows = nrh - nrl + 1;
 	cols = nch - ncl + 1;
 
+	/* One extra pointer before colums to hold main allocation address */
 	if ((m = (double **) malloc((rows + 1) * sizeof(double *))) == NULL) {
 		if (ret_null_on_malloc_fail)
 			return NULL;
@@ -1778,6 +1884,7 @@ int matrix_mult(
 	double **s2, int nr2, int nc2
 ) {
 	int i, j, k;
+	double **_d = d;
 
 	/* s1 and s2 must mesh */
 	if (nc1 != nr2)
@@ -1789,15 +1896,23 @@ int matrix_mult(
 
 	/* Output colums = s2 columns */
 	if (nc != nc2)
-		return 2;
+		return 3;
+
+	if (d == s1 || d == s2)
+		_d = dmatrix(0, nr-1, 0, nc-1);
 
 	for (i = 0; i < nr1; i++) {
 		for (j = 0; j < nc2; j++) { 
-			d[i][j] = 0.0;  
+			_d[i][j] = 0.0;  
 			for (k = 0; k < nc1; k++) {
-				d[i][j] += s1[i][k] * s2[k][j];
+				_d[i][j] += s1[i][k] * s2[k][j];
 			}
 		}
+	}
+
+	if (_d != d) {
+		copy_dmatrix(d, _d, 0, nr-1, 0, nc-1);
+		free_dmatrix(_d, 0, nr-1, 0, nc-1);
 	}
 
 	return 0;
@@ -1812,26 +1927,77 @@ int matrix_trans_mult(
 	double **s2, int nr2, int nc2
 ) {
 	int i, j, k;
+	double **_d = d;
 
 	/* s1 and s2 must mesh */
 	if (nr1 != nr2)
 		return 1;
 
-	/* Output rows = s1 rows */
+	/* Output rows = s1 columns */
 	if (nr != nc1)
 		return 2;
 
 	/* Output colums = s2 columns */
 	if (nc != nc2)
-		return 2;
+		return 3;
+
+	if (d == ts1 || d == s2)
+		_d = dmatrix(0, nr-1, 0, nc-1);
 
 	for (i = 0; i < nc1; i++) {
 		for (j = 0; j < nc2; j++) { 
-			d[i][j] = 0.0;  
+			_d[i][j] = 0.0;  
 			for (k = 0; k < nr1; k++) {
-				d[i][j] += ts1[k][i] * s2[k][j];
+				_d[i][j] += ts1[k][i] * s2[k][j];
 			}
 		}
+	}
+
+	if (_d != d) {
+		copy_dmatrix(d, _d, 0, nr-1, 0, nc-1);
+		free_dmatrix(_d, 0, nr-1, 0, nc-1);
+	}
+
+	return 0;
+}
+
+/* Matrix multiply s1 by transpose of s2 */
+/* 0 based matricies,  */
+int matrix_mult_trans(
+	double **d,  int nr,  int nc,
+	double **s1, int nr1, int nc1,
+	double **ts2, int nr2, int nc2
+) {
+	int i, j, k;
+	double **_d = d;
+
+	/* s1 and s2 must mesh */
+	if (nc1 != nc2)
+		return 1;
+
+	/* Output rows = s1 rows */
+	if (nr != nr1)
+		return 2;
+
+	/* Output colums = s2 rows */
+	if (nc != nr2)
+		return 3;
+
+	if (d == s1 || d == ts2)
+		_d = dmatrix(0, nr-1, 0, nc-1);
+
+	for (i = 0; i < nr1; i++) {
+		for (j = 0; j < nr2; j++) { 
+			_d[i][j] = 0.0;  
+			for (k = 0; k < nc1; k++) {
+				_d[i][j] += s1[i][k] * ts2[j][k];
+			}
+		}
+	}
+
+	if (_d != d) {
+		copy_dmatrix(d, _d, 0, nr-1, 0, nc-1);
+		free_dmatrix(_d, 0, nr-1, 0, nc-1);
 	}
 
 	return 0;
@@ -1863,12 +2029,13 @@ int matrix_vect_mult(
 
 	/* Output vector must match matrix rows */
 	if (nd != nr)
-		return 1;
+		return 2;
 
 	for (i = 0; i < nd; i++) {
 		d[i] = 0.0;  
-		for (j = 0; j < nv; j++)
+		for (j = 0; j < nv; j++) {
 			d[i] += m[i][j] * _v[j];
+		}
 	}
 
 	if (_v != v && _v != vv)
@@ -1903,7 +2070,7 @@ int matrix_trans_vect_mult(
 
 	/* Output vector must match matrix rows */
 	if (nd != nc)
-		return 1;
+		return 2;
 
 	for (i = 0; i < nd; i++) {
 		d[i] = 0.0;  
@@ -1917,6 +2084,58 @@ int matrix_trans_vect_mult(
 	return 0;
 }
 
+/* Add 0 based matricies */
+void matrix_add(double **d,  double **s1, double **s2, int nr,  int nc) {
+	int i, j;
+	for (i = 0; i < nr; i++) {
+		for (j = 0; j < nc; j++)
+			d[i][j] = s1[i][j] + s2[i][j];
+	}
+}
+
+/* Add scaled 0 based matricies */
+void matrix_scaled_add(double **d,  double **s1, double scale, double **s2, int nr,  int nc) {
+	int i, j;
+	for (i = 0; i < nr; i++) {
+		for (j = 0; j < nc; j++)
+			d[i][j] = s1[i][j] + scale * s2[i][j];
+	}
+}
+
+/* Copy a 0 base matrix */
+void matrix_cpy(double **d, double **s, int nr,  int nc) {
+	int i, j;
+	for (i = 0; i < nr; i++) {
+		for (j = 0; j < nc; j++)
+			d[i][j] = s[i][j];
+	}
+}
+
+/* Set a 0 base matrix */
+void matrix_set(double **d, double v, int nr,  int nc) {
+	int i, j;
+	for (i = 0; i < nr; i++) {
+		for (j = 0; j < nc; j++)
+			d[i][j] = v;
+	}
+}
+
+/* Return the maximum absolute difference between any corresponding elemnt */
+double matrix_max_diff(double **d, double **s, int nr,  int nc) {
+	int i, j;
+	double md = 0.0;
+
+	for (i = 0; i < nr; i++) {
+		for (j = 0; j < nc; j++) {
+			double tt = d[i][j] - s[i][j];
+			tt = fabs(tt);
+			if (tt > md)
+				md = tt;
+		}
+	}
+	return md;
+}
+
 
 /* Set zero based dvector */
 void vect_set(double *d, double v, int len) {
@@ -1928,7 +2147,6 @@ void vect_set(double *d, double v, int len) {
 			d[i] = v;
 	}
 }
-
 
 /* Negate and copy a vector, d = -v */
 /* d may be same as v */
@@ -1985,6 +2203,15 @@ void vect_invert(double *d, double *s, int len) {
 		d[i] = 1.0/s[i];
 }
 
+/* Multiply the dest by the source, d *= s */
+void vect_mul(
+	double *d, double *s, int len
+) {
+	int i;
+	for (i = 0; i < len; i++)
+		d[i] *= s[i];
+}
+
 /* Multiply the elements of two vectors, d = s1 * s2 */
 void vect_mul3(
 	double *d, double *s1, double *s2, int len
@@ -1992,6 +2219,71 @@ void vect_mul3(
 	int i;
 	for (i = 0; i < len; i++)
 		d[i] = s1[i] * s2[i];
+}
+
+/* Divide the destination by the source, d /= s1 */
+void vect_div(
+	double *d, double *s, int len
+) {
+	int i;
+	for (i = 0; i < len; i++)
+		d[i] /= s[i];
+}
+
+/* Divide the elements of two vectors, d = s1 / s2 */
+void vect_div3(double *d, double *s1, double *s2, int len) {
+	int i;
+	for (i = 0; i < len; i++)
+		d[i] = s1[i] / s2[i];
+}
+
+/* Divide the elements of two vectors, d = s1 / s2 */
+/* Return 1.0 if s2 < 1e-6 */
+void vect_div3_safe(double *d, double *s1, double *s2, int len) {
+	int i;
+	for (i = 0; i < len; i++) {
+		if (fabs(s2[i]) >= 1e-6)
+			d[i] = s1[i] / s2[i];
+		else
+			d[i] = 1.0;
+	}
+}
+/* Multiply and divide, d *= s1 / s2 */
+void vect_muldiv(double *d, double *s1, double *s2, int len) {
+	int i;
+	for (i = 0; i < len; i++)
+		d[i] *= s1[i] / s2[i];
+}
+
+/* Multiply and divide, d *= s1 / s2 */
+/* Don't change d if s2 < 1e-6 */
+void vect_muldiv_safe(double *d, double *s1, double *s2, int len) {
+	int i;
+	for (i = 0; i < len; i++) {
+		if (fabs(s2[i]) >= 1e-6)
+			d[i] *= s1[i] / s2[i];
+	}
+}
+
+/* Multiply and divide, d = s1 * s2 / s3 */
+void vect_muldiv3(double *d, double *s1, double *s2, double *s3, int len) {
+	int i;
+	for (i = 0; i < len; i++)
+		d[i] = s1[i] * s2[i] / s3[i];
+}
+
+/* Return the maximum elements from two vectors */
+void vect_max_elem(double *d, double *s, int len) {
+	int i;
+	for (i = 0; i < len; i++)
+		d[i] = (d[i] > s[i]) ? d[i] : s[i];
+}
+
+/* Return the maximum elements from two vectors */
+void vect_max_elem3(double *d, double *s1, double *s2, int len) {
+	int i;
+	for (i = 0; i < len; i++)
+		d[i] = (s1[i] > s2[i]) ? s1[i] : s2[i];
 }
 
 /* Scale a vector, */
@@ -2003,7 +2295,16 @@ void vect_scale(double *d, double *s, double scale, int len) {
 		d[i] = s[i] * scale;
 }
 
+/* 1 argument scale a vector, */
+void vect_scale1(double *d, double scale, int len) {
+	int i;
+
+	for (i = 0; i < len; i++)
+		d[i] *= scale;
+}
+
 /* Blend between s0 and s1 for bl 0..1 */
+/* i.e. d = (1 - bl) * s0 + bl * s1 */
 void vect_blend(double *d, double *s0, double *s1, double bl, int len) {
 	int i;
 
@@ -2039,6 +2340,17 @@ double vect_mag(double *s, int len) {
 	return sqrt(rv);
 }
 
+/* Return the vectors magnitude squared (norm squared) */
+double vect_magsq(double *s, int len) {
+	int i;
+	double rv = 0.0;
+
+	for (i = 0; i < len; i++)
+		rv += s[i] * s[i];
+
+	return rv;
+}
+
 /* Return the magnitude (norm) of the difference between two vectors */
 double vect_diffmag(double *s1, double *s2, int len) {
 	int i;
@@ -2050,6 +2362,31 @@ double vect_diffmag(double *s1, double *s2, int len) {
 	}
 
 	return sqrt(rv);
+}
+
+/* Return the sum of the vectors elements */
+double vect_sum(double *s, int len) {
+	int i;
+	double rv = 0.0;
+
+	for (i = 0; i < len; i++)
+		rv += s[i];
+
+	return rv;
+}
+
+/* Return the average value of the elements of a vector */
+double vect_avg(double *s, int len) {
+	int i;
+	double rv = 0.0;
+
+	if (len <= 0)
+		return rv;
+
+	for (i = 0; i < len; i++)
+		rv += s[i];
+
+	return rv/(double)len;
 }
 
 /* Return the normalized vectors */
@@ -2065,17 +2402,19 @@ int vect_normalize(double *d, double *s, int len) {
 
 	if (nv < 1e-9) {
 		nv = 1.0;
-		rv = 0;
+		rv = 1;
+	} else {
+		nv = 1.0/nv;
 	}
 
 	for (i = 0; i < len; i++)
-		d[i] = s[i]/nv;
+		d[i] = s[i] * nv;
 
 	return rv;
 }
 
-/* Return the vectors elements maximum magnitude (+ve) */
-double vect_max(double *s, int len) {
+/* Return the vectors elements maximum absolute magnitude */
+double vect_max_mag(double *s, int len) {
 	int i;
 	double rv = 0.0;
 
@@ -2084,7 +2423,47 @@ double vect_max(double *s, int len) {
 		if (tt > rv)
 			rv = tt;
 	}
+	return rv;
+}
 
+/* Return the vectors elements maximum value */
+double vect_max(double *s, int len) {
+	int i;
+	double rv = -DBL_MAX;
+
+	for (i = 0; i < len; i++) {
+		if (s[i] > rv)
+			rv = s[i];
+	}
+	return rv;
+}
+
+/* Return the elements maximum value from two vectors */
+double vect_max2(double *s1, int len1, double *s2, int len2) {
+	int i;
+	double rv = -DBL_MAX;
+
+	for (i = 0; i < len1; i++) {
+		if (s1[i] > rv)
+			rv = s1[i];
+	}
+
+	for (i = 0; i < len2; i++) {
+		if (s2[i] > rv)
+			rv = s2[i];
+	}
+	return rv;
+}
+
+/* Return the vectors elements minimum value */
+double vect_min(double *s, int len) {
+	int i;
+	double rv = DBL_MAX;
+
+	for (i = 0; i < len; i++) {
+		if (s[i] < rv)
+			rv = s[i];
+	}
 	return rv;
 }
 
@@ -2118,6 +2497,212 @@ void vect_spow(double *d, double *s, double pv, int len) {
 	}
 }
 
+/* Clip to a range */
+/* Return NZ if any clipping occured */
+/* d may be null */
+int vect_clip(double *d, double *s, double min, double max, int len) {
+	int i, clip = 0;
+
+	for (i = 0; i < len; i++) {
+		if (s[i] < min) {
+			clip = 1;
+			if (d != NULL)
+				d[i] = min;
+		} else if (s[i] > max) {
+			clip = 1;
+			if (d != NULL)
+		 		d[i] = max;
+		} else if (d != NULL) {
+			d[i] = s[i];
+		}
+	}
+
+	return clip;
+}
+
+/* Compare two vectors and return nz if they are the same */
+int vect_cmp(double *s1, double *s2, int len) {
+	int i;
+
+	for (i = 0; i < len; i++) {
+		if (s1[i] != s2[i])
+			return 0;
+	}
+	return 1;
+}
+
+/* - - - - - - - - - - - - - - - - - - - - - - */
+
+/* Linearly search a vector from 0 for a given value. */
+/* The must be ordered from smallest to largest. */
+/* The returned index is p[ix] <= val < p[ix+1] */
+/* Clip to the range of the vector 0..len-1 */
+int vect_lsearch(double *p, double in, int len) {
+	int i;
+
+	if (in < p[0])
+		in = p[0];
+	else if (in > p[len-1])
+		in = p[len-1];
+
+	/* Search for location of input within p[] */
+	for (i = 0; i < (len-1); i++) {
+		if (in >= p[i] && in < p[i+1])
+			break;
+	}
+	return i;
+}
+
+/* Binary search a vector from 0 for a given value. */
+/* The must be ordered from smallest to largest. */
+/* The returned index is p[ix] <= val < p[ix+1] */
+/* Clip to the range of the vector 0..len-1 */
+int vect_bsearch(double *p, double in, int len) {
+	int i0, i1, i2;
+	double v0, v1, v2;
+
+//fprintf(stderr,"~1 bsearch in %f len %d\n",in,len);
+	i0 = 0;
+	i2 = len - 1;
+	v0 = p[i0];
+	v2 = p[i2];
+
+//fprintf(stderr,"~1 i0 %d v0 %f i2 %d v2 %f\n",i0,v0,i2,v2);
+
+	if (in <= v0) {
+//fprintf(stderr,"~1 clip low\n");
+		i0 = i0;
+	} else if (in >= v2) {
+//fprintf(stderr,"~1 clip high\n");
+		i0 = i2;
+	} else {
+		do {
+			i1 = (i2 + i0)/2;		/* Trial point */
+			v1 = p[i1];				/* Value at trial */
+//fprintf(stderr,"~1 i0 %d v0 %f i1 %d v1 %f i2 %d v2 %f\n",i0,v0,i1,v1,i2,v2);
+			if (v1 < in) {
+				i0 = i1;			/* Take top half */
+				v0 = v1;
+			} else {
+				i2 = i1;			/* Take bottom half */
+				v2 = v1;
+			}
+		} while ((i2 - i0) > 1);
+		
+	}
+//fprintf(stderr,"~1 bsearch returnin %d\n",i0);
+	return i0;
+}
+
+/* Do a linear interpolation into a vector */
+/* Input 0.0 .. 1.0, clips result if outside that range */
+double vect_lerp(double *s, double in, int len) {
+	int i;
+	double out;
+
+	if (in < 0.0)
+		in = 0.0;
+	else if (in > 1.0)
+		in = 1.0;
+
+	in *= (len-1.0);				/* fp index value */
+	i = (int)floor(in);				/* Lower grid of point */
+
+	if (i >= (len-2))				/* Force to lower of two */
+		i = len-2;
+
+	in = in - (double)i;			/* Weight to upper grid point */
+
+	out = ((1.0 - in) * s[i]) + (in * s[i+1]);
+
+	return out;
+}
+
+/* Do a reverse linear interpolation of a vector. */
+/* This uses a simple search for the given value, */
+/* and so will return the reverse interpolation of the */
+/* matching span with the smallest index value. */ 
+/* Output 0.0 .. 1.0, clips result if outside that range */
+/* to the nearest index */
+double vect_rev_lerp(double *s, double in, int len) {
+	int i;
+	double out;
+	double minv = 1e38, maxv = -1e38;
+	double minx, maxx;
+
+	/* Search for location of input within s[] */
+	for (i = 0; i < (len-1); i++) {
+		if (in >= s[i] && in < s[i+1])
+			break;
+
+		if (s[i] < minv) {
+			minv = s[i];
+			minx = i;
+		}
+		if (s[i] > maxv) {
+			maxv = s[i];
+			maxx = i;
+		}
+	}
+
+	/* in value is outside vector value range */
+	if (i >= (len-1)) {
+		if (in < minv)
+			out = minx/(len-1.0);
+		else 
+			out = maxx/(len-1.0);
+		
+	} else {
+		out = (double)i + (in - s[i])/(s[i+1] - s[i]);
+		out /= (len-1.0);
+	}
+
+	return out;
+}
+
+/* Do a linear interpolation into a vector pair, position->value. */
+/* It is assumed that p[] is in sorted smallest to largest order, */
+/* and that the entries are distinct. */
+/* If input is outside range of p[], then the returned value will be */
+/* linearly extrapolated. */
+double vect_lerp2x(double *p, double *v, double in, int len) {
+	int i;
+	double out;
+
+	/* Locate pair to interpolate between */
+	i = vect_bsearch(p, in, len);
+//fprintf(stderr,"~1 bsearch returned %d\n",i);
+	if (i > (len-1))
+		i = len-1;
+//fprintf(stderr,"~1 bsearch after clip %d\n",i);
+
+	in = (in - p[i])/(p[i+1] - p[i]);
+//fprintf(stderr,"~1 lerp blend f %f\n",in);
+
+	out = ((1.0 - in) * v[i]) + (in * v[i+1]);
+//fprintf(stderr,"~1 lerp2 interpin v[%d] %f and v[%d] %f returning %f\n", i,v[i],i+1,v[i+1],out);
+
+	return out;
+}
+
+/* Same as above, but clip rather than extrapolating. */
+double vect_lerp2(double *p, double *v, double in, int len) {
+	double ret;
+
+	if (in < p[0]) {
+//fprintf(stderr,"~1 in %f < p[0] %f returning v[0] %f\n",in,p[0],v[0]);
+		return v[0];
+	} else if (in > p[len-1]) {
+//fprintf(stderr,"~1 in %f > p[%d] %f returning v[%d] %f\n",in,len-1,p[len-1],len-1,v[len-1]);
+		return v[len-1];
+	}
+
+	ret = vect_lerp2x(p, v, in, len);
+
+//fprintf(stderr,"~1 in %f returning ler2x %f\n",in,ret);
+	return ret;
+}
+
 /* - - - - - - - - - - - - - - - - - - - - - - */
 
 /* Set zero based ivector */
@@ -2134,6 +2719,197 @@ void ivect_set(int *d, int v, int len) {
 
 /* - - - - - - - - - - - - - - - - - - - - - - */
 
+/* Print double matrix to FILE * */
+/* id identifies matrix */
+/* pfx used at start of each line */
+/* Assumed indexed from 0 */
+void dump_dmatrix(FILE *fp, char *id, char *pfx, double **a, int nr,  int nc) {
+	int i, j;
+	fprintf(fp, "%s%s[%d][%d]\n",pfx,id,nr,nc);
+
+	for (j = 0; j < nr; j++) {
+		fprintf(fp, "%s ",pfx);
+		for (i = 0; i < nc; i++)
+			fprintf(fp, "%f%s",a[j][i], i < (nc-1) ? ", " : "");
+		fprintf(fp, "\n");
+	}
+}
+
+/* Print double matrix to FILE * with formatting */
+/* id identifies matrix */
+/* pfx used at start of each line */
+/* Assumed indexed from 0 */
+void dump_dmatrix_fmt(FILE *fp, char *id, char *pfx, double **a, int nr, int nc, char *fmt) {
+	int i, j;
+	fprintf(fp, "%s%s[%d][%d]\n",pfx,id,nr,nc);
+
+	for (j = 0; j < nr; j++) {
+		fprintf(fp, "%s ",pfx);
+		for (i = 0; i < nc; i++) {
+			fprintf(fp, fmt, a[j][i]);
+			if (i < (nc-1))
+				fprintf(fp, "%s",", ");
+		}
+		fprintf(fp, "\n");
+	}
+}
+
+/* Print float matrix to FILE * */
+/* id identifies matrix */
+/* pfx used at start of each line */
+/* Assumed indexed from 0 */
+void dump_fmatrix(FILE *fp, char *id, char *pfx, float **a, int nr,  int nc) {
+	int i, j;
+	fprintf(fp, "%s%s[%d][%d]\n",pfx,id,nr,nc);
+
+	for (j = 0; j < nr; j++) {
+		fprintf(fp, "%s ",pfx);
+		for (i = 0; i < nc; i++)
+			fprintf(fp, "%f%s",a[j][i], i < (nc-1) ? ", " : "");
+		fprintf(fp, "\n");
+	}
+}
+
+/* Print int matrix to FILE * */
+/* id identifies matrix */
+/* pfx used at start of each line */
+/* Assumed indexed from 0 */
+void dump_imatrix(FILE *fp, char *id, char *pfx, int **a, int nr,  int nc) {
+	int i, j;
+	fprintf(fp, "%s%s[%d][%d]\n",pfx,id,nr,nc);
+
+	for (j = 0; j < nr; j++) {
+		fprintf(fp, "%s ",pfx);
+		for (i = 0; i < nc; i++)
+			fprintf(fp, "%d%s",a[j][i], i < (nc-1) ? ", " : "");
+		fprintf(fp, "\n");
+	}
+}
+
+/* Print short matrix to FILE * */
+/* id identifies matrix */
+/* pfx used at start of each line */
+/* Assumed indexed from 0 */
+void dump_smatrix(FILE *fp, char *id, char *pfx, short **a, int nr,  int nc) {
+	int i, j;
+	fprintf(fp, "%s%s[%d][%d]\n",pfx,id,nr,nc);
+
+	for (j = 0; j < nr; j++) {
+		fprintf(fp, "%s ",pfx);
+		for (i = 0; i < nc; i++)
+			fprintf(fp, "%d%s",a[j][i], i < (nc-1) ? ", " : "");
+		fprintf(fp, "\n");
+	}
+}
+
+/* Print double vector to FILE * */
+/* id identifies vector */
+/* pfx used at start of each line */
+/* Assumed indexed from 0 */
+void dump_dvector(FILE *fp, char *id, char *pfx, double *a, int nc) {
+	int i;
+	fprintf(fp, "%s%s[%d]\n",pfx,id,nc);
+	fprintf(fp, "%s ",pfx);
+	for (i = 0; i < nc; i++)
+		fprintf(fp, "%f%s",a[i], i < (nc-1) ? ", " : "");
+	fprintf(fp, "\n");
+}
+
+/* Print double vector to FILE * with formatting */
+/* id identifies vector */
+/* pfx used at start of each line */
+/* Assumed indexed from 0 */
+void dump_dvector_fmt(FILE *fp, char *id, char *pfx, double *a, int nc, char *fmt) {
+	int i;
+	fprintf(fp, "%s%s[%d]\n",pfx,id,nc);
+	fprintf(fp, "%s ",pfx);
+	for (i = 0; i < nc; i++) {
+		fprintf(fp, fmt, a[i]);
+		if (i < (nc-1))
+			fprintf(fp, "%s",", ");
+	}
+	fprintf(fp, "\n");
+}
+
+/* Print float vector to FILE * */
+/* id identifies vector */
+/* pfx used at start of each line */
+/* Assumed indexed from 0 */
+void dump_fvector(FILE *fp, char *id, char *pfx, float *a, int nc) {
+	int i;
+	fprintf(fp, "%s%s[%d]\n",pfx,id,nc);
+	fprintf(fp, "%s ",pfx);
+	for (i = 0; i < nc; i++)
+		fprintf(fp, "%f%s",a[i], i < (nc-1) ? ", " : "");
+	fprintf(fp, "\n");
+}
+
+/* Print int vector to FILE * */
+/* id identifies vector */
+/* pfx used at start of each line */
+/* Assumed indexed from 0 */
+void dump_ivector(FILE *fp, char *id, char *pfx, int *a, int nc) {
+	int i;
+	fprintf(fp, "%s%s[%d]\n",pfx,id,nc);
+	fprintf(fp, "%s ",pfx);
+	for (i = 0; i < nc; i++)
+		fprintf(fp, "%d%s",a[i], i < (nc-1) ? ", " : "");
+	fprintf(fp, "\n");
+}
+
+/* Print short vector to FILE * */
+/* id identifies vector */
+/* pfx used at start of each line */
+/* Assumed indexed from 0 */
+void dump_svector(FILE *fp, char *id, char *pfx, short *a, int nc) {
+	int i;
+	fprintf(fp, "%s%s[%d]\n",pfx,id,nc);
+	fprintf(fp, "%s ",pfx);
+	for (i = 0; i < nc; i++)
+		fprintf(fp, "%d%s",a[i], i < (nc-1) ? ", " : "");
+	fprintf(fp, "\n");
+}
+
+/* Format double matrix as C code to FILE */
+/* id is variable name */
+/* pfx used at start of each line */
+/* hb sets horizontal element limit to wrap */
+/* Assumed indexed from 0 */
+void acode_dmatrix(FILE *fp, char *id, char *pfx, double **a, int nr,  int nc, int hb) {
+	int i, j;
+	fprintf(fp, "%sdouble %s[%d][%d] = {\n",pfx,id,nr,nc);
+
+	for (j = 0; j < nr; j++) {
+		fprintf(fp, "%s\t{ ",pfx);
+		for (i = 0; i < nc; i++) {
+			fprintf(fp, "%f%s",a[j][i], i < (nc-1) ? ", " : "");
+			if ((i % hb) == (hb-1))
+				fprintf(fp, "\n%s\t  ",pfx);
+		}
+		fprintf(fp, " }%s\n", j < (nr-1) ? "," : "");
+	}
+	fprintf(fp, "%s};\n",pfx);
+}
+
+/* Format double vector as C code to FILE */
+/* id is variable name */
+/* pfx used at start of each line */
+/* hb sets horizontal element limit to wrap */
+/* Assumed indexed from 0 */
+void acode_dvector(FILE *fp, char *id, char *pfx, double *v, int nc, int hb) {
+	int i;
+	fprintf(fp, "%sdouble %s[%d] = { ",pfx,id,nc);
+
+	for (i = 0; i < nc; i++) {
+		fprintf(fp, "%f%s",v[i], i < (nc-1) ? ", " : "");
+		if ((i % hb) == (hb-1))
+			fprintf(fp, "\n%s\t  ",pfx);
+	}
+	fprintf(fp, "%s};\n",pfx);
+}
+
+/* - - - - - - - - - - - - - - - - - - - - - - */
+
 /* Print double matrix to g_log debug */
 /* id identifies matrix */
 /* pfx used at start of each line */
@@ -2146,6 +2922,25 @@ void adump_dmatrix(a1log *log, char *id, char *pfx, double **a, int nr,  int nc)
 		a1logd(g_log, 0, "%s ",pfx);
 		for (i = 0; i < nc; i++)
 			a1logd(g_log, 0, "%f%s",a[j][i], i < (nc-1) ? ", " : "");
+		a1logd(g_log, 0, "\n");
+	}
+}
+
+/* Print double matrix to g_log debug with formatting */
+/* id identifies matrix */
+/* pfx used at start of each line */
+/* Assumed indexed from 0 */
+void adump_dmatrix_fmt(a1log *log, char *id, char *pfx, double **a, int nr, int nc, char *fmt) {
+	int i, j;
+	a1logd(g_log, 0, "%s%s[%d][%d]\n",pfx,id,nr,nc);
+
+	for (j = 0; j < nr; j++) {
+		a1logd(g_log, 0, "%s ",pfx);
+		for (i = 0; i < nc; i++) {
+			a1logd(g_log, 0, fmt, a[j][i]);
+			if (i < (nc-1))
+				a1logd(g_log, 0, "%s",", ");
+		}
 		a1logd(g_log, 0, "\n");
 	}
 }
@@ -2198,27 +2993,6 @@ void adump_smatrix(a1log *log, char *id, char *pfx, short **a, int nr,  int nc) 
 	}
 }
 
-/* Format double matrix as C code to FILE */
-/* id is variable name */
-/* pfx used at start of each line */
-/* hb sets horizontal element limit to wrap */
-/* Assumed indexed from 0 */
-void acode_dmatrix(FILE *fp, char *id, char *pfx, double **a, int nr,  int nc, int hb) {
-	int i, j;
-	fprintf(fp, "%sdouble %s[%d][%d] = {\n",pfx,id,nr,nc);
-
-	for (j = 0; j < nr; j++) {
-		fprintf(fp, "%s\t{ ",pfx);
-		for (i = 0; i < nc; i++) {
-			fprintf(fp, "%f%s",a[j][i], i < (nc-1) ? ", " : "");
-			if ((i % hb) == (hb-1))
-				fprintf(fp, "\n%s\t  ",pfx);
-		}
-		fprintf(fp, " }%s\n", j < (nr-1) ? "," : "");
-	}
-	fprintf(fp, "%s};\n",pfx);
-}
-
 /* Print double vector to g_log debug */
 /* id identifies vector */
 /* pfx used at start of each line */
@@ -2229,6 +3003,22 @@ void adump_dvector(a1log *log, char *id, char *pfx, double *a, int nc) {
 	a1logd(g_log, 0, "%s ",pfx);
 	for (i = 0; i < nc; i++)
 		a1logd(g_log, 0, "%f%s",a[i], i < (nc-1) ? ", " : "");
+	a1logd(g_log, 0, "\n");
+}
+
+/* Print double vector to g_log debug with formatting */
+/* id identifies vector */
+/* pfx used at start of each line */
+/* Assumed indexed from 0 */
+void adump_dvector_fmt(a1log *log, char *id, char *pfx, double *a, int nc, char *fmt) {
+	int i;
+	a1logd(g_log, 0, "%s%s[%d]\n",pfx,id,nc);
+	a1logd(g_log, 0, "%s ",pfx);
+	for (i = 0; i < nc; i++) {
+		a1logd(g_log, 0, fmt, a[i]);
+		if (i < (nc-1))
+			a1logd(g_log, 0, "%s",", ");
+	}
 	a1logd(g_log, 0, "\n");
 }
 
@@ -2269,6 +3059,22 @@ void adump_svector(a1log *log, char *id, char *pfx, short *a, int nc) {
 	for (i = 0; i < nc; i++)
 		a1logd(g_log, 0, "%d%s",a[i], i < (nc-1) ? ", " : "");
 	a1logd(g_log, 0, "\n");
+}
+
+/* Print C double matrix to g_log debug */
+/* id identifies matrix */
+/* pfx used at start of each line */
+/* Assumed indexed from 0 */
+void adump_C_dmatrix(a1log *log, char *id, char *pfx, double *a, int nr, int nc) {
+	int i, j;
+	a1logd(g_log, 0, "%s%s[%d][%d]\n",pfx,id,nr,nc);
+
+	for (j = 0; j < nr; j++, a += nc) {
+		a1logd(g_log, 0, "%s ",pfx);
+		for (i = 0; i < nc; i++)
+			a1logd(g_log, 0, "%f%s",a[i], i < (nc-1) ? ", " : "");
+		a1logd(g_log, 0, "\n");
+	}
 }
 
 /* ============================================================================ */
@@ -2418,22 +3224,6 @@ void matrix_TransposeNxN(int n, double *out, double *in) {
 	}
 }
 
-/* Print C double matrix to g_log debug */
-/* id identifies matrix */
-/* pfx used at start of each line */
-/* Assumed indexed from 0 */
-void adump_C_dmatrix(a1log *log, char *id, char *pfx, double *a, int nr, int nc) {
-	int i, j;
-	a1logd(g_log, 0, "%s%s[%d][%d]\n",pfx,id,nr,nc);
-
-	for (j = 0; j < nr; j++, a += nc) {
-		a1logd(g_log, 0, "%s ",pfx);
-		for (i = 0; i < nc; i++)
-			a1logd(g_log, 0, "%f%s",a[i], i < (nc-1) ? ", " : "");
-		a1logd(g_log, 0, "\n");
-	}
-}
-
 /*******************************************/
 /* Platform independent IEE754 conversions */
 /*******************************************/
@@ -2505,6 +3295,7 @@ double IEEE754todouble(ORD32 ip) {
 /* in a platform independent fashion. (ie. This works even */
 /* on the rare platforms that don't use IEEE 754 floating */
 /* point for their C implementation) */
+/* (Does this clip to range ?) */
 ORD64 doubletoIEEE754_64(double d) {
 	ORD32 sn = 0, ep = 0;
 	ORD64 ma, id;
@@ -2883,6 +3674,109 @@ void write_INR64_le(ORD8 *p, INR64 d) {
 	p[7] = (ORD8)(d >> 56);
 }
 
+/* - - - - - - - - */
+
+double read_FLT32_be(ORD8 *p);
+double read_FLT32_le(ORD8 *p);
+void write_FLT32_be(ORD8 *p, double d);
+void write_FLT32_le(ORD8 *p, double d);
+
+double read_FLT64_be(ORD8 *p);
+double read_FLT64_le(ORD8 *p);
+void write_FLT64_be(ORD8 *p, double d);
+void write_FLT64_le(ORD8 *p, double d);
+
+/* - - - - - - - - */
+/* IEEE 32 bit float */
+
+double read_FLT32_be(ORD8 *p) {
+	ORD32 val;
+	val = (((ORD32)p[0]) << 24)
+	    + (((ORD32)p[1]) << 16)
+	    + (((ORD32)p[2]) << 8)
+	    + (((ORD32)p[3]));
+	return IEEE754todouble(val);
+}
+
+double read_FLT32_le(ORD8 *p) {
+	ORD32 val;
+	val = (((ORD32)p[0]))
+	    + (((ORD32)p[1]) << 8)
+	    + (((ORD32)p[2]) << 16)
+	    + (((ORD32)p[3]) << 24);
+	return IEEE754todouble(val);
+}
+
+void write_FLT32_be(ORD8 *p, double d) {
+	ORD32 val = doubletoIEEE754(d);
+	p[0] = (ORD8)(val >> 24);
+	p[1] = (ORD8)(val >> 16);
+	p[2] = (ORD8)(val >> 8);
+	p[3] = (ORD8)(val);
+}
+
+void write_FLT32_le(ORD8 *p, double d) {
+	ORD32 val = doubletoIEEE754(d);
+	p[0] = (ORD8)(val);
+	p[1] = (ORD8)(val >> 8);
+	p[2] = (ORD8)(val >> 16);
+	p[3] = (ORD8)(val >> 24);
+}
+
+/* - - - - - - - - */
+/* IEEE 64 bit float */
+
+double read_FLT64_be(ORD8 *p) {
+	ORD64 val;
+	val = (((ORD64)p[0]) << 56)
+	    + (((ORD64)p[1]) << 48)
+	    + (((ORD64)p[2]) << 40)
+	    + (((ORD64)p[3]) << 32)
+	    + (((ORD64)p[4]) << 24)
+	    + (((ORD64)p[5]) << 16)
+	    + (((ORD64)p[6]) << 8)
+	    + (((ORD64)p[7]));
+	return IEEE754_64todouble(val);
+}
+
+double read_FLT64_le(ORD8 *p) {
+	ORD64 val;
+	val = (((ORD64)p[0]))
+	    + (((ORD64)p[1]) << 8)
+	    + (((ORD64)p[2]) << 16)
+	    + (((ORD64)p[3]) << 24)
+	    + (((ORD64)p[4]) << 32)
+	    + (((ORD64)p[5]) << 40)
+	    + (((ORD64)p[6]) << 48)
+	    + (((ORD64)p[7]) << 56);
+	return IEEE754_64todouble(val);
+}
+
+void write_FLT64_be(ORD8 *p, double d) {
+	ORD64 val = doubletoIEEE754_64(d);
+	p[0] = (ORD8)(val >> 56);
+	p[1] = (ORD8)(val >> 48);
+	p[2] = (ORD8)(val >> 40);
+	p[3] = (ORD8)(val >> 32);
+	p[4] = (ORD8)(val >> 24);
+	p[5] = (ORD8)(val >> 16);
+	p[6] = (ORD8)(val >> 8);
+	p[7] = (ORD8)(val);
+}
+
+void write_FLT64_le(ORD8 *p, double d) {
+	ORD64 val = doubletoIEEE754_64(d);
+	p[0] = (ORD8)(val);
+	p[1] = (ORD8)(val >> 8);
+	p[2] = (ORD8)(val >> 16);
+	p[3] = (ORD8)(val >> 24);
+	p[4] = (ORD8)(val >> 32);
+	p[5] = (ORD8)(val >> 40);
+	p[6] = (ORD8)(val >> 48);
+	p[7] = (ORD8)(val >> 56);
+}
+
+
 /*******************************/
 /* System independent timing */
 
@@ -3066,11 +3960,15 @@ double usec_time() {
 /*******************************/
 
 #define DEB_MAX_CHAN 24
+#define DEB_NO_BUFS 10
+
+/* The buffer re-use arrangement isn't thread safe, but will */
+/* work a alot of the time */ 
 
 /* Print an int vector to a string. */
-/* Returned static buffer is re-used every 5 calls. */
+/* Returned static buffer is re-used every DEB_NO_BUFS calls. */
 char *debPiv(int di, int *p) {
-	static char buf[5][DEB_MAX_CHAN * 16];
+	static char buf[DEB_NO_BUFS][DEB_MAX_CHAN * 16];
 	static int ix = 0;
 	int e;
 	char *bp;
@@ -3078,7 +3976,7 @@ char *debPiv(int di, int *p) {
 	if (p == NULL)
 		return "(null)";
 
-	if (++ix >= 5)
+	if (++ix >= DEB_NO_BUFS)
 		ix = 0;
 	bp = buf[ix];
 
@@ -3096,7 +3994,7 @@ char *debPiv(int di, int *p) {
 /* Print a double color vector to a string with format. */
 /* Returned static buffer is re-used every 5 calls. */
 char *debPdvf(int di, char *fmt, double *p) {
-	static char buf[5][DEB_MAX_CHAN * 50];
+	static char buf[DEB_NO_BUFS][DEB_MAX_CHAN * 50];
 	static int ix = 0;
 	int e;
 	char *bp;
@@ -3107,7 +4005,7 @@ char *debPdvf(int di, char *fmt, double *p) {
 	if (fmt == NULL)
 		fmt = "%.8f";
 
-	if (++ix >= 5)
+	if (++ix >= DEB_NO_BUFS)
 		ix = 0;
 	bp = buf[ix];
 
@@ -3131,7 +4029,7 @@ char *debPdv(int di, double *p) {
 /* Print a float color vector to a string. */
 /* Returned static buffer is re-used every 5 calls. */
 char *debPfv(int di, float *p) {
-	static char buf[5][DEB_MAX_CHAN * 50];
+	static char buf[DEB_NO_BUFS][DEB_MAX_CHAN * 50];
 	static int ix = 0;
 	int e;
 	char *bp;
@@ -3139,7 +4037,7 @@ char *debPfv(int di, float *p) {
 	if (p == NULL)
 		return "(null)";
 
-	if (++ix >= 5)
+	if (++ix >= DEB_NO_BUFS)
 		ix = 0;
 	bp = buf[ix];
 
@@ -3154,4 +4052,24 @@ char *debPfv(int di, float *p) {
 	return buf[ix];
 }
 
+/*******************************************/
+/* In case system doesn't have an implementation */
+
+double gamma_func(double x) {
+	static double cvals[12] = {
+	  2.5066282746310002, 198580.06271387736, -696538.00715380255, 984524.69720040925, 
+	  -719481.38054635737, 290262.7541092608, -64035.016015929359, 7201.8644207650395, 
+	  -354.97463894564885, 5.6610056376747284, -0.01474384952133102, 7.4908560087605962e-007 };
+	double rv;
+	int i;
+ 
+	rv = cvals[0];
+	for(i = 1; i < 12; i++)
+		rv += cvals[i]/(x + i);
+	rv *= exp(-(x + 12)) * pow(x + 12, x + 0.5);
+
+	return rv/x;
+}
+
 #undef DEB_MAX_CHAN
+

@@ -2,7 +2,7 @@
 /* General instrument + serial I/O support */
 
 /*
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Author: Graeme W. Gill
  * Date:   28/9/97
@@ -49,6 +49,7 @@ int serial_get_paths(icompaths *p, icom_type mask);
 
 /* Fake display & instrument device */
 icompath icomFakeDevice = { instFakeDisp, "Fake Display Device" };
+
 
 
 
@@ -131,7 +132,7 @@ static icompath *icompaths_get_path_sel(
 	 && dtix != dtix_3dlut
 	 && dtix != dtix_vtpg
 	 && dtix != dtix_printer
-	 && dtix != dtix_cmfm) {
+	) {
 //printf("~1 unrec index\n");
 		return NULL;
 	}
@@ -184,7 +185,6 @@ static void icompaths_clear_all(icompaths *p) {
 	icompaths_clear(p, dtix_3dlut);
 	icompaths_clear(p, dtix_vtpg);
 	icompaths_clear(p, dtix_printer);
-	icompaths_clear(p, dtix_cmfm);
 	icompaths_clear(p, dtix_combined);
 }
 
@@ -252,10 +252,7 @@ int icompaths_make_dslists(icompaths *p) {
 			if ((rv = icompaths_add_path(p, dtix_printer, xp)) != ICOM_OK)
 				return rv;
 		}
-		if (xp->dctype & icomt_cmfm) {
-			if ((rv = icompaths_add_path(p, dtix_cmfm, xp)) != ICOM_OK)
-				return rv;
-		}
+
 	}
 
 	/* Maintain backwards compatible instrument list alias */
@@ -503,6 +500,11 @@ void serial_close_port(icoms *p);
 
 /* Close the port */
 static void icoms_close_port(icoms *p) {
+	
+	/* We could get called by a couple of different contexts on close/kill, */
+	/* so prevent a race */
+	amutex_lock(p->lock);
+
 	if (p->is_open) {
 #ifdef ENABLE_USB
 		if (p->usbd) {
@@ -518,6 +520,8 @@ static void icoms_close_port(icoms *p) {
 #endif /* ENABLE_SERIAL */
 		p->is_open = 0;
 	}
+
+	amutex_unlock(p->lock);
 }
 
 int icompaths_refresh_paths(icompaths *p) {
@@ -583,9 +587,9 @@ static int create_fserexcl(icompaths *p) {
 /* exclusion list */
 static int icompaths_fs_excluded(icompaths *p, icompath *path) {
 	
+#if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
 	a1logd(p->log, 5, "fs_excluded check '%s'\n",path->spath);
 
-#if defined(ENABLE_SERIAL) || defined(ENABLE_FAST_SERIAL)
 	if (p->exlist != NULL) {
 		int i;
 
@@ -850,6 +854,7 @@ icoms_del(icoms *p) {
 	if (p->name != NULL)
 		free(p->name);
 	p->log = del_a1log(p->log);		/* unref */
+	amutex_del(p->lock);
 	free (p);
 }
 
@@ -868,6 +873,8 @@ icoms *new_icoms(
 		return NULL;
 	}
 
+	amutex_init(p->lock);
+	
 	if ((p->name = strdup(ipath->name)) == NULL) {
 		a1loge(log, ICOM_SYS, "new_icoms: strdup failed!\n");
 		return NULL;

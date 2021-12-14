@@ -2,7 +2,7 @@
  /* General USB I/O support */
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Author: Graeme W. Gill
  * Date:   2006/22/4
@@ -64,15 +64,15 @@ void usb_uninit_cancel(usb_cancelt *p) {
 
 /* Used by caller of icoms to re-init for wait_io */
 /* Must be called before icoms_usb_wait_io() */
-void usb_reinit_cancel(usb_cancelt *p) {
+void usb_reinit_cancel(usb_cancelt *cancelt) {
 	
-	amutex_lock(p->cmtx);
+	amutex_lock(cancelt->cmtx);
 
-	p->hcancel = NULL;
-	p->state = 0;
-	amutex_lock(p->condx);		/* Block until IO is started */
+	cancelt->hcancel = NULL;
+	cancelt->state = 0;
+	amutex_lock(cancelt->condx);		/* Block until IO is started */
 
-	amutex_unlock(p->cmtx);
+	amutex_unlock(cancelt->cmtx);
 }
 
 /* Wait for the given transaction to be pending or complete. */
@@ -115,7 +115,8 @@ int request,			/* 8 bit request code (USB bRequest) */
 int value,				/* 16 bit value (USB wValue) */
 int index,				/* 16 bit index (USB wIndex) */
 unsigned char *rwbuf,	/* Write or read buffer */
-int rwsize, 			/* Bytes to read or write */
+int rwsize, 			/* Size to write/max bytes to read */
+int *xferred,			/* Bytes written or read (may be NULL) */
 double tout				/* Timeout in seconds */
 ) {
 	int rv = 0;			/* Return value */
@@ -147,7 +148,10 @@ double tout				/* Timeout in seconds */
 	a1logd(p->log, 8, "icoms_usb_control: returning ICOM err 0x%x\n",rv);
 
 	if (p->log->debug >= 8 && (requesttype & IUSB_ENDPOINT_IN)) 
-		a1logd(p->log, 8, " read data %s\n",icoms_tohex(rwbuf, rwsize));
+		a1logd(p->log, 8, " read data %s\n",icoms_tohex(rwbuf, rwbytes));
+
+	if (xferred != NULL)
+		*xferred = rwbytes;
 
 	return rv;
 }

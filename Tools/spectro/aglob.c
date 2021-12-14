@@ -131,7 +131,7 @@ int aglob_create(aglob *g, char *spath) {
 	memset(&g->g, 0, sizeof(g->g));
 	g->rv = glob(tpath, GLOB_NOSORT, NULL, &g->g);
 	free(tpath);
-//a1loge(g_log, 0, "~1 glob '%s' returns %d and gl_pathc = %d\n",spath,g->rv,g->g.gl_pathc);
+	a1logd(g_log, 2, " glob '%s' returns %d and gl_pathc %d\n",spath,g->rv,g->g.gl_pathc);
 	if (g->rv == GLOB_NOSPACE) {
 		a1loge(g_log, 1, "aglob_create: glob returned GLOB_NOSPACE\n");
 		return 1;

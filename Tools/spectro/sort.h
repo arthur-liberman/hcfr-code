@@ -19,7 +19,7 @@
  * extra storage, but often isn't as fast as quicksort.
  */
 
-/* To sort ascenting, need to #define HEAP_COMPARE(A,B) so it returns true if A < B */
+/* To sort ascending, need to #define HEAP_COMPARE(A,B) so it returns true if A < B */
 /* Note that A will be ARRAY[a], and B will be ARRAY[b] where a and b are indexes. */
 /* TYPE should be the type of each entry of the ARRAY */
 #define HEAPSORT(TYPE,ARRAY,NUMBER) \

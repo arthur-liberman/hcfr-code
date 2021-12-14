@@ -3,7 +3,7 @@
  /* This supports installing OEM data files */
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Author: Graeme W. Gill
  * Date:   13/11/2012
@@ -1437,19 +1437,22 @@ int is_s4cal(xfile *xf) {
 static xfile *spyd4cal_extract(xfile **pxf, xfile *dll, int verb) {
 	unsigned char *buf, *caldata;
 	unsigned int size;
-	unsigned int i, j;
+	unsigned int i, j, ii, k;
 	int nocals;
 	unsigned int rfsize;
 	/* First 41 x 8 bytes are the following pattern: */
 	unsigned char cal2vals[8] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0x3f };
-	unsigned char cal2evals[7] = { '3', '3', '3', '7', '1', '0', '-' };
+	unsigned char cal2evals[2][7] = {
+		{ '3', '3', '3', '7', '1', '0', '-' },
+		{ 0x88, 0x13, 0x00, 0x00, 0x4a, 0x49, 0x4e }	
+	};
 	xfile *xf = NULL;
 
 	buf = dll->buf;
 	size = dll->len;
 
 	/* Search for start of the calibration data */
-	for(i = 0; i < (size - 41 * 8 - 7) ;i++) {
+	for (i = 0; i < (size - 41 * 8 - 7) ;i++) {
 		if (buf[i] == cal2vals[0]) {
 			for (j = 0; j < (41 * 8); j++) {
 				if (buf[i + j] != cal2vals[j % 8])
@@ -1467,17 +1470,24 @@ static xfile *spyd4cal_extract(xfile **pxf, xfile *dll, int verb) {
 	caldata = buf + i;
 
 	/* Search for end of the calibration data */
-	for(i += (41 * 8); i < (size-7) ;i++) {
-		if (buf[i] == cal2evals[0]) {
-			for (j = 0; j < 7; j++) {
-				if (buf[i + j] != cal2evals[j])
-					break;
+	ii = i + (41 * 8);
+	for (k = 0; k < 2; k++)	{		/* Try each possible end marker */
+
+		for (i = ii; i < (size-7) ;i++) {
+			if (buf[i] == cal2evals[k][0]) {
+				for (j = 0; j < 7; j++) {
+					if (buf[i + j] != cal2evals[k][j])
+						break;
+				}
+				if (j >= 7)
+					break;		/* found string after calibration data */
 			}
-			if (j >= 7)
-				break;		/* found string after calibration data */
+		}
+		if (i < (size-7)) {
+			break;				/* found string */
 		}
 	}
-	if (i >= (size-7)) {
+	if (k >= 2) {
 		if (verb) printf("Failed to locate end of Spyder 4 calibration data in '%s'\n",dll->name);
 		return NULL;
 	}
@@ -1677,16 +1687,16 @@ static ccss *parse_EDR(
 		tdtypes[1]  = disptech_unknown; /* Custom */
 		tdtypes[2]  = disptech_crt;
 		tdtypes[3]  = disptech_lcd_ccfl_ips;
-		tdtypes[4]  = disptech_lcd_ccfl_vpa;
+		tdtypes[4]  = disptech_lcd_ccfl_pva;
 		tdtypes[5]  = disptech_lcd_ccfl_tft;
 		tdtypes[6]  = disptech_lcd_ccfl_wg_ips;
-		tdtypes[7]  = disptech_lcd_ccfl_wg_vpa;
+		tdtypes[7]  = disptech_lcd_ccfl_wg_pva;
 		tdtypes[8]  = disptech_lcd_ccfl_wg_tft;
 		tdtypes[9]  = disptech_lcd_wled_ips;
-		tdtypes[10] = disptech_lcd_wled_vpa;
+		tdtypes[10] = disptech_lcd_wled_pva;
 		tdtypes[11] = disptech_lcd_wled_tft;
 		tdtypes[12] = disptech_lcd_rgbled_ips;
-		tdtypes[13] = disptech_lcd_rgbled_vpa;
+		tdtypes[13] = disptech_lcd_rgbled_pva;
 		tdtypes[14] = disptech_lcd_rgbled_tft;
 		tdtypes[15] = disptech_oled;
 		tdtypes[16] = disptech_amoled;

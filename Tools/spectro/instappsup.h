@@ -4,7 +4,7 @@
 /* Instrument command line application support functions */
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Author: Graeme W. Gill
  * Date:   15/3/2001

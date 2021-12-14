@@ -2,7 +2,7 @@
  /* General USB HID I/O support */
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Author: Graeme W. Gill
  * Date:   2007/10/10
@@ -51,7 +51,7 @@
     + we probably have to call the run loop ?
 
 */
-#undef USE_NEW_OSX_CODE
+#undef USE_NEW_OSX_CODE		/* Not fully implemented */
 
 /* These routines supliement the class code in ntio.c and unixio.c */
 /* with HID specific access routines for devices running on operating */
@@ -606,7 +606,7 @@ char **pnames			/* List of process names to try and kill before opening */
 				a1loge(p->log, ICOM_SYS, "hid_open_port: Getting HID device '%s' failed",p->name);
 				return ICOM_SYS;
 			}
-			(*piif)->Release(piif);		/* delete intermediate object */
+			// (*piif)->Release(piif);		/* delete intermediate object ?? */
 
 			if ((*p->hidd->device)->open(p->hidd->device, kIOHIDOptionsTypeSeizeDevice)
 			                                                       != kIOReturnSuccess) {
@@ -678,14 +678,12 @@ void hid_close_port(icoms *p) {
 #ifdef UNIX_APPLE
 # if defined(USE_NEW_OSX_CODE) && __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
 		if (IOHIDDeviceClose(p->hidd->ioob, kIOHIDOptionsTypeNone) != kIOReturnSuccess) {
-			a1loge(p->log, ICOM_SYS, "hid_close_port: closing HID port '%s' failed",p->name);
-			return;
+			a1loge(p->log, ICOM_SYS, "hid_close_port: closing HID port '%s' failed\n",p->name);
 		}
 #else	/* < 1060 */
 		if ((*(p->hidd->device))->stopAllQueues(p->hidd->device) != kIOReturnSuccess) {
 			a1loge(p->log, ICOM_SYS, "icoms_hid_read: Stopping queues for "
 			                                    "HID '%s' failed\n", p->name);
-			return;
 		}
 
 	    IOObjectRelease(p->hidd->port);
@@ -698,13 +696,15 @@ void hid_close_port(icoms *p) {
 		p->hidd->rlr = NULL;
 
 		if ((*p->hidd->device)->close(p->hidd->device) != kIOReturnSuccess) {
-			a1loge(p->log, ICOM_SYS, "hid_close_port: closing HID port '%s' failed",p->name);
-			return;
+			a1loge(p->log, ICOM_SYS, "hid_close_port: Closing HID port '%s' failed\n",p->name);
 		}
 
-		if ((*p->hidd->device)->Release(p->hidd->device) != kIOReturnSuccess) {
-			a1loge(p->log, ICOM_SYS, "hid_close_port: Releasing HID port '%s' failed",p->name);
-		}
+		/* Example code shows a Release being needed, but recent versions of OS X return error */
+		/* It's not clear from the empty Apple documentation what to do here. */
+		//if ((*p->hidd->device)->Release(p->hidd->device) != kIOReturnSuccess) {
+		//	a1logw(p->log, "Warning: hid_close_port, Releasing HID port '%s' failed\n",p->name);
+		//}
+
 		p->hidd->device = NULL;
 #endif	/* __MAC_OS_X_VERSION_MAX_ALLOWED < 1060 */
 #endif /* UNIX_APPLE */

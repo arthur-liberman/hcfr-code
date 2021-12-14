@@ -5,7 +5,7 @@
  /* This supports installing OEM data files */
 
 /* 
- * Argyll Color Correction System
+ * Argyll Color Management System
  *
  * Author: Graeme W. Gill
  * Date:   13/11/2012
