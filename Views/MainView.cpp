@@ -48,6 +48,7 @@
 #include <algorithm>
 #include <vector>
 #include <afxpriv.h>
+#include "EditEx.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -6303,14 +6304,14 @@ void CMainView::OnSelchangeInfoDisplay()
 
 	if (m_bUpdate)
 		GetConfig()->WriteProfileInt("MainView","Info Display",m_infoDisplay);
-
+	
 	switch ( m_infoDisplay )
 	{
 		case 0:
-			 pEdit = new CEdit;
-			
+			 pEdit = new CEditEx;
+
 			 pEdit -> Create (WS_VISIBLE | WS_CHILD | WS_BORDER | ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN, Rect, this, IDC_INFO_VIEW );
-			 pEdit -> SetFont ( GetFont () );
+			 pEdit -> SetFont ( GetFont () );		 
 			 pEdit -> SetWindowText ( GetDocument()->GetMeasure()->GetInfoString() );
 
 			 m_pInfoWnd = pEdit;

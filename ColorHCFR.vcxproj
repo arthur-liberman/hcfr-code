@@ -241,6 +241,7 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="EditEx.cpp" />
     <ClCompile Include="Export.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -864,6 +865,7 @@
     <ClInclude Include="DataSetDoc.h" />
     <ClInclude Include="DocEnumerator.h" />
     <ClInclude Include="DocTempl.h" />
+    <ClInclude Include="EditEx.h" />
     <ClInclude Include="Generators\madTPG.h" />
     <ClInclude Include="HelpID.h" />
     <ClInclude Include="htmlhelp.h" />
