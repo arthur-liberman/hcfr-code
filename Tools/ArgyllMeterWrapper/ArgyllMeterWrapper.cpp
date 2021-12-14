@@ -116,6 +116,7 @@ namespace
             // run at the moment, but I can live with this
             if(m_meters.empty())
             {
+                CWaitCursor wait;
                 if (m_ComPaths != 0)
                 {
                     m_ComPaths->del(m_ComPaths);
@@ -126,7 +127,7 @@ namespace
                 {
                     throw std::logic_error("Can't create new icompaths");
                 }
-
+                
                 for (int i(0); i != m_ComPaths->npaths; ++i)
                 {
                     _inst* meter = 0;
@@ -206,7 +207,7 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
     if(!m_meter->inited)
     {
 		instType Spyder = m_meter->get_itype(m_meter);
-		if ( Spyder == instSpyder1 || Spyder == instSpyder2)
+        if ( Spyder == instSpyder1 || Spyder == instSpyder2)
 		if (setup_spyd2(Spyder == instSpyder1?0:1) == 2)
 			MessageBox(NULL,"WARNING: This file contains a proprietary firmware image, and may not be freely distributed !","Loaded PLD",MB_OK);
 
@@ -284,6 +285,11 @@ bool ArgyllMeterWrapper::connectAndStartMeter(std::string& errorDescription, eRe
     }
 
     // set the desired mode
+    // 
+    // Omardris: Workarround Jeti => fix mode "inst_mode_emis_tele"
+    if (m_meterType == instSpectraval || m_meterType == instSpecbos)
+        mode = inst_mode_emis_tele;
+
     instCode = m_meter->set_mode(m_meter, mode);
     if(instCode != inst_ok)
     {
@@ -515,8 +521,8 @@ int ArgyllMeterWrapper::getObType()
 bool ArgyllMeterWrapper::setObType(CString SpectralType)
 {
     icxObserverType obType=icxOT_default;
- 
-    /*
+
+ /*
     if (SpectralType == "CIE 1931 2 deg")
         obType=icxOT_CIE_1931_2;
     if (SpectralType == "CIE 1964 10 deg")
@@ -724,7 +730,7 @@ std::string ArgyllMeterWrapper::getCalibrationInstructions(bool isHiRes)
         inst_calc_id_type calcidtype(inst_calc_id_none);
         dark_only = FALSE;
 		if (m_meterType == instEX1) dark_only = TRUE;
-        if ( (m_meterType == instI1Pro || m_meterType == instI1Pro2) )
+        if ( (m_meterType == instI1Pro || m_meterType == instI1Pro2 || m_meterType == instI1Pro3) )
         {
             if ( IDYES == AfxMessageBox ( "Skip white tile calibration?", MB_YESNO | MB_ICONQUESTION ) )
             {
@@ -847,7 +853,7 @@ bool ArgyllMeterWrapper::setAdaptMode()
 
 bool ArgyllMeterWrapper::doesSupportHiRes() const
 {
-    return (m_meterType == instI1Pro || m_meterType == instColorMunki || m_meterType == instI1Pro2);
+    return (m_meterType == instI1Pro || m_meterType == instColorMunki || m_meterType == instI1Pro2 || m_meterType == instI1Pro3);
 }
 
 
