@@ -39,5 +39,9 @@ struct _dev {
 	DEV_OBJ_BASE
 }; typedef struct _dev dev;
 
+#ifdef __cplusplus
+	}
+#endif
+
 #define DEV_H
 #endif /* DEV_H */

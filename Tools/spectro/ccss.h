@@ -19,6 +19,8 @@
  * Based on ccmx.h
  */
 
+#include "disptechs.h"
+
 #ifdef __cplusplus
 	extern "C" {
 #endif

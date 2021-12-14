@@ -314,8 +314,9 @@ typedef enum {
     icxOT_Judd_Voss_2		= 8,	/* Judd & Voss 1978 2 degree */
     icxOT_CIE_1964_10c		= 9,	/* Standard CIE 1964 10 degree, 2 degree compatible */
     icxOT_Shaw_Fairchild_2	= 10,	/* Shaw & Fairchild 1997 2 degree */
-    icxOT_EBU_2012	        = 11	/* EBU standard camera curves 2012 */
+    icxOT_EBU_2012	        = 11,	/* EBU standard camera curves 2012 */
 #endif /* !SALONEINSTLIB*/
+    icxOT_MAX
 } icxObserverType;
 
 /* Return pointers to three xpsects with a standard observer weighting curves */

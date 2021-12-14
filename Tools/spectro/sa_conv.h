@@ -178,6 +178,11 @@ void sa_Yxy2XYZ(double *out, double *in);
 #define icmInverse3x3 sa_Inverse3x3
 #define icmTranspose3x3 sa_Transpose3x3
 
+#define icmSet3(d_ary, s_val) ((d_ary)[0] = (s_val), (d_ary)[1] = (s_val), \
+                              (d_ary)[2] = (s_val))
+#define icmAdd3(out, in1, in2) ((out)[0] = in1[0] + in2[0], \
+                                (out)[1] = in1[1] + in2[1], \
+                                (out)[2] = in1[2] + in2[2])
 #define icmCpy3(d_ary, s_ary) ((d_ary)[0] = (s_ary)[0], (d_ary)[1] = (s_ary)[1], \
                               (d_ary)[2] = (s_ary)[2])
 #define icmScale3 sa_Scale3
