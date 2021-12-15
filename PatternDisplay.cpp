@@ -50,7 +50,7 @@ CPatternDisplay::~CPatternDisplay()
 {
 	if ( m_patternDGenerator)
 		delete m_patternDGenerator;
-
+	
 	m_patternDGenerator = NULL;
 }
 void CPatternDisplay::DoDataExchange(CDataExchange* pDX)
@@ -102,6 +102,8 @@ BEGIN_MESSAGE_MAP(CPatternDisplay, CDialog)
     ON_BN_CLICKED(IDC_PATTERN_PICT_CBOX, OnPatternPictCBox)
 	ON_BN_CLICKED(IDHELP, OnHelp)
 	ON_WM_HELPINFO()
+	ON_BN_CLICKED(IDCANCEL, Reset) // Omardris
+
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -192,6 +194,16 @@ static UINT idPictContBox[][2] =
 	{ IDR_PATTERN_CONT_40, TRUE },
 	{ IDR_PATTERN_CONT_50, TRUE },
 };
+
+void CPatternDisplay::Reset()
+{
+	if (m_patternDGenerator != NULL) {
+		m_patternDGenerator->Release();
+		delete m_patternDGenerator;
+		m_patternDGenerator = NULL;
+	}
+	CDialog::OnCancel();
+}
 
 void CPatternDisplay::CreateGenerator()
 {

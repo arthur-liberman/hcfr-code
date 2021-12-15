@@ -237,7 +237,7 @@ void CReferencesPropPage::OnControlClicked(UINT nID)
       m_eMeasuredGamma.EnableWindow (TRUE);
     }
 
-	if (1) //(m_GammaOffsetType == 5 || m_GammaOffsetType == 7 )
+	if (m_GammaOffsetType == 5 || m_GammaOffsetType == 7 )
 	{
 		if (m_bOverRideTargs)
 		{
@@ -255,6 +255,7 @@ void CReferencesPropPage::OnControlClicked(UINT nID)
   		m_FrameAvgMaxLCtrl.EnableWindow (TRUE);
   		m_bOverRideTargsCtrl.EnableWindow (TRUE);
   		m_useToneMapCtrl.EnableWindow (TRUE);
+		GetDlgItem(IDC_USER_BLACK)->EnableWindow(FALSE);
 	}
 	else
 	{
@@ -272,6 +273,7 @@ void CReferencesPropPage::OnControlClicked(UINT nID)
 		m_BT2390_WSCtrl.EnableWindow (FALSE);
 		m_BT2390_WS1Ctrl.EnableWindow (FALSE);
 		m_TargetSysGamma = floor( (1.2 + 0.42 * log10(GetConfig()->m_TargetMaxL / 1000.))*100.+0.5)/100.;
+		GetDlgItem(IDC_USER_BLACK)->EnableWindow(TRUE);
 	}
 
 	m_isModified=TRUE;
