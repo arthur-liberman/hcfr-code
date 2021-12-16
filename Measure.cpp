@@ -451,8 +451,29 @@ void CMeasure::Serialize(CArchive& ar)
 				GetConfig()->m_CCMode = CCPatterns(in[1]);
 				GetConfig()->m_colorStandard = ColorStandard(in[2]);
 				if (GetColorApp()->m_pColorReference)
-					delete GetColorApp()->m_pColorReference; 
-				GetColorApp()->m_pColorReference = new CColorReference(ColorStandard(in[2]), WhiteTarget(in[0]), in[6]);
+					delete GetColorApp()->m_pColorReference;
+				if (WhiteTarget(in[0]) == DCUST && in[2] != CUSTOM) //Custom White only
+				{
+					ColorxyY whitecolor = ColorxyY(in2[3], in2[4]);
+					GetColorApp()->m_pColorReference = new CColorReference(ColorStandard(in[2]), WhiteTarget(in[0]), -1, " modified", ColorXYZ(whitecolor));
+				}
+				else if (in[2] == CUSTOM && in[0] != DCUST) 	//Custom Color only
+				{
+					ColorxyY redcolor = ColorxyY(in2[6], in2[9]);
+					ColorxyY greencolor = ColorxyY(in2[7], in2[10]);
+					ColorxyY bluecolor = ColorxyY(in2[5], in2[8]);
+					GetColorApp()->m_pColorReference = new CColorReference(ColorStandard(in[2]), WhiteTarget(in[0]), -1, " modified", GetColorApp()->m_pColorReference->GetWhite(), redcolor, greencolor, bluecolor);
+				}
+				else if (in[2] == CUSTOM && in[0] == DCUST)	//Both
+				{
+					ColorxyY whitecolor = ColorxyY(in2[3], in2[4]);
+					ColorxyY redcolor = ColorxyY(in2[6], in2[9]);
+					ColorxyY greencolor = ColorxyY(in2[7], in2[10]);
+					ColorxyY bluecolor = ColorxyY(in2[5], in2[8]);
+					GetColorApp()->m_pColorReference = new CColorReference(ColorStandard(in[2]), WhiteTarget(in[0]), -1, " modified", ColorXYZ(whitecolor), redcolor, greencolor, bluecolor);
+				}
+				else
+					GetColorApp()->m_pColorReference = new CColorReference(ColorStandard(in[2]), WhiteTarget(in[0]), in[6]);
 				GetConfig()->m_dE_form = in[3];
 				GetConfig()->m_dE_gray = in[4];
 				GetConfig()->gw_Weight = in[5];
