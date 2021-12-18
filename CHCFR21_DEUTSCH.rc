@@ -344,7 +344,7 @@ CAPTION "Über HCFR Colorimeter"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         IDB_LOGO,IDC_STATIC,"Static",SS_BITMAP,7,7,172,62
-    LTEXT           "Version 3.5.3.6",IDC_STATIC_VERSION,7,76,119,8,SS_NOPREFIX
+    LTEXT           "Version 3.5.4.0",IDC_STATIC_VERSION,7,76,119,8,SS_NOPREFIX
     LTEXT           "Copyright (C) 2012-2017 Hcfr Project\nCopyright (C) 2005-2008 Association Homecinema Francophone",IDC_STATIC2,7,88,168,29
     LTEXT           "hcfr.sourceforge.net",IDC_HOMECINEMA_HYPERLINK,7,120,80,8
     LTEXT           "IDC_PLACEHOLDER",IDC_PLACEHOLDER,4,136,177,117
@@ -2646,12 +2646,12 @@ BEGIN
             VALUE "Comments", "Under GPL Licence"
             VALUE "CompanyName", "Association Homecinema Francophone"
             VALUE "FileDescription", "HCFR Colorimeter resources"
-            VALUE "FileVersion", "3.5.3.6"
+            VALUE "FileVersion", "3.5.4.0"
             VALUE "InternalName", "CHCFR21_DEUTSCH"
             VALUE "LegalCopyright", "Copyright (C) 2005-2016"
             VALUE "OriginalFilename", "CHCFR21_DEUTSCH.DLL"
             VALUE "ProductName", "HCFR Colorimeter German language"
-            VALUE "ProductVersion", "3.5.3.6"
+            VALUE "ProductVersion", "3.5.4.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -2808,7 +2808,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDR_MAINFRAME           "HCFR Colorimeter - 3.5.3.6"
+    IDR_MAINFRAME           "HCFR Colorimeter - 3.5.4.0"
     IDR_MESURETYPE          "\nFarbmessungen\nFarbmessungen\nColorHCFR Datei (*.chc)\n.chc\nCOLORHCFR\nHCFR Farbmessungen"
 END
 
