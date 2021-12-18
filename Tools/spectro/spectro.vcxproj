@@ -56,7 +56,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\librspl;usb\driver;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;NT;_CRT_SECURE_NO_WARNINGS;SALONEINSTLIB;ENABLE_SERIAL;ENABLE_FAST_SERIAL;ENABLE_USB;_USE_32BIT_TIME_T;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;NT;_CRT_SECURE_NO_WARNINGS;SALONEINSTLIB;ENABLE_FAST_SERIAL;ENABLE_USB;_USE_32BIT_TIME_T;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <ExceptionHandling>Async</ExceptionHandling>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
@@ -74,7 +74,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>..\librspl;usb\driver;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;NT;_CRT_SECURE_NO_WARNINGS;SALONEINSTLIB;ENABLE_SERIAL;ENABLE_FAST_SERIAL;ENABLE_USB;_USE_32BIT_TIME_T;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;NT;_CRT_SECURE_NO_WARNINGS;SALONEINSTLIB;ENABLE_FAST_SERIAL;ENABLE_USB;_USE_32BIT_TIME_T;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
