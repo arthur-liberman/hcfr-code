@@ -565,7 +565,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,15,150,184,10
 END
 
-IDD_ARGYLL_SENSOR_PROP_PAGE DIALOGEX 0, 0, 309, 176
+IDD_ARGYLL_SENSOR_PROP_PAGE DIALOGEX 0, 0, 309, 190
 STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Argyll Sensor"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
@@ -579,15 +579,15 @@ BEGIN
     COMBOBOX        IDC_ARGYLLSENSOR_READINGTYPE_COMBO,81,50,205,82,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     CONTROL         "Nutze Hi-Res Modus (Nur i1Pro && Colormunki Photo)",IDC_ARGYLL_SENSOR_HIRES,
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_GROUP | WS_TABSTOP,13,88,111,17
-    GROUPBOX        "Kalibrierung",IDC_STATIC,6,110,297,39
+    GROUPBOX        "Kalibrierung",IDC_STATIC,6,110,297,51
     PUSHBUTTON      "Meter kalibrieren",IDC_ARGYLL_CALIBRATE,15,124,88,14
     CONTROL         "Debug (Daten in HCFR.log speichern)",IDC_ARGYLL_SENSOR_DEBUG_CB,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,156,111,10
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,168,139,10
     COMBOBOX        IDC_ARGYLLSENSOR_SPECTRALTYPE_COMBO,81,69,205,82,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     LTEXT           "Observer Typ",IDC_STATIC,13,71,48,8
     COMBOBOX        IDC_ARGYLLSENSOR_INTTIME_COMBO,205,88,82,82,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     LTEXT           "Integrationszeit",IDC_STATIC,169,86,33,20
-    CTEXT           "After selecting your display, and reading types click the calibrate meter button to see if any calibrations are required. [Note that display types are not applicable when in ambient reading mode]",IDC_STATIC,131,118,165,45,WS_BORDER,WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE
+    CTEXT           "Nach Auswahl von Displaytyp und Messmodus klicken Sie auf ""Messgerät kalibrieren"", um zu prüfen, ob eine Sensor-Kalibrierung erforderlich ist. (Beachten Sie, dass im Ambient-Modus keine Displaytypen wählbar sind)",IDC_STATIC,122,114,165,46,WS_BORDER,WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE
 END
 
 IDD_DUPLICATEDOC_DIALOG DIALOG 0, 0, 279, 153
@@ -2100,7 +2100,7 @@ BEGIN
         MENUITEM "&Grautreppe",                 IDM_MEASURE_GRAYSCALE
         MENUITEM "&Primärfarben",               IDM_MEASURE_PRIMARIES
         MENUITEM "Primär- und &Sekundärfarben", IDM_MEASURE_SECONDARIES
-        MENUITEM "Grautreppe und &Farben\tF5",   IDM_MEASURE_GRAYSCALE_COLORS
+        MENUITEM "Grautreppe und &Farben\tF5",  IDM_MEASURE_GRAYSCALE_COLORS
         MENUITEM SEPARATOR
         MENUITEM "Nahe Schwarz &Abstufung",     IDM_MEASURE_NEARBLACK
         MENUITEM "Nahe &Weiß Abstufung",        IDM_MEASURE_NEARWHITE
@@ -2122,7 +2122,7 @@ BEGIN
         MENUITEM "&Kontrast",                   IDM_MEASURE_CONTRAST
         MENUITEM SEPARATOR
         MENUITEM "&Einmalige freie Messung\tF7", IDM_SINGLE_MEASUREMENT
-        MENUITEM "F&ortlaufende Messung\tF8",    IDM_CONTINUOUS_MEASUREMENT
+        MENUITEM "F&ortlaufende Messung\tF8",   IDM_CONTINUOUS_MEASUREMENT
         MENUITEM SEPARATOR
         POPUP "&Sensor"
         BEGIN
@@ -2162,15 +2162,15 @@ BEGIN
             POPUP "&Levels"
             BEGIN
                 MENUITEM "&Schwarz +1% && +2% animiert", IDM_PATTERN_ANIM_BLACK
-                MENUITEM "&Weiß -1% && -2% animiert", IDM_PATTERN_ANIM_WHITE
-                MENUITEM "&Clipping Schwarz",            IDM_PATTERN_CLIPL
-                MENUITEM "&Clipping Weiß",         IDM_PATTERN_CLIPH
-                MENUITEM "&Nahe Schwarz",                 IDM_PATTERN_NB
+                MENUITEM "&Weiß -1% && -2% animiert",   IDM_PATTERN_ANIM_WHITE
+                MENUITEM "&Clipping Schwarz",           IDM_PATTERN_CLIPL
+                MENUITEM "&Clipping Weiß",              IDM_PATTERN_CLIPH
+                MENUITEM "&Nahe Schwarz",               IDM_PATTERN_NB
             END
             POPUP "&Fokus && Auflösung"
             BEGIN
-                MENUITEM "&Ausrichtung && Konvergenz",   IDM_PATTERN_ALIGN
-                MENUITEM "&Ausrichtung && Uniformität",   IDM_PATTERN_ALIGN2
+                MENUITEM "&Ausrichtung && Konvergenz",  IDM_PATTERN_ALIGN
+                MENUITEM "&Ausrichtung && Uniformität", IDM_PATTERN_ALIGN2
                 MENUITEM "&IMATEST",                    IDM_PATTERN_SHARP
                 MENUITEM "IS&O 12233:2000",             ID_FOCUSRESOLUTION_ISO12233
                 MENUITEM "&Belle Nuit",                 IDM_PATTERN_BN
@@ -2203,50 +2203,46 @@ BEGIN
             POPUP "&Beispiel Realbilder"
             BEGIN
                 MENUITEM "&Rot",                        IDM_PATTERN_TC0
-                MENUITEM "&Grün",                      IDM_PATTERN_TC1
+                MENUITEM "&Grün",                       IDM_PATTERN_TC1
                 MENUITEM "&Blau",                       IDM_PATTERN_TC2
-                MENUITEM "&Gelb",                     IDM_PATTERN_TC3
+                MENUITEM "&Gelb",                       IDM_PATTERN_TC3
                 MENUITEM "&Cyan",                       IDM_PATTERN_TC4
                 MENUITEM "&Magenta",                    IDM_PATTERN_TC5
                 MENUITEM SEPARATOR
-                MENUITEM "&Hauttöne",                  IDM_PATTERN_TESTIMG
+                MENUITEM "&Hauttöne",                   IDM_PATTERN_TESTIMG
                 MENUITEM SEPARATOR
-                MENUITEM "&Sehr hell",                   IDM_PATTERN_DR0
-                MENUITEM "&Vollbereich",                 IDM_PATTERN_DR1
-                MENUITEM "Sehr &dunkel",                    IDM_PATTERN_DR2
+                MENUITEM "&Sehr hell",                  IDM_PATTERN_DR0
+                MENUITEM "&Vollbereich",                IDM_PATTERN_DR1
+                MENUITEM "Sehr &dunkel",                IDM_PATTERN_DR2
                 MENUITEM SEPARATOR
                 POPUP "Sch&warz && Weiß"
                 BEGIN
                     MENUITEM "&Graue Welt",                 IDM_PATTERN_TV
-                    MENUITEM "&Schatten",                    IDM_PATTERN_TV2
+                    MENUITEM "&Schatten",                   IDM_PATTERN_TV2
                 END
             END
             MENUITEM SEPARATOR
-            MENUITEM "&Weitere Testbilder",        IDM_PATTERN_DISPLAY
+            MENUITEM "&Weitere Testbilder",         IDM_PATTERN_DISPLAY
         END
         MENUITEM SEPARATOR
         POPUP "&Kalibrierungsdatei"
         BEGIN
-            //MENUITEM "Manually edit XYZ matrix",    IDM_MANUALLY_EDIT_SENSOR
             MENUITEM "XYZ Matrix manuell editieren", IDM_MANUALLY_EDIT_SENSOR
             MENUITEM SEPARATOR
-            //MENUITEM "Create using Existing Reference Measures", IDM_CALIBRATION_EXISTING
             MENUITEM "Aus vorhandenen Referenzmessungen erstellen", IDM_CALIBRATION_EXISTING
             MENUITEM "Aus simultanen Messungen erstellen", IDM_CALIBRATION_SIM
             MENUITEM "Manuell mit einem Referenz Colorimeter erstellen", IDM_CALIBRATION_MANUAL
-            //MENUITEM "Build colorimeter calibration spectral sample", IDM_CALIBRATION_SPECTRAL
             MENUITEM "Colorimeter Calibration Spectral Sample erstellen", IDM_CALIBRATION_SPECTRAL
             MENUITEM SEPARATOR
             MENUITEM "Kalibrierungsdatei speichern...", IDM_SAVE_CALIBRATION_FILE
-            //MENUITEM "Load meter correction file...", IDM_LOAD_CALIBRATION_FILE
             MENUITEM "Meter Korrekturdatei laden...", IDM_LOAD_CALIBRATION_FILE
         END
         POPUP "Simultane &Messungen"
         BEGIN
-            MENUITEM "&Grautreppe",                  IDM_SIM_GRAYSCALE
-            MENUITEM "&Primärfarben",                IDM_SIM_PRIMARIES
+            MENUITEM "&Grautreppe",                 IDM_SIM_GRAYSCALE
+            MENUITEM "&Primärfarben",               IDM_SIM_PRIMARIES
             MENUITEM "Primärfarben und &Sekundärfarben", IDM_SIM_SECONDARIES
-            MENUITEM "Grautreppe und &Farben",       IDM_SIM_GRAYSCALE_AND_COLORS
+            MENUITEM "Grautreppe und &Farben",      IDM_SIM_GRAYSCALE_AND_COLORS
             MENUITEM SEPARATOR
             MENUITEM "Nahe Schwarz &Abstufung",     IDM_SIM_NEARBLACK
             MENUITEM "Nahe &Weiß Abstufung",        IDM_SIM_NEARWHITE
@@ -2267,14 +2263,12 @@ BEGIN
         BEGIN
             MENUITEM "Messungen in &xls Datei",     IDM_EXPORT_XLS
             MENUITEM "Messungen in &csv Datei",     IDM_EXPORT_CSV
-            //MENUITEM "Create &PDF Report",          IDM_EXPORT_PDF
-            MENUITEM "&PDF Report erstellen", IDM_EXPORT_PDF
+            MENUITEM "&PDF Report erstellen",       IDM_EXPORT_PDF
         END
         MENUITEM SEPARATOR
         MENUITEM "&Voreinstellungen...",        IDM_GENERAL_CONFIG
         MENUITEM "&Sprache...",                 IDM_LANGUAGE
-        //MENUITEM "Reset to default prefs ",     IDC_INIT_BUTTON
-        MENUITEM   "&Preferenzen zurücksetzen", IDC_INIT_BUTTON
+        MENUITEM "&Preferenzen zurücksetzen",   IDC_INIT_BUTTON
     END
     POPUP "&Fenster"
     BEGIN
@@ -2729,6 +2723,7 @@ BEGIN
 
     IDD_ARGYLL_SENSOR_PROP_PAGE, DIALOG
     BEGIN
+        BOTTOMMARGIN, 181
     END
 
     IDD_REFERENCE_PROP_PAGE, DIALOG
@@ -2796,6 +2791,11 @@ END
 //
 
 IDD_MAINVIEW_FORM AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_ARGYLL_SENSOR_PROP_PAGE AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
