@@ -25,7 +25,7 @@ AppName=HCFR Calibration
 AppVerName=HCFR {#MyAppVersion}
 AppUpdatesURL=http://hcfr.sourceforge.net/
 AppVersion={#MyAppVersion}
-DefaultDirName={pf}\HCFR Calibration
+DefaultDirName={commonpf}\HCFR Calibration
 DefaultGroupName=HCFR Calibration
 OutputBaseFilename=HCFRSetup
 AllowNoIcons=yes
@@ -38,7 +38,7 @@ AppSupportURL=http://www.avsforum.com/forum/139-display-calibration/1393853-hcfr
 ;required for installing the driver on NT platforms
 PrivilegesRequired=Admin
 DisableStartupPrompt=yes
-AppCopyright=Copyright (C) 2013-2017 HCFR Team
+AppCopyright=Copyright (C) 2013-2021 HCFR Team
 VersionInfoDescription=HCFR Setup
 VersionInfoProductVersion={#MyAppVersion}
 VersionInfoVersion={#MyAppVersion}
@@ -77,7 +77,7 @@ Source: "..\Release\spotread.exe"; DestDir: "{app}\Tools"; Flags: ignoreversion;
 Source: "..\Install\dispwin.exe"; DestDir: "{app}\Tools"; Flags: ignoreversion; Components: main; 
 Source: "..\Install\msvcr100.dll"; DestDir: "{app}\Tools"; Flags: ignoreversion; Components: main
 Source: "..\Release\*.dll"; DestDir: "{app}"; Flags: ignoreversion; Components: main
-Source: "..\Release\*.chm"; DestDir: "{app}"; Flags: ignoreversion; Components: main
+Source: "Help\*.chm"; DestDir: "{app}"; Flags: ignoreversion; Components: main
 Source: "..\Install\Etalon_HCFR\*.thc"; DestDir: "{app}\Etalon_HCFR"; Flags: ignoreversion; Components: main
 Source: "..\Install\Profils_IR\*.ihc"; DestDir: "{app}\Profils_IR"; Flags: ignoreversion; Components: main
 Source: "..\Install\data\*.png"; DestDir: "{userappdata}\color"; Flags: ignoreversion; Components: main
@@ -85,12 +85,12 @@ Source: "..\Install\data\usercolors.csv"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\Install\data\*.csv"; DestDir: "{userappdata}\color"; Flags: ignoreversion; Components: main
 Source: "..\Install\color\*.*"; DestDir: "{userappdata}\color"; Flags: ignoreversion; Components: main
 Source: "..\Install\userpngs\*.png"; DestDir: "{app}\userpngs"; Flags: ignoreversion; Components: main
-Source: "..\Tools\usb\*.inf"; DestDir: "{app}\Drivers"; Flags: ignoreversion; Components: main
-Source: "..\Tools\usb\*.txt"; DestDir: "{app}\Drivers"; Flags: ignoreversion; Components: main
-Source: "..\Tools\usb\bin\x86\*.sys"; DestDir: "{app}\Drivers\bin\x86"; Flags: ignoreversion; Components: main
-Source: "..\Tools\usb\bin\amd64\*.sys"; DestDir: "{app}\Drivers\bin\amd64"; Flags: ignoreversion; Components: main
-Source: "..\Tools\usb\bin\ia64\*.sys"; DestDir: "{app}\Drivers\bin\ia64"; Flags: ignoreversion; Components: main
-Source: "..\Tools\usb\bin\*.txt"; DestDir: "{app}\Drivers\bin"; Flags: ignoreversion; Components: main
+Source: "..\Tools\spectro\usb\*.inf"; DestDir: "{app}\Drivers"; Flags: ignoreversion; Components: main
+Source: "..\Tools\spectro\usb\*.txt"; DestDir: "{app}\Drivers"; Flags: ignoreversion; Components: main
+Source: "..\Tools\spectro\usb\bin\x86\*.sys"; DestDir: "{app}\Drivers\bin\x86"; Flags: ignoreversion; Components: main
+Source: "..\Tools\spectro\usb\bin\amd64\*.sys"; DestDir: "{app}\Drivers\bin\amd64"; Flags: ignoreversion; Components: main
+Source: "..\Tools\spectro\usb\bin\ia64\*.sys"; DestDir: "{app}\Drivers\bin\ia64"; Flags: ignoreversion; Components: main
+Source: "..\Tools\spectro\usb\bin\*.txt"; DestDir: "{app}\Drivers\bin"; Flags: ignoreversion; Components: main
 Source: "..\Tools\pi\RB8PGenerator.dll"; DestDir: "{app}"; Flags: ignoreversion; Components: main
 
 [INI]
