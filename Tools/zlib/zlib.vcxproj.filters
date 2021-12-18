@@ -21,13 +21,7 @@
     <ClCompile Include="compress.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="crc32.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="deflate.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="gzio.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="infback.c">
@@ -51,11 +45,11 @@
     <ClCompile Include="zutil.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="zcrc32.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="crc32.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="deflate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -81,6 +75,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="zutil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="zcrc32.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
