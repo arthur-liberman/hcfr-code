@@ -29,4 +29,6 @@ UnitTests/tests.xml
 
 
 /.vs
-/devlib/libHDR.lib
+/devlib/libHDR.*
+/.vscode
+*proj.user
