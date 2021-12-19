@@ -2997,7 +2997,7 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 	BOOL		bPatternRetry = FALSE;
 	BOOL		bRetry = FALSE;
 	CCPatterns	ccPat = GetConfig()->m_CCMode;
-	int			size = ccPat == CCSG?96:(ccPat == CMS || ccPat ==CPS)?19:(ccPat==AXIS?71:RANDOM250);
+	int			size = ccPat == CCSG?96:(ccPat == CMS || ccPat ==CPS)?19:(ccPat==AXIS?71:24);
 	CString		strMsg, Title;
 	ColorRGBDisplay	GenColors [ 1010 ];
 	double		dLuxValue;
@@ -3249,7 +3249,7 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 	BOOL		bRetry = FALSE;
 	int			size = GetSaturationSize ();
 	CCPatterns	ccPat = GetConfig()->m_CCMode;
-	int			ccSize = ccPat == CCSG?96:(ccPat == CMS || ccPat == CPS)?19:(ccPat==AXIS?71:RANDOM250);
+	int			ccSize = ccPat == CCSG?96:(ccPat == CMS || ccPat == CPS)?19:(ccPat==AXIS?71:24);
 	CString		strMsg, Title;
 	ColorRGBDisplay	GenColors [ 7 * 256 ];
 
