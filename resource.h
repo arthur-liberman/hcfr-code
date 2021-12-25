@@ -555,7 +555,9 @@
 #define IDC_STATIC_NB                   1160
 #define IDC_EDIT_IRIS_TIME2             1160
 #define IDC_STATIC_MAX                  1161
+#define IDC_EDIT_IRIS_TIME3             1161
 #define IDC_STATIC_MIN                  1162
+#define IDC_EDIT_IRIS_TIME4             1162
 #define IDC_KISENSOR_GETVERSION         1163
 #define IDC_KISENSOR_TAOS_0             1164
 #define IDC_KISENSOR_TAOS_1             1165

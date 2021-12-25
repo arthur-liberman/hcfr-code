@@ -159,8 +159,8 @@ static UINT __cdecl BkgndThreadFunc ( LPVOID lpParameter )
 				m_nPat++;
 				if ( ( (m_nPat % GetConfig()->m_ablFreq) == 0) && GetConfig()->m_bABL )
 				{
-					pGenerator->DisplayRGBColor(ColorRGBDisplay(0.0), MT);
-					Sleep(1000);
+					pGenerator->DisplayRGBColor(ColorRGBDisplay(GetConfig()->m_ablLevel / 100.0), MT);
+					Sleep(GetConfig()->m_ablDuration);
 				}
 
 				if ( g_CurrentColor != clr || (( (m_nPat % GetConfig()->m_ablFreq) == 0) && GetConfig()->m_bABL) )

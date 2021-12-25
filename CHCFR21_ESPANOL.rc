@@ -383,12 +383,16 @@ BEGIN
     CONTROL         "Check for updates",IDC_CHECK_UPDATE,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,26,77,10
     CONTROL         "RealTime display of measures",IDC_CHECK_DISPLAYRT,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,101,106,105,10
-    CONTROL         "Black frame insertion",IDC_CHECK_ABL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,141,82,10
+    CONTROL         "Frame insertion",IDC_CHECK_ABL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,141,58,10
     CONTROL         "Disable High DPI scaling",IDC_CHECK_DISABLEDPI,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,97,27,91,10
     CONTROL         "Use 10 bit targets (HDR10 Blu-ray)",IDC_CHECK_USE_10bit,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,228,135,10
-    EDITTEXT        IDC_EDIT_IRIS_TIME2,135,140,21,14,ES_AUTOHSCROLL | WS_GROUP
-    LTEXT           "Frequency",IDC_STATIC,95,142,37,8
+    EDITTEXT        IDC_EDIT_IRIS_TIME2,81,144,21,14,ES_AUTOHSCROLL | WS_GROUP
+    LTEXT           "Frequency",IDC_STATIC,76,134,35,8
+    EDITTEXT        IDC_EDIT_IRIS_TIME3,119,144,21,14,ES_AUTOHSCROLL | WS_GROUP
+    LTEXT           "Duration [ms]",IDC_STATIC,110,134,40,8
+    EDITTEXT        IDC_EDIT_IRIS_TIME4,157,144,21,14,ES_AUTOHSCROLL | WS_GROUP
+    LTEXT           "Level [%]",IDC_STATIC,153,134,35,8
 END
 
 IDD_EXPORTXLS_DIALOG DIALOG 0, 0, 226, 135
@@ -2922,7 +2926,20 @@ END
 //
 
 IDC_CURSORMOVE          CURSOR                  "res\\DRAGMOVE.CUR"
+
 IDC_CURSOR_MEASURE      CURSOR                  "res\\cursor_meas.cur"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_GENERAL_PROP_PAGE AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

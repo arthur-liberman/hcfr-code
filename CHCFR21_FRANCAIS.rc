@@ -684,7 +684,7 @@ BEGIN
     LTEXT           "Courbe NB",IDC_STATIC,203,250,39,11
 END
 
-IDD_GENERAL_PROP_PAGE DIALOGEX 0, 0, 275, 258
+IDD_GENERAL_PROP_PAGE DIALOGEX 0, 0, 275, 261
 STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Général"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -700,19 +700,19 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,73,119,10
     CONTROL         "Détecte les gris/primaires lors des mesures utilisateur",IDC_CHECK_DETECT_PRIMARIES,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,84,181,10
-    GROUPBOX        "Iris dynamique",IDC_STATIC,7,104,256,77,WS_GROUP
+    GROUPBOX        "Iris dynamique",IDC_STATIC,7,104,256,79,WS_GROUP
     LTEXT           "Temps de latence",IDC_STATIC,14,115,58,8
     EDITTEXT        IDC_EDIT_IRIS_TIME,74,112,26,14,ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "ms",IDC_STATIC,103,114,10,8
     CONTROL         "Bip au début de la mesure (aide au réglage de latence)",IDC_CHECK_BEEP,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,134,188,10
-    GROUPBOX        "Mesures additionnelles aux primaires et secondaires",IDC_STATIC,7,186,255,25,WS_GROUP
-    CONTROL         "Aucune",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,197,41,10
-    CONTROL         "Blanc",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,69,197,34,10
-    CONTROL         "Blanc et noir",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,115,197,55,10
-    GROUPBOX        "Hypothèse d'arrondi des niveaux de gris",IDC_STATIC,7,215,254,36,WS_GROUP
+    GROUPBOX        "Mesures additionnelles aux primaires et secondaires",IDC_STATIC,7,188,255,25,WS_GROUP
+    CONTROL         "Aucune",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,199,41,10
+    CONTROL         "Blanc",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,69,199,34,10
+    CONTROL         "Blanc et noir",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,115,199,55,10
+    GROUPBOX        "Hypothèse d'arrondi des niveaux de gris",IDC_STATIC,7,217,254,36,WS_GROUP
     CONTROL         "Arrondi vers le bas des niveaux (AVSHD, DVE)",IDC_CHECK_USE_ROUNDDOWN,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,240,185,10
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,242,185,10
     CONTROL         "Utilisation des barres HSV",IDC_CHECK_USE_HSV,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,134,73,98,10
     CONTROL         "Ajouter un schéma de fixation aux mesures automatiques",IDC_IS_SETTLING,
                     "Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_DISABLED | WS_GROUP | WS_TABSTOP,14,149,149,10
@@ -722,10 +722,14 @@ BEGIN
     CONTROL         "Désactiver la mise à l'échelle High DPI",IDC_CHECK_DISABLEDPI,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,113,29,145,10
     CONTROL         "Utiliser des cibles 10 bits (HDR10 Blu-ray)",IDC_CHECK_USE_10bit,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,228,135,10
-    CONTROL         "Insertion de trame noire",IDC_CHECK_ABL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,165,92,10
-    EDITTEXT        IDC_EDIT_IRIS_TIME2,173,163,32,14,ES_AUTOHSCROLL | WS_GROUP
-    LTEXT           "Fréquence",IDC_STATIC,128,166,37,8
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,230,135,10
+    CONTROL         "Insertion de cadre",IDC_CHECK_ABL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,165,65,10
+    EDITTEXT        IDC_EDIT_IRIS_TIME2,86,168,32,12,ES_AUTOHSCROLL | WS_GROUP
+    LTEXT           "Fréquence",IDC_STATIC,85,159,34,8
+    EDITTEXT        IDC_EDIT_IRIS_TIME3,127,168,32,12,ES_AUTOHSCROLL | WS_GROUP
+    LTEXT           "Durée [ms]",IDC_STATIC,126,159,34,8
+    EDITTEXT        IDC_EDIT_IRIS_TIME4,166,168,32,12,ES_AUTOHSCROLL | WS_GROUP
+    LTEXT           "niveau",IDC_STATIC,171,159,22,8
 END
 
 IDD_EXPORTXLS_DIALOG DIALOG 0, 0, 226, 135
@@ -1444,7 +1448,7 @@ BEGIN
     IDD_GENERAL_PROP_PAGE, DIALOG
     BEGIN
         RIGHTMARGIN, 272
-        BOTTOMMARGIN, 257
+        BOTTOMMARGIN, 260
     END
 
     IDD_EXPORTXLS_DIALOG, DIALOG

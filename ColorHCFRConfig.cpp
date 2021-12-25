@@ -252,6 +252,8 @@ void CColorHCFRConfig::InitDefaults()
 	m_useHSV=FALSE;
 	m_latencyTime=0;
 	m_ablFreq = 10;
+	m_ablDuration = 500;
+	m_ablLevel = 50;
 	m_bLatencyBeep=FALSE;
 	bDisplayRT=TRUE;
 	m_bABL=FALSE;
@@ -350,7 +352,9 @@ BOOL CColorHCFRConfig::LoadSettings()
 	m_bDetectPrimaries=GetProfileInt("References","DetectPrimaries",1);
 	m_useHSV=GetProfileInt("References","UseHSV",0);
 	m_latencyTime=GetProfileInt("References","IrisLatencyTime",300);
-	m_ablFreq=GetProfileInt("References","BlkFrameFreq",10);
+	m_ablFreq=GetProfileInt("References","AblFrameFreq",10);
+	m_ablDuration=GetProfileInt("References","AblFrameDuration",500);
+	m_ablLevel=GetProfileInt("References","AblFrameLevel",50);
 	m_bLatencyBeep=GetProfileInt("References","IrisLatencyBeep",0);
 	bDisplayRT=GetProfileInt("References","Display RT",1);
 	m_bABL=GetProfileInt("References","ABL Inhibitor",0);
@@ -451,7 +455,9 @@ void CColorHCFRConfig::SaveSettings()
 	WriteProfileInt("References","DetectPrimaries",m_bDetectPrimaries);
 	WriteProfileInt("References","isSettling",m_isSettling);
 	WriteProfileInt("References","IrisLatencyTime",m_latencyTime);
-	WriteProfileInt("References","BlkFrameFreq",m_ablFreq);
+	WriteProfileInt("References","AblFrameFreq",m_ablFreq);
+	WriteProfileInt("References","AblFrameDuration",m_ablDuration);
+	WriteProfileInt("References","AblFrameLevel",m_ablLevel);
 	WriteProfileInt("References","IrisLatencyBeep",m_bLatencyBeep);
 	WriteProfileInt("References","Display RT",bDisplayRT);
 	WriteProfileInt("References","ABL Inhibitor",m_bABL);
@@ -526,6 +532,8 @@ void CColorHCFRConfig::SetPropertiesSheetValues()
 	m_generalPropertiesPage.m_bDisableHighDPI=m_bDisableHighDPI;
 	m_generalPropertiesPage.m_latencyTime=m_latencyTime;
 	m_generalPropertiesPage.m_ablFreq=m_ablFreq;
+	m_generalPropertiesPage.m_ablDuration=m_ablDuration;
+	m_generalPropertiesPage.m_ablLevel=m_ablLevel;
 	m_generalPropertiesPage.m_bLatencyBeep=m_bLatencyBeep;
 	m_generalPropertiesPage.m_bUseRoundDown=m_bUseRoundDown;
 	m_generalPropertiesPage.m_bUse10bit=m_bUse10bit;
@@ -647,6 +655,8 @@ BOOL CColorHCFRConfig::GetPropertiesSheetValues()
 	m_bDetectPrimaries=m_generalPropertiesPage.m_bDetectPrimaries;
 	m_latencyTime=m_generalPropertiesPage.m_latencyTime;
 	m_ablFreq=m_generalPropertiesPage.m_ablFreq;
+	m_ablDuration=m_generalPropertiesPage.m_ablDuration;
+	m_ablLevel=m_generalPropertiesPage.m_ablLevel;
 	m_bLatencyBeep=m_generalPropertiesPage.m_bLatencyBeep;
 	bDisplayRT=m_generalPropertiesPage.bDisplayRT;
 	m_bABL=m_generalPropertiesPage.m_bABL;

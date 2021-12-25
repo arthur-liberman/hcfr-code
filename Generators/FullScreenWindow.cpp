@@ -1637,12 +1637,20 @@ void video_scale (CxImage *inImage)
 			m_nPat++;
 
 			if ((m_nPat % GetConfig()->m_ablFreq) == 0 && GetConfig()->m_bABL)
-			{				
-				GetClientRect(&rect_ABL);
-				rect_ABL.DeflateRect(dWidth/2,dHeight/2);
-				brush.CreateSolidBrush ( RGB(0,0,0) );
+			{
+				if (m_nDisplayMode != DISPLAY_GDI_nBG)
+				{
+					rect_ABL = rect;
+				}
+				else
+				{
+					GetClientRect(&rect_ABL);
+					rect_ABL.DeflateRect(dWidth/2,dHeight/2);
+				}
+				const BYTE lvl = m_b16_235 ? (BYTE)(2.19 * GetConfig()->m_ablLevel + 16) : (BYTE)(2.55 * GetConfig()->m_ablLevel);
+				brush.CreateSolidBrush (RGB(lvl, lvl, lvl));
 				dc.FillRect ( &rect_ABL, &brush );
-				Sleep(500);
+				Sleep(GetConfig()->m_ablDuration);
 				brush.DeleteObject();
 				DeleteDC(dc1);
 			}

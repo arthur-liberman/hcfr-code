@@ -46,7 +46,10 @@ public:
 	BOOL	m_doMultipleInstance;
 	BOOL	m_doUpdateCheck;
 	BOOL	m_bDisplayTestColors;
-	int		m_latencyTime,m_ablFreq;
+	int		m_latencyTime;
+	int		m_ablFreq;
+	int		m_ablDuration;
+	int		m_ablLevel;
 	BOOL	m_doSavePosition;
 	BOOL	m_bContinuousMeasures;
 	BOOL	m_bLatencyBeep;

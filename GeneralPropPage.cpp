@@ -44,6 +44,8 @@ CGeneralPropPage::CGeneralPropPage() : CPropertyPageWithHelp(CGeneralPropPage::I
 	m_bDisplayTestColors = TRUE;
 	m_latencyTime = 0;
 	m_ablFreq = 10;
+	m_ablDuration = 500;
+	m_ablLevel = 50;
 	m_doSavePosition = FALSE;
 	m_bContinuousMeasures = TRUE;
 	m_bLatencyBeep = FALSE;
@@ -74,8 +76,12 @@ void CGeneralPropPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_COLORS, m_bDisplayTestColors);
 	DDX_Text(pDX, IDC_EDIT_IRIS_TIME, m_latencyTime);
 	DDX_Text(pDX, IDC_EDIT_IRIS_TIME2, m_ablFreq);
+	DDX_Text(pDX, IDC_EDIT_IRIS_TIME3, m_ablDuration);
+	DDX_Text(pDX, IDC_EDIT_IRIS_TIME4, m_ablLevel);
 	DDV_MinMaxInt(pDX, m_latencyTime, -30000, 30000);
-	DDV_MinMaxInt(pDX, m_ablFreq, 2, 100);
+	DDV_MinMaxInt(pDX, m_ablFreq, 1, 100);
+	DDV_MinMaxInt(pDX, m_ablDuration, 100, 10000);
+	DDV_MinMaxInt(pDX, m_ablLevel, 0, 100);
 	DDX_Check(pDX, IDC_CHECK_SAVEPOSITION, m_doSavePosition);
 	DDX_Check(pDX, IDC_CHECK_CONTINUOUS, m_bContinuousMeasures);
 	DDX_Check(pDX, IDC_CHECK_BEEP, m_bLatencyBeep);
