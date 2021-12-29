@@ -2580,7 +2580,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 			{
 				// Display primary/secondary/saturations colors delta luminance
 				int	    nCol2 = nCol, satsize=GetDocument()->GetMeasure()->GetSaturationSize();
-				double  RefLuma [1000], sat=double (nCol-1)/ double (satsize-1);
+				double  RefLuma [MAX_USER_CC_PATCH_SIZE], sat=double (nCol-1)/ double (satsize-1);
                 CColor White = GetDocument() -> GetMeasure () -> GetOnOffWhite();
 //	            CColor Black = GetDocument() -> GetMeasure () -> GetGray ( 0 );
 	            CColor Black = GetDocument() -> GetMeasure () -> GetOnOffBlack();
@@ -2698,7 +2698,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 					}
 				}
 
-				if ( (nCol2 < ( (m_displayMode > 11 || m_displayMode < 5) ? 7 : 1001) || (nCol2 == 7 && isHDR) ) && white.isValid() && white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) > 0.0001 )
+				if ( (nCol2 < ( (m_displayMode > 11 || m_displayMode < 5) ? 7 : (MAX_USER_CC_PATCH_SIZE+1)) || (nCol2 == 7 && isHDR) ) && white.isValid() && white.GetPreferedLuxValue(GetConfig () -> m_bPreferLuxmeter) > 0.0001 )
     		    {
 					if (aMeasure.isValid() && aComponentNum != 8 && aComponentNum != 6 )
 					{

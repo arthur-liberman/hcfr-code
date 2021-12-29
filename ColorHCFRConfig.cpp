@@ -1063,7 +1063,7 @@ void CColorHCFRConfig::GetCColors()
 
 			if (colorFile.good()) 
 			{
-				while( getline(colorFile, line) && cnt < 1000) //currently limited to 1000 colors
+				while( getline(colorFile, line) && cnt < MAX_USER_CC_PATCH_SIZE)
 		        {
 					std::istringstream s(line);
 					std::string field;

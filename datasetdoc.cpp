@@ -2412,12 +2412,12 @@ void CDataSetDoc::PerformSimultaneousMeasures ( int nMode )
 	CStringList		SensorList;
 	CString			strId, strTmp;
 	CString			Msg, Title;
-	ColorRGBDisplay	GenColors [ 1000 ];
-	CGenerator::MeasureType	mType[1000];
+	ColorRGBDisplay	GenColors [MAX_USER_CC_PATCH_SIZE];
+	CGenerator::MeasureType	mType[MAX_USER_CC_PATCH_SIZE];
 
 	double			dLuxValue;
 	BOOL			bUseLuxValues = TRUE;
-	double			measuredLux [ 1000 ];
+	double			measuredLux [MAX_USER_CC_PATCH_SIZE];
     double          gamma=(GetConfig()->m_useMeasuredGamma)?(GetConfig()->m_GammaAvg):(GetConfig()->m_GammaRef);
     MSG				message;
 
@@ -4738,7 +4738,7 @@ void CDataSetDoc::OnUpdateMeasureSatCC24(CCmdUI* pCmdUI)
 		 break;
 	}
 
-	pCmdUI -> Enable ( m_pGenerator -> CanDisplayScale ( nPattern, (nPattern<16?24:(nPattern==16?96:1000)), TRUE ) );
+	pCmdUI -> Enable ( m_pGenerator -> CanDisplayScale ( nPattern, (nPattern<16?24:(nPattern==16?96:MAX_USER_CC_PATCH_SIZE)), TRUE ) );
 }
 
 void CDataSetDoc::OnMeasureContrast() 

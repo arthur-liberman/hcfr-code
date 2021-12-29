@@ -32,6 +32,8 @@
 
 #define FX_NODATA -99999.99
 
+#define MAX_USER_CC_PATCH_SIZE 10000
+
 #include "libHCFR_Config.h"
 #include "Matrix.h"
 

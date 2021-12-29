@@ -80,7 +80,7 @@ void CTargetWnd::Refresh(BOOL m_b16_235, int minCol, int nSize, int m_DisplayMod
 		{
 			int		y1 = 0, y2 = 0, y3 = 0;
 			double	x1, x2, x3, p1, p2, p3, z1, z2, z3;
-			ColorRGBDisplay	GenColors [ 1010 ];
+			ColorRGBDisplay	GenColors [MAX_USER_CC_PATCH_SIZE + 10];
 		
 			if ((m_DisplayMode == 0 || m_DisplayMode == 2 || m_DisplayMode == 3 || m_DisplayMode == 4 ))
 			{

@@ -68,8 +68,8 @@ CMeasure::CMeasure()
 	m_magentaSatMeasureArray.SetSize(GetConfig()->GetProfileInt("Scale Sizes","Saturations",4)+1);
 
 	//need to limit size to current cc size needs or compress saved file
-    m_cc24SatMeasureArray.SetSize(1000);
-	m_cc24SatMeasureArray_master.SetSize(5000);
+    m_cc24SatMeasureArray.SetSize(MAX_USER_CC_PATCH_SIZE);
+	m_cc24SatMeasureArray_master.SetSize(5 * MAX_USER_CC_PATCH_SIZE);
 
 	m_primariesArray[0]=m_primariesArray[1]=m_primariesArray[2]=noDataColor;
 	m_secondariesArray[0]=m_secondariesArray[1]=m_secondariesArray[2]=noDataColor;
@@ -2999,7 +2999,7 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 	CCPatterns	ccPat = GetConfig()->m_CCMode;
 	int			size = ccPat == CCSG?96:(ccPat == CMS || ccPat ==CPS)?19:(ccPat==AXIS?71:24);
 	CString		strMsg, Title;
-	ColorRGBDisplay	GenColors [ 1010 ];
+	ColorRGBDisplay	GenColors [MAX_USER_CC_PATCH_SIZE + 10];
 	double		dLuxValue;
 	BOOL isExtPat =( GetConfig()->m_CCMode == USER || GetConfig()->m_CCMode == CM10SAT || GetConfig()->m_CCMode == CM10SAT75 || GetConfig()->m_CCMode == CM5SAT || GetConfig()->m_CCMode == CM5SAT75 || GetConfig()->m_CCMode == CM4SAT || GetConfig()->m_CCMode == CM4SAT75 || GetConfig()->m_CCMode == CM4LUM || GetConfig()->m_CCMode == CM5LUM || GetConfig()->m_CCMode == CM10LUM || GetConfig()->m_CCMode == RANDOM250 || GetConfig()->m_CCMode == RANDOM500 || GetConfig()->m_CCMode == CM6NB || GetConfig()->m_CCMode == CMDNR || GetConfig()->m_CCMode == MASCIOR50);
 	isExtPat = (isExtPat || GetConfig()->m_CCMode > 19);
@@ -3089,7 +3089,7 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 		pGenerator->Release();
 		return FALSE;
 	}
-	for (int i=0;i<1000;i++) 
+	for (int i=0;i<MAX_USER_CC_PATCH_SIZE;i++)
 		m_cc24SatMeasureArray[i] = noDataColor;
 	m_binMeasure = TRUE;
 	m_currentIndex = 0;
@@ -3230,7 +3230,7 @@ BOOL CMeasure::MeasureCC24SatScale(CSensor *pSensor, CGenerator *pGenerator, CDa
 		for (int i=PATTERN_SIZE+250;i<PATTERN_SIZE+250+500;i++)
 				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(PATTERN_SIZE+250)];
 	else if (iCC == USER)
-		for (int i=PATTERN_SIZE+250+500;i<PATTERN_SIZE+250+500+1000;i++)
+		for (int i=PATTERN_SIZE+250+500;i<PATTERN_SIZE+250+500+MAX_USER_CC_PATCH_SIZE;i++)
 				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(PATTERN_SIZE+250+500)];
 
 	m_binMeasure = FALSE;
@@ -3358,7 +3358,7 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 		pGenerator->Release();
 		return FALSE;
 	}
-	for (i=0;i<1000;i++) 
+	for (i=0;i<MAX_USER_CC_PATCH_SIZE;i++)
 	m_cc24SatMeasureArray[i] = noDataColor;
 
 	m_binMeasure = TRUE;
@@ -3610,7 +3610,7 @@ BOOL CMeasure::MeasureAllSaturationScales(CSensor *pSensor, CGenerator *pGenerat
 		for (int i=PATTERN_SIZE+250;i<PATTERN_SIZE+250+500;i++)
 				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(PATTERN_SIZE+250)];
 	else if (iCC == USER)
-		for (int i=PATTERN_SIZE+250+500;i<PATTERN_SIZE+250+500+1000;i++)
+		for (int i=PATTERN_SIZE+250+500;i<PATTERN_SIZE+250+500+MAX_USER_CC_PATCH_SIZE;i++)
 				m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(PATTERN_SIZE+250+500)];
 
 	m_binMeasure = FALSE;
@@ -6074,7 +6074,7 @@ BOOL CMeasure::ValidateBackgroundCC24SatScale ( BOOL bUseLuxValues, double * pLu
 			for (int i=PATTERN_SIZE+250;i<PATTERN_SIZE+250+500;i++)
 					m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(PATTERN_SIZE+250)];
 		else if (iCC == USER) 
-			for (int i=PATTERN_SIZE+250+500;i<PATTERN_SIZE+250+500+1000;i++)
+			for (int i=PATTERN_SIZE+250+500;i<PATTERN_SIZE+250+500+MAX_USER_CC_PATCH_SIZE;i++)
 					m_cc24SatMeasureArray_master[i] = m_cc24SatMeasureArray[i-(PATTERN_SIZE+250+500)];
 	}
 
@@ -6184,7 +6184,7 @@ CColor CMeasure::GetCC24Sat(int i)
 		return m_cc24SatMeasureArray[i]; 
 	}
 
-	return m_cc24SatMeasureArray_master[i + (iCC<=RANDOM250?(iCC * 100):(iCC==RANDOM500?PATTERN_SIZE+250:PATTERN_SIZE+250+500))];  //index increments by 100 until slot 19 (then 250 & 500 & user 1000 & 2020_50)
+	return m_cc24SatMeasureArray_master[i + (iCC<=RANDOM250?(iCC * 100):(iCC==RANDOM500?PATTERN_SIZE+250:PATTERN_SIZE+250+500))];  //index increments by 100 until slot 19 (then 250 & 500 & user MAX_USER_CC_PATCH_SIZE & 2020_50)
 } 
 
 CString CMeasure::GetCCStr() const

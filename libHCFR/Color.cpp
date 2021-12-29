@@ -2748,7 +2748,7 @@ int ReadColorsFromCsv(ColorRGBDisplay* genColors, int maxEntries, CString csvPat
 	{
 		return -1;
 	}
-	while (std::getline(colorFile, line) && cnt < maxEntries) //currently limited to 1000 colors
+	while (std::getline(colorFile, line) && cnt < maxEntries)
 	{
 		std::istringstream s(line);
 		std::string field;
@@ -3082,7 +3082,7 @@ bool GenerateCC24Colors (const CColorReference& colorReference, ColorRGBDisplay*
 			lpStr = strrchr ( m_ApplicationPath, (int) '\\' );
 			lpStr [ 1 ] = '\0';
             CString strPath = m_ApplicationPath;
-			n_elements = ReadColorsFromCsv(GenColors, 1000, strPath + "usercolors.csv");
+			n_elements = ReadColorsFromCsv(GenColors, MAX_USER_CC_PATCH_SIZE, strPath + "usercolors.csv");
             break;
         }
 
