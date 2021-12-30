@@ -98,7 +98,7 @@ public:
 	//{{AFX_DATA(CGeneratorSelectionPropPage)
 	enum { IDD = IDD_SELECT_GENERATOR_PROPPAGE };
 	CComboBox	m_generatorChoiceCtrl;
-	CString	m_generatorChoice;
+	int	m_generatorChoice;
 	//}}AFX_DATA
 
 	int GetCurrentID() { return m_currentID; }

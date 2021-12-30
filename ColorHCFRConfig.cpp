@@ -425,6 +425,16 @@ BOOL CColorHCFRConfig::LoadSettings()
 	gw_Weight = GetProfileInt("Advanced","gw_Weight",0);
 	if (!m_bDisableHighDPI)
 		isHighDPI = ((GetSystemMetrics(SM_CXSCREEN) > 1920) && (GetSystemMetrics(SM_CYSCREEN) > 1080));
+
+	CString	Msg;
+	m_generatorTypes.clear();
+	Msg.LoadString(IDS_MANUALDVDGENERATOR_NAME);
+	m_generatorTypes[enumManual] = Msg;
+	Msg.LoadString(IDS_GDIGENERATOR_NAME);
+	m_generatorTypes[enumAutomatic] = Msg;
+	CString generatorChoice = GetProfileString("Defaults", "Generator", (LPCSTR)Msg);
+	m_generatorType = GetGeneratorType(generatorChoice);
+
 	GetCColors();
 	return TRUE;
 }
@@ -833,6 +843,37 @@ void CColorHCFRConfig::ApplySettings(BOOL isStartupApply)
 //			AfxGetMainWnd()->SendMessage(WM_COMMAND,IDM_REFRESH_CONTROLS,NULL);	// refresh mainframe controls
 	    }
 	}
+}
+
+bool CColorHCFRConfig::SetGeneratorType(GeneratorType type)
+{
+	auto it = m_generatorTypes.find(type);
+	if (it != m_generatorTypes.end())
+	{
+		m_generatorType = type;
+		WriteProfileString("Defaults", "Generator", it->second);
+		return true;
+	}
+	return false;
+}
+
+CColorHCFRConfig::GeneratorType CColorHCFRConfig::GetGeneratorType(const CString& generatorString) const
+{
+	GeneratorType generatorType = enumAutomatic;
+	for (auto it = m_generatorTypes.begin(); it != m_generatorTypes.end(); it++)
+	{
+		if (it->second == generatorString)
+		{
+			generatorType = it->first;
+			break;
+		}
+	}
+	return generatorType;
+}
+
+CColorHCFRConfig::GeneratorType CColorHCFRConfig::GetGeneratorType() const
+{
+	return m_generatorType;
 }
 
 BOOL CColorHCFRConfig::IsProfileEntryDefined(LPCTSTR lpszSection,LPCTSTR lpszEntry)

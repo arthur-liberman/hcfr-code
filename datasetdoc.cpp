@@ -1443,7 +1443,7 @@ void CDataSetDoc::OnChangeGenerator()
 	Title.LoadString ( IDM_CHANGE_GENERATOR );
 	propSheet.SetTitle ( Title );
 
-	page.m_generatorChoice=m_pGenerator->GetName(); // default selection is current generator
+	page.m_generatorChoice=(int)GetConfig()->GetGeneratorType(m_pGenerator->GetName()); // default selection is current generator
 	if( propSheet.DoModal() == IDOK )
 	{
 		CreateGenerator(page.GetCurrentID());

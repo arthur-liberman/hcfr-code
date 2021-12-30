@@ -40,19 +40,17 @@ IMPLEMENT_DYNCREATE(CGeneratorSelectionPropPage, CPropertyPageWithHelp)
 CGeneratorSelectionPropPage::CGeneratorSelectionPropPage() : CPropertyPageWithHelp(CGeneratorSelectionPropPage::IDD)
 {
 	//{{AFX_DATA_INIT(CGeneratorSelectionPropPage)
-	m_generatorChoice = _T("");
+	m_generatorChoice = 0;
 	//}}AFX_DATA_INIT
 
 	// Init selection with previoulsy stored value
-	CString	Msg;
-	Msg.LoadString ( IDS_GDIGENERATOR_NAME );
-	m_generatorChoice = GetConfig()->GetProfileString("Defaults","Generator",(LPCSTR)Msg);
+	m_generatorChoice = GetConfig()->GetGeneratorType();
 }
 
 CGeneratorSelectionPropPage::~CGeneratorSelectionPropPage()
 {
 	// save current selection in the registry to be the next default value
-	 GetConfig()->WriteProfileString("Defaults","Generator",m_generatorChoice);
+	 GetConfig()->SetGeneratorType((CColorHCFRConfig::GeneratorType)m_generatorChoice);
 }
 
 void CGeneratorSelectionPropPage::DoDataExchange(CDataExchange* pDX)
@@ -60,7 +58,7 @@ void CGeneratorSelectionPropPage::DoDataExchange(CDataExchange* pDX)
 	CPropertyPageWithHelp::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CGeneratorSelectionPropPage)
 	DDX_Control(pDX, IDC_GENERATORCHOICE_COMBO, m_generatorChoiceCtrl);
-	DDX_CBString(pDX, IDC_GENERATORCHOICE_COMBO, m_generatorChoice);
+	DDX_CBIndex(pDX, IDC_GENERATORCHOICE_COMBO, m_generatorChoice);
 	//}}AFX_DATA_MAP
 
 	if(pDX->m_bSaveAndValidate != 0)	// 0=init 1=save
@@ -72,7 +70,7 @@ void CGeneratorSelectionPropPage::DoDataExchange(CDataExchange* pDX)
 		if ( m_generatorChoiceCtrl.GetCurSel() < 0 )
 			m_generatorChoiceCtrl.SetCurSel(0);
 	}
-	GetConfig()->WriteProfileString("Defaults","Generator",m_generatorChoice);
+	GetConfig()->SetGeneratorType((CColorHCFRConfig::GeneratorType)m_generatorChoice);
 }
 
 

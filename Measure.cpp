@@ -6851,13 +6851,11 @@ CColor CMeasure::GetRefSat(int i, double sat_ratio, bool special) const
 	return aColor;
 }
 
-CColor CMeasure::GetRefCC24Sat(int i) const
+ColorRGB RGB[MAX_USER_CC_PATCH_SIZE];
+
+void CMeasure::GetRefCC24Sat(int i, CColor& ccRef) const
 {
-	CColor aColor;
-	int m_cRef=GetColorReference().m_standard;
     CColorReference cRef = GetColorReference();
-	CColor ccRef;
-    ColorRGB RGB[1000];
 	bool const_XYZ = FALSE;
 	GetConfig()->m_bHDR100 = FALSE;
 
@@ -7278,16 +7276,12 @@ CColor CMeasure::GetRefCC24Sat(int i) const
 	
 	}
 
+	ccRef.ClearSpectrumLux();
 	ccRef.SetRGBValue(ColorRGB(r,g,b),(GetColorReference().m_standard==UHDTV3||GetColorReference().m_standard==UHDTV4)?CColorReference(UHDTV2):cRef);
 	
 	//Special case White redefined on Mascior disk to level 502 50.0% 92.254965 nits
-	CString	Msg, str;
-	Msg.LoadString ( IDS_GDIGENERATOR_NAME );
-	CString m_generatorChoice = GetConfig()->GetProfileString("Defaults","Generator",(LPCSTR)Msg);
-	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
-	bool DVD = (m_generatorChoice == str);
+	bool DVD = (GetConfig()->GetGeneratorType() == CColorHCFRConfig::enumManual);
 	double level = (abs(GetConfig()->m_DiffuseL-94.0)<0.5?92.254965:GetConfig()->m_DiffuseL) / 10000.;
 	if (!i && GetConfig()->m_CCMode == CPS && mode == 5 && DVD)
 		ccRef.SetRGBValue(ColorRGB(level,level,level),(GetColorReference().m_standard==UHDTV3||GetColorReference().m_standard==UHDTV4)?CColorReference(UHDTV2):cRef);
-	return ccRef;
 }

@@ -37,10 +37,17 @@
 #include "AppearancePropPage.h"
 #include "AdvancedPropPage.h"
 #include "ToolbarPropPage.h"
+#include <map>
 
 class CColorHCFRConfig  
 {
 public:
+	enum GeneratorType
+	{
+		enumAutomatic,
+		enumManual,
+	};
+
 	// Exe Path, with an ending backslash
 	char m_ApplicationPath [MAX_PATH];
 
@@ -136,11 +143,9 @@ public:
     BOOL    doHighlight;
 	BOOL	isHighDPI;
 
-
 	// Global strings
 	CString	m_PercentGray;
 
-public:
 	BOOL GetPropertiesSheetValues();
 	void SetPropertiesSheetValues();
 	void ChangeSettings(int aPage);
@@ -153,6 +158,10 @@ public:
 	std::string GetCColorsN(int index);
     void GetCColors();
 	CString strLang;
+
+	bool SetGeneratorType(GeneratorType type);
+	GeneratorType GetGeneratorType(const CString &generatorString) const;
+	GeneratorType GetGeneratorType() const;
 
 	BOOL IsProfileEntryDefined(LPCTSTR lpszSection,LPCTSTR lpszEntry);
 
@@ -171,7 +180,6 @@ public:
 	CReferencesPropPage m_referencesPropertiesPage;
 	CAdvancedPropPage m_advancedPropertiesPage;
 
-
 	CColorHCFRConfig();
 	virtual ~CColorHCFRConfig();
 
@@ -180,6 +188,8 @@ private:
 	CGeneralPropPage m_generalPropertiesPage;
 	CAppearancePropPage m_appearancePropertiesPage;
 	CToolbarPropPage m_toolbarPropertiesPage;
+	GeneratorType m_generatorType;
+	std::map<GeneratorType, CString> m_generatorTypes;
 };
 
 #endif // !defined(AFX_COLORHCFRCONFIG_H__669E7D2E_9632_4BCC_8C99_41DA182515F1__INCLUDED_)

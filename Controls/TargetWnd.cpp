@@ -66,11 +66,7 @@ void CTargetWnd::Refresh(BOOL m_b16_235, int minCol, int nSize, int m_DisplayMod
 {	
 	if (m_pRefColor)
 	{
-		CString	Msg, str;
-		Msg.LoadString ( IDS_GDIGENERATOR_NAME );
-		CString m_generatorChoice = GetConfig()->GetProfileString("Defaults","Generator",(LPCSTR)Msg);
-		str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
-		bool DVD = (m_generatorChoice == str);
+		bool DVD = (GetConfig()->GetGeneratorType() == CColorHCFRConfig::enumManual);
 		bool isUHDTV3 = GetConfig()->m_colorStandard == UHDTV3;
 		bool isUHDTV4 = GetConfig()->m_colorStandard == UHDTV4;
 		bool isHDR10 = GetConfig()->m_GammaOffsetType == 5;
@@ -153,7 +149,11 @@ void CTargetWnd::Refresh(BOOL m_b16_235, int minCol, int nSize, int m_DisplayMod
 					p3=GenColors[minCol-1][2] / 100.;
 					break;
 				case 11:
-					centerXYZ =  pDoc->GetMeasure()->GetRefCC24Sat(minCol-1).GetXYZValue();
+				{
+					CColor clr;
+					pDoc->GetMeasure()->GetRefCC24Sat(minCol - 1, clr);
+					centerXYZ = clr.GetXYZValue();
+				}
 					GenerateCC24Colors (GetColorReference(), GenColors, GetConfig()->m_CCMode, GetConfig()->m_GammaOffsetType);
 					if (GetConfig()->m_CCMode == MCD)
 					{

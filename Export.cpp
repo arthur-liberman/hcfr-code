@@ -838,8 +838,8 @@ bool CExport::SavePDF()
 	for ( i=0; i<mi; i++)
 	{
 		aColor = m_pDoc->GetMeasure()->GetCC24Sat(i);
-		aReference = m_pDoc->GetMeasure()->GetRefCC24Sat(i);
-		aRef = m_pDoc->GetMeasure()->GetRefCC24Sat(i).GetRGBValue(bRef);		
+		m_pDoc->GetMeasure()->GetRefCC24Sat(i, aReference);
+		aRef = aReference.GetRGBValue(bRef);
 
 		if (aColor.isValid())
 		{
@@ -1414,8 +1414,8 @@ bool CExport::SavePDF()
 		for ( i=0; i<mi; i++)
 		{
 			aColor = pDataRef->GetMeasure()->GetCC24Sat(i);
-			aReference = pDataRef->GetMeasure()->GetRefCC24Sat(i);
-			aRef = pDataRef->GetMeasure()->GetRefCC24Sat(i).GetRGBValue((cRef.m_standard==UHDTV3||cRef.m_standard==UHDTV4)?CColorReference(UHDTV2):GetColorReference());
+			pDataRef->GetMeasure()->GetRefCC24Sat(i, aReference);
+			aRef = aReference.GetRGBValue((cRef.m_standard==UHDTV3||cRef.m_standard==UHDTV4)?CColorReference(UHDTV2):GetColorReference());
 			if (GetConfig()->m_GammaOffsetType == 5)
 			{
 				if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= LG400017)
@@ -2337,7 +2337,7 @@ bool CExport::SaveCCSheet()
 		}
 
 		aColor = m_pDoc->GetMeasure()->GetCC24Sat(i);
-		aReference = m_pDoc->GetMeasure()->GetRefCC24Sat(i);
+		m_pDoc->GetMeasure()->GetRefCC24Sat(i, aReference);
 		if (GetConfig()->m_GammaOffsetType == 5)
 		{
 			if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= LG400017)

@@ -240,6 +240,7 @@ public:
 	CColor(double ax,double ay);			// xy initialisation
     CColor(ifstream &theFile);
 	~CColor();
+	void ClearSpectrumLux();
 
 	CColor& operator =(const CColor& obj);
 

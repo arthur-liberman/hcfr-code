@@ -1664,7 +1664,7 @@ void CMainView::InitGrid(bool sizeGrid)
                 CColor s_clr;
                 ColorRGB r_clr;
                 double inten;
-                s_clr=GetDocument()->GetMeasure()->GetRefCC24Sat(i);     
+				GetDocument()->GetMeasure()->GetRefCC24Sat(i, s_clr);
 				if (GetConfig()->m_GammaOffsetType == 5 && GetConfig()->m_bHDR100 )
 				{
 					s_clr.SetX(s_clr.GetX()*100);
@@ -2290,11 +2290,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 	CString str;
 	BOOL isHDR = ( GetConfig()->m_GammaOffsetType == 5 && (m_displayMode == 1 || m_displayMode >= 5 && m_displayMode <= 11) );
 	//Special case White redefined on Mascior disk to level 502 50.0% 92.254965 nits
-	CString	Msg, dstr;
-	Msg.LoadString ( IDS_GDIGENERATOR_NAME );
-	CString m_generatorChoice = GetConfig()->GetProfileString("Defaults","Generator",(LPCSTR)Msg);
-	dstr.LoadString(IDS_MANUALDVDGENERATOR_NAME);
-	BOOL DVD = (m_generatorChoice == dstr);	
+	BOOL DVD = (GetConfig()->GetGeneratorType() == CColorHCFRConfig::enumManual);
 	CColorReference  bRef = ((GetColorReference().m_standard == UHDTV3 || GetColorReference().m_standard == UHDTV4)?CColorReference(UHDTV2):(GetColorReference().m_standard == HDTVa || GetColorReference().m_standard == HDTVb)?CColorReference(HDTV):GetColorReference());
 	
 	if(aMeasure.isValid() || ( aComponentNum == 7 || ( aComponentNum == 5 && ( GetDataRef() == NULL || GetDataRef() == GetDocument () ) ) ))
@@ -3595,7 +3591,7 @@ void CMainView::UpdateGrid()
 
 				case 11:
 					 aColor = GetDocument()->GetMeasure()->GetCC24Sat(j);
-					 refColor = GetDocument()->GetMeasure()->GetRefCC24Sat(j);
+					 GetDocument()->GetMeasure()->GetRefCC24Sat(j, refColor);
 					 if ( pDataRef )
 						refDocColor = pDataRef->GetMeasure()->GetCC24Sat(j);
 					 break;

@@ -85,11 +85,7 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
     double cx,cy,cz,cxref,cyref,czref;
 	CColorReference cRef= (GetColorReference());
 	int satsize=m_pDocument->GetMeasure()->GetSaturationSize();
-	CString	Msg, dstr;
-	Msg.LoadString ( IDS_GDIGENERATOR_NAME );
-	CString m_generatorChoice = GetConfig()->GetProfileString("Defaults","Generator",(LPCSTR)Msg);
-	dstr.LoadString(IDS_MANUALDVDGENERATOR_NAME);
-	BOOL DVD = (m_generatorChoice == dstr);	
+	BOOL DVD = (GetConfig()->GetGeneratorType() == CColorHCFRConfig::enumManual);
 
 	if ( m_pRefColor)
 	{
@@ -99,7 +95,7 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 			if (m_displayMode == 11)
 			{
 				m_bLumaMode = TRUE;
-				aReference = m_pDocument->GetMeasure()->GetRefCC24Sat(minCol-1);
+				m_pDocument->GetMeasure()->GetRefCC24Sat(minCol-1, aReference);
 			}
 			else if (m_displayMode == 5)
 			{

@@ -2311,6 +2311,11 @@ CColor::CColor(ifstream &theFile):m_XYZValues(0.0,3,1)
 }
 CColor::~CColor()
 {
+	ClearSpectrumLux();
+}
+
+void CColor::ClearSpectrumLux()
+{
 	if ( m_pSpectrum )
 	{
 		delete m_pSpectrum;
@@ -2331,20 +2336,10 @@ CColor& CColor::operator =(const CColor& aColor)
 
 	m_XYZValues = aColor.m_XYZValues;
 
-	if ( m_pSpectrum )
-	{
-		delete m_pSpectrum;
-		m_pSpectrum = NULL;
-	}
+	ClearSpectrumLux();
 
 	if ( aColor.m_pSpectrum )
 		m_pSpectrum = new CSpectrum ( *aColor.m_pSpectrum );
-
-	if ( m_pLuxValue )
-	{
-		delete m_pLuxValue;
-		m_pLuxValue = NULL;
-	}
 
 	if ( aColor.m_pLuxValue )
 		m_pLuxValue = new double ( *aColor.m_pLuxValue );

@@ -96,11 +96,7 @@ void CGeneralPropPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_CHECK_USE_10bit, m_bUse10bitCtrl);
 	DDX_Check(pDX, IDC_CHECK_USE_10bit, m_bUse10bit);
 	DDX_Check(pDX, IDC_CHECK_USE_ROUNDDOWN, m_bUseRoundDown);
-	CString	Msg, str;
-	Msg.LoadString ( IDS_GDIGENERATOR_NAME );
-	CString m_generatorChoice = GetConfig()->GetProfileString("Defaults","Generator",(LPCSTR)Msg);
-	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
-	bool DVD = (m_generatorChoice == str);
+	bool DVD = (GetConfig()->GetGeneratorType() == CColorHCFRConfig::enumManual);
 	if (DVD)
 	{
 		if (GetConfig()->m_GammaOffsetType == 5)
@@ -158,11 +154,7 @@ void CGeneralPropPage::OnControlClicked(UINT nID)
 	// m_isModified becomes true only when Continuous Reading flag changes. This flag
 	// allow parent dialog to send a WM_SYSCOLORCHANGE message to all DataSetView to change
 	// measurement button look (camera or start icon).
-	CString	Msg, str;
-	Msg.LoadString ( IDS_GDIGENERATOR_NAME );
-	CString m_generatorChoice = GetConfig()->GetProfileString("Defaults","Generator",(LPCSTR)Msg);
-	str.LoadString(IDS_MANUALDVDGENERATOR_NAME);
-	bool DVD = (m_generatorChoice == str);
+	bool DVD = (GetConfig()->GetGeneratorType() == CColorHCFRConfig::enumManual);
 	if (DVD)
 	{
 		if (GetConfig()->m_GammaOffsetType == 5)
