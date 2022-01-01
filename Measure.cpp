@@ -568,7 +568,7 @@ void CMeasure::Serialize(CArchive& ar)
 			if ( version >= 8 )
 			{
 				ar >> size;
-				m_cc24SatMeasureArray.SetSize(size);
+				m_cc24SatMeasureArray.SetSize(max(size, MAX_USER_CC_PATCH_SIZE));
 				if ( version <= 12)
 				{
 					for(int i=0;i<size;i++)
@@ -592,7 +592,7 @@ void CMeasure::Serialize(CArchive& ar)
 				if ( version >= 10)
 				{
 					ar >> size;
-					m_cc24SatMeasureArray_master.SetSize(size);
+					m_cc24SatMeasureArray_master.SetSize(max(size, 5 * MAX_USER_CC_PATCH_SIZE));
 					if (version <= 12)
 					{
 						for(int i=0;i<size;i++)
