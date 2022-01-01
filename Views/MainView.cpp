@@ -2429,7 +2429,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 							}
 							else
 							{
-								if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= LG400017 && m_displayMode == 11)	
+								if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= CCMAXHDR && m_displayMode == 11)
 									YWhite = GetDocument()->GetMeasure()->GetGray((GetDocument()->GetMeasure()->GetGrayScaleSize()-1)).GetY() ;
 								else
 								{
@@ -2687,7 +2687,7 @@ CString CMainView::GetItemText(CColor & aMeasure, double YWhite, CColor & aRefer
 							else
 								white.SetY(94.37844);
 						else
-							if ((GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= LG400017) && m_displayMode == 11)
+							if ((GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= CCMAXHDR) && m_displayMode == 11)
 								white.SetY(GetDocument()->GetMeasure()->GetGray((GetDocument()->GetMeasure()->GetGrayScaleSize()-1)).GetY());
 							else
 								white.SetY(94.37844);
@@ -3621,7 +3621,7 @@ void CMainView::UpdateGrid()
 			
 			if ( (isHDR && m_displayMode <=11 && m_displayMode >= 5) )
 			{
-				if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= LG400017 && m_displayMode == 11)	
+				if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= CCMAXHDR && m_displayMode == 11)
 				{
 					refColor.SetX((refColor.GetX() * 100.));
 					refColor.SetY((refColor.GetY() * 100.));

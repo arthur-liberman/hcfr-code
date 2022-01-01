@@ -225,7 +225,7 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 
 			if ( (GetConfig()->m_GammaOffsetType == 5 && m_displayMode <=11 && m_displayMode >= 5) )
 			{
-				if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= LG400017 && m_displayMode == 11)	
+				if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= CCMAXHDR && m_displayMode == 11)
 				{
 					aReference.SetX((aReference.GetX() * 100.));
 					aReference.SetY((aReference.GetY() * 100.));
@@ -372,7 +372,7 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 							else
 								white.SetY(94.37844);
 						else
-							if ((GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= LG400017) && m_displayMode == 11)
+							if ((GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= CCMAXHDR) && m_displayMode == 11)
 								white.SetY(m_pDocument->GetMeasure()->GetGray((m_pDocument->GetMeasure()->GetGrayScaleSize()-1)).GetY());
 							else
 								white.SetY(94.37844);
@@ -456,7 +456,7 @@ void CRGBLevelWnd::Refresh(int minCol, int m_displayMode, int nSize)
 			}
 			else
 			{
-				if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= LG400017 && m_displayMode == 11)	
+				if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= CCMAXHDR && m_displayMode == 11)
 					YWhite = m_pDocument->GetMeasure()->GetGray((m_pDocument->GetMeasure()->GetGrayScaleSize()-1)).GetY() ;
 				else
 				{

@@ -793,7 +793,7 @@ bool CExport::SavePDF()
 	RefWhite = 1.0;
 	if (GetConfig()->m_GammaOffsetType == 5)
 	{
-		if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= LG400017)	
+		if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= CCMAXHDR)
 			YWhite = m_pDoc->GetMeasure()->GetGray((m_pDoc->GetMeasure()->GetGrayScaleSize()-1)).GetY() ;
 		else
 		{
@@ -850,7 +850,7 @@ bool CExport::SavePDF()
 			tmp.SetZ(tmp.GetZ() / YWhite);
 			if (GetConfig()->m_GammaOffsetType == 5)
 			{
-				if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= LG400017)
+				if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= CCMAXHDR)
 				{
 					aReference.SetX(aReference.GetX() * 100.);
 					aReference.SetY(aReference.GetY() * 100.);
@@ -1370,7 +1370,7 @@ bool CExport::SavePDF()
 		RefWhite = 1.0;
 		if (GetConfig()->m_GammaOffsetType == 5)
 		{
-			if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= LG400017)	
+			if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= CCMAXHDR)
 				YWhite = m_pDoc->GetMeasure()->GetGray((m_pDoc->GetMeasure()->GetGrayScaleSize()-1)).GetY() ;
 			else
 			{
@@ -1418,7 +1418,7 @@ bool CExport::SavePDF()
 			aRef = aReference.GetRGBValue((cRef.m_standard==UHDTV3||cRef.m_standard==UHDTV4)?CColorReference(UHDTV2):GetColorReference());
 			if (GetConfig()->m_GammaOffsetType == 5)
 			{
-				if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= LG400017)
+				if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= CCMAXHDR)
 				{
 					aReference.SetX(aReference.GetX() * 100.);
 					aReference.SetY(aReference.GetY() * 100.);
@@ -2327,7 +2327,7 @@ bool CExport::SaveCCSheet()
 		double tmWhite = getL_EOTF(0.5022283, NoDataColor, NoDataColor, GetConfig()->m_GammaRel, GetConfig()->m_Split, 5, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL,GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1) * 100.0;
 		if (GetConfig()->m_GammaOffsetType == 5)
 		{
-			if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= LG400017)	
+			if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= CCMAXHDR)
 				YWhite = m_pDoc->GetMeasure()->GetGray((m_pDoc->GetMeasure()->GetGrayScaleSize()-1)).GetY() ;
 			else
 			{
@@ -2340,7 +2340,7 @@ bool CExport::SaveCCSheet()
 		m_pDoc->GetMeasure()->GetRefCC24Sat(i, aReference);
 		if (GetConfig()->m_GammaOffsetType == 5)
 		{
-			if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= LG400017)
+			if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= CCMAXHDR)
 			{
 				aReference.SetX(aReference.GetX() * 100.);
 				aReference.SetY(aReference.GetY() * 100.);

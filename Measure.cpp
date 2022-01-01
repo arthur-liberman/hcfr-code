@@ -7154,7 +7154,7 @@ void CMeasure::GetRefCC24Sat(int i, CColor& ccRef) const
         //Custom color checker as default
 		default:
 			RGB [ i ] = GetConfig()->GetCColorsT(i);
-			if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= LG400017 )
+			if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= CCMAXHDR)
 				GetConfig()->m_bHDR100 = TRUE;
 			break;
     } 
@@ -7170,7 +7170,7 @@ void CMeasure::GetRefCC24Sat(int i, CColor& ccRef) const
 	
 	double r=pow(RGB[i][0],2.22),g=pow(RGB[i][1],2.22),b=pow(RGB[i][2],2.22);
 
-	if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= LG400017)
+	if (GetConfig()->m_CCMode >= MASCIOR50 && GetConfig()->m_CCMode <= CCMAXHDR)
 	{
 		r=RGB[i][0],g=RGB[i][1],b=RGB[i][2];
 		double PeakWhite = 700; //default 2017 LGs
@@ -7212,6 +7212,13 @@ void CMeasure::GetRefCC24Sat(int i, CColor& ccRef) const
 					r = levels3[i] * 10000. / PeakWhite /  100., g=levels3[i] * 10000. / PeakWhite / 100., b=levels3[i] * 10000. / PeakWhite / 100.;
 				break;
 				}
+			default:
+				{
+					r = getL_EOTF(r, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL, GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1) / PeakWhite;
+					g = getL_EOTF(g, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL, GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1) / PeakWhite;
+					b = getL_EOTF(b, White, Black, GetConfig()->m_GammaRel, GetConfig()->m_Split, mode, GetConfig()->m_DiffuseL, GetConfig()->m_MasterMinL, GetConfig()->m_MasterMaxL, GetConfig()->m_TargetMinL, GetConfig()->m_TargetMaxL, GetConfig()->m_useToneMap, FALSE, GetConfig()->m_TargetSysGamma, GetConfig()->m_BT2390_BS, GetConfig()->m_BT2390_WS, GetConfig()->m_BT2390_WS1) / PeakWhite;
+				}
+			break;
 		}
 	}
 	else
